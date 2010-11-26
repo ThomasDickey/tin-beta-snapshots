@@ -64,7 +64,7 @@
  *
  * return codes:
  *  0 = file locked successfully
- * -1 = some error occured
+ * -1 = some error occurred
  */
 int
 fd_lock(
@@ -108,7 +108,7 @@ fd_lock(
  * return codes:
  *  0 = file is not locked
  *  1 = file is locked
- * -1 = some error occured
+ * -1 = some error occurred
  */
 int
 test_fd_lock(
@@ -126,7 +126,7 @@ test_fd_lock(
 		flk.l_start = 0;
 		flk.l_len = 0;
 		if (fcntl(fd, F_GETLK, &flk) < 0)
-				return -1; /* some error occured */
+				return -1; /* some error occurred */
 		else {
 			if (flk.l_type != F_UNLCK)
 				return 1;	/* file is locked */
@@ -140,7 +140,7 @@ test_fd_lock(
 		if (errno == EACCES)
 			return 1;	/* file is locked */
 		else
-			return -1;	/* some error occured */
+			return -1;	/* some error occurred */
 	} else
 		rval = 0;	/* file is not lockf locked */
 #	else
@@ -149,7 +149,7 @@ test_fd_lock(
 		if (errno == EWOULDBLOCK)
 			return 1;	/* file is locked */
 		else
-			return -1;	/* some error occured */
+			return -1;	/* some error occurred */
 	} else
 		rval = 0; /* file is not flock locked */
 
@@ -169,7 +169,7 @@ test_fd_lock(
  *
  * return codes:
  *  0 = file unlocked successfully
- * -1 = some error occured
+ * -1 = some error occurred
  */
 int
 fd_unlock(
@@ -211,7 +211,7 @@ fd_unlock(
  *
  * return codes:
  *  TRUE  = file locked successfully
- *  FALSE = some error occured
+ *  FALSE = some error occurred
  */
 t_bool dot_lock(
 	const char *filename)
@@ -232,7 +232,7 @@ t_bool dot_lock(
 
 #ifdef HAVE_LINK
 	if (stat(lockfile, &statbuf)) {				/* lockfile doesn't exist */
-		if (!link(tempfile, lockfile)) {			/* link succsessfull */
+		if (!link(tempfile, lockfile)) {			/* link successful */
 			if (!stat(tempfile, &statbuf)) {	/* tempfile exist */
 				if (statbuf.st_nlink == 2)			/* link count ok */
 					rval = TRUE;
@@ -257,7 +257,7 @@ t_bool dot_lock(
  *
  * return codes:
  *  TRUE  = file unlocked successfully
- *  FALSE = some error occured
+ *  FALSE = some error occurred
  */
 t_bool dot_unlock(
 	const char *filename)

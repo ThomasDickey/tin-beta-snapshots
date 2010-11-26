@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-11-30
+ *  Updated   : 2010-10-01
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -97,7 +97,7 @@
 
 #include	<signal.h>
 
-enum context { cMain, cArt, cAttrib, cConfig, cFilter, cGroup, cHelp, cInfopager, cPage, cScope, cSelect, cThread };
+enum context { cMain, cArt, cAttachment, cAttrib, cConfig, cFilter, cGroup, cHelp, cInfopager, cPage, cPost, cPostCancel, cPostFup, cReconnect, cScope, cSelect, cThread, cURL };
 enum icontext { cNone, cGetline, cPromptCONT, cPromptSLK, cPromptYN };
 enum resizer { cNo, cYes, cRedraw };
 enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
@@ -337,7 +337,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 /*
  * any pgp/gpp support possible and wanted
- * sort out possible conflicts: gpg is prefered over pgp5 over pgp
+ * sort out possible conflicts: gpg is preferred over pgp5 over pgp
  */
 #if defined(HAVE_PGP) || defined(HAVE_PGPK) || defined(HAVE_GPG)
 #	define HAVE_PGP_GPG 1
@@ -559,7 +559,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define SAVEFILE_PREFIX		"unknown"
 
 
-/* MMDF-mailbox seperator */
+/* MMDF-mailbox separator */
 #ifndef MMDFHDRTXT
 #	define MMDFHDRTXT "\01\01\01\01\n"
 #endif /* MMDFHDRTXT */
@@ -607,8 +607,8 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define SHAR_REGEX	"\\#(?:!\\s?(?:/usr)?/bin/sh|\\s?(?i)this\\sis\\sa\\sshell\\sarchive)"
 
 /* slrn verbatim marks, case sensitive & ^-anchored */
-#define DEFAULT_VERBATIM_BEGIN_REGEX	"#v\\+"
-#define DEFAULT_VERBATIM_END_REGEX	"#v-"
+#define DEFAULT_VERBATIM_BEGIN_REGEX	"#v\\+\\s$"
+#define DEFAULT_VERBATIM_END_REGEX	"#v-\\s$"
 
 /*
  * URL related regexs:
@@ -642,6 +642,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define MAIL_REGEX	"\\b(?:mailto:(?:[-\\w$.+!*'(),;/?:@&=]|%[\\da-f]{2})+)"
 /*
  * case insensitive
+ * TODO: check against RFC 5538
  */
 #if 1 /* complex */
 #	define NEWS_REGEX "\\b(?:s?news|nntp):(?:(?:(?://(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?(?=[/])[^()\\^\\[\\]{}\\|\\x00-\\x1f\\x7f\\s\"<>'\\\\:,;]+|$))|[^\\^\\[\\]{}\\|\\x00-\\x1f\\x7f\\s<>\"():,;\\\\'/]+)\\b"
@@ -1030,6 +1031,8 @@ enum {
 #define SCOPE_LEVEL	6
 #define CONFIG_LEVEL	7
 #define ATTRIB_LEVEL	8
+#define ATTACHMENT_LEVEL	9
+#define URL_LEVEL	10
 
 #define MINI_HELP_LINES		5
 
@@ -1415,11 +1418,12 @@ struct t_article {
 	int score;			/* score article has reached after filtering */
 	unsigned int status:2;	/* 0 = read, 1 = unread, 2 = will return */
 	unsigned int killed:2;	/* 0 = not killed, 1 = killed, 2 = killed unread */
-	unsigned int zombie:1;	/* 1 = was alive (unread) before 'X' command */
-	unsigned int delete_it:1;	/* 1 = delete art when leaving group [mail group] */
+	t_bool zombie:1;	/* 1 = was alive (unread) before 'X' command */
+	t_bool delete_it:1;	/* 1 = delete art when leaving group [mail group] */
 	t_bool selected:1;	/* FALSE = not selected, TRUE = selected */
 	t_bool inrange:1;	/* TRUE = article selected via # range command */
 	t_bool matched:1;	/* TRUE = article matched regex in feed.c */
+	t_bool keep_in_base:1;	/* TRUE = keep (read) article in base[] (show_only_unread_arts) */
 };
 
 /*
@@ -1686,7 +1690,7 @@ struct t_hashnode {
  * future directions in adding other retrieval methods to present kill &
  * auto selection.
  *
- * Also seperate kill/select screen to allow ^K=kill ^A=auto-select
+ * Also separate kill/select screen to allow ^K=kill ^A=auto-select
  */
 struct t_filters {
 	int max;
@@ -1887,6 +1891,12 @@ typedef struct {
 	t_bool needsterminal:1;
 	t_bool copiousoutput:1;
 } t_mailcap;
+
+
+typedef struct urllist {
+	char *url;
+	struct urllist *next;
+} t_url;
 
 
 /*
@@ -2161,6 +2171,7 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 	extern void	no_leaks(void);
 #endif /* DOALLOC */
 
+#if 0 /* unused */
 #ifndef my_tmpfile_only
 /*
  * shortcut if we aren't interested in the tmpfiles filename/location
@@ -2169,6 +2180,7 @@ typedef void (*BodyPtr) (char *, FILE *, int);
  */
 #	define my_tmpfile_only(a)	my_tmpfile(a, sizeof(a) - 1, FALSE, (char *) 0)
 #endif /* !my_tmpfile_only */
+#endif /* 0 */
 
 
 /* define some standard places to look for a tin.defaults file */

@@ -25,7 +25,7 @@ messages and won't be able to post using the internal inews.
 
 Before mailing a bug-report to tin-bugs@tin.org please check if you are
 using the latest (stable) release, and if not, please upgrade first! Have a
-look a the doc/TODO file for known bugs. If you still think you've found a
+look at the doc/TODO file for known bugs. If you still think you've found a
 bug, please use the mail_bugreport function (shift-R) and write in English.
 Please do NOT enclose a core-file in your bugreport until we request it.
 

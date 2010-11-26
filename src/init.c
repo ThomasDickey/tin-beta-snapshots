@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2009-12-13
+ *  Updated   : 2010-10-07
  *  Notes     :
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
@@ -111,7 +111,7 @@ char userid[PATH_LEN];
 	char novrootdir[PATH_LEN];		/* root directory of nov index files */
 #endif /* !NNTP_ONLY */
 
-t_function last_search;	/* for repeated search */
+t_function last_search = GLOBAL_SEARCH_REPEAT;	/* for repeated search */
 int hist_last[HIST_MAXNUM + 1];
 int hist_pos[HIST_MAXNUM + 1];
 int iso2asc_supported;			/* Convert ISO-Latin1 to Ascii */
@@ -127,7 +127,6 @@ t_bool created_rcdir;			/* checks if first time tin is started */
 t_bool dangerous_signal_exit;		/* no get_respcode() in nntp_command when dangerous signal exit */
 t_bool disable_gnksa_domain_check;	/* disable checking TLD in From: etc. */
 t_bool disable_sender;			/* disable generation of Sender: header */
-t_bool filtered_articles;		/* locally killed / auto-selected articles */
 #ifdef NO_POSTING
 	t_bool force_no_post = TRUE;		/* force no posting mode */
 #else
@@ -327,6 +326,7 @@ struct t_config tinrc = {
 #ifdef HAVE_COLOR
 	FALSE,		/* use_color */
 #endif /* HAVE_COLOR */
+	FALSE,		/* abbreviate_groupname */
 	TRUE,		/* add_posted_to_filter */
 	TRUE,		/* advertising */
 	TRUE,		/* alternative_handling */
@@ -520,6 +520,8 @@ struct t_capabilities nntp_caps = {
 	FALSE, /* AUTHINFO SASL */
 	FALSE, /* AUTHINFO available but not in current state */
 	SASL_NONE, /* SASL CRAM-MD5 DIGEST-MD5 PLAIN GSSAPI EXTERNAL OTP NTLM LOGIN */
+	FALSE, /* COMPRESS */
+	COMPRESS_NONE, /* COMPRESS_NONE, COMPRESS_DEFLATE */
 #if 0
 	FALSE, /* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
 	FALSE /* IHAVE */
@@ -528,7 +530,7 @@ struct t_capabilities nntp_caps = {
 	FALSE /* LISTGROUP doesn't select group */
 #else
 	TRUE
-#endif /*! BROKEN_LISTGROUP */
+#endif /* !BROKEN_LISTGROUP */
 };
 
 static char libdir[PATH_LEN];			/* directory where news config files are (ie. active) */
@@ -675,7 +677,6 @@ init_selfinfo(
 	dangerous_signal_exit = FALSE;
 	disable_gnksa_domain_check = FALSE;
 	disable_sender = FALSE;	/* we set force_no_post=TRUE later on if we don't have a valid FQDN */
-	filtered_articles = FALSE;
 	iso2asc_supported = atoi(get_val("ISO2ASC", DEFAULT_ISO2ASC));
 	if (iso2asc_supported > NUM_ISO_TABLES || iso2asc_supported < 0) /* TODO: issue a warning here? */
 		iso2asc_supported = -1;

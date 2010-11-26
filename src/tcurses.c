@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2009-10-22
+ *  Updated   : 2010-09-07
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -396,8 +396,8 @@ highlight_string(
 	tmp[size] = '\0';
 	StartInverse();
 	my_fputs(tmp, stdout);
-	my_flush();
 	EndInverse();
+	my_flush();
 	stow_cursor();
 }
 

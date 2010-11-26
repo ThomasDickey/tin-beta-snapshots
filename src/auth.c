@@ -386,7 +386,7 @@ authinfo_plain(
 #	endif /* DEBUG */
 			/*
 			 * we return OK_AUTH here once so tin doesn't exit just because a
-			 * single comand requested auth ...
+			 * single command requested auth ...
 			 */
 			if (!already_failed)
 				ret = OK_AUTH;

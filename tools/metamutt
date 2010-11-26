@@ -17,7 +17,7 @@
 # Pressing "g" allows you to post a Followup to a newsgroup.
 #
 # Options:
-#  -D allows splits a digest into seperate mails by using formail
+#  -D allows splits a digest into separate mails by using formail
 #     (Feature added by Martin Ramsch <m.ramsch@computer.org>)
 #
 # This script tries to find a working muttrc (which is sourced first)

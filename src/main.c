@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-12-09
+ *  Updated   : 2010-03-07
  *  Notes     :
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -275,7 +275,7 @@ main(
 	 * Read in users filter preferences file. This has to be done before
 	 * quick post because the filters might be updated.
 	 */
-	filtered_articles = read_filter_file(filter_file);
+	read_filter_file(filter_file);
 
 	no_write = TRUE;
 #ifdef DEBUG

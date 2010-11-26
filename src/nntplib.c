@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2009-12-19
+ *  Updated   : 2010-11-10
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -123,13 +123,13 @@ getserverbyfile(
 #	endif /* !HAVE_SETENV && HAVE_PUTENV */
 #endif /* NNTP_ABLE */
 
-	if (!read_news_via_nntp) {
-		STRCPY(buf, "local");	/* what if a server is named "local"? */
+	if (read_saved_news) {
+		STRCPY(buf, "reading saved news");
 		return buf;
 	}
 
-	if (read_saved_news) {
-		STRCPY(buf, "reading saved news");
+	if (!read_news_via_nntp) {
+		STRCPY(buf, "local");	/* what if a server is named "local"? */
 		return buf;
 	}
 
@@ -271,7 +271,6 @@ server_init(
 	}
 #	endif /* TLI */
 
-
 	last_put[0] = '\0';		/* no retries in get_respcode */
 	/*
 	 * Now get the server's signon message
@@ -410,8 +409,8 @@ get_tcp_socket(
 #			ifdef h_addr
 	int x = 0;
 	char **cp;
-	static char *alist[2] = {0, 0};
 #			endif /* h_addr */
+	static char *alist[2] = {0, 0};
 	static struct hostent def;
 	static struct in_addr defaddr;
 	static char namebuf[256];
@@ -442,9 +441,7 @@ get_tcp_socket(
 		/* Raw ip address, fake */
 		STRCPY(namebuf, machine);
 		def.h_name = (char *) namebuf;
-#			ifdef h_addr
 		def.h_addr_list = alist;
-#			endif /* h_addr */
 		def.h_addr_list[0] = (char *) &defaddr;
 		def.h_length = sizeof(struct in_addr);
 		def.h_addrtype = AF_INET;
@@ -641,7 +638,7 @@ get_tcp6_socket(
 		freeaddrinfo(res0);
 	if (err < 0) {
 		/*
-		 * TODO: issue a more usefull error-message
+		 * TODO: issue a more useful error-message
 		 */
 		my_fprintf(stderr, _(txt_error_socket_or_connect_problem));
 		return -1;
@@ -781,7 +778,7 @@ put_server(
 		 * reconnect. reconnection is handled by get_server()
 		 *
 		 * don't cache "LIST ACTIVE something" as we would need to
-		 * resend all of them but we remeber just the last one. we cache
+		 * resend all of them but we remember just the last one. we cache
 		 * "LIST" instead, this will slow down things, but that's ok on
 		 * reconnect.
 		 */
@@ -805,6 +802,7 @@ reconnect(
 	int retry)
 {
 	char buf[NNTP_STRLEN];
+	int save_signal_context = signal_context;
 
 	/*
 	 * Tear down current connection
@@ -822,11 +820,29 @@ reconnect(
 	DEBUG_IO((stderr, _("\nServer timed out, trying reconnect # %d\n"), retry));
 
 	/*
+	 * set signal_context temporary to cReconnect to avoid trouble when receiving
+	 * SIGWINCH while beeing in prompt_yn()
+	 */
+	signal_context = cReconnect;
+
+	/*
 	 * Exit tin if the user says no to reconnect. The exit code stops tin from trying
 	 * to disconnect again - the connection is already dead
 	 */
-	if (!tinrc.auto_reconnect && prompt_yn(_(txt_reconnect_to_news_server), TRUE) != 1)
+	if (!tinrc.auto_reconnect && prompt_yn(_(txt_reconnect_to_news_server), TRUE) != 1) {
+		if (!strncmp("POST", last_put, 4)) {
+			unlink(backup_article_name(article_name));
+			rename_file(article_name, dead_article);
+			if (tinrc.keep_dead_articles)
+				append_file(dead_articles, dead_article);
+		}
 		tin_done(NNTP_ERROR_EXIT);		/* user said no to reconnect */
+	}
+
+	/*
+	 * reset signal_context
+	 */
+	signal_context = save_signal_context;
 
 	clear_message();
 
@@ -853,8 +869,15 @@ reconnect(
 		return 0;
 	}
 
-	if (--retry == 0)					/* No more tries? */
+	if (--retry == 0) {					/* No more tries? */
+		if (!strncmp("POST", buf, 4)) {
+			unlink(backup_article_name(article_name));
+			rename_file(article_name, dead_article);
+			if (tinrc.keep_dead_articles)
+				append_file(dead_articles, dead_article);
+		}
 		tin_done(NNTP_ERROR_EXIT);
+	}
 
 	return retry;
 }
@@ -1000,7 +1023,48 @@ check_extensions(void)
 	i = new_nntp_command("CAPABILITIES", INF_CAPABILITIES, buf, sizeof(buf));
 	switch (i) {
 		case INF_CAPABILITIES:
+			/* clear capabilities */
 			nntp_caps.type = CAPABILITIES;
+			nntp_caps.version = 0;
+			nntp_caps.mode_reader = FALSE;
+			nntp_caps.reader = FALSE;
+			nntp_caps.post = FALSE;
+			nntp_caps.list_active = FALSE;
+			nntp_caps.list_active_times = FALSE;
+			nntp_caps.list_distrib_pats = FALSE;
+			nntp_caps.list_headers = FALSE;
+			nntp_caps.list_newsgroups = FALSE;
+			nntp_caps.list_overview_fmt = FALSE;
+			nntp_caps.list_motd = FALSE;
+			nntp_caps.list_subscriptions = FALSE;
+			nntp_caps.list_distributions = FALSE;
+			nntp_caps.list_moderators = FALSE;
+			nntp_caps.list_counts = FALSE;
+			nntp_caps.xpat = FALSE;
+			nntp_caps.hdr = FALSE;
+			nntp_caps.hdr_cmd = NULL;
+			nntp_caps.over = FALSE;
+			nntp_caps.over_msgid = FALSE;
+			nntp_caps.over_cmd = NULL;
+			nntp_caps.newnews = FALSE;
+			FreeAndNull(nntp_caps.implementation);
+			nntp_caps.starttls = FALSE;
+			nntp_caps.authinfo_user = FALSE;
+			nntp_caps.authinfo_sasl = FALSE;
+			nntp_caps.authinfo_state = FALSE;
+			nntp_caps.sasl = SASL_NONE;
+			nntp_caps.compress = FALSE;
+			nntp_caps.compress_algorithm = COMPRESS_NONE;
+#if 0
+			nntp_caps.streaming = FALSE;
+			nntp_caps.ihave = FALSE;
+#endif /* 0 */
+#ifndef BROKEN_LISTGROUP
+			nntp_caps.broken_listgroup = FALSE;
+#else
+			nntp_caps.broken_listgroup = TRUE;
+#endif /*! BROKEN_LISTGROUP */
+
 			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #		ifdef DEBUG
 				if (debug & DEBUG_NNTP)
@@ -1013,7 +1077,7 @@ check_extensions(void)
 						d = strpbrk(d, " \t");
 						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
 							d++;
-							nntp_caps.version = MAX(nntp_caps.version, (unsigned int) atoi(d));
+							nntp_caps.version = (unsigned int) atoi(d);
 							d = strpbrk(d, " \t");
 						}
 					}
@@ -1034,7 +1098,7 @@ check_extensions(void)
 								nntp_caps.list_active = TRUE;
 							else if (!strncasecmp(d, "DISTRIB.PATS", 12))
 								nntp_caps.list_distrib_pats = TRUE;
-							else if (!strncasecmp(d, "DISTRIBUTIONS", 13)) /* "private" extension, RFC 2980, draft-elie-nntp-list-additions-00.txt */
+							else if (!strncasecmp(d, "DISTRIBUTIONS", 13)) /* RFC 6048 */
 								nntp_caps.list_distributions = TRUE;
 							else if (!strncasecmp(d, "HEADERS", 7))
 								nntp_caps.list_headers = TRUE; /* HDR requires LIST HEADERS, but not vice versa */
@@ -1042,13 +1106,13 @@ check_extensions(void)
 								nntp_caps.list_newsgroups = TRUE;
 							else if (!strncasecmp(d, "OVERVIEW.FMT", 12)) /* OVER requires OVERVIEW.FMT, but not vice versa */
 								nntp_caps.list_overview_fmt = TRUE;
-							else if (!strncasecmp(d, "MOTD", 4)) /* "private" extension, draft-elie-nntp-list-additions-00.txt */
+							else if (!strncasecmp(d, "MOTD", 4)) /* RFC 6048 */
 								nntp_caps.list_motd = TRUE;
-							else if (!strncasecmp(d, "SUBSCRIPTIONS", 13)) /* "private" extension, RFC 2980, draft-elie-nntp-list-additions-00.txt */
+							else if (!strncasecmp(d, "SUBSCRIPTIONS", 13)) /* RFC 6048 */
 								nntp_caps.list_subscriptions = TRUE;
-							else if (!strncasecmp(d, "MODERATORS", 10)) /* "private" extension, draft-elie-nntp-list-additions-00.txt*/
+							else if (!strncasecmp(d, "MODERATORS", 10)) /* RFC 6048 */
 								nntp_caps.list_moderators = TRUE;
-							else if (!strncasecmp(d, "COUNTS", 6)) /* "private" extension (highwinds), next nntp RFC? */
+							else if (!strncasecmp(d, "COUNTS", 6)) /* RFC 6048 */
 								nntp_caps.list_counts = TRUE;
 							d = strpbrk(d, " \t");
 						}
@@ -1143,6 +1207,16 @@ check_extensions(void)
 							if (!strncasecmp(d, "LOGIN", 5)) { /* Microsoft */
 								nntp_caps.authinfo_sasl = TRUE;
 								nntp_caps.sasl |= SASL_LOGIN;
+							}
+						}
+					} else if (!strncasecmp(ptr, "COMPRESS", 8)) { /* draft-murchison-nntp-compress-01.txt */
+						d = ptr + 8;
+						d = strpbrk(d, " \t");
+						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
+							d++;
+							if (!strncasecmp(d, "DEFLATE", 7)) {
+								nntp_caps.compress = TRUE;
+								nntp_caps.compress_algorithm |= COMPRESS_DEFLATE;
 							}
 						}
 					}
@@ -1277,7 +1351,7 @@ nntp_open(
 		return -EHOSTUNREACH;
 	}
 
-	if (!batch_mode) {
+	if (!batch_mode || verbose) {
 		if (nntp_tcp_port != IPPORT_NNTP)
 			wait_message(0, _(txt_connecting_port), nntp_server, nntp_tcp_port);
 		else
@@ -1292,7 +1366,7 @@ nntp_open(
 	ret = server_init(nntp_server, NNTP_TCP_NAME, nntp_tcp_port, line, sizeof(line));
 	DEBUG_IO((stderr, "server_init returns %d,%s\n", ret, line));
 
-	if (!batch_mode && ret >= 0 && cmd_line)
+	if ((!batch_mode || verbose) && ret >= 0)
 		my_fputc('\n', stdout);
 
 #	ifdef DEBUG
@@ -1378,14 +1452,14 @@ nntp_open(
 		 * to a 502 "already authenticated" error later on.
 		 */
 		if (nntp_caps.type == CAPABILITIES && nntp_caps.mode_reader) {
-			int respcode;
 			char buf[NNTP_STRLEN];
+
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", "nntp_open() MODE READER");
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "nntp_open() MODE READER");
 #	endif /* DEBUG */
 			put_server("MODE READER");
-			switch ((respcode = get_only_respcode(buf, sizeof(buf)))) {
+			switch (get_only_respcode(buf, sizeof(buf))) {
 				/* just honor ciritical errors */
 				case ERR_GOODBYE:
 				case ERR_ACCESS:
@@ -1521,7 +1595,7 @@ nntp_open(
 					j = -1;
 					break;
 
-				default:	/* usualy ERR_CMDSYN (args missing), Typhoon/Twister sends ERR_NCING */
+				default:	/* usually ERR_CMDSYN (args missing), Typhoon/Twister sends ERR_NCING */
 					nntp_caps.hdr_cmd = &xhdr_cmds[i];
 					j = -1;
 					break;
@@ -1704,7 +1778,7 @@ get_only_respcode(
 		DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 	}
 	if (message != NULL && mlen > 1)		/* Pass out the rest of the text */
-		my_strncpy(message, end, mlen - 1);
+		my_strncpy(message, ++end, mlen - 1);
 
 	return respcode;
 }
@@ -1720,7 +1794,10 @@ get_only_respcode(
  * Performs authentication if required and repeats the last command if
  * necessary after a timeout.
  *
- * TODO: make this handle 483 (RFC 3977) return codes
+ * TODO: make this handle 401 and 483 (RFC 3977) return codes.
+ *       as 401 requires to examine the returned text besides the
+ *       return value, we have to "fix" all nntp_command(..., NULL, 0) and
+ *       get_only_respcode(NULL, 0) calls to do this properly.
  */
 int
 get_respcode(
@@ -1740,49 +1817,47 @@ get_respcode(
 		if (debug & DEBUG_NNTP)
 			debug_print_file("NNTP", "get_respcode() authentication");
 #	endif /* DEBUG */
-		strncpy(savebuf, last_put, sizeof(savebuf) - 1);		/* Take copy, as authenticate() will clobber this */
+		STRCPY(savebuf, last_put);
 
-		if (authenticate(nntp_server, userid, FALSE)) {
-			if (nntp_caps.type == CAPABILITIES) {
-				check_extensions();
-				can_post = nntp_caps.post && !force_no_post;
-			}
-			if (curr_group != NULL) {
-				DEBUG_IO((stderr, _("Rejoin current group\n")));
-				snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
-				put_server(last_put);
-				s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
-#	ifdef DEBUG
-				if (debug & DEBUG_NNTP)
-					debug_print_file("NNTP", "<<< %s", last_put);
-#	endif /* DEBUG */
-				DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
-			}
-			strcpy(last_put, savebuf);
-
-			put_server(last_put);
-			ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
-
-			if (tin_errno) {
-#	ifdef DEBUG
-				if (debug & DEBUG_NNTP)
-					debug_print_file("NNTP", "<<< Error: tin_errno <> 0");
-#	endif /* DEBUG */
-				return -1;
-			}
-
-#	ifdef DEBUG
-			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "<<< %s", ptr);
-#	endif /* DEBUG */
-			respcode = (int) strtol(ptr, &end, 10);
-			if (message != NULL && mlen > 1)				/* Pass out the rest of the text */
-				strncpy(message, end, mlen - 1);
-
-		} else {
+		if (!authenticate(nntp_server, userid, FALSE)) {
 			error_message(2, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
 			tin_done(EXIT_FAILURE);
 		}
+		if (nntp_caps.type == CAPABILITIES) {
+			check_extensions();
+			can_post = nntp_caps.post && !force_no_post;
+		}
+		if (curr_group != NULL) {
+			DEBUG_IO((stderr, _("Rejoin current group\n")));
+			snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
+			put_server(last_put);
+			s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
+#	ifdef DEBUG
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "<<< %s", last_put);
+#	endif /* DEBUG */
+			DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
+		}
+		STRCPY(last_put, savebuf);
+
+		put_server(last_put);
+		ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
+
+		if (tin_errno) {
+#	ifdef DEBUG
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "<<< Error: tin_errno <> 0");
+#	endif /* DEBUG */
+				return -1;
+		}
+
+#	ifdef DEBUG
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "<<< %s", ptr);
+#	endif /* DEBUG */
+		respcode = (int) strtol(ptr, &end, 10);
+		if (message != NULL && mlen > 1)				/* Pass out the rest of the text */
+			strncpy(message, end, mlen - 1);
 	}
 	return respcode;
 }
@@ -1828,9 +1903,9 @@ DEBUG_IO((stderr, "nntp_command(%s)\n", command));
 
 
 /*
- * same as above, but with a slightly more usefull return code.
+ * same as above, but with a slightly more useful return code.
  * TODO: use it instead of nntp_command in the rest of the code
- *       (wherever it is more usefull).
+ *       (wherever it is more useful).
  */
 int
 new_nntp_command(

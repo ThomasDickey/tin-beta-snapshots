@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2008-11-22
+ *  Updated   : 2010-01-21
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -23,7 +23,7 @@
 #endif /* !TCURSES_H */
 
 #define BUF_SIZE	1024
-#define TABSIZE		4
+#define TAB_SIZE		4
 
 #define CTRL_A	'\001'
 #define CTRL_B	'\002'
@@ -638,7 +638,7 @@ gl_fixup(
 
 
 /*
- * default tab handler, acts like tabstops every TABSIZE cols
+ * default tab handler, acts like tabstops every TAB_SIZE cols
  */
 static int
 gl_tab(
@@ -654,14 +654,14 @@ gl_tab(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	len = wcslen(wbuf);
-	count = TABSIZE - (offset + *loc) % TABSIZE;
+	count = TAB_SIZE - (offset + *loc) % TAB_SIZE;
 	for (i = len; i >= *loc; i--)
 		wbuf[i + count] = wbuf[i];
 	for (i = 0; i < count; i++)
 		wbuf[*loc + i] = (wchar_t) ' ';
 #else
 	len = strlen(buf);
-	count = TABSIZE - (offset + *loc) % TABSIZE;
+	count = TAB_SIZE - (offset + *loc) % TAB_SIZE;
 	for (i = len; i >= *loc; i--)
 		buf[i + count] = buf[i];
 	for (i = 0; i < count; i++)

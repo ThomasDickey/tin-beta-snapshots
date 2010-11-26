@@ -3,12 +3,15 @@ New features and changes since tin-1.8.1
 New features
 ------------
 . attributes and scope menu
+. attachment level
+. URL level
 . configurable verbatim marks (default is slrn style)
 . configurable body trimming
 . UTF-8 descriptions (RFC 3977)
 . sort by date of last posted article
 . writes out newsrc if getting SIGUSR2
-. authentication via SASL PLAIN (RFC 4643) is prefered over USER/PASS
+. authentication via SASL PLAIN (RFC 4643) is preferred over USER/PASS
+. prefer LIST COUNTS (RFC 6048) over LIST ACTIVE if supported
 
 Changes
 -------
@@ -34,6 +37,8 @@ Changes
 . with positive getart_limit all unread articles less than getart_limit are
   kept as unread
 . mail/pipe/print articles now work on ranges too
+. PageReplyQuoteHeaders (^E) and PageFollowupQuoteHeaders (^W) now quote only
+  visible headers due to news_headers_to_display
 
 Retired Features
 ----------------

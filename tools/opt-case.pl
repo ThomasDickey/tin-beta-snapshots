@@ -56,7 +56,7 @@ while (defined($line = <>)) {
 	# that won't hurt, it just doesn't optimize'em
 	if ($line =~ m/^(subj|from|msgid(?:|_last|_only)|refs_only|xref)=(.*[^\W\d_].*)$/o) {
 		print "# rule rewritten, it might be possible that it can be further otpimized\n";
-		print "# check lines with (?i) if they realy need to be case insensitve and if\n";
+		print "# check lines with (?i) if they really need to be case insensitve and if\n";
 		print "# not remove leading (?i) manualy\n";
 		print "$1=$mod$2\n";
 		next;

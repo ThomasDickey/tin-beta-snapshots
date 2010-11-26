@@ -303,7 +303,7 @@ put_rest(
 /*
  * Read a logical base64 encoded line into the specified line buffer.
  * Logical lines can be split over several physical base64 encoded lines and
- * a single physical base64 encoded line can contain serveral logical lines.
+ * a single physical base64 encoded line can contain several logical lines.
  * This function keeps track of all these cases and always copies only one
  * decoded line to the line buffer.
  *
@@ -447,7 +447,7 @@ read_decoded_qp_line(
 		if ((buf2 = tin_fgets(file, FALSE)) == NULL) {
 			/*
 			 * Premature end of file (or file error, leave loop. To prevent
-			 * re-invokation of this function, set the numbers of read lines
+			 * re-invocation of this function, set the numbers of read lines
 			 * to the expected maximum that should be read at most.
 			 */
 			lines_read = max_lines_to_read;

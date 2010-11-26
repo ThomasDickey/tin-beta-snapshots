@@ -11,7 +11,7 @@ X-Note: This is an updated and revised descendant of Ron Newman's GNKSA 1.2
 Archive-name: usenet/software/good-netkeeping-seal
 Posting-Frequency: monthly (first Sunday)
 Last-modified: Oct 29 2003
-X-Version: 2.09 (@Id: gnksa.hdr,v 1.8 2003/10/29 07:31:42 js Exp @)
+X-Version: 2.09 ($Id: good-netkeeping-seal,v 1.12 2010/03/18 09:45:00 tom Exp $)
 URL: <http://www.gnksa.org/>
 Maintainer: Jeroen Scheerder <js@gnksa.org>
 
@@ -629,7 +629,7 @@ engage in flame warfare, all of which is harmful to other users.
 19) Be kind to servers, leave room for others
 
 Reading or posting software MUST NOT put excessive demands on news
-servers unnecessarily.  The sofware MUST limit itself to 4 simultaneous
+servers unnecessarily.  The software MUST limit itself to 4 simultaneous
 connections to a given server.  Spurious connects and unnecessary
 traffic MUST be avoided; the software MUST use as few as possible
 connections, reusing existing connections whenever possible.

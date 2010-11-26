@@ -1,6 +1,6 @@
 This attempts to document the article lifecycle.
 
-arts[] is trashed and rebuilt everytime a group is entered.
+arts[] is trashed and rebuilt every time a group is entered.
 This is handled entirely by index_group()
 
 setup_hard_base() creates an array of 'valid' article numbers in base[]

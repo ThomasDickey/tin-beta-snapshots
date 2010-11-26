@@ -1,3 +1,81 @@
+-- 1.9.6 release 20101126 "Burnside" --
+
+U025) Matt Anton <tin@syrius.org>
+      ADD. updated french translation
+      FIX. fr.po
+
+U024) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+U023) Joe Hansen <joedalton2@yahoo.dk>
+      ADD. updated danish translation
+      FIX. da.po
+
+U022) Thomas E. Dickey <dickey@invisible-island.net>
+      BUG. _XOPEN_SOURCE was defined on darwin
+      ADD. CF_SIGWINCH - compile check for SIGWINCH
+      FIX. aclocal.m4, configure[.in], Makefile[.in]
+
+U021) Dennis Preiser <onkelp@gmx.de>
+      BUG. SIGWINCH at page level after a connection timeout lead to a crash
+      BUG. no SIGWINCH hadling in setup_check_article()
+      BUG. comments in references were not skipped
+      BUG. fixed some display problem in the !USE_CURSES case
+      ADD. info message on SearchRepeat without previous search
+      ADD. attachment level 'V' at the article-pager
+      ADD. URL level 'U' at the article-pager
+      ADD. cancel article 'D' to the group and thread level
+      ADD. shell escape '!' to the 'M'enu
+      ADD. workaround for buggy isspace() implementations
+      ADD. tinrc.abbreviate_groupname option
+      ADD. don't take a copy of the article in raw mode when reading from
+           local-spool
+      ADD. skip over text/plain parts in multibyte charsets which may contain
+           null-bytes
+      ADD. message/rfc822 mime-parts are now parsed and included text/plain
+           parts are shown to the user
+      BUG. highlighting for SearchBody didn't work
+      BUG. depending on used terminal highlighting sometimes ran too far
+      BUG. fixed several sorting/threading/filtering options which did not
+           instantly reflect changes when not beeing in select level
+      BUG. help string was truncated at cCOLS without checking if inside a
+           multibyte sequence
+      BUG. build_gline() miscalculates free space for utf-8 groups &
+           descriptions
+      FIX. art.c, attrib.c, color.c, config.c, cook.c, curses.c, filter.c
+           group.c, help.c, init.c, keymap.c, lang.c, mail.c, main.c, misc.c
+           newsrc.c, nntplib.c, options_menu.c, page.c, post.c, prompt.c
+           refs.c, rfc2046.c, rfc2047.c, save.c, screen.c, select.c, signal.c
+           string.c, tags.c, thread.c, extern.h, keymap.h, proto.h, rfc2046.h
+           tin.h, tinrc.h, tincfg.tbl, tin.1, tin.5, keymap.sample
+
+U020) Urs Janssen <urs@tin.org>
+      ADD. minor manpage tweaking
+      ADD. config.guess, config.sub update
+      ADD. disallow postings to 'j' groups
+      ADD. disallow 198.51.100.0/24 and 203.0.113.0/24 in gnksa-checks
+      ADD. forbid "poster" in Newsgroups, warn about "example" in Newsgroups
+      ADD. forbid "poster" and a groupname in Followup-To, warn about "example"
+           in Followup-To
+      ADD. allow IDN ccTLDs in 'GNKSA'-parser
+      ADD. keep failed article in dead.article is server closes the
+           connection and no reconnection is done.
+      BUG. DEFAULT_VERBATIM_BEGIN_REGEX / DEFAULT_VERBATIM_END_REGEX allowed
+           tailing text in the line
+      BUG. da.po was missing from the tarball
+      BUG. x-posting to an unexisting group named first in Newsgroups caused
+           a crash
+      BUG. remembered capabilities over reconnects, they are flushed now
+      BUG. memleak on duplicated overview fields
+      BUG. don't send GROUP for groups not listed in the servers active file
+           when newsrc_active && list_active is set
+      FIX. active.c, art.c, attrib.c, config.c, curses.c, filter.c, init.c
+           lang.c, misc.c, newsrc.c, nntplib.c, post.c, rfc2047.c, save.c
+           select.c, sigfile.c, string.c, tcurses.c, thread.c, extern.h
+           nntplib.h, policy.h, tin.h, Makefile, tin.1, tin.5, config.guess
+           config.sub
+
 -- 1.9.5 release 20091224 "Lochruan" --
 
 U019) Urs Janssen <urs@tin.org>
@@ -40,7 +118,7 @@ U015) Dennis Preiser <onkelp@gmx.de>
       BUG. savedirs starting with '+' caused tin to hang after 's'aving an
            article to a file
       BUG. in rare cases (aborted article load or '-' after cancel) one
-           article was incorrectly maked as unavailable
+           article was incorrectly marked as unavailable
       BUG. memleaks in canlock operations
       BUG. fix a long overflow in print_bitmap_seq() when xmax = __LONG_MAX__
       BUG. didn't create Message-ID when cancelling own article when
@@ -125,7 +203,7 @@ U012) Dennis Preiser <onkelp@gmx.de>
       BUG. unescaped metacharacter in DEFAULT_VERBATIM_BEGIN_REGEX
       BUG. rot13 does not rotate the verbatim_begin_regex line
       BUG. numeric attributes got lost on big-endian OSs
-      BUG. missing newline in multipart/mixed articles befor the very last
+      BUG. missing newline in multipart/mixed articles before the very last
            text/plain part
       FIX. active.c, art.c, attrib.c, color.c, config.c, cook.c, debug.c
            feed.c, filter.c, group.c, inews.c, init.c, lang.c, mail.c, main.c
@@ -138,14 +216,14 @@ U011) Urs Janssen <urs@tin.org>
       ADD. minor code cleanup
       ADD. workaround bogus XHDR response from SoftVelocity Discussions 2.5q
       ADD. configurable path via tin.defaults to overview.fmt file
-      ADD. send "LIST HEADES" befor doing "HDR" if server supports it
+      ADD. send "LIST HEADERS" before doing "HDR" if server supports it
       ADD. config.guess, config.sub update
       ADD. started german manpage translation
-      ADD. issue extra "GROUP" when NEXT receives 411
+      ADD. issue extra "GROUP" when NEXT receives 412
       ADD. issue a warning if attributes file has an unexpected version number
       ADD. check for 8bit chars in Newsgroups, Followup-To and Distribution
-           befor posting
-      ADD. check user supplied Message-ID, Date and Expires-header befor
+           before posting
+      ADD. check user supplied Message-ID, Date and Expires-header before
            posting
       ADD. speedup -S, -N, -M
       ADD. improved DEFAULT_STRIP_WAS_REGEX
@@ -154,7 +232,7 @@ U011) Urs Janssen <urs@tin.org>
       BUG. don't break long body-lines in original article when superseding
       BUG. don't send "LIST NEWSGROUPS" for mailgroups in the -n case
       BUG. empty but present Followup-To header (server bug) was used in f'ups
-      BUG. didn't recheck CAPABILITIES after successfull auth or after mode
+      BUG. didn't recheck CAPABILITIES after successful auth or after mode
            switching if received 500er response in the first pass
       BUG. don't prompt for authdata if we can't auth as the server doesn't
            offer any auth-method we can send

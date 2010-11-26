@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2009-12-09
+ *  Updated   : 2010-03-15
  *  Notes     :
  *
  * Copyright (c) 1992-2010 Iain Lea <iain@bricbrac.de>
@@ -43,8 +43,8 @@
 #endif /* !TCURSES_H */
 
 /*
- * List of allowed seperator chars in active file
- * unsed in parse_active_line()
+ * List of allowed separator chars in active file
+ * unused in parse_active_line()
  */
 #define ACTIVE_SEP	" \n"
 
@@ -361,7 +361,7 @@ read_newsrc_active_file(
 #ifdef NNTP_ABLE
 			char buf[NNTP_STRLEN];
 			char line[NNTP_STRLEN];
-			if (window < NUM_SIMULTANEOUS_GROUP_COMMAND && ptr) {
+			if (window < NUM_SIMULTANEOUS_GROUP_COMMAND && ptr && (!list_active || (newsrc_active && list_active && group_find(ptr, FALSE)))) {
 				ngnames[index_i] = my_strdup(ptr);
 				snprintf(buf, sizeof(buf), "GROUP %s", ngnames[index_i]);
 #	ifdef DEBUG
@@ -419,7 +419,7 @@ read_newsrc_active_file(
 								error_message(2, _(txt_error_wrong_newsgroupname_in_group_response), ngname, ngnames[index_o], line);
 #	ifdef DEBUG
 								if (debug & DEBUG_NNTP) /* TODO: -> lang.c */
-									debug_print_file("NNTP", "Groupname missmatch in response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
+									debug_print_file("NNTP", "Groupname mismatch in response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
 #	endif /* DEBUG */
 							}
 							ptr = ngname;
@@ -765,6 +765,7 @@ read_news_active_file(
 			struct t_group *grpptr;
 			t_bool need_auth = FALSE;
 
+			*buff='\0';
 			/* we can't use for_each_group(i) yet, so we have to prase the newsrc */
 			if ((fp = fopen(newsrc, "r")) != NULL) {
 				while (tin_fgets(fp, FALSE) != NULL)
@@ -896,7 +897,8 @@ open_newgroups_fp(
 		if (idx == -1)
 			return (FILE *) 0;
 
-		ngtm = localtime(&newnews[idx].time);
+		if ((ngtm = localtime(&newnews[idx].time)) == NULL)
+			return (FILE *) 0;
 		/*
 		 * in the current draft, NEWGROUPS is allowed to take a 4 digit year
 		 * component - but even with a 2 digit year component it is y2k
@@ -1202,9 +1204,6 @@ find_newnews_index(
 /*
  * Get a single status char from the moderated field. Used on selection screen
  * and in header of group screen
- *
- * TODO: what about 'j' groups? active(5) says:
- *       "local postings to that group should not be generated"
  */
 char
 group_flag(
@@ -1216,6 +1215,7 @@ group_flag(
 
 		case 'x':
 		case 'n':
+		case 'j':
 			return 'X';
 
 		case '=':

@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2009-12-24
+.\" Updated   : 2010-11-26
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "December 24th, 2009" "1.9.5" "A Usenet newsreader"
+.TH tin 1 "November 26th, 2010" "1.9.6" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -286,8 +286,8 @@ to a list of newsgroups that are deemed appropriate by the news
 administrator. The subscriptions file should be created in your news lib
 directory (i.e., \fI${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions\fR) and should
 have file permissions set to 0644. If you read news via NNTP, then your news
-server must support the LIST SUBSCRIPTIONS command. It is part of the Common
-NNTP Extensions (\fBRFC2980\fP) and all modern servers should understand it.
+server must support the LIST SUBSCRIPTIONS command. It is part of the NNTP
+List Extensions (\fBRFC6048\fP) and all modern servers should understand it.
 .\"
 .\"
 .SS "SCREEN FORMAT"
@@ -767,6 +767,11 @@ with unread news.
 Cycle the display of the author through all the possible options
 for the tinrc variable \fBshow_author\fP.
 .TP
+.B GroupCancel 'D'
+Cancel (delete) or supersede (overwrite) the current article. It must
+have been posted by the same user. The cancel message can be seen in
+the newsgroup 'control' or 'control.cancel'.
+.TP
 .B EditFilter 'E'
 Edit the filter file and reload it afterwards.
 .TP
@@ -974,6 +979,11 @@ containing unread news.
 .B ThreadToggleSubjDisplay 'd'
 Cycle the display of the author through all the possible options for the
 tinrc variable \fBshow_author\fP.
+.TP
+.B ThreadCancel 'D'
+Cancel (delete) or supersede (overwrite) the current article. It must
+have been posted by the same user. The cancel message can be seen in
+the newsgroup 'control' or 'control.cancel'.
 .TP
 .B EditFilter 'E'
 Edit the filter file and reload it afterwards.
@@ -1271,12 +1281,12 @@ Return to group selection level.
 Goto parent article.
 .TP
 .B PageViewUrl 'U'
-Browse URLs in article. All URLs will be prompted in turn and opened
-using the \fBurl_handler\fP. '\fB<ESC>\fP' or no input will skip the
-URL.
+Display a list of URLs in the current article. See the section "URL LISTING"
+for more information.
 .TP
 .B PageViewAttach 'V'
-View or save multimedia attachments.
+Display a list of attachments of the current article. See the section
+"ATTACHMENT LISTING" for more information.
 .TP
 .B Post 'w'
 Post an article to the current group. If posting fails for some reason,
@@ -1296,6 +1306,92 @@ Mark article as unread.
 .TP
 .B MarkThdUnread 'Z'
 Mark the current thread as unread.
+.\"--------------------------------------------------------------------
+.\"
+.SS "URL LISTING"
+\fBPageViewUrl\fP ('\fBU\fP') displays a list of URLs in the current
+article. Besides the common moving keys, the following commands are available:
+.RS 4
+.TP 10
+.B UrlSelect '^J' '<CR>'
+The current URL will be prompted and opened using the
+\fBurl_handler\fP. '\fB<ESC>\fP' or no input will skip the URL.
+.TP
+.B SearchSubjF '/'
+URL forward search.
+.TP
+.B SearchSubjB '?'
+URL backward search.
+.TP
+.B SearchRepeat '\\\\'
+Repeat the previous search.
+.TP
+.B ShellEscape '!'
+Shell escape.
+.TP
+.B ToggleInfoLastLine 'i'
+Toggle the display of the current URL in the last line.
+.TP
+.B Help 'h'
+Help screen of commands available.
+.TP
+.B ToggleHelpDisplay 'H'
+Toggle the display of help mini menu at the bottom of the screen.
+.RE
+.\"--------------------------------------------------------------------
+.\"
+.SS "ATTACHMENT LISTING"
+\fBPageViewAttach\fP ('\fBV\fP') displays a list of attachments of the current
+article. Besides the common moving keys, the following commands are available:
+.RS 4
+.TP 10
+.B AttachPipe 'p'
+Pipe attachment into command.
+.TP
+.B AttachSave 's'
+Save current attachment / tagged attachments to disk.
+.TP
+.B AttachSelect '^J' '<CR>'
+View attachment.
+.TP
+.B AttachTag 't'
+Tag one or more attachments for saving.
+.TP
+.B AttachTagPattern '='
+Prompts for a pattern to match. All attachments whose name/description or
+content type/transfer encoding match the pattern will be tagged.
+.TP
+.B AttachToggleTagged '@'
+Reverse tagging of all attachments.
+.TP
+.B AttachUntag 'U'
+Untag all tagged attachments.
+.TP
+.B SearchSubjF '/'
+Attachment forward search.
+.TP
+.B SearchSubjB '?'
+Attachment backward search.
+.TP
+.B SearchRepeat '\\\\'
+Repeat the previous search.
+.TP
+.B GlobalPipe '|'
+Pipe attachment into command. Uses the raw attachment, no decoding is done.
+.TP
+.B ShellEscape '!'
+Shell escape.
+.TP
+.B ToggleInfoLastLine 'i'
+Toggle the display of the name/description of the current attachment in the
+last line.
+.TP
+.B Help 'h'
+Help screen of commands available.
+.TP
+.B ToggleHelpDisplay 'H'
+Toggle the display of help mini menu at the bottom of the screen.
+.RE
 .\"--------------------------------------------------------------------
 .\"
 .SS "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
@@ -1342,6 +1438,12 @@ Here is a full list of all the available variables. The name in braces is
 the name of the corresponding setting in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fR.
 .TP 4
+.B Abbreviate long newsgroup names (abbreviate_groupname)
+If ON abbreviate long newsgroup names at group selection level and article
+level (if necessary) like this:
+news.software.readers \-> n.software.readers \-> n.s.readers \-> n.s.r.
+Default is OFF.
+.TP
 .B Add posted articles to filter (add_posted_to_filter)
 If ON add posted articles which start a new thread to filter for
 highlighting follow-ups. Default is ON.
@@ -1559,10 +1661,14 @@ ON=apply to all groups, OFF=apply to current group. Default is ON.
 .B (default_filter_kill_header)
 Default for quick (1 key) kill filter header.
 .RS +.5i
-.IP 0,1 4
- ''Subject:''
-.IP 2,3
- ''From:''
+.IP 0 4
+ ''Subject:'' (case sensitive)
+.IP 1
+ ''Subject:'' (ignore case)
+.IP 2
+ ''From:'' (case sensitive)
+.IP 3
+ ''From:'' (ignore case)
 .IP 4
  ''Message\-ID:'' & full ''References:'' line
 .IP 5
@@ -1589,10 +1695,14 @@ ON=apply to all groups OFF=apply to current group. Default is ON.
 .B (default_filter_select_header)
 Default for quick (1 key) auto-selection filter header.
 .RS +.5i
-.IP 0,1 4
- ''Subject:''
-.IP 2,3
- ''From:''
+.IP 0 4
+ ''Subject:'' (case sensitive)
+.IP 1
+ ''Subject:'' (ignore case)
+.IP 2
+ ''From:'' (case sensitive)
+.IP 3
+ ''From:'' (ignore case)
 .IP 4
  ''Message\-ID:'' & full ''References:'' line
 .IP 5
@@ -2297,7 +2407,7 @@ If ON remove \fI~/.article\fR after posting. Default is ON.
 .B Program that opens URL's (url_handler)
 The program that will be run when launching URL's in the article viewer
 using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended to this.
-Default is \fBurl_handler.sh %s\fP.
+Default is \fBurl_handler.pl %s\fP.
 .TP
 .B URL highlighting in message body (url_highlight)
 Enable highlighting URLs in message body. Default is ON.
@@ -3264,6 +3374,14 @@ starting with \fB$LC_\fP. It's value should be of the form
 .BR environ (5)
 for more information.
 .TP
+.B LANGUAGE
+This variable defines a priority list for translations. Whenever a
+translation is not available in the language selected via \fB$LC_ALL\fP
+or \fB$LANG\fP the next language from the list is tried. It's value should
+be of the form \fIlanguage:language[:language]\fR. See
+.BR environ (5)
+for more information.
+.TP
 .B COLUMNS
 A decimal integer > 0 used to indicate the user's preferred width in column
 positions for the terminal screen or window. If this variable is unset or
@@ -3328,7 +3446,7 @@ to a safe location before starting tin in debug mode (e.g.
 does conform to the Base Definitions volume of IEEE Std 1003.1-2001, Section
 12, Utility Conventions (Utility Argument Syntax, Utility Syntax Guidelines).
 .\" - RFC2045, RFC2047, RFC2980, RFC3977, RFC4643, RFC5322
-.\"   RFC5536, RFC5537 or whatever
+.\"   RFC5536, RFC5537, RFC6048 or whatever
 .\"
 .\"
 .SH NOTES
@@ -3351,7 +3469,7 @@ DISABLE_PIPELINING in include/autoconf.h and recompile.
 .br
 Before mailing a bug-report to <tin\-bugs@tin.org> please check if you
 are using the latest (stable) release, and if not, please upgrade
-first! Have a look a the doc/TODO file for known bugs. If you still
+first! Have a look at the doc/TODO file for known bugs. If you still
 think you've found a bug, please use the \fBBugReport\fP ('\fBR\fP')
 function and write in English. Please do NOT enclose a core-file in
 your bugreport until we request it.
@@ -3467,4 +3585,5 @@ Urs Janssen <urs@tin.org>
 .BR RFC4643 ,
 .BR RFC5322 ,
 .BR RFC5536 ,
-.BR RFC5537
+.BR RFC5537 ,
+.BR RFC6048

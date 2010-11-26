@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2009-12-19
+ *  Updated   : 2010-10-07
  *  Notes     :
  *
  * Copyright (c) 1997-2010 Iain Lea <iain@bricbrac.de>
@@ -460,6 +460,17 @@ extern constext txt_articles_mailed[];
 extern constext txt_attach[];
 extern constext txt_attach_charset[];
 extern constext txt_attach_description[];
+extern constext txt_attachment_lines[];
+extern constext txt_attachment_menu[];
+extern constext txt_attachment_menu_com[];
+extern constext txt_attachment_no_name[];
+extern constext txt_attachment_saved[];
+extern constext txt_attachments_saved[];
+extern constext txt_attachment_select[];
+extern constext txt_attachment_tagged[];
+extern constext txt_attachments_tagged[];
+extern constext txt_attachment_untagged[];
+extern constext txt_attach_unsup_charset[];
 extern constext txt_attrib_menu_com[];
 extern constext txt_uue[];
 extern constext txt_at_s[];
@@ -487,14 +498,18 @@ extern constext txt_base_article_range[];
 extern constext txt_batch_update_unavail[];
 extern constext txt_begin_of_art[];
 extern constext txt_begin_of_page[];
-extern constext txt_caching_off[];
-extern constext txt_caching_on[];
+#ifdef NNTP_ABLE
+	extern constext txt_caching_off[];
+	extern constext txt_caching_on[];
+#endif /* NNTP_ABLE */
 extern constext txt_cancel_article[];
 extern constext txt_cancelling_art[];
 extern constext txt_cannot_create[];
 extern constext txt_cannot_create_uniq_name[];
 extern constext txt_cannot_find_base_art[];
-extern constext txt_cannot_get_nntp_server_name[];
+#ifdef NNTP_ABLE
+	extern constext txt_cannot_get_nntp_server_name[];
+#endif /* NNTP_ABLE */
 #if !defined(USE_CURSES) && defined(M_UNIX) && !defined(USE_TERMINFO)
 	extern constext txt_cannot_get_term_entry[];
 #endif /* !USE_CURSES && M_UNIX && !USE_TERMINFO */
@@ -502,7 +517,9 @@ extern constext txt_cannot_open[];
 extern constext txt_cannot_open_for_saving[];
 extern constext txt_cannot_post[];
 extern constext txt_cannot_post_group[];
-extern constext txt_cannot_retrieve[];
+#ifdef NNTP_ABLE
+	extern constext txt_cannot_retrieve[];
+#endif /* NNTP_ABLE */
 extern constext txt_cannot_write_to_directory[];
 extern constext txt_catchup[];
 extern constext txt_catchup_group[];
@@ -542,10 +559,12 @@ extern constext txt_deleting[];
 #endif /* NNTP_ABLE */
 extern constext txt_end_of_art[];
 extern constext txt_end_of_arts[];
+extern constext txt_end_of_attachments[];
 extern constext txt_end_of_groups[];
 extern constext txt_end_of_page[];
 extern constext txt_end_of_scopes[];
 extern constext txt_end_of_thread[];
+extern constext txt_end_of_urls[];
 extern constext txt_enter_getart_limit[];
 extern constext txt_enter_message_id[];
 extern constext txt_enter_next_thread[];
@@ -567,6 +586,7 @@ extern constext txt_error_bad_msgidfqdn[];
 extern constext txt_error_copy_fp[];
 extern constext txt_error_corrupted_file[];
 extern constext txt_error_fseek[];
+extern constext txt_error_followup_poster[];
 extern constext txt_error_gnksa_internal[];
 extern constext txt_error_gnksa_langle[];
 extern constext txt_error_gnksa_lparen[];
@@ -593,7 +613,6 @@ extern constext txt_error_gnksa_rn_enc[];
 extern constext txt_error_gnksa_rn_encsyn[];
 extern constext txt_error_gnksa_rn_paren[];
 extern constext txt_error_gnksa_rn_invalid[];
-extern constext txt_error_grp_renamed[];
 extern constext txt_error_header_and_body_not_separate[];
 extern constext txt_error_header_duplicate[];
 extern constext txt_error_header_format[];
@@ -606,16 +625,23 @@ extern constext txt_error_header_line_missing[];
 extern constext txt_error_header_line_not_7bit[];
 extern constext txt_error_header_line_space[];
 extern constext txt_error_insecure_permissions[];
-extern constext txt_error_invalid_response_to_group[];
-extern constext txt_error_locale[];
+#ifdef NNTP_ABLE
+	extern constext txt_error_invalid_response_to_group[];
+#endif /* NNTP_ABLE */
+#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
+	extern constext txt_error_locale[];
+#endif /* HAVE_SETLOCALE && !NO_LOCALE */
 extern constext txt_error_mime_end[];
 extern constext txt_error_mime_start[];
 extern constext txt_error_no_domain_name[];
 extern constext txt_error_no_enter_permission[];
-extern constext txt_error_no_from[];
+#ifdef NNTP_INEWS
+	extern constext txt_error_no_from[];
+#endif /* NNTP_INEWS */
 extern constext txt_error_no_read_permission[];
 extern constext txt_error_no_such_file[];
 extern constext txt_error_no_write_permission[];
+extern constext txt_error_newsgroups_poster[];
 extern constext txt_error_passwd_missing[];
 extern constext txt_error_plural[];
 extern constext txt_error_server_has_no_listed_groups[];
@@ -684,7 +710,7 @@ extern constext txt_help_article_by_num[];
 	extern constext txt_help_article_followup_no_quote[];
 	extern constext txt_help_article_followup_with_header[];
 	extern constext txt_help_article_repost[];
-#endif /* NO_POSTING */
+#endif /* !NO_POSTING */
 extern constext txt_help_article_edit[];
 extern constext txt_help_article_first_in_thread[];
 extern constext txt_help_article_first_page[];
@@ -717,6 +743,22 @@ extern constext txt_help_article_toggle_tabwidth[];
 extern constext txt_help_article_toggle_tex2iso[];
 extern constext txt_help_article_toggle_uue[];
 extern constext txt_help_article_view_attachments[];
+extern constext txt_help_attachment_first[];
+extern constext txt_help_attachment_goto[];
+extern constext txt_help_attachment_last[];
+#ifndef DONT_HAVE_PIPING
+	extern constext txt_help_attachment_pipe[];
+	extern constext txt_help_attachment_pipe_raw[];
+#endif /* !DONT_HAVE_PIPING */
+extern constext txt_help_attachment_save[];
+extern constext txt_help_attachment_search_forwards[];
+extern constext txt_help_attachment_search_backwards[];
+extern constext txt_help_attachment_select[];
+extern constext txt_help_attachment_tag[];
+extern constext txt_help_attachment_tag_pattern[];
+extern constext txt_help_attachment_toggle_tagged[];
+extern constext txt_help_attachment_untag[];
+extern constext txt_help_attachment_toggle_info_line[];
 extern constext txt_help_attrib_first_opt[];
 extern constext txt_help_attrib_goto_opt[];
 extern constext txt_help_attrib_last_opt[];
@@ -757,8 +799,10 @@ extern constext txt_help_global_page_up[];
 #ifndef DONT_HAVE_PIPING
 	extern constext txt_help_global_pipe[];
 #endif /* !DONT_HAVE_PIPING */
-extern constext txt_help_global_post[];
-extern constext txt_help_global_post_postponed[];
+#ifndef NO_POSTING
+	extern constext txt_help_global_post[];
+	extern constext txt_help_global_post_postponed[];
+#endif /* !NO_POSTING */
 extern constext txt_help_global_posting_history[];
 extern constext txt_help_global_previous_menu[];
 #ifndef DISABLE_PRINTING
@@ -865,9 +909,18 @@ extern constext txt_help_title_disp[];
 extern constext txt_help_title_misc[];
 extern constext txt_help_title_navi[];
 extern constext txt_help_title_ops[];
+extern constext txt_help_title_attachment_ops[];
 extern constext txt_help_title_attrib_ops[];
 extern constext txt_help_title_config_ops[];
 extern constext txt_help_title_scope_ops[];
+extern constext txt_help_title_url_ops[];
+extern constext txt_help_url_first_url[];
+extern constext txt_help_url_goto_url[];
+extern constext txt_help_url_last_url[];
+extern constext txt_help_url_search_forwards[];
+extern constext txt_help_url_search_backwards[];
+extern constext txt_help_url_select[];
+extern constext txt_help_url_toggle_info_line[];
 extern constext txt_incomplete[];
 extern constext txt_index_page_com[];
 extern constext txt_info_add_kill[];
@@ -925,6 +978,9 @@ extern constext txt_marked_as_unread[];
 extern constext txt_marked_arts_as_read[];
 extern constext txt_marked_arts_as_unread[];
 extern constext txt_matching_cmd_line_groups[];
+extern constext txt_mini_attachment_1[];
+extern constext txt_mini_attachment_2[];
+extern constext txt_mini_attachment_3[];
 extern constext txt_mini_group_1[];
 extern constext txt_mini_group_2[];
 extern constext txt_mini_group_3[];
@@ -940,6 +996,8 @@ extern constext txt_mini_select_2[];
 extern constext txt_mini_select_3[];
 extern constext txt_mini_thread_1[];
 extern constext txt_mini_thread_2[];
+extern constext txt_mini_url_1[];
+extern constext txt_mini_url_2[];
 extern constext txt_more[];
 extern constext txt_moving[];
 extern constext txt_msgid_line_last[];
@@ -957,6 +1015,7 @@ extern constext txt_next_resp[];
 extern constext txt_no[];
 extern constext txt_no_arts[];
 extern constext txt_no_arts_posted[];
+extern constext txt_no_attachments[];
 extern constext txt_no_description[];
 extern constext txt_no_filename[];
 extern constext txt_no_group[];
@@ -970,6 +1029,7 @@ extern constext txt_no_more_groups[];
 extern constext txt_no_newsgroups[];
 extern constext txt_no_next_unread_art[];
 extern constext txt_no_prev_group[];
+extern constext txt_no_prev_search[];
 extern constext txt_no_prev_unread_art[];
 extern constext txt_no_responses[];
 extern constext txt_no_resps_in_thread[];
@@ -984,7 +1044,9 @@ extern constext txt_no_subject[];
 	extern constext txt_no_term_set[];
 #endif /* !USE_CURSES */
 extern constext txt_no_viewer_found[];
-extern constext txt_no_xover_support[];
+#ifdef NNTP_ABLE
+	extern constext txt_no_xover_support[];
+#endif /* NNTP_ABLE */
 extern constext txt_not_exist[];
 extern constext txt_not_in_active_file[];
 extern constext txt_nrctbl_create[];
@@ -1032,8 +1094,10 @@ extern constext txt_quit_edit_xpost[];
 extern constext txt_quit_no_write[];
 extern constext txt_quoted_printable[];
 extern constext txt_range_invalid[];
-extern constext txt_read_abort[];
-extern constext txt_read_exit[];
+#ifdef NNTP_ABLE
+	extern constext txt_read_abort[];
+	extern constext txt_read_exit[];
+#endif /* NNTP_ABLE */
 extern constext txt_reading_article[];
 extern constext txt_reading_arts[];
 extern constext txt_reading_attributes_file[];
@@ -1054,6 +1118,7 @@ extern constext txt_refs_line_only[];
 	extern constext txt_remaining[];
 #endif /* HAVE_GETTIMEOFDAY */
 extern constext txt_remove_bogus[];
+extern constext txt_removed_rule[];
 extern constext txt_rename_error[];
 extern constext txt_reply_to_author[];
 extern constext txt_repost[];
@@ -1168,7 +1233,10 @@ extern constext txt_unsubscribing[];
 extern constext txt_unthreading_arts[];
 extern constext txt_updated[];
 extern constext txt_updating[];
+extern constext txt_url_menu[];
+extern constext txt_url_menu_com[];
 extern constext txt_url_open[];
+extern constext txt_url_select[];
 extern constext txt_url_done[];
 extern constext txt_usage_catchup[];
 extern constext txt_usage_check_for_unread_news[];
@@ -1230,6 +1298,7 @@ extern constext txt_warn_encoding_and_external_inews[];
 	extern constext txt_warn_header_line_comma[];
 	extern constext txt_warn_header_line_groups_contd[];
 #endif /* FOLLOW_USEFOR_DRAFT */
+extern constext txt_warn_example_hierarchy[];
 extern constext txt_warn_multiple_sigs[];
 extern constext txt_warn_newsrc[];
 extern constext txt_warn_not_all_arts_saved[];
@@ -1241,7 +1310,6 @@ extern constext txt_warn_update[];
 extern constext txt_warn_unrecognized_version[];
 extern constext txt_warn_wrong_sig_format[];
 extern constext txt_warn_xref_not_supported[];
-extern constext txt_warn_grp_renamed[];
 extern constext txt_writing_attributes_file[];
 extern constext txt_x_resp[];
 extern constext txt_yanked_groups[];
@@ -1262,6 +1330,7 @@ extern constext txt_you_have_mail[];
 
 #ifndef HAVE_FASCIST_NEWSADMIN
 	extern constext txt_warn_followup_to_several_groups[];
+	extern constext txt_warn_grp_renamed[];
 	extern constext txt_warn_missing_followup_to[];
 	extern constext txt_warn_not_in_newsrc[];
 	extern constext txt_warn_not_valid_newsgroup[];
@@ -1376,7 +1445,6 @@ extern t_bool disable_sender;
 extern t_bool force_no_post;
 extern t_bool force_reread_active_file;
 extern t_bool have_linescroll;
-extern t_bool filtered_articles;
 extern t_bool list_active;
 extern t_bool newsrc_active;
 extern t_bool no_write;
@@ -1487,7 +1555,9 @@ extern char *input_history[HIST_MAXNUM + 1][HIST_SIZE + 1];
 #else
 	extern constext txt_art_cannot_cancel[];
 	extern constext txt_error_sender_in_header_not_allowed[];
+#	ifdef NNTP_INEWS
 	extern constext txt_invalid_sender[];
+#	endif /* NNTP_INEWS */
 #endif /* FORGERY */
 
 extern t_bool word_highlight;
@@ -1503,6 +1573,7 @@ extern t_bool word_highlight;
 
 #ifdef HAVE_FASCIST_NEWSADMIN
 	extern constext txt_error_followup_to_several_groups[];
+	extern constext txt_error_grp_renamed[];
 	extern constext txt_error_missing_followup_to[];
 	extern constext txt_error_not_valid_newsgroup[];
 #endif /* HAVE_FASCIST_NEWSADMIN */
@@ -1550,6 +1621,7 @@ extern constext txt_processing_saved_arts[];
 	extern t_bool force_auth_on_conn_open;
 #endif /* NNTP_ABLE */
 
+extern struct opttxt txt_abbreviate_groupname;
 extern struct opttxt txt_add_posted_to_filter;
 extern struct opttxt txt_advertising;
 extern struct opttxt txt_alternative_handling;

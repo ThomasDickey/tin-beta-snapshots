@@ -3,7 +3,7 @@
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2008-09-21
+ *  Updated   : 2010-09-26
  *  Notes     : rfc2046 MIME article definitions
  *
  * Copyright (c) 2000-2010 Jason Faultless <jason@altarstone.com>
@@ -98,6 +98,18 @@ typedef struct part
 	struct part *uue;		/* UUencoded section information */
 	struct part *next;		/* next part */
 } t_part;
+
+
+/*
+ * Used in save.c to build a list of attachments to be displayed
+ *
+ * TODO: move somewhere else?
+ */
+typedef struct partlist {
+	t_part *part;
+	struct partlist *next;
+	int tagged;
+} t_partl;
 
 
 /*

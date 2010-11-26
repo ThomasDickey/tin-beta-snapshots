@@ -7,7 +7,7 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@invisible-island.net> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 2009-03-13
+ *  Updated   : 2010-11-13
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
@@ -110,8 +110,7 @@ set_colors(
 		if (bcolor > 0)
 			bcolor %= COLORS;
 
-		/* curses assumes white/black */
-		if (fcolor != COLOR_WHITE || bcolor != COLOR_BLACK) {
+		if (fcolor != default_fcol || bcolor != default_bcol) {
 			struct LIST *p;
 			t_bool found = FALSE;
 

@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2009-12-19
+ *  Updated   : 2010-09-16
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
@@ -117,7 +117,7 @@ static const struct {
 	{ SIGINT,	"SIGINT" },	/* ctrl-C */
 #	endif /* SIGINT */
 #	ifdef SIGQUIT
-	{ SIGQUIT,	"SIGQUIT " },	/* ctrl-\ */
+	{ SIGQUIT,	"SIGQUIT" },	/* ctrl-\ */
 #	endif /* SIGQUIT */
 #	ifdef SIGILL
 	{ SIGILL,	"SIGILL" },	/* illegal instruction */
@@ -290,10 +290,12 @@ handle_resize(
 			display_info_page(0);
 			break;
 
+		case cAttachment:
 		case cGroup:
 		case cScope:
 		case cSelect:
 		case cThread:
+		case cURL:
 			ClearScreen();
 			currmenu->redraw();
 			break;
@@ -301,6 +303,27 @@ handle_resize(
 		case cPage:
 			resize_article(TRUE, &pgart);
 			draw_page(curr_group->name, 0);
+			break;
+
+		case cPost:
+		case cPostCancel:
+			refresh_post_screen(signal_context);
+			break;
+
+		case cPostFup:
+			resize_article(TRUE, &pgart);
+			draw_page(curr_group->name, 0);
+			/*
+			 * Reset signal_context because draw_page()
+			 * sets signal_context to cPage.
+			 */
+			signal_context = cPostFup;
+			refresh_post_screen(signal_context);
+			break;
+
+		case cReconnect:
+			ClearScreen();
+			show_title(tin_progname);
 			break;
 
 		case cMain:

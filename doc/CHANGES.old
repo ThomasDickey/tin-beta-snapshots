@@ -57,7 +57,7 @@ U047) Urs Janssen <urs@tin.org>
            prompt_slk_response()
       BUG. newsgroups file caching didn't work
       ADD. pcre update (6.1 -> 6.4)
-      ADD. check replyto address befor mailing
+      ADD. check replyto address before mailing
       ADD. a few missing german translations
       ADD. config.guess, config.sub update
       ADD. allow unbinding keys by mapping them to "NULL"
@@ -86,7 +86,7 @@ U043) Urs Janssen <urs@tin.org>
       BUG. POST_EDIT was mssing from post_cancel_keys
       BUG. GLOBAL_QUIT was missing from post_edit_keys and
            post_edit_ext_keys and not rebindable in post_continue_keys
-      BUG. dublicated onlinehelp entries
+      BUG. duplicated onlinehelp entries
       BUG. FeedRepost didn't work
       BUG. digits were missing in option_menu_keys
       BUG. PGP_INCLUDE_KEY in the pgp-2 case didn't work
@@ -124,7 +124,7 @@ U041) Andrei Emeltchenko <andrei.emeltchenko@finik.org>
 U040) Michael Bienia <michael@vorlon.ping.de>
       BUG. keybindings were inited to late
       ADD. dynamic space calculation in filter_menu()
-      ADD. use enum option_enum instead of int where appropiate
+      ADD. use enum option_enum instead of int where appropriate
       FIX. Makefile[.in], proto.h, tin.h, filter.c, group.c, keymap.c, main.c
            options_menu.c, page.c, prompt.c, search.c, signal.c, thread.c
            makecfg.c
@@ -246,7 +246,7 @@ U028) Michael Bienia <michael@vorlon.ping.de>
       ADD. remove CURR_GROUP dependecy from sort functions
       ADD. wcspart() now mallocs the needed space on its own
       ADD. kill/hot-menu "Kill/Select pattern scope" now walks up the
-           hierarchie level
+           hierarchy level
       ADD. move '-V' code into a function, use it inside mail_bug_report()
       ADD. use mark_screen() also in GROUP_LEVEL and THREAD_LEVEL
       ADD. move the options menu code from config.c to options_menu.c
@@ -384,7 +384,7 @@ U015) Michael Bienia <michael@vorlon.ping.de>
       BUG. in REGEX-mode a iKeyGroupSelPattern of "*" wasn't transformed
            into a valid regex
       ADD. search again wraps around if no more matches are found
-      ADD. turn pcre into UTF-8 mode if usefull
+      ADD. turn pcre into UTF-8 mode if useful
       ADD. unicode normalization for search items
       FIX. extern.h, proto.h, tin.h, tinrc.h, config.c, feed.c, filter.c
            group.c, init.c, lang.c, misc.c, page.c, prompt.c, regex.c
@@ -781,7 +781,7 @@ U146) Urs Janssen <urs@tin.org>
       REM. tinrcupdate.pl
       REM. --with-local-charset
       REM. some unnecessary casts and unused vars
-      REM. Author-IDs and persistant header support
+      REM. Author-IDs and persistent header support
       REM. xref_max
       REM. $BUG_ADDRESS
       BUG. plugged a few small memory leaks
@@ -984,7 +984,7 @@ U129) Michael Bienia <michael@vorlon.ping.de>
 
 U128) Olaf Dietrich <olaf@dtrx.de>
       BUG. TeX2ISO was done before charset conversion
-      BUG. curses.h was prefered over ncurses[w].h
+      BUG. curses.h was preferred over ncurses[w].h
       FIX. proto.h, charset.c, cook.c, misc.c, rfc2047.c, aclocal.m4
 
 U127) Michael Bienia <michael@vorlon.ping.de>
@@ -1331,7 +1331,7 @@ U089) Urs Janssen <urs@tin.org>
            local cached overviews
       BUG. missing From caused crashes when replying
       BUG. match_string() doesn't allow emtpy strings (U048)
-      BUG. dublicated Cancel-Lock in rare cases
+      BUG. duplicated Cancel-Lock in rare cases
       BUG. eat_re() could modify subject in aborted posts
       BUG. unknown Content-Transfer-Encodings defaulted to 7bit instead of
            binary
@@ -1395,7 +1395,7 @@ U083) Urs Janssen <urs@tin.org>
       BUG. possible buffer overrun and empty pgp-address
       BUG. missing screen redraw after supersede
       BUG. possible dereferenced pointer (network_charset)
-      BUG. fixed some typos, reformated po-files
+      BUG. fixed some typos, reformatted po-files
       BUG. mailing_list attribute was ignored on no posting servers in page
            level
       FIX. config.guess, config.sub, Makefile, extern.h, tin.h, art.c
@@ -2376,7 +2376,7 @@ U001) Urs Janssen <urs@tin.org>
      ADD. check if tin fallback prototypes work with the system headers
      ADD. update configure script macros to accommodate cygwin32
      ADD. rearrange the configure script's check for network libraries
-     ADD. fix a couple of casts loosing const
+     ADD. fix a couple of casts losing const
      FIX. aclocal.m4, configure[.in], proto.h, getline.c, init.c, main.c
           memory.c, misc.c, nntplib.c, read.c, refs.c, select.c, signal.c
 
@@ -2391,7 +2391,7 @@ U001) Urs Janssen <urs@tin.org>
      ADD. 'w' post article, 'm' mail article to thread menu
      ADD. big code cleanup
      ADD. clear status line after error_message() is displayed
-     ADD. correct inital cursor position when mailing bug reports
+     ADD. correct initial cursor position when mailing bug reports
      ADD. cleanup tinrc/option menu variable naming
      BUG. mail bug report coredumps on bogus groups in selection menu
      FIX. extern.h, proto.h, tin.h, filter.c, group.c, inews.c, init.c
@@ -3468,7 +3468,7 @@ U001) Urs Janssen <urs@tin.org>
      FIX. thread.c
 
 507) Roland Rosenfeld <roland@spinnaker.rhein.de>
-     BUG. group=hierarchie.* in filter-editor was always changed to
+     BUG. group=hierarchy.* in filter-editor was always changed to
           group=*
      FIX. filter.c
 

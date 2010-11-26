@@ -82,7 +82,7 @@ overview_xref_support(
 	char *ptr;
 	char *p, *q;
 	t_bool supported = FALSE;
-	size_t res_fields = 9; /* inital number of overview fields */
+	size_t res_fields = 9; /* initial number of overview fields */
 	size_t fields = 0;
 	size_t i;
 

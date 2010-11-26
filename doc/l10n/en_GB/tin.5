@@ -11,17 +11,17 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "26. November 2010" 1.9.6 "Usenet Newsreader"
+.TH tin 5 "November 26th, 2010" 1.9.6 "A Usenet newsreader"
 
 .SH NAME
-tin, rtin \- zugehörige Dateien
+tin, rtin \- related files
 
-.SH BESCHREIBUNG
-Diese Manpage beschreibt die vom Newsreader \fBtin\fP(1) benutzen
-(Konfigurations)\-Dateien und deren Formate. Alle Dateien sollten Unixartige
-Zeilenenden ('\en' aka LF) haben.
+.SH DESCRIPTION
+This manpage describes the various (config) files and their formats used by
+the \fBtin\fP(1)  newsreader. All files are expected to have unix style ('\en'
+aka LF) line endings.
 
-.SH DATEIEN
+.SH FILES
 .\" TODO: mention
 .\" ${TIN_HOMEDIR:\-"$HOME"}/dead.article
 .\" ${TIN_HOMEDIR:\-"$HOME"}/dead.articles
@@ -180,10 +180,10 @@ ending in ".gif" by using "nametemplate=%s.gif"
 and partly the "needsterminal" flags, all other flags are internally
 ignored. It also can't handle the "%F" and "%n" expansions yet.
 .TP 
-Beispiel:
+Example:
 .RS
 .nf
-# mailcap Beispiel\-Datei
+# mailcap file example
 .br
 image/*;\e
 .br
@@ -246,31 +246,31 @@ mime type / filename extension pairs
 .sp
 .RS
 "\fInntpserver\fP \fIpassword\fP [\fIuser\fP]" pairs for NNTP servers that require
-authorization. If the password contains a space or a tab it must be enclosed
+authorisation. If the password contains a space or a tab it must be enclosed
 in doublequotes ("). Usernames must not be enclosed in doublequotes and thus
 can't contain spaces or tabs. Any line that starts with "#" is a
 comment. Blank lines are ignored. This file should be readable only for the
 user as it contains the users uncrypted password for reading news!
 .TP 
-\fBNNTPServer\fP
-Vollständiger Name (FQDN) des Newsservers.
+\fBnntpserver\fP
+full qualified domain name of the newsserver.
 .TP 
-\fBPasswort\fP
-Unverschlüsseltes Passwort für den Newsserver.
+\fBpassword\fP
+users uncrypted password for reading news.
 .TP 
-\fBUser\fP
-Username auf dem Newsserver falls er vom lokalen Benutzernamen
-abweicht. Dieses Feld ist optional.
+\fBuser\fP
+username on the newsserver if it differs from the local login. This field is
+optional.
 .TP 
-Beispiel:
+Example:
 .RS
-# Beispiel .newsauth\-Datei
+# sample .newsauth file
 .br
-news.example.org geheim
+news.example.org secret
 .br
-news.example.net verborgen gast
+news.example.net arcane guest
 .br
-news.example.com "streng geheim" james.bond@example.com
+news.example.com "top secret" james.bond@example.com
 .RE
 .RE
 .PP
@@ -290,9 +290,9 @@ a flag indicating if the group is subscribed ':' or not '!'.
 range of already read articles from that group; numbers separated by commas
 with sequential numbers collapsed with hyphens.
 .TP 
-Beispiel:
+Example:
 .RS
-# .newsrc Beispiel\-Datei
+# sample .newsrc file
 .br
 news.software.b! 1\-666,669
 .br
@@ -308,7 +308,7 @@ news.software.readers: 1\-19567,19571\-19597
 .fi
 .sp
 .RS
-Sicherungskopie von \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP
+backup of \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP
 .RE
 .PP
 
@@ -317,7 +317,7 @@ Sicherungskopie von \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP
 \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP
 .sp
 .RS
-Signatur
+signature
 .RE
 .PP
 
@@ -373,13 +373,13 @@ just put a large number here, something higher than the highest message in
 the mailbox
 .TP 
 \fBminnum\fP
-hier 0 angeben
+put 0 here
 .TP 
 \fBmailspool\fP
 path of mail spool directory. This must be the full pathname to the root of
 the mail folder area.
 .TP 
-Beispiel:
+Example:
 .RS
 Mail.inbox 12345 00000 /home/foo
 .br
@@ -424,25 +424,25 @@ applied. See the section NEWSGROUP LISTS & WILDCARDS in \fBtin\fP(1)  for the
 types of pattern that can be used here.
 .TP 
 \fBadd_posted_to_filter\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBadvertising\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBalternative_handling\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBask_for_metamail\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBauto_cc_bcc\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBauto_list_thread\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBauto_save\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBauto_select\fP
 Automatically perform the \fBGroupMarkUnselArtRead\fP ('\fBX\fP') command after
@@ -454,7 +454,7 @@ basis. For more information read section AUTOMATIC MAILING AND SAVING NEW
 NEWS in \fBtin\fP(1).
 .TP 
 \fBdate_format\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBdelete_tmp_files\fP
 If this is set to ON, then saved article files that have been post\-processed
@@ -463,7 +463,7 @@ delete the post\-processed files. Automatic processing of marked articles
 using \fBGroupAutoSave\fP ('\fBS\fP') will suppress prompting.
 .TP 
 \fBeditor_format\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBfcc\fP
 Mailbox to save sent mails. The format of the mailbox is controlled via the
@@ -473,29 +473,29 @@ tinrc \fBmailbox_format\fP variable.
 Set \*(rqFollowup\-To:\*(rq header to the specified group(s).
 .TP 
 \fBfrom\fP
-Identisch mit der tinrc\-Variable \fBmail_address\fP
+Identical to the tinrc variable \fBmail_address\fP
 .TP 
 \fBgroup_catchup_on_exit\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBmail_8bit_header\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBmail_mime_encoding\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBmaildir\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBmailing_list\fP
 Used when a group is a mailing list. All responses to the group will be
 directed to this email address instead
 .TP 
 \fBmark_ignore_tags\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBmark_saved_read\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBmime_forward\fP
 Determines whether usenet articles are forwarded as attachment or
@@ -520,13 +520,13 @@ to wildcard the major and/or minor type and a ! as the first character in an
 entry will negate it, eg: image/*,!image/bmp,!text/html. Default is */*
 .TP 
 \fBnews_headers_to_display\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBnews_headers_to_not_display\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBnews_quote_format\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBorganization\fP
 This can be used to set the article header field \*(rqOrganization:\*(rq. It
@@ -535,88 +535,88 @@ and $\fBORGANIZATION\fP (or $\fBNEWSORG\fP on Apollo DomainOS). Note that some
 newsserver might still overwrite the \&\*(rqOrganization:\*(rq header.
 .TP 
 \fBpos_first_unread\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBpost_8bit_header\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBpost_mime_encoding\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBpost_process_type\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBpost_process_view\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBprint_header\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBprocess_only_unread\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBprompt_followupto\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBquote_chars\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBsavedir\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 .\" TODO: document option
 \fBsavefile\fP
 .TP 
 \fBshow_author\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBshow_info\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBshow_only_unread_arts\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBshow_signatures\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBsigdashes\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBsigfile\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBsignature_repost\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBsort_article_type\fP
-Identisch mit der tinrc\-Variable \fBsort_article_type\fP
+Identical to the tinrc variable \fBsort_article_type\fP
 .TP 
 \fBsort_threads_type\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBstart_editor_offset\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBtex2iso_conv\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBthread_articles\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBthread_catchup_on_exit\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBthread_perc\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBtrim_article_body\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBverbatim_handling\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBwrap_on_next_unread\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBx_body\fP
 A piece of text that will be added at the start of a message body. If this
@@ -640,13 +640,13 @@ the filter rule added by \fBQuickFilterKill\fP will be applied.  If unset the
 default from the tinrc variable \fBdefault_filter_kill_global\fP will be used.
 .TP 
 \fBquick_kill_expire\fP
-Identisch mit der tinrc\-Variable \fBdefault_filter_kill_expire\fP
+Identical to the tinrc variable \fBdefault_filter_kill_expire\fP
 .TP 
 \fBquick_kill_case\fP
-Identisch mit der tinrc\-Variable \fBdefault_filter_kill_case\fP
+Identical to the tinrc variable \fBdefault_filter_kill_case\fP
 .TP 
 \fBquick_kill_header\fP
-Identisch mit der tinrc\-Variable \fBdefault_filter_kill_header\fP
+Identical to the tinrc variable \fBdefault_filter_kill_header\fP
 .TP 
 \fBquick_select_scope\fP
 A comma\-separated list of newsgroup patterns (wildmat\-style) to which groups
@@ -655,20 +655,20 @@ default from the tinrc variable \fBdefault_filter_select_global\fP will be
 used.
 .TP 
 \fBquick_select_expire\fP
-Identisch mit der tinrc\-Variable \fBdefault_filter_select_expire\fP
+Identical to the tinrc variable \fBdefault_filter_select_expire\fP
 .TP 
 \fBquick_select_case\fP
-Identisch mit der tinrc\-Variable \fBdefault_filter_select_case\fP
+Identical to the tinrc variable \fBdefault_filter_select_case\fP
 .TP 
 \fBquick_select_header\fP
-Identisch mit der tinrc\-Variable \fBdefault_filter_select_header\fP
+Identical to the tinrc variable \fBdefault_filter_select_header\fP
 .TP 
 \fBispell\fP
 Path and options for \fBispell\fP(1)\-like spell\-checker, e.g. "aspell
 \-\-mode=email \-\-dont\-backup check"
 .TP 
 \fBmm_network_charset\fP
-Identisch mit der tinrc\-Variable gleichen Namens
+Identical to the tinrc variable of the same name
 .TP 
 \fBundeclared_charset\fP
 Assume (broken) articles without MIME charset declaration have this charset
@@ -677,11 +677,11 @@ Assume (broken) articles without MIME charset declaration have this charset
 \-\-disable\-mime\-strict\-charset.
 .PP
 .TP 
-Beispiel:
+Example:
 .RS
 .nf
-# zusätzliche Header einfügen
-# ISO\-8859\-1 als Zeichensatz annehmen falls keiner angegeben wurde
+# include extra headers
+# assume ISO\-8859\-1 as charset if no charset is declared
 scope=*
 x_headers=~/.tin/headers
 undeclared_charset=ISO\-8859\-1
@@ -709,7 +709,7 @@ scope=*.test
 sigfile=\-\-none
 x_headers=Subject: test \- ignore \- no reply
 
-# ISO\-2022\-JP\-2 als Zeichensatz annehmen
+# assume ISO\-2022\-JP\-2 as charset
 scope=fj.*,japan.*
 undeclared_charset=ISO\-2022\-JP\-2
 .fi
@@ -782,7 +782,7 @@ counter) removed.
 time_t value when rule expires
 .PP
 .TP 
-Beispiel:
+Example:
 .RS
 .nf
 comment=mark all articles about tin, rtin,
@@ -1040,10 +1040,10 @@ to be build with mh\-mail\-handling support). Each line consist of two
 tab\-separated fields "\fImailgroupname\fP \fIone\-line description\fP".
 .TP 
 \fBmailgroupname\fP
-ist der Name der Newsgruppe
+is the name of the newsgroup
 .TP 
 \fBdescription\fP
-ist die zugehörige Kurzbeschreibung
+is a short single\-line description of the group
 .RE
 .PP
 
@@ -1053,8 +1053,8 @@ ist die zugehörige Kurzbeschreibung
 "\fInntpserver\fP \fInewsrc\fP [\fIshortname\fP [\fI...\fP]]" pairs to use with the
 \&\*(rq\fB\-g\fP\*(rq command\-line switch.
 .TP 
-\fBNNTPServer\fP
-Vollständiger Name (FQDN) des Newsservers.
+\fBnntpserver\fP
+full qualified domain name of the newsserver.
 .TP 
 \fBnewsrc\fP
 related newsrc.
@@ -1062,9 +1062,9 @@ related newsrc.
 \fBshortname\fP
 nickname(s) for the nntpserver.
 .TP 
-Beispiel:
+Example:
 .RS
-# Beispiel newsrctable\-Datei
+# sample newsrctable file
 .br
 news.tin.org .newsrc\-tin.org tinorg
 .br
@@ -1091,8 +1091,7 @@ changed by setting \fBposted_articles_file\fP.
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/postponed.articles\fP
 .sp
 .RS
-Vorrat an zurückgestellten Artikeln. Diese Datei benutzt das \fBmbox\fP(5)
-Format.
+Pool of postponed articles. This file is in \fBmbox\fP(5)  format.
 .RE
 .PP
 
@@ -1108,10 +1107,10 @@ copy exists. Each line consist of two tab\-separated fields
 "\fIgroup.name\fP	\fIone\-line description\fP".
 .TP 
 \fBgroup.name\fP
-ist der Name der Newsgruppe
+is the name of the newsgroup
 .TP 
 \fBone\-line description\fP
-ist die zugehörige Kurzbeschreibung
+is a short single\-line description of the group
 .RE
 .PP
 
@@ -1126,7 +1125,7 @@ File to store $\fBNNTPSERVER\fP and $\fBNNTPPORT\fP related data via a list of
 are not meant to be changed by the user.
 .TP 
 \fBversion\fP
-Interne Versionsnummer.
+Internal version number.
 .TP 
 \fBlast_newnews\fP
 Internal timestamp used by \fBtin\fP(1)  to keep track of new newsgroups on the
@@ -1167,7 +1166,7 @@ Turn ON advertising in header (\*(rqUser\-Agent:\*(rq). Default is ON.
 If ON strip multipart/alternative messages automatically. Default is ON.
 .TP 
 \fBart_marked_deleted\fP
-Zeichen das anzeigt, dass ein Artikel gelöscht wurde. Standard is 'D'.
+The character used to show that an article was deleted. Default is 'D'.
 .TP 
 \fBart_marked_inrange\fP
 The character used to show that an article is in a range. Default is '#'.
@@ -1199,7 +1198,7 @@ The character used to show that an article was killed. Default is 'K'.
 The character used to show that an article was hot before it was read. 
 Default is ':'. \fBkill_level\fP must be set accordingly.
 .TP 
-\fBStart des MIME\-Viewers bestätigen (ask_for_metamail)\fP
+\fBAsk before using MIME viewer (ask_for_metamail)\fP
 If ON \fBtin\fP(1)  will ask before using a MIME viewer (\fBmetamail_prog\fP) to
 display MIME messages. This only occurs if a MIME viewer is set. Default is
 OFF.
@@ -1240,78 +1239,78 @@ If set ON the user is asked when quitting if all groups read during the
 current session should be marked read. Default is OFF.
 .TP 
 \fBcol_back\fP
-Standard Hintergrundfarbe
+Standard background colour
 .TP 
 \fBcol_from\fP
-Farbe des Autors (From:)
+Colour of sender (From:)
 .TP 
 \fBcol_head\fP
-Farbe der Artikelheaderzeilen
+Colour of header\-lines
 .TP 
 \fBcol_help\fP
-Farbe des Hilfstext
+Colour of help pages
 .TP 
 \fBcol_invers_bg\fP
-Hintergrundfarbe für inversen Text
+Colour of background for inverse text
 .TP 
 \fBcol_invers_fg\fP
-Vordergrundfarbe für inversen Text
+Colour of foreground for inverse text
 .TP 
 \fBcol_markdash\fP
-Color of words emphasized like _this_. See also \fBword_h_display_marks\fP and
+Colour of words emphasized like _this_. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBcol_markslash\fP
-Color of words emphasized like /this/. See also \fBword_h_display_marks\fP and
+Colour of words emphasized like /this/. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBcol_markstar\fP
-Color of words emphasized like *this*. See also \fBword_h_display_marks\fP and
+Colour of words emphasized like *this*. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBcol_markstroke\fP
-Color of words emphasized like \-this\-. See also \fBword_h_display_marks\fP and
+Colour of words emphasized like \-this\-. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBcol_minihelp\fP
-Farbe des Minihilfemenü
+Colour of mini help menu
 .TP 
 \fBcol_newsheaders\fP
-Farbe des angezeigten Headers
+Colour of actual news header fields
 .TP 
 \fBcol_normal\fP
-Standard Vordergrundfarbe
+Standard foreground colour
 .TP 
 \fBcol_quote\fP
-Farbe der zitierten Zeilen
+Colour of quoted lines
 .TP 
 \fBcol_quote2\fP
-Farbe von zweifach zitierten Zeilen
+Colour of twice quoted lines
 .TP 
 \fBcol_quote3\fP
-Farbe von =>3\-fach zitierten Zeilen
+Colour of >=3 times quoted lines
 .TP 
 \fBcol_response\fP
-Color of response counter. This is the text that says 'Response x of y' in
+Colour of response counter. This is the text that says 'Response x of y' in
 the article viewer.
 .TP 
 \fBcol_signature\fP
-Farbe von Signaturen
+Colour of signatures
 .TP 
 \fBcol_urls\fP
-Farbe der hervorgehobenen URLs
+Colour of urls highlight
 .TP 
 \fBcol_verbatim\fP
-Farbe des wortgetreu darzustellenden Textes
+Colour of verbatim blocks
 .TP 
 \fBcol_subject\fP
-Farbe der Subjectzeile
+Colour of article subject
 .TP 
 \fBcol_text\fP
-Farbe der Textzeilen
+Colour of text\-lines
 .TP 
 \fBcol_title\fP
-Farbe des Hilfe/Mail\-Zeichens
+Colour of help/mail sign
 .TP 
 \fBconfirm_choice\fP
 \fBtin\fP(1)  can ask for manual confirmation to protect the user. Available
@@ -1344,7 +1343,7 @@ fallback code.  Default is "%a, %d %b %Y %H:%M:%S".
 The last article/author/config option that was searched for.
 .TP 
 \fBdefault_filter_days\fP
-Standard ist 28.
+Default is 28.
 .TP 
 \fBdefault_filter_kill_case\fP
 Default for quick (1 key) kill filter case. ON = filter case sensitive, OFF
@@ -1363,13 +1362,13 @@ Default for quick (1 key) kill filter header.
 .in +.3i
 .nf
 .ta \w'0,1   'u +\w'\'\'Message\-ID:\'\' & last \'\'References:\'\' entry only'u
-0	\*(rqSubject:\*(rq (Gross/Kleinschreibung beachten)
-1	\*(rqSubject:\*(rq (Gross/Kleinschreibung ignorieren)
-2	\*(rqFrom:\*(rq (Gross/Kleinschreibung beachten)
-3	\*(rqFrom:\*(rq (Gross/Kleinschreibung ignorieren)
-4	\*(rqMessage\-ID:\*(rq & alle \*(rqReferences:\*(rq Einträge
-5	\*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
-6	\*(rqMessage\-ID:\*(rq allein
+0	\*(rqSubject:\*(rq (case sensitive)
+1	\*(rqSubject:\*(rq (ignore case)
+2	\*(rqFrom:\*(rq (case sensitive)
+3	\*(rqFrom:\*(rq (ignore case)
+4	\*(rqMessage\-ID:\*(rq & full \*(rqReferences:\*(rq line
+5	\*(rqMessage\-ID:\*(rq & last \*(rqReferences:\*(rq entry only
+6	\*(rqMessage\-ID:\*(rq entry only
 7	\*(rqLines:\*(rq
 .fi
 .in -.3i
@@ -1391,13 +1390,13 @@ Default for quick (1 key) auto\-selection filter header.
 .in +.3i
 .nf
 .ta \w'0,1   'u +\w'\'\'Message\-ID:\'\' & last \'\'References:\'\' entry only'u
-0	\*(rqSubject:\*(rq (Gross/Kleinschreibung beachten)
-1	\*(rqSubject:\*(rq (Gross/Kleinschreibung ignorieren)
-2	\*(rqFrom:\*(rq (Gross/Kleinschreibung beachten)
-3	\*(rqFrom:\*(rq (Gross/Kleinschreibung ignorieren)
-4	\*(rqMessage\-ID:\*(rq & alle \*(rqReferences:\*(rq Einträge
-5	\*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
-6	\*(rqMessage\-ID:\*(rq allein
+0	\*(rqSubject:\*(rq (case sensitive)
+1	\*(rqSubject:\*(rq (ignore case)
+2	\*(rqFrom:\*(rq (case sensitive)
+3	\*(rqFrom:\*(rq (ignore case)
+4	\*(rqMessage\-ID:\*(rq & full \*(rqReferences:\*(rq line
+5	\*(rqMessage\-ID:\*(rq & last \*(rqReferences:\*(rq entry only
+6	\*(rqMessage\-ID:\*(rq entry only
 7	\*(rqLines:\*(rq
 .fi
 .in -.3i
@@ -1511,7 +1510,7 @@ This option controls the processing and display of articles that are
 killed. There are 3 options, default is 0 (\fBKill only unread arts\fP).
 .RS +1i
 .IP 0 3
-\fBKill only unread arts\fP is the 'traditional' behavior of \fBtin\fP(1).  Only
+\fBKill only unread arts\fP is the 'traditional' behaviour of \fBtin\fP(1).  Only
 unread articles are killed once only by marking them read. As filtering only
 happens on unread articles with \fBkill_level\fP set to 0, \fBart_marked_killed\fP
 and \fBart_marked_read_selected\fP are only shown once. When you reenter the
@@ -1668,11 +1667,11 @@ Format of quote line when posting/following up an article (%A=Address,
 %C=Firstname, %I=Initials). Default is "%F wrote:".
 .TP 
 \fBnormalization_form\fP
-The normalization form which should be used to normalize unicode input.  The
+The normalisation form which should be used to normalise unicode input.  The
 possible values are:
 .RS +1i
 .IP 0 3
-\fBNone\fP: keine Normalisierung
+\fBNone\fP: no normalisation
 .IP 1
 \fBNFKC\fP: Compatibility Decomposition, followed by Canonical Composition
 .IP 2
@@ -1682,8 +1681,8 @@ possible values are:
 .IP 4
 \fBNFD\fP: Canonical Decomposition
 .RE
-Some normalization modes are only available if they are supported by the
-library \fBtin\fP(1)  uses to do the normalization. Default is NFKC.
+Some normalisation modes are only available if they are supported by the
+library \fBtin\fP(1)  uses to do the normalisation. Default is NFKC.
 .TP 
 \fBpos_first_unread\fP
 If ON put cursor at first unread article in group otherwise at last
@@ -1770,7 +1769,7 @@ quoted regardless of this option when you are viewing an article in raw mode
 \fBPageToggleHeaders\fP ('\fB^H\fP') and followup or reply to it. Signatures are
 never quoted regardless of this option when \fBshow_signatures\fP is off.
 .IP 4
-\fBLeerzeilen zitieren\fP Diese Option ist standardmäßig aktiviert.
+\fBQuote empty lines\fP This option is on by default.
 .RE
 .TP 
 \fBquote_regex\fP
@@ -1834,7 +1833,7 @@ Which information about the author should be shown. Default is 2, authors
 full name.
 .RS +1i
 .IP 0 3
-\fBNichts\fP, nur die \*(rqSubject:\*(rq Zeile wird angezeigt.
+\fBNone\fP, only the \*(rqSubject:\*(rq line will be displayed.
 .IP 1
 \fBAddress\fP, \*(rqSubject:\*(rq line & the address part of the \*(rqFrom:\*(rq line are
 displayed.
@@ -1859,7 +1858,7 @@ Which information about the thread or article should be shown. Default is 1,
 show only the line count.
 .RS +1i
 .IP 0 3
-\fBNichts\fP. Keine weiteren Informationen werden angezeigt.
+\fBNone\fP, no information will be displayed.
 .IP 1
 \fBLines\fP, in article listing the line count of an article will be displayed
 and in thread listing the line count of first (unread)  article will be
@@ -1869,7 +1868,7 @@ displayed.
 in thread listing the score of the thread will be displayed \- see also
 \fBthread_score\fP.
 .IP 3
-\fBZeilen und Bewertung\fP, Zeilenzahl und Bewertung zusätzlich anzeigen.
+\fBLines & Score\fP, display line count and score.
 .RE
 .TP 
 \fBshow_only_unread_arts\fP
@@ -1910,25 +1909,25 @@ the default. The following sort types are allowed:
 .IP 0 3
 \fBNothing\fP, don't sort articles.
 .IP 1
-\fBSubject: (absteigend)\fP, Artikel absteigend nach \*(rqSubject:\*(rq sortieren.
+\fBSubject: (descending)\fP, sort articles by \*(rqSubject:\*(rq field descending.
 .IP 2
-\fBSubject: (aufsteigend)\fP, Artikel aufsteigend nach \*(rqSubject:\*(rq sortieren.
+\fBSubject: (ascending)\fP, sort articles by \*(rqSubject:\*(rq field ascending.
 .IP 3
-\fBFrom: (absteigend)\fP, Artikel absteigend nach \*(rqFrom:\*(rq sortieren.
+\fBFrom: (descending)\fP, sort articles by \*(rqFrom:\*(rq field descending.
 .IP 4
-\fBFrom: (aufsteigend)\fP, Artikel aufsteigend nach \*(rqFrom:\*(rq sortieren.
+\fBFrom: (ascending)\fP, sort articles by \*(rqFrom:\*(rq field ascending.
 .IP 5
-\fBDate: (absteigend)\fP, Artikel absteigend nach \*(rqDate:\*(rq sortieren.
+\fBDate: (descending)\fP, sort articles by \*(rqDate:\*(rq field descending.
 .IP 6
-\fBDate: (aufsteigend)\fP, Artikel aufsteigend nach \*(rqDate:\*(rq sortieren.
+\fBDate: (ascending)\fP, sort articles by \*(rqDate:\*(rq field ascending (default).
 .IP 7
-\fBScore (absteigend)\fP, Artikel absteigend nach Score sortieren.
+\fBScore (descending)\fP, sort articles by filtering score descending.
 .IP 8
-\fBScore (aufsteigend)\fP, Artikel aufsteigend nach Score sortieren.
+\fBScore (ascending)\fP, sort articles by filtering score ascending.
 .IP 9
-\fBLines: (absteigend)\fP, Artikel absteigend nach \*(rqLines:\*(rq sortieren.
+\fBLines: (descending)\fP, sort articles by \*(rqLines:\*(rq field descending.
 .IP 10
-\fBLines: (aufsteigend)\fP, Artikel aufsteigend nach \*(rqLines:\*(rq sortieren.
+\fBLines: (ascending)\fP, sort articles by \*(rqLines:\*(rq field ascending.
 .RE
 .TP 
 \fBsort_threads_type\fP
@@ -1988,8 +1987,8 @@ matching words are shown in \fBcol_markstroke\fP or \fBmono_markstroke\fP.  If
 .TP 
 \fBtex2iso_conv\fP
 Decode German style TeX umlaut codes to ISO If ON, show "a as Umlaut\-a,
-etc. Default is OFF. This behavior can also be toggled in the article viewer
-via \fBPageToggleTex2iso\fP ('\fB"\fP').
+etc. Default is OFF. This behaviour can also be toggled in the article
+viewer via \fBPageToggleTex2iso\fP ('\fB"\fP').
 .TP 
 \fBthread_articles\fP
 Defines which threading method to use. The choices are: 0) Don't thread, 1)
@@ -2035,9 +2034,9 @@ Default is 0. This option does not affect lines within verbatim blocks.
 .IP 0 3
 \fBDon't trim article body\fP, do nothing.
 .IP 1
-\fBFührende Leerzeilen überspringen\fP.
+\fBSkip leading blank lines\fP.
 .IP 2
-\fBAbschliessende Leerzeilen überspr.\fP.
+\fBSkip trailing blank lines\fP.
 .IP 3
 \fBSkip leading and trailing blank l.\fP, skip leading and trailing blank
 lines.
@@ -2070,7 +2069,7 @@ The program that will be run when launching URLs in the article viewer using
 Enable highlighting URLs in message body. Default is ON.
 .TP 
 \fBuse_color\fP
-If enabled \fBtin\fP(1)  uses ANSI\-colors. Default is OFF.
+If enabled \fBtin\fP(1)  uses ANSI\-colours. Default is OFF.
 .TP 
 \fBuse_keypad\fP
 Use scroll keys on keypad. Default is OFF.
@@ -2108,16 +2107,16 @@ Should the leading and ending stars, slashes, strokes and dashes also be
 displayed, even when they are highlighting marks?
 .RS +1i
 .IP 0 3
-\fBnein\fP
+\fBno\fP
 .IP 1
-ja, \fBMarkierung\fP anzeigen
+yes, \fBdisplay mark\fP
 .IP 2
-ein \fBLeerzeichen\fP ausgeben
+print a \fBspace\fP instead
 .RE
 .TP 
 \fBword_highlight\fP
 Enable word highlighting. See \fBword_h_display_marks\fP for the options
-available. If \fBuse_color\fP is enabled the colors specified in
+available. If \fBuse_color\fP is enabled the colours specified in
 \fBcol_markdash\fP, \fBcol_markslash\fP, \fBcol_markstar\fP and \fBcol_markstroke\fP are
 used for word highlighting else the character attributes specified in
 \fBmono_markdash\fP, \fBmono_markslash\fP, \fBmono_markstar\fP and \fBmono_markstroke\fP
@@ -2186,11 +2185,11 @@ Default encoding scheme use in MIME letters. quoted\-printable is a good
 choice here.
 .TP 
 \fBdisable_gnksa_domain_check\fP
-Unregistrierte Top\-Level\-Domains zulassen
+Allow unregistered top level domains
 .TP 
 \fBdisable_sender\fP
-Keinen \*(rqSender:\*(rq Header erzeugen. Falls \fBinews_prog\fP nicht auf \-\-internal
-steht wird die Einstellung ignoriert.
+Don't generate a \*(rqSender:\*(rq header. This has no effect if \fBinews_prog\fP is
+not set to \-\-internal.
 .TP 
 \fBspooldir\fP
 Base of your newsspool (Bnews, Cnews and INN traditional spool style),
@@ -2204,7 +2203,7 @@ same dir as \fIspooldir\fP), common values are \fI/var/spool/overview\fP,
 specified value.
 .TP 
 \fBoverviewfile\fP
-Names einer Overview\-Datei, übliche Namen sind \fI.overview\fP oder
+Name of a single overview file, common values are \fI.overview\fP,
 \fIover.view\fP.
 .TP 
 \fBoverviewfmtfile\fP
@@ -2238,8 +2237,8 @@ setting if your configuration differs.
 \fI/usr/local/share/locale/$LC_MESSAGES/LC_MESSAGES/tin.mo\fP
 .sp
 .RS
-Übersetzung in die in $\fBLC_ALL\fP, $\fBLC_MESSAGES\fP oder $\fBLANG\fP angegebene
-Sprache
+translation into language specified in $\fBLC_ALL\fP, $\fBLC_MESSAGES\fP or
+$\fBLANG\fP
 .RE
 .PP
 
@@ -2264,10 +2263,10 @@ Each line consists of four space\-separated fields "\fIname\fP \fIhighmark\fP
 \fIlowmark\fP \fIflags\fP".
 .TP 
 \fBname\fP
-ist der Name der Newsgruppe
+is the name of the newsgroup
 .TP 
 \fBhighmark\fP
-die höchste Artikelnummer die je in der Gruppe benutzt wurde
+is the highest article number that has been used in that newsgroup
 .TP 
 \fBlowmark\fP
 is the lowest article number in the group; this number is not guaranteed to
@@ -2287,16 +2286,16 @@ local postings are allowed
 no local postings are allowed, only remote ones
 .TP 
 \fBm\fP
-die Gruppe ist moderiert und alle Postings müssen approved werden
+the group is moderated and all postings must be approved
 .TP 
 \fBj\fP
 articles in this group are not kept, but only passed on
 .TP 
 \fBx\fP
-in diese Gruppe darf nicht geposted werden
+articles cannot be posted to this newsgroup
 .TP 
 \fB=foo.bar\fP
-Artikel werden auf dem Server in der Gruppe \*(rqfoo.bar\*(rq abgelegt
+articles are locally filed into the \*(rqfoo.bar\*(rq group
 .RE
 .TP 
 \fBtin\fP(1)
@@ -2315,14 +2314,14 @@ new group is created. Each line consist of three space\-separated fields
 "\fIname\fP \fItime\fP \fIcreator\fP".
 .TP 
 \fBname\fP
-ist der Name der Newsgruppe
+is the name of the newsgroup
 .TP 
 \fBtime\fP
 is the time when the group was created, expressed as the number of seconds
 since the epoch.
 .TP 
 \fBcreator\fP
-die Mailadresse der Person die die Gruppe angelegt hat.
+is the electronic mail address of the person who created the group.
 .TP 
 \fBtin\fP(1)
 only tries to read the file if you read directly from the local spool, if
@@ -2340,10 +2339,10 @@ created. Each line consist of two tab\-separated fields
 "\fIgroup.name\fP	\fIone\-line description\fP".
 .TP 
 \fBgroup.name\fP
-ist der Name der Newsgruppe
+is the name of the newsgroup
 .TP 
 \fBone\-line description\fP
-ist die zugehörige Kurzbeschreibung
+is a short single\-line description of the group
 .TP 
 \fBtin\fP(1)
 only tries to read the file if you read directly from the local spool, if
@@ -2385,7 +2384,7 @@ SUBSCRIPTIONS (\fBRFC6048\fP) command instead.
 .RE
 .PP
 
-.SH "SIEHE AUCH"
+.SH "SEE ALSO"
 \fBelm\fP(1), \fBinews\fP(1), \fBispell\fP(1), \fBlp\fP(1), \fBlpr\fP(1), \fBmetamail\fP(1) 
 \fBperl\fP(1), \fBpgp\fP(1), \fBrn\fP(1), \fBshar\fP(1), \fBslrnface\fP(1), \fBtin\fP(1),
 \fBxterm\fP(1x), \fBiconv\fP(3), \fBiconv_open\fP(3), \fBnl_langinfo\fP(3), \fBpcre\fP(3),

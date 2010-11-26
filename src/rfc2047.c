@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2009-03-18
+ *  Updated   : 2010-09-15
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2010 Chris Blum <chris@resolution.de>
@@ -49,8 +49,17 @@
  * in unstructured headers like Subject, Keyword and Summary
  * c.f. RFC 2047
  */
-#define isbetween(c, s) (isspace((unsigned char) c) || ((s) && ((c) == '(' || (c) == ')' || (c) == '"')))
-
+/*
+ * On some systems isspace(0xa0) returns TRUE (UTF-8 locale).
+ * 0xa0 can be the second byte of a UTF-8 character and must not be
+ * treated as whitespace, otherwise Q and B encoding fails.
+ */
+#if 0
+#	define isbetween(c, s) (isspace((unsigned char) c) || ((s) && ((c) == '(' || (c) == ')' || (c) == '"')))
+#else
+#	define my_isspace(c) ((c) == '\t' || (c) == '\n' || (c) == '\v' || (c) == '\f' || (c) == '\r' || (c) == ' ')
+#	define isbetween(c, s) (my_isspace(c) || ((s) && ((c) == '(' || (c) == ')' || (c) == '"')))
+#endif /* 0 */
 #define NOT_RANKED 255
 
 #if 0
@@ -1188,8 +1197,11 @@ compose_mail_mime_forwarded(
 	}
 
 	/* Put it all together */
-	if ((fp = fopen(filename, "w")) == NULL)
+	if ((fp = fopen(filename, "w")) == NULL) {
+		fclose(headerfp);
+		fclose(entityfp);
 		return;
+	}
 
 	rewind(headerfp);
 	while ((line = tin_fgets(headerfp, TRUE))) {

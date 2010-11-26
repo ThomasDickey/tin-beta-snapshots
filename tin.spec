@@ -1,6 +1,6 @@
 Name: tin
 Summary: tin - an easy-to-use USENET news reader
-Version: 1.9.5
+Version: 1.9.6
 Release: 1
 Copyright: BSD
 Group: Applications/News

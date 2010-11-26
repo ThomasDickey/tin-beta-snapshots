@@ -4,7 +4,7 @@
 # based on a script by Michael Elkins <me@cs.hmc.edu>
 # 2001-01-31 <urs@tin.org>
 #
-# URLs must start with a scheme and shell metas must be allready quoted
+# URLs must start with a scheme and shell metas must be already quoted
 # (tin doesn't recognize URLs without a scheme and it quotes the metas)
 #
 # TODO: check $BROWSER?
@@ -51,7 +51,7 @@ case $method in
 		;;
 
 	news|snews)
-		# usualy ment for reading news on the local server
+		# usually meant for reading news on the local server
 		if test x$DISPLAY = x; then
 			lynx $url || exit 1
 		else
@@ -60,7 +60,7 @@ case $method in
 		;;
 
 	nntp)
-		# usualy ment for reading news via NNTP
+		# usually meant for reading news via NNTP
 		# needs a special case as netscape can't handle nntp-URLs
 		# *sigh*
 		lynx $url || exit 1

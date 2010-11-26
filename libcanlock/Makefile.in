@@ -11,37 +11,37 @@ LIBOBJS = src/sha1.o src/hmac_sha1.o src/base64.o src/canlock.o
 LOCKLIB = $(PRELIB)canlock.a
 
 .c$o :
-@SHOW_CC@
-	 @ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	@SHOW_CC@
+	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-all: hmactest canlocktest
+all : hmactest canlocktest
 
-hmactest: t/hmactest.c $(LOCKLIB)
-@SHOW_CC@
+hmactest : t/hmactest.c $(LOCKLIB)
+	@SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) t/$@.c -o $@ $(LDFLAGS)
 
-canlocktest: t/canlocktest.c $(LOCKLIB)
-@SHOW_CC@
+canlocktest : t/canlocktest.c $(LOCKLIB)
+	@SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) t/$@.c -o $@ $(LDFLAGS)
 
-src/base64.o: src/base64.c include/base64.h
-src/canlock.o: src/canlock.c include/canlock.h
-src/hmac_sha1.o: src/hmac_sha1.c include/hmac_sha1.h
-src/sha1.o: src/sha1.c include/sha1.h
+src/base64.o : src/base64.c include/base64.h
+src/canlock.o : src/canlock.c include/canlock.h
+src/hmac_sha1.o : src/hmac_sha1.c include/hmac_sha1.h
+src/sha1.o : src/sha1.c include/sha1.h
 
-lib: $(LOCKLIB)
-$(LOCKLIB): $(LIBOBJS)
+lib : $(LOCKLIB)
+$(LOCKLIB) : $(LIBOBJS)
 	@-$(RM) -f $(LOCKLIB)
 	$(ARCHIVE) $(LOCKLIB) $(LIBOBJS)
 	$(RANLIB) $(LOCKLIB)
 
-clean:
+clean :
 	@-rm -f src/*.o t/*.o t/*.out *.gmon gmon.*
 
-distclean: clean
+distclean : clean
 	@-rm -f *.a canlocktest hmactest *.exe *.h
 
-test: all
+test : all
 	@echo "hmactest: "
 	@./hmactest > t/hmactest.out || echo hmm
 	@diff t/hmactest.shouldbe t/hmactest.out && echo " Pass." || echo " **FAIL**"

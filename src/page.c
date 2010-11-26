@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-09-27
+ *  Updated   : 2010-10-29
  *  Notes     :
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -63,6 +63,8 @@ static FILE *note_fp;			/* active stream (raw or cooked) */
 static int artlines;			/* active # of lines in pager */
 static t_lineinfo *artline;	/* active 'lineinfo' data */
 
+static t_url *url_list;
+
 t_openartinfo pgart =	/* Global context of article open in the pager */
 	{
 		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FALSE, 0 },
@@ -94,20 +96,30 @@ static t_bool reveal_ctrl_l;	/* set when ^L hiding is off */
 /*
  * Local prototypes
  */
+static int build_url_list(void);
 static int load_article(int new_respnum, struct t_group *group);
 static int prompt_response(int ch, int curr_respnum);
 static int scroll_page(int dir);
 static t_bool deactivate_next_ctrl_l(void);
 static t_bool activate_last_ctrl_l(void);
+static t_bool process_url(int n);
+static t_bool url_page(void);
 static t_function page_left(void);
 static t_function page_right(void);
 static t_function page_mouse_action(t_function (*left_action) (void), t_function (*right_action) (void));
+static t_function url_left(void);
+static t_function url_right(void);
+static void build_url_line(int i);
 static void draw_page_header(const char *group);
+static void draw_url_arrow(void);
+static void free_url_list(void);
 static void preprocess_info_message(FILE *info_fh);
 static void print_message_page(FILE *file, t_lineinfo *messageline, size_t messagelines, size_t base_line, size_t begin, size_t end, int help_level);
 static void process_search(int *lcurr_line, size_t message_lines, size_t screen_lines, int help_level);
-static void process_url(void);
+static void show_url_page(void);
 static void invoke_metamail(FILE *fp);
+
+static t_menu urlmenu = { 0, 0, 0, show_url_page, draw_url_arrow, build_url_line };
 
 #ifdef XFACE_ABLE
 #	define XFACE_SHOW()	if (tinrc.use_slrnface) \
@@ -302,13 +314,11 @@ show_page(
 	char buf[LEN];
 	char key[MAXKEYLEN];
 	int i, j, n = 0;
-	int old_sort_art_type = tinrc.sort_article_type;
 	int art_type = GROUP_TYPE_NEWS;
+	long old_artnum = 0L;
 	t_bool mouse_click_on = TRUE;
 	t_bool repeat_search;
 	t_function func;
-
-	filtered_articles = FALSE;	/* used in thread level */
 
 	if (group->attribute->mailing_list != NULL)
 		art_type = GROUP_TYPE_MAIL;
@@ -325,8 +335,6 @@ show_page(
 
 	if (srch_lineno != -1)
 		process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
-
-	resize_article(TRUE, &pgart);
 
 	forever {
 		if ((func = handle_keypad(page_left, page_right, page_mouse_action, page_keys)) == GLOBAL_SEARCH_REPEAT) {
@@ -565,6 +573,10 @@ page_goto_next_unread:
 				}
 				break;
 
+			case GLOBAL_SEARCH_REPEAT:
+				info_message(_(txt_no_prev_search));
+				break;
+
 			case GLOBAL_SEARCH_SUBJECT_FORWARD:	/* search in article */
 			case GLOBAL_SEARCH_SUBJECT_BACKWARD:
 				if (search_article((func == GLOBAL_SEARCH_SUBJECT_FORWARD), repeat_search, search_line, artlines, artline, reveal_ctrl_l_lines, note_fp) == -1)
@@ -678,30 +690,46 @@ page_goto_next_unread:
 
 			case GLOBAL_QUICK_FILTER_SELECT:	/* quickly auto-select article */
 			case GLOBAL_QUICK_FILTER_KILL:		/* quickly kill article */
-				if ((filtered_articles = quick_filter(func, group, &arts[this_resp])))
-					goto return_to_index;
-
-				draw_page(group->name, 0);
+				if (quick_filter(func, group, &arts[this_resp])) {
+					old_artnum = arts[this_resp].artnum;
+					unfilter_articles(group);
+					filter_articles(group);
+					make_threads(group, FALSE);
+					if ((n = find_artnum(old_artnum)) == -1 || which_thread(n) == -1) /* We have lost the thread */
+						return GRP_KILLED;
+					this_resp = n;
+					draw_page(group->name, 0);
+					info_message((func == GLOBAL_QUICK_FILTER_KILL) ? _(txt_info_add_kill) : _(txt_info_add_select));
+				}
 				break;
 
 			case GLOBAL_MENU_FILTER_SELECT:		/* auto-select article menu */
 			case GLOBAL_MENU_FILTER_KILL:			/* kill article menu */
 				XFACE_CLEAR();
 				if (filter_menu(func, group, &arts[this_resp])) {
-					if ((filtered_articles = filter_articles(group)))
-						goto return_to_index;
+					old_artnum = arts[this_resp].artnum;
+					unfilter_articles(group);
+					filter_articles(group);
+					make_threads(group, FALSE);
+					if ((n = find_artnum(old_artnum)) == -1 || which_thread(n) == -1) /* We have lost the thread */
+						return GRP_KILLED;
+					this_resp = n;
 				}
 				draw_page(group->name, 0);
 				break;
 
 			case GLOBAL_EDIT_FILTER:
 				XFACE_CLEAR();
-				if (!invoke_editor(filter_file, filter_file_offset, NULL))
-					break;
-				unfilter_articles();
-				(void) read_filter_file(filter_file);
-				if ((filtered_articles = filter_articles(group)))
-					goto return_to_index;
+				if (invoke_editor(filter_file, filter_file_offset, NULL)) {
+					old_artnum = arts[this_resp].artnum;
+					unfilter_articles(group);
+					(void) read_filter_file(filter_file);
+					filter_articles(group);
+					make_threads(group, FALSE);
+					if ((n = find_artnum(old_artnum)) == -1 || which_thread(n) == -1) /* We have lost the thread */
+						return GRP_KILLED;
+					this_resp = n;
+				}
 				draw_page(group->name, 0);
 				break;
 
@@ -792,21 +820,10 @@ page_goto_next_unread:
 			case GLOBAL_QUIT:	/* return to index page */
 return_to_index:
 				XFACE_CLEAR();
-				if (tinrc.sort_article_type != old_sort_art_type)
-					make_threads(group, TRUE);
-
 				i = which_thread(this_resp);
 				if (threadnum)
 					*threadnum = which_response(this_resp);
 
-				if (filtered_articles) {
-					int old_top = top_art;
-					long old_artnum = arts[this_resp].artnum;
-
-					filter_articles(group);
-					make_threads(group, FALSE);
-					i = find_new_pos(old_top, old_artnum, i);
-				}
 				return i;
 
 			case GLOBAL_TOGGLE_INVERSE_VIDEO:	/* toggle inverse video */
@@ -831,7 +848,13 @@ return_to_index:
 
 			case GLOBAL_OPTION_MENU:	/* option menu */
 				XFACE_CLEAR();
+				old_artnum = arts[this_resp].artnum;
 				config_page(group->name);
+				if ((this_resp = find_artnum(old_artnum)) == -1 || which_thread(this_resp) == -1) { /* We have lost the thread */
+					pos_first_unread_thread();
+					return GRP_EXIT;
+				}
+				fixup_thread(this_resp, FALSE);
 				draw_page(group->name, 0);
 				break;
 
@@ -968,18 +991,22 @@ return_to_index:
 
 			case PAGE_VIEW_ATTACHMENTS:
 				XFACE_SUPPRESS();
-				decode_save_mime(&pgart, FALSE);
+				attachment_page(&pgart);
 				draw_page(group->name, 0);
 				XFACE_SHOW();
 				break;
 
 			case PAGE_VIEW_URL:
 				if (!show_all_headers) { /* cooked mode? */
+					t_bool success;
+
 					XFACE_SUPPRESS();
 					resize_article(FALSE, &pgart); /* unbreak long lines */
-					process_url();
+					success = url_page();
 					resize_article(TRUE, &pgart); /* rebreak long lines */
 					draw_page(group->name, 0);
+					if (!success)
+						info_message(_(txt_url_done));
 					XFACE_SHOW();
 				}
 				break;
@@ -1168,25 +1195,15 @@ draw_page(
 	if (curr_line + ARTLINES >= artlines) {
 		char buf[LEN];
 		int len;
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		wchar_t *wbuf;
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 		STRCPY(buf, (arts[this_resp].thread != -1) ? _(txt_next_resp) : _(txt_last_resp));
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if ((wbuf = char2wchar_t(buf)) != NULL) {
-			len = wcswidth(wbuf, wcslen(wbuf) + 1);
-			free(wbuf);
-		} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			len = (int) strlen(buf);
-
+		len = strwidth(buf);
 		clear_message();
 		MoveCursor(cLINES, cCOLS - len - (1 + BLANK_PAGE_COLS));
 		StartInverse();
 		my_fputs(buf, stdout);
-		my_flush();
 		EndInverse();
+		my_flush();
 	} else
 		draw_percent_mark(curr_line + ARTLINES, artlines);
 
@@ -1241,12 +1258,6 @@ invoke_metamail(
 
 	/* This is needed if we are viewing the raw art */
 	fseek(fp, offset, SEEK_SET);	/* goto old position */
-
-	/* FIXME: values do differ for different languages */
-	MoveCursor(cLINES, cCOLS - 20 - BLANK_PAGE_COLS);
-	StartInverse();
-	my_flush();
-	EndInverse();
 }
 
 
@@ -1325,7 +1336,12 @@ draw_page_header(
 	/* group name */
 	if ((wtmp = char2wchar_t(group)) != NULL) {
 		/* wconvert_to_printable(wtmp); */
-		if ((i = wcswidth(wtmp, wcslen(wtmp))) < len)
+		if (tinrc.abbreviate_groupname)
+			wtmp2 = abbr_wcsgroupname(wtmp, len);
+		else
+			wtmp2 = wstrunc(wtmp, len);
+
+		if ((i = wcswidth(wtmp2, wcslen(wtmp2))) < len)
 			len = i;
 
 		center_pos = (cCOLS - len) / 2;
@@ -1334,7 +1350,6 @@ draw_page_header(
 		for (; cur_pos < center_pos; cur_pos++)
 			my_fputc(' ', stdout);
 
-		wtmp2 = wstrunc(wtmp, len);
 		my_fputws(wtmp2, stdout);
 		cur_pos += wcswidth(wtmp2, wcslen(wtmp2));
 		free(wtmp2);
@@ -1531,7 +1546,12 @@ draw_page_header(
 	len = cCOLS - 2 * MAX(cur_pos, right_len) - 3;
 
 	/* group name */
-	if ((i = strlen(group)) < len)
+	if (tinrc.abbreviate_groupname)
+		tmp = abbr_groupname(group, len);
+	else
+		tmp = strunc(group, len);
+
+	if ((i = strlen(tmp)) < len)
 		len = i;
 
 	center_pos = (cCOLS - len) / 2;
@@ -1540,7 +1560,6 @@ draw_page_header(
 	for (; cur_pos < center_pos; cur_pos++)
 		my_fputc(' ', stdout);
 
-	tmp = strunc(group, len);
 	my_fputs(tmp, stdout);
 	cur_pos += strlen(tmp);
 	free(tmp);
@@ -1715,6 +1734,9 @@ load_article(
 		switch (ret) {
 			case ART_UNAVAILABLE:
 				art_mark(group, &arts[new_respnum], ART_READ);
+				/* prevent retagging as unread in unfilter_articles() */
+				if (arts[new_respnum].killed == ART_KILLED_UNREAD)
+					arts[new_respnum].killed = ART_KILLED;
 				art_closed = TRUE;
 				wait_message(1, _(txt_art_unavailable));
 				return GRP_ARTUNAVAIL;
@@ -1748,6 +1770,13 @@ load_article(
 
 	art_mark(group, &arts[this_resp], ART_READ);
 
+	/*
+	 * Change status if art was unread before killing to
+	 * prevent retagging as unread in unfilter_articles()
+	 */
+	if (arts[this_resp].killed == ART_KILLED_UNREAD)
+		arts[this_resp].killed = ART_KILLED;
+
 	if (pgart.cooked == NULL) { /* harmony corruption */
 		wait_message(1, _(txt_art_unavailable));
 		return GRP_ARTUNAVAIL;
@@ -1762,7 +1791,12 @@ load_article(
 	artline = pgart.cookl;
 	artlines = pgart.cooked_lines;
 	search_line = 0;
-	reset_srch_offsets();
+	/*
+	 * Reset offsets only if not invoked during 'body search' (srch_lineno != -1)
+	 * otherwise the found string will not be highlighted
+	 */
+	if (srch_lineno == -1)
+		reset_srch_offsets();
 	rotate = 0;			/* normal mode, not rot13 */
 	reveal_ctrl_l = FALSE;
 	reveal_ctrl_l_lines = -1;	/* all ^L's active */
@@ -1977,58 +2011,6 @@ toggle_raw(
 	curr_line = 0;
 	show_all_headers = bool_not(show_all_headers);
 	draw_page(group->name, 0);
-}
-
-
-static void
-process_url(
-	void)
-{
-	char *ptr;
-	char buf[LEN];
-	char ubuf[LEN];
-	char url[LEN];
-	int i;
-	int offsets[6];
-	int offsets_size = ARRAY_SIZE(offsets);
-
-	/*
-	 * TODO: handle mailto: and news: (not NNTP) URLs internally
-	 */
-	for (i = curr_line; i < artlines; ++i) {
-		if (!(artline[i].flags & (C_URL | C_NEWS | C_MAIL)))
-			continue;
-
-		/*
-		 * Line contains a URL, so read it in
-		 */
-		fseek(pgart.cooked, artline[i].offset, SEEK_SET);
-		ptr = fgets(buf, sizeof(buf), pgart.cooked);
-
-		/*
-		 * Step through, finding URL's
-		 */
-		forever {
-			/* any matches left? */
-			if (pcre_exec(url_regex.re, url_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
-				if (pcre_exec(mail_regex.re, mail_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
-					if (pcre_exec(news_regex.re, news_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
-						break;
-
-			*(ptr + offsets[1]) = '\0';
-
-			if (prompt_default_string("URL:", url, sizeof(url), ptr + offsets[0], HIST_URL)) {
-				if (!*url)			/* Don't try and open nothing */
-					break;
-
-				wait_message(2, _(txt_url_open), url);
-				snprintf(ubuf, sizeof(ubuf), "%s %s", tinrc.url_handler, escape_shell_meta(url, 0));
-				invoke_cmd(ubuf);
-			}
-			ptr += offsets[1] + 1;
-		}
-	}
-	info_message(_(txt_url_done));
 }
 
 
@@ -2273,4 +2255,330 @@ preprocess_info_message(
 
 	num_info_lines--;
 	infoline = my_realloc(infoline, sizeof(t_lineinfo) * num_info_lines);
+}
+
+
+/*
+ * URL menu
+ */
+static t_function
+url_left(
+	void)
+{
+	return GLOBAL_QUIT;
+}
+
+
+static t_function
+url_right(
+	void)
+{
+	return URL_SELECT;
+}
+
+
+static void
+show_url_page(
+	void)
+{
+	int i;
+
+	signal_context = cURL;
+	currmenu = &urlmenu;
+
+	if (urlmenu.curr < 0)
+		urlmenu.curr = 0;
+
+	ClearScreen();
+	set_first_screen_item();
+	center_line(0, TRUE, _(txt_url_menu));
+
+	for (i = urlmenu.first; i < urlmenu.first + NOTESLINES && i < urlmenu.max; ++i)
+		build_url_line(i);
+
+	show_mini_help(URL_LEVEL);
+
+	draw_url_arrow();
+}
+
+
+static t_bool
+url_page(
+	void)
+{
+	char key[MAXKEYLEN];
+	t_function func;
+	t_menu *oldmenu = NULL;
+
+	if (currmenu)
+		oldmenu = currmenu;
+	urlmenu.curr = 0;
+	urlmenu.max = build_url_list();
+	if (urlmenu.max == 0)
+		return FALSE;
+
+	clear_note_area();
+	show_url_page();
+	set_xclick_off();
+
+	forever {
+		switch ((func = handle_keypad(url_left, url_right, NULL, url_keys))) {
+			case GLOBAL_QUIT:
+				free_url_list();
+				if (oldmenu)
+					currmenu = oldmenu;
+				return TRUE;
+
+			case DIGIT_1:
+			case DIGIT_2:
+			case DIGIT_3:
+			case DIGIT_4:
+			case DIGIT_5:
+			case DIGIT_6:
+			case DIGIT_7:
+			case DIGIT_8:
+			case DIGIT_9:
+				if (urlmenu.max)
+					prompt_item_num(func_to_key(func, url_keys), _(txt_url_select));
+				break;
+
+#ifndef NO_SHELL_ESCAPE
+			case GLOBAL_SHELL_ESCAPE:
+				do_shell_escape();
+				break;
+#endif /* !NO_SHELL_ESCAPE */
+
+			case GLOBAL_HELP:
+				show_help_page(URL_LEVEL, _(txt_url_menu_com));
+				show_url_page();
+				break;
+
+			case GLOBAL_FIRST_PAGE:
+				top_of_list();
+				break;
+
+			case GLOBAL_LAST_PAGE:
+				end_of_list();
+				break;
+
+			case GLOBAL_REDRAW_SCREEN:
+				my_retouch();
+				show_url_page();
+				break;
+
+			case GLOBAL_LINE_DOWN:
+				move_down();
+				break;
+
+			case GLOBAL_LINE_UP:
+				move_up();
+				break;
+
+			case GLOBAL_PAGE_DOWN:
+				page_down();
+				break;
+
+			case GLOBAL_PAGE_UP:
+				page_up();
+				break;
+
+			case GLOBAL_SCROLL_DOWN:
+				scroll_down();
+				break;
+
+			case GLOBAL_SCROLL_UP:
+				scroll_up();
+				break;
+
+			case GLOBAL_TOGGLE_HELP_DISPLAY:
+				toggle_mini_help(URL_LEVEL);
+				show_url_page();
+				break;
+
+			case GLOBAL_TOGGLE_INFO_LAST_LINE:
+				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
+				show_url_page();
+				break;
+
+			case URL_SELECT:
+				if (urlmenu.max) {
+					if (process_url(urlmenu.curr))
+						show_url_page();
+					else
+						draw_url_arrow();
+				}
+				break;
+
+			case GLOBAL_SEARCH_SUBJECT_FORWARD:
+			case GLOBAL_SEARCH_SUBJECT_BACKWARD:
+			case GLOBAL_SEARCH_REPEAT:
+				if (func == GLOBAL_SEARCH_REPEAT && last_search != GLOBAL_SEARCH_SUBJECT_FORWARD && last_search != GLOBAL_SEARCH_SUBJECT_BACKWARD)
+					info_message(_(txt_no_prev_search));
+				else if (urlmenu.max) {
+					int new_pos, old_pos = urlmenu.curr;
+
+					new_pos = generic_search((func == GLOBAL_SEARCH_SUBJECT_FORWARD), (func == GLOBAL_SEARCH_REPEAT), urlmenu.curr, urlmenu.max - 1, URL_LEVEL);
+					if (new_pos != old_pos)
+						move_to_item(new_pos);
+				}
+				break;
+
+			default:
+				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, url_keys)));
+				break;
+		}
+	}
+}
+
+
+static void
+draw_url_arrow(
+	void)
+{
+	draw_arrow_mark(INDEX_TOP + urlmenu.curr - urlmenu.first);
+	if (tinrc.info_in_last_line) {
+		t_url *lptr;
+
+		lptr = find_url(urlmenu.curr);
+		info_message("%s", lptr->url);
+	} else if (urlmenu.curr == urlmenu.max - 1)
+		info_message(_(txt_end_of_urls));
+}
+
+
+t_url *
+find_url(
+	int n)
+{
+	t_url *lptr;
+
+	lptr = url_list;
+	while(n-- > 0 && lptr->next)
+		lptr = lptr->next;
+
+	return lptr;
+}
+
+
+static void
+build_url_line(
+	int i)
+{
+	char *sptr;
+	int len = cCOLS - 9;
+	t_url *lptr;
+
+#ifdef USE_CURSES
+	/*
+	 * Allocate line buffer
+	 * make it the same size like in !USE_CURSES case to simplify some code
+	 */
+	sptr = my_malloc(cCOLS + 2);
+#else
+	sptr = screen[INDEX2SNUM(i)].col;
+#endif /* USE_CURSES */
+
+	lptr = find_url(i);
+	snprintf(sptr, cCOLS, "  %s  %-*.*s%s", tin_ltoa(i + 1, 4), len, len, lptr->url, cCRLF);
+	WriteLine(INDEX2LNUM(i), sptr);
+
+#ifdef USE_CURSES
+	free(sptr);
+#endif /* USE_CURSES */
+}
+
+
+static t_bool
+process_url(
+	int n)
+{
+	char *url, *url_esc;
+	size_t len;
+	t_url *lptr;
+
+	lptr = find_url(n);
+	len = strlen(lptr->url);
+	url = my_malloc(len + 1);
+	if (prompt_default_string("URL:", url, len, lptr->url, HIST_URL)) {
+		if (!*url) {			/* Don't try and open nothing */
+			free(url);
+			return FALSE;
+		}
+		wait_message(2, _(txt_url_open), url);
+		url_esc = escape_shell_meta(url, no_quote);
+		len = strlen(url_esc) + strlen(tinrc.url_handler) + 2;
+		url = my_realloc(url, len);
+		snprintf(url, len, "%s %s", tinrc.url_handler, url_esc);
+		invoke_cmd(url);
+		free(url);
+		cursoroff();
+		return TRUE;
+	}
+	free(url);
+	return FALSE;
+}
+
+
+static int
+build_url_list(
+	void)
+{
+	char *ptr;
+	int i, count = 0;
+	int offsets[6];
+	int offsets_size = ARRAY_SIZE(offsets);
+	t_url *lptr = NULL;
+
+	for (i = 0; i < artlines; ++i) {
+		if (!(artline[i].flags & (C_URL | C_NEWS | C_MAIL)))
+			continue;
+
+		/*
+		 * Line contains a URL, so read it in
+		 */
+		fseek(pgart.cooked, artline[i].offset, SEEK_SET);
+		if ((ptr = tin_fgets(pgart.cooked, FALSE)) == NULL)
+			continue;
+
+		/*
+		 * Step through, finding URL's
+		 */
+		forever {
+			/* any matches left? */
+			if (pcre_exec(url_regex.re, url_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
+				if (pcre_exec(mail_regex.re, mail_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
+					if (pcre_exec(news_regex.re, news_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
+						break;
+
+			*(ptr + offsets[1]) = '\0';
+
+			if (!url_list)
+				lptr = url_list = my_malloc(sizeof(t_url));
+			else {
+				lptr->next = my_malloc(sizeof(t_url));
+				lptr = lptr->next;
+			}
+			lptr->url = my_strdup(ptr + offsets[0]);
+			lptr->next = NULL;
+			++count;
+
+			ptr += offsets[1] + 1;
+		}
+	}
+	return count;
+}
+
+
+static void
+free_url_list(
+	void)
+{
+	t_url *p, *q;
+
+	for (p = url_list; p != NULL; p = q) {
+		q = p->next;
+		free(p->url);
+		free(p);
+	}
+	url_list = NULL;
 }

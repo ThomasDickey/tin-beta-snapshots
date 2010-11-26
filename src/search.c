@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-11-08
+ *  Updated   : 2010-10-01
  *  Notes     :
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -182,6 +182,80 @@ search_config(
 		FreeAndNull(search_regex.re);
 		FreeAndNull(search_regex.extra);
 	}
+	return result;
+}
+
+
+/*
+ * called by save.c (search for attachment) and page.c (search for URL)
+ */
+int
+generic_search(
+	t_bool forward,
+	t_bool repeat,
+	int current,
+	int last,
+	int level)
+{
+	char *pattern;
+	char buf[BUFSIZ];
+	const char *name, *charset;
+	int n = current;
+	int result = current;
+	t_bool found = FALSE;
+	t_part *part;
+	t_url *urlptr;
+
+	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
+		return result;
+
+	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, PCRE_CASELESS)))
+		return result;
+
+	do {
+		if (n == 0 && !forward)
+			n = last;
+		else {
+			if (n == last && forward)
+				n = 0;
+			else
+				n += forward ? 1 : -1;
+		}
+		switch (level) {
+			case ATTACHMENT_LEVEL:
+				part = get_part(n);
+				if (!(name = get_filename(part->params))) {
+					if (!(name = part->description))
+						name = _(txt_attachment_no_name);
+				}
+				charset = get_param(part->params, "charset");
+				snprintf(buf, sizeof(buf), "%s %s/%s %s, %s", name, content_types[part->type], part->subtype, content_encodings[part->encoding], charset ? charset : "");
+				break;
+
+			case URL_LEVEL:
+				urlptr = find_url(n);
+				snprintf(buf, sizeof(buf), "%s", urlptr->url);
+				break;
+
+			default:
+				buf[0] = '\0';
+				break;
+		}
+		if (match_regex(buf, pattern, &search_regex, TRUE)) {
+			result = n;
+			found = TRUE;
+			break;
+		}
+	} while (n != current);
+
+	clear_message();
+	if (tinrc.wildcard) {
+		FreeAndNull(search_regex.re);
+		FreeAndNull(search_regex.extra);
+	}
+	if (!found)
+		info_message(_(txt_no_match));
+
 	return result;
 }
 

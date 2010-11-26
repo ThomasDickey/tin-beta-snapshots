@@ -3,7 +3,7 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2009-12-19
+ *  Updated   : 2010-04-29
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
@@ -50,7 +50,7 @@
  * NB: This is different from the NNTP server timing us out due to inactivity
  */
 #if defined(HAVE_ALARM) && defined(SIGALRM)
-#	define NNTP_READ_TIMEOUT	60
+#	define NNTP_READ_TIMEOUT	120
 #endif /* HAVE_ALARM && SIGALRM */
 
 /*
@@ -69,7 +69,7 @@
  *	4xx  Command was correct, but couldn't be performed
  *	     for some specified reason.
  *	5xx  Command unimplemented, incorrect, or a
- *	     program error has occured.
+ *	     program error has occurred.
  *
  * Second digit:
  *
@@ -88,65 +88,66 @@
 #endif /* 0 */
 
 /* TODO: cleanup against RFC 2980, RFC 3977 */
-#define	INF_HELP		100	/* Help text on way */
-#define	INF_CAPABILITIES	101	/* Capability list follows */
+#define INF_HELP		100	/* Help text on way */
+#define INF_CAPABILITIES	101	/* Capability list follows */
 #define INF_DATE		111 /* yyyymmddhhmmss Server date and time */
 
-#define	OK_CANPOST		200	/* Hello; you can post */
-#define	OK_NOPOST		201	/* Hello; you can't post */
-#define	OK_EXTENSIONS	202	/* extensions supported follow */
-#define	OK_GOODBYE		205	/* Closing connection */
-#define	OK_GROUP		211	/* Group selected */
-#define	OK_GROUPS		215	/* Newsgroups follow */
-#define	OK_MOTD			215	/* News motd follows */
+#define OK_CANPOST		200	/* Hello; you can post */
+#define OK_NOPOST		201	/* Hello; you can't post */
+#define OK_EXTENSIONS	202	/* extensions supported follow */
+#define OK_GOODBYE		205	/* Closing connection */
+#define OK_GROUP		211	/* Group selected */
+#define OK_GROUPS		215	/* Newsgroups follow */
+#define OK_MOTD			215	/* News motd follows */
 
-#define	OK_ARTICLE		220	/* Article (head & body) follows */
-#define	OK_HEAD			221	/* Head follows */
-#define	OK_BODY			222	/* Body follows */
-#define	OK_NOTEXT		223	/* No text sent -- stat, next, last */
-#define	OK_XOVER		224	/* .overview data follows */
-#define	OK_HDR			225 /* headers follow */
-#define	OK_NEWNEWS		230	/* New articles by message-id follow */
-#define	OK_NEWGROUPS	231	/* New newsgroups follow */
-#define	OK_XFERED		235	/* Article transferred successfully */
-#define	OK_POSTED		240	/* Article posted successfully */
-#define	OK_AUTHSYS		280	/* Authorization system ok */
-#define	OK_AUTH			281	/* Authorization (user/pass) ok */
-#define	OK_BIN			282	/* binary data follows */
-#define	OK_LIST			282	/* list follows */
+#define OK_ARTICLE		220	/* Article (head & body) follows */
+#define OK_HEAD			221	/* Head follows */
+#define OK_BODY			222	/* Body follows */
+#define OK_NOTEXT		223	/* No text sent -- stat, next, last */
+#define OK_XOVER		224	/* .overview data follows */
+#define OK_HDR			225 /* headers follow */
+#define OK_NEWNEWS		230	/* New articles by message-id follow */
+#define OK_NEWGROUPS	231	/* New newsgroups follow */
+#define OK_XFERED		235	/* Article transferred successfully */
+#define OK_POSTED		240	/* Article posted successfully */
+#define OK_AUTHSYS		280	/* Authorization system ok */
+#define OK_AUTH			281	/* Authorization (user/pass) ok */
+#define OK_BIN			282	/* binary data follows */
+#define OK_LIST			282	/* list follows */
 #define OK_AUTH_SASL	283 /* authentication accepted (with success data) */
 
-#define	CONT_XFER		335	/* Continue to send article */
-#define	CONT_POST		340	/* Continue to post article */
-#define	NEED_AUTHINFO	380	/* authorization is required */
-#define	NEED_AUTHDATA	381	/* <type> authorization data required */
+#define CONT_XFER		335	/* Continue to send article */
+#define CONT_POST		340	/* Continue to post article */
+#define NEED_AUTHINFO	380	/* authorization is required */
+#define NEED_AUTHDATA	381	/* <type> authorization data required */
 #define NEED_AUTHDATA_SASL	383 /* continue with SASL exchange */
 
-#define	ERR_GOODBYE		400	/* Have to hang up for some reason */
-#define	ERR_NOGROUP		411	/* No such newsgroup */
-#define	ERR_NCING		412	/* Not currently in newsgroup */
+#define ERR_GOODBYE		400	/* Have to hang up for some reason */
+#define ERR_STATE		401 /* The client must change the state of the connection */
+#define ERR_NOGROUP		411	/* No such newsgroup */
+#define ERR_NCING		412	/* Not currently in newsgroup */
 
-#define	ERR_NOCRNT		420	/* No current article selected */
-#define	ERR_NONEXT		421	/* No next article in this group */
-#define	ERR_NOPREV		422	/* No previous article in this group */
-#define	ERR_NOARTIG		423	/* No such article in this group */
-#define	ERR_NOART		430	/* No such article at all */
-#define	ERR_GOTIT		435	/* Already got that article, don't send */
-#define	ERR_XFERFAIL		436	/* Transfer failed */
-#define	ERR_XFERRJCT		437	/* Article rejected, don't resend */
-#define	ERR_NOPOST		440	/* Posting not allowed */
-#define	ERR_POSTFAIL		441	/* Posting failed */
-#define	ERR_NOAUTH		480	/* authorization required for command */
-#define	ERR_AUTHFAIL	481 /* Authentication failed/rejected */
-#define	ERR_AUTHSEQ		482 /* Authentication commands issued out of sequence or SASL protocol error */
-#define	ERR_ENCRYPT		483	/* encrpytion required */
+#define ERR_NOCRNT		420	/* No current article selected */
+#define ERR_NONEXT		421	/* No next article in this group */
+#define ERR_NOPREV		422	/* No previous article in this group */
+#define ERR_NOARTIG		423	/* No such article in this group */
+#define ERR_NOART		430	/* No such article at all */
+#define ERR_GOTIT		435	/* Already got that article, don't send */
+#define ERR_XFERFAIL	436	/* Transfer failed */
+#define ERR_XFERRJCT	437	/* Article rejected, don't resend */
+#define ERR_NOPOST		440	/* Posting not allowed */
+#define ERR_POSTFAIL	441	/* Posting failed */
+#define ERR_NOAUTH		480	/* authorization required for command */
+#define ERR_AUTHFAIL	481 /* Authentication failed/rejected */
+#define ERR_AUTHSEQ		482 /* Authentication commands issued out of sequence or SASL protocol error */
+#define ERR_ENCRYPT		483	/* encrpytion required */
 
-#define	ERR_COMMAND		500	/* Command not recognized */
-#define	ERR_CMDSYN		501	/* Command syntax error */
-#define	ERR_ACCESS		502	/* Access to server denied */
-#define	ERR_FAULT		503	/* Program fault, command not performed */
-#define	ERR_MOTD		503	/* No news motd file */
-#define	ERR_AUTHBAD		580	/* Authorization Failed */
+#define ERR_COMMAND		500	/* Command not recognized */
+#define ERR_CMDSYN		501	/* Command syntax error */
+#define ERR_ACCESS		502	/* Access to server denied */
+#define ERR_FAULT		503	/* Program fault, command not performed */
+#define ERR_MOTD		503	/* No news motd file */
+#define ERR_AUTHBAD		580	/* Authorization Failed */
 
 /*
  * RFC 977 defines this; don't change it.
@@ -160,10 +161,13 @@ enum f_type { OVER_T_ERROR, OVER_T_INT, OVER_T_STRING, OVER_T_FSTRING };
 
 /*
  * CAPABILITIES
+ * remember to update init.c and nntplib.c:check_extensions() if you change
+ * t_capabilities
  */
 enum extension_type { NONE, CAPABILITIES, BROKEN };
 
 enum sasl_types { SASL_NONE = 0, SASL_PLAIN = 1, SASL_CRAM_MD5 = 2, SASL_DIGEST_MD5 = 4, SASL_GSSAPI = 8, SASL_EXTERNAL = 16, SASL_OTP = 32, SASL_NTLM = 64, SASL_LOGIN = 128 };
+enum c_algorithms { COMPRESS_NONE, COMPRESS_DEFLATE };
 
 struct t_capabilities {
 	enum extension_type type;		/* NONE, CAPABILITIES, BROKEN */
@@ -195,6 +199,8 @@ struct t_capabilities {
 	t_bool authinfo_sasl:1;			/* AUTHINFO SASL */
 	t_bool authinfo_state:1;		/* AUTHINFO not supported in curent state */
 	enum sasl_types sasl;			/* SASL_NONE, SASL_PLAIN, SASL_CRAM_MD5, SASL_DIGEST_MD5, SASL_GSSAPI, SASL_EXTERNAL, SASL_OTP, SASL_NTLM, SASL_LOGIN */
+	t_bool compress:1;				/* COMPRESS */
+	enum c_algorithms compress_algorithm;	/* COMPRESS_NONE, COMPRESS_DEFLATE */
 #if 0
 	t_bool streaming:1;				/* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
 	t_bool ihave:1;					/* IHAVE: "IHAVE" */

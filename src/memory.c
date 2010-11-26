@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-04-14
+ *  Updated   : 2010-05-16
  *  Notes     :
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -102,10 +102,10 @@ init_alloc(
 	 */
 	max_art = DEFAULT_ARTICLE_NUM;
 
-	arts = my_malloc(sizeof(*arts) * max_art);
+	arts = my_calloc(1, sizeof(*arts) * max_art);
 	base = my_malloc(sizeof(long) * max_art);
 
-	ofmt = my_calloc(1, sizeof(*ofmt) * 9);	/* inital number of overview fields */
+	ofmt = my_calloc(1, sizeof(*ofmt) * 9);	/* initial number of overview fields */
 
 	/*
 	 * save file array
@@ -130,9 +130,13 @@ void
 expand_art(
 	void)
 {
+	int i = max_art;
+
 	max_art += max_art >> 1;		/* increase by 50% */
 	arts = my_realloc(arts, sizeof(*arts) * max_art);
 	base = my_realloc(base, sizeof(long) * max_art);
+	for (; i < max_art; i++)		/* use memset() instead? */
+		arts[i].subject =  arts[i].from = arts[i].xref =  arts[i].refs = arts[i].msgid = NULL;
 }
 
 

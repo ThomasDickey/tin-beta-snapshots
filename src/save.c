@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-07-17
+ *  Updated   : 2010-11-13
  *  Notes     :
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -53,24 +53,57 @@
 enum state { INITIAL, MIDDLE, OFF, END };
 #endif /* !HAVE_LIBUU */
 
+enum action {
+	VIEW,
+	SAVE,
+	SAVE_TAGGED
+#ifndef DONT_HAVE_PIPING
+	, PIPE_RAW
+	, PIPE
+#endif /* !DONT_HAVE_PIPING */
+};
+
 /*
  * Local prototypes
  */
 static FILE *open_save_filename(const char *path, t_bool mbox);
+static char *build_tree(int depth, int maxlen, int i);
+static char *generate_savepath(t_part *part);
+static int build_part_list(t_openartinfo *art);
+static int get_tagged(int n);
 static int match_content_type(t_part *part, char *type);
 static t_bool check_save_mime_type(t_part *part, const char *mime_types);
 static t_bool decode_save_one(t_part *part, FILE *rawfp, t_bool postproc);
 static t_bool expand_save_filename(char *outpath, size_t outpath_len, const char *path);
+static t_bool tag_part(int n);
+static t_function attachment_left(void);
+static t_function attachment_right(void);
+static t_partl *find_part(int n);
+static void build_attachment_line(int i);
+static void draw_attachment_arrow(void);
+static void free_part_list(t_partl *list);
 static void generate_filename(char *buf, int buflen, const char *suffix);
+#ifndef DONT_HAVE_PIPING
+	static void pipe_part(const char *savepath);
+#endif /* !DONT_HAVE_PIPING */
 static void post_process_uud(void);
 static void post_process_sh(void);
+static void process_part(t_part *part,	FILE *rawfp, FILE *outfile, const char *savepath, enum action what);
+static void process_parts(t_part *part,	FILE *rawfp, enum action what);
+static void show_attachment_page(void);
 static void start_viewer(t_part *part, const char *path);
+static void tag_pattern(void);
+static void untag_all_parts(void);
+static void untag_part(int n);
 static void uudecode_line(const char *buf, FILE *fp);
 static void view_file(const char *path, const char *file);
 #ifndef HAVE_LIBUU
 	static void sum_file(const char *path, const char *file);
 #endif /* !HAVE_LIBUU */
 
+static int num_of_tagged_parts, info_len;
+static t_menu attmenu = { 0, 0, 0, show_attachment_page, draw_attachment_arrow, build_attachment_line };
+static t_partl *part_list;
 
 /*
  * Check for articles and say how many new/unread in each group.
@@ -438,7 +471,7 @@ save_and_process_art(
 
 	/* The first task is to fixup the filename to be saved too. This is context dependent */
 	strncpy(path, inpath, sizeof(path) - 1);
-/*fprintf(stderr, "save_and_process_art max=%d num_save=%d starting path=(%s) postproc=%s\n", max, num_save, path, bool_unparse(post_process));*/
+/* fprintf(stderr, "save_and_process_art max=%d num_save=%d starting path=(%s) postproc=%s\n", max, num_save, path, bool_unparse(post_process)); */
 
 	/*
 	 * If using the auto-save feature on an article with Archive-Name,
@@ -487,7 +520,7 @@ save_and_process_art(
 		}
 	}
 
-/*fprintf(stderr, "save_and_process_art expanded path now=(%s)\n", path);*/
+/* fprintf(stderr, "save_and_process_art expanded path now=(%s)\n", path); */
 
 	if ((fp = open_save_filename(path, is_mailbox)) == NULL)
 		return FALSE;
@@ -505,8 +538,8 @@ save_and_process_art(
 		 */
 	}
 
-	if (copy_fp(artinfo->raw, fp)) /* Write tailing newline or MMDF-mailbox seperator */
-		print_art_seperator_line(fp, is_mailbox);
+	if (copy_fp(artinfo->raw, fp)) /* Write tailing newline or MMDF-mailbox separator */
+		print_art_separator_line(fp, is_mailbox);
 	else {
 		fclose(fp);
 		unlink(path);
@@ -523,7 +556,7 @@ save_and_process_art(
 	save[num_save].path = my_strdup(path);
 	save[num_save].file = strrchr(save[num_save].path, DIRSEP) + 1;	/* ptr to filename portion */
 	save[num_save].mailbox = is_mailbox;
-/*fprintf(stderr, "SAPA (%s) (%s) mbox=%s\n", save[num_save].path, save[num_save].file, bool_unparse(save[num_save].mailbox));*/
+/* fprintf(stderr, "SAPA (%s) (%s) mbox=%s\n", save[num_save].path, save[num_save].file, bool_unparse(save[num_save].mailbox)); */
 	num_save++;			/* NB: num_save is bumped here only */
 
 	/*
@@ -593,6 +626,52 @@ generate_filename(
 	static int seqno = 0;
 
 	snprintf(buf, buflen, "%s-%03d.%s", SAVEFILE_PREFIX, seqno++, suffix);
+}
+
+/*
+ * Generate /save/to/path name.
+ *
+ * Return pointer to allocated memory which the caller must free or
+ * NULL if something went wrong.
+ */
+static char *
+generate_savepath(
+	t_part *part)
+{
+	char buf[2048];
+	char *savepath;
+	const char *name;
+	t_bool mbox;
+
+	savepath = my_malloc(PATH_LEN + 1);
+	/*
+	 * Get the filename to save to in 'savepath'
+	 */
+	if ((name = get_filename(part->params)) == NULL) {
+		char extension[NAME_LEN + 1];
+
+		lookup_extension(extension, sizeof(extension), content_types[part->type], part->subtype);
+		generate_filename(buf, sizeof(buf), extension);
+		mbox = expand_save_filename(savepath, PATH_LEN, buf);
+	} else
+		mbox = expand_save_filename(savepath, PATH_LEN, name);
+
+	/*
+	 * Not a good idea to dump attachments over a mailbox
+	 */
+	if (mbox) {
+		wait_message(2, _(txt_is_mailbox), content_types[part->type], part->subtype);
+		free(savepath);
+		return NULL;
+	}
+
+	if (!(create_path(savepath))) {
+		error_message(2, _(txt_cannot_open_for_saving), savepath);
+		free(savepath);
+		return NULL;
+	}
+
+	return savepath;
 }
 
 
@@ -1050,7 +1129,7 @@ uudecode_line(
 /*
  * Unpack /bin/sh archives
  * There is no end-of-shar marker so the code reads everything after
- * the start marker. This is why shar is handled seperately.
+ * the start marker. This is why shar is handled separately.
  * The code assumes shar archives do not span articles
  */
 static void
@@ -1106,10 +1185,10 @@ post_process_sh(
 
 
 /*
- * write tailing (MMDF)-mailbox seperator
+ * write tailing (MMDF)-mailbox separator
  */
 void
-print_art_seperator_line(
+print_art_separator_line(
 	FILE *fp,
 	t_bool is_mailbox)
 {
@@ -1175,10 +1254,8 @@ decode_save_one(
 {
 	FILE *fp;
 	char buf[2048], buf2[2048];
-	char savepath[PATH_LEN];
-	const char *name;
+	char *savepath;
 	int i;
-	t_bool mbox;
 
 	/*
 	 * Decode this message part if appropriate
@@ -1189,36 +1266,15 @@ decode_save_one(
 		return TRUE;
 	}
 
-	/*
-	 * Get the filename to save to in 'savepath'
-	 */
-	if ((name = get_filename(part->params)) == NULL) {
-		char extension[NAME_LEN + 1];
-
-		lookup_extension(extension, sizeof(extension), content_types[part->type], part->subtype);
-		generate_filename(buf, sizeof(buf), extension);
-		mbox = expand_save_filename(savepath, sizeof(savepath), buf);
-	} else
-		mbox = expand_save_filename(savepath, sizeof(savepath), name);
-
-	/*
-	 * Not a good idea to dump attachments over a mailbox
-	 */
-	if (mbox) {
-		wait_message(2, _(txt_is_mailbox), content_types[part->type], part->subtype);
+	if ((savepath = generate_savepath(part)) == NULL)
 		return FALSE;
-	}
-
-	if (!(create_path(savepath))) {
-		error_message(2, _(txt_cannot_open_for_saving), savepath);
-		return FALSE;
-	}
 
 	/*
 	 * Decode/save the attachment
 	 */
 	if ((fp = open_save_filename(savepath, FALSE)) == NULL) {
 		error_message(2, _(txt_cannot_open_for_saving), savepath);
+		free(savepath);
 		return FALSE;
 	}
 
@@ -1273,6 +1329,7 @@ decode_save_one(
 			start_viewer(part, savepath);
 		else if (i == -1) {	/* Skip rest of attachments */
 			unlink(savepath);
+			free(savepath);
 			return FALSE;
 		}
 	}
@@ -1288,10 +1345,13 @@ decode_save_one(
 		snprintf(buf, sizeof(buf), _(txt_save_attachment), savepath, content_types[part->type], part->subtype);
 		if ((i = prompt_yn(buf, FALSE)) != 1) {
 			unlink(savepath);
-			if (i == -1)	/* Skip rest of attachments */
+			if (i == -1) {	/* Skip rest of attachments */
+				free(savepath);
 				return FALSE;
+			}
 		}
 	}
+	free(savepath);
 	return TRUE;
 }
 
@@ -1443,3 +1503,819 @@ decode_save_mime(
 			break;
 	}
 }
+
+
+/*
+ * Attachment menu
+ */
+static void
+show_attachment_page(
+	void)
+{
+	char buf[BUFSIZ];
+	const char *charset;
+	int i, tmp_len, max_depth;
+	t_part *part;
+
+	signal_context = cAttachment;
+	currmenu = &attmenu;
+
+	if (attmenu.curr < 0)
+		attmenu.curr = 0;
+
+	info_len = max_depth = 0;
+	for (i = 0; i < attmenu.max; ++i) {
+		part = get_part(i);
+		snprintf(buf, sizeof(buf), _(txt_attachment_lines), part->line_count);
+		tmp_len = strwidth(buf);
+		charset = get_param(part->params, "charset");
+		snprintf(buf, sizeof(buf), "  %s/%s, %s, %s%s", content_types[part->type], part->subtype, content_encodings[part->encoding], charset ? charset : "", charset ? ", " : "");
+		tmp_len += strwidth(buf);
+		if (tmp_len > info_len)
+			info_len = tmp_len;
+
+		tmp_len = part->depth;
+		if (tmp_len > max_depth)
+			max_depth = tmp_len;
+	}
+	tmp_len = cCOLS - 13 - MIN((cCOLS - 13) / 2 + 10, max_depth * 2 + 1 + strwidth(_(txt_attachment_no_name)));
+	if (info_len > tmp_len)
+		info_len = tmp_len;
+
+	ClearScreen();
+	set_first_screen_item();
+	center_line(0, TRUE, _(txt_attachment_menu));
+
+	for (i = attmenu.first; i < attmenu.first + NOTESLINES && i < attmenu.max; ++i)
+		build_attachment_line(i);
+
+	show_mini_help(ATTACHMENT_LEVEL);
+
+	if (attmenu.max <= 0) {
+		info_message(_(txt_no_attachments));
+		return;
+	}
+
+	draw_attachment_arrow();
+}
+
+
+void
+attachment_page(
+	t_openartinfo *art)
+{
+	char key[MAXKEYLEN];
+	t_function func;
+	t_menu *oldmenu = NULL;
+	t_part *part;
+
+	if (currmenu)
+		oldmenu = currmenu;
+	num_of_tagged_parts = 0;
+	attmenu.curr = 0;
+	attmenu.max = build_part_list(art);
+	clear_note_area();
+	show_attachment_page();
+	set_xclick_off();
+
+	forever {
+		switch ((func = handle_keypad(attachment_left, attachment_right, NULL, attachment_keys))) {
+			case GLOBAL_QUIT:
+				free_part_list(part_list);
+				if (oldmenu)
+					currmenu = oldmenu;
+				return;
+
+			case DIGIT_1:
+			case DIGIT_2:
+			case DIGIT_3:
+			case DIGIT_4:
+			case DIGIT_5:
+			case DIGIT_6:
+			case DIGIT_7:
+			case DIGIT_8:
+			case DIGIT_9:
+				if (attmenu.max)
+					prompt_item_num(func_to_key(func, attachment_keys), _(txt_attachment_select));
+				break;
+
+#ifndef NO_SHELL_ESCAPE
+			case GLOBAL_SHELL_ESCAPE:
+				do_shell_escape();
+				break;
+#endif /* !NO_SHELL_ESCAPE */
+
+			case GLOBAL_HELP:
+				show_help_page(ATTACHMENT_LEVEL, _(txt_attachment_menu_com));
+				show_attachment_page();
+				break;
+
+			case GLOBAL_FIRST_PAGE:
+				top_of_list();
+				break;
+
+			case GLOBAL_LAST_PAGE:
+				end_of_list();
+				break;
+
+			case GLOBAL_REDRAW_SCREEN:
+				my_retouch();
+				show_attachment_page();
+				break;
+
+			case GLOBAL_LINE_DOWN:
+				move_down();
+				break;
+
+			case GLOBAL_LINE_UP:
+				move_up();
+				break;
+
+			case GLOBAL_PAGE_DOWN:
+				page_down();
+				break;
+
+			case GLOBAL_PAGE_UP:
+				page_up();
+				break;
+
+			case GLOBAL_SCROLL_DOWN:
+				scroll_down();
+				break;
+
+			case GLOBAL_SCROLL_UP:
+				scroll_up();
+				break;
+
+			case GLOBAL_TOGGLE_HELP_DISPLAY:
+				toggle_mini_help(ATTACHMENT_LEVEL);
+				show_attachment_page();
+				break;
+
+			case GLOBAL_TOGGLE_INFO_LAST_LINE:
+				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
+				show_attachment_page();
+				break;
+
+			case ATTACHMENT_SAVE:
+				if (attmenu.max) {
+					part = get_part(attmenu.curr);
+					process_parts(part, art->raw, num_of_tagged_parts ? SAVE_TAGGED : SAVE);
+					show_attachment_page();
+				}
+				break;
+
+			case ATTACHMENT_SELECT:
+				if (attmenu.max) {
+					part = get_part(attmenu.curr);
+					process_parts(part, art->raw, VIEW);
+					show_attachment_page();
+				}
+				break;
+
+			case ATTACHMENT_TAG:
+				if (attmenu.max) {
+					t_bool tagged;
+
+					tagged = tag_part(attmenu.curr);
+					show_attachment_page();
+					if (attmenu.curr + 1 < attmenu.max)
+						move_down();
+					info_message(tagged ? _(txt_attachment_tagged) : _(txt_attachment_untagged));
+				}
+				break;
+
+			case ATTACHMENT_UNTAG:
+				if (attmenu.max && num_of_tagged_parts) {
+					untag_all_parts();
+					show_attachment_page();
+				}
+				break;
+
+			case ATTACHMENT_TAG_PATTERN:
+				if (attmenu.max) {
+					tag_pattern();
+					show_attachment_page();
+					info_message(_(txt_attachments_tagged), num_of_tagged_parts);
+				}
+				break;
+
+			case ATTACHMENT_TOGGLE_TAGGED:
+				if (attmenu.max) {
+					int i;
+
+					for (i = attmenu.first; i < attmenu.max; ++i)
+						tag_part(i);
+					show_attachment_page();
+					info_message(_(txt_attachments_tagged), num_of_tagged_parts);
+				}
+				break;
+
+			case GLOBAL_SEARCH_SUBJECT_FORWARD:
+			case GLOBAL_SEARCH_SUBJECT_BACKWARD:
+			case GLOBAL_SEARCH_REPEAT:
+				if (func == GLOBAL_SEARCH_REPEAT && last_search != GLOBAL_SEARCH_SUBJECT_FORWARD && last_search != GLOBAL_SEARCH_SUBJECT_BACKWARD)
+					info_message(_(txt_no_prev_search));
+				else if (attmenu.max) {
+					int new_pos, old_pos = attmenu.curr;
+
+					new_pos = generic_search((func == GLOBAL_SEARCH_SUBJECT_FORWARD), (func == GLOBAL_SEARCH_REPEAT), attmenu.curr, attmenu.max - 1, ATTACHMENT_LEVEL);
+					if (new_pos != old_pos)
+						move_to_item(new_pos);
+				}
+				break;
+
+#ifndef DONT_HAVE_PIPING
+			case ATTACHMENT_PIPE:
+			case GLOBAL_PIPE:
+				if (attmenu.max) {
+					part = get_part(attmenu.curr);
+					process_parts(part, art->raw, func == GLOBAL_PIPE ? PIPE_RAW : PIPE);
+					show_attachment_page();
+				}
+				break;
+#endif /* !DONT_HAVE_PIPING */
+
+			default:
+				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, attachment_keys)));
+				break;
+		}
+	}
+}
+
+
+static t_function
+attachment_left(
+	void)
+{
+	return GLOBAL_QUIT;
+}
+
+
+static t_function
+attachment_right(
+	void)
+{
+	return ATTACHMENT_SELECT;
+}
+
+
+static void
+draw_attachment_arrow(
+	void)
+{
+	draw_arrow_mark(INDEX_TOP + attmenu.curr - attmenu.first);
+	if (tinrc.info_in_last_line) {
+		const char *name;
+		t_part *part;
+
+		part = get_part(attmenu.curr);
+		name = get_filename(part->params);
+		info_message("%s  %s", name ? name : _(txt_attachment_no_name), BlankIfNull(part->description));
+	} else if (attmenu.curr == attmenu.max - 1)
+		info_message(_(txt_end_of_attachments));
+}
+
+
+static void
+build_attachment_line(
+	int i)
+{
+	char *sptr;
+	const char *name;
+	const char *charset;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	char *tmpname;
+	char *tmpbuf;
+#endif /* MULTIBYTE_ABLE && !NOLOCALE */
+	char buf[BUFSIZ];
+	char buf2[BUFSIZ];
+	char *tree = NULL;
+	int len, namelen, tagged;
+	int treelen = 0;
+	t_part *part;
+
+#ifdef USE_CURSES
+	/*
+	 * Allocate line buffer
+	 * make it the same size like in !USE_CURSES case to simplify some code
+	 */
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		sptr = my_malloc(cCOLS * MB_CUR_MAX + 2);
+#	else
+		sptr = my_malloc(cCOLS + 2);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#else
+	sptr = screen[INDEX2SNUM(i)].col;
+#endif /* USE_CURSES */
+
+	part = get_part(i);
+	namelen = strwidth(_(txt_attachment_no_name));
+	tagged = get_tagged(i);
+
+	if (!(name = get_filename(part->params))) {
+		if (!(name = part->description))
+			name = _(txt_attachment_no_name);
+	}
+
+	charset = get_param(part->params, "charset");
+	snprintf(buf2, sizeof(buf2), _(txt_attachment_lines), part->line_count);
+	snprintf(buf, sizeof(buf), "  %s/%s, %s, %s%s%s", content_types[part->type], part->subtype, content_encodings[part->encoding], charset ? charset : "", charset ? ", " : "", buf2);
+	if (part->depth > 0) {
+		treelen = cCOLS - 13 - info_len - namelen;
+		tree = build_tree(part->depth, treelen, i);
+	}
+	snprintf(buf2, sizeof(buf2), "%s  %s", tagged ? tin_ltoa(tagged, 3) : "   ", BlankIfNull(tree));
+	FreeIfNeeded(tree);
+	len = strwidth(buf2);
+	if (namelen + len + info_len + 8 <= cCOLS)
+		namelen =  cCOLS - 8 - info_len - len;
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	tmpname = spart(name, namelen, TRUE);
+	tmpbuf = spart(buf, info_len, TRUE);
+	snprintf(sptr, cCOLS * MB_CUR_MAX, "  %s %s%*s%*s%s", tin_ltoa(i + 1, 4), buf2, namelen, BlankIfNull(tmpname), info_len, BlankIfNull(tmpbuf), cCRLF);
+	FreeIfNeeded(tmpname);
+	FreeIfNeeded(tmpbuf);
+#else
+	snprintf(sptr, cCOLS, "  %s %s%-*.*s%*.*s%s", tin_ltoa(i + 1, 4), buf2, namelen, namelen, name, info_len, info_len, buf, cCRLF);
+#endif /* MULTIBYTE_ABLE && !NOLOCALE */
+
+	WriteLine(INDEX2LNUM(i), sptr);
+
+#ifdef USE_CURSES
+	free(sptr);
+#endif /* USE_CURSES */
+}
+
+
+/*
+ * Build attachment tree. Code adopted
+ * from thread.c:make_prefix().
+ */
+static char *
+build_tree(
+	int depth,
+	int maxlen,
+	int i)
+{
+	char *tree;
+	int prefix_ptr, tmpdepth;
+	int depth_level = 0;
+	t_bool found = FALSE;
+	t_partl *lptr, *lptr2;
+
+	lptr2 = find_part(i);
+	prefix_ptr = depth * 2 - 1;
+	if (prefix_ptr > maxlen - 1 - !(maxlen % 2)) {
+		int odd = ((maxlen % 2) ? 0 : 1);
+
+		prefix_ptr -= maxlen - ++depth_level - 2 - odd;
+		while (prefix_ptr > maxlen - 2 - odd) {
+			if (depth_level < maxlen / 5)
+				depth_level++;
+
+			prefix_ptr -= maxlen - depth_level - 2 - odd;
+			odd = (odd ? 0 : 1);
+		}
+	}
+	tree = my_malloc(prefix_ptr + 3);
+	strcpy(&tree[prefix_ptr], "->");
+	for (lptr = lptr2->next; lptr != NULL; lptr = lptr->next) {
+		if (lptr->part->depth == depth) {
+			found = TRUE;
+			break;
+		}
+		if (lptr->part->depth < depth)
+			break;
+	}
+	tree[--prefix_ptr] = found ? '+' : '`';
+	found = FALSE;
+	for (tmpdepth = depth - 1; prefix_ptr > 1; --tmpdepth) {
+		for (lptr = lptr2->next; lptr != NULL; lptr = lptr->next) {
+			if (lptr->part->depth == tmpdepth) {
+				found = TRUE;
+				break;
+			}
+			if (lptr->part->depth < tmpdepth)
+				break;
+		}
+		tree[--prefix_ptr] = ' ';
+		tree[--prefix_ptr] = found ? '|' : ' ';
+		found = FALSE;
+	}
+	while (depth_level)
+		tree[--depth_level] = '>';
+
+	return tree;
+}
+
+
+/*
+ * Find nth attachment in part_list.
+ * Return pointer to that part.
+ */
+static t_partl *
+find_part(
+	int n)
+{
+	t_partl *lptr;
+
+	lptr = part_list;
+	if (attmenu.max >= 1)
+		lptr = lptr->next;
+
+	while (n-- > 0 && lptr->next)
+		lptr = lptr->next;
+
+	return lptr;
+}
+
+
+t_part *
+get_part(
+	int n)
+{
+	t_partl *lptr;
+
+	lptr = find_part(n);
+	return lptr->part;
+}
+
+
+static void
+tag_pattern(
+	void)
+{
+	char buf[BUFSIZ];
+	char pat[128];
+	char *prompt;
+	const char *name;
+	const char *charset;
+	struct regex_cache cache = { NULL, NULL };
+	t_part *part;
+	t_partl *lptr;
+
+#if 0
+	if (num_of_tagged_parts)
+		untag_all_parts();
+#endif /* 0 */
+
+	prompt = fmt_string(_(txt_select_pattern), tinrc.default_select_pattern);
+	if (!(prompt_string_default(prompt, tinrc.default_select_pattern, _(txt_info_no_previous_expression), HIST_SELECT_PATTERN))) {
+		free(prompt);
+		return;
+	}
+	free(prompt);
+
+	if (STRCMPEQ(tinrc.default_select_pattern, "*")) {	/* all */
+		if (tinrc.wildcard)
+			STRCPY(pat, ".*");
+		else
+			STRCPY(pat, tinrc.default_select_pattern);
+	} else
+		snprintf(pat, sizeof(pat), REGEX_FMT, tinrc.default_select_pattern);
+
+	if (tinrc.wildcard && !(compile_regex(pat, &cache, PCRE_CASELESS)))
+		return;
+
+	lptr = find_part(0);
+
+	for (; lptr != NULL; lptr = lptr->next) {
+		part = lptr->part;
+		if (!(name = get_filename(part->params))) {
+			if (!(name = part->description))
+				name = _(txt_attachment_no_name);
+		}
+		charset = get_param(part->params, "charset");
+
+		snprintf(buf, sizeof(buf), "%s %s/%s %s, %s", name, content_types[part->type], part->subtype, content_encodings[part->encoding], charset ? charset : "");
+
+		if (!match_regex(buf, pat, &cache, TRUE)) {
+			continue;
+		}
+		if (!lptr->tagged)
+			lptr->tagged = ++num_of_tagged_parts;
+	}
+
+	if (tinrc.wildcard) {
+		FreeIfNeeded(cache.re);
+		FreeIfNeeded(cache.extra);
+	}
+	return;
+}
+
+static int
+get_tagged(
+	int n)
+{
+	t_partl *lptr;
+
+	lptr = find_part(n);
+	return lptr->tagged;
+}
+
+
+static t_bool
+tag_part(
+	int n)
+{
+	t_partl *lptr;
+
+	lptr = find_part(n);
+	if (lptr->tagged) {
+		untag_part(n);
+		return FALSE;
+	} else {
+		lptr->tagged = ++num_of_tagged_parts;
+		return TRUE;
+	}
+}
+
+
+static void
+untag_part(
+	int n)
+{
+	int i;
+	t_partl *curr_part, *lptr;
+
+	lptr = find_part(0);
+	curr_part = find_part(n);
+	i = attmenu.max;
+
+	while (i-- > 0 && lptr) {
+		if (lptr->tagged > curr_part->tagged)
+			--lptr->tagged;
+		lptr = lptr->next;
+	}
+
+	curr_part->tagged = 0;
+	--num_of_tagged_parts;
+}
+
+
+static void
+untag_all_parts(
+	void)
+{
+	t_partl *lptr = part_list;
+
+	while (lptr) {
+		if (lptr->tagged) {
+			lptr->tagged = 0;
+		}
+		lptr = lptr->next;
+	}
+	num_of_tagged_parts = 0;
+}
+
+
+/*
+ * Build a linked list which holds pointers to the parts we want deal with.
+ */
+static int
+build_part_list(
+	t_openartinfo *art)
+{
+	int i = 0;
+	t_part *ptr, *uueptr;
+	t_partl *lptr;
+
+	part_list = my_malloc(sizeof(t_partl));
+	lptr = part_list;
+	lptr->part = art->hdr.ext;
+	lptr->next = NULL;
+	lptr->tagged = 0;
+	for (ptr = art->hdr.ext; ptr != NULL; ptr = ptr->next) {
+		if ((uueptr = ptr->uue) != NULL) {
+			lptr->next = my_malloc(sizeof(t_partl));
+			lptr->next->part = ptr;
+			lptr->next->next = NULL;
+			lptr->next->tagged = 0;
+			lptr = lptr->next;
+			++i;
+			for (; uueptr != NULL; uueptr = uueptr->next) {
+				lptr->next = my_malloc(sizeof(t_partl));
+				lptr->next->part = uueptr;
+				lptr->next->next = NULL;
+				lptr->next->tagged = 0;
+				lptr = lptr->next;
+				++i;
+			}
+		}
+
+		if (ptr->uue)
+			continue;
+
+		lptr->next = my_malloc(sizeof(t_partl));
+		lptr->next->part = ptr;
+		lptr->next->next = NULL;
+		lptr->next->tagged = 0;
+		lptr = lptr->next;
+		++i;
+	}
+	return i;
+}
+
+
+static void
+free_part_list(
+	t_partl *list)
+{
+	while (list->next != NULL) {
+		free_part_list(list->next);
+		list->next = NULL;
+	}
+	free(list);
+}
+
+
+static void
+process_parts(
+	t_part *part,
+	FILE *rawfp,
+	enum action what)
+{
+	FILE *fp;
+	char *savepath, *tmppath;
+	int i, saved_parts = 0;
+	t_partl *lptr;
+
+	switch (what) {
+		case SAVE_TAGGED:
+			for (i = 1; i <= num_of_tagged_parts; i++) {
+				lptr = part_list;
+
+				while (lptr) {
+					if (lptr->tagged == i) {
+						if ((savepath = generate_savepath(lptr->part)) == NULL)
+							return;
+
+						if ((fp = open_save_filename(savepath, FALSE)) == NULL) {
+							error_message(2, _(txt_cannot_open_for_saving), savepath);
+							free(savepath);
+							return;
+						}
+						process_part(lptr->part, rawfp, fp, NULL, SAVE);
+						free(savepath);
+						++saved_parts;
+					}
+					lptr = lptr->next;
+				}
+			}
+			break;
+
+		default:
+			if ((tmppath = generate_savepath(part)) == NULL)
+				return;
+
+			if (what == SAVE)
+				savepath = tmppath;
+			else {
+				savepath = get_tmpfilename(tmppath);
+				free(tmppath);
+			}
+			if ((fp = open_save_filename(savepath, FALSE)) == NULL) {
+				error_message(2, _(txt_cannot_open_for_saving), savepath);
+				free(savepath);
+				return;
+			}
+			process_part(part, rawfp, fp, savepath, what);
+			break;
+	}
+	switch (what) {
+		case SAVE_TAGGED:
+			wait_message(2, _(txt_attachments_saved), saved_parts, num_of_tagged_parts);
+			break;
+
+		case SAVE:
+			wait_message(2, _(txt_attachment_saved), savepath);
+			free(savepath);
+			break;
+
+		default:
+			unlink(savepath);
+			free(savepath);
+			break;
+	}
+	cursoroff();
+}
+
+
+/*
+ * VIEW/PIPE/SAVE the given part.
+ *
+ * PIPE_RAW uses the raw part, otherwise the part is decoded first.
+ */
+static void
+process_part(
+	t_part *part,
+	FILE *rawfp,
+	FILE *outfile,
+	const char *savepath,
+	enum action what)
+{
+	char buf[2048], buf2[2048];
+	int i;
+
+	if (what != PIPE_RAW && part->encoding == ENCODING_BASE64)
+		mmdecode(NULL, 'b', 0, NULL);				/* flush */
+
+	fseek(rawfp, part->offset, SEEK_SET);
+
+	for (i = 0; i < part->line_count; i++) {
+		if ((fgets(buf, sizeof(buf), rawfp)) == NULL)
+			break;
+
+		/* This should catch cases where people illegally append text etc */
+		if (buf[0] == '\0')
+			break;
+
+		if (what != PIPE_RAW) {
+			switch (part->encoding) {
+				int count;
+
+				case ENCODING_QP:
+				case ENCODING_BASE64:
+					count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2);
+					fwrite(buf2, count, 1, outfile);
+					break;
+
+				case ENCODING_UUE:
+					/* TODO: if postproc, don't decode these since the traditional uudecoder will get them */
+					/*
+					 * x-uuencode attachments have all the header info etc which we must ignore
+					 */
+					if (strncmp(buf, "begin ", 6) != 0 && strncmp(buf, "end\n", 4) != 0 && buf[0] != '\n')
+						uudecode_line(buf, outfile);
+					break;
+
+				default:
+					fputs(buf, outfile);
+			}
+		} else
+			fputs(buf, outfile);
+	}
+
+	fclose(outfile);
+
+	switch (what) {
+		case VIEW:
+			start_viewer(part, savepath);
+			break;
+
+#ifndef DONT_HAVE_PIPING
+		case PIPE:
+		case PIPE_RAW:
+			pipe_part(savepath);
+			break;
+#endif /* !DONT_HAVE_PIPING */
+
+		default:
+			break;
+	}
+}
+
+
+#ifndef DONT_HAVE_PIPING
+static void
+pipe_part(
+	const char *savepath)
+{
+	FILE *fp, *pipe_fp = (FILE *) 0;
+	char *prompt;
+
+	prompt = fmt_string(_(txt_pipe_to_command), cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
+	if (!(prompt_string_default(prompt, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND))) {
+		free(prompt);
+		return;
+	}
+	free(prompt);
+	if ((fp = fopen(savepath, "r")) == NULL)
+		/* TODO: error message? */
+		return;
+	EndWin();
+	Raw(FALSE);
+	fflush(stdout);
+	set_signal_catcher(FALSE);
+	if ((pipe_fp = popen(tinrc.default_pipe_command, "w")) == NULL) {
+		perror_message(_(txt_command_failed), tinrc.default_pipe_command);
+		set_signal_catcher(TRUE);
+		Raw(TRUE);
+		InitWin();
+		fclose(fp);
+		return;
+	}
+	copy_fp(fp, pipe_fp);
+	if (errno == EPIPE)
+		perror_message(_(txt_command_failed), tinrc.default_pipe_command);
+	fflush(pipe_fp);
+	(void) pclose(pipe_fp);
+	set_signal_catcher(TRUE);
+	Raw(TRUE);
+	InitWin();
+	fclose(fp);
+	prompt_continue();
+}
+#endif /* !DONT_HAVE_PIPING */
