@@ -1,6 +1,6 @@
 /*
  * includes/defines/declarations which are already done by tin.h
- * but might be needed if you use plp_snprintf() in other programms
+ * but might be needed if you use plp_snprintf() in other programs
  */
 
 #ifndef PLP_SNPRINTF_H

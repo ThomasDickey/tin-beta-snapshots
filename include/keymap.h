@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2009-09-27
+ *  Updated   : 2010-10-01
  *  Notes     :
  *
  * Copyright (c) 1999-2010 Jason Faultless <jason@altarstone.com>
@@ -154,6 +154,13 @@ enum defined_functions {
 	DIGIT_7,
 	DIGIT_8,
 	DIGIT_9,
+	ATTACHMENT_PIPE,
+	ATTACHMENT_SAVE,
+	ATTACHMENT_SELECT,
+	ATTACHMENT_TAG,
+	ATTACHMENT_TAG_PATTERN,
+	ATTACHMENT_TOGGLE_TAGGED,
+	ATTACHMENT_UNTAG,
 	SPECIAL_CATCHUP_LEFT,
 	SPECIAL_MOUSE_TOGGLE,
 	CATCHUP,
@@ -211,7 +218,7 @@ enum defined_functions {
 	GLOBAL_SET_RANGE,
 #ifndef NO_SHELL_ESCAPE
 	GLOBAL_SHELL_ESCAPE,
-#endif /* NO_SHELL_ESCAPE */
+#endif /* !NO_SHELL_ESCAPE */
 #ifdef HAVE_COLOR
 	GLOBAL_TOGGLE_COLOR,
 #endif /* HAVE_COLOR */
@@ -220,6 +227,7 @@ enum defined_functions {
 	GLOBAL_TOGGLE_INVERSE_VIDEO,
 	GLOBAL_VERSION,
 	GROUP_AUTOSAVE,
+	GROUP_CANCEL,
 	GROUP_DO_AUTOSELECT,
 	GROUP_GOTO,
 	GROUP_LIST_THREAD,
@@ -343,6 +351,7 @@ enum defined_functions {
 	SELECT_QUIT_NO_WRITE,
 	SELECT_YANK_ACTIVE,
 	THREAD_AUTOSAVE,
+	THREAD_CANCEL,
 	THREAD_MAIL,
 	THREAD_MARK_ARTICLE_READ,
 	THREAD_READ_NEXT_ARTICLE_OR_THREAD,
@@ -354,7 +363,8 @@ enum defined_functions {
 	THREAD_TOGGLE_ARTICLE_SELECTION,
 	THREAD_TOGGLE_SUBJECT_DISPLAY,
 	THREAD_UNDO_SELECTIONS,
-	THREAD_UNTAG
+	THREAD_UNTAG,
+	URL_SELECT
 };
 typedef enum defined_functions t_function;
 
@@ -376,6 +386,7 @@ struct keylist {
 };
 
 
+extern struct keylist attachment_keys;
 extern struct keylist feed_post_process_keys;
 extern struct keylist feed_supersede_article_keys;
 extern struct keylist feed_type_keys;
@@ -403,6 +414,7 @@ extern struct keylist save_append_overwrite_keys;
 extern struct keylist scope_keys;
 extern struct keylist select_keys;
 extern struct keylist thread_keys;
+extern struct keylist url_keys;
 
 
 extern t_function global_mouse_action(t_function (*left_action) (void), t_function (*right_action) (void));

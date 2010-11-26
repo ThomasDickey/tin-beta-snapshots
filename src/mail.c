@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2009-11-19
+ *  Updated   : 2010-05-20
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2010 Iain Lea <iain@bricbrac.de>
@@ -239,8 +239,10 @@ read_mailgroups_file(
 
 		fclose(fp);
 
-		if (!batch_mode && verb)
+		if (!batch_mode && verb) {
 			my_fputs("\n", stdout);
+			cursoroff();
+		}
 	}
 }
 #endif /* HAVE_MH_MAIL_HANDLING */
@@ -282,9 +284,9 @@ open_newsgroups_fp(
 			}
 		}
 		/*
-		 * TODO: test me, find a usefull limit,
+		 * TODO: test me, find a useful limit,
 		 *       optimize more than n groups (e.g. 5) of the same
-		 *       subhierarchie to a wildmat?
+		 *       subhierarchy to a wildmat?
 		 */
 		if (((nntp_caps.type == CAPABILITIES && nntp_caps.list_newsgroups) || nntp_caps.type != CAPABILITIES) && newsrc_active && !list_active && !no_more_wildmat && (PIPELINE_LIMIT > MAX(1, num_active))) {
 			char *ptr;
@@ -422,8 +424,10 @@ read_newsgroups_file(
 
 		TIN_FCLOSE(fp);
 
-		if (!batch_mode && verb)
+		if (!batch_mode && verb) {
 			my_fputs("\n", stdout);
+			cursoroff();
+		}
 	}
 }
 
@@ -444,8 +448,7 @@ read_descriptions(
 
 /*
  * Read groups descriptions from opened file & make local backup copy
- * of all groups that don't have a 'x' in the active file moderated
- * field & if reading groups of type GROUP_TYPE_NEWS.
+ * of all groups if reading groups of type GROUP_TYPE_NEWS.
  * Aborting this early won't have any adverse affects, just some missing
  * descriptions.
  */

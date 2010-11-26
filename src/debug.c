@@ -232,7 +232,7 @@ debug_print_malloc(
 		if ((fp = fopen(file, "a+")) != NULL) {
 			total += size;
 			/* sometimes size_t is long */
-			fprintf(fp, "%12s:%-4d %s(%6lu). Total %lu\n", xfile, line, is_malloc ? " malloc" : "realloc" , (unsigned long) size, (unsigned long) total);
+			fprintf(fp, "%12s:%-4d %s(%6lu). Total %lu\n", xfile, line, is_malloc ? " malloc" : "realloc", (unsigned long) size, (unsigned long) total);
 			fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
 			fclose(fp);
 		}

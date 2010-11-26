@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2009-06-24
+ *  Updated   : 2010-10-07
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2010 Jason Faultless <jason@altarstone.com>
@@ -636,7 +636,7 @@ parse_header(
 
 /*
  * Read main article headers into a blank header structure.
- * Pass the data 'from' -> 'to'
+ * Pass the data 'from' -> 'to' when reading via NNTP
  * Return tin_errno (basically will be !=0 if reading was 'q'uit)
  * We have to guard against 'to' here since this function is exported
  */
@@ -654,7 +654,7 @@ parse_rfc822_headers(
 	hdr->ext = new_part(NULL);		/* Initialise MIME data */
 
 	while ((line = tin_fgets(from, TRUE)) != NULL) {
-		if (to)
+		if (read_news_via_nntp && to)
 			fprintf(to, "%s\n", line);		/* Put raw data */
 
 		/*
@@ -832,7 +832,7 @@ unfold_header(
 #define TIN_EOF		0xf00	/* Used internally for error recovery */
 
 /*
- * Handles multipart/ article types, write data to a raw stream
+ * Handles multipart/ article types, write data to a raw stream when reading via NNTP
  * artinfo is used for generic article pointers
  * part contains content info about the attachment we're parsing
  * depth is the number of levels by which the current part is embedded
@@ -851,7 +851,8 @@ parse_multipart_article(
 	char *ptr;
 	int bnd;
 	int state = M_SEARCHING;
-	t_part *curr_part = 0;
+	t_bool is_rfc822 = FALSE;
+	t_part *curr_part = NULL, *rfc822_part = NULL;
 
 	while ((line = tin_fgets(infile, (state == M_HDR))) != NULL) {
 /* fprintf(stderr, "%d---:%s\n", depth, line); */
@@ -861,20 +862,41 @@ parse_multipart_article(
 		 */
 		bnd = boundary_check(line, artinfo->hdr.ext);
 
-		fprintf(artinfo->raw, "%s\n", line);
+		if (read_news_via_nntp)
+			fprintf(artinfo->raw, "%s\n", line);
 
 		artinfo->hdr.ext->line_count += count_lines(line);
 		if (show_progress_meter)
 			progress(artinfo->hdr.ext->line_count);		/* Overall line count */
 
+		if (part && part != artinfo->hdr.ext)
+			part->line_count += count_lines(line);
+
+		if (is_rfc822 && rfc822_part)
+			rfc822_part->line_count += count_lines(line);
+
 		if (bnd == BOUND_END) {							/* End of this part detected */
+			if (is_rfc822 && rfc822_part)
+				rfc822_part->line_count -= count_lines(line);
 			/*
 			 * When we have reached the end boundary of the outermost envelope
 			 * just log any trailing data for the raw article format.
 			 */
-			if (depth == 0)
+			if (boundary_cmp(line, get_param(artinfo->hdr.ext->params, "boundary")) == BOUND_END)
+				depth = 0;
+#if 0 /* doesn't count tailing lines after envelop mime part - correct but confusing */
+			if (read_news_via_nntp && depth == 0)
 				while ((line = tin_fgets(infile, FALSE)) != NULL)
 					fprintf(artinfo->raw, "%s\n", line);
+#else
+			if (depth == 0) {
+				while ((line = tin_fgets(infile, FALSE)) != NULL) {
+					if (read_news_via_nntp)
+						fprintf(artinfo->raw, "%s\n", line);
+					artinfo->hdr.ext->line_count++;
+				}
+			}
+#endif /* 0 */
 			return tin_errno;
 		}
 
@@ -894,7 +916,7 @@ parse_multipart_article(
 
 			case M_HDR:
 				switch (bnd) {
-					case BOUND_START:
+					case BOUND_START:	/* TODO: skip error message if not -DDEBUG? */
 						error_message(2, _(txt_error_mime_start));
 						continue;
 
@@ -907,10 +929,21 @@ parse_multipart_article(
 					curr_part->offset = ftell(artinfo->raw);
 
 					if (curr_part->type == TYPE_MULTIPART) {	/* Complex multipart article */
-						int ret;
+						int ret, old_line_count;
 
+						old_line_count = curr_part->line_count;
 						if ((ret = parse_multipart_article(infile, artinfo, curr_part, depth + 1, show_progress_meter)) != 0)
 							return ret;							/* User abort or EOF reached */
+						if (part && part != artinfo->hdr.ext)
+							part->line_count += curr_part->line_count - old_line_count;
+						if (is_rfc822 && rfc822_part)
+							rfc822_part->line_count += curr_part->line_count - old_line_count;
+					} else if (curr_part->type == TYPE_MESSAGE && !strcasecmp("RFC822", curr_part->subtype)) {
+						is_rfc822 = TRUE;
+						rfc822_part = curr_part;
+						state = M_HDR;
+						curr_part = new_part(part);
+						curr_part->depth = ++depth;
 					}
 					break;
 				}
@@ -918,7 +951,7 @@ parse_multipart_article(
 				/*
 				 * Keep headers that interest us
 				 */
-/*fprintf(stderr, "HDR:%s\n", line);*/
+/* fprintf(stderr, "HDR:%s\n", line); */
 				unfold_header(line);
 				if ((ptr = parse_header(line, "Content-Type", FALSE, FALSE))) {
 					parse_content_type(ptr, curr_part);
@@ -942,11 +975,17 @@ parse_multipart_article(
 			case M_BODY:
 				switch (bnd) {
 					case BOUND_NONE:
-/*fprintf(stderr, "BOD:%s\n", line);*/
+/* fprintf(stderr, "BOD:%s\n", line); */
 						curr_part->line_count++;
 						break;
 
 					case BOUND_START:		/* Start new attchment */
+						if (is_rfc822) {
+							--depth;
+							rfc822_part->line_count--;
+							rfc822_part = NULL;
+							is_rfc822 = FALSE;
+						}
 						state = M_HDR;
 						curr_part = new_part(part);
 						curr_part->depth = depth;
@@ -976,7 +1015,8 @@ parse_normal_article(
 	char *line;
 
 	while ((line = tin_fgets(in, FALSE)) != NULL) {
-		fprintf(artinfo->raw, "%s\n", line);
+		if (read_news_via_nntp)
+			fprintf(artinfo->raw, "%s\n", line);
 		++artinfo->hdr.ext->line_count;
 		if (show_progress_meter)
 			progress(artinfo->hdr.ext->line_count);
@@ -1051,7 +1091,9 @@ dump_art(
 
 /*
  * Core parser for all article types
- * Return NULL if we couldn't open an output stream
+ * Return NULL if we couldn't open an output stream when reading via NNTP
+ * When reading from local spool we assign the filehandle of the on-spool
+ * article directly to artinfo->raw
  */
 static int
 parse_rfc2045_article(
@@ -1062,8 +1104,11 @@ parse_rfc2045_article(
 {
 	int ret;
 
-	if (!infile || !(artinfo->raw = tmpfile()))
+	if (!infile || (read_news_via_nntp && !(artinfo->raw = tmpfile())))
 		return ART_ABORT;
+
+	if (!read_news_via_nntp)
+		artinfo->raw = infile;
 
 	art_lines = line_count;
 
@@ -1075,10 +1120,11 @@ parse_rfc2045_article(
 	 * We don't bother to parse all plain text articles
 	 */
 	if (artinfo->hdr.mime && artinfo->hdr.ext->type == TYPE_MULTIPART) {
-		if ((ret = parse_multipart_article(infile, artinfo, artinfo->hdr.ext, 0, show_progress_meter)) != 0) {
+		if ((ret = parse_multipart_article(infile, artinfo, artinfo->hdr.ext, 1, show_progress_meter)) != 0) {
 			/* Strip off EOF condition if present */
 			if (ret & TIN_EOF) {
 				ret ^= TIN_EOF;
+				/* TODO: skip error message if not -DDEBUG? */
 				error_message(2, _(txt_error_mime_end), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
 				if (ret != 0)
 					goto error;
@@ -1090,12 +1136,14 @@ parse_rfc2045_article(
 			goto error;
 	}
 
-	TIN_FCLOSE(infile);
+	if (read_news_via_nntp)
+		TIN_FCLOSE(infile);
 
 	return 0;
 
 error:
-	TIN_FCLOSE(infile);
+	if (read_news_via_nntp)
+		TIN_FCLOSE(infile);
 	art_close(artinfo);
 	return ret;
 }
@@ -1141,8 +1189,8 @@ open_art_fp(
 }
 
 
-/*----------- art_open() and art_close() are the only interface ---------*/
-/*------------------------for accessing articles -------------------*/
+/* ----------- art_open() and art_close() are the only interface --------- */
+/* ------------------------for accessing articles ------------------- */
 
 /*
  * Open's and postprocesses and article

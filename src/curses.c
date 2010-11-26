@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2009-10-22
+ *  Updated   : 2010-10-31
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -467,6 +467,19 @@ ClearScreen(
 }
 
 
+#ifdef HAVE_COLOR
+void
+reset_screen_attr(
+	void)
+{
+	if (!NO_CAP(_reset)) {
+		tputs(_reset, 1, outchar);
+		my_flush();
+	}
+}
+#endif /* HAVE_COLOR */
+
+
 /*
  *  move cursor to the specified row column on the screen.
  *  0,0 is the top left!
@@ -804,8 +817,8 @@ highlight_string(
 	MoveCursor(row, col);
 	StartInverse();
 	my_fputs(output, stdout);
-	my_flush();
 	EndInverse();
+	my_flush();
 
 	stow_cursor();
 }

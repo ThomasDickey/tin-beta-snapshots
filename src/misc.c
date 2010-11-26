@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-12-13
+ *  Updated   : 2010-11-03
  *  Notes     :
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -271,7 +271,7 @@ copy_body(
 	if (strlen(prefix) > 240) /* truncate and terminate */
 		prefix[240] = '\0';
 
-	/* convert %S to %s, for compability reasons only */
+	/* convert %S to %s, for compatibility reasons only */
 	if (strstr(prefix, "%S")) {
 		status_char = FALSE;
 		for (i = 0; prefix[i]; i++) {
@@ -417,7 +417,7 @@ invoke_ispell(
 		STRCPY(ispell, get_val("ISPELL", PATH_ISPELL));
 
 	/*
-	 * Now seperating the header and body in two different files so that
+	 * Now separating the header and body in two different files so that
 	 * the header is not checked by ispell
 	 */
 #ifdef HAVE_LONG_FILE_NAMES
@@ -805,9 +805,6 @@ draw_percent_mark(
 {
 	char buf[32]; /* should be big enough */
 	int len;
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t *wbuf;
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if (NOTESLINES <= 0)
 		return;
@@ -817,18 +814,12 @@ draw_percent_mark(
 
 	clear_message();
 	snprintf(buf, sizeof(buf), "%s(%d%%) [%ld/%ld]", _(txt_more), (int) (cur_num * 100 / max_num), cur_num, max_num);
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if ((wbuf = char2wchar_t(buf)) != NULL) {
-		len = wcswidth(wbuf, wcslen(wbuf) + 1);
-		free(wbuf);
-	} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		len = (int) strlen(buf);
+	len = strwidth(buf);
 	MoveCursor(cLINES, cCOLS - len - (1 + BLANK_PAGE_COLS));
 	StartInverse();
 	my_fputs(buf, stdout);
-	my_flush();
 	EndInverse();
+	my_flush();
 }
 
 
@@ -1067,6 +1058,14 @@ toggle_color(
 #	endif /* USE_CURSES */
 		use_color = bool_not(use_color);
 
+#	ifndef USE_CURSES
+	if (use_color) {
+		fcol(tinrc.col_normal);
+		bcol(tinrc.col_normal);
+	} else
+		reset_screen_attr();
+#	endif /* !USE_CURSES */
+
 	return TRUE;
 }
 
@@ -1218,7 +1217,7 @@ strfquote(
 					}
 					break;
 
-				case 'D':	/* Articles Date (reformated as specified in attributes->date_format) */
+				case 'D':	/* Articles Date (reformatted as specified in attributes->date_format) */
 					if (!my_strftime(tbuf, LEN - 1, curr_group->attribute->date_format, localtime(&arts[this_resp].date))) {
 						STRCPY(tbuf, BlankIfNull(pgart.hdr.date));
 					}
@@ -2620,7 +2619,7 @@ process_charsets(
 
 
 /*
- * checking of mail adresses for GNKSA compliance
+ * checking of mail addresses for GNKSA compliance
  *
  * son of RFC 1036:
  *   article         = 1*header separator body
@@ -3136,14 +3135,16 @@ gnksa_check_domain_literal(
 	if ((255 < x1) || (255 < x2) || (255 < x3) || (255 < x4))
 		return GNKSA_BAD_DOMAIN_LITERAL;
 
-	/* check for private ip or localhost */
+	/* check for private ip or localhost - see RFC 5735, RFC 5737 */
 	if ((!disable_gnksa_domain_check)
 	    && ((0 == x1)				/* local network */
 		|| (10 == x1)				/* private class A */
 		|| ((172 == x1) && (16 == (x2 & 0xf0)))	/* private /12 */
 		|| ((192 == x1) && (168 == x2))		/* private class B */
-		|| ((192 == x1) && (0 == x2) && (2 == x3)) /* private class C */
-		|| (127 == x1)))			/* localhost */
+		|| ((192 == x1) && (0 == x2) && (2 == x3)) /* TEST NET-1 */
+		|| ((198 == x1) && (51 == x2) && (100 == x3)) /* TEST NET-2 */
+		|| ((203 == x1) && (0 == x2) && (113 == x3)) /* TEST NET-3 */
+		|| (127 == x1)))			/* loopback */
 		return GNKSA_LOCAL_DOMAIN_LITERAL;
 
 	return GNKSA_OK;
@@ -3217,8 +3218,14 @@ gnksa_check_domain(
 			}
 			if (disable_gnksa_domain_check)
 				result = GNKSA_OK;
-			if (GNKSA_OK != result)
-				return result;
+			if (GNKSA_OK != result) {
+#if 0 /* valid IDN ccTLDs are checked via gnksa_domain_list[] */
+				if (strlen(aux) >= 8 && !strncasecmp(aux, "xn--", 4)) /* hack for IDN ccTLDs like xn--wgbh1c (Egypt), xn--mgbaam7a8h (Emarat) or xn--mgberp4a5d4ar (AlSaudiah) */
+					result = GNKSA_OK;
+				else
+#endif /* 0 */
+					return result;
+			}
 			break;
 	}
 
@@ -3583,11 +3590,9 @@ utf8_valid(
 			numc++;
 		} while ((d <<= 1) & 0x80);	/* get sequence length */
 
-		d = 1;
-		while (d < numc) {
-			if (*(c + d) == '\0' || *(c + d) == '\n')
-				illegal = TRUE;
-			d--;
+		if (c + numc > line + strlen(line)) { /* sequence runs past end of string */
+			illegal = TRUE;
+			numc = line + strlen(line) - c;
 		}
 
 		if (!illegal) {

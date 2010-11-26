@@ -3,7 +3,7 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2009-10-03
+ *  Updated   : 2010-04-02
  *  Notes     : Split out from other modules
  *
  * Copyright (c) 1999-2010 Jason Faultless <jason@altarstone.com>
@@ -136,7 +136,7 @@ get_multiparts(
 	MultiPartInfo **malloc_and_setme_info)
 {
 	MultiPartInfo tmp, tmp2;
-	MultiPartInfo *info = 0;
+	MultiPartInfo *info = NULL;
 	int i;
 	int part_index;
 
@@ -207,7 +207,7 @@ int
 tag_multipart(
 	int base_index)
 {
-	MultiPartInfo *info = 0;
+	MultiPartInfo *info = NULL;
 	int i;
 	const int qty = get_multiparts(base_index, &info);
 
@@ -341,10 +341,10 @@ untag_all_articles(
  * Return TRUE if a range was successfully read, parsed and set
  *
  * Allowed syntax is 0123456789-.$ (blanks are ignored):
- *   1-23    mark grp/art 1 thru 23
- *   1-.     mark grp/art 1 thru current
- *   1-$     mark grp/art 1 thru last
- *   .-$     mark grp/art current thru last
+ *   1-23    mark grp/art 1 through 23
+ *   1-.     mark grp/art 1 through current
+ *   1-$     mark grp/art 1 through last
+ *   .-$     mark grp/art current through last
  */
 t_bool
 set_range(
@@ -530,6 +530,8 @@ do_auto_select_arts(
 			art_mark(curr_group, &arts[i], ART_READ);
 			arts[i].zombie = TRUE;
 		}
+		if (curr_group->attribute->show_only_unread_arts)
+			arts[i].keep_in_base = FALSE;
 	}
 	if (curr_group->attribute->show_only_unread_arts)
 		find_base(curr_group);

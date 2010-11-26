@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2009-10-22
+ *  Updated   : 2010-05-07
  *  Notes     :
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
@@ -45,6 +45,7 @@
 
 static char *prompt_slk_message;	/* prompt message for prompt_slk_redraw */
 static char *prompt_yn_message;
+static char *prompt_yn_choice;
 
 /*
  * Local prototypes
@@ -166,9 +167,8 @@ prompt_yn(
 	char keyno[MAXKEYLEN], keyyes[MAXKEYLEN];
 	int keyyes_len = 0, keyno_len = 0, maxlen, prompt_len;
 	t_function func;
-#if defined (MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wint_t yes, no, prompt_ch, ch;
-	wchar_t *wtmp;
 #else
 	char yes, no, prompt_ch;
 	int ch;
@@ -182,23 +182,16 @@ prompt_yn(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	printascii(keyyes, (default_answer ? towupper(yes) : yes));
 	printascii(keyno, (!default_answer ? towupper(no) : no));
-	if ((wtmp = char2wchar_t(keyyes))) {
-		keyyes_len = wcswidth(wtmp, wcslen(wtmp));
-		free(wtmp);
-	}
-	if ((wtmp = char2wchar_t(keyno))) {
-		keyno_len = wcswidth(wtmp, wcslen(wtmp));
-		free(wtmp);
-	}
 #else
 	printascii(keyyes, (default_answer ? toupper(yes) : yes));
 	printascii(keyno, (!default_answer ? toupper(no) : no));
-	keyyes_len = (int) strlen(keyyes);
-	keyno_len = (int) strlen(keyno);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	keyyes_len = strwidth(keyyes);
+	keyno_len = strwidth(keyno);
 	maxlen = MAX(keyyes_len, keyno_len);
-	prompt_len = (int) strlen(prompt) + keyyes_len + keyno_len + maxlen + 6;
-	prompt_yn_message = my_malloc(prompt_len + 1);
+	prompt_len = keyyes_len + keyno_len + maxlen + 6;
+	prompt_yn_message = my_strdup(prompt);
+	prompt_yn_choice = my_malloc(prompt_len + 1);
 
 	input_context = cPromptYN;
 
@@ -206,10 +199,10 @@ prompt_yn(
 		prompt_ch = (default_answer ? yes : no);
 		keyprompt = (default_answer ? keyyes : keyno);
 
-		snprintf(prompt_yn_message, prompt_len, "%s (%s/%s) %-*s", prompt, keyyes, keyno, maxlen, keyprompt);
+		snprintf(prompt_yn_choice, prompt_len, " (%s/%s) %-*s", keyyes, keyno, maxlen, keyprompt);
 		prompt_yn_redraw();
 
-#if defined (MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (((ch = ReadWch()) == '\n') || (ch == '\r'))
 #else
 		if (((ch = (char) ReadCh()) == '\n') || (ch == '\r'))
@@ -249,6 +242,7 @@ prompt_yn(
 
 	input_context = cNone;
 	FreeAndNull(prompt_yn_message);
+	FreeAndNull(prompt_yn_choice);
 
 	if (!cmd_line) {
 		clear_message();
@@ -258,21 +252,34 @@ prompt_yn(
 }
 
 
-/* (Re)draws the prompt message for prompt_yn() */
+/*
+ * (Re)draws and resize the prompt message for prompt_yn()
+ */
 void
 prompt_yn_redraw(
 	void)
 {
+	char *buf;
+	int choice_len = strwidth(prompt_yn_choice);
+	int message_len = strwidth(prompt_yn_message);
+
 	if (!cmd_line) {
 		MoveCursor(cLINES, 0);
 		CleartoEOLN();
 	}
-	my_printf("%s", prompt_yn_message);
+	if (message_len + choice_len > cCOLS - 1) {
+		buf = strunc(prompt_yn_message, cCOLS - choice_len - 1);
+		message_len = strwidth(buf);
+		my_printf("%s%s", buf, prompt_yn_choice);
+		free(buf);
+	} else
+		my_printf("%s%s", prompt_yn_message, prompt_yn_choice);
+
 	if (!cmd_line)
 		cursoron();
 	my_flush();
 	if (!cmd_line)
-		MoveCursor(cLINES, (int) strlen(prompt_yn_message) -1);
+		MoveCursor(cLINES, (message_len + choice_len) - 1);
 }
 
 
@@ -295,12 +302,11 @@ prompt_list(
 	int size)
 {
 	int ch, var_orig;
-	int i, offset;
+	int i, offset, width = 0;
 	int change;
 	int adjust = (strcasecmp(_(list[0]), _(txt_default)) == 0);
-	size_t width = 0;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t *wbuf;
+	char *buf;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	var += adjust;
@@ -311,19 +317,18 @@ prompt_list(
 	 * Find the length of longest printable text
 	 */
 	for (i = 0; i < size; i++)
-		width = MAX(width, strlen(_(list[i])));
+		width = MAX(width, strwidth(_(list[i])));
 
 	show_menu_help(help_text);
 	cursoron();
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if ((wbuf = char2wchar_t(_(prompt_text))) != NULL) {
-		if ((offset = wcswidth(wbuf, wcslen(wbuf) + 1)) == -1) /* something went wrong, use wcslen as fallback */
-			offset = (int) wcslen(wbuf);
-		free(wbuf);
-	} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		offset = (int) strlen(_(prompt_text));
+	offset = strwidth(_(prompt_text));
+
+	/*
+	 * Make sure to not exceed cCOLS
+	 */
+	if (offset + width >= cCOLS)
+		width = cCOLS - offset - 1;
 
 	do {
 		MoveCursor(row, col + offset);
@@ -335,7 +340,7 @@ prompt_list(
 		 *   0 = do nothing
 		 *  -1 = move to the previous list element
 		 *
-		 *  if an arrow key was pressed change ch to an other value
+		 *  if an arrow key was pressed change ch to another value
 		 *  otherwise we will exit the while loop
 		 */
 		switch (ch) {
@@ -379,14 +384,26 @@ prompt_list(
 			else
 				var %= size;
 
-			my_printf("%-*s", (int) width, _(list[var]));
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if ((buf = spart(_(list[var]), width, TRUE)) != NULL) {
+				my_printf("%s", buf);
+				free(buf);
+			} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				my_printf("%-*s", width, _(list[var]));
 			my_flush();
 		}
 	} while (ch != '\r' && ch != '\n' && ch != ESC);
 
 	if (ch == ESC) {
 		var = var_orig;
-		my_printf("%-*s", (int) width, _(list[var]));
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if ((buf = spart(_(list[var]), width, TRUE)) != NULL) {
+			my_printf("%s", buf);
+			free(buf);
+		} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			my_printf("%-*s", width, _(list[var]));
 		my_flush();
 	}
 
@@ -628,16 +645,8 @@ sized_message(
 {
 	char *buf;
 	int max_len;
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t *wformat;
 
-	if ((wformat = char2wchar_t(format)) != NULL) {
-		/* The formatting info (%s) wastes 2 chars, but our prompt needs 1 char */
-		max_len = cCOLS - wcswidth(wformat, wcslen(wformat) + 1) + 2 - 1;
-		free(wformat);
-	} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		max_len = cCOLS - strlen(format) + 2 - 1;	/* The formatting info (%s) wastes 2 chars, but our prompt needs 1 char */
+	max_len = cCOLS - strwidth(format) + 2 - 1;	/* The formatting info (%s) wastes 2 chars, but our prompt needs 1 char */
 
 	buf = strunc(subject, max_len);
 
@@ -741,20 +750,11 @@ prompt_slk_redraw(
 	void)
 {
 	int column;
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t *wtmp;
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	wait_message(0, "%s", prompt_slk_message);
 
 	/* get the cursor _just_ right */
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if ((wtmp = char2wchar_t(prompt_slk_message)) != NULL) {
-		column = wcswidth(wtmp, wcslen(wtmp) + 1) - 1;
-		free(wtmp);
-	} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		column = (int) strlen(prompt_slk_message) - 1;
+	column = strwidth(prompt_slk_message) - 1;
 	MoveCursor(cLINES, column);
 }
 

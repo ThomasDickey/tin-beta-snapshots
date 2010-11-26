@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2009-12-10
+ *  Updated   : 2010-09-27
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2010 Jason Faultless <jason@altarstone.com>
@@ -55,6 +55,7 @@
 #define MATCH_REGEX(x,y,z)	(pcre_exec(x.re, x.extra, y, z, 0, 0, NULL, 0) >= 0)
 
 
+static t_bool charset_unsupported(const char *charset);
 static t_bool header_wanted(const char *line);
 static t_part *new_uue(t_part **part, char *name);
 static void process_text_body_part(t_bool wrap_lines, FILE *in, t_part *part, int hide_uue);
@@ -371,7 +372,7 @@ get_filename(
 
 #define PUT_UUE(part, qualifier_text) \
 	put_cooked(LEN, wrap_lines, C_UUE, _(txt_uue), \
-		part->depth * 4, "", \
+		part->depth ? (part->depth - 1) * 4 : 0, "", \
 		content_types[part->type], part->subtype, \
 		qualifier_text, part->line_count, get_filename(part->params))
 
@@ -454,7 +455,7 @@ process_text_body_part(
 				if (max_line_len < strlen(buf) + 2) {
 					max_line_len = strlen(buf) + 2;
 					line = my_realloc(line, max_line_len);
-				};
+				}
 				strcpy(line, buf);
 
 				/*
@@ -745,6 +746,39 @@ dump_cooked(
 
 
 /*
+ * Check for charsets which may contain NULL bytes and thus break string
+ * functions. Possibly incomplete.
+ *
+ * TODO: fix the other code to handle those charsets properly.
+ */
+static t_bool
+charset_unsupported(
+	const char *charset)
+{
+	static const char *charsets[] = {
+		"csUnicode",	/* alias for ISO-10646-UCS-2 */
+		"csUCS4",		/* alias for ISO-10646-UCS-4 */
+		"ISO-10646-UCS-2",
+		"ISO-10646-UCS-4",
+		"UTF-16",		/* covers also BE/LE */
+		"UTF-32",		/* covers also BE/LE */
+		NULL };
+	const char **charsetptr = charsets;
+	t_bool ret = FALSE;
+
+	if (!charset)
+		return ret;
+
+	do {
+		if (!strncasecmp(charset, *charsetptr, strlen(*charsetptr)))
+			ret = TRUE;
+	} while (!ret && *(++charsetptr) != NULL);
+
+	return ret;
+}
+
+
+/*
  * 'cooks' an article, ie, prepare what will actually appear on the screen
  * It is not easy to do this in the same pass as the initial read since
  * boundary conditions for multipart articles make it harder to do on the
@@ -875,27 +909,36 @@ cook_article(
 				charset = get_param(ptr->params, "charset");
 			else
 				charset = NULL;
-			PUT_ATTACH(ptr, ptr->depth * 4, name, charset);
+			PUT_ATTACH(ptr, (ptr->depth - 1) * 4, name, charset);
 
 			/* Try to view anything of type text, may need to review this */
-			if (IS_PLAINTEXT(ptr))
-				process_text_body_part(wrap_lines, artinfo->raw, ptr, hide_uue);
+			if (IS_PLAINTEXT(ptr)) {
+				if (charset_unsupported(charset)) {
+					put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_attach_unsup_charset), (ptr->depth - 1) * 4, "", charset);
+					if (ptr->next)
+						put_cooked(1, wrap_lines, C_ATTACH, "\n");
+				} else
+					process_text_body_part(wrap_lines, artinfo->raw, ptr, hide_uue);
+			}
 		}
 	} else {
+		if (!strcmp(content_types[hdr->ext->type], "text"))
+			charset = get_param(hdr->ext->params, "charset");
+		else
+			charset = NULL;
 		/*
 		 * A regular single-body article
 		 */
-		if (IS_PLAINTEXT(hdr->ext))
-			process_text_body_part(wrap_lines, artinfo->raw, hdr->ext, hide_uue);
-		else {
+		if (IS_PLAINTEXT(hdr->ext)) {
+			if (charset_unsupported(charset))
+				put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_attach_unsup_charset), 0, "", charset);
+			else
+				process_text_body_part(wrap_lines, artinfo->raw, hdr->ext, hide_uue);
+		} else {
 			/*
 			 * Non-textual main body
 			 */
 			name = get_filename(hdr->ext->params);
-			if (!strcmp(content_types[hdr->ext->type], "text"))
-				charset = get_param(hdr->ext->params, "charset");
-			else
-				charset = NULL;
 			PUT_ATTACH(hdr->ext, 0, name, charset);
 		}
 	}

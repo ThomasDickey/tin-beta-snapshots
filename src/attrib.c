@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2009-11-05
+ *  Updated   : 2010-08-27
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2010 Iain Lea <iain@bricbrac.de>
@@ -89,7 +89,7 @@ set_default_attributes(
 	attributes->mailing_list = NULL;
 	attributes->x_headers = NULL;
 	attributes->x_body = NULL;
-	attributes->from = (scope ? scope->from :(global ? tinrc.mail_address : NULL));
+	attributes->from = (scope ? scope->from : (global ? tinrc.mail_address : NULL));
 	attributes->news_quote_format = (scope ? scope->news_quote_format : (global ? tinrc.news_quote_format : NULL));
 	attributes->quote_chars = (scope ? scope->quote_chars : (global ? tinrc.quote_chars : NULL));
 	attributes->mime_types_to_save = (scope ? scope->mime_types_to_save : (global ? my_strdup("*/*") : NULL));
@@ -873,6 +873,7 @@ assign_attributes_to_groups(
 	struct t_scope *default_scope, *curr_scope;
 	t_bool found;
 	int i, j;
+	long processed = 0L;
 #ifdef CHARSET_CONVERSION
 	t_bool is_7bit;
 #endif /* CHARSET_CONVERSION */
@@ -882,6 +883,8 @@ assign_attributes_to_groups(
 
 	default_scope = &scopes[0];
 	for_each_group(i) {
+		if (++processed % (MODULO_COUNT_NUM) == 0)
+			spin_cursor();
 		group = &active[i];
 		found = FALSE;
 		for (j = 1; j < num_scope; j++) {
@@ -1155,16 +1158,20 @@ write_attributes_file(
 	fprintf(fp, _("#  quick_kill_expire=ON/OFF\n"));
 	fprintf(fp, _("#  quick_kill_case=ON/OFF\n"));
 	fprintf(fp, _("#  quick_kill_header=NUM\n"));
-	fprintf(fp, _("#    0=subj (case sensitive) 1=subj (ignore case)\n"));
-	fprintf(fp, _("#    2=from (case sensitive) 3=from (ignore case)\n"));
-	fprintf(fp, _("#    4=msgid 5=lines\n"));
+	fprintf(fp, _("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n"));
+	fprintf(fp, _("#    2=From: (case sensitive)     3=From: (ignore case)\n"));
+	fprintf(fp, _("#    4=Message-ID: & full References: line\n"));
+	fprintf(fp, _("#    5=Message-ID: & last References: entry only\n"));
+	fprintf(fp, _("#    6=Message-ID: entry only     7=Lines:\n"));
 	fprintf(fp, _("#  quick_select_scope=STRING\n"));
 	fprintf(fp, _("#  quick_select_expire=ON/OFF\n"));
 	fprintf(fp, _("#  quick_select_case=ON/OFF\n"));
 	fprintf(fp, _("#  quick_select_header=NUM\n"));
-	fprintf(fp, _("#    0=subj (case sensitive) 1=subj (ignore case)\n"));
-	fprintf(fp, _("#    2=from (case sensitive) 3=from (ignore case)\n"));
-	fprintf(fp, _("#    4=msgid 5=lines\n"));
+	fprintf(fp, _("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n"));
+	fprintf(fp, _("#    2=From: (case sensitive)     3=From: (ignore case)\n"));
+	fprintf(fp, _("#    4=Message-ID: & full References: line\n"));
+	fprintf(fp, _("#    5=Message-ID: & last References: entry only\n"));
+	fprintf(fp, _("#    6=Message-ID: entry only     7=Lines:\n"));
 	fprintf(fp, _("#  quote_chars=STRING (%%s, %%S for initials)\n"));
 #ifndef DISABLE_PRINTING
 	fprintf(fp, _("#  print_header=ON/OFF\n"));
@@ -1233,10 +1240,10 @@ write_attributes_file(
 	fprintf(fp, _("#    1 = Skip leading blank lines\n"));
 	fprintf(fp, _("#    2 = Skip trailing blank lines\n"));
 	fprintf(fp, _("#    3 = Skip leading and trailing blank lines\n"));
-	fprintf(fp, _("#    4 = Compact multiple blank lines between textblocks\n"));
-	fprintf(fp, _("#    5 = Compact multiple blank lines between textblocks and skip\n#        leading blank lines\n"));
-	fprintf(fp, _("#    6 = Compact multiple blank lines between textblocks and skip\n#        trailing blank lines\n"));
-	fprintf(fp, _("#    7 = Compact multiple blank lines between textblocks and skip\n#        leading and trailing blank lines\n"));
+	fprintf(fp, _("#    4 = Compact multiple blank lines between text blocks\n"));
+	fprintf(fp, _("#    5 = Compact multiple blank lines between text blocks and skip\n#        leading blank lines\n"));
+	fprintf(fp, _("#    6 = Compact multiple blank lines between text blocks and skip\n#        trailing blank lines\n"));
+	fprintf(fp, _("#    7 = Compact multiple blank lines between text blocks and skip\n#        leading and trailing blank lines\n"));
 	fprintf(fp, _("#  verbatim_handling=ON/OFF\n"));
 	fprintf(fp, _("#  wrap_on_next_unread=ON/OFF\n"));
 	fprintf(fp, _("#  x_body=STRING (eg. ~/.tin/extra-body-text)\n"));

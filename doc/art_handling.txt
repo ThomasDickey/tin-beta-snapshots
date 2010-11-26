@@ -44,7 +44,7 @@ There is one of these per article 'part' or attachment. The article as a
 whole counts as 1 part so there will always be at least one of these structures
 linked to the header.
 Each t_part is pre-initialised to the RFC2045 defaults. (text/plain, 7bit etc..)
-Content-* headers if present will then supercede this information.
+Content-* headers if present will then supersede this information.
 The other fields are:
 params		A linked list of parameters associated with the Content-Type and
 			Content-Disposition headers

@@ -49,7 +49,7 @@
  *      if need_name is set to true and/or we have to unlink the file
  *      ourself filename is set to the name of the tmp file located in
  *      base_dir
- * -1 = some error occured
+ * -1 = some error occurred
  */
 int
 my_tmpfile(

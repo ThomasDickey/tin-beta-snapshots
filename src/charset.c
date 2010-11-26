@@ -40,7 +40,7 @@
 #endif /* !TIN_H */
 
 /*
- *  Table for the iso2asc convertion...
+ *  Table for the iso2asc conversion
  *  iso2asc  by  (unrza3@cd4680fs.rrze.uni-erlangen.de)
  *  included by  (root@aspic.han.de)
  */
@@ -410,7 +410,7 @@ convert_to_printable(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 /*
  * NOTES: don't make wc a wint_t as libutf8 (at least version 0.8)
- *        sometimes fails to propper convert (wchar_t) 0 to (wint_t) 0
+ *        sometimes fails to proper convert (wchar_t) 0 to (wint_t) 0
  *        and thus loop termination fails.
  */
 wchar_t *

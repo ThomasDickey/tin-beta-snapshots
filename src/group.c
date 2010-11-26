@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-11-12
+ *  Updated   : 2010-10-07
  *  Notes     :
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -57,6 +57,7 @@ struct t_group *curr_group;
 static int do_search(t_function func, t_bool repeat);
 static int enter_pager(int art, t_bool ignore_unavail);
 static int enter_thread(int depth, t_pagerinfo *page);
+static int find_new_pos(long old_artnum, int cur_pos);
 static int group_catchup(t_function func);
 static int tab_pressed(void);
 static t_bool prompt_getart_limit(void);
@@ -139,7 +140,6 @@ group_page(
 {
 	char key[MAXKEYLEN];
 	int i, n, ii;
-	int old_top = 0;
 	int thread_depth;	/* Starting depth in threads we enter */
 	long old_artnum = 0L;
 	struct t_art_stat sbuf;
@@ -283,6 +283,10 @@ group_page(
 				}
 				break;
 
+			case GLOBAL_SEARCH_REPEAT:
+				info_message(_(txt_no_prev_search));
+				break;
+
 			case GLOBAL_SEARCH_AUTHOR_FORWARD:
 			case GLOBAL_SEARCH_AUTHOR_BACKWARD:
 			case GLOBAL_SEARCH_SUBJECT_FORWARD:
@@ -306,6 +310,24 @@ group_page(
 					info_message(_(txt_no_arts));
 				break;
 
+			case GROUP_CANCEL:	/* cancel current basenote */
+				if (grpmenu.curr >= 0) {
+					if (can_post || group->attribute->mailing_list != NULL) {
+						char *progress_msg = my_strdup(_(txt_reading_article));
+						int ret;
+
+						n = (int) base[grpmenu.curr];
+						ret = art_open(TRUE, &arts[n], group, &pgart, TRUE, progress_msg);
+						free(progress_msg);
+						if (ret != ART_UNAVAILABLE && ret != ART_ABORT && cancel_article(group, &arts[n], n))
+							show_group_page();
+						art_close(&pgart);
+					} else
+						info_message(_(txt_cannot_post));
+				} else
+					info_message(_(txt_no_arts));
+				break;
+
 			case GROUP_NEXT_UNREAD_ARTICLE_OR_GROUP:	/* goto next unread article/group */
 				ret_code = tab_pressed();
 				break;
@@ -320,26 +342,25 @@ group_page(
 					info_message(_(txt_no_arts));
 					break;
 				}
-				old_top = top_art;
 				n = (int) base[grpmenu.curr];
-				old_artnum = arts[n].artnum;
 				if (filter_menu(func, group, &arts[n])) {
-					if (filter_articles(group)) {
-						make_threads(group, FALSE);
-						grpmenu.curr = find_new_pos(old_top, old_artnum, grpmenu.curr);
-					}
+					old_artnum = arts[n].artnum;
+					unfilter_articles(group);
+					filter_articles(group);
+					make_threads(group, FALSE);
+					grpmenu.curr = find_new_pos(old_artnum, grpmenu.curr);
 				}
 				show_group_page();
 				break;
 
 			case GLOBAL_EDIT_FILTER:
-				if (!invoke_editor(filter_file, filter_file_offset, NULL))
-					break;
-				unfilter_articles();
-				(void) read_filter_file(filter_file);
-				if (filter_articles(group)) {
+				if (invoke_editor(filter_file, filter_file_offset, NULL)) {
+					old_artnum = grpmenu.max > 0 ? arts[(int) base[grpmenu.curr]].artnum : -1L;
+					unfilter_articles(group);
+					(void) read_filter_file(filter_file);
+					filter_articles(group);
 					make_threads(group, FALSE);
-					grpmenu.curr = find_new_pos(old_top, old_artnum, grpmenu.curr);
+					grpmenu.curr = old_artnum >= 0L ? find_new_pos(old_artnum, grpmenu.curr) : grpmenu.max - 1;
 				}
 				show_group_page();
 				break;
@@ -351,18 +372,16 @@ group_page(
 					break;
 				}
 				if ((!TINRC_CONFIRM_ACTION) || prompt_yn((func == GLOBAL_QUICK_FILTER_KILL) ? _(txt_quick_filter_kill) : _(txt_quick_filter_select), TRUE) == 1) {
-					old_top = top_art;
 					n = (int) base[grpmenu.curr]; /* should this depend on show_only_unread_arts? */
-					old_artnum = arts[n].artnum;
 					if (quick_filter(func, group, &arts[n])) {
+						old_artnum = arts[n].artnum;
+						unfilter_articles(group);
+						filter_articles(group);
+						make_threads(group, FALSE);
+						grpmenu.curr = find_new_pos(old_artnum, grpmenu.curr);
+						show_group_page();
 						info_message((func == GLOBAL_QUICK_FILTER_KILL) ? _(txt_info_add_kill) : _(txt_info_add_select));
-						if (filter_articles(group)) {
-							make_threads(group, FALSE);
-							/* TODO: position is wrong after quick killing a thread */
-							grpmenu.curr = find_new_pos(old_top, old_artnum, grpmenu.curr);
-						}
 					}
-					show_group_page();
 				}
 				break;
 
@@ -460,15 +479,9 @@ group_page(
 				break;
 
 			case GLOBAL_OPTION_MENU:			/* option menu */
-				if (grpmenu.max > 0) {
-					old_top = top_art;
-					old_artnum = arts[(int) base[grpmenu.curr]].artnum;
-				}
-				n = tinrc.sort_article_type;
+				old_artnum = grpmenu.max > 0 ? arts[(int) base[grpmenu.curr]].artnum : -1L;
 				config_page(group->name);
-				if (n != tinrc.sort_article_type)
-					make_threads(group, TRUE);
-				grpmenu.curr = find_new_pos(old_top, old_artnum, grpmenu.curr);
+				grpmenu.curr = old_artnum >= 0L ? find_new_pos(old_artnum, grpmenu.curr) : grpmenu.max - 1;
 				show_group_page();
 				break;
 
@@ -980,6 +993,14 @@ toggle_read_unread(
 {
 	int n, i = -1;
 
+	/*
+	 * Clear art->keep_in_base if switching to !show_only_unread_arts
+	 */
+	if (curr_group->attribute->show_only_unread_arts) {
+		for_each_art(n)
+			arts[n].keep_in_base = FALSE;
+	}
+
 	/* force currently is always false */
 	if (force)
 		curr_group->attribute->show_only_unread_arts = TRUE;	/* Yes - really, we change it in a bit */
@@ -996,13 +1017,15 @@ toggle_read_unread(
 			i = n;
 	}
 
-	curr_group->attribute->show_only_unread_arts = bool_not(curr_group->attribute->show_only_unread_arts);
+	if (!force)
+		curr_group->attribute->show_only_unread_arts = bool_not(curr_group->attribute->show_only_unread_arts);
 
 	find_base(curr_group);
 	if (i >= 0 && (n = which_thread(i)) >= 0)
 		grpmenu.curr = n;
 	else if (grpmenu.max > 0)
 		grpmenu.curr = grpmenu.max - 1;
+	clear_message();
 }
 
 
@@ -1011,24 +1034,16 @@ toggle_read_unread(
  * author it is impossible to know which, if any, articles will be left
  * afterwards. So we make a "best attempt" to find a new index point.
  */
-int
+static int
 find_new_pos(
-	int old_top,
 	long old_artnum,
 	int cur_pos)
 {
 	int i, pos;
 
-	if (top_art == old_top)
-		return cur_pos;
+	if ((i = find_artnum(old_artnum)) >= 0 && (pos = which_thread(i)) >= 0)
+		return pos;
 
-	for_each_art(i) {
-		if (arts[i].artnum == old_artnum) {
-			pos = which_thread(arts[i].artnum);
-			if (pos >= 0)
-				return pos;
-		}
-	}
 	return ((cur_pos < grpmenu.max) ? cur_pos : (grpmenu.max - 1));
 }
 
@@ -1279,7 +1294,7 @@ build_sline(
 		tmp_from = wcspart(wc, len_from, TRUE);
 	}
 
-#	if 0 /* use additional space if !draw_arrow - usefull? */
+#	if 0 /* use additional space if !draw_arrow - useful? */
 	if (!tinrc.draw_arrow) {
 		if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
 			mbstowcs(format, "%s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
@@ -1328,7 +1343,7 @@ build_sline(
 #else
 	arts_sub[len_subj - 12 + 1] = '\0';
 
-#	if 0 /* use additional space if !draw_arrow - usefull? */
+#	if 0 /* use additional space if !draw_arrow - useful? */
 	if (!tinrc.draw_arrow) {
 		if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH)
 			snprintf(buffer, cCOLS + 1, "%s %s %s%6d %-*.*s%s%-*.*s",
@@ -1691,7 +1706,7 @@ prompt_getart_limit(
 
 
 /*
- * Redraw all neccessary parts of the screen after FEED_MARK_(UN)READ
+ * Redraw all necessary parts of the screen after FEED_MARK_(UN)READ
  * Move cursor to next unread item if needed
  *
  * Returns TRUE when no next unread art, FALSE otherwise

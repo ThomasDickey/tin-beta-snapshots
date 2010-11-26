@@ -113,7 +113,7 @@ get_mailcap_entry(
 								STRCPY(mailcap, ptr);
 								foo = parse_mailcap_line(mailcap, part, path);
 								if (foo != NULL) {
-									fclose(fp); /* perfect match with test succeded (if given) */
+									fclose(fp); /* perfect match with test succeeded (if given) */
 									free(mailcaps);
 									return foo;
 								}
@@ -125,7 +125,7 @@ get_mailcap_entry(
 										if (foo == NULL) /* test failed */
 											wildcap[0] = '\0'; /* ignore match */
 									}
-								} /* else subtype missmatch, no action required */
+								} /* else subtype mismatch, no action required */
 							}
 						} /* else no match, no action required */
 					} /* else invalid mailcap line (no /), no action required */
@@ -306,7 +306,7 @@ get_mailcap_field(
 				break;
 
 			case ';':
-				if (!backquote && !doublequote) { /* field seperator (plain ;) */
+				if (!backquote && !doublequote) { /* field separator (plain ;) */
 					*ptr = '\0';
 					return mailcap;
 				}
@@ -395,7 +395,7 @@ expand_mailcap_meta(
 						const char *value;
 
 						parameter = my_calloc(1, end - ptr + 1);
-						strncpy(parameter, ptr + 1, end - ptr - 1);	/* extract paramter name */
+						strncpy(parameter, ptr + 1, end - ptr - 1);	/* extract parameter name */
 						if ((value = get_param(part->params, parameter)) != NULL) { /* match? */
 							const char *nptr = escape_shell_meta_chars ? escape_shell_meta(value, quote) : value;
 

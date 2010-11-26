@@ -2,11 +2,11 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2009-12-24
+.\" Updated   : 2010-11-26
 .\" Notes     : needs a some work
 .\"
 .\"
-.TH tin 5 "December 24th, 2009" "1.9.5" "A Usenet newsreader"
+.TH tin 5 "November 26th, 2010" "1.9.6" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -271,7 +271,7 @@ news.example.org  secret
 .br
 news.example.net  arcane  guest
 .br
-news.example.com  "top secret"  james.bond
+news.example.com  "top secret"  james.bond@example.com
 .RE
 .RE
 .PP
@@ -499,7 +499,7 @@ directed to this email address instead
 .B mark_ignore_tags
 Identical to the tinrc variable of the same name
 .TP
-.B mark_saved_unread
+.B mark_saved_read
 Identical to the tinrc variable of the same name
 .TP
 .B mime_forward
@@ -741,7 +741,7 @@ lines beginning with a '#' are ignored.
 .B comment
 Every entry (rule) in the filter file might get a comment. Multiple
 lines are allowed (but only for comments yet). Every line must start
-with the "comment="-keyword. Comments must appear first in the rule.
+with the "comment=" keyword. Comments must appear first in the rule.
 Comment lines placed within a rule will be moved to the begin of the
 next rule. This might be changed in the future. Don't use '#' to mark
 comments as those lines are ignored and your comments will get lost
@@ -785,12 +785,12 @@ Match against ''Lines:'', <num matches less than, >num matches more than.
 .TP
 .\" TODO: document option in detail
 .B gnksa
-Match against ''From:''-address parser return codes.
+Match against ''From:'' address parser return codes.
 .TP
 .B xref
-Match against ''Xref:''-line. Before any matching is done the line is
+Match against ''Xref:'' line. Before any matching is done the line is
 turned into the same format ''Newsgroups:'' has that is it is turned
-into a comma separated newsgroup list with all other informations (i.e.
+into a comma separated newsgroup list with all other information (i.e.
 the article counter) removed.
 .TP
 .B time
@@ -872,6 +872,14 @@ their defaults. If a keyname is bound to NULL it is unassigned.
 \fBMarkFeedRead\fP	^X
 \fBMarkFeedUnread\fP	^W
 .sp
+\fBAttachSelect\fP	^J	^M
+\fBAttachPipe\fP	p
+\fBAttachSave\fP	s
+\fBAttachTag\fP	t
+\fBAttachUntag\fP	U
+\fBAttachTagPattern\fP	=
+\fBAttachToggleTagged\fP	@
+.sp
 \fBConfigToggleAttrib\fP	TAB
 \fBConfigSelect\fP	^J	^M
 \fBConfigLastPage\fP	G
@@ -899,6 +907,7 @@ their defaults. If a keyname is bound to NULL it is unassigned.
 \fBGroupSelThdIfUnreadSelected\fP	;
 \fBGroupSelPattern\fP	=
 \fBGroupReverseSel\fP	@
+\fBGroupCancel\fP	D
 \fBGroupToggleGetartLimit\fP	G
 \fBGroupMarkThdRead\fP	K
 \fBGroupNextUnreadArt\fP	N
@@ -1023,6 +1032,7 @@ their defaults. If a keyname is bound to NULL it is unassigned.
 \fBThreadSelArt\fP	*
 \fBThreadToggleArtSel\fP	.
 \fBThreadReverseSel\fP	@
+\fBThreadCancel\fP	D
 \fBThreadMarkArtRead\fP	K
 \fBThreadAutoSave\fP	S
 \fBThreadUntag\fP	U
@@ -1031,6 +1041,8 @@ their defaults. If a keyname is bound to NULL it is unassigned.
 \fBThreadSave\fP	s
 \fBThreadTag\fP	t
 \fBThreadUndoSel\fP	~
+.sp
+\fBUrlSelect\fP	^J	^M
 .fi
 .RE
 .PP
@@ -1162,6 +1174,12 @@ works. If it exists, the global configuration file,
 users own configuration file \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fR is read.
 The global file is useful for distributing system-wide defaults to new
 users who have no private tinrc yet (see also \fB/etc/tin/tin.defaults\fP).
+.TP
+.B abbreviate_groupname
+If ON abbreviate long newsgroup names at group selection level and article
+level (if necessary) like this:
+news.software.readers \-> n.software.readers \-> n.s.readers \-> n.s.r.
+Default is OFF.
 .TP
 .B add_posted_to_filter
 If ON add posted articles which start a new thread to filter for
@@ -1382,8 +1400,10 @@ Default for quick (1 key) kill filter header.
 .in +.3i
 .nf
 .ta \w'0,1   'u +\w'\'\'Message\-ID:\'\' & last \'\'References:\'\' entry only'u
-0,1	''Subject:''
-2,3	''From:''
+0	''Subject:'' (case sensitive)
+1	''Subject:'' (ignore case)
+2	''From:'' (case sensitive)
+3	''From:'' (ignore case)
 4	''Message\-ID:'' & full ''References:'' line
 5	''Message\-ID:'' & last ''References:'' entry only
 6	''Message\-ID:'' entry only
@@ -1408,8 +1428,10 @@ Default for quick (1 key) auto-selection filter header.
 .in +.3i
 .nf
 .ta \w'0,1   'u +\w'\'\'Message\-ID:\'\' & last \'\'References:\'\' entry only'u
-0,1	''Subject:''
-2,3	''From:''
+0	''Subject:'' (case sensitive)
+1	''Subject:'' (ignore case)
+2	''From:'' (case sensitive)
+3	''From:'' (ignore case)
 4	''Message\-ID:'' & full ''References:'' line
 5	''Message\-ID:'' & last ''References:'' entry only
 6	''Message\-ID:'' entry only
@@ -2133,7 +2155,7 @@ ON.
 .B url_handler
 The program that will be run when launching URLs in the article viewer
 using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended to
-this. Default is \fBurl_handler.sh %s\fP.
+this. Default is \fBurl_handler.pl %s\fP.
 .TP
 .B url_highlight
 Enable highlighting URLs in message body. Default is ON.
@@ -2486,7 +2508,7 @@ the newsserver.
 only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
-uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
+uses the LIST SUBSCRIPTIONS (\fBRFC6048\fP) command instead.
 .RE
 .PP
 
@@ -2527,4 +2549,5 @@ uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 .BR RFC4643 ,
 .BR RFC5322 ,
 .BR RFC5536 ,
-.BR RFC5537
+.BR RFC5537 ,
+.BR RFC6048

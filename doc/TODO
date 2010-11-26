@@ -4,6 +4,11 @@ not read only ,-).
 
 Bugs
 ----
+o  get_respcode() doesn't handle the 401 response code. as we have to
+   evaluate the response text as well we have to fix every
+   nntp_command(..., NULL, 0) call.
+   [20100429 Urs Janssen <urs@tin.org>]
+
 o  col_response is a misnomer as the counter doesn't count responses
    anymore (except on the very first article). The man-page is outdated too.
    [20080826 Urs Janssen <urs@tin.org>]
@@ -99,6 +104,19 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  add nntp_default_server to tin.defaults to override compile time setting.
+   if given strings starts with / or ~ the value is taken from the referenced
+   file, if it starts with $ it is read from the referenced variable.
+   [20101118 Urs Janssen <urs@tin.org>]
+
+o  the old space_goto_next_article=ON && space_goto_next_unread=OFF is not
+   possible with the new goto_next_unread rc-var, we need something like
+   an additional goto_next_read rc-var
+   [20101101 Urs Janssen <urs@tin.org>]
+
+o  key to show all article headers but not switch into raw mode like ^H does
+   [20100911 Urs Janssen <urs@tin.org>]
+
 o  add DEFAULT_SIGDASHES_REGEX and related 'M'enu-entry for signature
    detection in cook.c
    [20080925 Urs Janssen <urs@tin.org>]
@@ -114,7 +132,7 @@ o  add user defined screen layout at different levels
 o  add TLS (RFC 4642), NNTPS support
    (<http://www.gnu.org/software/gnutls/>, <http://www.openssl.org/>
     might be useful (but unfortunately we use fputs()/fgets() instead of
-    read()/write() - BIO_*() may be usefull);
+    read()/write() - BIO_*() may be useful);
     "stunnel -c -d 1119 -r news.example.org:563; tin -g localhost -p 1119"
     can be used for NNTPS)
    [20031210 Urs Janssen <urs@tin.org>]
@@ -131,17 +149,12 @@ o  make 'GNKSA'-parser RFC5322/USEFOR compliant and fix bugs
    (e.g. "<~$!~( )@( )example.com>" causes "illegal character in RHS", but
    the address is valid)
 
-o  allow IDN ccTLDs (/\.xn--\S+$/) in 'GNKSA'-parser
-
 o  add In-Reply-To threading for mailgroups
    [20030518 Urs Janssen <urs@tin.org>]
 
 o  make auto'S'ave also work for inrange groups
    (unfortunately 'S' at select level is used for something else)
    [20030508 Urs Janssen <urs@tin.org>]
-
-o  sub-parse message/rfc822 messages (might occur in mail-groups)
-   [20030310 Urs Janssen <urs@tin.org>]
 
 o  turn ask_for_metamail into $MM_NOASK support (see metamail(1))
    [20030314 Urs Janssen <urs@tin.org>]
@@ -248,8 +261,6 @@ o  check if the articles Subject/From in the pager matches (minus
 o  attributes (still) needs some work; See doc/config-anomalies.
    [20030303 Dirk Nimmich <nimmich@muenster.de>]
 
-o  add 'make unproto'
-
 o  add IPv6 support
    (add protocol independent wrappers which use IPv6 (functions)
     whenever possible).
@@ -300,12 +311,11 @@ o  add feature show_new_newsgroups_since
 o  add new key which taggs articles based on a prompted regex, could be used
    for GROUP_MARK_THREAD_READ,PAGE_MARK_THREAD_READ,THREAD_MARK_ARTICLE_READ
    and/or something like GROUP_SELECT_THREAD/THREAD_SELECT_ARTICLE which
-   works on tagged arts (the later might be usefull in conjnction with
+   works on tagged arts (the later might be useful in conjnction with
    GROUP_MARK_UNSELECTED_ARTICLES_READ)
    [20051110 Urs Janssen <urs@tin.org>]
 
 o  Additions to the thread menu:
-     'D'  (cancel article)
      ']'  (GLOBAL_QUICK_FILTER_KILL)
      '['  (GLOBAL_QUICK_FILTER_SELECT)
      'r'  (reply to) /* not 'R' cause it conflicts with mail_bugreport */
@@ -314,10 +324,12 @@ o  Additions to the thread menu:
      'N'  (next unread article)
      'P'  (previous unread article)
      'T'  (tag all parts of current multipart-message in order)
+     'V'  (View/pipe/save multimedia attachments)
      'X'  (mark all unread articles that have not been selected as read)
      ';'  (mark unread arts as hot if >= 1 art in thread is hot)
      '+'  (mark thread as hot)
      '='  (mark pattern as hot)
+     '@'  (toggle selections)
      'Y'  (check for new articles in thread)
      '%'  (toggle rot13 encoding of screen content)
      'x'  (repost)
@@ -325,6 +337,7 @@ o  Additions to the thread menu:
      keys to go to previous/next thread
 
 o  Additions to the group menu:
+     'V'  (View/pipe/save multimedia attachments)
      'Y'  (check for new articles in group)
      '%'  (toggle rot13 encoding of screen content)
 
@@ -333,14 +346,28 @@ o  Additions to the select menu:
 
 o  Add to the 'M'enu:
      'R'  (GLOBAL_BUGREPORT)
-     '!'  (GLOBAL_SHELL_ESCAPE)
      '&'  (GLOBAL_TOGGLE_COLOR)
      and maybe a way to change built in path like DEFAULT_MAILER, PATH_PGP, ...
 
-o  Add to the POST_INFO-level ('W'):
      '?','/','\' search (partly done, currently only the displayed page is
                          searched which is not that useful)
      'h'  (GLOBAL_HELP)
+
+o  Add to the attachment menu ('V'):
+     'F'  post followup to current article, not including current attachment
+     'R'  reply through mail to author, not including current attachment
+          or
+     'R'  (GLOBAL_BUGREPORT)
+     'f'  post followup to current article, including current (or tagged)
+          attachment(s)
+     'm'  mail attachment
+     'o'  print attachment
+     'r'  reply through mail to author, including current attachment
+     't'  tag attachments for '|', 'p', 's', 'm' (done for 's')
+     '#'  tag range of attachments (n-m)
+     'x'  repost current attachment to another group
+     '%'  (toggle rot13 encoding of screen content)
+     '&'  (GLOBAL_TOGGLE_COLOR)
 
 o  Add a commandline switch (-V) that prints out all values of cpp-symbols
    etc. [partly done, but should be cleaned up]
@@ -458,10 +485,18 @@ o  suppress hide_uue=2 checking unless first line in an article or following
 
 Internal Changes
 ----------------
+o  rewrite mini-help, remove the long strings and generate them dynamicly
+   one help text for each key makes translations more easy and uniq and can
+   use the available space on the screen much better if not running on 80
+   columns.
+   [20100326 Urs Janssen <urs@tin.org>]
+
 o  rewrite auth.c
+   - turn t_bool authinfo_user, authinfo_sasl, authinfo_state into
+     enum authinfo { NONE = 0, USER = 1, SASL = 2 }
 
 o  make article numbers (u)int_least64_t/PRI[iu]LEAST64 (on OSs where possible),
-   provide usefull fallbacks if system doesn't have <inttypes.h>/<stdint.h>
+   provide useful fallbacks if system doesn't have <inttypes.h>/<stdint.h>
    (check for long long and if present use "%lld";
    #ifdef int_least64_t typedef artnum_t int_least64_t #else ...).
    use atoll/strtoll for parsing article numbers. (#ifdef HAVE ATOLL
@@ -475,13 +510,13 @@ o  fix aclocal.m4:CF_FUNC_SYSTEM and/or misc.c:invoke_cmd() that
 o  tinrc.confirm_choice should be written/read as int, not string as users
    who edit the tinrc manually can't know the exact strings required.
    unfortunately rc_update() can't handle type changes (rc_update should
-   also get the splitted version number as arg so we can do specific
+   also get the split version number as arg so we can do specific
    changes).
    [20081112 Urs Janssen <urs@tin.org>]
 
 o  use read()/write() instead of fputs()/fgets()
 
-o  move serveral (server related) files into the per-server dir
+o  move several (server related) files into the per-server dir
    e.g.:
       ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news${NNTPSERVER+"-$NNTPSERVER"}/
    should be
@@ -491,7 +526,7 @@ o  move serveral (server related) files into the per-server dir
 o  upgrade configure-script to >= autoconf-2.61
    [20050728 Urs Janssen <urs@tin.org>]
 
-o  remove untranslateable constructs like txt_prefix_*
+o  remove untranslatable constructs like txt_prefix_*
    [20050413 Urs Janssen <urs@tin.org>]
 
 o  keys which could be renamed/merged:
@@ -511,7 +546,7 @@ o  read_overview() calls eat_re() which strips the "Re: " out of the
    [20050225 Urs Janssen <urs@tin.org>]
 
 o  use new_nntp_command() instead of nntp_command() in the rest of the
-   code (where usefull; if we do a global change, rename it to
+   code (where useful; if we do a global change, rename it to
    nntp_command()). see check_extensions() for a sample usage.
    [20050211 Urs Janssen <urs@tin.org>]
 
@@ -568,7 +603,7 @@ o  close potential security holes:
    - check getenv() results before using it
    - check where my_strncpy() or STRCPY() should be used
      or include OpenBSDs strlcpy(3) (and strlcat(3)) and use it.
-   (<ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/>)
+   (<http://www.openbsd.org/cgi-bin/cvsweb/src/lib/libc/string/strlcpy.c>)
    [Urs Janssen <urs@tin.org> - its4 <http://www.rstcorp.com/its4>, rats
     <http://www.securesw.com/rats/> and flawfinder
     <http://www.dwheeler.com/flawfinder/> can locate potential security
@@ -606,11 +641,6 @@ o  rewrite the tag code so that arts[].tagged becomes index in arts[]
 o  strip Xref:-header if saving news in batch mode (-S)?
    [Urs Janssen <urs@tin.org>]
 
-o  When reading local spool, assign the filehandle of the on-spool
-   article directly to artinfo->raw. There is no need to take a local
-   copy.
-   [Jason Faultless <jason@altarstone.com>]
-
 o  what is with NEW_HASH_METHOD in list.c?
 
 o  rewrite code to use INEWS_PATH instead of INEWSDIR
@@ -618,6 +648,12 @@ o  rewrite code to use INEWS_PATH instead of INEWSDIR
 
 o  remove built in path of external commands (metamail, ispell, ...)
    [for ispell $ISPELL can be used to override systempath and progname]
+
+o  add configure-switch for DISABLE_PIPELINING
+   [20090612 Urs Janssen <urs@tin.org>]
+
+o  mask inline PGP SIGNATURE/KEY BLOCK like we do for uu-sections
+   [20090722 Urs Janssen <urs@tin.org>]
 
 Unicode
 -------
@@ -653,7 +689,7 @@ o  make mm_network_charset an user configurable item list
    [20050805 <urs@tin.org>]
 
 o  add IDNA support (RFC 3490ff.)
-   (<http://www.gnu.org/software/libidn/> might be usefull)
+   (<http://www.gnu.org/software/libidn/> might be useful)
    (added minimalistic IDNA decoding support if a recent libidn is found, urs)
    [20030917 Urs Janssen <urs@tin.org>]
 
@@ -663,11 +699,14 @@ o  add normalization
    (done for search strings)
    [20031209 Michael Bienia <michael@vorlon.ping.de>]
 
-o  add configure-switch for DISABLE_PIPELINING
-   [20090612 Urs Janssen <urs@tin.org>]
-
 Docs/online help
 ----------------
+o  the documentation of PageFollowupQuoteHeaders (^W) and
+   PageReplyQuoteHeaders (^E) is wrong as not all headers but just those
+   visible via news_headers_to_display (or all if raw mode is on
+   (PageToggleHeaders (^H)) are included.
+   [20100911 Urs Janssen <urs@tin.org>]
+
 o  the online help of GroupMarkUnselArtRead 'X' is unclear as it doesn't
    say that the article are marked read
    [20090814 Urs Janssen <urs@tin.org>]
@@ -703,6 +742,40 @@ o  integrate doc/auth.txt into tin.1-manpage
 
 Not yet classified
 ------------------
+o  what about !us-ascii chars in username/password when using
+   AUTHINFO USER/PASS? Currently they are sent as is, RFC 3977 says
+   "The character set for all NNTP commands is UTF-8", RFC 4643 doesn't
+   mention any special handling.
+   [20101104 Urs Janssen <urs@tin.org>]
+
+o  what is or was HIST_HELP_SEARCH good for? And what about cHelp?
+   [20101008 Urs Janssen <urs@tin.org>]
+
+o  fix memleaks on early exits (i.e. host unreachable, auth failed, ...)
+   [20100517 Urs Janssen <urs@tin.org>]
+
+o  charset conversion fails when converting articles from multibyte charsets
+   with 0 bytes (UCS2, UCS4, UTF-16[[LB]E], UTF-32[[LB]E], ...), currently
+   we just skip over such parts instead of handling them properly
+   [20100905 Urs Janssen <urs@tin.org>]
+
+o  add "COMPRESS DEFLATE" support once it's official? this would require a
+   rewrite of the code which reads data from the network (which should be
+   done anyway for TLS) as we must handle null-bytes in the stream.
+   <http://www.ietf.org/internet-drafts/draft-murchison-nntp-compress-01.txt>
+   [20100122 Urs Janssen <urs@tin.org>]
+
+o  the documentation suggests that novrootdir/$TIN_NOVROOTDIR defaults to
+   spooldir/$TIN_SPOOLDIR if unset, which is not exactly what happens as
+   this default is set at configure/compile time, not at runtime, so
+   setting $TIN_SPOOLDIR to something different than the default will not
+   automatically adjust $TIN_NOVROOTDIR at runtime. we should either
+   fix the documentation or the behaviour.
+   [20100103 Urs Janssen <urs@tin.org>]
+
+o  FOLLOW_USEFOR_DRAFT is a minomer as RFC 5536 is released
+   [20091225 Urs Janssen <urs@tin.org>]
+
 o  un/subscribe_pattern() is very slow on servers with a huge active file
    [20091223 Urs Janssen <urs@tin.org>]
 
@@ -710,9 +783,6 @@ o  replace wildmat.c with uwildmat.c
    <http://inn.eyrie.org/trac/browser/trunk/lib/uwildmat.c>? It knows poison
    patterns and can handle UTF-8 strings
    [20091223 Urs Janssen <urs@tin.org>]
-
-o  mask inline PGP SIGNATURE/KEY BLOCK like we do for uu-sections?
-   [20090722 Urs Janssen <urs@tin.org>]
 
 o  support $XDG_CONFIG_HOME / $XDG_DATA_HOME?
    <http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html>
@@ -752,7 +822,7 @@ o  rename prompt_followupto (to prompt_extra_headres) and make it an option
    "Followup-To & Summary"; "Followup-To & Keywords";
    "Summary & Keywords"; "Followup-To, Summary & Keywords"} or make it a
    user-definable text field like news_headers_to_display? or leave this
-   entirely to the user - he could tweak atributes accrodingly.
+   entirely to the user - he could tweak attributes accrodingly.
    [20060503 Urs Janssen <urs@tin.org>]
 
 o  in several places only the latest keybinding is shown in prompts
@@ -815,7 +885,7 @@ o  check_article_to_be_posted() needs a cleanup!
 
 o  update gettext stuff to > gettext-0.12.1
 
-o  clean up included pcre stuff and update to >= pcre-8.0
+o  clean up included pcre stuff and update to >= pcre-8.10
 
 o  what is with conflicting tinrc settings? should we disallow those, or leave
    it to the user to realise that e.g. strip_blanks=ON && inverse_okay=ON
@@ -851,5 +921,5 @@ o  cleanup main.c/init_selfinfo()
 
 o  re add innlib support? (the old one was dropped as the lib has retired
    all (which were not that many) features we used and our code didn't
-   use the innlibs code where ever it was possible (and usefull).
+   use the innlibs code where ever it was possible (and useful).
    [20080211 Urs Janssen <urs@tin.org>]

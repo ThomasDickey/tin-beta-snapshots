@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2009-05-07
+ *  Updated   : 2010-09-10
  *  Notes     :
  *
  * Copyright (c) 1997-2010 Urs Janssen <urs@tin.org>
@@ -76,7 +76,7 @@
 
 /*
  * special ltoa()
- * converts value into a string with a maxlen of digits (usualy should be
+ * converts value into a string with a maxlen of digits (usually should be
  * >=4), last char may be one of the following:
  * 'K'ilo, 'M'ega, 'G'iga, 'T'erra, 'P'eta, 'E'xa, 'Z'etta, 'Y'otta,
  * 'X'ona, 'W'eka, 'V'unda, 'U'da (these last 4 are no official SI-prefixes)
@@ -763,6 +763,29 @@ wchar_t2char(
 
 
 /*
+ * Interface to wcspart for non wide character strings
+ */
+char *
+spart(
+	const char *str,
+	int columns,
+	t_bool pad)
+{
+	char *buf = NULL;
+	wchar_t *wbuf, *wbuf2;
+
+	if ((wbuf = char2wchar_t(str)) != NULL) {
+		wbuf2 = wcspart(wbuf, columns, pad);
+		free(wbuf);
+		buf = wchar_t2char(wbuf2);
+		FreeIfNeeded(wbuf2);
+	}
+
+	return buf;
+}
+
+
+/*
  * returns a new string fitting into 'columns' columns
  * if pad is TRUE the resulting string will be filled with spaces if necessary
  */
@@ -802,7 +825,139 @@ wcspart(
 
 	return wbuf;
 }
+
+
+/*
+ * wcs version of abbr_groupname()
+ */
+wchar_t *
+abbr_wcsgroupname(
+	const wchar_t *grpname,
+	int len)
+{
+	wchar_t *src, *dest, *tail, *new_grpname;
+	int tmplen, newlen;
+
+	dest = new_grpname = my_wcsdup(grpname);
+
+	if (wcswidth(grpname, wcslen(grpname)) > len) {
+		if ((src = wcschr(grpname, (wchar_t) '.')) != NULL) {
+			tmplen = wcwidth(*dest++);
+
+			do  {
+				*dest++ = *src;
+				tmplen += wcwidth(*src++);
+				*dest++ = *src;
+				tmplen += wcwidth(*src++);
+				tail = src;
+				newlen = wcswidth(tail, wcslen(tail)) + tmplen;
+			} while ((src = wcschr(src, (wchar_t) '.')) != NULL && newlen > len);
+
+			if (newlen > len)
+				*dest++ = (wchar_t) '.';
+			else {
+				while (*tail)
+					*dest++ = *tail++;
+			}
+
+			*dest = (wchar_t) '\0';
+			new_grpname = my_realloc(new_grpname, sizeof(wchar_t) * (wcslen(new_grpname) + 1));
+
+			if (wcswidth(new_grpname, wcslen(new_grpname)) > len) {
+				dest = wstrunc(new_grpname, len);
+				free(new_grpname);
+				new_grpname = dest;
+			}
+		} else {
+			dest = wstrunc(new_grpname, len);
+			free(new_grpname);
+			new_grpname = dest;
+		}
+	}
+
+	return new_grpname;
+}
+
+#else /* !MULTIBYTE_ABLE || NO_LOCALE */
+
+/*
+ * Abbreviate a groupname like this:
+ * 	foo.bar.baz
+ * 	f.bar.baz
+ * 	f.b.baz
+ * 	f.b.b.
+ * depending on the given length
+ */
+char *
+abbr_groupname(
+	const char *grpname,
+	size_t len)
+{
+	char *src, *dest, *tail, *new_grpname;
+	size_t tmplen, newlen;
+
+	dest = new_grpname = my_strdup(grpname);
+
+	if (strlen(grpname) > len) {
+		if ((src = strchr(grpname, '.')) != NULL) {
+			dest++;
+			tmplen = 1;
+
+			do  {
+				*dest++ = *src++;
+				*dest++ = *src++;
+				tmplen += 2;
+				tail = src;
+				newlen = strlen(tail) + tmplen;
+			} while ((src = strchr(src, '.')) != NULL && newlen > len);
+
+			if (newlen > len)
+				*dest++ = '.';
+			else {
+				while (*tail)
+					*dest++ = *tail++;
+			}
+
+			*dest = '\0';
+			new_grpname = my_realloc(new_grpname, strlen(new_grpname) + 1);
+
+			if (strlen(new_grpname) > len) {
+				dest = strunc(new_grpname, len);
+				free(new_grpname);
+				new_grpname = dest;
+			}
+		} else {
+			dest = strunc(new_grpname, len);
+			free(new_grpname);
+			new_grpname = dest;
+		}
+	}
+
+	return new_grpname;
+}
 #endif /* MULTIBYTE_ABLE && !NOLOCALE */
+
+
+/*
+ * Returns the number of screen positions a string occupies
+ */
+int
+strwidth(
+	const char *str)
+{
+	int columns = (int) strlen(str);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	int width;
+	wchar_t *wbuf;
+
+	if ((wbuf = char2wchar_t(str)) != NULL) {
+		if ((width = wcswidth(wbuf, wcslen(wbuf) + 1)) > 0)
+			columns = width;
+		free(wbuf);
+	}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	return columns;
+}
 
 
 #define TRUNC_TAIL	"..."
@@ -1015,11 +1170,11 @@ normalize(
 		if ((ustr = char2UChar(tmp)) == NULL) /* something went wrong, return the original string (as valid UTF8) */
 			return tmp;
 
-		needed = unorm_normalize(ustr, -1, mode, 0 , NULL, 0, &status);
+		needed = unorm_normalize(ustr, -1, mode, 0, NULL, 0, &status);
 		status = U_ZERO_ERROR;		/* reset status */
 		norm_len = needed + 1;
 		norm = my_malloc(sizeof(UChar) * norm_len);
-		needed = unorm_normalize(ustr, -1, mode, 0 , norm, norm_len, &status);
+		needed = unorm_normalize(ustr, -1, mode, 0, norm, norm_len, &status);
 		if (U_FAILURE(status)) {
 			/* something went wrong, return the original string (as valid UTF8) */
 			free(ustr);
@@ -1030,6 +1185,8 @@ normalize(
 		/* convert back to UTF-8 */
 		if ((buf = UChar2char(norm)) == NULL) /* something went wrong, return the original string (as valid UTF8) */
 			buf = tmp;
+		else
+			free(tmp);
 
 		free(ustr);
 		free(norm);
@@ -1051,7 +1208,7 @@ normalize(
 
 
 /*
- * returns a pointer to allocated buffer containing the formated string
+ * returns a pointer to allocated buffer containing the formatted string
  * must be freed if not needed anymore
  */
 char *

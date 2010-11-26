@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2009-11-17
+ *  Updated   : 2010-01-10
  *  Notes     : Cacheing of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -166,7 +166,7 @@ valid_msgid(
 	char *msgid)
 {
 	size_t mlen = 0;
-	t_bool at_present = 0;
+	t_bool at_present = FALSE;
 
 	str_trim(msgid);
 	if (!msgid || *msgid != '<')
@@ -396,12 +396,24 @@ parse_references(
 		return NULL;
 
 	/*
+	 * As per RFC 5536, a leading comment is allowed -> skip unknown
+	 * token until we find a valid msgid
+	 *
+	 * TODO: parse these tokens to be sure it is a comment and not
+	 *       a damaged header
+	 */
+	if (!valid_msgid(ptr)) {
+		while ((ptr = strtok(NULL, REF_SEP)) != NULL && !valid_msgid(ptr))
+			;
+	}
+
+	if (ptr == NULL)
+		return NULL;
+
+	/*
 	 * By definition, the head of the thread has no parent
 	 */
 	parent = NULL;
-
-	if (!valid_msgid(ptr))
-		return NULL;
 
 	current = add_msgid(REF_REF, ptr, parent);
 
@@ -1012,7 +1024,17 @@ build_references(
 			 * TODO: do this in a single pass
 			 */
 			if ((s = strrchr(art->refs, '<')) != NULL) {
-				if (!strcmp(art->msgid, s)) {
+				char *ptr;
+
+				/*
+				 * A comment can occur after another REF_SEP, remove it
+				 *
+				 * TODO: parse it to be sure it is a comment
+				 */
+				if ((ptr = strpbrk(s, REF_SEP)) != NULL)
+					*ptr = '\0';
+
+				if (valid_msgid(s) && !strcmp(art->msgid, s)) {
 					/*
 					 * Remove circular reference to current article
 					 */
@@ -1022,16 +1044,11 @@ build_references(
 #endif /* DEBUG */
 					*s = '\0';
 				}
-			}
-			if (s != NULL) {
-				if (valid_msgid(art->msgid))
+				if (valid_msgid(art->msgid) && valid_msgid(s))
 					art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, s, NULL));
 				*s = '\0';
-			} else {
-				if (valid_msgid(art->msgid))
-					art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, art->refs, NULL));
+			} else
 				FreeAndNull(art->refs);
-			}
 		}
 
 		/*

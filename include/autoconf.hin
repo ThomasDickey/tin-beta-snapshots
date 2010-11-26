@@ -455,7 +455,7 @@
 #	undef DECL_SIG_CONST
 
 
-/* FIXME: remove absolut-paths! */
+/* FIXME: remove absolute-paths! */
 /*
  * Program-paths (i.e., the invocation-path)
  */
@@ -584,7 +584,7 @@
 #	undef TIN_DEFAULTS_DIR
 
 /*
- * define if second and thrid argument of setvbuf() are swapped
+ * define if second and third argument of setvbuf() are swapped
  * (System V before Release 3)
  */
 #	undef SETVBUF_REVERSED

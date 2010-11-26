@@ -18,7 +18,7 @@ Compile Tin For Windows
 
      - configure
        - export CC=gcc
-       - ./configure --enable-nntp-only --disable-nls
+       - ./configure --enable-nntp-only
 
      - make
        - cd src
@@ -37,4 +37,4 @@ Compile Tin For Windows
               set HOME=c:\home
               set USER=username
        - tested with
-           1.9.3 release 20080506 "Dalintober"
+           1.9.5 release 20091224 "Lochruan"

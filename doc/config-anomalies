@@ -51,11 +51,6 @@ prompt_followupto
 pos_first_unread
 show_only_unread_arts
 kill_level                   *
-tab_goto_next_unread         *
-space_goto_next_unread       *
-pgdn_goto_next               *
-full_page_scroll             *
-show_last_line_prev_page     *
 group_catchup_on_exit
 thread_catchup_on_exit
 thread_articles
@@ -88,12 +83,11 @@ hide_uue                     *
 news_quote_format
 mail_quote_format            *
 xpost_quote_format           *
-auto_cc
-auto_bcc
+auto_cc_bcc
 default_filter_days          *
 getart_limit                 *
 recent_time                  *
-mail_address                   from in attributes; should be splitted into
+mail_address                   from in attributes; should be split into
                                username and addresse
 mm_charset                     mm_network_charset
                                (if charset conversion is available)

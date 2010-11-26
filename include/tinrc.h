@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2009-02-14
+ *  Updated   : 2010-04-11
  *  Notes     :
  *
  * Copyright (c) 1999-2010 Jason Faultless <jason@altarstone.com>
@@ -189,6 +189,7 @@ struct t_config {
 #	ifdef HAVE_COLOR
 		t_bool use_color;					/* like use_color but stored in tinrc */
 #	endif /* HAVE_COLOR */
+	t_bool abbreviate_groupname;		/* abbreviate groupnames like n.s.readers */
 	t_bool add_posted_to_filter;
 	t_bool advertising;
 	t_bool alternative_handling;

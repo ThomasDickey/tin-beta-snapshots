@@ -3,7 +3,7 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2009-10-22
+ *  Updated   : 2010-05-10
  *  Notes     : curses #include files, #defines & struct's
  *
  * Copyright (c) 1997-2010 Thomas Dickey <dickey@invisible-island.net>
@@ -119,7 +119,9 @@ extern void my_printf(const char *fmt, ...)
 #		endif /* __GNUC__ */
 	;
 extern void my_retouch(void);
-extern void refresh_color(void);
+#		ifdef HAVE_COLOR
+	extern void refresh_color(void);
+#		endif /* refresh_color */
 extern void write_line(int row, char *buffer);
 
 #	else	/* !USE_CURSES */

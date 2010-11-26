@@ -1,5 +1,5 @@
 #! /bin/sh
-# @Id: mkdirs.sh,v 1.5 2007/03/25 22:29:46 tom Exp @
+# $Id: mkdirs.sh,v 1.5 2007/03/25 22:29:46 urs Exp $
 # -----------------------------------------------------------------------------
 # mkinstalldirs --- make directory hierarchy
 # Author: Noah Friedman <friedman@prep.ai.mit.edu>

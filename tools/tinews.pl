@@ -37,7 +37,9 @@
 #       - check for /etc/nntpserver (and /etc/news/server)
 #       - also check for ~/.nntpauth?
 #       - add $PGPOPTS, $PGPPATH, $GNUPGHOME support
+#       - add pid to pgptmpf to allow multiple simultaneous instances
 #       - cleanup, remove duplicated code
+#       - sign Injection-Date?
 #
 # version Number
 my $version = "1.1.24";
@@ -608,7 +610,7 @@ sub savearticle {
 
 
 #-------- sub signarticle
-# signarticle signs an articel and returns a reference to an array
+# signarticle signs an article and returns a reference to an array
 # 	containing the whole signed Message.
 #
 # Receives:

@@ -53,6 +53,16 @@ MarkFeedUnread			^W
 
 #####
 
+AttachPipe			p
+AttachSave			s
+AttachSelect			^J	^M
+AttachTag			t
+AttachTagPattern		=
+AttachToggleTagged		@
+AttachUntag			U
+
+#####
+
 ConfigToggleAttrib		TAB
 ConfigSelect			^J	^M
 ConfigLastPage			G
@@ -86,6 +96,7 @@ GroupToggleThdSel		.
 GroupSelThdIfUnreadSelected	;
 GroupSelPattern			=
 GroupReverseSel			@
+GroupCancel			D
 GroupToggleGetartLimit		G
 GroupMarkThdRead		K
 GroupNextUnreadArt		N
@@ -218,12 +229,12 @@ SelectMarkGrpUnread		z	Z
 
 #####
 
-ScopeSelect				^J	^M
-ScopeEditAttributesFile	E
-ScopeAdd				a
-ScopeDelete				d
-ScopeMove				m
-ScopeRename				r
+ScopeSelect			^J	^M
+ScopeEditAttributesFile		E
+ScopeAdd			a
+ScopeDelete			d
+ScopeMove			m
+ScopeRename			r
 
 #####
 
@@ -232,6 +243,7 @@ ThreadReadArt			^J	^M
 ThreadSelArt			*
 ThreadToggleArtSel		.
 ThreadReverseSel		@
+ThreadCancel			D
 ThreadMarkArtRead		K
 ThreadAutoSave			S
 ThreadUntag			U
@@ -240,3 +252,7 @@ ThreadMail			m
 ThreadSave			s
 ThreadTag			t
 ThreadUndoSel			~
+
+#####
+
+UrlSelect			^J	^M

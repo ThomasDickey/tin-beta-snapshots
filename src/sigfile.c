@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2009-07-17
+ *  Updated   : 2010-11-13
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2010 Mike Gleason
@@ -135,25 +135,25 @@ msg_write_signature(
 			my_chdir(cwd);
 			return;
 		}
-	}
 
-	if ((sigfp = fopen(path, "r")) != NULL) {
-		fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "\n");
-		copy_fp(sigfp, fp);
-		fclose(sigfp);
-		return;
-	}
-
-	/*
-	 * Use ~/.signature as a last resort, but only if mailing or
-	 * using internal inews (external inews appends it automagically).
-	 */
-	if ((sigfp = fopen(default_signature, "r")) != NULL) {
-		if (include_dot_signature) {
+		if ((sigfp = fopen(path, "r")) != NULL) {
 			fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "\n");
 			copy_fp(sigfp, fp);
+			fclose(sigfp);
+			return;
 		}
-		fclose(sigfp);
+
+		/*
+		 * Use ~/.signature as a last resort, but only if mailing or
+		 * using internal inews (external inews appends it automagically).
+		 */
+		if ((sigfp = fopen(default_signature, "r")) != NULL) {
+			if (include_dot_signature) {
+				fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "\n");
+				copy_fp(sigfp, fp);
+			}
+			fclose(sigfp);
+		}
 	}
 }
 
@@ -197,7 +197,7 @@ thrashdir(
 	DIR_BUF *dp;
 	char *cwd;
 	int safeguard, recurse;
-	int c = 0, numentries, pick;
+	int c = 0, numentries = 0, pick;
 	struct stat st;
 
 	sigfile[0] = '\0';
@@ -205,8 +205,7 @@ thrashdir(
 	if ((dirp = opendir(CURRENTDIR)) == NULL)
 		return 1;
 
-	numentries = 0;
-	while ((dp = readdir(dirp)) != NULL)
+	while (readdir(dirp) != NULL)
 		numentries++;
 
 	/*

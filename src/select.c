@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-10-30
+ *  Updated   : 2010-10-07
  *  Notes     :
  *
  * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -205,7 +205,7 @@ selection_page(
 			case GLOBAL_SEARCH_SUBJECT_BACKWARD:
 			case GLOBAL_SEARCH_REPEAT:
 				if (func == GLOBAL_SEARCH_REPEAT && last_search != GLOBAL_SEARCH_SUBJECT_FORWARD && last_search != GLOBAL_SEARCH_SUBJECT_BACKWARD)
-					info_message(_(txt_bad_command), printascii(key, key_to_func(GLOBAL_HELP, select_keys)));
+					info_message(_(txt_no_prev_search));
 				else {
 					if ((i = search_active((func == GLOBAL_SEARCH_SUBJECT_FORWARD), (func == GLOBAL_SEARCH_REPEAT))) != -1) {
 						move_to_item(i);
@@ -381,6 +381,8 @@ selection_page(
 				show_selection_page();
 				if (tinrc.show_only_unread_groups)
 					info_message(_(txt_show_unread));
+				else
+					clear_message();
 				break;
 
 			case GLOBAL_BUGREPORT:
@@ -567,7 +569,7 @@ show_selection_page(
 	 */
 	if (yanked_out) {
 		for (i = 0; i < selmenu.max; i++) {
-			if ((len = strlen(active[my_group[i]].name)) > groupname_len)
+			if ((len = strwidth(active[my_group[i]].name)) > groupname_len)
 				groupname_len = len;
 			if (show_description && groupname_len > tinrc.groupname_max_length) {
 				/* no need to search further, we have reached max length */
@@ -577,7 +579,7 @@ show_selection_page(
 		}
 	} else {
 		for_each_group(i) {
-			if ((len = strlen(active[i].name)) > groupname_len)
+			if ((len = strwidth(active[i].name)) > groupname_len)
 				groupname_len = len;
 			if (show_description && groupname_len > tinrc.groupname_max_length) {
 				/* no need to search further, we have reached max length */
@@ -609,18 +611,29 @@ static void
 build_gline(
 	int i)
 {
-	char tmp[10];
-	char active_name[255];
-	char group_descript[255];
 	char subs;
+	char tmp[10];
+	int n, blank_len;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	char *name_buf = NULL;
+	char *desc_buf = NULL;
+	int name_len = groupname_len;
+	wchar_t *active_name = NULL;
+	wchar_t *active_name2 = NULL;
+	wchar_t *active_desc = NULL;
+	wchar_t *active_desc2 = NULL;
+#else
+	char *active_name;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #ifdef USE_CURSES
 	char sptr[BUFSIZ];
 #else
 	char *sptr = screen[INDEX2SNUM(i)].col;
 #endif /* USE_CURSES */
-	int n, blank_len;
 
-	blank_len = (MIN(cCOLS, (int) sizeof(group_descript)) - (groupname_len + SELECT_MISC_COLS)) + (show_description ? 2 : 4);
+#define DESCRIPTION_LENGTH 255
+
+	blank_len = (MIN(cCOLS, DESCRIPTION_LENGTH) - (groupname_len + SELECT_MISC_COLS)) + (show_description ? 2 : 4);
 
 	if (active[my_group[i]].inrange)
 		strcpy(tmp, "    #");
@@ -648,33 +661,94 @@ build_gline(
 	 */
 	if (active[n].bogus)					/* Group is not in active list */
 		subs = 'D';
-	else if (active[n].subscribed)			/* Important that this preceeds Newgroup */
+	else if (active[n].subscribed)			/* Important that this precedes Newgroup */
 		subs = group_flag(active[n].moderated);
 	else
 		subs = ((active[n].newgroup) ? 'N' : 'u'); /* New (but unsubscribed) group or unsubscribed group */
 
-	strncpy(active_name, active[n].name, groupname_len);
-	active_name[groupname_len] = '\0';
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if ((active_name = char2wchar_t(active[n].name)) == NULL) /* If char2wchar_t() fails try again after replacing unprintable characters */
+		active_name = char2wchar_t(convert_to_printable(active[n].name));
+
+	if (show_description && active[n].description)
+		active_desc = char2wchar_t(active[n].description);
+
+	if (active_name && tinrc.abbreviate_groupname) {
+		if (show_description && !active_desc)
+			active_name2 = abbr_wcsgroupname(active_name, (size_t) (groupname_len + blank_len));
+		else
+			active_name2 = abbr_wcsgroupname(active_name, (size_t) groupname_len);
+
+		free(active_name);
+	} else
+		active_name2 = active_name;
+
+	if (active_name2 && (active_name = wcspart(active_name2, groupname_len, TRUE)) != NULL) {
+		free(active_name2);
+		if ((name_buf = wchar_t2char(active_name)) != NULL) {
+			free(active_name);
+			name_len = (int) strlen(name_buf);
+		}
+	}
 
 	if (show_description) {
-		if (active[n].description) {
-			strncpy(group_descript, active[n].description, blank_len);
-			group_descript[blank_len] = '\0';
+		if (active_desc) {
+			if ((active_desc2 = wcspart(active_desc, blank_len, TRUE)) != NULL) {
+				if ((desc_buf = wchar_t2char(active_desc2)) != NULL)
+					blank_len = strlen(desc_buf);
+				free(active_desc);
+				free(active_desc2);
+			}
+		}
+		if (desc_buf) {
+			sprintf(sptr, "  %c %s %s  %-*.*s  %-*.*s%s",
+				subs, tin_ltoa(i + 1, 4), tmp,
+				name_len, name_len, BlankIfNull(name_buf),
+				blank_len, blank_len, desc_buf, cCRLF);
+			free(desc_buf);
+		} else
+			sprintf(sptr, "  %c %s %s  %-*.*s  %s",
+				subs, tin_ltoa(i + 1, 4), tmp,
+				(name_len + blank_len),
+				(name_len + blank_len), BlankIfNull(name_buf), cCRLF);
+	} else {
+		if (tinrc.draw_arrow)
+			sprintf(sptr, "  %c %s %s  %-*.*s%s", subs, tin_ltoa(i + 1, 4), tmp, name_len, name_len, BlankIfNull(name_buf), cCRLF);
+		else
+			sprintf(sptr, "  %c %s %s  %-*.*s%*s%s", subs, tin_ltoa(i + 1, 4), tmp, name_len, name_len, BlankIfNull(name_buf), blank_len, " ", cCRLF);
+	}
+
+	FreeIfNeeded(name_buf);
+#else
+	if (tinrc.abbreviate_groupname) {
+		if (show_description && !active[n].description)
+			active_name = abbr_groupname(active[n].name, (size_t) (groupname_len + blank_len));
+		else
+			active_name = abbr_groupname(active[n].name, (size_t) groupname_len);
+	} else
+		active_name = my_strdup(active[n].name);
+
+	if (show_description) {
+		if (active[n].description)
 			sprintf(sptr, "  %c %s %s  %-*.*s  %-*.*s%s",
 				 subs, tin_ltoa(i + 1, 4), tmp,
 				 groupname_len, groupname_len, active_name,
-				 blank_len, blank_len, group_descript, cCRLF);
-		} else
+				 blank_len, blank_len, active[n].description, cCRLF);
+		else
 			sprintf(sptr, "  %c %s %s  %-*.*s  %s",
 				 subs, tin_ltoa(i + 1, 4), tmp,
 				 (groupname_len + blank_len),
-				 (groupname_len + blank_len), active[n].name, cCRLF);
+				 (groupname_len + blank_len), active_name, cCRLF);
 	} else {
 		if (tinrc.draw_arrow)
 			sprintf(sptr, "  %c %s %s  %-*.*s%s", subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, cCRLF);
 		else
 			sprintf(sptr, "  %c %s %s  %-*.*s%*s%s", subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, blank_len, " ", cCRLF);
 	}
+
+	free(active_name);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	if (tinrc.strip_blanks)
 		strcat(strip_line(sptr), cCRLF);
 

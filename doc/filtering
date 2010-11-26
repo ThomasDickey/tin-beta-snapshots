@@ -155,7 +155,7 @@ from=pattern        From:
                     old-style e-mail address, i.e. ''some@body.example (John
                     Doe)'' instead of ''John Doe <some@body.example>'',
                     before trying to match the patterns in the filter rule.
-                    That way a rule tailored to to match the full from
+                    That way a rule tailored to match the full from
                     header "jsmith@ac.example (John Smith)" will still work
                     when John posts with a different newsreader which uses
                     "John Smith <jsmith@ac.example>".
