@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2010-04-06
+dnl Updated   : 2011-02-22
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2010 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2011 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.9.6
+VERSION=2.0.0
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -79,7 +79,7 @@ case "$host_os" in
 esac
 
 ### Native Language Support
-ALL_LINGUAS="da de en_GB et fr ru rw sv tr"
+ALL_LINGUAS="da de en_GB et fr ru sv tr"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"
@@ -719,6 +719,7 @@ CF_CHECK_HEADERS(\
 	fcntl.h \
 	getopt.h \
 	ioctl.h \
+	inttypes.h \
 	langinfo.h \
 	libc.h \
 	locale.h \
@@ -738,6 +739,7 @@ CF_CHECK_HEADERS(\
 	stdarg.h \
 	stdbool.h \
 	stddef.h \
+	stdint.h \
 	stdlib.h \
 	string.h \
 	strings.h \
@@ -942,6 +944,7 @@ AC_CHECK_FUNCS(\
 	fork \
 	ftime \
 	ftruncate \
+	fsync \
 	getcwd \
 	gettimeofday \
 	getwd \

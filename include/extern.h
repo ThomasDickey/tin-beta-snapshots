@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2010-10-07
+ *  Updated   : 2011-01-30
  *  Notes     :
  *
- * Copyright (c) 1997-2010 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2011 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -308,9 +308,13 @@
 #endif /* DECL_VSPRINTF */
 #endif /* 0 */
 
-
-extern int optind;
-extern char *optarg;
+#ifdef __CYGWIN__
+	extern int __declspec(dllimport) optind;
+	extern char __declspec(dllimport) *optarg;
+#else
+	extern int optind;
+	extern char *optarg;
+#endif /* __CYGWIN__ */
 
 /*
  * Local variables
@@ -737,6 +741,7 @@ extern constext txt_help_article_search_forwards[];
 extern constext txt_help_article_show_raw[];
 extern constext txt_help_article_skip_quote[];
 extern constext txt_help_article_toggle_formfeed[];
+extern constext txt_help_article_toggle_headers[];
 extern constext txt_help_article_toggle_highlight[];
 extern constext txt_help_article_toggle_rot13[];
 extern constext txt_help_article_toggle_tabwidth[];
@@ -1249,6 +1254,10 @@ extern constext txt_usage_dont_show_descriptions[];
 #ifdef NNTP_ABLE
 	extern constext txt_unparseable_counts[];
 	extern constext txt_usage_force_authentication[];
+#ifdef INET6
+	extern constext txt_usage_force_ipv4[];
+	extern constext txt_usage_force_ipv6[];
+#endif /* INET6 */
 	extern constext txt_usage_newsserver[];
 	extern constext txt_usage_port[];
 	extern constext txt_usage_read_news_remotely[];
@@ -1444,6 +1453,10 @@ extern t_bool disable_gnksa_domain_check;
 extern t_bool disable_sender;
 extern t_bool force_no_post;
 extern t_bool force_reread_active_file;
+#if defined(NNTP_ABLE) && defined(INET6)
+	extern t_bool force_ipv4;
+	extern t_bool force_ipv6;
+#endif /* NNTP_ABLE && INET6 */
 extern t_bool have_linescroll;
 extern t_bool list_active;
 extern t_bool newsrc_active;
@@ -1767,6 +1780,9 @@ extern struct opttxt txt_unlink_article;
 extern struct opttxt txt_url_handler;
 extern struct opttxt txt_url_highlight;
 extern struct opttxt txt_use_mouse;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern struct opttxt txt_utf8_graphics;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 extern struct opttxt txt_verbatim_begin_regex;
 extern struct opttxt txt_verbatim_end_regex;
 extern struct opttxt txt_verbatim_handling;

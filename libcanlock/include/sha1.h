@@ -1,6 +1,10 @@
 #ifndef _SHA1_H_
 #define _SHA1_H_
 
+#ifdef HAVE_CONFIG_H
+#	include "autoconf.h"
+#endif /* HAVE_CONFIG_H */
+
 /* The SHA block size and message digest sizes, in bytes */
 
 #define SHA_DATASIZE    64
@@ -9,7 +13,13 @@
 #define SHA_DIGESTLEN    5
 /* The structure for storing SHA info */
 
-#include <stdint.h>
+#ifdef HAVE_STDINT_H
+#	include <stdint.h>
+#else
+#	ifdef HAVE_INTTYPES_H
+#		include <inttypes.h>
+#	endif /* HAVE_INTTYPES_H */
+#endif /* HAVE_STDINT_H */
 
 typedef struct sha_ctx {
   uint32_t digest[SHA_DIGESTLEN];  /* Message digest */

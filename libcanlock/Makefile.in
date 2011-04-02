@@ -1,5 +1,5 @@
 CFLAGS	= @CFLAGS@
-CPPFLAGS = @CPPFLAGS@ -Iinclude
+CPPFLAGS = @DEFS@ -Iinclude -I../include @CPPFLAGS@
 LDFLAGS	= @LDFLAGS@ -L. -lcanlock
 CC	= @CC@
 PRELIB	= @LIB_PREFIX@

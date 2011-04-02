@@ -3,10 +3,10 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2010-10-01
+ *  Updated   : 2011-01-25
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2010 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2011 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1175,13 +1175,18 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageToggleHeaders") == 0) {
+			if (strcmp(keyname, "PageToggleAllHeaders") == 0) {
 				process_keys(PAGE_TOGGLE_HEADERS, keys, &page_keys);
 
 				return TRUE;
 			}
 			if (strcmp(keyname, "PageToggleHighlight") == 0) {
 				process_keys(PAGE_TOGGLE_HIGHLIGHTING, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageToggleRaw") == 0) {
+				process_keys(PAGE_TOGGLE_RAW, keys, &page_keys);
 
 				return TRUE;
 			}
@@ -2205,6 +2210,8 @@ upgrade_keymap_file(
 					catchup[1] = my_strdup(keydef);
 				else if (strcmp(keyname, "PageCatchupNextUnread") == 0)
 					catchup_next_unread[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageToggleHeaders") == 0)
+					fprintf(newfp, "PageToggleRaw\t\t\t%s\n", keydef);
 				else if (strcmp(keyname, "PromptNo") == 0 || strcmp(keyname, "PromptYes") == 0) {
 					if (strlen(keydef) == 1 && islower((int)(unsigned char) keydef[0]))
 						fprintf(newfp, "%s\t\t\t%c\t%c\n", keyname, keydef[0], toupper((int)(unsigned char) keydef[0]));
@@ -2673,7 +2680,7 @@ setup_default_keys(
 #ifdef HAVE_PGP_GPG
 	add_default_key(&page_keys, "", PAGE_PGP_CHECK_ARTICLE);
 #endif /* HAVE_PGP_GPG */
-	add_default_key(&page_keys, "", PAGE_TOGGLE_HEADERS);
+	add_default_key(&page_keys, "", PAGE_TOGGLE_RAW);
 	add_default_key(&page_keys, "", GLOBAL_MENU_FILTER_KILL);
 	add_default_key(&page_keys, "\n\r", PAGE_NEXT_THREAD);
 	add_default_key(&page_keys, "", PAGE_TOGGLE_TABS);
@@ -2724,6 +2731,7 @@ setup_default_keys(
 	add_default_key(&page_keys, "[", GLOBAL_QUICK_FILTER_SELECT);
 	add_default_key(&page_keys, "]", GLOBAL_QUICK_FILTER_KILL);
 	add_default_key(&page_keys, "%", PAGE_TOGGLE_ROT13);
+	add_default_key(&page_keys, "*", PAGE_TOGGLE_HEADERS);
 	add_default_key(&page_keys, ":", PAGE_SKIP_INCLUDED_TEXT);
 	add_default_key(&page_keys, "_", PAGE_TOGGLE_HIGHLIGHTING);
 

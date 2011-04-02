@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2010-05-18
+ *  Updated   : 2011-01-29
  *  Notes     :
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1318,7 +1318,7 @@ parse_headers(
 				 * Archive-name: {name}/{part|patch}{number}
 				 * eg, acorn/faq/part01
 				 */
-				if ((hdr = parse_header(ptr + 1, "rchive-name", FALSE, FALSE))) {
+				if ((hdr = parse_header(ptr + 1, "rchive-name", FALSE, FALSE, FALSE))) {
 					char *s;
 
 					if ((s = strrchr(hdr, '/')) != NULL) {
@@ -1344,18 +1344,18 @@ parse_headers(
 
 			case 'D':	/* Date:  mandatory */
 				if (!h->date) {
-					if ((hdr = parse_header(ptr + 1, "ate", FALSE, FALSE)))
+					if ((hdr = parse_header(ptr + 1, "ate", FALSE, FALSE, FALSE)))
 						h->date = parsedate(hdr, (struct _TIMEINFO *) 0);
 				}
 				break;
 
 			case 'F':	/* From:  mandatory */
 				if (!got_from) {
-					if ((hdr = parse_header(ptr + 1, "rom", FALSE, FALSE))) {
+					if ((hdr = parse_header(ptr + 1, "rom", FALSE, FALSE, FALSE))) {
 						h->gnksa_code = parse_from(hdr, art_from_addr, art_full_name);
 						h->from = hash_str(buffer_to_ascii(art_from_addr));
 						if (*art_full_name)
-							h->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name))));
+							h->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name), FALSE)));
 						got_from = TRUE;
 					}
 				}
@@ -1363,7 +1363,7 @@ parse_headers(
 
 			case 'L':	/* Lines:  optional */
 				if (!got_lines) {
-					if ((hdr = parse_header(ptr + 1, "ines", FALSE, FALSE))) {
+					if ((hdr = parse_header(ptr + 1, "ines", FALSE, FALSE, FALSE))) {
 						h->line_count = atoi(hdr);
 						got_lines = TRUE;
 					}
@@ -1372,20 +1372,20 @@ parse_headers(
 
 			case 'M':	/* Message-ID:  mandatory */
 				if (!h->msgid) {
-					if ((hdr = parse_header(ptr + 1, "essage-ID", FALSE, FALSE)))
+					if ((hdr = parse_header(ptr + 1, "essage-ID", FALSE, FALSE, FALSE)))
 						h->msgid = my_strdup(hdr);
 				}
 				break;
 
 			case 'R':	/* References:  optional */
 				if (!h->refs) {
-					if ((hdr = parse_header(ptr + 1, "eferences", FALSE, FALSE)))
+					if ((hdr = parse_header(ptr + 1, "eferences", FALSE, FALSE, FALSE)))
 						h->refs = my_strdup(hdr);
 				}
 
 				/* Received:  If found it's probably a mail article */
 				if (!got_received) {
-					if (parse_header(ptr + 1, "eceived", FALSE, FALSE)) {
+					if (parse_header(ptr + 1, "eceived", FALSE, FALSE, FALSE)) {
 						max_lineno <<= 1;		/* double the max number of line to read for mails */
 						got_received = TRUE;
 					}
@@ -1394,14 +1394,14 @@ parse_headers(
 
 			case 'S':	/* Subject:  mandatory */
 				if (!h->subject) {
-					if ((hdr = parse_header(ptr + 1, "ubject", FALSE, FALSE)))
-						h->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(hdr))), FALSE));
+					if ((hdr = parse_header(ptr + 1, "ubject", FALSE, FALSE, FALSE)))
+						h->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(hdr), FALSE)), FALSE));
 				}
 				break;
 
 			case 'X':	/* Xref:  optional */
 				if (!h->xref) {
-					if ((hdr = parse_header(ptr + 1, "ref", FALSE, FALSE)))
+					if ((hdr = parse_header(ptr + 1, "ref", FALSE, FALSE, FALSE)))
 						h->xref = my_strdup(hdr);
 				}
 				break;
@@ -1614,7 +1614,7 @@ read_overview(
 				if (ofmt[count].type == OVER_T_STRING) {
 					if (!strcasecmp(ofmt[count].name, "Subject:")) {
 						if (*ptr)
-							art->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr))), FALSE));
+							art->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr), FALSE)), FALSE));
 						else {
 							art->subject = hash_str("");
 #ifdef DEBUG
@@ -1630,7 +1630,7 @@ read_overview(
 							art->gnksa_code = parse_from(ptr, art_from_addr, art_full_name);
 							art->from = hash_str(buffer_to_ascii(art_from_addr));
 							if (*art_full_name)
-								art->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name))));
+								art->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name), FALSE)));
 						} else {
 							art->from = hash_str("");
 #ifdef DEBUG
@@ -1705,7 +1705,7 @@ read_overview(
 				switch(count) {
 					case 1: /* Subject: */
 						if (*ptr)
-							art->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr))), FALSE));
+							art->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr), FALSE)), FALSE));
 						else {
 							art->subject = hash_str("");
 #ifdef DEBUG
@@ -1720,7 +1720,7 @@ read_overview(
 							art->gnksa_code = parse_from(ptr, art_from_addr, art_full_name);
 							art->from = hash_str(buffer_to_ascii(art_from_addr));
 							if (*art_full_name)
-								art->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name))));
+								art->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name), FALSE)));
 						} else {
 							art->from = hash_str("");
 #ifdef DEBUG
@@ -1790,7 +1790,7 @@ read_overview(
 			if (ofmt[count].type == OVER_T_FSTRING) {
 				if (*ptr) {
 					if (!strcasecmp(ofmt[count].name, "Xref:")) {
-						if ((q = parse_header(ptr, "Xref", FALSE, FALSE)) != NULL) {
+						if ((q = parse_header(ptr, "Xref", FALSE, FALSE, FALSE)) != NULL) {
 							FreeIfNeeded(art->xref); /* if field is listed more than once in overview.fmt */
 							art->xref = my_strdup(q);
 						}

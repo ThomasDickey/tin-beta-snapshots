@@ -31,9 +31,6 @@ o  unexpected multiline responses confuse tin, e.g.:
    (the servers response should be a single line (INN 2.2))
    [20050207 Urs Janssen <urs@tin.org>]
 
-o  piping/printing articles grabbles screen
-   [20030501 Urs Janssen <urs@tin.org>]
-
 o  better integrate saving of MIME/non-MIME articles when not using libuu.
    MIME sections are saved by the 's'ave operations, uuencoded sections
    are saved as part of the postprocess backend
@@ -104,6 +101,11 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  as libidn only does IDNA 2003 but not IDNA 2008 (RFC 5890-5894) add
+   a configure check for libidnkit2.x (<http://jprs.co.jp/idn/index-e.html>)
+   and if found use idn_decodename() in misc.c:idna_decode()
+   [20110120 Urs Janssen <urs@tin.org>]
+
 o  add nntp_default_server to tin.defaults to override compile time setting.
    if given strings starts with / or ~ the value is taken from the referenced
    file, if it starts with $ it is read from the referenced variable.
@@ -113,9 +115,6 @@ o  the old space_goto_next_article=ON && space_goto_next_unread=OFF is not
    possible with the new goto_next_unread rc-var, we need something like
    an additional goto_next_read rc-var
    [20101101 Urs Janssen <urs@tin.org>]
-
-o  key to show all article headers but not switch into raw mode like ^H does
-   [20100911 Urs Janssen <urs@tin.org>]
 
 o  add DEFAULT_SIGDASHES_REGEX and related 'M'enu-entry for signature
    detection in cook.c
@@ -302,7 +301,13 @@ o  MIME-pgp support according to RFC 2015, RFC 3156 - (should be easy now)
    As MIME-pgp verification needs the undecoded mime-part with it's headers
    storing the raw-offset of each part in the article would be very helpful.
 
+o  pgpverify invocation with a single key instead of '|''a''pgpverify' or a
+   buildin pgpverify solution.
+
 o  pgp-{6,7} support
+
+o  add check for GPGME (<http://www.gnupg.org/related_software/gpgme/>) and if
+   found use it for pgp actions.
 
 o  add feature Cc:
 
@@ -348,10 +353,6 @@ o  Add to the 'M'enu:
      'R'  (GLOBAL_BUGREPORT)
      '&'  (GLOBAL_TOGGLE_COLOR)
      and maybe a way to change built in path like DEFAULT_MAILER, PATH_PGP, ...
-
-     '?','/','\' search (partly done, currently only the displayed page is
-                         searched which is not that useful)
-     'h'  (GLOBAL_HELP)
 
 o  Add to the attachment menu ('V'):
      'F'  post followup to current article, not including current attachment
@@ -400,12 +401,11 @@ o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo
    and add an option to write/read {g,b,l}zipped local overviews.
    liblzma, zlib, libbzip2 and lzo might also be used for post-processing.
 
-o  add check for GPGME (<http://www.gnupg.org/related_software/gpgme/>) and if
-   found use it for pgp actions.
-
 o  rewrite/cleanup all the debugging code, the output in /tmp is messy; the
    on screen output either slows down things dramatically or is unreadable;
    add timestamps to at least the NNTP-log; split DEBUG_MISC?
+
+o  Add 'M'enu option to define chars for utf8_graphics.
 
 Posting enhancements
 --------------------
@@ -485,6 +485,15 @@ o  suppress hide_uue=2 checking unless first line in an article or following
 
 Internal Changes
 ----------------
+o  ditch MAX_MSG_HEADERS (post.c)
+   [20110212 Urs Janssen <urs@tin.org>]
+
+o  always display (also) the servers error response string to the user,
+   currently tin sometimes gives generic messages (i.e. when authentication
+   fails), but the servers response may include additional infos (like
+   bandwidth exceeded)
+   [20101230 Urs Janssen <urs@tin.org>]
+
 o  rewrite mini-help, remove the long strings and generate them dynamicly
    one help text for each key makes translations more easy and uniq and can
    use the available space on the screen much better if not running on 80
@@ -530,7 +539,9 @@ o  remove untranslatable constructs like txt_prefix_*
    [20050413 Urs Janssen <urs@tin.org>]
 
 o  keys which could be renamed/merged:
+   - 'l' GroupListThd, PageListThd
    - 'm' GroupMail, PageMail, PostMail, ThreadMail
+   - 'D' GroupCancel, PageCancel, ThreadCancel
    - 'N' GroupNextUnreadArt, PageNextUnreadArt, (SelectNextUnreadGrp)
    - 'S' GroupAutoSave, PageAutoSave, ThreadAutoSave
    - 'P' GroupPrevUnreadArt, PagePrevUnreadArt
@@ -654,6 +665,10 @@ o  add configure-switch for DISABLE_PIPELINING
 
 o  mask inline PGP SIGNATURE/KEY BLOCK like we do for uu-sections
    [20090722 Urs Janssen <urs@tin.org>]
+
+o  some non fixed width strings can be formated nicer (warp on last sapce
+   befor cCOLS), i.e. txt_warn_downgrade
+   [20110325 Urs Janssen <urs@tin.org>]
 
 Unicode
 -------
@@ -885,7 +900,7 @@ o  check_article_to_be_posted() needs a cleanup!
 
 o  update gettext stuff to > gettext-0.12.1
 
-o  clean up included pcre stuff and update to >= pcre-8.10
+o  clean up included pcre stuff and update to >= pcre-8.12
 
 o  what is with conflicting tinrc settings? should we disallow those, or leave
    it to the user to realise that e.g. strip_blanks=ON && inverse_okay=ON

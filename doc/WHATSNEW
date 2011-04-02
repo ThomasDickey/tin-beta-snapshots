@@ -12,6 +12,8 @@ New features
 . writes out newsrc if getting SIGUSR2
 . authentication via SASL PLAIN (RFC 4643) is preferred over USER/PASS
 . prefer LIST COUNTS (RFC 6048) over LIST ACTIVE if supported
+. danish translation
+. -4 / -6 cmd. line switches to force IPv4 / IPv6 connection
 
 Changes
 -------
@@ -31,7 +33,9 @@ Changes
     show_only_unread      -> show_only_unread_arts
     sort_art_type         -> sort_article_type
     thread_arts           -> thread_articles
-. '-s', '-m' and '-G' cmd-line options no longer changes the corresponding
+. changed names in keymap:
+    PageToggleHeaders     -> PageToggleRaw
+. '-s', '-m' and '-G' cmd-line options no longer change the corresponding
   tinrc values
 . '-w' uses the first given cmd-line group as default group to post to
 . with positive getart_limit all unread articles less than getart_limit are
@@ -45,3 +49,4 @@ Retired Features
 . VMS support
 . libinn support (was broken for ages)
 . AUTHINFO GENERIC (deprecated by RFC 4643)
+. Kinyarwanda translation (unmaintained since initial commit)

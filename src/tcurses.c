@@ -3,11 +3,11 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2010-09-07
+ *  Updated   : 2011-04-02
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
- * Copyright (c) 1997-2010 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2011 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -828,6 +828,10 @@ my_retouch(
 	TRACE(("my_retouch"));
 	if (!cmd_line) {
 		wrefresh(curscr);
+#	ifdef HAVE_COLOR
+		fcol(tinrc.col_normal);
+		bcol(tinrc.col_back);
+#	endif /* HAVE_COLOR */
 	}
 }
 

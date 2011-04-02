@@ -3,10 +3,10 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2010-05-20
+ *  Updated   : 2011-01-29
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2010 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2011 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -511,7 +511,7 @@ read_groups_descriptions(
 			 * Protect against invalid character sequences.
 			 */
 			process_charsets(&r, &r_len, "UTF-8", tinrc.mm_local_charset, FALSE);
-			group->description = convert_to_printable(r);
+			group->description = convert_to_printable(r, FALSE);
 		}
 
 		if (++count % 100 == 0)

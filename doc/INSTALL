@@ -69,8 +69,7 @@ TIN related:
   DEBUG                                   MATCH_TAR_PATTERN
   JUST_TESTING                            NEW_HASH_METHOD
   OPTIMIZE_JUST_STAR                      REREAD_ACTIVE_FILE_SECS
-  USE_UTF8_HORIZONTAL_ELLIPSIS            NO_LOCKING
-  FILE_MODE_BROKEN
+  NO_LOCKING                              FILE_MODE_BROKEN
 
 System related:
   --datadir                               --localstatedir

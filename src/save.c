@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2010-11-13
+ *  Updated   : 2011-03-27
  *  Notes     :
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -725,10 +725,8 @@ post_process_files(
 	if (num_save < 1)
 		return FALSE;
 
-	clear_message();
-#ifdef USE_CURSES
-	scrollok(stdscr, TRUE);
-#endif /* USE_CURSES */
+	EndWin();
+	Raw(FALSE);
 	my_printf("%s%s", _(txt_post_processing), cCRLF);
 
 	switch (proc_type_func) {
@@ -745,22 +743,24 @@ post_process_files(
 
 	my_printf("%s%s%s", _(txt_post_processing_finished), cCRLF, cCRLF);
 	my_flush();
-	prompt_continue();
 #ifdef USE_CURSES
-	scrollok(stdscr, FALSE);
+	Raw(TRUE);
+	InitWin();
 #endif /* USE_CURSES */
+	prompt_continue();
+#ifndef USE_CURSES
+	Raw(TRUE);
+	InitWin();
+#endif /* !USE_CURSES */
 
 	/*
 	 * Remove the post-processed files if required
 	 */
-	my_printf(cCRLF);
-	my_flush();
-
 	if (auto_delete) {
 		int i;
 
-		my_printf("%s%s", _(txt_deleting), cCRLF);
-		my_flush();
+		wait_message((tinrc.beginner_level) ? 2 : 1, "%s", _(txt_deleting));
+		cursoroff();
 
 		for (i = 0; i < num_save; i++)
 			unlink(save[i].path);
@@ -1219,8 +1219,6 @@ start_viewer(
 		wait_message(0, _(txt_starting_command), foo->command);
 		if (foo->needsterminal) {
 			set_xclick_off();
-			EndWin();
-			Raw(FALSE);
 			fflush(stdout);
 		} else {
 			if (foo->description)
@@ -1228,9 +1226,15 @@ start_viewer(
 		}
 		invoke_cmd(foo->command);
 		if (foo->needsterminal) {
+#ifndef USE_CURSES
+			EndWin();
+			Raw(FALSE);
+#endif /* !USE_CURSES */
+			prompt_continue();
+#ifndef USE_CURSES
 			Raw(TRUE);
 			InitWin();
-			prompt_continue();
+#endif /* !USE_CURSES */
 		}
 		if (foo->nametemplate) /* undo nametemplate, needed as 'save'-prompt is done outside start_viewer */
 			rename_file(foo->nametemplate, path);
@@ -1318,11 +1322,9 @@ decode_save_one(
 	/*
 	 * View the attachment
 	 */
-	if (postproc) {
-		if (curr_group->attribute->post_process_view) {
+	if ((postproc && curr_group->attribute->post_process_view) || !curr_group->attribute->ask_for_metamail) {
 			start_viewer(part, savepath);
 			my_printf(cCRLF);
-		}
 	} else {
 		snprintf(buf, sizeof(buf), _(txt_view_attachment), savepath, content_types[part->type], part->subtype);
 		if ((i = prompt_yn(buf, TRUE)) == 1)
@@ -1829,7 +1831,7 @@ build_attachment_line(
 	FreeIfNeeded(tree);
 	len = strwidth(buf2);
 	if (namelen + len + info_len + 8 <= cCOLS)
-		namelen =  cCOLS - 8 - info_len - len;
+		namelen = cCOLS - 8 - info_len - len;
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	tmpname = spart(name, namelen, TRUE);
@@ -1859,7 +1861,12 @@ build_tree(
 	int maxlen,
 	int i)
 {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	char *result;
+	wchar_t *tree;
+#else
 	char *tree;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	int prefix_ptr, tmpdepth;
 	int depth_level = 0;
 	t_bool found = FALSE;
@@ -1879,8 +1886,15 @@ build_tree(
 			odd = (odd ? 0 : 1);
 		}
 	}
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	tree = my_malloc(sizeof(wchar_t) * prefix_ptr + 3 * sizeof(wchar_t));
+	tree[prefix_ptr + 2] = (wchar_t) '\0';
+#else
 	tree = my_malloc(prefix_ptr + 3);
-	strcpy(&tree[prefix_ptr], "->");
+	tree[prefix_ptr + 2] = '\0';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	tree[prefix_ptr + 1] = TREE_ARROW;
+	tree[prefix_ptr] = TREE_HORIZ;
 	for (lptr = lptr2->next; lptr != NULL; lptr = lptr->next) {
 		if (lptr->part->depth == depth) {
 			found = TRUE;
@@ -1889,7 +1903,7 @@ build_tree(
 		if (lptr->part->depth < depth)
 			break;
 	}
-	tree[--prefix_ptr] = found ? '+' : '`';
+	tree[--prefix_ptr] = found ? TREE_VERT_RIGHT : TREE_UP_RIGHT;
 	found = FALSE;
 	for (tmpdepth = depth - 1; prefix_ptr > 1; --tmpdepth) {
 		for (lptr = lptr2->next; lptr != NULL; lptr = lptr->next) {
@@ -1900,14 +1914,20 @@ build_tree(
 			if (lptr->part->depth < tmpdepth)
 				break;
 		}
-		tree[--prefix_ptr] = ' ';
-		tree[--prefix_ptr] = found ? '|' : ' ';
+		tree[--prefix_ptr] = TREE_BLANK;
+		tree[--prefix_ptr] = found ? TREE_VERT : TREE_BLANK;
 		found = FALSE;
 	}
 	while (depth_level)
-		tree[--depth_level] = '>';
+		tree[--depth_level] = TREE_ARROW_WRAP;
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	result = wchar_t2char(tree);
+	free(tree);
+	return result;
+#else
 	return tree;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 }
 
 
@@ -2313,9 +2333,15 @@ pipe_part(
 	fflush(pipe_fp);
 	(void) pclose(pipe_fp);
 	set_signal_catcher(TRUE);
+	fclose(fp);
+#	ifdef USE_CURSES
 	Raw(TRUE);
 	InitWin();
-	fclose(fp);
+#	endif /* USE_CURSES */
 	prompt_continue();
+#	ifndef USE_CURSES
+	Raw(TRUE);
+	InitWin();
+#	endif /* !USE_CURSES */
 }
 #endif /* !DONT_HAVE_PIPING */

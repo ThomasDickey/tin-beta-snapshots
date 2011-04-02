@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2010-09-10
+ *  Updated   : 2011-01-30
  *  Notes     :
  *
- * Copyright (c) 1997-2010 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2011 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -560,6 +560,67 @@ eat_tab(
 }
 
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+wchar_t *
+wexpand_tab(
+	wchar_t *wstr,
+	size_t tab_width)
+{
+	size_t cur_len = LEN, i = 0, tw;
+	wchar_t *wbuf = my_malloc(cur_len * sizeof(wchar_t));
+	wchar_t *wc = wstr;
+
+	while (*wc) {
+		if (i > cur_len - (tab_width + 1)) {
+			cur_len <<= 1;
+			wbuf = my_realloc(wbuf, cur_len * sizeof(wchar_t));
+		}
+		if (*wc == (wchar_t) '\t') {
+			tw = tab_width;
+			for (; tw > 0; --tw)
+				wbuf[i++] = (wchar_t) ' ';
+		} else
+			wbuf[i++] = *wc;
+		wc++;
+	}
+	wbuf[i] = '\0';
+
+	return wbuf;
+}
+
+
+#else /* !MULTIBYTE_ABLE || NO_LOCALE */
+
+
+char *
+expand_tab(
+	char *str,
+	size_t tab_width)
+{
+	size_t cur_len = LEN, i = 0, tw;
+	char *buf = my_malloc(cur_len);
+	char *c = str;
+
+	while (*c) {
+		if (i > cur_len - (tab_width + 1)) {
+			cur_len <<= 1;
+			buf = my_realloc(buf, cur_len);
+		}
+		if (*c == '\t') {
+			tw = tab_width;
+			for (; tw > 0; --tw)
+				buf[i++] = ' ';
+		} else
+			buf[i++] = *c;
+		c++;
+	}
+	buf[i] = '\0';
+
+	return buf;
+}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+
 /*
  * Format a shell command, escaping blanks and other awkward characters that
  * appear in the string arguments. Replaces sprintf, except that we pass in
@@ -800,7 +861,7 @@ wcspart(
 
 	wbuf = my_wcsdup(wstr);
 	/* make sure all characters in wbuf are printable */
-	ptr = wconvert_to_printable(wbuf);
+	ptr = wconvert_to_printable(wbuf, FALSE);
 
 	/* terminate wbuf after 'columns' columns */
 	while (*ptr && used + wcwidth(*ptr) <= columns)
@@ -844,7 +905,7 @@ abbr_wcsgroupname(
 		if ((src = wcschr(grpname, (wchar_t) '.')) != NULL) {
 			tmplen = wcwidth(*dest++);
 
-			do  {
+			do {
 				*dest++ = *src;
 				tmplen += wcwidth(*src++);
 				*dest++ = *src;
@@ -903,7 +964,7 @@ abbr_groupname(
 			dest++;
 			tmplen = 1;
 
-			do  {
+			do {
 				*dest++ = *src++;
 				*dest++ = *src++;
 				tmplen += 2;
@@ -1001,13 +1062,6 @@ strunc(
 }
 
 
-/*
- * if you use UTF-8 as local charset and want to use
- * U+2026 (HORIZONTAL_ELLIPSIS) instead of "..." uncomment
- * the following define
- */
-/* #define USE_UTF8_HORIZONTAL_ELLIPSIS 1 */
-
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 /* the wide-char equivalent of strunc() */
 wchar_t *
@@ -1019,14 +1073,13 @@ wstrunc(
 
 	/* make sure all characters are printable */
 	wtmp = my_wcsdup(wmessage);
-	wconvert_to_printable(wtmp);
+	wconvert_to_printable(wtmp, FALSE);
 
 	if (wcswidth(wtmp, wcslen(wtmp)) > len) {
 		/* wtmp must be truncated */
 		wchar_t *wtmp2, *tail;
 
-#	ifdef USE_UTF8_HORIZONTAL_ELLIPSIS
-		if (IS_LOCAL_CHARSET("UTF-8")) {
+		if (tinrc.utf8_graphics) {
 			/*
 			 * use U+2026 (HORIZONTAL ELLIPSIS) instead of "..."
 			 * we gain two additional screen positions
@@ -1035,7 +1088,6 @@ wstrunc(
 			tail[0] = 8230; /* U+2026 */
 			tail[1] = 0;	/* \0 */
 		} else
-#	endif /* USE_UTF8_HORIZONTAL_ELLIPSIS */
 			tail = char2wchar_t(TRUNC_TAIL);
 
 		wtmp2 = wcspart(wtmp, len - wcslen(tail), FALSE);
@@ -1174,7 +1226,7 @@ normalize(
 		status = U_ZERO_ERROR;		/* reset status */
 		norm_len = needed + 1;
 		norm = my_malloc(sizeof(UChar) * norm_len);
-		needed = unorm_normalize(ustr, -1, mode, 0, norm, norm_len, &status);
+		(void) unorm_normalize(ustr, -1, mode, 0, norm, norm_len, &status);
 		if (U_FAILURE(status)) {
 			/* something went wrong, return the original string (as valid UTF8) */
 			free(ustr);

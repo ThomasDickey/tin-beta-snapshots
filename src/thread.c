@@ -3,10 +3,10 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2010-10-07
+ *  Updated   : 2011-01-29
  *  Notes     :
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -232,7 +232,7 @@ build_tline(
 		/*
 		 * Copy in the subject up to where the author (if any) starts
 		 */
-		gap = cCOLS - strlen(buffer) - len_from; /* gap = gap (no. of chars) between tree and author/border of window */
+		gap = cCOLS - strwidth(buffer) - len_from; /* gap = gap (no. of chars) between tree and author/border of window */
 
 		if (len_from)	/* Leave gap before author */
 			gap -= 2;
@@ -312,7 +312,7 @@ build_tline(
 	}
 
 	/* protect display from non-displayable characters (e.g., form-feed) */
-	convert_to_printable(buffer);
+	convert_to_printable(buffer, FALSE);
 
 	if (!tinrc.strip_blanks) {
 		/* Pad to end of line so that inverse bar looks 'good' */
@@ -1319,7 +1319,12 @@ make_prefix(
 	char *prefix,
 	int maxlen)
 {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	char *result;
+	wchar_t *buf, *buf2;
+#else
 	char *buf;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	int prefix_ptr;
 	int depth = 0;
 	int depth_level = 0;
@@ -1348,23 +1353,39 @@ make_prefix(
 		}
 	}
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	buf = my_malloc(sizeof(wchar_t) * prefix_ptr + 3 * sizeof(wchar_t));
+	buf[prefix_ptr + 2] = (wchar_t) '\0';
+#else
 	buf = my_malloc(prefix_ptr + 3);
-	strcpy(&buf[prefix_ptr], "->");
-	buf[--prefix_ptr] = (has_sibling(art) ? '+' : '`');
+	buf[prefix_ptr + 2] = '\0';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	buf[prefix_ptr + 1] = TREE_ARROW;
+	buf[prefix_ptr] = TREE_HORIZ;
+	buf[--prefix_ptr] = (has_sibling(art) ? TREE_VERT_RIGHT : TREE_UP_RIGHT);
 
 	for (ptr = art->parent; prefix_ptr > 1; ptr = ptr->parent) {
 		if (IS_EXPIRED(ptr))
 			continue;
-		buf[--prefix_ptr] = ' ';
-		buf[--prefix_ptr] = (has_sibling(ptr) ? '|' : ' ');
+		buf[--prefix_ptr] = TREE_BLANK;
+		buf[--prefix_ptr] = (has_sibling(ptr) ? TREE_VERT : TREE_BLANK);
 	}
 
 	while (depth_level)
-		buf[--depth_level] = '>';
+		buf[--depth_level] = TREE_ARROW_WRAP;
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	buf2 = wcspart(buf, maxlen, FALSE);
+	result = wchar_t2char(buf2);
+	strcpy(prefix, result);
+	free(buf);
+	FreeIfNeeded(buf2);
+	FreeIfNeeded(result);
+#else
 	strncpy(prefix, buf, maxlen);
 	prefix[maxlen] = '\0'; /* just in case strlen(buf) > maxlen */
 	free(buf);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	return;
 }
 

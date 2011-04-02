@@ -5,7 +5,7 @@ dnl Created   : 1995-08-24
 dnl Updated   : 2009-12-31
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2010 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2011 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -3637,10 +3637,10 @@ dnl ----------
 dnl Provide a value for the $PATH and similar separator
 AC_DEFUN([CF_PATHSEP],
 [
-	case $cf_cv_system_name in
+case $cf_cv_system_name in
 	os2*)	PATH_SEPARATOR=';'  ;;
 	*)	PATH_SEPARATOR=':'  ;;
-	esac
+esac
 ifelse($1,,,[$1=$PATH_SEPARATOR])
 	AC_SUBST(PATH_SEPARATOR)
 ])dnl

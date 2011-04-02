@@ -3,9 +3,9 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2006-09-02
+ *  Updated   : 2010-12-18
  *
- * Copyright (c) 1997-2010 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2011 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -306,7 +306,6 @@ tin_fgets(
 	static char *dynbuf = NULL;
 	static int size = 0;
 
-	char *temp, *ptr;
 	int next;
 
 	tin_errno = 0;					/* Clear errors */
@@ -330,8 +329,8 @@ tin_fgets(
 	size = INIT;
 #endif /* 1 */
 
-	if ((ptr = tin_read(dynbuf, size, fp, header)) == NULL)
-		return ptr;
+	if (tin_read(dynbuf, size, fp, header) == NULL)
+		return NULL;
 
 	if (tin_errno != 0) {
 		DEBUG_IO((stderr, _("Aborted read\n")));
@@ -343,9 +342,8 @@ tin_fgets(
 	while (partial_read) {
 		if (next + RCHUNK > size)
 			size = next + RCHUNK;
-		temp = my_realloc(dynbuf, size * sizeof(*dynbuf));
-		dynbuf = temp;
-		temp = tin_read(dynbuf + next, size - next, fp, header); /* What if == 0? */
+		dynbuf = my_realloc(dynbuf, size * sizeof(*dynbuf));
+		(void) tin_read(dynbuf + next, size - next, fp, header); /* What if == NULL? */
 		next += offset;
 
 		if (tin_errno != 0)

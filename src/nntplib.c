@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2010-11-10
+ *  Updated   : 2011-02-22
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -615,7 +615,7 @@ get_tcp6_socket(
 #	endif /* AF_UNSPEC */
 	memset(&hints, 0, sizeof(hints));
 /*	hints.ai_flags = AI_CANONNAME; */
-	hints.ai_family = ADDRFAM;
+	hints.ai_family = (force_ipv4 ? AF_INET : (force_ipv6 ? AF_INET6 : ADDRFAM));
 	hints.ai_socktype = SOCK_STREAM;
 	res = (struct addrinfo *) 0;
 	res0 = (struct addrinfo *) 0;
@@ -628,7 +628,7 @@ get_tcp6_socket(
 		if ((s = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0)
 			continue;
 		if (connect(s, res->ai_addr, res->ai_addrlen) != 0)
-			close(s);
+			s_close(s);
 		else {
 			err = 0;
 			break;
@@ -712,7 +712,7 @@ get_dnet_socket(
 
 	if (connect(s, (struct sockaddr *) &sdn, sizeof(sdn)) < 0) {
 		nerror("connect");
-		close(s);
+		s_close(s);
 		return -1;
 	}
 

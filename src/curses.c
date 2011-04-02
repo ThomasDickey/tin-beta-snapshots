@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2010-10-31
+ *  Updated   : 2011-03-25
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -173,6 +173,9 @@ setup_screen(
 	ScreenSize(&cLINES, &cCOLS);
 	cmd_line = FALSE;
 	Raw(TRUE);
+#ifdef HAVE_COLOR
+	bcol(tinrc.col_back);
+#endif /* HAVE_COLOR */
 	set_win_size(&cLINES, &cCOLS);
 }
 
@@ -461,6 +464,10 @@ void
 ClearScreen(
 	void)
 {
+#ifdef HAVE_COLOR
+	fcol(tinrc.col_normal);
+	bcol(tinrc.col_back);
+#endif /* HAVE_COLOR */
 	tputs(_clearscreen, 1, outchar);
 	my_flush();		/* clear the output buffer */
 	_line = 1;

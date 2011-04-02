@@ -3,10 +3,10 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2010-05-10
+ *  Updated   : 2011-04-02
  *  Notes     : curses #include files, #defines & struct's
  *
- * Copyright (c) 1997-2010 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2011 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,17 +111,18 @@ extern void my_fputs(const char *str, FILE *stream);
 extern void my_fprintf(FILE *stream, const char *fmt, ...)
 #		if defined(__GNUC__) && !defined(printf)
 	__attribute__((format(printf,2,3)))
-#		endif /* __GNUC__ */
+#		endif /* __GNUC__ && !printf */
 	;
 extern void my_printf(const char *fmt, ...)
 #		if defined(__GNUC__) && !defined(printf)
 	__attribute__((format(printf,1,2)))
-#		endif /* __GNUC__ */
+#		endif /* __GNUC__ && !printf */
 	;
 extern void my_retouch(void);
 #		ifdef HAVE_COLOR
 	extern void refresh_color(void);
-#		endif /* refresh_color */
+	extern void reset_color(void);
+#		endif /* HAVE_COLOR */
 extern void write_line(int row, char *buffer);
 
 #	else	/* !USE_CURSES */

@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2010-11-26
+.\" Updated   : 2011-01-30
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "26. November 2010" 1.9.6 "Usenet Newsreader"
+.TH tin 1 "26. November 2010" 2.0.0 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -26,10 +26,11 @@ tin, rtin \- Ein Usenet Newsreader
 .\"
 \fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|[\|\fB\-a\fP\|]
 [\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-ArzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
-\|\|\fB\-s\fP \fINews\-Verz.\fP\|] [\|\fB\-cuvZ\fP\|] [\|\fB\-N\fP\||\|\fB\-M\fP \fIAdresse\fP\|]
-[\|\fB\-o\fP\||\|\fB\-w\fP\|]\|] [\|\fB\-D\fP \fIDebuggrad\fP\|] [\|\fB\-G\fP
-\fIArtikellimit\fP\|] [\|\fB\-f\fP \fInewsrc\-Datei\fP\|] [\|\fB\-g\fP \fIServer\fP\|]
-[\|\fB\-m\fP \fIMail\-Verz.\fP\|] [\|\fB\-p\fP \fIPort\fP\|] [\|\fB\-I\fP \fIindex\-Verz.\fP\|]\ \|[\fINewsgruppe\fP\|[\|,.\|.\|.\|]\|]\|]
+\|\|\fB\-s\fP \fINews\-Verz.\fP\|] [\|\fB\-cuvZ\fP\|] [\|\fB\-4\fP\||\|\fB\-6\fP\|]
+[\|\fB\-N\fP\||\|\fB\-M\fP \fIAdresse\fP\|] [\|\fB\-o\fP\||\|\fB\-w\fP\|]\|] [\|\fB\-D\fP
+\fIDebuggrad\fP\|] [\|\fB\-G\fP \fIArtikellimit\fP\|] [\|\fB\-f\fP \fInewsrc\-Datei\fP\|]
+[\|\fB\-g\fP \fIServer\fP\|] [\|\fB\-m\fP \fIMail\-Verz.\fP\|] [\|\fB\-p\fP \fIPort\fP\|] [\|\fB\-I\fP
+\fIindex\-Verz.\fP\|]\ \|[\fINewsgruppe\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH BESCHREIBUNG
 \fBtin\fP ist ein einfach zu bedienender Newsreader für das Usenet. Er kann
 Artikel von einem lokalen (z. B. aus \fI/var/spool/news\fP) oder entfernten
@@ -81,6 +82,12 @@ Ungelesene Nachrichten vorhanden
 .\"
 .SH OPTIONEN
 .TP  12
+\fB\-4\fP
+Force connecting via IPv4 to the remote NNTP server.
+.TP 
+\fB\-6\fP
+Force connecting via IPv6 to the remote NNTP server.
+.TP 
 \fB\-a\fP
 ANSI\-Farben ein/\-ausschalten (Standard ist aus).
 .TP 
@@ -289,7 +296,7 @@ unread articles displayed on the same line in front.
   X    5   124  news.software.readers   Discussion of software used to r
 .fi
 .PP
-Eventuell steht am Anfang der Zeile noch eines def folgende Zeichen:
+Eventuell steht am Anfang der Zeile noch eines der folgende Zeichen:
 .TP  10
 \fBu\fP
 This group is unsubscribed. To see only your subscribed groups use the
@@ -1054,7 +1061,7 @@ article with all headers included.
 \fBPagePGPCheckArticle '^G'\fP
 Perform \fBpgp\fP(1)  operations on article.
 .TP 
-\fBPageToggleHeaders '^H'\fP
+\fBPageToggleRaw '^H'\fP
 Toggles the display mode (raw including all headers vs. cooked).
 .TP 
 \fBMenuFilterKill '^K'\fP
@@ -1071,6 +1078,10 @@ headers included.
 \fBPageToggleTex2iso '"'\fP
 Toggle TeX to ISO decoding for current article. The default behavior is
 taken from the \fBtex2iso_conv\fP variable in the tinrc file.
+.TP 
+\fBPageToggleAllHeaders '*'\fP
+Toggles the display of all headers vs. headers in
+\fBnews_headers_to_display\fP.
 .TP 
 \fBPageToggleRot '%'\fP
 Toggle ROT\-13 decoding for this article.
@@ -1284,7 +1295,7 @@ Alle Artikel als ungelesen markieren.
 .\"--------------------------------------------------------------------
 .\"
 Markiere den aktuellen Thread als ungelesen.
-.SS "URL LISTING"
+.SS "URL LISTE"
 \fBPageViewUrl\fP ('\fBU\fP') displays a list of URLs in the current
 article. Besides the common moving keys, the following commands are
 available:
@@ -1628,13 +1639,13 @@ OFF=apply to current group. Default is ON.
 Default for quick (1 key) kill filter header.
 .RS +.5i
 .IP 0 4
- \*(rqSubject:\*(rq (Gross/Kleinschreibung beachten)
+ \*(rqSubject:\*(rq (Groß/Kleinschreibung beachten)
 .IP 1
- \*(rqSubject:\*(rq (Gross/Kleinschreibung ignorieren)
+ \*(rqSubject:\*(rq (Groß/Kleinschreibung ignorieren)
 .IP 2
- \*(rqFrom:\*(rq (Gross/Kleinschreibung beachten)
+ \*(rqFrom:\*(rq (Groß/Kleinschreibung beachten)
 .IP 3
- \*(rqFrom:\*(rq (Gross/Kleinschreibung ignorieren)
+ \*(rqFrom:\*(rq (Groß/Kleinschreibung ignorieren)
 .IP 4
  \*(rqMessage\-ID:\*(rq & alle \*(rqReferences:\*(rq Einträge
 .IP 5
@@ -1661,13 +1672,13 @@ groups OFF=apply to current group. Default is ON.
 Default for quick (1 key) auto\-selection filter header.
 .RS +.5i
 .IP 0 4
- \*(rqSubject:\*(rq (Gross/Kleinschreibung beachten)
+ \*(rqSubject:\*(rq (Groß/Kleinschreibung beachten)
 .IP 1
- \*(rqSubject:\*(rq (Gross/Kleinschreibung ignorieren)
+ \*(rqSubject:\*(rq (Groß/Kleinschreibung ignorieren)
 .IP 2
- \*(rqFrom:\*(rq (Gross/Kleinschreibung beachten)
+ \*(rqFrom:\*(rq (Groß/Kleinschreibung beachten)
 .IP 3
- \*(rqFrom:\*(rq (Gross/Kleinschreibung ignorieren)
+ \*(rqFrom:\*(rq (Groß/Kleinschreibung ignorieren)
 .IP 4
  \*(rqMessage\-ID:\*(rq & alle \*(rqReferences:\*(rq Einträge
 .IP 5
@@ -2283,7 +2294,7 @@ The default is Both Subject and References.  The choices are:
 If ON catchup group/thread when leaving with the left arrow key. Default is
 ON.
 .TP 
-\fBProzentualer Subject vergleich (thread_perc)\fP
+\fBProzentualer Subject Vergleich (thread_perc)\fP
 How closely the subjects must match for two threads to be considered part of
 the same thread. This is a percentage and the default if 75%.
 .TP 
@@ -2360,6 +2371,10 @@ Default is OFF.
 If enabled \fBtin\fP uses \fBslrnface\fP(1)  to interpret the \*(rqX\-Face:\*(rq
 header. For this option to have any effect, \fBtin\fP must be running in an
 \fBxterm\fP(1x)  and \fBslrnface\fP(1)  must be in your $\fBPATH\fP. Default is OFF.
+.TP 
+\fBUse UTF\-8 graphics (utf8_graphics)\fP
+If ON use UTF\-8 characters for indicator ('\->'), thread/attachment tree
+and ellipsis ('...'). Default is OFF.
 .TP 
 \fBReg. Ausd. für den Anfang e. wortgetreuen Textblock (verbatim_begin_regex)\fP
 A regular expression that tin will use to find the begin of a verbatim

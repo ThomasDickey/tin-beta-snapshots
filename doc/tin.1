@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2010-11-26
+.\" Updated   : 2011-01-30
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "November 26th, 2010" "1.9.6" "A Usenet newsreader"
+.TH tin 1 "November 26th, 2010" "2.0.0" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -26,6 +26,7 @@ tin, rtin \- A Usenet newsreader
 .RB \|\| \-s
 .IR News_dir \|]
 .RB [\| \-cuvZ \|]
+.RB [\| \-4 \||\| \-6 \|]
 .RB [\| \-N \||\| \-M
 .IR address \|]
 .RB [\| \-o \||\| \-w \|]\|]
@@ -100,6 +101,12 @@ Unread news
 .\"
 .SH OPTIONS
 .TP 12
+.B \-4
+Force connecting via IPv4 to the remote NNTP server.
+.TP
+.B \-6
+Force connecting via IPv6 to the remote NNTP server.
+.TP
 .B \-a
 Toggle ANSI color (default is off).
 .TP
@@ -1076,7 +1083,7 @@ Perform
 .BR pgp (1)
 operations on article.
 .TP
-.B PageToggleHeaders '^H'
+.B PageToggleRaw '^H'
 Toggles the display mode (raw including all headers vs. cooked).
 .TP
 .B MenuFilterKill '^K'
@@ -1093,6 +1100,9 @@ headers included.
 .B PageToggleTex2iso '\&"'
 Toggle TeX to ISO decoding for current article. The default behavior is
 taken from the \fBtex2iso_conv\fP variable in the tinrc file.
+.TP
+.B PageToggleAllHeaders '*'
+Toggles the display of all headers vs. headers in \fBnews_headers_to_display\fP.
 .TP
 .B PageToggleRot '%'
 Toggle ROT-13 decoding for this article.
@@ -2433,6 +2443,10 @@ to interpret the ''X\-Face:'' header. For this option to have any effect,
 and
 .BR slrnface (1)
 must be in your $\fBPATH\fP. Default is OFF.
+.TP
+.B Use UTF-8 graphics (utf8_graphics)
+If ON use UTF-8 characters for indicator ('\->'), thread/attachment tree and
+ellipsis ('...'). Default is OFF.
 .TP
 .B Regex for begin of a verbatim block (verbatim_begin_regex)
 A regular expression that tin will use to find the begin of a verbatim block.

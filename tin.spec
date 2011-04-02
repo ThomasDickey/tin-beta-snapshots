@@ -1,10 +1,10 @@
 Name: tin
 Summary: tin - an easy-to-use USENET news reader
-Version: 1.9.6
+Version: 2.0.0
 Release: 1
 Copyright: BSD
 Group: Applications/News
-Source: ftp://ftp.tin.org/pub/news/clients/tin/v1.9/%{name}-%{version}.tar.bz2
+Source: ftp://ftp.tin.org/pub/news/clients/tin/v2.0/%{name}-%{version}.tar.bz2
 Buildroot: /var/tmp/%{name}-%{version}-%{release}
 Packager: Dirk Nimmich <nimmich@muenster.de>
 
@@ -54,4 +54,3 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Tue Jul 22 2003 Dirk Nimmich <nimmich@muenster.de>
   Specfile created for tin 1.6.0.
-

@@ -6,7 +6,7 @@
  *  Updated   : 2010-05-16
  *  Notes     :
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -136,7 +136,7 @@ expand_art(
 	arts = my_realloc(arts, sizeof(*arts) * max_art);
 	base = my_realloc(base, sizeof(long) * max_art);
 	for (; i < max_art; i++)		/* use memset() instead? */
-		arts[i].subject =  arts[i].from = arts[i].xref =  arts[i].refs = arts[i].msgid = NULL;
+		arts[i].subject = arts[i].from = arts[i].xref = arts[i].refs = arts[i].msgid = NULL;
 }
 
 

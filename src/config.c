@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2010-04-11
+ *  Updated   : 2011-01-30
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -751,6 +751,14 @@ read_config_file(
 				break;
 #endif /* XFACE_ABLE */
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if (match_boolean(buf, "utf8_graphics=", &tinrc.utf8_graphics)) {
+				/* only enable this when local charset is UTF-8 */
+				tinrc.utf8_graphics = tinrc.utf8_graphics ? IS_LOCAL_CHARSET("UTF-8") : FALSE;
+				break;
+			}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 			break;
 
 		case 'v':
@@ -1083,6 +1091,11 @@ write_config_file(
 
 	fprintf(fp, _(txt_auto_cc_bcc.tinrc));
 	fprintf(fp, "auto_cc_bcc=%d\n\n", tinrc.auto_cc_bcc);
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	fprintf(fp, _(txt_utf8_graphics.tinrc));
+	fprintf(fp, "utf8_graphics=%s\n\n", print_boolean(tinrc.utf8_graphics));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	fprintf(fp, _(txt_art_marked_deleted.tinrc));
 	fprintf(fp, "art_marked_deleted=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_deleted));
