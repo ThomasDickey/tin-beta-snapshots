@@ -1,4 +1,4 @@
-# Keymap file V1.0.8 for the TIN newsreader
+# Keymap file V1.0.9 for the TIN newsreader
 #
 # Sample keymap file
 # This file contains the default key mappings
@@ -127,7 +127,7 @@ HelpFirstPage			g
 
 PageReplyQuoteHeaders		^E
 PagePGPCheckArticle		^G
-PageToggleHeaders		^H
+PageToggleRaw			^H
 PageNextUnread			TAB
 PageNextThd			^J	^M
 PageToggleTabs			^T
@@ -136,6 +136,7 @@ PageToggleTex2iso		"
 PageToggleRot			%
 PageToggleUue			(
 PageReveal			)
+PageToggleAllHeaders		*
 PageSkipIncludedText		:
 PageTopThd			<
 PageBotThd			>

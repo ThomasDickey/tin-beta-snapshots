@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2010-10-07
+ *  Updated   : 2011-01-29
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2010 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2011 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -225,7 +225,7 @@ get_quoted_string(
 	}
 	*ptr = '\0';
 	*dest = my_realloc(*dest, strlen(*dest) + 1);
-	return *source ? source++ : source;
+	return *source ? source + 1 : source;
 }
 
 
@@ -585,7 +585,8 @@ parse_header(
 	char *buf,
 	const char *pat,
 	t_bool decode,
-	t_bool structured)
+	t_bool structured,
+	t_bool keep_tab)
 {
 	size_t plen = strlen(pat);
 	char *ptr = buf + plen;
@@ -619,15 +620,15 @@ parse_header(
 
 				if (*name) {
 					if (type == GNKSA_ADDRTYPE_OLDSTYLE)
-						sprintf(ptr, "%s (%s)", addr, convert_to_printable(rfc1522_decode(name)));
+						sprintf(ptr, "%s (%s)", addr, convert_to_printable(rfc1522_decode(name), keep_tab));
 					else
-						sprintf(ptr, "%s <%s>", convert_to_printable(rfc1522_decode(name)), addr);
+						sprintf(ptr, "%s <%s>", convert_to_printable(rfc1522_decode(name), keep_tab), addr);
 				} else
 					strcpy(ptr, addr);
 			} else
-				return convert_to_printable(ptr);
+				return convert_to_printable(ptr, keep_tab);
 		} else
-			return (convert_to_printable(rfc1522_decode(ptr)));
+			return (convert_to_printable(rfc1522_decode(ptr), keep_tab));
 	}
 
 	return ptr;
@@ -671,112 +672,112 @@ parse_rfc822_headers(
 		 *        loss (multiple Cc: lines are allowed, for example)
 		 */
 		unfold_header(line);
-		if ((ptr = parse_header(line, "From", TRUE, TRUE))) {
+		if ((ptr = parse_header(line, "From", TRUE, TRUE, FALSE))) {
 			FreeIfNeeded(hdr->from);
 			hdr->from = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "To", TRUE, TRUE))) {
+		if ((ptr = parse_header(line, "To", TRUE, TRUE, FALSE))) {
 			FreeIfNeeded(hdr->to);
 			hdr->to = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Cc", TRUE, TRUE))) {
+		if ((ptr = parse_header(line, "Cc", TRUE, TRUE, FALSE))) {
 			FreeIfNeeded(hdr->cc);
 			hdr->cc = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Bcc", TRUE, TRUE))) {
+		if ((ptr = parse_header(line, "Bcc", TRUE, TRUE, FALSE))) {
 			FreeIfNeeded(hdr->bcc);
 			hdr->bcc = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Date", FALSE, FALSE))) {
+		if ((ptr = parse_header(line, "Date", FALSE, FALSE, FALSE))) {
 			FreeIfNeeded(hdr->date);
 			hdr->date = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Subject", TRUE, FALSE))) {
+		if ((ptr = parse_header(line, "Subject", TRUE, FALSE, TRUE))) {
 			FreeIfNeeded(hdr->subj);
 			hdr->subj = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Organization", TRUE, FALSE))) {
+		if ((ptr = parse_header(line, "Organization", TRUE, FALSE, TRUE))) {
 			FreeIfNeeded(hdr->org);
 			hdr->org = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Reply-To", TRUE, TRUE))) {
+		if ((ptr = parse_header(line, "Reply-To", TRUE, TRUE, FALSE))) {
 			FreeIfNeeded(hdr->replyto);
 			hdr->replyto = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Newsgroups", FALSE, FALSE))) {
+		if ((ptr = parse_header(line, "Newsgroups", FALSE, FALSE, FALSE))) {
 			FreeIfNeeded(hdr->newsgroups);
 			hdr->newsgroups = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Message-ID", FALSE, FALSE))) {
+		if ((ptr = parse_header(line, "Message-ID", FALSE, FALSE, FALSE))) {
 			FreeIfNeeded(hdr->messageid);
 			hdr->messageid = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "References", FALSE, FALSE))) {
+		if ((ptr = parse_header(line, "References", FALSE, FALSE, FALSE))) {
 			FreeIfNeeded(hdr->references);
 			hdr->references = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Distribution", FALSE, FALSE))) {
+		if ((ptr = parse_header(line, "Distribution", FALSE, FALSE, FALSE))) {
 			FreeIfNeeded(hdr->distrib);
 			hdr->distrib = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Keywords", TRUE, FALSE))) {
+		if ((ptr = parse_header(line, "Keywords", TRUE, FALSE, FALSE))) {
 			FreeIfNeeded(hdr->keywords);
 			hdr->keywords = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Summary", TRUE, FALSE))) {
+		if ((ptr = parse_header(line, "Summary", TRUE, FALSE, FALSE))) {
 			FreeIfNeeded(hdr->summary);
 			hdr->summary = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Followup-To", FALSE, FALSE))) {
+		if ((ptr = parse_header(line, "Followup-To", FALSE, FALSE, FALSE))) {
 			FreeIfNeeded(hdr->followup);
 			hdr->followup = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "X-Comment-To", TRUE, TRUE))) {
+		if ((ptr = parse_header(line, "X-Comment-To", TRUE, TRUE, FALSE))) {
 			FreeIfNeeded(hdr->ftnto);
 			hdr->ftnto = my_strdup(ptr);
 			continue;
 		}
 #ifdef XFACE_ABLE
-		if ((ptr = parse_header(line, "X-Face", FALSE, FALSE))) {
+		if ((ptr = parse_header(line, "X-Face", FALSE, FALSE, FALSE))) {
 			FreeIfNeeded(hdr->xface);
 			hdr->xface = my_strdup(ptr);
 			continue;
 		}
 #endif /* XFACE_ABLE */
 		/* TODO: check version */
-		if (parse_header(line, "MIME-Version", FALSE, FALSE)) {
+		if (parse_header(line, "MIME-Version", FALSE, FALSE, FALSE)) {
 			hdr->mime = TRUE;
 			continue;
 		}
-		if ((ptr = parse_header(line, "Content-Type", FALSE, FALSE))) {
+		if ((ptr = parse_header(line, "Content-Type", FALSE, FALSE, FALSE))) {
 			parse_content_type(ptr, hdr->ext);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE, FALSE))) {
+		if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE, FALSE, FALSE))) {
 			hdr->ext->encoding = parse_content_encoding(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Content-Description", TRUE, FALSE))) {
+		if ((ptr = parse_header(line, "Content-Description", TRUE, FALSE, FALSE))) {
 			FreeIfNeeded(hdr->ext->description);
 			hdr->ext->description = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Content-Disposition", FALSE, FALSE))) {
+		if ((ptr = parse_header(line, "Content-Disposition", FALSE, FALSE, FALSE))) {
 			parse_content_disposition(ptr, hdr->ext);
 			continue;
 		}
@@ -953,19 +954,19 @@ parse_multipart_article(
 				 */
 /* fprintf(stderr, "HDR:%s\n", line); */
 				unfold_header(line);
-				if ((ptr = parse_header(line, "Content-Type", FALSE, FALSE))) {
+				if ((ptr = parse_header(line, "Content-Type", FALSE, FALSE, FALSE))) {
 					parse_content_type(ptr, curr_part);
 					break;
 				}
-				if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE, FALSE))) {
+				if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE, FALSE, FALSE))) {
 					curr_part->encoding = parse_content_encoding(ptr);
 					break;
 				}
-				if ((ptr = parse_header(line, "Content-Disposition", FALSE, FALSE))) {
+				if ((ptr = parse_header(line, "Content-Disposition", FALSE, FALSE, FALSE))) {
 					parse_content_disposition(ptr, curr_part);
 					break;
 				}
-				if ((ptr = parse_header(line, "Content-Description", TRUE, FALSE))) {
+				if ((ptr = parse_header(line, "Content-Description", TRUE, FALSE, FALSE))) {
 					FreeIfNeeded(curr_part->description);
 					curr_part->description = my_strdup(ptr);
 					break;
@@ -1237,7 +1238,7 @@ art_open(
 		wait_message(0, _(txt_is_tex_encoded));
 
 	/* Maybe fix it so if this fails, we default to raw? */
-	if (!cook_article(wrap_lines, artinfo, tinrc.hide_uue))
+	if (!cook_article(wrap_lines, artinfo, tinrc.hide_uue, FALSE))
 		return ART_ABORT;
 
 #ifdef DEBUG_ART

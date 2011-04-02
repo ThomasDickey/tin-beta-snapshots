@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2010-11-26
+.\" Updated   : 2011-01-30
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "November 26th, 2010" 1.9.6 "A Usenet newsreader"
+.TH tin 1 "November 26th, 2010" 2.0.0 "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -26,10 +26,11 @@ tin, rtin \- A Usenet newsreader
 .\"
 \fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|[\|\fB\-a\fP\|]
 [\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-ArzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
-\|\|\fB\-s\fP \fINews_dir\fP\|] [\|\fB\-cuvZ\fP\|] [\|\fB\-N\fP\||\|\fB\-M\fP \fIaddress\fP\|]
-[\|\fB\-o\fP\||\|\fB\-w\fP\|]\|] [\|\fB\-D\fP \fIdebug_level\fP\|] [\|\fB\-G\fP
-\fIarticle_limit\fP\|] [\|\fB\-f\fP \fInewsrc_file\fP\|] [\|\fB\-g\fP \fIserver\fP\|]
-[\|\fB\-m\fP \fIMail_dir\fP\|] [\|\fB\-p\fP \fIport\fP\|] [\|\fB\-I\fP \fIindex_dir\fP\|]\ \|[\fInewsgroup\fP\|[\|,.\|.\|.\|]\|]\|]
+\|\|\fB\-s\fP \fINews_dir\fP\|] [\|\fB\-cuvZ\fP\|] [\|\fB\-4\fP\||\|\fB\-6\fP\|]
+[\|\fB\-N\fP\||\|\fB\-M\fP \fIaddress\fP\|] [\|\fB\-o\fP\||\|\fB\-w\fP\|]\|] [\|\fB\-D\fP
+\fIdebug_level\fP\|] [\|\fB\-G\fP \fIarticle_limit\fP\|] [\|\fB\-f\fP \fInewsrc_file\fP\|]
+[\|\fB\-g\fP \fIserver\fP\|] [\|\fB\-m\fP \fIMail_dir\fP\|] [\|\fB\-p\fP \fIport\fP\|] [\|\fB\-I\fP
+\fIindex_dir\fP\|]\ \|[\fInewsgroup\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH DESCRIPTION
 \fBtin\fP is a full\-screen easy to use Usenet newsreader. It can read news
 locally (e.g., \fI/var/spool/news\fP) or remotely (\fBrtin\fP or \fBtin \-r\fP option)
@@ -80,6 +81,12 @@ Unread news
 .\"
 .SH OPTIONS
 .TP  12
+\fB\-4\fP
+Force connecting via IPv4 to the remote NNTP server.
+.TP 
+\fB\-6\fP
+Force connecting via IPv6 to the remote NNTP server.
+.TP 
 \fB\-a\fP
 Toggle ANSI colour (default is off).
 .TP 
@@ -1047,7 +1054,7 @@ article with all headers included.
 \fBPagePGPCheckArticle '^G'\fP
 Perform \fBpgp\fP(1)  operations on article.
 .TP 
-\fBPageToggleHeaders '^H'\fP
+\fBPageToggleRaw '^H'\fP
 Toggles the display mode (raw including all headers vs. cooked).
 .TP 
 \fBMenuFilterKill '^K'\fP
@@ -1064,6 +1071,10 @@ headers included.
 \fBPageToggleTex2iso '"'\fP
 Toggle TeX to ISO decoding for current article. The default behaviour is
 taken from the \fBtex2iso_conv\fP variable in the tinrc file.
+.TP 
+\fBPageToggleAllHeaders '*'\fP
+Toggles the display of all headers vs. headers in
+\fBnews_headers_to_display\fP.
 .TP 
 \fBPageToggleRot '%'\fP
 Toggle ROT\-13 decoding for this article.
@@ -2354,6 +2365,10 @@ Default is OFF.
 If enabled \fBtin\fP uses \fBslrnface\fP(1)  to interpret the \*(rqX\-Face:\*(rq
 header. For this option to have any effect, \fBtin\fP must be running in an
 \fBxterm\fP(1x)  and \fBslrnface\fP(1)  must be in your $\fBPATH\fP. Default is OFF.
+.TP 
+\fBUse UTF\-8 graphics (utf8_graphics)\fP
+If ON use UTF\-8 characters for indicator ('\->'), thread/attachment tree
+and ellipsis ('...'). Default is OFF.
 .TP 
 \fBRegex for begin of a verbatim block (verbatim_begin_regex)\fP
 A regular expression that tin will use to find the begin of a verbatim

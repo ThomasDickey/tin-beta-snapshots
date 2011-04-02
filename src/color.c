@@ -7,11 +7,11 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@invisible-island.net> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 2010-11-13
+ *  Updated   : 2011-04-02
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
- * Copyright (c) 1995-2010 Roland Rosenfeld <roland@spinnaker.rhein.de>
+ * Copyright (c) 1995-2011 Roland Rosenfeld <roland@spinnaker.rhein.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,6 +148,16 @@ refresh_color(
 
 
 void
+reset_color(
+	void)
+{
+	current_fcol = default_fcol;
+	current_bcol = default_bcol;
+	refresh_color();
+}
+
+
+void
 free_color_pair_arrays(
 	void)
 {
@@ -174,6 +184,9 @@ fcol(
 			current_fcol = color;
 #	else
 			int bold;
+
+			if (cmd_line)
+				return;
 			if (color < 0)
 				color = default_fcol;
 			bold = (color >> 3); /* bitwise operation on signed value? ouch */
@@ -266,7 +279,7 @@ draw_pager_line(
 					if ((wline = char2wchar_t(line)) != NULL) {
 						int visual_len;
 
-						wconvert_to_printable(wline);
+						wconvert_to_printable(wline, FALSE);
 						visual_len = wcswidth(wline, wcslen(wline) + 1);
 						free(wline);
 

@@ -3,10 +3,10 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2010-10-07
+ *  Updated   : 2011-01-25
  *  Notes     :
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -514,7 +514,8 @@ static t_help_page page_help_page[] = {
 	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
 	{ txt_help_article_toggle_rot13, PAGE_TOGGLE_ROT13 },
 	{ txt_help_global_toggle_inverse_video, GLOBAL_TOGGLE_INVERSE_VIDEO },
-	{ txt_help_article_show_raw, PAGE_TOGGLE_HEADERS },
+	{ txt_help_article_show_raw, PAGE_TOGGLE_RAW },
+	{ txt_help_article_toggle_headers, PAGE_TOGGLE_HEADERS },
 #ifdef HAVE_COLOR
 	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
@@ -768,16 +769,23 @@ show_mini_help(
 				printascii(key[2], func_to_key(GLOBAL_HELP, attachment_keys)),
 				printascii(key[3], func_to_key(GLOBAL_QUIT, attachment_keys)));
 			center_line(line, FALSE, buf);
+#ifndef DONT_HAVE_PIPING
 			snprintf(buf, bufs, _(txt_mini_attachment_2),
 				printascii(key[0], func_to_key(ATTACHMENT_SELECT, attachment_keys)),
-#ifndef DONT_HAVE_PIPING
 				printascii(key[5], func_to_key(ATTACHMENT_PIPE, attachment_keys)),
 				printascii(key[6], func_to_key(GLOBAL_PIPE, attachment_keys)),
-#endif /* !DONT_HAVE_PIPING */
 				printascii(key[1], func_to_key(ATTACHMENT_SAVE, attachment_keys)),
 				printascii(key[2], func_to_key(ATTACHMENT_TAG, attachment_keys)),
 				printascii(key[3], func_to_key(ATTACHMENT_TAG_PATTERN, attachment_keys)),
 				printascii(key[4], func_to_key(ATTACHMENT_UNTAG, attachment_keys)));
+#else
+			snprintf(buf, bufs, _(txt_mini_attachment_2),
+				printascii(key[0], func_to_key(ATTACHMENT_SELECT, attachment_keys)),
+				printascii(key[1], func_to_key(ATTACHMENT_SAVE, attachment_keys)),
+				printascii(key[2], func_to_key(ATTACHMENT_TAG, attachment_keys)),
+				printascii(key[3], func_to_key(ATTACHMENT_TAG_PATTERN, attachment_keys)),
+				printascii(key[4], func_to_key(ATTACHMENT_UNTAG, attachment_keys)));
+#endif /* !DONT_HAVE_PIPING */
 			center_line(line + 1, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_attachment_3),
 				printascii(key[1], func_to_key(ATTACHMENT_TOGGLE_TAGGED, attachment_keys)),
@@ -840,19 +848,48 @@ show_mini_help(
 				printascii(key[4], func_to_key(GROUP_MARK_THREAD_READ, group_keys)),
 				printascii(key[5], func_to_key(GROUP_LIST_THREAD, group_keys)));
 			center_line(line + 1, FALSE, buf);
+
+#if defined(DONT_HAVE_PIPING) && defined(DISABLE_PRINTING)
 			snprintf(buf, bufs, _(txt_mini_group_3),
-#ifndef DONT_HAVE_PIPING
-				printascii(key[0], func_to_key(GLOBAL_PIPE, group_keys)),
-#endif /* !DONT_HAVE_PIPING */
-				printascii(key[1], func_to_key(GROUP_MAIL, group_keys)),
-#ifndef DISABLE_PRINTING
-				printascii(key[2], func_to_key(GLOBAL_PRINT, group_keys)),
-#endif /* !DISABLE_PRINTING */
 				printascii(key[3], func_to_key(GLOBAL_QUIT, group_keys)),
 				printascii(key[4], func_to_key(GROUP_TOGGLE_READ_UNREAD, group_keys)),
 				printascii(key[5], func_to_key(GROUP_SAVE, group_keys)),
 				printascii(key[6], func_to_key(GROUP_TAG, group_keys)),
 				printascii(key[7], func_to_key(GLOBAL_POST, group_keys)));
+#else
+#	ifdef DONT_HAVE_PIPING
+			snprintf(buf, bufs, _(txt_mini_group_3),
+				printascii(key[1], func_to_key(GROUP_MAIL, group_keys)),
+				printascii(key[2], func_to_key(GLOBAL_PRINT, group_keys)),
+				printascii(key[3], func_to_key(GLOBAL_QUIT, group_keys)),
+				printascii(key[4], func_to_key(GROUP_TOGGLE_READ_UNREAD, group_keys)),
+				printascii(key[5], func_to_key(GROUP_SAVE, group_keys)),
+				printascii(key[6], func_to_key(GROUP_TAG, group_keys)),
+				printascii(key[7], func_to_key(GLOBAL_POST, group_keys)));
+#	else
+#		ifdef DISABLE_PRINTING
+			snprintf(buf, bufs, _(txt_mini_group_3),
+				printascii(key[0], func_to_key(GLOBAL_PIPE, group_keys)),
+				printascii(key[1], func_to_key(GROUP_MAIL, group_keys)),
+				printascii(key[3], func_to_key(GLOBAL_QUIT, group_keys)),
+				printascii(key[4], func_to_key(GROUP_TOGGLE_READ_UNREAD, group_keys)),
+				printascii(key[5], func_to_key(GROUP_SAVE, group_keys)),
+				printascii(key[6], func_to_key(GROUP_TAG, group_keys)),
+				printascii(key[7], func_to_key(GLOBAL_POST, group_keys)));
+#		else
+			snprintf(buf, bufs, _(txt_mini_group_3),
+				printascii(key[0], func_to_key(GLOBAL_PIPE, group_keys)),
+				printascii(key[1], func_to_key(GROUP_MAIL, group_keys)),
+				printascii(key[2], func_to_key(GLOBAL_PRINT, group_keys)),
+				printascii(key[3], func_to_key(GLOBAL_QUIT, group_keys)),
+				printascii(key[4], func_to_key(GROUP_TOGGLE_READ_UNREAD, group_keys)),
+				printascii(key[5], func_to_key(GROUP_SAVE, group_keys)),
+				printascii(key[6], func_to_key(GROUP_TAG, group_keys)),
+				printascii(key[7], func_to_key(GLOBAL_POST, group_keys)));
+#		endif /* DISABLE_PRINTING */
+#	endif /* DONT_HAVE_PIPING */
+#endif /* DONT_HAVE_PIPING && DISABLE_PRINTING */
+
 			center_line(line + 2, FALSE, buf);
 			break;
 
@@ -885,19 +922,49 @@ show_mini_help(
 				printascii(key[3], func_to_key(PAGE_FOLLOWUP_QUOTE, page_keys)),
 				printascii(key[4], func_to_key(PAGE_MARK_THREAD_READ, page_keys)));
 			center_line(line + 1, FALSE, buf);
+
+#if defined(DONT_HAVE_PIPING) && defined(DISABLE_PRINTING)
 			snprintf(buf, bufs, _(txt_mini_page_3),
-#ifndef DONT_HAVE_PIPING
-				printascii(key[0], func_to_key(GLOBAL_PIPE, page_keys)),
-#endif /* !DONT_HAVE_PIPING */
 				printascii(key[1], func_to_key(PAGE_MAIL, page_keys)),
-#ifndef DISABLE_PRINTING
-				printascii(key[2], func_to_key(GLOBAL_PRINT, page_keys)),
-#endif /* !DISABLE_PRINTING */
 				printascii(key[3], func_to_key(GLOBAL_QUIT, page_keys)),
 				printascii(key[4], func_to_key(PAGE_REPLY_QUOTE, page_keys)),
 				printascii(key[5], func_to_key(PAGE_SAVE, page_keys)),
 				printascii(key[6], func_to_key(PAGE_TAG, page_keys)),
 				printascii(key[7], func_to_key(GLOBAL_POST, page_keys)));
+#else
+#	ifdef DONT_HAVE_PIPING
+			snprintf(buf, bufs, _(txt_mini_page_3),
+				printascii(key[1], func_to_key(PAGE_MAIL, page_keys)),
+				printascii(key[2], func_to_key(GLOBAL_PRINT, page_keys)),
+				printascii(key[3], func_to_key(GLOBAL_QUIT, page_keys)),
+				printascii(key[4], func_to_key(PAGE_REPLY_QUOTE, page_keys)),
+				printascii(key[5], func_to_key(PAGE_SAVE, page_keys)),
+				printascii(key[6], func_to_key(PAGE_TAG, page_keys)),
+				printascii(key[7], func_to_key(GLOBAL_POST, page_keys)));
+#	else
+#		ifdef DISABLE_PRINTING
+			snprintf(buf, bufs, _(txt_mini_page_3),
+				printascii(key[0], func_to_key(GLOBAL_PIPE, page_keys)),
+				printascii(key[1], func_to_key(PAGE_MAIL, page_keys)),
+				printascii(key[3], func_to_key(GLOBAL_QUIT, page_keys)),
+				printascii(key[4], func_to_key(PAGE_REPLY_QUOTE, page_keys)),
+				printascii(key[5], func_to_key(PAGE_SAVE, page_keys)),
+				printascii(key[6], func_to_key(PAGE_TAG, page_keys)),
+				printascii(key[7], func_to_key(GLOBAL_POST, page_keys)));
+#		else
+			snprintf(buf, bufs, _(txt_mini_page_3),
+				printascii(key[0], func_to_key(GLOBAL_PIPE, page_keys)),
+				printascii(key[1], func_to_key(PAGE_MAIL, page_keys)),
+				printascii(key[2], func_to_key(GLOBAL_PRINT, page_keys)),
+				printascii(key[3], func_to_key(GLOBAL_QUIT, page_keys)),
+				printascii(key[4], func_to_key(PAGE_REPLY_QUOTE, page_keys)),
+				printascii(key[5], func_to_key(PAGE_SAVE, page_keys)),
+				printascii(key[6], func_to_key(PAGE_TAG, page_keys)),
+				printascii(key[7], func_to_key(GLOBAL_POST, page_keys)));
+#		endif /* DISABLE_PRINTING */
+#	endif /* DONT_HAVE_PIPING */
+#endif /* DONT_HAVE_PIPING && DISABLE_PRINTING */
+
 			center_line(line + 2, FALSE, buf);
 			break;
 

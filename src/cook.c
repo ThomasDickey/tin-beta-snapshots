@@ -3,10 +3,10 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2010-09-27
+ *  Updated   : 2011-01-29
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2010 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2011 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -106,7 +106,7 @@ expand_ctrl_chars(
 	*length = strlen(*line);
 #else
 	int curr_len = LEN;
-	int i = 0, j, ln = 0;
+	unsigned int i = 0, j, ln = 0;
 	char *buf = my_malloc(curr_len);
 	unsigned char *c;
 
@@ -807,7 +807,8 @@ t_bool
 cook_article(
 	t_bool wrap_lines,
 	t_openartinfo *artinfo,
-	int hide_uue)
+	int hide_uue,
+	t_bool show_all_headers)
 {
 	const char *charset;
 	const char *name;
@@ -844,7 +845,7 @@ cook_article(
 			break;
 		}
 
-		if (header_wanted(line)) {	/* Put cooked data */
+		if (show_all_headers || header_wanted(line)) {	/* Put cooked data */
 			const char **strptr = struct_header;
 			char *l = NULL, *ptr, *foo, *bar;
 			size_t i = LEN;
@@ -856,7 +857,8 @@ cook_article(
 					foo = my_strdup(*strptr);
 					if ((ptr = strchr(foo, ':'))) {
 						*ptr = '\0';
-						if ((ptr = parse_header(line, foo, TRUE, TRUE))) {
+						unfold_header(line);
+						if ((ptr = parse_header(line, foo, TRUE, TRUE, FALSE))) {
 							bar = idna_decode(ptr);	/* do we wan't idna_decode() here? */
 							l = my_calloc(1, strlen(bar) + strlen(*strptr) + 1);
 							strncpy(l, line, strlen(*strptr));

@@ -3,10 +3,10 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2010-10-11
+ *  Updated   : 2011-03-28
  *  Notes     : #defines and static data for policy configuration
  *
- * Copyright (c) 1999-2010 Ralf Doeblitz <doeblitz@gmx.de>
+ * Copyright (c) 1999-2011 Ralf Doeblitz <doeblitz@gmx.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -167,9 +167,10 @@
  * .sh  St. Helena                     .si  Slovenia
  * .sk  Slovakia                       .sl  Sierra Leone
  * .sm  San Marino                     .sn  Senegal
- * .sr  Surinam                        .st  Sao Tome and Principe
- * .su  Soviet Union (former)          .sv  El Salvador
- * .sy  Syrian Arab Republic           .sz  Swaziland
+ * .so  Somalia                        .sr  Surinam
+ * .st  Sao Tome and Principe          .su  Soviet Union (former)
+ * .sv  El Salvador                    .sy  Syrian Arab Republic
+ * .sz  Swaziland
  *
  * .tc  The Turks & Caicos Islands     .td  Chad
  * .tf  French Southern Territories    .tg  Togo
@@ -194,7 +195,6 @@
  * .wf  Wallis and Futuna Islands      .ws  Western Samoa
  *
  * .ye  Yemen                          .yt  Mayotte
- * .yu  Yugoslavia
  *
  * .za  South Africa                   .zm  Zambia
  * .zw  Zimbabwe
@@ -205,8 +205,10 @@
  * .cs  former Czechoslovakia, now .cz and .sk
  * .dd  former German Democratic Republic, now .de
  * .fx  France, Metropolitan
+ * .oz  Australian MHSnet
  * .um  United States Minor Outlying Islands
  * .yd  Democratic Yemen, now .ye
+ * .yu  Yugoslavia, now .rs and .me
  * .wg  West Bank and Gaza, now .ps
  * .zr  former Zaire, now .cd
  *
@@ -219,7 +221,6 @@
  * .gb  United Kingdom, use .uk
  * .nt  Neutral Zone
  * .sj  Svalbard and Jan Mayen Islands (Norway)
- * .so  Somalia
  *
  * requested new TLDs:
  * .ct  Catalonia
@@ -228,7 +229,6 @@
  * .hk  Hong Kong, now .cn
  * .su  former USSR, now .ru
  * .tp  former East Timor, now .tl
- * .yu  former Yugoslavia
  */
 
 static char gnksa_country_codes[26*26] = {
@@ -251,13 +251,13 @@ static char gnksa_country_codes[26*26] = {
 /* P */ 1,0,0,0,1, 1,1,1,0,0, 1,1,1,1,0, 0,0,1,1,1, 0,0,1,0,1,0,
 /* Q */ 1,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,0,
 /* R */ 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,1, 0,0,0,1,0, 1,0,1,0,0,0,
-/* S */ 1,1,1,1,1, 0,1,1,1,0, 1,1,1,1,0, 0,0,1,0,1, 1,1,0,0,1,1,
+/* S */ 1,1,1,1,1, 0,1,1,1,0, 1,1,1,1,1, 0,0,1,0,1, 1,1,0,0,1,1,
 /* T */ 0,0,1,1,0, 1,1,1,0,1, 1,1,1,1,1, 1,0,1,0,1, 0,1,1,0,0,1,
 /* U */ 1,0,0,0,0, 0,1,0,0,0, 1,0,0,0,0, 0,0,0,1,0, 0,0,0,0,1,1,
 /* V */ 1,0,1,0,1, 0,1,0,1,0, 0,0,0,1,0, 0,0,0,0,0, 1,0,0,0,0,0,
 /* W */ 0,0,0,0,0, 1,0,0,0,0, 0,0,0,0,0, 0,0,0,1,0, 0,0,0,0,0,0,
 /* X */ 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,0,
-/* Y */ 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,1, 1,0,0,0,0,0,
+/* Y */ 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,1, 0,0,0,0,0,0,
 /* Z */ 1,0,0,0,0, 0,0,0,0,0, 0,0,1,0,0, 0,0,0,0,0, 0,0,1,0,0,0
 /*      A B C D E  F G H I J  K L M N O  P Q R S T  U V W X Y Z */
 };
@@ -280,12 +280,12 @@ static const char *gnksa_domain_list[] = {
 	"tel",	/* Internet communication */
 	"aero",	/* Air-transport industry */
 	"arpa",	/* Address and Routing Parameter Area */
+	"asia",	/* Asia and the Pacific */
 	"coop",	/* Non-profit cooperatives */
 	"info",	/* Unrestricted use */
 	"jobs",	/* Human resource managers */
 	"mobi",	/* Mobile products and services */
 	"name",	/* For registration by individuals */
-	"asia",	/* Asia and the Pacific */
 	"museum",	/* Museums */
 	"travel",	/* Travel industry */
 	/*
@@ -315,12 +315,24 @@ static const char *gnksa_domain_list[] = {
 	"xn--fiqz9s",		/* China, Traditional Chinese */
 	"xn--wgbh1c",		/* Egypt */
 	"xn--j6w193g",		/* Hong Kong, Han */
+	"xn--45brj9c",		/* India, Bengali */
+	"xn--gecrj9c",		/* India, Gujarati */
+	"xn--h2brj9c",		/* India, Hindi */
+	"xn--s9brj9c",		/* India, Punjabi */
+	"xn--xkc2dl3a5ee0h",	/* India, Tamil */
+	"xn--fpcrj9c3d",	/* India, Telugu */
+	"xn--mgbbh1a71e",	/* India, Urdu */
 	"xn--mgbayh7gpa",	/* Jordan */
+	"xn--3e0b707e",		/* Korea, Republic of */
 	"xn--ygbi2ammx",	/* Palestinian Territory */
+	"xn--wgbl6a",		/* Qatar */
 	"xn--p1ai",			/* Russian Federation */
 	"xn--mgberp4a5d4ar",	/* Saudi Arabia */
+	"xn--yfro4i67o",	/* Singapore, Chinese */
+	"xn--clchc0ea0b2g2a9gcd",	/* Singapore, Tamil */
 	"xn--fzc2c9e2c",	/* Sri Lanka, Sinhala */
 	"xn--xkc2al3hye2a",	/* Sri Lanka, Tamil */
+	"xn--ogbpf8fl",		/* Syrian Arab Republic */
 	"xn--kpry57d",		/* Taiwan, Simplified Chinese */
 	"xn--kprw13d",		/* Taiwan, Traditional Chinese */
 	"xn--o3cw4h",		/* Thailand */
@@ -328,14 +340,24 @@ static const char *gnksa_domain_list[] = {
 	"xn--mgbaam7a8h",	/* United Arab Emirates */
 #	if 0
 	/* purposed IDN ccTLDs */
-	"xn--wgbl6a",		/* Qatar */
-	"xn--mgbtf8fl",		/* Syria */
+	"xn--lgbbat1ad8j",	/* Algeria */
+	"xn--54b7fta0cc",	/* Bangladesh */
+	"xn--node",			/* Georgia */
+	"xn--mgba3a4f16a",	/* Iran */
+	"xn--mgbc0a9azcg",	/* Morocco */
+	"xn--mgb9awbf",		/* Oman */
+	"xn--mgbai9azgqp6j",	/* Pakistan */
+	"xn--90a3ac",		/* Serbia */
+	"xn--j1amh",		/* Ukraine */
 #	endif /* 0 */
 #	if 0
 	/* Desired Variant String(s) */
+	"xn--mgba3a4fra",	/* Iran */
+	"xn--mgbai9a5eva00b",	/* Pakistan */
 	"xn--mgberp4a5d4a87g",	/* Saudi Arabia */
 	"xn--mgbqly7c0a67fbc",	/* Saudi Arabia */
 	"xn--mgbqly7cvafr",	/* Saudi Arabia */
+	"xn--mgbtf8fl",		/* Syria */
 	"xn--nnx388a",		/* Taiwan */
 #	endif /* 0 */
 	/* sentinel */

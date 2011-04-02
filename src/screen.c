@@ -3,10 +3,10 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2010-04-11
+ *  Updated   : 2011-01-29
  *  Notes     :
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -280,9 +280,15 @@ draw_arrow_mark(
 {
 	MoveCursor(line, 0);
 
-	if (tinrc.draw_arrow)
-		my_fputs("->", stdout);
-	else {
+	if (tinrc.draw_arrow) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (tinrc.utf8_graphics) {
+			my_fputwc(CURSOR_HORIZ, stdout);
+			my_fputwc(CURSOR_ARROW, stdout);
+		} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			my_fputs("->", stdout);
+	} else {
 #ifdef USE_CURSES
 		char buffer[BUFSIZ];
 		char *s = screen_contents(line, 0, buffer);

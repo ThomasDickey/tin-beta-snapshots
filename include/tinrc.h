@@ -3,10 +3,10 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2010-04-11
+ *  Updated   : 2011-01-29
  *  Notes     :
  *
- * Copyright (c) 1999-2010 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2011 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -234,6 +234,9 @@ struct t_config {
 	t_bool tex2iso_conv;			/* convert "a to Umlaut-a */
 	t_bool thread_catchup_on_exit;		/* catchup thread with left arrow key or not */
 	t_bool unlink_article;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		t_bool utf8_graphics;				/* use utf-8 characters for line drawing */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	t_bool verbatim_handling;			/* Detection of verbatim blocks */
 	char inews_prog[PATH_LEN];
 	int interactive_mailer;			/* invoke user's mailreader */

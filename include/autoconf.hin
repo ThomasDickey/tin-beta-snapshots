@@ -3,10 +3,10 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2009-12-19
+ *  Updated   : 2011-02-20
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1995-2010 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1995-2011 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -166,6 +166,7 @@
 #	undef HAVE_FCNTL_H
 #	undef HAVE_GETOPT_H
 #	undef HAVE_ICONV_H
+#	undef HAVE_INTTYPES_H
 #	undef HAVE_IOCTL_H
 #	undef HAVE_LANGINFO_H
 #	undef HAVE_LIBC_H
@@ -190,6 +191,7 @@
 #	undef HAVE_STDARG_H
 #	undef HAVE_STDBOOL_H
 #	undef HAVE_STDDEF_H
+#	undef HAVE_STDINT_H
 #	undef HAVE_STDLIB_H
 #	undef HAVE_STRINGS_H
 #	undef HAVE_STRING_H
@@ -243,6 +245,7 @@
 #	undef HAVE_FORK
 #	undef HAVE_FTIME
 #	undef HAVE_FTRUNCATE
+#	undef HAVE_FSYNC
 #	undef HAVE_GAI_STRERROR
 #	undef HAVE_GETADDRINFO
 #	undef HAVE_GETCWD

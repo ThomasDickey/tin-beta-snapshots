@@ -3,10 +3,10 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2009-12-13
+ *  Updated   : 2011-03-25
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -922,9 +922,15 @@ got_epipe_while_piping:
 			fflush(pipe_fp);
 			(void) pclose(pipe_fp);
 			set_signal_catcher(TRUE);
+#	ifdef USE_CURSES
 			Raw(TRUE);
 			InitWin();
+#	endif /* USE_CURSES */
 			prompt_continue();
+#	ifndef USE_CURSES
+			Raw(TRUE);
+			InitWin();
+#	endif /* !USE_CURSES */
 			redraw_screen = TRUE;
 			break;
 #endif /* !DONT_HAVE_PIPING */

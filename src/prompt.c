@@ -3,10 +3,10 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2010-05-07
+ *  Updated   : 2011-03-25
  *  Notes     :
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -382,7 +382,7 @@ prompt_list(
 			if (var < 0)
 				var = size - 1;
 			else
-				var %= size;
+				var %= (size ? size : 1);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			if ((buf = spart(_(list[var]), width, TRUE)) != NULL) {
@@ -772,9 +772,7 @@ prompt_continue(
 	int ch;
 	int save_signal_context = signal_context;
 
-#ifdef USE_CURSES
 	cmd_line = TRUE;
-#endif /* USE_CURSES */
 	info_message(_(txt_return_key));
 	signal_context = cMain;
 	input_context = cPromptCONT;
@@ -793,10 +791,12 @@ prompt_continue(
 
 	input_context = cNone;
 	signal_context = save_signal_context;
-	my_fputc('\n', stdout);
 
 #ifdef USE_CURSES
+	my_fputc('\n', stdout);
+#endif /* USE_CURSES */
 	cmd_line = FALSE;
+#ifdef USE_CURSES
 	my_retouch();
 #endif /* USE_CURSES */
 }

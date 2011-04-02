@@ -3,10 +3,10 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2010-10-01
+ *  Updated   : 2011-01-25
  *  Notes     :
  *
- * Copyright (c) 1999-2010 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2011 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -290,6 +290,7 @@ enum defined_functions {
 	PAGE_TAG,
 	PAGE_TOGGLE_HEADERS,
 	PAGE_TOGGLE_HIGHLIGHTING,
+	PAGE_TOGGLE_RAW,
 	PAGE_TOGGLE_ROT13,
 	PAGE_TOGGLE_TABS,
 	PAGE_TOGGLE_TEX2ISO,

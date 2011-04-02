@@ -1,3 +1,49 @@
+-- 2.0.0 release 20110402 "" --
+
+U028) Dennis Preiser <dennis@d--p.de>
+      BUG. used preprocessor directives within snprintf which may be
+           implemented as a macro
+      BUG. fixed a typo
+      BUG. fixed several display problems in the !USE_CURSES case
+      BUG. fixed several display problems with non default foreground and
+           background colors.
+      BUG. dead increment
+      BUG. didn't unfold structured news_headers_to_display before calling
+           convert_to_printable which replaces \n with ?
+      ADD. removed some unnecessary variables
+      ADD. PageToggleAllHeaders
+      ADD. do not strip tabs from Subject or Organization in page header
+      ADD. tinrc.utf8_graphics to use UTF-8 characters for various graphics
+      FIX. extern.h, keymap.h, proto.h, tcurses.h, tin.h, tinrc.h, art.c
+           charset.c, color.c, config.c, cook.c, curses.c, feed.c, filter.c
+           group.c, help.c, init.c, keymap.c, lang.c, mail.c, misc.c
+           options_menu.c, page.c, pgp.c, post.c, prompt.c, read.c, rfc2046.c
+           save.c, screen.c, select.c, string.c, tcurses.c, thread.c
+           tincfg.tbl, tin.1, tin.5, keymap.sample
+
+U027) Urs Janssen <urs@tin.org>
+      BUG. used preprocessor directives within snprintf which may be
+           implemented as a macro
+      BUG. tinrc.ask_for_metamail had no effect
+      BUG. CHECK_SIGN for gpg was wrong (at least for gpg 1.4.x)
+      BUG. .so TLD wasn't allowed but is in use since 11/2010
+      BUG. .yu TLD was still allowed but is defunct since 04/2010
+      ADD. allow -- in domain names in URL_REGEX and NEWS_REGEX
+      ADD. allow new IDN ccTLDs of Korea, India, Singapore and Syria
+      REM. Kinyarwanda po files
+      ADD. cache getenv("NNTPSERVER") result early
+      ADD. -4 / -6 cmd. line switch
+      ADD. config.guess, config.sub update
+      ADD. configure check for stdint.h and inttypes.h
+      ADD. configure check for fsync()
+      FIX. help.c, init.c, lang.c, main.c, nntplib.c, pgp.c, post.c, prompt.c
+           save.c, extern.h, policy.h, tin.h, autoconf.h[in], configure[.in]
+           config.guess, config.sub, tin.1, rw.po
+
+U026) Matt Anton <tin@syrius.org>
+      ADD. updated french translation
+      FIX. fr.po
+
 -- 1.9.6 release 20101126 "Burnside" --
 
 U025) Matt Anton <tin@syrius.org>
@@ -17,11 +63,11 @@ U022) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. CF_SIGWINCH - compile check for SIGWINCH
       FIX. aclocal.m4, configure[.in], Makefile[.in]
 
-U021) Dennis Preiser <onkelp@gmx.de>
+U021) Dennis Preiser <dennis@d--p.de>
       BUG. SIGWINCH at page level after a connection timeout lead to a crash
       BUG. no SIGWINCH hadling in setup_check_article()
       BUG. comments in references were not skipped
-      BUG. fixed some display problem in the !USE_CURSES case
+      BUG. fixed some display problems in the !USE_CURSES case
       ADD. info message on SearchRepeat without previous search
       ADD. attachment level 'V' at the article-pager
       ADD. URL level 'U' at the article-pager
@@ -100,7 +146,7 @@ U016) Volker Borchert <v.borchert@vistecprivat.de>
       ADD. fallback for missing sys_errlist declaration
       FIX. prompt.c, string.c, pcre/Makefile[.in]
 
-U015) Dennis Preiser <onkelp@gmx.de>
+U015) Dennis Preiser <dennis@d--p.de>
       ADD. scope and attributes menu
       ADD. help pages to the various menus
       ADD. PageSkipIncludedText now skips over the next quoted block
@@ -186,11 +232,11 @@ U013) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. configure check to guess $ARFLAGS
       FIX. aclocal.m4, configure[.in], libcanlock/Makefile.in, pcre/Makefile.in
 
- 021) Dennis Preiser <onkelp@gmx.de>
+ 021) Dennis Preiser <dennis@d--p.de>
       BUG. memleak in free_attributes()
       FIX. memory.c
 
-U012) Dennis Preiser <onkelp@gmx.de>
+U012) Dennis Preiser <dennis@d--p.de>
       ADD. enhance attributes documentation
       ADD. menu-option/attribute to turn verbatim block handling on and off
       ADD. menu-option to color the lines between the verbatim marks

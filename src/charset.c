@@ -3,10 +3,10 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2009-02-23
+ *  Updated   : 2011-01-29
  *  Notes     : ISO to ascii charset conversion routines
  *
- * Copyright (c) 1993-2010 Markus Kuhn <mgk25@cl.cam.ac.uk>
+ * Copyright (c) 1993-2011 Markus Kuhn <mgk25@cl.cam.ac.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -374,7 +374,8 @@ is_art_tex_encoded(
  */
 char *
 convert_to_printable(
-	char *buf)
+	char *buf,
+	t_bool keep_tab)
 {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	char *buffer;
@@ -385,7 +386,7 @@ convert_to_printable(
 		utf8_valid(buf);
 
 	if ((wbuffer = char2wchar_t(buf)) != NULL) {
-		wconvert_to_printable(wbuffer);
+		wconvert_to_printable(wbuffer, keep_tab);
 
 		if ((buffer = wchar_t2char(wbuffer)) != NULL) {
 			strncpy(buf, buffer, len);
@@ -399,7 +400,7 @@ convert_to_printable(
 	unsigned char *c;
 
 	for (c = (unsigned char *) buf; *c; c++) {
-		if (!my_isprint(*c))
+		if (!my_isprint(*c) && !(keep_tab && *c == '\t'))
 			*c = '?';
 	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -415,12 +416,13 @@ convert_to_printable(
  */
 wchar_t *
 wconvert_to_printable(
-	wchar_t *wbuf)
+	wchar_t *wbuf,
+	t_bool keep_tab)
 {
 	wchar_t *wc;
 
 	for (wc = wbuf; *wc; wc++) {
-		if (!iswprint((wint_t) *wc))
+		if (!iswprint((wint_t) *wc) && !(keep_tab && *wc == (wchar_t) '\t'))
 			*wc = (wchar_t) '?';
 	}
 

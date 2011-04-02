@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2010-10-29
+ *  Updated   : 2011-03-25
  *  Notes     :
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -90,7 +90,8 @@ static int scroll_region_top;	/* first screen line for displayed message */
 static int search_line;			/* Line to commence next search from */
 static t_lineinfo *infoline = (t_lineinfo *) 0;
 
-static t_bool show_all_headers;	/* CTRL-H with headers specified */
+static t_bool show_all_headers;	/* all headers <-> headers in news_headers_to[_not]_display */
+static t_bool show_raw_article;	/* CTRL-H raw <-> cooked article */
 static t_bool reveal_ctrl_l;	/* set when ^L hiding is off */
 
 /*
@@ -641,7 +642,15 @@ page_goto_next_unread:
 				break;
 #endif /* HAVE_PGP_GPG */
 
-			case PAGE_TOGGLE_HEADERS:	/* toggle display of whole 'raw' article */
+			case PAGE_TOGGLE_HEADERS:	/* toggle display of all headers */
+				XFACE_CLEAR();
+				show_all_headers = bool_not(show_all_headers);
+				resize_article(TRUE, &pgart);	/* Also recooks it.. */
+				curr_line = 0;
+				draw_page(group->name, 0);
+				break;
+
+			case PAGE_TOGGLE_RAW:	/* toggle display of whole 'raw' article */
 				XFACE_CLEAR();
 				toggle_raw(group);
 				break;
@@ -802,7 +811,7 @@ page_goto_next_unread:
 				XFACE_CLEAR();
 				(void) post_response(group->name, this_resp,
 				  (func == PAGE_FOLLOWUP_QUOTE || func == PAGE_FOLLOWUP_QUOTE_HEADERS) ? TRUE : FALSE,
-				  func == PAGE_FOLLOWUP_QUOTE_HEADERS ? TRUE : FALSE, show_all_headers);
+				  func == PAGE_FOLLOWUP_QUOTE_HEADERS ? TRUE : FALSE, show_raw_article);
 				draw_page(group->name, 0);
 				break;
 
@@ -908,7 +917,7 @@ return_to_index:
 			case PAGE_REPLY_QUOTE_HEADERS:
 			case PAGE_REPLY:
 				XFACE_CLEAR();
-				mail_to_author(group->name, this_resp, (func == PAGE_REPLY_QUOTE || func == PAGE_REPLY_QUOTE_HEADERS) ? TRUE : FALSE, func == PAGE_REPLY_QUOTE_HEADERS ? TRUE : FALSE, show_all_headers);
+				mail_to_author(group->name, this_resp, (func == PAGE_REPLY_QUOTE || func == PAGE_REPLY_QUOTE_HEADERS) ? TRUE : FALSE, func == PAGE_REPLY_QUOTE_HEADERS ? TRUE : FALSE, show_raw_article);
 				draw_page(group->name, 0);
 				break;
 
@@ -997,7 +1006,7 @@ return_to_index:
 				break;
 
 			case PAGE_VIEW_URL:
-				if (!show_all_headers) { /* cooked mode? */
+				if (!show_raw_article) { /* cooked mode? */
 					t_bool success;
 
 					XFACE_SUPPRESS();
@@ -1058,7 +1067,7 @@ print_message_page(
 		/*
 		 * rotN encoding on body and sig data only
 		 */
-		if ((rotate != 0) && ((curr->flags & (C_BODY | C_SIG)) || show_all_headers)) {
+		if ((rotate != 0) && ((curr->flags & (C_BODY | C_SIG)) || show_raw_article)) {
 			for (p = line; *p; p++) {
 				if (*p >= 'A' && *p <= 'Z')
 					*p = (*p - 'A' + rotate) % 26 + 'A';
@@ -1074,7 +1083,7 @@ print_message_page(
 #endif /* !USE_CURSES */
 
 		MoveCursor(i + scroll_region_top, 0);
-		draw_pager_line(line, curr->flags, show_all_headers);
+		draw_pager_line(line, curr->flags, show_raw_article);
 
 		/*
 		 * Highlight URL's and mail addresses
@@ -1200,6 +1209,9 @@ draw_page(
 		len = strwidth(buf);
 		clear_message();
 		MoveCursor(cLINES, cCOLS - len - (1 + BLANK_PAGE_COLS));
+#ifdef HAVE_COLOR
+		fcol(tinrc.col_normal);
+#endif /* HAVE_COLOR */
 		StartInverse();
 		my_fputs(buf, stdout);
 		EndInverse();
@@ -1208,7 +1220,7 @@ draw_page(
 		draw_percent_mark(curr_line + ARTLINES, artlines);
 
 #ifdef XFACE_ABLE
-	if (tinrc.use_slrnface && !show_all_headers)
+	if (tinrc.use_slrnface && !show_raw_article)
 		slrnface_display_xface(note_h->xface);
 #endif /* XFACE_ABLE */
 
@@ -1252,9 +1264,15 @@ invoke_metamail(
 #endif /* !DONT_HAVE_PIPING */
 		perror_message(_(txt_command_failed), ptr);
 
+#ifdef USE_CURSES
 	Raw(TRUE);
 	InitWin();
+#endif /* USE_CURSES */
 	prompt_continue();
+#ifndef USE_CURSES
+	Raw(TRUE);
+	InitWin();
+#endif /* !USE_CURSES */
 
 	/* This is needed if we are viewing the raw art */
 	fseek(fp, offset, SEEK_SET);	/* goto old position */
@@ -1274,9 +1292,9 @@ draw_page_header(
 	int len, right_len, center_pos, cur_pos;
 	size_t line_len;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t *fmt_resp, *fmt_thread, *wtmp, *wtmp2;
+	wchar_t *fmt_resp, *fmt_thread, *wtmp, *wtmp2, *wbuf;
 #else
-	char *tmp;
+	char *tmp, *tmp2;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	whichresp = which_response(this_resp);
@@ -1335,7 +1353,7 @@ draw_page_header(
 
 	/* group name */
 	if ((wtmp = char2wchar_t(group)) != NULL) {
-		/* wconvert_to_printable(wtmp); */
+		/* wconvert_to_printable(wtmp, FALSE); */
 		if (tinrc.abbreviate_groupname)
 			wtmp2 = abbr_wcsgroupname(wtmp, len);
 		else
@@ -1421,8 +1439,8 @@ draw_page_header(
 	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), line_len);
 	buf[line_len - 1] = '\0';
 	if ((wtmp = char2wchar_t(buf)) != NULL) {
-		wtmp2 = wstrunc(wtmp, cCOLS - 2 * right_len - 3);
-
+		wbuf = wexpand_tab(wtmp, tabwidth);
+		wtmp2 = wstrunc(wbuf, cCOLS - 2 * right_len - 3);
 		center_pos = (cCOLS - wcswidth(wtmp2, wcslen(wtmp2))) / 2;
 
 		/* pad out to left */
@@ -1435,6 +1453,7 @@ draw_page_header(
 		cur_pos += wcswidth(wtmp2, wcslen(wtmp2));
 		free(wtmp2);
 		free(wtmp);
+		free(wbuf);
 	}
 
 #	ifdef HAVE_COLOR
@@ -1502,8 +1521,8 @@ draw_page_header(
 		snprintf(buf, line_len, _(txt_at_s), note_h->org);
 
 		if ((wtmp = char2wchar_t(buf)) != NULL) {
-			wconvert_to_printable(wtmp);
-			wtmp2 = wstrunc(wtmp, cCOLS - cur_pos - 1);
+			wbuf = wexpand_tab(wtmp, tabwidth);
+			wtmp2 = wstrunc(wbuf, cCOLS - cur_pos - 1);
 
 			i = cCOLS - wcswidth(wtmp2, wcslen(wtmp2)) - 1;
 			for (; cur_pos < i; cur_pos++)
@@ -1512,6 +1531,7 @@ draw_page_header(
 			my_fputws(wtmp2, stdout);
 			free(wtmp2);
 			free(wtmp);
+			free(wbuf);
 		}
 	}
 
@@ -1621,7 +1641,8 @@ draw_page_header(
 	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), line_len);
 	buf[line_len - 1] = '\0';
 
-	tmp = strunc(buf, cCOLS - 2 * right_len - 3);
+	tmp2 = expand_tab(buf, tabwidth);
+	tmp = strunc(tmp2, cCOLS - 2 * right_len - 3);
 
 	center_pos = (cCOLS - strlen(tmp)) / 2;
 
@@ -1634,6 +1655,7 @@ draw_page_header(
 	EndInverse();
 	cur_pos += strlen(tmp);
 	free(tmp);
+	free(tmp2);
 
 #	ifdef HAVE_COLOR
 	fcol(tinrc.col_response);
@@ -1685,12 +1707,14 @@ draw_page_header(
 		/* we have enough space to print at least " at ..." */
 		snprintf(buf, line_len, _(txt_at_s), note_h->org);
 
-		tmp = strunc(buf, cCOLS - cur_pos - 1);
+		tmp2 = expand_tab(buf, tabwidth);
+		tmp = strunc(tmp2, cCOLS - cur_pos - 1);
 		len = cCOLS - (int) strlen(tmp) - 1;
 		for (; cur_pos < len; cur_pos++)
 			my_fputc(' ', stdout);
 		my_fputs(tmp, stdout);
 		free(tmp);
+		free(tmp2);
 	}
 
 	my_fputs(cCRLF, stdout);
@@ -1766,6 +1790,13 @@ load_article(
 				}
 				break;
 		}
+	} else if (show_all_headers) {
+		/*
+		 * article is already opened with show_all_headers ON
+		 * -> re-cook it
+		 */
+		show_all_headers = FALSE;
+		resize_article(TRUE, &pgart);
 	}
 
 	art_mark(group, &arts[this_resp], ART_READ);
@@ -1785,6 +1816,7 @@ load_article(
 	/*
 	 * Setup to start viewing cooked version
 	 */
+	show_raw_article = FALSE;
 	show_all_headers = FALSE;
 	curr_line = 0;
 	note_fp = pgart.cooked;
@@ -1903,7 +1935,7 @@ void
 toggle_raw(
 	struct t_group *group)
 {
-	if (show_all_headers) {
+	if (show_raw_article) {
 		artline = pgart.cookl;
 		artlines = pgart.cooked_lines;
 		note_fp = pgart.cooked;
@@ -2009,7 +2041,7 @@ toggle_raw(
 		note_fp = pgart.raw;
 	}
 	curr_line = 0;
-	show_all_headers = bool_not(show_all_headers);
+	show_raw_article = bool_not(show_raw_article);
 	draw_page(group->name, 0);
 }
 
@@ -2028,9 +2060,9 @@ resize_article(
 	if (artinfo->cooked)
 		fclose(artinfo->cooked);
 
-	cook_article(wrap_lines, artinfo, hide_uue);
+	cook_article(wrap_lines, artinfo, hide_uue, show_all_headers);
 
-	show_all_headers = FALSE;
+	show_raw_article = FALSE;
 	artline = pgart.cookl;
 	artlines = pgart.cooked_lines;
 	note_fp = pgart.cooked;
@@ -2552,7 +2584,7 @@ build_url_list(
 
 			*(ptr + offsets[1]) = '\0';
 
-			if (!url_list)
+			if (!lptr)
 				lptr = url_list = my_malloc(sizeof(t_url));
 			else {
 				lptr->next = my_malloc(sizeof(t_url));

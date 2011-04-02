@@ -3,10 +3,10 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2009-02-12
+ *  Updated   : 2011-03-25
  *  Notes     : PGP support
  *
- * Copyright (c) 1995-2010 Steven J. Madsen <steve@erinet.com>
+ * Copyright (c) 1995-2011 Steven J. Madsen <steve@erinet.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,11 @@
 #		define PGPNAME		PATH_GPG
 #		define PGPDIR		".gnupg"
 #		define PGP_PUBRING	"pubring.gpg"
-#		define CHECK_SIGN	"%s %s --no-batch --decrypt <%s %s"
+#		if 0 /* gpg 1.4.11 doesn't like this */
+#			define CHECK_SIGN	"%s %s --no-batch --decrypt <%s %s"
+#		else
+#			define CHECK_SIGN	"%s %s < %s %s"
+#		endif /* 0 */
 #		define ADD_KEY		"%s %s --no-batch --import %s"
 #		define APPEND_KEY	"%s %s --no-batch --armor --output %s --export %s", PGPNAME, pgpopts, keyfile, buf
 #		define DO_ENCRYPT	\
@@ -470,8 +474,15 @@ pgp_check_article(
 		my_printf("\n");
 		Raw(TRUE);
 	}
-
+#	ifndef USE_CURSES
+	EndWin();
+	Raw(FALSE);
+#	endif /* !USE_CURSES */
 	prompt_continue();
+#	ifndef USE_CURSES
+	Raw(TRUE);
+	InitWin();
+#	endif /* !USE_CURSES */
 	if (pgp_key) {
 		if (prompt_yn(_(txt_pgp_add), FALSE) == 1) {
 			Raw(FALSE);

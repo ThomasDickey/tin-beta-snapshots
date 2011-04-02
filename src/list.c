@@ -6,7 +6,7 @@
  *  Updated   : 2008-11-28
  *  Notes     : Low level functions handling the active[] list and its group_hash index
  *
- * Copyright (c) 1993-2010 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2011 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

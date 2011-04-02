@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2010-03-07
+ *  Updated   : 2011-02-05
  *  Notes     :
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -195,7 +195,8 @@ main(
 	/*
 	 * Connect to nntp server?
 	 */
-	nntp_server = getserverbyfile(NNTP_SERVER_FILE);
+	if (!nntp_server || !*nntp_server)
+		nntp_server = getserverbyfile(NNTP_SERVER_FILE);
 	if (read_news_via_nntp && !read_saved_news && nntp_open())
 		giveup();
 
@@ -417,7 +418,7 @@ main(
 /*
  * process command line options
  */
-#define OPTIONS "aAcdD:f:g:G:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
+#define OPTIONS "46aAcdD:f:g:G:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
 
 static void
 read_cmd_line_options(
@@ -431,6 +432,39 @@ read_cmd_line_options(
 
 	while ((ch = getopt(argc, argv, OPTIONS)) != -1) {
 		switch (ch) {
+
+			case '4':
+#if defined(NNTP_ABLE) && defined(INET6)
+				force_ipv4 = TRUE;
+				read_news_via_nntp = TRUE;
+#else
+#	ifdef NNTP_ABLE
+				error_message(2, _(txt_option_not_enabled), "-DENABLE_IPV6");
+#	else
+				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+#	endif /* NNTP_ABLE*/
+				giveup();
+				/* keep lint quiet: */
+				/* NOTREACHED */
+#endif /* NNTP_ABLE && INET6 */
+				break;
+
+			case '6':
+#if defined(NNTP_ABLE) && defined(INET6)
+				force_ipv6 = TRUE;
+				read_news_via_nntp = TRUE;
+#	else
+#	ifdef NNTP_ABLE
+				error_message(2, _(txt_option_not_enabled), "-DENABLE_IPV6");
+#	else
+				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+#	endif /* NNTP_ABLE*/
+				giveup();
+				/* keep lint quiet: */
+				/* NOTREACHED */
+#endif /* NNTP_ABLE && INET6 */
+				break;
+
 			case 'a':
 #ifdef HAVE_COLOR
 				cmdline.args |= CMDLINE_USE_COLOR;
@@ -445,6 +479,7 @@ read_cmd_line_options(
 			case 'A':
 #ifdef NNTP_ABLE
 				force_auth_on_conn_open = TRUE;
+				read_news_via_nntp = TRUE;
 #else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
@@ -660,9 +695,10 @@ read_cmd_line_options(
 	num_cmdargs = optind;
 	max_cmdargs = argc;
 	if (!newsrc_set) {
-		if (read_news_via_nntp)
-			get_newsrcname(newsrc, sizeof(newsrc), getserverbyfile(NNTP_SERVER_FILE));
-		else {
+		if (read_news_via_nntp) {
+			nntp_server = getserverbyfile(NNTP_SERVER_FILE);
+			get_newsrcname(newsrc, sizeof(newsrc), nntp_server);
+		} else {
 #if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
 			struct utsname uts;
 			(void) uname(&uts);
@@ -731,6 +767,14 @@ read_cmd_line_options(
 		wait_message(2, _(txt_useless_combination), "-Z", "-z", "-Z");
 		check_any_unread = FALSE;
 	}
+
+#if defined(NNTP_ABLE) && defined(INET6)
+	if (force_ipv4 && force_ipv6) {
+		wait_message(2, _(txt_useless_combination), "-4", "-6", "-6");
+		force_ipv6 = FALSE;
+	}
+#endif /* NNTP_ABLE && INET6 */
+
 	if (mail_news || save_news || update_index || check_any_unread || catchup)
 		batch_mode = TRUE;
 	else
@@ -772,6 +816,11 @@ usage(
 	char *theProgname)
 {
 	error_message(2, _(txt_usage_tin), theProgname);
+
+#if defined(NNTP_ABLE) && defined(INET6)
+		error_message(2, _(txt_usage_force_ipv4));
+		error_message(2, _(txt_usage_force_ipv6));
+#endif /* NNTP_ABLE && INET6 */
 
 #ifdef HAVE_COLOR
 		error_message(2, _(txt_usage_toggle_color));

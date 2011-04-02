@@ -3,10 +3,10 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2010-10-01
+ *  Updated   : 2011-03-27
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -631,7 +631,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	if 0 /* this one is ok for IPv4 */
 #		define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\]\\>\"\\s]*|$|(?=[)\\]\\>\"\\s]))"
 #	else	/* this one should be IPv6 safe - test me! */
-#		define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:/[^)\\]\\>\"\\s]*|$|(?=[)\\]\\>\"\\s]))"
+#		define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-|[^\\W_]){0,61}(?<!---)[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:/[^)\\]\\>\"\\s]*|$|(?=[)\\]\\>\"\\s]))"
 #	endif /* 0 */
 #endif /* 0 */
 /*
@@ -645,7 +645,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  * TODO: check against RFC 5538
  */
 #if 1 /* complex */
-#	define NEWS_REGEX "\\b(?:s?news|nntp):(?:(?:(?://(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?(?=[/])[^()\\^\\[\\]{}\\|\\x00-\\x1f\\x7f\\s\"<>'\\\\:,;]+|$))|[^\\^\\[\\]{}\\|\\x00-\\x1f\\x7f\\s<>\"():,;\\\\'/]+)\\b"
+#	define NEWS_REGEX "\\b(?:s?news|nntp):(?:(?:(?://(?:(?:[^\\W_](?:(?:-|[^\\W_]){0,61}(?<!---)[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?(?=[/])[^()\\^\\[\\]{}\\|\\x00-\\x1f\\x7f\\s\"<>'\\\\:,;]+|$))|[^\\^\\[\\]{}\\|\\x00-\\x1f\\x7f\\s<>\"():,;\\\\'/]+)\\b"
 #else
 #	if 1 /* less complex */
 #		define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s\\*@>]+(?(?=[@])[^\\s\\*@<>()\",/]+|[^\\s\\*<>()\":,/]+)\\b"
@@ -657,7 +657,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 /*
  * case insensitive
  */
-#	define TELNET_REGEX	"\\btelnet://(?:[^:@/]*(?::[^:@/]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?||localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?/?"
+#	define TELNET_REGEX	"\\btelnet://(?:[^:@/]*(?::[^:@/]*)?@)?(?:(?:[^\\W_](?:(?:-|[^\\W_]){0,61}(?<!---)[^\\W_])?\\.)+[a-z]{2,6}\\.?||localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?/?"
 #endif /* 0 */
 
 
@@ -841,6 +841,39 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #ifndef MARK_INRANGE
 #	define MARK_INRANGE	'#'	/* group/art within a range (# command) */
 #endif /* !MARK_INRANGE */
+
+
+/*
+ * Unicode chars for thread and attachment tree and cursor (instead of "|+`->")
+ * only available when IS_LOCAL_CHARSET("UTF-8")
+ */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	/*
+	 * For CURSOR_ARROW and CURSOR_HORIZ tinrc.utf8_graphics ? :
+	 * is handled inside screen.c:draw_arrow_mark().
+	 */
+#	define CURSOR_ARROW		(wchar_t) 0x25B6
+#	define CURSOR_HORIZ		(wchar_t) 0x2500
+#	define TREE_ARROW		(wchar_t) (tinrc.utf8_graphics ? 0x25B6 : '>')
+#	define TREE_ARROW_WRAP	(wchar_t) (tinrc.utf8_graphics ? 0x25B7 : '>')
+#	define TREE_BLANK		(wchar_t) ' '
+#	define TREE_HORIZ		(wchar_t) (tinrc.utf8_graphics ? 0x2500 : '-')
+#	define TREE_UP_RIGHT	(wchar_t) (tinrc.utf8_graphics ? 0x2514 : '`')
+#	define TREE_VERT		(wchar_t) (tinrc.utf8_graphics ? 0x2502 : '|')
+#	define TREE_VERT_RIGHT	(wchar_t) (tinrc.utf8_graphics ? 0x251C : '+')
+#else
+	/*
+	 * No need for CURSOR_ARROW and CURSOR_HORIZ here. This is handled inside
+	 * screen.c:draw_arrow_mark().
+	 */
+#	define TREE_ARROW		'>'
+#	define TREE_ARROW_WRAP	'>'
+#	define TREE_BLANK		' '
+#	define TREE_HORIZ		'-'
+#	define TREE_UP_RIGHT	'`'
+#	define TREE_VERT		'|'
+#	define TREE_VERT_RIGHT	'+'
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 /*
  * position of the unread/will_return/hot-mark

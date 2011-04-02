@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2010-11-03
+ *  Updated   : 2011-04-02
  *  Notes     :
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -505,7 +505,15 @@ shell_escape(
 
 	(void) invoke_cmd(p);
 
+#	ifndef USE_CURSES
+	EndWin();
+	Raw(FALSE);
+#	endif /* !USE_CURSES */
 	prompt_continue();
+#	ifndef USE_CURSES
+	Raw(TRUE);
+	InitWin();
+#	endif /* !USE_CURSES */
 
 	if (tinrc.draw_arrow)
 		ClearScreen();
@@ -623,6 +631,9 @@ tin_done(
 	if (ret != -SIGUSR1) {
 #endif /* SIGUSR1 */
 #ifdef HAVE_COLOR
+#	ifndef USE_CURSES
+		reset_screen_attr();
+#	endif /* !USE_CURSES */
 		use_color = FALSE;
 		EndInverse();
 #else
@@ -816,6 +827,9 @@ draw_percent_mark(
 	snprintf(buf, sizeof(buf), "%s(%d%%) [%ld/%ld]", _(txt_more), (int) (cur_num * 100 / max_num), cur_num, max_num);
 	len = strwidth(buf);
 	MoveCursor(cLINES, cCOLS - len - (1 + BLANK_PAGE_COLS));
+#ifdef HAVE_COLOR
+	fcol(tinrc.col_normal);
+#endif /* HAVE_COLOR */
 	StartInverse();
 	my_fputs(buf, stdout);
 	EndInverse();
@@ -1054,15 +1068,20 @@ toggle_color(
 		use_color = FALSE;
 		info_message(_(txt_no_colorterm));
 		return FALSE;
-	} else
+	}
+	if (use_color)
+		reset_color();
 #	endif /* USE_CURSES */
-		use_color = bool_not(use_color);
+	use_color = bool_not(use_color);
 
-#	ifndef USE_CURSES
 	if (use_color) {
+#	ifdef USE_CURSES
 		fcol(tinrc.col_normal);
-		bcol(tinrc.col_normal);
-	} else
+#	endif /* USE_CURSES */
+		bcol(tinrc.col_back);
+	}
+#	ifndef USE_CURSES
+	else
 		reset_screen_attr();
 #	endif /* !USE_CURSES */
 

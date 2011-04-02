@@ -5,11 +5,11 @@
 #
 
 PROJECT	= tin
-LVER	= 1
-PVER	= 9
-SVER	= 6
+LVER	= 2
+PVER	= 0
+SVER	= 0
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20101126
+DVER	= 20110402
 EXE	= tin
 
 # directory structure
@@ -323,8 +323,6 @@ POFILES = \
 	$(PODIR)/fr.po \
 	$(PODIR)/ru.gmo \
 	$(PODIR)/ru.po \
-	$(PODIR)/rw.gmo \
-	$(PODIR)/rw.po \
 	$(PODIR)/sv.gmo \
 	$(PODIR)/sv.po \
 	$(PODIR)/tr.gmo \

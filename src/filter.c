@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2010-11-13
+ *  Updated   : 2010-12-10
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1328,7 +1328,7 @@ filter_menu(
 	 * Expire time
 	 */
 	snprintf(double_time, sizeof(double_time), "2x %s", text_time);
-	snprintf(quat_time, sizeof(double_time), "4x %s", text_time);
+	snprintf(quat_time, sizeof(quat_time), "4x %s", text_time);
 	list = my_malloc(sizeof(char *) * 4);
 	list[0] = (char *) _(txt_unlimited_time);
 	list[1] = text_time;

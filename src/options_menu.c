@@ -3,10 +3,10 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2010-10-29
+ *  Updated   : 2011-04-02
  *  Notes     : Split from config.c
  *
- * Copyright (c) 2004-2010 Michael Bienia <michael@vorlon.ping.de>
+ * Copyright (c) 2004-2011 Michael Bienia <michael@vorlon.ping.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -227,6 +227,11 @@ option_is_visible(
 		case OPT_STROKES_REGEX:
 		case OPT_UNDERSCORES_REGEX:
 			return curr_scope ? FALSE : tinrc.word_highlight;
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		case OPT_UTF8_GRAPHICS:
+			return curr_scope ? FALSE : IS_LOCAL_CHARSET("UTF-8");
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 		case OPT_VERBATIM_BEGIN_REGEX:
 		case OPT_VERBATIM_END_REGEX:
@@ -1235,6 +1240,9 @@ config_page(
 						case OPT_TRANSLIT:
 #endif /* HAVE_ICONV_OPEN_TRANSLIT && CHARSET_CONVERSION */
 						case OPT_UNLINK_ARTICLE:
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+						case OPT_UTF8_GRAPHICS:
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 						case OPT_URL_HIGHLIGHT:
 #ifdef HAVE_KEYPAD
 						case OPT_USE_KEYPAD:
@@ -1635,7 +1643,6 @@ config_page(
 				case OPT_LIST:
 					switch (option) {
 #ifdef HAVE_COLOR
-						case OPT_COL_BACK:
 						case OPT_COL_FROM:
 						case OPT_COL_HEAD:
 						case OPT_COL_HELP:
@@ -1644,7 +1651,6 @@ config_page(
 						case OPT_COL_MESSAGE:
 						case OPT_COL_MINIHELP:
 						case OPT_COL_NEWSHEADERS:
-						case OPT_COL_NORMAL:
 						case OPT_COL_QUOTE:
 						case OPT_COL_QUOTE2:
 						case OPT_COL_QUOTE3:
@@ -1679,6 +1685,14 @@ config_page(
 						case OPT_WORD_H_DISPLAY_MARKS:
 							prompt_option_list(option);
 							break;
+
+#ifdef HAVE_COLOR
+						case OPT_COL_BACK:
+						case OPT_COL_NORMAL:
+							if (prompt_option_list(option))
+									redraw_screen(option);
+							break;
+#endif /* HAVE_COLOR */
 
 						case OPT_AUTO_CC_BCC:
 							if (prompt_option_list(option))

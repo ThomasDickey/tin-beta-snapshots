@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2010-10-31
+ *  Updated   : 2011-01-29
  *  Notes     :
  *
- * Copyright (c) 1997-2010 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2011 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,12 +87,12 @@ extern void write_attributes_file(const char *file);
 #endif /* NNTP_ABLE */
 
 /* charset.c */
-extern char *convert_to_printable(char *buf);
+extern char *convert_to_printable(char *buf, t_bool keep_tab);
 extern t_bool is_art_tex_encoded(FILE *fp);
 extern void convert_iso2asc(char *iso, char **asc_buffer, size_t *max_line_len, int t);
 extern void convert_tex2iso(char *from, char *to);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	extern wchar_t *wconvert_to_printable(wchar_t *wbuf);
+	extern wchar_t *wconvert_to_printable(wchar_t *wbuf, t_bool keep_tab);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 /* color.c */
@@ -121,7 +121,7 @@ extern void write_config_file(char *file);
 
 /* cook.c */
 extern const char *get_filename(t_param *ptr);
-extern t_bool cook_article(t_bool wrap_lines, t_openartinfo *artinfo, int hide_uue);
+extern t_bool cook_article(t_bool wrap_lines, t_openartinfo *artinfo, int hide_uue, t_bool show_all_headers);
 extern t_bool expand_ctrl_chars(char **line, size_t *length, size_t lcook_width);
 
 /* curses.c */
@@ -547,7 +547,7 @@ extern void rfc1521_encode(char *line, FILE *f, int e);
 /* rfc2046.c */
 extern FILE *open_art_fp(struct t_group *group, long art);
 extern const char *get_param(t_param *list, const char *name);
-extern char *parse_header(char *buf, const char *pat, t_bool decode, t_bool structured);
+extern char *parse_header(char *buf, const char *pat, t_bool decode, t_bool structured, t_bool keep_tab);
 extern int art_open(t_bool wrap_lines, struct t_article *art, struct t_group *group, t_openartinfo *artinfo, t_bool show_progress_meter, char *pmesg);
 extern int content_type(char *type);
 extern int parse_rfc822_headers(struct t_header *hdr, FILE *from, FILE *to);
@@ -680,9 +680,11 @@ extern void str_lwr(char *str);
 	extern wchar_t *abbr_wcsgroupname(const wchar_t *grpname, int len);
 	extern wchar_t *char2wchar_t(const char *str);
 	extern wchar_t *wcspart(const wchar_t *wstr, int columns, t_bool pad);
+	extern wchar_t *wexpand_tab(wchar_t *wstr, size_t tab_width);
 	extern wchar_t *wstrunc(const wchar_t *wmessage, int len);
 #else
 	extern char *abbr_groupname(const char *grpname, size_t len);
+	extern char *expand_tab(char *str, size_t tab_width);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 	extern char *render_bidi(const char *str, t_bool *is_rtl);

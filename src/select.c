@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2010-10-07
+ *  Updated   : 2011-03-25
  *  Notes     :
  *
- * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -251,9 +251,9 @@ selection_page(
 				break;
 
 			case GLOBAL_EDIT_FILTER:
-				if (!invoke_editor(filter_file, filter_file_offset, NULL))
-					break;
-				(void) read_filter_file(filter_file);
+				if (invoke_editor(filter_file, filter_file_offset, NULL))
+					(void) read_filter_file(filter_file);
+				show_selection_page();
 				break;
 
 			case SELECT_TOGGLE_DESCRIPTIONS:	/* toggle newsgroup descriptions */
@@ -668,7 +668,7 @@ build_gline(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((active_name = char2wchar_t(active[n].name)) == NULL) /* If char2wchar_t() fails try again after replacing unprintable characters */
-		active_name = char2wchar_t(convert_to_printable(active[n].name));
+		active_name = char2wchar_t(convert_to_printable(active[n].name, FALSE));
 
 	if (show_description && active[n].description)
 		active_desc = char2wchar_t(active[n].description);
