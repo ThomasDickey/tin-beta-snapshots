@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2011-01-29
+ *  Updated   : 2011-11-05
  *  Notes     :
  *
- * Copyright (c) 1997-2011 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2012 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@ extern char group_flag(char ch);
 extern int find_newnews_index(const char *cur_newnews_host);
 extern int read_news_active_file(void);
 extern t_bool match_group_list(const char *group, const char *group_list);
-extern t_bool parse_active_line(char *line, long *max, long *min, char *moderated);
+extern t_bool parse_active_line(char *line, t_artnum *max, t_artnum *min, char *moderated);
 extern t_bool process_bogus(char *name);
 extern t_bool need_reread_active_file(void);
 extern t_bool resync_active_file(void);
@@ -64,7 +64,7 @@ extern void create_save_active_file(void);
 extern void load_newnews_info(char *info);
 
 /* art.c */
-extern int find_artnum(long art);
+extern int find_artnum(t_artnum art);
 extern int global_get_multipart_info(int aindex, MultiPartInfo *setme);
 extern t_bool index_group(struct t_group *group);
 extern void do_update(t_bool catchup);
@@ -111,7 +111,7 @@ extern char *quote_space_to_dash(char *str);
 extern const char *print_boolean(t_bool value);
 extern t_bool match_boolean(char *line, const char *pat, t_bool *dst);
 extern t_bool match_integer(char *line, const char *pat, int *dst, int maxval);
-extern t_bool match_list(char *line, constext *pat, constext *const *table, size_t tablelen, int *dst);
+extern t_bool match_list(char *line, constext *pat, constext *const *table, int *dst);
 extern t_bool match_long(char *line, const char *pat, long *dst);
 extern t_bool match_string(char *line, const char *pat, char *dst, size_t dstlen);
 extern t_bool read_config_file(char *file, t_bool global_file);
@@ -176,6 +176,9 @@ extern void word_highlight_string(int row, int col, int size, int color);
 	extern void debug_print_filters(void);
 	extern void debug_print_header(struct t_article *s);
 	extern void debug_print_malloc(int is_malloc, const char *xfile, int line, size_t size);
+#	ifdef DEBUG
+	extern const char *logtime(void);
+#	endif /* DEBUG */
 #endif /* DEBUG */
 
 /* envarg.c */
@@ -248,7 +251,7 @@ extern void get_user_info(char *user_name, char *full_name);
 extern void init_selfinfo(void);
 extern void postinit_regexp(void);
 #ifdef HAVE_COLOR
-	extern void postinit_colors(void);
+	extern void postinit_colors(int last_color);
 #endif /* HAVE_COLOR */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern t_bool utf8_pcre(void);
@@ -287,9 +290,9 @@ extern t_bool dot_unlock(const char *filename);
 
 /* mail.c */
 extern t_bool art_edit(struct t_group *group, struct t_article *article);
-extern void find_art_max_min(const char *group_path, long *art_max, long *art_min);
+extern void find_art_max_min(const char *group_path, t_artnum *art_max, t_artnum *art_min);
 extern void print_active_head(const char *active_file);
-extern void print_group_line(FILE *fp, const char *group_name, long art_max, long art_min, const char *base_dir);
+extern void print_group_line(FILE *fp, const char *group_name, t_artnum art_max, t_artnum art_min, const char *base_dir);
 extern void read_descriptions(t_bool verb);
 extern void grp_del_mail_arts(struct t_group *group);
 extern void grp_del_mail_art(struct t_article *article);
@@ -306,6 +309,7 @@ extern void giveup(void);
 /* memory.c */
 extern void expand_active(void);
 extern void expand_art(void);
+extern void expand_base(void);
 extern void expand_newnews(void);
 extern void expand_save(void);
 extern void expand_scope(void);
@@ -347,6 +351,7 @@ extern int strfmailer(const char *mail_prog, char *subject, char *to, const char
 extern int strfpath(const char *format, char *str, size_t maxsize, struct t_group *group, t_bool expand_all);
 extern int strfquote(const char *group, int respnum, char *s, size_t maxsize, char *format);
 extern int tin_version_info(FILE *fp);
+extern int tin_gettime(struct t_tintime *tt);
 extern long file_mtime(const char *file);
 extern long file_size(const char *file);
 extern t_bool backup_file(const char *filename, const char *backupname);
@@ -399,7 +404,7 @@ extern void toggle_inverse_video(void);
 #endif /* !NO_SHELL_ESCAPE */
 
 /* newsrc.c */
-extern int group_get_art_info(char *tin_spooldir, char *groupname, int grouptype, long *art_count, long *art_max, long *art_min);
+extern int group_get_art_info(char *tin_spooldir, char *groupname, int grouptype, t_artnum *art_count, t_artnum *art_max, t_artnum *art_min);
 extern signed long int read_newsrc(char *newsrc_file, t_bool allgroups);
 extern signed long int write_newsrc(void);
 extern t_bool pos_group_in_newsrc(struct t_group *group, int pos);
@@ -407,10 +412,10 @@ extern void art_mark(struct t_group *group, struct t_article *art, int flag);
 extern void backup_newsrc(void);
 extern void catchup_newsrc_file(void);
 extern void delete_group(char *group);
-extern void expand_bitmap(struct t_group *group, long min);
+extern void expand_bitmap(struct t_group *group, t_artnum min);
 extern void grp_mark_read(struct t_group *group, struct t_article *art);
 extern void grp_mark_unread(struct t_group *group);
-extern void parse_unread_arts(struct t_group *group, long min);
+extern void parse_unread_arts(struct t_group *group, t_artnum min);
 extern void reset_newsrc(void);
 extern void subscribe(struct t_group *group, int sub_state, t_bool get_info);
 extern void thd_mark_read(struct t_group *group, long thread);
@@ -545,7 +550,7 @@ extern int read_decoded_qp_line(FILE *file, char **line, size_t *max_line_len, c
 extern void rfc1521_encode(char *line, FILE *f, int e);
 
 /* rfc2046.c */
-extern FILE *open_art_fp(struct t_group *group, long art);
+extern FILE *open_art_fp(struct t_group *group, t_artnum art);
 extern const char *get_param(t_param *list, const char *name);
 extern char *parse_header(char *buf, const char *pat, t_bool decode, t_bool structured, t_bool keep_tab);
 extern int art_open(t_bool wrap_lines, struct t_article *art, struct t_group *group, t_openartinfo *artinfo, t_bool show_progress_meter, char *pmesg);
@@ -587,7 +592,7 @@ extern void error_message(unsigned int sdelay, const char *fmt, ...);
 extern void info_message(const char *fmt, ...);
 extern void perror_message(const char *fmt, ...);
 extern void ring_bell(void);
-extern void show_progress(const char *txt, long count, long total);
+extern void show_progress(const char *txt, t_artnum count, t_artnum total);
 extern void show_title(const char *title);
 extern void spin_cursor(void);
 extern void stow_cursor(void);
@@ -632,7 +637,7 @@ extern char *fmt_string(const char *fmt, ...);
 extern char *my_strdup(const char *str);
 extern char *str_trim(char *string);
 extern char *strunc(const char *message, int len);
-extern char *tin_ltoa(long value, int digits);
+extern char *tin_ltoa(t_artnum value, int digits);
 extern char *tin_strtok(char *str, const char *delim);
 extern int sh_format(char *dst, size_t len, const char *fmt, ...);
 extern int strwidth(const char *str);
@@ -640,16 +645,16 @@ extern size_t mystrcat(char **t, const char *s);
 extern void my_strncpy(char *p, const char *q, size_t n);
 extern void str_lwr(char *str);
 #if !defined(HAVE_STRCASESTR) || defined(DECL_STRCASESTR)
-	extern const char *strcasestr(const char *haystack, const char *needle);
+	extern char *strcasestr(const char *haystack, const char *needle);
 #endif /* !HAVE_STRCASESTR || DECL_STRCASESTR */
 #if !defined(HAVE_STRSEP) || defined(DECL_SEP)
 	extern char *strsep(char **stringp, const char *delim);
 #endif /* !HAVE_STRSEP || DECL_STRSEP */
 #ifndef HAVE_STRPBRK
-	extern char *strpbrk(char *str1, char *str2);
+	extern char *strpbrk(const char *str1, const char *str2);
 #endif /* !HAVE_STRPBRK */
 #ifndef HAVE_STRSTR
-	extern char *strstr(char *text, char *pattern);
+	extern char *strstr(const char *text, const char *pattern);
 #endif /* !HAVE_STRSTR */
 #ifndef HAVE_STRCASECMP
 	extern int strcasecmp(const char *p, const char *q);
@@ -750,8 +755,8 @@ extern t_bool wildmatpos(const char *text, char *p, t_bool icase, int *srch_offs
 
 /* xref.c */
 extern t_bool overview_xref_support(void);
-extern void NSETRNG0(t_bitmap *bitmap, long low, long high);
-extern void NSETRNG1(t_bitmap *bitmap, long low, long high);
+extern void NSETRNG0(t_bitmap *bitmap, t_artnum low, t_artnum high);
+extern void NSETRNG1(t_bitmap *bitmap, t_artnum low, t_artnum high);
 extern void art_mark_xref_read(struct t_article *art);
 
 #endif /* !PROTO_H */

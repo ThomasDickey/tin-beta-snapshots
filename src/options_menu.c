@@ -3,10 +3,10 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2011-04-02
+ *  Updated   : 2011-10-27
  *  Notes     : Split from config.c
  *
- * Copyright (c) 2004-2011 Michael Bienia <michael@vorlon.ping.de>
+ * Copyright (c) 2004-2012 Michael Bienia <michael@vorlon.ping.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -218,15 +218,21 @@ option_is_visible(
 #endif /* HAVE_COLOR */
 
 		case OPT_WORD_H_DISPLAY_MARKS:
-		case OPT_MONO_MARKSTAR:
-		case OPT_MONO_MARKDASH:
-		case OPT_MONO_MARKSLASH:
-		case OPT_MONO_MARKSTROKE:
 		case OPT_SLASHES_REGEX:
 		case OPT_STARS_REGEX:
 		case OPT_STROKES_REGEX:
 		case OPT_UNDERSCORES_REGEX:
 			return curr_scope ? FALSE : tinrc.word_highlight;
+
+		case OPT_MONO_MARKSTAR:
+		case OPT_MONO_MARKDASH:
+		case OPT_MONO_MARKSLASH:
+		case OPT_MONO_MARKSTROKE:
+#ifdef HAVE_COLOR
+			return curr_scope ? FALSE : (tinrc.word_highlight && !tinrc.use_color);
+#else
+			return curr_scope ? FALSE : tinrc.word_highlight;
+#endif /* HAVE_COLOR */
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		case OPT_UTF8_GRAPHICS:
@@ -249,16 +255,6 @@ option_is_visible(
 		case OPT_POSTING_OPTIONS:
 		case OPT_EXPERT_OPTIONS:
 			return TRUE;
-
-		case OPT_ATTRIB_QUICK_KILL_HEADER:
-		case OPT_ATTRIB_QUICK_KILL_SCOPE:
-		case OPT_ATTRIB_QUICK_KILL_EXPIRE:
-		case OPT_ATTRIB_QUICK_KILL_CASE:
-		case OPT_ATTRIB_QUICK_SELECT_HEADER:
-		case OPT_ATTRIB_QUICK_SELECT_SCOPE:
-		case OPT_ATTRIB_QUICK_SELECT_EXPIRE:
-		case OPT_ATTRIB_QUICK_SELECT_CASE:
-			return FALSE;
 
 		case OPT_ATTRIB_ADD_POSTED_TO_FILTER:
 		case OPT_ATTRIB_ADVERTISING:
@@ -295,6 +291,14 @@ option_is_visible(
 		case OPT_ATTRIB_POST_MIME_ENCODING:
 		case OPT_ATTRIB_POST_PROCESS_VIEW:
 		case OPT_ATTRIB_POS_FIRST_UNREAD:
+		case OPT_ATTRIB_QUICK_KILL_HEADER:
+		case OPT_ATTRIB_QUICK_KILL_SCOPE:
+		case OPT_ATTRIB_QUICK_KILL_EXPIRE:
+		case OPT_ATTRIB_QUICK_KILL_CASE:
+		case OPT_ATTRIB_QUICK_SELECT_HEADER:
+		case OPT_ATTRIB_QUICK_SELECT_SCOPE:
+		case OPT_ATTRIB_QUICK_SELECT_EXPIRE:
+		case OPT_ATTRIB_QUICK_SELECT_CASE:
 #ifndef DISABLE_PRINTING
 		case OPT_ATTRIB_PRINT_HEADER:
 #endif /* !DISABLE_PRINTING */
@@ -549,7 +553,7 @@ move_cursor(
 			if (cur_option < first_option_on_screen) {
 				/* move the markers one option up */
 				first_option_on_screen = cur_option;
-				last_option_on_screen = prev_option(last_option_on_screen, TRUE);
+				set_last_option_on_screen(cur_option);
 #ifdef USE_CURSES
 				do_scroll(-1);
 				print_any_option(cur_option);
@@ -774,8 +778,6 @@ static void
 redraw_screen(
 	enum option_enum option)
 {
-	my_retouch();
-	set_xclick_off();
 	show_config_page();
 	highlight_option(option);
 }
@@ -925,6 +927,8 @@ config_page(
 	set_last_option_on_screen(0);
 
 	redraw_screen(option);
+	set_xclick_off();
+
 	forever {
 		switch ((func = handle_keypad(option_left, option_right, NULL, option_menu_keys))) {
 			case GLOBAL_QUIT:
@@ -1210,6 +1214,8 @@ config_page(
 				break;
 
 			case GLOBAL_REDRAW_SCREEN:
+				my_retouch();
+				set_xclick_off();
 				set_last_option_on_screen(first_option_on_screen);
 				redraw_screen(option);
 				break;
@@ -1585,6 +1591,26 @@ config_page(
 								SET_NUM_ATTRIBUTE(prompt_followupto);
 							break;
 
+						case OPT_ATTRIB_QUICK_KILL_CASE:
+							if (prompt_option_on_off(option))
+								SET_NUM_ATTRIBUTE(quick_kill_case);
+							break;
+
+						case OPT_ATTRIB_QUICK_KILL_EXPIRE:
+							if (prompt_option_on_off(option))
+								SET_NUM_ATTRIBUTE(quick_kill_expire);
+							break;
+
+						case OPT_ATTRIB_QUICK_SELECT_CASE:
+							if (prompt_option_on_off(option))
+								SET_NUM_ATTRIBUTE(quick_select_case);
+							break;
+
+						case OPT_ATTRIB_QUICK_SELECT_EXPIRE:
+							if (prompt_option_on_off(option))
+								SET_NUM_ATTRIBUTE(quick_select_expire);
+							break;
+
 						case OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS:
 							if (prompt_option_on_off(option))
 								SET_NUM_ATTRIBUTE(show_only_unread_arts);
@@ -1690,7 +1716,7 @@ config_page(
 						case OPT_COL_BACK:
 						case OPT_COL_NORMAL:
 							if (prompt_option_list(option))
-									redraw_screen(option);
+								redraw_screen(option);
 							break;
 #endif /* HAVE_COLOR */
 
@@ -1747,7 +1773,7 @@ config_page(
 								 * or a !8bit encoding but a 8bit network charset, update encoding if needed
 								 */
 								is_7bit = FALSE;
-								for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
+								for (i = 0; txt_mime_7bit_charsets[i] != NULL; i++) {
 									if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
 										is_7bit = TRUE;
 										break;
@@ -1783,7 +1809,7 @@ config_page(
 								 * or a !8bit encoding but a 8bit network charset, update encoding if needed
 								 */
 								is_7bit = FALSE;
-								for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
+								for (i = 0; txt_mime_7bit_charsets[i] != NULL; i++) {
 									if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
 										is_7bit = TRUE;
 										break;
@@ -1822,7 +1848,7 @@ config_page(
 								 */
 								is_7bit = FALSE;
 								UPDATE_INT_ATTRIBUTES(mm_network_charset);
-								for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
+								for (i = 0; txt_mime_7bit_charsets[i] != NULL; i++) {
 									if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
 										is_7bit = TRUE;
 										break;
@@ -1886,6 +1912,16 @@ config_page(
 						case OPT_ATTRIB_POST_PROCESS_TYPE:
 							if (prompt_option_list(option))
 								SET_NUM_ATTRIBUTE(post_process_type);
+							break;
+
+						case OPT_ATTRIB_QUICK_KILL_HEADER:
+							if (prompt_option_list(option))
+								SET_NUM_ATTRIBUTE(quick_kill_header);
+							break;
+
+						case OPT_ATTRIB_QUICK_SELECT_HEADER:
+							if (prompt_option_list(option))
+								SET_NUM_ATTRIBUTE(quick_select_header);
 							break;
 
 						case OPT_ATTRIB_SHOW_AUTHOR:
@@ -2197,6 +2233,16 @@ config_page(
 								SET_STRING_ATTRIBUTE(organization);
 							break;
 
+						case OPT_ATTRIB_QUICK_KILL_SCOPE:
+							if (prompt_option_string(option))
+								SET_STRING_ATTRIBUTE(quick_kill_scope);
+							break;
+
+						case OPT_ATTRIB_QUICK_SELECT_SCOPE:
+							if (prompt_option_string(option))
+								SET_STRING_ATTRIBUTE(quick_select_scope);
+							break;
+
 						case OPT_ATTRIB_QUOTE_CHARS:
 							if (prompt_option_string(option))
 								SET_STRING_ATTRIBUTE(quote_chars);
@@ -2246,6 +2292,15 @@ config_page(
 						case OPT_SCROLL_LINES:
 							prompt_option_num(option);
 							break;
+
+#if defined(HAVE_ALARM) && defined(SIGALRM)
+						case OPT_NNTP_READ_TIMEOUT_SECS:
+							if (prompt_option_num(option)) {
+								if (tinrc.nntp_read_timeout_secs < 0)
+									tinrc.nntp_read_timeout_secs = 0;
+							}
+							break;
+#endif /* HAVE_ALARM && SIGALRM */
 
 						case OPT_REREAD_ACTIVE_FILE_SECS:
 							if (prompt_option_num(option)) {
@@ -2458,6 +2513,7 @@ scope_page(
 
 			case GLOBAL_REDRAW_SCREEN:
 				my_retouch();
+				set_xclick_off();
 				show_scope_page();
 				break;
 
@@ -2870,6 +2926,22 @@ check_state(
 			return curr_scope->state->process_only_unread;
 		case OPT_ATTRIB_PROMPT_FOLLOWUPTO:
 			return curr_scope->state->prompt_followupto;
+		case OPT_ATTRIB_QUICK_KILL_SCOPE:
+			return curr_scope->state->quick_kill_scope;
+		case OPT_ATTRIB_QUICK_KILL_HEADER:
+			return curr_scope->state->quick_kill_header;
+		case OPT_ATTRIB_QUICK_KILL_CASE:
+			return curr_scope->state->quick_kill_case;
+		case OPT_ATTRIB_QUICK_KILL_EXPIRE:
+			return curr_scope->state->quick_kill_expire;
+		case OPT_ATTRIB_QUICK_SELECT_SCOPE:
+			return curr_scope->state->quick_select_scope;
+		case OPT_ATTRIB_QUICK_SELECT_HEADER:
+			return curr_scope->state->quick_select_header;
+		case OPT_ATTRIB_QUICK_SELECT_CASE:
+			return curr_scope->state->quick_select_case;
+		case OPT_ATTRIB_QUICK_SELECT_EXPIRE:
+			return curr_scope->state->quick_select_expire;
 		case OPT_ATTRIB_QUOTE_CHARS:
 			return curr_scope->state->quote_chars;
 		case OPT_ATTRIB_SAVEDIR:
@@ -3064,6 +3136,40 @@ reset_state(
 			build_news_headers_array(curr_scope->attribute, FALSE);
 			curr_scope->state->news_headers_to_not_display = FALSE;
 			snprintf(tinrc.attrib_news_headers_to_not_display, sizeof(tinrc.attrib_news_headers_to_not_display), "%s", BlankIfNull(default_scope->attribute->news_headers_to_not_display));
+			break;
+		case OPT_ATTRIB_QUICK_KILL_SCOPE:
+			FreeAndNull(curr_scope->attribute->quick_kill_scope);
+			curr_scope->state->quick_kill_scope = FALSE;
+			snprintf(tinrc.attrib_quick_kill_scope, sizeof(tinrc.attrib_quick_kill_scope), "%s", BlankIfNull(default_scope->attribute->quick_kill_scope));
+			break;
+		case OPT_ATTRIB_QUICK_KILL_HEADER:
+			curr_scope->state->quick_kill_header = FALSE;
+			tinrc.attrib_quick_kill_header = default_scope->attribute->quick_kill_header;
+			break;
+		case OPT_ATTRIB_QUICK_KILL_CASE:
+			curr_scope->state->quick_kill_case = FALSE;
+			tinrc.attrib_quick_kill_case = default_scope->attribute->quick_kill_case;
+			break;
+		case OPT_ATTRIB_QUICK_KILL_EXPIRE:
+			curr_scope->state->quick_kill_expire = FALSE;
+			tinrc.attrib_quick_kill_expire = default_scope->attribute->quick_kill_expire;
+			break;
+		case OPT_ATTRIB_QUICK_SELECT_SCOPE:
+			FreeAndNull(curr_scope->attribute->quick_select_scope);
+			curr_scope->state->quick_select_scope = FALSE;
+			snprintf(tinrc.attrib_quick_select_scope, sizeof(tinrc.attrib_quick_select_scope), "%s", BlankIfNull(default_scope->attribute->quick_select_scope));
+			break;
+		case OPT_ATTRIB_QUICK_SELECT_HEADER:
+			curr_scope->state->quick_select_header = FALSE;
+			tinrc.attrib_quick_select_header = default_scope->attribute->quick_select_header;
+			break;
+		case OPT_ATTRIB_QUICK_SELECT_CASE:
+			curr_scope->state->quick_select_case = FALSE;
+			tinrc.attrib_quick_select_case = default_scope->attribute->quick_select_case;
+			break;
+		case OPT_ATTRIB_QUICK_SELECT_EXPIRE:
+			curr_scope->state->quick_select_expire = FALSE;
+			tinrc.attrib_quick_select_expire = default_scope->attribute->quick_select_expire;
 			break;
 		case OPT_ATTRIB_NEWS_QUOTE_FORMAT:
 			FreeAndNull(curr_scope->attribute->news_quote_format);
@@ -3269,6 +3375,12 @@ initialize_attributes(
 #endif /* !DISABLE_PRINTING */
 	INITIALIZE_NUM_ATTRIBUTE(process_only_unread);
 	INITIALIZE_NUM_ATTRIBUTE(prompt_followupto);
+	INITIALIZE_NUM_ATTRIBUTE(quick_kill_header);
+	INITIALIZE_NUM_ATTRIBUTE(quick_kill_case);
+	INITIALIZE_NUM_ATTRIBUTE(quick_kill_expire);
+	INITIALIZE_NUM_ATTRIBUTE(quick_select_header);
+	INITIALIZE_NUM_ATTRIBUTE(quick_select_case);
+	INITIALIZE_NUM_ATTRIBUTE(quick_select_expire);
 	INITIALIZE_NUM_ATTRIBUTE(show_author);
 	INITIALIZE_NUM_ATTRIBUTE(show_info);
 	INITIALIZE_NUM_ATTRIBUTE(show_only_unread_arts);
@@ -3302,6 +3414,8 @@ initialize_attributes(
 	INITIALIZE_STRING_ATTRIBUTE(news_headers_to_not_display);
 	INITIALIZE_STRING_ATTRIBUTE(news_quote_format);
 	INITIALIZE_STRING_ATTRIBUTE(organization);
+	INITIALIZE_STRING_ATTRIBUTE(quick_kill_scope);
+	INITIALIZE_STRING_ATTRIBUTE(quick_select_scope);
 	INITIALIZE_STRING_ATTRIBUTE(quote_chars);
 	INITIALIZE_STRING_ATTRIBUTE(savedir);
 	INITIALIZE_STRING_ATTRIBUTE(savefile);

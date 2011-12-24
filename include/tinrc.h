@@ -6,7 +6,7 @@
  *  Updated   : 2011-01-29
  *  Notes     :
  *
- * Copyright (c) 1999-2011 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2012 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -295,6 +295,13 @@ struct t_config {
 	int attrib_quick_kill_header;
 	int attrib_quick_select_header;
 	int attrib_mail_mime_encoding;
+#if defined(HAVE_ALARM) && defined(SIGALRM)
+	/*
+	 * # seconds after which a read from the NNTP will timeout
+	 * NB: This is different from the NNTP server timing us out due to inactivity
+	 */
+	int nntp_read_timeout_secs;
+#endif /* HAVE_ALARM && SIGALRM */
 	int attrib_post_mime_encoding;
 	int attrib_post_process_type;
 	int attrib_show_author;

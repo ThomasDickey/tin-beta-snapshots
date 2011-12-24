@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-03-27
+ *  Updated   : 2011-11-06
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -200,7 +200,7 @@ check_start_save_any_news(
 
 			group_count++;
 			snprintf(buf, sizeof(buf), _(txt_saved_groupname), group->name);
-			fprintf(fp_log, buf);
+			fprintf(fp_log, "%s", buf);
 			if (verbose)
 				wait_message(0, buf);
 
@@ -251,7 +251,7 @@ check_start_save_any_news(
 						continue;
 
 					if (function == SAVE_ANY_NEWS) {
-						snprintf(buf, sizeof(buf), "%ld", arts[j].artnum);
+						snprintf(buf, sizeof(buf), "%"T_ARTNUM_PFMT, arts[j].artnum);
 						joinpath(savefile, sizeof(savefile), path, buf);
 					}
 
@@ -284,7 +284,7 @@ check_start_save_any_news(
 						fprintf(savefp, "Content-Transfer-Encoding: 8bit\n\n");
 					}
 
-					snprintf(buf, sizeof(buf), "[%5ld]  %s\n", arts[j].artnum, arts[j].subject);
+					snprintf(buf, sizeof(buf), "[%5"T_ARTNUM_PFMT"]  %s\n", arts[j].artnum, arts[j].subject);
 					fprintf(fp_log, "%s", buf);	/* buf may contain % */
 					if (verbose)
 						wait_message(0, buf);
@@ -2158,7 +2158,7 @@ process_parts(
 	enum action what)
 {
 	FILE *fp;
-	char *savepath, *tmppath;
+	char *savepath = NULL, *tmppath;
 	int i, saved_parts = 0;
 	t_partl *lptr;
 

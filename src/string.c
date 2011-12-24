@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2011-01-30
+ *  Updated   : 2011-11-06
  *  Notes     :
  *
- * Copyright (c) 1997-2011 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2012 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -84,7 +84,7 @@
  */
 char *
 tin_ltoa(
-	long value,
+	t_artnum value,
 	int digits)
 {
 	static char buffer[64];
@@ -97,7 +97,7 @@ tin_ltoa(
 		return buffer;
 	}
 
-	snprintf(buffer, sizeof(buffer), "%ld", value);
+	snprintf(buffer, sizeof(buffer), "%"T_ARTNUM_PFMT, value);
 	len = (int) strlen(buffer);
 
 	while (len > digits) {
@@ -122,7 +122,7 @@ tin_ltoa(
 
 		buffer[digits] = '\0';
 	} else
-		snprintf(buffer, sizeof(buffer), "%*ld", digits, value);
+		snprintf(buffer, sizeof(buffer), "%*"T_ARTNUM_PFMT, digits, value);
 
 	return buffer;
 }
@@ -211,7 +211,7 @@ my_strncpy(
 /*
  * case-insensitive version of strstr()
  */
-const char *
+char *
 strcasestr(
 	const char *haystack,
 	const char *needle)
@@ -277,11 +277,11 @@ str_lwr(
  */
 char *
 strpbrk(
-	char *str1,
-	char *str2)
+	const char *str1,
+	const char *str2)
 {
-	char *ptr1;
-	char *ptr2;
+	const char *ptr1;
+	const char *ptr2;
 
 	for (ptr1 = str1; *ptr1 != '\0'; ptr1++) {
 		for (ptr2 = str2; *ptr2 != '\0'; ) {
@@ -299,8 +299,8 @@ strpbrk(
  */
 char *
 strstr(
-	char *text,
-	char *pattern)
+	const char *text,
+	const char *pattern)
 {
 	unsigned char *p, *t;
 	int i, j, *delta;

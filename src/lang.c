@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-01-30
+ *  Updated   : 2011-11-14
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,6 +87,7 @@ constext txt_attachment_tagged[] = N_("Tagged attachment");
 constext txt_attachments_tagged[] = N_("%d attachments tagged");
 constext txt_attachment_untagged[] = N_("Untagged attachment");
 constext txt_attrib_menu_com[] = N_("Attributes Menu Commands");
+constext txt_attrib_no_scope[] = N_("attribute with no scope: %s");
 #ifdef NNTP_ABLE
 	constext txt_auth_failed[] = N_("%d Authentication failed");
 	constext txt_auth_failed_nopass[] = N_("NNTP authorization password not found for %s");
@@ -632,7 +633,7 @@ constext txt_msgid_line_only[] = N_("Message-ID: line              ");
 constext txt_msgid_refs_line[] = N_("Message-ID: & References: line");
 
 constext txt_name[] = N_(", name: ");
-constext txt_newsgroup[] = N_("Goto newsgroup [%s]> ");
+constext txt_newsgroup[] = N_("Go to newsgroup [%s]> ");
 constext txt_newsgroup_plural[] = N_("newsgroups");
 constext txt_newsgroup_position[] = N_("Position %s in group list (1,2,..,$) [%d]> ");
 constext txt_newsgroup_singular[] = N_("newsgroup");
@@ -687,7 +688,7 @@ constext txt_only[] = N_("Only");
 constext txt_option_not_enabled[] = N_("Option not enabled. Recompile with %s.");
 constext txt_options_menu[] = N_("Options Menu");
 constext txt_options_menu_com[] = N_("Options Menu Commands");
-constext txt_out_of_memory[] = "%s: memory exhausted trying to allocate %d bytes in file %s line %d";
+constext txt_out_of_memory[] = "%s: memory exhausted trying to allocate %lu bytes in file %s line %d";
 
 constext txt_pcre_error_at[] = N_("Error in regex: %s at pos. %d '%s'");
 constext txt_pcre_error_num[] = N_("Error in regex: pcre internal error %d");
@@ -811,7 +812,7 @@ constext txt_select_art[] = N_("Select article> ");
 constext txt_select_config_file_option[] = N_("Select option number before text or use arrow keys and <CR>. 'q' to quit.");
 constext txt_select_group[] = N_("Select group> ");
 constext txt_select_pattern[] = N_("Enter selection pattern [%s]> ");
-constext txt_select_thread[] = N_("Select thread > ");
+constext txt_select_thread[] = N_("Select thread> ");
 constext txt_send_bugreport[] = N_("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n");
 constext txt_servers_active[] = N_("servers active-file");
 constext txt_skipping_newgroups[] = N_("Cannot move into new newsgroups. Subscribe first...");
@@ -1077,7 +1078,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2011 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2012 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
@@ -1245,13 +1246,14 @@ constext *txt_threading[] = {
 	N_("References"),
 	N_("Both Subject and References"),
 	N_("Multipart Subject"),
-	N_("Percentage Match")
+	N_("Percentage Match"),
+	NULL
 };
 
 /*
  * Whether to use wildmat() or regexec() for matching strings
  */
-constext *txt_wildcard_type[] = { "WILDMAT", "REGEX" };
+constext *txt_wildcard_type[] = { "WILDMAT", "REGEX", NULL };
 
 /*
  * Handling of uuencoded data in pager
@@ -1259,7 +1261,8 @@ constext *txt_wildcard_type[] = { "WILDMAT", "REGEX" };
 constext *txt_hide_uue_type[] = {
 	N_("No"),
 	N_("Yes"),
-	N_("Hide All")
+	N_("Hide All"),
+	NULL
 };
 
 /*
@@ -1269,7 +1272,8 @@ constext *txt_show_from[] = {
 	N_("None"),
 	N_("Address"),
 	N_("Full Name"),
-	N_("Address and Name")
+	N_("Address and Name"),
+	NULL
 };
 
 /*
@@ -1278,14 +1282,16 @@ constext *txt_show_from[] = {
 constext *txt_thread_score_type[] = {
 	N_("Max"),
 	N_("Sum"),
-	N_("Average")
+	N_("Average"),
+	NULL
 };
 
 constext *txt_show_info_type[] = {
 	N_("None"),
 	N_("Lines"),
 	N_("Score"),
-	N_("Lines & Score")
+	N_("Lines & Score"),
+	NULL
 };
 
 #ifdef HAVE_COLOR
@@ -1309,7 +1315,20 @@ constext *txt_show_info_type[] = {
 		N_("Light Blue"),
 		N_("Light Pink"),
 		N_("Light Cyan"),
-		N_("Light White")
+		N_("Light White"),
+		NULL
+	};
+	constext *txt_backcolors[] = {
+		N_("Default"),
+		N_("Black"),
+		N_("Red"),
+		N_("Green"),
+		N_("Brown"),
+		N_("Blue"),
+		N_("Pink"),
+		N_("Cyan"),
+		N_("White"),
+		NULL
 	};
 #endif /* HAVE_COLOR */
 
@@ -1319,7 +1338,8 @@ constext *txt_show_info_type[] = {
 constext *txt_marks[] = {
 	N_("Nothing"),
 	N_("Mark"),
-	N_("Space")
+	N_("Space"),
+	NULL
 };
 
 /*
@@ -1332,7 +1352,8 @@ constext *txt_attrs[] = {
 	N_("Reverse video"),
 	N_("Blinking"),
 	N_("Half bright"),
-	N_("Bold")
+	N_("Bold"),
+	NULL
 };
 
 /* different options for auto_cc_bcc */
@@ -1340,7 +1361,8 @@ constext *txt_auto_cc_bcc_options[] = {
 	N_("No"),
 	N_("Cc"),
 	N_("Bcc"),
-	N_("Cc and Bcc")
+	N_("Cc and Bcc"),
+	NULL
 };
 
 /* different confirm choices */
@@ -1352,7 +1374,8 @@ constext *txt_confirm_choices[] = {
 	N_("commands & quit"),
 	N_("commands & select"),
 	N_("quit & select"),
-	N_("commands & quit & select")
+	N_("commands & quit & select"),
+	NULL
 };
 
 /* different options for goto_next_unread */
@@ -1361,6 +1384,20 @@ constext *txt_goto_next_unread_options[] = {
 	N_("PageDown"),
 	N_("PageNextUnread"),
 	N_("PageDown or PageNextUnread"),
+	NULL
+};
+
+/* different options for quick_kill_header / quick_select_header */
+constext *txt_quick_ks_header_options[] = {
+	N_("Subject: (case sensitive)"),
+	N_("Subject: (ignore case)"),
+	N_("From: (case sensitive)"),
+	N_("From: (ignore case)"),
+	N_("Msg-ID: & full References: line"),
+	N_("Msg-ID: & last References: only"),
+	N_("Message-ID: entry only"),
+	N_("Lines:"),
+	NULL
 };
 
 /* different options for trim_article_body */
@@ -1373,6 +1410,7 @@ constext *txt_trim_article_body_options[] = {
 	N_("Compact multiple and skip leading"),
 	N_("Compact multiple and skip trailing"),
 	N_("Compact mltpl., skip lead. & trai."),
+	NULL
 };
 
 /*
@@ -1380,15 +1418,18 @@ constext *txt_trim_article_body_options[] = {
  */
 /* TODO: can any of this go away? */
 constext *txt_mime_encodings[] = {
-	txt_8bit, txt_base64, txt_quoted_printable, txt_7bit
+	txt_8bit, txt_base64, txt_quoted_printable, txt_7bit,
+	NULL
 };
 
 constext *content_encodings[] = {
-	"7bit", "quoted-printable", "base64", "8bit", "binary", "x-uuencode"
+	"7bit", "quoted-printable", "base64", "8bit", "binary", "x-uuencode",
+	NULL
 };
 
-const char *content_types[] = {
-	"text", "multipart", "application", "message", "image", "audio", "video"
+constext *content_types[] = {
+	"text", "multipart", "application", "message", "image", "audio", "video",
+	NULL
 };
 
 /*
@@ -1398,7 +1439,8 @@ const char *content_types[] = {
 constext *txt_post_process_types[] = {
 		N_("No"),
 		N_("Shell archive"),
-		N_("Yes")
+		N_("Yes"),
+		NULL
 };
 
 constext *txt_sort_a_type[] = {
@@ -1412,7 +1454,8 @@ constext *txt_sort_a_type[] = {
 		N_("Score (descending)"),
 		N_("Score (ascending)"),
 		N_("Lines: (descending)"),
-		N_("Lines: (ascending)")
+		N_("Lines: (ascending)"),
+		NULL
 };
 
 constext *txt_sort_t_type[] = {
@@ -1420,21 +1463,24 @@ constext *txt_sort_t_type[] = {
 		N_("Score (descending)"),
 		N_("Score (ascending)"),
 		N_("Last posting date (descending)"),
-		N_("Last posting date (ascending)")
+		N_("Last posting date (ascending)"),
+		NULL
 };
 
 /* Ways of handling bogus groups */
 constext *txt_strip_bogus_type[] = {
 		N_("Always Keep"),
 		N_("Always Remove"),
-		N_("Mark with D on selection screen")
+		N_("Mark with D on selection screen"),
+		NULL
 };
 
 /* Ways of handling killed articles */
 constext *txt_kill_level_type[] = {
 		N_("Kill only unread arts"),
 		N_("Kill all arts & show with K"), /* TODO: s/K/art_marked_killed/ */
-		N_("Kill all arts and never show")
+		N_("Kill all arts and never show"),
+		NULL
 };
 
 /* Various quoting styles */
@@ -1446,7 +1492,8 @@ constext *txt_quote_style_type[] = {
 		N_("Quote empty lines"),
 		N_("Compress quotes, quote empty lines"),
 		N_("Quote sigs & empty lines"),
-		N_("Comp. q., quote sigs & empty lines")
+		N_("Comp. q., quote sigs & empty lines"),
+		NULL
 };
 
 #ifdef CHARSET_CONVERSION
@@ -1461,7 +1508,8 @@ constext *txt_mime_charsets[] = {
 	"ISO-2022-CN", "ISO-2022-CN-EXT", "ISO-2022-JP", "ISO-2022-JP-1",
 	"ISO-2022-JP-2",
 	"Big5",
-	"UTF-8"
+	"UTF-8",
+	NULL
 };
 #endif /* CHARSET_CONVERSION */
 
@@ -1471,22 +1519,23 @@ constext *txt_mime_7bit_charsets[] = {
 	"ISO-2022-CN", "ISO-2022-CN-EXT", "ISO-2022-JP", "ISO-2022-JP-1",
 	"ISO-2022-JP-2", "ISO-2022-KR",
 	"HZ-GB-2312",
-	/* sentinel */
-	""
+	NULL
 };
 
 /* different mailbox formats */
 constext *txt_mailbox_formats[] = {
 	"MBOXO",
 	"MBOXRD",
-	"MMDF"
+	"MMDF",
+	NULL
 };
 
 /* interactive mailers */
 constext *txt_interactive_mailers[] = {
 	N_("no"),
 	N_("with headers"),
-	N_("without headers")
+	N_("without headers"),
+	NULL
 };
 
 #ifdef HAVE_UNICODE_NORMALIZATION
@@ -1496,12 +1545,13 @@ constext *txt_normalization_forms[] = {
 	N_("NFKC"),
 	N_("NFKD"),
 	N_("NFC"),
-	N_("NFD")
+	N_("NFD"),
 #	else
 #		ifdef HAVE_LIBIDN
-	N_("NFKC")
+	N_("NFKC"),
 #		endif /* HAVE_LIBIDN */
 #	endif /* HAVE_LIBICUUC */
+	NULL
 };
 #endif /* HAVE_UNICODE_NORMALIZATION */
 
@@ -1515,6 +1565,12 @@ struct opttxt txt_display_options = {
 struct opttxt txt_color_options = {
 	NULL,
 	N_("Color Options"),
+	NULL
+};
+#else
+struct opttxt txt_highlight_options = {
+	NULL,
+	N_("Highlight Options"),
 	NULL
 };
 #endif /* HAVE_COLOR */
@@ -1654,7 +1710,7 @@ struct opttxt txt_sort_threads_type = {
 
 struct opttxt txt_pos_first_unread = {
 	N_("Put cursor at first/last unread art in groups. <SPACE> toggles & <CR> sets."),
-	N_("Goto first unread article in group"),
+	N_("Go to first unread article in group"),
 	N_("# If ON put cursor at first unread art in group otherwise last art\n")
 };
 
@@ -2680,6 +2736,14 @@ struct opttxt txt_strip_bogus = {
 #   2 = highlight with D on selection screen\n")
 };
 
+#if defined(HAVE_ALARM) && defined(SIGALRM)
+struct opttxt txt_nntp_read_timeout_secs = {
+	N_("Enter number of seconds to wait for a response from the server. <CR> sets."),
+	N_("NNTP read timeout in seconds"),
+	N_("# Time in seconds to wait for a response from the server (0=no timeout)\n")
+};
+#endif /* HAVE_ALARM && SIGALRM */
+
 struct opttxt txt_reread_active_file_secs = {
 	N_("Enter number of seconds until active file will be reread. <CR> sets."),
 	N_("Interval in secs to reread active"),
@@ -2798,50 +2862,50 @@ struct opttxt txt_savefile = {
 };
 
 struct opttxt txt_quick_select_scope = {
-	NULL,
-	NULL,
+	N_("Scope for the filter rule. <CR> sets, <ESC> cancels."),
+	N_("Quick (1 key) select filter scope"),
 	NULL
 };
 
 struct opttxt txt_quick_select_header = {
-	NULL,
-	NULL,
+	N_("Header for filter rule. <CR> sets, <ESC> cancels."),
+	N_("Quick (1 key) select filter header"),
 	NULL
 };
 
 struct opttxt txt_quick_select_case = {
-	NULL,
-	NULL,
+	N_("ON = case sensitive, OFF = ignore case. <CR> sets, <ESC> cancels."),
+	N_("Quick (1 key) select filter case"),
 	NULL
 };
 
 struct opttxt txt_quick_select_expire = {
-	NULL,
-	NULL,
+	N_("ON = expire, OFF = don't ever expire. <CR> sets, <ESC> cancels."),
+	N_("Quick (1 key) select filter expire"),
 	NULL
 };
 
 struct opttxt txt_quick_kill_scope = {
-	NULL,
-	NULL,
+	N_("Scope for the filter rule. <CR> sets, <ESC> cancels."),
+	N_("Quick (1 key) kill filter scope"),
 	NULL
 };
 
 struct opttxt txt_quick_kill_header = {
-	NULL,
-	NULL,
+	N_("Header for filter rule. <CR> sets, <ESC> cancels."),
+	N_("Quick (1 key) kill filter header"),
 	NULL
 };
 
 struct opttxt txt_quick_kill_case = {
-	NULL,
-	NULL,
+	N_("ON = case sensitive, OFF = ignore case. <CR> sets, <ESC> cancels."),
+	N_("Quick (1 key) kill filter case"),
 	NULL
 };
 
 struct opttxt txt_quick_kill_expire = {
-	NULL,
-	NULL,
+	N_("ON = expire, OFF = don't ever expire. <CR> sets, <ESC> cancels."),
+	N_("Quick (1 key) kill filter expire"),
 	NULL
 };
 

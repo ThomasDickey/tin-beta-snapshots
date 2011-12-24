@@ -6,7 +6,7 @@
  *  Updated   : 2010-09-26
  *  Notes     : rfc2046 MIME article definitions
  *
- * Copyright (c) 2000-2011 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2012 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,6 @@
 #	define MIME_SUPPORTED_VERSION	"1.0"
 
 /* These must track the array definitions in lang.c */
-#	define NUM_CONTENT_TYPES	7
 #	define TYPE_TEXT			0
 #	define TYPE_MULTIPART		1
 #	define TYPE_APPLICATION		2
@@ -50,7 +49,6 @@
 #	define TYPE_AUDIO			5
 #	define TYPE_VIDEO			6
 
-#	define NUM_ENCODINGS		6
 #	define ENCODING_7BIT		0
 #	define ENCODING_QP			1
 #	define ENCODING_BASE64		2

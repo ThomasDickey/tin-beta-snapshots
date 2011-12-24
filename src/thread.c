@@ -3,10 +3,10 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-01-29
+ *  Updated   : 2011-11-04
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -387,7 +387,7 @@ thread_page(
 	char key[MAXKEYLEN];
 	char mark[] = { '\0', '\0' };
 	int i, n;
-	long old_artnum = 0L;
+	t_artnum old_artnum = T_ARTNUM_CONST(0);
 	t_bool repeat_search;
 	t_function func;
 

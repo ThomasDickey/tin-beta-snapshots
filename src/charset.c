@@ -3,10 +3,10 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2011-01-29
+ *  Updated   : 2011-04-24
  *  Notes     : ISO to ascii charset conversion routines
  *
- * Copyright (c) 1993-2011 Markus Kuhn <mgk25@cl.cam.ac.uk>
+ * Copyright (c) 1993-2012 Markus Kuhn <mgk25@cl.cam.ac.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -167,12 +167,12 @@ convert_iso2asc(
 	if (iso == NULL || asc == NULL)
 		return;
 
-	tab = (iso2asc[t] - ISO_EXTRA);
+	tab = iso2asc[t];
 	first = TRUE;
 	i = a = 0;
 	while (*iso != '\0') {
 		if (*EIGHT_BIT(iso) >= ISO_EXTRA) {
-			p = tab[*EIGHT_BIT(iso)];
+			p = tab[*EIGHT_BIT(iso) - ISO_EXTRA];
 			iso++, i++;
 			first = TRUE;
 			while (*p) {

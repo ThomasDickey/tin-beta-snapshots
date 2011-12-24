@@ -2,10 +2,10 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2011-01-29
+;   Updated   : 2011-10-27
 ;   Notes     : #defines and structs for config.c
 ;
-; Copyright (c) 1996-2011 Thomas E. Dickey <dickey@invisible-island.net>
+; Copyright (c) 1996-2012 Thomas E. Dickey <dickey@invisible-island.net>
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without
@@ -38,19 +38,19 @@
 	display_options			OPT_TITLE
 	beginner_level			OPT_ON_OFF
 	show_description		OPT_ON_OFF
-	show_author			txt_show_from	SHOW_FROM_BOTH+1
+	show_author			txt_show_from
 	draw_arrow			OPT_ON_OFF
 	inverse_okay			OPT_ON_OFF
 	strip_blanks			OPT_ON_OFF
-	thread_articles			txt_threading	THREAD_MAX+1
+	thread_articles			txt_threading
 	thread_perc			OPT_NUM
-	sort_article_type		txt_sort_a_type	SORT_ARTICLES_BY_LINES_ASCEND+1
-	sort_threads_type		txt_sort_t_type	SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND+1
+	sort_article_type		txt_sort_a_type
+	sort_threads_type		txt_sort_t_type
 	pos_first_unread		OPT_ON_OFF
 	show_only_unread_arts		OPT_ON_OFF
 	show_only_unread_groups		OPT_ON_OFF
-	kill_level			txt_kill_level_type	KILL_NOTHREAD+1
-	goto_next_unread		txt_goto_next_unread_options NUM_GOTO_NEXT_UNREAD
+	kill_level			txt_kill_level_type
+	goto_next_unread		txt_goto_next_unread_options
 	auto_list_thread		OPT_ON_OFF
 	wrap_on_next_unread		OPT_ON_OFF
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -67,14 +67,14 @@
 	art_marked_read_selected	OPT_CHAR
 	groupname_max_length		OPT_NUM
 	abbreviate_groupname		OPT_ON_OFF
-	show_info			txt_show_info_type	SHOW_INFO_BOTH+1
-	thread_score			txt_thread_score_type	THREAD_SCORE_WEIGHT+1
+	show_info			txt_show_info_type
+	thread_score			txt_thread_score_type
 	scroll_lines			OPT_NUM
 	show_signatures			OPT_ON_OFF
 	news_headers_to_display		OPT_STRING
 	news_headers_to_not_display	OPT_STRING
 	alternative_handling		OPT_ON_OFF
-	hide_uue			txt_hide_uue_type	UUE_ALL+1
+	hide_uue			txt_hide_uue_type
 	verbatim_handling		OPT_ON_OFF
 	tex2iso_conv			OPT_ON_OFF
 	metamail_prog			OPT_STRING
@@ -82,25 +82,25 @@
 	catchup_read_groups		OPT_ON_OFF
 	group_catchup_on_exit		OPT_ON_OFF
 	thread_catchup_on_exit		OPT_ON_OFF
-	confirm_choice			txt_confirm_choices	NUM_CONFIRM_CHOICES
+	confirm_choice			txt_confirm_choices
 	mark_ignore_tags		OPT_ON_OFF
 	use_mouse			OPT_ON_OFF
 #ifdef HAVE_KEYPAD
 	use_keypad			OPT_ON_OFF
 #endif
 	wrap_column			OPT_NUM
-	trim_article_body		txt_trim_article_body_options NUM_TRIM_ARTICLE_BODY
-	attrib_show_author			txt_show_from	SHOW_FROM_BOTH+1
-	attrib_thread_articles			txt_threading	THREAD_MAX+1
+	trim_article_body		txt_trim_article_body_options
+	attrib_show_author			txt_show_from
+	attrib_thread_articles			txt_threading
 	attrib_thread_perc			OPT_NUM
-	attrib_sort_article_type		txt_sort_a_type	SORT_ARTICLES_BY_LINES_ASCEND+1
-	attrib_sort_threads_type		txt_sort_t_type	SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND+1
+	attrib_sort_article_type		txt_sort_a_type
+	attrib_sort_threads_type		txt_sort_t_type
 	attrib_pos_first_unread		OPT_ON_OFF
 	attrib_show_only_unread_arts		OPT_ON_OFF
 	attrib_auto_list_thread		OPT_ON_OFF
 	attrib_auto_select		OPT_ON_OFF
 	attrib_wrap_on_next_unread		OPT_ON_OFF
-	attrib_show_info			txt_show_info_type	SHOW_INFO_BOTH+1
+	attrib_show_info			txt_show_info_type
 	attrib_show_signatures			OPT_ON_OFF
 	attrib_news_headers_to_display		OPT_STRING
 	attrib_news_headers_to_not_display	OPT_STRING
@@ -111,7 +111,7 @@
 	attrib_group_catchup_on_exit		OPT_ON_OFF
 	attrib_thread_catchup_on_exit		OPT_ON_OFF
 	attrib_mark_ignore_tags		OPT_ON_OFF
-	attrib_trim_article_body		txt_trim_article_body_options NUM_TRIM_ARTICLE_BODY
+	attrib_trim_article_body		txt_trim_article_body_options
 
 ; getart_limit options
 	getart_limit_options		OPT_TITLE
@@ -120,7 +120,7 @@
 
 ; filtering options
 	filtering_options		OPT_TITLE
-	wildcard			txt_wildcard_type	2
+	wildcard			txt_wildcard_type
 	score_limit_kill		OPT_NUM
 	score_kill			OPT_NUM
 	score_limit_select		OPT_NUM
@@ -129,11 +129,11 @@
 	add_posted_to_filter		OPT_ON_OFF
 	attrib_add_posted_to_filter	OPT_ON_OFF
 	attrib_quick_kill_scope		OPT_STRING
-	attrib_quick_kill_header	OPT_NUM
+	attrib_quick_kill_header	txt_quick_ks_header_options
 	attrib_quick_kill_case		OPT_ON_OFF
 	attrib_quick_kill_expire	OPT_ON_OFF
 	attrib_quick_select_scope	OPT_STRING
-	attrib_quick_select_header	OPT_NUM
+	attrib_quick_select_header	txt_quick_ks_header_options
 	attrib_quick_select_case	OPT_ON_OFF
 	attrib_quick_select_expire	OPT_ON_OFF
 
@@ -141,40 +141,42 @@
 #ifdef HAVE_COLOR
 	color_options			OPT_TITLE
 	use_color			OPT_ON_OFF
-	col_normal			txt_colors	MAX_COLOR+1
-	col_back			txt_colors	MAX_COLOR+1
-	col_invers_bg			txt_colors	MAX_COLOR+1
-	col_invers_fg			txt_colors	MAX_COLOR+1
-	col_text			txt_colors	MAX_COLOR+1
-	col_minihelp			txt_colors	MAX_COLOR+1
-	col_help			txt_colors	MAX_COLOR+1
-	col_message			txt_colors	MAX_COLOR+1
-	col_quote			txt_colors	MAX_COLOR+1
-	col_quote2			txt_colors	MAX_COLOR+1
-	col_quote3			txt_colors	MAX_COLOR+1
-	col_head			txt_colors	MAX_COLOR+1
-	col_newsheaders			txt_colors	MAX_COLOR+1
-	col_subject			txt_colors	MAX_COLOR+1
-	col_response			txt_colors	MAX_COLOR+1
-	col_from			txt_colors	MAX_COLOR+1
-	col_title			txt_colors	MAX_COLOR+1
-	col_signature			txt_colors	MAX_COLOR+1
-	col_urls			txt_colors	MAX_COLOR+1
-	col_verbatim			txt_colors	MAX_COLOR+1
+	col_normal			txt_colors
+	col_back			txt_backcolors
+	col_invers_bg			txt_backcolors
+	col_invers_fg			txt_colors
+	col_text			txt_colors
+	col_minihelp			txt_colors
+	col_help			txt_colors
+	col_message			txt_colors
+	col_quote			txt_colors
+	col_quote2			txt_colors
+	col_quote3			txt_colors
+	col_head			txt_colors
+	col_newsheaders			txt_colors
+	col_subject			txt_colors
+	col_response			txt_colors
+	col_from			txt_colors
+	col_title			txt_colors
+	col_signature			txt_colors
+	col_urls			txt_colors
+	col_verbatim			txt_colors
+#else
+	highlight_options		OPT_TITLE
 #endif
 	url_highlight			OPT_ON_OFF
 	word_highlight			OPT_ON_OFF
-	word_h_display_marks		txt_marks	MAX_MARK+1
+	word_h_display_marks		txt_marks
 #ifdef HAVE_COLOR
-	col_markstar			txt_colors	MAX_COLOR+1
-	col_markdash			txt_colors	MAX_COLOR+1
-	col_markslash			txt_colors	MAX_COLOR+1
-	col_markstroke			txt_colors	MAX_COLOR+1
+	col_markstar			txt_colors
+	col_markdash			txt_colors
+	col_markslash			txt_colors
+	col_markstroke			txt_colors
 #endif
-	mono_markstar			txt_attrs	MAX_ATTR+1
-	mono_markdash			txt_attrs	MAX_ATTR+1
-	mono_markslash			txt_attrs	MAX_ATTR+1
-	mono_markstroke			txt_attrs	MAX_ATTR+1
+	mono_markstar			txt_attrs
+	mono_markdash			txt_attrs
+	mono_markslash			txt_attrs
+	mono_markstroke			txt_attrs
 
 ; posting/mailing options
 	posting_options			OPT_TITLE
@@ -184,7 +186,7 @@
 	sigdashes			OPT_ON_OFF
 	signature_repost		OPT_ON_OFF
 	quote_chars			OPT_STRING
-	quote_style			txt_quote_style_type (QUOTE_COMPRESS|QUOTE_SIGS|QUOTE_EMPTY)+1
+	quote_style			txt_quote_style_type
 	news_quote_format		OPT_STRING
 	xpost_quote_format		OPT_STRING
 	mail_quote_format		OPT_STRING
@@ -205,40 +207,40 @@
 #ifndef CHARSET_CONVERSION
 	mm_charset			OPT_STRING
 #else
-	mm_network_charset		txt_mime_charsets	NUM_MIME_CHARSETS
-	attrib_mm_network_charset		txt_mime_charsets	NUM_MIME_CHARSETS
+	mm_network_charset		txt_mime_charsets
+	attrib_mm_network_charset		txt_mime_charsets
 	attrib_undeclared_charset		OPT_STRING
 #endif
-	attrib_post_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
+	attrib_post_mime_encoding		txt_mime_encodings
 	attrib_post_8bit_header		OPT_ON_OFF
-	attrib_mail_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
+	attrib_mail_mime_encoding		txt_mime_encodings
 	attrib_mail_8bit_header		OPT_ON_OFF
 	attrib_mime_forward		OPT_ON_OFF
 	attrib_mailing_list		OPT_STRING
-	attrib_auto_cc_bcc				txt_auto_cc_bcc_options AUTO_CC_BCC+1
-	attrib_fcc				OPT_STRING
+	attrib_auto_cc_bcc		txt_auto_cc_bcc_options
+	attrib_fcc			OPT_STRING
 	attrib_x_body			OPT_STRING
 	attrib_x_comment_to		OPT_ON_OFF
 	attrib_x_headers		OPT_STRING
 #if defined(NO_LOCALE) && defined(CHARSET_CONVERSION)
 	mm_local_charset		OPT_STRING
 #endif
-	post_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
+	post_mime_encoding		txt_mime_encodings
 	post_8bit_header		OPT_ON_OFF
-	mail_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
+	mail_mime_encoding		txt_mime_encodings
 	mail_8bit_header		OPT_ON_OFF
-	auto_cc_bcc				txt_auto_cc_bcc_options AUTO_CC_BCC+1
+	auto_cc_bcc			txt_auto_cc_bcc_options
 	spamtrap_warning_addresses	OPT_STRING
 
 ; saving/printing options
 	saving_options			OPT_TITLE
 	maildir				OPT_STRING
-	mailbox_format			txt_mailbox_formats	NUM_MAILBOX_FORMATS
+	mailbox_format			txt_mailbox_formats
 	batch_save			OPT_ON_OFF
 	savedir				OPT_STRING
 	auto_save			OPT_ON_OFF
 	mark_saved_read			OPT_ON_OFF
-	post_process_type		txt_post_process_types	POST_PROC_YES+1
+	post_process_type		txt_post_process_types
 	post_process_view		OPT_ON_OFF
 	process_only_unread		OPT_ON_OFF
 	attrib_maildir				OPT_STRING
@@ -248,10 +250,10 @@
 	attrib_auto_save			OPT_ON_OFF
 	attrib_delete_tmp_files			OPT_ON_OFF
 	attrib_mark_saved_read			OPT_ON_OFF
-	attrib_post_process_type		txt_post_process_types	POST_PROC_YES+1
+	attrib_post_process_type		txt_post_process_types
 	attrib_post_process_view		OPT_ON_OFF
 	attrib_process_only_unread		OPT_ON_OFF
-	attrib_mime_types_to_save				OPT_STRING
+	attrib_mime_types_to_save		OPT_STRING
 #ifndef DISABLE_PRINTING
 	print_header			OPT_ON_OFF
 	attrib_print_header			OPT_ON_OFF
@@ -278,14 +280,17 @@
 	editor_format			OPT_STRING
 	inews_prog			OPT_STRING
 	mailer_format			OPT_STRING
-	interactive_mailer		txt_interactive_mailers NUM_INTERACTIVE_MAILERS
+	interactive_mailer		txt_interactive_mailers
 	unlink_article			OPT_ON_OFF
 	posted_articles_file		OPT_STRING
 	keep_dead_articles		OPT_ON_OFF
 	strip_newsrc			OPT_ON_OFF
-	strip_bogus			txt_strip_bogus_type BOGUS_SHOW+1
+	strip_bogus			txt_strip_bogus_type
 	reread_active_file_secs		OPT_NUM
 	auto_reconnect			OPT_ON_OFF
+#if defined(HAVE_ALARM) && defined(SIGALRM)
+	nntp_read_timeout_secs	OPT_NUM
+#endif
 	cache_overview_files		OPT_ON_OFF
 #ifdef XFACE_ABLE
 	use_slrnface			OPT_ON_OFF
@@ -294,10 +299,10 @@
 	date_format			OPT_STRING
 #ifdef HAVE_UNICODE_NORMALIZATION
 #	ifdef HAVE_LIBICUUC
-		normalization_form		txt_normalization_forms NORMALIZE_NFD+1
+		normalization_form		txt_normalization_forms
 #	else
 #		ifdef HAVE_LIBIDN
-			normalization_form		txt_normalization_forms 2
+			normalization_form		txt_normalization_forms
 #		endif
 #	endif
 #endif

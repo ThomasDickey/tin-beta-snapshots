@@ -3,10 +3,10 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2010-05-16
+ *  Updated   : 2011-11-14
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@ int num_active = -1;
 int max_newnews;
 int num_newnews = 0;
 int max_art;
+int max_base;
 int max_save;
 int num_save = 0;
 int max_scope;
@@ -58,7 +59,7 @@ int num_scope = -1;
  * Dynamic arrays
  */
 int *my_group;				/* .newsrc --> active[] */
-long *base;				/* base articles for each thread */
+t_artnum *base;				/* base articles for each thread */
 struct t_group *active;			/* active newsgroups */
 struct t_scope *scopes = NULL;	/* attributes stores in .tin/attributes */
 struct t_newnews *newnews;		/* active file sizes on differnet servers */
@@ -101,9 +102,10 @@ init_alloc(
 	 * article headers array
 	 */
 	max_art = DEFAULT_ARTICLE_NUM;
+	max_base = DEFAULT_ARTICLE_NUM;
 
 	arts = my_calloc(1, sizeof(*arts) * max_art);
-	base = my_malloc(sizeof(long) * max_art);
+	base = my_malloc(sizeof(t_artnum) * max_base);
 
 	ofmt = my_calloc(1, sizeof(*ofmt) * 9);	/* initial number of overview fields */
 
@@ -134,7 +136,6 @@ expand_art(
 
 	max_art += max_art >> 1;		/* increase by 50% */
 	arts = my_realloc(arts, sizeof(*arts) * max_art);
-	base = my_realloc(base, sizeof(long) * max_art);
 	for (; i < max_art; i++)		/* use memset() instead? */
 		arts[i].subject = arts[i].from = arts[i].xref = arts[i].refs = arts[i].msgid = NULL;
 }
@@ -152,6 +153,15 @@ expand_active(
 		active = my_realloc(active, sizeof(*active) * max_active);
 		my_group = my_realloc(my_group, sizeof(int) * max_active);
 	}
+}
+
+
+void
+expand_base(
+	void)
+{
+	max_base += max_base >> 1;		/* increase by 50% */
+	base = my_realloc(base, sizeof(t_artnum) * max_base);
 }
 
 
@@ -308,7 +318,7 @@ free_art_array(
 	int i;
 
 	for_each_art(i) {
-		arts[i].artnum = 0L;
+		arts[i].artnum = T_ARTNUM_CONST(0);
 		arts[i].date = (time_t) 0;
 		FreeAndNull(arts[i].xref);
 
@@ -506,7 +516,7 @@ my_malloc1(
 #endif /* DEBUG */
 
 	if ((p = malloc(size)) == NULL) {
-		error_message(2, txt_out_of_memory, tin_progname, size, file, line);
+		error_message(2, txt_out_of_memory, tin_progname, (unsigned long) size, file, line);
 		giveup();
 	}
 	return p;
@@ -530,7 +540,7 @@ my_calloc1(
 #endif /* DEBUG */
 
 	if ((p = calloc(nmemb, size)) == NULL) {
-		error_message(2, txt_out_of_memory, tin_progname, nmemb * size, file, line);
+		error_message(2, txt_out_of_memory, tin_progname, (unsigned long) (nmemb * size), file, line);
 		giveup();
 	}
 	return p;
@@ -558,7 +568,7 @@ my_realloc1(
 	p = ((!p) ? (malloc(size)) : realloc(p, size));
 
 	if (p == NULL) {
-		error_message(2, txt_out_of_memory, tin_progname, size, file, line);
+		error_message(2, txt_out_of_memory, tin_progname, (unsigned long) size, file, line);
 		giveup();
 	}
 	return p;

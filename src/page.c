@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-03-25
+ *  Updated   : 2011-11-04
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@
 #endif /* HAVE_IDNA_H && !_IDNA_H */
 #if defined(HAVE_STRINGPREP_H) && !defined(_STRINGPREP_H)
 #	include <stringprep.h>
-#endif /* HAVE_STRINGPREP_H & !_STRINGPREP_H */
+#endif /* HAVE_STRINGPREP_H && !_STRINGPREP_H */
 #endif /* 0 */
 
 /*
@@ -316,7 +316,7 @@ show_page(
 	char key[MAXKEYLEN];
 	int i, j, n = 0;
 	int art_type = GROUP_TYPE_NEWS;
-	long old_artnum = 0L;
+	t_artnum old_artnum = T_ARTNUM_CONST(0);
 	t_bool mouse_click_on = TRUE;
 	t_bool repeat_search;
 	t_function func;
@@ -391,7 +391,7 @@ show_page(
 					if (curr_line == 0)
 						info_message(_(txt_begin_of_art));
 					else {
-						curr_line -= (tinrc.scroll_lines == -2) ? ARTLINES / 2 : ARTLINES;
+						curr_line -= ((tinrc.scroll_lines == -2) ? ARTLINES / 2 : ARTLINES);
 						draw_page(group->name, 0);
 					}
 				}
@@ -420,7 +420,7 @@ show_page(
 						if ((func == PAGE_NEXT_UNREAD) && (tinrc.goto_next_unread & GOTO_NEXT_UNREAD_TAB))
 							goto page_goto_next_unread;
 
-						curr_line += (tinrc.scroll_lines == -2) ? ARTLINES / 2 : ARTLINES;
+						curr_line += ((tinrc.scroll_lines == -2) ? ARTLINES / 2 : ARTLINES);
 
 						if (tinrc.scroll_lines == -1)		/* formerly show_last_line_prev_page */
 							curr_line--;
@@ -1468,9 +1468,9 @@ draw_page_header(
 		my_printf(_(txt_art_x_of_n), whichresp + 1, x_resp + 1);
 	else {
 		if (!x_resp)
-			my_printf(_(txt_no_responses));
+			my_printf("%s", _(txt_no_responses));
 		else if (x_resp == 1)
-			my_printf(_(txt_1_resp));
+			my_printf("%s", _(txt_1_resp));
 		else
 			my_printf(_(txt_x_resp), x_resp);
 	}
@@ -2149,7 +2149,7 @@ info_pager(
 					display_info_page(0);
 					break;
 				}
-				curr_info_line += (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
+				curr_info_line += ((tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES);
 				display_info_page(0);
 				break;
 
@@ -2167,7 +2167,7 @@ info_pager(
 					display_info_page(0);
 					break;
 				}
-				curr_info_line -= (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
+				curr_info_line -= ((tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES);
 				display_info_page(0);
 				break;
 
@@ -2485,7 +2485,7 @@ find_url(
 	t_url *lptr;
 
 	lptr = url_list;
-	while(n-- > 0 && lptr->next)
+	while (n-- > 0 && lptr->next)
 		lptr = lptr->next;
 
 	return lptr;

@@ -53,7 +53,7 @@ o  add version number to other config-files (e.g. tin.defaults)
    used (wildmat or regexp)
    [Urs Janssen <urs@tin.org>]
 
-o  overview file cacheing code is over-complex
+o  overview file caching code is over-complex
    - cache the original overview info instead of rebuilding it from
      the processed (decoded etc.) data, no matter if it's broken (e.g.
      contains raw 8 bit data) as we have to deal with that anyway. if there
@@ -101,10 +101,8 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
-o  as libidn only does IDNA 2003 but not IDNA 2008 (RFC 5890-5894) add
-   a configure check for libidnkit2.x (<http://jprs.co.jp/idn/index-e.html>)
-   and if found use idn_decodename() in misc.c:idna_decode()
-   [20110120 Urs Janssen <urs@tin.org>]
+o  x_body currently doesn't allow cmd. execution via ! like x_headers
+   [20110912 Urs Janssen <urs@tin.org>]
 
 o  add nntp_default_server to tin.defaults to override compile time setting.
    if given strings starts with / or ~ the value is taken from the referenced
@@ -298,7 +296,7 @@ o  unify Fcc and posted_articles_file
 o  MIME-pgp support according to RFC 2015, RFC 3156 - (should be easy now)
    and/or in the format that used by signcontrol/pgpverify (see also
    tinews.pl)
-   As MIME-pgp verification needs the undecoded mime-part with it's headers
+   As MIME-pgp verification needs the undecoded mime-part with its headers
    storing the raw-offset of each part in the article would be very helpful.
 
 o  pgpverify invocation with a single key instead of '|''a''pgpverify' or a
@@ -403,7 +401,12 @@ o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo
 
 o  rewrite/cleanup all the debugging code, the output in /tmp is messy; the
    on screen output either slows down things dramatically or is unreadable;
-   add timestamps to at least the NNTP-log; split DEBUG_MISC?
+   split DEBUG_MISC?
+   [Urs Janssen <urs@tin.org>]
+
+o  replace gettimeofday() with clock_gettime() if available in parsdate.y
+   as POSIX.1-2008 marks gettimeofday() as obsolete.
+   [20110910 Urs Janssen <urs@tin.org>]
 
 o  Add 'M'enu option to define chars for utf8_graphics.
 
@@ -478,13 +481,34 @@ o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
 o  integrate multi-part tagging with regular tagging, eg.
    "This article appears to have multi-parts, try and find them (y/n)?"
 
+o  do RFC 2231 decoding of non us-ascii MIME-parameter values
+   (rfc2046.c:parse_params())
+   [20110428 Urs Janssen <urs@tin.org>]
+
+o  allow RFC 2231 parameter value continuations
+   [20110428 Urs Janssen <urs@tin.org>]
+
+o  allow RFC 2231 language specification in encoded words
+   (rfc2047.c:rfc1522_decode())
+   [20110428 Urs Janssen <urs@tin.org>]
+
 o  add Content-Language (RFC 3282) analysis
 
 o  suppress hide_uue=2 checking unless first line in an article or following
    a blank line
 
+o  add missing mailcap (RFC 1524) features (%n, %F, copiousoutput, print, ...)
+   [20111205 Urs Janssen <urs@tin.org>]
+
 Internal Changes
 ----------------
+o  curses.c:input_pending() and curses.c:get_arrow_key() have
+   #ifdef HAVE_SELECT and a code path for the case when we don't have
+   select(2), but read.c:wait_for_input() has no code path the the
+   !HAVE_SELECT case. we should add a !HAVE_SELECT case there (or at
+   least have adjusted messages in txt_reading_article and txt_group)
+   [20110506 Urs Janssen <urs@tin.org>]
+
 o  ditch MAX_MSG_HEADERS (post.c)
    [20110212 Urs Janssen <urs@tin.org>]
 
@@ -503,14 +527,6 @@ o  rewrite mini-help, remove the long strings and generate them dynamicly
 o  rewrite auth.c
    - turn t_bool authinfo_user, authinfo_sasl, authinfo_state into
      enum authinfo { NONE = 0, USER = 1, SASL = 2 }
-
-o  make article numbers (u)int_least64_t/PRI[iu]LEAST64 (on OSs where possible),
-   provide useful fallbacks if system doesn't have <inttypes.h>/<stdint.h>
-   (check for long long and if present use "%lld";
-   #ifdef int_least64_t typedef artnum_t int_least64_t #else ...).
-   use atoll/strtoll for parsing article numbers. (#ifdef HAVE ATOLL
-   #define atoartnum atoll #else ...)
-   [20050728 Urs Janssen <urs@tin.org>]
 
 o  fix aclocal.m4:CF_FUNC_SYSTEM and/or misc.c:invoke_cmd() that
    --enable-broken-system-fix/IGNORE_SYSTEM_STATUS isn't needed anymore.
@@ -572,10 +588,6 @@ o  get rid of CURR_GROUP, use t_group instead
 
 o  clean up $AUTOSUBSCRIBE code (the NNTP code path is a mess)
    [20030412 Urs Janssen <urs@tin.org>]
-
-o  try to get rid of the magic numbers like NUM_MIME_CHARSETS and use
-   a sentinel in the arrays instead (match_list is a showstopper here).
-   [20030203 Urs Janssen <urs@tin.org>]
 
 o  check where joinpath() should be used (e.g. grep for TMPDIR in the source)
    [Urs Janssen <urs@tin.org>]
@@ -666,8 +678,8 @@ o  add configure-switch for DISABLE_PIPELINING
 o  mask inline PGP SIGNATURE/KEY BLOCK like we do for uu-sections
    [20090722 Urs Janssen <urs@tin.org>]
 
-o  some non fixed width strings can be formated nicer (warp on last sapce
-   befor cCOLS), i.e. txt_warn_downgrade
+o  some non fixed width strings could be formatted nicer (warp on last space
+   before cCOLS), i.e. txt_warn_downgrade
    [20110325 Urs Janssen <urs@tin.org>]
 
 Unicode
@@ -703,8 +715,11 @@ o  make mm_network_charset an user configurable item list
    best (i.e. can display most (all) of the chars in the article).
    [20050805 <urs@tin.org>]
 
-o  add IDNA support (RFC 3490ff.)
-   (<http://www.gnu.org/software/libidn/> might be useful)
+o  add IDNA 2003 (RFC 3490ff.) and IDNA 2008 (RFC 5890ff.) support,
+   (<http://www.gnu.org/software/libidn/> IDNA 2003,
+    <http://jprs.co.jp/idn/index-e.html> IDNA 2008,
+    <http://site.icu-project.org/> IDNA (uidna_IDNToUnicode()),
+    <http://www.gnu.org/s/libidn/#libidn2> IDNA 2008)
    (added minimalistic IDNA decoding support if a recent libidn is found, urs)
    [20030917 Urs Janssen <urs@tin.org>]
 
@@ -757,6 +772,14 @@ o  integrate doc/auth.txt into tin.1-manpage
 
 Not yet classified
 ------------------
+o  make --with-defaults-dir= default to $sysconfdir/tin
+   (=/usr/local/etc/tin)?
+   [20110809 Urs Janssen <urs@tin.org>]
+
+o  Supersedes (and repost) don't reuse the Reply-To: header of the original
+   article
+   [20110808 Urs Janssen <urs@tin.org>]
+
 o  what about !us-ascii chars in username/password when using
    AUTHINFO USER/PASS? Currently they are sent as is, RFC 3977 says
    "The character set for all NNTP commands is UTF-8", RFC 4643 doesn't
@@ -900,11 +923,7 @@ o  check_article_to_be_posted() needs a cleanup!
 
 o  update gettext stuff to > gettext-0.12.1
 
-o  clean up included pcre stuff and update to >= pcre-8.12
-
-o  what is with conflicting tinrc settings? should we disallow those, or leave
-   it to the user to realise that e.g. strip_blanks=ON && inverse_okay=ON
-   looks ugly?
+o  clean up included pcre stuff and update to >= pcre-8.21
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file
@@ -915,6 +934,10 @@ o  think about group numbering in "only unread" display mode
 
 o  remove tinrc.strip_blanks? IMHO it's not needed anymore
    [20020305 Urs Janssen <urs@tin.org>]
+
+o  what is with conflicting tinrc settings? should we disallow those, or leave
+   it to the user to realise that e.g. strip_blanks=ON && inverse_okay=ON
+   looks ugly?
 
 o  doesn't handle symlinks for .oldnewsrc
    (see <20021003021508.GA28021@akk10.akk.uni-karlsruhe.de> for details, urs.

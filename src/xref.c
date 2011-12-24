@@ -3,10 +3,10 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2009-04-09
+ *  Updated   : 2011-11-06
  *  Notes     :
  *
- * Copyright (c) 1993-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -96,7 +96,7 @@ overview_xref_support(
 
 #if defined(DEBUG) && defined(NNTP_ABLE)
 			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "<<< %s", ptr);
+				debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #endif /* DEBUG && NNTP_ABLE */
 
 			fields++;
@@ -324,7 +324,7 @@ art_mark_xref_read(
 	char *xref_ptr;
 	char *groupname;
 	char *ptr, c;
-	long artnum;
+	t_artnum artnum;
 	struct t_group *group;
 #ifdef DEBUG
 	char *debug_mesg;
@@ -356,7 +356,7 @@ art_mark_xref_read(
 			break;
 
 		ptr = xref_ptr++;
-		artnum = atol(xref_ptr);
+		artnum = atoartnum(xref_ptr);
 		while (isdigit((int) *xref_ptr))
 			xref_ptr++;
 
@@ -369,7 +369,7 @@ art_mark_xref_read(
 
 #ifdef DEBUG
 		if (debug & DEBUG_NEWSRC) {
-			debug_mesg = fmt_string("LOOKUP Xref: [%s:%ld] active=[%s] num_unread=[%ld]",
+			debug_mesg = fmt_string("LOOKUP Xref: [%s:%"T_ARTNUM_PFMT"] active=[%s] num_unread=[%"T_ARTNUM_PFMT"]",
 				groupname, artnum,
 				(group ? group->name : ""),
 				(group ? group->newsrc.num_unread : 0));
@@ -388,7 +388,7 @@ art_mark_xref_read(
 						group->newsrc.num_unread--;
 #ifdef DEBUG
 					if (debug & DEBUG_NEWSRC) {
-						debug_mesg = fmt_string("FOUND!Xref: [%s:%ld] marked READ num_unread=[%ld]",
+						debug_mesg = fmt_string("FOUND!Xref: [%s:%"T_ARTNUM_PFMT"] marked READ num_unread=[%"T_ARTNUM_PFMT"]",
 							groupname, artnum, group->newsrc.num_unread);
 							debug_print_comment(debug_mesg);
 							debug_print_bitmap(group, NULL);
@@ -410,10 +410,10 @@ art_mark_xref_read(
 void
 NSETRNG1(
 	t_bitmap *bitmap,
-	long low,
-	long high)
+	t_artnum low,
+	t_artnum high)
 {
-	long i;
+	t_artnum i;
 
 	if (bitmap == NULL) {
 #ifdef DEBUG
@@ -444,10 +444,10 @@ NSETRNG1(
 void
 NSETRNG0(
 	t_bitmap *bitmap,
-	long low,
-	long high)
+	t_artnum low,
+	t_artnum high)
 {
-	long i;
+	t_artnum i;
 
 	if (bitmap == NULL) {
 		error_message(2, "NSETRNG0() failed. Bitmap == NULL");

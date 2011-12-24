@@ -1,5 +1,5 @@
 Name: tin
-Summary: tin - an easy-to-use USENET news reader
+Summary: easy-to-use USENET news reader
 Version: 2.0.0
 Release: 1
 Copyright: BSD
@@ -9,7 +9,7 @@ Buildroot: /var/tmp/%{name}-%{version}-%{release}
 Packager: Dirk Nimmich <nimmich@muenster.de>
 
 %description
-tin is an easy-to-use USENET news reader for the console using NNTP.
+An easy-to-use USENET news reader for the console using NNTP.
 It supports threading, scoring, different charsets, and many other
 useful things. It has also support for different languages.
 

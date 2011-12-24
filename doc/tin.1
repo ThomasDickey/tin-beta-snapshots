@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2011-01-30
+.\" Updated   : 2011-12-24
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "November 26th, 2010" "2.0.0" "A Usenet newsreader"
+.TH tin 1 "December 24th, 2011" "2.1.0" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -157,7 +157,9 @@ might result in incorrect article counts but is usually faster than the
 default which is to read the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fR file
 (either directly or via LIST) and then check the article count via
-NNTP GROUP command (\fBRFC3977\fP) ''\fB\-ln\fP''.
+NNTP GROUP command (\fBRFC3977\fP) ''\fB\-ln\fP''. If reding via
+NNTP and LIST COUNTS (\fBRFC6048\fP) is available that is used instead
+as it gives more accurate article counts.
 .TP
 .BI \-m " dir"
 Mailbox directory to use. Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fR.
@@ -171,7 +173,7 @@ Only load groups from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fR file that are
 subscribed to in the user's \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR. This
 allows a noticeable speedup when connecting via a slow line, but \fBtin\fP
-can not tell which groups are moderated. See also ''\fB\-l\fP''.
+may not be able detect which groups are moderated. See also ''\fB\-l\fP''.
 .TP
 .B \-N
 Mail unread articles to yourself for later reading. For more information
@@ -1136,10 +1138,10 @@ is everything which matches \fBquote_regex\fP, \fBquote_regex2\fP or
 \fBquote_regex3\fP.
 .TP
 .B PageTopThd '<'
-Goto the first article in the current thread.
+Go to the first article in the current thread.
 .TP
 .B PageBotThd '>'
-Goto the last article in the current thread.
+Go to the last article in the current thread.
 .TP
 .B PageToggleHighlight '_'
 Toggle word highlighting on/off.
@@ -1168,10 +1170,10 @@ a full explanation of these variables and "FILTERING ARTICLES" for more
 information on filtering.
 .TP
 .B PageNextThd '^J' '<CR>'
-Goto next base article.
+Go to next base article.
 .TP
 .B PageNextUnread '<TAB>'
-Goto next unread article. If the tinrc variable \fBgoto_next_unread\fP
+Go to next unread article. If the tinrc variable \fBgoto_next_unread\fP
 doesn't contain PageNextUnread, then this key will first page through the
 current article.
 .TP
@@ -1212,10 +1214,10 @@ Post a followup to the current article without including a copy of the
 article.
 .TP
 .B PageFirstPage 'g'
-Goto the start of the article.
+Go to the start of the article.
 .TP
 .B PageLastPage 'G'
-Goto the end of the article.
+Go to the end of the article.
 .TP
 .B ToggleInfoLastLine 'i'
 Display the subject of the current article in the last line.
@@ -1288,7 +1290,7 @@ or reposting.
 Return to group selection level.
 .TP
 .B PageGotoParent 'u'
-Goto parent article.
+Go to parent article.
 .TP
 .B PageViewUrl 'U'
 Display a list of URLs in the current article. See the section "URL LISTING"
@@ -2002,6 +2004,10 @@ Format of quote line when posting/following up an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
 %C=Firstname, %I=Initials). Default is "%F wrote:".
 .TP
+.B NNTP read timeout in seconds (nntp_read_timeout_secs)
+Time in seconds to wait for a response from the server. Default is 120.
+Setting this to 0 means no timeout.
+.TP
 .B Unicode normalization form (normalization_form)
 The normalization form \fBtin\fP should use to normalize unicode input.
 The possible values are:
@@ -2020,7 +2026,7 @@ The possible values are:
 Some normalization modes are only available if they are supported by the
 library \fBtin\fP uses to do the normalization. Default is NFKC.
 .TP
-.B Goto first unread article in group (pos_first_unread)
+.B Go to first unread article in group (pos_first_unread)
 If ON put cursor at first unread article in group otherwise at last
 article. Default is ON.
 .TP
@@ -2043,7 +2049,9 @@ encoding. base64 and quoted\-printable are usually undesired on usenet.
 .B View post-processed files (post_process_view)
 If ON, then \fBtin\fP will start an appropriate viewer program to display
 any files that were post processed and uudecoded. The program is determined
-using the mailcap file. Default is ON.
+using the
+.BR mailcap (5)
+file. Default is ON.
 .TP
 .B Post process saved articles (post_process_type)
 This specifies whether to perform post processing on saved articles.
@@ -2970,10 +2978,8 @@ with the ''\fB\-u\fP'' option:
 .fi
 .RE
 .PP
-If you are low on local disk space you should consider using
-\fBgetart_limit\fP to limit the size of cached indexes and also
-manually purge cached data for groups you are not reading anymore
-with something like:
+If you are low on local disk space you should consider to manually purge
+cached data for groups you are not reading anymore with something like:
 .PP
 .RS
 .ft CW
@@ -2997,7 +3003,8 @@ find ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \\
 .\"       $TMPDIR/REFS.info  (-D 8)
 .\"       $TMPDIR/MALLOC     (-D 16)
 .\"       $TMPDIR/ATTRIBUTES (-D 32)
-.\"       $TMPDIR/SCOPES     (-D 32)
+.\"       $TMPDIR/SCOPES-R   (-D 32)
+.\"       $TMPDIR/SCOPES-W   (-D 32)
 .\"       $TMPDIR/ACTIVE     (-D 64)
 For a detailed description see
 .BR tin (5).
@@ -3225,7 +3232,26 @@ variable instead of the system default.
 .B ISO2ASC
 Set the ISO to ASCII charset decoding table character to use in decoding
 an article text. Values can range from 0 to 6.
-.\" TODO: short document the different tables (doc/iso2asc.txt) here
+.RS +.5i
+.TP
+.B 0
+universal table for many languages
+.TP
+.B 1
+single-spacing universal table
+.TP
+.B 2
+table for Danish, Dutch, German, Norwegian and Swedish
+.TP
+.B 3
+table for Danish, Finnish, Norwegian and Swedish using the appropriate ISO 646 variant
+.TP
+.B 4
+table with RFC 1345 codes in brackets
+.TP
+.B 5
+table for printers that allow overstriking with backspace
+.RE
 .TP
 .B ORGANIZATION
 Set the article header field ''Organization:'' to the contents of the
@@ -3258,7 +3284,7 @@ This variable has precedence over the default mailer that is used in all
 mailing operations within \fBtin\fP.
 .TP
 .B MAIL
-Full path to the users mailbox.
+Full path to the user's mailbox.
 .TP
 .B VISUAL
 This variable has precedence over the default editor (i.e.,
@@ -3306,7 +3332,8 @@ A pathname of a directory made available for \fBtin\fP to create
 temporary files.
 .TP
 .B MAILCAPS
-This variable can be used to override the default path search for mailcap
+This variable can be used to override the default path search for
+.BR mailcap (5)
 files. See also
 .BR tin (5).
 .TP
@@ -3585,6 +3612,7 @@ Urs Janssen <urs@tin.org>
 .BR wildmat (3),
 .BR environ (5),
 .BR locale (5),
+.BR mailcap (5),
 .BR mbox (5),
 .BR mmdf (5),
 .BR newsoverview (5),

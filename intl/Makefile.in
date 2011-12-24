@@ -39,8 +39,7 @@ subdir = intl
 
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
-MKINSTALLDIRS = @MKINSTALLDIRS@
-mkinstalldirs = $(SHELL) `case "$(MKINSTALLDIRS)" in /*) echo "$(MKINSTALLDIRS)" ;; *) echo "$(top_builddir)/$(MKINSTALLDIRS)" ;; esac`
+mkinstalldirs = mkdir -p
 
 l = @INTL_LIBTOOL_SUFFIX_PREFIX@
 
@@ -49,7 +48,7 @@ CC = @CC@
 LIBTOOL = @LIBTOOL@
 RANLIB = @RANLIB@
 YACC = @INTLBISON@ -y -d
-YFLAGS = --name-prefix=__gettext
+YFLAGS = -p __gettext
 
 x = @EXEEXT@
 o = .@OBJEXT@
@@ -98,7 +97,7 @@ LTV_AGE=0
 	$(LIBTOOL) --mode=compile $(COMPILE) $<
 
 .y.c:
-	$(YACC) $(YFLAGS) --output $@ $<
+	$(YACC) $(YFLAGS) -o $@ $<
 	rm -f $*.h
 
 .sin.sed:

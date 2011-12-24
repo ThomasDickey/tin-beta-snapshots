@@ -3,10 +3,10 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2010-09-16
+ *  Updated   : 2011-09-07
  *  Notes     : signal handlers for different modes and window resizing
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -421,12 +421,16 @@ signal_handler(
  * fatal error but we don't want the "signal handler caught signal"
  * message here
  */
-#ifdef SIGALRM
+#if defined(HAVE_ALARM) && defined(SIGALRM)
 		case SIGALRM:
+#	ifdef DEBUG
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "get_server() %d sec elapsed without response", tinrc.nntp_read_timeout_secs);
+#	endif /* DEBUG */
 			error_message(2, "NNTP connection error. Exiting...");
 			tin_done(NNTP_ERROR_EXIT);
 			return;
-#endif /* SIGALRM */
+#endif /* HAVE_ALARM && SIGALRM */
 
 #ifdef SIGCHLD
 		case SIGCHLD:

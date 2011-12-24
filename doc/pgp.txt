@@ -47,7 +47,7 @@ There are 3 places where pgp is invoked:
 
    PGP2:  pgp -f $PGPOPTS <article >/dev/null
    PGP5:  pgpv -f $PGPOPTS <article >/dev/null
-   GPG:   gpg $PGPOPTS --nobatch --decrypt <article >/dev/null
+   GPG:   gpg $PGPOPTS <article >/dev/null
 
    If the article has (-----BEGIN PGP PUBLIC KEY BLOCK-----)
 

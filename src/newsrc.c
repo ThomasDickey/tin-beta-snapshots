@@ -3,10 +3,10 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2010-07-14
+ *  Updated   : 2011-11-06
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,8 +55,8 @@ static mode_t newsrc_mode = 0;
  */
 static FILE *open_subscription_fp(void);
 static char *parse_newsrc_line(char *line, int *sub);
-static char *parse_subseq(struct t_group *group, char *seq, long *low, long *high, int *sum);
-static char *parse_get_seq(char *seq, long *low, long *high);
+static char *parse_subseq(struct t_group *group, char *seq, t_artnum *low, t_artnum *high, t_artnum *sum);
+static char *parse_get_seq(char *seq, t_artnum *low, t_artnum *high);
 static int write_newsrc_line(FILE *fp, char *line);
 static t_bool create_newsrc(char *newsrc_file);
 static void auto_subscribe_groups(char *newsrc_file);
@@ -404,13 +404,13 @@ group_get_art_info(
 	char *tin_spooldir,
 	char *groupname,
 	int grouptype,
-	long *art_count,
-	long *art_max,
-	long *art_min)
+	t_artnum *art_count,
+	t_artnum *art_max,
+	t_artnum *art_min)
 {
 	DIR *dir;
 	DIR_BUF *direntry;
-	long artnum;
+	t_artnum artnum;
 
 	if (read_news_via_nntp && grouptype == GROUP_TYPE_NEWS) {
 #ifdef NNTP_ABLE
@@ -425,14 +425,14 @@ group_get_art_info(
 
 		switch (get_respcode(line, sizeof(line))) {
 			case OK_GROUP:
-				if (sscanf(line, "%ld %ld %ld", art_count, art_min, art_max) != 3)
+				if (sscanf(line, "%"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT, art_count, art_min, art_max) != 3)
 					error_message(2, _(txt_error_invalid_response_to_group), line);
 				break;
 
 			case ERR_NOGROUP:
-				*art_count = 0L;
-				*art_min = 1L;
-				*art_max = 0L;
+				*art_count = T_ARTNUM_CONST(0);
+				*art_min = T_ARTNUM_CONST(1);
+				*art_max = T_ARTNUM_CONST(0);
 				return -ERR_NOGROUP;
 
 			case ERR_ACCESS:
@@ -455,19 +455,19 @@ group_get_art_info(
 #endif /* NNTP_ABLE */
 	} else {
 		char group_path[PATH_LEN];
-		*art_count = 0L;
-		*art_min = 0L;
-		*art_max = 0L;
+		*art_count = T_ARTNUM_CONST(0);
+		*art_min = T_ARTNUM_CONST(0);
+		*art_max = T_ARTNUM_CONST(0);
 
 		make_base_group_path(tin_spooldir, groupname, group_path, sizeof(group_path));
 
 		if ((dir = opendir(group_path)) != NULL) {
 			while ((direntry = readdir(dir)) != NULL) {
-				artnum = atol(direntry->d_name); /* should be '\0' terminated... */
-				if (artnum >= 1L) {
+				artnum = atoartnum(direntry->d_name); /* should be '\0' terminated... */
+				if (artnum >= T_ARTNUM_CONST(1)) {
 					if (artnum > *art_max) {
 						*art_max = artnum;
-						if (*art_min == 0L)
+						if (*art_min == T_ARTNUM_CONST(0))
 							*art_min = artnum;
 					} else if (artnum < *art_min)
 						*art_min = artnum;
@@ -475,10 +475,10 @@ group_get_art_info(
 				}
 			}
 			CLOSEDIR(dir);
-			if (*art_min == 0L)
-				*art_min = 1L;
+			if (*art_min == T_ARTNUM_CONST(0))
+				*art_min = T_ARTNUM_CONST(1);
 		} else {
-			*art_min = 1L;
+			*art_min = T_ARTNUM_CONST(1);
 			return -1;
 		}
 	}
@@ -494,15 +494,15 @@ static void
 get_subscribe_info(
 	struct t_group *grp)
 {
-	long oldmin = grp->xmin;
-	long oldmax = grp->xmax;
+	t_artnum oldmin = grp->xmin;
+	t_artnum oldmax = grp->xmax;
 
 	group_get_art_info(grp->spooldir, grp->name, grp->type, &grp->count, &grp->xmax, &grp->xmin);
 
 	if (grp->newsrc.num_unread > grp->count) {
 #ifdef DEBUG
 		if (debug & DEBUG_NEWSRC) { /* TODO: is this the right debug-level? */
-			my_printf(cCRLF "Unread WRONG %s unread=[%ld] count=[%ld]", grp->name, grp->newsrc.num_unread, grp->count);
+			my_printf(cCRLF "Unread WRONG %s unread=[%"T_ARTNUM_PFMT"] count=[%"T_ARTNUM_PFMT"]", grp->name, grp->newsrc.num_unread, grp->count);
 			my_flush();
 		}
 #endif /* DEBUG */
@@ -513,7 +513,7 @@ get_subscribe_info(
 		expand_bitmap(grp, 0);
 #ifdef DEBUG
 		if (debug & DEBUG_NEWSRC) { /* TODO: is this the right debug-level? */
-			my_printf(cCRLF "Min/Max DIFF %s old=[%ld-%ld] new=[%ld-%ld]", grp->name, oldmin, oldmax, grp->xmin, grp->xmax);
+			my_printf(cCRLF "Min/Max DIFF %s old=[%"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT"] new=[%"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT"]", grp->name, oldmin, oldmax, grp->xmin, grp->xmax);
 			my_flush();
 		}
 #endif /* DEBUG */
@@ -601,8 +601,7 @@ reset_newsrc(
 	FILE *fp;
 	FILE *newfp;
 	char *line;
-	int sub;
-	long i;
+	int sub, i;
 
 	if (!no_write && (newfp = fopen(newnewsrc, "w")) != NULL) {
 		if (newsrc_mode)
@@ -710,7 +709,7 @@ void
 grp_mark_unread(
 	struct t_group *group)
 {
-	int bitlength;
+	t_artnum bitlength;
 	t_bitmap *newbitmap = (t_bitmap *) 0;
 
 #ifdef DEBUG
@@ -736,7 +735,7 @@ grp_mark_unread(
 	group->newsrc.xbitlen = bitlength;
 
 	if (bitlength)
-		NSETRNG1(group->newsrc.xbitmap, 0L, bitlength - 1L);
+		NSETRNG1(group->newsrc.xbitmap, T_ARTNUM_CONST(0), bitlength - T_ARTNUM_CONST(1));
 
 #ifdef DEBUG
 	if (debug & DEBUG_NEWSRC)
@@ -788,10 +787,10 @@ parse_bitmap_seq(
 	char *seq)
 {
 	char *ptr;
-	int sum = 0;
-	long low = 0L;
-	long high = 0L;
-	long min, max;
+	t_artnum sum = T_ARTNUM_CONST(0);
+	t_artnum low = T_ARTNUM_CONST(0);
+	t_artnum high = T_ARTNUM_CONST(0);
+	t_artnum min, max;
 	t_bool gotseq = FALSE;
 
 	/*
@@ -834,7 +833,7 @@ parse_bitmap_seq(
 		group->newsrc.xbitlen = (max - min) + 1;
 		if (group->newsrc.xbitlen > 0) {
 			group->newsrc.xbitmap = my_malloc(BITS_TO_BYTES(group->newsrc.xbitlen));
-			NSETRNG1(group->newsrc.xbitmap, 0L, group->newsrc.xbitlen - 1L);
+			NSETRNG1(group->newsrc.xbitmap, T_ARTNUM_CONST(0), group->newsrc.xbitlen - T_ARTNUM_CONST(1));
 		}
 
 		if (min <= high) {
@@ -860,10 +859,10 @@ parse_bitmap_seq(
 		group->newsrc.xbitlen = (group->newsrc.xmax - group->newsrc.xmin) + 1;
 		if (group->newsrc.xbitlen > 0) {
 			group->newsrc.xbitmap = my_malloc(BITS_TO_BYTES(group->newsrc.xbitlen));
-			NSETRNG1(group->newsrc.xbitmap, 0L, group->newsrc.xbitlen - 1L);
+			NSETRNG1(group->newsrc.xbitmap, T_ARTNUM_CONST(0), group->newsrc.xbitlen - T_ARTNUM_CONST(1));
 		}
 /*
-wait_message(2, "BITMAP Grp=[%s] MinMax=[%ld-%ld] Len=[%ld]\n",
+wait_message(2, "BITMAP Grp=[%s] MinMax=[%"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT"] Len=[%"T_ARTNUM_PFMT"]\n",
 	group->name, group->xmin, group->xmax, group->newsrc.xbitlen);
 */
 	}
@@ -874,7 +873,7 @@ wait_message(2, "BITMAP Grp=[%s] MinMax=[%ld-%ld] Len=[%ld]\n",
 		if (group->newsrc.xmax > high)
 			sum += group->newsrc.xmax - high;
 	} else
-		sum = (int) ((group->count >= 0) ? group->count : ((group->newsrc.xmax - group->newsrc.xmin) + 1));
+		sum = (group->count >= 0) ? group->count : ((group->newsrc.xmax - group->newsrc.xmin) + 1);
 
 	group->newsrc.num_unread = sum;
 #ifdef DEBUG
@@ -896,13 +895,13 @@ static char *
 parse_subseq(
 	struct t_group *group,
 	char *seq,
-	long *low,
-	long *high,
-	int *sum)
+	t_artnum *low,
+	t_artnum *high,
+	t_artnum *sum)
 {
-	long bitmin;
-	long bitmax;
-	long last_high = *high;
+	t_artnum bitmin;
+	t_artnum bitmax;
+	t_artnum last_high = *high;
 
 	seq = parse_get_seq(seq, low, high);
 
@@ -921,7 +920,7 @@ parse_subseq(
 		if (bitmin >= 0) {
 			if (*high > group->newsrc.xmax) {
 				/* We trust .newsrc's max. */
-				long bitlen;
+				t_artnum bitlen;
 				t_bitmap *newbitmap;
 
 				group->newsrc.xmax = *high;
@@ -951,7 +950,7 @@ parse_subseq(
 
 		if (bitmax > group->newsrc.xmax) {
 			/* We trust .newsrc's max. */
-			long bitlen;
+			t_artnum bitlen;
 			t_bitmap *newbitmap;
 
 			group->newsrc.xmax = bitmax;
@@ -983,14 +982,14 @@ parse_subseq(
 static char *
 parse_get_seq(
 	char *seq,
-	long *low,
-	long *high)
+	t_artnum *low,
+	t_artnum *high)
 {
-	*low = strtol(seq, &seq, 10);
+	*low = strtoartnum(seq, &seq, 10);
 
 	if (*seq == '-') {	/* Range of articles */
 		seq++;
-		*high = strtol(seq, &seq, 10);
+		*high = strtoartnum(seq, &seq, 10);
 	} else	/* Single article */
 		*high = *low;
 
@@ -1007,11 +1006,11 @@ parse_get_seq(
 void
 parse_unread_arts(
 	struct t_group *group,
-	long min)
+	t_artnum min)
 {
 	int i;
-	long unread = 0;
-	long bitmin, bitmax;
+	t_artnum unread = T_ARTNUM_CONST(0);
+	t_artnum bitmin, bitmax;
 	t_bitmap *newbitmap = (t_bitmap *) 0;
 
 	bitmin = group->newsrc.xmin;
@@ -1029,7 +1028,7 @@ parse_unread_arts(
 
 	if (group->newsrc.xmax >= bitmin) {
 		newbitmap = my_malloc(BITS_TO_BYTES(group->newsrc.xmax - bitmin + 1));
-		NSETRNG0(newbitmap, 0L, group->newsrc.xmax - bitmin);
+		NSETRNG0(newbitmap, T_ARTNUM_CONST(0), group->newsrc.xmax - bitmin);
 	}
 
 	/*
@@ -1037,7 +1036,7 @@ parse_unread_arts(
 	 * of all articles below the new minimum
 	 */
 	if (min > 0 && newbitmap) {
-		long j, tmp_bitmax;
+		t_artnum j, tmp_bitmax;
 
 		tmp_bitmax = (bitmax < min) ? bitmax : min;
 		for (j = bitmin; j < tmp_bitmax; j++) {
@@ -1092,8 +1091,8 @@ print_bitmap_seq(
 	FILE *fp,
 	struct t_group *group)
 {
-	long artnum;
-	long i;
+	t_artnum artnum;
+	t_artnum i;
 	t_bool flag = FALSE;
 
 #ifdef DEBUG
@@ -1105,7 +1104,7 @@ print_bitmap_seq(
 
 	if (group->count == 0 || group->xmin > group->xmax) {
 		if (group->newsrc.xmax > 1)
-			fprintf(fp, "1-%ld", group->newsrc.xmax);
+			fprintf(fp, "1-%"T_ARTNUM_PFMT, group->newsrc.xmax);
 
 		fprintf(fp, "\n");
 		fflush(fp);
@@ -1122,7 +1121,7 @@ print_bitmap_seq(
 			if (group->newsrc.xbitmap && NTEST(group->newsrc.xbitmap, i - group->newsrc.xmin) == ART_READ) {
 				if (flag) {
 					artnum = i;
-					fprintf(fp, ",%ld", i);
+					fprintf(fp, ",%"T_ARTNUM_PFMT, i);
 				} else {
 					artnum = 1;
 					flag = TRUE;
@@ -1132,7 +1131,7 @@ print_bitmap_seq(
 					i++;
 
 				if (artnum != i)
-					fprintf(fp, "-%ld", i);
+					fprintf(fp, "-%"T_ARTNUM_PFMT, i);
 
 			} else if (!flag) {
 				flag = TRUE;
@@ -1140,7 +1139,7 @@ print_bitmap_seq(
 					fprintf(fp, "1");
 
 					if (group->newsrc.xmin > 2)
-						fprintf(fp, "-%ld", group->newsrc.xmin - 1);
+						fprintf(fp, "-%"T_ARTNUM_PFMT, group->newsrc.xmin - 1);
 
 				}
 			}
@@ -1155,7 +1154,7 @@ print_bitmap_seq(
 		fprintf(fp, "1");
 
 		if (group->newsrc.xmin > 2)
-			fprintf(fp, "-%ld", group->newsrc.xmin - 1);
+			fprintf(fp, "-%"T_ARTNUM_PFMT, group->newsrc.xmin - 1);
 
 #ifdef DEBUG
 		if (debug & DEBUG_NEWSRC)
@@ -1193,6 +1192,7 @@ pos_group_in_newsrc(
 	t_bool ret_code = FALSE;
 	t_bool sub_created = FALSE;
 	t_bool unsub_created = FALSE;
+	t_bool fs_error = FALSE;
 
 	if (no_write)
 		goto rewrite_group_done;
@@ -1250,21 +1250,22 @@ pos_group_in_newsrc(
 			clearerr(fp_sub);
 			fclose(fp_sub);
 		}
-		fp_sub = NULL;
+		fs_error = TRUE;
 	}
 	if ((err = ferror(fp_unsub)) || fclose(fp_unsub)) {
-		if (fp_sub) /* didn't see and error above */
+		if (!fs_error) /* avoid repeatd error message */
 			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
 		if (err) {
 			clearerr(fp_unsub);
 			fclose(fp_unsub);
 		}
-		fp_unsub = NULL;
+		fs_error = TRUE;
 	}
-	if (fp_sub == NULL || fp_unsub == NULL)
+	fp_sub = fp_unsub = NULL;
+
+	if (fs_error)
 		goto rewrite_group_done;
 
-	fp_sub = fp_unsub = NULL;
 	fclose(fp_in);
 	fp_in = NULL;
 
@@ -1422,12 +1423,12 @@ parse_newsrc_line(
 void
 expand_bitmap(
 	struct t_group *group,
-	long min)
+	t_artnum min)
 {
-	long bitlen;
-	long first;
-	long tmp;
-	long max;
+	t_artnum bitlen;
+	t_artnum first;
+	t_artnum tmp;
+	t_artnum max;
 	t_bool need_full_copy = FALSE;
 
 	/* calculate new max */
@@ -1469,7 +1470,7 @@ expand_bitmap(
 	} else if (group->newsrc.xbitmap == NULL) {
 		group->newsrc.xbitmap = my_malloc(BITS_TO_BYTES(bitlen));
 		if (group->newsrc.xmin > first)
-			NSETRNG0(group->newsrc.xbitmap, 0L, group->newsrc.xmin - first - 1L);
+			NSETRNG0(group->newsrc.xbitmap, T_ARTNUM_CONST(0), group->newsrc.xmin - first - T_ARTNUM_CONST(1));
 		if (bitlen > group->newsrc.xmin - first)
 			NSETRNG1(group->newsrc.xbitmap, group->newsrc.xmin - first, bitlen - 1);
 #ifdef DEBUG
@@ -1491,7 +1492,7 @@ expand_bitmap(
 		/* Mark earlier articles as read, updating num_unread */
 
 		if (first < group->newsrc.xmin) {
-			NSETRNG0(newbitmap, 0L, group->newsrc.xmin - first - 1L);
+			NSETRNG0(newbitmap, T_ARTNUM_CONST(0), group->newsrc.xmin - first - T_ARTNUM_CONST(1));
 		}
 
 		for (tmp = group->newsrc.xmin; tmp < min; tmp++) {
@@ -1528,7 +1529,7 @@ expand_bitmap(
 		/* Mark earlier articles as read, updating num_unread */
 
 		if (first < group->newsrc.xmin) {
-			NSETRNG0(newbitmap, 0L, group->newsrc.xmin - first - 1L);
+			NSETRNG0(newbitmap, T_ARTNUM_CONST(0), group->newsrc.xmin - first - T_ARTNUM_CONST(1));
 		}
 
 		for (tmp = group->newsrc.xmin; tmp < min; tmp++) {

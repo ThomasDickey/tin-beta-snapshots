@@ -6,7 +6,7 @@
  *  Updated   : 2010-04-29
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,14 +44,6 @@
 
 #define NNTP_TCP_NAME	"nntp"
 #define NNTP_TCP_PORT	"119"
-
-/*
- * # seconds after which a read from the NNTP will timeout
- * NB: This is different from the NNTP server timing us out due to inactivity
- */
-#if defined(HAVE_ALARM) && defined(SIGALRM)
-#	define NNTP_READ_TIMEOUT	120
-#endif /* HAVE_ALARM && SIGALRM */
 
 /*
  * # times to try and reconnect to server after timeout

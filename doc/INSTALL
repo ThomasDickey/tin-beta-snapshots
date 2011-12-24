@@ -33,21 +33,22 @@ The following configure options and defines are documented in detail:
   --enable-inverse-video                  --with-ispell
   --enable-locale                         --with-libdir
   --enable-lockf                          --with-libiconv-prefix
-  --enable-mh-mail-handling               --with-mailbox
-  --enable-mime-strict-charset            --with-mailer
-  --enable-nls                            --with-metamail
-  --enable-nntp                           --with-mime-default-charset
-  --enable-nntp-only                      --with-ncurses
-  --enable-pgp-gpg                        --with-nntp-default-server
-  --enable-piping                         --with-nov-dir
-  --enable-posting                        --with-nov-fname
-  --enable-printing                       --with-pcre
-  --enable-prototypes                     --with-pgp
-  --enable-shell-escape                   --with-pgpk
-  --enable-warnings                       --with-screen
-  --enable-xhdr-xref                      --with-shell
-  --exec-prefix                           --with-spooldir
-  --mandir                                --with-trace
+  --enable-long-article-numbers           --with-mailbox
+  --enable-mh-mail-handling               --with-mailer
+  --enable-mime-strict-charset            --with-metamail
+  --enable-nls                            --with-mime-default-charset
+  --enable-nntp                           --with-ncurses
+  --enable-nntp-only                      --with-nntp-default-server
+  --enable-pgp-gpg                        --with-nov-dir
+  --enable-piping                         --with-nov-fname
+  --enable-posting                        --with-pcre
+  --enable-printing                       --with-pgp
+  --enable-prototypes                     --with-pgpk
+  --enable-shell-escape                   --with-screen
+  --enable-warnings                       --with-shell
+  --enable-xhdr-xref                      --with-spooldir
+  --exec-prefix                           --with-trace
+  --mandir
   --prefix
 
 
@@ -84,6 +85,7 @@ System related:
   --with-build-cppflags                   --with-build-ldflags
   --with-build-libs                       --build
   --host                                  --target
+  --with-pkg-config                       --with-textdomain
 
 News machine names
 ------------------
@@ -292,6 +294,13 @@ Only define if your NNTP-server file is other than /etc/nntpserver.
 DISABLE_PIPELINING
 Define if your newsserver can't handle pipelined commands.
 
+--enable-long-article-numbers (default: off)
+Add code to handle huge (>2^31) article numbers, such article numbers violate
+the NNTP RFC and support for them may sensible increases tins memory usage.
+If SMALL_MEMORY_MACHINE is defined --enable-long-article-numbers has no
+effect.
+
+
 Options to set some default values
 ----------------------------------
 --with-shell=PROG (default: sh, except on BSD where csh is used)
@@ -375,7 +384,7 @@ environment variable ISO2ASC.
 
 --with-curses-dir=dir (default: empty)
 If (n)curses is not installed in a standard location (i.e below /usr) you
-can specify it's installation directory here.
+can specify its installation directory here.
 
 --with-screen=type (default: termcap)
 This is a simpler way (than --with-ncurses and --enable-curses) to specify
@@ -389,7 +398,7 @@ Define this if you want to link with ncurses instead of termcap. Note: This
 is required on some Linux distributions (i.e., SuSE) where there is either a
 curses or termcap library which is not ncurses. If ncurses is installed as
 the curses library, this option is usually not needed. This option is
-depriciated, use --with-screen=ncurses (see above) instead.
+deprecated, use --with-screen=ncurses (see above) instead.
 
 --enable-curses (default: off)
 Enable this if you wish to use the curses screen optimizing rather than
@@ -398,7 +407,7 @@ termcap. This has been tested well starting with ncurses 4.1; it should work
 is known to have a bug in libc which prevents use of curses, ncurses works
 well on that platform). To build with ncurses screen optimizing, you must
 give both the --with-ncurses and --enable-curses options. This option is
-depriciated, use --with-screen=ncurses (see above) instead.
+deprecated, use --with-screen=ncurses (see above) instead.
 
 --enable-inverse-video (default: on)
 Disable if you want inverse video and highlighted bar disabled by default.

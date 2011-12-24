@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-04-02
+ *  Updated   : 2011-12-21
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,11 @@
 #endif /* HAVE_IDNA_H && !_IDNA_H */
 #if defined(HAVE_STRINGPREP_H) && !defined(_STRINGPREP_H)
 #	include <stringprep.h>
-#endif /* HAVE_STRINGPREP_H & !_STRINGPREP_H */
+#endif /* HAVE_STRINGPREP_H && !_STRINGPREP_H */
+
+#if defined(HAVE_IDN_API_H) && !defined(IDN_API_H)
+#	include <idn/api.h>
+#endif /* HAVE_IDN_API_H && !IDN_API_H */
 
 
 /*
@@ -83,7 +87,7 @@ static void write_input_history_file(void);
 	static t_bool buffer_to_local(char **line, size_t *max_line_len, const char *network_charset, const char *local_charset);
 #endif /* CHARSET_CONVERSION */
 #if 0 /* currently unused */
-	static t_bool stat_article(long art, const char *group_path);
+	static t_bool stat_article(t_artnum art, const char *group_path);
 #endif /* 0 */
 
 
@@ -450,9 +454,13 @@ invoke_ispell(
 		fputs(buf, fp_head);
 		if (buf[0] == '\n' || buf[0] == '\r') {
 			fclose(fp_head);
+			fp_head = 0;
 			break;
 		}
 	}
+
+	if (fp_head)
+		fclose(fp_head);
 
 	while (fgets(buf, (int) sizeof(buf), fp_all) != NULL)
 		fputs(buf, fp_body);
@@ -609,7 +617,6 @@ tin_done(
 		}
 
 		write_input_history_file();
-		write_attributes_file(local_attributes_file);
 
 #ifdef HAVE_MH_MAIL_HANDLING
 		write_mail_active_file();
@@ -686,7 +693,11 @@ my_mkdir(
 	snprintf(buf, sizeof(buf), "mkdir %s", path); /* redirect stderr to /dev/null? use invoke_cmd()? */
 	if (stat(path, &sb) == -1) {
 		system(buf);
+#	ifdef HAVE_CHMOD
 		return chmod(path, mode);
+#	else
+		return 0;
+#	endif /* HAVE_CHMOD */
 	} else
 		return -1;
 #else
@@ -2033,21 +2044,16 @@ make_base_group_path(
 
 
 /*
- * Delete tmp index & local newsgroups file
+ * Delete index lock
  */
 void
 cleanup_tmp_files(
 	void)
 {
-#if 0
-	char acNovFile[PATH_LEN];
-
-	if (nntp_caps.over_cmd && !tinrc.cache_overview_files) {
-		snprintf(acNovFile, sizeof(acNovFile), "%s%ld.idx", TMPDIR, (long) process_id);
-		unlink(acNovFile);
-	}
-#endif /* 0 */
-
+	/*
+	 * only required if update_index == TRUE, but update_index is
+	 * unknown here
+	 */
 	if (batch_mode)
 		unlink(lock_file);
 }
@@ -2242,7 +2248,9 @@ write_input_history_file(
 	if ((his_w = ferror(fp)) || fclose(fp)) {
 		error_message(2, _(txt_filesystem_full), local_input_history_file);
 		/* fix modes for all pre 1.4.1 local_input_history_file files */
+#ifdef HAVE_CHMOD
 		chmod(local_input_history_file, (mode_t) (S_IRUSR|S_IWUSR));
+#endif /* HAVE_CHMOD */
 		if (his_w) {
 			clearerr(fp);
 			fclose(fp);
@@ -3713,26 +3721,64 @@ utf8_valid(
 #endif /* CHARSET_CONVERSION || (MULTIBYTE_ABLE && !NO_LOCALE) */
 
 
+/*
+ * TODO: add conversion via uidna_IDNToUnicode() #ifdef HAVE_LIBICUUC
+ */
 char *idna_decode(
 	char *in)
 {
 	char *out = my_strdup(in);
+#if defined(HAVE_LIBIDNKIT) && defined(HAVE_IDN_DECODENAME) && defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
+	idn_result_t res;
+	char *q, *r = NULL;
+
+	if ((q = strrchr(out, '@'))) {
+		q++;
+		r = strrchr(in, '@');
+		r++;
+	} else {
+		r = in;
+		q = out;
+	}
+	if ((res = idn_decodename(IDN_DECODE_LOOKUP, r, q, out + strlen(out) - q)) == idn_success)
+		return out;
+	else { /* IDNA 2008 failed, try again with IDNA 2003 if available */
+		free(out);
+		out = my_strdup(in);
+	}
+#	ifdef DEBUG
+	if (debug & DEBUG_MISC)
+		wait_message(2, "idn_decodename(%s): %s", r, idn_result_tostring(res));
+#	endif /* DEBUG */
+#endif /*  HAVE_LIBIDNKIT && HAVE_IDN_DECODENAME && HAVE_SETLOCALE && !NO_LOCALE */
 
 #if defined(HAVE_LIBIDN) && defined(HAVE_IDNA_TO_UNICODE_LZLZ)
 	if (stringprep_check_version("0.3.0")) {
-		char *q, *r = NULL;
+		char *t, *s = NULL;
+		int rs = IDNA_SUCCESS;
 
-		if ((q = strrchr(out, '@')))
-			q++;
+		if ((t = strrchr(out, '@')))
+			t++;
 		else
-			q = out;
+			t = out;
+
 #	ifdef HAVE_IDNA_USE_STD3_ASCII_RULES
-		if (!idna_to_unicode_lzlz(q, &r, IDNA_USE_STD3_ASCII_RULES))
+		if ((rs = idna_to_unicode_lzlz(t, &s, IDNA_USE_STD3_ASCII_RULES)) == IDNA_SUCCESS)
 #	else
-		if (!idna_to_unicode_lzlz(q, &r, 0))
+		if ((rs = idna_to_unicode_lzlz(t, &s, 0)) == IDNA_SUCCESS)
 #	endif /* HAVE_IDNA_USE_STD3_ASCII_RULES */
-			strcpy(q, r);
-		FreeIfNeeded(r);
+			strcpy(t, s);
+#	ifdef DEBUG
+		else {
+			if (debug & DEBUG_MISC)
+#		ifdef HAVE_IDNA_STRERROR
+				wait_message(2, "idna_to_unicode_lzlz(%s): %s", t, idna_strerror(rs));
+#		else
+				wait_message(2, "idna_to_unicode_lzlz(%s): %d", t, rs);
+#		endif /* HAVE_IDNA_STRERROR */
+		}
+#	endif /* DEBUG */
+		FreeIfNeeded(s);
 	}
 #endif /* HAVE_LIBIDN && HAVE_IDNA_TO_UNICODE_LZLZ */
 
@@ -3939,10 +3985,15 @@ tin_version_info(
 			"-MULTIBYTE_ABLE "
 #endif /* MULTIBYTE_ABLE */
 #ifdef NO_LOCALE
-			"+NO_LOCALE"
+			"+NO_LOCALE "
 #else
-			"-NO_LOCALE"
+			"-NO_LOCALE "
 #endif /* NO_LOCALE */
+#ifdef USE_LONG_ARTICLE_NUMBERS
+			"+USE_LONG_ARTICLE_NUMBERS"
+#else
+			"-USE_LONG_ARTICLE_NUMBERS"
+#endif /* USE_LONG_ARTICLE_NUMBERS */
 			"\n\t"
 #ifdef USE_CANLOCK
 			"+USE_CANLOCK "
@@ -3982,7 +4033,6 @@ tin_version_info(
 #endif /* FOLLOW_USEFOR_DRAFT */
 			"\n");
 	wlines += 11;
-
 	fflush(fp);
 	return wlines;
 }
@@ -4000,13 +4050,44 @@ draw_mark_selected(
 }
 
 
+int
+tin_gettime(
+	struct t_tintime *tt)
+{
+#ifdef HAVE_CLOCK_GETTIME
+	static struct timespec cgt;
+#endif /* HAVE_CLOCK_GETTIME */
+#ifdef HAVE_GETTIMEOFDAY
+	static struct timeval gt;
+#endif /* HAVE_GETTIMEOFDAY */
+
+#ifdef HAVE_CLOCK_GETTIME
+	if (clock_gettime(CLOCK_REALTIME, &cgt) == 0) {
+		tt->tv_sec = cgt.tv_sec;
+		tt->tv_nsec = cgt.tv_nsec;
+		return 0;
+	}
+#endif /* HAVE_CLOCK_GETTIME */
+#ifdef HAVE_GETTIMEOFDAY
+	if (gettimeofday(&gt, NULL) == 0) {
+		tt->tv_sec = gt.tv_sec;
+		tt->tv_nsec = gt.tv_usec * 1000;
+		return 0;
+	}
+#endif /* HAVE_GETTIMEOFDAY */
+	tt->tv_sec = 0;
+	tt->tv_nsec = 0;
+	return -1;
+}
+
+
 #if 0
 /*
  * Stat a mail/news article to see if it still exists
  */
 static t_bool
 stat_article(
-	long art,
+	t_artnum art,
 	const char *group_path)
 {
 	struct t_group currgrp;
@@ -4017,7 +4098,7 @@ stat_article(
 	if (read_news_via_nntp && currgrp.type == GROUP_TYPE_NEWS) {
 		char buf[NNTP_STRLEN];
 
-		snprintf(buf, sizeof(buf), "STAT %ld", art);
+		snprintf(buf, sizeof(buf), "STAT %"T_ARTNUM_PFMT, art);
 		return (nntp_command(buf, OK_NOTEXT, NULL, 0) != NULL);
 	} else
 #	endif /* NNTP_ABLE */
@@ -4026,7 +4107,7 @@ stat_article(
 		struct stat sb;
 
 		joinpath(filename, sizeof(filename), currgrp.spooldir, group_path);
-		snprintf(&filename[strlen(filename)], sizeof(filename), "/%ld", art);
+		snprintf(&filename[strlen(filename)], sizeof(filename), "/%"T_ARTNUM_PFMT, art);
 
 		return (stat(filename, &sb) != -1);
 	}

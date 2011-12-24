@@ -3,10 +3,10 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2011-03-28
+ *  Updated   : 2011-10-21
  *  Notes     : #defines and static data for policy configuration
  *
- * Copyright (c) 1999-2011 Ralf Doeblitz <doeblitz@gmx.de>
+ * Copyright (c) 1999-2012 Ralf Doeblitz <doeblitz@gmx.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -221,12 +221,11 @@
  * .gb  United Kingdom, use .uk
  * .nt  Neutral Zone
  * .sj  Svalbard and Jan Mayen Islands (Norway)
+ * .ss  South Sudan
  *
  * requested new TLDs:
- * .ct  Catalonia
  *
  * xccTLDs:
- * .hk  Hong Kong, now .cn
  * .su  former USSR, now .ru
  * .tp  former East Timor, now .tl
  */
@@ -278,6 +277,7 @@ static const char *gnksa_domain_list[] = {
 	"org",	/* Organizations */
 	"pro",	/* Accountants, lawyers, and physicians */
 	"tel",	/* Internet communication */
+	"xxx",	/* For adult entertainment */
 	"aero",	/* Air-transport industry */
 	"arpa",	/* Address and Routing Parameter Area */
 	"asia",	/* Asia and the Pacific */
@@ -289,7 +289,7 @@ static const char *gnksa_domain_list[] = {
 	"museum",	/* Museums */
 	"travel",	/* Travel industry */
 	/*
-	 * more gTLDs to come >=2007, proposed are:
+	 * more gTLDs to come, proposed are:
 	 *  .kids     .mail     .post
 	 *  (.berlin) (.sco)    (.bzh)    (.cym)    (.gal)
 	 */
@@ -311,6 +311,7 @@ static const char *gnksa_domain_list[] = {
 	"bofh",	/* There Is No Cabal */
 #	endif /* TINC_DNS */
 	/* active IDN ccTLDs */
+	"xn--lgbbat1ad8j",	/* Algeria */
 	"xn--fiqs8s",		/* China, Simplified Chinese */
 	"xn--fiqz9s",		/* China, Traditional Chinese */
 	"xn--wgbh1c",		/* Egypt */
@@ -324,10 +325,12 @@ static const char *gnksa_domain_list[] = {
 	"xn--mgbbh1a71e",	/* India, Urdu */
 	"xn--mgbayh7gpa",	/* Jordan */
 	"xn--3e0b707e",		/* Korea, Republic of */
+	"xn--mgbc0a9azcg",	/* Morocco */
 	"xn--ygbi2ammx",	/* Palestinian Territory */
 	"xn--wgbl6a",		/* Qatar */
 	"xn--p1ai",			/* Russian Federation */
 	"xn--mgberp4a5d4ar",	/* Saudi Arabia */
+	"xn--90a3ac",		/* Serbia */
 	"xn--yfro4i67o",	/* Singapore, Chinese */
 	"xn--clchc0ea0b2g2a9gcd",	/* Singapore, Tamil */
 	"xn--fzc2c9e2c",	/* Sri Lanka, Sinhala */
@@ -340,15 +343,15 @@ static const char *gnksa_domain_list[] = {
 	"xn--mgbaam7a8h",	/* United Arab Emirates */
 #	if 0
 	/* purposed IDN ccTLDs */
-	"xn--lgbbat1ad8j",	/* Algeria */
 	"xn--54b7fta0cc",	/* Bangladesh */
 	"xn--node",			/* Georgia */
 	"xn--mgba3a4f16a",	/* Iran */
-	"xn--mgbc0a9azcg",	/* Morocco */
+	"xn--80ao21a",		/* Kazakhstan */
+	"xn--mgbx4cd0ab",	/* Malaysia */
 	"xn--mgb9awbf",		/* Oman */
 	"xn--mgbai9azgqp6j",	/* Pakistan */
-	"xn--90a3ac",		/* Serbia */
 	"xn--j1amh",		/* Ukraine */
+	"xn--mgb2ddes",		/* Yemen */
 #	endif /* 0 */
 #	if 0
 	/* Desired Variant String(s) */

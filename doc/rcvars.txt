@@ -35,7 +35,8 @@ Adding new tinrc variables:
 . If the variable is to be chosen from a list, then the second field of
   tincfg.tbl is the name of an array which holds the textual descriptions
   of the options. Add this array to lang.c and extern.h
-  The third field is the maximum value of the variable, ie the array size.
+  Don't forget to add NULL as the very last array member in lang.c. Various
+  functions rely on it.
 
 Adding a new attribute:
 

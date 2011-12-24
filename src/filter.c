@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2010-12-10
+ *  Updated   : 2011-11-09
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -215,8 +215,15 @@ test_regex(
 			regex_errpos = pcre_exec(cache->re, cache->extra, string, strlen(string), 0, 0, NULL, 0);
 			if (regex_errpos >= 0)
 				return 1;
-			else if (regex_errpos != PCRE_ERROR_NOMATCH) {
+			else if (regex_errpos != PCRE_ERROR_NOMATCH) { /* also exclude PCRE_ERROR_BADUTF8 ? */
 				error_message(2, _(txt_pcre_error_num), regex_errpos);
+#ifdef DEBUG
+				if (debug & DEBUG_FILTER) {
+					debug_print_file("FILTER", _(txt_pcre_error_num), regex_errpos);
+					debug_print_file("FILTER", "\t regex: %s", regex);
+					debug_print_file("FILTER", "\tstring: %s", string);
+				}
+#endif /* DEBUG */
 				return -1;
 			}
 		}
@@ -660,14 +667,14 @@ write_filter_file(
 
 	/* TODO: -> lang.c */
 	fprintf(fp, "# Filter file V%s for the TIN newsreader\n#\n", FILTER_VERSION);
-	fprintf(fp, _(txt_filter_file));
+	fprintf(fp, "%s", _(txt_filter_file));
 
 	/* determine the file offset */
 	if (!batch_mode) {
 		fpos = ftell(fp);
 		rewind(fp);
 		filter_file_offset = 1;
-		while((i = fgetc(fp)) != EOF) {
+		while ((i = fgetc(fp)) != EOF) {
 			if (i == '\n')
 				filter_file_offset++;
 		}
@@ -1440,12 +1447,14 @@ quick_filter(
 	if (type == GLOBAL_QUICK_FILTER_KILL) {
 		header = group->attribute->quick_kill_header;
 		expire = group->attribute->quick_kill_expire;
-		icase = group->attribute->quick_kill_case;
+		/* ON=case sensitive, OFF=ignore case -> invert */
+		icase = bool_not(group->attribute->quick_kill_case);
 		scope = group->attribute->quick_kill_scope;
 	} else {	/* type == GLOBAL_QUICK_FILTER_SELECT */
 		header = group->attribute->quick_select_header;
 		expire = group->attribute->quick_select_expire;
-		icase = group->attribute->quick_select_case;
+		/* ON=case sensitive, OFF=ignore case -> invert */
+		icase = bool_not(group->attribute->quick_select_case);
 		scope = group->attribute->quick_select_scope;
 	}
 

@@ -593,7 +593,7 @@ gl_fixup(
 			off_right = (gl_cnt > gl_shift + gl_width - 1) ? 1 : 0;
 			right = (off_right) ? gl_shift + gl_width - 2 : gl_cnt;
 		}
-		pad -= (off_right) ? gl_width - 1 : gl_cnt - gl_shift;
+		pad -= (off_right ? gl_width - 1 : gl_cnt - gl_shift);
 		pad = (pad < 0) ? 0 : pad;
 		if (left <= right) {	/* clean up screen */
 			for (i = 0; i < backup; i++)

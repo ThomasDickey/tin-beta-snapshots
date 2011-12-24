@@ -3,10 +3,10 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2009-08-14
+ *  Updated   : 2011-12-07
  *  Notes     :
  *
- * Copyright (c) 2003-2011 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
+ * Copyright (c) 2003-2012 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -131,7 +131,7 @@ slrnface_start(
 	}
 
 	status = snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) getpid());
-	if (status <= 0 || status >= pathlen) {
+	if (status <= 0 || status >= (int) pathlen) {
 		error_message(2, _("Can't run slrnface: couldn't construct fifo name."));
 		unlink(fifo);
 		free(fifo);

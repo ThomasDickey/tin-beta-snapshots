@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-01-30
+ *  Updated   : 2011-11-04
  *  Notes     :
  *
- * Copyright (c) 1997-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,15 @@
 #ifdef DECL_ATOL
 	extern long atol(const char *);
 #endif /* DECL_ATOL */
+#ifdef HAVE_ATOLL
+#	ifdef DECL_ATOLL
+		extern long long atoll(const char *);
+#	endif /* DECL_ATOLL */
+#else
+#	if defined(HAVE_ATOQ) && defined(DECL_ATOQ)
+		 extern long long atoq(const char *);
+#	endif /* HAVE_ATOQ && DECL_ATOQ */
+#endif /* HAVE_ATOLL */
 #ifndef HAVE_MEMCPY
 #	ifdef DECL_BCOPY
 		extern int bcopy(char *, char *, int);
@@ -138,9 +147,6 @@
 #ifdef DECL_GETOPT
 	extern int getopt(int, char * const*, const char *);
 #endif /* DECL_GETOPT */
-#ifdef DECL_GETPASS
-	extern char *getpass(const char *);
-#endif /* DECL_GETPASS */
 #ifdef DECL_GETPWNAM
 	extern struct passwd *getpwnam(const char *);
 #endif /* DECL_GETPWNAM */
@@ -230,8 +236,10 @@
 #endif /* DECL_STRCASECMP */
 #ifdef DECL_STRCHR
 	extern char *strchr(const char *, int);
-	extern char *strrchr(const char *, int);
 #endif /* DECL_STRCHR */
+#ifdef DECL_STRRCHR
+	extern char *strrchr(const char *, int);
+#endif /* DECL_STRRCHR */
 #ifdef DECL_STRFTIME
 	extern int strftime(char *, int, char *, struct tm *);
 #endif /* DECL_STRFTIME */
@@ -244,6 +252,9 @@
 #ifdef DECL_STRTOL
 	extern long strtol(const char *, char **, int);
 #endif /* DECL_STRTOL */
+#ifdef DECL_STRTOLL
+	extern long long strtoll(const char *, char **, int);
+#endif /* DECL_STRTOLL */
 #ifdef DECL_SYSTEM
 	extern int system(const char *);
 #endif /* DECL_SYSTEM */
@@ -404,6 +415,7 @@ extern constext *txt_attrs[];
 extern constext *txt_auto_cc_bcc_options[];
 #ifdef HAVE_COLOR
 	extern constext *txt_colors[];
+	extern constext *txt_backcolors[];
 #endif /* HAVE_COLOR */
 extern constext *txt_confirm_choices[];
 extern constext *txt_goto_next_unread_options[];
@@ -422,6 +434,7 @@ extern constext *txt_mime_encodings[];
 #endif /* HAVE_UNICODE_NORMALIZATION */
 extern constext *txt_onoff[];
 extern constext *txt_post_process_types[];
+extern constext *txt_quick_ks_header_options[];
 extern constext *txt_quote_style_type[];
 extern constext *txt_show_from[];
 extern constext *txt_show_info_type[];
@@ -476,6 +489,7 @@ extern constext txt_attachments_tagged[];
 extern constext txt_attachment_untagged[];
 extern constext txt_attach_unsup_charset[];
 extern constext txt_attrib_menu_com[];
+extern constext txt_attrib_no_scope[];
 extern constext txt_uue[];
 extern constext txt_at_s[];
 #ifdef NNTP_ABLE
@@ -1379,6 +1393,7 @@ extern int iso2asc_supported;
 extern int last_resp;
 extern int max_active;
 extern int max_art;
+extern int max_base;
 extern int max_newnews;
 extern int max_save;
 extern int max_scope;
@@ -1399,7 +1414,7 @@ extern int xcol;
 extern int xmouse;
 extern int xrow;
 
-extern long *base;
+extern t_artnum *base;
 
 extern signed long int read_newsrc_lines;
 
@@ -1660,6 +1675,8 @@ extern struct opttxt txt_cache_overview_files;
 extern struct opttxt txt_catchup_read_groups;
 #ifdef HAVE_COLOR
 	extern struct opttxt txt_color_options;
+#else
+	extern struct opttxt txt_highlight_options;
 #endif /* HAVE_COLOR */
 extern struct opttxt txt_confirm_choice;
 extern struct opttxt txt_date_format;
@@ -1714,6 +1731,9 @@ extern struct opttxt txt_metamail_prog;
 extern struct opttxt txt_news_headers_to_display;
 extern struct opttxt txt_news_headers_to_not_display;
 extern struct opttxt txt_news_quote_format;
+#if defined(HAVE_ALARM) && defined(SIGALRM)
+	extern struct opttxt txt_nntp_read_timeout_secs;
+#endif /* HAVE_ALARM && SIGALRM */
 extern struct opttxt txt_organization;
 extern struct opttxt txt_pos_first_unread;
 extern struct opttxt txt_post_8bit_header;

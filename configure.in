@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2011-02-22
+dnl Updated   : 2011-12-21
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2011 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2012 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -34,14 +34,14 @@ dnl SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.13.20020210)
+AC_PREREQ(2.13.20110430)
 AC_INIT(include/tin.h)
 AC_CONFIG_HEADER(include/autoconf.h:include/autoconf.hin)
 AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.0.0
+VERSION=2.1.0
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -358,9 +358,7 @@ AC_MSG_RESULT($cf_with_screen)
 use_curses=no
 use_ncurses=no
 
-AC_MSG_CHECKING(if you specified curses install-directory)
 CF_WITH_CURSES_DIR($cf_with_screen)
-AC_MSG_RESULT($cf_cv_curses_dir)
 
 case $cf_with_screen in #(vi
 termcap|terminfo) #(we will determine which it really is
@@ -382,14 +380,14 @@ pdcurses) #(vi
 none)
 	AC_MSG_CHECKING(if you want to use ncurses library)
 	AC_ARG_WITH(ncurses,
-		[  --with-ncurses          link with ncurses if available (depriciated)],
+		[  --with-ncurses          link with ncurses if available (deprecated)],
 		[use_ncurses=$withval],
 		[use_ncurses=no])
 	AC_MSG_RESULT($use_ncurses)
 
 	AC_MSG_CHECKING(if you want curses rather than termcap interface)
 	CF_ARG_ENABLE(curses,
-		[  --enable-curses         use curses interface (depriciated)],
+		[  --enable-curses         use curses interface (deprecated)],
 		[cf_with_screen=curses;  use_curses=$withval],
 		[cf_with_screen=termcap; use_curses=no])
 	AC_MSG_RESULT($enableval)
@@ -400,22 +398,17 @@ if test $use_curses != no ; then
 	AC_DEFINE(USE_CURSES)
 	case $cf_with_screen in #(vi
 	ncurses) #(vi
-		CF_NCURSES_CPPFLAGS
-		CF_NCURSES_LIBS
+		CF_NCURSES_CONFIG
 		;;
 	ncursesw) #(vi
 		CF_CHECK_HEADERS(stdlib.h wchar.h wctype.h)
 		AM_MULTIBYTE_ABLE
-		CF_NCURSES_CPPFLAGS(ncursesw)
-		CF_NCURSES_LIBS(ncursesw)
-		CF_NCURSES_VERSION
+		CF_NCURSES_CONFIG(ncursesw)
 		CF_XOPEN_CURSES
 		test "$cf_cv_need_xopen_extension" = unknown && AC_ERROR(X/Open curses not found)
 		;;
 	curses) #(vi
-		CF_CURSES_CPPFLAGS
-		CF_CURSES_LIBS
-		CF_NCURSES_VERSION
+		CF_CURSES_CONFIG
 		CF_XOPEN_CURSES
 		;;
 	esac
@@ -681,6 +674,14 @@ if test "$enableval" = "yes"; then
 fi
 AC_REPLACE_FUNCS(getaddrinfo getnameinfo)
 
+### should we use 64 bit article numbers if possible?
+AC_MSG_CHECKING([whether to enable long article numbers])
+CF_ARG_ENABLE(long-article-numbers,
+        [  --enable-long-article-numbers
+                          enable long article numbers (default: disabled)],
+[AC_DEFINE(ENABLE_LONG_ARTICLE_NUMBERS)])
+AC_MSG_RESULT($enableval)
+
 ### checks for operator characteristics (should be the last option)
 AC_MSG_CHECKING(whether to make a coffee while compiling)
 AC_ARG_WITH(coffee,
@@ -815,6 +816,38 @@ if test $ac_cv_long_long = yes; then
 	AC_DEFINE(HAVE_LONG_LONG)
 fi
 
+dnl test to see if int_least64_t is defined
+AC_MSG_CHECKING(for int_least64_t)
+AC_TRY_COMPILE([
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+#ifdef HAVE_HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+],[int_least64_t x; x = 0],
+ac_cv_int_least64_t=yes, ac_cv_int_least64_t=no)
+AC_MSG_RESULT($ac_cv_int_least64_t)
+if test $ac_cv_int_least64_t = yes; then
+	AC_DEFINE(HAVE_INT_LEAST64_T)
+
+	AC_MSG_CHECKING(for INT64_C)
+	AC_TRY_COMPILE([
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+#ifdef HAVE_HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+],[int_least64_t x; x = INT64_C(0)],
+	ac_cv_int64_c=yes, ac_cv_int64_c=no)
+	AC_MSG_RESULT($ac_cv_int64_c)
+	if test $ac_cv_int64_c = yes; then
+		AC_DEFINE(HAVE_INT64_C)
+	fi
+fi
+
+
 dnl test to see if nl_item is defined
 AC_MSG_CHECKING(for nl_item)
 AC_TRY_COMPILE([
@@ -843,20 +876,46 @@ AC_CHECK_LIB(uu, UUInitialize,
 	)]
 )
 
-# libidn - Internationalized Domain Names
+# libidnkit - Internationalized Domain Names / IDN 2008
+AC_CHECK_LIB(idnkit, idn_decodename, [
+	AC_CHECK_HEADER(idn/api.h, [
+		AC_MSG_CHECKING(for IDN_DECODE_LOOKUP)
+		cf_save_LIBS="$LIBS"
+		LIBS="$LIBS -lidnkit"
+		AC_TRY_LINK([#include <idn/api.h>
+			#include <string.h>], [
+			idn_result_t rs;
+			char in[255], out[255];
+			strcpy(in, "xn--brenfe-fta9a2q.de");
+			rs = idn_decodename(IDN_DECODE_LOOKUP, &in, &out, 254);
+			idn_result_tostring(rs);], [
+			AC_DEFINE(HAVE_LIBIDNKIT)
+			AC_DEFINE(HAVE_IDN_API_H)
+			AC_DEFINE(HAVE_IDN_DECODENAME)
+			AC_MSG_RESULT(yes)], [
+			LIBS=$cf_save_LIBS
+			AC_MSG_RESULT(no)
+		])
+	])
+])
+
+# libidn - Internationalized Domain Names / IDN 2003
 AC_CHECK_LIB(idn, stringprep_check_version,
 	[AC_CHECK_HEADER(stringprep.h,[
 		AC_DEFINE(HAVE_STRINGPREP_H)
 		AC_CHECK_HEADER(idna.h, [
 			AC_DEFINE(HAVE_IDNA_H)
-			AC_CHECK_LIB(idn, idna_to_unicode_lzlz,[
+			AC_CHECK_LIB(idn, idna_to_unicode_lzlz, [
 				AC_DEFINE(HAVE_IDNA_TO_UNICODE_LZLZ)
 				AC_MSG_CHECKING(for IDNA_USE_STD3_ASCII_RULES)
-				AC_EGREP_HEADER(IDNA_USE_STD3_ASCII_RULES, idna.h,[
+				AC_EGREP_HEADER(IDNA_USE_STD3_ASCII_RULES, idna.h, [
 					AC_DEFINE(HAVE_IDNA_USE_STD3_ASCII_RULES)
 					AC_MSG_RESULT(yes)],
 					AC_MSG_RESULT(no)
 				)
+			])
+			AC_CHECK_LIB(idn, idna_strerror, [
+				AC_DEFINE(HAVE_IDNA_STRERROR)
 			])
 		])
 		AC_DEFINE(HAVE_LIBIDN)
@@ -935,6 +994,8 @@ AC_CHECK_FUNCS(\
 	alarm \
 	atoi \
 	atol \
+	atoll \
+	atoq \
 	bcopy \
 	chmod \
 	closesocket \
@@ -978,10 +1039,12 @@ AC_CHECK_FUNCS(\
 	strdup \
 	strftime \
 	strpbrk \
+	strrchr \
 	strrstr \
 	strsep \
 	strstr \
 	strtol \
+	strtoll \
 	tmpfile \
 	tzset \
 	uname \
@@ -999,6 +1062,16 @@ AC_CHECK_FUNC(flock,
 		AC_DEFINE(HAVE_FLOCK)
 		LIBS="$LIBS -lbsd")])
 
+# clock_gettime() / librt
+AC_CHECK_FUNC(clock_gettime,
+	AC_DEFINE(HAVE_CLOCK_GETTIME),[
+		AC_CHECK_LIB(rt, clock_gettime,
+			AC_DEFINE(HAVE_CLOCK_GETTIME)
+			LIBS="$LIBS -lrt"
+		)
+	]
+)
+
 AM_MULTIBYTE_ABLE
 
 AC_MSG_CHECKING(if gettimeofday takes two arguments)
@@ -1008,7 +1081,7 @@ AC_TRY_COMPILE([
 #endif],
 [struct timeval *tv;
 struct timezone *tz;
-gettimeofday(tv, tz);],
+gettimeofday(&tv, &tz);],
 ac_cv_func_gettimeofday_2args=yes, ac_cv_func_gettimeofday_2args=no)
 AC_MSG_RESULT($ac_cv_func_gettimeofday_2args)
 if test $ac_cv_func_gettimeofday_2args = yes; then
@@ -1137,6 +1210,8 @@ CF_CHECK_DECL(\
 	alarm \
 	atoi \
 	atol \
+	atoll \
+	atoq \
 	bcopy \
 	bzero \
 	calloc \
@@ -1155,7 +1230,6 @@ CF_CHECK_DECL(\
 	fwrite \
 	getcwd \
 	getopt \
-	getpass \
 	getwd \
 	ioctl \
 	isascii \
@@ -1180,6 +1254,7 @@ CF_CHECK_DECL(\
 	strftime \
 	strncasecmp \
 	strtol \
+	strtoll \
 	system \
 	time \
 	tolower \
@@ -1290,24 +1365,19 @@ case "$host_os" in
 		AC_CHECK_FUNC(link, AC_DEFINE(HAVE_LINK))
 esac
 
-# tin has mkdirs.sh instead of mkinstalldirs, overwrite the result of test
-# in gettext.m4
-MKINSTALLDIRS="\$(top_srcdir)/mkdirs.sh"
-AC_SUBST(MKINSTALLDIRS)
-
 if test "$cf_cv_termlib" = pdcurses ; then
 	CF_PDCURSES_X11
 fi
 
 ### sum up warnings
 if test "$cf_cv_termlib" = none ; then
-	AC_MSG_WARN(no term-lib found, you might run into trouble later.)
+	AC_MSG_WARN([no term-lib found, you might run into trouble later.])
 fi
 if test "$YACC" = "" ; then
-	AC_MSG_WARN(no yacc-parser found, you might run into trouble later.)
+	AC_MSG_WARN([no yacc-parser found, you might run into trouble later.])
 fi
 if test "$RANLIB" = "" ; then
-        AC_MSG_WARN(no library archive builder found, you might run into trouble later.)
+	AC_MSG_WARN([no library archive builder found, you might run into trouble later.])
 fi
 
 ### Finally, build autoconf.h and the makefiles
