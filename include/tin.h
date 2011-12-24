@@ -3,10 +3,10 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-03-27
+ *  Updated   : 2011-11-06
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -173,6 +173,57 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #ifdef HAVE_GETOPT_H
 #	include <getopt.h>
 #endif /* HAVE_GETOPT_H */
+
+
+#if defined(ENABLE_LONG_ARTICLE_NUMBERS) && !defined(SMALL_MEMORY_MACHINE)
+/*
+ * defines and typedefs for 64 bit article numbers
+ *
+ * TODO: what if !CPP_DOES_CONCAT
+ *       add configure check for PRIdLEAST64
+ *       add configure check for SCNdLEAST64
+ */
+#	if defined(HAVE_INT_LEAST64_T) && !defined(HAVE_INTTYPES_H)
+#		undef HAVE_INT_LEAST64_T
+#	endif /* HAVE_INT_LEAST64_T && !HAVE_INTTYPES_H */
+#	if defined(HAVE_INT_LEAST64_T) || defined(HAVE_LONG_LONG) || defined(quad_t)
+#		if defined(HAVE_ATOLL) || defined(HAVE_ATOQ)
+#			ifdef HAVE_STRTOLL
+#				define USE_LONG_ARTICLE_NUMBERS 1
+#			endif /* HAVE_STRTOLL */
+#		endif /* HAVE_ATOLL || HAVE_ATOQ */
+#	endif /* HAVE_INT_LEAST64_T || HAVE_LONG_LONG || quad_t */
+#	ifdef HAVE_STDINT_H
+#		include <stdint.h>
+#	endif	/* HAVE_STDINT_H */
+#endif /* ENABLE_LONG_ARTICLE_NUMBERS && !SMALL_MEMORY_MACHINE */
+#ifdef USE_LONG_ARTICLE_NUMBERS
+#	if defined(HAVE_INT_LEAST64_T) && defined(HAVE_INT64_C)
+#		include <inttypes.h>
+		typedef int_least64_t t_artnum;
+#		define T_ARTNUM_PFMT PRIdLEAST64
+#		define T_ARTNUM_SFMT SCNdLEAST64
+#		define T_ARTNUM_CONST(v) INT64_C(v)
+#	else
+		typedef long long t_artnum;
+#		define T_ARTNUM_PFMT "lld"
+#		define T_ARTNUM_SFMT "lld"
+#		define T_ARTNUM_CONST(v) v ## LL
+#	endif /* HAVE_INT_LEAST64_T && HAVE_INT64_C */
+#	ifdef HAVE_ATOLL
+#		define atoartnum atoll
+#	else
+#		define atoartnum atoq
+#	endif /* HAVE_ATOLL */
+#	define strtoartnum strtoll
+#else
+	typedef long t_artnum;
+#	define T_ARTNUM_PFMT "ld"
+#	define T_ARTNUM_SFMT "ld"
+#	define T_ARTNUM_CONST(v) v ## L
+#	define atoartnum atol
+#	define strtoartnum strtol
+#endif /* USE_LONG_ARTICLE_NUMBERS */
 
 /*
  * FIXME: make this autoconf
@@ -419,8 +470,10 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	endif /* !HAVE_MEMSET */
 #	ifndef HAVE_STRCHR
 #		define strchr(str, ch)	index(str, ch)
-#		define strrchr(str, ch)	rindex(str, ch)
 #	endif /* !HAVE_STRCHR */
+#	ifndef HAVE_STRRCHR
+#		define strrchr(str, ch)	rindex(str, ch)
+#	endif /* !HAVE_STRRCHR */
 #	if defined(__386BSD__) || defined(__bsdi__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #		define DEFAULT_PRINTER	"/usr/bin/lpr"
 #		define DEFAULT_SUM	"/usr/bin/cksum -o 1 <" /* use tailing <, otherwise get filename output too */
@@ -895,7 +948,6 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  */
 #define TIN_ABORT		1			/* User requested abort or timeout */
 
-#define NUM_CONFIRM_CHOICES	8	/* confirm what? */
 #define TINRC_CONFIRM_ACTION	(tinrc.confirm_choice == 1 || tinrc.confirm_choice == 4 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 7)
 #define TINRC_CONFIRM_TO_QUIT	(tinrc.confirm_choice == 3 || tinrc.confirm_choice == 4 || tinrc.confirm_choice == 6 || tinrc.confirm_choice == 7)
 #define TINRC_CONFIRM_SELECT	(tinrc.confirm_choice == 2 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 6 || tinrc.confirm_choice == 7)
@@ -929,15 +981,8 @@ enum {
 	MIME_ENCODING_8BIT = 0,
 	MIME_ENCODING_BASE64,
 	MIME_ENCODING_QP,
-	MIME_ENCODING_7BIT,
-	NUM_MIME_ENCODINGS
+	MIME_ENCODING_7BIT
 };
-
-#ifdef CHARSET_CONVERSION			/* can/should do charset conversion via iconv() */
-#	define NUM_MIME_CHARSETS 27	/* # known 'outgoing' charsets */
-#endif /* CHARSET_CONVERSION */
-
-#define NUM_MAILBOX_FORMATS 3		/* MBOX0, MBOXRD, MMDF */
 
 /*
  * Number of charset-traslation tables (iso2asci)
@@ -1122,8 +1167,7 @@ enum {
 enum {
 	INTERACTIVE_NONE = 0,
 	INTERACTIVE_WITH_HEADERS,
-	INTERACTIVE_WITHOUT_HEADERS,
-	NUM_INTERACTIVE_MAILERS
+	INTERACTIVE_WITHOUT_HEADERS
 };
 
 /*
@@ -1432,7 +1476,7 @@ struct t_msgid {
  *	>=0 points to the previous arts[] (struct t_article)
  */
 struct t_article {
-	long artnum;			/* Article number in spool directory for group */
+	t_artnum artnum;		/* Article number in spool directory for group */
 	char *subject;			/* Subject: line from mail header */
 	char *from;			/* From: line from mail header (address) */
 	char *name;			/* From: line from mail header (full name) */
@@ -1656,23 +1700,17 @@ struct t_scope {
 };
 
 /*
- * TODO: turn longs to int_least64_t
- */
-/*
  * struct t_newsrc - newsrc related info.
  */
 struct t_newsrc {
 	t_bool present:1;		/* update newsrc? */
-	long num_unread;		/* unread articles in group */
-	long xmax;			/* newsrc max */
-	long xmin;			/* newsrc min */
-	long xbitlen;			/* bitmap length (max-min+1) */
+	t_artnum num_unread;		/* unread articles in group */
+	t_artnum xmax;			/* newsrc max */
+	t_artnum xmin;			/* newsrc min */
+	t_artnum xbitlen;			/* bitmap length (max-min+1) */
 	t_bitmap *xbitmap;	/* bitmap read/unread (max-min+1+7)/8 */
 };
 
-/*
- * TODO: turn longs to int_least64_t
- */
 /*
  * struct t_group - newsgroup info from active file
  */
@@ -1682,9 +1720,9 @@ struct t_group {
 	char *description;	/* text from NEWSLIBDIR/newsgroups file */
 	char *spooldir;		/* groups spool directory */
 	char moderated;		/* state of group moderation */
-	long count;			/* article number count */
-	long xmax;			/* max. article number */
-	long xmin;			/* min. article number */
+	t_artnum count;		/* article number count */
+	t_artnum xmax;		/* max. article number */
+	t_artnum xmin;		/* min. article number */
 	unsigned int type:4;		/* grouptype - newsgroup/mailbox/savebox */
 	t_bool inrange:1;		/* TRUE if group selected via # range command */
 	t_bool read_during_session:1;	/* TRUE if group entered during session */
@@ -1856,7 +1894,6 @@ struct t_option {
 	int var_index;		/* index in corresponding table */
 	int *variable;		/* ptr to variable to change */
 	constext **opt_list;	/* ptr to list entries if OPT_LIST */
-	int opt_count;		/* no. of list entries if OPT_LIST */
 	struct opttxt *txt;	/* ptr to information/help on option */
 };
 
@@ -1902,6 +1939,12 @@ typedef struct _TIMEINFO {
 	long usec;
 	long tzone;
 } TIMEINFO;
+
+
+struct t_tintime {
+	time_t tv_sec; /* seconds */
+	long tv_nsec; /* nanoseconds */
+};
 
 
 /*

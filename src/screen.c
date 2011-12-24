@@ -3,10 +3,10 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-01-29
+ *  Updated   : 2011-11-05
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -416,8 +416,8 @@ spin_cursor(
 void
 show_progress(
 	const char *txt,
-	long count,
-	long total)
+	t_artnum count,
+	t_artnum total)
 {
 	char display[LEN];
 	int ratio;
@@ -425,20 +425,20 @@ show_progress(
 	static char last_display[LEN];
 	static const char *last_txt;
 	static int last_ratio;
-	static long last_total;
+	static t_artnum last_total;
 	static time_t last_update;
-#ifdef HAVE_GETTIMEOFDAY
-	static long last_count;
+#if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
+	static t_artnum last_count;
 	static int average;
 	static int samples;
 	static int sum;
-	static struct timeval last_time;
-	static struct timeval this_time;
 	char *display_format;
 	int time_diff;
 	int secs_left;
-	long count_diff;
-#endif /* HAVE_GETTIMEOFDAY */
+	t_artnum count_diff;
+	static struct t_tintime last_time;
+	static struct t_tintime this_time;
+#endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
 
 	if (batch_mode || count <= 0 || total <= 0)
 		return;
@@ -461,7 +461,7 @@ show_progress(
 
 	last_update = curr_time;
 
-#ifdef HAVE_GETTIMEOFDAY
+#if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
 	display_format = my_malloc(strlen(DISPLAY_FMT) + strlen(_(txt_remaining)) + 1);
 	strcpy(display_format, DISPLAY_FMT);
 
@@ -473,10 +473,9 @@ show_progress(
 		sum = average = samples = 0;
 	} else {
 		/* Get the current time */
-		gettimeofday(&this_time, NULL);
+		tin_gettime(&this_time);
 		time_diff = (this_time.tv_sec - last_time.tv_sec) * 1000000;
-		time_diff += (this_time.tv_usec - last_time.tv_usec);
-
+		time_diff += ((this_time.tv_nsec - last_time.tv_nsec) / 1000);
 		count_diff = (count - last_count);
 
 		if (!count_diff) /* avoid div by zero */
@@ -515,11 +514,10 @@ show_progress(
 	free(display_format);
 
 	last_count = count;
-	gettimeofday(&last_time, NULL);
-
+	tin_gettime(&last_time);
 #else
 	snprintf(display, sizeof(display), "%s %3d%%", txt, ratio);
-#endif /* HAVE_GETTIMEOFDAY */
+#endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
 
 	/* Only display text if it changed from last time */
 	if (strcmp(display, last_display)) {

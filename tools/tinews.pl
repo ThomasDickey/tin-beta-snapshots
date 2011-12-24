@@ -4,7 +4,7 @@
 # signs the article and posts it.
 #
 #
-# Copyright (c) 2002-2011 Urs Janssen <urs@tin.org>,
+# Copyright (c) 2002-2012 Urs Janssen <urs@tin.org>,
 #                         Marc Brockschmidt <marc@marcbrockschmidt.de>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,32 +32,34 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 #
-# TODO: - FIXME add debug mode which doesn't delete tmp-files and is verbose
-#       - add pgp6 support
-#       - check for /etc/nntpserver (and /etc/news/server)
-#       - also check for ~/.nntpauth?
-#       - add $PGPOPTS, $PGPPATH, $GNUPGHOME support
+# TODO: - add debug mode which doesn't delete tmp-files and is verbose
 #       - add pid to pgptmpf to allow multiple simultaneous instances
-#       - cleanup, remove duplicated code
-#       - sign Injection-Date?
+#       - check for /etc/nntpserver (and /etc/news/server)
+#       - add $PGPOPTS, $PGPPATH and $GNUPGHOME support
+#       - cleanup and remove duplicated code
 #
+
+use strict;
+use warnings;
+
 # version Number
-my $version = "1.1.24";
+my $version = "1.1.32";
 
 my %config;
 
 # configuration, may be overwritten via ~/.tinewsrc
 $config{'NNTPServer'}	= 'news';	# your NNTP servers name, may be set via $NNTPSERVER
 $config{'NNTPPort'}		= 119;	# NNTP-port, may be set via $NNTPPORT
-$config{'NNTPUser'}		= '';	# username for nntp-auth, may be set via ~/.newsauth
-$config{'NNTPPass'}		= '';	# password for nntp-auth, may be set via ~/.newsauth
+$config{'NNTPUser'}		= '';	# username for nntp-auth, may be set via ~/.newsauth or ~/.nntpauth
+$config{'NNTPPass'}		= '';	# password for nntp-auth, may be set via ~/.newsauth or ~/.nntpauth
 
 $config{'PGPSigner'}	= '';	# sign as who?
 $config{'PGPPass'}		= '';	# pgp2 only
-$config{'PathtoPGPPass'}= '';	# pgp2, pgp5 and gpg
+$config{'PathtoPGPPass'}= '';	# pgp2, pgp5, pgp6 and gpg
+$config{'PGPPassFD'}	= 9;	# file descriptor used for input redirection of PathtoPGPPass, GPG, PGP5 and PGP6 only
 
 $config{'pgp'}			= '/usr/bin/pgp';	# path to pgp
-$config{'PGPVersion'}	= '2';	# Use 2 for 2.X, 5 for PGP > 2.X and GPG for GPG
+$config{'PGPVersion'}	= '2';	# Use 2 for 2.X, 5 for PGP5, 6 for PGP6 and GPG for GPG
 $config{'digest-algo'}	= 'MD5';# Digest Algorithm for GPG. Must be supported by your installation
 
 $config{'Interactive'}	= 'yes';# allow interactive usage
@@ -77,19 +79,18 @@ $config{'pgpend'}		= '-----END PGP SIGNATURE-----';	# End of PGP-Signature
 # $config{'canlock_secret'}	= '~/.cancelsecret';		# Path to canlock secret file
 
 $config{'PGPSignHeaders'} = ['From', 'Newsgroups', 'Subject', 'Control',
-	'Supersedes', 'Followup-To', 'Date', 'Sender', 'Approved',
+	'Supersedes', 'Followup-To', 'Date', 'Injection-Date', 'Sender', 'Approved',
 	'Message-ID', 'Reply-To', 'Cancel-Key', 'Also-Control',
 	'Distribution'];
 $config{'PGPorderheaders'} = ['from', 'newsgroups', 'subject', 'control',
-	'supersedes', 'followup-To', 'date', 'organization', 'lines',
-	'sender', 'approved', 'distribution', 'message-id',
+	'supersedes', 'followup-To', 'date', 'injection-date', 'organization',
+	'lines', 'sender', 'approved', 'distribution', 'message-id',
 	'references', 'reply-to', 'mime-version', 'content-type',
 	'content-transfer-encoding', 'summary', 'keywords', 'cancel-lock',
 	'cancel-key', 'also-control', 'x-pgp', 'user-agent'];
 
 ################################################################################
 
-use strict;
 use Getopt::Long qw(GetOptions);
 use Net::NNTP;
 use Time::Local;
@@ -100,15 +101,17 @@ use Term::ReadLine;
 my %cli_headers;
 
 # read config file ~/.tinewsrc if present
-if (-r glob('~/.tinewsrc')) {
-	open (TINEWSRC, glob('~/.tinewsrc'));
-	while (defined($_ = <TINEWSRC>)) {
-		if (m/^([^#\s]+)\s*=\s*(\S+)/io) {
-			$config{$1} = $2;
+if (open(my $TINEWSRC, '<', (glob('~/.tinewsrc'))[0])) {
+	while (defined($_ = <$TINEWSRC>)) {
+		if (m/^([^#\s=]+)\s*=\s*(\S[^#]+)/io) {
+			chomp($config{$1} = $2);
 		}
 	}
-	close (TINEWSRC);
+	close($TINEWSRC);
 }
+
+# digest-algo is case sensitive and should be all uppercase
+$config{'digest-algo'} = uc($config{'digest-algo'});
 
 # these env-vars have higher priority
 $config{'NNTPServer'} = $ENV{'NNTPSERVER'} if ($ENV{'NNTPSERVER'});
@@ -168,10 +171,10 @@ if (! $config{'no_sign'}) {
 	$config{'PGPSigner'} = $ENV{'SIGNER'} if ($ENV{'SIGNER'});
 	$config{'PathtoPGPPass'} = $ENV{'PGPPASSFILE'} if ($ENV{'PGPPASSFILE'});
 	if ($config{'PathtoPGPPass'}) {
-		open (PGPPass, glob($config{'PathtoPGPPass'})) or
-			$config{'Interactive'} && die ("$0: Can't open ".$config{'PathtoPGPPass'}.": $!");
-		chomp ($config{'PGPPass'} = <PGPPass>);
-		close(PGPPass);
+		open(my $PGPPass, '<', (glob($config{'PathtoPGPPass'}))[0]) or
+			$config{'Interactive'} && die("$0: Can't open ".$config{'PathtoPGPPass'}.": $!");
+		chomp($config{'PGPPass'} = <$PGPPass>);
+		close($PGPPass);
 	}
 	if ($config{'PGPVersion'} eq '2' && $ENV{'PGPPASS'}) {
 		$config{'PGPPass'} = $ENV{'PGPPASS'};
@@ -184,16 +187,16 @@ readarticle(\%Header, \@Body);
 
 # Add signature if there is none
 if (!$config{'no_signature'}) {
-	if ($config{'add_signature'} && !grep /^-- /, @Body) {
+	if ($config{'add_signature'} && !grep {/^-- /} @Body) {
 		if (-r $config{'sig_path'}) {
 			my $l = 0;
 			push @Body, "-- \n";
-			open SIGNATURE, ($config{'sig_path'}) or die "Can't open " . $config{'sig_path'} . ": $!";
-			while (<SIGNATURE>){
+			open(my $SIGNATURE, '<', $config{'sig_path'}) or die("Can't open " . $config{'sig_path'} . ": $!");
+			while (<$SIGNATURE>){
 				die $config{'sig_path'} . " longer than " . $config{'sig_max_lines'}. " lines!" if (++$l > $config{'sig_max_lines'});
 				push @Body, $_;
 			}
-			close SIGNATURE;
+			close($SIGNATURE);
 		} else {
 			if ($config{'debug'}) {
 				warn "Tried to add " . $config{'sig_path'} . ", but it is unreadable";
@@ -205,13 +208,13 @@ if (!$config{'no_signature'}) {
 # import headers set in the environment
 if (!defined($Header{'reply-to'})) {
 	if ($ENV{'REPLYTO'}) {
-		chomp ($Header{'reply-to'} = "Reply-To: " . $ENV{'REPLYTO'});
+		chomp($Header{'reply-to'} = "Reply-To: " . $ENV{'REPLYTO'});
 		$Header{'reply-to'} .= "\n";
 	}
 }
 foreach ('DISTRIBUTION', 'ORGANIZATION') {
 	if (!defined($Header{lc($_)}) && $ENV{$_}) {
-		chomp ($Header{lc($_)} = ucfirst($_).": " . $ENV{$_});
+		chomp($Header{lc($_)} = ucfirst($_).": " . $ENV{$_});
 		$Header{lc($_)} .= "\n";
 	}
 }
@@ -221,16 +224,17 @@ foreach ('Approved', 'Control', 'Distribution', 'Expires',
 	'From', 'Followup-To', 'Newsgroups',' Reply-To', 'Subject',
 	'References', 'Organization', 'Path') {
 	next if (!defined($config{lc($_)}));
-	chomp ($Header{lc($_)} = $_ . ": " . $config{lc($_)});
+	chomp($Header{lc($_)} = $_ . ": " . $config{lc($_)});
 	$Header{lc($_)} .= "\n";
 }
 
 # verify/add/remove headers
 foreach ('From', 'Subject') {
-	die "$0: No $_:-header defined." if (!defined($Header{lc($_)}));
+	die("$0: No $_:-header defined.") if (!defined($Header{lc($_)}));
 }
 
 $Header{'date'} = "Date: ".getdate()."\n" if (!defined($Header{'date'}) || $Header{'date'} !~ m/^[^\s:]+: .+/o);
+$Header{'injection-date'} = "Injection-Date: ".getdate()."\n";
 
 if (defined($Header{'user-agent'})) {
 	chomp $Header{'user-agent'};
@@ -252,25 +256,44 @@ if ($config{'debug'}) {
 		warn "Raw 8-bit data in the following header:\n$Header{$_}" if ($Header{$_} =~ m/[\x80-\xff]/o);
 	}
 	if (!defined($Header{'mime-version'}) || !defined($Header{'content-type'}) || !defined($Header{'content-transfer-encoding'})) {
-		warn "8bit body without MIME-headers\n" if (grep /[\x80-\xff]/, @Body);
+		warn "8bit body without MIME-headers\n" if (grep {/[\x80-\xff]/} @Body);
 	}
 }
 
 # try ~/.newsauth if no $config{'NNTPPass'} was set
 if (!$config{'NNTPPass'}) {
+	my ($l, $server, $pass, $user);
 	if (-r (glob("~/.newsauth"))[0]) {
-		my ($l, $server, $pass, $user);
-		open NEWSAUTH, (glob("~/.newsauth"))[0] or die "Can't open ~/.newsauth: $!";
-		while ($l = <NEWSAUTH>) {
+		open (my $NEWSAUTH, '<', (glob("~/.newsauth"))[0]) or die("Can't open ~/.newsauth: $!");
+		while ($l = <$NEWSAUTH>) {
 			chomp $l;
 			next if ($l =~ m/^[#\s]/);
 			($server, $pass, $user) = split(/\s+\b/, $l);
 			last if ($server =~ m/\Q$config{'NNTPServer'}\E/);
 		}
-		close (NEWSAUTH);
-		if ($pass) {
+		close($NEWSAUTH);
+		if ($pass && $server =~ m/\Q$config{'NNTPServer'}\E/) {
 			$config{'NNTPPass'} = $pass;
 			$config{'NNTPUser'} = $user || getlogin || getpwuid($<) || $ENV{USER};
+		} else {
+			$pass = $user = "";
+		}
+	}
+	# try ~/.nntpauth if we still got no password
+	if (!$pass) {
+		if (-r (glob("~/.nntpauth"))[0]) {
+			open (my $NNTPAUTH, '<', (glob("~/.nntpauth"))[0]) or die("Can't open ~/.nntpauth: $!");
+			while ($l = <$NNTPAUTH>) {
+				chomp $l;
+				next if ($l =~ m/^[#\s]/);
+				($server, $user, $pass) = split(/\s+\b/, $l);
+				last if ($server =~ m/\Q$config{'NNTPServer'}\E/);
+			}
+			close($NNTPAUTH);
+			if ($pass && $server =~ m/\Q$config{'NNTPServer'}\E/) {
+				$config{'NNTPPass'} = $pass;
+				$config{'NNTPUser'} = $user || getlogin || getpwuid($<) || $ENV{USER};
+			}
 		}
 	}
 }
@@ -288,21 +311,21 @@ if (!defined($Header{'message-id'})) {
 	my $hname;
 	eval "use Sys::Hostname";
 	if ($@) {
-		chomp ($hname = `hostname`);
+		chomp($hname = `hostname`);
 	} else {
 		$hname = hostname();
 	}
 	my ($hostname,) = gethostbyname($hname);
 	if (defined($hostname) && $hostname =~ m/\./io) {
-		$Header{'message-id'} = "Message-ID: " . sprintf ("<N%xI%xT%x@%s>\n", $>, timelocal(localtime), $$, $hostname);
+		$Header{'message-id'} = "Message-ID: " . sprintf("<N%xI%xT%x@%s>\n", $>, timelocal(localtime), $$, $hostname);
 	}
 }
 
 # add Cancel-Lock (and Cancel-Key) header(s) if requested
 if ($config{'canlock_secret'} && defined($Header{'message-id'}) && !$config{'no_canlock'}) {
-	open (CANLock, glob($config{'canlock_secret'})) or die ("$0: Can't open " . $config{'canlock_secret'} . ": $!");
-	chomp (my $key = <CANLock>);
-	close (CANLock);
+	open(my $CANLock, '<', (glob($config{'canlock_secret'}))[0]) or die("$0: Can't open " . $config{'canlock_secret'} . ": $!");
+	chomp(my $key = <$CANLock>);
+	close($CANLock);
 	(my $data = $Header{'message-id'}) =~ s#^Message-ID: ##i;
 	chomp $data;
 	my $digest = Digest::HMAC_SHA1::hmac_sha1($data, $key);
@@ -354,7 +377,7 @@ if ($config{'sendmail'} && defined($Header{'newsgroups'}) && (defined($Header{'t
 
 if (! $config{'no_sign'}) {
 	if (!$config{'PGPSigner'}) {
-		chomp ($config{'PGPSigner'} = $Header{'from'});
+		chomp($config{'PGPSigner'} = $Header{'from'});
 		$config{'PGPSigner'} =~ s/^[^\s:]+: (.*)/$1/;
 	}
 	$PGPCommand = getpgpcommand($config{'PGPVersion'});
@@ -388,12 +411,12 @@ if (! $config{'savedir'}) {
 
 # mail article
 if (($To || $Cc || $Bcc) && $config{'sendmail'}) {
-	open(MAIL, $config{'sendmail'}) || die "$!";
+	open(my $MAIL, $config{'sendmail'}) || die("$!");
 	unshift @$MessageR, "$To" if ($To);
 	unshift @$MessageR, "$Cc" if ($Cc);
 	unshift @$MessageR, "$Bcc" if ($Bcc);
-	print(MAIL @$MessageR);
-	close(MAIL);
+	print($MAIL @$MessageR);
+	close($MAIL);
 }
 
 # Game over. Insert new coin.
@@ -416,12 +439,13 @@ sub readarticle {
 				$$HeaderR{$currentheader} .= $_;
 			} else {
 				chomp($_);
-				die ("'$_' is not a correct header-line");
+				die("'$_' is not a correct header-line");
 			}
 		} else {
 			push @$BodyR, $_;
 		}
 	}
+	return;
 }
 
 #-------- sub getdate
@@ -459,7 +483,7 @@ sub getdate {
 # $config{'Interactive'} is != 0).
 sub AuthonNNTP {
 	my $Server = Net::NNTP->new($config{'NNTPServer'}, Reader => 1, Debug => 0, Port => $config{'NNTPPort'})
-		or die "$0: Can't connect to ".$config{'NNTPServer'}.":".$config{'NNTPPort'}."!\n";
+		or die("$0: Can't connect to ".$config{'NNTPServer'}.":".$config{'NNTPPort'}."!\n");
 	my $ServerMsg = "";
 	my $ServerCod = $Server->code();
 
@@ -467,7 +491,7 @@ sub AuthonNNTP {
 	if ($ServerCod < 200 || $ServerCod > 201) {
 		$ServerMsg = $Server->message();
 		$Server->quit();
-		die ($0.": ".$ServerCod." ".$ServerMsg."\n");
+		die($0.": ".$ServerCod." ".$ServerMsg."\n");
 	}
 
 	# read access - try auth
@@ -480,7 +504,7 @@ sub AuthonNNTP {
 			} else {
 				$ServerMsg = $Server->message();
 				$Server->quit();
-				die ($0.": ".$ServerCod." ".$ServerMsg."\n");
+				die($0.": ".$ServerCod." ".$ServerMsg."\n");
 			}
 		}
 		$Server->authinfo($config{'NNTPUser'}, $config{'NNTPPass'});
@@ -503,7 +527,7 @@ sub AuthonNNTP {
 			} else {
 				$ServerMsg = $Server->message();
 				$Server->quit();
-				die ($0.": ".$ServerCod." ".$ServerMsg."\n");
+				die($0.": ".$ServerCod." ".$ServerMsg."\n");
 			}
 		}
 		$Server->authinfo($config{'NNTPUser'}, $config{'NNTPPass'});
@@ -542,26 +566,34 @@ sub getpgpcommand {
 		} elsif ($config{'Interactive'}) {
 			$PGPCommand = $config{'pgp'}." -z -u \"".$config{'PGPSigner'}."\" +verbose=0 language='en' -saft <".$config{'pgptmpf'}.".txt >".$config{'pgptmpf'}.".txt.asc";
 		} else {
-			die "$0: Passphrase is unknown!\n";
+			die("$0: Passphrase is unknown!\n");
 		}
 	} elsif ($PGPVersion eq '5') {
 		if ($config{'PathtoPGPPass'}) {
-			$PGPCommand = "PGPPASSFD=42 ".$config{'pgp'}."s -u \"".$config{'PGPSigner'}."\" -t --armor -o ".$config{'pgptmpf'}.".txt.asc -z -f < ".$config{'pgptmpf'}.".txt 42<".$config{'PathtoPGPPass'};
+			$PGPCommand = "PGPPASSFD=".$config{'PGPPassFD'}." ".$config{'pgp'}."s -u \"".$config{'PGPSigner'}."\" -t --armor -o ".$config{'pgptmpf'}.".txt.asc -z -f < ".$config{'pgptmpf'}.".txt ".$config{'PGPPassFD'}."<".$config{'PathtoPGPPass'};
 		} elsif ($config{'Interactive'}) {
 			$PGPCommand = $config{'pgp'}."s -u \"".$config{'PGPSigner'}."\" -t --armor -o ".$config{'pgptmpf'}.".txt.asc -z -f < ".$config{'pgptmpf'}.".txt";
 		} else {
-			die "$0: Passphrase is unknown!\n";
+			die("$0: Passphrase is unknown!\n");
+		}
+	} elsif ($PGPVersion eq '6') { # this is untested
+		if ($config{'PathtoPGPPass'}) {
+			$PGPCommand = "PGPPASSFD=".$config{'PGPPassFD'}." ".$config{'pgp'}." -u \"".$config{'PGPSigner'}."\" -saft -o ".$config{'pgptmpf'}.".txt.asc < ".$config{'pgptmpf'}.".txt ".$config{'PGPPassFD'}."<".$config{'PathtoPGPPass'};
+		} elsif ($config{'Interactive'}) {
+			$PGPCommand = $config{'pgp'}." -u \"".$config{'PGPSigner'}."\" -saft -o ".$config{'pgptmpf'}.".txt.asc < ".$config{'pgptmpf'}.".txt";
+		} else {
+			die("$0: Passphrase is unknown!\n");
 		}
 	} elsif ($PGPVersion =~ m/GPG/io) {
 		if ($config{'PathtoPGPPass'}) {
-			$PGPCommand = $config{'pgp'}." --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-tty --batch --passphrase-fd 42 42<".$config{'PathtoPGPPass'}." --clearsign ".$config{'pgptmpf'}.".txt";
+			$PGPCommand = $config{'pgp'}." --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-tty --batch --passphrase-fd ".$config{'PGPPassFD'}." ".$config{'PGPPassFD'}."<".$config{'PathtoPGPPass'}." --clearsign ".$config{'pgptmpf'}.".txt";
 		} elsif ($config{'Interactive'}) {
 			$PGPCommand = $config{'pgp'}." --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-secmem-warning --no-batch --clearsign ".$config{'pgptmpf'}.".txt";
 		} else {
-			die "$0: Passphrase is unknown!\n";
+			die("$0: Passphrase is unknown!\n");
 		}
 	} else {
-		die "$0: Unknown PGP-Version $PGPVersion!";
+		die("$0: Unknown PGP-Version $PGPVersion!");
 	}
 	return $PGPCommand;
 }
@@ -583,12 +615,13 @@ sub postarticle {
 		if (!$Server->ok()) {
 			my $ServerMsg = $Server->message();
 			$Server->quit();
-			die ("\n$0: Posting failed! Response from news server:\n", $Server->code(), ' ', $ServerMsg);
+			die("\n$0: Posting failed! Response from news server:\n", $Server->code(), ' ', $ServerMsg);
 		}
 		$Server->quit();
 	} else {
-		die "\n".$0.": Posting failed!\n";
+		die("\n".$0.": Posting failed!\n");
 	}
+	return;
 }
 
 
@@ -601,11 +634,12 @@ sub savearticle {
 	my ($ArticleR) = @_;
 	my $timestamp = timelocal(localtime);
 	(my $ng = $Newsgroups) =~ s#^Newsgroups:\s*([^,\s]+).*#$1#i;
-	my $gn = join "", map { substr($_,0,1) } (split (/\./, $ng));
+	my $gn = join "", map { substr($_,0,1) } (split(/\./, $ng));
 	my $filename = $config{'savedir'}."/".$timestamp."-".$gn."-".$$;
-	open (SH, '>', $filename) or die("$0: can't open $filename: $!\n");
-	print SH @$ArticleR;
-	close(SH) or warn "$0: Couldn't close: $!\n";
+	open(my $SH, '>', $filename) or die("$0: can't open $filename: $!\n");
+	print $SH @$ArticleR;
+	close($SH) or warn "$0: Couldn't close: $!\n";
+	return;
 }
 
 
@@ -621,7 +655,7 @@ sub savearticle {
 # 	- $MessageRef: A reference to an array containing the whole message.
 sub signarticle {
 	my ($HeaderR, $BodyR) = @_;
-	my (@pgphead, @pgpbody, $pgphead, $pgpbody, $header, $signheaders, @signheaders);
+	my (@pgphead, @pgpbody, $pgphead, $pgpbody, $signheaders, @signheaders);
 
 	foreach (@{$config{'PGPSignHeaders'}}) {
 		if (defined($$HeaderR{lc($_)}) && $$HeaderR{lc($_)} =~ m/^[^\s:]+: .+/o) {
@@ -629,7 +663,7 @@ sub signarticle {
 		}
 	}
 
-	$pgpbody = join ("", @$BodyR);
+	$pgpbody = join("", @$BodyR);
 
 	# Delete and create the temporary pgp-Files
 	unlink $config{'pgptmpf'}.".txt";
@@ -637,36 +671,36 @@ sub signarticle {
 	$signheaders = join(",", @signheaders);
 
 	$pgphead = "X-Signed-Headers: $signheaders\n";
-	foreach $header (@signheaders) {
+	foreach my $header (@signheaders) {
 		if ($$HeaderR{lc($header)} =~ m/^[^\s:]+: (.+?)\n?$/so) {
 			$pgphead .= $header.": ".$1."\n";
 		}
 	}
 
 	unless (substr($pgpbody,-1,1)=~ /\n/ ) {$pgpbody.="\n"};
-	open(FH, ">" . $config{'pgptmpf'} . ".txt") or die "$0: can't open ".$config{'pgptmpf'}.": $!\n";
-	print FH $pgphead, "\n", $pgpbody;
-	print FH "\n" if ($config{'PGPVersion'} =~ m/GPG/io);	# workaround a pgp/gpg incompatibility - should IMHO be fixed in pgpverify
-	close(FH) or warn "$0: Couldn't close TMP: $!\n";
+	open(my $FH, '>', $config{'pgptmpf'} . ".txt") or die("$0: can't open ".$config{'pgptmpf'}.": $!\n");
+	print $FH $pgphead, "\n", $pgpbody;
+	print $FH "\n" if ($config{'PGPVersion'} =~ m/GPG/io); # workaround a pgp/gpg incompatibility - should IMHO be fixed in pgpverify
+	close($FH) or warn "$0: Couldn't close TMP: $!\n";
 
 	# Start PGP, then read the signature;
 	`$PGPCommand`;
 
-	open (FH, "<" . $config{'pgptmpf'} . ".txt.asc") or die "$0: can't open ".$config{'pgptmpf'}.".txt.asc: $!\n";
-	$/ = "\n".$config{'pgpbegin'}."\n";
-	$_ = <FH>;
+	open($FH, '<', $config{'pgptmpf'} . ".txt.asc") or die("$0: can't open ".$config{'pgptmpf'}.".txt.asc: $!\n");
+	local $/ = "\n".$config{'pgpbegin'}."\n";
+	$_ = <$FH>;
 	unless (m/\Q$config{'pgpbegin'}\E$/o) {
 		unlink $config{'pgptmpf'} . ".txt";
 		unlink $config{'pgptmpf'} . ".txt.asc";
-		die "$0: ".$config{'pgpbegin'}." not found in ".$config{'pgptmpf'}.".txt.asc\n"
+		die("$0: ".$config{'pgpbegin'}." not found in ".$config{'pgptmpf'}.".txt.asc\n");
 	}
 	unlink($config{'pgptmpf'} . ".txt") or warn "$0: Couldn't unlink ".$config{'pgptmpf'}.".txt: $!\n";
 
-	$/ = "\n";
-	$_ = <FH>;
+	local $/ = "\n";
+	$_ = <$FH>;
 	unless (m/^Version: (\S+)(?:\s(\S+))?/o) {
 		unlink $config{'pgptmpf'} . ".txt.asc";
-		die "$0: didn't find PGP Version line where expected.\n";
+		die("$0: didn't find PGP Version line where expected.\n");
 	}
 	if (defined($2)) {
 		$$HeaderR{$config{'pgpheader'}} = $1."-".$2." ".$signheaders;
@@ -674,36 +708,36 @@ sub signarticle {
 		$$HeaderR{$config{'pgpheader'}} = $1." ".$signheaders;
 	}
 	do {			# skip other pgp headers like
-		$_ = <FH>;	# "charset:"||"comment:" until empty line
+		$_ = <$FH>;	# "charset:"||"comment:" until empty line
 	} while ! /^$/;
 
-	while (<FH>) {
+	while (<$FH>) {
 		chomp;
 		last if /^\Q$config{'pgpend'}\E$/;
 		$$HeaderR{$config{'pgpheader'}} .= "\n\t$_";
 	}
 	$$HeaderR{$config{'pgpheader'}} .= "\n" unless ($$HeaderR{$config{'pgpheader'}} =~ /\n$/s);
 
-	$_ = <FH>;
-	unless (eof(FH)) {
+	$_ = <$FH>;
+	unless (eof($FH)) {
 		unlink $config{'pgptmpf'} . ".txt.asc";
-		die "$0: unexpected data following ".$config{'pgpend'}."\n";
+		die("$0: unexpected data following ".$config{'pgpend'}."\n");
 	}
-	close(FH);
+	close($FH);
 	unlink $config{'pgptmpf'} . ".txt.asc";
 
 	my $tmppgpheader = $config{'pgpheader'} . ": " . $$HeaderR{$config{'pgpheader'}};
 	delete $$HeaderR{$config{'pgpheader'}};
 
 	@pgphead = ();
-	foreach $header (@{$config{PGPorderheaders}}) {
+	foreach my $header (@{$config{PGPorderheaders}}) {
 		if ($$HeaderR{$header} && $$HeaderR{$header} ne "\n") {
 			push(@pgphead, "$$HeaderR{$header}");
 			delete $$HeaderR{$header};
 		}
 	}
 
-	foreach $header (keys %$HeaderR) {
+	foreach my $header (keys %$HeaderR) {
 		if ($$HeaderR{$header} && $$HeaderR{$header} ne "\n") {
 			push(@pgphead, "$$HeaderR{$header}");
 			delete $$HeaderR{$header};
@@ -714,7 +748,7 @@ sub signarticle {
 	push @pgphead, ("X-PGP-Key: " . $config{'PGPSigner'} . "\n"), $tmppgpheader;
 	undef $tmppgpheader;
 
-	@pgpbody = split /$/m, $pgpbody;
+	@pgpbody = split(/$/m, $pgpbody);
 	my @pgpmessage = (@pgphead, "\n", @pgpbody);
 	return \@pgpmessage;
 }
@@ -737,7 +771,7 @@ sub usage {
 	print "  -w string  set Followup-To:-header to string\n";
 	print "  -x string  set Path:-header to string\n";
 	print "  -H         show help\n";
-	print "  -L         do not add Cacenl-Lock: / Cancel-Key: headers\n";
+	print "  -L         do not add Cancel-Lock: / Cancel-Key: headers\n";
 	print "  -R         disallow control messages\n";
 	print "  -S         do not append " . $config{'sig_path'} . "\n";
 	print "  -X         do not sign article\n";
@@ -960,7 +994,16 @@ off by default.
 "nntpserver password [user]" pairs for NNTP servers that require
 authorization. Any line that starts with "#" is a comment. Blank lines are
 ignored. This file should be readable only for the user as it contains the
-users uncrypted password for reading news.
+user's uncrypted password for reading news. First match counts. If no
+matching entry is found F<$HOME/.nntpauth> is checked.
+
+=item F<$HOME/.nntpauth>
+
+"nntpserver user password" pairs for NNTP servers that require
+authorization. First match counts. Lines starting with "#" are skipped and
+blank lines are ignored. This file should be readable only for the user as
+it contains the user's uncrypted password for reading news.
+F<$HOME/.newsauth> is checked first.
 
 =item F<$HOME/.tinewsrc>
 
@@ -980,13 +1023,13 @@ security is an issue, don't use this script.
 =head1 NOTES
 
 B<tinews.pl> is designed to be used with B<pgp>(1)-2.6.3,
-B<pgp>(1)-5 and B<gpg>(1).
+B<pgp>(1)-5, B<pgp>(1)-6 and B<gpg>(1).
 
 B<tinews.pl> requires the following standard modules to be installed:
 B<Getopt::Long>(3pm), B<Net::NNTP>(3pm), B<Time::Local>(3pm) and
 B<Term::Readline>(3pm).
 
-If the Cacenl-Lock feature is enabled the following additional modules
+If the Cancel-Lock feature is enabled the following additional modules
 must be installed: B<MIME::Base64>(3pm), B<Digest::SHA1>(3pm) and
 B<Digest::HMAC_SHA1>(3pm)
 

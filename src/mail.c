@@ -3,10 +3,10 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2011-01-29
+ *  Updated   : 2011-11-06
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -93,7 +93,7 @@ read_mail_active_file(
 	char buf[LEN];
 	char my_spooldir[PATH_LEN];
 	char buf2[PATH_LEN];
-	long min, max;
+	t_artnum min, max;
 	struct t_group *ptr;
 
 	if (!batch_mode)
@@ -335,7 +335,7 @@ open_newsgroups_fp(
 							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #			ifdef DEBUG
 								if (debug & DEBUG_NNTP)
-									debug_print_file("NNTP", "<<< %s", ptr);
+									debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #			endif /* DEBUG */
 								fprintf(result, "%s\n", str_trim(ptr));
 							}
@@ -361,7 +361,7 @@ open_newsgroups_fp(
 					while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #			ifdef DEBUG
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "<<< %s", ptr);
+							debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #			endif /* DEBUG */
 						fprintf(result, "%s\n", str_trim(ptr));
 					}
@@ -531,7 +531,7 @@ print_active_head(
 		return;
 
 	if ((fp = fopen(active_file, "w")) != NULL) {
-		fprintf(fp, _(txt_mail_save_active_head));
+		fprintf(fp, "%s", _(txt_mail_save_active_head));
 		fclose(fp);
 	}
 }
@@ -540,22 +540,22 @@ print_active_head(
 void
 find_art_max_min(
 	const char *group_path,
-	long *art_max,
-	long *art_min)
+	t_artnum *art_max,
+	t_artnum *art_min)
 {
 	DIR *dir;
 	DIR_BUF *direntry;
-	long art_num;
+	t_artnum art_num;
 
-	*art_min = *art_max = 0L;
+	*art_min = *art_max = T_ARTNUM_CONST(0);
 
 	if ((dir = opendir(group_path)) != NULL) {
 		while ((direntry = readdir(dir)) != NULL) {
-			art_num = atol(direntry->d_name);
-			if (art_num >= 1L) {
+			art_num = atoartnum(direntry->d_name);
+			if (art_num >= T_ARTNUM_CONST(1)) {
 				if (art_num > *art_max) {
 					*art_max = art_num;
-					if (*art_min == 0L)
+					if (*art_min == T_ARTNUM_CONST(0))
 						*art_min = art_num;
 				} else if (art_num < *art_min)
 					*art_min = art_num;
@@ -563,8 +563,8 @@ find_art_max_min(
 		}
 		CLOSEDIR(dir);
 	}
-	if (*art_min == 0L)
-		*art_min = 1L;
+	if (*art_min == T_ARTNUM_CONST(0))
+		*art_min = T_ARTNUM_CONST(1);
 }
 
 
@@ -572,11 +572,11 @@ void
 print_group_line(
 	FILE *fp,
 	const char *group_name,
-	long art_max,
-	long art_min,
+	t_artnum art_max,
+	t_artnum art_min,
 	const char *base_dir)
 {
-	fprintf(fp, "%s %05ld %05ld %s\n",
+	fprintf(fp, "%s %05"T_ARTNUM_PFMT" %05"T_ARTNUM_PFMT" %s\n",
 		group_name, art_max, art_min, base_dir);
 }
 
@@ -614,7 +614,7 @@ grp_del_mail_arts(
 		for_each_art(i) {
 			article = &arts[i];
 			if (article->delete_it) {
-				snprintf(artnum, sizeof(artnum), "%ld", article->artnum);
+				snprintf(artnum, sizeof(artnum), "%"T_ARTNUM_PFMT, article->artnum);
 				joinpath(article_filename, sizeof(article_filename), group_path, artnum);
 				unlink(article_filename);
 				article->thread = ART_EXPIRED;
@@ -646,7 +646,7 @@ art_edit(
 		return FALSE;
 
 	make_base_group_path(group->spooldir, group->name, temp_filename, sizeof(temp_filename));
-	snprintf(buf, sizeof(buf), "%ld", article->artnum);
+	snprintf(buf, sizeof(buf), "%"T_ARTNUM_PFMT, article->artnum);
 	joinpath(article_filename, sizeof(article_filename), temp_filename, buf);
 	snprintf(temp_filename, sizeof(temp_filename), "%s%ld.art", TMPDIR, (long) process_id);
 

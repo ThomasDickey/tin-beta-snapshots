@@ -5,14 +5,15 @@
 # (tin doesn't recognize URLs without a scheme and it quotes the metas)
 
 use strict;
+use warnings;
 
 (my $pname = $0) =~ s#^.*/##;
 die "Usage: $pname URL" if $#ARGV != 0;
 
 # version Number
-my $version = "0.1.0";
+my $version = "0.1.1";
 
-my ($method, $url, $browser, $match, @try);
+my ($method, $url, $match, @try);
 $method = $url = $ARGV[0];
 $method =~ s#^([^:]+):.*#$1#io;
 
@@ -29,13 +30,13 @@ if ($ENV{"BROWSER_".uc($method)}) {
 		push(@try, 'mozilla -remote openURL\(%s\)');
 		push(@try, 'opera -remote openURL\(%s\)');
 		push(@try, 'galeon -n');
-		push(@try, 'lynx');	# prefer lynx over links as it can handle news:-urls
+		push(@try, 'lynx'); # prefer lynx over links as it can handle news:-urls
 		push(@try, qw('links2 -g' links w3m));
 		push(@try, 'kfmclient newTab'); # has no useful return-value on error
 	}
 }
 
-for $browser (@try) {
+for my $browser (@try) {
 	# ignore empty parts
 	next if ($browser =~ m/^$/o);
 	# expand %s if not preceded by odd number of %
@@ -117,9 +118,9 @@ Examples:
 
 B<url_handler.pl> was designed to work together with B<tin>(1) which only
 issues shell escaped absolute URLs thus B<url_handler.pl> does not try hard
-to shell escape it's input nor does it convert relative URLs into absolute
+to shell escape its input nor does it convert relative URLs into absolute
 ones! If you use B<url_handler.pl> from other applications be sure to at
-least shell escaped it's input!
+least shell escaped its input!
 
 =head1 AUTHOR
 

@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-03-25
+ *  Updated   : 2011-11-09
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -342,7 +342,7 @@ selection_page(
 				break;
 
 			case GLOBAL_OPTION_MENU:
-				config_page(CURR_GROUP.name);
+				config_page(selmenu.max ? CURR_GROUP.name : NULL);
 				show_selection_page();
 				break;
 
@@ -639,7 +639,7 @@ build_gline(
 		strcpy(tmp, "    #");
 	else if (active[my_group[i]].newsrc.num_unread) {
 		int getart_limit;
-		long num_unread;
+		t_artnum num_unread;
 
 		getart_limit = cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit;
 		num_unread = active[my_group[i]].newsrc.num_unread;
@@ -674,11 +674,7 @@ build_gline(
 		active_desc = char2wchar_t(active[n].description);
 
 	if (active_name && tinrc.abbreviate_groupname) {
-		if (show_description && !active_desc)
-			active_name2 = abbr_wcsgroupname(active_name, (size_t) (groupname_len + blank_len));
-		else
-			active_name2 = abbr_wcsgroupname(active_name, (size_t) groupname_len);
-
+		active_name2 = abbr_wcsgroupname(active_name, (size_t) groupname_len);
 		free(active_name);
 	} else
 		active_name2 = active_name;
@@ -720,12 +716,9 @@ build_gline(
 
 	FreeIfNeeded(name_buf);
 #else
-	if (tinrc.abbreviate_groupname) {
-		if (show_description && !active[n].description)
-			active_name = abbr_groupname(active[n].name, (size_t) (groupname_len + blank_len));
-		else
-			active_name = abbr_groupname(active[n].name, (size_t) groupname_len);
-	} else
+	if (tinrc.abbreviate_groupname)
+		active_name = abbr_groupname(active[n].name, (size_t) groupname_len);
+	else
 		active_name = my_strdup(active[n].name);
 
 	if (show_description) {
@@ -991,7 +984,7 @@ reposition_group(
 		return default_num;
 
 	if (strlen(pos))
-		pos_num = ((pos[0] == '$') ? selmenu.max: atoi(pos));
+		pos_num = ((pos[0] == '$') ? selmenu.max : atoi(pos));
 	else {
 		if (tinrc.default_move_group)
 			pos_num = tinrc.default_move_group;

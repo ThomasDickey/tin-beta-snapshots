@@ -6,7 +6,7 @@
  *  Updated   : 2011-03-25
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -310,7 +310,6 @@ prompt_list(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	var += adjust;
-	size += adjust;
 	var_orig = var;
 
 	/*
@@ -425,7 +424,7 @@ prompt_option_on_off(
 	t_bool old_value = *variable;
 
 	fmt_option_prompt(prompt, sizeof(prompt), TRUE, option);
-	*variable = prompt_list(option_row(option), 0, *variable, option_table[option].txt->help, prompt, txt_onoff, 2) ? TRUE: FALSE;
+	*variable = prompt_list(option_row(option), 0, *variable, option_table[option].txt->help, prompt, txt_onoff, 2) ? TRUE : FALSE;
 	return *variable != old_value;
 }
 
@@ -440,9 +439,12 @@ prompt_option_list(
 	char prompt[LEN];
 	int *variable = option_table[option].variable;
 	int old_value = *variable;
+	int opt_count = 0;
 
+	while (option_table[option].opt_list[opt_count] != NULL)
+		++opt_count;
 	fmt_option_prompt(prompt, sizeof(prompt), TRUE, option);
-	*variable = prompt_list(option_row(option), 0, *variable, option_table[option].txt->help, prompt, option_table[option].opt_list, option_table[option].opt_count);
+	*variable = prompt_list(option_row(option), 0, *variable, option_table[option].txt->help, prompt, option_table[option].opt_list, opt_count);
 	return *variable != old_value;
 }
 

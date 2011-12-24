@@ -6,7 +6,7 @@
  *  Updated   : 2009-02-14
  *  Notes     : #defines and structs for options_menu.c
  *
- * Copyright (c) 1997-2011 Thomas E. Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2012 Thomas E. Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,6 @@ MYDATA {
 	MYDATA *link;
 	char *name;
 	char *type;
-	char *size;
 };
 
 static MYDATA *all_data;
@@ -88,8 +87,7 @@ string_dup(
 static void
 store_data(
 	const char *name,
-	const char *type,
-	const char *size)
+	const char *type)
 {
 	MYDATA *p = (MYDATA *) malloc(sizeof(MYDATA));
 	MYDATA *q;
@@ -97,7 +95,6 @@ store_data(
 	p->link = 0;
 	p->name = string_dup(name);
 	p->type = string_dup(type);
-	p->size = string_dup(size);
 
 	if ((q = all_data) == 0)
 		all_data = p;
@@ -125,22 +122,17 @@ parse_tbl(
 	line_no++;
 	if (*buffer != ';' && *buffer != '\0') {	/* ignore comments */
 		if (*buffer == '#') {
-			store_data(buffer, "", "");
+			store_data(buffer, "");
 		} else {
 			/*
-			 * otherwise the data consists of up to 3 blank
-			 * separated columns (name, type, size).
+			 * otherwise the data consists of 2 blank
+			 * separated columns (name, type).
 			 */
 			while (*s && !isspace ((int)*s))
 				s++;
 			while (isspace ((int)*s))
 				*s++ = '\0';
-			t = s;
-			while (*t && !isspace ((int)*t))
-				t++;
-			while (isspace ((int)*t))
-				*t++ = '\0';
-			store_data(buffer, s, t);
+			store_data(buffer, s);
 		}
 	}
 }
@@ -255,9 +247,9 @@ generate_tbl(
 			}
 
 			if (is_opt)
-				fprintf(ofp, "NULL, 0, ");
+				fprintf(ofp, "NULL, ");
 			else
-				fprintf(ofp, "%s, %s, ", p->type, p->size);
+				fprintf(ofp, "%s, ", p->type);
 			fprintf(ofp, "&txt_%s ", dft_name);
 			fprintf(ofp, "%s\n", suffix);
 		}

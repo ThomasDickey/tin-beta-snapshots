@@ -6,6 +6,7 @@ PRELIB	= @LIB_PREFIX@
 o	= .@OBJEXT@
 ARCHIVE = @AR@ @ARFLAGS@
 RANLIB  = @RANLIB@
+RM	= rm
 
 LIBOBJS = src/sha1.o src/hmac_sha1.o src/base64.o src/canlock.o
 LOCKLIB = $(PRELIB)canlock.a
@@ -36,10 +37,11 @@ $(LOCKLIB) : $(LIBOBJS)
 	$(RANLIB) $(LOCKLIB)
 
 clean :
-	@-rm -f src/*.o t/*.o t/*.out *.gmon gmon.*
+	@-$(RM) -f src/*.o t/*.o t/*.out *.gmon gmon.*
 
 distclean : clean
-	@-rm -f *.a canlocktest hmactest *.exe *.h
+	@-$(RM) -f *.a canlocktest hmactest *.exe *.h
+	@-$(RM) -rf canlocktest.dSYM hmactest.dSYM
 
 test : all
 	@echo "hmactest: "

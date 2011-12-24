@@ -7,11 +7,11 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@invisible-island.net> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 2011-04-02
+ *  Updated   : 2011-04-24
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
- * Copyright (c) 1995-2011 Roland Rosenfeld <roland@spinnaker.rhein.de>
+ * Copyright (c) 1995-2012 Roland Rosenfeld <roland@spinnaker.rhein.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -120,9 +120,9 @@ set_colors(
 					break;
 				}
 			}
-			if (found)
+			if (found) {
 				pair = p->pair;
-			else if (++nextpair < COLOR_PAIRS) {
+			} else if (++nextpair < COLOR_PAIRS) {
 				p = my_malloc(sizeof(struct LIST));
 				p->fg = fcolor;
 				p->bg = bcolor;
@@ -130,8 +130,9 @@ set_colors(
 				p->link = list;
 				list = p;
 				init_pair(pair, fcolor, bcolor);
-			} else
+			} else {
 				pair = 0;
+			}
 		}
 
 		bkgdset(attribute | COLOR_PAIR(pair) | ' ');
@@ -176,25 +177,27 @@ void
 fcol(
 	int color)
 {
-	TRACE(("fcol(%d) %s", color, txt_colors[color - MIN_COLOR]));
-	if (use_color) {
-		if (color >= MIN_COLOR && color <= MAX_COLOR) {
-#	ifdef USE_CURSES
-			set_colors(color, current_bcol);
-			current_fcol = color;
-#	else
-			int bold;
+	if (color < MIN_COLOR || color > MAX_COLOR)
+		color = default_fcol;
 
-			if (cmd_line)
-				return;
-			if (color < 0)
-				color = default_fcol;
-			bold = (color >> 3); /* bitwise operation on signed value? ouch */
-			my_printf("\033[%d;%dm", bold, ((color & 7) + 30));
-			if (!bold)
-				bcol(current_bcol);
+	TRACE(("fcol(%d) %s", color, txt_colors[color - MIN_COLOR]));
+
+	if (use_color) {
+#	ifdef USE_CURSES
+		set_colors(color, current_bcol);
+		current_fcol = color;
+#	else
+		int bold;
+
+		if (cmd_line)
+			return;
+		if (color < 0)
+			color = default_fcol;
+		bold = (color >> 3); /* bitwise operation on signed value? ouch */
+		my_printf("\033[%d;%dm", bold, ((color & 7) + 30));
+		if (!bold)
+			bcol(current_bcol);
 #	endif /* USE_CURSES */
-		}
 	}
 #	ifdef USE_CURSES
 	else
@@ -208,18 +211,20 @@ void
 bcol(
 	int color)
 {
+	if (color < MIN_COLOR || color > MAX_COLOR)
+		color = default_bcol;
+
 	TRACE(("bcol(%d) %s", color, txt_colors[color - MIN_COLOR]));
+
 	if (use_color) {
-		if (color >= MIN_COLOR && color <= MAX_BACKCOLOR) {
 #	ifdef USE_CURSES
-			set_colors(current_fcol, color);
+		set_colors(current_fcol, color);
 #	else
-			if (color < 0)
-				color = default_bcol;
-			my_printf("\033[%dm", (color + 40));
+		if (color < 0)
+			color = default_bcol;
+		my_printf("\033[%dm", (color + 40));
 #	endif /* USE_CURSES */
-			current_bcol = color;
-		}
+		current_bcol = color;
 	}
 #	ifdef USE_CURSES
 	else
@@ -324,7 +329,7 @@ draw_pager_line(
 				c++;
 			}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			else if (IS_LOCAL_CHARSET("Big5") && (unsigned char) *c >= 0xa1 &&(unsigned char) *c <= 0xfe && *(c + 1)) {
+			else if (IS_LOCAL_CHARSET("Big5") && (unsigned char) *c >= 0xa1 && (unsigned char) *c <= 0xfe && *(c + 1)) {
 				/*
 				 * Big5: ASCII chars are handled by the normal code
 				 * check only for 2-byte chars

@@ -2,11 +2,11 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2011-02-05
+.\" Updated   : 2011-12-24
 .\" Notes     : needs a some work
 .\"
 .\"
-.TH tin 5 "November 26th, 2010" "2.0.0" "A Usenet newsreader"
+.TH tin 5 "December 24th, 2011" "2.1.0" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -15,7 +15,8 @@ tin, rtin \- related files
 This manpage describes the various (config) files and their formats used by
 the
 .BR tin (1)
-newsreader. All files are expected to have unix style ('\\n' aka LF) line endings.
+newsreader. All files are expected to have unix style ('\\n' aka LF) line
+endings.
 
 .SH FILES
 .\" TODO: mention
@@ -33,7 +34,8 @@ newsreader. All files are expected to have unix style ('\\n' aka LF) line ending
 .\" $TMPDIR/REFS.info  (-D 8)
 .\" $TMPDIR/MALLOC     (-D 16)
 .\" $TMPDIR/ATTRIBUTES (-D 32)
-.\" $TMPDIR/SCOPES     (-D 32)
+.\" $TMPDIR/SCOPES-R   (-D 32)
+.\" $TMPDIR/SCOPES-W   (-D 32)
 .\" $TMPDIR/ACTIVE     (-D 64)
 .PP
 .IR $MAILCAPS
@@ -49,7 +51,7 @@ newsreader. All files are expected to have unix style ('\\n' aka LF) line ending
 .IR /etc/mail/mailcap
 .sp
 .RS
-.BR mailcap (4)
+.BR mailcap (5)
 files as defined in \fBRFC1524\fP. The Mailcap files are read by
 .BR tin (1)
 to determine how to display non-text messages at the local site. Any line
@@ -61,9 +63,9 @@ Each individual mailcap entry consists of a content-type specification, a
 command to execute, and (possibly) a set of optional "flag" values.
 .sp
 The "type" field is simply any legal content type name. It is the string
-that will be matched against the ''Content\-Type:'' header to decide if this is
-the mailcap entry that matches the current message. Additionally, the type
-field may specify a subtype or a wildcard to match all subtypes.
+that will be matched against the ''Content\-Type:'' header to decide if this
+is the mailcap entry that matches the current message. Additionally, the
+type field may specify a subtype or a wildcard to match all subtypes.
 .sp
 The "command" field is any UNIX command and is used to specify the
 interpreter for the given type of message. It will be passed to the shell
@@ -251,13 +253,13 @@ require authorization. If the password contains a space or a tab it must be
 enclosed in doublequotes ("). Usernames must not be enclosed in doublequotes
 and thus can't contain spaces or tabs. Any line that starts with "#" is a
 comment. Blank lines are ignored. This file should be readable only for the
-user as it contains the users uncrypted password for reading news!
+user as it contains the user's uncrypted password for reading news!
 .TP
 .B nntpserver
 full qualified domain name of the newsserver.
 .TP
 .B password
-users uncrypted password for reading news.
+user's uncrypted password for reading news.
 .TP
 .B user
 username on the newsserver if it differs from the local login. This field is
@@ -411,7 +413,7 @@ active file of user's saved newsgroups, used by \fBtin \-R\fP.
 .RS
 The group attributes files may be used to override some global settings from
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fR on a per group basis. Order is
-important as last match counts; this allows to refine attributes for
+important as last match counts; this allows one to refine attributes for
 narrowed scopes. Note that the \fIscope=<grouplist>\fR line has to be
 specified before the attributes are specified for that list and each
 attribute can only be set once per scope section. All attributes are set to
@@ -763,8 +765,8 @@ Match against ''Subject:''
 .B from
 Match against ''From:''.
 .BR tin (1)
-converts the contents of the ''From:'' header to an old style e-mail address,
-e.g. ''some@body.example (John Doe)'' instead
+converts the contents of the ''From:'' header to an old style e-mail
+address, e.g. ''some@body.example (John Doe)'' instead
 of ''John Doe <some@body.example>'', before trying to match the patterns in
 the filter rule.
 .TP
@@ -1172,8 +1174,8 @@ reads in the configuration file. This contains a list of
 .BR tin (1)
 works. If it exists, the global configuration file,
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fR is read first. After that, the
-users own configuration file \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fR is read.
-The global file is useful for distributing system-wide defaults to new
+user's own configuration file \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fR is
+read. The global file is useful for distributing system-wide defaults to new
 users who have no private tinrc yet (see also \fB/etc/tin/tin.defaults\fP).
 .TP
 .B abbreviate_groupname
@@ -1522,8 +1524,8 @@ Default is 'No'.
 .B inews_prog
 Path, name and options of external
 .BR inews (1).
-If you are reading via NNTP the default value is "\-\-internal" (use built-in
-NNTP inews), else it is "inews \-h". The article is passed to
+If you are reading via NNTP the default value is "\-\-internal" (use
+built-in NNTP inews), else it is "inews \-h". The article is passed to
 \fBinews_prog\fP on STDIN via '< article'.
 .TP
 .B info_in_last_line
@@ -1533,9 +1535,9 @@ toggles setting). This facility is useful as the full width of the screen is
 available to display long subjects. Default is OFF.
 .TP
 .B interactive_mailer
-If greater than 0 your mailreader will be invoked earlier for reply so you can
-use more of its features (e.g. MIME, pgp, ...). 1 means include headers, 2
-means don't include headers (old use_mailreader_i=ON option). 0 turns off
+If greater than 0 your mailreader will be invoked earlier for reply so you
+can use more of its features (e.g. MIME, pgp, ...). 1 means include headers,
+2 means don't include headers (old use_mailreader_i=ON option). 0 turns off
 usage. This option has to suit \fBmailer_format\fP. Default is 0.
 .TP
 .B inverse_okay
@@ -1736,6 +1738,9 @@ Format of quote line when posting/following up an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
 %C=Firstname, %I=Initials). Default is "%F wrote:".
 .TP
+.B nntp_read_timeout_secs
+Time in seconds to wait for a response from the server. Default is 120.
+.TP
 .B normalization_form
 The normalization form which should be used to normalize unicode input.
 The possible values are:
@@ -1780,8 +1785,9 @@ base64 and quoted\-printable are usually undesired on usenet.
 If ON, then
 .BR tin (1)
 will start an appropriate viewer program to display any files that were post
-processed and uudecoded. The program is determined using the mailcap file.
-Default is ON.
+processed and uudecoded. The program is determined using the
+.BR mailcap (5)
+file. Default is ON.
 .TP
 .B post_process_type
 This specifies whether to perform post processing on saved articles.
@@ -1935,8 +1941,8 @@ displayed.
 .TP
 .B show_description
 If ON show a short group description text after newsgroup name at the group
-selection level. The ''\fB\-d\fP'' command-line flag will override the setting
-and turn descriptions off. The text used is taken from the
+selection level. The ''\fB\-d\fP'' command-line flag will override the
+setting and turn descriptions off. The text used is taken from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups\fR file and if supported (requires
 .BR tin (1)
 to be build with mh-mail-handling support) from
@@ -2068,7 +2074,8 @@ Bogus groups are groups that are present in your
 server. There are 3 options. 0 means do nothing & always keep bogus groups.
 1 means bogus groups will be permanently removed. 2 means that bogus groups
 will appear on the Group Selection Menu, prefixed with a 'D'. This allows
-you to unsubscribe from them as and when you wish. Default is 0 (Always Keep).
+you to unsubscribe from them as and when you wish. Default is 0 (Always
+Keep).
 .TP
 .B strip_newsrc
 If ON, then unsubscribed groups will be permanently removed from
@@ -2156,8 +2163,8 @@ matching words are shown in \fBcol_markdash\fP or \fBmono_markdash\fP. If
 uses a built-in default.
 .TP
 .B unlink_article
-If ON remove \fI${TIN_HOMEDIR:\-"$HOME"}/.article\fR after posting. Default is
-ON.
+If ON remove \fI${TIN_HOMEDIR:\-"$HOME"}/.article\fR after posting. Default
+is ON.
 .TP
 .B url_handler
 The program that will be run when launching URLs in the article viewer
@@ -2184,8 +2191,8 @@ Default is OFF.
 .B use_slrnface
 If enabled
 .BR slrnface (1)
-will be used to interpret the ''X\-Face:'' header. For this option to have any
-effect,
+will be used to interpret the ''X\-Face:'' header. For this option to have
+any effect,
 .BR tin (1)
 must be running in an
 .BR xterm (1x)
@@ -2427,7 +2434,7 @@ articles are locally filed into the ''foo.bar'' group
 only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
-uses the LIST (\fBRFC3977\fP) command instead.
+uses the LIST (\fBRFC3977\fP) or LIST COUNTS (\fBRFC6048\fP) command instead.
 .RE
 .PP
 
@@ -2513,8 +2520,8 @@ uses the LIST OVERVIEW.FMT (\fBRFC3977\fP) command instead.
 .sp
 .RS
 This file contains a list of newsgroups - one per line - which the client
-should subscribe to when the user has no ${TIN_HOMEDIR:\-"$HOME"}/.newsrc for
-the newsserver.
+should subscribe to when the user has no ${TIN_HOMEDIR:\-"$HOME"}/.newsrc
+for the newsserver.
 .BR tin (1)
 only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
@@ -2543,7 +2550,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC6048\fP) command instead.
 .BR pcre (3),
 .BR strftime (3),
 .BR system (3),
-.BR mailcap (4),
+.BR mailcap (5),
 .BR active (5),
 .BR mbox (5),
 .BR mmdf (5),

@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2011-01-29
+ *  Updated   : 2011-11-06
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2011 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2012 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,7 +95,7 @@ content_type(
 {
 	int i;
 
-	for (i = 0; i < NUM_CONTENT_TYPES; ++i) {
+	for (i = 0; content_types[i] != NULL; ++i) {
 		if (strcasecmp(type, content_types[i]) == 0)
 			return i;
 	}
@@ -389,7 +389,7 @@ parse_content_type(
 	 */
 	if ((params = strtok(NULL, "\n")) != NULL) {
 #ifndef CHARSET_CONVERSION
-		char defparms[] = CT_DEFPARMS;	/* must be writeable */
+		char defparms[] = CT_DEFPARMS;	/* must be writable */
 #endif /* !CHARSET_CONVERSION */
 
 		free_list(content->params);
@@ -407,7 +407,7 @@ parse_content_type(
 				parse_params(charsetheader, content);
 				free(charsetheader);
 			} else {
-				char defparms[] = CT_DEFPARMS;	/* must be writeable */
+				char defparms[] = CT_DEFPARMS;	/* must be writable */
 
 				parse_params(defparms, content);
 			}
@@ -423,7 +423,7 @@ parse_content_encoding(
 {
 	unsigned int i;
 
-	for (i = 0; i < NUM_ENCODINGS; ++i) {
+	for (i = 0; content_encodings[i] != NULL; ++i) {
 		if (strcasecmp(encoding, content_encodings[i]) == 0)
 		return i;
 	}
@@ -472,7 +472,7 @@ new_part(
 	t_part *p;
 	t_part *ptr = my_malloc(sizeof(t_part));
 #ifndef CHARSET_CONVERSION
-	char defparms[] = CT_DEFPARMS;	/* must be writeable */
+	char defparms[] = CT_DEFPARMS;	/* must be writable */
 #endif /* !CHARSET_CONVERSION */
 
 	ptr->type = TYPE_TEXT;					/* Defaults per RFC */
@@ -492,7 +492,7 @@ new_part(
 		parse_params(charsetheader, ptr);
 		free(charsetheader);
 	} else {
-		char defparms[] = CT_DEFPARMS;	/* must be writeable */
+		char defparms[] = CT_DEFPARMS;	/* must be writable */
 
 		parse_params(defparms, ptr);
 	}
@@ -1160,14 +1160,14 @@ error:
 FILE *
 open_art_fp(
 	struct t_group *group,
-	long art)
+	t_artnum art)
 {
 	FILE *art_fp;
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && group->type == GROUP_TYPE_NEWS) {
 		char buf[NNTP_STRLEN];
-		snprintf(buf, sizeof(buf), "ARTICLE %ld", art);
+		snprintf(buf, sizeof(buf), "ARTICLE %"T_ARTNUM_PFMT, art);
 		art_fp = nntp_command(buf, OK_ARTICLE, NULL, 0);
 	} else {
 #endif /* NNTP_ABLE */
@@ -1178,7 +1178,7 @@ open_art_fp(
 
 		make_group_path(group->name, group_path);
 		joinpath(buf, sizeof(buf), group->spooldir, group_path);
-		snprintf(fbuf, sizeof(fbuf), "%ld", art);
+		snprintf(fbuf, sizeof(fbuf), "%"T_ARTNUM_PFMT, art);
 		joinpath(pbuf, sizeof(pbuf), buf, fbuf);
 
 		art_fp = fopen(pbuf, "r");

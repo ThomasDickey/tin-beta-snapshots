@@ -6,7 +6,7 @@
  *  Updated   : 2010-09-15
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2011 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2012 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -378,7 +378,7 @@ do_b_encode(
 	t_bool isleading_between = TRUE;		/* are we still processing leading space */
 
 	while (count-- > 0 && (!isbetween(*w, isstruct_head) || isleading_between) && *w) {
-		len8 += is_EIGHT_BIT(w) ? 1 : (-len8);
+		len8 += (is_EIGHT_BIT(w) ? 1 : -len8);
 		if (!isbetween(*w, isstruct_head))
 			isleading_between = FALSE;
 		*(t++) = *(w++);
@@ -597,7 +597,7 @@ rfc1522_do_encode(
 #endif /* 0 */
 					{
 						snprintf(buf2, sizeof(buf2), "=%2.2X", *EIGHT_BIT(what));
-						if ((size_t)( t - buffer + 3) >= bufferlen) {
+						if ((size_t)(t - buffer + 3) >= bufferlen) {
 							/* buffer too small, double its size */
 							offset = t - buffer;
 							bufferlen <<= 1;
@@ -928,7 +928,7 @@ do_rfc15211522_encode(
 	rewind(g);
 	rewind(f);
 #ifdef HAVE_FTRUNCATE
-	ftruncate(fileno(f), 0);
+	(void) ftruncate(fileno(f), 0);
 #endif /* HAVE_FTRUNCATE */
 
 	/* copy header */
@@ -939,7 +939,7 @@ do_rfc15211522_encode(
 		/*
 		 * 7bit charsets except US-ASCII also need mime headers
 		 */
-		for (i = 1; *txt_mime_7bit_charsets[i]; i++) {
+		for (i = 1; txt_mime_7bit_charsets[i] != NULL; i++) {
 #ifdef CHARSET_CONVERSION
 			if (!strcasecmp(txt_mime_charsets[mmnwcharset], txt_mime_7bit_charsets[i])) {
 				mime_headers_needed = TRUE;
@@ -1322,7 +1322,7 @@ contains_8bit_characters(
 
 	rewind(fp);
 	while ((line = tin_fgets(fp, FALSE))) {
-		for ( ; *line != '\0'; line++) {
+		for (; *line != '\0'; line++) {
 			if (is_EIGHT_BIT(line))
 				return TRUE;
 		}

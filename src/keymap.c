@@ -6,7 +6,7 @@
  *  Updated   : 2011-01-25
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2011 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2012 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -443,9 +443,9 @@ process_keys(
 	t_bool error, ret = TRUE;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wkeydef;
-	wchar_t key;
+	wchar_t key = '\0';
 #else
-	char key;
+	char key = '\0';
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	tmp = my_strdup(keys);		/* don't change "keys" */

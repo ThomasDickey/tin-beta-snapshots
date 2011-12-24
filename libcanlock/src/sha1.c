@@ -9,7 +9,7 @@
  * Adapted to pike and some cleanup by Niels Möller.
  */
 
-/* $Id: sha1.c,v 1.2 2009/08/14 20:03:51 tom Exp $ */
+/* @Id: sha1.c,v 1.5 2002/05/26 17:46:16 nmav Exp @ */
 
 /* SHA: NIST's Secure Hash Algorithm */
 

@@ -6,7 +6,7 @@
  *  Updated   : 2008-11-08
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,10 +40,10 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.0.0"
+#		define VERSION		"2.1.0"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20110402"
-#	define RELEASENAME	"Burnside"
+#	define RELEASEDATE	"20111224"
+#	define RELEASENAME	"Bridgend"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.11"
 #	define ATTRIBUTES_VERSION	"1.0.7"

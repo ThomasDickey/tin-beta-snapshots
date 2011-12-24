@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-02-22
+ *  Updated   : 2011-12-23
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,6 +107,7 @@
 #define POST_NORMAL		2
 #define POST_RESPONSE	3
 #define POST_REPOST		4
+#define POST_SUPERSEDED	5
 
 /* When prompting for subject, display no more than 20 characters */
 #define DISPLAY_SUBJECT_LEN 20
@@ -438,7 +439,7 @@ msg_write_headers(
 			fprintf(fp, "%s: %s\n", msg_headers[i].name, BlankIfNull(msg_headers[i].text));
 			wrote++;
 			if ((p = msg_headers[i].text)) {
-				while((p = strchr(p, '\n'))) {
+				while ((p = strchr(p, '\n'))) {
 					p++;
 					wrote++;
 				}
@@ -922,7 +923,7 @@ check_article_to_be_posted(
 			if (tinrc.beginner_level) {
 				setup_check_article_screen(&init);
 				/* StartInverse(); */
-				my_fprintf(stderr, _(txt_error_approved)); /* this is only a Warning: */
+				my_fprintf(stderr, "%s", _(txt_error_approved)); /* this is only a Warning: */
 				/* EndInverse(); */
 				my_fflush(stderr);
 #ifdef HAVE_FASCIST_NEWSADMIN
@@ -1356,7 +1357,7 @@ check_article_to_be_posted(
 	/*
 	 * check for known 7bit charsets
 	 */
-	for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
+	for (i = 0; txt_mime_7bit_charsets[i] != NULL; i++) {
 #ifdef CHARSET_CONVERSION
 		if (!strcasecmp(txt_mime_charsets[mmnwcharset], txt_mime_7bit_charsets[i]))
 #else
@@ -1395,9 +1396,9 @@ check_article_to_be_posted(
 
 		/* missing headers */
 		if (errors_catbp & CA_ERROR_HEADER_LINE_BLANK)
-			my_fprintf(stderr, _(txt_error_header_line_blank));
+			my_fprintf(stderr, "%s", _(txt_error_header_line_blank));
 		if (errors_catbp & CA_ERROR_MISSING_BODY_SEPERATOT)
-			my_fprintf(stderr, _(txt_error_header_and_body_not_separate));
+			my_fprintf(stderr, "%s", _(txt_error_header_and_body_not_separate));
 		if (errors_catbp & CA_ERROR_MISSING_FROM)
 			my_fprintf(stderr, _(txt_error_header_line_missing), "From");
 		if (errors_catbp & CA_ERROR_MISSING_SUBJECT)
@@ -1437,15 +1438,15 @@ check_article_to_be_posted(
 
 		/* illegal group names / combinations */
 		if (errors_catbp & CA_ERROR_NEWSGROUPS_POSTER)
-			my_fprintf(stderr, _(txt_error_newsgroups_poster));
+			my_fprintf(stderr, "%s", _(txt_error_newsgroups_poster));
 		if (errors_catbp & CA_ERROR_FOLLOWUP_TO_POSTER)
-			my_fprintf(stderr, _(txt_error_followup_poster));
+			my_fprintf(stderr, "%s", _(txt_error_followup_poster));
 
 		/* encoding/charset trouble */
 		if (errors_catbp & CA_ERROR_BAD_CHARSET)
-			my_fprintf(stderr, _(txt_error_header_line_bad_charset));
+			my_fprintf(stderr, "%s", _(txt_error_header_line_bad_charset));
 		if (errors_catbp & CA_ERROR_BAD_ENCODING)
-			my_fprintf(stderr, _(txt_error_header_line_bad_encoding));
+			my_fprintf(stderr, "%s", _(txt_error_header_line_bad_encoding));
 
 		if (errors_catbp & CA_ERROR_DISTRIBUTIOIN_NOT_7BIT)
 			my_fprintf(stderr, _(txt_error_header_line_not_7bit), "Distribution");
@@ -1471,14 +1472,14 @@ check_article_to_be_posted(
 		setup_check_article_screen(&init);
 
 		if (warnings_catbp & CA_WARNING_SPACES_ONLY_SUBJECT)
-			my_fprintf(stderr, _(txt_warn_blank_subject));
+			my_fprintf(stderr, "%s", _(txt_warn_blank_subject));
 		if (warnings_catbp & CA_WARNING_RE_WITHOUT_REFERENCES)
-			my_fprintf(stderr, _(txt_warn_re_but_no_references));
+			my_fprintf(stderr, "%s", _(txt_warn_re_but_no_references));
 		if (warnings_catbp & CA_WARNING_REFERENCES_WITHOUT_RE)
-			my_fprintf(stderr, _(txt_warn_references_but_no_re));
+			my_fprintf(stderr, "%s", _(txt_warn_references_but_no_re));
 
 		if ((warnings_catbp & CA_WARNING_NEWSGROUPS_EXAMPLE) || (warnings_catbp & CA_WARNING_FOLLOWUP_TO_EXAMPLE))
-			my_fprintf(stderr, _(txt_warn_example_hierarchy));
+			my_fprintf(stderr, "%s", _(txt_warn_example_hierarchy));
 
 #ifdef FOLLOW_USEFOR_DRAFT /* TODO: give useful warning */
 		if (warnings_catbp & CA_WARNING_SPACE_IN_NEWSGROUPS)
@@ -1494,12 +1495,12 @@ check_article_to_be_posted(
 		if (warnings_catbp & CA_WARNING_MULTIPLE_SIGDASHES)
 			my_fprintf(stderr, _(txt_warn_multiple_sigs), saw_sig_dashes);
 		if (warnings_catbp & CA_WARNING_WRONG_SIGDASHES)
-			my_fprintf(stderr, _(txt_warn_wrong_sig_format));
+			my_fprintf(stderr, "%s", _(txt_warn_wrong_sig_format));
 		if (warnings_catbp & CA_WARNING_LONG_SIGNATURE)
 			my_fprintf(stderr, _(txt_warn_sig_too_long), MAX_SIG_LINES);
 
 		if (warnings_catbp & CA_WARNING_ENCODING_EXTERNAL_INEWS)
-			my_fprintf(stderr, _(txt_warn_encoding_and_external_inews));
+			my_fprintf(stderr, "%s", _(txt_warn_encoding_and_external_inews));
 
 #ifdef CHARSET_CONVERSION
 		if (warnings_catbp & CA_WARNING_CHARSET_CONVERSION)
@@ -1516,7 +1517,7 @@ check_article_to_be_posted(
 		 */
 		setup_check_article_screen(&init);
 		if (c_art_unchanged)
-			my_fprintf(stderr, _(txt_warn_article_unchanged));
+			my_fprintf(stderr, "%s", _(txt_warn_article_unchanged));
 		my_fprintf(stderr, _(txt_art_newsgroups), subject, PLURAL(ngcnt, txt_newsgroup));
 		for (i = 0; i < ngcnt; i++) {
 			if ((psGrp = group_find(newsgroups[i], FALSE))) {
@@ -1563,12 +1564,12 @@ check_article_to_be_posted(
 			if (ftngcnt > 1) {
 #ifdef HAVE_FASCIST_NEWSADMIN
 				StartInverse();
-				my_fprintf(stderr, _(txt_error_followup_to_several_groups));
+				my_fprintf(stderr, "%s", _(txt_error_followup_to_several_groups));
 				EndInverse();
 				my_fflush(stderr);
 				errors++;
 #else
-				my_fprintf(stderr, _(txt_warn_followup_to_several_groups));
+				my_fprintf(stderr, "%s", _(txt_warn_followup_to_several_groups));
 				warnings++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 			}
@@ -1615,7 +1616,7 @@ check_article_to_be_posted(
 
 #ifndef NO_ETIQUETTE
 		if (tinrc.beginner_level)
-			my_fprintf(stderr, _(txt_warn_posting_etiquette));
+			my_fprintf(stderr, "%s", _(txt_warn_posting_etiquette));
 #endif /* !NO_ETIQUETTE */
 		my_fflush(stderr);
 	}
@@ -1761,7 +1762,7 @@ post_article_loop:
 
 			case GLOBAL_OPTION_MENU:
 				config_page(group->name);
-				while ((i = check_article_to_be_posted(article_name, art_type, &group, art_unchanged, FALSE) == 1) && repair_article(&func, group))
+				while ((i = check_article_to_be_posted(article_name, art_type, &group, art_unchanged, FALSE)) == 1 && repair_article(&func, group))
 					;
 				break;
 
@@ -1821,7 +1822,7 @@ post_article_loop:
 				break;
 		}
 		signal_context = cPost;
-		if (type != POST_REPOST) {
+		if (type != POST_REPOST && type != POST_SUPERSEDED) {
 			char keyedit[MAXKEYLEN], keypost[MAXKEYLEN];
 			char keypostpone[MAXKEYLEN], keyquit[MAXKEYLEN];
 			char keymenu[MAXKEYLEN];
@@ -1984,6 +1985,7 @@ post_article_done:
 					break;
 
 				case POST_REPOST:
+				case POST_SUPERSEDED:
 					tag = 'x';
 					break;
 
@@ -2423,7 +2425,7 @@ pickup_postponed_articles(
 	char question[HEADER_LEN];
 	int count = count_postponed_articles();
 	int i;
-	t_function func;
+	t_function func = NOT_ASSIGNED;
 
 	if (!count) {
 		if (!ask)
@@ -3311,7 +3313,7 @@ mail_to_someone(
 
 	if (!mime_forward || INTERACTIVE_NONE != tinrc.interactive_mailer) {
 		rewind(artinfo->raw);
-		fprintf(fp, _(txt_forwarded));
+		fprintf(fp, "%s", _(txt_forwarded));
 
 		if (!note_h.mime)
 			copy_fp(artinfo->raw, fp);
@@ -3341,7 +3343,7 @@ mail_to_someone(
 			}
 			free(buff);
 		}
-		fprintf(fp, _(txt_forwarded_end));
+		fprintf(fp, "%s", _(txt_forwarded_end));
 	}
 
 	if (INTERACTIVE_NONE == tinrc.interactive_mailer)
@@ -3671,11 +3673,11 @@ show_cancel_info(
 		c_author = author;
 
 	if (!c_author) {
-		my_fprintf(stderr, _(txt_warn_cancel_forgery));
+		my_fprintf(stderr, "%s", _(txt_warn_cancel_forgery));
 		my_fprintf(stderr, "From: %s\n", BlankIfNull(note_h.from));
 	} else
 #endif /* FORGERY */
-	my_fprintf(stderr, _(txt_warn_cancel));
+	my_fprintf(stderr, "%s", _(txt_warn_cancel));
 
 	my_fprintf(stderr, "Subject: %s\n", BlankIfNull(note_h.subj));
 	my_fprintf(stderr, "Date: %s\n", BlankIfNull(note_h.date));
@@ -3730,14 +3732,18 @@ cancel_article(
 		error_message(2, "From=[%s]  Cancel=[%s]", art->from, from_name);
 #endif /* DEBUG */
 
+	/*
+	 * superseding foreign articles is allowed via 'x'repost
+	 * (in the FORGERY case), so there is no need to disallow it
+	 * with 'D' here (in the FORGERY case).
+	 */
+#ifndef FORGERY
 	if (!strcasestr(from_name, art->from)) {
-#ifdef FORGERY
-		author = FALSE;
-#else
 		wait_message(3, _(txt_art_cannot_cancel));
 		return redraw_screen;
-#endif /* FORGERY */
-	} else {
+	} else
+#endif /* !FORGERY */
+	{
 		char *smsg;
 		char buff[LEN];
 		char keycancel[MAXKEYLEN], keyquit[MAXKEYLEN], keysupersede[MAXKEYLEN];
@@ -3841,7 +3847,7 @@ cancel_article(
 
 #ifdef FORGERY
 	if (author) {
-		fprintf(fp, txt_article_cancelled);
+		fprintf(fp, "%s", txt_article_cancelled);
 		start_line_offset++;
 	} else {
 		rewind(pgart.raw);
@@ -3850,7 +3856,7 @@ cancel_article(
 	fclose(fp);
 	invoke_editor(cancel, start_line_offset, group);
 #else
-	fprintf(fp, txt_article_cancelled);
+	fprintf(fp, "%s", txt_article_cancelled);
 	start_line_offset++;
 	fclose(fp);
 #endif /* FORGERY */
@@ -3938,9 +3944,8 @@ cancel_article(
 	return redraw_screen;
 }
 
-
+#define FromSameUser	(strcasestr(from_name, arts[respnum].from))
 #ifndef FORGERY
-#	define FromSameUser	(strcasestr(from_name, arts[respnum].from))
 #	define NotSuperseding	(!supersede || (!FromSameUser))
 #	define Superseding	(supersede && FromSameUser)
 #else
@@ -4016,7 +4021,9 @@ repost_article(
 
 			snprintf(line, sizeof(line), "<supersede.%s", note_h.messageid + 1);
 			msg_add_header("Message-ID", line);
-			/* ADD_CAN_KEY(note_h.messageid); */ /* should we add key here? */
+			if (FromSameUser) {	/* just add can-key for own articles */
+				ADD_CAN_KEY(note_h.messageid);
+			}
 #	else
 			msg_add_header("From", from_name);
 			if (*reply_to)
@@ -4188,7 +4195,7 @@ repost_article(
 			"%s", sized_message(&smsg, buff, note_h.subj));
 		free(smsg);
 	}
-	return (post_loop(POST_REPOST, group, func, (Superseding ? _(txt_superseding_art) : _(txt_repost_an_article)), art_type, start_line_offset));
+	return (post_loop(Superseding ? POST_SUPERSEDED : POST_REPOST, group, func, (Superseding ? _(txt_superseding_art) : _(txt_repost_an_article)), art_type, start_line_offset));
 }
 
 
@@ -4499,7 +4506,8 @@ insert_from_header(
 			rename_file(outfile, infile);
 
 			return TRUE;
-		}
+		} else
+			fclose(fp_in);
 	}
 	return FALSE;
 }
@@ -4553,8 +4561,8 @@ reread_active_after_posting(
 	void)
 {
 	int i;
-	long old_min;
-	long old_max;
+	t_artnum old_min;
+	t_artnum old_max;
 	struct t_group *group;
 	t_bool modified = FALSE;
 
@@ -4574,7 +4582,7 @@ reread_active_after_posting(
 					if (group->newsrc.num_unread > group->count) {
 #ifdef DEBUG
 						if (debug & DEBUG_NEWSRC) { /* TODO: is this the right debug-level? */
-							my_printf(cCRLF "Unread WRONG grp=[%s] unread=[%ld] count=[%ld]",
+							my_printf(cCRLF "Unread WRONG grp=[%s] unread=[%"T_ARTNUM_PFMT"] count=[%"T_ARTNUM_PFMT"]",
 								group->name, group->newsrc.num_unread, group->count);
 							my_flush();
 						}
@@ -4584,7 +4592,7 @@ reread_active_after_posting(
 					if (group->xmin != old_min || group->xmax != old_max) {
 #ifdef DEBUG
 						if (debug & DEBUG_NEWSRC) { /* TODO: is this the right debug-level? */
-							my_printf(cCRLF "Min/Max DIFF grp=[%s] old=[%ld-%ld] new=[%ld-%ld]",
+							my_printf(cCRLF "Min/Max DIFF grp=[%s] old=[%"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT"] new=[%"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT"]",
 								group->name, old_min, old_max, group->xmin, group->xmax);
 							my_flush();
 						}

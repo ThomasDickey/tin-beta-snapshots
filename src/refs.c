@@ -8,7 +8,7 @@
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
  *
- * Copyright (c) 1996-2011 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1996-2012 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -314,7 +314,7 @@ add_msgid(
 
 #ifdef DEBUG
 	if (debug & DEBUG_REFS)
-		DEBUG_PRINT((dbgfd, "new: %s -> %s\n", msgid, (newparent)?newparent->txt:"None"));
+		DEBUG_PRINT((dbgfd, "new: %s -> %s\n", msgid, (newparent) ? newparent->txt : "None"));
 #endif /* DEBUG */
 
 	/*
@@ -940,12 +940,14 @@ collate_subjects(
 			 * is that we have to add later threads onto the end of the
 			 * previous thread
 			 */
-			if (
-					(arts[i].subject == arts[j].subject) /* ||
-					(arts[i].archive && arts[j].archive && (arts[i].archive->name == arts[j].archive->name)) */
-			) {
-/*DEBUG_PRINT((dbgfd, "RES: %d is now previous, at end of %d\n", i, j));*/
-
+#if 1
+			if (arts[i].subject == arts[j].subject)
+#else
+			/* see also art.c:thread_by_subject() */
+			if ((arts[i].subject == arts[j].subject) || (arts[i].archive && arts[j].archive && (arts[i].archive->name == arts[j].archive->name)))
+#endif /* 1 */
+			{
+				/* DEBUG_PRINT((dbgfd, "RES: %d is now previous, at end of %d\n", i, j)); */
 				for (art = j; arts[art].thread >= 0; art = arts[art].thread)
 					;
 

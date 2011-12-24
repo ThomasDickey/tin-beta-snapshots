@@ -3,10 +3,10 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-01-29
+ *  Updated   : 2011-11-04
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -141,7 +141,7 @@ group_page(
 	char key[MAXKEYLEN];
 	int i, n, ii;
 	int thread_depth;	/* Starting depth in threads we enter */
-	long old_artnum = 0L;
+	t_artnum old_artnum = T_ARTNUM_CONST(0);
 	struct t_art_stat sbuf;
 	t_bool flag;
 	t_bool xflag = FALSE;	/* 'X'-flag */
@@ -214,7 +214,7 @@ group_page(
 			case DIGIT_8:
 			case DIGIT_9:
 				if (grpmenu.max)
-					prompt_item_num(func_to_key(func, group_keys), _(txt_select_thread));
+					prompt_item_num(func_to_key(func, group_keys), group->attribute->thread_articles == THREAD_NONE ? _(txt_select_art) : _(txt_select_thread));
 				break;
 
 #	ifndef NO_SHELL_ESCAPE
@@ -355,12 +355,12 @@ group_page(
 
 			case GLOBAL_EDIT_FILTER:
 				if (invoke_editor(filter_file, filter_file_offset, NULL)) {
-					old_artnum = grpmenu.max > 0 ? arts[(int) base[grpmenu.curr]].artnum : -1L;
+					old_artnum = grpmenu.max > 0 ? arts[(int) base[grpmenu.curr]].artnum : T_ARTNUM_CONST(-1);
 					unfilter_articles(group);
 					(void) read_filter_file(filter_file);
 					filter_articles(group);
 					make_threads(group, FALSE);
-					grpmenu.curr = old_artnum >= 0L ? find_new_pos(old_artnum, grpmenu.curr) : grpmenu.max - 1;
+					grpmenu.curr = old_artnum >= T_ARTNUM_CONST(0) ? find_new_pos(old_artnum, grpmenu.curr) : grpmenu.max - 1;
 				}
 				show_group_page();
 				break;
@@ -479,9 +479,9 @@ group_page(
 				break;
 
 			case GLOBAL_OPTION_MENU:			/* option menu */
-				old_artnum = grpmenu.max > 0 ? arts[(int) base[grpmenu.curr]].artnum : -1L;
+				old_artnum = grpmenu.max > 0 ? arts[(int) base[grpmenu.curr]].artnum : T_ARTNUM_CONST(-1);
 				config_page(group->name);
-				grpmenu.curr = old_artnum >= 0L ? find_new_pos(old_artnum, grpmenu.curr) : grpmenu.max - 1;
+				grpmenu.curr = old_artnum >= T_ARTNUM_CONST(0) ? find_new_pos(old_artnum, grpmenu.curr) : grpmenu.max - 1;
 				show_group_page();
 				break;
 

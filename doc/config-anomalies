@@ -32,10 +32,6 @@ art_marked_selected, art_marked_recent, art_marked_unread, art_marked_read,
 art_marked_killed and art_marked_read_selected must be converted by
 SPACE_TO_DASH() before writing to tinrc file.
 
-default_filter_kill_case and default_filter_select_case write inverted values
-to tinrc file (not really a problem -- these are not in option_table and must
-be handled explicitly anyway)
-
 -----------------------------------------------------------------------------
 
 tinrc variables that should be removed because they can be used in the

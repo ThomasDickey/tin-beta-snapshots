@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2011-02-22
+ *  Updated   : 2011-09-12
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -522,7 +522,7 @@ get_tcp_socket(
 	}
 
 	if (x < 0) {
-		my_fprintf(stderr, _(txt_giving_up));
+		my_fprintf(stderr, "%s", _(txt_giving_up));
 		return -save_errno;					/* Return the last errno we got */
 	}
 #		else
@@ -617,7 +617,6 @@ get_tcp6_socket(
 /*	hints.ai_flags = AI_CANONNAME; */
 	hints.ai_family = (force_ipv4 ? AF_INET : (force_ipv6 ? AF_INET6 : ADDRFAM));
 	hints.ai_socktype = SOCK_STREAM;
-	res = (struct addrinfo *) 0;
 	res0 = (struct addrinfo *) 0;
 	if ((err = getaddrinfo(mymachine, myport, &hints, &res0))) {
 		my_fprintf(stderr, "\ngetaddrinfo: %s\n", gai_strerror(err));
@@ -640,7 +639,7 @@ get_tcp6_socket(
 		/*
 		 * TODO: issue a more useful error-message
 		 */
-		my_fprintf(stderr, _(txt_error_socket_or_connect_problem));
+		my_fprintf(stderr, "%s", _(txt_error_socket_or_connect_problem));
 		return -1;
 	}
 	return s;
@@ -741,7 +740,7 @@ u_put_server(
 #	ifdef DEBUG
 	if (debug & DEBUG_NNTP) {
 		if (strcmp(string, "\r\n"))
-			debug_print_file("NNTP", ">>> %s", string);
+			debug_print_file("NNTP", ">>>%s%s", logtime(), string);
 	}
 #	endif /* DEBUG */
 }
@@ -771,7 +770,7 @@ put_server(
 		s_puts("\r\n", nntp_wr_fp);
 #	ifdef DEBUG
 		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", ">>> %s", string);
+			debug_print_file("NNTP", ">>>%s%s", logtime(), string);
 #	endif /* DEBUG */
 		/*
 		 * remember the last command we wrote to be able to resend it after a
@@ -821,7 +820,7 @@ reconnect(
 
 	/*
 	 * set signal_context temporary to cReconnect to avoid trouble when receiving
-	 * SIGWINCH while beeing in prompt_yn()
+	 * SIGWINCH while being in prompt_yn()
 	 */
 	signal_context = cReconnect;
 
@@ -859,7 +858,7 @@ reconnect(
 			s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
 #	ifdef DEBUG
 			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "<<< %s", last_put);
+				debug_print_file("NNTP", "<<<%s%s", logtime(), last_put);
 #	endif /* DEBUG */
 			DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
 		}
@@ -915,13 +914,13 @@ get_server(
 	 *   -the network connection went down
 	 */
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
-	alarm(NNTP_READ_TIMEOUT);
+	alarm(tinrc.nntp_read_timeout_secs);
 #	endif /* HAVE_ALARM && SIGALRM */
 	while (nntp_rd_fp == NULL || s_gets(string, size, nntp_rd_fp) == NULL) {
 		if (errno == EINTR) {
 			errno = 0;
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
-			alarm(NNTP_READ_TIMEOUT);		/* Restart the timer */
+			alarm(tinrc.nntp_read_timeout_secs);		/* Restart the timer */
 #	endif /* HAVE_ALARM && SIGALRM */
 			continue;
 		}
@@ -999,10 +998,7 @@ close_server(
 	s_end();
 	nntp_wr_fp = nntp_rd_fp = NULL;
 }
-#endif /* NNTP_ABLE */
 
-
-#ifdef NNTP_ABLE
 /*
  * Try and use CAPABILITIES here. Get this list before issuing other NNTP
  * commands because the correct methods may be mentioned in the list of
@@ -1063,12 +1059,12 @@ check_extensions(void)
 			nntp_caps.broken_listgroup = FALSE;
 #else
 			nntp_caps.broken_listgroup = TRUE;
-#endif /*! BROKEN_LISTGROUP */
+#endif /* !BROKEN_LISTGROUP */
 
 			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #		ifdef DEBUG
 				if (debug & DEBUG_NNTP)
-					debug_print_file("NNTP", "<<< %s", ptr);
+					debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #		endif /* DEBUG */
 				/* look for version number(s) */
 				if (!nntp_caps.version && nntp_caps.type == CAPABILITIES) {
@@ -1263,10 +1259,10 @@ mode_reader(
 
 	if (!nntp_caps.reader) {
 		char line[NNTP_STRLEN];
-#ifdef DEBUG
+#	ifdef DEBUG
 		if (debug & DEBUG_NNTP)
 			debug_print_file("NNTP", "mode_reader() MODE READER");
-#endif /* DEBUG */
+#	endif /* DEBUG */
 		DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 		put_server("MODE READER");
 
@@ -1304,10 +1300,10 @@ mode_reader(
 				return ret;
 
 			case ERR_COMMAND:
-#if 1
+#	if 1
 				ret = 0;
 				break;
-#endif /* 1 */
+#	endif /* 1 */
 
 			default:
 				break;
@@ -1360,7 +1356,7 @@ nntp_open(
 
 #	ifdef DEBUG
 	if (debug & DEBUG_NNTP)
-		debug_print_file("NNTP", "nntp_open() %s", nntp_server);
+		debug_print_file("NNTP", "nntp_open() %s:%d", nntp_server, nntp_tcp_port);
 #	endif /* DEBUG */
 
 	ret = server_init(nntp_server, NNTP_TCP_NAME, nntp_tcp_port, line, sizeof(line));
@@ -1734,14 +1730,14 @@ get_only_respcode(
 	if (tin_errno || ptr == NULL) {
 #	ifdef DEBUG
 		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", "<<< Error: tin_error<>0 or ptr==NULL in get_only_respcode()");
+			debug_print_file("NNTP", "<<<%sError: tin_error<>0 or ptr==NULL in get_only_respcode()", logtime());
 #	endif /* DEBUG */
 		return -1;
 	}
 
 #	ifdef DEBUG
 	if (debug & DEBUG_NNTP)
-		debug_print_file("NNTP", "<<< %s", ptr);
+		debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 	respcode = (int) strtol(ptr, &end, 10);
 	DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
@@ -1765,14 +1761,14 @@ get_only_respcode(
 		if (tin_errno) {
 #	ifdef DEBUG
 			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "<<< Error: tin_errno <> 0");
+				debug_print_file("NNTP", "<<<%sError: tin_errno <> 0", logtime());
 #	endif /* DEBUG */
 			return -1;
 		}
 
 #	ifdef DEBUG
 		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", "<<< %s", ptr);
+			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 		respcode = (int) strtol(ptr, &end, 10);
 		DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
@@ -1834,7 +1830,7 @@ get_respcode(
 			s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
 #	ifdef DEBUG
 			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "<<< %s", last_put);
+				debug_print_file("NNTP", "<<<%s%s", logtime(), last_put);
 #	endif /* DEBUG */
 			DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
 		}
@@ -1846,14 +1842,14 @@ get_respcode(
 		if (tin_errno) {
 #	ifdef DEBUG
 			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "<<< Error: tin_errno <> 0");
+				debug_print_file("NNTP", "<<<%sError: tin_errno <> 0", logtime());
 #	endif /* DEBUG */
 				return -1;
 		}
 
 #	ifdef DEBUG
 		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", "<<< %s", ptr);
+			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 		respcode = (int) strtol(ptr, &end, 10);
 		if (message != NULL && mlen > 1)				/* Pass out the rest of the text */
@@ -1962,7 +1958,7 @@ list_motd(
 			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #	ifdef DEBUG
 				if (debug & DEBUG_NNTP)
-					debug_print_file("NNTP", "<<< %s", ptr);
+					debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 				/*
 				 * according to draft-elie-nntp-list-additions-00.txt 2.4.2

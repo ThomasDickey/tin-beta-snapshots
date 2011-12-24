@@ -6,7 +6,7 @@
  *  Updated   : 2010-10-01
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -157,7 +157,7 @@ search_config(
 			if (n == last && forward)
 				n = 0;
 			else
-				n += forward ? 1 : -1;
+				n += (forward ? 1 : -1);
 		}
 		/* search only visible options */
 		if (option_is_visible(n)) {
@@ -219,7 +219,7 @@ generic_search(
 			if (n == last && forward)
 				n = 0;
 			else
-				n += forward ? 1 : -1;
+				n += (forward ? 1 : -1);
 		}
 		switch (level) {
 			case ATTACHMENT_LEVEL:

@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: base64.h,v 1.2 2009/08/14 20:03:51 tom Exp $ */
+/* @Id: base64.h,v 1.2 1999/12/02 16:58:45 joda Exp @ */
 
 #ifndef _BASE64_H_
 #define _BASE64_H_

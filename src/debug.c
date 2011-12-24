@@ -3,10 +3,10 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2009-03-13
+ *  Updated   : 2011-11-06
  *  Notes     : debug routines
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -116,7 +116,7 @@ debug_print_header(
 	joinpath(file, sizeof(file), TMPDIR, "ARTS");
 
 	if ((fp = fopen(file, "a+")) != NULL) {
-		fprintf(fp,"art=[%5ld] tag=[%s] kill=[%s] selected=[%s]\n", s->artnum,
+		fprintf(fp,"art=[%5"T_ARTNUM_PFMT"] tag=[%s] kill=[%s] selected=[%s]\n", s->artnum,
 			bool_unparse(s->tagged),
 			bool_unparse(s->killed),
 			bool_unparse(s->selected));
@@ -164,7 +164,7 @@ debug_print_active(
 				i, group->name,
 				(group->type == GROUP_TYPE_NEWS ? "NEWS" : "MAIL"),
 				group->spooldir);
-			fprintf(fp, "count=[%4ld] max=[%4ld] min=[%4ld] mod=[%c]\n",
+			fprintf(fp, "count=[%4"T_ARTNUM_PFMT"] max=[%4"T_ARTNUM_PFMT"] min=[%4"T_ARTNUM_PFMT"] mod=[%c]\n",
 				group->count, group->xmax, group->xmin, group->moderated);
 			fprintf(fp, " nxt=[%4d] hash=[%lu]  description=[%s]\n", group->next,
 				hash_groupname(group->name), BlankIfNull(group->description));
@@ -259,7 +259,7 @@ debug_print_filter(
 		BlankIfNull(the_filter->msgid));
 
 	if (the_filter->time)
-		fprintf(fp, "       time=[%ld][%s]\n", the_filter->time, BlankIfNull(str_trim(ctime(&the_filter->time))));
+		fprintf(fp, "       time=[%ld][%s]\n", (long) the_filter->time, BlankIfNull(str_trim(ctime(&the_filter->time))));
 }
 
 
@@ -350,12 +350,12 @@ debug_print_bitmap(
 	joinpath(file, sizeof(file), TMPDIR, "BITMAP");
 	if (group != NULL) {
 		if ((fp = fopen(file, "a+")) != NULL) {
-			fprintf(fp, "\nActive: Group=[%s] sub=[%c] min=[%ld] max=[%ld] count=[%ld] num_unread=[%ld]\n",
+			fprintf(fp, "\nActive: Group=[%s] sub=[%c] min=[%"T_ARTNUM_PFMT"] max=[%"T_ARTNUM_PFMT"] count=[%"T_ARTNUM_PFMT"] num_unread=[%"T_ARTNUM_PFMT"]\n",
 				group->name, SUB_CHAR(group->subscribed),
 				group->xmin, group->xmax, group->count,
 				group->newsrc.num_unread);
 			if (art != NULL) {
-				fprintf(fp, "art=[%5ld] tag=[%s] kill=[%s] selected=[%s] subj=[%s]\n",
+				fprintf(fp, "art=[%5"T_ARTNUM_PFMT"] tag=[%s] kill=[%s] selected=[%s] subj=[%s]\n",
 					art->artnum,
 					bool_unparse(art->tagged),
 					bool_unparse(art->killed),
@@ -366,9 +366,9 @@ debug_print_bitmap(
 					(art->status == ART_READ ? "READ" : "UNREAD"));
 			}
 			debug_print_newsrc(&group->newsrc, fp);
+			fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+			fclose(fp);
 		}
-		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
-		fclose(fp);
 	}
 }
 
@@ -378,9 +378,10 @@ debug_print_newsrc(
 	struct t_newsrc *lnewsrc,
 	FILE *fp)
 {
-	int i, j;
+	int j;
+	t_artnum i;
 
-	fprintf(fp, "Newsrc: min=[%ld] max=[%ld] bitlen=[%ld] num_unread=[%ld] present=[%d]\n",
+	fprintf(fp, "Newsrc: min=[%"T_ARTNUM_PFMT"] max=[%"T_ARTNUM_PFMT"] bitlen=[%"T_ARTNUM_PFMT"] num_unread=[%"T_ARTNUM_PFMT"] present=[%d]\n",
 		lnewsrc->xmin, lnewsrc->xmax, lnewsrc->xbitlen,
 		lnewsrc->num_unread, lnewsrc->present);
 
@@ -397,4 +398,27 @@ debug_print_newsrc(
 	fprintf(fp, "]\n");
 	fflush(fp);
 }
+
+
+#	ifdef NNTP_ABLE
+const char *
+logtime(
+	void)
+{
+#		if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
+	static struct t_tintime log_time;
+	static char out[40];
+
+	if (tin_gettime(&log_time) == 0)
+	{
+		strftime(out, 39, " [%H:%M:%S.", gmtime(&(log_time.tv_sec)));
+		sprintf(out + 11, "%09ld", log_time.tv_nsec); /* strlen(" [hh:mm:ss.") */
+		out[17] = '\0'; /* strlen(" [hh:mm:ss.uuuuuu") */
+		strcat(out, "] ");
+		return out;
+	}
+#		endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
+	return " ";
+}
+#	endif /* NNTP_ABLE */
 #endif /* DEBUG */

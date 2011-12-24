@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-02-05
+ *  Updated   : 2011-04-17
  *  Notes     :
  *
- * Copyright (c) 1991-2011 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,8 +88,8 @@ main(
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	if (setlocale(LC_ALL, "")) {
 #	ifdef ENABLE_NLS
-		bindtextdomain(PACKAGE, LOCALEDIR);
-		textdomain(PACKAGE);
+		bindtextdomain(NLS_TEXTDOMAIN, LOCALEDIR);
+		textdomain(NLS_TEXTDOMAIN);
 #	endif /* ENABLE_NLS */
 	} else
 		error_message(4, txt_error_locale);

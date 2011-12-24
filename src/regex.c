@@ -3,11 +3,11 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2008-11-22
+ *  Updated   : 2011-11-09
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
- * Copyright (c) 1997-2011 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2012 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

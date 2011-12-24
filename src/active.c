@@ -3,10 +3,10 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2010-03-15
+ *  Updated   : 2011-11-06
  *  Notes     :
  *
- * Copyright (c) 1992-2011 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2012 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,14 +66,14 @@ static time_t active_timestamp;	/* time active file read (local) */
 static FILE *open_newgroups_fp(int idx);
 static FILE *open_news_active_fp(void);
 static int check_for_any_new_groups(void);
-static void active_add(struct t_group *ptr, long count, long max, long min, const char *moderated);
-static void append_group_line(char *active_file, char *group_path, long art_max, long art_min, char *base_dir);
+static void active_add(struct t_group *ptr, t_artnum count, t_artnum max, t_artnum min, const char *moderated);
+static void append_group_line(char *active_file, char *group_path, t_artnum art_max, t_artnum art_min, char *base_dir);
 static void make_group_list(char *active_file, char *base_dir, char *fixed_base, char *group_path);
 static void read_active_file(void);
 static void read_newsrc_active_file(void);
 static void subscribe_new_group(char *group, char *autosubscribe, char *autounsubscribe);
 #ifdef NNTP_ABLE
-	static t_bool parse_count_line(char *line, long *max, long *min, long *count, char *moderated);
+	static t_bool parse_count_line(char *line, t_artnum *max, t_artnum *min, t_artnum *count, char *moderated);
 	static void read_active_counts(void);
 #endif /* NNTP_ABLE */
 
@@ -139,9 +139,9 @@ resync_active_file(
 static void
 active_add(
 	struct t_group *ptr,
-	long count,
-	long max,
-	long min,
+	t_artnum count,
+	t_artnum max,
+	t_artnum min,
 	const char *moderated)
 {
 	/* name - pre-initialised when group is made */
@@ -194,7 +194,7 @@ process_bogus(
 	if ((ptr = group_add(name)) == NULL)
 		return FALSE;
 
-	active_add(ptr, 0L, 1L, 0L, "n");
+	active_add(ptr, T_ARTNUM_CONST(0), T_ARTNUM_CONST(1), T_ARTNUM_CONST(0), "n");
 	ptr->bogus = TRUE;		/* Mark it bogus */
 
 	if (my_group_add(name, FALSE) < 0)
@@ -210,8 +210,8 @@ process_bogus(
 t_bool
 parse_active_line(
 	char *line,
-	long *max,
-	long *min,
+	t_artnum *max,
+	t_artnum *min,
 	char *moderated)
 {
 	char *p = NULL, *q = NULL, *r = NULL;
@@ -238,8 +238,8 @@ parse_active_line(
 		return FALSE;
 	}
 
-	*max = atol(p);
-	*min = atol(q);
+	*max = atoartnum(p);
+	*min = atoartnum(q);
 	strcpy(moderated, r);
 
 	return TRUE;
@@ -255,9 +255,9 @@ parse_active_line(
 static t_bool
 parse_count_line(
 	char *line,
-	long *max,
-	long *min,
-	long *count,
+	t_artnum *max,
+	t_artnum *min,
+	t_artnum *count,
 	char *moderated)
 {
 	char *p = NULL, *q = NULL, *r = NULL, *s = NULL;
@@ -286,9 +286,9 @@ parse_count_line(
 		return FALSE;
 	}
 
-	*max = atol(p);
-	*min = atol(q);
-	*count = atol(r);
+	*max = atoartnum(p);
+	*min = atoartnum(q);
+	*count = atoartnum(r);
 	strcpy(moderated, s);
 
 	return TRUE;
@@ -314,8 +314,8 @@ read_newsrc_active_file(
 	char *p;
 	char moderated[PATH_LEN];
 	int window = 0;
-	long count = -1L, min = 1L, max = 0L;
-	long processed = 0L;
+	t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
+	t_artnum processed = T_ARTNUM_CONST(0);
 	static char ngname[NNTP_STRLEN];
 	struct t_group *grpptr;
 #ifdef NNTP_ABLE
@@ -405,9 +405,9 @@ read_newsrc_active_file(
 
 					case OK_GROUP:
 						{
-							char fmt[20];
+							char fmt[25];
 
-							snprintf(fmt, sizeof(fmt), "%%ld %%ld %%ld %%%ds", NNTP_STRLEN);
+							snprintf(fmt, sizeof(fmt), "%%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%%ds", NNTP_STRLEN);
 							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4) {
 								error_message(2, _(txt_error_invalid_response_to_group), line);
 #	ifdef DEBUG
@@ -555,7 +555,7 @@ read_active_file(
 	FILE *fp;
 	char *ptr;
 	char moderated[PATH_LEN];
-	long count = -1L, min = 1L, max = 0L;
+	t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
 	long processed = 0L;
 	struct t_group *grpptr;
 
@@ -581,6 +581,11 @@ read_active_file(
 	}
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+#if defined(DEBUG) && defined(NNTP_ABLE)
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+#endif /* DEBUG && NNTP_ABLE */
+
 		if (!parse_active_line(ptr, &max, &min, moderated))
 			continue;
 
@@ -641,8 +646,8 @@ read_active_counts(
 	FILE *fp;
 	char *ptr;
 	char moderated[PATH_LEN];
-	long count = -1L, min = 1L, max = 0L;
-	long processed = 0L;
+	t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
+	t_artnum processed = T_ARTNUM_CONST(0);
 	struct t_group *grpptr;
 
 	if (!batch_mode || verbose)
@@ -657,6 +662,11 @@ read_active_counts(
 	}
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+#	ifdef DEBUG
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+#	endif /* DEBUG */
+
 		if (!parse_count_line(ptr, &max, &min, &count, moderated))
 			continue;
 
@@ -761,7 +771,7 @@ read_news_active_file(
 			char *ptr, *q;
 			char moderated[PATH_LEN];
 			int r = 0, i = 0, j = 0;
-			long count = -1L, min = 1L, max = 0L;
+			t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
 			struct t_group *grpptr;
 			t_bool need_auth = FALSE;
 
@@ -807,7 +817,7 @@ read_news_active_file(
 					for (i = 0; i < r && !did_reconnect; i++) {
 						if ((j = get_only_respcode(buff, sizeof(buff))) != OK_GROUPS) {
 							/* TODO: add 483 (RFC 3977) code */
-							if (j == ERR_NOAUTH || r == NEED_AUTHINFO)
+							if (j == ERR_NOAUTH || j == NEED_AUTHINFO)
 								need_auth = TRUE;
 #if 0 /* do we need something like this? */
 							if (j == ERR_CMDSYN)
@@ -818,7 +828,7 @@ read_news_active_file(
 							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #		ifdef DEBUG
 								if (debug & DEBUG_NNTP)
-									debug_print_file("NNTP", "<<< %s", ptr);
+									debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #		endif /* DEBUG */
 								if (nntp_caps.type == CAPABILITIES && nntp_caps.list_counts) {
 									if (!parse_count_line(ptr, &max, &min, &count, moderated))
@@ -1043,7 +1053,7 @@ subscribe_new_group(
 		}
 
 		if ((ptr = group_add(group)) != NULL)
-			active_add(ptr, 0L, 1L, 0L, "y");
+			active_add(ptr, T_ARTNUM_CONST(0), T_ARTNUM_CONST(1), T_ARTNUM_CONST(0), "y");
 
 		if ((idx = my_group_add(group, FALSE)) < 0)
 			return;
@@ -1265,8 +1275,8 @@ make_group_list(
 	char *ptr;
 	char filename[PATH_LEN];
 	char path[PATH_LEN];
-	long art_max;
-	long art_min;
+	t_artnum art_max;
+	t_artnum art_min;
 	struct stat stat_info;
 	t_bool is_dir;
 
@@ -1302,8 +1312,8 @@ static void
 append_group_line(
 	char *active_file,
 	char *group_path,
-	long art_max,
-	long art_min,
+	t_artnum art_max,
+	t_artnum art_min,
 	char *base_dir)
 {
 	FILE *fp;
@@ -1329,7 +1339,7 @@ append_group_line(
 		while ((ptr = strchr(ptr, '/')) != NULL)
 			*ptr = '.';
 
-		wait_message(0, "Appending=[%s %ld %ld %s]\n", group_name, art_max, art_min, base_dir);
+		wait_message(0, "Appending=[%s %"T_ARTNUM_PFMT" %"T_ARTNUM_PFMT" %s]\n", group_name, art_max, art_min, base_dir);
 		print_group_line(fp, group_name, art_max, art_min, base_dir);
 		if ((err = ferror(fp)) || fclose(fp)) { /* TODO: issue warning? */
 			rename(file_tmp, active_file);
