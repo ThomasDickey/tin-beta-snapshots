@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2011-11-29
+ *  Updated   : 2012-02-20
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -61,7 +61,7 @@ int cCOLS;
 static int my_innstr(char *str, int n);
 
 
-#	ifdef HAVE_XCURSES
+#	if defined(HAVE_XCURSES) && !defined(HAVE_VWPRINTW)
 static int
 vwprintw(
 	WINDOW *w,
@@ -84,7 +84,7 @@ vwprintw(
 	}
 	return code;
 }
-#	endif /* HAVE_XCURSES */
+#	endif /* HAVE_XCURSES && !HAVE_VWPRINTW */
 
 
 /*

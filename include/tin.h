@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-06
+ *  Updated   : 2012-03-11
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -341,7 +341,10 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  */
 #ifdef HAVE_DIRENT_H
 #	include <dirent.h>
+/* #	define NAMLEN(dirent) strlen((dirent)->d_name) */
 #else
+#	define dirent direct
+/* #	define NAMLEN(dirent) (dirent)->d_namlen */
 #	ifdef HAVE_SYS_NDIR_H
 #		include <sys/ndir.h>
 #	endif /* HAVE_SYS_NDIR_H */
@@ -354,7 +357,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #endif /* HAVE_DIRENT_H */
 
 #ifndef DIR_BUF
-#	define DIR_BUF	struct dirent
+#	define DIR_BUF struct dirent
 #endif /* !DIR_BUF */
 
 #ifndef HAVE_UNLINK
@@ -1382,32 +1385,52 @@ enum {
  */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 #	ifdef HAVE_LIBICUUC
-#		define HAVE_UNICODE_NORMALIZATION 1
+#		define HAVE_UNICODE_NORMALIZATION 3
 #	else
-#		if defined(HAVE_LIBIDN) && defined(HAVE_STRINGPREP_H)
+#		ifdef HAVE_LIBUNISTRING
 #			define HAVE_UNICODE_NORMALIZATION 2
-#		endif /* HAVE_LIBIDN */
+#		else
+#			if defined(HAVE_LIBIDN) && defined(HAVE_STRINGPREP_H)
+#				define HAVE_UNICODE_NORMALIZATION 1
+#			endif /* HAVE_LIBIDN */
+#		endif /* HAVE_LIBUNISTRING */
 #	endif /* HAVE_LIBICUUC */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 /*
- * normalization forms
+ * normalization forms, we prefer NFC (see RFC 6532) if possible
  */
 #ifdef HAVE_UNICODE_NORMALIZATION
 enum {
 	NORMALIZE_NONE = 0,
-#	ifdef HAVE_LIBICUUC
+#	if (HAVE_UNICODE_NORMALIZATION >= 2)
 	NORMALIZE_NFKC = 1,
 	NORMALIZE_NFKD = 2,
 	NORMALIZE_NFC = 3,
 	NORMALIZE_NFD = 4
+#		define DEFAULT_NORMALIZE NORMALIZE_NFC
 #	else
-#		ifdef HAVE_LIBIDN
 	NORMALIZE_NFKC = 1
-#		endif /* HAVE_LIBIDN */
-#	endif /* HAVE_LIBICUUC */
+#		define DEFAULT_NORMALIZE NORMALIZE_NFKC
+#	endif /* HAVE_UNICODE_NORMALIZATION >= 2 */
 };
 #endif /* HAVE_UNICODE_NORMALIZATION */
+
+#ifdef HAVE_LIBICUUC
+#	ifdef HAVE_UNICODE_USTRING_H
+#		include <unicode/ustring.h>
+#	endif /* HAVE_UNICODE_USTRING_H */
+#	ifdef HAVE_UNICODE_UNORM_H
+#		include <unicode/unorm.h>
+#	endif /* HAVE_UNICODE_UNORM_H */
+#	ifdef HAVE_UNICODE_UIDNA_H
+#		include <unicode/uidna.h>
+#	endif /* HAVE_UNICODE_UIDNA_H */
+#	ifdef HAVE_UNICODE_UBIDI_H
+#		include <unicode/ubidi.h>
+#	endif /* HAVE_UNICODE_UBIDI_H */
+#endif /* HAVE_LIBICUUC */
+
 
 /*
  * used in checking article header before posting
@@ -1999,8 +2022,16 @@ typedef struct urllist {
 
 /* Define a matching function pointer type */
 typedef int (*t_compfunc)(t_comptype, t_comptype);
+typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 
 #define _CDECL
+
+/* set to (void)heapsort or qsort */
+#ifndef USE_HEAPSORT
+#	define tin_sort qsort
+#else
+#	define MAX_SORT_FUNCS 1
+#endif /* !USE_HEAPSORT */
 
 /* Seperator between dir part of path & the filename */
 #define DIRSEP	'/'

@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-04
+ *  Updated   : 2012-03-04
  *  Notes     :
  *
  * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -480,7 +480,7 @@ group_page(
 
 			case GLOBAL_OPTION_MENU:			/* option menu */
 				old_artnum = grpmenu.max > 0 ? arts[(int) base[grpmenu.curr]].artnum : T_ARTNUM_CONST(-1);
-				config_page(group->name);
+				config_page(group->name, signal_context);
 				grpmenu.curr = old_artnum >= T_ARTNUM_CONST(0) ? find_new_pos(old_artnum, grpmenu.curr) : grpmenu.max - 1;
 				show_group_page();
 				break;

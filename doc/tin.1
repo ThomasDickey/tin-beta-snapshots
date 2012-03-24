@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2011-12-24
+.\" Updated   : 2012-03-04
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "December 24th, 2011" "2.1.0" "A Usenet newsreader"
+.TH tin 1 "December 24th, 2011" "2.1.1" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -369,10 +369,10 @@ missing if the specific option is not enabled. It might also contain an 'M',
 switch!) if the group is moderated, set to no posting or postings to it get
 redirected.
 .PP
-If a thread has unread articles in it it's marked with a
-\fBart_marked_unread\fP in front of the total number of articles in the
-thread. If there are recent articles within the thread it might be marked
-with \fBart_marked_recent\fP in front of the total number of articles in the
+If a thread has unread articles it is marked with \fBart_marked_unread\fP
+in front of the total number of articles in the thread. If there are
+recent articles within the thread it might be marked with
+\fBart_marked_recent\fP in front of the total number of articles in the
 thread - this is controlled by the \fBrecent_time\fP option. If a thread has
 hot articles in it (see also section "FILTERING ARTICLES") it's marked with
 \fBart_marked_selected\fP in front of the total number of articles in the
@@ -2024,7 +2024,8 @@ The possible values are:
 \fBNFD\fP: Canonical Decomposition
 .RE
 Some normalization modes are only available if they are supported by the
-library \fBtin\fP uses to do the normalization. Default is NFKC.
+library \fBtin\fP uses to do the normalization. NFC should be used if
+possible.
 .TP
 .B Go to first unread article in group (pos_first_unread)
 If ON put cursor at first unread article in group otherwise at last
@@ -2190,6 +2191,20 @@ setting and turn descriptions off. The text used is taken from the
 .B tin
 to be build with mh-mail-handling support) from
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups\fR for mailgroups. Default is ON.
+.TP
+.B Function for sorting articles (sort_function)
+Function used for sorting articles. Default is 0.
+.RS +.5i
+.IP 0 3
+Use
+.BR qsort (3)
+for sorting.
+.IP 1
+Use
+.BR heapsort (3)
+for sorting. This might be faster in large groups with long threads
+(somewhat presorted data).
+.RE
 .TP
 .B Show lines/score in listings (show_info)
 Which information about the thread or article should be shown. Default is 1,
@@ -2592,14 +2607,15 @@ documentation directory. This file can also be read online at
 <http://www.tin.org/filtering.txt>.
 .PP
 .\" FIXME - Next paragraph is out of date
-The on-screen filtering menu is accessed by pressing '\fB^K\fP' at the Group
-and Article levels. It allows the user to kill or select an article that
-matches the current ''Subject:'' line, ''From:'' line or a string entered by
-the user. The user entered string can be applied to the ''Subject:'' or
-\&''From:'' lines of an article. The kill description can be limited to the
-current newsgroup or it can apply to all newsgroups. Once entered the user
-can abort the command and not save the kill description, edit the kill file
-or save the kill description.
+The on-screen filtering menu is accessed by pressing 
+\fBMenuFilterKill\fP ('\fB^K\fP') or \fBMenuFilterSelect\fP ('\fB^A\fP')
+at the Group and Article levels. It allows the user to kill or select an
+article that matches the current ''Subject:'' line, ''From:'' line or a
+string entered by the user. The user entered string can be applied to the
+\&''Subject:'' or ''From:'' line of an article. The filter can be limited
+to the current newsgroup or it can apply to all newsgroups. Once entered
+the user can abort the command and not save the new filter, edit the full
+filter file or save filter.
 .\"
 .\"
 .SS "POSTING ARTICLES"
@@ -3601,11 +3617,13 @@ Urs Janssen <urs@tin.org>
 .BR uudecode (1),
 .BR vi (1),
 .BR xterm (1x),
+.BR heapsort (3),
 .BR iconv (3),
 .BR iconv_open (3),
 .BR nl_langinfo (3),
 .BR pcre (3),
 .BR pcrepattern (3),
+.BR qsort (3),
 .BR snprintf (3),
 .BR strftime (3),
 .BR vsnprintf (3),

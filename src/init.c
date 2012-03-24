@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-04-17
+ *  Updated   : 2012-03-04
  *  Notes     :
  *
  * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
@@ -283,6 +283,9 @@ struct t_config tinrc = {
 	SHOW_FROM_NAME,				/* show_author */
 	SORT_ARTICLES_BY_DATE_ASCEND,		/* sort_article_type */
 	SORT_THREADS_BY_SCORE_DESCEND,		/* sort_threads_type */
+#ifdef USE_HEAPSORT
+	0,				/* sort_function default qsort */
+#endif
 	BOGUS_SHOW,		/* strip_bogus */
 	THREAD_BOTH,		/* thread_articles */
 	THREAD_PERC_DEFAULT,	/* thread_perc */
@@ -410,7 +413,7 @@ struct t_config tinrc = {
 	TRUE,		/* default_filter_select_global */
 	DEFAULT_DATE_FORMAT,	/* date_format */
 #ifdef HAVE_UNICODE_NORMALIZATION
-	NORMALIZE_NFKC,		/* normalization form */
+	DEFAULT_NORMALIZE,		/* normalization form */
 #endif /* HAVE_UNICODE_NORMALIZATION */
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 	FALSE,		/* render_bidi */

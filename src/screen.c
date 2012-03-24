@@ -409,7 +409,9 @@ spin_cursor(
 }
 
 
-#define DISPLAY_FMT "%s %3d%% "
+#if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
+#	define DISPLAY_FMT "%s %3d%% "
+#endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
 /*
  * progressmeter in %
  */

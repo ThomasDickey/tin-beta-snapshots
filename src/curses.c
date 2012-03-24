@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2011-04-17
+ *  Updated   : 2012-03-05
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -1016,16 +1016,17 @@ input_pending(
 }
 
 
+#if defined(HAVE_USLEEP) || defined(HAVE_SELECT) || defined(HAVE_POLL)
+#	define wait_a_while(i) \
+	while (!input_pending(0) \
+		&& i < ((VT_ESCAPE_TIMEOUT * 1000) / SECOND_CHARACTER_DELAY))
+#endif /* HAVE_USLEEP || HAVE_SELECT || HAVE_POLL */
 int
 get_arrow_key(
 	int prech)
 {
 	int ch;
 	int ch1;
-
-#define wait_a_while(i) \
-	while (!input_pending(0) \
-		&& i < ((VT_ESCAPE_TIMEOUT * 1000) / SECOND_CHARACTER_DELAY))
 
 	if (!input_pending(0)) {
 #	ifdef HAVE_USLEEP

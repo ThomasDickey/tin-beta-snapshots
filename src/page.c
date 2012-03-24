@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-04
+ *  Updated   : 2012-03-04
  *  Notes     :
  *
  * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -858,7 +858,7 @@ return_to_index:
 			case GLOBAL_OPTION_MENU:	/* option menu */
 				XFACE_CLEAR();
 				old_artnum = arts[this_resp].artnum;
-				config_page(group->name);
+				config_page(group->name, signal_context);
 				if ((this_resp = find_artnum(old_artnum)) == -1 || which_thread(this_resp) == -1) { /* We have lost the thread */
 					pos_first_unread_thread();
 					return GRP_EXIT;

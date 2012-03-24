@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2011-12-24
+.\" Updated   : 2012-03-04
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "December 24th, 2011" 2.1.0 "A Usenet newsreader"
+.TH tin 1 "December 24th, 2011" 2.1.1 "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -346,16 +346,15 @@ missing if the specific option is not enabled. It might also contain an 'M',
 switch!) if the group is moderated, set to no posting or postings to it get
 redirected.
 .PP
-If a thread has unread articles in it it's marked with a
-\fBart_marked_unread\fP in front of the total number of articles in the
-thread. If there are recent articles within the thread it might be marked
-with \fBart_marked_recent\fP in front of the total number of articles in the
-thread \- this is controlled by the \fBrecent_time\fP option. If a thread has
-hot articles in it (see also section "FILTERING ARTICLES") it's marked with
-\fBart_marked_selected\fP in front of the total number of articles in the
-thread. The number of lines of the first (unread) article in the thread
-might also be shown right before the subject \- this is controlled by the
-\fBshow_info\fP option.
+If a thread has unread articles it is marked with \fBart_marked_unread\fP in
+front of the total number of articles in the thread. If there are recent
+articles within the thread it might be marked with \fBart_marked_recent\fP in
+front of the total number of articles in the thread \- this is controlled by
+the \fBrecent_time\fP option. If a thread has hot articles in it (see also
+section "FILTERING ARTICLES") it's marked with \fBart_marked_selected\fP in
+front of the total number of articles in the thread. The number of lines of
+the first (unread) article in the thread might also be shown right before
+the subject \- this is controlled by the \fBshow_info\fP option.
 .PP
 .\" FIXME - make this autoscale
 .nf
@@ -1963,7 +1962,7 @@ possible values are:
 \fBNFD\fP: Canonical Decomposition
 .RE
 Some normalisation modes are only available if they are supported by the
-library \fBtin\fP uses to do the normalisation. Default is NFKC.
+library \fBtin\fP uses to do the normalisation. NFC should be used if possible.
 .TP 
 \fBGo to first unread article in group (pos_first_unread)\fP
 If ON put cursor at first unread article in group otherwise at last
@@ -2121,6 +2120,16 @@ and turn descriptions off. The text used is taken from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups\fP file and if supported (requires
 \fBtin\fP to be build with mh\-mail\-handling support) from
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups\fP for mailgroups. Default is ON.
+.TP 
+\fBFunction for sorting articles (sort_function)\fP
+Function used for sorting articles. Default is 0.
+.RS +.5i
+.IP 0 3
+Use \fBqsort\fP(3)  for sorting.
+.IP 1
+Use \fBheapsort\fP(3)  for sorting. This might be faster in large groups with
+long threads (somewhat presorted data).
+.RE
 .TP 
 \fBShow lines/score in listings (show_info)\fP
 Which information about the thread or article should be shown. Default is 1,
@@ -2504,14 +2513,15 @@ directory. This file can also be read online at
 .\" FIXME - Next paragraph is out of date
 .\"
 .\"
-The on\-screen filtering menu is accessed by pressing '\fB^K\fP' at the Group
-and Article levels. It allows the user to kill or select an article that
-matches the current \*(rqSubject:\*(rq line, \*(rqFrom:\*(rq line or a string entered by
-the user. The user entered string can be applied to the \*(rqSubject:\*(rq or
-\&\*(rqFrom:\*(rq lines of an article. The kill description can be limited to the
-current newsgroup or it can apply to all newsgroups. Once entered the user
-can abort the command and not save the kill description, edit the kill file
-or save the kill description.
+The on\-screen filtering menu is accessed by pressing \fBMenuFilterKill\fP
+('\fB^K\fP') or \fBMenuFilterSelect\fP ('\fB^A\fP')  at the Group and Article
+levels. It allows the user to kill or select an article that matches the
+current \*(rqSubject:\*(rq line, \*(rqFrom:\*(rq line or a string entered by the
+user. The user entered string can be applied to the \&\*(rqSubject:\*(rq or
+\&\*(rqFrom:\*(rq line of an article. The filter can be limited to the current
+newsgroup or it can apply to all newsgroups. Once entered the user can abort
+the command and not save the new filter, edit the full filter file or save
+filter.
 .SS "POSTING ARTICLES"
 \fBtin\fP allows posting of articles, follow\-up to already posted articles and
 replying direct through mail to the author of an article.
@@ -3402,10 +3412,10 @@ Urs Janssen <urs@tin.org>
 \fBcron\fP(1), \fBelm\fP(1), \fBemacs\fP(1), \fBgpg\fP(1), \fBinews\fP(1), \fBispell\fP(1),
 \fBlp\fP(1), \fBlpr\fP(1), \fBmetamail\fP(1), \fBnoffle\fP(1), \fBperl\fP(1), \fBperlre\fP(1),
 \fBpgp\fP(1), \fBrn\fP(1), \fBsendmail\fP(1), \fBshar\fP(1), \fBslrnface\fP(1), \fBtass\fP(1),
-\fBunshar\fP(1), \fBuudecode\fP(1), \fBvi\fP(1), \fBxterm\fP(1x), \fBiconv\fP(3),
-\fBiconv_open\fP(3), \fBnl_langinfo\fP(3), \fBpcre\fP(3), \fBpcrepattern\fP(3),
-\fBsnprintf\fP(3), \fBstrftime\fP(3), \fBvsnprintf\fP(3), \fBwildmat\fP(3),
-\fBenviron\fP(5), \fBlocale\fP(5), \fBmailcap\fP(5), \fBmbox\fP(5), \fBmmdf\fP(5),
-\fBnewsoverview\fP(5), \fBtin\fP(5), \fBRFC1524\fP, \fBRFC2045\fP, \fBRFC2046\fP,
-\fBRFC2047\fP, \fBRFC2048\fP, \fBRFC2980\fP, \fBRFC3977\fP, \fBRFC4643\fP, \fBRFC5322\fP,
-\fBRFC5536\fP, \fBRFC5537\fP, \fBRFC6048\fP
+\fBunshar\fP(1), \fBuudecode\fP(1), \fBvi\fP(1), \fBxterm\fP(1x), \fBheapsort\fP(3),
+\fBiconv\fP(3), \fBiconv_open\fP(3), \fBnl_langinfo\fP(3), \fBpcre\fP(3),
+\fBpcrepattern\fP(3), \fBqsort\fP(3), \fBsnprintf\fP(3), \fBstrftime\fP(3),
+\fBvsnprintf\fP(3), \fBwildmat\fP(3), \fBenviron\fP(5), \fBlocale\fP(5), \fBmailcap\fP(5),
+\fBmbox\fP(5), \fBmmdf\fP(5), \fBnewsoverview\fP(5), \fBtin\fP(5), \fBRFC1524\fP,
+\fBRFC2045\fP, \fBRFC2046\fP, \fBRFC2047\fP, \fBRFC2048\fP, \fBRFC2980\fP, \fBRFC3977\fP,
+\fBRFC4643\fP, \fBRFC5322\fP, \fBRFC5536\fP, \fBRFC5537\fP, \fBRFC6048\fP

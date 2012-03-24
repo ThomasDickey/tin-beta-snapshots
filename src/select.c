@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-09
+ *  Updated   : 2012-03-04
  *  Notes     :
  *
  * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -342,7 +342,7 @@ selection_page(
 				break;
 
 			case GLOBAL_OPTION_MENU:
-				config_page(selmenu.max ? CURR_GROUP.name : NULL);
+				config_page(selmenu.max ? CURR_GROUP.name : NULL, signal_context);
 				show_selection_page();
 				break;
 
@@ -813,7 +813,7 @@ yank_active_file(
 
 
 /*
- * Sort active[] and associated qsort() helper function
+ * Sort active[] and associated tin_sort() helper function
  */
 static int
 active_comp(
@@ -876,7 +876,7 @@ sort_active_file(
 {
 	save_restore_curr_group(TRUE);
 
-	qsort(active, (size_t) num_active, sizeof(struct t_group), active_comp);
+	tin_sort(active, (size_t) num_active, sizeof(struct t_group), active_comp);
 	group_rehash(yanked_out);
 
 	selmenu.curr = save_restore_curr_group(FALSE);

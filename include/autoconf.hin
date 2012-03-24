@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2011-12-21
+ *  Updated   : 2012-02-29
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2012 Thomas Dickey <dickey@invisible-island.net>
@@ -260,6 +260,7 @@
 #	undef HAVE_GETSERVBYNAME
 #	undef HAVE_GETTIMEOFDAY
 #	undef HAVE_GETWD
+#	undef HAVE_HEAPSORT
 #	undef HAVE_ICONV
 #	undef HAVE_INET_ADDR
 #	undef HAVE_INET_ATON
@@ -286,6 +287,7 @@
 #	undef HAVE_SETENV
 #	undef HAVE_SETLOCALE
 #	undef HAVE_SETTZ
+#	undef HAVE_SETVBUF
 #	undef HAVE_SNPRINTF
 #	undef HAVE_STPCPY
 #	undef HAVE_STRCASECMP
@@ -314,6 +316,7 @@
 #	undef HAVE_USLEEP
 #	undef HAVE_VASPRINTF
 #	undef HAVE_VSNPRINTF
+#	undef HAVE_VWPRINTW
 #	undef HAVE_WAITPID
 #	undef HAVE__TRACEF
 
@@ -367,6 +370,7 @@
 #	undef DECL_GETHOSTNAME
 #	undef DECL_GETOPT
 #	undef DECL_GETWD
+#	undef DECL_HEAPSORT
 #	undef DECL_INET_ADDR
 #	undef DECL_INET_ATON
 #	undef DECL_INET_NTOA
@@ -515,6 +519,16 @@
 #	undef USE_FCNTL
 #	undef USE_FLOCK
 #	undef USE_LOCKF
+
+/*
+ * Define this if we intend to use heapsort as an alternative to qsort.
+ */
+#	undef USE_HEAPSORT
+
+/*
+ * Define this if we intend to use heapsort as an alternative to qsort.
+ */
+#	undef USE_HEAPSORT
 
 /*
  * Define this if the compiler performs ANSI-style token substitution (used in
@@ -677,7 +691,16 @@
 #	undef HAVE_UNICODE_UNORM_H
 #	undef HAVE_UNICODE_USTRING_H
 #	undef HAVE_UNICODE_UBIDI_H
+#	undef HAVE_UNICODE_UIDNA_H
 #	undef HAVE_LIBICUUC
+
+/*
+ * GNU libunistring
+ *     used for unicode normalization
+ */
+#	undef HAVE_UNITYPES_H
+#	undef HAVE_UNINORM_H
+#	undef HAVE_LIBUNISTRING
 
 /*
  * Define as const if the declaration of iconv() needs const.

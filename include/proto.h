@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2011-11-05
+ *  Updated   : 2012-03-04
  *  Notes     :
  *
  * Copyright (c) 1997-2012 Urs Janssen <urs@tin.org>
@@ -242,6 +242,11 @@ extern const char *get_host_name(void);
 	extern char *build_sender(void);
 #endif /* !FORGERY */
 
+/* heapsort.c */
+#ifndef HAVE_HEAPSORT
+	extern int heapsort(void *, size_t, size_t, t_compfunc);
+#endif /* !HAVE_HEAPSORT */
+
 /* inews.c */
 extern t_bool submit_news_file(char *name, struct t_group *group, char *a_message_id);
 extern void get_from_name(char *from_name, struct t_group *thisgrp);
@@ -446,7 +451,7 @@ extern t_bool get_newsrcname(char *newsrc_name, size_t newsrc_name_len, const ch
 
 /* options_menu.c */
 extern char *fmt_option_prompt(char *dst, size_t len, t_bool editing, enum option_enum option);
-extern void config_page(const char *grpname);
+extern void config_page(const char *grpname, enum context level);
 extern int option_row(enum option_enum option);
 extern t_bool option_is_visible(enum option_enum option);
 extern void check_score_defaults(void);
@@ -697,6 +702,10 @@ extern void str_lwr(char *str);
 #ifdef HAVE_UNICODE_NORMALIZATION
 	extern char *normalize(const char *str);
 #endif /* HAVE_UNICODE_NORMALIZATION */
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern UChar *char2UChar(const char *str);
+	extern char *UChar2char(const UChar *ustr);
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && !NO_LOCALE */
 
 /* tags.c */
 extern int line_is_tagged(int n);

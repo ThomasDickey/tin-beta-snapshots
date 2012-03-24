@@ -1002,7 +1002,9 @@ build_references(
 
 		joinpath(file, sizeof(file), TMPDIR, "REFS.dump");
 		dbgfd = fopen(file, "w");
+#	ifdef HAVE_SETVBUF
 		SETVBUF(dbgfd, NULL, _IONBF, 0);
+#	endif /* HAVE_SETVBUF */
 		fprintf(dbgfd, "MSGID phase\n");
 	}
 #endif /* DEBUG */

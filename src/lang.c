@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-14
+ *  Updated   : 2012-03-04
  *  Notes     :
  *
  * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
@@ -1467,6 +1467,14 @@ constext *txt_sort_t_type[] = {
 		NULL
 };
 
+#ifdef USE_HEAPSORT
+constext *txt_sort_functions[] = {
+		N_("Quick-sort"),
+		N_("Heap-sort"),
+		NULL
+};
+#endif
+
 /* Ways of handling bogus groups */
 constext *txt_strip_bogus_type[] = {
 		N_("Always Keep"),
@@ -1541,16 +1549,14 @@ constext *txt_interactive_mailers[] = {
 #ifdef HAVE_UNICODE_NORMALIZATION
 constext *txt_normalization_forms[] = {
 	N_("None"),
-#	ifdef HAVE_LIBICUUC
+#	if (HAVE_UNICODE_NORMALIZATION >= 2)
 	N_("NFKC"),
 	N_("NFKD"),
 	N_("NFC"),
 	N_("NFD"),
 #	else
-#		ifdef HAVE_LIBIDN
 	N_("NFKC"),
-#		endif /* HAVE_LIBIDN */
-#	endif /* HAVE_LIBICUUC */
+#	endif /* HAVE_UNICODE_NORMALIZATION >= 2 */
 	NULL
 };
 #endif /* HAVE_UNICODE_NORMALIZATION */
@@ -2422,7 +2428,7 @@ struct opttxt txt_quote_chars = {
 	N_("Enter quotation marks, %s or %S for author's initials."),
 	N_("Characters used as quote-marks"),
 	N_("# Characters used in quoting to followups and replies.\n\
-# '_' is replaced by ' ', %%s, %%S are replaced by author's initials.\n")
+# '_' is replaced by ' ', %s, %S are replaced by author's initials.\n")
 };
 
 struct opttxt txt_quote_style = {
@@ -2444,8 +2450,8 @@ struct opttxt txt_news_quote_format = {
 	N_("%A Addr %D Date %F Addr+Name %G Groupname %M Message-ID %N Name %C First Name"),
 	N_("Quote line when following up"),
 	N_("# Format of quote line when mailing/posting/following-up an article\n\
-# %%A Address    %%D Date   %%F Addr+Name   %%G Groupname   %%M Message-ID\n\
-# %%N Full Name  %%C First Name   %%I Initials\n")
+# %A Address    %D Date   %F Addr+Name   %G Groupname   %M Message-ID\n\
+# %N Full Name  %C First Name   %I Initials\n")
 };
 
 struct opttxt txt_xpost_quote_format = {
@@ -2665,7 +2671,7 @@ struct opttxt txt_editor_format = {
 	N_("Enter %E for editor, %F for filename, %N for line-number, <CR> to set."),
 	N_("Invocation of your editor"),
 	N_("# Format of editor line including parameters\n\
-# %%E Editor  %%F Filename  %%N Linenumber\n")
+# %E Editor  %F Filename  %N Linenumber\n")
 };
 
 struct opttxt txt_inews_prog = {
@@ -2678,9 +2684,9 @@ struct opttxt txt_mailer_format = {
 	N_("Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."),
 	N_("Invocation of your mail command"),
 	N_("# Format of mailer line including parameters\n\
-# %%M Mailer  %%S Subject  %%T To  %%F Filename\n\
-# ie. to use elm as your mailer:    elm -s \"%%S\" \"%%T\" < %%F\n\
-# ie. elm interactive          :    elm -i %%F -s \"%%S\" \"%%T\"\n")
+# %M Mailer  %S Subject  %T To  %F Filename\n\
+# ie. to use elm as your mailer:    elm -s \"%S\" \"%T\" < %F\n\
+# ie. elm interactive          :    elm -i %F -s \"%S\" \"%T\"\n")
 };
 
 struct opttxt txt_interactive_mailer = {
@@ -2773,14 +2779,15 @@ struct opttxt txt_normalization_form = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Unicode normalization form"),
 	N_("# Unicode normalization form\n\
-# Possible values are (the default is marked with *):\n\
+# Possible values are:\n\
 #   0 = None\n\
-# * 1 = NFKC\n\
+#   1 = NFKC\n\
 #   2 = NFKD\n\
 #   3 = NFC\n\
 #   4 = NFD\n")
 };
 #endif /* HAVE_UNICODE_NORMALIZATION */
+
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 struct opttxt txt_render_bidi = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
@@ -2788,6 +2795,17 @@ struct opttxt txt_render_bidi = {
 	N_("# If ON, bi-directional text is rendered by tin\n")
 };
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
+
+#ifdef USE_HEAPSORT
+struct opttxt txt_sort_function = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Function for sorting articles"),
+	N_("# Function for sorting articles\n\
+# Possible values are (the default is marked with *):\n\
+# * 0 = qsort\n\
+#   1 = heapsort\n")
+};
+#endif /* USE_HEAPSORT */
 
 /*
  * structs for the attributes menu below,

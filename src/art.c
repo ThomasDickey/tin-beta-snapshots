@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-12
+ *  Updated   : 2012-02-20
  *  Notes     :
  *
  * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -52,10 +52,9 @@
 /*
  * TODO: fixup to remove CURR_GROUP dependency in all sort funcs
  */
-#define SortBy(func)	qsort(arts, (size_t) top_art, sizeof(struct t_article), func);
+#define SortBy(func)	tin_sort(arts, (size_t) top_art, sizeof(struct t_article), func);
 
 int top_art = 0;				/* # of articles in arts[] */
-
 
 /*
  * Local prototypes
@@ -161,7 +160,7 @@ find_base(
 
 
 /*
- * Longword comparison routine for the qsort()
+ * Longword comparison routine for the tin_sort()
  */
 static int
 base_comp(
@@ -362,7 +361,7 @@ setup_hard_base(
 				}
 			}
 			CLOSEDIR(d);
-			qsort((char *) base, (size_t) grpmenu.max, sizeof(t_artnum), base_comp);
+			tin_sort((char *) base, (size_t) grpmenu.max, sizeof(t_artnum), base_comp);
 		}
 	}
 
@@ -1304,15 +1303,15 @@ sort_base(
 	switch (sort_threads_type) {
 		case SORT_THREADS_BY_SCORE_DESCEND:
 		case SORT_THREADS_BY_SCORE_ASCEND:
-			qsort(base, (size_t) grpmenu.max, sizeof(t_artnum), score_comp_base);
+			tin_sort(base, (size_t) grpmenu.max, sizeof(t_artnum), score_comp_base);
 			break;
 
 		case SORT_THREADS_BY_LAST_POSTING_DATE_DESCEND:
-			qsort(base, (size_t) grpmenu.max, sizeof(t_artnum), last_date_comp_base_desc);
+			tin_sort(base, (size_t) grpmenu.max, sizeof(t_artnum), last_date_comp_base_desc);
 			break;
 
 		case SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND:
-			qsort(base, (size_t) grpmenu.max, sizeof(t_artnum), last_date_comp_base_asc);
+			tin_sort(base, (size_t) grpmenu.max, sizeof(t_artnum), last_date_comp_base_asc);
 			break;
 	}
 }
@@ -2775,3 +2774,31 @@ open_xover_fp(
 	}
 	return NULL;
 }
+
+#ifdef USE_HEAPSORT
+int
+tin_sort(
+	void *sbase,
+	size_t nel,
+	size_t width,
+	t_compfunc compar)
+{
+	int rc;
+
+	switch (tinrc.sort_function) {
+		case 0:
+			qsort(sbase, nel, width, compar);
+			rc = 0;
+			break;
+
+		case 1:
+			rc = heapsort(sbase, nel, width, compar);
+			break;
+
+		default:
+			rc = -1;
+			break;
+	}
+	return rc;
+}
+#endif /* USE_HEAPSORT */
