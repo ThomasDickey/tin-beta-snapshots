@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2011-12-24
+.\" Updated   : 2012-03-04
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "24. Dezember 2011" 2.1.0 "Usenet Newsreader"
+.TH tin 5 "24. Dezember 2011" 2.1.1 "Usenet Newsreader"
 
 .SH NAME
 tin, rtin \- zugehörige Dateien
@@ -1694,7 +1694,8 @@ possible values are:
 \fBNFD\fP: Canonical Decomposition
 .RE
 Some normalization modes are only available if they are supported by the
-library \fBtin\fP(1)  uses to do the normalization. Default is NFKC.
+library \fBtin\fP(1)  uses to do the normalization. NFC should be used if
+possible.
 .TP 
 \fBpos_first_unread\fP
 If ON put cursor at first unread article in group otherwise at last
@@ -1839,6 +1840,16 @@ traditional page\-by\-page scrolling. Set to \-1 to get page\-by\-page scrolling
 where the top/bottom line is carried over onto the next page.  This setting
 supersedes show_last_line_prev_page=ON. Set to \-2 to get half\-page
 scrolling. This setting supersedes full_page_scroll=OFF.
+.TP 
+\fBsort_function\fP
+Function used for sorting articles. Default is 0.
+.RS +.5i
+.IP 0 3
+Use \fBqsort\fP(3)  for sorting.
+.IP 1
+Use \fBheapsort\fP(3)  for sorting. This might be faster in large groups with
+long threads (somewhat presorted data).
+.RE
 .TP 
 \fBshow_author\fP
 Which information about the author should be shown. Default is 2, authors
@@ -2403,8 +2414,9 @@ SUBSCRIPTIONS (\fBRFC6048\fP) command instead.
 .SH "SIEHE AUCH"
 \fBelm\fP(1), \fBinews\fP(1), \fBispell\fP(1), \fBlp\fP(1), \fBlpr\fP(1), \fBmetamail\fP(1) 
 \fBperl\fP(1), \fBpgp\fP(1), \fBrn\fP(1), \fBshar\fP(1), \fBslrnface\fP(1), \fBtin\fP(1),
-\fBxterm\fP(1x), \fBiconv\fP(3), \fBiconv_open\fP(3), \fBnl_langinfo\fP(3), \fBpcre\fP(3),
-\fBstrftime\fP(3), \fBsystem\fP(3), \fBmailcap\fP(5), \fBactive\fP(5), \fBmbox\fP(5),
-\fBmmdf\fP(5), \fBnewsoverview\fP(5), \fBoverview.fmt\fP(5), \fBinnd\fP(8), \fBRFC1524\fP,
-\fBRFC2045\fP, \fBRFC2046\fP, \fBRFC2047\fP, \fBRFC2048\fP, \fBRFC2980\fP, \fBRFC3977\fP,
-\fBRFC4643\fP, \fBRFC5322\fP, \fBRFC5536\fP, \fBRFC5537\fP, \fBRFC6048\fP
+\fBxterm\fP(1x), \fBheapsort\fP(3)  \fBiconv\fP(3), \fBiconv_open\fP(3),
+\fBnl_langinfo\fP(3), \fBpcre\fP(3), \fBqsort\fP(3), \fBstrftime\fP(3), \fBsystem\fP(3),
+\fBmailcap\fP(5), \fBactive\fP(5), \fBmbox\fP(5), \fBmmdf\fP(5), \fBnewsoverview\fP(5),
+\fBoverview.fmt\fP(5), \fBinnd\fP(8), \fBRFC1524\fP, \fBRFC2045\fP, \fBRFC2046\fP,
+\fBRFC2047\fP, \fBRFC2048\fP, \fBRFC2980\fP, \fBRFC3977\fP, \fBRFC4643\fP, \fBRFC5322\fP,
+\fBRFC5536\fP, \fBRFC5537\fP, \fBRFC6048\fP

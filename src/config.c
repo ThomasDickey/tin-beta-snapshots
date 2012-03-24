@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-04-17
+ *  Updated   : 2012-03-04
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
@@ -512,15 +512,13 @@ read_config_file(
 #endif /* HAVE_ALARM && SIGALRM */
 
 #ifdef HAVE_UNICODE_NORMALIZATION
-#	ifdef HAVE_LIBICUUC
+#	if (HAVE_UNICODE_NORMALIZATION >= 2)
 			if (match_integer(buf, "normalization_form=", &tinrc.normalization_form, NORMALIZE_NFD))
 				break;
 #	else
-#		ifdef HAVE_LIBIDN
 			if (match_integer(buf, "normalization_form=", &tinrc.normalization_form, NORMALIZE_NFKC))
 				break;
-#		endif /* HAVE_LIBIDN */
-#	endif /* HAVE_LIBICUUC */
+#	endif /* HAVE_UNICODE_NORMALIZATION >= 2 */
 #endif /* HAVE_UNICODE_NORMALIZATION */
 
 			break;
@@ -655,6 +653,11 @@ read_config_file(
 
 			if (match_integer(buf, "sort_threads_type=", &tinrc.sort_threads_type, SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND))
 				break;
+
+#ifdef USE_HEAPSORT
+			if (match_integer(buf, "sort_function=", &tinrc.sort_function, MAX_SORT_FUNCS))
+				break;
+#endif /* USE_HEAPSORT */
 
 			if (match_integer(buf, "scroll_lines=", &tinrc.scroll_lines, 0))
 				break;
@@ -972,6 +975,11 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_sort_threads_type.tinrc));
 	fprintf(fp, "sort_threads_type=%d\n\n", tinrc.sort_threads_type);
+
+#ifdef USE_HEAPSORT
+	fprintf(fp, "%s", _(txt_sort_function.tinrc));
+	fprintf(fp, "sort_function=%d\n\n", tinrc.sort_function);
+#endif
 
 	fprintf(fp, "%s", _(txt_maildir.tinrc));
 	fprintf(fp, "maildir=%s\n\n", tinrc.maildir);

@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2011-12-21
+dnl Updated   : 2012-03-05
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2012 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,11 +41,13 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.1.0
+VERSION=2.1.1
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
+
+EXTRAO_DEP='#'
 
 CF_CHECK_CACHE
 
@@ -122,6 +124,34 @@ case "$host_cpu:$host_vendor:$host_os" in
 		;;
 esac
 
+AC_MSG_CHECKING(if you would like to use heapsort)
+CF_ARG_ENABLE(heapsort,
+	[  --enable-heapsort       enable heapsort() as alternative to qsort],
+	[cf_use_heapsort=yes],
+	[cf_use_heapsort=no])
+AC_MSG_RESULT($cf_use_heapsort)
+if test "x$cf_use_heapsort" = xyes; then
+	AC_CHECK_FUNCS(heapsort)
+	if test x"$ac_cv_func_heapsort" = xyes; then
+		AC_MSG_CHECKING(if its prototype is compatible with qsort)
+		AC_TRY_COMPILE([
+#include <stdlib.h>
+#include <sys/types.h>
+extern int my_compare(const void *, const void *);
+],[
+	char *base = 0;
+	heapsort((void *)0, 1, 2, my_compare);
+],,[cf_use_heapsort=no]);
+		AC_MSG_RESULT($cf_use_heapsort)
+	else
+		CF_VERBOSE(will use our own heapsort function)
+		EXTRAO_DEP=''
+		EXTRAOBJS="$EXTRAOBJS \$(OBJDIR)/heapsort.o"
+	fi
+fi
+if test "x$cf_use_heapsort" = xyes; then
+	AC_DEFINE(USE_HEAPSORT)
+fi
 
 CF_WITH_PROGRAM(ispell,
 [  --with-ispell           (default: from system path)])
@@ -160,6 +190,10 @@ fi
 ## slrnface
 CF_WITH_PROGRAM(slrnface,
 [  --with-slrnface         (default: from system path)])
+if test -n "$ac_cv_path_PATH_SLRNFACE"; then
+	EXTRAO_DEP=""
+	EXTRAOBJS="$EXTRAOBJS \$(OBJDIR)/xface.o"
+fi
 
 ## Default shell
 AC_ARG_WITH(shell,
@@ -344,7 +378,6 @@ else
 	AC_MSG_WARN([[None of fcntl(), lockf(), flock() available]])
 fi
 
-
 AC_MSG_CHECKING(for screen type)
 AC_ARG_WITH(screen,
 [  --with-screen=xxx       specify screen type, which must be one of:
@@ -435,7 +468,6 @@ debug_malloc=none
 CF_WITH_DBMALLOC(debug_malloc=DBMALLOC)
 CF_WITH_DMALLOC(debug_malloc=DMALLOC)
 
-EXTRAO_DEP='#'
 AC_ARG_WITH(trace,
 	[  --with-trace            use debugging/traces for screen output],
 	[
@@ -447,7 +479,7 @@ AC_ARG_WITH(trace,
 		 use_trace=yes
 		 AC_DEFINE(USE_TRACE)
 		 EXTRAO_DEP=''
-		 EXTRAOBJS="$EXTRAOBJS trace.o"],
+		 EXTRAOBJS="$EXTRAOBJS \$(OBJDIR)/trace.o"],
 		 use_trace=no)])],
 	[use_trace=no])
 #AC_MSG_CHECKING(if you want debugging-trace)
@@ -876,6 +908,88 @@ AC_CHECK_LIB(uu, UUInitialize,
 	)]
 )
 
+
+# ICU - International Components for Unicode
+# TODO: do seperate checks for
+#  - unorm_normalize()
+#  - uidna_IDNToUnicode()
+#  - ubidi_open()
+cf_try_icuuc="no"
+AC_CHECK_HEADER(unicode/unorm.h,[
+	AC_CHECK_HEADER(unicode/ustring.h, [
+		AC_DEFINE(HAVE_UNICODE_UNORM_H)
+		AC_DEFINE(HAVE_UNICODE_USTRING_H)
+		AC_MSG_CHECKING(for unorm_normalize in libicuuc)
+		cf_save_LIBS="$LIBS"
+		cf_try_icuuc="no"
+		LIBS="$LIBS -licuuc"
+		AC_TRY_LINK([#include <unicode/unorm.h>], [
+			int32_t needed, ustr = NULL;
+ 			UErrorCode status;
+			needed = unorm_normalize(ustr, -1, UNORM_DEFAULT, 0, NULL, 0, &status);], [
+			AC_DEFINE(HAVE_LIBICUUC)
+			cf_try_icuuc="yes"],
+			LIBS=$cf_save_LIBS
+		)
+		AC_MSG_RESULT($cf_try_icuuc)
+		AC_CHECK_HEADER(unicode/uidna.h, [
+			AC_DEFINE(HAVE_UNICODE_UIDNA_H)
+		])
+		AC_CHECK_HEADER(unicode/ubidi.h, [
+			AC_DEFINE(HAVE_UNICODE_UBIDI_H)
+		])
+	])
+])
+
+# without icuuc try GNU libunistring for normalization
+if test $cf_try_icuuc = no ; then
+	AC_CHECK_HEADER(unitypes.h,[
+		AC_CHECK_HEADER(uninorm.h,[
+			AC_DEFINE(HAVE_UNITYPES_H)
+			AC_DEFINE(HAVE_UNINORM_H)
+			AC_MSG_CHECKING(for u8_normalize in libunistring)
+			cf_save_LIBS="$LIBS"
+			cf_try_unistring="no"
+			LIBS="$LIBS -lunistring"
+			AC_TRY_LINK([#include <unitypes.h>
+				#include <uninorm.h>], [
+				size_t ol = 0;
+				u8_normalize(UNINORM_NFC, (uint8_t *) "x", 2, NULL, &ol);], [
+				AC_DEFINE(HAVE_LIBUNISTRING)
+				cf_try_unistring="yes"],
+				LIBS=$cf_save_LIBS
+			)
+			AC_MSG_RESULT($cf_try_unistring)
+		])
+	])
+fi
+
+# without icuuc try libidn for Internationalized Domain Names / IDN 2003
+if test $cf_try_icuuc = no ; then
+	AC_CHECK_LIB(idn, stringprep_check_version,
+		[AC_CHECK_HEADER(stringprep.h,[
+			AC_DEFINE(HAVE_STRINGPREP_H)
+			AC_CHECK_HEADER(idna.h, [
+				AC_DEFINE(HAVE_IDNA_H)
+				AC_CHECK_LIB(idn, idna_to_unicode_lzlz, [
+					AC_DEFINE(HAVE_IDNA_TO_UNICODE_LZLZ)
+					AC_MSG_CHECKING(for IDNA_USE_STD3_ASCII_RULES)
+					AC_EGREP_HEADER(IDNA_USE_STD3_ASCII_RULES, idna.h, [
+						AC_DEFINE(HAVE_IDNA_USE_STD3_ASCII_RULES)
+						AC_MSG_RESULT(yes)],
+						AC_MSG_RESULT(no)
+					)
+				])
+				AC_CHECK_LIB(idn, idna_strerror, [
+					AC_DEFINE(HAVE_IDNA_STRERROR)
+				])
+			])
+			AC_DEFINE(HAVE_LIBIDN)
+			LIBS="$LIBS -lidn"]
+		)]
+	)
+fi
+
 # libidnkit - Internationalized Domain Names / IDN 2008
 AC_CHECK_LIB(idnkit, idn_decodename, [
 	AC_CHECK_HEADER(idn/api.h, [
@@ -899,53 +1013,6 @@ AC_CHECK_LIB(idnkit, idn_decodename, [
 	])
 ])
 
-# libidn - Internationalized Domain Names / IDN 2003
-AC_CHECK_LIB(idn, stringprep_check_version,
-	[AC_CHECK_HEADER(stringprep.h,[
-		AC_DEFINE(HAVE_STRINGPREP_H)
-		AC_CHECK_HEADER(idna.h, [
-			AC_DEFINE(HAVE_IDNA_H)
-			AC_CHECK_LIB(idn, idna_to_unicode_lzlz, [
-				AC_DEFINE(HAVE_IDNA_TO_UNICODE_LZLZ)
-				AC_MSG_CHECKING(for IDNA_USE_STD3_ASCII_RULES)
-				AC_EGREP_HEADER(IDNA_USE_STD3_ASCII_RULES, idna.h, [
-					AC_DEFINE(HAVE_IDNA_USE_STD3_ASCII_RULES)
-					AC_MSG_RESULT(yes)],
-					AC_MSG_RESULT(no)
-				)
-			])
-			AC_CHECK_LIB(idn, idna_strerror, [
-				AC_DEFINE(HAVE_IDNA_STRERROR)
-			])
-		])
-		AC_DEFINE(HAVE_LIBIDN)
-		LIBS="$LIBS -lidn"]
-	)]
-)
-
-# ICU - International Components for Unicode
-AC_CHECK_HEADER(unicode/unorm.h,[
-	AC_CHECK_HEADER(unicode/ustring.h, [
-		AC_DEFINE(HAVE_UNICODE_UNORM_H)
-		AC_DEFINE(HAVE_UNICODE_USTRING_H)
-		AC_MSG_CHECKING(for unorm_normalize in libicuuc)
-		cf_save_LIBS="$LIBS"
-		cf_try_icuuc="no"
-		LIBS="$LIBS -licuuc"
-		AC_TRY_LINK([#include <unicode/unorm.h>], [
-			int32_t needed, ustr = NULL;
- 			UErrorCode status;
-			needed = unorm_normalize(ustr, -1, UNORM_DEFAULT, 0, NULL, 0, &status);], [
-			AC_DEFINE(HAVE_LIBICUUC)
-			cf_try_icuuc="yes"],
-			LIBS=$cf_save_LIBS
-		)
-		AC_MSG_RESULT($cf_try_icuuc)
-		AC_CHECK_HEADER(unicode/ubidi.h, [
-			AC_DEFINE(HAVE_UNICODE_UBIDI_H)
-		])
-	])
-])
 
 if test $use_curses != no ; then
 	cf_cv_termlib=$cf_with_screen
@@ -1030,6 +1097,7 @@ AC_CHECK_FUNCS(\
 	setenv \
 	setlocale \
 	settz \
+	setvbuf \
 	sigaction \
 	snprintf \
 	stpcpy \
@@ -1231,6 +1299,7 @@ CF_CHECK_DECL(\
 	getcwd \
 	getopt \
 	getwd \
+	heapsort \
 	ioctl \
 	isascii \
 	kill \
@@ -1368,6 +1437,7 @@ esac
 if test "$cf_cv_termlib" = pdcurses ; then
 	CF_PDCURSES_X11
 fi
+AC_CHECK_FUNCS(vwprintw)
 
 ### sum up warnings
 if test "$cf_cv_termlib" = none ; then

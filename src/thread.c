@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-04
+ *  Updated   : 2012-03-04
  *  Notes     :
  *
  * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
@@ -656,7 +656,7 @@ thread_page(
 			case GLOBAL_OPTION_MENU:
 				n = find_response(thread_basenote, thdmenu.curr);
 				old_artnum = arts[n].artnum;
-				config_page(group->name);
+				config_page(group->name, signal_context);
 				if ((n = find_artnum(old_artnum)) == -1 || which_thread(n) == -1) { /* We have lost the thread */
 					pos_first_unread_thread();
 					ret_code = GRP_EXIT;

@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 2
 PVER	= 1
-SVER	= 0
+SVER	= 1
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20111224
+DVER	= 20120324
 EXE	= tin
 
 # directory structure
@@ -64,6 +64,7 @@ CFILES	= \
 	$(SRCDIR)/group.c \
 	$(SRCDIR)/hashstr.c \
 	$(SRCDIR)/header.c \
+	$(SRCDIR)/heapsort.c \
 	$(SRCDIR)/help.c\
 	$(SRCDIR)/inews.c \
 	$(SRCDIR)/init.c \

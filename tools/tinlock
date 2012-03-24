@@ -11,7 +11,7 @@ host=`hostname`
 pid=$$
 lock=$host"	"$pid
 
-if test ${TIN_HOMEDIR-"$HOME"} ; then
+if test -d ${TIN_HOMEDIR-"$HOME"} ; then
 	lockdir=${TIN_HOMEDIR-"$HOME"}/.tin
 	file=tinlock
 else

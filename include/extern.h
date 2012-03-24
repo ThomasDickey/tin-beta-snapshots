@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-04
+ *  Updated   : 2012-02-20
  *  Notes     :
  *
  * Copyright (c) 1997-2012 Iain Lea <iain@bricbrac.de>
@@ -156,6 +156,9 @@
 #ifdef DECL_GETWD
 	extern char *getwd(char *);
 #endif /* DECL_GETWD */
+#ifdef DECL_HEAPSORT
+	extern int heapsort(void *, size_t, size_t, int (*)(t_comptype*, t_comptype*));
+#endif /* DECL_HEAPSORT */
 #ifdef DECL_INET_ADDR
 	extern unsigned long inet_addr(const char *);
 #endif /* DECL_INET_ADDR */
@@ -1421,6 +1424,12 @@ extern signed long int read_newsrc_lines;
 extern size_t tabwidth;
 
 extern pid_t process_id;
+
+#ifdef USE_HEAPSORT
+extern int tin_sort(void *, size_t, size_t, t_compfunc);
+extern constext *txt_sort_functions[];
+extern struct opttxt txt_sort_function;
+#endif
 
 extern struct regex_cache strip_re_regex;
 extern struct regex_cache strip_was_regex;

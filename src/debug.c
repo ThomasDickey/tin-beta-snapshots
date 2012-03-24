@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-06
+ *  Updated   : 2012-03-22
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
@@ -411,7 +411,7 @@ logtime(
 
 	if (tin_gettime(&log_time) == 0)
 	{
-		strftime(out, 39, " [%H:%M:%S.", gmtime(&(log_time.tv_sec)));
+		my_strftime(out, 39, " [%H:%M:%S.", gmtime(&(log_time.tv_sec)));
 		sprintf(out + 11, "%09ld", log_time.tv_nsec); /* strlen(" [hh:mm:ss.") */
 		out[17] = '\0'; /* strlen(" [hh:mm:ss.uuuuuu") */
 		strcat(out, "] ");

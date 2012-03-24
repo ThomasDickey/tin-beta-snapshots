@@ -15,21 +15,22 @@ Note: The section 'News machine names' is now at the beginning as it
 
 The following configure options and defines are documented in detail:
 ---------------------------------------------------------------------
-  --disable-fcntl                         --program-prefix
-  --disable-included-msgs                 --program-suffix
-  --enable-8bit-keys                      --program-transform-name
-  --enable-append-pid                     --with-coffee
-  --enable-break-long-lines               --with-curses-dir
-  --enable-broken-listgroup-fix           --with-dbmalloc
-  --enable-broken-system-fix              --with-defaults-dir
-  --enable-cancel-locks                   --with-dmalloc
-  --enable-color                          --with-domain-name
-  --enable-curses                         --with-editor
-  --enable-debug                          --with-gpg
-  --enable-echo                           --with-included-gettext
-  --enable-etiquette                      --with-inews-dir
-  --enable-fascist-newsadmin              --with-slrnface
-  --enable-flock                          --with-iso-to-ascii
+  --disable-fcntl                         --prefix
+  --disable-included-msgs                 --program-prefix
+  --enable-8bit-keys                      --program-suffix
+  --enable-append-pid                     --program-transform-name
+  --enable-break-long-lines               --with-coffee
+  --enable-broken-listgroup-fix           --with-curses-dir
+  --enable-broken-system-fix              --with-dbmalloc
+  --enable-cancel-locks                   --with-defaults-dir
+  --enable-color                          --with-dmalloc
+  --enable-curses                         --with-domain-name
+  --enable-debug                          --with-editor
+  --enable-echo                           --with-gpg
+  --enable-etiquette                      --with-included-gettext
+  --enable-fascist-newsadmin              --with-inews-dir
+  --enable-flock                          --with-slrnface
+  --enable-heapsort                       --with-iso-to-ascii
   --enable-inverse-video                  --with-ispell
   --enable-locale                         --with-libdir
   --enable-lockf                          --with-libiconv-prefix
@@ -49,7 +50,6 @@ The following configure options and defines are documented in detail:
   --enable-xhdr-xref                      --with-spooldir
   --exec-prefix                           --with-trace
   --mandir
-  --prefix
 
 
   ENFORCE_RFC1034                         HAVE_UUDEVIEW_H
@@ -520,6 +520,11 @@ within tin). See doc/reading-mail.txt for further information.
 Turn on Cancel-Locks. This feature requires the client to know the
 Message-ID of the posting, so if your server does not offer server side
 purposed IDs you have to mess around with EVIL_INSIDE
+
+--enable-heapsort (default: off)
+Enable heapsort(3) as alternative to qsort(3). In large groups with a long
+retention and long threads this may be a performance win as the data in
+the group is somewhat presorted.
 
 --enable-nls (default: on)
 The --enable-nls option enables Native Language Support (NLS), which allows

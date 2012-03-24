@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2011-11-06
+ *  Updated   : 2012-02-29
  *  Notes     :
  *
  * Copyright (c) 1997-2012 Urs Janssen <urs@tin.org>
@@ -38,25 +38,21 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+
 #ifdef HAVE_UNICODE_NORMALIZATION
-#	ifdef HAVE_LIBICUUC
-#		if defined(HAVE_UNICODE_UNORM_H) && !defined(UNORM_H)
-#			include <unicode/unorm.h>
-#		endif /* HAVE_UNICODE_UNORM_H && !UNORM_H */
-#		if defined(HAVE_UNICODE_USTRING_H) && !defined(USTRING_H)
-#			include <unicode/ustring.h>
-#		endif /* HAVE_UNICODE_USTRING_H && !USTRING_H */
+#	ifdef HAVE_LIBUNISTRING
+#		ifdef HAVE_UNITYPES_H
+#			include <unitypes.h>
+#		endif /* HAVE_UNITYPES_H */
+#		ifdef HAVE_UNINORM_H
+#			include <uninorm.h>
+#		endif /* HAVE_UNINORM_H */
 #	else
 #		if defined(HAVE_LIBIDN) && defined(HAVE_STRINGPREP_H) && !defined(_STRINGPREP_H)
 #			include <stringprep.h>
 #		endif /* HAVE_LIBIDN && HAVE_STRINGPREP_H && !_STRINGPREP_H */
-#	endif /* HAVE_LIBICUUC */
+#	endif /* HAVE_LIBUNISTRING */
 #endif /* HAVE_UNICODE_NORMALIZATION */
-#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-#	if defined(HAVE_UNICODE_UBIDI_H) && !defined(UBIDI_H)
-#		include <unicode/ubidi.h>
-#	endif /* HAVE_UNICODE_UBIDI_H && !UBIDI_H */
-#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && !NO_LOCALE */
 
 /*
  * this file needs some work
@@ -67,12 +63,7 @@
  */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	static wchar_t *my_wcsdup(const wchar_t *wstr);
-#	if defined(HAVE_LIBICUUC)
-		static UChar *char2UChar(const char *str);
-		static char *UChar2char(const UChar *ustr);
-#	endif /* HAVE_LIBICUUC */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-
 
 /*
  * special ltoa()
@@ -1122,7 +1113,7 @@ my_wcsdup(
  * convert from char* (UTF-8) to UChar* (UTF-16)
  * ICU expects strings as UChar*
  */
-static UChar *
+UChar *
 char2UChar(
 	const char *str)
 {
@@ -1147,7 +1138,7 @@ char2UChar(
 /*
  * convert from UChar* (UTF-16) to char* (UTF-8)
  */
-static char *
+char *
 UChar2char(
 	const UChar *ustr)
 {
@@ -1245,7 +1236,34 @@ normalize(
 		return buf;
 	}
 #	else
-#		ifdef HAVE_LIBIDN
+#		ifdef HAVE_LIBUNISTRING
+	/* unistring */
+	{
+		uninorm_t mode;
+		size_t olen = 0;
+
+		switch (tinrc.normalization_form) {
+			case NORMALIZE_NFD:
+				mode = UNINORM_NFD;
+				break;
+
+			case NORMALIZE_NFC:
+				mode = UNINORM_NFC;
+				break;
+
+			case NORMALIZE_NFKD:
+				mode = UNINORM_NFKD;
+				break;
+
+			case NORMALIZE_NFKC:
+			default:
+				mode = UNINORM_NFKC;
+		}
+		buf = (char *) u8_normalize(mode, (uint8_t *) tmp, strlen(tmp) + 1, NULL, &olen);
+		return buf;
+	}
+#		else
+#			ifdef HAVE_LIBIDN
 	/* libidn */
 
 	buf = stringprep_utf8_nfkc_normalize(tmp, -1);
@@ -1253,7 +1271,8 @@ normalize(
 		buf = tmp;
 
 	return buf;
-#		endif /* HAVE_LIBIDN */
+#			endif /* HAVE_LIBIDN */
+#		endif /* HAVE_LIBUNISTRING */
 #	endif /* HAVE_LIBICUUC */
 }
 #endif /* HAVE_UNICODE_NORMALIZATION */

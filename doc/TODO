@@ -87,6 +87,10 @@ o  remove Message-IDs with 8bit chars in them when they occur in
    Message-ID or References header
    [done for References in replies/followups, Urs]
 
+o  keep RFC 6532 in mind as parts of it will sooner or later make it into
+   NNTP (sic!).
+   [20120220 Urs Janssen <urs@tin.org>]
+
 o  repost ('x') ignores ~/.tin/attributes - bug or feature?!
    [IMHO a bug as settings like mailing_list are essential, Urs]
 
@@ -221,6 +225,9 @@ o  turn CA_ERROR_SPACE_IN_NEWSGROUPS, CA_ERROR_NEWLINE_IN_NEWSGROUPS,
    for removal in the future.
    [define FOLLOW_USEFOR_DRAFT to turn the mentioned errors into
     warnings. 20011226 Urs Janssen <urs@tin.org>]
+
+o  check FOLLOW_USEFOR_DRAFT code against RFC 5536
+   [20120221 Urs Janssen <urs@tin.org>]
 
 o  support "Suggested Minimal Digest Format"
    <ftp://rtfm.mit.edu/pub/usenet/news.answers/faqs/minimal-digest-format>
@@ -473,6 +480,11 @@ o  allow expiring filter entrys n-days after the last time they matched
 
 o  add command to generate filter rules for all currently tagged articles
 
+o  allow editing of the strings presented in the kill-Menu for
+   "Kill Subject", "Kill From", "Kill Msg-Id" without having to edit
+   the full filter-file
+   [20120201 Urs Janssen <urs@tin.org>]
+
 Pager enhancements
 ------------------
 o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
@@ -504,7 +516,7 @@ Internal Changes
 ----------------
 o  curses.c:input_pending() and curses.c:get_arrow_key() have
    #ifdef HAVE_SELECT and a code path for the case when we don't have
-   select(2), but read.c:wait_for_input() has no code path the the
+   select(2), but read.c:wait_for_input() has no code path for the
    !HAVE_SELECT case. we should add a !HAVE_SELECT case there (or at
    least have adjusted messages in txt_reading_article and txt_group)
    [20110506 Urs Janssen <urs@tin.org>]
@@ -592,7 +604,7 @@ o  clean up $AUTOSUBSCRIBE code (the NNTP code path is a mess)
 o  check where joinpath() should be used (e.g. grep for TMPDIR in the source)
    [Urs Janssen <urs@tin.org>]
 
-o  make configure look for strrstr() in libpub/publib.h
+o  make configure look for strrstr() in libpub & publib.h
    [Urs Janssen <urs@tin.org>]
 
 o  reorder several structs to avoid padding (see gcc -Wpadded)
@@ -725,7 +737,8 @@ o  add IDNA 2003 (RFC 3490ff.) and IDNA 2008 (RFC 5890ff.) support,
 
 o  add normalization
    (via <http://oss.software.ibm.com/icu/> or
-   <http://www.gnu.org/software/libidn/>)
+   <http://www.gnu.org/software/libidn/> or
+   <http://www.gnu.org/software/libunistring/>)
    (done for search strings)
    [20031209 Michael Bienia <michael@vorlon.ping.de>]
 
@@ -923,7 +936,7 @@ o  check_article_to_be_posted() needs a cleanup!
 
 o  update gettext stuff to > gettext-0.12.1
 
-o  clean up included pcre stuff and update to >= pcre-8.21
+o  clean up included pcre stuff and update to >= pcre-8.30
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file
@@ -961,3 +974,10 @@ o  re add innlib support? (the old one was dropped as the lib has retired
    all (which were not that many) features we used and our code didn't
    use the innlibs code where ever it was possible (and useful).
    [20080211 Urs Janssen <urs@tin.org>]
+
+o  add check for libarchive <https://code.google.com/p/libarchive/>
+   and use for post-processing?
+   [20111225 Urs Janssen <urs@tin.org>]
+
+o  add jump to selected article from DisplayPostHist (’W’)
+   [20120220 Urs Janssen <urs@tin.org>]

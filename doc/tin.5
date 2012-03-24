@@ -2,11 +2,11 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2011-12-24
+.\" Updated   : 2012-03-04
 .\" Notes     : needs a some work
 .\"
 .\"
-.TH tin 5 "December 24th, 2011" "2.1.0" "A Usenet newsreader"
+.TH tin 5 "December 24th, 2011" "2.1.1" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -1759,7 +1759,7 @@ The possible values are:
 Some normalization modes are only available if they are supported by the
 library
 .BR tin (1)
-uses to do the normalization. Default is NFKC.
+uses to do the normalization. NFC should be used if possible.
 .TP
 .B pos_first_unread
 If ON put cursor at first unread article in group otherwise at last article.
@@ -1921,6 +1921,20 @@ traditional page-by-page scrolling. Set to \-1 to get page-by-page
 scrolling where the top/bottom line is carried over onto the next page.
 This setting supersedes show_last_line_prev_page=ON. Set to \-2 to get
 half-page scrolling. This setting supersedes full_page_scroll=OFF.
+.TP
+.B sort_function
+Function used for sorting articles. Default is 0.
+.RS +.5i
+.IP 0 3
+Use
+.BR qsort (3)
+for sorting.
+.IP 1
+Use
+.BR heapsort (3)
+for sorting. This might be faster in large groups with long threads
+(somewhat presorted data).
+.RE
 .TP
 .B show_author
 Which information about the author should be shown. Default is 2, authors
@@ -2544,10 +2558,12 @@ uses the LIST SUBSCRIPTIONS (\fBRFC6048\fP) command instead.
 .BR slrnface (1),
 .BR tin (1),
 .BR xterm (1x),
+.BR heapsort (3)
 .BR iconv (3),
 .BR iconv_open (3),
 .BR nl_langinfo (3),
 .BR pcre (3),
+.BR qsort (3),
 .BR strftime (3),
 .BR system (3),
 .BR mailcap (5),

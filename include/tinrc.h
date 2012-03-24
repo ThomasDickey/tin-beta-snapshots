@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2011-01-29
+ *  Updated   : 2012-02-20
  *  Notes     :
  *
  * Copyright (c) 1999-2012 Jason Faultless <jason@altarstone.com>
@@ -43,7 +43,7 @@
  *        and could be nuked if tin comes with a prefilled .inputhistory
  *        which is installed automatically if no .inputhistory is found.
  *
- * TODO:  sort in a useful order (also needs reoerdering in init.c)
+ * TODO:  sort in a useful order (also needs reordering in init.c)
  */
 
 #ifndef TINRC_H
@@ -142,6 +142,9 @@ struct t_config {
 	int show_author;					/* show_author value from 'M' menu in tinrc */
 	int sort_article_type;				/* method used to sort arts[] */
 	int sort_threads_type;				/* method used to sort base[] */
+#	ifdef USE_HEAPSORT
+	int sort_function;					/* index into sort_function[] */
+#	endif
 	int strip_bogus;
 	int thread_articles;				/* threading system for viewing articles */
 	int thread_perc;				/* how close the match needs to be for THREAD_PERC to recognize two articles as the same thread */

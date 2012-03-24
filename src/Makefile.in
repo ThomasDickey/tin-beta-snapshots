@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2011-12-07
+# Updated: 2012-02-20
 #
 # Copyright (c) 1995-2012 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -199,7 +199,6 @@ CFILES	= \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/version.c \
 	$(SRCDIR)/wildmat.c \
-	$(SRCDIR)/xface.c \
 	$(SRCDIR)/xref.c
 
 EXTRAOBJS = @EXTRAOBJS@
@@ -275,7 +274,6 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/thread$o \
 	$(OBJDIR)/version$o \
 	$(OBJDIR)/wildmat$o \
-	$(OBJDIR)/xface$o \
 	$(OBJDIR)/xref$o
 
 ALL_FILES = $(HFILES) $(CFILES)
@@ -478,7 +476,7 @@ makecfg$X :			$(SRCDIR)/makecfg.c \
 				$(INCDIR)/tin.h \
 				../include/autoconf.h
 	@SHOW_CC@
-	@ECHO_CC@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o $@ $(SRCDIR)/makecfg.c #$(BUILD_LIBS)
+	@ECHO_CC@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o $@ $(SRCDIR)/makecfg.c
 
 TIN_DEP	= \
 	Makefile \

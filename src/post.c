@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-12-23
+ *  Updated   : 2012-03-04
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
@@ -306,7 +306,7 @@ repair_article(
 		if (invoke_editor(article_name, start_line_offset, group))
 			return TRUE;
 	} else if (func == GLOBAL_OPTION_MENU) {
-		config_page(group->name);
+		config_page(group->name, signal_context);
 		return TRUE;
 	}
 	return FALSE;
@@ -1761,7 +1761,7 @@ post_article_loop:
 				return ret_code;
 
 			case GLOBAL_OPTION_MENU:
-				config_page(group->name);
+				config_page(group->name, signal_context);
 				while ((i = check_article_to_be_posted(article_name, art_type, &group, art_unchanged, FALSE)) == 1 && repair_article(&func, group))
 					;
 				break;

@@ -1,3 +1,30 @@
+-- 2.1.1 release 20120311 "" --
+
+ 005) Dennis Preiser <dennis@d--p.de>
+      BUG. in read groups with show_only_unread_arts base article was invalid
+           but should be displayed after 'M'enu
+      FIX. group.c, options_menu.c, page.c, post.c, select.c, thread.c, proto.h
+
+U004) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      ADD. --enable-heapsort configure switch
+      ADD. 'M'enu option for sort_function if --enable-heapsort
+      FIX. art.c, config.c, heapsort.c, init.c, lang.c, options_menu.c
+           tcurses.c, tincfg.tbl, extern.h, proto.h, tin.h, tinrc.h
+           configure[.in], autoconf.h[in], aclocal.m4
+
+U003) Urs Janssen <urs@tin.org>
+      ADD. config.guess, config.sub update
+      ADD. heapsort.c fallback
+      ADD. compile heapsort.c and xface.c conditionaly
+      ADD. configure check for libunistring if libicuuc is not found
+      ADD. prefer libicuuc for idna2003 decoding over libidn
+      ADD. use NFC instead of NFKC as default normalization if possible
+      BUG. doubled % in some description strings where single % are needed
+      FIX. art.c, config.c, debug.c, heapsort.c, init.c, lang.c, misc.c
+           select.c, string.c extern.h, proto.h, tin.h, autoconf.h[in]
+           configure[.in], config.guess, config.sub, tin.1, tin.5, *.po
+
 -- 2.1.0 release 20111224 "Bridgend" --
 
  004) Matt Anton <tin@syrius.org>

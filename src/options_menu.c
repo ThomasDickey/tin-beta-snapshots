@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2011-10-27
+ *  Updated   : 2012-03-04
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2012 Michael Bienia <michael@vorlon.ping.de>
@@ -50,12 +50,14 @@
 
 #define UPDATE_INT_ATTRIBUTES(option) do { \
 		scopes[0].attribute->option = tinrc.option; \
+		changed |= MISC_OPTS; \
 	} while (0)
 
 #define CAO(A, O) A ## O
 #define SET_NUM_ATTRIBUTE(option) do { \
 		curr_scope->attribute->option = CAO(tinrc.attrib_, option); \
 		curr_scope->state->option = TRUE; \
+		changed |= MISC_OPTS; \
 	} while (0)
 #define SET_STRING_ATTRIBUTE(opt) do { \
 		if (!strlen(CAO(tinrc.attrib_, opt))) { \
@@ -66,6 +68,7 @@
 			curr_scope->state->opt = TRUE; \
 			curr_scope->attribute->opt = my_strdup(CAO(tinrc.attrib_, opt)); \
 		} \
+		changed |= MISC_OPTS; \
 	} while (0)
 
 static enum option_enum first_option_on_screen, last_option_on_screen, last_opt;
@@ -105,7 +108,7 @@ static void print_any_option(enum option_enum option);
 static void redraw_screen(enum option_enum option);
 static void repaint_option(enum option_enum option);
 static void reset_state(enum option_enum option);
-static void scope_page(void);
+static void scope_page(enum context level);
 static void set_first_option_on_screen(enum option_enum last_option);
 static void set_last_opt(void);
 static void set_last_option_on_screen(enum option_enum first_option);
@@ -893,31 +896,39 @@ get_first_opt(
  */
 void
 config_page(
-	const char *grpname)
+	const char *grpname,
+	enum context level)
 {
 	char key[MAXKEYLEN];
 	enum option_enum option, old_option;
 	enum {
-		NO_CHANGES = 0,
-		DISPLAY_OPTS = 1,
-		SCORE_OPTS = 2,
-		THREAD_OPTS = 4,
-		THREAD_SCORE = 8,
-		SHOW_ONLY_UNREAD = 16
-	} changed = NO_CHANGES;
+		NOT_CHANGED			= 0,
+		MISC_OPTS			= 1 << 0,
+		DISPLAY_OPTS		= 1 << 1,
+		SCORE_OPTS			= 1 << 2,
+		SHOW_AUTHOR			= 1 << 3,
+		SHOW_ONLY_UNREAD	= 1 << 4,
+		SORT_OPTS			= 1 << 5,
+		THREAD_ARTS			= 1 << 6,
+		THREAD_SCORE		= 1 << 7
+	} changed = NOT_CHANGED;
 	int i, scope_idx = 0;
 	t_bool change_option = FALSE;
 	t_function func;
 #ifdef CHARSET_CONVERSION
 	t_bool is_7bit;
 #endif /* CHARSET_CONVERSION */
-	unsigned old_sort_arts = 0, old_sort_threads = 0, old_show_unread = 0, old_thread_arts = 0;
+	unsigned old_show_author = 0, old_show_unread = 0, old_thread_arts = 0;
 
 	if (curr_scope)
 		initialize_attributes();
 	if (grpname && curr_group) {
-		old_sort_arts = curr_group->attribute->sort_article_type;
-		old_sort_threads = curr_group->attribute->sort_threads_type;
+		/*
+		 * These things can be toggled by the user,
+		 * keep a copy of the current value to restore
+		 * the state if necessary
+		 */
+		old_show_author = curr_group->attribute->show_author;
 		old_show_unread = curr_group->attribute->show_only_unread_arts;
 		old_thread_arts = curr_group->attribute->thread_articles;
 	}
@@ -934,37 +945,52 @@ config_page(
 			case GLOBAL_QUIT:
 				if (grpname) {
 					if (curr_scope && scope_is_empty()) {
+						/*
+						 * Called via TAB from Config 'M'enu and all attributes
+						 * have default values -> delete scope
+						 */
 						do_delete_scope(scope_idx);
 						curr_scope = NULL;
 					}
-					/*
-					 * TODO: write files only in case of changes
-					 */
-					write_config_file(local_config_file);
-					write_attributes_file(local_attributes_file);
+					if (changed) {
+						/*
+						 * At least one option or attribute has changed,
+						 * write config files
+						 */
+						write_config_file(local_config_file);
+						write_attributes_file(local_attributes_file);
+					}
 				}
 				/* FALLTHROUGH */
 			case CONFIG_NO_SAVE:
 				if (grpname && curr_scope) {
+					/*
+					 * Called via TAB from Config 'M'enu,
+					 * delete scope if all attributes have default values
+					 */
 					if (scope_is_empty())
 						do_delete_scope(scope_idx);
 					curr_scope = NULL;
 				}
 				assign_attributes_to_groups();
 				if (grpname && curr_group) {
-					if (old_sort_arts != curr_group->attribute->sort_article_type
-						|| old_sort_threads != curr_group->attribute->sort_threads_type
-						|| old_thread_arts != curr_group->attribute->thread_articles)
-						changed |= THREAD_OPTS;
-
-					if (old_show_unread != curr_group->attribute->show_only_unread_arts)
-						changed |= SHOW_ONLY_UNREAD;
+					/*
+					 * These things can be toggled by the user,
+					 * restore the cached state if no changes were made
+					 */
+					if (!(changed & SHOW_AUTHOR))
+						curr_group->attribute->show_author = old_show_author;
+					if (!(changed & SHOW_ONLY_UNREAD))
+						curr_group->attribute->show_only_unread_arts = old_show_unread;
+					if (!(changed & THREAD_ARTS))
+						curr_group->attribute->thread_articles = old_thread_arts;
 
 					if (changed) {
 						t_bool filtered = FALSE;
+						t_bool old_keep_in_base = TRUE;
 
 						/*
-						 * recook if in an article is open
+						 * recook if an article is open
 						 */
 						if (changed & DISPLAY_OPTS) {
 							if (pgart.raw)
@@ -990,13 +1016,24 @@ config_page(
 						 * If show_only_unread_arts or the scoring of a thread has changed,
 						 * resort base[] (find_base() is called inside make_threads() too, so
 						 * do this only if make_threads() was not called before)
+						 *
+						 * If we were called from page level, keep the current article in
+						 * base[]. This prevents that find_base() removes the current article
+						 * after switching to show_only_unread.
 						 */
-						if (changed & THREAD_OPTS)
+						if (level == cPage) {
+							old_keep_in_base = arts[this_resp].keep_in_base;
+							arts[this_resp].keep_in_base = TRUE;
+						}
+						if (changed & (THREAD_ARTS | SORT_OPTS))
 							make_threads(curr_group, TRUE);
 						else if (filtered)
 							make_threads(curr_group, FALSE);
 						else if (changed & (SHOW_ONLY_UNREAD | THREAD_SCORE))
 							find_base(curr_group);
+
+						if (level == cPage)
+							arts[this_resp].keep_in_base = old_keep_in_base;
 					}
 				}
 				clear_note_area();
@@ -1162,7 +1199,7 @@ config_page(
 
 			case CONFIG_SCOPE_MENU:
 				if (!curr_scope) {
-					scope_page();
+					scope_page(level);
 					set_last_opt();
 					option = get_first_opt();
 					first_option_on_screen = 0;
@@ -1177,6 +1214,7 @@ config_page(
 						info_message(_(txt_scope_operation_not_allowed));
 					else if (check_state(option)) {
 						reset_state(option);
+						changed |= MISC_OPTS;
 						redraw_screen(option);
 					}
 				}
@@ -1254,7 +1292,8 @@ config_page(
 						case OPT_USE_KEYPAD:
 #endif /* HAVE_KEYPAD */
 						case OPT_USE_MOUSE:
-							prompt_option_on_off(option);
+							if (prompt_option_on_off(option))
+								changed |= MISC_OPTS;
 							break;
 
 						case OPT_ADD_POSTED_TO_FILTER:
@@ -1383,14 +1422,18 @@ config_page(
 
 						/* show mini help menu */
 						case OPT_BEGINNER_LEVEL:
-							if (prompt_option_on_off(option))
+							if (prompt_option_on_off(option)) {
 								set_noteslines(cLINES);
+								changed |= MISC_OPTS;
+							}
 							break;
 
 						/* show all arts or just new/unread arts */
 						case OPT_SHOW_ONLY_UNREAD_ARTS:
-							if (prompt_option_on_off(option))
+							if (prompt_option_on_off(option)) {
 								UPDATE_INT_ATTRIBUTES(show_only_unread_arts);
+								changed |= SHOW_ONLY_UNREAD;
+							}
 							break;
 
 						/* draw -> / highlighted bar */
@@ -1401,6 +1444,7 @@ config_page(
 									tinrc.inverse_okay = TRUE;
 									repaint_option(OPT_INVERSE_OKAY);
 								}
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -1413,6 +1457,7 @@ config_page(
 									tinrc.draw_arrow = TRUE;	/* we don't want to navigate blindly */
 									repaint_option(OPT_DRAW_ARROW);
 								}
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -1443,6 +1488,7 @@ config_page(
 								show_description = tinrc.show_description;
 								if (show_description)			/* force reread of newgroups file */
 									read_descriptions(FALSE);
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -1458,6 +1504,7 @@ config_page(
 									use_color = tinrc.use_color;
 								set_last_option_on_screen(first_option_on_screen);
 								redraw_screen(option);
+								changed |= MISC_OPTS;
 							}
 							break;
 #endif /* HAVE_COLOR */
@@ -1470,6 +1517,7 @@ config_page(
 									slrnface_stop();
 								else
 									slrnface_start();
+								changed |= MISC_OPTS;
 							}
 							break;
 #endif /* XFACE_ABLE */
@@ -1480,12 +1528,14 @@ config_page(
 								word_highlight = tinrc.word_highlight;
 								set_last_option_on_screen(first_option_on_screen);
 								redraw_screen(option);
+								changed |= MISC_OPTS;
 							}
 							break;
 
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 						case OPT_RENDER_BIDI:
-							prompt_option_on_off(option);
+							if (prompt_option_on_off(option))
+								changed |= MISC_OPTS;
 							break;
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
 
@@ -1612,8 +1662,10 @@ config_page(
 							break;
 
 						case OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS:
-							if (prompt_option_on_off(option))
+							if (prompt_option_on_off(option)) {
 								SET_NUM_ATTRIBUTE(show_only_unread_arts);
+								changed |= SHOW_ONLY_UNREAD;
+							}
 							break;
 
 						case OPT_ATTRIB_SHOW_SIGNATURES:
@@ -1709,14 +1761,20 @@ config_page(
 						case OPT_STRIP_BOGUS:
 						case OPT_WILDCARD:
 						case OPT_WORD_H_DISPLAY_MARKS:
-							prompt_option_list(option);
+#ifdef USE_HEAPSORT
+						case OPT_SORT_FUNCTION:
+#endif /* USE_HEAPSORT */
+							if (prompt_option_list(option))
+								changed |= MISC_OPTS;
 							break;
 
 #ifdef HAVE_COLOR
 						case OPT_COL_BACK:
 						case OPT_COL_NORMAL:
-							if (prompt_option_list(option))
+							if (prompt_option_list(option)) {
 								redraw_screen(option);
+								changed |= MISC_OPTS;
+							}
 							break;
 #endif /* HAVE_COLOR */
 
@@ -1726,18 +1784,24 @@ config_page(
 							break;
 
 						case OPT_THREAD_ARTICLES:
-							if (prompt_option_list(option))
+							if (prompt_option_list(option)) {
 								UPDATE_INT_ATTRIBUTES(thread_articles);
+								changed |= THREAD_ARTS;
+							}
 							break;
 
 						case OPT_SORT_ARTICLE_TYPE:
-							if (prompt_option_list(option))
+							if (prompt_option_list(option)) {
 								UPDATE_INT_ATTRIBUTES(sort_article_type);
+								changed |= SORT_OPTS;
+							}
 							break;
 
 						case OPT_SORT_THREADS_TYPE:
-							if (prompt_option_list(option))
+							if (prompt_option_list(option)) {
 								UPDATE_INT_ATTRIBUTES(sort_threads_type);
+								changed |= SORT_OPTS;
+							}
 							break;
 
 						case OPT_THREAD_SCORE:
@@ -1756,8 +1820,10 @@ config_page(
 							break;
 
 						case OPT_SHOW_AUTHOR:
-							if (prompt_option_list(option))
+							if (prompt_option_list(option)) {
 								UPDATE_INT_ATTRIBUTES(show_author);
+								changed |= SHOW_AUTHOR;
+							}
 							break;
 
 						case OPT_SHOW_INFO:
@@ -1925,8 +1991,10 @@ config_page(
 							break;
 
 						case OPT_ATTRIB_SHOW_AUTHOR:
-							if (prompt_option_list(option))
+							if (prompt_option_list(option)) {
 								SET_NUM_ATTRIBUTE(show_author);
+								changed |= SHOW_AUTHOR;
+							}
 							break;
 
 						case OPT_ATTRIB_SHOW_INFO:
@@ -1935,18 +2003,24 @@ config_page(
 							break;
 
 						case OPT_ATTRIB_SORT_ARTICLE_TYPE:
-							if (prompt_option_list(option))
+							if (prompt_option_list(option)) {
 								SET_NUM_ATTRIBUTE(sort_article_type);
+								changed |= SORT_OPTS;
+							}
 							break;
 
 						case OPT_ATTRIB_SORT_THREADS_TYPE:
-							if (prompt_option_list(option))
+							if (prompt_option_list(option)) {
 								SET_NUM_ATTRIBUTE(sort_threads_type);
+								changed |= SORT_OPTS;
+							}
 							break;
 
 						case OPT_ATTRIB_THREAD_ARTICLES:
-							if (prompt_option_list(option))
+							if (prompt_option_list(option)) {
 								SET_NUM_ATTRIBUTE(thread_articles);
+								changed |= THREAD_ARTS;
+							}
 							break;
 
 						case OPT_ATTRIB_TRIM_ARTICLE_BODY:
@@ -1977,13 +2051,15 @@ config_page(
 						case OPT_SPAMTRAP_WARNING_ADDRESSES:
 						case OPT_URL_HANDLER:
 						case OPT_XPOST_QUOTE_FORMAT:
-							prompt_option_string(option);
+							if (prompt_option_string(option))
+								changed |= MISC_OPTS;
 							break;
 
 						case OPT_EDITOR_FORMAT:
 							if (prompt_option_string(option)) {
 								if (!strlen(tinrc.editor_format))
 									STRCPY(tinrc.editor_format, TIN_EDITOR_FMT_ON);
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -1995,13 +2071,15 @@ config_page(
 								 * to be network charset.
 								 */
 								STRCPY(tinrc.mm_local_charset, tinrc.mm_charset);
+								changed |= MISC_OPTS;
 							}
 							break;
 #else
 #	ifdef NO_LOCALE
 						case OPT_MM_LOCAL_CHARSET:
-							prompt_option_string(option);
+							if (prompt_option_string(option))
 							/* no locales -> can't guess local charset */
+								changed |= MISC_OPTS;
 							break;
 
 #	endif /* NO_LOCALE */
@@ -2010,12 +2088,14 @@ config_page(
 						case OPT_NEWS_HEADERS_TO_DISPLAY:
 							if (prompt_option_string(option)) {
 								build_news_headers_array(scopes[0].attribute, TRUE);
+								changed |= MISC_OPTS;
 							}
 							break;
 
 						case OPT_NEWS_HEADERS_TO_NOT_DISPLAY:
 							if (prompt_option_string(option)) {
 								build_news_headers_array(scopes[0].attribute, FALSE);
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -2025,6 +2105,7 @@ config_page(
 
 								strfpath(tinrc.posted_articles_file, buf, sizeof(buf), &CURR_GROUP, TRUE);
 								STRCPY(tinrc.posted_articles_file, buf);
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -2114,6 +2195,7 @@ config_page(
 								if (!strlen(tinrc.strip_re_regex))
 									STRCPY(tinrc.strip_re_regex, DEFAULT_STRIP_RE_REGEX);
 								compile_regex(tinrc.strip_re_regex, &strip_re_regex, PCRE_ANCHORED);
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -2130,6 +2212,7 @@ config_page(
 										STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
 								}
 								compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -2159,6 +2242,7 @@ config_page(
 							if (prompt_option_string(option)) {
 								if (!strlen(tinrc.date_format))
 									STRCPY(tinrc.date_format, DEFAULT_DATE_FORMAT);
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -2290,7 +2374,8 @@ config_page(
 					switch (option) {
 						case OPT_GETART_LIMIT:
 						case OPT_SCROLL_LINES:
-							prompt_option_num(option);
+							if (prompt_option_num(option))
+								changed |= MISC_OPTS;
 							break;
 
 #if defined(HAVE_ALARM) && defined(SIGALRM)
@@ -2298,6 +2383,7 @@ config_page(
 							if (prompt_option_num(option)) {
 								if (tinrc.nntp_read_timeout_secs < 0)
 									tinrc.nntp_read_timeout_secs = 0;
+								changed |= MISC_OPTS;
 							}
 							break;
 #endif /* HAVE_ALARM && SIGALRM */
@@ -2306,6 +2392,7 @@ config_page(
 							if (prompt_option_num(option)) {
 								if (tinrc.reread_active_file_secs < 0)
 									tinrc.reread_active_file_secs = 0;
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -2313,6 +2400,7 @@ config_page(
 							if (prompt_option_num(option)) {
 								if (tinrc.recent_time < 0)
 									tinrc.recent_time = 0;
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -2320,6 +2408,7 @@ config_page(
 							if (prompt_option_num(option)) {
 								if (tinrc.groupname_max_length < 0)
 									tinrc.groupname_max_length = 0;
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -2327,6 +2416,7 @@ config_page(
 							if (prompt_option_num(option)) {
 								if (tinrc.filter_days <= 0)
 									tinrc.filter_days = 1;
+								changed |= MISC_OPTS;
 							}
 							break;
 
@@ -2378,7 +2468,8 @@ config_page(
 						case OPT_ART_MARKED_READ:
 						case OPT_ART_MARKED_KILLED:
 						case OPT_ART_MARKED_READ_SELECTED:
-							prompt_option_char(option);
+							if (prompt_option_char(option))
+								changed |= MISC_OPTS;
 							break;
 
 						default:
@@ -2454,7 +2545,7 @@ show_scope_page(
 
 static void
 scope_page(
-	void)
+	enum context level)
 {
 	char key[MAXKEYLEN];
 	int i;
@@ -2604,7 +2695,7 @@ scope_page(
 			case SCOPE_SELECT:
 				if (scopemenu.max) {
 					curr_scope = &scopes[scopemenu.curr + 1];
-					config_page(NULL);
+					config_page(NULL, level);
 					if (!curr_scope->global && scope_is_empty())
 						do_delete_scope(scopemenu.curr + 1);
 					curr_scope = NULL;
