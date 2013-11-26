@@ -3,10 +3,10 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2011-12-07
+ *  Updated   : 2013-11-06
  *  Notes     :
  *
- * Copyright (c) 2003-2012 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
+ * Copyright (c) 2003-2013 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ slrnface_start(
 	void)
 {
 	char *fifo;
-	char *ptr;
+	const char *ptr;
 	int status;
 	pid_t pid, pidst;
 	size_t pathlen;
@@ -96,7 +96,13 @@ slrnface_start(
 	}
 
 	uname(&u);
-	if (!(ptr = getenv("HOME"))) { /* TODO: use tin global 'homedir' instead? or even rcdir? */
+	ptr = get_val("XDG_RUNTIME_DIR", get_val("HOME", ""));
+	/*
+	 * TODO:
+	 * - check if $XDG_RUNTIME_DIR is on a local filesystem and has secure permissions
+	 * <http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html>
+	 */
+	if (!strlen(ptr)) { /* TODO: mention XDG_RUNTIME_DIR in error message? */
 #	ifdef DEBUG
 		if (debug & DEBUG_MISC)
 			error_message(2, _("Can't run slrnface: Environment variable %s not found."), "HOME");
@@ -178,8 +184,11 @@ slrnface_start(
 				switch (WEXITSTATUS(status)) {
 					case 0:	/* All fine, open the pipe */
 						slrnface_fd = open(fifo, O_WRONLY, (S_IRUSR|S_IWUSR));
-						write(slrnface_fd, "start\n", strlen("start\n"));
-						message = NULL;
+						if (slrnface_fd != -1) {
+							write(slrnface_fd, "start\n", strlen("start\n"));
+							message = NULL;
+						} else
+							message = "can't open FIFO";
 						break;
 
 					/* TODO: warp into _()? */

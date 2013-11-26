@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2011-09-12
+ *  Updated   : 2013-11-12
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -170,13 +170,7 @@ getserverbyfile(
 			(void) fclose(fp);
 			return buf;
 		}
-
 		(void) fclose(fp);
-
-		if (cp != NULL) {
-			get_nntpserver(buf, sizeof(buf), cp);
-			return buf;
-		}
 	}
 
 #	ifdef NNTP_DEFAULT_SERVER
@@ -260,12 +254,14 @@ server_init(
 #	ifdef TLI /* Transport Level Interface */
 	if (t_sync(sockt_rd) < 0) {	/* Sync up new fd with TLI */
 		t_error("server_init: t_sync()");
+		s_fclose(nntp_rd_fp);
 		nntp_rd_fp = NULL;
 		return -EPROTO;
 	}
 #	else
 	if ((nntp_wr_fp = (TCP *) s_fdopen(sockt_wr, "w")) == NULL) {
 		perror("server_init: fdopen() #2");
+		s_fclose(nntp_rd_fp);
 		nntp_rd_fp = NULL;
 		return -errno;
 	}
@@ -601,7 +597,7 @@ get_tcp6_socket(
 	struct addrinfo hints, *res, *res0;
 
 	snprintf(mymachine, sizeof(mymachine), "%s", machine);
-	snprintf(myport, sizeof(myport), "%d", port);
+	snprintf(myport, sizeof(myport), "%u", port);
 
 /* just in case */
 #	ifdef AF_UNSPEC
@@ -833,7 +829,7 @@ reconnect(
 			unlink(backup_article_name(article_name));
 			rename_file(article_name, dead_article);
 			if (tinrc.keep_dead_articles)
-				append_file(dead_articles, dead_article);
+				append_file(dead_article, dead_articles);
 		}
 		tin_done(NNTP_ERROR_EXIT);		/* user said no to reconnect */
 	}
@@ -873,7 +869,7 @@ reconnect(
 			unlink(backup_article_name(article_name));
 			rename_file(article_name, dead_article);
 			if (tinrc.keep_dead_articles)
-				append_file(dead_articles, dead_article);
+				append_file(dead_article, dead_articles);
 		}
 		tin_done(NNTP_ERROR_EXIT);
 	}
@@ -999,6 +995,7 @@ close_server(
 	nntp_wr_fp = nntp_rd_fp = NULL;
 }
 
+
 /*
  * Try and use CAPABILITIES here. Get this list before issuing other NNTP
  * commands because the correct methods may be mentioned in the list of
@@ -1007,7 +1004,8 @@ close_server(
  * Sets up: t_capabilities nntp_caps
  */
 static int
-check_extensions(void)
+check_extensions(
+	void)
 {
 	char *d;
 	char *ptr;
@@ -1671,8 +1669,8 @@ nntp_open(
 	if (!is_reconnect && !batch_mode && show_description && check_for_new_newsgroups) {
 		/*
 		 * TODO:
-		 * - document that "-d" and/or "-q" turns off "LIST MOTD" (or add
-		 *   a tinrc var to turn LIST MOTD on/off)
+		 * - add a tinrc var to turn LIST MOTD on/off?
+		 *   (currently done automatically for -d, -q and -Q)
 		 */
 		if (nntp_caps.list_motd)
 			list_motd();

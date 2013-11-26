@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2012-02-20
+ *  Updated   : 2013-11-10
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ static FILE *open_art_header(char *groupname, t_artnum art, t_artnum *next);
 static FILE *open_xover_fp(struct t_group *group, const char *mode, t_artnum min, t_artnum max, t_bool local);
 static char *find_nov_file(struct t_group *group, int mode);
 static char *print_date(time_t secs);
-static char *print_from(struct t_group *group, struct t_article *article);
+static char *print_from(struct t_group *group, struct t_article *article, int charset);
 static int artnum_comp(t_comptype p1, t_comptype p2);
 static int base_comp(t_comptype p1, t_comptype p2);
 static int date_comp_asc(t_comptype p1, t_comptype p2);
@@ -213,7 +213,7 @@ setup_hard_base(
 		char buf[NNTP_STRLEN];
 		char line[NNTP_STRLEN];
 		int getart_limit = cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit;
-		FILE *fp = NULL;
+		FILE *fp;
 		t_artnum last, start, count = 0, j = 0;
 		static t_bool skip_listgroup = FALSE;
 
@@ -345,11 +345,6 @@ setup_hard_base(
 
 		make_base_group_path(group->spooldir, group->name, group_path, sizeof(group_path));
 
-		if (access(group_path, R_OK) != 0) {
-			error_message(2, _(txt_not_exist));
-			return -1;
-		}
-
 		if ((d = opendir(group_path)) != NULL) {
 			while ((e = readdir(d)) != NULL) {
 				art = atoartnum(e->d_name);
@@ -362,6 +357,13 @@ setup_hard_base(
 			}
 			CLOSEDIR(d);
 			tin_sort((char *) base, (size_t) grpmenu.max, sizeof(t_artnum), base_comp);
+		} else {
+			perror_message(_(txt_cannot_open), group_path);
+#if 0
+			if (access(group_path, R_OK) != 0)
+				error_message(2, _(txt_not_exist));
+#endif /* 0 */
+			return -1;
 		}
 	}
 
@@ -716,7 +718,7 @@ read_art_headers(
 
 		get_cwd(dir);
 		make_base_group_path(group->spooldir, group->name, buf, sizeof(buf));
-		my_chdir(buf);
+		chdir(buf);
 	}
 
 	group_msg = fmt_string(_(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group->name);
@@ -780,7 +782,7 @@ read_art_headers(
 	 * Change back to previous dir before indexing started
 	 */
 	if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS)
-		my_chdir(dir);
+		chdir(dir);
 
 	return modified;
 }
@@ -957,8 +959,8 @@ global_get_multipart_info(
 
 
 /*
- *	Again this was taken from tags.c, but works on global indicies into arts
- *	rather then on base_index.
+ * Again this was taken from tags.c, but works on global indicies into arts
+ * rather then on base_index.
  */
 static int
 global_look_for_multipart_info(
@@ -1844,7 +1846,17 @@ read_overview(
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
 						}
 #endif /* DEBUG */
+						continue;
 					}
+#if 0 /* code example for hadnling addition overview fields */
+					if (!strcasecmp(ofmt[count].name, "Path:")) {
+#ifdef DEBUG
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") extra overview-field \"%s\" at position %d %s", nntp_caps.over_cmd, artnum, ofmt[count].name, count, ptr);
+#endif /* DEBUG */
+						continue;
+					}
+#endif /* 0 */
 				}
 				continue;
 			}
@@ -1980,6 +1992,9 @@ write_overview(
 	FILE *fp;
 	int i;
 	struct t_article *article;
+#ifdef CHARSET_CONVERSION
+	int c = -1;
+#endif /* CHARSET_CONVERSION */
 
 	/*
 	 * Can't write or caching is off or getart_limit is set
@@ -1998,6 +2013,18 @@ write_overview(
 	 */
 	fprintf(fp, "%s\n", group->name);
 
+#ifdef CHARSET_CONVERSION
+	/* get undeclared_charset number if required */
+	if (group->attribute->undeclared_charset) {
+		for (i = 0; txt_mime_charsets[i] != NULL; i++) {
+			if (!strcasecmp(group->attribute->undeclared_charset, txt_mime_charsets[i])) {
+				c = i;
+				break;
+			}
+		}
+	}
+#endif /* CHARSET_CONVERSION */
+
 	for_each_art(i) {
 		char *p;
 		char *q, *ref;
@@ -2006,19 +2033,28 @@ write_overview(
 
 		if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
 			ref = NULL;
-			/*
-			 * TODO: instead of tinrc.mm_local_charset we'd better use UTF-8
-			 *       here and in print_from() in the CHARSET_CONVERSION case.
-			 *       note that this requires something like
-			 *          buffer_to_network(article->subject, "UTF-8");
-			 *       right bfore the rfc1522_encode() call.
-			 *
-			 *       if we would cache the original undecoded data, we could
-			 *       ignore stuff like this.
-			 */
-			p = rfc1522_encode(article->subject, tinrc.mm_local_charset, FALSE);
-			/* as the subject might now be folded we have to unfold it */
-			unfold_header(p);
+
+			if (!group->attribute->post_8bit_header) { /* write encoded data */
+				/*
+				 * TODO: instead of tinrc.mm_local_charset we'd better use UTF-8
+				 *       here and in print_from() in the CHARSET_CONVERSION case.
+				 *       note that this requires something like
+				 *          buffer_to_network(article->subject, "UTF-8");
+				 *       right bfore the rfc1522_encode() call.
+				 *
+				 *       if we would cache the original undecoded data, we could
+				 *       ignore stuff like this.
+				 */
+				p = rfc1522_encode(article->subject, tinrc.mm_local_charset, FALSE);
+				/* as the subject might now be folded we have to unfold it */
+				unfold_header(p);
+			} else { /* raw data */
+				p = my_strdup(article->subject);
+#ifdef CHARSET_CONVERSION
+				if (group->attribute->undeclared_charset && c != -1) /* use undeclared_charset if set (otherwise local charset is used) */
+					buffer_to_network(p, c);
+#endif /* CHARSET_CONVERSION */
+			}
 
 			/*
 			 * replace any '\t's with ' ' in the references-data
@@ -2041,8 +2077,12 @@ write_overview(
 
 			fprintf(fp, "%"T_ARTNUM_PFMT"\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
 				article->artnum,
-				group->attribute->post_8bit_header ? article->subject : p,
-				print_from(group, article),
+				p,
+#ifdef CHARSET_CONVERSION
+				print_from(group, article, c),
+#else
+				print_from(group, article, -1),
+#endif /* CHARSET_CONVERSION */
 				print_date(article->date),
 				BlankIfNull(article->msgid),
 				BlankIfNull(ref),
@@ -2585,7 +2625,8 @@ last_date_comp_base_asc(
 }
 
 
-static time_t get_last_posting_date(
+static time_t
+get_last_posting_date(
 	long n)
 {
 	long i;
@@ -2712,22 +2753,30 @@ print_date(
 static char *
 print_from(
 	struct t_group *group,
-	struct t_article *article)
+	struct t_article *article,
+	int charset)
 {
-	char *p;
+	char *p, *q;
 	static char from[PATH_LEN];
 
 	*from = '\0';
 
 	if (article->name != NULL) {
+		q = my_strdup(article->name);
+#ifdef CHARSET_CONVERSION
+		if (charset != -1) {
+			buffer_to_network(q, charset);
+		}
+#endif /* CHARSET_CONVERSION */
 		p = rfc1522_encode(article->name, tinrc.mm_local_charset, FALSE);
 		unfold_header(p);
 		if (strpbrk(article->name, "\".:;<>@[]()\\") != NULL && article->name[0] != '"' && article->name[strlen(article->name)] != '"')
-			snprintf(from, sizeof(from), "\"%s\" <%s>", group->attribute->post_8bit_header ? article->name : p, article->from);
+			snprintf(from, sizeof(from), "\"%s\" <%s>", group->attribute->post_8bit_header ? q : p, article->from);
 		else
-			snprintf(from, sizeof(from), "%s <%s>", group->attribute->post_8bit_header ? article->name : p, article->from);
+			snprintf(from, sizeof(from), "%s <%s>", group->attribute->post_8bit_header ? q : p, article->from);
 
 		free(p);
+		free(q);
 	} else
 		STRCPY(from, article->from);
 

@@ -3,10 +3,10 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2011-11-06
+ *  Updated   : 2013-10-31
  *  Notes     :
  *
- * Copyright (c) 1993-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -152,6 +152,13 @@ overview_xref_support(
 							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected > %d", ptr, fields, 7);
 #endif /* DEBUG */
 					}
+#ifdef DEBUG
+					else {
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d", ptr, fields);
+					}
+#endif /* DEBUG */
+
 					continue;
 				}
 

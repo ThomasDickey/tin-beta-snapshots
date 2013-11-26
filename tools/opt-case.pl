@@ -11,13 +11,13 @@
 #       filter by hand and never let tin rewrite the file, you might want to
 #       check that first)
 #
-# NOTE: don't use opt-case.pl on wildmat filerts, transform them into regexp
-#       filter via w2r.pl before
+# NOTE: don't use opt-case.pl on wildmat filters, transform them into regexp
+#       filter via w2r.pl first
 
 # version number
 # $VERSION = "0.2.2";
 
-# perl 5 is needed for lookahead assertions and perl < 5.004 is know to be
+# perl 5 is needed for lookahead assertions and perl < 5.004 is known to be
 # buggy
 require 5.004;
 
@@ -55,9 +55,9 @@ while (defined($line = <>)) {
 	# optimizations (on lines with \s, \S, \d, \D as only 'letters') but
 	# that won't hurt, it just doesn't optimize'em
 	if ($line =~ m/^(subj|from|msgid(?:|_last|_only)|refs_only|xref)=(.*[^\W\d_].*)$/o) {
-		print "# rule rewritten, it might be possible that it can be further otpimized\n";
+		print "# rule rewritten, it might be possible that it can be further optimized\n";
 		print "# check lines with (?i) if they really need to be case insensitve and if\n";
-		print "# not remove leading (?i) manualy\n";
+		print "# not remove leading (?i) manually\n";
 		print "$1=$mod$2\n";
 		next;
         }
@@ -90,7 +90,7 @@ is the order B<tin>(1) saves the filter file, if you created the
 filter by hand and never let B<tin>(1) rewrite the file, you might
 want to check that first).
 
-Don't use B<opt-case.pl> on wildmat filerts, transform them into
+Don't use B<opt-case.pl> on wildmat filters, transform them into
 regexp filter via B<w2r.pl>(1) first.
 
 =head1 AUTHOR

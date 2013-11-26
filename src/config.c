@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2012-03-04
+ *  Updated   : 2013-11-05
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -391,6 +391,9 @@ read_config_file(
 			if (match_integer(buf, "goto_next_unread=", &tinrc.goto_next_unread, NUM_GOTO_NEXT_UNREAD))
 				break;
 
+			if (match_string(buf, "group_format=", tinrc.group_format, sizeof(tinrc.group_format)))
+				break;
+
 			if (match_integer(buf, "groupname_max_length=", &tinrc.groupname_max_length, 132))
 				break;
 
@@ -597,8 +600,10 @@ read_config_file(
 		case 's':
 			if (match_string(buf, "savedir=", tinrc.savedir, sizeof(tinrc.savedir))) {
 				if (tinrc.savedir[0] == '.' && strlen(tinrc.savedir) == 1) {
-					get_cwd(buf);
-					my_strncpy(tinrc.savedir, buf, sizeof(tinrc.savedir) - 1);
+					char buff[PATH_LEN];
+
+					get_cwd(buff);
+					my_strncpy(tinrc.savedir, buff, sizeof(tinrc.savedir) - 1);
 				}
 				break;
 			}
@@ -618,6 +623,9 @@ read_config_file(
 				check_score_defaults();
 				break;
 			}
+
+			if (match_string(buf, "select_format=", tinrc.select_format, sizeof(tinrc.select_format)))
+				break;
 
 			if (match_integer(buf, "show_author=", &tinrc.show_author, SHOW_FROM_BOTH))
 				break;
@@ -662,9 +670,6 @@ read_config_file(
 			if (match_integer(buf, "scroll_lines=", &tinrc.scroll_lines, 0))
 				break;
 
-			if (match_integer(buf, "show_info=", &tinrc.show_info, SHOW_INFO_BOTH))
-				break;
-
 			if (match_boolean(buf, "show_signatures=", &tinrc.show_signatures))
 				break;
 
@@ -700,6 +705,9 @@ read_config_file(
 				break;
 
 			if (match_integer(buf, "thread_perc=", &tinrc.thread_perc, 100))
+				break;
+
+			if (match_string(buf, "thread_format=", tinrc.thread_format, sizeof(tinrc.thread_format)))
 				break;
 
 			if (match_integer(buf, "thread_score=", &tinrc.thread_score, THREAD_SCORE_WEIGHT))
@@ -850,9 +858,14 @@ read_config_file(
 	/* set defaults if blank */
 	if (!*tinrc.editor_format)
 		STRCPY(tinrc.editor_format, TIN_EDITOR_FMT_ON);
+	if (!*tinrc.select_format)
+		STRCPY(tinrc.select_format, DEFAULT_SELECT_FORMAT);
+	if (!*tinrc.group_format)
+		STRCPY(tinrc.group_format, DEFAULT_GROUP_FORMAT);
+	if (!*tinrc.thread_format)
+		STRCPY(tinrc.thread_format, DEFAULT_THREAD_FORMAT);
 	if (!*tinrc.date_format)
 		STRCPY(tinrc.date_format, DEFAULT_DATE_FORMAT);
-
 	/* determine local charset */
 #if defined(NO_LOCALE) && !defined(CHARSET_CONVERSION)
 	strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
@@ -979,7 +992,7 @@ write_config_file(
 #ifdef USE_HEAPSORT
 	fprintf(fp, "%s", _(txt_sort_function.tinrc));
 	fprintf(fp, "sort_function=%d\n\n", tinrc.sort_function);
-#endif
+#endif /* USE_HEAPSORT */
 
 	fprintf(fp, "%s", _(txt_maildir.tinrc));
 	fprintf(fp, "maildir=%s\n\n", tinrc.maildir);
@@ -1009,9 +1022,6 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_interactive_mailer.tinrc));
 	fprintf(fp, "interactive_mailer=%d\n\n", tinrc.interactive_mailer);
-
-	fprintf(fp, "%s", _(txt_show_info.tinrc));
-	fprintf(fp, "show_info=%d\n\n", tinrc.show_info);
 
 	fprintf(fp, "%s", _(txt_thread_score.tinrc));
 	fprintf(fp, "thread_score=%d\n\n", tinrc.thread_score);
@@ -1347,6 +1357,15 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_strip_bogus.tinrc));
 	fprintf(fp, "strip_bogus=%d\n\n", tinrc.strip_bogus);
+
+	fprintf(fp, "%s", _(txt_select_format.tinrc));
+	fprintf(fp, "select_format=%s\n\n", tinrc.select_format);
+
+	fprintf(fp, "%s", _(txt_group_format.tinrc));
+	fprintf(fp, "group_format=%s\n\n", tinrc.group_format);
+
+	fprintf(fp, "%s", _(txt_thread_format.tinrc));
+	fprintf(fp, "thread_format=%s\n\n", tinrc.thread_format);
 
 	fprintf(fp, "%s", _(txt_date_format.tinrc));
 	fprintf(fp, "date_format=%s\n\n", tinrc.date_format);
@@ -1731,7 +1750,7 @@ rc_update(
 	FILE *fp)
 {
 	char buf[1024];
-	const char *env;
+	int show_info = 1;
 	t_bool auto_bcc = FALSE;
 	t_bool auto_cc = FALSE;
 	t_bool confirm_to_quit = FALSE;
@@ -1747,6 +1766,7 @@ rc_update(
 	t_bool show_last_line_prev_page = FALSE;
 	t_bool show_lines = FALSE;
 	t_bool show_score = FALSE;
+	t_bool show_lines_or_score = FALSE;
 	t_bool space_goto_next_unread = FALSE;
 	t_bool tab_goto_next_unread = FALSE;
 	t_bool use_builtin_inews = FALSE;
@@ -1801,8 +1821,10 @@ rc_update(
 				/* simple rename */
 				if (match_string(buf, "default_savedir=", tinrc.savedir, sizeof(tinrc.savedir))) {
 					if (tinrc.savedir[0] == '.' && strlen(tinrc.savedir) == 1) {
-						get_cwd(buf);
-						my_strncpy(tinrc.savedir, buf, sizeof(tinrc.savedir) - 1);
+						char buff[PATH_LEN];
+
+						get_cwd(buff);
+						my_strncpy(tinrc.savedir, buff, sizeof(tinrc.savedir) - 1);
 					}
 					break;
 				}
@@ -1842,15 +1864,21 @@ rc_update(
 				}
 				if (match_boolean(buf, "save_to_mmdf_mailbox=", &save_to_mmdf_mailbox))
 					break;
+				if (match_integer(buf, "show_info=", &show_info, 3))
+					break;
 				if (match_boolean(buf, "show_last_line_prev_page=", &show_last_line_prev_page))
 					break;
-				if (match_boolean(buf, "show_lines=", &show_lines))
+				if (match_boolean(buf, "show_lines=", &show_lines)){
+					show_lines_or_score = TRUE;
 					break;
+				}
 				/* simple rename */
 				if (match_boolean(buf, "show_only_unread=", &tinrc.show_only_unread_arts))
 					break;
-				if (match_boolean(buf, "show_score=", &show_score))
+				if (match_boolean(buf, "show_score=", &show_score)) {
+					show_lines_or_score = TRUE;
 					break;
+				}
 				break;
 
 			case 't':
@@ -1901,7 +1929,28 @@ rc_update(
 
 	tinrc.mailbox_format = (save_to_mmdf_mailbox ? 2 : 0);
 
-	tinrc.show_info = (show_lines ? SHOW_INFO_LINES : 0) + (show_score ? SHOW_INFO_SCORE : 0);
+	if (show_lines_or_score)
+		show_info = (show_lines ? 1 : 0) + (show_score ? 2 : 0);
+
+	switch (show_info) {
+		case 0:
+			STRCPY(tinrc.group_format, "%n %m %R  %s  %F");
+			STRCPY(tinrc.thread_format, "%n %m  %T  %F");
+			break;
+
+		case 2:
+			STRCPY(tinrc.group_format, "%n %m %R %S  %s  %F");
+			STRCPY(tinrc.thread_format, "%n %m  [%S]  %T  %F");
+			break;
+
+		case 3:
+			STRCPY(tinrc.group_format, "%n %m %R %L %S  %s  %F");
+			STRCPY(tinrc.thread_format, "%n %m  [%L,%S]  %T  %F");
+			break;
+
+		default:
+			break;
+	}
 
 	if (show_last_line_prev_page)
 		tinrc.scroll_lines = -1;
@@ -1912,8 +1961,7 @@ rc_update(
 	if (use_mailreader_i)
 		tinrc.interactive_mailer = INTERACTIVE_WITHOUT_HEADERS;
 
-	env = getenv("NOMETAMAIL");
-	if (!use_metamail || (NULL == env))
+	if (!use_metamail || getenv("NOMETAMAIL") != NULL)
 		strncpy(tinrc.metamail_prog, INTERNAL_CMD, sizeof(tinrc.metamail_prog) - 1);
 	else
 		my_strncpy(tinrc.metamail_prog, METAMAIL_CMD, sizeof(tinrc.metamail_prog) - 1);

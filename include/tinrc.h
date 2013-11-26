@@ -3,10 +3,10 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2012-02-20
+ *  Updated   : 2013-09-01
  *  Notes     :
  *
- * Copyright (c) 1999-2012 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2013 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ struct t_config {
 	 * Chars used to show article status
 	 */
 	char art_marked_deleted;
-	char art_marked_inrange;
+	char art_marked_inrange;	/* misnomer, as it's also used for other ranges */
 	char art_marked_return;
 	char art_marked_selected;
 	char art_marked_recent;
@@ -143,12 +143,12 @@ struct t_config {
 	int sort_article_type;				/* method used to sort arts[] */
 	int sort_threads_type;				/* method used to sort base[] */
 #	ifdef USE_HEAPSORT
-	int sort_function;					/* index into sort_function[] */
-#	endif
+		int sort_function;				/* index into sort_function[] */
+#	endif /* USE_HEAPSORT */
 	int strip_bogus;
 	int thread_articles;				/* threading system for viewing articles */
 	int thread_perc;				/* how close the match needs to be for THREAD_PERC to recognize two articles as the same thread */
-	int thread_score;				/* how the score for threads is computed*/
+	int thread_score;				/* how the score for threads is computed */
 	int wildcard;						/* 0=wildmat, 1=regex */
 	int score_limit_kill;					/* score limit to kill articles */
 	int score_limit_select;					/* score limit to select articles */
@@ -162,7 +162,7 @@ struct t_config {
 		int col_help;						/* color of help pages */
 		int col_invers_bg;					/* color of inverse text (background) */
 		int col_invers_fg;					/* color of inverse text (foreground) */
-		int col_minihelp;					/* color of mini help menu*/
+		int col_minihelp;					/* color of mini help menu */
 		int col_normal;						/* standard foreground color */
 		int col_markdash;					/* text highlighting with _underdashes_ */
 		int col_markstar;					/* text highlighting with *stars* */
@@ -178,10 +178,10 @@ struct t_config {
 		int col_urls;						/* color of urls highlight */
 		int col_verbatim;					/* color of verbatim blocks */
 		int col_subject;					/* color of article subject */
-		int col_text;						/* color of textlines*/
+		int col_text;						/* color of textlines */
 		int col_title;						/* color of Help/Mail-Sign */
 #	endif /* HAVE_COLOR */
-	int word_h_display_marks;			/* display * or _ when highlighting or space or nothing*/
+	int word_h_display_marks;			/* display * or _ when highlighting or space or nothing */
 	int mono_markdash;				/* attribute for text highlighting with _underdashes_ */
 	int mono_markstar;				/* attribute for text highlighting with *stars* */
 	int mono_markslash;				/* attribute for text highlighting with /slashes/ */
@@ -225,7 +225,6 @@ struct t_config {
 	t_bool prompt_followupto;			/* display empty Followup-To header in editor */
 	int quote_style;					/* quoting behaviour */
 	t_bool show_description;
-	int show_info;				/* show lines and/or score (or nothing) */
 	t_bool show_only_unread_arts;		/* show only new/unread arts or all arts */
 	t_bool show_only_unread_groups;		/* set TRUE to see only subscribed groups with new news */
 	t_bool show_signatures;				/* show signatures when displaying articles */
@@ -258,13 +257,16 @@ struct t_config {
 		t_bool use_slrnface;			/* Use the slrnface programme to display 'X-Face:'s */
 #	endif /* XFACE_ABLE */
 	t_bool default_filter_select_global;
+	char select_format[LEN];		/* format string for the selection level */
+	char group_format[LEN];			/* format string for the group level */
+	char thread_format[LEN];		/* format string for the thread level */
 	char date_format[LEN];			/* format string for the date display in the page header */
 #	ifdef HAVE_UNICODE_NORMALIZATION
-	int normalization_form;
+		int normalization_form;
 #	endif /* HAVE_UNICODE_NORMALIZATION */
-#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
-	t_bool render_bidi;
-#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
+#	if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+		t_bool render_bidi;
+#	endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
 #	ifdef CHARSET_CONVERSION
 		int attrib_mm_network_charset;
 		char attrib_undeclared_charset[LEN];
@@ -291,19 +293,20 @@ struct t_config {
 #	endif /* HAVE_ISPELL */
 	char attrib_quick_kill_scope[LEN];
 	char attrib_quick_select_scope[LEN];
+	char attrib_group_format[LEN];
+	char attrib_thread_format[LEN];
 	char attrib_date_format[LEN];
 	int attrib_trim_article_body;
 	int attrib_auto_cc_bcc;
-	int attrib_show_info;
 	int attrib_quick_kill_header;
 	int attrib_quick_select_header;
 	int attrib_mail_mime_encoding;
 #if defined(HAVE_ALARM) && defined(SIGALRM)
-	/*
-	 * # seconds after which a read from the NNTP will timeout
-	 * NB: This is different from the NNTP server timing us out due to inactivity
-	 */
-	int nntp_read_timeout_secs;
+		/*
+		 * # seconds after which a read from the NNTP will timeout
+		 * NB: This is different from the NNTP server timing us out due to inactivity
+		 */
+		int nntp_read_timeout_secs;
 #endif /* HAVE_ALARM && SIGALRM */
 	int attrib_post_mime_encoding;
 	int attrib_post_process_type;

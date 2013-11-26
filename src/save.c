@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-06
+ *  Updated   : 2013-11-21
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1259,6 +1259,7 @@ decode_save_one(
 	FILE *fp;
 	char buf[2048], buf2[2048];
 	char *savepath;
+	int count;
 	int i;
 
 	/*
@@ -1296,8 +1297,6 @@ decode_save_one(
 			break;
 
 		switch (part->encoding) {
-			int count;
-
 			case ENCODING_QP:
 			case ENCODING_BASE64:
 				count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2);
@@ -1521,6 +1520,7 @@ show_attachment_page(
 
 	signal_context = cAttachment;
 	currmenu = &attmenu;
+	mark_offset = 0;
 
 	if (attmenu.curr < 0)
 		attmenu.curr = 0;
@@ -2237,6 +2237,7 @@ process_part(
 	enum action what)
 {
 	char buf[2048], buf2[2048];
+	int count;
 	int i;
 
 	if (what != PIPE_RAW && part->encoding == ENCODING_BASE64)
@@ -2254,12 +2255,10 @@ process_part(
 
 		if (what != PIPE_RAW) {
 			switch (part->encoding) {
-				int count;
-
 				case ENCODING_QP:
 				case ENCODING_BASE64:
-					count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2);
-					fwrite(buf2, count, 1, outfile);
+					if ((count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2)) > 0)
+						fwrite(buf2, count, 1, outfile);
 					break;
 
 				case ENCODING_UUE:

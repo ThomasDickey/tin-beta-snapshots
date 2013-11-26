@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2012-03-11
+ *  Updated   : 2013-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -120,16 +120,16 @@ append_file(
 {
 	FILE *fp_old, *fp_new;
 
-	if ((fp_new = fopen(new_filename, "r")) == NULL) {
-		perror_message(_(txt_cannot_open), new_filename);
-		return;
-	}
-	if ((fp_old = fopen(old_filename, "a+")) == NULL) {
+	if ((fp_old = fopen(old_filename, "r")) == NULL) {
 		perror_message(_(txt_cannot_open), old_filename);
-		fclose(fp_new);
 		return;
 	}
-	copy_fp(fp_new, fp_old);
+	if ((fp_new = fopen(new_filename, "a")) == NULL) {
+		perror_message(_(txt_cannot_open), new_filename);
+		fclose(fp_old);
+		return;
+	}
+	copy_fp(fp_old, fp_new);
 	fclose(fp_old);
 	fclose(fp_new);
 }
@@ -372,11 +372,15 @@ invoke_editor(
 	int lineno,
 	struct t_group *group) /* return value is always ignored */
 {
-	char buf[PATH_LEN], fnameb[PATH_LEN];
+	char buf[PATH_LEN];
 	char editor_format[PATH_LEN];
 	static char editor[PATH_LEN];
 	static t_bool first = TRUE;
 	t_bool retcode;
+#ifdef BACKUP_FILE_EXT
+	char fnameb[PATH_LEN];
+#endif /* BACKUP_FILE_EXT */
+
 
 	if (first) {
 		my_strncpy(editor, get_val("VISUAL", get_val("EDITOR", DEFAULT_EDITOR)), sizeof(editor) - 1);
@@ -396,9 +400,11 @@ invoke_editor(
 	retcode = invoke_cmd(buf);
 
 #ifdef BACKUP_FILE_EXT
-	strcpy(fnameb, filename);
-	strcat(fnameb, BACKUP_FILE_EXT);
-	unlink(fnameb);
+	if (strlen(filename) + strlen(BACKUP_FILE_EXT) < sizeof(fnameb)) {
+		STRCPY(fnameb, filename);
+		strcat(fnameb, BACKUP_FILE_EXT);
+		unlink(fnameb);
+	}
 #endif /* BACKUP_FILE_EXT */
 	return retcode;
 }
@@ -471,7 +477,7 @@ invoke_ispell(
 	sh_format(buf, sizeof(buf), "%s %s", ispell, nam_body);
 	retcode = invoke_cmd(buf);
 
-	append_file(nam_head, nam_body);
+	append_file(nam_body, nam_head);
 	unlink(nam_body);
 	rename_file(nam_head, nam);
 	return retcode;
@@ -696,21 +702,13 @@ my_mkdir(
 #	ifdef HAVE_CHMOD
 		return chmod(path, mode);
 #	else
-		return 0;
+		return 0; /* chmod via system() like for mkdir? */
 #	endif /* HAVE_CHMOD */
 	} else
 		return -1;
 #else
 		return mkdir(path, mode);
 #endif /* !HAVE_MKDIR */
-}
-
-
-int
-my_chdir(
-	char *path)
-{
-	return chdir(path);
 }
 
 
@@ -1121,28 +1119,25 @@ create_index_lock_file(
 {
 	FILE *fp;
 	char buf[64];
-	struct stat sb;
 	time_t epoch;
 	int err;
 
-	if (stat(the_lock_file, &sb) == 0) {
-		if ((fp = fopen(the_lock_file, "r")) != NULL) {
-			fgets(buf, (int) sizeof(buf), fp);
-			fclose(fp);
-			error_message(2, "\n%s: Already started pid=[%d] on %s", tin_progname, atoi(buf), buf + 8);
-			giveup();
-		}
-	} else {
-		if ((fp = fopen(the_lock_file, "w")) != NULL) {
-			fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
-			(void) time(&epoch);
-			fprintf(fp, "%6d  %s\n", (int) process_id, ctime(&epoch));
-			if ((err = ferror(fp)) || fclose(fp)) {
-				error_message(2, _(txt_filesystem_full), the_lock_file);
-				if (err) {
-					clearerr(fp);
-					fclose(fp);
-				}
+	if ((fp = fopen(the_lock_file, "r")) != NULL) {
+		fgets(buf, (int) sizeof(buf), fp);
+		fclose(fp);
+		error_message(2, "\n%s: Already started pid=[%d] on %s", tin_progname, atoi(buf), buf + 8);
+		free(tin_progname);
+		giveup();
+	}
+	if ((fp = fopen(the_lock_file, "w")) != NULL) {
+		fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+		(void) time(&epoch);
+		fprintf(fp, "%6d  %s\n", (int) process_id, ctime(&epoch));
+		if ((err = ferror(fp)) || fclose(fp)) {
+			error_message(2, _(txt_filesystem_full), the_lock_file);
+			if (err) {
+				clearerr(fp);
+				fclose(fp);
 			}
 		}
 	}
@@ -1240,7 +1235,7 @@ strfquote(
 				case 'C':	/* First Name of author */
 					if (arts[respnum].name != NULL) {
 						STRCPY(tbuf, arts[respnum].name);
-						if (strchr(arts[respnum].name, ' '))
+						if (strchr(tbuf, ' '))
 							*(strchr(tbuf, ' ')) = '\0';
 					} else {
 						STRCPY(tbuf, arts[respnum].from);
@@ -1280,12 +1275,12 @@ strfquote(
 					tbuf[j] = '\0';
 					break;
 
-				case 'M':	/* Articles MessageId */
+				case 'M':	/* Articles Message-ID */
 					STRCPY(tbuf, BlankIfNull(pgart.hdr.messageid));
 					break;
 
 				case 'N':	/* Articles Name of author */
-					strcpy(tbuf, ((arts[respnum].name != NULL) ? arts[respnum].name : arts[respnum].from));
+					STRCPY(tbuf, ((arts[respnum].name != NULL) ? arts[respnum].name : arts[respnum].from));
 					break;
 
 				default:
@@ -1961,20 +1956,42 @@ out:
  */
 int
 get_initials(
-	int respnum,
+	struct t_article *art,
 	char *s,
 	int maxsize) /* return value is always ignored */
 {
 	char tbuf[PATH_LEN];
 	int i, j = 0;
 	t_bool iflag = FALSE;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wtmp, *wbuf;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if (s == NULL || maxsize <= 0)
 		return 0;
 
-	strcpy(tbuf, ((arts[respnum].name != NULL) ? arts[respnum].name : arts[respnum].from));
-
-	for (i = 0; tbuf[i] && j < maxsize - 1; i++) {
+	STRCPY(tbuf, ((art->name != NULL) ? art->name : art->from));
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if ((wtmp = char2wchar_t(tbuf)) != NULL) {
+		wbuf = my_malloc(sizeof(wchar_t) * (maxsize + 1));
+		for (i = 0; wtmp[i] && j < maxsize; i++) {
+			if (iswalpha((wint_t) wtmp[i])) {
+				if (!iflag) {
+					wbuf[j++] = wtmp[i];
+					iflag = TRUE;
+				}
+			} else
+				iflag = FALSE;
+		}
+		wbuf[j] = (wchar_t) '\0';
+		s[0] = '\0';
+		if (wcstombs(tbuf, wbuf, sizeof(tbuf) - 1) != (size_t) -1)
+			strcat(s, tbuf);
+		free(wtmp);
+		free(wbuf);
+	}
+#else
+	for (i = 0; tbuf[i] && j < maxsize; i++) {
 		if (isalpha((int)(unsigned char) tbuf[i])) {
 			if (!iflag) {
 				s[j++] = tbuf[i];
@@ -1984,6 +2001,7 @@ get_initials(
 			iflag = FALSE;
 	}
 	s[j] = '\0';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	return 0;
 }
 
@@ -2070,10 +2088,10 @@ make_post_process_cmd(
 	char currentdir[PATH_LEN];
 
 	get_cwd(currentdir);
-	my_chdir(dir);
+	chdir(dir);
 	sh_format(buf, sizeof(buf), cmd, file);
 	invoke_cmd(buf);
-	my_chdir(currentdir);
+	chdir(currentdir);
 }
 #endif /* !M_UNIX */
 
@@ -2247,8 +2265,8 @@ write_input_history_file(
 
 	if ((his_w = ferror(fp)) || fclose(fp)) {
 		error_message(2, _(txt_filesystem_full), local_input_history_file);
-		/* fix modes for all pre 1.4.1 local_input_history_file files */
 #ifdef HAVE_CHMOD
+		/* fix modes for all pre 1.4.1 local_input_history_file files */
 		chmod(local_input_history_file, (mode_t) (S_IRUSR|S_IWUSR));
 #endif /* HAVE_CHMOD */
 		if (his_w) {
@@ -2420,6 +2438,7 @@ buffer_to_local(
 
 							case E2BIG:
 								tbuf = my_realloc(tbuf, tsize * 2);
+								tmpbuf = (char *) (tbuf + tsize - tmpbytesleft);
 								tmpbytesleft += tsize;
 								tsize <<= 1; /* double size */
 								break;
@@ -2521,46 +2540,48 @@ buffer_to_network(
 	size_t inbytesleft, outbytesleft;
 	t_bool conv_success = TRUE;
 
-	if ((cd = iconv_open(txt_mime_charsets[mmnwcharset], tinrc.mm_local_charset)) != (iconv_t) (-1)) {
-		inbytesleft = strlen(line);
-		inbuf = (char *) line;
-		outbytesleft = 1 + inbytesleft * 4;
-		osize = outbytesleft;
-		obuf = my_malloc(osize + 1);
-		outbuf = (char *) obuf;
+	if (strcasecmp(txt_mime_charsets[mmnwcharset], tinrc.mm_local_charset)) {
+		if ((cd = iconv_open(txt_mime_charsets[mmnwcharset], tinrc.mm_local_charset)) != (iconv_t) (-1)) {
+			inbytesleft = strlen(line);
+			inbuf = (char *) line;
+			outbytesleft = 1 + inbytesleft * 4;
+			osize = outbytesleft;
+			obuf = my_malloc(osize + 1);
+			outbuf = (char *) obuf;
 
-		do {
-			errno = 0;
-			result = iconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
-			if (result == (size_t) (-1)) {
-				switch (errno) {
-					case EILSEQ:
-						/* TODO: only one '?' for each multibyte sequence ? */
-						**&outbuf = '?';
-						outbuf++;
-						inbuf++;
-						inbytesleft--;
-						conv_success = FALSE;
-						break;
+			do {
+				errno = 0;
+				result = iconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+				if (result == (size_t) (-1)) {
+					switch (errno) {
+						case EILSEQ:
+							/* TODO: only one '?' for each multibyte sequence ? */
+							**&outbuf = '?';
+							outbuf++;
+							inbuf++;
+							inbytesleft--;
+							conv_success = FALSE;
+							break;
 
-					case E2BIG:
-						obuf = my_realloc(obuf, osize * 2);
-						outbuf = (char *) (obuf + osize - outbytesleft);
-						outbytesleft += osize;
-						osize <<= 1; /* double size */
-						break;
+						case E2BIG:
+							obuf = my_realloc(obuf, osize * 2);
+							outbuf = (char *) (obuf + osize - outbytesleft);
+							outbytesleft += osize;
+							osize <<= 1; /* double size */
+							break;
 
-					default:	/* EINVAL */
-						inbytesleft = 0;
-						conv_success = FALSE;
+						default:	/* EINVAL */
+							inbytesleft = 0;
+							conv_success = FALSE;
+					}
 				}
-			}
-		} while (inbytesleft > 0);
+			} while (inbytesleft > 0);
 
-		**&outbuf = '\0';
-		strcpy(line, obuf); /* FIXME: here we assume that line is big enough to hold obuf */
-		free(obuf);
-		iconv_close(cd);
+			**&outbuf = '\0';
+			strcpy(line, obuf); /* FIXME: here we assume that line is big enough to hold obuf */
+			free(obuf);
+			iconv_close(cd);
+		}
 	}
 	return conv_success;
 }
@@ -3245,14 +3266,8 @@ gnksa_check_domain(
 			}
 			if (disable_gnksa_domain_check)
 				result = GNKSA_OK;
-			if (GNKSA_OK != result) {
-#if 0 /* valid IDN ccTLDs are checked via gnksa_domain_list[] */
-				if (strlen(aux) >= 8 && !strncasecmp(aux, "xn--", 4)) /* hack for IDN ccTLDs like xn--wgbh1c (Egypt), xn--mgbaam7a8h (Emarat) or xn--mgberp4a5d4ar (AlSaudiah) */
-					result = GNKSA_OK;
-				else
-#endif /* 0 */
-					return result;
-			}
+			if (GNKSA_OK != result)
+				return result;
 			break;
 	}
 
@@ -3479,10 +3494,8 @@ gnksa_do_check_from(
 
 	/* parse address */
 	addr_begin = strrchr(address, '@');
-	if (NULL == addr_begin) {
-		if (GNKSA_OK == code)
-			code = result;
-	} else {
+
+	if (NULL != addr_begin) {
 		/* temporarily terminate string at separator position */
 		*addr_begin++ = '\0';
 
@@ -3721,7 +3734,8 @@ utf8_valid(
 #endif /* CHARSET_CONVERSION || (MULTIBYTE_ABLE && !NO_LOCALE) */
 
 
-char *idna_decode(
+char *
+idna_decode(
 	char *in)
 {
 	char *out = my_strdup(in);
@@ -3749,7 +3763,7 @@ char *idna_decode(
 	if (debug & DEBUG_MISC)
 		wait_message(2, "idn_decodename(%s): %s", r, idn_result_tostring(res));
 #		endif /* DEBUG */
-#	endif /*  HAVE_LIBIDNKIT && HAVE_IDN_DECODENAME */
+#	endif /* HAVE_LIBIDNKIT && HAVE_IDN_DECODENAME */
 
 /* IDNA 2003 */
 #	ifdef HAVE_LIBICUUC
@@ -3772,7 +3786,7 @@ char *idna_decode(
 
 			*s = '\0'; /* cut of domainpart */
 			s = UChar2char(dest); /* convert domainpart */
-			t = malloc(strlen(out) + strlen(s) + 1);
+			t = my_malloc(strlen(out) + strlen(s) + 1);
 			sprintf(t, "%s%s", out, s);
 			free(s);
 			free(out);
@@ -3871,7 +3885,7 @@ tin_version_info(
 	wlines++;
 
 	fprintf(fp, "Characteristics:\n\t"
-/* TODO: complete list and do some useful grouping */
+/* TODO: complete list and do some useful grouping; show only in -vV case? */
 #ifdef DEBUG
 			"+DEBUG "
 #else
@@ -4071,7 +4085,7 @@ void
 draw_mark_selected(
 	int i)
 {
-	MoveCursor(INDEX2LNUM(i), MARK_OFFSET);
+	MoveCursor(INDEX2LNUM(i), mark_offset);
 	StartInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
 	my_fputc(tinrc.art_marked_selected, stdout);
 	EndInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */

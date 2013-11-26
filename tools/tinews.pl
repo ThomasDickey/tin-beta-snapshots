@@ -4,7 +4,7 @@
 # signs the article and posts it.
 #
 #
-# Copyright (c) 2002-2012 Urs Janssen <urs@tin.org>,
+# Copyright (c) 2002-2013 Urs Janssen <urs@tin.org>,
 #                         Marc Brockschmidt <marc@marcbrockschmidt.de>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,13 +37,14 @@
 #       - check for /etc/nntpserver (and /etc/news/server)
 #       - add $PGPOPTS, $PGPPATH and $GNUPGHOME support
 #       - cleanup and remove duplicated code
+#       - option to convert CRLF to LF in input
 #
 
 use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.32";
+my $version = "1.1.35";
 
 my %config;
 
@@ -98,10 +99,21 @@ use Term::ReadLine;
 
 (my $pname = $0) =~ s#^.*/##;
 
-my %cli_headers;
+# read config file (first match counts) from
+# $XDG_CONFIG_HOME/tinewsrc ~/.config/tinewsrc ~/.tinewsrc
+# if present
+my $TINEWSRC = undef;
+my (@try, %seen);
+if ($ENV{'XDG_CONFIG_HOME'}) {
+	push(@try, (glob("$ENV{'XDG_CONFIG_HOME'}/tinewsrc"))[0]);
+}
+push(@try, (glob('~/.config/tinewsrc'))[0], (glob('~/.tinewsrc'))[0]);
 
-# read config file ~/.tinewsrc if present
-if (open(my $TINEWSRC, '<', (glob('~/.tinewsrc'))[0])) {
+foreach (grep { ! $seen{$_}++ } @try) {
+	last if (open($TINEWSRC, '<', $_));
+	$TINEWSRC = undef;
+}
+if (defined($TINEWSRC)) {
 	while (defined($_ = <$TINEWSRC>)) {
 		if (m/^([^#\s=]+)\s*=\s*(\S[^#]+)/io) {
 			chomp($config{$1} = $2);
@@ -162,10 +174,10 @@ if ($config{'canlock_secret'} && !$config{'no_canlock'}) {
 	}
 }
 
-my $term = new Term::ReadLine 'tinews';
+my $term = Term::ReadLine->new('tinews');
 my $attribs = $term->Attribs;
 my $in_header = 1;
-my (@Header, %Header, @Body, $PGPCommand);
+my (%Header, @Body, $PGPCommand);
 
 if (! $config{'no_sign'}) {
 	$config{'PGPSigner'} = $ENV{'SIGNER'} if ($ENV{'SIGNER'});
@@ -437,8 +449,11 @@ sub readarticle {
 				$$HeaderR{$currentheader} = "$1: $2";
 			} elsif (m/^[ \t]/o) {
 				$$HeaderR{$currentheader} .= $_;
+#			} elsif (m/^([^\s:]+):$/) { # skip over empty headers
+#				next;
 			} else {
 				chomp($_);
+				# TODO: quote esc. sequences?
 				die("'$_' is not a correct header-line");
 			}
 		} else {
@@ -544,7 +559,6 @@ sub AuthonNNTP {
 # 	- $PGPVersion: A scalar holding the PGPVersion
 sub getpgpcommand {
 	my ($PGPVersion) = @_;
-	my $PGPCommand;
 	my $found = 0;
 
 	if ($config{'pgp'} !~ /^\//) {
@@ -801,99 +815,125 @@ to the article and send out the mail-copies.
 If a Cancel-Lock secret file is defined it will automatically add a
 Cancel-Lock: (and Cancel-Key: if required) header.
 
+The input should have unix line endings (<LF>, '\n').
+
 =head1 OPTIONS
+X<tinews, commandline options>
 
 =over 4
 
 =item -B<a> C<Approved> | --B<approved> C<Approved>
+X<-a> X<--approved>
 
 Set the article header field Approved: to the given value.
 
 =item -B<c> C<Control> | --B<control> C<Control>
+X<-c> X<--control>
 
 Set the article header field Control: to the given value.
 
 =item -B<d> C<Distribution> | --B<distribution> C<Distribution>
+X<-d> X<--distribution>
 
 Set the article header field Distribution: to the given value.
 
 =item -B<e> C<Expires> | --B<expires> C<Expires>
+X<-e> X<--expires>
 
 Set the article header field Expires: to the given value.
 
 =item -B<f> C<From> | --B<from> C<From>
+X<-f> X<--from>
 
 Set the article header field From: to the given value.
 
 =item -B<n> C<Newsgroups> | --B<newsgroups> C<Newsgroups>
+X<-n> X<--newsgroups>
 
 Set the article header field Newsgroups: to the given value.
 
 =item -B<o> C<Organization> | --B<organization> C<Organization>
+X<-o> X<--organization>
 
 Set the article header field Organization: to the given value.
 
 =item -B<p> C<port> | --B<port> C<port>
+X<-p> X<--port>
 
 use C<port> as NNTP-port
 
 =item -B<r> C<Reply-To> | --B<replyto> C<Reply-To>
+X<-r> X<--replyto>
 
 Set the article header field Reply-To: to the given value.
 
 =item -B<s> F<directory> | --B<savedir> F<directory>
+X<-s> X<--savedir>
 
 Save signed article to directory F<directory> instead of posting.
 
 =item -B<t> C<Subject> | --B<subject> C<Subject>
+X<-t> X<--subject>
 
 Set the article header field Subject: to the given value.
 
 =item -B<w> C<Followup-To> | --B<followupto> C<Followup-To>
+X<-w> X<--followupto>
 
 Set the article header field Followup-To: to the given value.
 
 =item -B<x> C<Path> | --B<path> C<Path>
+X<-x> X<--path>
 
 Set the article header field Path: to the given value.
 
 =item -B<H> | --B<help>
+X<-H> X<--help>
 
 Show help-page.
 
 =item -B<L> | --B<no-canlock>
+X<-L> X<--no-canlock>
 
 Do not add Cancel-Lock: / Cancel-Key: headers.
 
 =item -B<R> | --B<no-control>
+X<-R> X<--no-control>
 
 Restricted mode, disallow control-messages.
 
 =item -B<S> | --B<no-signature>
+X<-s> X<--no-signature>
 
 Do not append F<$HOME/.signature>.
 
 =item -B<X> | --B<no-sign>
+X<-X> X<--no-sign>
 
 Do not sign the article.
 
 =item -B<Y> | --B<force-auth>
+X<-Y> X<--force-auth>
 
 Force authentication on connect even if not required by the server.
 
 =item -B<A> -B<V> -B<W>
+X<-A> X<-V> X<-W>
 
 These options are accepted for compatibility reasons but ignored.
 
 =item -B<h> | --B<headers>
+X<-h> X<--headers>
 
 These options are accepted for compatibility reasons but ignored.
 
 =item -B<O> | --B<no-organization>
+X<-O> X<--no-organization>
 
 These options are accepted for compatibility reasons but ignored.
 
 =item -B<D> | -B<N> | --B<debug>
+X<-D> X<-N> X<--debug>
 
 These options are accepted but do not have any functionality yet.
 
@@ -916,47 +956,56 @@ An error occurred.
 =back
 
 =head1 ENVIRONMENT
+X<tinews, environment variables>
 
 =over 4
 
 =item B<$NNTPSERVER>
+X<$NNTPSERVER> X<NNTPSERVER>
 
 Set to override the NNTP server configured in the source.
 
 =item B<$NNTPPORT>
+X<$NNTPPORT> X<NNTPPORT>
 
 The NNTP TCP-port to post news to. This variable only needs to be set if the
 TCP-port is not 119 (the default). The '-B<p>' command-line option overrides
 B<$NNTPPORT>.
 
 =item B<$PGPPASS>
+X<$PGPPASS> X<PGPPASS>
 
 Set to override the passphrase configured in the source (used for
 B<pgp>(1)-2.6.3).
 
 =item B<$PGPPASSFILE>
+X<$PGPPASSFILE> X<PGPPASSFILE>
 
 Passphrase file used for B<pgp>(1) or B<gpg>(1).
 
 =item B<$SIGNER>
+X<$SIGNER> X<SIGNER>
 
 Set to override the user-id for signing configured in the source. If you
 neither set B<$SIGNER> nor configure it in the source the contents of the
 From:-field will be used.
 
 =item B<$REPLYTO>
+X<$REPLYTO> X<REPLYTO>
 
 Set the article header field Reply-To: to the return address specified by
 the variable if there isn't already a Reply-To: header in the article.
 The '-B<r>' command-line option overrides B<$REPLYTO>.
 
 =item B<$ORGANIZATION>
+X<$ORGANIZATION> X<ORGANIZATION>
 
 Set the article header field Organization: to the contents of the variable
 if there isn't already a Organization: header in the article. The '-B<o>'
 command-line option overrides B<$ORGANIZATION>.
 
 =item B<$DISTRIBUTION>
+X<$DISTRIBUTION> X<DISTRIBUTION>
 
 Set the article header field Distribution: to the contents of the variable
 if there isn't already a Distribution: header in the article. The '-B<d>'
@@ -1005,11 +1054,11 @@ blank lines are ignored. This file should be readable only for the user as
 it contains the user's uncrypted password for reading news.
 F<$HOME/.newsauth> is checked first.
 
-=item F<$HOME/.tinewsrc>
+=item F<$XDG_CONFIG_HOME/tinewsrc> F<$HOME/.config/tinewsrc> F<$HOME/.tinewsrc>
 
 "option=value" configuration pairs. Lines that start with "#" are ignored.
 If the file contains uncrypted passwords (e.g. NNTPPass or PGPPass), it
-should be only readable for the user.
+should be readable for the user only.
 
 =back
 

@@ -3,10 +3,10 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2012-03-04
+ *  Updated   : 2013-11-23
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ char dead_article[PATH_LEN];		/* ~/dead.article file */
 char dead_articles[PATH_LEN];		/* ~/dead.articles file */
 char default_organization[PATH_LEN];	/* Organization: */
 char default_signature[PATH_LEN];
-char domain_name[MAXHOSTNAMELEN];
+char domain_name[MAXHOSTNAMELEN + 1];
 char global_attributes_file[PATH_LEN];
 char global_config_file[PATH_LEN];
 char homedir[PATH_LEN];
@@ -99,7 +99,7 @@ char save_active_file[PATH_LEN];
 char spooldir[PATH_LEN];		/* directory where news is */
 char overviewfmt_file[PATH_LEN];	/* full path to overview.fmt */
 char subscriptions_file[PATH_LEN];	/* full path to subscriptions */
-char tin_progname[PATH_LEN];		/* program name */
+char *tin_progname;		/* program name */
 char txt_help_bug_report[LEN];		/* address to send bug reports to */
 char userid[PATH_LEN];
 #ifdef HAVE_MH_MAIL_HANDLING
@@ -285,7 +285,7 @@ struct t_config tinrc = {
 	SORT_THREADS_BY_SCORE_DESCEND,		/* sort_threads_type */
 #ifdef USE_HEAPSORT
 	0,				/* sort_function default qsort */
-#endif
+#endif /* USE_HEAPSORT */
 	BOGUS_SHOW,		/* strip_bogus */
 	THREAD_BOTH,		/* thread_articles */
 	THREAD_PERC_DEFAULT,	/* thread_perc */
@@ -374,7 +374,6 @@ struct t_config tinrc = {
 	FALSE,		/* prompt_followupto */
 	QUOTE_COMPRESS|QUOTE_EMPTY,	/* quote_style */
 	TRUE,		/* show_description */
-	SHOW_INFO_LINES,		/* show_info */
 	TRUE,		/* show_only_unread_arts */
 	FALSE,		/* show_only_unread_groups */
 	TRUE,		/* show_signatures */
@@ -411,6 +410,9 @@ struct t_config tinrc = {
 	FALSE,		/* use_slrnface */
 #endif /* XFACE_ABLE */
 	TRUE,		/* default_filter_select_global */
+	DEFAULT_SELECT_FORMAT,	/* select_format */
+	DEFAULT_GROUP_FORMAT,	/* group_format */
+	DEFAULT_THREAD_FORMAT,	/* thread_format */
 	DEFAULT_DATE_FORMAT,	/* date_format */
 #ifdef HAVE_UNICODE_NORMALIZATION
 	DEFAULT_NORMALIZE,		/* normalization form */
@@ -444,10 +446,11 @@ struct t_config tinrc = {
 #endif /* HAVE_ISPELL */
 	"",		/* attrib_quick_kill_scope */
 	"",		/* attrib_quick_select_scope */
+	"",		/* attrib_group_format */
+	"",		/* attrib_thread_format */
 	"",		/* attrib_date_format */
 	0,		/* attrib_trim_article_body */
 	0,		/* attrib_auto_cc_bcc */
-	SHOW_INFO_LINES,		/* attrib_show_info */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* attrib_quick_kill_header */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* attrib_quick_select_header */
 	MIME_ENCODING_QP,		/* attrib_mail_mime_encoding */
@@ -635,9 +638,12 @@ init_selfinfo(
 {
 	FILE *fp;
 	char *ptr;
-	const char *cptr;
+	char tmp[PATH_LEN];
 	struct stat sb;
 	struct passwd *myentry;
+#if defined(DOMAIN_NAME) || defined(HAVE_GETHOSTBYNAME)
+	const char *cptr;
+#endif /* DOMAIN_NAME || HAVE_GETHOSTBYNAME */
 
 	domain_name[0] = '\0';
 
@@ -655,14 +661,14 @@ init_selfinfo(
 
 #ifdef DOMAIN_NAME
 	if ((cptr = get_domain_name()) != NULL)
-		strcpy(domain_name, cptr);
+		my_strncpy(domain_name, cptr, MAXHOSTNAMELEN);
 #endif /* DOMAIN_NAME */
 
 #ifdef HAVE_GETHOSTBYNAME
 	if (domain_name[0] == '\0') {
 		cptr = get_fqdn(get_host_name());
 		if (cptr != NULL)
-			strcpy(domain_name, cptr);
+			my_strncpy(domain_name, cptr, MAXHOSTNAMELEN);
 	}
 #endif /* HAVE_GETHOSTBYNAME */
 
@@ -673,10 +679,11 @@ init_selfinfo(
 
 	if ((myentry = getpwuid(getuid())) == NULL) {
 		error_message(2, _(txt_error_passwd_missing));
+		free(tin_progname);
 		giveup();
 	}
 
-	strcpy(userid, myentry->pw_name);
+	my_strncpy(userid, myentry->pw_name, sizeof(userid) - 1);
 
 	if (((ptr = getenv("TIN_HOMEDIR")) != NULL) && strlen(ptr)) {
 		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
@@ -689,10 +696,10 @@ init_selfinfo(
 
 	created_rcdir = FALSE;
 	dangerous_signal_exit = FALSE;
-	disable_gnksa_domain_check = FALSE;
+	disable_gnksa_domain_check = TRUE;
 	disable_sender = FALSE;	/* we set force_no_post=TRUE later on if we don't have a valid FQDN */
 	iso2asc_supported = atoi(get_val("ISO2ASC", DEFAULT_ISO2ASC));
-	if (iso2asc_supported > NUM_ISO_TABLES || iso2asc_supported < 0) /* TODO: issue a warning here? */
+	if (iso2asc_supported >= NUM_ISO_TABLES || iso2asc_supported < 0) /* TODO: issue a warning here? */
 		iso2asc_supported = -1;
 	list_active = FALSE;
 	newsrc_active = FALSE;
@@ -833,8 +840,8 @@ init_selfinfo(
 
 	joinpath(rcdir, sizeof(rcdir), homedir, RCDIR);
 	if (stat(rcdir, &sb) == -1) {
+		my_mkdir(rcdir, (mode_t) (S_IRWXU)); /* TODO: bail out? give error message? no_write = TRUE? */
 		created_rcdir = TRUE;
-		my_mkdir(rcdir, (mode_t) (S_IRWXU));
 	}
 	strcpy(tinrc.mailer_format, MAILER_FORMAT);
 	my_strncpy(mailer, get_val(ENV_VAR_MAILER, DEFAULT_MAILER), sizeof(mailer) - 1);
@@ -882,18 +889,21 @@ init_selfinfo(
 	joinpath(postponed_articles_file, sizeof(postponed_articles_file), rcdir, POSTPONED_FILE);
 	joinpath(save_active_file, sizeof(save_active_file), rcdir, ACTIVE_SAVE_FILE);
 
-	snprintf(lock_file, sizeof(lock_file), INDEX_LOCK, TMPDIR, userid);
+	snprintf(tmp, sizeof(tmp), INDEX_LOCK, userid);
+	joinpath(lock_file, sizeof(lock_file), TMPDIR, tmp);
 
 #ifdef NNTP_ABLE
 	nntp_tcp_port = (unsigned short) atoi(get_val("NNTPPORT", NNTP_TCP_PORT));
 #endif /* NNTP_ABLE */
 
-	if (stat(posted_info_file, &sb) == -1) {
-		if ((fp = fopen(posted_info_file, "w")) != NULL) {
-			fprintf(fp, "%s", _(txt_posted_info_file));
-			fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
-			fclose(fp);
+	if ((fp = fopen(posted_info_file, "a")) != NULL) {
+		if (!fstat(fileno(fp), &sb)) {
+			if (sb.st_size == 0) {
+				fprintf(fp, "%s", _(txt_posted_info_file));
+				fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+			}
 		}
+		fclose(fp);
 	}
 
 	init_postinfo();

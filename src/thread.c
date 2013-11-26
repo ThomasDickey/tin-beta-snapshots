@@ -3,10 +3,10 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2012-03-04
+ *  Updated   : 2013-10-15
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,7 @@
 
 int thread_basenote = 0;				/* Index in base[] of basenote */
 static int thread_respnum = 0;			/* Index in arts[] of basenote ie base[thread_basenote] */
+static struct t_fmt thrd_fmt;
 t_bool show_subject;
 
 /*
@@ -107,9 +108,9 @@ get_art_mark(
  * there are a lot of variables in the format for the output
  *
  * WARNING: some other code expects to find the article mark (ART_MARK_READ,
- * ART_MARK_SELECTED, etc) at MARK_OFFSET from beginning of the line.
+ * ART_MARK_SELECTED, etc) at mark_offset from beginning of the line.
  * So, if you change the format used in this routine, be sure to check that
- * the value of MARK_OFFSET (tin.h) is still correct.
+ * the value of mark_offset is still correct.
  * Yes, this is somewhat kludgy.
  */
 static void
@@ -117,15 +118,15 @@ build_tline(
 	int l,
 	struct t_article *art)
 {
-	char mark;
+	char mark = '\0';
 	int gap, fill, i;
-	int rest_of_line = cCOLS;
-	int len_from, len_subj;
+	size_t len, len_start, len_end;
 	struct t_msgid *ptr;
-	char *buffer;
+	char *buffer, *buf;
+	char *fmt = thrd_fmt.str;
+	char tmp[LEN];
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wtmp, *wtmp2;
-	char tmp[BUFSIZ];
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 #ifdef USE_CURSES
@@ -142,175 +143,183 @@ build_tline(
 	buffer = screen[INDEX2SNUM(l)].col;
 #endif /* USE_CURSES */
 
-	/*
-	 * Start with 2 spaces for ->
-	 * then index number of the message and whitespace (2+4+1 chars)
-	 */
-#if 0 /* useful? see also group.c:build_sline() */
-	if (!tinrc.draw_arrow)
-		sprintf(buffer, "%s ", tin_ltoa(l + 1, 6));
-	else
-#endif /* 0 */
-	sprintf(buffer, "  %s ", tin_ltoa(l + 1, 4));
-	rest_of_line -= 7;
+	buffer[0] = '\0';
 
-	/*
-	 * Add the article flags, tag number, or whatever (3 chars)
-	 */
-	rest_of_line -= 3;
-	if (art->tagged) {
-		strcat(buffer, tin_ltoa(art->tagged, 3));
-		mark = '\0';
-	} else {
-		strcat(buffer, "   ");
-		mark = get_art_mark(art);
-		buffer[MARK_OFFSET] = mark;			/* insert mark */
-	}
+	if (tinrc.draw_arrow)
+			strcat(buffer, "  ");
 
-	strcat(buffer, "  ");					/* 2 more spaces */
-	rest_of_line -= 2;
-
-	/*
-	 * Add the number of lines and/or the score if enabled
-	 * (inside "[,]", 1+4[+1+6]+1+2 chars total)
-	 */
-	if (curr_group->attribute->show_info != SHOW_INFO_NOTHING) { /* add [ */
-		strcat(buffer, "[");
-		rest_of_line--;
-	}
-
-	if (curr_group->attribute->show_info == SHOW_INFO_LINES || curr_group->attribute->show_info == SHOW_INFO_BOTH) { /* add lines */
-		strcat(buffer, ((art->line_count != -1) ? tin_ltoa(art->line_count, 4): "   ?"));
-		rest_of_line -= 4;
-	}
-
-	if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
-		if (tinrc.show_info == SHOW_INFO_BOTH) { /* insert a separator if show lines and score */
-			strcat(buffer, ",");
-			rest_of_line--;
+	for (; *fmt; fmt++) {
+		if (*fmt != '%') {
+			strncat(buffer, fmt, 1);
+			continue;
 		}
-		strcat(buffer, tin_ltoa(art->score, 6));
-		rest_of_line -= 6;
-	}
+		switch (*++fmt) {
+			case '\0':
+				break;
 
-	if (curr_group->attribute->show_info != SHOW_INFO_NOTHING) { /* add closing ] and two spaces */
-		strcat(buffer, "]  ");
-		rest_of_line -= 3;
-	}
+			case '%':
+				strncat(buffer, fmt, 1);
+				break;
 
-	/*
-	 * There are two formats for the rest of the line:
-	 * 1) subject + optional author info
-	 * 2) mandatory author info (eg, if subject threading)
-	 *
-	 * Add the subject and author information if required
-	 */
-	if (show_subject) {
-		if (curr_group->attribute->show_author == SHOW_FROM_NONE)
-				len_from = 0;
-		else {
-			len_from = rest_of_line;
-
-			if (curr_group->attribute->show_author == SHOW_FROM_BOTH)
-				len_from /= 2; /* if SHOW_FROM_BOTH use 50% for author info */
-			else
-				len_from /= 3; /* otherwise use 33% for author info */
-
-			if (len_from < 0) /* security check - small screen? */
-				len_from = 0;
-		}
-		rest_of_line -= len_from;
-		len_subj = rest_of_line - (len_from ? 2 : 0);
-
-		/*
-		 * Mutt-like thread tree. by sjpark@sparcs.kaist.ac.kr
-		 * Insert tree-structure strings "`->", "+->", ...
-		 */
-
-		make_prefix(art->refptr, buffer + strlen(buffer), len_subj);
-
-		/*
-		 * Copy in the subject up to where the author (if any) starts
-		 */
-		gap = cCOLS - strwidth(buffer) - len_from; /* gap = gap (no. of chars) between tree and author/border of window */
-
-		if (len_from)	/* Leave gap before author */
-			gap -= 2;
-
-		/*
-		 * Mutt-like thread tree. by sjpark@sparcs.kaist.ac.kr
-		 * Hide subject if same as parent's.
-		 */
-		if (gap > 0) {
-			size_t len = strlen(buffer);
-
-			for (ptr = art->refptr->parent; ptr && IS_EXPIRED(ptr); ptr = ptr->parent)
-				;
-
-			if (!(ptr && arts[ptr->article].subject == art->subject)) {
+			case 'D':	/* date */
+				buf = my_malloc(LEN);
+				if (my_strftime(buf, LEN - 1, thrd_fmt.date_str, localtime(&art->date))) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				if ((wtmp = char2wchar_t(art->subject)) != NULL) {
-					wtmp2 = wcspart(wtmp, gap, TRUE);
-					if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
-						strncat(buffer, tmp, cCOLS * MB_CUR_MAX - len - 1);
+					if ((wtmp = char2wchar_t(buf)) != NULL) {
+						wtmp2 = wcspart(wtmp, thrd_fmt.len_date_max, TRUE);
+						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+							strcat(buffer, tmp);
 
-					free(wtmp);
-					free(wtmp2);
+						free(wtmp);
+						free(wtmp2);
+					}
+#else
+					strncat(buffer, buf, thrd_fmt.len_date_max);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				}
-			}
-#else
-				strncat(buffer, art->subject, gap);
-			}
-			buffer[len + gap] = '\0';	/* Just in case */
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		}
+				free(buf);
+				break;
 
-		/*
-		 * If we need to show the author, pad out to the start of the author field,
-		 */
-		if (len_from) {
-			fill = cCOLS - len_from - strwidth(buffer);
-			gap = strlen(buffer);
-			for (i = 0; i < fill; i++)
-				buffer[gap + i] = ' ';
-			buffer[gap + fill] = '\0';
-
-			/*
-			 * Now add the author info at the end. This will be 0 terminated
-			 */
+			case 'F':	/* from */
+				if (curr_group->attribute->show_author != SHOW_FROM_NONE) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			get_author(TRUE, art, tmp, sizeof(tmp) - 1);
+					get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
-			if ((wtmp = char2wchar_t(tmp)) != NULL) {
-				wtmp2 = wcspart(wtmp, len_from, TRUE);
-				if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
-					strncat(buffer, tmp, cCOLS * MB_CUR_MAX - strlen(buffer) - 1);
+					if ((wtmp = char2wchar_t(tmp)) != NULL) {
+						wtmp2 = wcspart(wtmp, thrd_fmt.len_from, TRUE);
+						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+							strcat(buffer, tmp);
 
-				free(wtmp);
-				free(wtmp2);
-			}
+						free(wtmp);
+						free(wtmp2);
+					}
 #else
-			get_author(TRUE, art, buffer + strlen(buffer), len_from);
+					len_start = strwidth(buffer);
+					get_author(TRUE, art, buffer + strlen(buffer), thrd_fmt.len_from);
+					fill = thrd_fmt.len_from - (strwidth(buffer) - len_start);
+					gap = strlen(buffer);
+					for (i = 0; i < fill; i++)
+						buffer[gap + i] = ' ';
+					buffer[gap + fill] = '\0';
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		}
+				}
+				break;
 
-	} else { /* Add the author info. This is always shown if subject is not */
+			case 'I':	/* initials */
+				len = MIN(thrd_fmt.len_initials, sizeof(tmp) - 1);
+				get_initials(art, tmp, len);
+				strcat(buffer, tmp);
+				if ((i = len - strwidth(tmp)) > 0) {
+					buf = buffer + strlen(buffer);
+					for (;i > 0; --i)
+						*buf++ = ' ';
+					*buf = '\0';
+				}
+				break;
+
+			case 'L':	/* lines */
+				if (art->line_count != -1)
+					strcat(buffer, tin_ltoa(art->line_count, thrd_fmt.len_linecnt));
+				else {
+					buf = buffer + strlen(buffer);
+					for (i = thrd_fmt.len_linecnt; i > 1; --i)
+						*buf++ = ' ';
+					*buf++ = '?';
+					*buf = '\0';
+				}
+				break;
+
+			case 'm':	/* article flags, tag number, or whatever */
+				if (!thrd_fmt.mark_offset)
+					thrd_fmt.mark_offset = mark_offset = strwidth(buffer) + 2;
+				if (art->tagged) {
+					strcat(buffer, tin_ltoa(art->tagged, 3));
+					mark = '\0';
+				} else {
+					strcat(buffer, "   ");
+					mark = get_art_mark(art);
+					buffer[strlen(buffer) - 1] = mark;		/* insert mark */
+				}
+				break;
+
+			case 'M':	/* message-id */
+				len = MIN(thrd_fmt.len_msgid, sizeof(tmp) - 1);
+				strncpy(tmp, art->refptr ? art->refptr->txt : "", len);
+				tmp[len] = '\0';
+				strcat(buffer, tmp);
+				if ((i = len - strwidth(tmp)) > 0) {
+					buf = buffer + strlen(buffer);
+					for (;i > 0; --i)
+						*buf++ = ' ';
+					*buf = '\0';
+				}
+				break;
+
+			case 'n':
+				strcat(buffer, tin_ltoa(l + 1, thrd_fmt.len_linenumber));
+				break;
+
+			case 'S':	/* score */
+				strcat(buffer, tin_ltoa(art->score, thrd_fmt.len_score));
+				break;
+
+			case 'T':	/* thread/subject */
+				if (show_subject) {
+					len = curr_group->attribute->show_author != SHOW_FROM_NONE ? thrd_fmt.len_subj : thrd_fmt.len_subj + thrd_fmt.len_from;
+					/*
+					 * Mutt-like thread tree. by sjpark@sparcs.kaist.ac.kr
+					 * Insert tree-structure strings "`->", "+->", ...
+					 */
+					len_start = strwidth(buffer);
+
+					make_prefix(art->refptr, buffer + strlen(buffer), len);
+
+					len_end = strwidth(buffer);
+
+					/*
+					 * Copy in the subject up to where the author (if any) starts
+					 */
+					gap = len - (len_end - len_start);
+
+					/*
+					 * Mutt-like thread tree. by sjpark@sparcs.kaist.ac.kr
+					 * Hide subject if same as parent's.
+					 */
+					if (gap > 0) {
+						for (ptr = art->refptr->parent; ptr && IS_EXPIRED(ptr); ptr = ptr->parent)
+							;
+
+						if (!(ptr && arts[ptr->article].subject == art->subject)) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		get_author(TRUE, art, tmp, sizeof(tmp) - 1);
+							if ((wtmp = char2wchar_t(art->subject)) != NULL) {
+								wtmp2 = wcspart(wtmp, gap, TRUE);
+								if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+									strcat(buffer, tmp);
 
-		if ((wtmp = char2wchar_t(tmp)) != NULL) {
-			wtmp2 = wcspart(wtmp, cCOLS - strlen(buffer), TRUE);
-			if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
-				strncat(buffer, tmp, cCOLS * MB_CUR_MAX - strlen(buffer) - 1);
-
-			free(wtmp);
-			free(wtmp2);
-		}
+								free(wtmp);
+								free(wtmp2);
+							}
+						}
 #else
-		get_author(TRUE, art, buffer + strlen(buffer), cCOLS - strlen(buffer));
+							strncat(buffer, art->subject, gap);
+						}
+						buffer[len_end + gap] = '\0';	/* Just in case */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+					}
+
+					/* pad out */
+					fill = len - (strwidth(buffer) - len_start);
+					gap = strlen(buffer);
+					for (i = 0; i < fill; i++)
+						buffer[gap + i] = ' ';
+					buffer[gap + fill] = '\0';
+				}
+				break;
+
+			default:
+				break;
+		}
 	}
-
 	/* protect display from non-displayable characters (e.g., form-feed) */
 	convert_to_printable(buffer, FALSE);
 
@@ -732,7 +741,7 @@ thread_page(
 					t_bool tagged;
 
 					if ((tagged = tag_article(n)))
-						mark_screen(thdmenu.curr, MARK_OFFSET - 2, tin_ltoa((&arts[n])->tagged, 3));
+						mark_screen(thdmenu.curr, mark_offset - 2, tin_ltoa((&arts[n])->tagged, 3));
 					else
 						update_thread_page();						/* Must update whole page */
 
@@ -772,7 +781,7 @@ thread_page(
 				arts[n].selected = (!(func == THREAD_TOGGLE_ARTICLE_SELECTION && arts[n].selected));	/* TODO: optimise? */
 /*				update_thread_page(); */
 				mark[0] = get_art_mark(&arts[n]);
-				mark_screen(thdmenu.curr, MARK_OFFSET, mark);
+				mark_screen(thdmenu.curr, mark_offset, mark);
 				if (thdmenu.curr + 1 < thdmenu.max)
 					move_down();
 				else
@@ -839,6 +848,9 @@ show_thread_page(
 	 */
 	show_subject = ((arts[thread_respnum].archive != NULL) || (curr_group->attribute->thread_articles == THREAD_REFS) || (curr_group->attribute->thread_articles == THREAD_BOTH));
 
+	parse_format_string(curr_group->attribute->thread_format, &thrd_fmt);
+	mark_offset = 0;
+
 	if (show_subject)
 		title = fmt_string(_(txt_stp_list_thread), grpmenu.curr + 1, grpmenu.max);
 	else
@@ -869,11 +881,11 @@ update_thread_page(
 
 	for (i = thdmenu.first; i < thdmenu.first + NOTESLINES && i < thdmenu.max; ++i) {
 		if ((&arts[the_index])->tagged)
-			mark_screen(i, MARK_OFFSET - 2, tin_ltoa((&arts[the_index])->tagged, 3));
+			mark_screen(i, mark_offset - 2, tin_ltoa((&arts[the_index])->tagged, 3));
 		else {
 			mark[0] = get_art_mark(&arts[the_index]);
-			mark_screen(i, MARK_OFFSET - 2, "  ");	/* clear space used by tag numbering */
-			mark_screen(i, MARK_OFFSET, mark);
+			mark_screen(i, mark_offset - 2, "  ");	/* clear space used by tag numbering */
+			mark_screen(i, mark_offset, mark);
 			if (mark[0] == tinrc.art_marked_selected)
 				draw_mark_selected(i);
 		}
@@ -971,7 +983,8 @@ which_thread(
 	}
 
 #ifdef DEBUG
-	error_message(2, _(txt_cannot_find_base_art), n);
+	if (debug & (DEBUG_FILTER | DEBUG_REFS))
+		error_message(2, _(txt_cannot_find_base_art), n);
 #endif /* DEBUG */
 	return -1;
 }
@@ -1571,7 +1584,7 @@ thread_mark_postprocess(
 		case (FEED_MARK_READ):
 			if (feed_type == FEED_ARTICLE) {
 				mark[0] = get_art_mark(&arts[respnum]);
-				mark_screen(thdmenu.curr, MARK_OFFSET, mark);
+				mark_screen(thdmenu.curr, mark_offset, mark);
 			} else
 				show_thread_page();
 
@@ -1584,7 +1597,7 @@ thread_mark_postprocess(
 		case (FEED_MARK_UNREAD):
 			if (feed_type == FEED_ARTICLE) {
 				mark[0] = get_art_mark(&arts[respnum]);
-				mark_screen(thdmenu.curr, MARK_OFFSET, mark);
+				mark_screen(thdmenu.curr, mark_offset, mark);
 				draw_thread_arrow();
 			} else
 				show_thread_page();

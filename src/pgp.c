@@ -3,10 +3,10 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2011-03-25
+ *  Updated   : 2013-11-12
  *  Notes     : PGP support
  *
- * Copyright (c) 1995-2012 Steven J. Madsen <steve@erinet.com>
+ * Copyright (c) 1995-2013 Steven J. Madsen <steve@erinet.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -109,15 +109,15 @@ PGPNAME, pgpopts, pt, mailto, mailfrom, pt
 #	define PGP_SIG_TAG "-----BEGIN PGP SIGNED MESSAGE-----\n"
 #	define PGP_KEY_TAG "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
 
-#	define HEADERS	"%stin-%ld.h"
+#	define HEADERS	"tin-%ld.h"
 #	ifdef HAVE_LONG_FILE_NAMES
-#		define PLAINTEXT	"%stin-%ld.pt"
-#		define CIPHERTEXT	"%stin-%ld.pt.asc"
-#		define KEYFILE		"%stin-%ld.k.asc"
+#		define PLAINTEXT	"tin-%ld.pt"
+#		define CIPHERTEXT	"tin-%ld.pt.asc"
+#		define KEYFILE		"tin-%ld.k.asc"
 #	else
-#		define PLAINTEXT	"%stn-%ld.p"
-#		define CIPHERTEXT	"%stn-%ld.p.asc"
-#		define KEYFILE		"%stn-%ld.k.asc"
+#		define PLAINTEXT	"tn-%ld.p"
+#		define CIPHERTEXT	"tn-%ld.p.asc"
+#		define KEYFILE		"tn-%ld.k.asc"
 #	endif /* HAVE_LONG_FILE_NAMES */
 
 
@@ -195,11 +195,15 @@ split_file(
 {
 	FILE *art, *header, *plaintext;
 	char buf[LEN];
+	char tmp[PATH_LEN];
 	mode_t mask;
 
-	snprintf(hdr, sizeof(hdr), HEADERS, TMPDIR, (long) process_id);
-	snprintf(pt, sizeof(pt), PLAINTEXT, TMPDIR, (long) process_id);
-	snprintf(ct, sizeof(ct), CIPHERTEXT, TMPDIR, (long) process_id);
+	snprintf(tmp, sizeof(tmp), HEADERS, (long) process_id);
+	joinpath(hdr, sizeof(hdr), TMPDIR, tmp);
+	snprintf(tmp, sizeof(tmp), PLAINTEXT, (long) process_id);
+	joinpath(pt, sizeof(pt), TMPDIR, tmp);
+	snprintf(tmp, sizeof(tmp), CIPHERTEXT, (long) process_id);
+	joinpath(ct, sizeof(ct), TMPDIR, tmp);
 
 	if ((art = fopen(file, "r")) == NULL)
 		return;
@@ -284,14 +288,16 @@ pgp_append_public_key(
 	char *file)
 {
 	FILE *fp, *key;
-	char keyfile[PATH_LEN], cmd[LEN], buf[LEN];
+	char cmd[LEN], buf[LEN];
+	char keyfile[PATH_LEN], tmp[PATH_LEN];
 
 	if ((CURR_GROUP.attribute->from) != NULL && strlen(CURR_GROUP.attribute->from))
 		strip_name(CURR_GROUP.attribute->from, buf);
 	else
 		snprintf(buf, sizeof(buf), "%s@%s", userid, BlankIfNull(get_host_name()));
 
-	snprintf(keyfile, sizeof(keyfile), KEYFILE, TMPDIR, (long) process_id);
+	snprintf(tmp, sizeof(tmp), KEYFILE, (long) process_id);
+	joinpath(keyfile, sizeof(keyfile), TMPDIR, tmp);
 
 /*
  * TODO: I'm guessing the pgp append key command creates 'keyfile' and that
@@ -444,7 +450,11 @@ pgp_check_article(
 		info_message(_(txt_cannot_open), artfile);
 		return FALSE;
 	}
-	fseek(artinfo->raw, artinfo->hdr.ext->offset, SEEK_SET);		/* -> start of body */
+	/* -> start of body */
+	if (fseek(artinfo->raw, artinfo->hdr.ext->offset, SEEK_SET) != 0) {
+		fclose(art);
+		return FALSE;
+	}
 
 	fgets(buf, LEN, artinfo->raw);		/* Copy the body whilst looking for SIG/KEY tags */
 	while (!feof(artinfo->raw)) {

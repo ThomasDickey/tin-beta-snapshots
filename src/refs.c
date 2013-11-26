@@ -3,12 +3,12 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2010-01-10
- *  Notes     : Cacheing of message ids / References based threading
+ *  Updated   : 2013-11-14
+ *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
  *
- * Copyright (c) 1996-2012 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1996-2013 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -222,6 +222,7 @@ add_msgid(
 
 	if (!msgid) {
 		error_message(2, "add_msgid: NULL msgid\n");
+		free_all_arrays();
 		giveup();
 	}
 
@@ -978,7 +979,7 @@ collate_subjects(
  *    maintained.
  * 3) Add rest of References header to the cache. This information is less
  *    reliable than the info added in 2) and is only used to fill in any
- *    gaps in the reference tree - no information is superceded.
+ *    gaps in the reference tree - no information is superseded.
  * 4) free() up the msgid and refs headers once cached
  */
 void

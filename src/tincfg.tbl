@@ -2,10 +2,10 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2012-02-20
+;   Updated   : 2013-09-01
 ;   Notes     : #defines and structs for config.c
 ;
-; Copyright (c) 1996-2012 Thomas E. Dickey <dickey@invisible-island.net>
+; Copyright (c) 1996-2013 Thomas E. Dickey <dickey@invisible-island.net>
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without
@@ -67,7 +67,6 @@
 	art_marked_read_selected	OPT_CHAR
 	groupname_max_length		OPT_NUM
 	abbreviate_groupname		OPT_ON_OFF
-	show_info			txt_show_info_type
 	thread_score			txt_thread_score_type
 	scroll_lines			OPT_NUM
 	show_signatures			OPT_ON_OFF
@@ -90,28 +89,27 @@
 #endif
 	wrap_column			OPT_NUM
 	trim_article_body		txt_trim_article_body_options
-	attrib_show_author			txt_show_from
-	attrib_thread_articles			txt_threading
-	attrib_thread_perc			OPT_NUM
-	attrib_sort_article_type		txt_sort_a_type
-	attrib_sort_threads_type		txt_sort_t_type
+	attrib_show_author		txt_show_from
+	attrib_thread_articles		txt_threading
+	attrib_thread_perc		OPT_NUM
+	attrib_sort_article_type	txt_sort_a_type
+	attrib_sort_threads_type	txt_sort_t_type
 	attrib_pos_first_unread		OPT_ON_OFF
-	attrib_show_only_unread_arts		OPT_ON_OFF
+	attrib_show_only_unread_arts	OPT_ON_OFF
 	attrib_auto_list_thread		OPT_ON_OFF
 	attrib_auto_select		OPT_ON_OFF
-	attrib_wrap_on_next_unread		OPT_ON_OFF
-	attrib_show_info			txt_show_info_type
-	attrib_show_signatures			OPT_ON_OFF
-	attrib_news_headers_to_display		OPT_STRING
+	attrib_wrap_on_next_unread	OPT_ON_OFF
+	attrib_show_signatures		OPT_ON_OFF
+	attrib_news_headers_to_display	OPT_STRING
 	attrib_news_headers_to_not_display	OPT_STRING
-	attrib_alternative_handling		OPT_ON_OFF
-	attrib_verbatim_handling		OPT_ON_OFF
-	attrib_tex2iso_conv			OPT_ON_OFF
+	attrib_alternative_handling	OPT_ON_OFF
+	attrib_verbatim_handling	OPT_ON_OFF
+	attrib_tex2iso_conv		OPT_ON_OFF
 	attrib_ask_for_metamail		OPT_ON_OFF
-	attrib_group_catchup_on_exit		OPT_ON_OFF
-	attrib_thread_catchup_on_exit		OPT_ON_OFF
+	attrib_group_catchup_on_exit	OPT_ON_OFF
+	attrib_thread_catchup_on_exit	OPT_ON_OFF
 	attrib_mark_ignore_tags		OPT_ON_OFF
-	attrib_trim_article_body		txt_trim_article_body_options
+	attrib_trim_article_body	txt_trim_article_body_options
 
 ; getart_limit options
 	getart_limit_options		OPT_TITLE
@@ -195,25 +193,25 @@
 	translit			OPT_ON_OFF
 #endif
 	attrib_from			OPT_STRING
-	attrib_organization			OPT_STRING
-	attrib_prompt_followupto		OPT_ON_OFF
+	attrib_organization		OPT_STRING
+	attrib_prompt_followupto	OPT_ON_OFF
 	attrib_followup_to		OPT_STRING
-	attrib_sigfile				OPT_STRING
-	attrib_sigdashes			OPT_ON_OFF
+	attrib_sigfile			OPT_STRING
+	attrib_sigdashes		OPT_ON_OFF
 	attrib_signature_repost		OPT_ON_OFF
-	attrib_quote_chars			OPT_STRING
-	attrib_news_quote_format		OPT_STRING
-	attrib_advertising			OPT_ON_OFF
+	attrib_quote_chars		OPT_STRING
+	attrib_news_quote_format	OPT_STRING
+	attrib_advertising		OPT_ON_OFF
 #ifndef CHARSET_CONVERSION
 	mm_charset			OPT_STRING
 #else
 	mm_network_charset		txt_mime_charsets
-	attrib_mm_network_charset		txt_mime_charsets
-	attrib_undeclared_charset		OPT_STRING
+	attrib_mm_network_charset	txt_mime_charsets
+	attrib_undeclared_charset	OPT_STRING
 #endif
 	attrib_post_mime_encoding		txt_mime_encodings
 	attrib_post_8bit_header		OPT_ON_OFF
-	attrib_mail_mime_encoding		txt_mime_encodings
+	attrib_mail_mime_encoding	txt_mime_encodings
 	attrib_mail_8bit_header		OPT_ON_OFF
 	attrib_mime_forward		OPT_ON_OFF
 	attrib_mailing_list		OPT_STRING
@@ -243,20 +241,20 @@
 	post_process_type		txt_post_process_types
 	post_process_view		OPT_ON_OFF
 	process_only_unread		OPT_ON_OFF
-	attrib_maildir				OPT_STRING
-	attrib_batch_save			OPT_ON_OFF
-	attrib_savedir				OPT_STRING
-	attrib_savefile				OPT_STRING
-	attrib_auto_save			OPT_ON_OFF
-	attrib_delete_tmp_files			OPT_ON_OFF
-	attrib_mark_saved_read			OPT_ON_OFF
-	attrib_post_process_type		txt_post_process_types
-	attrib_post_process_view		OPT_ON_OFF
-	attrib_process_only_unread		OPT_ON_OFF
-	attrib_mime_types_to_save		OPT_STRING
+	attrib_maildir			OPT_STRING
+	attrib_batch_save		OPT_ON_OFF
+	attrib_savedir			OPT_STRING
+	attrib_savefile			OPT_STRING
+	attrib_auto_save		OPT_ON_OFF
+	attrib_delete_tmp_files		OPT_ON_OFF
+	attrib_mark_saved_read		OPT_ON_OFF
+	attrib_post_process_type	txt_post_process_types
+	attrib_post_process_view	OPT_ON_OFF
+	attrib_process_only_unread	OPT_ON_OFF
+	attrib_mime_types_to_save	OPT_STRING
 #ifndef DISABLE_PRINTING
 	print_header			OPT_ON_OFF
-	attrib_print_header			OPT_ON_OFF
+	attrib_print_header		OPT_ON_OFF
 	printer				OPT_STRING
 #endif
 
@@ -289,32 +287,31 @@
 	reread_active_file_secs		OPT_NUM
 	auto_reconnect			OPT_ON_OFF
 #if defined(HAVE_ALARM) && defined(SIGALRM)
-	nntp_read_timeout_secs	OPT_NUM
+	nntp_read_timeout_secs		OPT_NUM
 #endif
 	cache_overview_files		OPT_ON_OFF
 #ifdef XFACE_ABLE
 	use_slrnface			OPT_ON_OFF
 #endif
 	url_handler			OPT_STRING
+	select_format			OPT_STRING
+	group_format			OPT_STRING
+	thread_format			OPT_STRING
 	date_format			OPT_STRING
 #ifdef HAVE_UNICODE_NORMALIZATION
-#	ifdef HAVE_LIBICUUC
-		normalization_form		txt_normalization_forms
-#	else
-#		ifdef HAVE_LIBIDN
-			normalization_form		txt_normalization_forms
-#		endif
-#	endif
+	normalization_form		txt_normalization_forms
 #endif
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 	render_bidi			OPT_ON_OFF
 #endif
-	attrib_start_editor_offset		OPT_ON_OFF
-	attrib_editor_format			OPT_STRING
+	attrib_start_editor_offset	OPT_ON_OFF
+	attrib_editor_format		OPT_STRING
 #ifdef HAVE_ISPELL
 	attrib_ispell			OPT_STRING
 #endif
 #ifdef USE_HEAPSORT
 	sort_function			txt_sort_functions
 #endif
-	attrib_date_format			OPT_STRING
+	attrib_group_format		OPT_STRING
+	attrib_thread_format		OPT_STRING
+	attrib_date_format		OPT_STRING

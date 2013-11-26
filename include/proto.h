@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2012-03-04
+ *  Updated   : 2013-11-17
  *  Notes     :
  *
- * Copyright (c) 1997-2012 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2013 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -347,9 +347,8 @@ extern const char *get_val(const char *env, const char *def);
 extern const char *gnksa_strerror(int errcode);
 extern int gnksa_check_from(char *from);
 extern int gnksa_split_from(const char *from, char *address, char *realname, int *addrtype);
-extern int get_initials(int respnum, char *s, int maxsize);
+extern int get_initials(struct t_article *art, char *s, int maxsize);
 extern int gnksa_do_check_from(const char *from, char *address, char *realname);
-extern int my_chdir(char *path);
 extern int my_mkdir(char *path, mode_t mode);
 extern int parse_from(const char *from, char *address, char *realname);
 extern int strfmailer(const char *mail_prog, char *subject, char *to, const char *filename, char *dest, size_t maxsize, const char *format);
@@ -648,6 +647,7 @@ extern int sh_format(char *dst, size_t len, const char *fmt, ...);
 extern int strwidth(const char *str);
 extern size_t mystrcat(char **t, const char *s);
 extern void my_strncpy(char *p, const char *q, size_t n);
+extern void parse_format_string(const char *fmtstr, struct t_fmt *fmt);
 extern void str_lwr(char *str);
 #if !defined(HAVE_STRCASESTR) || defined(DECL_STRCASESTR)
 	extern char *strcasestr(const char *haystack, const char *needle);
@@ -725,7 +725,7 @@ extern void untag_article(long art);
 #endif /* !HAVE_TMPFILE */
 
 /* my_tmpfile.c */
-extern int my_tmpfile(char *filename, size_t name_size, t_bool need_name, const char *base_dir);
+extern int my_tmpfile(char *filename, size_t name_size, const char *base_dir);
 
 /* thread.c */
 extern int find_response(int i, int n);

@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2011-04-17
+# Updated: 2013-01-09
 #
 
 PROJECT	= tin
 LVER	= 2
 PVER	= 1
-SVER	= 1
+SVER	= 5
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20120324
+DVER	= 20131126
 EXE	= tin
 
 # directory structure
@@ -180,6 +180,7 @@ TOP	= \
 	$(TOPDIR)/configure \
 	$(TOPDIR)/configure.in \
 	$(TOPDIR)/install-sh \
+	$(TOPDIR)/po4a.conf \
 	$(TOPDIR)/tin.spec
 
 PCRE	= \
@@ -326,7 +327,9 @@ POFILES = \
 	$(PODIR)/sv.gmo \
 	$(PODIR)/sv.po \
 	$(PODIR)/tr.gmo \
-	$(PODIR)/tr.po
+	$(PODIR)/tr.po \
+	$(PODIR)/zh_TW.po \
+	$(PODIR)/zh_TW.gmo
 
 L10NFILES = \
 	$(L10NDIR)/de/tin.1 \
@@ -336,12 +339,11 @@ L10NFILES = \
 	$(L10NDIR)/en_GB/tin.1 \
 	$(L10NDIR)/en_GB/tin.5 \
 	$(L10NDIR)/en_GB.po \
-	$(L10NDIR)/po4a.conf \
 	$(L10NDIR)/tin-man.pot
 
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES) $(L10NFILES)
 
-ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(INTLDIR) $(PODIR) $(L10NDIR) $(L10NDIR)/de
+ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(INTLDIR) $(PODIR) $(L10NDIR) $(L10NDIR)/de $(L10NDIR)/en_GB
 
 # standard commands
 CD	= cd
@@ -357,12 +359,12 @@ SHELL	= /bin/sh
 TAR	= tar
 GZIP	= gzip
 BZIP2	= bzip2
-LZMA	= lzma
+XZ	= xz
 WC	= wc
 SED	= sed
 TR	= tr
 TEST	= test
-
+PO4A	= po4a
 
 all:
 	@$(ECHO) "Top level Makefile for the $(PROJECT) v$(VER) Usenet newsreader."
@@ -468,17 +470,17 @@ bzip2:
 	@$(CHMOD) 644 $(PROJECT)-$(VER).tar.bz2
 	@$(LS) -l $(PROJECT)-$(VER).tar.bz2
 
-lzma:
-	@$(ECHO) "Generating lzma compressd tar file..."
-	@-$(RM) -f $(PROJECT)-$(VER).tar.lzma
+xz:
+	@$(ECHO) "Generating xz compressd tar file..."
+	@-$(RM) -f $(PROJECT)-$(VER).tar.xz
 	@$(TAR) cvf $(PROJECT)-$(VER).tar -C ../ \
 	`$(ECHO) $(ALL_FILES) \
 	| $(TR) -s '[[:space:]]' "[\012*]" \
 	| $(SED) 's,^\./,$(PROJECT)-$(VER)/,' \
 	| $(TR) "[\012]" " "`
-	@$(LZMA) -9 $(PROJECT)-$(VER).tar
-	@$(CHMOD) 644 $(PROJECT)-$(VER).tar.lzma
-	@$(LS) -l $(PROJECT)-$(VER).tar.lzma
+	@$(XZ) -z -F xz -9e $(PROJECT)-$(VER).tar
+	@$(CHMOD) 644 $(PROJECT)-$(VER).tar.xz
+	@$(LS) -l $(PROJECT)-$(VER).tar.xz
 
 #
 # I know it's ugly, but it works
@@ -505,7 +507,7 @@ dist:
 	@$(MAKE) chmod
 	@$(MAKE) tar
 	@$(MAKE) bzip2
-	@$(MAKE) lzma
+	@$(MAKE) xz
 
 version:
 	@$(ECHO) "$(PROJECT)-$(VER)"
@@ -521,6 +523,7 @@ distclean:
 	$(TOPDIR)/config.log \
 	$(TOPDIR)/config.status \
 	$(TOPDIR)/td-conf.out \
+	$(TOPDIR)/CPPCHECK \
 	$(INCDIR)/autoconf.h \
 	$(SRCDIR)/Makefile \
 	$(PCREDIR)/Makefile \
@@ -528,7 +531,8 @@ distclean:
 	$(INTLDIR)/po2tbl.sed \
 	$(PROJECT)-$(VER).tar.gz \
 	$(PROJECT)-$(VER).tar.bz2 \
-	$(PROJECT)-$(VER).tar.lzma
+	$(PROJECT)-$(VER).tar.xz \
+	$(PODIR)/messages.mo
 
 configure: configure.in aclocal.m4
 	autoconf
@@ -537,4 +541,10 @@ config.status: configure
 	$(TOPDIR)/config.status --recheck
 
 po4a:
-	@$(CD) $(L10NDIR) && po4a --no-backups --rm-backups po4a.conf
+	@$(PO4A) po4a.conf
+
+cppcheck: FORCE
+	@-if $(TEST) ! -r $(SRCDIR)/options_menu.h -o ! -r $(SRCDIR)/tincfg.h ; then $(MAKE) build ; fi
+	@-if $(TEST) -r $(SRCDIR)/options_menu.h -a -r $(SRCDIR)/tincfg.h ; then cppcheck -f -v -I $(INCDIR) -I $(CANDIR) -I $(PCREDIR) -I $(SRCDIR) $(SRCDIR) 1>/dev/null 2>$(TOPDIR)/CPPCHECK ; fi
+
+FORCE:

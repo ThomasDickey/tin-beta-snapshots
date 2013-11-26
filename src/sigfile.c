@@ -3,10 +3,10 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2010-11-13
+ *  Updated   : 2013-11-21
  *  Notes     : Generate random signature for posting/mailing etc.
  *
- * Copyright (c) 1992-2012 Mike Gleason
+ * Copyright (c) 1992-2013 Mike Gleason
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -132,7 +132,7 @@ msg_write_signature(
 			}
 			copy_fp(sigfp, fp);
 			fclose(sigfp);
-			my_chdir(cwd);
+			chdir(cwd);
 			return;
 		}
 
@@ -162,26 +162,21 @@ static FILE *
 open_random_sig(
 	char *sigdir)
 {
-	struct stat st;
+	srand((unsigned int) time(NULL));
 
-	if (stat(sigdir, &st) != -1) {
-		if (S_ISDIR(st.st_mode)) {
-			srand((unsigned int) time(NULL));
-			my_chdir(sigdir);
-
-			if (thrashdir(sigdir) || !*sigfile) {
+	if (chdir(sigdir) == 0)  {
+		if (thrashdir(sigdir) || !*sigfile) {
 #ifdef DEBUG
-				if (debug & DEBUG_MISC)
-					error_message(2, "NO sigfile=[%s]", sigfile);
+			if (debug & DEBUG_MISC)
+				error_message(2, "NO sigfile=[%s]", sigfile);
 #endif /* DEBUG */
-				return (FILE *) 0;
-			} else {
+			return (FILE *) 0;
+		} else {
 #ifdef DEBUG
-				if (debug & DEBUG_MISC)
-					error_message(2, "sigfile=[%s]", sigfile);
+			if (debug & DEBUG_MISC)
+				error_message(2, "sigfile=[%s]", sigfile);
 #endif /* DEBUG */
-				return fopen(sigfile, "r");
-			}
+			return fopen(sigfile, "r");
 		}
 	}
 
@@ -212,11 +207,12 @@ thrashdir(
 	 * consider "." and ".." non-entries
 	 * consider all entries starting with "." non-entries
 	 */
-	cwd = my_malloc(PATH_LEN);
-	if (numentries < 3 || cwd == NULL) {
+	if (numentries < 3) {
 		CLOSEDIR(dirp);
 		return -1;
 	}
+
+	cwd = my_malloc(PATH_LEN);
 
 	get_cwd(cwd);
 	recurse = strcmp(cwd, sigdir);
@@ -235,8 +231,10 @@ thrashdir(
 		rewinddir(dirp);
 #else
 		CLOSEDIR(dirp);
-		if ((dirp = opendir(CURRENTDIR)) == NULL)
+		if ((dirp = opendir(CURRENTDIR)) == NULL) {
+			free(cwd);
 			return 1;
+		}
 #endif /* HAVE_REWINDDIR */
 		pick = rand() % numentries + 1;
 		while (--pick >= 0) {
@@ -249,6 +247,7 @@ thrashdir(
 			else {	/* if we have a non-dot entry */
 				if (stat(dp->d_name, &st) == -1) {
 					CLOSEDIR(dirp);
+					free(cwd);
 					return 1;
 				}
 				if (S_ISDIR(st.st_mode)) {
@@ -256,8 +255,9 @@ thrashdir(
 						/*
 						 * do subdirectories
 						 */
-						if ((my_chdir(dp->d_name) < 0) || ((c = thrashdir(sigdir)) == 1)) {
+						if ((chdir(dp->d_name) < 0) || ((c = thrashdir(sigdir)) == 1)) {
 							CLOSEDIR(dirp);
+							free(cwd);
 							return 1;
 						}
 						if (c == -1) {
@@ -266,7 +266,7 @@ thrashdir(
 							 * empty dir so try again.
 							 */
 							dp = NULL;
-							my_chdir(cwd);
+							chdir(cwd);
 						}
 					} else
 						dp = NULL;

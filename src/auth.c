@@ -3,11 +3,11 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2009-06-27
+ *  Updated   : 2013-01-13
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2012 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 1997-2013 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,8 +61,8 @@ static t_bool authinfo_plain(char *server, char *authuser, t_bool startup);
 
 
 /*
- * Read the $HOME/.newsauth file and put authentication username
- * and password for the specified server in the given strings.
+ * Read the ${TIN_HOMEDIR:-"$HOME"}/.newsauth file and put authentication
+ * username and password for the specified server in the given strings.
  * Returns TRUE if at least a password was found, FALSE if there was
  * no .newsauth file or no matching server.
  */
@@ -105,7 +105,7 @@ read_newsauth_file(
 
 		/*
 		 * Search through authorization file for correct NNTP server
-		 * File has format:  'nntp-server' 'password' ['username']
+		 * File has format: 'nntp-server' 'password' ['username']
 		 */
 		while (fgets(line, sizeof(line), fp) != NULL) {
 			/* strip trailing newline character */
@@ -304,15 +304,19 @@ authinfo_plain(
 	 * .newsauth has failed or there's no .newsauth file respectively no
 	 * matching username/password for the current server. If we are not at
 	 * startup we ask the user to enter such a pair by hand. Don't ask him
-	 * startup except if requested by -A option because if he doesn't need
-	 * authenticate(we don't know), the "Server expects authentication"
+	 * at startup except if requested by -A option because if he doesn't need
+	 * to authenticate (we don't know), the "Server expects authentication"
 	 * messages are annoying (and even wrong).
 	 * UNSURE: Maybe we want to make this decision configurable in the
 	 * options menu, too, so that the user doesn't need -A.
 	 * TODO: Put questions into do_authinfo_user() because it is possible
 	 * that the server doesn't want a password; so only ask for it if needed.
 	 */
-	 if (force_auth_on_conn_open || !startup) {
+	if (force_auth_on_conn_open || !startup) {
+		if (batch_mode) { /* no interactive username/password prompting */
+			error_message(0, _(txt_auth_needed));
+			return (ret == OK_AUTH);
+		}
 		if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && !nntp_caps.authinfo_state && ((nntp_caps.sasl & SASL_PLAIN) || nntp_caps.authinfo_user || (!nntp_caps.authinfo_user && !(nntp_caps.sasl & SASL_PLAIN))))) {
 #	ifdef USE_CURSES
 			int state = RawState();
@@ -427,15 +431,71 @@ do_authinfo_sasl_plain(
 {
 	char line[PATH_LEN];
 	char *foo;
+	char *utf8user;
+	char *utf8pass;
 	int ret;
+#		ifdef CHARSET_CONVERSION
+	char *cp;
+	int i, c = 0;
+	t_bool contains_8bit = FALSE;
+#		endif /* CHARSET_CONVERSION */
+
+	utf8user = my_strdup(authuser);
+	utf8pass = my_strdup(authpass);
+#		ifdef CHARSET_CONVERSION
+	/* RFC 4616 */
+	if (!IS_LOCAL_CHARSET("UTF-8")) {
+		for (cp = utf8user; *cp && !contains_8bit; cp++) {
+			if (!isascii(*cp)) {
+				contains_8bit = TRUE;
+				break;
+			}
+		}
+		for (cp = utf8pass; *cp && !contains_8bit; cp++) {
+			if (!isascii(*cp)) {
+				contains_8bit = TRUE;
+				break;
+			}
+		}
+		if (contains_8bit) {
+			for (i = 0; txt_mime_charsets[i] != NULL; i++) {
+				if (!strcasecmp("UTF-8", txt_mime_charsets[i])) {
+					c = i;
+					break;
+				}
+			}
+			if (c == i) { /* should never fail */
+				if (!buffer_to_network(utf8user, c)) {
+					free(utf8user);
+					free(utf8pass);
+					utf8user = my_strdup(authuser);
+					utf8pass = my_strdup(authpass);
+				} else {
+					if (!buffer_to_network(utf8pass, c)) {
+						free(utf8user);
+						free(utf8pass);
+						utf8user = my_strdup(authuser);
+						utf8pass = my_strdup(authpass);
+					}
+				}
+			}
+		}
+	}
+#		endif /* CHARSET_CONVERSION */
 
 #		ifdef DEBUG
 	if (debug & DEBUG_NNTP)
 		debug_print_file("NNTP", "do_authinfo_sasl_plain(%s, %s)", BlankIfNull(authuser), BlankIfNull(authpass));
 #		endif /* DEBUG */
 
-	if ((foo = sasl_auth_plain(authuser, authpass)) == NULL)
+	if ((foo = sasl_auth_plain(utf8user, utf8pass)) == NULL) {
+		free(utf8user);
+		free(utf8pass);
 		return ERR_AUTHBAD;
+	}
+
+	free(utf8user);
+	free(utf8pass);
 
 	snprintf(line, sizeof(line), "AUTHINFO SASL PLAIN %s", foo);
 	free(foo);
@@ -451,7 +511,8 @@ do_authinfo_sasl_plain(
 }
 
 
-static char *sasl_auth_plain(
+static char *
+sasl_auth_plain(
 	char *user,
 	char *pass)
 {

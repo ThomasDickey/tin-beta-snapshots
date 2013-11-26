@@ -3,10 +3,10 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2009-07-17
+ *  Updated   : 2013-11-21
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
- * Copyright (c) 2000-2012 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2013 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,10 @@
 #endif /* !TIN_H */
 
 
-/* TODO: what about !unix systems? */
+/*
+ * As defined in RFC 1524, Appendix A
+ * TODO: what about !unix systems?
+ */
 #define DEFAULT_MAILCAPS "~/.mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap:/etc/mail/mailcap"
 
 /* maximum number of mailcap fields */
@@ -74,7 +77,7 @@ get_mailcap_entry(
 
 	/* build list of mailcap files */
 	if ((ptr = getenv("MAILCAPS")) != NULL && strlen(ptr))
-			mailcaps = my_strdup(ptr);
+		mailcaps = my_strdup(ptr);
 	if (mailcaps != NULL) {
 		mailcaps = my_realloc(mailcaps, strlen(mailcaps) + strlen(DEFAULT_MAILCAPS) + 2);
 		strcat(strcat(mailcaps, ":"), DEFAULT_MAILCAPS);
@@ -111,6 +114,7 @@ get_mailcap_entry(
 							if (!strncasecmp(ptr + strlen(content_types[part->type]) + 1, part->subtype, strlen(part->subtype))) {
 								/* full match, so parse line and evaluate test if given. */
 								STRCPY(mailcap, ptr);
+								FreeAndNull(foo);
 								foo = parse_mailcap_line(mailcap, part, path);
 								if (foo != NULL) {
 									fclose(fp); /* perfect match with test succeeded (if given) */
@@ -121,6 +125,7 @@ get_mailcap_entry(
 								if ((*(ptr2 + 1) == '*') || (*(ptr2 + 1) == ';')) { /* wildmat match */
 									if (!strlen(wildcap)) { /* we don't already have a wildmat match */
 										STRCPY(wildcap, buf);
+										FreeAndNull(foo);
 										foo = parse_mailcap_line(wildcap, part, path);
 										if (foo == NULL) /* test failed */
 											wildcap[0] = '\0'; /* ignore match */
@@ -141,7 +146,7 @@ get_mailcap_entry(
 		nptr = strtok(NULL, ":"); /* get next filename */
 	}
 	free(mailcaps);
-	foo = (t_mailcap *) 0; /* no match, weed out possible junk */
+	FreeAndNull(foo);
 	return foo;
 }
 
@@ -479,5 +484,5 @@ free_mailcap(
 	FreeIfNeeded(tmailcap->print);
 	FreeIfNeeded(tmailcap->test);
 	FreeIfNeeded(tmailcap->x11bitmap);
-	FreeIfNeeded(tmailcap);
+	free(tmailcap);
 }

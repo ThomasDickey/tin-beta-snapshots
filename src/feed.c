@@ -3,10 +3,10 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2011-03-25
+ *  Updated   : 2013-11-13
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1062,9 +1062,8 @@ print_file(
 		return FALSE;
 	}
 
-	if (curr_group->attribute->print_header)
-		rewind(artinfo->raw);
-	else {
+	rewind(artinfo->raw);
+	if (!curr_group->attribute->print_header && !(fseek(artinfo->raw, hdr->ext->offset, SEEK_SET))) {	/* -> start of body */
 		if (hdr->newsgroups)
 			fprintf(fp, "Newsgroups: %s\n", hdr->newsgroups);
 		if (arts[respnum].from == arts[respnum].name || arts[respnum].name == NULL)
@@ -1075,7 +1074,6 @@ print_file(
 			fprintf(fp, "Subject: %s\n", hdr->subj);
 		if (hdr->date)
 			fprintf(fp, "Date: %s\n\n", hdr->date);
-		fseek(artinfo->raw, hdr->ext->offset, SEEK_SET);	/* -> start of body */
 	}
 
 	ok = copy_fp(artinfo->raw, fp);

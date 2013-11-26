@@ -3,10 +3,10 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-03-25
+ *  Updated   : 2013-01-09
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -425,7 +425,7 @@ prompt_option_on_off(
 
 	fmt_option_prompt(prompt, sizeof(prompt), TRUE, option);
 	*variable = prompt_list(option_row(option), 0, *variable, option_table[option].txt->help, prompt, txt_onoff, 2) ? TRUE : FALSE;
-	return *variable != old_value;
+	return bool_not(bool_equal(*variable, old_value));
 }
 
 

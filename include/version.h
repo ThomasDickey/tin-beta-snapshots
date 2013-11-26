@@ -3,10 +3,10 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-11-08
+ *  Updated   : 2013-09-01
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,13 +40,13 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.1.1"
+#		define VERSION		"2.1.5"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20120324"
-#	define RELEASENAME	"Bridgend"
+#	define RELEASEDATE	"20131126"
+#	define RELEASENAME	"Meadowburn"
 /* config-file versions - must by dotted triples */
-#	define TINRC_VERSION	"1.3.11"
-#	define ATTRIBUTES_VERSION	"1.0.7"
+#	define TINRC_VERSION	"1.3.12"
+#	define ATTRIBUTES_VERSION	"1.0.8"
 #	define FILTER_VERSION	"1.0.0"
 #	define KEYMAP_VERSION	"1.0.9"
 #	define SERVERCONFIG_VERSION	"1.0.0"

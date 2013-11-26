@@ -3,10 +3,10 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2011-01-25
+ *  Updated   : 2013-11-05
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -629,8 +629,8 @@ make_help_page(
 	const t_help_page *helppage,
 	const struct keylist keys)
 {
-	char *buf = my_malloc(LEN);
-	char *last = my_malloc(LEN);
+	char *buf;
+	char *last;
 	char key[MAXKEYLEN];
 	/*
 	 * length is only needed to pass it to expand_ctrl_chars()
@@ -641,6 +641,9 @@ make_help_page(
 
 	if (!helppage)
 		return;
+
+	buf = my_malloc(LEN);
+	last = my_malloc(LEN);
 
 	last[0] = '\0';
 

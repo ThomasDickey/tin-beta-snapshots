@@ -6,7 +6,7 @@
  *  Updated   : 2011-04-24
  *  Notes     : ISO to ascii charset conversion routines
  *
- * Copyright (c) 1993-2012 Markus Kuhn <mgk25@cl.cam.ac.uk>
+ * Copyright (c) 1993-2013 Markus Kuhn <mgk25@cl.cam.ac.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,7 @@
 
 static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 {
+	/* universal table for many languages */
 	{
 	" ","!","c",SUB,SUB,"Y","|",SUB,"\"","(c)","a","<<","-","-","(R)","-",
 	" ","+/-","2","3","'","u","P",".",",","1","o",">>"," 1/4"," 1/2"," 3/4","?",
@@ -65,6 +66,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"a","a","a","a","a","a","ae","c","e","e","e","e","i","i","i","i",
 	"d","n","o","o","o","o","o",":","o","u","u","u","u","y","th","y"
 	},
+	/* single-spacing universal table */
 	{
 	" ","!","c",SUB,SUB,"Y","|",SUB,"\"","c","a","<","-","-","R","-",
 	" ",SUB,"2","3","'","u","P",".",",","1","o",">",SUB,SUB,SUB,"?",
@@ -73,6 +75,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"a","a","a","a","a","a","a","c","e","e","e","e","i","i","i","i",
 	"d","n","o","o","o","o","o",":","o","u","u","u","u","y","t","y"
 	},
+	/* table for Danish, Dutch, German, Norwegian and Swedish */
 	{
 	" ","!","c",SUB,SUB,"Y","|",SUB,"\"","(c)","a","<<","-","-","(R)","-",
 	" ","+/-","2","3","'","u","P",".",",","1","o",">>"," 1/4"," 1/2"," 3/4","?",
@@ -81,6 +84,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"a","a","a","a","ae","aa","ae","c","e","e","e","e","i","i","i","i",
 	"d","n","o","o","o","o","oe",":","oe","u","u","u","ue","y","th","ij"
 	},
+	/* table for Danish, Finnish, Norwegian and Swedish, ISO 646 variant */
 	{
 	" ","!","c",SUB,"$","Y","|",SUB,"\"","(c)","a","<<","-","-","(R)","-",
 	" ","+/-","2","3","'","u","P",".",",","1","o",">>"," 1/4"," 1/2"," 3/4","?",
@@ -89,6 +93,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"a","a","a","a","{","}","{","c","e","`","e","e","i","i","i","i",
 	"d","n","o","o","o","o","|",":","|","u","u","u","~","y","th","y"
 	},
+	/* table with RFC1345 codes in brackets */
 	{
 	"[NS]","[!I]","[Ct]","[Pd]","[Cu]","[Ye]","[BB]","[SE]",
 	"[':]","[Co]","[-a]","[<<]","[NO]","[--]","[Rg]","['-]",
@@ -103,6 +108,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"[d-]","[n?]","[o!]","[o']","[o>]","[o?]","[o:]","[-:]",
 	"[o/]","[u!]","[u']","[u>]","[u:]","[y']","[th]","[y:]"
 	},
+	/* table for printers that allow overstriking with backspace */
 	{
 	" ","!","c\b|","L\b-","o\bX","Y\b=","|",SUB,
 	"\"","(c)","a\b_","<<","-\b,","-","(R)","-",
@@ -117,6 +123,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"d\b-","n\b~","o\b`","o\b'","o\b^","o\b~","o\b\"","-\b:",
 	"o\b/","u\b`","u\b'","u\b^","u\b\"","y\b'","th","y\b\""
 	},
+	/* table for IBM PC character set (code page 437) */
 	{
 	"\377","\255","\233","\234",SUB,"\235","|","\25",
 	"\"","(c)","\246","\256","\252","-","(R)","-",

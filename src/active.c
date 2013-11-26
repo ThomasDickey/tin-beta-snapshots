@@ -3,10 +3,10 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2011-11-06
+ *  Updated   : 2011-11-17
  *  Notes     :
  *
- * Copyright (c) 1992-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -353,7 +353,7 @@ read_newsrc_active_file(
 			 * later on
 			 * TODO: check RFCs for possible max. size
 			 */
-			strncpy(ngname, ptr, 128);
+			my_strncpy(ngname, ptr, 128);
 			ptr = ngname;
 		}
 
@@ -361,6 +361,7 @@ read_newsrc_active_file(
 #ifdef NNTP_ABLE
 			char buf[NNTP_STRLEN];
 			char line[NNTP_STRLEN];
+
 			if (window < NUM_SIMULTANEOUS_GROUP_COMMAND && ptr && (!list_active || (newsrc_active && list_active && group_find(ptr, FALSE)))) {
 				ngnames[index_i] = my_strdup(ptr);
 				snprintf(buf, sizeof(buf), "GROUP %s", ngnames[index_i]);
@@ -770,7 +771,8 @@ read_news_active_file(
 			char buff[NNTP_STRLEN];
 			char *ptr, *q;
 			char moderated[PATH_LEN];
-			int r = 0, i = 0, j = 0;
+			int r = 0, j = 0;
+			int i;
 			t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
 			struct t_group *grpptr;
 			t_bool need_auth = FALSE;
@@ -788,16 +790,16 @@ read_news_active_file(
 						*q = '\0';
 						if (nntp_caps.type == CAPABILITIES && (nntp_caps.list_active || nntp_caps.list_counts)) {
 							/* LIST ACTIVE or LIST COUNTS takes wildmats */
-							if (!i) { /* new wildmat list */
-								i++;
-								snprintf(buff, sizeof(buff), "LIST %s %s", nntp_caps.list_counts ? "COUNTS" : "ACTIVE", ptr);
-								continue;
-							}
-							if (strlen(buff) + strlen(ptr) + 1 < NNTP_STRLEN) { /* append group name */
+							if (*buff && ((strlen(buff) + strlen(ptr)) < (NNTP_STRLEN - 1))) { /* append group name */
 								snprintf(buff + strlen(buff), sizeof(buff) - strlen(buff), ",%s", ptr);
-								continue;
+							} else {
+								if (*buff) {
+									put_server(buff);
+									r++;
+								}
+								snprintf(buff, sizeof(buff), "LIST %s %s", nntp_caps.list_counts ? "COUNTS" : "ACTIVE", ptr);
 							}
-							i = 0; /* new wildmatlist required */
+							continue;
 						} else
 							snprintf(buff, sizeof(buff), "LIST ACTIVE %s", ptr);
 						put_server(buff);
@@ -1251,15 +1253,17 @@ create_save_active_file(
 	if (no_write && file_size(local_save_active_file) != -1L)
 		return;
 
-	wait_message(0, _(txt_creating_active));
+	if (strfpath(cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : tinrc.savedir, group_path, sizeof(group_path), NULL, FALSE)) {
+		wait_message(0, _(txt_creating_active));
+		print_active_head(local_save_active_file);
 
-	print_active_head(local_save_active_file);
-	strfpath(cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : tinrc.savedir, group_path, sizeof(group_path), NULL, FALSE);
-	while (strlen(group_path) && group_path[strlen(group_path) - 1] == '/')
-		group_path[strlen(group_path) - 1] = '\0';
-	fb = my_strdup(group_path);
-	make_group_list(local_save_active_file, cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : tinrc.savedir, fb, group_path);
-	free(fb);
+		while (strlen(group_path) && group_path[strlen(group_path) - 1] == '/')
+			group_path[strlen(group_path) - 1] = '\0';
+
+		fb = my_strdup(group_path);
+		make_group_list(local_save_active_file, cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : tinrc.savedir, fb, group_path);
+		free(fb);
+	}
 }
 
 
@@ -1342,11 +1346,15 @@ append_group_line(
 		wait_message(0, "Appending=[%s %"T_ARTNUM_PFMT" %"T_ARTNUM_PFMT" %s]\n", group_name, art_max, art_min, base_dir);
 		print_group_line(fp, group_name, art_max, art_min, base_dir);
 		if ((err = ferror(fp)) || fclose(fp)) { /* TODO: issue warning? */
-			rename(file_tmp, active_file);
 			if (err) {
 				clearerr(fp);
 				fclose(fp);
 			}
+			err = rename(file_tmp, active_file);
+#ifdef DEBUG
+			if ((debug & DEBUG_MISC) && err) /* TODO: is this the right debug-level? */
+				perror_message(_(txt_rename_error), file_tmp, active_file);
+#endif /* DEBUG */
 		}
 		free(group_name);
 	}

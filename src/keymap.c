@@ -3,10 +3,10 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2011-01-25
+ *  Updated   : 2013-11-05
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2012 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2013 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -377,8 +377,10 @@ read_keymap_file(
 					fclose(fp);
 					upgrade_keymap_file(map);
 					upgrade = RC_IGNORE;
-					if (!(fp = fopen(map, "r"))) /* TODO: issue error message? */
+					if (!(fp = fopen(map, "r"))) { /* TODO: issue error message? */
+						free(map);
 						return TRUE;
+					}
 				}
 				break;
 			}

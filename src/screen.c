@@ -3,10 +3,10 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-05
+ *  Updated   : 2013-08-29
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,8 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
+
+int mark_offset = 0;
 
 #ifndef USE_CURSES
 	struct t_screen *screen;
@@ -278,6 +280,10 @@ void
 draw_arrow_mark(
 	int line)
 {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wtmp;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	MoveCursor(line, 0);
 
 	if (tinrc.draw_arrow) {
@@ -295,14 +301,28 @@ draw_arrow_mark(
 #else
 		char *s = screen[line - INDEX_TOP].col;
 #endif /* USE_CURSES */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if ((wtmp = char2wchar_t(s)) != NULL) {
+			StartInverse();
+			my_fputws(wtmp, stdout);
+			EndInverse();
+			if (mark_offset && wtmp[mark_offset] == tinrc.art_marked_selected) {
+				MoveCursor(line, mark_offset);
+				EndInverse();
+				my_fputwc(wtmp[mark_offset], stdout);
+			}
+			free(wtmp);
+		}
+#else
 		StartInverse();
 		my_fputs(s, stdout);
 		EndInverse();
-		if (s[MARK_OFFSET] == tinrc.art_marked_selected) {
-			MoveCursor(line, MARK_OFFSET);
+		if (mark_offset && s[mark_offset] == tinrc.art_marked_selected) {
+			MoveCursor(line, mark_offset);
 			EndInverse();
-			my_fputc(s[MARK_OFFSET], stdout);
+			my_fputc(s[mark_offset], stdout);
 		}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	}
 	stow_cursor();
 }
@@ -313,6 +333,9 @@ erase_arrow(
 	void)
 {
 	int line = INDEX_TOP + currmenu->curr - currmenu->first;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wtmp;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if (!currmenu->max)
 		return;
@@ -334,13 +357,26 @@ erase_arrow(
 		s = screen[line - INDEX_TOP].col;
 #endif /* USE_CURSES */
 		EndInverse();
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if ((wtmp = char2wchar_t(s)) != NULL) {
+			my_fputws(wtmp, stdout);
+			if (mark_offset && wtmp[mark_offset] == tinrc.art_marked_selected) {
+				MoveCursor(line, mark_offset);
+				StartInverse();
+				my_fputwc(wtmp[mark_offset], stdout);
+				EndInverse();
+			}
+			free(wtmp);
+		}
+#else
 		my_fputs(s, stdout);
-		if (s[MARK_OFFSET] == tinrc.art_marked_selected) {
-			MoveCursor(line, MARK_OFFSET);
+		if (mark_offset && s[mark_offset] == tinrc.art_marked_selected) {
+			MoveCursor(line, mark_offset);
 			StartInverse();
-			my_fputc(s[MARK_OFFSET], stdout);
+			my_fputc(s[mark_offset], stdout);
 			EndInverse();
 		}
+#endif /* MULTIBYTE_ABLE && !NOLOCALE */
 	}
 }
 

@@ -3,10 +3,10 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2008-11-22
+ *  Updated   : 2013-11-15
  *  Notes     :
  *
- * Copyright (c) 2003-2012 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2003-2013 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,9 +73,15 @@ check_upgrade(
 	len = strlen(lskip) + strlen(fmt) + 1; /* format buffer len */
 	format = my_malloc(len + 1);
 	snprintf(format, len, "%s%s", lskip, fmt);
-	sscanf(line, format, &rc_majorv, &rc_minorv, &rc_subv);
-	free(format);
 	free(lskip);
+
+	if (sscanf(line, format, &rc_majorv, &rc_minorv, &rc_subv) != 3) {
+		free(format);
+		free(lversion);
+		return RC_ERROR;
+	}
+
+	free(format);
 
 	/* we can't parse our own version number - should never happen */
 	if (sscanf(lversion, fmt, &c_majorv, &c_minorv, &c_subv) != 3) {
@@ -112,6 +118,7 @@ upgrade_prompt_quit(
 
 		case RC_ERROR: /* can't parse internal version string, should not happen */
 			error_message(2, txt_warn_unrecognized_version);
+			free(tin_progname);
 			giveup();
 			/* NOTREACHED */
 			break;
@@ -130,6 +137,7 @@ upgrade_prompt_quit(
 		case 'q':
 		case 'Q':
 		case ESC:
+			free(tin_progname);
 			giveup();
 			/* NOTREACHED */
 			break;

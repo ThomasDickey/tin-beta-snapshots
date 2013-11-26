@@ -3,10 +3,10 @@
  *  Module    : my_tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
- *  Updated   : 2009-02-12
+ *  Updated   : 2013-11-17
  *  Notes     :
  *
- * Copyright (c) 2001-2012 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2001-2013 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 
 
 /*
- * my_tmpfile(filename, name_size, need_name, base_dir)
+ * my_tmpfile(filename, name_size, base_dir)
  *
  * try to create a uniq tmp-file descriptor
  *
@@ -55,37 +55,21 @@ int
 my_tmpfile(
 	char *filename,
 	size_t name_size,
-	t_bool need_name,
 	const char *base_dir)
 {
 	int fd = -1;
 	char buf[PATH_LEN];
+	mode_t mask;
 #if defined(HAVE_MKTEMP) && !defined(HAVE_MKSTEMP)
 	char *t;
 #endif /* HAVE_MKTEMP && !HAVE_MKSTEMP */
 #ifdef DEBUG
 	int sverrno;
 #endif /* DEBUG */
+
 	errno = 0;
 
 	if (filename != NULL && name_size > 0) {
-		if (!need_name) {
-			FILE *fp;
-
-			if ((fp = tmpfile()) != NULL)
-				fd = fileno(fp);
-#ifdef DEBUG
-			else {
-				sverrno = errno;
-				wait_message(5, "HAVE_TMPFILE %s", strerror(sverrno));
-			}
-#endif /* DEBUG */
-			*filename = '\0';
-			if (fd == -1)
-				error_message(2, _(txt_cannot_create_uniq_name));
-			return fd;
-		}
-
 		if (base_dir) {
 			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin-%s-%ld-XXXXXX", get_host_name(), (long) process_id);
 			joinpath(filename, name_size, base_dir, buf);
@@ -93,6 +77,7 @@ my_tmpfile(
 			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin_XXXXXX");
 			joinpath(filename, name_size, TMPDIR, buf);
 		}
+		mask = umask((mode_t) (S_IRWXO|S_IRWXG));
 #ifdef DEBUG
 		errno = 0;
 #endif /* DEBUG */
@@ -114,7 +99,8 @@ my_tmpfile(
 #		endif /* DEBUG */
 #	endif /* HAVE_MKTEMP */
 #endif /* HAVE_MKSTEMP */
-		}
+		umask(mask);
+	}
 	if (fd == -1)
 		error_message(2, _(txt_cannot_create_uniq_name));
 	return fd;

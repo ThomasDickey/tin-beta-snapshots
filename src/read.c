@@ -3,9 +3,9 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2011-05-06
+ *  Updated   : 2011-11-15
  *
- * Copyright (c) 1997-2012 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2013 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -101,6 +101,7 @@ wait_for_input(
 
 			if (errno != EINTR) {
 				perror_message("select() failed");
+				free(tin_progname);
 				giveup();
 			} else
 				return FALSE;

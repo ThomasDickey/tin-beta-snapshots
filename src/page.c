@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2012-03-04
+ *  Updated   : 2013-11-23
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1050,7 +1050,9 @@ print_message_page(
 			break;
 
 		curr = &messageline[base_line + i];
-		fseek(file, curr->offset, SEEK_SET);
+
+		if (fseek(file, curr->offset, SEEK_SET) != 0)
+			break;
 
 		if ((line = tin_fgets(file, FALSE)) == NULL)
 			break;	/* ran out of message */
@@ -1246,7 +1248,10 @@ invoke_metamail(
 	if (('\0' == *ptr) || (0 == strcmp(ptr, INTERNAL_CMD)) || (NULL != getenv("NOMETAMAIL")))
 		return;
 
-	offset = ftell(fp);
+	if ((offset = ftell(fp)) == -1) {
+		perror_message(_(txt_command_failed), ptr);
+		return;
+	}
 	rewind(fp);
 
 	EndWin();
@@ -1424,10 +1429,11 @@ draw_page_header(
 
 	/* tex2iso */
 	if (pgart.tex2iso) {
-		wtmp = char2wchar_t(_(txt_tex));
-		my_fputws(wtmp, stdout);
-		cur_pos += wcswidth(wtmp, wcslen(wtmp));
-		free(wtmp);
+		if ((wtmp = char2wchar_t(_(txt_tex))) != NULL) {
+			my_fputws(wtmp, stdout);
+			cur_pos += wcswidth(wtmp, wcslen(wtmp));
+			free(wtmp);
+		}
 	}
 
 	/* subject */
@@ -2317,6 +2323,7 @@ show_url_page(
 
 	signal_context = cURL;
 	currmenu = &urlmenu;
+	mark_offset = 0;
 
 	if (urlmenu.curr < 0)
 		urlmenu.curr = 0;

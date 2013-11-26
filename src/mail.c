@@ -3,10 +3,10 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2011-11-06
+ *  Updated   : 2013-11-21
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -207,11 +207,15 @@ write_mail_active_file(
 		}
 		if ((i = ferror(fp)) || fclose(fp)) {
 			error_message(2, _(txt_filesystem_full), mail_active_file);
-			rename(file_tmp, mail_active_file);
 			if (i) {
 				clearerr(fp);
 				fclose(fp);
 			}
+			i = rename(file_tmp, mail_active_file);
+#ifdef DEBUG
+			if ((debug & DEBUG_MISC) && i) /* TODO: is this the right debug-level? */
+				perror_message(_(txt_rename_error), file_tmp, mail_active_file);
+#endif /* DEBUG */
 		} else
 			unlink(file_tmp);
 	}
@@ -268,19 +272,19 @@ open_newsgroups_fp(
 
 	if (read_news_via_nntp && !read_saved_news) {
 		if (read_local_newsgroups_file) {
-			struct stat buf;
+			if ((result = fopen(local_newsgroups_file, "r")) != NULL) {
+				struct stat buf;
 
-			if (!stat(local_newsgroups_file, &buf)) {
-				if (buf.st_size > 0) {
-					if ((result = fopen(local_newsgroups_file, "r")) != NULL) {
 #	ifdef DEBUG
-						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "open_newsgroups_fp Using local copy of newsgroups file");
+					if (debug & DEBUG_NNTP)
+						debug_print_file("NNTP", "open_newsgroups_fp Using local copy of newsgroups file");
 #	endif /* DEBUG */
+				if (!fstat(fileno(result), &buf)) {
+					if (buf.st_size > 0)
 						return result;
-					}
-				} else
-					unlink(local_newsgroups_file);
+				}
+				fclose(result);
+				unlink(local_newsgroups_file);
 			}
 		}
 		/*
@@ -648,7 +652,8 @@ art_edit(
 	make_base_group_path(group->spooldir, group->name, temp_filename, sizeof(temp_filename));
 	snprintf(buf, sizeof(buf), "%"T_ARTNUM_PFMT, article->artnum);
 	joinpath(article_filename, sizeof(article_filename), temp_filename, buf);
-	snprintf(temp_filename, sizeof(temp_filename), "%s%ld.art", TMPDIR, (long) process_id);
+	snprintf(buf, sizeof(buf), "%ld.art", (long) process_id);
+	joinpath(temp_filename, sizeof(temp_filename), TMPDIR, buf);
 
 	if (!backup_file(article_filename, temp_filename))
 		return FALSE;

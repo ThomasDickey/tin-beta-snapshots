@@ -1,5 +1,7 @@
 /* simply include tin's autoconf'd header file */
-#include "autoconf.h"
+#ifndef TIN_AUTOCONF_H
+#	include "autoconf.h"
+#endif /* !TIN_AUTOCONF_H */
 #define EBCDIC 0
 #define POSIX_MALLOC_THRESHOLD 10
 #define PCRE_EXPORT
