@@ -2,10 +2,10 @@
 .\" Module    : mmdf.5
 .\" Author    : U. Janssen
 .\" Created   : 2002-02-18
-.\" Updated   :
+.\" Updated   : 2013-11-04
 .\" Notes     : needs a lot of work
 .\"
-.TH mmdf 5 "February 18th, 2002" "Unix" "User Manuals"
+.TH mmdf 5 "November 5th, 2013" "Unix" "User Manuals"
 .\"
 .SH NAME
 MMDF \- Multi\-channel Memorandum Distribution Facility mailbox format
@@ -14,16 +14,16 @@ MMDF \- Multi\-channel Memorandum Distribution Facility mailbox format
 This document describes the
 .B MMDF
 mailbox format used by some MTAs and MUAs (i.e.
-.BR scomail (1))
+.BR \%scomail (1))
 to store mail messages locally.
 .PP
 An
 .B MMDF
 mailbox is a text file containing an arbitrary number of e-mail messages.
 Each message consists of a postmark, followed by an e-mail message formatted
-according to \fBRFC822\fP / \fBRFC2822\fP, followed by a postmark. The file
-format is line-oriented. Lines are separated by line feed characters (ASCII
-10). A postmark line consists of the four characters "^A^A^A^A" (Control-A;
+according to \fBRFC\%5322\fP, followed by a postmark. The file format is
+line-oriented. Lines are separated by line feed characters (ASCII 10).
+A postmark line consists of the four characters "^A^A^A^A" (Control-A;
 ASCII 1).
 .TP
 Example of a \fBMMDF\fP mailbox holding two mails:
@@ -64,13 +64,15 @@ bar
 .PP
 In contrast to most other single file mailbox formats like
 MBOXO and MBOXRD (see
-.BR mbox (5))
+.BR \%mbox (5)
+and
+.BR RFC\%4155 )
 there is no need to quote/dequote "From "-lines in
 .B MMDF
 mailboxes as such lines have no special meaning in this format.
 .PP
 If the modification-time (usually determined via
-.BR stat (2))
+.BR \%stat (2))
 of a nonempty mailbox file is greater than the access-time
 the file has new mail. Many MUAs place a Status: header in
 each message to indicate which messages have already been
@@ -86,14 +88,14 @@ files should generally not be accessed without locking.
 Three different locking mechanisms (and combinations thereof) are in
 general use:
 .IP "\(bu"
-.BR fcntl (2)
+.BR \%fcntl (2)
 locking is mostly used on recent, POSIX-compliant systems. Use of
 this locking method is, in particular, advisable if
 .B MMDF
 files are accessed through the Network File System (NFS), since it
 seems the only way to reliably invalidate NFS clients' caches.
 .IP "\(bu"
-.BR flock (2)
+.BR \%flock (2)
 locking is mostly used on BSD-based systems.
 .IP "\(bu"
 Dotlocking is used on all kinds of systems. In order to lock an
@@ -101,12 +103,12 @@ Dotlocking is used on all kinds of systems. In order to lock an
 file named \fIfolder\fR, an application first creates a temporary file
 with a unique name in the directory in which the
 \fIfolder\fR resides. The application then tries to use the
-.BR link (2)
+.BR \%link (2)
 system call to create a hard link named \fIfolder.lock\fR
 to the temporary file. The success of the
-.BR link (2)
+.BR \%link (2)
 system call should be additionally verified using
-.BR stat (2)
+.BR \%stat (2)
 calls. If the link has succeeded, the mail folder is considered
 dotlocked. The temporary file can then safely be unlinked.
 .IP ""
@@ -115,9 +117,9 @@ In order to release the lock, an application just unlinks the
 .PP
 If multiple methods are combined, implementors should make sure to
 use the non-blocking variants of the
-.BR fcntl (2)
+.BR \%fcntl (2)
 and
-.BR flock (2)
+.BR \%flock (2)
 system calls in order to avoid deadlocks.
 .PP
 If multiple methods are combined, an
@@ -152,14 +154,14 @@ is not part of any currently supported standard.
 was developed at the University of Delaware by Dave Crocker.
 .\"
 .SH "SEE ALSO"
-.BR scomail (1),
-.BR fcntl (2),
-.BR flock (2),
-.BR link (2),
-.BR stat (2),
-.BR mbox (5),
-.BR RFC822 ,
-.BR RFC2822
+.BR \%scomail (1),
+.BR \%fcntl (2),
+.BR \%flock (2),
+.BR \%link (2),
+.BR \%stat (2),
+.BR \%mbox (5),
+.BR RFC\%4155 ,
+.BR RFC\%5322
 
 .SH AUTHOR
 Urs Janssen <urs@tin.org>

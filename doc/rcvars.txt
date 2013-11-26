@@ -43,9 +43,10 @@ Adding a new attribute:
 . Think of a name, we'll call it NAME
 . Document it on the tin.5 manpage under the
   "${TIN_HOMEDIR-"$HOME"}/.tin/attributes" section
-. Add it to the t_attribute structure in tin.h
-. Define the default value for it in set_default_attributes()
-. Add it to the list of enumerated types at the beginning of attrib.c
+. Add it to the t_attribute and t_attribute_state structure in tin.h
+. Define the default value for it in attrib.c:set_default_attributes()
+. Set the default state for it in attrib.c:set_default_state()
+. Add it to tinrc.h and tincfg.tbl
 . In read_attributes_file() add a MATCH_<TYPE> entry to parse it in
   under the appropriate first letter section.
 . In set_attrib() and assign_attributes_to_groups(), add a corresponding
@@ -54,8 +55,9 @@ Adding a new attribute:
   describe the usage of the attribute and add code to write out the
   attribute
 . Add code to write out the attribute in dump_attributes() and dump_scopes()
-. In options_menu.c:change_config_file() add UPDATE_(INT_|STRING_)ATTRIBUTES
-  under the appropriate case OPT_* section
+. In options_menu.c:config_page() add UPDATE_(INT_|STRING_)ATTRIBUTES
+  under the appropriate case OPT_* section; add entries in option_is_visible(),
+  check_state(), reset_state(), initialize_attributes()
 . Free up the attribute in memory.c:free_attributes_array() if needed
 
 Where possible try to keep the ordering of the attributes in the various

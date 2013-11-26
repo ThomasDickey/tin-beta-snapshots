@@ -6,7 +6,7 @@
  *  Updated   : 2012-02-29
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1995-2012 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1995-2013 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -461,7 +461,7 @@
 #	undef OUTC_ARGS
 
 /*
- * Miscelleneous terminfo/termcap definitions
+ * Miscellaneous terminfo/termcap definitions
  */
 #	undef HAVE_EXTERN_TCAP_PC
 
@@ -519,11 +519,6 @@
 #	undef USE_FCNTL
 #	undef USE_FLOCK
 #	undef USE_LOCKF
-
-/*
- * Define this if we intend to use heapsort as an alternative to qsort.
- */
-#	undef USE_HEAPSORT
 
 /*
  * Define this if we intend to use heapsort as an alternative to qsort.

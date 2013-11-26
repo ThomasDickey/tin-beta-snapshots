@@ -3,10 +3,10 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2012-03-04
+ *  Updated   : 2013-11-16
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@
  * need to manually fix this up
  */
 struct t_group *curr_group;
+static struct t_fmt grp_fmt;
 
 /*
  * Local prototypes
@@ -89,7 +90,7 @@ show_tagged_lines(
 
 	for (i = grpmenu.first; i < grpmenu.first + NOTESLINES && i < grpmenu.max; ++i) {
 		if ((i != grpmenu.curr) && (j = line_is_tagged(base[i])))
-			mark_screen(i, MARK_OFFSET - 2, tin_ltoa(j, 3));
+			mark_screen(i, mark_offset - 2, tin_ltoa(j, 3));
 	}
 }
 
@@ -644,14 +645,14 @@ group_page(
 						}
 					}
 					if ((ii = line_is_tagged(n)))
-						mark_screen(grpmenu.curr, MARK_OFFSET - 2, tin_ltoa(ii, 3));
+						mark_screen(grpmenu.curr, mark_offset - 2, tin_ltoa(ii, 3));
 					else {
 						char mark[] = { '\0', '\0' };
 
 						stat_thread(grpmenu.curr, &sbuf);
 						mark[0] = sbuf.art_mark;
-						mark_screen(grpmenu.curr, MARK_OFFSET - 2, "  "); /* clear space used by tag numbering */
-						mark_screen(grpmenu.curr, MARK_OFFSET, mark);
+						mark_screen(grpmenu.curr, mark_offset - 2, "  "); /* clear space used by tag numbering */
+						mark_screen(grpmenu.curr, mark_offset, mark);
 					}
 					if (tagged)
 						show_tagged_lines();
@@ -775,7 +776,7 @@ group_page(
 
 					stat_thread(grpmenu.curr, &sbuf);
 					mark[0] = sbuf.art_mark;
-					mark_screen(grpmenu.curr, MARK_OFFSET, mark);
+					mark_screen(grpmenu.curr, mark_offset, mark);
 				}
 
 				show_group_title(TRUE);
@@ -913,6 +914,8 @@ show_group_page(
 
 	ClearScreen();
 	set_first_screen_item();
+	parse_format_string(curr_group->attribute->group_format, &grp_fmt);
+	mark_offset = 0;
 	show_group_title(FALSE);
 
 	for (i = grpmenu.first; i < grpmenu.first + NOTESLINES && i < grpmenu.max; ++i)
@@ -939,12 +942,12 @@ update_group_page(
 
 	for (i = grpmenu.first; i < grpmenu.first + NOTESLINES && i < grpmenu.max; ++i) {
 		if ((j = line_is_tagged(base[i])))
-			mark_screen(i, MARK_OFFSET - 2, tin_ltoa(j, 3));
+			mark_screen(i, mark_offset - 2, tin_ltoa(j, 3));
 		else {
 			stat_thread(i, &sbuf);
 			mark[0] = sbuf.art_mark;
-			mark_screen(i, MARK_OFFSET - 2, "  ");	/* clear space used by tag numbering */
-			mark_screen(i, MARK_OFFSET, mark);
+			mark_screen(i, mark_offset - 2, "  ");	/* clear space used by tag numbering */
+			mark_screen(i, mark_offset, mark);
 			if (sbuf.art_mark == tinrc.art_marked_selected)
 				draw_mark_selected(i);
 		}
@@ -1128,75 +1131,30 @@ build_multipart_header(
  * Build subject line given an index into base[].
  *
  * WARNING: some other code expects to find the article mark (ART_MARK_READ,
- * ART_MARK_SELECTED, etc) at MARK_OFFSET from beginning of the line.
+ * ART_MARK_SELECTED, etc) at mark_offset from beginning of the line.
  * So, if you change the format used in this routine, be sure to check that
- * the value of MARK_OFFSET (tin.h) is still correct.
+ * the value of mark_offset is still correct.
  * Yes, this is somewhat kludgy.
  */
 static void
 build_sline(
 	int i)
 {
-	const char *spaces = "XXXX";
-	char from[HEADER_LEN];
-	char new_resps[8];
-	char art_cnt[10];
+	char *fmt, *buf;
 	char arts_sub[255];
+	char tmp_buf[8];
+	char tmp[LEN];
 	int respnum;
 	int n, j;
-	int len_from;
-	int len_subj;
+	int k, fill, gap;
+	size_t len;
 	struct t_art_stat sbuf;
 	char *buffer;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	size_t len;
-	wchar_t format[32];
-	wchar_t wbuffer[LEN];
-	wchar_t *tmp_subj = NULL, *tmp_subj2;
-	wchar_t *tmp_from = NULL, *tmp_from2;
+	wchar_t *wtmp, *wtmp2;
+#else
+	size_t len_start;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-
-	/* set len_from and len_subj */
-	{
-		int max_from;
-		int max_subj;
-		int num_cols = cCOLS - 1;
-
-		max_subj = ((curr_group->attribute->show_author == SHOW_FROM_BOTH) ? ((num_cols / 2) - 4): ((num_cols / 2) + 3));
-		max_from = (num_cols - max_subj) - 17;
-
-		if (curr_group->attribute->show_author != SHOW_FROM_BOTH) {
-			if (max_from > 25) {
-				max_subj += max_from - 25;
-				max_from = 25;
-			}
-		}
-
-		if (curr_group->attribute->show_author != SHOW_FROM_NONE) {
-			len_from = max_from - BLANK_GROUP_COLS;
-			len_subj = max_subj;
-			spaces = "  ";
-		} else {
-			len_from = 0;
-			len_subj = (max_subj + max_from + 2) - BLANK_GROUP_COLS;
-			spaces = "";
-		}
-
-		/* which information should be displayed? */
-		switch (curr_group->attribute->show_info) {
-			case SHOW_INFO_NOTHING:
-				len_subj += 11;
-				break;
-
-			case SHOW_INFO_LINES:
-				len_subj += 6;
-				break;
-
-			case SHOW_INFO_SCORE:
-				len_subj += 5;
-				break;
-		}
-	}
 
 #ifdef USE_CURSES
 	/*
@@ -1208,184 +1166,196 @@ build_sline(
 #	else
 		buffer = my_malloc(cCOLS + 2);
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#else
+	buffer = screen[INDEX2SNUM(i)].col;
 #endif /* USE_CURSES */
 
-	from[0] = '\0';
+	buffer[0] = '\0';
+
 	respnum = (int) base[i];
 
 	stat_thread(i, &sbuf);
-
-	/*
-	 * n is number of articles in this thread
-	 */
-	n = ((curr_group->attribute->show_only_unread_arts) ? (sbuf.unread + sbuf.seen) : sbuf.total);
-	/*
-	 * if you like to see the number of responses excluding the first
-	 *	art in thread - add the following:
-	 *	n--;
-	 */
-
-	if ((j = line_is_tagged(respnum)))
-		strcpy(new_resps, tin_ltoa(j, 3));
-	else
-		snprintf(new_resps, sizeof(new_resps), "  %c", sbuf.art_mark);
 
 	/*
 	 * Find index of first unread in this thread
 	 */
 	j = (sbuf.unread) ? next_unread(respnum) : respnum;
 
-	if (curr_group->attribute->show_info == SHOW_INFO_LINES || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
-		if (n > 1) { /* change this to (n > 0) if you do a n-- above */
-			if (arts[j].line_count != -1) {
-				char tmp_buffer[4];
+	fmt = grp_fmt.str;
 
-				STRCPY(tmp_buffer, tin_ltoa(n, 3));
-				snprintf(art_cnt, sizeof(art_cnt), "%s %s ", tmp_buffer, tin_ltoa(arts[j].line_count, 4));
-			} else
-				snprintf(art_cnt, sizeof(art_cnt), "%s    ? ", tin_ltoa(n, 3));
-		} else {
-			if (arts[j].line_count != -1)
-				snprintf(art_cnt, sizeof(art_cnt), "    %s ", tin_ltoa(arts[j].line_count, 4));
-			else
-				strcpy(art_cnt, "       ? ");
+	if (tinrc.draw_arrow)
+			strcat(buffer, "  ");
+
+	for (; *fmt; fmt++) {
+		if (*fmt != '%') {
+			strncat(buffer, fmt, 1);
+			continue;
 		}
-	} else {
-		if (n > 1) /* change this to (n > 0) if you do a n-- above */
-			snprintf(art_cnt, sizeof(art_cnt), "%s ", tin_ltoa(n, 3));
-		else
-			strcpy(art_cnt, "    ");
-	}
+		switch (*++fmt) {
+			case '\0':
+				break;
 
-	if (curr_group->attribute->show_author != SHOW_FROM_NONE)
+			case '%':
+				strncat(buffer, fmt, 1);
+				break;
+
+			case 'D':	/* date */
+				buf = my_malloc(LEN);
+				if (my_strftime(buf, LEN - 1, grp_fmt.date_str, localtime((const time_t *) &arts[j].date))) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		/* ignore len_from for now, we truncate it later */
-		get_author(FALSE, &arts[j], from, sizeof(from) - 1);
+					if ((wtmp = char2wchar_t(buf)) != NULL) {
+						wtmp2 = wcspart(wtmp, grp_fmt.len_date_max, TRUE);
+						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+							strcat(buffer, tmp);
+
+						free(wtmp);
+						free(wtmp2);
+					}
 #else
-		get_author(FALSE, &arts[j], from, len_from);
+					strncat(buffer, buf, grp_fmt.len_date_max);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				}
+				free(buf);
+				break;
 
-	if (sbuf.multipart_have > 1) /* We have a multipart msg so lets built our new header info. */
-		build_multipart_header(arts_sub, len_subj, arts[j].subject, sbuf.multipart_compare_len, sbuf.multipart_have, sbuf.multipart_total);
-	else
-		STRCPY(arts_sub, arts[j].subject);
+			case 'F':	/* from */
+				if (curr_group->attribute->show_author != SHOW_FROM_NONE) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					get_author(FALSE, &arts[j], tmp, sizeof(tmp) - 1);
 
-#ifndef USE_CURSES
-	buffer = screen[INDEX2SNUM(i)].col;
-#endif /* !USE_CURSES */
+					if ((wtmp = char2wchar_t(tmp)) != NULL) {
+						wtmp2 = wcspart(wtmp, grp_fmt.len_from, TRUE);
+						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+							strcat(buffer, tmp);
+
+						free(wtmp);
+						free(wtmp2);
+					}
+#else
+					len_start = strwidth(buffer);
+					get_author(FALSE, &arts[j], buffer + strlen(buffer), grp_fmt.len_from);
+					fill = grp_fmt.len_from - (strwidth(buffer) - len_start);
+					gap = strlen(buffer);
+					for (k = 0; k < fill; k++)
+						buffer[gap + k] = ' ';
+					buffer[gap + fill] = '\0';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				}
+				break;
+
+			case 'I':	/* initials */
+				len = MIN(grp_fmt.len_initials, sizeof(tmp) - 1);
+				get_initials(&arts[j], tmp, len);
+				strcat(buffer, tmp);
+				if ((k = len - strwidth(tmp)) > 0) {
+					buf = buffer + strlen(buffer);
+					for (;k > 0; --k)
+						*buf++ = ' ';
+					*buf = '\0';
+				}
+				break;
+
+			case 'L':	/* lines */
+				if (arts[j].line_count != -1)
+					strcat(buffer, tin_ltoa(arts[j].line_count, grp_fmt.len_linecnt));
+				else {
+					buf = buffer + strlen(buffer);
+					for (k = grp_fmt.len_linecnt; k > 1; --k)
+						*buf++ = ' ';
+					*buf++ = '?';
+					*buf = '\0';
+				}
+				break;
+
+			case 'm':	/* article flags, tag number, or whatever */
+				if (!grp_fmt.mark_offset)
+					grp_fmt.mark_offset = mark_offset = strwidth(buffer) + 2;
+				if ((k = line_is_tagged(respnum)))
+					STRCPY(tmp_buf, tin_ltoa(k, 3));
+				else
+					snprintf(tmp_buf, sizeof(tmp_buf), "  %c", sbuf.art_mark);
+				strcat(buffer, tmp_buf);
+				break;
+
+			case 'M':	/* message-id */
+				len = MIN(grp_fmt.len_msgid, sizeof(tmp) - 1);
+				strncpy(tmp, arts[j].refptr ? arts[j].refptr->txt : "", len);
+				tmp[len] = '\0';
+				strcat(buffer, tmp);
+				if ((k = len - strwidth(tmp)) > 0) {
+					buf = buffer + strlen(buffer);
+					for (;k > 0; --k)
+						*buf++ = ' ';
+					*buf = '\0';
+				}
+				break;
+
+			case 'n':
+				strcat(buffer, tin_ltoa(i + 1, grp_fmt.len_linenumber));
+				break;
+
+			case 'R':
+				n = ((curr_group->attribute->show_only_unread_arts) ? (sbuf.unread + sbuf.seen) : sbuf.total);
+				if (n > 1)
+					strcat(buffer, tin_ltoa(n, grp_fmt.len_respcnt));
+				else {
+					buf = buffer + strlen(buffer);
+					for (k = grp_fmt.len_respcnt; k > 0; --k)
+						*buf++ = ' ';
+					*buf = '\0';
+				}
+				break;
+
+			case 'S':	/* score */
+				strcat(buffer, tin_ltoa(sbuf.score, grp_fmt.len_score));
+				break;
+
+			case 's':	/* thread/subject */
+				len = curr_group->attribute->show_author != SHOW_FROM_NONE ? grp_fmt.len_subj : grp_fmt.len_subj + grp_fmt.len_from;
+
+				if (sbuf.multipart_have > 1) /* We have a multipart msg so lets built our new header info. */
+					build_multipart_header(arts_sub, len, arts[j].subject, sbuf.multipart_compare_len, sbuf.multipart_have, sbuf.multipart_total);
+				else
+					STRCPY(arts_sub, arts[j].subject);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	/* format subject and from */
-	if ((tmp_subj2 = char2wchar_t(arts_sub)) != NULL) {
-		tmp_subj = wcspart(tmp_subj2, len_subj - 12, TRUE);
-		free(tmp_subj2);
-	} else {
-		wchar_t wc[1] = {0};
+				if ((wtmp = char2wchar_t(arts_sub)) != NULL) {
+					wtmp2 = wcspart(wtmp, len, TRUE);
+					if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+						strcat(buffer, tmp);
 
-		tmp_subj = wcspart(wc, len_subj - 12, TRUE);
-	}
-
-	if ((tmp_from2 = char2wchar_t(from)) != NULL) {
-		tmp_from = wcspart(tmp_from2, len_from, TRUE);
-		free(tmp_from2);
-	} else {
-		wchar_t wc[1] = {0};
-
-		tmp_from = wcspart(wc, len_from, TRUE);
-	}
-
-#	if 0 /* use additional space if !draw_arrow - useful? */
-	if (!tinrc.draw_arrow) {
-		if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
-			mbstowcs(format, "%s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
-			swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
-				 tin_ltoa(i + 1, 6), new_resps, art_cnt, sbuf.score, tmp_subj,
-				 spaces, tmp_from);
-		} else {
-			mbstowcs(format, "%s %s %s %-ls%s%-ls", ARRAY_SIZE(format) - 1);
-			swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
-				 tin_ltoa(i + 1, 6), new_resps, art_cnt, tmp_subj,
-				 spaces, tmp_from);
-		}
-	} else {
-		if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
-			mbstowcs(format, "  %s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
-			swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
-				 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score, tmp_subj,
-				 spaces, tmp_from);
-		} else {
-			mbstowcs(format, "  %s %s %s %-ls%s%-ls", ARRAY_SIZE(format) - 1);
-			swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
-				 tin_ltoa(i + 1, 4), new_resps, art_cnt, tmp_subj,
-				 spaces, tmp_from);
-		}
-	}
-#	else
-	if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
-		mbstowcs(format, "  %s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
-		swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
-			 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score, tmp_subj,
-			 spaces, tmp_from);
-	} else {
-		mbstowcs(format, "  %s %s %s %-ls%s%-ls", ARRAY_SIZE(format) - 1);
-		swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
-			 tin_ltoa(i + 1, 4), new_resps, art_cnt, tmp_subj,
-			 spaces, tmp_from);
-	}
-#	endif /* 0 */
-
-	FreeIfNeeded(tmp_subj);
-	FreeIfNeeded(tmp_from);
-
-	if ((len = wcstombs(buffer, wbuffer, cCOLS * MB_CUR_MAX)) == (size_t) -1)
-		len = 0;
-	buffer[len] = '\0';
+					free(wtmp);
+					free(wtmp2);
+				}
 #else
-	arts_sub[len_subj - 12 + 1] = '\0';
-
-#	if 0 /* use additional space if !draw_arrow - useful? */
-	if (!tinrc.draw_arrow) {
-		if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH)
-			snprintf(buffer, cCOLS + 1, "%s %s %s%6d %-*.*s%s%-*.*s",
-				 tin_ltoa(i + 1, 6), new_resps, art_cnt, sbuf.score,
-				 len_subj - 12, len_subj - 12, arts_sub,
-				 spaces, len_from, len_from, from);
-		else
-			snprintf(buffer, cCOLS + 1, "%s %s %s%-*.*s%s%-*.*s",
-				 tin_ltoa(i + 1, 6), new_resps, art_cnt,
-				 len_subj - 12, len_subj - 12, arts_sub,
-				 spaces, len_from, len_from, from);
-	} else {
-		if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH)
-			snprintf(buffer, cCOLS + 1, "  %s %s %s%6d %-*.*s%s%-*.*s",
-				 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score,
-				 len_subj - 12, len_subj - 12, arts_sub,
-				 spaces, len_from, len_from, from);
-		else
-			snprintf(buffer, cCOLS + 1, "  %s %s %s%-*.*s%s%-*.*s",
-				 tin_ltoa(i + 1, 4), new_resps, art_cnt,
-				 len_subj - 12, len_subj - 12, arts_sub,
-				 spaces, len_from, len_from, from);
-	}
-#	else
-	if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH)
-		snprintf(buffer, cCOLS + 1, "  %s %s %s%6d %-*.*s%s%-*.*s",
-			 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score,
-			 len_subj - 12, len_subj - 12, arts_sub,
-			 spaces, len_from, len_from, from);
-	else
-		snprintf(buffer, cCOLS + 1, "  %s %s %s%-*.*s%s%-*.*s",
-			 tin_ltoa(i + 1, 4), new_resps, art_cnt,
-			 len_subj - 12, len_subj - 12, arts_sub,
-			 spaces, len_from, len_from, from);
-#	endif /* 0 */
+				len_start = strwidth(buffer);
+				strncat(buffer, arts_sub, len);
+				fill = len - (strwidth(buffer) - len_start);
+				gap = strlen(buffer);
+				for (k = 0; k < fill; k++)
+					buffer[gap + k] = ' ';
+				buffer[gap + fill] = '\0';
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				break;
 
-	/*
-	 * protect display from non-displayable characters (e.g., form-feed)
-	 * and write line.
-	 */
-	WriteLine(INDEX2LNUM(i), convert_to_printable(buffer, FALSE));
+			default:
+				break;
+		}
+	}
+	/* protect display from non-displayable characters (e.g., form-feed) */
+	convert_to_printable(buffer, FALSE);
+
+	if (!tinrc.strip_blanks) {
+		/* Pad to end of line so that inverse bar looks 'good' */
+		fill = cCOLS - strwidth(buffer);
+		gap = strlen(buffer);
+		for (k = 0; k < fill; k++)
+			buffer[gap + k] = ' ';
+
+		buffer[gap + fill] = '\0';
+	}
+
+	WriteLine(INDEX2LNUM(i), buffer);
 
 #ifdef USE_CURSES
 	free(buffer);

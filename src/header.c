@@ -3,9 +3,9 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2008-11-22
+ *  Updated   : 2013-11-18
  *
- * Copyright (c) 1997-2012 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2013 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -233,7 +233,7 @@ get_user_name(
 	username[0] = '\0';
 
 	if ((pw = getpwuid(getuid())) != NULL)
-		strcpy(username, pw->pw_name);
+		STRCPY(username, pw->pw_name);
 	else {
 		if (!*username) {
 			error_message(2, _(txt_error_passwd_missing));
@@ -333,19 +333,15 @@ build_sender(
 	if ((ptr = get_full_name()))
 		snprintf(sender, sizeof(sender), ((strpbrk(ptr, "\".:;<>@[]()\\")) ? "\"%s\"" : "%s "), ptr);
 	if ((ptr = get_user_name())) {
-		strcat(sender, "<");
-		strcat(sender, ptr);
-		strcat(sender, "@");
+		snprintf(sender + strlen (sender), sizeof(sender) - strlen (sender), "<%s@", ptr);
 
 #	ifdef HAVE_GETHOSTBYNAME
 		if ((ptr = get_fqdn(get_host_name())))
 #	else
 		if ((ptr = get_host_name()))
 #	endif /* HAVE_GETHOSTBYNAME */
-		{
-			strcat(sender, ptr);
-			strcat(sender, ">");
-		} else
+			 snprintf(sender + strlen (sender), sizeof(sender) - strlen (sender), "%s>", ptr);
+		else
 			return NULL;
 	} else
 		return NULL;

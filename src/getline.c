@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2010-01-21
+ *  Updated   : 2013-11-15
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -383,6 +383,7 @@ gl_newline(
 		 * desirable though.
 		 */
 		error_message(2, "tin_getline: input buffer overflow");
+		free(tin_progname);
 		giveup();
 	}
 	hist_add(w);		/* only adds if nonblank */

@@ -1027,11 +1027,12 @@ get_arrow_key(
 {
 	int ch;
 	int ch1;
+#if defined(HAVE_USLEEP) || defined(HAVE_SELECT) || defined(HAVE_POLL)
+	int i = 0;
+#endif /* HAVE_USLEEP || HAVE_SELECT || HAVE_POLL */
 
 	if (!input_pending(0)) {
 #	ifdef HAVE_USLEEP
-		int i = 0;
-
 		wait_a_while(i) {
 			usleep((unsigned long) (SECOND_CHARACTER_DELAY * 1000));
 			i++;
@@ -1039,7 +1040,6 @@ get_arrow_key(
 #	else	/* !HAVE_USLEEP */
 #		ifdef HAVE_SELECT
 		struct timeval tvptr;
-		int i = 0;
 
 		wait_a_while(i) {
 			tvptr.tv_sec = 0;
@@ -1050,7 +1050,6 @@ get_arrow_key(
 #		else /* !HAVE_SELECT */
 #			ifdef HAVE_POLL
 		struct pollfd fds[1];
-		int i = 0;
 
 		wait_a_while(i) {
 			poll(fds, 0, SECOND_CHARACTER_DELAY);

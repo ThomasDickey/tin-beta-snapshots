@@ -11,7 +11,7 @@ use warnings;
 die "Usage: $pname URL" if $#ARGV != 0;
 
 # version Number
-my $version = "0.1.1";
+my $version = "0.1.2";
 
 my ($method, $url, $match, @try);
 $method = $url = $ARGV[0];
@@ -29,10 +29,11 @@ if ($ENV{"BROWSER_".uc($method)}) {
 		push(@try, 'firefox -a firefox -remote openURL\(%s\)');
 		push(@try, 'mozilla -remote openURL\(%s\)');
 		push(@try, 'opera -remote openURL\(%s\)');
-		push(@try, 'galeon -n');
+		push(@try, qw(chromium 'galeon -n' 'epiphany -n' konqueror));
 		push(@try, 'lynx'); # prefer lynx over links as it can handle news:-urls
-		push(@try, qw('links2 -g' links w3m));
+		push(@try, qw('links2 -g' links w3m surf arora));
 		push(@try, 'kfmclient newTab'); # has no useful return-value on error
+		push(@try, 'xdg-open'); # xdg-open evaluates $BROWSER which is unset
 	}
 }
 
@@ -73,7 +74,9 @@ viewer found in either B<$BROWSER_I<SCHEME>> or B<$BROWSER>.
 
 =item B<$BROWSER_I<SCHEME>>
 
-The user's preferred utility to browse URLs of tye I<SCHEME>. May actually
+=back
+
+The user's preferred utility to browse URLs of type I<SCHEME>. May actually
 consist of a sequence of colon-separated browser commands to be tried in
 order until one succeeds. If a command part contains %s, the URL is
 substituted there, otherwise the browser command is simply called with the
@@ -81,7 +84,7 @@ URL as its last argument. %% is replaced by a single percent sign (%), and
 %c is replaced by a colon (:).
 Examples:
 
-=over 4
+=over 2
 
 =item $BROWSER_FTP="wget:ncftp"
 
@@ -97,7 +100,11 @@ Examples:
 
 Z<>
 
+=over 4
+
 =item B<$BROWSER>
+
+=back
 
 The user's preferred utility to browse URLs for which there is no special
 viewer defined via B<$BROWSER_I<SCHEME>>. Again it may actually consist of a

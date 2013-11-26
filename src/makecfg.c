@@ -6,7 +6,7 @@
  *  Updated   : 2009-02-14
  *  Notes     : #defines and structs for options_menu.c
  *
- * Copyright (c) 1997-2012 Thomas E. Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2013 Thomas E. Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -418,8 +418,8 @@ makecfg(
 		,"#\t\tdefine OVAL(T, M) char M;"
 		,"#\t\tdefine OEND(T, M) char M;"
 		,"#\t\tdefine OTYP struct"
-		,"#\tendif"
-		,"#endif"
+		,"#\tendif /* CPP_DOES_CONCAT */"
+		,"#endif /* lint */"
 		,0
 	};
 	static const char *const table_2[] =

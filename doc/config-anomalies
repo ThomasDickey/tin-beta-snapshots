@@ -61,7 +61,6 @@ print_header
 batch_save
 start_editor_offset
 editor_format
-show_info                    *
 posted_articles_file         *
 add_posted_to_filter
 sigfile

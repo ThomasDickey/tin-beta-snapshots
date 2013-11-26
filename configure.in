@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2012-03-05
+dnl Updated   : 2012-12-15
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2012 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2013 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.1.1
+VERSION=2.1.5
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -81,7 +81,7 @@ case "$host_os" in
 esac
 
 ### Native Language Support
-ALL_LINGUAS="da de en_GB et fr ru sv tr"
+ALL_LINGUAS="da de en_GB et fr ru sv tr zh_TW"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"
@@ -124,6 +124,7 @@ case "$host_cpu:$host_vendor:$host_os" in
 		;;
 esac
 
+dnl TODO: also check for heapsort(3) in libbsd?
 AC_MSG_CHECKING(if you would like to use heapsort)
 CF_ARG_ENABLE(heapsort,
 	[  --enable-heapsort       enable heapsort() as alternative to qsort],
@@ -557,9 +558,10 @@ AC_SUBST(CANDIR_MAKE)
 AC_SUBST(CANLIBS)
 
 ## gsasl - used for AUTH SASL PLAIN
+gsasl=no
 AC_CHECK_HEADER(gsasl.h,
-	AC_CHECK_LIB(gsasl, gsasl_check_version, gsasl=yes, gsasl=no),
-	gsasl=no)
+	[AC_CHECK_LIB(gsasl, gsasl_check_version, gsasl=yes)]
+)
 if test "$gsasl" = "yes"; then
 	CF_ARG_DISABLE(gsasl,
 		[  --disable-gsasl         don't use GNU SASL],
@@ -910,7 +912,7 @@ AC_CHECK_LIB(uu, UUInitialize,
 
 
 # ICU - International Components for Unicode
-# TODO: do seperate checks for
+# TODO: do separate checks for
 #  - unorm_normalize()
 #  - uidna_IDNToUnicode()
 #  - ubidi_open()

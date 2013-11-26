@@ -635,7 +635,7 @@ fi
 
 
 PACKAGE=tin
-VERSION=2.1.1
+VERSION=2.1.5
 cat >> confdefs.h <<EOF
 #define PACKAGE "$PACKAGE"
 EOF
@@ -852,7 +852,7 @@ fi
 esac
 
 ### Native Language Support
-ALL_LINGUAS="da de en_GB et fr ru sv tr"
+ALL_LINGUAS="da de en_GB et fr ru sv tr zh_TW"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"
@@ -9226,7 +9226,7 @@ const char icb[5] = {0xa4, 0xa4, 0xa4, 0xe5, 0x00};
       /* (void) iswupper((wint_t) wcb[0]); */
       /* (void) towlower((wint_t) wcb[0]); */
       /* (void) iswlower((wint_t) wcb[0]); */
-      /* (void) iswalpha((wint_t) wcb[0]); */
+      (void) iswalpha((wint_t) wcb[0]);
       /* (void) iswblank((wint_t) wcb[0]); */
       /* (void) iswpunct((wint_t) wcb[0]); */
       /* (void) iswxdigit((wint_t) wcb[0]); */
@@ -9280,7 +9280,7 @@ const char icb[5] = {0xa4, 0xa4, 0xa4, 0xe5, 0x00};
         /* (void) iswupper((wint_t) wcb[0]); */
         /* (void) towlower((wint_t) wcb[0]); */
         /* (void) iswlower((wint_t) wcb[0]); */
-        /* (void) iswalpha((wint_t) wcb[0]); */
+        (void) iswalpha((wint_t) wcb[0]);
         /* (void) iswblank((wint_t) wcb[0]); */
         /* (void) iswpunct((wint_t) wcb[0]); */
         /* (void) iswxdigit((wint_t) wcb[0]); */
@@ -12203,19 +12203,20 @@ echo "$ac_t""$enableval" 1>&6
 
 
 ## gsasl - used for AUTH SASL PLAIN
+gsasl=no
 ac_safe=`echo "gsasl.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for gsasl.h""... $ac_c" 1>&6
-echo "configure:12209: checking for gsasl.h" >&5
+echo "configure:12210: checking for gsasl.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 12214 "configure"
+#line 12215 "configure"
 #include "confdefs.h"
 #include <gsasl.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:12219: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:12220: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -12232,7 +12233,7 @@ fi
 if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
   echo "$ac_t""yes" 1>&6
   echo $ac_n "checking for gsasl_check_version in -lgsasl""... $ac_c" 1>&6
-echo "configure:12236: checking for gsasl_check_version in -lgsasl" >&5
+echo "configure:12237: checking for gsasl_check_version in -lgsasl" >&5
 ac_lib_var=`echo gsasl'_'gsasl_check_version | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -12240,7 +12241,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lgsasl  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 12244 "configure"
+#line 12245 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -12251,7 +12252,7 @@ int main() {
 gsasl_check_version()
 ; return 0; }
 EOF
-if { (eval echo configure:12255: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:12256: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -12269,12 +12270,11 @@ if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
   gsasl=yes
 else
   echo "$ac_t""no" 1>&6
-gsasl=no
 fi
+
 
 else
   echo "$ac_t""no" 1>&6
-gsasl=no
 fi
 
 if test "$gsasl" = "yes"; then
@@ -15162,7 +15162,7 @@ fi
 
 
 # ICU - International Components for Unicode
-# TODO: do seperate checks for
+# TODO: do separate checks for
 #  - unorm_normalize()
 #  - uidna_IDNToUnicode()
 #  - ubidi_open()
@@ -17087,7 +17087,7 @@ const char icb[5] = {0xa4, 0xa4, 0xa4, 0xe5, 0x00};
       /* (void) iswupper((wint_t) wcb[0]); */
       /* (void) towlower((wint_t) wcb[0]); */
       /* (void) iswlower((wint_t) wcb[0]); */
-      /* (void) iswalpha((wint_t) wcb[0]); */
+      (void) iswalpha((wint_t) wcb[0]);
       /* (void) iswblank((wint_t) wcb[0]); */
       /* (void) iswpunct((wint_t) wcb[0]); */
       /* (void) iswxdigit((wint_t) wcb[0]); */
@@ -17141,7 +17141,7 @@ const char icb[5] = {0xa4, 0xa4, 0xa4, 0xe5, 0x00};
         /* (void) iswupper((wint_t) wcb[0]); */
         /* (void) towlower((wint_t) wcb[0]); */
         /* (void) iswlower((wint_t) wcb[0]); */
-        /* (void) iswalpha((wint_t) wcb[0]); */
+        (void) iswalpha((wint_t) wcb[0]);
         /* (void) iswblank((wint_t) wcb[0]); */
         /* (void) iswpunct((wint_t) wcb[0]); */
         /* (void) iswxdigit((wint_t) wcb[0]); */

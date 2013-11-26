@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2012-03-04
+.\" Updated   : 2013-11-26
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24. Dezember 2011" 2.1.1 "Usenet Newsreader"
+.TH tin 1 "25. November 2013" 2.1.5 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -35,8 +35,9 @@ tin, rtin \- Ein Usenet Newsreader
 \fBtin\fP ist ein einfach zu bedienender Newsreader für das Usenet. Er kann
 Artikel von einem lokalen (z. B. aus \fI/var/spool/news\fP) oder entfernten
 Server (\fBrtin\fP oder \fBtin \-r\fP Option) mittels NNTP (Network News Transport
-Protocol) lesen. Er benutzt, sofern vorhanden, lokale NOV \fBnewsoverview\fP(5)
-Indexdateien bzw. den [X]OVER NNTP\-Befehl (\fBRFC2980\fP, \fBRFC3977\fP).
+Protocol) lesen. Er benutzt, sofern vorhanden, lokale NOV
+\fB\%newsoverview\fP(5) Indexdateien bzw. den [X]OVER NNTP\-Befehl
+(\fBRFC\%2980\fP, \fBRFC\%3977\fP).
 .PP
 \fBtin\fP hat vier unterschiedliche Arbeitsebenen: Auswahlebene, Gruppenebene,
 Threadebene und Artikelebene. Mit dem \fBHelp\fP ('\fBh\fP') Befehl können die
@@ -100,7 +101,8 @@ Erstelle bzw. aktualisiere Index\-Dateien für alle Gruppen in
 Datei und markiere alle Artikel als gelesen.
 .TP 
 \fB\-d\fP
-Keine Gruppenbeschreibungen laden (Interaktiver\-Modus).
+Keine Gruppenbeschreibungen und die Server Meldung des Tages laden
+(Interaktiver\-Modus).
 .TP 
 \fB\-D\fP\fI Debuggrad\fP
 Debuggrad angeben (1 = NNTP, 2 = Filter, 4 = newsrc, 8 = Threading, 16 =
@@ -132,12 +134,13 @@ has no effect if \fBtin\fP retrieves its index files via NNTP and
 \fB\-l\fP
 Get number of articles per group from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file. If reading
-via NNTP this is done with the LIST command (\fBRFC3977\fP). This might result
-in incorrect article counts but is usually faster than the default which is
-to read the \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file
-(either directly or via LIST) and then check the article count via NNTP
-GROUP command (\fBRFC3977\fP) \*(rq\fB\-ln\fP\*(rq. If reding via NNTP and LIST COUNTS
-(\fBRFC6048\fP) is available that is used instead as it gives more accurate
+via NNTP this is done with the LIST command (\fBRFC\%3977\fP ). This might
+result in incorrect article counts but is usually faster than the default
+which is to read the
+\fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file (either
+directly or via LIST) and then check the article count via NNTP GROUP
+command (\fBRFC\%3977\fP ) \*(rq\fB\-ln\fP\*(rq. If reading via NNTP and LIST COUNTS
+(\fBRFC\%6048\fP ) is available that is used instead as it gives more accurate
 article counts.
 .TP 
 \fB\-m\fP\fI Verzeichnis\fP
@@ -170,7 +173,8 @@ Zu benutzende Portnummer falls per NNTP gelesen wird (Standard ist
 119). Übersteuert die Umgebungsvariable $\fBNNTPPORT\fP.
 .TP 
 \fB\-q\fP
-Nicht prüfen ob neue Newsgruppen vorhanden sind.
+Nicht prüfen ob neue Newsgruppen vorhanden sind und die Server Meldung des
+Tages nicht laden.
 .TP 
 \fB\-Q\fP
 Schnellstart. \fBtin\fP so schnell wie möglich starten, zur Zeit entspricht
@@ -210,7 +214,7 @@ Schnell\-Modus um nur einen Artikel zu posten. Nach Möglichkeit mit \*(rq\fB\-n
 kombinieren.
 .TP 
 \fB\-x\fP
-No posting mode. You cannot post articles if you use this option.
+Sie können keine Artikel veröffentlichen, wenn Sie diese Option verwenden.
 .TP 
 \fB\-X\fP
 No overwrite mode. \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP and files in
@@ -231,7 +235,7 @@ that new/unread news exists. Useful for writing scripts.
 \fBtin\fP can also dynamically change its options by the \fBOptionMenu\fP ('\fBM\fP')
 command. Any changes are written to
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP. For more information see section
-"GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" and \fBtin\fP(5).
+"GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" and \fB\%tin\fP(5).
 .PP
 A list of groups can be specified after the other command\-line options. This
 can be useful if you wish to yank in or subscribe to a hand\-picked subset of
@@ -279,15 +283,16 @@ administrator. The subscriptions file should be created in your news lib
 directory (i.e., \fI${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions\fP) and should have
 file permissions set to 0644. If you read news via NNTP, then your news
 server must support the LIST SUBSCRIPTIONS command. It is part of the NNTP
-List Extensions (\fBRFC6048\fP) and all modern servers should understand it.
+List Extensions (\fBRFC\%6048\fP ) and all modern servers should understand it.
 .SS "SCREEN FORMAT"
 \fBtin\fP hat vier unterschiedliche Arbeitsebenen: Auswahlebene, Gruppenebene,
 Threadebene und Artikelebene.
 .PP
 At the Selection level the title displays (the name of the newsserver and)
 the number of subscribed groups (containing new unread articles). The
-newsgroups are displayed in the middle of the screen with the number of
-unread articles displayed on the same line in front.
+newsgroups are displayed in the middle of the screen usually with the number
+of unread articles displayed on the same line in front, but it can be
+customized via \fBselect_format\fP.
 .PP
 .\" FIXME - make this autoscale
 .nf
@@ -334,9 +339,13 @@ then you will receive an error from your newsserver telling you the correct
 group to post to.
 .PP
 At the Group level the title contains the name of the group, the number of
-conversation threads, the threading method, the limit of articles to get,
-the total number of articles, the number of hot articles, the number of
-recent articles and the number of killed articles. I.e.:
+conversation threads, the abbreviated threading method (\fBthread_articles\fP),
+the limit of articles to get (if set; \fBgetart_limit\fP), the total number of
+(unread) articles (\fBart_marked_read\fP or \fBart_marked_unread\fP), the number
+of hot articles \fBart_marked_selected\fP, the number of read hot articles (if
+any; \fBart_marked_read_selected\fP), the number of recent articles
+(\fBart_marked_recent\fP) and the number of killed articles
+(\fBart_marked_killed\fP). I.e.:
 .PP
 .nf
 .\" FIXME - make this autocenter
@@ -358,7 +367,8 @@ the \fBrecent_time\fP option. If a thread has hot articles in it (see also
 section "FILTERING ARTICLES") it's marked with \fBart_marked_selected\fP in
 front of the total number of articles in the thread. The number of lines of
 the first (unread) article in the thread might also be shown right before
-the subject \- this is controlled by the \fBshow_info\fP option.
+the subject \- this is controlled by the \fBshow_info\fP option. The display can
+be customized via \fBgroup_format\fP.
 .PP
 .\" FIXME - make this autoscale
 .nf
@@ -372,7 +382,7 @@ the subject \- this is controlled by the \fBshow_info\fP option.
 .PP
 .\" FIXME - add description of fields
 At the Thread level the screen usually (depends on the threading method
-used) looks like this:
+used) looks like this, but can be customized via \fBthread_format\fP:
 .PP
 .\" FIXME - make this autoscale
 .nf
@@ -394,8 +404,11 @@ Urs Janssen <urs@akk.org>       bei Arbeitskreis Kultur und Kommunikati
 
 Artikel\-Körper
 .fi
+.PP
 .\"
 .\"
+Das Aussehen der Auswahl\-, Gruppen\- und Threadebene kann individuell
+angepasst werden. Siehe hierzu den Abschnitt "ANSICHTEN ANPASSEN".
 .SS "COMMON MOVING KEYS"
 This table shows the common keys used for moving around all levels within
 \fBtin\fP.
@@ -421,7 +434,7 @@ editing a string:
 .PP
 .TP  10
 \fB^A, ^E\fP
-move to beginning or end of line, respectively.
+An den Zeillenanfang bzw. das Zeilenende springen.
 .TP 
 \fB^F, ^B\fP
 non\-destructive move forward or back one location, respectively.
@@ -440,7 +453,7 @@ Lösche vom Cursor bis zum Zeilenende.
 move through history, previous and next, respectively.
 .TP 
 \fB^L, ^R\fP
-redraw the current line.
+Aktuelle Zeile neu aufbauen.
 .TP 
 \fB<CR>\fP
 places line on history list if non\-blank, appends newline and returns to the
@@ -461,7 +474,7 @@ Shell escape. \fBShellEscape\fP by itself will launch a shell, \fBShellEscape\fP
 have been disabled by the System Administrator.
 .TP 
 \fBToggleColor '&'\fP
-Toggle use of ANSI color.
+ANSI Farben ein\-/ausschalten.
 .TP 
 \fBRedrawScr '^L'\fP
 Bildschirminhalt neu aufbauen.
@@ -491,7 +504,7 @@ Help screen of commands available on the current menu. You can use
 ('\fB\e\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Toggle the display of help mini menu at the bottom of the screen.
+Mini\-Hilfe am unterem Bildschirrand ein\-/ausschalten.
 .TP 
 \fBDisplayPostHist 'W'\fP
 List articles posted by user. The date posted, the newsgroup and the subject
@@ -503,7 +516,7 @@ to the menu.
 .\"--------------------------------------------------------------------
 .\"
 Versions\-Informationen ausgeben.
-.SS "NEWSGROUP SELECTION COMMANDS"
+.SS "BEFEHLE ZUR GRUPPENAUSWAHL"
 .TP  10
 \fB4\fP
 Gruppe 4 auswählen.
@@ -523,10 +536,12 @@ Liste vorhandener Newsgroups sortieren.
 Vorherige Suche wiederholen.
 .TP 
 \fBSearchSubjF '/'\fP
-Search for a group by name and description (if displayed).
+Vorwärts nach einer Gruppe anhand des Namens und/oder der Kurzbeschreibung
+(falls angezeigt) suchen.
 .TP 
 \fBSearchSubjB '?'\fP
-Backward search through the group names and descriptions.
+Rückwärts mach einer Gruppe anhand des Namens und/oder der Kurzbeschreibung
+(falls angezeigt) suchen.
 .TP 
 \fBSelectReadGrp '^J' '<CR>'\fP
 Read current group.
@@ -617,7 +632,8 @@ get the chance to \fBPostEdit\fP ('\fBe\fP') the article again, \fBPostPostpone\
 discard it via \fBQuit\fP ('\fBq\fP').
 .TP 
 \fBSelectQuitNoWrite 'X'\fP
-Quit \fBtin\fP without saving any changes to the configuration.
+\fBtin\fP beenden ohne ggf. gemachte Änderungen an den Einstellung zu
+speichern.
 .TP 
 \fBSelectYankActive 'y'\fP
 Yanks in all groups. Toggles the displayed groups between all the groups in
@@ -633,6 +649,9 @@ see if any new news has arrived since starting \fBtin\fP.
 .\"
 Alle Artikel in der aktuellen Gruppe als ungelesen markieren.
 .SS "GROUP INDEX COMMANDS"
+All searches in this level are limited to unread articles if in
+\fBshow_only_unread_arts\fP mode. \fBGroupToggleReadUnread\fP ('\fBr\fP')  can be use
+toggle the setting right before/after the search.
 .TP  10
 \fB4\fP
 Artikel 4 auswählen.
@@ -666,10 +685,10 @@ Re\-enter the last message that was viewed.
 Vorherige Suche wiederholen.
 .TP 
 \fBSearchSubjF '/'\fP
-Search forward for specified subject.
+Vorwärts nach dem angegebenem Subject suchen.
 .TP 
 \fBSearchSubjB '?'\fP
-Search backward for specified subject.
+Rückwärts nach dem angegebenem Subject suchen.
 .TP 
 \fBGroupSelThd '*'\fP
 Select current thread for later processing.
@@ -768,7 +787,7 @@ Choose a new group by name. This command can be used to access any group,
 even those not currently yanked in.
 .TP 
 \fBGroupToggleGetartLimit 'G'\fP
-Toggle article/group limit.
+Artikel/Gruppe Beschränkungen ein\-/ausschalten.
 .TP 
 \fBToggleInfoLastLine 'i'\fP
 Display the subject of the first article in the current thread in the last
@@ -867,7 +886,7 @@ your own articles.
 .TP 
 \fBGroupMarkUnselArtRead 'X'\fP
 Mark all unread articles that have not been selected as read, redraw screen
-to reflect changes and put index at the first thread to begin reading. 
+to reflect changes and put index at the first thread to begin reading.
 Pressing \fBGroupMarkUnselArtRead\fP ('\fBX\fP') again will toggle back to the way
 it was before. See \fBGroupUndoSel\fP ('\fB~\fP') command for clearing the toggle
 effect, leaving the group will also clear the toggle effect and make the
@@ -1060,7 +1079,7 @@ Reply through mail to the author of the current article with a copy of the
 article with all headers included.
 .TP 
 \fBPagePGPCheckArticle '^G'\fP
-Perform \fBpgp\fP(1)  operations on article.
+Perform \fB\%pgp\fP(1)  operations on article.
 .TP 
 \fBPageToggleRaw '^H'\fP
 Toggles the display mode (raw including all headers vs. cooked).
@@ -1085,7 +1104,7 @@ Toggles the display of all headers vs. headers in
 \fBnews_headers_to_display\fP.
 .TP 
 \fBPageToggleRot '%'\fP
-Toggle ROT\-13 decoding for this article.
+ROT\-13 Entschlüsseln ein\-/ausschalten.
 .TP 
 \fBPageToggleUue '('\fP
 Toggle the display of uuencoded sections. The default behavior is taken from
@@ -1325,7 +1344,7 @@ Toggle the display of the current URL in the last line.
 Help screen of commands available.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Toggle the display of help mini menu at the bottom of the screen.
+Mini\-Hilfe am unterem Bildschirrand ein\-/ausschalten.
 .RE
 .\"--------------------------------------------------------------------
 .\"
@@ -1373,19 +1392,19 @@ Pipe attachment into command. Uses the raw attachment, no decoding is done.
 Shell escape.
 .TP 
 \fBToggleInfoLastLine 'i'\fP
-Names oder Beschreibung des Anhangs in der untersten Zeile anzeigen.
+Name oder Beschreibung des Anhangs in der untersten Zeile anzeigen.
 .TP 
 \fBHelp 'h'\fP
 Help screen of commands available.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Toggle the display of help mini menu at the bottom of the screen.
+Mini\-Hilfe am unterem Bildschirrand ein\-/ausschalten.
 .RE
 .\"--------------------------------------------------------------------
 .\"
 .SS "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
 .\" FIXME - add missing descriptions
-At startup, \fBtin\fP reads in the configuration files (see also \fBtin\fP(5)). 
+At startup, \fBtin\fP reads in the configuration files (see also \fB\%tin\fP(5)).
 They contain a list of variables that can be used to configure the way
 \fBtin\fP works. If it exists, the global configuration file,
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fP is read. After that, the user's own
@@ -1451,7 +1470,7 @@ The character used to show that an article will return as an unread article
 when the group is next entered. Default is '\-'.
 .TP 
 \fBZeichen für wichtige Artikel (art_marked_selected)\fP
-The character used to show that an article/thread is auto\-selected (hot). 
+The character used to show that an article/thread is auto\-selected (hot).
 Default is '*'.
 .TP 
 \fBZeichen für aktuelle Artikel (art_marked_recent)\fP
@@ -1466,11 +1485,11 @@ The character used to show that an article has not been read. Default is
 The character used to show that an article was read. Default is ' '.
 .TP 
 \fBZeichen für gekillte Artikel (art_marked_killed)\fP
-The character used to show that an article was killed. Default is 'K'. 
+The character used to show that an article was killed. Default is 'K'.
 \fBkill_level\fP must be set accordingly.
 .TP 
 \fBZeichen für gelesene wichtige Art. (art_marked_read_selected)\fP
-The character used to show that an article was hot before it was read. 
+The character used to show that an article was hot before it was read.
 Default is ':'. \fBkill_level\fP must be set accordingly.
 .TP 
 \fBStart des MIME\-Viewers bestätigen (ask_for_metamail)\fP
@@ -1483,7 +1502,7 @@ Automatically put your name in the \*(rqCc:\*(rq and/or \*(rqBcc:\*(rq field whe
 mailing an article. Default is No.
 .TP 
 \fBZeige Thread mit rechter Pfeilt. an (auto_list_thread)\fP
-If ON automatically list thread when entering it using right arrow key. 
+If ON automatically list thread when entering it using right arrow key.
 Default is ON.
 .TP 
 \fBAutom. Wiederverbindung zum Server (auto_reconnect)\fP
@@ -1506,7 +1525,7 @@ displayed after composing an article. Default is ON.
 .TP 
 \fBSpeichere NNTP Overview Daten lokal (cache_overview_files)\fP
 If ON, create local copies of NNTP overview files. This can be used to
-considerably speed up accessing large groups when using a slow connection. 
+considerably speed up accessing large groups when using a slow connection.
 See also "INDEX FILES". Default is OFF.
 .TP 
 \fBCatchup der Gruppen beim Beenden (catchup_read_groups)\fP
@@ -1610,8 +1629,8 @@ the \fBQuit\fP ('\fBq\fP') command.
 .\" most of these default_* settings are not available from the menu
 .\" as they are intended for internal use only.
 Format string \fBtin\fP uses for date representation. A description of the
-different format options can be found at \fBstrftime\fP(3).  \fBtin\fP uses
-\fBstrftime\fP(3)  when available and supports most format options in his
+different format options can be found at \fB\%strftime\fP(3).  \fBtin\fP uses
+\fB\%strftime\fP(3)  when available and supports most format options in his
 fallback code.  Default is "%a, %d %b %Y %H:%M:%S".
 .TP 
 \fB(default_art_search)\fP
@@ -1729,7 +1748,7 @@ Allows groups/articles to be selected by an arrow '\->' if set ON or by
 an highlighted bar if set OFF. Default is OFF.
 .TP 
 \fBAufruf Ihres Editors (editor_format)\fP
-The format string used to create the editor start command with parameters. 
+The format string used to create the editor start command with parameters.
 Default is "%E +%N %F" (i.e., /bin/vi +7 .article).
 .TP 
 \fBAnzeigeauffrischung nach Kommandos (force_screen_redraw)\fP
@@ -1745,13 +1764,18 @@ fetching articles from your first unread minus absolute value of
 \fBCatchup der Gruppe mit l. Cursor (group_catchup_on_exit)\fP
 If ON catchup group when leaving with the left arrow key. Default is ON.
 .TP 
+\fBFormatanweisung für die Gruppenebene (group_format)\fP
+Diese Formatanweisung wird von \fBtin\fP zur Darstellung der Gruppenebene
+benutzt. Für weitere Informationen sei auf den Abschnitt "ANSICHTEN
+ANPASSEN" verwiesen. Voreingestellt ist "%n\ %m\ %R\ %L\ \ %s\ \ %F".
+.TP 
 \fBZum nächsten ungelesenen Artikel... (goto_next_unread)\fP
-Which keys \fBtin\fP should accept to jump to the next unread article. 
+Which keys \fBtin\fP should accept to jump to the next unread article.
 Possible is any combination of \fBPageDown\fP and \fBPageNextUnread\fP.  When
 \fBPageDown\fP is set \fBtin\fP jumps to the next article at the end of the
 current one. When \fBPageNextUnread\fP is set \fBtin\fP jumps immediately to the
 next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')  is
-pressed. Default is PageNextUnread.
+pressed. Default is \fBPageNextUnread\fP.
 .TP 
 \fBMax. Länge angezeigter Gruppennamen (groupname_max_length)\fP
 Maximum length of the names of newsgroups to be displayed so that more of
@@ -1767,9 +1791,10 @@ article but can also lead to false positives. This setting can also be
 toggled in the article viewer. Default is 'No'.
 .TP 
 \fBExternes inews\-Programm (inews_prog)\fP
-Path, name and options of external \fBinews\fP(1).  If you are reading via NNTP
-the default value is \-\-internal (use built\-in NNTP inews), else it is "inews
-\-h". The article is passed to \fBinews_prog\fP on STDIN via '< article'.
+Path, name and options of external \fB\%inews\fP(1).  If you are reading via
+NNTP the default value is \-\-internal (use built\-in NNTP inews), else it is
+"inews \-h". The article is passed to \fBinews_prog\fP on STDIN via '<
+article'.
 .TP 
 \fB(info_in_last_line)\fP
 .\" this is missing from the Menu
@@ -1823,31 +1848,32 @@ Voreinstellung ist 0 (\fBKillt nur ungelesene Artikel\fP).
 Allows 8bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set to
 8bit. Leaving it OFF is safe for most users and compliant to Internet Mail
-Standard (\fBRFC5322\fP and \fBRFC2047\fP). Default is OFF.
+Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP ). Default is OFF.
 .TP 
 \fBMailadresse (und Name) (mail_address)\fP
 User's mail address (and full name), if not username@host. This is used when
-creating articles, sending mail and when \fBpgp\fP(1)  signing.
+creating articles, sending mail and when \fB\%pgp\fP(1)  signing.
 .TP 
 \fBMIME\-Kodierung für E\-Mails (mail_mime_encoding)\fP
 MIME encoding of the body in mail message, if necessary (8bit, base64,
 quoted\-printable, 7bit). Default is quoted\-printable.
 .TP 
 \fBEinleitungszeile bei Mailantwort (mail_quote_format)\fP
-Format of quote line when replying (via mail) to an article (%A=Address,
-%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
-%C=Firstname, %I=Initials). Default is "In article %M you wrote:"
+Format der Einleitungszeile für Mailantworten (%A=Mailadresse, %D=Datum,
+%F=Name und Adresse, %G=Name der Gruppe, %M=Message\-ID, %N=Name des Autors,
+%C=Vorname des Autors, %I=Initialen des Autor). Voreinstellung ist "In
+article %M you wrote:".
 .TP 
 \fBMailbox\-Format (mailbox_format)\fP
-Select one of the following mailbox\-formats: MBOXO (default, except for
-SCO), MBOXRD or MMDF (default on SCO). See \fBmbox\fP(5)  for more details on
-MBOXO and MBOXRD and \fBmmdf\fP(5)  for more details about MMDF.
+Select one of the following mailbox\-formats: MBOXO (default, except on SCO),
+MBOXRD or MMDF (default on SCO). See \fB\%mbox\fP(5)  and \fBRFC\%4155\fP for more
+details on MBOXO and MBOXRD and \fB\%mmdf\fP(5)  for more details about MMDF.
 .TP 
 \fBMail Verzeichnis (maildir)\fP
-The directory where articles/threads are to be saved in \fBmbox\fP(5) 
-format. This feature is mainly for use with the \fBelm\fP(1)  mail program. It
-allows the user to save articles/threads/groups simply by giving '=' as the
-filename to save to.  Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fP.
+The directory where articles/threads are to be saved in \fB\%mbox\fP(5)
+format. This feature is mainly for use with the \fB\%elm\fP(1)  mail
+program. It allows the user to save articles/threads/groups simply by giving
+\&'=' as the filename to save to.  Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fP.
 .TP 
 \fBAufruf Ihres Mailkommandos (mailer_format)\fP
 .\" TODO: document %S, %T, %M, %F, %U ...
@@ -1870,9 +1896,9 @@ unread articles, or nothing.
 If ON mark articles that are saved as read. Default is ON.
 .TP 
 \fBMIME\-Viewer (metamail_prog)\fP
-Path, name and options of external \fBmetamail\fP(1)  program used to view
+Path, name and options of external \fB\%metamail\fP(1)  program used to view
 non\-textual parts of articles.  To use the built\-in viewer, set to
-\-\-internal. This is the default value when \fBmetamail\fP(1)  is not
+\-\-internal. This is the default value when \fB\%metamail\fP(1)  is not
 installed. Leave it blank if you don't want any automatic viewing of
 non\-textual attachments. The 'V' command can always be used to manually view
 any attachments.  See also \fBask_for_metamail\fP.
@@ -1885,13 +1911,13 @@ than the value of this parameter is considered not displayable and
 represented as '?'. Otherwise, all character sets are regarded as compatible
 with the display. If it's not set, the value of the environment variable
 $\fBMM_CHARSET\fP is used. US\-ASCII or compile\-time default is used in case
-neither of them is defined. If your system supports \fBiconv\fP(3), this option
-is disabled and you should use \fBmm_network_charset\fP instead.
+neither of them is defined. If your system supports \fB\%iconv\fP(3), this
+option is disabled and you should use \fBmm_network_charset\fP instead.
 .TP 
 \fBMM_NETWORK_CHARSET (mm_network_charset)\fP
-Charset used for posting and MIME headers; replaces \fBmm_charset\fP. 
+Charset used for posting and MIME headers; replaces \fBmm_charset\fP.
 Conversion between \fBmm_network_charset\fP and local charset (determined via
-\fBnl_langinfo\fP(3))  is done via \fBiconv\fP(3), if this function is not
+\fB\%nl_langinfo\fP(3))  is done via \fB\%iconv\fP(3), if this function is not
 available on your system this option is disabled and you have to use
 \fBmm_charset\fP instead. \fBmm_network_charset\fP is limited to one of the
 following charsets:
@@ -1899,7 +1925,7 @@ following charsets:
 US\-ASCII, ISO\-8859\-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8\-{R,U,RU}
 EUC\-{CN,JP,KR,TW}, ISO\-2022\-{CN,CN\-EXT,JP,JP\-1,JP\-2}, Big5, UTF\-8
 .in -.3i
-Not all values might work on your system, see \fBiconv_open\fP(3)  for more
+Not all values might work on your system, see \fB\%iconv_open\fP(3)  for more
 details. If it's not set, the value of the environment variable
 $\fBMM_CHARSET\fP is used. US\-ASCII or compile\-time default is used in case
 neither of them is defined.
@@ -1925,7 +1951,7 @@ terminal which attributes are usable. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fB(newnews)\fP
-These are internal timers used by \fBtin\fP to keep track of new newsgroups. 
+These are internal timers used by \fBtin\fP to keep track of new newsgroups.
 Do not change them unless you understand what they are for.
 .TP 
 \fBor *) (news_headers_to_display\fP
@@ -1944,12 +1970,13 @@ do something like this: \fInews_headers_to_display=X\-\fP
 off this option.
 .TP 
 \fBEinleitungszeile beim Antworten (news_quote_format)\fP
-Format of quote line when posting/following up an article (%A=Address,
-%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
-%C=Firstname, %I=Initials). Default is "%F wrote:".
+Format der Einleitungszeile für Newsartikel (%A=Mailadresse, %D=Datum,
+%F=Name und Adresse, %G=Name der Gruppe, %M=Message\-ID, %N=Name des Autors,
+%C=Vorname des Autors, %I=Initialen des Autor). Voreinstellung ist "%F
+wrote:".
 .TP 
 \fBNNTP read timeout in seconds (nntp_read_timeout_secs)\fP
-Time in seconds to wait for a response from the server. Default is 120. 
+Time in seconds to wait for a response from the server. Default is 120.
 Setting this to 0 means no timeout.
 .TP 
 \fBUnicode Normalisierungsart (normalization_form)\fP
@@ -1992,7 +2019,7 @@ and quoted\-printable are usually undesired on usenet.
 \fBNachbearbeitete Artikel anzeigen (post_process_view)\fP
 If ON, then \fBtin\fP will start an appropriate viewer program to display any
 files that were post processed and uudecoded. The program is determined
-using the \fBmailcap\fP(5)  file. Default is ON.
+using the \fB\%mailcap\fP(5)  file. Default is ON.
 .TP 
 \fBNachbearbeiten gespeichert. Artikel (post_process_type)\fP
 This specifies whether to perform post processing on saved articles.  The
@@ -2001,7 +2028,7 @@ following values are allowed:
 .IP 0 3
 \fBNo\fP (default), no post processing is done.
 .IP 1
-\fBShell archives\fP, unpacking of multi\-part \fBshar\fP(1)  files only.
+\fBShell archives\fP, unpacking of multi\-part \fB\%shar\fP(1)  files only.
 .IP 2
 \fBYes\fP, binary attachments and data will be decoded and saved.
 .RE
@@ -2017,12 +2044,12 @@ the \*(rqSubject:\*(rq and \*(rqFrom:\*(rq fields are output. Default is OFF.
 .TP 
 \fBDruckprogramm mit Optionen (printer)\fP
 The printer program with options that is to be used to print articles.  The
-default is \fBlpr\fP(1)  for BSD machines and \fBlp\fP(1)  for SysV
+default is \fB\%lpr\fP(1)  for BSD machines and \fB\%lp\fP(1)  for SysV
 machines. Printing from \fBtin\fP may have been disabled by the System
 Administrator.
 .TP 
 \fBBearbeite nur ungelesene Artikel (process_only_unread)\fP
-If ON only save/print/pipe/mail unread articles (tagged articles excepted). 
+If ON only save/print/pipe/mail unread articles (tagged articles excepted).
 Default is OFF.
 .TP 
 \fBLeeres Fup'2 im Editor anzeigen (prompt_followupto)\fP
@@ -2098,9 +2125,14 @@ Score of an article which should be marked hot, this must be >=
 The number of lines that will be scrolled up/down in the article pager when
 using cursor\-up/down. The default is 1 (line\-by\-line). Set to 0 to get
 traditional tin page\-by\-page scrolling. Set to \-1 to get page\-by\-page
-scrolling where the top/bottom line is carried over onto the next page. 
+scrolling where the top/bottom line is carried over onto the next page.
 This setting supersedes show_last_line_prev_page=ON. Set to \-2 to get
 half\-page scrolling. This setting supersedes full_page_scroll=OFF.
+.TP 
+\fBFormatanweisung für die Auswahlebene (select_format)\fP
+Diese Formatanweisung wird von \fBtin\fP zur Darstellung der Auswahlebene
+benutzt. Für weitere Informationen sei auf den Abschnitt "ANSICHTEN
+ANPASSEN" verwiesen. Voreingestellt ist "%f\ %n\ %U\ \ %G\ \ %d".
 .TP 
 \fBIm Gruppenmenü, zeige Autor an nach (show_author)\fP
 Which information about the author should be shown. Default is 2, authors
@@ -2128,13 +2160,13 @@ and turn descriptions off. The text used is taken from the
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups\fP for mailgroups. Default is ON.
 .TP 
 \fBSortierfunktion (sort_function)\fP
-Function used for sorting articles. Default is 0.
+Sortierfunktion für Artikel. Standard ist 0.
 .RS +.5i
 .IP 0 3
-Use \fBqsort\fP(3)  for sorting.
+Mit \fB\%qsort\fP(3) sortieren.
 .IP 1
-Use \fBheapsort\fP(3)  for sorting. This might be faster in large groups with
-long threads (somewhat presorted data).
+Mit \fB\%heapsort\fP(3) sortieren. Kann in großen Gruppen mit langen Threads
+schneller sein.
 .RE
 .TP 
 \fBZeige Zeilenz./Bewert. in Übersicht (show_info)\fP
@@ -2191,7 +2223,7 @@ This specifies how articles should be sorted. Sort by ascending Date (6) is
 the default. The following sort types are allowed:
 .RS +.5i
 .IP 0 3
-\fBNothing\fP, don't sort articles.
+\fBNichts\fP, keine Sortierung.
 .IP 1
 \fBSubject: (absteigend)\fP, Artikel absteigend nach \*(rqSubject:\*(rq sortieren.
 .IP 2
@@ -2258,7 +2290,7 @@ display when reading on a slow terminal or via modem. Default is ON.
 \fBLösche nicht vorhan. G. aus newsrc (strip_bogus)\fP
 Bogus groups are groups that are present in your
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP file that no longer exist on the news
-server. There are 3 options. 0 means do nothing & always keep bogus groups. 
+server. There are 3 options. 0 means do nothing & always keep bogus groups.
 1 means bogus groups will be permanently removed. 2 means that bogus groups
 will appear on the Group Selection Menu, prefixed with a 'D'. This allows
 you to unsubscribe from them as and when you wish. Default is 0 (Always
@@ -2286,18 +2318,18 @@ toggled in the article viewer via \fBPageToggleTex2iso\fP ('\fB"\fP').
 Defines which threading method to use. It's possible to set the threading
 type on a per group basis by setting the group attribute variable
 \fBthread_arts\fP to 0 \- 4 in the file
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fP. (See also "GROUP ATTRIBUTES".) 
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fP. (See also "GROUP ATTRIBUTES".)
 The default is Both Subject and References.  The choices are:
 .RS +.5i
 .IP 0 3
 \fBNone\fP, don't thread.
 .IP 1
-\fBSubject\fP, thread on \*(rqSubject:\*(rq only.
+\fBSubject\fP, Diskussionsfaden nur anhand von \*(rqSubject:\*(rq aufbauen.
 .IP 2
-\fBReferences\fP, thread on \*(rqReferences:\*(rq only.
+\fBReferences\fP, Diskussionsfaden nur anhand von \*(rqReferences:\*(rq aufbauen.
 .IP 3
-\fBBoth Subject and References\fP, thread on \*(rqReferences:\*(rq then
-\&\*(rqSubject:\*(rq (default).
+\fBBoth Subject and References\fP, Diskussionsfaden anhand von
+\&\*(rqReferences:\*(rqund \*(rqSubject:\*(rq aufbauen. (Voreinstellung).
 .IP 4
 \fBMultipart Subject\fP, thread multipart articles on \*(rqSubject:\*(rq.
 .IP 5
@@ -2309,6 +2341,11 @@ The default is Both Subject and References.  The choices are:
 If ON catchup group/thread when leaving with the left arrow key. Default is
 ON.
 .TP 
+\fBFormatanweisung für die Threadebene (thread_format)\fP
+Diese Formatanweisung wird von \fBtin\fP zur Darstellung der Threadebene
+benutzt. Für weitere Informationen sei auf den Abschnitt "ANSICHTEN
+ANPASSEN" verwiesen. Voreingestellt ist "%n\ %m\ \ [%L]\ \ %T\ \ %F".
+.TP 
 \fBProzentualer Subject Vergleich (thread_perc)\fP
 How closely the subjects must match for two threads to be considered part of
 the same thread. This is a percentage and the default if 75%.
@@ -2318,22 +2355,22 @@ How the total score of a thread is computed. Default is 0, the maximum score
 in this thread.
 .RS +.5i
 .IP 0 3
-\fBMax\fP, the maximum score in this thread.
+\fBMax\fP, Maximalwert im Diskussionsfaden.
 .IP 1
-\fBSum\fP, the sum of all scores in this thread.
+\fBSum\fP, Summer aller Bewertungen im Diskussionsfaden.
 .IP 2
-\fBAverage\fP, the average score in this thread.
+\fBAverage\fP, Durchschnitt aller Bewertungen im Diskussionsfaden.
 .RE
 .TP 
 \fBVerwende Umschreibungen (translit)\fP
-If ON append //TRANSLIT to the first argument of \fBiconv_open\fP(3)  to enable
-transliteration. This means that when a character cannot be represented in
-the target character set, it can be approximated through one or several
-similarly looking characters. On systems where this extension doesn't exist,
-this option is disabled. Default is OFF.
+If ON append //TRANSLIT to the first argument of \fB\%iconv_open\fP(3)  to
+enable transliteration. This means that when a character cannot be
+represented in the target character set, it can be approximated through one
+or several similarly looking characters. On systems where this extension
+doesn't exist, this option is disabled. Default is OFF.
 .TP 
 \fBHow to treat blank lines (trim_article_body)\fP
-Allows you to select how \fBtin\fP treats blank lines in article bodies. 
+Allows you to select how \fBtin\fP treats blank lines in article bodies.
 Default is 0. This option does not affect lines within verbatim blocks.
 .RS +.5i
 .IP 0 3
@@ -2341,7 +2378,7 @@ Default is 0. This option does not affect lines within verbatim blocks.
 .IP 1
 \fBFührende Leerzeilen überspringen\fP.
 .IP 2
-\fBAbschliessende Leerzeilen überspr.\fP.
+\fBAbschließende Leerzeilen überspr.\fP.
 .IP 3
 \fBSkip leading and trailing blank l.\fP, skip leading and trailing blank
 lines.
@@ -2366,7 +2403,7 @@ If ON remove \fI~/.article\fP after posting. Default is ON.
 .TP 
 \fBÖffne URLs mit ... (url_handler)\fP
 The program that will be run when launching URL's in the article viewer
-using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended to this. 
+using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended to this.
 Default is \fBurl_handler.pl %s\fP.
 .TP 
 \fBURL\-Hervorhebung im Artikel (url_highlight)\fP
@@ -2379,13 +2416,14 @@ If enabled \fBtin\fP uses ANSI\-colors. Default is OFF.
 Standard ist OFF.
 .TP 
 \fBMaus in xterm nutzen (use_mouse)\fP
-Allows the mouse button support in a \fBxterm\fP(1x)  to be enabled/disabled. 
-Default is OFF.
+Allows the mouse button support in a \fB\%xterm\fP(1x)  to be
+enabled/disabled.  Default is OFF.
 .TP 
 \&\fB\*(rqX\-Face:\*(rqs mit slrnface Anzeigen (use_slrnface)\fP
-If enabled \fBtin\fP uses \fBslrnface\fP(1)  to interpret the \*(rqX\-Face:\*(rq
+If enabled \fBtin\fP uses \fB\%slrnface\fP(1)  to interpret the \*(rqX\-Face:\*(rq
 header. For this option to have any effect, \fBtin\fP must be running in an
-\fBxterm\fP(1x)  and \fBslrnface\fP(1)  must be in your $\fBPATH\fP. Default is OFF.
+\fB\%xterm\fP(1x)  and \fB\%slrnface\fP(1)  must be in your $\fBPATH\fP. Default is
+OFF.
 .TP 
 \fBUse UTF\-8 graphics (utf8_graphics)\fP
 If ON use UTF\-8 characters for indicator ('\->'), thread/attachment tree
@@ -2403,11 +2441,12 @@ If ON verbatim blocks will be detected. Default is ON.
 .TP 
 \fBWildcardprüfung (wildcard)\fP
 Allows you to select how \fBtin\fP matches strings. The default is 0 and uses
-the wildmat notation, which is how this has traditionally been handled. 
-Setting this to 1 allows you to use \fBperl\fP(1)  compatible regular
-expressions \fBpcre\fP(3)  (see also \fBperlre\fP(1)  and \fBpcrepattern\fP(3)).  You
-will probably want to update your filter file if you use this regularly. 
-NB: Newsgroup names will always be matched using the wildmat notation.
+the wildmat notation, which is how this has traditionally been handled.
+Setting this to 1 allows you to use \fB\%perl\fP(1)  compatible regular
+expressions \fB\%pcre\fP(3)  (see also \fB\%perlre\fP(1)  and
+\fB\%pcrepattern\fP(3)).  You will probably want to update your filter file if
+you use this regularly.  NB: Newsgroup names will always be matched using
+the wildmat notation.
 .TP 
 \fBAnstelle der Markierung anzeigen (word_h_display_marks)\fP
 Should the leading and ending stars, slashes, strokes and dashes also be
@@ -2457,7 +2496,7 @@ the attributes are specified for that list. All attributes are set to a
 reasonable default so you only have to specify the attribute that you want
 to change (e.g., savedir). All toggle attributes are set by specifying
 ON/OFF. Otherwise, these function exactly the same as their global
-equivalents. For more details see \fBtin\fP(5).
+equivalents. For more details see \fB\%tin\fP(5).
 .PP
 Attributes can also be changed from the attributes menu which can be
 accessed by \fBConfigToggleAttrib\fP ('\fB<TAB>\fP') from the options menu
@@ -2473,7 +2512,7 @@ options menu the attributes menu provides the following command:
 \fBConfigResetAttrib\fP ('\fBr\fP') which resets an attribute to a default value.
 .SS "SCOPES MENU"
 The scopes menu (accessible from the options menu with \fBConfigScopeMenu\fP
-('\fBS\fP')) shows all scopes read from the global and local attributes file. 
+('\fBS\fP')) shows all scopes read from the global and local attributes file.
 Scopes from the global attributes file are marked with '!' to the left of
 the scope number. Delete/rename/move are not possible with those scopes.
 .PP
@@ -2496,7 +2535,7 @@ specify. This can be anything from the name of the author to the number of
 lines in an article.
 .PP
 When \fBtin\fP starts up the user's kill\-file
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fP (see also \fBtin\fP(5))  is read. Each
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fP (see also \fB\%tin\fP(5))  is read. Each
 time a newsgroup is entered the rules are applied and articles killed or
 selected when they meet certain criteria.
 .PP
@@ -2514,6 +2553,7 @@ The filtering capabilities of \fBtin\fP have been significantly enhanced over
 previous versions to include scoring and better pattern matching. It is
 recommended that you read the file \fIfiltering\fP in the \fBtin\fP documentation
 directory. This file can also be read online at
+.br
 <http://www.tin.org/filtering.txt>.
 .PP
 .\" FIXME - Next paragraph is out of date
@@ -2533,10 +2573,10 @@ filter.
 replying direct through mail to the author of an article.
 .PP
 Use the \fBPost\fP ('\fBw\fP') command to post an article to a newsgroup.  After
-entering the post subject the default editor (i.e., \fBvi\fP(1))  or the editor
-specified by the $\fBVISUAL\fP or $\fBEDITOR\fP environment variable will be
-started and the article can be entered. To crosspost articles simply add a
-comma and the name of the newsgroup(s) to the end of the \*(rqNewsgroups:\*(rq
+entering the post subject the default editor (i.e., \fB\%vi\fP(1))  or the
+editor specified by the $\fBVISUAL\fP or $\fBEDITOR\fP environment variable will
+be started and the article can be entered. To crosspost articles simply add
+a comma and the name of the newsgroup(s) to the end of the \*(rqNewsgroups:\*(rq
 line at the beginning of the article. After saving and exiting the editor
 you are asked if you wish to a)bort posting the article, e)dit the article
 again or p)ost the article to the specified newsgroup(s).
@@ -2579,7 +2619,7 @@ following variables are expanded if found in the tinrc variables
 \fB%A\fP	Mailadresse
 \fB%D\fP	Datum (benutzt \fBdate_format\fP)
 \fB%F\fP	Name und Adresse (%N <%A>)
-\fB%G\fP	Groupname
+\fB%G\fP	Name der Gruppe
 \fB%M\fP	Message\-ID
 \fB%N\fP	Name des Autors
 \fB%C\fP	Vorname des Autors
@@ -2623,7 +2663,7 @@ Otherwise, the initial prompt will ask you to select which article, thread,
 hot (auto\-selected), regex pattern, tagged articles you wish to mail, pipe
 etc.
 .PP
-Tagged articles must have already been tagged with a \fB*Tag\fP ('\fBt\fP') 
+Tagged articles must have already been tagged with a \fB*Tag\fP ('\fBt\fP')
 command. All tagged articles can be untagged by a \fB*Untag\fP ('\fBU\fP')  untag
 command.
 .PP
@@ -2656,10 +2696,10 @@ processed. A default process type can be set via \fBpost_process_type\fP.
 \&\*(rq\fB\-N\fP\*(rq option) or saved (\*(rq\fB\-S\fP\*(rq option) in batch mode for later
 reading. Useful when going on holiday and you don't want to return and find
 that expire has removed a whole load of unread articles. Best to run via
-\fBcron\fP(1)  everyday while away, after which you will be mailed a report of
-which articles were mailed/saved from which newsgroups and the total number
-of articles mailed/saved. Articles are saved in a private news structure
-under your <savedir> directory (default is
+\fB\%cron\fP(1)  everyday while away, after which you will be mailed a report
+of which articles were mailed/saved from which newsgroups and the total
+number of articles mailed/saved. Articles are saved in a private news
+structure under your <savedir> directory (default is
 \fI${TIN_HOMEDIR:\-"$HOME"}/News\fP). Be careful of using this option if you
 read a lot of groups because you could overflow your file system.
 .PP
@@ -2705,10 +2745,10 @@ Several places in \fBtin\fP allow you to specify a list of newsgroups. These
 include command\-line groups, (un)subscribe groups, the AUTO[UN]SUBSCRIBE
 mechanism. The scope= attributes file tag and the filter file group= tag
 also use the same syntax. \fBtin\fP interprets this variable similarly to
-\fBrn(1).\fP It contains a list of patterns, separated by commas and possibly
-prefixed with exclamation points. An exclamation point negates the meaning
-of a match on this pattern, and can be used to cancel certain matches. Some
-examples:
+\fB\%rn\fP(1).  It contains a list of patterns, separated by commas and
+possibly prefixed with exclamation points. An exclamation point negates the
+meaning of a match on this pattern, and can be used to cancel certain
+matches. Some examples:
 .sp
 \fIalt.config,news.*,!news.test\fP
 .sp
@@ -2720,11 +2760,11 @@ See the explanation for the $\fBAUTOSUBSCRIBE\fP variables for further
 examples.
 .SS SIGNATUREN
 \fBtin\fP will recognize a signature in either
-\fI${TIN_HOMEDIR:\-"$HOME"}/.signature\fP or \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP. 
+\fI${TIN_HOMEDIR:\-"$HOME"}/.signature\fP or \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP.
 If \fI${TIN_HOMEDIR:\-"$HOME"}/.signature\fP exists, then the signature will be
 pulled into the editor for mail commands only. A signature in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.signature\fP will not be pulled into the editor for
-posting commands since \fBinews\fP(1)  will append the signature itself.
+posting commands since \fB\%inews\fP(1)  will append the signature itself.
 .PP
 A signature in \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP will be pulled into the
 editor for both posting and mailing commands.
@@ -2748,6 +2788,147 @@ directory \fI.sigs\fP (note: one signature per numbered file). A random
 signature can also consist of a fixed part signature that can contain your
 name, address etc. followed by the random sig. The fixed part of the random
 sig is read from the file \fI$HOME/.sigfixed\fP.
+.SS "ANSICHTEN ANPASSEN"
+Das Aussehen der Auswahl\-, Gruppen\- und Threadebene kann den eigenen
+Bedürfnissen angepasst werden. Hierzu dienen Formatanweisungen, welche den
+Inhalt und die Position der einzelnen Elemente einer Bildschirmzeile
+definieren. Innerhalb der Formatanweisungen werden Platzhalter eingesetzt,
+die später beim Bildschirmaufbau durch den eigentlichen Inhalt ersetzt
+werden. Folgende Platzhalter stehen zur Verfügung:
+.PP
+.in +.3i
+.nf
+.ta \w'%G    'u +\w'aktuelle Gruppen\-, Thread\- oder Artikelnummer'u
+\fB%D\fP	Datum
+\fB%F\fP	Absender, Name und/oder E\-Mail Adresse
+\fB%G\fP	Name der Gruppe
+\fB%I\fP	Initialen des Absenders
+\fB%L\fP	Anzahl der Zeilen
+\fB%M\fP	Message\-ID
+\fB%R\fP	Anzahl der Antworten im Thread
+\fB%S\fP	Score
+\fB%T\fP	Subject und/oder Baumdarstellung des Thread
+\fB%U\fP	Anzahl ungelesener Artikel
+\fB%d\fP	Gruppenbeschreibung
+\fB%f\fP	Gruppenkennzeichnung
+\fB%m\fP	Artikelkennzeichnungen
+\fB%n\fP	aktuelle Gruppen\-, Thread\- oder Artikelnummer
+\fB%s\fP	Subject
+\fB%%\fP	%
+.fi
+.in -.3i
+.PP
+Nicht alle Platzhalter können in jeder Ebene verwendet werden. Die folgende
+Tabelle gibt einen Überblick über die Verfügbarkeit der einzelnen
+Platzhalter:
+.PP
+.in +.3i
+.nf
+.ta \w'%G        'uC +\w'\fBselect_format\fP 'uC +\w'\fBgroup_format\fP 'uC +\w'\fBthread_format\fP'uC
+	\fBselect_format\fP	\fBgroup_format\fP	\fBthread_format\fP
+\fB%D\fP		X	X
+\fB%F\fP		X	X
+\fB%G\fP	X
+\fB%I\fP		X	X
+\fB%L\fP		X	X
+\fB%M\fP		X	X
+\fB%R\fP		X
+\fB%S\fP		X	X
+\fB%T\fP			X
+\fB%U\fP	X
+\fB%d\fP	X
+\fB%f\fP	X
+\fB%m\fP		X	X
+\fB%n\fP	X	X	X
+\fB%s\fP		X
+\fB%%\fP	X	X	X
+.fi
+.in -.3i
+.PP
+Voreingestellt sind folgende Formatanweisungen:
+.PP
+.in +.3i
+.nf
+.ta \w'select_format  'u +\w'"\fB%n %m  [%L]  %T  %F\fP"'u
+\fBselect_format\fP:	"\fB%f %n %U  %G  %d\fP"
+\fBgroup_format\fP:	"\fB%n %m %R %L  %s  %F\fP"
+\fBthread_format\fP:	"\fB%n %m  [%L]  %T  %F\fP"
+.fi
+.in -.3i
+.PP
+Ob in der Auswahlebene die Gruppenbeschreibung angezeigt wird, hängt von
+\fBshow_description\fP ab. Außerdem kann mit \fBSelectToggleDescriptions\fP
+('\fBd\fP') die Beschreibung aus\- bzw. eingeblendet werden.
+.PP
+Welche Absenderinformationen bei '\fB%F\fP' angezeigt werden ist abhängig von
+\fBshow_author\fP. Zusätzlich kann mit \fBGroupToggleSubjDisplay\fP
+bzw. \fBThreadToggleSubjDisplay\fP ('\fBd\fP') durch die möglichen Anzeigeoptionen
+durchgeschaltet werden.
+.PP
+Für die Datumsanzeige mit '\fB%D\fP' wird \fBdate_format\fP benutzt. Man kann
+allerdings auch in runden Klammern ein eigenes Datumsformat angeben, das
+anstelle von \fBdate_format\fP benutzt werden soll. Der Platzhalter dafür würde
+dann z.B. so aussehen: '\fB%(%d %b %y %H:%M)D\fP' (siehe \fBdate_format\fP für
+weiterführende Informationen).
+.PP
+Den einzelnen Platzhaltern (außer '\fB%%\fP') kann man eine Längenangabe
+mitgeben. Das durch den Platzhalter repräsentierte Feld wird dann mit genau
+dieser Breite auf dem Bildschirm dargestellt. Die Angabe erfolgt als
+positive Zahl zwischen '\fB%\fP' und dem den Platzhalter charakterisierenden
+Buchstaben. Folgendes Beispiel stellt den Score in der Threadebene 10
+Zeichen breit dar: '\fB%10S\fP'. Einige Platzhalter haben eine voreingestellte
+Breite die unter Umständen dazu führt, dass der Inhalt abgeschnitten
+wird. Für Platzhalter die nur Zahlen enthalten wird der Wert durch eine
+passende Zehnerpotenz geteilt und mit dem zugehörigen SI\-Suffix versehen,
+z.B. wird bei einer Breite von vier aus 54321 dann "54 k". Wenn das nicht
+gewünscht ist muss die Breite angegeben werden, z.B. '\fB%6n\fP'. Hier ist eine
+Übersicht der Voreinstellungen:
+.PP
+.in +.3i
+.nf
+.ta \w'Platzhalter  'u	+\w'Breite'u
+Platzhalter	Breite
+\fB%I\fP	 3
+\fB%L\fP	 4
+\fB%M\fP	10
+\fB%R\fP	 3
+\fB%S\fP	 6
+\fB%U\fP	 5
+\fB%n\fP	 4
+.fi
+.in -.3i
+.PP
+Wird bei '\fB%D\fP' keine Länge angegeben, so wird die Länge anhand der
+Formatanweisung für das Datum und dem aktuellen Tag bestimmt. Sind in der
+Formatanweisung volle Wochentags\- oder Monatsnamen enthalten, kann es
+vorkommen, dass das Datum anderer Artikel länger als ermittelt ist. In
+diesem Fall wird das Datum abgeschnitten dargestellt. Das tritt z. B. auf,
+wenn der aktuelle Monat Mai ist und der Artikel, zu dem das Datum angezeigt
+werden soll, im Dezember gepostet wurde. In solchen Fällen ist es sinnvoll,
+die maximale Länge manuell zu ermitteln und in die Formatanweisung
+einzutragen.
+.PP
+Sind in der Formatanweisung '\fB%F\fP' und '\fB%s\fP' bzw. '\fB%T\fP' enthalten und
+jeweils keine Längen angegeben, dann nimmt '\fB%F\fP' ein Drittel und '\fB%s\fP'
+bzw. '\fB%T\fP' zwei Drittel des für beide zusammen verfügbaren Platzes ein.
+.PP
+Weiterhin kann eine Mindestbildschirmbreite definiert werden. Das
+entsprechende Element wird dann erst dargestellt, wenn auf dem Bildschirm
+mehr Zeichen als angegeben dargestellt werden können. Das ist hilfreich, um
+die Anzeige bei kleineren Bildschirmen oder Terminalfenstern nicht zu
+überfrachten. Hier erfolgt die Angabe vor dem den Platzhalter
+charakterisierenden Buchstaben durch eine positive Zahl, welcher ein
+\&'\fB>\fP' vorangestellt wird. Soll z. B. der Score erst ab einer
+Bildschirmbreite größer 100 Zeichen angezeigt werden, lautet die
+Formatanweisung '\fB%>100S\fP'.
+.PP
+.\"
+.\"
+Wenn eine Längenangabe und eine Mindestbildschirmbreite angegeben werden
+soll, muss zuerst die Länge und danach die Mindestbreite in der
+Formatanweisung stehen. Um den Score 10 Zeichen breit und erst ab einer
+Bildschirmbreite über 100 Zeichen darzustellen, lautet die Anweisung
+\&'\fB%10>100S\fP'.
 .SS "TIPS UND TRICKS"
 \fBtin\fP can be pretty much be navigated by using the four cursor keys.  The
 left arrow key goes up a level, the right arrow key goes down a level, the
@@ -2766,11 +2947,11 @@ Newssoftware:
 themes)
 .PP
 Many prompts within \fBtin\fP offer a default choice that the cursor is
-positioned on. By pressing '\fB<CR>\fP' the default value is taken. 
+positioned on. By pressing '\fB<CR>\fP' the default value is taken.
 Most prompts can be aborted by pressing '\fB<ESC>\fP'.
 .PP
-When \fBtin\fP is run in an \fBxterm\fP(1x)  it will resize itself each time the
-\fBxterm\fP(1x)  is resized.
+When \fBtin\fP is run in an \fB\%xterm\fP(1x)  it will resize itself each time the
+\fB\%xterm\fP(1x)  is resized.
 .PP
 \fBtin\fP will reread the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file at set
@@ -2781,21 +2962,21 @@ intervals (\fBreread_active_file_secs\fP) to show any newly arrived news.
 If you find large number of new newsgroups cluttering up your screen,
 pressing \fBSelectToggleReadDisplay\fP ('\fBr\fP') will make them go away.
 .SS "XTERM BUTTONS"
-If the environment variable \fB$TERM\fP is set to \fBxterm\fP(1x), then button
-pressing can be used to select groups and articles. In this discussion, the
-buttons are assumed to be assigned conventionally (i.e., Button1 is the left
-button).
+Falls die Umgebungsvariable \fB$TERM\fP auf \fB\%xterm\fP(1x) gesetzt ist können
+die Maustasten benutzt werden um Gruppen oder Artikel auszuwählen. Es wird
+davon ausgegangen, dass die Maustasten normal zugeteilt sind (Maustaste1 ist
+die linke Maustaste).
 .PP
 In general (i.e., for the group, thread and article menus),
 .TP  10
-Button1 (left)
+Maustaste1 (Links)
 enters next (lower) level if you click on an article, otherwise pages down.
 .TP 
-Button2 (center)
+Maustaste2 (Mitte)
 returns to the previous (upper) level if you click on an article, otherwise
 pages up.
 .TP 
-Button3 (right)
+Maustaste3 (Rechts)
 positions on the article line under mouse cursor, or pages down if you've
 clicked outside the list of articles.
 .PP
@@ -2842,16 +3023,16 @@ moves to the article pointed at.
 .\"
 .\"
 In other menus and areas button pressing reverts back to usual cut and paste
-of \fBxterm\fP(1x), but after one click of any button.
+of \fB\%xterm\fP(1x), but after one click of any button.
 .SS "INDEX DATEIEN"
-If your news server supports NOV index files (see \fBnewsoverview\fP(5), most
+If your news server supports NOV index files (see \fB\%newsoverview\fP(5), most
 modern installations will) and you have a fast connection to your news
 server then this section can be ignored.
 .PP
 If your news server doesn't support NOV index files or you have a very slow
 connection to your news server then \fBtin\fP can cache the index for each
 newsgroup if \fBcache_overview_files\fP is set to ON.  Note that this cache can
-use up large amounts of diskspace if you read a lot of groups and/or high
+use up large amounts of disk space if you read a lot of groups and/or high
 traffic groups.
 .PP
 Each user creates/updates his/her own index files that are stored in
@@ -2870,7 +3051,7 @@ updating of the index file and will be much faster as only new articles will
 need to be cached.
 .PP
 As indexing might take some time you may want to run \fBtin\fP form the system
-batcher \fBcron\fP(1)  with the \*(rq\fB\-u\fP\*(rq option:
+batcher \fB\%cron\fP(1)  with the \*(rq\fB\-u\fP\*(rq option:
 .PP
 .RS
 .nf
@@ -2892,6 +3073,7 @@ cached data for groups you are not reading anymore with something like:
 .SH DATEIEN
 .\" TODO: mention dead.article, dead.articles
 .\"               .article[.$$], .cancel[.$$], .letter[.$$]?
+.\"       ${XDG_RUNTIME_DIR:\-"$HOME"}/.slrnfaces
 .\"       $PWD/trace[.out]   (--with-trace)
 .\"       $TMPDIR/NNTP       (-D 1)
 .\"       $TMPDIR/FILTER     (-D 2)
@@ -2904,11 +3086,11 @@ cached data for groups you are not reading anymore with something like:
 .\"       $TMPDIR/SCOPES-R   (-D 32)
 .\"       $TMPDIR/SCOPES-W   (-D 32)
 .\"       $TMPDIR/ACTIVE     (-D 64)
-Für eine ausführlich Beschreibung siehe \fBtin\fP(5).
+Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .PP
 \fI$MAILCAPS\fP
 .br
-\fI${TIN_HOMEDIR:\-"$HOME"}/.mailcap\fP
+\fI~/.mailcap\fP
 .br
 \fI/etc/mailcap\fP
 .br
@@ -3044,19 +3226,8 @@ Für eine ausführlich Beschreibung siehe \fBtin\fP(5).
 .\"
 .\"
 .SH UMGEBUNGSVARIABLEN
-.\" TODO: sort in a useful order, add undocumented env-vars like:
-.\"
-.\" .TP
-.\" .B SHELL (Unix)
-.\" The pathname of the user's login shell.
-.\"
-.\" used in xface support
-.\" .TP
-.\" .B DISPLAY
-.\" .TP
-.\" .B WINDOWID
-.\"
-.\"
+.\" TODO: - sort in a useful order
+.\"       - add undocumented env-vars (if any)
 .TP 
 \fBTINRC\fP
 Define this variable if you want to specify command\-line options that \fBtin\fP
@@ -3101,6 +3272,11 @@ Define this variable if you want to override the \fBNOVROOTDIR\fP path that was
 compiled into the \fBtin\fP binary, default is \fBSPOOLDIR\fP (see above). If tin
 is running in NNTP mode setting this variable has no effect.
 .TP 
+\fBTIN_NOVFILENAME\fP
+Define this variable if you want to override the \fBOVERVIEW_FILE\fP file name
+that was compiled into the \fBtin\fP binary, default is \fI.overview\fP. If tin is
+running in NNTP mode setting this variable has no effect.
+.TP 
 \fBTIN_ACTIVEFILE\fP
 Define this variable if you want to override the \fBNEWSLIBDIR/active\fP path
 that was compiled into the \fBtin\fP binary. If tin is running in NNTP mode
@@ -3124,27 +3300,33 @@ variable instead of the system default.
 .TP 
 \fBISO2ASC\fP
 Set the ISO to ASCII charset decoding table character to use in decoding an
-article text. Values can range from 0 to 6.
+article text. Values can range from \-1 to 6.
 .RS +.5i
 .TP 
+\fB\-1\fP
+Keine Umformung
+.TP 
 \fB0\fP
-universal table for many languages
+Universal\-Tabelle für viele Sprachen
 .TP 
 \fB1\fP
 single\-spacing universal table
 .TP 
 \fB2\fP
-table for Danish, Dutch, German, Norwegian and Swedish
+Tabelle für Dänisch, Niederländisch, Deutsch, Norwegisch und Schwedisch
 .TP 
 \fB3\fP
 table for Danish, Finnish, Norwegian and Swedish using the appropriate ISO
 646 variant
 .TP 
 \fB4\fP
-table with RFC 1345 codes in brackets
+table with \fBRFC\%1345\fP codes in brackets
 .TP 
 \fB5\fP
 table for printers that allow overstriking with backspace
+.TP 
+\fB6\fP
+table for IBM PC character set (code page 437)
 .RE
 .TP 
 \fBORGANIZATION\fP
@@ -3154,7 +3336,8 @@ DomainOS machine the environment variable $\fBNEWSORG\fP has to be used instead
 of $\fBORGANIZATION\fP.
 .TP 
 \fBNEWSORG (DomainOS)\fP
-DomainOS specific, same as $\fBORGANIZATION\fP on other OSs (see above).
+DomainOS spezifisch, wie $\fBORGANISATION\fP auf anderen Betriebssystemen
+(siehe oben).
 .TP 
 \fBREPLYTO\fP
 Set the article header field \*(rqReply\-To:\*(rq to the return address specified
@@ -3170,7 +3353,7 @@ Same as $\fBNAME\fP.
 .TP 
 \fBHOME\fP
 Das Anmeldeverzeichnis des Benutzers. Weitere Informationen finden sich in
-\fBenviron\fP(5).
+\fB\%environ\fP(5).
 .TP 
 \fBMAILER\fP
 This variable has precedence over the default mailer that is used in all
@@ -3180,16 +3363,16 @@ mailing operations within \fBtin\fP.
 Full path to the user's mailbox.
 .TP 
 \fBVISUAL\fP
-This variable has precedence over the default editor (i.e., \fBvi\fP(1))  that
-is used in all editing operations within \fBtin\fP (e.g., posting, replying,
-follow\-ups, ...). Evaluation order is \fI${VISUAL:\-"${EDITOR:\-vi}"}\fP. See
-\fBenviron\fP(5)  for more info.
+This variable has precedence over the default editor (i.e., \fB\%vi\fP(1))
+that is used in all editing operations within \fBtin\fP (e.g., posting,
+replying, follow\-ups, ...). Evaluation order is
+\fI${VISUAL:\-"${EDITOR:\-vi}"}\fP. See \fB\%environ\fP(5)  for more info.
 .TP 
 \fBEDITOR\fP
 If $\fBVISUAL\fP is unset, then this variable is looked up for a default
 editor. If $\fBEDITOR\fP and $\fBVISUAL\fP are both unset, \fBtin\fP uses the systems
-default editor (i.e.  \fBvi\fP(1))  on UNIX\-systems). See \fBenviron\fP(5)  for
-more info.
+default editor (i.e.  \fB\%vi\fP(1))  on UNIX\-systems). See \fB\%environ\fP(5)
+for more info.
 .TP 
 \fBAUTOSUBSCRIBE\fP
 A new group is checked against the list of patterns; if it matches, \fBtin\fP
@@ -3220,69 +3403,69 @@ files.
 .TP 
 \fBMAILCAPS\fP
 This variable can be used to override the default path search for
-\fBmailcap\fP(5)  files. See also \fBtin\fP(5).
+\fB\%mailcap\fP(5)  files. See also \fB\%tin\fP(5).
 .TP 
 \fBNOMETAMAIL\fP
-Set this variable to disable the use of \fBmetamail\fP(1)  or a replacement
+Set this variable to disable the use of \fB\%metamail\fP(1)  or a replacement
 (e.g. metamutt).
 .TP 
 \fBMM_CHARSET\fP
 .TP 
 \fBISPELL\fP
-Set this variable to point to \fBispell\fP(1)  or a replacement and its
+Set this variable to point to \fB\%ispell\fP(1)  or a replacement and its
 cmd\-line options.
 .TP 
 \fBPGPOPTS\fP
-Define any additional options that you wish to pass to your \fBpgp\fP(1)  or
-\fBgpg\fP(1)  program.
+Define any additional options that you wish to pass to your \fB\%pgp\fP(1)  or
+\fB\%gpg\fP(1)  program.
 .TP 
 \fBPGPPATH\fP
-Override the name of the \fBpgp\fP(1)  directory in \fB$HOME\fP that holds your
+Override the name of the \fB\%pgp\fP(1)  directory in \fB$HOME\fP that holds your
 keys etc..
 .TP 
 \fBGNUPGHOME\fP
-Override the name of the \fBgpg\fP(1)  directory in \fB$HOME\fP that holds your
+Override the name of the \fB\%gpg\fP(1)  directory in \fB$HOME\fP that holds your
 keys etc..
 .TP 
 \fBLC_CTYPE\fP
 .\" TODO: document LC_CTYPEs influence on
 .\"       ~/.tin/keymap.*, 8bit char display, ...
-This variable determines the \fBlocale\fP(5)  category for character handling
+This variable determines the \fB\%locale\fP(5)  category for character handling
 functions. Usually it determines the character classes for pattern matching
 character classification and case conversion. Currently this is not true for
 \fBtin\fP (which temporary unsets \fB$LC_CTYPE\fP right before any match is done
 to avoid confusion).  It's value should be of the form
-\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fBenviron\fP(5) 
+\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fB\%environ\fP(5)
 for more information.
 .TP 
 \fBLC_MESSAGES\fP
-Formats of informative and diagnostic messages and interactive responses. 
+Formats of informative and diagnostic messages and interactive responses.
 It's value should be of the form
-\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fBlocale\fP(5)  and
-\fBenviron\fP(5)  for more information.
+\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fB\%locale\fP(5)
+and \fB\%environ\fP(5)  for more information.
 .TP 
 \fBLC_TIME\fP
 Date and time formats. It's value should be of the form
-\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fBlocale\fP(5)  and
-\fBenviron\fP(5)  for more information.
+\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fB\%locale\fP(5)
+and \fB\%environ\fP(5)  for more information.
 .TP 
 \fBLC_ALL\fP
 This variable overrides the value of the \fB$LANG\fP variable and any other
 \fB$LC_\fP variable. It's value should be of the form
-\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP]. See \fBlocale\fP(5)  and \fBenviron\fP(5) 
-for more information.
+\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP]. See \fB\%locale\fP(5)  and
+\fB\%environ\fP(5)  for more information.
 .TP 
 \fBLANG\fP
-This variable determines the \fBlocale\fP(5)  category for any category not
+This variable determines the \fB\%locale\fP(5)  category for any category not
 specifically selected with a variable starting with \fB$LC_\fP. It's value
 should be of the form \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP]. See
-\fBenviron\fP(5)  for more information.
+\fB\%environ\fP(5)  for more information.
 .TP 
 \fBLANGUAGE\fP
 This variable defines a priority list for translations. Whenever a
 translation is not available in the language selected via \fB$LC_ALL\fP or
 \fB$LANG\fP the next language from the list is tried. It's value should be of
-the form \fIlanguage:language[:language]\fP. See \fBenviron\fP(5)  for more
+the form \fIlanguage:language[:language]\fP. See \fB\%environ\fP(5)  for more
 information.
 .TP 
 \fBCOLUMNS\fP
@@ -3306,12 +3489,26 @@ or window. When \fB$LINES\fP is set, any terminal\-height information implied by
 \fB$LINES\fP unless they wish to override the system selection.
 .TP 
 \fBTERM\fP
-.\"
-.\"
-.\" TODO: add missing, sort useful, document in detail
 Der verwendete Terminaltyp. Weitere Informationen finden sich in
-\fBenviron\fP(5).
+\fB\%environ\fP(5).
+.TP 
+\fBDISPLAY\fP
+Display name, pointing to the X server; required for xface.
+.TP 
+\fBWINDOWID\fP
+Used for determining terminal's X window id; required for xface. Should be
+set by the terminal emulator.
+.TP 
+\fBSHELL\fP
+The pathname of the user's login shell. Used to set
+\fBdefault_shell_command\fP.
+.TP 
+\fBXDG_RUNTIME_DIR\fP
+.\"
+.\"
+The pathname of the user's dir to put non\-essential runtime files into.
 .SH SIGNALE
+.\" TODO: add missing, sort useful, document in detail
 \fBtin\fP verarbeitet folgende Signale:
 .TP 
 \fBSIGHUP\fP
@@ -3341,23 +3538,23 @@ readable files in \fB$TMPDIR\fP which may contain the users NNTP password in
 cleartext. On multiuser\-systems \fB$TMPDIR\fP should be set to a safe location
 before starting tin in debug mode (e.g.  \fBTMPDIR=$HOME tin \-D 1\fP).
 .SH "KONFORM ZU"
-.\" - RFC2045, RFC2047, RFC2980, RFC3977, RFC4643, RFC5322
-.\"   RFC5536, RFC5537, RFC6048 or whatever
+.\" - RFC\%2045, RFC\%2047, RFC\%2980, RFC\%3977, RFC\%4155, RFC\%4643,
+.\"   RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
 .\"
 .\"
-\fBtin\fP does conform to the Base Definitions volume of IEEE Std 1003.1\-2001,
+\fBtin\fP does conform to the Base Definitions volume of IEEE Std 1003.1\-2008,
 Section 12, Utility Conventions (Utility Argument Syntax, Utility Syntax
 Guidelines).
 .SH ANMERKUNGEN
 Regular expression support is provided by the PCRE library package
-\fBpcre\fP(3), which is open source software, written by Philip Hazel, and
+\fB\%pcre\fP(3), which is open source software, written by Philip Hazel, and
 copyright by the University of Cambridge, England.
 .br
 .\"
 .\"
-ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
+<ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/>
 .SH BUGS
-\fBCNews\fP NNTPd, \fBnoffle\fP(1)  (<= V1.0\-pre5) and \fBNewsCache\fP (<=
+\fBCNews\fP NNTPd, \fB\%noffle\fP(1)  (<= V1.0\-pre5) and \fBNewsCache\fP (<=
 V1.1.91) can't handle pipelined GROUP commands. If you run into trouble with
 any of the mentioned servers define DISABLE_PIPELINING in include/autoconf.h
 and recompile.
@@ -3371,19 +3568,21 @@ found a bug, please use the \fBBugReport\fP ('\fBR\fP')  function and write in
 English. Please do NOT enclose a core\-file in your bugreport until we
 request it.
 .SH GESCHICHTE
-.\"
-.\"
-\fBtin\fP basiert auf \fBtass\fP(1), einem Newsreader der von Rich Skrenta
+\fBtin\fP basiert auf \fB\%tass\fP(1), einem Newsreader der von Rich Skrenta
 entwickelt und dessen Code im März 1991 von ihm in alt.sources
 veröffentlicht wurde. Die erste Version von \fBtin\fP wurde am 23. August 1991
-veröffentlicht. \fBtass\fP(1) orientiert sich stark an notesfiles, einer Public
-Domain Version für UNIX von PLATO Notes, welches 1982 von Ray Essick und Rob
-Kolstad an der University of Illinois entstand. Eine Übersicht der Versionen
-findet sich unter <http://www.tin.org/history.html>.
+veröffentlicht. \fB\%tass\fP(1) orientiert sich stark an notesfiles, einer
+Public Domain Version für UNIX von PLATO Notes, welches 1982 von Ray Essick
+und Rob Kolstad an der University of Illinois entstand. Eine Übersicht der
+Versionen findet sich unter
+.br
+.\"
+.\"
+<http://www.tin.org/history.html>.
 .SH DANKSAGUNGEN
 .PP
 .IP "Rich Skrenta"
-Autor von \fBtass\fP(1)  v3.2, der Basis für diesen Newsreader.
+Autor von \fB\%tass\fP(1) v3.2, der Basis für diesen Newsreader.
 .IP "Bill Davidsen"
 Autor von envarg.c, Umgebungsvariablenleseroutine.
 .IP "Mike Gleason"
@@ -3395,17 +3594,17 @@ Autor von strftime.c, Datumsfromatierungsroutine.
 .IP "Rich Salz"
 author of wildmat.c pattern matching and parsdate.y date parsing routines.
 .IP "Dave Taylor"
-author of curses.c from the \fBelm\fP(1)  mailreader.
+Autor von curses.c aus dem Mailreader \fB\%elm\fP(1).
 .IP "Chris Thewalt"
-author of getline.c \fBemacs\fP(1)  style editing routine.
+Autor von getline.c, \fB\%emacs\fP(1)\-artige Eingaberoutine.
 .IP "Steven Madsen"
-for adding \fBpgp\fP(1)  (Pretty Good Privacy) support.
+für \fB\%pgp\fP(1) (Pretty Good Privacy) Unterstützung.
 .IP "Philip Hazel <ph10@cam.ac.uk>"
-für \fBpcre\fP(3) (Library für Perl\-kompatible reguläre Ausdrücke).
+für \fB\%pcre\fP(3) (Library für Perl\-kompatible reguläre Ausdrücke).
 .IP "Patrick Powell <papowell@astart.com>"
 .\"
 .\"
-für \fBsnprintf\fP(3)  und \fBvsnprintf\fP(3)  Fallbacks.
+für \fB\%snprintf\fP(3) und \fB\%vsnprintf\fP(3) Fallbacks.
 .SH AUTOR
 .TP  1i
 Iain Lea <iain@bricbrac.de>
@@ -3421,13 +3620,15 @@ Urs Janßen <urs@tin.org>
 Erika Mustermann <erika@example.org>
 .\"
 .SH "SIEHE AUCH"
-\fBcron\fP(1), \fBelm\fP(1), \fBemacs\fP(1), \fBgpg\fP(1), \fBinews\fP(1), \fBispell\fP(1),
-\fBlp\fP(1), \fBlpr\fP(1), \fBmetamail\fP(1), \fBnoffle\fP(1), \fBperl\fP(1), \fBperlre\fP(1),
-\fBpgp\fP(1), \fBrn\fP(1), \fBsendmail\fP(1), \fBshar\fP(1), \fBslrnface\fP(1), \fBtass\fP(1),
-\fBunshar\fP(1), \fBuudecode\fP(1), \fBvi\fP(1), \fBxterm\fP(1x), \fBheapsort\fP(3),
-\fBiconv\fP(3), \fBiconv_open\fP(3), \fBnl_langinfo\fP(3), \fBpcre\fP(3),
-\fBpcrepattern\fP(3), \fBqsort\fP(3), \fBsnprintf\fP(3), \fBstrftime\fP(3),
-\fBvsnprintf\fP(3), \fBwildmat\fP(3), \fBenviron\fP(5), \fBlocale\fP(5), \fBmailcap\fP(5),
-\fBmbox\fP(5), \fBmmdf\fP(5), \fBnewsoverview\fP(5), \fBtin\fP(5), \fBRFC1524\fP,
-\fBRFC2045\fP, \fBRFC2046\fP, \fBRFC2047\fP, \fBRFC2048\fP, \fBRFC2980\fP, \fBRFC3977\fP,
-\fBRFC4643\fP, \fBRFC5322\fP, \fBRFC5536\fP, \fBRFC5537\fP, \fBRFC6048\fP
+\fB\%cron\fP(1), \fB\%elm\fP(1), \fB\%emacs\fP(1), \fB\%gpg\fP(1), \fB\%inews\fP(1),
+\fB\%ispell\fP(1), \fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%noffle\fP(1),
+\fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1),
+\fB\%shar\fP(1), \fB\%slrnface\fP(1), \fB\%tass\fP(1), \fB\%unshar\fP(1),
+\fB\%uudecode\fP(1), \fB\%vi\fP(1), \fB\%xterm\fP(1x), \fB\%heapsort\fP(3),
+\fB\%iconv\fP(3), \fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3), \fB\%pcre\fP(3),
+\fB\%pcrepattern\fP(3), \fB\%qsort\fP(3), \fB\%snprintf\fP(3), \fB\%strftime\fP(3),
+\fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3), \fB\%environ\fP(5), \fB\%locale\fP(5),
+\fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5),
+\fB\%tin\fP(5), \fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP,
+\fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2980\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
+\fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP

@@ -3,10 +3,10 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2011-09-18
+ *  Updated   : 2013-09-04
  *  Notes     : Group attribute routines
  *
- * Copyright (c) 1993-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,6 +82,8 @@ set_default_attributes(
 	attributes->savedir = (scope ? scope->savedir : (global ? tinrc.savedir : NULL));
 	attributes->savefile = NULL;
 	attributes->sigfile = (scope ? scope->sigfile : (global ? tinrc.sigfile : NULL));
+	attributes->group_format = (scope ? scope->group_format : (global ? tinrc.group_format : NULL));
+	attributes->thread_format = (scope ? scope->thread_format : (global ? tinrc.thread_format : NULL));
 	attributes->date_format = (scope ? scope->date_format : (global ? tinrc.date_format : NULL));
 	attributes->editor_format = (scope ? scope->editor_format : (global ? tinrc.editor_format : NULL));
 	attributes->organization = (scope ? scope->organization : (global ? (*default_organization ? default_organization : NULL) : NULL));
@@ -110,7 +112,6 @@ set_default_attributes(
 	attributes->thread_perc = tinrc.thread_perc;
 	attributes->sort_article_type = tinrc.sort_article_type;
 	attributes->sort_threads_type = tinrc.sort_threads_type;
-	attributes->show_info = tinrc.show_info;
 	attributes->show_author = tinrc.show_author;
 	attributes->show_signatures = tinrc.show_signatures;
 	attributes->trim_article_body = tinrc.trim_article_body;
@@ -179,6 +180,7 @@ set_default_state(
 	state->followup_to = FALSE;
 	state->from = FALSE;
 	state->group_catchup_on_exit = FALSE;
+	state->group_format = FALSE;
 #ifdef HAVE_ISPELL
 	state->ispell = FALSE;
 #endif /* HAVE_ISPELL */
@@ -216,7 +218,6 @@ set_default_state(
 	state->savedir = FALSE;
 	state->savefile = FALSE;
 	state->show_author = FALSE;
-	state->show_info = FALSE;
 	state->show_only_unread_arts = FALSE;
 	state->show_signatures = FALSE;
 	state->sigdashes = FALSE;
@@ -228,6 +229,7 @@ set_default_state(
 	state->tex2iso_conv = FALSE;
 	state->thread_articles = FALSE;
 	state->thread_catchup_on_exit = FALSE;
+	state->thread_format = FALSE;
 	state->thread_perc = FALSE;
 	state->trim_article_body = FALSE;
 #ifdef CHARSET_CONVERSION
@@ -362,6 +364,7 @@ read_attributes_file(
 
 				case 'g':
 					MATCH_BOOLEAN("group_catchup_on_exit=", OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT);
+					MATCH_STRING("group_format=", OPT_ATTRIB_GROUP_FORMAT);
 					break;
 
 				case 'i':
@@ -440,7 +443,6 @@ read_attributes_file(
 						break;
 					}
 					MATCH_INTEGER("show_author=", OPT_ATTRIB_SHOW_AUTHOR, SHOW_FROM_BOTH);
-					MATCH_INTEGER("show_info=", OPT_ATTRIB_SHOW_INFO, SHOW_INFO_BOTH);
 					MATCH_BOOLEAN("show_only_unread_arts=", OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS);
 					MATCH_BOOLEAN("show_signatures=", OPT_ATTRIB_SHOW_SIGNATURES);
 					MATCH_BOOLEAN("sigdashes=", OPT_ATTRIB_SIGDASHES);
@@ -455,6 +457,7 @@ read_attributes_file(
 					MATCH_BOOLEAN("tex2iso_conv=", OPT_ATTRIB_TEX2ISO_CONV);
 					MATCH_INTEGER("thread_articles=", OPT_ATTRIB_THREAD_ARTICLES, THREAD_MAX);
 					MATCH_BOOLEAN("thread_catchup_on_exit=", OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT);
+					MATCH_STRING("thread_format=", OPT_ATTRIB_THREAD_FORMAT);
 					MATCH_INTEGER("thread_perc=", OPT_ATTRIB_THREAD_PERC, 100);
 					MATCH_INTEGER("trim_article_body=", OPT_ATTRIB_TRIM_ARTICLE_BODY, 7);
 					break;
@@ -486,9 +489,10 @@ read_attributes_file(
 			}
 
 			if (!global_file && upgrade == RC_UPGRADE) {
+				int auto_cc_bcc;
+				int show_info;
 				t_bool auto_bcc = FALSE;
 				t_bool auto_cc = FALSE;
-				int auto_cc_bcc;
 
 				switch (tolower((unsigned char) line[0])) {
 					case 'a':
@@ -517,6 +521,37 @@ read_attributes_file(
 						break;
 
 					case 's':
+						if (match_integer(line, "show_info=", &show_info, 3)) {
+							char *gbuf = my_malloc(23);
+							char *tbuf = my_malloc(23);
+
+							switch (show_info) {
+								case 0:
+									strcpy(gbuf, "%n %m %R  %s  %F");
+									strcpy(tbuf, "%n %m  %T  %F");
+									break;
+
+								case 2:
+									strcpy(gbuf, "%n %m %R %S  %s  %F");
+									strcpy(tbuf, "%n %m  [%S]  %T  %F");
+									break;
+
+								case 3:
+									strcpy(gbuf, "%n %m %R %L %S  %s  %F");
+									strcpy(tbuf, "%n %m  [%L,%S]  %T  %F");
+									break;
+
+								default:
+									strcpy(gbuf, DEFAULT_GROUP_FORMAT);
+									strcpy(tbuf, DEFAULT_THREAD_FORMAT);
+									break;
+							}
+							set_attrib(OPT_ATTRIB_GROUP_FORMAT, scope, line, gbuf);
+							set_attrib(OPT_ATTRIB_THREAD_FORMAT, scope, line, tbuf);
+							free(gbuf);
+							free(tbuf);
+							found = TRUE;
+						}
 						MATCH_BOOLEAN("show_only_unread=", OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS);
 						MATCH_INTEGER("sort_art_type=", OPT_ATTRIB_SORT_ARTICLE_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
 						break;
@@ -669,6 +704,9 @@ set_attrib(
 			case OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT:
 				SET_INTEGER(group_catchup_on_exit);
 
+			case OPT_ATTRIB_GROUP_FORMAT:
+				SET_STRING(group_format);
+
 			case OPT_ATTRIB_MAIL_8BIT_HEADER:
 				SET_INTEGER(mail_8bit_header);
 
@@ -736,14 +774,14 @@ set_attrib(
 			case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
 				SET_INTEGER(thread_catchup_on_exit);
 
+			case OPT_ATTRIB_THREAD_FORMAT:
+				SET_STRING(thread_format);
+
 			case OPT_ATTRIB_THREAD_PERC:
 				SET_INTEGER(thread_perc);
 
 			case OPT_ATTRIB_SHOW_AUTHOR:
 				SET_INTEGER(show_author);
-
-			case OPT_ATTRIB_SHOW_INFO:
-				SET_INTEGER(show_info);
 
 			case OPT_ATTRIB_SHOW_SIGNATURES:
 				SET_INTEGER(show_signatures);
@@ -909,6 +947,8 @@ assign_attributes_to_groups(
 				SET_ATTRIB(savedir);
 				SET_ATTRIB(savefile);
 				SET_ATTRIB(sigfile);
+				SET_ATTRIB(group_format);
+				SET_ATTRIB(thread_format);
 				SET_ATTRIB(date_format);
 				SET_ATTRIB(editor_format);
 				SET_ATTRIB(organization);
@@ -942,7 +982,6 @@ assign_attributes_to_groups(
 				SET_ATTRIB(thread_perc);
 				SET_ATTRIB(sort_article_type);
 				SET_ATTRIB(sort_threads_type);
-				SET_ATTRIB(show_info);
 				SET_ATTRIB(show_author);
 				SET_ATTRIB(show_signatures);
 				SET_ATTRIB(trim_article_body);
@@ -1122,6 +1161,7 @@ write_attributes_file(
 	fprintf(fp, _("#  followup_to=STRING\n"));
 	fprintf(fp, _("#  from=STRING (just append wanted From:-line, don't use quotes)\n"));
 	fprintf(fp, _("#  group_catchup_on_exit=ON/OFF\n"));
+	fprintf(fp, _("#  group_format=STRING (eg. %%n %%m %%R %%L  %%s  %%F)\n"));
 	fprintf(fp, _("#  mail_8bit_header=ON/OFF\n"));
 	fprintf(fp, _("#  mail_mime_encoding=supported_encoding"));
 	for (i = 0; txt_mime_encodings[i] != NULL; i++) {
@@ -1201,12 +1241,6 @@ write_attributes_file(
 		SHOW_FROM_ADDR, _(txt_show_from[SHOW_FROM_ADDR]),
 		SHOW_FROM_NAME, _(txt_show_from[SHOW_FROM_NAME]),
 		SHOW_FROM_BOTH, _(txt_show_from[SHOW_FROM_BOTH]));
-	fprintf(fp, _("#  show_info=NUM\n"));
-	fprintf(fp, "#    %d=%s, %d=%s, %d=%s, %d=%s\n",
-		SHOW_INFO_NOTHING, _(txt_show_info_type[SHOW_INFO_NOTHING]),
-		SHOW_INFO_LINES, _(txt_show_info_type[SHOW_INFO_LINES]),
-		SHOW_INFO_SCORE, _(txt_show_info_type[SHOW_INFO_SCORE]),
-		SHOW_INFO_BOTH, _(txt_show_info_type[SHOW_INFO_BOTH]));
 	fprintf(fp, _("#  show_signatures=ON/OFF\n"));
 	fprintf(fp, _("#  show_only_unread_arts=ON/OFF\n"));
 	fprintf(fp, _("#  sigdashes=ON/OFF\n"));
@@ -1248,6 +1282,7 @@ write_attributes_file(
 		fprintf(fp, "%d=%s, ", i, _(txt_threading[i]));
 	}
 	fprintf(fp, "\n");
+	fprintf(fp, _("#  thread_format=STRING (eg. %%n %%m [%%L]  %%T  %%F)\n"));
 	fprintf(fp, _("#  thread_perc=NUM\n"));
 	fprintf(fp, _("#  trim_article_body=NUM\n"));
 	fprintf(fp, _("#    0 = Don't trim article body\n"));
@@ -1320,6 +1355,8 @@ write_attributes_file(
 					fprintf(fp, "from=%s\n", scope->attribute->from);
 				if (scope->state->group_catchup_on_exit)
 					fprintf(fp, "group_catchup_on_exit=%s\n", print_boolean(scope->attribute->group_catchup_on_exit));
+				if (scope->state->group_format && scope->attribute->group_format)
+					fprintf(fp, "group_format=%s\n", scope->attribute->group_format);
 				if (scope->state->mail_8bit_header)
 					fprintf(fp, "mail_8bit_header=%s\n", print_boolean(scope->attribute->mail_8bit_header));
 				if (scope->state->mail_mime_encoding)
@@ -1396,8 +1433,6 @@ write_attributes_file(
 					fprintf(fp, "savefile=%s\n", scope->attribute->savefile);
 				if (scope->state->show_author)
 					fprintf(fp, "show_author=%u\n", scope->attribute->show_author);
-				if (scope->state->show_info)
-					fprintf(fp, "show_info=%u\n", scope->attribute->show_info);
 				if (scope->state->show_only_unread_arts)
 					fprintf(fp, "show_only_unread_arts=%s\n", print_boolean(scope->attribute->show_only_unread_arts));
 				if (scope->state->show_signatures)
@@ -1420,6 +1455,8 @@ write_attributes_file(
 					fprintf(fp, "thread_articles=%u\n", scope->attribute->thread_articles);
 				if (scope->state->thread_catchup_on_exit)
 					fprintf(fp, "thread_catchup_on_exit=%s\n", print_boolean(scope->attribute->thread_catchup_on_exit));
+				if (scope->state->thread_format && scope->attribute->thread_format)
+					fprintf(fp, "thread_format=%s\n", scope->attribute->thread_format);
 				if (scope->state->thread_perc)
 					fprintf(fp, "thread_perc=%u\n", scope->attribute->thread_perc);
 				if (scope->state->trim_article_body)
@@ -1533,6 +1570,7 @@ dump_attributes(
 			debug_print_file("ATTRIBUTES", "\tdelete_tmp_files=%s", print_boolean(group->attribute->delete_tmp_files));
 			debug_print_file("ATTRIBUTES", "\teditor_format=%s", BlankIfNull(group->attribute->editor_format));
 			debug_print_file("ATTRIBUTES", "\tgroup_catchup_on_exit=%s", print_boolean(group->attribute->group_catchup_on_exit));
+			debug_print_file("ATTRIBUTES", "\tgroup_format=%s", BlankIfNull(group->attribute->group_format));
 			debug_print_file("ATTRIBUTES", "\tmail_8bit_header=%s", print_boolean(group->attribute->mail_8bit_header));
 			debug_print_file("ATTRIBUTES", "\tmail_mime_encoding=%s", txt_mime_encodings[group->attribute->mail_mime_encoding]);
 			debug_print_file("ATTRIBUTES", "\tmark_ignore_tags=%s", print_boolean(group->attribute->mark_ignore_tags));
@@ -1561,12 +1599,12 @@ dump_attributes(
 			debug_print_file("ATTRIBUTES", "\tsort_article_type=%d", group->attribute->sort_article_type);
 			debug_print_file("ATTRIBUTES", "\tsort_threads_type=%d", group->attribute->sort_threads_type);
 			debug_print_file("ATTRIBUTES", "\tshow_author=%d", group->attribute->show_author);
-			debug_print_file("ATTRIBUTES", "\tshow_info=%d", group->attribute->show_info);
 			debug_print_file("ATTRIBUTES", "\tshow_signatures=%s", print_boolean(group->attribute->show_signatures));
 			debug_print_file("ATTRIBUTES", "\tsigdashes=%s", print_boolean(group->attribute->sigdashes));
 			debug_print_file("ATTRIBUTES", "\tsignature_repost=%s", print_boolean(group->attribute->signature_repost));
 			debug_print_file("ATTRIBUTES", "\tstart_editor_offset=%s", print_boolean(group->attribute->start_editor_offset));
 			debug_print_file("ATTRIBUTES", "\tthread_catchup_on_exit=%s", print_boolean(group->attribute->thread_catchup_on_exit));
+			debug_print_file("ATTRIBUTES", "\tthread_format=%s", BlankIfNull(group->attribute->thread_format));
 			debug_print_file("ATTRIBUTES", "\ttrim_article_body=%d", group->attribute->trim_article_body);
 			debug_print_file("ATTRIBUTES", "\tverbatim_handling=%s", print_boolean(group->attribute->verbatim_handling));
 			debug_print_file("ATTRIBUTES", "\twrap_on_next_unread=%s", print_boolean(group->attribute->wrap_on_next_unread));
@@ -1645,6 +1683,7 @@ dump_scopes(
 			debug_print_file(fname, "\t%sdelete_tmp_files=%s", DEBUG_PRINT_STATE(delete_tmp_files), print_boolean(scope->attribute->delete_tmp_files));
 			debug_print_file(fname, "\t%seditor_format=%s", DEBUG_PRINT_STATE(editor_format), DEBUG_PRINT_STRING(editor_format));
 			debug_print_file(fname, "\t%sgroup_catchup_on_exit=%s", DEBUG_PRINT_STATE(group_catchup_on_exit), print_boolean(scope->attribute->group_catchup_on_exit));
+			debug_print_file(fname, "\t%sgroup_format=%s", DEBUG_PRINT_STATE(group_format), DEBUG_PRINT_STRING(group_format));
 			debug_print_file(fname, "\t%smail_8bit_header=%s", DEBUG_PRINT_STATE(mail_8bit_header), print_boolean(scope->attribute->mail_8bit_header));
 			debug_print_file(fname, "\t%smail_mime_encoding=%s", DEBUG_PRINT_STATE(mail_mime_encoding), txt_mime_encodings[scope->attribute->mail_mime_encoding]);
 			debug_print_file(fname, "\t%smark_ignore_tags=%s", DEBUG_PRINT_STATE(mark_ignore_tags), print_boolean(scope->attribute->mark_ignore_tags));
@@ -1673,12 +1712,12 @@ dump_scopes(
 			debug_print_file(fname, "\t%ssort_article_type=%d", DEBUG_PRINT_STATE(sort_article_type), scope->attribute->sort_article_type);
 			debug_print_file(fname, "\t%ssort_threads_type=%d", DEBUG_PRINT_STATE(sort_threads_type), scope->attribute->sort_threads_type);
 			debug_print_file(fname, "\t%sshow_author=%d", DEBUG_PRINT_STATE(show_author), scope->attribute->show_author);
-			debug_print_file(fname, "\t%sshow_info=%d", DEBUG_PRINT_STATE(show_info), scope->attribute->show_info);
 			debug_print_file(fname, "\t%sshow_signatures=%s", DEBUG_PRINT_STATE(show_signatures), print_boolean(scope->attribute->show_signatures));
 			debug_print_file(fname, "\t%ssigdashes=%s", DEBUG_PRINT_STATE(sigdashes), print_boolean(scope->attribute->sigdashes));
 			debug_print_file(fname, "\t%ssignature_repost=%s", DEBUG_PRINT_STATE(signature_repost), print_boolean(scope->attribute->signature_repost));
 			debug_print_file(fname, "\t%sstart_editor_offset=%s", DEBUG_PRINT_STATE(start_editor_offset), print_boolean(scope->attribute->start_editor_offset));
 			debug_print_file(fname, "\t%sthread_catchup_on_exit=%s", DEBUG_PRINT_STATE(thread_catchup_on_exit), print_boolean(scope->attribute->thread_catchup_on_exit));
+			debug_print_file(fname, "\t%sthread_format=%s", DEBUG_PRINT_STATE(thread_format), DEBUG_PRINT_STRING(thread_format));
 			debug_print_file(fname, "\t%strim_article_body=%d", DEBUG_PRINT_STATE(trim_article_body), scope->attribute->trim_article_body);
 			debug_print_file(fname, "\t%sverbatim_handling=%s", DEBUG_PRINT_STATE(verbatim_handling), print_boolean(scope->attribute->verbatim_handling));
 			debug_print_file(fname, "\t%swrap_on_next_unread=%s", DEBUG_PRINT_STATE(wrap_on_next_unread), print_boolean(scope->attribute->wrap_on_next_unread));

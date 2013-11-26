@@ -42,15 +42,13 @@ o  batch mode has several bugs
      the statistics nor taken into account for the 'any unread news' status.
    - -vc could be more verbose (like -vcZ is)
    - -o currently is not a 'batch_mode' option
-   - if server requires authentication (and no ~/.newsauth entry matches)
-     tin prompts for username but not for password
    [Urs Janssen <urs@tin.org>]
 
 o  add version number to other config-files (e.g. tin.defaults)
    and do the same checks as for TINRC_VERSION/tinrc. for the
    filter and attributes file store the charset the file is written in
    (e.g. ISO-8859-x vs. unicode) and for the filter file the filter method
-   used (wildmat or regexp)
+   used (wildmat or regexp (or TRE))
    [Urs Janssen <urs@tin.org>]
 
 o  overview file caching code is over-complex
@@ -71,6 +69,10 @@ o  comments in attributes get lost (we need to do something like we do for
 o  if tin is falling back to HEAD/NEXT ([X]OVER not working) it doesn't honor
    tinrc.getart_limit
    [20090112 Urs Janssen <urs@tin.org>]
+
+o  the keys GroupToggleSubjDisplay and ThreadToggleSubjDisplay are misnamed,
+   as they toggle the display of the sender address, not the subject.
+   [20130839 Urs Janssen <urs@tin.org>]
 
 Pager Problems
 --------------
@@ -105,6 +107,22 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  add per scope getart_limit via attributes
+   [20131114 Urs Janssen <urs@tin.org>]
+
+o  add support for %A (Address), %C (Firstname), %N (Fullname) to
+   group_format and thread_format
+   (what about "conflicting" settings for show_author and %[ACIN]?)
+   [20130925 Urs Janssen <urs@tin.org>]
+
+o  add a key to "drop" pending data from the server (either by
+   disconnet/reconnect (fast but reconnect may fail due to rate limit or ...)
+   or via calling drain_buffer() (might be slow if there ss much pending
+   data)) so one doesn't have to quit and restart tin if the client/server
+   communication get's desynced (i.e by reading an article which has a non
+   dotstuffed lone . in it or the like)
+   [20130615 Urs Janssen <urs@tin.org>]
+
 o  x_body currently doesn't allow cmd. execution via ! like x_headers
    [20110912 Urs Janssen <urs@tin.org>]
 
@@ -127,7 +145,10 @@ o  give an error message if append_mail() fails (grep TODO post.c)
 
 o  allow remapping of the 'z' abort-key (lynx style) in wait_for_input().
 
-o  add user defined screen layout at different levels
+o  add user defined screen layout at different levels (i.e. posting
+   history screen)
+   (done for selection, group and thread level)
+   - what about groupname_max_length, still needed?
    [20041025 Urs Janssen <urs@tin.org>]
 
 o  add TLS (RFC 4642), NNTPS support
@@ -138,9 +159,9 @@ o  add TLS (RFC 4642), NNTPS support
     can be used for NNTPS)
    [20031210 Urs Janssen <urs@tin.org>]
 
-o  add more AUTHINFO SASL (RFC 4643) support (DIGEST-MD5, EXTERNAL, ...)
-   and a fallback if no libgsasl is found (e.g cyrus-sasl or a handrolled
-   version for at least PLAIN)
+o  add more AUTHINFO SASL (RFC 4643, RFC 5802) support (DIGEST-MD5,
+   EXTERNAL, ...) and a fallback if no libgsasl is found (e.g cyrus-sasl
+   or a handrolled version for at least PLAIN)
    [20080316 Urs Janssen <urs@tin.org>]
 
 o  add XZVER (and XZHDR) support (zlib compressed yyencoded overview data)
@@ -149,6 +170,11 @@ o  add XZVER (and XZHDR) support (zlib compressed yyencoded overview data)
 o  make 'GNKSA'-parser RFC5322/USEFOR compliant and fix bugs
    (e.g. "<~$!~( )@( )example.com>" causes "illegal character in RHS", but
    the address is valid)
+
+o  the TLD checking in the 'GNKSA'-parser needs some rework, keeping the
+   list of valid TLDs up to date is more or less impossible with the ~1400
+   pending new TLDs
+   [20131024 Urs Janssen <urs@tin.org>]
 
 o  add In-Reply-To threading for mailgroups
    [20030518 Urs Janssen <urs@tin.org>]
@@ -197,12 +223,13 @@ o  should the postponed 'file' (and posted messages 'file') be in
 
 o  add maildir/maildir++ support (besides MBOX{O,RD} and MMDF},
    MH (not only reading but also writing), mailstore, BABYL, Kendra (MMDF
-   like with 20*CTRL-A as sep.), MBX (indexed MBOX from UW-IMAP) and add
-   man-pages for the various formats.
+   like with 20*CTRL-A as sep.), MBX and MIX (indexed MBOX from UW-IMAP)
+   and add man-pages for the various formats.
    (see <http://www.ifi.uio.no/~larsi/notes/BABYL> for BABYL,
     <http://www.qmail.org/man/man5/maildir.html> for maildir,
     <http://www.qmail.org/man/man5/mbox.html> for MBOXCL and MBOXCL2,
-    <http://www.washington.edu/imap/listarch/2000/msg00363.html> for MBX)
+    <http://www.washington.edu/imap/listarch/2000/msg00363.html> for MBX,
+    <http://www.washington.edu/imap/documentation/mixfmt.txt.html for MIX)
    [20020215 Urs Janssen <urs@tin.org>]
 
 o  add $LOCKEXT support
@@ -297,6 +324,13 @@ o  if using "-n" commandline switch you can't subscribe to newsgroups not
 o  item_by_item_etiquette_warnings [compile-time?]
    (e.g. enable x-posts without f'up warning, disable long-sig warning)
 
+o  don't prefix posted_articles_file with maildir if posted_articles_file
+   has an absolute path (after expanding ~).
+   [20130627 Urs Janssen <urs@tin.org>]
+
+o  posted_articles_file is not available in attributes
+   [20130628 Urs Janssen <urs@tin.org>]
+
 o  unify Fcc and posted_articles_file
    [20031012 Dirk Nimmich <nimmich@muenster.de>]
 
@@ -353,6 +387,7 @@ o  Additions to the group menu:
 
 o  Additions to the select menu:
      '%'  (toggle rot13 encoding of screen content)
+     key to toggle groupname abbreviation
 
 o  Add to the 'M'enu:
      'R'  (GLOBAL_BUGREPORT)
@@ -400,11 +435,13 @@ o  Merge the selection code with the range code. Having two similar methods
    of picking articles with similar goals is wasteful.
    [Jason Faultless <jason@altarstone.com>]
 
-o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo
+o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo, liblz4, liblrzip
    (<http://tukaani.org/xz/>, <http://sources.redhat.com/bzip2/>,
-    <http://www.gzip.org/zlib/>, <http://www.oberhumer.com/opensource/lzo/>)
-   and add an option to write/read {g,b,l}zipped local overviews.
-   liblzma, zlib, libbzip2 and lzo might also be used for post-processing.
+    <http://www.gzip.org/zlib/>, <http://www.oberhumer.com/opensource/lzo/>,
+    <http://code.google.com/p/lz4/>,
+    <http://freecode.com/projects/long-range-zip>) and add an option to
+   write/read *zipped local overviews.
+   the libs might also be used for post-processing articles.
 
 o  rewrite/cleanup all the debugging code, the output in /tmp is messy; the
    on screen output either slows down things dramatically or is unreadable;
@@ -514,6 +551,14 @@ o  add missing mailcap (RFC 1524) features (%n, %F, copiousoutput, print, ...)
 
 Internal Changes
 ----------------
+o  rename disable_gnksa_domain_check to enable_gnksa_domain_check and
+   invert logic now the default changed
+   [20131119 Urs Janssen <urs@tin.org>]
+
+o  %s/%S in quote_char should replaced by %I in misc.c:copy_body() and
+   config.c:rc_update() to be consistent.
+   [20131003 Urs Janssen <urs@tin.org>]
+
 o  curses.c:input_pending() and curses.c:get_arrow_key() have
    #ifdef HAVE_SELECT and a code path for the case when we don't have
    select(2), but read.c:wait_for_input() has no code path for the
@@ -551,7 +596,7 @@ o  tinrc.confirm_choice should be written/read as int, not string as users
    changes).
    [20081112 Urs Janssen <urs@tin.org>]
 
-o  use read()/write() instead of fputs()/fgets()
+o  use read()/write() instead of fputs()/fgets() on socket
 
 o  move several (server related) files into the per-server dir
    e.g.:
@@ -665,8 +710,11 @@ o  cleanup post.c
 o  check code with Splint (LCLint) <http://www.splint.org/>,
    ccmalloc (<http://ftp.de.debian.org/debian/pool/main/c/ccmalloc/>),
    MSS (<http://hem1.passagen.se/blizzar/mss/>),
-   valgrind (<http://valgrind.org/>) and cppcheck
-   (<http://cppcheck.wiki.sourceforge.net/>)
+   valgrind (<http://valgrind.org/>), cppcheck
+   (<http://cppcheck.wiki.sourceforge.net/>), AdLint
+   (<http://adlint.sourceforge.net>), clang-analyzer
+   (<http://clang-analyzer.llvm.org/>) and Coverity
+   (<https://scan.coverity.com/projects/993>)
 
 o  rewrite the tag code so that arts[].tagged becomes index in arts[]
    of next tagged article. num_of_tagged_arts becomes index of first
@@ -716,7 +764,7 @@ o  make mm_network_charset an "option_list" to avoid junk input or
    us-ascii) on each...) and disable those not available.
    (think about more network charsets (GB2312, GB18030, Shift_JIS,
     ISO-8859-6[-{I,E}], ISO-8859-8[-{I,E}], ISO-8859-11, VISCII, VIQR;
-    check wether KOI8-RU is still used/valid))
+    check whether KOI8-RU is still used/valid))
    [done except configure check 20010907 urs@tin.org]
 
 o  make mm_network_charset an user configurable item list
@@ -741,6 +789,10 @@ o  add normalization
    <http://www.gnu.org/software/libunistring/>)
    (done for search strings)
    [20031209 Michael Bienia <michael@vorlon.ping.de>]
+
+o  check for wcsftime() and if found use it instead of strftime() (at
+   least in page.c).
+   [20130129 Urs Janssen <urs@tin.org>]
 
 Docs/online help
 ----------------
@@ -835,7 +887,7 @@ o  replace wildmat.c with uwildmat.c
    patterns and can handle UTF-8 strings
    [20091223 Urs Janssen <urs@tin.org>]
 
-o  support $XDG_CONFIG_HOME / $XDG_DATA_HOME?
+o  support $XDG_CONFIG_HOME[S] / $XDG_DATA_HOME[S] / $XDG_RUNTIME_DIR
    <http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html>
    [20081010 Urs Janssen <urs@tin.org>]
 
@@ -896,7 +948,8 @@ o  should 'tin -z foo.bar' only start up if there is any unread news in
 
 o  trn and perls Net::NNTP::Auth use ~/.nntpauth (format is
    "^server\s+user\s+password"), shall we also try ~/.nntpauth if we can't
-   find a matching entry in ~/.newsauth?
+   find a matching entry in ~/.newsauth? and should we look for
+   ${TIN_HOMEDIR:-"$HOME"}/.tin/.newsauth if ~/.newsauth is not found?
    [20040128 Urs Janssen <urs@tin.org>]
 
 o  what todo if in a CTE: x-uue the CD: filename differs from the one given
@@ -936,7 +989,7 @@ o  check_article_to_be_posted() needs a cleanup!
 
 o  update gettext stuff to > gettext-0.12.1
 
-o  clean up included pcre stuff and update to >= pcre-8.30
+o  clean up included pcre stuff and update to >= pcre-8.33
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file
@@ -970,6 +1023,12 @@ o  cleanup main.c/init_selfinfo()
     what I mean)
    [fixed some of the double/tripple reads, urs]
 
+o  cache mailbox_name in misc.c/mail_check()?
+
+o  configure checks for fdopen(3) and defines HAVE_FDOPEN if found, but we
+   don't have any code guared with that macro nor any fallback code if not
+   found.
+
 o  re add innlib support? (the old one was dropped as the lib has retired
    all (which were not that many) features we used and our code didn't
    use the innlibs code where ever it was possible (and useful).
@@ -979,5 +1038,12 @@ o  add check for libarchive <https://code.google.com/p/libarchive/>
    and use for post-processing?
    [20111225 Urs Janssen <urs@tin.org>]
 
+o  add check for heapsort(3) in libbsd? <http://libbsd.freedesktop.org/wiki/>
+   [20130305 Urs Janssen <urs@tin.org>]
+
 o  add jump to selected article from DisplayPostHist (’W’)
    [20120220 Urs Janssen <urs@tin.org>]
+
+o  add check for libtre and offer TRE as matching method for "wildcard"?
+   <http://laurikari.net/tre/about/>, <https://github.com/laurikari/tre/>
+   [20130706 Urs Janssen <urs@tin.org>]

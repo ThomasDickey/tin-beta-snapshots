@@ -3,10 +3,10 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2011-01-29
+ *  Updated   : 2013-04-29
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2012 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2013 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -210,7 +210,6 @@ put_cooked(
 	char *p, *bufp, *buf;
 	int wrap_column;
 	int space;
-/*	static int overflow = 0; */ /* TODO: we don't use it (anymore?) */
 	static int saved_flags = 0;
 	va_list ap;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -263,7 +262,6 @@ put_cooked(
 		if (*p == '\n')
 			p++;
 		bufp = p;
-/*		overflow = 0; */
 
 		if (art->cooked_lines == 0) {
 			art->cookl = my_malloc(sizeof(t_lineinfo) * CHUNK);
@@ -300,7 +298,6 @@ put_cooked(
 	if (*bufp != '\0') {
 		fputs(bufp, art->cooked);
 		saved_flags = flags;
-/*		overflow += strlen(bufp); */
 	}
 
 	va_end(ap);
@@ -486,7 +483,7 @@ process_text_body_part(
 		 * - skip leading blank lines
 		 * - replace multiple blank lines with one empty line
 		 * - skip tailing blank lines, keep one if an
-		 *   attachement follows
+		 *   attachment follows
 		 */
 		if (curr_group->attribute->trim_article_body && !in_uue && !in_verbatim && !verbatim_begin) {
 			len_blank = 1;
@@ -872,7 +869,7 @@ cook_article(
 			} while (!found && *(++strptr) != 0);
 
 			/* unstructured but must not be decoded */
-			if (l == NULL && (!strncasecmp(line, "References: ", 12) || !strncasecmp(line, "Message-ID: ", 12) || !strncasecmp(line, "Date: ", 6) || !strncasecmp(line, "Newsgroups: ", 12) || !strncasecmp(line, "Distribution: ", 14) || !strncasecmp(line, "Followup-To: ", 13) || !strncasecmp(line, "X-Face: ", 8) || !strncasecmp(line, "Cancel-Lock: ", 13) || !strncasecmp(line, "Cancel-Key: ", 12)))
+			if (l == NULL && (!strncasecmp(line, "References: ", 12) || !strncasecmp(line, "Message-ID: ", 12) || !strncasecmp(line, "Date: ", 6) || !strncasecmp(line, "Newsgroups: ", 12) || !strncasecmp(line, "Distribution: ", 14) || !strncasecmp(line, "Followup-To: ", 13) || !strncasecmp(line, "X-Face: ", 8) || !strncasecmp(line, "Cancel-Lock: ", 13) || !strncasecmp(line, "Cancel-Key: ", 12) || !strncasecmp(line, "Supersedes: ", 12)))
 				l = my_strdup(line);
 
 			if (l == NULL)

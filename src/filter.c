@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2011-11-09
+ *  Updated   : 2013-11-25
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -662,8 +662,10 @@ write_filter_file(
 		return;
 	}
 
-	if ((fp = fopen(filename, "w+")) == NULL)
+	if ((fp = fopen(filename, "w+")) == NULL) {
+		free(file_tmp);
 		return;
+	}
 
 	/* TODO: -> lang.c */
 	fprintf(fp, "# Filter file V%s for the TIN newsreader\n#\n", FILTER_VERSION);
@@ -671,14 +673,15 @@ write_filter_file(
 
 	/* determine the file offset */
 	if (!batch_mode) {
-		fpos = ftell(fp);
-		rewind(fp);
-		filter_file_offset = 1;
-		while ((i = fgetc(fp)) != EOF) {
-			if (i == '\n')
-				filter_file_offset++;
+		if ((fpos = ftell(fp)) > 0) {
+			rewind(fp);
+			filter_file_offset = 1;
+			while ((i = fgetc(fp)) != EOF) {
+				if (i == '\n')
+					filter_file_offset++;
+			}
+			fseek(fp, fpos, SEEK_SET);
 		}
-		fseek(fp, fpos, SEEK_SET);
 	}
 
 	fflush(fp);
@@ -1372,7 +1375,7 @@ filter_menu(
 		list[j] = (char *) _(txt_all_groups);
 
 		if ((i = get_choice(INDEX_TOP + 13, ptr_filter_help_scope, ptr_filter_scope, list, j + 1)) > 0)
-			strncpy(rule.scope, i == j ? "*" : list[i], sizeof(rule.scope));
+			my_strncpy(rule.scope, i == j ? "*" : list[i], sizeof(rule.scope) - 1);
 
 		for (j--; j >= 0; j--)
 			free(list[j]);
@@ -1466,7 +1469,9 @@ quick_filter(
 	/*
 	 * Setup rules
 	 */
-	strcpy(rule.scope, BlankIfNull(scope));
+	if (strlen(BlankIfNull(scope)) > (sizeof(rule.scope) - 1))
+		return FALSE;
+	my_strncpy(rule.scope, BlankIfNull(scope), sizeof(rule.scope) - 1);
 	rule.counter = 0;
 	rule.lines_cmp = FILTER_LINES_NO;
 	rule.lines_num = 0;
@@ -1870,7 +1875,7 @@ filter_articles(
 					if (arts[i].name != NULL)
 						snprintf(buf, sizeof(buf), "%s (%s)", arts[i].from, arts[i].name);
 					else
-						strcpy(buf, arts[i].from);
+						STRCPY(buf, arts[i].from);
 
 					switch (test_regex(buf, ptr[j].from, ptr[j].icase, &regex_cache_from[j])) {
 						case 1:
@@ -2015,9 +2020,9 @@ filter_articles(
 				/*
 				 * Filter on Xref: lines
 				 *
-				 * 	Xref: news.foo.bar foo.bar:666 bar.bar:999
-				 * is turned into
-				 * 	foo.bar,bar.bar
+				 * "news.foo.bar foo.bar:666 bar.bar:999"
+				 * is turned into the Newsgroups like string
+				 * foo.bar,bar.bar
 				 */
 				if (arts[i].xref && *arts[i].xref) {
 					if (ptr[j].score && ptr[j].xref != NULL) {
@@ -2031,7 +2036,7 @@ filter_articles(
 							s++;
 
 						/* reformat */
-						k = e = my_malloc(strlen(s));
+						k = e = my_malloc(strlen(s) + 1);
 						while (*s) {
 							if (*s == ':') {
 								*e++ = ',';

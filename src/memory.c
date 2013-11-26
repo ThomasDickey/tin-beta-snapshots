@@ -3,10 +3,10 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2011-11-14
+ *  Updated   : 2013-11-15
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -183,7 +183,7 @@ expand_scope(
 			scopes = my_malloc(sizeof(*scopes) * max_scope);
 		num_scope = 0;
 	} else {
-		max_scope += max_scope >> 1;	/* increase by 50 % */
+		max_scope += max_scope >> 1;	/* increase by 50% */
 		scopes = my_realloc(scopes, sizeof(*scopes) * max_scope);
 	}
 }
@@ -308,6 +308,8 @@ free_all_arrays(
 	}
 
 	tin_fgets(NULL, FALSE);
+
+	free(tin_progname);
 }
 
 
@@ -362,6 +364,8 @@ static void
 free_attributes(
 	struct t_attribute *attributes)
 {
+	free_if_not_default(&attributes->group_format, tinrc.group_format);
+	free_if_not_default(&attributes->thread_format, tinrc.thread_format);
 	free_if_not_default(&attributes->date_format, tinrc.date_format);
 	free_if_not_default(&attributes->editor_format, tinrc.editor_format);
 	FreeAndNull(attributes->fcc);

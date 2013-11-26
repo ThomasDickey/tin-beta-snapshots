@@ -3,10 +3,10 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2012-03-04
+ *  Updated   : 2013-10-01
  *  Notes     : Split from config.c
  *
- * Copyright (c) 2004-2012 Michael Bienia <michael@vorlon.ping.de>
+ * Copyright (c) 2004-2013 Michael Bienia <michael@vorlon.ping.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -275,6 +275,7 @@ option_is_visible(
 		case OPT_ATTRIB_FOLLOWUP_TO:
 		case OPT_ATTRIB_FROM:
 		case OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT:
+		case OPT_ATTRIB_GROUP_FORMAT:
 #ifdef HAVE_ISPELL
 		case OPT_ATTRIB_ISPELL:
 #endif /* HAVE_ISPELL */
@@ -311,7 +312,6 @@ option_is_visible(
 		case OPT_ATTRIB_SAVEDIR:
 		case OPT_ATTRIB_SAVEFILE:
 		case OPT_ATTRIB_SHOW_AUTHOR:
-		case OPT_ATTRIB_SHOW_INFO:
 		case OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS:
 		case OPT_ATTRIB_SHOW_SIGNATURES:
 		case OPT_ATTRIB_SIGDASHES:
@@ -320,6 +320,7 @@ option_is_visible(
 		case OPT_ATTRIB_START_EDITOR_OFFSET:
 		case OPT_ATTRIB_THREAD_ARTICLES:
 		case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
+		case OPT_ATTRIB_THREAD_FORMAT:
 		case OPT_ATTRIB_THREAD_PERC:
 		case OPT_ATTRIB_TRIM_ARTICLE_BODY:
 		case OPT_ATTRIB_TEX2ISO_CONV:
@@ -809,6 +810,7 @@ show_config_page(
 	enum option_enum i;
 
 	signal_context = curr_scope ? cAttrib : cConfig;
+	mark_offset = 0;
 
 	ClearScreen();
 	center_line(0, TRUE, curr_scope ? curr_scope->scope : _(txt_options_menu));
@@ -1826,11 +1828,6 @@ config_page(
 							}
 							break;
 
-						case OPT_SHOW_INFO:
-							if (prompt_option_list(option))
-								UPDATE_INT_ATTRIBUTES(show_info);
-							break;
-
 						case OPT_MAIL_MIME_ENCODING:
 							if (prompt_option_list(option)) {
 #ifdef CHARSET_CONVERSION
@@ -1997,11 +1994,6 @@ config_page(
 							}
 							break;
 
-						case OPT_ATTRIB_SHOW_INFO:
-							if (prompt_option_list(option))
-								SET_NUM_ATTRIBUTE(show_info);
-							break;
-
 						case OPT_ATTRIB_SORT_ARTICLE_TYPE:
 							if (prompt_option_list(option)) {
 								SET_NUM_ATTRIBUTE(sort_article_type);
@@ -2061,6 +2053,19 @@ config_page(
 									STRCPY(tinrc.editor_format, TIN_EDITOR_FMT_ON);
 								changed |= MISC_OPTS;
 							}
+							break;
+
+						case OPT_GROUP_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!strlen(tinrc.group_format))
+									STRCPY(tinrc.group_format, DEFAULT_GROUP_FORMAT);
+								changed |= MISC_OPTS;
+							}
+							break;
+
+						case OPT_ATTRIB_GROUP_FORMAT:
+							if (prompt_option_string(option))
+								SET_STRING_ATTRIBUTE(group_format);
 							break;
 
 #ifndef CHARSET_CONVERSION
@@ -2144,6 +2149,14 @@ config_page(
 							break;
 #endif /* HAVE_COLOR */
 
+						case OPT_SELECT_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!strlen(tinrc.select_format))
+									STRCPY(tinrc.select_format, DEFAULT_SELECT_FORMAT);
+								changed |= MISC_OPTS;
+							}
+							break;
+
 						case OPT_SLASHES_REGEX:
 							if (prompt_option_string(option)) {
 								FreeIfNeeded(slashes_regex.re);
@@ -2214,6 +2227,19 @@ config_page(
 								compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);
 								changed |= MISC_OPTS;
 							}
+							break;
+
+						case OPT_THREAD_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!strlen(tinrc.thread_format))
+									STRCPY(tinrc.thread_format, DEFAULT_THREAD_FORMAT);
+								changed |= MISC_OPTS;
+							}
+							break;
+
+						case OPT_ATTRIB_THREAD_FORMAT:
+							if (prompt_option_string(option))
+								SET_STRING_ATTRIBUTE(thread_format);
 							break;
 
 						case OPT_VERBATIM_BEGIN_REGEX:
@@ -2297,6 +2323,7 @@ config_page(
 							if (prompt_option_string(option)) {
 								SET_STRING_ATTRIBUTE(news_headers_to_display);
 								build_news_headers_array(curr_scope->attribute, TRUE);
+								changed |= DISPLAY_OPTS;
 							}
 							break;
 
@@ -2304,6 +2331,7 @@ config_page(
 							if (prompt_option_string(option)) {
 								SET_STRING_ATTRIBUTE(news_headers_to_not_display);
 								build_news_headers_array(curr_scope->attribute, FALSE);
+								changed |= DISPLAY_OPTS;
 							}
 							break;
 
@@ -2519,6 +2547,7 @@ show_scope_page(
 
 	signal_context = cScope;
 	currmenu = &scopemenu;
+	mark_offset = 0;
 
 	if (scopemenu.curr < 0)
 		scopemenu.curr = 0;
@@ -2973,6 +3002,8 @@ check_state(
 			return curr_scope->state->from;
 		case OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT:
 			return curr_scope->state->group_catchup_on_exit;
+		case OPT_ATTRIB_GROUP_FORMAT:
+			return curr_scope->state->group_format;
 #ifdef HAVE_ISPELL
 		case OPT_ATTRIB_ISPELL:
 			return curr_scope->state->ispell;
@@ -3041,8 +3072,6 @@ check_state(
 			return curr_scope->state->savefile;
 		case OPT_ATTRIB_SHOW_AUTHOR:
 			return curr_scope->state->show_author;
-		case OPT_ATTRIB_SHOW_INFO:
-			return curr_scope->state->show_info;
 		case OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS:
 			return curr_scope->state->show_only_unread_arts;
 		case OPT_ATTRIB_SHOW_SIGNATURES:
@@ -3059,6 +3088,8 @@ check_state(
 			return curr_scope->state->thread_articles;
 		case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
 			return curr_scope->state->thread_catchup_on_exit;
+		case OPT_ATTRIB_THREAD_FORMAT:
+			return curr_scope->state->thread_format;
 		case OPT_ATTRIB_THREAD_PERC:
 			return curr_scope->state->thread_perc;
 		case OPT_ATTRIB_TRIM_ARTICLE_BODY:
@@ -3173,6 +3204,11 @@ reset_state(
 		case OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT:
 			curr_scope->state->group_catchup_on_exit = FALSE;
 			tinrc.attrib_group_catchup_on_exit = default_scope->attribute->group_catchup_on_exit;
+			break;
+		case OPT_ATTRIB_GROUP_FORMAT:
+			FreeAndNull(curr_scope->attribute->group_format);
+			curr_scope->state->group_format = FALSE;
+			snprintf(tinrc.attrib_group_format, sizeof(tinrc.attrib_group_format), "%s", BlankIfNull(default_scope->attribute->group_format));
 			break;
 #ifdef HAVE_ISPELL
 		case OPT_ATTRIB_ISPELL:
@@ -3321,10 +3357,6 @@ reset_state(
 			curr_scope->state->show_author = FALSE;
 			tinrc.attrib_show_author = default_scope->attribute->show_author;
 			break;
-		case OPT_ATTRIB_SHOW_INFO:
-			curr_scope->state->show_info = FALSE;
-			tinrc.attrib_show_info = default_scope->attribute->show_info;
-			break;
 		case OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS:
 			curr_scope->state->show_only_unread_arts = FALSE;
 			tinrc.attrib_show_only_unread_arts = default_scope->attribute->show_only_unread_arts;
@@ -3357,6 +3389,11 @@ reset_state(
 		case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
 			curr_scope->state->thread_catchup_on_exit = FALSE;
 			tinrc.attrib_thread_catchup_on_exit = default_scope->attribute->thread_catchup_on_exit;
+			break;
+		case OPT_ATTRIB_THREAD_FORMAT:
+			FreeAndNull(curr_scope->attribute->thread_format);
+			curr_scope->state->thread_format = FALSE;
+			snprintf(tinrc.attrib_thread_format, sizeof(tinrc.attrib_thread_format), "%s", BlankIfNull(default_scope->attribute->thread_format));
 			break;
 		case OPT_ATTRIB_THREAD_PERC:
 			curr_scope->state->thread_perc = FALSE;
@@ -3473,7 +3510,6 @@ initialize_attributes(
 	INITIALIZE_NUM_ATTRIBUTE(quick_select_case);
 	INITIALIZE_NUM_ATTRIBUTE(quick_select_expire);
 	INITIALIZE_NUM_ATTRIBUTE(show_author);
-	INITIALIZE_NUM_ATTRIBUTE(show_info);
 	INITIALIZE_NUM_ATTRIBUTE(show_only_unread_arts);
 	INITIALIZE_NUM_ATTRIBUTE(show_signatures);
 	INITIALIZE_NUM_ATTRIBUTE(sigdashes);
@@ -3495,6 +3531,7 @@ initialize_attributes(
 	INITIALIZE_STRING_ATTRIBUTE(fcc);
 	INITIALIZE_STRING_ATTRIBUTE(followup_to);
 	INITIALIZE_STRING_ATTRIBUTE(from);
+	INITIALIZE_STRING_ATTRIBUTE(group_format);
 #ifdef HAVE_ISPELL
 	INITIALIZE_STRING_ATTRIBUTE(ispell);
 #endif /* HAVE_ISPELL */
@@ -3511,6 +3548,7 @@ initialize_attributes(
 	INITIALIZE_STRING_ATTRIBUTE(savedir);
 	INITIALIZE_STRING_ATTRIBUTE(savefile);
 	INITIALIZE_STRING_ATTRIBUTE(sigfile);
+	INITIALIZE_STRING_ATTRIBUTE(thread_format);
 #ifdef CHARSET_CONVERSION
 	INITIALIZE_NUM_ATTRIBUTE(mm_network_charset);
 	INITIALIZE_STRING_ATTRIBUTE(undeclared_charset);

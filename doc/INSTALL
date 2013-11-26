@@ -374,7 +374,7 @@ one of the following 7 conversion tables for different languages
         4  convert 8-bit characters according to RFC 1345
         5  build 8-bit characters by combining several 7-bit chars and
            using backspace (useful for printers)
-        6  ???
+        6  table for IBM PC character set (code page 437)
 
 E.g., adding --with-iso-to-ascii=2 to the configure options would be useful
 in german language newsgroups. For more detailed info read the file

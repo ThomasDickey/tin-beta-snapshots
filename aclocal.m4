@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2012-02-20
+dnl Updated   : 2013-10-03
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2012 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2013 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -294,7 +294,7 @@ AC_DEFUN([AM_MULTIBYTE_ABLE],
       /* (void) iswupper((wint_t) wcb[0]); */
       /* (void) towlower((wint_t) wcb[0]); */
       /* (void) iswlower((wint_t) wcb[0]); */
-      /* (void) iswalpha((wint_t) wcb[0]); */
+      (void) iswalpha((wint_t) wcb[0]);
       /* (void) iswblank((wint_t) wcb[0]); */
       /* (void) iswpunct((wint_t) wcb[0]); */
       /* (void) iswxdigit((wint_t) wcb[0]); */
@@ -336,7 +336,7 @@ AC_DEFUN([AM_MULTIBYTE_ABLE],
         /* (void) iswupper((wint_t) wcb[0]); */
         /* (void) towlower((wint_t) wcb[0]); */
         /* (void) iswlower((wint_t) wcb[0]); */
-        /* (void) iswalpha((wint_t) wcb[0]); */
+        (void) iswalpha((wint_t) wcb[0]);
         /* (void) iswblank((wint_t) wcb[0]); */
         /* (void) iswpunct((wint_t) wcb[0]); */
         /* (void) iswxdigit((wint_t) wcb[0]); */

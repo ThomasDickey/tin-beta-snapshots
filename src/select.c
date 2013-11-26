@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2012-03-04
+ *  Updated   : 2013-11-16
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,8 @@
 #endif /* !TCURSES_H */
 
 
+static struct t_fmt sel_fmt;
+
 /*
  * Local prototypes
  */
@@ -75,6 +77,8 @@ static void yank_active_file(void);
 t_menu selmenu = { 1, 0, 0, show_selection_page, draw_group_arrow, build_gline };
 
 static int groupname_len;	/* max. group name length */
+static int flags_offset;
+static int ucnt_offset;
 
 
 static t_function
@@ -424,7 +428,7 @@ selection_page(
 					break;
 				}
 				if (CURR_GROUP.subscribed) {
-					mark_screen(selmenu.curr, 2, CURR_GROUP.newgroup ? "N" : "u");
+					mark_screen(selmenu.curr, flags_offset, CURR_GROUP.newgroup ? "N" : "u");
 					subscribe(&CURR_GROUP, UNSUBSCRIBED, TRUE);
 					info_message(_(txt_unsubscribed_to), CURR_GROUP.name);
 					move_down();
@@ -484,7 +488,7 @@ selection_page(
 #endif /* 1 */
 					}
 				} else
-					strcpy(buf, CURR_GROUP.name);
+					STRCPY(buf, CURR_GROUP.name);
 				if (!can_post && !CURR_GROUP.bogus && !CURR_GROUP.attribute->mailing_list) {
 					info_message(_(txt_cannot_post));
 					break;
@@ -522,15 +526,16 @@ selection_page(
 					break;
 				}
 				grp_mark_unread(&CURR_GROUP);
-				{
-					char tmp[6];
+				if (CURR_GROUP.newsrc.num_unread)
+					STRCPY(buf, tin_ltoa(CURR_GROUP.newsrc.num_unread, sel_fmt.len_ucnt));
+				else {
+					size_t j = 0;
 
-					if (CURR_GROUP.newsrc.num_unread)
-						STRCPY(tmp, tin_ltoa(CURR_GROUP.newsrc.num_unread, 5));
-					else
-						STRCPY(tmp, "     ");
-					mark_screen(selmenu.curr, 9, tmp);
+					while(j < sel_fmt.len_ucnt)
+						buf[j++] = ' ';
+					buf[j] = '\0';
 				}
+				mark_screen(selmenu.curr, ucnt_offset, buf);
 				break;
 
 			default:
@@ -545,10 +550,16 @@ show_selection_page(
 	void)
 {
 	char buf[LEN];
-	int i, len;
+	int i;
+	size_t len;
 
 	signal_context = cSelect;
 	currmenu = &selmenu;
+	parse_format_string(tinrc.select_format, &sel_fmt);
+	groupname_len = 0;
+	flags_offset = 0;
+	mark_offset = 0;
+	ucnt_offset = 0;
 
 	if (read_news_via_nntp)
 		snprintf(buf, sizeof(buf), "%s (%s  %d%s)", _(txt_group_selection), nntp_server, selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
@@ -562,36 +573,41 @@ show_selection_page(
 	set_first_screen_item();
 	show_title(buf);
 
-	/*
-	 * calculate max length of groupname field
-	 * if yanked in (yanked_out == FALSE) check all groups in active file
-	 * otherwise just subscribed to groups
-	 */
-	if (yanked_out) {
-		for (i = 0; i < selmenu.max; i++) {
-			if ((len = strwidth(active[my_group[i]].name)) > groupname_len)
-				groupname_len = len;
-			if (show_description && groupname_len > tinrc.groupname_max_length) {
-				/* no need to search further, we have reached max length */
-				groupname_len = tinrc.groupname_max_length;
-				break;
+	if (!sel_fmt.len_grpname) {
+		/*
+		 * calculate max length of groupname field
+		 * if yanked in (yanked_out == FALSE) check all groups in active file
+		 * otherwise just subscribed to groups
+		 */
+		if (yanked_out) {
+			for (i = 0; i < selmenu.max; i++) {
+				if ((len = strwidth(active[my_group[i]].name)) > sel_fmt.len_grpname)
+					sel_fmt.len_grpname = len;
+			}
+		} else {
+			for_each_group(i) {
+				if ((len = strwidth(active[i].name)) > sel_fmt.len_grpname)
+					sel_fmt.len_grpname = len;
 			}
 		}
-	} else {
-		for_each_group(i) {
-			if ((len = strwidth(active[i].name)) > groupname_len)
-				groupname_len = len;
-			if (show_description && groupname_len > tinrc.groupname_max_length) {
-				/* no need to search further, we have reached max length */
-				groupname_len = tinrc.groupname_max_length;
-				break;
-			}
-		}
-	}
-	if (groupname_len >= (cCOLS - SELECT_MISC_COLS))
-		groupname_len = cCOLS - SELECT_MISC_COLS - 1;
+		groupname_len = show_description ? MIN((int) sel_fmt.len_grpname, tinrc.groupname_max_length) : (int) sel_fmt.len_grpname;
+	} else
+		groupname_len = sel_fmt.len_grpname;
+
+	if (groupname_len >= (int) sel_fmt.len_grpname_max)
+		groupname_len = sel_fmt.len_grpname_max;
 	if (groupname_len < 0)
 		groupname_len = 0;
+
+	if (!sel_fmt.len_grpdesc)
+		sel_fmt.len_grpdesc = sel_fmt.len_grpname_max - groupname_len;
+	else {
+		if (sel_fmt.len_grpdesc > sel_fmt.len_grpname_max - groupname_len)
+			sel_fmt.len_grpdesc = sel_fmt.len_grpname_max - groupname_len;
+	}
+
+	flags_offset = sel_fmt.flags_offset + (sel_fmt.g_before_f ? groupname_len : 0) + (sel_fmt.d_before_f ? sel_fmt.len_grpdesc : 0);
+	ucnt_offset = sel_fmt.ucnt_offset + (sel_fmt.g_before_u ? groupname_len : 0) + (sel_fmt.d_before_u ? sel_fmt.len_grpdesc : 0);
 
 	for (i = selmenu.first; i < selmenu.first + NOTESLINES && i < selmenu.max; i++)
 		build_gline(i);
@@ -611,13 +627,13 @@ static void
 build_gline(
 	int i)
 {
+	char *fmt, *buf;
 	char subs;
-	char tmp[10];
-	int n, blank_len;
+	int n;
+	size_t j;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	char *name_buf = NULL;
 	char *desc_buf = NULL;
-	int name_len = groupname_len;
 	wchar_t *active_name = NULL;
 	wchar_t *active_name2 = NULL;
 	wchar_t *active_desc = NULL;
@@ -631,117 +647,144 @@ build_gline(
 	char *sptr = screen[INDEX2SNUM(i)].col;
 #endif /* USE_CURSES */
 
-#define DESCRIPTION_LENGTH 255
-
-	blank_len = (MIN(cCOLS, DESCRIPTION_LENGTH) - (groupname_len + SELECT_MISC_COLS)) + (show_description ? 2 : 4);
-
-	if (active[my_group[i]].inrange)
-		strcpy(tmp, "    #");
-	else if (active[my_group[i]].newsrc.num_unread) {
-		int getart_limit;
-		t_artnum num_unread;
-
-		getart_limit = cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit;
-		num_unread = active[my_group[i]].newsrc.num_unread;
-		if (getart_limit > 0 && getart_limit < num_unread)
-			num_unread = getart_limit;
-		strcpy(tmp, tin_ltoa(num_unread, 5));
-	} else
-		strcpy(tmp, "     ");
-
+	sptr[0] = '\0';
+	fmt = sel_fmt.str;
 	n = my_group[i];
 
-	/*
-	 * Display a flag for this group if needed
-	 * . Bogus groups are dumped immediately
-	 * . Normal subscribed groups may be
-	 *   ' ' normal, 'X' not postable, 'M' moderated, '=' renamed
-	 * . Newgroups are 'N'
-	 * . Unsubscribed groups are 'u'
-	 */
-	if (active[n].bogus)					/* Group is not in active list */
-		subs = 'D';
-	else if (active[n].subscribed)			/* Important that this precedes Newgroup */
-		subs = group_flag(active[n].moderated);
-	else
-		subs = ((active[n].newgroup) ? 'N' : 'u'); /* New (but unsubscribed) group or unsubscribed group */
+	if (tinrc.draw_arrow)
+			strcat(sptr, "  ");
 
+	for (; *fmt; fmt++) {
+		if (*fmt != '%') {
+			strncat(sptr, fmt, 1);
+			continue;
+		}
+		switch (*++fmt) {
+			case '\0':
+				break;
+
+			case '%':
+				strncat(sptr, fmt, 1);
+				break;
+
+			case 'd':
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if ((active_name = char2wchar_t(active[n].name)) == NULL) /* If char2wchar_t() fails try again after replacing unprintable characters */
-		active_name = char2wchar_t(convert_to_printable(active[n].name, FALSE));
-
-	if (show_description && active[n].description)
-		active_desc = char2wchar_t(active[n].description);
-
-	if (active_name && tinrc.abbreviate_groupname) {
-		active_name2 = abbr_wcsgroupname(active_name, (size_t) groupname_len);
-		free(active_name);
-	} else
-		active_name2 = active_name;
-
-	if (active_name2 && (active_name = wcspart(active_name2, groupname_len, TRUE)) != NULL) {
-		free(active_name2);
-		if ((name_buf = wchar_t2char(active_name)) != NULL) {
-			free(active_name);
-			name_len = (int) strlen(name_buf);
-		}
-	}
-
-	if (show_description) {
-		if (active_desc) {
-			if ((active_desc2 = wcspart(active_desc, blank_len, TRUE)) != NULL) {
-				if ((desc_buf = wchar_t2char(active_desc2)) != NULL)
-					blank_len = strlen(desc_buf);
-				free(active_desc);
-				free(active_desc2);
-			}
-		}
-		if (desc_buf) {
-			sprintf(sptr, "  %c %s %s  %-*.*s  %-*.*s%s",
-				subs, tin_ltoa(i + 1, 4), tmp,
-				name_len, name_len, BlankIfNull(name_buf),
-				blank_len, blank_len, desc_buf, cCRLF);
-			free(desc_buf);
-		} else
-			sprintf(sptr, "  %c %s %s  %-*.*s  %s",
-				subs, tin_ltoa(i + 1, 4), tmp,
-				(name_len + blank_len),
-				(name_len + blank_len), BlankIfNull(name_buf), cCRLF);
-	} else {
-		if (tinrc.draw_arrow)
-			sprintf(sptr, "  %c %s %s  %-*.*s%s", subs, tin_ltoa(i + 1, 4), tmp, name_len, name_len, BlankIfNull(name_buf), cCRLF);
-		else
-			sprintf(sptr, "  %c %s %s  %-*.*s%*s%s", subs, tin_ltoa(i + 1, 4), tmp, name_len, name_len, BlankIfNull(name_buf), blank_len, " ", cCRLF);
-	}
-
-	FreeIfNeeded(name_buf);
+				if (show_description && active[n].description) {
+					active_desc = char2wchar_t(active[n].description);
+					if (active_desc) {
+						if ((active_desc2 = wcspart(active_desc, sel_fmt.len_grpdesc, TRUE)) != NULL) {
+							desc_buf = wchar_t2char(active_desc2);
+							free(active_desc);
+							free(active_desc2);
+						}
+					}
+					if (desc_buf) {
+						strcat(sptr, desc_buf);
+						FreeAndNull(desc_buf);
+					}
+				} else {
+					buf = sptr + strlen(sptr);
+					for (j = 0; j < sel_fmt.len_grpdesc; ++j)
+						*buf++ = ' ';
+					*buf = '\0';
+				}
 #else
-	if (tinrc.abbreviate_groupname)
-		active_name = abbr_groupname(active[n].name, (size_t) groupname_len);
-	else
-		active_name = my_strdup(active[n].name);
-
-	if (show_description) {
-		if (active[n].description)
-			sprintf(sptr, "  %c %s %s  %-*.*s  %-*.*s%s",
-				 subs, tin_ltoa(i + 1, 4), tmp,
-				 groupname_len, groupname_len, active_name,
-				 blank_len, blank_len, active[n].description, cCRLF);
-		else
-			sprintf(sptr, "  %c %s %s  %-*.*s  %s",
-				 subs, tin_ltoa(i + 1, 4), tmp,
-				 (groupname_len + blank_len),
-				 (groupname_len + blank_len), active_name, cCRLF);
-	} else {
-		if (tinrc.draw_arrow)
-			sprintf(sptr, "  %c %s %s  %-*.*s%s", subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, cCRLF);
-		else
-			sprintf(sptr, "  %c %s %s  %-*.*s%*s%s", subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, blank_len, " ", cCRLF);
-	}
-
-	free(active_name);
+				if (show_description && active[n].description)
+					strncat(sptr,  active[n].description, sel_fmt.len_grpdesc);
+				else {
+					buf = sptr + strlen(sptr);
+					for (j = 0; j < sel_fmt.len_grpdesc; ++j)
+						*buf++ = ' ';
+					*buf = '\0';
+				}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				break;
 
+			case 'f':
+				/*
+				 * Display a flag for this group if needed
+				 * . Bogus groups are dumped immediately
+				 * . Normal subscribed groups may be
+				 *   ' ' normal, 'X' not postable, 'M' moderated, '=' renamed
+				 * . Newgroups are 'N'
+				 * . Unsubscribed groups are 'u'
+				 *
+				 * TODO: make flags configurable via tinrc?
+				 */
+				if (active[n].bogus)					/* Group is not in active list */
+					subs = 'D';
+				else if (active[n].subscribed)			/* Important that this precedes Newgroup */
+					subs = group_flag(active[n].moderated);
+				else
+					subs = ((active[n].newgroup) ? 'N' : 'u'); /* New (but unsubscribed) group or unsubscribed group */
+				buf = sptr + strlen(sptr);
+				*buf++ = subs;
+				*buf = '\0';
+				break;
+
+			case 'G':
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				if ((active_name = char2wchar_t(active[n].name)) == NULL) /* If char2wchar_t() fails try again after replacing unprintable characters */
+					active_name = char2wchar_t(convert_to_printable(active[n].name, FALSE));
+
+				if (active_name && tinrc.abbreviate_groupname) {
+					active_name2 = abbr_wcsgroupname(active_name, groupname_len);
+					free(active_name);
+				} else
+					active_name2 = active_name;
+
+				if (active_name2 && (active_name = wcspart(active_name2, groupname_len, TRUE)) != NULL) {
+					free(active_name2);
+					name_buf = wchar_t2char(active_name);
+					free(active_name);
+				}
+				if (name_buf) {
+					strcat(sptr, name_buf);
+					FreeAndNull(name_buf);
+				}
+#else
+				if (tinrc.abbreviate_groupname)
+					active_name = abbr_groupname(active[n].name, groupname_len);
+				else
+					active_name = my_strdup(active[n].name);
+
+				strcat(sptr, active_name);
+				free(active_name);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				break;
+
+			case 'n':
+				strcat(sptr, tin_ltoa(i + 1, sel_fmt.len_linenumber));
+				break;
+
+			case 'U':
+				if (active[my_group[i]].inrange) {
+					buf = sptr + strlen(sptr);
+					for (j = 1; j < sel_fmt.len_ucnt; ++j)
+						*buf++ = ' ';
+					*buf++ = tinrc.art_marked_inrange;
+					*buf = '\0';
+				} else if (active[my_group[i]].newsrc.num_unread) {
+					int getart_limit;
+					t_artnum num_unread;
+
+					getart_limit = cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit;
+					num_unread = active[my_group[i]].newsrc.num_unread;
+					if (getart_limit > 0 && getart_limit < num_unread)
+						num_unread = getart_limit;
+					strcat(sptr, tin_ltoa(num_unread, sel_fmt.len_ucnt));
+				} else {
+					buf = sptr + strlen(sptr);
+					for (j = 0; j < sel_fmt.len_ucnt; ++j)
+						*buf++ = ' ';
+					*buf = '\0';
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
 	if (tinrc.strip_blanks)
 		strcat(strip_line(sptr), cCRLF);
 
@@ -1039,7 +1082,15 @@ catchup_group(
 
 	if ((!TINRC_CONFIRM_ACTION) || prompt_yn(sized_message(&smsg, _(txt_mark_group_read), group->name), TRUE) == 1) {
 		grp_mark_read(group, NULL);
-		mark_screen(selmenu.curr, 9, "     ");
+		{
+			char buf[LEN];
+			size_t i = 0;
+
+			while (i < sel_fmt.len_ucnt)
+				buf[i++] = ' ';
+			buf[i] = '\0';
+			mark_screen(selmenu.curr, ucnt_offset, buf);
+		}
 
 		if (goto_next_unread_group)
 			pos_next_unread_group(TRUE);

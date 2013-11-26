@@ -5,9 +5,13 @@ New features
 . IDNA 2008 support if linked against libidnkit2
 . user configurable timeout (nntp_read_timeout_secs)
 . support large article numbers (>2^31) (--enable-long-article-numbers)
+. support for user defined screen layout at selection, group and thread level
 
 Changes
 -------
+. disable_gnksa_domain_check now defaults to TRUE; too many new gTLDs
 
 Retired Features
 ----------------
+. show_info, can now be set via user defined screen layout at group and thread
+  level

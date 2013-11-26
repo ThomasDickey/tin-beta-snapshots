@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2012-03-04
+ *  Updated   : 2013-11-20
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,7 @@ constext txt_art_cancel[] = N_("Article cancelled (deleted).");
 	constext txt_art_cannot_cancel[] = N_("Article cannot be cancelled (deleted).");
 #endif /* !FORGERY */
 constext txt_art_deleted[] = N_("Article deleted.");
+constext txt_art_mailgroups[] = N_("\nYour article:\n  \"%s\"\nwill be mailed to the following address:\n  %s");
 constext txt_art_newsgroups[] = N_("\nYour article:\n  \"%s\"\nwill be posted to the following %s:\n");
 constext txt_art_not_posted[] = N_("Article not posted!");
 constext txt_art_not_saved[] = N_("Article not saved");
@@ -173,8 +174,9 @@ constext txt_error_approved[] = N_("\nWarning: Approved: header used.\n");
 constext txt_error_asfail[] = "%s: assertion failure: %s (%d): %s\n";
 constext txt_error_bad_approved[] = N_("\nError: Bad address in Approved: header.\n");
 constext txt_error_bad_from[] = N_("\nError: Bad address in From: header.\n");
-constext txt_error_bad_replyto[] = N_("\nError: Bad address in Reply-To: header.\n");
 constext txt_error_bad_msgidfqdn[] = N_("\nError: Bad FQDN in Message-ID: header.\n");
+constext txt_error_bad_replyto[] = N_("\nError: Bad address in Reply-To: header.\n");
+constext txt_error_bad_to[] = N_("\nError: Bad address in To: header.\n");
 #ifndef NO_LOCKING
 	constext txt_error_cant_unlock[] = N_("Can't unlock %s");
 	constext txt_error_couldnt_dotlock[] = N_("Couldn't dotlock %s - article not appended!");
@@ -1078,7 +1080,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2012 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2013 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
@@ -1286,14 +1288,6 @@ constext *txt_thread_score_type[] = {
 	NULL
 };
 
-constext *txt_show_info_type[] = {
-	N_("None"),
-	N_("Lines"),
-	N_("Score"),
-	N_("Lines & Score"),
-	NULL
-};
-
 #ifdef HAVE_COLOR
 	/*
 	 * Which colors can be used.
@@ -1473,7 +1467,7 @@ constext *txt_sort_functions[] = {
 		N_("Heap-sort"),
 		NULL
 };
-#endif
+#endif /* USE_HEAPSORT */
 
 /* Ways of handling bogus groups */
 constext *txt_strip_bogus_type[] = {
@@ -1549,13 +1543,11 @@ constext *txt_interactive_mailers[] = {
 #ifdef HAVE_UNICODE_NORMALIZATION
 constext *txt_normalization_forms[] = {
 	N_("None"),
-#	if (HAVE_UNICODE_NORMALIZATION >= 2)
 	N_("NFKC"),
+#	if (HAVE_UNICODE_NORMALIZATION >= 2)
 	N_("NFKD"),
 	N_("NFC"),
 	N_("NFD"),
-#	else
-	N_("NFKC"),
 #	endif /* HAVE_UNICODE_NORMALIZATION >= 2 */
 	NULL
 };
@@ -1668,7 +1660,7 @@ struct opttxt txt_thread_perc = {
 # the percentage of characters in the subject of an article that must match\n\
 # a base article for both those articles to be considered to belong to the\n\
 # same thread. This option is an integer percentage, eg. 80, no decimals may\n\
-# follow. If 80 is used here, then 80%% of the characters must match exactly,\n\
+# follow. If 80 is used here, then 80% of the characters must match exactly,\n\
 # no insertion of a character, for the two articles to be put in the same\n\
 # thread. eg. 'happy' and 'harpy' would match, but 'harpie', 'happie' and\n\
 # 'harppy' would be threaded separately from 'happy'\n")
@@ -1852,17 +1844,6 @@ struct opttxt txt_abbreviate_groupname = {
 	N_("# If ON abbreviate (if necessary) long newsgroup names at group selection\n\
 # level and article level like this:\n\
 #   news.software.readers -> n.software.readers -> n.s.readers -> n.s.r.\n")
-};
-
-struct opttxt txt_show_info = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Show lines/score in listings"),
-	N_("# What information should be displayed in article/thread listing\n\
-# Possible values are (the default is marked with *):\n\
-#   0 = nothing\n\
-# * 1 = lines\n\
-#   2 = score\n\
-#   3 = lines & score\n")
 };
 
 struct opttxt txt_scroll_lines = {
@@ -2708,7 +2689,7 @@ struct opttxt txt_unlink_article = {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 struct opttxt txt_utf8_graphics = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Use UTF-8 graphics (thrd tree etc.)"),
+	N_("Use UTF-8 graphics (thread tree etc.)"),
 	N_("# If ON use UTF-8 characters for indicator '->', tree and ellipsis '...'.\n")
 };
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -2766,6 +2747,60 @@ struct opttxt txt_cache_overview_files = {
 	N_("Create local copies of NNTP overview files. <SPACE> toggles & <CR> sets."),
 	N_("Cache NNTP overview files locally"),
 	N_("# If ON, create local copies of NNTP overview files.\n")
+};
+
+struct opttxt txt_select_format = {
+	N_("Enter format string. <CR> sets, <ESC> cancels."),
+	N_("Format string for selection level"),
+	N_("# Format string for selection level representation\n\
+# Default: %f %n %U  %G  %d\n\
+# Possible values are:\n\
+#   %%              '%'\n\
+#   %d              Description\n\
+#   %f              Newsgroup flag: 'D' bogus, 'X' not postable,\n\
+#                   'M' moderated, '=' renamed, 'N' new, 'u' unsubscribed\n\
+#   %G              Group name\n\
+#   %n              Number, linenumber on screen\n\
+#   %U              Unread count\n")
+};
+
+struct opttxt txt_group_format = {
+	N_("Enter format string. <CR> sets, <ESC> cancels."),
+	N_("Format string for group level"),
+	N_("# Format string for group level representation\n\
+# Default: %n %m %R %L  %s  %F\n\
+# Possible values are:\n\
+#   %%              '%'\n\
+#   %D              Date, like date_format\n\
+#   %(formatstr)D   Date, formatstr gets passed to my_strftime()\n\
+#   %F              From, name and/or address according to show_author\n\
+#   %I              Initials\n\
+#   %L              Line count\n\
+#   %M              Message-ID\n\
+#   %m              Article marks\n\
+#   %n              Number, linenumber on screen\n\
+#   %R              Count, number of responses in thread\n\
+#   %s              Subject (only group level)\n\
+#   %S              Score\n")
+};
+
+struct opttxt txt_thread_format = {
+	N_("Enter format string. <CR> sets, <ESC> cancels."),
+	N_("Format string for thread level"),
+	N_("# Format string for thread level representation\n\
+# Default: %n %m  [%L]  %T  %F\n\
+# Possible values are:\n\
+#   %%              '%'\n\
+#   %D              Date, like date_format\n\
+#   %(formatstr)D   Date, formatstr gets passed to my_strftime()\n\
+#   %F              From, name and/or address according to show_author\n\
+#   %I              Initials\n\
+#   %L              Line count\n\
+#   %M              Message-ID\n\
+#   %m              Article marks\n\
+#   %n              Number, linenumber on screen\n\
+#   %S              Score\n\
+#   %T              Thread tree (only thread level)\n")
 };
 
 struct opttxt txt_date_format = {
@@ -2857,7 +2892,7 @@ struct opttxt txt_mailing_list = {
 
 struct opttxt txt_mime_forward = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Forward articles as attachement"),
+	N_("Forward articles as attachment"),
 	NULL
 };
 

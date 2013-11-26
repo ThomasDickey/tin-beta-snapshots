@@ -23,7 +23,7 @@ LookupMessage			L
 OptionMenu			M
 Postponed			O	^O
 QuitTin				Q
-BugReport                  	R
+BugReport			R
 DisplayPostHist			W
 MarkThreadUnread		Z
 FirstPage			^

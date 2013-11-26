@@ -3,10 +3,10 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2010-10-01
+ *  Updated   : 2013-11-12
  *  Notes     :
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -356,7 +356,10 @@ body_search(
 	 */
 	for (i = 0; artinfo.cookl[i].flags & C_HEADER; ++i)
 		;
-	fseek(artinfo.cooked, artinfo.cookl[i].offset, SEEK_SET);
+	if (fseek(artinfo.cooked, artinfo.cookl[i].offset, SEEK_SET) != 0) {
+		art_close(&artinfo);
+		return -1;
+	}
 
 	/*
 	 * Now search the body
@@ -613,7 +616,8 @@ search_article(
 		 * TODO: consider not searching some line types?
 		 * 'B'ody search skips hdrs, '/' inside article does not.
 		 */
-		fseek(fp, line[i].offset, SEEK_SET);
+		if (fseek(fp, line[i].offset, SEEK_SET) != 0)
+			return -1;
 
 		/* Don't search beyond ^L if hiding is enabled */
 		if ((line[i].flags&C_CTRLL) && i > reveal_ctrl_l_lines)

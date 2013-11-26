@@ -6,7 +6,7 @@
  *  Updated   : 2010-04-29
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
- * Copyright (c) 1991-2012 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -165,7 +165,7 @@ struct t_capabilities {
 	enum extension_type type;		/* NONE, CAPABILITIES, BROKEN */
 	unsigned int version;			/* CAPABILITIES version */
 	t_bool mode_reader:1;			/* MODE-READER: "MODE READER" */
-	t_bool reader:1;				/* READER: "ARTCILE", "BODY", "DATE", "GROUP", "LAST", "LISTGROUP", "NEWGROUPS", "NEXT" */
+	t_bool reader:1;				/* READER: "ARTICLE", "BODY", "DATE", "GROUP", "LAST", "LISTGROUP", "NEWGROUPS", "NEXT" */
 	t_bool post:1;					/* POST */
 	t_bool list_active:1;			/* LIST ACTIVE */
 	t_bool list_active_times:1;		/* LIST ACTIVE.TIMES, optional */

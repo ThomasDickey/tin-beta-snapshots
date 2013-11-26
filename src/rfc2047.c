@@ -3,10 +3,10 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2010-09-15
+ *  Updated   : 2013-11-05
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2012 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2013 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1301,12 +1301,12 @@ to understand the new format, and some of what follows may look strange.\n\n"));
 	fprintf(fp, "--%s\n", boundary);
 	rewind(messagefp);
 	copy_fp(messagefp, fp);
+	fclose(messagefp);
 	fputc('\n', fp);
 
 	/* closing boundary */
 	fprintf(fp, "--%s--\n", boundary);
 	/* TODO: insert an epilogue here? */
-
 	return fp;
 }
 
