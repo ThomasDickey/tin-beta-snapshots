@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2012-12-15
+dnl Updated   : 2013-12-06
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2013 Thomas E. Dickey <dickey@invisible-island.net>
@@ -85,17 +85,14 @@ ALL_LINGUAS="da de en_GB et fr ru sv tr zh_TW"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"
-AC_PROG_CC
+CF_PROG_CC
 AC_PROG_GCC_TRADITIONAL
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 CF_PROG_YACC
 AC_CHECK_PROGS(LINT, lint alint lclint tdlint splint, :)
-AC_AIX
 CF_XOPEN_SOURCE
 CF_SIGWINCH
-AC_ISC_POSIX
-CF_ANSI_CC_REQD
 CF_PROG_EXT
 CF_LIB_PREFIX(LIB_PREFIX)
 AC_PROG_LN_S
