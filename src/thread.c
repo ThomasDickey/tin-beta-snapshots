@@ -3,10 +3,10 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2013-10-15
+ *  Updated   : 2014-04-29
  *  Notes     :
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -211,7 +211,7 @@ build_tline(
 				strcat(buffer, tmp);
 				if ((i = len - strwidth(tmp)) > 0) {
 					buf = buffer + strlen(buffer);
-					for (;i > 0; --i)
+					for (; i > 0; --i)
 						*buf++ = ' ';
 					*buf = '\0';
 				}
@@ -249,7 +249,7 @@ build_tline(
 				strcat(buffer, tmp);
 				if ((i = len - strwidth(tmp)) > 0) {
 					buf = buffer + strlen(buffer);
-					for (;i > 0; --i)
+					for (; i > 0; --i)
 						*buf++ = ' ';
 					*buf = '\0';
 				}
@@ -272,39 +272,43 @@ build_tline(
 					 */
 					len_start = strwidth(buffer);
 
-					make_prefix(art->refptr, buffer + strlen(buffer), len);
+					if (art->refptr) {
+						make_prefix(art->refptr, buffer + strlen(buffer), len);
 
-					len_end = strwidth(buffer);
+						len_end = strwidth(buffer);
 
-					/*
-					 * Copy in the subject up to where the author (if any) starts
-					 */
-					gap = len - (len_end - len_start);
+						/*
+						 * Copy in the subject up to where the author (if any) starts
+						 */
+						gap = len - (len_end - len_start);
 
-					/*
-					 * Mutt-like thread tree. by sjpark@sparcs.kaist.ac.kr
-					 * Hide subject if same as parent's.
-					 */
-					if (gap > 0) {
-						for (ptr = art->refptr->parent; ptr && IS_EXPIRED(ptr); ptr = ptr->parent)
-							;
+						/*
+						 * Mutt-like thread tree. by sjpark@sparcs.kaist.ac.kr
+						 * Hide subject if same as parent's.
+						 */
+						if (gap > 0) {
+							for (ptr = art->refptr->parent; ptr && IS_EXPIRED(ptr); ptr = ptr->parent)
+								;
 
-						if (!(ptr && arts[ptr->article].subject == art->subject)) {
+							if (!(ptr && arts[ptr->article].subject == art->subject))
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-							if ((wtmp = char2wchar_t(art->subject)) != NULL) {
-								wtmp2 = wcspart(wtmp, gap, TRUE);
-								if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
-									strcat(buffer, tmp);
+							{
+								if ((wtmp = char2wchar_t(art->subject)) != NULL) {
+									wtmp2 = wcspart(wtmp, gap, TRUE);
+									if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+										strcat(buffer, tmp);
 
-								free(wtmp);
-								free(wtmp2);
+									free(wtmp);
+									free(wtmp2);
+								}
 							}
-						}
 #else
-							strncat(buffer, art->subject, gap);
-						}
-						buffer[len_end + gap] = '\0';	/* Just in case */
+							{
+								strncat(buffer, art->subject, gap);
+							}
+							buffer[len_end + gap] = '\0';	/* Just in case */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+						}
 					}
 
 					/* pad out */
@@ -1268,7 +1272,7 @@ next_unread(
 
 	if (curr_group->attribute->wrap_on_next_unread) {
 		n = base[0];
-		while (n != cur_base_art) {
+		while (n != cur_base_art && n >= 0) {
 			if (((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) && arts[n].thread != ART_EXPIRED)
 				return n;
 

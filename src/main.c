@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-15
+ *  Updated   : 2013-11-27
  *  Notes     :
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -77,9 +77,8 @@ main(
 	int argc,
 	char *argv[])
 {
-	int count;
+	int count, start_groupnum;
 	int num_cmd_line_groups = 0;
-	int start_groupnum = 0;
 	t_bool tmp_no_write;
 
 	cmd_line = TRUE;
@@ -1016,6 +1015,7 @@ create_mail_save_dirs(
  * giveup() indicates a serious error and keeping track of what we've
  * already malloc()ed would be a PITA.
  */
+/* coverity[+kill] */
 void
 giveup(
 	void)

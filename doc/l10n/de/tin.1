@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2013-11-26
+.\" Updated   : 2014-07-27
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,13 +14,13 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "25. November 2013" 2.1.5 "Usenet Newsreader"
+.TH tin 1 "3. Oktober 2014" 2.3.0 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
 .\"
 .\"
-tin, rtin \- Ein Usenet Newsreader
+tin, rtin \- Usenet Newsreader
 .SH ÜBERSICHT
 .\"
 .\"
@@ -120,7 +120,7 @@ Zugehörigen Newsserver und newsrc\-Datei aus
 Beschränkt die Anzahl der zu ladenden Artikel pro Gruppe.
 .TP 
 \fB\-h\fP
-Kurzübersicht der verfügbaren Komandozeilenoptionen.
+Kurzübersicht der verfügbaren Kommandozeilenoptionen.
 .TP 
 \fB\-H\fP
 Kurzeinführung in \fBtin\fP welche auch beim allerersten Start ausgegeben wird.
@@ -265,7 +265,7 @@ NB: With the \*(rq\fB\-n\fP\*(rq flag, only unsubscribed groups in the
 .PP
 .\"
 .\"
-Komandozeilenoptionen haben eine höhere Priorität als attributes und tinrc
+Kommandozeilenoptionen haben eine höhere Priorität als attributes und tinrc
 Optionen und übersteuern daher die konfigurierten Werte.
 .SH GEBRAUCH
 .\"
@@ -288,7 +288,7 @@ List Extensions (\fBRFC\%6048\fP ) and all modern servers should understand it.
 \fBtin\fP hat vier unterschiedliche Arbeitsebenen: Auswahlebene, Gruppenebene,
 Threadebene und Artikelebene.
 .PP
-At the Selection level the title displays (the name of the newsserver and)
+At the Selection level the title displays (the name of the news server and)
 the number of subscribed groups (containing new unread articles). The
 newsgroups are displayed in the middle of the screen usually with the number
 of unread articles displayed on the same line in front, but it can be
@@ -335,7 +335,7 @@ by a more appropriately named one.
 .TP 
 \fB=\fP
 This group has been renamed and you may no longer post to it. If you do,
-then you will receive an error from your newsserver telling you the correct
+then you will receive an error from your news server telling you the correct
 group to post to.
 .PP
 At the Group level the title contains the name of the group, the number of
@@ -394,7 +394,7 @@ used) looks like this, but can be customized via \fBthread_format\fP:
 .fi
 .PP
 .\" FIXME - add description of fields
-At the Article level the page header has the following format:
+In der Artikelebene hat der Kopf der Seite folgendes Format:
 .PP
 .\" FIXME - make this autoscale
 .nf
@@ -462,7 +462,7 @@ caller.
 \fB<ESC>\fP
 .\"
 .\"
-aborts the present editing operation.
+bricht den gegenwärtigen Bearbeitungsvorgang ab.
 .SS "ALLGEMEINE BEFEHLE"
 Die folgenden Befehle stehen in allen vier Ebenen zur Verfügung und bewirken
 überall das Gleichen.
@@ -504,7 +504,7 @@ Help screen of commands available on the current menu. You can use
 ('\fB\e\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Mini\-Hilfe am unterem Bildschirrand ein\-/ausschalten.
+Mini\-Hilfe am unterem Bildschirmrand ein\-/ausschalten.
 .TP 
 \fBDisplayPostHist 'W'\fP
 List articles posted by user. The date posted, the newsgroup and the subject
@@ -588,7 +588,7 @@ User configurable options menu (for more information see section "GLOBAL
 OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES").
 .TP 
 \fBSelectNextUnreadGrp 'N'\fP
-Positions the cursor on the next group with unread articles in it.
+Setzt den Cursor auf die nächste Gruppe mit ungelesenen Artikeln.
 .TP 
 \fBQuit 'q'\fP
 Quit \fBtin\fP \- ask the user to confirm if \fBconfirm_choice\fP is set
@@ -1344,7 +1344,7 @@ Toggle the display of the current URL in the last line.
 Help screen of commands available.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Mini\-Hilfe am unterem Bildschirrand ein\-/ausschalten.
+Mini\-Hilfe am unterem Bildschirmrand ein\-/ausschalten.
 .RE
 .\"--------------------------------------------------------------------
 .\"
@@ -1398,7 +1398,7 @@ Name oder Beschreibung des Anhangs in der untersten Zeile anzeigen.
 Help screen of commands available.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Mini\-Hilfe am unterem Bildschirrand ein\-/ausschalten.
+Mini\-Hilfe am unterem Bildschirmrand ein\-/ausschalten.
 .RE
 .\"--------------------------------------------------------------------
 .\"
@@ -3553,7 +3553,7 @@ copyright by the University of Cambridge, England.
 .\"
 .\"
 <ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/>
-.SH BUGS
+.SH FEHLER
 \fBCNews\fP NNTPd, \fB\%noffle\fP(1)  (<= V1.0\-pre5) and \fBNewsCache\fP (<=
 V1.1.91) can't handle pipelined GROUP commands. If you run into trouble with
 any of the mentioned servers define DISABLE_PIPELINING in include/autoconf.h

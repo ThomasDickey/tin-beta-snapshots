@@ -6,7 +6,7 @@
  *  Updated   : 2013-11-19
  *  Notes     : #defines and static data for policy configuration
  *
- * Copyright (c) 1999-2013 Ralf Doeblitz <doeblitz@gmx.de>
+ * Copyright (c) 1999-2014 Ralf Doeblitz <doeblitz@gmx.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+ * CAUTION: THIS FILE IS OUTDATED AND NO LONGER ACTIVELY MAINTAINED
+ * "disable_gnksa_domain_check=OFF" MIGHT RESULT IN FALSE POSITIVES
+ */
 
 /*
  * tables for TLD search in misc.c, gnksa domain checking

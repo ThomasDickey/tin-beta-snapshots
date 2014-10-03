@@ -3,10 +3,10 @@
  *  Module    : my_tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
- *  Updated   : 2013-11-17
+ *  Updated   : 2014-05-13
  *  Notes     :
  *
- * Copyright (c) 2001-2013 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2001-2014 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,7 +71,11 @@ my_tmpfile(
 
 	if (filename != NULL && name_size > 0) {
 		if (base_dir) {
+#ifdef HAVE_LONG_FILE_NAMES
 			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin-%s-%ld-XXXXXX", get_host_name(), (long) process_id);
+#else
+			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin-XXXXXX");
+#endif /* HAVE_LONG_FILE_NAMES */
 			joinpath(filename, name_size, base_dir, buf);
 		} else {
 			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin_XXXXXX");

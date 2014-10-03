@@ -49,7 +49,7 @@
  * isn't worth optimizing; the SWAP's get sped up by the cache, and pointer
  * arithmetic gets lost in the time required for comparison function calls.
  */
-#define	SWAP(a, b, count, size, tmp) { \
+#define SWAP(a, b, count, size, tmp) { \
 	count = size; \
 	do { \
 		tmp = *a; \

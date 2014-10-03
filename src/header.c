@@ -5,7 +5,7 @@
  *  Created   : 1997-03-10
  *  Updated   : 2013-11-18
  *
- * Copyright (c) 1997-2013 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2014 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -121,7 +121,7 @@ get_domain_name(
 
 
 #ifdef HAVE_GETHOSTBYNAME
-#	define MAXLINELEN   1024
+#	define MAXLINELEN	1024
 #	define WS	" \f\t\v"
 /* find FQDN - gethostbyaddr() */
 const char *

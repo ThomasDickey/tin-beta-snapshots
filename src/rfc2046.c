@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2011-11-06
+ *  Updated   : 2014-04-29
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2013 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2014 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,6 +94,9 @@ content_type(
 	char *type)
 {
 	int i;
+
+	if (type == NULL)
+		return -1;
 
 	for (i = 0; content_types[i] != NULL; ++i) {
 		if (strcasecmp(type, content_types[i]) == 0)
@@ -388,6 +391,7 @@ parse_content_type(
 	 * Parse any parameters into a list
 	 */
 	if ((params = strtok(NULL, "\n")) != NULL) {
+		const char *format;
 #ifndef CHARSET_CONVERSION
 		char defparms[] = CT_DEFPARMS;	/* must be writable */
 #endif /* !CHARSET_CONVERSION */
@@ -412,6 +416,10 @@ parse_content_type(
 				parse_params(defparms, content);
 			}
 #endif /* !CHARSET_CONVERSION */
+		}
+		if ((format = get_param(content->params, "format"))) {
+			if (!strcasecmp(format, "flowed"))
+				content->format = FORMAT_FLOWED;
 		}
 	}
 }
@@ -479,6 +487,7 @@ new_part(
 	ptr->subtype = my_strdup("plain");
 	ptr->description = NULL;
 	ptr->encoding = ENCODING_7BIT;
+	ptr->format = FORMAT_FIXED;
 	ptr->params = NULL;
 
 #ifndef CHARSET_CONVERSION

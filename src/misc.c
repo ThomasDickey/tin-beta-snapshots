@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-25
+ *  Updated   : 2014-02-17
  *  Notes     :
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -330,10 +330,10 @@ copy_body(
 				} else	/* line was not already quoted (no >) */
 					retcode = fprintf(fp_op, "%s%s", prefixbuf, buf);
 			} else	/* line is empty */
-					retcode = fprintf(fp_op, "%s\n", ((tinrc.quote_style & QUOTE_EMPTY) ? prefixbuf : ""));
+				retcode = fprintf(fp_op, "%s\n", ((tinrc.quote_style & QUOTE_EMPTY) ? prefixbuf : ""));
 		} else {		/* no initials in quote_string, just copy */
 			if ((buf[0] != '\n') || (tinrc.quote_style & QUOTE_EMPTY))
-				retcode = fprintf(fp_op, "%s%s", ((buf[0] == '>' || buf[0] == ' ') ? prefixbuf : prefix), buf);	/* use blank-stripped quote string if line is already quoted or beginns with a space */
+				retcode = fprintf(fp_op, "%s%s", (buf[0] == '>' ? prefixbuf : prefix), buf);	/* use blank-stripped quote string if line is already quoted */
 			else
 				retcode = fprintf(fp_op, "\n");
 		}
@@ -557,7 +557,7 @@ tin_done(
 	int ret)
 {
 	int i;
-	signed long int wrote_newsrc_lines = -1;
+	signed long int wrote_newsrc_lines;
 	static int nested = 0;
 	struct t_group *group;
 	t_bool ask = TRUE;
@@ -3471,9 +3471,7 @@ gnksa_do_check_from(
 {
 	char *addr_begin;
 	char decoded[HEADER_LEN];
-	int result = 0;
-	int code;
-	int addrtype;
+	int result, code, addrtype;
 
 	decoded[0] = '\0';
 
@@ -3616,7 +3614,7 @@ utf8_valid(
 
 	c = line;
 
-	while (*c != '\0' && *c != '\n') {
+	while (*c != '\0') {
 		if (!(*c & 0x80)) { /* plain US-ASCII? */
 			c++;
 			continue;
@@ -3771,7 +3769,7 @@ idna_decode(
 		UChar *src;
 		UChar dest[1024];
 		UErrorCode err = U_ZERO_ERROR;
-		char *s = NULL;
+		char *s;
 
 		if ((s = strrchr(out, '@')))
 			s++;
@@ -4156,5 +4154,3 @@ stat_article(
 	}
 }
 #endif /* 0 */
-
-

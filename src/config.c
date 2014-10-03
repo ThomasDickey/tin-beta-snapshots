@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-05
+ *  Updated   : 2014-08-31
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -631,7 +631,8 @@ read_config_file(
 				break;
 
 			if (match_boolean(buf, "show_description=", &tinrc.show_description)) {
-				show_description = tinrc.show_description;
+				if (show_description)
+					show_description = tinrc.show_description;
 				break;
 			}
 
@@ -1707,20 +1708,9 @@ ulBuildArgv(
 		;
 
 	buf = my_strdup(tmp);
-	if (!buf) {
-		*new_argc = 0;
-		return NULL;
-	}
+	tmp = buf;
 
 	new_argv = my_calloc(1, sizeof(char *));
-	if (!new_argv) {
-		free(buf);
-		*new_argc = 0;
-		return NULL;
-	}
-
-	tmp = buf;
-	new_argv[0] = NULL;
 
 	while (*tmp) {
 		if (!isspace((int) *tmp)) { /* found the beginning of a word */

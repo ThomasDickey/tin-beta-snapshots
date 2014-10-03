@@ -6,7 +6,7 @@
  *  Updated   : 2013-11-06
  *  Notes     :
  *
- * Copyright (c) 2003-2013 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
+ * Copyright (c) 2003-2014 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

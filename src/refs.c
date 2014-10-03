@@ -8,7 +8,7 @@
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
  *
- * Copyright (c) 1996-2013 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1996-2014 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -849,7 +849,7 @@ build_thread(
 
 /*
  * Run a new set of threads through the base articles, using the
- * parent / child / sibling  / article pointers in the msgid hash.
+ * parent / child / sibling / article pointers in the msgid hash.
  */
 void
 thread_by_reference(

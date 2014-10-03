@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-16
+ *  Updated   : 2014-02-01
  *  Notes     :
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -531,7 +531,7 @@ selection_page(
 				else {
 					size_t j = 0;
 
-					while(j < sel_fmt.len_ucnt)
+					while (j < sel_fmt.len_ucnt)
 						buf[j++] = ' ';
 					buf[j] = '\0';
 				}
@@ -627,24 +627,30 @@ static void
 build_gline(
 	int i)
 {
-	char *fmt, *buf;
+	char *sptr, *fmt, *buf;
 	char subs;
 	int n;
 	size_t j;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	char *name_buf = NULL;
 	char *desc_buf = NULL;
-	wchar_t *active_name = NULL;
-	wchar_t *active_name2 = NULL;
-	wchar_t *active_desc = NULL;
-	wchar_t *active_desc2 = NULL;
+	wchar_t *active_name, *active_name2, *active_desc, *active_desc2;
 #else
 	char *active_name;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 #ifdef USE_CURSES
-	char sptr[BUFSIZ];
+	/*
+	 * Allocate line buffer
+	 * make it the same size like in !USE_CURSES case to simplify the code
+	 */
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		sptr = my_malloc(cCOLS * MB_CUR_MAX + 2);
+#	else
+		sptr = my_malloc(cCOLS + 2);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #else
-	char *sptr = screen[INDEX2SNUM(i)].col;
+	sptr = screen[INDEX2SNUM(i)].col;
 #endif /* USE_CURSES */
 
 	sptr[0] = '\0';
@@ -652,7 +658,7 @@ build_gline(
 	n = my_group[i];
 
 	if (tinrc.draw_arrow)
-			strcat(sptr, "  ");
+		strcat(sptr, "  ");
 
 	for (; *fmt; fmt++) {
 		if (*fmt != '%') {
@@ -690,7 +696,7 @@ build_gline(
 				}
 #else
 				if (show_description && active[n].description)
-					strncat(sptr,  active[n].description, sel_fmt.len_grpdesc);
+					strncat(sptr, active[n].description, sel_fmt.len_grpdesc);
 				else {
 					buf = sptr + strlen(sptr);
 					for (j = 0; j < sel_fmt.len_grpdesc; ++j)
@@ -789,6 +795,10 @@ build_gline(
 		strcat(strip_line(sptr), cCRLF);
 
 	WriteLine(INDEX2LNUM(i), sptr);
+
+#ifdef USE_CURSES
+	free(sptr);
+#endif /* USE_CURSES */
 }
 
 

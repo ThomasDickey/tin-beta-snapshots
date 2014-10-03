@@ -85,6 +85,11 @@ o  8bit chars in some headers are RFC-2047-encoded where this is not allowed
    (see parse_rfc822_headers()).
    [20090112 Urs Janssen <urs@tin.org>]
 
+o  the mime encoder may create two adjacent encoed words in the same line
+   i.e.       Subject: =?UTF-8?B?4oKs4oKs4oKs?= =?UTF-8?B?IOKCrOKCrOKCrA==?=
+   instead of Subject: =?UTF-8?B?4oKs4oKs4oKsIOKCrOKCrOKCrA==?=
+   [20140513 Urs Janssen <urs@tin.org>]
+
 o  remove Message-IDs with 8bit chars in them when they occur in
    Message-ID or References header
    [done for References in replies/followups, Urs]
@@ -708,8 +713,6 @@ o  add check for sizeof char, short, int, long, ...
 o  cleanup post.c
 
 o  check code with Splint (LCLint) <http://www.splint.org/>,
-   ccmalloc (<http://ftp.de.debian.org/debian/pool/main/c/ccmalloc/>),
-   MSS (<http://hem1.passagen.se/blizzar/mss/>),
    valgrind (<http://valgrind.org/>), cppcheck
    (<http://cppcheck.wiki.sourceforge.net/>), AdLint
    (<http://adlint.sourceforge.net>), clang-analyzer
@@ -787,7 +790,7 @@ o  add normalization
    (via <http://oss.software.ibm.com/icu/> or
    <http://www.gnu.org/software/libidn/> or
    <http://www.gnu.org/software/libunistring/>)
-   (done for search strings)
+   (done for search strings only, missing for "threading" by subject etc. pp.)
    [20031209 Michael Bienia <michael@vorlon.ping.de>]
 
 o  check for wcsftime() and if found use it instead of strftime() (at
@@ -952,6 +955,10 @@ o  trn and perls Net::NNTP::Auth use ~/.nntpauth (format is
    ${TIN_HOMEDIR:-"$HOME"}/.tin/.newsauth if ~/.newsauth is not found?
    [20040128 Urs Janssen <urs@tin.org>]
 
+o  allow a different port on newsauth and or newsrctable (server:port [...])?
+   if we do, what's the precedence? -p, newsauth, newsrctable, $NNTPORT, 119?
+   [20140504 Urs Janssen <urs@tin.org>]
+
 o  what todo if in a CTE: x-uue the CD: filename differs from the one given
    in the begin line? IMHO we should use the one from the begin line for
    saving and in the overview in the pager.
@@ -989,7 +996,7 @@ o  check_article_to_be_posted() needs a cleanup!
 
 o  update gettext stuff to > gettext-0.12.1
 
-o  clean up included pcre stuff and update to >= pcre-8.33
+o  clean up included pcre stuff and update to >= pcre-8.36
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file

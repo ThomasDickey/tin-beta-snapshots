@@ -137,7 +137,7 @@ spec	: /* NULL */
 
 item	: time {
 	    yyHaveTime++;
-#if	defined(lint)
+#if defined(lint)
 	    /* I am compulsive about lint natterings... */
 	    if (yyHaveTime == -1) {
 		YYERROR;
@@ -416,7 +416,7 @@ static const TABLE	TimezoneTable[] = {
     { "nzdt",	tDAYZONE,  -HOUR(12) },	/* New Zealand Daylight */
 
     /* For completeness we include the following entries. */
-#if	0
+#if 0
 
     /* Duplicate names.  Either they conflict with a zone listed above
      * (which is either more likely to be seen or just been in circulation
@@ -765,10 +765,10 @@ GetTimeInfo(
     static time_t	LastTime;
     static long		LastTzone;
     struct tm		*tm;
-#if	defined(HAVE_GETTIMEOFDAY)
+#if defined(HAVE_GETTIMEOFDAY)
     struct timeval	tv;
 #endif	/* defined(HAVE_GETTIMEOFDAY) */
-#if	defined(DONT_HAVE_TM_GMTOFF)
+#if defined(DONT_HAVE_TM_GMTOFF)
     struct tm		local;
     struct tm		gmt;
 #endif	/* !defined(DONT_HAVE_TM_GMTOFF) */
@@ -790,7 +790,7 @@ GetTimeInfo(
 	LastTime = Now->time;
 	if ((tm = localtime(&Now->time)) == NULL)
 	    return -1;
-#if	defined(DONT_HAVE_TM_GMTOFF)
+#if defined(DONT_HAVE_TM_GMTOFF)
 	/* To get the timezone, compare localtime with GMT. */
 	local = *tm;
 	if ((tm = gmtime(&Now->time)) == NULL)
@@ -811,7 +811,7 @@ GetTimeInfo(
 	LastTzone *= 60;
 	LastTzone += gmt.tm_min - local.tm_min;
 #else
-	LastTzone =  (0 - tm->tm_gmtoff) / 60;
+	LastTzone = (0 - tm->tm_gmtoff) / 60;
 #endif	/* defined(DONT_HAVE_TM_GMTOFF) */
     }
     Now->tzone = LastTzone;

@@ -3,10 +3,10 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2011-11-17
+ *  Updated   : 2014-01-09
  *  Notes     :
  *
- * Copyright (c) 1992-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -316,7 +316,7 @@ read_newsrc_active_file(
 	int window = 0;
 	t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
 	t_artnum processed = T_ARTNUM_CONST(0);
-	static char ngname[NNTP_STRLEN];
+	static char ngname[NNTP_STRLEN]; /* RFC 3977 3.1 limits group names to 497 octets */
 	struct t_group *grpptr;
 #ifdef NNTP_ABLE
 	t_bool need_auth = FALSE;
@@ -408,7 +408,7 @@ read_newsrc_active_file(
 						{
 							char fmt[25];
 
-							snprintf(fmt, sizeof(fmt), "%%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%%ds", NNTP_STRLEN);
+							snprintf(fmt, sizeof(fmt), "%%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%%ds", NNTP_STRLEN - 1);
 							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4) {
 								error_message(2, _(txt_error_invalid_response_to_group), line);
 #	ifdef DEBUG
@@ -540,9 +540,8 @@ open_news_active_fp(
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news)
 		return (nntp_command("LIST", OK_GROUPS, NULL, 0));
-	else
 #endif /* NNTP_ABLE */
-		return (fopen(news_active_file, "r"));
+	return (fopen(news_active_file, "r"));
 }
 
 
@@ -777,7 +776,7 @@ read_news_active_file(
 			struct t_group *grpptr;
 			t_bool need_auth = FALSE;
 
-			*buff='\0';
+			*buff = '\0';
 			/* we can't use for_each_group(i) yet, so we have to prase the newsrc */
 			if ((fp = fopen(newsrc, "r")) != NULL) {
 				while (tin_fgets(fp, FALSE) != NULL)
@@ -804,7 +803,7 @@ read_news_active_file(
 							snprintf(buff, sizeof(buff), "LIST ACTIVE %s", ptr);
 						put_server(buff);
 						r++;
-						*buff='\0';
+						*buff = '\0';
 					}
 					if (*buff) {
 						put_server(buff);
@@ -922,9 +921,9 @@ open_newgroups_fp(
 			ngtm->tm_hour, ngtm->tm_min, ngtm->tm_sec);
 
 		return (nntp_command(line, OK_NEWGROUPS, NULL, 0));
-	} else
+	}
 #endif /* NNTP_ABLE */
-		return (fopen(active_times_file, "r"));
+	return (fopen(active_times_file, "r"));
 }
 
 

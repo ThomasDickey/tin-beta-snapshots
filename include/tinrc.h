@@ -6,7 +6,7 @@
  *  Updated   : 2013-09-01
  *  Notes     :
  *
- * Copyright (c) 1999-2013 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2014 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

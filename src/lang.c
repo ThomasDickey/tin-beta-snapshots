@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-20
+ *  Updated   : 2014-01-10
  *  Notes     :
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -908,7 +908,7 @@ constext txt_usage_mail_bugreport[] = N_("\nMail bug reports/comments to %s");
 constext txt_usage_mail_new_news[] = N_("  -N       mail new news to your posts (batch mode)");
 constext txt_usage_mail_new_news_to_user[] = N_("  -M user  mail new news to specified user (batch mode)");
 constext txt_usage_newsrc_file[] = N_("  -f file  subscribed to newsgroups file [default=%s]");
-constext txt_usage_no_posting[] = N_("  -x       no posting mode");
+constext txt_usage_no_posting[] = N_("  -x       no-posting mode");
 constext txt_usage_post_article[] = N_("  -w       post an article and exit");
 constext txt_usage_post_postponed_arts[] = N_("  -o       post all postponed articles and exit");
 constext txt_usage_read_saved_news[] = N_("  -R       read news saved by -S option");
@@ -942,7 +942,7 @@ Warning: You are using a non-plain transfer encoding (such as base64 or\n\
          quoted-printable) and an external inews program to submit your\n\
          article. If a signature is appended by that inews program it will\n\
          not be encoded properly.\n");
-constext txt_warn_example_hierarchy[]= N_("\nWarning: \"example\" is a reserved hierarchy!\n");
+constext txt_warn_example_hierarchy[] = N_("\nWarning: \"example\" is a reserved hierarchy!\n");
 constext txt_warn_update[] = N_("\n\nYou are upgrading to tin %s from an earlier version.\n\
 Some values in your %s file have changed!\nRead WHATSNEW, etc...\n");
 constext txt_warn_downgrade[] = N_("\n\nYou are downgrading to tin %s from a more recent version!\n\
@@ -1080,7 +1080,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2013 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2014 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
@@ -1656,6 +1656,7 @@ struct opttxt txt_thread_articles = {
 struct opttxt txt_thread_perc = {
 	N_("Enter percentage match required to thread together. <CR> sets."),
 	N_("Thread percentage match"),
+	/* xgettext:no-c-format */
 	N_("# Thread percentage match...\n\
 # the percentage of characters in the subject of an article that must match\n\
 # a base article for both those articles to be considered to belong to the\n\

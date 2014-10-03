@@ -3,10 +3,10 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2013-04-29
+ *  Updated   : 2014-02-17
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2013 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2014 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -402,6 +402,7 @@ process_text_body_part(
 {
 	char *rest = NULL;
 	char *line = NULL, *buf, *tmpline;
+	const char *ncharset;
 	size_t max_line_len = 0;
 	int flags, len, lines_left, len_blank;
 	int offsets[6];
@@ -469,7 +470,8 @@ process_text_body_part(
 			break;	/* premature end of file, file error etc. */
 
 		/* convert network to local charset, tex2iso, iso2asc etc. */
-		process_charsets(&line, &max_line_len, get_param(part->params, "charset"), tinrc.mm_local_charset, curr_group->attribute->tex2iso_conv && art->tex2iso);
+		ncharset = get_param(part->params, "charset");
+		process_charsets(&line, &max_line_len, ncharset ? ncharset : "US-ASCII" , tinrc.mm_local_charset, curr_group->attribute->tex2iso_conv && art->tex2iso);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (IS_LOCAL_CHARSET("UTF-8"))
@@ -673,7 +675,18 @@ process_text_body_part(
 
 		if (expand_ctrl_chars(&line, &max_line_len, tabwidth))
 			flags |= C_CTRLL;				/* Line contains form-feed */
-		put_cooked(max_line_len, wrap_lines && (!IS_LOCAL_CHARSET("Big5")), flags, "%s", line);
+
+		buf = line;
+
+		/*
+		 * Skip over the first space in case of Format=Flowed (space-stuffing)
+		 */
+		if (part->format == FORMAT_FLOWED) {
+			if (line[0] == ' ')
+				++buf;
+		}
+
+		put_cooked(max_line_len, wrap_lines && (!IS_LOCAL_CHARSET("Big5")), flags, "%s", buf);
 	} /* while */
 
 	/*

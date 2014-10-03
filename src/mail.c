@@ -3,10 +3,10 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2013-11-21
+ *  Updated   : 2014-08-31
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -391,9 +391,9 @@ open_newsgroups_fp(
 			}
 		}
 		return (nntp_command("LIST NEWSGROUPS", OK_GROUPS, NULL, 0));
-	} else
+	}
 #endif /* NNTP_ABLE */
-		return fopen(newsgroups_file, "r");
+	return fopen(newsgroups_file, "r");
 }
 
 
@@ -412,12 +412,8 @@ read_newsgroups_file(
 		if (!batch_mode && verb)
 			wait_message(0, _(txt_reading_newsgroups_file));
 
-		if (read_news_via_nntp && !no_write) {
-			struct stat buf;
-
-			if (stat(local_newsgroups_file, &buf) || !read_local_newsgroups_file)
-				fp_save = fopen(local_newsgroups_file, "w");
-		}
+		if (read_news_via_nntp && !no_write && !read_local_newsgroups_file)
+			fp_save = fopen(local_newsgroups_file, "w");
 
 		read_groups_descriptions(fp, fp_save);
 
@@ -661,8 +657,8 @@ art_edit(
 	if (!invoke_editor(temp_filename, 1, group)) {
 		unlink(temp_filename);
 		return FALSE;
-	} else
-		rename_file(temp_filename, article_filename);
+	}
 
+	rename_file(temp_filename, article_filename);
 	return TRUE;
 }

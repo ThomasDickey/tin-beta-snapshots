@@ -3,10 +3,10 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2013-11-19
+ *  Updated   : 2013-11-27
  *  Notes     : NNTP built in version of inews
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -92,7 +92,7 @@ submit_inews(
 	char response[NNTP_STRLEN];
 	int auth_error = 0;
 	int respcode;
-	t_bool leave_loop = FALSE;
+	t_bool leave_loop;
 	t_bool id_in_article = FALSE;
 	t_bool ret_code = FALSE;
 #	ifndef FORGERY

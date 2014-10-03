@@ -6,7 +6,7 @@
  *  Updated   : 2010-04-29
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,11 +72,11 @@
  *	x4x  Posting
  */
 #if 0 /* unused */
-#	define	CHAR_INF		'1'
-#	define	CHAR_OK		'2'
-#	define	CHAR_CONT		'3'
-#	define	CHAR_ERR		'4'
-#	define	CHAR_FATAL		'5'
+#	define CHAR_INF		'1'
+#	define CHAR_OK		'2'
+#	define CHAR_CONT	'3'
+#	define CHAR_ERR		'4'
+#	define CHAR_FATAL	'5'
 #endif /* 0 */
 
 /* TODO: cleanup against RFC 2980, RFC 3977 */

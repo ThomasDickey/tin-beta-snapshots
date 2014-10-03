@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-21
+ *  Updated   : 2013-12-07
  *  Notes     :
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -421,7 +421,7 @@ open_save_filename(
 	}
 
 	if ((fp = fopen(path, mode)) == NULL) {
-		perror_message("%s (%s)", _(txt_art_not_saved), path);
+		error_message(2, _(txt_cannot_open_for_saving), path);
 		return NULL;
 	}
 
@@ -1278,7 +1278,6 @@ decode_save_one(
 	 * Decode/save the attachment
 	 */
 	if ((fp = open_save_filename(savepath, FALSE)) == NULL) {
-		error_message(2, _(txt_cannot_open_for_saving), savepath);
 		free(savepath);
 		return FALSE;
 	}
@@ -1793,8 +1792,7 @@ build_attachment_line(
 	char buf[BUFSIZ];
 	char buf2[BUFSIZ];
 	char *tree = NULL;
-	int len, namelen, tagged;
-	int treelen = 0;
+	int len, namelen, tagged, treelen;
 	t_part *part;
 
 #ifdef USE_CURSES
@@ -2173,7 +2171,6 @@ process_parts(
 							return;
 
 						if ((fp = open_save_filename(savepath, FALSE)) == NULL) {
-							error_message(2, _(txt_cannot_open_for_saving), savepath);
 							free(savepath);
 							return;
 						}
@@ -2197,7 +2194,6 @@ process_parts(
 				free(tmppath);
 			}
 			if ((fp = open_save_filename(savepath, FALSE)) == NULL) {
-				error_message(2, _(txt_cannot_open_for_saving), savepath);
 				free(savepath);
 				return;
 			}
@@ -2302,7 +2298,7 @@ static void
 pipe_part(
 	const char *savepath)
 {
-	FILE *fp, *pipe_fp = (FILE *) 0;
+	FILE *fp, *pipe_fp;
 	char *prompt;
 
 	prompt = fmt_string(_(txt_pipe_to_command), cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);

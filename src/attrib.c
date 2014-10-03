@@ -3,10 +3,10 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2013-09-04
+ *  Updated   : 2014-05-28
  *  Notes     : Group attribute routines
  *
- * Copyright (c) 1993-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1307,14 +1307,28 @@ write_attributes_file(
 	 * this is nesessary because a changed locale setting
 	 * may lead to an invalid offset
 	 */
-	fpos = ftell(fp);
+	if ((fpos = ftell(fp)) <= 0) {
+		clearerr(fp);
+		fclose(fp);
+		unlink(new_file);
+		free(new_file);
+		error_message(2, _(txt_filesystem_full), ATTRIBUTES_FILE);
+		return;
+	}
 	rewind(fp);
 	attrib_file_offset = 1;
 	while ((i = fgetc(fp)) != EOF) {
 		if (i == '\n')
 			attrib_file_offset++;
 	}
-	fseek(fp, fpos, SEEK_SET);
+	if (fseek(fp, fpos, SEEK_SET)) {
+		clearerr(fp);
+		fclose(fp);
+		unlink(new_file);
+		free(new_file);
+		error_message(2, _(txt_filesystem_full), ATTRIBUTES_FILE);
+		return;
+	}
 
 	if ((num_scope > 0) && (scopes != NULL)) {
 		struct t_scope *scope;

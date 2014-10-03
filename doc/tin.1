@@ -3,17 +3,17 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2013-11-26
+.\" Updated   : 2014-07-27
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "November 25th, 2013" "2.1.5" "A Usenet newsreader"
+.TH tin 1 "October 3rd, 2014" "2.3.0" "Usenet newsreader"
 .\"
 .\"
 .SH NAME
-tin, rtin \- A Usenet newsreader
+tin, rtin \- Usenet newsreader
 .\"
 .\"
 .SH SYNOPSIS
@@ -228,7 +228,7 @@ Quick mode to post an article and then exit. In order for this to be really
 quick, it should be used with ''\fB\-n\fP'' if possible.
 .TP
 .B \-x
-No posting mode. You cannot post articles if you use this option.
+No-posting mode. You cannot post articles if you use this option.
 .TP
 .B \-X
 No overwrite mode. \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR and files in
@@ -303,7 +303,7 @@ List Extensions (\fBRFC\%6048\fP ) and all modern servers should understand it.
 \fBtin\fP has four separate levels of operation: Selection level,
 Group level, Thread level and Article level.
 .PP
-At the Selection level the title displays (the name of the newsserver
+At the Selection level the title displays (the name of the news server
 and) the number of subscribed groups (containing new unread articles). The
 newsgroups are displayed in the middle of the screen usually with the number of
 unread articles displayed on the same line in front, but it can be customized
@@ -350,7 +350,7 @@ by a more appropriately named one.
 .TP
 .B =
 This group has been renamed and you may no longer post to it. If you do,
-then you will receive an error from your newsserver telling you the correct
+then you will receive an error from your news server telling you the correct
 group to post to.
 .PP
 At the Group level the title contains the name of the group, the number
@@ -3005,7 +3005,7 @@ to be specified by a positive number preceded by an '\fB>\fP'. In the following
 example \fBtin\fP will display the score only if the screen is wider than 100
 characters: '\fB%>100S\fP'.
 .PP
-If both, the length and the minimum screen width should be specified for an
+If both the length and the minimum screen width should be specified for an
 item, the length must be the first parameter and the minimum screen width
 must be the second one. The following example displays the score with a length
 of 10 characters only if the screen is wider than 100 characters:
@@ -3399,10 +3399,10 @@ variable instead of the system default.
 .TP
 .B ISO2ASC
 Set the ISO to ASCII charset decoding table character to use in decoding
-an article text. Values can range from -1 to 6.
+an article text. Values can range from \-1 to 6.
 .RS +.5i
 .TP
-.B -1
+.B \-1
 no conversion
 .TP
 .B 0
