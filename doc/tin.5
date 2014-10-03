@@ -2,11 +2,11 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2013-11-25
+.\" Updated   : 2014-05-04
 .\" Notes     : needs a some work
 .\"
 .\"
-.TH tin 5 "November 25th, 2013" "2.1.5" "A Usenet newsreader"
+.TH tin 5 "October 3rd, 2014" "2.3.0" "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -260,13 +260,13 @@ comment. Blank lines are ignored. This file should be readable only for the
 user as it contains the user's uncrypted password for reading news!
 .TP
 .B nntpserver
-full qualified domain name of the newsserver.
+full qualified domain name of the news server.
 .TP
 .B password
 user's uncrypted password for reading news.
 .TP
 .B user
-username on the newsserver if it differs from the local login. This field is
+username on the news server if it differs from the local login. This field is
 optional.
 .TP
 Example:
@@ -548,7 +548,7 @@ Identical to the tinrc variable of the same name
 This can be used to set the article header field ''Organization:''. It
 overrides the setting (if any) of organization in
 \fI/etc/tin/tin.defaults\fR and $\fBORGANIZATION\fP (or $\fBNEWSORG\fP on
-Apollo DomainOS). Note that some newsserver might still overwrite the
+Apollo DomainOS). Note that some news servers might still overwrite the
 \&''Organization:'' header.
 .TP
 .B pos_first_unread
@@ -1083,7 +1083,7 @@ is a short single-line description of the group
 pairs to use with the ''\fB\-g\fP'' command-line switch.
 .TP
 .B nntpserver
-full qualified domain name of the newsserver.
+full qualified domain name of the news server.
 .TP
 .B newsrc
 related newsrc.
@@ -2395,7 +2395,10 @@ Default encoding scheme used in MIME letters. quoted\-printable is a good
 choice here.
 .TP
 .B disable_gnksa_domain_check
-Allow unregistered top level domains
+Allow unregistered top level domains. As the list of valid TLDs is no longer
+actively maintained the default was changed to ON starting with
+.BR \%tin (1)
+version 2.1.5
 .TP
 .B disable_sender
 Don't generate a ''Sender:'' header. This has an effect only if
@@ -2522,7 +2525,7 @@ uses the LIST (\fBRFC\%3977\fP) or LIST COUNTS (\fBRFC\%6048\fP) command instead
 .sp
 .RS
 This file provides a chronological record of when newsgroups are created. It
-is normally updated by the local newsserver (e.g.
+is normally updated by the local news server (e.g.
 .BR \%innd (8))
 whenever a new group is created. Each line consist of three space-separated
 fields "\fIname\fR \fItime\fR \fIcreator\fR".
@@ -2549,7 +2552,7 @@ uses the NEWGROUPS (\fBRFC\%3977\fP) command instead.
 .sp
 .RS
 This file provides short descriptions of each newsgroup. It is normally
-updated by the local newsserver (e.g.
+updated by the local news server (e.g.
 .BR \%innd (8))
 whenever a new group is created. Each line consist of two tab-separated
 fields "\fIgroup.name\fR	\fIone-line description\fR".
@@ -2601,7 +2604,7 @@ uses the LIST OVERVIEW.FMT (\fBRFC\%3977\fP) command instead.
 .RS
 This file contains a list of newsgroups - one per line - which the client
 should subscribe to when the user has no ${TIN_HOMEDIR:\-"$HOME"}/.newsrc
-for the newsserver.
+for the news server.
 .BR \%tin (1)
 only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,

@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2012-03-05
+ *  Updated   : 2013-12-06
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -1246,7 +1246,7 @@ ReadWch(
 {
 	char *mbs = my_malloc(MB_CUR_MAX + 1);
 	int result, to_read;
-	wchar_t wch = 0;
+	wchar_t wch;
 
 	fflush(stdout);
 

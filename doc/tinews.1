@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "tinews.pl 1"
-.TH tinews.pl 1 "May 26th, 2013" "1.1.35" "Post and sign an article via NNTP"
+.TH tinews.pl 1 "February 25th, 2014" "1.1.38" "Post and sign an article via NNTP"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -204,6 +204,10 @@ Save signed article to directory \fIdirectory\fR instead of posting.
 .IX Xref "-t --subject"
 .IX Item "-t Subject | --subject Subject"
 Set the article header field Subject: to the given value.
+.IP "\-\fBv\fR | \-\-\fBversion\fR" 4
+.IX Xref "-v --version"
+.IX Item "-v | --version"
+Show version.
 .ie n .IP "\-\fBw\fR ""Followup\-To"" | \-\-\fBfollowupto\fR ""Followup\-To""" 4
 .el .IP "\-\fBw\fR \f(CWFollowup\-To\fR | \-\-\fBfollowupto\fR \f(CWFollowup\-To\fR" 4
 .IX Xref "-w --followupto"
@@ -376,8 +380,8 @@ security is an issue, don't use this script.
 \&\fBTerm::Readline\fR(3pm).
 .PP
 If the Cancel-Lock feature is enabled the following additional modules
-must be installed: \fBMIME::Base64\fR(3pm), \fBDigest::SHA1\fR(3pm) and
-\&\fBDigest::HMAC_SHA1\fR(3pm)
+must be installed: \fBMIME::Base64\fR(3pm), \fBDigest::SHA\fR(3pm) or
+\&\fBDigest::SHA1\fR(3pm) and \fBDigest::HMAC_SHA1\fR(3pm)
 .SH "AUTHOR"
 .IX Header "AUTHOR"
 Urs Janssen <urs@tin.org>,
@@ -385,5 +389,6 @@ Marc Brockschmidt <marc@marcbrockschmidt.de>
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
 \&\fBpgp\fR(1), \fBgpg\fR(1), \fBpgps\fR(1), \fBDigest::HMAC_SHA1\fR(3pm),
-\&\fBDigest::SHA1\fR(3pm), \fBGetopt::Long\fR(3pm), \fBMIME::Base64\fR(3pm),
-\&\fBNet::NNTP\fR(3pm), \fBTime::Local\fR(3pm), \fBTerm::Readline\fR(3pm)
+\&\fBDigest::SHA\fR(3pm), \fBDigest::SHA1\fR(3pm), \fBGetopt::Long\fR(3pm),
+\&\fBMIME::Base64\fR(3pm), \fBNet::NNTP\fR(3pm), \fBTime::Local\fR(3pm),
+\&\fBTerm::Readline\fR(3pm)

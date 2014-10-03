@@ -1,5 +1,260 @@
 This file contains an overview of the changes made between
-tin 1.3BETA 950824 and tin 2.0.0, for recent changes look at CHANGES
+tin 1.3BETA 950824 and tin 2.2.0, for recent changes look at CHANGES
+
+-- 2.2.0 release 20131224 "Lochindaal" --
+
+U025) Joe Hansen <joedalton2@yahoo.dk>
+      ADD. updated danish translation
+      FIX. da.po
+
+U024) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      FIX. aclocal.m4, configure.in
+
+U023) Dennis Preiser <dennis@d--p.de>
+      BUG. do not truncate long subjects in group level if they
+           fit on the screen
+      FIX. group.c
+
+U022) Matt Anton <tin@syrius.org>
+      ADD. updated french translation
+      FIX. fr.po
+
+U021) Urs Janssen <urs@tin.org>
+      ADD. removed some useless initializations
+      ADD. config.guess update
+      BUG. don't give error message for manually aborted saves
+      BUG. fixed a possible free(NULL) if linked against libgsasl
+      BUG. forged cancels (-DFORGERY) didn't include all original headers
+           in the body as it was done before tin 2.0.0
+      BUG. memleak in pos_group_in_newsrc() when moving a group to new position
+      FIX. active.c, auth.c, curses.c, feed.c, group.c, inews.c, lang.c, mail.c
+           main.c, misc.c, newsrc.c, page.c, post.c, prompt.c, save.c, select.c
+           string.c, thread.c, xref.c, config.guess
+
+U020) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+-- 2.1.5 release 20131126 "Meadowburn" --
+
+U019) Dennis Preiser <dennis@d--p.de>
+      BUG. possible dereference null return value
+      BUG. fixed various uncritical resource leeks
+      BUG. possible wrong position of %U and %f with user defined screen
+           layout
+      FIX. select.c, string.c, tin.h
+
+U018) Matt Anton <tin@syrius.org>
+      ADD. updated french translation
+      FIX. fr.po
+
+U017) Urs Janssen <urs@tin.org>
+      ADD. updated german translation
+      ADD. remove FWS from Newsgroups and Followup-To when posting a followup
+      ADD. allow new gTLDs xn--ngbc5azd, xn--80asehdb, xn--80aswg, xn--unup4y
+      ADD. allow new IDN ccTLD of Iran
+      ADD. allow new gTLDs graphics, contractors, gallery, sexy, construction
+           tattoo, technology, estate, land, bike, ventures, camera, clothing
+           lighting, singles, voyage, guru, holdings, equipment
+      ADD. make the filter debug output somewhat more readable
+      ADD. more verbose "LIST OVERVIEW.FMT" debugging
+      ADD. updated mbox and mmdf manpage
+      ADD. set default of disable_gnksa_domain_check to TRUE
+      ADD. mention mailaddress on the posting summary screen for mailgroups
+      BUG. in mailgroups the posting summary screen wasn't updated after
+           editing the article
+      BUG. fixed various uncritical resource leeks
+      BUG. fixed various hypothetic buffer overruns
+      BUG. removed some dead code
+      BUG. in -n case a valid group could be treated as invalid on RFC 3977
+           servers
+      FIX. active.c, art.c, config.c, debug.c, feed.c, filter.c, getline.c
+           group.c, header.c, help.c, inews.c, init.c, keymap.c, lang.c, lock.c
+           main.c, memory.c, misc.c, my_tmpfile.c, newsrc.c, nntplib.c, page.c
+           pgp.c, post.c, read.c, refs.c, rfc1524.c rfc2046.c, rfc2047.c
+           save.c, search.c, select.c, sigfile.c, version.c, xface.c, xref.c
+           extern.h, policy.h, proto.h, de.po, mbox.5, mmdf.5
+
+U016) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+-- 2.1.4 release 20131019 "Killarow" --
+
+U015) Dennis Preiser <dennis@d--p.de>
+      ADD. user defined screen layout at selection, group and thread level
+           (debian bug #63877)
+      BUG. the code for genetaring initials (used for quote_chars) was not
+           multibyte safe
+      FIX. attrib.c, config.c, group.c, init.c, lang.c, memory.c, misc.c
+           options_menu.c, page.c, post.c, save.c, screen.c, select.c, string.c
+           thread.c, tincfg.tbl, extern.h, proto.h, tin.h, tinrc.h, version.h
+           tin.1, tin.5
+
+U014) Urs Janssen <urs@tin.org>
+      BUG. off by one error when checking for valid ISO2ASC settings
+      BUG. current article was not recooked if changing
+           news_headers_to_display and/or news_headers_to_not_display
+           in the attributes menu
+      BUG. used 'K' instead of 'k' as kilo SI suffix when shortening large
+           numbers
+      ADD. skip "Can't find base article" message if not running in
+           DEBUG_FILTER or DEBUG_REFS mode
+      ADD. allow new IDN ccTLD of Mongolia
+      ADD. allow gTLD post.
+      ADD. tweaked manpage
+      ADD. make traget install_nls_man for translated manpages
+      ADD. config.guess update
+      FIX. charset.c, config.c, init.c, options_menu.c, string.c, policy.h
+           Makefile, Makefile.in, tin.1, tin.5, config.guess
+
+-- 2.1.3 release 20130812 "Scarabus" --
+
+U013) Dennis Preiser <dennis@d--p.de>
+      BUG. contents of Supersedes header was shown mime decoded in pager
+      FIX. cook.c
+
+U012) Wei-Lun Chao <chaoweilun@gmail.com>
+      ADD. updated chinese translation
+      FIX. zh_TW.po
+
+UO11) Dennis Grevenstein <dennis@pcde.inka.de>
+      BUG. used strdup() instead of my_strdup() (strdup is not mandatory
+           in ANSI-C)
+      FIX. art.c
+
+U010) Joe Hansen <joedalton2@yahoo.dk>
+      ADD. updated danish translation
+      FIX. da.po
+
+U009) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+U008) Urs Janssen <urs@tin.org>
+      BUG. interactive prompting for username/password in batch-mode
+      BUG. don't generate Cancel-Lock if cancel secret is empty
+      BUG. used strdup() instead of my_strdup()
+      ADD. prefer $XDG_RUNTIME_DIR over $HOME for fifos used by xface
+      ADD. allow new IDN ccTLD of Ukraine
+      ADD. allow new ccTLD of Sint Maarten
+      ADD. config.guess, config.sub update
+      ADD. avoid charset conversion if the local charset is the same as
+           the network charset
+      ADD. mention $TIN_NOVFILENAME in man pages
+      FIX. auth.c, debug.c, lang.c, misc.c, post.c, prompt.c, xface.c, bool.h
+           extern.h, policy.h, Makefile, config.guess, config.sub, tin.[15]
+
+-- 2.1.2 release 20121224 "Langholm" --
+
+U007) Vincent Lefevre <vincent@vinc17.net>
+      BUG. doubled % in some description strings where single % are needed
+           (debian bug #684587)
+      FIX. lang.c
+
+U006) Urs Janssen <urs@tin.org>
+      BUG. possible printf with null pointer in check_moderated() when trying
+           to post an article to a non existent group
+      ADD. config.guess, config.sub update
+      ADD. allow new IDN ccTLDs of Oman and Malaysia
+      BUG. username and password wasn't converted to UTF-8 for SASL AUTH PLAIN
+      BUG. missing square brackets in gsasl.h check
+      FIX. auth.c, post.c, policy.h, configure[.in], config.guess, config.sub
+
+U005) Matt Anton <tin@syrius.org>
+      ADD. updated french translation
+      FIX. fr.po
+
+-- 2.1.1 release 20120623 "Mulindry" --
+
+ 007) Urs Janssen <urs@tin.org>
+      ADD. allow new IDN ccTLD of Kazakhstan and new ccTLD of Curacao
+      FIX. policy.h
+
+ 006) Wei-Lun Chao <chaoweilun@gmail.com>
+      ADD. chinese translation
+      FIX. zh_TW.po
+
+ 005) Dennis Preiser <dennis@d--p.de>
+      BUG. in read groups with show_only_unread_arts base article was invalid
+           but should be displayed after 'M'enu
+      FIX. group.c, options_menu.c, page.c, post.c, select.c, thread.c, proto.h
+
+U004) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      ADD. --enable-heapsort configure switch
+      ADD. 'M'enu option for sort_function if --enable-heapsort
+      FIX. art.c, config.c, heapsort.c, init.c, lang.c, options_menu.c
+           tcurses.c, tincfg.tbl, extern.h, proto.h, tin.h, tinrc.h
+           configure[.in], autoconf.h[in], aclocal.m4
+
+U003) Urs Janssen <urs@tin.org>
+      ADD. config.guess, config.sub update
+      ADD. heapsort.c fallback
+      ADD. compile heapsort.c and xface.c conditionaly
+      ADD. configure check for libunistring if libicuuc is not found
+      ADD. configure check for setvbug
+      ADD. prefer libicuuc for idna2003 decoding over libidn
+      ADD. use NFC instead of NFKC as default normalization if possible
+      ADD. swapped args for append_file() to match order of copy_fp()
+      BUG. creation of several temporary files could fail if $TMPDIR didn't
+           end with /
+      BUG. doubled % in some description strings where single % are needed
+      BUG. used strftime() instead of my_strftime() in debug.c
+      BUG. cached overview wasn't converted to undeclared_charset if set for
+           the group and post_8bit_header was active
+      FIX. art.c, config.c, debug.c, heapsort.c, inews.c, init.c, lang.c
+           mail.c, misc.c, nntplib.c, pgp.c, post.c, refs.c, select.c
+           string.c extern.h, proto.h, tin.h, autoconf.h[in], configure[.in]
+           config.guess, config.sub, Makefile, tin.1, tin.5, *.po
+
+-- 2.1.0 release 20111224 "Bridgend" --
+
+ 004) Matt Anton <tin@syrius.org>
+      ADD. updated french translation
+      FIX. fr.po
+
+ 003) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+U002) Dennis Preiser <dennis@d--p.de>
+      ADD. support for article numbers > 2^31 (--enable-long-article-numbers)
+      ADD. reduce memory usage if getart_limit is set
+      ADD. store superseds in posted_articles_file
+      FIX. active.c, art.c, debug.c, group.c, lang.c, mail.c, memory.c
+           newsrc.c, page.c, post.c, rfc2046.c, save.c, screen.c, select.c
+           string.c, thread.c, xref.c, extern.h, proto.h, tin.h, autoconf.h[in]
+           configure[.in]
+
+ 002) Dennis Preiser <dennis@d--p.de>
+      BUG. buggy error-message for attributes with no scope
+      BUG. abbreviated group names might get unnecessary cut off
+      BUG. OPT_MONO_* options were shown in menu when use_color is enabled
+      BUG. in some cases huge article numbers might get corrupted due to
+           the use of atoi()
+      BUG. possible uninitialized ext_color member in cchar_t (new in ncurses6)
+      FIX. art.c, attrib.c, lang.c, options_menu.c, select.c, tcurses.c
+           extern.h, tincfg.tbl
+
+U001) Urs Janssen <urs@tin.org>
+      ADD. some more debugging output
+      ADD. timestamps to debugging output
+      ADD. configure check for libidnkit (IDNA 2008)
+      ADD. configure check for clock_gettime(2)
+      ADD. updated german translation, switch to UTF-8 encoding
+      ADD. configure check for inet_ntoa in libnsl
+      ADD. configure check for idna_strerro in libidn
+      ADD. use range in LISTGROUP if getart_limit is set
+      FIX. active.c, art.c, debug.c, filter.c, group.c, lang.c, mail.c, misc.c
+           nntplib.c, screen.c, signal.c, xref.c, proto.h, tin.h, tin.1, tin.5
+           Makefile[.in], configure[.in] autoconf.h[in], aclocal.m4, de.po
+
+ 001) Urs Janssen <urs@tin.org>
+      ADD. config.guess, config.sub update
+      BUG. crash when entering scope menu without active group
+      FIX. select.c, config.guess, config.sub
 
 -- 2.0.0 release 20110823 "Ardenistiel" --
 

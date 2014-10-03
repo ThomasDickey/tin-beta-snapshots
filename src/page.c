@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-23
+ *  Updated   : 2014-04-26
  *  Notes     :
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1871,7 +1871,7 @@ prompt_response(
 	int ch,
 	int curr_respnum)
 {
-	int num;
+	int i, num;
 
 	clear_message();
 
@@ -1880,7 +1880,10 @@ prompt_response(
 		return -1;
 	}
 
-	return find_response(which_thread(curr_respnum), num);
+	if ((i = which_thread(curr_respnum)) >= 0)
+		return find_response(i, num);
+	else
+		return -1;
 }
 
 
@@ -2536,7 +2539,7 @@ process_url(
 	t_url *lptr;
 
 	lptr = find_url(n);
-	len = strlen(lptr->url);
+	len = strlen(lptr->url) << 1; /* double size; room for editing URL */
 	url = my_malloc(len + 1);
 	if (prompt_default_string("URL:", url, len, lptr->url, HIST_URL)) {
 		if (!*url) {			/* Don't try and open nothing */

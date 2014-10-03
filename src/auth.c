@@ -3,11 +3,11 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2013-01-13
+ *  Updated   : 2013-12-06
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2013 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 1997-2014 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -154,8 +154,8 @@ read_newsauth_file(
 		}
 		fclose(fp);
 		return (found > 0);
-	} else
-		return FALSE;
+	}
+	return FALSE;
 }
 
 
@@ -498,7 +498,7 @@ do_authinfo_sasl_plain(
 	free(utf8pass);
 
 	snprintf(line, sizeof(line), "AUTHINFO SASL PLAIN %s", foo);
-	free(foo);
+	FreeIfNeeded(foo);
 #		ifdef DEBUG
 	if (debug & DEBUG_NNTP)
 		debug_print_file("NNTP", "authorization %s", line);

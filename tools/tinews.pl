@@ -4,7 +4,7 @@
 # signs the article and posts it.
 #
 #
-# Copyright (c) 2002-2013 Urs Janssen <urs@tin.org>,
+# Copyright (c) 2002-2014 Urs Janssen <urs@tin.org>,
 #                         Marc Brockschmidt <marc@marcbrockschmidt.de>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@ use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.35";
+my $version = "1.1.39";
 
 my %config;
 
@@ -131,6 +131,7 @@ $config{'NNTPPort'} = $ENV{'NNTPPORT'} if ($ENV{'NNTPPORT'});
 
 # Get options:
 $Getopt::Long::ignorecase=0;
+$Getopt::Long::bundling=1;
 GetOptions('A|V|W|O|no-organization|h|headers' => [], # do nothing
 	'debug|D|N'	=> \$config{'debug'},
 	'port|p=i'	=> \$config{'NNTPPort'},
@@ -152,7 +153,8 @@ GetOptions('A|V|W|O|no-organization|h|headers' => [], # do nothing
 	'references|F=s'	=> \$config{'references'},
 	'organization|o=s'	=> \$config{'organization'},
 	'path|x=s'	=> \$config{'path'},
-	'help|H'	=> \$config{'help'}
+	'help|H'	=> \$config{'help'},
+	'version|v'	=> \$config{'version'}
 );
 
 foreach (@ARGV) {
@@ -160,13 +162,26 @@ foreach (@ARGV) {
 	usage();
 }
 
+if ($config{'version'}) {
+	version();
+	exit 0;
+}
+
 usage() if ($config{'help'});
 
+my $sha_mod=undef;
 # Cancel-Locks require some more modules
 if ($config{'canlock_secret'} && !$config{'no_canlock'}) {
-	foreach ('MIME::Base64()', 'Digest::SHA1()', 'Digest::HMAC_SHA1()') {
+	foreach ('Digest::SHA qw(sha1)', 'Digest::SHA1()') {
 		eval "use $_";
-		if ($@) {
+		if (!$@) {
+			($sha_mod = $_) =~ s#( qw\(sha1\)|\(\))##;
+			last;
+		}
+	}
+	foreach ('MIME::Base64()', 'Digest::HMAC_SHA1()') {
+		eval "use $_";
+		if ($@ || !defined($sha_mod)) {
 			$config{'no_canlock'} = 1;
 			warn "Cancel-Locks disabled: Can't locate ".$_."\n" if $config{'debug'};
 			last;
@@ -334,7 +349,7 @@ if (!defined($Header{'message-id'})) {
 }
 
 # add Cancel-Lock (and Cancel-Key) header(s) if requested
-if ($config{'canlock_secret'} && defined($Header{'message-id'}) && !$config{'no_canlock'}) {
+if ($config{'canlock_secret'} && !$config{'no_canlock'} && defined($Header{'message-id'})) {
 	open(my $CANLock, '<', (glob($config{'canlock_secret'}))[0]) or die("$0: Can't open " . $config{'canlock_secret'} . ": $!");
 	chomp(my $key = <$CANLock>);
 	close($CANLock);
@@ -342,7 +357,12 @@ if ($config{'canlock_secret'} && defined($Header{'message-id'}) && !$config{'no_
 	chomp $data;
 	my $digest = Digest::HMAC_SHA1::hmac_sha1($data, $key);
 	my $cancel_key = MIME::Base64::encode($digest, '');
-	my $cancel_lock = MIME::Base64::encode(Digest::SHA1::sha1($cancel_key, ''));
+	my $cancel_lock;
+	if ($sha_mod =~ m/SHA1/) {
+		$cancel_lock = MIME::Base64::encode(Digest::SHA1::sha1($cancel_key, ''));
+	} else {
+		$cancel_lock = MIME::Base64::encode(Digest::SHA::sha1($cancel_key, ''));
+	}
 	if (defined($Header{'cancel-lock'})) {
 		chomp $Header{'cancel-lock'};
 		$Header{'cancel-lock'} .= " sha1:" . $cancel_lock;
@@ -767,9 +787,13 @@ sub signarticle {
 	return \@pgpmessage;
 }
 
+sub version {
+	print $pname." ".$version."\n";
+	return;
+}
 
 sub usage {
-	print $pname." ".$version."\n";
+	version();
 	print "Usage: ".$pname." [OPTS] < article\n";
 	print "  -a string  set Approved:-header to string\n";
 	print "  -c string  set Control:-header to string\n";
@@ -782,6 +806,7 @@ sub usage {
 	print "  -r string  set Reply-To:-header to string\n";
 	print "  -s string  save signed article to directory string instead of posting\n";
 	print "  -t string  set Subject:-header to string\n";
+	print "  -v         show version\n";
 	print "  -w string  set Followup-To:-header to string\n";
 	print "  -x string  set Path:-header to string\n";
 	print "  -H         show help\n";
@@ -806,7 +831,7 @@ B<tinews.pl> [B<OPTIONS>] E<lt> I<input>
 =head1 DESCRIPTION
 
 B<tinews.pl> reads an article on STDIN, signs it via B<pgp>(1) or
-B<gpg>(1) and posts it to a newsserver.
+B<gpg>(1) and posts it to a news server.
 
 If the article contains To:, Cc: or Bcc: headers and mail-actions are
 configured it will automatically add a "Posted-And-Mailed: yes" header
@@ -876,6 +901,11 @@ Save signed article to directory F<directory> instead of posting.
 X<-t> X<--subject>
 
 Set the article header field Subject: to the given value.
+
+=item -B<v> | --B<version>
+X<-v> X<--version>
+
+Show version.
 
 =item -B<w> C<Followup-To> | --B<followupto> C<Followup-To>
 X<-w> X<--followupto>
@@ -1079,8 +1109,8 @@ B<Getopt::Long>(3pm), B<Net::NNTP>(3pm), B<Time::Local>(3pm) and
 B<Term::Readline>(3pm).
 
 If the Cancel-Lock feature is enabled the following additional modules
-must be installed: B<MIME::Base64>(3pm), B<Digest::SHA1>(3pm) and
-B<Digest::HMAC_SHA1>(3pm)
+must be installed: B<MIME::Base64>(3pm), B<Digest::SHA>(3pm) or
+B<Digest::SHA1>(3pm) and B<Digest::HMAC_SHA1>(3pm)
 
 =head1 AUTHOR
 
@@ -1090,7 +1120,8 @@ Marc Brockschmidt E<lt>marc@marcbrockschmidt.deE<gt>
 =head1 SEE ALSO
 
 B<pgp>(1), B<gpg>(1), B<pgps>(1), B<Digest::HMAC_SHA1>(3pm),
-B<Digest::SHA1>(3pm), B<Getopt::Long>(3pm), B<MIME::Base64>(3pm),
-B<Net::NNTP>(3pm), B<Time::Local>(3pm), B<Term::Readline>(3pm)
+B<Digest::SHA>(3pm), B<Digest::SHA1>(3pm), B<Getopt::Long>(3pm),
+B<MIME::Base64>(3pm), B<Net::NNTP>(3pm), B<Time::Local>(3pm),
+B<Term::Readline>(3pm)
 
 =cut

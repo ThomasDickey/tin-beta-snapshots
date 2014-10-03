@@ -3,10 +3,10 @@
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2010-09-26
+ *  Updated   : 2014-02-17
  *  Notes     : rfc2046 MIME article definitions
  *
- * Copyright (c) 2000-2013 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2014 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,6 +63,8 @@
 #	define BOUND_START		1
 #	define BOUND_END		2
 
+#	define FORMAT_FIXED		0
+#	define FORMAT_FLOWED	1
 
 /*
  * Linked list of parameter/value pairs
@@ -84,6 +86,7 @@ typedef struct part
 {
 	unsigned type:3;		/* Content major type */
 	unsigned encoding:3;	/* Transfer encoding */
+	unsigned format:1;		/* Format=Fixed/Flowed */
 #	if 0
 	unsigned disposition:1;
 #	endif /* 0 */

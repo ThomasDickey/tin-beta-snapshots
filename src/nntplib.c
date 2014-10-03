@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2013-11-12
+ *  Updated   : 2013-12-05
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -1849,6 +1849,8 @@ get_respcode(
 		if (debug & DEBUG_NNTP)
 			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
+		if (ptr == NULL)
+			return -1;
 		respcode = (int) strtol(ptr, &end, 10);
 		if (message != NULL && mlen > 1)				/* Pass out the rest of the text */
 			strncpy(message, end, mlen - 1);

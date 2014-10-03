@@ -6,7 +6,7 @@
  *  Updated   : 2005-10-19
  *  Notes     : Generic nagivation and key handling routines
  *
- * Copyright (c) 1999-2013 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2014 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

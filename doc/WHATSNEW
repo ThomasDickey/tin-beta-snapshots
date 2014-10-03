@@ -1,17 +1,12 @@
-New features and changes since tin-2.0.0
+New features and changes since tin-2.2.0
 
 New features
 ------------
-. IDNA 2008 support if linked against libidnkit2
-. user configurable timeout (nntp_read_timeout_secs)
-. support large article numbers (>2^31) (--enable-long-article-numbers)
-. support for user defined screen layout at selection, group and thread level
 
 Changes
 -------
-. disable_gnksa_domain_check now defaults to TRUE; too many new gTLDs
+The gTLD list is no longer activly maintained (too many new gTLD recently),
+disable_gnksa_domain_check=ON might result in false positives.
 
 Retired Features
 ----------------
-. show_info, can now be set via user defined screen layout at group and thread
-  level

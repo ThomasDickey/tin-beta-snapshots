@@ -3,10 +3,10 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2013-11-05
+ *  Updated   : 2014-05-09
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2013 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2014 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -369,13 +369,27 @@ do_b_encode(
 {
 	char tmp[60];				/* strings to be B encoded */
 	char *t = tmp;
+	int count = max_ewsize / 4 * 3;
+	t_bool isleading_between = TRUE;		/* are we still processing leading space */
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	while (count-- > 0 && (!isbetween(*w, isstruct_head) || isleading_between) && *w) {
+		if (!isbetween(*w, isstruct_head))
+			isleading_between = FALSE;
+		*(t++) = *(w++);
+		/*
+		 * ensure that the next multi-octet character
+		 * fits into the remaining space
+		 */
+		if (mbtowc(NULL, w, MB_CUR_MAX) > count)
+			break;
+	}
+#else
 	int len8 = 0;				/* the number of trailing 8bit chars, which
 								   should be even (i.e. the first and second byte
 								   of wide_char should NOT be split into two
 								   encoded words) in order to be compatible with
 								   some CJK mail client */
-	int count = max_ewsize / 4 * 3;
-	t_bool isleading_between = TRUE;		/* are we still processing leading space */
 
 	while (count-- > 0 && (!isbetween(*w, isstruct_head) || isleading_between) && *w) {
 		len8 += (is_EIGHT_BIT(w) ? 1 : -len8);
@@ -387,6 +401,7 @@ do_b_encode(
 /* if (len8 & (unsigned long) 1 && !isbetween(*w,isstruct_head)) */
 	if (len8 != len8 / 2 * 2 && !isbetween(*w, isstruct_head) && (*w))
 		t--;
+#endif /* MULTIBYTE_ABLE && !NOLOCALE */
 
 	*t = '\0';
 

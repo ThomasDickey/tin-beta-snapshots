@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-20
+ *  Updated   : 2014-04-24
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -408,7 +408,7 @@ msg_add_header(
 		/*
 		 * if header does not exist then add it
 		 */
-		if (!(done || msg_headers[i].name)) {
+		if (i < MAX_MSG_HEADERS && !(done || msg_headers[i].name)) {
 			msg_headers[i].name = my_strdup(new_name);
 			if (text) {
 				for (p = text; *p && (*p == ' ' || *p == '\t'); p++)
@@ -941,7 +941,7 @@ check_article_to_be_posted(
 #endif /* CHARSET_CONVERSION */
 			if (GNKSA_OK != (i = gnksa_check_from(cp2 + (cp - line) + 1))) {
 				StartInverse();
-				my_fprintf(stderr, _(txt_error_bad_approved));
+				my_fprintf(stderr, "%s", _(txt_error_bad_approved));
 				my_fprintf(stderr, gnksa_strerror(i), i);
 				EndInverse();
 				my_fflush(stderr);
@@ -961,7 +961,7 @@ check_article_to_be_posted(
 #endif /* CHARSET_CONVERSION */
 			if (GNKSA_OK != (i = gnksa_check_from(cp2 + (cp - line) + 1))) {
 				StartInverse();
-				my_fprintf(stderr, _(txt_error_bad_from));
+				my_fprintf(stderr, "%s", _(txt_error_bad_from));
 				my_fprintf(stderr, gnksa_strerror(i), i);
 				EndInverse();
 				my_fflush(stderr);
@@ -980,7 +980,7 @@ check_article_to_be_posted(
 #endif /* CHARSET_CONVERSION */
 			if (GNKSA_OK != (i = gnksa_check_from(cp2 + (cp - line) + 1))) {
 				StartInverse();
-				my_fprintf(stderr, _(txt_error_bad_replyto));
+				my_fprintf(stderr, "%s", _(txt_error_bad_replyto));
 				my_fprintf(stderr, gnksa_strerror(i), i);
 				EndInverse();
 				my_fflush(stderr);
@@ -999,7 +999,7 @@ check_article_to_be_posted(
 #endif /* CHARSET_CONVERSION */
 			if (GNKSA_OK != (i = gnksa_check_from(cp2 + (cp - line) + 1))) {
 				StartInverse();
-				my_fprintf(stderr, _(txt_error_bad_to));
+				my_fprintf(stderr, "%s", _(txt_error_bad_to));
 				my_fprintf(stderr, gnksa_strerror(i), i);
 				EndInverse();
 				my_fflush(stderr);
@@ -1025,7 +1025,7 @@ check_article_to_be_posted(
 #endif /* 0 */
 			{
 				StartInverse();
-				my_fprintf(stderr, _(txt_error_bad_msgidfqdn));
+				my_fprintf(stderr, "%s", _(txt_error_bad_msgidfqdn));
 				my_fprintf(stderr, gnksa_strerror(i), i);
 				EndInverse();
 				my_fflush(stderr);
@@ -3764,17 +3764,14 @@ cancel_article(
 		error_message(2, "From=[%s]  Cancel=[%s]", art->from, from_name);
 #endif /* DEBUG */
 
-	/*
-	 * superseding foreign articles is allowed via 'x'repost
-	 * (in the FORGERY case), so there is no need to disallow it
-	 * with 'D' here (in the FORGERY case).
-	 */
-#ifndef FORGERY
 	if (!strcasestr(from_name, art->from)) {
+#ifdef FORGERY
+		author = FALSE;
+#else
 		wait_message(3, _(txt_art_cannot_cancel));
 		return redraw_screen;
-	} else
-#endif /* !FORGERY */
+#endif /* FORGERY */
+	}
 	{
 		char *smsg;
 		char buff[LEN];
@@ -4273,8 +4270,7 @@ msg_add_x_headers(
 			if (line[0] != '\n' && line[0] != '#') {
 				if (line[0] != ' ' && line[0] != '\t') {
 					x_hdrs = my_realloc(x_hdrs, (num_x_hdrs + 1) * sizeof(char *));
-					x_hdrs[num_x_hdrs] = my_malloc(strlen(line) + 1);
-					strcpy(x_hdrs[num_x_hdrs++], line);
+					x_hdrs[num_x_hdrs++] = my_strdup(line);
 				} else {
 					if (!num_x_hdrs) /* folded line, but no previous header */
 						continue;
@@ -5033,8 +5029,8 @@ build_messageid(
 {
 	int i;
 	size_t j;
-	static char buf[1024]; /* Message-IDs are limited to 998-12+CRLF octets */
-	static unsigned long int seqnum = 0; /* we'd use a counter in tinrc */
+	static char buf[HEADER_LEN]; /* Message-IDs are limited to 250 octets as of RFC 5536 3.1.3 */
+	static unsigned long int seqnum = 0; /* use a counter in tinrc? */
 	time_t t = time(NULL);
 
 	if (t >= 1041379200) /* 2003-01-01 00:00:00 GMT */
@@ -5054,7 +5050,7 @@ build_messageid(
 	 * draft-ietf-usefor-msg-id-alt-00, 2.1.3
 	 * based on login name and FQDN
 	 */
-		static char buf2[1024];
+		static char buf2[HEADER_LEN];
 
 		strip_name(build_sender(), buf2);
 		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "N%s%%%s>", radix32(getuid()), buf2);
@@ -5310,12 +5306,13 @@ add_headers(
 
 
 #ifdef EVIL_INSIDE
+/* radix32 aka base32hex (RFC 4648) */
 static char *
 radix32(
 	unsigned long int num)
 {
 	static const char ralphabet[] = "0123456789abcdefghijklmnopqrstuv";
-	static char tmp[20];
+	static char tmp[20]; /* 32^19-1 = 2^95-1 */
 	char *ptr;
 
 	ptr = tmp + sizeof(tmp) - 1;

@@ -3,10 +3,10 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2013-10-31
+ *  Updated   : 2013-12-06
  *  Notes     :
  *
- * Copyright (c) 1993-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,13 +61,14 @@ open_overview_fmt_fp(
 	if (read_news_via_nntp && !read_saved_news) {
 		if (!*nntp_caps.over_cmd)
 			return (FILE *) 0;
+
 		if ((nntp_caps.type == CAPABILITIES && nntp_caps.list_overview_fmt) || nntp_caps.type != CAPABILITIES)
 			return (nntp_command("LIST OVERVIEW.FMT", OK_GROUPS, NULL, 0));
-		else
-			return (FILE *) 0;
-	} else
+
+		return (FILE *) 0;
+	}
 #endif /* NNTP_ABLE */
-		return (fopen(overviewfmt_file, "r"));
+	return (fopen(overviewfmt_file, "r"));
 }
 
 

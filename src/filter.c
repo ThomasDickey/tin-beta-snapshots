@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2013-11-25
+ *  Updated   : 2014-05-28
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -526,7 +526,7 @@ read_filter_file(
 						}
 #ifdef DEBUG
 						if (debug & DEBUG_FILTER)
-							debug_print_file("FILTER","buf=[%s]  Gsubj=[%s]", ptr[i].subj, glob_filter.filter[i].subj);
+							debug_print_file("FILTER", "buf=[%s]  Gsubj=[%s]", ptr[i].subj, glob_filter.filter[i].subj);
 #endif /* DEBUG */
 					}
 					break;
@@ -539,7 +539,7 @@ read_filter_file(
 					score = atoi(scbuf);
 #ifdef DEBUG
 					if (debug & DEBUG_FILTER)
-						debug_print_file("FILTER","score=[%d]", score);
+						debug_print_file("FILTER", "score=[%d]", score);
 #endif /* DEBUG */
 					if (ptr && !expired_time) {
 						if (score > SCORE_MAX)
@@ -671,20 +671,33 @@ write_filter_file(
 	fprintf(fp, "# Filter file V%s for the TIN newsreader\n#\n", FILTER_VERSION);
 	fprintf(fp, "%s", _(txt_filter_file));
 
+	fflush(fp);
+
 	/* determine the file offset */
 	if (!batch_mode) {
-		if ((fpos = ftell(fp)) > 0) {
-			rewind(fp);
-			filter_file_offset = 1;
-			while ((i = fgetc(fp)) != EOF) {
-				if (i == '\n')
-					filter_file_offset++;
-			}
-			fseek(fp, fpos, SEEK_SET);
+		if ((fpos = ftell(fp)) <= 0) {
+				clearerr(fp);
+				fclose(fp);
+				rename_file(file_tmp, filename);
+				free(file_tmp);
+				error_message(2, _(txt_filesystem_full), filename);
+				return;
+		}
+		rewind(fp);
+		filter_file_offset = 1;
+		while ((i = fgetc(fp)) != EOF) {
+			if (i == '\n')
+				filter_file_offset++;
+		}
+		if (fseek(fp, fpos, SEEK_SET)) {
+			clearerr(fp);
+			fclose(fp);
+			rename_file(file_tmp, filename);
+			free(file_tmp);
+			error_message(2, _(txt_filesystem_full), filename);
+			return;
 		}
 	}
-
-	fflush(fp);
 
 	/*
 	 * Save global filters

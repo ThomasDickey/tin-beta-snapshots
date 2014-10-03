@@ -3,9 +3,9 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2011-11-15
+ *  Updated   : 2014-04-30
  *
- * Copyright (c) 1997-2013 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2014 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -178,7 +178,7 @@ tin_read(
 	t_bool header)
 {
 	char *ptr;
-	signed char c;
+	int c;
 	int i;
 #ifdef NNTP_ABLE
 	t_bool check_dot_only_line;

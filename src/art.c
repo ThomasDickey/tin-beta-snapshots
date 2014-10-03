@@ -6,7 +6,7 @@
  *  Updated   : 2013-11-10
  *  Notes     :
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -247,7 +247,7 @@ setup_hard_base(
 			if (j < group->xmin)
 				j = group->xmin;
 
-			for ( ; count < j; count++) {
+			for (; count < j; count++) {
 				if (grpmenu.max >= max_base)
 					expand_base();
 				base[grpmenu.max++] = count;
@@ -959,7 +959,7 @@ global_get_multipart_info(
 
 
 /*
- * Again this was taken from tags.c, but works on global indicies into arts
+ * Again this was taken from tags.c, but works on global indices into arts
  * rather then on base_index.
  */
 static int
@@ -1007,7 +1007,7 @@ global_look_for_multipart_info(
 
 
 /*
- * Taken from tags.c but changed to use indicies into arts[] instead of
+ * Taken from tags.c but changed to use indices into arts[] instead of
  * base_index. Changed so that even when we don't have all the parts we
  * return a valid array.
  *
@@ -2823,6 +2823,7 @@ open_xover_fp(
 	}
 	return NULL;
 }
+
 
 #ifdef USE_HEAPSORT
 int

@@ -3,10 +3,10 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-16
+ *  Updated   : 2014-01-11
  *  Notes     :
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -101,8 +101,8 @@ group_left(
 {
 	if (curr_group->attribute->group_catchup_on_exit)
 		return SPECIAL_CATCHUP_LEFT;		/* ie, not via 'c' or 'C' */
-	else
-		return GLOBAL_QUIT;
+
+	return GLOBAL_QUIT;
 }
 
 
@@ -1141,7 +1141,7 @@ build_sline(
 	int i)
 {
 	char *fmt, *buf;
-	char arts_sub[255];
+	char arts_sub[HEADER_LEN];
 	char tmp_buf[8];
 	char tmp[LEN];
 	int respnum;
@@ -1249,7 +1249,7 @@ build_sline(
 				strcat(buffer, tmp);
 				if ((k = len - strwidth(tmp)) > 0) {
 					buf = buffer + strlen(buffer);
-					for (;k > 0; --k)
+					for (; k > 0; --k)
 						*buf++ = ' ';
 					*buf = '\0';
 				}
@@ -1284,7 +1284,7 @@ build_sline(
 				strcat(buffer, tmp);
 				if ((k = len - strwidth(tmp)) > 0) {
 					buf = buffer + strlen(buffer);
-					for (;k > 0; --k)
+					for (; k > 0; --k)
 						*buf++ = ' ';
 					*buf = '\0';
 				}

@@ -6,7 +6,7 @@
  *  Updated   : 2013-09-01
  *  Notes     :
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,10 +40,10 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.1.5"
+#		define VERSION		"2.3.0"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20131126"
-#	define RELEASENAME	"Meadowburn"
+#	define RELEASEDATE	"20141003"
+#	define RELEASENAME	"Glenfoyle"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.12"
 #	define ATTRIBUTES_VERSION	"1.0.8"

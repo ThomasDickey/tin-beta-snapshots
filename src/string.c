@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2013-11-22
+ *  Updated   : 2014-05-12
  *  Notes     :
  *
- * Copyright (c) 1997-2013 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2014 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -780,15 +780,25 @@ wchar_t *
 char2wchar_t(
 	const char *str)
 {
-	size_t len;
+	char *test = my_strdup(str);
+	size_t len = (size_t) (-1);
+	size_t pos = strlen(test);
 	wchar_t *wstr;
 
-	len = mbstowcs(NULL, str, 0);
-	if (len == (size_t) (-1))
+	/* check for illegal sequences */
+	while (len == (size_t) (-1) && pos) {
+		if ((len = mbstowcs(NULL, test, 0)) == (size_t) (-1))
+			test[--pos] = '?';
+	}
+	/* shouldn't happen anymore */
+	if (len == (size_t) (-1)) {
+		free(test);
 		return NULL;
+	}
 
 	wstr = my_malloc(sizeof(wchar_t) * (len + 1));
-	mbstowcs(wstr, str, len + 1);
+	mbstowcs(wstr, test, len + 1);
+	free(test);
 
 	return wstr;
 }
@@ -1269,9 +1279,10 @@ normalize(
 #			ifdef HAVE_LIBIDN
 	/* libidn */
 
-	buf = stringprep_utf8_nfkc_normalize(tmp, -1);
-	if (buf == NULL) /* normalization failed, return the original string (as valid UTF8) */
+	if ((buf = stringprep_utf8_nfkc_normalize(tmp, -1)) == NULL) /* normalization failed, return the original string (as valid UTF8) */
 		buf = tmp;
+	else
+		free(tmp);
 
 	return buf;
 #			endif /* HAVE_LIBIDN */
@@ -1340,7 +1351,6 @@ parse_format_string(
 	const char *fmtstr,
 	struct t_fmt *fmt)
 {
-	char tmp[BUFSIZ];
 	char tmp_date_str[LEN];
 	char *out, *d_fmt, *buf;
 	const char *in;
@@ -1368,6 +1378,7 @@ parse_format_string(
 	};
 	int flags = NO_FLAGS;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	char tmp[BUFSIZ];
 	wchar_t *wtmp;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
@@ -1424,7 +1435,7 @@ parse_format_string(
 			}
 		}
 		if (*in == '(') {
-			char *tmpp = NULL;
+			char *tmpp;
 			const char *endp = NULL;
 			const char *startp = in;
 
@@ -1472,7 +1483,7 @@ parse_format_string(
 					if (strlen(tmp_date_str))
 						strcpy(fmt->date_str, tmp_date_str);
 					else
-						strcpy(fmt->date_str, curr_group->attribute->date_format);
+						STRCPY(fmt->date_str, curr_group->attribute->date_format);
 					buf = my_malloc(LEN);
 					(void) time(&tmptime);
 					if (my_strftime(buf, LEN - 1, fmt->date_str, localtime(&tmptime))) {

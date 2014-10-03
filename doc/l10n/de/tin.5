@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2013-11-25
+.\" Updated   : 2014-05-04
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "25. November 2013" 2.1.5 "Usenet Newsreader"
+.TH tin 5 "3. Oktober 2014" 2.3.0 "Usenet Newsreader"
 
 .SH NAME
 tin, rtin \- zugehörige Dateien
@@ -539,7 +539,7 @@ Identisch mit der tinrc\-Variable gleichen Namens
 This can be used to set the article header field \*(rqOrganization:\*(rq. It
 overrides the setting (if any) of organization in \fI/etc/tin/tin.defaults\fP
 and $\fBORGANIZATION\fP (or $\fBNEWSORG\fP on Apollo DomainOS). Note that some
-newsserver might still overwrite the \&\*(rqOrganization:\*(rq header.
+news servers might still overwrite the \&\*(rqOrganization:\*(rq header.
 .TP 
 \fBpos_first_unread\fP
 Identisch mit der tinrc\-Variable gleichen Namens
@@ -2180,15 +2180,16 @@ If ON use UTF\-8 characters for indicator ('\->'), thread/attachment tree
 and ellipsis ('...'). Default is OFF.
 .TP 
 \fBverbatim_begin_regex\fP
-A regular expression that tin will use to find the begin of a verbatim
-block.  Default is #v+
+Ein regulärer Ausdruck, der den Beginn eines wortgetreu wiederzugebenden
+Absatzes findet. Voreinstellung ist #v+
 .TP 
 \fBverbatim_end_regex\fP
-A regular expression that tin will use to find the end of a verbatim block.
-Default is #v\-
+Ein regulärer Ausdruck, der das Ende eines wortgetreu wiederzugebenden
+Absatzes findet. Voreinstellung ist #v\-
 .TP 
 \fBverbatim_handling\fP
-If ON verbatim blocks will be detected.  Default is ON
+Falls ON werden wortgetreue Textblöcke in Artiklen erkannt. Voreinstellung
+ist ON.
 .TP 
 \fBwildcard\fP
 Allows you to select how \fB\%tin\fP(1)  matches strings. The default is 0 and
@@ -2281,7 +2282,9 @@ Default encoding scheme used in MIME letters. quoted\-printable is a good
 choice here.
 .TP 
 \fBdisable_gnksa_domain_check\fP
-Unregistrierte Top\-Level\-Domains zulassen
+Unregistrierte Top\-Level\-Domains zulassen. Da die Liste der gültigen TLDs
+nicht mehr aktiv gepflegt wird wurde ab \fB\%tin\fP(1) Version 2.1.5 die
+Voreinstellung auf ON gändert.
 .TP 
 \fBdisable_sender\fP
 Keinen \*(rqSender:\*(rq Header erzeugen. Falls \fBinews_prog\fP nicht auf \-\-internal
@@ -2405,8 +2408,8 @@ COUNTS (\fBRFC\%6048\fP) command instead.
 .sp
 .RS
 This file provides a chronological record of when newsgroups are created. It
-is normally updated by the local newsserver (e.g.  \fB\%innd\fP(8))  whenever a
-new group is created. Each line consist of three space\-separated fields
+is normally updated by the local news server (e.g.  \fB\%innd\fP(8))  whenever
+a new group is created. Each line consist of three space\-separated fields
 "\fIname\fP \fItime\fP \fIcreator\fP".
 .TP 
 \fBname\fP
@@ -2430,7 +2433,7 @@ command instead.
 .sp
 .RS
 This file provides short descriptions of each newsgroup. It is normally
-updated by the local newsserver (e.g.  \fB\%innd\fP(8))  whenever a new group
+updated by the local news server (e.g.  \fB\%innd\fP(8))  whenever a new group
 is created. Each line consist of two tab\-separated fields
 "\fIgroup.name\fP	\fIone\-line description\fP".
 .TP 
@@ -2474,7 +2477,7 @@ uses the LIST OVERVIEW.FMT (\fBRFC\%3977\fP) command instead.
 .RS
 This file contains a list of newsgroups \- one per line \- which the client
 should subscribe to when the user has no ${TIN_HOMEDIR:\-"$HOME"}/.newsrc for
-the newsserver.  \fB\%tin\fP(1)  only tries to read the file if you read
+the news server.  \fB\%tin\fP(1)  only tries to read the file if you read
 directly from the local spool, if you read news via NNTP, \fB\%tin\fP(1)  uses
 the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .RE

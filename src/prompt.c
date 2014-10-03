@@ -3,10 +3,10 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2013-01-09
+ *  Updated   : 2013-11-30
  *  Notes     :
  *
- * Copyright (c) 1991-2013 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -165,7 +165,7 @@ prompt_yn(
 {
 	char *keyprompt;
 	char keyno[MAXKEYLEN], keyyes[MAXKEYLEN];
-	int keyyes_len = 0, keyno_len = 0, maxlen, prompt_len;
+	int keyyes_len, keyno_len, maxlen, prompt_len;
 	t_function func;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wint_t yes, no, prompt_ch, ch;
