@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 1.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-03 16:08+0200\n"
+"POT-Creation-Date: 2014-12-24 09:41+0100\n"
 "PO-Revision-Date: 2006-04-21 15:39+0200\n"
 "Last-Translator: Andrei Emeltchenko <andrei.emeltchenko@finik.org>\n"
 "Language-Team: Russian <gnu@mx.ru>\n"
@@ -8013,7 +8013,7 @@ msgstr ""
 "Строка %d длиннее 998 октетов и должна быть разбита на части,\n"
 "но кодировка не установлена в %s\n"
 
-#: src/post.c:2304
+#: src/post.c:2306
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Отправление в группу %.*s ..."

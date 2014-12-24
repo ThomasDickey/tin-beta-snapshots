@@ -997,6 +997,7 @@ o  check_article_to_be_posted() needs a cleanup!
 o  update gettext stuff to > gettext-0.12.1
 
 o  clean up included pcre stuff and update to >= pcre-8.36
+   (maybe even pcre2?)
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.1.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-03 16:08+0200\n"
+"POT-Creation-Date: 2014-12-24 09:41+0100\n"
 "PO-Revision-Date: 2013-02-12 23:03+0800\n"
 "Last-Translator: Wei-Lun Chao <bluebat@member.fsf.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -7978,7 +7978,7 @@ msgstr ""
 "第 %d 列長度超過 998 位元組而，但是\n"
 "編碼未被設定為 %s\n"
 
-#: src/post.c:2304
+#: src/post.c:2306
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "張貼：%.*s…"

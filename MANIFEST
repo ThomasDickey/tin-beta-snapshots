@@ -1,27 +1,27 @@
-MANIFEST for tin-2.3.0 (Fri Oct  3 16:54:09 CEST 2014)
+MANIFEST for tin-2.3.1 (Wed Dec 24 10:39:36 CET 2014)
 ----------------------------------------------------
    14465 ./Makefile
-    8124 ./MANIFEST
+    8123 ./MANIFEST
     1441 ./README
      745 ./README.MAC
      976 ./README.WIN
   188211 ./aclocal.m4
      882 ./conf-tin
-   43465 ./config.guess
-   35983 ./config.sub
+   43542 ./config.guess
+   35995 ./config.sub
   675241 ./configure
    35887 ./configure.in
     7123 ./install-sh
      318 ./po4a.conf
     1486 ./tin.spec
    18847 ./doc/ABOUT-NLS
-    2491 ./doc/CHANGES
+    2982 ./doc/CHANGES
   289012 ./doc/CHANGES.old
     5041 ./doc/CREDITS
     1305 ./doc/DEBUG_REFS
    31011 ./doc/INSTALL
-   44515 ./doc/TODO
-     259 ./doc/WHATSNEW
+   44538 ./doc/TODO
+     260 ./doc/WHATSNEW
     2618 ./doc/art_handling.txt
     1701 ./doc/article.txt
     4373 ./doc/auth.txt
@@ -45,8 +45,8 @@ MANIFEST for tin-2.3.0 (Fri Oct  3 16:54:09 CEST 2014)
     4947 ./doc/umlaute.txt
     4246 ./doc/umlauts.txt
     6957 ./doc/url_handler.1
-  135961 ./doc/tin.1
-   80669 ./doc/tin.5
+  136057 ./doc/tin.1
+   80671 ./doc/tin.5
     5065 ./doc/tin.defaults
    15629 ./doc/tinews.1
     2418 ./doc/tools.txt
@@ -70,7 +70,7 @@ MANIFEST for tin-2.3.0 (Fri Oct  3 16:54:09 CEST 2014)
     8428 ./include/nntplib.h
      664 ./include/plp_snprintf.h
    15507 ./include/policy.h
-   32954 ./include/proto.h
+   33106 ./include/proto.h
     5416 ./include/rfc2046.h
     3377 ./include/stpwatch.h
     5898 ./include/tcurses.h
@@ -78,7 +78,7 @@ MANIFEST for tin-2.3.0 (Fri Oct  3 16:54:09 CEST 2014)
    17000 ./include/tinrc.h
     4346 ./include/tnntp.h
     2264 ./include/trace.h
-    2352 ./include/version.h
+    2350 ./include/version.h
    35233 ./src/active.c
    75128 ./src/art.c
    76746 ./src/attrib.c
@@ -91,7 +91,7 @@ MANIFEST for tin-2.3.0 (Fri Oct  3 16:54:09 CEST 2014)
    10854 ./src/debug.c
     3408 ./src/envarg.c
    30376 ./src/feed.c
-   56928 ./src/filter.c
+   57003 ./src/filter.c
    18148 ./src/getline.c
     9070 ./src/global.c
    44970 ./src/group.c
@@ -112,7 +112,7 @@ MANIFEST for tin-2.3.0 (Fri Oct  3 16:54:09 CEST 2014)
    10715 ./src/makecfg.c
    13601 ./src/memory.c
     5283 ./src/mimetypes.c
-   94684 ./src/misc.c
+   94725 ./src/misc.c
    39445 ./src/newsrc.c
    53544 ./src/nntplib.c
     7502 ./src/nrctbl.c
@@ -121,7 +121,7 @@ MANIFEST for tin-2.3.0 (Fri Oct  3 16:54:09 CEST 2014)
    24137 ./src/parsdate.y
    17057 ./src/plp_snprintf.c
    13212 ./src/pgp.c
-  151664 ./src/post.c
+  151739 ./src/post.c
    18904 ./src/prompt.c
    10400 ./src/read.c
    27386 ./src/refs.c
@@ -130,7 +130,7 @@ MANIFEST for tin-2.3.0 (Fri Oct  3 16:54:09 CEST 2014)
    15069 ./src/rfc2045.c
    32307 ./src/rfc2046.c
    36645 ./src/rfc2047.c
-   57027 ./src/save.c
+   57076 ./src/save.c
    12530 ./src/screen.c
    18246 ./src/search.c
    33716 ./src/select.c
@@ -268,10 +268,10 @@ MANIFEST for tin-2.3.0 (Fri Oct  3 16:54:09 CEST 2014)
     5068 ./po/Makefile.inn
      847 ./po/POTFILES.in
   143655 ./po/tin.pot
-  103073 ./po/da.gmo
-  187985 ./po/da.po
-  192385 ./po/de.gmo
-  233447 ./po/de.po
+  106888 ./po/da.gmo
+  189802 ./po/da.po
+  192381 ./po/de.gmo
+  233440 ./po/de.po
     8368 ./po/en_GB.gmo
   147210 ./po/en_GB.po
   186548 ./po/et.gmo
@@ -286,12 +286,12 @@ MANIFEST for tin-2.3.0 (Fri Oct  3 16:54:09 CEST 2014)
   217686 ./po/tr.po
   220579 ./po/zh_TW.po
   179592 ./po/zh_TW.gmo
-  142776 ./doc/l10n/de/tin.1
-   84192 ./doc/l10n/de/tin.5
+  142872 ./doc/l10n/de/tin.1
+   84194 ./doc/l10n/de/tin.5
      130 ./doc/l10n/de.add
-  355574 ./doc/l10n/de.po
-  139382 ./doc/l10n/en_GB/tin.1
-   83208 ./doc/l10n/en_GB/tin.5
-  479277 ./doc/l10n/en_GB.po
-  300822 ./doc/l10n/tin-man.pot
-10929960 total
+  355670 ./doc/l10n/de.po
+  139493 ./doc/l10n/en_GB/tin.1
+   83210 ./doc/l10n/en_GB/tin.5
+  479373 ./doc/l10n/en_GB.po
+  300919 ./doc/l10n/tin-man.pot
+10937172 total

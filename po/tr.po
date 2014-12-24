@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 1.7.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-03 16:08+0200\n"
+"POT-Creation-Date: 2014-12-24 09:41+0100\n"
 "PO-Revision-Date: 2005-03-06 09:25+0200\n"
 "Last-Translator: Þebnem Korkmaz <sebnem_k@hotmail.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -8868,7 +8868,7 @@ msgid ""
 "encoding is not set to %s\n"
 msgstr ""
 
-#: src/post.c:2304
+#: src/post.c:2306
 #, fuzzy, c-format
 msgid "Posting: %.*s ..."
 msgstr "Gönderiliyor: %.*s ..."

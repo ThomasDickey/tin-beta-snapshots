@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin 2.3.0\n"
+"Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-03 16:08+0200\n"
-"PO-Revision-Date: 2014-01-10 11:38+0100\n"
+"POT-Creation-Date: 2014-12-24 09:41+0100\n"
+"PO-Revision-Date: 2014-12-24 09:37+0100\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -2049,8 +2049,7 @@ msgstr "hebt die Markierung der markierten Anhänge auf"
 
 #: src/lang.c:383
 msgid "toggle info message in last line (name/description of attachment)"
-msgstr ""
-"Informationen in der der letzten Zeine ein/ausblenden (Name des Anhangs)"
+msgstr "Informationen in der letzten Zeile ein/ausblenden (Name des Anhangs)"
 
 #: src/lang.c:384
 msgid "choose first attribute in list"
@@ -8353,7 +8352,7 @@ msgstr ""
 "Zeile %d ist länger als 998 Oktetts und sollte gefaltet werden,\n"
 "aber die Kodierung ist nicht auf %s gesetzt\n"
 
-#: src/post.c:2304
+#: src/post.c:2306
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Poste: %.*s ..."

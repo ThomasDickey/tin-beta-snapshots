@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2014-02-17
+ *  Updated   : 2014-11-30
  *  Notes     :
  *
- * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -2384,7 +2384,7 @@ buffer_to_local(
 #	endif /* HAVE_ICONV_OPEN_TRANSLIT */
 
 			/* iconv() might crash on broken multibyte sequences so check them */
-			if (!strcasecmp(cnetwork_charset, "UTF-8"))
+			if (!strcasecmp(cnetwork_charset, "UTF-8") || !strcasecmp(cnetwork_charset, "utf8"))
 				(void) utf8_valid(*line);
 
 			/*
