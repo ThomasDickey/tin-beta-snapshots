@@ -635,7 +635,7 @@ fi
 
 
 PACKAGE=tin
-VERSION=2.3.0
+VERSION=2.3.1
 cat >> confdefs.h <<EOF
 #define PACKAGE "$PACKAGE"
 EOF

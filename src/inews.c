@@ -6,7 +6,7 @@
  *  Updated   : 2013-11-27
  *  Notes     : NNTP built in version of inews
  *
- * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

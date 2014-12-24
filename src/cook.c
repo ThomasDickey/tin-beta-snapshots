@@ -6,7 +6,7 @@
  *  Updated   : 2014-02-17
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2014 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2015 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

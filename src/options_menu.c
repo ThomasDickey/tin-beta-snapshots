@@ -6,7 +6,7 @@
  *  Updated   : 2013-10-01
  *  Notes     : Split from config.c
  *
- * Copyright (c) 2004-2014 Michael Bienia <michael@vorlon.ping.de>
+ * Copyright (c) 2004-2015 Michael Bienia <michael@vorlon.ping.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

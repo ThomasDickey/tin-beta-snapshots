@@ -1,3 +1,20 @@
+-- 2.3.1 release 20141224 "Tallant" --
+
+U007) Dennis Preiser <dennis@d--p.de>
+      ADD. also validate "utf8" input
+      FIX. misc.c
+
+U006) Joe Hansen <joedalton2@yahoo.dk>
+      ADD. updated danish translation
+      FIX. da.po
+
+U005) Urs Janssen <urs@tin.org>
+      ADD. fix hypothetic null pointer dereference
+      ADD. config.guess, config.sub update
+      ADD. updated german translation
+      FIX. proto.h, filter.c, post.c, save.c, tin.1, config.guess, config.sub,
+           de.po
+
 -- 2.3.0 release 20141003 "Glenfoyle" --
 
 U004) Joe Hansen <joedalton2@yahoo.dk>

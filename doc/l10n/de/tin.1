@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2014-07-27
+.\" Updated   : 2014-12-24
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "3. Oktober 2014" 2.3.0 "Usenet Newsreader"
+.TH tin 1 "24. Dezember 2014" 2.3.1 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -1404,13 +1404,15 @@ Mini\-Hilfe am unterem Bildschirmrand ein\-/ausschalten.
 .\"
 .SS "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
 .\" FIXME - add missing descriptions
+.\"       - \fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fR is used 
+.\"         in the !TIN_DEFAULTS_DIR config case
 At startup, \fBtin\fP reads in the configuration files (see also \fB\%tin\fP(5)).
 They contain a list of variables that can be used to configure the way
-\fBtin\fP works. If it exists, the global configuration file,
-\fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fP is read. After that, the user's own
-configuration file is read from \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP. The
-global file is useful for distributing system\-wide defaults to new users who
-have no private tinrc yet.
+\fBtin\fP works.  If it exists, the global configuration file,
+\fI/etc/tin/tinrc\fP is read.  After that, the user's own configuration file is
+read from \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP.  The global file is useful
+for distributing system\-wide defaults to new users who have no private tinrc
+yet.
 .PP
 The variables are user configurable by editing
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP directly. Most of them can also be set

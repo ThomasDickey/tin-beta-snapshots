@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2014-05-28
+ *  Updated   : 2014-10-25
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -954,6 +954,7 @@ print_filter_menu(
 }
 
 
+#if defined(SIGWINCH) || defined(SIGTSTP)
 void
 refresh_filter_menu(
 	void)
@@ -971,6 +972,7 @@ refresh_filter_menu(
 	 *    string input)
 	 */
 }
+#endif /* SIGWINCH || SIGTSTP */
 
 
 /*

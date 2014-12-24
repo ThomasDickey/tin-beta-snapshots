@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-03 16:08+0200\n"
+"POT-Creation-Date: 2014-12-24 09:41+0100\n"
 "PO-Revision-Date: 2013-12-24 01:00+0000\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: \n"
@@ -7362,7 +7362,7 @@ msgid ""
 "encoding is not set to %s\n"
 msgstr ""
 
-#: src/post.c:2304
+#: src/post.c:2306
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr ""

@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2013-11-17
+ *  Updated   : 2014-10-25
  *  Notes     :
  *
- * Copyright (c) 1997-2014 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2015 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -194,7 +194,9 @@ extern t_bool quick_filter(t_function type, struct t_group *group, struct t_arti
 extern t_bool quick_filter_select_posted_art(struct t_group *group, const char *subj, const char *a_message_id);
 extern t_bool read_filter_file(const char *file);
 extern void free_filter_array(struct t_filters *ptr);
-extern void refresh_filter_menu(void);
+#if defined(SIGWINCH) || defined(SIGTSTP)
+	extern void refresh_filter_menu(void);
+#endif /* SIGWINCH || SIGTSTP */
 extern void unfilter_articles(struct t_group *group);
 extern void write_filter_file(const char *filename);
 
@@ -500,7 +502,9 @@ extern t_bool reread_active_after_posting(void);
 extern t_bool user_posted_messages(void);
 extern void init_postinfo(void);
 extern void quick_post_article(t_bool postponed_only);
-extern void refresh_post_screen(int context);
+#if defined(SIGWINCH) || defined(SIGTSTP)
+	extern void refresh_post_screen(int context);
+#endif /* SIGWINCH || SIGTSTP */
 #ifdef USE_CANLOCK
 	extern char *build_canlock(const char *messageid, const char *secret);
 	extern char *get_secret(void);

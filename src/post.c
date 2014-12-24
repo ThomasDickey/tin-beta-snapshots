@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2014-04-24
+ *  Updated   : 2014-10-25
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1675,6 +1675,7 @@ setup_check_article_screen(
 }
 
 
+#if defined(SIGWINCH) || defined(SIGTSTP)
 void
 refresh_post_screen(
 	int context)
@@ -1712,6 +1713,7 @@ refresh_post_screen(
 			break;
 	}
 }
+#endif /* SIGWINCH || SIGTSTP */
 
 
 /*

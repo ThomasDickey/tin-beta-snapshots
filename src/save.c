@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-12-07
+ *  Updated   : 2014-10-04
  *  Notes     :
  *
- * Copyright (c) 1991-2014 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1441,7 +1441,11 @@ check_save_mime_type(
 
 	ptr = my_strdup(mime_types);
 
-	pair = strtok(ptr, ",");
+	if ((pair = strtok(ptr, ",")) == NULL) {
+		free(ptr);
+		return FALSE;
+	}
+
 	retcode = match_content_type(part, pair);
 
 	while ((pair = strtok(NULL, ",")) != NULL) {

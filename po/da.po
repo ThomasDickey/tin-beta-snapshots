@@ -26,11 +26,13 @@
 # signatur -> underskrift
 # subject -> emne
 # supersed -> fortræng (andre forslag?)
+# thread -> tråd
 # trim -> beskær
 # URL -> URL (måske bedre med adresse, men nogle strenge ser ud til at skulle være korte!).
 # yank -> ryk
 # whitespace -> mellemrum (egentlig 'blanke tegn' (mellemrum, 
 #                         (linjeskift, sideskift, tabulatortegn osv.))
+# wrap around -> omhandler, omfavner, ombrydning, omfang ???
 #
 # bemærk at den her slags strenge ikke skal oversættes
 # add_posted_to_filter=ON/OFF. Kun hvis der er mellemrum til højre for 
@@ -43,7 +45,7 @@
 # Thanks for updating the danish translation, one minor issue I noticed:
 # msgid "#  date_format=STRING (eg. %%a, %%d %%b %%Y %%H:%%M:%%S)\n"
 # msgstr "#  dato_format=STRING (f.eks. %%a, %%d %%b %%Y %%H:%%M:%%S)\n"
-# date_format is teh name of a variable, its name must not be translated (the
+# date_format is the name of a variable, its name must not be translated (the
 # config file parser only undertands the untranslated name) - if a translated
 # name is used the parser ignores the setting.
 # I would also suggest not to translate the names of article headers
@@ -55,8 +57,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-03 16:08+0200\n"
-"PO-Revision-Date: 2014-08-30 09:14+0100\n"
+"POT-Creation-Date: 2014-12-24 09:41+0100\n"
+"PO-Revision-Date: 2014-11-09 09:14+0100\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -1393,7 +1395,7 @@ msgstr "Ugyldigt svar på kommanoden GROUP, %s"
 #: src/lang.c:243
 #, c-format
 msgid "MIME parse error: Unexpected end of %s/%s article"
-msgstr ""
+msgstr "MIME-fortolkningsfejl: Uventet afslutning på %s/%s artikel"
 
 #: src/lang.c:244
 msgid "MIME parse error: Start boundary whilst reading headers"
@@ -2218,19 +2220,19 @@ msgstr "0 - 9\t  vælg tråd efter nummer"
 
 #: src/lang.c:458
 msgid "toggle limit number of articles to get, and reload"
-msgstr ""
+msgstr "skift begræns antallet af artikler at hente, og genindlæs"
 
 #: src/lang.c:459
 msgid "toggle display of all/unread articles"
-msgstr ""
+msgstr "skift vis alle/ulæste artikler"
 
 #: src/lang.c:460
 msgid "toggle selection of thread"
-msgstr ""
+msgstr "skift valg af tråd"
 
 #: src/lang.c:461
 msgid "cycle through threading options available"
-msgstr ""
+msgstr "løb igennem de tilgængelige trådningstilvalg"
 
 #: src/lang.c:462
 msgid "undo all selections (all articles)"
@@ -2298,7 +2300,7 @@ msgstr "0 - 9\t  vælg gruppe efter nummer"
 
 #: src/lang.c:478
 msgid "choose range of groups to be affected by next command"
-msgstr ""
+msgstr "vælg rækkevidden af grupper der påvirkes af næste kommando"
 
 #: src/lang.c:479
 msgid "choose last group in list"
@@ -2339,6 +2341,7 @@ msgstr "søg baglæns efter et gruppenavn"
 #: src/lang.c:488
 msgid " \t  (all searches are case-insensitive and wrap around)"
 msgstr ""
+" \t  (alle søgninger tager ikke højde for små/store bogstaver og omfang)"
 
 #: src/lang.c:489
 msgid "search forwards for a group name"
@@ -5502,7 +5505,7 @@ msgstr ""
 msgid "Show all articles or only unread articles. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Vis alle artikler eller kun ulæste artikler. <MELLEMRUM> skifter og <CR> "
-"vælger."
+"angiver."
 
 #: src/lang.c:1718
 msgid "Show only unread articles"
@@ -5580,6 +5583,7 @@ msgstr ""
 #: src/lang.c:1774
 msgid "Enter character to indicate deleted articles. <CR> sets, <ESC> cancels."
 msgstr ""
+"Indtast tegn til at indikere slettede artikler. <CR> angiver, <ESC> afbryder."
 
 #: src/lang.c:1775
 msgid "Character to show deleted articles"
@@ -5613,6 +5617,8 @@ msgid ""
 "Enter character to indicate that article will return. <CR> sets, <ESC> "
 "cancels."
 msgstr ""
+"Indtast tegn til at indikere at artikel vil returnere. <CR> angiver, <ESC> "
+"afbryder."
 
 #: src/lang.c:1789
 msgid "Character to show returning arts"
@@ -5628,6 +5634,7 @@ msgstr ""
 msgid ""
 "Enter character to indicate selected articles. <CR> sets, <ESC> cancels."
 msgstr ""
+"Indtast tegn til at indikere valgte artikler. <CR> angiver, <ESC> afbryder."
 
 #: src/lang.c:1796
 msgid "Character to show selected articles"
@@ -5656,10 +5663,11 @@ msgstr ""
 #: src/lang.c:1809
 msgid "Enter character to indicate unread articles. <CR> sets, <ESC> cancels."
 msgstr ""
+"Indtast tegn til at indikere ulæste artikler. <CR> angiver, <ESC> afbryder."
 
 #: src/lang.c:1810
 msgid "Character to show unread articles"
-msgstr ""
+msgstr "Tegn til visning af ulæste artikler"
 
 #: src/lang.c:1811
 msgid ""
@@ -5670,6 +5678,7 @@ msgstr ""
 #: src/lang.c:1816
 msgid "Enter character to indicate read articles. <CR> sets, <ESC> cancels."
 msgstr ""
+"Indtast tegn til at indikere læste artikler. <CR> angiver, <ESC> afbryder."
 
 #: src/lang.c:1817
 msgid "Character to show read articles"
@@ -5793,10 +5802,11 @@ msgstr ""
 msgid ""
 "Decode German style TeX umlaut codes to ISO. <SPACE> toggles & <CR> sets."
 msgstr ""
+"Afkod i tysk stil TeX-umlautkoder til ISO. <SPACE> skifter og <CR> vælger."
 
 #: src/lang.c:1882
 msgid "Display \"a as Umlaut-a"
-msgstr ""
+msgstr "Vis \"a som umlaut-a"
 
 #: src/lang.c:1883
 msgid ""
@@ -5810,7 +5820,7 @@ msgstr ""
 
 #: src/lang.c:1889
 msgid "Display these header fields (or *)"
-msgstr ""
+msgstr "Vis disse teksthovedfelter (eller *)"
 
 #: src/lang.c:1890
 msgid ""
@@ -5824,7 +5834,7 @@ msgstr ""
 
 #: src/lang.c:1899
 msgid "Do not display these header fields"
-msgstr ""
+msgstr "Vis ikke disse teksthovedfelter"
 
 #: src/lang.c:1900
 msgid ""
@@ -5885,6 +5895,8 @@ msgstr ""
 #: src/lang.c:1931
 msgid "A regex used to decide which lines to show in col_quote2."
 msgstr ""
+"Et regulært udtryk brugt til at bestemme hvilke linjer der vises i "
+"col_quote2."
 
 #: src/lang.c:1932
 msgid "Regex used to show twice quoted l."
@@ -5903,7 +5915,7 @@ msgstr ""
 
 #: src/lang.c:1940
 msgid "Regex used to show >= 3 times q.l."
-msgstr ""
+msgstr "Regulært udtryk brugt til at vise >= 3 gange q.l."
 
 #: src/lang.c:1941
 msgid ""
@@ -5911,10 +5923,15 @@ msgid ""
 "# quoted >=3 times. >=3 times quoted lines are shown in col_quote3.\n"
 "# If you leave this blank, tin will use a built in default.\n"
 msgstr ""
+"# Et regulært udtryk som tin vil bruge til at bestemme hvilke linjer\n"
+"# der er citerede >=3 gange. >=3 gange citerede linjer vises i col_quote3.\n"
+"# Hvis efterladt blank bruger tin en indbygget standard.\n"
 
 #: src/lang.c:1948
 msgid "A regex used to decide which words to show in col_markslashes."
 msgstr ""
+"Et regulært udtryk brugt til at bestemme hvilke ord der skal vises i "
+"col_markslashes."
 
 #: src/lang.c:1949
 msgid "Regex used to highlight /slashes/"
@@ -5930,10 +5947,12 @@ msgstr ""
 #: src/lang.c:1956
 msgid "A regex used to decide which words to show in col_markstars."
 msgstr ""
+"Et regulært udtryk brugt til at bestemme hvilke ord der skal vises i "
+"col_markstars."
 
 #: src/lang.c:1957
 msgid "Regex used to highlight *stars*"
-msgstr ""
+msgstr "Regulært udtryk brugt til at fremhæve *stjerner*"
 
 #: src/lang.c:1958
 msgid ""
@@ -6637,15 +6656,15 @@ msgstr ""
 
 #: src/lang.c:2367
 msgid "# Wrap article lines at column\n"
-msgstr ""
+msgstr "# Ombryd artikellinjer ved kolonne\n"
 
 #: src/lang.c:2372
 msgid "Wrap around threads on next unread"
-msgstr ""
+msgstr "Tråde omhandlet ved næste ulæst"
 
 #: src/lang.c:2373
 msgid "# If ON wrap around threads on searching next unread article\n"
-msgstr ""
+msgstr "# Hvis ON omhandlet tråde ved søgning efter næste ulæst artikel\n"
 
 #: src/lang.c:2377
 msgid "Enter default mail address (and fullname). <CR> sets."
@@ -7496,7 +7515,7 @@ msgstr ""
 
 #: src/lang.c:2925 src/lang.c:2949
 msgid "Header for filter rule. <CR> sets, <ESC> cancels."
-msgstr ""
+msgstr "Teksthoved for filterregel. <CR> angiver, <ESC> afbryder."
 
 #: src/lang.c:2926
 msgid "Quick (1 key) select filter header"
@@ -7648,7 +7667,7 @@ msgstr ""
 "Linje %d er længere end 998 oktetter og bør foldes sammen, men\n"
 "kodningen er ikke sat til %s\n"
 
-#: src/post.c:2304
+#: src/post.c:2306
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Indsender: %.*s ..."
