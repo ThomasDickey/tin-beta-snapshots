@@ -3,7 +3,7 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2013-11-19
+ *  Updated   : 2015-09-14
  *  Notes     : #defines and static data for policy configuration
  *
  * Copyright (c) 1999-2015 Ralf Doeblitz <doeblitz@gmx.de>
@@ -327,11 +327,12 @@ static const char *gnksa_domain_list[] = {
 	"csnet",
 	"bitnet",
 #	endif /* 0 */
-	/* the next four are defined in RFC 2606, RFC 6761 */
+	/* the next five are defined in RFC 2606, RFC 6761 */
 	"invalid",
 #	if 0
-	/* but three of them shoudn't be used on usenet */
+	/* but four of them shoudn't be used on usenet */
 	"test",
+	"onion",
 	"example",
 	"localhost",
 #	endif /* 0 */

@@ -562,7 +562,7 @@ Activated by tin -Dn where n is 1 = NNTP-dialog, 2 = filter-file,
 32 = misc (-D 63 = debug all). Debug files written to $TMPDIR are ARTS,
 ACTIVE, BASE, NNTP, SAVE_COMP, BITMAP, MALLOC and FILTER. Depending on
 the debuglevel some files may not be generated. As the files written in
-$TMPDIR are world readable and may contian uncryted password information
+$TMPDIR are world readable and may contain uncryted password information
 (e.g. when using -D 1) don't run "-D n" on multiuser systems without setting
 $TMPDIR to a safe location, e.g. "TMPDIR=$HOME ./tin -D 1".
 

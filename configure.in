@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2013-12-06
+dnl Updated   : 2015-06-16
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2015 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.3.1
+VERSION=2.3.2
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -81,7 +81,7 @@ case "$host_os" in
 esac
 
 ### Native Language Support
-ALL_LINGUAS="da de en_GB et fr ru sv tr zh_TW"
+ALL_LINGUAS="da de en_GB et fr ru sv tr zh_CN zh_TW"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"
@@ -913,6 +913,9 @@ AC_CHECK_LIB(uu, UUInitialize,
 #  - unorm_normalize()
 #  - uidna_IDNToUnicode()
 #  - ubidi_open()
+# and for IDNA2008
+#  - uidna_openUTS46()
+#  - uidna_nameToUnicode()
 cf_try_icuuc="no"
 AC_CHECK_HEADER(unicode/unorm.h,[
 	AC_CHECK_HEADER(unicode/ustring.h, [
@@ -964,6 +967,7 @@ if test $cf_try_icuuc = no ; then
 fi
 
 # without icuuc try libidn for Internationalized Domain Names / IDN 2003
+# TODO: check for libidn2
 if test $cf_try_icuuc = no ; then
 	AC_CHECK_LIB(idn, stringprep_check_version,
 		[AC_CHECK_HEADER(stringprep.h,[
@@ -1409,19 +1413,22 @@ int main() {
 # FIXME / TESTME
 # locale is broken on cygwin < 1.7.0
 # group/other bits don't work on cygwin < 1.7.0
-# locking doesn't work on cygwin
-# link(2) is detected but doesn't work on cygwin
+# locking doesn't work on cygwin < 2.0 as link(2) is detected but doesn't work
 case "$host_os" in
 	*cygwin*)
 		case `uname -r | sed 's,(.*,,'` in
-			1.7.*)
-				AC_DEFINE(NO_LOCKING)
-				;;
-			*)
-				# link does not work
+			B*|1.0-6].*)
+				# multiple defects
 				AC_DEFINE(NO_LOCALE)
 				AC_DEFINE(NO_LOCKING)
 				AC_DEFINE(FILE_MODE_BROKEN)
+				;;
+			1.7.*)
+				# link does not work
+				AC_DEFINE(NO_LOCKING)
+				;;
+			*)
+				AC_CHECK_FUNC(link, AC_DEFINE(HAVE_LINK))
 				;;
 			esac
 		;;

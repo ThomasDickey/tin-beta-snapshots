@@ -2,7 +2,7 @@
 # Configuration validation subroutine script.
 #   Copyright 1992-2015 Free Software Foundation, Inc.
 
-timestamp='2015-03-08'
+timestamp='2015-08-20'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -146,7 +146,7 @@ case $os in
 	-dec* | -mips* | -sequent* | -encore* | -pc532* | -sgi* | -sony* | \
 	-att* | -7300* | -3300* | -delta* | -motorola* | -sun[234]* | \
 	-unicom* | -ibm* | -next | -hp | -isi* | -apollo | -altos* | \
-	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | -hitachi* |\
+	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | -hitachi* | \
 	-c[123]* | -convex* | -sun | -crds | -omron* | -dg | -ultra | -tti* | \
 	-harris | -dolphin | -highlevel | -gould | -cbm | -ns | -masscomp | \
 	-apple | -axis | -knuth | -cray | -microblaze*)
@@ -255,6 +255,7 @@ case $basic_machine in
 	| arc | arceb \
 	| arm | arm[bl]e | arme[lb] | armv[2-8] | armv[3-8][lb] | armv7[arm] \
 	| avr | avr32 \
+	| ba \
 	| be32 | be64 \
 	| bfin \
 	| c4x | c8051 | clipper \
@@ -305,7 +306,7 @@ case $basic_machine in
 	| riscv32 | riscv64 \
 	| rl78 | rx \
 	| score \
-	| sh | sh[1234] | sh[24]a | sh[24]aeb | sh[23]e | sh[34]eb | sheb | shbe | shle | sh[1234]le | sh3ele \
+	| sh | sh[1234] | sh[24]a | sh[24]aeb | sh[23]e | sh[234]eb | sheb | shbe | shle | sh[1234]le | sh3ele \
 	| sh64 | sh64le \
 	| sparc | sparc64 | sparc64b | sparc64v | sparc86x | sparclet | sparclite \
 	| sparcv8 | sparcv9 | sparcv9b | sparcv9v \
@@ -340,7 +341,6 @@ case $basic_machine in
 	ms1)
 		basic_machine=mt-unknown
 		;;
-
 	strongarm | thumb | xscale)
 		basic_machine=arm-unknown
 		;;
@@ -351,17 +351,15 @@ case $basic_machine in
 	xscaleeb)
 		basic_machine=armeb-unknown
 		;;
-
 	xscaleel)
 		basic_machine=armel-unknown
 		;;
-
 	# We use `pc' rather than `unknown'
 	# because (1) that's what they normally are, and
 	# (2) the word "unknown" tends to confuse beginning users.
 	i*86 | x86_64)
-	  basic_machine=$basic_machine-pc
-	  ;;
+		basic_machine=$basic_machine-pc
+		;;
 	# Object if more than one company name word.
 	*-*-*)
 		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
@@ -376,6 +374,7 @@ case $basic_machine in
 	| alphapca5[67]-* | alpha64pca5[67]-* | arc-* | arceb-* \
 	| arm-*  | armbe-* | armle-* | armeb-* | armv*-* \
 	| avr-* | avr32-* \
+	| ba-* \
 	| be32-* | be64-* \
 	| bfin-* | bs2000-* \
 	| c[123]* | c30-* | [cjt]90-* | c4x-* \
@@ -428,12 +427,13 @@ case $basic_machine in
 	| pdp10-* | pdp11-* | pj-* | pjl-* | pn-* | power-* \
 	| powerpc-* | powerpc64-* | powerpc64le-* | powerpcle-* \
 	| pyramid-* \
+	| riscv32-* | riscv64-* \
 	| rl78-* | romp-* | rs6000-* | rx-* \
 	| sh-* | sh[1234]-* | sh[24]a-* | sh[24]aeb-* | sh[23]e-* | sh[34]eb-* | sheb-* | shbe-* \
 	| shle-* | sh[1234]le-* | sh3ele-* | sh64-* | sh64le-* \
 	| sparc-* | sparc64-* | sparc64b-* | sparc64v-* | sparc86x-* | sparclet-* \
 	| sparclite-* \
-	| sparcv8-* | sparcv9-* | sparcv9b-* | sparcv9v-* | sv1-* | sx?-* \
+	| sparcv8-* | sparcv9-* | sparcv9b-* | sparcv9v-* | sv1-* | sx*-* \
 	| tahoe-* \
 	| tic30-* | tic4x-* | tic54x-* | tic55x-* | tic6x-* | tic80-* \
 	| tile*-* \
@@ -518,7 +518,7 @@ case $basic_machine in
 		basic_machine=i386-pc
 		os=-aros
 		;;
-        asmjs)
+	asmjs)
 		basic_machine=asmjs-unknown
 		;;
 	aux)
@@ -891,10 +891,10 @@ case $basic_machine in
 		basic_machine=v70-nec
 		os=-sysv
 		;;
-	next | m*-next )
+	next | m*-next)
 		basic_machine=m68k-next
 		case $os in
-		    -nextstep* )
+		    -nextstep*)
 			;;
 		    -ns2*)
 		      os=-nextstep2
@@ -1013,9 +1013,11 @@ case $basic_machine in
 	pn)
 		basic_machine=pn-gould
 		;;
-	power)	basic_machine=power-ibm
+	power)
+		basic_machine=power-ibm
 		;;
-	ppc | ppcbe)	basic_machine=powerpc-unknown
+	ppc | ppcbe)
+		basic_machine=powerpc-unknown
 		;;
 	ppc-* | ppcbe-*)
 		basic_machine=powerpc-`echo $basic_machine | sed 's/^[^-]*-//'`
@@ -1026,9 +1028,11 @@ case $basic_machine in
 	ppcle-* | powerpclittle-*)
 		basic_machine=powerpcle-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
-	ppc64)	basic_machine=powerpc64-unknown
+	ppc64)
+		basic_machine=powerpc64-unknown
 		;;
-	ppc64-*) basic_machine=powerpc64-`echo $basic_machine | sed 's/^[^-]*-//'`
+	ppc64-*)
+		basic_machine=powerpc64-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
 	ppc64le | powerpc64little | ppc64-le | powerpc64-little)
 		basic_machine=powerpc64le-unknown
@@ -1372,11 +1376,11 @@ case $os in
 	# Each alternative MUST END IN A *, to match a version number.
 	# -sysv* is not here because it comes later, after sysvr4.
 	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
-	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
+	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]* \
 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -auroraux* | -solaris* \
 	      | -sym* | -kopensolaris* | -plan9* \
 	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
-	      | -aos* | -aros* | -cloudabi* \
+	      | -aos* | -aros* | -cloudabi* | -sortix* \
 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
 	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* \
@@ -1471,7 +1475,7 @@ case $os in
 	-nova*)
 		os=-rtmk-nova
 		;;
-	-ns2 )
+	-ns2)
 		os=-nextstep2
 		;;
 	-nsk*)
@@ -1668,7 +1672,7 @@ case $basic_machine in
 	m88k-omron*)
 		os=-luna
 		;;
-	*-next )
+	*-next)
 		os=-nextstep
 		;;
 	*-sequent)

@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2014-01-10
+ *  Updated   : 2015-10-09
  *  Notes     :
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
@@ -143,6 +143,7 @@ constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=sha
 	constext txt_color_on[] = N_("ANSI color enabled");
 #endif /* HAVE_COLOR */
 constext txt_command_failed[] = N_("Command failed: %s");
+constext txt_cook_article_failed_exiting[] = N_("Cook article failed, %s is exiting");
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 #ifdef NNTP_ABLE
 	constext txt_connecting[] = N_("Connecting to %s...");
@@ -784,7 +785,7 @@ constext txt_save_attachment[] = N_("Save '%s' (%s/%s)?");
 constext txt_save_config[] = N_("Save configuration before continuing?");
 constext txt_save_filename[] = N_("Save filename> ");
 constext txt_saved[] = N_("Saved");
-constext txt_saved_group[] = N_("%4d unread (%4d hot) %s in %s\n");
+constext txt_saved_group[] = N_("%5d unread (%4d hot) %s in %s\n");
 constext txt_saved_groupname[] = N_("Saved %s...\n");
 constext txt_saved_nothing[] = N_("Nothing was saved");
 constext txt_saved_summary[] = N_("\n%s %d %s from %d %s\n");
@@ -859,7 +860,7 @@ constext txt_thread_marked_as_selected[] = N_("Thread selected");
 	constext txt_thread_plural[] = N_("threads");
 #endif /* 0 */
 constext txt_thread_singular[] = N_("thread");
-constext txt_thread_x_of_n[] = N_("Thread %4s of %4s");
+constext txt_thread_x_of_n[] = N_("Thread  %4s of %4s");
 constext txt_threading_arts[] = N_("Threading articles...");
 constext txt_toggled_high[] = N_("Toggled word highlighting %s");
 constext txt_toggled_rot13[] = N_("Toggled rot13 encoding");
@@ -876,7 +877,7 @@ constext txt_unsubscribe_pattern[] = N_("Enter wildcard unsubscribe pattern> ");
 constext txt_uu_error_decode[] = N_("Error decoding %s : %s");
 constext txt_uu_error_no_end[] = N_("No end.");
 constext txt_uu_success[] = N_("%s successfully decoded.");
-constext txt_uue[] = N_("%*s[-- %s/%s, %suuencoded file, %d lines, name: %s --]\n\n");
+constext txt_uue[] = N_("%*s[-- %s/%s, %suuencoded file, %d lines, name: %s --]\n");
 constext txt_unread[] = N_("unread ");
 constext txt_unsubscribed_num_groups[] = N_("unsubscribed from %d groups");
 constext txt_unsubscribed_to[] = N_("Unsubscribed from %s");
@@ -1942,6 +1943,20 @@ struct opttxt txt_quote_regex3 = {
 # quoted >=3 times. >=3 times quoted lines are shown in col_quote3.\n\
 # If you leave this blank, tin will use a built in default.\n")
 };
+
+struct opttxt txt_extquote_handling = {
+	N_("Enable detection of external quotes? <SPACE> toggles & <CR> sets."),
+	N_("Detection of external quotes"),
+	N_("# If ON detect quoted text from external sources in articles\n")
+};
+
+struct opttxt txt_extquote_regex = {
+	N_("A regex used to decide which lines to show in col_extquote."),
+	N_("Regex used to show quotes from external sources"),
+	N_("# A regular expression that tin will use to decide which lines are\n\
+# external quotes. Text from external quotes is shown in col_extquote.\n\
+# If you leave this blank, tin will use a built in default.\n")
+};
 #endif /* HAVE_COLOR */
 
 struct opttxt txt_slashes_regex = {
@@ -2228,6 +2243,13 @@ struct opttxt txt_col_subject = {
 	N_("Color of article subject lines"),
 	N_("# Color of article subject\n\
 # Default: 6 (cyan)\n")
+};
+
+struct opttxt txt_col_extquote = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Color of external quotes"),
+	N_("# Color of quoted text from external sources\n\
+# Default: 5 (pink)\n")
 };
 
 struct opttxt txt_col_response = {

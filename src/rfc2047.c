@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2014-05-09
+ *  Updated   : 2015-05-20
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2015 Chris Blum <chris@resolution.de>
@@ -200,7 +200,7 @@ mmdecode(
 		build_base64_rank_table();
 
 		while (*what != delimiter) {
-			x = base64_rank[(int) (*what++)];
+			x = base64_rank[(unsigned char) (*what++)];
 			/* ignore everything not in the alphabet, including '=' */
 			if (x == NOT_RANKED)
 				continue;
@@ -1290,7 +1290,10 @@ compose_multipart_mixed(
 
 	requires_8bit = (requires_8bit || contains_8bit_characters(textfp));
 
-	/* Header: CT with multipart boundary, CTE */
+	/*
+	 * Header: CT with multipart boundary, CTE
+	 * TODO: -> lang.c
+	 */
 	generate_mime_boundary(boundary, textfp, articlefp);
 	fprintf(fp, "Content-Type: multipart/mixed; boundary=\"%s\"\n", boundary);
 	fprintf(fp, "Content-Transfer-Encoding: %s\n\n", requires_8bit ? txt_8bit : txt_7bit);

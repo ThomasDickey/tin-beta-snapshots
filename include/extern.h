@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-20
+ *  Updated   : 2015-10-09
  *  Notes     :
  *
  * Copyright (c) 1997-2015 Iain Lea <iain@bricbrac.de>
@@ -562,6 +562,7 @@ extern constext txt_choose_post_process_type[];
 	extern constext txt_color_on[];
 #endif /* HAVE_COLOR */
 extern constext txt_command_failed[];
+extern constext txt_cook_article_failed_exiting[];
 extern constext txt_confirm_select_on_exit[];
 #ifdef NNTP_ABLE
 	extern constext txt_connecting[];
@@ -1450,6 +1451,7 @@ extern struct regex_cache stars_regex;
 extern struct regex_cache underscores_regex;
 extern struct regex_cache strokes_regex;
 #ifdef HAVE_COLOR
+	extern struct regex_cache extquote_regex;
 	extern struct regex_cache quote_regex;
 	extern struct regex_cache quote_regex2;
 	extern struct regex_cache quote_regex3;
@@ -1838,6 +1840,8 @@ extern struct opttxt txt_xpost_quote_format;
 	extern struct opttxt txt_quote_regex;
 	extern struct opttxt txt_quote_regex2;
 	extern struct opttxt txt_quote_regex3;
+	extern struct opttxt txt_extquote_handling;
+	extern struct opttxt txt_extquote_regex;
 	extern struct opttxt txt_use_color;
 	extern struct opttxt txt_col_normal;
 	extern struct opttxt txt_col_back;
@@ -1850,6 +1854,7 @@ extern struct opttxt txt_xpost_quote_format;
 	extern struct opttxt txt_col_quote;
 	extern struct opttxt txt_col_quote2;
 	extern struct opttxt txt_col_quote3;
+	extern struct opttxt txt_col_extquote;
 	extern struct opttxt txt_col_head;
 	extern struct opttxt txt_col_newsheaders;
 	extern struct opttxt txt_col_subject;

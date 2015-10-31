@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-15
+ *  Updated   : 2015-10-09
  *  Notes     :
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -251,6 +251,8 @@ free_all_arrays(
 	FreeIfNeeded(quote_regex2.extra);
 	FreeIfNeeded(quote_regex3.re);
 	FreeIfNeeded(quote_regex3.extra);
+	FreeIfNeeded(extquote_regex.re);
+	FreeIfNeeded(extquote_regex.extra);
 #endif /* HAVE_COLOR */
 	FreeIfNeeded(slashes_regex.re);
 	FreeIfNeeded(slashes_regex.extra);

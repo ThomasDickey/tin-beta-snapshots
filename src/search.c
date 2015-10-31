@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-12
+ *  Updated   : 2015-05-20
  *  Notes     :
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -620,10 +620,11 @@ search_article(
 			return -1;
 
 		/* Don't search beyond ^L if hiding is enabled */
-		if ((line[i].flags&C_CTRLL) && i > reveal_ctrl_l_lines)
+		if ((line[i].flags & C_CTRLL) && i > reveal_ctrl_l_lines)
 			break;
 
-		tmp = tin_fgets(fp, FALSE);
+		if ((tmp = tin_fgets(fp, FALSE)) == NULL)
+			return -1;
 		if (!forward && srch_offsets[0] >= 0) {
 			tmp[srch_offsets[0]] = '\0';	/* ignore anything on this line after the last match */
 			srch_offsets[1] = 0;	/* start backwards search at the beginning of the line */

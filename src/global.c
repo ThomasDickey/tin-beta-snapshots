@@ -416,6 +416,9 @@ handle_keypad(
 			func = key_to_func(ch, keys);
 			break;
 	}
+#if 0
+	usleep((unsigned long) (SECOND_CHARACTER_DELAY * 3));
+#endif /* 0 */
 	return func;
 }
 

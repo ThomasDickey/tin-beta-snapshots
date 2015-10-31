@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2014-11-30
+ *  Updated   : 2015-06-17
  *  Notes     :
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -2303,7 +2303,7 @@ quote_wild(
 			    || *str == '#'
 			    || *str == ' ' || *str == '\t') {
 				*target++ = '\\';
-				*target++ = ((*str == ' ' || *str == '\t')? 's' : *str);
+				*target++ = ((*str == ' ' || *str == '\t') ? 's' : *str);
 			} else
 				*target++ = *str;
 		} else {	/* wildmat */
@@ -2367,12 +2367,9 @@ buffer_to_local(
 	const char *network_charset,
 	const char *local_charset)
 {
-	char *cnetwork_charset;
-
 	/* FIXME: this should default in RFC2046.c to US-ASCII */
 	if ((network_charset && *network_charset)) {	/* Content-Type: had a charset parameter */
-		cnetwork_charset = my_strdup(network_charset);
-		if (strcasecmp(cnetwork_charset, local_charset)) { /* different charsets */
+		if (strcasecmp(network_charset, local_charset)) { /* different charsets */
 			char *clocal_charset;
 			iconv_t cd0, cd1, cd2;
 
@@ -2384,7 +2381,7 @@ buffer_to_local(
 #	endif /* HAVE_ICONV_OPEN_TRANSLIT */
 
 			/* iconv() might crash on broken multibyte sequences so check them */
-			if (!strcasecmp(cnetwork_charset, "UTF-8") || !strcasecmp(cnetwork_charset, "utf8"))
+			if (!strcasecmp(network_charset, "UTF-8") || !strcasecmp(network_charset, "utf8"))
 				(void) utf8_valid(*line);
 
 			/*
@@ -2392,7 +2389,7 @@ buffer_to_local(
 			 *       instead of converting it?
 			 */
 			if ((cd0 = iconv_open("UCS-4", "US-ASCII")) != (iconv_t) (-1) &&
-				(cd1 = iconv_open("UCS-4", cnetwork_charset)) != (iconv_t) (-1) &&
+				(cd1 = iconv_open("UCS-4", network_charset)) != (iconv_t) (-1) &&
 				(cd2 = iconv_open(clocal_charset, "UCS-4")) != (iconv_t) (-1)) {
 				ICONV_CONST char *inbuf;
 				char unknown = '?';
@@ -2515,12 +2512,10 @@ buffer_to_local(
 				free(tbuf);
 			} else {
 				free(clocal_charset);
-				free(cnetwork_charset);
 				return FALSE;
 			}
 			free(clocal_charset);
 		}
-		free(cnetwork_charset);
 	}
 	return TRUE;
 }
@@ -2949,7 +2944,7 @@ gnksa_dequote_plainphrase(
 
 	/* decode realname */
 	while (*rpos) {
-		if (!gnksa_legal_realname_chars[(int) *rpos])
+		if (!gnksa_legal_realname_chars[(unsigned char) *rpos])
 			return GNKSA_INVALID_REALNAME;
 
 		switch (state) {
@@ -3294,7 +3289,7 @@ gnksa_check_domain(
 
 	/* check for illegal characters in FQDN */
 	for (aux = domain; *aux; aux++) {
-		if (!gnksa_legal_fqdn_chars[(int) *aux])
+		if (!gnksa_legal_fqdn_chars[(unsigned char) *aux])
 			return GNKSA_INVALID_FQDN_CHAR;
 	}
 
@@ -3326,7 +3321,7 @@ gnksa_check_localpart(
 
 	/* check for illegal characters in FQDN */
 	for (aux = localpart; *aux; aux++) {
-		if (!gnksa_legal_localpart_chars[(int) *aux])
+		if (!gnksa_legal_localpart_chars[(unsigned char) *aux])
 			return GNKSA_INVALID_LOCALPART;
 	}
 
@@ -3649,13 +3644,13 @@ utf8_valid(
 					/* out of range or sequences which would also fit into 2 bytes */
 					if (d < 0xe0 || d > 0xef || (d == 0xe0 && e < 0xa0))
 						illegal = TRUE;
-					/* U+D800 ... U+DFFF */
+					/* U+D800 ... U+DBFF, U+DC00 ... U+DFFF (high-surrogates, low-surrogates) */
 					if (d == 0xed && e > 0x9f)
 						illegal = TRUE;
 					/* U+FDD0 ... U+FDEF */
 					if (d == 0xef && e == 0xb7 && (f >= 0x90 && f <= 0xaf))
 						illegal = TRUE;
-					/* U+FFFE, U+FFFF */
+					/* U+FFFE, U+FFFF (noncharacters) */
 					if (d == 0xef && e == 0xbf && (f == 0xbe || f == 0xbf))
 						illegal = TRUE;
 					break;
@@ -3782,7 +3777,7 @@ idna_decode(
 		if (!(U_FAILURE(err))) {
 			char *t;
 
-			*s = '\0'; /* cut of domainpart */
+			*s = '\0'; /* cut off domainpart */
 			s = UChar2char(dest); /* convert domainpart */
 			t = my_malloc(strlen(out) + strlen(s) + 1);
 			sprintf(t, "%s%s", out, s);

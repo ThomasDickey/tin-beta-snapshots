@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2014-02-17
+ *  Updated   : 2015-10-09
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2015 Jason Faultless <jason@altarstone.com>
@@ -96,13 +96,13 @@ expand_ctrl_chars(
 	 * it should help us find problems with wide-char strings
 	 * in the development branch
 	 */
-	assert (wline != NULL);
+	assert(wline != NULL);
 	wlen = wcslen(wline);
 	ctrl_L = wexpand_ctrl_chars(&wline, &wlen, lcook_width);
 	free(*line);
 	*line = wchar_t2char(wline);
 	free(wline);
-	assert (line != NULL);
+	assert(line != NULL);
 	*length = strlen(*line);
 #else
 	int curr_len = LEN;
@@ -471,7 +471,7 @@ process_text_body_part(
 
 		/* convert network to local charset, tex2iso, iso2asc etc. */
 		ncharset = get_param(part->params, "charset");
-		process_charsets(&line, &max_line_len, ncharset ? ncharset : "US-ASCII" , tinrc.mm_local_charset, curr_group->attribute->tex2iso_conv && art->tex2iso);
+		process_charsets(&line, &max_line_len, ncharset ? ncharset : "US-ASCII", tinrc.mm_local_charset, curr_group->attribute->tex2iso_conv && art->tex2iso);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (IS_LOCAL_CHARSET("UTF-8"))
@@ -652,15 +652,20 @@ process_text_body_part(
 		}
 
 #ifdef HAVE_COLOR
+		/* keep order in sync with color.c:draw_pager_line() */
 		if (quote_regex3.re) {
 			if (MATCH_REGEX(quote_regex3, line, len))
 				flags |= C_QUOTE3;
 			else if (quote_regex2.re) {
 				if (MATCH_REGEX(quote_regex2, line, len))
 					flags |= C_QUOTE2;
-				else if (quote_regex.re) {
-					if (MATCH_REGEX(quote_regex, line, len))
-						flags |= C_QUOTE1;
+				else if (curr_group->attribute->extquote_handling && extquote_regex.re) {
+					if (MATCH_REGEX(extquote_regex, line, len))
+						flags |= C_EXTQUOTE;
+					else if (quote_regex.re) {
+						if (MATCH_REGEX(quote_regex, line, len))
+							flags |= C_QUOTE1;
+					}
 				}
 			}
 		}
@@ -668,10 +673,12 @@ process_text_body_part(
 
 		if (MATCH_REGEX(url_regex, line, len))
 			flags |= C_URL;
+#if 0
 		if (MATCH_REGEX(mail_regex, line, len))
 			flags |= C_MAIL;
 		if (MATCH_REGEX(news_regex, line, len))
 			flags |= C_NEWS;
+#endif /* 0 */
 
 		if (expand_ctrl_chars(&line, &max_line_len, tabwidth))
 			flags |= C_CTRLL;				/* Line contains form-feed */

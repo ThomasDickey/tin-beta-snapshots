@@ -902,7 +902,7 @@ thread_by_percentage(
 		if (!(slen = strlen(arts[base[root_num]].subject)))
 			slen++;
 		unmatched += abs(slen - strlen(arts[i].subject));
-		if ((unmatched * 100) / slen > percentage) {
+		if (unmatched * 100 / slen > percentage) {
 			/*
 			 * If there is less greater than percentage% different start a
 			 * new thread.

@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2014-08-31
+ *  Updated   : 2015-10-09
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
@@ -222,6 +222,11 @@ read_config_file(
 			if (match_color(buf, "col_quote3=", &tinrc.col_quote3, MAX_COLOR))
 				break;
 
+#ifdef HAVE_COLOR
+			if (match_color(buf, "col_extquote=", &tinrc.col_extquote, MAX_COLOR))
+				break;
+#endif /* HAVE_COLOR */
+
 			if (match_color(buf, "col_head=", &tinrc.col_head, MAX_COLOR))
 				break;
 
@@ -375,6 +380,14 @@ read_config_file(
 		case 'e':
 			if (match_string(buf, "editor_format=", tinrc.editor_format, sizeof(tinrc.editor_format)))
 				break;
+
+#ifdef HAVE_COLOR
+			if (match_boolean(buf, "extquote_handling=", &tinrc.extquote_handling))
+				break;
+
+			if (match_string(buf, "extquote_regex=", tinrc.extquote_regex, sizeof(tinrc.extquote_regex)))
+				break;
+#endif /* HAVE_COLOR */
 
 			break;
 
@@ -1099,6 +1112,11 @@ write_config_file(
 	fprintf(fp, "%s", _(txt_verbatim_end_regex.tinrc));
 	fprintf(fp, "verbatim_end_regex=%s\n\n", tinrc.verbatim_end_regex);
 
+#ifdef HAVE_COLOR
+	fprintf(fp, "%s", _(txt_extquote_regex.tinrc));
+	fprintf(fp, "extquote_regex=%s\n\n", tinrc.extquote_regex);
+#endif /* HAVE_COLOR */
+
 	fprintf(fp, "%s", _(txt_show_signatures.tinrc));
 	fprintf(fp, "show_signatures=%s\n\n", print_boolean(tinrc.show_signatures));
 
@@ -1247,6 +1265,11 @@ write_config_file(
 	fprintf(fp, "%s", _(txt_col_subject.tinrc));
 	fprintf(fp, "col_subject=%d\n\n", tinrc.col_subject);
 
+#ifdef HAVE_COLOR
+	fprintf(fp, "%s", _(txt_col_extquote.tinrc));
+	fprintf(fp, "col_extquote=%d\n\n", tinrc.col_extquote);
+#endif /* HAVE_COLOR */
+
 	fprintf(fp, "%s", _(txt_col_response.tinrc));
 	fprintf(fp, "col_response=%d\n\n", tinrc.col_response);
 
@@ -1352,6 +1375,11 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_verbatim_handling.tinrc));
 	fprintf(fp, "verbatim_handling=%s\n\n", print_boolean(tinrc.verbatim_handling));
+
+#ifdef HAVE_COLOR
+	fprintf(fp, "%s", _(txt_extquote_handling.tinrc));
+	fprintf(fp, "extquote_handling=%s\n\n", print_boolean(tinrc.extquote_handling));
+#endif /* HAVE_COLOR */
 
 	fprintf(fp, "%s", _(txt_strip_newsrc.tinrc));
 	fprintf(fp, "strip_newsrc=%s\n\n", print_boolean(tinrc.strip_newsrc));

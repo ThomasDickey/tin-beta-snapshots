@@ -1,6 +1,6 @@
 Name: tin
 Summary: easy-to-use USENET news reader
-Version: 2.3.1
+Version: 2.3.2
 Release: 1
 License: BSD
 Group: Applications/News
@@ -45,7 +45,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/locale/*/LC_MESSAGES/*.mo
 %doc %{_mandir}/man1/*
 %doc %{_mandir}/man5/*
-%doc doc/CHANGES doc/INSTALL doc/TODO doc/WHATSNEW
+%doc doc/CHANGES doc/CHANGES.old doc/INSTALL doc/TODO doc/WHATSNEW
 %doc doc/auth.txt doc/filtering doc/good-netkeeping-seal doc/iso2asc.txt
 %doc doc/keymap.sample doc/mailcap.sample doc/pgp.txt doc/reading-mail.txt
 %doc doc/tools.txt doc/umlaute.txt doc/umlauts.txt doc/wildmat.3

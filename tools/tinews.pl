@@ -35,16 +35,18 @@
 # TODO: - add debug mode which doesn't delete tmp-files and is verbose
 #       - add pid to pgptmpf to allow multiple simultaneous instances
 #       - check for /etc/nntpserver (and /etc/news/server)
+#       - add $NEWSHOST fallback for $NNTPSERVER (like in Net::NNTP)?
 #       - add $PGPOPTS, $PGPPATH and $GNUPGHOME support
 #       - cleanup and remove duplicated code
 #       - option to convert CRLF to LF in input
+#       - use STARTTLS (if Net::NNTP is recent enought and server supports it)
 #
 
 use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.39";
+my $version = "1.1.40";
 
 my %config;
 
@@ -139,6 +141,7 @@ GetOptions('A|V|W|O|no-organization|h|headers' => [], # do nothing
 	'no-control|R'	=> \$config{'no_control'},
 	'no-signature|S'	=> \$config{'no_signature'},
 	'no-canlock|L'	=> \$config{'no_canlock'},
+	'no-injection-date|I'	=> \$config{'no-injection-date'},
 	'force-auth|Y'	=> \$config{'force_auth'},
 	'approved|a=s'	=> \$config{'approved'},
 	'control|c=s'	=> \$config{'control'},
@@ -261,7 +264,7 @@ foreach ('From', 'Subject') {
 }
 
 $Header{'date'} = "Date: ".getdate()."\n" if (!defined($Header{'date'}) || $Header{'date'} !~ m/^[^\s:]+: .+/o);
-$Header{'injection-date'} = "Injection-Date: ".getdate()."\n";
+$Header{'injection-date'} = "Injection-Date: ".getdate()."\n" if (!$config{'no-injection-date'});
 
 if (defined($Header{'user-agent'})) {
 	chomp $Header{'user-agent'};
@@ -810,6 +813,7 @@ sub usage {
 	print "  -w string  set Followup-To:-header to string\n";
 	print "  -x string  set Path:-header to string\n";
 	print "  -H         show help\n";
+	print "  -I         do not add Injection-Date: header\n";
 	print "  -L         do not add Cancel-Lock: / Cancel-Key: headers\n";
 	print "  -R         disallow control messages\n";
 	print "  -S         do not append " . $config{'sig_path'} . "\n";
@@ -921,6 +925,11 @@ Set the article header field Path: to the given value.
 X<-H> X<--help>
 
 Show help-page.
+
+=item -B<I> | --B<no-injection-date>
+X<-I> X<--no-injection-date>
+
+Do not add Injection-Date: header.
 
 =item -B<L> | --B<no-canlock>
 X<-L> X<--no-canlock>

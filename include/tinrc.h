@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2013-09-01
+ *  Updated   : 2015-10-09
  *  Notes     :
  *
  * Copyright (c) 1999-2015 Jason Faultless <jason@altarstone.com>
@@ -109,6 +109,7 @@ struct t_config {
 		char quote_regex[LEN];				/* regex used to determine quoted lines */
 		char quote_regex2[LEN];				/* regex used to determine twice quoted lines */
 		char quote_regex3[LEN];				/* regex used to determine >=3 times quoted lines */
+		char extquote_regex[LEN];			/* regex used to determine quoted lines from external sources */
 #	endif /* HAVE_COLOR */
 	char slashes_regex[LEN];			/* regex used to highlight /slashes/ */
 	char stars_regex[LEN];				/* regex used to highlight *stars* */
@@ -173,6 +174,7 @@ struct t_config {
 		int col_quote;						/* color of quotelines */
 		int col_quote2;						/* color of twice quoted lines */
 		int col_quote3;						/* color of >=3 times quoted lines */
+		int col_extquote;					/* color of quoted external text */
 		int col_response;					/* color of respone counter */
 		int col_signature;					/* color of signature */
 		int col_urls;						/* color of urls highlight */
@@ -240,6 +242,9 @@ struct t_config {
 		t_bool utf8_graphics;				/* use utf-8 characters for line drawing */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	t_bool verbatim_handling;			/* Detection of verbatim blocks */
+#	ifdef HAVE_COLOR
+		t_bool extquote_handling;		/* Detection of quoted text from external sources */
+#	endif /* HAVE_COLOR */
 	char inews_prog[PATH_LEN];
 	int interactive_mailer;			/* invoke user's mailreader */
 	t_bool use_mouse;					/* enables/disables mouse support under xterm */
@@ -344,6 +349,9 @@ struct t_config {
 	t_bool attrib_tex2iso_conv;
 	t_bool attrib_thread_catchup_on_exit;
 	t_bool attrib_verbatim_handling;
+#	ifdef HAVE_COLOR
+		t_bool attrib_extquote_handling;
+#	endif /* HAVE_COLOR */
 	t_bool attrib_x_comment_to;
 	t_bool attrib_wrap_on_next_unread;
 	t_bool attrib_ask_for_metamail;

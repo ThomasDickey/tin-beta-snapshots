@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2014-04-26
+ *  Updated   : 2015-05-04
  *  Notes     :
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -481,6 +481,52 @@ page_goto_next_unread:
 					i = scroll_page(KEYMAP_DOWN);
 					curr_line += i;
 					draw_page(group->name, i);
+				}
+				break;
+
+			case PAGE_SCROLL_UP:
+				if (activate_last_ctrl_l())
+					draw_page(group->name, 0);
+				else {
+					if (curr_line == 0) {
+						info_message(_(txt_begin_of_art));
+						break;
+					}
+
+#ifdef USE_CURSES
+					scrollok(stdscr, TRUE);
+#endif /* USE_CURSES */
+					SetScrollRegion(scroll_region_top, NOTESLINES + 1);
+					ScrollScreen(-1);
+					SetScrollRegion(0, cLINES);
+#ifdef USE_CURSES
+					scrollok(stdscr, FALSE);
+#endif /* USE_CURSES */
+					--curr_line;
+					draw_page(group->name, -1);
+				}
+				break;
+
+			case PAGE_SCROLL_DOWN:
+				if (deactivate_next_ctrl_l())
+					draw_page(group->name, 0);
+				else {
+					if (curr_line + ARTLINES >= artlines) {
+						info_message(_(txt_end_of_art));
+						break;
+					}
+
+#ifdef USE_CURSES
+					scrollok(stdscr, TRUE);
+#endif /* USE_CURSES */
+					SetScrollRegion(scroll_region_top, NOTESLINES + 1);
+					ScrollScreen(1);
+					SetScrollRegion(0, cLINES);
+#ifdef USE_CURSES
+					scrollok(stdscr, FALSE);
+#endif /* USE_CURSES */
+					++curr_line;
+					draw_page(group->name, 1);
 				}
 				break;
 
@@ -1473,6 +1519,7 @@ draw_page_header(
 	if (whichresp)
 		my_printf(_(txt_art_x_of_n), whichresp + 1, x_resp + 1);
 	else {
+		/* TODO: ngettext */
 		if (!x_resp)
 			my_printf("%s", _(txt_no_responses));
 		else if (x_resp == 1)
@@ -1674,10 +1721,11 @@ draw_page_header(
 	if (whichresp)
 		my_printf(_(txt_art_x_of_n), whichresp + 1, x_resp + 1);
 	else {
+		/* TODO: ngettext */
 		if (!x_resp)
-			my_printf(_(txt_no_responses));
+			my_printf("%s", _(txt_no_responses));
 		else if (x_resp == 1)
-			my_printf(_(txt_1_resp));
+			my_printf("%s", _(txt_1_resp));
 		else
 			my_printf(_(txt_x_resp), x_resp);
 	}
@@ -2051,14 +2099,12 @@ toggle_raw(
 	}
 	curr_line = 0;
 	show_raw_article = bool_not(show_raw_article);
-	draw_page(group->name, 0);
+	draw_page(group ? group->name : "", 0);
 }
 
 
 /*
  * Re-cook an article
- *
- * TODO: check cook_article()s return code
  */
 void
 resize_article(
@@ -2069,7 +2115,10 @@ resize_article(
 	if (artinfo->cooked)
 		fclose(artinfo->cooked);
 
-	cook_article(wrap_lines, artinfo, hide_uue, show_all_headers);
+	if (!cook_article(wrap_lines, artinfo, hide_uue, show_all_headers)) {
+		wait_message(3, _(txt_cook_article_failed_exiting), tin_progname);
+		tin_done(EXIT_FAILURE);
+	}
 
 	show_raw_article = FALSE;
 	artline = pgart.cookl;

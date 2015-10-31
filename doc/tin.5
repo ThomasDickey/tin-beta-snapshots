@@ -2,17 +2,17 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2014-12-24
+.\" Updated   : 2015-01-10
 .\" Notes     : needs a some work
 .\"
 .\"
-.TH tin 5 "December 24th, 2014" "2.3.1" "Usenet newsreader"
+.TH tin 5 "December 24th, 2014" "2.3.2" "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
 
 .SH DESCRIPTION
-This manpage describes the various (config) files and their formats used by
+This man page describes the various (config) files and their formats used by
 the
 .BR \%tin (1)
 newsreader. All files are expected to have unix style ('\\n' aka LF) line
@@ -171,7 +171,7 @@ points to an appropriate icon to be used to visually denote the presence of
 this kind of data.
 .TP
 .B nametemplate
-The "nametemplate" field gives a file name format, in which %s will be
+The "nametemplate" field gives a filename format, in which %s will be
 replaced by a short unique string to give the name of the temporary file to
 be passed to the viewing command. This is only expected to be relevant in
 environments where filename extensions are meaningful, e.g., one could
@@ -474,6 +474,9 @@ processing of marked articles using \fBGroupAutoSave\fP
 ('\fBS\fP') will suppress prompting.
 .TP
 .B editor_format
+Identical to the tinrc variable of the same name
+.TP
+.B extquote_handling
 Identical to the tinrc variable of the same name
 .TP
 .B fcc
@@ -1283,6 +1286,9 @@ current session should be marked read. Default is OFF.
 .B col_back
 Standard background color
 .TP
+.B col_extquote
+Color of quoted text from external sources
+.TP
 .B col_from
 Color of sender (From:)
 .TP
@@ -1333,8 +1339,8 @@ Color of twice quoted lines
 Color of >=3 times quoted lines
 .TP
 .B col_response
-Color of response counter. This is the text that says 'Response x of y' in
-the article viewer.
+Color of response counter. This is the text that says "Response x of y"
+in the article viewer.
 .TP
 .B col_signature
 Color of signatures
@@ -1358,18 +1364,18 @@ Color of help/mail sign
 .BR \%tin (1)
 can ask for manual confirmation to protect the user. Available choices:
 .in +.5i
-.B commands:
+.BR commands :
 Ask for confirmation before executing certain dangerous commands (e.g.,
 \fBCatchup\fP ('\fBc\fP')). Commands that this affects are marked in
 this manual with '[after confirmation]'.
 .\" TODO: check if all affected commands are marked [after confirmation]
 .sp
-.B quit:
+.BR quit :
 You'll be asked to confirm that you wish to exit
 .BR \%tin (1)
 when you use the \fBQuit\fP ('\fBq\fP') command.
 .sp
-.B select:
+.BR select :
 Ask for confirmation before marking all not selected (with
 \fBGroupMarkUnselArtRead\fP ('\fBX\fP') command) articles as read.
 .in -.5i
@@ -1397,16 +1403,17 @@ The last article/author/config option that was searched for.
 Default is 28.
 .TP
 .B default_filter_kill_case
-Default for quick (1 key) kill filter case. ON = filter case sensitive, OFF
-= ignore case. Default is OFF.
+Default for quick (1 key) kill filter case.
+ON = filter case sensitive, OFF = ignore case. Default is OFF.
 .TP
 .B default_filter_kill_expire
-Default for quick (1 key) kill filter expire. ON = limit
-to '\fBdefault_filter_days\fP', OFF = don't ever expire. Default is OFF.
+Default for quick (1 key) kill filter expire.
+ON = limit to \fBdefault_filter_days\fP, OFF = don't ever expire. Default
+is OFF.
 .TP
 .B default_filter_kill_global
-Default for quick (1 key) kill filter global. ON=apply to all groups,
-OFF=apply to current group. Default is ON.
+Default for quick (1 key) kill filter global.
+ON=apply to all groups, OFF=apply to current group. Default is ON.
 .TP
 .B default_filter_kill_header
 Default for quick (1 key) kill filter header.
@@ -1429,12 +1436,13 @@ Default for quick (1 key) auto-selection filter case. ON=filter case
 sensitive, OFF=ignore case. Default is OFF.
 .TP
 .B default_filter_select_expire
-Default for quick (1 key) auto-selection filter expire. ON = limit
-to '\fBdefault_filter_days\fP', OFF = don't ever expire. Default is OFF.
+Default for quick (1 key) auto-selection filter expire.
+ON = limit to \fBdefault_filter_days\fP, OFF = don't ever expire.
+Default is OFF.
 .TP
 .B default_filter_select_global
-Default for quick (1 key) auto-selection filter global. ON=apply to all
-groups, OFF=apply to current group. Default is ON.
+Default for quick (1 key) auto-selection filter global.
+ON=apply to all groups, OFF=apply to current group. Default is ON.
 .TP
 .B default_filter_select_header
 Default for quick (1 key) auto-selection filter header.
@@ -1487,13 +1495,21 @@ Default for quick (1 key) auto-selection filter header.
 .B default_subject_search
 .TP
 .B draw_arrow
-Allows groups/articles to be selected by an arrow '\->' if set ON or by an
-highlighted bar if set OFF.
+Allows groups/articles to be selected by an arrow '\->' if set ON or
+by an highlighted bar if set OFF. Default is OFF.
 .TP
 .B editor_format
 The format string used to create the editor start command with parameters.
 Default is '%E +%N %F' with %E=Editor, %N=Linenumber and %F=Filename
 (e.g., /bin/vi +7 .article).
+.TP
+.B extquote_handling
+If ON quotes from external sources will be detected. Default is OFF.
+.TP
+.B extquote_regex
+A regular expression that will be applied when reading articles. All
+matching lines are shown in \fBcol_extquote\fP. If \fBextquote_regex\fP is
+blank, then \fBtin\fP uses a built-in default.
 .TP
 .B force_screen_redraw
 Specifies whether a screen redraw should always be done after certain
@@ -1560,8 +1576,8 @@ built-in NNTP inews), else it is "inews \-h". The article is passed to
 .TP
 .B info_in_last_line
 If ON, show current group description or article subject in the last line
-(not in the pager and global menu) - \fBToggleInfoLastLine\fP ('\fBi\fP'
-toggles setting). This facility is useful as the full width of the screen is
+(not in the pager and global menu) - \fBToggleInfoLastLine\fP ('\fBi\fP')
+toggles setting. This facility is useful as the full width of the screen is
 available to display long subjects. Default is OFF.
 .TP
 .B interactive_mailer
@@ -1637,9 +1653,9 @@ The directory where articles/threads are to be saved in
 .BR \%mbox (5)
 format. This feature is mainly for use with the
 .BR \%elm (1)
-mail program. It allows the user to save articles/threads/groups simply
-by giving '=' as the filename to save to. Default is
-\fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fR.
+mail program. It allows the user to save articles/threads/groups simply by
+giving '=' as the filename to save to.
+Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fR.
 .TP
 .B mailer_format
 The format string used to create the mailer command with parameters that is
@@ -1657,7 +1673,7 @@ claws-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 are supported:
 .in +.3i
 .nf
-.ta \w'%S'u +\w'subject-field'u
+.ta \w'%S'u +\w'default_mailer'u
 %F	filename
 %M	default_mailer
 %S	subject-field
@@ -1693,7 +1709,7 @@ used to manually view any attachments. See also
 .B mm_charset
 Charset supported locally, which is also used for MIME header
 (charset parameter and charset name in header encoding) in mail and
-news postings. If \fBMIME_STRICT_CHARSET\fP is defined at the compile
+news postings. If \fBMIME_STRICT_CHARSET\fP is defined at compile
 time, text in charset other than the value of this parameter is
 considered not displayable and represented as '?'. Otherwise, all
 character sets are regarded as compatible with the display. If it's
@@ -1710,9 +1726,9 @@ via
 .BR \%nl_langinfo (3))
 is done via
 .BR \%iconv (3),
-if this function is not available on your system this option is disabled
-and you have to use \fBmm_charset\fP instead.
-\fBmm_network_charset\fP is limited to one of the following charsets:
+if this function is not available on your system this option is disabled and
+you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP is
+limited to one of the following charsets:
 .in +.3i
 US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU}
 EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2}, Big5, UTF-8
@@ -1720,26 +1736,26 @@ EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2}, Big5, UTF-8
 Not all values might work on your system, see
 .BR \%iconv_open (3)
 for more details. If it's not set, the value of the environment variable
-$\fBMM_CHARSET\fP is used. US-ASCII or compile-time default is used in
-case neither of them is defined.
+$\fBMM_CHARSET\fP is used. US-ASCII or compile-time default is used in case
+neither of them is defined.
 .TP
 .B mono_markdash
-Character attribute of words emphasized like _this_. It is depending on your
+Character attribute of words emphasized like _this_. It depends on your
 terminal which attributes are usable. See also \fBword_h_display_marks\fP
 and \fBword_highlight\fP.
 .TP
 .B mono_markslash
-Character attribute of words emphasized like /this/. It is depending on your
+Character attribute of words emphasized like /this/. It depends on your
 terminal which attributes are usable. See also \fBword_h_display_marks\fP
 and \fBword_highlight\fP.
 .TP
 .B mono_markstar
-Character attribute of words emphasized like *this*. It is depending on your
+Character attribute of words emphasized like *this*. It depends on your
 terminal which attributes are usable. See also \fBword_h_display_marks\fP
 and \fBword_highlight\fP.
 .TP
 .B mono_markstroke
-Character attribute of words emphasized like \-this\-. It is depending on your
+Character attribute of words emphasized like \-this\-. It depends on your
 terminal which attributes are usable. See also \fBword_h_display_marks\fP
 and \fBword_highlight\fP.
 .TP
@@ -1751,10 +1767,10 @@ what they are for.
 .TP
 .B news_headers_to_display
 Which news headers you wish to see. If you want to see _all_ the headers,
-place an '*' as this value. This is the only way a wildcard can be used. If
-you enter 'X\-' as the value, you will see all headers beginning with 'X\-'
-(like X\-Alan or X\-Pape). You can list more than one by delimiting with
-spaces. Not defining anything turns off this option.
+place an '*' as this value. This is the only way a wildcard can be used.
+If you enter 'X\-' as the value, you will see all headers beginning
+with 'X\-' (like X\-Alan or X\-Pape). You can list more than one by delimiting
+with spaces. Not defining anything turns off this option.
 .TP
 .B news_headers_to_not_display
 Same as \fBnews_headers_to_display\fP except it denotes the opposite. An
@@ -1794,8 +1810,8 @@ library
 uses to do the normalization. NFC should be used if possible.
 .TP
 .B pos_first_unread
-If ON put cursor at first unread article in group otherwise at last article.
-Default is ON.
+If ON put cursor at first unread article in group otherwise at last
+article. Default is ON.
 .TP
 .B post_8bit_header
 Allows 8bit characters unencoded in the header of a news article, if
@@ -1949,10 +1965,10 @@ Score of an article which should be marked hot, this must be >=
 .B scroll_lines
 The number of lines that will be scrolled up/down in the article pager when
 using cursor-up/down. The default is 1 (line-by-line). Set to 0 to get
-traditional page-by-page scrolling. Set to \-1 to get page-by-page
+traditional tin page-by-page scrolling. Set to \-1 to get page-by-page
 scrolling where the top/bottom line is carried over onto the next page.
 This setting supersedes show_last_line_prev_page=ON. Set to \-2 to get
-half-page scrolling. This setting supersedes full_page_scroll=OFF.
+half-page scrolling. This setting supersedes \fBfull_page_scroll\fP=OFF.
 .TP
 .B select_format
 The format string used for the Selection level. Default is
@@ -2017,8 +2033,8 @@ show only the line count.
 \fBNone\fP, no information will be displayed.
 .IP 1
 \fBLines\fP, in article listing the line count of an article will be
-displayed and in thread listing the line count of first (unread)
-article will be displayed.
+displayed and in thread listing the line count of first (unread) article
+will be displayed.
 .IP 2
 \fBScore\fP, in article listing the score of an article will be displayed
 and in thread listing the score of the thread will be displayed - see also
@@ -2028,8 +2044,8 @@ and in thread listing the score of the thread will be displayed - see also
 .RE
 .TP
 .B show_only_unread_arts
-If ON show only new/unread articles otherwise show all articles. Default is
-ON.
+If ON show only new/unread articles otherwise show all articles.
+Default is ON.
 .TP
 .B show_only_unread_groups
 If ON show only subscribed groups that contain unread articles. Default
@@ -2111,7 +2127,9 @@ the default. The following sort types are allowed:
 .B spamtrap_warning_addresses
 Set this option to a list of comma-separated strings to be warned if you are
 replying to an article by mail where the e-mail address contains one of
-these strings. The matching is case-insensitive.
+these strings. The matching is case-insensitive. Example:
+.sp
+\fIspam,delete,remove\fR
 .TP
 .B stars_regex
 A regular expression that will be applied when reading articles. All
@@ -2274,7 +2292,7 @@ If enabled
 will be used to interpret the ''X\-Face:'' header. For this option to have
 any effect,
 .BR \%tin (1)
-must be running in an
+must be running in a
 .BR \%xterm (1x)
 and
 .BR \%slrnface (1)
@@ -2299,14 +2317,18 @@ Default is ON
 .B wildcard
 Allows you to select how
 .BR \%tin (1)
-matches strings. The default is 0 and uses the wildmat notation, which is
-how this has traditionally been handled. Setting this to 1 allows you to use
+matches strings. The default is 0 and
+uses the wildmat notation, which is how this has traditionally been handled.
+Setting this to 1 allows you to use
 .BR \%perl (1)
 compatible regular expressions
 .BR \%pcre (3).
-You will probably want to update your filter
-file if you use this regularly. NB: Newsgroup names will always be matched
-using the wildmat notation.
+(see also
+.BR \%perlre (1)
+and
+.BR \%pcrepattern (3)).
+You will probably want to update your filter file if you use this regularly.
+NB: Newsgroup names will always be matched using the wildmat notation.
 .TP
 .B word_h_display_marks
 Should the leading and ending stars, slashes, strokes and dashes also be
@@ -2326,7 +2348,7 @@ available. If \fBuse_color\fP is enabled the colors specified in
 \fBcol_markdash\fP, \fBcol_markslash\fP, \fBcol_markstar\fP and
 \fBcol_markstroke\fP are used for word highlighting else the character
 attributes specified in \fBmono_markdash\fP, \fBmono_markslash\fP,
-\fBmono_markstar\fP and \fBmono_markstroke\fP are used.
+\fBmono_markstar\fP and \fBmono_markstroke\fP are used. Default is ON.
 .TP
 .B wrap_column
 Sets the column at which a displayed article body should be wrapped.
@@ -2535,7 +2557,7 @@ is the name of the newsgroup
 .TP
 .B time
 is the time when the group was created, expressed as the number of seconds
-since the epoch.
+since the Epoch.
 .TP
 .B creator
 is the electronic mail address of the person who created the group.
@@ -2574,8 +2596,8 @@ uses the LIST NEWSGROUPS (\fBRFC\%3977\fP) command instead.
 .IR ${TIN_LIBDIR:\-NEWSLIBDIR}/organization
 .sp
 .RS
-This file specifies might hold a default organization to be used
-in the ''Organization:'' header. $\fBORGANIZATION\fP has a higher priority
+This file might hold a default organization to be used in
+the ''Organization:'' header. $\fBORGANIZATION\fP has a higher priority
 if set.
 .RE
 .PP
@@ -2621,6 +2643,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR \%lpr (1),
 .BR \%metamail (1),
 .BR \%perl (1),
+.BR \%perlre (1),
 .BR \%pgp (1),
 .BR \%rn (1),
 .BR \%shar (1),
@@ -2632,6 +2655,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR \%iconv_open (3),
 .BR \%nl_langinfo (3),
 .BR \%pcre (3),
+.BR \%pcrepattern (3),
 .BR \%qsort (3),
 .BR \%strftime (3),
 .BR \%system (3),

@@ -2,11 +2,12 @@ New features and changes since tin-2.2.0
 
 New features
 ------------
+- simplified Chinese translation
 
 Changes
 -------
 The gTLD list is no longer actively maintained (too many new gTLD recently),
-disable_gnksa_domain_check=ON might result in false positives.
+disable_gnksa_domain_check=OFF might result in false positives.
 
 Retired Features
 ----------------

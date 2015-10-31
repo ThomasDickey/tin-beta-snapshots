@@ -1532,6 +1532,7 @@ process_mapping(
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &select_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &thread_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &url_keys);
+				process_keys(PAGE_SCROLL_DOWN, keys, &page_keys);
 
 				return TRUE;
 			}
@@ -1543,6 +1544,7 @@ process_mapping(
 				process_keys(GLOBAL_SCROLL_UP, keys, &select_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &thread_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &url_keys);
+				process_keys(PAGE_SCROLL_UP, keys, &page_keys);
 
 				return TRUE;
 			}
@@ -2701,6 +2703,8 @@ setup_default_keys(
 	add_default_key(&page_keys, "p", PAGE_PREVIOUS_ARTICLE);
 	add_default_key(&page_keys, "r", PAGE_REPLY_QUOTE);
 	add_default_key(&page_keys, "s", PAGE_SAVE);
+	add_default_key(&page_keys, ">", PAGE_SCROLL_DOWN);
+	add_default_key(&page_keys, "<", PAGE_SCROLL_UP);
 	add_default_key(&page_keys, "t", PAGE_TAG);
 	add_default_key(&page_keys, "u", PAGE_GOTO_PARENT);
 	add_default_key(&page_keys, "x", PAGE_REPOST);

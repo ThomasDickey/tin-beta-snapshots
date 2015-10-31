@@ -309,7 +309,7 @@ add_msgid(
 			return i;
 		}
 
-		error_message(2, "Error: Impossible combination of conditions !\n");
+		error_message(2, "Error: Impossible combination of conditions!\n");
 		return i;
 	}
 

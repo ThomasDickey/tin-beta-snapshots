@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-27
+ *  Updated   : 2015-10-21
  *  Notes     :
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -201,6 +201,7 @@ main(
 	if (!nntp_server || !*nntp_server)
 		nntp_server = getserverbyfile(NNTP_SERVER_FILE);
 	if (read_news_via_nntp && !read_saved_news && nntp_open()) {
+		nntp_close();
 		free_all_arrays();
 		giveup();
 	}
@@ -425,6 +426,9 @@ main(
 
 /*
  * process command line options
+ * [01235789beEFijJkKLOtTyY] are unused
+ * [W] is reserved
+ * [BCPU] have been in use at some time, but now are unused
  */
 #define OPTIONS "46aAcdD:f:g:G:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
 

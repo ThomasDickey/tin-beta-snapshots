@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-30
+ *  Updated   : 2015-10-31
  *  Notes     :
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
@@ -571,7 +571,7 @@ prompt_string_default(
 		my_strncpy(def, pattern, LEN);
 	else {
 		if (def[0] == '\0') {		/* no default - give up */
-			error_message(2, failtext);
+			error_message(2, "%s", failtext);
 			return NULL;
 		}
 	}

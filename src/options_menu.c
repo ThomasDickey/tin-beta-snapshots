@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2013-10-01
+ *  Updated   : 2015-10-09
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2015 Michael Bienia <michael@vorlon.ping.de>
@@ -199,6 +199,7 @@ option_is_visible(
 		case OPT_COL_QUOTE:
 		case OPT_COL_QUOTE2:
 		case OPT_COL_QUOTE3:
+		case OPT_COL_EXTQUOTE:
 		case OPT_COL_RESPONSE:
 		case OPT_COL_SIGNATURE:
 		case OPT_COL_SUBJECT:
@@ -208,6 +209,7 @@ option_is_visible(
 		case OPT_QUOTE_REGEX:
 		case OPT_QUOTE_REGEX2:
 		case OPT_QUOTE_REGEX3:
+		case OPT_EXTQUOTE_HANDLING:
 			return curr_scope ? FALSE : tinrc.use_color;
 
 		case OPT_COL_MARKSTAR:
@@ -218,6 +220,9 @@ option_is_visible(
 
 		case OPT_COL_VERBATIM:
 			return curr_scope ? FALSE : (tinrc.verbatim_handling && tinrc.use_color);
+
+		case OPT_EXTQUOTE_REGEX:
+			return curr_scope ? FALSE : (tinrc.extquote_handling && tinrc.use_color);
 #endif /* HAVE_COLOR */
 
 		case OPT_WORD_H_DISPLAY_MARKS:
@@ -247,10 +252,12 @@ option_is_visible(
 			return curr_scope ? FALSE : tinrc.verbatim_handling;
 
 		case OPT_GETART_LIMIT_OPTIONS:
+			return curr_scope ? FALSE : TRUE;
+
 #ifdef HAVE_COLOR
 		case OPT_COLOR_OPTIONS:
+			return curr_scope ? tinrc.use_color : TRUE;
 #endif /* HAVE_COLOR */
-			return curr_scope ? FALSE : TRUE;
 
 		case OPT_DISPLAY_OPTIONS:
 		case OPT_FILTERING_OPTIONS:
@@ -337,6 +344,11 @@ option_is_visible(
 		case OPT_ATTRIB_X_COMMENT_TO:
 		case OPT_ATTRIB_X_HEADERS:
 			return curr_scope ? TRUE : FALSE;
+
+#ifdef HAVE_COLOR
+		case OPT_ATTRIB_EXTQUOTE_HANDLING:
+			return curr_scope ? tinrc.use_color : FALSE;
+#endif /* HAVE_COLOR */
 
 		default:
 			return curr_scope ? FALSE : TRUE;
@@ -1333,6 +1345,20 @@ config_page(
 								UPDATE_INT_ATTRIBUTES(batch_save);
 							break;
 
+#ifdef HAVE_COLOR
+						case OPT_EXTQUOTE_HANDLING:
+							/*
+							 * option toggles visibility of other
+							 * options -> needs redraw_screen()
+							 */
+							if (prompt_option_on_off(option)) {
+								UPDATE_INT_ATTRIBUTES(extquote_handling);
+								set_last_option_on_screen(first_option_on_screen);
+								redraw_screen(option);
+							}
+							break;
+#endif /* HAVE_COLOR */
+
 						case OPT_GROUP_CATCHUP_ON_EXIT:
 							if (prompt_option_on_off(option))
 								UPDATE_INT_ATTRIBUTES(group_catchup_on_exit);
@@ -1586,6 +1612,13 @@ config_page(
 								SET_NUM_ATTRIBUTE(delete_tmp_files);
 							break;
 
+#ifdef HAVE_COLOR
+						case OPT_ATTRIB_EXTQUOTE_HANDLING:
+							if (prompt_option_on_off(option))
+								SET_NUM_ATTRIBUTE(extquote_handling);
+							break;
+#endif /* HAVE_COLOR */
+
 						case OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT:
 							if (prompt_option_on_off(option))
 								SET_NUM_ATTRIBUTE(group_catchup_on_exit);
@@ -1734,6 +1767,7 @@ config_page(
 						case OPT_COL_QUOTE:
 						case OPT_COL_QUOTE2:
 						case OPT_COL_QUOTE3:
+						case OPT_COL_EXTQUOTE:
 						case OPT_COL_RESPONSE:
 						case OPT_COL_SIGNATURE:
 						case OPT_COL_SUBJECT:
@@ -2144,6 +2178,17 @@ config_page(
 								if (!strlen(tinrc.quote_regex3))
 									STRCPY(tinrc.quote_regex3, DEFAULT_QUOTE_REGEX3);
 								compile_regex(tinrc.quote_regex3, &quote_regex3, PCRE_CASELESS);
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
+						case OPT_EXTQUOTE_REGEX:
+							if (prompt_option_string(option)) {
+								FreeIfNeeded(extquote_regex.re);
+								FreeIfNeeded(extquote_regex.extra);
+								if (!strlen(tinrc.extquote_regex))
+									STRCPY(tinrc.extquote_regex, DEFAULT_EXTQUOTE_REGEX);
+								compile_regex(tinrc.extquote_regex, &extquote_regex, PCRE_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
@@ -2994,6 +3039,10 @@ check_state(
 			return curr_scope->state->delete_tmp_files;
 		case OPT_ATTRIB_EDITOR_FORMAT:
 			return curr_scope->state->editor_format;
+#ifdef HAVE_COLOR
+		case OPT_ATTRIB_EXTQUOTE_HANDLING:
+			return curr_scope->state->extquote_handling;
+#endif /* HAVE_COLOR */
 		case OPT_ATTRIB_FCC:
 			return curr_scope->state->fcc;
 		case OPT_ATTRIB_FOLLOWUP_TO:
@@ -3186,6 +3235,12 @@ reset_state(
 			curr_scope->state->editor_format = FALSE;
 			snprintf(tinrc.attrib_editor_format, sizeof(tinrc.attrib_editor_format), "%s", BlankIfNull(default_scope->attribute->editor_format));
 			break;
+#ifdef HAVE_COLOR
+		case OPT_ATTRIB_EXTQUOTE_HANDLING:
+			curr_scope->state->extquote_handling = FALSE;
+			tinrc.attrib_extquote_handling = default_scope->attribute->extquote_handling;
+			break;
+#endif /* HAVE_COLOR */
 		case OPT_ATTRIB_FCC:
 			FreeAndNull(curr_scope->attribute->fcc);
 			curr_scope->state->fcc = FALSE;
@@ -3488,6 +3543,9 @@ initialize_attributes(
 	INITIALIZE_NUM_ATTRIBUTE(auto_select);
 	INITIALIZE_NUM_ATTRIBUTE(batch_save);
 	INITIALIZE_NUM_ATTRIBUTE(delete_tmp_files);
+#ifdef HAVE_COLOR
+	INITIALIZE_NUM_ATTRIBUTE(extquote_handling);
+#endif /* HAVE_COLOR */
 	INITIALIZE_NUM_ATTRIBUTE(group_catchup_on_exit);
 	INITIALIZE_NUM_ATTRIBUTE(mail_8bit_header);
 	INITIALIZE_NUM_ATTRIBUTE(mail_mime_encoding);
