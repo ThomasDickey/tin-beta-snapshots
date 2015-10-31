@@ -333,14 +333,14 @@ build_sender(
 	if ((ptr = get_full_name()))
 		snprintf(sender, sizeof(sender), ((strpbrk(ptr, "\".:;<>@[]()\\")) ? "\"%s\"" : "%s "), ptr);
 	if ((ptr = get_user_name())) {
-		snprintf(sender + strlen (sender), sizeof(sender) - strlen (sender), "<%s@", ptr);
+		snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "<%s@", ptr);
 
 #	ifdef HAVE_GETHOSTBYNAME
 		if ((ptr = get_fqdn(get_host_name())))
 #	else
 		if ((ptr = get_host_name()))
 #	endif /* HAVE_GETHOSTBYNAME */
-			 snprintf(sender + strlen (sender), sizeof(sender) - strlen (sender), "%s>", ptr);
+			snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "%s>", ptr);
 		else
 			return NULL;
 	} else

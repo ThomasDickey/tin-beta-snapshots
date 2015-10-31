@@ -258,18 +258,18 @@ submit_inews(
 			}
 #	ifdef USE_CANLOCK
 			if (!can_lock_in_article) {
-					char lock[1024];
-					char *lptr;
+				char lock[1024];
+				char *lptr;
 
-					lock[0] = '\0';
-					if ((lptr = build_canlock(message_id, get_secret())) != NULL) {
-						STRCPY(lock, lptr);
-						free(lptr);
-						snprintf(buf, sizeof(buf), "Cancel-Lock: %s", lock);
-						u_put_server(buf);
-						u_put_server("\r\n");
-					}
+				lock[0] = '\0';
+				if ((lptr = build_canlock(message_id, get_secret())) != NULL) {
+					STRCPY(lock, lptr);
+					free(lptr);
+					snprintf(buf, sizeof(buf), "Cancel-Lock: %s", lock);
+					u_put_server(buf);
+					u_put_server("\r\n");
 				}
+			}
 #	endif /* USE_CANLOCK */
 		}
 

@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2014-01-11
+ *  Updated   : 2015-10-31
  *  Notes     :
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -144,6 +144,7 @@ group_page(
 	int thread_depth;	/* Starting depth in threads we enter */
 	t_artnum old_artnum = T_ARTNUM_CONST(0);
 	struct t_art_stat sbuf;
+	struct t_article *art;
 	t_bool flag;
 	t_bool xflag = FALSE;	/* 'X'-flag */
 	t_bool repeat_search;
@@ -165,7 +166,13 @@ group_page(
 	 * update index file. quit group level if user aborts indexing
 	 */
 	if (!index_group(group)) {
+		for_each_art(i) {
+			art = &arts[i];
+			FreeAndNull(art->refs);
+			FreeAndNull(art->msgid);
+		}
 		curr_group = NULL;
+		tin_errno = 0;
 		return GRP_RETSELECT;
 	}
 

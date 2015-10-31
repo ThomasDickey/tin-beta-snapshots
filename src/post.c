@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2014-10-25
+ *  Updated   : 2015-10-21
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
@@ -912,8 +912,17 @@ check_article_to_be_posted(
 			subject[cCOLS - 6] = '\0';
 		}
 
+/*
+ * only allow hand supplied Sender in FORGERY case or
+ * with external inews and not HAVE_FASCIST_NEWSADMIN
+ */
 #ifndef FORGERY
-		if (cp - line == 6 && !strncasecmp(line, "Sender", 6)) {
+#	ifdef HAVE_FASCIST_NEWSADMIN
+		if (cp - line == 6 && !strncasecmp(line, "Sender", 6))
+#	else
+		if (!strcasecmp(tinrc.inews_prog, INTERNAL_CMD) && cp - line == 6 && !strncasecmp(line, "Sender", 6))
+#	endif /* HAVE_FASCIST_NEWSADMIN */
+		{
 			StartInverse();
 			my_fprintf(stderr, _(txt_error_sender_in_header_not_allowed), cnt);
 			EndInverse();
@@ -1982,7 +1991,7 @@ post_article_done:
 			}
 		}
 
-		if (header.subj) {
+		if (header.subj && header.newsgroups) {
 			char tag;
 			/*
 			 * When crossposting postponed articles we currently do not add
@@ -2087,7 +2096,8 @@ check_moderated(
 	/* Take copy - strtok() modifies its args */
 	STRCPY(newsgroups, groups);
 
-	ogroupn = groupname = strtok(newsgroups, ",");
+	if ((ogroupn = groupname = strtok(newsgroups, ",")) == NULL)
+		return NULL;
 
 	do {
 		vnum++; /* number of newsgroups */

@@ -927,7 +927,7 @@ parse_multipart_article(
 			case M_HDR:
 				switch (bnd) {
 					case BOUND_START:	/* TODO: skip error message if not -DDEBUG? */
-						error_message(2, _(txt_error_mime_start));
+						error_message(1, _(txt_error_mime_start));
 						continue;
 
 					case BOUND_NONE:
@@ -1135,7 +1135,7 @@ parse_rfc2045_article(
 			if (ret & TIN_EOF) {
 				ret ^= TIN_EOF;
 				/* TODO: skip error message if not -DDEBUG? */
-				error_message(2, _(txt_error_mime_end), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
+				error_message(1, _(txt_error_mime_end), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
 				if (ret != 0)
 					goto error;
 			} else

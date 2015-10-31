@@ -394,7 +394,7 @@ show_title(
 		fcol(tinrc.col_title);
 #endif /* HAVE_COLOR */
 		/* you have mail message in */
-		my_fputs((mail_check() ? _(txt_you_have_mail) : _(txt_type_h_for_help)), stdout);
+		my_fputs(_(txt_type_h_for_help), stdout);
 
 #ifdef HAVE_COLOR
 		fcol(tinrc.col_normal);

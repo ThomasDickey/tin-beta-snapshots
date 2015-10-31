@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2013-01-09
+# Updated: 2015-08-29
 #
 
 PROJECT	= tin
 LVER	= 2
 PVER	= 3
-SVER	= 1
+SVER	= 2
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20141224
+DVER	= 20150912
 EXE	= tin
 
 # directory structure
@@ -328,6 +328,8 @@ POFILES = \
 	$(PODIR)/sv.po \
 	$(PODIR)/tr.gmo \
 	$(PODIR)/tr.po \
+	$(PODIR)/zh_CN.po \
+	$(PODIR)/zh_CN.gmo \
 	$(PODIR)/zh_TW.po \
 	$(PODIR)/zh_TW.gmo
 

@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2014-05-28
+ *  Updated   : 2015-10-09
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2015 Iain Lea <iain@bricbrac.de>
@@ -116,6 +116,9 @@ set_default_attributes(
 	attributes->show_signatures = tinrc.show_signatures;
 	attributes->trim_article_body = tinrc.trim_article_body;
 	attributes->verbatim_handling = tinrc.verbatim_handling;
+#ifdef HAVE_COLOR
+	attributes->extquote_handling = tinrc.extquote_handling;
+#endif /* HAVE_COLOR */
 	attributes->wrap_on_next_unread = tinrc.wrap_on_next_unread;
 	attributes->add_posted_to_filter = tinrc.add_posted_to_filter;
 	attributes->advertising = tinrc.advertising;
@@ -237,6 +240,9 @@ set_default_state(
 	state->mm_network_charset = FALSE;
 #endif /* CHARSET_CONVERSION */
 	state->verbatim_handling = FALSE;
+#ifdef HAVE_COLOR
+	state->extquote_handling = FALSE;
+#endif /* HAVE_COLOR */
 	state->wrap_on_next_unread = FALSE;
 	state->x_body = FALSE;
 	state->x_comment_to = FALSE;
@@ -354,6 +360,10 @@ read_attributes_file(
 
 				case 'e':
 					MATCH_STRING("editor_format=", OPT_ATTRIB_EDITOR_FORMAT);
+#ifdef HAVE_COLOR
+					MATCH_BOOLEAN("extquote_handling=", OPT_ATTRIB_EXTQUOTE_HANDLING);
+#endif /* HAVE_COLOR */
+
 					break;
 
 				case 'f':
@@ -756,6 +766,11 @@ set_attrib(
 			case OPT_ATTRIB_PROMPT_FOLLOWUPTO:
 				SET_INTEGER(prompt_followupto);
 
+#ifdef HAVE_COLOR
+			case OPT_ATTRIB_EXTQUOTE_HANDLING:
+				SET_INTEGER(extquote_handling);
+#endif /* HAVE_COLOR */
+
 			case OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS:
 				SET_INTEGER(show_only_unread_arts);
 
@@ -986,6 +1001,9 @@ assign_attributes_to_groups(
 				SET_ATTRIB(show_signatures);
 				SET_ATTRIB(trim_article_body);
 				SET_ATTRIB(verbatim_handling);
+#ifdef HAVE_COLOR
+				SET_ATTRIB(extquote_handling);
+#endif /* HAVE_COLOR */
 				SET_ATTRIB(wrap_on_next_unread);
 				SET_ATTRIB(add_posted_to_filter);
 				SET_ATTRIB(advertising);
@@ -1294,6 +1312,9 @@ write_attributes_file(
 	fprintf(fp, _("#    6 = Compact multiple blank lines between text blocks and skip\n#        trailing blank lines\n"));
 	fprintf(fp, _("#    7 = Compact multiple blank lines between text blocks and skip\n#        leading and trailing blank lines\n"));
 	fprintf(fp, _("#  verbatim_handling=ON/OFF\n"));
+#ifdef HAVE_COLOR
+	fprintf(fp, _("#  extquote_handling=ON/OFF\n"));
+#endif /* HAVE_COLOR */
 	fprintf(fp, _("#  wrap_on_next_unread=ON/OFF\n"));
 	fprintf(fp, _("#  x_body=STRING (eg. ~/.tin/extra-body-text)\n"));
 	fprintf(fp, _("#  x_comment_to=ON/OFF\n"));
@@ -1361,6 +1382,10 @@ write_attributes_file(
 					fprintf(fp, "delete_tmp_files=%s\n", print_boolean(scope->attribute->delete_tmp_files));
 				if (scope->state->editor_format && scope->attribute->editor_format)
 					fprintf(fp, "editor_format=%s\n", scope->attribute->editor_format);
+#ifdef HAVE_COLOR
+				if (scope->state->extquote_handling)
+					fprintf(fp, "extquote_handling=%s\n", print_boolean(scope->attribute->extquote_handling));
+#endif /* HAVE_COLOR */
 				if (scope->state->fcc && scope->attribute->fcc)
 					fprintf(fp, "fcc=%s\n", scope->attribute->fcc);
 				if (scope->state->followup_to && scope->attribute->followup_to)
@@ -1583,6 +1608,9 @@ dump_attributes(
 			debug_print_file("ATTRIBUTES", "\tdate_format=%s", BlankIfNull(group->attribute->date_format));
 			debug_print_file("ATTRIBUTES", "\tdelete_tmp_files=%s", print_boolean(group->attribute->delete_tmp_files));
 			debug_print_file("ATTRIBUTES", "\teditor_format=%s", BlankIfNull(group->attribute->editor_format));
+#	ifdef HAVE_COLOR
+			debug_print_file("ATTRIBUTES", "\textquote_handling=%s", print_boolean(group->attribute->extquote_handling));
+#	endif /* HAVE_COLOR */
 			debug_print_file("ATTRIBUTES", "\tgroup_catchup_on_exit=%s", print_boolean(group->attribute->group_catchup_on_exit));
 			debug_print_file("ATTRIBUTES", "\tgroup_format=%s", BlankIfNull(group->attribute->group_format));
 			debug_print_file("ATTRIBUTES", "\tmail_8bit_header=%s", print_boolean(group->attribute->mail_8bit_header));
@@ -1696,6 +1724,9 @@ dump_scopes(
 			debug_print_file(fname, "\t%sdate_format=%s", DEBUG_PRINT_STATE(date_format), DEBUG_PRINT_STRING(date_format));
 			debug_print_file(fname, "\t%sdelete_tmp_files=%s", DEBUG_PRINT_STATE(delete_tmp_files), print_boolean(scope->attribute->delete_tmp_files));
 			debug_print_file(fname, "\t%seditor_format=%s", DEBUG_PRINT_STATE(editor_format), DEBUG_PRINT_STRING(editor_format));
+#	ifdef HAVE_COLOR
+			debug_print_file(fname, "\t%sextquote_handling=%s", DEBUG_PRINT_STATE(extquote_handling), print_boolean(scope->attribute->extquote_handling));
+#	endif /* HAVE_COLOR */
 			debug_print_file(fname, "\t%sgroup_catchup_on_exit=%s", DEBUG_PRINT_STATE(group_catchup_on_exit), print_boolean(scope->attribute->group_catchup_on_exit));
 			debug_print_file(fname, "\t%sgroup_format=%s", DEBUG_PRINT_STATE(group_format), DEBUG_PRINT_STRING(group_format));
 			debug_print_file(fname, "\t%smail_8bit_header=%s", DEBUG_PRINT_STATE(mail_8bit_header), print_boolean(scope->attribute->mail_8bit_header));

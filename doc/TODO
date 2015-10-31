@@ -4,6 +4,12 @@ not read only ,-).
 
 Bugs
 ----
+o  replying via email to an article with
+   From: =?us-ascii?q?<a@example.com>,?= <b@example.org>
+   will result in
+   To: <a@example.com>, <b@example.org>
+   [20141230 Urs Janssen <urs@tin.org>]
+
 o  get_respcode() doesn't handle the 401 response code. as we have to
    evaluate the response text as well we have to fix every
    nntp_command(..., NULL, 0) call.
@@ -440,10 +446,11 @@ o  Merge the selection code with the range code. Having two similar methods
    of picking articles with similar goals is wasteful.
    [Jason Faultless <jason@altarstone.com>]
 
-o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo, liblz4, liblrzip
+o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo, lzlib, liblz4,
+   liblrzip, ...
    (<http://tukaani.org/xz/>, <http://sources.redhat.com/bzip2/>,
     <http://www.gzip.org/zlib/>, <http://www.oberhumer.com/opensource/lzo/>,
-    <http://code.google.com/p/lz4/>,
+    <http://lzip.nongnu.org/lzlib.html>, <http://code.google.com/p/lz4/>,
     <http://freecode.com/projects/long-range-zip>) and add an option to
    write/read *zipped local overviews.
    the libs might also be used for post-processing articles.
@@ -556,6 +563,11 @@ o  add missing mailcap (RFC 1524) features (%n, %F, copiousoutput, print, ...)
 
 Internal Changes
 ----------------
+o  in ENABLE_NLS case replace PLURAL() macro with proper use of
+   ngettext(3) (if found by configure) to support languages with
+   more than one plural form.
+   [20150113 Urs Janssen <urs@tin.org>]
+
 o  rename disable_gnksa_domain_check to enable_gnksa_domain_check and
    invert logic now the default changed
    [20131119 Urs Janssen <urs@tin.org>]
@@ -781,7 +793,8 @@ o  make mm_network_charset an user configurable item list
 o  add IDNA 2003 (RFC 3490ff.) and IDNA 2008 (RFC 5890ff.) support,
    (<http://www.gnu.org/software/libidn/> IDNA 2003,
     <http://jprs.co.jp/idn/index-e.html> IDNA 2008,
-    <http://site.icu-project.org/> IDNA (uidna_IDNToUnicode()),
+    <http://site.icu-project.org/> IDNA (uidna_IDNToUnicode()
+     and/or with ICU >=4.6 uidna_nameToUnicode(uidna_openUTS46)),
     <http://www.gnu.org/s/libidn/#libidn2> IDNA 2008)
    (added minimalistic IDNA decoding support if a recent libidn is found, urs)
    [20030917 Urs Janssen <urs@tin.org>]
@@ -812,7 +825,7 @@ o  the online help of GroupMarkUnselArtRead 'X' is unclear as it doesn't
 o  document the different singnals/actions (i.e. SIGUSR2 writes newsrc)
    [20080209 Urs Janssen <urs@tin.org>]
 
-o  exit staus documentation in the manpage isn't correct, we have more
+o  exit staus documentation in the man page isn't correct, we have more
    exit codes than just 0/1 (and 2 in the -Z case).
    [20080320 Urs Janssen <urs@tin.org>]
 
@@ -832,14 +845,22 @@ o  man page always needs work and proof reading
    e.g. 'U', 'V' in pager need better documentation, random organization
    feature isn't documented at all.
 
-o  tin.defaults could use more documentation in manpage (tin.5)
+o  tin.defaults could use more documentation in man page (tin.5)
 
-o  replace "\\" by "\e" in manpages (portable?)
+o  replace "\\" by "\e" in man pages (portable?)
 
-o  integrate doc/auth.txt into tin.1-manpage
+o  integrate doc/auth.txt into tin.1 man page
 
 Not yet classified
 ------------------
+o  create missing dir(s) in path to newsrc, right now get_newsrcname()
+   usually comes up with
+   "No permissions to go into /home/$USER/.tin/${NNTPSERVER}"
+   if one uses something like
+   *  ~/.tin/${NNTPSERVER-localhost}/.newsrc
+   in newsrctable
+   [20150121 Urs Janssen <urs@tin.org>]
+
 o  make --with-defaults-dir= default to $sysconfdir/tin
    (=/usr/local/etc/tin)?
    [20110809 Urs Janssen <urs@tin.org>]
@@ -996,8 +1017,10 @@ o  check_article_to_be_posted() needs a cleanup!
 
 o  update gettext stuff to > gettext-0.12.1
 
-o  clean up included pcre stuff and update to >= pcre-8.36
-   (maybe even pcre2?)
+o  clean up included pcre stuff and update to >= pcre-8.37
+
+o  and pcre2 support (new API)
+   <http://www.pcre.org/current/doc/html/>
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file
@@ -1046,6 +1069,8 @@ o  add check for libarchive <https://code.google.com/p/libarchive/>
    and use for post-processing?
    [20111225 Urs Janssen <urs@tin.org>]
 
+o  add check for liblockfile and/or liblock and use if found?
+
 o  add check for heapsort(3) in libbsd? <http://libbsd.freedesktop.org/wiki/>
    [20130305 Urs Janssen <urs@tin.org>]
 
@@ -1055,3 +1080,6 @@ o  add jump to selected article from DisplayPostHist (’W’)
 o  add check for libtre and offer TRE as matching method for "wildcard"?
    <http://laurikari.net/tre/about/>, <https://github.com/laurikari/tre/>
    [20130706 Urs Janssen <urs@tin.org>]
+
+o  eval $NEWSHOST if $NNTPSERVER is unset (like Net::NNTP(3perl))
+   [20141225 Urs Janssen <urs@tin.org>]

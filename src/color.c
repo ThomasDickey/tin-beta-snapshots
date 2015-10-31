@@ -7,7 +7,7 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@invisible-island.net> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 2011-04-24
+ *  Updated   : 2015-10-09
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
@@ -251,15 +251,17 @@ draw_pager_line(
 			fcol(tinrc.col_signature);
 		} else if (flags & (C_HEADER | C_ATTACH | C_UUE)) {
 			fcol(tinrc.col_newsheaders);
-		} else {
-			if (flags & C_QUOTE3) {
+		} else { /* keep order in sync with cook.c:process_text_body_part() */
+			if (flags & C_VERBATIM) {
+				fcol(tinrc.col_verbatim);
+			} else if (flags & C_QUOTE3) {
 				fcol(tinrc.col_quote3);
 			} else if (flags & C_QUOTE2) {
 				fcol(tinrc.col_quote2);
+			} else if (flags & C_EXTQUOTE) {
+				fcol(tinrc.col_extquote);
 			} else if (flags & C_QUOTE1) {
 				fcol(tinrc.col_quote);
-			} else if (flags & C_VERBATIM) {
-				fcol(tinrc.col_verbatim);
 			} else
 				fcol(tinrc.col_text);
 		}

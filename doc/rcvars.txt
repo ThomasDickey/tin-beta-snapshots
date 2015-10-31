@@ -3,9 +3,9 @@ Adding new tinrc variables:
 . Think of a name for your variable, we'll call it NAME
 . Add it to tincfg.tbl, the ordering of this file decides the order of the
   Option 'M'enu. Use an appropriate type.
-. Add an entry for it to the tin.1 manpage under the
+. Add an entry for it to the tin.1 man page under the
   "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" section
-  and one to the tin.5 manpage under the "FILES" section (subsection tinrc)
+  and one to the tin.5 man page under the "FILES" section (subsection tinrc)
 . Add NAME with the correct type to the master declaration in tinrc.h
 . Add an initial value for NAME in the correct position in t_config tinrc={};
   in init.c
@@ -41,7 +41,7 @@ Adding new tinrc variables:
 Adding a new attribute:
 
 . Think of a name, we'll call it NAME
-. Document it on the tin.5 manpage under the
+. Document it on the tin.5 man page under the
   "${TIN_HOMEDIR-"$HOME"}/.tin/attributes" section
 . Add it to the t_attribute and t_attribute_state structure in tin.h
 . Define the default value for it in attrib.c:set_default_attributes()

@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2014-02-01
+ *  Updated   : 2015-10-31
  *  Notes     :
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1307,7 +1307,7 @@ subscribe_pattern(
 		return;
 	}
 
-	wait_message(0, message);
+	wait_message(0, "%s", message);
 
 	for_each_group(i) {
 		if (match_group_list(active[i].name, buf)) {

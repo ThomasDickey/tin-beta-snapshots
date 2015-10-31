@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2013-12-05
+ *  Updated   : 2015-10-31
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -370,7 +370,7 @@ get_tcp_socket(
 	if (t_connect(s, callptr, (struct t_call *) 0) < 0) {
 		save_errno = t_errno;
 		if (save_errno == TLOOK)
-			fprintf(stderr, _(txt_error_server_unavailable));
+			fprintf(stderr, "%s", _(txt_error_server_unavailable));
 		else
 			t_error("t_connect");
 		t_free((char *) callptr, T_CALL);
@@ -821,32 +821,30 @@ reconnect(
 	signal_context = cReconnect;
 
 	/*
-	 * Exit tin if the user says no to reconnect. The exit code stops tin from trying
-	 * to disconnect again - the connection is already dead
+	 * Exit tin if there are no more tries or if the user says no to reconnect.
+	 * The exit code stops tin from trying to disconnect again - the connection
+	 * is already dead
 	 */
-	if (!tinrc.auto_reconnect && prompt_yn(_(txt_reconnect_to_news_server), TRUE) != 1) {
+	if (!retry || (!tinrc.auto_reconnect && prompt_yn(_(txt_reconnect_to_news_server), TRUE) != 1)) {
 		if (!strncmp("POST", last_put, 4)) {
 			unlink(backup_article_name(article_name));
 			rename_file(article_name, dead_article);
 			if (tinrc.keep_dead_articles)
 				append_file(dead_article, dead_articles);
 		}
-		tin_done(NNTP_ERROR_EXIT);		/* user said no to reconnect */
+		if (!retry)
+			error_message(2, _("NNTP connection error. Exiting..."));
+		tin_done(NNTP_ERROR_EXIT);		/* user said no to reconnect or no more retries */
 	}
 
-	/*
-	 * reset signal_context
-	 */
+	/* reset signal_context */
 	signal_context = save_signal_context;
 
 	clear_message();
-
 	strcpy(buf, last_put);			/* Keep copy here, it will be clobbered a lot otherwise */
 
 	if (!nntp_open()) {
-		/*
-		 * Re-establish our current group and resend last command
-		 */
+		/* Re-establish our current group and resend last command */
 		if (curr_group != NULL) {
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
 			snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
@@ -861,17 +859,7 @@ reconnect(
 		DEBUG_IO((stderr, _("Resend last command (%s)\n"), buf));
 		put_server(buf);
 		did_reconnect = TRUE;
-		return 0;
-	}
-
-	if (--retry == 0) {					/* No more tries? */
-		if (!strncmp("POST", buf, 4)) {
-			unlink(backup_article_name(article_name));
-			rename_file(article_name, dead_article);
-			if (tinrc.keep_dead_articles)
-				append_file(dead_article, dead_articles);
-		}
-		tin_done(NNTP_ERROR_EXIT);
+		retry = 0;
 	}
 
 	return retry;
@@ -896,7 +884,7 @@ get_server(
 	char *string,
 	int size)
 {
-	int retry = NNTP_TRY_RECONNECT;
+	static int retry_cnt = NNTP_TRY_RECONNECT;
 
 	reconnected_in_last_get_server = FALSE;
 	errno = 0;
@@ -947,7 +935,7 @@ get_server(
 				strcpy(last_put, "MODE READER");
 				nntp_caps.type = BROKEN;
 			}
-			retry = reconnect(retry);		/* Will abort when out of tries */
+			retry_cnt = reconnect(retry_cnt--);		/* Will abort when out of tries */
 			reconnected_in_last_get_server = TRUE;
 		} else {
 			/*
@@ -962,6 +950,7 @@ get_server(
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
 	alarm(0);
 #	endif /* HAVE_ALARM && SIGALRM */
+	retry_cnt = NNTP_TRY_RECONNECT;
 	return string;
 }
 
@@ -1234,7 +1223,7 @@ check_extensions(
 #		if 1
 		case ERR_GOODBYE:
 			ret = i;
-			error_message(2, buf);
+			error_message(2, "%s", buf);
 			break;
 #		endif /* 1 */
 
@@ -1294,7 +1283,7 @@ mode_reader(
 
 			case ERR_GOODBYE:
 			case ERR_ACCESS:
-				error_message(2, line);
+				error_message(2, "%s", line);
 				return ret;
 
 			case ERR_COMMAND:
@@ -1398,7 +1387,7 @@ nntp_open(
 			if (ret < 0)
 				error_message(2, _(txt_failed_to_connect_to_server), nntp_server);
 			else
-				error_message(2, line);
+				error_message(2, "%s", line);
 
 			return ret;
 	}
@@ -1457,7 +1446,7 @@ nntp_open(
 				/* just honor ciritical errors */
 				case ERR_GOODBYE:
 				case ERR_ACCESS:
-					error_message(2, buf);
+					error_message(2, "%s", buf);
 					return -1;
 
 				default:

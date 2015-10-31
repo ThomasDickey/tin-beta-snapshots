@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2014-12-24
+.\" Updated   : 2015-01-11
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "December 24th, 2014" "2.3.1" "Usenet newsreader"
+.TH tin 1 "December 24th, 2014" "2.3.2" "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -309,7 +309,7 @@ newsgroups are displayed in the middle of the screen usually with the number of
 unread articles displayed on the same line in front, but it can be customized
 via \fBselect_format\fP.
 .PP
-.\" FIXME - make this autoscale
+.\" FIXME - make this auto scale
 .nf
 \->M    1     2  comp.security.announce  Announcements from the CERT abou
   M    2     1  news.admin.announce     Announcements for news adminstra
@@ -386,7 +386,7 @@ thread. The number of lines of the first (unread) article in the thread
 might also be shown right before the subject - this is controlled by the
 \fBshow_info\fP option. The display can be customized via \fBgroup_format\fP.
 .PP
-.\" FIXME - make this autoscale
+.\" FIXME - make this auto scale
 .nf
                 de.admin.net-abuse.announce (11B 13+ 1* 1o 0K) M
 
@@ -400,7 +400,7 @@ At the Thread level the screen usually (depends on the threading method
 used) looks like this, but can be customized via \fBthread_format\fP:
 .\" FIXME - add description of fields
 .PP
-.\" FIXME - make this autoscale
+.\" FIXME - make this auto scale
 .nf
 \->   1      [   7]  What is this funny tree in the thr  Robert F. Simmig
      2      [  12]  +\->                                 Sephan Wagner <s
@@ -412,7 +412,7 @@ used) looks like this, but can be customized via \fBthread_format\fP:
 At the Article level the page header has the following format:
 .\" FIXME - add description of fields
 .PP
-.\" FIXME - make this autoscale
+.\" FIXME - make this auto scale
 .nf
 Sun, 28 Dec 1997 21:21:01   de.admin.news.groups      Thread   20 of 86
 Lines 50   Re: EINSPRUCH zu RESULT:de.comm.mobil.ALL   Article  47 of 59
@@ -443,8 +443,10 @@ Line Down	\fBDown arrow\fP	\fBDown\fP (\fBj\fP or \fB^N\fP)
 .\"
 .\"
 .SS "COMMON EDITING COMMANDS"
-An emacs style editing package allows the easy editing of input strings.
-An history list allows the easy reuse of previously entered strings.
+An
+.BR \%emacs (1)
+style editing package allows the easy editing of input strings.
+A history list allows the easy reuse of previously entered strings.
 In addition to the cursor keys, the following commands are available when
 editing a string:
 .PP
@@ -702,7 +704,7 @@ Repeat the previous search
 Search forward for specified subject.
 .TP
 .B SearchSubjB '?'
-Search backward for specified subject.
+Search backwards for specified subject.
 .TP
 .B GroupSelThd '*'
 Select current thread for later processing.
@@ -886,15 +888,16 @@ multipart articles into a thread (''Subject:'' based).
 Untag all articles that were tagged.
 .TP
 .B Post 'w'
-Post an article to current group. If posting fails for some reason, you'll
-get the chance to edit the article again via \fBPostEdit\fP ('\fBe\fP'),
-postpone it via \fBPostPostpone\fP ('\fBo\fP') for later processing (see
-also ''\fB\-o\fP'' command-line switch) or discard it via \fBQuit\fP ('\fBq\fP').
+Post an article to the current group. If posting fails for some reason,
+you'll get the chance to edit the article again via \fBPostEdit\fP
+('\fBe\fP'), postpone it for later processing via \fBPostPostpone\fP
+('\fBo\fP') (see also ''\fB\-o\fP'' command-line switch) or discard it via
+\fBQuit\fP ('\fBq\fP').
 .TP
 .B GroupRepost 'x'
 Repost an already posted article / thread / auto-selected (hot) articles /
 articles matching pattern / tagged articles to another newsgroup(s). Useful
-for reposting from global to local newsgroups. Do not use this to cross-post
+for reposting from global to local newsgroups. Do not use this to crosspost
 your own articles.
 .TP
 .B GroupMarkUnselArtRead 'X'
@@ -949,10 +952,10 @@ Re-enter the last message that was viewed.
 Repeat the previous search.
 .TP
 .B SearchSubjF '/'
-Search forward for a specified subject.
+Search forward for specified subject.
 .TP
 .B SearchSubjB '?'
-Search backwards for a specified subject.
+Search backwards for specified subject.
 .TP
 .B ThreadSelArt '*'
 Select the current thread for later processing.
@@ -1060,8 +1063,8 @@ or reposting.
 Untag all tagged threads.
 .TP
 .B Post 'w'
-Post an article to current group. If posting fails for some reason, you'll
-get the chance to edit the article again via \fBPostEdit\fP
+Post an article to the current group. If posting fails for some reason,
+you'll get the chance to edit the article again via \fBPostEdit\fP
 ('\fBe\fP'), postpone it for later processing via \fBPostPostpone\fP
 ('\fBo\fP') (see also ''\fB\-o\fP'' command-line switch) or discard it via
 \fBQuit\fP ('\fBq\fP').
@@ -1316,8 +1319,8 @@ Display a list of attachments of the current article. See the section
 Post an article to the current group. If posting fails for some reason,
 you'll get the chance to edit the article again via \fBPostEdit\fP
 ('\fBe\fP'), postpone it for later processing via \fBPostPostpone\fP
-('\fBo\fP') (see also ''\fB\-o\fP'' command-line switch) or discard it
-via \fBQuit\fP ('\fBq\fP').
+('\fBo\fP') (see also ''\fB\-o\fP'' command-line switch) or discard it via
+\fBQuit\fP ('\fBq\fP').
 .TP
 .B PageRepost 'x'
 Repost an already posted article / thread / auto-selected (hot) articles /
@@ -1420,14 +1423,14 @@ Toggle the display of help mini menu at the bottom of the screen.
 .\"
 .SS "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
 .\" FIXME - add missing descriptions
-.\"       - \fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fR is used 
+.\"       - \fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fR is used
 .\"         in the !TIN_DEFAULTS_DIR config case
 At startup, \fBtin\fP reads in the configuration files (see also
 .BR \%tin (5)).
 They contain a list of variables that can be used to configure the way
-\fBtin\fP works.  If it exists, the global configuration file,
-\fI/etc/tin/tinrc\fR is read.  After that, the user's own configuration file
-is read from \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fR.  The global file is
+\fBtin\fP works. If it exists, the global configuration file,
+\fI/etc/tin/tinrc\fR is read. After that, the user's own configuration file
+is read from \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fR. The global file is
 useful for distributing system-wide defaults to new users who have no
 private tinrc yet.
 .PP
@@ -1499,8 +1502,8 @@ The character used to show that an article/thread is recent (not older
 than X days). See also \fBrecent_time\fP. Default is 'o'.
 .TP
 .B Character to show unread articles (art_marked_unread)
-The character used to show that an article has not been read. Default is
-\&'+'.
+The character used to show that an article has not been read.
+Default is '+'.
 .TP
 .B Character to show read articles (art_marked_read)
 The character used to show that an article was read. Default is ' '.
@@ -1558,6 +1561,9 @@ current session should be marked read. Default is OFF.
 .TP
 .B Standard background color (col_back)
 Standard background color
+.TP
+.B Color of quoted text from external sources (col_extquote)
+Color of quoted text from external sources
 .TP
 .B Color of sender (From:) (col_from)
 Color of sender (From:)
@@ -1716,7 +1722,7 @@ Default is OFF.
 .TP
 .B (default_filter_select_global)
 Default for quick (1 key) auto-selection filter global.
-ON=apply to all groups OFF=apply to current group. Default is ON.
+ON=apply to all groups, OFF=apply to current group. Default is ON.
 .TP
 .B (default_filter_select_header)
 Default for quick (1 key) auto-selection filter header.
@@ -1781,6 +1787,14 @@ by an highlighted bar if set OFF. Default is OFF.
 The format string used to create the editor start command with parameters.
 Default is "%E +%N %F" (i.e., /bin/vi +7 .article).
 .TP
+.B Detection of external quotes (extquote_handling)
+If ON quotes from external sources will be detected. Default is OFF.
+.TP
+.B Regex used to show external quotes (extquote_regex)
+A regular expression that will be applied when reading articles. All
+matching lines are shown in \fBcol_extquote\fP. If \fBextquote_regex\fP is
+blank, then \fBtin\fP uses a built-in default.
+.TP
 .B Force redraw after certain commands (force_screen_redraw)
 Specifies whether a screen redraw should always be done after certain
 external commands. Default is OFF.
@@ -1811,19 +1825,20 @@ Maximum length of the names of newsgroups to be displayed so that more of
 the newsgroup description can be displayed. Default is 32.
 .TP
 .B Display uue data as an attachment (hide_uue)
-If set to 'No' then raw uuencoded data is displayed. If set to 'Yes' then
-sections of uuencoded data will be shown with a single tag line showing the
-size and filename (much the same as a MIME attachment). If set to 'Hide all'
-then any line that looks like uuencoded data will be folded into a tag line.
-This is useful when uuencoded data is split across more than one article but
-can also lead to false positives. This setting can also be toggled in the
-article viewer. Default is 'No'.
+If set to 'No' then raw uuencoded data is displayed. If set to 'Yes'
+then sections of uuencoded data will be shown with a single tag line
+showing the size and filename (much the same as a MIME attachment).
+If set to 'Hide all' then any line that looks like uuencoded data
+will be folded into a tag line. This is useful when uuencoded data is
+split across more than one article but can also lead to false
+positives. This setting can also be toggled in the article viewer.
+Default is 'No'.
 .TP
 .B External inews (inews_prog)
 Path, name and options of external
 .BR \%inews (1).
-If you are reading via NNTP the default value is \-\-internal (use built-in
-NNTP inews), else it is "inews \-h". The article is passed to
+If you are reading via NNTP the default value is "\-\-internal" (use
+built-in NNTP inews), else it is "inews \-h". The article is passed to
 \fBinews_prog\fP on STDIN via '< article'.
 .TP
 .B (info_in_last_line)
@@ -1878,7 +1893,7 @@ Default is 0 (\fBKill only unread arts\fP).
 Allows 8bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set
 to 8bit. Leaving it OFF is safe for most users and compliant to Internet
-Mail Standard (\fBRFC\%5322\fP  and \fBRFC\%2047\fP ). Default is OFF.
+Mail Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP). Default is OFF.
 .TP
 .B Mail address (mail_address)
 User's mail address (and full name), if not username@host. This is used when
@@ -1915,13 +1930,30 @@ giving '=' as the filename to save to.
 Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fR.
 .TP
 .B Invocation of your mail command (mailer_format)
-.\" TODO: document %S, %T, %M, %F, %U ...
 The format string used to create the mailer command with parameters that is
 used for mailing articles to other people. Default is '%M "%T" < %F' (e.g.,
 /bin/mail "iain" < .article). The flexible format allows other mailers with
-different command-line parameters to be used such as 'elm \-s "%S" "%T" <
-"%F"' (e.g., elm \-s "subject" "iain" < .article) or 'sendmail \-oi \-oem \-t <
-%F' (e.g. sendmail \-oi \-oem \-t < .article).
+different command line parameters to be used such as
+.in +.3i
+.nf
+sendmail \-oem \-t < %F
+elm \-s "%S" "%T" < "%F"
+claws-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
+.fi
+.in -.3i
+\fBinteractive_mailer\fP must be set adequate. The following substitutions
+are supported:
+.in +.3i
+.nf
+.ta \w'%S'u +\w'default_mailer'u
+%F	filename
+%M	default_mailer
+%S	subject-field
+%T	to-filed
+%U	username
+%%	%
+.fi
+.in -.3i
 .TP
 .B 'Mark as (un)read' ignores tags (mark_ignore_tags)
 When this is ON, the \fBGroupMarkThdRead\fP ('\fBK\fP'),
@@ -1941,10 +1973,10 @@ program used to view non-textual parts of articles.
 To use the built-in viewer, set to \-\-internal. This is the default
 value when
 .BR \%metamail (1)
-is not installed. Leave it blank if you don't want any
-automatic viewing of non-textual attachments. The 'V' command can
-always be used to manually view any attachments.
-See also \fBask_for_metamail\fP.
+is not installed. Leave it blank if you don't want any automatic
+viewing of non-textual attachments. The 'V' command can always be
+used to manually view any attachments. See also
+\fBask_for_metamail\fP.
 .TP
 .B MM_CHARSET (mm_charset)
 Charset supported locally, which is also used for MIME header
@@ -2012,11 +2044,11 @@ with spaces. Not defining anything turns off this option.
 .TP
 .B Do not display these header fields (news_headers_to_not_display)
 Same as \fBnews_headers_to_display\fP except it denotes the opposite. An
-example of using both options might be if you thought X\- headers were A Good
-Thing(tm), but thought Alan and Pape were miscreants... well then you would
-do something like this:
-\fInews_headers_to_display=X\-\fR
-\fInews_headers_to_not_display=X\-Alan X\-Pape\fR.
+example of using both options might be if you thought 'X\-' headers were A
+Good Thing(tm), but thought Alan and Pape were miscreants... well then you
+would do something like this:
+\fBnews_headers_to_display=X\-\fP
+\fBnews_headers_to_not_display=X\-Alan X\-Pape\fP
 Not defining anything turns off this option.
 .TP
 .B Quote line when following up (news_quote_format)
@@ -2063,9 +2095,9 @@ local hierarchy of your interest to determine what to do with this
 and \fBpost_mime_encoding\fP.
 .TP
 .B MIME encoding in news messages (post_mime_encoding)
-MIME encoding of the body in news message, if necessary. (8bit,
-base64, quoted\-printable, 7bit). Default is 8bit, which leads to no
-encoding. base64 and quoted\-printable are usually undesired on usenet.
+MIME encoding of the body in news message, if necessary. (8bit, base64,
+quoted\-printable, 7bit). Default is 8bit, which leads to no encoding.
+base64 and quoted\-printable are usually undesired on usenet.
 .TP
 .B View post-processed files (post_process_view)
 If ON, then \fBtin\fP will start an appropriate viewer program to display
@@ -2184,7 +2216,7 @@ using cursor-up/down. The default is 1 (line-by-line). Set to 0 to get
 traditional tin page-by-page scrolling. Set to \-1 to get page-by-page
 scrolling where the top/bottom line is carried over onto the next page.
 This setting supersedes show_last_line_prev_page=ON. Set to \-2 to get
-half-page scrolling. This setting supersedes full_page_scroll=OFF.
+half-page scrolling. This setting supersedes \fBfull_page_scroll\fP=OFF.
 .TP
 .B Format string for the Selection level (select_format)
 Format string tin uses for Selection level representation. See the section
@@ -2465,10 +2497,10 @@ matching words are shown in \fBcol_markdash\fP or \fBmono_markdash\fP. If
 .B Remove ~/.article after posting (unlink_article)
 If ON remove \fI~/.article\fR after posting. Default is ON.
 .TP
-.B Program that opens URL's (url_handler)
-The program that will be run when launching URL's in the article viewer
-using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended to this.
-Default is \fBurl_handler.pl %s\fP.
+.B Program that opens URLs (url_handler)
+The program that will be run when launching URLs in the article viewer
+using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended to
+this. Default is \fBurl_handler.pl %s\fP.
 .TP
 .B URL highlighting in message body (url_highlight)
 Enable highlighting URLs in message body. Default is ON.
@@ -2489,7 +2521,7 @@ Default is OFF.
 If enabled \fBtin\fP uses
 .BR \%slrnface (1)
 to interpret the ''X\-Face:'' header. For this option to have any effect,
-\fBtin\fP must be running in an
+\fBtin\fP must be running in a
 .BR \%xterm (1x)
 and
 .BR \%slrnface (1)
@@ -2553,7 +2585,7 @@ as the result is still positive, otherwise it will fall back to the
 current screen width). Default is 0, wrapping at the current screen
 width.
 .TP
-.B Quote line when cross-posting (xpost_quote_format)
+.B Quote line when crossposting (xpost_quote_format)
 Format is the same as for \fBnews_quote_format\fP, this is used when
 answering to a crossposting to several groups with no ''Followup\-To:''
 set.
@@ -2747,18 +2779,18 @@ prompting according to the default save parameters defined in tinrc or by
 any attributes set for the current group.
 .PP
 Otherwise, the initial prompt will ask you to select which article,
-thread, hot (auto-selected), regex pattern, tagged articles you wish to
-mail, pipe etc.
+thread, hot (auto-selected), regular expression pattern, tagged articles
+you wish to mail, pipe etc.
 .PP
 Tagged articles must have already been tagged with a \fB*Tag\fP ('\fBt\fP')
 command. All tagged articles can be untagged by a \fB*Untag\fP ('\fBU\fP')
 untag command.
 .PP
-If a regex pattern is selected you are asked to enter a pattern (e.g., to
-match all articles subject lines containing 'net News' you enter "net
-News"). Any articles that match the entered expression will be mailed, piped
-etc. See also the \fBwildcard\fP tinrc variable for advanced pattern
-matching options.
+If a regular expression pattern is selected you are asked to enter a
+pattern (e.g., to match all articles subject lines containing 'net News'
+you enter "net News"). Any articles that match the entered expression will
+be mailed, piped etc. See also the \fBwildcard\fP tinrc variable for advanced
+pattern matching options.
 .PP
 Various expansion characters are recognized when entering the directory
 and file to save to. Environment variables (prefixed with '$') and user home
@@ -2967,7 +2999,7 @@ number after the '\fB%\fP'. The following example displays the score in the
 thread level 10 characters wide: '\fB%10S\fP'. Some variables do have a default
 width which may lead to truncation. Truncation for variables which contain only
 numbers happens by dividing the value with a sufficient power of ten and adding a
-SI suffix to the result, i.e. the variable holds a value of 54321 and the width
+SI suffix to the result, that is the variable holds a value of 54321 and the width
 for the variable is 4 the result will be "54 k". If that's undesired you have
 to specify a larger width manually, i.e. '\fB%6n\fP'. Here is an overview of
 the defaults:
@@ -3032,7 +3064,7 @@ Many prompts within \fBtin\fP offer a default choice that the cursor is
 positioned on. By pressing '\fB<CR>\fP' the default value is taken.
 Most prompts can be aborted by pressing '\fB<ESC>\fP'.
 .PP
-When \fBtin\fP is run in an
+When \fBtin\fP is run in a
 .BR \%xterm (1x)
 it will resize itself each time
 the
@@ -3373,8 +3405,8 @@ was compiled into the \fBtin\fP binary, default is \fBSPOOLDIR\fP (see
 above). If tin is running in NNTP mode setting this variable has no effect.
 .TP
 .B TIN_NOVFILENAME
-Define this variable if you want to override the \fBOVERVIEW_FILE\fP file
-name that was compiled into the \fBtin\fP binary, default is
+Define this variable if you want to override the \fBOVERVIEW_FILE\fP
+filename that was compiled into the \fBtin\fP binary, default is
 \fI.overview\fP. If tin is running in NNTP mode setting this variable has
 no effect.
 .TP
@@ -3637,7 +3669,7 @@ The pathname of the user's login shell. Used to set
 \fBdefault_shell_command\fP.
 .TP
 .B XDG_RUNTIME_DIR
-The pathname of the user's dir to put non-essential runtime files into.
+The pathname of the user's dir to put non-essential run time files into.
 .\"
 .\"
 .SH SIGNALS
@@ -3652,7 +3684,7 @@ Terminate gracefully.
 Terminate gracefully.
 .TP
 .B SIGUSR1
-Terminate gracefully but do not restore tty.
+Terminate gracefully but do not restore terminal (tty).
 .TP
 .B SIGUSR2
 Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR-file.
@@ -3703,7 +3735,7 @@ are using the latest (stable) release, and if not, please upgrade
 first! Have a look at the doc/TODO file for known bugs. If you still
 think you've found a bug, please use the \fBBugReport\fP ('\fBR\fP')
 function and write in English. Please do NOT enclose a core-file in
-your bugreport until we request it.
+your bug-report until we request it.
 .\"
 .\"
 .SH HISTORY

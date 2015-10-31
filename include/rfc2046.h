@@ -3,7 +3,7 @@
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2014-02-17
+ *  Updated   : 2015-10-09
  *  Notes     : rfc2046 MIME article definitions
  *
  * Copyright (c) 2000-2015 Jason Faultless <jason@altarstone.com>
@@ -153,11 +153,14 @@ struct t_header
 #	define C_QUOTE2	0x0040
 #	define C_QUOTE3	0x0080
 
-#	define C_URL		0x0100	/* Contains http|ftp|gopher: */
-#	define C_MAIL		0x0200	/* Contains mailto: */
-#	define C_NEWS		0x0400	/* Contains news|nntp: */
-#	define C_CTRLL		0x0800	/* Contains ^L */
-#	define C_VERBATIM	0x1000	/* Verbatim block */
+#	define C_URL			0x0100	/* Contains http|ftp|gopher: */
+#	define C_MAIL			0x0200	/* Contains mailto: */
+#	define C_NEWS			0x0400	/* Contains news|nntp: */
+#	define C_CTRLL			0x0800	/* Contains ^L */
+#	define C_VERBATIM		0x1000	/* Verbatim block */
+#	ifdef HAVE_COLOR
+#		define C_EXTQUOTE	0x2000	/* Quoted text from external sources */
+#	endif /* HAVE_COLOR */
 
 
 typedef struct lineinfo

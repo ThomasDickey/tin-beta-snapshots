@@ -1,3 +1,59 @@
+-- 2.3.2 release 20151031 "" --
+
+U015) Stefan Assmann <sassmann@kpanic.de>
+      BUG. format string vulnerability with -Sv
+      FIX. save.c, select.c
+
+U014) Wei-Lun Chao <bluebat@member.fsf.org>
+      ADD. update traditional chinese translation
+      FIX. zh_TW.po
+
+U013) Mingye Wang <arthur200126@gmail.com>
+      ADD. simplified chinese translation
+      FIX. zh_CN.po
+
+U012) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      FIX. aclocal.m4
+
+U011) Dennis Preiser <dennis@d--p.de>
+      BUG. used freed fp if cooking of article fails
+      BUG. Cygwin >= 2.0 was treated as Cygwin < 1.7
+      BUG. ncurses >= 6.0 wasn't recognized
+      BUG. possible crash on initial reconnect loop when network is down
+      BUG. socket not closed on early exit
+      BUG. memory leak when aborting index_group() from select level
+      ADD. AttachSelect and AttachPipe now perform charset translation for
+           text/*-parts
+      ADD. handle CRLF spead over two lines in base64 decoding
+      ADD. options to color external quotes (extquote_handling,
+           extquote_regex, col_extquote)
+      FIX. extern.h, rfc2046.h, tcurses.h, tin.h, tinrc.h, attrib.c, color.c
+           config.c, cook.c, group.c, init.c, lang.c, main.c, memory.c
+           nntplib.c, options_menu.c, page.c, rfc2045.c, save.c, tincfg.tbl
+           tin.[15], configure[.in]
+
+U010) Joe Hansen <joedalton2@yahoo.dk>
+      ADD. updated danish translation
+      FIX. da.po
+
+U009) Urs Janssen <urs@tin.org>
+      ADD. updated german translation
+      ADD. config.guess, config.sub update
+      ADD. fix hypothetic null pointer dereference
+      ADD. allow hand supplied Sender header with external news
+      ADD. avoid useless strdup()/free()
+      ADD. onion TLD to disallowed TLDs
+      ADD. removed redundant conditions in auth code
+      BUG. wrong format string in CLOSEDIR macro used
+      BUG. uncontrolled format string in nntp error messages.
+      FIX. auth.c, misc.c, nntplib.c, page.c, post.c, prompt.c, rfc2047.c
+           search.c, thread.c, policy.h, tin.h, de.po, config.guess, config.sub
+
+U008) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
 -- 2.3.1 release 20141224 "Tallant" --
 
 U007) Dennis Preiser <dennis@d--p.de>
@@ -12,7 +68,7 @@ U005) Urs Janssen <urs@tin.org>
       ADD. fix hypothetic null pointer dereference
       ADD. config.guess, config.sub update
       ADD. updated german translation
-      FIX. proto.h, filter.c, post.c, save.c, tin.1, config.guess, config.sub,
+      FIX. proto.h, filter.c, post.c, save.c, tin.1, config.guess, config.sub
            de.po
 
 -- 2.3.0 release 20141003 "Glenfoyle" --

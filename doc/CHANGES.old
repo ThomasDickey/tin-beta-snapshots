@@ -2315,7 +2315,7 @@ U071) Urs Janssen <urs@tin.org>
       ADD. config.guess, config.sub update
       ADD. start BeOS port (networking missing)
       ADD. renamed some vars to avoid shadowing on QNX
-      ADD. new quad_t check to avoid waring with autoconf >= 2.5
+      ADD. new quad_t check to avoid warning with autoconf >= 2.5
       ADD. w2r.pl and opt-case.pl man-pages
       BUG. nls didn't work
       BUG. shell detection failed in some cases

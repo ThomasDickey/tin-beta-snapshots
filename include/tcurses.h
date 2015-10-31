@@ -50,9 +50,9 @@
 #				endif /* _XOPEN_SOURCE_EXTENDED */
 #				include <ncursesw/ncurses.h>
 				/* we need a recent ncursesw for wide-char */
-#				if (NCURSES_VERSION_MAJOR >= 5) && (NCURSES_VERSION_MINOR >= 3)
+#				if (NCURSES_VERSION_MAJOR == 5) && (NCURSES_VERSION_MINOR >= 3) || (NCURSES_VERSION_MAJOR >= 6)
 #					define HAVE_NCURSESW 1
-#				endif /* NCURSES_VERSION_MAJOR >= 5 && NCURSES_VERSION_MINOR >=3 */
+#				endif /* NCURSES_VERSION_MAJOR == 5 && NCURSES_VERSION_MINOR >=3 || NCURSES_VERSION_MAJOR >= 6 */
 #			else
 #				if defined(HAVE_NCURSES_H)
 #					include <ncurses.h>

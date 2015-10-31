@@ -40,9 +40,9 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.3.1"
+#		define VERSION		"2.3.2"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20141224"
+#	define RELEASEDATE	"20150912"
 #	define RELEASENAME	"Tallant"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.12"

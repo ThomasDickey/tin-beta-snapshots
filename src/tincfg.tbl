@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2013-09-01
+;   Updated   : 2015-10-09
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2014 Thomas E. Dickey <dickey@invisible-island.net>
@@ -159,6 +159,9 @@
 	col_signature			txt_colors
 	col_urls			txt_colors
 	col_verbatim			txt_colors
+	col_extquote			txt_colors
+	extquote_handling		OPT_ON_OFF
+	attrib_extquote_handling	OPT_ON_OFF
 #else
 	highlight_options		OPT_TITLE
 #endif
@@ -273,6 +276,9 @@
 	strip_was_regex			OPT_STRING
 	verbatim_begin_regex		OPT_STRING
 	verbatim_end_regex		OPT_STRING
+#ifdef HAVE_COLOR
+	extquote_regex			OPT_STRING
+#endif
 	force_screen_redraw		OPT_ON_OFF
 	start_editor_offset		OPT_ON_OFF
 	editor_format			OPT_STRING

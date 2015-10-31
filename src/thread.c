@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2014-04-29
+ *  Updated   : 2015-10-21
  *  Notes     :
  *
  * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
@@ -865,7 +865,8 @@ show_thread_page(
 	art = find_response(thread_basenote, thdmenu.first);
 	for (i = thdmenu.first; i < thdmenu.first + NOTESLINES && i < thdmenu.max; ++i) {
 		build_tline(i, &arts[art]);
-		art = next_response(art);
+		if ((art = next_response(art)) < 0)
+			break;
 	}
 
 	show_mini_help(THREAD_LEVEL);

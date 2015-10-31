@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2013-12-06
+ *  Updated   : 2015-10-22
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -250,7 +250,7 @@ authinfo_plain(
 		if (ret != OK_AUTH)
 #	endif /* USE_SASL */
 		{
-			if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_user))
+			if (nntp_caps.type != CAPABILITIES || nntp_caps.authinfo_user)
 				ret = do_authinfo_user(server, authusername, authpassword);
 		}
 		return (ret == OK_AUTH);
@@ -353,7 +353,7 @@ authinfo_plain(
 			if (ret != OK_AUTH)
 #	endif /* USE_SASL */
 			{
-				if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && (nntp_caps.authinfo_user || (!nntp_caps.authinfo_user && !nntp_caps.authinfo_sasl)))) {
+				if (nntp_caps.type != CAPABILITIES || (nntp_caps.authinfo_user || !nntp_caps.authinfo_sasl)) {
 #	ifdef DEBUG
 					if (debug & DEBUG_NNTP) {
 						if (nntp_caps.type == CAPABILITIES && !nntp_caps.authinfo_sasl && !nntp_caps.authinfo_user)
@@ -485,7 +485,7 @@ do_authinfo_sasl_plain(
 
 #		ifdef DEBUG
 	if (debug & DEBUG_NNTP)
-		debug_print_file("NNTP", "do_authinfo_sasl_plain(%s, %s)", BlankIfNull(authuser), BlankIfNull(authpass));
+		debug_print_file("NNTP", "do_authinfo_sasl_plain(\"%s\", \"%s\")", BlankIfNull(authuser), BlankIfNull(authpass));
 #		endif /* DEBUG */
 
 	if ((foo = sasl_auth_plain(utf8user, utf8pass)) == NULL) {
