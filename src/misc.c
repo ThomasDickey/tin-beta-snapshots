@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2015-06-17
+ *  Updated   : 2016-07-29
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -381,7 +381,6 @@ invoke_editor(
 	char fnameb[PATH_LEN];
 #endif /* BACKUP_FILE_EXT */
 
-
 	if (first) {
 		my_strncpy(editor, get_val("VISUAL", get_val("EDITOR", DEFAULT_EDITOR)), sizeof(editor) - 1);
 		first = FALSE;
@@ -554,16 +553,26 @@ do_shell_escape(
  */
 void
 tin_done(
-	int ret)
+	int ret,
+	const char *fmt,
+	...)
 {
+	char *buf = NULL;
 	int i;
 	signed long int wrote_newsrc_lines;
 	static int nested = 0;
 	struct t_group *group;
 	t_bool ask = TRUE;
+	va_list ap;
 
 	if (nested++)
 		giveup();
+
+	if (fmt && *fmt) {
+		va_start(ap, fmt);
+		buf = fmt_message(fmt, ap);
+		va_end(ap);
+	}
 
 	signal_context = cMain;
 
@@ -669,6 +678,13 @@ tin_done(
 #	endif /* USE_CURSES */
 #endif /* HAVE_COLOR */
 	cleanup_tmp_files();
+
+	if (buf && *buf) {
+		my_fputs(buf, stderr);
+		my_fputs(cCRLF, stderr);
+		my_fflush(stderr);
+		free(buf);
+	}
 
 #ifdef DOALLOC
 	no_leaks();	/* free permanent stuff */
@@ -1015,7 +1031,7 @@ get_author(
 	char *p = idna_decode(art->from);
 	int author;
 
-	author = ((thread && !show_subject) ? SHOW_FROM_BOTH : curr_group->attribute->show_author);
+	author = ((thread && !show_subject && curr_group->attribute->show_author == SHOW_FROM_NONE) ? SHOW_FROM_BOTH : curr_group->attribute->show_author);
 
 	switch (author) {
 		case SHOW_FROM_ADDR:
@@ -1119,8 +1135,8 @@ create_index_lock_file(
 {
 	FILE *fp;
 	char buf[64];
-	time_t epoch;
 	int err;
+	time_t epoch;
 
 	if ((fp = fopen(the_lock_file, "r")) != NULL) {
 		fgets(buf, (int) sizeof(buf), fp);
@@ -1466,6 +1482,8 @@ strfpath_cp(
  *   0			on error
  *   1			if generated pathname is a mailbox
  *   2			success
+ *
+ * TODO: add %X (Article number), %M (Message-ID)?
  */
 static int
 _strfpath(
@@ -2388,14 +2406,15 @@ buffer_to_local(
 			 * TODO: hardcode unknown_ucs4 (0x00 0x00 0x00 0x3f)
 			 *       instead of converting it?
 			 */
-			if ((cd0 = iconv_open("UCS-4", "US-ASCII")) != (iconv_t) (-1) &&
-				(cd1 = iconv_open("UCS-4", network_charset)) != (iconv_t) (-1) &&
-				(cd2 = iconv_open(clocal_charset, "UCS-4")) != (iconv_t) (-1)) {
+			cd0 = iconv_open("UCS-4", "US-ASCII");
+			cd1 = iconv_open("UCS-4", network_charset);
+			cd2 = iconv_open(clocal_charset, "UCS-4");
+			if (cd0 != (iconv_t) (-1) && cd1 != (iconv_t) (-1) && cd2 != (iconv_t) (-1)) {
 				ICONV_CONST char *inbuf;
 				char unknown = '?';
 				ICONV_CONST char *unknown_ascii = &unknown;
-				char *unknown_ucs4;
-				char unknown_buf[4];
+				char *unknown_buf;
+				char unknown_ucs4[4];
 				char *obuf, *outbuf;
 				char *tmpbuf, *tbuf;
 				ICONV_CONST char *cur_inbuf;
@@ -2407,10 +2426,10 @@ buffer_to_local(
 				size_t cur_obl, cur_ibl;
 				size_t result;
 
-				unknown_ucs4 = unknown_buf;
+				unknown_buf = unknown_ucs4;
 
 				/* convert '?' from ASCII to UCS-4 */
-				iconv(cd0, &unknown_ascii, &inbytesleft, &unknown_ucs4, &unknown_bytesleft);
+				iconv(cd0, &unknown_ascii, &inbytesleft, &unknown_buf, &unknown_bytesleft);
 
 				/* temporarily convert to UCS-4 */
 				inbuf = (ICONV_CONST char *) *line;
@@ -2511,6 +2530,12 @@ buffer_to_local(
 				free(obuf);
 				free(tbuf);
 			} else {
+				if (cd2 != (iconv_t) (-1))
+					iconv_close(cd2);
+				if (cd1 != (iconv_t) (-1))
+					iconv_close(cd1);
+				if (cd0 != (iconv_t) (-1))
+					iconv_close(cd0);
 				free(clocal_charset);
 				return FALSE;
 			}
@@ -2738,7 +2763,7 @@ static char gnksa_legal_localpart_chars[256] = {
 /*         0 1 2 3  4 5 6 7  8 9 a b  c d e f */
 /* 0x00 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
 /* 0x10 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
-/* 0x20 */ 0,0,0,1, 1,1,1,1, 0,0,1,1, 0,1,1,1,
+/* 0x20 */ 0,1,0,1, 1,1,1,1, 0,0,1,1, 0,1,1,1,
 /* 0x30 */ 1,1,1,1, 1,1,1,1, 1,1,0,0, 0,1,0,1,
 /* 0x40 */ 0,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1,
 /* 0x50 */ 1,1,1,1, 1,1,1,1, 1,1,1,0, 0,0,1,1,
@@ -3097,7 +3122,7 @@ gnksa_dequote_plainphrase(
 						state = 4;
 						*(wpos++) = *(rpos++);
 						break;
-					}
+				}
 				break;
 
 			case 5:
@@ -3746,7 +3771,7 @@ idna_decode(
 		r = in;
 		q = out;
 	}
-	if ((res = idn_decodename(IDN_DECODE_LOOKUP, r, q, out + strlen(out) - q)) == idn_success)
+	if ((res = idn_decodename(IDN_DECODE_LOOKUP, r, q, out + strlen(out) - q + 1)) == idn_success)
 		return out;
 	else { /* IDNA 2008 failed, try again with IDNA 2003 if available */
 		free(out);
@@ -3833,7 +3858,7 @@ tin_version_info(
 		PRODUCT, VERSION, RELEASEDATE, RELEASENAME, __DATE__, __TIME__);
 #else
 	fprintf(fp, _("Version: %s %s release %s (\"%s\")\n"),
-	       PRODUCT, VERSION, RELEASEDATE, RELEASENAME);
+		PRODUCT, VERSION, RELEASEDATE, RELEASENAME);
 #endif /* __DATE__ && __TIME__ */
 	wlines++;
 

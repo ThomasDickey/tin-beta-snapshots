@@ -3,10 +3,10 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2014-08-31
+ *  Updated   : 2016-07-29
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -315,7 +315,7 @@ open_newsgroups_fp(
 						if (group->type == GROUP_TYPE_NEWS) {
 							if (nntp_caps.type == CAPABILITIES && nntp_caps.list_newsgroups) {
 								if (*buff) {
-									if (strlen(buff) + strlen(active[i].name) + 1 < NNTP_STRLEN) {
+									if (strlen(buff) + strlen(active[i].name) + 1 < NNTP_GRPLEN) {
 										snprintf(buff + strlen(buff), sizeof(buff) - strlen(buff), ",%s", active[i].name);
 										continue;
 									} else {
@@ -372,10 +372,8 @@ open_newsgroups_fp(
 				}
 				/* TODO: add 483 (RFC 3977) support */
 				if (no_more_wildmat == ERR_NOAUTH || no_more_wildmat == NEED_AUTHINFO) {
-					if (!authenticate(nntp_server, userid, FALSE)) {
-						error_message(2, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
-						tin_done(EXIT_FAILURE);
-					}
+					if (!authenticate(nntp_server, userid, FALSE))
+						tin_done(EXIT_FAILURE, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
 				}
 #		endif /* !DISABLE_PIPELINING */
 				fclose(result);
@@ -610,6 +608,7 @@ grp_del_mail_arts(
 		 * at least for GROUP_TYPE_SAVE a wait is annoying - nuke the message?
 		 */
 		wait_message(0, (group->type == GROUP_TYPE_MAIL) ? _(txt_processing_mail_arts) : _(txt_processing_saved_arts));
+		cursoroff();
 		make_base_group_path(group->spooldir, group->name, group_path, sizeof(group_path));
 		for_each_art(i) {
 			article = &arts[i];

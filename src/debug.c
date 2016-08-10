@@ -3,10 +3,10 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-09
+ *  Updated   : 2016-02-26
  *  Notes     : debug routines
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,11 +53,11 @@ int debug;
  */
 static void debug_print_attributes(struct t_attribute *attr, FILE *fp);
 static void debug_print_filter(FILE *fp, int num, struct t_filter *the_filter);
-static void debug_print_newsrc(struct t_newsrc *NewSrc, FILE *fp);
+static void debug_print_newsrc(struct t_newsrc *lnewsrc, FILE *fp);
 
 
 /*
- * nntp specific debug routines
+ * remove debug files
  */
 void
 debug_delete_files(
@@ -65,22 +65,46 @@ debug_delete_files(
 {
 	char file[PATH_LEN];
 
-	if (debug) {
+	if (debug & (DEBUG_NNTP | DEBUG_REMOVE)) {
 		joinpath(file, sizeof(file), TMPDIR, "NNTP");
 		unlink(file);
+	}
+
+	if (debug & (DEBUG_FILTER | DEBUG_REMOVE)) {
 		joinpath(file, sizeof(file), TMPDIR, "ARTS");
-		unlink(file);
-		joinpath(file, sizeof(file), TMPDIR, "ACTIVE");
-		unlink(file);
-		joinpath(file, sizeof(file), TMPDIR, "BITMAP");
-		unlink(file);
-		joinpath(file, sizeof(file), TMPDIR, "MALLOC");
 		unlink(file);
 		joinpath(file, sizeof(file), TMPDIR, "FILTER");
 		unlink(file);
+	}
+
+	if (debug & (DEBUG_NEWSRC | DEBUG_REMOVE)) {
+		joinpath(file, sizeof(file), TMPDIR, "BITMAP");
+		unlink(file);
+	}
+
+	if (debug & (DEBUG_REFS | DEBUG_REMOVE)) {
+		joinpath(file, sizeof(file), TMPDIR, "REFS.dump");
+		unlink(file);
+		joinpath(file, sizeof(file), TMPDIR, "REFS.info");
+		unlink(file);
+	}
+
+	if (debug & (DEBUG_MEM | DEBUG_REMOVE)) {
+		joinpath(file, sizeof(file), TMPDIR, "MALLOC");
+		unlink(file);
+	}
+
+	if (debug & (DEBUG_ATTRIB | DEBUG_REMOVE)) {
 		joinpath(file, sizeof(file), TMPDIR, "ATTRIBUTES");
 		unlink(file);
-		joinpath(file, sizeof(file), TMPDIR, "SCOPES");
+		joinpath(file, sizeof(file), TMPDIR, "SCOPES-R");
+		unlink(file);
+		joinpath(file, sizeof(file), TMPDIR, "SCOPES-W");
+		unlink(file);
+	}
+
+	if (debug & (DEBUG_MISC | DEBUG_REMOVE)) {
+		joinpath(file, sizeof(file), TMPDIR, "ACTIVE");
 		unlink(file);
 	}
 }
@@ -414,8 +438,7 @@ logtime(
 	static struct t_tintime log_time;
 	static char out[40];
 
-	if (tin_gettime(&log_time) == 0)
-	{
+	if (tin_gettime(&log_time) == 0) {
 		if (my_strftime(out, 39, " [%H:%M:%S.", gmtime(&(log_time.tv_sec)))) {
 			sprintf(out + 11, "%09ld", log_time.tv_nsec); /* strlen(" [hh:mm:ss.") */
 			out[17] = '\0'; /* strlen(" [hh:mm:ss.uuuuuu") */

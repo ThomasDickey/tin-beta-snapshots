@@ -3,11 +3,11 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2015-10-22
+ *  Updated   : 2016-01-31
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2015 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 1997-2016 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -235,9 +235,8 @@ authinfo_plain(
 	static t_bool already_failed = FALSE;
 	static t_bool initialized = FALSE;
 
-	changed = strcmp(server, last_server);	/* do we need new auth values? */
-	strncpy(last_server, server, PATH_LEN - 1);
-	last_server[PATH_LEN - 1] = '\0';
+	if ((changed = strcmp(server, last_server)))	/* do we need new auth values? */
+		STRCPY(last_server, server);
 
 	/*
 	 * Let's try the previous auth pair first, if applicable.
@@ -257,7 +256,8 @@ authinfo_plain(
 	}
 
 	authpassword[0] = '\0';
-	authuser = strncpy(authusername, authuser, sizeof(authusername) - 1);
+	STRCPY(authusername, authuser);
+	authuser = authusername;
 	authpass = authpassword;
 
 	/*
@@ -326,7 +326,7 @@ authinfo_plain(
 #	ifdef USE_CURSES
 			Raw(TRUE);
 #	endif /* USE_CURSES */
-			if (!prompt_default_string(_(txt_auth_user), authuser, PATH_LEN, authusername, HIST_NONE)) {
+			if (!prompt_default_string(_(txt_auth_user), authuser, sizeof(authusername) - 1, authusername, HIST_NONE)) {
 #	ifdef DEBUG
 				if (debug & DEBUG_NNTP)
 					debug_print_file("NNTP", "authorization failed: no username");
@@ -337,14 +337,15 @@ authinfo_plain(
 #	ifdef USE_CURSES
 			Raw(state);
 			my_printf("%s", _(txt_auth_pass));
-			wgetnstr(stdscr, authpassword, sizeof(authpassword));
+			wgetnstr(stdscr, authpassword, sizeof(authpassword) - 1);
+			authpassword[sizeof(authpassword) - 1] = '\0';
 			Raw(TRUE);
 #	else
 			/*
-			 * on some systems (i.e. Solaris) getpass(3) is limited to 8 chars ->
-			 * we use tin_getline()
+			 * on some systems (i.e. Solaris) getpass(3) is limited
+			 * to 8 chars -> we use tin_getline()
 			 */
-			authpass = strncpy(authpassword, tin_getline(_(txt_auth_pass), FALSE, NULL, PATH_LEN, TRUE, HIST_NONE), sizeof(authpassword) - 1);
+			STRCPY(authpassword, tin_getline(_(txt_auth_pass), FALSE, NULL, sizeof(authpassword) - 1, TRUE, HIST_NONE));
 #	endif /* USE_CURSES */
 
 #	ifdef USE_SASL
@@ -467,14 +468,10 @@ do_authinfo_sasl_plain(
 			if (c == i) { /* should never fail */
 				if (!buffer_to_network(utf8user, c)) {
 					free(utf8user);
-					free(utf8pass);
 					utf8user = my_strdup(authuser);
-					utf8pass = my_strdup(authpass);
 				} else {
 					if (!buffer_to_network(utf8pass, c)) {
-						free(utf8user);
 						free(utf8pass);
-						utf8user = my_strdup(authuser);
 						utf8pass = my_strdup(authpass);
 					}
 				}

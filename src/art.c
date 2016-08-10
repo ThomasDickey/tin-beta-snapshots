@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-10
+ *  Updated   : 2016-08-06
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -477,8 +477,10 @@ index_group(
 	if ((last_read_article < max) && caching_xover) {
 		new_min = (last_read_article >= min) ? last_read_article + 1 : min;
 
-		if ((changed += read_overview(group, new_min, max, &last_read_article, FALSE)) == -1)
+		if ((i = read_overview(group, new_min, max, &last_read_article, FALSE)) == -1)
 			return FALSE;	/* user aborted indexing */
+		else
+			changed += i;
 	} else
 		caching_xover = FALSE;
 
@@ -502,8 +504,10 @@ index_group(
 	if (total > 0) {
 		new_min = (getart_limit != 0 && last_read_article < min) ? min - 1 : last_read_article;
 
-		if ((changed += read_art_headers(group, total, new_min)) == -1)
+		if ((i = read_art_headers(group, total, new_min)) == -1)
 			return FALSE;		/* user aborted indexing */
+		else
+			changed += i;
 	}
 
 #ifdef DEBUG
@@ -702,7 +706,7 @@ read_art_headers(
 {
 	FILE *fp;
 	char dir[PATH_LEN];
-	char *group_msg;
+	char group_msg[LEN];
 	int i;
 	int modified = 0;
 	t_artnum art;
@@ -721,7 +725,8 @@ read_art_headers(
 		chdir(buf);
 	}
 
-	group_msg = fmt_string(_(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group->name);
+	snprintf(group_msg, sizeof(group_msg), _(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group->name);
+
 	for (i = 0; i < grpmenu.max; i++) {	/* for each article number */
 		art = base[i];
 
@@ -767,6 +772,21 @@ read_art_headers(
 				debug_print_file("NNTP", "read_art_headers() %s", buf);
 			}
 #endif /* DEBUG */
+			arts[top_art].artnum = T_ARTNUM_CONST(0);
+			arts[top_art].date = (time_t) 0;
+			FreeAndNull(arts[top_art].xref);
+			FreeAndNull(arts[top_art].refs);
+			FreeAndNull(arts[top_art].msgid);
+			if (arts[top_art].archive) {
+				FreeAndNull(arts[top_art].archive->partnum);
+				FreeAndNull(arts[top_art].archive);
+			}
+			arts[top_art].tagged = 0;
+			arts[top_art].thread = ART_EXPIRED;
+			arts[top_art].prev = ART_NORMAL;
+			arts[top_art].status = ART_UNREAD;
+			arts[top_art].killed = ART_NOTKILLED;
+			arts[top_art].selected = FALSE;
 			continue;
 		}
 
@@ -776,7 +796,6 @@ read_art_headers(
 		if (++modified % MODULO_COUNT_NUM == 0)
 			show_progress(group_msg, modified, total);
 	}
-	free(group_msg);
 
 	/*
 	 * Change back to previous dir before indexing started
@@ -865,7 +884,7 @@ thread_by_percentage(
 {
 	int i, j, k;
 	int root_num = 0; /* The index number of the root we are currently working on. */
-	int unmatched; /* This is the number of characters that don't match between the two strings */
+	unsigned int unmatched; /* This is the number of characters that don't match between the two strings */
 	unsigned int percentage = 100 - group->attribute->thread_perc;
 	size_t slen;
 
@@ -901,7 +920,7 @@ thread_by_percentage(
 		 */
 		if (!(slen = strlen(arts[base[root_num]].subject)))
 			slen++;
-		unmatched += abs(slen - strlen(arts[i].subject));
+		unmatched += slen - strlen(arts[i].subject);
 		if (unmatched * 100 / slen > percentage) {
 			/*
 			 * If there is less greater than percentage% different start a
@@ -1634,7 +1653,7 @@ read_overview(
 					debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") Unexpected overview-field %d of %d: %s", nntp_caps.over_cmd, artnum, count, over_fields, ptr);
 #endif /* DEBUG */
 
-				/* "common error" Xref:full in overview-data but not in OVERVIEW.FTM */
+				/* "common error" Xref:full in overview-data but not in OVERVIEW.FMT */
 				if (count == over_fields + 1) {
 					if (!strncasecmp(ptr, "Xref: ", 6)) {
 #ifdef DEBUG
@@ -1725,7 +1744,7 @@ read_overview(
 						if (*ptr) {
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && !isdigit((unsigned char) *ptr))
-									debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") overview field %d (%s) mismatch: %s", nntp_caps.over_cmd, artnum, count, ofmt[count].name, ptr);
+								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") overview field %d (%s) mismatch: %s", nntp_caps.over_cmd, artnum, count, ofmt[count].name, ptr);
 #endif /* DEBUG */
 						}
 						continue;
@@ -2191,15 +2210,18 @@ find_nov_file(
 			 * Append -<nntpserver> to private cache dir
 			 */
 			if (!once_only && nntp_server) {
-				const char *from;
-				char *to;
-				int c;
+				size_t sp, ln = strlen(index_newsdir);
 
-				to = index_newsdir + strlen(index_newsdir);
-				*(to++) = '-';
-				for (from = nntp_server; (c = *from) != 0; ++from)
-					*(to++) = tolower(c);
-				*to = '\0';
+				if ((sp = sizeof(index_newsdir) - ln - 1) >= 2) {
+					char *srv = my_strdup(nntp_server);
+
+					strcat(index_newsdir, "-");
+					sp--;
+					ln++;
+					str_lwr(srv);
+					my_strncpy(index_newsdir + ln, srv, sp);
+					free(srv);
+				}
 				once_only = TRUE;
 			}
 
@@ -2265,7 +2287,6 @@ find_nov_file(
 
 		if (strcmp(buf, group->name) == 0)
 			break;
-
 	}
 
 	return nov_file;
@@ -2281,6 +2302,7 @@ do_update(
 {
 	int i, j, k = 0;
 	time_t beg_epoch = 0;
+	struct t_article *art;
 	struct t_group *group;
 
 	if (verbose)
@@ -2302,8 +2324,14 @@ do_update(
 		if (group->bogus || !group->subscribed)
 			continue;
 
-		if (!index_group(group))
+		if (!index_group(group)) {
+			for_each_art(j) {
+				art = &arts[j];
+				FreeAndNull(art->refs);
+				FreeAndNull(art->msgid);
+			}
 			continue;
+		}
 
 		k++;
 
@@ -2727,7 +2755,11 @@ find_artnum(
 
 
 /*----------------------------- Overview handling -----------------------*/
-
+/* TODO: use
+ *           setlocale(LC_ALL, "POSIX"); setlocale(LC_TIME, "POSIX");
+ *           my_strftime(date, sizeof(date) -1, "%d %b %Y %H:%M:%S GMT",gmtime(&secs));
+ *       instead?
+ */
 static char *
 print_date(
 	time_t secs)
@@ -2739,12 +2771,14 @@ print_date(
 		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 	};
 
-	tm = gmtime(&secs);
-	snprintf(date, sizeof(date), "%02d %s %04d %02d:%02d:%02d GMT",
-			tm->tm_mday,
-			months_a[tm->tm_mon],
-			tm->tm_year + 1900,
-			tm->tm_hour, tm->tm_min, tm->tm_sec);
+	if ((tm = gmtime(&secs)) != NULL)
+		snprintf(date, sizeof(date), "%02d %s %04d %02d:%02d:%02d GMT",
+				tm->tm_mday,
+				months_a[tm->tm_mon],
+				tm->tm_year + 1900,
+				tm->tm_hour, tm->tm_min, tm->tm_sec);
+	else
+		snprintf(date, sizeof(date), "01 Jan 1970 00:00:00 UTC");
 
 	return date;
 }

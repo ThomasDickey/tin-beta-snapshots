@@ -3,12 +3,12 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2013-11-14
+ *  Updated   : 2016-05-02
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
  *
- * Copyright (c) 1996-2015 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1996-2016 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@
 #define REF_SEP	" \t"			/* Separator chars in ref headers */
 
 #ifdef DEBUG
-#	define DEBUG_PRINT(x)	fprintf x
+#	define DEBUG_PRINT(x)	if (dbgfd != NULL) fprintf x
 static FILE *dbgfd;
 #endif /* DEBUG */
 
@@ -440,7 +440,7 @@ rearrange_siblings(
 		current = arts[i].refptr;
 
 		if (!current)
-		continue;
+			continue;
 
 		for (; current->sibling == NULL && current->parent != NULL; current = current->parent)
 			;
@@ -724,9 +724,7 @@ dump_msgid_threads(
 
 	for (i = 0; i < MSGID_HASH_SIZE; i++) {
 		if (msgids[i] != NULL) {
-
 			for (ptr = msgids[i]; ptr != NULL; ptr = ptr->next) {
-
 				if (ptr->parent == NULL) {
 					dump_msgid_thread(ptr, 1);
 					fprintf(dbgfd, "\n");
@@ -734,7 +732,6 @@ dump_msgid_threads(
 			}
 		}
 	}
-
 	fprintf(dbgfd, "Dump complete.\n\n");
 }
 #endif /* DEBUG */
@@ -863,8 +860,8 @@ thread_by_reference(
 		char file[PATH_LEN];
 
 		joinpath(file, sizeof(file), TMPDIR, "REFS.info");
-		dbgfd = fopen(file, "w");
-		dump_msgid_threads();
+		if ((dbgfd = fopen(file, "w")) != NULL)
+			dump_msgid_threads();
 	}
 #endif /* DEBUG */
 
@@ -881,16 +878,16 @@ thread_by_reference(
 	}
 
 #ifdef DEBUG
-	if (debug & DEBUG_REFS) {
-		fprintf(dbgfd, "Full dump of threading info...\n");
-		fprintf(dbgfd, "%3s %3s %3s %3s : %3s %3s\n", "#", "Par", "Sib", "Chd", "In", "Thd");
+	if ((debug & DEBUG_REFS) && dbgfd != NULL) {
+		DEBUG_PRINT((dbgfd, "Full dump of threading info...\n"));
+		DEBUG_PRINT((dbgfd, "%3s %3s %3s %3s : %3s %3s\n", "#", "Par", "Sib", "Chd", "In", "Thd"));
 
 		for_each_art(i) {
-			fprintf(dbgfd, "%3d %3d %3d %3d : %3d %3d : %.50s %s\n", i,
+			DEBUG_PRINT((dbgfd, "%3d %3d %3d %3d : %3d %3d : %.50s %s\n", i,
 				(arts[i].refptr->parent) ? arts[i].refptr->parent->article : -2,
 				(arts[i].refptr->sibling) ? arts[i].refptr->sibling->article : -2,
 				(arts[i].refptr->child) ? arts[i].refptr->child->article : -2,
-				arts[i].prev, arts[i].thread, arts[i].refptr->txt, arts[i].subject);
+				arts[i].prev, arts[i].thread, arts[i].refptr->txt, arts[i].subject));
 		}
 
 		fclose(dbgfd);
@@ -1002,11 +999,12 @@ build_references(
 		char file[PATH_LEN];
 
 		joinpath(file, sizeof(file), TMPDIR, "REFS.dump");
-		dbgfd = fopen(file, "w");
+		if ((dbgfd = fopen(file, "w")) != NULL) {
 #	ifdef HAVE_SETVBUF
-		SETVBUF(dbgfd, NULL, _IONBF, 0);
+			SETVBUF(dbgfd, NULL, _IONBF, 0);
 #	endif /* HAVE_SETVBUF */
-		fprintf(dbgfd, "MSGID phase\n");
+			DEBUG_PRINT((dbgfd, "MSGID phase\n"));
+		}
 	}
 #endif /* DEBUG */
 
@@ -1092,7 +1090,7 @@ build_references(
 	}
 
 #ifdef DEBUG
-	if (debug & DEBUG_REFS)
+	if ((debug & DEBUG_REFS) && dbgfd != NULL)
 		fclose(dbgfd);
 #endif /* DEBUG */
 

@@ -3,10 +3,10 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-05
+ *  Updated   : 2016-06-06
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -218,6 +218,10 @@ static t_help_page select_help_page[] = {
 	{ txt_help_select_group_by_num, NOT_ASSIGNED },
 	{ txt_help_select_goto_group, SELECT_GOTO },
 	{ txt_help_select_next_unread_group, SELECT_NEXT_UNREAD_GROUP },
+#ifdef NNTP_ABLE
+	{ txt_help_select_lookup_group, GLOBAL_LOOKUP_MESSAGEID },
+	{ txt_help_select_lookup_group_comment, NOT_ASSIGNED },
+#endif /* NNTP_ABLE */
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_select_search_group_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
 	{ txt_help_select_search_group_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },

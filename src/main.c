@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-21
+ *  Updated   : main.c
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -144,13 +144,16 @@ main(
 	hash_init();
 	init_selfinfo();
 	init_group_hash();
-	setup_default_keys(); /* preinit keybindings */
 
 	/*
 	 * Process envargs & command line options
 	 * These override the configured in values
 	 */
 	read_cmd_line_options(argc, argv);
+
+	/* preinit keybindings if interactive */
+	if (!batch_mode)
+		setup_default_keys();
 
 	/*
 	 * Read user local & global config files
@@ -217,7 +220,7 @@ main(
 	 * no error message? why?
 	 */
 	if (update_index && nntp_caps.over_cmd && !tinrc.cache_overview_files) {
-		error_message(2, _(txt_batch_update_unavail), tin_progname);
+		error_message(2, _(txt_batch_update_unavail), tin_progname, print_boolean(tinrc.cache_overview_files));
 		free_all_arrays();
 		giveup();
 	}
@@ -305,7 +308,7 @@ main(
 		quick_post_article(post_postponed_and_exit);
 		wait_message(2, _(txt_exiting));
 		no_write = TRUE; /* disable newsrc updates */
-		tin_done(EXIT_SUCCESS);
+		tin_done(EXIT_SUCCESS, NULL);
 	}
 
 	/* TODO: replace hardcoded key-name in txt_info_postponed */
@@ -356,13 +359,13 @@ main(
 	 * Check/start if any new/unread articles
 	 */
 	if (check_any_unread)
-		tin_done(check_start_save_any_news(CHECK_ANY_NEWS, catchup));
+		tin_done(check_start_save_any_news(CHECK_ANY_NEWS, catchup), NULL);
 
 	if (start_any_unread) {
 		batch_mode = TRUE;			/* Suppress some unwanted on-screen garbage */
 		if ((start_groupnum = check_start_save_any_news(START_ANY_NEWS, catchup)) == -1) {
-			free_all_arrays();
-			giveup();				/* No new/unread news so exit */
+			batch_mode = FALSE;
+			tin_done(EXIT_SUCCESS, NULL);
 		}
 		batch_mode = FALSE;
 	}
@@ -378,7 +381,7 @@ main(
 	 */
 	if (mail_news || save_news) {
 		check_start_save_any_news(mail_news ? MAIL_ANY_NEWS : SAVE_ANY_NEWS, catchup);
-		tin_done(EXIT_SUCCESS);
+		tin_done(EXIT_SUCCESS, NULL);
 	}
 
 	/*
@@ -386,7 +389,7 @@ main(
 	 */
 	if (batch_mode && catchup && !update_index) {
 		catchup_newsrc_file();
-		tin_done(EXIT_SUCCESS);
+		tin_done(EXIT_SUCCESS, NULL);
 	}
 
 	/*
@@ -454,7 +457,7 @@ read_cmd_line_options(
 				error_message(2, _(txt_option_not_enabled), "-DENABLE_IPV6");
 #	else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
-#	endif /* NNTP_ABLE*/
+#	endif /* NNTP_ABLE */
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -471,7 +474,7 @@ read_cmd_line_options(
 				error_message(2, _(txt_option_not_enabled), "-DENABLE_IPV6");
 #	else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
-#	endif /* NNTP_ABLE*/
+#	endif /* NNTP_ABLE */
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -792,6 +795,13 @@ read_cmd_line_options(
 		wait_message(2, _(txt_useless_combination), "-Z", "-z", "-Z");
 		check_any_unread = FALSE;
 	}
+#	ifdef DEBUG
+	if ((debug & DEBUG_NNTP) && !read_news_via_nntp) {
+		/* TODO: lang.c */
+		wait_message(3, _(txt_useless_combination), _("reading from local spool"), "-D nntp", "-D nntp");
+		debug &= ~DEBUG_NNTP;
+	}
+#	endif /* DEBUG */
 
 #if defined(NNTP_ABLE) && defined(INET6)
 	if (force_ipv4 && force_ipv6) {
@@ -921,7 +931,7 @@ update_index_files(
 	create_index_lock_file(lock_file);
 	tinrc.thread_articles = THREAD_NONE;	/* stop threading to run faster */
 	do_update(catchup);
-	tin_done(EXIT_SUCCESS);
+	tin_done(EXIT_SUCCESS, NULL);
 }
 
 
@@ -975,12 +985,11 @@ read_cmd_line_groups(
 			for_each_group(i) {
 				if (match_group_list(active[i].name, cmdargs[num])) {
 					if (my_group_add(active[i].name, TRUE) != -1) {
+						matched++;
 						if (post_article_and_exit) {
 							my_strncpy(tinrc.default_post_newsgroups, active[i].name, sizeof(tinrc.default_post_newsgroups) - 1);
-							matched++;
 							break;
 						}
-						matched++;
 					}
 				}
 			}

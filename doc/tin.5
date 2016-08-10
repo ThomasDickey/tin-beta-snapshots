@@ -2,11 +2,11 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2015-01-10
+.\" Updated   : 2016-07-25
 .\" Notes     : needs a some work
 .\"
 .\"
-.TH tin 5 "December 24th, 2014" "2.3.2" "Usenet newsreader"
+.TH tin 5 "March 27th, 2016" "2.4.0" "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -1516,8 +1516,8 @@ Specifies whether a screen redraw should always be done after certain
 external commands. Default is OFF.
 .TP
 .B getart_limit
-If \fBgetart_limit\fP is > 0 not more than \fBgetart_limit\fP articles/group
-are fetched from the server. If \fBgetart_limit\fP is < 0
+If \fBgetart_limit\fP is > 0 not more than the last \fBgetart_limit\fP
+articles/group are fetched from the server. If \fBgetart_limit\fP is < 0
 .BR \%tin (1)
 will start fetching articles from your first unread minus absolute value of
 \fBgetart_limit\fP. Default is 0, which means no limit.
@@ -1552,10 +1552,6 @@ The format string used for the Group level. Default is
 %%	%
 .fi
 .in -.3i
-.TP
-.B groupname_max_length
-Maximum length of the names of newsgroups to be displayed so that more of
-the newsgroup description can be displayed. Default is 32.
 .TP
 .B hide_uue
 If set to 'No' then raw uuencoded data is displayed. If set to 'Yes'
@@ -2671,6 +2667,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR RFC\%2046 ,
 .BR RFC\%2047 ,
 .BR RFC\%2048 ,
+.BR RFC\%2231 ,
 .BR RFC\%2980 ,
 .BR RFC\%3977 ,
 .BR RFC\%4155 ,

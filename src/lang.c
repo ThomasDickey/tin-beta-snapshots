@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-09
+ *  Updated   : 2016-07-29
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,7 +111,7 @@ constext txt_bad_command[] = N_("Bad command. Type '%s' for help.");
 constext txt_base64[] = "base64";
 constext txt_base_article[] = N_("Base article");
 constext txt_base_article_range[] = N_("Base article range");
-constext txt_batch_update_unavail[] = N_("%s: Updating of index files not supported\n");
+constext txt_batch_update_unavail[] = N_("%s: Updating of index files not supported: cache_overview_files=%s");
 constext txt_begin_of_art[] = N_("*** Beginning of article ***");
 constext txt_begin_of_page[] = N_("*** Beginning of page ***");
 
@@ -187,6 +187,7 @@ constext txt_error_copy_fp[] = "copy_fp() failed";
 constext txt_error_corrupted_file[] = N_("Corrupted file %s");
 constext txt_error_fseek[] = "fseek() error on [%s]";
 constext txt_error_followup_poster[] = N_("\nError: Followup-To \"poster\" and a newsgroup is not allowed!\n");
+constext txt_error_format_string[] = N_("Error: Custom format exceeds screen width. Using default \"%s\".");
 constext txt_error_gnksa_internal[] = N_("Internal error in GNKSA routine - send bug report.\n");
 constext txt_error_gnksa_langle[] = N_("Left angle bracket missing in route address.\n");
 constext txt_error_gnksa_lparen[] = N_("Left parenthesis missing in old-style address.\n");
@@ -314,6 +315,7 @@ constext txt_group_rereading[] = N_("Rereading %s...");
 constext txt_group_select_com[] = N_("Top Level Commands");
 constext txt_group_selection[] = N_("Group Selection");
 constext txt_group_singular[] = N_("group");
+constext txt_grpdesc_disabled[] = N_("*** Group descriptions are disabled according to current select_format ***");
 
 constext txt_help_filter_comment[] = N_("One or more lines of comment. <CR> to add a line or proceed if line is empty.");
 constext txt_help_filter_from[] = N_("From: line to add to filter file. <SPACE> toggles & <CR> sets.");
@@ -478,6 +480,10 @@ constext txt_help_select_goto_group[] = N_("choose group by name");
 constext txt_help_select_group_by_num[] = N_("0 - 9\t  choose group by number");
 constext txt_help_select_group_range[] = N_("choose range of groups to be affected by next command");
 constext txt_help_select_last_group[] = N_("choose last group in list");
+#ifdef NNTP_ABLE
+	constext txt_help_select_lookup_group[] = N_("list groups which an article has been posted to (by Message-ID)");
+	constext txt_help_select_lookup_group_comment[] = N_(" \t  (go to article if at least one of the groups is available)");
+#endif /* NNTP_ABLE */
 constext txt_help_select_mark_group_unread[] = N_("mark all articles in chosen group unread");
 constext txt_help_select_move_group[] = N_("move chosen group within list");
 constext txt_help_select_next_unread_group[] = N_("choose next group with unread news");
@@ -585,6 +591,13 @@ constext txt_kill_time[] = N_("Kill time in days   : ");
 constext txt_last[] = N_("Last");
 constext txt_last_resp[] = N_("-- Last response --");
 constext txt_lines[] = N_("Lines %s  ");
+
+#ifdef NNTP_ABLE
+	constext txt_lookup_func_not_available[] = N_("Function not available.");
+	constext txt_lookup_func_not_nntp[] = N_("Not reading via NNTP.");
+	constext txt_lookup_show_group[] = N_("Group: %s");
+	constext txt_lookup_show_groups[] = N_("Groups: %s");
+#endif /* NNTP_ABLE */
 
 constext txt_mail[] = N_("Mail");
 constext txt_mailbox[] = N_("mailbox ");
@@ -785,7 +798,7 @@ constext txt_save_attachment[] = N_("Save '%s' (%s/%s)?");
 constext txt_save_config[] = N_("Save configuration before continuing?");
 constext txt_save_filename[] = N_("Save filename> ");
 constext txt_saved[] = N_("Saved");
-constext txt_saved_group[] = N_("%5d unread (%4d hot) %s in %s\n");
+constext txt_saved_group[] = N_("%4d unread (%4d hot) %s in %s\n");
 constext txt_saved_groupname[] = N_("Saved %s...\n");
 constext txt_saved_nothing[] = N_("Nothing was saved");
 constext txt_saved_summary[] = N_("\n%s %d %s from %d %s\n");
@@ -796,7 +809,7 @@ constext txt_screen_init_failed[] = N_("%s: Screen initialization failed");
 #ifndef USE_CURSES
 	constext txt_screen_too_small[] = N_("%s: screen is too small\n");
 #endif /* !USE_CURSES */
-constext txt_screen_too_small_exiting[] = N_("screen is too small, %s is exiting\n");
+constext txt_screen_too_small_exiting[] = N_("screen is too small, %s is exiting");
 constext txt_scope_delete[] = N_("Delete scope?");
 constext txt_scope_enter[] = N_("Enter scope> ");
 constext txt_scope_new_position[] = N_("Select new position> ");
@@ -860,7 +873,7 @@ constext txt_thread_marked_as_selected[] = N_("Thread selected");
 	constext txt_thread_plural[] = N_("threads");
 #endif /* 0 */
 constext txt_thread_singular[] = N_("thread");
-constext txt_thread_x_of_n[] = N_("Thread  %4s of %4s");
+constext txt_thread_x_of_n[] = N_("Thread %4s of %4s");
 constext txt_threading_arts[] = N_("Threading articles...");
 constext txt_toggled_high[] = N_("Toggled word highlighting %s");
 constext txt_toggled_rot13[] = N_("Toggled rot13 encoding");
@@ -877,7 +890,7 @@ constext txt_unsubscribe_pattern[] = N_("Enter wildcard unsubscribe pattern> ");
 constext txt_uu_error_decode[] = N_("Error decoding %s : %s");
 constext txt_uu_error_no_end[] = N_("No end.");
 constext txt_uu_success[] = N_("%s successfully decoded.");
-constext txt_uue[] = N_("%*s[-- %s/%s, %suuencoded file, %d lines, name: %s --]\n");
+constext txt_uue[] = N_("%*s[-- %s/%s, %suuencoded file, %d lines, name: %s --]\n\n");
 constext txt_unread[] = N_("unread ");
 constext txt_unsubscribed_num_groups[] = N_("unsubscribed from %d groups");
 constext txt_unsubscribed_to[] = N_("Unsubscribed from %s");
@@ -1081,7 +1094,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2015 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2016 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
@@ -1121,7 +1134,7 @@ Tin will try to use XHDR XREF instead (slows down things a bit).\n");
 		constext txt_warn_xref_not_supported[] = N_("Your server does not have Xref: in its XOVER information.\n");
 #	endif /* XHDR_XREF */
 #	ifndef NNTP_ONLY
-		constext txt_cannot_open_active_file[] = N_("Can't open %s. Try %s -r to read news via NNTP.\n");
+		constext txt_cannot_open_active_file[] = N_("Can't open %s. Try %s -r to read news via NNTP.");
 #	endif /* !NNTP_ONLY */
 #else
 	constext txt_usage_quickstart[] = N_("  -Q       quick start. Same as -qd");
@@ -1143,6 +1156,7 @@ Tin will try to use XHDR XREF instead (slows down things a bit).\n");
 #endif /* !DISABLE_PRINTING */
 
 #ifndef DONT_HAVE_PIPING
+	constext txt_articles_piped[] = N_("%d %s piped to \"%s\"");
 	constext txt_help_global_pipe[] = N_("pipe article/thread/hot/pattern/tagged articles into command");
 	constext txt_no_command[] = N_("No command");
 	constext txt_pipe[] = N_("Pipe");
@@ -1619,9 +1633,9 @@ struct opttxt txt_show_description = {
 };
 
 struct opttxt txt_show_author = {
-	N_("Show Subject & From (author) fields in group menu. <SPACE> toggles & <CR> sets."),
-	N_("In group menu, show author by"),
-	N_("# Part of from field to display\n\
+	N_("Show From (author) fields in group & thread level. <SPACE> toggles & <CR> sets."),
+	N_("In group and thread level, show author by"),
+	N_("# Part of From field to display in group and thread level\n\
 # Possible values are (the default is marked with *):\n\
 #   0 = none\n\
 #   1 = address\n\
@@ -1832,12 +1846,6 @@ struct opttxt txt_art_marked_read_selected = {
 	N_("Character to show readselected arts"),
 	N_("# Character used to show that an art was selected before read (default ':')\n\
 # kill_level must be set accordingly, _ is turned into ' '\n")
-};
-
-struct opttxt txt_groupname_max_length = {
-	N_("Enter maximum length of newsgroup names displayed. <CR> sets."),
-	N_("Max. length of group names shown"),
-	N_("# Maximum length of the names of newsgroups displayed\n")
 };
 
 struct opttxt txt_abbreviate_groupname = {
@@ -2550,11 +2558,13 @@ struct opttxt txt_mail_8bit_header = {
 # turn it ON unless you have some compelling reason.\n")
 };
 
+#ifndef USE_CURSES
 struct opttxt txt_strip_blanks = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Strip blanks from ends of lines"),
 	N_("# If ON strip blanks from ends of lines for faster display on slow terminals.\n")
 };
+#endif /* !USE_CURSES */
 
 #ifdef HAVE_ICONV_OPEN_TRANSLIT
 struct opttxt txt_translit = {

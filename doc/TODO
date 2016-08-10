@@ -27,10 +27,6 @@ o  cLINES < MIN_LINES_ON_TERMINAL || cCOLS < MIN_COLUMNS_ON_TERMINAL
    isn't checked on startup
    [20071210 Urs Janssen <urs@tin.org>]
 
-o  a wrong username/password in ~/.newsauth can lead to an endless AUTH-loop
-   when using -A and issuing a wrong username/password in the prompt
-   [20080926 Urs Janssen <urs@tin.org>]
-
 o  unexpected multiline responses confuse tin, e.g.:
    | 240 Article posted =?ISO-8859-1?Q?=3C=3D=3Fiso=2D8859=2D1=3Fq=3F=3F=3D87r7k8na?=
    |   =?ISO-8859-1?Q?vt=2Efsf=40urs=2Did=2Etest=2Eka=2Enu=3E?=
@@ -92,7 +88,7 @@ o  8bit chars in some headers are RFC-2047-encoded where this is not allowed
    [20090112 Urs Janssen <urs@tin.org>]
 
 o  the mime encoder may create two adjacent encoed words in the same line
-   i.e.       Subject: =?UTF-8?B?4oKs4oKs4oKs?= =?UTF-8?B?IOKCrOKCrOKCrA==?=
+   e.g.       Subject: =?UTF-8?B?4oKs4oKs4oKs?= =?UTF-8?B?IOKCrOKCrOKCrA==?=
    instead of Subject: =?UTF-8?B?4oKs4oKs4oKsIOKCrOKCrOKCrA==?=
    [20140513 Urs Janssen <urs@tin.org>]
 
@@ -118,6 +114,16 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  add second pipe command when piping multiple articles to use one
+   pipe per article (currently it is one pipe for all). ':' could be
+   used as key (only in use at the pager where this feature doesn't make
+   sense).
+   [20160412 Urs Janssen <urs@tin.org>]
+
+o  allow abort piping multiple articles, ESC/'z' just aborts the current
+   one
+   [20160409 Urs Janssen <urs@tin.org>]
+
 o  add per scope getart_limit via attributes
    [20131114 Urs Janssen <urs@tin.org>]
 
@@ -128,7 +134,7 @@ o  add support for %A (Address), %C (Firstname), %N (Fullname) to
 
 o  add a key to "drop" pending data from the server (either by
    disconnet/reconnect (fast but reconnect may fail due to rate limit or ...)
-   or via calling drain_buffer() (might be slow if there ss much pending
+   or via calling drain_buffer() (might be slow if there is much pending
    data)) so one doesn't have to quit and restart tin if the client/server
    communication get's desynced (i.e by reading an article which has a non
    dotstuffed lone . in it or the like)
@@ -156,10 +162,9 @@ o  give an error message if append_mail() fails (grep TODO post.c)
 
 o  allow remapping of the 'z' abort-key (lynx style) in wait_for_input().
 
-o  add user defined screen layout at different levels (i.e. posting
+o  add user defined screen layout at different levels (e.g. posting
    history screen)
    (done for selection, group and thread level)
-   - what about groupname_max_length, still needed?
    [20041025 Urs Janssen <urs@tin.org>]
 
 o  add TLS (RFC 4642), NNTPS support
@@ -509,6 +514,8 @@ o  add config option for (external) viewer to show postings stored in
 
 Filtering enhancements
 ----------------------
+o  add xref filter to the filter-menu
+
 o  add spamassassin interface when ever adding body filters
 
 o  add used filter-type to filter file or filter rule or use different
@@ -534,6 +541,10 @@ o  allow editing of the strings presented in the kill-Menu for
    the full filter-file
    [20120201 Urs Janssen <urs@tin.org>]
 
+o  allow to abort the filter loop with iKeyAbort when entering a (large)
+   group
+   [20160211 Urs Janssen <urs@tin.org>]
+
 Pager enhancements
 ------------------
 o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
@@ -541,17 +552,6 @@ o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
 
 o  integrate multi-part tagging with regular tagging, eg.
    "This article appears to have multi-parts, try and find them (y/n)?"
-
-o  do RFC 2231 decoding of non us-ascii MIME-parameter values
-   (rfc2046.c:parse_params())
-   [20110428 Urs Janssen <urs@tin.org>]
-
-o  allow RFC 2231 parameter value continuations
-   [20110428 Urs Janssen <urs@tin.org>]
-
-o  allow RFC 2231 language specification in encoded words
-   (rfc2047.c:rfc1522_decode())
-   [20110428 Urs Janssen <urs@tin.org>]
 
 o  add Content-Language (RFC 3282) analysis
 
@@ -587,7 +587,7 @@ o  ditch MAX_MSG_HEADERS (post.c)
    [20110212 Urs Janssen <urs@tin.org>]
 
 o  always display (also) the servers error response string to the user,
-   currently tin sometimes gives generic messages (i.e. when authentication
+   currently tin sometimes gives generic messages (e.g. when authentication
    fails), but the servers response may include additional infos (like
    bandwidth exceeded)
    [20101230 Urs Janssen <urs@tin.org>]
@@ -690,6 +690,10 @@ o  check where iKeyAbort should be used instead of ESC (etc.pp.)
    [Urs Janssen <urs@tin.org>]
 
 o  close potential security holes:
+   - remove fixed length buffers (find_nov_file(), print_from(),
+     quote_space_to_dash(), escape_shell_meta(), backup_article(),
+     build_messageid(), get_secret(), get_host_name(), get_domain_name(),
+     get_fqdn(), get_user_name(), get_full_name(), build_sender(), ...)
    - change all system()/popen() calls to fork() and exec() calls
    - check where we should use snprintf() instead of sprintf()
    - check where we should use strncat() instead of strcat()
@@ -699,12 +703,7 @@ o  close potential security holes:
                                opendir()/t_open()/tmpfile()
    - check getenv() results before using it
    - check where my_strncpy() or STRCPY() should be used
-     or include OpenBSDs strlcpy(3) (and strlcat(3)) and use it.
-   (<http://www.openbsd.org/cgi-bin/cvsweb/src/lib/libc/string/strlcpy.c>)
-   [Urs Janssen <urs@tin.org> - its4 <http://www.rstcorp.com/its4>, rats
-    <http://www.securesw.com/rats/> and flawfinder
-    <http://www.dwheeler.com/flawfinder/> can locate potential security
-    holes]
+   [Urs Janssen <urs@tin.org>]
 
 o  add to autoconf:
    - eradicate platform/compiler ifdefs
@@ -727,9 +726,11 @@ o  cleanup post.c
 o  check code with Splint (LCLint) <http://www.splint.org/>,
    valgrind (<http://valgrind.org/>), cppcheck
    (<http://cppcheck.wiki.sourceforge.net/>), AdLint
-   (<http://adlint.sourceforge.net>), clang-analyzer
-   (<http://clang-analyzer.llvm.org/>) and Coverity
-   (<https://scan.coverity.com/projects/993>)
+   (<http://adlint.sourceforge.net/>), clang-analyzer
+   (<http://clang-analyzer.llvm.org/>), Coverity
+   (<https://scan.coverity.com/projects/993>), infer
+   (<http://fbinfer.com/>) and zzuf
+   (<http://caca.zoy.org/wiki/zzuf>)
 
 o  rewrite the tag code so that arts[].tagged becomes index in arts[]
    of next tagged article. num_of_tagged_arts becomes index of first
@@ -754,7 +755,7 @@ o  mask inline PGP SIGNATURE/KEY BLOCK like we do for uu-sections
    [20090722 Urs Janssen <urs@tin.org>]
 
 o  some non fixed width strings could be formatted nicer (warp on last space
-   before cCOLS), i.e. txt_warn_downgrade
+   before cCOLS), e.g. txt_warn_downgrade
    [20110325 Urs Janssen <urs@tin.org>]
 
 Unicode
@@ -822,7 +823,7 @@ o  the online help of GroupMarkUnselArtRead 'X' is unclear as it doesn't
    say that the article are marked read
    [20090814 Urs Janssen <urs@tin.org>]
 
-o  document the different singnals/actions (i.e. SIGUSR2 writes newsrc)
+o  document the different singnals/actions (e.g. SIGUSR2 writes newsrc)
    [20080209 Urs Janssen <urs@tin.org>]
 
 o  exit staus documentation in the man page isn't correct, we have more
@@ -851,8 +852,44 @@ o  replace "\\" by "\e" in man pages (portable?)
 
 o  integrate doc/auth.txt into tin.1 man page
 
+o  document %G of strfpath() in man page
+
 Not yet classified
 ------------------
+o  follow $LC_COLLATE (e.g. add strxfrm() to subj_comp_*/from_comp_*)?
+   [20160421 Urs Janssen <urs@tin.org>]
+
+o  IDNA decode news_headers_to_display?
+   [20160227 Urs Janssen <urs@tin.org>]
+
+o  sometimes we convert the supplied server name to lowercaes (for cached
+   overviews) and sometimes we don't (nrctbl.c code and -g arg). Thus
+   -g Foo.bAr.eXample may result in file not found
+   for entries like '*       ~/.tin/.newsrcs/${NNTPSERVER-localhost}'
+   even there is a ~/.tin/.newsrcs/foo.bar.example file.
+   Should we always lowercase $NNTPSERVER / -g? (but still allow
+   upper/camelcase for -f or a fixed filename in newsrctable).
+   [20160225 Urs Janssen <urs@tin.org>]
+
+o  add %M (Message-ID) and %X (article number) to strfpath()?
+   [20160225 Urs Janssen <urs@tin.org>]
+
+o  add "host:port" notation support for -g as shortcut for -p port -g host
+   [20160222 Urs Janssen <urs@tin.org>]
+
+o  allow "begin-base64"/"====\n" as start/end marker for UUE-blocks besides
+   the traditional "begin"/"end\n"?
+   [20151204 Urs Janssen <urs@tin.org>]
+
+o  cache_overview_files also affects $TIN_INDEX_MAILDIR and $TIN_INDEX_SAVEDIR
+   overviews, is this desired?
+   [20151112 Urs Janssen <urs@tin.org>]
+
+o  articles without a Message-ID are skipped as the code currently depends
+   on Message-IDs, but they might show up in mailgroups - assign a pseudo
+   Message-ID to them?
+   [20151111 Urs Janssen <urs@tin.org>]
+
 o  create missing dir(s) in path to newsrc, right now get_newsrcname()
    usually comes up with
    "No permissions to go into /home/$USER/.tin/${NNTPSERVER}"
@@ -878,9 +915,6 @@ o  what about !us-ascii chars in username/password when using
 o  what is or was HIST_HELP_SEARCH good for? And what about cHelp?
    [20101008 Urs Janssen <urs@tin.org>]
 
-o  fix memleaks on early exits (i.e. host unreachable, auth failed, ...)
-   [20100517 Urs Janssen <urs@tin.org>]
-
 o  charset conversion fails when converting articles from multibyte charsets
    with 0 bytes (UCS2, UCS4, UTF-16[[LB]E], UTF-32[[LB]E], ...), currently
    we just skip over such parts instead of handling them properly
@@ -889,7 +923,7 @@ o  charset conversion fails when converting articles from multibyte charsets
 o  add "COMPRESS DEFLATE" support once it's official? this would require a
    rewrite of the code which reads data from the network (which should be
    done anyway for TLS) as we must handle null-bytes in the stream.
-   <http://www.ietf.org/internet-drafts/draft-murchison-nntp-compress-01.txt>
+   <https://tools.ietf.org/id/draft-murchison-nntp-compress-02.txt>
    [20100122 Urs Janssen <urs@tin.org>]
 
 o  the documentation suggests that novrootdir/$TIN_NOVROOTDIR defaults to
@@ -911,7 +945,8 @@ o  replace wildmat.c with uwildmat.c
    patterns and can handle UTF-8 strings
    [20091223 Urs Janssen <urs@tin.org>]
 
-o  support $XDG_CONFIG_HOME[S] / $XDG_DATA_HOME[S] / $XDG_RUNTIME_DIR
+o  support $XDG_CONFIG_HOME[S] / $XDG_DATA_HOME[S] / $XDG_RUNTIME_DIR /
+   $XDG_CACHE_HOME (eg. for cached NEWSGROUPS_FILE)
    <http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html>
    [20081010 Urs Janssen <urs@tin.org>]
 
@@ -1017,10 +1052,10 @@ o  check_article_to_be_posted() needs a cleanup!
 
 o  update gettext stuff to > gettext-0.12.1
 
-o  clean up included pcre stuff and update to >= pcre-8.37
-
 o  and pcre2 support (new API)
    <http://www.pcre.org/current/doc/html/>
+
+o  clean up included pcre stuff and update to >= pcre-8.38
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file
@@ -1028,13 +1063,6 @@ o  shows up cross-postings multiple times even if read once before getting
 o  think about group numbering in "only unread" display mode
    (using different numbers in show all/show only unread leads to some
     problems, f.e. group moving)
-
-o  remove tinrc.strip_blanks? IMHO it's not needed anymore
-   [20020305 Urs Janssen <urs@tin.org>]
-
-o  what is with conflicting tinrc settings? should we disallow those, or leave
-   it to the user to realise that e.g. strip_blanks=ON && inverse_okay=ON
-   looks ugly?
 
 o  doesn't handle symlinks for .oldnewsrc
    (see <20021003021508.GA28021@akk10.akk.uni-karlsruhe.de> for details, urs.
@@ -1048,11 +1076,6 @@ o  missing newsrc file and connecting to a server without groups leads to the
    while tin was running. Useful? Should write_newsrc() try to create a newsrc
    file if it is missing instead of just leaving?
    [20061102 Dirk Nimmich <nimmich@muenster.de>]
-
-o  cleanup main.c/init_selfinfo()
-   ('strace -e trace=file tin' and/or 'ltrace -e getenv tin' and you know
-    what I mean)
-   [fixed some of the double/tripple reads, urs]
 
 o  cache mailbox_name in misc.c/mail_check()?
 

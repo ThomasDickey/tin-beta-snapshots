@@ -6,7 +6,7 @@
  *  Updated   : 2013-11-17
  *  Notes     :
  *
- * Copyright (c) 1998-2015 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1998-2016 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -126,7 +126,7 @@ test_fd_lock(
 		flk.l_start = 0;
 		flk.l_len = 0;
 		if (fcntl(fd, F_GETLK, &flk) < 0)
-				return -1; /* some error occurred */
+			return -1; /* some error occurred */
 		else {
 			if (flk.l_type != F_UNLCK)
 				return 1;	/* file is locked */

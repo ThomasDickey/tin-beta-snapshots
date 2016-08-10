@@ -3,10 +3,10 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-09
+ *  Updated   : 2016-04-17
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -273,7 +273,6 @@ struct t_config tinrc = {
 	0,		/* getart_limit */
 	2,		/* recent_time */
 	GOTO_NEXT_UNREAD_TAB,		/* goto_next_unread */
-	32,		/* groupname_max_length */
 	UUE_NO,	/* hide_uue */
 	KILL_UNREAD,		/* kill_level */
 	MIME_ENCODING_QP,		/* mail_mime_encoding */
@@ -386,7 +385,9 @@ struct t_config tinrc = {
 #else
 	FALSE,		/* start_editor_offset */
 #endif /* M_UNIX */
+#ifndef USE_CURSES
 	TRUE,		/* strip_blanks */
+#endif /* !USE_CURSES */
 	FALSE,		/* strip_newsrc */
 	FALSE,		/* tex2iso_conv */
 	TRUE,		/* thread_catchup_on_exit */
@@ -1103,7 +1104,7 @@ utf8_pcre(
 
 #	if (defined(PCRE_MAJOR) && PCRE_MAJOR >= 4)
 	(void) pcre_config(PCRE_CONFIG_UTF8, &i);
-#	endif /* PCRE_MAJOR && PCRE_MAJOR >= $*/
+#	endif /* PCRE_MAJOR && PCRE_MAJOR >= 4 */
 
 	return (i ? TRUE : FALSE);
 }

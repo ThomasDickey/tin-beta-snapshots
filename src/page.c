@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2015-05-04
+ *  Updated   : 2016-07-29
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,14 +42,6 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 
-#if 0
-#if defined(HAVE_IDNA_H) && !defined(_IDNA_H)
-#	include <idna.h>
-#endif /* HAVE_IDNA_H && !_IDNA_H */
-#if defined(HAVE_STRINGPREP_H) && !defined(_STRINGPREP_H)
-#	include <stringprep.h>
-#endif /* HAVE_STRINGPREP_H && !_STRINGPREP_H */
-#endif /* 0 */
 
 /*
  * PAGE_HEADER is the size in lines of the article page header
@@ -316,6 +308,7 @@ show_page(
 	char key[MAXKEYLEN];
 	int i, j, n = 0;
 	int art_type = GROUP_TYPE_NEWS;
+	int hide_uue_tmp;
 	t_artnum old_artnum = T_ARTNUM_CONST(0);
 	t_bool mouse_click_on = TRUE;
 	t_bool repeat_search;
@@ -481,52 +474,6 @@ page_goto_next_unread:
 					i = scroll_page(KEYMAP_DOWN);
 					curr_line += i;
 					draw_page(group->name, i);
-				}
-				break;
-
-			case PAGE_SCROLL_UP:
-				if (activate_last_ctrl_l())
-					draw_page(group->name, 0);
-				else {
-					if (curr_line == 0) {
-						info_message(_(txt_begin_of_art));
-						break;
-					}
-
-#ifdef USE_CURSES
-					scrollok(stdscr, TRUE);
-#endif /* USE_CURSES */
-					SetScrollRegion(scroll_region_top, NOTESLINES + 1);
-					ScrollScreen(-1);
-					SetScrollRegion(0, cLINES);
-#ifdef USE_CURSES
-					scrollok(stdscr, FALSE);
-#endif /* USE_CURSES */
-					--curr_line;
-					draw_page(group->name, -1);
-				}
-				break;
-
-			case PAGE_SCROLL_DOWN:
-				if (deactivate_next_ctrl_l())
-					draw_page(group->name, 0);
-				else {
-					if (curr_line + ARTLINES >= artlines) {
-						info_message(_(txt_end_of_art));
-						break;
-					}
-
-#ifdef USE_CURSES
-					scrollok(stdscr, TRUE);
-#endif /* USE_CURSES */
-					SetScrollRegion(scroll_region_top, NOTESLINES + 1);
-					ScrollScreen(1);
-					SetScrollRegion(0, cLINES);
-#ifdef USE_CURSES
-					scrollok(stdscr, FALSE);
-#endif /* USE_CURSES */
-					++curr_line;
-					draw_page(group->name, 1);
 				}
 				break;
 
@@ -1046,7 +993,12 @@ return_to_index:
 
 			case PAGE_VIEW_ATTACHMENTS:
 				XFACE_SUPPRESS();
+				hide_uue_tmp = hide_uue;
+				hide_uue = UUE_NO;
+				resize_article(TRUE, &pgart);
 				attachment_page(&pgart);
+				hide_uue = hide_uue_tmp;
+				resize_article(TRUE, &pgart);
 				draw_page(group->name, 0);
 				XFACE_SHOW();
 				break;
@@ -1563,7 +1515,12 @@ draw_page_header(
 		free(wtmp);
 	}
 
-	/* organization */
+	/*
+	 * Organization
+	 *
+	 * TODO: IDNA decoding, see also comment in
+	 *       cook.c:cook_article()
+	 */
 	if ((wtmp = char2wchar_t(_(txt_at_s))) != NULL) {
 		len = wcswidth(wtmp, wcslen(wtmp));
 		free(wtmp);
@@ -1801,13 +1758,10 @@ load_article(
 #endif /* DEBUG */
 
 	if (new_respnum != this_resp || art_closed) {
-		char *progress_mesg = my_strdup(_(txt_reading_article));
 		int ret;
 
 		art_close(&pgart);			/* close previously opened art in pager */
-
-		ret = art_open(TRUE, &arts[new_respnum], group, &pgart, TRUE, progress_mesg);
-		free(progress_mesg);
+		ret = art_open(TRUE, &arts[new_respnum], group, &pgart, TRUE, _(txt_reading_article));
 
 		switch (ret) {
 			case ART_UNAVAILABLE:
@@ -2115,10 +2069,8 @@ resize_article(
 	if (artinfo->cooked)
 		fclose(artinfo->cooked);
 
-	if (!cook_article(wrap_lines, artinfo, hide_uue, show_all_headers)) {
-		wait_message(3, _(txt_cook_article_failed_exiting), tin_progname);
-		tin_done(EXIT_FAILURE);
-	}
+	if (!cook_article(wrap_lines, artinfo, hide_uue, show_all_headers))
+		tin_done(EXIT_FAILURE, _(txt_cook_article_failed_exiting), tin_progname);
 
 	show_raw_article = FALSE;
 	artline = pgart.cookl;

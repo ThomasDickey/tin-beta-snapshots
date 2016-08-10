@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2014-05-12
+ *  Updated   : 2016-02-25
  *  Notes     :
  *
- * Copyright (c) 1997-2015 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2016 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -250,10 +250,9 @@ str_lwr(
 {
 	char *dst = str;
 
-	while (*str) {
-		*dst++ = (char) tolower((unsigned char) *str);
-		str++;
-	}
+	while (*str)
+		*dst++ = (char) tolower((unsigned char) *str++);
+
 	*dst = '\0';
 }
 
@@ -664,22 +663,22 @@ sh_format(
 			}
 
 			switch (*fmt++) {
-			case '%':
-				src = strcpy(temp, "%");
-				break;
+				case '%':
+					src = strcpy(temp, "%");
+					break;
 
-			case 's':
-				src = va_arg(ap, char *);
-				break;
+				case 's':
+					src = va_arg(ap, char *);
+					break;
 
-			case 'd':
-				snprintf(temp, sizeof(temp), "%d", va_arg(ap, int));
-				src = temp;
-				break;
+				case 'd':
+					snprintf(temp, sizeof(temp), "%d", va_arg(ap, int));
+					src = temp;
+					break;
 
-			default:
-				src = strcpy(temp, "");
-				break;
+				default:
+					src = strcpy(temp, "");
+					break;
 			}
 
 			while (*src != '\0') {
@@ -1087,9 +1086,8 @@ wstrunc(
 			 * use U+2026 (HORIZONTAL ELLIPSIS) instead of "..."
 			 * we gain two additional screen positions
 			 */
-			tail = my_malloc(sizeof(wchar_t) * 2);
+			tail = my_calloc(2, sizeof(wchar_t));
 			tail[0] = 8230; /* U+2026 */
-			tail[1] = 0;	/* \0 */
 		} else
 			tail = char2wchar_t(TRUNC_TAIL);
 
@@ -1097,7 +1095,9 @@ wstrunc(
 		wtmp2 = wcspart(wtmp, len - len_tail, FALSE);
 		free(wtmp);
 		wtmp = my_realloc(wtmp2, sizeof(wchar_t) * (wcslen(wtmp2) + len_tail + 1));	/* wtmp2 isn't valid anymore and doesn't have to be free()ed */
-		wcscat(wtmp, tail ? tail : (wchar_t) '\0');
+		if (!tail)
+			tail = my_calloc(1, sizeof(wchar_t));
+		wcscat(wtmp, tail);
 		free(tail);
 	}
 
@@ -1356,7 +1356,7 @@ parse_format_string(
 	const char *in;
 	int min_cols;
 	size_t cnt = 0;
-	size_t len, tmplen;
+	size_t len, len2, tmplen;
 	time_t tmptime;
 	enum {
 		NO_FLAGS		= 0,
@@ -1387,6 +1387,7 @@ parse_format_string(
 	fmt->len_grpdesc = 0;
 	fmt->len_from = 0;
 	fmt->len_grpname = 0;
+	fmt->len_grpname_dsc = 0;
 	fmt->len_grpname_max = 0;
 	fmt->len_initials = 0;
 	fmt->len_linenumber = 0;
@@ -1399,6 +1400,7 @@ parse_format_string(
 	fmt->flags_offset = 0;
 	fmt->mark_offset = 0;
 	fmt->ucnt_offset = 0;
+	fmt->show_grpdesc = FALSE;
 	fmt->d_before_f = FALSE;
 	fmt->g_before_f = FALSE;
 	fmt->d_before_u = FALSE;
@@ -1419,16 +1421,24 @@ parse_format_string(
 		}
 		*out++ = *in++;
 		len = 0;
+		len2 = 0;
 		min_cols = 0;
 		tmp_date_str[0] = '\0';
 		d_fmt = tmp_date_str;
-		if (*in >= '0' && *in <= '9') {
+		if (*in > '0' && *in <= '9') {
 			len = atoi(in);
 			for (; *in >= '0' && *in <= '9'; in++)
 				;
 		}
+		if (*in == ',') {
+			if (*++in > '0' && *in <= '9') {
+				len2 = atoi(in);
+				for (; *in >= '0' && *in <= '9'; in++)
+					;
+			}
+		}
 		if (*in == '>') {
-			if (*++in >= '0' && *in <= '9') {
+			if (*++in > '0' && *in <= '9') {
 				min_cols = atoi(in);
 				for (; *in >= '0' && *in <= '9'; in++)
 					;
@@ -1469,6 +1479,7 @@ parse_format_string(
 				/* Newsgroup description */
 				if (cCOLS > min_cols && !(flags & GRP_DESC) && signal_context == cSelect) {
 					flags |= GRP_DESC;
+					fmt->show_grpdesc = TRUE;
 					if (len) {
 						fmt->len_grpdesc = len;
 					}
@@ -1538,6 +1549,7 @@ parse_format_string(
 					if (len) {
 						fmt->len_grpname = len;
 					}
+					fmt->len_grpname_dsc = (len2 ? len2 : 32);
 				} else
 					out -= 2;
 				break;
@@ -1626,6 +1638,7 @@ parse_format_string(
 				/* Thread tree */
 				if (cCOLS > min_cols && !(flags & THREAD_TREE) && signal_context == cThread) {
 					flags |= THREAD_TREE;
+					show_subject = TRUE;
 					if (len) {
 						fmt->len_subj = len;
 					}
@@ -1669,26 +1682,36 @@ parse_format_string(
 	 */
 	if (cnt > (size_t) cCOLS - 1) {
 		flags = NO_FLAGS;
+		fmt->len_linenumber = 4;
 		switch (signal_context) {
 			case cSelect:
+				error_message(2, _(txt_error_format_string), DEFAULT_SELECT_FORMAT);
 				STRCPY(fmt->str, DEFAULT_SELECT_FORMAT);
 				flags = (GRP_FLAGS | LINE_NUMBER | U_CNT | GRP_NAME | GRP_DESC);
 				cnt = tinrc.draw_arrow ? 18 : 16;
+				fmt->show_grpdesc = TRUE;
 				fmt->flags_offset = tinrc.draw_arrow ? 2 : 0;
 				fmt->ucnt_offset = tinrc.draw_arrow ? 10 : 8;
+				fmt->len_grpname_dsc = 32;
 				fmt->len_grpname_max = cCOLS - cnt - 1;
+				fmt->len_ucnt = 5;
 				break;
 
 			case cGroup:
+				error_message(2, _(txt_error_format_string), DEFAULT_GROUP_FORMAT);
 				STRCPY(fmt->str, DEFAULT_GROUP_FORMAT);
 				flags = (LINE_NUMBER | ART_MARKS | RESP_COUNT | LINE_CNT | SUBJECT | FROM);
 				cnt = tinrc.draw_arrow ? 23 : 21;
+				fmt->len_linecnt = 4;
+				fmt->len_respcnt = 3;
 				break;
 
 			case cThread:
+				error_message(2, _(txt_error_format_string), DEFAULT_THREAD_FORMAT);
 				STRCPY(fmt->str, DEFAULT_THREAD_FORMAT);
 				flags = (LINE_NUMBER | ART_MARKS | LINE_CNT | THREAD_TREE | FROM);
 				cnt = tinrc.draw_arrow ? 22 : 20;
+				fmt->len_linecnt = 4;
 				break;
 
 			default:
@@ -1702,8 +1725,11 @@ parse_format_string(
 
 		fmt->len_subj = cCOLS - fmt->len_from - cnt - 1;
 	} else {
-		if (flags & GRP_NAME)
+		if (flags & (GRP_NAME | GRP_DESC))
 			fmt->len_grpname_max = cCOLS - cnt - 1;
+
+		if (!show_description && !(flags & GRP_NAME))
+			fmt->len_grpname_max = 0;
 
 		if (flags & DATE && fmt->len_date > (cCOLS - cnt - 1))
 			fmt->len_date = (cCOLS - cnt - 1);

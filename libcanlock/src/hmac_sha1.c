@@ -80,7 +80,8 @@ hmac_sha1(
     else
         memcpy(keyin, K, Klen);
 
-    step2 = (unsigned char *) malloc(Tlen + SHA_DATASIZE);
+    if ((step2 = (unsigned char *) malloc(Tlen + SHA_DATASIZE)) == NULL)
+    	return NULL;
 
     c = keyin;
     for (i = 0; i < Klen; i++) {

@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2015-01-11
+.\" Updated   : 2016-07-25
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "December 24th, 2014" 2.3.2 "Usenet newsreader"
+.TH tin 1 "March 27th, 2016" 2.4.0 "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -63,6 +63,9 @@ Successful program execution.
 .TP 
 \fB1\fP
 Usage, syntax, configuration file or network error.
+.TP 
+\fB2\fP
+NNTP error.
 .RE
 .PP
 Batch mode (\*(rq\fB\-Z\fP\*(rq):
@@ -82,16 +85,19 @@ Unread news
 .SH OPTIONS
 .TP  12
 \fB\-4\fP
-Force connecting via IPv4 to the remote NNTP server.
+Force connecting via IPv4 to the remote NNTP server. Only available when
+build with IPv6 support.
 .TP 
 \fB\-6\fP
-Force connecting via IPv6 to the remote NNTP server.
+Force connecting via IPv6 to the remote NNTP server. Only available when
+build with IPv6 support.
 .TP 
 \fB\-a\fP
 Toggle ANSI colour (default is off).
 .TP 
 \fB\-A\fP
-Force authentication on initial connect.
+Force authentication on initial connect. Only available when reading via
+NNTP.
 .TP 
 \fB\-c\fP
 Create/update index files for every group in
@@ -99,12 +105,14 @@ Create/update index files for every group in
 and mark all articles as read.
 .TP 
 \fB\-d\fP
+.\"
+.\" FIXME: explain debug levels
 Don't load newsgroup descriptions and servers message of the day
 (interactive mode).
 .TP 
 \fB\-D\fP\fI debug\-level\fP
 Enter debug\-level (1 = NNTP, 2 = filter, 4 = newsrc, 8 = threading, 16 =
-memory, 32 = attributes, 64 = misc).
+memory, 32 = attributes, 64 = misc, 128 = remove existing debug files).
 .TP 
 \fB\-f\fP\fI file\fP
 Use the specified file of subscribed to newsgroups in place of
@@ -112,7 +120,8 @@ Use the specified file of subscribed to newsgroups in place of
 .TP 
 \fB\-g\fP\fI server\fP
 Use the server and newsrc specified in
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP.
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP. Only available when reading via
+NNTP.
 .TP 
 \fB\-G\fP\fI article\-limit\fP
 Limit the number of articles/group to retrieve from the server.
@@ -166,7 +175,8 @@ quick, it should be used with \*(rq\fB\-n\fP\*(rq if possible.
 .TP 
 \fB\-p\fP\fI port\fP
 Port to use if reading via NNTP (default is 119). This also overrides the
-environment variable $\fBNNTPPORT\fP if set.
+environment variable $\fBNNTPPORT\fP if set. Only available when reading via
+NNTP.
 .TP 
 \fB\-q\fP
 Don't check for new newsgroups and skip loading the servers message of the
@@ -570,6 +580,13 @@ option.
 \fBToggleInverseVideo 'I'\fP
 Toggle inverse video.
 .TP 
+\fBLookupMessage 'L'\fP
+Look up article by \*(rqMessage\-ID:\*(rq. If none of the groups listed in the
+\&\*(rqNewsgroups:\*(rq\-header of the referenced article is available, just the
+contents of the \*(rqNewsgroups:\*(rq\-header will be displayed in the last line.
+At this level this command only works if reading via NNTP and the server
+supports [X]HDR (\fBRFC\%2980\fP, \fBRFC\%3977\fP) or XPAT (\fBRFC\%2980\fP).
+.TP 
 \fBSelectMoveGrp 'm'\fP
 Move the current group within the group selection list. By entering '1' the
 group will become the first displayed group in the list, by entering '8' the
@@ -932,7 +949,7 @@ Search forward for specified subject.
 Search backwards for specified subject.
 .TP 
 \fBThreadSelArt '*'\fP
-Select the current thread for later processing.
+Select current thread for later processing.
 .TP 
 \fBThreadToggleArtSel '.'\fP
 Toggle selection of current article.
@@ -1744,7 +1761,7 @@ an highlighted bar if set OFF. Default is OFF.
 .TP 
 \fBInvocation of your editor (editor_format)\fP
 The format string used to create the editor start command with parameters.
-Default is "%E +%N %F" (i.e., /bin/vi +7 .article).
+Default is "%E +%N %F" (e.g., /bin/vi +7 .article).
 .TP 
 \fBDetection of external quotes (extquote_handling)\fP
 If ON quotes from external sources will be detected. Default is OFF.
@@ -1759,10 +1776,10 @@ Specifies whether a screen redraw should always be done after certain
 external commands. Default is OFF.
 .TP 
 \fBNumber of articles to get (getart_limit)\fP
-If \fBgetart_limit\fP is > 0 not more than \fBgetart_limit\fP articles/group
-are fetched from the server. If \fBgetart_limit\fP is < 0 \fBtin\fP will start
-fetching articles from your first unread minus absolute value of
-\fBgetart_limit\fP. Default is 0, which means no limit.
+If \fBgetart_limit\fP is > 0 not more than the last \fBgetart_limit\fP
+articles/group are fetched from the server. If \fBgetart_limit\fP is < 0
+\fBtin\fP will start fetching articles from your first unread minus absolute
+value of \fBgetart_limit\fP. Default is 0, which means no limit.
 .TP 
 \fBCatchup group using left key (group_catchup_on_exit)\fP
 If ON catchup group when leaving with the left arrow key. Default is ON.
@@ -1778,10 +1795,6 @@ Possible is any combination of \fBPageDown\fP and \fBPageNextUnread\fP.  When
 current one. When \fBPageNextUnread\fP is set \fBtin\fP jumps immediately to the
 next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')  is
 pressed. Default is \fBPageNextUnread\fP.
-.TP 
-\fBMax. length of group names shown (groupname_max_length)\fP
-Maximum length of the names of newsgroups to be displayed so that more of
-the newsgroup description can be displayed. Default is 32.
 .TP 
 \fBDisplay uue data as an attachment (hide_uue)\fP
 If set to 'No' then raw uuencoded data is displayed. If set to 'Yes' then
@@ -2150,7 +2163,7 @@ half\-page scrolling. This setting supersedes \fBfull_page_scroll\fP=OFF.
 Format string tin uses for Selection level representation. See the section
 "CUSTOMISING THE SCREEN FORMAT". Default is "%f\ %n\ %U\ \ %G\ \ %d".
 .TP 
-\fBIn group menu, show author by (show_author)\fP
+\fBIn group and thread level, show author by (show_author)\fP
 Which information about the author should be shown. Default is 2, authors
 full name.
 .RS +.5i
@@ -2509,7 +2522,7 @@ no private attributes file yet.
 Note that the \fIscope=<grouplist>\fP line has to be specified before
 the attributes are specified for that list. All attributes are set to a
 reasonable default so you only have to specify the attribute that you want
-to change (e.g., savedir). All toggle attributes are set by specifying
+to change (e.g., \fBsavedir\fP). All toggle attributes are set by specifying
 ON/OFF. Otherwise, these function exactly the same as their global
 equivalents. For more details see \fB\%tin\fP(5).
 .PP
@@ -2518,7 +2531,7 @@ accessed by \fBConfigToggleAttrib\fP ('\fB<TAB>\fP') from the options menu
 or \fBScopeSelect\fP ('\fB^J\fP' or '\fB<CR>\fP') from the scopes menu.  The
 attributes menu looks and behaves very similar to the options menu. The
 title shows the current scope. Attributes set in the current scope are
-marked with '\+' to the left of the attributes number.
+marked with '+' to the left of the attributes number.
 .PP
 .\"
 .\"
@@ -2714,7 +2727,7 @@ that expire has removed a whole load of unread articles. Best to run via
 \fB\%cron\fP(1)  everyday while away, after which you will be mailed a report
 of which articles were mailed/saved from which newsgroups and the total
 number of articles mailed/saved. Articles are saved in a private news
-structure under your <savedir> directory (default is
+structure under your \fBsavedir\fP directory (default is
 \fI${TIN_HOMEDIR:\-"$HOME"}/News\fP). Be careful of using this option if you
 read a lot of groups because you could overflow your file system.
 .PP
@@ -2876,23 +2889,30 @@ The information displayed with '\fB%F\fP' depends on the value of
 \fBshow_author\fP. \fBGroupToggleSubjDisplay\fP resp.  \fBThreadToggleSubjDisplay\fP
 ('\fBd\fP') switches through all available options.
 .PP
-\(cq\fB%D\fP' uses \fBdate_format\fP for date representation. It is possible to
+For date representation '\fB%D\fP' uses \fBdate_format\fP. It is possible to
 specify a different date format in round brackets (e.g. '\fB%(%d %b %y
 %H:%M)D\fP'). See \fBdate_format\fP for more details.
 .PP
 The length of each item (except '\fB%%\fP') can be defined with a positive
 number after the '\fB%\fP'. The following example displays the score in the
-thread level 10 characters wide: '\fB%10S\fP'. Some variables do have a default
-width which may lead to truncation. Truncation for variables which contain
-only numbers happens by dividing the value with a sufficient power of ten
-and adding a SI suffix to the result, that is the variable holds a value of
-54321 and the width for the variable is 4 the result will be "54 k". If
-that's undesired you have to specify a larger width manually,
-i.e. '\fB%6n\fP'. Here is an overview of the defaults:
+thread level 10 characters wide: '\fB%10S\fP'.
+.PP
+If the newsgroup name is displayed together with the newsgroup description,
+the width of the newsgroup name can be controlled via a optional comma
+separated second value (e.g. '\fB%60,20G\fP'). It is valid to omit the first
+value (e.g. ('\fB%,20G\fP')). If no second value is given, \fBtin\fP uses a
+default value of 32.
+.PP
+Some variables do have a default width which may lead to truncation.
+Truncation for variables which contain only numbers happens by dividing the
+value with a sufficient power of ten and adding a SI suffix to the result,
+that is the variable holds a value of 54321 and the width for the variable
+is 4 the result will be "54 k". If that's undesired you have to specify a
+larger width manually, e.g. '\fB%6n\fP'. Here is an overview of the defaults:
 .PP
 .in +.3i
 .nf
-.ta \w'Variable  'u	+\w'width'u
+.ta \w'Variable  'u +\w'width'u
 Variable	width
 \fB%I\fP	 3
 \fB%L\fP	 4
@@ -2913,15 +2933,19 @@ May and the article to which the date is displayed was posted in
 December. In such cases it might useful to determine the maximum length
 manually and specify the length in the format string.
 .PP
+In case the format string contains '\fB%G\fP' and '\fB%d\fP' and no length are
+given, \fBtin\fP determines the longest newsgroup name and uses this length for
+\&'\fB%G\fP'. The remaining space will used for '\fB%d\fP'.
+.PP
 When the format string contains the specifier '\fB%F\fP' and '\fB%s\fP'
 resp. '\fB%T\fP' and no length are given, '\fB%F\fP' will use one third and
 \&'\fB%s\fP' resp. '\fB%T\fP' will use two third of the available space.
 .PP
 In addition, a minimum screen width can be defined for each item (except
-\(cq\fB%%\fP'). In this case, the item will only be displayed when the screen
-is wider than specified. This comes in handy to not overload a small screen
-but have maximum information on a large screen. The minimum screen width has
-to be specified by a positive number preceded by an '\fB>\fP'. In the
+\&'\fB%%\fP'). In this case, the item will only be displayed when the screen is
+wider than specified. This comes in handy to not overload a small screen but
+have maximum information on a large screen. The minimum screen width has to
+be specified by a positive number preceded by an '\fB>\fP'. In the
 following example \fBtin\fP will display the score only if the screen is wider
 than 100 characters: '\fB%>100S\fP'.
 .PP
@@ -2931,7 +2955,7 @@ If both the length and the minimum screen width should be specified for an
 item, the length must be the first parameter and the minimum screen width
 must be the second one. The following example displays the score with a
 length of 10 characters only if the screen is wider than 100 characters:
-\(cq\fB%10>100S\fP'.
+\&'\fB%10>100S\fP'.
 .SS "TIPS AND TRICKS"
 \fBtin\fP can be pretty much be navigated by using the four cursor keys.  The
 left arrow key goes up a level, the right arrow key goes down a level, the
@@ -3534,13 +3558,13 @@ Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-file.
 .SH SECURITY
 .\"
 .\"
-When \fBtin\fP is started in debug mode (\*(rq\fB\-D n\fP\*(rq) it will create world
+If \fBtin\fP is started in debug mode (\*(rq\fB\-D n\fP\*(rq) it will create world
 readable files in \fB$TMPDIR\fP which may contain the users NNTP password in
 cleartext. On multi\-user systems \fB$TMPDIR\fP should be set to a safe location
 before starting tin in debug mode (e.g.  \fBTMPDIR=$HOME tin \-D 1\fP).
 .SH "CONFORMING TO"
-.\" - RFC\%2045, RFC\%2047, RFC\%2980, RFC\%3977, RFC\%4155, RFC\%4643,
-.\"   RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
+.\" - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
+.\"   RFC\%4643, RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
 .\"
 .\"
 \fBtin\fP does conform to the Base Definitions volume of IEEE Std 1003.1\-2008,
@@ -3626,5 +3650,6 @@ Urs Janssen <urs@tin.org>
 \fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3), \fB\%environ\fP(5), \fB\%locale\fP(5),
 \fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5),
 \fB\%tin\fP(5), \fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP,
-\fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2980\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
-\fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP
+\fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3977\fP,
+\fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP,
+\fBRFC\%6048\fP

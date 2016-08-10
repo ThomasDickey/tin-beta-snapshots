@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2014-10-25
+ *  Updated   : 2016-07-29
  *  Notes     :
  *
- * Copyright (c) 1997-2015 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2016 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -383,7 +383,7 @@ extern void read_input_history_file(void);
 extern void rename_file(const char *old_filename, const char *new_filename);
 extern void show_inverse_video_status(void);
 extern void strip_name(const char *from, char *address);
-extern void tin_done(int ret);
+extern void tin_done(int ret, const char *fmt, ...);
 extern void toggle_inverse_video(void);
 #if defined(CHARSET_CONVERSION) || (defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE))
 	extern char *utf8_valid(char *line);
@@ -475,7 +475,7 @@ extern time_t parsedate(char *p, TIMEINFO *now);
 	extern t_bool pgp_check_article(t_openartinfo *artinfo);
 	extern void init_pgp(void);
 	extern void invoke_pgp_mail(const char *nam, char *mail_to);
-	extern void invoke_pgp_news(char *the_article);
+	extern void invoke_pgp_news(char *artfile);
 #endif /* HAVE_PGP_GPG */
 
 /* plp_snprintf.c */
@@ -561,9 +561,10 @@ extern void rfc1521_encode(char *line, FILE *f, int e);
 extern FILE *open_art_fp(struct t_group *group, t_artnum art);
 extern const char *get_param(t_param *list, const char *name);
 extern char *parse_header(char *buf, const char *pat, t_bool decode, t_bool structured, t_bool keep_tab);
-extern int art_open(t_bool wrap_lines, struct t_article *art, struct t_group *group, t_openartinfo *artinfo, t_bool show_progress_meter, char *pmesg);
+extern int art_open(t_bool wrap_lines, struct t_article *art, struct t_group *group, t_openartinfo *artinfo, t_bool show_progress_meter, const char *pmesg);
 extern int content_type(char *type);
 extern int parse_rfc822_headers(struct t_header *hdr, FILE *from, FILE *to);
+extern t_param *new_params(void);
 extern t_part *new_part(t_part *part);
 extern void art_close(t_openartinfo *artinfo);
 extern void free_and_init_header(struct t_header *hdr);

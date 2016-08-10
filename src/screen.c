@@ -3,10 +3,10 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-08-29
+ *  Updated   : 2016-04-15
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,8 +72,8 @@ fmt_message(
 	va_list ap)
 {
 	char *msg;
-#ifdef HAVE_VASPRINTF
 
+#ifdef HAVE_VASPRINTF
 	if (vasprintf(&msg, fmt, ap) == -1)	/* something went wrong */
 #endif /* HAVE_VASPRINTF */
 	{
@@ -309,7 +309,7 @@ draw_arrow_mark(
 			if (mark_offset && wtmp[mark_offset] == tinrc.art_marked_selected) {
 				MoveCursor(line, mark_offset);
 				EndInverse();
-				my_fputwc(wtmp[mark_offset], stdout);
+				my_fputwc((wint_t) wtmp[mark_offset], stdout);
 			}
 			free(wtmp);
 		}
@@ -363,7 +363,7 @@ erase_arrow(
 			if (mark_offset && wtmp[mark_offset] == tinrc.art_marked_selected) {
 				MoveCursor(line, mark_offset);
 				StartInverse();
-				my_fputwc(wtmp[mark_offset], stdout);
+				my_fputwc((wint_t) wtmp[mark_offset], stdout);
 				EndInverse();
 			}
 			free(wtmp);
@@ -394,7 +394,7 @@ show_title(
 		fcol(tinrc.col_title);
 #endif /* HAVE_COLOR */
 		/* you have mail message in */
-		my_fputs(_(txt_type_h_for_help), stdout);
+		my_fputs((mail_check() ? _(txt_you_have_mail) : _(txt_type_h_for_help)), stdout);
 
 #ifdef HAVE_COLOR
 		fcol(tinrc.col_normal);
@@ -447,6 +447,8 @@ spin_cursor(
 
 #if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
 #	define DISPLAY_FMT "%s %3d%% "
+#else
+#	define DISPLAY_FMT "%s %3d%%"
 #endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
 /*
  * progressmeter in %
@@ -461,7 +463,6 @@ show_progress(
 	int ratio;
 	time_t curr_time;
 	static char last_display[LEN];
-	static const char *last_txt;
 	static int last_ratio;
 	static t_artnum last_total;
 	static time_t last_update;
@@ -469,6 +470,7 @@ show_progress(
 	static t_artnum last_count;
 	static int average;
 	static int samples;
+	static int last_secs_left;
 	static int sum;
 	char *display_format;
 	int time_diff;
@@ -478,11 +480,11 @@ show_progress(
 	static struct t_tintime this_time;
 #endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
 
-	if (batch_mode || count <= 0 || total <= 0)
+	if (batch_mode || count <= 0 || total <= 1)
 		return;
 
 	/* If this is a new progress meter, start recalculating */
-	if ((last_txt != txt) || (last_total != total)) {
+	if ((last_total != total) || (count == 1)) {
 		last_ratio = -1;
 		last_display[0] = '\0';
 		last_update = time(NULL) - 2;
@@ -492,8 +494,8 @@ show_progress(
 	ratio = (int) ((count * 100) / total);
 	if ((ratio == last_ratio) && (curr_time - last_update < 2))
 		/*
-		 * return if ratio did not change and less than 1-2 seconds since last
-		 * update to reduce output
+		 * return if ratio did not change and less than
+		 * 2 seconds since last update to reduce output
 		 */
 		return;
 
@@ -504,11 +506,11 @@ show_progress(
 	strcpy(display_format, DISPLAY_FMT);
 
 	if (last_ratio == -1) {
-		/* Don't print a "time remaining" this time */
+		/* Don't print the time remaining */
 		snprintf(display, sizeof(display), display_format, txt, ratio);
 
 		/* Reset the variables */
-		sum = average = samples = 0;
+		sum = average = samples = last_secs_left = 0;
 	} else {
 		/* Get the current time */
 		tin_gettime(&this_time);
@@ -546,27 +548,47 @@ show_progress(
 		if (secs_left < 0)
 			secs_left = 0;
 
-		strcat(display_format, _(txt_remaining));
-		snprintf(display, sizeof(display), display_format, txt, ratio, secs_left / 60, secs_left % 60);
+		if ((secs_left > 0) && (last_secs_left == 0))
+			last_secs_left = secs_left;
+
+		if (samples < 5)
+			/* Don't print the time remaining */
+			snprintf(display, sizeof(display), display_format, txt, ratio);
+		else {
+			/* Don't allow time remaining to increase by 1 or 2 seconds */
+			if ((secs_left == last_secs_left + 1) || (secs_left == last_secs_left + 2))
+				secs_left = last_secs_left;
+			else if (secs_left < last_secs_left)
+				last_secs_left = secs_left;
+			strcat(display_format, _(txt_remaining));
+			snprintf(display, sizeof(display), display_format, txt, ratio, secs_left / 60, secs_left % 60);
+		}
 	}
 	free(display_format);
 
 	last_count = count;
 	tin_gettime(&last_time);
 #else
-	snprintf(display, sizeof(display), "%s %3d%%", txt, ratio);
+	snprintf(display, sizeof(display), DISPLAY_FMT, txt, ratio);
 #endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
 
 	/* Only display text if it changed from last time */
 	if (strcmp(display, last_display)) {
 		char *tmp;
 
-		clear_message();
-		MoveCursor(cLINES, 0);
+		if (RawState()) {
+			clear_message();
+			MoveCursor(cLINES, 0);
+		} else {
+			my_printf("\r");
+			my_flush();
+			CleartoEOLN();
+		}
 
-#	ifdef HAVE_COLOR
-		fcol(tinrc.col_message);
-#	endif /* HAVE_COLOR */
+#ifdef HAVE_COLOR
+		if (RawState())
+			fcol(tinrc.col_message);
+#endif /* HAVE_COLOR */
 
 		/*
 		 * TODO: depending on the length of the newsgroup name
@@ -576,15 +598,20 @@ show_progress(
 		my_printf("%s", sized_message(&tmp, "%s", display));
 		free(tmp);
 
-#	ifdef HAVE_COLOR
-		fcol(tinrc.col_normal);
-#	endif /* HAVE_COLOR */
+#ifdef HAVE_COLOR
+		if (RawState())
+			fcol(tinrc.col_normal);
+#endif /* HAVE_COLOR */
+
+#ifndef USE_CURSES
+		if (!RawState())
+			MoveCursor(cLINES, 0);
+#endif /* !USE_CURSES */
 
 		my_flush();
 		STRCPY(last_display, display);
 	}
 
-	last_txt = txt;
 	last_total = total;
 	last_ratio = ratio;
 }

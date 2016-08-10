@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2014-10-25
+ *  Updated   : 2016-05-23
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -429,7 +429,7 @@ read_filter_file(
 						}
 					}
 				}
-			break;
+				break;
 
 			case 'l':
 				if (match_string(buf + 1, "ines=", buffer, sizeof(buffer))) {
@@ -676,12 +676,12 @@ write_filter_file(
 	/* determine the file offset */
 	if (!batch_mode) {
 		if ((fpos = ftell(fp)) <= 0) {
-				clearerr(fp);
-				fclose(fp);
-				rename_file(file_tmp, filename);
-				free(file_tmp);
-				error_message(2, _(txt_filesystem_full), filename);
-				return;
+			clearerr(fp);
+			fclose(fp);
+			rename_file(file_tmp, filename);
+			free(file_tmp);
+			error_message(2, _(txt_filesystem_full), filename);
+			return;
 		}
 		rewind(fp);
 		filter_file_offset = 1;
@@ -737,7 +737,7 @@ write_filter_array(
 #endif /* DEBUG */
 
 		if (ptr->filter[i].time && theTime > ptr->filter[i].time)
-				continue;
+			continue;
 #ifdef DEBUG
 		if (debug & DEBUG_FILTER)
 			debug_print_file("FILTER", "Scope=[%s]" cCRLF, (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
@@ -1290,22 +1290,27 @@ filter_menu(
 	 * Get the < > sign if any for the lines rule
 	 */
 	ptr = buf;
-	while (ptr && *ptr == ' ')
+	while (*ptr == ' ')
 		ptr++;
 
-	if (ptr && *ptr == '>') {
+	if (*ptr == '>') {
 		rule.lines_cmp = FILTER_LINES_GT;
 		ptr++;
-	} else if (ptr && *ptr == '<') {
+	} else if (*ptr == '<') {
 		rule.lines_cmp = FILTER_LINES_LT;
 		ptr++;
-	} else if (ptr && *ptr == '=') {
+	} else if (*ptr == '=') {
 		rule.lines_cmp = FILTER_LINES_EQ;
 		ptr++;
 	}
-	rule.lines_num = atoi(ptr);
 
-	if (rule.lines_cmp != FILTER_LINES_NO && rule.lines_num >= 0)
+	if (*ptr)
+		rule.lines_num = abs(atoi(ptr));
+
+	if (rule.lines_num && rule.lines_cmp == FILTER_LINES_NO)
+		rule.lines_cmp = FILTER_LINES_EQ;
+
+	if (rule.lines_cmp != FILTER_LINES_NO && rule.lines_num)
 		rule.lines_ok = TRUE;
 
 	/*
@@ -1856,6 +1861,8 @@ filter_articles(
 
 	/*
 	 * loop through all arts applying global & local filtering rules
+	 *
+	 * TODO: allow iKeyAbort to stop filtering
 	 */
 	for (i = 0; (i < top_art) && !error; i++) {
 		arts[i].score = 0;
@@ -2045,25 +2052,43 @@ filter_articles(
 						t_bool skip = FALSE;
 
 						s = arts[i].xref;
-						while (*s && !isspace((int) *s))	/* skip server name */
-							s++;
-						while (*s && isspace((int) *s))
-							s++;
-
-						/* reformat */
-						k = e = my_malloc(strlen(s) + 1);
-						while (*s) {
-							if (*s == ':') {
-								*e++ = ',';
-								skip = TRUE;
-							}
-							if (*s != ':' && !isspace((int) *s) && !skip)
-								*e++ = *s;
-							if (isspace((int) *s))
-								skip = FALSE;
-							s++;
+						if (strchr(s, ' ') || strchr(s, '\t')) {
+							while (*s && !isspace((int) *s))	/* skip server name */
+								s++;
+							while (*s && isspace((int) *s))
+								s++;
 						}
-						*--e = '\0';
+#ifdef DEBUG
+						else { /* server name missing in overview, i.e. colobus 2.1 */
+							if (debug & DEBUG_FILTER) { /* TODO: lang.c, _()? */
+								debug_print_file("FILTER", "Malformed overview entry: servername missing.");
+								debug_print_file("FILTER", "\t Xref: %s", arts[i].xref);
+							}
+						}
+#endif /* DEBUG */
+						if (strlen(s)) {
+							/* reformat */
+							k = e = my_malloc(strlen(s) + 1);
+							while (*s) {
+								if (*s == ':') {
+									*e++ = ',';
+									skip = TRUE;
+								}
+								if (*s != ':' && !isspace((int) *s) && !skip)
+									*e++ = *s;
+								if (isspace((int) *s))
+									skip = FALSE;
+								s++;
+							}
+							*--e = '\0';
+						} else {
+#ifdef DEBUG
+							if (debug & DEBUG_FILTER) /* TODO: lang.c, _()? */
+								debug_print_file("FILTER", "Skipping xref filter");
+#endif /* DEBUG */
+							error = TRUE;
+							break;
+						}
 
 						if (ptr[j].xref != NULL) {
 							switch (test_regex(k, ptr[j].xref, ptr[j].icase, &regex_cache_xref[j])) {

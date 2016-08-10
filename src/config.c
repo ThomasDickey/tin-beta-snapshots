@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-09
+ *  Updated   : 2016-04-17
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,7 @@
  */
 static t_bool match_item(char *line, const char *pat, char *dst, size_t dstlen);
 static t_bool rc_update(FILE *fp);
+static t_bool rc_post_update(FILE *fp);
 static void write_server_config(void);
 #ifdef HAVE_COLOR
 	static t_bool match_color(char *line, const char *pat, int *dst, int max);
@@ -407,9 +408,6 @@ read_config_file(
 			if (match_string(buf, "group_format=", tinrc.group_format, sizeof(tinrc.group_format)))
 				break;
 
-			if (match_integer(buf, "groupname_max_length=", &tinrc.groupname_max_length, 132))
-				break;
-
 			if (match_boolean(buf, "group_catchup_on_exit=", &tinrc.group_catchup_on_exit))
 				break;
 
@@ -696,8 +694,10 @@ read_config_file(
 			if (match_string(buf, "strokes_regex=", tinrc.strokes_regex, sizeof(tinrc.strokes_regex)))
 				break;
 
+#ifndef USE_CURSES
 			if (match_boolean(buf, "strip_blanks=", &tinrc.strip_blanks))
 				break;
+#endif /* !USE_CURSES */
 
 			if (match_integer(buf, "strip_bogus=", &tinrc.strip_bogus, BOGUS_SHOW))
 				break;
@@ -828,6 +828,8 @@ read_config_file(
 			break;
 		}
 	}
+	if (upgrade == RC_UPGRADE)
+		rc_post_update(fp);
 	fclose(fp);
 
 	/*
@@ -1181,11 +1183,10 @@ write_config_file(
 	fprintf(fp, "%s", _(txt_use_mouse.tinrc));
 	fprintf(fp, "use_mouse=%s\n\n", print_boolean(tinrc.use_mouse));
 
+#ifndef USE_CURSES
 	fprintf(fp, "%s", _(txt_strip_blanks.tinrc));
 	fprintf(fp, "strip_blanks=%s\n\n", print_boolean(tinrc.strip_blanks));
-
-	fprintf(fp, "%s", _(txt_groupname_max_length.tinrc));
-	fprintf(fp, "groupname_max_length=%d\n\n", tinrc.groupname_max_length);
+#endif /* !USE_CURSES */
 
 	fprintf(fp, "%s", _(txt_abbreviate_groupname.tinrc));
 	fprintf(fp, "abbreviate_groupname=%s\n\n", print_boolean(tinrc.abbreviate_groupname));
@@ -1762,6 +1763,7 @@ ulBuildArgv(
 
 /*
  * auto update tinrc
+ * called at the beginning of read_config_file()
  */
 static t_bool
 rc_update(
@@ -1985,6 +1987,65 @@ rc_update(
 		my_strncpy(tinrc.metamail_prog, METAMAIL_CMD, sizeof(tinrc.metamail_prog) - 1);
 
 	rewind(fp);
+	return TRUE;
+}
+
+
+/*
+ * auto update tinrc
+ * called at the end of read_config_file()
+ * useful to update variables which are already present in tinrc
+ */
+static t_bool
+rc_post_update(
+	FILE *fp)
+{
+	char buf[1024];
+	int groupname_max_length = 0;
+
+	if (!fp)
+		return FALSE;
+
+	rewind(fp);
+	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
+		if (buf[0] == '#' || buf[0] == '\n')
+			continue;
+
+		switch (tolower((unsigned char) buf[0])) {
+			case 'g':
+				if (match_integer(buf, "groupname_max_length=", &groupname_max_length, 132))
+					break;
+
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	/* update the values */
+	if (groupname_max_length > 0 && groupname_max_length != 32) {
+		char length[LEN];
+		char *dest, *d, *f, *l;
+
+		snprintf(length, sizeof(length), ",%d", groupname_max_length);
+
+		d = dest = my_malloc(strlen(tinrc.select_format) + strlen(length) + 1);
+		f = tinrc.select_format;
+		l = length;
+
+		while (*f) {
+			if (*f == 'G') {
+				while (*l)
+					*d++ = *l++;
+			}
+			*d++ = *f++;
+		}
+		*d = '\0';
+		STRCPY(tinrc.select_format, dest);
+		free(dest);
+	}
+
 	return TRUE;
 }
 

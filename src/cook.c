@@ -3,10 +3,10 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2015-10-09
+ *  Updated   : 2016-02-28
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2015 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2016 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -322,14 +322,13 @@ new_uue(
 	/*
 	 * Load the name into the parameter list
 	 */
-	ptr->params = my_malloc(sizeof(t_param));
+	ptr->params = new_params();
 	ptr->params->name = my_strdup("name");
 	ptr->params->value = my_strdup(str_trim(name));
-	ptr->params->next = NULL;
 
 	ptr->encoding = ENCODING_UUE;	/* treat as x-uuencode */
 
-	ptr->offset = ftell(art->raw);
+	ptr->offset = ftell(art->cooked);
 	ptr->depth = (*part)->depth;	/* uue is at the same depth as the envelope */
 
 	/*
@@ -359,8 +358,7 @@ get_filename(
 			return NULL;
 	}
 
-	/* TODO: Use base_name()? or at least DIRSEP */
-	if (((p = strrchr(name, '/'))) || ((p = strrchr(name, '\\'))))
+	if ((p = strrchr(name, DIRSEP)))
 		return p + 1;
 
 	return name;
@@ -466,8 +464,10 @@ process_text_body_part(
 				lines_left--;
 				break;
 		}
-		if (!(line && strlen(line)))
+		if (!(line && strlen(line))) {
+			FreeIfNeeded(rest);
 			break;	/* premature end of file, file error etc. */
+		}
 
 		/* convert network to local charset, tex2iso, iso2asc etc. */
 		ncharset = get_param(part->params, "charset");
@@ -666,6 +666,9 @@ process_text_body_part(
 						if (MATCH_REGEX(quote_regex, line, len))
 							flags |= C_QUOTE1;
 					}
+				} else if (quote_regex.re) {
+					if (MATCH_REGEX(quote_regex, line, len))
+						flags |= C_QUOTE1;
 				}
 			}
 		}
@@ -673,12 +676,10 @@ process_text_body_part(
 
 		if (MATCH_REGEX(url_regex, line, len))
 			flags |= C_URL;
-#if 0
 		if (MATCH_REGEX(mail_regex, line, len))
 			flags |= C_MAIL;
 		if (MATCH_REGEX(news_regex, line, len))
 			flags |= C_NEWS;
-#endif /* 0 */
 
 		if (expand_ctrl_chars(&line, &max_line_len, tabwidth))
 			flags |= C_CTRLL;				/* Line contains form-feed */
@@ -876,7 +877,21 @@ cook_article(
 						*ptr = '\0';
 						unfold_header(line);
 						if ((ptr = parse_header(line, foo, TRUE, TRUE, FALSE))) {
-							bar = idna_decode(ptr);	/* do we wan't idna_decode() here? */
+#if 0
+							/*
+							 * TODO:
+							 * idna_decode() currently expects just a FQDN
+							 * or a mailaddress (with all comments stripped).
+							 *
+							 * we need to look for something like
+							 * (?i)((?:\S+\.)?xn--[a-z0-9\.\-]{3,}\S+)\b
+							 * and just decode $1
+							 * maybe also in process_text_body_part()
+							 */
+							bar = idna_decode(ptr);
+#else
+							bar = my_strdup(ptr);
+#endif /* 0 */
 							l = my_calloc(1, strlen(bar) + strlen(*strptr) + 1);
 							strncpy(l, line, strlen(*strptr));
 							strcat(l, bar);

@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2015-06-16
+dnl Updated   : 2015-11-03
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2015 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2016 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.3.2
+VERSION=2.4.0
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -123,10 +123,10 @@ esac
 
 dnl TODO: also check for heapsort(3) in libbsd?
 AC_MSG_CHECKING(if you would like to use heapsort)
-CF_ARG_ENABLE(heapsort,
-	[  --enable-heapsort       enable heapsort() as alternative to qsort],
-	[cf_use_heapsort=yes],
-	[cf_use_heapsort=no])
+CF_ARG_DISABLE(heapsort,
+	[  --disable-heapsort      disable heapsort() as alternative to qsort],
+	[cf_use_heapsort=no],
+	[cf_use_heapsort=yes])
 AC_MSG_RESULT($cf_use_heapsort)
 if test "x$cf_use_heapsort" = xyes; then
 	AC_CHECK_FUNCS(heapsort)
@@ -318,14 +318,14 @@ fi
 ### are used in a lot of places.
 AC_CACHE_CHECK(if you want socks library,cf_cv_use_libsocks,[
 AC_ARG_WITH(socks,
-	[  --with-socks[=path]     link with socks library if available],
+	[  --with-socks[=path]       link with socks library if available],
 	[cf_cv_use_libsocks=$withval],
 	[cf_cv_use_libsocks=no])
 ])
 
 AC_CACHE_CHECK(if you want socks5 library,cf_cv_use_libsocks5,[
 AC_ARG_WITH(socks5,
-	[  --with-socks5[=path]    link with socks5 library if available],
+	[  --with-socks5[=path]      link with socks5 library if available],
 	[cf_cv_use_libsocks5=$withval],
 	[cf_cv_use_libsocks5=no])
 ])
@@ -587,9 +587,9 @@ CF_ARG_DISABLE(etiquette,
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to strictly observe RFC2047 and break long lines)
-CF_ARG_ENABLE(break-long-lines,
-	[  --enable-break-long-lines
-                          break long mime-encoded lines],
+CF_ARG_DISABLE(break-long-lines,
+	[  --disable-break-long-lines
+                          don't break long mime-encoded lines],,
 	[AC_DEFINE(MIME_BREAK_LONG_LINES)])
 AC_MSG_RESULT($enableval)
 
@@ -696,9 +696,10 @@ AC_DEFINE_UNQUOTED(TIN_DEFAULTS_DIR,"$TIN_DEFAULTS_DIR")
 
 ### check for ipv6 support
 AC_MSG_CHECKING([whether to enable IPv6])
-CF_ARG_ENABLE(ipv6,
-	[  --enable-ipv6           enable IPv6 (with IPv4) support (default: disabled)],
-[AC_DEFINE(ENABLE_IPV6)])
+CF_ARG_DISABLE(ipv6,
+	[  --disable-ipv6          disable IPv6 support (default: enabled)],
+	,
+	[AC_DEFINE(ENABLE_IPV6)])
 AC_MSG_RESULT($enableval)
 if test "$enableval" = "yes"; then
 	CF_CHECK_IPV6

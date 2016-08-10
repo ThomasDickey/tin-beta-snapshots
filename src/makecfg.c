@@ -3,10 +3,10 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2009-02-14
+ *  Updated   : 2015-11-25
  *  Notes     : #defines and structs for options_menu.c
  *
- * Copyright (c) 1997-2015 Thomas E. Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2016 Thomas E. Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -271,7 +271,7 @@ generate_enum(
 	static const char *const table_2[] = {
 		"\tSIGNAL_HANDLER };",
 		"",
-		"#define LAST_OPT SIGNAL_HANDLER - 1",
+		"#define LAST_OPT (SIGNAL_HANDLER - 1)",
 		0
 	};
 
@@ -511,12 +511,22 @@ main(
 	FILE *input = stdin;
 	FILE *output = stdout;
 	FILE *output2 = open_it("options_menu.h", "w");
+	MYDATA *m, *n;
 
 	if (argc > 1)
 		input = open_it(argv[1], "r");
 	if (argc > 2)
 		output = open_it(argv[2], "w");
 	makecfg(input, output, output2);
+
+	m = all_data;
+	while (m) {
+		n = m->link;
+		FreeIfNeeded(m->name);
+		FreeIfNeeded(m->type);
+		free(m);
+		m = n;
+	}
 
 	return (0);
 }

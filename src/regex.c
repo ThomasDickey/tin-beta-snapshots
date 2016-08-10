@@ -7,7 +7,7 @@
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
- * Copyright (c) 1997-2015 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2016 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -121,7 +121,7 @@ compile_regex(
 		if (i)
 			my_options |= PCRE_UTF8;
 	}
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE && PCRE_MAJOR && PCRE_MAJOR >= 4*/
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE && PCRE_MAJOR && PCRE_MAJOR >= 4 */
 
 	if ((cache->re = pcre_compile(regex, my_options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
 		error_message(2, _(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);

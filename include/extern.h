@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-09
+ *  Updated   : 2016-06-06
  *  Notes     :
  *
- * Copyright (c) 1997-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -479,6 +479,9 @@ extern constext txt_articles_mailed[];
 #ifndef DISABLE_PRINTING
 	extern constext txt_articles_printed[];
 #endif /* !DISABLE_PRINTING */
+#ifndef DONT_HAVE_PIPING
+	extern constext txt_articles_piped[];
+#endif /* !DONT_HAVE_PIPING */
 extern constext txt_attach[];
 extern constext txt_attach_charset[];
 extern constext txt_attach_description[];
@@ -612,6 +615,7 @@ extern constext txt_error_copy_fp[];
 extern constext txt_error_corrupted_file[];
 extern constext txt_error_fseek[];
 extern constext txt_error_followup_poster[];
+extern constext txt_error_format_string[];
 extern constext txt_error_gnksa_internal[];
 extern constext txt_error_gnksa_langle[];
 extern constext txt_error_gnksa_lparen[];
@@ -725,6 +729,7 @@ extern constext txt_group_rereading[];
 extern constext txt_group_select_com[];
 extern constext txt_group_selection[];
 extern constext txt_group_singular[];
+extern constext txt_grpdesc_disabled[];
 extern constext txt_help_article_autokill[];
 extern constext txt_help_article_autoselect[];
 extern constext txt_help_article_browse_urls[];
@@ -902,6 +907,10 @@ extern constext txt_help_select_goto_group[];
 extern constext txt_help_select_group_by_num[];
 extern constext txt_help_select_group_range[];
 extern constext txt_help_select_last_group[];
+#ifdef NNTP_ABLE
+	extern constext txt_help_select_lookup_group[];
+	extern constext txt_help_select_lookup_group_comment[];
+#endif /* NNTP_ABLE */
 extern constext txt_help_select_mark_group_unread[];
 extern constext txt_help_select_move_group[];
 extern constext txt_help_select_next_unread_group[];
@@ -985,6 +994,12 @@ extern constext txt_kill_time[];
 extern constext txt_last[];
 extern constext txt_last_resp[];
 extern constext txt_lines[];
+#ifdef NNTP_ABLE
+	extern constext txt_lookup_func_not_available[];
+	extern constext txt_lookup_func_not_nntp[];
+	extern constext txt_lookup_show_group[];
+	extern constext txt_lookup_show_groups[];
+#endif /* NNTP_ABLE */
 extern constext txt_mail[];
 extern constext txt_mailbox[];
 extern constext txt_mail_art_to[];
@@ -1710,7 +1725,6 @@ extern struct opttxt txt_getart_limit_options;
 extern struct opttxt txt_goto_next_unread;
 extern struct opttxt txt_group_catchup_on_exit;
 extern struct opttxt txt_group_format;
-extern struct opttxt txt_groupname_max_length;
 extern struct opttxt txt_hide_uue;
 extern struct opttxt txt_inews_prog;
 extern struct opttxt txt_interactive_mailer;
@@ -1799,7 +1813,9 @@ extern struct opttxt txt_sort_threads_type;
 extern struct opttxt txt_spamtrap_warning_addresses;
 extern struct opttxt txt_stars_regex;
 extern struct opttxt txt_start_editor_offset;
-extern struct opttxt txt_strip_blanks;
+#ifndef USE_CURSES
+	extern struct opttxt txt_strip_blanks;
+#endif /* !USE_CURSES */
 extern struct opttxt txt_strip_bogus;
 extern struct opttxt txt_strip_newsrc;
 extern struct opttxt txt_strip_re_regex;

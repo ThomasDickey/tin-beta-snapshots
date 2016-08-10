@@ -6,7 +6,7 @@
  *  Updated   : 2015-08-24
  *  Notes     : RFC 2045/2047 encoding
  *
- * Copyright (c) 1995-2015 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2016 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -325,7 +325,7 @@ read_decoded_base64_line(
 	char **rest)
 {
 	char *buf2;	/* holds the entire decoded line */
-	char *buf;	/* holds the entire encoded line*/
+	char *buf;	/* holds the entire encoded line */
 	int count;
 	int lines_read = 0;
 	int put_chars;

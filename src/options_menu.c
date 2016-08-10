@@ -3,10 +3,10 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2015-10-09
+ *  Updated   : 2016-04-27
  *  Notes     : Split from config.c
  *
- * Copyright (c) 2004-2015 Michael Bienia <michael@vorlon.ping.de>
+ * Copyright (c) 2004-2016 Michael Bienia <michael@vorlon.ping.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -251,6 +251,9 @@ option_is_visible(
 		case OPT_VERBATIM_END_REGEX:
 			return curr_scope ? FALSE : tinrc.verbatim_handling;
 
+#ifndef USE_CURSES
+		case OPT_STRIP_BLANKS:
+#endif /* !USE_CURSES */
 		case OPT_GETART_LIMIT_OPTIONS:
 			return curr_scope ? FALSE : TRUE;
 
@@ -459,8 +462,8 @@ print_any_option(
 
 	switch (option_table[option].var_type) {
 		case OPT_ON_OFF:
-			/* tailing space to overwrite any left over F from OFF */
-			snprintf(ptr, len, "%s ", print_boolean(*OPT_ON_OFF_list[option_table[option].var_index]));
+			/* %-3s to match the length of OFF */
+			snprintf(ptr, len, "%-3s", print_boolean(*OPT_ON_OFF_list[option_table[option].var_index]));
 			break;
 
 		case OPT_LIST:
@@ -503,7 +506,10 @@ print_any_option(
 #else
 	my_printf("%.*s", cCOLS - 1, temp);
 	/* draw_arrow_mark() will read this back for repainting */
-	strncpy(screen[row - INDEX_TOP].col, temp, cCOLS);
+	if (tinrc.strip_blanks)
+		strncpy(screen[row - INDEX_TOP].col, temp, cCOLS - 1);
+	else
+		snprintf(screen[row - INDEX_TOP].col, cCOLS, "%-*s", cCOLS - 1, temp);
 #endif /* USE_CURSES */
 }
 
@@ -1292,7 +1298,6 @@ config_page(
 						case OPT_FORCE_SCREEN_REDRAW:
 						case OPT_KEEP_DEAD_ARTICLES:
 						case OPT_SHOW_ONLY_UNREAD_GROUPS:
-						case OPT_STRIP_BLANKS:
 						case OPT_STRIP_NEWSRC:
 #if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 						case OPT_TRANSLIT:
@@ -1355,6 +1360,7 @@ config_page(
 								UPDATE_INT_ATTRIBUTES(extquote_handling);
 								set_last_option_on_screen(first_option_on_screen);
 								redraw_screen(option);
+								changed |= DISPLAY_OPTS;
 							}
 							break;
 #endif /* HAVE_COLOR */
@@ -1421,6 +1427,15 @@ config_page(
 								UPDATE_INT_ATTRIBUTES(start_editor_offset);
 							break;
 
+#ifndef USE_CURSES
+						case OPT_STRIP_BLANKS:
+							if (prompt_option_on_off(option)) {
+								redraw_screen(option);
+								changed |= MISC_OPTS;
+							}
+							break;
+#endif /* !USE_CURSES */
+
 						case OPT_TEX2ISO_CONV:
 							if (prompt_option_on_off(option))
 								UPDATE_INT_ATTRIBUTES(tex2iso_conv);
@@ -1471,6 +1486,7 @@ config_page(
 								if (!tinrc.draw_arrow && !tinrc.inverse_okay) {
 									tinrc.inverse_okay = TRUE;
 									repaint_option(OPT_INVERSE_OKAY);
+									center_line(0, TRUE, _(txt_options_menu));
 								}
 								changed |= MISC_OPTS;
 							}
@@ -1485,6 +1501,7 @@ config_page(
 									tinrc.draw_arrow = TRUE;	/* we don't want to navigate blindly */
 									repaint_option(OPT_DRAW_ARROW);
 								}
+								center_line(0, TRUE, _(txt_options_menu));
 								changed |= MISC_OPTS;
 							}
 							break;
@@ -2477,14 +2494,6 @@ config_page(
 							}
 							break;
 
-						case OPT_GROUPNAME_MAX_LENGTH:
-							if (prompt_option_num(option)) {
-								if (tinrc.groupname_max_length < 0)
-									tinrc.groupname_max_length = 0;
-								changed |= MISC_OPTS;
-							}
-							break;
-
 						case OPT_FILTER_DAYS:
 							if (prompt_option_num(option)) {
 								if (tinrc.filter_days <= 0)
@@ -2814,6 +2823,12 @@ build_scope_line(
 #endif /* USE_CURSES */
 
 	snprintf(sptr, cCOLS, "  %c %s  %-*.*s%s", (scopes[i + 1].global ? '!' : ' '), tin_ltoa(i + 1, 4), len, len, scopes[i + 1].scope, cCRLF);
+
+#ifndef USE_CURSES
+	if (tinrc.strip_blanks)
+		strcat(strip_line(sptr), cCRLF);
+#endif /* !USE_CURSES */
+
 	WriteLine(INDEX2LNUM(i), sptr);
 
 #ifdef USE_CURSES

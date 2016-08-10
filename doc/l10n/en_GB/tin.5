@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2015-01-10
+.\" Updated   : 2016-07-25
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "December 24th, 2014" 2.3.2 "Usenet newsreader"
+.TH tin 5 "March 27th, 2016" 2.4.0 "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -1474,10 +1474,10 @@ Specifies whether a screen redraw should always be done after certain
 external commands. Default is OFF.
 .TP 
 \fBgetart_limit\fP
-If \fBgetart_limit\fP is > 0 not more than \fBgetart_limit\fP articles/group
-are fetched from the server. If \fBgetart_limit\fP is < 0 \fB\%tin\fP(1)  will
-start fetching articles from your first unread minus absolute value of
-\fBgetart_limit\fP. Default is 0, which means no limit.
+If \fBgetart_limit\fP is > 0 not more than the last \fBgetart_limit\fP
+articles/group are fetched from the server. If \fBgetart_limit\fP is < 0
+\fB\%tin\fP(1)  will start fetching articles from your first unread minus
+absolute value of \fBgetart_limit\fP. Default is 0, which means no limit.
 .TP 
 \fBgoto_next_unread\fP
 Which keys \fBtin\fP should accept to jump to the next unread article.
@@ -1508,10 +1508,6 @@ The format string used for the Group level. Default is "%n\ %m\ %R\ %L\ \ %s\ \ 
 %%	%
 .fi
 .in -.3i
-.TP 
-\fBgroupname_max_length\fP
-Maximum length of the names of newsgroups to be displayed so that more of
-the newsgroup description can be displayed. Default is 32.
 .TP 
 \fBhide_uue\fP
 If set to 'No' then raw uuencoded data is displayed. If set to 'Yes' then
@@ -2498,6 +2494,6 @@ the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 \fB\%pcre\fP(3), \fB\%pcrepattern\fP(3), \fB\%qsort\fP(3), \fB\%strftime\fP(3),
 \fB\%system\fP(3), \fB\%active\fP(5), \fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5),
 \fB\%newsoverview\fP(5), \fB\%overview.fmt\fP(5), \fB\%innd\fP(8), \fBRFC\%1524\fP,
-\fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2980\fP,
-\fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP,
-\fBRFC\%5537\fP, \fBRFC\%6048\fP
+\fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP,
+\fBRFC\%2980\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP,
+\fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP

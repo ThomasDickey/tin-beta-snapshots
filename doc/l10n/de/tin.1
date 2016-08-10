@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2015-01-11
+.\" Updated   : 2016-07-25
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24. Dezember 2014" 2.3.2 "Usenet Newsreader"
+.TH tin 1 "27. März 2016" 2.4.0 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -65,6 +65,9 @@ Programm erfolgreich beendet.
 .TP 
 \fB1\fP
 Bedien\-, Syntax\-, Konfigurations\- oder Netzwerk\-Fehler.
+.TP 
+\fB2\fP
+NNTP Fehler.
 .RE
 .PP
 Batch\-Modus (\*(rq\fB\-Z\fP\*(rq):
@@ -84,16 +87,19 @@ Ungelesene Nachrichten vorhanden
 .SH OPTIONEN
 .TP  12
 \fB\-4\fP
-Verbindung via IPv4 zum NNTP Server erzwingen.
+Verbindung via IPv4 zum NNTP Server erzwingen. Nur verfügbar, wenn \fBtin\fP
+mit IPv6\-Unterstützung gebaut wurde.
 .TP 
 \fB\-6\fP
-Verbindung via IPv6 zum NNTP Server erzwingen.
+Verbindung via IPv6 zum NNTP Server erzwingen. Nur verfügbar, wenn \fBtin\fP
+mit IPv6\-Unterstützung gebaut wurde.
 .TP 
 \fB\-a\fP
 ANSI\-Farben ein/\-ausschalten (Voreinstellung ist aus).
 .TP 
 \fB\-A\fP
-Erzwinge Authentifikation beim Verbindungsaufbau.
+Erzwinge Authentifikation beim Verbindungsaufbau. Nur verfügbar, wenn via
+NNTP gelesen wird.
 .TP 
 \fB\-c\fP
 Erstelle bzw. aktualisiere Index\-Dateien für alle Gruppen in
@@ -101,12 +107,15 @@ Erstelle bzw. aktualisiere Index\-Dateien für alle Gruppen in
 Datei und markiere alle Artikel als gelesen.
 .TP 
 \fB\-d\fP
+.\"
+.\" FIXME: explain debug levels
 Keine Gruppenbeschreibungen und die Server Meldung des Tages laden
 (Interaktiver\-Modus).
 .TP 
 \fB\-D\fP\fI Debuggrad\fP
 Debuggrad angeben (1 = NNTP, 2 = Filter, 4 = newsrc, 8 = Threading, 16 =
-Speicher, 32 = attributes, 64 = Diverses).
+Speicher, 32 = attributes, 64 = Diverses, 128 = vorhandene Debugdatein
+löschen).
 .TP 
 \fB\-f\fP\fI Datei\fP
 Benutze die angegebene newsrc\-Datei anstelle von
@@ -114,7 +123,8 @@ Benutze die angegebene newsrc\-Datei anstelle von
 .TP 
 \fB\-g\fP\fI Server\fP
 Zugehörigen Newsserver und newsrc\-Datei aus
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP benutzen.
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP benutzen. Nur verfügbar, wenn
+via NNTP gelesen wird.
 .TP 
 \fB\-G\fP\fI Artikellimit\fP
 Beschränkt die Anzahl der zu ladenden Artikel pro Gruppe.
@@ -170,7 +180,8 @@ wieder beenden. Nach Möglichkeit mit \*(rq\fB\-n\fP\*(rq kombinieren.
 .TP 
 \fB\-p\fP\fI Port\fP
 Zu benutzende Portnummer falls per NNTP gelesen wird (Voreinstellung ist
-119). Übersteuert die Umgebungsvariable $\fBNNTPPORT\fP.
+119). Übersteuert die Umgebungsvariable $\fBNNTPPORT\fP. Nur verfügbar, wenn
+via NNTP gelesen wird.
 .TP 
 \fB\-q\fP
 Nicht prüfen ob neue Newsgruppen vorhanden sind und die Server Meldung des
@@ -239,15 +250,16 @@ command. Any changes are written to
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP. For more information see section
 "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" and \fB\%tin\fP(5).
 .PP
-A list of groups can be specified after the other command\-line options. This
-can be useful if you wish to yank in or subscribe to a hand\-picked subset of
-the active newsgroups. See the section "NEWSGROUP LISTS & WILDCARDS" for the
-types of pattern that \fBtin\fP understands.
+Eine Liste von Gruppen kann nach den anderen Befehlszeilenoptionen angegeben
+werden. Dies kann nützlich sein, wenn Sie eine handverlesenen Untermenge der
+aktiven Newsgroups einblenden oder abonnieren wollen. möchten. Siehe den
+Abschnitt "NEWSGROUP LISTEN & WILDCARDS" für die Arten von Muster, die
+\fBtin\fP versteht.
 .PP
-If you specify a single group\-name, or a wildcard that matches a single
-group, then you will automatically enter that group. Otherwise the normal
-group selection screen will appear, but with all the matching groups present
-too, as though you had yanked just those groups in.
+Wenn Sie einen einzelnen Gruppennamen oder eine Wildcard,die nur auf eine
+einzelne Gruppe passt angeben, dann wird automatisch in diese Gruppe
+betreten. Andernfalls wird der normale Auswahlbildschirm angezeigt mit allen
+passenden zusätzlichen Gruppen.
 .PP
 With the \*(rq\fB\-w\fP\*(rq flag a given group\-name is used as default group to post
 to. If more than one group or a wildcard is specified only the first group
@@ -286,15 +298,15 @@ directory (i.e., \fI${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions\fP) and should have
 file permissions set to 0644. If you read news via NNTP, then your news
 server must support the LIST SUBSCRIPTIONS command. It is part of the NNTP
 List Extensions (\fBRFC\%6048\fP ) and all modern servers should understand it.
-.SS "SCREEN FORMAT"
+.SS ANSICHTEN
 \fBtin\fP hat vier unterschiedliche Arbeitsebenen: Auswahlebene, Gruppenebene,
 Threadebene und Artikelebene.
 .PP
-At the Selection level the title displays (the name of the news server and)
-the number of subscribed groups (containing new unread articles). The
-newsgroups are displayed in the middle of the screen usually with the number
-of unread articles displayed on the same line in front, but it can be
-customized via \fBselect_format\fP.
+In der Auswahlebene zeigt der Titel (der Name des News\-Server und) die
+Anzahl der abonnierten Gruppen (mit neuen ungelesenen Artikel). Die
+Newsgruppen werden in der Mitte des Bildschirms, in der Regel mit der Anzahl
+der ungelesenen Artikel in der gleichen Zeile davor, abgebildet, aber das
+kann mittels \fBselect_format\fP angepasst werden.
 .PP
 .\" FIXME - make this auto scale
 .nf
@@ -412,8 +424,8 @@ Artikel\-Körper
 Das Aussehen der Auswahl\-, Gruppen\- und Threadebene kann individuell
 angepasst werden. Siehe hierzu den Abschnitt "ANSICHTEN ANPASSEN".
 .SS "GEMEINSAME BEWEGUNGSTASTEN"
-This table shows the common keys used for moving around all levels within
-\fBtin\fP.
+Diese Tabelle zeigt Tasten welche in \fBtin\fP in allen Ebenen zum Navigieren
+verwendet werden.
 .RS
 .nf
 .ta \w'Beg. of list/article  'u +\w'ANSI/vt100   'u
@@ -579,6 +591,13 @@ option.
 \fBToggleInverseVideo 'I'\fP
 (De)aktiviere inverse Darstellung.
 .TP 
+\fBLookupMessage 'L'\fP
+Look up article by \*(rqMessage\-ID:\*(rq. If none of the groups listed in the
+\&\*(rqNewsgroups:\*(rq\-header of the referenced article is available, just the
+contents of the \*(rqNewsgroups:\*(rq\-header will be displayed in the last line.
+At this level this command only works if reading via NNTP and the server
+supports [X]HDR (\fBRFC\%2980\fP, \fBRFC\%3977\fP) or XPAT (\fBRFC\%2980\fP).
+.TP 
 \fBSelectMoveGrp 'm'\fP
 Move the current group within the group selection list. By entering '1' the
 group will become the first displayed group in the list, by entering '8' the
@@ -693,7 +712,7 @@ Vorwärts nach dem angegebenem Subject suchen.
 Rückwärts nach dem angegebenem Subject suchen.
 .TP 
 \fBGroupSelThd '*'\fP
-Select current thread for later processing.
+Wähle aktuellen Thread für die spätere Verarbeitung aus.
 .TP 
 \fBGroupDoAutoSel '+'\fP
 Selects all threads in current group. It is a shortcut for calling
@@ -761,8 +780,8 @@ Autoren\-Suche vorwärts. Sucht nach Artikeln mit einem bestimmtem
 Autoren\-Suche rückwärts. Siehe auch \fBSearchAuthF\fP ('\fBa\fP') oben.
 .TP 
 \fBSearchBody 'B'\fP
-Search the body of all articles in group (can be slow). You can abort the
-search using \fBQuit\fP ('\fBq\fP').
+Durchsuche die Körper aller Artikel in der Gruppe (kann langsam sein). Die
+Suche kann mit \fBQuit\fP ('\fBq\fP') abgebrochen werden.
 .TP 
 \fBCatchup 'c'\fP
 Mark all articles as read [after confirmation] then return to the group
@@ -805,7 +824,7 @@ of the current article/thread. When tagged articles/threads are present, a
 prompt asks how to proceed.
 .TP 
 \fBGroupListThd 'l'\fP
-Open the thread under the current cursor position.
+Öffnet den Thread unter der aktuellen Cursorposition.
 .TP 
 \fBLookupMessage 'L'\fP
 Artikel anhand der \*(rqMessage\-ID:\*(rq nachschlagen.
@@ -834,7 +853,7 @@ PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
 Zur vorherigen Gruppe springen.
 .TP 
 \fBGroupPrevUnreadArt 'P'\fP
-Go to previous unread article.
+Zum vorherigen ungelesenen Artikel gehen.
 .TP 
 \fBQuit 'q'\fP
 Kehre zur vorherigen Ebene zurück.
@@ -944,7 +963,7 @@ Vorwärts nach dem angegebenem Subject suchen.
 Rückwärts nach dem angegebenem Subject suchen.
 .TP 
 \fBThreadSelArt '*'\fP
-Select the current thread for later processing.
+Wähle aktuellen Thread für die spätere Verarbeitung aus.
 .TP 
 \fBThreadToggleArtSel '.'\fP
 Toggle selection of current article.
@@ -975,8 +994,8 @@ the current one.
 Autoren\-Suche rückwärts. Siehe auch \fBSearchAuthF\fP ('\fBa\fP') oben.
 .TP 
 \fBSearchBody 'B'\fP
-Search the body of all articles in group (can be slow). You can abort the
-search using \fBQuit\fP ('\fBq\fP').
+Durchsuche die Körper aller Artikel in der Gruppe (kann langsam sein). Die
+Suche kann mit \fBQuit\fP ('\fBq\fP') abgebrochen werden.
 .TP 
 \fBCatchup 'c'\fP
 Mark thread as read [after confirmation] and return to the group index
@@ -1067,7 +1086,7 @@ Alle Artikel im aktuellen Thread as ungelesen markieren.
 .\" FIXME - refine descriptions
 .TP  10
 \fB0\fP
-Read the first (base) article in this thread.
+Den ersten (Basis) Artikel in diesem Thread lesen.
 .TP 
 \fB4\fP
 Antwort 4 im diesem Thread lesen.
@@ -1126,10 +1145,10 @@ Zur zuletzt angezeigte Nachricht springen.
 Vorherige Suche wiederholen.
 .TP 
 \fBSearchSubjF '/'\fP
-Forward search the text of this article.
+Vorwärts innerhalb dieses Artikels suchen.
 .TP 
 \fBSearchSubjB '?'\fP
-Backward search the text of this article.
+Rückwärts innerhalb dieses Artikels suchen.
 .TP 
 \fBPageSkipIncludedText ':'\fP
 Skip to the end of the next quoted text\-block in this article. Quoted text
@@ -1168,7 +1187,7 @@ TINRC CONFIGURABLE VARIABLES" for a full explanation of these variables and
 "FILTERING ARTICLES" for more information on filtering.
 .TP 
 \fBPageNextThd '^J' '<CR>'\fP
-Go to next base article.
+Zum nächsten Basisartikel springen.
 .TP 
 \fBPageNextUnread '<TAB>'\fP
 Go to next unread article. If the tinrc variable \fBgoto_next_unread\fP doesn't
@@ -1182,8 +1201,8 @@ Suche nach Autor (vorwärts).
 Suche nach Autor (rückwärts).
 .TP 
 \fBSearchBody 'B'\fP
-Search the body of all articles in group (can be slow). You can abort the
-search using \fBQuit\fP ('\fBq\fP').
+Durchsuche die Körper aller Artikel in der Gruppe (kann langsam sein). Die
+Suche kann mit \fBQuit\fP ('\fBq\fP') abgebrochen werden.
 .TP 
 \fBCatchup 'c'\fP
 Mark the current thread as read [after confirmation] and return to the
@@ -1681,7 +1700,7 @@ Voreinstellung für Schnell (1 Tasten) Killfilter Header.
 .IP 4
  \*(rqMessage\-ID:\*(rq & alle \*(rqReferences:\*(rq Einträge
 .IP 5
-\&\*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
+ \*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
 .IP 6
  \*(rqMessage\-ID:\*(rq allein
 .IP 7
@@ -1714,7 +1733,7 @@ Default for quick (1 key) auto\-selection filter header.
 .IP 4
  \*(rqMessage\-ID:\*(rq & alle \*(rqReferences:\*(rq Einträge
 .IP 5
-\&\*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
+ \*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
 .IP 6
  \*(rqMessage\-ID:\*(rq allein
 .IP 7
@@ -1761,7 +1780,7 @@ an highlighted bar if set OFF. Default is OFF.
 .TP 
 \fBAufruf Ihres Editors (editor_format)\fP
 The format string used to create the editor start command with parameters.
-Default is "%E +%N %F" (i.e., /bin/vi +7 .article).
+Default is "%E +%N %F" (e.g., /bin/vi +7 .article).
 .TP 
 \fBFremdzitate erkennen (extquote_handling)\fP
 Falls ON werden Fremdzitate in Artikeln erkannt. Voreinstellung ist ON.
@@ -1776,10 +1795,10 @@ Specifies whether a screen redraw should always be done after certain
 external commands. Default is OFF.
 .TP 
 \fBAnzahl der zu holenden Artikel (getart_limit)\fP
-If \fBgetart_limit\fP is > 0 not more than \fBgetart_limit\fP articles/group
-are fetched from the server. If \fBgetart_limit\fP is < 0 \fBtin\fP will start
-fetching articles from your first unread minus absolute value of
-\fBgetart_limit\fP. Default is 0, which means no limit.
+If \fBgetart_limit\fP is > 0 not more than the last \fBgetart_limit\fP
+articles/group are fetched from the server. If \fBgetart_limit\fP is < 0
+\fBtin\fP will start fetching articles from your first unread minus absolute
+value of \fBgetart_limit\fP. Default is 0, which means no limit.
 .TP 
 \fBCatchup der Gruppe mit l. Cursor (group_catchup_on_exit)\fP
 Falls ON: Catchup (als gelesen markieren) der Gruppe beim Verlassen mit der
@@ -1797,10 +1816,6 @@ Possible is any combination of \fBPageDown\fP and \fBPageNextUnread\fP.  When
 current one. When \fBPageNextUnread\fP is set \fBtin\fP jumps immediately to the
 next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')  is
 pressed. Default is \fBPageNextUnread\fP.
-.TP 
-\fBMax. Länge angezeigter Gruppennamen (groupname_max_length)\fP
-Maximum length of the names of newsgroups to be displayed so that more of
-the newsgroup description can be displayed. Default is 32.
 .TP 
 \fBZeige uue\-Teile als Anhang (hide_uue)\fP
 If set to 'No' then raw uuencoded data is displayed. If set to 'Yes' then
@@ -2172,7 +2187,7 @@ Diese Formatanweisung wird von \fBtin\fP zur Darstellung der Auswahlebene
 benutzt. Für weitere Informationen sei auf den Abschnitt "ANSICHTEN
 ANPASSEN" verwiesen. Voreingestellt ist "%f\ %n\ %U\ \ %G\ \ %d".
 .TP 
-\fBIm Gruppenmenü, zeige Autor an nach (show_author)\fP
+\fBIm Gruppen\- und Threadlevel, zeige Autor an mit (show_author)\fP
 Which information about the author should be shown. Default is 2, authors
 full name.
 .RS +.5i
@@ -2413,23 +2428,29 @@ Allows you to select how \fBtin\fP treats blank lines in article bodies.
 Default is 0. This option does not affect lines within verbatim blocks.
 .RS +.5i
 .IP 0 3
-\fBDon't trim article body\fP, do nothing.
+\fBArtikelrumpf nicht anpassen\fP
 .IP 1
 \fBFührende Leerzeilen überspringen\fP.
 .IP 2
 \fBAbschließende Leerzeilen überspr.\fP.
 .IP 3
-\fBSkip leading and trailing blank l.\fP, skip leading and trailing blank
-lines.
+\fBFühr. & abschlies. Leerz. überspr.\fP, Führende und abschließende Leerzeilen
+überspringen.
 .IP 4
-\fBCompact multiple between text\fP, replace multiple blank lines between
-textblocks with one blank line.
+\fBMehrere zwischen Textblöcken zusammenfassen\fP, Leerzeilen zwischen
+Textblöcken zusammenfassen.
 .IP 5
-\fBCompact multiple and skip leading\fP, 4 + 1
+\fBMehrere zwischen Textbl. zusammenfassen + führende Leerzeilen
+überspringen\fP, 4 + 1; Leerzeilen zwischen Textblöcken zusammenfassen und
+führende Leerzeilen überspringen.
 .IP 6
-\fBCompact multiple and skip trailing\fP, 4 + 2
+\fBMehrere zwischen Textbl. zusammenfassen + abschließende
+Leerz. überspringen\fP, 4 + 2; Leerzeilen zwischen Textblöcken zusammenfassen
+und abschließende Leerzeilen überspringen.
 .IP 7
-\fBCompact mltpl., skip lead. & trai.\fP, 4 + 3
+\fBMehrere zwischen Textbl. zusammenf. + führende/abschließende
+Leerz. überspr.\fP, 4 + 3; Leerzeilen zwischen Textblöcken zusammenfassen und
+führende sowie abschließende Leerzeilen überspringen
 .RE
 .TP 
 \fBReg. für _Unterstr._ Hervorhebungen (underscores_regex)\fP
@@ -2449,7 +2470,7 @@ The program that will be run when launching URLs in the article viewer using
 Enable highlighting URLs in message body. Default is ON.
 .TP 
 \fBBenutze ANSI\-Farben (use_color)\fP
-If enabled \fBtin\fP uses ANSI\-colors. Default is OFF.
+AMSI\-Farben in \fBtin\fP benutzen. Voreinstellung ist OFF.
 .TP 
 \fBScrollt. vom Nummernblock nutzen (use_keypad)\fP
 Voreinstellung ist OFF.
@@ -2535,7 +2556,7 @@ no private attributes file yet.
 Note that the \fIscope=<grouplist>\fP line has to be specified before
 the attributes are specified for that list. All attributes are set to a
 reasonable default so you only have to specify the attribute that you want
-to change (e.g., savedir). All toggle attributes are set by specifying
+to change (e.g., \fBsavedir\fP). All toggle attributes are set by specifying
 ON/OFF. Otherwise, these function exactly the same as their global
 equivalents. For more details see \fB\%tin\fP(5).
 .PP
@@ -2544,7 +2565,7 @@ accessed by \fBConfigToggleAttrib\fP ('\fB<TAB>\fP') from the options menu
 or \fBScopeSelect\fP ('\fB^J\fP' or '\fB<CR>\fP') from the scopes menu.  The
 attributes menu looks and behaves very similar to the options menu. The
 title shows the current scope. Attributes set in the current scope are
-marked with '\+' to the left of the attributes number.
+marked with '+' to the left of the attributes number.
 .PP
 .\"
 .\"
@@ -2740,8 +2761,8 @@ that expire has removed a whole load of unread articles. Best to run via
 \fB\%cron\fP(1)  everyday while away, after which you will be mailed a report
 of which articles were mailed/saved from which newsgroups and the total
 number of articles mailed/saved. Articles are saved in a private news
-structure under your <savedir> directory (default is
-\fI${TIN_HOMEDIR:\-"$HOME"}/News\fP). Be careful of using this option if you
+structure under your \fBsavedir\fP directory (default is
+\fI${TIN_HOMEDIR:\-"$HOME"}/News\fP).  Be careful of using this option if you
 read a lot of groups because you could overflow your file system.
 .PP
 When using \*(rq\fB\-S\fP\*(rq together with a given directory to save to (\*(rq\fB\-s\fP\*(rq
@@ -2781,7 +2802,7 @@ highest number available. Currently the only commands that understand ranges
 are \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBMarkArtUnread\fP ('\fBz\fP') and
 \fBMarkThdUnread\fP ('\fBZ\fP').
 .PP
-.SS "NEWSGROUP LISTS & WILDCARDS"
+.SS "NEWSGROUP LISTEN & WILDCARDS"
 Several places in \fBtin\fP allow you to specify a list of newsgroups. These
 include command\-line groups, (un)subscribe groups, the AUTO[UN]SUBSCRIBE
 mechanism. The scope= attributes file tag and the filter file group= tag
@@ -2909,25 +2930,30 @@ durchgeschaltet werden.
 Für die Datumsanzeige mit '\fB%D\fP' wird \fBdate_format\fP benutzt. Man kann
 allerdings auch in runden Klammern ein eigenes Datumsformat angeben, das
 anstelle von \fBdate_format\fP benutzt werden soll. Der Platzhalter dafür würde
-dann z.B. so aussehen: '\fB%(%d %b %y %H:%M)D\fP' (siehe \fBdate_format\fP für
+dann z. B. so aussehen: '\fB%(%d %b %y %H:%M)D\fP' (siehe \fBdate_format\fP für
 weiterführende Informationen).
 .PP
-Den einzelnen Platzhaltern (außer '\fB%%\fP') kann man eine Längenangabe
-mitgeben. Das durch den Platzhalter repräsentierte Feld wird dann mit genau
-dieser Breite auf dem Bildschirm dargestellt. Die Angabe erfolgt als
-positive Zahl zwischen '\fB%\fP' und dem den Platzhalter charakterisierenden
-Buchstaben. Folgendes Beispiel stellt den Score in der Threadebene 10
-Zeichen breit dar: '\fB%10S\fP'. Einige Platzhalter haben eine voreingestellte
-Breite die unter Umständen dazu führt, dass der Inhalt abgeschnitten
-wird. Für Platzhalter die nur Zahlen enthalten wird der Wert durch eine
-passende Zehnerpotenz geteilt und mit dem zugehörigen SI\-Suffix versehen,
-z.B. wird bei einer Breite von vier aus 54321 dann "54 k". Wenn das nicht
-gewünscht ist muss die Breite angegeben werden, z.B. '\fB%6n\fP'. Hier ist eine
-Übersicht der Voreinstellungen:
+Die Länge der einzelnen Elemente (außer '\fB%%\fP') kann mit einer positiven
+Zahl nach dem '\fB%\fP' definiert werden. Das folgende Beispiel stellt den
+Score in der Threadebene 10 Zeichen breit dar: '\fB%10S\fP'.
+.PP
+Wenn der Gruppenname zusammen mit der Gruppenbeschreibung angezeigt wird,
+kann die Breite des Gruppennamens über einen optionalen, durch Komma
+getrennten, zweiten Wert gesteuert werden (z. B. '\fB%60,20G\fP'). Der erste
+Wert kann weggelassen werden (z. B. ('\fB%,20G\fP))'. Ist kein zweiter Wert
+angegeben verwendet \fBtin\fP ein Standardwert von 32.
+.PP
+Einige Platzhalter haben eine voreingestellte Breite die unter Umständen
+dazu führt, dass der Inhalt abgeschnitten wird. Für Platzhalter die nur
+Zahlen enthalten wird der Wert durch eine passende Zehnerpotenz geteilt und
+mit dem zugehörigen SI\-Suffix versehen, z. B. wird bei einer Breite von vier
+aus 54321 dann "54 k". Wenn das nicht gewünscht ist muss die Breite
+angegeben werden, z. B. '\fB%6n\fP'. Hier ist eine Übersicht der
+Voreinstellungen:
 .PP
 .in +.3i
 .nf
-.ta \w'Platzhalter  'u	+\w'Breite'u
+.ta \w'Platzhalter  'u +\w'Breite'u
 Platzhalter	Breite
 \fB%I\fP	 3
 \fB%L\fP	 4
@@ -2949,17 +2975,21 @@ werden soll, im Dezember gepostet wurde. In solchen Fällen ist es sinnvoll,
 die maximale Länge manuell zu ermitteln und in die Formatanweisung
 einzutragen.
 .PP
+Falls der Formatstring enthält '\fB%G\fP' und '\fB%d\fP' enthält und keine Länge
+gegeben ist, bestimmt der längste Gruppenname die Länge für '\fB%G\fP.' Der
+verbleibende Platz wird für '\fB%d\fP' verwendet.
+.PP
 Sind in der Formatanweisung '\fB%F\fP' und '\fB%s\fP' bzw. '\fB%T\fP' enthalten und
 jeweils keine Längen angegeben, dann nimmt '\fB%F\fP' ein Drittel und '\fB%s\fP'
 bzw. '\fB%T\fP' zwei Drittel des für beide zusammen verfügbaren Platzes ein.
 .PP
-Weiterhin kann eine Mindestbildschirmbreite definiert werden. Das
-entsprechende Element wird dann erst dargestellt, wenn auf dem Bildschirm
-mehr Zeichen als angegeben dargestellt werden können. Das ist hilfreich, um
-die Anzeige bei kleineren Bildschirmen oder Terminalfenstern nicht zu
-überfrachten. Hier erfolgt die Angabe vor dem den Platzhalter
-charakterisierenden Buchstaben durch eine positive Zahl, welcher ein
-\&'\fB>\fP' vorangestellt wird. Soll z. B. der Score erst ab einer
+Weiterhin kann eine Mindestbildschirmbreite pro Element (außer '\fB%%\fP')
+definiert werden. Das entsprechende Element wird dann erst dargestellt, wenn
+auf dem Bildschirm mehr Zeichen als angegeben dargestellt werden können. Das
+ist hilfreich, um die Anzeige bei kleineren Bildschirmen oder
+Terminalfenstern nicht zu überfrachten. Hier erfolgt die Angabe vor dem den
+Platzhalter charakterisierenden Buchstaben durch eine positive Zahl, welcher
+ein '\fB>\fP' vorangestellt wird. Soll z. B. der Score erst ab einer
 Bildschirmbreite größer 100 Zeichen angezeigt werden, lautet die
 Formatanweisung '\fB%>100S\fP'.
 .PP
@@ -3574,22 +3604,22 @@ Speichern der \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-Datei.
 .SH SICHERHEIT
 .\"
 .\"
-When \fBtin\fP is started in debug mode (\*(rq\fB\-D n\fP\*(rq) it will create world
+If \fBtin\fP is started in debug mode (\*(rq\fB\-D n\fP\*(rq) it will create world
 readable files in \fB$TMPDIR\fP which may contain the users NNTP password in
 cleartext. On multiuser\-systems \fB$TMPDIR\fP should be set to a safe location
 before starting tin in debug mode (e.g.  \fBTMPDIR=$HOME tin \-D 1\fP).
 .SH "KONFORM ZU"
-.\" - RFC\%2045, RFC\%2047, RFC\%2980, RFC\%3977, RFC\%4155, RFC\%4643,
-.\"   RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
+.\" - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
+.\"   RFC\%4643, RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
 .\"
 .\"
 \fBtin\fP does conform to the Base Definitions volume of IEEE Std 1003.1\-2008,
 Section 12, Utility Conventions (Utility Argument Syntax, Utility Syntax
 Guidelines).
 .SH ANMERKUNGEN
-Regular expression support is provided by the PCRE library package
-\fB\%pcre\fP(3), which is open source software, written by Philip Hazel, and
-copyright by the University of Cambridge, England.
+Unterstützung für reguläre Ausdrücke wird durch die PCRE\-Bibliothek
+\fBpcre\fP(3) bereitgestellt welche Open\-Source\-Software ist. Autor ist Philip
+Hazel und das Urheberrecht liegt bei der University of Cambridge, England.
 .br
 .\"
 .\"
@@ -3671,5 +3701,6 @@ Erika Mustermann <erika@example.org>
 \fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3), \fB\%environ\fP(5), \fB\%locale\fP(5),
 \fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5),
 \fB\%tin\fP(5), \fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP,
-\fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2980\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
-\fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP
+\fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3977\fP,
+\fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP,
+\fBRFC\%6048\fP

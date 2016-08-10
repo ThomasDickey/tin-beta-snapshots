@@ -6,7 +6,7 @@
  *  Updated   : 2005-10-19
  *  Notes     : Generic nagivation and key handling routines
  *
- * Copyright (c) 1999-2015 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2016 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -416,9 +416,6 @@ handle_keypad(
 			func = key_to_func(ch, keys);
 			break;
 	}
-#if 0
-	usleep((unsigned long) (SECOND_CHARACTER_DELAY * 3));
-#endif /* 0 */
 	return func;
 }
 

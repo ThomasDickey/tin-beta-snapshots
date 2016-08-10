@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2014-04-29
+ *  Updated   : 2016-02-11
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2015 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2016 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,8 +43,10 @@
 /*
  * local prototypes
  */
+static char *get_charset(char *value);
 static char *get_quoted_string(char *source, char **dest);
 static char *get_token(const char *source);
+static char *strip_charset(char **value);
 static char *skip_equal_sign(char *source);
 static char *skip_space(char *source);
 static int boundary_cmp(const char *line, const char *boundary);
@@ -53,10 +55,12 @@ static int parse_multipart_article(FILE *infile, t_openartinfo *artinfo, t_part 
 static int parse_normal_article(FILE *in, t_openartinfo *artinfo, t_bool show_progress_meter);
 static int parse_rfc2045_article(FILE *infile, int line_count, t_openartinfo *artinfo, t_bool show_progress_meter);
 static unsigned int parse_content_encoding(const char *encoding);
+static void decode_value(const char *charset, t_param *part);
 static void parse_content_type(char *type, t_part *content);
 static void parse_content_disposition(char *disp, t_part *part);
 static void parse_params(char *params, t_part *content);
 static void progress(int line_count);
+static void remove_cwsp(char *source);
 #ifdef DEBUG_ART
 	static void dump_art(t_openartinfo *art);
 #endif /* DEBUG_ART */
@@ -66,8 +70,23 @@ static void progress(int line_count);
  * Local variables
  */
 static int art_lines = 0;		/* lines in art on spool */
-static char *progress_mesg = NULL;	/* message progress() should display */
+static const char *progress_mesg = NULL;	/* message progress() should display */
+/* RFC 2231 decoding table */
+static const char xtbl[] = {
+/*        0  1  2  3    4  5  6  7    8  9  a  b    c  d  e  f */
+/* 0 */  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,
+/* 1 */  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,
+/* 2 */  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,
+/* 3 */   0, 1, 2, 3,   4, 5, 6, 7,   8, 9,-1,-1,  -1,-1,-1,-1,
+/* 4 */  -1,10,11,12,  13,14,15,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,
+/* 5 */  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,
+/* 6 */  -1,10,11,12,  13,14,15,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,
+/* 7 */  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1
+};
 
+#define XVAL(c) (xtbl[(unsigned int) (c)])
+/* C90: isxdigit(3) */
+#define IS_XDIGIT(c) (((c) >= '0' && (c) <= '9') || ((c) >= 'a' && (c) <= 'f') || ((c) >= 'A' && (c) <= 'F'))
 #define PARAM_SEP	"; \n"
 /* default parameters for Content-Type */
 #define CT_DEFPARMS	"charset=US-ASCII"
@@ -189,6 +208,60 @@ skip_space(
 }
 
 
+/*
+ * Removes comments and white space
+ */
+static void
+remove_cwsp(
+	char *source)
+{
+	char *from, *to, src;
+	int c_cnt = 0;
+	t_bool inquotes = FALSE;
+
+	from = to = source;
+
+	while ((src = *from++) && c_cnt >= 0) {
+		if (src == '"' && c_cnt == 0)
+			inquotes = bool_not(inquotes);
+
+		if (inquotes && src == '\\' && *from) {
+			*to++ = src;
+			*to++ = *from++;
+			continue;
+		}
+
+		if (!inquotes) {
+			if (src == '(') {
+				++c_cnt;
+				continue;
+			}
+			if (src == ')') {
+				--c_cnt;
+				continue;
+			}
+			if (c_cnt > 0 || src == ' ' || src == '\t')
+				continue;
+		}
+
+		*to++ = src;
+	}
+
+	/*
+	 * Setting *source = '\0' might be the right thing
+	 * because the header is damaged. Anyway, we let the
+	 * rest of the code pick up usable pieces.
+	 */
+#if 0
+	if (c_cnt != 0)
+		/* unbalanced parenthesis, header damaged */
+		*source = '\0';
+	else
+#endif /* 0 */
+		*to = '\0';
+}
+
+
 static char *
 get_token(
 	const char *source)
@@ -218,7 +291,10 @@ get_quoted_string(
 	while (*source) {
 		if ('\\' == *source) {
 			quote = TRUE;	/* next char as-is */
-			source++;
+			if ('\\' == *++source) {
+				*ptr++ = *source++;
+				quote = FALSE;
+			}
 			continue;
 		}
 		if (('"' == *source) && !quote)
@@ -229,6 +305,87 @@ get_quoted_string(
 	*ptr = '\0';
 	*dest = my_realloc(*dest, strlen(*dest) + 1);
 	return *source ? source + 1 : source;
+}
+
+
+/*
+ * RFC 2231: Extract character set from parameter value
+ */
+static char *
+get_charset(
+	char *value)
+{
+	char *charset, *ptr;
+
+	/* no charset information present */
+	if (!strchr(value, '\''))
+		return NULL;
+
+	/* no charset given -> fall back to us-ascii */
+	if (*value == '\'')
+		return my_strdup("US-ASCII");
+
+	charset = my_strdup(value);
+
+	if ((ptr = strchr(charset, '\'')))
+		*ptr = '\0';
+
+	return charset;
+}
+
+
+/*
+ * RFC 2231: Decode parameter value according to the given
+ *           character set
+ */
+static void
+decode_value(
+	const char *charset,
+	t_param *part)
+{
+	char *rptr, *wptr;
+	const char *cset;
+	size_t max_line_len = strlen(part->value);
+
+	/*
+	 * we prefer part->charset if present, even if rfc 2231
+	 * forbids different charsets for each part
+	 */
+	cset = part->charset ? part->charset : charset;
+	rptr = wptr = part->value;
+
+	while (*rptr) {
+		if (*rptr == '%' && IS_XDIGIT(*(rptr + 1)) && IS_XDIGIT(*(rptr + 2))) {
+			*wptr++ = XVAL(*(rptr + 1)) << 4 | XVAL(*(rptr + 2));
+			rptr += 3;
+		} else
+			*wptr++ = *rptr++;
+	}
+	*wptr = '\0';
+
+	process_charsets(&(part->value), &max_line_len, cset, tinrc.mm_local_charset, FALSE);
+	part->encoded = FALSE;
+	FreeAndNull(part->charset);
+}
+
+
+/*
+ * RFC 2231: Remove character set (and language information)
+ *           from parameter value
+ */
+static char *
+strip_charset(
+	char **value)
+{
+	char *newval, *ptr;
+
+	if ((ptr = strrchr(*value, '\''))) {
+		newval = my_strdup(ptr + 1);
+		free(*value);
+		*value = my_realloc(newval, strlen(newval) + 1);
+	}
+
+	return *value;
 }
 
 
@@ -260,11 +417,15 @@ parse_params(
 	char *params,
 	t_part *content)
 {
-	char *name, *param, *value;
+	char *name, *param, *value, *contp;
+	int idx;
+	t_bool encoded;
 	t_param *ptr;
 
 	param = params;
 	while (*param) {
+		idx = -1;
+		encoded = FALSE;
 		/* Skip over white space */
 		if (!(param = skip_space(param)))
 			break;
@@ -272,10 +433,23 @@ parse_params(
 		/* catch parameter name */
 		name = get_token(param);
 		param += strlen(name);
+
 		if (!*param) {
 			/* Nothing follows, invalid, stop here */
 			FreeIfNeeded(name);
 			break;
+		}
+
+		/* RFC 2231 Character set and language information */
+		if ((contp = strrchr(name, '*')) && !*(contp + 1)) {
+			encoded = TRUE;
+			*contp = '\0';
+		}
+
+		/* RFC 2231 Parameter Value Continuations */
+		if ((contp = strchr(name, '*')) && *(contp + 1) && *(contp + 1) >= '0' && *(contp + 1) <= '9') {
+			idx = atoi(contp + 1);
+			*contp = '\0';
 		}
 
 		if (!(param = skip_equal_sign(param))) {
@@ -292,9 +466,16 @@ parse_params(
 			param += strlen(value);
 		}
 
-		ptr = my_malloc(sizeof(t_param));
+		ptr = new_params();
 		ptr->name = name;
-		ptr->value = value;	/* TODO don't RFC1522 decode, parameter encoding is per RFC2231 (not implemented yet) */
+		if (encoded) {
+			ptr->encoded = TRUE;
+			ptr->charset = get_charset(value);
+			ptr->value = strip_charset(&value);
+		} else
+			ptr->value = value;
+
+		ptr->part = idx;
 		ptr->next = content->params;		/* Push onto start of list */
 		content->params = ptr;
 
@@ -304,6 +485,28 @@ parse_params(
 		if (';' == *param)
 			param++;
 	}
+}
+
+
+/*
+ * Return a freshly allocated and initialised t_param structure
+ */
+t_param *
+new_params(
+	void)
+{
+	t_param *ptr;
+
+	ptr = my_malloc(sizeof(t_param));
+	ptr->name = NULL;
+	ptr->value = NULL;
+	ptr->charset = NULL;
+	ptr->part = -1;
+	ptr->encoded = FALSE;
+	ptr->enc_fallback = TRUE;
+	ptr->next = NULL;
+
+	return ptr;
 }
 
 
@@ -321,6 +524,7 @@ free_list(
 
 	free(list->name);
 	free(list->value);
+	FreeIfNeeded(list->charset);
 	free(list);
 }
 
@@ -333,9 +537,88 @@ get_param(
 	t_param *list,
 	const char *name)
 {
-	for (; list != NULL; list = list->next) {
-		if (strcasecmp(name, list->name) == 0)
-			return list->value;
+	char *tmpval, *charset = NULL;
+	int i, j;
+	size_t newlen;
+	t_param *p_list, *c_list;
+
+	for (p_list = list; p_list != NULL; p_list = p_list->next) {
+		/*
+		 * RFC 2231 Parameter Value Continuations + Character Set
+		 *
+		 * part == 0,1,2...: parameter has several parts, must be concatenated
+		 * part == -1      : parameter has only one part
+		 * part == -2      : part has already been concatenated, main part has
+		 *                   part == -1
+		 *
+		 * charset         : character set if present
+		 */
+		if (strcasecmp(name, p_list->name) == 0 && p_list->part > -2) {
+			if (p_list->part == -1 && p_list->encoded && p_list->charset) {
+				decode_value(p_list->charset, p_list);
+				p_list->encoded = FALSE;
+				p_list->enc_fallback = FALSE;
+			}
+			if (p_list->part >= 0) {
+				newlen = 0;
+				if (p_list->charset) {
+					FreeIfNeeded(charset);
+					charset = my_strdup(p_list->charset);
+				}
+				for (j = 0, c_list = list; c_list != NULL; c_list = c_list->next) {
+					if (strcasecmp(name, c_list->name) == 0) {
+						if (c_list->part < 0)
+							continue;
+						if (c_list->part < p_list->part) {
+							if (c_list->charset) {
+								FreeIfNeeded(charset);
+								charset = my_strdup(c_list->charset);
+							}
+							p_list = c_list;
+						}
+
+						if (j < c_list->part)
+							j = c_list->part;
+
+						newlen += strlen(c_list->value);
+					}
+				}
+				p_list->value = my_realloc(p_list->value, newlen + 1);
+				if (charset)
+					decode_value(charset, p_list);
+				for (i = p_list->part + 1; i <= j; ++i) {
+					for (c_list = list; c_list != NULL; c_list = c_list->next) {
+						if (strcasecmp(name, c_list->name) == 0) {
+							if (c_list->part == i) {
+								if (c_list->encoded && charset)
+									decode_value(charset, c_list);
+								strcat(p_list->value, c_list->value);
+								c_list->part = -2;
+							}
+						}
+					}
+				}
+				p_list->part = -1;
+				p_list->encoded = FALSE;
+				p_list->enc_fallback = FALSE;
+				FreeAndNull(charset);
+			}
+			/*
+			 * RFC 2047 'encoded-word' is not allowed at this place but
+			 * some clients use this nevertheless -> we try to decode that
+			 */
+			if (p_list->enc_fallback) {
+				tmpval = p_list->value;
+				if (*tmpval == '=' && *++tmpval && *tmpval == '?') {
+					if ((tmpval = rfc1522_decode(p_list->value))) {
+						free(p_list->value);
+						p_list->value = my_strdup(tmpval);
+					}
+				}
+				p_list->enc_fallback = FALSE;
+			}
+			return p_list->value;
+		}
 	}
 
 	return NULL;
@@ -353,6 +636,9 @@ parse_content_type(
 	char *subtype, *params;
 	int i;
 
+	/* Remove comments and white space */
+	remove_cwsp(type);
+
 	/*
 	 * Split the type/subtype
 	 */
@@ -360,13 +646,6 @@ parse_content_type(
 		return;
 
 	/* Look up major type */
-
-	/*
-	 * TODO: remove/ignore comments in the CT-header, currently
-	 *       we do not recognize
-	 *          Content-Type: (foo) text/plain; charset=us-ascii
-	 *       as "text/plain"
-	 */
 
 	/*
 	 * Unrecognised type, treat according to RFC
@@ -396,8 +675,6 @@ parse_content_type(
 		char defparms[] = CT_DEFPARMS;	/* must be writable */
 #endif /* !CHARSET_CONVERSION */
 
-		free_list(content->params);
-		content->params = NULL;
 		parse_params(params, content);
 		if (!get_param(content->params, "charset")) {	/* add default charset if needed */
 #ifndef CHARSET_CONVERSION
@@ -433,7 +710,7 @@ parse_content_encoding(
 
 	for (i = 0; content_encodings[i] != NULL; ++i) {
 		if (strcasecmp(encoding, content_encodings[i]) == 0)
-		return i;
+			return i;
 	}
 
 	/*
@@ -460,6 +737,9 @@ parse_content_disposition(
 	t_part *part)
 {
 	char *ptr;
+
+	/* Remove comments and white space */
+	remove_cwsp(disp);
 
 	strtok(disp, PARAM_SEP);
 	if ((ptr = strtok(NULL, "\n")) == NULL)
@@ -927,7 +1207,7 @@ parse_multipart_article(
 			case M_HDR:
 				switch (bnd) {
 					case BOUND_START:	/* TODO: skip error message if not -DDEBUG? */
-						error_message(1, _(txt_error_mime_start));
+						error_message(2, _(txt_error_mime_start));
 						continue;
 
 					case BOUND_NONE:
@@ -1135,7 +1415,7 @@ parse_rfc2045_article(
 			if (ret & TIN_EOF) {
 				ret ^= TIN_EOF;
 				/* TODO: skip error message if not -DDEBUG? */
-				error_message(1, _(txt_error_mime_end), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
+				error_message(2, _(txt_error_mime_end), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
 				if (ret != 0)
 					goto error;
 			} else
@@ -1218,7 +1498,7 @@ art_open(
 	struct t_group *group,
 	t_openartinfo *artinfo,
 	t_bool show_progress_meter,
-	char *pmesg)
+	const char *pmesg)
 {
 	FILE *fp;
 
