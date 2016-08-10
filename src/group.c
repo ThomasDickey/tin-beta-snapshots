@@ -3,10 +3,10 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-31
+ *  Updated   : 2016-04-17
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -321,12 +321,10 @@ group_page(
 			case GROUP_CANCEL:	/* cancel current basenote */
 				if (grpmenu.curr >= 0) {
 					if (can_post || group->attribute->mailing_list != NULL) {
-						char *progress_msg = my_strdup(_(txt_reading_article));
 						int ret;
 
 						n = (int) base[grpmenu.curr];
-						ret = art_open(TRUE, &arts[n], group, &pgart, TRUE, progress_msg);
-						free(progress_msg);
+						ret = art_open(TRUE, &arts[n], group, &pgart, TRUE, _(txt_reading_article));
 						if (ret != ART_UNAVAILABLE && ret != ART_ABORT && cancel_article(group, &arts[n], n))
 							show_group_page();
 						art_close(&pgart);
@@ -1148,18 +1146,18 @@ build_sline(
 	int i)
 {
 	char *fmt, *buf;
+	char *buffer;
 	char arts_sub[HEADER_LEN];
 	char tmp_buf[8];
 	char tmp[LEN];
 	int respnum;
-	int n, j;
-	int k, fill, gap;
+	int j, k, n;
 	size_t len;
 	struct t_art_stat sbuf;
-	char *buffer;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wtmp, *wtmp2;
 #else
+	int fill, gap;
 	size_t len_start;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
@@ -1191,7 +1189,7 @@ build_sline(
 	fmt = grp_fmt.str;
 
 	if (tinrc.draw_arrow)
-			strcat(buffer, "  ");
+		strcat(buffer, "  ");
 
 	for (; *fmt; fmt++) {
 		if (*fmt != '%') {
@@ -1352,15 +1350,10 @@ build_sline(
 	/* protect display from non-displayable characters (e.g., form-feed) */
 	convert_to_printable(buffer, FALSE);
 
-	if (!tinrc.strip_blanks) {
-		/* Pad to end of line so that inverse bar looks 'good' */
-		fill = cCOLS - strwidth(buffer);
-		gap = strlen(buffer);
-		for (k = 0; k < fill; k++)
-			buffer[gap + k] = ' ';
-
-		buffer[gap + fill] = '\0';
-	}
+#ifndef USE_CURSES
+	if (tinrc.strip_blanks)
+		strcat(strip_line(buffer), cCRLF);
+#endif /* !USE_CURSES */
 
 	WriteLine(INDEX2LNUM(i), buffer);
 

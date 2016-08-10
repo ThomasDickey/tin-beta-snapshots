@@ -3,10 +3,10 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-09
+ *  Updated   : 2016-08-06
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -326,9 +326,13 @@ free_art_array(
 		arts[i].date = (time_t) 0;
 		FreeAndNull(arts[i].xref);
 
-		/* .refs & .msgid are free()d in build_references() */
-		arts[i].refs = (char *) '\0';
-		arts[i].msgid = (char *) '\0';
+		/*
+		 * .refs & .msgid are usually free()d in build_references()
+		 * nevertheless we try to free() it here in case tin_done()
+		 * was called before build_references()
+		 */
+		FreeAndNull(arts[i].refs);
+		FreeAndNull(arts[i].msgid);
 
 		if (arts[i].archive) {
 			/* ->name is hashed */

@@ -3,9 +3,9 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2014-04-30
+ *  Updated   : 2016-07-29
  *
- * Copyright (c) 1997-2015 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2016 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -138,13 +138,17 @@ wait_for_input(
 				}
 
 				if (ch == iKeyQuit || ch == 'z' || ch == iKeyAbort) {
+					if (post_article_and_exit)
+						return FALSE;
 					if (prompt_yn(_(txt_read_abort), FALSE) == 1)
 						return TRUE;
 				}
 
 				if (ch == iKeyQuitTin) {
+					if (post_article_and_exit)
+						return FALSE;
 					if (prompt_yn(_(txt_read_exit), FALSE) == 1)
-						tin_done(EXIT_SUCCESS);
+						tin_done(EXIT_SUCCESS, NULL);
 				}
 
 			}

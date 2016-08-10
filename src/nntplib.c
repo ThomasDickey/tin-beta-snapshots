@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2015-10-31
+ *  Updated   : 2016-07-29
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -772,17 +772,19 @@ put_server(
 		 * remember the last command we wrote to be able to resend it after a
 		 * reconnect. reconnection is handled by get_server()
 		 *
-		 * don't cache "LIST ACTIVE something" as we would need to
-		 * resend all of them but we remember just the last one. we cache
-		 * "LIST" instead, this will slow down things, but that's ok on
-		 * reconnect.
+		 * don't cache "LIST [ACTIVE|COUNTS|NEWSGROUPS] something" as we
+		 * would need to resend all of them but we remember just the last
+		 * one. we cache "LIST cmd." instead, this will slow down things, but
+		 * that's ok on reconnect.
 		 */
+        if (strcmp(last_put, string))
+        	STRCPY(last_put, string);
 		if (!strncmp(string, "LIST ACTIVE ", 12))
-			STRCPY(last_put, "LIST");
-		else {
-			if (last_put != string)
-				STRCPY(last_put, string);
-		}
+			last_put[11] = '\0'; /* "LIST ACTIVE" */
+		else if (!strncmp(string, "LIST COUNTS ", 12))
+			last_put[11] = '\0'; /* "LIST COUNTS" */
+		else if (!strncmp(string, "LIST NEWSGROUPS ", 16))
+			last_put[15] = '\0'; /* "LIST NEWSGROUPS" */
 	}
 	(void) s_flush(nntp_wr_fp);
 }
@@ -825,16 +827,21 @@ reconnect(
 	 * The exit code stops tin from trying to disconnect again - the connection
 	 * is already dead
 	 */
-	if (!retry || (!tinrc.auto_reconnect && prompt_yn(_(txt_reconnect_to_news_server), TRUE) != 1)) {
-		if (!strncmp("POST", last_put, 4)) {
+	if (retry > NNTP_TRY_RECONNECT || (!tinrc.auto_reconnect && prompt_yn(_(txt_reconnect_to_news_server), TRUE) != 1)) {
+		if (!strcmp("POST", last_put)) {
 			unlink(backup_article_name(article_name));
 			rename_file(article_name, dead_article);
 			if (tinrc.keep_dead_articles)
 				append_file(dead_article, dead_articles);
 		}
-		if (!retry)
-			error_message(2, _("NNTP connection error. Exiting..."));
-		tin_done(NNTP_ERROR_EXIT);		/* user said no to reconnect or no more retries */
+		if (retry > NNTP_TRY_RECONNECT) {
+#	ifdef DEBUG
+			/* TODO: -> lang.c */
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "reconnect(%d) limit %d reached, giving up.", retry, NNTP_TRY_RECONNECT);
+#	endif /* DEBUG */
+		}
+		tin_done(NNTP_ERROR_EXIT, _("NNTP connection error. Exiting..."));		/* user said no to reconnect or no more retries */
 	}
 
 	/* reset signal_context */
@@ -859,7 +866,7 @@ reconnect(
 		DEBUG_IO((stderr, _("Resend last command (%s)\n"), buf));
 		put_server(buf);
 		did_reconnect = TRUE;
-		retry = 0;
+		retry = NNTP_TRY_RECONNECT;
 	}
 
 	return retry;
@@ -884,7 +891,7 @@ get_server(
 	char *string,
 	int size)
 {
-	static int retry_cnt = NNTP_TRY_RECONNECT;
+	static int retry_cnt = 0;
 
 	reconnected_in_last_get_server = FALSE;
 	errno = 0;
@@ -912,7 +919,7 @@ get_server(
 		alarm(0);
 #	endif /* HAVE_ALARM && SIGALRM */
 		if (quitting)						/* Don't bother to reconnect */
-			tin_done(NNTP_ERROR_EXIT);		/* And don't try to disconnect again! */
+			tin_done(NNTP_ERROR_EXIT, NULL);		/* And don't try to disconnect again! */
 
 #	ifdef DEBUG
 		if (errno != 0 && errno != EINTR)	/* Will only confuse end users */
@@ -925,17 +932,17 @@ get_server(
 		 * closed immediately). Also prevents tin from asking to reconnect
 		 * when user is quitting tin if tinrc.auto_reconnect is false.
 		 */
-		if (strncmp(last_put, "QUIT", 4)) {
+		if (strcmp(last_put, "QUIT")) {
 			/*
 			 * Typhoon v2.1.1.363 colses the connection right after an unknown
 			 * command, (i.e. CAPABILITIES) so we avoid the reissue it on a
 			 * reconnect if it was the last command.
 			 */
-			if (!strncmp(last_put, "CAPABILITIES", 12)) {
+			if (!strcmp(last_put, "CAPABILITIES")) {
 				strcpy(last_put, "MODE READER");
 				nntp_caps.type = BROKEN;
 			}
-			retry_cnt = reconnect(retry_cnt--);		/* Will abort when out of tries */
+			retry_cnt = reconnect(++retry_cnt);		/* Will abort when out of tries */
 			reconnected_in_last_get_server = TRUE;
 		} else {
 			/*
@@ -950,7 +957,7 @@ get_server(
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
 	alarm(0);
 #	endif /* HAVE_ALARM && SIGALRM */
-	retry_cnt = NNTP_TRY_RECONNECT;
+	retry_cnt = 0;
 	return string;
 }
 
@@ -1023,7 +1030,7 @@ check_extensions(
 			nntp_caps.list_distributions = FALSE;
 			nntp_caps.list_moderators = FALSE;
 			nntp_caps.list_counts = FALSE;
-			nntp_caps.xpat = FALSE;
+			nntp_caps.xpat = TRUE; /* only used in select.c:lookup_msgid(); toggles to false if fails, INN > 2.7.0 announces it */
 			nntp_caps.hdr = FALSE;
 			nntp_caps.hdr_cmd = NULL;
 			nntp_caps.over = FALSE;
@@ -1192,7 +1199,7 @@ check_extensions(
 								nntp_caps.sasl |= SASL_LOGIN;
 							}
 						}
-					} else if (!strncasecmp(ptr, "COMPRESS", 8)) { /* draft-murchison-nntp-compress-01.txt */
+					} else if (!strncasecmp(ptr, "COMPRESS", 8)) { /* draft-murchison-nntp-compress-05 */
 						d = ptr + 8;
 						d = strpbrk(d, " \t");
 						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
@@ -1209,6 +1216,7 @@ check_extensions(
 					else if (!strcasecmp(ptr, "STREAMING"))
 						nntp_caps.streaming = TRUE;
 #		endif /* 0 */
+				/* XZVER, XZHDR, ... */
 				} else
 					nntp_caps.type = NONE;
 			}
@@ -1560,7 +1568,6 @@ nntp_open(
 					break;
 			}
 		}
-#	ifdef XHDR_XREF
 		for (i = 0, j = 0; i < 2 && j >= 0; i++) {
 			j = new_nntp_command(&xhdr_cmds[i], ERR_CMDSYN, line, sizeof(line));
 			switch (j) {
@@ -1584,7 +1591,18 @@ nntp_open(
 					break;
 			}
 		}
-#	endif /* XHDR_XREF */
+		/* no XPAT probing here, we do it in select.c:lookup_msgid() as that's the only place we use it */
+		nntp_caps.xpat = TRUE;
+#		if 0
+		switch (new_nntp_command("XPAT Newsgroups <0> *", ERR_NOART, line, sizeof(line))) {
+			case ERR_NOART:
+				nntp_caps.xpat = TRUE;
+				break;
+
+			default:
+				break;
+		}
+#		endif /* 0 */
 	} else {
 		if (!nntp_caps.over_cmd) {
 			/*
@@ -1609,7 +1627,6 @@ nntp_open(
 					break;
 			}
 		}
-#	ifdef XHDR_XREF
 		if (!nntp_caps.hdr_cmd) {
 			/*
 			 * CAPABILITIES didn't mention HDR or XHDR, try XHDR
@@ -1633,7 +1650,6 @@ nntp_open(
 					break;
 			}
 		}
-#	endif /* XHDR_XREF */
 	}
 
 	if (!nntp_caps.over_cmd) {
@@ -1727,13 +1743,17 @@ get_only_respcode(
 		debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 	respcode = (int) strtol(ptr, &end, 10);
+	if (end == ptr) /* no leading numbers in response */
+		respcode = -1;
 	DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 
 	/*
 	 * we also reconnect on ERR_FAULT if last_put was ARTICLE or LIST or POST
 	 * as inn (2.2.3) sends ERR_FAULT on timeout
+	 *
+	 * what about other LIST cmds? (ACTIVE|COUNTS|OVERVIEW.FMT|...)
 	 */
-	if (last_put[0] != '\0' && ((respcode == ERR_FAULT && !strncmp(last_put, "ARTICLE", 7)) || (respcode == ERR_FAULT && !strcmp(last_put, "POST")) || (respcode == ERR_FAULT && !strcmp(last_put, "LIST")) || respcode == ERR_GOODBYE || respcode == OK_GOODBYE) && strcmp(last_put, "QUIT")) {
+	if (last_put[0] != '\0' && ((respcode == ERR_FAULT && (!strncmp(last_put, "ARTICLE", 7) || !strcmp(last_put, "POST") || !strcmp(last_put, "LIST"))) || respcode == ERR_GOODBYE || respcode == OK_GOODBYE) && strcmp(last_put, "QUIT")) {
 		/*
 		 * Maybe server timed out.
 		 * If so, retrying will force a reconnect.
@@ -1745,10 +1765,10 @@ get_only_respcode(
 		put_server(last_put);
 		ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
 
-		if (tin_errno) {
+		if (tin_errno || ptr == NULL) {
 #	ifdef DEBUG
 			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "<<<%sError: tin_errno <> 0", logtime());
+				debug_print_file("NNTP", "<<<%sError: tin_errno<>0 or ptr==NULL in get_only_respcode(retry)", logtime());
 #	endif /* DEBUG */
 			return -1;
 		}
@@ -1758,9 +1778,11 @@ get_only_respcode(
 			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 		respcode = (int) strtol(ptr, &end, 10);
+		if (end == ptr) /* no leading numbers in response */
+			respcode = -1;
 		DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 	}
-	if (message != NULL && mlen > 1)		/* Pass out the rest of the text */
+	if (message != NULL && mlen > 1 && *end != '\0')		/* Pass out the rest of the text */
 		my_strncpy(message, ++end, mlen - 1);
 
 	return respcode;
@@ -1802,13 +1824,16 @@ get_respcode(
 #	endif /* DEBUG */
 		STRCPY(savebuf, last_put);
 
-		if (!authenticate(nntp_server, userid, FALSE)) {
-			error_message(2, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
-			tin_done(EXIT_FAILURE);
-		}
+		if (!authenticate(nntp_server, userid, FALSE))
+			tin_done(EXIT_FAILURE, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
+
 		if (nntp_caps.type == CAPABILITIES) {
 			check_extensions();
 			can_post = nntp_caps.post && !force_no_post;
+		} else {
+			put_server("MODE READER");
+			if (get_only_respcode(message, mlen) == OK_CANPOST)
+				can_post = TRUE && !force_no_post;
 		}
 		if (curr_group != NULL) {
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
@@ -1831,7 +1856,7 @@ get_respcode(
 			if (debug & DEBUG_NNTP)
 				debug_print_file("NNTP", "<<<%sError: tin_errno <> 0", logtime());
 #	endif /* DEBUG */
-				return -1;
+			return -1;
 		}
 
 #	ifdef DEBUG
@@ -1840,7 +1865,11 @@ get_respcode(
 #	endif /* DEBUG */
 		if (ptr == NULL)
 			return -1;
+
 		respcode = (int) strtol(ptr, &end, 10);
+		if (end == ptr)	/* no leading numbers in response */
+			return -1;
+
 		if (message != NULL && mlen > 1)				/* Pass out the rest of the text */
 			strncpy(message, end, mlen - 1);
 	}
@@ -1950,8 +1979,7 @@ list_motd(
 					debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 				/*
-				 * according to draft-elie-nntp-list-additions-00.txt 2.4.2
-				 * the MOTD is in UTF-8
+				 * RFC 6048 2.5.2 "The information MUST be in UTF-8"
 				 *
 				 * TODO: - store a hash value of the entire motd in the server-rc
 				 *         and only if it differs from the old value display the

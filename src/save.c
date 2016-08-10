@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-31
+ *  Updated   : 2016-02-25
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,16 +49,21 @@
 #endif /* HAVE_UUDEVIEW_H */
 
 #ifndef HAVE_LIBUU
-#undef OFF
-enum state { INITIAL, MIDDLE, OFF, END };
+#	undef OFF
+	enum state {
+		INITIAL,
+		MIDDLE,
+		OFF,
+		END
+	};
 #endif /* !HAVE_LIBUU */
 
 enum action {
 	VIEW,
 	SAVE,
-	SAVE_TAGGED
+	SAVE_TAGGED,
+	PIPE_RAW
 #ifndef DONT_HAVE_PIPING
-	, PIPE_RAW
 	, PIPE
 #endif /* !DONT_HAVE_PIPING */
 };
@@ -88,8 +93,8 @@ static void generate_filename(char *buf, int buflen, const char *suffix);
 #endif /* !DONT_HAVE_PIPING */
 static void post_process_uud(void);
 static void post_process_sh(void);
-static void process_part(t_part *part, FILE *rawfp, FILE *outfile, const char *savepath, enum action what);
-static void process_parts(t_part *part, FILE *rawfp, enum action what);
+static void process_part(t_part *part, t_openartinfo *art, FILE *outfile, const char *savepath, enum action what);
+static void process_parts(t_part *part, t_openartinfo *art, enum action what);
 static void show_attachment_page(void);
 static void start_viewer(t_part *part, const char *path);
 static void tag_pattern(void);
@@ -138,6 +143,7 @@ check_start_save_any_news(
 	int i, j;
 	int art_count, hot_count;
 	int saved_arts = 0;					/* Total # saved arts */
+	struct t_article *art;
 	struct t_group *group;
 	t_bool log_opened = TRUE;
 	t_bool print_first = verbose;
@@ -216,8 +222,14 @@ check_start_save_any_news(
 			}
 		}
 
-		if (!index_group(group))
+		if (!index_group(group)) {
+			for_each_art(j) {
+				art = &arts[j];
+				FreeAndNull(art->refs);
+				FreeAndNull(art->msgid);
+			}
 			continue;
+		}
 
 		/*
 		 * For each article in this group...
@@ -589,26 +601,34 @@ t_bool
 create_path(
 	const char *path)
 {
-	char buf[PATH_LEN];
-	int i, j, len;
+	char *buf, *p;
 	struct stat st;
 
-	len = (int) strlen(path);
+	if (!strlen(path))
+		return FALSE;
 
-	for (i = 0, j = 0; i < len; i++, j++) {
-		buf[j] = path[i];
-		if (i + 1 < len && path[i + 1] == DIRSEP) {
-			buf[j + 1] = '\0';
-			if (stat(buf, &st) == -1) {
-				if (my_mkdir(buf, (mode_t) (S_IRWXU|S_IRUGO|S_IXUGO)) == -1) {
-					if (errno != EEXIST) {
-						perror_message(_(txt_cannot_create), buf);
-						return FALSE;
-					}
+	buf = my_strdup(path);
+	p = buf + 1;
+
+	if (!strlen(p)) {
+		free(buf);
+		return FALSE;
+	}
+
+	while ((p = strchr(p, DIRSEP)) != NULL) {
+		*p = '\0';
+		if (stat(buf, &st) == -1) {
+			if (my_mkdir(buf, (mode_t) (S_IRWXU|S_IRUGO|S_IXUGO)) == -1) {
+				if (errno != EEXIST) {
+					perror_message(_(txt_cannot_create), buf);
+					free(buf);
+					return FALSE;
 				}
 			}
 		}
+		*p++ = DIRSEP;
 	}
+	free(buf);
 	return TRUE;
 }
 
@@ -1075,10 +1095,9 @@ view_file(
 	/*
 	 * Needed for the mime-type processor
 	 */
-	part->params = my_malloc(sizeof(t_param));
+	part->params = new_params();
 	part->params->name = my_strdup("name");
 	part->params->value = my_strdup(file);
-	part->params->next = NULL;
 
 	start_viewer(part, path);
 	my_printf(cCRLF);
@@ -1222,7 +1241,7 @@ start_viewer(
 			fflush(stdout);
 		} else {
 			if (foo->description)
-				info_message(foo->description);
+				info_message("%s", foo->description);
 		}
 		invoke_cmd(foo->command);
 		if (foo->needsterminal) {
@@ -1356,7 +1375,11 @@ decode_save_one(
 }
 
 
-enum match { NO, MATCH, NOTMATCH };
+enum match {
+	NO,
+	MATCH,
+	NOTMATCH
+};
 
 /*
  * Match a single type/subtype Content pair
@@ -1665,7 +1688,7 @@ attachment_page(
 			case ATTACHMENT_SAVE:
 				if (attmenu.max) {
 					part = get_part(attmenu.curr);
-					process_parts(part, art->raw, num_of_tagged_parts ? SAVE_TAGGED : SAVE);
+					process_parts(part, art, num_of_tagged_parts ? SAVE_TAGGED : SAVE);
 					show_attachment_page();
 				}
 				break;
@@ -1673,7 +1696,7 @@ attachment_page(
 			case ATTACHMENT_SELECT:
 				if (attmenu.max) {
 					part = get_part(attmenu.curr);
-					process_parts(part, art->raw, VIEW);
+					process_parts(part, art, VIEW);
 					show_attachment_page();
 				}
 				break;
@@ -1735,7 +1758,7 @@ attachment_page(
 			case GLOBAL_PIPE:
 				if (attmenu.max) {
 					part = get_part(attmenu.curr);
-					process_parts(part, art->raw, func == GLOBAL_PIPE ? PIPE_RAW : PIPE);
+					process_parts(part, art, func == GLOBAL_PIPE ? PIPE_RAW : PIPE);
 					show_attachment_page();
 				}
 				break;
@@ -1824,7 +1847,11 @@ build_attachment_line(
 
 	charset = get_param(part->params, "charset");
 	snprintf(buf2, sizeof(buf2), _(txt_attachment_lines), part->line_count);
-	snprintf(buf, sizeof(buf), "  %s/%s, %s, %s%s%s", content_types[part->type], part->subtype, content_encodings[part->encoding], charset ? charset : "", charset ? ", " : "", buf2);
+	/* TODO: make the layout configurable? */
+	if (!strcmp(content_types[part->type], "text"))
+		snprintf(buf, sizeof(buf), "  %s/%s, %s, %s%s%s", content_types[part->type], part->subtype, content_encodings[part->encoding], charset ? charset : "", charset ? ", " : "", buf2);
+	else
+		snprintf(buf, sizeof(buf), "  %s/%s, %s, %s", content_types[part->type], part->subtype, content_encodings[part->encoding], buf2);
 	if (part->depth > 0) {
 		treelen = cCOLS - 13 - info_len - namelen;
 		tree = build_tree(part->depth, treelen, i);
@@ -2156,7 +2183,7 @@ free_part_list(
 static void
 process_parts(
 	t_part *part,
-	FILE *rawfp,
+	t_openartinfo *art,
 	enum action what)
 {
 	FILE *fp;
@@ -2178,7 +2205,7 @@ process_parts(
 							free(savepath);
 							return;
 						}
-						process_part(lptr->part, rawfp, fp, NULL, SAVE);
+						process_part(lptr->part, art, fp, NULL, SAVE);
 						free(savepath);
 						++saved_parts;
 					}
@@ -2201,7 +2228,7 @@ process_parts(
 				free(savepath);
 				return;
 			}
-			process_part(part, rawfp, fp, savepath, what);
+			process_part(part, art, fp, savepath, what);
 			break;
 	}
 	switch (what) {
@@ -2231,32 +2258,53 @@ process_parts(
 static void
 process_part(
 	t_part *part,
-	FILE *rawfp,
+	t_openartinfo *art,
 	FILE *outfile,
 	const char *savepath,
 	enum action what)
 {
+	FILE *infile = NULL;
 	char buf[2048], buf2[2048];
 	int count;
-	int i;
+	int i, line_count;
 #ifdef CHARSET_CONVERSION
 	char *conv_buf;
 	const char *network_charset;
 	size_t line_len;
 #endif /* CHARSET_CONVERSION */
 
+	/*
+	 * uuencoded parts must be read from the cooked article,
+	 * otherwise they might be additionally encoded with b64 or qp
+	 */
+	if (part->encoding == ENCODING_UUE)
+		infile = art->cooked;
+	else
+		infile = art->raw;
+
 	if (what != PIPE_RAW && part->encoding == ENCODING_BASE64)
 		mmdecode(NULL, 'b', 0, NULL);				/* flush */
 
-	fseek(rawfp, part->offset, SEEK_SET);
+	fseek(infile, part->offset, SEEK_SET);
 
-	for (i = 0; i < part->line_count; i++) {
-		if ((fgets(buf, sizeof(buf), rawfp)) == NULL)
+	line_count = part->line_count;
+
+	for (i = 0; i < line_count; i++) {
+		if ((fgets(buf, sizeof(buf), infile)) == NULL)
 			break;
 
 		/* This should catch cases where people illegally append text etc */
 		if (buf[0] == '\0')
 			break;
+
+		/*
+		 * page.c:new_uue() sets offset to the 'begin ...' line
+		 * -> skip over the first line in uuencoded parts
+		 */
+		if (part->encoding == ENCODING_UUE && i == 0) {
+			++line_count;
+			continue;
+		}
 
 		if (what != PIPE_RAW) {
 			switch (part->encoding) {
@@ -2293,8 +2341,8 @@ process_part(
 				default:
 #ifdef CHARSET_CONVERSION
 						if (what != SAVE && what != SAVE_TAGGED && !strncmp(content_types[part->type], "text", 4)) {
-							line_len = strlen(buf);
 							conv_buf = my_strdup(buf);
+							line_len = strlen(conv_buf);
 							network_charset = get_param(part->params, "charset");
 							process_charsets(&conv_buf, &line_len, network_charset ? network_charset : "US-ASCII", tinrc.mm_local_charset, FALSE);
 							strncpy(buf, conv_buf, sizeof(buf) - 1);

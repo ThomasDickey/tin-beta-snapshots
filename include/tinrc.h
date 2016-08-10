@@ -3,10 +3,10 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2015-10-09
+ *  Updated   : 2016-04-17
  *  Notes     :
  *
- * Copyright (c) 1999-2015 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2016 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -132,7 +132,6 @@ struct t_config {
 	int getart_limit;					/* number of article to get */
 	int recent_time;				/* Time limit when article is "fresh" */
 	int goto_next_unread;				/* jump to next unread article with SPACE|PGDN|TAB */
-	int groupname_max_length;			/* max len of group names to display on screen */
 	int hide_uue;						/* treatment of uuencoded data in pager */
 	int kill_level;						/* Define how killed articles are shown */
 	int mail_mime_encoding;
@@ -233,7 +232,9 @@ struct t_config {
 	t_bool sigdashes;					/* set TRUE to prepend every signature with dashes */
 	t_bool signature_repost;			/* set TRUE to add signature when reposting articles */
 	t_bool start_editor_offset;
-	t_bool strip_blanks;
+#ifndef USE_CURSES
+		t_bool strip_blanks;
+#endif /* !USE_CURSES */
 	t_bool strip_newsrc;
 	t_bool tex2iso_conv;			/* convert "a to Umlaut-a */
 	t_bool thread_catchup_on_exit;		/* catchup thread with left arrow key or not */

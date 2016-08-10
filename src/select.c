@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-31
+ *  Updated   : 2016-07-29
  *  Notes     :
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,11 @@ static void sort_active_file(void);
 static void subscribe_pattern(const char *prompt, const char *message, const char *result, t_bool state);
 static void sync_active_file(void);
 static void yank_active_file(void);
+#ifdef NNTP_ABLE
+	static char *lookup_msgid(char *id);
+	static int show_article_by_msgid(void);
+	static struct t_group *get_group_from_list(char *newsgroups);
+#endif /* NNTP_ABLE */
 
 
 /*
@@ -113,6 +118,7 @@ selection_page(
 	setbuf(stdin, 0);
 #endif /* READ_CHAR_HACK */
 
+	Raw(TRUE);
 	ClearScreen();
 
 	/*
@@ -261,10 +267,13 @@ selection_page(
 				break;
 
 			case SELECT_TOGGLE_DESCRIPTIONS:	/* toggle newsgroup descriptions */
-				show_description = bool_not(show_description);
-				if (show_description)
-					read_descriptions(TRUE);
-				show_selection_page();
+				if (sel_fmt.show_grpdesc) {
+					show_description = bool_not(show_description);
+					if (show_description)
+						read_descriptions(TRUE);
+					show_selection_page();
+				} else
+					info_message(_(txt_grpdesc_disabled));
 				break;
 
 			case SELECT_GOTO:			/* prompt for a new group name */
@@ -287,6 +296,23 @@ selection_page(
 				show_help_page(SELECT_LEVEL, _(txt_group_select_com));
 				show_selection_page();
 				break;
+
+#ifdef NNTP_ABLE
+			case GLOBAL_LOOKUP_MESSAGEID:
+				switch (n = show_article_by_msgid()) {
+					case 0:
+						show_selection_page();
+						break;
+
+					case GRP_QUIT:
+						select_quit();
+						break;
+
+					default:
+						break;
+				}
+				break;
+#endif /* NNTP_ABLE */
 
 			case GLOBAL_TOGGLE_HELP_DISPLAY:	/* toggle mini help menu */
 				toggle_mini_help(SELECT_LEVEL);
@@ -364,7 +390,7 @@ selection_page(
 
 			case SELECT_QUIT_NO_WRITE:		/* quit, but don't save configuration */
 				if (prompt_yn(_(txt_quit_no_write), TRUE) == 1)
-					tin_done(EXIT_SUCCESS);
+					tin_done(EXIT_SUCCESS, NULL);
 				show_selection_page();
 				break;
 
@@ -476,7 +502,7 @@ selection_page(
 						/*
 						 * this is a gross hack to avoid a crash in the
 						 * CHARSET_CONVERSION conversion case in new_part()
-						 * which relies currently relies on CURR_GROUP
+						 * which currently relies on CURR_GROUP
 						 */
 						selmenu.curr = my_group_add(buf, FALSE);
 						/*
@@ -573,7 +599,7 @@ show_selection_page(
 	set_first_screen_item();
 	show_title(buf);
 
-	if (!sel_fmt.len_grpname) {
+	if (sel_fmt.len_grpname_max && !sel_fmt.len_grpname) {
 		/*
 		 * calculate max length of groupname field
 		 * if yanked in (yanked_out == FALSE) check all groups in active file
@@ -590,11 +616,11 @@ show_selection_page(
 					sel_fmt.len_grpname = len;
 			}
 		}
-		groupname_len = show_description ? MIN((int) sel_fmt.len_grpname, tinrc.groupname_max_length) : (int) sel_fmt.len_grpname;
-	} else
-		groupname_len = sel_fmt.len_grpname;
+	}
 
-	if (groupname_len >= (int) sel_fmt.len_grpname_max)
+	groupname_len = (sel_fmt.show_grpdesc && show_description) ? (int) sel_fmt.len_grpname_dsc : (int) sel_fmt.len_grpname;
+
+	if (groupname_len > (int) sel_fmt.len_grpname_max)
 		groupname_len = sel_fmt.len_grpname_max;
 	if (groupname_len < 0)
 		groupname_len = 0;
@@ -636,7 +662,8 @@ build_gline(
 	char *desc_buf = NULL;
 	wchar_t *active_name, *active_name2, *active_desc, *active_desc2;
 #else
-	char *active_name;
+	char *active_name, *active_name2;
+	size_t fill, len_start;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 #ifdef USE_CURSES
@@ -695,14 +722,16 @@ build_gline(
 					*buf = '\0';
 				}
 #else
-				if (show_description && active[n].description)
+				if (show_description && active[n].description) {
+					len_start = strwidth(sptr);
 					strncat(sptr, active[n].description, sel_fmt.len_grpdesc);
-				else {
-					buf = sptr + strlen(sptr);
-					for (j = 0; j < sel_fmt.len_grpdesc; ++j)
-						*buf++ = ' ';
-					*buf = '\0';
-				}
+					fill = sel_fmt.len_grpdesc - (strwidth(sptr) - len_start);
+				} else
+					fill = sel_fmt.len_grpdesc;
+				buf = sptr + strlen(sptr);
+				for (j = 0; j < fill; ++j)
+					*buf++ = ' ';
+				*buf = '\0';
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 
@@ -754,8 +783,11 @@ build_gline(
 				else
 					active_name = my_strdup(active[n].name);
 
-				strcat(sptr, active_name);
+				active_name2 = my_malloc(groupname_len + 1);
+				snprintf(active_name2, groupname_len + 1, "%-*s", groupname_len, active_name);
+				strcat(sptr, active_name2);
 				free(active_name);
+				free(active_name2);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 
@@ -791,8 +823,10 @@ build_gline(
 				break;
 		}
 	}
+#ifndef USE_CURSES
 	if (tinrc.strip_blanks)
 		strcat(strip_line(sptr), cCRLF);
+#endif /* !USE_CURSES */
 
 	WriteLine(INDEX2LNUM(i), sptr);
 
@@ -1342,7 +1376,7 @@ select_quit(
 {
 	write_config_file(local_config_file);
 	ClearScreen();
-	tin_done(EXIT_SUCCESS);	/* Tin END */
+	tin_done(EXIT_SUCCESS, NULL);	/* Tin END */
 }
 
 
@@ -1383,3 +1417,264 @@ select_read_group(
 	else
 		info_message(_(txt_no_arts));
 }
+
+
+#ifdef NNTP_ABLE
+/*
+ * Try to fetch articles Nesgroups-header via [X]HDR or XPAT.
+ */
+static char *
+lookup_msgid(
+	char *msgid)
+{
+	if (read_news_via_nntp && !read_saved_news) {
+		if (!nntp_caps.hdr_cmd && !nntp_caps.xpat) {
+			info_message(_(txt_lookup_func_not_available));
+			return NULL;
+		}
+		if (msgid) {
+			char *ptr, *r = NULL;
+			static char *x = NULL;
+			char buf[NNTP_STRLEN];
+			int ret;
+
+			if (nntp_caps.hdr_cmd) {
+				snprintf(buf, sizeof(buf), "%s Newsgroups %s", nntp_caps.hdr_cmd, msgid);
+					ret = new_nntp_command(buf, (nntp_caps.type == CAPABILITIES) ? OK_HDR : OK_HEAD, NULL, 0);
+
+				switch (ret) {
+					case OK_HEAD:
+					case OK_HDR:
+						while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#       ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+#       endif /* DEBUG */
+
+							if (ret == OK_HEAD) { /* RFC 2980 ("%s %s", id, grp) */
+								if (!strncmp(ptr, msgid, strlen(msgid))) { /* INN, MPNews, Leafnode, Cnews nntpd */
+									r = ptr + strlen(msgid) + 1;
+								} else { /* DNEWS ("%d %s", num, grp) */
+									r = ptr;
+									while (*r && *r != ' ' && *r != '\t')
+										r++;
+									while (*r && (*r == ' ' || *r == '\t'))
+										r++;
+								}
+							}
+
+							if (ret == OK_HDR) { /* RFC 3977 ("0 %s", grp) */
+								if (*ptr == '0' && (*(ptr + 1) == ' ' || *(ptr + 1) == '\t'))
+									r = ptr + 2;
+
+							}
+
+							if (r)
+								x = my_strdup(r);
+						}
+
+						if (x)
+							return x;
+
+						if (!r) {
+#       ifdef DEBUG
+								if (debug & DEBUG_NNTP)
+									debug_print_file("NNTP", "lookup_msgid(%s) response empty or not recognized", buf);
+#       endif /* DEBUG */
+								if (!nntp_caps.xpat)
+									info_message(_(txt_lookup_func_not_available));
+						}
+						if (r || !nntp_caps.xpat)
+							return NULL;
+						break;
+
+					case ERR_NOART:
+						info_message(_(txt_art_unavailable));
+						return NULL;
+
+					default:
+						if (!nntp_caps.xpat) { /* try only once */
+							info_message(_(txt_lookup_func_not_available));
+							return NULL;
+						}
+						break;
+				}
+			}
+
+			if (nntp_caps.xpat) {
+				snprintf(buf, sizeof(buf), "XPAT Newsgroups %s *", msgid);
+				ret = new_nntp_command(buf, OK_HEAD, NULL, 0);
+				r = NULL;
+				switch (ret) {
+					case OK_HEAD:
+						while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+#endif /* DEBUG */
+							if (!strncmp(ptr, msgid, strlen(msgid)))
+								r = ptr + strlen(msgid) + 1;
+
+							if (r)
+								x = my_strdup(r);
+						}
+
+						if (x)
+							return x;
+
+						if (!r) {
+#       ifdef DEBUG
+								if (debug & DEBUG_NNTP)
+									debug_print_file("NNTP", "lookup_msgid(%s) response empty or not recognized", buf);
+#       endif /* DEBUG */
+								info_message(_(txt_lookup_func_not_available));
+								/* nntp_caps.xpat = FALSE; */ /* ? */
+						}
+						return NULL;
+
+					case ERR_NOART:
+						info_message(_(txt_art_unavailable));
+						return NULL;
+
+					default:
+						nntp_caps.xpat = FALSE;
+						break;
+				}
+			}
+			info_message(_(txt_lookup_func_not_available));
+		}
+	} else
+		info_message("%s %s", _(txt_lookup_func_not_available), _(txt_lookup_func_not_nntp));
+
+	return NULL;
+}
+
+
+/*
+ * Get a message ID for the 'L' command. Add <> if needed.
+ * Try to enter an appropriate group and display the referenced article.
+ * If no group from the Newsgroups:-header is available, display the
+ * contents of the header.
+ */
+static int
+show_article_by_msgid(
+	void)
+{
+	char id[LEN];
+	char *idptr;
+	char *newsgroups = NULL;
+	int i, ret = 0;
+	struct t_article *art;
+	struct t_group *group = NULL;
+	struct t_msgid *msgid = NULL;
+	t_bool tmp_cache_overview_files;
+	t_bool tmp_show_only_unread_arts;
+
+	if (!(read_news_via_nntp && !read_saved_news)) {
+		info_message("%s %s", _(txt_lookup_func_not_available), _(txt_lookup_func_not_nntp));
+		return -1;
+	}
+
+	if (prompt_string(_(txt_enter_message_id), id + 1, HIST_MESSAGE_ID) && id[1]) {
+		idptr = str_trim(id + 1);
+		if (id[1] != '<') {
+			id[0] = '<';
+			strcat(id, ">");
+			idptr = id;
+		}
+		newsgroups = lookup_msgid(idptr);
+	}
+
+	if (!newsgroups)
+		return -1;
+
+	if ((group = get_group_from_list(newsgroups)) == NULL) {
+		info_message(strchr(newsgroups, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), newsgroups);
+		free(newsgroups);
+		return -1;
+	}
+
+	curr_group = group;
+	num_of_tagged_arts = 0;
+	range_active = FALSE;
+	last_resp = -1;
+	this_resp = -1;
+	tmp_cache_overview_files = tinrc.cache_overview_files;
+	tinrc.cache_overview_files = FALSE;
+	tmp_show_only_unread_arts = curr_group->attribute->show_only_unread_arts;
+	curr_group->attribute->show_only_unread_arts = FALSE;
+
+	if (!index_group(group)) {
+		for_each_art(i) {
+			art = &arts[i];
+			FreeAndNull(art->refs);
+			FreeAndNull(art->msgid);
+		}
+		tin_errno = 0;
+		ret = -1;
+	}
+
+	if (!ret) {
+		grpmenu.first = 0;
+
+		if ((msgid = find_msgid(idptr)) == NULL) {
+			info_message(_(txt_art_unavailable));
+			ret = -1;
+		}
+
+		if (!ret && msgid->article == ART_UNAVAILABLE) {
+			info_message(_(txt_art_unavailable));
+			ret = -1;
+		}
+
+		if (!ret && which_thread(msgid->article) == -1) {
+			info_message(_(txt_no_last_message));
+			ret = -1;
+		}
+	}
+
+	if (!ret) {
+		switch ((i = show_page(group, msgid->article, NULL))) {
+			case GRP_QUIT:
+				ret = GRP_QUIT;
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	free(newsgroups);
+	art_close(&pgart);
+	tinrc.cache_overview_files = tmp_cache_overview_files;
+	curr_group->attribute->show_only_unread_arts = tmp_show_only_unread_arts;
+	curr_group = NULL;
+
+	return ret;
+}
+
+
+/*
+ * Takes a list of newsgroups and determines if one of them is available.
+ */
+static struct t_group *
+get_group_from_list(
+	char *newsgroups)
+{
+	char *ptr;
+	t_bool found = FALSE;
+	struct t_group *group = NULL;
+
+	if (!newsgroups || (ptr = strtok(newsgroups, ",")) == NULL)
+		return NULL;
+
+	/* find first available group of type news */
+	do {
+		group = group_find(ptr, TRUE);
+		if (group && group->type == GROUP_TYPE_NEWS)
+			found = TRUE;
+	} while (!found && (ptr = strtok(NULL, ",")) != NULL);
+
+	return found ? group : NULL;
+}
+#endif /* NNTP_ABLE */

@@ -3,9 +3,9 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2013-11-18
+ *  Updated   : 2016-07-29
  *
- * Copyright (c) 1997-2015 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2016 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -235,10 +235,8 @@ get_user_name(
 	if ((pw = getpwuid(getuid())) != NULL)
 		STRCPY(username, pw->pw_name);
 	else {
-		if (!*username) {
-			error_message(2, _(txt_error_passwd_missing));
-			tin_done(EXIT_FAILURE);
-		}
+		if (!*username)
+			tin_done(EXIT_FAILURE, _(txt_error_passwd_missing));
 	}
 
 	return username;

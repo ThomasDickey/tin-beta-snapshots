@@ -3,10 +3,10 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2013-12-06
+ *  Updated   : 2016-06-02
  *  Notes     :
  *
- * Copyright (c) 1993-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -118,7 +118,7 @@ overview_xref_support(
 							expensive_over_parse = TRUE;
 #ifdef DEBUG
 							if (debug & DEBUG_NNTP)
-								debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 7);
+								debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 7);
 #endif /* DEBUG */
 						}
 						continue;
@@ -131,7 +131,7 @@ overview_xref_support(
 							expensive_over_parse = TRUE;
 #ifdef DEBUG
 							if (debug & DEBUG_NNTP)
-								debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 6);
+								debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 6);
 #endif /* DEBUG */
 						}
 						continue;
@@ -150,13 +150,13 @@ overview_xref_support(
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected > %d", ptr, fields, 7);
+							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected > %d", ptr, fields, 7);
 #endif /* DEBUG */
 					}
 #ifdef DEBUG
 					else {
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d", ptr, fields);
+							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d", ptr, fields);
 					}
 #endif /* DEBUG */
 
@@ -171,7 +171,7 @@ overview_xref_support(
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 1);
+							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 1);
 #endif /* DEBUG */
 					}
 					continue;
@@ -184,7 +184,7 @@ overview_xref_support(
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 2);
+							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 2);
 #endif /* DEBUG */
 					}
 					continue;
@@ -197,7 +197,7 @@ overview_xref_support(
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 3);
+							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 3);
 #endif /* DEBUG */
 					}
 					continue;
@@ -210,7 +210,7 @@ overview_xref_support(
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 4);
+							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 4);
 #endif /* DEBUG */
 					}
 					continue;
@@ -223,7 +223,7 @@ overview_xref_support(
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 5);
+							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 5);
 #endif /* DEBUG */
 					}
 					continue;
@@ -236,7 +236,7 @@ overview_xref_support(
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 6);
+							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 6);
 #endif /* DEBUG */
 					}
 					continue;
@@ -249,7 +249,7 @@ overview_xref_support(
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 7);
+							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 7);
 #endif /* DEBUG */
 					}
 					continue;
@@ -273,7 +273,7 @@ overview_xref_support(
 	if (fields < 2) {
 #ifdef DEBUG
 		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", "OVERVIEW.FTM: Empty response - using safe defaults");
+			debug_print_file("NNTP", fp ? "OVERVIEW.FMT: Empty response - using safe defaults" : "OVERVIEW.FMT: not advertized - using safe defaults");
 #endif /* DEBUG */
 		ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (8 + 1));
 		ofmt[1].type = OVER_T_STRING;
@@ -311,7 +311,9 @@ overview_xref_support(
 	 *       - in the NNTP_ABLE but !read_news_via_nntp case when
 	 *         OVERVIEW.FMT-file wasn't found or didn't mention Xref:
 	 *       - if the used command is OVER instead of XOVER
+	 *         (use nntp_caps.over_cmd in txt_warn_xref_not_supported ?)
 	 *       - if the used command is HDR XREF instead of XHDR XREF
+	 *         (use nntp_caps.hdr_cmd in txt_warn_xref_not_supported ?)
 	 *       - if server doesn't mention XREF in LIST HEADERS
 	 */
 	if (read_news_via_nntp && !supported)

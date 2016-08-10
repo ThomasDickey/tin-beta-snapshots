@@ -3,10 +3,10 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2013-11-05
+ *  Updated   : 2016-05-25
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2015 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2016 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -949,6 +949,9 @@ process_mapping(
 			if (strcmp(keyname, "LookupMessage") == 0) {
 				process_keys(GLOBAL_LOOKUP_MESSAGEID, keys, &group_keys);
 				process_keys(GLOBAL_LOOKUP_MESSAGEID, keys, &page_keys);
+#ifdef NNTP_ABLE
+				process_keys(GLOBAL_LOOKUP_MESSAGEID, keys, &select_keys);
+#endif /* NNTP_ABLE */
 				process_keys(GLOBAL_LOOKUP_MESSAGEID, keys, &thread_keys);
 
 				return TRUE;
@@ -1532,7 +1535,6 @@ process_mapping(
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &select_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &thread_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &url_keys);
-				process_keys(PAGE_SCROLL_DOWN, keys, &page_keys);
 
 				return TRUE;
 			}
@@ -1544,7 +1546,6 @@ process_mapping(
 				process_keys(GLOBAL_SCROLL_UP, keys, &select_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &thread_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &url_keys);
-				process_keys(PAGE_SCROLL_UP, keys, &page_keys);
 
 				return TRUE;
 			}
@@ -2576,6 +2577,9 @@ setup_default_keys(
 	add_default_key(&select_keys, "z", SELECT_MARK_GROUP_UNREAD);
 	add_default_key(&select_keys, "C", CATCHUP_NEXT_UNREAD);
 	add_default_key(&select_keys, "E", GLOBAL_EDIT_FILTER);
+#ifdef NNTP_ABLE
+	add_default_key(&select_keys, "L", GLOBAL_LOOKUP_MESSAGEID);
+#endif /* NNTP_ABLE */
 	add_default_key(&select_keys, "N", SELECT_NEXT_UNREAD_GROUP);
 	add_default_key(&select_keys, "S", SELECT_SUBSCRIBE_PATTERN);
 	add_default_key(&select_keys, "U", SELECT_UNSUBSCRIBE_PATTERN);
@@ -2703,8 +2707,6 @@ setup_default_keys(
 	add_default_key(&page_keys, "p", PAGE_PREVIOUS_ARTICLE);
 	add_default_key(&page_keys, "r", PAGE_REPLY_QUOTE);
 	add_default_key(&page_keys, "s", PAGE_SAVE);
-	add_default_key(&page_keys, ">", PAGE_SCROLL_DOWN);
-	add_default_key(&page_keys, "<", PAGE_SCROLL_UP);
 	add_default_key(&page_keys, "t", PAGE_TAG);
 	add_default_key(&page_keys, "u", PAGE_GOTO_PARENT);
 	add_default_key(&page_keys, "x", PAGE_REPOST);

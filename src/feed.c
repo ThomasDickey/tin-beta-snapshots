@@ -3,10 +3,10 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2014-04-26
+ *  Updated   : 2016-04-12
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,12 +38,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-
-#ifdef DEBUG
-#	ifndef TCURSES_H
-#		include "tcurses.h"
-#	endif /* !TCURSES_H */
-#endif /* DEBUG */
+#ifndef TCURSES_H
+#	include "tcurses.h"
+#endif /* !TCURSES_H */
 
 
 static t_bool confirm;					/* only used for FEED_MAIL */
@@ -400,7 +397,7 @@ print_save_summary(
 		snprintf(buf, sizeof(buf), _(txt_saved_to_range),
 			what, first, last);
 
-	wait_message((tinrc.beginner_level) ? 2 : 1, buf);
+	wait_message((tinrc.beginner_level) ? 4 : 2, buf);
 
 	return;
 }
@@ -439,14 +436,12 @@ feed_article(
 	switch (function) {
 #ifndef DONT_HAVE_PIPING
 		case FEED_PIPE:
-			/* TODO: looks odd because screen mode is raw */
 			progress_mesg = fmt_string("%s (%d/%d)", _(txt_piping), counter->total, counter->max);
 			break;
 #endif /* !DONT_HAVE_PIPING */
 
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
-			/* TODO: looks odd because screen mode is raw */
 			progress_mesg = fmt_string("%s (%d/%d)", _(txt_printing), counter->total, counter->max);
 			break;
 #endif /* !DISABLE_PRINTING */
@@ -457,16 +452,19 @@ feed_article(
 			break;
 	}
 
+	if (progress_mesg != NULL) {
+		if (!use_current)
+			show_progress(progress_mesg, counter->total, counter->max);
+		FreeAndNull(progress_mesg);
+	}
+
 	if (use_current)
 		openartptr = &pgart;			/* Use art already open in pager */
 	else {
-		if (art_open(FALSE, &arts[art], group, openartptr, TRUE, progress_mesg) < 0) {
+		if (art_open(FALSE, &arts[art], group, openartptr, FALSE, NULL) < 0)
 			/* User abort or an error */
-			FreeIfNeeded(progress_mesg);
 			return FALSE;
-		}
 	}
-	FreeIfNeeded(progress_mesg);
 
 	switch (function) {
 		case FEED_MAIL:
@@ -830,6 +828,7 @@ feed_articles(
 				}
 			}
 			range_active = FALSE;
+			redraw_screen = TRUE;
 			break;
 
 		case FEED_TAGGED:		/* tagged articles */
@@ -845,6 +844,7 @@ feed_articles(
 				}
 			}
 			untag_all_articles();	/* TODO: this will untag even on partial failure */
+			redraw_screen = TRUE;
 			break;
 
 		case FEED_HOT:		/* hot (auto-selected) articles */
@@ -890,6 +890,7 @@ feed_articles(
 						handle_EPIPE();
 				}
 			}
+			redraw_screen = TRUE;
 			break;
 
 		default:			/* Should never get here */
@@ -924,6 +925,7 @@ got_epipe_while_piping:
 			fflush(pipe_fp);
 			(void) pclose(pipe_fp);
 			set_signal_catcher(TRUE);
+			my_printf(cCRLF);
 #	ifdef USE_CURSES
 			Raw(TRUE);
 			InitWin();
@@ -942,6 +944,11 @@ got_epipe_while_piping:
 			if (num_save == 0) {
 				wait_message(1, _(txt_saved_nothing));
 				break;
+			}
+
+			if (redraw_screen) {
+				currmenu->redraw();
+				redraw_screen = FALSE;
 			}
 
 			print_save_summary(feed_type, counter.total);
@@ -988,8 +995,10 @@ got_epipe_while_piping:
 				clear_message();
 		}
 	} else {
-		if (redraw_screen)
+		if (redraw_screen) {
 			currmenu->redraw();
+			redraw_screen = FALSE;
+		}
 	}
 
 	/*
@@ -1023,6 +1032,12 @@ got_epipe_while_piping:
 				}
 			}
 			break;
+
+#ifndef DONT_HAVE_PIPING
+		case FEED_PIPE:
+			info_message(_(txt_articles_piped), counter.success, PLURAL(counter.success, txt_article), tinrc.default_pipe_command);
+			break;
+#endif /* !DONT_HAVE_PIPING */
 
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:

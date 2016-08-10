@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-21
+ *  Updated   : 2016-03-10
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -565,7 +565,6 @@ update_posted_info_file(
 {
 	FILE *fp;
 	char *file_tmp;
-	struct tm *pitm;
 	time_t epoch;
 
 	if (no_write)
@@ -580,16 +579,21 @@ update_posted_info_file(
 
 	if ((fp = fopen(posted_info_file, "a")) != NULL) {
 		int err;
+		char logdate[10];
 
-		(void) time(&epoch);
-		pitm = localtime(&epoch);
+		if (time(&epoch) != (time_t) -1) {
+			if (!my_strftime(logdate, sizeof(logdate) - 1, "%d-%m-%y", localtime(&epoch)))
+				strcpy(logdate, "NO  DATE");
+		} else
+			strcpy(logdate, "NO  DATE");
+
 		if (*a_message_id) {
 			char *mid = my_strdup(a_message_id);
 
-			fprintf(fp, "%02d-%02d-%02d|%c|%s|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, BlankIfNull(group), BlankIfNull(subj), BlankIfNull(str_trim(mid)));
+			fprintf(fp, "%s|%c|%s|%s|%s\n", logdate, action, BlankIfNull(group), BlankIfNull(subj), BlankIfNull(str_trim(mid)));
 			free(mid);
 		} else
-			fprintf(fp, "%02d-%02d-%02d|%c|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, BlankIfNull(group), BlankIfNull(subj));
+			fprintf(fp, "%s|%c|%s|%s\n", logdate, action, BlankIfNull(group), BlankIfNull(subj));
 
 		if ((err = ferror(fp)) || fclose(fp)) {
 			error_message(2, _(txt_filesystem_full), posted_info_file);
@@ -879,6 +883,7 @@ check_article_to_be_posted(
 				break;
 			}
 		}
+
 #ifdef CHARSET_CONVERSION
 		/* are all characters in article contained in network_charset? */
 		if (strcasecmp(tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset]) && !charset_conversion_fails) { /* local_charset != network_charset */
@@ -888,7 +893,6 @@ check_article_to_be_posted(
 			free(cp);
 		}
 #endif /* CHARSET_CONVERSION */
-
 
 		if ((cp = strchr(line, ':')) == NULL) {
 			StartInverse();
@@ -1057,7 +1061,7 @@ check_article_to_be_posted(
 		if (cp - line == 4 && !strncasecmp(line, "Date", 4)) {
 			if ((cp2 = parse_header(line, "Date", FALSE, FALSE, FALSE))) {
 				if (parsedate(cp2, (struct _TIMEINFO *) 0) <= 0)
-				errors_catbp |= CA_ERROR_BAD_DATE;
+					errors_catbp |= CA_ERROR_BAD_DATE;
 			} else {
 				errors_catbp |= CA_ERROR_BAD_DATE;
 			}
@@ -1066,7 +1070,7 @@ check_article_to_be_posted(
 		if (cp - line == 7 && !strncasecmp(line, "Expires", 7)) {
 			if ((cp2 = parse_header(line, "Expires", FALSE, FALSE, FALSE))) {
 				if (parsedate(cp2, (struct _TIMEINFO *) 0) <= 0)
-				errors_catbp |= CA_ERROR_BAD_EXPIRES;
+					errors_catbp |= CA_ERROR_BAD_EXPIRES;
 			} else {
 				errors_catbp |= CA_ERROR_BAD_EXPIRES;
 			}
@@ -1845,7 +1849,7 @@ post_article_loop:
 							append_file(dead_article, dead_articles);
 						wait_message(2, _(txt_art_rejected), dead_article);
 					}
-				return ret_code;
+					return ret_code;
 				}
 
 			case POST_POSTPONE:
@@ -2622,10 +2626,12 @@ skip_id(
 	const char *id)
 {
 	size_t skipped = 0;
-	while (id[skipped] && isspace((unsigned char) id[skipped]))
+
+	while (id[skipped] != '\0' && isspace((unsigned char) id[skipped]))
 		skipped++;
-	if (id[skipped]) {
-		while (id[skipped] && !isspace((unsigned char) id[skipped]))
+
+	if (id[skipped] != '\0') {
+		while (id[skipped] != '\0' && !isspace((unsigned char) id[skipped]))
 			skipped++;
 	}
 	return skipped;
@@ -2724,7 +2730,10 @@ join_references(
 
 	while (*e) {
 		if (*e == ' ') {
-			space++, *c++ = ' ', e++;	/* keep existing spaces */
+			/* keep existing spaces */
+			space++;
+			*c++ = ' ';
+			e++;
 			continue;
 		} else if (*e != '<') {		/* strip everything besides spaces and */
 			e++;	/* message-ids */
@@ -2733,9 +2742,10 @@ join_references(
 		if (damaged_id(e)) {	/* remove damaged message ids and mark
 					   the gap if that's not already done */
 			e += skip_id(e);
-			while (space < 3)
-				space++, *c++ = ' ';
-
+			while (space < 3) {
+				space++;
+				*c++ = ' ';
+			}
 			continue;
 		}
 		if (!space)
@@ -2744,8 +2754,10 @@ join_references(
 			space = 0;
 		appendid(&c, &e);
 	}
-	while (space)
-		c--, space--;	/* remove superfluous space at the end */
+	while (space) {
+		c--;
+		space--;	/* remove superfluous space at the end */
+	}
 	*c++ = ' ';
 	appendid(&c, &newref);
 	*c = 0;
@@ -2763,7 +2775,27 @@ join_references(
 		*d++ = ' ';	/* and mark this appropriately */
 		while (*c == ' ')
 			c++;
-		strcpy(d, c);
+#ifdef HAVE_MEMMOVE	/* TODO: put into a function? */
+		memmove(d, c, strlen(c) + 1);
+#else
+#	ifdef HAVE_BCOPY
+		bcopy(c, d, strlen(c) + 1);
+#	else
+		{
+			size_t l = strlen(c) + 1;
+
+			if (c < d && d < c + l) {
+				d += l;
+				c += l;
+				while (l--)
+					*--d= *--c;
+			} else {
+				while (l--)
+					*d++ = *c++;
+			}
+		}
+#	endif /* HAVE_BCOPY */
+#endif /* HAVE_MEMMOVE */
 	}
 
 	strcpy(buffer, b);
@@ -4498,12 +4530,12 @@ insert_from_header(
 					/*
 					 * insert_from_header() is only called
 					 * from submit_mail_file() so the 3rd
-					 * arg should perhaps be TRUE
+					 * arg is TRUE
 					 */
 #	ifdef CHARSET_CONVERSION
-					p = rfc1522_encode(from_buff, txt_mime_charsets[tinrc.mm_network_charset], FALSE);
+					p = rfc1522_encode(from_buff, txt_mime_charsets[tinrc.mm_network_charset], TRUE);
 #	else
-					p = rfc1522_encode(from_buff, tinrc.mm_charset, FALSE);
+					p = rfc1522_encode(from_buff, tinrc.mm_charset, TRUE);
 #	endif /* CHARSET_CONVERSION */
 					if (GNKSA_OK != gnksa_check_from(p)) { /* error in address */
 						error_message(2, _(txt_invalid_from), from_buff);
@@ -4580,9 +4612,9 @@ find_reply_to_addr(
 		/* TODO: Return code ignored? */
 		parse_from(ptr, from_addr, fname);
 #else
-		/* Or should we decode full_addr? */
-		parse_from(ptr, temp, fname);
-		strcpy(full_addr, rfc1522_decode(tmp));
+		/* Or should we decode from_addr? */
+		parse_from(ptr, tmp, fname);
+		strcpy(from_addr, rfc1522_decode(tmp));
 #endif /* 1 */
 	} else
 		strcpy(from_addr, ptr);
@@ -5234,7 +5266,6 @@ add_headers(
 				}
 				if (adddate) {
 					time_t epoch;
-					struct tm *gmdate;
 					char dateheader[50];
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 					char *old_lc_all = NULL, *old_lc_time = NULL;
@@ -5250,8 +5281,8 @@ add_headers(
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
 					(void) time(&epoch);
-					gmdate = gmtime(&epoch); /* my_strftime has no %z or %Z */
-					if (!my_strftime(dateheader, sizeof(dateheader) - 1, "Date: %a, %d %b %Y %H:%M:%S -0000\n", gmdate)) {
+					/* my_strftime has no %z or %Z */
+					if (!my_strftime(dateheader, sizeof(dateheader) - 1, "Date: %a, %d %b %Y %H:%M:%S -0000\n", gmtime(&epoch))) {
 						writesuccess = FALSE;
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 						FreeIfNeeded(old_lc_all);

@@ -6,7 +6,7 @@
  *  Updated   : 2011-01-25
  *  Notes     :
  *
- * Copyright (c) 1999-2015 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2016 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -286,8 +286,6 @@ enum defined_functions {
 	PAGE_REPLY_QUOTE_HEADERS,
 	PAGE_REPOST,
 	PAGE_SAVE,
-	PAGE_SCROLL_DOWN,
-	PAGE_SCROLL_UP,
 	PAGE_SKIP_INCLUDED_TEXT,
 	PAGE_TAG,
 	PAGE_TOGGLE_HEADERS,

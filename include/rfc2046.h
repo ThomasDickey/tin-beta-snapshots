@@ -3,10 +3,10 @@
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2015-10-09
+ *  Updated   : 2016-01-01
  *  Notes     : rfc2046 MIME article definitions
  *
- * Copyright (c) 2000-2015 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2016 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,6 +74,10 @@ typedef struct param
 {
 	char *name;
 	char *value;
+	char *charset;
+	int part;
+	t_bool encoded;
+	t_bool enc_fallback;
 	struct param *next;
 } t_param;
 

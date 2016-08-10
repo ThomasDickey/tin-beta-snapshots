@@ -413,8 +413,11 @@ _nl_load_domain (domain_file, domainbinding)
       char *read_ptr;
 
       data = (struct mo_file_header *) malloc (size);
-      if (data == NULL)
-	return;
+      if (data == NULL) {
+    	  if (!use_mmap)
+	      	close (fd);
+		return;
+	}
 
       to_read = size;
       read_ptr = (char *) data;

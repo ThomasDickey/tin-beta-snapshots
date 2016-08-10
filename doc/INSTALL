@@ -19,7 +19,7 @@ The following configure options and defines are documented in detail:
   --disable-included-msgs                 --program-prefix
   --enable-8bit-keys                      --program-suffix
   --enable-append-pid                     --program-transform-name
-  --enable-break-long-lines               --with-coffee
+  --disable-break-long-lines              --with-coffee
   --enable-broken-listgroup-fix           --with-curses-dir
   --enable-broken-system-fix              --with-dbmalloc
   --enable-cancel-locks                   --with-defaults-dir
@@ -64,7 +64,7 @@ The following configure options and defines are documented in detail:
 Not yet documented configure options and defines:
 -------------------------------------------------
 TIN related:
-  --enable-ipv6                          --with-socks5
+  --disable-ipv6                         --with-socks5
   --with-socks                           --with-sum
 
   DEBUG                                   MATCH_TAR_PATTERN
@@ -260,8 +260,8 @@ Can be overridden by setting the environment variable NNTPSERVER.
 --enable-broken-listgroup-fix (default: off)
 Bypass a bug in some broken NNTPservers which need an extra GROUP command
 before accepting a LISTGROUP command. This can be also used to bypass the
-bug in some servers (i.e. DeleGate) where LISTGROUP doesn't select the
-group and thus subseqent cmds. fail.
+bug in some servers (i.e. DeleGate, SurgeNews) where LISTGROUP doesn't
+select the group and thus subseqent cmds. fail.
 
 --enable-xhdr-xref (default: on)
 If disabled, don't allow using XHDR XREF if XOVER doesn't work to mark
@@ -521,10 +521,11 @@ Turn on Cancel-Locks. This feature requires the client to know the
 Message-ID of the posting, so if your server does not offer server side
 purposed IDs you have to mess around with EVIL_INSIDE
 
---enable-heapsort (default: off)
+--enable-heapsort (default: on)
 Enable heapsort(3) as alternative to qsort(3). In large groups with a long
 retention and long threads this may be a performance win as the data in
-the group is somewhat presorted.
+the group is somewhat presorted. Use --disable-heapsort to deactivate
+heapsort(3) inclusion.
 
 --enable-nls (default: on)
 The --enable-nls option enables Native Language Support (NLS), which allows
@@ -581,20 +582,20 @@ profile time consuming operations
 
 Miscellaneous options
 ---------------------
---enable-append-pid (default: on)
-Enable if you want tin to append its process id to any file that a user
-edits (.article, .cancel, .letter etc.). Highly recommended if a user wants
-to start several instances of tin at a time; otherwise files might be
-overwritten.
+--disable-append-pid (default: on)
+Disable if you want tin not to append its process id to any file that a user
+edits (.article, .cancel, .letter etc.). Keeping the default is highly
+recommended if a user wants to start several instances of tin at a time;
+otherwise files might be overwritten.
 
---enable-break-long-lines (default: off)
-Enable if you want tin to break long MIME encoded header lines in
+--disable-break-long-lines (default: on)
+Disable if you want tin not to break long MIME encoded header lines in
 accordance with RFC 2047 (i.e. after 76 characters) in postings as well as
-in e-mail. Default is to not break ("fold") such lines in news postings
-because some news servers and clients can't handle them very well (doing
-folding right seems to be a major problem). This option only affects
-headers in postings; e-mail headers are always folded if they have MIME
-encoded words and are longer than 76 characters.
+in e-mail. Default is to break ("fold") such lines in news postings.
+Some very old news servers and clients can't handle folded lines very
+well. This option only affects headers in postings; e-mail headers are
+always folded if they have MIME encoded words and are longer than 76
+characters.
 
 --enable-broken-system-fix (default: off)
 Ignore system()s return value. This is only needed on some very old OSs,

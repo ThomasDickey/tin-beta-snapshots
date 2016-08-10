@@ -3,10 +3,10 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-31
+ *  Updated   : 2016-04-12
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -365,7 +365,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	ifdef HAVE_SYS_DIR_H
 #		include <sys/dir.h>
 #	endif /* HAVE_SYS_DIR_H */
-#	if HAVE_NDIR_H
+#	ifdef HAVE_NDIR_H
 #		include <ndir.h>
 #	endif /* HAVE_NDIR_H */
 #endif /* HAVE_DIRENT_H */
@@ -906,8 +906,8 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 	 * For CURSOR_ARROW and CURSOR_HORIZ tinrc.utf8_graphics ? :
 	 * is handled inside screen.c:draw_arrow_mark().
 	 */
-#	define CURSOR_ARROW		(wchar_t) 0x25B6
-#	define CURSOR_HORIZ		(wchar_t) 0x2500
+#	define CURSOR_ARROW		(wint_t) 0x25B6
+#	define CURSOR_HORIZ		(wint_t) 0x2500
 #	define TREE_ARROW		(wchar_t) (tinrc.utf8_graphics ? 0x25B6 : '>')
 #	define TREE_ARROW_WRAP	(wchar_t) (tinrc.utf8_graphics ? 0x25B7 : '>')
 #	define TREE_BLANK		(wchar_t) ' '
@@ -1776,6 +1776,7 @@ struct t_fmt {
 	size_t len_grpdesc;		/* %d newsgroup description */
 	size_t len_from;		/* %F From */
 	size_t len_grpname;		/* %G groupname */
+	size_t len_grpname_dsc;
 	size_t len_grpname_max;
 	size_t len_initials;	/* %I initials */
 	size_t len_linenumber;	/* %n linenumber on screen */
@@ -1788,6 +1789,7 @@ struct t_fmt {
 	size_t flags_offset;
 	size_t mark_offset;
 	size_t ucnt_offset;
+	t_bool show_grpdesc;
 	t_bool d_before_f;
 	t_bool g_before_f;
 	t_bool d_before_u;

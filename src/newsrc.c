@@ -3,10 +3,10 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2013-12-04
+ *  Updated   : 2016-07-29
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -295,9 +295,7 @@ open_subscription_fp(
 	if (!read_saved_news) {
 #ifdef NNTP_ABLE
 		if (read_news_via_nntp) {
-			/*
-			 * draft-elie-nntp-list-additions-00.txt
-			 */
+			/* RFC 6048 2.6 */
 			if (nntp_caps.type == CAPABILITIES && !nntp_caps.list_subscriptions)
 				return NULL;
 			else
@@ -439,8 +437,7 @@ group_get_art_info(
 				return -ERR_NOGROUP;
 
 			case ERR_ACCESS:
-				error_message(2, "%s%s", cCRLF, line);
-				tin_done(NNTP_ERROR_EXIT);
+				tin_done(NNTP_ERROR_EXIT, "%s", line);
 				/* keep lint quiet: */
 				/* NOTREACHED */
 				break;

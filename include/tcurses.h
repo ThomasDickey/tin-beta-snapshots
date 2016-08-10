@@ -6,7 +6,7 @@
  *  Updated   : 2011-04-02
  *  Notes     : curses #include files, #defines & struct's
  *
- * Copyright (c) 1997-2015 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2016 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

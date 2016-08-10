@@ -3,10 +3,10 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2010-04-29
+ *  Updated   : 2016-01-03
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
- * Copyright (c) 1991-2015 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,6 +88,7 @@
 #define OK_NOPOST		201	/* Hello; you can't post */
 #define OK_EXTENSIONS	202	/* extensions supported follow */
 #define OK_GOODBYE		205	/* Closing connection */
+#define OK_COMPRESS		206	/* Compression active */
 #define OK_GROUP		211	/* Group selected */
 #define OK_GROUPS		215	/* Newsgroups follow */
 #define OK_MOTD			215	/* News motd follows */
@@ -116,6 +117,7 @@
 
 #define ERR_GOODBYE		400	/* Have to hang up for some reason */
 #define ERR_STATE		401 /* The client must change the state of the connection */
+#define ERR_COMPRESS	403	/* Unable to activate compression */
 #define ERR_NOGROUP		411	/* No such newsgroup */
 #define ERR_NCING		412	/* Not currently in newsgroup */
 
@@ -139,12 +141,17 @@
 #define ERR_ACCESS		502	/* Access to server denied */
 #define ERR_FAULT		503	/* Program fault, command not performed */
 #define ERR_MOTD		503	/* No news motd file */
+#define ERR_COMPRESS_ALG	503	/* Compression algorithm not supported */
 #define ERR_AUTHBAD		580	/* Authorization Failed */
 
 /*
  * RFC 977 defines this; don't change it.
  */
 #define NNTP_STRLEN		512
+/*
+ * RFC 3977 3.1
+ */
+#define NNTP_GRPLEN		497
 
 /*
  * OVERVIEW.FMT field types
@@ -158,7 +165,17 @@ enum f_type { OVER_T_ERROR, OVER_T_INT, OVER_T_STRING, OVER_T_FSTRING };
  */
 enum extension_type { NONE, CAPABILITIES, BROKEN };
 
-enum sasl_types { SASL_NONE = 0, SASL_PLAIN = 1, SASL_CRAM_MD5 = 2, SASL_DIGEST_MD5 = 4, SASL_GSSAPI = 8, SASL_EXTERNAL = 16, SASL_OTP = 32, SASL_NTLM = 64, SASL_LOGIN = 128 };
+enum sasl_types {
+	SASL_NONE 		= 0,
+	SASL_PLAIN		= 1 << 0,
+	SASL_CRAM_MD5	= 1 << 1,
+	SASL_DIGEST_MD5	= 1 << 2,
+	SASL_GSSAPI		= 1 << 3,
+	SASL_EXTERNAL	= 1 << 4,
+	SASL_OTP		= 1 << 5,
+	SASL_NTLM		= 1 << 6,
+	SASL_LOGIN		= 1 << 7
+};
 enum c_algorithms { COMPRESS_NONE, COMPRESS_DEFLATE };
 
 struct t_capabilities {
