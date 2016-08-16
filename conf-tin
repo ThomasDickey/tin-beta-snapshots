@@ -30,10 +30,27 @@ CC="${CC-cc}"
 # 	-without-pgpk --without-gpg
 # for pgp-2 support
 
+if test -z "$SHELL"; then
+	case `./config.guess` in
+	*solaris2.10)
+		SHELL=/usr/xpg4/bin/sh
+		;;
+	*)
+		SHELL=/bin/sh
+		;;
+	esac
+else
+	case "$SHELL" in
+	*[cz]sh)
+		SHELL=/bin/sh
+		;;
+	esac
+fi
+
 echo "Making with $CC $CFLAGS"
 CFLAGS="$CFLAGS" \
 CC="$CC" \
-./configure --verbose \
+$SHELL ./configure --verbose \
 	--disable-echo \
 	--enable-prototypes \
 	--enable-nntp-only \
