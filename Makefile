@@ -4,6 +4,8 @@
 # Updated: 2015-08-29
 #
 
+SHELL	= @SHELL@
+
 PROJECT	= tin
 LVER	= 2
 PVER	= 4
@@ -540,7 +542,7 @@ configure: configure.in aclocal.m4
 	autoconf
 
 config.status: configure
-	$(TOPDIR)/config.status --recheck
+	$(SHELL) $(TOPDIR)/config.status --recheck
 
 po4a:
 	@$(PO4A) po4a.conf
