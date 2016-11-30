@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-30 11:25+0200\n"
+"POT-Creation-Date: 2016-10-12 17:33+0200\n"
 "PO-Revision-Date: 2015-10-08 12:13+0800\n"
 "Last-Translator: Wei-Lun Chao <bluebat@member.fsf.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -8060,11 +8060,11 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr "連線到 NNTP 伺服器 %s 時失敗。離開…"
 
-#: src/nntplib.c:856 src/nntplib.c:1839
+#: src/nntplib.c:856 src/nntplib.c:1833
 msgid "Rejoin current group\n"
 msgstr "重新連結目前的群組\n"
 
-#: src/nntplib.c:864 src/nntplib.c:1847
+#: src/nntplib.c:864 src/nntplib.c:1841
 #, c-format
 msgid "Read (%s)\n"
 msgstr "已讀 (%s)\n"
@@ -8074,11 +8074,11 @@ msgstr "已讀 (%s)\n"
 msgid "Resend last command (%s)\n"
 msgstr "重新發送最近的命令 (%s)\n"
 
-#: src/nntplib.c:1486
+#: src/nntplib.c:1480
 msgid "CAPABILITIES did not announce READER"
 msgstr "能力中並未宣告包含閱讀器"
 
-#: src/nntplib.c:1993
+#: src/nntplib.c:1987
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8160,7 +8160,7 @@ msgstr ""
 "以了解新的格式，而隨後而來的東西也許看起來會很怪異。\n"
 "\n"
 
-#: src/save.c:1065
+#: src/save.c:1067
 msgid "bytes"
 msgstr "位元組"
 

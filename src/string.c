@@ -6,7 +6,7 @@
  *  Updated   : 2016-02-25
  *  Notes     :
  *
- * Copyright (c) 1997-2016 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2017 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1273,6 +1273,7 @@ normalize(
 				mode = UNINORM_NFKC;
 		}
 		buf = (char *) u8_normalize(mode, (uint8_t *) tmp, strlen(tmp) + 1, NULL, &olen);
+		free(tmp);
 		return buf;
 	}
 #		else

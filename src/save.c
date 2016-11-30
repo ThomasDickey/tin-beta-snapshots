@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-02-25
+ *  Updated   : 2016-10-10
  *  Notes     :
  *
- * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -213,7 +213,7 @@ check_start_save_any_news(
 			if (function == SAVE_ANY_NEWS) {
 				char tmp[PATH_LEN];
 
-				if (!strfpath(cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : tinrc.savedir, tmp, sizeof(tmp), group, FALSE))
+				if (!strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : tinrc.savedir, tmp, sizeof(tmp), group, FALSE))
 					joinpath(tmp, sizeof(tmp), homedir, DEFAULT_SAVEDIR);
 
 				make_group_path(group->name, group_path);
@@ -648,6 +648,7 @@ generate_filename(
 	snprintf(buf, buflen, "%s-%03d.%s", SAVEFILE_PREFIX, seqno++, suffix);
 }
 
+
 /*
  * Generate /save/to/path name.
  *
@@ -720,7 +721,7 @@ expand_save_filename(
 	base_name(buf_path, base_filename);
 
 	/* Build default path to save to */
-	if (!(ret = strfpath(cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : curr_group->attribute->savedir, buf, sizeof(buf), curr_group, FALSE)))
+	if (!(ret = strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : curr_group->attribute->savedir, buf, sizeof(buf), curr_group, FALSE)))
 		joinpath(buf, sizeof(buf), homedir, DEFAULT_SAVEDIR);
 
 	/* Join path and filename */
@@ -949,6 +950,7 @@ post_process_uud(
 						filename = strrchr(path, DIRSEP) + 1;	/* ptr to filename portion */
 						if ((fp_out = fopen(path, "w")) == NULL) {
 							perror_message(_(txt_cannot_open), path);
+							fclose(fp_in);
 							return;
 						}
 						state = MIDDLE;
@@ -2053,6 +2055,7 @@ tag_pattern(
 	}
 	return;
 }
+
 
 static int
 get_tagged(

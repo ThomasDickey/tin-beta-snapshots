@@ -3,10 +3,10 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-04-17
+ *  Updated   : 2016-10-10
  *  Notes     :
  *
- * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1409,9 +1409,9 @@ show_group_title(
 		*txt_threading[curr_group->attribute->thread_articles]);
 
 	/* article count */
-	if (cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit)
+	if ((cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit)
 		snprintf(tmp, sizeof(tmp), " %d/%d%c",
-			cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit, art_cnt,
+			(cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit, art_cnt,
 			(curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
 	else
 		snprintf(tmp, sizeof(tmp), " %d%c",

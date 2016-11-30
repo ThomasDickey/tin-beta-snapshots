@@ -856,6 +856,10 @@ o  document %G of strfpath() in man page
 
 Not yet classified
 ------------------
+o  abort HEAD/NEXT loop on 5xx responses to HEAD? (see
+   art.c:open_art_header())
+   [20161011 Urs Janssen <urs@tin.org>]
+
 o  follow $LC_COLLATE (e.g. add strxfrm() to subj_comp_*/from_comp_*)?
    [20160421 Urs Janssen <urs@tin.org>]
 
@@ -923,7 +927,7 @@ o  charset conversion fails when converting articles from multibyte charsets
 o  add "COMPRESS DEFLATE" support once it's official? this would require a
    rewrite of the code which reads data from the network (which should be
    done anyway for TLS) as we must handle null-bytes in the stream.
-   <https://tools.ietf.org/id/draft-murchison-nntp-compress-02.txt>
+   <https://tools.ietf.org/id/draft-murchison-nntp-compress-06.txt>
    [20100122 Urs Janssen <urs@tin.org>]
 
 o  the documentation suggests that novrootdir/$TIN_NOVROOTDIR defaults to
@@ -1055,7 +1059,7 @@ o  update gettext stuff to > gettext-0.12.1
 o  and pcre2 support (new API)
    <http://www.pcre.org/current/doc/html/>
 
-o  clean up included pcre stuff and update to >= pcre-8.38
+o  clean up included pcre stuff and update to >= pcre-8.39
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file

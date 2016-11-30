@@ -3,10 +3,10 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2016-07-29
+ *  Updated   : 2016-10-10
  *  Notes     :
  *
- * Copyright (c) 1992-2016 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2017 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -320,8 +320,8 @@ do_read_newsrc_active_file(
 	char *p;
 	char moderated[PATH_LEN];
 	int window = 0;
+	long processed = 0L;
 	t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
-	t_artnum processed = T_ARTNUM_CONST(0);
 	static char ngname[NNTP_GRPLEN + 1]; /* RFC 3977 3.1 limits group names to 497 octets */
 	struct t_group *grpptr;
 #ifdef NNTP_ABLE
@@ -503,6 +503,7 @@ do_read_newsrc_active_file(
 #endif /* NNTP_ABLE */
 }
 
+
 /*
  * Wrapper for do_read_newsrc_active_file() to handle
  * missing authentication
@@ -584,9 +585,9 @@ read_active_file(
 	FILE *fp;
 	char *ptr;
 	char moderated[PATH_LEN];
-	t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
 	long processed = 0L;
 	struct t_group *grpptr;
+	t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
 
 	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_news_active_file));
@@ -671,9 +672,9 @@ read_active_counts(
 	FILE *fp;
 	char *ptr;
 	char moderated[PATH_LEN];
-	t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
-	t_artnum processed = T_ARTNUM_CONST(0);
+	long processed = 0L;
 	struct t_group *grpptr;
+	t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
 
 	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_news_active_file));
@@ -794,8 +795,8 @@ read_news_active_file(
 			char moderated[PATH_LEN];
 			int r = 0, j = 0;
 			int i;
-			t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
 			struct t_group *grpptr;
+			t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
 			t_bool need_auth = FALSE;
 
 			*buff = '\0';
@@ -1272,7 +1273,7 @@ create_save_active_file(
 	if (no_write && file_size(local_save_active_file) != -1L)
 		return;
 
-	if (strfpath(cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : tinrc.savedir, group_path, sizeof(group_path), NULL, FALSE)) {
+	if (strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : tinrc.savedir, group_path, sizeof(group_path), NULL, FALSE)) {
 		wait_message(0, _(txt_creating_active));
 		print_active_head(local_save_active_file);
 
@@ -1280,7 +1281,7 @@ create_save_active_file(
 			group_path[strlen(group_path) - 1] = '\0';
 
 		fb = my_strdup(group_path);
-		make_group_list(local_save_active_file, cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : tinrc.savedir, fb, group_path);
+		make_group_list(local_save_active_file, (cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : tinrc.savedir, fb, group_path);
 		free(fb);
 	}
 }

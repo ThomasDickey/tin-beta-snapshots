@@ -1,5 +1,297 @@
 This file contains an overview of the changes made between
-tin 1.3BETA 950824 and tin 2.2.0, for recent changes look at CHANGES
+tin 1.3BETA 950824 and tin 2.4.0, for recent changes look at CHANGES
+
+-- 2.4.0 release 20160823 "Octomore" --
+
+U031) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      FIX. aclocal.m4, configure, Makefile, conf-tin
+
+U030) Matt Anton <tin@syrius.org>
+      ADD. updated french translation
+      FIX. fr.po
+
+U029) Corinna Vinschen <vinschen@redhat.com>
+      BUG. missing prototypes on cygwin
+      FIX. aclocal.m4
+
+U028) Dennis Preiser <dennis@d--p.de>
+      BUG. memleak on exit due to unexpected nntp connection vanishing
+      FIX. art.c, memory.c
+
+U027) Urs Janssen <urs@tin.org>
+      Dennis Preiser <dennis@d--p.de>
+      ADD. log reconnect limit reached (debian bug #832397)
+      ADD. document NNTP_ERROR_EXIT code (debian bug #832397)
+      ADD. give error messages on exit after curses has ended (debian bug #832397)
+      FIX. proto.h, active.c, header.c, lang.c, mail.c, main.c, misc.c
+           newsrc.c, nntplib.c, page.c, read.c, select.c, signal.c, thread.c
+           tin.[15]
+
+U026) Joe Hansen <joedalton2@yahoo.dk>
+      ADD. updated danish translation
+      FIX. da.po
+
+U025) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+-- 2.3.4 release 20160628 "Newton" --
+
+U024) Dennis Preiser <dennis@d--p.de>
+      ADD. hide strip_blanks option when using curses
+      ADD. LookupMessage ('L') to selection level if reading via NNTP
+      BUG. toggling inverse_okay didn't refresh Menu header
+      BUG. progress message when piping/printing articles looked odd
+      BUG. spurious revers mark in menu in !USE_CURSES case when toggling
+           ON/OFF options
+      BUG. select_format wasn't fully honored in
+           !USE_CURSES && !MULTIBYTE_ABLE case
+      BUG. strip_blanks (!USE_CURSES) wasn't always honored
+      FIX. config.c, feed.c, group.c, help.c, init.c, keymap.c, lang.c
+           options_menu.c, screen.c, select.c, thread.c, tincfg.tbl, extern.h
+           tin.h, tinrc.h, tin.1
+
+U023) Urs Janssen <urs@tin.org>
+      ADD. config.guess, config.sub update
+      ADD. LookupMessage ('L') to selection level if reading via NNTP
+      BUG. filter menu required = sign if filtering on exact line number
+      BUG. didn't compile with --disable-piping / -DDONT_HAVE_PIPING
+      BUG. missing checks for successful fopen of debug refs dump files
+      BUG. typos in debug message
+      FIX. active.c, filter.c, nntplib.c, refs.c, save.c, screen.c, select.c
+           xref.c, config.guess, config.sub, tin.1, de.po
+
+U022) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+-- 2.3.3 release 20160327 "Kinloch" --
+
+U021) Glenn Spell <glenn@gs.fay.nc.us>
+      BUG. progress message when piping/printing articles looked odd
+      FIX. extern.h, feed.c, lang.c, prompt.c, screen.c
+
+U020) Joe Hansen <joedalton2@yahoo.dk>
+      ADD. updated danish translation
+      FIX. da.po
+
+U019) Urs Janssen <urs@tin.org>
+      BUG. single quoted lines not always colored
+      BUG. -Q [-nqd] didn't work with servers announcing LIST COUNTS
+      BUG. NNTP cmd. arguments could exhaust RFC 3977 3.1 limit
+      BUG. -z leaked file descriptors and memory with no unread news present
+      BUG. possible null pointer dereference with gmtime() and localtime()
+      BUG. automatic auth on non RFC 3977 servers didn't update can_post status
+      BUG. memleak in buffer_to_local()
+      BUG. overlapping strcpy in join_references()
+      BUG. handle missing server name in xref overview data in xref-filters
+      BUG. didn't remove old SCOPES-[RW], REFS.dump, REFS.info before logging
+           to them
+      BUG. ! was disallowed in local part of From
+      REM. idna_decode() from headers_to_display
+      ADD. -D 128 to purge old debug files
+      ADD. avoid useless strdup()/free()/realloc()
+      ADD. updated german translation
+      ADD. config.guess, config.sub update
+      ADD. improve -u error message
+      ADD. don't resend "LIST [NEWSGROUPS|COUNTS] wildmat" on reconnect
+      ADD. warn about "-D 1" when not using nntp
+      ADD. remove superfluous abs(size_t - size_t)
+      ADD. removed fixed buffer from create_path()
+      ADD. --enable-break-long-lines is now default
+      ADD. avoid several comma operators (to silence -Wcomma)
+      ADD. updated german translation
+      FIX. active.c, art.c, auth.c, charset.c, cook.c, debug.c, filter.c
+           group.c, lang.c, mail.c, main.c, misc.c, nntplib.c, page.c, post.c
+           rfc2046.c, rfc2047.c, save.c, screen.c, thread.c, nntplib.h,de.po
+           tin.1, config.guess, config.sub, de.po
+
+U018) Dennis Preiser <dennis@d--p.de>
+      ADD. allow RFC 2231 parameter value continuation with gaps in numbering
+           and part numbering starting anywhere
+      ADD. RFC 2231 decoding of non us-ascii MIME-parameter values
+      ADD. fallback to RFC 2047 decoding of non us-ascii MIME-parameter values
+      ADD. omit charset info for non text/*-parts in the attachment menu
+      BUG. crash in RFC 2231 parameter value continuation if 0-part is missing
+      BUG. out of bounds access in buffer_to_local() on invalid multibyte
+           sequence
+      BUG. unknown evaluation order in reconnect loop
+      BUG. memory leak on unexpected end of file
+      BUG. Content-Disposition filename wasn't used if found before
+           Content-Type name
+      BUG. changing extquote_handling in 'M'enu did not immediately took effect
+      BUG. aborting exit of -w (post_article_and_exit) lead to endless
+           drain_buffer()-loop
+      BUG. delayed auth in read_newsrc_active_file() could lead to exit
+           due to empty group list
+      BUG. leaving a mailgroup might keep the cursor visible
+      BUG. when prompting for username/password string may lack termination
+      FIX. active.c, auth.c, cook.c, mail.c, misc.c, nntplib.c
+           options_menu.c, read.c, rfc2046.c, save.c, proto.h, rfc2046.h
+
+U017) Matt Anton <tin@syrius.org>
+      ADD. updated french translation
+      FIX. fr.po
+
+U016) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+-- 2.3.2 release 20151224 "Glenavullen" --
+
+U015) Stefan Assmann <sassmann@kpanic.de>
+      BUG. format string vulnerability with -Sv
+      FIX. save.c, select.c
+
+U014) Wei-Lun Chao <bluebat@member.fsf.org>
+      ADD. update traditional chinese translation
+      FIX. zh_TW.po
+
+U013) Mingye Wang <arthur200126@gmail.com>
+      ADD. simplified chinese translation
+      FIX. zh_CN.po
+
+U012) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      FIX. aclocal.m4
+
+U011) Dennis Preiser <dennis@d--p.de>
+      BUG. uue parts in mime articles were not mime decoded before uue
+           decoding
+      BUG. used freed fp if cooking of article fails
+      BUG. Cygwin >= 2.0 was treated as Cygwin < 1.7
+      BUG. ncurses >= 6.0 wasn't recognized
+      BUG. possible crash on initial reconnect loop when network is down
+      BUG. socket not closed on early exit
+      BUG. memory leak when aborting index_group() from select level
+      BUG. memory leak when reading mailgroup articles without Message-ID
+      BUG. memory leak in makecfg
+      BUG. in thread level space calculation for %F was wrong with
+           S'ubject or 'P'ercent threading active
+      BUG. in thread level show_author was ignored with S'ubject or 'P'ercent
+           threading active
+      BUG. thread level didn't show subject with 'P'ercent or 'M'ultibyte
+           threading active and '%T' present in thread_format
+      ADD. AttachSelect and AttachPipe now perform charset translation for
+           text/*-parts
+      ADD. handle CRLF spread over two lines in base64 decoding
+      ADD. options to color external quotes (extquote_handling,
+           extquote_regex, col_extquote)
+      ADD. skip over RFC 2231 language parameter in encoded words
+      ADD. RFC 2231 parameter value continuation
+      ADD. allow comments in Content-* headers
+      REM. groupname_max_length tinrc option (replaced by select_format)
+      FIX. extern.h, rfc2046.h, tcurses.h, tin.h, tinrc.h, version.h, art.c
+           attrib.c, color.c, config.c, cook.c, group.c, init.c, lang.c
+           main.c, makecfg.c, memory.c, misc.c, nntplib.c, options_menu.c
+           page.c, rfc2045.c, rfc2046.c, rfc2047.c, save.c, select.c, string.c
+           thread.c, tincfg.tbl, tin.[15], configure[.in]
+
+U010) Joe Hansen <joedalton2@yahoo.dk>
+      ADD. updated danish translation
+      FIX. da.po
+
+U009) Urs Janssen <urs@tin.org>
+      ADD. updated german translation
+      ADD. config.guess, config.sub update
+      ADD. fix hypothetic null pointer dereference
+      ADD. allow hand supplied Sender header with external news
+      ADD. avoid useless strdup()/free()
+      ADD. onion TLD to disallowed TLDs
+      ADD. removed redundant conditions in auth code
+      ADD. --enable-heapsort is now default
+      ADD. --enable-ipv6 is now default
+      REM. dead code
+      BUG. wrong format string in CLOSEDIR macro used
+      BUG. uncontrolled format string in nntp error messages.
+      BUG. tin_errno wasn't always cleared when aborting index_group()
+      BUG. in batch mode rebindable keys were malloced but not freed
+      FIX. auth.c, cook.c, group.c, lang.c, main.c, misc.c, nntplib.c
+           page.c, post.c, prompt.c, rfc2047.c, search.c, thread.c, policy.h
+           tin.h, de.po, config.guess, config.sub, configure[.in]
+           Makefile[.in]
+
+U008) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+-- 2.3.1 release 20141224 "Tallant" --
+
+U007) Dennis Preiser <dennis@d--p.de>
+      ADD. also validate "utf8" input
+      FIX. misc.c
+
+U006) Joe Hansen <joedalton2@yahoo.dk>
+      ADD. updated danish translation
+      FIX. da.po
+
+U005) Urs Janssen <urs@tin.org>
+      ADD. fix hypothetic null pointer dereference
+      ADD. config.guess, config.sub update
+      ADD. updated german translation
+      FIX. proto.h, filter.c, post.c, save.c, tin.1, config.guess, config.sub
+           de.po
+
+-- 2.3.0 release 20141003 "Glenfoyle" --
+
+U004) Joe Hansen <joedalton2@yahoo.dk>
+      ADD. updated danish translation
+      FIX. da.po
+
+U003) Urs Janssen <urs@tin.org>
+      ADD. !HAVE_LONG_FILE_NAMES code path to my_tmpfile()
+      ADD. allow TLDs with up to 14 chars (.cancerresearch) in
+           URL_REGEX and NEWS_REGEX
+      BUG. memleak in normalize() if libidn is used for normalization
+      BUG. '-d' didn't work as it was always overwritten by tinrc setting
+      ADD. config.sub update
+      FIX. attrib.c, config.c, filter.c, mail.c, my_tmpfile.c, string.c
+           config.sub, tin.[15]
+
+U002) Dennis Preiser <dennis@d--p.de>
+      BUG. in base64 encoding multibyte chars could have been broken into
+           multiple encoded words which is prohibited by RFC 2047
+      FIX. rfc2047.c
+
+U001) Matt Anton <tin@syrius.org>
+      ADD. updated french translation
+      FIX. fr.po
+
+-- 2.2.1 release 20140504 "Tober an Righ" --
+
+ 004) Dennis Preiser <dennis@d--p.de>
+      BUG. don't stop utf8 validation on first \n
+      BUG. possible buffer overrun in build_gline().
+      BUG. missing check for art->refptr in build_tline().
+      ADD. handle space-stuffing from RFC 2646 4.4
+      ADD. tweak URL_REGEX, don't stop before closing ) if there was an
+           opening ( in the URL.
+      ADD. allow editing of captured URL before spawning viewer
+      FIX. cook.c, misc.c, page.c, rfc2046.c, select.c, thread.c, rfc2046.h
+           tin.h
+
+ 003) Matt Anton <tin@syrius.org>
+      ADD. updated french translation
+      FIX. fr.po
+
+ 002) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+ 001) Urs Janssen <urs@tin.org>
+      ADD. config.guess, config.sub update
+      ADD. updated german translation
+      ADD. no-c-format hint for xgettext
+      BUG. hypothetic 1 byte buffer overrun in read_newsrc_active_file() with
+           newsgoup names longer than 511 bytes (RFC 3977 guarantees them to
+           be 497 bytes max).
+      BUG. hypothetic out of bounds write in msg_add_header() if more than
+           MAX_MSG_HEADERS are added automatically
+      BUG. don't null strings will illegal multibyte sequences, just replace
+           everything after the fist illegal sequence with ?
+      FIX. active.c, config.c, feed.c, lang.c, page.c, post.c, read.c,
+           rfc2046.c, string.c, config.guess, config.sub, de.po
 
 -- 2.2.0 release 20131224 "Lochindaal" --
 

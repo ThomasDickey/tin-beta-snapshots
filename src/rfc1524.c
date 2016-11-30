@@ -6,7 +6,7 @@
  *  Updated   : 2013-11-21
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
- * Copyright (c) 2000-2016 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2017 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -7,7 +7,7 @@
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
- * Copyright (c) 1997-2016 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2017 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

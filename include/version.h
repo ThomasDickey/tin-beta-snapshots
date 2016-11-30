@@ -6,7 +6,7 @@
  *  Updated   : 2013-11-21
  *  Notes     :
  *
- * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,10 +40,10 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.4.0"
+#		define VERSION		"2.4.1"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20160810"
-#	define RELEASENAME	"Newton"
+#	define RELEASEDATE	"20161130"
+#	define RELEASENAME	"Octomore"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.13"
 #	define ATTRIBUTES_VERSION	"1.0.8"

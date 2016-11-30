@@ -3,10 +3,10 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2016-04-12
+ *  Updated   : 2016-10-10
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -162,7 +162,7 @@ expand_feed_filename(
 	if ((ret == 0) || !(strrchr(outpath, DIRSEP))) {
 		char buf[PATH_LEN];
 
-		if (!strfpath(cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : curr_group->attribute->savedir, buf, sizeof(buf), curr_group, FALSE))
+		if (!strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : curr_group->attribute->savedir, buf, sizeof(buf), curr_group, FALSE))
 			joinpath(buf, sizeof(buf), homedir, DEFAULT_SAVEDIR);
 		joinpath(outpath, outpath_len, buf, path);
 		return FALSE;

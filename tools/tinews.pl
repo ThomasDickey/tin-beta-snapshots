@@ -4,7 +4,7 @@
 # signs the article and posts it.
 #
 #
-# Copyright (c) 2002-2016 Urs Janssen <urs@tin.org>,
+# Copyright (c) 2002-2017 Urs Janssen <urs@tin.org>,
 #                         Marc Brockschmidt <marc@marcbrockschmidt.de>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.40";
+my $version = "1.1.41";
 
 my %config;
 
@@ -59,10 +59,10 @@ $config{'NNTPPass'}		= '';	# password for nntp-auth, may be set via ~/.newsauth 
 $config{'PGPSigner'}	= '';	# sign as who?
 $config{'PGPPass'}		= '';	# pgp2 only
 $config{'PathtoPGPPass'}= '';	# pgp2, pgp5, pgp6 and gpg
-$config{'PGPPassFD'}	= 9;	# file descriptor used for input redirection of PathtoPGPPass, GPG, PGP5 and PGP6 only
+$config{'PGPPassFD'}	= 9;	# file descriptor used for input redirection of PathtoPGPPass; GPG1, GPG2, PGP5 and PGP6 only
 
 $config{'pgp'}			= '/usr/bin/pgp';	# path to pgp
-$config{'PGPVersion'}	= '2';	# Use 2 for 2.X, 5 for PGP5, 6 for PGP6 and GPG for GPG
+$config{'PGPVersion'}	= '2';	# Use 2 for 2.X, 5 for PGP5, 6 for PGP6, GPG or GPG1 for GPG1 and GPG2 for GPG2
 $config{'digest-algo'}	= 'MD5';# Digest Algorithm for GPG. Must be supported by your installation
 
 $config{'Interactive'}	= 'yes';# allow interactive usage
@@ -621,11 +621,19 @@ sub getpgpcommand {
 		} else {
 			die("$0: Passphrase is unknown!\n");
 		}
-	} elsif ($PGPVersion =~ m/GPG/io) {
+	} elsif ($PGPVersion =~ m/GPG1?$/io) {
 		if ($config{'PathtoPGPPass'}) {
-			$PGPCommand = $config{'pgp'}." --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-tty --batch --passphrase-fd ".$config{'PGPPassFD'}." ".$config{'PGPPassFD'}."<".$config{'PathtoPGPPass'}." --clearsign ".$config{'pgptmpf'}.".txt";
+			$PGPCommand = $config{'pgp'}." --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-tty --batch --passphrase-fd ".$config{'PGPPassFD'}." ".$config{'PGPPassFD'}."<".$config{'PathtoPGPPass'}." --clearsign ".$config{'pgptmpf'}.".txt";
 		} elsif ($config{'Interactive'}) {
-			$PGPCommand = $config{'pgp'}." --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-secmem-warning --no-batch --clearsign ".$config{'pgptmpf'}.".txt";
+			$PGPCommand = $config{'pgp'}." --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-secmem-warning --no-batch --clearsign ".$config{'pgptmpf'}.".txt";
+		} else {
+			die("$0: Passphrase is unknown!\n");
+		}
+	} elsif ($PGPVersion =~ m/GPG2$/io) {
+		if ($config{'PathtoPGPPass'}) {
+			$PGPCommand = $config{'pgp'}." --pinentry-mode loopback --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-tty --batch --passphrase-fd ".$config{'PGPPassFD'}." ".$config{'PGPPassFD'}."<".$config{'PathtoPGPPass'}." --clearsign ".$config{'pgptmpf'}.".txt";
+		} elsif ($config{'Interactive'}) {
+			$PGPCommand = $config{'pgp'}." --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-secmem-warning --no-batch --clearsign ".$config{'pgptmpf'}.".txt";
 		} else {
 			die("$0: Passphrase is unknown!\n");
 		}
@@ -1082,7 +1090,7 @@ off by default.
 "nntpserver password [user]" pairs for NNTP servers that require
 authorization. Any line that starts with "#" is a comment. Blank lines are
 ignored. This file should be readable only for the user as it contains the
-user's uncrypted password for reading news. First match counts. If no
+user's unencrypted password for reading news. First match counts. If no
 matching entry is found F<$HOME/.nntpauth> is checked.
 
 =item F<$HOME/.nntpauth>
@@ -1090,13 +1098,13 @@ matching entry is found F<$HOME/.nntpauth> is checked.
 "nntpserver user password" pairs for NNTP servers that require
 authorization. First match counts. Lines starting with "#" are skipped and
 blank lines are ignored. This file should be readable only for the user as
-it contains the user's uncrypted password for reading news.
+it contains the user's unencrypted password for reading news.
 F<$HOME/.newsauth> is checked first.
 
 =item F<$XDG_CONFIG_HOME/tinewsrc> F<$HOME/.config/tinewsrc> F<$HOME/.tinewsrc>
 
 "option=value" configuration pairs. Lines that start with "#" are ignored.
-If the file contains uncrypted passwords (e.g. NNTPPass or PGPPass), it
+If the file contains unencrypted passwords (e.g. NNTPPass or PGPPass), it
 should be readable for the user only.
 
 =back
@@ -1111,7 +1119,7 @@ security is an issue, don't use this script.
 =head1 NOTES
 
 B<tinews.pl> is designed to be used with B<pgp>(1)-2.6.3,
-B<pgp>(1)-5, B<pgp>(1)-6 and B<gpg>(1).
+B<pgp>(1)-5, B<pgp>(1)-6, B<gpg>(1) and B<gpg2>(1).
 
 B<tinews.pl> requires the following standard modules to be installed:
 B<Getopt::Long>(3pm), B<Net::NNTP>(3pm), B<Time::Local>(3pm) and
@@ -1128,7 +1136,7 @@ Marc Brockschmidt E<lt>marc@marcbrockschmidt.deE<gt>
 
 =head1 SEE ALSO
 
-B<pgp>(1), B<gpg>(1), B<pgps>(1), B<Digest::HMAC_SHA1>(3pm),
+B<pgp>(1), B<gpg>(1), B<gpg2>(1), B<pgps>(1), B<Digest::HMAC_SHA1>(3pm),
 B<Digest::SHA>(3pm), B<Digest::SHA1>(3pm), B<Getopt::Long>(3pm),
 B<MIME::Base64>(3pm), B<Net::NNTP>(3pm), B<Time::Local>(3pm),
 B<Term::Readline>(3pm)

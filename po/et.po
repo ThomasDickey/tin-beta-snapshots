@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin 2.3.4\n"
+"Project-Id-Version: tin 2.4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-30 11:25+0200\n"
-"PO-Revision-Date: 2016-06-28 22:41+0300\n"
+"POT-Creation-Date: 2016-10-12 17:33+0200\n"
+"PO-Revision-Date: 2016-08-10 16:15+0300\n"
 "Last-Translator: Toomas Soome <tsoome@me.com>\n"
 "Language-Team: Estonian <linux-ee@lists.eenet.ee>\n"
 "Language: et\n"
@@ -8187,11 +8187,11 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr "NNTP ühenduse viga. Lõpetan..."
 
-#: src/nntplib.c:856 src/nntplib.c:1839
+#: src/nntplib.c:856 src/nntplib.c:1833
 msgid "Rejoin current group\n"
 msgstr "Taasühinen jooksva grupiga\n"
 
-#: src/nntplib.c:864 src/nntplib.c:1847
+#: src/nntplib.c:864 src/nntplib.c:1841
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Lugesin (%s)\n"
@@ -8201,11 +8201,11 @@ msgstr "Lugesin (%s)\n"
 msgid "Resend last command (%s)\n"
 msgstr "Saada viimane käsk uuesti (%s)\n"
 
-#: src/nntplib.c:1486
+#: src/nntplib.c:1480
 msgid "CAPABILITIES did not announce READER"
 msgstr "CAPABILITIES ei sisalda READER"
 
-#: src/nntplib.c:1993
+#: src/nntplib.c:1987
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8287,7 +8287,7 @@ msgstr ""
 "vormingut kasutama ja järgnev tekst võib olla kummaline.\n"
 "\n"
 
-#: src/save.c:1065
+#: src/save.c:1067
 msgid "bytes"
 msgstr "baiti"
 

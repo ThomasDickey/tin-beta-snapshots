@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2016-07-29
+ *  Updated   : 2016-09-22
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -1199,7 +1199,7 @@ check_extensions(
 								nntp_caps.sasl |= SASL_LOGIN;
 							}
 						}
-					} else if (!strncasecmp(ptr, "COMPRESS", 8)) { /* draft-murchison-nntp-compress-05 */
+					} else if (!strncasecmp(ptr, "COMPRESS", 8)) { /* draft-murchison-nntp-compress-06 */
 						d = ptr + 8;
 						d = strpbrk(d, " \t");
 						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
@@ -1262,8 +1262,8 @@ mode_reader(
 		put_server("MODE READER");
 
 		/*
-		 * According to the latest NNTP draft (May 2005), MODE READER may only
-		 * return the following response codes:
+		 * According to RFC 3977 (5.3), MODE READER may only return the
+		 * following response codes:
 		 *
 		 *   200 (OK_CANPOST)     Hello, you can post
 		 *   201 (OK_NOPOST)      Hello, you can't post
@@ -1429,20 +1429,9 @@ nntp_open(
 	 * allowed to post after authentication issue a "MODE READER" again and
 	 * interpret the response code.
 	 */
-	if (force_auth_on_conn_open || (nntp_caps.type == CAPABILITIES && !nntp_caps.reader && (nntp_caps.authinfo_user || (nntp_caps.authinfo_sasl & SASL_PLAIN))))
-	{
-#	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", "nntp_open() authenticate()");
-#	endif /* DEBUG */
 
-		/*
-		 * switch mode before auth so we do not auth as a feeder.
-		 * don't use mode_reader() to prevent authenticaion to
-		 * kick in on a 481 "auth required" response and thus lead
-		 * to a 502 "already authenticated" error later on.
-		 */
-		if (nntp_caps.type == CAPABILITIES && nntp_caps.mode_reader) {
+	if (nntp_caps.type == CAPABILITIES && !nntp_caps.reader) {
+		if (nntp_caps.mode_reader) {
 			char buf[NNTP_STRLEN];
 
 #	ifdef DEBUG
@@ -1463,11 +1452,16 @@ nntp_open(
 			check_extensions();
 		}
 
-		if (!authenticate(nntp_server, userid, FALSE))	/* 3rd parameter is FALSE as we need to get prompted for username password here */
-			return -1;
+		if (force_auth_on_conn_open) {
+#	ifdef DEBUG
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "nntp_open() authenticate(force_auth_on_conn_open)");
+#	endif /* DEBUG */
 
-		if (nntp_caps.type == CAPABILITIES)
+			if (!authenticate(nntp_server, userid, FALSE))	/* 3rd parameter is FALSE as we need to get prompted for username password here */
+				return -1;
 			check_extensions();
+		}
 	}
 
 	if ((nntp_caps.type == CAPABILITIES && nntp_caps.mode_reader) || nntp_caps.type != CAPABILITIES) {

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 1.7.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-30 11:25+0200\n"
+"POT-Creation-Date: 2016-10-12 17:33+0200\n"
 "PO-Revision-Date: 2005-03-06 09:25+0200\n"
 "Last-Translator: Þebnem Korkmaz <sebnem_k@hotmail.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -8910,12 +8910,12 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr "NNTP sunucusuna baðlantý baþarýsýz %s. Çýkýyor..."
 
-#: src/nntplib.c:856 src/nntplib.c:1839
+#: src/nntplib.c:856 src/nntplib.c:1833
 #, fuzzy
 msgid "Rejoin current group\n"
 msgstr "Þu anki gruba tekrar katýl\n"
 
-#: src/nntplib.c:864 src/nntplib.c:1847
+#: src/nntplib.c:864 src/nntplib.c:1841
 #, fuzzy, c-format
 msgid "Read (%s)\n"
 msgstr "Oku (%s)\n"
@@ -8925,11 +8925,11 @@ msgstr "Oku (%s)\n"
 msgid "Resend last command (%s)\n"
 msgstr "Son komutu tekrr yolla (%s)\n"
 
-#: src/nntplib.c:1486
+#: src/nntplib.c:1480
 msgid "CAPABILITIES did not announce READER"
 msgstr ""
 
-#: src/nntplib.c:1993
+#: src/nntplib.c:1987
 msgid "MOTD: "
 msgstr ""
 
@@ -9003,7 +9003,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: src/save.c:1065
+#: src/save.c:1067
 msgid "bytes"
 msgstr "bayt"
 

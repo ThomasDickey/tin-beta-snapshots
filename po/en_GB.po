@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-30 11:25+0200\n"
+"POT-Creation-Date: 2016-10-12 17:33+0200\n"
 "PO-Revision-Date: 2013-12-24 01:00+0000\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: \n"
@@ -7401,11 +7401,11 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr ""
 
-#: src/nntplib.c:856 src/nntplib.c:1839
+#: src/nntplib.c:856 src/nntplib.c:1833
 msgid "Rejoin current group\n"
 msgstr ""
 
-#: src/nntplib.c:864 src/nntplib.c:1847
+#: src/nntplib.c:864 src/nntplib.c:1841
 #, c-format
 msgid "Read (%s)\n"
 msgstr ""
@@ -7415,11 +7415,11 @@ msgstr ""
 msgid "Resend last command (%s)\n"
 msgstr ""
 
-#: src/nntplib.c:1486
+#: src/nntplib.c:1480
 msgid "CAPABILITIES did not announce READER"
 msgstr ""
 
-#: src/nntplib.c:1993
+#: src/nntplib.c:1987
 msgid "MOTD: "
 msgstr ""
 
@@ -7490,7 +7490,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: src/save.c:1065
+#: src/save.c:1067
 msgid "bytes"
 msgstr ""
 

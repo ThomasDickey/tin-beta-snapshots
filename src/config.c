@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2016-04-17
+ *  Updated   : 2016-10-10
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -766,7 +766,7 @@ read_config_file(
 
 #ifdef HAVE_COLOR
 			if (match_boolean(buf, "use_color=", &tinrc.use_color)) {
-				use_color = cmdline.args & CMDLINE_USE_COLOR ? bool_not(tinrc.use_color) : tinrc.use_color;
+				use_color = (cmdline.args & CMDLINE_USE_COLOR) ? bool_not(tinrc.use_color) : tinrc.use_color;
 				break;
 			}
 #endif /* HAVE_COLOR */

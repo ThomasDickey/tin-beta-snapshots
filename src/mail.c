@@ -6,7 +6,7 @@
  *  Updated   : 2016-07-29
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2016 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2017 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
