@@ -1,13 +1,13 @@
 # German translations for the tin man pages.
 # This file is distributed under the same license as the tin package.
-# Urs Janssen <urs@tin.org>, 2008-2016.
+# Urs Janssen <urs@tin.org>, 2008-2017.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin-man 2.3.4\n"
+"Project-Id-Version: tin-man 2.4.1\n"
 "Report-Msgid-Bugs-To: translation@tin.org\n"
-"POT-Creation-Date: 2016-07-25 13:21+0200\n"
-"PO-Revision-Date: 2016-03-29 09:52+0200\n"
+"POT-Creation-Date: 2016-09-19 01:15+0200\n"
+"PO-Revision-Date: 2016-08-10 16:06+0200\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -24,14 +24,14 @@ msgstr "tin"
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9
 #, no-wrap
-msgid "March 27th, 2016"
-msgstr "27. März 2016"
+msgid "August 23rd, 2016"
+msgstr "23. August 2016"
 
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9
 #, no-wrap
-msgid "2.4.0"
-msgstr "2.4.0"
+msgid "2.4.1"
+msgstr "2.4.1"
 
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9
@@ -9364,7 +9364,7 @@ msgid ""
 "in double quotes (\"). Usernames must not be enclosed in double quotes and "
 "thus can't contain spaces or tabs. Any line that starts with \"#\" is a "
 "comment. Blank lines are ignored. This file should be readable only for the "
-"user as it contains the user's uncrypted password for reading news!"
+"user as it contains the user's unencrypted password for reading news!"
 msgstr ""
 
 #. type: TP
@@ -9386,7 +9386,7 @@ msgstr "B<Passwort>"
 
 #. type: Plain text
 #: doc/tin.5:267
-msgid "user's uncrypted password for reading news."
+msgid "user's unencrypted password for reading news."
 msgstr "Unverschlüsseltes Passwort für den Newsserver."
 
 #. type: TP

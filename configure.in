@@ -5,7 +5,7 @@ dnl Created   : 1995-08-24
 dnl Updated   : 2015-11-03
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2016 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2017 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.4.0
+VERSION=2.4.1
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)

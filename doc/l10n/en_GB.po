@@ -1,13 +1,13 @@
 # English (United Kingdom) translations for the tin man pages.
 # This file is distributed under the same license as the tin package.
-# Urs Janssen <urs@tin.org>, 2011-2016.
+# Urs Janssen <urs@tin.org>, 2011-2017.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin-man 2.3.4\n"
+"Project-Id-Version: tin-man 2.4.1\n"
 "Report-Msgid-Bugs-To: translation@tin.org\n"
-"POT-Creation-Date: 2016-07-25 13:21+0200\n"
-"PO-Revision-Date: 2016-06-06 14:10+0200\n"
+"POT-Creation-Date: 2016-09-19 01:15+0200\n"
+"PO-Revision-Date: 2016-08-10 16:06+0200\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: en_GB\n"
@@ -24,14 +24,14 @@ msgstr "tin"
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9
 #, no-wrap
-msgid "March 27th, 2016"
-msgstr "March 27th, 2016"
+msgid "August 23rd, 2016"
+msgstr "August 23rd, 2016"
 
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9
 #, no-wrap
-msgid "2.4.0"
-msgstr "2.4.0"
+msgid "2.4.1"
+msgstr "2.4.1"
 
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9
@@ -4884,10 +4884,10 @@ msgid ""
 "B<tin> will start fetching articles from your first unread minus absolute "
 "value of B<getart_limit>. Default is 0, which means no limit."
 msgstr ""
-"If B<getart_limit> is E<gt> 0 not more than the last B<getart_limit> articles/group "
-"are fetched from the server. If B<getart_limit> is E<lt> 0 B<tin> will start "
-"fetching articles from your first unread minus absolute value of "
-"B<getart_limit>. Default is 0, which means no limit."
+"If B<getart_limit> is E<gt> 0 not more than the last B<getart_limit> "
+"articles/group are fetched from the server. If B<getart_limit> is E<lt> 0 "
+"B<tin> will start fetching articles from your first unread minus absolute "
+"value of B<getart_limit>. Default is 0, which means no limit."
 
 #. type: TP
 #: doc/tin.1:1823
@@ -10574,14 +10574,14 @@ msgid ""
 "in double quotes (\"). Usernames must not be enclosed in double quotes and "
 "thus can't contain spaces or tabs. Any line that starts with \"#\" is a "
 "comment. Blank lines are ignored. This file should be readable only for the "
-"user as it contains the user's uncrypted password for reading news!"
+"user as it contains the user's unencrypted password for reading news!"
 msgstr ""
 "\"I<nntpserver> I<password> [I<user>]\" pairs for NNTP servers that require "
 "authorisation. If the password contains a space or a tab it must be enclosed "
 "in double quotes (\"). Usernames must not be enclosed in double quotes and "
 "thus can't contain spaces or tabs. Any line that starts with \"#\" is a "
 "comment. Blank lines are ignored. This file should be readable only for the "
-"user as it contains the user's uncrypted password for reading news!"
+"user as it contains the user's unencrypted password for reading news!"
 
 #. type: TP
 #: doc/tin.5:261 doc/tin.5:1087
@@ -10602,8 +10602,8 @@ msgstr "B<password>"
 
 #. type: Plain text
 #: doc/tin.5:267
-msgid "user's uncrypted password for reading news."
-msgstr "user's uncrypted password for reading news."
+msgid "user's unencrypted password for reading news."
+msgstr "user's unencrypted password for reading news."
 
 #. type: TP
 #: doc/tin.5:267
@@ -13140,10 +13140,10 @@ msgid ""
 "\\%tin>(1)  will start fetching articles from your first unread minus "
 "absolute value of B<getart_limit>. Default is 0, which means no limit."
 msgstr ""
-"If B<getart_limit> is E<gt> 0 not more than the last B<getart_limit> articles/group "
-"are fetched from the server. If B<getart_limit> is E<lt> 0 B<\\%tin>(1)  "
-"will start fetching articles from your first unread minus absolute value of "
-"B<getart_limit>. Default is 0, which means no limit."
+"If B<getart_limit> is E<gt> 0 not more than the last B<getart_limit> "
+"articles/group are fetched from the server. If B<getart_limit> is E<lt> 0 B<"
+"\\%tin>(1)  will start fetching articles from your first unread minus "
+"absolute value of B<getart_limit>. Default is 0, which means no limit."
 
 #. type: TP
 #: doc/tin.5:1524

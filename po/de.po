@@ -4,14 +4,14 @@
 # Kai Bojens <kbojens@on-luebeck.de>, 2000-2002.
 # Andreas Metzler <tin-dev@downhill.at.eu.org>, 2001-2003.
 # Christian Garbs <tin-dev@cgarbs.de>, 2003.
-# Urs Janssen <urs@tin.org>, 2004-2016
+# Urs Janssen <urs@tin.org>, 2004-2017
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin 2.4.0\n"
+"Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-30 11:25+0200\n"
-"PO-Revision-Date: 2016-07-230 12:15+0200\n"
+"POT-Creation-Date: 2016-10-12 17:33+0200\n"
+"PO-Revision-Date: 2016-09-29 09:15+0200\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -8418,11 +8418,11 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr "NNTP Verbindungsfehler. Beende..."
 
-#: src/nntplib.c:856 src/nntplib.c:1839
+#: src/nntplib.c:856 src/nntplib.c:1833
 msgid "Rejoin current group\n"
 msgstr "Betrete aktuelle Gruppe neu\n"
 
-#: src/nntplib.c:864 src/nntplib.c:1847
+#: src/nntplib.c:864 src/nntplib.c:1841
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Lese (%s)\n"
@@ -8432,11 +8432,11 @@ msgstr "Lese (%s)\n"
 msgid "Resend last command (%s)\n"
 msgstr "Sende letztes Kommando (%s) neu\n"
 
-#: src/nntplib.c:1486
+#: src/nntplib.c:1480
 msgid "CAPABILITIES did not announce READER"
 msgstr "CAPABILITIES hat READER nicht bekannt geben"
 
-#: src/nntplib.c:1993
+#: src/nntplib.c:1987
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8521,7 +8521,7 @@ msgstr ""
 "aussehen.\n"
 "\n"
 
-#: src/save.c:1065
+#: src/save.c:1067
 msgid "bytes"
 msgstr "Bytes"
 

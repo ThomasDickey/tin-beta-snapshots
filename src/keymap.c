@@ -6,7 +6,7 @@
  *  Updated   : 2016-05-25
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2016 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2017 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-07-29
+ *  Updated   : 2016-10-10
  *  Notes     :
  *
- * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1594,7 +1594,7 @@ _strfpath(
 					char buf[PATH_LEN];
 
 					is_mailbox = TRUE;
-					if (strfpath(cmdline.args & CMDLINE_MAILDIR ? cmdline.maildir : group->attribute->maildir, buf, sizeof(buf), group, FALSE)) {
+					if (strfpath((cmdline.args & CMDLINE_MAILDIR) ? cmdline.maildir : group->attribute->maildir, buf, sizeof(buf), group, FALSE)) {
 						if (*(format + 1) == '\0')				/* Just an = */
 							joinpath(tbuf, sizeof(tbuf), buf, group->name);
 						else
@@ -1622,7 +1622,7 @@ _strfpath(
 					/*
 					 * Start with the savedir name
 					 */
-					if (strfpath(cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : group->attribute->savedir, buf, sizeof(buf), group, FALSE)) {
+					if (strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : group->attribute->savedir, buf, sizeof(buf), group, FALSE)) {
 						char tmp[PATH_LEN];
 #ifdef HAVE_LONG_FILE_NAMES
 						my_strncpy(tmp, group->name, sizeof(tmp) - 1);

@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin-2.3.2\n"
+"Project-Id-Version: tin-2.4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-30 11:25+0200\n"
-"PO-Revision-Date: 2015-12-28 11:36+0100\n"
+"POT-Creation-Date: 2016-10-12 17:33+0200\n"
+"PO-Revision-Date: 2016-08-10 16:57+0100\n"
 "Last-Translator: Matt Anton <tin@syrius.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -820,7 +820,7 @@ msgstr "Champ article initial"
 #: src/lang.c:114
 #, c-format
 msgid "%s: Updating of index files not supported: cache_overview_files=%s"
-msgstr "%s : Màj des fichiers index non supportée: cache_overview_files=%s"
+msgstr "%s : Màj des fichiers index non supportée : cache_overview_files=%s"
 
 #: src/lang.c:115
 msgid "*** Beginning of article ***"
@@ -2326,13 +2326,12 @@ msgid "choose last group in list"
 msgstr "choisir le dernier groupe de la liste"
 
 #: src/lang.c:484
-#, fuzzy
 msgid "list groups which an article has been posted to (by Message-ID)"
-msgstr "aller à l'article via son Message-ID"
+msgstr "lister les groupes qui ont un article posté à (par Message-ID)"
 
 #: src/lang.c:485
 msgid " \t  (go to article if at least one of the groups is available)"
-msgstr ""
+msgstr " \t  (aller à l'article si au moins un groupe est disponible)"
 
 #: src/lang.c:487
 msgid "mark all articles in chosen group unread"
@@ -2788,23 +2787,22 @@ msgid "Lines %s  "
 msgstr "%s lignes "
 
 #: src/lang.c:596
-#, fuzzy
 msgid "Function not available."
-msgstr "Article indisponible"
+msgstr "Fonction indisponible."
 
 #: src/lang.c:597
 msgid "Not reading via NNTP."
-msgstr ""
+msgstr "Pas de lecture depuis NNTP."
 
 #: src/lang.c:598
-#, fuzzy, c-format
+#, c-format
 msgid "Group: %s"
-msgstr "Groupe %.*s..."
+msgstr "Groupe : %s"
 
 #: src/lang.c:599
-#, fuzzy, c-format
+#, c-format
 msgid "Groups: %s"
-msgstr "Groupe %.*s..."
+msgstr "Groupes : %s"
 
 #: src/lang.c:602
 msgid "Mail"
@@ -4894,9 +4892,9 @@ msgid "Printing..."
 msgstr "Impression..."
 
 #: src/lang.c:1159
-#, fuzzy, c-format
+#, c-format
 msgid "%d %s piped to \"%s\""
-msgstr "%d %s imprimé"
+msgstr "%d %s passé à \"%s\""
 
 #: src/lang.c:1160
 msgid "pipe article/thread/hot/pattern/tagged articles into command"
@@ -8326,7 +8324,7 @@ msgstr "Insérer l'en-tête 'X-Comment-To:'"
 #. TODO: lang.c
 #: src/main.c:801
 msgid "reading from local spool"
-msgstr ""
+msgstr "lecture depuis le spool local"
 
 #: src/misc.c:3857
 #, c-format
@@ -8355,11 +8353,11 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr "Erreur de connexion NNTP. Fermeture..."
 
-#: src/nntplib.c:856 src/nntplib.c:1839
+#: src/nntplib.c:856 src/nntplib.c:1833
 msgid "Rejoin current group\n"
 msgstr "Rejoindre le groupe actuel\n"
 
-#: src/nntplib.c:864 src/nntplib.c:1847
+#: src/nntplib.c:864 src/nntplib.c:1841
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Lecture (%s)\n"
@@ -8369,11 +8367,11 @@ msgstr "Lecture (%s)\n"
 msgid "Resend last command (%s)\n"
 msgstr "Réenvoyer la dernière commande (%s)\n"
 
-#: src/nntplib.c:1486
+#: src/nntplib.c:1480
 msgid "CAPABILITIES did not announce READER"
 msgstr "CAPABILITIES n'a pas annoncé READER"
 
-#: src/nntplib.c:1993
+#: src/nntplib.c:1987
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8456,7 +8454,7 @@ msgstr ""
 "ce qui suit peut paraître assez bizarre.\n"
 "\n"
 
-#: src/save.c:1065
+#: src/save.c:1067
 msgid "bytes"
 msgstr "octets"
 
@@ -8517,3 +8515,12 @@ msgstr "Fermeture anormale de Slrnface, code %d."
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Échec de Slrnface : %s."
+
+#~ msgid "Enter maximum length of newsgroup names displayed. <CR> sets."
+#~ msgstr "Largeur max. à afficher des noms des groupes. <RETOUR> valide."
+
+#~ msgid "Max. length of group names shown"
+#~ msgstr "Largeur max. des noms des groupes"
+
+#~ msgid "# Maximum length of the names of newsgroups displayed\n"
+#~ msgstr "# Largeur maximum à afficher des noms des groupes.\n"

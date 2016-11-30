@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2016-03-10
+ *  Updated   : 2016-10-10
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -2054,7 +2054,7 @@ post_article_done:
 			char a_mailbox[LEN];
 			char posted_msgs_file[PATH_LEN];
 
-			joinpath(posted_msgs_file, sizeof(posted_msgs_file), cmdline.args & CMDLINE_MAILDIR ? cmdline.maildir : (group ? group->attribute->maildir : tinrc.maildir), tinrc.posted_articles_file);
+			joinpath(posted_msgs_file, sizeof(posted_msgs_file), (cmdline.args & CMDLINE_MAILDIR) ? cmdline.maildir : (group ? group->attribute->maildir : tinrc.maildir), tinrc.posted_articles_file);
 			/*
 			 * log Message-ID if given in a_message_id,
 			 * add Date:, remove empty headers
@@ -2636,6 +2636,7 @@ skip_id(
 	}
 	return skipped;
 }
+
 
 /*
  * Checks if Message-ID has valid format
@@ -4016,6 +4017,7 @@ cancel_article(
 	/* NOTREACHED */
 	return redraw_screen;
 }
+
 
 #define FromSameUser	(strcasestr(from_name, arts[respnum].from))
 #ifndef FORGERY

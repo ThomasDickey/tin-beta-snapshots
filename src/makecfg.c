@@ -3,10 +3,10 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2015-11-25
+ *  Updated   : 2016-11-18
  *  Notes     : #defines and structs for options_menu.c
  *
- * Copyright (c) 1997-2016 Thomas E. Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2017 Thomas E. Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -81,7 +81,12 @@ static char *
 string_dup(
 	const char *string)
 {
-	return strcpy((char *) malloc(strlen(string) + 1), string);
+	char *buf;
+
+	if ((buf = malloc(strlen(string) + 1)) == NULL)
+		failed("malloc()");
+
+	return strcpy(buf, string);
 }
 
 static void
@@ -89,8 +94,10 @@ store_data(
 	const char *name,
 	const char *type)
 {
-	MYDATA *p = (MYDATA *) malloc(sizeof(MYDATA));
-	MYDATA *q;
+	MYDATA *p, *q;
+
+	if ((p = (MYDATA *) malloc(sizeof(MYDATA))) == NULL)
+		failed("malloc() failed");
 
 	p->link = 0;
 	p->name = string_dup(name);

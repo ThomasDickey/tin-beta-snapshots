@@ -452,7 +452,7 @@ static void
 gl_kill_back_word(
 	void)
 {
-	int i, cur;
+	int i, j, cur;
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	/* delete spaces */
@@ -482,12 +482,16 @@ gl_kill_back_word(
 
 	i++;
 	if (i != gl_pos) {
+		j = i;
 		cur = gl_pos;
 		gl_fixup(-1, i);
+
+		while (gl_buf[cur])
+			gl_buf[j++] = gl_buf[cur++];
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		wcscpy(&gl_buf[i], &gl_buf[cur]);
+ 		gl_buf[j] = (wchar_t) '\0';
 #else
-		strcpy(&gl_buf[i], &gl_buf[cur]);
+		gl_buf[j] = '\0';
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		gl_fixup(i, i);
 	} else

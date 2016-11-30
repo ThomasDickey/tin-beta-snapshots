@@ -6,7 +6,7 @@
  *  Updated   : 2013-11-12
  *  Notes     : PGP support
  *
- * Copyright (c) 1995-2016 Steven J. Madsen <steve@erinet.com>
+ * Copyright (c) 1995-2017 Steven J. Madsen <steve@erinet.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

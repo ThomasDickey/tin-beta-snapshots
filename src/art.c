@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-08-06
+ *  Updated   : 2016-10-10
  *  Notes     :
  *
- * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -212,7 +212,7 @@ setup_hard_base(
 #ifdef NNTP_ABLE
 		char buf[NNTP_STRLEN];
 		char line[NNTP_STRLEN];
-		int getart_limit = cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit;
+		int getart_limit = (cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit;
 		FILE *fp;
 		t_artnum last, start, count = 0, j = 0;
 		static t_bool skip_listgroup = FALSE;
@@ -433,7 +433,7 @@ index_group(
 	min = grpmenu.max ? base[0] : group->xmin;
 	max = grpmenu.max ? base[grpmenu.max - 1] : min - 1;
 
-	getart_limit = cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit;
+	getart_limit = (cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit;
 
 	if (getart_limit > 0) {
 		if (grpmenu.max && (grpmenu.max > getart_limit))
@@ -629,6 +629,13 @@ open_art_header(
 		snprintf(buf, sizeof(buf), "HEAD %"T_ARTNUM_PFMT, art);
 		if ((fp = nntp_command(buf, OK_HEAD, NULL, 0)) != NULL)
 			return fp;
+
+		/*
+		 * TODO:
+		 * shall we stop on 5xx?, i.e JamNNTPd/2 1.3 responds with
+		 * "503 Access denied" instead of 480 but NEXT still works, so
+		 * tin loop over all articles without getting useful data
+		 */
 
 		/*
 		 * HEAD failed, try to find NEXT
@@ -2018,7 +2025,7 @@ write_overview(
 	/*
 	 * Can't write or caching is off or getart_limit is set
 	 */
-	if (no_write || !tinrc.cache_overview_files || (cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit) != 0)
+	if (no_write || !tinrc.cache_overview_files || ((cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit) != 0)
 		return;
 
 	if ((fp = open_xover_fp(group, "w", T_ARTNUM_CONST(0), T_ARTNUM_CONST(0), FALSE)) == NULL)
@@ -2757,7 +2764,7 @@ find_artnum(
 /*----------------------------- Overview handling -----------------------*/
 /* TODO: use
  *           setlocale(LC_ALL, "POSIX"); setlocale(LC_TIME, "POSIX");
- *           my_strftime(date, sizeof(date) -1, "%d %b %Y %H:%M:%S GMT",gmtime(&secs));
+ *           my_strftime(date, sizeof(date) -1, "%d %b %Y %H:%M:%S GMT", gmtime(&secs));
  *       instead?
  */
 static char *
@@ -2772,7 +2779,7 @@ print_date(
 	};
 
 	if ((tm = gmtime(&secs)) != NULL)
-		snprintf(date, sizeof(date), "%02d %s %04d %02d:%02d:%02d GMT",
+		snprintf(date, sizeof(date), "%02d %.3s %04d %02d:%02d:%02d GMT",
 				tm->tm_mday,
 				months_a[tm->tm_mon],
 				tm->tm_year + 1900,

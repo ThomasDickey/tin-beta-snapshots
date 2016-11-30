@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-07-29
+ *  Updated   : 2016-10-10
  *  Notes     :
  *
- * Copyright (c) 1991-2016 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -640,6 +640,10 @@ show_selection_page(
 
 	show_mini_help(SELECT_LEVEL);
 
+#ifdef NNTP_ABLE
+	did_reconnect = FALSE;
+#endif /* NNTP_ABLE */
+
 	if (selmenu.max <= 0) {
 		info_message(_(txt_no_groups));
 		return;
@@ -806,7 +810,7 @@ build_gline(
 					int getart_limit;
 					t_artnum num_unread;
 
-					getart_limit = cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit;
+					getart_limit = (cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit;
 					num_unread = active[my_group[i]].newsrc.num_unread;
 					if (getart_limit > 0 && getart_limit < num_unread)
 						num_unread = getart_limit;
@@ -858,6 +862,7 @@ static void
 sync_active_file(
 	void)
 {
+	wait_message(0, _(txt_reading_news_newsrc_file));
 	force_reread_active_file = TRUE;
 	resync_active_file();
 }

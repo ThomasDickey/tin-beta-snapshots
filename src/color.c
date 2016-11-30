@@ -11,7 +11,7 @@
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
- * Copyright (c) 1995-2016 Roland Rosenfeld <roland@spinnaker.rhein.de>
+ * Copyright (c) 1995-2017 Roland Rosenfeld <roland@spinnaker.rhein.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
