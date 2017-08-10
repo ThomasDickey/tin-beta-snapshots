@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2012-02-20
+ *  Updated   : 2017-01-05
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -689,13 +689,13 @@ my_fprintf(
 void
 my_fputc(
 	int ch,
-	FILE *fp)
+	FILE *stream)
 {
 	TRACE(("my_fputc(%s)", tin_tracechar(ch)));
 	if (cmd_line) {
 		if (_inraw && ch == '\n')
-			fputc('\r', fp);
-		fputc(ch, fp);
+			fputc('\r', stream);
+		fputc(ch, stream);
 	} else
 		addch((unsigned char) ch);
 }
@@ -704,15 +704,15 @@ my_fputc(
 void
 my_fputs(
 	const char *str,
-	FILE *fp)
+	FILE *stream)
 {
 	TRACE(("my_fputs(%s)", _nc_visbuf(str)));
 	if (cmd_line) {
 		if (_inraw) {
 			while (*str)
-				my_fputc(*str++, fp);
+				my_fputc(*str++, stream);
 		} else
-			fputs(str, fp);
+			fputs(str, stream);
 	} else {
 		addstr(str);
 	}

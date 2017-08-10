@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-10-10
+ *  Updated   : 2017-03-28
  *  Notes     :
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -67,7 +67,7 @@ static void subscribe_pattern(const char *prompt, const char *message, const cha
 static void sync_active_file(void);
 static void yank_active_file(void);
 #ifdef NNTP_ABLE
-	static char *lookup_msgid(char *id);
+	static char *lookup_msgid(char *msgid);
 	static int show_article_by_msgid(void);
 	static struct t_group *get_group_from_list(char *newsgroups);
 #endif /* NNTP_ABLE */
@@ -1239,8 +1239,6 @@ read_groups(
 
 	if (!need_reread_active_file())
 		show_selection_page();
-
-	return;
 }
 
 
@@ -1451,10 +1449,10 @@ lookup_msgid(
 					case OK_HEAD:
 					case OK_HDR:
 						while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
-#       ifdef DEBUG
+#		ifdef DEBUG
 							if (debug & DEBUG_NNTP)
 								debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
-#       endif /* DEBUG */
+#		endif /* DEBUG */
 
 							if (ret == OK_HEAD) { /* RFC 2980 ("%s %s", id, grp) */
 								if (!strncmp(ptr, msgid, strlen(msgid))) { /* INN, MPNews, Leafnode, Cnews nntpd */
@@ -1482,10 +1480,10 @@ lookup_msgid(
 							return x;
 
 						if (!r) {
-#       ifdef DEBUG
+#		ifdef DEBUG
 								if (debug & DEBUG_NNTP)
 									debug_print_file("NNTP", "lookup_msgid(%s) response empty or not recognized", buf);
-#       endif /* DEBUG */
+#		endif /* DEBUG */
 								if (!nntp_caps.xpat)
 									info_message(_(txt_lookup_func_not_available));
 						}
@@ -1513,10 +1511,10 @@ lookup_msgid(
 				switch (ret) {
 					case OK_HEAD:
 						while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
-#ifdef DEBUG
+#		ifdef DEBUG
 							if (debug & DEBUG_NNTP)
 								debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
-#endif /* DEBUG */
+#		endif /* DEBUG */
 							if (!strncmp(ptr, msgid, strlen(msgid)))
 								r = ptr + strlen(msgid) + 1;
 
@@ -1528,10 +1526,10 @@ lookup_msgid(
 							return x;
 
 						if (!r) {
-#       ifdef DEBUG
+#		ifdef DEBUG
 								if (debug & DEBUG_NNTP)
 									debug_print_file("NNTP", "lookup_msgid(%s) response empty or not recognized", buf);
-#       endif /* DEBUG */
+#		endif /* DEBUG */
 								info_message(_(txt_lookup_func_not_available));
 								/* nntp_caps.xpat = FALSE; */ /* ? */
 						}

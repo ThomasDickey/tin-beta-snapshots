@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2016-03-10
+ *  Updated   : 2017-03-28
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2017 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -253,8 +253,6 @@ convert_iso2asc(
 		}
 	}
 	*asc = '\0';
-
-	return;
 }
 
 

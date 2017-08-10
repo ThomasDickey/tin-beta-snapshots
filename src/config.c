@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2016-10-10
+ *  Updated   : 2017-08-02
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
@@ -188,6 +188,14 @@ read_config_file(
 		case 'c':
 			if (match_boolean(buf, "cache_overview_files=", &tinrc.cache_overview_files))
 				break;
+
+#ifdef USE_CANLOCK
+			if (match_boolean(buf, "cancel_locks=", &tinrc.cancel_locks))
+				break;
+
+			if (match_list(buf, "cancel_lock_algo=", txt_cancel_lock_algos, &tinrc.cancel_lock_algo))
+				break;
+#endif /* USE_CANLOCK */
 
 			if (match_boolean(buf, "catchup_read_groups=", &tinrc.catchup_read_groups))
 				break;
@@ -1174,6 +1182,14 @@ write_config_file(
 	fprintf(fp, "%s", _(txt_inews_prog.tinrc));
 	fprintf(fp, "inews_prog=%s\n\n", tinrc.inews_prog);
 
+#ifdef USE_CANLOCK
+	fprintf(fp, "%s", _(txt_cancel_locks.tinrc));
+	fprintf(fp, "cancel_locks=%s\n\n", print_boolean(tinrc.cancel_locks));
+
+	fprintf(fp, "%s", _(txt_cancel_lock_algo.tinrc));
+	fprintf(fp, "cancel_lock_algo=%s\n\n", txt_cancel_lock_algos[tinrc.cancel_lock_algo]);
+#endif /* USE_CANLOCK */
+
 	fprintf(fp, "%s", _(txt_auto_list_thread.tinrc));
 	fprintf(fp, "auto_list_thread=%s\n\n", print_boolean(tinrc.auto_list_thread));
 
@@ -1848,9 +1864,21 @@ rc_update(
 					}
 					break;
 				}
-				/* simple rename */
-				if (match_string(buf, "default_sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile)))
+				/* 1. simple rename
+				 *
+				 * 2. previous versions has always passed groupname to external
+				 *    commands, now we look for %G
+				 */
+				if (match_string(buf, "default_sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile))) {
+					if (tinrc.sigfile[0] == '!') {
+						char *newbuf = my_malloc(sizeof(tinrc.sigfile) + 4);
+
+						sprintf(newbuf, "%s %s", tinrc.sigfile, "%G");
+						my_strncpy(tinrc.sigfile, newbuf, sizeof(tinrc.sigfile) - 1);
+						free(newbuf);
+					}
 					break;
+				}
 				break;
 
 			case 'h':
@@ -1888,7 +1916,7 @@ rc_update(
 					break;
 				if (match_boolean(buf, "show_last_line_prev_page=", &show_last_line_prev_page))
 					break;
-				if (match_boolean(buf, "show_lines=", &show_lines)){
+				if (match_boolean(buf, "show_lines=", &show_lines)) {
 					show_lines_or_score = TRUE;
 					break;
 				}
@@ -1943,7 +1971,7 @@ rc_update(
 		tinrc.hide_uue = 1;
 
 	if (keep_posted_articles)
-		strncpy(tinrc.posted_articles_file, "posted", sizeof(tinrc.posted_articles_file) - 1);
+		STRCPY(tinrc.posted_articles_file, "posted");
 
 	tinrc.quote_style = (compress_quotes ? QUOTE_COMPRESS : 0) + (quote_empty_lines ? QUOTE_EMPTY : 0) + (quote_signatures ? QUOTE_SIGS : 0);
 
@@ -1976,13 +2004,13 @@ rc_update(
 		tinrc.scroll_lines = -1;
 
 	if (use_builtin_inews)
-		strncpy(tinrc.inews_prog, INTERNAL_CMD, sizeof(tinrc.inews_prog) - 1);
+		STRCPY(tinrc.inews_prog, INTERNAL_CMD);
 
 	if (use_mailreader_i)
 		tinrc.interactive_mailer = INTERACTIVE_WITHOUT_HEADERS;
 
 	if (!use_metamail || getenv("NOMETAMAIL") != NULL)
-		strncpy(tinrc.metamail_prog, INTERNAL_CMD, sizeof(tinrc.metamail_prog) - 1);
+		STRCPY(tinrc.metamail_prog, INTERNAL_CMD);
 	else
 		my_strncpy(tinrc.metamail_prog, METAMAIL_CMD, sizeof(tinrc.metamail_prog) - 1);
 
@@ -2015,7 +2043,23 @@ rc_post_update(
 			case 'g':
 				if (match_integer(buf, "groupname_max_length=", &groupname_max_length, 132))
 					break;
+				break;
 
+			case 's':
+				/*
+				 * previous versions has always passed groupname to external
+				 * commands, now we look for %G
+				 */
+				if (match_string(buf, "sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile))) {
+					if (tinrc.sigfile[0] == '!') {
+						char *newbuf = my_malloc(sizeof(tinrc.sigfile) + 4);
+
+						sprintf(newbuf, "%s %s", tinrc.sigfile, "%G");
+						my_strncpy(tinrc.sigfile, newbuf, sizeof(tinrc.sigfile) - 1);
+						free(newbuf);
+					}
+					break;
+				}
 				break;
 
 			default:

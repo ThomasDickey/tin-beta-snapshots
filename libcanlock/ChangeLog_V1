@@ -1,0 +1,12 @@
+VERSION 1:
+
+24 Sep 1998
+        - Now trying to be compatible with an updated cancel lock draft.
+        - We now generate the lock by hashing the Base64 encoding of the
+          cancel key, instead of the underlying binary digest.
+        - the xxx_key() and xxx_lock() functions now add the md5: or sha1:
+          tag to the lock.
+        - lock_strip_alpha() now discards pesky clue strings and normalizes
+          the case of type codes.
+        - the old lock_strip() that returned numeric codes will be going
+          away.

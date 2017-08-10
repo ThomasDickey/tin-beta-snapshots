@@ -489,7 +489,7 @@ gl_kill_back_word(
 		while (gl_buf[cur])
 			gl_buf[j++] = gl_buf[cur++];
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
- 		gl_buf[j] = (wchar_t) '\0';
+		gl_buf[j] = (wchar_t) '\0';
 #else
 		gl_buf[j] = '\0';
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */

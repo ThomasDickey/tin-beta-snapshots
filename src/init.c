@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2016-04-17
+ *  Updated   : 2017-05-03
  *  Notes     :
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
@@ -107,7 +107,7 @@ char userid[PATH_LEN];
 	char mailgroups_file[PATH_LEN];
 #endif /* HAVE_MH_MAIL_HANDLING */
 #ifndef NNTP_ONLY
-	char novfilename[PATH_LEN];		/* file name of a single nov index file */
+	char novfilename[NAME_LEN + 1];		/* file name of a single nov index file */
 	char novrootdir[PATH_LEN];		/* root directory of nov index files */
 #endif /* !NNTP_ONLY */
 
@@ -400,6 +400,10 @@ struct t_config tinrc = {
 	FALSE,		/* extquote_handling */
 #endif /* HAVE_COLOR */
 	"",		/* inews_prog */
+#ifdef USE_CANLOCK
+	TRUE,		/* cancel_locks */
+	0,			/* cancel_lock_algo, sha1 */
+#endif /* USE_CANLOCK */
 	INTERACTIVE_NONE,		/* interactive_mailer */
 	FALSE,		/* use_mouse */
 #ifdef HAVE_KEYPAD

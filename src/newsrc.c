@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-07-29
+ *  Updated   : 2017-05-23
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -804,7 +804,7 @@ parse_bitmap_seq(
 	if (debug & DEBUG_NEWSRC) {
 		char buf[NEWSRC_LINE];
 
-		snprintf(buf, sizeof(buf), "Parsing [%s%c %.*s]", group->name, SUB_CHAR(group->subscribed), (int) (NEWSRC_LINE - strlen(group->name) - 20), ptr);
+		snprintf(buf, sizeof(buf), "Parsing [%s%c %.*s]", group->name, SUB_CHAR(group->subscribed), (int) (NEWSRC_LINE - strlen(group->name) - 14), BlankIfNull(ptr));
 		debug_print_comment(buf);
 		debug_print_bitmap(group, NULL);
 	}

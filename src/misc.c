@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-10-10
+ *  Updated   : 2017-06-13
  *  Notes     :
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1139,9 +1139,9 @@ create_index_lock_file(
 	time_t epoch;
 
 	if ((fp = fopen(the_lock_file, "r")) != NULL) {
-		fgets(buf, (int) sizeof(buf), fp);
+		err = (fgets(buf, (int) sizeof(buf), fp) == NULL);
 		fclose(fp);
-		error_message(2, "\n%s: Already started pid=[%d] on %s", tin_progname, atoi(buf), buf + 8);
+		error_message(2, "\n%s: Already started pid=[%d] on %s", tin_progname, err ? 0 : atoi(buf), err ? "-" : buf + 8);
 		free(tin_progname);
 		giveup();
 	}
@@ -3790,6 +3790,10 @@ idna_decode(
 		UChar dest[1024];
 		UErrorCode err = U_ZERO_ERROR;
 		char *s;
+#ifdef HAVE_LIBICUUC_46_API
+		UIDNA *uts46;
+		UIDNAInfo info = UIDNA_INFO_INITIALIZER;
+#endif /* HAVE_LIBICUUC_46_API */
 
 		if ((s = strrchr(out, '@')))
 			s++;
@@ -3797,18 +3801,25 @@ idna_decode(
 			s = out;
 
 		src = char2UChar(s);
+#ifndef HAVE_LIBICUUC_46_API
 		uidna_IDNToUnicode(src, -1, dest, 1023, UIDNA_USE_STD3_RULES, NULL, &err);
+#else
+		uts46 = uidna_openUTS46(UIDNA_USE_STD3_RULES, &err);
+		uidna_nameToUnicode(uts46, src, u_strlen(src), dest, 1023, &info, &err);
+		uidna_close(uts46);
+#endif /* !HAVE_LIBICUUC_46_API */
 		free(src);
 		if (!(U_FAILURE(err))) {
 			char *t;
 
 			*s = '\0'; /* cut off domainpart */
-			s = UChar2char(dest); /* convert domainpart */
-			t = my_malloc(strlen(out) + strlen(s) + 1);
-			sprintf(t, "%s%s", out, s);
-			free(s);
-			free(out);
-			out = t;
+			if ((s = UChar2char(dest)) != NULL) { /* convert domainpart */
+				t = my_malloc(strlen(out) + strlen(s) + 1);
+				sprintf(t, "%s%s", out, s);
+				free(s);
+				free(out);
+				out = t;
+			}
 		}
 	}
 #	else
@@ -4107,7 +4118,6 @@ draw_mark_selected(
 	StartInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
 	my_fputc(tinrc.art_marked_selected, stdout);
 	EndInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
-	return;
 }
 
 

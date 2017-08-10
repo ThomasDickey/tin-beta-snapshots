@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2016-08-23
+.\" Updated   : 2017-08-02
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "23. August 2016" 2.4.1 "Usenet Newsreader"
+.TH tin 1 "24. Dezember 2016" 2.4.2 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -56,7 +56,7 @@ ausgewählte Gruppe wird durch Drücken von '\fB<CR>\fP' betreten.
 .\"
 Durch Drücken der \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') Taste wird
 die nächste Newsgruppe mit ungelesenen Artikeln betreten.
-.SH EXIT\-STATUS
+.SH RÜCKGABEWERT
 Interaktiver\-Modus:
 .RS +.5i
 .TP 
@@ -114,7 +114,7 @@ Keine Gruppenbeschreibungen und die Server Meldung des Tages laden
 .TP 
 \fB\-D\fP\fI Debuggrad\fP
 Debuggrad angeben (1 = NNTP, 2 = Filter, 4 = newsrc, 8 = Threading, 16 =
-Speicher, 32 = attributes, 64 = Diverses, 128 = vorhandene Debugdatein
+Speicher, 32 = attributes, 64 = Diverses, 128 = vorhandene Debugdateien
 löschen).
 .TP 
 \fB\-f\fP\fI Datei\fP
@@ -221,8 +221,8 @@ Ausführliche Ausgabe für \*(rq\fB\-c\fP\*(rq, \*(rq\fB\-M\fP\*(rq, \*(rq\fB\-N
 Versionsinformationen ausgeben.
 .TP 
 \fB\-w\fP
-Schnell\-Modus um nur einen Artikel zu posten. Nach Möglichkeit mit \*(rq\fB\-n\fP\*(rq
-kombinieren.
+Schnell\-Modus um nur einen Artikel zu posten. Diese Option beinhaltet
+\&\*(rq\fB\-d\fP\*(rq. Nach Möglichkeit mit \*(rq\fB\-n\fP\*(rq kombinieren.
 .TP 
 \fB\-x\fP
 Sie können keine Artikel veröffentlichen, wenn Sie diese Option verwenden.
@@ -251,12 +251,12 @@ command. Any changes are written to
 "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" and \fB\%tin\fP(5).
 .PP
 Eine Liste von Gruppen kann nach den anderen Befehlszeilenoptionen angegeben
-werden. Dies kann nützlich sein, wenn Sie eine handverlesenen Untermenge der
-aktiven Newsgroups einblenden oder abonnieren wollen. möchten. Siehe den
-Abschnitt "NEWSGROUP LISTEN & WILDCARDS" für die Arten von Muster, die
-\fBtin\fP versteht.
+werden. Dies kann nützlich sein, falls Sie eine handverlesene Untermenge der
+aktiven Newsgruppen einblenden oder abonnieren möchten. Siehe den Abschnitt
+"NEWSGROUP LISTEN & WILDCARDS" für die Arten von Muster, die \fBtin\fP
+versteht.
 .PP
-Wenn Sie einen einzelnen Gruppennamen oder eine Wildcard,die nur auf eine
+Wenn Sie einen einzelnen Gruppennamen oder eine Wildcard, die nur auf eine
 einzelne Gruppe passt angeben, dann wird automatisch in diese Gruppe
 betreten. Andernfalls wird der normale Auswahlbildschirm angezeigt mit allen
 passenden zusätzlichen Gruppen.
@@ -811,8 +811,8 @@ even those not currently yanked in.
 Artikel/Gruppe Beschränkungen ein\-/ausschalten.
 .TP 
 \fBToggleInfoLastLine 'i'\fP
-Display the subject of the first article in the current thread in the last
-line.
+Betreff des ersten Artikels im aktuellen Thread in der letzten Zeile
+anzeigen.
 .TP 
 \fBToggleInverseVideo 'I'\fP
 (De)aktiviere inverse Darstellung.
@@ -1081,7 +1081,7 @@ articles are present, a prompt asks how to proceed.
 \fBMarkThdUnread 'Z'\fP
 .\"--------------------------------------------------------------------
 .\"
-Alle Artikel im aktuellen Thread as ungelesen markieren.
+Alle Artikel im aktuellen Thread als ungelesen markieren.
 .SS "ARTICLE VIEWER COMMANDS"
 .\" FIXME - refine descriptions
 .TP  10
@@ -1469,7 +1469,7 @@ the name of the corresponding setting in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP.
 .TP  4
 \fBLange Newsgruppennamen abkürzen (abbreviate_groupname)\fP
-Falls On werden, sofern nötig, lange Newsgruppennamen in der Auswahl\- und
+Falls ON werden, sofern nötig, lange Newsgruppennamen in der Auswahl\- und
 Artikelebene wie folgt abgekürzt: news.software.readers \->
 n.software.readers \-> n.s.readers \-> n.s.r. Voreinstellung ist OFF.
 .TP 
@@ -1555,6 +1555,15 @@ displayed after composing an article. Default is ON.
 If ON, create local copies of NNTP overview files. This can be used to
 considerably speed up accessing large groups when using a slow connection.
 See also "INDEX FILES". Default is OFF.
+.TP 
+\fBCancel\-Lock/Cancel\-Key Header erzeugen (cancel_locks)\fP
+Falls ON erzeuge Cancel\-Locks. Nur vorhanden falls tin mit
+Cancel\-Lock\-Unterstützung gebaut wurde. Voreinstellung ist ON.
+.TP 
+\fBHash\-Algorithmus für Cancel\-Lock/Cancel\-Key (cancel_lock_algo)\fP
+Diesen Hash\-Algorithmus für Cancel\-Locks verwenden. Nur vorhanden falls tin
+mit Cancel\-Lock\-Unterstützung gebaut wurde. Gültige Werte sind sha1, sha256
+und sha512. Voreinstellung ist sha1.
 .TP 
 \fBCatchup der Gruppen beim Beenden (catchup_read_groups)\fP
 .\"
@@ -2259,9 +2268,10 @@ The path that specifies the signature file to use when posting, following up
 to or replying to an article. If the path is a directory then the signature
 will be randomly generated from files that are in the specified
 directory. If the path starts with a ! the program the path points to will
-be executed to generate a signature. \fBtin\fP will pass the name of the
-current newsgroup as argument to the program. \-\-none will suppress any
-signature.  Default is \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP.
+be executed to generate a signature. In order to pass the group name to the
+program, %G can be specified. This will be replaced by the name of the
+current newsgroup. \-\-none will suppress any signature.  Default is
+\fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP.
 .TP 
 \fBSignatur beim Reposten anhängen (signature_repost)\fP
 Falls ON wird die Signatur auch an repostete Artikel
@@ -3431,7 +3441,7 @@ This variable has precedence over the default mailer that is used in all
 mailing operations within \fBtin\fP.
 .TP 
 \fBMAIL\fP
-Full path to the user's mailbox.
+Voller Pfad zum Postfach des Benutzers.
 .TP 
 \fBVISUAL\fP
 This variable has precedence over the default editor (i.e., \fB\%vi\fP(1))
@@ -3481,6 +3491,8 @@ Set this variable to disable the use of \fB\%metamail\fP(1)  or a replacement
 (e.g. metamutt).
 .TP 
 \fBMM_CHARSET\fP
+Benutzter MIME\-Zeichensatz, falls nicht über die tinrc\-Variable
+\fBmm_charset\fP konfiguriert.
 .TP 
 \fBISPELL\fP
 Set this variable to point to \fB\%ispell\fP(1)  or a replacement and its
@@ -3564,11 +3576,11 @@ Der verwendete Terminaltyp. Weitere Informationen finden sich in
 \fB\%environ\fP(5).
 .TP 
 \fBDISPLAY\fP
-Display name, pointing to the X server; required for xface.
+Anzeigename der auf den X\-Server zeigt; erforderlich für xface.
 .TP 
 \fBWINDOWID\fP
-Used for determining terminal's X window id; required for xface. Should be
-set by the terminal emulator.
+Wird verwendet, um die X\-Window\-ID des Terminal zu bestimmen. Erforderlich
+für xface. Sollte vom Terminalemulator gesetzt werden.
 .TP 
 \fBSHELL\fP
 The pathname of the user's login shell. Used to set

@@ -8,27 +8,31 @@ ARCHIVE = @AR@ @ARFLAGS@
 RANLIB  = @RANLIB@
 RM	= rm
 
-LIBOBJS = src/sha1.o src/hmac_sha1.o src/base64.o src/canlock.o
+LIBOBJS = src/usha.o src/sha1.o src/sha224-256.o src/sha384-512.o src/hmac.o src/base64.o src/canlock.o
 LOCKLIB = $(PRELIB)canlock.a
 
 .c$o :
 	@SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-all : hmactest canlocktest
+all : shatest canlocktest
 
-hmactest : t/hmactest.c $(LOCKLIB)
+shatest : test/hkdf.o $(LOCKLIB)
 	@SHOW_CC@
-	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) t/$@.c -o $@ $(LDFLAGS)
+	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) test/$@.c -o $@ test/hkdf.o $(LDFLAGS)
 
-canlocktest : t/canlocktest.c $(LOCKLIB)
+canlocktest : test/canlocktest.c $(LOCKLIB)
 	@SHOW_CC@
-	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) t/$@.c -o $@ $(LDFLAGS)
+	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) test/$@.c -o $@ $(LDFLAGS)
 
 src/base64.o : src/base64.c include/base64.h
 src/canlock.o : src/canlock.c include/canlock.h
-src/hmac_sha1.o : src/hmac_sha1.c include/hmac_sha1.h
-src/sha1.o : src/sha1.c include/sha1.h
+src/hmac.o : src/hmac.c include/sha.h
+src/usha.o : src/usha.c include/sha.h
+src/sha1.o : src/sha1.c include/sha.h
+src/sha224-256.o : src/sha224-256.c include/sha.h
+src/sha384-512.o : src/sha384-512.c include/sha.h
+test/hkdf.o : test/hkdf.c include/sha.h
 
 lib : $(LOCKLIB)
 $(LOCKLIB) : $(LIBOBJS)
@@ -37,16 +41,15 @@ $(LOCKLIB) : $(LIBOBJS)
 	$(RANLIB) $(LOCKLIB)
 
 clean :
-	@-$(RM) -f src/*.o t/*.o t/*.out *.gmon gmon.*
+	@-$(RM) -f src/*.o test/*.o test/*.out *.gmon gmon.*
 
 distclean : clean
-	@-$(RM) -f *.a canlocktest hmactest *.exe *.h
-	@-$(RM) -rf canlocktest.dSYM hmactest.dSYM
+	@-$(RM) -f *.a canlocktest shatest *.exe *.h
+	@-$(RM) -rf canlocktest.dSYM shatest.dSYM
 
 test : all
-	@echo "hmactest: "
-	@./hmactest > t/hmactest.out || echo hmm
-	@diff t/hmactest.shouldbe t/hmactest.out && echo " Pass." || echo " **FAIL**"
+	@echo "shatest: "
+	@./shatest -p
+	@echo
 	@echo "canlocktest: "
-	@./canlocktest > t/canlocktest.out
-	@diff t/canlocktest.shouldbe t/canlocktest.out && echo " Pass." || echo " **FAIL**"
+	@./canlocktest

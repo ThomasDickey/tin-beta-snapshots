@@ -3,7 +3,7 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2015-08-24
+ *  Updated   : 2017-02-17
  *  Notes     : RFC 2045/2047 encoding
  *
  * Copyright (c) 1995-2017 Chris Blum <chris@resolution.de>
@@ -90,7 +90,7 @@ rfc1521_encode(
 			if (bits) {
 				if (xpos >= 73) {
 					*b++ = '\n';
-					*b = 0;
+					*b = '\0';
 					fputs(buffer, f);
 					b = buffer;
 					xpos = 0;
@@ -109,7 +109,7 @@ rfc1521_encode(
 				bits = 0;
 			}
 			if (xpos) {
-				*b = 0;
+				*b = '\0';
 				fputs(buffer, f);
 				xpos = 0;
 			}
@@ -139,7 +139,7 @@ rfc1521_encode(
 				if (bits >= 24) {
 					if (xpos >= 73) {
 						*b++ = '\n';
-						*b = 0;
+						*b = '\0';
 						b = buffer;
 						xpos = 0;
 						fputs(buffer, f);
@@ -206,7 +206,7 @@ rfc1521_encode(
 				xpos = 0;
 			}
 		}
-		*b = 0;
+		*b = '\0';
 		if (b != buffer)
 			fputs(buffer, f);
 		if (b != buffer && b[-1] == '\n')

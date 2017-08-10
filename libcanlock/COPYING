@@ -1,0 +1,53 @@
+
+Licenses
+========
+
+This package contains parts covered by different licenses.
+
+Every source file contains license notes at the beginning.
+Please report source files with missing license notes as bug.
+
+
+Summary
+=======
+
+Note: The following list may not be up-to-date.
+Please use the license notes in the files as legal basis!
+
+Files: configure.ac [*/]Makefile.am doc/*.in* src/secret.c util/canlock.c
+Copyright (c) 2017 Michael Baeuerle
+License: MIT-like
+
+Files: src/canlock.c include/canlock.h
+Copyright (c) 2017 Dennis Preiser
+Copyright (c) 2003 G. J. Andruk
+License: MIT-like
+
+Files: test/canlocktest.c
+Copyright (c) 2017 Michael Baeuerle
+Copyright (c) 2003 G. J. Andruk
+License: MIT-like
+
+Files: test/canlocktest_legacy.c
+Copyright (c) 2003 G. J. Andruk
+License: MIT-like
+
+Files: GNU autotools build system
+Copyright (c) 1992-2015 Free Software Foundation, Inc.
+License: MIT-like (using exception in original GPL-based license)
+
+Files: aclocal.m4 m4/lt*.m4 [*/]Makefile.in configure
+Copyright (c) 1996-2014 Free Software Foundation, Inc.
+License: Unlimited permission to copy and/or distribute
+
+Files: SHA related
+Copyright (c) 2011 IETF Trust and the persons identified as authors of the code
+License: BSD-3-clause
+
+Files: include/base64.h src/base64.c
+Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Hogskolan
+ (Royal Institute of Technology, Stockholm, Sweden)
+License: BSD-3-clause
+
+
+EOF

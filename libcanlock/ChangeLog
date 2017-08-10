@@ -1,0 +1,18 @@
+
+Changelog
+=========
+
+3.0.0      2017-07-14
+           API for arbitrary hash algorithm added (Written by Dennis Preiser)
+           Support for SHA2 added (Using code from RFC6234 section 8)
+           SHA1 implementation replaced (Using code from RFC6234 section 8)
+           Function to overwrite secret data in memory added
+           Command line utility added
+           Test program for new API added
+           Test program for SHA implementation replaced
+           New portable build system added (Based on GNU autotools)
+           Man pages added
+           Release version scheme changed
+
+
+EOF

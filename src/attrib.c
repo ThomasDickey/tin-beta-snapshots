@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2015-10-09
+ *  Updated   : 2017-08-02
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2017 Iain Lea <iain@bricbrac.de>
@@ -561,6 +561,19 @@ read_attributes_file(
 							free(gbuf);
 							free(tbuf);
 							found = TRUE;
+						}
+						/*
+						 * previous versions has always passed groupname to external
+						 * commands, now we look for %G
+						 *
+						 * 8 == sizeof("sigfile=")
+						 */
+						if (match_string(line, "sigfile=", buf, sizeof(buf) - 8) && buf[0] == '!') {
+							char *newbuf = my_malloc(sizeof(buf) - 8 + 4);
+
+							sprintf(newbuf, "%s %s", buf, "%G");
+							set_attrib(OPT_ATTRIB_SIGFILE, scope, line, newbuf);
+							free(newbuf);
 						}
 						MATCH_BOOLEAN("show_only_unread=", OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS);
 						MATCH_INTEGER("sort_art_type=", OPT_ATTRIB_SORT_ARTICLE_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
@@ -1528,7 +1541,6 @@ write_attributes_file(
 		rename_file(new_file, file);
 
 	free(new_file);
-	return;
 }
 
 

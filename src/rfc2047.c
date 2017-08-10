@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2016-03-10
+ *  Updated   : 2017-03-28
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2017 Chris Blum <chris@resolution.de>
@@ -257,7 +257,7 @@ rfc1522_decode(
 #endif /* !CHARSET_CONVERSION */
 	sc = c;
 
-	while (*c && t - buffer < BUFFER_LEN) {
+	while (*c && t - buffer < BUFFER_LEN - 1) {
 		if (*c != '=') {
 			if (adjacentflag && isspace((unsigned char) *c)) {
 				const char *dd;
@@ -289,7 +289,7 @@ rfc1522_decode(
 				}
 				*e++ = *c++;
 			}
-			*e = 0;
+			*e = '\0';
 			if (*c == '?') {
 				c++;
 				encoding = tolower((unsigned char) *c);
@@ -364,7 +364,6 @@ str2b64(
 	}
 
 	*to = '\0';
-	return;
 }
 
 
@@ -779,7 +778,7 @@ rfc1522_do_encode(
 			rightafter_ew = FALSE;
 		}
 	}		/* end of pass 1 while loop */
-	*t = 0;
+	*t = '\0';
 
 	/* Pass 2: break long lines if there are MIME-sequences in the result */
 	c = buffer;
@@ -825,7 +824,7 @@ every "word" were a space ... */
 		FreeAndNull(buffer);
 		buffer = new_buffer;
 	}
-	*t = 0;
+	*t = '\0';
 	*where = buffer;
 	return any_quoting_done;
 }

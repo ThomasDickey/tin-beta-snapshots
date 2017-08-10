@@ -23,7 +23,8 @@ U027) Urs Janssen <urs@tin.org>
       Dennis Preiser <dennis@d--p.de>
       ADD. log reconnect limit reached (debian bug #832397)
       ADD. document NNTP_ERROR_EXIT code (debian bug #832397)
-      ADD. give error messages on exit after curses has ended (debian bug #832397)
+      ADD. give error messages on exit after curses has ended (debian bug
+           #832397)
       FIX. proto.h, active.c, header.c, lang.c, mail.c, main.c, misc.c
            newsrc.c, nntplib.c, page.c, read.c, select.c, signal.c, thread.c
            tin.[15]
@@ -2157,7 +2158,7 @@ U118) Philip Paeps <philip@paeps.cx>
 U117) Andreas Metzler <tin-dev@downhill.at.eu.org>
       BUG. possible overrun while expanding \t
       BUG. typos in the german translation
-      BUG. wrong help-page entrys
+      BUG. wrong help-page entries
       ADD. from=filter exemplification
       FIX. cook.c, lang.c, tin.5, filtering, de.po
 
@@ -3514,7 +3515,7 @@ U001) Urs Janssen <urs@tin.org>
 672) Urs Janssen <urs@tin.org>
      BUG. fixed uncritical memleak in free_attributes_array()
      BUG. fixed possible call of free(NULL)
-     ADD. overview_xref_support() now handles Xref:full entrys in
+     ADD. overview_xref_support() now handles Xref:full entries in
           overview.ftm with traling garbage on the line
      ADD. check for duplicated Newsgroups, Subject and Followup-To
           header before posting

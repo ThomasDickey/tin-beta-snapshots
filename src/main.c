@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : main.c
+ *  Updated   : 2017-02-22
  *  Notes     :
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -305,7 +305,7 @@ main(
 	 */
 	if (post_article_and_exit || post_postponed_and_exit) {
 		no_write = tmp_no_write; /* restore original value */
-		quick_post_article(post_postponed_and_exit);
+		quick_post_article(post_postponed_and_exit, num_cmd_line_groups);
 		wait_message(2, _(txt_exiting));
 		no_write = TRUE; /* disable newsrc updates */
 		tin_done(EXIT_SUCCESS, NULL);

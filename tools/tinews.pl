@@ -39,14 +39,15 @@
 #       - add $PGPOPTS, $PGPPATH and $GNUPGHOME support
 #       - cleanup and remove duplicated code
 #       - option to convert CRLF to LF in input
-#       - use STARTTLS (if Net::NNTP is recent enought and server supports it)
+#       - use STARTTLS (if Net::NNTP is recent enough and server supports it)?
+#       - quote inpupt properly before passing to shell
 #
 
 use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.41";
+my $version = "1.1.45";
 
 my %config;
 
@@ -79,7 +80,10 @@ $config{'pgpheader'}	= 'X-PGP-Sig';
 $config{'pgpbegin'}		= '-----BEGIN PGP SIGNATURE-----';	# Begin of PGP-Signature
 $config{'pgpend'}		= '-----END PGP SIGNATURE-----';	# End of PGP-Signature
 
+$config{'canlock_algorithm'}	= 'sha1'; 	# Digest algorithm used for cancel-lock and cancel-key; sha1, sha256 and sha512 are supported
 # $config{'canlock_secret'}	= '~/.cancelsecret';		# Path to canlock secret file
+
+# $config{'ignore_headers'} = '';		# headers to be ignored during signing
 
 $config{'PGPSignHeaders'} = ['From', 'Newsgroups', 'Subject', 'Control',
 	'Supersedes', 'Followup-To', 'Date', 'Injection-Date', 'Sender', 'Approved',
@@ -145,9 +149,11 @@ GetOptions('A|V|W|O|no-organization|h|headers' => [], # do nothing
 	'force-auth|Y'	=> \$config{'force_auth'},
 	'approved|a=s'	=> \$config{'approved'},
 	'control|c=s'	=> \$config{'control'},
+	'canlock-algorithm=s'	=> \$config{'canlock_algorithm'},
 	'distribution|d=s'	=> \$config{'distribution'},
 	'expires|e=s'	=> \$config{'expires'},
 	'from|f=s'	=> \$config{'from'},
+	'ignore-headers|i=s'	=> \$config{'ignore_headers'},
 	'followupto|w=s'	=> \$config{'followup-to'},
 	'newsgroups|n=s'	=> \$config{'newsgroups'},
 	'replyto|r=s'	=> \$config{'reply-to'},
@@ -175,19 +181,45 @@ usage() if ($config{'help'});
 my $sha_mod=undef;
 # Cancel-Locks require some more modules
 if ($config{'canlock_secret'} && !$config{'no_canlock'}) {
-	foreach ('Digest::SHA qw(sha1)', 'Digest::SHA1()') {
-		eval "use $_";
-		if (!$@) {
-			($sha_mod = $_) =~ s#( qw\(sha1\)|\(\))##;
-			last;
-		}
+	$config{'canlock_algorithm'} = lc($config{'canlock_algorithm'});
+	# we support sha1, sha256 and sha512, fallback to sha1 if something else is given
+	if (!($config{'canlock_algorithm'} =~ /^sha(1|256|512)$/)) {
+		warn "Digest algorithm " . $config{'canlock_algorithm'} . " not supported. Falling back to sha1.\n" if $config{'debug'};
+		$config{'canlock_algorithm'} = 'sha1';
 	}
-	foreach ('MIME::Base64()', 'Digest::HMAC_SHA1()') {
-		eval "use $_";
-		if ($@ || !defined($sha_mod)) {
-			$config{'no_canlock'} = 1;
-			warn "Cancel-Locks disabled: Can't locate ".$_."\n" if $config{'debug'};
-			last;
+	if ($config{'canlock_algorithm'} eq 'sha1') {
+		foreach ('Digest::SHA qw(sha1)', 'Digest::SHA1()') {
+			eval "use $_";
+			if (!$@) {
+				($sha_mod = $_) =~ s#( qw\(sha1\)|\(\))##;
+				last;
+			}
+		}
+		foreach ('MIME::Base64()', 'Digest::HMAC_SHA1()') {
+			eval "use $_";
+			if ($@ || !defined($sha_mod)) {
+				$config{'no_canlock'} = 1;
+				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if $config{'debug'};
+				last;
+			}
+		}
+	} elsif ($config{'canlock_algorithm'} eq 'sha256') {
+		foreach ('MIME::Base64()', 'Digest::SHA qw(sha256 hmac_sha256)') {
+			eval "use $_";
+			if ($@) {
+	 			$config{'no_canlock'} = 1;
+				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if $config{'debug'};
+				last;
+			}
+		}
+	} else {
+		foreach ('MIME::Base64()', 'Digest::SHA qw(sha512 hmac_sha512)') {
+			eval "use $_";
+			if ($@) {
+	 			$config{'no_canlock'} = 1;
+				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if $config{'debug'};
+				last;
+			}
 		}
 	}
 }
@@ -211,7 +243,13 @@ if (! $config{'no_sign'}) {
 	}
 }
 
-
+# Remove unwanted headers from PGPSignHeaders
+if (${config{'ignore_headers'}}) {
+	my @hdr_to_ignore = split(/,/, ${config{'ignore_headers'}});
+	foreach my $hdr (@hdr_to_ignore) {
+		@{$config{'PGPSignHeaders'}} = map {lc($_) eq lc($hdr) ? () : $_} @{$config{'PGPSignHeaders'}};
+	}
+}
 # Read the message and split the header
 readarticle(\%Header, \@Body);
 
@@ -358,44 +396,38 @@ if ($config{'canlock_secret'} && !$config{'no_canlock'} && defined($Header{'mess
 	close($CANLock);
 	(my $data = $Header{'message-id'}) =~ s#^Message-ID: ##i;
 	chomp $data;
-	my $digest = Digest::HMAC_SHA1::hmac_sha1($data, $key);
-	my $cancel_key = MIME::Base64::encode($digest, '');
-	my $cancel_lock;
-	if ($sha_mod =~ m/SHA1/) {
-		$cancel_lock = MIME::Base64::encode(Digest::SHA1::sha1($cancel_key, ''));
-	} else {
-		$cancel_lock = MIME::Base64::encode(Digest::SHA::sha1($cancel_key, ''));
-	}
+	my $cancel_key = buildcancelkey($data, $key);
+	my $cancel_lock = buildcancellock($cancel_key, $sha_mod);
 	if (defined($Header{'cancel-lock'})) {
 		chomp $Header{'cancel-lock'};
-		$Header{'cancel-lock'} .= " sha1:" . $cancel_lock;
+		$Header{'cancel-lock'} .= " " . $config{'canlock_algorithm'} . ":" . $cancel_lock;
 	} else {
-		$Header{'cancel-lock'} = "Cancel-Lock: sha1:" . $cancel_lock;
+		$Header{'cancel-lock'} = "Cancel-Lock: " . $config{'canlock_algorithm'} . ":" . $cancel_lock;
 	}
 
 	if ((defined($Header{'supersedes'}) && $Header{'supersedes'} =~ m/^Supersedes:\s+<\S+>\s*$/i) || (defined($Header{'control'}) && $Header{'control'} =~ m/^Control:\s+cancel\s+<\S+>\s*$/i) ||(defined($Header{'also-control'}) && $Header{'also-control'} =~ m/^Also-Control:\s+cancel\s+<\S+>\s*$/i)) {
 		if (defined($Header{'also-control'}) && $Header{'also-control'} =~ m/^Also-Control:\s+cancel\s+/i) {
 			($data = $Header{'also-control'}) =~ s#^Also-Control:\s+cancel\s+##i;
 			chomp $data;
-			$cancel_key = MIME::Base64::encode(Digest::HMAC_SHA1::hmac_sha1($data, $key),'');
+			$cancel_key = buildcancelkey($data, $key);
 		} else {
 			if (defined($Header{'control'}) && $Header{'control'} =~ m/^Control: cancel /i) {
 				($data = $Header{'control'})=~ s#^Control:\s+cancel\s+##i;
 				chomp $data;
-				$cancel_key = MIME::Base64::encode(Digest::HMAC_SHA1::hmac_sha1($data, $key),'');
+				$cancel_key = buildcancelkey($data, $key);
 			} else {
 				if (defined($Header{'supersedes'})) {
 					($data = $Header{'supersedes'}) =~ s#^Supersedes: ##i;
 					chomp $data;
-					$cancel_key = MIME::Base64::encode(Digest::HMAC_SHA1::hmac_sha1($data, $key),'');
+					$cancel_key = buildcancelkey($data, $key);
 				}
 			}
 		}
 		if (defined($Header{'cancel-key'})) {
 			chomp $Header{'cancel-key'};
-			$Header{'cancel-key'} .= " sha1:" . $cancel_key . "\n";
+			$Header{'cancel-key'} .= " " . $config{'canlock_algorithm'} . ":" . $cancel_key . "\n";
 		} else {
-			$Header{'cancel-key'} = "Cancel-Key: sha1:" . $cancel_key . "\n";
+			$Header{'cancel-key'} = "Cancel-Key: " . $config{'canlock_algorithm'} . ":" . $cancel_key . "\n";
 		}
 	}
 }
@@ -690,7 +722,7 @@ sub savearticle {
 
 #-------- sub signarticle
 # signarticle signs an article and returns a reference to an array
-# 	containing the whole signed Message.
+# containing the whole signed Message.
 #
 # Receives:
 # 	- $HeaderR: A reference to a hash containing the articles headers.
@@ -798,6 +830,55 @@ sub signarticle {
 	return \@pgpmessage;
 }
 
+#-------- sub buildcancelkey
+# buildcancelkey builds the cancel-key based on the configured HASH algorithm.
+#
+# Receives:
+# 	- $data: The input data.
+# 	- $key: The secret key to be used.
+#
+# Returns:
+# 	- $cancel_key: The calculated cancel-key.
+sub buildcancelkey {
+	my ($data, $key) = @_;
+	my $cancel_key;
+	if ($config{'canlock_algorithm'} eq 'sha1') {
+		$cancel_key = MIME::Base64::encode(Digest::HMAC_SHA1::hmac_sha1($data, $key), '');
+	} elsif ($config{'canlock_algorithm'} eq 'sha256') {
+		$cancel_key = MIME::Base64::encode(Digest::SHA::hmac_sha256($data, $key), '');
+	} else {
+		$cancel_key = MIME::Base64::encode(Digest::SHA::hmac_sha512($data, $key), '');
+	}
+	return $cancel_key;
+}
+
+#-------- sub buildcancellock
+# buildcancellock builds the cancel-lock based on the configured HASH algorithm
+# and the given cancel-key.
+#
+# Receives:
+# 	- $sha_mod: A hint which module to be used for sha1.
+# 	- $cancel_key: The cancel-key for which the lock has to be calculated.
+#
+# Returns:
+# 	- $cancel_lock: The calculated cancel-lock.
+sub buildcancellock {
+	my ($cancel_key, $sha_mod) = @_;
+	my $cancel_lock;
+	if ($config{'canlock_algorithm'} eq 'sha1') {
+		if ($sha_mod =~ m/SHA1/) {
+			$cancel_lock = MIME::Base64::encode(Digest::SHA1::sha1($cancel_key, ''));
+		} else {
+			$cancel_lock = MIME::Base64::encode(Digest::SHA::sha1($cancel_key, ''));
+		}
+	} elsif ($config{'canlock_algorithm'} eq 'sha256') {
+		$cancel_lock = MIME::Base64::encode(Digest::SHA::sha256($cancel_key, ''));
+	} else {
+		$cancel_lock = MIME::Base64::encode(Digest::SHA::sha512($cancel_key, ''));
+	}
+	return $cancel_lock;
+}
+
 sub version {
 	print $pname." ".$version."\n";
 	return;
@@ -811,6 +892,7 @@ sub usage {
 	print "  -d string  set Distribution:-header to string\n";
 	print "  -e string  set Expires:-header to string\n";
 	print "  -f string  set From:-header to string\n";
+	print "  -i string  list of headers to be ignored for signing\n";
 	print "  -n string  set Newsgroups:-header to string\n";
 	print "  -o string  set Organization:-header to string\n";
 	print "  -p port    use port as NNTP port [default=".$config{'NNTPPort'}."]\n";
@@ -884,6 +966,20 @@ X<-f> X<--from>
 
 Set the article header field From: to the given value.
 
+=item -B<i> F<header> | --B<ignore-headers> F<header>
+X<-i> X<--ignore-headers>
+
+Comma separated list of headers that will be ignored during signing.
+Usually the following headers will be signed if present:
+
+From, Newsgroups, Subject, Control, Supersedes, Followup-To,
+Date, Injection-Date, Sender, Approved, Message-ID, Reply-To,
+Cancel-Key, Also-Control and Distribution.
+
+Some of them may be altered on the Server (i.e. Cancel-Key) which would
+invalid the signature, this option can be used the exclude such headers
+if required.
+
 =item -B<n> C<Newsgroups> | --B<newsgroups> C<Newsgroups>
 X<-n> X<--newsgroups>
 
@@ -943,6 +1039,12 @@ Do not add Injection-Date: header.
 X<-L> X<--no-canlock>
 
 Do not add Cancel-Lock: / Cancel-Key: headers.
+
+=item --B<canlock-algorithm> C<Algorithm>
+X<--canlock-algorithm>
+
+Digest algorithm used for Cancel-Lock: / Cancel-Key: headers.
+Supported algorithms are sha1, sha256 and sha512. Default is sha1.
 
 =item -B<R> | --B<no-control>
 X<-R> X<--no-control>
@@ -1127,7 +1229,8 @@ B<Term::Readline>(3pm).
 
 If the Cancel-Lock feature is enabled the following additional modules
 must be installed: B<MIME::Base64>(3pm), B<Digest::SHA>(3pm) or
-B<Digest::SHA1>(3pm) and B<Digest::HMAC_SHA1>(3pm)
+B<Digest::SHA1>(3pm) and B<Digest::HMAC_SHA1>(3pm). sha256 and sha512 as
+algorithms for B<canlock-algorithm> are only available with B<Digest::SHA>.
 
 =head1 AUTHOR
 

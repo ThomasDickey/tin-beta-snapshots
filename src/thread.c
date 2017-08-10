@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2016-07-26
+ *  Updated   : 2017-03-28
  *  Notes     :
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
@@ -382,7 +382,6 @@ draw_thread_item(
 	int item)
 {
 	build_tline(item, &arts[find_response(thread_basenote, item)]);
-	return;
 }
 
 
@@ -1430,7 +1429,6 @@ make_prefix(
 	prefix[maxlen] = '\0'; /* just in case strlen(buf) > maxlen */
 	free(buf);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	return;
 }
 
 

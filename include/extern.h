@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2016-06-06
+ *  Updated   : 2017-05-03
  *  Notes     :
  *
  * Copyright (c) 1997-2017 Iain Lea <iain@bricbrac.de>
@@ -397,7 +397,7 @@ extern char newsgroups_file[PATH_LEN];
 extern char newsrc[PATH_LEN];
 #ifndef NNTP_ONLY
 	extern char novrootdir[PATH_LEN];
-	extern char novfilename[PATH_LEN];
+	extern char novfilename[NAME_LEN + 1];
 #endif /* !NNTP_ONLY */
 extern char page_header[LEN];
 extern char posted_info_file[PATH_LEN];
@@ -414,6 +414,9 @@ extern char domain_name[];
 
 extern const char base64_alphabet[64];
 
+#ifdef USE_CANLOCK
+	extern constext *txt_cancel_lock_algos[];
+#endif /* USE_CANLOCK */
 extern constext *content_encodings[];
 extern constext *content_types[];
 extern constext *txt_attrs[];
@@ -1702,6 +1705,10 @@ extern struct opttxt txt_delete_tmp_files;
 extern struct opttxt txt_batch_save;
 extern struct opttxt txt_beginner_level;
 extern struct opttxt txt_cache_overview_files;
+#ifdef USE_CANLOCK
+	extern struct opttxt txt_cancel_locks;
+	extern struct opttxt txt_cancel_lock_algo;
+#endif /* USE_CANLOCK */
 extern struct opttxt txt_catchup_read_groups;
 #ifdef HAVE_COLOR
 	extern struct opttxt txt_color_options;

@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2015-08-29
+# Updated: 2017-08-09
 #
 
 SHELL	= @SHELL@
@@ -9,9 +9,9 @@ SHELL	= @SHELL@
 PROJECT	= tin
 LVER	= 2
 PVER	= 4
-SVER	= 1
+SVER	= 2
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20161130
+DVER	= 20170810
 EXE	= tin
 
 # directory structure
@@ -255,22 +255,33 @@ PCRE	= \
 	$(PCREDIR)/testdata/testoutput9
 
 CAN	= \
-	$(CANDIR)/CHANGES \
-	$(CANDIR)/HOWTO \
-	$(CANDIR)/README \
+	$(CANDIR)/COPYING \
+	$(CANDIR)/ChangeLog \
+	$(CANDIR)/ChangeLog_V0 \
+	$(CANDIR)/ChangeLog_V1 \
+	$(CANDIR)/ChangeLog_V2 \
+	$(CANDIR)/ChangeLog_V3 \
+	$(CANDIR)/INSTALL \
+	$(CANDIR)/LICENSE \
 	$(CANDIR)/Makefile.in \
+	$(CANDIR)/README \
 	$(CANDIR)/src/base64.c \
 	$(CANDIR)/src/canlock.c \
-	$(CANDIR)/src/hmac_sha1.c \
+	$(CANDIR)/src/hmac.c \
+	$(CANDIR)/src/secret.c \
 	$(CANDIR)/src/sha1.c \
+	$(CANDIR)/src/sha224-256.c \
+	$(CANDIR)/src/sha384-512.c \
+	$(CANDIR)/src/usha.c \
 	$(CANDIR)/include/base64.h \
 	$(CANDIR)/include/canlock.h \
-	$(CANDIR)/include/hmac_sha1.h \
-	$(CANDIR)/include/sha1.h \
-	$(CANDIR)/t/canlocktest.c \
-	$(CANDIR)/t/hmactest.c \
-	$(CANDIR)/t/canlocktest.shouldbe \
-	$(CANDIR)/t/hmactest.shouldbe
+	$(CANDIR)/include/sha-private.h \
+	$(CANDIR)/include/sha.h \
+	$(CANDIR)/test/canlocktest.c \
+	$(CANDIR)/test/canlocktest_legacy.c \
+	$(CANDIR)/test/hkdf.c \
+	$(CANDIR)/test/shatest.c \
+	$(CANDIR)/util/canlock.c
 
 MISC	= \
 	$(INCDIR)/autoconf.hin \
@@ -347,7 +358,7 @@ L10NFILES = \
 
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES) $(L10NFILES)
 
-ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(INTLDIR) $(PODIR) $(L10NDIR) $(L10NDIR)/de $(L10NDIR)/en_GB
+ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(CANDIR)/include $(CANDIR)/src $(CANDIR)/test $(CANDIR)/util/ $(INTLDIR) $(PODIR) $(L10NDIR) $(L10NDIR)/de $(L10NDIR)/en_GB
 
 # standard commands
 CD	= cd

@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-10-10
+ *  Updated   : 2017-02-03
  *  Notes     :
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -633,8 +633,8 @@ open_art_header(
 		/*
 		 * TODO:
 		 * shall we stop on 5xx?, i.e JamNNTPd/2 1.3 responds with
-		 * "503 Access denied" instead of 480 but NEXT still works, so
-		 * tin loop over all articles without getting useful data
+		 * "503 Access denied" instead of 480 but NEXT still works,
+		 * so tin loops over all articles without getting useful data
 		 */
 
 		/*
@@ -729,7 +729,13 @@ read_art_headers(
 
 		get_cwd(dir);
 		make_base_group_path(group->spooldir, group->name, buf, sizeof(buf));
-		chdir(buf);
+		if (chdir(buf) != 0) {
+#ifdef DEBUG
+			if (debug & DEBUG_MISC)
+				fprintf(stderr, "read_art_headers(chdir(%s))", strerror(errno));
+#endif /* DEBUG */
+			return -1;
+		}
 	}
 
 	snprintf(group_msg, sizeof(group_msg), _(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group->name);
@@ -1918,7 +1924,7 @@ read_overview(
 		if (first) {
 			found = TRUE;
 			/*
-			 * TODO: do once a start and cache full result
+			 * TODO: do once at start and cache full result
 			 *       if "LIST HEADERS RANGE" failed try "LIST HEADERS"?
 			 */
 			if (nntp_caps.type == CAPABILITIES && nntp_caps.list_headers) {

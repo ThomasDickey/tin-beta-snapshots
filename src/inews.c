@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2013-11-27
+ *  Updated   : 2017-05-03
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
@@ -257,7 +257,7 @@ submit_inews(
 				u_put_server("\r\n");
 			}
 #	ifdef USE_CANLOCK
-			if (!can_lock_in_article) {
+			if (tinrc.cancel_locks && !can_lock_in_article) {
 				char lock[1024];
 				char *lptr;
 

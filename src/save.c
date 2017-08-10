@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-10-10
+ *  Updated   : 2017-04-04
  *  Notes     :
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -493,7 +493,7 @@ save_and_process_art(
 		const char *partprefix;
 		char *ptr;
 		char archpath[PATH_LEN];
-		char filename[NAME_LEN];
+		char filename[NAME_LEN + 1];
 
 		/*
 		 * We need either a part or a patch number, part takes precedence
@@ -664,7 +664,7 @@ generate_savepath(
 	const char *name;
 	t_bool mbox;
 
-	savepath = my_malloc(PATH_LEN + 1);
+	savepath = my_malloc(PATH_LEN);
 	/*
 	 * Get the filename to save to in 'savepath'
 	 */
@@ -882,8 +882,6 @@ post_process_uud(
 	my_printf(_(txt_libuu_saved), count, num_save, errors, PLURAL(errors, txt_error));
 	my_printf(cCRLF);
 	UUCleanUp();
-
-	return;
 }
 
 #else
@@ -1143,7 +1141,6 @@ uudecode_line(
 			}
 		}
 	}
-	return;
 }
 
 
@@ -1201,7 +1198,6 @@ post_process_sh(
 #endif /* !M_UNIX */
 		unlink(file_out);
 	}
-	return;
 }
 
 
@@ -2053,7 +2049,6 @@ tag_pattern(
 		FreeIfNeeded(cache.re);
 		FreeIfNeeded(cache.extra);
 	}
-	return;
 }
 
 

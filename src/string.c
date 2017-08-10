@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2016-02-25
+ *  Updated   : 2017-02-17
  *  Notes     :
  *
  * Copyright (c) 1997-2017 Urs Janssen <urs@tin.org>
@@ -239,7 +239,7 @@ mystrcat(
 		*((*t)++) = *s++;
 		len++;
 	}
-	**t = 0;
+	**t = '\0';
 	return len;
 }
 

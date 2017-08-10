@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2016-08-23
+.\" Updated   : 2017-08-02
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "August 23rd, 2016" "2.4.1" "Usenet newsreader"
+.TH tin 1 "December 24th, 2016" "2.4.2" "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -232,8 +232,9 @@ Verbose mode for ''\fB\-c\fP'', ''\fB\-M\fP'', ''\fB\-N\fP'', ''\fB\-S\fP'',
 Print version and date information.
 .TP
 .B \-w
-Quick mode to post an article and then exit. In order for this to be really
-quick, it should be used with ''\fB\-n\fP'' if possible.
+Quick mode to post an article and then exit. This option implies
+\&''\fB\-d\fP''. In order for this to be really quick, it should be used
+with ''\fB\-n\fP'' if possible.
 .TP
 .B \-x
 No-posting mode. You cannot post articles if you use this option.
@@ -713,7 +714,7 @@ section "RANGES" for more information.
 Re-enter the last message that was viewed.
 .TP
 .B SearchRepeat '\\\\'
-Repeat the previous search
+Repeat the previous search.
 .TP
 .B SearchSubjF '/'
 Search forward for specified subject.
@@ -852,7 +853,7 @@ OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES").
 Go to next group.
 .TP
 .B GroupNextUnreadArt 'N'
-Go to next unread article.
+Go to the next unread article.
 .TP
 .B Print 'o'
 Send current article / thread / auto-selected (hot) articles / articles
@@ -1567,6 +1568,15 @@ displayed after composing an article. Default is ON.
 If ON, create local copies of NNTP overview files. This can be used to
 considerably speed up accessing large groups when using a slow connection.
 See also "INDEX FILES". Default is OFF.
+.TP
+.B Generate cancel-locks (cancel_locks)
+If ON, generate cancel-locks. Only available when build with cancel-lock
+support. Default is ON.
+.TP
+.B Hash algorithm for cancel-locks (cancel_lock_algo)
+Use this hash algorithm for cancel-locks. Only available when build with
+cancel-lock support. Valid values are sha1, sha256 and sha512.
+Default is sha1.
 .TP
 .B Catchup read groups when quitting (catchup_read_groups)
 If set ON the user is asked when quitting if all groups read during the
@@ -2301,8 +2311,7 @@ If ON show only subscribed groups that contain unread articles. Default
 is OFF.
 .TP
 .B Display signatures (show_signatures)
-If OFF don't show signatures when displaying articles.
-Default is ON.
+If OFF don't show signatures when displaying articles. Default is ON.
 .TP
 .B Prepend signature with '\en\-\- \en' (sigdashes)
 If ON prepend the signature with sigdashes. Default is ON.
@@ -2312,9 +2321,9 @@ The path that specifies the signature file to use when posting, following
 up to or replying to an article. If the path is a directory then the
 signature will be randomly generated from files that are in the specified
 directory. If the path starts with a ! the program the path points to will
-be executed to generate a signature. \fBtin\fP will pass the name of the
-current newsgroup as argument to the program. \-\-none will suppress any
-signature.
+be executed to generate a signature. In order to pass the group name to the
+program, %G can be specified. This will be replaced by the name of the
+current newsgroup. \-\-none will suppress any signature.
 Default is \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fR.
 .TP
 .B Add signature when reposting (signature_repost)
@@ -3574,6 +3583,7 @@ Set this variable to disable the use of
 or a replacement (e.g. metamutt).
 .TP
 .B MM_CHARSET
+MIME character set used if not configured via the tinrc variable \fBmm_charset\fP.
 .TP
 .B ISPELL
 Set this variable to point to

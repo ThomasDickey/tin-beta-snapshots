@@ -79,7 +79,7 @@
 #	define CHAR_FATAL	'5'
 #endif /* 0 */
 
-/* TODO: cleanup against RFC 2980, RFC 3977 */
+/* TODO: cleanup against RFC 2980, RFC 3977, RFC 4643, RFC 6048, RFC 8054 */
 #define INF_HELP		100	/* Help text on way */
 #define INF_CAPABILITIES	101	/* Capability list follows */
 #define INF_DATE		111 /* yyyymmddhhmmss Server date and time */

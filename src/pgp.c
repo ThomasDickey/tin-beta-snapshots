@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2013-11-12
+ *  Updated   : 2017-03-28
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2017 Steven J. Madsen <steve@erinet.com>
@@ -315,7 +315,6 @@ pgp_append_public_key(
 		}
 		unlink(keyfile);
 	}
-	return;
 }
 
 
