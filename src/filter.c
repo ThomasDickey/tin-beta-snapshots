@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2016-05-23
+ *  Updated   : 2017-03-28
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
@@ -1011,8 +1011,6 @@ fmt_filter_menu_prompt(
 	}
 	snprintf(dest, dest_len, fmt_str, buf);
 	free(buf);
-
-	return;
 }
 
 
@@ -1617,8 +1615,8 @@ add_filter_rule(
 	struct t_filter_rule *rule,
 	t_bool quick_filter_rule)
 {
-	char acBuf[PATH_LEN];
-	char sbuf[(sizeof(acBuf) / 2)]; /* half as big as acBuf so quote_wild(sbuf) fits into acBuf */
+	char acbuf[PATH_LEN];
+	char sbuf[(sizeof(acbuf) / 2)]; /* half as big as acbuf so quote_wild(sbuf) fits into acbuf */
 	int i = glob_filter.num;
 	t_bool filtered = FALSE;
 	time_t current_time;
@@ -1629,8 +1627,8 @@ add_filter_rule(
 
 	ptr = glob_filter.filter;
 
-	ptr[i].icase = FALSE;
 	ptr[i].inscope = TRUE;
+	ptr[i].icase = FALSE;
 	ptr[i].fullref = FILTER_MSGID;
 	ptr[i].comment = (struct t_filter_comment *) 0;
 	ptr[i].scope = NULL;
@@ -1675,24 +1673,24 @@ add_filter_rule(
 
 	ptr[i].icase = rule->icase;
 	if (*rule->text) {
-		snprintf(acBuf, sizeof(acBuf), REGEX_FMT, quote_wild_whitespace(rule->text));
+		snprintf(acbuf, sizeof(acbuf), REGEX_FMT, quote_wild_whitespace(rule->text));
 
 		switch (rule->counter) {
 			case FILTER_SUBJ_CASE_IGNORE:
 			case FILTER_SUBJ_CASE_SENSITIVE:
-				ptr[i].subj = my_strdup(acBuf);
+				ptr[i].subj = my_strdup(acbuf);
 				break;
 
 			case FILTER_FROM_CASE_IGNORE:
 			case FILTER_FROM_CASE_SENSITIVE:
-				ptr[i].from = my_strdup(acBuf);
+				ptr[i].from = my_strdup(acbuf);
 				break;
 
 			case FILTER_MSGID:
 			case FILTER_MSGID_LAST:
 			case FILTER_MSGID_ONLY:
 			case FILTER_REFS_ONLY:
-				ptr[i].msgid = my_strdup(acBuf);
+				ptr[i].msgid = my_strdup(acbuf);
 				ptr[i].fullref = rule->counter;
 				break;
 
@@ -1706,17 +1704,17 @@ add_filter_rule(
 	} else {
 		/*
 		 * STRCPY() truncates subject/from/message-id so it fits
-		 * into acBuf even after quote_wild()
+		 * into acbuf even after quote_wild()
 		 */
 		if (rule->subj_ok) {
 			STRCPY(sbuf, art->subject);
-			snprintf(acBuf, sizeof(acBuf), REGEX_FMT, (rule->check_string ? quote_wild(sbuf) : sbuf));
-			ptr[i].subj = my_strdup(acBuf);
+			snprintf(acbuf, sizeof(acbuf), REGEX_FMT, (rule->check_string ? quote_wild(sbuf) : sbuf));
+			ptr[i].subj = my_strdup(acbuf);
 		}
 		if (rule->from_ok) {
 			STRCPY(sbuf, art->from);
-			snprintf(acBuf, sizeof(acBuf), REGEX_FMT, quote_wild(sbuf));
-			ptr[i].from = my_strdup(acBuf);
+			snprintf(acbuf, sizeof(acbuf), REGEX_FMT, quote_wild(sbuf));
+			ptr[i].from = my_strdup(acbuf);
 		}
 		/*
 		 * message-ids should be quoted
@@ -1749,8 +1747,8 @@ add_filter_rule(
 			} else {
 				STRCPY(sbuf, MSGID(art));
 			}
-			snprintf(acBuf, sizeof(acBuf), REGEX_FMT, quote_wild(sbuf));
-			ptr[i].msgid = my_strdup(acBuf);
+			snprintf(acbuf, sizeof(acbuf), REGEX_FMT, quote_wild(sbuf));
+			ptr[i].msgid = my_strdup(acbuf);
 			ptr[i].fullref = rule->fullref;
 		}
 		if (rule->subj_ok || rule->from_ok || rule->msgid_ok || rule->lines_ok) {

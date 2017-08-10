@@ -583,7 +583,6 @@ void
 grp_del_mail_art(
 	struct t_article *article)
 {
-
 	if (article->delete_it)
 		info_message(_(txt_art_undeleted));
 	else

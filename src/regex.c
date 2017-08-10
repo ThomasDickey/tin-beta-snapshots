@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2011-11-09
+ *  Updated   : 2017-02-17
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -110,7 +110,7 @@ compile_regex(
 	struct regex_cache *cache,
 	int options)
 {
-	const char *regex_errmsg = 0;
+	const char *regex_errmsg = NULL;
 	int regex_errpos, my_options = options;
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE) && (defined(PCRE_MAJOR) && PCRE_MAJOR >= 4)

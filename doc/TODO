@@ -87,7 +87,7 @@ o  8bit chars in some headers are RFC-2047-encoded where this is not allowed
    (see parse_rfc822_headers()).
    [20090112 Urs Janssen <urs@tin.org>]
 
-o  the mime encoder may create two adjacent encoed words in the same line
+o  the mime encoder may create two adjacent encoded words in the same line
    e.g.       Subject: =?UTF-8?B?4oKs4oKs4oKs?= =?UTF-8?B?IOKCrOKCrOKCrA==?=
    instead of Subject: =?UTF-8?B?4oKs4oKs4oKsIOKCrOKCrOKCrA==?=
    [20140513 Urs Janssen <urs@tin.org>]
@@ -137,7 +137,7 @@ o  add a key to "drop" pending data from the server (either by
    or via calling drain_buffer() (might be slow if there is much pending
    data)) so one doesn't have to quit and restart tin if the client/server
    communication get's desynced (i.e by reading an article which has a non
-   dotstuffed lone . in it or the like)
+   dotstuffed lone '.' in it or the like)
    [20130615 Urs Janssen <urs@tin.org>]
 
 o  x_body currently doesn't allow cmd. execution via ! like x_headers
@@ -166,6 +166,13 @@ o  add user defined screen layout at different levels (e.g. posting
    history screen)
    (done for selection, group and thread level)
    [20041025 Urs Janssen <urs@tin.org>]
+
+o  add jump to article (if still available and Message-ID is known) to
+   posting history screen
+   [20170331 Urs Janssen <urs@tin.org>]
+
+o  allow a Message-ID on the cmd. line to jump to the given article
+   [20170718 Urs Janssen <urs@tin.org>]
 
 o  add TLS (RFC 4642), NNTPS support
    (<http://www.gnu.org/software/gnutls/>, <http://www.openssl.org/>
@@ -217,7 +224,7 @@ o  allow bold, underline, italic, ... as colour substitution for
    [20030218 Serge Matveev <sm@cl.spb.ru>]
 
 o  hierarchical 'M'enu, e.g. put all art_marked_*into a 'submenu',
-   restructure/sort 'M'enu items, some disply-options (render BiDi) are
+   restructure/sort 'M'enu items, some display-options (render BiDi) are
    currently under expert options, some options in display options are
    navigation options (catchup thread, use mouse, ...)
    [20020322 Urs Janssen <urs@tin.org>]
@@ -368,10 +375,10 @@ o  add feature Cc:
 
 o  add feature show_new_newsgroups_since
 
-o  add new key which taggs articles based on a prompted regex, could be used
+o  add new key which tags articles based on a prompted regex, could be used
    for GROUP_MARK_THREAD_READ,PAGE_MARK_THREAD_READ,THREAD_MARK_ARTICLE_READ
    and/or something like GROUP_SELECT_THREAD/THREAD_SELECT_ARTICLE which
-   works on tagged arts (the later might be useful in conjnction with
+   works on tagged arts (the later might be useful in conjunction with
    GROUP_MARK_UNSELECTED_ARTICLES_READ)
    [20051110 Urs Janssen <urs@tin.org>]
 
@@ -452,11 +459,12 @@ o  Merge the selection code with the range code. Having two similar methods
    [Jason Faultless <jason@altarstone.com>]
 
 o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo, lzlib, liblz4,
-   liblrzip, ...
+   liblrzip, libzstd, ...
    (<http://tukaani.org/xz/>, <http://sources.redhat.com/bzip2/>,
     <http://www.gzip.org/zlib/>, <http://www.oberhumer.com/opensource/lzo/>,
     <http://lzip.nongnu.org/lzlib.html>, <http://code.google.com/p/lz4/>,
-    <http://freecode.com/projects/long-range-zip>) and add an option to
+    <http://freecode.com/projects/long-range-zip>,
+    <https://github.com/facebook/zstd>) and add an option to
    write/read *zipped local overviews.
    the libs might also be used for post-processing articles.
 
@@ -532,7 +540,7 @@ o  don't strip "Re: " out of the subject before applying the filter on it
 o  allow any given amount of days in default_filter_days not only
    {1, 2, 4} * 28 days
 
-o  allow expiring filter entrys n-days after the last time they matched
+o  allow expiring filter entries n-days after the last time they matched
 
 o  add command to generate filter rules for all currently tagged articles
 
@@ -592,7 +600,7 @@ o  always display (also) the servers error response string to the user,
    bandwidth exceeded)
    [20101230 Urs Janssen <urs@tin.org>]
 
-o  rewrite mini-help, remove the long strings and generate them dynamicly
+o  rewrite mini-help, remove the long strings and generate them dynamiclly
    one help text for each key makes translations more easy and uniq and can
    use the available space on the screen much better if not running on 80
    columns.
@@ -823,7 +831,7 @@ o  the online help of GroupMarkUnselArtRead 'X' is unclear as it doesn't
    say that the article are marked read
    [20090814 Urs Janssen <urs@tin.org>]
 
-o  document the different singnals/actions (e.g. SIGUSR2 writes newsrc)
+o  document the different signals/actions (e.g. SIGUSR2 writes newsrc)
    [20080209 Urs Janssen <urs@tin.org>]
 
 o  exit staus documentation in the man page isn't correct, we have more
@@ -838,7 +846,7 @@ o  add installation guide (in html)
 o  add cross-compilation hints
    	CC="crosscc" LD="crossld" AR="crossar" RANLIB=":" MAKE="crossmake" \
    	./configure --with-build-cc=gcc --with-build-cpp=cpp \
-   	--target=cross-traget-tripple --without-x # usual configure flags
+   	--target=cross-traget-triple --without-x # usual configure flags
 
 o  better document keymap feature
 
@@ -924,10 +932,10 @@ o  charset conversion fails when converting articles from multibyte charsets
    we just skip over such parts instead of handling them properly
    [20100905 Urs Janssen <urs@tin.org>]
 
-o  add "COMPRESS DEFLATE" support once it's official? this would require a
+o  add "COMPRESS DEFLATE" support? this would require a
    rewrite of the code which reads data from the network (which should be
    done anyway for TLS) as we must handle null-bytes in the stream.
-   <https://tools.ietf.org/id/draft-murchison-nntp-compress-06.txt>
+   <https://www.rfc-editor.org/rfc/rfc8054.txt>
    [20100122 Urs Janssen <urs@tin.org>]
 
 o  the documentation suggests that novrootdir/$TIN_NOVROOTDIR defaults to
@@ -938,7 +946,7 @@ o  the documentation suggests that novrootdir/$TIN_NOVROOTDIR defaults to
    fix the documentation or the behaviour.
    [20100103 Urs Janssen <urs@tin.org>]
 
-o  FOLLOW_USEFOR_DRAFT is a minomer as RFC 5536 is released
+o  FOLLOW_USEFOR_DRAFT is a misnomer as RFC 5536 is released
    [20091225 Urs Janssen <urs@tin.org>]
 
 o  un/subscribe_pattern() is very slow on servers with a huge active file
@@ -969,7 +977,7 @@ o  create debug output in
    need to be able to overwrite the file)
    [20080211 Urs Janssen <urs@tin.org>]
 
-o  -M/-N report is malied to userid, should we use tinrc.mail_address
+o  -M/-N report is mailed to userid, should we use tinrc.mail_address
    instead?
 
 o  tin uses the first sig-isolator as recent one, USEFOR says it should
@@ -1030,7 +1038,7 @@ o  inverse_okay's Menu description isn't accurate (invers is also used for
 
 o  --disable-inverse-video seems to be ignored - do we still need it?
 
-o  move tinrc.defaults for certain comands to a pre-filled .inputhistory?
+o  move tinrc.defaults for certain comannds to a pre-filled .inputhistory?
    (if so, also move last_search there)
    [Jason Faultless]
 
@@ -1059,7 +1067,7 @@ o  update gettext stuff to > gettext-0.12.1
 o  and pcre2 support (new API)
    <http://www.pcre.org/current/doc/html/>
 
-o  clean up included pcre stuff and update to >= pcre-8.39
+o  clean up included pcre stuff and update to >= pcre-8.40
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file
@@ -1084,7 +1092,7 @@ o  missing newsrc file and connecting to a server without groups leads to the
 o  cache mailbox_name in misc.c/mail_check()?
 
 o  configure checks for fdopen(3) and defines HAVE_FDOPEN if found, but we
-   don't have any code guared with that macro nor any fallback code if not
+   don't have any code guarded with that macro nor any fallback code if not
    found.
 
 o  re add innlib support? (the old one was dropped as the lib has retired

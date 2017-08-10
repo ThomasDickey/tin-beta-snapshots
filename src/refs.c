@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2016-05-02
+ *  Updated   : 2017-03-28
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -893,8 +893,6 @@ thread_by_reference(
 		fclose(dbgfd);
 	}
 #endif /* DEBUG */
-
-	return;
 }
 
 
@@ -960,8 +958,6 @@ collate_subjects(
 		 */
 		h->aptr = i;
 	}
-
-	return;
 }
 
 

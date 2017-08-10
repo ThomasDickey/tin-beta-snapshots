@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2015-11-03
+dnl Updated   : 2017-06-13
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2017 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.4.1
+VERSION=2.4.2
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -918,6 +918,7 @@ AC_CHECK_LIB(uu, UUInitialize,
 #  - uidna_openUTS46()
 #  - uidna_nameToUnicode()
 cf_try_icuuc="no"
+cf_try_icuuc46="no"
 AC_CHECK_HEADER(unicode/unorm.h,[
 	AC_CHECK_HEADER(unicode/ustring.h, [
 		AC_DEFINE(HAVE_UNICODE_UNORM_H)
@@ -935,9 +936,24 @@ AC_CHECK_HEADER(unicode/unorm.h,[
 			LIBS=$cf_save_LIBS
 		)
 		AC_MSG_RESULT($cf_try_icuuc)
+		cf_save_LIBS="$LIBS"
 		AC_CHECK_HEADER(unicode/uidna.h, [
 			AC_DEFINE(HAVE_UNICODE_UIDNA_H)
 		])
+		AC_MSG_CHECKING(for uidna_nameToUnicode in libicuuc)
+		AC_TRY_LINK([#include <unicode/uidna.h>
+			#include <unicode/unorm.h>], [
+			UErrorCode status = U_ZERO_ERROR;
+			UIDNAInfo info = UIDNA_INFO_INITIALIZER;
+			UIDNA *uts46;
+			uidna_openUTS46(UNORM_DEFAULT, &status);
+			uidna_nameToUnicode(uts46, NULL, 0, NULL, 0, &info, &status);
+			uidna_close(uts46);], [
+			AC_DEFINE(HAVE_LIBICUUC_46_API)
+			cf_try_icuuc46="yes"],
+			LIBS=$cf_save_LIBS
+		)
+		AC_MSG_RESULT($cf_try_icuuc46)
 		AC_CHECK_HEADER(unicode/ubidi.h, [
 			AC_DEFINE(HAVE_UNICODE_UBIDI_H)
 		])

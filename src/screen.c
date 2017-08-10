@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-04-15
+ *  Updated   : 2017-03-28
  *  Notes     :
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -214,8 +214,6 @@ perror_message(
 	}
 
 	va_end(ap);
-
-	return;
 }
 
 

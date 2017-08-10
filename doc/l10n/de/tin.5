@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2016-09-19
+.\" Updated   : 2017-08-02
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "23. August 2016" 2.4.1 "Usenet Newsreader"
+.TH tin 5 "24. Dezember 2016" 2.4.2 "Usenet Newsreader"
 
 .SH NAME
 tin, rtin \- zugehörige Dateien
@@ -231,7 +231,7 @@ the default server given at compile time has lower priority.
 .RS
 secret to be used for cancel\-locks if \fB\%tin\fP(1)  is build with support for
 it. An empty secret file disables the cancel\-lock creation in that
-case. This file should be readable only for the user.
+case. This file should be readable only by the user.
 .RE
 .PP
 
@@ -288,7 +288,7 @@ news.example.com "streng geheim" james.bond@example.com
 Der Name der Newsgruppe.
 .TP 
 \fBflag\fP
-a flag indicating if the group is subscribed ':' or not '!'.
+Markierung die angibt ob die Gruppe abonniert ist ':' oder nicht '!'.
 .TP 
 \fBArtikel\fP
 range of already read articles from that group; numbers separated by commas
@@ -328,14 +328,14 @@ Signatur
 \fI${TIN_HOMEDIR:\-"$HOME"}/.sigfixed\fP
 .sp
 .RS
-fixed part of a randomly generated signature
+Fester Bestandteil einer zufällig erzeugten Signatur
 .RE
 .PP
 
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/.inputhistory\fP
 .sp
 .RS
-history of last used strings
+Historie der zuletzt verwendeten Zeichenfolgen
 .RE
 .PP
 
@@ -1098,16 +1098,16 @@ posting history
 \fI${TIN_HOMEDIR:\-"$HOME"}/Mail/posted\fP
 .sp
 .RS
-Copy of all posted articles in \fB\%mbox\fP(5)  format. The filename can be
-changed by setting \fBposted_articles_file\fP.
+Kopie aller geposteten Artikel im \fB\%mbox\fP(5)\-Format. Der Dateiname kann
+durch setzen von \fBposted_articles_file\fP geändert werden.
 .RE
 .PP
 
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/postponed.articles\fP
 .sp
 .RS
-Vorrat an zurückgestellten Artikeln. Diese Datei benutzt das \fB\%mbox\fP(5)
-Format.
+Vorrat an zurückgestellten Artikeln. Diese Datei benutzt das
+\fB\%mbox\fP(5)\-Format.
 .RE
 .PP
 
@@ -1167,7 +1167,7 @@ file is useful for distributing system\-wide defaults to new users who have
 no private tinrc yet (see also \fB/etc/tin/tin.defaults\fP).
 .TP 
 \fBabbreviate_groupname\fP
-Falls On werden, sofern nötig, lange Newsgruppennamen in der Auswahl\- und
+Falls ON werden, sofern nötig, lange Newsgruppennamen in der Auswahl\- und
 Artikelebene wie folgt abgekürzt: news.software.readers \->
 n.software.readers \-> n.s.readers \-> n.s.r. Voreinstellung ist OFF.
 .TP 
@@ -1253,6 +1253,15 @@ displayed after composing an article. Default is ON.
 If ON, create local copies of NNTP overview files. This can be used to
 considerably speed up accessing large groups when using a slow connection.
 Default is OFF.
+.TP 
+\fBcancel_locks\fP
+Falls ON erzeuge Cancel\-Locks. Nur vorhanden falls tin mit
+Cancel\-Lock\-Unterstützung gebaut wurde. Voreinstellung ist ON.
+.TP 
+\fBcancel_lock_algo\fP
+Diesen Hash\-Algorithmus für Cancel\-Locks verwenden. Nur vorhanden falls tin
+mit Cancel\-Lock\-Unterstützung gebaut wurde. Gültige Werte sind sha1, sha256
+und sha512. Voreinstellung ist sha1.
 .TP 
 \fBcatchup_read_groups\fP
 If set ON the user is asked when quitting if all groups read during the
@@ -1979,9 +1988,10 @@ The path that specifies the signature file to use when posting, following up
 to or replying to an article. If the path is a directory then the signature
 will be randomly generated from files that are in the specified
 directory. If the path starts with a ! the program the path points to will
-be executed to generate a signature.  \fB\%tin\fP(1)  will pass the name of the
-current newsgroup as argument to the program. \-\-none will suppress any
-signature.  Default is \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP.
+be executed to generate a signature. In order to pass the group name to the
+program, %G can be specified. This will be replaced by the name of the
+current newsgroup.  program. \-\-none will suppress any signature.  Default is
+\fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP.
 .TP 
 \fBsignature_repost\fP
 Falls ON wird die Signatur auch an repostete Artikel
@@ -2190,7 +2200,7 @@ Enable highlighting URLs in message body. Default is ON.
 If enabled \fB\%tin\fP(1)  uses ANSI\-colors. Default is OFF.
 .TP 
 \fBuse_keypad\fP
-Use scroll keys on keypad. Default is OFF.
+Navigationstasten auf dem Tastenfeld verwenden. Voreinstellung ist OFF.
 .TP 
 \fBuse_mouse\fP
 Allows the mouse button support in a \fB\%xterm\fP(1x)  to be
@@ -2278,7 +2288,7 @@ controlled via \fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fP and/or
 built\-in default) the \fInewslibdir\fP.
 .TP 
 \fBdomainname\fP
-Sets a global domain name used in From lines
+Setzt den globalen Domänennamen, der in From\-Zeilen verwendet wird
 .TP 
 \fBorganization\fP
 Defines the name of your organization. $\fBORGANIZATION\fP overrides any
@@ -2377,7 +2387,7 @@ Sprache
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP
 .sp
 .RS
-Diese Datei enthält eine Liste der Newsgruppen, die der lokale Sever
+Diese Datei enthält eine Liste der Newsgruppen, die der lokale Server
 vorhält. Jede Newsgruppe sollte nur einmal aufgeführt werden. Jede Zeile
 beschreibt eine Gruppe; in jeder Newsgruppe haben die Artikel eindeutige
 Namen: monoton steigende Nummern.
@@ -2462,10 +2472,10 @@ News per NNTP gelesen wird verwendet \fB\%tin\fP(1) stattdessen den NEWGROUPS
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups\fP
 .sp
 .RS
-Diese Datei enthält kurze Beschreibungen der einzelnen Newsgroupen. Es wird
+Diese Datei enthält kurze Beschreibungen der einzelnen Newsgruppen. Es wird
 normalerweise durch die lokalen Newsserver aktualisiert (zB. \fB\%innd\fP(8))
 sobald eine neue Gruppe wird erstellt. Jede Zeile besteht aus zwei durch
-Tabulatoren getrennte Felder "\fIgroup.name\fP	\fIKurzbeschreibung\fP".
+Tabulator getrennten Feldern "\fIgroup.name\fP	\fIKurzbeschreibung\fP".
 .TP 
 \fBgroup.name\fP
 ist der Name der Newsgruppe

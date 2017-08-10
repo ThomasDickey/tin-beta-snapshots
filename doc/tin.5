@@ -2,11 +2,11 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2016-09-19
+.\" Updated   : 2017-08-02
 .\" Notes     : needs a some work
 .\"
 .\"
-.TH tin 5 "August 23rd, 2016" "2.4.1" "Usenet newsreader"
+.TH tin 5 "December 24th, 2016" "2.4.2" "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -234,7 +234,7 @@ priority.
 secret to be used for cancel-locks if
 .BR \%tin (1)
 is build with support for it. An empty secret file disables the cancel-lock
-creation in that case. This file should be readable only for the user.
+creation in that case. This file should be readable only by the user.
 .RE
 .PP
 
@@ -1279,6 +1279,15 @@ If ON, create local copies of NNTP overview files. This can be used to
 considerably speed up accessing large groups when using a slow connection.
 Default is OFF.
 .TP
+.B cancel_locks
+If ON, generate cancel-locks. Only available when build with cancel-lock
+support. Default is ON.
+.TP
+.B cancel_lock_algo
+Use this hash algorithm for cancel-locks. Only available when build with
+cancel-lock support. Valid values are sha1, sha256 and sha512.
+Default is sha1.
+.TP
 .B catchup_read_groups
 If set ON the user is asked when quitting if all groups read during the
 current session should be marked read. Default is OFF.
@@ -2058,9 +2067,9 @@ The path that specifies the signature file to use when posting, following
 up to or replying to an article. If the path is a directory then the
 signature will be randomly generated from files that are in the specified
 directory. If the path starts with a ! the program the path points to will
-be executed to generate a signature.
-.BR \%tin (1)
-will pass the name of the current newsgroup as argument to the
+be executed to generate a signature. In order to pass the group name to the
+program, %G can be specified. This will be replaced by the name of the
+current newsgroup.
 program. \-\-none will suppress any signature.
 Default is \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fR.
 .TP
@@ -2307,8 +2316,7 @@ A regular expression that tin will use to find the end of a verbatim block.
 Default is #v-
 .TP
 .B verbatim_handling
-If ON verbatim blocks will be detected.
-Default is ON
+If ON verbatim blocks will be detected. Default is ON.
 .TP
 .B wildcard
 Allows you to select how

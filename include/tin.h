@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-04-12
+ *  Updated   : 2017-03-31
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -697,10 +697,9 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-|[^\\W_]){0,61}(?<!---)[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,14}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?(?=[^\\)\\]\\>\"\\s]*\\()(?:/[^\\]\\>\"\\s]*|$|(?=[)\\]\\>\"\\s]))|(?:/[^)\\]\\>\"\\s]*|$|(?=[)\\]\\>\"\\s])))"
 /*
  * case insensitive
- * TOFO: check against RFC 2368
+ * TOFO: check against RFC 6068
  */
-/* #define MAIL_REGEX	"\\b(?:mailto:(?:(?:[-\\w$.+!*'(),;/?:@&=]|(?:%[\\da-f]{2}))+))" */
-#define MAIL_REGEX	"\\b(?:mailto:(?:[-\\w$.+!*'(),;/?:@&=]|%[\\da-f]{2})+)"
+#define MAIL_REGEX	"\\b(?:mailto:(?:[-\\w$.+!*'(),;/?:@&=]|%[\\da-f]{2})+)(?<!\\))"
 /*
  * case insensitive
  * TODO: check against RFC 5538
@@ -852,6 +851,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 #define NEWSRC_LINE	8192
 #define HEADER_LEN	1024
+#define IMF_LINE_LEN 998 /* RFC 5322 2.1.1 */
 
 #define TABLE_SIZE	1409
 

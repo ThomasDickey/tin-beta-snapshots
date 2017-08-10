@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2016-10-10
+ *  Updated   : 2017-03-28
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
@@ -398,8 +398,6 @@ print_save_summary(
 			what, first, last);
 
 	wait_message((tinrc.beginner_level) ? 4 : 2, buf);
-
-	return;
 }
 
 

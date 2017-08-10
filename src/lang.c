@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2016-07-29
+ *  Updated   : 2017-08-02
  *  Notes     :
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
@@ -119,7 +119,9 @@ constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) art
 constext txt_cancelling_art[] = N_("Cancelling article...");
 constext txt_cannot_create_uniq_name[] = "Can't create unique tempfile-name";
 constext txt_cannot_create[] = N_("Cannot create %s");
-constext txt_cannot_find_base_art[] = N_("Can't find base article %d");
+#ifdef DEBUG
+	constext txt_cannot_find_base_art[] = N_("Can't find base article %d");
+#endif /* DEBUG */
 constext txt_cannot_open[] = N_("Can't open %s");
 constext txt_cannot_open_for_saving[] = N_("Couldn't open %s for saving");
 constext txt_cannot_post[] = N_("*** Posting not allowed ***");
@@ -1374,6 +1376,16 @@ constext *txt_auto_cc_bcc_options[] = {
 	NULL
 };
 
+#ifdef USE_CANLOCK
+/* hash algorithms for Cancel-Lock/Cancel-Key */
+constext *txt_cancel_lock_algos[] = {
+		"sha1",
+		"sha256",
+		"sha512",
+		NULL
+};
+#endif /* USE_CANLOCK */
+
 /* different confirm choices */
 constext *txt_confirm_choices[] = {
 	N_("none"),
@@ -2421,6 +2433,7 @@ struct opttxt txt_sigfile = {
 	N_("# Signature path (random sigs)/file to be used when posting/replying\n\
 # sigfile=file       appends file as signature\n\
 # sigfile=!command   executes external command to generate a signature\n\
+#                    (specify %G to pass name of current newsgroup)\n\
 # sigfile=--none     don't append a signature\n")
 };
 
@@ -2586,6 +2599,20 @@ struct opttxt txt_auto_cc_bcc = {
 #   2 = Bcc\n\
 #   3 = Cc and Bcc\n")
 };
+
+#ifdef USE_CANLOCK
+struct opttxt txt_cancel_locks = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Generate Cancel-Lock/Cancel-Key Header"),
+	N_("# If ON generate Cancel-Lock/Cancel-Key Header\n")
+};
+
+struct opttxt txt_cancel_lock_algo = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Hash algorithm for Cancel-Lock/Cancel-Key"),
+	N_("# Hash algorithm for Cancel-Lock/Cancel-Key (default 'sha1')\n")
+};
+#endif /* USE_CANLOCK */
 
 struct opttxt txt_spamtrap_warning_addresses = {
 	N_("Enter address elements about which you want to be warned. <CR> sets."),

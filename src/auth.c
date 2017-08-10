@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2016-01-31
+ *  Updated   : 2016-12-13
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -297,6 +297,12 @@ authinfo_plain(
 				return TRUE;
 			}
 		}
+#	ifdef DEBUG
+		else {
+			if (debug & DEBUG_NNTP)
+				 debug_print_file("NNTP", "read_newsauth_file(\"%s\", \"%s\", \"%s\") failed", server, authuser, authpass);
+		}
+#	endif /* DEBUG */
 	}
 
 	/*

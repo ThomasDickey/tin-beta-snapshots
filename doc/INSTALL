@@ -667,5 +667,5 @@ Compiled & installed
 Tin was successfully built and installed on a variety of platforms including
 Linux, FreeBSD, OpenBSD, NetBSD, BSDi, Darwin, Solaris, IRIX, HP-UX, Ultrix,
 Tru64, AIX, SINIX, UXP/V, SUPER-UX, Unicos, QNX, GNU Hurd, DG/UX, SEIUX,
-Openstep, MiNT, Haiku, MINIX, Syllable and Cygwin.
+Openstep, MiNT, Haiku, MINIX, Syllable, Bitrig and Cygwin.
 For a detailed list see <http://www.tin.org/builds.html>

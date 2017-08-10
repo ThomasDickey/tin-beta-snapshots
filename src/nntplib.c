@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2016-09-22
+ *  Updated   : 2017-01-31
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -777,8 +777,8 @@ put_server(
 		 * one. we cache "LIST cmd." instead, this will slow down things, but
 		 * that's ok on reconnect.
 		 */
-        if (strcmp(last_put, string))
-        	STRCPY(last_put, string);
+		if (strcmp(last_put, string))
+			STRCPY(last_put, string);
 		if (!strncmp(string, "LIST ACTIVE ", 12))
 			last_put[11] = '\0'; /* "LIST ACTIVE" */
 		else if (!strncmp(string, "LIST COUNTS ", 12))
@@ -1199,7 +1199,7 @@ check_extensions(
 								nntp_caps.sasl |= SASL_LOGIN;
 							}
 						}
-					} else if (!strncasecmp(ptr, "COMPRESS", 8)) { /* draft-murchison-nntp-compress-06 */
+					} else if (!strncasecmp(ptr, "COMPRESS", 8)) { /* RFC 8054 */
 						d = ptr + 8;
 						d = strpbrk(d, " \t");
 						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
@@ -1322,7 +1322,7 @@ nntp_open(
 {
 #ifdef NNTP_ABLE
 	char *linep;
-	char line[NNTP_STRLEN];
+	char line[NNTP_STRLEN]= { '\0' };
 	int ret;
 	t_bool sec = FALSE;
 	/* It appears that is_reconnect guards code that should be run only once */
@@ -1399,7 +1399,7 @@ nntp_open(
 
 			return ret;
 	}
-	if (!is_reconnect) {
+	if (!is_reconnect && *line) {
 		/* remove leading whitespace and save server's initial response */
 		linep = line;
 		while (isspace((int) *linep))
@@ -1451,17 +1451,19 @@ nntp_open(
 			}
 			check_extensions();
 		}
+	}
 
-		if (force_auth_on_conn_open) {
+	if (force_auth_on_conn_open) {
 #	ifdef DEBUG
-			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "nntp_open() authenticate(force_auth_on_conn_open)");
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "nntp_open() authenticate(force_auth_on_conn_open)");
 #	endif /* DEBUG */
 
-			if (!authenticate(nntp_server, userid, FALSE))	/* 3rd parameter is FALSE as we need to get prompted for username password here */
-				return -1;
+		if (!authenticate(nntp_server, userid, FALSE))	/* 3rd parameter is FALSE as we need to get prompted for username password here */
+			return -1;
+
+		if (nntp_caps.type == CAPABILITIES)
 			check_extensions();
-		}
 	}
 
 	if ((nntp_caps.type == CAPABILITIES && nntp_caps.mode_reader) || nntp_caps.type != CAPABILITIES) {
@@ -1483,7 +1485,7 @@ nntp_open(
 		can_post = nntp_caps.post && !force_no_post;
 	}
 
-	if (!is_reconnect) {
+	if (!is_reconnect && *line) {
 #	if 0
 	/*
 	 * gives wrong results if RFC 3977 server requestes auth after

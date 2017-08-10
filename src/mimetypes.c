@@ -3,7 +3,7 @@
  *  Module    : mimetypes.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-31
- *  Updated   : 2007-12-30
+ *  Updated   : 2017-03-28
  *  Notes     : mime.types handling
  *
  * Copyright (c) 2000-2017 Jason Faultless <jason@altarstone.com>
@@ -118,8 +118,6 @@ lookup_mimetype(
 	joinpath(buf, sizeof(buf), TIN_DEFAULTS_DIR, "mime.types");
 	_lookup_mimetype(buf, ext, part);
 #endif /* TIN_DEFAULTS_DIR */
-
-	return;
 }
 
 

@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2016-08-23
+.\" Updated   : 2017-08-02
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "August 23rd, 2016" 2.4.1 "Usenet newsreader"
+.TH tin 1 "December 24th, 2016" 2.4.2 "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -215,8 +215,9 @@ Verbose mode for \*(rq\fB\-c\fP\*(rq, \*(rq\fB\-M\fP\*(rq, \*(rq\fB\-N\fP\*(rq, 
 Print version and date information.
 .TP 
 \fB\-w\fP
-Quick mode to post an article and then exit. In order for this to be really
-quick, it should be used with \*(rq\fB\-n\fP\*(rq if possible.
+Quick mode to post an article and then exit. This option implies
+\&\*(rq\fB\-d\fP\*(rq. In order for this to be really quick, it should be used with
+\&\*(rq\fB\-n\fP\*(rq if possible.
 .TP 
 \fB\-x\fP
 No\-posting mode. You cannot post articles if you use this option.
@@ -690,7 +691,7 @@ section "RANGES" for more information.
 Re\-enter the last message that was viewed.
 .TP 
 \fBSearchRepeat '\e'\fP
-Repeat the previous search
+Repeat the previous search.
 .TP 
 \fBSearchSubjF '/'\fP
 Search forward for specified subject.
@@ -829,7 +830,7 @@ OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES").
 Go to next group.
 .TP 
 \fBGroupNextUnreadArt 'N'\fP
-Go to next unread article.
+Go to the next unread article.
 .TP 
 \fBPrint 'o'\fP
 Send current article / thread / auto\-selected (hot) articles / articles
@@ -1537,6 +1538,15 @@ If ON, create local copies of NNTP overview files. This can be used to
 considerably speed up accessing large groups when using a slow connection.
 See also "INDEX FILES". Default is OFF.
 .TP 
+\fBGenerate cancel\-locks (cancel_locks)\fP
+If ON, generate cancel\-locks. Only available when build with cancel\-lock
+support. Default is ON.
+.TP 
+\fBHash algorithm for cancel\-locks (cancel_lock_algo)\fP
+Use this hash algorithm for cancel\-locks. Only available when build with
+cancel\-lock support. Valid values are sha1, sha256 and sha512.  Default is
+sha1.
+.TP 
 \fBCatchup read groups when quitting (catchup_read_groups)\fP
 .\"
 .\" FIXME - I leave this to someone who's using colors
@@ -2225,7 +2235,7 @@ If ON show only subscribed groups that contain unread articles. Default is
 OFF.
 .TP 
 \fBDisplay signatures (show_signatures)\fP
-If OFF don't show signatures when displaying articles.  Default is ON.
+If OFF don't show signatures when displaying articles. Default is ON.
 .TP 
 \fBPrepend signature with '\en\-\- \en' (sigdashes)\fP
 If ON prefix the signature with sigdashes. Default is ON.
@@ -2235,9 +2245,10 @@ The path that specifies the signature file to use when posting, following up
 to or replying to an article. If the path is a directory then the signature
 will be randomly generated from files that are in the specified
 directory. If the path starts with a ! the program the path points to will
-be executed to generate a signature. \fBtin\fP will pass the name of the
-current newsgroup as argument to the program. \-\-none will suppress any
-signature.  Default is \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP.
+be executed to generate a signature. In order to pass the group name to the
+program, %G can be specified. This will be replaced by the name of the
+current newsgroup. \-\-none will suppress any signature.  Default is
+\fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP.
 .TP 
 \fBAdd signature when reposting (signature_repost)\fP
 If ON add signature to reposted articles. Default is ON.
@@ -3435,6 +3446,8 @@ Set this variable to disable the use of \fB\%metamail\fP(1)  or a replacement
 (e.g. metamutt).
 .TP 
 \fBMM_CHARSET\fP
+MIME character set used if not configured via the tinrc variable
+\fBmm_charset\fP.
 .TP 
 \fBISPELL\fP
 Set this variable to point to \fB\%ispell\fP(1)  or a replacement and its

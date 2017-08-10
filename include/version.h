@@ -40,13 +40,13 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.4.1"
+#		define VERSION		"2.4.2"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20161130"
-#	define RELEASENAME	"Octomore"
+#	define RELEASEDATE	"20170810"
+#	define RELEASENAME	"Daill"
 /* config-file versions - must by dotted triples */
-#	define TINRC_VERSION	"1.3.13"
-#	define ATTRIBUTES_VERSION	"1.0.8"
+#	define TINRC_VERSION	"1.3.14"
+#	define ATTRIBUTES_VERSION	"1.0.9"
 #	define FILTER_VERSION	"1.0.0"
 #	define KEYMAP_VERSION	"1.0.9"
 #	define SERVERCONFIG_VERSION	"1.0.0"

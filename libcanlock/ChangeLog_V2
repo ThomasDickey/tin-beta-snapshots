@@ -1,0 +1,26 @@
+
+VERSION 2b:
+
+05 Oct 2003
+        [No information available]
+
+VERSION 2a:
+
+11 Aug 2003
+        - Only very minor changes.  The makefile was tweaked slightly
+          for increased portability, and a typo in lock_strip was fixed.
+
+VERSION 2:
+
+10 Aug 2003
+        - Replaced the SHA-1 library with the source code from RFC 1374.
+          The old code had problems on PowerPC that I was too lazy to hunt
+          down and fix.
+        - Replaced the ISC version of Base64 with an implementation
+          produced by Sweden's Royal Institute of Technology (KTH). The
+          old functions carried a weird patent disclaimer from IBM, while
+          the new ones use a nice simple non-scary BSD license.
+        - The md5_key(), md5_lock() and md5_verify() functions have been
+          removed.  As far as I can tell they weren't being used.
+        - Added a Makefile instead of the Build thingy.
+        - Did a bunch of cleanup to get rid of various warnings.

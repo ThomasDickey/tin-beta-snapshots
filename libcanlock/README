@@ -1,45 +1,75 @@
-libcanlock - a library for creating and verifying cancel locks.
+
+libcanlock
+==========
+A library for creating and verifying RFC xxxx Netnews Cancel-Locks.
 
 
-Copyright stuff:
-
-    sha1.c is basically the sample code from RFC 3174 from Donald
-    Eastlake and Paul Jones, and carries a BSD-ish license from the
-    Internet Society.
-
-    base64.c carries a BSD license from KTH.
-
-    hmac_sha1.c, canlock.c, hmactest.c and canlocktest.c were written by
-    Greg Andruk, and carry an MIT style license.
+1) General
+libcanlock is a standalone implementation without external dependencies.
+If your program already uses a library that contains functions for hash and
+base64 algorithms (e.g. OpenSSL), it is recommended that you use them instead
+(to avoid code duplication).
 
 
-How to compile it:
+2) System requirements
+- POSIX.1-2001 compliant operating system
+- C99 compiler with 'int' data type of at least 32 bit width
 
-    If you are lucky, it will be enough to unpack the archive, change to
-    it top directory and run make.
-        
-    You can also:
-
-        make test
-            to insure the library works as Fluffy intended
-        
-        make clean
-                to get rid of stray build gunk
-            
-        make nuke
-                to return the directory to its lovely pristine condition
-           
-    The libcanlock.a that will be produced is what you want to link into
-    your newsreader or whatever.
+Note:
+A POSIX style operating system is required only for the build system and the
+test-suite.
+The code of the library and CLI utility is intended to be portable C99 (with the
+exception that 16 bit platforms are not supported).
 
 
-Random blabbage:
+3) API
+Since version 3 there is a new API available (hash algorithm independent).
+Man pages for this API are installed together with the library.
 
-    This version compiled and ran correctly on x86, PowerPC, Itanium,
-    PA-RISC and Alpha, so hopefully it's now reasonably portable.
+Anything that is not documented should be considered as internal and not
+part of the API. There is no portable way to hide all the internal stuff
+completely, but expect that a future version may no longer export it without
+notice.
 
-    The canlocktest source code should give you a pretty good idea of
-    how the functions work.  See the doc directory for relevant RFCs and
-    stuff.
 
-Meow.
+4) Backward compatibility
+The old API from version 2 is still emulated, but it is now deprecated and
+undocumented.
+
+Including the header file from the new location, recompile and relink should
+be sufficient to port an existing application to version 3 of the library.
+It is also possible to install both version 2 and version 3 of the library
+in parallel.
+
+
+5) Versioning scheme
+With version 3 the release version scheme has changed.
+Now the release version contains 3 numbers "x.y.z":
+
+- Major (x)
+  The major number is incremented for every API/ABI change that is not backward
+  compatible.
+- Minor (y)
+  The minor number is incremented for API/ABI extensions that are backward
+  compatible.
+- Patch (z)
+  The patch number is incremented for changes that don't change the API/ABI.
+
+In other words:
+Releases with the same major and minor numbers are drop-in replacements.
+Up- and downgrades between such versions are possible without touching
+programs that use the library.
+Releases with the same major, but different minor numbers are backward,
+but not forward compatible. Upgrades are possible, downgrades can break
+programs that use the library.
+Releases with different major numbers require changes in all programs that
+use the library.
+
+
+canlock
+=======
+Since version 3 the command line utility "canlock" is available as frontend.
+The utility and a man page for it are installed together with the library.
+
+
+EOF

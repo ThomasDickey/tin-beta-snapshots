@@ -169,7 +169,7 @@ wildmatpos(
 	int srch_offsets_size)
 {
 	char *txt, *t, *px;
-	int i;
+	int i, prev_offset = srch_offsets[1];
 	t_bool ret = FALSE;
 
 	if (srch_offsets_size >= 2)
@@ -199,7 +199,7 @@ wildmatpos(
 	/* remove the leading '*' */
 	px = my_strdup(p + 1);
 
-	for (t = txt; *t; t++)
+	for (t = txt + prev_offset; *t; t++)
 		if ((ret = (DoMatch(t, px))) == TRUE) {
 			/* remove the trailing '*' */
 			px[strlen(px) - 1] = '\0';

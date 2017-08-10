@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "tinews.pl 1"
-.TH tinews.pl 1 "September 19th, 2016" "1.1.41" "Post and sign an article via NNTP"
+.TH tinews.pl 1 "May 13th, 2017" "1.1.45" "Post and sign an article via NNTP"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -184,6 +184,19 @@ Set the article header field Expires: to the given value.
 .IX Xref "-f --from"
 .IX Item "-f From | --from From"
 Set the article header field From: to the given value.
+.IP "\-\fBi\fR \fIheader\fR | \-\-\fBignore-headers\fR \fIheader\fR" 4
+.IX Xref "-i --ignore-headers"
+.IX Item "-i header | --ignore-headers header"
+Comma separated list of headers that will be ignored during signing.
+Usually the following headers will be signed if present:
+.Sp
+From, Newsgroups, Subject, Control, Supersedes, Followup-To,
+Date, Injection-Date, Sender, Approved, Message-ID, Reply-To,
+Cancel-Key, Also-Control and Distribution.
+.Sp
+Some of them may be altered on the Server (i.e. Cancel-Key) which would
+invalid the signature, this option can be used the exclude such headers
+if required.
 .ie n .IP "\-\fBn\fR ""Newsgroups"" | \-\-\fBnewsgroups\fR ""Newsgroups""" 4
 .el .IP "\-\fBn\fR \f(CWNewsgroups\fR | \-\-\fBnewsgroups\fR \f(CWNewsgroups\fR" 4
 .IX Xref "-n --newsgroups"
@@ -239,6 +252,12 @@ Do not add Injection-Date: header.
 .IX Xref "-L --no-canlock"
 .IX Item "-L | --no-canlock"
 Do not add Cancel-Lock: / Cancel-Key: headers.
+.ie n .IP "\-\-\fBcanlock-algorithm\fR ""Algorithm""" 4
+.el .IP "\-\-\fBcanlock-algorithm\fR \f(CWAlgorithm\fR" 4
+.IX Xref "--canlock-algorithm"
+.IX Item "--canlock-algorithm Algorithm"
+Digest algorithm used for Cancel-Lock: / Cancel-Key: headers.
+Supported algorithms are sha1, sha256 and sha512. Default is sha1.
 .IP "\-\fBR\fR | \-\-\fBno-control\fR" 4
 .IX Xref "-R --no-control"
 .IX Item "-R | --no-control"
@@ -394,7 +413,8 @@ security is an issue, don't use this script.
 .PP
 If the Cancel-Lock feature is enabled the following additional modules
 must be installed: \fBMIME::Base64\fR(3pm), \fBDigest::SHA\fR(3pm) or
-\&\fBDigest::SHA1\fR(3pm) and \fBDigest::HMAC_SHA1\fR(3pm)
+\&\fBDigest::SHA1\fR(3pm) and \fBDigest::HMAC_SHA1\fR(3pm). sha256 and sha512 as
+algorithms for \fBcanlock-algorithm\fR are only available with \fBDigest::SHA\fR.
 .SH "AUTHOR"
 .IX Header "AUTHOR"
 Urs Janssen <urs@tin.org>,

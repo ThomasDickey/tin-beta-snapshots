@@ -84,7 +84,7 @@ string_dup(
 	char *buf;
 
 	if ((buf = malloc(strlen(string) + 1)) == NULL)
-		failed("malloc()");
+		failed("malloc() failed");
 
 	return strcpy(buf, string);
 }

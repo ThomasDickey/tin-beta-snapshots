@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2016-10-10
+ *  Updated   : 2017-05-30
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
@@ -48,13 +48,15 @@
 
 #ifdef USE_CANLOCK
 #	define ADD_CAN_KEY(id) { \
-		char key[1024]; \
-		char *kptr; \
-		key[0] = '\0'; \
-		if ((kptr = build_cankey(id, get_secret())) != NULL) { \
-			STRCPY(key, kptr); \
-			free(kptr); \
-			msg_add_header("Cancel-Key", key); \
+		if (tinrc.cancel_locks) { \
+			char key[1024]; \
+			char *kptr; \
+			key[0] = '\0'; \
+			if ((kptr = build_cankey(id, get_secret())) != NULL) { \
+				STRCPY(key, kptr); \
+				free(kptr); \
+				msg_add_header("Cancel-Key", key); \
+			} \
 		} \
 	}
 	/*
@@ -66,13 +68,15 @@
 	 */
 #	ifdef EVIL_INSIDE
 #		define ADD_CAN_LOCK(id) { \
-			char lock[1024]; \
-			char *lptr = (char *) 0; \
-			lock[0] = '\0'; \
-			if ((lptr = build_canlock(id, get_secret())) != NULL) { \
-				STRCPY(lock, lptr); \
-				free(lptr); \
-				msg_add_header("Cancel-Lock", lock); \
+			if (tinrc.cancel_locks) { \
+				char lock[1024]; \
+				char *lptr = (char *) 0; \
+				lock[0] = '\0'; \
+				if ((lptr = build_canlock(id, get_secret())) != NULL) { \
+					STRCPY(lock, lptr); \
+					free(lptr); \
+					msg_add_header("Cancel-Lock", lock); \
+				} \
 			} \
 		}
 #	endif /* EVIL_INSIDE */
@@ -181,6 +185,7 @@ static void update_posted_info_file(const char *group, int action, const char *s
 #endif /* EVIL_INSIDE */
 #ifdef USE_CANLOCK
 	static char *build_cankey(const char *messageid, const char *secret);
+	static cl_hash_version get_cancel_lock_algo(void);
 #endif /* USE_CANLOCK */
 
 
@@ -539,7 +544,6 @@ user_posted_messages(
 		snprintf(buf, sizeof(buf), "%8s  %c  %-*s  %s",
 			posted[i - 1].date, posted[i - 1].action,
 			(int) group_len, posted[i - 1].group, posted[i - 1].subj);
-		buf[cCOLS - 2] = '\0';
 		fprintf(fp, "%s%s", buf, cCRLF);
 	}
 	free(posted);
@@ -1323,32 +1327,29 @@ check_article_to_be_posted(
 
 			warnings++;
 		}
-		if (strlen(line) > 998 && !must_break_line)
+		if (strlen(line) > IMF_LINE_LEN && !must_break_line)
 			must_break_line = cnt;
 	}
 
-#if 1
 /*
  * TODO: cleanup, test me, move to the right location, strings -> lang.c, ...
- *       define a macro for 998
  */
 	if (must_break_line && ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) != MIME_ENCODING_BASE64)) {
 #	ifdef MIME_BREAK_LONG_LINES
 		if (contains_8bit) {
 			if ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) != MIME_ENCODING_QP)
-				my_fprintf(stderr, _("Line %d is longer than 998 octets and should be folded, but\nencoding is neither set to %s nor to %s\n"), must_break_line, txt_quoted_printable, txt_base64);
+				my_fprintf(stderr, _("Line %d is longer than %d octets and should be folded, but\nencoding is neither set to %s nor to %s\n"), must_break_line, IMF_LINE_LEN, txt_quoted_printable, txt_base64);
 		} else
 #	endif /* MIME_BREAK_LONG_LINES */
 		{
 			if ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_QP)
-				my_fprintf(stderr, _("Line %d is longer than 998 octets and should be folded, but\nencoding is set to %s without enabling MIME_BREAK_LONG_LINES or\nposting doesn't contain any 8bit chars and thus folding won't happen\n"), must_break_line, txt_quoted_printable);
+				my_fprintf(stderr, _("Line %d is longer than %d octets and should be folded, but\nencoding is set to %s without enabling MIME_BREAK_LONG_LINES or\nposting doesn't contain any 8bit chars and thus folding won't happen\n"), must_break_line, IMF_LINE_LEN, txt_quoted_printable);
 			else
-				my_fprintf(stderr, _("Line %d is longer than 998 octets and should be folded, but\nencoding is not set to %s\n"), must_break_line, txt_base64);
+				my_fprintf(stderr, _("Line %d is longer than %d octets and should be folded, but\nencoding is not set to %s\n"), must_break_line, IMF_LINE_LEN, txt_base64);
 		}
 		my_fflush(stderr);
 		warnings++;
 	}
-#endif /* 1 */
 
 	if (saw_sig_dashes > 1)
 		warnings_catbp |= CA_WARNING_MULTIPLE_SIGDASHES;
@@ -2250,7 +2251,8 @@ create_normal_article_headers(
  */
 void
 quick_post_article(
-	t_bool postponed_only)
+	t_bool postponed_only,
+	int num_cmd_line_groups)
 {
 	char buf[HEADER_LEN];
 	int art_type = GROUP_TYPE_NEWS;
@@ -2271,16 +2273,16 @@ quick_post_article(
 		return;
 
 	/*
-	 * Get groupname
+	 * post_article_and_exit
+	 * Get groupname, but skip query if group was given on the cmd.-line
 	 */
-	snprintf(buf, sizeof(buf), _(txt_post_newsgroups), tinrc.default_post_newsgroups);
-	if (!(prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS)))
-		return;
+	if (!num_cmd_line_groups) {
+		snprintf(buf, sizeof(buf), _(txt_post_newsgroups), tinrc.default_post_newsgroups);
+		if (!(prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS)))
+			return;
 
-	/*
-	 * Strip double newsgroups
-	 */
-	strip_double_ngs(tinrc.default_post_newsgroups);
+		 strip_double_ngs(tinrc.default_post_newsgroups);
+	}
 
 	/*
 	 * Check/see if any of the newsgroups are not postable.
@@ -2320,7 +2322,6 @@ post_postponed_article(
 	snprintf(buf, sizeof(buf), _("Posting: %.*s ..."), cCOLS - 14, subject); /* TODO: -> lang.c, use strunc() */
 	post_loop(POST_POSTPONED, group_find(ng, FALSE), (ask ? POST_EDIT : GLOBAL_POST), buf, GROUP_TYPE_NEWS, 0);
 	free(ng);
-	return;
 }
 
 
@@ -2402,8 +2403,6 @@ fetch_postponed_article(
 	 */
 
 	while (fgets(line, (int) sizeof(line), in) != NULL) {
-		if (tinrc.mailbox_format == 1)
-			bufp = line;
 		if (strncmp(line, "From ", 5) == 0)
 			first_article = FALSE;
 		if (first_article) {
@@ -2421,6 +2420,7 @@ fetch_postponed_article(
 
 			/* unquote quoted From_ lines */
 			if (tinrc.mailbox_format == 1) {
+				bufp = line;
 				while (*bufp == '>')
 					bufp++;
 				if (strncmp(bufp, "From ", 5) == 0)
@@ -2688,7 +2688,7 @@ is_crosspost(
  * shortening to 998 is a good idea.
  */
 #ifdef NNTP_ONLY
-#	define MAXREFSIZE 998
+#	define MAXREFSIZE 998	/* MIN(IMF_LINE_LEN,2047) */
 #else /* some extern inews (required for posting right into the spool) can't handle 1k-lines */
 #	define MAXREFSIZE 512
 #endif /* NNTP_ONLY */
@@ -2761,7 +2761,7 @@ join_references(
 	}
 	*c++ = ' ';
 	appendid(&c, &newref);
-	*c = 0;
+	*c = '\0';
 
 	/* now see if we need to remove ids */
 	while (strlen(b) > (MAXREFSIZE - strlen("References: ") - 2)) {
@@ -3516,7 +3516,7 @@ mail_bug_report(
 			fprintf(fp, "NNTP2: %s\n", bug_nntpserver2);
 			start_line_offset++;
 		}
-		if (nntp_caps.implementation){
+		if (nntp_caps.implementation) {
 			fprintf(fp, "IMPLE: %s\n", nntp_caps.implementation);
 			start_line_offset++;
 		}
@@ -5138,6 +5138,24 @@ build_messageid(
 
 /* TODO: move to canlock.c */
 #ifdef USE_CANLOCK
+static cl_hash_version
+get_cancel_lock_algo(
+	void)
+{
+	/*
+	 * must match the order in txt_cancel_lock_algos
+	 */
+	switch(tinrc.cancel_lock_algo) {
+		case 1:
+			return CL_SHA256;
+		case 2:
+			return CL_SHA512;
+		case 0:
+		default:
+			return CL_SHA1;
+	}
+}
+
 /*
  * build_canlock(messageid, secret)
  * returns *(cancel-lock) or NULL
@@ -5148,9 +5166,9 @@ build_canlock(
 	const char *secret)
 {
 	if ((messageid == NULL) || (secret == NULL) || (*secret == '\0'))
-		return ((char *) 0);
+		return NULL;
 	else
-		return (char *) (sha_lock((const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid)));
+		return cl_get_lock(get_cancel_lock_algo(), (const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid));
 }
 
 
@@ -5164,9 +5182,9 @@ build_cankey(
 	const char *secret)
 {
 	if ((messageid == NULL) || (secret == NULL) || (*secret == '\0'))
-		return ((char *) 0);
+		return NULL;
 	else
-		return (sha_key((const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid)));
+		return cl_get_key(get_cancel_lock_algo(), (const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid));
 }
 
 
@@ -5422,7 +5440,7 @@ stripped_double_ngs(
 				/* Double newsgroup. Move all following newsgroups downwards */
 				k = j + 1;
 				do {
-					newsgroups[k-1] = newsgroups[k];
+					newsgroups[k - 1] = newsgroups[k];
 				} while (newsgroups[k++]);
 				changed = TRUE;
 				(*ngcnt)--;

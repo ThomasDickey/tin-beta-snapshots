@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2016-05-25
+ *  Updated   : 2017-03-28
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2017 Dirk Nimmich <nimmich@muenster.de>
@@ -2479,8 +2479,6 @@ upgrade_keymap_file(
 	rename(newk, old);
 	wait_message(0, _(txt_keymap_upgraded), KEYMAP_VERSION);
 	prompt_continue();
-
-	return;
 }
 
 

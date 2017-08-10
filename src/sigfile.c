@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2013-11-21
+ *  Updated   : 2017-08-02
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2017 Mike Gleason
@@ -74,12 +74,41 @@ msg_write_signature(
 #ifndef DONT_HAVE_PIPING
 		if (thisgroup->attribute->sigfile[0] == '!') {
 			FILE *pipe_fp;
-			char *sigcmd;
+			char *sigcmd, *sigattr, *ptr;
 			char cmd[PATH_LEN];
 
 			fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "\n");
-			sigcmd = my_malloc(strlen(thisgroup->attribute->sigfile + 1) + strlen(thisgroup->name) + 4);
-			sprintf(sigcmd, "%s \"%s\"", thisgroup->attribute->sigfile + 1, thisgroup->name);
+			sigattr = thisgroup->attribute->sigfile + 1;
+
+			if ((ptr = strstr(sigattr, "%G"))) {
+				char *to, *grpname;
+				int cnt = 1;
+
+				/* check if %G occurs more than once */
+				while (strstr(++ptr, "%G"))
+					++cnt;
+
+				/* sigattr - (cnt * '%G') + (cnt * '"groupname"') + '\0' */
+				sigcmd = my_malloc(strlen(sigattr) + cnt * strlen(thisgroup->name) + 1);
+				to = sigcmd;
+
+				while (*sigattr) {
+					if (*sigattr == '%' && *(sigattr + 1) && *(sigattr + 1) == 'G') {
+						grpname = thisgroup->name;
+						*to++ = '"';
+						while (*grpname)
+							*to++ = *grpname++;
+						*to++ = '"';
+						sigattr += 2;
+					} else
+						*to++ = *sigattr++;
+				}
+
+				*to = '\0';
+			} else {
+				sigcmd = my_malloc(strlen(sigattr) + 1);
+				sprintf(sigcmd, "%s", sigattr);
+			}
 
 			if ((pipe_fp = popen(sigcmd, "r")) != NULL) {
 				while (fgets(cmd, PATH_LEN, pipe_fp))

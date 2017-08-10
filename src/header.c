@@ -310,7 +310,6 @@ get_from_name(
 	if (debug & DEBUG_MISC)
 		error_message(2, "FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, get_user_name(), domain_name, get_full_name());
 #	endif /* DEBUG */
-
 }
 
 

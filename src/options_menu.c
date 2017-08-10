@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2016-04-27
+ *  Updated   : 2017-05-03
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2017 Michael Bienia <michael@vorlon.ping.de>
@@ -185,6 +185,10 @@ option_is_visible(
 	enum option_enum option)
 {
 	switch (option) {
+#ifdef USE_CANLOCK
+		case OPT_CANCEL_LOCK_ALGO:
+			return curr_scope ? FALSE : tinrc.cancel_locks;
+#endif /* USE_CANLOCK */
 #ifdef HAVE_COLOR
 		case OPT_COL_BACK:
 		case OPT_COL_FROM:
@@ -1370,6 +1374,17 @@ config_page(
 								UPDATE_INT_ATTRIBUTES(group_catchup_on_exit);
 							break;
 
+#ifdef USE_CANLOCK
+						case OPT_CANCEL_LOCKS:
+							/*
+							 * option toggles visibility of other
+							 * options -> needs redraw_screen()
+							 */
+							if (prompt_option_on_off(option))
+								redraw_screen(option);
+							break;
+#endif /* USE_CANLOCK */
+
 						case OPT_MARK_IGNORE_TAGS:
 							if (prompt_option_on_off(option))
 								UPDATE_INT_ATTRIBUTES(mark_ignore_tags);
@@ -1772,6 +1787,9 @@ config_page(
 
 				case OPT_LIST:
 					switch (option) {
+#ifdef USE_CANLOCK
+						case OPT_CANCEL_LOCK_ALGO:
+#endif /* USE_CANLOCK */
 #ifdef HAVE_COLOR
 						case OPT_COL_FROM:
 						case OPT_COL_HEAD:

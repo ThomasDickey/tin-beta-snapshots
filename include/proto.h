@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2016-07-29
+ *  Updated   : 2017-02-22
  *  Notes     :
  *
  * Copyright (c) 1997-2017 Urs Janssen <urs@tin.org>
@@ -501,7 +501,7 @@ extern t_bool post_article(const char *groupname);
 extern t_bool reread_active_after_posting(void);
 extern t_bool user_posted_messages(void);
 extern void init_postinfo(void);
-extern void quick_post_article(t_bool postponed_only);
+extern void quick_post_article(t_bool postponed_only, int num_cmd_line_groups);
 #if defined(SIGWINCH) || defined(SIGTSTP)
 	extern void refresh_post_screen(int context);
 #endif /* SIGWINCH || SIGTSTP */

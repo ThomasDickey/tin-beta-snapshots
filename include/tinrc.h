@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2016-04-17
+ *  Updated   : 2017-05-03
  *  Notes     :
  *
  * Copyright (c) 1999-2017 Jason Faultless <jason@altarstone.com>
@@ -212,7 +212,7 @@ struct t_config {
 	t_bool info_in_last_line;
 	t_bool inverse_okay;
 	t_bool keep_dead_articles;			/* keep all dead articles in dead.articles */
-	char posted_articles_file[LEN];		/* if set, file in which to keep posted articles */
+	char posted_articles_file[PATH_LEN];		/* if set, file in which to keep posted articles */
 	t_bool mail_8bit_header;			/* allow 8bit chars. in header of mail message */
 	t_bool mark_ignore_tags;			/* Ignore tags for GROUP_MARK_THREAD_READ/THREAD_MARK_ARTICLE_READ */
 	t_bool mark_saved_read;				/* mark saved article/thread as read */
@@ -247,6 +247,10 @@ struct t_config {
 		t_bool extquote_handling;		/* Detection of quoted text from external sources */
 #	endif /* HAVE_COLOR */
 	char inews_prog[PATH_LEN];
+#ifdef USE_CANLOCK
+		t_bool cancel_locks;			/* generate Cancel-Lock/Cancel-Key header */
+		int cancel_lock_algo;			/* algorithm used for Cancel-Lock/Cancel-Key */
+#endif /* USE_CANLOCK */
 	int interactive_mailer;			/* invoke user's mailreader */
 	t_bool use_mouse;					/* enables/disables mouse support under xterm */
 #	ifdef HAVE_KEYPAD

@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-07-29
+ *  Updated   : 2017-03-30
  *  Notes     :
  *
  * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1055,11 +1055,14 @@ print_message_page(
 		if ((line = tin_fgets(file, FALSE)) == NULL)
 			break;	/* ran out of message */
 
+		if ((help_level == INFO_PAGER) && ((int) strlen(line) >= cCOLS - 1))
+			line[cCOLS - 1] = '\0';
+
 		/*
 		 * use the offsets gained while doing line wrapping to
 		 * determine the correct position to truncate the line
 		 */
-		if (base_line + i < messagelines - 1) {	/* not last line of message */
+		if ((help_level != INFO_PAGER) && (base_line + i < messagelines - 1)) {	/* not last line of message */
 			bytes = (curr + 1)->offset - curr->offset;
 			line[bytes] = '\0';
 		}
@@ -1190,7 +1193,7 @@ draw_page(
 	 * ncurses doesn't clear the scroll area when you scroll by more than the
 	 * window size - force full redraw
 	 */
-	if ((end-start >= ARTLINES) || (part == 0)) {
+	if ((end - start >= ARTLINES) || (part == 0)) {
 		ClearScreen();
 		draw_page_header(group);
 	} else
