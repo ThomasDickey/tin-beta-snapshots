@@ -99,7 +99,7 @@
  * over its parent's record.
  *
  * Then, starting from the *bottom* of the heap, finding k's correct place,
- * again maintianing the invariant.  As a result of the invariant no element
+ * again maintaining the invariant.  As a result of the invariant no element
  * is 'lost' when k is assigned its correct place in the heap.
  *
  * The time savings from this optimization are on the order of 15-20% for the

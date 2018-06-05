@@ -6,7 +6,7 @@
  *  Updated   : 2016-02-26
  *  Notes     : debug routines
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@
 #	endif /* !NEWSRC_H */
 #endif /* DEBUG */
 
-int debug;
+unsigned short debug;
 
 #ifdef DEBUG
 /*

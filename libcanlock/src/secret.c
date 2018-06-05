@@ -1,5 +1,5 @@
 /* ========================================================================== */
-/* Copyright (c) 2017 Michael Baeuerle
+/* Copyright (c) 2018 Michael Baeuerle
  *
  * All rights reserved.
  *
@@ -78,7 +78,7 @@ int cl_clear_secret(void *sec, size_t sec_size, size_t buf_size)
  * #if defined(__STDC_LIB_EXT1__)
  * We use the check result from autoconf instead
  */
-#if HAVE_MEMSET_S
+#ifdef HAVE_MEMSET_S
       /* Standard solution using C11 Annex K */
       res = (int) memset_s(sec, buf_size, 0, sec_size);
       if (res)
@@ -89,6 +89,17 @@ int cl_clear_secret(void *sec, size_t sec_size, size_t buf_size)
 #else  /* HAVE_MEMSET_S */
       if (sec_size <= buf_size)
       {
+         /* OS specific functions should be called here, if available */
+#  ifdef HAVE_EXPLICIT_MEMSET
+         /* NetBSD has 'explicit_memset()' since version 7.0 */
+         explicit_memset(sec, 0, sec_size);
+         res = 0;
+#  elif defined(HAVE_EXPLICIT_BZERO)
+         /* OpenBSD has 'explicit_bzero()' since version 5.5 */
+         /* GNU libc has 'explicit_bzero()' since version 2.25 */
+         explicit_bzero(sec, sec_size);
+         res = 0;
+#  else  /* HAVE_EXPLICIT_MEMSET */
          /*
           * There seems to be no portable way to enforce memory access in C99.
           * But there is a chance that the optimizer is not smart enough and
@@ -96,20 +107,7 @@ int cl_clear_secret(void *sec, size_t sec_size, size_t buf_size)
           */
          memset(sec, 0, sec_size);
          res = 1;
-
-         /* -------------------------------------------------------------------- */
-         /* OS specific functions can be called here */
-
-#  if HAVE_EXPLICIT_MEMSET
-         /* NetBSD has 'explicit_memset()' since version 7.0 */
-         explicit_memset(sec, 0, sec_size);
-         res = 0;
-#  elif HAVE_EXPLICIT_BZERO
-         /* OpenBSD has 'explicit_bzero()' since version 5.5 */
-         /* GNU libc has 'explicit_bzero()' since version 2.25 */
-         explicit_bzero(sec, sec_size);
-         res = 0;
-#  endif  /* HAVE_EXPLICIT_MEMSET */
+#  endif
       }
 #endif  /* HAVE_MEMSET_S */
    }

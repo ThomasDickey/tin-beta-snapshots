@@ -11,6 +11,7 @@
  *      the various SHA algorithms.
  */
 
+#include "canlock-private.h"
 #include "sha.h"
 
 /*
@@ -46,10 +47,14 @@ int hmac(SHAversion whichSha,
     const unsigned char *key, int key_len,
     uint8_t digest[USHAMaxHashSize])
 {
-  HMACContext context;
-  return hmacReset(&context, whichSha, key, key_len) ||
-         hmacInput(&context, message_array, length) ||
-         hmacResult(&context, digest);
+  int res;
+  HMACContext context;  /* Security review: Location L1 */
+
+  res = hmacReset(&context, whichSha, key, key_len) ||
+        hmacInput(&context, message_array, length) ||
+        hmacResult(&context, digest);
+  cl_clear_secret((void *) &context, sizeof(HMACContext), sizeof(HMACContext));
+  return res;
 }
 
 /*
@@ -79,6 +84,7 @@ int hmacReset(HMACContext *context, enum SHAversion whichSha,
   int i, blocksize, hashsize, ret;
 
   /* inner padding - key XORd with ipad */
+  /* Security review: Location L3 */
   unsigned char k_ipad[USHA_Max_Message_Block_Size];
 
   /* temporary buffer when keylen > blocksize */
@@ -97,7 +103,7 @@ int hmacReset(HMACContext *context, enum SHAversion whichSha,
    * reset it to key = HASH(key).
    */
   if (key_len > blocksize) {
-    USHAContext tcontext;
+    USHAContext tcontext;  /* Security review: Location L2 */
     int err = USHAReset(&tcontext, whichSha) ||
               USHAInput(&tcontext, key, key_len) ||
               USHAResult(&tcontext, tempkey);
@@ -105,6 +111,9 @@ int hmacReset(HMACContext *context, enum SHAversion whichSha,
 
     key = tempkey;
     key_len = hashsize;
+    /* tcontext contains a buffer to which key is copied by USHAInput() */
+    cl_clear_secret((void *) &tcontext,
+                    sizeof(USHAContext), sizeof(USHAContext));
   }
 
   /*
@@ -134,6 +143,7 @@ int hmacReset(HMACContext *context, enum SHAversion whichSha,
   ret = USHAReset(&context->shaContext, whichSha) ||
         /* and start with inner pad */
         USHAInput(&context->shaContext, k_ipad, blocksize);
+  cl_clear_secret((void *) k_ipad, sizeof(k_ipad), sizeof(k_ipad));
   return context->Corrupted = ret;
 }
 

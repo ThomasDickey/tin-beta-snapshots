@@ -56,7 +56,7 @@ while (defined($line = <>)) {
 	# that won't hurt, it just doesn't optimize'em
 	if ($line =~ m/^(subj|from|msgid(?:|_last|_only)|refs_only|xref)=(.*[^\W\d_].*)$/o) {
 		print "# rule rewritten, it might be possible that it can be further optimized\n";
-		print "# check lines with (?i) if they really need to be case insensitve and if\n";
+		print "# check lines with (?i) if they really need to be case insensitive and if\n";
 		print "# not remove leading (?i) manually\n";
 		print "$1=$mod$2\n";
 		next;
@@ -78,7 +78,7 @@ B<opt-case.pl> E<lt> I<input> [E<gt> I<output>]
 
 =head1 DESCRIPTION
 
-B<opt-case.pl> reads a B<tin>(1) filter-file (B<tin>(5)) with regexp
+B<opt-case.pl> reads a L<tin(1)> filter-file (L<tin(5)>) with regexp
 filters on STDIN and turns all case insensitive regexp into case
 sensitive ones whenever possible, as case sensitive regexp are (a
 bit) faster.
@@ -86,12 +86,12 @@ bit) faster.
 =head1 NOTES
 
 The case= line must come before any line with a regexp pattern, (that
-is the order B<tin>(1) saves the filter file, if you created the
-filter by hand and never let B<tin>(1) rewrite the file, you might
+is the order L<tin(1)> saves the filter file, if you created the
+filter by hand and never let L<tin(1)> rewrite the file, you might
 want to check that first).
 
 Don't use B<opt-case.pl> on wildmat filters, transform them into
-regexp filter via B<w2r.pl>(1) first.
+regexp filter via L<w2r.pl(1)> first.
 
 =head1 AUTHOR
 
@@ -99,6 +99,6 @@ Urs Janssen E<lt>urs@tin.orgE<gt>
 
 =head1 SEE ALSO
 
-B<tin>(1), B<tin>(5), B<w2r.pl>(1)
+L<tin(1)>, L<tin(5)>, L<w2r.pl(1)>
 
 =cut

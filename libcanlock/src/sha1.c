@@ -36,6 +36,7 @@
  *      the input.
  */
 
+#include "canlock-private.h"
 #include "sha.h"
 #include "sha-private.h"
 
@@ -255,7 +256,7 @@ static void SHA1ProcessMessageBlock(SHA1Context *context)
   };
   int        t;               /* Loop counter */
   uint32_t   temp;            /* Temporary word value */
-  uint32_t   W[80];           /* Word sequence */
+  uint32_t   W[80];           /* Word sequence. Security review: Location L4 */
   uint32_t   A, B, C, D, E;   /* Word buffers */
 
   /*
@@ -312,6 +313,8 @@ static void SHA1ProcessMessageBlock(SHA1Context *context)
     B = A;
     A = temp;
   }
+
+  cl_clear_secret((void *) W, sizeof(W), sizeof(W));
 
   context->Intermediate_Hash[0] += A;
   context->Intermediate_Hash[1] += B;

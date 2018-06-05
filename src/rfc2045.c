@@ -6,7 +6,7 @@
  *  Updated   : 2017-02-17
  *  Notes     : RFC 2045/2047 encoding
  *
- * Copyright (c) 1995-2017 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2018 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -298,7 +298,7 @@ put_rest(
 		/* rest is now empty */
 		FreeAndNull(*rest);
 
-	(*line)[put_chars] = '\0';	/* don't count the termining NULL! */
+	(*line)[put_chars] = '\0';	/* don't count the terminating NULL! */
 	return put_chars;
 }
 

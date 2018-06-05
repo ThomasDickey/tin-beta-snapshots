@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2017-04-04
+ *  Updated   : 2018-02-02
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -573,7 +573,7 @@ save_and_process_art(
 
 	/*
 	 * Extract/view parts from multipart articles if required
-	 * libuu does this as part of it's own processing
+	 * libuu does this as part of its own processing
 	 */
 #ifndef HAVE_LIBUU
 	if (post_process) {
@@ -1170,7 +1170,7 @@ post_process_sh(
 		if ((fp_in = fopen(save[i].path, "r")) == NULL)
 			continue;
 
-		wait_message(1, _(txt_extracting_shar), save[i].path);
+		wait_message(0, _(txt_extracting_shar), save[i].path);
 
 		while (fgets(buf, (int) sizeof(buf), fp_in) != NULL) {
 			/* find #!/bin/sh style patterns */
@@ -1183,8 +1183,10 @@ post_process_sh(
 		}
 		fclose(fp_in);
 
-		if (fp_out == NULL)			/* Didn't extract any shar */
+		if (fp_out == NULL) {			/* Didn't extract any shar */
+			my_fputs(cCRLF, stdout);
 			continue;
+		}
 
 		fclose(fp_out);
 		fp_out = NULL;
@@ -1835,7 +1837,7 @@ build_attachment_line(
 #endif /* USE_CURSES */
 
 	part = get_part(i);
-	namelen = strwidth(_(txt_attachment_no_name));
+	namelen = MIN(cCOLS - 13 - info_len - 8, strwidth(_(txt_attachment_no_name)));
 	tagged = get_tagged(i);
 
 	if (!(name = get_filename(part->params))) {

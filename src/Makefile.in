@@ -1,9 +1,9 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2012-02-20
+# Updated: 2018-01-10
 #
-# Copyright (c) 1995-2014 Thomas E. Dickey <dickey@invisible-island.net>
+# Copyright (c) 1995-2018 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -406,7 +406,7 @@ uninstall_helpers :
 install : $(DESTDIR)$(INS_BINARY_DIR)
 	@$(MAKE) all
 	@$(ECHO) "Installing $(EXE) v$(VER) to $(DESTDIR)$(INS_BINARY_DIR)/$(PROJEXE) ..."
-	@$(INSTALL) -s $(BINDIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/$(PROJEXE)
+	@$(INSTALL) $(BINDIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/$(PROJEXE)
 	@( $(CD) $(DESTDIR)$(INS_BINARY_DIR) && $(RM) -f r$(PROJEXE) && $(LN) $(PROJEXE) r$(PROJEXE) )
 	@$(MAKE) install_helpers
 	@$(MAKE) install_manpage

@@ -3,10 +3,10 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2017-03-28
+ *  Updated   : 2018-03-20
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -627,7 +627,7 @@ feed_articles(
 	switch (function) {
 		/* Setup mail - get address to mail to */
 		case FEED_MAIL:
-			prompt = fmt_string(_(txt_mail_art_to), cCOLS - (strlen(_(txt_mail_art_to)) + 30), tinrc.default_mail_address);
+			prompt = fmt_string(_(txt_mail_art_to), cCOLS - (strwidth(_(txt_mail_art_to)) > cCOLS - 30 ? cCOLS - 30 : strwidth(_(txt_mail_art_to)) + 30), tinrc.default_mail_address);
 			if (!(prompt_string_default(prompt, tinrc.default_mail_address, _(txt_no_mail_address), HIST_MAIL_ADDRESS))) {
 				free(prompt);
 				return -1;
@@ -638,7 +638,7 @@ feed_articles(
 #ifndef DONT_HAVE_PIPING
 		/* Setup pipe - get pipe-to command and open the pipe */
 		case FEED_PIPE:
-			prompt = fmt_string(_(txt_pipe_to_command), cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
+			prompt = fmt_string(_(txt_pipe_to_command), cCOLS - (strwidth(_(txt_pipe_to_command)) > cCOLS - 30 ? cCOLS - 30 : strwidth(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
 			if (!(prompt_string_default(prompt, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND))) {
 				free(prompt);
 				return -1;
@@ -1064,6 +1064,7 @@ print_file(
 	t_bool ok;
 #	ifdef DONT_HAVE_PIPING
 	char cmd[PATH_LEN], file[PATH_LEN];
+	int i;
 #	endif /* DONT_HAVE_PIPING */
 
 #	ifdef DONT_HAVE_PIPING
@@ -1095,11 +1096,14 @@ print_file(
 
 #	ifdef DONT_HAVE_PIPING
 	fclose(fp);
-	strncpy(cmd, command, sizeof(cmd) - 2);
-	strcat(cmd, " ");
-	strncat(cmd, file, sizeof(cmd) - strlen(cmd) - 1);
-	cmd[sizeof(cmd) - 1] = '\0';
-	invoke_cmd(cmd);
+	i = snprintf(cmd, sizeof(cmd), "%s %s", command, file);
+	if (i > 0 && i < (int) sizeof(cmd))
+		invoke_cmd(cmd);
+	else {
+		perror_message(_(txt_command_failed), cmd);
+		unlink(file);
+		return FALSE;
+	}
 	unlink(file);
 #	else
 	fflush(fp);

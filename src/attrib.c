@@ -3,10 +3,10 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2017-08-02
+ *  Updated   : 2017-08-06
  *  Notes     : Group attribute routines
  *
- * Copyright (c) 1993-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -321,6 +321,10 @@ read_attributes_file(
 
 	if ((fp = fopen(file, "r")) != NULL) {
 		scope[0] = '\0';
+		/*
+		 * TODO: use tin_fgets() instead to handle long lines
+		 * (e.g. buggy translation)
+		 */
 		while (fgets(line, (int) sizeof(line), fp) != NULL) {
 			if (line[0] == '\n')
 				continue;
@@ -590,8 +594,14 @@ read_attributes_file(
 
 			if (found)
 				found = FALSE;
-			else
+			else {
+				/* TODO: even without DEBUG? */
 				error_message(1, _(txt_bad_attrib), line);
+#ifdef DEBUG
+				if (debug & (DEBUG_ATTRIB))
+					debug_print_file("ATTRIBUTES", txt_bad_attrib, line);
+#endif /* DEBUG */
+			}
 		}
 		fclose(fp);
 
@@ -1338,7 +1348,7 @@ write_attributes_file(
 
 	/*
 	 * determine the file offset
-	 * this is nesessary because a changed locale setting
+	 * this is necessary because a changed locale setting
 	 * may lead to an invalid offset
 	 */
 	if ((fpos = ftell(fp)) <= 0) {

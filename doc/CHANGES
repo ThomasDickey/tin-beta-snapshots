@@ -1,25 +1,70 @@
--- 2.4.2 release 20170810 "" --
+-- 2.4.3 release 20180605 "" --
+
+ 011) Francisco Javier Serrador <fserrador@gmail.com>
+      ADD. spanish translation
+      FIX. es.po
+
+ 010) Matt Anton <tin@lv223.org>
+      ADD. updated french translation
+      FIX. fr.po
+
+ 009) Dennis Preiser <dennis@d--p.de>
+      BUG. ensure destination of match_string() is NULL terminated
+      BUG. possible buffer overflows with long translations
+      BUG. fixed length buffer in rfc1522_decode() may overflow
+      ADD. don't idna_decode() strings which are not IDNA encoded
+      ADD. ability to filter on Path:-header
+      FIX. art.c, config.c, feed.c, filter.c, getline.c, help.c, lang.c
+           main.c, memory.c, nntplib.c, page.c, rfc2047.c, save.c, screen.c
+           extern.h, nntplib.h, proto.h, tin.h
+
+ 008) Urs Janssen <urs@tin.org>
+      ADD. config.guess, config.sub update
+      ADD. checks for explicit_bzero(), explicit_memset(), memset_s()
+      ADD. don't strip binray with "make install"
+      ADD. match_string()/match_item() now stop on first '\n'
+      ADD. don't show broken active file messages if not running with -D 1
+      ADD. accept arbitrary line length in mail.active file
+      ADD. allow (multiple) -v for debug mode
+      BUG. possible buffer overflow when prompting for a wildcard search
+           pattern in get_search_pattern()
+      BUG. possible buffer overflows with long translations
+      BUG. pointer arithmetic with possible NULL pointer
+      BUG. didn't recheck CAPABILITIES after auth
+      FIX. active.c, art.c, auth.c, config.c, feed.c, getline.c, help.c, init.c
+           keymap.c, mail.c, main.c, misc.c, newsrc.c, nntplib.c, rfc1524.c
+           search.c, select.c, signal.c, strftime.c, extern.h, proto.h
+           config.guess, config.sub, configure[.in], autoconf.h[in]
+           Makefile[.in]
+
+-- 2.4.2 release 20171224 "Lochhead" --
+
+ 007) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      FIX. aclocal.m4, configure[.in]
 
  006) Mesutcan Kurt <mesutcank@gmail.com>
       ADD. updated turkish translation
       FIX. tr.po
 
  005) Dennis Preiser <dennis@d--p.de>
-      ADD. cancel_locks, cancel_lock_algo config options
+      ADD. cancel_lock_algo config option
       ADD. sha256 and sha512 as possible algorithms for cancel_locks
       ADD. sigfile=!command no longer passes the name of the current
            newsgroup to command, but %G is replaced by groupname if
            specified
+      ADD. remove sleep(1) from unshar loop
       BUG. possible buffer overrun in rfc1522_decode()
       BUG. wildcard search doesn't advance past a match in a line for a
            subsequent search
       BUG. last line in the info_pager (help, posting-history) lacked
            truncation
+      BUG. quoted pairs in CFWS were not ignored
       ADD. cleanup
       FIX. attrib.c, config.c, inews.c, init.c, lang.c, options_menu.c, page.c
-           post.c, regex.c, rfc2045.c, rfc2047.c, sigfile.c, string.c
-           wildmat.c, tincfg.tbl, extern.h, tinrc.h, version.h, libcanlock/*
-           tin.1, tin.5
+           post.c, regex.c, rfc2045.c, rfc2046.c, rfc2047.c, save.c, sigfile.c
+           string.c, wildmat.c, tincfg.tbl, extern.h, tinrc.h, version.h
+           libcanlock/*, tin.1, tin.5
 
  004) Joe Hansen <joedalton2@yahoo.dk>
       ADD. updated danish translation
@@ -31,6 +76,9 @@
       BUG. possible use of uninitialized variable in debug output
       BUG. posting history screen failed to use additional space
            if window was widened
+      BUG. 2nd arg of tin_getline() is int not bool
+      BUG. multibyte input to prompts was grabbled if using ncurses but not
+           ncursesw
       ADD. config.guess, config.sub update
       ADD. adjust argument names to be the same in declaration and definition
       ADD. install rtin.5 manpage
@@ -39,11 +87,12 @@
       ADD. tweak MAIL_REGEX to not capture a tailing ')'
       ADD. use uidna_nameToUnicode() instead of uidna_IDNToUnicode() if
            linked against ICU >=4.6
-      FIX. art.c, attrib.c, charset.c, config.c, feed.c, filter.c, help.c
-           keymap.c, lang.c, main.c, mimetypes.c, misc.c, newsrc.c, nntplib.c
-           pgp.c, post.c, refs.c, rfc2047.c, save.c, screen.c, select.c
-           tcurses.c, thread.c, proto.h, tin.h, Makefile[.in], configure[.in]
-           autoconf.h[in], config.guess, config.sub
+      FIX. art.c, attrib.c, auth.c, charset.c, config.c, curses.c, feed.c
+           filter.c, group.c, help.c, keymap.c, lang.c, main.c, mimetypes.c
+           misc.c, newsrc.c, nntplib.c, pgp.c, post.c, prompt.c, refs.c
+           rfc2047.c, save.c, screen.c, select.c, tcurses.c, thread.c, proto.h
+           tin.h, Makefile[.in], configure[.in], autoconf.h[in], config.guess
+           config.sub, tin.1, tin.5
 
 -- 2.4.1 release 20161224 "Daill" --
 

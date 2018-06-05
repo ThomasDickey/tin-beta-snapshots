@@ -517,9 +517,9 @@ me know the problems by sending me a bug report ('R' bug command from
 within tin). See doc/reading-mail.txt for further information.
 
 --enable-cancel-locks (default: off)
-Turn on Cancel-Locks. This feature requires the client to know the
-Message-ID of the posting, so if your server does not offer server side
-purposed IDs you have to mess around with EVIL_INSIDE
+Turn on Cancel-Locks (RFC 8315). This feature requires the client to know
+the Message-ID of the posting, so if your server does not offer server side
+purposed IDs you have to mess around with EVIL_INSIDE.
 
 --enable-heapsort (default: on)
 Enable heapsort(3) as alternative to qsort(3). In large groups with a long

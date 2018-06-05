@@ -3,10 +3,10 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2017-03-28
+ *  Updated   : 2018-02-05
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ stow_cursor(
 
 
 /*
- * helper for the varius *_message() functions
+ * helper for the various *_message() functions
  * returns a pointer to an allocated buffer with the formatted message
  * must be freed if not needed anymore
  */
@@ -128,7 +128,7 @@ wait_message(
 	const char *fmt,
 	...)
 {
-	char *buf;
+	char *buf, *msg;
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -139,7 +139,22 @@ wait_message(
 #endif /* HAVE_COLOR */
 
 	buf = fmt_message(fmt, ap);
-	my_fputs(buf, stdout);
+	/* test for multiline messages */
+	if (strrchr(buf, '\n')) {
+		char *from, *to;
+
+		for (from = buf; *from && (to = strchr(from, '\n')); from = ++to) {
+			*to = '\0';
+			msg = strunc(from, cCOLS - 1);
+			my_fputs(msg, stdout);
+			my_fputc('\n', stdout);
+			free(msg);
+		}
+	} else {
+		msg = strunc(buf, cCOLS - 1);
+		my_fputs(msg, stdout);
+		free(msg);
+	}
 	free(buf);
 
 #ifdef HAVE_COLOR

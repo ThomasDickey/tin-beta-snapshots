@@ -6,7 +6,7 @@
  *  Updated   : 2013-11-21
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,14 +40,14 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.4.2"
+#		define VERSION		"2.4.3"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20170810"
-#	define RELEASENAME	"Daill"
+#	define RELEASEDATE	"20180605"
+#	define RELEASENAME	"Lochhead"
 /* config-file versions - must by dotted triples */
-#	define TINRC_VERSION	"1.3.14"
+#	define TINRC_VERSION	"1.3.15"
 #	define ATTRIBUTES_VERSION	"1.0.9"
-#	define FILTER_VERSION	"1.0.0"
+#	define FILTER_VERSION	"1.0.1"
 #	define KEYMAP_VERSION	"1.0.9"
 #	define SERVERCONFIG_VERSION	"1.0.0"
 

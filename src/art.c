@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2017-02-03
+ *  Updated   : 2018-02-18
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -77,7 +77,7 @@ static int last_date_comp_base_desc(t_comptype p1, t_comptype p2);
 static int lines_comp_asc(t_comptype p1, t_comptype p2);
 static int lines_comp_desc(t_comptype p1, t_comptype p2);
 static int read_art_headers(struct t_group *group, int total, t_artnum top);
-static int read_overview(struct t_group *group, t_artnum min, t_artnum max, t_artnum *top, t_bool local);
+static int read_overview(struct t_group *group, t_artnum min, t_artnum max, t_artnum *top, t_bool local, t_bool *rebuild_cache);
 static int score_comp_asc(t_comptype p1, t_comptype p2);
 static int score_comp_desc(t_comptype p1, t_comptype p2);
 static int score_comp_base(t_comptype p1, t_comptype p2);
@@ -94,6 +94,10 @@ static void thread_by_multipart(void);
 static void thread_by_percentage(struct t_group *group);
 static void thread_by_subject(void);
 static void write_overview(struct t_group *group);
+#ifdef NNTP_ABLE
+	static struct t_article_range *build_range_list(t_artnum min, t_artnum max, int *range_cnt);
+	static t_bool get_path_header(int cur, int cnt, struct t_group *group, t_artnum min, t_artnum max);
+#endif /* NNTP_ABLE */
 
 
 /*
@@ -104,8 +108,7 @@ void
 show_art_msg(
 	const char *group)
 {
-/* what if cCOLS < (strlen)+18? */
-	wait_message(0, _(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group);
+	wait_message(0, _(txt_group), cCOLS - (strwidth(_(txt_group)) > cCOLS ? cCOLS : strwidth(_(txt_group)) + 2 - 3), group);
 }
 
 
@@ -223,7 +226,7 @@ setup_hard_base(
 		 * nntpcache, leafnode and SurgeNews. Usually this should not be
 		 * needed.
 		 *
-		 * For getart_limit recheck lowwatermark as at leat giganews gives
+		 * For getart_limit recheck lowwatermark as at least giganews gives
 		 * very different results for LIST ACTIVE (3 year retention for all)
 		 * and GROUP (based on the clients contract).
 		 * Calculate range and prepare base[] not to loose unread arts.
@@ -262,7 +265,7 @@ setup_hard_base(
 				/* RFC 3977 allows ranges in LISTGROUP */
 				if (getart_limit > 0)
 					snprintf(buf, sizeof(buf), "LISTGROUP %s %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT"", group->name, j, group->xmax);
-				else /* getart_limit < 0; fetch till newsest art */
+				else /* getart_limit < 0; fetch till newest art */
 					snprintf(buf, sizeof(buf), "LISTGROUP %s %"T_ARTNUM_PFMT"-", group->name, j);
 
 			} else /* for RFC 977 just use GROUP */
@@ -276,7 +279,7 @@ setup_hard_base(
 				char *ptr;
 
 #	ifdef DEBUG
-				if (debug & DEBUG_NNTP)
+				if ((debug & DEBUG_NNTP) && verbose > 1)
 					debug_print_file("NNTP", "setup_hard_base(%s)", buf);
 #	endif /* DEBUG */
 
@@ -309,7 +312,7 @@ setup_hard_base(
 				return -1;
 
 #	ifdef DEBUG
-			if (debug & DEBUG_NNTP)
+			if ((debug & DEBUG_NNTP) && verbose > 1)
 				debug_print_file("NNTP", "setup_hard_base(%s)", buf);
 #	endif /* DEBUG */
 			total = count;
@@ -399,6 +402,8 @@ index_group(
 	t_artnum min, new_min, max;
 	t_bool caching_xover;
 	t_bool filtered;
+	t_bool path_in_nov = FALSE;
+	t_bool rebuild_cache = FALSE;
 
 	if (group == NULL)
 		return TRUE;
@@ -461,13 +466,13 @@ index_group(
 	/*
 	 * Read in the existing overview data for min..max
 	 * This read has local=TRUE set if locally caching XOVER records to ensure
-	 * we pull in any private overview caches in preference to using using OVER
+	 * we pull in any private overview caches in preference to using OVER
 	 *
 	 * When reading local spool, this will pull in the system wide overview
 	 * cache (if found) otherwise the private overview cache will be read
 	 */
 	caching_xover = (tinrc.cache_overview_files && nntp_caps.over_cmd && group->type == GROUP_TYPE_NEWS);
-	if ((changed = read_overview(group, min, max, &last_read_article, caching_xover)) == -1)
+	if ((changed = read_overview(group, min, max, &last_read_article, caching_xover, &rebuild_cache)) == -1)
 		return FALSE;	/* user aborted indexing */
 
 	/*
@@ -477,7 +482,7 @@ index_group(
 	if ((last_read_article < max) && caching_xover) {
 		new_min = (last_read_article >= min) ? last_read_article + 1 : min;
 
-		if ((i = read_overview(group, new_min, max, &last_read_article, FALSE)) == -1)
+		if ((i = read_overview(group, new_min, max, &last_read_article, FALSE, &rebuild_cache)) == -1)
 			return FALSE;	/* user aborted indexing */
 		else
 			changed += i;
@@ -543,13 +548,15 @@ index_group(
 			if (group->attribute->show_only_unread_arts)
 				arts[i].keep_in_base = FALSE;
 		}
+		if (!path_in_nov && arts[i].path && *arts[i].path != '\0')
+			path_in_nov = TRUE;
 	}
 
 	/*
 	 * Only rewrite the index if it has changed
 	 * TODO review the exact logic behind "|| caching_xover"
 	 */
-	if (changed || caching_xover)
+	if (changed || caching_xover || rebuild_cache)
 		write_overview(group);
 
 	/*
@@ -738,7 +745,7 @@ read_art_headers(
 		}
 	}
 
-	snprintf(group_msg, sizeof(group_msg), _(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group->name);
+	snprintf(group_msg, sizeof(group_msg), _(txt_group), cCOLS - MIN(cCOLS - 1, strwidth(_(txt_group))) + 2 - 3, group->name);
 
 	for (i = 0; i < grpmenu.max; i++) {	/* for each article number */
 		art = base[i];
@@ -778,16 +785,17 @@ read_art_headers(
 
 		if (!res) {
 #ifdef DEBUG
-			if (debug & DEBUG_NNTP) {
+			if (debug & DEBUG_FILTER) { /* we currently have no "local spool" debug level */
 				char buf[PATH_LEN];
 
 				snprintf(buf, sizeof(buf), "FAILED parse_headers(%"T_ARTNUM_PFMT")", art);
-				debug_print_file("NNTP", "read_art_headers() %s", buf);
+				debug_print_file("ARTS", "read_art_headers() %s", buf);
 			}
 #endif /* DEBUG */
 			arts[top_art].artnum = T_ARTNUM_CONST(0);
 			arts[top_art].date = (time_t) 0;
 			FreeAndNull(arts[top_art].xref);
+			FreeAndNull(arts[top_art].path);
 			FreeAndNull(arts[top_art].refs);
 			FreeAndNull(arts[top_art].msgid);
 			if (arts[top_art].archive) {
@@ -958,8 +966,8 @@ thread_by_percentage(
 
 
 /*
- * This was brought over from tags.c, however this version doesn't not
- * opperate on base_index
+ * This was brought over from tags.c, however this version doesn't
+ * operate on base_index
  *
  * Parses a subject header of the type "multipart message subject (01/42)"
  * into a MultiPartInfo struct, or fails if the message subject isn't in the
@@ -992,7 +1000,7 @@ global_get_multipart_info(
 
 /*
  * Again this was taken from tags.c, but works on global indices into arts
- * rather then on base_index.
+ * rather than on base_index.
  */
 static int
 global_look_for_multipart_info(
@@ -1174,7 +1182,7 @@ thread_by_multipart(
  * information before threading which happens anyway expect when using
  * THREAD_NONE (I don't immediately see how this is useful)
  */
-/* TODO: rewrite that user can easly combine different 'threading'
+/* TODO: rewrite that user can easily combine different 'threading'
  *       methods, i.e:
  *       - thread_by_multipart() + collate_subjects()
  */
@@ -1384,7 +1392,8 @@ parse_headers(
 
 		/*
 		 * as Archive-name: is placed in the body it's safe to exit
-		 * the loop if it was found.
+		 * the loop if it was found. Don't mix up with Archive: from
+		 * RFC 5536.
 		 */
 		if (lineno++ > max_lineno || h->archive)
 			break;
@@ -1455,6 +1464,14 @@ parse_headers(
 				}
 				break;
 
+			/* for Path:-filter when reading from local spool */
+			case 'P':	/* Path: */
+				if (!h->path) {
+					if ((hdr = parse_header(ptr + 1, "ath", FALSE, FALSE, FALSE)))
+						h->path = my_strdup(hdr);
+				}
+				break;
+
 			case 'R':	/* References:  optional */
 				if (!h->refs) {
 					if ((hdr = parse_header(ptr + 1, "eferences", FALSE, FALSE, FALSE)))
@@ -1502,7 +1519,7 @@ parse_headers(
 	 * The son of RFC 1036 states that the following hdrs are mandatory. It
 	 * also states that Subject, Newsgroups and Path are too. Ho hum.
 	 *
-	 * What about readinng mail from local spool via ~/.tin/active.mail,
+	 * What about reading mail from local spool via ~/.tin/active.mail,
 	 * they might not have a Message-ID but got_received is very likely to
 	 * be true.
 	 */
@@ -1518,6 +1535,270 @@ parse_headers(
 
 	return FALSE;
 }
+
+#ifdef NNTP_ABLE
+/*
+ * Loop over arts[] and find ranges without Path: header
+ * If there are any try to optimize the ranges regarding traffic consumption
+ * Start optimization if at least MIN_CNT ranges exist
+ * If there are more than MAX_CNT ranges after optimization, fetch all in one
+ * big range
+ */
+#define MIN_CNT 10
+#define MAX_CNT 50
+static struct t_article_range *
+build_range_list(
+	t_artnum min,
+	t_artnum max,
+	int *range_cnt)
+{
+	int i, gap_cnt = 0;
+	struct t_article_range *res = NULL, *gap_list, *curr, *from;
+	t_artnum new_end;
+
+	new_end = T_ARTNUM_CONST(0);
+	gap_list = my_malloc(sizeof(struct t_article_range));
+	curr = gap_list;
+	curr->start = min;
+	curr->end = max;
+	curr->cnt = T_ARTNUM_CONST(0);
+	curr->next = NULL;
+
+	for_each_art(i) {
+		if (arts[i].artnum < min)
+			continue;
+		if (arts[i].artnum > max)
+			break;
+		if (arts[i].path) {
+			for (; i < top_art && arts[i].path; i++)
+				;
+			/*
+			 * the current art has no path -> we use this one
+			 * if we reached top_art all arts have path
+			 * so we use max
+			 */
+			curr->start = i == top_art ? max : arts[i--].artnum;
+		} else {
+			for (; i < top_art && !arts[i].path; i++)
+				;
+			/* the current art has path -> we use the last one */
+			new_end = curr->end = arts[--i].artnum;
+		}
+		if (new_end) {
+			curr->cnt = curr->end - curr->start + 1;
+			curr->next = my_malloc(sizeof(struct t_article_range));
+			curr = curr->next;
+			curr->start = new_end;
+			curr->end = max;
+			curr->cnt = T_ARTNUM_CONST(0);
+			curr->next = NULL;
+			new_end = T_ARTNUM_CONST(0);
+		}
+	}
+
+	curr = gap_list;
+	while (curr && curr->cnt) {
+		++gap_cnt;
+#	ifdef DEBUG
+		if ((debug & DEBUG_NNTP) && verbose > 1)
+			debug_print_file("NNTP", "range #%d without path in overview cache: start: %"T_ARTNUM_PFMT" end: %"T_ARTNUM_PFMT" cnt: %"T_ARTNUM_PFMT"", gap_cnt, curr->start, curr->end, curr->cnt);
+#	endif /* DEBUG */
+		curr = curr->next;
+	}
+
+	/*
+	 * Optimize only if there are at least MIN_CNT ranges
+	 */
+	if (gap_cnt >= MIN_CNT) {
+		res = my_malloc(sizeof(struct t_article_range));
+		res->start = T_ARTNUM_CONST(0);
+		res->end = T_ARTNUM_CONST(0);
+		res->cnt = T_ARTNUM_CONST(0);
+		res->next = NULL;
+
+		from = gap_list;
+		curr = res;
+		while (from) {
+			curr->start = from->start;
+			curr->end = from->end;
+			curr->cnt = from->cnt;
+			if ((from = from->next)) {
+				/*
+				 * If the next range is grater then the gap between the current
+				 * one and the next one we build a new range including the
+				 * current one, the next one and the gap between
+				 */
+				while (from && from->cnt >= from->start - curr->end - 1) {
+					curr->end = from->end;
+					from = from->next;
+				}
+				curr->cnt = curr->end - curr->start + 1;
+				curr->next = my_malloc(sizeof(struct t_article_range));
+				curr = curr->next;
+				curr->start = T_ARTNUM_CONST(0);
+				curr->end = T_ARTNUM_CONST(0);
+				curr->cnt = T_ARTNUM_CONST(0);
+				curr->next = NULL;
+			}
+		}
+	}
+
+	/*
+	 * If there are less then MIN_CNT ranges
+	 * no res is build -> return the original list
+	 */
+	if (res) {
+		while (gap_list) {
+			curr = gap_list;
+			gap_list = curr->next;
+			free(curr);
+		}
+	} else
+		res = gap_list;
+
+	curr = res;
+	gap_cnt = 0;
+	while (curr && curr->cnt) {
+		++gap_cnt;
+#	ifdef DEBUG
+		if ((debug & DEBUG_NNTP) && verbose > 1)
+			debug_print_file("NNTP", "optimized range #%d: start: %"T_ARTNUM_PFMT" end: %"T_ARTNUM_PFMT" cnt: %"T_ARTNUM_PFMT"", gap_cnt, curr->start, curr->end, curr->cnt);
+#	endif /* DEBUG */
+		curr = curr->next;
+	}
+
+	if (gap_cnt >= MAX_CNT) {
+		curr = res;
+		while (curr->next && curr->next->cnt) {
+			res->end = curr->next->end;
+			curr->next->cnt = 0;
+			curr = curr->next;
+		}
+		res->cnt = res->end - res->start + 1;
+		gap_cnt = 1;
+#	ifdef DEBUG
+		if ((debug & DEBUG_NNTP) && verbose > 1) {
+			debug_print_file("NNTP", "more then %d ranges after optimization, fetch all at once instead: start: %"T_ARTNUM_PFMT" end: %"T_ARTNUM_PFMT" cnt: %"T_ARTNUM_PFMT"", MAX_CNT, res->start, res->end, res->cnt);
+		}
+#	endif /* DEBUG */
+	}
+	*range_cnt = gap_cnt;
+
+	return res;
+}
+
+
+/*
+ * Fetch the Path header in case we want to filter on that in the given group
+ *
+ * Try [X]HDR first, then XPAT
+ */
+static t_bool
+get_path_header(
+	int cur,
+	int cnt,
+	struct t_group *group,
+	t_artnum min,
+	t_artnum max)
+{
+	FILE *fp = NULL;
+	char *prep_msg;
+	char *buf, *ptr;
+	char cmd[NNTP_STRLEN];
+	t_artnum artnum, i;
+	t_bool found = FALSE;
+	static t_bool supported = TRUE; /* assume HDR || XPAT works */
+
+	if (!read_news_via_nntp || !supported || group->type != GROUP_TYPE_NEWS)
+		return FALSE;
+
+#	ifdef DEBUG
+	if ((debug & DEBUG_NNTP) && verbose > 1)
+		debug_print_file("NNTP", "%s: Filtering on Path header requested.", group->name);
+#	endif /* DEBUG */
+
+	if (nntp_caps.type == CAPABILITIES && nntp_caps.list_headers && !*nntp_caps.headers_range && nntp_caps.hdr_cmd[0] != 'X') {
+		int j = new_nntp_command("LIST HEADERS RANGE", 215, cmd, sizeof(cmd));
+		switch (j) {
+			case 215:
+				while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#	ifdef DEBUG
+					if (debug & DEBUG_NNTP)
+						debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+#	endif /* DEBUG */
+					nntp_caps.headers_range = my_realloc(nntp_caps.headers_range, strlen(nntp_caps.headers_range) + strlen(ptr) + 2);
+					strcat(nntp_caps.headers_range, ptr);
+					strcat(nntp_caps.headers_range, "\n");
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	/* does HDR return Path? */
+	if (nntp_caps.headers_range && (ptr = strtok(nntp_caps.headers_range, "\n")) != NULL) {
+		do {
+			if ((*ptr == ':' && *(ptr + 1) == '\0') || !strncasecmp(ptr, "Path", 4))
+				found = TRUE;
+		} while (!found && *ptr && (ptr = strtok(NULL, "\n")) != NULL);
+	}
+
+	if ((nntp_caps.hdr || nntp_caps.hdr_cmd) && (!(nntp_caps.type == CAPABILITIES) || found)) {
+		if (min == max)
+			snprintf(cmd, sizeof(cmd), "%s Path %"T_ARTNUM_PFMT, nntp_caps.hdr_cmd, min);
+		else
+			snprintf(cmd, sizeof(cmd), "%s Path %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT, nntp_caps.hdr_cmd, min, max);
+		fp = nntp_command(cmd, nntp_caps.hdr_cmd[0] == 'X' ? OK_XHDR : OK_HDR, NULL, 0);
+		if (!nntp_caps.hdr && fp)
+			nntp_caps.hdr = TRUE;
+	} else if (nntp_caps.xpat) {
+		if (min == max)
+			snprintf(cmd, sizeof(cmd), "XPAT Path %"T_ARTNUM_PFMT" *", min);
+		else
+			snprintf(cmd, sizeof(cmd), "XPAT Path %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT" *", min, max);
+		fp = nntp_command(cmd, OK_XPAT, NULL, 0);
+	}
+
+	if (fp) {
+		prep_msg = fmt_string(_(txt_prep_for_filter_on_path), cur, cnt);
+		while ((buf = tin_fgets(fp, FALSE)) != NULL && buf[0] != '.') {
+#	ifdef DEBUG
+			if ((debug & DEBUG_NNTP) && verbose)
+				debug_print_file("NNTP", "<<<%s%s", logtime(), buf);
+#	endif /* DEBUG */
+			if ((ptr = tin_strtok(buf, " ")) == NULL)
+				continue;
+			artnum = atoartnum(ptr);
+			if ((ptr = tin_strtok(NULL, " ")) == NULL)
+				continue;
+			for_each_art(i) {
+				if (arts[i].artnum == artnum) {
+					FreeIfNeeded(arts[i].path);
+					arts[i].path = my_strdup(ptr);
+				}
+			}
+			if (++artnum % MODULO_COUNT_NUM == 0)
+				show_progress(prep_msg, artnum - min, max - min);
+		}
+		free(prep_msg);
+		return supported;
+	}
+
+	/* !fp */
+	supported = FALSE;
+	if (nntp_caps.xpat)
+		nntp_caps.xpat = FALSE;
+	/* as nntp_caps.hdr may work with other headers we don't disable it*/
+
+#ifdef DEBUG
+	if ((debug & DEBUG_NNTP) && verbose > 1)
+		debug_print_file("NNTP", "%s: Neither \"[X]HDR Path\" nor \"XPAT Path\" are supportet.", group->name);
+#endif /* DEBUG */
+	return supported;
+}
+#endif /* NNTP_ABLE */
 
 
 /*
@@ -1545,7 +1826,8 @@ read_overview(
 	t_artnum min,
 	t_artnum max,
 	t_artnum *top,
-	t_bool local)
+	t_bool local,
+	t_bool *rebuild_cache)
 {
 	FILE *fp;
 	char *ptr;
@@ -1555,8 +1837,9 @@ read_overview(
 	char art_full_name[HEADER_LEN];
 	char art_from_addr[HEADER_LEN];
 	unsigned int count;
-	int expired = 0;
+	int i, expired = 0;
 	t_artnum artnum;
+	t_bool path_found = FALSE, path_in_ofmt = FALSE;
 	struct t_article *art;
 	size_t over_fields = 1;
 
@@ -1569,13 +1852,16 @@ read_overview(
 	if (group->xmax > max)
 		group->xmax = max;
 
-	group_msg = fmt_string(_(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group->name);
+	group_msg = fmt_string(_(txt_group), cCOLS - MIN(cCOLS - 1, strwidth(_(txt_group))) + 2 - 3, group->name);
 
 	/* get the number of fields per over-record as announced by LIST OVERVIEW.FMT */
 	if (ofmt) {
-		for (; ofmt[over_fields].name; over_fields++)
-			;
+		for (; ofmt[over_fields].name; over_fields++) {
+			if (local && !path_in_ofmt && !strcasecmp(ofmt[over_fields].name, "Path:"))
+				path_in_ofmt = TRUE;
+		}
 	}
+
 	if (!--over_fields) { /* e.g. nntp_caps.type == CAPABILITIES && !nntp_caps.list_overview_fmt -> assume defaults */
 		ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (8 + 1));
 		ofmt[0].type = OVER_T_INT;
@@ -1600,6 +1886,11 @@ read_overview(
 	}
 
 	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
+#ifdef DEBUG
+		if ((debug & DEBUG_NNTP) && fp == FAKE_NNTP_FP && verbose)
+			debug_print_file("NNTP", "<<<%s%s", logtime(), buf);
+#endif /* DEBUG */
+
 		if (need_resize) {
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
 			need_resize = cNo;
@@ -1662,7 +1953,7 @@ read_overview(
 			/* skip unexpected tailing fields */
 			if (count > over_fields) {
 #ifdef DEBUG
-				if (debug & DEBUG_NNTP)
+				if ((debug & DEBUG_NNTP) && verbose > 1)
 					debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") Unexpected overview-field %d of %d: %s", nntp_caps.over_cmd, artnum, count, over_fields, ptr);
 #endif /* DEBUG */
 
@@ -1670,13 +1961,25 @@ read_overview(
 				if (count == over_fields + 1) {
 					if (!strncasecmp(ptr, "Xref: ", 6)) {
 #ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "%s: found unexpected Xref: on semi std. position", nntp_caps.over_cmd);
 #endif /* DEBUG */
 						over_fields++;
 						ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (over_fields + 2)); /* + 2 = artnum and end-marker */
 						ofmt[over_fields].type = OVER_T_FSTRING;
 						ofmt[over_fields].name = my_strdup("Xref:");
+						ofmt[over_fields + 1].type = OVER_T_ERROR;
+						ofmt[over_fields + 1].name = NULL;
+						xref_supported = TRUE;
+					} else if (local && !strncasecmp(ptr, "Path: ", 6)) {
+#ifdef DEBUG
+						if ((debug & DEBUG_NNTP) && verbose > 1)
+							debug_print_file("NNTP", "%s: found Path:", nntp_caps.over_cmd);
+#endif /* DEBUG */
+						over_fields++;
+						ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (over_fields + 2)); /* + 2 = artnum and end-marker */
+						ofmt[over_fields].type = OVER_T_FSTRING;
+						ofmt[over_fields].name = my_strdup("Path:");
 						ofmt[over_fields + 1].type = OVER_T_ERROR;
 						ofmt[over_fields + 1].name = NULL;
 						xref_supported = TRUE;
@@ -1696,7 +1999,7 @@ read_overview(
 						else {
 							art->subject = hash_str("");
 #ifdef DEBUG
-							if (debug & DEBUG_NNTP)
+							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
@@ -1712,7 +2015,7 @@ read_overview(
 						} else {
 							art->from = hash_str("");
 #ifdef DEBUG
-							if (debug & DEBUG_NNTP)
+							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
@@ -1722,7 +2025,7 @@ read_overview(
 					if (!strcasecmp(ofmt[count].name, "Date:")) {
 						art->date = parsedate(ptr, (TIMEINFO *) 0);
 #ifdef DEBUG
-						if ((debug & DEBUG_NNTP) && art->date == (time_t) -1)
+						if ((debug & DEBUG_NNTP) && verbose > 1 && art->date == (time_t) -1)
 							debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
 #endif /* DEBUG */
 						continue;
@@ -1735,7 +2038,7 @@ read_overview(
 						} else {
 							art->msgid = NULL;
 #ifdef DEBUG
-							if (debug & DEBUG_NNTP)
+							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
@@ -1750,13 +2053,31 @@ read_overview(
 							art->refs = NULL;
 						continue;
 					}
+
+					/*
+					 * non std. fields when doing
+					 * expensive overview parsing (very
+					 * rare, just happens if RFC 3977
+					 * 8.4.2 is violated) go here
+					 */
+					/* for Path:-filter */
+					if (!strcasecmp(ofmt[count].name, "Path:")) {
+						if (!path_found)
+							path_found = TRUE;
+						if (*ptr) {
+							FreeIfNeeded(art->path); /* if field is listed more than once in overview.fmt */
+							art->path = my_strdup(ptr);
+						} else
+							art->path = NULL;
+						continue;
+					}
 				}
 				/* metadata fields */
 				if (ofmt[count].type == OVER_T_INT) {
 					if (!strcasecmp(ofmt[count].name, "Bytes:")) {
 						if (*ptr) {
 #ifdef DEBUG
-							if ((debug & DEBUG_NNTP) && !isdigit((unsigned char) *ptr))
+							if ((debug & DEBUG_NNTP) && verbose > 1 && !isdigit((unsigned char) *ptr))
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") overview field %d (%s) mismatch: %s", nntp_caps.over_cmd, artnum, count, ofmt[count].name, ptr);
 #endif /* DEBUG */
 						}
@@ -1770,7 +2091,7 @@ read_overview(
 							else {
 								art->line_count = 0;
 #ifdef DEBUG
-								if (debug & DEBUG_NNTP)
+								if ((debug & DEBUG_NNTP) && verbose > 1)
 									debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") overview field %d (%s) mismatch: %s", nntp_caps.over_cmd, artnum, count, ofmt[count].name, ptr);
 #endif /* DEBUG */
 							}
@@ -1787,7 +2108,7 @@ read_overview(
 						else {
 							art->subject = hash_str("");
 #ifdef DEBUG
-							if (debug & DEBUG_NNTP)
+							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
@@ -1802,7 +2123,7 @@ read_overview(
 						} else {
 							art->from = hash_str("");
 #ifdef DEBUG
-							if (debug & DEBUG_NNTP)
+							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
@@ -1811,7 +2132,7 @@ read_overview(
 					case 3:	/* Date: */
 						art->date = parsedate(ptr, (TIMEINFO *) 0);
 #ifdef DEBUG
-						if ((debug & DEBUG_NNTP) && art->date == (time_t) -1)
+						if ((debug & DEBUG_NNTP) && verbose > 1 && art->date == (time_t) -1)
 							debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
 #endif /* DEBUG */
 						break;
@@ -1822,7 +2143,7 @@ read_overview(
 						else {
 							art->msgid = NULL;
 #ifdef DEBUG
-							if (debug & DEBUG_NNTP)
+							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
@@ -1838,7 +2159,7 @@ read_overview(
 					case 6:	/* :bytes || Bytes: */
 						if (*ptr) {
 #ifdef DEBUG
-							if ((debug & DEBUG_NNTP) && !isdigit((unsigned char) *ptr))
+							if ((debug & DEBUG_NNTP) && verbose > 1 && !isdigit((unsigned char) *ptr))
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") overview field %d (%s) mismatch: %s", nntp_caps.over_cmd, artnum, count, ofmt[count].name, ptr);
 #endif /* DEBUG */
 						}
@@ -1851,7 +2172,7 @@ read_overview(
 							else {
 								art->line_count = 0;
 #ifdef DEBUG
-								if (debug & DEBUG_NNTP)
+								if ((debug & DEBUG_NNTP) && verbose > 1)
 									debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") overview field %d (%s) mismatch: %s", nntp_caps.over_cmd, artnum, count, ofmt[count].name, ptr);
 #endif /* DEBUG */
 							}
@@ -1874,21 +2195,39 @@ read_overview(
 						}
 #ifdef DEBUG
 						else {
-							if (debug & DEBUG_NNTP)
+							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
 						}
 #endif /* DEBUG */
 						continue;
 					}
-#if 0 /* code example for hadnling addition overview fields */
-					if (!strcasecmp(ofmt[count].name, "Path:")) {
+					/*
+					 * handling of addition overview fields
+					 * goes here
+					 */
 #ifdef DEBUG
-						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") extra overview-field \"%s\" at position %d %s", nntp_caps.over_cmd, artnum, ofmt[count].name, count, ptr);
+					if ((debug & DEBUG_NNTP) && verbose > 1)
+						debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") extra overview-field \"%s\" at position %d %s", nntp_caps.over_cmd, artnum, ofmt[count].name, count, ptr);
 #endif /* DEBUG */
+					/* if we're lucky we've Path in NOV */
+					/*
+					 * if reading locally cached overview data try
+					 * path regardless of the server OVERVIEW.FMT
+					 */
+					if (local || !strcasecmp(ofmt[count].name, "Path:")) {
+						if ((q = parse_header(ptr, "Path", FALSE, FALSE, FALSE)) != NULL) {
+							if (!path_found)
+								path_found = TRUE;
+							FreeIfNeeded(art->path);
+							art->path = my_strdup(q);
+#ifdef DEBUG
+							if ((debug & DEBUG_NNTP) && verbose > 1 && strcasecmp(ofmt[count].name, "Path:"))
+								debug_print_file("NNTP", "\tUsing as \"Path:\" not \"%s\"", ofmt[count].name);
+#endif /* DEBUG */
+
+						}
 						continue;
 					}
-#endif /* 0 */
 				}
 				continue;
 			}
@@ -1924,29 +2263,41 @@ read_overview(
 		if (first) {
 			found = TRUE;
 			/*
-			 * TODO: do once at start and cache full result
-			 *       if "LIST HEADERS RANGE" failed try "LIST HEADERS"?
+			 * TODO: if "LIST HEADERS RANGE" failed try "LIST HEADERS"?
 			 */
 			if (nntp_caps.type == CAPABILITIES && nntp_caps.list_headers) {
-				int i = new_nntp_command("LIST HEADERS RANGE", 215, cbuf, sizeof(cbuf));
+				if (!*nntp_caps.headers_range) {
+					i = new_nntp_command("LIST HEADERS RANGE", 215, cbuf, sizeof(cbuf));
 
-				found = FALSE;
-				switch (i) {
-					case 215:
-						while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+					found = FALSE;
+					switch (i) {
+						case 215:
+							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #	ifdef DEBUG
-							if (debug & DEBUG_NNTP)
-								debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+								if (debug & DEBUG_NNTP)
+									debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
-							if (!found && ((*ptr == ':' && *(ptr + 1) == '\0') || !strncasecmp(ptr, "Xref", 4)))
-								found = TRUE;
-						}
-						break;
+								if (!found && ((*ptr == ':' && *(ptr + 1) == '\0') || !strncasecmp(ptr, "Xref", 4)))
+									found = TRUE;
+								nntp_caps.headers_range = my_realloc(nntp_caps.headers_range, strlen(nntp_caps.headers_range) + strlen(ptr) + 2);
+								strcat(nntp_caps.headers_range, ptr);
+								strcat(nntp_caps.headers_range, "\n");
+							}
+							break;
 
-					default:
-						break;
+						default:
+							break;
+					}
+					first = FALSE;
+				} else {
+					found = FALSE;
+					if (nntp_caps.headers_range && (ptr = strtok(nntp_caps.headers_range, "\n" )) != NULL) {
+						do {
+							if ((*ptr == ':' && *(ptr + 1) == '\0') || !strncasecmp(ptr, "Xref", 4))
+								found = TRUE;
+						} while (!found && *ptr && (ptr = strtok(NULL, "\n")) != NULL);
+					}
 				}
-				first = FALSE;
 			}
 		}
 
@@ -1955,6 +2306,11 @@ read_overview(
 			group_msg = fmt_string("%s XREF loop", nntp_caps.hdr_cmd); /* TODO: find a better message, move to lang.c */
 			if ((fp = nntp_command(cbuf, nntp_caps.hdr ? OK_HDR : OK_HEAD, NULL, 0)) != NULL) { /* RFC 2980 (XHDR) uses 221; RFC 3977 (HDR) uses 225 */
 				while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+#	ifdef DEBUG
+					if ((debug & DEBUG_NNTP) && verbose)
+						debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+#	endif /* DEBUG */
+
 					artnum = atoartnum(ptr);
 					if (artnum <= 0 || artnum < group->xmin || artnum > group->xmax)
 						continue;
@@ -1981,6 +2337,53 @@ read_overview(
 	}
 #endif /* NNTP_ABLE && XHDR_XREF */
 
+	if (local) {
+#ifdef NNTP_ABLE
+		if (filter_on_path(group)) {
+			struct t_article_range *ranges, *curr;
+			t_bool supported = TRUE;
+			int curr_range, range_cnt;
+
+			/*
+			 * Get the ranges without Path: header and try to fetch the
+			 * headers
+			 */
+			if ((ranges = build_range_list(min, *top, &range_cnt))) {
+				curr = ranges;
+				curr_range = 1;
+				while (curr && supported) {
+					if (curr->cnt)
+						supported = get_path_header(curr_range++, range_cnt, group, curr->start, curr->end);
+					curr = curr->next;
+				}
+				if (!supported && path_in_ofmt) {
+					/*
+					 * fetching Path: headers via [X]HDR or XPAT has failed
+					 * Path: is in the servers overview so let the next
+					 * read_overview() fetch them
+					 */
+					free_art_array();
+					free_msgids();
+					top_art = 0;
+					*top = T_ARTNUM_CONST(0);
+					expired = 0;
+				}
+				*rebuild_cache = TRUE;
+				while (ranges) {
+					curr = ranges;
+					ranges = curr->next;
+					free(curr);
+				}
+			}
+		}
+#endif /* NNTP_ABLE */
+	} else
+		if (!path_found && filter_on_path(group)) {
+#ifdef NNTP_ABLE
+			if (!get_path_header(1, 1, group, min, *top))
+#endif /* NNTP_ABLE */
+				wait_message(2, _(txt_cannot_filter_on_path));
+		}
 	return expired;
 }
 
@@ -2003,10 +2406,10 @@ read_overview(
  *       the data (from/subject) in the original charset (we don't store
  *       that info). this has the advantage that we can avoid raw 8bit data
  *       in our overviews, but the disadvantage that we might store the data
- *       with a wrong charset and thus lose information. a simmiliar problem
+ *       with a wrong charset and thus lose information. a similar problem
  *       exists with the data for the from:-line, we don't store it in the
  *       original format, whenever our from-parser (partially) fails we'll
- *       lose information in our overviews (but those couldn't be handeled
+ *       lose information in our overviews (but those couldn't be handled
  *       by tin anyway, so this is not a real problem).
  *       long-term solution: store the original data in the overview
  *       (tin has to handle raw 8bit data and other ugly stuff in the
@@ -2072,7 +2475,7 @@ write_overview(
 				 *       here and in print_from() in the CHARSET_CONVERSION case.
 				 *       note that this requires something like
 				 *          buffer_to_network(article->subject, "UTF-8");
-				 *       right bfore the rfc1522_encode() call.
+				 *       right before the rfc1522_encode() call.
 				 *
 				 *       if we would cache the original undecoded data, we could
 				 *       ignore stuff like this.
@@ -2123,6 +2526,9 @@ write_overview(
 
 			if (article->xref)
 				fprintf(fp, "\tXref: %s", article->xref);
+
+			if (article->path)
+				fprintf(fp, "\tPath: %s", article->path);
 
 			fprintf(fp, "\n");
 			free(p);

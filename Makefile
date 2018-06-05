@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2017-08-09
+# Updated: 2018-01-10
 #
 
 SHELL	= @SHELL@
@@ -9,9 +9,9 @@ SHELL	= @SHELL@
 PROJECT	= tin
 LVER	= 2
 PVER	= 4
-SVER	= 2
+SVER	= 3
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20170810
+DVER	= 20180605
 EXE	= tin
 
 # directory structure
@@ -275,6 +275,8 @@ CAN	= \
 	$(CANDIR)/src/usha.c \
 	$(CANDIR)/include/base64.h \
 	$(CANDIR)/include/canlock.h \
+	$(CANDIR)/include/canlock-private.h \
+	$(CANDIR)/include/config.h \
 	$(CANDIR)/include/sha-private.h \
 	$(CANDIR)/include/sha.h \
 	$(CANDIR)/test/canlocktest.c \

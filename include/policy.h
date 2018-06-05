@@ -6,7 +6,7 @@
  *  Updated   : 2015-09-14
  *  Notes     : #defines and static data for policy configuration
  *
- * Copyright (c) 1999-2017 Ralf Doeblitz <doeblitz@gmx.de>
+ * Copyright (c) 1999-2018 Ralf Doeblitz <doeblitz@gmx.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -330,7 +330,7 @@ static const char *gnksa_domain_list[] = {
 	/* the next five are defined in RFC 2606, RFC 6761 */
 	"invalid",
 #	if 0
-	/* but four of them shoudn't be used on usenet */
+	/* but four of them shouldn't be used on usenet */
 	"test",
 	"onion",
 	"example",

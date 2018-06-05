@@ -3,10 +3,10 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2017-05-03
+ *  Updated   : 2017-08-13
  *  Notes     :
  *
- * Copyright (c) 1999-2017 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2018 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -248,7 +248,6 @@ struct t_config {
 #	endif /* HAVE_COLOR */
 	char inews_prog[PATH_LEN];
 #ifdef USE_CANLOCK
-		t_bool cancel_locks;			/* generate Cancel-Lock/Cancel-Key header */
 		int cancel_lock_algo;			/* algorithm used for Cancel-Lock/Cancel-Key */
 #endif /* USE_CANLOCK */
 	int interactive_mailer;			/* invoke user's mailreader */
@@ -264,7 +263,7 @@ struct t_config {
 	t_bool default_filter_select_case;
 	t_bool default_filter_select_expire;
 #	ifdef XFACE_ABLE
-		t_bool use_slrnface;			/* Use the slrnface programme to display 'X-Face:'s */
+		t_bool use_slrnface;			/* Use the slrnface program to display 'X-Face:'s */
 #	endif /* XFACE_ABLE */
 	t_bool default_filter_select_global;
 	char select_format[LEN];		/* format string for the selection level */

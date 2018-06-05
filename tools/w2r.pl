@@ -56,7 +56,7 @@ sub w2p {
 	while ($wild =~ s/(.)//) {
 		$cchar = $1;
 
-		# if char is a [, and we arn't allreay in []
+		# if char is a [, and we aren't allreay in []
 		if ($lchar !~ m/\\/o && $cchar =~ m/\[/o) {
 			$bmode++;
 			$reg = $cchar;
@@ -128,7 +128,7 @@ B<w2r.pl> E<lt> I<input> [E<gt> I<output>]
 
 =head1 DESCRIPTION
 
-B<w2r.pl> reads a B<tin>(1) filter file with wildmat filters on STDIN,
+B<w2r.pl> reads a L<tin(1)> filter file with wildmat filters on STDIN,
 converts it to regexp filters and returns it on STDOUT.
 
 =head1 NOTES
@@ -141,6 +141,6 @@ Urs Janssen E<lt>urs@tin.orgE<gt>
 
 =head1 SEE ALSO
 
-B<tin>(1), B<tin>(5)
+L<tin(1)>, L<tin(5)>
 
 =cut

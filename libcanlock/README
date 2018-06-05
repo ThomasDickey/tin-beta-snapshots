@@ -1,7 +1,9 @@
 
 libcanlock
 ==========
-A library for creating and verifying RFC xxxx Netnews Cancel-Locks.
+A library for creating and verifying RFC 8315 Netnews Cancel-Locks.
+This implementation uses the recommended algorithm from Section 4 with HMAC
+based on the same hash function as <scheme>.
 
 
 1) General

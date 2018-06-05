@@ -3,11 +3,11 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2017-01-05
+ *  Updated   : 2017-10-18
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
- * Copyright (c) 1997-2017 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2018 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -583,13 +583,16 @@ again:
 
 		if (wch < KEY_MIN) {
 			/* read in the multibyte sequence */
-			char *mbs = my_malloc(MB_CUR_MAX + 1);
+			char *mbs = my_calloc(1, MB_CUR_MAX + 1);
 			int i, ch;
 			wchar_t wc;
 
 			mbs[0] = (char) wch;
 			nodelay(stdscr, TRUE);
-			for (i = 1; i < (int) MB_CUR_MAX; i++) {
+			res = mbtowc(&wc, mbs, MB_CUR_MAX);
+			for (i = 1; i < (int) MB_CUR_MAX && res == -1; i++) {
+				if ((res = mbtowc(&wc, mbs, MB_CUR_MAX)) > 0)
+					break;
 				if ((ch = getch()) != ERR)
 					mbs[i] = (char) ch;
 				else
@@ -597,8 +600,6 @@ again:
 			}
 			nodelay(stdscr, FALSE);
 
-			mbs[i] = '\0';
-			res = mbtowc(&wc, mbs, MB_CUR_MAX);
 			free(mbs);
 			if (res == -1)
 				return WEOF; /* error */
@@ -842,7 +843,7 @@ my_retouch(
 
 /*
  * innstr can't read multibyte chars
- * we use innwstr (if avaible) and convert to multibyte chars
+ * we use innwstr (if available) and convert to multibyte chars
  */
 static int
 my_innstr(

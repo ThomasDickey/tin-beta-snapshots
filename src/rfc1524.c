@@ -3,10 +3,10 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2013-11-21
+ *  Updated   : 2018-03-13
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
- * Copyright (c) 2000-2017 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2018 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,16 +71,14 @@ get_mailcap_entry(
 	char buf[LEN];
 	char filename[LEN];	/* name of current mailcap file */
 	char mailcap[LEN];	/* full match */
-	char *mailcaps = NULL;	/* possible mailcap files */
+	char *mailcaps;		/* possible mailcap files */
 	char wildcap[LEN];	/* basetype match */
 	t_mailcap *foo = (t_mailcap *) 0;
 
 	/* build list of mailcap files */
-	if ((ptr = getenv("MAILCAPS")) != NULL && strlen(ptr))
-		mailcaps = my_strdup(ptr);
-	if (mailcaps != NULL) {
-		mailcaps = my_realloc(mailcaps, strlen(mailcaps) + strlen(DEFAULT_MAILCAPS) + 2);
-		strcat(strcat(mailcaps, ":"), DEFAULT_MAILCAPS);
+	if ((ptr = getenv("MAILCAPS")) != NULL && strlen(ptr)) {
+		mailcaps = my_malloc(strlen(ptr) + strlen(DEFAULT_MAILCAPS) + 2);
+		sprintf(mailcaps, "%s:%s", ptr, DEFAULT_MAILCAPS);
 	} else
 		mailcaps = my_strdup(DEFAULT_MAILCAPS);
 
@@ -161,7 +159,7 @@ parse_mailcap_line(
 	const char *path)
 {
 	char *ptr, *optr, *buf;
-	int i = MAILCAPFIELDS - 2; /* max MAILCAPFIELDS - required fileds */
+	int i = MAILCAPFIELDS - 2; /* max MAILCAPFIELDS - required fields */
 	t_mailcap *tmailcap;
 
 	/* malloc and init */
@@ -182,7 +180,7 @@ parse_mailcap_line(
 
 	optr = ptr = my_strdup(mailcap);
 
-	/* get required entrys */
+	/* get required entries */
 	ptr = get_mailcap_field(ptr);
 	buf = my_calloc(1, strlen(content_types[part->type]) + strlen(part->subtype) + 2);
 	sprintf(buf, "%s/%s", content_types[part->type], part->subtype);

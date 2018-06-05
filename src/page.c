@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2017-03-30
+ *  Updated   : 2018-02-05
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1055,8 +1055,21 @@ print_message_page(
 		if ((line = tin_fgets(file, FALSE)) == NULL)
 			break;	/* ran out of message */
 
-		if ((help_level == INFO_PAGER) && ((int) strlen(line) >= cCOLS - 1))
+		if ((help_level == INFO_PAGER) && (strwidth(line) >= cCOLS - 1))
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			{
+				char *tmp, *f, *t;
+
+				f = tmp = strunc(line, cCOLS - 1);
+				t = line;
+				while (*f)
+					*t++ = *f++;
+				*t = '\0';
+				free(tmp);
+			}
+#else
 			line[cCOLS - 1] = '\0';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 		/*
 		 * use the offsets gained while doing line wrapping to
@@ -1205,20 +1218,22 @@ draw_page(
 	 * Print an appropriate footer
 	 */
 	if (curr_line + ARTLINES >= artlines) {
-		char buf[LEN];
+		char buf[LEN], *buf2;
 		int len;
 
 		STRCPY(buf, (arts[this_resp].thread != -1) ? _(txt_next_resp) : _(txt_last_resp));
-		len = strwidth(buf);
+		buf2 = strunc(buf, cCOLS - 1);
+		len = strwidth(buf2);
 		clear_message();
 		MoveCursor(cLINES, cCOLS - len - (1 + BLANK_PAGE_COLS));
 #ifdef HAVE_COLOR
 		fcol(tinrc.col_normal);
 #endif /* HAVE_COLOR */
 		StartInverse();
-		my_fputs(buf, stdout);
+		my_fputs(buf2, stdout);
 		EndInverse();
 		my_flush();
+		free(buf2);
 	} else
 		draw_percent_mark(curr_line + ARTLINES, artlines);
 
@@ -1292,7 +1307,7 @@ static void
 draw_page_header(
 	const char *group)
 {
-	char *buf;
+	char *buf, *tmp;
 	int i;
 	int whichresp, x_resp;
 	int len, right_len, center_pos, cur_pos;
@@ -1300,7 +1315,7 @@ draw_page_header(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *fmt_resp, *fmt_thread, *wtmp, *wtmp2, *wbuf;
 #else
-	char *tmp, *tmp2;
+	char *tmp2;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	whichresp = which_response(this_resp);
@@ -1321,7 +1336,7 @@ draw_page_header(
 
 	/*
 	 * determine the needed space for the text at the right hand margin
-	 * the formating info (%4s) needs 3 positions but we need 4 positions
+	 * the formatting info (%4s) needs 3 positions but we need 4 positions
 	 * on the screen for each counter.
 	 */
 	if (fmt_thread && fmt_resp)
@@ -1334,6 +1349,12 @@ draw_page_header(
 		right_len = 0;
 	FreeIfNeeded(fmt_thread);
 	FreeIfNeeded(fmt_resp);
+
+	/*
+	 * limit right_len to cCOLS / 3
+	 */
+	if (right_len > cCOLS / 3 + 1)
+		right_len = cCOLS / 3 + 1;
 
 	/*
 	 * first line
@@ -1387,7 +1408,9 @@ draw_page_header(
 	/* thread info */
 	/* can't eval tin_ltoa() more than once in a statement due to statics */
 	strcpy(buf, tin_ltoa(which_thread(this_resp) + 1, 4));
-	my_printf(_(txt_thread_x_of_n), buf, tin_ltoa(grpmenu.max, 4));
+	tmp = strunc(_(txt_thread_x_of_n), cCOLS / 3 - 1);
+	my_printf(tmp, buf, tin_ltoa(grpmenu.max, 4));
+	free(tmp);
 
 	my_fputs(cCRLF, stdout);
 
@@ -1414,8 +1437,11 @@ draw_page_header(
 	{
 		wchar_t *fmt;
 
-		if ((fmt = char2wchar_t(_(txt_lines))) != NULL) {
-			wtmp = my_malloc(sizeof(wchar_t) * line_len);
+		if ((wtmp = char2wchar_t(_(txt_lines))) != NULL) {
+			int tex_space = pgart.tex2iso ? 5 : 0;
+
+			fmt = wstrunc(wtmp, cCOLS / 3 - 1 - tex_space);
+			wtmp = my_realloc(wtmp, sizeof(wchar_t) * line_len);
 			swprintf(wtmp, line_len, fmt, buf);
 			my_fputws(wtmp, stdout);
 			cur_pos += wcswidth(wtmp, wcslen(wtmp));
@@ -1431,9 +1457,11 @@ draw_page_header(
 	/* tex2iso */
 	if (pgart.tex2iso) {
 		if ((wtmp = char2wchar_t(_(txt_tex))) != NULL) {
-			my_fputws(wtmp, stdout);
-			cur_pos += wcswidth(wtmp, wcslen(wtmp));
+			wtmp2 = wstrunc(wtmp, 5);
+			my_fputws(wtmp2, stdout);
+			cur_pos += wcswidth(wtmp2, wcslen(wtmp2));
 			free(wtmp);
+			free(wtmp2);
 		}
 	}
 
@@ -1471,16 +1499,23 @@ draw_page_header(
 	for (; cur_pos < cCOLS - right_len - 1; cur_pos++)
 		my_fputc(' ', stdout);
 
-	if (whichresp)
-		my_printf(_(txt_art_x_of_n), whichresp + 1, x_resp + 1);
-	else {
+	if (whichresp) {
+		tmp = strunc(_(txt_art_x_of_n), cCOLS / 3 - 1);
+		my_printf(tmp, whichresp + 1, x_resp + 1);
+		free(tmp);
+	} else {
 		/* TODO: ngettext */
-		if (!x_resp)
-			my_printf("%s", _(txt_no_responses));
-		else if (x_resp == 1)
-			my_printf("%s", _(txt_1_resp));
-		else
-			my_printf(_(txt_x_resp), x_resp);
+		if (!x_resp) {
+			tmp = strunc(_(txt_no_responses), cCOLS / 3 - 1);
+			my_printf("%s", tmp);
+		} else if (x_resp == 1) {
+			tmp = strunc(_(txt_1_resp), cCOLS / 3 - 1);
+			my_printf("%s", tmp);
+		} else {
+			tmp = strunc(_(txt_x_resp), cCOLS / 3 - 1);
+			my_printf(tmp, x_resp);
+		}
+		free(tmp);
 	}
 	my_fputs(cCRLF, stdout);
 
@@ -1524,13 +1559,7 @@ draw_page_header(
 	 * TODO: IDNA decoding, see also comment in
 	 *       cook.c:cook_article()
 	 */
-	if ((wtmp = char2wchar_t(_(txt_at_s))) != NULL) {
-		len = wcswidth(wtmp, wcslen(wtmp));
-		free(wtmp);
-	} else
-		len = 0;
-	if (note_h->org && cCOLS - cur_pos - 1 >= len - 2 + 3) {
-		/* we have enough space to print at least " at ..." */
+	if (note_h->org) {
 		snprintf(buf, line_len, _(txt_at_s), note_h->org);
 
 		if ((wtmp = char2wchar_t(buf)) != NULL) {
@@ -1554,7 +1583,7 @@ draw_page_header(
 #else /* !MULTIBYTE_ABLE || NO_LOCALE */
 	/*
 	 * determine the needed space for the text at the right hand margin
-	 * the formating info (%4s) needs 3 positions but we need 4 positions
+	 * the formatting info (%4s) needs 3 positions but we need 4 positions
 	 * on the screen for each counter
 	 */
 	right_len = MAX((strlen(_(txt_thread_x_of_n)) - 6 + 8), (strlen(_(txt_art_x_of_n)) - 6 + 8));

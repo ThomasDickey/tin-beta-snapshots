@@ -3,8 +3,8 @@
  *  Module    : strftime.c
  *  Author    : A. Robbins & I. Lea
  *  Created   : 1991-02-01
- *  Updated   : 1993-08-15
- *  Notes     : Relatively quick-and-dirty implemenation of ANSI library
+ *  Updated   : 2018-04-04
+ *  Notes     : Relatively quick-and-dirty implementation of ANSI library
  *              routine for System V Unix systems.
  *              If target system already has strftime() call the #define
  *              HAVE_STRFTIME can be set to use it.
@@ -12,7 +12,7 @@
  *              tm = localtime(&secs);
  *              num = strftime(buf, sizeof(buf), "%a %d-%m-%y %H:%M:%S", tm);
  *
- * Copyright (c) 1991-2017 Arnold Robbins <arnold@skeeve.com>
+ * Copyright (c) 1991-2018 Arnold Robbins <arnold@skeeve.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,7 +67,7 @@ my_strftime(
 #ifdef HAVE_STRFTIME
 	return strftime(s, maxsize, format, timeptr);
 #else
-	char *endp = s + maxsize;
+	char *endp;
 	char *start = s;
 	char tbuf[100];
 	int i;
@@ -108,6 +108,7 @@ my_strftime(
 #	endif /* HAVE_SETTZ */
 #endif /* HAVE_TZSET */
 
+	endp = s + maxsize;
 	for (; *format && s < endp - 1; format++) {
 		tbuf[0] = '\0';
 		if (*format != '%') {

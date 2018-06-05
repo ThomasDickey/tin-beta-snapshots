@@ -166,6 +166,7 @@ refs_only=pattern   References: line (e.g. <123@ether.net>) without Message-Id:
 lines=num           Lines: ; <num matches less than, >num matches more than.
 gnksa=[<>]?NUM      GNKSA parse_from() return code
 xref=pattern        Xref: ; filter crossposts to groups matching pattern
+path=pattern        Path: ; filter server names matching pattern
 
 When you are using wildmat pattern-matching, patterns in ~/.tin/filter
 should be delimited with "*", verbatim wildcards in patterns must be
@@ -222,6 +223,22 @@ code   error description
  404   illegal character in oldstyle realname part (one of "()<>\")
  405   illegal character in realname part
 
+
+Path:-filter
+Restrictions - this will only work if:
+- reading from local spool and
+-- without access to local NOV-files and OVERVIEW.FMT or
+-- local NOV files provide Path data
+- or reading via NNTP and
+-- NOV files provide Path data or
+-- server supports HDR and announces "Path" in LIST HEADERS RANGE or
+-- server does not support HDR but XHDR and returns "Path" data if requested or
+-- server supports XPAT and returns "Path" data if requested
+Side effects:
+When unsing a Path:-filer tin _may_ rebuild locally cached overview
+data if cache_overview_files=ON is set to get the Path data into the
+local cache of the group where the filter is active. This will may cause
+more NNTP traffic once.
 
 6. EXAMPLES
 
@@ -313,6 +330,13 @@ group=*
 case=1
 score=kill
 from=@ac\.example\s\(John\sSmith\)$
+
+comment= Kill all articles which have news.example.org in
+comment= in the Path: header
+group=*
+case=1
+score=kill
+path=news\.example\.org
 
 7. TODO
 

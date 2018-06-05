@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2017-01-31
+ *  Updated   : 2018-02-15
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -58,7 +58,6 @@ static TCP *nntp_rd_fp = NULL;
 	static int mode_reader(t_bool *sec);
 	static int reconnect(int retry);
 	static int server_init(char *machine, const char *cservice, unsigned short port, char *text, size_t mlen);
-	static int check_extensions(void);
 	static void close_server(void);
 	static void list_motd(void);
 #	ifdef INET6
@@ -188,7 +187,7 @@ getserverbyfile(
  *
  *	Parameters:	"machine" is the machine to connect to.
  *			"service" is the service to connect to on the machine.
- *			"port" is the servive port to connect to.
+ *			"port" is the service port to connect to.
  *
  *	Returns:	server's initial response code
  *			or -errno
@@ -593,7 +592,7 @@ get_tcp6_socket(
 {
 	char mymachine[MAXHOSTNAMELEN + 1];
 	char myport[12];
-	int s = -1, err = -1;
+	int s = -1, err;
 	struct addrinfo hints, *res, *res0;
 
 	snprintf(mymachine, sizeof(mymachine), "%s", machine);
@@ -837,7 +836,7 @@ reconnect(
 		if (retry > NNTP_TRY_RECONNECT) {
 #	ifdef DEBUG
 			/* TODO: -> lang.c */
-			if (debug & DEBUG_NNTP)
+			if ((debug & DEBUG_NNTP) && verbose > 1)
 				debug_print_file("NNTP", "reconnect(%d) limit %d reached, giving up.", retry, NNTP_TRY_RECONNECT);
 #	endif /* DEBUG */
 		}
@@ -949,8 +948,8 @@ get_server(
 			 * Use standard NNTP closing message and response code if user is
 			 * quitting tin and leave loop.
 			 */
-			strncpy(string, _(txt_nntp_ok_goodbye), size - 2);
-			strcat(string, cCRLF);		/* tin_fgets() needs CRLF */
+			strncpy(string, _(txt_nntp_ok_goodbye), size - 3);
+			strcat(string, "\r\n");		/* tin_fgets() needs CRLF */
 			break;
 		}
 	}
@@ -980,8 +979,14 @@ close_server(
 	if (nntp_wr_fp == NULL || nntp_rd_fp == NULL)
 		return;
 
-	if (!batch_mode || verbose)
-		my_fputs(_(txt_disconnecting), stdout);
+	if (!batch_mode || verbose) {
+		char *msg;
+
+		msg = strunc(_(txt_disconnecting), cCOLS - 1);
+		my_fputs(msg, stdout);
+		my_fputc('\n', stdout);
+		free(msg);
+	}
 	nntp_command("QUIT", OK_GOODBYE, NULL, 0);
 	quitting = TRUE;										/* Don't reconnect just for this */
 
@@ -999,9 +1004,9 @@ close_server(
  *
  * Sets up: t_capabilities nntp_caps
  */
-static int
+int
 check_extensions(
-	void)
+	int rvl)
 {
 	char *d;
 	char *ptr;
@@ -1010,7 +1015,9 @@ check_extensions(
 	int ret = 0;
 
 	buf[0] = '\0';
-	i = new_nntp_command("CAPABILITIES", INF_CAPABILITIES, buf, sizeof(buf));
+
+	/* rvl > 0 = manually send "CAPABILITIES" to avoid endless AUTH loop */
+	i = rvl ? rvl : new_nntp_command("CAPABILITIES", INF_CAPABILITIES, buf, sizeof(buf));
 	switch (i) {
 		case INF_CAPABILITIES:
 			/* clear capabilities */
@@ -1023,6 +1030,8 @@ check_extensions(
 			nntp_caps.list_active_times = FALSE;
 			nntp_caps.list_distrib_pats = FALSE;
 			nntp_caps.list_headers = FALSE;
+			FreeAndNull(nntp_caps.headers_range);
+			FreeAndNull(nntp_caps.headers_id);
 			nntp_caps.list_newsgroups = FALSE;
 			nntp_caps.list_overview_fmt = FALSE;
 			nntp_caps.list_motd = FALSE;
@@ -1030,7 +1039,7 @@ check_extensions(
 			nntp_caps.list_distributions = FALSE;
 			nntp_caps.list_moderators = FALSE;
 			nntp_caps.list_counts = FALSE;
-			nntp_caps.xpat = TRUE; /* only used in select.c:lookup_msgid(); toggles to false if fails, INN > 2.7.0 announces it */
+			nntp_caps.xpat = TRUE; /* toggles to false if fails, INN > 2.7.0 announces it */
 			nntp_caps.hdr = FALSE;
 			nntp_caps.hdr_cmd = NULL;
 			nntp_caps.over = FALSE;
@@ -1147,6 +1156,8 @@ check_extensions(
 					else if (!strncasecmp(ptr, &xhdr_cmds[1], strlen(&xhdr_cmds[1]))) {
 						nntp_caps.hdr_cmd = &xhdr_cmds[1];
 						nntp_caps.list_headers = nntp_caps.hdr = TRUE;
+						nntp_caps.headers_range = my_strdup("");
+						nntp_caps.headers_id = my_strdup("");
 					} else if (!strncasecmp(ptr, "AUTHINFO", 8)) {
 						d = ptr + 8;
 						d = strpbrk(d, " \t");
@@ -1224,7 +1235,7 @@ check_extensions(
 
 		/*
 		 * XanaNewz 2 Server Version 2.0.0.3 doesn't know CAPABILITIES
-		 * but respondes with 400 _without_ closing the connection. If
+		 * but responds with 400 _without_ closing the connection. If
 		 * you use tin on a XanaNewz 2 Server comment out the following
 		 * case.
 		 */
@@ -1255,8 +1266,8 @@ mode_reader(
 	if (!nntp_caps.reader) {
 		char line[NNTP_STRLEN];
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", "mode_reader() MODE READER");
+		if ((debug & DEBUG_NNTP) && verbose > 1)
+			debug_print_file("NNTP", "mode_reader(MODE READER)");
 #	endif /* DEBUG */
 		DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 		put_server("MODE READER");
@@ -1332,7 +1343,7 @@ nntp_open(
 		return 0;
 
 #	ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "nntp_open() BEGIN");
 #	endif /* DEBUG */
 
@@ -1350,7 +1361,7 @@ nntp_open(
 	}
 
 #	ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "nntp_open() %s:%d", nntp_server, nntp_tcp_port);
 #	endif /* DEBUG */
 
@@ -1361,7 +1372,7 @@ nntp_open(
 		my_fputc('\n', stdout);
 
 #	ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "nntp_open() %s", line);
 #	endif /* DEBUG */
 
@@ -1420,7 +1431,7 @@ nntp_open(
 	 *       RFC 4643).
 	 */
 	if (nntp_caps.type != BROKEN)
-		check_extensions();
+		check_extensions(0);
 
 	/*
 	 * If the user wants us to authenticate on connection startup, do it now.
@@ -1435,8 +1446,8 @@ nntp_open(
 			char buf[NNTP_STRLEN];
 
 #	ifdef DEBUG
-			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "nntp_open() MODE READER");
+			if ((debug & DEBUG_NNTP) && verbose > 1)
+				debug_print_file("NNTP", "nntp_open(MODE READER)");
 #	endif /* DEBUG */
 			put_server("MODE READER");
 			switch (get_only_respcode(buf, sizeof(buf))) {
@@ -1449,21 +1460,18 @@ nntp_open(
 				default:
 					break;
 			}
-			check_extensions();
+			check_extensions(0);
 		}
 	}
 
 	if (force_auth_on_conn_open) {
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", "nntp_open() authenticate(force_auth_on_conn_open)");
+		if ((debug & DEBUG_NNTP) && verbose > 1)
+			debug_print_file("NNTP", "nntp_open(authenticate(force_auth_on_conn_open))");
 #	endif /* DEBUG */
 
 		if (!authenticate(nntp_server, userid, FALSE))	/* 3rd parameter is FALSE as we need to get prompted for username password here */
 			return -1;
-
-		if (nntp_caps.type == CAPABILITIES)
-			check_extensions();
 	}
 
 	if ((nntp_caps.type == CAPABILITIES && nntp_caps.mode_reader) || nntp_caps.type != CAPABILITIES) {
@@ -1474,11 +1482,15 @@ nntp_open(
 			return ret;
 		}
 		if (nntp_caps.type == CAPABILITIES)
-			check_extensions();
+			check_extensions(0);
 	}
 
 	if (nntp_caps.type == CAPABILITIES) {
 		if (!nntp_caps.reader) {
+#	ifdef DEBUG
+			if ((debug & DEBUG_NNTP) && verbose > 1)
+				debug_print_file("NNTP", "CAPABILITIES did not announce READER");
+#	endif /* DEBUG */
 			error_message(2, _("CAPABILITIES did not announce READER")); /* TODO: -> lang.c */
 			return -1; /* give up */
 		}
@@ -1550,7 +1562,7 @@ nntp_open(
 				case OK_XOVER:	/* unexpected multiline ok, e.g.: Synchronet 3.13 NNTP Service 1.92 or on reconnect if last cmd was GROUP */
 					nntp_caps.over_cmd = &xover_cmds[i];
 #	ifdef DEBUG
-					if (debug & DEBUG_NNTP)
+					if ((debug & DEBUG_NNTP) && verbose > 1)
 						debug_print_file("NNTP", "nntp_open() %s skipping data", &xover_cmds[i]);
 #	endif /* DEBUG */
 					while (tin_fgets(FAKE_NNTP_FP, FALSE))
@@ -1573,7 +1585,7 @@ nntp_open(
 				case 221:	/* unexpected multiline ok, e.g.: SoftVelocity Discussions 2.5q */
 					nntp_caps.hdr_cmd = &xhdr_cmds[i];
 #		ifdef DEBUG
-					if (debug & DEBUG_NNTP)
+					if ((debug & DEBUG_NNTP) && verbose > 1)
 						debug_print_file("NNTP", "nntp_open() %s skipping data", &xhdr_cmds[i]);
 #		endif /* DEBUG */
 					while (tin_fgets(FAKE_NNTP_FP, FALSE))
@@ -1587,7 +1599,7 @@ nntp_open(
 					break;
 			}
 		}
-		/* no XPAT probing here, we do it in select.c:lookup_msgid() as that's the only place we use it */
+		/* no XPAT probing here, we do when it's needed */
 		nntp_caps.xpat = TRUE;
 #		if 0
 		switch (new_nntp_command("XPAT Newsgroups <0> *", ERR_NOART, line, sizeof(line))) {
@@ -1611,7 +1623,7 @@ nntp_open(
 				case OK_XOVER:	/* unexpected multiline ok, e.g.: Synchronet 3.13 NNTP Service 1.92 or on reconnect if last cmd was GROUP */
 					nntp_caps.over_cmd = xover_cmds;
 #	ifdef DEBUG
-					if (debug & DEBUG_NNTP)
+					if ((debug & DEBUG_NNTP) && verbose > 1)
 						debug_print_file("NNTP", "nntp_open() %s skipping data", xover_cmds);
 #	endif /* DEBUG */
 					while (tin_fgets(FAKE_NNTP_FP, FALSE))
@@ -1634,7 +1646,7 @@ nntp_open(
 				case 221:	/* unexpected multiline ok, e.g.: SoftVelocity Discussions 2.5q */
 					nntp_caps.hdr_cmd = xhdr_cmds;
 #		ifdef DEBUG
-					if (debug & DEBUG_NNTP)
+					if ((debug & DEBUG_NNTP) && verbose > 1)
 						debug_print_file("NNTP", "nntp_open() %s skipping data", xhdr_cmds);
 #		endif /* DEBUG */
 					while (tin_fgets(FAKE_NNTP_FP, FALSE))
@@ -1696,7 +1708,7 @@ nntp_close(
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news) {
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
+		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "nntp_close() END");
 #	endif /* DEBUG */
 		close_server();
@@ -1728,8 +1740,8 @@ get_only_respcode(
 
 	if (tin_errno || ptr == NULL) {
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", "<<<%sError: tin_error<>0 or ptr==NULL in get_only_respcode()", logtime());
+		if ((debug & DEBUG_NNTP) && verbose > 1)
+			debug_print_file("NNTP", "Error: tin_error<>0 or ptr==NULL in get_only_respcode()");
 #	endif /* DEBUG */
 		return -1;
 	}
@@ -1755,7 +1767,7 @@ get_only_respcode(
 		 * If so, retrying will force a reconnect.
 		 */
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
+		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "get_only_respcode() timeout");
 #	endif /* DEBUG */
 		put_server(last_put);
@@ -1763,8 +1775,8 @@ get_only_respcode(
 
 		if (tin_errno || ptr == NULL) {
 #	ifdef DEBUG
-			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "<<<%sError: tin_errno<>0 or ptr==NULL in get_only_respcode(retry)", logtime());
+			if ((debug & DEBUG_NNTP) && verbose > 1)
+				debug_print_file("NNTP", "Error: tin_errno<>0 or ptr==NULL in get_only_respcode(retry)");
 #	endif /* DEBUG */
 			return -1;
 		}
@@ -1796,7 +1808,7 @@ get_only_respcode(
  * necessary after a timeout.
  *
  * TODO: make this handle 401 and 483 (RFC 3977) return codes.
- *       as 401 requires to examine the returned text besides the
+ *       as 401 requires the examination of the returned text besides the
  *       return value, we have to "fix" all nntp_command(..., NULL, 0) and
  *       get_only_respcode(NULL, 0) calls to do this properly.
  */
@@ -1815,7 +1827,7 @@ get_respcode(
 		 * Server requires authentication.
 		 */
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
+		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "get_respcode() authentication");
 #	endif /* DEBUG */
 		STRCPY(savebuf, last_put);
@@ -1823,10 +1835,9 @@ get_respcode(
 		if (!authenticate(nntp_server, userid, FALSE))
 			tin_done(EXIT_FAILURE, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
 
-		if (nntp_caps.type == CAPABILITIES) {
-			check_extensions();
+		if (nntp_caps.type == CAPABILITIES)
 			can_post = nntp_caps.post && !force_no_post;
-		} else {
+		else {
 			put_server("MODE READER");
 			if (get_only_respcode(message, mlen) == OK_CANPOST)
 				can_post = TRUE && !force_no_post;
@@ -1849,8 +1860,8 @@ get_respcode(
 
 		if (tin_errno) {
 #	ifdef DEBUG
-			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "<<<%sError: tin_errno <> 0", logtime());
+			if ((debug & DEBUG_NNTP) && verbose > 1)
+				debug_print_file("NNTP", "Error: tin_errno <> 0");
 #	endif /* DEBUG */
 			return -1;
 		}
@@ -1889,7 +1900,7 @@ nntp_command(
 {
 DEBUG_IO((stderr, "nntp_command(%s)\n", command));
 #	ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "nntp_command(%s)", command);
 #	endif /* DEBUG */
 	put_server(command);
@@ -1897,7 +1908,7 @@ DEBUG_IO((stderr, "nntp_command(%s)\n", command));
 	if (!bool_equal(dangerous_signal_exit, TRUE)) {
 		if (get_respcode(message, mlen) != success) {
 #	ifdef DEBUG
-			if (debug & DEBUG_NNTP)
+			if ((debug & DEBUG_NNTP) && verbose > 1)
 				debug_print_file("NNTP", "nntp_command(%s) NOT_OK", command);
 #	endif /* DEBUG */
 			/* error_message(2, "%s", message); */
@@ -1905,7 +1916,7 @@ DEBUG_IO((stderr, "nntp_command(%s)\n", command));
 		}
 	}
 #	ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "nntp_command(%s) OK", command);
 #	endif /* DEBUG */
 	return FAKE_NNTP_FP;
@@ -1928,7 +1939,7 @@ new_nntp_command(
 
 DEBUG_IO((stderr, "new_nntp_command(%s)\n", command));
 #	ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "new_nntp_command(%s)", command);
 #	endif /* DEBUG */
 	put_server(command);
@@ -1936,14 +1947,14 @@ DEBUG_IO((stderr, "new_nntp_command(%s)\n", command));
 	if (!bool_equal(dangerous_signal_exit, TRUE)) {
 		if ((respcode = get_respcode(message, mlen)) != success) {
 #	ifdef DEBUG
-			if (debug & DEBUG_NNTP)
+			if ((debug & DEBUG_NNTP) && verbose > 1)
 				debug_print_file("NNTP", "new_nntp_command(%s) NOT_OK - Expected: %d, got: %d", command, success, respcode);
 #	endif /* DEBUG */
 			return respcode;
 		}
 	}
 #	ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "new_nntp_command(%s) OK", command);
 #	endif /* DEBUG */
 	return respcode;

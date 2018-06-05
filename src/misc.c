@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2017-06-13
+ *  Updated   : 2018-04-04
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -248,7 +248,7 @@ backup_file(
  * prefix (= quote_chars), initials of the articles author
  * with_sig is set if the signature should be quoted
  *
- * TODO: rewrite from scratch, the code is awfull
+ * TODO: rewrite from scratch, the code is awful
  */
 void
 copy_body(
@@ -712,8 +712,8 @@ my_mkdir(
 	char buf[LEN];
 	struct stat sb;
 
-	snprintf(buf, sizeof(buf), "mkdir %s", path); /* redirect stderr to /dev/null? use invoke_cmd()? */
 	if (stat(path, &sb) == -1) {
+		snprintf(buf, sizeof(buf), "mkdir %s", path); /* redirect stderr to /dev/null? use invoke_cmd()? */
 		system(buf);
 #	ifdef HAVE_CHMOD
 		return chmod(path, mode);
@@ -1127,7 +1127,7 @@ show_color_status(
  * Check for lock file to stop multiple copies of tin -u running and if it
  * does not exist create it so this is the only copy running
  *
- * FIXME: get ridd of hardcoded pid-length as pid_t might be long
+ * FIXME: get rid of hardcoded pid-length as pid_t might be long
  */
 void
 create_index_lock_file(
@@ -1180,7 +1180,7 @@ strfquote(
 	size_t maxsize,
 	char *format)
 {
-	char *endp = s + maxsize;
+	char *endp;
 	char *start = s;
 	char tbuf[LEN];
 	int i, j;
@@ -1192,6 +1192,7 @@ strfquote(
 	if (strchr(format, '%') == NULL && strlen(format) + 1 >= maxsize)
 		return 0;
 
+	endp = s + maxsize;
 	for (; *format && s < endp - 1; format++) {
 		tbuf[0] = '\0';
 
@@ -1339,7 +1340,7 @@ strfeditor(
 	size_t maxsize,
 	char *format)
 {
-	char *endp = s + maxsize;
+	char *endp;
 	char *start = s;
 	char tbuf[PATH_LEN];
 	int i;
@@ -1350,6 +1351,7 @@ strfeditor(
 	if (strchr(format, '%') == NULL && strlen(format) + 1 >= maxsize)
 		return 0;
 
+	endp = s + maxsize;
 	for (; *format && s < endp - 1; format++) {
 		tbuf[0] = '\0';
 
@@ -1493,11 +1495,11 @@ _strfpath(
 	struct t_group *group,
 	t_bool expand_all)
 {
-	char *endp = str + maxsize;
-	const char *startp = format;
+	char *endp;
+	char *envptr;
 	char defbuf[PATH_LEN];
 	char tbuf[PATH_LEN];
-	char *envptr;
+	const char *startp = format;
 	int i;
 	struct passwd *pwd;
 	t_bool is_mailbox = FALSE;
@@ -1508,6 +1510,7 @@ _strfpath(
 	if (strlen(format) + 1 >= maxsize)
 		return 0;
 
+	endp = str + maxsize;
 	for (; *format && str < endp - 1; format++) {
 		tbuf[0] = '\0';
 
@@ -1783,7 +1786,7 @@ strfmailer(
 	size_t maxsize,
 	const char *format)
 {
-	char *endp = dest + maxsize;
+	char *endp;
 	char *start = dest;
 	char tbuf[PATH_LEN];
 	int quote_area = no_quote;
@@ -1798,9 +1801,9 @@ strfmailer(
 
 	/*
 	 * TODO: shouldn't we better check for no % OR format > maxsize?
-	 *       as no replacemnt doesn't make sense (hardcoded To, Subject
-	 *       and filename) and the resulting string usuly is longer after
-	 *       replacemnts were done (nobody uses enough %% to make the
+	 *       as no replacement doesn't make sense (hardcoded To, Subject
+	 *       and filename) and the resulting string usually is longer after
+	 *       replacements were done (nobody uses enough %% to make the
 	 *       result shorter than the input).
 	 */
 	if (strchr(format, '%') == NULL && strlen(format) + 1 >= maxsize)
@@ -1810,6 +1813,7 @@ strfmailer(
 	 * walk through format until end of format or end of available space
 	 * and replace place holders
 	 */
+	endp = dest + maxsize;
 	for (; *format && dest < endp - 1; format++) {
 		tbuf[0] = '\0';
 
@@ -3610,7 +3614,7 @@ strip_line(
 
 #if defined(CHARSET_CONVERSION) || (defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE))
 /*
- * 'check' a given UTF-8 strig and '?'-out illegal sequences
+ * 'check' a given UTF-8 string and '?'-out illegal sequences
  * TODO: is this check complete?
  *
  * UTF-8           = ASCII / UTF-8-non-ascii
@@ -3757,30 +3761,37 @@ idna_decode(
 	char *in)
 {
 	char *out = my_strdup(in);
+
+	/* decoding needed? */
+	if (!strstr(in, "xn--"))
+		return out;
+
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 /* IDNA 2008 */
 #	if defined(HAVE_LIBIDNKIT) && defined(HAVE_IDN_DECODENAME)
-	idn_result_t res;
-	char *q, *r = NULL;
+	{
+		idn_result_t res;
+		char *q, *r = NULL;
 
-	if ((q = strrchr(out, '@'))) {
-		q++;
-		r = strrchr(in, '@');
-		r++;
-	} else {
-		r = in;
-		q = out;
-	}
-	if ((res = idn_decodename(IDN_DECODE_LOOKUP, r, q, out + strlen(out) - q + 1)) == idn_success)
-		return out;
-	else { /* IDNA 2008 failed, try again with IDNA 2003 if available */
-		free(out);
-		out = my_strdup(in);
-	}
+		if ((q = strrchr(out, '@'))) {
+			q++;
+			r = strrchr(in, '@');
+			r++;
+		} else {
+			r = in;
+			q = out;
+		}
+		if ((res = idn_decodename(IDN_DECODE_LOOKUP, r, q, out + strlen(out) - q + 1)) == idn_success)
+			return out;
+		else { /* IDNA 2008 failed, try again with IDNA 2003 if available */
+			free(out);
+			out = my_strdup(in);
+		}
 #		ifdef DEBUG
-	if (debug & DEBUG_MISC)
-		wait_message(2, "idn_decodename(%s): %s", r, idn_result_tostring(res));
+		if (debug & DEBUG_MISC)
+			wait_message(2, "idn_decodename(%s): %s", r, idn_result_tostring(res));
 #		endif /* DEBUG */
+	}
 #	endif /* HAVE_LIBIDNKIT && HAVE_IDN_DECODENAME */
 
 /* IDNA 2003 */

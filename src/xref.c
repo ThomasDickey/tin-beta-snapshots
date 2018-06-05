@@ -3,10 +3,10 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2016-06-02
+ *  Updated   : 2018-02-12
  *  Notes     :
  *
- * Copyright (c) 1993-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -117,7 +117,7 @@ overview_xref_support(
 						if (fields != 7) {
 							expensive_over_parse = TRUE;
 #ifdef DEBUG
-							if (debug & DEBUG_NNTP)
+							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 7);
 #endif /* DEBUG */
 						}
@@ -130,7 +130,7 @@ overview_xref_support(
 						if (fields != 6) {
 							expensive_over_parse = TRUE;
 #ifdef DEBUG
-							if (debug & DEBUG_NNTP)
+							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 6);
 #endif /* DEBUG */
 						}
@@ -149,13 +149,13 @@ overview_xref_support(
 					if (fields < 7) {
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected > %d", ptr, fields, 7);
 #endif /* DEBUG */
 					}
 #ifdef DEBUG
 					else {
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d", ptr, fields);
 					}
 #endif /* DEBUG */
@@ -170,7 +170,7 @@ overview_xref_support(
 					if (fields != 1) {
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 1);
 #endif /* DEBUG */
 					}
@@ -183,7 +183,7 @@ overview_xref_support(
 					if (fields != 2) {
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 2);
 #endif /* DEBUG */
 					}
@@ -196,7 +196,7 @@ overview_xref_support(
 					if (fields != 3) {
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 3);
 #endif /* DEBUG */
 					}
@@ -209,7 +209,7 @@ overview_xref_support(
 					if (fields != 4) {
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 4);
 #endif /* DEBUG */
 					}
@@ -222,7 +222,7 @@ overview_xref_support(
 					if (fields != 5) {
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 5);
 #endif /* DEBUG */
 					}
@@ -235,7 +235,7 @@ overview_xref_support(
 					if (fields != 6) {
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 6);
 #endif /* DEBUG */
 					}
@@ -248,7 +248,7 @@ overview_xref_support(
 					if (fields != 7) {
 						expensive_over_parse = TRUE;
 #ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "OVERVIEW.FMT: %s at position %d expected %d", ptr, fields, 7);
 #endif /* DEBUG */
 					}
@@ -272,7 +272,7 @@ overview_xref_support(
 
 	if (fields < 2) {
 #ifdef DEBUG
-		if (debug & DEBUG_NNTP)
+		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", fp ? "OVERVIEW.FMT: Empty response - using safe defaults" : "OVERVIEW.FMT: not advertized - using safe defaults");
 #endif /* DEBUG */
 		ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (8 + 1));

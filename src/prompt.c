@@ -3,10 +3,10 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2015-10-31
+ *  Updated   : 2017-10-18
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ prompt_num(
 
 	clear_message();
 	snprintf(tmp, sizeof(tmp), "%c", ch);
-	if ((p = tin_getline(prompt, TRUE, tmp, 0, FALSE, HIST_OTHER)) != NULL) {
+	if ((p = tin_getline(prompt, 1, tmp, 0, FALSE, HIST_OTHER)) != NULL) {
 		STRCPY(tmp, p);
 		num = atoi(tmp);
 	} else
@@ -112,7 +112,7 @@ prompt_default_string(
 	char *p;
 
 	clear_message();
-	if ((p = tin_getline(prompt, FALSE, default_prompt, buf_len, FALSE, which_hist)) == NULL) {
+	if ((p = tin_getline(prompt, 0, default_prompt, buf_len, FALSE, which_hist)) == NULL) {
 		buf[0] = '\0';
 		clear_message();
 		return FALSE;
@@ -143,7 +143,7 @@ prompt_menu_string(
 	 */
 	/* fflush(stdin); */
 	MoveCursor(line, 0);
-	if ((p = tin_getline(prompt, FALSE, var, 0, FALSE, HIST_OTHER)) == NULL)
+	if ((p = tin_getline(prompt, 0, var, 0, FALSE, HIST_OTHER)) == NULL)
 		return FALSE;
 
 	strcpy(var, p);
@@ -532,7 +532,7 @@ prompt_option_char(
 		MoveCursor(option_row(option), 0);
 		fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
 
-		if ((p = tin_getline(prompt, FALSE, p, 1, FALSE, HIST_OTHER)) == NULL) {
+		if ((p = tin_getline(prompt, 0, p, 1, FALSE, HIST_OTHER)) == NULL) {
 			clear_message();
 			return FALSE;
 		}

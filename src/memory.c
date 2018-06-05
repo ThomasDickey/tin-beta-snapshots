@@ -3,10 +3,10 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2016-08-06
+ *  Updated   : 2018-02-11
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ int *my_group;				/* .newsrc --> active[] */
 t_artnum *base;				/* base articles for each thread */
 struct t_group *active;			/* active newsgroups */
 struct t_scope *scopes = NULL;	/* attributes stores in .tin/attributes */
-struct t_newnews *newnews;		/* active file sizes on differnet servers */
+struct t_newnews *newnews;		/* active file sizes on different servers */
 struct t_article *arts;			/* articles headers in current group */
 struct t_save *save;			/* sorts articles before saving them */
 
@@ -137,7 +137,7 @@ expand_art(
 	max_art += max_art >> 1;		/* increase by 50% */
 	arts = my_realloc(arts, sizeof(*arts) * max_art);
 	for (; i < max_art; i++)		/* use memset() instead? */
-		arts[i].subject = arts[i].from = arts[i].xref = arts[i].refs = arts[i].msgid = NULL;
+		arts[i].subject = arts[i].from = arts[i].xref = arts[i].path = arts[i].refs = arts[i].msgid = NULL;
 }
 
 
@@ -300,6 +300,8 @@ free_all_arrays(
 		FreeAndNull(newnews);
 	}
 
+	FreeAndNull(nntp_caps.headers_range);
+	FreeAndNull(nntp_caps.headers_id);
 	FreeAndNull(nntp_caps.implementation);
 
 	if (ofmt) { /* ofmt might not be allocated yet on early abort */
@@ -310,6 +312,7 @@ free_all_arrays(
 	}
 
 	tin_fgets(NULL, FALSE);
+	rfc1522_decode(NULL);
 
 	free(tin_progname);
 }
@@ -325,6 +328,7 @@ free_art_array(
 		arts[i].artnum = T_ARTNUM_CONST(0);
 		arts[i].date = (time_t) 0;
 		FreeAndNull(arts[i].xref);
+		FreeAndNull(arts[i].path);
 
 		/*
 		 * .refs & .msgid are usually free()d in build_references()
