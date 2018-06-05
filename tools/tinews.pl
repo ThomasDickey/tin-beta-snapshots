@@ -4,7 +4,7 @@
 # signs the article and posts it.
 #
 #
-# Copyright (c) 2002-2017 Urs Janssen <urs@tin.org>,
+# Copyright (c) 2002-2018 Urs Janssen <urs@tin.org>,
 #                         Marc Brockschmidt <marc@marcbrockschmidt.de>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,19 +35,22 @@
 # TODO: - add debug mode which doesn't delete tmp-files and is verbose
 #       - add pid to pgptmpf to allow multiple simultaneous instances
 #       - check for /etc/nntpserver (and /etc/news/server)
-#       - add $NEWSHOST fallback for $NNTPSERVER (like in Net::NNTP)?
 #       - add $PGPOPTS, $PGPPATH and $GNUPGHOME support
 #       - cleanup and remove duplicated code
 #       - option to convert CRLF to LF in input
 #       - use STARTTLS (if Net::NNTP is recent enough and server supports it)?
 #       - quote inpupt properly before passing to shell
+#       - if (!defined $ENV{'GPG_TTY'}) {if (open(my $T,'-|','tty')) {
+#           chomp(my $tty=<$T>); close($T);
+#           $ENV{'GPG_TTY'}=$tty if($tty =~ m/^\//)}}
+#         for gpg?
 #
 
 use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.45";
+my $version = "1.1.49";
 
 my %config;
 
@@ -131,7 +134,8 @@ if (defined($TINEWSRC)) {
 # digest-algo is case sensitive and should be all uppercase
 $config{'digest-algo'} = uc($config{'digest-algo'});
 
-# these env-vars have higher priority
+# these env-vars have higher priority (order is important)
+$config{'NNTPServer'} = $ENV{'NEWSHOST'} if ($ENV{'NEWSHOST'});
 $config{'NNTPServer'} = $ENV{'NNTPSERVER'} if ($ENV{'NNTPSERVER'});
 $config{'NNTPPort'} = $ENV{'NNTPPORT'} if ($ENV{'NNTPPORT'});
 
@@ -256,11 +260,11 @@ readarticle(\%Header, \@Body);
 # Add signature if there is none
 if (!$config{'no_signature'}) {
 	if ($config{'add_signature'} && !grep {/^-- /} @Body) {
-		if (-r $config{'sig_path'}) {
+		if (-r glob($config{'sig_path'})) {
 			my $l = 0;
 			push @Body, "-- \n";
-			open(my $SIGNATURE, '<', $config{'sig_path'}) or die("Can't open " . $config{'sig_path'} . ": $!");
-			while (<$SIGNATURE>){
+			open(my $SIGNATURE, '<', glob($config{'sig_path'})) or die("Can't open " . $config{'sig_path'} . ": $!");
+			while (<$SIGNATURE>) {
 				die $config{'sig_path'} . " longer than " . $config{'sig_max_lines'}. " lines!" if (++$l > $config{'sig_max_lines'});
 				push @Body, $_;
 			}
@@ -400,9 +404,9 @@ if ($config{'canlock_secret'} && !$config{'no_canlock'} && defined($Header{'mess
 	my $cancel_lock = buildcancellock($cancel_key, $sha_mod);
 	if (defined($Header{'cancel-lock'})) {
 		chomp $Header{'cancel-lock'};
-		$Header{'cancel-lock'} .= " " . $config{'canlock_algorithm'} . ":" . $cancel_lock;
+		$Header{'cancel-lock'} .= " " . $config{'canlock_algorithm'} . ":" . $cancel_lock . "\n";
 	} else {
-		$Header{'cancel-lock'} = "Cancel-Lock: " . $config{'canlock_algorithm'} . ":" . $cancel_lock;
+		$Header{'cancel-lock'} = "Cancel-Lock: " . $config{'canlock_algorithm'} . ":" . $cancel_lock . "\n";
 	}
 
 	if ((defined($Header{'supersedes'}) && $Header{'supersedes'} =~ m/^Supersedes:\s+<\S+>\s*$/i) || (defined($Header{'control'}) && $Header{'control'} =~ m/^Control:\s+cancel\s+<\S+>\s*$/i) ||(defined($Header{'also-control'}) && $Header{'also-control'} =~ m/^Also-Control:\s+cancel\s+<\S+>\s*$/i)) {
@@ -769,6 +773,7 @@ sub signarticle {
 	unless (m/\Q$config{'pgpbegin'}\E$/o) {
 		unlink $config{'pgptmpf'} . ".txt";
 		unlink $config{'pgptmpf'} . ".txt.asc";
+		close($FH);
 		die("$0: ".$config{'pgpbegin'}." not found in ".$config{'pgptmpf'}.".txt.asc\n");
 	}
 	unlink($config{'pgptmpf'} . ".txt") or warn "$0: Couldn't unlink ".$config{'pgptmpf'}.".txt: $!\n";
@@ -777,6 +782,7 @@ sub signarticle {
 	$_ = <$FH>;
 	unless (m/^Version: (\S+)(?:\s(\S+))?/o) {
 		unlink $config{'pgptmpf'} . ".txt.asc";
+		close($FH);
 		die("$0: didn't find PGP Version line where expected.\n");
 	}
 	if (defined($2)) {
@@ -798,6 +804,7 @@ sub signarticle {
 	$_ = <$FH>;
 	unless (eof($FH)) {
 		unlink $config{'pgptmpf'} . ".txt.asc";
+		close($FH);
 		die("$0: unexpected data following ".$config{'pgpend'}."\n");
 	}
 	close($FH);
@@ -867,14 +874,14 @@ sub buildcancellock {
 	my $cancel_lock;
 	if ($config{'canlock_algorithm'} eq 'sha1') {
 		if ($sha_mod =~ m/SHA1/) {
-			$cancel_lock = MIME::Base64::encode(Digest::SHA1::sha1($cancel_key, ''));
+			$cancel_lock = MIME::Base64::encode(Digest::SHA1::sha1($cancel_key, ''), '');
 		} else {
-			$cancel_lock = MIME::Base64::encode(Digest::SHA::sha1($cancel_key, ''));
+			$cancel_lock = MIME::Base64::encode(Digest::SHA::sha1($cancel_key, ''), '');
 		}
 	} elsif ($config{'canlock_algorithm'} eq 'sha256') {
-		$cancel_lock = MIME::Base64::encode(Digest::SHA::sha256($cancel_key, ''));
+		$cancel_lock = MIME::Base64::encode(Digest::SHA::sha256($cancel_key, ''), '');
 	} else {
-		$cancel_lock = MIME::Base64::encode(Digest::SHA::sha512($cancel_key, ''));
+		$cancel_lock = MIME::Base64::encode(Digest::SHA::sha512($cancel_key, ''), '');
 	}
 	return $cancel_lock;
 }
@@ -924,8 +931,8 @@ B<tinews.pl> [B<OPTIONS>] E<lt> I<input>
 
 =head1 DESCRIPTION
 
-B<tinews.pl> reads an article on STDIN, signs it via B<pgp>(1) or
-B<gpg>(1) and posts it to a news server.
+B<tinews.pl> reads an article on STDIN, signs it via L<pgp(1)> or
+L<gpg(1)> and posts it to a news server.
 
 If the article contains To:, Cc: or Bcc: headers and mail-actions are
 configured it will automatically add a "Posted-And-Mailed: yes" header
@@ -1109,10 +1116,17 @@ X<tinews, environment variables>
 
 =over 4
 
+=item B<$NEWSHOST>
+X<$NEWSHOST> X<NEWSHOST>
+
+Set to override the NNTP server configured in the source or config-file.
+It has lower priority than B<$NNTPSERVER> and should be avoided.
+
 =item B<$NNTPSERVER>
 X<$NNTPSERVER> X<NNTPSERVER>
 
-Set to override the NNTP server configured in the source.
+Set to override the NNTP server configured in the source or config-file.
+This has higher priority than B<$NEWSHOST>.
 
 =item B<$NNTPPORT>
 X<$NNTPPORT> X<NNTPPORT>
@@ -1125,12 +1139,12 @@ B<$NNTPPORT>.
 X<$PGPPASS> X<PGPPASS>
 
 Set to override the passphrase configured in the source (used for
-B<pgp>(1)-2.6.3).
+L<pgp(1)>-2.6.3).
 
 =item B<$PGPPASSFILE>
 X<$PGPPASSFILE> X<PGPPASSFILE>
 
-Passphrase file used for B<pgp>(1) or B<gpg>(1).
+Passphrase file used for L<pgp(1)> or L<gpg(1)>.
 
 =item B<$SIGNER>
 X<$SIGNER> X<SIGNER>
@@ -1176,7 +1190,7 @@ Temporary file used to store the reformatted and signed article.
 
 =item F<$PGPPASSFILE>
 
-The passphrase file to be used for B<pgp>(1) or B<gpg>(1).
+The passphrase file to be used for L<pgp(1)> or L<gpg(1)>.
 
 =item F<$HOME/.signature>
 
@@ -1220,17 +1234,24 @@ security is an issue, don't use this script.
 
 =head1 NOTES
 
-B<tinews.pl> is designed to be used with B<pgp>(1)-2.6.3,
-B<pgp>(1)-5, B<pgp>(1)-6, B<gpg>(1) and B<gpg2>(1).
+B<tinews.pl> is designed to be used with L<pgp(1)>-2.6.3,
+L<pgp(1)>-5, L<pgp(1)>-6, L<gpg(1)> and L<gpg2(1)>.
 
 B<tinews.pl> requires the following standard modules to be installed:
-B<Getopt::Long>(3pm), B<Net::NNTP>(3pm), B<Time::Local>(3pm) and
-B<Term::Readline>(3pm).
+L<Getopt::Long(3pm)>, L<Net::NNTP(3pm)>, <Time::Local(3pm)> and
+L<Term::Readline(3pm)>.
 
-If the Cancel-Lock feature is enabled the following additional modules
-must be installed: B<MIME::Base64>(3pm), B<Digest::SHA>(3pm) or
-B<Digest::SHA1>(3pm) and B<Digest::HMAC_SHA1>(3pm). sha256 and sha512 as
-algorithms for B<canlock-algorithm> are only available with B<Digest::SHA>.
+If the Cancel-Lock feature (RFC 8315) is enabled the following additional
+modules must be installed: L<MIME::Base64(3pm)>, L<Digest::SHA(3pm)> or
+L<Digest::SHA1(3pm)> and L<Digest::HMAC_SHA1(3pm)>. sha256 and sha512 as
+algorithms for B<canlock-algorithm> are only available with L<Digest::SHA(3pm)>.
+
+L<gpg2(1)> users may need to set B<$GPG_TTY>, i.e.
+
+ GPG_TTY=$(tty)
+ export GPG_TTY
+
+before using B<tinews.pl>. See L<https://www.gnupg.org/> for details.
 
 =head1 AUTHOR
 
@@ -1239,9 +1260,9 @@ Marc Brockschmidt E<lt>marc@marcbrockschmidt.deE<gt>
 
 =head1 SEE ALSO
 
-B<pgp>(1), B<gpg>(1), B<gpg2>(1), B<pgps>(1), B<Digest::HMAC_SHA1>(3pm),
-B<Digest::SHA>(3pm), B<Digest::SHA1>(3pm), B<Getopt::Long>(3pm),
-B<MIME::Base64>(3pm), B<Net::NNTP>(3pm), B<Time::Local>(3pm),
-B<Term::Readline>(3pm)
+L<pgp(1)>, L<gpg(1)>, L<gpg2(1)>, L<pgps(1)>, L<Digest::HMAC_SHA1(3pm)>,
+L<Digest::SHA(3pm)>, L<Digest::SHA1(3pm)>, L<Getopt::Long(3pm)>,
+L<MIME::Base64(3pm)>, L<Net::NNTP(3pm)>, L<Time::Local(3pm)>,
+L<Term::Readline(3pm)>
 
 =cut

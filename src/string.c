@@ -6,7 +6,7 @@
  *  Updated   : 2017-02-17
  *  Notes     :
  *
- * Copyright (c) 1997-2017 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2018 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1025,7 +1025,7 @@ strwidth(
 #define TRUNC_TAIL	"..."
 /*
  * shortens 'mesg' that it occupies at most 'len' screen positions.
- * If it was nessary to truncate 'mesg', " ..." is appended to the
+ * If it was necessary to truncate 'mesg', " ..." is appended to the
  * resulting string (still 'len' screen positions wide).
  * The resulting string is stored in 'buf'.
  */

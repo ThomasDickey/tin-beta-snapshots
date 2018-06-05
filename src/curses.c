@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2013-12-06
+ *  Updated   : 2017-10-18
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -1298,7 +1298,7 @@ ReadWch(
 	/*
 	 * UTF-8
 	 */
-	if (!strcasecmp(tinrc.mm_local_charset, "UTF-8")) {
+	if (IS_LOCAL_CHARSET("UTF-8")) {
 		int ch = mbs[0] & 0xFF;
 
 		/* determine the count of bytes we have still have to read */

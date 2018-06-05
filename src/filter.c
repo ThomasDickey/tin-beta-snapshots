@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2017-03-28
+ *  Updated   : 2018-02-11
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -254,6 +254,7 @@ set_filter(
 		ptr->gnksa_num = 0;
 		ptr->score = 0;
 		ptr->xref = NULL;
+		ptr->path = NULL;
 		ptr->time = (time_t) 0;
 		ptr->next = (struct t_filter *) 0;
 	}
@@ -273,6 +274,7 @@ free_filter_item(
 	FreeAndNull(ptr->from);
 	FreeAndNull(ptr->msgid);
 	FreeAndNull(ptr->xref);
+	FreeAndNull(ptr->path);
 }
 
 
@@ -313,6 +315,7 @@ read_filter_file(
 	char buffer[HEADER_LEN];
 	char gnksa[HEADER_LEN];
 	char xref[HEADER_LEN];
+	char path[HEADER_LEN];
 	char scbuf[PATH_LEN];
 	int i = 0;
 	int icase = 0;
@@ -411,6 +414,7 @@ read_filter_file(
 					msgid[0] = '\0';
 					buffer[0] = '\0';
 					xref[0] = '\0';
+					path[0] = '\0';
 					icase = 0;
 					secs = 0L;
 					break;
@@ -490,6 +494,23 @@ read_filter_file(
 							FreeIfNeeded(ptr[i].msgid);
 							ptr[i].msgid = my_strdup(msgid);
 							ptr[i].fullref = FILTER_MSGID_ONLY;
+						}
+					}
+				}
+				break;
+
+			case 'p':
+				if (match_string(buf + 1, "ath=", path, sizeof(path))) {
+					str_trim(path);
+					if (ptr && !expired_time) {
+						if (tinrc.wildcard && ptr[i].path != NULL) {
+							/* merge with already read value */
+							ptr[i].path = my_realloc(ptr[i].path, strlen(ptr[i].path) + strlen(path) + 2);
+							strcat(ptr[i].path, "|");
+							strcat(ptr[i].path, path);
+						} else {
+							FreeIfNeeded(ptr[i].path);
+							ptr[i].path = my_strdup(path);
 						}
 					}
 				}
@@ -583,7 +604,7 @@ read_filter_file(
 
 			case 'x':
 				/*
-				 * TODO: fromat has changed in FILTER_VERSION 1.0.0,
+				 * TODO: format has changed in FILTER_VERSION 1.0.0,
 				 *       should we comment out older xref rules like below?
 				 */
 				if (match_string(buf + 1, "ref=", xref, sizeof(xref))) {
@@ -839,6 +860,9 @@ write_filter_array(
 
 		if (ptr->filter[i].xref != NULL)
 			fprintf(fp, "xref=%s\n", ptr->filter[i].xref);
+
+		if (ptr->filter[i].path != NULL)
+			fprintf(fp, "path=%s\n", ptr->filter[i].path);
 
 		if (ptr->filter[i].time) {
 			char timestring[25];
@@ -1641,6 +1665,7 @@ add_filter_rule(
 	ptr[i].gnksa_num = 0;
 	ptr[i].score = rule->score;
 	ptr[i].xref = NULL;
+	ptr[i].path = NULL;
 
 	if (rule->comment != NULL)
 		ptr[i].comment = copy_filter_comment(rule->comment, ptr[i].comment);
@@ -1797,7 +1822,7 @@ unfilter_articles(
  * Filter any articles in specified group.
  * Apply global filter rules followed by group filter rules.
  * In global rules check if scope field set to determine if
- * filter applys to current group.
+ * filter applies to current group.
  */
 t_bool
 filter_articles(
@@ -1811,6 +1836,7 @@ filter_articles(
 	struct regex_cache *regex_cache_from = NULL;
 	struct regex_cache *regex_cache_msgid = NULL;
 	struct regex_cache *regex_cache_xref = NULL;
+	struct regex_cache *regex_cache_path = NULL;
 	t_bool filtered = FALSE;
 	t_bool error = FALSE;
 
@@ -1845,6 +1871,7 @@ filter_articles(
 		regex_cache_from = my_malloc(msiz);
 		regex_cache_msgid = my_malloc(msiz);
 		regex_cache_xref = my_malloc(msiz);
+		regex_cache_path = my_malloc(msiz);
 		for (j = 0; j < num; j++) {
 			regex_cache_subj[j].re = NULL;
 			regex_cache_subj[j].extra = NULL;
@@ -1854,6 +1881,8 @@ filter_articles(
 			regex_cache_msgid[j].extra = NULL;
 			regex_cache_xref[j].re = NULL;
 			regex_cache_xref[j].extra = NULL;
+			regex_cache_path[j].re = NULL;
+			regex_cache_path[j].extra = NULL;
 		}
 	}
 
@@ -2105,6 +2134,26 @@ filter_articles(
 						free(k);
 					}
 				}
+
+				/*
+				 * Filter on Path: lines
+				 */
+				if (arts[i].path && *arts[i].path) {
+					if (ptr[j].path != NULL) {
+						switch (test_regex(arts[i].path, ptr[j].path, ptr[j].icase, &regex_cache_path[j])) {
+							case 1:
+								SET_FILTER(group, i, j);
+								break;
+
+							case -1:
+								error = TRUE;
+								break;
+
+							default:
+								break;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -2122,11 +2171,14 @@ filter_articles(
 			FreeIfNeeded(regex_cache_msgid[j].extra);
 			FreeIfNeeded(regex_cache_xref[j].re);
 			FreeIfNeeded(regex_cache_xref[j].extra);
+			FreeIfNeeded(regex_cache_path[j].re);
+			FreeIfNeeded(regex_cache_path[j].extra);
 		}
 		free(regex_cache_subj);
 		free(regex_cache_from);
 		free(regex_cache_msgid);
 		free(regex_cache_xref);
+		free(regex_cache_path);
 	}
 
 	/*
@@ -2153,6 +2205,33 @@ filter_articles(
 		clear_message();
 
 	return filtered;
+}
+
+
+/*
+ * Check if we have to filter on Path: for the given group
+ */
+t_bool
+filter_on_path(
+	struct t_group *group)
+{
+	int i;
+	struct t_filter *flt;
+	t_bool ret = FALSE;
+
+	if (group->glob_filter->num == 0)
+		return ret;
+
+	if (set_filter_scope(group)) {
+		flt = group->glob_filter->filter;
+		for (i = 0; i < group->glob_filter->num; i++) {
+			if (flt[i].inscope && flt[i].path) {
+				ret = TRUE;
+				break;
+			}
+		}
+	}
+	return ret;
 }
 
 

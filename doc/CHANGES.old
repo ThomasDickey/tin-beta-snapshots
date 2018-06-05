@@ -485,7 +485,7 @@ U004) Thomas E. Dickey <dickey@invisible-island.net>
 U003) Urs Janssen <urs@tin.org>
       ADD. config.guess, config.sub update
       ADD. heapsort.c fallback
-      ADD. compile heapsort.c and xface.c conditionaly
+      ADD. compile heapsort.c and xface.c conditionally
       ADD. configure check for libunistring if libicuuc is not found
       ADD. configure check for setvbug
       ADD. prefer libicuuc for idna2003 decoding over libidn
@@ -639,7 +639,7 @@ U022) Thomas E. Dickey <dickey@invisible-island.net>
 
 U021) Dennis Preiser <dennis@d--p.de>
       BUG. SIGWINCH at page level after a connection timeout lead to a crash
-      BUG. no SIGWINCH hadling in setup_check_article()
+      BUG. no SIGWINCH handling in setup_check_article()
       BUG. comments in references were not skipped
       BUG. fixed some display problems in the !USE_CURSES case
       ADD. info message on SearchRepeat without previous search
@@ -1182,7 +1182,7 @@ U044) Travis Brown <travisb@sfu.ca>
            options_menu.c, tincfg.tbl, tin.1, tin.5
 
 U043) Urs Janssen <urs@tin.org>
-      BUG. POST_EDIT was mssing from post_cancel_keys
+      BUG. POST_EDIT was missing from post_cancel_keys
       BUG. GLOBAL_QUIT was missing from post_edit_keys and
            post_edit_ext_keys and not rebindable in post_continue_keys
       BUG. duplicated onlinehelp entries
@@ -1291,7 +1291,7 @@ U032) Michael Bienia <michael@vorlon.ping.de>
       ADD. (w)strunc() now malloc()s the needed space
       ADD. line-scrolling in select-, group- and thread-level
       ADD. screen-scrolling iKeyScrollUp ('<'), iKeyScrollDown ('>')
-      ADD. unifiy option-value description formats
+      ADD. unify option-value description formats
       BUG. missing file truncation in do_rfc15211522_encode()
       FIX. extern.h, keymap.h, menukeys.h, proto.h, tin.h, cook.c, global.c
            group.c, help.c, keymap.c, lang.c, options_menu.c, page.c, post.c
@@ -1342,7 +1342,7 @@ U028) Michael Bienia <michael@vorlon.ping.de>
       ADD. allow to hide options in the 'M'enu based on the value of other
            options
       ADD. crsr-up/dowm in option-list
-      ADD. remove CURR_GROUP dependecy from sort functions
+      ADD. remove CURR_GROUP dependency from sort functions
       ADD. wcspart() now mallocs the needed space on its own
       ADD. kill/hot-menu "Kill/Select pattern scope" now walks up the
            hierarchy level
@@ -1358,7 +1358,7 @@ U028) Michael Bienia <michael@vorlon.ping.de>
 -- 1.7.5 release 20040615 "Gighay" --
 
  024) Herbert Xu <herbert@gondor.apana.org.au
-      BUG. potential use/free of unitialized data in get_recipients()
+      BUG. potential use/free of uninitialized data in get_recipients()
       FIX. post.c
 
  023) Michael Bienia <michael@vorlon.ping.de>
@@ -1729,7 +1729,7 @@ U166) Andreas Metzler <tin-dev@downhill.at.eu.org>
 U165) Michael Bienia <michael@vorlon.ping.de>
       BUG. manpage cleanups
       BUG. //TRANSLIT might not work correct
-      BUG. changing thread_articles via 'M'enu while being an 'emtpy'
+      BUG. changing thread_articles via 'M'enu while being an 'empty'
            group caused a crash
       ADD. +/-MULTIBYTE_ABLE to -V output
       FIX. config.c, main.c, misc.c, tin.1, tin.5
@@ -2176,9 +2176,9 @@ U115) Martin Klaiber <martinkl@zedat.fu-berlin.de>
       FIX. select.c
 
 U114) Urs Janssen <urs@tin.org>
-      BUG. cached overview datas date was in localtime() without holding a
+      BUG. cached overview data date was in localtime() without holding a
            timezone
-      BUG. in some cases tin created incorrect overview datas
+      BUG. in some cases tin created incorrect overview data
       BUG. add_posted_to_filter didn't work with -w and -o
       BUG. typo fixed in the english translation
       BUG. description-toggle didn't work for mailgroups
@@ -2429,7 +2429,7 @@ U089) Urs Janssen <urs@tin.org>
       BUG. sometimes illegal From-fields were written to
            local cached overviews
       BUG. missing From caused crashes when replying
-      BUG. match_string() doesn't allow emtpy strings (U048)
+      BUG. match_string() doesn't allow empty strings (U048)
       BUG. duplicated Cancel-Lock in rare cases
       BUG. eat_re() could modify subject in aborted posts
       BUG. unknown Content-Transfer-Encodings defaulted to 7bit instead of
@@ -2716,7 +2716,7 @@ U059) Urs Janssen <urs@tin.org>
       BUG. insert_from_header() didn't fclose() open files on invalid
            From: lines
       BUG. off by one quoting error in cooked mode with no headers shown
-           in followups/replys
+           in followups/replies
       BUG. backup_file() treated missing source files as an error
       BUG. if a nntp:-url only contained the name of a group but didn't
            specify an article the last group name component wasn't recognized
@@ -2822,16 +2822,16 @@ U052) Urs Janssen <urs@tin.org>
            mailboxes
       BUG. fetch_postponed_article() didn't unquote quoted From_ lines
       BUG. storing in MMDF mailboxes was broken
-      BUG. quoting long lines in followups/replys lead to wrong quote
+      BUG. quoting long lines in followups/replies lead to wrong quote
            levels
       BUG. didn't compile on MacOS X with apples gcc-port
       BUG. contains_nonprintables() check for encoded words was to soft
-      BUG. off by one quoting error in followups/replys
+      BUG. off by one quoting error in followups/replies
       BUG. url_handler.sh didn't handle uppercase schemes and & in URLs
       BUG. 'U' in raw_mode crashed tin
       BUG. newline missing in bugreport
       ADD. .ps (Palestinian Territories) as a valid TLD
-      ADD. use the raw-article for followups/replys if pager is in
+      ADD. use the raw-article for followups/replies if pager is in
            raw-mode
       ADD. config.guess, config.sub, metamutt (1.15 -> 1.17) update
       ADD. expiretover script for purging old cached overview data
@@ -3420,7 +3420,7 @@ U001) Urs Janssen <urs@tin.org>
      FIX. misc.c
 
 681) Vincent Lefevre <vlefevre@ens-lyon.fr>
-     BUG. used C-style comparsion in shell script
+     BUG. used C-style comparison in shell script
      FIX. configure[.in]
 
 680) Dawid Kuroczko <dk@ssw.krakow.pl>
@@ -3726,7 +3726,7 @@ U001) Urs Janssen <urs@tin.org>
      FIX. feed.c, save.c, tin.1
 
 639) Roland Rosenfeld <roland@spinnaker.rhein.de>
-     ADD. respect mail_address for mail-replys if not using interactive
+     ADD. respect mail_address for mail-replies if not using interactive
           mailer (!use_mailreader_i)
      FIX. post.c
 
@@ -4424,7 +4424,7 @@ U001) Urs Janssen <urs@tin.org>
      FIX. rfc1521.c
 
 530) Urs Janssen <urs@tin.org>
-     BUG. Newsgroups:-line was present in mail-replys, renamed it to
+     BUG. Newsgroups:-line was present in mail-replies, renamed it to
           X-Newsgroups (RFC 822 doesn't define a Newsgroups:-header)
           for mail_to_author and removed it from mail_to_someone where
           it's usually present in the body.
@@ -5187,7 +5187,7 @@ U001) Urs Janssen <urs@tin.org>
 
 412) Urs Janssen <urs@akk.uni-karlsruhe.de>
      ADD. test for curses before reading any config-files
-     BUG. upon Supersedes Reply-To: was inserted even if $REPLYTO was't set
+     BUG. upon Supersedes Reply-To: was inserted even if $REPLYTO wasn't set
      FIX. main.c, post.c
 
 411) Oliver B. Warzecha <obw@amarok.ping.de>

@@ -3,10 +3,10 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2017-05-23
+ *  Updated   : 2018-02-16
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,7 +72,7 @@ static void print_bitmap_seq(FILE *fp, struct t_group *group);
  * accordingly. Bogus groups will _not_ be subscribed to as a design
  * principle.
  *
- * Returns the numer of lines read(useful for a check newsrc >= oldnewsrc)
+ * Returns the number of lines read(useful for a check newsrc >= oldnewsrc)
  * 	< 0 error
  * 	>=0 number of lines read
  */
@@ -419,15 +419,19 @@ group_get_art_info(
 
 		snprintf(line, sizeof(line), "GROUP %s", groupname);
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
+		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "group_get_art_info %s", line);
 #	endif /* DEBUG */
 		put_server(line);
 
 		switch (get_respcode(line, sizeof(line))) {
 			case OK_GROUP:
-				if (sscanf(line, "%"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT, art_count, art_min, art_max) != 3)
-					error_message(2, _(txt_error_invalid_response_to_group), line);
+				if (sscanf(line, "%"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT, art_count, art_min, art_max) != 3) {
+#	ifdef DEBUG
+					if ((debug & DEBUG_NNTP) && verbose > 1)
+						debug_print_file("NNTP", "Invalid response to GROUP command, %s", line);
+#	endif /* DEBUG */
+				}
 				break;
 
 			case ERR_NOGROUP:
@@ -444,7 +448,7 @@ group_get_art_info(
 
 			default:
 #	ifdef DEBUG
-				if (debug & DEBUG_NNTP)
+				if ((debug & DEBUG_NNTP) && verbose > 1)
 					debug_print_file("NNTP", "NOT_OK %s", line);
 #	endif /* DEBUG */
 				return -1;

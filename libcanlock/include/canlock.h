@@ -1,9 +1,9 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
  *
- * Copyright (c) 2017 Dennis Preiser
- * Copyright (c) 2017 Michael Baeuerle
  * Copyright (c) 2003 G.J. Andruk
+ * Copyright (c) 2017 Dennis Preiser
+ * Copyright (c) 2018 Michael Baeuerle
  *
  * All rights reserved.
  *
@@ -38,6 +38,12 @@
 
 
 /* ========================================================================== */
+/* Include header files */
+
+#include <stddef.h>  /* For size_t */
+
+
+/* ========================================================================== */
 /* Constants */
 
 /* libcanlock API major version */
@@ -49,7 +55,7 @@
 /* libcanlock legacy API V2 emulation available if nonzero */
 #define CL_API_V2  1
 
-/* Supported hash algorithms for <scheme> according to RFCxxxx */
+/* Supported hash algorithms for <scheme> according to RFC 8315 */
 #define CL_INVALID  0
 #define CL_SHA1     1         /* IANA registered name: "sha1" */
 #define CL_SHA224   2         /* IANA registered name: "sha224" */

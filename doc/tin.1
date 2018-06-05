@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2017-08-02
+.\" Updated   : 2018-03-21
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "December 24th, 2016" "2.4.2" "Usenet newsreader"
+.TH tin 1 "December 24th, 2017" "2.4.3" "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -130,6 +130,7 @@ Don't load newsgroup descriptions and servers message of the day
 .BI \-D " debug-level"
 Enter debug-level (1 = NNTP, 2 = filter, 4 = newsrc, 8 = threading, 16 =
 memory, 32 = attributes, 64 = misc, 128 = remove existing debug files).
+For NNTP-level ''\fB\-v\fP'' controls the verbosity of the output.
 .TP
 .BI \-f " file"
 Use the specified file of subscribed to newsgroups in place of
@@ -142,6 +143,11 @@ reading via NNTP.
 .TP
 .BI \-G " article-limit"
 Limit the number of articles/group to retrieve from the server.
+If \fIarticle-limit\fP is > 0 not more than the last \fIarticle-limit\fP
+articles/group are fetched from the server. If \fIarticle-limit\fP
+is < 0 \fBtin\fP will start fetching articles from your first unread
+minus absolute value of \fIarticle-limit\fP. Default is 0, which
+means no limit.
 .TP
 .B \-h
 Help listing all command-line options.
@@ -159,13 +165,13 @@ NNTP and \fBcache_overview_files\fP is turned off.
 .BI \-l
 Get number of articles per group from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fR file. If
-reading via NNTP this is done with the LIST command (\fBRFC\%3977\fP ). This
+reading via NNTP this is done with the LIST command (\fBRFC\%3977\fP). This
 might result in incorrect article counts but is usually faster than the
 default which is to read the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fR file
 (either directly or via LIST) and then check the article count via
-NNTP GROUP command (\fBRFC\%3977\fP ) ''\fB\-ln\fP''. If reading via
-NNTP and LIST COUNTS (\fBRFC\%6048\fP ) is available that is used instead
+NNTP GROUP command (\fBRFC\%3977\fP) ''\fB\-ln\fP''. If reading via
+NNTP and LIST COUNTS (\fBRFC\%6048\fP) is available that is used instead
 as it gives more accurate article counts.
 .TP
 .BI \-m " dir"
@@ -225,8 +231,9 @@ option. This option is disabled if \fBtin\fP retrieves its index files via a
 NNTP server and \fBcache_overview_files\fP is turned off.
 .TP
 .B \-v
-Verbose mode for ''\fB\-c\fP'', ''\fB\-M\fP'', ''\fB\-N\fP'', ''\fB\-S\fP'',
-\&''\fB\-u\fP'' and ''\fB\-Z\fP'' options.
+Verbose mode for ''\fB\-D\fP'', ''\fB\-c\fP'', ''\fB\-M\fP'', ''\fB\-N\fP'',
+\&''\fB\-S\fP'', ''\fB\-u\fP'' and ''\fB\-Z\fP'' options. Can be used multiple
+times to increase verbosity.
 .TP
 .B \-V
 Print version and date information.
@@ -303,9 +310,9 @@ A user starting \fBtin\fP for the first time can be automatically subscribed
 to a list of newsgroups that are deemed appropriate by the news
 administrator. The subscriptions file should be created in your news lib
 directory (i.e., \fI${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions\fR) and should
-have file permissions set to 0644. If you read news via NNTP, then your news
-server must support the LIST SUBSCRIPTIONS command. It is part of the NNTP
-List Extensions (\fBRFC\%6048\fP ) and all modern servers should understand it.
+be world readable. If you read news via NNTP, then your news server must
+support the LIST SUBSCRIPTIONS command. It is part of the NNTP List
+Extensions (\fBRFC\%6048\fP) and all modern servers should understand it.
 .\"
 .\"
 .SS "SCREEN FORMAT"
@@ -1569,13 +1576,10 @@ If ON, create local copies of NNTP overview files. This can be used to
 considerably speed up accessing large groups when using a slow connection.
 See also "INDEX FILES". Default is OFF.
 .TP
-.B Generate cancel-locks (cancel_locks)
-If ON, generate cancel-locks. Only available when build with cancel-lock
-support. Default is ON.
-.TP
 .B Hash algorithm for cancel-locks (cancel_lock_algo)
 Use this hash algorithm for cancel-locks. Only available when build with
-cancel-lock support. Valid values are sha1, sha256 and sha512.
+cancel-lock support. none disables the generation of cancel-locks. Valid
+values are none, sha1, sha256 and sha512.
 Default is sha1.
 .TP
 .B Catchup read groups when quitting (catchup_read_groups)
@@ -1835,7 +1839,7 @@ means no limit.
 If ON catchup group when leaving with the left arrow key. Default is ON.
 .TP
 .B Format string for the Group level (group_format)
-Format string tin uses for Group level representation. See the section
+Format string \fBtin\fP uses for Group level representation. See the section
 "CUSTOMIZING THE SCREEN FORMAT". Default is "%n\ %m\ %R\ %L\ \ %s\ \ %F".
 .TP
 .B Go to the next unread article with (goto_next_unread)
@@ -2235,13 +2239,13 @@ Score of an article which should be marked hot, this must be >=
 .B Number of lines to scroll in pager (scroll_lines)
 The number of lines that will be scrolled up/down in the article pager when
 using cursor-up/down. The default is 1 (line-by-line). Set to 0 to get
-traditional tin page-by-page scrolling. Set to \-1 to get page-by-page
+traditional \fBtin\fP page-by-page scrolling. Set to \-1 to get page-by-page
 scrolling where the top/bottom line is carried over onto the next page.
 This setting supersedes show_last_line_prev_page=ON. Set to \-2 to get
 half-page scrolling. This setting supersedes \fBfull_page_scroll\fP=OFF.
 .TP
 .B Format string for the Selection level (select_format)
-Format string tin uses for Selection level representation. See the section
+Format string \fBtin\fP uses for Selection level representation. See the section
 "CUSTOMIZING THE SCREEN FORMAT". Default is "%f\ %n\ %U\ \ %G\ \ %d".
 .TP
 .B In group and thread level, show author by (show_author)
@@ -2460,7 +2464,7 @@ If ON catchup group/thread when leaving with the left arrow key. Default is
 ON.
 .TP
 .B Format string for the Thread level (thread_format)
-Format string tin uses for Thread level representation. See the section
+Format string \fBtin\fP uses for Thread level representation. See the section
 "CUSTOMIZING THE SCREEN FORMAT". Default is "%n\ %m\ \ [%L]\ \ %T\ \ %F".
 .TP
 .B Matchingness of a thread (thread_perc)
@@ -2553,10 +2557,10 @@ If ON use UTF-8 characters for indicator ('\->'), thread/attachment tree and
 ellipsis ('...'). Default is OFF.
 .TP
 .B Regex for begin of a verbatim block (verbatim_begin_regex)
-A regular expression that tin will use to find the begin of a verbatim block.
+A regular expression that \fBtin\fP will use to find the begin of a verbatim block.
 .TP
 .B Regex for end of a verbatim block (verbatim_end_regex)
-A regular expression that tin will use to find the end of a verbatim block.
+A regular expression that \fBtin\fP will use to find the end of a verbatim block.
 .TP
 .B Detection of verbatim blocks (verbatim_handling)
 If ON verbatim blocks will be detected. Default is ON.
@@ -2837,7 +2841,7 @@ via \fBpost_process_type\fP.
 \&''\fB\-N\fP'' option) or saved (''\fB\-S\fP'' option) in batch mode for later
 reading. Useful when going on holiday and you don't want to return and find
 that expire has removed a whole load of unread articles. Best to run via
-.BR \%cron (1)
+.BR \%cron (8)
 everyday while away, after which you will be mailed a report of which
 articles were mailed/saved from which newsgroups and the total number of
 articles mailed/saved. Articles are saved in a private news structure under
@@ -3206,7 +3210,7 @@ will be much faster as only new articles will need to be cached.
 .PP
 As indexing might take some time you may want to run \fBtin\fP form
 the system batcher
-.BR \%cron (1)
+.BR \%cron (8)
 with the ''\fB\-u\fP'' option:
 .PP
 .RS
@@ -3424,27 +3428,27 @@ to \fI/tmp\fR.
 .B TIN_LIBDIR
 Define this variable if you want to override the \fBNEWSLIBDIR\fP path
 that was compiled into the \fBtin\fP binary, default is \fI/usr/lib/news\fR.
-If tin is running in NNTP mode setting this variable has no effect.
+If \fBtin\fP is running in NNTP mode setting this variable has no effect.
 .TP
 .B TIN_SPOOLDIR
 Define this variable if you want to override the \fBSPOOLDIR\fP path that
 was compiled into the \fBtin\fP binary, default is \fI/var/spool/news\fR.
-If tin is running in NNTP mode setting this variable has no effect.
+If \fBtin\fP is running in NNTP mode setting this variable has no effect.
 .TP
 .B TIN_NOVROOTDIR
 Define this variable if you want to override the \fBNOVROOTDIR\fP path that
 was compiled into the \fBtin\fP binary, default is \fBSPOOLDIR\fP (see
-above). If tin is running in NNTP mode setting this variable has no effect.
+above). If \fBtin\fP is running in NNTP mode setting this variable has no effect.
 .TP
 .B TIN_NOVFILENAME
 Define this variable if you want to override the \fBOVERVIEW_FILE\fP
 filename that was compiled into the \fBtin\fP binary, default is
-\fI.overview\fP. If tin is running in NNTP mode setting this variable has
+\fI.overview\fP. If \fBtin\fP is running in NNTP mode setting this variable has
 no effect.
 .TP
 .B TIN_ACTIVEFILE
 Define this variable if you want to override the \fBNEWSLIBDIR/active\fP
-path that was compiled into the \fBtin\fP binary. If tin is running in NNTP
+path that was compiled into the \fBtin\fP binary. If \fBtin\fP is running in NNTP
 mode setting this variable has no effect. If $\fBTIN_LIBDIR\fP is set it is
 prepended to $\fBTIN_ACTIVEFILE\fP.
 .TP
@@ -3733,7 +3737,7 @@ Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR-file.
 If \fBtin\fP is started in debug mode (''\fB\-D n\fP'') it will create
 world readable files in \fB$TMPDIR\fP which may contain the users NNTP
 password in cleartext. On multiuser-systems \fB$TMPDIR\fP should be set
-to a safe location before starting tin in debug mode (e.g.
+to a safe location before starting \fBtin\fP in debug mode (e.g.
 \fBTMPDIR=$HOME tin \-D 1\fP).
 .\"
 .\"
@@ -3835,7 +3839,7 @@ Urs Janssen <urs@tin.org>
 .\"
 .\"
 .SH "SEE ALSO"
-.BR \%cron (1),
+.BR \%cron (8),
 .BR \%elm (1),
 .BR \%emacs (1),
 .BR \%gpg (1),

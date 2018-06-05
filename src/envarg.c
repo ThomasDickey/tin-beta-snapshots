@@ -6,7 +6,7 @@
  *  Updated   : 1993-03-10
  *  Notes     : Adds default options from environment to command line
  *
- * Copyright (c) 1991-2017 Bill Davidson
+ * Copyright (c) 1991-2018 Bill Davidson
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

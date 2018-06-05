@@ -123,7 +123,7 @@ Examples:
 
 =head1 SECURITY
 
-B<url_handler.pl> was designed to work together with B<tin>(1) which only
+B<url_handler.pl> was designed to work together with L<tin(1)> which only
 issues shell escaped absolute URLs thus B<url_handler.pl> does not try hard
 to shell escape its input nor does it convert relative URLs into absolute
 ones! If you use B<url_handler.pl> from other applications be sure to at
@@ -135,7 +135,7 @@ Urs Janssen E<lt>urs@tin.orgE<gt>
 
 =head1 SEE ALSO
 
-http://www.catb.org/~esr/BROWSER/
-http://www.dwheeler.com/browse/secure_browser.html
+L<http://www.catb.org/~esr/BROWSER/>
+L<http://www.dwheeler.com/browse/secure_browser.html>
 
 =cut

@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2017-05-03
+ *  Updated   : 2018-02-18
  *  Notes     :
  *
- * Copyright (c) 1997-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -517,7 +517,6 @@ extern constext txt_author_search_forwards[];
 extern constext txt_autoselecting_articles[];
 extern constext txt_autosubscribed[];
 extern constext txt_autosubscribing_groups[];
-extern constext txt_bad_active_file[];
 extern constext txt_bad_article[];
 extern constext txt_bad_attrib[];
 extern constext txt_bad_command[];
@@ -536,6 +535,7 @@ extern constext txt_cancelling_art[];
 extern constext txt_cannot_create[];
 extern constext txt_cannot_create_uniq_name[];
 extern constext txt_cannot_find_base_art[];
+extern constext txt_cannot_filter_on_path[];
 #ifdef NNTP_ABLE
 	extern constext txt_cannot_get_nntp_server_name[];
 #endif /* NNTP_ABLE */
@@ -561,7 +561,7 @@ extern constext txt_checking_for_news[];
 extern constext txt_checking_new_groups[];
 #if !defined(HAVE_LIBUU) && defined(M_UNIX) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
 	extern constext txt_checksum_of_file[];
-#endif /* !HAVE_LIBUU && M_UNIX && HAVE SUM && !DONT_HAVE_PIPING */
+#endif /* !HAVE_LIBUU && M_UNIX && HAVE_SUM && !DONT_HAVE_PIPING */
 extern constext txt_choose_post_process_type[];
 #ifdef HAVE_COLOR
 	extern constext txt_color_off[];
@@ -657,9 +657,6 @@ extern constext txt_error_header_line_missing[];
 extern constext txt_error_header_line_not_7bit[];
 extern constext txt_error_header_line_space[];
 extern constext txt_error_insecure_permissions[];
-#ifdef NNTP_ABLE
-	extern constext txt_error_invalid_response_to_group[];
-#endif /* NNTP_ABLE */
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	extern constext txt_error_locale[];
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
@@ -689,9 +686,6 @@ extern constext txt_error_unknown_dlevel[];
 #if defined(NNTP_ABLE) && defined(HAVE_GETSERVBYNAME) && !defined(INET6)
 	extern constext txt_error_unknown_service[];
 #endif /* NNTP_ABLE && HAVE_GETSERVBYNAME && !INET6 */
-#ifdef NNTP_ABLE
-	extern constext txt_error_wrong_newsgroupname_in_group_response[];
-#endif /* NNTP_ABLE */
 extern constext txt_esc[];
 extern constext txt_exiting[];
 extern constext txt_external_mail_done[];
@@ -1121,6 +1115,9 @@ extern constext txt_postpone_repost[];
 extern constext txt_prefix_hot[];
 extern constext txt_prefix_tagged[];
 extern constext txt_prefix_untagged[];
+#ifdef NNTP_ABLE
+	extern constext txt_prep_for_filter_on_path[];
+#endif /* NNTP_ABLE */
 extern constext txt_prompt_fup_ignore[];
 extern constext txt_prompt_unchanged_mail[];
 extern constext txt_prompt_see_postponed[];
@@ -1262,7 +1259,7 @@ extern constext txt_toggled_tex2iso[];
 extern constext txt_toggled_tabwidth[];
 #if defined(NNTP_ABLE) && defined(HAVE_INET_NTOA) && !defined(INET6)
 	extern constext txt_trying[];
-#endif /* NNTP_ABLE && HAVE_INET_NTOA && ! INET6 */
+#endif /* NNTP_ABLE && HAVE_INET_NTOA && !INET6 */
 #ifndef NO_LOCKING
 	extern constext txt_trying_dotlock[];
 	extern constext txt_trying_lock[];
@@ -1291,7 +1288,6 @@ extern constext txt_usage_dont_check_new_newsgroups[];
 extern constext txt_usage_dont_save_files_on_quit[];
 extern constext txt_usage_dont_show_descriptions[];
 #ifdef NNTP_ABLE
-	extern constext txt_unparseable_counts[];
 	extern constext txt_usage_force_authentication[];
 #ifdef INET6
 	extern constext txt_usage_force_ipv4[];
@@ -1329,6 +1325,7 @@ extern constext txt_usage_verbose[];
 extern constext txt_usage_version[];
 extern constext txt_useful_without_batch_mode[];
 extern constext txt_useful_with_batch_mode[];
+extern constext txt_useful_with_batch_or_debug_mode[];
 extern constext txt_useless_combination[];
 extern constext txt_use_mime[];
 extern constext txt_value_out_of_range[];
@@ -1411,7 +1408,6 @@ extern int attrib_file_offset;
 extern int cCOLS;
 extern int cLINES;
 extern int curr_line;
-extern int debug;
 extern int filter_file_offset;
 extern int input_context;
 extern int iso2asc_supported;
@@ -1439,6 +1435,8 @@ extern int top_art;
 extern int xcol;
 extern int xmouse;
 extern int xrow;
+
+extern unsigned short debug;
 
 extern t_artnum *base;
 
@@ -1519,7 +1517,7 @@ extern t_bool reread_active_for_posted_arts;
 extern t_bool show_description;
 extern t_bool show_subject;
 extern t_bool batch_mode;
-extern t_bool verbose;
+extern int verbose;
 extern t_bool xref_supported;
 extern t_bool expensive_over_parse;
 
@@ -1706,7 +1704,6 @@ extern struct opttxt txt_batch_save;
 extern struct opttxt txt_beginner_level;
 extern struct opttxt txt_cache_overview_files;
 #ifdef USE_CANLOCK
-	extern struct opttxt txt_cancel_locks;
 	extern struct opttxt txt_cancel_lock_algo;
 #endif /* USE_CANLOCK */
 extern struct opttxt txt_catchup_read_groups;

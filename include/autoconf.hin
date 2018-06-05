@@ -3,10 +3,10 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2017-06-13
+ *  Updated   : 2018-01-10
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1995-2017 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1995-2018 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -918,6 +918,11 @@ Added missing headers after gettext update, using autoheader
  * STACK_DIRECTION = 0 => direction of growth unknown
  */
 #	undef STACK_DIRECTION
+
+/* libcanlock */
+#	undef HAVE_EXPLICIT_BZERO
+#	undef HAVE_EXPLICIT_MEMSET
+#	undef HAVE_MEMSET_S
 
 /* Define if the X Window System is missing or not being used. */
 #	undef X_DISPLAY_MISSING

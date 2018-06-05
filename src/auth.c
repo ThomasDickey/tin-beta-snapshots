@@ -3,11 +3,11 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2016-12-13
+ *  Updated   : 2018-06-04
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2017 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 1997-2018 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -97,7 +97,7 @@ read_newsauth_file(
 		if (S_ISREG(statbuf.st_mode) && (statbuf.st_mode|S_IRUSR|S_IWUSR) != (S_IRUSR|S_IWUSR|S_IFREG)) {
 			error_message(4, _(txt_error_insecure_permissions), filename, statbuf.st_mode);
 			/*
-			 * TODO: fix permssions?
+			 * TODO: fix permissions?
 			 * fchmod(fd, S_IRUSR|S_IWUSR);
 			 */
 		}
@@ -135,7 +135,7 @@ read_newsauth_file(
 				if ((ptr != NULL) && (ptr > _authpass)) {
 					_authpass++;
 					*ptr++ = '\0';	/* cut off trailing " */
-				} else	/* no matching ", proceede as normal */
+				} else	/* no matching ", proceed as normal */
 					ptr = _authpass;
 			}
 
@@ -145,7 +145,7 @@ read_newsauth_file(
 			if (ptr != NULL) {	/* a 3rd argument follows */
 				while (*ptr == ' ' || *ptr == '\t')	/* skip any blanks */
 					*ptr++ = '\0';
-				if (*ptr != '\0')	/* if its not just empty */
+				if (*ptr != '\0')	/* if it is not just empty */
 					strcpy(authuser, ptr);	/* so will replace default user */
 			}
 			strcpy(authpass, _authpass);
@@ -176,7 +176,7 @@ do_authinfo_user(
 
 	snprintf(line, sizeof(line), "AUTHINFO USER %s", authuser);
 #	ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "authorization %s", line);
 #	endif /* DEBUG */
 	put_server(line);
@@ -185,7 +185,7 @@ do_authinfo_user(
 
 	if ((authpass == NULL) || (*authpass == '\0')) {
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
+		if ((debug & DEBUG_NNTP) && verbose >1)
 			debug_print_file("NNTP", "authorization failed: no password");
 #	endif /* DEBUG */
 		error_message(2, _(txt_auth_failed_nopass), server);
@@ -194,7 +194,7 @@ do_authinfo_user(
 
 	snprintf(line, sizeof(line), "AUTHINFO PASS %s", authpass);
 #	ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "authorization %s", line);
 #	endif /* DEBUG */
 	put_server(line);
@@ -209,7 +209,7 @@ do_authinfo_user(
  * NNTP user authorization. Returns TRUE if authorization succeeded,
  * FALSE if not.
  *
- * tries AUTHINFO SASL PLAIN (if available) fist and if not succcessfull
+ * tries AUTHINFO SASL PLAIN (if available) fist and if not successful
  * AUTHINFO USER/PASS
  *
  * If username/passwd already given, and server wasn't changed, retry those.
@@ -290,7 +290,7 @@ authinfo_plain(
 
 			if (ret == OK_AUTH) {
 #	ifdef DEBUG
-				if (debug & DEBUG_NNTP)
+				if ((debug & DEBUG_NNTP) && verbose > 1)
 					debug_print_file("NNTP", "authorization succeeded");
 #	endif /* DEBUG */
 				initialized = TRUE;
@@ -299,7 +299,7 @@ authinfo_plain(
 		}
 #	ifdef DEBUG
 		else {
-			if (debug & DEBUG_NNTP)
+			if ((debug & DEBUG_NNTP) && verbose > 1)
 				 debug_print_file("NNTP", "read_newsauth_file(\"%s\", \"%s\", \"%s\") failed", server, authuser, authpass);
 		}
 #	endif /* DEBUG */
@@ -334,7 +334,7 @@ authinfo_plain(
 #	endif /* USE_CURSES */
 			if (!prompt_default_string(_(txt_auth_user), authuser, sizeof(authusername) - 1, authusername, HIST_NONE)) {
 #	ifdef DEBUG
-				if (debug & DEBUG_NNTP)
+				if ((debug & DEBUG_NNTP) && verbose > 1)
 					debug_print_file("NNTP", "authorization failed: no username");
 #	endif /* DEBUG */
 				return FALSE;
@@ -351,7 +351,7 @@ authinfo_plain(
 			 * on some systems (i.e. Solaris) getpass(3) is limited
 			 * to 8 chars -> we use tin_getline()
 			 */
-			STRCPY(authpassword, tin_getline(_(txt_auth_pass), FALSE, NULL, sizeof(authpassword) - 1, TRUE, HIST_NONE));
+			STRCPY(authpassword, tin_getline(_(txt_auth_pass), 0, NULL, sizeof(authpassword) - 1, TRUE, HIST_NONE));
 #	endif /* USE_CURSES */
 
 #	ifdef USE_SASL
@@ -388,12 +388,12 @@ authinfo_plain(
 			/*
 			 * TODO:
 			 * nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_state
-			 * can we change the sate here? and if so how? SARTTLS? MODE
+			 * can we change the state here? and if so how? SARTTLS? MODE
 			 * READER?
 			 */
 #	ifdef DEBUG
-			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "authorization not allowed in current sate");
+			if ((debug & DEBUG_NNTP) && verbose > 1)
+				debug_print_file("NNTP", "authorization not allowed in current state");
 #	endif /* DEBUG */
 			/*
 			 * we return OK_AUTH here once so tin doesn't exit just because a
@@ -405,7 +405,7 @@ authinfo_plain(
 	}
 
 #	ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "authorization %s", (ret == OK_AUTH ? "succeeded" : "failed"));
 #	endif /* DEBUG */
 
@@ -426,7 +426,25 @@ authenticate(
 	char *user,
 	t_bool startup)
 {
-	return authinfo_plain(server, user, startup);
+	char line[NNTP_STRLEN];
+	t_bool ret;
+
+	ret = authinfo_plain(server, user, startup);
+
+
+	if (ret && nntp_caps.type == CAPABILITIES) {
+		/* resend CAPABILITIES, but "manually" to avoid AUTH loop */
+		snprintf(line, sizeof(line), "%s", "CAPABILITIES");
+#	ifdef DEBUG
+		if ((debug & DEBUG_NNTP) && verbose > 1)
+			debug_print_file("NNTP", "authenticate(%s)", line);
+#	endif /* DEBUG */
+		put_server(line);
+
+		check_extensions(get_only_respcode(line, sizeof(line)));
+	}
+
+	return ret;
 }
 
 
@@ -487,7 +505,7 @@ do_authinfo_sasl_plain(
 #		endif /* CHARSET_CONVERSION */
 
 #		ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "do_authinfo_sasl_plain(\"%s\", \"%s\")", BlankIfNull(authuser), BlankIfNull(authpass));
 #		endif /* DEBUG */
 
@@ -503,7 +521,7 @@ do_authinfo_sasl_plain(
 	snprintf(line, sizeof(line), "AUTHINFO SASL PLAIN %s", foo);
 	FreeIfNeeded(foo);
 #		ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "authorization %s", line);
 #		endif /* DEBUG */
 	put_server(line);

@@ -6,7 +6,7 @@
  *  Updated   : 2013-11-06
  *  Notes     :
  *
- * Copyright (c) 2003-2017 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
+ * Copyright (c) 2003-2018 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 
 
 /*
- * TODO: - document the used vars/files/dir in the mapage
+ * TODO: - document the used vars/files/dir in the manpage
  *       - move strings to lang.c
  */
 

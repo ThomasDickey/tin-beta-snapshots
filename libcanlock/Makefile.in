@@ -8,25 +8,30 @@ ARCHIVE = @AR@ @ARFLAGS@
 RANLIB  = @RANLIB@
 RM	= rm
 
-LIBOBJS = src/usha.o src/sha1.o src/sha224-256.o src/sha384-512.o src/hmac.o src/base64.o src/canlock.o
+LIBOBJS = src/secret.o src/usha.o src/sha1.o src/sha224-256.o src/sha384-512.o src/hmac.o src/base64.o src/canlock.o
 LOCKLIB = $(PRELIB)canlock.a
 
 .c$o :
 	@SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-all : shatest canlocktest
+all : shatest canlocktest canlock
 
-shatest : test/hkdf.o $(LOCKLIB)
+canlock : util/canlock.c $(LOCKLIB)
 	@SHOW_CC@
-	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) test/$@.c -o $@ test/hkdf.o $(LDFLAGS)
+	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) util/$@.c -o $@ $(LDFLAGS)
 
 canlocktest : test/canlocktest.c $(LOCKLIB)
 	@SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) test/$@.c -o $@ $(LDFLAGS)
 
+shatest : test/hkdf.o $(LOCKLIB)
+	@SHOW_CC@
+	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) test/$@.c -o $@ test/hkdf.o $(LDFLAGS)
+
 src/base64.o : src/base64.c include/base64.h
 src/canlock.o : src/canlock.c include/canlock.h
+src/secret.o : src/secret.c include/canlock.h
 src/hmac.o : src/hmac.c include/sha.h
 src/usha.o : src/usha.c include/sha.h
 src/sha1.o : src/sha1.c include/sha.h
@@ -44,10 +49,10 @@ clean :
 	@-$(RM) -f src/*.o test/*.o test/*.out *.gmon gmon.*
 
 distclean : clean
-	@-$(RM) -f *.a canlocktest shatest *.exe *.h
-	@-$(RM) -rf canlocktest.dSYM shatest.dSYM
+	@-$(RM) -f *.a canlock canlocktest shatest *.exe
+	@-$(RM) -rf canlock.dSYM canlocktest.dSYM shatest.dSYM
 
-test : all
+test : canlocktest shatest
 	@echo "shatest: "
 	@./shatest -p
 	@echo

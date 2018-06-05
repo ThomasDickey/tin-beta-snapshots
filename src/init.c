@@ -3,10 +3,10 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2017-05-03
+ *  Updated   : 2018-02-15
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -147,7 +147,7 @@ t_bool read_local_newsgroups_file;	/* read newsgroups file locally or via NNTP *
 t_bool read_news_via_nntp = FALSE;	/* read news locally or via NNTP */
 t_bool read_saved_news = FALSE;		/* tin -R read saved news from tin -S */
 t_bool show_description = TRUE;		/* current copy of tinrc flag */
-t_bool verbose = FALSE;			/* update index files only mode */
+int verbose = 0;			/* batch or debug mode */
 t_bool word_highlight;		/* word highlighting on/off */
 t_bool xref_supported = TRUE;
 #ifdef HAVE_COLOR
@@ -401,8 +401,7 @@ struct t_config tinrc = {
 #endif /* HAVE_COLOR */
 	"",		/* inews_prog */
 #ifdef USE_CANLOCK
-	TRUE,		/* cancel_locks */
-	0,			/* cancel_lock_algo, sha1 */
+	1,			/* cancel_lock_algo, sha1 */
 #endif /* USE_CANLOCK */
 	INTERACTIVE_NONE,		/* interactive_mailer */
 	FALSE,		/* use_mouse */
@@ -529,6 +528,8 @@ struct t_capabilities nntp_caps = {
 	FALSE, /* LIST: "LIST ACTIVE.TIMES" */
 	FALSE, /* LIST: "LIST DISTRIB.PATS" */
 	FALSE, /* LIST: "LIST HEADERS" */
+	NULL, /* list of headers by range */
+	NULL, /* list of headers by id */
 	FALSE, /* LIST: "LIST NEWSGROUPS" */
 	FALSE, /* LIST: "LIST OVERVIEW.FMT" */
 	FALSE, /* LIST: "LIST MOTD" */
@@ -1029,7 +1030,7 @@ postinit_regexp(
 		 * try to be clever, if we still use the initial default value
 		 * convert it to our needs
 		 *
-		 * TODO: a global soultion
+		 * TODO: a global solution
 		 */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			if (IS_LOCAL_CHARSET("UTF-8") && utf8_pcre()) {

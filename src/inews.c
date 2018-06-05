@@ -3,10 +3,10 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2017-05-03
+ *  Updated   : 2017-08-13
  *  Notes     : NNTP built in version of inews
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -257,7 +257,7 @@ submit_inews(
 				u_put_server("\r\n");
 			}
 #	ifdef USE_CANLOCK
-			if (tinrc.cancel_locks && !can_lock_in_article) {
+			if (tinrc.cancel_lock_algo && !can_lock_in_article) {
 				char lock[1024];
 				char *lptr;
 
@@ -481,7 +481,7 @@ sender_needed(
 	from_at_pos = strchr(from_addr, '@');
 	if ((sender_at_pos = strchr(sender_addr, '@')))
 		sender_dot_pos = strchr(sender_at_pos, '.');
-	else /* this case is catched by the gnksa_do_check_from() code above; anyway ... */
+	else /* this case is caught by the gnksa_do_check_from() code above; anyway ... */
 		return -2;
 
 	if (from_at_pos == NULL || sender_dot_pos == NULL) /* as we build From and check Sender above this shouldn't happen at all */

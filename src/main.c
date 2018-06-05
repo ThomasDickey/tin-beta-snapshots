@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2017-02-22
+ *  Updated   : 2018-02-15
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -144,6 +144,15 @@ main(
 	hash_init();
 	init_selfinfo();
 	init_group_hash();
+
+	/*
+	 * Set cCOLS temporarily to trim (localized) messages
+	 * It does not matter if this value is greater than the actual
+	 * terminal size
+	 *
+	 * cCOLS will be set later to the real terminal width
+	 */
+	cCOLS = 80;
 
 	/*
 	 * Process envargs & command line options
@@ -518,7 +527,7 @@ read_cmd_line_options(
 
 			case 'D':		/* debug mode */
 #ifdef DEBUG
-				debug = atoi(optarg);
+				debug = atoi(optarg) & 0xff;
 				debug_delete_files();
 #else
 				error_message(2, _(txt_option_not_enabled), "-DDEBUG");
@@ -665,8 +674,8 @@ read_cmd_line_options(
 				update_index = TRUE;
 				break;
 
-			case 'v':	/* verbose mode */
-				verbose = TRUE;
+			case 'v':	/* verbose mode, can be used multiple times */
+				verbose++;
 				break;
 
 			case 'V':
@@ -745,10 +754,6 @@ read_cmd_line_options(
 	 * Sort out option conflicts
 	 */
 	if (!batch_mode) {
-		if (verbose) {
-			wait_message(2, _(txt_useful_with_batch_mode), "-v");
-			verbose = FALSE;
-		}
 		if (catchup) {
 			wait_message(2, _(txt_useful_with_batch_mode), "-c");
 			catchup = FALSE;
@@ -757,6 +762,12 @@ read_cmd_line_options(
 		if (read_saved_news) {
 			wait_message(2, _(txt_useful_without_batch_mode), "-R");
 			read_saved_news = FALSE;
+		}
+	}
+	if (!(batch_mode || debug)) {
+		if (verbose) {
+			wait_message(2, _(txt_useful_with_batch_or_debug_mode), "-v");
+			verbose = FALSE;
 		}
 	}
 	if (post_postponed_and_exit && force_no_post) {

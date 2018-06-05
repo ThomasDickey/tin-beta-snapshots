@@ -9,7 +9,7 @@ New features
 - options to color external quotes (extquote_handling, extquote_regex,
   col_extquote)
 - LookupMessage ('L') in select level if reading via NNTP
-
+- filter articles based on Path, see doc/filtering for details
 
 Changes
 -------
@@ -32,6 +32,8 @@ To match the old behaviour: 'sigfile=!/path/to/command %G'.
 --enable-cancel-locks requires libcanlock-3 (which is included, but
 some distros (e.g. debian) are linking against a shared lib which may
 be too old).
+
+"make install" no longer strips the tin binary
 
 Retired Features
 ----------------

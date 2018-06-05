@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2017-06-13
+dnl Updated   : 2018-01-19
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2017 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2018 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.4.2
+VERSION=2.4.3
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -81,7 +81,7 @@ case "$host_os" in
 esac
 
 ### Native Language Support
-ALL_LINGUAS="da de en_GB et fr ru sv tr zh_CN zh_TW"
+ALL_LINGUAS="da de en_GB es et fr ru sv tr zh_CN zh_TW"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"
@@ -911,12 +911,14 @@ AC_CHECK_LIB(uu, UUInitialize,
 
 # ICU - International Components for Unicode
 # TODO: do separate checks for
-#  - unorm_normalize()
-#  - uidna_IDNToUnicode()
+#  - unorm_normalize() # deprecated since ICU 56
+#  - uidna_IDNToUnicode() # deprecated since ICU 56
 #  - ubidi_open()
 # and for IDNA2008
 #  - uidna_openUTS46()
 #  - uidna_nameToUnicode()
+#  - unorm2.h
+#  - unorm2_normalize()
 cf_try_icuuc="no"
 cf_try_icuuc46="no"
 AC_CHECK_HEADER(unicode/unorm.h,[
@@ -1087,6 +1089,8 @@ AC_CHECK_FUNCS(\
 	chmod \
 	closesocket \
 	execlp \
+	explicit_bzero \
+	explicit_memset \
 	fcntl \
 	fdopen \
 	fork \
@@ -1158,6 +1162,26 @@ AC_CHECK_FUNC(clock_gettime,
 			LIBS="$LIBS -lrt"
 		)
 	]
+)
+
+AC_MSG_CHECKING([for memset_s])
+AC_TRY_RUN([
+/* Request C11 Annex K */
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <string.h>
+#include <stddef.h>
+int main()
+{
+	char buf[10] = { 1 };
+	if (memset_s((void*) buf, (size_t) 100, 0, (size_t) 1))
+		return(-1);
+}],
+	[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(HAVE_MEMSET_S)
+	],
+	[AC_MSG_RESULT([no])],
+	[AC_MSG_RESULT([unknown])]
 )
 
 AM_MULTIBYTE_ABLE
@@ -1422,9 +1446,16 @@ int main() {
 		exit(1);
 	exit(0);
 }],
-	AC_DEFINE(HAVE_ICONV_OPEN_TRANSLIT) AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no),
-	AC_MSG_RESULT(unknown)
+	[
+		AC_DEFINE(HAVE_ICONV_OPEN_TRANSLIT)
+		AC_MSG_RESULT(yes)
+	],
+	[
+		AC_MSG_RESULT(no)
+	],
+	[
+		AC_MSG_RESULT(unknown)
+	]
 )
 
 # FIXME / TESTME

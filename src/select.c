@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2017-03-28
+ *  Updated   : 2018-02-15
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1031,7 +1031,7 @@ skip_newgroups(
  * my_group[] if group is added or was already there. Return -1 if group
  * is not in active[]
  *
- * NOTE: can't be static due to my_group_add() marco
+ * NOTE: can't be static due to my_group_add() macro
  */
 int
 add_my_group(
@@ -1298,7 +1298,7 @@ toggle_my_groups(
 		}
 	}
 #else
-	/* preserv group ordering based on newsrc */
+	/* preserve group ordering based on newsrc */
 	if ((fp = fopen(newsrc, "r")) == NULL)
 		return;
 
@@ -1481,7 +1481,7 @@ lookup_msgid(
 
 						if (!r) {
 #		ifdef DEBUG
-								if (debug & DEBUG_NNTP)
+								if ((debug & DEBUG_NNTP) && verbose > 1)
 									debug_print_file("NNTP", "lookup_msgid(%s) response empty or not recognized", buf);
 #		endif /* DEBUG */
 								if (!nntp_caps.xpat)
@@ -1527,7 +1527,7 @@ lookup_msgid(
 
 						if (!r) {
 #		ifdef DEBUG
-								if (debug & DEBUG_NNTP)
+								if ((debug & DEBUG_NNTP) && verbose > 1)
 									debug_print_file("NNTP", "lookup_msgid(%s) response empty or not recognized", buf);
 #		endif /* DEBUG */
 								info_message(_(txt_lookup_func_not_available));

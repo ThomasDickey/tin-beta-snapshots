@@ -3,10 +3,10 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2017-03-28
+ *  Updated   : 2018-01-30
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2017 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2018 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -274,7 +274,7 @@ printascii(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 {
 	if (ch == 0)
-		strcpy(buf, _("NULL"));
+		snprintf(buf, MAXKEYLEN, "%s", _("NULL"));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	else if (iswgraph(ch)) {	/* Regular printables */
 		int i = wctomb(buf, ch);
@@ -291,11 +291,11 @@ printascii(
 	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	else if (ch == '\t') {	/* TAB */
-		strcpy(buf, _(txt_tab));
+		snprintf(buf, MAXKEYLEN, "%s", _(txt_tab));
 	} else if ((ch == '\n') || (ch == '\r')) {	/* LF, CR */
-		strcpy(buf, _(txt_cr));
+		snprintf(buf, MAXKEYLEN, "%s", _(txt_cr));
 	} else if (ch == ESC) {		/* Escape */
-		strcpy(buf, _(txt_esc));
+		snprintf(buf, MAXKEYLEN, "%s", _(txt_esc));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	} else if (iswcntrl(ch)) {	/* Control keys */
 #else
@@ -305,7 +305,7 @@ printascii(
 		buf[1] = ((int) ch & 0xFF) + '@';
 		buf[2] = '\0';
 	} else if (ch == ' ')		/* SPACE */
-		strcpy(buf, _(txt_space));
+		snprintf(buf, MAXKEYLEN, "%s", _(txt_space));
 	else
 		strcpy(buf, "???");	/* Never happens? */
 
@@ -335,7 +335,7 @@ read_keymap_file(
 	 *
 	 * locale is first match from LC_ALL, LC_CTYPE, LC_MESSAGES, LANG
 	 *
-	 * TODO: LC_CTYPE has higgher priority than LC_MESSAGES, does this make sense?
+	 * TODO: LC_CTYPE has higher priority than LC_MESSAGES, does this make sense?
 	 */
 	/* get locale suffix */
 	map = my_strdup(get_val("LC_ALL", get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LANG", "")))));

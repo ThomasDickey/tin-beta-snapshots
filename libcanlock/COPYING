@@ -15,7 +15,7 @@ Note: The following list may not be up-to-date.
 Please use the license notes in the files as legal basis!
 
 Files: configure.ac [*/]Makefile.am doc/*.in* src/secret.c util/canlock.c
-Copyright (c) 2017 Michael Baeuerle
+Copyright (c) 2018 Michael Baeuerle
 License: MIT-like
 
 Files: src/canlock.c include/canlock.h

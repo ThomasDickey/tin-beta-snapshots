@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2016-09-26
+ *  Updated   : 2017-10-11
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2017 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2018 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ static int count_lines(char *line);
 static int parse_multipart_article(FILE *infile, t_openartinfo *artinfo, t_part *part, int depth, t_bool show_progress_meter);
 static int parse_normal_article(FILE *in, t_openartinfo *artinfo, t_bool show_progress_meter);
 static int parse_rfc2045_article(FILE *infile, int line_count, t_openartinfo *artinfo, t_bool show_progress_meter);
-static unsigned int parse_content_encoding(const char *encoding);
+static unsigned int parse_content_encoding(char *encoding);
 static void decode_value(const char *charset, t_param *part);
 static void parse_content_type(char *type, t_part *content);
 static void parse_content_disposition(char *disp, t_part *part);
@@ -232,6 +232,11 @@ remove_cwsp(
 		}
 
 		if (!inquotes) {
+			/* skip over quoted pairs */
+			if (c_cnt && src == '\\') {
+				++from;
+				continue;
+			}
 			if (src == '(') {
 				++c_cnt;
 				continue;
@@ -704,9 +709,12 @@ parse_content_type(
 
 static unsigned int
 parse_content_encoding(
-	const char *encoding)
+	char *encoding)
 {
 	unsigned int i;
+
+	/* Remove comments and white space */
+	remove_cwsp(encoding);
 
 	for (i = 0; content_encodings[i] != NULL; ++i) {
 		if (strcasecmp(encoding, content_encodings[i]) == 0)
@@ -1520,7 +1528,7 @@ art_open(
 
 	/*
 	 * TODO: compare art->msgid and artinfo->hdr.messageid and issue a
-	 *       warinng (once) about broken overviews if they differ
+	 *       warning (once) about broken overviews if they differ
 	 */
 
 	if ((artinfo->tex2iso = ((group->attribute->tex2iso_conv) ? is_art_tex_encoded(artinfo->raw) : FALSE)))
@@ -1535,7 +1543,7 @@ art_open(
 #endif /* DEBUG_ART */
 
 	/*
-	 * If Newsgroups is empty its a good bet the article is a mail article
+	 * If Newsgroups is empty it is a good bet the article is a mail article
 	 * TODO: Why do this ?
 	 */
 	if (!artinfo->hdr.newsgroups)

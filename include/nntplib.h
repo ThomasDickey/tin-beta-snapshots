@@ -3,10 +3,10 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2016-01-03
+ *  Updated   : 2018-02-10
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,6 +95,8 @@
 
 #define OK_ARTICLE		220	/* Article (head & body) follows */
 #define OK_HEAD			221	/* Head follows */
+#define OK_XHDR			221 /* headers follow */
+#define OK_XPAT			221 /* headers follow */
 #define OK_BODY			222	/* Body follows */
 #define OK_NOTEXT		223	/* No text sent -- stat, next, last */
 #define OK_XOVER		224	/* .overview data follows */
@@ -188,6 +190,8 @@ struct t_capabilities {
 	t_bool list_active_times:1;		/* LIST ACTIVE.TIMES, optional */
 	t_bool list_distrib_pats:1;		/* LIST DISTRIB.PATS, optional */
 	t_bool list_headers:1;			/* LIST HEADERS */
+	char *headers_range;			/* list of headers by range */
+	char *headers_id;				/* list of headers by id */
 	t_bool list_newsgroups:1;		/* LIST NEWSGROUPS */
 	t_bool list_overview_fmt:1;		/* LIST OVERVIEW.FMT */
 	t_bool list_motd:1;				/* LIST MOTD, "private" extension */
@@ -206,7 +210,7 @@ struct t_capabilities {
 	t_bool starttls:1;				/* STARTTLS */
 	t_bool authinfo_user:1;			/* AUTHINFO USER/PASS */
 	t_bool authinfo_sasl:1;			/* AUTHINFO SASL */
-	t_bool authinfo_state:1;		/* AUTHINFO not supported in curent state */
+	t_bool authinfo_state:1;		/* AUTHINFO not supported in current state */
 	enum sasl_types sasl;			/* SASL_NONE, SASL_PLAIN, SASL_CRAM_MD5, SASL_DIGEST_MD5, SASL_GSSAPI, SASL_EXTERNAL, SASL_OTP, SASL_NTLM, SASL_LOGIN */
 	t_bool compress:1;				/* COMPRESS */
 	enum c_algorithms compress_algorithm;	/* COMPRESS_NONE, COMPRESS_DEFLATE */

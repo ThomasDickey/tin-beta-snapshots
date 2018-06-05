@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2017-05-30
+ *  Updated   : 2017-08-13
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@
 
 #ifdef USE_CANLOCK
 #	define ADD_CAN_KEY(id) { \
-		if (tinrc.cancel_locks) { \
+		if (tinrc.cancel_lock_algo) { \
 			char key[1024]; \
 			char *kptr; \
 			key[0] = '\0'; \
@@ -68,7 +68,7 @@
 	 */
 #	ifdef EVIL_INSIDE
 #		define ADD_CAN_LOCK(id) { \
-			if (tinrc.cancel_locks) { \
+			if (tinrc.cancel_lock_algo) { \
 				char lock[1024]; \
 				char *lptr = (char *) 0; \
 				lock[0] = '\0'; \
@@ -720,7 +720,7 @@ append_mail(
  * - check for special newsgroups: to, ctl, all, control, junk
  *   [RFC 5536 3.1.4]
  * - check for Supersedes in Control messages [RFC 5536 3.2.3]
- * - check for 'illegal' distribultion: all [RFC 5536 3.2.4]
+ * - check for 'illegal' distribution: all [RFC 5536 3.2.4]
  *
  * Check the article file for correct header syntax and if there
  * is a blank between the header information and the text.
@@ -5126,7 +5126,7 @@ build_messageid(
 	/*
 	 * I've seen passwd->pw_name with spaces in it (cygwin) and we use
 	 * that in the !FROGERY case -> disallow 'common' junk which is not
-	 * catched by the gnksa_check_from()
+	 * caught by the gnksa_check_from()
 	 */
 	if (damaged_id(buf))
 		return NULL;
@@ -5146,11 +5146,11 @@ get_cancel_lock_algo(
 	 * must match the order in txt_cancel_lock_algos
 	 */
 	switch(tinrc.cancel_lock_algo) {
-		case 1:
-			return CL_SHA256;
 		case 2:
+			return CL_SHA256;
+		case 3:
 			return CL_SHA512;
-		case 0:
+		case 1:
 		default:
 			return CL_SHA1;
 	}
@@ -5165,7 +5165,7 @@ build_canlock(
 	const char *messageid,
 	const char *secret)
 {
-	if ((messageid == NULL) || (secret == NULL) || (*secret == '\0'))
+	if (!tinrc.cancel_lock_algo || (messageid == NULL) || (secret == NULL) || (*secret == '\0'))
 		return NULL;
 	else
 		return cl_get_lock(get_cancel_lock_algo(), (const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid));
@@ -5181,7 +5181,7 @@ build_cankey(
 	const char *messageid,
 	const char *secret)
 {
-	if ((messageid == NULL) || (secret == NULL) || (*secret == '\0'))
+	if (!tinrc.cancel_lock_algo || (messageid == NULL) || (secret == NULL) || (*secret == '\0'))
 		return NULL;
 	else
 		return cl_get_key(get_cancel_lock_algo(), (const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid));
@@ -5406,7 +5406,9 @@ build_nglist(
 	src = ngs_list;
 	dst = my_list;
 	while ((cp = *src++)) {
-		if (cp == ',') cp = ' ';
+		if (cp == ',')
+			cp = ' ';
+
 		*dst++ = cp;
 	}
 	*dst = cp;

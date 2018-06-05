@@ -6,7 +6,7 @@
  *  Updated   : 2016-02-28
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2017 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2018 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -457,7 +457,7 @@ process_text_body_part(
 				/*
 				 * FIXME: Some code in cook.c expects a '\n' at the end
 				 * of the line. As tin_fgets() strips trailing '\n', re-add it.
-				 * This should problably be fixed in that other code.
+				 * This should probably be fixed in that other code.
 				 */
 				strcat(line, "\n");
 

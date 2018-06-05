@@ -7,7 +7,7 @@
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
- * Copyright (c) 1997-2017 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2018 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,7 +148,7 @@ highlight_regexes(
 	int color)
 {
 	char *ptr;
-	int offsets[6]; /* we are not interrested in any supatterns, so 6 is sufficient */
+	int offsets[6]; /* we are not interested in any subpatterns, so 6 is sufficient */
 	int offsets_size = ARRAY_SIZE(offsets);
 #ifdef USE_CURSES
 	char buf[LEN];

@@ -40,6 +40,7 @@
  *   to hash the final few bits of the input.
  */
 
+#include "canlock-private.h"
 #include "sha.h"
 #include "sha-private.h"
 
@@ -400,9 +401,9 @@ static void SHA224_256ProcessMessageBlock(SHA256Context *context)
       0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
       0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
   };
-  int        t, t4;                   /* Loop counter */
-  uint32_t   temp1, temp2;            /* Temporary word value */
-  uint32_t   W[64];                   /* Word sequence */
+  int        t, t4;            /* Loop counter */
+  uint32_t   temp1, temp2;     /* Temporary word value */
+  uint32_t   W[64];            /* Word sequence. Security review: Location L5 */
   uint32_t   A, B, C, D, E, F, G, H;  /* Word buffers */
 
   /*
@@ -439,6 +440,8 @@ static void SHA224_256ProcessMessageBlock(SHA256Context *context)
     B = A;
     A = temp1 + temp2;
   }
+
+  cl_clear_secret((void *) W, sizeof(W), sizeof(W));
 
   context->Intermediate_Hash[0] += A;
   context->Intermediate_Hash[1] += B;

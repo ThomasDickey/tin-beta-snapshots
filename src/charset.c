@@ -3,10 +3,10 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2017-03-28
+ *  Updated   : 2017-10-18
  *  Notes     : ISO to ascii charset conversion routines
  *
- * Copyright (c) 1993-2017 Markus Kuhn <mgk25@cl.cam.ac.uk>
+ * Copyright (c) 1993-2018 Markus Kuhn <mgk25@cl.cam.ac.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -274,16 +274,16 @@ convert_tex2iso(
 	 * code position as ISO-8859-1
 	 * DEC-MCS, Windows-1252
 	 */
-	if (!strcasecmp(tinrc.mm_local_charset, "ISO-8859-1") ||
-		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-2") ||
-		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-3") ||
-		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-4") ||
-		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-9") ||
-		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-10") ||
-		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-13") ||
-		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-14") ||
-		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-15") ||
-		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-16") ||
+	if (IS_LOCAL_CHARSET("ISO-8859-1") ||
+		IS_LOCAL_CHARSET("ISO-8859-2") ||
+		IS_LOCAL_CHARSET("ISO-8859-3") ||
+		IS_LOCAL_CHARSET("ISO-8859-4") ||
+		IS_LOCAL_CHARSET("ISO-8859-9") ||
+		IS_LOCAL_CHARSET("ISO-8859-10") ||
+		IS_LOCAL_CHARSET("ISO-8859-13") ||
+		IS_LOCAL_CHARSET("ISO-8859-14") ||
+		IS_LOCAL_CHARSET("ISO-8859-15") ||
+		IS_LOCAL_CHARSET("ISO-8859-16") ||
 		iso2asc_supported >= 0) {
 		tex_to[1] = tex_to[0] = "\344";	/* auml */
 		tex_to[3] = tex_to[2] = "\366";	/* ouml */
@@ -292,7 +292,7 @@ convert_tex2iso(
 		tex_to[9] = tex_to[8] = "\326";	/* Ouml */
 		tex_to[11] = tex_to[10] = "\334";	/* Uuml */
 		tex_to[14] = tex_to[13] = tex_to[12] = "\337"; /* szlig */
-	} else if (!strcasecmp(tinrc.mm_local_charset, "UTF-8")) { /* locale charset is UTF-8 */
+	} else if (IS_LOCAL_CHARSET("UTF-8")) { /* locale charset is UTF-8 */
 		tex_to[1] = tex_to[0] = "\303\244";	/* auml */
 		tex_to[3] = tex_to[2] = "\303\266";	/* ouml */
 		tex_to[5] = tex_to[4] = "\303\274";	/* uuml */

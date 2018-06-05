@@ -3,10 +3,10 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2016-07-29
+ *  Updated   : 2018-02-15
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -90,7 +90,7 @@ read_mail_active_file(
 	void)
 {
 	FILE *fp;
-	char buf[LEN];
+	char *buf;
 	char my_spooldir[PATH_LEN];
 	char buf2[PATH_LEN];
 	t_artnum min, max;
@@ -115,7 +115,7 @@ read_mail_active_file(
 		return;
 	}
 
-	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
+	while ((buf = tin_fgets(fp, FALSE))) {
 		if (!parse_active_line(buf, &max, &min, my_spooldir) || *buf == '\0')
 			continue;
 
@@ -276,7 +276,7 @@ open_newsgroups_fp(
 				struct stat buf;
 
 #	ifdef DEBUG
-					if (debug & DEBUG_NNTP)
+					if ((debug & DEBUG_NNTP) && verbose > 1)
 						debug_print_file("NNTP", "open_newsgroups_fp Using local copy of newsgroups file");
 #	endif /* DEBUG */
 				if (!fstat(fileno(result), &buf)) {
@@ -338,7 +338,7 @@ open_newsgroups_fp(
 							}
 							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #			ifdef DEBUG
-								if (debug & DEBUG_NNTP)
+								if (debug & DEBUG_NNTP && verbose)
 									debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #			endif /* DEBUG */
 								fprintf(result, "%s\n", str_trim(ptr));
@@ -364,7 +364,7 @@ open_newsgroups_fp(
 					}
 					while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #			ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if (debug & DEBUG_NNTP && verbose)
 							debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #			endif /* DEBUG */
 						fprintf(result, "%s\n", str_trim(ptr));
@@ -384,7 +384,7 @@ open_newsgroups_fp(
 			if (result != NULL) {
 				if (!no_more_wildmat)
 					return result;
-				else /* AUTH request while pipeling or some error */
+				else /* AUTH request while pipelining or some error */
 					fclose(result);
 			}
 		}
@@ -462,6 +462,10 @@ read_groups_descriptions(
 	struct t_group *group;
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+#ifdef DEBUG
+		if ((debug & DEBUG_NNTP) && fp == FAKE_NNTP_FP && verbose)
+			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+#endif /* DEBUG */
 		if (*ptr == '#' || *ptr == '\0')
 			continue;
 

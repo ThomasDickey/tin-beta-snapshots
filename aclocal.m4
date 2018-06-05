@@ -5,7 +5,7 @@ dnl Created   : 1995-08-24
 dnl Updated   : 2017-09-23
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2017 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2018 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without

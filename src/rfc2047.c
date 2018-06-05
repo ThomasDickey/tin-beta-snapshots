@@ -3,10 +3,10 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2017-03-28
+ *  Updated   : 2018-02-11
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2017 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2018 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -232,16 +232,30 @@ rfc1522_decode(
 	char *c, *sc;
 	const char *d;
 	char *t;
-#define BUFFER_LEN 2048
-	static char buffer[BUFFER_LEN];
+	static char *buffer = NULL;
+	static int buffer_len = 0;
 	size_t max_len;
 	char charset[1024];
 	char encoding;
 	t_bool adjacentflag = FALSE;
 
+	if (!s) {
+		FreeAndNull(buffer);
+		return NULL;
+	}
+
 	charset[0] = '\0';
 	c = my_strdup(s);
 	max_len = strlen(c) + 1;
+
+	if (!buffer) {
+		buffer_len = max_len;
+		buffer = my_malloc((size_t) buffer_len);
+	} else if (max_len > (size_t) buffer_len) {
+			buffer_len = max_len;
+			buffer = my_realloc(buffer, (size_t) buffer_len);
+	}
+
 	t = buffer;
 
 	/*
@@ -257,7 +271,7 @@ rfc1522_decode(
 #endif /* !CHARSET_CONVERSION */
 	sc = c;
 
-	while (*c && t - buffer < BUFFER_LEN - 1) {
+	while (*c && t - buffer < buffer_len - 1) {
 		if (*c != '=') {
 			if (adjacentflag && isspace((unsigned char) *c)) {
 				const char *dd;
@@ -312,8 +326,8 @@ rfc1522_decode(
 							*(tmpbuf + i) = '\0';
 							process_charsets(&tmpbuf, &max_len, charset, tinrc.mm_local_charset, FALSE);
 							chars_to_copy = strlen(tmpbuf);
-							if (chars_to_copy > BUFFER_LEN - (t - buffer) - 1)
-								chars_to_copy = BUFFER_LEN - (t - buffer) - 1;
+							if (chars_to_copy > buffer_len - (t - buffer) - 1)
+								chars_to_copy = buffer_len - (t - buffer) - 1;
 							strncpy(t, tmpbuf, chars_to_copy);
 							free(tmpbuf);
 							t += chars_to_copy;
@@ -327,7 +341,7 @@ rfc1522_decode(
 				}
 			}
 		}
-		while (d != c && t - buffer < BUFFER_LEN - 1)
+		while (d != c && t - buffer < buffer_len - 1)
 			*t++ = *d++;
 	}
 	*t = '\0';

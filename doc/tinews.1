@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "tinews.pl 1"
-.TH tinews.pl 1 "May 13th, 2017" "1.1.45" "Post and sign an article via NNTP"
+.TH tinews.pl 1 "December 8th, 2017" "1.1.49" "Post and sign an article via NNTP"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -145,8 +145,8 @@ tinews.pl \- Post and sign an article via NNTP
 \&\fBtinews.pl\fR [\fB\s-1OPTIONS\s0\fR] < \fIinput\fR
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBtinews.pl\fR reads an article on \s-1STDIN,\s0 signs it via \fBpgp\fR(1) or
-\&\fBgpg\fR(1) and posts it to a news server.
+\&\fBtinews.pl\fR reads an article on \s-1STDIN,\s0 signs it via \fIpgp\fR\|(1) or
+\&\fIgpg\fR\|(1) and posts it to a news server.
 .PP
 If the article contains To:, Cc: or Bcc: headers and mail-actions are
 configured it will automatically add a \*(L"Posted-And-Mailed: yes\*(R" header
@@ -302,11 +302,18 @@ An error occurred.
 .SH "ENVIRONMENT"
 .IX Xref "tinews, environment variables"
 .IX Header "ENVIRONMENT"
+.ie n .IP "\fB\fB$NEWSHOST\fB\fR" 4
+.el .IP "\fB\f(CB$NEWSHOST\fB\fR" 4
+.IX Xref "$NEWSHOST NEWSHOST"
+.IX Item "$NEWSHOST"
+Set to override the \s-1NNTP\s0 server configured in the source or config-file.
+It has lower priority than \fB\f(CB$NNTPSERVER\fB\fR and should be avoided.
 .ie n .IP "\fB\fB$NNTPSERVER\fB\fR" 4
 .el .IP "\fB\f(CB$NNTPSERVER\fB\fR" 4
 .IX Xref "$NNTPSERVER NNTPSERVER"
 .IX Item "$NNTPSERVER"
-Set to override the \s-1NNTP\s0 server configured in the source.
+Set to override the \s-1NNTP\s0 server configured in the source or config-file.
+This has higher priority than \fB\f(CB$NEWSHOST\fB\fR.
 .ie n .IP "\fB\fB$NNTPPORT\fB\fR" 4
 .el .IP "\fB\f(CB$NNTPPORT\fB\fR" 4
 .IX Xref "$NNTPPORT NNTPPORT"
@@ -319,12 +326,12 @@ TCP-port is not 119 (the default). The '\-\fBp\fR' command-line option overrides
 .IX Xref "$PGPPASS PGPPASS"
 .IX Item "$PGPPASS"
 Set to override the passphrase configured in the source (used for
-\&\fBpgp\fR(1)\-2.6.3).
+\&\fIpgp\fR\|(1)\-2.6.3).
 .ie n .IP "\fB\fB$PGPPASSFILE\fB\fR" 4
 .el .IP "\fB\f(CB$PGPPASSFILE\fB\fR" 4
 .IX Xref "$PGPPASSFILE PGPPASSFILE"
 .IX Item "$PGPPASSFILE"
-Passphrase file used for \fBpgp\fR(1) or \fBgpg\fR(1).
+Passphrase file used for \fIpgp\fR\|(1) or \fIgpg\fR\|(1).
 .ie n .IP "\fB\fB$SIGNER\fB\fR" 4
 .el .IP "\fB\f(CB$SIGNER\fB\fR" 4
 .IX Xref "$SIGNER SIGNER"
@@ -364,7 +371,7 @@ Temporary file used to store the reformatted and signed article.
 .ie n .IP "\fI\fI$PGPPASSFILE\fI\fR" 4
 .el .IP "\fI\f(CI$PGPPASSFILE\fI\fR" 4
 .IX Item "$PGPPASSFILE"
-The passphrase file to be used for \fBpgp\fR(1) or \fBgpg\fR(1).
+The passphrase file to be used for \fIpgp\fR\|(1) or \fIgpg\fR\|(1).
 .ie n .IP "\fI\fI$HOME\fI/.signature\fR" 4
 .el .IP "\fI\f(CI$HOME\fI/.signature\fR" 4
 .IX Item "$HOME/.signature"
@@ -404,24 +411,33 @@ find that password, in plaintext, in a core dump. In short, if serious
 security is an issue, don't use this script.
 .SH "NOTES"
 .IX Header "NOTES"
-\&\fBtinews.pl\fR is designed to be used with \fBpgp\fR(1)\-2.6.3,
-\&\fBpgp\fR(1)\-5, \fBpgp\fR(1)\-6, \fBgpg\fR(1) and \fBgpg2\fR(1).
+\&\fBtinews.pl\fR is designed to be used with \fIpgp\fR\|(1)\-2.6.3,
+\&\fIpgp\fR\|(1)\-5, \fIpgp\fR\|(1)\-6, \fIgpg\fR\|(1) and \fIgpg2\fR\|(1).
 .PP
 \&\fBtinews.pl\fR requires the following standard modules to be installed:
-\&\fBGetopt::Long\fR(3pm), \fBNet::NNTP\fR(3pm), \fBTime::Local\fR(3pm) and
-\&\fBTerm::Readline\fR(3pm).
+\&\fIGetopt::Long\fR\|(3pm), \fINet::NNTP\fR\|(3pm), <\fITime::Local\fR\|(3pm)> and
+\&\fITerm::Readline\fR\|(3pm).
 .PP
 If the Cancel-Lock feature is enabled the following additional modules
-must be installed: \fBMIME::Base64\fR(3pm), \fBDigest::SHA\fR(3pm) or
-\&\fBDigest::SHA1\fR(3pm) and \fBDigest::HMAC_SHA1\fR(3pm). sha256 and sha512 as
-algorithms for \fBcanlock-algorithm\fR are only available with \fBDigest::SHA\fR.
+must be installed: \fIMIME::Base64\fR\|(3pm), \fIDigest::SHA\fR\|(3pm) or
+\&\fIDigest::SHA1\fR\|(3pm) and \fIDigest::HMAC_SHA1\fR\|(3pm). sha256 and sha512 as
+algorithms for \fBcanlock-algorithm\fR are only available with \fIDigest::SHA\fR\|(3pm).
+.PP
+\&\fIgpg2\fR\|(1) users may need to set \fB\f(CB$GPG_TTY\fB\fR, i.e.
+.PP
+.Vb 2
+\& GPG_TTY=$(tty)
+\& export GPG_TTY
+.Ve
+.PP
+before using \fBtinews.pl\fR. See <https://www.gnupg.org/> for details.
 .SH "AUTHOR"
 .IX Header "AUTHOR"
 Urs Janssen <urs@tin.org>,
 Marc Brockschmidt <marc@marcbrockschmidt.de>
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
-\&\fBpgp\fR(1), \fBgpg\fR(1), \fBgpg2\fR(1), \fBpgps\fR(1), \fBDigest::HMAC_SHA1\fR(3pm),
-\&\fBDigest::SHA\fR(3pm), \fBDigest::SHA1\fR(3pm), \fBGetopt::Long\fR(3pm),
-\&\fBMIME::Base64\fR(3pm), \fBNet::NNTP\fR(3pm), \fBTime::Local\fR(3pm),
-\&\fBTerm::Readline\fR(3pm)
+\&\fIpgp\fR\|(1), \fIgpg\fR\|(1), \fIgpg2\fR\|(1), \fIpgps\fR\|(1), \fIDigest::HMAC_SHA1\fR\|(3pm),
+\&\fIDigest::SHA\fR\|(3pm), \fIDigest::SHA1\fR\|(3pm), \fIGetopt::Long\fR\|(3pm),
+\&\fIMIME::Base64\fR\|(3pm), \fINet::NNTP\fR\|(3pm), \fITime::Local\fR\|(3pm),
+\&\fITerm::Readline\fR\|(3pm)

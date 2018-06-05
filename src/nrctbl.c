@@ -9,7 +9,7 @@
  *              and the name of the newsrc file for a given
  *              alias of the server.
  *
- * Copyright (c) 1996-2017 Sven Paulus <sven@tin.org>
+ * Copyright (c) 1996-2018 Sven Paulus <sven@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -242,7 +242,7 @@ get_newsrcname(
 
 					case 'a':
 						/*
-						 * FIXME this (e.g. the location of the alternativce name)
+						 * FIXME this (e.g. the location of the alternative name)
 						 * is not documented in the man page
 						 */
 						snprintf(name_found, sizeof(name_found), ".newsrc-%s", nntpserver_name);

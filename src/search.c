@@ -3,10 +3,10 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2015-05-20
+ *  Updated   : 2018-01-29
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -86,7 +86,7 @@ get_search_pattern(
 		*forward = last_forward;
 		my_strncpy(def, last_pattern, LEN);
 	} else {
-		sprintf(tmpbuf, (*forward ? fwd_msg : bwd_msg), def);
+		snprintf(tmpbuf, sizeof(tmpbuf), (*forward ? fwd_msg : bwd_msg), def);
 
 		if (!prompt_string_default(tmpbuf, def, _(txt_no_search_string), which_hist))
 			return NULL;
@@ -125,7 +125,7 @@ get_search_pattern(
 	 * A gross hack to simulate substrings with wildmat()
 	 */
 /* TODO: somehow use REGEX_FMT here? */
-	sprintf(tmpbuf, "*%s*", def);
+	snprintf(tmpbuf, sizeof(tmpbuf), "*%s*", def);
 	return tmpbuf;
 }
 

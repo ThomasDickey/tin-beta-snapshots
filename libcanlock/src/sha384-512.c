@@ -43,6 +43,7 @@
  *
  */
 
+#include "canlock-private.h"
 #include "sha.h"
 
 #ifdef USE_32BIT_ONLY
@@ -678,7 +679,7 @@ static void SHA384_512ProcessMessageBlock(SHA512Context *context)
   int     t, t2, t8;                  /* Loop counter */
   uint32_t  temp1[2], temp2[2],       /* Temporary word values */
         temp3[2], temp4[2], temp5[2];
-  uint32_t  W[2*80];                  /* Word sequence */
+  uint32_t  W[2*80];          /* Word sequence. Security review: Location L6a */
   uint32_t  A[2], B[2], C[2], D[2],   /* Word buffers */
         E[2], F[2], G[2], H[2];
 
@@ -751,6 +752,8 @@ static void SHA384_512ProcessMessageBlock(SHA512Context *context)
     SHA512_ADD(temp1, temp2, A);
   }
 
+  cl_clear_secret((void *) W, sizeof(W), sizeof(W));
+
   SHA512_ADDTO2(&context->Intermediate_Hash[0], A);
   SHA512_ADDTO2(&context->Intermediate_Hash[2], B);
   SHA512_ADDTO2(&context->Intermediate_Hash[4], C);
@@ -791,9 +794,9 @@ static void SHA384_512ProcessMessageBlock(SHA512Context *context)
       0x431D67C49C100D4Cll, 0x4CC5D4BECB3E42B6ll, 0x597F299CFC657E2All,
       0x5FCB6FAB3AD6FAECll, 0x6C44198C4A475817ll
   };
-  int        t, t8;                   /* Loop counter */
-  uint64_t   temp1, temp2;            /* Temporary word value */
-  uint64_t   W[80];                   /* Word sequence */
+  int        t, t8;           /* Loop counter */
+  uint64_t   temp1, temp2;    /* Temporary word value */
+  uint64_t   W[80];           /* Word sequence. Security review: Location L6b */
   uint64_t   A, B, C, D, E, F, G, H;  /* Word buffers */
 
   /*
@@ -833,6 +836,8 @@ static void SHA384_512ProcessMessageBlock(SHA512Context *context)
     B = A;
     A = temp1 + temp2;
   }
+
+  cl_clear_secret((void *) W, sizeof(W), sizeof(W));
 
   context->Intermediate_Hash[0] += A;
   context->Intermediate_Hash[1] += B;

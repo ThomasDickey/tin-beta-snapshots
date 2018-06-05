@@ -3,10 +3,10 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2016-10-10
+ *  Updated   : 2018-02-16
  *  Notes     :
  *
- * Copyright (c) 1992-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -92,7 +92,7 @@ need_reread_active_file(
 
 /*
  * Resync active file when reread_active_file_secs have passed or
- * force_reread_actve_file is set.
+ * force_reread_active_file is set.
  * Return TRUE if a reread was performed
  */
 t_bool
@@ -234,10 +234,10 @@ parse_active_line(
 
 	if (!p || !q || !r || !lineok) {
 #ifdef DEBUG
-		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", txt_bad_active_file, line);
+		/* TODO: This also logs broken non NNTP active lines (i.e. mail.active) to NNTP */
+		if (debug & DEBUG_NNTP && verbose > 1)
+			debug_print_file("NNTP", "Active file corrupt - %s", line);
 #endif /* DEBUG */
-		error_message(2, _(txt_bad_active_file), line);
 		return FALSE;
 	}
 
@@ -281,10 +281,9 @@ parse_count_line(
 
 	if (!p || !q || !r || !s || !lineok) {
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", _(txt_unparseable_counts), line);
+		if (debug & DEBUG_NNTP && verbose > 1)
+			debug_print_file("NNTP", "unparseable \"LIST COUNTS\" line: \"%s\"", line);
 #	endif /* DEBUG */
-		error_message(2, _(txt_unparseable_counts), line);
 		return FALSE;
 	}
 
@@ -306,7 +305,7 @@ parse_count_line(
  * We can't know the 'moderator' status and always return 'y'
  * But we don't change if the 'moderator' status is already checked by
  * read_active_file()
- * Returnes TRUE if NNTP is enabled and authentication is needed
+ * Returns TRUE if NNTP is enabled and authentication is needed
  */
 #ifdef NNTP_ABLE
 static t_bool
@@ -363,7 +362,7 @@ do_read_newsrc_active_file(
 				ngnames[index_i] = my_strdup(ptr);
 				snprintf(buf, sizeof(buf), "GROUP %s", ngnames[index_i]);
 #	ifdef DEBUG
-				if (debug & DEBUG_NNTP)
+				if ((debug & DEBUG_NNTP) && verbose > 1)
 					debug_print_file("NNTP", "read_newsrc_active_file() %s", buf);
 #	endif /* DEBUG */
 				put_server(buf);
@@ -385,7 +384,7 @@ do_read_newsrc_active_file(
 					for (i = 0; i < window - 1; i++) {
 						snprintf(buf, sizeof(buf), "GROUP %s", ngnames[j]);
 #	ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "read_newsrc_active_file() %s", buf);
 #	endif /* DEBUG */
 						put_server(buf);
@@ -407,16 +406,14 @@ do_read_newsrc_active_file(
 
 							snprintf(fmt, sizeof(fmt), "%%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%%ds", NNTP_GRPLEN);
 							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4) {
-								error_message(2, _(txt_error_invalid_response_to_group), line);
 #	ifdef DEBUG
-								if (debug & DEBUG_NNTP) /* TODO: -> lang.c */
+								if (debug & DEBUG_NNTP && verbose > 1)
 									debug_print_file("NNTP", "Invalid response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
 #	endif /* DEBUG */
 							}
 							if (strcmp(ngname, ngnames[index_o]) != 0) {
-								error_message(2, _(txt_error_wrong_newsgroupname_in_group_response), ngname, ngnames[index_o], line);
 #	ifdef DEBUG
-								if (debug & DEBUG_NNTP) /* TODO: -> lang.c */
+								if (debug & DEBUG_NNTP && verbose > 1)
 									debug_print_file("NNTP", "Groupname mismatch in response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
 #	endif /* DEBUG */
 							}
@@ -446,7 +443,7 @@ do_read_newsrc_active_file(
 
 					default:
 #	ifdef DEBUG
-						if (debug & DEBUG_NNTP)
+						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "NOT_OK %s", line);
 #	endif /* DEBUG */
 						free(ngnames[index_o]);
@@ -610,7 +607,7 @@ read_active_file(
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 #if defined(DEBUG) && defined(NNTP_ABLE)
-		if (debug & DEBUG_NNTP)
+		if ((debug & DEBUG_NNTP) && verbose) /* long multiline response */
 			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #endif /* DEBUG && NNTP_ABLE */
 
@@ -688,7 +685,7 @@ read_active_counts(
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
+		if ((debug & DEBUG_NNTP) && verbose) /* long multiline response */
 			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 
@@ -785,7 +782,7 @@ read_news_active_file(
 #ifdef NNTP_ABLE
 #	ifndef DISABLE_PIPELINING
 		/*
-		 * prefer LIST COUNTS, otherwise use LIST ACIVE (-l) or GROUP (-n)
+		 * prefer LIST COUNTS, otherwise use LIST ACTIVE (-l) or GROUP (-n)
 		 * or both (-ln); LIST COUNTS/ACTIVE grplist is used up to
 		 * PIPELINE_LIMIT groups in newsrc
 		 */
@@ -800,7 +797,7 @@ read_news_active_file(
 			t_bool need_auth = FALSE;
 
 			*buff = '\0';
-			/* we can't use for_each_group(i) yet, so we have to prase the newsrc */
+			/* we can't use for_each_group(i) yet, so we have to parse the newsrc */
 			if ((fp = fopen(newsrc, "r")) != NULL) {
 				while (tin_fgets(fp, FALSE) != NULL)
 					j++;
@@ -851,7 +848,7 @@ read_news_active_file(
 						} else {
 							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #		ifdef DEBUG
-								if (debug & DEBUG_NNTP)
+								if ((debug & DEBUG_NNTP) && verbose) /* long multiline response */
 									debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #		endif /* DEBUG */
 								if (nntp_caps.type == CAPABILITIES && nntp_caps.list_counts) {
@@ -987,7 +984,7 @@ check_for_any_new_groups(
 	}
 
 #ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "Newnews old=[%lu]  new=[%lu]", (unsigned long int) old_newnews_time, (unsigned long int) new_newnews_time);
 #endif /* DEBUG */
 
@@ -1088,7 +1085,7 @@ subscribe_new_group(
 		/*
 		 * as subscribe_new_group() is called from check_for_any_new_groups()
 		 * which has pending data on the socket if reading via NNTP we are not
-		 * allowed to issue any NNTP comands yet
+		 * allowed to issue any NNTP commands yet
 		 */
 		subscribe(&active[my_group[idx]], SUBSCRIBED, bool_not(read_news_via_nntp));
 		/*
@@ -1209,7 +1206,7 @@ load_newnews_info(
 	newnews[i].time = new_time;
 
 #ifdef DEBUG
-	if (debug & DEBUG_NNTP)
+	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "ACTIVE host=[%s] time=[%lu]", newnews[i].host, (unsigned long int) newnews[i].time);
 #endif /* DEBUG */
 }

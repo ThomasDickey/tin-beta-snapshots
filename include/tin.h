@@ -3,10 +3,10 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2017-03-31
+ *  Updated   : 2018-02-18
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2017 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -866,7 +866,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #endif /* !DEFAULT_ISO2ASC */
 
 #ifndef DEFAULT_COMMENT
-#	define DEFAULT_COMMENT	"> "	/* used when by follow-ups & replys */
+#	define DEFAULT_COMMENT	"> "	/* used when by follow-ups & replies */
 #endif /* !DEFAULT_COMMENT */
 #ifndef ART_MARK_UNREAD
 #	define ART_MARK_UNREAD	'+'	/* used to show that an art is unread */
@@ -1006,7 +1006,7 @@ enum {
 #	define INDEX2SNUM(i)	((i) - currmenu->first)
 #endif /* !USE_CURSES */
 
-#define GROUP_MATCH(s1, pat, case)		(wildmat(s1, pat, case))
+#define GROUP_MATCH(s1, pat, case_s)		(wildmat(s1, pat, case_s))
 
 #define REGEX_FMT (tinrc.wildcard ? "%s" : "*%s*")
 
@@ -1033,7 +1033,7 @@ enum {
 #endif /* NNTP_ABLE */
 
 /*
- * Often used macro to point to the group we are currenty in
+ * Often used macro to point to the group we are currently in
  */
 #define CURR_GROUP	(active[my_group[selmenu.curr]])
 
@@ -1290,7 +1290,7 @@ enum {
 #define ESC	27
 
 /*
- * filter entrys expire after DEFAULT_FILTER_DAYS
+ * filter entries expire after DEFAULT_FILTER_DAYS
  */
 #define DEFAULT_FILTER_DAYS		28
 
@@ -1378,7 +1378,7 @@ enum {
 #		else
 #			if defined(HAVE_LIBIDN) && defined(HAVE_STRINGPREP_H)
 #				define HAVE_UNICODE_NORMALIZATION 1
-#			endif /* HAVE_LIBIDN */
+#			endif /* HAVE_LIBIDN && HAVE_STRINGPREP_H */
 #		endif /* HAVE_LIBUNISTRING */
 #	endif /* HAVE_LIBICUUC */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1492,6 +1492,7 @@ struct t_article {
 	int gnksa_code;			/* From: line from mail header (GNKSA error code) */
 	time_t date;			/* Date: line from header in seconds */
 	char *xref;			/* Xref: cross posted article reference line */
+	char *path;			/* Path: line */
 	/* NB: The msgid and refs are only retained until the reference tree is built */
 	char *msgid;			/* Message-ID: unique message identifier */
 	char *refs;			/* References: article reference id's */
@@ -1511,6 +1512,20 @@ struct t_article {
 	t_bool matched:1;	/* TRUE = article matched regex in feed.c */
 	t_bool keep_in_base:1;	/* TRUE = keep (read) article in base[] (show_only_unread_arts) */
 };
+
+
+#ifdef NNTP_ABLE
+/*
+ * struct t_article_range - holds ranges of article numbers to perform actions on parts of arts[]
+ */
+struct t_article_range {
+	t_artnum start;
+	t_artnum end;
+	t_artnum cnt;
+	struct t_article_range *next;
+};
+#endif /* NNTP_ABLE */
+
 
 /*
  * struct t_newsheader - holds an array of which news headers to [not] display
@@ -1843,6 +1858,7 @@ struct t_filter {
 	int gnksa_num;			/* GNKSA code */
 	int score;			/* score to give if rule matches */
 	char *xref;			/* groups in xref line */
+	char *path;			/* server in path line */
 	time_t time;			/* expire time in seconds */
 	struct t_filter *next;		/* next rule valid in group */
 	unsigned int inscope:4;		/* if group matches scope e.g. 'comp.os.*' */

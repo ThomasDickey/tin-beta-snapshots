@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2013-11-15
+ *  Updated   : 2018-02-06
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -92,6 +92,7 @@ tin_getline(
 	int which_hist)
 {
 	int c, i, loc, tmp, gl_max;
+	char *tprompt;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wint_t wc;
 #else
@@ -106,10 +107,12 @@ tin_getline(
 	if (prompt == NULL)
 		prompt = "";
 
+	tprompt = strunc(prompt, cCOLS - 6);
+
 	gl_buf[0] = 0;		/* used as end of input indicator */
 	gl_fixup(-1, 0);	/* this resets gl_fixup */
-	gl_width = cCOLS - strlen(prompt);
-	gl_prompt = prompt;
+	gl_width = cCOLS - MIN(cCOLS - 6, strwidth(tprompt));
+	gl_prompt = tprompt;
 	gl_pos = gl_cnt = 0;
 
 	if (max_chars == 0) {
@@ -120,7 +123,7 @@ tin_getline(
 	} else
 		gl_max = max_chars;
 
-	my_fputs(prompt, stdout);
+	my_fputs(tprompt, stdout);
 	cursoron();
 	my_flush();
 
@@ -228,6 +231,7 @@ tin_getline(
 
 						default:
 							input_context = cNone;
+							free(tprompt);
 							return NULL;
 					}
 					break;
@@ -239,6 +243,7 @@ tin_getline(
 					wcstombs(buf, gl_buf, BUF_SIZE - 1);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 					input_context = cNone;
+					free(tprompt);
 					return buf;
 
 				case CTRL_A:
@@ -257,6 +262,7 @@ tin_getline(
 						wcstombs(buf, gl_buf, BUF_SIZE - 1);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 						input_context = cNone;
+						free(tprompt);
 						return buf;
 					} else
 						gl_del(0);
@@ -318,6 +324,7 @@ tin_getline(
 	wcstombs(buf, gl_buf, BUF_SIZE - 1);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	input_context = cNone;
+	free(tprompt);
 	return buf;
 }
 

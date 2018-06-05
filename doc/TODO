@@ -114,6 +114,17 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  allow per server cache_overview_files setting via serverrc.
+   [20180215 Urs Janssen <urs@tin.org>]
+
+o  add check for ICU unorm2.h/unorm2_normalize(); prefer it over
+   ICU unorm.h/unorm_normalize()
+   [20180119 Urs Janssen <urs@tin.org>]
+
+o  implement SAVE_APPEND_FILE_ALL ('A') and SAVE_OVERWRITE_ALL ('O') keys
+   which just ask once if file(s) already exist (open_save_filename()).
+   [20170811 Urs Janssen <urs@tin.org>]
+
 o  add second pipe command when piping multiple articles to use one
    pipe per article (currently it is one pipe for all). ':' could be
    used as key (only in use at the pager where this feature doesn't make
@@ -133,10 +144,10 @@ o  add support for %A (Address), %C (Firstname), %N (Fullname) to
    [20130925 Urs Janssen <urs@tin.org>]
 
 o  add a key to "drop" pending data from the server (either by
-   disconnet/reconnect (fast but reconnect may fail due to rate limit or ...)
+   disconnect/reconnect (fast but reconnect may fail due to rate limit or ...)
    or via calling drain_buffer() (might be slow if there is much pending
    data)) so one doesn't have to quit and restart tin if the client/server
-   communication get's desynced (i.e by reading an article which has a non
+   communication gets desynced (i.e by reading an article which has a non
    dotstuffed lone '.' in it or the like)
    [20130615 Urs Janssen <urs@tin.org>]
 
@@ -522,7 +533,7 @@ o  add config option for (external) viewer to show postings stored in
 
 Filtering enhancements
 ----------------------
-o  add xref filter to the filter-menu
+o  add Xref + Path filter to the filter-menu
 
 o  add spamassassin interface when ever adding body filters
 
@@ -534,6 +545,7 @@ o  add command: mark all articles older/newer than <date> (or <days>) as
 
 o  fix kill/hot mechanism so that it is possible to match articles on
    arbitrary headers
+   [done for Path, Dennis]
 
 o  don't strip "Re: " out of the subject before applying the filter on it
 
@@ -600,8 +612,8 @@ o  always display (also) the servers error response string to the user,
    bandwidth exceeded)
    [20101230 Urs Janssen <urs@tin.org>]
 
-o  rewrite mini-help, remove the long strings and generate them dynamiclly
-   one help text for each key makes translations more easy and uniq and can
+o  rewrite mini-help, remove the long strings and generate them dynamically
+   one help text for each key makes translations more easy and unique and can
    use the available space on the screen much better if not running on 80
    columns.
    [20100326 Urs Janssen <urs@tin.org>]
@@ -821,6 +833,11 @@ o  check for wcsftime() and if found use it instead of strftime() (at
 
 Docs/online help
 ----------------
+o  document the difference between
+   - "-D 1" (nntp dialog with likely long multilines responses skipped)
+   - "-vD 1" (full nntp dialog)
+   - "-vvD 1" (full nntp dialog plus diagnostic messages)
+
 o  the documentation of PageFollowupQuoteHeaders (^W) and
    PageReplyQuoteHeaders (^E) is wrong as not all headers but just those
    visible via news_headers_to_display (or all if raw mode is on
@@ -834,7 +851,7 @@ o  the online help of GroupMarkUnselArtRead 'X' is unclear as it doesn't
 o  document the different signals/actions (e.g. SIGUSR2 writes newsrc)
    [20080209 Urs Janssen <urs@tin.org>]
 
-o  exit staus documentation in the man page isn't correct, we have more
+o  exit status documentation in the man page isn't correct, we have more
    exit codes than just 0/1 (and 2 in the -Z case).
    [20080320 Urs Janssen <urs@tin.org>]
 
@@ -864,6 +881,12 @@ o  document %G of strfpath() in man page
 
 Not yet classified
 ------------------
+o  allow per group cancel_lock_algo setting via attributes?
+   [20170810 Urs Janssen <urs@tin.org>]
+
+o  allow per group cache_overview_files setting via attributes?
+   [20180215 Urs Janssen <urs@tin.org>]
+
 o  abort HEAD/NEXT loop on 5xx responses to HEAD? (see
    art.c:open_art_header())
    [20161011 Urs Janssen <urs@tin.org>]
@@ -974,7 +997,7 @@ o  create debug output in
    ${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}
    instead of in $TMPDIR (as it may contain username and password,
    access restrictions in $TMPDIR are a bad idea as other users
-   need to be able to overwrite the file)
+   need to be able to overwrite the file (multi user system)).
    [20080211 Urs Janssen <urs@tin.org>]
 
 o  -M/-N report is mailed to userid, should we use tinrc.mail_address
@@ -996,7 +1019,7 @@ o  rename prompt_followupto (to prompt_extra_headres) and make it an option
    "Followup-To & Summary"; "Followup-To & Keywords";
    "Summary & Keywords"; "Followup-To, Summary & Keywords"} or make it a
    user-definable text field like news_headers_to_display? or leave this
-   entirely to the user - he could tweak attributes accrodingly.
+   entirely to the user - he could tweak attributes accordingly.
    [20060503 Urs Janssen <urs@tin.org>]
 
 o  in several places only the latest keybinding is shown in prompts
@@ -1032,7 +1055,7 @@ o  what todo if in a CTE: x-uue the CD: filename differs from the one given
    saving and in the overview in the pager.
    [urs@tin.org]
 
-o  inverse_okay's Menu description isn't accurate (invers is also used for
+o  inverse_okay's Menu description isn't accurate (inverse is also used for
    URL highlighting). mono_mark* do allow "Reverse video" even if
    inverse_okay=FALSE.
 
@@ -1046,7 +1069,7 @@ o  what about -a cmd-line flag? is this really needed? IMHO this can be
    dropped, '&' can be used for runtime color toggling.
    [20021106 Urs Janssen <urs@tin.org>]
 
-o  commas in real-name might cause problems in mail-replys
+o  commas in real-name might cause problems in mail-replies
    From: Last, First <user@accou.nt> (which is illegal) leads to
    To: Last, First<user@accou.nt> which is last@localhost,user@accou.nt
    should we try to fix things and quote the realname part?
@@ -1067,7 +1090,7 @@ o  update gettext stuff to > gettext-0.12.1
 o  and pcre2 support (new API)
    <http://www.pcre.org/current/doc/html/>
 
-o  clean up included pcre stuff and update to >= pcre-8.40
+o  clean up included pcre stuff and update to >= pcre-8.42
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file

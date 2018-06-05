@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2017-08-02
+ *  Updated   : 2018-02-18
  *  Notes     :
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,7 +104,6 @@ constext txt_autosubscribed[] = N_("\nAutosubscribed to %s");
 constext txt_autosubscribing_groups[] = N_("Autosubscribing groups...\n");
 constext txt_autoselecting_articles[] = N_("Autoselecting articles (use '%s' to see all unread) ...");
 
-constext txt_bad_active_file[] = N_("Active file corrupt - %s");
 constext txt_bad_article[] = N_("Article to be posted resulted in errors/warnings. %s=quit, %s=Menu, %s=edit: ");
 constext txt_bad_attrib[] = N_("Unrecognized attribute: %s");
 constext txt_bad_command[] = N_("Bad command. Type '%s' for help.");
@@ -119,6 +118,7 @@ constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) art
 constext txt_cancelling_art[] = N_("Cancelling article...");
 constext txt_cannot_create_uniq_name[] = "Can't create unique tempfile-name";
 constext txt_cannot_create[] = N_("Cannot create %s");
+constext txt_cannot_filter_on_path[] = "Can't filter on Path";
 #ifdef DEBUG
 	constext txt_cannot_find_base_art[] = N_("Can't find base article %d");
 #endif /* DEBUG */
@@ -238,9 +238,6 @@ constext txt_error_header_line_not_7bit[] = N_("\nError: %s contains non 7bit ch
 constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not have a space after the colon:\n%s\n");
 constext txt_error_header_duplicate[] = N_("\nError: There are multiple (%d) \"%s:\" lines in the header.\n");
 constext txt_error_insecure_permissions[] = N_("Insecure permissions of %s (%o)");
-#ifdef NNTP_ABLE
-	constext txt_error_invalid_response_to_group[] = N_("Invalid response to GROUP command, %s");
-#endif /* NNTP_ABLE */
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	constext txt_error_locale[] = "Can't set the specified locale!";
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
@@ -297,6 +294,9 @@ constext txt_filter_file[] = N_("# Format:\n\
 #   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n\
 #   gnksa=[<>]?NUM    Optional. GNKSA parse_from() return code. '<' or '>' opt.\n\
 #   xref=PATTERN      Optional. Kill pattern (e.g. alt.flame*)\n\
+#   path=PATTERN      Optional. Kill pattern (e.g. news.example.org)\n\
+#                     Be aware that filtering on Path: may significantly slow\n\
+#                     down the process.\n\
 #   time=NUM          Optional. time_t value when rule expires\n#\n");
 constext txt_filter_score[] = N_("Enter score for rule (default=%d): ");
 constext txt_filter_score_help[] = N_("Enter the score weight (range 0 < score <= %d)"); /* SCORE_MAX */
@@ -727,6 +727,9 @@ constext txt_postpone_repost[] = N_("Post postponed articles [%%s]? (%s/%s/%s/%s
 constext txt_prefix_hot[] = N_("Hot %s");
 constext txt_prefix_tagged[] = N_("Tagged %s");
 constext txt_prefix_untagged[] = N_("Untagged %s");
+#ifdef NNTP_ABLE
+	constext txt_prep_for_filter_on_path[] = N_("Preparing for filtering on Path header (%d/%d)...");
+#endif /* NNTP_ABLE */
 constext txt_processing_mail_arts[] = N_("Processing mail messages marked for deletion.");
 constext txt_processing_saved_arts[] = N_("Processing saved articles marked for deletion.");
 constext txt_prompt_fup_ignore[] = N_("Accept Followup-To? %s=post, %s=ignore, %s=quit: ");
@@ -899,9 +902,6 @@ constext txt_unsubscribed_to[] = N_("Unsubscribed from %s");
 constext txt_unsubscribing[] = N_("Unsubscribing... ");
 constext txt_unthreading_arts[] = N_("Unthreading articles...");
 constext txt_updated[] = N_("Updated");
-#ifdef NNTP_ABLE
-	constext txt_unparseable_counts[] = N_("unparseable \"LIST COUNTS\" line: \"%s\"");
-#endif /* NNTP_ABLE */
 constext txt_updating[] = N_("Updating");
 constext txt_url_menu[] = N_("URL Menu");
 constext txt_url_menu_com[] = N_("URL Menu Commands");
@@ -936,6 +936,7 @@ constext txt_usage_verbose[] = N_("  -v       verbose output for batch mode opti
 constext txt_usage_version[] = N_("  -V       print version & date information");
 constext txt_useful_without_batch_mode[] = N_("%s only useful without batch mode operations\n");
 constext txt_useful_with_batch_mode[] = N_("%s only useful for batch mode operations\n");
+constext txt_useful_with_batch_or_debug_mode[] = N_("%s only useful for batch or debug mode operations\n");
 constext txt_useless_combination[] = N_("Useless combination %s and %s. Ignoring %s.\n");
 
 constext txt_value_out_of_range[] = N_("\n%s%d out of range (0 - %d). Reset to 0");
@@ -1096,7 +1097,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2017 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2018 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
@@ -1104,8 +1105,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_caching_on[] = N_("Tin will use local index files instead.\n");
 	constext txt_cannot_get_nntp_server_name[] = N_("Cannot find NNTP server name");
 	constext txt_connecting_port[] = N_("Connecting to %s:%u...");
-	constext txt_disconnecting[] = N_("Disconnecting from server...\n");
-	constext txt_error_wrong_newsgroupname_in_group_response[] = N_("Wrong newsgroup name (\"%s\") in response of \"GROUP %s\" command: \"%s\"");
+	constext txt_disconnecting[] = N_("Disconnecting from server...");
 	constext txt_failed_to_connect_to_server[] = N_("Failed to connect to NNTP server %s. Exiting...");
 	constext txt_nntp_ok_goodbye[] = N_("205  Closing connection");
 	constext txt_no_xover_support[] = N_("Your server does not support the NNTP XOVER or OVER command.\n");
@@ -1379,10 +1379,11 @@ constext *txt_auto_cc_bcc_options[] = {
 #ifdef USE_CANLOCK
 /* hash algorithms for Cancel-Lock/Cancel-Key */
 constext *txt_cancel_lock_algos[] = {
-		"sha1",
-		"sha256",
-		"sha512",
-		NULL
+	"none",
+	"sha1",
+	"sha256",
+	"sha512",
+	NULL
 };
 #endif /* USE_CANLOCK */
 
@@ -2601,16 +2602,11 @@ struct opttxt txt_auto_cc_bcc = {
 };
 
 #ifdef USE_CANLOCK
-struct opttxt txt_cancel_locks = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Generate Cancel-Lock/Cancel-Key Header"),
-	N_("# If ON generate Cancel-Lock/Cancel-Key Header\n")
-};
-
 struct opttxt txt_cancel_lock_algo = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Hash algorithm for Cancel-Lock/Cancel-Key"),
-	N_("# Hash algorithm for Cancel-Lock/Cancel-Key (default 'sha1')\n")
+	N_("# Hash algorithm for Cancel-Lock/Cancel-Key (default 'sha1')\n\
+# Use 'none' to not generate Cancel-Lock headers.\n")
 };
 #endif /* USE_CANLOCK */
 

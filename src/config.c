@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2017-08-02
+ *  Updated   : 2018-01-17
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2017 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -190,9 +190,6 @@ read_config_file(
 				break;
 
 #ifdef USE_CANLOCK
-			if (match_boolean(buf, "cancel_locks=", &tinrc.cancel_locks))
-				break;
-
 			if (match_list(buf, "cancel_lock_algo=", txt_cancel_lock_algos, &tinrc.cancel_lock_algo))
 				break;
 #endif /* USE_CANLOCK */
@@ -1183,9 +1180,6 @@ write_config_file(
 	fprintf(fp, "inews_prog=%s\n\n", tinrc.inews_prog);
 
 #ifdef USE_CANLOCK
-	fprintf(fp, "%s", _(txt_cancel_locks.tinrc));
-	fprintf(fp, "cancel_locks=%s\n\n", print_boolean(tinrc.cancel_locks));
-
 	fprintf(fp, "%s", _(txt_cancel_lock_algo.tinrc));
 	fprintf(fp, "cancel_lock_algo=%s\n\n", txt_cancel_lock_algos[tinrc.cancel_lock_algo]);
 #endif /* USE_CANLOCK */
@@ -1637,15 +1631,11 @@ match_string(
 	char *dst,
 	size_t dstlen)
 {
-	char *ptr;
 	size_t patlen = strlen(pat);
 
-	if (STRNCMPEQ(line, pat, patlen) && (strlen(line) > patlen /* + 1 */)) {
-		if (dst != NULL && dstlen >= 1) {
-			strncpy(dst, &line[patlen], dstlen);
-			if ((ptr = strrchr(dst, '\n')) != NULL)
-				*ptr = '\0';
-		}
+	if (STRNCMPEQ(line, pat, patlen) && (strlen(line) > patlen)) {
+		if (dst != NULL && dstlen >= 1)
+			my_strncpy(dst, &line[patlen], dstlen - 1);
 		return TRUE;
 	}
 	return FALSE;
@@ -1664,13 +1654,14 @@ match_item(
 	char *nline = my_strdup(line);
 	size_t patlen = strlen(pat);
 
-	nline[strlen(nline) - 1] = '\0'; /* remove tailing \n */
+	if ((ptr = strchr(nline, '\n')) != NULL) /* terminate on \n */
+		*ptr = '\0';
 
 	if (!strcasecmp(nline, pat)) {
-		strncpy(dst, &nline[patlen], dstlen);
-		if ((ptr = strrchr(dst, '\n')) != NULL)
-			*ptr = '\0';
-
+		if (dst != NULL) {
+			strncpy(dst, &nline[patlen], dstlen);
+			dst[dstlen ? (dstlen - 1) : 0] = '\0';
+		}
 		free(nline);
 		return TRUE;
 	}
@@ -1785,7 +1776,7 @@ static t_bool
 rc_update(
 	FILE *fp)
 {
-	char buf[1024];
+	char buf[LEN];
 	int show_info = 1;
 	t_bool auto_bcc = FALSE;
 	t_bool auto_cc = FALSE;
@@ -2028,7 +2019,7 @@ static t_bool
 rc_post_update(
 	FILE *fp)
 {
-	char buf[1024];
+	char buf[LEN];
 	int groupname_max_length = 0;
 
 	if (!fp)
@@ -2040,6 +2031,20 @@ rc_post_update(
 			continue;
 
 		switch (tolower((unsigned char) buf[0])) {
+			case 'c':
+#ifdef USE_CANLOCK
+				{
+					t_bool cancel_locks = TRUE;
+
+					if (match_boolean(buf, "cancel_locks=", &cancel_locks)) {
+						if (!cancel_locks)
+							tinrc.cancel_lock_algo = 0;
+						break;
+					}
+				}
+#endif /* USE_CANLOCK */
+				break;
+
 			case 'g':
 				if (match_integer(buf, "groupname_max_length=", &groupname_max_length, 132))
 					break;

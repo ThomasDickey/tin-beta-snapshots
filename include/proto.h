@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2017-02-22
+ *  Updated   : 2018-02-13
  *  Notes     :
  *
- * Copyright (c) 1997-2017 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2018 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -190,6 +190,7 @@ extern int feed_articles(int function, int level, t_function type, struct t_grou
 /* filter.c */
 extern t_bool filter_articles(struct t_group *group);
 extern t_bool filter_menu(t_function type, struct t_group *group, struct t_article *art);
+extern t_bool filter_on_path(struct t_group *group);
 extern t_bool quick_filter(t_function type, struct t_group *group, struct t_article *art);
 extern t_bool quick_filter_select_posted_art(struct t_group *group, const char *subj, const char *a_message_id);
 extern t_bool read_filter_file(const char *file);
@@ -437,6 +438,7 @@ extern void nntp_close(void);
 #ifdef NNTP_ABLE
 	extern FILE *nntp_command(const char *, int, char *, size_t);
 	extern char *get_server(char *string, int size);
+	extern int check_extensions(int);
 	extern int get_respcode(char *, size_t);
 	extern int get_only_respcode(char *, size_t);
 	extern int new_nntp_command(const char *command, int success, char *message, size_t mlen);
