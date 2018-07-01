@@ -61,9 +61,9 @@ int cCOLS;
 static int my_innstr(char *str, int n);
 
 
-#	if defined(HAVE_XCURSES) && !defined(HAVE_VWPRINTW)
+#	if defined(HAVE_XCURSES) && !defined(HAVE_VW_PRINTW)
 static int
-vwprintw(
+vw_printw(
 	WINDOW *w,
 	char *fmt,
 	va_list ap)
@@ -74,7 +74,7 @@ vwprintw(
 
 	vsnprintf(buffer, sizeof(buffer), fmt, ap);
 	getyx(w, y, x);
-	TRACE(("vwprintw[%d/%d,%d/%d]:%s", y, cLINES, x, cCOLS, buffer));
+	TRACE(("vw_printw[%d/%d,%d/%d]:%s", y, cLINES, x, cCOLS, buffer));
 	while (*string == '\b')
 		string++;
 	code = waddstr(w, string);
@@ -84,7 +84,7 @@ vwprintw(
 	}
 	return code;
 }
-#	endif /* HAVE_XCURSES && !HAVE_VWPRINTW */
+#	endif /* HAVE_XCURSES && !HAVE_VW_PRINTW */
 
 
 /*
@@ -657,7 +657,7 @@ my_printf(
 		if (flag)
 			Raw(TRUE);
 	} else
-		vwprintw(stdscr, fmt, ap);
+		vw_printw(stdscr, fmt, ap);
 
 	va_end(ap);
 }
@@ -681,7 +681,7 @@ my_fprintf(
 		if (flag)
 			Raw(TRUE);
 	} else
-		vwprintw(stdscr, fmt, ap);
+		vw_printw(stdscr, fmt, ap);
 
 	va_end(ap);
 }
