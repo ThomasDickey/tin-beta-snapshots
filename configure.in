@@ -1143,7 +1143,6 @@ AC_CHECK_FUNCS(\
 	unlink \
 	use_default_colors \
 	usleep \
-	vasprintf \
 	vsnprintf \
 	waitpid \
 $cf_tc_funcs )
@@ -1491,7 +1490,7 @@ esac
 if test "$cf_cv_termlib" = pdcurses ; then
 	CF_PDCURSES_X11
 fi
-AC_CHECK_FUNCS(vwprintw)
+AC_CHECK_FUNCS(vw_printw)
 
 ### sum up warnings
 if test "$cf_cv_termlib" = none ; then

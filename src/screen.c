@@ -72,16 +72,17 @@ fmt_message(
 	va_list ap)
 {
 	char *msg;
+	size_t size = LEN;
+	int used;
 
-#ifdef HAVE_VASPRINTF
-	if (vasprintf(&msg, fmt, ap) == -1)	/* something went wrong */
-#endif /* HAVE_VASPRINTF */
-	{
-		size_t size = LEN;
-
-		msg = my_malloc(size);
-		/* TODO: realloc msg if necessary */
-		vsnprintf(msg, size, fmt, ap);
+	while (1) {
+		if ((msg = my_malloc(size)) == 0)
+			break;
+		used = vsnprintf(msg, size, fmt, ap);
+		if (used > 0 && used < (int) size)
+			break;
+		size *= 2;
+		free(msg);
 	}
 
 	return msg;

@@ -1304,19 +1304,20 @@ fmt_string(
 {
 	char *str;
 	va_list ap;
+	size_t size = LEN;
+	int used;
 
-	va_start(ap, fmt);
-#ifdef HAVE_VASPRINTF
-	if (vasprintf(&str, fmt, ap) == -1)	/* something went wrong */
-#endif /* HAVE_VASPRINTF */
-	{
-		size_t size = LEN;
-
-		str = my_malloc(size);
-		/* TODO: realloc str if necessary */
-		vsnprintf(str, size, fmt, ap);
+	while (1) {
+		if ((str = my_malloc(size)) == 0)
+			break;
+		va_start(ap, fmt);
+		used = vsnprintf(str, size, fmt, ap);
+		va_end(ap);
+		if (used > 0 && used < (int) size)
+			break;
+		size *= 2;
+		free(str);
 	}
-	va_end(ap);
 
 	return str;
 }
