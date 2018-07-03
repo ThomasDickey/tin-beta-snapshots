@@ -42,7 +42,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"2.4.3"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20180605"
+#	define RELEASEDATE	"20180703"
 #	define RELEASENAME	"Lochhead"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.15"

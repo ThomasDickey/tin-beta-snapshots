@@ -229,7 +229,7 @@ setup_hard_base(
 		 * For getart_limit recheck lowwatermark as at least giganews gives
 		 * very different results for LIST ACTIVE (3 year retention for all)
 		 * and GROUP (based on the clients contract).
-		 * Calculate range and prepare base[] not to loose unread arts.
+		 * Calculate range and prepare base[] not to lose unread arts.
 		 */
 		if (nntp_caps.broken_listgroup || (!skip_listgroup && getart_limit && nntp_caps.type == CAPABILITIES && nntp_caps.reader)) {
 			snprintf(buf, sizeof(buf), "GROUP %s", group->name);
@@ -2241,7 +2241,7 @@ read_overview(
 		if (!art->msgid && group->type == GROUP_TYPE_NEWS)
 			continue;
 
-		/* we might loose accuracy here, but that shouldn't hurt */
+		/* we might lose accuracy here, but that shouldn't hurt */
 		if (artnum % MODULO_COUNT_NUM == 0)
 			show_progress(group_msg, artnum - min, max - min);
 
@@ -2327,7 +2327,7 @@ read_overview(
 							*q = '\0';
 						art->xref = my_strdup(ptr);
 					}
-					/* we might loose accuracy here, but that shouldn't hurt */
+					/* we might lose accuracy here, but that shouldn't hurt */
 					if (artnum % MODULO_COUNT_NUM == 0)
 						show_progress(group_msg, artnum - min, max - min);
 				}

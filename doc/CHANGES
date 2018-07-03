@@ -1,4 +1,9 @@
--- 2.4.3 release 20180605 "" --
+-- 2.4.3 release 20180703 "" --
+
+ 012) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      FIX. aclocal.m4, configure[.in], autoconf.h[in], memory.c, screen.c
+           string.c, tcurses.c
 
  011) Francisco Javier Serrador <fserrador@gmail.com>
       ADD. spanish translation
@@ -16,7 +21,7 @@
       ADD. ability to filter on Path:-header
       FIX. art.c, config.c, feed.c, filter.c, getline.c, help.c, lang.c
            main.c, memory.c, nntplib.c, page.c, rfc2047.c, save.c, screen.c
-           extern.h, nntplib.h, proto.h, tin.h
+           extern.h, nntplib.h, proto.h, tin.h, tin.5
 
  008) Urs Janssen <urs@tin.org>
       ADD. config.guess, config.sub update
@@ -31,11 +36,11 @@
       BUG. possible buffer overflows with long translations
       BUG. pointer arithmetic with possible NULL pointer
       BUG. didn't recheck CAPABILITIES after auth
-      FIX. active.c, art.c, auth.c, config.c, feed.c, getline.c, help.c, init.c
-           keymap.c, mail.c, main.c, misc.c, newsrc.c, nntplib.c, rfc1524.c
-           search.c, select.c, signal.c, strftime.c, extern.h, proto.h
-           config.guess, config.sub, configure[.in], autoconf.h[in]
-           Makefile[.in]
+      FIX. active.c, art.c, auth.c, config.c, debug.c, feed.c, getline.c
+           help.c, init.c, keymap.c, mail.c, main.c, misc.c, newsrc.c
+           nntplib.c, rfc1524.c, rfc2045.c, search.c, screen.c, select.c
+           signal.c, strftime.c, string.c, extern.h, proto.h, config.guess
+           config.sub, configure[.in], autoconf.h[in], Makefile[.in]
 
 -- 2.4.2 release 20171224 "Lochhead" --
 
