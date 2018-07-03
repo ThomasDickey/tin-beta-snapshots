@@ -1,21 +1,21 @@
-MANIFEST for tin-2.4.3 (Tue Jun  5 11:01:23 CEST 2018)
+MANIFEST for tin-2.4.3 (Tue Jul  3 13:30:23 CEST 2018)
 ----------------------------------------------------
    14950 ./Makefile
     8641 ./MANIFEST
     1383 ./README
      745 ./README.MAC
      976 ./README.WIN
-  189691 ./aclocal.m4
+  191924 ./aclocal.m4
     1081 ./conf-tin
-   44176 ./config.guess
-   35753 ./config.sub
-  701287 ./configure
-   37133 ./configure.in
+   44178 ./config.guess
+   35879 ./config.sub
+  721519 ./configure
+   37121 ./configure.in
     7123 ./install-sh
      355 ./po4a.conf
     1502 ./tin.spec
    18847 ./doc/ABOUT-NLS
-    5504 ./doc/CHANGES
+    5745 ./doc/CHANGES
   301420 ./doc/CHANGES.old
     5125 ./doc/CREDITS
     1305 ./doc/DEBUG_REFS
@@ -46,7 +46,7 @@ MANIFEST for tin-2.4.3 (Tue Jun  5 11:01:23 CEST 2018)
     4246 ./doc/umlauts.txt
     7172 ./doc/url_handler.1
   138757 ./doc/tin.1
-   81557 ./doc/tin.5
+   81548 ./doc/tin.5
     5065 ./doc/tin.defaults
    17673 ./doc/tinews.1
     2418 ./doc/tools.txt
@@ -80,7 +80,7 @@ MANIFEST for tin-2.4.3 (Tue Jun  5 11:01:23 CEST 2018)
     2264 ./include/trace.h
     2351 ./include/version.h
    35498 ./src/active.c
-   89019 ./src/art.c
+   89016 ./src/art.c
    78541 ./src/attrib.c
    16935 ./src/auth.c
    12717 ./src/charset.c
@@ -110,7 +110,7 @@ MANIFEST for tin-2.4.3 (Tue Jun  5 11:01:23 CEST 2018)
    17071 ./src/mail.c
    26719 ./src/main.c
    10950 ./src/makecfg.c
-   13928 ./src/memory.c
+   14014 ./src/memory.c
     5273 ./src/mimetypes.c
    95749 ./src/misc.c
    39525 ./src/newsrc.c
@@ -127,19 +127,19 @@ MANIFEST for tin-2.4.3 (Tue Jun  5 11:01:23 CEST 2018)
    27481 ./src/refs.c
     5485 ./src/regex.c
    14455 ./src/rfc1524.c
-   15195 ./src/rfc2045.c
+   15199 ./src/rfc2045.c
    38931 ./src/rfc2046.c
    37023 ./src/rfc2047.c
    59264 ./src/save.c
-   13580 ./src/screen.c
+   13587 ./src/screen.c
    18310 ./src/search.c
    40911 ./src/select.c
     8356 ./src/sigfile.c
    14349 ./src/signal.c
     7223 ./src/strftime.c
-   38658 ./src/string.c
+   38620 ./src/string.c
    13345 ./src/tags.c
-   17573 ./src/tcurses.c
+   17579 ./src/tcurses.c
     3070 ./src/tmpfile.c
     3558 ./src/my_tmpfile.c
    41924 ./src/thread.c
@@ -215,7 +215,7 @@ MANIFEST for tin-2.4.3 (Tue Jun  5 11:01:23 CEST 2018)
   108966 ./pcre/testdata/testoutput7
    53056 ./pcre/testdata/testoutput8
    28769 ./pcre/testdata/testoutput9
-   21376 ./include/autoconf.hin
+   21354 ./include/autoconf.hin
    22357 ./src/Makefile.in
    10242 ./src/tincfg.tbl
     1397 ./libcanlock/COPYING
@@ -302,11 +302,11 @@ MANIFEST for tin-2.4.3 (Tue Jun  5 11:01:23 CEST 2018)
   225896 ./po/zh_TW.po
   179163 ./po/zh_TW.gmo
   148683 ./doc/l10n/de/tin.1
-   86968 ./doc/l10n/de/tin.5
+   86958 ./doc/l10n/de/tin.5
      130 ./doc/l10n/de.add
-  375630 ./doc/l10n/de.po
+  375016 ./doc/l10n/de.po
   142555 ./doc/l10n/en_GB/tin.1
-   84134 ./doc/l10n/en_GB/tin.5
-  468798 ./doc/l10n/en_GB.po
-  295228 ./doc/l10n/tin-man.pot
-12040535 total
+   84124 ./doc/l10n/en_GB/tin.5
+  468829 ./doc/l10n/en_GB.po
+  294611 ./doc/l10n/tin-man.pot
+12062168 total

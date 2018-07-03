@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2016-02-26
+ *  Updated   : 2018-07-03
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
@@ -341,6 +341,7 @@ debug_print_file(
 
 	va_start(ap, fmt);
 	buf = fmt_message(fmt, ap);
+	va_end(ap);
 
 	joinpath(file, sizeof(file), TMPDIR, fname);
 
@@ -350,7 +351,6 @@ debug_print_file(
 		fclose(fp);
 	}
 	free(buf);
-	va_end(ap);
 }
 
 

@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-05
+ *  Updated   : 2018-07-03
  *  Notes     :
  *
  * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -74,12 +74,17 @@ fmt_message(
 	size_t size = LEN;
 	char *msg = my_malloc(size);
 	int used;
+	va_list aq;
 
 	while (1) {
-		used = vsnprintf(msg, size, fmt, ap);
-		if (used > 0 && used < (int) size)
+		va_copy(aq, ap);
+		used = vsnprintf(msg, size, fmt, aq);
+		va_end(aq);
+
+		if (used >= 0 && used < (int) size)
 			break;
-		size *= 2;
+
+		size <<= 1;
 		msg = my_realloc(msg, size);
 	}
 

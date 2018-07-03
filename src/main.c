@@ -384,7 +384,7 @@ main(
 	 * or
 	 * Save any new articles to savedir structure for later reading
 	 *
-	 * TODO: should we temporarely set
+	 * TODO: should we temporarily set
 	 *       getart_limit=-1,thread_articles=0,sort_article_type=0
 	 *       for speed reasons?
 	 */

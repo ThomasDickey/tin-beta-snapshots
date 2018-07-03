@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2018-01-10
+ *  Updated   : 2018-07-02
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2018 Thomas Dickey <dickey@invisible-island.net>

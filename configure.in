@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2018-01-19
+dnl Updated   : 2018-07-02
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2018 Thomas E. Dickey <dickey@invisible-island.net>

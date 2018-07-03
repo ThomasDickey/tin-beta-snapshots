@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2017-02-17
+ *  Updated   : 2018-07-02
  *  Notes     :
  *
  * Copyright (c) 1997-2018 Urs Janssen <urs@tin.org>
@@ -1302,21 +1302,21 @@ fmt_string(
 	const char *fmt,
 	...)
 {
-	char *str;
 	va_list ap;
 	size_t size = LEN;
+	char *str = my_malloc(size);
 	int used;
 
 	while (1) {
-		if ((str = my_malloc(size)) == 0)
-			break;
 		va_start(ap, fmt);
 		used = vsnprintf(str, size, fmt, ap);
 		va_end(ap);
+
 		if (used > 0 && used < (int) size)
 			break;
-		size *= 2;
-		free(str);
+
+		size <<= 1;
+		str = my_realloc(str, size);
 	}
 
 	return str;
