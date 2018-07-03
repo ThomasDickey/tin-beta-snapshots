@@ -71,18 +71,16 @@ fmt_message(
 	const char *fmt,
 	va_list ap)
 {
-	char *msg;
 	size_t size = LEN;
+	char *msg = my_malloc(size);
 	int used;
 
 	while (1) {
-		if ((msg = my_malloc(size)) == 0)
-			break;
 		used = vsnprintf(msg, size, fmt, ap);
 		if (used > 0 && used < (int) size)
 			break;
 		size *= 2;
-		free(msg);
+		msg = my_realloc(msg, size);
 	}
 
 	return msg;

@@ -490,7 +490,7 @@ read_decoded_qp_line(
 			buflen <<= 1;
 			buf = my_realloc(buf, buflen);
 		}
-		strncat(buf, buf2, buflen);
+		strncat(buf, buf2, buflen - 2);
 	} while ((c == '=') && (lines_read < max_lines_to_read));
 	/*
 	 * re-add newline and NULL termination at end of line
