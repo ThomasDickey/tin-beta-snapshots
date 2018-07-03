@@ -579,7 +579,17 @@ my_realloc1(
 		return NULL;
 	}
 
-	p = ((!p) ? (malloc(size)) : realloc(p, size));
+	if (p) {
+		void *q = realloc(p, size);
+
+		if (q != NULL)
+			 p = q;
+		else {
+			free(p);
+			p = NULL;
+		}
+	} else
+		p = malloc(size);
 
 	if (p == NULL) {
 		error_message(2, txt_out_of_memory, tin_progname, (unsigned long) size, file, line);
