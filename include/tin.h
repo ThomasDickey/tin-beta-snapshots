@@ -3,10 +3,10 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-18
+ *  Updated   : 2018-11-13
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -884,7 +884,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	define ART_MARK_READ	' '	/* used to show that an art was not read or seen */
 #endif /* !ART_MARK_READ */
 #ifndef ART_MARK_READ_SELECTED
-#	define ART_MARK_READ_SELECTED ':'	/* used to show that an read art is hot (kill_level >0) */
+#	define ART_MARK_READ_SELECTED ':'	/* used to show that a read art is hot (kill_level >0) */
 #endif /* !ART_MARK_READ_SELECTED */
 #ifndef ART_MARK_KILLED
 #	define ART_MARK_KILLED 'K'		/* art has been killed (kill_level >0) */
@@ -1281,11 +1281,15 @@ enum {
 #ifdef assert
 #	undef assert
 #endif /* assert */
-#ifdef CPP_DOES_EXPAND
-#	define assert(p)	if(! (p)) asfail(__FILE__, __LINE__, #p); else (void)0;
+#if !defined(NDEBUG)
+#	ifdef CPP_DOES_EXPAND
+#		define assert(p)	if(! (p)) asfail(__FILE__, __LINE__, #p); else (void)0;
+#	else
+#		define assert(p)	if(! (p)) asfail(__FILE__, __LINE__, "p"); else (void)0;
+#	endif /* CPP_DOES_EXPAND */
 #else
-#	define assert(p)	if(! (p)) asfail(__FILE__, __LINE__, "p"); else (void)0;
-#endif /* CPP_DOES_EXPAND */
+#	define assert(p)        ((void) 0)
+#endif /* !NDEBUG */
 
 #define ESC	27
 
@@ -1394,6 +1398,9 @@ enum {
 	NORMALIZE_NFKD = 2,
 	NORMALIZE_NFC = 3,
 	NORMALIZE_NFD = 4
+#ifdef HAVE_UNICODE_UNORM2_H
+	,NORMALIZE_NFKC_CF = 5
+#endif /* HAVE_UNICODE_UNORM2_H */
 #		define DEFAULT_NORMALIZE NORMALIZE_NFC
 #	else
 	NORMALIZE_NFKC = 1
@@ -1406,9 +1413,13 @@ enum {
 #	ifdef HAVE_UNICODE_USTRING_H
 #		include <unicode/ustring.h>
 #	endif /* HAVE_UNICODE_USTRING_H */
-#	ifdef HAVE_UNICODE_UNORM_H
-#		include <unicode/unorm.h>
-#	endif /* HAVE_UNICODE_UNORM_H */
+#	ifdef HAVE_UNICODE_UNORM2_H
+#		include <unicode/unorm2.h>
+#	else
+#		ifdef HAVE_UNICODE_UNORM_H
+#			include <unicode/unorm.h>
+#		endif /* HAVE_UNICODE_UNORM_H */
+#	endif /* HAVE_UNICODE_UNORM2_H */
 #	ifdef HAVE_UNICODE_UIDNA_H
 #		include <unicode/uidna.h>
 #	endif /* HAVE_UNICODE_UIDNA_H */

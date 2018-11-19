@@ -6,7 +6,7 @@
  *  Updated   : 2013-11-21
  *  Notes     :
  *
- * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"2.4.3"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20180703"
+#	define RELEASEDATE	"20181119"
 #	define RELEASENAME	"Lochhead"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.15"

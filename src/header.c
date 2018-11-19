@@ -5,7 +5,7 @@
  *  Created   : 1997-03-10
  *  Updated   : 2016-07-29
  *
- * Copyright (c) 1997-2018 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2019 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

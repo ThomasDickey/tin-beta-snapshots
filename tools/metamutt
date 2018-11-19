@@ -7,7 +7,7 @@
 # work as a filter without any problems.
 # 
 # This script was written to use it in combination with the tin news
-# reader, where you have to set the envionment variable
+# reader, where you have to set the environment variable
 # METAMAIL=metamutt, but it should work with other programs, too.
 #
 # You need formail (from the procmail package) to use this script. If

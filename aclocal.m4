@@ -5,7 +5,7 @@ dnl Created   : 1995-08-24
 dnl Updated   : 2018-07-01
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2018 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2019 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -5776,7 +5776,7 @@ case $host_os in
 	cf_xopen_source="-D_DARWIN_C_SOURCE"
 	cf_XOPEN_SOURCE=
 	;;
-(freebsd*|dragonfly*)
+(freebsd*|dragonfly*|midnightbsd*)
 	# 5.x headers associate
 	#	_XOPEN_SOURCE=600 with _POSIX_C_SOURCE=200112L
 	#	_XOPEN_SOURCE=500 with _POSIX_C_SOURCE=199506L

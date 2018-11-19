@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2018-07-02
+ *  Updated   : 2018-07-20
  *  Notes     :
  *
- * Copyright (c) 1997-2018 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2019 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@
  * special ltoa()
  * converts value into a string with a maxlen of digits (usually should be
  * >=4), last char may be one of the following:
- * 'k'ilo, 'M'ega, 'G'iga, 'T'erra, 'P'eta, 'E'xa, 'Z'etta, 'Y'otta,
+ * 'k'ilo, 'M'ega, 'G'iga, 'T'era, 'P'eta, 'E'xa, 'Z'etta, 'Y'otta,
  * 'X'ona, 'W'eka, 'V'unda, 'U'da (these last 4 are no official SI-prefixes)
  * or 'e' if an error occurs
  */
@@ -690,11 +690,11 @@ sh_format(
 				 * the whole string rather than escaping individual chars.
 				 */
 				if (quote == '"') {
-					fix = (strchr(SH_DOUBLE, *src) != 0);
+					fix = (strchr(SH_DOUBLE, *src) != NULL);
 				} else if (quote == '\'') {
-					fix = (strchr(SH_SINGLE, *src) != 0);
+					fix = (strchr(SH_SINGLE, *src) != NULL);
 				} else
-					fix = (strchr(SH_META, *src) != 0);
+					fix = (strchr(SH_META, *src) != NULL);
 				if (fix) {
 					SH_FORMAT('\\');
 				}
@@ -755,7 +755,7 @@ strrstr(
 	const char *ptr;
 	size_t slen, plen;
 
-	if ((str != 0) && (pat != 0)) {
+	if ((str != NULL) && (pat != NULL)) {
 		slen = strlen(str);
 		plen = strlen(pat);
 
@@ -1202,35 +1202,77 @@ normalize(
 		int32_t needed, norm_len;
 		UChar *ustr, *norm;
 		UErrorCode status = U_ZERO_ERROR;
+#ifdef HAVE_UNICODE_UNORM2_H
+		static const char *uname[] = {"nfc", "nfkc", "nfkc_cf"}; /* */
+		const char *unamep;
+		UNormalization2Mode mode;
+#else
 		UNormalizationMode mode;
-
-		switch (tinrc.normalization_form) {
-			case NORMALIZE_NFD:
-				mode = UNORM_NFD;
-				break;
-
-			case NORMALIZE_NFC:
-				mode = UNORM_NFC;
-				break;
-
-			case NORMALIZE_NFKD:
-				mode = UNORM_NFKD;
-				break;
-
-			case NORMALIZE_NFKC:
-			default:
-				mode = UNORM_NFKC;
-		}
+#endif /* !HAVE_UNICODE_UNORM2_H */
 
 		/* convert to UTF-16 which is used internally by ICU */
 		if ((ustr = char2UChar(tmp)) == NULL) /* something went wrong, return the original string (as valid UTF8) */
 			return tmp;
 
+		switch (tinrc.normalization_form) {
+			case NORMALIZE_NFD:
+#ifdef HAVE_UNICODE_UNORM2_H
+				unamep = uname[0];
+				mode = UNORM2_DECOMPOSE;
+#else
+				mode = UNORM_NFD;
+#endif /* HAVE_UNICODE_UNORM2_H */
+				break;
+
+			case NORMALIZE_NFC:
+#ifdef HAVE_UNICODE_UNORM2_H
+				unamep = uname[0];
+				mode = UNORM2_COMPOSE;
+#else
+				mode = UNORM_NFC;
+#endif /* HAVE_UNICODE_UNORM2_H */
+				break;
+
+			case NORMALIZE_NFKD:
+#ifdef HAVE_UNICODE_UNORM2_H
+				unamep = uname[1];
+				mode = UNORM2_DECOMPOSE;
+#else
+				mode = UNORM_NFKD;
+#endif /* HAVE_UNICODE_UNORM2_H */
+				break;
+#ifdef HAVE_UNICODE_UNORM2_H
+			case NORMALIZE_NFKC_CF:
+				unamep = uname[2];
+				mode = UNORM2_COMPOSE;
+				break;
+#endif /* HAVE_UNICODE_UNORM2_H */
+
+			case NORMALIZE_NFKC:
+			default:
+#ifdef HAVE_UNICODE_UNORM2_H
+				unamep = uname[1];
+				mode = UNORM2_COMPOSE;
+#else
+				mode = UNORM_NFKC;
+#endif /* HAVE_UNICODE_UNORM2_H */
+		}
+
+#ifdef HAVE_UNICODE_UNORM2_H
+		needed = unorm2_normalize(unorm2_getInstance(NULL, unamep, mode, &status), ustr, -1, NULL, 0, &status);
+#else
 		needed = unorm_normalize(ustr, -1, mode, 0, NULL, 0, &status);
+#endif /* HAVE_UNICODE_UNORM2_H */
+
 		status = U_ZERO_ERROR;		/* reset status */
 		norm_len = needed + 1;
 		norm = my_malloc(sizeof(UChar) * norm_len);
+#ifdef HAVE_UNICODE_UNORM2_H
+		(void) unorm2_normalize(unorm2_getInstance(NULL, unamep, mode, &status), ustr, -1, norm, norm_len, &status);
+#else
 		(void) unorm_normalize(ustr, -1, mode, 0, norm, norm_len, &status);
+#endif /* HAVE_UNICODE_UNORM2_H */
+
 		if (U_FAILURE(status)) {
 			/* something went wrong, return the original string (as valid UTF8) */
 			free(ustr);

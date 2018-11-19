@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2017-08-13
+ *  Updated   : 2018-11-09
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -742,11 +742,11 @@ append_mail(
  * 11. Warn if transfer encoding is base64 or quoted-printable and using
  *     external inews
  * 12. Check that Subject, Newsgroups and if present Followup-To
- *     headers are uniq
+ *     headers are unique
  * 13. Display an 'are you sure' message before posting article
  */
 #define CA_ERROR_HEADER_LINE_BLANK        0x0000001
-#define CA_ERROR_MISSING_BODY_SEPERATOT   0x0000002
+#define CA_ERROR_MISSING_BODY_SEPARATOR   0x0000002
 #define CA_ERROR_MISSING_FROM             0x0000004
 #define CA_ERROR_DUPLICATED_FROM          0x0000008
 #define CA_ERROR_MISSING_SUBJECT          0x0000010
@@ -1370,7 +1370,7 @@ check_article_to_be_posted(
 #endif /* CHARSET_CONVERSION */
 
 	if (!end_of_header)
-		errors_catbp |= CA_ERROR_MISSING_BODY_SEPERATOT;
+		errors_catbp |= CA_ERROR_MISSING_BODY_SEPARATOR;
 
 	/*
 	 * check for MIME Content-Type and Content-Transfer-Encoding
@@ -1428,7 +1428,7 @@ check_article_to_be_posted(
 		/* missing headers */
 		if (errors_catbp & CA_ERROR_HEADER_LINE_BLANK)
 			my_fprintf(stderr, "%s", _(txt_error_header_line_blank));
-		if (errors_catbp & CA_ERROR_MISSING_BODY_SEPERATOT)
+		if (errors_catbp & CA_ERROR_MISSING_BODY_SEPARATOR)
 			my_fprintf(stderr, "%s", _(txt_error_header_and_body_not_separate));
 		if (errors_catbp & CA_ERROR_MISSING_FROM)
 			my_fprintf(stderr, _(txt_error_header_line_missing), "From");
@@ -3380,7 +3380,7 @@ mail_to_someone(
 		return ret_code;
 
 	/*
-	 * TODO: This is a undocumented hack!
+	 * TODO: This is an undocumented hack!
 	 * in the !mime_forward case we should get the charset of each part
 	 * and convert it to the local one (as this is also needed for the
 	 * interactive_mailer case).
@@ -3555,7 +3555,7 @@ mail_to_author(
 	t_bool raw_data)
 {
 	FILE *fp;
-	char *p, *q;
+	char *p;
 	char from_addr[HEADER_LEN];
 	char nam[PATH_LEN];
 	char subject[HEADER_LEN];
@@ -3593,9 +3593,9 @@ mail_to_author(
 		}
 	}
 
-	q = p = my_strdup(note_h.subj);
+	p = my_strdup(note_h.subj);
 	snprintf(subject, sizeof(subject), "Re: %s\n", eat_re(p, TRUE));
-	free(q);
+	free(p);
 
 	/*
 	 * add extra headers in the mail_to_author() case as we don't include the

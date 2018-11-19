@@ -117,10 +117,6 @@ New features
 o  allow per server cache_overview_files setting via serverrc.
    [20180215 Urs Janssen <urs@tin.org>]
 
-o  add check for ICU unorm2.h/unorm2_normalize(); prefer it over
-   ICU unorm.h/unorm_normalize()
-   [20180119 Urs Janssen <urs@tin.org>]
-
 o  implement SAVE_APPEND_FILE_ALL ('A') and SAVE_OVERWRITE_ALL ('O') keys
    which just ask once if file(s) already exist (open_save_filename()).
    [20170811 Urs Janssen <urs@tin.org>]
@@ -803,7 +799,7 @@ o  make mm_network_charset an "option_list" to avoid junk input or
     check whether KOI8-RU is still used/valid))
    [done except configure check 20010907 urs@tin.org]
 
-o  make mm_network_charset an user configurable item list
+o  make mm_network_charset a user configurable item list
    ("US-ASCII:ISO-8859-1:ISO-8859-9:ISO-8859-15:UTF-8",
     "US-ASCII:ISO 8859-5:KOI8-R:UTF-8",
     "EUC-CN:ISO-2022-CN:ISO-2022-CN-EXT:Big5:UTF-8", whatever)
@@ -821,11 +817,14 @@ o  add IDNA 2003 (RFC 3490ff.) and IDNA 2008 (RFC 5890ff.) support,
    [20030917 Urs Janssen <urs@tin.org>]
 
 o  add normalization
-   (via <http://oss.software.ibm.com/icu/> or
+   (via <http://site.icu-project.org/> or
    <http://www.gnu.org/software/libidn/> or
    <http://www.gnu.org/software/libunistring/>)
    (done for search strings only, missing for "threading" by subject etc. pp.)
    [20031209 Michael Bienia <michael@vorlon.ping.de>]
+
+o  rewrite ICU configure checks
+   [20180710 Urs Janssen <urs@tin.org>]
 
 o  check for wcsftime() and if found use it instead of strftime() (at
    least in page.c).

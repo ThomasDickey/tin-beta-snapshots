@@ -6,7 +6,7 @@
  *  Updated   : 2017-08-02
  *  Notes     : Generate random signature for posting/mailing etc.
  *
- * Copyright (c) 1992-2018 Mike Gleason
+ * Copyright (c) 1992-2019 Mike Gleason
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

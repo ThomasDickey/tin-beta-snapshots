@@ -94,7 +94,7 @@
  * Select the top of the heap and 'heapify'.  Since by far the most expensive
  * action is the call to the compar function, a considerable optimization
  * in the average case can be achieved due to the fact that k, the displaced
- * elememt, is usually quite small, so it would be preferable to first
+ * element, is usually quite small, so it would be preferable to first
  * heapify, always maintaining the invariant that the larger child is copied
  * over its parent's record.
  *

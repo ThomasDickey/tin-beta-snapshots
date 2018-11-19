@@ -1,10 +1,10 @@
 #! /usr/bin/perl -w
 #
-# reads an article on STDIN, mails any copies if requied,
+# reads an article on STDIN, mails any copies if required,
 # signs the article and posts it.
 #
 #
-# Copyright (c) 2002-2018 Urs Janssen <urs@tin.org>,
+# Copyright (c) 2002-2019 Urs Janssen <urs@tin.org>,
 #                         Marc Brockschmidt <marc@marcbrockschmidt.de>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -1164,7 +1164,7 @@ The '-B<r>' command-line option overrides B<$REPLYTO>.
 X<$ORGANIZATION> X<ORGANIZATION>
 
 Set the article header field Organization: to the contents of the variable
-if there isn't already a Organization: header in the article. The '-B<o>'
+if there isn't already an Organization: header in the article. The '-B<o>'
 command-line option overrides B<$ORGANIZATION>.
 
 =item B<$DISTRIBUTION>

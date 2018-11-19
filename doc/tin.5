@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2018-02-12
+.\" Updated   : 2018-11-07
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -100,7 +100,7 @@ support mail composing agents that support the composition of multiple types
 of mail using external composing agents. As with the view-command, the
 semantics of program execution are operating system dependent. The result of
 the composing program may be data that is not yet suitable for mail
-transport - that is, a Content\-Transfer\-Encoding may need to be applied to
+transport \(em that is, a Content\-Transfer\-Encoding may need to be applied to
 the data.
 .TP
 .B composetyped
@@ -130,7 +130,7 @@ machine architecture, or the window system in use) to determine whether or
 not the mailcap line applies. It specifies a program to be run to test some
 condition. The semantics of execution and of the value returned by the test
 program are operating system dependent. If the test fails, a subsequent
-mailcap entry should be sought. Multiple test fields are not permitted -
+mailcap entry should be sought. Multiple test fields are not permitted \(em
 since a test can call a program, it can already be arbitrarily complex.
 .TP
 .B needsterminal
@@ -697,7 +697,7 @@ Identical to the tinrc variable of the same name
 .TP
 .B undeclared_charset
 Assume (broken) articles without MIME charset declaration have this
-charset - default is US-ASCII. This attribute works only on systems
+charset \(em default is US-ASCII. This attribute works only on systems
 with working
 .BR \%iconv (3),
 others might have to compile
@@ -1506,7 +1506,7 @@ Default for quick (1 key) auto-selection filter header.
 .TP
 .B draw_arrow
 Allows groups/articles to be selected by an arrow '\->' if set ON or
-by an highlighted bar if set OFF. Default is OFF.
+by a highlighted bar if set OFF. Default is OFF.
 .TP
 .B editor_format
 The format string used to create the editor start command with parameters.
@@ -1590,7 +1590,7 @@ built-in NNTP inews), else it is "inews \-h". The article is passed to
 .TP
 .B info_in_last_line
 If ON, show current group description or article subject in the last line
-(not in the pager and global menu) - \fBToggleInfoLastLine\fP ('\fBi\fP')
+(not in the pager and global menu) \(em \fBToggleInfoLastLine\fP ('\fBi\fP')
 toggles setting. This facility is useful as the full width of the screen is
 available to display long subjects. Default is OFF.
 .TP
@@ -1817,6 +1817,8 @@ The possible values are:
 \fBNFC\fP: Canonical Decomposition, followed by Canonical Composition
 .IP 4
 \fBNFD\fP: Canonical Decomposition
+.IP 5
+\fBNFKC_CF\fP: Compatibility Decomposition, followed by Canonical Composition and Case Folding
 .RE
 Some normalization modes are only available if they are supported by the
 library
@@ -2054,7 +2056,7 @@ displayed and in thread listing the line count of first (unread) article
 will be displayed.
 .IP 2
 \fBScore\fP, in article listing the score of an article will be displayed
-and in thread listing the score of the thread will be displayed - see also
+and in thread listing the score of the thread will be displayed \(em see also
 \fBthread_score\fP.
 .IP 3
 \fBLines & Score\fP, display line count and score.
@@ -2195,7 +2197,7 @@ Defines which threading method to use. The choices are:
 4) Thread multipart articles on Subject.
 5) Thread on Percentage Match of the Subjects
 It's also possible to set the threading type on a per group basis by setting
-the group attribute variable \fBthread_articles\fP to 0 - 5 in the file
+the group attribute variable \fBthread_articles\fP to 0 \(en 5 in the file
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fR.
 .TP
 .B thread_format
@@ -2641,7 +2643,7 @@ uses the LIST OVERVIEW.FMT (\fBRFC\%3977\fP) command instead.
 .\" is the Path correct? or is it /news/etc/subscriptions
 .sp
 .RS
-This file contains a list of newsgroups - one per line - which the client
+This file contains a list of newsgroups \(em one per line \(em which the client
 should subscribe to when the user has no ${TIN_HOMEDIR:\-"$HOME"}/.newsrc
 for the news server.
 .BR \%tin (1)

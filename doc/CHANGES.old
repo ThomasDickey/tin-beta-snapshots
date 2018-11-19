@@ -289,7 +289,7 @@ U001) Matt Anton <tin@syrius.org>
            be 497 bytes max).
       BUG. hypothetic out of bounds write in msg_add_header() if more than
            MAX_MSG_HEADERS are added automatically
-      BUG. don't null strings will illegal multibyte sequences, just replace
+      BUG. don't null strings with illegal multibyte sequences, just replace
            everything after the fist illegal sequence with ?
       FIX. active.c, config.c, feed.c, lang.c, page.c, post.c, read.c,
            rfc2046.c, string.c, config.guess, config.sub, de.po
@@ -378,7 +378,7 @@ U016) Toomas Soome <Toomas.Soome@microlink.ee>
 U015) Dennis Preiser <dennis@d--p.de>
       ADD. user defined screen layout at selection, group and thread level
            (debian bug #63877)
-      BUG. the code for genetaring initials (used for quote_chars) was not
+      BUG. the code for generating initials (used for quote_chars) was not
            multibyte safe
       FIX. attrib.c, config.c, group.c, init.c, lang.c, memory.c, misc.c
            options_menu.c, page.c, post.c, save.c, screen.c, select.c, string.c
@@ -774,9 +774,9 @@ U014) Urs Janssen <urs@tin.org>
       ADD. convert MOTD from UTF-8 to local-charset
       ADD. warn about aliased groups
       ADD. reduce number of "LIST ACTIVE grp" cmds send with -n if server
-           announces "LIST ACTIVE" capabillity
+           announces "LIST ACTIVE" capability
       ADD. reduce number of "LIST NEWSGROUPS grp" cmds send with -n if server
-           announces "LIST NEWSGROUPS" capabillity
+           announces "LIST NEWSGROUPS" capability
       ADD. prefer "LIST COUNTS" over "LIST ACTIVE" when announced via
            CAPABILITIES
       BUG. NULL was only allowed once to unbound a keymapping
@@ -1755,7 +1755,7 @@ U163) Jason Faultless <jason@altarstone.com>
            newsrc.c, open.c, post.c, refs.c, tin.1
 
 U162) Thomas E. Dickey <dickey@invisible-island.net>
-      BUG. -lintl may not be linked to executable if using a "externl" lib
+      BUG. -lintl may not be linked to executable if using an "external" lib
       FIX. aclocal.m4, configure[.in], Makefile[.in], Makefile.inn
 
 U161) Corinna Vinschen <corinna@vinschen.de>
@@ -3933,7 +3933,7 @@ U001) Urs Janssen <urs@tin.org>
 
 610) Jason Faultless <jason@radar.tele2.co.uk>
      BUG. if the shell tin is running in is SIGHUP tin could fall into
-          a endless loop
+          an endless loop
      FIX. read.c, signal.c
 
 609) Ralf Doeblitz <doeblitz@gmx.de>
@@ -4447,7 +4447,7 @@ U001) Urs Janssen <urs@tin.org>
      FIX. tin.h, filter.c, group.c
 
 527) Jason Faultless <jason@radar.tele2.co.uk>
-     BUG. 'A'uthor search backwards might produce a
+     BUG. 'A'uthor search backwards might produce an
            invalid offset into arts[]
      FIX. search.c
 
@@ -4729,7 +4729,7 @@ U001) Urs Janssen <urs@tin.org>
           prompt.c, select.c, active.c
 
 480) Roland Rosenfeld <roland@spinnaker.rhein.de>
-     BUG. search in 'M'enu ends in a endless loop if no match was found
+     BUG. search in 'M'enu ends in an endless loop if no match was found
      BUG. off by one error when jumping direct to a 'M'enu option
      ADD. runtime check if color is supported
      FIX. search.c, extern.h, proto.h, color.c, config.c, group.c, lang.c
@@ -5498,7 +5498,7 @@ U001) Urs Janssen <urs@tin.org>
 
 358) Kevin Lentin <kevinl@cs.monash.edu.au>
      BUG. When reading mail groups tin tries to connect the server
-     ADD. prompt_yn2() now allows only 'y','n','ESC' as a answer
+     ADD. prompt_yn2() now allows only 'y','n','ESC' as an answer
      BUG. if you answer the reconnect to server question with no or the
           connection is broken the newsrc is written out before tin exits.
      FIX. several supplied patches

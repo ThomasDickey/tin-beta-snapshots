@@ -6,7 +6,7 @@
  *  Updated   : 2018-02-16
  *  Notes     :
  *
- * Copyright (c) 1992-2018 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2019 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -901,7 +901,7 @@ read_news_active_file(
 		newgrps = check_for_any_new_groups();
 
 	/*
-	 * finally we have a list of all groups an can set the attributes
+	 * finally we have a list of all groups and can set the attributes
 	 */
 	assign_attributes_to_groups();
 

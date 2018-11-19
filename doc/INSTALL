@@ -261,7 +261,7 @@ Can be overridden by setting the environment variable NNTPSERVER.
 Bypass a bug in some broken NNTPservers which need an extra GROUP command
 before accepting a LISTGROUP command. This can be also used to bypass the
 bug in some servers (i.e. DeleGate, SurgeNews) where LISTGROUP doesn't
-select the group and thus subseqent cmds. fail.
+select the group and thus subsequent cmds. fail.
 
 --enable-xhdr-xref (default: on)
 If disabled, don't allow using XHDR XREF if XOVER doesn't work to mark
