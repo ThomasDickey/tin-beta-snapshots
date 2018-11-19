@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-18
+ *  Updated   : 2018-07-20
  *  Notes     :
  *
- * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -584,7 +584,7 @@ constext txt_keymap_upgraded[] = N_("Keymap file was upgraded to version %s\n");
 constext txt_kill_from[] = N_("Kill From:     [%s] (y/n): ");
 constext txt_kill_lines[] = N_("Kill Lines: (</>num): ");
 constext txt_kill_menu[] = N_("Kill Article Menu");
-constext txt_kill_msgid[] = N_("Kill Msg-Id:   [%s] (f/l/o/n): ");
+constext txt_kill_msgid[] = N_("Kill Msg-ID:   [%s] (f/l/o/n): ");
 constext txt_kill_scope[] = N_("Kill pattern scope  : ");
 constext txt_kill_subj[] = N_("Kill Subject:  [%s] (y/n): ");
 constext txt_kill_text[] = N_("Kill text pattern   : ");
@@ -784,7 +784,7 @@ constext txt_return_key[] = N_("Press <RETURN> to continue...");
 constext txt_select_from[] = N_("Select From    [%s] (y/n): ");
 constext txt_select_lines[] = N_("Select Lines: (</>num): ");
 constext txt_select_menu[] = N_("Auto-select Article Menu");
-constext txt_select_msgid[] = N_("Select Msg-Id  [%s] (f/l/o/n): ");
+constext txt_select_msgid[] = N_("Select Msg-ID  [%s] (f/l/o/n): ");
 constext txt_select_scope[] = N_("Select pattern scope: ");
 constext txt_select_subj[] = N_("Select Subject [%s] (y/n): ");
 constext txt_select_text[] = N_("Select text pattern : ");
@@ -1097,7 +1097,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2018 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2019 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
@@ -1576,6 +1576,9 @@ constext *txt_normalization_forms[] = {
 	N_("NFKD"),
 	N_("NFC"),
 	N_("NFD"),
+#		ifdef HAVE_UNICODE_UNORM2_H
+	N_("NFKC case fold"),
+#		endif /* HAVE_UNICODE_UNORM2_H */
 #	endif /* HAVE_UNICODE_NORMALIZATION >= 2 */
 	NULL
 };
@@ -2045,7 +2048,7 @@ struct opttxt txt_metamail_prog = {
 	N_("MIME binary content viewer"),
 	N_("# If --internal automatically use the built in MIME viewer for non-text\n\
 # parts of articles.\n\
-# Otherwise specify an external viewer program (eg, metamail) or leave blank\n\
+# Otherwise specify an external viewer program (eg. metamail) or leave blank\n\
 # for no automatic viewing\n")
 };
 
@@ -2865,6 +2868,10 @@ struct opttxt txt_date_format = {
 	N_("# Format string for date representation\n")
 };
 
+/*
+ * TODO: needs different text for HAVE_UNICODE_NORMALIZATION < 2 and/or
+ *       !HAVE_UNICODE_UNORM2_H
+ */
 #ifdef HAVE_UNICODE_NORMALIZATION
 struct opttxt txt_normalization_form = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
@@ -2875,7 +2882,8 @@ struct opttxt txt_normalization_form = {
 #   1 = NFKC\n\
 #   2 = NFKD\n\
 #   3 = NFC\n\
-#   4 = NFD\n")
+#   4 = NFD\n\
+#   5 = NFKC_CF\n")
 };
 #endif /* HAVE_UNICODE_NORMALIZATION */
 

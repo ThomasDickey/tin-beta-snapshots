@@ -6,7 +6,7 @@
  *  Updated   : 2014-05-13
  *  Notes     :
  *
- * Copyright (c) 2001-2018 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2001-2019 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@
 /*
  * my_tmpfile(filename, name_size, base_dir)
  *
- * try to create a uniq tmp-file descriptor
+ * try to create a unique tmp-file descriptor
  *
  * return codes:
  * >0 = file descriptor of tmpfile

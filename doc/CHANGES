@@ -1,4 +1,4 @@
--- 2.4.3 release 20180703 "" --
+-- 2.4.3 release 20181119 "" --
 
  012) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. update configure macros
@@ -26,21 +26,28 @@
  008) Urs Janssen <urs@tin.org>
       ADD. config.guess, config.sub update
       ADD. checks for explicit_bzero(), explicit_memset(), memset_s()
+      ADD. check for unicode/unorm2.h to favor unorm2_normalize() over
+           unorm_normalize() if found
+      ADD. NFKC_case_fold normalization if unicode/unorm2.h is found
       ADD. don't strip binray with "make install"
       ADD. match_string()/match_item() now stop on first '\n'
       ADD. don't show broken active file messages if not running with -D 1
       ADD. accept arbitrary line length in mail.active file
       ADD. allow (multiple) -v for debug mode
+      ADD. honor NDEBUG in assert() replacement
       BUG. possible buffer overflow when prompting for a wildcard search
            pattern in get_search_pattern()
       BUG. possible buffer overflows with long translations
       BUG. pointer arithmetic with possible NULL pointer
       BUG. didn't recheck CAPABILITIES after auth
-      FIX. active.c, art.c, auth.c, config.c, debug.c, feed.c, getline.c
-           help.c, init.c, keymap.c, mail.c, main.c, misc.c, newsrc.c
-           nntplib.c, rfc1524.c, rfc2045.c, search.c, screen.c, select.c
-           signal.c, strftime.c, string.c, extern.h, proto.h, config.guess
-           config.sub, configure[.in], autoconf.h[in], Makefile[.in]
+      BUG. transport-padding on mime boundaries wasn't ignored
+      FIX. active.c, art.c, auth.c, config.c, cook.c, debug.c, feed.c
+           getline.c, group.c, help.c, init.c, keymap.c, lang.c, mail.c, main.c
+           misc.c, newsrc.c, nntplib.c, options_menu.c, page.c, post.c, read.c
+           rfc1524.c, rfc2045.c, rfc2046.c, rfc2047.c, search.c, screen.c
+           select.c, signal.c, strftime.c, string.c, extern.h, proto.h, tin.h
+           config.guess, config.sub, configure[.in], autoconf.h[in]
+           Makefile[.in], tin.1, tin.5
 
 -- 2.4.2 release 20171224 "Lochhead" --
 

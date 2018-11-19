@@ -3,10 +3,10 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2017-09-18
+ *  Updated   : 2017-10-24
  *  Notes     :
  *
- * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -620,7 +620,7 @@ group_page(
 					 * This loop looks for any article in the thread that
 					 * isn't already tagged.
 					 */
-					for (ii = n; ii != -1 && tagged; ii = arts[ii].thread) {
+					for (ii = n; ii != -1; ii = arts[ii].thread) {
 						if (arts[ii].tagged == 0) {
 							tagged = FALSE;
 							break;
@@ -1666,7 +1666,7 @@ prompt_getart_limit(
 	t_bool ret = FALSE;
 
 	clear_message();
-	if ((p = tin_getline(_(txt_enter_getart_limit), 2, 0, 0, FALSE, HIST_OTHER)) != NULL) {
+	if ((p = tin_getline(_(txt_enter_getart_limit), 2, NULL, 0, FALSE, HIST_OTHER)) != NULL) {
 		tinrc.getart_limit = atoi(p);
 		ret = TRUE;
 	}

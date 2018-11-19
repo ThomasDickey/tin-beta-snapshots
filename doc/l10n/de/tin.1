@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2018-03-21
+.\" Updated   : 2018-11-07
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -386,13 +386,13 @@ redirected.
 If a thread has unread articles it is marked with \fBart_marked_unread\fP in
 front of the total number of articles in the thread. If there are recent
 articles within the thread it might be marked with \fBart_marked_recent\fP in
-front of the total number of articles in the thread \- this is controlled by
-the \fBrecent_time\fP option. If a thread has hot articles in it (see also
+front of the total number of articles in the thread \(em this is controlled
+by the \fBrecent_time\fP option. If a thread has hot articles in it (see also
 section "FILTERING ARTICLES") it's marked with \fBart_marked_selected\fP in
 front of the total number of articles in the thread. The number of lines of
 the first (unread) article in the thread might also be shown right before
-the subject \- this is controlled by the \fBshow_info\fP option. The display can
-be customized via \fBgroup_format\fP.
+the subject \(em this is controlled by the \fBshow_info\fP option. The display
+can be customized via \fBgroup_format\fP.
 .PP
 .\" FIXME - make this auto scale
 .nf
@@ -549,7 +549,7 @@ Versions\-Informationen ausgeben.
 Gruppe 4 auswählen.
 .TP 
 \fBSelectResetNewsrc '^R'\fP
-Setzt die Datei \fI$(TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP zurück. Dies zerstört
+Setzt die Datei \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP zurück. Dies zerstört
 alle Aufzeichnungen über gelesene Artikel, also benutze diese Funktion mit
 Vorsicht.
 .TP 
@@ -1803,8 +1803,8 @@ Default for quick (1 key) auto\-selection filter header.
 \fB(default_subject_search)\fP
 .TP 
 \fBZeige \-> anstatt einer Markierung (draw_arrow)\fP
-Allows groups/articles to be selected by an arrow '\->' if set ON or by
-an highlighted bar if set OFF. Default is OFF.
+Allows groups/articles to be selected by an arrow '\->' if set ON or by a
+highlighted bar if set OFF. Default is OFF.
 .TP 
 \fBAufruf Ihres Editors (editor_format)\fP
 The format string used to create the editor start command with parameters.
@@ -1863,8 +1863,8 @@ article'.
 \fB(info_in_last_line)\fP
 .\" this is missing from the Menu
 If ON, show current group description or article subject in the last line
-(not in the pager and global menu) \- \fBToggleInfoLastLine\fP ('\fBi\fP')  toggles
-setting. This facility is useful as the full width of the screen is
+(not in the pager and global menu) \(em \fBToggleInfoLastLine\fP ('\fBi\fP')
+toggles setting. This facility is useful as the full width of the screen is
 available to display long subjects. Default is OFF.
 .TP 
 \fBBenutze interaktives Mailprogramm (interactive_mailer)\fP
@@ -2062,22 +2062,26 @@ Time in seconds to wait for a response from the server. Default is 120.
 Setting this to 0 means no timeout.
 .TP 
 \fBUnicode Normalisierungsart (normalization_form)\fP
-The normalization form \fBtin\fP should use to normalize unicode input.  The
-possible values are:
+Normalisierungsform dioe \fBtin\fP verwenden soll um die Unicode\-Eingabe zu
+normalisieren. Die möglichen Werte sind:
 .RS +.5i
 .IP 0 3
 \fBNone\fP: keine Normalisierung
 .IP 1
-\fBNFKC\fP: Compatibility Decomposition, followed by Canonical Composition
+\fBNFKC\fP: Kompatibilitätszerlegung, gefolgt von kanonischer Zusammensetzung
 .IP 2
-\fBNFKD\fP: Compatibility Decomposition
+\fBNFKD\fP: Kompatibilitätszerlegung
 .IP 3
-\fBNFC\fP: Canonical Decomposition, followed by Canonical Composition
+\fBNFC\fP: Kanonische Zerlegung, gefolgt von kanonischer Zusammensetzung
 .IP 4
-\fBNFD\fP: Canonical Decomposition
+\fBNFD\fP: Kanonische Zerlegung
+.IP 5
+\fBNFKC_CF\fP: Kompatibilitätszerlegung, gefolgt von kanonischer
+Zusammensetzung und Faltung
 .RE
-Some normalization modes are only available if they are supported by the
-library \fBtin\fP uses to do the normalization. NFC should be used if possible.
+Einige Normalisierungsmodi sind nur verfügbar, wenn sie von der Bibliothek
+unterstützt werden, die \fBtin\fP verwendet, um die Normalisierung
+durchzuführen. Nach Möglichkeit sollte NFC verwendet werden.
 .TP 
 \fBSetze Cursor auf ersten ungel. Art. (pos_first_unread)\fP
 If ON put cursor at first unread article in group otherwise at last
@@ -2262,7 +2266,7 @@ and in thread listing the line count of first (unread) article will be
 displayed.
 .IP 2
 \fBScore\fP, in article listing the score of an article will be displayed and
-in thread listing the score of the thread will be displayed \- see also
+in thread listing the score of the thread will be displayed \(em see also
 \fBthread_score\fP.
 .IP 3
 \fBZeilen und Bewertung\fP, Zeilenzahl und Bewertung zusätzlich anzeigen.
@@ -2400,7 +2404,7 @@ toggled in the article viewer via \fBPageToggleTex2iso\fP ('\fB"\fP').
 \fBThreade Artikel anhand (thread_articles)\fP
 Defines which threading method to use. It's possible to set the threading
 type on a per group basis by setting the group attribute variable
-\fBthread_arts\fP to 0 \- 4 in the file
+\fBthread_arts\fP to 0 \(en 4 in the file
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fP. (See also "GROUP ATTRIBUTES".)
 The default is Both Subject and References.  The choices are:
 .RS +.5i
@@ -2824,12 +2828,12 @@ mark them as read)
 A range is simply a group of items marked using the \fBSetRange\fP (\fB'#'\fP)
 key. Certain \fBtin\fP commands will operate on a range if one exists rather
 than just the current item. A range is an expression of the form
-<min>\-<max>, e.g. 10\-15 will highlight items 10 through 15
-on the current screen. Other than absolute numeric positions, '.' can be
-used in place of the current cursor position and '$' can be used to mean the
-highest number available. Currently the only commands that understand ranges
-are \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBMarkArtUnread\fP ('\fBz\fP') and
-\fBMarkThdUnread\fP ('\fBZ\fP').
+<min>\(en<max>, e.g. 10\(en15 will highlight items 10
+through 15 on the current screen. Other than absolute numeric positions, '.'
+can be used in place of the current cursor position and '$' can be used to
+mean the highest number available. Currently the only commands that
+understand ranges are \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBMarkArtUnread\fP
+('\fBz\fP') and \fBMarkThdUnread\fP ('\fBZ\fP').
 .PP
 .SS "NEWSGROUP LISTEN & WILDCARDS"
 Several places in \fBtin\fP allow you to specify a list of newsgroups. These
@@ -3030,9 +3034,10 @@ Formatanweisung stehen. Um den Score 10 Zeichen breit und erst ab einer
 Bildschirmbreite über 100 Zeichen darzustellen, lautet die Anweisung
 \&'\fB%10>100S\fP'.
 .SS "TIPPS UND TRICKS"
-\fBtin\fP can be pretty much be navigated by using the four cursor keys.  The
-left arrow key goes up a level, the right arrow key goes down a level, the
-up arrow key goes up a line and the down arrow key goes down a line.
+In \fBtin\fP kann weitgehend mit den vier Cursortasten navigiert werden. Die
+linke Pfeiltaste geht eine Ebene nach oben, die rechte Pfeiltaste eine Ebene
+nach unten, die obere Pfeiltaste eine Zeile nach oben und die untere
+Pfeiltaste eine Zeile nach unten.
 .PP
 In den folgenden Newsgruppen finden sich nützliche Informationen über
 Newssoftware:
@@ -3159,8 +3164,9 @@ batcher \fB\%cron\fP(8)  with the \*(rq\fB\-u\fP\*(rq option:
 .fi
 .RE
 .PP
-If you are low on local disk space you should consider to manually purge
-cached data for groups you are not reading anymore with something like:
+Falls Sie wenig Platz auf der lokalen Festplatte haben, sollten Sie in
+Betracht ziehen, zwischengespeicherte Daten für Gruppen, die Sie nicht mehr
+lesen, manuell zu bereinigen:
 .PP
 .RS
 .nf
@@ -3333,8 +3339,8 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 Setzen Sie diese Variable wenn Sie Befehlszeilenoptionen angeben möchten mit
 denen \fBtin\fP gestartet werden soll um die Eingabe, jedesmal wenn \fBtin\fP
 ausgeführt wird, zu sparen. Der Inhalt der Umgebungsvariablen wird den
-angegebenen Befehlszeilenoptionen vorangestellt \- bevor diese auf Gültigkeit
-überprüft werden \- um Sie manuell übersteuern zu können.
+angegebenen Befehlszeilenoptionen vorangestellt \(em bevor diese auf
+Gültigkeit überprüft werden \(em um Sie manuell übersteuern zu können.
 .TP 
 \fBTIN_HOMEDIR\fP
 Setzen Sie diese Variable falls Sie das \fI.tin\fP Verzeichnis nicht in
@@ -3439,13 +3445,13 @@ DomainOS spezifisch, wie $\fBORGANISATION\fP auf anderen Betriebssystemen
 (siehe oben).
 .TP 
 \fBREPLYTO\fP
-Set the article header field \*(rqReply\-To:\*(rq to the return address specified
-by the variable. This is useful if you wish to receive replies at a
-different address.
+Setzt den \*(rqReply\-To:\*(rq\-Header auf die in der Variable angegebene
+Rücksendeadresse. Dies ist nützlich, wenn Sie Antworten an eine andere
+Adresse erhalten möchten.
 .TP 
 \fBNAME\fP
-Overrides the full name given in the gecos\-files in \fI/etc/passwd\fP, see also
-\fBmail_address\fP.
+Überschreibt den vollständigen Namen, der im Geos\-Feld in \fI/etc/passwd\fP
+angegeben ist, siehe auch \fBmail_address\fP.
 .TP 
 \fBREALNAME\fP
 Same as $\fBNAME\fP.
@@ -3671,8 +3677,8 @@ Bevor Sie einen Bug\-Report an <tin\-bugs@tin.org> schicken,
 falls nicht, bitte erst aktualisieren! Sehen Sie sich die doc/TODO\-Datei für
 bekannte Fehler an. Wenn Sie immer noch meinen einen Fehler gefunden zu
 haben benutzen Sie bitte die Funktion \fBBugReport\fP ('\fBR\fP') und schreiben
-auf Englisch. Bitte fügen Sie Ihrem Bug\-Report KEINE Core\-Datei bei \- außer
-wir haben diese anfordert.
+auf Englisch. Bitte fügen Sie Ihrem Bug\-Report KEINE Core\-Datei bei \(em
+außer wir haben diese anfordert.
 .SH GESCHICHTE
 \fBtin\fP basiert auf \fB\%tass\fP(1), einem Newsreader der von Rich Skrenta
 entwickelt und dessen Code im März 1991 von ihm in alt.sources

@@ -3,10 +3,10 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-16
+ *  Updated   : 2018-10-24
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -343,7 +343,7 @@ auto_subscribe_groups(
 	/* TODO: test me! */
 	while ((ptr = tin_fgets(fp_subs, FALSE)) != NULL) {
 		if (ptr[0] != '#') {
-			if (group_find(ptr, FALSE) != 0)
+			if (group_find(ptr, FALSE) != NULL)
 				fprintf(fp_newsrc, "%s:\n", ptr);
 		}
 	}
@@ -1305,10 +1305,8 @@ pos_group_in_newsrc(
 		subscribed_pos++;
 	}
 
-	if (!repositioned) {
+	if (!repositioned)
 		write_newsrc_line(fp_out, newsgroup);
-		repositioned = TRUE;
-	}
 
 	/*
 	 * append unsubscribed groups file to newnewsrc
@@ -1329,10 +1327,8 @@ pos_group_in_newsrc(
 			fclose(fp_out);
 		}
 	} else {
-		if (repositioned) {
-			rename_file(newnewsrc, newsrc);
-			ret_code = TRUE;
-		}
+		rename_file(newnewsrc, newsrc);
+		ret_code = TRUE;
 	}
 	fp_out = NULL;
 	newnewsrc_created = FALSE;

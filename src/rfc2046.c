@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2017-10-11
+ *  Updated   : 2018-10-12
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2018 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2019 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -138,36 +138,60 @@ boundary_cmp(
 {
 	size_t blen = strlen(boundary);
 	size_t len;
+	char *e, *l;
 	int nl;
 
 	if ((len = strlen(line)) == 0)
 		return BOUND_NONE;
 
-	nl = line[len - 1] == '\n';
-
-	if (len != blen + 2 + nl && len != blen + 4 + nl)
+	if (blen + 2 > len)
 		return BOUND_NONE;
 
-	if (line[0] != '-' || line[1] != '-')
-		return BOUND_NONE;
+ 	/* remove traing whites as per RFC 2046 5.1.1 */
+	l = my_strdup(line);
+	e = l + len - 1;
+	while(e > l + blen + 1 && isspace(*e))
+		*e-- = '\0';
 
-	if (strncmp(line + 2, boundary, blen) != 0)
-		return BOUND_NONE;
+	len = strlen(l);
 
-	if (line[blen + 2] != '-') {
-		if (nl ? line[blen + 2] == '\n' : line[blen + 2] == '\0')
-			return BOUND_START;
-		else
-			return BOUND_NONE;
+	nl = l[len - 1] == '\n';
+
+	if (len != blen + 2 + nl && len != blen + 4 + nl) {
+		free(l);
+		return BOUND_NONE;
+	}
+	if (l[0] != '-' || l[1] != '-') {
+		free(l);
+		return BOUND_NONE;
 	}
 
-	if (line[blen + 3] != '-')
+	if (strncmp(l + 2, boundary, blen) != 0) {
+		free(l);
 		return BOUND_NONE;
+	}
 
-	if (nl ? line[blen + 4] == '\n' : line[blen + 4] == '\0')
-		return BOUND_END;
-	else
+	if (l[blen + 2] != '-') {
+		if (nl ? l[blen + 2] == '\n' : l[blen + 2] == '\0') {
+			free(l);
+			return BOUND_START;
+		} else {
+			free(l);
+			return BOUND_NONE;
+		}
+	}
+
+	if (l[blen + 3] != '-') {
+		free(l);
 		return BOUND_NONE;
+	}
+
+	if (nl ? l[blen + 4] == '\n' : l[blen + 4] == '\0') {
+		free(l);
+		return BOUND_END;
+	}
+	free(l);
+	return BOUND_NONE;
 }
 
 

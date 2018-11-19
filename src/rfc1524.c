@@ -6,7 +6,7 @@
  *  Updated   : 2018-03-13
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
- * Copyright (c) 2000-2018 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2019 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -371,7 +371,7 @@ expand_mailcap_meta(
 		 * we do a check here
 		 */
 		if (space < 10) {				/* 'worst'case are two chars ... */
-			olen = strlen(line);		/* get current legth of string */
+			olen = strlen(line);		/* get current length of string */
 			space += linelen;			/* recalc available space */
 			linelen <<= 1;				/* double maxlen */
 			line = my_realloc(line, linelen);

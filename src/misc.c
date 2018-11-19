@@ -6,7 +6,7 @@
  *  Updated   : 2018-04-04
  *  Notes     :
  *
- * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -459,7 +459,7 @@ invoke_ispell(
 		fputs(buf, fp_head);
 		if (buf[0] == '\n' || buf[0] == '\r') {
 			fclose(fp_head);
-			fp_head = 0;
+			fp_head = NULL;
 			break;
 		}
 	}
@@ -919,7 +919,7 @@ mail_check(
 
 	mailbox_name = get_val("MAIL", mailbox);
 
-	if (mailbox_name != 0 && stat(mailbox_name, &buf) >= 0) {
+	if (mailbox_name != NULL && stat(mailbox_name, &buf) >= 0) {
 		if ((int) (buf.st_mode & S_IFMT) == (int) S_IFDIR) { /* maildir setup */
 			char *maildir_box;
 			size_t maildir_box_len = strlen(mailbox_name) + strlen(MAILDIR_NEW) + 2;
@@ -3468,7 +3468,7 @@ gnksa_split_from(
 	}
 
 	/*
-	 * if we allow <> as From: we must disallow <> as Mesage-ID,
+	 * if we allow <> as From: we must disallow <> as Message-ID,
 	 * see code in post.c:check_article_to_be_posted()
 	 */
 #if 0

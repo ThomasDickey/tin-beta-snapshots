@@ -6,7 +6,7 @@
  *  Updated   : 2018-07-03
  *  Notes     : debug routines
  *
- * Copyright (c) 1991-2018 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -208,7 +208,7 @@ debug_print_attributes(
 	struct t_attribute *attr,
 	FILE *fp)
 {
-	if (attr == 0)
+	if (attr == NULL)
 		return;
 
 	fprintf(fp, "global=[%u] show=[%u] thread=[%u] sort=[%u] author=[%u] auto_select=[%u] auto_save=[%u] batch_save=[%u] process=[%u]\n",

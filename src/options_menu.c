@@ -6,7 +6,7 @@
  *  Updated   : 2017-08-13
  *  Notes     : Split from config.c
  *
- * Copyright (c) 2004-2018 Michael Bienia <michael@vorlon.ping.de>
+ * Copyright (c) 2004-2019 Michael Bienia <michael@vorlon.ping.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -2916,7 +2916,7 @@ find_scope(
 		return 0;
 
 	for (i = 1; i < num_scope; i++) {
-		if ((!scopes[i].global && strcasecmp(scope, scopes[i].scope) == 0))
+		if (!scopes[i].global && strcasecmp(scope, scopes[i].scope) == 0)
 			return i;
 	}
 
@@ -2936,7 +2936,7 @@ move_scope(
 	int new_pos;
 
 	clear_message();
-	if ((p = tin_getline(_(txt_scope_new_position), 1, 0, 0, FALSE, HIST_OTHER)) != NULL)
+	if ((p = tin_getline(_(txt_scope_new_position), 1, NULL, 0, FALSE, HIST_OTHER)) != NULL)
 		new_pos = atoi(p);
 	else
 		new_pos = curr_pos;
