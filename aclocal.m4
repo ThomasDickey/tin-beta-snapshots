@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2018-07-01
+dnl Updated   : 2018-12-03
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2019 Thomas E. Dickey <dickey@invisible-island.net>
@@ -1541,7 +1541,7 @@ AC_SUBST(PCREDIR_LIBS)
 AC_SUBST(PCREDIR_CPPFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CC_ENV_FLAGS version: 8 updated: 2017/09/23 08:50:24
+dnl CF_CC_ENV_FLAGS version: 9 updated: 2018/07/29 18:03:26
 dnl ---------------
 dnl Check for user's environment-breakage by stuffing CFLAGS/CPPFLAGS content
 dnl into CC.  This will not help with broken scripts that wrap the compiler
@@ -1558,11 +1558,28 @@ AC_DEFUN([CF_CC_ENV_FLAGS],
 # This should have been defined by AC_PROG_CC
 : ${CC:=cc}
 
+AC_MSG_CHECKING(\$CFLAGS variable)
+case "x$CFLAGS" in
+(*-[[IUD]]*)
+	AC_MSG_RESULT(broken)
+	AC_MSG_WARN(your environment uses the CFLAGS variable to hold CPPFLAGS options)
+	cf_flags="$CFLAGS"
+	CFLAGS=
+	for cf_arg in $cf_flags
+	do
+		CF_ADD_CFLAGS($cf_arg)
+	done
+	;;
+(*)
+	AC_MSG_RESULT(ok)
+	;;
+esac
+
 AC_MSG_CHECKING(\$CC variable)
 case "$CC" in
 (*[[\ \	]]-*)
 	AC_MSG_RESULT(broken)
-	AC_MSG_WARN(your environment misuses the CC variable to hold CFLAGS/CPPFLAGS options)
+	AC_MSG_WARN(your environment uses the CC variable to hold CFLAGS/CPPFLAGS options)
 	# humor him...
 	cf_prog=`echo "$CC" | sed -e 's/	/ /g' -e 's/[[ ]]* / /g' -e 's/[[ ]]*[[ ]]-[[^ ]].*//'`
 	cf_flags=`echo "$CC" | ${AWK:-awk} -v prog="$cf_prog" '{ printf("%s", [substr]([$]0,1+length(prog))); }'`
@@ -5506,6 +5523,91 @@ AC_DEFUN([CF_UPPER],
 $1=`echo "$2" | sed y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%`
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_VA_COPY version: 5 updated: 2018/12/03 20:07:13
+dnl ----------
+dnl check for va_copy, part of stdarg.h starting with ISO C 1999.
+dnl Also, workaround for glibc's __va_copy, by checking for both.
+dnl Finally, try to accommodate pre-ISO C 1999 headers.
+AC_DEFUN([CF_VA_COPY],[
+AC_CACHE_CHECK(for va_copy, cf_cv_have_va_copy,[
+AC_TRY_LINK([
+#include <stdarg.h>
+],[
+	static va_list dst;
+	static va_list src;
+	va_copy(dst, src)],
+	cf_cv_have_va_copy=yes,
+	cf_cv_have_va_copy=no)])
+
+if test "$cf_cv_have_va_copy" = yes;
+then
+	AC_DEFINE(HAVE_VA_COPY,1,[Define to 1 if we have va_copy])
+else # !cf_cv_have_va_copy
+
+AC_CACHE_CHECK(for __va_copy, cf_cv_have___va_copy,[
+AC_TRY_LINK([
+#include <stdarg.h>
+],[
+	static va_list dst;
+	static va_list src;
+	__va_copy(dst, src)],
+	cf_cv_have___va_copy=yes,
+	cf_cv_have___va_copy=no)])
+
+if test "$cf_cv_have___va_copy" = yes
+then
+	AC_DEFINE(HAVE___VA_COPY,1,[Define to 1 if we have __va_copy])
+else # !cf_cv_have___va_copy
+
+AC_CACHE_CHECK(for __builtin_va_copy, cf_cv_have___builtin_va_copy,[
+AC_TRY_LINK([
+#include <stdarg.h>
+],[
+	static va_list dst;
+	static va_list src;
+	__builtin_va_copy(dst, src)],
+	cf_cv_have___builtin_va_copy=yes,
+	cf_cv_have___builtin_va_copy=no)])
+
+test "$cf_cv_have___builtin_va_copy" = yes &&
+	AC_DEFINE(HAVE___BUILTIN_VA_COPY,1,[Define to 1 if we have __builtin_va_copy])
+
+fi # cf_cv_have___va_copy
+
+fi # cf_cv_have_va_copy
+
+case "${cf_cv_have_va_copy}${cf_cv_have___va_copy}${cf_cv_have___builtin_va_copy}" in
+(*yes*)
+	;;
+
+(*)
+	AC_CACHE_CHECK(if we can simply copy va_list, cf_va_pointer_va_list,[
+AC_TRY_LINK([
+#include <stdarg.h>
+],[
+	va_list dst;
+	va_list src;
+	dst = src],
+	cf_cv_pointer_va_list=yes,
+	cf_cv_pointer_va_list=no)])
+
+	if test "$cf_cv_pointer_va_list" = no
+	then
+		AC_CACHE_CHECK(if we can copy va_list indirectly, cf_va_array_va_list,[
+AC_TRY_LINK([
+#include <stdarg.h>
+],[
+	va_list dst;
+	va_list src;
+	dst = src],
+			cf_cv_array_va_list=yes,
+			cf_cv_array_va_list=no)])
+		test "$cf_cv_array_va_list" = yes && AC_DEFINE(ARRAY_VA_LIST,1,[Define to 1 if we can copy va_list indirectly])
+	fi
+	;;
+esac
+])
+dnl ---------------------------------------------------------------------------
 dnl CF_VERBOSE version: 3 updated: 2007/07/29 09:55:12
 dnl ----------
 dnl Use AC_VERBOSE w/o the warnings
@@ -5746,7 +5848,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 53 updated: 2018/06/16 18:58:58
+dnl CF_XOPEN_SOURCE version: 54 updated: 2018/11/07 07:43:44
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality,

@@ -77,9 +77,9 @@ fmt_message(
 	va_list aq;
 
 	while (1) {
-		va_copy(aq, ap);
+		begin_va_copy(aq, ap);
 		used = vsnprintf(msg, size, fmt, aq);
-		va_end(aq);
+		end_va_copy(aq);
 
 		if (used >= 0 && used < (int) size)
 			break;

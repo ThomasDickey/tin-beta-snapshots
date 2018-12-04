@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2018-07-10
+dnl Updated   : 2018-12-03
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2019 Thomas E. Dickey <dickey@invisible-island.net>
@@ -81,7 +81,7 @@ case "$host_os" in
 esac
 
 ### Native Language Support
-ALL_LINGUAS="da de en_GB es et fr ru sv tr zh_CN zh_TW"
+ALL_LINGUAS="da de en_GB et fr ru sv tr zh_CN zh_TW"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"
@@ -738,7 +738,6 @@ CF_CPP_EXPANDS
 CF_CPP_CONCATS
 CF_CHECK_NESTED_PARAMS
 
-
 ###	Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_DIRENT
@@ -806,6 +805,7 @@ CF_CHECK_HEADERS(\
 ###	Checks that depend on existence-checks for headers
 CF_SIZECHANGE
 CF_SYS_SELECT_TIMEVAL
+CF_VA_COPY
 
 ###	Checks for Datatypes.
 AC_CHECK_TYPE(gid_t, int)

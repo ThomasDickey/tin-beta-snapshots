@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2018-07-10
+ *  Updated   : 2018-12-03
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2019 Thomas Dickey <dickey@invisible-island.net>
@@ -884,6 +884,18 @@ Added missing headers after gettext update, using autoheader
 
 /* Define if you have <vfork.h>. */
 #	undef HAVE_VFORK_H
+
+/* Define if you have the va_copy feature */
+#	undef HAVE_VA_COPY
+
+/* Define if you have the __va_copy feature */
+#	undef HAVE___VA_COPY
+
+/* Define if you have the __builtin_va_copy feature */
+#	undef HAVE___BUILTIN_VA_COPY
+
+/* Define if va_list is an array, and none of va_copy/__va_copy/__builtin_va_copy are supported */
+#	undef ARRAY_VA_LIST
 
 /* Define if you have the vprintf function. */
 #	undef HAVE_VPRINTF
