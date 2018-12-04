@@ -2401,6 +2401,27 @@ extern struct tm *localtime(time_t *);
 #	include <gsasl.h>
 #endif /* USE_SASL */
 
+/*
+ * adapted from ncurses curses.priv.h:
+ * If we have va_copy(), use it for assigning va_list's.
+ */
+#if defined(HAVE___VA_COPY)
+#define begin_va_copy(dst,src)	__va_copy(dst, src)
+#define end_va_copy(dst)	va_end(dst)
+#elif defined(va_copy) || defined(HAVE_VA_COPY)
+#define begin_va_copy(dst,src)	va_copy(dst, src)
+#define end_va_copy(dst)	va_end(dst)
+#elif defined(HAVE___BUILTIN_VA_COPY)
+#define begin_va_copy(dst,src)	__builtin_va_copy(dst, src)
+#define end_va_copy(dst)	va_end(dst)
+#elif defined(ARRAY_VA_LIST)
+#define begin_va_copy(dst,src) *(dst) = *(src)
+#define end_va_copy(dst)	/* nothing */
+#else
+#define begin_va_copy(dst,src) (dst) = (src)
+#define end_va_copy(dst)	/* nothing */
+#endif
+
 /* snprintf(), vsnprintf() */
 #ifndef HAVE_SNPRINTF
 #	define snprintf	plp_snprintf
