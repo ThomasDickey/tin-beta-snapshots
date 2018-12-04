@@ -5581,7 +5581,7 @@ case "${cf_cv_have_va_copy}${cf_cv_have___va_copy}${cf_cv_have___builtin_va_copy
 	;;
 
 (*)
-	AC_CACHE_CHECK(if we can simply copy va_list, cf_va_pointer_va_list,[
+	AC_CACHE_CHECK(if we can simply copy va_list, cf_cv_pointer_va_list,[
 AC_TRY_LINK([
 #include <stdarg.h>
 ],[
@@ -5593,13 +5593,13 @@ AC_TRY_LINK([
 
 	if test "$cf_cv_pointer_va_list" = no
 	then
-		AC_CACHE_CHECK(if we can copy va_list indirectly, cf_va_array_va_list,[
+		AC_CACHE_CHECK(if we can copy va_list indirectly, cf_cv_array_va_list,[
 AC_TRY_LINK([
 #include <stdarg.h>
 ],[
 	va_list dst;
 	va_list src;
-	dst = src],
+	*dst = *src],
 			cf_cv_array_va_list=yes,
 			cf_cv_array_va_list=no)])
 		test "$cf_cv_array_va_list" = yes && AC_DEFINE(ARRAY_VA_LIST,1,[Define to 1 if we can copy va_list indirectly])
