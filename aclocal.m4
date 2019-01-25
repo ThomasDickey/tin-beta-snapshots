@@ -103,7 +103,7 @@ strdup strtoul tsearch __argz_count __argz_stringify __argz_next])
            #      presentlang can be used as a fallback for messages
            #      which are not translated in the desiredlang catalog).
            case "$desiredlang" in
-             ("$presentlang"*) useit=yes;;
+             "$presentlang"*) useit=yes;;
            esac
          done
          if test $useit = yes; then
@@ -395,10 +395,10 @@ set dummy $2; ac_word=[$]2
 AC_MSG_CHECKING([for $ac_word])
 AC_CACHE_VAL(ac_cv_path_$1,
 [case "[$]$1" in
-  ([[\\/]*|?:[\\/]]*)
+  [[\\/]*|?:[\\/]]*)
   ac_cv_path_$1="[$]$1" # Let the user override the test with a path.
   ;;
-  (*)
+  *)
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}${PATH_SEPARATOR}"
   for ac_dir in ifelse([$5], , $PATH, [$5]); do
     test -z "$ac_dir" && ac_dir=.
@@ -649,12 +649,12 @@ AC_DEFUN([AM_WITH_NLS],
 
         # Support "outfile[:infile[:infile...]]"
         case "$ac_file" in
-          (*:*) ac_file=`echo "$ac_file"|sed 's%:.*%%'` ;;
+          *:*) ac_file=`echo "$ac_file"|sed 's%:.*%%'` ;;
         esac
 
         # PO directories have a Makefile.in generated from Makefile.inn.
         case "$ac_file" in
-        (*/[Mm]akefile.in)
+        */[Mm]akefile.in)
           # Adjust a relative srcdir.
           ac_dir=`echo "$ac_file"|sed 's%/[^/][^/]*$%%'`
           ac_dir_suffix="/`echo "$ac_dir"|sed 's%^\./%%'`"
@@ -665,9 +665,9 @@ AC_DEFUN([AM_WITH_NLS],
           test -n "$ac_given_srcdir" || ac_given_srcdir="$srcdir"
 
           case "$ac_given_srcdir" in
-            (.)  top_srcdir=`echo $ac_dots|sed 's%/$%%'` ;;
-            (/*) top_srcdir="$ac_given_srcdir" ;;
-            (*)  top_srcdir="$ac_dots$ac_given_srcdir" ;;
+            .)  top_srcdir=`echo $ac_dots|sed 's%/$%%'` ;;
+            /*) top_srcdir="$ac_given_srcdir" ;;
+            *)  top_srcdir="$ac_dots$ac_given_srcdir" ;;
           esac
 
           if test -f "$ac_given_srcdir/$ac_dir/POTFILES.in"; then
@@ -707,11 +707,11 @@ AC_DEFUN([AM_WITH_NLS],
 changequote(<<,>>)dnl
         ac_prog_version=`$INTLBISON --version 2>&1 | sed -n 's/^.*GNU Bison.* \([0-9]*\.[0-9.]*\).*$/\1/p'`
         case $ac_prog_version in
-          ('') ac_prog_version="v. ?.??, bad"; ac_verc_fail=yes;;
-          (1.2[6-9]*|1.[3-9][0-9]*|[2-9].*)
+          '') ac_prog_version="v. ?.??, bad"; ac_verc_fail=yes;;
+          1.2[6-9]*|1.[3-9][0-9]*|[2-9].*)
 changequote([,])dnl
              ac_prog_version="$ac_prog_version, ok"; ac_verc_fail=no;;
-          (*) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=yes;;
+          *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=yes;;
         esac
       AC_MSG_RESULT([$ac_prog_version])
       fi
@@ -801,11 +801,11 @@ cf_new_extra_cppflags=
 for cf_add_cflags in $1
 do
 case $cf_fix_cppflags in
-(no)
+no)
 	case $cf_add_cflags in
-	(-undef|-nostdinc*|-I*|-D*|-U*|-E|-P|-C)
+	-undef|-nostdinc*|-I*|-D*|-U*|-E|-P|-C)
 		case $cf_add_cflags in
-		(-D*)
+		-D*)
 			cf_tst_cflags=`echo ${cf_add_cflags} |sed -e 's/^-D[[^=]]*='\''\"[[^"]]*//'`
 
 			test "x${cf_add_cflags}" != "x${cf_tst_cflags}" \
@@ -822,11 +822,11 @@ case $cf_fix_cppflags in
 			;;
 		esac
 		case "$CPPFLAGS" in
-		(*$cf_add_cflags)
+		*$cf_add_cflags)
 			;;
-		(*)
+		*)
 			case $cf_add_cflags in
-			(-D*)
+			-D*)
 				cf_tst_cppflags=`echo "x$cf_add_cflags" | sed -e 's/^...//' -e 's/=.*//'`
 				CF_REMOVE_DEFINE(CPPFLAGS,$CPPFLAGS,$cf_tst_cppflags)
 				;;
@@ -835,12 +835,12 @@ case $cf_fix_cppflags in
 			;;
 		esac
 		;;
-	(*)
+	*)
 		CF_APPEND_TEXT(cf_new_cflags,$cf_add_cflags)
 		;;
 	esac
 	;;
-(yes)
+yes)
 	CF_APPEND_TEXT(cf_new_extra_cppflags,$cf_add_cflags)
 
 	cf_tst_cflags=`echo ${cf_add_cflags} |sed -e 's/^[[^"]]*"'\''//'`
@@ -1022,11 +1022,11 @@ dnl $1 = shell variable containing the result of --with-XXX=[DIR]
 dnl $2 = module to look for.
 AC_DEFUN([CF_ADD_OPTIONAL_PATH],[
 case "$1" in
-(no)
+no)
 	;;
-(yes)
+yes)
 	;;
-(*)
+*)
 	CF_ADD_SEARCHPATH([$1], [AC_MSG_ERROR(cannot find $2 under $1)])
 	;;
 esac
@@ -1560,7 +1560,7 @@ AC_DEFUN([CF_CC_ENV_FLAGS],
 
 AC_MSG_CHECKING(\$CFLAGS variable)
 case "x$CFLAGS" in
-(*-[[IUD]]*)
+*-[[IUD]]*)
 	AC_MSG_RESULT(broken)
 	AC_MSG_WARN(your environment uses the CFLAGS variable to hold CPPFLAGS options)
 	cf_flags="$CFLAGS"
@@ -1570,14 +1570,14 @@ case "x$CFLAGS" in
 		CF_ADD_CFLAGS($cf_arg)
 	done
 	;;
-(*)
+*)
 	AC_MSG_RESULT(ok)
 	;;
 esac
 
 AC_MSG_CHECKING(\$CC variable)
 case "$CC" in
-(*[[\ \	]]-*)
+*[[\ \	]]-*)
 	AC_MSG_RESULT(broken)
 	AC_MSG_WARN(your environment uses the CC variable to hold CFLAGS/CPPFLAGS options)
 	# humor him...
@@ -1587,10 +1587,10 @@ case "$CC" in
 	for cf_arg in $cf_flags
 	do
 		case "x$cf_arg" in
-		(x-[[IUDfgOW]]*)
+		x-[[IUDfgOW]]*)
 			CF_ADD_CFLAGS($cf_arg)
 			;;
-		(*)
+		*)
 			CC="$CC $cf_arg"
 			;;
 		esac
@@ -1599,7 +1599,7 @@ case "$CC" in
 	CF_VERBOSE(resulting CFLAGS: '$CFLAGS')
 	CF_VERBOSE(resulting CPPFLAGS: '$CPPFLAGS')
 	;;
-(*)
+*)
 	AC_MSG_RESULT(ok)
 	;;
 esac
@@ -2029,14 +2029,14 @@ AC_DEFUN([CF_CURSES_CPPFLAGS],[
 AC_CACHE_CHECK(for extra include directories,cf_cv_curses_incdir,[
 cf_cv_curses_incdir=no
 case $host_os in
-(hpux10.*)
+hpux10.*)
 	if test "x$cf_cv_screen" = "xcurses_colr"
 	then
 		test -d /usr/include/curses_colr && \
 		cf_cv_curses_incdir="-I/usr/include/curses_colr"
 	fi
 	;;
-(sunos3*|sunos4*)
+sunos3*|sunos4*)
 	if test "x$cf_cv_screen" = "xcurses_5lib"
 	then
 		test -d /usr/5lib && \
@@ -2098,10 +2098,10 @@ AC_MSG_RESULT($cf_result)
 
 if test "$cf_result" = no ; then
 case $host_os in
-(freebsd*)
+freebsd*)
 	AC_CHECK_LIB(mytinfo,tgoto,[CF_ADD_LIBS(-lmytinfo)])
 	;;
-(hpux10.*)
+hpux10.*)
 	# Looking at HPUX 10.20, the Hcurses library is the oldest (1997), cur_colr
 	# next (1998), and xcurses "newer" (2000).  There is no header file for
 	# Hcurses; the subdirectory curses_colr has the headers (curses.h and
@@ -2120,9 +2120,9 @@ case $host_os in
 			])])
 	fi
 	;;
-(linux*)
+linux*)
 	case `arch 2>/dev/null` in
-	(x86_64)
+	x86_64)
 		if test -d /lib64
 		then
 			CF_ADD_LIBDIR(/lib64)
@@ -2130,12 +2130,12 @@ case $host_os in
 			CF_ADD_LIBDIR(/lib)
 		fi
 		;;
-	(*)
+	*)
 		CF_ADD_LIBDIR(/lib)
 		;;
 	esac
 	;;
-(sunos3*|sunos4*)
+sunos3*|sunos4*)
 	if test "x$cf_cv_screen" = "xcurses_5lib"
 	then
 		if test -d /usr/5lib ; then
@@ -2279,17 +2279,17 @@ fi
 ])
 
 case $cf_cv_need_curses_h in
-(both)
+both)
 	AC_DEFINE_UNQUOTED(NEED_CURSES_H,1,[Define to 1 if we must include curses.h])
 	AC_DEFINE_UNQUOTED(NEED_TERMCAP_H,1,[Define to 1 if we must include termcap.h])
 	;;
-(curses.h)
+curses.h)
 	AC_DEFINE_UNQUOTED(NEED_CURSES_H,1,[Define to 1 if we must include curses.h])
 	;;
-(term.h)
+term.h)
 	AC_DEFINE_UNQUOTED(NEED_TERM_H,1,[Define to 1 if we must include term.h])
 	;;
-(termcap.h)
+termcap.h)
 	AC_DEFINE_UNQUOTED(NEED_TERMCAP_H,1,[Define to 1 if we must include termcap.h])
 	;;
 esac
@@ -2314,7 +2314,7 @@ AC_CACHE_CHECK(for term.h, cf_cv_term_header,[
 cf_header_list="term.h ncurses/term.h ncursesw/term.h"
 
 case ${cf_cv_ncurses_header:-curses.h} in
-(*/*)
+*/*)
 	cf_header_item=`echo ${cf_cv_ncurses_header:-curses.h} | sed -e 's%\..*%%' -e 's%/.*%/%'`term.h
 	cf_header_list="$cf_header_item $cf_header_list"
 	;;
@@ -2332,7 +2332,7 @@ do
 done
 
 case $cf_cv_term_header in
-(no)
+no)
 	# If curses is ncurses, some packagers still mess it up by trying to make
 	# us use GNU termcap.  This handles the most common case.
 	for cf_header in ncurses/term.h ncursesw/term.h
@@ -2354,13 +2354,13 @@ esac
 ])
 
 case $cf_cv_term_header in
-(term.h)
+term.h)
 	AC_DEFINE(HAVE_TERM_H,1,[Define to 1 if we have term.h])
 	;;
-(ncurses/term.h)
+ncurses/term.h)
 	AC_DEFINE(HAVE_NCURSES_TERM_H,1,[Define to 1 if we have ncurses/term.h])
 	;;
-(ncursesw/term.h)
+ncursesw/term.h)
 	AC_DEFINE(HAVE_NCURSESW_TERM_H,1,[Define to 1 if we have ncursesw/term.h])
 	;;
 esac
@@ -2522,31 +2522,31 @@ cf_ipv6dir=none
 
 AC_MSG_CHECKING(for IPv6 library if required)
 case $cf_cv_ipv6type in
-(solaris)
+solaris)
 	;;
-(inria)
+inria)
 	;;
-(kame)
+kame)
 	dnl http://www.kame.net/
 	cf_ipv6lib=inet6
 	cf_ipv6dir=v6
 	;;
-(linux-glibc)
+linux-glibc)
 	;;
-(linux-libinet6)
+linux-libinet6)
 	dnl http://www.v6.linux.or.jp/
 	cf_ipv6lib=inet6
 	cf_ipv6dir=inet6
 	;;
-(toshiba)
+toshiba)
 	cf_ipv6lib=inet6
 	cf_ipv6dir=v6
 	;;
-(v6d)
+v6d)
 	cf_ipv6lib=v6
 	cf_ipv6dir=v6
 	;;
-(zeta)
+zeta)
 	cf_ipv6lib=inet6
 	cf_ipv6dir=v6
 	;;
@@ -2600,7 +2600,7 @@ cf_cv_ipv6type=unknown
 for i in solaris inria kame linux-glibc linux-libinet6 toshiba v6d zeta
 do
 	case $i in
-	(solaris)
+	solaris)
 		if test "SunOS" = "`uname -s`"
 		then
 		  if test -f /usr/include/netinet/ip6.h
@@ -2609,7 +2609,7 @@ do
 		  fi
 		fi
 		;;
-	(inria)
+	inria)
 		dnl http://www.kame.net/
 		AC_EGREP_CPP(yes, [
 #include <netinet/in.h>
@@ -2617,7 +2617,7 @@ do
 yes
 #endif],	[cf_cv_ipv6type=$i])
 		;;
-	(kame)
+	kame)
 		dnl http://www.kame.net/
 		AC_EGREP_CPP(yes, [
 #include <netinet/in.h>
@@ -2625,7 +2625,7 @@ yes
 yes
 #endif],	[cf_cv_ipv6type=$i])
 		;;
-	(linux-glibc)
+	linux-glibc)
 		dnl http://www.v6.linux.or.jp/
 		AC_EGREP_CPP(yes, [
 #include <features.h>
@@ -2633,7 +2633,7 @@ yes
 yes
 #endif],	[cf_cv_ipv6type=$i])
 		;;
-	(linux-libinet6)
+	linux-libinet6)
 		dnl http://www.v6.linux.or.jp/
 		if test -d /usr/inet6
 		then
@@ -2643,21 +2643,21 @@ yes
 			cf_cv_ipv6type=$i
 		fi
 		;;
-	(toshiba)
+	toshiba)
 		AC_EGREP_CPP(yes, [
 #include <sys/param.h>
 #ifdef _TOSHIBA_INET6
 yes
 #endif],	[cf_cv_ipv6type=$i])
 		;;
-	(v6d)
+	v6d)
 		AC_EGREP_CPP(yes, [
 #include </usr/local/v6/include/sys/v6config.h>
 #ifdef __V6D__
 yes
 #endif],	[cf_cv_ipv6type=$i])
 		;;
-	(zeta)
+	zeta)
 		AC_EGREP_CPP(yes, [
 #include <sys/param.h>
 #ifdef _ZETA_MINAMI_INET6
@@ -3191,19 +3191,19 @@ then
 		if AC_TRY_EVAL(ac_compile); then
 			test -n "$verbose" && AC_MSG_RESULT(... -$cf_opt)
 			case $cf_opt in
-			(Wcast-qual)
+			Wcast-qual)
 				CF_APPEND_TEXT(CPPFLAGS,-DXTSTRINGDEFINES)
 				;;
-			(Winline)
+			Winline)
 				case $GCC_VERSION in
-				([[34]].*)
+				[[34]].*)
 					CF_VERBOSE(feature is broken in gcc $GCC_VERSION)
 					continue;;
 				esac
 				;;
-			(Wpointer-arith)
+			Wpointer-arith)
 				case $GCC_VERSION in
-				([[12]].*)
+				[[12]].*)
 					CF_VERBOSE(feature is broken in gcc $GCC_VERSION)
 					continue;;
 				esac
@@ -3342,7 +3342,7 @@ if test -n "${CFLAGS}${CPPFLAGS}" ; then
 	for cf_header_path in $CPPFLAGS $CFLAGS
 	do
 		case $cf_header_path in
-		(-I*)
+		-I*)
 			cf_header_path=`echo ".$cf_header_path" |sed -e 's/^...//' -e 's,/include$,,'`
 			CF_ADD_SUBDIR_PATH($1,$2,include,$cf_header_path,NONE)
 			cf_header_path_list="$cf_header_path_list [$]$1"
@@ -3390,7 +3390,7 @@ ifelse([$2],,INTEL_COMPILER,[$2])=no
 
 if test "$ifelse([$1],,[$1],GCC)" = yes ; then
 	case $host_os in
-	(linux*|gnu*)
+	linux*|gnu*)
 		AC_MSG_CHECKING(if this is really Intel ifelse([$1],GXX,C++,C) compiler)
 		cf_save_CFLAGS="$ifelse([$3],,CFLAGS,[$3])"
 		ifelse([$3],,CFLAGS,[$3])="$ifelse([$3],,CFLAGS,[$3]) -no-gcc"
@@ -3424,7 +3424,7 @@ if test -n "${LDFLAGS}${LIBS}" ; then
 	for cf_library_path in $LDFLAGS $LIBS
 	do
 		case $cf_library_path in
-		(-L*)
+		-L*)
 			cf_library_path=`echo ".$cf_library_path" |sed -e 's/^...//' -e 's,/lib$,,'`
 			CF_ADD_SUBDIR_PATH($1,$2,lib,$cf_library_path,NONE)
 			cf_library_path_list="$cf_library_path_list [$]$1"
@@ -3445,14 +3445,14 @@ dnl $1 = variable to set
 define([CF_LIB_PREFIX],
 [
 	case $cf_cv_system_name in
-	(OS/2*|os2*)
+	OS/2*|os2*)
 		if test "$DFT_LWR_MODEL" = libtool; then
 			LIB_PREFIX='lib'
 		else
 			LIB_PREFIX=''
 		fi
 		;;
-	(*)	LIB_PREFIX='lib'
+	*)	LIB_PREFIX='lib'
 		;;
 	esac
 ifelse($1,,,[$1=$LIB_PREFIX])
@@ -3563,19 +3563,19 @@ all :
 CF_EOF
 		cf_result=`${MAKE:-make} -k -f cf_makeflags.tmp 2>/dev/null | fgrep -v "ing directory" | sed -e 's,[[ 	]]*$,,'`
 		case "$cf_result" in
-		(.*k|.*kw)
+		.*k|.*kw)
 			cf_result=`${MAKE:-make} -k -f cf_makeflags.tmp CC=cc 2>/dev/null`
 			case "$cf_result" in
-			(.*CC=*)	cf_cv_makeflags=
+			.*CC=*)	cf_cv_makeflags=
 				;;
-			(*)	cf_cv_makeflags=$cf_option
+			*)	cf_cv_makeflags=$cf_option
 				;;
 			esac
 			break
 			;;
-		(.-)
+		.-)
 			;;
-		(*)
+		*)
 			CF_MSG_LOG(given option \"$cf_option\", no match \"$cf_result\")
 			;;
 		esac
@@ -3851,16 +3851,16 @@ fi
 # Set definitions to allow ifdef'ing for ncurses.h
 
 case $cf_cv_ncurses_header in
-(*ncurses.h)
+*ncurses.h)
 	AC_DEFINE(HAVE_NCURSES_H,1,[Define to 1 if we have ncurses.h])
 	;;
 esac
 
 case $cf_cv_ncurses_header in
-(ncurses/curses.h|ncurses/ncurses.h)
+ncurses/curses.h|ncurses/ncurses.h)
 	AC_DEFINE(HAVE_NCURSES_NCURSES_H,1,[Define to 1 if we have ncurses/ncurses.h])
 	;;
-(ncursesw/curses.h|ncursesw/ncurses.h)
+ncursesw/curses.h|ncursesw/ncurses.h)
 	AC_DEFINE(HAVE_NCURSESW_NCURSES_H,1,[Define to 1 if we have ncursesw/ncurses.h])
 	;;
 esac
@@ -3894,7 +3894,7 @@ AC_CHECK_LIB(gpm,Gpm_Open,
 		[cf_ncurses_LIBS="-lgpm"])])
 
 case $host_os in
-(freebsd*)
+freebsd*)
 	# This is only necessary if you are linking against an obsolete
 	# version of ncurses (but it should do no harm, since it's static).
 	if test "$cf_nculib_root" = ncurses ; then
@@ -4021,7 +4021,7 @@ cf_cv_netlibs=""
 cf_test_netlibs=yes
 
 case $host_os in
-(mingw*)
+mingw*)
 	AC_CHECK_HEADERS( windows.h winsock.h winsock2.h )
 
 	if test "$ac_cv_header_winsock2_h" = "yes" ; then
@@ -4054,7 +4054,7 @@ case $host_os in
 
 	LIBS="$cf_save_LIBS"
 	;;
-(*)
+*)
 	AC_CHECK_FUNCS(gethostname,,[
 		CF_RECHECK_FUNC(gethostname,nsl,cf_cv_netlibs,[
 			CF_RECHECK_FUNC(gethostname,socket,cf_cv_netlibs)])])
@@ -4083,7 +4083,7 @@ esac
 ])
 
 case $cf_cv_netlibs in
-(*ws2_32*)
+*ws2_32*)
 	AC_DEFINE(USE_WINSOCK2_H,1,[Define to 1 if we should include winsock2.h])
 	;;
 esac
@@ -4109,11 +4109,11 @@ AC_ARG_WITH($1,
 AC_MSG_RESULT(${with_$1:-no})
 
 case .$with_cflags in
-(.*-g*)
+.*-g*)
 	case .$CFLAGS in
-	(.*-g*)
+	.*-g*)
 		;;
-	(*)
+	*)
 		CF_ADD_CFLAGS([-g])
 		;;
 	esac
@@ -4166,8 +4166,8 @@ AC_DEFUN([CF_PATHSEP],
 [
 	AC_MSG_CHECKING(for PATH separator)
 	case $cf_cv_system_name in
-	(os2*)	PATH_SEPARATOR=';'  ;;
-	(*)	${PATH_SEPARATOR:=':'}  ;;
+	os2*)	PATH_SEPARATOR=';'  ;;
+	*)	${PATH_SEPARATOR:=':'}  ;;
 	esac
 ifelse([$1],,,[$1=$PATH_SEPARATOR])
 	AC_SUBST(PATH_SEPARATOR)
@@ -4268,24 +4268,24 @@ else
 fi
 
 case ".[$]$1" in
-(.\[$]\(*\)*|.\'*\'*)
+.\[$]\(*\)*|.\'*\'*)
 	;;
-(..|./*|.\\*)
+..|./*|.\\*)
 	;;
-(.[[a-zA-Z]]:[[\\/]]*) # OS/2 EMX
+.[[a-zA-Z]]:[[\\/]]*) # OS/2 EMX
 	;;
-(.\[$]{*prefix}*|.\[$]{*dir}*)
+.\[$]{*prefix}*|.\[$]{*dir}*)
 	eval $1="[$]$1"
 	case ".[$]$1" in
-	(.NONE/*)
+	.NONE/*)
 		$1=`echo [$]$1 | sed -e s%NONE%$cf_path_syntax%`
 		;;
 	esac
 	;;
-(.no|.NONE/*)
+.no|.NONE/*)
 	$1=`echo [$]$1 | sed -e s%NONE%$cf_path_syntax%`
 	;;
-(*)
+*)
 	ifelse([$2],,[AC_MSG_ERROR([expected a pathname, not \"[$]$1\"])],$2)
 	;;
 esac
@@ -4349,15 +4349,15 @@ AC_ARG_WITH(pkg-config,
 AC_MSG_RESULT($cf_pkg_config)
 
 case $cf_pkg_config in
-(no)
+no)
 	PKG_CONFIG=none
 	;;
-(yes)
+yes)
 	CF_ACVERSION_CHECK(2.52,
 		[AC_PATH_TOOL(PKG_CONFIG, pkg-config, none)],
 		[AC_PATH_PROG(PKG_CONFIG, pkg-config, none)])
 	;;
-(*)
+*)
 	PKG_CONFIG=$withval
 	;;
 esac
@@ -4405,14 +4405,14 @@ make an error
 	[cf_cv_posix_c_source=no],
 	[cf_want_posix_source=no
 	 case .$cf_POSIX_C_SOURCE in
-	 (.[[12]]??*)
+	 .[[12]]??*)
 		cf_cv_posix_c_source="-D_POSIX_C_SOURCE=$cf_POSIX_C_SOURCE"
 		;;
-	 (.2)
+	 .2)
 		cf_cv_posix_c_source="-D_POSIX_C_SOURCE=$cf_POSIX_C_SOURCE"
 		cf_want_posix_source=yes
 		;;
-	 (.*)
+	 .*)
 		cf_want_posix_source=yes
 		;;
 	 esac
@@ -4514,7 +4514,7 @@ AC_DEFUN([CF_PROG_EXT],
 [
 AC_REQUIRE([CF_CHECK_CACHE])
 case $cf_cv_system_name in
-(os2*)
+os2*)
 	CFLAGS="$CFLAGS -Zmt"
 	CF_APPEND_TEXT(CPPFLAGS,-D__ST_MT_ERRNO__)
 	CXXFLAGS="$CXXFLAGS -Zmt"
@@ -4867,7 +4867,7 @@ done
 if test "$cf_cv_sizechange" != no ; then
 	AC_DEFINE(HAVE_SIZECHANGE,1,[Define to 1 if sizechange declarations are provided])
 	case $cf_cv_sizechange in
-	(NEED*)
+	NEED*)
 		AC_DEFINE_UNQUOTED($cf_cv_sizechange )
 		;;
 	esac
@@ -4980,9 +4980,9 @@ sys/termio.h \
 
 if test "$ac_cv_header_termios_h" = yes ; then
 	case "$CFLAGS $CPPFLAGS" in
-	(*-D_POSIX_SOURCE*)
+	*-D_POSIX_SOURCE*)
 		termios_bad=dunno ;;
-	(*)	termios_bad=maybe ;;
+	*)	termios_bad=maybe ;;
 	esac
 	if test "$termios_bad" = maybe ; then
 	AC_MSG_CHECKING(whether termios.h needs _POSIX_SOURCE)
@@ -5094,7 +5094,7 @@ AC_TRY_LINK([],[char *x=(char*)tgoto("",0,0)],
 ],[
 ifelse([$1],,,[
 case "$1" in
-(ncurses*)
+ncurses*)
 	CF_NCURSES_CONFIG($1)
 	cf_cv_termlib=terminfo
 	;;
@@ -5178,10 +5178,10 @@ dnl but some packagers change this, breaking various applications.
 AC_DEFUN([CF_TERM_HEADER],[
 AC_CACHE_CHECK(for terminfo header, cf_cv_term_header,[
 case ${cf_cv_ncurses_header} in
-(*/ncurses.h|*/ncursesw.h)
+*/ncurses.h|*/ncursesw.h)
 	cf_term_header=`echo "$cf_cv_ncurses_header" | sed -e 's%ncurses[[^.]]*\.h$%term.h%'`
 	;;
-(*)
+*)
 	cf_term_header=term.h
 	;;
 esac
@@ -5202,16 +5202,16 @@ done
 # Set definitions to allow ifdef'ing to accommodate subdirectories
 
 case $cf_cv_term_header in
-(*term.h)
+*term.h)
 	AC_DEFINE(HAVE_TERM_H,1,[Define to 1 if we have term.h])
 	;;
 esac
 
 case $cf_cv_term_header in
-(ncurses/term.h)
+ncurses/term.h)
 	AC_DEFINE(HAVE_NCURSES_TERM_H,1,[Define to 1 if we have ncurses/term.h])
 	;;
-(ncursesw/term.h)
+ncursesw/term.h)
 	AC_DEFINE(HAVE_NCURSESW_TERM_H,1,[Define to 1 if we have ncursesw/term.h])
 	;;
 esac
@@ -5301,7 +5301,7 @@ AC_DEFUN([CF_TRIM_X_LIBS],[
 	for cf_trim_lib in Xmu Xt X11
 	do
 		case "$LIBS" in
-		(*-l$cf_trim_lib\ *-l$cf_trim_lib*)
+		*-l$cf_trim_lib\ *-l$cf_trim_lib*)
 			LIBS=`echo "$LIBS " | sed -e 's/  / /g' -e 's%-l'"$cf_trim_lib"' %%' -e 's/ $//'`
 			CF_VERBOSE(..trimmed $LIBS)
 			;;
@@ -5439,12 +5439,12 @@ done
 ])
 
 case $cf_cv_type_outchar in
-(int*)
+int*)
 	AC_DEFINE(OUTC_RETURN,1,[Define to 1 if tputs outc function returns a value])
 	;;
 esac
 case $cf_cv_type_outchar in
-(*char*)
+*char*)
 	AC_DEFINE(OUTC_ARGS,char c,[Define to actual type to override tputs outc parameter type])
 	;;
 esac
@@ -5577,10 +5577,10 @@ fi # cf_cv_have___va_copy
 fi # cf_cv_have_va_copy
 
 case "${cf_cv_have_va_copy}${cf_cv_have___va_copy}${cf_cv_have___builtin_va_copy}" in
-(*yes*)
+*yes*)
 	;;
 
-(*)
+*)
 	AC_CACHE_CHECK(if we can simply copy va_list, cf_cv_pointer_va_list,[
 AC_TRY_LINK([
 #include <stdarg.h>
@@ -5841,7 +5841,7 @@ AC_TRY_LINK([
 ])
 
 case $cf_cv_need_xopen_extension in
-(*_*)
+*_*)
 	CF_APPEND_TEXT(CPPFLAGS,-D$cf_cv_need_xopen_extension)
 	;;
 esac
@@ -5865,20 +5865,20 @@ cf_POSIX_C_SOURCE=ifelse([$2],,199506L,[$2])
 cf_xopen_source=
 
 case $host_os in
-(aix[[4-7]]*)
+aix[[4-7]]*)
 	cf_xopen_source="-D_ALL_SOURCE"
 	;;
-(msys)
+msys)
 	cf_XOPEN_SOURCE=600
 	;;
-(darwin[[0-8]].*)
+darwin[[0-8]].*)
 	cf_xopen_source="-D_APPLE_C_SOURCE"
 	;;
-(darwin*)
+darwin*)
 	cf_xopen_source="-D_DARWIN_C_SOURCE"
 	cf_XOPEN_SOURCE=
 	;;
-(freebsd*|dragonfly*|midnightbsd*)
+freebsd*|dragonfly*|midnightbsd*)
 	# 5.x headers associate
 	#	_XOPEN_SOURCE=600 with _POSIX_C_SOURCE=200112L
 	#	_XOPEN_SOURCE=500 with _POSIX_C_SOURCE=199506L
@@ -5886,56 +5886,56 @@ case $host_os in
 	cf_XOPEN_SOURCE=600
 	cf_xopen_source="-D_BSD_TYPES -D__BSD_VISIBLE -D_POSIX_C_SOURCE=$cf_POSIX_C_SOURCE -D_XOPEN_SOURCE=$cf_XOPEN_SOURCE"
 	;;
-(hpux11*)
+hpux11*)
 	cf_xopen_source="-D_HPUX_SOURCE -D_XOPEN_SOURCE=500"
 	;;
-(hpux*)
+hpux*)
 	cf_xopen_source="-D_HPUX_SOURCE"
 	;;
-(irix[[56]].*)
+irix[[56]].*)
 	cf_xopen_source="-D_SGI_SOURCE"
 	cf_XOPEN_SOURCE=
 	;;
-(linux*|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin)
+linux*|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin)
 	CF_GNU_SOURCE($cf_XOPEN_SOURCE)
 	;;
-(minix*)
+minix*)
 	cf_xopen_source="-D_NETBSD_SOURCE" # POSIX.1-2001 features are ifdef'd with this...
 	;;
-(mirbsd*)
+mirbsd*)
 	# setting _XOPEN_SOURCE or _POSIX_SOURCE breaks <sys/select.h> and other headers which use u_int / u_short types
 	cf_XOPEN_SOURCE=
 	CF_POSIX_C_SOURCE($cf_POSIX_C_SOURCE)
 	;;
-(netbsd*)
+netbsd*)
 	cf_xopen_source="-D_NETBSD_SOURCE" # setting _XOPEN_SOURCE breaks IPv6 for lynx on NetBSD 1.6, breaks xterm, is not needed for ncursesw
 	;;
-(openbsd[[4-9]]*)
+openbsd[[4-9]]*)
 	# setting _XOPEN_SOURCE lower than 500 breaks g++ compile with wchar.h, needed for ncursesw
 	cf_xopen_source="-D_BSD_SOURCE"
 	cf_XOPEN_SOURCE=600
 	;;
-(openbsd*)
+openbsd*)
 	# setting _XOPEN_SOURCE breaks xterm on OpenBSD 2.8, is not needed for ncursesw
 	;;
-(osf[[45]]*)
+osf[[45]]*)
 	cf_xopen_source="-D_OSF_SOURCE"
 	;;
-(nto-qnx*)
+nto-qnx*)
 	cf_xopen_source="-D_QNX_SOURCE"
 	;;
-(sco*)
+sco*)
 	# setting _XOPEN_SOURCE breaks Lynx on SCO Unix / OpenServer
 	;;
-(solaris2.*)
+solaris2.*)
 	cf_xopen_source="-D__EXTENSIONS__"
 	cf_cv_xopen_source=broken
 	;;
-(sysv4.2uw2.*) # Novell/SCO UnixWare 2.x (tested on 2.1.2)
+sysv4.2uw2.*) # Novell/SCO UnixWare 2.x (tested on 2.1.2)
 	cf_XOPEN_SOURCE=
 	cf_POSIX_C_SOURCE=
 	;;
-(*)
+*)
 	CF_TRY_XOPEN_SOURCE
 	CF_POSIX_C_SOURCE($cf_POSIX_C_SOURCE)
 	;;
@@ -6058,9 +6058,9 @@ int check = XmuCompareISOLatin1("big", "small")
 			then
 				# workaround for broken ".pc" files...
 				case "$cf_x_athena_lib" in
-				(*-lXmu*)
+				*-lXmu*)
 					;;
-				(*)
+				*)
 					CF_VERBOSE(work around broken package)
 					cf_save_xmu="$LIBS"
 					cf_first_lib=`echo "$cf_save_xmu" | sed -e 's/^[ ][ ]*//' -e 's/ .*//'`
@@ -6233,9 +6233,9 @@ cf_have_X_LIBS=no
 CF_TRY_PKG_CONFIG(xt,[
 
 	case "x$LIBS" in
-	(*-lX11*)
+	*-lX11*)
 		;;
-	(*)
+	*)
 # we have an "xt" package, but it may omit Xt's dependency on X11
 AC_CACHE_CHECK(for usable X dependency,cf_cv_xt_x11_compat,[
 AC_TRY_LINK([
@@ -6265,11 +6265,11 @@ AC_TRY_LINK([
 	then
 		# workaround for broken ".pc" files used for X Toolkit.
 		case "x$X_PRE_LIBS" in
-		(*-lICE*)
+		*-lICE*)
 			case "x$LIBS" in
-			(*-lICE*)
+			*-lICE*)
 				;;
-			(*)
+			*)
 				CF_VERBOSE(work around broken ICE dependency)
 				CF_TRY_PKG_CONFIG(ice,
 					[CF_TRY_PKG_CONFIG(sm)],
