@@ -505,7 +505,8 @@ CF_ARG_WITH(nntp-default-server,
 
     if test "$NNTP_DEFAULT_SERVER" = "" ; then
 	if test "$DOMAIN_NAME" != "" ; then
-		test -z "$NNTP_DEFAULT_SERVER" && case "$DOMAIN_NAME" in #(((
+		test -z "$NNTP_DEFAULT_SERVER" && \
+		case "$DOMAIN_NAME" in #(((
 	 	/*)
 			if test -r "$DOMAIN_NAME" ; then
 				NNTP_DEFAULT_SERVER="news.`cat $DOMAIN_NAME`"
