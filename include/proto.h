@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2018-02-13
+ *  Updated   : 2019-02-18
  *  Notes     :
  *
  * Copyright (c) 1997-2019 Urs Janssen <urs@tin.org>
@@ -130,9 +130,9 @@ extern int InitScreen(void);
 extern int RawState(void);
 extern int ReadCh(void);
 extern int get_arrow_key(int prech);
-#if defined(M_UNIX) && !defined(USE_CURSES)
+#if !defined(USE_CURSES)
 	extern int get_termcaps(void);
-#endif /* M_UNIX && !USE_CURSES */
+#endif /* !USE_CURSES */
 extern void EndInverse(void);
 extern void EndWin(void);
 extern void InitWin(void);
@@ -365,7 +365,7 @@ extern t_bool backup_file(const char *filename, const char *backupname);
 extern t_bool copy_fp(FILE *fp_ip, FILE *fp_op);
 extern t_bool invoke_cmd(const char *nam);
 extern t_bool invoke_editor(const char *filename, int lineno, struct t_group *group);
-extern t_bool mail_check(void);
+extern t_bool mail_check(const char *mailbox_name);
 extern void append_file(char *old_filename, char *new_filename);
 extern void asfail(const char *file, int line, const char *cond);
 extern void base_name(const char *fullpath, char *file);
@@ -402,9 +402,6 @@ extern void toggle_inverse_video(void);
 #ifdef HAVE_ISPELL
 	extern t_bool invoke_ispell(const char *nam, struct t_group *group);
 #endif /* HAVE_ISPELL */
-#ifndef M_UNIX
-	extern void make_post_process_cmd(char *cmd, char *dir, char *file);
-#endif /* !M_UNIX */
 #ifndef NO_SHELL_ESCAPE
 	extern void shell_escape(void);
 	extern void do_shell_escape(void);
@@ -656,6 +653,8 @@ extern size_t mystrcat(char **t, const char *s);
 extern void my_strncpy(char *p, const char *q, size_t n);
 extern void parse_format_string(const char *fmtstr, struct t_fmt *fmt);
 extern void str_lwr(char *str);
+extern int my_tolower(int);
+extern int my_toupper(int);
 #if !defined(HAVE_STRCASESTR) || defined(DECL_STRCASESTR)
 	extern char *strcasestr(const char *haystack, const char *needle);
 #endif /* !HAVE_STRCASESTR || DECL_STRCASESTR */
@@ -752,8 +751,8 @@ extern t_bool thread_mark_postprocess(int function, t_function feed_type, int re
 extern void fixup_thread(int respnum, t_bool redraw);
 
 /* version.c */
-extern enum rc_state check_upgrade(char *line, const char *skip, const char *version);
-extern void upgrade_prompt_quit(enum rc_state reason, const char *file);
+extern struct t_version *check_upgrade(char *line, const char *skip, const char *version);
+extern void upgrade_prompt_quit(struct t_version *upgrade, const char *file);
 
 /* wildmat.c */
 extern t_bool wildmat(const char *text, char *p, t_bool icase);

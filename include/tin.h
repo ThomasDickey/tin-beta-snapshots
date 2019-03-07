@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-11-13
+ *  Updated   : 2019-02-18
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -79,7 +79,9 @@
 #define N_(Str) Str
 
 #if defined(ENABLE_NLS) && !defined(__BUILD__)
-#	include <libintl.h>
+#	ifdef HAVE_LIBINTL_H
+#		include <libintl.h>
+#	endif /* HAVE_LIBINTL_H */
 #	define _(Text)	gettext(Text)
 #else
 #	undef bindtextdomain
@@ -102,7 +104,7 @@
 enum context { cMain, cArt, cAttachment, cAttrib, cConfig, cFilter, cGroup, cHelp, cInfopager, cPage, cPost, cPostCancel, cPostFup, cReconnect, cScope, cSelect, cThread, cURL };
 enum icontext { cNone, cGetline, cPromptCONT, cPromptSLK, cPromptYN };
 enum resizer { cNo, cYes, cRedraw };
-enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
+enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 #include <stdio.h>
 #ifdef HAVE_ERRNO_H
@@ -166,18 +168,6 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 #include <ctype.h>
 
-/*
- * FIXME: make this autoconf
- * get around broken tolower()/toupper() macros on
- * ancient BSDs (at least on sony news os)
- */
-#if defined(__bsd43__) && defined(__sony_news__)
-#	undef tolower
-#	undef toupper
-#	define tolower(c) ((isalpha(c) && isupper(c)) ? ((unsigned char) (c - 'A' + 'a')) : c)
-#	define toupper(c) ((isalpha(c) && islower(c)) ? ((unsigned char) (c - 'a' + 'A')) : c)
-#endif /* __bsd43__ && __sony_news__ */
-
 #ifdef HAVE_STDLIB_H
 #	include <stdlib.h>
 #endif /* HAVE_STDLIB_H */
@@ -187,7 +177,6 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #ifdef HAVE_GETOPT_H
 #	include <getopt.h>
 #endif /* HAVE_GETOPT_H */
-
 
 #if defined(ENABLE_LONG_ARTICLE_NUMBERS) && !defined(SMALL_MEMORY_MACHINE)
 /*
@@ -819,35 +808,33 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  * NEWSRC_LINE =
  */
 
-#ifdef M_UNIX
-#	ifdef PATH_MAX
-#		define PATH_LEN	PATH_MAX
+#ifdef PATH_MAX
+#	define PATH_LEN	PATH_MAX
+#else
+#	ifdef MAXPATHLEN
+#		define PATH_LEN	MAXPATHLEN
 #	else
-#		ifdef MAXPATHLEN
-#			define PATH_LEN	MAXPATHLEN
+#		ifdef _POSIX_PATH_MAX
+#			define PATH_LEN	_POSIX_PATH_MAX
 #		else
-#			ifdef _POSIX_PATH_MAX
-#				define PATH_LEN	_POSIX_PATH_MAX
-#			else
-#				define PATH_LEN	255
-#			endif /* _POSIX_PATH_MAX */
-#		endif /* MAXPATHLEN */
-#	endif /* PATH_MAX */
-#	ifdef HAVE_LONG_FILE_NAMES
-#		ifdef NAME_MAX
-#			define NAME_LEN	NAME_MAX
-#		else
-#			ifdef _POSIX_NAME_MAX
-#				define NAME_LEN	_POSIX_NAME_MAX
-#			else
-#				define NAME_LEN	14
-#			endif /* _POSIX_NAME_MAX */
-#		endif /* NAME_MAX */
+#			define PATH_LEN	255
+#		endif /* _POSIX_PATH_MAX */
+#	endif /* MAXPATHLEN */
+#endif /* PATH_MAX */
+#ifdef HAVE_LONG_FILE_NAMES
+#	ifdef NAME_MAX
+#		define NAME_LEN	NAME_MAX
 #	else
-#		define NAME_LEN	14
-#	endif /* HAVE_LONG_FILE_NAMES */
-#	define LEN	1024
-#endif /* M_UNIX */
+#		ifdef _POSIX_NAME_MAX
+#			define NAME_LEN	_POSIX_NAME_MAX
+#		else
+#			define NAME_LEN	14
+#		endif /* _POSIX_NAME_MAX */
+#	endif /* NAME_MAX */
+#else
+#	define NAME_LEN	14
+#endif /* HAVE_LONG_FILE_NAMES */
+#define LEN	1024
 
 #define NEWSRC_LINE	8192
 #define HEADER_LEN	1024
@@ -943,6 +930,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define TINRC_CONFIRM_ACTION	(tinrc.confirm_choice == 1 || tinrc.confirm_choice == 4 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 7)
 #define TINRC_CONFIRM_TO_QUIT	(tinrc.confirm_choice == 3 || tinrc.confirm_choice == 4 || tinrc.confirm_choice == 6 || tinrc.confirm_choice == 7)
 #define TINRC_CONFIRM_SELECT	(tinrc.confirm_choice == 2 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 6 || tinrc.confirm_choice == 7)
+#define TINRC_CONFIRM_MAX	7
 
 /*
  * defines for tinrc.auto_cc_bcc
@@ -1281,15 +1269,15 @@ enum {
 #ifdef assert
 #	undef assert
 #endif /* assert */
-#if !defined(NDEBUG)
-#	ifdef CPP_DOES_EXPAND
-#		define assert(p)	if(! (p)) asfail(__FILE__, __LINE__, #p); else (void)0;
-#	else
-#		define assert(p)	if(! (p)) asfail(__FILE__, __LINE__, "p"); else (void)0;
-#	endif /* CPP_DOES_EXPAND */
-#else
+#ifdef NDEBUG
 #	define assert(p)        ((void) 0)
-#endif /* !NDEBUG */
+#else
+#	ifdef CPP_DOES_EXPAND
+#		define assert(p)	if(!(p)) asfail(__FILE__, __LINE__, #p); else (void) 0;
+#	else
+#		define assert(p)	if(!(p)) asfail(__FILE__, __LINE__, "p"); else (void) 0;
+#	endif /* CPP_DOES_EXPAND */
+#endif /* NDEBUG */
 
 #define ESC	27
 
@@ -2098,49 +2086,21 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 #define MOUSE_BUTTON_2		1
 #define MOUSE_BUTTON_3		2
 
+
+#define REDIRECT_OUTPUT		"> /dev/null 2>&1"
+#define REDIRECT_PGP_OUTPUT		"> /dev/null"
+#define ENV_VAR_MAILER		"MAILER"
+#define ENV_VAR_SHELL		"SHELL"
 #define TIN_EDITOR_FMT_OFF		"%E %F"
-
-#ifdef M_UNIX
-#	define REDIRECT_OUTPUT		"> /dev/null 2>&1"
-#	define REDIRECT_PGP_OUTPUT		"> /dev/null"
-#	define ENV_VAR_MAILER		"MAILER"
-#	define ENV_VAR_SHELL		"SHELL"
-#	define TIN_EDITOR_FMT_ON		"%E +%N %F"
-#	define MAILER_FORMAT		"%M -oi -t < %F"
-#	define TMPDIR	get_val("TMPDIR", _PATH_TMP)
-#	ifdef HAVE_KEY_PREFIX
-#		define KEY_PREFIX		0x8f: case 0x9b
-#	endif /* HAVE_KEY_PREFIX */
-#endif /* M_UNIX */
-
-/* fallback values */
-/* FIXME! */
-#ifndef REDIRECT_OUTPUT
-#	define REDIRECT_OUTPUT		""
-#endif /* !REDIRECT_OUTPUT */
-#ifndef REDIRECT_PGP_OUTPUT
-#	define REDIRECT_PGP_OUTPUT		""
-#endif /* !REDIRECT_PGP_OUTPUT */
-#ifndef ENV_VAR_MAILER
-#	define ENV_VAR_MAILER		""
-#endif /* !ENV_VAR_MAILER */
-#ifndef ENV_VAR_SHELL
-#	define ENV_VAR_SHELL		""
-#endif /* !ENV_VAR_SHELL */
-#ifndef TIN_EDITOR_FMT_ON
-#	define TIN_EDITOR_FMT_ON		TIN_EDITOR_FMT_OFF
-#endif /* !TIN_EDITOR_FMT_ON */
-#ifndef MAILER_FORMAT
-#	define MAILER_FORMAT		""
-#endif /* !MAILER_FORMAT */
-#ifndef TMPDIR
-#	define TMPDIR	_PATH_TMP
-#endif /* !TMPDIR */
+#define TIN_EDITOR_FMT_ON		"%E +%N %F"
+#define MAILER_FORMAT		"%M -oi -t < %F"
+#define TMPDIR	get_val("TMPDIR", _PATH_TMP)
+#ifdef HAVE_KEY_PREFIX
+#	define KEY_PREFIX		0x8f: case 0x9b
+#endif /* HAVE_KEY_PREFIX */
 
 #if !defined(S_ISDIR)
-#	if defined(M_UNIX)
-#		define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
-#	endif /* M_UNIX */
+#	define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
 #endif /* !S_ISDIR */
 
 #if !defined(S_ISREG)
@@ -2406,21 +2366,27 @@ extern struct tm *localtime(time_t *);
  * If we have va_copy(), use it for assigning va_list's.
  */
 #if defined(HAVE___VA_COPY)
-#define begin_va_copy(dst,src)	__va_copy(dst, src)
-#define end_va_copy(dst)	va_end(dst)
-#elif defined(va_copy) || defined(HAVE_VA_COPY)
-#define begin_va_copy(dst,src)	va_copy(dst, src)
-#define end_va_copy(dst)	va_end(dst)
-#elif defined(HAVE___BUILTIN_VA_COPY)
-#define begin_va_copy(dst,src)	__builtin_va_copy(dst, src)
-#define end_va_copy(dst)	va_end(dst)
-#elif defined(ARRAY_VA_LIST)
-#define begin_va_copy(dst,src) *(dst) = *(src)
-#define end_va_copy(dst)	/* nothing */
+#	define begin_va_copy(dst,src)	__va_copy(dst, src)
+#	define end_va_copy(dst)	va_end(dst)
 #else
-#define begin_va_copy(dst,src) (dst) = (src)
-#define end_va_copy(dst)	/* nothing */
-#endif
+#	if defined(va_copy) || defined(HAVE_VA_COPY)
+#		define begin_va_copy(dst,src)	va_copy(dst, src)
+#		define end_va_copy(dst)	va_end(dst)
+#	else
+#		if defined(HAVE___BUILTIN_VA_COPY)
+#			define begin_va_copy(dst,src)	__builtin_va_copy(dst, src)
+#			define end_va_copy(dst)	va_end(dst)
+#		else
+#			if defined(ARRAY_VA_LIST)
+#				define begin_va_copy(dst,src)	*(dst) = *(src)
+#				define end_va_copy(dst)	/* nothing */
+#			else
+#				define begin_va_copy(dst,src)	(dst) = (src)
+#				define end_va_copy(dst)	/* nothing */
+#			endif /* ARRAY_VA_LIST */
+#		endif /* HAVE___BUILTIN_VA_COPY */
+#	endif /* va_copy || HAVE_VA_COPY */
+#endif /* HAVE___VA_COPY */
 
 /* snprintf(), vsnprintf() */
 #ifndef HAVE_SNPRINTF
@@ -2475,6 +2441,12 @@ extern struct tm *localtime(time_t *);
 struct t_overview_fmt {
 	char *name;
 	enum f_type type;
+};
+
+struct t_version {
+	enum rc_state state;
+	int file_version;		/* rc_majorv * 10000 + rc_minorv * 100 + rc_subv */
+/*	int current_version;*/	/* c_majorv * 10000 + c_minorv * 100 + c_subv */
 };
 
 #endif /* !TIN_H */

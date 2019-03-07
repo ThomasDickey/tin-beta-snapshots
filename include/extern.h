@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-18
+ *  Updated   : 2019-02-18
  *  Notes     :
  *
  * Copyright (c) 1997-2019 Iain Lea <iain@bricbrac.de>
@@ -539,9 +539,9 @@ extern constext txt_cannot_filter_on_path[];
 #ifdef NNTP_ABLE
 	extern constext txt_cannot_get_nntp_server_name[];
 #endif /* NNTP_ABLE */
-#if !defined(USE_CURSES) && defined(M_UNIX) && !defined(USE_TERMINFO)
+#if !defined(USE_CURSES) && !defined(USE_TERMINFO)
 	extern constext txt_cannot_get_term_entry[];
-#endif /* !USE_CURSES && M_UNIX && !USE_TERMINFO */
+#endif /* !USE_CURSES && !USE_TERMINFO */
 extern constext txt_cannot_open[];
 extern constext txt_cannot_open_for_saving[];
 extern constext txt_cannot_post[];
@@ -559,9 +559,9 @@ extern constext txt_caughtup[];
 extern constext txt_check_article[];
 extern constext txt_checking_for_news[];
 extern constext txt_checking_new_groups[];
-#if !defined(HAVE_LIBUU) && defined(M_UNIX) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
+#if !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
 	extern constext txt_checksum_of_file[];
-#endif /* !HAVE_LIBUU && M_UNIX && HAVE_SUM && !DONT_HAVE_PIPING */
+#endif /* !HAVE_LIBUU && && HAVE_SUM && !DONT_HAVE_PIPING */
 extern constext txt_choose_post_process_type[];
 #ifdef HAVE_COLOR
 	extern constext txt_color_off[];
@@ -1339,10 +1339,10 @@ extern constext txt_warn_cancel[];
 #endif /* CHARSET_CONVERSION */
 extern constext txt_warn_downgrade[];
 extern constext txt_warn_encoding_and_external_inews[];
-#ifdef FOLLOW_USEFOR_DRAFT
+#ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 	extern constext txt_warn_header_line_comma[];
 	extern constext txt_warn_header_line_groups_contd[];
-#endif /* FOLLOW_USEFOR_DRAFT */
+#endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 extern constext txt_warn_example_hierarchy[];
 extern constext txt_warn_multiple_sigs[];
 extern constext txt_warn_newsrc[];
@@ -1638,10 +1638,10 @@ extern t_bool word_highlight;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 
 
-#ifndef FOLLOW_USEFOR_DRAFT
+#ifndef ALLOW_FWS_IN_NEWSGROUPLIST
 	extern constext txt_error_header_line_comma[];
 	extern constext txt_error_header_line_groups_contd[];
-#endif /* !FOLLOW_USEFOR_DRAFT */
+#endif /* !ALLOW_FWS_IN_NEWSGROUPLIST */
 
 #ifdef HAVE_PGP_GPG
 	extern constext txt_pgp_add[];

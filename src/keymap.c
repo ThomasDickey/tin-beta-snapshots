@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2018-01-30
+ *  Updated   : 2019-02-04
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2019 Dirk Nimmich <nimmich@muenster.de>
@@ -326,7 +326,7 @@ read_keymap_file(
 	char *line, *keydef, *kname;
 	char *map, *ptr;
 	char buf[LEN], buff[NAME_LEN + 1], filename[PATH_LEN];
-	enum rc_state upgrade = RC_CHECK;
+	struct t_version *upgrade = NULL;
 	t_bool ret = TRUE;
 
 	/*
@@ -371,14 +371,16 @@ read_keymap_file(
 	/* check if keymap file is uptodate */
 	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
 		if (line[0] == '#') {
-			if (upgrade == RC_CHECK && match_string(buf, "# Keymap file V", NULL, 0)) {
+			if (upgrade == NULL && match_string(buf, "# Keymap file V", NULL, 0)) {
 				/* TODO: keymap downgrade */
-				if ((upgrade = check_upgrade(line, "# Keymap file V", KEYMAP_VERSION)) == RC_UPGRADE) {
+				upgrade = check_upgrade(line, "# Keymap file V", KEYMAP_VERSION);
+				if (upgrade->state == RC_UPGRADE) {
 					fclose(fp);
 					upgrade_keymap_file(map);
-					upgrade = RC_IGNORE;
+					upgrade->state = RC_IGNORE;
 					if (!(fp = fopen(map, "r"))) { /* TODO: issue error message? */
 						free(map);
+						FreeAndNull(upgrade);
 						return TRUE;
 					}
 				}
@@ -423,10 +425,11 @@ read_keymap_file(
 	}
 	fclose(fp);
 	setup_default_keys();
-	if (upgrade != RC_IGNORE)
+	if (upgrade && upgrade->state != RC_IGNORE)
 		upgrade_prompt_quit(upgrade, map);
 
 	free(map);
+	FreeAndNull(upgrade);
 	return ret;
 }
 
@@ -2219,7 +2222,7 @@ upgrade_keymap_file(
 					fprintf(newfp, "PageToggleRaw\t\t\t%s\n", keydef);
 				else if (strcmp(keyname, "PromptNo") == 0 || strcmp(keyname, "PromptYes") == 0) {
 					if (strlen(keydef) == 1 && islower((int)(unsigned char) keydef[0]))
-						fprintf(newfp, "%s\t\t\t%c\t%c\n", keyname, keydef[0], toupper((int)(unsigned char) keydef[0]));
+						fprintf(newfp, "%s\t\t\t%c\t%c\n", keyname, keydef[0], my_toupper((int)(unsigned char) keydef[0]));
 					else
 						fprintf(newfp, "%s", backup);
 				} else

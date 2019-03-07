@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2018-02-16
+ *  Updated   : 2019-01-28
  *  Notes     :
  *
  * Copyright (c) 1992-2019 Iain Lea <iain@bricbrac.de>
@@ -199,6 +199,12 @@ process_bogus(
 
 	active_add(ptr, T_ARTNUM_CONST(0), T_ARTNUM_CONST(1), T_ARTNUM_CONST(0), "n");
 	ptr->bogus = TRUE;		/* Mark it bogus */
+	/*
+	 * Set pointer to default attributes
+	 */
+	if (ptr->attribute && !ptr->attribute->global)
+		free(ptr->attribute);
+	ptr->attribute = scopes[0].attribute;
 
 	if (my_group_add(name, FALSE) < 0)
 		return TRUE;
@@ -329,7 +335,6 @@ do_read_newsrc_active_file(
 	int index_i = 0;
 	int index_o = 0;
 #endif /* NNTP_ABLE */
-
 
 	rewind(fp);
 
@@ -746,9 +751,9 @@ read_news_active_file(
 	FILE *fp;
 	int newgrps = 0;
 	t_bool do_group_cmds = !nntp_caps.list_counts;
-#ifdef NNTP_ABLE
+#if defined(NNTP_ABLE) && !defined(DISABLE_PIPELINING)
 	t_bool did_list_cmd = FALSE;
-#endif /* NNTP_ABLE */
+#endif /* NNTP_ABLE && !DISABLE_PIPELINING */
 
 	/*
 	 * Ignore -n if no .newsrc can be found or .newsrc is empty
@@ -769,7 +774,9 @@ read_news_active_file(
 	/* Read an active file if it is allowed */
 	if (list_active) {
 #ifdef NNTP_ABLE
+#	ifndef DISABLE_PIPELINING
 		did_list_cmd = TRUE;
+#	endif /* !DISABLE_PIPELINING */
 		if (read_news_via_nntp && nntp_caps.list_counts)
 			read_active_counts();
 		else
@@ -1125,7 +1132,7 @@ match_group_list(
 		separator = strchr(group_list, ',');
 		group_len = MIN(((separator == NULL) ? list_len : (size_t) (separator - group_list)), sizeof(pattern) - 1);
 
-		if ((negate = ('!' == *group_list))) {
+		if ((negate = (*group_list == '!'))) {
 			/*
 			 * a '!' before the pattern inverts sense of match
 			 */
@@ -1147,7 +1154,7 @@ match_group_list(
 		/*
 		 * now examine next entry if any
 		 */
-		if ((char) 0 != group_list[group_len])
+		if (group_list[group_len] != '\0')
 			group_len++;	/* skip the separator */
 
 		group_list += group_len;

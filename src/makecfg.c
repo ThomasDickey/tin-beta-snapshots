@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2016-11-18
+ *  Updated   : 2019-02-04
  *  Notes     : #defines and structs for options_menu.c
  *
  * Copyright (c) 1997-2019 Thomas E. Dickey <dickey@invisible-island.net>
@@ -72,7 +72,7 @@ open_it(
 {
 	FILE *fp = fopen(filename, mode);
 
-	if (fp == 0)
+	if (fp == NULL)
 		failed(filename);
 	return fp;
 }
@@ -99,14 +99,14 @@ store_data(
 	if ((p = (MYDATA *) malloc(sizeof(MYDATA))) == NULL)
 		failed("malloc() failed");
 
-	p->link = 0;
+	p->link = NULL;
 	p->name = string_dup(name);
 	p->type = string_dup(type);
 
-	if ((q = all_data) == 0)
+	if ((q = all_data) == NULL)
 		all_data = p;
 	else {
-		while (q->link != 0)
+		while (q->link != NULL)
 			q = q->link;
 		q->link = p;
 	}
@@ -151,7 +151,7 @@ write_it(
 {
 	int n;
 
-	for (n = 0; table[n] != 0; n++)
+	for (n = 0; table[n] != NULL; n++)
 		fprintf(ofp, "%s\n", table[n]);
 }
 
@@ -162,7 +162,7 @@ index_of(
 	int result = 0;
 	MYDATA *q;
 
-	for (q = all_data; q != 0 && q != p; q = q->link) {
+	for (q = all_data; q != NULL && q != p; q = q->link) {
 		if (!strcmp(p->type, q->type)) {
 			result++;
 		}
@@ -227,7 +227,7 @@ generate_tbl(
 
 	/* generate the access table */
 	write_it(ofp, table_1);
-	for (p = all_data; p != 0; p = p->link) {
+	for (p = all_data; p != NULL; p = p->link) {
 		if (p->name[0] == '#')
 			fprintf(ofp, "%s\n", p->name);
 		else {
@@ -284,7 +284,7 @@ generate_enum(
 
 	/* generate enumerated type */
 	write_it(ofp2, table_1);
-	for (p = all_data; p != 0; p = p->link) {
+	for (p = all_data; p != NULL; p = p->link) {
 		if (p->name[0] == '#')
 			fprintf(ofp2, "%s\n", p->name);
 		else {
@@ -293,8 +293,8 @@ generate_enum(
 			fprintf(ofp2, "\tOPT_");
 			while (*s != '\0') {
 				fprintf(ofp2, "%c",
-					 isalpha ((unsigned char)*s) && islower((unsigned char)*s)
-					 ? toupper ((unsigned char)*s)
+					 (*s >= 'a' && *s <= 'z')
+					 ? ((unsigned char) ((*s) -'a' + 'A'))
 					 : *s);
 				s++;
 			}
@@ -328,21 +328,21 @@ generate_ptr(
 	}
 	after = FALSE;
 
-	for (p = all_data, q = 0; p != 0; p = p->link) {
+	for (p = all_data, q = NULL; p != NULL; p = p->link) {
 		if (p->name[0] == '#') {
 			if (!strcmp(p->name, "#endif")) {
 				if (after) {
 					fprintf(ofp, "%s\n", p->name);
 					after = FALSE;
 				}
-				q = 0;
+				q = NULL;
 			} else {
 				q = p;
 			}
 		} else if (!strcmp(p->type, opt_type)) {
-			if (q != 0) {
+			if (q != NULL) {
 				fprintf(ofp, "%s\n", q->name);
-				q = 0;
+				q = NULL;
 				after = TRUE;
 			}
 			switch (mode) {
@@ -472,7 +472,7 @@ makecfg(
 	 * For each type used in the table, generate a list of pointers to
 	 * that type.
 	 */
-	for (p = all_data; p != 0; p = p->link) {
+	for (p = all_data; p != NULL; p = p->link) {
 		int found = FALSE;
 
 		if (p->name[0] == '#')

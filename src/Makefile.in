@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2018-01-10
+# Updated: 2019-02-04
 #
 # Copyright (c) 1995-2019 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -51,9 +51,8 @@ PRELIB		= @LIB_PREFIX@
 x		= @EXEEXT@
 o		= .@OBJEXT@
 
-DEBUG		= @ENABLE_DEBUG@ -DDEBUG #-DPROFILE
-FEATURES	= # -DEVIL_INSIDE
-
+DEBUG		= @ENABLE_DEBUG@ -DDEBUG # -DPROFILE
+FEATURES	= # -DALLOW_FWS_IN_NEWSGROUPLIST # -DEVIL_INSIDE
 INTL_CPPFLAGS	= -DLOCALEDIR=\"$(prefix)/@DATADIRNAME@/locale\"
 PCRE_CPPFLAGS	= @PCREDIR_CPPFLAGS@ @PCREDIR_MAKE@ -I$(top_builddir)/pcre -I$(top_srcdir)/pcre
 
@@ -84,7 +83,7 @@ INS_SYSDEF_DIR	= @TIN_DEFAULTS_DIR@
 INS_MANUAL_EXT	= 1
 INS_OLD_SUFFIX	= old
 
-MAN_LINGUAS = de en_GB
+MAN_LINGUAS = de en_GB es
 
 # Project
 PROJECT	= `echo @PACKAGE@|sed '@program_transform_name@'`
@@ -310,7 +309,7 @@ $(OBJDIR)/parsdate.c : $(SRCDIR)/parsdate.y
 
 $(BINDIR)/$(EXE) : $(OFILES) $(EXTRALIBS)
 	@$(ECHO) "Linking $(EXE) v$(VER) ..."
-	$(CC) $(LDFLAGS) -o $(BINDIR)/$(EXE) $(OFILES) $(LINK_LIBS) $(DEBUG)
+	$(CC) $(LDFLAGS) -o $(BINDIR)/$(EXE) $(OFILES) $(LINK_LIBS)
 	@$(LS) -l $(BINDIR)/$(EXE)
 
 help :

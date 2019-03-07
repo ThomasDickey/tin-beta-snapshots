@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2018-01-10
+# Updated: 2018-12-04
 #
 
 SHELL	= @SHELL@
@@ -9,9 +9,9 @@ SHELL	= @SHELL@
 PROJECT	= tin
 LVER	= 2
 PVER	= 4
-SVER	= 3
+SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20181119
+DVER	= 20190307
 EXE	= tin
 
 # directory structure
@@ -333,6 +333,8 @@ POFILES = \
 	$(PODIR)/de.po \
 	$(PODIR)/en_GB.gmo \
 	$(PODIR)/en_GB.po \
+	$(PODIR)/es.gmo \
+	$(PODIR)/es.po \
 	$(PODIR)/et.gmo \
 	$(PODIR)/et.po \
 	$(PODIR)/fr.gmo \
@@ -356,6 +358,9 @@ L10NFILES = \
 	$(L10NDIR)/en_GB/tin.1 \
 	$(L10NDIR)/en_GB/tin.5 \
 	$(L10NDIR)/en_GB.po \
+	$(L10NDIR)/es/tin.1 \
+	$(L10NDIR)/es/tin.5 \
+	$(L10NDIR)/es.po \
 	$(L10NDIR)/tin-man.pot
 
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES) $(L10NFILES)

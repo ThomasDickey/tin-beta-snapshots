@@ -1118,7 +1118,7 @@ stat_thread(
 	struct t_art_stat *sbuf) /* return value is always ignored */
 {
 	int i;
-	MultiPartInfo minfo = { 0 };
+	MultiPartInfo minfo = {0};
 
 	sbuf->total = 0;
 	sbuf->unread = 0;

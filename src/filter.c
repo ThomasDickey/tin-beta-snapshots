@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2018-02-11
+ *  Updated   : 2019-02-18
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
@@ -327,7 +327,7 @@ read_filter_file(
 	t_bool expired_time = FALSE;
 	time_t current_secs = (time_t) 0;
 	static t_bool first_read = TRUE;
-	enum rc_state upgrade = RC_CHECK;
+	struct t_version *upgrade = NULL;
 
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
@@ -351,16 +351,16 @@ read_filter_file(
 		if (*buf == '#') {
 			if (scope[0] == '\0')
 				filter_file_offset++;
-			if (upgrade == RC_CHECK && first_read && match_string(buf, "# Filter file V", NULL, 0)) {
+			if (upgrade == NULL && first_read && match_string(buf, "# Filter file V", NULL, 0)) {
 				first_read = FALSE;
 				upgrade = check_upgrade(buf, "# Filter file V", FILTER_VERSION);
-				if (upgrade != RC_IGNORE)
+				if (upgrade->state != RC_IGNORE)
 					upgrade_prompt_quit(upgrade, FILTER_FILE); /* TODO: do something (more) useful here */
 			}
 			continue;
 		}
 
-		switch (tolower((unsigned char) buf[0])) {
+		switch (my_tolower((unsigned char) buf[0])) {
 			case 'c':
 				if (match_integer(buf + 1, "ase=", &icase, 1)) {
 					if (ptr && !expired_time)
@@ -622,7 +622,7 @@ read_filter_file(
 					}
 					break;
 				}
-				if (upgrade == RC_UPGRADE) {
+				if (upgrade && upgrade->state == RC_UPGRADE) {
 					char foo[HEADER_LEN];
 
 					if (match_string(buf + 1, "ref_max=", foo, LEN - 1)) {
@@ -649,12 +649,13 @@ read_filter_file(
 	}
 	fclose(fp);
 
-	if (expired || upgrade == RC_UPGRADE)
+	if (expired || (upgrade && upgrade->state == RC_UPGRADE))
 		write_filter_file(file);
 
 	if (!cmd_line && !batch_mode)
 		clear_message();
 
+	FreeAndNull(upgrade);
 	return TRUE;
 }
 
@@ -933,7 +934,7 @@ get_choice(
 			default:
 				break;
 		}
-	} while (ch != '\n' && ch != '\r' && ch != iKeyAbort); /* TODO: replace hardcoded keynames */
+	} while (ch != '\n' && ch != '\r' && ch != iKeyAbort); /* TODO: replace hard coded keynames */
 
 	if (ch == iKeyAbort)
 		return -1;
@@ -1785,7 +1786,7 @@ add_filter_rule(
 	if (filtered) {
 #ifdef DEBUG
 		if (debug & DEBUG_FILTER)
-			wait_message(2, "inscope=[%s] scope=[%s] case=[%d] subj=[%s] from=[%s] msgid=[%s] fullref=[%d] line=[%d %d] time=[%lu]", bool_unparse(ptr[i].inscope), BlankIfNull(rule->scope), ptr[i].icase, BlankIfNull(ptr[i].subj), BlankIfNull(ptr[i].from), BlankIfNull(ptr[i].msgid), ptr[i].fullref, ptr[i].lines_cmp, ptr[i].lines_num, (unsigned long int) ptr[i].time);
+			wait_message(2, "inscope=[%s] scope=[%s] case=[%d] subj=[%s] from=[%s] msgid=[%s] fullref=[%u] line=[%d %d] time=[%lu]", bool_unparse(ptr[i].inscope), BlankIfNull(rule->scope), ptr[i].icase, BlankIfNull(ptr[i].subj), BlankIfNull(ptr[i].from), BlankIfNull(ptr[i].msgid), ptr[i].fullref, ptr[i].lines_cmp, ptr[i].lines_num, (unsigned long int) ptr[i].time);
 #endif /* DEBUG */
 		write_filter_file(filter_file);
 	}

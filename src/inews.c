@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2017-08-13
+ *  Updated   : 2019-02-18
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
@@ -398,14 +398,13 @@ submit_news_file(
 	rfc15211522_encode(name, txt_mime_encodings[(group ? group->attribute->post_mime_encoding : tinrc.post_mime_encoding)], group, (group ? group->attribute->post_8bit_header : tinrc.post_8bit_header), ismail);
 
 #ifdef NNTP_INEWS
-	if (read_news_via_nntp && !read_saved_news && 0 == strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
+	if (read_news_via_nntp && !read_saved_news && !strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
 		ret_code = submit_inews(name, group, a_message_id);
 	else
 #endif /* NNTP_INEWS */
 		{
-#ifdef M_UNIX
 			/* use tinrc.inews_prog or 'inewsdir/inews -h' 'inews -h' */
-			if (0 != strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
+			if (strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
 				STRCPY(buf, tinrc.inews_prog);
 			else {
 				if (*inewsdir)
@@ -415,14 +414,11 @@ submit_news_file(
 			}
 			cp += strlen(cp);
 			sh_format(cp, sizeof(buf) - (cp - buf), " < %s", name);
-#else
-			make_post_cmd(cp, name);
-#endif /* M_UNIX */
 
 			ret_code = invoke_cmd(buf);
 
 #ifdef NNTP_INEWS
-			if (!ret_code && read_news_via_nntp && !read_saved_news && 0 != strcasecmp(tinrc.inews_prog, INTERNAL_CMD)) {
+			if (!ret_code && read_news_via_nntp && !read_saved_news && strcasecmp(tinrc.inews_prog, INTERNAL_CMD)) {
 				if (prompt_yn(_(txt_post_via_builtin_inews), TRUE)) {
 					ret_code = submit_inews(name, group, a_message_id);
 					if (ret_code) {

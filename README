@@ -7,12 +7,12 @@ check your local setup in:
 	include/autoconf.h
 
 compile with:
-	make build (or cd src; make)
+	make build (or cd src && make)
 
 install with:
 	make install
 
-Install at your own risk.
+Install and use at your own risk.
 
 For a more detailed description of all the configure options read
 doc/INSTALL.
@@ -22,6 +22,9 @@ you are running tin on. IF YOU DON'T HAVE A HOST NAME WITH A VALID DOMAIN
 GO AND GET ONE AND CONFIGURE YOUR HOST -- NOW! (This will prevent problems
 with other software, too.) Otherwise users may get "Invalid Sender" error
 messages and won't be able to post using the internal inews.
+
+As the included pcre library is slightly outdated linking against a newer
+version is recommended (configure --with-pcre ; see doc/INSTALL for details).
 
 Before mailing a bug-report to tin-bugs@tin.org please check if you are
 using the latest (stable) release, and if not, please upgrade first! Have a

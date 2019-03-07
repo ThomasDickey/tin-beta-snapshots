@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2018-12-03
+ *  Updated   : 2019-02-18
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2019 Thomas Dickey <dickey@invisible-island.net>
@@ -54,23 +54,10 @@
 #	undef TIN_LIBS
 
 /*
- * If we're able to run the 'configure' script, it's close enough to UNIX for
- * our purposes. (It's predefined on SCO).
- */
-#	ifndef M_UNIX
-#		define M_UNIX
-#	endif /* !M_UNIX */
-
-/*
  * SCO requires special handling
  */
 #	undef NEED_TIMEVAL_FIX
 #	undef NEED_PTEM_H
-
-/*
- * Mac OS X need some extras
- */
-#	undef MAC_OS_X
 
 /*
  * SEIUX has strange struct utsname values
@@ -173,6 +160,7 @@
 #	undef HAVE_IOCTL_H
 #	undef HAVE_LANGINFO_H
 #	undef HAVE_LIBC_H
+#	undef HAVE_LIBINTL_H
 #	undef HAVE_LOCALE_H
 #	undef HAVE_MALLOC_H
 #	undef HAVE_NCURSESW_NCURSES_H
@@ -183,7 +171,6 @@
 #	undef HAVE_NETDB_H
 #	undef HAVE_NETINET_IN_H
 #	undef HAVE_NETLIB_H
-#	undef HAVE_NET_SOCKET_H		/* __BEOS__ */
 #	undef HAVE_NOMACROS_H		/* ncurses 4.1 */
 #	undef HAVE_PATHS_H
 #	undef HAVE_POLL_H
@@ -243,7 +230,6 @@
 #	undef HAVE_BCOPY
 #	undef HAVE_CHMOD
 #	undef HAVE_CLOCK_GETTIME
-#	undef HAVE_CLOSESOCKET		/* __BEOS__ */
 #	undef HAVE_EXECLP
 #	undef HAVE_FCNTL
 #	undef HAVE_FDOPEN
@@ -638,7 +624,8 @@
 
 /*
  * on some old systems the WIFEXITED()/WEXITSTATUS() macros do not work,
- * e.g. SEIUX3.2, DG/UX5.4R3, NEXTSTEP3
+ * e.g. SEIUX3.2, DG/UX5.4R3, NEXTSTEP3, ULTRIX4.5
+ * TODO: write configure check
  */
 #	undef IGNORE_SYSTEM_STATUS
 
@@ -951,6 +938,11 @@ Added missing headers after gettext update, using autoheader
  */
 #	undef FILE_MODE_BROKEN
 
+/*
+ * define if tolower() doesn't work correctly as on NEWS-OS3.3
+ */
+#	undef TOLOWER_BROKEN
+#	undef TOUPPER_BROKEN
 
 /*
  * define if newsserver can't handle pipelined (streamed) commands

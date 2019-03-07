@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-18
+ *  Updated   : 2018-12-18
  *  Notes     :
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1399,7 +1399,7 @@ parse_headers(
 			break;
 
 		unfold_header(ptr);
-		switch (toupper((unsigned char) *ptr)) {
+		switch (my_toupper((unsigned char) *ptr)) {
 			case 'A':	/* Archive-name:  optional */
 				/*
 				 * Archive-name: {name}/{part|patch}{number}
@@ -1792,10 +1792,10 @@ get_path_header(
 		nntp_caps.xpat = FALSE;
 	/* as nntp_caps.hdr may work with other headers we don't disable it*/
 
-#ifdef DEBUG
+#	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "%s: Neither \"[X]HDR Path\" nor \"XPAT Path\" are supportet.", group->name);
-#endif /* DEBUG */
+#	endif /* DEBUG */
 	return supported;
 }
 #endif /* NNTP_ABLE */
@@ -1837,7 +1837,7 @@ read_overview(
 	char art_full_name[HEADER_LEN];
 	char art_from_addr[HEADER_LEN];
 	unsigned int count;
-	int i, expired = 0;
+	int expired = 0;
 	t_artnum artnum;
 	t_bool path_found = FALSE, path_in_ofmt = FALSE;
 	struct t_article *art;
@@ -2257,6 +2257,7 @@ read_overview(
 #if defined(NNTP_ABLE) && defined(XHDR_XREF)
 	if (read_news_via_nntp && !read_saved_news && !xref_supported && nntp_caps.hdr_cmd) {
 		char cbuf[HEADER_LEN];
+		int i;
 		static t_bool found;
 		static t_bool first = TRUE;
 

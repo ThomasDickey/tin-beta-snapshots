@@ -212,10 +212,10 @@ write_mail_active_file(
 				fclose(fp);
 			}
 			i = rename(file_tmp, mail_active_file);
-#ifdef DEBUG
+#	ifdef DEBUG
 			if ((debug & DEBUG_MISC) && i) /* TODO: is this the right debug-level? */
 				perror_message(_(txt_rename_error), file_tmp, mail_active_file);
-#endif /* DEBUG */
+#	endif /* DEBUG */
 		} else
 			unlink(file_tmp);
 	}

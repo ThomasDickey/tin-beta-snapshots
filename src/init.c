@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-15
+ *  Updated   : 2019-02-18
  *  Notes     :
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
@@ -380,11 +380,7 @@ struct t_config tinrc = {
 	TRUE,		/* show_signatures */
 	TRUE,		/* sigdashes */
 	TRUE,		/* signature_repost */
-#ifdef M_UNIX
 	TRUE,		/* start_editor_offset */
-#else
-	FALSE,		/* start_editor_offset */
-#endif /* M_UNIX */
 #ifndef USE_CURSES
 	TRUE,		/* strip_blanks */
 #endif /* !USE_CURSES */
@@ -432,7 +428,7 @@ struct t_config tinrc = {
 #ifdef CHARSET_CONVERSION
 	-1,		/* attrib_mm_network_charset, defaults to $MM_CHARSET */
 	"",		/* attrib_undeclared_charset */
-#endif /* !CHARSET_CONVERSION */
+#endif /* CHARSET_CONVERSION */
 	"",		/* attrib_editor_format */
 	"",		/* attrib_fcc */
 	"",		/* attrib_maildir */
@@ -498,11 +494,7 @@ struct t_config tinrc = {
 	TRUE,		/* attrib_show_signatures */
 	TRUE,		/* attrib_sigdashes */
 	TRUE,		/* attrib_signature_repost */
-#ifdef M_UNIX
 	TRUE,		/* attrib_start_editor_offset */
-#else
-	FALSE,		/* attrib_start_editor_offset */
-#endif /* M_UNIX */
 	FALSE,		/* attrib_tex2iso_conv */
 	TRUE,		/* attrib_thread_catchup_on_exit */
 	TRUE,		/* attrib_verbatim_handling */
@@ -738,9 +730,9 @@ init_selfinfo(
 	index_savedir[0] = '\0';
 	newsrc[0] = '\0';
 
-	snprintf(page_header, sizeof(page_header), "%s %s release %s (\"%s\") [%s%s]",
-		PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
-		(iso2asc_supported >= 0 ? " ISO2ASC" : ""));
+	snprintf(page_header, sizeof(page_header), "%s %s release %s (\"%s\") %s",
+		PRODUCT, VERSION, RELEASEDATE, RELEASENAME,
+		(iso2asc_supported >= 0 ? "[ISO2ASC]" : ""));
 	snprintf(cvers, sizeof(cvers), txt_copyright_notice, page_header);
 
 	default_organization[0] = '\0';
@@ -891,7 +883,11 @@ init_selfinfo(
 #ifdef HAVE_MH_MAIL_HANDLING
 	joinpath(mail_active_file, sizeof(mail_active_file), rcdir, ACTIVE_MAIL_FILE);
 #endif /* HAVE_MH_MAIL_HANDLING */
-	joinpath(mailbox, sizeof(mailbox), DEFAULT_MAILBOX, userid);
+	ptr = getenv("MAIL");
+	if (ptr == NULL || (*ptr == '\0'))
+		joinpath(mailbox, sizeof(mailbox), DEFAULT_MAILBOX, userid);
+	else
+		STRCPY(mailbox, ptr);
 #ifdef HAVE_MH_MAIL_HANDLING
 	joinpath(mailgroups_file, sizeof(mailgroups_file), rcdir, MAILGROUPS_FILE);
 #endif /* HAVE_MH_MAIL_HANDLING */

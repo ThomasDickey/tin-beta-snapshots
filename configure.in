@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2018-12-03
+dnl Updated   : 2019-02-18
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2019 Thomas E. Dickey <dickey@invisible-island.net>
@@ -34,14 +34,14 @@ dnl SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.13.20110430)
+AC_PREREQ(2.52.20181006)
 AC_INIT(include/tin.h)
 AC_CONFIG_HEADER(include/autoconf.h:include/autoconf.hin)
 AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.4.3
+VERSION=2.4.4
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -81,7 +81,7 @@ case "$host_os" in
 esac
 
 ### Native Language Support
-ALL_LINGUAS="da de en_GB et fr ru sv tr zh_CN zh_TW"
+ALL_LINGUAS="da de en_GB es et fr ru sv tr zh_CN zh_TW"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"
@@ -106,10 +106,6 @@ CF_PROG_AR
 CF_AR_FLAGS
 
 case "$host_cpu:$host_vendor:$host_os" in
-	# check for MacOS X, exclude Darwin on ix86
-#	powerpc:apple:darwin*)  #(vi
-#		AC_DEFINE(MAC_OS_X)
-#		;;
 	# check for cygwin environment
 	# -DSTATIC is needed for pcre
 	*:*:*cygwin*)	#(vi
@@ -458,6 +454,10 @@ PCRE_MAKEFILE=
 if test "$PCRE_HOME" = "no" ; then
 	LINK_SIZE="-DLINK_SIZE=2"
 	AC_SUBST(LINK_SIZE)
+	UTF8="-DSUPPORT_UTF8"
+	UCP="-DSUPPORT_UCP"
+	AC_SUBST(UTF8)
+	AC_SUBST(UCP)
 	PCRE_MAKEFILE="$PCRE_MAKEFILE pcre/Makefile pcre/RunTest"
 fi
 
@@ -757,7 +757,6 @@ CF_CHECK_HEADERS(\
 	libc.h \
 	locale.h \
 	malloc.h \
-	net/socket.h \
 	netdb.h \
 	netinet/in.h \
 	netlib.h \
@@ -1091,7 +1090,6 @@ AC_CHECK_FUNCS(\
 	atoq \
 	bcopy \
 	chmod \
-	closesocket \
 	execlp \
 	explicit_bzero \
 	explicit_memset \
@@ -1279,7 +1277,6 @@ CF_COREFILE
 # Setup includes for test-program to verify declarations
 CHECK_DECL_FLAG="-I$srcdir/include -I$srcdir/pcre"
 CHECK_DECL_HDRS='
-#define M_UNIX
 #define __CPROTO__
 #define HAVE_CONFDEFS_H
 #include <tin.h>'
@@ -1433,6 +1430,57 @@ else
 	AC_SUBST(ALLOCA)
 fi
 
+# tolower() is known to be broken on at least sony-newsos3
+AC_MSG_CHECKING(for working tolower())
+AC_TRY_RUN([
+#include <ctype.h>
+int main() {
+	unsigned char str;
+
+	for (str = 1; str < 127; str++) {
+	        if ((char) tolower(str) != ((str >= 'A' && str <= 'Z') ? ((unsigned char) (str - 'A' + 'a')) : str))
+			return 1;
+	}
+	return 0;
+}],
+        [
+                AC_MSG_RESULT(yes)
+        ],
+        [
+		AC_DEFINE(TOLOWER_BROKEN)
+                AC_MSG_RESULT(no)
+        ],
+        [
+                AC_MSG_RESULT(unknown)
+        ]
+)
+
+# also check toupper
+AC_MSG_CHECKING(for working toupper())
+AC_TRY_RUN([
+#include <ctype.h>
+int main() {
+	unsigned char str;
+
+	for (str = 1; str < 127; str++) {
+	        if ((char) toupper(str) != ((str >= 'a' && str <= 'z') ? ((unsigned char) (str - 'a' + 'A')) : str))
+			return 1;
+	}
+	return 0;
+}],
+        [
+                AC_MSG_RESULT(yes)
+        ],
+        [
+		AC_DEFINE(TOUPPER_BROKEN)
+                AC_MSG_RESULT(no)
+        ],
+        [
+                AC_MSG_RESULT(unknown)
+        ]
+)
+
+
 CF_CHECK_HEADERS(iconv.h)
 AC_MSG_CHECKING(for iconv_open() //TRANSLIT extension)
 AC_TRY_RUN([
@@ -1519,7 +1567,7 @@ CF_DEFINE_STRING(TIN_CPP,      "$CPP")
 CF_DEFINE_STRING(TIN_CPPFLAGS, "$CPPFLAGS")
 CF_DEFINE_STRING(TIN_LD,       "$CC")
 CF_DEFINE_STRING(TIN_LDFLAGS,  "$LDFLAGS")
-CF_DEFINE_STRING(TIN_LIBS,     "$LIBS")
+CF_DEFINE_STRING(TIN_LIBS,     "$PCREDIR_LIBS $LIBS")
 
 AC_OUTPUT($PCRE_MAKEFILE
 	$SUB_MAKEFILE

@@ -71,7 +71,7 @@
  * .ca  Canada                         .cc  Cocos (Keeling) Islands
  * .cd  Congo, Democratic People's Republic
  * .cf  Central African Republic       .cg  Congo, Republic of
- * .ch  Switzerland                    .ci  Côte d'Ivoire
+ * .ch  Switzerland                    .ci  CÃ´te d'Ivoire
  * .ck  Cook Islands                   .cl  Chile
  * .cm  Cameroon                       .cn  China
  * .co  Colombia                       .cr  Costa Rica
@@ -332,7 +332,7 @@ static const char *gnksa_domain_list[] = {
 #	if 0
 	/* but four of them shouldn't be used on usenet */
 	"test",
-	"onion",
+	"onion",			/* RFC 7686 */
 	"example",
 	"localhost",
 #	endif /* 0 */

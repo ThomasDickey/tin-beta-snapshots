@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2017-08-06
+ *  Updated   : 2019-02-04
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2019 Iain Lea <iain@bricbrac.de>
@@ -297,7 +297,7 @@ read_attributes_file(
 	char line[LEN];
 	char scope[LEN];
 	int i, num;
-	enum rc_state upgrade = RC_CHECK;
+	struct t_version *upgrade = NULL;
 	static t_bool startup = TRUE;
 	t_bool flag, found = FALSE;
 
@@ -332,16 +332,16 @@ read_attributes_file(
 				if (!global_file) {
 					if (scope[0] == '\0')
 						attrib_file_offset++;
-					if (startup && upgrade == RC_CHECK && match_string(line, "# Group attributes file V", NULL, 0)) {
+					if (startup && upgrade == NULL && match_string(line, "# Group attributes file V", NULL, 0)) {
 						upgrade = check_upgrade(line, "# Group attributes file V", ATTRIBUTES_VERSION);
-						if (upgrade != RC_IGNORE)
+						if (upgrade->state != RC_IGNORE)
 							upgrade_prompt_quit(upgrade, file); /* TODO: do something (more) useful here */
 					}
 				}
 				continue;
 			}
 
-			switch (tolower((unsigned char) line[0])) {
+			switch (my_tolower((unsigned char) line[0])) {
 				case 'a':
 					MATCH_BOOLEAN("add_posted_to_filter=", OPT_ATTRIB_ADD_POSTED_TO_FILTER);
 					MATCH_BOOLEAN("advertising=", OPT_ATTRIB_ADVERTISING);
@@ -502,13 +502,13 @@ read_attributes_file(
 					break;
 			}
 
-			if (!global_file && upgrade == RC_UPGRADE) {
+			if (!global_file && upgrade && upgrade->state == RC_UPGRADE) {
 				int auto_cc_bcc;
 				int show_info;
 				t_bool auto_bcc = FALSE;
 				t_bool auto_cc = FALSE;
 
-				switch (tolower((unsigned char) line[0])) {
+				switch (my_tolower((unsigned char) line[0])) {
 					case 'a':
 						if (match_boolean(line, "auto_bcc=", &auto_bcc)) {
 							if (scopes[num_scope -1].attribute->auto_cc_bcc & AUTO_CC)
@@ -565,6 +565,7 @@ read_attributes_file(
 							free(gbuf);
 							free(tbuf);
 							found = TRUE;
+							break;
 						}
 						/*
 						 * previous versions has always passed groupname to external
@@ -573,11 +574,15 @@ read_attributes_file(
 						 * 8 == sizeof("sigfile=")
 						 */
 						if (match_string(line, "sigfile=", buf, sizeof(buf) - 8) && buf[0] == '!') {
-							char *newbuf = my_malloc(sizeof(buf) - 8 + 4);
+							/* just append %G if ATTRIBUTES_VERSION <= 1.0.8 */
+							if (upgrade && upgrade->file_version < 10009) {
+								char *newbuf = my_malloc(sizeof(buf) - 8 + 4);
 
-							sprintf(newbuf, "%s %s", buf, "%G");
-							set_attrib(OPT_ATTRIB_SIGFILE, scope, line, newbuf);
-							free(newbuf);
+								sprintf(newbuf, "%s %s", buf, "%G");
+								set_attrib(OPT_ATTRIB_SIGFILE, scope, line, newbuf);
+								free(newbuf);
+							}
+							break;
 						}
 						MATCH_BOOLEAN("show_only_unread=", OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS);
 						MATCH_INTEGER("sort_art_type=", OPT_ATTRIB_SORT_ARTICLE_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
@@ -608,8 +613,11 @@ read_attributes_file(
 		/*
 		 * TODO: do something useful for the other cases
 		 */
-		if (!global_file && upgrade == RC_UPGRADE)
+		if (!global_file && upgrade && upgrade->state == RC_UPGRADE)
 			write_attributes_file(file);
+
+		FreeAndNull(upgrade);
+
 	} else if (!global_file && startup) {
 		/* no local attributes file, add some useful defaults and write file */
 

@@ -400,8 +400,8 @@ art_mark_xref_read(
 					if (debug & DEBUG_NEWSRC) {
 						debug_mesg = fmt_string("FOUND!Xref: [%s:%"T_ARTNUM_PFMT"] marked READ num_unread=[%"T_ARTNUM_PFMT"]",
 							groupname, artnum, group->newsrc.num_unread);
-							debug_print_comment(debug_mesg);
-							debug_print_bitmap(group, NULL);
+						debug_print_comment(debug_mesg);
+						debug_print_bitmap(group, NULL);
 /*						error_message(2, debug_mesg); */
 						free(debug_mesg);
 					}

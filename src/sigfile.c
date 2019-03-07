@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2017-08-02
+ *  Updated   : 2018-11-22
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2019 Mike Gleason
@@ -62,7 +62,7 @@ msg_write_signature(
 	char pathfixed[PATH_LEN];
 
 #ifdef NNTP_INEWS
-	if (read_news_via_nntp && 0 == strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
+	if (read_news_via_nntp && !strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
 		include_dot_signature = TRUE;
 #endif /* NNTP_INEWS */
 
@@ -70,7 +70,10 @@ msg_write_signature(
 		if (!strcmp(thisgroup->attribute->sigfile, "--none"))
 			return;
 
-		/* TODO: handle DONT_HAVE_PIPING case */
+		/*
+		 * TODO: handle DONT_HAVE_PIPING case
+		 *       use strfpath()?
+		 */
 #ifndef DONT_HAVE_PIPING
 		if (thisgroup->attribute->sigfile[0] == '!') {
 			FILE *pipe_fp;

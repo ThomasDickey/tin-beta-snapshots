@@ -3,7 +3,7 @@
  *  Module    : tnntp.h
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-05
- *  Updated   : 2006-02-15
+ *  Updated   : 2019-02-18
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2019 Thomas Dickey <dickey@invisible-island.net>
@@ -42,21 +42,8 @@
 #define s_flush	fflush
 #define s_fclose	fclose
 #define s_gets	fgets
-#if 0 /* __BEOS__ port in progress */
-#	ifdef HAVE_CLOSESOCKET
-#		define s_close	closesocket
-#	else
-#		define s_close	close
-#	endif /* HAVE_CLOSESOCKET */
-#	ifdef __BEOS__
-#		define s_puts(s,fd)	write(fileno(fd),s,strlen(s))
-#	else
-#		define s_puts	fputs
-#	endif /* __BEOS__ */
-#else
-#	define s_close	close
-#	define s_puts	fputs
-#endif /* 0 */
+#define s_close	close
+#define s_puts	fputs
 #define s_dup	dup
 #define s_end()
 
@@ -73,17 +60,13 @@
 #		ifdef HAVE_STROPTS_H
 #			include	<stropts.h>
 #		endif /* HAVE_STROPTS_H */
-#		ifdef HAVE_NET_SOCKET_H /* __BEOS__ fd_* macros */
-#			include <net/socket.h>
+#		ifdef HAVE_SYS_SOCKET_H
+#			include	<sys/socket.h>
 #		else
-#			ifdef HAVE_SYS_SOCKET_H
-#				include	<sys/socket.h>
-#			else
-#				ifdef HAVE_SOCKET_H
-#					include <socket.h>
-#				endif /* HAVE_SOCKET_H */
-#			endif /* HAVE_SYS_SOCKET_H */
-#		endif /* HAVE_NET_SOCKET_H */
+#			ifdef HAVE_SOCKET_H
+#				include <socket.h>
+#			endif /* HAVE_SOCKET_H */
+#		endif /* HAVE_SYS_SOCKET_H */
 #		ifdef HAVE_NETINET_IN_H
 #			include	<netinet/in.h>
 #		endif /* HAVE_NETINET_IN_H */

@@ -32,7 +32,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 #
-# TODO: - add debug mode which doesn't delete tmp-files and is verbose
+# TODO: - extend debug mode to not delete tmp-files and be more verbose
 #       - add pid to pgptmpf to allow multiple simultaneous instances
 #       - check for /etc/nntpserver (and /etc/news/server)
 #       - add $PGPOPTS, $PGPPATH and $GNUPGHOME support
@@ -50,7 +50,7 @@ use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.49";
+my $version = "1.1.50";
 
 my %config;
 
@@ -556,7 +556,7 @@ sub getdate {
 # are defined, the sub will try to ask the user (only if
 # $config{'Interactive'} is != 0).
 sub AuthonNNTP {
-	my $Server = Net::NNTP->new($config{'NNTPServer'}, Reader => 1, Debug => 0, Port => $config{'NNTPPort'})
+	my $Server = Net::NNTP->new($config{'NNTPServer'}, Reader => 1, Debug => $config{'debug'}, Port => $config{'NNTPPort'})
 		or die("$0: Can't connect to ".$config{'NNTPServer'}.":".$config{'NNTPPort'}."!\n");
 	my $ServerMsg = "";
 	my $ServerCod = $Server->code();
@@ -909,6 +909,8 @@ sub usage {
 	print "  -v         show version\n";
 	print "  -w string  set Followup-To:-header to string\n";
 	print "  -x string  set Path:-header to string\n";
+	print "  -D         enable debugging\n";
+	print "  -F string  set References:-header to string\n";
 	print "  -H         show help\n";
 	print "  -I         do not add Injection-Date: header\n";
 	print "  -L         do not add Cancel-Lock: / Cancel-Key: headers\n";
@@ -934,6 +936,10 @@ B<tinews.pl> [B<OPTIONS>] E<lt> I<input>
 B<tinews.pl> reads an article on STDIN, signs it via L<pgp(1)> or
 L<gpg(1)> and posts it to a news server.
 
+The article shall not contain any raw 8-bit data or it needs to
+already have the relevant MIME-headers as B<tinews.pl> will not
+add any MIME-headers nor encode its input.
+
 If the article contains To:, Cc: or Bcc: headers and mail-actions are
 configured it will automatically add a "Posted-And-Mailed: yes" header
 to the article and send out the mail-copies.
@@ -944,7 +950,7 @@ Cancel-Lock: (and Cancel-Key: if required) header.
 The input should have unix line endings (<LF>, '\n').
 
 =head1 OPTIONS
-X<tinews, commandline options>
+X<tinews, command-line options>
 
 =over 4
 
@@ -1091,7 +1097,9 @@ These options are accepted for compatibility reasons but ignored.
 =item -B<D> | -B<N> | --B<debug>
 X<-D> X<-N> X<--debug>
 
-These options are accepted but do not have any functionality yet.
+Enable warnings about raw 8-bit data and set L<Net::NNTP(3pm)> in debug
+mode, enable warnings about raw 8-bit data, warn about disabled options
+due to lacking perl-modules or executables and unreadable files.
 
 =back
 
@@ -1252,6 +1260,9 @@ L<gpg2(1)> users may need to set B<$GPG_TTY>, i.e.
  export GPG_TTY
 
 before using B<tinews.pl>. See L<https://www.gnupg.org/> for details.
+
+B<tinews.pl> does not do any MIME encoding, its input should be already
+properly encoded and have all relevant headers set.
 
 =head1 AUTHOR
 

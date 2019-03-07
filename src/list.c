@@ -3,7 +3,7 @@
  *  Module    : list.c
  *  Author    : I. Lea
  *  Created   : 1993-12-18
- *  Updated   : 2008-11-28
+ *  Updated   : 2019-01-18
  *  Notes     : Low level functions handling the active[] list and its group_hash index
  *
  * Copyright (c) 1993-2019 Iain Lea <iain@bricbrac.de>
@@ -80,25 +80,6 @@ unsigned long
 hash_groupname(
 	const char *group)
 {
-/* #define NEW_HASH_METHOD 1 */
-#ifdef NEW_HASH_METHOD	/* still testing */
-	unsigned long hash = 0L, g, hash_value;
-	/* prime == smallest prime number greater than size of string table */
-	int prime = 1423;
-	const char *p;
-
-	for (p = group; *p; p++) {
-		hash = (hash << 4) + *p;
-		if ((g = hash & 0xf0000000) != 0) {
-			hash ^= g >> 24;
-			hash ^= g;
-		}
-	}
-	hash_value = hash % prime;
-#	ifdef DEBUG
-/*	my_printf("hash=[%s] [%ld]\n", group, hash_value); */
-#	endif /* DEBUG */
-#else
 	unsigned long hash_value = 0L;
 	unsigned int len = 0;
 	const unsigned char *ptr = (const unsigned char *) group;
@@ -110,7 +91,6 @@ hash_groupname(
 		hash_value %= TABLE_SIZE;
 	}
 	hash_value %= TABLE_SIZE;
-#endif /* NEW_HASH_METHOD */
 
 	return hash_value;
 }
@@ -154,7 +134,7 @@ find_group_index(
 	if (ignore_case) {
 		i = group_hash[h];
 		while (i >= 0) {
-			if (0 == strcasecmp(group, active[i].name))
+			if (!strcasecmp(group, active[i].name))
 				return i;
 			i = active[i].next;
 		}

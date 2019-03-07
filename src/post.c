@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2018-11-09
+ *  Updated   : 2019-02-25
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
@@ -90,7 +90,7 @@
 #ifdef EVIL_INSIDE
 /* gee! ugly hack - but works */
 #	define ADD_MSG_ID_HEADER()	{ \
-		char mid[1024]; \
+		char mid[NNTP_STRLEN]; \
 		const char *mptr = (const char *) 0; \
 		mid[0] = '\0'; \
 		if ((mptr = build_messageid()) != NULL) { \
@@ -251,7 +251,7 @@ prompt_rejected(
 
 /* FIXME (what does this mean?) fix screen pos. */
 	Raw(FALSE);
-	/* TODO: replace hardcoded key-name in txt_post_error_ask_postpone */
+	/* TODO: replace hard coded key-name in txt_post_error_ask_postpone */
 	my_fprintf(stderr, "\n\n%s\n\n", _(txt_post_error_ask_postpone));
 	my_fflush(stderr);
 	Raw(TRUE);
@@ -634,7 +634,7 @@ append_mail(
 #ifndef NO_LOCKING
 	int fd;
 	unsigned int retrys = 11;	/* maximum lock retrys + 1 */
-#endif /* NO_LOCKING */
+#endif /* !NO_LOCKING */
 
 	if (!strcasecmp(txt_mailbox_formats[tinrc.mailbox_format], "MMDF") && the_mailbox != postponed_articles_file)
 		mmdf = TRUE;
@@ -766,12 +766,12 @@ append_mail(
 #define CA_ERROR_DISTRIBUTIOIN_NOT_7BIT   0x0040000
 #define CA_ERROR_NEWSGROUPS_POSTER        0x0080000
 #define CA_ERROR_FOLLOWUP_TO_POSTER       0x0100000
-#ifndef FOLLOW_USEFOR_DRAFT
+#ifndef ALLOW_FWS_IN_NEWSGROUPLIST
 #	define CA_ERROR_SPACE_IN_NEWSGROUPS    0x0200000
 #	define CA_ERROR_NEWLINE_IN_NEWSGROUPS  0x0400000
 #	define CA_ERROR_SPACE_IN_FOLLOWUP_TO   0x0800000
 #	define CA_ERROR_NEWLINE_IN_FOLLOWUP_TO 0x1000000
-#endif /* !FOLLOW_USEFOR_DRAFT */
+#endif /* !ALLOW_FWS_IN_NEWSGROUPLIST */
 #define CA_WARNING_SPACES_ONLY_SUBJECT      0x000001
 #define CA_WARNING_RE_WITHOUT_REFERENCES    0x000002
 #define CA_WARNING_REFERENCES_WITHOUT_RE    0x000004
@@ -784,12 +784,12 @@ append_mail(
 #ifdef CHARSET_CONVERSION
 #	define CA_WARNING_CHARSET_CONVERSION    0x000200
 #endif /* CHARSET_CONVERSION */
-#ifdef FOLLOW_USEFOR_DRAFT
+#ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 #	define CA_WARNING_SPACE_IN_NEWSGROUPS    0x000400
 #	define CA_WARNING_NEWLINE_IN_NEWSGROUPS  0x000800
 #	define CA_WARNING_SPACE_IN_FOLLOWUP_TO   0x001000
 #	define CA_WARNING_NEWLINE_IN_FOLLOWUP_TO 0x002000
-#endif /* FOLLOW_USEFOR_DRAFT */
+#endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 
 /*
  * TODO: cleanup!
@@ -956,7 +956,7 @@ check_article_to_be_posted(
 #else
 			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
-			if (GNKSA_OK != (i = gnksa_check_from(cp2 + (cp - line) + 1))) {
+			if ((i = gnksa_check_from(cp2 + (cp - line) + 1)) != GNKSA_OK) {
 				StartInverse();
 				my_fprintf(stderr, "%s", _(txt_error_bad_approved));
 				my_fprintf(stderr, gnksa_strerror(i), i);
@@ -976,7 +976,7 @@ check_article_to_be_posted(
 #else
 			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
-			if (GNKSA_OK != (i = gnksa_check_from(cp2 + (cp - line) + 1))) {
+			if ((i = gnksa_check_from(cp2 + (cp - line) + 1)) != GNKSA_OK) {
 				StartInverse();
 				my_fprintf(stderr, "%s", _(txt_error_bad_from));
 				my_fprintf(stderr, gnksa_strerror(i), i);
@@ -995,7 +995,7 @@ check_article_to_be_posted(
 #else
 			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
-			if (GNKSA_OK != (i = gnksa_check_from(cp2 + (cp - line) + 1))) {
+			if ((i = gnksa_check_from(cp2 + (cp - line) + 1)) != GNKSA_OK) {
 				StartInverse();
 				my_fprintf(stderr, "%s", _(txt_error_bad_replyto));
 				my_fprintf(stderr, gnksa_strerror(i), i);
@@ -1014,7 +1014,7 @@ check_article_to_be_posted(
 #else
 			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
-			if (GNKSA_OK != (i = gnksa_check_from(cp2 + (cp - line) + 1))) {
+			if ((i = gnksa_check_from(cp2 + (cp - line) + 1)) != GNKSA_OK) {
 				StartInverse();
 				my_fprintf(stderr, "%s", _(txt_error_bad_to));
 				my_fprintf(stderr, gnksa_strerror(i), i);
@@ -1089,18 +1089,18 @@ check_article_to_be_posted(
 			for (cp = line + 11; *cp == ' '; cp++)
 				;
 			if (strchr(cp, ' ') || strchr(cp, '\t')) {
-#ifdef FOLLOW_USEFOR_DRAFT
+#ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 				warnings_catbp |= CA_WARNING_SPACE_IN_NEWSGROUPS;
 #else
 				errors_catbp |= CA_ERROR_SPACE_IN_NEWSGROUPS;
-#endif /* FOLLOW_USEFOR_DRAFT */
+#endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 			}
 			if (strchr(cp, '\n')) {
-#ifdef FOLLOW_USEFOR_DRAFT
+#ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 				warnings_catbp |= CA_WARNING_NEWLINE_IN_NEWSGROUPS;
 #else
 				errors_catbp |= CA_ERROR_NEWLINE_IN_NEWSGROUPS;
-#endif /* FOLLOW_USEFOR_DRAFT */
+#endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 				unfold_header(line);
 			}
 
@@ -1154,18 +1154,18 @@ check_article_to_be_posted(
 			if (strlen(cp)) /* Followup-To not empty */
 				found_followup_to_lines++;
 			if (strchr(cp, ' ') || strchr(cp, '\t')) {
-#ifdef FOLLOW_USEFOR_DRAFT
+#ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 				warnings_catbp |= CA_WARNING_SPACE_IN_FOLLOWUP_TO;
 #else
 				errors_catbp |= CA_ERROR_SPACE_IN_FOLLOWUP_TO;
-#endif /* FOLLOW_USEFOR_DRAFT */
+#endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 			}
 			if (strchr(cp, '\n')) {
-#ifdef FOLLOW_USEFOR_DRAFT
+#ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 				warnings_catbp |= CA_WARNING_NEWLINE_IN_FOLLOWUP_TO;
 #else
 				errors_catbp |= CA_ERROR_NEWLINE_IN_FOLLOWUP_TO;
-#endif /* FOLLOW_USEFOR_DRAFT */
+#endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 				unfold_header(line);
 			}
 
@@ -1418,7 +1418,7 @@ check_article_to_be_posted(
 	 * signature it will not be encoded. We might additionally check if there's
 	 * a file named ~/.signature and skip the warning if it is not present.
 	 */
-	if ((((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_QP) || ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_BASE64)) && 0 != strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
+	if ((((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_QP) || ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_BASE64)) && strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
 		warnings_catbp |= CA_WARNING_ENCODING_EXTERNAL_INEWS;
 
 	/* give most error messages */
@@ -1453,7 +1453,7 @@ check_article_to_be_posted(
 		if (errors_catbp & CA_ERROR_EMPTY_NEWSGROUPS)
 			my_fprintf(stderr, _(txt_error_header_line_empty), "Newsgroups");
 
-#ifndef FOLLOW_USEFOR_DRAFT
+#ifndef ALLOW_FWS_IN_NEWSGROUPLIST
 		/* illegal space in headers */
 		if (errors_catbp & CA_ERROR_SPACE_IN_NEWSGROUPS)
 			my_fprintf(stderr, _(txt_error_header_line_comma), "Newsgroups");
@@ -1465,7 +1465,7 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_error_header_line_groups_contd), "Newsgroups");
 		if (errors_catbp & CA_ERROR_NEWLINE_IN_FOLLOWUP_TO)
 			my_fprintf(stderr, _(txt_error_header_line_groups_contd), "Followup-To");
-#endif /* !FOLLOW_USEFOR_DRAFT */
+#endif /* !ALLOW_FWS_IN_NEWSGROUPLIST */
 
 		/* illegal group names / combinations */
 		if (errors_catbp & CA_ERROR_NEWSGROUPS_POSTER)
@@ -1511,7 +1511,7 @@ check_article_to_be_posted(
 		if ((warnings_catbp & CA_WARNING_NEWSGROUPS_EXAMPLE) || (warnings_catbp & CA_WARNING_FOLLOWUP_TO_EXAMPLE))
 			my_fprintf(stderr, "%s", _(txt_warn_example_hierarchy));
 
-#ifdef FOLLOW_USEFOR_DRAFT /* TODO: give useful warning */
+#ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 		if (warnings_catbp & CA_WARNING_SPACE_IN_NEWSGROUPS)
 			my_fprintf(stderr, _(txt_warn_header_line_comma), "Newsgroups");
 		if (warnings_catbp & CA_WARNING_SPACE_IN_FOLLOWUP_TO)
@@ -1520,7 +1520,7 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_warn_header_line_groups_contd), "Newsgroups");
 		if (warnings_catbp & CA_WARNING_NEWLINE_IN_FOLLOWUP_TO)
 			my_fprintf(stderr, _(txt_warn_header_line_groups_contd), "Followup-To");
-#endif /* FOLLOW_USEFOR_DRAFT */
+#endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 
 		if (warnings_catbp & CA_WARNING_MULTIPLE_SIGDASHES)
 			my_fprintf(stderr, _(txt_warn_multiple_sigs), saw_sig_dashes);
@@ -1710,11 +1710,11 @@ refresh_post_screen(
 				center_line(0, TRUE, _(txt_check_article));
 				MoveCursor(INDEX_TOP, 0);
 				Raw(FALSE);
-#ifdef FORGERY
+#	ifdef FORGERY
 				show_cancel_info(FALSE, TRUE);
-#else
+#	else
 				show_cancel_info();
-#endif /* FORGERY */
+#	endif /* FORGERY */
 				Raw(oldraw);
 			}
 			break;
@@ -2281,7 +2281,7 @@ quick_post_article(
 		if (!(prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS)))
 			return;
 
-		 strip_double_ngs(tinrc.default_post_newsgroups);
+		strip_double_ngs(tinrc.default_post_newsgroups);
 	}
 
 	/*
@@ -2682,13 +2682,13 @@ is_crosspost(
 
 
 /*
- * with folding there would not be a length limit, but currently we don't do
- * folding and some of our code has a 2048 byte limit.  also there are
- * several newsservers out there which do have some length limit, so
- * shortening to 998 is a good idea.
+ * RFC 5537 3.4.4
+ * "If the resulting References header field would, after unfolding, exceed
+ *  998 characters in length (including its field name but not the final
+ *  CRLF), it MUST be trimmed (and otherwise MAY be trimmed)."
  */
 #ifdef NNTP_ONLY
-#	define MAXREFSIZE 998	/* MIN(IMF_LINE_LEN,2047) */
+#	define MAXREFSIZE 998
 #else /* some extern inews (required for posting right into the spool) can't handle 1k-lines */
 #	define MAXREFSIZE 512
 #endif /* NNTP_ONLY */
@@ -3388,7 +3388,7 @@ mail_to_someone(
 	if (note_h.ext->type == TYPE_MULTIPART)
 		mime_forward = TRUE; /* force mime_forward for multipart articles */
 
-	if (!mime_forward || INTERACTIVE_NONE != tinrc.interactive_mailer) {
+	if (!mime_forward || tinrc.interactive_mailer != INTERACTIVE_NONE) {
 		rewind(artinfo->raw);
 		fprintf(fp, "%s", _(txt_forwarded));
 
@@ -3423,12 +3423,12 @@ mail_to_someone(
 		fprintf(fp, "%s", _(txt_forwarded_end));
 	}
 
-	if (INTERACTIVE_NONE == tinrc.interactive_mailer)
+	if (tinrc.interactive_mailer == INTERACTIVE_NONE)
 		msg_write_signature(fp, TRUE, &CURR_GROUP);
 
 	fclose(fp);
 
-	if (INTERACTIVE_NONE != tinrc.interactive_mailer) {	/* user wants to use his own mailreader */
+	if (tinrc.interactive_mailer != INTERACTIVE_NONE) {	/* user wants to use his own mailreader */
 		char buf[HEADER_LEN];
 		char *p;
 
@@ -3526,12 +3526,12 @@ mail_bug_report(
 	fprintf(fp, "\nPlease enter _detailed_ bug report, gripe or comment:\n\n");
 	start_line_offset += 2;
 
-	if (INTERACTIVE_NONE == tinrc.interactive_mailer)
+	if (tinrc.interactive_mailer == INTERACTIVE_NONE)
 		msg_write_signature(fp, TRUE, (selmenu.curr == -1) ? NULL : &CURR_GROUP);
 
 	fclose(fp);
 
-	if (INTERACTIVE_NONE != tinrc.interactive_mailer) {	/* user wants to use his own mailreader */
+	if (tinrc.interactive_mailer != INTERACTIVE_NONE) {	/* user wants to use his own mailreader */
 		subject[strlen(subject) - 1] = '\0';	/* cut trailing '\n' */
 		strfmailer(mailer, subject, bug_addr, nam, buf, sizeof(buf), tinrc.mailer_format);
 		if (invoke_cmd(buf))
@@ -3649,7 +3649,7 @@ mail_to_author(
 	} else /* !copy_text */
 		fprintf(fp, "\n");	/* add a newline to keep vi from bitching */
 
-	if (INTERACTIVE_NONE == tinrc.interactive_mailer)
+	if (tinrc.interactive_mailer == INTERACTIVE_NONE)
 		msg_write_signature(fp, TRUE, &CURR_GROUP);
 
 	fclose(fp);
@@ -3659,7 +3659,7 @@ mail_to_author(
 
 		find_reply_to_addr(mail_to, TRUE, &pgart.hdr);
 
-		if (INTERACTIVE_NONE != tinrc.interactive_mailer) {	/* user wants to use his own mailreader for reply */
+		if (tinrc.interactive_mailer != INTERACTIVE_NONE) {	/* user wants to use his own mailreader for reply */
 			char buf[HEADER_LEN];
 
 			subject[strlen(subject) - 1] = '\0'; /* cut trailing '\n' */
@@ -4105,7 +4105,7 @@ repost_article(
 				msg_add_header("Reply-To", reply_to);
 			ADD_MSG_ID_HEADER();
 			ADD_CAN_KEY(note_h.messageid);
-#	endif /* !FORGERY */
+#	endif /* FORGERY */
 			msg_add_header("Supersedes", note_h.messageid);
 
 			if (note_h.followup)
@@ -4478,8 +4478,8 @@ checknadd_headers(
 				snprintf(suffix, sizeof(suffix), " (%s)", SYSTEM_NAME);
 #endif /* SYSTEM_NAME */
 
-		fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s)%s\n",
-			PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME, suffix);
+		fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") %s\n",
+			PRODUCT, VERSION, RELEASEDATE, RELEASENAME, suffix);
 	}
 
 	fputs("\n", fp_out); /* header/body separator */
@@ -4539,7 +4539,7 @@ insert_from_header(
 #	else
 					p = rfc1522_encode(from_buff, tinrc.mm_charset, TRUE);
 #	endif /* CHARSET_CONVERSION */
-					if (GNKSA_OK != gnksa_check_from(p)) { /* error in address */
+					if (gnksa_check_from(p) != GNKSA_OK) { /* error in address */
 						error_message(2, _(txt_invalid_from), from_buff);
 						free(p);
 						unlink(outfile);
@@ -4557,7 +4557,7 @@ insert_from_header(
 #	else
 						p = rfc1522_encode(from_name, tinrc.mm_charset, FALSE);
 #	endif /* CHARSET_CONVERSION */
-						if (GNKSA_OK != gnksa_check_from(p + 6)) { /* error in address */
+						if (gnksa_check_from(p + 6) != GNKSA_OK) { /* error in address */
 							error_message(2, _(txt_invalid_from), from_name + 6);
 							free(p);
 							unlink(outfile);
@@ -4759,11 +4759,11 @@ submit_mail_file(
 			free_and_init_header(&hdr);
 		}
 	}
-	if (NULL != fcc) {
+	if (fcc != NULL) {
 		if (mailed && strlen(fcc)) {
 			char a_mailbox[PATH_LEN];
 
-			if (0 == strfpath(fcc, a_mailbox, sizeof(a_mailbox), group, TRUE))
+			if (!strfpath(fcc, a_mailbox, sizeof(a_mailbox), group, TRUE))
 				STRCPY(a_mailbox, fcc);
 			if (!append_mail(file, userid, a_mailbox)) {
 				/* TODO: error handling */
@@ -5075,7 +5075,7 @@ build_messageid(
 {
 	int i;
 	size_t j;
-	static char buf[HEADER_LEN]; /* Message-IDs are limited to 250 octets as of RFC 5536 3.1.3 */
+	static char buf[NNTP_STRLEN]; /* Message-IDs are limited to 250 octets as of RFC 5536 3.1.3 and RFC 3977 3.6 */
 	static unsigned long int seqnum = 0; /* use a counter in tinrc? */
 	time_t t = time(NULL);
 

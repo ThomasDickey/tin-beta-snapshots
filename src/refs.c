@@ -179,7 +179,7 @@ valid_msgid(
 		msgid++;
 	}
 
-	if (!at_present || (*msgid != '>') || mlen <= 2 || *(msgid + 1))
+	if (!at_present || (*msgid != '>') || mlen <= 2 /* || mlen > 250 */|| *(msgid + 1))
 		return FALSE;
 
 	return TRUE;

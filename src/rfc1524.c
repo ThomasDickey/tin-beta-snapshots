@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2018-03-13
+ *  Updated   : 2018-11-25
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000-2019 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
@@ -112,7 +112,7 @@ get_mailcap_entry(
 							if (!strncasecmp(ptr + strlen(content_types[part->type]) + 1, part->subtype, strlen(part->subtype))) {
 								/* full match, so parse line and evaluate test if given. */
 								STRCPY(mailcap, ptr);
-								FreeAndNull(foo);
+								FreeIfNeeded(foo);
 								foo = parse_mailcap_line(mailcap, part, path);
 								if (foo != NULL) {
 									fclose(fp); /* perfect match with test succeeded (if given) */
@@ -123,7 +123,7 @@ get_mailcap_entry(
 								if ((*(ptr2 + 1) == '*') || (*(ptr2 + 1) == ';')) { /* wildmat match */
 									if (!strlen(wildcap)) { /* we don't already have a wildmat match */
 										STRCPY(wildcap, buf);
-										FreeAndNull(foo);
+										FreeIfNeeded(foo);
 										foo = parse_mailcap_line(wildcap, part, path);
 										if (foo == NULL) /* test failed */
 											wildcap[0] = '\0'; /* ignore match */
@@ -379,17 +379,17 @@ expand_mailcap_meta(
 			lptr = line + olen;		/* adjust pointer to current position */
 		}
 
-		if ('\\' == *ptr) {
+		if (*ptr == '\\') {
 			ptr++;
-			if (('\\' == *ptr) || ('%' == *ptr)) {
+			if ((*ptr == '\\') || (*ptr == '%')) {
 				*lptr++ = *ptr++;
 				space--;
 			}
 			continue;
 		}
-		if ('%' == *ptr) {
+		if (*ptr == '%') {
 			ptr++;
-			if ('{' == *ptr) {	/* Content-Type parameter */
+			if (*ptr == '{') {	/* Content-Type parameter */
 				char *end;
 
 				if ((end = strchr(ptr, '}')) != NULL) {
@@ -419,11 +419,11 @@ expand_mailcap_meta(
 				}
 				continue;
 #if 0 /* TODO */
-			} else if ('F' == *ptr) {	/* Content-Types and Filenames of sub parts */
-			} else if ('n' == *ptr) {	/* Number of sub parts */
+			} else if (*ptr == 'F') {	/* Content-Types and Filenames of sub parts */
+			} else if (*ptr == 'n') {	/* Number of sub parts */
 			}
 #endif /* 0 */
-			} else if ('s' == *ptr) {	/* Filename */
+			} else if (*ptr == 's') {	/* Filename */
 				const char *nptr = escape_shell_meta_chars ? escape_shell_meta(path, quote) : path;
 
 				CHECK_SPACE(strlen(nptr) + 2);
@@ -432,7 +432,7 @@ expand_mailcap_meta(
 				space -= strlen(line);
 				ptr++;
 				continue;
-			} else if ('t' == *ptr) {	/* Content-Type */
+			} else if (*ptr == 't') {	/* Content-Type */
 				const char *nptr = escape_shell_meta_chars ? escape_shell_meta(part->subtype, quote) : part->subtype;
 
 				CHECK_SPACE((strlen(content_types[part->type]) + 1 + strlen(nptr)));
@@ -451,9 +451,9 @@ expand_mailcap_meta(
 		}
 
 		if (escape_shell_meta_chars) {
-			if (('\'' == *ptr) && (quote != dbl_quote))
+			if ((*ptr == '\'') && (quote != dbl_quote))
 				quote = (quote == no_quote ? sgl_quote : no_quote);
-			else if (('"' == *ptr) && (quote != sgl_quote))
+			else if ((*ptr == '"') && (quote != sgl_quote))
 				quote = (quote == no_quote ? dbl_quote : no_quote);
 		}
 

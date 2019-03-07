@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-15
+ *  Updated   : 2019-02-18
  *  Notes     :
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -177,15 +177,13 @@ main(
 	no_write = TRUE;		/* don't allow any writing back during startup */
 
 	if (!batch_mode) {
-#ifdef M_UNIX
-#	ifndef USE_CURSES
+#ifndef USE_CURSES
 		if (!get_termcaps()) {
 			error_message(2, _(txt_screen_init_failed), tin_progname);
 			free_all_arrays();
 			giveup();
 		}
-#	endif /* !USE_CURSES */
-#endif /* M_UNIX */
+#endif /* !USE_CURSES */
 
 		/*
 		 * Init curses emulation
@@ -320,7 +318,7 @@ main(
 		tin_done(EXIT_SUCCESS, NULL);
 	}
 
-	/* TODO: replace hardcoded key-name in txt_info_postponed */
+	/* TODO: replace hard coded key-name in txt_info_postponed */
 	if ((count = count_postponed_articles()))
 		wait_message(3, _(txt_info_postponed), count, PLURAL(count, txt_article));
 
@@ -742,9 +740,9 @@ read_cmd_line_options(
 			get_newsrcname(newsrc, sizeof(newsrc), uts.nodename);
 #else
 			char nodenamebuf[256]; /* SUSv2 limit; better use HOST_NAME_MAX */
-#ifdef HAVE_GETHOSTNAME
+#	ifdef HAVE_GETHOSTNAME
 			(void) gethostname(nodenamebuf, sizeof(nodenamebuf));
-#endif /* HAVE_GETHOSTNAME */
+#	endif /* HAVE_GETHOSTNAME */
 			get_newsrcname(newsrc, sizeof(newsrc), nodenamebuf);
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 		}

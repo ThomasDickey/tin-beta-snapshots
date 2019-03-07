@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2018-11-07
+.\" Updated   : 2019-02-20
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "December 24th, 2017" "2.4.3" "Usenet newsreader"
+.TH tin 1 "December 24th, 2018" "2.4.4" "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -50,7 +50,7 @@ tin, rtin \- Usenet newsreader
 .B tin
 is a full-screen easy to use Usenet newsreader. It can read news locally
 (e.g., \fI/var/spool/news\fR) or remotely (\fBrtin\fP or \fBtin \-r\fP
-option) via a NNTP (Network News Transport Protocol) server. It will
+option) via an NNTP (Network News Transport Protocol) server. It will
 automatically utilize NOV
 .BR \%newsoverview (5)
 style index files if available locally or via the NNTP [X]OVER command
@@ -227,7 +227,7 @@ information read section "AUTOMATIC MAILING AND SAVING NEW NEWS".
 .B \-u
 Create/update index files for every group in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR or file specified by the ''\fB\-f\fP''
-option. This option is disabled if \fBtin\fP retrieves its index files via a
+option. This option is disabled if \fBtin\fP retrieves its index files via an
 NNTP server and \fBcache_overview_files\fP is turned off.
 .TP
 .B \-v
@@ -2526,8 +2526,8 @@ If ON remove \fI~/.article\fR after posting. Default is ON.
 .TP
 .B Program that opens URLs (url_handler)
 The program that will be run when launching URLs in the article viewer
-using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended to
-this. Default is \fBurl_handler.pl %s\fP.
+using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended.
+Default is \fBurl_handler.pl\fP.
 .TP
 .B URL highlighting in message body (url_highlight)
 Enable highlighting URLs in message body. Default is ON.
@@ -2539,7 +2539,7 @@ If enabled \fBtin\fP uses ANSI-colors. Default is OFF.
 Default is OFF.
 .TP
 .B Use mouse in xterm (use_mouse)
-Allows the mouse button support in a
+Allows the mouse button support in an
 .BR \%xterm (1x)
 to be enabled/disabled.
 Default is OFF.
@@ -2548,7 +2548,7 @@ Default is OFF.
 If enabled \fBtin\fP uses
 .BR \%slrnface (1)
 to interpret the ''X\-Face:'' header. For this option to have any effect,
-\fBtin\fP must be running in a
+\fBtin\fP must be running in an
 .BR \%xterm (1x)
 and
 .BR \%slrnface (1)
@@ -2830,8 +2830,14 @@ mailbox with the name of the current newsgroup (eg, alt.sources).
 See \fBmaildir\fP.
 .PP
 To save in savedir/<news.group.name>/<filename> format enter '+<filename>'.
-Environment variables are allowed within a filename (e.g.,
-\fI$SOURCES/dir/filename\fR). See \fBsavedir\fP.
+See \fBsavedir\fP. Like '+' %G is expanded to the current news.group.name
+but without \fBsavedir\fP prefixed. %P is expanded to the news.group.name
+with all '.' replaced by '/'.
+.PP
+If saving multiple files at once the filename (if not referring to a mailbox)
+will be extended by ".num" where "num" is a at least 3 digit number counting
+up from 1. Environment variables are allowed within a filename (e.g.,
+\fI$SOURCES/dir/filename\fR).
 .PP
 When saving articles you can specify whether the saved files should be
 post processed. A default process type can be set
@@ -3102,7 +3108,7 @@ Many prompts within \fBtin\fP offer a default choice that the cursor is
 positioned on. By pressing '\fB<CR>\fP' the default value is taken.
 Most prompts can be aborted by pressing '\fB<ESC>\fP'.
 .PP
-When \fBtin\fP is run in a
+When \fBtin\fP is run in an
 .BR \%xterm (1x)
 it will resize itself each time
 the

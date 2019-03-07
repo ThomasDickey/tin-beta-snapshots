@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2016-07-29
+ *  Updated   : 2018-11-23
  *
  * Copyright (c) 1997-2019 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -151,7 +151,7 @@ get_fqdn(
 	}
 
 #	ifdef HAVE_INET_ADDR
-	if ('0' <= *name && *name <= '9') {
+	if (*name >= '0' && *name <= '9') {
 		in_addr_t addr = inet_addr(name);
 
 		if ((hp = gethostbyaddr((char *) &addr, 4, AF_INET)))
@@ -275,7 +275,7 @@ get_full_name(
 			*p++ = '\0';
 			STRCPY(tmp, pw->pw_name);
 			if (*tmp && isalpha((int)(unsigned char) *tmp) && islower((int)(unsigned char) *tmp))
-				*tmp = toupper((int)(unsigned char) *tmp);
+				*tmp = my_toupper((int)(unsigned char) *tmp);
 			snprintf(fullname, sizeof(fullname), "%s%s%s", buf, tmp, p);
 		} else
 			STRCPY(fullname, buf);

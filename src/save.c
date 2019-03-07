@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-02
+ *  Updated   : 2019-02-20
  *  Notes     :
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -135,7 +135,6 @@ check_start_save_any_news(
 	FILE *fp_log = (FILE *) 0;
 	char *line;
 	char buf[LEN];
-	char group_path[PATH_LEN];
 	char path[PATH_LEN];
 	char logfile[PATH_LEN], savefile[PATH_LEN];
 	char subject[HEADER_LEN];
@@ -212,12 +211,14 @@ check_start_save_any_news(
 
 			if (function == SAVE_ANY_NEWS) {
 				char tmp[PATH_LEN];
+				char *group_path = my_malloc(strlen(group->name) + 2); /* trailing "/\0" */
 
+				make_group_path(group->name, group_path);
 				if (!strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : tinrc.savedir, tmp, sizeof(tmp), group, FALSE))
 					joinpath(tmp, sizeof(tmp), homedir, DEFAULT_SAVEDIR);
 
-				make_group_path(group->name, group_path);
 				joinpath(path, sizeof(path), tmp, group_path);
+				free(group_path);
 				create_path(path);	/* TODO error handling */
 			}
 		}
@@ -918,7 +919,7 @@ post_process_uud(
 		if ((fp_in = fopen(save[i].path, "r")) == NULL)
 			continue;
 
-		while (fgets(s, (int) sizeof(s), fp_in) != 0) {
+		while (fgets(s, (int) sizeof(s), fp_in) != NULL) {
 			switch (state) {
 				case INITIAL:
 					if (strncmp("begin ", s, 6) == 0) {
@@ -957,7 +958,7 @@ post_process_uud(
 
 				case MIDDLE:
 					/*
-					 * TODO: replace hardcoded length check (uue lines are not
+					 * TODO: replace hard coded length check (uue lines are not
 					 *       required to be 60 chars long (45 encoded chars)
 					 *       ('M' == 60 * 3 / 4 + ' ' == 77))
 					 */
@@ -1035,14 +1036,14 @@ post_process_uud(
 
 /*
  * Sum file - why do we bother to do this?
- * nuke code or add DONT_HAVE_PIPING and !M_UNIX -tree
+ * nuke code or add DONT_HAVE_PIPING -tree
  */
 static void
 sum_file(
 	const char *path,
 	const char *file)
 {
-#	if defined(M_UNIX) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
+#	if defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
 	FILE *fp_in;
 	char *ext;
 	char buf[LEN];
@@ -1070,7 +1071,7 @@ sum_file(
 		my_printf(cCRLF);
 	}
 	my_flush();
-#	endif /* M_UNIX && HAVE SUM && !DONT_HAVE_PIPING */
+#	endif /* HAVE SUM && !DONT_HAVE_PIPING */
 }
 #endif /* HAVE_LIBUU */
 
@@ -1190,14 +1191,10 @@ post_process_sh(
 
 		fclose(fp_out);
 		fp_out = NULL;
-#ifndef M_UNIX
-		make_post_process_cmd(DEFAULT_UNSHAR, file_out_dir, file_out);
-#else
 		sh_format(buf, sizeof(buf), "cd %s; sh %s", file_out_dir, file_out);
 		my_fputs(cCRLF, stdout);
 		my_flush();
 		invoke_cmd(buf);			/* Handles its own errors */
-#endif /* !M_UNIX */
 		unlink(file_out);
 	}
 }
@@ -2263,7 +2260,7 @@ process_part(
 	const char *savepath,
 	enum action what)
 {
-	FILE *infile = NULL;
+	FILE *infile;
 	char buf[2048], buf2[2048];
 	int count;
 	int i, line_count;

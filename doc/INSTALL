@@ -64,13 +64,13 @@ The following configure options and defines are documented in detail:
 Not yet documented configure options and defines:
 -------------------------------------------------
 TIN related:
-  --disable-ipv6                         --with-socks5
-  --with-socks                           --with-sum
+  --with-socks                           --with-socks5
+  --with-sum
 
   DEBUG                                   MATCH_TAR_PATTERN
-  JUST_TESTING                            NEW_HASH_METHOD
+  DEBUG_ART                               FILE_MODE_BROKEN
   OPTIMIZE_JUST_STAR                      REREAD_ACTIVE_FILE_SECS
-  NO_LOCKING                              FILE_MODE_BROKEN
+  NO_LOCKING
 
 System related:
   --datadir                               --localstatedir
@@ -527,6 +527,9 @@ retention and long threads this may be a performance win as the data in
 the group is somewhat presorted. Use --disable-heapsort to deactivate
 heapsort(3) inclusion.
 
+--disable-ipv6 (default: enabled)
+Disable IPv6 support.
+
 --enable-nls (default: on)
 The --enable-nls option enables Native Language Support (NLS), which allows
 tin to run in languages other than American English. Native Language
@@ -657,9 +660,10 @@ allow additional toplevel domains (GNKSA-check)
 EVIL_INSIDE
 let tin generate Message-IDs
 
-FOLLOW_USEFOR_DRAFT
+ALLOW_FWS_IN_NEWSGROUPLIST
 issue a warning instead of an error-message if Newsgroups: or
 Followup-To:-header contains spaces, newlines or tabs.
+See RFC 5536 3.1.4. and RFC 5536 3.2.6.
 
 
 Compiled & installed
@@ -667,5 +671,5 @@ Compiled & installed
 Tin was successfully built and installed on a variety of platforms including
 Linux, FreeBSD, OpenBSD, NetBSD, BSDi, Darwin, Solaris, IRIX, HP-UX, Ultrix,
 Tru64, AIX, SINIX, UXP/V, SUPER-UX, Unicos, QNX, GNU Hurd, DG/UX, SEIUX,
-Openstep, MiNT, Haiku, MINIX, Syllable, Bitrig and Cygwin.
+Openstep, MiNT, Haiku, MINIX, Syllable, Bitrig, UnixWare and Cygwin.
 For a detailed list see <http://www.tin.org/builds.html>

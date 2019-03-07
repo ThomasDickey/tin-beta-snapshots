@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2016-02-28
+ *  Updated   : 2019-02-03
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2019 Jason Faultless <jason@altarstone.com>
@@ -491,7 +491,7 @@ process_text_body_part(
 			len_blank = 1;
 			tmpline = line;
 			/* check if line contains only whitespace */
-			while ((' ' == *tmpline) || ('\t' == *tmpline)) {
+			while ((*tmpline == ' ') || (*tmpline == '\t')) {
 				len_blank++;
 				tmpline++;
 			}
@@ -901,7 +901,7 @@ cook_article(
 					free(foo);
 					found = TRUE;
 				}
-			} while (!found && *(++strptr) != 0);
+			} while (!found && *(++strptr) != NULL);
 
 			/* unstructured but must not be decoded */
 			if (l == NULL && (!strncasecmp(line, "References: ", 12) || !strncasecmp(line, "Message-ID: ", 12) || !strncasecmp(line, "Date: ", 6) || !strncasecmp(line, "Newsgroups: ", 12) || !strncasecmp(line, "Distribution: ", 14) || !strncasecmp(line, "Followup-To: ", 13) || !strncasecmp(line, "X-Face: ", 8) || !strncasecmp(line, "Cancel-Lock: ", 13) || !strncasecmp(line, "Cancel-Key: ", 12) || !strncasecmp(line, "Supersedes: ", 12)))

@@ -555,7 +555,7 @@ U029) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. update configure macros; switch to 2.13.20110430
       ADD. --with-pkg-config configure switch
       ADD. --with-textdomain configure switch
-      ADD. don't use hardcoded number of available colors; don't try to set
+      ADD. don't use hard coded number of available colors; don't try to set
            colors out of identified range
       FIX. color.c, curses.c, init.c, main.c, tcurses.c, autoconf.h[in]
            proto.h aclocal.m4, configure[.in], Makefile, Makefile.in
@@ -1887,7 +1887,7 @@ U146) Urs Janssen <urs@tin.org>
       BUG. didn't read attributes file when started with '-q' flag
       BUG. parse_rfc822_headers() did also decode the address-part of
            of headers like From/To
-      BUG. removed some hardcoded keys
+      BUG. removed some hard coded keys
       BUG. fixed a few typos in the french translation
       BUG. -S without -n did also save new groups
       BUG. $AUTOSUBSRIBE was broken
@@ -4113,7 +4113,7 @@ U001) Urs Janssen <urs@tin.org>
 583) Urs Janssen <urs@tin.org>
      BUG. compile with -DDONT_HAVE_PIPING didn't work
      BUG. broken newsrc-lines could cause a core-dump
-     BUG. if starting with on commandline group, tin doesn't display
+     BUG. if starting with on command-line group, tin doesn't display
           any groupnames after leaving group-level
      BUG. no check for empty but present Followup-To line if posting
           to multiple newsgroups
@@ -4405,7 +4405,7 @@ U001) Urs Janssen <urs@tin.org>
      FIX. several supplied patches
 
 533) Ralf Doeblitz <doeblitz@gmx.de>
-     BUG. commandline flags overridden by tinrc values
+     BUG. command-line flags overridden by tinrc values
      BUG. screen not initialized to default attributes when using color
      BUG. documentation for default_filter_kill_header and
           default_filter_select_header outdated in man page

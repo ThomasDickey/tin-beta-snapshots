@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2018-01-17
+ *  Updated   : 2019-02-04
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
@@ -53,7 +53,7 @@
  */
 static t_bool match_item(char *line, const char *pat, char *dst, size_t dstlen);
 static t_bool rc_update(FILE *fp);
-static t_bool rc_post_update(FILE *fp);
+static t_bool rc_post_update(FILE *fp/* , struct t_version *upgrade */);
 static void write_server_config(void);
 #ifdef HAVE_COLOR
 	static t_bool match_color(char *line, const char *pat, int *dst, int max);
@@ -74,7 +74,7 @@ read_config_file(
 {
 	FILE *fp;
 	char buf[LEN], tmp[LEN];
-	enum rc_state upgrade = RC_CHECK;
+	struct t_version *upgrade = NULL;
 #ifdef CHARSET_CONVERSION
 	int i;
 	t_bool is_7bit;
@@ -90,17 +90,17 @@ read_config_file(
 		if (buf[0] == '\n')
 			continue;
 		if (buf[0] == '#') {
-			if (upgrade == RC_CHECK && !global_file && match_string(buf, "# tin configuration file V", NULL, 0)) {
+			if (upgrade == NULL && !global_file && match_string(buf, "# tin configuration file V", NULL, 0)) {
 				upgrade = check_upgrade(buf, "# tin configuration file V", TINRC_VERSION);
-				if (upgrade != RC_IGNORE)
+				if (upgrade->state != RC_IGNORE)
 					upgrade_prompt_quit(upgrade, CONFIG_FILE);
-				if (upgrade == RC_UPGRADE)
+				if (upgrade->state == RC_UPGRADE)
 					rc_update(fp);
 			}
 			continue;
 		}
 
-		switch (tolower((unsigned char) buf[0])) {
+		switch (my_tolower((unsigned char) buf[0])) {
 		case 'a':
 			if (match_boolean(buf, "abbreviate_groupname=", &tinrc.abbreviate_groupname))
 				break;
@@ -228,10 +228,8 @@ read_config_file(
 			if (match_color(buf, "col_quote3=", &tinrc.col_quote3, MAX_COLOR))
 				break;
 
-#ifdef HAVE_COLOR
 			if (match_color(buf, "col_extquote=", &tinrc.col_extquote, MAX_COLOR))
 				break;
-#endif /* HAVE_COLOR */
 
 			if (match_color(buf, "col_head=", &tinrc.col_head, MAX_COLOR))
 				break;
@@ -275,8 +273,14 @@ read_config_file(
 			if (match_color(buf, "col_markstroke=", &tinrc.col_markstroke, MAX_COLOR))
 				break;
 #endif /* HAVE_COLOR */
-			if (match_list(buf, "confirm_choice=", txt_confirm_choices, &tinrc.confirm_choice))
-				break;
+
+			if (upgrade && upgrade->file_version < 10316) {
+				if (match_list(buf, "confirm_choice=", txt_confirm_choices, &tinrc.confirm_choice))
+					break;
+			} else {
+				if (match_integer(buf, "confirm_choice=", &tinrc.confirm_choice, TINRC_CONFIRM_MAX))
+					break;
+			}
 
 			break;
 
@@ -833,8 +837,10 @@ read_config_file(
 			break;
 		}
 	}
-	if (upgrade == RC_UPGRADE)
-		rc_post_update(fp);
+	if (!global_file && upgrade && upgrade->state == RC_UPGRADE)
+		rc_post_update(fp/* , upgrade */);
+
+	FreeAndNull(upgrade);
 	fclose(fp);
 
 	/*
@@ -944,7 +950,7 @@ write_config_file(
 	fprintf(fp, "prompt_followupto=%s\n\n", print_boolean(tinrc.prompt_followupto));
 
 	fprintf(fp, "%s", _(txt_confirm_choice.tinrc));
-	fprintf(fp, "confirm_choice=%s\n\n", txt_confirm_choices[tinrc.confirm_choice]);
+	fprintf(fp, "confirm_choice=%d\n\n", tinrc.confirm_choice);
 
 	fprintf(fp, "%s", _(txt_mark_ignore_tags.tinrc));
 	fprintf(fp, "mark_ignore_tags=%s\n\n", print_boolean(tinrc.mark_ignore_tags));
@@ -1276,10 +1282,8 @@ write_config_file(
 	fprintf(fp, "%s", _(txt_col_subject.tinrc));
 	fprintf(fp, "col_subject=%d\n\n", tinrc.col_subject);
 
-#ifdef HAVE_COLOR
 	fprintf(fp, "%s", _(txt_col_extquote.tinrc));
 	fprintf(fp, "col_extquote=%d\n\n", tinrc.col_extquote);
-#endif /* HAVE_COLOR */
 
 	fprintf(fp, "%s", _(txt_col_response.tinrc));
 	fprintf(fp, "col_response=%d\n\n", tinrc.col_response);
@@ -1809,7 +1813,7 @@ rc_update(
 		if (buf[0] == '#' || buf[0] == '\n')
 			continue;
 
-		switch (tolower((unsigned char) buf[0])) {
+		switch (my_tolower((unsigned char) buf[0])) {
 			case 'a':
 				if (match_boolean(buf, "auto_bcc=", &auto_bcc))
 					break;
@@ -1861,7 +1865,9 @@ rc_update(
 				 *    commands, now we look for %G
 				 */
 				if (match_string(buf, "default_sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile))) {
-					if (tinrc.sigfile[0] == '!') {
+					size_t l = strlen(tinrc.sigfile);
+
+					if (tinrc.sigfile[0] == '!' && (tinrc.sigfile[l - 2] != '%' || tinrc.sigfile[l - 1] != 'G')) {
 						char *newbuf = my_malloc(sizeof(tinrc.sigfile) + 4);
 
 						sprintf(newbuf, "%s %s", tinrc.sigfile, "%G");
@@ -2014,10 +2020,14 @@ rc_update(
  * auto update tinrc
  * called at the end of read_config_file()
  * useful to update variables which are already present in tinrc
+ *
+ * pass upgrade to this function once we need to exactly check
+ * upgrade->file_version, upgrade->current_version
  */
 static t_bool
 rc_post_update(
-	FILE *fp)
+	FILE *fp
+	/* , struct t_version *upgrade */)
 {
 	char buf[LEN];
 	int groupname_max_length = 0;
@@ -2030,7 +2040,7 @@ rc_post_update(
 		if (buf[0] == '#' || buf[0] == '\n')
 			continue;
 
-		switch (tolower((unsigned char) buf[0])) {
+		switch (my_tolower((unsigned char) buf[0])) {
 			case 'c':
 #ifdef USE_CANLOCK
 				{
@@ -2056,7 +2066,9 @@ rc_post_update(
 				 * commands, now we look for %G
 				 */
 				if (match_string(buf, "sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile))) {
-					if (tinrc.sigfile[0] == '!') {
+					size_t l = strlen(tinrc.sigfile);
+
+					if (tinrc.sigfile[0] == '!'&& (tinrc.sigfile[l - 2] != '%' || tinrc.sigfile[l - 1] != 'G')) {
 						char *newbuf = my_malloc(sizeof(tinrc.sigfile) + 4);
 
 						sprintf(newbuf, "%s %s", tinrc.sigfile, "%G");
@@ -2108,7 +2120,7 @@ read_server_config(
 	char file[PATH_LEN];
 	char newnews_info[LEN];
 	char serverdir[PATH_LEN];
-	enum rc_state upgrade = RC_CHECK;
+	struct t_version *upgrade = NULL;
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
@@ -2121,10 +2133,12 @@ read_server_config(
 	joinpath(serverdir, sizeof(serverdir), rcdir, file);
 	joinpath(file, sizeof(file), serverdir, SERVERCONFIG_FILE);
 	joinpath(local_newsgroups_file, sizeof(local_newsgroups_file), serverdir, NEWSGROUPS_FILE);
+
 	if ((fp = fopen(file, "r")) == NULL)
 		return;
-	while (NULL != (line = tin_fgets(fp, FALSE))) {
-		if (('#' == *line) || ('\0' == *line))
+
+	while ((line = tin_fgets(fp, FALSE)) != NULL) {
+		if ((*line == '#') || (*line == '\0'))
 			continue;
 
 		if (match_string(line, "last_newnews=", newnews_info, sizeof(newnews_info))) {
@@ -2136,13 +2150,13 @@ read_server_config(
 			free(tmp_info);
 			continue;
 		}
+
 		if (match_string(line, "version=", NULL, 0)) {
-			if (RC_CHECK != upgrade)
-				/* ignore duplicate version lines; last match counts */
+			if (upgrade != NULL) /* ignore duplicate version lines; first match counts */
 				continue;
+
 			upgrade = check_upgrade(line, "version=", SERVERCONFIG_VERSION);
-			if (RC_IGNORE == upgrade)
-				/* Expected version number; nothing to do -> continue */
+			if (upgrade->state == RC_IGNORE) /* Expected version number; nothing to do -> continue */
 				continue;
 
 			/* Nothing to do yet for RC_UPGRADE and RC_DOWNGRADE */
@@ -2150,6 +2164,7 @@ read_server_config(
 		}
 	}
 	fclose(fp);
+	FreeAndNull(upgrade);
 }
 
 
@@ -2182,8 +2197,8 @@ write_server_config(
 	if ((no_write || post_article_and_exit || post_postponed_and_exit) && file_size(file) != -1L)
 		return;
 
-	if (-1 == stat(serverdir, &statbuf)) {
-		if (-1 == my_mkdir(serverdir, (mode_t) (S_IRWXU)))
+	if (stat(serverdir, &statbuf) == -1) {
+		if (my_mkdir(serverdir, (mode_t) (S_IRWXU)) == -1)
 			/* Can't create directory TODO: Add error handling */
 			return;
 	}
