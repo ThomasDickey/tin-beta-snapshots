@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2018-02-15
+ *  Updated   : 2018-12-03
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -563,9 +563,9 @@ get_tcp_socket(
 		return -save_errno;
 	}
 
-#			endif /* !EXCELAN */
-#		endif /* !h_addr */
-#	endif /* !TLI */
+#			endif /* EXCELAN */
+#		endif /* h_addr */
+#	endif /* TLI */
 	return s;
 }
 #endif /* NNTP_ABLE && !INET6 */
@@ -592,7 +592,7 @@ get_tcp6_socket(
 {
 	char mymachine[MAXHOSTNAMELEN + 1];
 	char myport[12];
-	int s = -1, err;
+	int s = -1, err, ec = 0, es = 0;
 	struct addrinfo hints, *res, *res0;
 
 	snprintf(mymachine, sizeof(mymachine), "%s", machine);
@@ -619,22 +619,28 @@ get_tcp6_socket(
 	}
 	err = -1;
 	for (res = res0; res; res = res->ai_next) {
-		if ((s = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0)
+		if ((s = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0) {
+			es = errno;
 			continue;
-		if (connect(s, res->ai_addr, res->ai_addrlen) != 0)
+		}
+		if (connect(s, res->ai_addr, res->ai_addrlen) != 0) {
+			ec = errno;
 			s_close(s);
+		}
 		else {
-			err = 0;
+			es = ec = err = 0;
 			break;
 		}
 	}
 	if (res0 != NULL)
 		freeaddrinfo(res0);
 	if (err < 0) {
-		/*
-		 * TODO: issue a more useful error-message
-		 */
 		my_fprintf(stderr, "%s", _(txt_error_socket_or_connect_problem));
+		if (es)
+			my_fprintf(stderr, "\tsocket(2): %s\n", strerror(es));
+		if (ec)
+			my_fprintf(stderr, "\tconnect(2): %s\n", strerror(ec));
+		sleep(3);
 		return -1;
 	}
 	return s;
@@ -1054,21 +1060,21 @@ check_extensions(
 			nntp_caps.sasl = SASL_NONE;
 			nntp_caps.compress = FALSE;
 			nntp_caps.compress_algorithm = COMPRESS_NONE;
-#if 0
+#	if 0
 			nntp_caps.streaming = FALSE;
 			nntp_caps.ihave = FALSE;
-#endif /* 0 */
-#ifndef BROKEN_LISTGROUP
+#	endif /* 0 */
+#	ifndef BROKEN_LISTGROUP
 			nntp_caps.broken_listgroup = FALSE;
-#else
+#	else
 			nntp_caps.broken_listgroup = TRUE;
-#endif /* !BROKEN_LISTGROUP */
+#	endif /* !BROKEN_LISTGROUP */
 
 			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
-#		ifdef DEBUG
+#	ifdef DEBUG
 				if (debug & DEBUG_NNTP)
 					debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
-#		endif /* DEBUG */
+#	endif /* DEBUG */
 				/* look for version number(s) */
 				if (!nntp_caps.version && nntp_caps.type == CAPABILITIES) {
 					if (!strncasecmp(ptr, "VERSION", 7)) {
@@ -1584,10 +1590,10 @@ nntp_open(
 
 				case 221:	/* unexpected multiline ok, e.g.: SoftVelocity Discussions 2.5q */
 					nntp_caps.hdr_cmd = &xhdr_cmds[i];
-#		ifdef DEBUG
+#	ifdef DEBUG
 					if ((debug & DEBUG_NNTP) && verbose > 1)
 						debug_print_file("NNTP", "nntp_open() %s skipping data", &xhdr_cmds[i]);
-#		endif /* DEBUG */
+#	endif /* DEBUG */
 					while (tin_fgets(FAKE_NNTP_FP, FALSE))
 						;
 					j = -1;
@@ -1601,7 +1607,7 @@ nntp_open(
 		}
 		/* no XPAT probing here, we do when it's needed */
 		nntp_caps.xpat = TRUE;
-#		if 0
+#	if 0
 		switch (new_nntp_command("XPAT Newsgroups <0> *", ERR_NOART, line, sizeof(line))) {
 			case ERR_NOART:
 				nntp_caps.xpat = TRUE;
@@ -1610,7 +1616,7 @@ nntp_open(
 			default:
 				break;
 		}
-#		endif /* 0 */
+#	endif /* 0 */
 	} else {
 		if (!nntp_caps.over_cmd) {
 			/*
@@ -1645,10 +1651,10 @@ nntp_open(
 
 				case 221:	/* unexpected multiline ok, e.g.: SoftVelocity Discussions 2.5q */
 					nntp_caps.hdr_cmd = xhdr_cmds;
-#		ifdef DEBUG
+#	ifdef DEBUG
 					if ((debug & DEBUG_NNTP) && verbose > 1)
 						debug_print_file("NNTP", "nntp_open() %s skipping data", xhdr_cmds);
-#		endif /* DEBUG */
+#	endif /* DEBUG */
 					while (tin_fgets(FAKE_NNTP_FP, FALSE))
 						;
 					break;

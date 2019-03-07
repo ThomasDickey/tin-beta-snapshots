@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-04-04
+ *  Updated   : 2019-02-28
  *  Notes     :
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -429,13 +429,13 @@ invoke_ispell(
 	 * Now separating the header and body in two different files so that
 	 * the header is not checked by ispell
 	 */
-#ifdef HAVE_LONG_FILE_NAMES
+#	ifdef HAVE_LONG_FILE_NAMES
 	snprintf(nam_body, sizeof(nam_body), "%s%s", nam, ".body");
 	snprintf(nam_head, sizeof(nam_head), "%s%s", nam, ".head");
-#else
+#	else
 	snprintf(nam_body, sizeof(nam_body), "%s%s", nam, ".b");
 	snprintf(nam_head, sizeof(nam_head), "%s%s", nam, ".h");
-#endif /* HAVE_LONG_FILE_NAMES */
+#	endif /* HAVE_LONG_FILE_NAMES */
 
 	if ((fp_all = fopen(nam, "r")) == NULL) {
 		perror_message(_(txt_cannot_open), nam);
@@ -609,7 +609,7 @@ tin_done(
 		while (i--) {
 			wrote_newsrc_lines = write_newsrc();
 			if ((wrote_newsrc_lines >= 0L) && (wrote_newsrc_lines >= read_newsrc_lines)) {
-				if (!batch_mode || verbose)
+				if (/* !batch_mode || */ verbose)
 					wait_message(0, _(txt_newsrc_saved));
 				break;
 			}
@@ -728,7 +728,6 @@ my_mkdir(
 }
 
 
-#ifdef M_UNIX
 void
 rename_file(
 	const char *old_filename,
@@ -741,11 +740,11 @@ rename_file(
 
 	unlink(new_filename);
 
-#	ifdef HAVE_LINK
+#ifdef HAVE_LINK
 	if (link(old_filename, new_filename) == -1)
-#	else
+#else
 	if (rename(old_filename, new_filename) < 0)
-#	endif /* HAVE_LINK */
+#endif /* HAVE_LINK */
 	{
 		if (errno == EXDEV) {	/* create & copy file across filesystem */
 			if ((fp_old = fopen(old_filename, "r")) == NULL) {
@@ -776,14 +775,13 @@ rename_file(
 			return;
 		}
 	}
-#	ifdef HAVE_LINK
+#ifdef HAVE_LINK
 	if (unlink(old_filename) == -1) {
 		perror_message(_(txt_rename_error), old_filename, new_filename);
 		return;
 	}
-#	endif /* HAVE_LINK */
+#endif /* HAVE_LINK */
 }
-#endif /* M_UNIX */
 
 
 /*
@@ -798,7 +796,7 @@ invoke_cmd(
 	t_bool save_cmd_line = cmd_line;
 #ifndef IGNORE_SYSTEM_STATUS
 	t_bool success;
-#endif /* IGNORE_SYSTEM_STATUS */
+#endif /* !IGNORE_SYSTEM_STATUS */
 
 	if (!save_cmd_line) {
 		EndWin();
@@ -906,18 +904,13 @@ dir_name(
 
 /*
  * Return TRUE if new mail has arrived
- *
- * TODO: why not cache the mailbox_name?
  */
 #define MAILDIR_NEW	"new"
 t_bool
 mail_check(
-	void)
+	const char *mailbox_name)
 {
-	const char *mailbox_name;
 	struct stat buf;
-
-	mailbox_name = get_val("MAIL", mailbox);
 
 	if (mailbox_name != NULL && stat(mailbox_name, &buf) >= 0) {
 		if ((int) (buf.st_mode & S_IFMT) == (int) S_IFDIR) { /* maildir setup */
@@ -1127,7 +1120,7 @@ show_color_status(
  * Check for lock file to stop multiple copies of tin -u running and if it
  * does not exist create it so this is the only copy running
  *
- * FIXME: get rid of hardcoded pid-length as pid_t might be long
+ * FIXME: get rid of hard coded pid-length as pid_t might be long
  */
 void
 create_index_lock_file(
@@ -1465,14 +1458,15 @@ strfpath_cp(
 /*
  * strfpath - produce formatted pathname expansion. Handles following forms:
  *   ~/News    -> $HOME/News
- *   ~abc/News -> /usr/abc/News
+ *   ~abc/News -> /home/abc/News
  *   $var/News -> /env/var/News
  *   =file     -> $HOME/Mail/file
- *   =         -> $HOME/Mail/group.name
+ *   =         -> $HOME/Mail/group.name   (shorthand for =%G)
  *   +file     -> savedir/group.name/file
- *
- * Interestingly, %G is not documented as such and apparently unused
- *   ~/News/%G -> $HOME/News/group.name
+ *   %G        -> group.name              (group.name is a file )
+ *   %G/file   -> group.name/file         (group.name is a dir)
+ *   %P        -> group/name              (name is a file)
+ *   %P/file   -> group/name/file         (name is a dir)
  *
  * Inputs:
  *   format		The string to be converted
@@ -1484,8 +1478,6 @@ strfpath_cp(
  *   0			on error
  *   1			if generated pathname is a mailbox
  *   2			success
- *
- * TODO: add %X (Article number), %M (Message-ID)?
  */
 static int
 _strfpath(
@@ -1646,20 +1638,42 @@ _strfpath(
 
 			case '%':	/* Different forms of parsing cmds */
 				format++;
-				if (*format && *format == 'G' && group != NULL) {
+				if (group != NULL && *format && *format == 'G') {
 					memset(tbuf, 0, sizeof(tbuf));
 					STRCPY(tbuf, group->name);
 					i = strlen(tbuf);
 					if (((str + i) < (endp - 1)) && (i > 0)) {
 						strcpy(str, tbuf);
 						str += i;
-						break;
 					} else {
 						str[0] = '\0';
 						return 0;
 					}
-				} else
-					*str++ = *format;
+					break;
+				}
+				if (group != NULL && *format && *format == 'P') {
+					char *pbuf = my_malloc(strlen(group->name) + 2); /* trailing "/\0" */
+
+					make_group_path(group->name, pbuf);
+					if ((i = strlen(pbuf)))
+						pbuf[i--] = '\0'; /* remove trailing '/' */
+					else {
+						str[0] = '\0';
+						free(pbuf);
+						return 0;
+					}
+					if (((str + i) < (endp - 1)) && (i > 0)) {
+						strcpy(str, pbuf);
+						free(pbuf);
+						str += i;
+					} else {
+						str[0] = '\0';
+						free(pbuf);
+						return 0;
+					}
+					break;
+				}
+				*str++ = *format;
 				/* FALLTHROUGH */
 			default:
 				break;
@@ -1801,7 +1815,7 @@ strfmailer(
 
 	/*
 	 * TODO: shouldn't we better check for no % OR format > maxsize?
-	 *       as no replacement doesn't make sense (hardcoded To, Subject
+	 *       as no replacement doesn't make sense (hard coded To, Subject
 	 *       and filename) and the resulting string usually is longer after
 	 *       replacements were done (nobody uses enough %% to make the
 	 *       result shorter than the input).
@@ -1897,7 +1911,7 @@ strfmailer(
 
 				case 'S':	/* Subject */
 					/* don't MIME encode Subject if using external mail client */
-					if (INTERACTIVE_NONE != tinrc.interactive_mailer)
+					if (tinrc.interactive_mailer != INTERACTIVE_NONE)
 						strncpy(tbuf, escape_shell_meta(subject, quote_area), sizeof(tbuf) - 1);
 					else {
 #ifdef CHARSET_CONVERSION
@@ -1914,7 +1928,7 @@ strfmailer(
 
 				case 'T':	/* To */
 					/* don't MIME encode To if using external mail client */
-					if (INTERACTIVE_NONE != tinrc.interactive_mailer)
+					if (tinrc.interactive_mailer != INTERACTIVE_NONE)
 						strncpy(tbuf, escape_shell_meta(to, quote_area), sizeof(tbuf) - 1);
 					else {
 #ifdef CHARSET_CONVERSION
@@ -1931,7 +1945,7 @@ strfmailer(
 
 				case 'U':	/* User */
 					/* don't MIME encode User if using external mail client */
-					if (INTERACTIVE_NONE != tinrc.interactive_mailer)
+					if (tinrc.interactive_mailer != INTERACTIVE_NONE)
 						strncpy(tbuf, userid, sizeof(tbuf) - 1);
 					else {
 #ifdef CHARSET_CONVERSION
@@ -2054,9 +2068,8 @@ make_group_path(
 	char *path)
 {
 	while (*name) {
-		*path = ((*name == '.') ? '/' : *name);
+		*path++ = ((*name == '.') ? '/' : *name);
 		name++;
-		path++;
 	}
 	*path++ = '/';
 	*path = '\0';
@@ -2076,10 +2089,11 @@ make_base_group_path(
 	char *group_path,
 	size_t group_path_len)
 {
-	char buf[LEN];
+	char *buf = my_malloc(strlen(group_name) + 2); /* trailing "/\0" */
 
 	make_group_path(group_name, buf);
 	joinpath(group_path, group_path_len, base_dir, buf);
+	free(buf);
 }
 
 
@@ -2097,25 +2111,6 @@ cleanup_tmp_files(
 	if (batch_mode)
 		unlink(lock_file);
 }
-
-
-#ifndef M_UNIX
-void
-make_post_process_cmd(
-	char *cmd,
-	char *dir,
-	char *file)
-{
-	char buf[LEN];
-	char currentdir[PATH_LEN];
-
-	get_cwd(currentdir);
-	chdir(dir);
-	sh_format(buf, sizeof(buf), cmd, file);
-	invoke_cmd(buf);
-	chdir(currentdir);
-}
-#endif /* !M_UNIX */
 
 
 /*
@@ -2147,9 +2142,7 @@ file_mtime(
 
 
 /*
- * TODO: this seems to be unix specific, avoid !M_UNIX calls or
- *       add code for other OS
- *       this feature also isn't documented anywhere
+ * TODO: this feature isn't documented anywhere
  */
 char *
 random_organization(
@@ -2161,7 +2154,7 @@ random_organization(
 
 	*selorg = '\0';
 
-	if (*in_org != '/')	/* M_UNIXism?! */
+	if (*in_org != '/')
 		return in_org;
 
 	srand((unsigned int) time(NULL));
@@ -3004,7 +2997,7 @@ gnksa_dequote_plainphrase(
 
 					case '=':
 						*(wpos++) = *(rpos++);
-						if ('?' == *rpos) {
+						if (*rpos == '?') {
 							state = 2;
 							*(wpos++) = *(rpos++);
 						} else
@@ -3115,7 +3108,7 @@ gnksa_dequote_plainphrase(
 				switch (*rpos) {
 					case '?':
 						*(wpos++) = *(rpos++);
-						if ('=' == *rpos) {
+						if (*rpos == '=') {
 							state = initialstate;
 							*(wpos++) = *(rpos++);
 						} else
@@ -3143,7 +3136,7 @@ gnksa_dequote_plainphrase(
 
 					case '=':
 						*(wpos++) = *(rpos++);
-						if ('?' == *rpos) {
+						if (*rpos == '?') {
 							state = 2;
 							*(wpos++) = *(rpos++);
 						} else
@@ -3184,12 +3177,12 @@ gnksa_check_domain_literal(
 	x1 = x2 = x3 = x4 = 666;
 	term = '\0';
 
-	if ('[' == *domain) { /* literal bracketed */
+	if (*domain == '[') { /* literal bracketed */
 		n = sscanf(domain, "[%u.%u.%u.%u%c", &x1, &x2, &x3, &x4, &term);
-		if (5 != n)
+		if (n != 5)
 			return GNKSA_BAD_DOMAIN_LITERAL;
 
-		if (']' != term)
+		if (term != ']')
 			return GNKSA_BAD_DOMAIN_LITERAL;
 
 	} else { /* literal not bracketed */
@@ -3198,25 +3191,25 @@ gnksa_check_domain_literal(
 #else
 		n = sscanf(domain, "%u.%u.%u.%u%c", &x1, &x2, &x3, &x4, &term);
 		/* there should be no terminating character present */
-		if (4 != n)
+		if (n != 4)
 			return GNKSA_BAD_DOMAIN_LITERAL;
 #endif /* REQUIRE_BRACKETS_IN_DOMAIN_LITERAL */
 	}
 
 	/* check ip parts for legal range */
-	if ((255 < x1) || (255 < x2) || (255 < x3) || (255 < x4))
+	if ((x1 > 255) || (x2 > 255) || (x3 > 255) || (x4 > 255))
 		return GNKSA_BAD_DOMAIN_LITERAL;
 
 	/* check for private ip or localhost - see RFC 5735, RFC 5737 */
 	if ((!disable_gnksa_domain_check)
-	    && ((0 == x1)				/* local network */
-		|| (10 == x1)				/* private class A */
-		|| ((172 == x1) && (16 == (x2 & 0xf0)))	/* private /12 */
-		|| ((192 == x1) && (168 == x2))		/* private class B */
-		|| ((192 == x1) && (0 == x2) && (2 == x3)) /* TEST NET-1 */
-		|| ((198 == x1) && (51 == x2) && (100 == x3)) /* TEST NET-2 */
-		|| ((203 == x1) && (0 == x2) && (113 == x3)) /* TEST NET-3 */
-		|| (127 == x1)))			/* loopback */
+	    && ((x1 == 0)				/* local network */
+		|| (x1 == 10)				/* private class A */
+		|| ((x1 == 172) && ((x2 & 0xf0) == 16))	/* private /12 */
+		|| ((x1 == 192) && (x2 == 168))		/* private class B */
+		|| ((x1 == 192) && (x2 == 0) && (x3 == 2)) /* TEST NET-1 */
+		|| ((x1 == 198) && (x2 == 51) && (x3 == 100)) /* TEST NET-2 */
+		|| ((x1 == 203) && (x2 == 0) && (x3 == 113)) /* TEST NET-3 */
+		|| (x1 == 127)))			/* loopback */
 		return GNKSA_LOCAL_DOMAIN_LITERAL;
 
 	return GNKSA_OK;
@@ -3233,16 +3226,15 @@ gnksa_check_domain(
 	int result;
 
 	/* check for domain literal */
-	if ('[' == *domain) /* check value of domain literal */
+	if (*domain == '[') /* check value of domain literal */
 		return gnksa_check_domain_literal(domain);
 
 	/* check for leading or trailing dot */
-	if (('.' == *domain) || ('.' == *(domain + strlen(domain) - 1)))
+	if ((*domain == '.') || (*(domain + strlen(domain) - 1) == '.'))
 		return GNKSA_ZERO_LENGTH_LABEL;
 
 	/* look for TLD start */
-	aux = strrchr(domain, '.');
-	if (NULL == aux)
+	if ((aux = strrchr(domain, '.')) == NULL)
 		return GNKSA_SINGLE_DOMAIN;
 
 	aux++;
@@ -3251,7 +3243,7 @@ gnksa_check_domain(
 	switch ((int) strlen(aux)) {
 		case 1:
 			/* no numeric components allowed */
-			if (('0' <= *aux) && ('9' >= *aux))
+			if ((*aux >= '0') && (*aux <= '9'))
 				return gnksa_check_domain_literal(domain);
 
 			/* single letter TLDs do not exist */
@@ -3261,12 +3253,12 @@ gnksa_check_domain(
 
 		case 2:
 			/* no numeric components allowed */
-			if (('0' <= *aux) && ('9' >= *aux)
-			    && ('0' <= *(aux + 1)) && ('9' >= *(aux + 1)))
+			if ((*aux >= '0') && (*aux <= '9')
+			    && (*(aux + 1) >= '0') && (*(aux + 1) <= '9'))
 				return gnksa_check_domain_literal(domain);
 
-			if (('a' <= *aux) && ('z' >= *aux)
-			    && ('a' <= *(aux + 1)) && ('z' >= *(aux + 1))) {
+			if ((*aux >= 'a') && (*aux <= 'z')
+			    && (*(aux + 1) >= 'a') && (*(aux + 1) <= 'z')) {
 				i = ((*aux - 'a') * 26) + (*(aux + 1)) - 'a';
 				if (!gnksa_country_codes[i])
 					return GNKSA_UNKNOWN_DOMAIN;
@@ -3276,9 +3268,9 @@ gnksa_check_domain(
 
 		case 3:
 			/* no numeric components allowed */
-			if (('0' <= *aux) && ('9' >= *aux)
-			    && ('0' <= *(aux + 1)) && ('9' >= *(aux + 1))
-			    && ('0' <= *(aux + 2)) && ('9' >= *(aux + 2)))
+			if ((*aux >= '0') && (*aux <= '9')
+			    && (*(aux + 1) >= '0') && (*(aux + 1) <= '9')
+			    && (*(aux + 2) >= '0') && (*(aux + 2) <= '9'))
 				return gnksa_check_domain_literal(domain);
 			/* FALLTHROUGH */
 		default:
@@ -3290,7 +3282,7 @@ gnksa_check_domain(
 			}
 			if (disable_gnksa_domain_check)
 				result = GNKSA_OK;
-			if (GNKSA_OK != result)
+			if (result != GNKSA_OK)
 				return result;
 			break;
 	}
@@ -3298,18 +3290,18 @@ gnksa_check_domain(
 	/* check for illegal labels */
 	last = domain;
 	for (aux = domain; *aux; aux++) {
-		if ('.' == *aux) {
+		if (*aux == '.') {
 			if (aux - last - 1 > 63)
 				return GNKSA_ILLEGAL_LABEL_LENGTH;
 
-			if ('.' == *(aux + 1))
+			if (*(aux + 1) == '.')
 				return GNKSA_ZERO_LENGTH_LABEL;
 
-			if (('-' == *(aux + 1)) || ('-' == *(aux - 1)))
+			if ((*(aux + 1) == '-') || (*(aux - 1) == '-'))
 				return GNKSA_ILLEGAL_LABEL_HYPHEN;
 
 #ifdef ENFORCE_RFC1034
-			if (('0' <= *(aux + 1)) && ('9' >= *(aux + 1)))
+			if ((*(aux + 1) >= '0') && (*(aux + 1) <= '9'))
 				return GNKSA_ILLEGAL_LABEL_BEGNUM;
 #endif /* ENFORCE_RFC1034 */
 			last = aux;
@@ -3340,11 +3332,11 @@ gnksa_check_localpart(
 		return GNKSA_LOCALPART_MISSING;
 
 	/* check for zero-length domain parts */
-	if (('.' == *localpart) || ('.' == *(localpart + strlen(localpart) -1)))
+	if ((*localpart == '.') || (*(localpart + strlen(localpart) - 1) == '.'))
 		return GNKSA_ZERO_LENGTH_LOCAL_WORD;
 
 	for (aux = localpart; *aux; aux++) {
-		if (('.' == *aux) && ('.' == *(aux + 1)))
+		if ((*aux == '.') && (*(aux + 1) == '.'))
 			return GNKSA_ZERO_LENGTH_LOCAL_WORD;
 	}
 
@@ -3382,7 +3374,7 @@ gnksa_split_from(
 
 	/* skip trailing whitespace */
 	addr_end = work + strlen(work) - 1;
-	while (addr_end >= work && (' ' == *addr_end || '\t' == *addr_end))
+	while (addr_end >= work && (*addr_end == ' ' || *addr_end == '\t'))
 		addr_end--;
 
 	if (addr_end < work) {
@@ -3393,7 +3385,7 @@ gnksa_split_from(
 	*(addr_end + 1) = '\0';
 	*(addr_end + 2) = '\0';
 
-	if ('>' == *addr_end) {
+	if (*addr_end == '>') {
 		/* route-address used */
 		*addrtype = GNKSA_ADDRTYPE_ROUTE;
 
@@ -3402,7 +3394,7 @@ gnksa_split_from(
 		while (('<' != *addr_begin) && (addr_begin > work))
 			addr_begin--;
 
-		if ('<' != *addr_begin) /* syntax error in mail address */
+		if (*addr_begin != '<') /* syntax error in mail address */
 			return GNKSA_LANGLE_MISSING;
 
 		/* copy route address */
@@ -3414,10 +3406,10 @@ gnksa_split_from(
 		addr_begin = work;
 
 		/* strip surrounding whitespace */
-		while (addr_end >= work && (' ' == *addr_end || '\t' == *addr_end))
+		while (addr_end >= work && (*addr_end == ' '|| *addr_end == '\t'))
 			addr_end--;
 
-		while ((' ' == *addr_begin) || ('\t' == *addr_begin))
+		while ((*addr_begin == ' ') || (*addr_begin == '\t'))
 			addr_begin++;
 
 		*++addr_end = '\0';
@@ -3430,12 +3422,12 @@ gnksa_split_from(
 		/* get address part */
 		/* skip leading whitespace */
 		addr_begin = work;
-		while ((' ' == *addr_begin) || ('\t' == *addr_begin))
+		while ((*addr_begin == ' ') || (*addr_begin == '\t'))
 			addr_begin++;
 
 		/* scan forward to next whitespace or null */
 		addr_end = addr_begin;
-		while ((' ' != *addr_end) && ('\t' != *addr_end) && (*addr_end))
+		while ((*addr_end != ' ') && (*addr_end != '\t') && (*addr_end))
 			addr_end++;
 
 		*addr_end = '\0';
@@ -3446,19 +3438,19 @@ gnksa_split_from(
 		addr_begin = addr_end + 1;
 		addr_end = addr_begin + strlen(addr_begin) -1;
 		/* strip surrounding whitespace */
-		while ((' ' == *addr_end) || ('\t' == *addr_end))
+		while ((*addr_end == ' ') || (*addr_end == '\t'))
 			addr_end--;
 
-		while ((' ' == *addr_begin) || ('\t' == *addr_begin))
+		while ((*addr_begin == ' ') || (*addr_begin == '\t'))
 			addr_begin++;
 
 		/* any realname at all? */
 		if (*addr_begin) {
 			/* check for parentheses */
-			if ('(' != *addr_begin)
+			if (*addr_begin != '(')
 				return GNKSA_LPAREN_MISSING;
 
-			if (')' != *addr_end)
+			if (*addr_end != ')')
 				return GNKSA_RPAREN_MISSING;
 
 			/* copy realname */
@@ -3501,40 +3493,45 @@ gnksa_do_check_from(
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		wait_message(0, "From:=[%s]", from);
+		debug_print_file("GNKSA", "From:=[%s]", from);
 #endif /* DEBUG */
 
 	/* split from */
 	code = gnksa_split_from(from, address, realname, &addrtype);
-	if ('\0' == *address) /* address missing or not extractable */
+	if (*address == '\0') /* address missing or not extractable */
 		return code;
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		wait_message(0, "address=[%s]", address);
+		debug_print_file("GNKSA", "address=[%s]", address);
 #endif /* DEBUG */
 
 	/* parse address */
 	addr_begin = strrchr(address, '@');
 
-	if (NULL != addr_begin) {
+	if (addr_begin != NULL) {
 		/* temporarily terminate string at separator position */
 		*addr_begin++ = '\0';
 
 #ifdef DEBUG
 		if (debug & DEBUG_MISC)
-			wait_message(0, "FQDN=[%s]", addr_begin);
+			debug_print_file("GNKSA", "FQDN=[%s]", addr_begin);
 #endif /* DEBUG */
 
 		/* convert FQDN part to lowercase */
 		str_lwr(addr_begin);
 
-		if (GNKSA_OK != (result = gnksa_check_domain(addr_begin))
-		    && (GNKSA_OK == code)) /* error detected */
+#ifdef DEBUG
+		if (debug & DEBUG_MISC)
+			debug_print_file("GNKSA", "str_lwr(FQDN)=[%s]", addr_begin);
+#endif /* DEBUG */
+
+		if ((result = gnksa_check_domain(addr_begin)) != GNKSA_OK
+		    && (code == GNKSA_OK)) /* error detected */
 			code = result;
 
-		if (GNKSA_OK != (result = gnksa_check_localpart(address))
-		    && (GNKSA_OK == code)) /* error detected */
+		if ((result = gnksa_check_localpart(address)) != GNKSA_OK
+		    && (code == GNKSA_OK)) /* error detected */
 			code = result;
 
 		/* restore separator character */
@@ -3543,22 +3540,22 @@ gnksa_do_check_from(
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		wait_message(0, "realname=[%s]", realname);
+		debug_print_file("GNKSA", "realname=[%s]", realname);
 #endif /* DEBUG */
 
 	/* check realname */
-	if (GNKSA_OK != (result = gnksa_dequote_plainphrase(realname, decoded, addrtype))) {
-		if (GNKSA_OK == code) /* error detected */
+	if ((result = gnksa_dequote_plainphrase(realname, decoded, addrtype)) != GNKSA_OK) {
+		if (code == GNKSA_OK) /* error detected */
 			code = result;
 	} else	/* copy dequoted realname to result variable */
 		strcpy(realname, decoded);
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC) { /* TODO: dump to a file instead of wait_message() */
-		if (GNKSA_OK != code)
-			wait_message(2, "From:=[%s], GNKSA=[%d]", from, code);
+		if (code != GNKSA_OK)
+			debug_print_file("GNKSA", "From:=[%s], GNKSA=[%d]", from, code);
 		else
-			wait_message(0, "GNKSA=[%d]", code);
+			debug_print_file("GNKSA", "GNKSA=[%d]", code);
 	}
 #endif /* DEBUG */
 
@@ -3801,10 +3798,10 @@ idna_decode(
 		UChar dest[1024];
 		UErrorCode err = U_ZERO_ERROR;
 		char *s;
-#ifdef HAVE_LIBICUUC_46_API
+#		ifdef HAVE_LIBICUUC_46_API
 		UIDNA *uts46;
 		UIDNAInfo info = UIDNA_INFO_INITIALIZER;
-#endif /* HAVE_LIBICUUC_46_API */
+#		endif /* HAVE_LIBICUUC_46_API */
 
 		if ((s = strrchr(out, '@')))
 			s++;
@@ -3812,13 +3809,13 @@ idna_decode(
 			s = out;
 
 		src = char2UChar(s);
-#ifndef HAVE_LIBICUUC_46_API
+#		ifndef HAVE_LIBICUUC_46_API
 		uidna_IDNToUnicode(src, -1, dest, 1023, UIDNA_USE_STD3_RULES, NULL, &err);
-#else
+#		else
 		uts46 = uidna_openUTS46(UIDNA_USE_STD3_RULES, &err);
 		uidna_nameToUnicode(uts46, src, u_strlen(src), dest, 1023, &info, &err);
 		uidna_close(uts46);
-#endif /* !HAVE_LIBICUUC_46_API */
+#		endif /* !HAVE_LIBICUUC_46_API */
 		free(src);
 		if (!(U_FAILURE(err))) {
 			char *t;
@@ -3837,7 +3834,7 @@ idna_decode(
 #		if defined(HAVE_LIBIDN) && defined(HAVE_IDNA_TO_UNICODE_LZLZ)
 	if (stringprep_check_version("0.3.0")) {
 		char *t, *s = NULL;
-		int rs = IDNA_SUCCESS;
+		int rs;
 
 		if ((t = strrchr(out, '@')))
 			t++;
@@ -4109,11 +4106,11 @@ tin_version_info(
 #else
 			"-REQUIRE_BRACKETS_IN_DOMAIN_LITERAL "
 #endif /* REQUIRE_BRACKETS_IN_DOMAIN_LITERAL */
-#ifdef FOLLOW_USEFOR_DRAFT
-			"+FOLLOW_USEFOR_DRAFT"
+#ifdef ALLOW_FWS_IN_NEWSGROUPLIST
+			"+ALLOW_FWS_IN_NEWSGROUPLIST"
 #else
-			"-FOLLOW_USEFOR_DRAFT"
-#endif /* FOLLOW_USEFOR_DRAFT */
+			"-ALLOW_FWS_IN_NEWSGROUPLIST"
+#endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 			"\n");
 	wlines += 11;
 	fflush(fp);

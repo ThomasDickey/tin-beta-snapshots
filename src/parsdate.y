@@ -747,7 +747,7 @@ date_lex(void)
 	if (CTYPE(isalpha, c)) {
 	    for (p = buff; (c = *yyInput++) == '.' || CTYPE(isalpha, c); )
 		if (p < &buff[sizeof buff - 1])
-		    *p++ = CTYPE(isupper, c) ? tolower(c) : c;
+		    *p++ = CTYPE(isupper, c) ? my_tolower(c) : c;
 	    *p = '\0';
 	    yyInput--;
 	    return LookupWord(buff, p - buff);

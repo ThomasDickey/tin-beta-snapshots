@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2018-02-11
+ *  Updated   : 2019-02-03
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2019 Chris Blum <chris@resolution.de>
@@ -150,7 +150,7 @@ mmdecode(
 	char *t;
 
 	t = where;
-	encoding = tolower((unsigned char) encoding);
+	encoding = my_tolower((unsigned char) encoding);
 	if (encoding == 'q') {		/* quoted-printable */
 		int x;
 		unsigned hi, lo;
@@ -306,7 +306,7 @@ rfc1522_decode(
 			*e = '\0';
 			if (*c == '?') {
 				c++;
-				encoding = tolower((unsigned char) *c);
+				encoding = my_tolower((unsigned char) *c);
 				if (encoding == 'b')
 					(void) mmdecode(NULL, 'b', 0, NULL);	/* flush */
 				c++;
@@ -585,7 +585,7 @@ rfc1522_do_encode(
 			isstruct_head = TRUE;
 			break;
 		}
-	} while (*(++strptr) != 0);
+	} while (*(++strptr) != NULL);
 
 	t = buffer = my_malloc(bufferlen);
 	encoding = which_encoding(what);
@@ -835,7 +835,7 @@ every "word" were a space ... */
 					column++;
 				}
 		}
-		FreeAndNull(buffer);
+		FreeIfNeeded(buffer);
 		buffer = new_buffer;
 	}
 	*t = '\0';

@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2018-10-12
+ *  Updated   : 2019-02-20
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2019 Jason Faultless <jason@altarstone.com>
@@ -147,7 +147,7 @@ boundary_cmp(
 	if (blen + 2 > len)
 		return BOUND_NONE;
 
- 	/* remove traing whites as per RFC 2046 5.1.1 */
+	/* remove trailing whites as per RFC 2046 5.1.1 */
 	l = my_strdup(line);
 	e = l + len - 1;
 	while(e > l + blen + 1 && isspace(*e))
@@ -226,7 +226,7 @@ static char *
 skip_space(
 	char *source)
 {
-	while ((*source) && ((' ' == *source) || ('\t' == *source)))
+	while ((*source) && ((*source == ' ') || (*source == '\t')))
 		source++;
 	return *source ? source : NULL;
 }
@@ -318,15 +318,15 @@ get_quoted_string(
 	ptr = *dest;
 	source++; /* skip over double quote */
 	while (*source) {
-		if ('\\' == *source) {
+		if (*source == '\\') {
 			quote = TRUE;	/* next char as-is */
-			if ('\\' == *++source) {
+			if (*++source == '\\') {
 				*ptr++ = *source++;
 				quote = FALSE;
 			}
 			continue;
 		}
-		if (('"' == *source) && !quote)
+		if ((*source == '"') && !quote)
 			break;	/* end of quoted-string */
 		*ptr++ = *source++;
 		quote = FALSE;
@@ -428,7 +428,7 @@ skip_equal_sign(
 	if (!(source = skip_space(source)))
 		return NULL;
 
-	if ('=' != *source++)
+	if (*source++ != '=')
 		/* no equal sign, invalid header, stop parsing here */
 		return NULL;
 
@@ -487,7 +487,7 @@ parse_params(
 		}
 
 		/* catch parameter value; may be surrounded by double quotes */
-		if ('"' == *param)	/* parse quoted-string */
+		if (*param == '"')	/* parse quoted-string */
 			param = get_quoted_string(param, &value);
 		else {
 			/* parse token */
@@ -509,9 +509,9 @@ parse_params(
 		content->params = ptr;
 
 		/* advance pointer to next parameter */
-		while ((*param) && (';' != *param))
+		while ((*param) && (*param != ';'))
 			param++;
-		if (';' == *param)
+		if (*param == ';')
 			param++;
 	}
 }
@@ -1378,7 +1378,7 @@ dump_art(
 	t_param *pptr;
 	struct t_header note_h = art->hdr;
 
-	fprintf(stderr, "\nMain body\nMIME-Version: %d\n", note_h.mime);
+	fprintf(stderr, "\nMain body\nMIME-Version: %u\n", note_h.mime);
 	fprintf(stderr, "Content-Type: %s/%s\nContent-Transfer-Encoding: %s\n",
 		content_types[note_h.ext->type], note_h.ext->subtype,
 		content_encodings[note_h.ext->encoding]);
@@ -1495,10 +1495,11 @@ open_art_fp(
 		char buf[PATH_LEN];
 		char pbuf[PATH_LEN];
 		char fbuf[NAME_LEN + 1];
-		char group_path[PATH_LEN];
+		char *group_path = my_malloc(strlen(group->name) + 2); /* tailing "/\0" */;
 
 		make_group_path(group->name, group_path);
 		joinpath(buf, sizeof(buf), group->spooldir, group_path);
+		free(group_path);
 		snprintf(fbuf, sizeof(fbuf), "%"T_ARTNUM_PFMT, art);
 		joinpath(pbuf, sizeof(pbuf), buf, fbuf);
 

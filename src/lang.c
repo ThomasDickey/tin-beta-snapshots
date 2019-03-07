@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2018-07-20
+ *  Updated   : 2019-02-18
  *  Notes     :
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
@@ -145,11 +145,12 @@ constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=sha
 	constext txt_color_on[] = N_("ANSI color enabled");
 #endif /* HAVE_COLOR */
 constext txt_command_failed[] = N_("Command failed: %s");
-constext txt_cook_article_failed_exiting[] = N_("Cook article failed, %s is exiting");
+constext txt_copyright_notice[] = "%s (c) Copyright 1991-2019 Iain Lea.";
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 #ifdef NNTP_ABLE
 	constext txt_connecting[] = N_("Connecting to %s...");
 #endif /* NNTP_ABLE */
+constext txt_cook_article_failed_exiting[] = N_("Cook article failed, %s is exiting");
 constext txt_cr[] = N_("<CR>");
 constext txt_creating_active[] = N_("Creating active file for saved groups...\n");
 constext txt_creating_newsrc[] = N_("Creating newsrc file...\n");
@@ -543,14 +544,14 @@ constext txt_info_not_multipart_message[] = N_("Not a multi-part message");
 constext txt_info_not_subscribed[] = N_("You are not subscribed to this group");
 constext txt_info_no_previous_expression[] = N_("No previous expression");
 constext txt_info_no_write[] = N_("Operation disabled in no-overwrite mode");
-/* TODO: replace hardcoded key-name in txt_info_postponed */
+/* TODO: replace hard coded key-name in txt_info_postponed */
 constext txt_info_postponed[] = N_("%d postponed %s, reuse with ^O...\n");
 constext txt_info_x_conversion_note[] = N_("X-Conversion-Note: multipart/alternative contents have been removed.\n\
   To get the whole article, turn alternative handling OFF in the Option Menu\n");
 constext txt_is_mailbox[] = N_("Save filename for %s/%s is a mailbox. Attachment not saved");
 constext txt_is_tex_encoded[] = N_("TeX2Iso encoded article");
 constext txt_incomplete[] = N_("incomplete ");
-/* TODO: replace hardcoded key-names */
+/* TODO: replace hard coded key-names */
 constext txt_intro_page[] = N_("\nWelcome to %s, a full screen threaded Netnews reader. It can read news locally\n\
 (ie. <spool>/news) or remotely (-r option)  from a NNTP (Network News Transport\n\
 Protocol) server. -h lists the available command line options.\n\n\
@@ -712,7 +713,7 @@ constext txt_pcre_error_at[] = N_("Error in regex: %s at pos. %d '%s'");
 constext txt_pcre_error_num[] = N_("Error in regex: pcre internal error %d");
 constext txt_pcre_error_text[] = N_("Error in regex: study - pcre internal error %s");
 constext txt_post_a_followup[] = N_("Post a followup...");
-/* TODO: replace hardcoded key-name in txt_post_error_ask_postpone */
+/* TODO: replace hard coded key-name in txt_post_error_ask_postpone */
 constext txt_post_error_ask_postpone[] = N_("An error has occurred while posting the article. If you think that this\n\
 error is temporary or otherwise correctable, you can postpone the article\n\
 and pick it up again with ^O later.\n");
@@ -834,7 +835,7 @@ constext txt_select_config_file_option[] = N_("Select option number before text 
 constext txt_select_group[] = N_("Select group> ");
 constext txt_select_pattern[] = N_("Enter selection pattern [%s]> ");
 constext txt_select_thread[] = N_("Select thread> ");
-constext txt_send_bugreport[] = N_("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n");
+constext txt_send_bugreport[] = N_("%s %s %s (\"%s\"): send a DETAILED bug report to %s\n");
 constext txt_servers_active[] = N_("servers active-file");
 constext txt_skipping_newgroups[] = N_("Cannot move into new newsgroups. Subscribe first...");
 constext txt_space[] = N_("<SPACE>");
@@ -1058,9 +1059,9 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_libuu_error_no_data[] = N_("No data.");
 	constext txt_libuu_error_unknown[] = N_("Unknown error.");
 #else
-#	if defined(M_UNIX) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
+#	if defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
 		constext txt_checksum_of_file[] = N_("\tChecksum of %s (%ld %s)");
-#	endif /* M_UNIX && HAVE_SUM && !DONT_HAVE_PIPING */
+#	endif /* HAVE_SUM && !DONT_HAVE_PIPING */
 #endif /* HAVE_LIBUU */
 
 #ifdef HAVE_MH_MAIL_HANDLING
@@ -1096,9 +1097,6 @@ Warning: Posting is in %s and contains characters which are not\n\
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_PGP_GPG */
 
-#ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2019 Iain Lea.";
-#endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
 	constext txt_caching_off[] = N_("Try cache_overview_files to speed up things.\n");
@@ -1168,7 +1166,7 @@ Tin will try to use XHDR XREF instead (slows down things a bit).\n");
 	constext txt_piping_not_enabled[] = N_("Piping not enabled.");
 #endif /* !DONT_HAVE_PIPING */
 
-#ifndef FOLLOW_USEFOR_DRAFT
+#ifndef ALLOW_FWS_IN_NEWSGROUPLIST
 	constext txt_error_header_line_comma[] = N_("\n\
 Error: The \"%s:\" line has spaces  in it that MUST be removed.\n\
        The only allowable  space is the one  separating the colon (:)\n\
@@ -1185,7 +1183,7 @@ Warning: The \"%s:\" line is continued in the next line.\n\
          To avoid trouble please write all newsgroups into a single line.\n");
 	constext txt_warn_header_line_comma[] = N_("\n\
 Warning: The \"%s:\" line has spaces in it that SHOULD be removed.\n");
-#endif /* !FOLLOW_USEFOR_DRAFT */
+#endif /* !ALLOW_FWS_IN_NEWSGROUPLIST */
 
 #ifndef NO_ETIQUETTE
 	constext txt_warn_posting_etiquette[] = N_("\n\
@@ -1206,9 +1204,9 @@ Warning: The \"%s:\" line has spaces in it that SHOULD be removed.\n");
 	constext txt_shell_escape[] = N_("Enter shell command [%s]> ");
 #endif /* !NO_SHELL_ESCAPE */
 
-#if !defined(USE_CURSES) && defined(M_UNIX) && !defined(USE_TERMINFO)
+#if !defined(USE_CURSES) && !defined(USE_TERMINFO)
 	constext txt_cannot_get_term_entry[] = N_("%s: Can't get entry for TERM\n");
-#endif /* !USE_CURSES && M_UNIX && !USE_TERMINFO */
+#endif /* !USE_CURSES && !USE_TERMINFO */
 
 #if defined(HAVE_POLL) || defined(HAVE_SELECT)
 	constext txt_group[] = N_("Group %.*s ('q' to quit)...");
@@ -2080,7 +2078,16 @@ struct opttxt txt_thread_catchup_on_exit = {
 struct opttxt txt_confirm_choice = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Which actions require confirmation"),
-	N_("# What should we ask confirmation for.\n")
+	N_("# What should we ask confirmation for.\n\
+# Possible values are (the default is marked with *):\n\
+#   0 = none\n\
+#   1 = commands\n\
+#   2 = select\n\
+#   3 = quit\n\
+# * 4 = commands & quit\n\
+#   5 = commands & select\n\
+#   6 = quit & select\n\
+#   7 = commands & quit & select\n")
 };
 
 struct opttxt txt_mark_ignore_tags = {

@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-10-24
+ *  Updated   : 2018-11-23
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -384,8 +384,8 @@ backup_newsrc(
 	joinpath(dirbuf, sizeof(dirbuf), rcdir, filebuf);
 	joinpath(filebuf, sizeof(filebuf), dirbuf, OLDNEWSRC_FILE);
 
-	if (-1 == stat(dirbuf, &statbuf)) {
-		if (-1 == my_mkdir(dirbuf, (mode_t) (S_IRWXU)))
+	if (stat(dirbuf, &statbuf) == -1) {
+		if (my_mkdir(dirbuf, (mode_t) (S_IRWXU)) == -1)
 			/* Can't create directory: Fall back on Homedir */
 			joinpath(filebuf, sizeof(filebuf), homedir, OLDNEWSRC_FILE);
 	}
@@ -1235,7 +1235,7 @@ pos_group_in_newsrc(
 
 	while ((line = tin_fgets(fp_in, FALSE)) != NULL) {
 		if (STRNCMPEQ(group->name, line, group_len) && line[group_len] == SUBSCRIBED) {
-			FreeAndNull(newsgroup);
+			FreeIfNeeded(newsgroup);
 			newsgroup = my_strdup(line);		/* Take a copy of this line */
 			found = TRUE;
 			continue;

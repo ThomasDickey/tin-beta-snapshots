@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2018-03-20
+ *  Updated   : 2019-02-15
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
@@ -76,7 +76,7 @@ static void print_save_summary(t_function type, int fed);
 #ifndef DONT_HAVE_PIPING
 #	define handle_EPIPE()	if (got_epipe) goto got_epipe_while_piping
 #else
-#	define handle_EPIPE() /*nothing*/
+#	define handle_EPIPE()	do {} while (0)	/* nothing */
 #endif /* !DONT_HAVE_PIPING */
 
 /*
@@ -579,7 +579,7 @@ feed_articles(
 	int saved_curr_line = -1;
 	int thread_base;
 	struct t_art_stat sbuf;
-	struct t_counters counter = { 0, 0, 0 };
+	struct t_counters counter = {0, 0, 0};
 	t_bool feed_mark_function = function == FEED_MARK_READ || function == FEED_MARK_UNREAD;
 	t_bool mark_saved = FALSE;
 	t_bool no_next_unread = FALSE;
@@ -899,8 +899,8 @@ feed_articles(
 	 * Invoke post-processing if needed
 	 * Work out what (if anything) needs to be redrawn
 	 */
-	if (INTERACTIVE_NONE == tinrc.interactive_mailer)
-		redraw_screen |= mail_check();	/* in case of sending to oneself */
+	if (tinrc.interactive_mailer == INTERACTIVE_NONE)
+		redraw_screen |= mail_check(mailbox);	/* in case of sending to oneself */
 
 	switch (function) {
 		case FEED_MARK_READ:
@@ -1004,7 +1004,7 @@ got_epipe_while_piping:
 	 */
 	switch (function) {
 		case FEED_MAIL:
-			if (INTERACTIVE_NONE != tinrc.interactive_mailer)
+			if (tinrc.interactive_mailer != INTERACTIVE_NONE)
 				info_message(_(txt_external_mail_done));
 			else
 				info_message(_(txt_articles_mailed), counter.success, PLURAL(counter.success, txt_article));

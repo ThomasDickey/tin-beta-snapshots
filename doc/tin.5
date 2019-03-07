@@ -2,11 +2,11 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2018-11-07
+.\" Updated   : 2019-02-28
 .\" Notes     : needs a some work
 .\"
 .\"
-.TH tin 5 "December 24th, 2017" "2.4.3" "Usenet newsreader"
+.TH tin 5 "December 24th, 2018" "2.4.3" "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -655,7 +655,8 @@ be automatically added when posting. If the string starts with a / or ~
 then it is assumed to be the name of a file containing the header and its
 content to be inserted. If the string starts with a ! then what follows
 is assumed to be the path to a program to be executed to generate the
-header and its content.
+header and its content. %G is expanded to the current news.group.name
+and %P is expanded to the news.group.name with all '.' replaced by '/'.
 .TP
 .B quick_kill_scope
 A comma-separated list of newsgroup patterns (wildmat-style) to which
@@ -2286,8 +2287,8 @@ is ON.
 .TP
 .B url_handler
 The program that will be run when launching URLs in the article viewer
-using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended to
-this. Default is \fBurl_handler.pl %s\fP.
+using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended.
+Default is \fBurl_handler.pl\fP.
 .TP
 .B url_highlight
 Enable highlighting URLs in message body. Default is ON.
@@ -2301,7 +2302,7 @@ uses ANSI-colors. Default is OFF.
 Use scroll keys on keypad. Default is OFF.
 .TP
 .B use_mouse
-Allows the mouse button support in a
+Allows the mouse button support in an
 .BR \%xterm (1x)
 to be enabled/disabled.
 Default is OFF.
@@ -2312,7 +2313,7 @@ If enabled
 will be used to interpret the ''X\-Face:'' header. For this option to have
 any effect,
 .BR \%tin (1)
-must be running in a
+must be running in an
 .BR \%xterm (1x)
 and
 .BR \%slrnface (1)

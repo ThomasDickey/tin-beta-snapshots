@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-15
+ *  Updated   : 2019-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1443,7 +1443,7 @@ lookup_msgid(
 
 			if (nntp_caps.hdr_cmd) {
 				snprintf(buf, sizeof(buf), "%s Newsgroups %s", nntp_caps.hdr_cmd, msgid);
-					ret = new_nntp_command(buf, (nntp_caps.type == CAPABILITIES) ? OK_HDR : OK_HEAD, NULL, 0);
+				ret = new_nntp_command(buf, (nntp_caps.type == CAPABILITIES) ? OK_HDR : OK_HEAD, NULL, 0);
 
 				switch (ret) {
 					case OK_HEAD:
@@ -1469,7 +1469,6 @@ lookup_msgid(
 							if (ret == OK_HDR) { /* RFC 3977 ("0 %s", grp) */
 								if (*ptr == '0' && (*(ptr + 1) == ' ' || *(ptr + 1) == '\t'))
 									r = ptr + 2;
-
 							}
 
 							if (r)
@@ -1563,7 +1562,7 @@ static int
 show_article_by_msgid(
 	void)
 {
-	char id[LEN];
+	char id[NNTP_STRLEN];	/* still way too big; RFC 3977 3.6 & RFC 5536 3.1.3 limit Message-ID to max 250 octets */
 	char *idptr;
 	char *newsgroups = NULL;
 	int i, ret = 0;
@@ -1664,7 +1663,7 @@ static struct t_group *
 get_group_from_list(
 	char *newsgroups)
 {
-	char *ptr;
+	char *ptr, *tr;
 	t_bool found = FALSE;
 	struct t_group *group = NULL;
 
@@ -1673,7 +1672,8 @@ get_group_from_list(
 
 	/* find first available group of type news */
 	do {
-		group = group_find(ptr, TRUE);
+		tr = str_trim(ptr);
+		group = group_find(tr, TRUE);
 		if (group && group->type == GROUP_TYPE_NEWS)
 			found = TRUE;
 	} while (!found && (ptr = strtok(NULL, ",")) != NULL);

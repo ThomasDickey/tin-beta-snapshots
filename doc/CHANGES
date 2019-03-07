@@ -1,9 +1,47 @@
--- 2.4.3 release 20181119 "" --
+-- 2.4.4 release 20190307 "" --
+
+ 016) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros - use xpg3 instead of xpg4 case-statements
+      FIX. aclocal.m4, configure[.in]
+
+ 015) Dennis Preiser <dennis@d--p.de>
+      BUG. 'L'ookupMessageID in select-level could crash if 1st group
+           in newsrc is marked bogus
+      FIX. active.c
+
+ 014) Urs Janssen <urs@tin.org>
+      BUG. sigfile attribute with a command ("sigfile=!") would append %G
+           on {ATTRIBUTES,TINRC}_VERSION increase even if already present.
+      ADD. fix handrolled strcasestr() to cast returned value
+           (required for cray-unicos cc)
+      ADD. configure check for working tolower(), toupper()
+           (required for sony-newsos3)
+      ADD. determine mailbox_name just once
+      ADD. switched tinrc.confirm_choice from string to int
+      ADD. invoke_metamail() without piping
+      ADD. %P expansion (groupname with '.' replaced by '/') in _strfpath()
+      REM. dead code (NEW_HASH_METHOD, gl_init_done, OSNAME)
+      REM. non M_UNIX and __BEOS__ code
+      ADD. config.guess, config.sub update
+      FIX. active.c, art.c, attrib.c, config.c, cook.c, curses.c, feed.c
+           filter.c, getline.c, header.c, inews.c, init.c, keymap.c, lang.c
+           list.c, makecfg.c, main.c, mimetypes.c, misc.c, page.c, post.c
+           prompt.c, rfc2046.c, rfc2047.c, save.c, screen.c, select.c, signal.c
+           string.c, version.c, bugrep.h, extern.h, proto.h, tin.h, tnntp.h
+           version.h, parsdate.y, Makefile[.in], config.guess, config.sub
+           configure[.in], autoconf.hin
+
+ 013) Toomas Soome <tsoome@me.com>
+      ADD. updated estonian translation
+      FIX. et.po
+
+-- 2.4.3 release 20181224 "Glen Mhor" --
 
  012) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. update configure macros
-      FIX. aclocal.m4, configure[.in], autoconf.h[in], memory.c, screen.c
-           string.c, tcurses.c
+      ADD. check for va_copy() for pre C99 systems
+      FIX. aclocal.m4, configure[.in], autoconf.h[in], tin.h, memory.c
+           screen.c, string.c, tcurses.c
 
  011) Francisco Javier Serrador <fserrador@gmail.com>
       ADD. spanish translation
@@ -41,12 +79,20 @@
       BUG. pointer arithmetic with possible NULL pointer
       BUG. didn't recheck CAPABILITIES after auth
       BUG. transport-padding on mime boundaries wasn't ignored
+      BUG. get_group_from_list() used in 'L'lookup_msgid() couldn't handle
+           FWS as of RFC 5536 3.1.4.
+      ADD. rename FOLLOW_USEFOR_DRAFT to ALLOW_FWS_IN_NEWSGROUPLIST
+      ADD. remove some redundant assigns
+      ADD. switch from autoconf-2.13.20110430 to autoconf-2.52.20181006
+      ADD. be more verbose on connections errors when get_tcp6_socket()
+           is used (debian bug #232924)
       FIX. active.c, art.c, auth.c, config.c, cook.c, debug.c, feed.c
-           getline.c, group.c, help.c, init.c, keymap.c, lang.c, mail.c, main.c
-           misc.c, newsrc.c, nntplib.c, options_menu.c, page.c, post.c, read.c
-           rfc1524.c, rfc2045.c, rfc2046.c, rfc2047.c, search.c, screen.c
-           select.c, signal.c, strftime.c, string.c, extern.h, proto.h, tin.h
-           config.guess, config.sub, configure[.in], autoconf.h[in]
+           getline.c, group.c, header.c, help.c, init.c, keymap.c, lang.c
+           list.c, mail.c, main.c, misc.c, newsrc.c, nntplib.c, options_menu.c
+           page.c, post.c, read.c, rfc1524.c, rfc2045.c, rfc2046.c, rfc2047.c
+           save.c, search.c, screen.c, select.c, signal.c, sigfile.c
+           strftime.c, string.c, extern.h, proto.h, tin.h, config.guess
+           config.sub, aclocal.m4, configure[.in], autoconf.h[in]
            Makefile[.in], tin.1, tin.5
 
 -- 2.4.2 release 20171224 "Lochhead" --

@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2017-10-18
+ *  Updated   : 2019-02-18
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -22,29 +22,29 @@
 #endif /* !TNNTP_H */
 
 /* local prototype */
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE) && defined(M_UNIX)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	static wint_t convert_c2wc (const char *input);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE && M_UNIX */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE*/
 
 #ifdef USE_CURSES
 
-#define ReadCh cmdReadCh
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE) && defined(M_UNIX)
-#	define ReadWch cmdReadWch
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE && M_UNIX */
-#define get_arrow_key cmd_get_arrow_key
+#	define ReadCh cmdReadCh
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#		define ReadWch cmdReadWch
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#	define get_arrow_key cmd_get_arrow_key
 
 void my_dummy(void) { }	/* ANSI C requires non-empty file */
 t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
 
 #else	/* !USE_CURSES */
 
-#ifndef ns32000
+#	ifndef ns32000
 #	undef	sinix
-#endif /* !ns32000 */
+#	endif /* !ns32000 */
 
-#define DEFAULT_LINES_ON_TERMINAL	24
-#define DEFAULT_COLUMNS_ON_TERMINAL	80
+#	define DEFAULT_LINES_ON_TERMINAL	24
+#	define DEFAULT_COLUMNS_ON_TERMINAL	80
 
 int cLINES = DEFAULT_LINES_ON_TERMINAL - 1;
 int cCOLS = DEFAULT_COLUMNS_ON_TERMINAL;
@@ -53,52 +53,52 @@ static int _inraw = FALSE;	/* are we IN rawmode? */
 static int xclicks = FALSE;	/* do we have an xterm? */
 t_bool have_linescroll = FALSE;
 
-#define TTYIN	0
+#	define TTYIN	0
 
-#if defined(HAVE_TERMIOS_H) && defined(HAVE_TCGETATTR) && defined(HAVE_TCSETATTR)
-#	ifdef HAVE_IOCTL_H
-#		include <ioctl.h>
+#	if defined(HAVE_TERMIOS_H) && defined(HAVE_TCGETATTR) && defined(HAVE_TCSETATTR)
+#		ifdef HAVE_IOCTL_H
+#			include <ioctl.h>
+#		else
+#			ifdef HAVE_SYS_IOCTL_H
+#				include <sys/ioctl.h>
+#			endif /* HAVE_SYS_IOCTL_H */
+#		endif /* HAVE_IOCTL_H */
+#		if !defined(sun) || !defined(NL0)
+#			include <termios.h>
+#		endif /* !sun || !NL0 */
+#		define USE_POSIX_TERMIOS 1
+#		define TTY struct termios
 #	else
-#		ifdef HAVE_SYS_IOCTL_H
-#			include <sys/ioctl.h>
-#		endif /* HAVE_SYS_IOCTL_H */
-#	endif /* HAVE_IOCTL_H */
-#	if !defined(sun) || !defined(NL0)
-#		include <termios.h>
-#	endif /* !sun || !NL0 */
-#	define USE_POSIX_TERMIOS 1
-#	define TTY struct termios
-#else
-#	ifdef HAVE_TERMIO_H
-#		include <termio.h>
-#		define USE_TERMIO 1
-#		define TTY struct termio
-#	else
-#		ifdef HAVE_SGTTY_H
-#			include <sgtty.h>
-#			define USE_SGTTY 1
-#			define TTY struct sgttyb
+#		ifdef HAVE_TERMIO_H
+#			include <termio.h>
+#			define USE_TERMIO 1
+#			define TTY struct termio
+#		else
+#			ifdef HAVE_SGTTY_H
+#				include <sgtty.h>
+#				define USE_SGTTY 1
+#				define TTY struct sgttyb
 /*
 	#			else
 	#				error "No termios.h, termio.h or sgtty.h found"
 */
-#		endif /* HAVE_SGTTY_H */
-#	endif /* HAVE_TERMIO_H */
-#endif /* HAVE_TERMIOS_H && HAVE_TCGETATTR && HAVE_TCSETATTR */
+#			endif /* HAVE_SGTTY_H */
+#		endif /* HAVE_TERMIO_H */
+#	endif /* HAVE_TERMIOS_H && HAVE_TCGETATTR && HAVE_TCSETATTR */
 
 static TTY _raw_tty, _original_tty;
 
 
-#ifndef USE_SGTTY
-#	define USE_SGTTY 0
-#endif /* !USE_SGTTY */
+#	ifndef USE_SGTTY
+#		define USE_SGTTY 0
+#	endif /* !USE_SGTTY */
 
-#ifndef USE_POSIX_TERMIOS
-#	define USE_POSIX_TERMIOS 0
-#	ifndef USE_TERMIO
-#		define USE_TERMIO 0
-#	endif /* !USE_TERMIO */
-#endif /* !USE_POSIX_TERMIOS */
+#	ifndef USE_POSIX_TERMIOS
+#		define USE_POSIX_TERMIOS 0
+#		ifndef USE_TERMIO
+#			define USE_TERMIO 0
+#		endif /* !USE_TERMIO */
+#	endif /* !USE_POSIX_TERMIOS */
 
 static char *_clearscreen, *_moveto, *_cleartoeoln, *_cleartoeos,
 			*_setinverse, *_clearinverse, *_setunderline, *_clearunderline,
@@ -109,7 +109,6 @@ static char *_clearscreen, *_moveto, *_cleartoeoln, *_cleartoeos,
 
 static int _columns, _line, _lines, _colors;
 
-#ifdef M_UNIX
 #	undef SET_TTY
 #	undef GET_TTY
 #	if USE_POSIX_TERMIOS
@@ -130,11 +129,10 @@ static int _columns, _line, _lines, _colors;
 #			endif /* USE_SGTTY */
 #		endif /* USE_TERMIO */
 #	endif /* USE_POSIX_TERMIOS */
-#endif /* M_UNIX */
 
-#if 0
+#	if 0
 	static int in_inverse;			/* 1 when in inverse, 0 otherwise */
-#endif /* 0 */
+#	endif /* 0 */
 
 /*
  * Local prototypes
@@ -173,13 +171,12 @@ setup_screen(
 	ScreenSize(&cLINES, &cCOLS);
 	cmd_line = FALSE;
 	Raw(TRUE);
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 	bcol(tinrc.col_back);
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 	set_win_size(&cLINES, &cCOLS);
 }
 
-#ifdef M_UNIX
 
 #	ifdef USE_TERMINFO
 #		define CAPNAME(a,b)       b
@@ -209,7 +206,7 @@ setup_screen(
 #	endif /* HAVE_TPARM */
 
 #	ifdef HAVE_EXTERN_TCAP_PC
-extern char PC;			/* used in 'tputs()' */
+	extern char PC;			/* used in 'tputs()' */
 #	endif /* HAVE_EXTERN_TCAP_PC */
 
 int
@@ -350,61 +347,6 @@ InitScreen(
 	return TRUE;
 }
 
-#else	/* !M_UNIX */
-
-int
-InitScreen(
-	void)
-{
-	char *ptr;
-
-	/*
-	 * we're going to assume a terminal here...
-	 */
-
-	_clearscreen = "\033[1;1H\033[J";
-	_moveto = "\033[%d;%dH";	/* not a termcap string! */
-	_cleartoeoln = "\033[K";
-	_setinverse = "\033[7m";
-	_clearinverse = "\033[0m";
-	_setunderline = "\033[4m";
-	_clearunderline = "\033[0m";
-	_keypadlocal = "";
-	_keypadxmit = "";
-	/* needed for word highlighting */
-	_reset = "\033[0m";
-	_reversevideo = "\033[7m";
-	_blink = "\033[5m";
-	_dim = "\033[2m";
-	_bold = "\033[1m";
-
-	_lines = _columns = -1;
-
-	if ((ptr = getenv("LINES")) != 0)
-		_lines = atol(ptr);
-
-	if ((ptr = getenv("COLUMNS")) != 0)
-		_columns = atol(ptr);
-
-	/*
-	 * If that failed, try get a response from the console itself
-	 */
-
-	if (_lines < MIN_LINES_ON_TERMINAL || _columns < MIN_COLUMNS_ON_TERMINAL) {
-		my_fprintf(stderr, _(txt_screen_too_small), tin_progname);
-		return FALSE;
-	}
-
-	InitWin();
-
-	Raw(FALSE);
-
-	have_linescroll = FALSE;
-	return TRUE;
-}
-
-#endif /* M_UNIX */
-
 
 void
 InitWin(
@@ -465,17 +407,17 @@ void
 ClearScreen(
 	void)
 {
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
 	bcol(tinrc.col_back);
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 	tputs(_clearscreen, 1, outchar);
 	my_flush();		/* clear the output buffer */
 	_line = 1;
 }
 
 
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 void
 reset_screen_attr(
 	void)
@@ -485,14 +427,13 @@ reset_screen_attr(
 		my_flush();
 	}
 }
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 
 
 /*
  *  move cursor to the specified row column on the screen.
  *  0,0 is the top left!
  */
-#ifdef M_UNIX
 void
 MoveCursor(
 	int row,
@@ -505,24 +446,6 @@ MoveCursor(
 	my_flush();
 	_line = row + 1;
 }
-
-#else	/* !M_UNIX */
-
-void
-MoveCursor(
-	int row,
-	int col)
-{
-	char stuff[12];
-
-	if (_moveto) {
-		snprintf(stuff, sizeof(stuff), _moveto, row + 1, col + 1);
-		tputs(stuff, 1, outchar);
-		my_flush();
-		_line = row + 1;
-	}
-}
-#endif /* M_UNIX */
 
 
 /*
@@ -655,7 +578,7 @@ EndInverse(
 }
 
 
-#if 0 /* doesn't work correct with ncurses4.x */
+#	if 0 /* doesn't work correct with ncurses4.x */
 /*
  * toggle inverse video mode
  */
@@ -668,7 +591,7 @@ ToggleInverse(
 	else
 		EndInverse();
 }
-#endif /* 0 */
+#	endif /* 0 */
 
 
 /*
@@ -695,19 +618,19 @@ Raw(
 	} else if (state && !_inraw) {
 		GET_TTY(&_original_tty);
 		GET_TTY(&_raw_tty);
-#if USE_SGTTY
+#	if USE_SGTTY
 		_raw_tty.sg_flags &= ~(ECHO | CRMOD);	/* echo off */
 		_raw_tty.sg_flags |= CBREAK;		/* raw on */
-#else
-#	ifdef __FreeBSD__
+#	else
+#		ifdef __FreeBSD__
 		cfmakeraw(&_raw_tty);
 		_raw_tty.c_lflag |= ISIG;		/* for ^Z */
-#	else
+#		else
 		_raw_tty.c_lflag &= ~(ICANON | ECHO);	/* noecho raw mode */
 		_raw_tty.c_cc[VMIN] = '\01';	/* minimum # of chars to queue */
 		_raw_tty.c_cc[VTIME] = '\0';	/* minimum time to wait for input */
-#	endif /* __FreeBSD__ */
-#endif /* USE_SGTTY */
+#		endif /* __FreeBSD__ */
+#	endif /* USE_SGTTY */
 		SET_TTY(&_raw_tty);
 		_inraw = 1;
 	}
@@ -720,11 +643,11 @@ Raw(
 OUTC_FUNCTION(
 	outchar)
 {
-#ifdef OUTC_RETURN
+#	ifdef OUTC_RETURN
 	return fputc(c, stdout);
-#else
+#	else
 	(void) fputc(c, stdout);
-#endif /* OUTC_RETURN */
+#	endif /* OUTC_RETURN */
 }
 
 
@@ -804,7 +727,7 @@ highlight_string(
 
 	my_strncpy(output, &(screen[row].col[col]), size);
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	/*
 	 * In a multibyte locale we get byte offsets instead of character
 	 * offsets; calculate now the correct starting column
@@ -820,7 +743,7 @@ highlight_string(
 			free(wtmp);
 		}
 	}
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	MoveCursor(row, col);
 	StartInverse();
@@ -850,9 +773,9 @@ word_highlight_string(
 	char output[LEN];
 	int byte_offset = col;
 	int wsize = size;
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wtmp;
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	attributes[0] = _reset;	/* Normal */
 	attributes[1] = _setinverse;	/* Best highlighting */
@@ -864,7 +787,7 @@ word_highlight_string(
 
 	my_strncpy(output, &(screen[row].col[byte_offset]), size);
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	/*
 	 * In a multibyte locale we get byte offsets instead of character
 	 * offsets; calculate now the correct starting column and
@@ -883,7 +806,7 @@ word_highlight_string(
 		wsize = wcswidth(wtmp, wcslen(wtmp) + 1);
 		free(wtmp);
 	}
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	MoveCursor(row, col);
 
@@ -1032,13 +955,13 @@ get_arrow_key(
 #endif /* HAVE_USLEEP || HAVE_SELECT || HAVE_POLL */
 
 	if (!input_pending(0)) {
-#	ifdef HAVE_USLEEP
+#ifdef HAVE_USLEEP
 		wait_a_while(i) {
 			usleep((unsigned long) (SECOND_CHARACTER_DELAY * 1000));
 			i++;
 		}
-#	else	/* !HAVE_USLEEP */
-#		ifdef HAVE_SELECT
+#else	/* !HAVE_USLEEP */
+#	ifdef HAVE_SELECT
 		struct timeval tvptr;
 
 		wait_a_while(i) {
@@ -1047,19 +970,19 @@ get_arrow_key(
 			select(0, NULL, NULL, NULL, &tvptr);
 			i++;
 		}
-#		else /* !HAVE_SELECT */
-#			ifdef HAVE_POLL
+#	else /* !HAVE_SELECT */
+#		ifdef HAVE_POLL
 		struct pollfd fds[1];
 
 		wait_a_while(i) {
 			poll(fds, 0, SECOND_CHARACTER_DELAY);
 			i++;
 		}
-#			else /* !HAVE_POLL */
+#		else /* !HAVE_POLL */
 		(void) sleep(1);
-#			endif /* HAVE_POLL */
-#		endif /* HAVE_SELECT */
-#	endif /* HAVE_USLEEP */
+#		endif /* HAVE_POLL */
+#	endif /* HAVE_SELECT */
+#endif /* HAVE_USLEEP */
 		if (!input_pending(0))
 			return prech;
 	}
@@ -1070,57 +993,57 @@ get_arrow_key(
 	switch (ch) {
 		case 'A':
 		case 'i':
-#	ifdef QNX42
+#ifdef QNX42
 		case 0xA1:
-#	endif /* QNX42 */
+#endif /* QNX42 */
 			return KEYMAP_UP;
 
 		case 'B':
-#	ifdef QNX42
+#ifdef QNX42
 		case 0xA9:
-#	endif /* QNX42 */
+#endif /* QNX42 */
 			return KEYMAP_DOWN;
 
 		case 'D':
-#	ifdef QNX42
+#ifdef QNX42
 		case 0xA4:
-#	endif /* QNX42 */
+#endif /* QNX42 */
 			return KEYMAP_LEFT;
 
 		case 'C':
-#	ifdef QNX42
+#ifdef QNX42
 		case 0xA6:
-#	endif /* QNX42 */
+#endif /* QNX42 */
 			return KEYMAP_RIGHT;
 
 		case 'I':		/* ansi  PgUp */
 		case 'V':		/* at386 PgUp */
 		case 'S':		/* 97801 PgUp */
 		case 'v':		/* emacs style */
-#	ifdef QNX42
+#ifdef QNX42
 		case 0xA2:
-#	endif /* QNX42 */
+#endif /* QNX42 */
 			return KEYMAP_PAGE_UP;
 
 		case 'G':		/* ansi  PgDn */
 		case 'U':		/* at386 PgDn */
 		case 'T':		/* 97801 PgDn */
-#	ifdef QNX42
+#ifdef QNX42
 		case 0xAA:
-#	endif /* QNX42 */
+#endif /* QNX42 */
 			return KEYMAP_PAGE_DOWN;
 
 		case 'H':		/* at386 Home */
-#	ifdef QNX42
+#ifdef QNX42
 		case 0xA0:
-#	endif /* QNX42 */
+#endif /* QNX42 */
 			return KEYMAP_HOME;
 
 		case 'F':		/* ansi  End */
 		case 'Y':		/* at386 End */
-#	ifdef QNX42
+#ifdef QNX42
 		case 0xA8:
-#	endif /* QNX42 */
+#endif /* QNX42 */
 			return KEYMAP_END;
 
 		case '2':		/* vt200 Ins */
@@ -1170,28 +1093,27 @@ get_arrow_key(
 /*
  * The UNIX version of ReadCh, termcap version
  */
-#ifdef M_UNIX
 int
 ReadCh(
 	void)
 {
 	int result;
-#	ifndef READ_CHAR_HACK
+#ifndef READ_CHAR_HACK
 	char ch;
-#	endif /* !READ_CHAR_HACK */
+#endif /* !READ_CHAR_HACK */
 
 	fflush(stdout);
-#	ifdef READ_CHAR_HACK
-#		undef getc
+#ifdef READ_CHAR_HACK
+#	undef getc
 	while ((result = getc(stdin)) == EOF) {
 		if (feof(stdin))
 			break;
 
-#		ifdef EINTR
+#	ifdef EINTR
 		if (ferror(stdin) && errno != EINTR)
-#		else
+#	else
 		if (ferror(stdin))
-#		endif /* EINTR */
+#	endif /* EINTR */
 			break;
 
 		clearerr(stdin);
@@ -1199,8 +1121,8 @@ ReadCh(
 
 	return ((result == EOF) ? EOF : result & 0xFF);
 
-#	else
-#		ifdef EINTR
+#else
+#	ifdef EINTR
 
 	allow_resize(TRUE);
 	while ((result = read(0, &ch, 1)) < 0 && errno == EINTR) {		/* spin on signal interrupts */
@@ -1210,17 +1132,17 @@ ReadCh(
 		}
 	}
 	allow_resize(FALSE);
-#		else
+#	else
 	result = read(0, &ch, 1);
-#		endif /* EINTR */
+#	endif /* EINTR */
 
 	return ((result <= 0) ? EOF : ch & 0xFF);
 
-#	endif /* READ_CHAR_HACK */
+#endif /* READ_CHAR_HACK */
 }
 
 
-#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 /*
  * A helper function for ReadWch()
  * converts the read input to a wide-char
@@ -1255,7 +1177,7 @@ ReadWch(
 	 * read at least one byte. The further processing is depending of
 	 * the read byte and the used charset.
 	 */
-#		ifdef EINTR
+#	ifdef EINTR
 	allow_resize(TRUE);
 	while ((result = read(0, mbs, 1)) < 0 && errno == EINTR) { /* spin on signal interrupts */
 		if (need_resize) {
@@ -1264,9 +1186,9 @@ ReadWch(
 		}
 	}
 	allow_resize(FALSE);
-#		else
+#	else
 	result = read(0, mbs, 1);
-#		endif /* EINTR */
+#	endif /* EINTR */
 
 	if (result <= 0) {
 		free(mbs);
@@ -1322,7 +1244,7 @@ ReadWch(
 
 		/* read the missing bytes of the multi-byte sequence */
 		if (to_read > 0) {
-#		ifdef EINTR
+#	ifdef EINTR
 			allow_resize(TRUE);
 			while ((result = read(0, mbs + 1, to_read)) < 0 && errno == EINTR) { /* spin on signal interrupts */
 				if (need_resize) {
@@ -1331,9 +1253,9 @@ ReadWch(
 				}
 			}
 			allow_resize(FALSE);
-#		else
+#	else
 			result = read(0, mbs + 1, to_read);
-#		endif /* EINTR */
+#	endif /* EINTR */
 			if (result < 0) {
 				free(mbs);
 
@@ -1353,5 +1275,4 @@ ReadWch(
 	free(mbs);
 	return WEOF;
 }
-#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-#endif /* M_UNIX */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */

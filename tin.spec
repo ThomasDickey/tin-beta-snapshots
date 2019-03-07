@@ -1,6 +1,6 @@
 Name: tin
 Summary: easy-to-use USENET news reader
-Version: 2.4.2
+Version: 2.4.4
 Release: 1
 License: BSD
 Group: Applications/News
@@ -25,7 +25,10 @@ CFLAGS="$RPM_OPT_FLAGS" ./configure --with-install-prefix=$RPM_BUILD_ROOT \
  --verbose \
  --disable-echo \
  --enable-prototypes \
- --enable-nntp-only
+ --enable-nntp-only \
+ --enable-cancel-locks \
+ --enable-long-article-numbers \
+ --with-pcre
 
 %build
 make build

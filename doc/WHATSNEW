@@ -26,8 +26,8 @@ qsort)
 
 sigfile=!/path/to/command no longer passes the name of the current
 newsgroup to command. One can specify %G which will be replaced by
-the name of the current newsgroup.
-To match the old behaviour: 'sigfile=!/path/to/command %G'.
+the name of the current newsgroup to match the old behaviour:
+'sigfile=!/path/to/command %G'.
 
 --enable-cancel-locks requires libcanlock-3 (which is included, but
 some distros (e.g. debian) are linking against a shared lib which may

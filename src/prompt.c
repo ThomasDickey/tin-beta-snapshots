@@ -183,8 +183,8 @@ prompt_yn(
 	printascii(keyyes, (default_answer ? towupper(yes) : yes));
 	printascii(keyno, (!default_answer ? towupper(no) : no));
 #else
-	printascii(keyyes, (default_answer ? toupper(yes) : yes));
-	printascii(keyno, (!default_answer ? toupper(no) : no));
+	printascii(keyyes, (default_answer ? my_toupper(yes) : yes));
+	printascii(keyno, (!default_answer ? my_toupper(no) : no));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	keyyes_len = strwidth(keyyes);
 	keyno_len = strwidth(keyno);

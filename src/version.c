@@ -3,7 +3,7 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2013-11-15
+ *  Updated   : 2019-02-04
  *  Notes     :
  *
  * Copyright (c) 2003-2019 Urs Janssen <urs@tin.org>
@@ -46,15 +46,19 @@
  *          version number (which must be a dotted triple)
  * version  is the version number (dotted triple) we expect to match
  *
- * returns RC_IGNORE     1st args dotted triple matches 3rd arg
- *         RC_UPGRADE    1st args dotted triple is older than 3rd arg
- *         RC_DOWNGRADE  1st args dotted triple is newer than 3rd arg
- *         RC_ERROR      3rd arg is not a dotted triple (usage error)
+ * returns struct t_version*
+ *         ->state
+ *              RC_IGNORE     1st args dotted triple matches 3rd arg
+ *              RC_UPGRADE    1st args dotted triple is older than 3rd arg
+ *              RC_DOWNGRADE  1st args dotted triple is newer than 3rd arg
+ *              RC_ERROR      3rd arg is not a dotted triple (usage error)
+ *         ->file_version     version number in file as int
+ *              (rc_majorv * 10000 + rc_minorv * 100 + rc_subv) or -1
  *
  * Don't make the arguments to sscanf() consts, as some old systems require
  * them to writable (but do not change them)
  */
-enum rc_state
+struct t_version *
 check_upgrade(
 	char *line,
 	const char *skip,
@@ -65,8 +69,12 @@ check_upgrade(
 	char *lversion = my_strdup(version);
 	char fmt[10];
 	int rc_majorv, rc_minorv, rc_subv; /* version numbers in the file */
-	int c_majorv, c_minorv, c_subv;	/* version numbers we require */
+	int current_version, c_majorv, c_minorv, c_subv;	/* version numbers we require */
 	size_t len;
+	struct t_version *fversion = my_malloc(sizeof(struct t_version));
+
+	fversion->state = RC_ERROR;
+	fversion->file_version = -1;
 
 	rc_majorv = rc_minorv = rc_subv = c_majorv = c_minorv = c_subv = -1;
 	strcpy(fmt, "%d.%d.%d"); /* we are expecting dotted triples */
@@ -78,36 +86,40 @@ check_upgrade(
 	if (sscanf(line, format, &rc_majorv, &rc_minorv, &rc_subv) != 3) {
 		free(format);
 		free(lversion);
-		return RC_ERROR;
+		return fversion;
 	}
-
 	free(format);
+
+	fversion->file_version = rc_majorv * 10000 + rc_minorv * 100 + rc_subv;
 
 	/* we can't parse our own version number - should never happen */
 	if (sscanf(lversion, fmt, &c_majorv, &c_minorv, &c_subv) != 3) {
 		free(lversion);
-		return RC_ERROR;
+		return fversion;
 	}
 	free(lversion);
 
-	if (c_majorv == rc_majorv && c_minorv == rc_minorv && c_subv == rc_subv)
-		return RC_IGNORE;
+	current_version = c_majorv * 10000 + c_minorv * 100 + c_subv;
 
-	if (rc_majorv > c_majorv ||
-		(rc_majorv == c_majorv && rc_minorv > c_minorv) ||
-		(rc_majorv == c_majorv && rc_minorv == c_minorv && rc_subv > c_subv))
-		return RC_DOWNGRADE;
+	if (fversion->file_version == current_version)
+		fversion->state = RC_IGNORE;
 
-	return RC_UPGRADE;
+	if (fversion->file_version > current_version)
+		fversion->state = RC_DOWNGRADE;
+
+	if (fversion->file_version < current_version)
+		fversion->state = RC_UPGRADE;
+
+	return fversion;
 }
 
 
 void
 upgrade_prompt_quit(
-	enum rc_state reason,
+	struct t_version *upgrade,
 	const char *file)
 {
-	switch (reason) {
+	switch (upgrade->state) {
 		case RC_UPGRADE:
 			error_message(2, _(txt_warn_update), VERSION, file);
 			break;
@@ -118,6 +130,7 @@ upgrade_prompt_quit(
 
 		case RC_ERROR: /* can't parse internal version string, should not happen */
 			error_message(2, txt_warn_unrecognized_version);
+			free(upgrade);
 			free(tin_progname);
 			giveup();
 			/* NOTREACHED */
@@ -137,6 +150,7 @@ upgrade_prompt_quit(
 		case 'q':
 		case 'Q':
 		case ESC:
+			free(upgrade);
 			free(tin_progname);
 			giveup();
 			/* NOTREACHED */

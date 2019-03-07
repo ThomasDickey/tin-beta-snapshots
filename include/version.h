@@ -3,7 +3,7 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2013-11-21
+ *  Updated   : 2019-02-18
  *  Notes     :
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
@@ -40,28 +40,15 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.4.3"
+#		define VERSION		"2.4.4"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20181119"
-#	define RELEASENAME	"Lochhead"
-/* config-file versions - must by dotted triples */
-#	define TINRC_VERSION	"1.3.15"
+#	define RELEASEDATE	"20190307"
+#	define RELEASENAME	"Glen Mhor"
+/* config-file versions - must by dotted triples in the range 0 to 99 each */
+#	define TINRC_VERSION	"1.3.16"
 #	define ATTRIBUTES_VERSION	"1.0.9"
 #	define FILTER_VERSION	"1.0.1"
 #	define KEYMAP_VERSION	"1.0.9"
 #	define SERVERCONFIG_VERSION	"1.0.0"
-
-#	ifdef M_UNIX
-#		ifdef __BEOS__
-#			define OSNAME	"BeOS"
-#		endif /* __BEOS__ */
-#		ifndef OSNAME
-#			define OSNAME	"UNIX"
-#		endif /* !OSNAME */
-#	endif /* M_UNIX */
-
-#	ifndef OSNAME
-#		define OSNAME	"Unknown"
-#	endif /* !OSNAME */
 
 #endif /* !VERSION_H */

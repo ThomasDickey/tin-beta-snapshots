@@ -13,15 +13,15 @@
 .\"*******************************************************************
 .TH tin 5 "December 24th, 2018" 2.4.3 "Usenet newsreader"
 
-.SH NAME
+.SH NOMBRE
 tin, rtin \- related files
 
-.SH DESCRIPTION
+.SH DESCRIPCIÓN
 This man page describes the various (config) files and their formats used by
 the \fB\%tin\fP(1)  newsreader. All files are expected to have unix style
 ('\en' aka LF) line endings.
 
-.SH FILES
+.SH FICHEROS
 .\" TODO: mention
 .\" ${TIN_HOMEDIR:\-"$HOME"}/dead.article
 .\" ${TIN_HOMEDIR:\-"$HOME"}/dead.articles
@@ -250,7 +250,7 @@ mime type / filename extension pairs
 .sp
 .RS
 "\fInntpserver\fP \fIpassword\fP [\fIuser\fP]" pairs for NNTP servers that require
-authorisation. If the password contains a space or a tab it must be enclosed
+authorization. If the password contains a space or a tab it must be enclosed
 in double quotes ("). Usernames must not be enclosed in double quotes and
 thus can't contain spaces or tabs. Any line that starts with "#" is a
 comment. Blank lines are ignored. This file should be readable only for the
@@ -1263,81 +1263,81 @@ If set ON the user is asked when quitting if all groups read during the
 current session should be marked read. Default is OFF.
 .TP 
 \fBcol_back\fP
-Standard background colour
+Standard background color
 .TP 
 \fBcol_extquote\fP
-Colour of quoted text from external sources
+Color of quoted text from external sources
 .TP 
 \fBcol_from\fP
-Colour of sender (From:)
+Color of sender (From:)
 .TP 
 \fBcol_head\fP
-Colour of header\-lines
+Color of header\-lines
 .TP 
 \fBcol_help\fP
-Colour of help pages
+Color of help pages
 .TP 
 \fBcol_invers_bg\fP
-Colour of background for inverse text
+Color of background for inverse text
 .TP 
 \fBcol_invers_fg\fP
-Colour of foreground for inverse text
+Color of foreground for inverse text
 .TP 
 \fBcol_markdash\fP
-Colour of words emphasised like _this_. See also \fBword_h_display_marks\fP and
+Color of words emphasized like _this_. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBcol_markslash\fP
-Colour of words emphasised like /this/. See also \fBword_h_display_marks\fP and
+Color of words emphasized like /this/. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBcol_markstar\fP
-Colour of words emphasised like *this*. See also \fBword_h_display_marks\fP and
+Color of words emphasized like *this*. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBcol_markstroke\fP
-Colour of words emphasised like \-this\-. See also \fBword_h_display_marks\fP and
+Color of words emphasized like \-this\-. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBcol_minihelp\fP
-Colour of mini help menu
+Color of mini help menu
 .TP 
 \fBcol_newsheaders\fP
-Colour of actual news header fields
+Color of actual news header fields
 .TP 
 \fBcol_normal\fP
-Standard foreground colour
+Standard foreground color
 .TP 
 \fBcol_quote\fP
-Colour of quoted lines
+Color of quoted lines
 .TP 
 \fBcol_quote2\fP
-Colour of twice quoted lines
+Color of twice quoted lines
 .TP 
 \fBcol_quote3\fP
-Colour of >=3 times quoted lines
+Color of >=3 times quoted lines
 .TP 
 \fBcol_response\fP
-Colour of response counter. This is the text that says "Response x of y" in
+Color of response counter. This is the text that says "Response x of y" in
 the article viewer.
 .TP 
 \fBcol_signature\fP
-Colour of signatures
+Color of signatures
 .TP 
 \fBcol_urls\fP
-Colour of urls highlight
+Color of urls highlight
 .TP 
 \fBcol_verbatim\fP
-Colour of verbatim blocks
+Color of verbatim blocks
 .TP 
 \fBcol_subject\fP
-Colour of article subject
+Color of article subject
 .TP 
 \fBcol_text\fP
-Colour of text\-lines
+Color of text\-lines
 .TP 
 \fBcol_title\fP
-Colour of help/mail sign
+Color of help/mail sign
 .TP 
 \fBconfirm_choice\fP
 \fB\%tin\fP(1)  can ask for manual confirmation to protect the user. Available
@@ -1373,7 +1373,7 @@ The last article/author/config option that was searched for.
 Default is 28.
 .TP 
 \fBdefault_filter_kill_case\fP
-Default for quick (1 key) kill filter case.  ON = filter case\-sensitive, OFF
+Default for quick (1 key) kill filter case.  ON = filter case sensitive, OFF
 = ignore case. Default is OFF.
 .TP 
 \fBdefault_filter_kill_expire\fP
@@ -1389,9 +1389,9 @@ Default for quick (1 key) kill filter header.
 .in +.3i
 .nf
 .ta \w'0,1   'u +\w'\'\'Message\-ID:\'\' & last \'\'References:\'\' entry only'u
-0	\*(rqSubject:\*(rq (case\-sensitive)
+0	\*(rqSubject:\*(rq (case sensitive)
 1	\*(rqSubject:\*(rq (ignore case)
-2	\*(rqFrom:\*(rq (case\-sensitive)
+2	\*(rqFrom:\*(rq (case sensitive)
 3	\*(rqFrom:\*(rq (ignore case)
 4	\*(rqMessage\-ID:\*(rq & full \*(rqReferences:\*(rq line
 5	\*(rqMessage\-ID:\*(rq & last \*(rqReferences:\*(rq entry only
@@ -1401,15 +1401,15 @@ Default for quick (1 key) kill filter header.
 .in -.3i
 .TP 
 \fBdefault_filter_select_case\fP
-Default for quick (1 key) auto\-selection filter case. ON=filter
-case\-sensitive, OFF=ignore case. Default is OFF.
+Default for quick (1 key) auto\-selection filter case. ON=filter case
+sensitive, OFF=ignore case. Default is OFF.
 .TP 
 \fBdefault_filter_select_expire\fP
 Default for quick (1 key) auto\-selection filter expire.  ON = limit to
 \fBdefault_filter_days\fP, OFF = don't ever expire.  Default is OFF.
 .TP 
 \fBdefault_filter_select_global\fP
-Default for quick (1 key) auto\-selection filter global. ON=apply to all
+Default for quick (1 key) auto\-selection filter global.  ON=apply to all
 groups, OFF=apply to current group. Default is ON.
 .TP 
 \fBdefault_filter_select_header\fP
@@ -1417,9 +1417,9 @@ Default for quick (1 key) auto\-selection filter header.
 .in +.3i
 .nf
 .ta \w'0,1   'u +\w'\'\'Message\-ID:\'\' & last \'\'References:\'\' entry only'u
-0	\*(rqSubject:\*(rq (case\-sensitive)
+0	\*(rqSubject:\*(rq (case sensitive)
 1	\*(rqSubject:\*(rq (ignore case)
-2	\*(rqFrom:\*(rq (case\-sensitive)
+2	\*(rqFrom:\*(rq (case sensitive)
 3	\*(rqFrom:\*(rq (ignore case)
 4	\*(rqMessage\-ID:\*(rq & full \*(rqReferences:\*(rq line
 5	\*(rqMessage\-ID:\*(rq & last \*(rqReferences:\*(rq entry only
@@ -1463,8 +1463,8 @@ Default for quick (1 key) auto\-selection filter header.
 \fBdefault_subject_search\fP
 .TP 
 \fBdraw_arrow\fP
-Allows groups/articles to be selected by an arrow '\->' if set ON or by
-ahighlighted bar if set OFF. Default is OFF.
+Allows groups/articles to be selected by an arrow '\->' if set ON or by a
+highlighted bar if set OFF. Default is OFF.
 .TP 
 \fBeditor_format\fP
 The format string used to create the editor start command with parameters.
@@ -1477,7 +1477,7 @@ If ON quotes from external sources will be detected. Default is OFF.
 \fBextquote_regex\fP
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_extquote\fP. If \fBextquote_regex\fP is blank,
-then \fB%tin\fP(1) uses a built\-in default.
+then \fB%tin\fP(1)  uses a built\-in default.
 .TP 
 \fBforce_screen_redraw\fP
 Specifies whether a screen redraw should always be done after certain
@@ -1490,10 +1490,10 @@ articles/group are fetched from the server. If \fBgetart_limit\fP is < 0
 absolute value of \fBgetart_limit\fP. Default is 0, which means no limit.
 .TP 
 \fBgoto_next_unread\fP
-Which keys \fB%tin\fP(1) should accept to jump to the next unread article.
+Which keys \fB%tin\fP(1)  should accept to jump to the next unread article.
 Possible is any combination of \fBPageDown\fP and \fBPageNextUnread\fP.  When
-\fBPageDown\fP is set \fBtin\fP jumps to the next article at the end of the
-current one. When \fBPageNextUnread\fP is set \fB%tin\fP(1) jumps immediately to
+\fBPageDown\fP is set \fB%tin\fP(1)  jumps to the next article at the end of the
+current one. When \fBPageNextUnread\fP is set \fB%tin\fP(1)  jumps immediately to
 the next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')  is
 pressed. Default is \fBPageNextUnread\fP.
 .TP 
@@ -1560,11 +1560,11 @@ This option controls the processing and display of articles that are
 killed. There are 3 options, default is 0 (\fBKill only unread arts\fP).
 .RS +1i
 .IP 0 3
-\fBKill only unread arts\fP is the 'traditional' behaviour of \fB\%tin\fP(1).
-Only unread articles are killed once only by marking them read. As filtering
-only happens on unread articles with \fBkill_level\fP set to 0,
-\fBart_marked_killed\fP and \fBart_marked_read_selected\fP are only shown
-once. When you reenter the group the mark will be gone.
+\fBKill only unread arts\fP is the 'traditional' behavior of \fB\%tin\fP(1).  Only
+unread articles are killed once only by marking them read. As filtering only
+happens on unread articles with \fBkill_level\fP set to 0, \fBart_marked_killed\fP
+and \fBart_marked_read_selected\fP are only shown once. When you reenter the
+group the mark will be gone.
 .IP 1
 \fBKill all arts & show with K\fP will process all articles in the group and
 therefore there is a processing overhead when using this option. Killed
@@ -1679,22 +1679,22 @@ $\fBMM_CHARSET\fP is used. US\-ASCII or compile\-time default is used in case
 neither of them is defined.
 .TP 
 \fBmono_markdash\fP
-Character attribute of words emphasised like _this_. It depends on your
+Character attribute of words emphasized like _this_. It depends on your
 terminal which attributes are usable. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBmono_markslash\fP
-Character attribute of words emphasised like /this/. It depends on your
+Character attribute of words emphasized like /this/. It depends on your
 terminal which attributes are usable. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBmono_markstar\fP
-Character attribute of words emphasised like *this*. It depends on your
+Character attribute of words emphasized like *this*. It depends on your
 terminal which attributes are usable. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBmono_markstroke\fP
-Character attribute of words emphasised like \-this\-. It depends on your
+Character attribute of words emphasized like \-this\-. It depends on your
 terminal which attributes are usable. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
@@ -1726,11 +1726,11 @@ Format of quote line when posting/following up an article (%A=Address,
 Time in seconds to wait for a response from the server. Default is 120.
 .TP 
 \fBnormalization_form\fP
-The normalisation form which should be used to normalise unicode input.  The
+The normalization form which should be used to normalize unicode input.  The
 possible values are:
 .RS +1i
 .IP 0 3
-\fBNone\fP: no normalisation
+\fBNone\fP: no normalization
 .IP 1
 \fBNFKC\fP: Compatibility Decomposition, followed by Canonical Composition
 .IP 2
@@ -1743,8 +1743,8 @@ possible values are:
 \fBNFKC_CF\fP: Compatibility Decomposition, followed by Canonical Composition
 and Case Folding
 .RE
-Some normalisation modes are only available if they are supported by the
-library \fB\%tin\fP(1)  uses to do the normalisation. NFC should be used if
+Some normalization modes are only available if they are supported by the
+library \fB\%tin\fP(1)  uses to do the normalization. NFC should be used if
 possible.
 .TP 
 \fBpos_first_unread\fP
@@ -1855,8 +1855,8 @@ If set to 0, this feature is deactivated, otherwise it means the number of
 days. Default is 2.
 .TP 
 \fBrender_bidi\fP
-If ON \fB%tin\fP(1) does the rendering of bi\-directional text. If OFF
-\fB%tin\fP(1) leaves the rendering of bi\-directional text to the
+If ON \fB%tin\fP(1)  does the rendering of bi\-directional text. If OFF
+\fB%tin\fP(1)  leaves the rendering of bi\-directional text to the
 terminal. Default is OFF.
 .TP 
 \fBreread_active_file_secs\fP
@@ -1887,7 +1887,7 @@ Score of an article which should be marked hot, this must be >=
 \fBscroll_lines\fP
 The number of lines that will be scrolled up/down in the article pager when
 using cursor\-up/down. The default is 1 (line\-by\-line). Set to 0 to get
-traditional \fBtin\fP tin page\-by\-page scrolling. Set to \-1 to get page\-by\-page
+traditional \fBtin\fP page\-by\-page scrolling. Set to \-1 to get page\-by\-page
 scrolling where the top/bottom line is carried over onto the next page.
 This setting supersedes show_last_line_prev_page=ON. Set to \-2 to get
 half\-page scrolling. This setting supersedes \fBfull_page_scroll\fP=OFF.
@@ -1971,7 +1971,7 @@ OFF.
 If OFF don't show signatures when displaying articles. Default is ON.
 .TP 
 \fBsigdashes\fP
-If ON prefix the signature with sigdashes. Default is ON.
+If ON prepend the signature with sigdashes. Default is ON.
 .TP 
 \fBsigfile\fP
 The path that specifies the signature file to use when posting, following up
@@ -2078,8 +2078,8 @@ matching words are shown in \fBcol_markstroke\fP or \fBmono_markstroke\fP.  If
 .TP 
 \fBtex2iso_conv\fP
 Decode German style TeX umlaut codes to ISO If ON, show "a as Umlaut\-a,
-etc. Default is OFF. This behaviour can also be toggled in the article
-viewer via \fBPageToggleTex2iso\fP ('\fB"\fP').
+etc. Default is OFF. This behavior can also be toggled in the article viewer
+via \fBPageToggleTex2iso\fP ('\fB"\fP').
 .TP 
 \fBthread_articles\fP
 Defines which threading method to use. The choices are: 0) Don't thread, 1)
@@ -2137,7 +2137,7 @@ or several similarly looking characters. On systems where this extension
 doesn't exist, this option is disabled. Default is OFF.
 .TP 
 \fBtrim_article_body\fP
-Allows you to select how \fB%tin\fP(1) treats blank lines in article bodies.
+Allows you to select how \fB%tin\fP(1)  treats blank lines in article bodies.
 Default is 0. This option does not affect lines within verbatim blocks.
 .RS +1i
 .IP 0 3
@@ -2171,14 +2171,14 @@ ON.
 .TP 
 \fBurl_handler\fP
 The program that will be run when launching URLs in the article viewer using
-\fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended. Default is
+\fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended.  Default is
 \fBurl_handler.pl\fP.
 .TP 
 \fBurl_highlight\fP
 Enable highlighting URLs in message body. Default is ON.
 .TP 
 \fBuse_color\fP
-If enabled \fB\%tin\fP(1)  uses ANSI\-colours. Default is OFF.
+If enabled \fB\%tin\fP(1)  uses ANSI\-colors. Default is OFF.
 .TP 
 \fBuse_keypad\fP
 Use scroll keys on keypad. Default is OFF.
@@ -2231,7 +2231,7 @@ print a \fBspace\fP instead
 .TP 
 \fBword_highlight\fP
 Enable word highlighting. See \fBword_h_display_marks\fP for the options
-available. If \fBuse_color\fP is enabled the colours specified in
+available. If \fBuse_color\fP is enabled the colors specified in
 \fBcol_markdash\fP, \fBcol_markslash\fP, \fBcol_markstar\fP and \fBcol_markstroke\fP are
 used for word highlighting else the character attributes specified in
 \fBmono_markdash\fP, \fBmono_markslash\fP, \fBmono_markstar\fP and \fBmono_markstroke\fP
@@ -2271,7 +2271,7 @@ built\-in default) the \fInewslibdir\fP.
 Sets a global domain name used in From lines
 .TP 
 \fBorganization\fP
-Defines the name of your organisation. $\fBORGANIZATION\fP overrides any
+Defines the name of your organization. $\fBORGANIZATION\fP overrides any
 specified value.
 .TP 
 \fBnewslibdir\fP
@@ -2354,7 +2354,7 @@ setting if your configuration differs.
 \fI/usr/local/share/locale/$LC_MESSAGES/LC_MESSAGES/tin.mo\fP
 .sp
 .RS
-translation into language specified in $\fBLC_ALL\fP, $\fBLC_MESSAGES\fP or
+traducido en idiomas especificados dentro de $\fBLC_ALL\fP, $\fBLC_MESSAGES\fP o
 $\fBLANG\fP
 .RE
 .PP
@@ -2471,7 +2471,7 @@ command instead.
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/organization\fP
 .sp
 .RS
-This file might hold a default organisation to be used in the
+This file might hold a default organization to be used in the
 \&\*(rqOrganization:\*(rq header. $\fBORGANIZATION\fP has a higher priority if set.
 .RE
 .PP
@@ -2480,7 +2480,7 @@ This file might hold a default organisation to be used in the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/overview.fmt\fP
 .sp
 .RS
-This file specifies the organisation of the news overview database (see also
+This file specifies the organization of the news overview database (see also
 \fB\%newsoverview\fP(5)).  The order of lines in this file is important; it
 determines the order in which the fields will appear in the database. See
 also \fB\%overview.fmt\fP(5).  \fB\%tin\fP(1)  only tries to read the file if you
@@ -2502,7 +2502,7 @@ command instead.
 .RE
 .PP
 
-.SH "SEE ALSO"
+.SH "VEA ADEMÁS"
 \fB\%elm\fP(1), \fB\%inews\fP(1), \fB\%ispell\fP(1), \fB\%lp\fP(1), \fB\%lpr\fP(1),
 \fB\%metamail\fP(1), \fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1),
 \fB\%shar\fP(1), \fB\%slrnface\fP(1), \fB\%tin\fP(1), \fB\%xterm\fP(1x),

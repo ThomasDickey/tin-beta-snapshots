@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-05
+ *  Updated   : 2019-02-15
  *  Notes     :
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1253,36 +1253,52 @@ static void
 invoke_metamail(
 	FILE *fp)
 {
-	char *ptr;
-	long offset;
-#ifndef DONT_HAVE_PIPING
-	FILE *mime_fp;
+	char *ptr = tinrc.metamail_prog;
 	char buf[LEN];
-#endif /* !DONT_HAVE_PIPING */
+	long offset;
+	FILE *mime_fp;
+#ifdef DONT_HAVE_PIPING
+	char mimefile[PATH_LEN];
+	int fd_mime;
+#endif /* DONT_HAVE_PIPING */
 
-	ptr = tinrc.metamail_prog;
-	if (('\0' == *ptr) || (0 == strcmp(ptr, INTERNAL_CMD)) || (NULL != getenv("NOMETAMAIL")))
+	if ((*ptr == '\0') || (!strcmp(ptr, INTERNAL_CMD)) || (getenv("NOMETAMAIL") != NULL))
 		return;
 
 	if ((offset = ftell(fp)) == -1) {
 		perror_message(_(txt_command_failed), ptr);
 		return;
 	}
-	rewind(fp);
 
 	EndWin();
 	Raw(FALSE);
 
-	/* TODO: add DONT_HAVE_PIPING fallback code */
-#ifndef DONT_HAVE_PIPING
+#ifdef DONT_HAVE_PIPING
+	if ((fd_mime = my_tmpfile(mimefile, sizeof(mimefile) - 1, homedir)) == -1) {
+		perror_message(_(txt_command_failed), ptr);
+		return;
+	}
+	if ((mime_fp = fdopen(fd_mime, "w"))) {
+#else
 	if ((mime_fp = popen(ptr, "w"))) {
+#endif /* DONT_HAVE_PIPING */
+		rewind(fp);
 		while (fgets(buf, (int) sizeof(buf), fp) != NULL)
 			fputs(buf, mime_fp);
 
 		fflush(mime_fp);
+		/* This is needed if we are viewing the raw art */
+		fseek(fp, offset, SEEK_SET);	/* goto old position */
+
+#ifdef DONT_HAVE_PIPING
+		snprintf(buf, sizeof(buf) -1, "%s %s", tinrc.metamail_prog, mimefile);
+		invoke_cmd(buf);
+		fclose(mime_fp);
+		unlink(mimefile);
+#else
 		pclose(mime_fp);
+#endif /* DONT_HAVE_PIPING */
 	} else
-#endif /* !DONT_HAVE_PIPING */
 		perror_message(_(txt_command_failed), ptr);
 
 #ifdef USE_CURSES
@@ -1294,9 +1310,6 @@ invoke_metamail(
 	Raw(TRUE);
 	InitWin();
 #endif /* !USE_CURSES */
-
-	/* This is needed if we are viewing the raw art */
-	fseek(fp, offset, SEEK_SET);	/* goto old position */
 }
 
 
@@ -1725,9 +1738,9 @@ draw_page_header(
 	 */
 	cur_pos = 0;
 
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 	fcol(tinrc.col_from);
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 	/* from */
 	/*
 	 * TODO: don't use arts[this_resp].name/arts[this_resp].from
@@ -1999,7 +2012,7 @@ toggle_raw(
 			pgart.rawl = my_malloc(sizeof(t_lineinfo) * chunk);
 			offset = ftell(pgart.raw);
 
-			while (NULL != (line = tin_fgets(pgart.raw, FALSE))) {
+			while ((line = tin_fgets(pgart.raw, FALSE)) != NULL) {
 				int space;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				int num_bytes;

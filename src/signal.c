@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-15
+ *  Updated   : 2019-02-18
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
@@ -494,7 +494,7 @@ signal_handler(
 #endif /* SIGSEGV */
 
 #if defined(SIGBUS) || defined(SIGSEGV)
-			my_fprintf(stderr, _(txt_send_bugreport), tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
+			my_fprintf(stderr, _(txt_send_bugreport), tin_progname, VERSION, RELEASEDATE, RELEASENAME, bug_addr);
 			my_fflush(stderr);
 			break;
 #endif /* SIGBUS || SIGSEGV */

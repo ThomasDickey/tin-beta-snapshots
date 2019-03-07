@@ -54,6 +54,7 @@ $SHELL ./configure --verbose \
 	--disable-echo \
 	--enable-prototypes \
 	--enable-nntp-only \
+	--with-pcre \
 	--with-domain-name=/etc/NNTP_INEWS_DOMAIN \
 	--with-coffee \
         $OPTS $* 2>&1 |tee -a $OUT

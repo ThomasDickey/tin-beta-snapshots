@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "tinews.pl 1"
-.TH tinews.pl 1 "December 8th, 2017" "1.1.49" "Post and sign an article via NNTP"
+.TH tinews.pl 1 "December 19th, 2018" "1.1.50" "Post and sign an article via NNTP"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -148,6 +148,10 @@ tinews.pl \- Post and sign an article via NNTP
 \&\fBtinews.pl\fR reads an article on \s-1STDIN,\s0 signs it via \fIpgp\fR\|(1) or
 \&\fIgpg\fR\|(1) and posts it to a news server.
 .PP
+The article shall not contain any raw 8\-bit data or it needs to
+already have the relevant MIME-headers as \fBtinews.pl\fR will not
+add any MIME-headers nor encode its input.
+.PP
 If the article contains To:, Cc: or Bcc: headers and mail-actions are
 configured it will automatically add a \*(L"Posted-And-Mailed: yes\*(R" header
 to the article and send out the mail-copies.
@@ -157,7 +161,7 @@ Cancel-Lock: (and Cancel-Key: if required) header.
 .PP
 The input should have unix line endings (<\s-1LF\s0>, '\en').
 .SH "OPTIONS"
-.IX Xref "tinews, commandline options"
+.IX Xref "tinews, command-line options"
 .IX Header "OPTIONS"
 .ie n .IP "\-\fBa\fR ""Approved"" | \-\-\fBapproved\fR ""Approved""" 4
 .el .IP "\-\fBa\fR \f(CWApproved\fR | \-\-\fBapproved\fR \f(CWApproved\fR" 4
@@ -289,7 +293,9 @@ These options are accepted for compatibility reasons but ignored.
 .IP "\-\fBD\fR | \-\fBN\fR | \-\-\fBdebug\fR" 4
 .IX Xref "-D -N --debug"
 .IX Item "-D | -N | --debug"
-These options are accepted but do not have any functionality yet.
+Enable warnings about raw 8\-bit data and set \fINet::NNTP\fR\|(3pm) in debug
+mode, enable warnings about raw 8\-bit data, warn about disabled options
+due to lacking perl-modules or executables and unreadable files.
 .SH "EXIT STATUS"
 .IX Header "EXIT STATUS"
 The following exit values are returned:
@@ -418,8 +424,8 @@ security is an issue, don't use this script.
 \&\fIGetopt::Long\fR\|(3pm), \fINet::NNTP\fR\|(3pm), <\fITime::Local\fR\|(3pm)> and
 \&\fITerm::Readline\fR\|(3pm).
 .PP
-If the Cancel-Lock feature is enabled the following additional modules
-must be installed: \fIMIME::Base64\fR\|(3pm), \fIDigest::SHA\fR\|(3pm) or
+If the Cancel-Lock feature (\s-1RFC 8315\s0) is enabled the following additional
+modules must be installed: \fIMIME::Base64\fR\|(3pm), \fIDigest::SHA\fR\|(3pm) or
 \&\fIDigest::SHA1\fR\|(3pm) and \fIDigest::HMAC_SHA1\fR\|(3pm). sha256 and sha512 as
 algorithms for \fBcanlock-algorithm\fR are only available with \fIDigest::SHA\fR\|(3pm).
 .PP
@@ -431,6 +437,9 @@ algorithms for \fBcanlock-algorithm\fR are only available with \fIDigest::SHA\fR
 .Ve
 .PP
 before using \fBtinews.pl\fR. See <https://www.gnupg.org/> for details.
+.PP
+\&\fBtinews.pl\fR does not do any \s-1MIME\s0 encoding, its input should be already
+properly encoded and have all relevant headers set.
 .SH "AUTHOR"
 .IX Header "AUTHOR"
 Urs Janssen <urs@tin.org>,

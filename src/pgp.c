@@ -143,11 +143,11 @@ init_pgp(
 
 	pgpopts = get_val("PGPOPTS", "");
 
-#ifdef HAVE_GPG
+#	ifdef HAVE_GPG
 	if ((ptr = getenv("GNUPGHOME")) != NULL)
 		my_strncpy(pgp_data, ptr, sizeof(pgp_data) - 1);
 	else
-#endif /* HAVE_GPG */
+#	endif /* HAVE_GPG */
 	{
 		if ((ptr = getenv("PGPPATH")) != NULL)
 			my_strncpy(pgp_data, ptr, sizeof(pgp_data) - 1);
@@ -358,18 +358,18 @@ invoke_pgp_mail(
 			printascii(keyquit, func_to_key(GLOBAL_QUIT, pgp_mail_keys)));
 	switch (func) {
 		case PGP_KEY_SIGN:
-#ifdef HAVE_PGPK
+#	ifdef HAVE_PGPK
 			ClearScreen();
 			MoveCursor(cLINES - 7, 0);
-#endif /* HAVE_PGPK */
+#	endif /* HAVE_PGPK */
 			do_pgp(func, nam, NULL);
 			break;
 
 		case PGP_KEY_ENCRYPT_SIGN:
-#ifdef HAVE_PGPK
+#	ifdef HAVE_PGPK
 			ClearScreen();
 			MoveCursor(cLINES - 7, 0);
-#endif /* HAVE_PGPK */
+#	endif /* HAVE_PGPK */
 			do_pgp(func, nam, mail_to);
 			break;
 
@@ -405,20 +405,20 @@ invoke_pgp_news(
 			break;
 
 		case PGP_KEY_SIGN:
-#ifdef HAVE_PGPK
+#	ifdef HAVE_PGPK
 			info_message(" ");
 			MoveCursor(cLINES - 7, 0);
 			my_printf("\n");
-#endif /* HAVE_PGPK */
+#	endif /* HAVE_PGPK */
 			do_pgp(func, artfile, NULL);
 			break;
 
 		case PGP_INCLUDE_KEY:
-#ifdef HAVE_PGPK
+#	ifdef HAVE_PGPK
 			info_message(" ");
 			MoveCursor(cLINES - 7, 0);
 			my_printf("\n");
-#endif /* HAVE_PGPK */
+#	endif /* HAVE_PGPK */
 			do_pgp(PGP_KEY_SIGN, artfile, NULL);
 			pgp_append_public_key(artfile);
 			break;

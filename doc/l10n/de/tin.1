@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2018-11-07
+.\" Updated   : 2019-02-20
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24. Dezember 2017" 2.4.3 "Usenet Newsreader"
+.TH tin 1 "24. Dezember 2018" 2.4.4 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -607,11 +607,12 @@ option.
 (De)aktiviere inverse Darstellung.
 .TP 
 \fBLookupMessage 'L'\fP
-Look up article by \*(rqMessage\-ID:\*(rq. If none of the groups listed in the
-\&\*(rqNewsgroups:\*(rq\-header of the referenced article is available, just the
-contents of the \*(rqNewsgroups:\*(rq\-header will be displayed in the last line.
-At this level this command only works if reading via NNTP and the server
-supports [X]HDR (\fBRFC\%2980\fP, \fBRFC\%3977\fP) or XPAT (\fBRFC\%2980\fP).
+Artikel anhand der \*(rqMessage\-ID:\*(rq Nachschlagen. Wenn keine der in den
+\&\*(rqNewsgroups:\*(rq\-Kopfzeilen des referenzierten Artikels aufgeführten Gruppen
+verfügbar ist, wird in der letzten Zeile nur der Inhalt der
+\&\*(rqNewsgroups:\*(rq\-Kopfzeilen angezeigt. Auf dieser Ebene funktioniert dieser
+Befehl nur beim Lesen mittels NNTP und der Server muss [X]HDR (\fBRFC\%2980\fP,
+\fBRFC\%3977\fP) oder XPAT (\fBRFC\%2980\fP) unterstützen.
 .TP 
 \fBSelectMoveGrp 'm'\fP
 Move the current group within the group selection list. By entering '1' the
@@ -1496,8 +1497,8 @@ n.software.readers \-> n.s.readers \-> n.s.r. Voreinstellung ist OFF.
 Falls ON füge gepostete Artikel die einen neuen Thread einleiten zum Filter
 hinzu um eventuelle Antworten hervorzuheben. Voreinstellung ist ON.
 .TP 
-\fBFüge 'User\-Agent:'\-Header ein (advertising)\fP
-Falls ON füge 'User\-Agent:'\-Header ein. Voreinstellung ist ON.
+\fBFüge 'User\-Agent:'\-Kopfzeile ein (advertising)\fP
+Falls ON füge 'User\-Agent:'\-Kopfzeile ein. Voreinstellung ist ON.
 .TP 
 \fBÜbersp. multipart/alternative\-Teile (alternative_handling)\fP
 Falls ON entsorge multipart/alternative Teile des Artikels
@@ -2139,7 +2140,8 @@ Falls ON speichere/drucke/pipe/maile nur ungelesene Artikel (markierte
 Artikel ausgenommen). Voreinstellung ist OFF.
 .TP 
 \fBLeeres Fup'2 im Editor anzeigen (prompt_followupto)\fP
-Falls ON zeige leeren Followup\-To:\-Header im Editor. Voreinstellung ist OFF.
+Falls ON zeige leere Followup\-To:\-Kopfzeile im Editor. Voreinstellung ist
+OFF.
 .TP 
 \fBZitatzeichen (quote_chars)\fP
 The character used in quoting included text to article followups and mail
@@ -2496,8 +2498,8 @@ Falls ON entferne ~/.article nach dem posten. Voreinstellung ist ON.
 .TP 
 \fBÖffne URLs mit ... (url_handler)\fP
 The program that will be run when launching URLs in the article viewer using
-\fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended to this. Default is
-\fBurl_handler.pl %s\fP.
+\fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended.  Default is
+\fBurl_handler.pl\fP.
 .TP 
 \fBURL\-Hervorhebung im Artikel (url_highlight)\fP
 Enable highlighting URLs in message body. Default is ON.
@@ -2509,12 +2511,12 @@ AMSI\-Farben in \fBtin\fP benutzen. Voreinstellung ist OFF.
 Voreinstellung ist OFF.
 .TP 
 \fBMaus in xterm nutzen (use_mouse)\fP
-Allows the mouse button support in a \fB\%xterm\fP(1x)  to be
+Allows the mouse button support in an \fB\%xterm\fP(1x)  to be
 enabled/disabled.  Default is OFF.
 .TP 
 \&\fB\*(rqX\-Face:\*(rqs mit slrnface Anzeigen (use_slrnface)\fP
 If enabled \fBtin\fP uses \fB\%slrnface\fP(1)  to interpret the \*(rqX\-Face:\*(rq
-header. For this option to have any effect, \fBtin\fP must be running in a
+header. For this option to have any effect, \fBtin\fP must be running in an
 \fB\%xterm\fP(1x)  and \fB\%slrnface\fP(1)  must be in your $\fBPATH\fP. Default is
 OFF.
 .TP 
@@ -2779,8 +2781,14 @@ mailbox with the name of the current newsgroup (eg, alt.sources).  See
 \fBmaildir\fP.
 .PP
 To save in savedir/<news.group.name>/<filename> format enter
-\&'+<filename>'.  Environment variables are allowed within a filename
-(e.g., \fI$SOURCES/dir/filename\fP). See \fBsavedir\fP.
+\&'+<filename>'.  See \fBsavedir\fP. Like '+' %G is expanded to the
+current news.group.name but without \fBsavedir\fP prefixed. %P is expanded to
+the news.group.name with all '.' replaced by '/'.
+.PP
+If saving multiple files at once the filename (if not referring to a
+mailbox)  will be extended by ".num" where "num" is a at least 3 digit
+number counting up from 1. Environment variables are allowed within a
+filename (e.g., \fI$SOURCES/dir/filename\fP).
 .PP
 .\"
 .\"
@@ -3055,7 +3063,7 @@ Many prompts within \fBtin\fP offer a default choice that the cursor is
 positioned on. By pressing '\fB<CR>\fP' the default value is taken.
 Most prompts can be aborted by pressing '\fB<ESC>\fP'.
 .PP
-When \fBtin\fP is run in a \fB\%xterm\fP(1x)  it will resize itself each time the
+When \fBtin\fP is run in an \fB\%xterm\fP(1x)  it will resize itself each time the
 \fB\%xterm\fP(1x)  is resized.
 .PP
 \fBtin\fP will reread the
@@ -3445,7 +3453,7 @@ DomainOS spezifisch, wie $\fBORGANISATION\fP auf anderen Betriebssystemen
 (siehe oben).
 .TP 
 \fBREPLYTO\fP
-Setzt den \*(rqReply\-To:\*(rq\-Header auf die in der Variable angegebene
+Setzt die \*(rqReply\-To:\*(rq\-Kopfzeile auf die in der Variable angegebene
 Rücksendeadresse. Dies ist nützlich, wenn Sie Antworten an eine andere
 Adresse erhalten möchten.
 .TP 

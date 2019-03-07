@@ -1,6 +1,6 @@
 Items which are showstoppers for the next major release are marked with '!'
-in front of them (feel free to up/downgrade and/or add bugs, this file is
-not read only ,-).
+in front of them (feel free to up/downgrade and/or add or fix bugs, this
+file is not read only ,-).
 
 Bugs
 ----
@@ -114,8 +114,20 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  add configure check for cl_clear_secret() in libcanlock and CL_API_MAJOR,
+   CL_API_MINOR in canlock.h and if suitable prefer over bundled
+   libcanlock (--with-canlock).
+   [20190212 Urs Janssen <urs@tin.org>]
+
 o  allow per server cache_overview_files setting via serverrc.
    [20180215 Urs Janssen <urs@tin.org>]
+
+o  add something like default_cmd_line_opts (acting like $TINRC) to serverrc?
+   precedence [low to high] = serverrc.def_cmd_line_opts, $TINRC, cmd-line?
+   [20190205 Urs Janssen <urs@tin.org>]
+
+o  if we extend serverrc it should also get some 'M'enu.
+   [20190205 Urs Janssen <urs@tin.org>]
 
 o  implement SAVE_APPEND_FILE_ALL ('A') and SAVE_OVERWRITE_ALL ('O') keys
    which just ask once if file(s) already exist (open_save_filename()).
@@ -127,8 +139,7 @@ o  add second pipe command when piping multiple articles to use one
    sense).
    [20160412 Urs Janssen <urs@tin.org>]
 
-o  allow abort piping multiple articles, ESC/'z' just aborts the current
-   one
+o  allow abort piping multiple articles, ESC/'z' just aborts the current one
    [20160409 Urs Janssen <urs@tin.org>]
 
 o  add per scope getart_limit via attributes
@@ -144,7 +155,7 @@ o  add a key to "drop" pending data from the server (either by
    or via calling drain_buffer() (might be slow if there is much pending
    data)) so one doesn't have to quit and restart tin if the client/server
    communication gets desynced (i.e by reading an article which has a non
-   dotstuffed lone '.' in it or the like)
+   dot-stuffed lone '.' in it or the like)
    [20130615 Urs Janssen <urs@tin.org>]
 
 o  x_body currently doesn't allow cmd. execution via ! like x_headers
@@ -224,7 +235,7 @@ o  add bold-italic, bold-underline, italic-underline, bold-italic-underline
    word highlightings.
    [20020721 Urs Janssen <urs@tin.org>]
 
-o  allow bold, underline, italic, ... as colour substitution for
+o  allow bold, underline, italic, ... as color substitution for
    monochrome terminals (map green=underline, italic=yellow)
    (see also
    <nntp://news.tin.org/20020416202232.A4575@bloatware.reston01.va.comcast.net>)
@@ -266,11 +277,12 @@ o  add $LOCKEXT support
    [20030611 Urs Janssen <urs@tin.org>]
 
 o  add xxencode (<http://www.ctan.org/tex-archive/tools/xxcode/xxdecode.c>),
-   base224 (<http://b-news.sf.net/>), xBin <http://www.xbin.org/> and
-   yenc (hide/decode-)support (see <http://nerv.cx/liyang/software/yydecode/>
-   for readable code, ignore the crap on <http://www.yenc.org/>). also
-   check <http://www.exit109.com/~jeremy/news/binaries/> which might
-   replace yenc etc.pp. some day.
+   base224 (<http://b-news.sf.net/>), xBin <http://www.xbin.org/>,
+   base91 (<http://base91.sourceforge.net/>) and yenc (hide/decode-)support
+   (see <http://nerv.cx/liyang/software/yydecode/> for readable code, ignore
+   the crap on <http://www.yenc.org/>). also check
+   <http://www.exit109.com/~jeremy/news/binaries/> which might replace yenc
+   etc.pp. some day.
    [20020216 Urs Janssen <urs@tin.org>]
 
 o  add "Face:" (incompatible "X-Face:"-replacement) support?
@@ -278,13 +290,10 @@ o  add "Face:" (incompatible "X-Face:"-replacement) support?
 
 o  turn CA_ERROR_SPACE_IN_NEWSGROUPS, CA_ERROR_NEWLINE_IN_NEWSGROUPS,
    CA_ERROR_SPACE_IN_FOLLOWUP_TO, CA_ERROR_NEWLINE_IN_FOLLOWUP_TO into
-   CA_WARNING_s (see draft-ietf-usefor-article-06.txt 5.5) and mark them
+   CA_WARNING_s (see RFC 5536 3.1.4. and 3.2.6.) and mark them
    for removal in the future.
-   [define FOLLOW_USEFOR_DRAFT to turn the mentioned errors into
+   [define ALLOW_FWS_IN_NEWSGROUPLIST to turn the mentioned errors into
     warnings. 20011226 Urs Janssen <urs@tin.org>]
-
-o  check FOLLOW_USEFOR_DRAFT code against RFC 5536
-   [20120221 Urs Janssen <urs@tin.org>]
 
 o  support "Suggested Minimal Digest Format"
    <ftp://rtfm.mit.edu/pub/usenet/news.answers/faqs/minimal-digest-format>
@@ -344,7 +353,7 @@ o  check if server supports 'LIST MODERATORS' and/or 'LIST DISTRIB.PATS' and
    leave the mailing to the server; if the group has limited distribution
    inform the user, ...)
 
-o  if using "-n" commandline switch you can't subscribe to newsgroups not
+o  if using "-n" command-line switch you can't subscribe to newsgroups not
    present in your newsrc - a simple check against the server
    (e.g. GROUP $newsgroup or if !NNTP try to stat the dir) would help.
    if the server understands "LIST ACTIVE grp" we could also get the group's
@@ -371,7 +380,7 @@ o  MIME-pgp support according to RFC 2015, RFC 3156 - (should be easy now)
    storing the raw-offset of each part in the article would be very helpful.
 
 o  pgpverify invocation with a single key instead of '|''a''pgpverify' or a
-   buildin pgpverify solution.
+   built-in pgpverify solution.
 
 o  pgp-{6,7} support
 
@@ -440,7 +449,7 @@ o  Add to the attachment menu ('V'):
      '%'  (toggle rot13 encoding of screen content)
      '&'  (GLOBAL_TOGGLE_COLOR)
 
-o  Add a commandline switch (-V) that prints out all values of cpp-symbols
+o  Add a command-line switch (-V) that prints out all values of cpp-symbols
    etc. [partly done, but should be cleaned up]
 
 o  Reorganize tinrc into related sections for easier editing
@@ -448,7 +457,7 @@ o  Reorganize tinrc into related sections for easier editing
 
 o  A system-wide tinrc configuration file (to hold some defaults).
    [done: /etc/tin/tinrc] A key code to reset to the system defaults.
-   Maybe a second file which could be used to force settings (eg
+   Maybe a second file which could be used to force settings (eg.
    inews & mailer) (tin.defaults [--with-defaults-dir] is a start)
 
 o  when From: only contains "First-name Last-name" tin strips the
@@ -531,8 +540,6 @@ Filtering enhancements
 ----------------------
 o  add Xref + Path filter to the filter-menu
 
-o  add spamassassin interface when ever adding body filters
-
 o  add used filter-type to filter file or filter rule or use different
    filter files for wildmat/regexp
 
@@ -579,6 +586,9 @@ o  add missing mailcap (RFC 1524) features (%n, %F, copiousoutput, print, ...)
 
 Internal Changes
 ----------------
+o  merge refs.c:valid_msgid() and post.c:damaged_id()
+   [Urs Janssen <urs@tin.org>]
+
 o  in ENABLE_NLS case replace PLURAL() macro with proper use of
    ngettext(3) (if found by configure) to support languages with
    more than one plural form.
@@ -604,7 +614,7 @@ o  ditch MAX_MSG_HEADERS (post.c)
 
 o  always display (also) the servers error response string to the user,
    currently tin sometimes gives generic messages (e.g. when authentication
-   fails), but the servers response may include additional infos (like
+   fails), but the servers response may include additional info (like
    bandwidth exceeded)
    [20101230 Urs Janssen <urs@tin.org>]
 
@@ -622,24 +632,13 @@ o  fix aclocal.m4:CF_FUNC_SYSTEM and/or misc.c:invoke_cmd() that
    --enable-broken-system-fix/IGNORE_SYSTEM_STATUS isn't needed anymore.
    [20090520 Urs Janssen <urs@tin.org>]
 
-o  tinrc.confirm_choice should be written/read as int, not string as users
-   who edit the tinrc manually can't know the exact strings required.
-   unfortunately rc_update() can't handle type changes (rc_update should
-   also get the split version number as arg so we can do specific
-   changes).
-   [20081112 Urs Janssen <urs@tin.org>]
-
 o  use read()/write() instead of fputs()/fgets() on socket
 
-o  move several (server related) files into the per-server dir
-   e.g.:
+o  move several (server related) files into the per-server dir e.g.:
       ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news${NNTPSERVER+"-$NNTPSERVER"}/
    should be
       ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}/.news/
    [20050807 Urs Janssen <urs@tin.org>]
-
-o  upgrade configure-script to >= autoconf-2.61
-   [20050728 Urs Janssen <urs@tin.org>]
 
 o  remove untranslatable constructs like txt_prefix_*
    [20050413 Urs Janssen <urs@tin.org>]
@@ -659,7 +658,7 @@ o  read_overview() calls eat_re() which strips the "Re: " out of the
    subject. the modified subject is used for batch_mode opperatios (-N/-M)
    which might not be what ppl. expect and eat_re() is the only function
    which needs the 'regex' overhead in batch_mode... (see also the note
-   about "Re: "strpping at "Filtering enhancements").
+   about "Re: "-stripping at "Filtering enhancements").
    [20050225 Urs Janssen <urs@tin.org>]
 
 o  use new_nntp_command() instead of nntp_command() in the rest of the
@@ -679,9 +678,6 @@ o  get rid of CURR_GROUP, use t_group instead
 o  clean up $AUTOSUBSCRIBE code (the NNTP code path is a mess)
    [20030412 Urs Janssen <urs@tin.org>]
 
-o  check where joinpath() should be used (e.g. grep for TMPDIR in the source)
-   [Urs Janssen <urs@tin.org>]
-
 o  make configure look for strrstr() in libpub & publib.h
    [Urs Janssen <urs@tin.org>]
 
@@ -697,9 +693,6 @@ o  check where PRODUCT should be used instead of tin_progname and/or "tin"
    [Urs Janssen <urs@tin.org>]
 
 o  check where NEWSRC_FILE should be used in lang.c instead of "newsrc"
-
-o  kick Hungarian notation
-   [Urs Janssen <urs@tin.org>]
 
 o  check where iKeyAbort should be used instead of ESC (etc.pp.)
    (AFAICS all fixed except prompt.c and read.c/'z')
@@ -721,23 +714,11 @@ o  close potential security holes:
    - check where my_strncpy() or STRCPY() should be used
    [Urs Janssen <urs@tin.org>]
 
-o  add to autoconf:
-   - eradicate platform/compiler ifdefs
-
-o  clean up architecture independent files, rename several defines,
-   remove useless doubled defines
-
 o  split tin.h/proto.h for better dependencies in Makefile
 
 o  check where int/long/... should be replaced by size_t, uid_t, mode_t,
    off_t, ...
    [Urs Janssen <urs@tin.org>]
-
-o  add check for sizeof char, short, int, long, ...
-   make sure that the code works even with 'uncommon' values
-   (e.g. char = 1 byte with 32 bit)
-
-o  cleanup post.c
 
 o  check code with Splint (LCLint) <http://www.splint.org/>,
    valgrind (<http://valgrind.org/>), cppcheck
@@ -755,8 +736,6 @@ o  rewrite the tag code so that arts[].tagged becomes index in arts[]
 
 o  strip Xref:-header if saving news in batch mode (-S)?
    [Urs Janssen <urs@tin.org>]
-
-o  what is with NEW_HASH_METHOD in list.c?
 
 o  rewrite code to use INEWS_PATH instead of INEWSDIR
    [20021007 Urs Janssen <urs@tin.org>
@@ -776,23 +755,9 @@ o  some non fixed width strings could be formatted nicer (warp on last space
 
 Unicode
 -------
-o  add UTF-8 (unicode) support (RFC 2279)
-   (see <http://www.cl.cam.ac.uk/~mgk25/unicode.html>)
-   if we ever want to add UTF-7 (RFC 2152) (posting) support (I don't
-   think this is needed) we have to encode it ourself (as iconv()
-   might encode <, @, > which leads to illegal headers) or split
-   headers into "encoding part" and "rest" ...
-   [local_charset <-> UTF-8 which needs iconv() is added;
-    20010830 urs@tin.org]
-
-o  make select/group/thread/page-level multibyte "safe". they all use
-   strlen(), strncpy(), strncat(), snprintf() to build the screen - but
-   in a multibyte environment (e.g. mm_local_charset=UTF-8) this is a
-   fault. [mostly done for ncursesw]
-
 o  make mm_network_charset an "option_list" to avoid junk input or
    undesired (UTF-1, UTF-7, UTF-16*, UTF-32*, UCS-2, UCS-4, ...) encodings.
-   add configure check for the hardcoded charsets (try iconv_open(x,
+   add configure check for the hard coded charsets (try iconv_open(x,
    us-ascii) on each...) and disable those not available.
    (think about more network charsets (GB2312, GB18030, Shift_JIS,
     ISO-8859-6[-{I,E}], ISO-8859-8[-{I,E}], ISO-8859-11, VISCII, VIQR;
@@ -805,6 +770,7 @@ o  make mm_network_charset a user configurable item list
     "EUC-CN:ISO-2022-CN:ISO-2022-CN-EXT:Big5:UTF-8", whatever)
    and try all given charsets in order till the one is found which matches
    best (i.e. can display most (all) of the chars in the article).
+   (see also RFC 2046 4.1.2)
    [20050805 <urs@tin.org>]
 
 o  add IDNA 2003 (RFC 3490ff.) and IDNA 2008 (RFC 5890ff.) support,
@@ -854,10 +820,10 @@ o  exit status documentation in the man page isn't correct, we have more
    exit codes than just 0/1 (and 2 in the -Z case).
    [20080320 Urs Janssen <urs@tin.org>]
 
-o  review the danish, swedish, turkish, russian and kinyarwanda translations
-   (da.po, sv.po, tr.po, ru.po, rw.po); add/finish man-page translation(s).
+o  review the spanish, swedish and russian translations
+   (es.po, sv.po, ru.po); add/finish missing man-page translation(s).
 
-o  add installation guide (in html)
+o  add installation guide (in html?)
 
 o  add cross-compilation hints
    	CC="crosscc" LD="crossld" AR="crossar" RANLIB=":" MAKE="crossmake" \
@@ -875,8 +841,6 @@ o  tin.defaults could use more documentation in man page (tin.5)
 o  replace "\\" by "\e" in man pages (portable?)
 
 o  integrate doc/auth.txt into tin.1 man page
-
-o  document %G of strfpath() in man page
 
 Not yet classified
 ------------------
@@ -903,9 +867,6 @@ o  sometimes we convert the supplied server name to lowercaes (for cached
    even there is a ~/.tin/.newsrcs/foo.bar.example file.
    Should we always lowercase $NNTPSERVER / -g? (but still allow
    upper/camelcase for -f or a fixed filename in newsrctable).
-   [20160225 Urs Janssen <urs@tin.org>]
-
-o  add %M (Message-ID) and %X (article number) to strfpath()?
    [20160225 Urs Janssen <urs@tin.org>]
 
 o  add "host:port" notation support for -g as shortcut for -p port -g host
@@ -967,9 +928,6 @@ o  the documentation suggests that novrootdir/$TIN_NOVROOTDIR defaults to
    automatically adjust $TIN_NOVROOTDIR at runtime. we should either
    fix the documentation or the behaviour.
    [20100103 Urs Janssen <urs@tin.org>]
-
-o  FOLLOW_USEFOR_DRAFT is a misnomer as RFC 5536 is released
-   [20091225 Urs Janssen <urs@tin.org>]
 
 o  un/subscribe_pattern() is very slow on servers with a huge active file
    [20091223 Urs Janssen <urs@tin.org>]
@@ -1045,8 +1003,9 @@ o  trn and perls Net::NNTP::Auth use ~/.nntpauth (format is
    ${TIN_HOMEDIR:-"$HOME"}/.tin/.newsauth if ~/.newsauth is not found?
    [20040128 Urs Janssen <urs@tin.org>]
 
-o  allow a different port on newsauth and or newsrctable (server:port [...])?
-   if we do, what's the precedence? -p, newsauth, newsrctable, $NNTPORT, 119?
+o  allow a different port in newsauth- and/or newsrctable-file
+   (server:port [...])? if we do, what's the precedence?
+   [high] -p, newsauth, newsrctable, $NNTPORT, 119 [low]?
    [20140504 Urs Janssen <urs@tin.org>]
 
 o  what todo if in a CTE: x-uue the CD: filename differs from the one given
@@ -1069,9 +1028,10 @@ o  what about -a cmd-line flag? is this really needed? IMHO this can be
    [20021106 Urs Janssen <urs@tin.org>]
 
 o  commas in real-name might cause problems in mail-replies
-   From: Last, First <user@accou.nt> (which is illegal) leads to
-   To: Last, First<user@accou.nt> which is last@localhost,user@accou.nt
-   should we try to fix things and quote the realname part?
+   'From: Last, First <user@example.com>' (which was illegal in RFC 1036 but
+   is no longer with RFC 5536) leads to 'To: Last, First<user@example.com>'
+   which is 'last@localhost,user@example.com' should we try to fix things and
+   quote the realname part?
    [20021007 Urs Janssen <urs@tin.org>]
 
 o  setting TIN_HOMEDIR to a non-existent dir gives a "Filesystem full"
@@ -1079,12 +1039,7 @@ o  setting TIN_HOMEDIR to a non-existent dir gives a "Filesystem full"
    feature? if the later we should give a more exact error-message.
    [20011112 Urs Janssen <urs@tin.org>]
 
-o  check_article_to_be_posted() needs a cleanup!
-   (avoid setup_check_article_screen(&init);StartInverse();EndInverse();
-    overhead)
-   [20010629 Urs Janssen <urs@tin.org>]
-
-o  update gettext stuff to > gettext-0.12.1
+o  update gettext stuff to > gettext-0.12.1 (or drop it?)
 
 o  and pcre2 support (new API)
    <http://www.pcre.org/current/doc/html/>
@@ -1111,8 +1066,6 @@ o  missing newsrc file and connecting to a server without groups leads to the
    file if it is missing instead of just leaving?
    [20061102 Dirk Nimmich <nimmich@muenster.de>]
 
-o  cache mailbox_name in misc.c/mail_check()?
-
 o  configure checks for fdopen(3) and defines HAVE_FDOPEN if found, but we
    don't have any code guarded with that macro nor any fallback code if not
    found.
@@ -1122,7 +1075,7 @@ o  re add innlib support? (the old one was dropped as the lib has retired
    use the innlibs code where ever it was possible (and useful).
    [20080211 Urs Janssen <urs@tin.org>]
 
-o  add check for libarchive <https://code.google.com/p/libarchive/>
+o  add check for libarchive <http://www.libarchive.org/>
    and use for post-processing?
    [20111225 Urs Janssen <urs@tin.org>]
 
@@ -1131,7 +1084,7 @@ o  add check for liblockfile and/or liblock and use if found?
 o  add check for heapsort(3) in libbsd? <http://libbsd.freedesktop.org/wiki/>
    [20130305 Urs Janssen <urs@tin.org>]
 
-o  add jump to selected article from DisplayPostHist (’W’)
+o  add jump to selected article from DisplayPostHist ('W')
    [20120220 Urs Janssen <urs@tin.org>]
 
 o  add check for libtre and offer TRE as matching method for "wildcard"?

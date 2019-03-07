@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2018-07-20
+ *  Updated   : 2019-01-08
  *  Notes     :
  *
  * Copyright (c) 1997-2019 Urs Janssen <urs@tin.org>
@@ -213,11 +213,11 @@ strcasestr(
 	h = haystack;
 	n = needle;
 	while (*haystack) {
-		if (tolower((unsigned char) *h) == tolower((unsigned char) *n)) {
+		if (my_tolower((unsigned char) *h) == my_tolower((unsigned char) *n)) {
 			h++;
 			n++;
 			if (!*n)
-				return haystack;
+				return (char *) haystack;
 		} else {
 			h = ++haystack;
 			n = needle;
@@ -243,6 +243,39 @@ mystrcat(
 	return len;
 }
 
+/*
+ * get around broken tolower()/toupper() macros on
+ * ancient BSDs (at least on sony news os)
+ */
+int
+my_tolower(
+int c)
+{
+#ifdef TOLOWER_BROKEN
+	if (c >= 'A' && c <= 'Z')
+		return (c - 'A' + 'a');
+	else
+		return (c);
+#else
+	return tolower(c);
+#endif /* TOLOWER_BROKEN */
+}
+
+
+int
+my_toupper(
+int c)
+{
+#ifdef TOUPPER_BROKEN
+	if (c >= 'a' && c <= 'z')
+		return (c - 'a' + 'A');
+	else
+		return (c);
+#else
+	return toupper(c);
+#endif /* TOUPPER_BROKEN */
+}
+
 
 void
 str_lwr(
@@ -251,7 +284,7 @@ str_lwr(
 	char *dst = str;
 
 	while (*str)
-		*dst++ = (char) tolower((unsigned char) *str++);
+		*dst++ = (char) my_tolower((unsigned char) *str++);
 
 	*dst = '\0';
 }
@@ -368,7 +401,7 @@ atol(
 
 #ifndef HAVE_STRTOL
 /* fix me - put me in tin.h */
-#	define DIGIT(x) (isdigit((unsigned char) x) ? ((x) - '0') : (10 + tolower((unsigned char) x) - 'a'))
+#	define DIGIT(x) (isdigit((unsigned char) x) ? ((x) - '0') : (10 + my_tolower((unsigned char) x) - 'a'))
 #	define MBASE 36
 long
 strtol(
@@ -422,7 +455,7 @@ OUT:
 
 #if !defined(HAVE_STRCASECMP) || !defined(HAVE_STRNCASECMP)
 	/* fix me - put me in tin.h */
-#	define FOLD_TO_UPPER(a)	(toupper((unsigned char) (a)))
+#	define FOLD_TO_UPPER(a)	(my_toupper((unsigned char) (a)))
 #endif /* !HAVE_STRCASECMP || !HAVE_STRNCASECMP */
 /*
  * strcmp that ignores case

@@ -431,7 +431,6 @@ authenticate(
 
 	ret = authinfo_plain(server, user, startup);
 
-
 	if (ret && nntp_caps.type == CAPABILITIES) {
 		/* resend CAPABILITIES, but "manually" to avoid AUTH loop */
 		snprintf(line, sizeof(line), "%s", "CAPABILITIES");
