@@ -1,4 +1,4 @@
-                  Authentication to a NNTP server with tin
+                  Authentication to an NNTP server with tin
 
 Tin is able to do authentication to news servers according to the "Common
 NNTP Extensions" (this document is available at [1]). There are several ways
@@ -64,7 +64,7 @@ authentication command can take use of NNTP_AUTH_FDS when invoked; it should
 exit successful if the authentication was accepted.
 
 If NNTPAUTH is empty or not available, tin sends an "authinfo generic any
-<user-id>" command to the server and expects the result as a NNTP response
+<user-id>" command to the server and expects the result as an NNTP response
 code.
 
 The AUTHINFO SASL PLAIN authentication method requires tin to be linked

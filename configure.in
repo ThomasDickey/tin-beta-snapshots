@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2019-02-18
+dnl Updated   : 2019-03-12
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2019 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2020 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -1430,7 +1430,26 @@ else
 	AC_SUBST(ALLOCA)
 fi
 
-# tolower() is known to be broken on at least sony-newsos3
+# if struct hostent contains h_addr_list or not (SunOS-3.5)
+AC_MSG_CHECKING(for h_addr_list in struct hostent)
+AC_TRY_COMPILE([
+#ifdef HAVE_NETDB_H
+#include <netdb.h>
+#endif
+],[
+struct hostent h;
+h.h_addr_list[0]=0;
+],ac_cv_hostent_h_addr_list=yes,ac_cv_hostent_h_addr_list=no)
+AC_MSG_RESULT($ac_cv_hostent_h_addr_list)
+if test $ac_cv_hostent_h_addr_list = yes; then
+	AC_DEFINE(HAVE_HOSTENT_H_ADDR_LIST)
+fi
+
+CF_CHECK_FD_SET
+
+# tolower() is known to be broken on 4.2BSD by
+# not checking if input is an uppercase letter
+# /* #define tolower(c)	((c)-'A'+'a') */
 AC_MSG_CHECKING(for working tolower())
 AC_TRY_RUN([
 #include <ctype.h>
@@ -1455,7 +1474,9 @@ int main() {
         ]
 )
 
-# also check toupper
+# toupper is known to be broken on 4.2BSD by
+# not checking if input is an lowercase letter
+# /* #define toupper(c)	((c)-'a'+'A') */
 AC_MSG_CHECKING(for working toupper())
 AC_TRY_RUN([
 #include <ctype.h>

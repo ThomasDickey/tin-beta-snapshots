@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2019-02-20
+.\" Updated   : 2019-12-24
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "December 24th, 2018" "2.4.4" "Usenet newsreader"
+.TH tin 1 "December 24th, 2019" "2.4.4" "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -75,31 +75,19 @@ newsgroup with unread articles.
 .\"
 .\"
 .SH "EXIT STATUS"
-Interactive mode:
-.RS +.5i
+.\" TODO: also exits with signalnr cought as exit status
 .TP
 .B 0
-Successful program execution.
+Successful program execution. No unread news available in batch mode.
 .TP
 .B 1
 Usage, syntax, configuration file or network error.
 .TP
 .B 2
+Unread news available (batch mode (''\fB\-Z\fP'') only).
+.TP
+.B 3
 NNTP error.
-.RE
-.PP
-Batch mode (''\fB\-Z\fP''):
-.RS +.5i
-.TP
-.B 0
-No unread news
-.TP
-.B 1
-Usage, syntax, configuration file or network error.
-.TP
-.B 2
-Unread news
-.RE
 .\"
 .\"
 .SH OPTIONS
@@ -2177,7 +2165,7 @@ If ON show empty ''Followup\-To:'' header when editing an article. Default is OF
 .B Characters used as quote-marks (quote_chars)
 The character used in quoting included text to article followups and mail
 replies. The '_' character represents a blank character and is replaced
-with ' ' when read. Default is '>_'.
+with ' ' when read, %I is replaced by author's initials. Default is '>_'.
 .TP
 .B Quoting behavior (quote_style)
 How articles should be quoted when following up or replying to them. There

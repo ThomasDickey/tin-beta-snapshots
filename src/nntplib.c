@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2018-12-03
+ *  Updated   : 2019-07-16
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -58,7 +58,7 @@ static TCP *nntp_rd_fp = NULL;
 	static int mode_reader(t_bool *sec);
 	static int reconnect(int retry);
 	static int server_init(char *machine, const char *cservice, unsigned short port, char *text, size_t mlen);
-	static void close_server(void);
+	static void close_server(t_bool send_no_quit);
 	static void list_motd(void);
 #	ifdef INET6
 		static int get_tcp6_socket(char *machine, unsigned short port);
@@ -242,11 +242,14 @@ server_init(
 
 	if ((nntp_rd_fp = (TCP *) s_fdopen(sockt_rd, "r")) == NULL) {
 		perror("server_init: fdopen() #1");
+		s_close(sockt_rd);
 		return -errno;
 	}
 
 	if ((sockt_wr = s_dup(sockt_rd)) < 0) {
 		perror("server_init: dup()");
+		s_fclose(nntp_rd_fp);
+		nntp_rd_fp = NULL;
 		return -errno;
 	}
 
@@ -260,6 +263,7 @@ server_init(
 #	else
 	if ((nntp_wr_fp = (TCP *) s_fdopen(sockt_wr, "w")) == NULL) {
 		perror("server_init: fdopen() #2");
+		s_close(sockt_wr);
 		s_fclose(nntp_rd_fp);
 		nntp_rd_fp = NULL;
 		return -errno;
@@ -405,7 +409,9 @@ get_tcp_socket(
 	int x = 0;
 	char **cp;
 #			endif /* h_addr */
+#			ifdef HAVE_HOSTENT_H_ADDR_LIST
 	static char *alist[2] = {0, 0};
+#			endif /* HAVE_HOSTENT_H_ADDR_LIST */
 	static struct hostent def;
 	static struct in_addr defaddr;
 	static char namebuf[256];
@@ -436,8 +442,12 @@ get_tcp_socket(
 		/* Raw ip address, fake */
 		STRCPY(namebuf, machine);
 		def.h_name = (char *) namebuf;
+#			ifdef HAVE_HOSTENT_H_ADDR_LIST
 		def.h_addr_list = alist;
 		def.h_addr_list[0] = (char *) &defaddr;
+#			else
+		def.h_addr = (char *) &defaddr;
+#			endif /* HAVE_HOSTENT_H_ADDR_LIST */
 		def.h_length = sizeof(struct in_addr);
 		def.h_addrtype = AF_INET;
 		def.h_aliases = 0;
@@ -553,9 +563,11 @@ get_tcp_socket(
 	}
 
 	/* And then connect */
-
+#				ifdef HAVE_HOSTENT_H_ADDR_LIST
 	memcpy((char *) &sock_in.sin_addr, hp->h_addr_list[0], hp->h_length);
-
+#				else
+	memcpy((char *) &sock_in.sin_addr, hp->h_addr, hp->h_length);
+#				endif /* HAVE_HOSTENT_H_ADDR_LIST */
 	if (connect(s, (struct sockaddr *) &sock_in, sizeof(sock_in)) < 0) {
 		save_errno = errno;
 		perror("connect");
@@ -626,8 +638,7 @@ get_tcp6_socket(
 		if (connect(s, res->ai_addr, res->ai_addrlen) != 0) {
 			ec = errno;
 			s_close(s);
-		}
-		else {
+		} else {
 			es = ec = err = 0;
 			break;
 		}
@@ -980,24 +991,25 @@ get_server(
  */
 static void
 close_server(
-	void)
+	t_bool send_no_quit)
 {
-	if (nntp_wr_fp == NULL || nntp_rd_fp == NULL)
-		return;
+	if (!send_no_quit && nntp_wr_fp && nntp_rd_fp) {
 
-	if (!batch_mode || verbose) {
-		char *msg;
+		if (!batch_mode || verbose) {
+			char *msg;
 
-		msg = strunc(_(txt_disconnecting), cCOLS - 1);
-		my_fputs(msg, stdout);
-		my_fputc('\n', stdout);
-		free(msg);
+			msg = strunc(_(txt_disconnecting), cCOLS - 1);
+			my_fputs(msg, stdout);
+			my_fputc('\n', stdout);
+			free(msg);
+		}
+		nntp_command("QUIT", OK_GOODBYE, NULL, 0);
+		quitting = TRUE;										/* Don't reconnect just for this */
 	}
-	nntp_command("QUIT", OK_GOODBYE, NULL, 0);
-	quitting = TRUE;										/* Don't reconnect just for this */
-
-	(void) s_fclose(nntp_wr_fp);
-	(void) s_fclose(nntp_rd_fp);
+	if (nntp_wr_fp)
+		(void) s_fclose(nntp_wr_fp);
+	if (nntp_rd_fp)
+		(void) s_fclose(nntp_rd_fp);
 	s_end();
 	nntp_wr_fp = nntp_rd_fp = NULL;
 }
@@ -1506,7 +1518,7 @@ nntp_open(
 	if (!is_reconnect && *line) {
 #	if 0
 	/*
-	 * gives wrong results if RFC 3977 server requestes auth after
+	 * gives wrong results if RFC 3977 server requests auth after
 	 * CAPABILITIES is parsed (with no posting allowed) and after auth
 	 * posting is allowed. as we will inform the user later on when he
 	 * actually tries to post it should do no harm to skip this message
@@ -1709,15 +1721,15 @@ nntp_open(
  */
 void
 nntp_close(
-	void)
+	t_bool send_no_quit)
 {
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news) {
 #	ifdef DEBUG
 		if ((debug & DEBUG_NNTP) && verbose > 1)
-			debug_print_file("NNTP", "nntp_close() END");
+			debug_print_file("NNTP", "nntp_close(%s) END", bool_unparse(send_no_quit));
 #	endif /* DEBUG */
-		close_server();
+		close_server(send_no_quit);
 	}
 #endif /* NNTP_ABLE */
 }

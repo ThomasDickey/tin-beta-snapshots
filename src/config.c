@@ -3,35 +3,38 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-02-04
+ *  Updated   : 2019-07-03
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -535,13 +538,8 @@ read_config_file(
 #endif /* HAVE_ALARM && SIGALRM */
 
 #ifdef HAVE_UNICODE_NORMALIZATION
-#	if (HAVE_UNICODE_NORMALIZATION >= 2)
-			if (match_integer(buf, "normalization_form=", &tinrc.normalization_form, NORMALIZE_NFD))
+			if (match_integer(buf, "normalization_form=", &tinrc.normalization_form, NORMALIZE_MAX))
 				break;
-#	else
-			if (match_integer(buf, "normalization_form=", &tinrc.normalization_form, NORMALIZE_NFKC))
-				break;
-#	endif /* HAVE_UNICODE_NORMALIZATION >= 2 */
 #endif /* HAVE_UNICODE_NORMALIZATION */
 
 			break;
@@ -583,6 +581,16 @@ read_config_file(
 
 		case 'q':
 			if (match_string(buf, "quote_chars=", tinrc.quote_chars, sizeof(tinrc.quote_chars))) {
+				if (upgrade && upgrade->file_version < 10317) { /* %s/%S changed to %I */
+					char *q = tinrc.quote_chars;
+
+					while (*q) {
+						if (*q == '%' && (*(q + 1) == 's' || *(q + 1) == 'S'))
+							*(++q) = 'I';
+
+						q++;
+					}
+				}
 				quote_dash_to_space(tinrc.quote_chars);
 				break;
 			}
@@ -864,10 +872,7 @@ read_config_file(
 		}
 	}
 	if (is_7bit) {
-		if (tinrc.mail_mime_encoding != MIME_ENCODING_7BIT)
-			tinrc.mail_mime_encoding = MIME_ENCODING_7BIT;
-		if (tinrc.post_mime_encoding != MIME_ENCODING_7BIT)
-			tinrc.post_mime_encoding = MIME_ENCODING_7BIT;
+		tinrc.mail_mime_encoding = tinrc.post_mime_encoding = MIME_ENCODING_7BIT;
 	} else {
 		if (tinrc.mail_mime_encoding == MIME_ENCODING_7BIT)
 			tinrc.mail_mime_encoding = MIME_ENCODING_QP;
@@ -2215,9 +2220,10 @@ write_server_config(
 	fprintf(fp, _(txt_serverconfig_header), PRODUCT, tin_progname, VERSION, RELEASEDATE, RELEASENAME, PRODUCT, PRODUCT);
 	fprintf(fp, "version=%s\n", SERVERCONFIG_VERSION);
 
-	if ((i = find_newnews_index(nntp_server)) >= 0)
+	if ((i = find_newnews_index(nntp_server)) >= 0) {
 		if (my_strftime(timestring, sizeof(timestring) - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time))))
 			fprintf(fp, "last_newnews=%lu (%s)\n", (unsigned long int) newnews[i].time, timestring);
+	}
 
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
 

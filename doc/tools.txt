@@ -1,7 +1,7 @@
 short descriptions of files in the tools-directory
 
 tinews.pl
-        a perl script that can be used as a inews replacement if posting via
+        a perl script that can be used as an inews replacement if posting via
         NNTP. the main purpose of this script is to automatically sign
         posted/mailed articles via pgp or gpg. besides the autosigning
         feature it takes care about Cc: and Bcc: lines in news-postings

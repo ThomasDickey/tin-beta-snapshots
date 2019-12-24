@@ -3,35 +3,38 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2018-07-03
+ *  Updated   : 2019-07-23
  *  Notes     : debug routines
  *
- * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -150,6 +153,9 @@ debug_print_header(
 		fprintf(fp,"msgid=[%s]  refs=[%s]\n",
 			BlankIfNull(s->msgid),
 			BlankIfNull(s->refs));
+
+		if (s->killed)
+			fprintf(fp,"score=[%d] gnksa=[%d] lines=[%d]\n", s->score, s->gnksa_code, s->line_count);
 
 		if (s->archive) {
 			fprintf(fp, "archive.name=[%-38s]  ", s->archive->name);
@@ -278,10 +284,16 @@ debug_print_filter(
 		the_filter->score,
 		the_filter->icase ? "C" : "I");
 
-	fprintf(fp, "       subj=[%s]\n       from=[%s]\n       msgid=[%s]\n",
-		BlankIfNull(the_filter->subj),
-		BlankIfNull(the_filter->from),
-		BlankIfNull(the_filter->msgid));
+	if (the_filter->subj)
+		fprintf(fp, "       subj=[%s]\n", the_filter->subj);
+	if (the_filter->from)
+		fprintf(fp, "       from=[%s]\n", the_filter->from);
+	if (the_filter->msgid)
+		fprintf(fp, "       msgid=[%s]\n", the_filter->msgid);
+	if (the_filter->xref)
+		fprintf(fp, "       xref=[%s]\n", the_filter->xref);
+	if (the_filter->path)
+		fprintf(fp, "       path=[%s]\n", the_filter->path);
 
 	fprintf(fp, "       lines=[%c%d] gnksa=[%c%d]\n",
 		sign[(int) the_filter->lines_cmp], the_filter->lines_num,

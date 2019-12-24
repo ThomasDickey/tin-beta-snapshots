@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2019-02-20
+.\" Updated   : 2019-12-24
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24. Dezember 2018" 2.4.4 "Usenet Newsreader"
+.TH tin 1 "24. Dezember 2019" 2.4.4 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -57,33 +57,22 @@ ausgewählte Gruppe wird durch Drücken von '\fB<CR>\fP' betreten.
 Durch Drücken der \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') Taste wird
 die nächste Newsgruppe mit ungelesenen Artikeln betreten.
 .SH RÜCKGABEWERT
-Interaktiver\-Modus:
-.RS +.5i
+.\" TODO: also exits with signalnr cought as exit status
 .TP 
 \fB0\fP
-Programm erfolgreich beendet.
+Programm erfolgreich beendet. Im Batch\-Modus: keine ungelesenen Nachrichten
+vorhanden.
 .TP 
 \fB1\fP
 Bedien\-, Syntax\-, Konfigurations\- oder Netzwerk\-Fehler.
 .TP 
 \fB2\fP
+Ungelesene Nachrichten vorhanden (nur im Batch\-Modus (\*(rq\fB\-Z\fP\*(rq)).
+.TP 
+\fB3\fP
+.\"
+.\"
 NNTP Fehler.
-.RE
-.PP
-Batch\-Modus (\*(rq\fB\-Z\fP\*(rq):
-.RS +.5i
-.TP 
-\fB0\fP
-Keine ungelesenen Nachrichten vorhanden
-.TP 
-\fB1\fP
-Bedien\-, Syntax\-, Konfigurations\- oder Netzwerk\-Fehler.
-.TP 
-\fB2\fP
-Ungelesene Nachrichten vorhanden
-.RE
-.\"
-.\"
 .SH OPTIONEN
 .TP  12
 \fB\-4\fP
@@ -2146,7 +2135,7 @@ OFF.
 \fBZitatzeichen (quote_chars)\fP
 The character used in quoting included text to article followups and mail
 replies. The '_' character represents a blank character and is replaced with
-\&' ' when read. Default is '>_'.
+\&' ' when read, %I is replaced by author's initials. Default is '>_'.
 .TP 
 \fBZitierverhalten (quote_style)\fP
 How articles should be quoted when following up or replying to them. There
@@ -2463,7 +2452,7 @@ Allows you to select how \fBtin\fP treats blank lines in article bodies.
 Default is 0. This option does not affect lines within verbatim blocks.
 .RS +.5i
 .IP 0 3
-\fBArtikelrumpf nicht anpassen\fP
+\fBArtikelrumpf nicht anpassen\fP.
 .IP 1
 \fBFührende Leerzeilen überspringen\fP.
 .IP 2
@@ -3721,7 +3710,7 @@ Autor von getline.c, \fB\%emacs\fP(1)\-artige Eingaberoutine.
 .IP "Steven Madsen"
 für \fB\%pgp\fP(1) (Pretty Good Privacy) Unterstützung.
 .IP "Philip Hazel <ph10@cam.ac.uk>"
-für \fB\%pcre\fP(3) (Library für Perl\-kompatible reguläre Ausdrücke).
+für \fB\%pcre\fP(3) (Bibliothek für Perl\-kompatible reguläre Ausdrücke).
 .IP "Patrick Powell <papowell@astart.com>"
 .\"
 .\"

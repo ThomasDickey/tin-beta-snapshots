@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2019-02-18
+ *  Updated   : 2019-03-12
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -20,6 +20,9 @@
 #ifndef TNNTP_H
 #	include "tnntp.h"
 #endif /* !TNNTP_H */
+#ifndef TIN_MISSING_FD_H
+#	include <missing_fd.h>
+#endif /* TIN_MISSING_FD_H */
 
 /* local prototype */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -605,6 +608,15 @@ RawState(
 }
 
 
+/* SunOS-3.5 - FIXME! */
+#if defined(sun) || defined(__sun) && (!defined(__SVR4) || !defined(__svr4__)) && defined(BSD) && BSD < 199306
+#	ifndef ECHO
+#		define ECHO		0x00000008 /* echo input */
+#	endif /* !ECHO */
+#	ifndef CBREAK
+#		define CBREAK	0x00000002 /* half-cooked mode */
+#	endif /* !CBREAK */
+#endif /* sun || __sun && (!__SVR4 ||! __svr4__) && BSD && BSD < 199306 */
 /*
  * state is either TRUE or FALSE, as indicated by call
  */
@@ -795,6 +807,7 @@ word_highlight_string(
 	 */
 	if (byte_offset > 0) {
 		char tmp[LEN];
+
 		my_strncpy(tmp, &(screen[row].col[0]), sizeof(tmp) - 1);
 		tmp[byte_offset] = '\0';
 		if ((wtmp = char2wchar_t(tmp)) != NULL) {

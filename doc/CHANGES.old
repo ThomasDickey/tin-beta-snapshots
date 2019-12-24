@@ -515,7 +515,7 @@ U003) Urs Janssen <urs@tin.org>
 U002) Dennis Preiser <dennis@d--p.de>
       ADD. support for article numbers > 2^31 (--enable-long-article-numbers)
       ADD. reduce memory usage if getart_limit is set
-      ADD. store superseds in posted_articles_file
+      ADD. store supersedes in posted_articles_file
       FIX. active.c, art.c, debug.c, group.c, lang.c, mail.c, memory.c
            newsrc.c, page.c, post.c, rfc2046.c, save.c, screen.c, select.c
            string.c, thread.c, xref.c, extern.h, proto.h, tin.h, autoconf.h[in]
@@ -762,7 +762,7 @@ U015) Dennis Preiser <dennis@d--p.de>
 U014) Urs Janssen <urs@tin.org>
       ADD. minor code cleanup
       ADD. assume pid_t is long instead of int
-      ADD. comment out trace.o dependeny-rule if not configured --with-trace
+      ADD. comment out trace.o dependency-rule if not configured --with-trace
       ADD. disable abort-posting for cursor-keys on check-article screen
            (debian bug #231070)
       ADD. try AUTHINFO USER/PASS on -A if CAPABILITIES didn't announce any
@@ -858,7 +858,7 @@ U011) Urs Janssen <urs@tin.org>
            offer any auth-method we can send
       BUG. configure options --program-prefix, --program-suffix and
            --program-transform-name didn't work
-      BUG. headers with just one byte content were automagicaly removed
+      BUG. headers with just one byte content were automagically removed
       BUG. -R didn't work if savedir was set to an unexpanded path
       BUG. fixed memleak with -R
       BUG. --disable-posting didn't catch 'x' (repost) early enough
@@ -1200,8 +1200,8 @@ U043) Urs Janssen <urs@tin.org>
            Catchup; GroupCatchupNextUnread, PageCatchupNextUnread,
            SelectCatchupNextUnread, ThreadCatchupNextUnread to
            CatchupNextUnread
-      ADD. don't care about subscritions file if reading saved news
-      ADD. extended tin_ltoa() and fix a hypotetic out of bounds write
+      ADD. don't care about subscriptions file if reading saved news
+      ADD. extended tin_ltoa() and fix a hypothetical out of bounds write
       ADD. set LINT to : if no lint found
       ADD. config.guess, config.sub update
       ADD. some more CAPABILITIES parsing
@@ -1480,7 +1480,7 @@ U015) Michael Bienia <michael@vorlon.ping.de>
       BUG. didn't search first article line and rest of the line after a
            match
       BUG. option and filter menus weren't multibyte safe
-      BUG. in REGEX-mode a iKeyGroupSelPattern of "*" wasn't transformed
+      BUG. in REGEX-mode an iKeyGroupSelPattern of "*" wasn't transformed
            into a valid regex
       ADD. search again wraps around if no more matches are found
       ADD. turn pcre into UTF-8 mode if useful
@@ -2193,7 +2193,7 @@ U114) Urs Janssen <urs@tin.org>
       ADD. manpage updates
       ADD. smarter check for inews
       ADD. config.guess, config.sub update
-      ADD. ignore leading/taling whitespaces in input at prompt_msgid()
+      ADD. ignore leading/tailing whitespaces in input at prompt_msgid()
       FIX. extern.h, proto.h, tin.h, art.c, charset.c, config.c, cook.c
            filter.c, group.c, header.c, help.c, inews.c, init.c, lang.c
            mail.c, main.c, misc.c, newsrc.c, nrctbl.c, page.c, pgp.c, post.c
@@ -2414,7 +2414,7 @@ U089) Urs Janssen <urs@tin.org>
       ADD. mmdf(5)-man page
       ADD. install rtin-man page
       ADD. automatically set mm_local_charset to current local charset
-      ADD. made match_item() caseinsensitive
+      ADD. made match_item() case insensitive
       ADD. turned default for ask_for_metamail and use_metamail to off
       ADD. tin(1,5)-man page updates
       ADD. prefer inews_prog over INEWSDIR/inews -h
@@ -3776,7 +3776,7 @@ U001) Urs Janssen <urs@tin.org>
           pcre/*
 
 633) Ralf Doeblitz <doeblitz@gmx.de>
-     FIX. the GNKSA-cheks now try to decode the given address as far as
+     FIX. the GNKSA-checks now try to decode the given address as far as
           possible
      ADD. option to disable Sender: via tin.defaults
      ADD. option to disable GNKSA check of top level domain and domain
@@ -3901,7 +3901,7 @@ U001) Urs Janssen <urs@tin.org>
      BUG. tiny memleak in read_input_history_file()
      BUG. various inconsistencies / minor errors in searching
      REM. unnecessary checks for error returns from my_malloc()
-     REM. #ifdef SHOW_PROGESS - it is on by default
+     REM. #ifdef SHOW_PROGRESS - it is on by default
      REM. auto_save_msg, it was not used
      FIX. tin.1, extern.h, menukeys.h, proto.h, tin.h, active.c, art.c
           attrib.c, config.c, filter.c, group.c, help.c, init.c, lang.c

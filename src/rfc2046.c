@@ -3,35 +3,38 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2019-02-20
+ *  Updated   : 2019-10-25
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2019 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2020 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -476,7 +479,7 @@ parse_params(
 		}
 
 		/* RFC 2231 Parameter Value Continuations */
-		if ((contp = strchr(name, '*')) && *(contp + 1) && *(contp + 1) >= '0' && *(contp + 1) <= '9') {
+		if ((contp = strchr(name, '*')) && *(contp + 1) >= '0' && *(contp + 1) <= '9') {
 			idx = atoi(contp + 1);
 			*contp = '\0';
 		}
@@ -638,7 +641,7 @@ get_param(
 			 */
 			if (p_list->enc_fallback) {
 				tmpval = p_list->value;
-				if (*tmpval == '=' && *++tmpval && *tmpval == '?') {
+				if (*tmpval == '=' && *(++tmpval) == '?') {
 					if ((tmpval = rfc1522_decode(p_list->value))) {
 						free(p_list->value);
 						p_list->value = my_strdup(tmpval);
@@ -747,7 +750,7 @@ parse_content_encoding(
 
 	/*
 	 * TODO: check rfc - may need to switch Content-Type to
-	 * application/octet-steam where this header exists but is unparseable.
+	 * application/octet-steam where this header exists but is unparsable.
 	 *
 	 * RFC 2045 6.2:
 	 * Labelling unencoded data containing 8bit characters as "7bit" is not
@@ -976,9 +979,13 @@ parse_rfc822_headers(
 	hdr->ext = new_part(NULL);		/* Initialise MIME data */
 
 	while ((line = tin_fgets(from, TRUE)) != NULL) {
-		if (read_news_via_nntp && to)
+		if (read_news_via_nntp && to) {
 			fprintf(to, "%s\n", line);		/* Put raw data */
-
+#ifdef DEBUG
+			if ((debug & DEBUG_NNTP) && verbose > 1)
+				debug_print_file("NNTP", "<<<%s%s", logtime(), line);
+#endif /* DEBUG */
+		}
 		/*
 		 * End of headers ?
 		 */
@@ -1184,8 +1191,13 @@ parse_multipart_article(
 		 */
 		bnd = boundary_check(line, artinfo->hdr.ext);
 
-		if (read_news_via_nntp)
+		if (read_news_via_nntp) {
 			fprintf(artinfo->raw, "%s\n", line);
+#ifdef DEBUG
+			if ((debug & DEBUG_NNTP) && verbose > 1)
+				debug_print_file("NNTP", "<<<%s%s", logtime(), line);
+#endif /* DEBUG */
+		}
 
 		artinfo->hdr.ext->line_count += count_lines(line);
 		if (show_progress_meter)
@@ -1301,7 +1313,7 @@ parse_multipart_article(
 						curr_part->line_count++;
 						break;
 
-					case BOUND_START:		/* Start new attchment */
+					case BOUND_START:		/* Start new attachment */
 						if (is_rfc822) {
 							--depth;
 							rfc822_part->line_count--;
@@ -1337,9 +1349,16 @@ parse_normal_article(
 	char *line;
 
 	while ((line = tin_fgets(in, FALSE)) != NULL) {
-		if (read_news_via_nntp)
+		if (read_news_via_nntp) {
 			fprintf(artinfo->raw, "%s\n", line);
+#ifdef DEBUG
+			if ((debug & DEBUG_NNTP) && verbose > 1)
+				debug_print_file("NNTP", "<<<%s%s", logtime(), line);
+#endif /* DEBUG */
+		}
+
 		++artinfo->hdr.ext->line_count;
+
 		if (show_progress_meter)
 			progress(artinfo->hdr.ext->line_count);
 	}

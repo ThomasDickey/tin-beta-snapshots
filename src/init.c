@@ -3,35 +3,38 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-02-18
+ *  Updated   : 2019-08-20
  *  Notes     :
  *
- * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -800,10 +803,10 @@ init_selfinfo(
 	if (!*overviewfmt_file)
 		joinpath(overviewfmt_file, sizeof(overviewfmt_file), libdir, OVERVIEW_FMT);
 	if (!*default_organization) {
-		char buf[LEN], filename[PATH_LEN];
+		char buf[LEN];
 
-		joinpath(filename, sizeof(filename), libdir, "organization");
-		if ((fp = fopen(filename, "r")) != NULL) {
+		joinpath(tmp, sizeof(tmp), libdir, "organization");
+		if ((fp = fopen(tmp, "r")) != NULL) {
 			if (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 				ptr = strrchr(buf, '\n');
 				if (ptr != NULL)
@@ -825,13 +828,11 @@ init_selfinfo(
 		size_t space = 255;
 
 		ptr = my_malloc(space + 1);
-		strcpy(ptr, "mm_network_charset=");
-		space -= strlen(ptr);
-		strncat(ptr, get_val("MM_CHARSET", MM_CHARSET), space);
-		if ((space -= strlen(ptr)) > 0) {
-			strncat(ptr, "\n", space);
-			match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset);
-		}
+
+		snprintf(ptr, space, "mm_network_charset=%s\n", get_val("MM_CHARSET", MM_CHARSET));
+		if (!match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset)) /* $MM_CHARSET may be set invalid, fallback */
+			snprintf(ptr, space, "mm_network_charset=%s\n", MM_CHARSET);
+
 		free(ptr);
 	}
 #endif /* !CHARSET_CONVERSION */

@@ -21,7 +21,7 @@
 # buggy
 require 5.004;
 
-$mod=""; 	# (?i) modifer
+$mod=""; 	# (?i) modifier
 
 while (defined($line = <>)) {
 	chomp $line;

@@ -13,6 +13,9 @@ New features
 
 Changes
 -------
+Subjects are now normalized if local charset is UTF-8 and system supports it
+(for better threading).
+
 The gTLD list is no longer actively maintained (too many new gTLD recently),
 disable_gnksa_domain_check=OFF might result in false positives.
 
