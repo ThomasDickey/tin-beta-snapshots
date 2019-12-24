@@ -1,12 +1,12 @@
 /*
  *  Project   : tin - a Usenet reader
- *  Module    : joinpath.c
- *  Author    : Thomas Dickey <dickey@invisible-island.net>
- *  Created   : 1997-01-10
- *  Updated   : 2008-12-04
+ *  Module    : missing_fd.h
+ *  Author    : Dennis Grevenstein <dennis.grevenstein@gmail.com>
+ *  Created   : 2019-03-09
+ *  Updated   : 2019-03-13
  *  Notes     :
  *
- * Copyright (c) 1997-2020 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 2019-2020 Dennis Grevenstein <dennis.grevenstein@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,32 +38,39 @@
  */
 
 
-#ifndef TIN_H
-#	include "tin.h"
-#endif /* !TIN_H */
+#ifndef TIN_MISSING_FD_H
+#	define TIN_MISSING_FD_H
+#	ifndef HAVE_TYPE_FD_SET
 
-/*
- * Concatenate dir+file, ensuring that we don't introduce extra '/', since some
- * systems (e.g., Apollo) use "//" for special purposes.
- */
-void
-joinpath(
-	char *result,
-	size_t result_size,
-	const char *dir,
-	const char *file)
-{
-	size_t result_len;
+	/* for SunOS 3.5 */
+	/* luna - 09-MAR-2019 */
+#	if defined(sun) || defined(__sun) /* && (!defined(__SVR4) || !defined(__svr4__)) && defined(BSD) && BSD < 199306 */
+typedef	long	fd_mask;
+#		ifndef	FD_SETSIZE
+#			ifdef SUNDBE /* Sun DataBase Excelerator */
+#				define FD_SETSIZE      2048
+#			else
+#				define FD_SETSIZE      256
+#			endif /* SUNDBE */
+#		endif /* !FD_SETSIZE */
+#		ifndef NBBY
+#			define NBBY 8	/* bits per byte */
+#		endif /* !NBBY */
+#		define	NFDBITS	(sizeof(fd_mask) * NBBY)	/* bits per mask */
+#		ifndef howmany
+#			define	howmany(x, y)	(((x) + ((y) - 1)) / (y))
+#		endif /* !howmany */
 
-	(void) strncpy(result, dir, result_size - 1);
-	result[result_size - 1] = '\0';
-	result_len = strlen(result);
-	if ((result_len < (result_size - 1)) && (result[0] == '\0' || result[strlen(result) - 1] != '/')) {
-		(void) strcat(result, "/");
-		result_len++;
-	}
-	if (result_len < (result_size - 1)) {
-		(void) strncat(result, BlankIfNull(file), result_size - result_len - 1);
-		result[result_size - 1] = '\0';
-	}
-}
+typedef	struct fd_set {
+	fd_mask	fds_bits[howmany(FD_SETSIZE, NFDBITS)];
+} fd_set;
+
+
+#		define	FD_SET(n, p)	((p)->fds_bits[(n)/NFDBITS] |= (1 << ((n) % NFDBITS)))
+#		define	FD_CLR(n, p)	((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
+#		define	FD_ISSET(n, p)	((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
+#		define	FD_ZERO(p)		memset((void *)(p), 0, sizeof (*(p)))
+
+#		endif /* sun || __sun */
+#	endif /* !HAVE_TYPE_FD_SET */
+#endif /* !TIN_MISSING_FD_H */

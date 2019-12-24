@@ -3,35 +3,38 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2019-02-04
+ *  Updated   : 2019-07-03
  *  Notes     : Group attribute routines
  *
- * Copyright (c) 1993-2019 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2020 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -440,6 +443,16 @@ read_attributes_file(
 					MATCH_INTEGER("quick_select_header=", OPT_ATTRIB_QUICK_SELECT_HEADER, FILTER_LINES);
 					MATCH_STRING("quick_select_scope=", OPT_ATTRIB_QUICK_SELECT_SCOPE);
 					if (match_string(line, "quote_chars=", buf, sizeof(buf))) {
+						if (upgrade && upgrade->file_version < 10010) { /* %s/%S changed to %I */
+							char *q = buf;
+
+							while (*q) {
+								if (*q == '%' && (*(q + 1) == 's' || *(q + 1) == 'S'))
+									*(++q) = 'I';
+
+								q++;
+							}
+						}
 						quote_dash_to_space(buf);
 						set_attrib(OPT_ATTRIB_QUOTE_CHARS, scope, line, buf);
 						found = TRUE;
@@ -936,6 +949,7 @@ add_scope(
 
 	if ((num_scope >= max_scope) || (num_scope < 0) || (scopes == NULL))
 		expand_scope();
+
 	scopes[num_scope].scope = my_strdup(scope);
 	scopes[num_scope].attribute = my_malloc(sizeof(struct t_attribute));
 	set_default_attributes(scopes[num_scope].attribute, NULL, FALSE);
@@ -1090,10 +1104,7 @@ assign_attributes_to_groups(
 				}
 			}
 			if (is_7bit) {
-				if (group->attribute->mail_mime_encoding != MIME_ENCODING_7BIT)
-					group->attribute->mail_mime_encoding = MIME_ENCODING_7BIT;
-				if (group->attribute->post_mime_encoding != MIME_ENCODING_7BIT)
-					group->attribute->post_mime_encoding = MIME_ENCODING_7BIT;
+				group->attribute->mail_mime_encoding = group->attribute->post_mime_encoding = MIME_ENCODING_7BIT;
 			} else {
 				if (group->attribute->mail_mime_encoding == MIME_ENCODING_7BIT)
 					group->attribute->mail_mime_encoding = MIME_ENCODING_QP;
@@ -1275,7 +1286,7 @@ write_attributes_file(
 	fprintf(fp, _("#    4=Message-ID: & full References: line\n"));
 	fprintf(fp, _("#    5=Message-ID: & last References: entry only\n"));
 	fprintf(fp, _("#    6=Message-ID: entry only     7=Lines:\n"));
-	fprintf(fp, _("#  quote_chars=STRING (%%s, %%S for initials)\n"));
+	fprintf(fp, _("#  quote_chars=STRING (%%I for initials)\n"));
 #ifndef DISABLE_PRINTING
 	fprintf(fp, _("#  print_header=ON/OFF\n"));
 #endif /* !DISABLE_PRINTING */

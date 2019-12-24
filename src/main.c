@@ -3,35 +3,38 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2019-02-18
+ *  Updated   : 2019-07-16
  *  Notes     :
  *
- * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -211,7 +214,7 @@ main(
 	if (!nntp_server || !*nntp_server)
 		nntp_server = getserverbyfile(NNTP_SERVER_FILE);
 	if (read_news_via_nntp && !read_saved_news && nntp_open()) {
-		nntp_close();
+		nntp_close(FALSE);
 		free_all_arrays();
 		giveup();
 	}
@@ -438,7 +441,11 @@ main(
  * process command line options
  * [01235789beEFijJkKLOtTyY] are unused
  * [W] is reserved
- * [BCPU] have been in use at some time, but now are unused
+ * [BCPU] have been in use at some time, but now are unused:
+ *   B BBS mode (M_AMIGA only)
+ *   C count articles
+ *   P purge group index files of articles that no longer exist
+ *   U update index files in background
  */
 #define OPTIONS "46aAcdD:f:g:G:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
 
@@ -862,15 +869,15 @@ usage(
 	error_message(2, _(txt_usage_tin), theProgname);
 
 #if defined(NNTP_ABLE) && defined(INET6)
-		error_message(2, _(txt_usage_force_ipv4));
-		error_message(2, _(txt_usage_force_ipv6));
+	error_message(2, _(txt_usage_force_ipv4));
+	error_message(2, _(txt_usage_force_ipv6));
 #endif /* NNTP_ABLE && INET6 */
 
 #ifdef HAVE_COLOR
-		error_message(2, _(txt_usage_toggle_color));
+	error_message(2, _(txt_usage_toggle_color));
 #endif /* HAVE_COLOR */
 #ifdef NNTP_ABLE
-		error_message(2, _(txt_usage_force_authentication));
+	error_message(2, _(txt_usage_force_authentication));
 #endif /* NNTP_ABLE */
 
 	error_message(2, _(txt_usage_catchup));

@@ -1,5 +1,5 @@
-Compilation and installation notes for tin - 2002-06-04 (still incomplete!)
--------------------------------------------------------
+Compilation and installation notes for tin
+------------------------------------------
 Note: Tin requires a valid fully qualified domain name for the host you are
       running tin on. IF YOU DON'T HAVE A HOST NAME WITH A VALID DOMAIN GO
       AND GET ONE AND CONFIGURE YOUR HOST -- NOW! (This will prevent
@@ -246,12 +246,12 @@ to install the tin.defaults file at a location where tin can find it!).
 NNTP - Reading & posting news
 -----------------------------
 --enable-nntp (default: on)
-Enable if you wish to read news locally and remotely via a NNTP server.
+Enable if you wish to read news locally and remotely via an NNTP server.
 Disable if you only want to read from local spool. Note: If you disable
 this feature, you won't be able to connect to any NNTP server.
 
 --enable-nntp-only (default: off)
-Enable if you [want to | can] ONLY read news remotely via a NNTP server.
+Enable if you [want to | can] ONLY read news remotely via an NNTP server.
 
 --with-nntp-default-server (default: news.$DOMAIN_NAME)
 Defines the name of the default NNTP server that tin should connect to.
@@ -566,7 +566,7 @@ Activated by tin -Dn where n is 1 = NNTP-dialog, 2 = filter-file,
 32 = misc (-D 63 = debug all). Debug files written to $TMPDIR are ARTS,
 ACTIVE, BASE, NNTP, SAVE_COMP, BITMAP, MALLOC and FILTER. Depending on
 the debuglevel some files may not be generated. As the files written in
-$TMPDIR are world readable and may contain uncryted password information
+$TMPDIR are world readable and may contain unencrypted password information
 (e.g. when using -D 1) don't run "-D n" on multiuser systems without setting
 $TMPDIR to a safe location, e.g. "TMPDIR=$HOME ./tin -D 1".
 
@@ -665,6 +665,11 @@ issue a warning instead of an error-message if Newsgroups: or
 Followup-To:-header contains spaces, newlines or tabs.
 See RFC 5536 3.1.4. and RFC 5536 3.2.6.
 
+License
+-------
+SPDX-License-Identifier: BSD-3-Clause
+See <https://spdx.org/licenses/BSD-3-Clause.html> and/or
+<https://opensource.org/licenses/BSD-3-Clause>
 
 Compiled & installed
 --------------------

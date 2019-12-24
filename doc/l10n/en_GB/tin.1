@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2019-02-20
+.\" Updated   : 2019-12-24
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "December 24th, 2018" 2.4.4 "Usenet newsreader"
+.TH tin 1 "December 24th, 2019" 2.4.4 "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -55,33 +55,21 @@ pressing '\fB<CR>\fP'.
 The \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') key enters the next
 newsgroup with unread articles.
 .SH "EXIT STATUS"
-Interactive mode:
-.RS +.5i
+.\" TODO: also exits with signalnr cought as exit status
 .TP 
 \fB0\fP
-Successful program execution.
+Successful program execution. No unread news available in batch mode.
 .TP 
 \fB1\fP
 Usage, syntax, configuration file or network error.
 .TP 
 \fB2\fP
+Unread news available (batch mode (\*(rq\fB\-Z\fP\*(rq) only).
+.TP 
+\fB3\fP
+.\"
+.\"
 NNTP error.
-.RE
-.PP
-Batch mode (\*(rq\fB\-Z\fP\*(rq):
-.RS +.5i
-.TP 
-\fB0\fP
-No unread news
-.TP 
-\fB1\fP
-Usage, syntax, configuration file or network error.
-.TP 
-\fB2\fP
-Unread news
-.RE
-.\"
-.\"
 .SH OPTIONS
 .TP  12
 \fB\-4\fP
@@ -2104,7 +2092,7 @@ OFF.
 \fBCharacters used as quote\-marks (quote_chars)\fP
 The character used in quoting included text to article followups and mail
 replies. The '_' character represents a blank character and is replaced with
-\&' ' when read. Default is '>_'.
+\&' ' when read, %I is replaced by author's initials. Default is '>_'.
 .TP 
 \fBQuoting behaviour (quote_style)\fP
 How articles should be quoted when following up or replying to them. There

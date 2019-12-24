@@ -3,35 +3,38 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2019-02-28
+ *  Updated   : 2019-09-19
  *  Notes     :
  *
- * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -248,7 +251,7 @@ backup_file(
  * prefix (= quote_chars), initials of the articles author
  * with_sig is set if the signature should be quoted
  *
- * TODO: rewrite from scratch, the code is awful
+ * TODO: rewrite from scratch, the code is awful.
  */
 void
 copy_body(
@@ -261,8 +264,13 @@ copy_body(
 	char buf[8192];
 	char buf2[8192];
 	char prefixbuf[256];
+	char *p = prefixbuf;
+	char *q = prefix;
 	int i;
 	int retcode;
+	size_t maxlen = sizeof(prefixbuf) - 1;
+	size_t ilen = strlen(initl);
+	t_bool initials = FALSE;
 	t_bool status_char;
 	t_bool status_space;
 
@@ -272,45 +280,39 @@ copy_body(
 		return;
 	}
 
-	if (strlen(prefix) > 240) /* truncate and terminate */
-		prefix[240] = '\0';
+	while(maxlen > 0 && *q) {
+		if (*q == '%' && *(q + 1) == 'I') {
+			if (maxlen < ilen) /* not enough space left for %I expansion */
+				break;
 
-	/* convert %S to %s, for compatibility reasons only */
-	if (strstr(prefix, "%S")) {
-		status_char = FALSE;
-		for (i = 0; prefix[i]; i++) {
-			if ((status_char) && (prefix[i] == 'S'))
-				prefix[i] = 's';
-			status_char = (prefix[i] == '%');
+			strcpy(p, initl);
+			maxlen -= ilen;
+			p += ilen;
+			q += 2; /* skip over "%I" */
+			initials = TRUE;
+		} else {
+			*p++ = *q++;
+			maxlen--;
 		}
 	}
+	*p = '\0';
 
-	/*
-	 * strip trailing space if tinrc.quote_style doesn't have its
-	 * QUOTE_COMPRESS flag set
-	 */
-	if (tinrc.quote_style & QUOTE_COMPRESS) {
-		if (strstr(prefix, "%s"))
-			snprintf(prefixbuf, sizeof(prefixbuf), prefix, initl);
-		else {
-			/* strip tailing space from quote-char for quoting quoted lines */
-			strcpy(prefixbuf, prefix);
-			if (prefixbuf[strlen(prefixbuf) - 1] == ' ')
-				prefixbuf[strlen(prefixbuf) - 1] = '\0';
-		}
-	} else
-		snprintf(prefixbuf, sizeof(prefixbuf), prefix, initl);
+	/* no QUOTE_COMPRESS with initials */
+	if ((tinrc.quote_style & QUOTE_COMPRESS) && !initials) {
+		if (prefixbuf[strlen(prefixbuf) - 1] == ' ')
+			prefixbuf[strlen(prefixbuf) - 1] = '\0';
+	}
 
 	/*
 	 * if raw_data is true, the signature is exceptionally quoted, even if
 	 * tinrc tells us not to do so. This extraordinary behavior occurs when
 	 * replying or following up with the 'raw' message shown.
 	 */
-
 	while (fgets(buf, (int) sizeof(buf), fp_ip) != NULL) {
 		if (!(tinrc.quote_style & QUOTE_SIGS) && !strcmp(buf, SIGDASHES) && !raw_data)
 			break;
-		if (strstr(prefix, "%s")) { /* initials wanted */
+
+		if (initials) { /* initials wanted */
 			if (buf[0] != '\n') { /* line is not empty */
 				if (strchr(buf, '>')) {
 					status_space = FALSE;
@@ -643,8 +645,7 @@ tin_done(
 #endif /* XFACE_ABLE */
 
 	/* Do this sometime after we save the newsrc in case this hangs up for any reason */
-	if (ret != NNTP_ERROR_EXIT)
-		nntp_close();			/* disconnect from NNTP server */
+	nntp_close((ret == NNTP_ERROR_EXIT));			/* disconnect from NNTP server */
 
 	free_all_arrays();
 
@@ -1543,13 +1544,13 @@ _strfpath(
 			case '$':	/* Read the envvar and use its value */
 				i = 0;
 				format++;
-				if (*format && *format == '{') {
+				if (*format == '{') {
 					format++;
 					while (*format && !(strchr("}-", *format)))
 						tbuf[i++] = *format++;
 					tbuf[i] = '\0';
 					i = 0;
-					if (*format && *format == '-') {
+					if (*format == '-') {
 						format++;
 						while (*format && *format != '}')
 							defbuf[i++] = *format++;
@@ -1638,7 +1639,7 @@ _strfpath(
 
 			case '%':	/* Different forms of parsing cmds */
 				format++;
-				if (group != NULL && *format && *format == 'G') {
+				if (group != NULL && *format == 'G') {
 					memset(tbuf, 0, sizeof(tbuf));
 					STRCPY(tbuf, group->name);
 					i = strlen(tbuf);
@@ -1651,7 +1652,7 @@ _strfpath(
 					}
 					break;
 				}
-				if (group != NULL && *format && *format == 'P') {
+				if (group != NULL && *format == 'P') {
 					char *pbuf = my_malloc(strlen(group->name) + 2); /* trailing "/\0" */
 
 					make_group_path(group->name, pbuf);
@@ -2407,13 +2408,13 @@ buffer_to_local(
 			cd1 = iconv_open("UCS-4", network_charset);
 			cd2 = iconv_open(clocal_charset, "UCS-4");
 			if (cd0 != (iconv_t) (-1) && cd1 != (iconv_t) (-1) && cd2 != (iconv_t) (-1)) {
-				ICONV_CONST char *inbuf;
 				char unknown = '?';
-				ICONV_CONST char *unknown_ascii = &unknown;
 				char *unknown_buf;
 				char unknown_ucs4[4];
 				char *obuf, *outbuf;
 				char *tmpbuf, *tbuf;
+				ICONV_CONST char *inbuf;
+				ICONV_CONST char *unknown_ascii = &unknown;
 				ICONV_CONST char *cur_inbuf;
 				int used;
 				size_t inbytesleft = 1;
@@ -3768,7 +3769,7 @@ idna_decode(
 #	if defined(HAVE_LIBIDNKIT) && defined(HAVE_IDN_DECODENAME)
 	{
 		idn_result_t res;
-		char *q, *r = NULL;
+		char *q, *r;
 
 		if ((q = strrchr(out, '@'))) {
 			q++;

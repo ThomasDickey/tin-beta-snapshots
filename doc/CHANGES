@@ -1,4 +1,8 @@
--- 2.4.4 release 20190307 "" --
+-- 2.4.4 release 20191224 "Millburn" --
+
+ 017) Dennis Grevenstein <dennis.grevenstein@gmail.com>
+      ADD. FD_*-fallback for SunOS-3.5
+      FIX. missing_fd.h
 
  016) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. update configure macros - use xpg3 instead of xpg4 case-statements
@@ -7,29 +11,56 @@
  015) Dennis Preiser <dennis@d--p.de>
       BUG. 'L'ookupMessageID in select-level could crash if 1st group
            in newsrc is marked bogus
-      FIX. active.c
+      BUG. memleak in thread_by_multipart
+      FIX. active.c, art.c, tin.5
 
  014) Urs Janssen <urs@tin.org>
       BUG. sigfile attribute with a command ("sigfile=!") would append %G
            on {ATTRIBUTES,TINRC}_VERSION increase even if already present.
+      BUG. tinrc normalization_form=5 (NFKC_CF) setting was lost on restart
+      BUG. quote_chars with multiple '%s' lead to a crash
+      BUG. memleak with stray comments (no scope) in filter file
+      ADD. tweak is_art_tex_encoded to allow text umlauts at the beginning
+           of a line
+      ADD. turned '%s'/'%S' in quote_chars (for initials) into '%I' to be
+           consistent with other occurrences
+      ADD. repost ('x') now takes mailing_list attribute into account
+      ADD. repost prolog looked ugly in multibyte env. if multibyte chars
+           were quoted in the prolog
+      ADD. disallow supersedes in mailgroups
       ADD. fix handrolled strcasestr() to cast returned value
            (required for cray-unicos cc)
       ADD. configure check for working tolower(), toupper()
            (required for sony-newsos3)
+      ADD. configure check for h_addr_list in struct hostent
+           (required for sun-sunos3.5)
+      ADD. CF_TYPE_FD_SET and CF_CHECK_FD_SET configure checks from
+           Thomas E. Dickey
+      ADD. fixup autoconf missdetections for *-next-{nextstep,openstep}*
+           (WIFEXITED, WIFEXITED, HAVE_SYS_UTSNAME_H, HAVE_SYS_WAIT_H, ...)
       ADD. determine mailbox_name just once
       ADD. switched tinrc.confirm_choice from string to int
       ADD. invoke_metamail() without piping
       ADD. %P expansion (groupname with '.' replaced by '/') in _strfpath()
-      REM. dead code (NEW_HASH_METHOD, gl_init_done, OSNAME)
+      ADD. check for gcc >= 2.6 to use __attribute__((unused))
+      ADD. GLOBAL_BUGREPORT ('R') to 'M'enu and attachment menu
+      ADD. normalize subject for threading
+      ADD. xref and path to debug filter output if set and hide subject,
+           from and msgid if unset
+      ADD. article headers and body to very verbose nntp debug (-D 1 -vv) log
+      ADD. score, gnksa and lines to arts debug output for killed articles
+      REM. dead code (NEW_HASH_METHOD, gl_init_done, OSNAME, redundant
+           conditions)
       REM. non M_UNIX and __BEOS__ code
       ADD. config.guess, config.sub update
-      FIX. active.c, art.c, attrib.c, config.c, cook.c, curses.c, feed.c
-           filter.c, getline.c, header.c, inews.c, init.c, keymap.c, lang.c
-           list.c, makecfg.c, main.c, mimetypes.c, misc.c, page.c, post.c
-           prompt.c, rfc2046.c, rfc2047.c, save.c, screen.c, select.c, signal.c
-           string.c, version.c, bugrep.h, extern.h, proto.h, tin.h, tnntp.h
-           version.h, parsdate.y, Makefile[.in], config.guess, config.sub
-           configure[.in], autoconf.hin
+      FIX. active.c, art.c, attrib.c, charset.c, config.c, cook.c, curses.c
+           debug.c, feed.c, filter.c, getline.c, header.c, inews.c, init.c
+           keymap.c, lang.c, list.c, makecfg.c, main.c, mimetypes.c, misc.c
+           newsrc.c, nntplib.c, nrctbl.c, options_menu.c, page.c, post.c
+           prompt.c, read.c, rfc2046.c, rfc2047.c, save.c, screen.c, select.c
+           sigfile.c, signal.c, string.c, version.c, xref.c, bugrep.h, extern.h
+           proto.h, tin.h, tnntp.h, version.h, parsdate.y, Makefile[.in]
+           config.guess, config.sub, configure[.in], autoconf.hin, tin.1, tin.5
 
  013) Toomas Soome <tsoome@me.com>
       ADD. updated estonian translation
@@ -67,7 +98,7 @@
       ADD. check for unicode/unorm2.h to favor unorm2_normalize() over
            unorm_normalize() if found
       ADD. NFKC_case_fold normalization if unicode/unorm2.h is found
-      ADD. don't strip binray with "make install"
+      ADD. don't strip binary with "make install"
       ADD. match_string()/match_item() now stop on first '\n'
       ADD. don't show broken active file messages if not running with -D 1
       ADD. accept arbitrary line length in mail.active file

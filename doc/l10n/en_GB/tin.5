@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2019-02-28
+.\" Updated   : 2019-12-24
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "December 24th, 2018" 2.4.3 "Usenet newsreader"
+.TH tin 5 "December 24th, 2019" 2.4.4 "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -714,7 +714,7 @@ followup_to=poster
 # in fido.* newsgroups change quote_chars
 # and add X\-Comment\-To: line
 scope=fido.*
-quote_chars=%s>_
+quote_chars=%I>_
 x_comment_to=ON
 
 # in *.test newsgroups, don't append signature
@@ -1477,7 +1477,7 @@ If ON quotes from external sources will be detected. Default is OFF.
 \fBextquote_regex\fP
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_extquote\fP. If \fBextquote_regex\fP is blank,
-then \fB%tin\fP(1) uses a built\-in default.
+then \fB\%tin\fP(1) uses a built\-in default.
 .TP 
 \fBforce_screen_redraw\fP
 Specifies whether a screen redraw should always be done after certain
@@ -1490,10 +1490,10 @@ articles/group are fetched from the server. If \fBgetart_limit\fP is < 0
 absolute value of \fBgetart_limit\fP. Default is 0, which means no limit.
 .TP 
 \fBgoto_next_unread\fP
-Which keys \fB%tin\fP(1) should accept to jump to the next unread article.
+Which keys \fB\%tin\fP(1) should accept to jump to the next unread article.
 Possible is any combination of \fBPageDown\fP and \fBPageNextUnread\fP.  When
-\fBPageDown\fP is set \fBtin\fP jumps to the next article at the end of the
-current one. When \fBPageNextUnread\fP is set \fB%tin\fP(1) jumps immediately to
+\fBPageDown\fP is set \fB\tin\fP jumps to the next article at the end of the
+current one. When \fBPageNextUnread\fP is set \fB\%tin\fP(1) jumps immediately to
 the next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')  is
 pressed. Default is \fBPageNextUnread\fP.
 .TP 
@@ -1811,10 +1811,9 @@ If ON show empty \*(rqFollowup\-To:\*(rq header when editing an article.  Defaul
 is OFF.
 .TP 
 \fBquote_chars\fP
-.\" TODO: document %s
 The character used in quoting included text to article followups and mail
 replies. The '_' character represents a blank character and is replaced with
-\&' ' when read. Default is '>_'.
+\&' ' when read, %I is replaced by author's initials. Default is '>_'.
 .TP 
 \fBquote_style\fP
 This bit coded integer value controls how articles are to be quoted when
@@ -1855,8 +1854,8 @@ If set to 0, this feature is deactivated, otherwise it means the number of
 days. Default is 2.
 .TP 
 \fBrender_bidi\fP
-If ON \fB%tin\fP(1) does the rendering of bi\-directional text. If OFF
-\fB%tin\fP(1) leaves the rendering of bi\-directional text to the
+If ON \fB\%tin\fP(1) does the rendering of bi\-directional text. If OFF
+\fB\%tin\fP(1) leaves the rendering of bi\-directional text to the
 terminal. Default is OFF.
 .TP 
 \fBreread_active_file_secs\fP
@@ -2137,7 +2136,7 @@ or several similarly looking characters. On systems where this extension
 doesn't exist, this option is disabled. Default is OFF.
 .TP 
 \fBtrim_article_body\fP
-Allows you to select how \fB%tin\fP(1) treats blank lines in article bodies.
+Allows you to select how \fB\%tin\fP(1) treats blank lines in article bodies.
 Default is 0. This option does not affect lines within verbatim blocks.
 .RS +1i
 .IP 0 3

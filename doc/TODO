@@ -48,8 +48,8 @@ o  batch mode has several bugs
 
 o  add version number to other config-files (e.g. tin.defaults)
    and do the same checks as for TINRC_VERSION/tinrc. for the
-   filter and attributes file store the charset the file is written in
-   (e.g. ISO-8859-x vs. unicode) and for the filter file the filter method
+   tinrc, filter and attributes file store the charset the file is written
+   in (e.g. ISO-8859-x vs. unicode) and for the filter file the filter method
    used (wildmat or regexp (or TRE))
    [Urs Janssen <urs@tin.org>]
 
@@ -100,8 +100,8 @@ o  keep RFC 6532 in mind as parts of it will sooner or later make it into
    NNTP (sic!).
    [20120220 Urs Janssen <urs@tin.org>]
 
-o  repost ('x') ignores ~/.tin/attributes - bug or feature?!
-   [IMHO a bug as settings like mailing_list are essential, Urs]
+o  repost ('x') ignores some ~/.tin/attributes
+   [fixed for mailing_list, Urs]
 
 o  forged cancelling via Supersedes:/Also-Control:/Control:-header is possible
    if it is supplied by hand (inews_prog=--internal)
@@ -266,7 +266,7 @@ o  add maildir/maildir++ support (besides MBOX{O,RD} and MMDF},
    MH (not only reading but also writing), mailstore, BABYL, Kendra (MMDF
    like with 20*CTRL-A as sep.), MBX and MIX (indexed MBOX from UW-IMAP)
    and add man-pages for the various formats.
-   (see <http://www.ifi.uio.no/~larsi/notes/BABYL> for BABYL,
+   (see <https://quimby.gnus.org/notes/BABYL> for BABYL,
     <http://www.qmail.org/man/man5/maildir.html> for maildir,
     <http://www.qmail.org/man/man5/mbox.html> for MBOXCL and MBOXCL2,
     <http://www.washington.edu/imap/listarch/2000/msg00363.html> for MBX,
@@ -276,10 +276,10 @@ o  add maildir/maildir++ support (besides MBOX{O,RD} and MMDF},
 o  add $LOCKEXT support
    [20030611 Urs Janssen <urs@tin.org>]
 
-o  add xxencode (<http://www.ctan.org/tex-archive/tools/xxcode/xxdecode.c>),
+o  add xxencode (<http://www.debath.co.uk/code/xxencode.c>),
    base224 (<http://b-news.sf.net/>), xBin <http://www.xbin.org/>,
    base91 (<http://base91.sourceforge.net/>) and yenc (hide/decode-)support
-   (see <http://nerv.cx/liyang/software/yydecode/> for readable code, ignore
+   (see <http://yydecode.sourceforge.net/> for readable code, ignore
    the crap on <http://www.yenc.org/>). also check
    <http://www.exit109.com/~jeremy/news/binaries/> which might replace yenc
    etc.pp. some day.
@@ -429,20 +429,18 @@ o  Additions to the select menu:
      key to toggle groupname abbreviation
 
 o  Add to the 'M'enu:
-     'R'  (GLOBAL_BUGREPORT)
      '&'  (GLOBAL_TOGGLE_COLOR)
      and maybe a way to change built in path like DEFAULT_MAILER, PATH_PGP, ...
 
 o  Add to the attachment menu ('V'):
      'F'  post followup to current article, not including current attachment
-     'R'  reply through mail to author, not including current attachment
-          or
-     'R'  (GLOBAL_BUGREPORT)
      'f'  post followup to current article, including current (or tagged)
           attachment(s)
      'm'  mail attachment
      'o'  print attachment
      'r'  reply through mail to author, including current attachment
+     ''   reply through mail to author, not including current attachment
+          ('R' is already taken by GLOBAL_BUGREPORT)
      't'  tag attachments for '|', 'p', 's', 'm' (done for 's')
      '#'  tag range of attachments (n-m)
      'x'  repost current attachment to another group
@@ -477,7 +475,7 @@ o  Merge the selection code with the range code. Having two similar methods
 o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo, lzlib, liblz4,
    liblrzip, libzstd, ...
    (<http://tukaani.org/xz/>, <http://sources.redhat.com/bzip2/>,
-    <http://www.gzip.org/zlib/>, <http://www.oberhumer.com/opensource/lzo/>,
+    <https://zlib.net/>, <http://www.oberhumer.com/opensource/lzo/>,
     <http://lzip.nongnu.org/lzlib.html>, <http://code.google.com/p/lz4/>,
     <http://freecode.com/projects/long-range-zip>,
     <https://github.com/facebook/zstd>) and add an option to
@@ -581,7 +579,9 @@ o  add Content-Language (RFC 3282) analysis
 o  suppress hide_uue=2 checking unless first line in an article or following
    a blank line
 
-o  add missing mailcap (RFC 1524) features (%n, %F, copiousoutput, print, ...)
+o  add missing mailcap (RFC 1524) features: %n, %F, copiousoutput, print,
+   if no %s appears in the view-command (or edit fields) the body part needs
+   to be passed to the command as standard input, ...
    [20111205 Urs Janssen <urs@tin.org>]
 
 Internal Changes
@@ -597,10 +597,6 @@ o  in ENABLE_NLS case replace PLURAL() macro with proper use of
 o  rename disable_gnksa_domain_check to enable_gnksa_domain_check and
    invert logic now the default changed
    [20131119 Urs Janssen <urs@tin.org>]
-
-o  %s/%S in quote_char should replaced by %I in misc.c:copy_body() and
-   config.c:rc_update() to be consistent.
-   [20131003 Urs Janssen <urs@tin.org>]
 
 o  curses.c:input_pending() and curses.c:get_arrow_key() have
    #ifdef HAVE_SELECT and a code path for the case when we don't have
@@ -722,7 +718,7 @@ o  check where int/long/... should be replaced by size_t, uid_t, mode_t,
 
 o  check code with Splint (LCLint) <http://www.splint.org/>,
    valgrind (<http://valgrind.org/>), cppcheck
-   (<http://cppcheck.wiki.sourceforge.net/>), AdLint
+   (<https://trac.cppcheck.net/>), AdLint
    (<http://adlint.sourceforge.net/>), clang-analyzer
    (<http://clang-analyzer.llvm.org/>), Coverity
    (<https://scan.coverity.com/projects/993>), infer
@@ -786,7 +782,7 @@ o  add normalization
    (via <http://site.icu-project.org/> or
    <http://www.gnu.org/software/libidn/> or
    <http://www.gnu.org/software/libunistring/>)
-   (done for search strings only, missing for "threading" by subject etc. pp.)
+   (done for search strings and threading, missing for filtering etc. pp.)
    [20031209 Michael Bienia <michael@vorlon.ping.de>]
 
 o  rewrite ICU configure checks
@@ -813,11 +809,11 @@ o  the online help of GroupMarkUnselArtRead 'X' is unclear as it doesn't
    say that the article are marked read
    [20090814 Urs Janssen <urs@tin.org>]
 
-o  document the different signals/actions (e.g. SIGUSR2 writes newsrc)
+o  document the different signals/actions
    [20080209 Urs Janssen <urs@tin.org>]
 
 o  exit status documentation in the man page isn't correct, we have more
-   exit codes than just 0/1 (and 2 in the -Z case).
+   exit codes than just 0, 1, (2 in the -Z case) and 3.
    [20080320 Urs Janssen <urs@tin.org>]
 
 o  review the spanish, swedish and russian translations
@@ -1044,7 +1040,7 @@ o  update gettext stuff to > gettext-0.12.1 (or drop it?)
 o  and pcre2 support (new API)
    <http://www.pcre.org/current/doc/html/>
 
-o  clean up included pcre stuff and update to >= pcre-8.42
+o  clean up included pcre stuff and update to >= pcre-8.43
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file

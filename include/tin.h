@@ -3,35 +3,38 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2019-02-18
+ *  Updated   : 2019-06-13
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2019 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -258,6 +261,20 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	include <posix/unistd.h>
 #	include <bsd/netinet/in.h>
 #endif /* SEIUX */
+/* *-next-nextstep3 && *-next-openstep4 */
+#ifdef __NeXT__
+#	undef HAVE_SYS_UTSNAME_H
+#	undef HAVE_UNAME
+#	undef WEXITSTATUS
+#	undef WIFEXITED
+#	define IGNORE_SYSTEM_STATUS 1
+#	define HAVE_SYS_WAIT_H 1
+#	define NO_LOCKING 1
+#endif /* __NeXT__ */
+/* m68k-sun-sunos3.5 */
+#if defined(sun) || defined(__sun) && (!defined(__SVR4) || !defined(__svr4__)) && defined(BSD) && BSD < 199306
+#	define IGNORE_SYSTEM_STATUS 1
+#endif /* sun|| __sun && (!__SVR4 || __svr4__) && BSD && BSD < 199306 */
 
 #ifdef HAVE_FCNTL_H
 #	include <fcntl.h>
@@ -1031,7 +1048,7 @@ enum {
 #define UNREAD_GROUP(i)		(!active[my_group[i]].bogus && active[my_group[i]].newsrc.num_unread > 0)
 
 /*
- * Expands to singlar/plural version of string
+ * Expands to singular/plural version of string
  */
 #define PLURAL(x,y)			((x == 1) ? _(y##_singular) : _(y##_plural))
 
@@ -1381,20 +1398,27 @@ enum {
 #ifdef HAVE_UNICODE_NORMALIZATION
 enum {
 	NORMALIZE_NONE = 0,
-#	if (HAVE_UNICODE_NORMALIZATION >= 2)
 	NORMALIZE_NFKC = 1,
+#	if (HAVE_UNICODE_NORMALIZATION >= 2)
 	NORMALIZE_NFKD = 2,
 	NORMALIZE_NFC = 3,
 	NORMALIZE_NFD = 4
-#ifdef HAVE_UNICODE_UNORM2_H
-	,NORMALIZE_NFKC_CF = 5
-#endif /* HAVE_UNICODE_UNORM2_H */
-#		define DEFAULT_NORMALIZE NORMALIZE_NFC
-#	else
-	NORMALIZE_NFKC = 1
-#		define DEFAULT_NORMALIZE NORMALIZE_NFKC
+#		ifdef HAVE_UNICODE_UNORM2_H
+	, NORMALIZE_NFKC_CF = 5
+#		endif /* HAVE_UNICODE_UNORM2_H */
 #	endif /* HAVE_UNICODE_NORMALIZATION >= 2 */
 };
+#	if (HAVE_UNICODE_NORMALIZATION >= 2)
+#		ifdef HAVE_UNICODE_UNORM2_H
+#			define NORMALIZE_MAX NORMALIZE_NFKC_CF
+#		else
+#			define NORMALIZE_MAX NORMALIZE_NFD
+#		endif /* HAVE_UNICODE_UNORM2_H */
+#		define DEFAULT_NORMALIZE NORMALIZE_NFC
+#	else
+#		define NORMALIZE_MAX NORMALIZE_NFKC
+#		define DEFAULT_NORMALIZE NORMALIZE_NFKC
+#	endif /* HAVE_UNICODE_NORMALIZATION >= 2 */
 #endif /* HAVE_UNICODE_NORMALIZATION */
 
 #ifdef HAVE_LIBICUUC
@@ -2396,13 +2420,13 @@ extern struct tm *localtime(time_t *);
 #	define vsnprintf	plp_vsnprintf
 #endif /* HAVE_VSNPRINTF */
 
-/*
- * TODO: might need an extra check for gcc-version >= 2.5
- *       __GNUC__ __GNUC_MINOR__
- */
 /* gcc-specific attributes */
 #if defined(__GNUC__) && !defined(__cplusplus) && !defined(__APPLE_CC__) && !defined(__NeXT__)
-#	define UNUSED(x) x __attribute__((unused))
+#	if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6)
+#		define UNUSED(x) x __attribute__((unused))
+#	else
+#		define UNUSED(x) x
+#	endif /*  __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6) */
 #else
 #	define UNUSED(x) x
 #endif /* __GNUC__ && !__cplusplus && !__APPLE_CC__ && !__NeXT__ */

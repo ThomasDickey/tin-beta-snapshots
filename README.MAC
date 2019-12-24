@@ -8,8 +8,8 @@ or
 configure needs at least the argument:
 --with-domain-name=<your domain>
 
-Compile tin, install it and run in a ISO-8859-1(5) terminal.
-Note for Mac OS X 10.6 / Darwin 10.0.0 users: you may also set a FQDN with
+Compile tin, install it and run in an ISO-8859-1(5) terminal.
+Note for Mac OS X 10.6 / Darwin 10.0.0 users: you may also set an FQDN with
 `/usr/sbin/scutil --set HostName` if you set the "disable_sender" option to
 ON on /etc/tin/tin.defaults
 

@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2018-12-04
+# Updated: 2019-03-12
 #
 
 SHELL	= @SHELL@
@@ -11,7 +11,7 @@ LVER	= 2
 PVER	= 4
 SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20190307
+DVER	= 20191224
 EXE	= tin
 
 # directory structure
@@ -33,6 +33,7 @@ HFILES	= \
 	$(INCDIR)/debug.h \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/keymap.h \
+	$(INCDIR)/missing_fd.h \
 	$(INCDIR)/newsrc.h \
 	$(INCDIR)/nntplib.h \
 	$(INCDIR)/plp_snprintf.h \

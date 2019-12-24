@@ -3,35 +3,38 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-02-25
+ *  Updated   : 2019-07-09
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -3777,9 +3780,6 @@ cancel_article(
 #ifdef FORGERY
 	char line[HEADER_LEN];
 	t_bool author = TRUE;
-#else
-	char user_name[128];
-	char full_name[128];
 #endif /* FORGERY */
 	int init = 1;
 	int oldraw;
@@ -3800,8 +3800,6 @@ cancel_article(
 	get_from_name(from_name, group);
 #ifdef FORGERY
 	make_path_header(line);
-#else
-	get_user_info(user_name, full_name);
 #endif /* FORGERY */
 
 #ifdef DEBUG
@@ -3817,6 +3815,7 @@ cancel_article(
 		return redraw_screen;
 #endif /* FORGERY */
 	}
+
 	{
 		char *smsg;
 		char buff[LEN];
@@ -4021,11 +4020,11 @@ cancel_article(
 
 #define FromSameUser	(strcasestr(from_name, arts[respnum].from))
 #ifndef FORGERY
-#	define NotSuperseding	(!supersede || (!FromSameUser))
-#	define Superseding	(supersede && FromSameUser)
+#	define NotSuperseding	(!supersede || (!FromSameUser) || art_type != GROUP_TYPE_NEWS)
+#	define Superseding	(supersede && FromSameUser && art_type == GROUP_TYPE_NEWS)
 #else
-#	define NotSuperseding	(!supersede)
-#	define Superseding	(supersede)
+#	define NotSuperseding	(!supersede || art_type != GROUP_TYPE_NEWS)
+#	define Superseding	(supersede && art_type == GROUP_TYPE_NEWS)
 #endif /* !FORGERY */
 
 /*
@@ -4066,70 +4065,81 @@ repost_article(
 	if ((group = check_moderated(groupname, &art_type, _(txt_art_not_posted))) == NULL)
 		return ret_code;
 
+	/*
+	 * check for GROUP_TYPE_MAIL
+	 */
+	if (group->attribute->mailing_list)
+		art_type = GROUP_TYPE_MAIL;
+
+	if (art_type == GROUP_TYPE_MAIL && supersede) {
+		error_message(3, _("Can't supersede in mailgroups, try repost instead.")); /* TODO: -> lang.c */
+		return ret_code;
+	}
+
 	if ((fp = fopen(article_name, "w")) == NULL) {
 		perror_message(_(txt_cannot_open), article_name);
 		return ret_code;
 	}
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
 
-	if (supersede) {
-		get_user_info(user_name, full_name);
-		get_from_name(from_name, group);
-#	ifndef FORGERY
-		if (FromSameUser)
-#	endif /* !FORGERY */
-		{
+	get_from_name(from_name, group);
+	get_user_info(user_name, full_name);
+
+	if (Superseding) {
+
 #	ifdef FORGERY
-			make_path_header(line);
-			msg_add_header("Path", line);
+		make_path_header(line);
+		msg_add_header("Path", line);
 
-			msg_add_header("From", (note_h.from ? note_h.from : from_name));
+		msg_add_header("From", (note_h.from ? note_h.from : from_name));
 
-			find_reply_to_addr(line, FALSE, &artinfo->hdr);
-			if (*line)
-				msg_add_header("Reply-To", line);
+		find_reply_to_addr(line, FALSE, &artinfo->hdr);
+		if (*line)
+			msg_add_header("Reply-To", line);
 
-			msg_add_header("X-Superseded-By", from_name);
+		msg_add_header("X-Superseded-By", from_name);
 
-			if (note_h.org)
-				msg_add_header("Organization", note_h.org);
+		if (note_h.org)
+			msg_add_header("Organization", note_h.org);
 
-			snprintf(line, sizeof(line), "<supersede.%s", note_h.messageid + 1);
-			msg_add_header("Message-ID", line);
-			if (FromSameUser) {	/* just add can-key for own articles */
-				ADD_CAN_KEY(note_h.messageid);
-			}
-#	else
-			msg_add_header("From", from_name);
-			if (*reply_to)
-				msg_add_header("Reply-To", reply_to);
-			ADD_MSG_ID_HEADER();
+		snprintf(line, sizeof(line), "<supersede.%s", note_h.messageid + 1);
+		msg_add_header("Message-ID", line);
+		if (FromSameUser) {	/* just add can-key for own articles */
 			ADD_CAN_KEY(note_h.messageid);
-#	endif /* FORGERY */
-			msg_add_header("Supersedes", note_h.messageid);
-
-			if (note_h.followup)
-				msg_add_header("Followup-To", note_h.followup);
-
-			if (note_h.keywords)
-				msg_add_header("Keywords", note_h.keywords);
-
-			if (note_h.summary)
-				msg_add_header("Summary", note_h.summary);
-
-			if (note_h.distrib)
-				msg_add_header("Distribution", note_h.distrib);
 		}
-	} else { /* !supersede */
-		get_user_info(user_name, full_name);
-		get_from_name(from_name, group);
+#	else
+		msg_add_header("From", from_name);
+		if (*reply_to)
+			msg_add_header("Reply-To", reply_to);
+		ADD_MSG_ID_HEADER();
+		ADD_CAN_KEY(note_h.messageid);
+#	endif /* FORGERY */
+		msg_add_header("Supersedes", note_h.messageid);
+
+		if (note_h.followup)
+			msg_add_header("Followup-To", note_h.followup);
+
+		if (note_h.keywords)
+			msg_add_header("Keywords", note_h.keywords);
+
+		if (note_h.summary)
+			msg_add_header("Summary", note_h.summary);
+
+		if (note_h.distrib)
+			msg_add_header("Distribution", note_h.distrib);
+	} else { /* !Superseding */
 		msg_add_header("From", from_name);
 		if (*reply_to)
 			msg_add_header("Reply-To", reply_to);
 	}
 	msg_add_header("Subject", note_h.subj);
-	msg_add_header("Newsgroups", groupname);
-	ADD_MSG_ID_HEADER();
+
+	if (group->attribute->mailing_list)
+		msg_add_header("To", group->attribute->mailing_list);
+	else {
+		msg_add_header("Newsgroups", groupname);
+		ADD_MSG_ID_HEADER();
+	}
 
 	if (note_h.references) {
 		join_references(buf, note_h.references, (NotSuperseding ? note_h.messageid : ""));
@@ -4168,14 +4178,16 @@ repost_article(
 	msg_free_headers();
 
 	if (NotSuperseding) {
-		fprintf(fp, "[ %-72s ]\n", _(txt_article_reposted));
 		/*
 		 * all string lengths are calculated to a maximum line length
 		 * of 76 characters, this should look ok (sven@tin.org)
+		 *
+		 * TODO : use strunc() on note_h.subj?
 		 */
-		fprintf(fp, "[ From: %-66s ]\n", note_h.from);
-		fprintf(fp, "[ Subject: %-63s ]\n", note_h.subj);
-		fprintf(fp, "[ Newsgroups: %-60s ]\n", note_h.newsgroups);
+		fprintf(fp, "[ %-*s ]\n", (int) (72 + strlen(_(txt_article_reposted)) - strwidth(_(txt_article_reposted))), _(txt_article_reposted));
+		fprintf(fp, "[ From: %-*s ]\n", (int) (66 + strlen(note_h.from) - strwidth(note_h.from)), note_h.from);
+		fprintf(fp, "[ Subject: %-*s ]\n", (int) (63 + strlen(note_h.subj) - strwidth(note_h.subj)), note_h.subj);
+		fprintf(fp, "[ Newsgroups: %-*s ]\n", (int) (60 + strlen(note_h.newsgroups) - strwidth(note_h.newsgroups)), note_h.newsgroups);
 		if (note_h.messageid)
 			fprintf(fp, "[ Message-ID: %-60s ]\n\n", note_h.messageid);
 	} else /* don't break long lines if superseeding. TODO: what about uu/mime-parts? */
@@ -4511,7 +4523,7 @@ insert_from_header(
 		if ((fp_out = fopen(outfile, "w")) != NULL) {
 			strcpy(from_name, "From: ");
 			if (*tinrc.mail_address)
-				strncat(from_name, tinrc.mail_address, sizeof(from_name) - 7);
+				snprintf(from_name + 6, sizeof(from_name) - 7, "%s", tinrc.mail_address);
 			else
 				get_from_name(from_name + 6, (struct t_group *) 0);
 
@@ -5302,14 +5314,8 @@ add_headers(
 
 					(void) time(&epoch);
 					/* my_strftime has no %z or %Z */
-					if (!my_strftime(dateheader, sizeof(dateheader) - 1, "Date: %a, %d %b %Y %H:%M:%S -0000\n", gmtime(&epoch))) {
+					if (!my_strftime(dateheader, sizeof(dateheader) - 1, "Date: %a, %d %b %Y %H:%M:%S -0000\n", gmtime(&epoch)))
 						writesuccess = FALSE;
-#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
-						FreeIfNeeded(old_lc_all);
-						FreeIfNeeded(old_lc_time);
-#endif /* HAVE_SETLOCALE && !NO_LOCALE */
-						break;
-					}
 
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 					/* change back LC_* */
@@ -5322,10 +5328,11 @@ add_headers(
 					}
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
-					if (write(fd_out, dateheader, strlen(dateheader)) == (ssize_t) -1) /* abort on write errors */ {
+					if (writesuccess && write(fd_out, dateheader, strlen(dateheader)) == (ssize_t) -1) /* abort on write errors */
 						writesuccess = FALSE;
+
+					if (!writesuccess)
 						break;
-					}
 				}
 			} else {
 				char *cp;

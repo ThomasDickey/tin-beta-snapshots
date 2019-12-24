@@ -3,34 +3,37 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2018-11-23
+ *  Updated   : 2019-07-07
  *
- * Copyright (c) 1997-2019 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2020 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef TIN_H
@@ -155,14 +158,22 @@ get_fqdn(
 		in_addr_t addr = inet_addr(name);
 
 		if ((hp = gethostbyaddr((char *) &addr, 4, AF_INET)))
+#		ifdef HAVE_HOSTENT_H_ADDR_LIST
 			in.s_addr = (*hp->h_addr_list[0]);
+#		else
+			in.s_addr = (*hp->h_addr);
+#		endif /* HAVE_HOSTENT_H_ADDR_LIST */
 		return (hp && strchr(hp->h_name, '.') ? hp->h_name : inet_ntoa(in));
 	}
 #	endif /* HAVE_INET_ADDR */
 	if ((hp = gethostbyname(name)) && !strchr(hp->h_name, '.'))
+#	ifdef HAVE_HOSTENT_H_ADDR_LIST
 		if ((hp = gethostbyaddr(hp->h_addr_list[0], hp->h_length, hp->h_addrtype)))
 			in.s_addr = (*hp->h_addr_list[0]);
-
+#	else
+		if ((hp = gethostbyaddr(hp->h_addr, hp->h_length, hp->h_addrtype)))
+			in.s_addr = (*hp->h_addr);
+#	endif /* HAVE_HOSTENT_H_ADDR_LIST */
 	snprintf(fqdn, sizeof(fqdn), "%s", hp
 		? strchr(hp->h_name, '.')
 			? hp->h_name : inet_ntoa(in)
@@ -304,11 +315,11 @@ get_from_name(
 		return;
 	}
 
-	sprintf(from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), get_full_name(), get_user_name(), fromhost);
+	sprintf(from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), BlankIfNull(get_full_name()), BlankIfNull(get_user_name()), BlankIfNull(fromhost));
 
 #	ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		error_message(2, "FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, get_user_name(), domain_name, get_full_name());
+		error_message(2, "FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", BlankIfNull(from_name), BlankIfNull(get_user_name()), domain_name, BlankIfNull(get_full_name()));
 #	endif /* DEBUG */
 }
 

@@ -138,7 +138,7 @@ used when you enter new entries by hand.
 
 additional info:
 
-case=num    num: 0=casesensitive, 1=caseinsensitive
+case=num    num: 0=case sensitive, 1=case insensitive
 score=num   num: score value of rule, can now also be one of the magic words
                  "kill" or "hot", which are equivalent to
                  SCORE_KILL and SCORE_SELECT respectively.

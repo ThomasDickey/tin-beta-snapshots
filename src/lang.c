@@ -3,35 +3,38 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-02-18
+ *  Updated   : 2019-07-03
  *  Notes     :
  *
- * Copyright (c) 1991-2019 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -145,7 +148,7 @@ constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=sha
 	constext txt_color_on[] = N_("ANSI color enabled");
 #endif /* HAVE_COLOR */
 constext txt_command_failed[] = N_("Command failed: %s");
-constext txt_copyright_notice[] = "%s (c) Copyright 1991-2019 Iain Lea.";
+constext txt_copyright_notice[] = "%s (c) Copyright 1991-2020 Iain Lea.";
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 #ifdef NNTP_ABLE
 	constext txt_connecting[] = N_("Connecting to %s...");
@@ -553,7 +556,7 @@ constext txt_is_tex_encoded[] = N_("TeX2Iso encoded article");
 constext txt_incomplete[] = N_("incomplete ");
 /* TODO: replace hard coded key-names */
 constext txt_intro_page[] = N_("\nWelcome to %s, a full screen threaded Netnews reader. It can read news locally\n\
-(ie. <spool>/news) or remotely (-r option)  from a NNTP (Network News Transport\n\
+(ie. <spool>/news) or remotely (-r option) from an NNTP (Network News Transport\n\
 Protocol) server. -h lists the available command line options.\n\n\
 %s  has four newsreading levels, the newsgroup selection page, the group index\n\
 page, the thread listing page and the article viewer. Help is available at each\n\
@@ -2461,10 +2464,10 @@ struct opttxt txt_signature_repost = {
 };
 
 struct opttxt txt_quote_chars = {
-	N_("Enter quotation marks, %s or %S for author's initials."),
+	N_("Enter quotation marks, %I for author's initials."),
 	N_("Characters used as quote-marks"),
 	N_("# Characters used in quoting to followups and replies.\n\
-# '_' is replaced by ' ', %s, %S are replaced by author's initials.\n")
+# '_' is replaced by ' ', %I is replaced by author's initials.\n")
 };
 
 struct opttxt txt_quote_style = {

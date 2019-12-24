@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2019-01-26
+dnl Updated   : 2019-03-12
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2019 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2020 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -6413,4 +6413,69 @@ AC_CACHE_CHECK(whether we are using the GNU C Library 2.1 or newer,
 	ac_cv_gnu_library_2_1=no)])
 	AC_SUBST(GLIBC21)
 	GLIBC21="$ac_cv_gnu_library_2_1"
+])
+
+dnl CF_CHECK_FD_SET version: 5 updated: 2012/10/06 11:17:15
+dnl ---------------
+dnl Check if the fd_set type and corresponding macros are defined.
+AC_DEFUN([CF_CHECK_FD_SET],
+[
+AC_REQUIRE([CF_TYPE_FD_SET])
+AC_CACHE_CHECK([for fd_set macros],cf_cv_macros_fd_set,[
+AC_TRY_COMPILE([
+#include <sys/types.h>
+#if USE_SYS_SELECT_H
+# include <sys/select.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+#  ifdef TIME_WITH_SYS_TIME
+#   include <time.h>
+#  endif
+# else
+#  include <time.h>
+# endif
+#endif
+],[
+	fd_set read_bits;
+	FD_ZERO(&read_bits);
+	FD_SET(0, &read_bits);],
+	[cf_cv_macros_fd_set=yes],
+	[cf_cv_macros_fd_set=no])])
+test $cf_cv_macros_fd_set = yes && AC_DEFINE(HAVE_TYPE_FD_SET,1,[Define to 1 if type fd_set is declared])
+])dnl
+
+dnl CF_TYPE_FD_SET version: 5 updated: 2012/10/04 20:12:20
+dnl --------------
+dnl Check for the declaration of fd_set.  Some platforms declare it in
+dnl <sys/types.h>, and some in <sys/select.h>, which requires <sys/types.h>.
+dnl Finally, if we are using this for an X application, Xpoll.h may include
+dnl <sys/select.h>, so we don't want to do it twice.
+AC_DEFUN([CF_TYPE_FD_SET],
+[
+AC_CHECK_HEADERS(X11/Xpoll.h)
+
+AC_CACHE_CHECK(for declaration of fd_set,cf_cv_type_fd_set,
+	[CF_MSG_LOG(sys/types alone)
+AC_TRY_COMPILE([
+#include <sys/types.h>],
+	[fd_set x],
+	[cf_cv_type_fd_set=sys/types.h],
+	[CF_MSG_LOG(X11/Xpoll.h)
+AC_TRY_COMPILE([
+#ifdef HAVE_X11_XPOLL_H
+#include <X11/Xpoll.h>
+#endif],
+	[fd_set x],
+	[cf_cv_type_fd_set=X11/Xpoll.h],
+	[CF_MSG_LOG(sys/select.h)
+AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <sys/select.h>],
+	[fd_set x],
+	[cf_cv_type_fd_set=sys/select.h],
+	[cf_cv_type_fd_set=unknown])])])])
+if test $cf_cv_type_fd_set = sys/select.h ; then
+	AC_DEFINE(USE_SYS_SELECT_H,1,[Define to 1 to include sys/select.h to declare fd_set])
+fi
 ])
