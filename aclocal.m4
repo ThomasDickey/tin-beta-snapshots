@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2019-03-12
+dnl Updated   : 2019-12-31
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2020 Thomas E. Dickey <dickey@invisible-island.net>
@@ -34,6 +34,7 @@ dnl SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
 dnl
 dnl Macros used in TIN auto-configuration script.
+dnl https://invisible-island.net/autoconf/
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -251,7 +252,7 @@ AC_DEFUN([AM_LC_MESSAGES],
 	fi
 fi])dnl
 dnl ---------------------------------------------------------------------------
-dnl AM_MULTIBYTE_ABLE version: 9 updated: 2013/12/06 19:12:41
+dnl AM_MULTIBYTE_ABLE version: 10 updated: 2019/12/31 20:39:42
 dnl -----------------
 dnl
 dnl check for required multibyte/widechar functions
@@ -358,7 +359,7 @@ AC_DEFUN([AM_MULTIBYTE_ABLE],
   ])
   if test "$am_cv_multibyte_able" != no; then
     if test "$am_cv_multibyte_able" = libutf8; then
-      AC_DEFINE(HAVE_LIBUTF8_H)
+      AC_DEFINE(HAVE_LIBUTF8_H,1,[Define this to 1 if we have header libutf8.h])
       LIBS="-lutf8 $LIBS"
     fi
     AC_DEFINE(MULTIBYTE_ABLE, 1,
@@ -974,7 +975,7 @@ if test -n "$1" ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ADD_LIBS version: 2 updated: 2014/07/13 14:33:27
+dnl CF_ADD_LIBS version: 3 updated: 2019/11/02 16:47:33
 dnl -----------
 dnl Add one or more libraries, used to enforce consistency.  Libraries are
 dnl prepended to an existing list, since their dependencies are assumed to
@@ -983,19 +984,19 @@ dnl
 dnl $1 = libraries to add, with the "-l", etc.
 dnl $2 = variable to update (default $LIBS)
 AC_DEFUN([CF_ADD_LIBS],[
-cf_add_libs="$1"
-# Filter out duplicates - this happens with badly-designed ".pc" files...
-for cf_add_1lib in [$]ifelse($2,,LIBS,[$2])
-do
-	for cf_add_2lib in $cf_add_libs
-	do
-		if test "x$cf_add_1lib" = "x$cf_add_2lib"
-		then
+cf_add_libs="[$]ifelse($2,,LIBS,[$2])"
+# reverse order
+cf_add_0lib=
+for cf_add_1lib in $1; do cf_add_0lib="$cf_add_1lib $cf_add_0lib"; done
+# filter duplicates
+for cf_add_1lib in $cf_add_0lib; do
+	for cf_add_2lib in $cf_add_libs; do
+		if test "x$cf_add_1lib" = "x$cf_add_2lib"; then
 			cf_add_1lib=
 			break
 		fi
 	done
-	test -n "$cf_add_1lib" && cf_add_libs="$cf_add_libs $cf_add_1lib"
+	test -n "$cf_add_1lib" && cf_add_libs="$cf_add_1lib $cf_add_libs"
 done
 ifelse($2,,LIBS,[$2])="$cf_add_libs"
 ])dnl
@@ -1818,7 +1819,7 @@ fi
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CHECK_NESTED_PARAMS version: 2 updated: 1997/08/28 23:57:55
+dnl CF_CHECK_NESTED_PARAMS version: 3 updated: 2019/12/31 20:39:42
 dnl ----------------------
 dnl Check if the compiler allows nested parameter lists (some don't)
 AC_DEFUN([CF_CHECK_NESTED_PARAMS],
@@ -1831,7 +1832,7 @@ AC_CACHE_VAL(cf_cv_nested_params,[
 	[cf_cv_nested_params=no])
 ])
 AC_MSG_RESULT($cf_cv_nested_params)
-test $cf_cv_nested_params = yes && AC_DEFINE(HAVE_NESTED_PARAMS)
+test $cf_cv_nested_params = yes && AC_DEFINE(HAVE_NESTED_PARAMS,1,[Define this to 1 if the compiler allows nested parameter lists])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_CLANG_COMPILER version: 2 updated: 2013/11/19 19:23:35
@@ -1897,7 +1898,7 @@ if test $cf_cv_color_curses = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_COMPTYPE version: 2 updated: 1997/08/28 23:57:55
+dnl CF_COMPTYPE version: 3 updated: 2019/12/31 20:39:42
 dnl -----------
 dnl Check if the compiler uses 'void *' for qsort's compare function parameters
 dnl (i.e., it's an ANSI prototype).
@@ -1917,13 +1918,13 @@ AC_CACHE_VAL(cf_cv_comptype,[
 ])
 AC_MSG_RESULT($cf_cv_comptype)
 if test $cf_cv_comptype = yes; then
-	AC_DEFINE(HAVE_COMPTYPE_VOID)
+	AC_DEFINE(HAVE_COMPTYPE_VOID,1,[Define this to 1 if qsort uses void*])
 else
-	AC_DEFINE(HAVE_COMPTYPE_CHAR)
+	AC_DEFINE(HAVE_COMPTYPE_CHAR,1,[Define this to 1 if qsort uses char*])
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_COREFILE version: 4 updated: 2010/10/23 15:52:32
+dnl CF_COREFILE version: 5 updated: 2019/12/31 20:39:42
 dnl -----------
 dnl Check if the application can dump core (for debugging).
 AC_DEFUN([CF_COREFILE],
@@ -1972,10 +1973,10 @@ int main()
 	[cf_cv_corefile=no],
 	[cf_cv_corefile=unknown])])
 AC_MSG_RESULT($cf_cv_corefile)
-test $cf_cv_corefile = yes && AC_DEFINE(HAVE_COREFILE)
+test $cf_cv_corefile = yes && AC_DEFINE(HAVE_COREFILE,1,[Define this to 1 if the application can dump core])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CPP_CONCATS version: 2 updated: 1997/08/28 23:57:55
+dnl CF_CPP_CONCATS version: 3 updated: 2019/12/31 20:39:42
 dnl --------------
 dnl Test for ANSI token expansion (used in 'assert').
 AC_DEFUN([CF_CPP_CONCATS],
@@ -1989,10 +1990,10 @@ AC_CACHE_VAL(cf_cv_cpp_concats,[
 	[cf_cv_cpp_concats=no])
 ])
 AC_MSG_RESULT($cf_cv_cpp_concats)
-test $cf_cv_cpp_concats = yes && AC_DEFINE(CPP_DOES_CONCAT)
+test $cf_cv_cpp_concats = yes && AC_DEFINE(CPP_DOES_CONCAT,1,[Define this to 1 for ansi token concatenation])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CPP_EXPANDS version: 2 updated: 1997/08/28 23:57:55
+dnl CF_CPP_EXPANDS version: 3 updated: 2019/12/31 20:39:42
 dnl --------------
 dnl Test for ANSI token expansion (used in 'assert').
 AC_DEFUN([CF_CPP_EXPANDS],
@@ -2006,7 +2007,7 @@ AC_CACHE_VAL(cf_cv_cpp_expands,[
 	[cf_cv_cpp_expands=no])
 ])
 AC_MSG_RESULT($cf_cv_cpp_expands)
-test $cf_cv_cpp_expands = yes && AC_DEFINE(CPP_DOES_EXPAND)
+test $cf_cv_cpp_expands = yes && AC_DEFINE(CPP_DOES_EXPAND,1,[Define this to 1 for ansi token expansion/substitution])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_CURSES_CONFIG version: 2 updated: 2006/10/29 11:06:27
@@ -2366,7 +2367,7 @@ ncursesw/term.h)
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_DEFAULT_SHELL version: 6 updated: 2005/09/29 07:32:03
+dnl CF_DEFAULT_SHELL version: 7 updated: 2019/12/31 20:39:42
 dnl ----------------
 dnl Look for a Bourne-shell compatible program from a list that we know about:
 dnl	ash	Almquist Shell (sh based)
@@ -2447,10 +2448,10 @@ Cannot find the default shell you specified: $cf_shell_progs)
 		AC_MSG_ERROR(Cannot use /bin/false because it does not exist)
 	fi
 fi
-AC_DEFINE_UNQUOTED(DEFAULT_SHELL,"$DEFAULT_SHELL")
+AC_DEFINE_UNQUOTED(DEFAULT_SHELL,"$DEFAULT_SHELL",[Define this to the default shell-program])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_DEFINE_STRING version: 2 updated: 2001/07/22 21:09:16
+dnl CF_DEFINE_STRING version: 3 updated: 2019/12/31 20:39:42
 dnl ----------------
 dnl Define a string which may contain escaped quotes or backslashes
 dnl $1 = symbol to define
@@ -2458,7 +2459,7 @@ dnl $2 = the information we want to quote
 AC_DEFUN([CF_DEFINE_STRING],
 [
 cf_define=`echo $2|sed -e 's/\\\\/\\\\134/g' -e 's/^[[ 	]]\\+//' -e 's/[[ 	]]\\+$//' -e 's/"/\\\\042/g'`
-AC_DEFINE_UNQUOTED($1, "$cf_define")
+AC_DEFINE_UNQUOTED($1, "$cf_define", [Define a value for $1])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_DIRNAME version: 4 updated: 2002/12/21 19:25:52
@@ -3033,7 +3034,7 @@ int main(void) {
 	fi
 ])])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_FUNC_SYSTEM version: 5 updated: 2010/10/23 15:52:32
+dnl CF_FUNC_SYSTEM version: 6 updated: 2019/12/31 20:39:42
 dnl --------------
 dnl Check if the 'system()' function returns a usable status, or if not, try
 dnl to use the status returned by a SIGCHLD.
@@ -3081,12 +3082,13 @@ int main()
 	[cf_cv_system_status=unknown])
 ])
 AC_MSG_RESULT($cf_cv_system_status)
-test $cf_cv_system_status = no && AC_DEFINE(USE_SYSTEM_STATUS)
+test $cf_cv_system_status = no && AC_DEFINE(USE_SYSTEM_STATUS,1,[Define this to 1 if the system function returns usable exit-status])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_VERSION version: 7 updated: 2012/10/18 06:46:33
+dnl CF_GCC_VERSION version: 8 updated: 2019/09/07 13:38:36
 dnl --------------
-dnl Find version of gcc
+dnl Find version of gcc, and (because icc/clang pretend to be gcc without being
+dnl compatible), attempt to determine if icc/clang is actually used.
 AC_DEFUN([CF_GCC_VERSION],[
 AC_REQUIRE([AC_PROG_CC])
 GCC_VERSION=none
@@ -3096,9 +3098,11 @@ if test "$GCC" = yes ; then
 	test -z "$GCC_VERSION" && GCC_VERSION=unknown
 	AC_MSG_RESULT($GCC_VERSION)
 fi
+CF_INTEL_COMPILER(GCC,INTEL_COMPILER,CFLAGS)
+CF_CLANG_COMPILER(GCC,CLANG_COMPILER,CFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 33 updated: 2018/06/20 20:23:13
+dnl CF_GCC_WARNINGS version: 36 updated: 2019/09/07 13:38:36
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
@@ -3120,14 +3124,11 @@ dnl
 AC_DEFUN([CF_GCC_WARNINGS],
 [
 AC_REQUIRE([CF_GCC_VERSION])
-CF_INTEL_COMPILER(GCC,INTEL_COMPILER,CFLAGS)
-CF_CLANG_COMPILER(GCC,CLANG_COMPILER,CFLAGS)
-
+if test "x$have_x" = xyes; then CF_CONST_X_STRING fi
 cat > conftest.$ac_ext <<EOF
 #line __oline__ "${as_me:-configure}"
 int main(int argc, char *argv[[]]) { return (argv[[argc-1]] == 0) ; }
 EOF
-
 if test "$INTEL_COMPILER" = yes
 then
 # The "-wdXXX" options suppress warnings:
@@ -3162,7 +3163,6 @@ then
 		fi
 	done
 	CFLAGS="$cf_save_CFLAGS"
-
 elif test "$GCC" = yes
 then
 	AC_CHECKING([for $CC warning options])
@@ -3191,9 +3191,6 @@ then
 		if AC_TRY_EVAL(ac_compile); then
 			test -n "$verbose" && AC_MSG_RESULT(... -$cf_opt)
 			case $cf_opt in
-			Wcast-qual)
-				CF_APPEND_TEXT(CPPFLAGS,-DXTSTRINGDEFINES)
-				;;
 			Winline)
 				case $GCC_VERSION in
 				[[34]].*)
@@ -4179,7 +4176,7 @@ ifelse([$1],,,[$1=$PATH_SEPARATOR])
 	AC_MSG_RESULT($PATH_SEPARATOR)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PATH_EDITOR version: 5 updated: 2000/07/20 00:41:18
+dnl CF_PATH_EDITOR version: 6 updated: 2019/12/31 20:39:42
 dnl --------------
 dnl Look for the default editor (vi)
 AC_DEFUN([CF_PATH_EDITOR],
@@ -4198,10 +4195,10 @@ if test -z "$DEFAULT_EDITOR" ; then
     fi
 fi
 AC_MSG_RESULT($DEFAULT_EDITOR)
-AC_DEFINE_UNQUOTED(DEFAULT_EDITOR,"$DEFAULT_EDITOR")
+AC_DEFINE_UNQUOTED(DEFAULT_EDITOR,"$DEFAULT_EDITOR",[Define this to the default editor])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PATH_MAILBOX version: 4 updated: 1998/04/01 11:39:13
+dnl CF_PATH_MAILBOX version: 5 updated: 2019/12/31 20:39:42
 dnl ---------------
 dnl Look for the directory that contains incoming mail.  I would check for an
 dnl actual mail-file, to verify this, but that is not always easy to arrange.
@@ -4226,14 +4223,14 @@ for cf_dir in \
     done
 fi
 if test -n "$DEFAULT_MAILBOX" ; then
-	AC_DEFINE_UNQUOTED(DEFAULT_MAILBOX,"$DEFAULT_MAILBOX")
+	AC_DEFINE_UNQUOTED(DEFAULT_MAILBOX,"$DEFAULT_MAILBOX",[Define this to the directory for incoming mailboxes])
 else
 	DEFAULT_MAILBOX=none
 fi
 AC_MSG_RESULT($DEFAULT_MAILBOX)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PATH_MAILER version: 6 updated: 2001/05/27 21:36:02
+dnl CF_PATH_MAILER version: 7 updated: 2019/12/31 20:39:42
 dnl --------------
 dnl Look for the program that sends outgoing mail.
 AC_DEFUN([CF_PATH_MAILER],
@@ -4252,7 +4249,7 @@ AC_MSG_CHECKING(for default mailer)
 if test -n "$DEFAULT_MAILER" ; then
 	CF_FIX_SLASHES(ac_cv_path_DEFAULT_MAILER)
 	CF_FIX_SLASHES(DEFAULT_MAILER)
-	AC_DEFINE_UNQUOTED(DEFAULT_MAILER,"$DEFAULT_MAILER")
+	AC_DEFINE_UNQUOTED(DEFAULT_MAILER,"$DEFAULT_MAILER",[Define this to the default mailer-program])
 else
 	DEFAULT_MAILER=none
 fi
@@ -4456,7 +4453,7 @@ fi # cf_cv_posix_visible
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_POSIX_JC version: 3 updated: 2001/05/27 21:36:02
+dnl CF_POSIX_JC version: 4 updated: 2019/12/31 20:39:42
 dnl -----------
 dnl Check if we have POSIX-style job control (i.e., sigaction), or if we must
 dnl use the signal functions.  Use AC_CHECK_FUNCS(sigaction) first.
@@ -4474,7 +4471,7 @@ AC_TRY_COMPILE([
   [cf_cv_sigact_bad=no],[cf_cv_sigact_bad=yes])
 ])
 
-test "$cf_cv_sigact_bad" = yes && AC_DEFINE(SVR4_ACTION)
+test "$cf_cv_sigact_bad" = yes && AC_DEFINE(SVR4_ACTION,1,[Define this to 1 if sigaction needs _POSIX_SOURCE])
 
 AC_CACHE_CHECK(if we have sigaction/related functions,cf_cv_sigaction_funcs,[
 AC_TRY_LINK([
@@ -4492,7 +4489,7 @@ AC_TRY_LINK([
     [cf_cv_sigaction_funcs=yes],
     [cf_cv_sigaction_funcs=no])])
 
-test "$cf_cv_sigaction_funcs" = yes && AC_DEFINE(HAVE_POSIX_JC)
+test "$cf_cv_sigaction_funcs" = yes && AC_DEFINE(HAVE_POSIX_JC,1,[Define this to 1 if we have POSIX-style job-control functions])
 
 fi
 ])dnl
@@ -4531,11 +4528,15 @@ AC_DEFUN([CF_PROG_AR],[
 AC_CHECK_TOOL(AR, ar, ar)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_PROG_CC version: 4 updated: 2014/07/12 18:57:58
+dnl CF_PROG_CC version: 5 updated: 2019/12/31 08:53:54
 dnl ----------
 dnl standard check for CC, plus followup sanity checks
 dnl $1 = optional parameter to pass to AC_PROG_CC to specify compiler name
 AC_DEFUN([CF_PROG_CC],[
+CF_ACVERSION_CHECK(2.53,
+	[AC_MSG_WARN(this will incorrectly handle gnatgcc choice)
+	 AC_REQUIRE([AC_PROG_CC])],
+	[])
 ifelse($1,,[AC_PROG_CC],[AC_PROG_CC($1)])
 CF_GCC_VERSION
 CF_ACVERSION_CHECK(2.52,
@@ -4569,7 +4570,7 @@ AC_SUBST(PROG_EXT)
 test -n "$PROG_EXT" && AC_DEFINE_UNQUOTED(PROG_EXT,"$PROG_EXT",[Define to the program extension (normally blank)])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PROG_SUM_R version: 2 updated: 1997/08/28 23:57:55
+dnl CF_PROG_SUM_R version: 3 updated: 2019/12/31 20:39:42
 dnl -------------
 dnl See if sum can take -r
 AC_DEFUN([CF_PROG_SUM_R],
@@ -4586,8 +4587,8 @@ else
 fi
 ])
 if test $ac_cv_prog_sum_r = yes; then
-	AC_DEFINE(SUM_TAKES_DASH_R)
-	AC_DEFINE_UNQUOTED(PATH_SUM_R, "$ac_cv_path_PATH_SUM -r")
+	AC_DEFINE(SUM_TAKES_DASH_R,1,[Define this if the sum command support -r option])
+	AC_DEFINE_UNQUOTED(PATH_SUM_R, "$ac_cv_path_PATH_SUM -r", [Define this to the sum command, with -r option if supported])
 else
 	AC_DEFINE_UNQUOTED(PATH_SUM_R, "$ac_cv_path_PATH_SUM")
 fi
@@ -4648,7 +4649,7 @@ YACC="$cf_cv_prog_YACC"
 AC_SUBST(YACC)dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PW_GECOS version: 2 updated: 2000/04/13 10:13:00
+dnl CF_PW_GECOS version: 3 updated: 2019/12/31 20:39:42
 dnl -----------
 dnl Check if the passwd-struct defines the '.pw_gecos' member (useful
 dnl in decoding user names).
@@ -4662,7 +4663,7 @@ AC_CACHE_CHECK([for passwd.pw_gecos], cf_cv_pw_gecos,[
 	char bar = foo.pw_gecos],
 	[cf_cv_pw_gecos=yes],
 	[cf_cv_pw_gecos=no])])
-test $cf_cv_pw_gecos = no && AC_DEFINE(DONT_HAVE_PW_GECOS)
+test $cf_cv_pw_gecos = no && AC_DEFINE(DONT_HAVE_PW_GECOS,1,[Define this to 1 if passwd struct has .pw_gecos])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_RECHECK_FUNC version: 3 updated: 2000/10/18 19:29:13
@@ -4708,12 +4709,12 @@ $1=`echo "$2" | \
 		-e 's/-[[UD]]'"$3"'\(=[[^ 	]]*\)\?[$]//g'`
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SIGWINCH version: 1 updated: 2006/04/02 16:41:09
+dnl CF_SIGWINCH version: 2 updated: 2019/03/23 19:54:44
 dnl -----------
 dnl Use this macro after CF_XOPEN_SOURCE, but do not require it (not all
 dnl programs need this test).
 dnl
-dnl This is really a MacOS X 10.4.3 workaround.  Defining _POSIX_C_SOURCE
+dnl This is really a Mac OS X 10.4.3 workaround.  Defining _POSIX_C_SOURCE
 dnl forces SIGWINCH to be undefined (breaks xterm, ncurses).  Oddly, the struct
 dnl winsize declaration is left alone - we may revisit this if Apple choose to
 dnl break that part of the interface as well.
@@ -4767,7 +4768,7 @@ done
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SIG_ARGS version: 2 updated: 1997/08/28 23:57:55
+dnl CF_SIG_ARGS version: 3 updated: 2019/12/31 20:39:42
 dnl -----------
 dnl Check for systems that have signal-handlers prototyped with one argument
 dnl versus those with more than one argument, define the symbol SIG_ARGS to
@@ -4786,10 +4787,10 @@ do
 done
 ])
 AC_MSG_RESULT($cf_cv_sig_args)
-AC_DEFINE_UNQUOTED(SIG_ARGS,$cf_cv_sig_args)
+AC_DEFINE_UNQUOTED(SIG_ARGS,$cf_cv_sig_args,[Define this to 1 if signal handlers are prototyped with more than one argument])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SIG_CONST version: 4 updated: 2010/10/23 15:52:32
+dnl CF_SIG_CONST version: 5 updated: 2019/12/31 20:39:42
 dnl ------------
 dnl Check for systems where the special signal constants aren't prototyped
 dnl (there's a lot of them, and the compiler can generate a lot of warning
@@ -4832,7 +4833,7 @@ int main()
 fi
 ])
 AC_MSG_RESULT($cf_cv_sig_const)
-test "$cf_cv_sig_const" = yes && AC_DEFINE(DECL_SIG_CONST)
+test "$cf_cv_sig_const" = yes && AC_DEFINE(DECL_SIG_CONST,1,[Define this to 1 for redefinable signal constants])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_SIZECHANGE version: 14 updated: 2018/06/20 20:23:13
@@ -5073,7 +5074,7 @@ AC_DEFUN([CF_SYS_ERRLIST],
     CF_CHECK_ERRNO(sys_errlist)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SYS_SELECT_TIMEVAL version: 4 updated: 1997/12/16 11:22:31
+dnl CF_SYS_SELECT_TIMEVAL version: 5 updated: 2019/12/31 20:39:42
 dnl ---------------------
 dnl Check if there is a conflict between <sys/select.h> and <sys/time.h>.
 dnl This is known to be a problem with SCO.
@@ -5111,7 +5112,7 @@ AC_TRY_COMPILE([
 done
 ])
 AC_MSG_RESULT($cf_cv_sys_select_timeval)
-test $cf_cv_sys_select_timeval = yes && AC_DEFINE(NEED_TIMEVAL_FIX)
+test $cf_cv_sys_select_timeval = yes && AC_DEFINE(NEED_TIMEVAL_FIX,1,[Define this to 1 if sys/time.h conflicts with sys/select.h])
 ])
 dnl ---------------------------------------------------------------------------
 dnl CF_TERMCAP_LIBS version: 15 updated: 2015/04/15 19:08:48
@@ -5173,7 +5174,7 @@ if test "$cf_cv_termlib" = none; then
 fi
 ])])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_TERMIOS version: 2 updated: 1997/08/28 23:57:55
+dnl CF_TERMIOS version: 3 updated: 2019/12/31 20:39:42
 dnl ----------
 dnl See if we can link with the termios functions tcsetattr/tcgetattr
 AC_DEFUN([CF_TERMIOS],
@@ -5201,9 +5202,9 @@ AC_CACHE_VAL(cf_cv_use_termios_h,[
 ])
 AC_MSG_RESULT($cf_cv_use_termios_h)
 if test $cf_cv_use_termios_h = yes; then
-	AC_DEFINE(HAVE_TERMIOS_H)
-	AC_DEFINE(HAVE_TCGETATTR)
-	AC_DEFINE(HAVE_TCSETATTR)
+	AC_DEFINE(HAVE_TERMIOS_H,1,[Define this to 1 if we have header termios.h])
+	AC_DEFINE(HAVE_TCGETATTR,1,[Define this to 1 if we have function tcgetattr])
+	AC_DEFINE(HAVE_TCSETATTR,1,[Define this to 1 if we have function tcsetattr])
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -5254,7 +5255,7 @@ ncursesw/term.h)
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_TIOCGWINSZ version: 5 updated: 2010/10/23 15:52:32
+dnl CF_TIOCGWINSZ version: 6 updated: 2019/12/31 20:39:42
 dnl -------------
 dnl On some systems ioctl(fd, TIOCGWINSZ, &size) will always return {0,0} until
 dnl ioctl(fd, TIOCSWINSZ, &size) is called to explicitly set the size of the
@@ -5299,7 +5300,7 @@ int main()
 		rm -f autoconf.h
 		CFLAGS="$cf_save_CFLAGS"])
 AC_MSG_RESULT($cf_cv_use_tiocgwinsz)
-test $cf_cv_use_tiocgwinsz != yes && AC_DEFINE(DONT_HAVE_SIGWINCH)
+test $cf_cv_use_tiocgwinsz != yes && AC_DEFINE(DONT_HAVE_SIGWINCH,1,[Define this to 1 for working TIOCGWINSZ])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_TM_GMTOFF version: 3 updated: 2012/11/08 20:57:52
@@ -5560,7 +5561,7 @@ AC_DEFUN([CF_UPPER],
 $1=`echo "$2" | sed y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%`
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_VA_COPY version: 5 updated: 2018/12/03 20:07:13
+dnl CF_VA_COPY version: 6 updated: 2018/12/04 18:14:25
 dnl ----------
 dnl check for va_copy, part of stdarg.h starting with ISO C 1999.
 dnl Also, workaround for glibc's __va_copy, by checking for both.
@@ -5723,7 +5724,7 @@ if test "$with_dbmalloc" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_DFTENV version: 5 updated: 2019/01/26 18:33:16
+dnl CF_WITH_DFTENV version: 6 updated: 2019/12/31 20:39:42
 dnl --------------
 dnl Wrapper for AC_ARG_WITH to inherit/override an environment variable's
 dnl "#define" in the compile.
@@ -5740,7 +5741,7 @@ yes|no)
   ;;
 esac
 $3="$withval"
-AC_DEFINE_UNQUOTED($3,"[$]$3")dnl
+AC_DEFINE_UNQUOTED($3,"[$]$3",[Define $2])dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_WITH_DMALLOC version: 7 updated: 2010/06/21 17:26:47
@@ -5779,7 +5780,7 @@ eval $3="$withval"
 AC_SUBST($3)dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_PROGRAM version: 6 updated: 2008/03/23 14:48:54
+dnl CF_WITH_PROGRAM version: 7 updated: 2019/12/31 20:39:42
 dnl ---------------
 dnl Wrapper for AC_PATH_PROG, with command-line option.
 dnl Params:
@@ -5802,8 +5803,8 @@ AC_ARG_WITH($1,[$2],ifelse($3,,
    # user supplied option-value for "--with-$1=path"
    AC_MSG_CHECKING(for $1)
    ac_cv_path_]cf_path_name[="$withval"
-   AC_DEFINE_UNQUOTED(cf_path_name,"$withval")dnl
-   AC_DEFINE(cf_have_name)dnl
+   AC_DEFINE_UNQUOTED(cf_path_name,"$withval",[Define this to the pathname for $1])dnl
+   AC_DEFINE(cf_have_name,1,[Define this to 1 if the $1 program exists])dnl
    AC_MSG_RESULT($withval)
    ;;
  esac],[$3]),[
@@ -5816,7 +5817,7 @@ AC_ARG_WITH($1,[$2],ifelse($3,,
 ])dnl
 undefine([cf_path_name])undefine([cf_have_name])])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_VALUE version: 3 updated: 1998/04/01 11:39:13
+dnl CF_WITH_VALUE version: 4 updated: 2019/12/31 20:39:42
 dnl -------------
 dnl Wrapper for AC_ARG_WITH to ensure that if the user supplies a value, it is
 dnl not simply defaulting to yes/no.  Empty strings are ok if the macro is
@@ -5827,7 +5828,7 @@ dnl $3 = variable to inherit/override
 dnl $4 = default value, if any.
 AC_DEFUN([CF_WITH_VALUE],
 [CF_ARG_WITH($1,[$2],[$3],[$4])
- AC_DEFINE_UNQUOTED($3,"$withval")dnl
+ AC_DEFINE_UNQUOTED($3,"$withval",[Define a value for $1])dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_XOPEN_CURSES version: 14 updated: 2018/06/20 20:23:13
@@ -6247,7 +6248,7 @@ CF_TRY_PKG_CONFIG(Xext,,[
 		[CF_ADD_LIB(Xext)])])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_X_TOOLKIT version: 23 updated: 2015/04/12 15:39:00
+dnl CF_X_TOOLKIT version: 24 updated: 2019/03/23 19:54:44
 dnl ------------
 dnl Check for X Toolkit libraries
 AC_DEFUN([CF_X_TOOLKIT],
@@ -6255,7 +6256,7 @@ AC_DEFUN([CF_X_TOOLKIT],
 AC_REQUIRE([AC_PATH_XTRA])
 AC_REQUIRE([CF_CHECK_CACHE])
 
-# OSX is schizoid about who owns /usr/X11 (old) versus /opt/X11 (new), and (and
+# OSX is schizoid about who owns /usr/X11 (old) versus /opt/X11 (new) (and
 # in some cases has installed dummy files in the former, other cases replaced
 # it with a link to the new location).  This complicates the configure script.
 # Check for that pitfall, and recover using pkg-config
@@ -6414,7 +6415,7 @@ AC_CACHE_CHECK(whether we are using the GNU C Library 2.1 or newer,
 	AC_SUBST(GLIBC21)
 	GLIBC21="$ac_cv_gnu_library_2_1"
 ])
-
+dnl ---------------------------------------------------------------------------
 dnl CF_CHECK_FD_SET version: 5 updated: 2012/10/06 11:17:15
 dnl ---------------
 dnl Check if the fd_set type and corresponding macros are defined.
@@ -6444,7 +6445,7 @@ AC_TRY_COMPILE([
 	[cf_cv_macros_fd_set=no])])
 test $cf_cv_macros_fd_set = yes && AC_DEFINE(HAVE_TYPE_FD_SET,1,[Define to 1 if type fd_set is declared])
 ])dnl
-
+dnl ---------------------------------------------------------------------------
 dnl CF_TYPE_FD_SET version: 5 updated: 2012/10/04 20:12:20
 dnl --------------
 dnl Check for the declaration of fd_set.  Some platforms declare it in
@@ -6479,3 +6480,57 @@ if test $cf_cv_type_fd_set = sys/select.h ; then
 	AC_DEFINE(USE_SYS_SELECT_H,1,[Define to 1 to include sys/select.h to declare fd_set])
 fi
 ])
+dnl ---------------------------------------------------------------------------
+dnl CF_CONST_X_STRING version: 1 updated: 2019/04/08 17:50:29
+dnl -----------------
+dnl The X11R4-X11R6 Xt specification uses an ambiguous String type for most
+dnl character-strings.
+dnl
+dnl It is ambiguous because the specification accommodated the pre-ANSI
+dnl compilers bundled by more than one vendor in lieu of providing a standard C
+dnl compiler other than by costly add-ons.  Because of this, the specification
+dnl did not take into account the use of const for telling the compiler that
+dnl string literals would be in readonly memory.
+dnl
+dnl As a workaround, one could (starting with X11R5) define XTSTRINGDEFINES, to
+dnl let the compiler decide how to represent Xt's strings which were #define'd. 
+dnl That does not solve the problem of using the block of Xt's strings which
+dnl are compiled into the library (and is less efficient than one might want).
+dnl
+dnl Xt specification 7 introduces the _CONST_X_STRING symbol which is used both
+dnl when compiling the library and compiling using the library, to tell the
+dnl compiler that String is const.
+AC_DEFUN([CF_CONST_X_STRING],
+[
+AC_TRY_COMPILE(
+[
+#include <stdlib.h>
+#include <X11/Intrinsic.h>
+],
+[String foo = malloc(1)],[
+
+AC_CACHE_CHECK(for X11/Xt const-feature,cf_cv_const_x_string,[
+	AC_TRY_COMPILE(
+		[
+#define _CONST_X_STRING	/* X11R7.8 (perhaps) */
+#undef  XTSTRINGDEFINES	/* X11R5 and later */
+#include <stdlib.h>
+#include <X11/Intrinsic.h>
+		],[String foo = malloc(1); *foo = 0],[
+			cf_cv_const_x_string=no
+		],[
+			cf_cv_const_x_string=yes
+		])
+])
+
+case $cf_cv_const_x_string in
+no)
+	CF_APPEND_TEXT(CPPFLAGS,-DXTSTRINGDEFINES)
+	;;
+*)
+	CF_APPEND_TEXT(CPPFLAGS,-D_CONST_X_STRING)
+	;;
+esac
+
+])
+])dnl
