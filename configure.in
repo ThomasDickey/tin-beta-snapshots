@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2019-12-31
+dnl Updated   : 2020-01-01
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2020 Thomas E. Dickey <dickey@invisible-island.net>
@@ -160,6 +160,7 @@ CF_PROG_SUM_R
 CF_PATH_EDITOR
 CF_PATH_MAILER
 CF_PATH_MAILBOX
+CF_PKG_CONFIG
 
 ## PGP Support
 AC_MSG_CHECKING(if you want PGP/GPG-Support)
@@ -451,7 +452,7 @@ AC_MSG_RESULT($PCRE_HOME)
 CF_BUNDLED_PCRE($PCRE_HOME)
 
 PCRE_MAKEFILE=
-if test "$PCRE_HOME" = "no" ; then
+if test "$cf_pcre_home" = "no" ; then
 	LINK_SIZE="-DLINK_SIZE=2"
 	AC_SUBST(LINK_SIZE)
 	UTF8="-DSUPPORT_UTF8"
