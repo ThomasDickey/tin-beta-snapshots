@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2019-03-12
+dnl Updated   : 2019-12-31
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2020 Thomas E. Dickey <dickey@invisible-island.net>
@@ -42,8 +42,8 @@ AC_PREFIX_DEFAULT(/usr/local)
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
 VERSION=2.4.4
-AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Define this to the package name])
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define this to the package version])
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 
@@ -113,7 +113,7 @@ case "$host_cpu:$host_vendor:$host_os" in
 		;;
 	# SEIUX doesn't have any useful preprocessor symbol
 	mips:sei:seiux*)	#(vi
-		AC_DEFINE(SEIUX)
+		AC_DEFINE(SEIUX,1,[Define this to 1 for the MIPS/SEIUX system])
 		;;
 esac
 
@@ -144,7 +144,7 @@ extern int my_compare(const void *, const void *);
 	fi
 fi
 if test "x$cf_use_heapsort" = xyes; then
-	AC_DEFINE(USE_HEAPSORT)
+	AC_DEFINE(USE_HEAPSORT,1,[Define this to 1 to use the heapsort function])
 fi
 
 CF_WITH_PROGRAM(ispell,
@@ -209,9 +209,9 @@ if test "$USE_NNTP" = "yes" ; then
 AC_MSG_CHECKING(whether to be NNTP_ONLY)
 CF_ARG_ENABLE(nntp-only,
 	[  --enable-nntp-only      enable reading via NNTP only],
-	[AC_DEFINE(NNTP_ONLY)
+	[AC_DEFINE(NNTP_ONLY,1,[Define this to 1 to be NNTP-only])
 	 USE_SPOOLDIR=no],
-	[AC_DEFINE(NNTP_ABLE)])
+	[AC_DEFINE(NNTP_ABLE,1,[Define this to 1 to be NNTP-capable])])
 AC_MSG_RESULT($enableval)
 fi
 
@@ -422,7 +422,7 @@ none)
 esac
 
 if test $use_curses != no ; then
-	AC_DEFINE(USE_CURSES)
+	AC_DEFINE(USE_CURSES,1,[Define this to 1 if we will use the curses library])
 	case $cf_with_screen in #(vi
 	ncurses) #(vi
 		CF_NCURSES_CONFIG
@@ -469,13 +469,13 @@ CF_WITH_DMALLOC(debug_malloc=DMALLOC)
 AC_ARG_WITH(trace,
 	[  --with-trace            use debugging/traces for screen output],
 	[
-	AC_CHECK_FUNC(_tracef,[AC_DEFINE(HAVE__TRACEF)],[
+	AC_CHECK_FUNC(_tracef,[AC_DEFINE(HAVE__TRACEF,1,[Define this to 1 if we have function _tracef])],[
 	AC_CHECK_LIB(${cf_with_screen}_g,_tracef,
 		[AC_DEFINE(HAVE__TRACEF)
 		 LIBS=`echo "$LIBS" | sed -e s/-l${cf_with_screen}// -e s/-lcurses//`
 		 LIBS="-l${cf_with_screen}_g $LIBS"
 		 use_trace=yes
-		 AC_DEFINE(USE_TRACE)
+		 AC_DEFINE(USE_TRACE,1,[Define this to 1 if we will use ncurses' trace-functions])
 		 EXTRAO_DEP=''
 		 EXTRAOBJS="$EXTRAOBJS \$(OBJDIR)/trace.o"],
 		 use_trace=no)])],
@@ -491,7 +491,7 @@ CF_ARG_WITH(domain-name,
 	[  --with-domain-name      sets $DOMAIN_NAME],
 	DOMAIN_NAME)
 if test "$DOMAIN_NAME" != ""; then
-	AC_DEFINE_UNQUOTED(DOMAIN_NAME, "$DOMAIN_NAME")
+	AC_DEFINE_UNQUOTED(DOMAIN_NAME, "$DOMAIN_NAME",[Define this to the news server's domain-name])
 fi
 AC_MSG_RESULT($DOMAIN_NAME)
 
@@ -527,18 +527,18 @@ fi
 
 ## These options are interdependent, so we delay defining them til now:
 test -n "$NNTP_DEFAULT_SERVER" \
-	&& AC_DEFINE_UNQUOTED(NNTP_DEFAULT_SERVER,"$NNTP_DEFAULT_SERVER")
-test ".$INEWSDIR" != ".$NEWSLIBDIR" && AC_DEFINE_UNQUOTED(INEWSDIR,"$INEWSDIR")
-AC_DEFINE_UNQUOTED(NEWSLIBDIR,"$NEWSLIBDIR")
-AC_DEFINE_UNQUOTED(NOVROOTDIR,"$NOVROOTDIR")
-AC_DEFINE_UNQUOTED(SPOOLDIR,"$SPOOLDIR")
+	&& AC_DEFINE_UNQUOTED(NNTP_DEFAULT_SERVER,"$NNTP_DEFAULT_SERVER",[Define this to the default NNTP server])
+test ".$INEWSDIR" != ".$NEWSLIBDIR" && AC_DEFINE_UNQUOTED(INEWSDIR,"$INEWSDIR",[Define this to the inews directory path])
+AC_DEFINE_UNQUOTED(NEWSLIBDIR,"$NEWSLIBDIR",[Define this to the news library directory path])
+AC_DEFINE_UNQUOTED(NOVROOTDIR,"$NOVROOTDIR",[Define this to the news overview directory path])
+AC_DEFINE_UNQUOTED(SPOOLDIR,"$SPOOLDIR",[Define this to the spool directory path])
 
 ## optional features
 AC_MSG_CHECKING(whether to use MH style mail handling for mailgroups)
 CF_ARG_ENABLE(mh-mail-handling,
 	[  --enable-mh-mail-handling
                           use MH style mail handling for mailgroups],
-	[AC_DEFINE(HAVE_MH_MAIL_HANDLING)])
+	[AC_DEFINE(HAVE_MH_MAIL_HANDLING,1,[Define this to 1 to use MH style mail handling for mailgroups])])
 AC_MSG_RESULT($enableval)
 
 CAN_MAKEFILE=
@@ -548,7 +548,7 @@ CF_ARG_ENABLE(cancel-locks,
 	[  --enable-cancel-locks   enable creation of Cancel-Locks],
 	[CANLIBS='-L../libcanlock -lcanlock'
 	CAN_MAKEFILE="libcanlock/Makefile"
-	AC_DEFINE(USE_CANLOCK)],
+	AC_DEFINE(USE_CANLOCK,1,[Define this to 1 to use Cancel-Locks])],
 	[CANDIR_MAKE='#'
 	CANLIBS=''])
 AC_MSG_RESULT($enableval)
@@ -572,7 +572,7 @@ fi
 AC_MSG_CHECKING(whether to enable 8-bit keycodes)
 CF_ARG_DISABLE(8bit-keys,
 	[  --disable-8bit-keys     disable 8-bit keycode support],,
-	[AC_DEFINE(HAVE_KEY_PREFIX)])
+	[AC_DEFINE(HAVE_KEY_PREFIX,1,[Define this to 1 to enable 8-bit keycodes])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to enable ANSI-color)
@@ -584,21 +584,21 @@ AC_MSG_RESULT($use_color)
 AC_MSG_CHECKING(whether to enable posting-etiquette)
 CF_ARG_DISABLE(etiquette,
 	[  --disable-etiquette     disable printing of posting-etiquette],
-	[AC_DEFINE(NO_ETIQUETTE)])
+	[AC_DEFINE(NO_ETIQUETTE,1,[Define this to 1 to enable posting-etiquette])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to strictly observe RFC2047 and break long lines)
 CF_ARG_DISABLE(break-long-lines,
 	[  --disable-break-long-lines
                           don't break long mime-encoded lines],,
-	[AC_DEFINE(MIME_BREAK_LONG_LINES)])
+	[AC_DEFINE(MIME_BREAK_LONG_LINES,1,[Define this to 1 to strictly observe RFC2047 and break long lines])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to force MM_CHARSET obeyance when decoding mime)
 CF_ARG_DISABLE(mime-strict-charset,
 	[  --disable-mime-strict-charset
                           force MM_CHARSET obeyance],,
-	[AC_DEFINE(MIME_STRICT_CHARSET)])
+	[AC_DEFINE(MIME_STRICT_CHARSET,1,[Define this to 1 to force MM_CHARSET obeyance when decoding mime])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(for MIME character-set)
@@ -617,56 +617,56 @@ AC_MSG_RESULT($DEFAULT_ISO2ASC)
 AC_MSG_CHECKING(whether to enable locale support)
 CF_ARG_DISABLE(locale,
 	[  --disable-locale        disable locale support],
-	[AC_DEFINE(NO_LOCALE)])
+	[AC_DEFINE(NO_LOCALE,1,[Define this to 1 to disable locale support])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to enable posting)
 CF_ARG_DISABLE(posting,
 	[  --disable-posting       disable posting],
-	[AC_DEFINE(NO_POSTING)])
+	[AC_DEFINE(NO_POSTING,1,[Define this to 1 to disable posting])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to enable shell escape)
 CF_ARG_DISABLE(shell-escape,
 	[  --disable-shell-escape  disable shell escape],
-	[AC_DEFINE(NO_SHELL_ESCAPE)])
+	[AC_DEFINE(NO_SHELL_ESCAPE,1,[Define this to 1 to disable shell escape])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to have fascist newsadmin)
 CF_ARG_ENABLE(fascist-newsadmin,
 	[  --enable-fascist-newsadmin
                           have fascist newsadmin],
-	[AC_DEFINE(HAVE_FASCIST_NEWSADMIN)])
+	[AC_DEFINE(HAVE_FASCIST_NEWSADMIN,1,[Define this to 1 to have fascist newsadmin])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to enable inverse video and highlighting)
 CF_ARG_DISABLE(inverse-video,
 	[  --disable-inverse-video disable inverse video and highlighting],
-	[AC_DEFINE(USE_INVERSE_HACK)])
+	[AC_DEFINE(USE_INVERSE_HACK,1,[Define this to 1 to enable inverse video and highlighting])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to enable piping support)
 CF_ARG_DISABLE(piping,
 	[  --disable-piping        disable piping support],
-	[AC_DEFINE(DONT_HAVE_PIPING)])
+	[AC_DEFINE(DONT_HAVE_PIPING,1,[Define this to 1 to enable piping support])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to enable printer support)
 CF_ARG_DISABLE(printing,
 	[  --disable-printing      disable printer support],
-	[AC_DEFINE(DISABLE_PRINTING)])
+	[AC_DEFINE(DISABLE_PRINTING,1,[Define this to 1 to enable printer support])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to unique tmp-files by appending .pid)
 CF_ARG_DISABLE(append-pid,
 	[  --disable-append-pid    disable appending .pid to tmp-files],,
-	[AC_DEFINE(APPEND_PID)])
+	[AC_DEFINE(APPEND_PID,1,[Define this to 1 to unique tmp-files by appending .pid])])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to fallback to XHDR XREF if XOVER isn't supported)
 CF_ARG_DISABLE(xhdr-xref,
 	[  --disable-xhdr-xref     disable XHDR XREF fallback],,
-	[AC_DEFINE(XHDR_XREF)])
+	[AC_DEFINE(XHDR_XREF,1,[Define this to 1 to fallback to XHDR XREF if XOVER isn't supported])])
 AC_MSG_RESULT($enableval)
 
 ### bypass a bug in old versions of leafnode & NNTPcache
@@ -674,7 +674,7 @@ AC_MSG_CHECKING(whether to send a GROUP command before a LISTGROUP)
 CF_ARG_ENABLE(broken-listgroup-fix,
 	[  --enable-broken-listgroup-fix
                           send extra GROUP command before LISTGROUP],
-	[AC_DEFINE(BROKEN_LISTGROUP)])
+	[AC_DEFINE(BROKEN_LISTGROUP,1,[Define this to 1 to send a GROUP command before a LISTGROUP])])
 AC_MSG_RESULT($enableval)
 
 ### on some old systems the WIFEXITED()/WEXITSTATUS() macros do not work
@@ -682,7 +682,7 @@ AC_MSG_CHECKING(whether to ignore system()s return value)
 CF_ARG_ENABLE(broken-system-fix,
 	[  --enable-broken-system-fix
                           ignore system()s return value],
-	[AC_DEFINE(IGNORE_SYSTEM_STATUS)])
+	[AC_DEFINE(IGNORE_SYSTEM_STATUS,1,[Define this to 1 to ignore system()s return value])])
 AC_MSG_RESULT($enableval)
 
 ### checks for the location of the system-wide default setting file
@@ -693,14 +693,14 @@ CF_WITH_PATH(defaults-dir,
                          ],
 	TIN_DEFAULTS_DIR,/etc/tin)
 AC_MSG_RESULT($TIN_DEFAULTS_DIR)
-AC_DEFINE_UNQUOTED(TIN_DEFAULTS_DIR,"$TIN_DEFAULTS_DIR")
+AC_DEFINE_UNQUOTED(TIN_DEFAULTS_DIR,"$TIN_DEFAULTS_DIR",[Define this to the directory containing tin.defaults file])
 
 ### check for ipv6 support
 AC_MSG_CHECKING([whether to enable IPv6])
 CF_ARG_DISABLE(ipv6,
 	[  --disable-ipv6          disable IPv6 support (default: enabled)],
 	,
-	[AC_DEFINE(ENABLE_IPV6)])
+	[AC_DEFINE(ENABLE_IPV6,1,[Define this to 1 to enable IPv6])])
 AC_MSG_RESULT($enableval)
 if test "$enableval" = "yes"; then
 	CF_CHECK_IPV6
@@ -712,7 +712,7 @@ AC_MSG_CHECKING([whether to enable long article numbers])
 CF_ARG_ENABLE(long-article-numbers,
         [  --enable-long-article-numbers
                           enable long article numbers (default: disabled)],
-[AC_DEFINE(ENABLE_LONG_ARTICLE_NUMBERS)])
+[AC_DEFINE(ENABLE_LONG_ARTICLE_NUMBERS,1,[Define this to 1 to enable long article numbers])])
 AC_MSG_RESULT($enableval)
 
 ### checks for operator characteristics (should be the last option)
@@ -722,7 +722,7 @@ AC_ARG_WITH(coffee,
 	[ case "$withval" in
 	yes)
 	AC_MSG_RESULT(yes - with milk - please!)
-	AC_DEFINE(HAVE_COFFEE)
+	AC_DEFINE(HAVE_COFFEE,1,[Define this to 1 to make a coffee while compiling])
 	;;
 	*)
 	AC_MSG_RESULT(no)
@@ -834,7 +834,7 @@ AC_TRY_COMPILE([
 ac_cv_quad_t=yes, ac_cv_quad_t=no)
 AC_MSG_RESULT($ac_cv_quad_t)
 if test $ac_cv_quad_t = yes; then
-	AC_DEFINE(HAVE_QUAD_T)
+	AC_DEFINE(HAVE_QUAD_T,1,[Define this to 1 if we have type quad_t])
 fi
 
 dnl test to see if long long is defined
@@ -845,7 +845,7 @@ AC_TRY_COMPILE([
 ac_cv_long_long=yes, ac_cv_long_long=no)
 AC_MSG_RESULT($ac_cv_long_long)
 if test $ac_cv_long_long = yes; then
-	AC_DEFINE(HAVE_LONG_LONG)
+	AC_DEFINE(HAVE_LONG_LONG,1,[Define this to 1 if we have long-long type])
 fi
 
 dnl test to see if int_least64_t is defined
@@ -861,7 +861,7 @@ AC_TRY_COMPILE([
 ac_cv_int_least64_t=yes, ac_cv_int_least64_t=no)
 AC_MSG_RESULT($ac_cv_int_least64_t)
 if test $ac_cv_int_least64_t = yes; then
-	AC_DEFINE(HAVE_INT_LEAST64_T)
+	AC_DEFINE(HAVE_INT_LEAST64_T,1,[Define this to 1 if we have type least64_t])
 
 	AC_MSG_CHECKING(for INT64_C)
 	AC_TRY_COMPILE([
@@ -875,7 +875,7 @@ if test $ac_cv_int_least64_t = yes; then
 	ac_cv_int64_c=yes, ac_cv_int64_c=no)
 	AC_MSG_RESULT($ac_cv_int64_c)
 	if test $ac_cv_int64_c = yes; then
-		AC_DEFINE(HAVE_INT64_C)
+		AC_DEFINE(HAVE_INT64_C,1,[Define this to 1 if we have function INT64_C])
 	fi
 fi
 
@@ -894,7 +894,7 @@ AC_TRY_COMPILE([
 ac_cv_nl_item=yes, ac_cv_nl_item=no)
 AC_MSG_RESULT($ac_cv_nl_item)
 if test $ac_cv_nl_item = yes; then
-        AC_DEFINE(HAVE_NL_ITEM)
+        AC_DEFINE(HAVE_NL_ITEM,1,[Define this to 1 if we have header nl_types.h])
 fi
 
 ###	Checks for libraries.
@@ -902,8 +902,8 @@ fi
 # only define HAVE_LIBUU and HAVE_UUDEVIEW_H if both are found
 AC_CHECK_LIB(uu, UUInitialize,
 	[AC_CHECK_HEADER(uudeview.h,
-		[AC_DEFINE(HAVE_LIBUU)
-		AC_DEFINE(HAVE_UUDEVIEW_H)
+		[AC_DEFINE(HAVE_LIBUU,1,[Define this to 1 if we have library uu])
+		AC_DEFINE(HAVE_UUDEVIEW_H,1,[Define this to 1 if we have header uudeview.h])
 		LIBS="$LIBS -luu"]
 	)]
 )
@@ -922,8 +922,8 @@ cf_try_icuuc="no"
 cf_try_icuuc46="no"
 AC_CHECK_HEADER(unicode/unorm.h,[
 	AC_CHECK_HEADER(unicode/ustring.h, [
-		AC_DEFINE(HAVE_UNICODE_UNORM_H)
-		AC_DEFINE(HAVE_UNICODE_USTRING_H)
+		AC_DEFINE(HAVE_UNICODE_UNORM_H,1,[Define this to 1 if we have header unicode/unorm.h])
+		AC_DEFINE(HAVE_UNICODE_USTRING_H,1,[Define this to 1 if we have header unicode/ustring.h])
 		AC_MSG_CHECKING(for unorm_normalize in libicuuc)
 		cf_save_LIBS="$LIBS"
 		cf_try_icuuc="no"
@@ -932,14 +932,14 @@ AC_CHECK_HEADER(unicode/unorm.h,[
 			int32_t needed, ustr = NULL;
  			UErrorCode status;
 			needed = unorm_normalize(ustr, -1, UNORM_DEFAULT, 0, NULL, 0, &status);], [
-			AC_DEFINE(HAVE_LIBICUUC)
+			AC_DEFINE(HAVE_LIBICUUC,1,[Define this to 1 if we have libicuuc])
 			cf_try_icuuc="yes"],
 			LIBS=$cf_save_LIBS
 		)
 		AC_MSG_RESULT($cf_try_icuuc)
 		cf_save_LIBS="$LIBS"
 		AC_CHECK_HEADER(unicode/uidna.h, [
-			AC_DEFINE(HAVE_UNICODE_UIDNA_H)
+			AC_DEFINE(HAVE_UNICODE_UIDNA_H,1,[Define this to 1 if we have header unicode/uidna.h])
 		])
 		AC_MSG_CHECKING(for uidna_nameToUnicode in libicuuc)
 		AC_TRY_LINK([#include <unicode/uidna.h>
@@ -950,27 +950,27 @@ AC_CHECK_HEADER(unicode/unorm.h,[
 			uidna_openUTS46(UNORM_DEFAULT, &status);
 			uidna_nameToUnicode(uts46, NULL, 0, NULL, 0, &info, &status);
 			uidna_close(uts46);], [
-			AC_DEFINE(HAVE_LIBICUUC_46_API)
+			AC_DEFINE(HAVE_LIBICUUC_46_API,1,[Define this to 1 if we have libicuus 46-API])
 			cf_try_icuuc46="yes"],
 			LIBS=$cf_save_LIBS
 		)
 		AC_MSG_RESULT($cf_try_icuuc46)
 		AC_CHECK_HEADER(unicode/ubidi.h, [
-			AC_DEFINE(HAVE_UNICODE_UBIDI_H)
+			AC_DEFINE(HAVE_UNICODE_UBIDI_H,1,[Define this to 1 if we have header unicode/ubidi.h])
 		])
 	])
 ])
 # IDNA2008
 AC_CHECK_HEADER(unicode/unorm2.h, [
-	AC_DEFINE(HAVE_UNICODE_UNORM2_H)
+	AC_DEFINE(HAVE_UNICODE_UNORM2_H,1,[Define this to 1 if we have header unicode/unorm2.h])
 ])
 
 # without icuuc try GNU libunistring for normalization
 if test $cf_try_icuuc = no ; then
 	AC_CHECK_HEADER(unitypes.h,[
 		AC_CHECK_HEADER(uninorm.h,[
-			AC_DEFINE(HAVE_UNITYPES_H)
-			AC_DEFINE(HAVE_UNINORM_H)
+			AC_DEFINE(HAVE_UNITYPES_H,1,[Define this to 1 if we have header unitypes.h])
+			AC_DEFINE(HAVE_UNINORM_H,1,[Define this to 1 if we have header uninorm.h])
 			AC_MSG_CHECKING(for u8_normalize in libunistring)
 			cf_save_LIBS="$LIBS"
 			cf_try_unistring="no"
@@ -979,7 +979,7 @@ if test $cf_try_icuuc = no ; then
 				#include <uninorm.h>], [
 				size_t ol = 0;
 				u8_normalize(UNINORM_NFC, (uint8_t *) "x", 2, NULL, &ol);], [
-				AC_DEFINE(HAVE_LIBUNISTRING)
+				AC_DEFINE(HAVE_LIBUNISTRING,1,[Define this to 1 if we have library unistring])
 				cf_try_unistring="yes"],
 				LIBS=$cf_save_LIBS
 			)
@@ -993,23 +993,23 @@ fi
 if test $cf_try_icuuc = no ; then
 	AC_CHECK_LIB(idn, stringprep_check_version,
 		[AC_CHECK_HEADER(stringprep.h,[
-			AC_DEFINE(HAVE_STRINGPREP_H)
+			AC_DEFINE(HAVE_STRINGPREP_H,1,[Define this to 1 if we have header stringprep.h])
 			AC_CHECK_HEADER(idna.h, [
-				AC_DEFINE(HAVE_IDNA_H)
+				AC_DEFINE(HAVE_IDNA_H,1,[Define this to 1 if we have header idna.h])
 				AC_CHECK_LIB(idn, idna_to_unicode_lzlz, [
-					AC_DEFINE(HAVE_IDNA_TO_UNICODE_LZLZ)
+					AC_DEFINE(HAVE_IDNA_TO_UNICODE_LZLZ,1,[Define this to 1 if we have function idna_to_unicode_lzlz])
 					AC_MSG_CHECKING(for IDNA_USE_STD3_ASCII_RULES)
 					AC_EGREP_HEADER(IDNA_USE_STD3_ASCII_RULES, idna.h, [
-						AC_DEFINE(HAVE_IDNA_USE_STD3_ASCII_RULES)
+						AC_DEFINE(HAVE_IDNA_USE_STD3_ASCII_RULES,1,[Define this to 1 if we have symbol IDNA_USE_STD3_ASCII_RULES in idna.h])
 						AC_MSG_RESULT(yes)],
 						AC_MSG_RESULT(no)
 					)
 				])
 				AC_CHECK_LIB(idn, idna_strerror, [
-					AC_DEFINE(HAVE_IDNA_STRERROR)
+					AC_DEFINE(HAVE_IDNA_STRERROR,1,[Define this to 1 if we have function idna_strerror])
 				])
 			])
-			AC_DEFINE(HAVE_LIBIDN)
+			AC_DEFINE(HAVE_LIBIDN,1,[Define this to 1 if we have library idn])
 			LIBS="$LIBS -lidn"]
 		)]
 	)
@@ -1028,9 +1028,9 @@ AC_CHECK_LIB(idnkit, idn_decodename, [
 			strcpy(in, "xn--brenfe-fta9a2q.de");
 			rs = idn_decodename(IDN_DECODE_LOOKUP, &in, &out, 254);
 			idn_result_tostring(rs);], [
-			AC_DEFINE(HAVE_LIBIDNKIT)
-			AC_DEFINE(HAVE_IDN_API_H)
-			AC_DEFINE(HAVE_IDN_DECODENAME)
+			AC_DEFINE(HAVE_LIBIDNKIT,1,[Define this to 1 if we can link with idnkit library])
+			AC_DEFINE(HAVE_IDN_API_H,1,[Define this to 1 if we have header idn/api.h])
+			AC_DEFINE(HAVE_IDN_DECODENAME,1,[Define this to 1 if we have function idn_decodename])
 			AC_MSG_RESULT(yes)], [
 			LIBS=$cf_save_LIBS
 			AC_MSG_RESULT(no)
@@ -1059,20 +1059,20 @@ make an error
 		[cf_result=no])
 	AC_MSG_RESULT($cf_result)
 	CFLAGS="$cf_save_CFLAGS"
-	test $cf_result = yes && AC_DEFINE(HAVE_TERMCAP_H)
+	test $cf_result = yes && AC_DEFINE(HAVE_TERMCAP_H,1,[Define this to 1 if we have non-ncurses header termcap.h])
 	CF_TYPE_OUTCHAR
 fi
 
 cf_tc_funcs=
 cf_tc_externs=
 if test ".$cf_cv_termlib" = .terminfo ; then
-	AC_DEFINE(USE_TERMINFO)
+	AC_DEFINE(USE_TERMINFO,1,[Define this to 1 if we use terminfo functions for screen management])
 	cf_tc_funcs="tigetint tigetnum tparam tparm"
 	cf_tc_externs="$cf_tc_funcs tgoto tigetstr tputs tigetflag"
 elif test ".$cf_cv_termlib" = .termcap ; then
 	# BSD 'tputs()' may need 'PC' to be set.
 	AC_TRY_LINK([],[extern char PC; PC = 0],
-		[AC_DEFINE(HAVE_EXTERN_TCAP_PC)])
+		[AC_DEFINE(HAVE_EXTERN_TCAP_PC,1,[Define this if termcap's extern PC exists])])
 	cf_tc_funcs="tgetint tgetnum tparam tparm"
 	cf_tc_externs="$cf_tc_funcs tgoto tgetstr tputs tgetent tgetflag"
 fi
@@ -1150,14 +1150,14 @@ AC_CHECK_FUNCS(\
 $cf_tc_funcs )
 
 AC_CHECK_FUNC(flock,
-	AC_DEFINE(HAVE_FLOCK),[
+	AC_DEFINE(HAVE_FLOCK,1,[Define this to 1 if flock function exists]),[
 	AC_CHECK_LIB(bsd, flock,
 		AC_DEFINE(HAVE_FLOCK)
 		LIBS="$LIBS -lbsd")])
 
 # clock_gettime() / librt
 AC_CHECK_FUNC(clock_gettime,
-	AC_DEFINE(HAVE_CLOCK_GETTIME),[
+	AC_DEFINE(HAVE_CLOCK_GETTIME,1,[Define this to 1 if clock_gettime function exists]),[
 		AC_CHECK_LIB(rt, clock_gettime,
 			AC_DEFINE(HAVE_CLOCK_GETTIME)
 			LIBS="$LIBS -lrt"
@@ -1179,7 +1179,7 @@ int main()
 }],
 	[
 		AC_MSG_RESULT([yes])
-		AC_DEFINE(HAVE_MEMSET_S)
+		AC_DEFINE(HAVE_MEMSET_S,1,[Define this to 1 if we have function memset_s])
 	],
 	[AC_MSG_RESULT([no])],
 	[AC_MSG_RESULT([unknown])]
@@ -1198,7 +1198,7 @@ gettimeofday(&tv, &tz);],
 ac_cv_func_gettimeofday_2args=yes, ac_cv_func_gettimeofday_2args=no)
 AC_MSG_RESULT($ac_cv_func_gettimeofday_2args)
 if test $ac_cv_func_gettimeofday_2args = yes; then
-	AC_DEFINE(GETTIMEOFDAY_2ARGS)
+	AC_DEFINE(GETTIMEOFDAY_2ARGS,1,[Define this to 1 if gettimeofday takes two arguments])
 fi
 
 CF_POSIX_JC
@@ -1207,7 +1207,7 @@ CF_FUNC_MEMMOVE
 
 AC_MSG_CHECKING(if select expects int * arguments)
 AC_EGREP_HEADER([select\(.*, *int *\*,],time.h,
-	AC_DEFINE(HAVE_SELECT_INTP) AC_MSG_RESULT(yes),
+	AC_DEFINE(HAVE_SELECT_INTP,1,[Define this to 1 if select expects int * arguments]) AC_MSG_RESULT(yes),
 	AC_MSG_RESULT(no)
 )
 
@@ -1241,7 +1241,7 @@ CF_FUNC_SYSTEM
 # Check if we are trying to use curses+color, but cannot
 if test $use_color = yes ; then
 	if test $use_curses = no ; then
-		AC_DEFINE(HAVE_COLOR)
+		AC_DEFINE(HAVE_COLOR,1,[Define this to 1 if curses supports color])
 	elif test $cf_with_screen = pdcurses ; then
 		AC_DEFINE(HAVE_COLOR)
 	else
@@ -1442,7 +1442,7 @@ h.h_addr_list[0]=0;
 ],ac_cv_hostent_h_addr_list=yes,ac_cv_hostent_h_addr_list=no)
 AC_MSG_RESULT($ac_cv_hostent_h_addr_list)
 if test $ac_cv_hostent_h_addr_list = yes; then
-	AC_DEFINE(HAVE_HOSTENT_H_ADDR_LIST)
+	AC_DEFINE(HAVE_HOSTENT_H_ADDR_LIST,1,[Define this to 1 if we have h_addr_list in struct hostent])
 fi
 
 CF_CHECK_FD_SET
@@ -1466,7 +1466,7 @@ int main() {
                 AC_MSG_RESULT(yes)
         ],
         [
-		AC_DEFINE(TOLOWER_BROKEN)
+		AC_DEFINE(TOLOWER_BROKEN,1,[Define this to 1 if function tolower if broken])
                 AC_MSG_RESULT(no)
         ],
         [
@@ -1493,7 +1493,7 @@ int main() {
                 AC_MSG_RESULT(yes)
         ],
         [
-		AC_DEFINE(TOUPPER_BROKEN)
+		AC_DEFINE(TOUPPER_BROKEN,1,[Define this to 1 if function toupper if broken])
                 AC_MSG_RESULT(no)
         ],
         [
@@ -1519,7 +1519,7 @@ int main() {
 	exit(0);
 }],
 	[
-		AC_DEFINE(HAVE_ICONV_OPEN_TRANSLIT)
+		AC_DEFINE(HAVE_ICONV_OPEN_TRANSLIT,1,[Define this to 1 if iconv_open() //TRANSLIT extension works])
 		AC_MSG_RESULT(yes)
 	],
 	[
@@ -1539,16 +1539,16 @@ case "$host_os" in
 		case `uname -r | sed 's,(.*,,'` in
 			B*|1.0-6].*)
 				# multiple defects
-				AC_DEFINE(NO_LOCALE)
-				AC_DEFINE(NO_LOCKING)
-				AC_DEFINE(FILE_MODE_BROKEN)
+				AC_DEFINE(NO_LOCALE,1,[Define this to 1 if locale does not work])
+				AC_DEFINE(NO_LOCKING,1,[Define this to 1 if locking does not work])
+				AC_DEFINE(FILE_MODE_BROKEN,1,[Define this to 1 if file-permissions are broken])
 				;;
 			1.7.*)
 				# link does not work
 				AC_DEFINE(NO_LOCKING)
 				;;
 			*)
-				AC_CHECK_FUNC(link, AC_DEFINE(HAVE_LINK))
+				AC_CHECK_FUNC(link, AC_DEFINE(HAVE_LINK,1,[Define this to 1 if we have function link]))
 				;;
 			esac
 		;;
