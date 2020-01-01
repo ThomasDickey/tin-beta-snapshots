@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2019-12-31
+dnl Updated   : 2020-01-01
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2020 Thomas E. Dickey <dickey@invisible-island.net>
@@ -1511,12 +1511,14 @@ dnl Top-level macro for configuring an application with a bundled copy of
 dnl the pcre library.
 dnl
 dnl $1 specifies the top of the directory containing PCRE's include, lib dirs.
+dnl    That is assigned to $cf_pcre_home, which may be updated.
 AC_DEFUN([CF_BUNDLED_PCRE],
 [
 cf_pcre_home=$1
 PCREDIR_MAKE=
 PCREDIR_LIBS=
 PCREDIR_CPPFLAGS=
+
 case .$cf_pcre_home in #(vi
 .no) #(vi
 	# setup to compile the bundled PCRE:
@@ -1527,8 +1529,21 @@ case .$cf_pcre_home in #(vi
 	AC_SUBST(PCRE_DEFINES)
 	;;
 .yes) #(vi
-	PCREDIR_MAKE='#'
-	PCREDIR_LIBS="-lpcre"
+	CF_FIND_PCRE(
+		cf_pcre_cppflags,
+		cf_pcre_libs,
+		[
+			PCREDIR_MAKE='#'
+			PCREDIR_LIBS="$cf_pcre_libs"
+			PCREDIR_CPPFLAGS="$cf_pcre_cppflags"
+		],[
+			CF_VERBOSE(using bundled pcre because no installed pcre was found)
+			AC_SUBST(PCRE_MAJOR)
+			AC_SUBST(PCRE_MINOR)
+			AC_SUBST(PCRE_DATE)
+			AC_SUBST(PCRE_DEFINES)
+			cf_pcre_home=no
+		])
 	;;
 .*)
 	CF_PATH_SYNTAX(cf_pcre_home)
@@ -1537,6 +1552,7 @@ case .$cf_pcre_home in #(vi
 	PCREDIR_CPPFLAGS="-I${cf_pcre_home}/include"
 	;;
 esac
+
 AC_SUBST(PCREDIR_MAKE)
 AC_SUBST(PCREDIR_LIBS)
 AC_SUBST(PCREDIR_CPPFLAGS)
@@ -1772,6 +1788,36 @@ fi
 
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_CHECK_FD_SET version: 5 updated: 2012/10/06 11:17:15
+dnl ---------------
+dnl Check if the fd_set type and corresponding macros are defined.
+AC_DEFUN([CF_CHECK_FD_SET],
+[
+AC_REQUIRE([CF_TYPE_FD_SET])
+AC_CACHE_CHECK([for fd_set macros],cf_cv_macros_fd_set,[
+AC_TRY_COMPILE([
+#include <sys/types.h>
+#if USE_SYS_SELECT_H
+# include <sys/select.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+#  ifdef TIME_WITH_SYS_TIME
+#   include <time.h>
+#  endif
+# else
+#  include <time.h>
+# endif
+#endif
+],[
+	fd_set read_bits;
+	FD_ZERO(&read_bits);
+	FD_SET(0, &read_bits);],
+	[cf_cv_macros_fd_set=yes],
+	[cf_cv_macros_fd_set=no])])
+test $cf_cv_macros_fd_set = yes && AC_DEFINE(HAVE_TYPE_FD_SET,1,[Define to 1 if type fd_set is declared])
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_CHECK_HEADERS version: 3 updated: 2000/11/03 11:14:19
 dnl ----------------
 dnl AC_CHECK_HEADERS(sys/socket.h) fails on OS/2 EMX because it demands that
@@ -1922,6 +1968,60 @@ if test $cf_cv_comptype = yes; then
 else
 	AC_DEFINE(HAVE_COMPTYPE_CHAR,1,[Define this to 1 if qsort uses char*])
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_CONST_X_STRING version: 1 updated: 2019/04/08 17:50:29
+dnl -----------------
+dnl The X11R4-X11R6 Xt specification uses an ambiguous String type for most
+dnl character-strings.
+dnl
+dnl It is ambiguous because the specification accommodated the pre-ANSI
+dnl compilers bundled by more than one vendor in lieu of providing a standard C
+dnl compiler other than by costly add-ons.  Because of this, the specification
+dnl did not take into account the use of const for telling the compiler that
+dnl string literals would be in readonly memory.
+dnl
+dnl As a workaround, one could (starting with X11R5) define XTSTRINGDEFINES, to
+dnl let the compiler decide how to represent Xt's strings which were #define'd. 
+dnl That does not solve the problem of using the block of Xt's strings which
+dnl are compiled into the library (and is less efficient than one might want).
+dnl
+dnl Xt specification 7 introduces the _CONST_X_STRING symbol which is used both
+dnl when compiling the library and compiling using the library, to tell the
+dnl compiler that String is const.
+AC_DEFUN([CF_CONST_X_STRING],
+[
+AC_TRY_COMPILE(
+[
+#include <stdlib.h>
+#include <X11/Intrinsic.h>
+],
+[String foo = malloc(1)],[
+
+AC_CACHE_CHECK(for X11/Xt const-feature,cf_cv_const_x_string,[
+	AC_TRY_COMPILE(
+		[
+#define _CONST_X_STRING	/* X11R7.8 (perhaps) */
+#undef  XTSTRINGDEFINES	/* X11R5 and later */
+#include <stdlib.h>
+#include <X11/Intrinsic.h>
+		],[String foo = malloc(1); *foo = 0],[
+			cf_cv_const_x_string=no
+		],[
+			cf_cv_const_x_string=yes
+		])
+])
+
+case $cf_cv_const_x_string in
+no)
+	CF_APPEND_TEXT(CPPFLAGS,-DXTSTRINGDEFINES)
+	;;
+*)
+	CF_APPEND_TEXT(CPPFLAGS,-D_CONST_X_STRING)
+	;;
+esac
+
+])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_COREFILE version: 5 updated: 2019/12/31 20:39:42
@@ -2851,6 +2951,52 @@ ifelse([$4],,[
 ],[$4])
 else
 ifelse([$5],,AC_MSG_WARN(Cannot find $3 library),[$5])
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_FIND_PCRE version: 1 updated: 2020/01/01 16:29:19
+dnl ------------
+dnl Look for PCRE, to use instead of a bundled copy of PCRE.
+dnl
+dnl $1 = variable to set with PCRE's CPPFLAGS
+dnl $2 = variable to set with PCRE's LIBS
+dnl $3 = action to take on success
+dnl $4 = action to take on failure
+AC_DEFUN([CF_FIND_PCRE],[
+AC_REQUIRE([CF_PKG_CONFIG])
+
+cf_save_CFLAGS="$CFLAGS"
+cf_save_LIBS="$LIBS"
+cf_find_PCRE=yes
+
+CF_TRY_PKG_CONFIG(libpcre2,,[
+	CF_TRY_PKG_CONFIG(libpcre,,[
+		AC_CHECK_LIB(pcre,pcre_compile,[
+			CF_ADD_LIB(pcre)
+			AC_CHECK_LIB(pcre2-posix,regcomp,[
+				CF_ADD_LIB(pcre2-posix)],[
+					AC_CHECK_LIB(pcreposix,regcomp,[
+						CF_ADD_LIB(pcreposix)
+					],[
+						cf_find_PCRE=no
+					])
+				])
+			],[
+				cf_find_PCRE=no
+			])
+		])
+	])
+
+CFLAGS="$cf_save_CFLAGS"
+LIBS="$cf_save_LIBS"
+
+$1="$cf_pkgconfig_incs"
+$2="$cf_pkgconfig_libs"
+
+if test "$cf_find_PCRE" = yes; then
+	$3
+else
+	$4
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -5413,6 +5559,41 @@ if test "$cf_cv_xopen_source" != no ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
+dnl CF_TYPE_FD_SET version: 5 updated: 2012/10/04 20:12:20
+dnl --------------
+dnl Check for the declaration of fd_set.  Some platforms declare it in
+dnl <sys/types.h>, and some in <sys/select.h>, which requires <sys/types.h>.
+dnl Finally, if we are using this for an X application, Xpoll.h may include
+dnl <sys/select.h>, so we don't want to do it twice.
+AC_DEFUN([CF_TYPE_FD_SET],
+[
+AC_CHECK_HEADERS(X11/Xpoll.h)
+
+AC_CACHE_CHECK(for declaration of fd_set,cf_cv_type_fd_set,
+	[CF_MSG_LOG(sys/types alone)
+AC_TRY_COMPILE([
+#include <sys/types.h>],
+	[fd_set x],
+	[cf_cv_type_fd_set=sys/types.h],
+	[CF_MSG_LOG(X11/Xpoll.h)
+AC_TRY_COMPILE([
+#ifdef HAVE_X11_XPOLL_H
+#include <X11/Xpoll.h>
+#endif],
+	[fd_set x],
+	[cf_cv_type_fd_set=X11/Xpoll.h],
+	[CF_MSG_LOG(sys/select.h)
+AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <sys/select.h>],
+	[fd_set x],
+	[cf_cv_type_fd_set=sys/select.h],
+	[cf_cv_type_fd_set=unknown])])])])
+if test $cf_cv_type_fd_set = sys/select.h ; then
+	AC_DEFINE(USE_SYS_SELECT_H,1,[Define to 1 to include sys/select.h to declare fd_set])
+fi
+])
+dnl ---------------------------------------------------------------------------
 dnl CF_TYPE_OUTCHAR version: 15 updated: 2015/05/15 19:42:24
 dnl ---------------
 dnl Check for return and param type of 3rd -- OutChar() -- param of tputs().
@@ -6415,122 +6596,3 @@ AC_CACHE_CHECK(whether we are using the GNU C Library 2.1 or newer,
 	AC_SUBST(GLIBC21)
 	GLIBC21="$ac_cv_gnu_library_2_1"
 ])
-dnl ---------------------------------------------------------------------------
-dnl CF_CHECK_FD_SET version: 5 updated: 2012/10/06 11:17:15
-dnl ---------------
-dnl Check if the fd_set type and corresponding macros are defined.
-AC_DEFUN([CF_CHECK_FD_SET],
-[
-AC_REQUIRE([CF_TYPE_FD_SET])
-AC_CACHE_CHECK([for fd_set macros],cf_cv_macros_fd_set,[
-AC_TRY_COMPILE([
-#include <sys/types.h>
-#if USE_SYS_SELECT_H
-# include <sys/select.h>
-#else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-#  ifdef TIME_WITH_SYS_TIME
-#   include <time.h>
-#  endif
-# else
-#  include <time.h>
-# endif
-#endif
-],[
-	fd_set read_bits;
-	FD_ZERO(&read_bits);
-	FD_SET(0, &read_bits);],
-	[cf_cv_macros_fd_set=yes],
-	[cf_cv_macros_fd_set=no])])
-test $cf_cv_macros_fd_set = yes && AC_DEFINE(HAVE_TYPE_FD_SET,1,[Define to 1 if type fd_set is declared])
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_TYPE_FD_SET version: 5 updated: 2012/10/04 20:12:20
-dnl --------------
-dnl Check for the declaration of fd_set.  Some platforms declare it in
-dnl <sys/types.h>, and some in <sys/select.h>, which requires <sys/types.h>.
-dnl Finally, if we are using this for an X application, Xpoll.h may include
-dnl <sys/select.h>, so we don't want to do it twice.
-AC_DEFUN([CF_TYPE_FD_SET],
-[
-AC_CHECK_HEADERS(X11/Xpoll.h)
-
-AC_CACHE_CHECK(for declaration of fd_set,cf_cv_type_fd_set,
-	[CF_MSG_LOG(sys/types alone)
-AC_TRY_COMPILE([
-#include <sys/types.h>],
-	[fd_set x],
-	[cf_cv_type_fd_set=sys/types.h],
-	[CF_MSG_LOG(X11/Xpoll.h)
-AC_TRY_COMPILE([
-#ifdef HAVE_X11_XPOLL_H
-#include <X11/Xpoll.h>
-#endif],
-	[fd_set x],
-	[cf_cv_type_fd_set=X11/Xpoll.h],
-	[CF_MSG_LOG(sys/select.h)
-AC_TRY_COMPILE([
-#include <sys/types.h>
-#include <sys/select.h>],
-	[fd_set x],
-	[cf_cv_type_fd_set=sys/select.h],
-	[cf_cv_type_fd_set=unknown])])])])
-if test $cf_cv_type_fd_set = sys/select.h ; then
-	AC_DEFINE(USE_SYS_SELECT_H,1,[Define to 1 to include sys/select.h to declare fd_set])
-fi
-])
-dnl ---------------------------------------------------------------------------
-dnl CF_CONST_X_STRING version: 1 updated: 2019/04/08 17:50:29
-dnl -----------------
-dnl The X11R4-X11R6 Xt specification uses an ambiguous String type for most
-dnl character-strings.
-dnl
-dnl It is ambiguous because the specification accommodated the pre-ANSI
-dnl compilers bundled by more than one vendor in lieu of providing a standard C
-dnl compiler other than by costly add-ons.  Because of this, the specification
-dnl did not take into account the use of const for telling the compiler that
-dnl string literals would be in readonly memory.
-dnl
-dnl As a workaround, one could (starting with X11R5) define XTSTRINGDEFINES, to
-dnl let the compiler decide how to represent Xt's strings which were #define'd. 
-dnl That does not solve the problem of using the block of Xt's strings which
-dnl are compiled into the library (and is less efficient than one might want).
-dnl
-dnl Xt specification 7 introduces the _CONST_X_STRING symbol which is used both
-dnl when compiling the library and compiling using the library, to tell the
-dnl compiler that String is const.
-AC_DEFUN([CF_CONST_X_STRING],
-[
-AC_TRY_COMPILE(
-[
-#include <stdlib.h>
-#include <X11/Intrinsic.h>
-],
-[String foo = malloc(1)],[
-
-AC_CACHE_CHECK(for X11/Xt const-feature,cf_cv_const_x_string,[
-	AC_TRY_COMPILE(
-		[
-#define _CONST_X_STRING	/* X11R7.8 (perhaps) */
-#undef  XTSTRINGDEFINES	/* X11R5 and later */
-#include <stdlib.h>
-#include <X11/Intrinsic.h>
-		],[String foo = malloc(1); *foo = 0],[
-			cf_cv_const_x_string=no
-		],[
-			cf_cv_const_x_string=yes
-		])
-])
-
-case $cf_cv_const_x_string in
-no)
-	CF_APPEND_TEXT(CPPFLAGS,-DXTSTRINGDEFINES)
-	;;
-*)
-	CF_APPEND_TEXT(CPPFLAGS,-D_CONST_X_STRING)
-	;;
-esac
-
-])
-])dnl
