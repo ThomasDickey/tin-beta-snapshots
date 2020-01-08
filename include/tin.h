@@ -2377,7 +2377,7 @@ extern struct tm *localtime(time_t *);
 
 /* libcanlock */
 #ifdef USE_CANLOCK
-#	include "../libcanlock/include/canlock.h"
+#	include <canlock.h>
 #endif /* USE_CANLOCK */
 
 /* gsasl */
