@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2020-01-01
+dnl Updated   : 2020-01-09
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2020 Thomas E. Dickey <dickey@invisible-island.net>
@@ -542,36 +542,24 @@ CF_ARG_ENABLE(mh-mail-handling,
 	[AC_DEFINE(HAVE_MH_MAIL_HANDLING,1,[Define this to 1 to use MH style mail handling for mailgroups])])
 AC_MSG_RESULT($enableval)
 
-CAN_MAKEFILE=
-CANDIR_MAKE=
 AC_MSG_CHECKING(whether to use Cancel-Locks)
 CF_ARG_ENABLE(cancel-locks,
 	[  --enable-cancel-locks   enable creation of Cancel-Locks])
 AC_MSG_RESULT($enableval)
-if test "x$enableval" = xyes
-then
-	canlock=no
-	AC_CHECK_HEADER(canlock.h,
-		[AC_CHECK_LIB(canlock, cl_clear_secret, canlock=yes)])
-	if test "$canlock" = "yes"; then
-		CANLIBS='-lcanlock'
-		CAN_MAKEFILE=""
-		CANDIR_MAKE='#'
-		CAN_CPPFLAGS=''
-	else
-		CANLIBS='-L../libcanlock -lcanlock'
-		CAN_MAKEFILE='libcanlock/Makefile'
-		CANDIR_MAKE=''
-		CAN_CPPFLAGS='-I$(top_builddir)/libcanlock/include -I$(top_srcdir)/libcanlock/include'
-	fi
-	AC_DEFINE(USE_CANLOCK,1,[Define this to 1 to use Cancel-Locks])
+USE_CANLOCK=$enableval
+
+if test "$USE_CANLOCK" = yes ; then
+	AC_MSG_CHECKING(whether to use installed canlock rather than bundled)
+	AC_ARG_WITH(canlock,
+		[  --with-cancel-locks=PATH use installed canlock versus bundled],
+		[CANLOCK_HOME=$withval],
+		[CANLOCK_HOME=$USE_CANLOCK])
+	AC_MSG_RESULT($CANLOCK_HOME)
+	CF_BUNDLED_CANLOCK($CANLOCK_HOME)
 else
 	CANDIR_MAKE='#'
-	CANLIBS=''
 fi
 AC_SUBST(CANDIR_MAKE)
-AC_SUBST(CANLIBS)
-AC_SUBST(CAN_CPPFLAGS)
 
 ## gsasl - used for AUTH SASL PLAIN
 gsasl=no

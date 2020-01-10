@@ -521,6 +521,14 @@ Turn on Cancel-Locks (RFC 8315). This feature requires the client to know
 the Message-ID of the posting, so if your server does not offer server side
 purposed IDs you have to mess around with EVIL_INSIDE.
 
+--with-canlock[=PATH] (default: bundled copy of canlock)
+If --enable-cancel-locks is used, use this option to also specify if you
+wish to use an externally-installed copy of the canlock (Cancel-Locks)
+library.  If you specify a PATH, it should be the root of a directory
+containing the include- and lib-directories where canlock is installed. 
+If you do not specify a PATH, the makefile will use the standard
+locations for this library.
+
 --enable-heapsort (default: on)
 Enable heapsort(3) as alternative to qsort(3). In large groups with a long
 retention and long threads this may be a performance win as the data in

@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2019-03-11
+ *  Updated   : 2020-01-09
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2020 Thomas Dickey <dickey@invisible-island.net>
@@ -163,6 +163,7 @@
 #	undef HAVE_IOCTL_H
 #	undef HAVE_LANGINFO_H
 #	undef HAVE_LIBC_H
+#	undef HAVE_LIBCANLOCK_3_CANLOCK_H 
 #	undef HAVE_LIBINTL_H
 #	undef HAVE_LOCALE_H
 #	undef HAVE_MALLOC_H
