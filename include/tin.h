@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2019-06-13
+ *  Updated   : 2020-01-09
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -2377,7 +2377,11 @@ extern struct tm *localtime(time_t *);
 
 /* libcanlock */
 #ifdef USE_CANLOCK
-#	include <canlock.h>
+#	ifdef HAVE_LIBCANLOCK_3_CANLOCK_H 
+#		include <libcanlock-3/canlock.h>
+#	else
+#		include <canlock.h>
+#	endif
 #endif /* USE_CANLOCK */
 
 /* gsasl */

@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2020-01-01
+dnl Updated   : 2020-01-09
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2020 Thomas E. Dickey <dickey@invisible-island.net>
@@ -1375,6 +1375,61 @@ AC_SUBST(BUILD_EXEEXT)
 AC_SUBST(BUILD_OBJEXT)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_BUNDLED_CANLOCK version: 1 updated: 2020/01/09 20:03:25
+dnl ------------------
+dnl Top-level macro for configuring an application with a bundled copy of
+dnl the canlock library.
+dnl
+dnl $1 specifies the top of the directory containing CANLOCK's include/lib dirs.
+dnl    That is assigned to $cf_canlock_home, which may be updated.
+AC_DEFUN([CF_BUNDLED_CANLOCK],
+[
+cf_canlock_home=$1
+CANDIR_MAKE=
+CANLIBS=
+CAN_CPPFLAGS=
+CAN_MAKEFILE=
+
+case .$cf_canlock_home in #(vi
+.no) #(vi
+	CF_VERBOSE(using bundled canlock)
+	CANLIBS='-L../libcanlock -lcanlock'
+	CAN_CPPFLAGS='-I$(top_builddir)/libcanlock/include -I$(top_srcdir)/libcanlock/include'
+	CAN_MAKEFILE='libcanlock/Makefile'
+	;;
+.yes) #(vi
+	CF_FIND_CANLOCK(
+		cf_canlock_cppflags,
+		cf_canlock_libs,
+		[
+			CANDIR_MAKE='#'
+			CANLIBS="$cf_canlock_libs"
+			CAN_CPPFLAGS="$cf_canlock_cppflags"
+			CF_VERBOSE(using installed canlock)
+		],[
+			CF_VERBOSE(using bundled canlock because no installed canlock was found)
+			CANLIBS='-L../libcanlock -lcanlock'
+			CAN_CPPFLAGS='-I$(top_builddir)/libcanlock/include -I$(top_srcdir)/libcanlock/include'
+			CAN_MAKEFILE='libcanlock/Makefile'
+		])
+	;;
+.*)
+	CF_PATH_SYNTAX(cf_canlock_home)
+	CANDIR_MAKE='#'
+	CANLIBS="-L${cf_canlock_home}/lib -lcanlock"
+	CAN_CPPFLAGS="-I${cf_canlock_home}/include"
+	CF_VERBOSE(using installed canlock $cf_canlock_home)
+	;;
+esac
+
+AC_DEFINE(USE_CANLOCK,1,[Define this to 1 to use Cancel-Locks])
+
+AC_SUBST(CANDIR_MAKE)
+AC_SUBST(CANLIBS)
+AC_SUBST(CAN_CPPFLAGS)
+AC_SUBST(CAN_MAKEFILE)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_BUNDLED_INTL version: 19 updated: 2018/06/20 20:23:13
 dnl ---------------
 dnl Top-level macro for configuring an application with a bundled copy of
@@ -2612,6 +2667,53 @@ AC_DEFUN([CF_ERRNO],
 CF_CHECK_ERRNO(errno)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_FIND_CANLOCK version: 1 updated: 2020/01/09 20:03:25
+dnl ---------------
+dnl Look for CANLOCK, to use instead of a bundled copy of CANLOCK.
+dnl
+dnl $1 = variable to set with CANLOCK's CPPFLAGS
+dnl $2 = variable to set with CANLOCK's LIBS
+dnl $3 = action to take on success
+dnl $4 = action to take on failure
+AC_DEFUN([CF_FIND_CANLOCK],[
+AC_REQUIRE([CF_PKG_CONFIG])
+
+cf_save_CFLAGS="$CFLAGS"
+cf_save_LIBS="$LIBS"
+cf_find_CANLOCK=yes
+
+CF_TRY_PKG_CONFIG(libcanlock3,,[
+	CF_TRY_PKG_CONFIG(libcanlock,,[
+		cf_pkgconfig_incs=
+		cf_pkgconfig_libs=
+		for cf_canlock_lib in canlock3 canlock
+		do
+			AC_CHECK_LIB($cf_canlock_lib,cl_clear_secret,[
+				cf_pkgconfig_libs="-l$cf_canlock_lib"
+				break
+			])
+		done
+		if test -z "$cf_pkgconfig_libs" ; then
+			cf_find_CANLOCK=no
+		else
+			AC_CHECK_HEADERS(libcanlock-3/canlock.h canlock.h)
+		fi
+		])
+	])
+
+CFLAGS="$cf_save_CFLAGS"
+LIBS="$cf_save_LIBS"
+
+$1="$cf_pkgconfig_incs"
+$2="$cf_pkgconfig_libs"
+
+if test "$cf_find_CANLOCK" = yes; then
+	$3
+else
+	$4
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_FIND_IPV6_LIBS version: 8 updated: 2015/04/15 19:08:48
 dnl -----------------
 dnl Based on the IPV6 stack type, look for the corresponding library.
@@ -3248,12 +3350,13 @@ CF_INTEL_COMPILER(GCC,INTEL_COMPILER,CFLAGS)
 CF_CLANG_COMPILER(GCC,CLANG_COMPILER,CFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 36 updated: 2019/09/07 13:38:36
+dnl CF_GCC_WARNINGS version: 37 updated: 2020/01/05 20:04:12
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
 dnl
 dnl	-Wconversion (useful in older versions of gcc, but not in gcc 2.7.x)
+dnl	-Winline (usually not worthwhile)
 dnl	-Wredundant-decls (system headers make this too noisy)
 dnl	-Wtraditional (combines too many unrelated messages, only a few useful)
 dnl	-Wwrite-strings (too noisy, but should review occasionally).  This
@@ -3309,7 +3412,7 @@ then
 		fi
 	done
 	CFLAGS="$cf_save_CFLAGS"
-elif test "$GCC" = yes
+elif test "$GCC" = yes && test "$GCC_VERSION" != "unknown"
 then
 	AC_CHECKING([for $CC warning options])
 	cf_save_CFLAGS="$CFLAGS"
@@ -3331,7 +3434,7 @@ then
 		Wpointer-arith \
 		Wshadow \
 		Wstrict-prototypes \
-		Wundef $cf_gcc_warnings $cf_warn_CONST $1
+		Wundef Wno-inline $cf_gcc_warnings $cf_warn_CONST $1
 	do
 		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
 		if AC_TRY_EVAL(ac_compile); then
