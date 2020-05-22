@@ -44,6 +44,8 @@ o  batch mode has several bugs
      the statistics nor taken into account for the 'any unread news' status.
    - -vc could be more verbose (like -vcZ is)
    - -o currently is not a 'batch_mode' option
+   - -u could be faster if not building threads etc. pp.
+     (build_references(), filter_articles(), make_threads())
    [Urs Janssen <urs@tin.org>]
 
 o  add version number to other config-files (e.g. tin.defaults)
@@ -464,8 +466,6 @@ o  when From: only contains "First-name Last-name" tin strips the
 
 o  Bounce duplicate Message-ID's when the headers are read. This will
    make the threading code happier too.
-   Make read_overview() more forgiving of errors. If the article # is okay,
-   then there is no reason to completely hide the article
    [Jason Faultless <jason@altarstone.com>]
 
 o  Merge the selection code with the range code. Having two similar methods
@@ -716,14 +716,17 @@ o  check where int/long/... should be replaced by size_t, uid_t, mode_t,
    off_t, ...
    [Urs Janssen <urs@tin.org>]
 
-o  check code with Splint (LCLint) <http://www.splint.org/>,
-   valgrind (<http://valgrind.org/>), cppcheck
-   (<https://trac.cppcheck.net/>), AdLint
-   (<http://adlint.sourceforge.net/>), clang-analyzer
-   (<http://clang-analyzer.llvm.org/>), Coverity
-   (<https://scan.coverity.com/projects/993>), infer
-   (<http://fbinfer.com/>) and zzuf
-   (<http://caca.zoy.org/wiki/zzuf>)
+o  check code with
+   valgrind (<http://valgrind.org/>),
+   cppcheck (<https://trac.cppcheck.net/>),
+   Coverity (<https://scan.coverity.com/projects/993>),
+   gcc-10 -fanalyzer
+   (<https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html>),
+   clang-analyzer (<http://clang-analyzer.llvm.org/>),
+   infer (<http://fbinfer.com/>)
+   AdLint (<http://adlint.sourceforge.net/>),
+   Splint (LCLint) <http://www.splint.org/> and
+   zzuf (<http://caca.zoy.org/wiki/zzuf>)
 
 o  rewrite the tag code so that arts[].tagged becomes index in arts[]
    of next tagged article. num_of_tagged_arts becomes index of first
@@ -833,6 +836,10 @@ o  man page always needs work and proof reading
    feature isn't documented at all.
 
 o  tin.defaults could use more documentation in man page (tin.5)
+
+o  submit short invocation examples to tldr
+   <https://github.com/tldr-pages/tldr> and/or eg
+   <https://github.com/srsudar/eg>
 
 o  replace "\\" by "\e" in man pages (portable?)
 
@@ -1040,7 +1047,7 @@ o  update gettext stuff to > gettext-0.12.1 (or drop it?)
 o  and pcre2 support (new API)
    <http://www.pcre.org/current/doc/html/>
 
-o  clean up included pcre stuff and update to >= pcre-8.43
+o  clean up included pcre stuff and update to >= pcre-8.44
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file

@@ -57,6 +57,9 @@ tmpfile(
 	char buf[sizeof(_PATH_TMP) + sizeof(TRAILER)];
 	int sverrno, fd = -1;
 	sigset_t set, oset;
+#	if !defined(HAVE_MKSTEMP) && defined(HAVE_MKTEMP)
+	char *p;
+#	endif /* !HAVE_MKSTEMP && HAVE_MKTEMP */
 
 	(void) memcpy(buf, _PATH_TMP, sizeof(_PATH_TMP) - 1);
 	(void) memcpy(buf + sizeof(_PATH_TMP) - 1, TRAILER, sizeof(TRAILER));
@@ -69,7 +72,8 @@ tmpfile(
 	fd = mkstemp(buf);
 #	else
 #		ifdef HAVE_MKTEMP
-	fd = open(mktemp(buf), (O_WRONLY|O_CREAT|O_EXCL), (mode_t) (S_IRUSR|S_IWUSR));
+	p = mktemp(buf);
+	fd = open(p, (O_WRONLY|O_CREAT|O_EXCL), (mode_t) (S_IRUSR|S_IWUSR));
 #		endif /* HAVE_MKTEMP */
 #	endif /* HAVE_MKSTEMP */
 
@@ -79,7 +83,13 @@ tmpfile(
 		(void) unlink(buf);
 		u = umask(0);
 		(void) umask(u);
+#	ifdef HAVE_FCHMOD
 		(void) fchmod(fd, (S_IRUGO|S_IWUGO) & ~u);
+#	else
+#		if defined(HAVE_CHMOD) && !defined(HAVE_MKSTEMP) && defined(HAVE_MKTEMP)
+		fchmod(p, (S_IRUGO|S_IWUGO) & ~u);
+#		endif /* HAVE_CHMOD && !HAVE_MKSTEMP && HAVE_MKTEMP */
+#endif /* HAVE_FCHMOD */
 	}
 
 	(void) sigprocmask(SIG_SETMASK, &oset, NULL);

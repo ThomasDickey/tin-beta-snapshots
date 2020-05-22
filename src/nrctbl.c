@@ -3,7 +3,7 @@
  *  Module    : nrctbl.c
  *  Author    : Sven Paulus <sven@tin.org>
  *  Created   : 1996-10-06
- *  Updated   : 2019-07-08
+ *  Updated   : 2020-04-23
  *  Notes     : This module does the NNTP server name lookup in
  *              ~/.tin/newsrctable and returns the real hostname
  *              and the name of the newsrc file for a given
@@ -72,7 +72,13 @@ write_newsrctable_file(
 		return;
 
 	fprintf(fp, _(txt_nrctbl_info), PRODUCT, VERSION);
+#ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+#else
+#	ifdef HAVE_CHMOD
+	chmod(local_newsrctable_file, (mode_t) (S_IRUSR|S_IWUSR));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 	fclose(fp);
 }
 

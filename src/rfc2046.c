@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2019-10-25
+ *  Updated   : 2020-05-01
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2020 Jason Faultless <jason@altarstone.com>
@@ -1250,8 +1250,11 @@ parse_multipart_article(
 
 			case M_HDR:
 				switch (bnd) {
-					case BOUND_START:	/* TODO: skip error message if not -DDEBUG? */
-						error_message(2, _(txt_error_mime_start));
+					case BOUND_START:
+#ifdef DEBUG
+						if (debug & DEBUG_MISC)
+							error_message(2, _(txt_error_mime_start));
+#endif /* DEBUG */
 						continue;
 
 					case BOUND_NONE:
@@ -1465,8 +1468,10 @@ parse_rfc2045_article(
 			/* Strip off EOF condition if present */
 			if (ret & TIN_EOF) {
 				ret ^= TIN_EOF;
-				/* TODO: skip error message if not -DDEBUG? */
-				error_message(2, _(txt_error_mime_end), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
+#ifdef DEBUG
+				if (debug & DEBUG_MISC)
+					error_message(2, _(txt_error_mime_end), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
+#endif /* DEBUG */
 				if (ret != 0)
 					goto error;
 			} else

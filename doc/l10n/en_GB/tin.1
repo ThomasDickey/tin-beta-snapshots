@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2019-12-24
+.\" Updated   : 2020-05-22
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "December 24th, 2019" 2.4.4 "Usenet newsreader"
+.TH tin 1 "December 24th, 2019" 2.4.5 "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -177,7 +177,7 @@ day.
 .TP 
 \fB\-Q\fP
 Quick start. Start \fBtin\fP as quickly as possible. Currently this is
-equivalent to \*(rq\fB\-nqd\fP\*(rq.
+equivalent to \*(rq\fB\-dnq\fP\*(rq.
 .TP 
 \fB\-r\fP
 Read news remotely from the default NNTP server specified in the environment
@@ -201,7 +201,7 @@ option. This option is disabled if \fBtin\fP retrieves its index files via an
 NNTP server and \fBcache_overview_files\fP is turned off.
 .TP 
 \fB\-v\fP
-Verbose mode for \*(rq\fB\-D\fP\*(rq, \*(rq\fB\-c\fP\*(rq, \*(rq\fB\-M\fP\*(rq, \*(rq\fB\-N\fP\*(rq, \&\*(rq\fB\-S\fP\*(rq,
+Verbose mode for \*(rq\fB\-c\fP\*(rq, \*(rq\fB\-D\fP\*(rq, \*(rq\fB\-M\fP\*(rq, \*(rq\fB\-N\fP\*(rq, \&\*(rq\fB\-S\fP\*(rq,
 \&\*(rq\fB\-u\fP\*(rq and \*(rq\fB\-Z\fP\*(rq options. Can be used multiple times to increase
 verbosity.
 .TP 
@@ -1564,6 +1564,9 @@ Colour of background for inverse text
 \fBColour for inverse text (foreground) (col_invers_fg)\fP
 Colour of foreground for inverse text
 .TP 
+\fBColour of status messages (col_message)\fP
+Colour of status messages in last line
+.TP 
 \fBColour of highlighting with _dash_ (col_markdash)\fP
 Colour of words emphasised like _this_. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
@@ -2332,6 +2335,14 @@ Keep).
 \fBNo unsubscribed groups in newsrc (strip_newsrc)\fP
 If ON, then unsubscribed groups will be permanently removed from your
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP file. Default is OFF.
+.TP 
+\fBRegex with Subject prefixes (strip_re_regex)\fP
+A regular expression to find Subject prefixes like "Re:" to remove.  If
+\fBstrip_re_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
+.TP 
+\fBRegex with Subject suffixes (strip_was_regex)\fP
+A regular expression to find Subject suffixes like "(was:" to remove.  If
+\fBstrip_was_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
 .TP 
 \fBRegex used to highlight \-strokes\- (strokes_regex)\fP
 A regular expression that will be applied when reading articles. All
@@ -3653,16 +3664,15 @@ Urs Janssen <urs@tin.org>
 .\"
 .\"
 .SH "SEE ALSO"
-\fB\%cron\fP(8), \fB\%elm\fP(1), \fB\%emacs\fP(1), \fB\%gpg\fP(1), \fB\%inews\fP(1),
-\fB\%ispell\fP(1), \fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%noffle\fP(1),
-\fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1),
-\fB\%shar\fP(1), \fB\%slrnface\fP(1), \fB\%tass\fP(1), \fB\%unshar\fP(1),
-\fB\%uudecode\fP(1), \fB\%vi\fP(1), \fB\%xterm\fP(1x), \fB\%heapsort\fP(3),
-\fB\%iconv\fP(3), \fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3), \fB\%pcre\fP(3),
-\fB\%pcrepattern\fP(3), \fB\%qsort\fP(3), \fB\%snprintf\fP(3), \fB\%strftime\fP(3),
-\fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3), \fB\%environ\fP(5), \fB\%locale\fP(5),
-\fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5),
-\fB\%tin\fP(5), \fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP,
-\fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3977\fP,
-\fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP,
-\fBRFC\%6048\fP
+\fB\%elm\fP(1), \fB\%emacs\fP(1), \fB\%gpg\fP(1), \fB\%inews\fP(1), \fB\%ispell\fP(1),
+\fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%noffle\fP(1), \fB\%perl\fP(1),
+\fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1), \fB\%shar\fP(1),
+\fB\%slrnface\fP(1), \fB\%tass\fP(1), \fB\%unshar\fP(1), \fB\%uudecode\fP(1),
+\fB\%vi\fP(1), \fB\%xterm\fP(1x), \fB\%heapsort\fP(3), \fB\%iconv\fP(3),
+\fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3), \fB\%pcre\fP(3), \fB\%pcrepattern\fP(3),
+\fB\%qsort\fP(3), \fB\%snprintf\fP(3), \fB\%strftime\fP(3), \fB\%vsnprintf\fP(3),
+\fB\%wildmat\fP(3), \fB\%environ\fP(5), \fB\%locale\fP(5), \fB\%mailcap\fP(5),
+\fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5), \fB\%tin\fP(5), \fB\%cron\fP(8),
+\fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP,
+\fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
+\fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP

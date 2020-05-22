@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-07-09
+ *  Updated   : 2020-04-29
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -2196,7 +2196,13 @@ create_normal_article_headers(
 		return FALSE;
 	}
 
+#ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+#else
+#	ifdef HAVE_CHMOD
+	chmod(article_name, (mode_t) (S_IRUSR|S_IWUSR));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	get_from_name(from_name, group);
 #ifdef FORGERY
@@ -2968,7 +2974,13 @@ post_response(
 		return ret_code;
 	}
 
+#ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+#else
+#	ifdef HAVE_CHMOD
+	chmod(article_name, (mode_t) (S_IRUSR|S_IWUSR));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	group = group_find(groupname, FALSE);
 	get_from_name(from_name, group);
@@ -3140,7 +3152,13 @@ create_mail_headers(
 		return NULL;
 	}
 
+#ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+#else
+#	ifdef HAVE_CHMOD
+	chmod(filename, (mode_t) (S_IRUSR|S_IWUSR));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	if ((INTERACTIVE_NONE == tinrc.interactive_mailer) || (INTERACTIVE_WITH_HEADERS == tinrc.interactive_mailer)) {	/* tin should include headers for editing */
 		char from_buf[HEADER_LEN];
@@ -3854,7 +3872,13 @@ cancel_article(
 		return redraw_screen;
 	}
 
+#ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+#else
+#	ifdef HAVE_CHMOD
+	chmod(cancel, (mode_t) (S_IRUSR|S_IWUSR));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 #ifdef FORGERY
 	if (!author) {
@@ -4080,7 +4104,13 @@ repost_article(
 		perror_message(_(txt_cannot_open), article_name);
 		return ret_code;
 	}
+#ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+#else
+#	ifdef HAVE_CHMOD
+	chmod(article_name, (mode_t) (S_IRUSR|S_IWUSR));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	get_from_name(from_name, group);
 	get_user_info(user_name, full_name);
@@ -4472,14 +4502,14 @@ checknadd_headers(
 #if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
 		if (*system_info.release) {
 #	ifdef _AIX
-		snprintf(suffix, sizeof(suffix), " (%s/%s.%s)",
+		snprintf(suffix, sizeof(suffix), "(%s/%s.%s)",
 			system_info.sysname, system_info.version, system_info.release);
 #	else
 #		if defined(SEIUX) || defined(__riscos)
-			snprintf(suffix, sizeof(suffix), " (%s/%s)",
+			snprintf(suffix, sizeof(suffix), "(%s/%s)",
 				system_info.version, system_info.release);
 #		else
-			snprintf(suffix, sizeof(suffix), " (%s/%s (%s))",
+			snprintf(suffix, sizeof(suffix), "(%s/%s (%s))",
 				system_info.sysname, system_info.release, system_info.machine);
 #		endif /* SEIUX || __riscos */
 #	endif /* _AIX */
@@ -4487,7 +4517,7 @@ checknadd_headers(
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 #ifdef SYSTEM_NAME
 		if (!*suffix && strlen(SYSTEM_NAME))
-				snprintf(suffix, sizeof(suffix), " (%s)", SYSTEM_NAME);
+				snprintf(suffix, sizeof(suffix), "(%s)", SYSTEM_NAME);
 #endif /* SYSTEM_NAME */
 
 		fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") %s\n",
@@ -5238,7 +5268,13 @@ get_secret(
 #		ifdef DEBUG
 			error_message(4, _(txt_error_insecure_permissions), path_secret, statbuf.st_mode);
 #		else
+#			ifdef HAVE_FCHMOD
 			fchmod(fd, S_IRUSR|S_IWUSR);
+#			else
+#				ifdef HAVE_CHMOD
+			chmod(path_secret, S_IRUSR|S_IWUSR);
+#				endif /* HAVE_CHMOD */
+#			endif /* HAVE_FCHMOD */
 #		endif /* DEBUG */
 		}
 #	endif /* !FILE_MODE_BROKEN */

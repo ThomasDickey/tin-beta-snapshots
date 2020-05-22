@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-07-23
+ *  Updated   : 2020-05-19
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -109,6 +109,8 @@ debug_delete_files(
 	if (debug & (DEBUG_MISC | DEBUG_REMOVE)) {
 		joinpath(file, sizeof(file), TMPDIR, "ACTIVE");
 		unlink(file);
+		joinpath(file, sizeof(file), TMPDIR, "GNKSA");
+		unlink(file);
 	}
 }
 
@@ -122,10 +124,7 @@ debug_print_arts(
 {
 	int i;
 
-	if (!(debug & DEBUG_FILTER))
-		return;
-
-	for_each_art(i)
+	for_each_art(i) /* fopen/close() horror */
 		debug_print_header(&arts[i]);
 }
 
@@ -134,13 +133,14 @@ void
 debug_print_header(
 	struct t_article *s)
 {
+	static char file[PATH_LEN] = { '\0' };
 	FILE *fp;
-	char file[PATH_LEN];
 
 	if (!(debug & DEBUG_FILTER))
 		return;
 
-	joinpath(file, sizeof(file), TMPDIR, "ARTS");
+	if (!*file)
+		joinpath(file, sizeof(file), TMPDIR, "ARTS");
 
 	if ((fp = fopen(file, "a")) != NULL) {
 		fprintf(fp,"art=[%5"T_ARTNUM_PFMT"] tag=[%s] kill=[%s] selected=[%s]\n", s->artnum,
@@ -166,7 +166,13 @@ debug_print_header(
 		}
 		fprintf(fp,"thread=[%d]  prev=[%d]  status=[%u]\n\n", s->thread, s->prev, s->status);
 		fflush(fp);
+#ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+#else
+#	ifdef HAVE_CHMOD
+		chmod(file, (S_IRUGO|S_IWUGO));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 		fclose(fp);
 	}
 }
@@ -176,13 +182,14 @@ void
 debug_print_active(
 	void)
 {
+	static char file[PATH_LEN] = { '\0' };
 	FILE *fp;
-	char file[PATH_LEN];
 
 	if (!(debug & DEBUG_MISC))
 		return;
 
-	joinpath(file, sizeof(file), TMPDIR, "ACTIVE");
+	if (!*file)
+		joinpath(file, sizeof(file), TMPDIR, "ACTIVE");
 
 	if ((fp = fopen(file, "w")) != NULL) {
 		int i;
@@ -203,7 +210,13 @@ debug_print_active(
 			if (debug & DEBUG_ATTRIB)
 				debug_print_attributes(group->attribute, fp);
 		}
+#ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+#else
+#	ifdef HAVE_CHMOD
+		chmod(file, (S_IRUGO|S_IWUGO));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 		fclose(fp);
 	}
 }
@@ -248,24 +261,30 @@ debug_print_attributes(
 
 void
 debug_print_malloc(
-	int is_malloc,
+	t_bool is_malloc,
 	const char *xfile,
 	int line,
 	size_t size)
 {
-	FILE *fp;
-	char file[PATH_LEN];
+	static char file[PATH_LEN] = { '\0' };
 	static size_t total = 0;
+	FILE *fp;
 
-	if (debug & DEBUG_MEM) {
+	if (!*file)
 		joinpath(file, sizeof(file), TMPDIR, "MALLOC");
-		if ((fp = fopen(file, "a")) != NULL) {
-			total += size;
-			/* sometimes size_t is long */
-			fprintf(fp, "%12s:%-4d %s(%6lu). Total %lu\n", xfile, line, is_malloc ? " malloc" : "realloc", (unsigned long) size, (unsigned long) total);
-			fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
-			fclose(fp);
-		}
+
+	if ((fp = fopen(file, "a")) != NULL) {
+		total += size;
+		/* sometimes size_t is long */
+		fprintf(fp, "%12s:%-4d %s(%6lu). Total %lu\n", xfile, line, is_malloc ? " malloc" : "realloc", (unsigned long) size, (unsigned long) total);
+#ifdef HAVE_FCHMOD
+		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+#else
+#	ifdef HAVE_CHMOD
+		chmod(file, (S_IRUGO|S_IWUGO));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
+		fclose(fp);
 	}
 }
 
@@ -308,15 +327,13 @@ void
 debug_print_filters(
 	void)
 {
-	FILE *fp;
-	char file[PATH_LEN];
 	int i, num;
+	static char file[PATH_LEN] = { '\0' };
 	struct t_filter *the_filter;
+	FILE *fp;
 
-	if (!(debug & DEBUG_FILTER))
-		return;
-
-	joinpath(file, sizeof(file), TMPDIR, "FILTER");
+	if (!*file)
+		joinpath(file, sizeof(file), TMPDIR, "FILTER");
 
 	if ((fp = fopen(file, "w")) != NULL) {
 		/*
@@ -331,7 +348,13 @@ debug_print_filters(
 		}
 		fprintf(fp, "*** END GLOBAL FILTER ***\n");
 
+#ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+#else
+#	ifdef HAVE_CHMOD
+		chmod(file, (S_IRUGO|S_IWUGO));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 		fclose(fp);
 	}
 }
@@ -359,7 +382,13 @@ debug_print_file(
 
 	if ((fp = fopen(file, "a")) != NULL) {
 		fprintf(fp,"%s\n", buf);
+#ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+#else
+#	ifdef HAVE_CHMOD
+		chmod(file, (S_IRUGO|S_IWUGO));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 		fclose(fp);
 	}
 	free(buf);
@@ -407,7 +436,13 @@ debug_print_bitmap(
 					(art->status == ART_READ ? "READ" : "UNREAD"));
 			}
 			debug_print_newsrc(&group->newsrc, fp);
+#ifdef HAVE_FCHMOD
 			fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+#else
+#	ifdef HAVE_CHMOD
+			chmod(file, (S_IRUGO|S_IWUGO));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 			fclose(fp);
 		}
 	}

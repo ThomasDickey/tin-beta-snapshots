@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-01-09
+ *  Updated   : 2020-05-13
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -126,6 +126,9 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 		extern int errno;
 #	endif /* DECL_ERRNO */
 #endif /* !errno */
+#if !defined(EHOSTUNREACH)
+#   define EHOSTUNREACH 113
+#endif /* !EHOSTUNREACH */
 
 #ifdef HAVE_STDDEF_H
 #	include <stddef.h>
@@ -1456,9 +1459,16 @@ typedef unsigned char	t_bitmap;
 #define MSGID_REF			2		/* Add a msgid->ref entry */
 
 /*
- * Size of msgid hash table
+ * Size of hash tables for hash_str() and hash_msgid()
+ * Make sure it's prime!
  */
-#define MSGID_HASH_SIZE		2609
+#ifdef SMALL_MEMORY_MACHINE
+#	define HASHNODE_TABLE_SIZE 2411
+#	define MSGID_HASH_SIZE	2609
+#else
+#	define HASHNODE_TABLE_SIZE 222199
+#	define MSGID_HASH_SIZE	222199
+#endif /* MSGID_HASH_SIZE */
 
 /*
  * cmd-line options
@@ -2377,11 +2387,11 @@ extern struct tm *localtime(time_t *);
 
 /* libcanlock */
 #ifdef USE_CANLOCK
-#	ifdef HAVE_LIBCANLOCK_3_CANLOCK_H 
+#	ifdef HAVE_LIBCANLOCK_3_CANLOCK_H
 #		include <libcanlock-3/canlock.h>
 #	else
 #		include <canlock.h>
-#	endif
+#	endif /* HAVE_LIBCANLOCK_3_CANLOCK_H */
 #endif /* USE_CANLOCK */
 
 /* gsasl */

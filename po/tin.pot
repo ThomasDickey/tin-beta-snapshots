@@ -3,11 +3,12 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-18 13:24+0100\n"
+"POT-Creation-Date: 2020-05-22 12:39+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,6 +16,28 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#. -> lang.c
+#: src/art.c:419
+#, c-format
+msgid "Reading %s\n"
+msgstr ""
+
+#. TODO: -> lang.c
+#: src/art.c:1173
+msgid "Threading by multipart"
+msgstr ""
+
+#. -> lang.c
+#: src/art.c:2509
+#, c-format
+msgid "Writing %s\n"
+msgstr ""
+
+#. TODO: -> lang.c
+#: src/art.c:2589
+msgid "Writing overview cache..."
+msgstr ""
 
 #: src/attrib.c:986
 msgid "Processing attributes... "
@@ -4354,7 +4377,7 @@ msgid "  -p port  use port as NNTP port [default=%d]"
 msgstr ""
 
 #: src/lang.c:1118
-msgid "  -Q       quick start. Same as -nqd"
+msgid "  -Q       quick start. Same as -dnq"
 msgstr ""
 
 #: src/lang.c:1119
@@ -7305,21 +7328,27 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr ""
 
 #. TODO: lang.c
-#: src/main.c:817
+#: src/main.c:819
 msgid "reading from local spool"
 msgstr ""
 
-#: src/misc.c:3877
+#. TODO: != ENOENT ? and -> lang.c
+#: src/misc.c:750
+#, c-format
+msgid "Error: unlink %s"
+msgstr ""
+
+#: src/misc.c:3905
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr ""
 
-#: src/misc.c:3880
+#: src/misc.c:3908
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr ""
 
-#: src/newsrc.c:460
+#: src/newsrc.c:472
 msgid "Unreachable?\n"
 msgstr ""
 
@@ -7356,7 +7385,7 @@ msgstr ""
 msgid "MOTD: "
 msgstr ""
 
-#: src/nrctbl.c:178
+#: src/nrctbl.c:184
 #, c-format
 msgid "couldn't expand %s\n"
 msgstr ""
@@ -7383,12 +7412,12 @@ msgid ""
 "encoding is not set to %s\n"
 msgstr ""
 
-#: src/post.c:2325
+#: src/post.c:2331
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr ""
 
-#: src/post.c:4075
+#: src/post.c:4099
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -7414,6 +7443,18 @@ msgid "[- Unavailable -]"
 msgstr ""
 
 #.
+#. * Add the Message-ID headers to the cache, using the last Reference
+#. * as the parent
+#.
+#.
+#. * Add the References data to the cache
+#.
+#: src/refs.c:1015 src/refs.c:1077
+#, c-format
+msgid "Building References-trees (%d/%d)..."
+msgstr ""
+
+#.
 #. * preamble
 #. * TODO: -> lang.c
 #.
@@ -7427,7 +7468,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: src/save.c:1069
+#: src/save.c:1075
 msgid "bytes"
 msgstr ""
 

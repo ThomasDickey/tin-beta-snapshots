@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2017-03-28
+ *  Updated   : 2020-05-13
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -982,6 +982,7 @@ void
 build_references(
 	struct t_group *group)
 {
+	static char msg[LEN];
 	char *s;
 	int i;
 	struct t_article *art;
@@ -1011,6 +1012,7 @@ build_references(
 	 * Add the Message-ID headers to the cache, using the last Reference
 	 * as the parent
 	 */
+	snprintf(msg, sizeof(msg), _("Building References-trees (%d/%d)..."), 1, 2); /* TODO: -> lang.c */
 	for_each_art(i) {
 		art = &arts[i];
 
@@ -1060,6 +1062,9 @@ build_references(
 			art->refptr->article = i;
 
 		FreeAndNull(art->msgid);	/* Now cached - discard this */
+
+		if (i % (MODULO_COUNT_NUM * 20) == 0)
+			show_progress(msg, i, top_art);
 	}
 
 #ifdef DEBUG
@@ -1069,6 +1074,7 @@ build_references(
 	/*
 	 * Add the References data to the cache
 	 */
+	snprintf(msg, sizeof(msg), _("Building References-trees (%d/%d)..."), 2, 2); /* TODO: -> lang.c */
 	for_each_art(i) {
 		if (!arts[i].refs)						/* No refs - skip */
 			continue;
@@ -1086,6 +1092,9 @@ build_references(
 			add_msgid(REF_REF, art->refptr->parent->txt, refs);
 
 		FreeAndNull(art->refs);
+
+		if (i % (MODULO_COUNT_NUM * 20) == 0)
+			show_progress(msg, i, top_art);
 	}
 
 #ifdef DEBUG

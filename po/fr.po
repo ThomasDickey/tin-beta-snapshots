@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin-2.4.2\n"
+"Project-Id-Version: tin-2.4.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-18 13:24+0100\n"
-"PO-Revision-Date: 2018-11-16 14:30+0100\n"
+"POT-Creation-Date: 2020-05-22 12:39+0200\n"
+"PO-Revision-Date: 2019-12-31 00:41+0100\n"
 "Last-Translator: Matt Anton <tin@lv223.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -15,8 +15,32 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Poedit 2.2\n"
 "X-Poedit-SourceCharset: UTF-8\n"
+
+#. -> lang.c
+#: src/art.c:419
+#, fuzzy, c-format
+msgid "Reading %s\n"
+msgstr "Relecture de %s..."
+
+#. TODO: -> lang.c
+#: src/art.c:1173
+#, fuzzy
+msgid "Threading by multipart"
+msgstr "Regroupement des articles..."
+
+#. -> lang.c
+#: src/art.c:2509
+#, fuzzy, c-format
+msgid "Writing %s\n"
+msgstr "Essai %s"
+
+#. TODO: -> lang.c
+#: src/art.c:2589
+#, fuzzy
+msgid "Writing overview cache..."
+msgstr "Écriture du fichier attributes..."
 
 #: src/attrib.c:986
 msgid "Processing attributes... "
@@ -292,7 +316,7 @@ msgid "#  quick_select_header=NUM\n"
 msgstr "#  quick_select_header=NUM\n"
 
 #: src/attrib.c:1289
-#, fuzzy, c-format
+#, c-format
 msgid "#  quote_chars=STRING (%%I for initials)\n"
 msgstr "#  quote_chars=TERME (%%I pour les initiales)\n"
 
@@ -704,7 +728,7 @@ msgstr "%d sur %d pièces-jointes enregistrées."
 
 #: src/lang.c:89
 msgid "Select attachment> "
-msgstr "Sélectionner la pièce-jointe >"
+msgstr "Sélectionner la pièce-jointe > "
 
 #: src/lang.c:90
 msgid "Tagged attachment"
@@ -1525,7 +1549,6 @@ msgid "-- end of forwarded message --\n"
 msgstr "-- fin du message redirigé --\n"
 
 #: src/lang.c:281
-#, fuzzy
 msgid ""
 "# Format:\n"
 "#   comment=STRING    Optional. Multiple lines allowed. Comments must be "
@@ -1567,7 +1590,8 @@ msgstr ""
 "#                     valide pour un commentaire !\n"
 "#   group=TERME       Obligatoire. Liste de groupe (pe. fr.comp.*,!"
 "*sources*).\n"
-"#   case=NUM          Obligatoire. Casse sensible=0 / casse insensible=1.\n"
+"#   case=NUM          Obligatoire. Casse sensible=0 / casse insensible=1 "
+"lors du filtrage.\n"
 "#   score=NUM|TERME   Obligatoire. Score à attribuer. Soit :\n"
 "#     score=NUM         Un numéro (pe. 70). Ou :\n"
 "#     score=TERME       Un des deux mots-clé suivants : 'hot' ou 'kill'.\n"
@@ -2750,7 +2774,7 @@ msgstr "Créer un filtre"
 #: src/lang.c:591
 #, c-format
 msgid "Kill Msg-ID:   [%s] (f/l/o/n): "
-msgstr "  MID : [%s] (t/d/a/n) : "
+msgstr "Filtrer par Msg-ID : [%s] (t/d/a/n) : "
 
 #: src/lang.c:592
 msgid "Kill pattern scope  : "
@@ -3333,7 +3357,7 @@ msgstr "%s non marqué"
 #: src/lang.c:735
 #, c-format
 msgid "Preparing for filtering on Path header (%d/%d)..."
-msgstr ""
+msgstr "Préparation pour filtrer d’après l’en-tête ‘Path’ (%d/%d)…"
 
 #: src/lang.c:737
 msgid "Processing mail messages marked for deletion."
@@ -3536,7 +3560,7 @@ msgstr "Créer une règle"
 #: src/lang.c:791
 #, c-format
 msgid "Select Msg-ID  [%s] (f/l/o/n): "
-msgstr "  MID : [%s] (t/d/a/n) : "
+msgstr "Sélection par Msg-ID : [%s] (t/d/a/n) : "
 
 #: src/lang.c:792
 msgid "Select pattern scope: "
@@ -3667,11 +3691,11 @@ msgstr "Effacer la sélection ?"
 
 #: src/lang.c:823
 msgid "Enter scope> "
-msgstr "Entrez la sélection >"
+msgstr "Entrez la sélection > "
 
 #: src/lang.c:824
 msgid "Select new position> "
-msgstr "Sélection de la nouvelle position >"
+msgstr "Sélection de la nouvelle position > "
 
 #: src/lang.c:825
 msgid "New position cannot be a global scope"
@@ -3683,7 +3707,7 @@ msgstr "Opération interdite, sélection globale"
 
 #: src/lang.c:827
 msgid "Rename scope> "
-msgstr "Renommer la sélection"
+msgstr "Renommer la sélection "
 
 #: src/lang.c:828
 msgid "Select scope> "
@@ -3971,7 +3995,7 @@ msgstr ""
 
 #: src/lang.c:903
 msgid "unread "
-msgstr "non lu"
+msgstr "non lu "
 
 #: src/lang.c:904
 #, c-format
@@ -4158,9 +4182,9 @@ msgid "%s only useful for batch mode operations\n"
 msgstr "%s utile seulement pour opérations en tâche de fond\n"
 
 #: src/lang.c:943
-#, fuzzy, c-format
+#, c-format
 msgid "%s only useful for batch or debug mode operations\n"
-msgstr "%s utile seulement pour opérations en tâche de fond ou débogage\n"
+msgstr "%s utile seulement pour opérations en tâche de fond ou de débogage\n"
 
 #: src/lang.c:944
 #, c-format
@@ -4775,8 +4799,8 @@ msgid "  -p port  use port as NNTP port [default=%d]"
 msgstr "  -p port  utiliser port comme port NNTP [défaut=%d]"
 
 #: src/lang.c:1118
-msgid "  -Q       quick start. Same as -nqd"
-msgstr "  -Q       démarrage rapide. Idem que -npd"
+msgid "  -Q       quick start. Same as -dnq"
+msgstr "  -Q       démarrage rapide. Idem que -dnq"
 
 #: src/lang.c:1119
 msgid "  -r       read news remotely from default NNTP server"
@@ -5379,7 +5403,7 @@ msgstr "Regrouper et effacer les dernières"
 
 #: src/lang.c:1435
 msgid "Compact mltpl., skip lead. & trai."
-msgstr "Regrouper puis effacer les premières et dernières"
+msgstr "Regrouper puis effacer les 1ères et dernières lignes"
 
 #: src/lang.c:1464
 msgid "Shell archive"
@@ -5528,7 +5552,7 @@ msgstr "NFD"
 
 #: src/lang.c:1581
 msgid "NFKC case fold"
-msgstr ""
+msgstr "Transformation NFKC de la casse"
 
 #: src/lang.c:1590
 msgid "Display Options"
@@ -5996,7 +6020,7 @@ msgstr ""
 
 #: src/lang.c:1828
 msgid "Character to show selected articles"
-msgstr "Caractère pour articles sélect."
+msgstr "Caractère pour articles sélectionnés"
 
 #: src/lang.c:1829
 msgid ""
@@ -6263,7 +6287,7 @@ msgstr ""
 
 #: src/lang.c:1937
 msgid "Skip multipart/alternative parts"
-msgstr "Ignorer parties multipart/alter."
+msgstr "Ignorer parties multipart/alternatives"
 
 #: src/lang.c:1938
 msgid "# If ON strip multipart/alternative messages automatically\n"
@@ -6310,7 +6334,7 @@ msgstr ""
 
 #: src/lang.c:1958
 msgid "Regex used to show twice quoted l."
-msgstr "Regex pour afficher le 2nd niveau"
+msgstr "Regex pour afficher le 2nd niveau."
 
 #: src/lang.c:1959
 msgid ""
@@ -6553,8 +6577,9 @@ msgid ""
 "blank\n"
 "# for no automatic viewing\n"
 msgstr ""
-"# Utilisation du visualisateur MIME inclus pour les parties non textuelles\n"
-"# si l'option '--internal' est utilisée.\n"
+"# Si l’option '--internal’ est utilisée utiliser le visualiseur MIME inclus "
+"pour\n"
+"# les parties non textuelles.\n"
 "# Sinon, spécifiez un logiciel externe (pe. metamail) ou laissez ce champ\n"
 "# vide pour ne pas activer la prévisualisation automatique.\n"
 
@@ -6607,7 +6632,6 @@ msgid "Which actions require confirmation"
 msgstr "Quelles actions requièrent confirmation"
 
 #: src/lang.c:2084
-#, fuzzy
 msgid ""
 "# What should we ask confirmation for.\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6620,14 +6644,16 @@ msgid ""
 "#   6 = quit & select\n"
 "#   7 = commands & quit & select\n"
 msgstr ""
-"# Regrouper les articles par...\n"
-"# Les valeurs possibles sont (celle par défaut est marquée par *) :\n"
+"# Demander confirmation pour.\n"
+"# Les valeurs possibles sont (valeur par défaut marquée par *):\n"
 "#   0 = aucun\n"
-"#   1 = Sujet\n"
-"#   2 = References\n"
-"# * 3 = Les deux (Sujet et References)\n"
-"#   4 = Sujet multipartie\n"
-"#   5 = Pourcentage de concordance\n"
+"#   1 = commandes\n"
+"#   2 = sélection\n"
+"#   3 = quitter\n"
+"# * 4 = commandes & quitter\n"
+"#   5 = commandes & sélection\n"
+"#   6 = quitter et sélection\n"
+"#   7 = commandes & quitter & sélection\n"
 
 #: src/lang.c:2098
 msgid "'Mark as (un)read' ignores tags"
@@ -6912,7 +6938,7 @@ msgstr ""
 
 #: src/lang.c:2256
 msgid "Color of =>3 times quoted line"
-msgstr "Couleur de citation de 3e niveau ou sup."
+msgstr "Couleur de citation de 3e niveau ou supérieur"
 
 #: src/lang.c:2257
 msgid ""
@@ -7296,23 +7322,20 @@ msgid "# If ON add signature to reposted articles\n"
 msgstr "# Si ON, rajoute la signature aux articles repostés\n"
 
 #: src/lang.c:2467
-#, fuzzy
 msgid "Enter quotation marks, %I for author's initials."
-msgstr "Caractère de citation, %I pour les initiales de l'auteur."
+msgstr "Caractère de citation, %I correspond aux initiales de l’auteur."
 
 #: src/lang.c:2468
 msgid "Characters used as quote-marks"
 msgstr "Caractère de citation"
 
 #: src/lang.c:2469
-#, fuzzy
 msgid ""
 "# Characters used in quoting to followups and replies.\n"
 "# '_' is replaced by ' ', %I is replaced by author's initials.\n"
 msgstr ""
-"# Caractères utilisés pour les citations.\n"
-"# '_' est remplacé par ' ', %I est remplacé par les intiales\n"
-"# de l'auteur auquel vous répondez.\n"
+"# Caractères utilisés pour les citations et les réponses.\n"
+"# '_' est remplacé par ' ', %I est remplacé par les intiales de l’auteur.\n"
 
 #: src/lang.c:2475
 msgid "Quoting behavior"
@@ -8355,21 +8378,27 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr "Insérer l'en-tête 'X-Comment-To:'"
 
 #. TODO: lang.c
-#: src/main.c:817
+#: src/main.c:819
 msgid "reading from local spool"
 msgstr "lecture depuis le spool local"
 
-#: src/misc.c:3877
+#. TODO: != ENOENT ? and -> lang.c
+#: src/misc.c:750
+#, c-format
+msgid "Error: unlink %s"
+msgstr ""
+
+#: src/misc.c:3905
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Version : %s %s release %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3880
+#: src/misc.c:3908
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Version : %s %s release %s (\"%s\")\n"
 
-#: src/newsrc.c:460
+#: src/newsrc.c:472
 msgid "Unreachable?\n"
 msgstr "Inacessible ?\n"
 
@@ -8408,7 +8437,7 @@ msgstr "CAPABILITIES n'a pas annoncé READER"
 msgid "MOTD: "
 msgstr "MOTD: "
 
-#: src/nrctbl.c:178
+#: src/nrctbl.c:184
 #, c-format
 msgid "couldn't expand %s\n"
 msgstr "impossible de décompacter %s\n"
@@ -8443,14 +8472,15 @@ msgstr ""
 "La ligne %d est plus longue que %d octets et devrait être réduite, mais\n"
 "l'encodage n'est pas %s\n"
 
-#: src/post.c:2325
+#: src/post.c:2331
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Postage : %.*s ..."
 
-#: src/post.c:4075
+#: src/post.c:4099
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
+"Impossible de remplacer dans les groupes mail, essayez de poster à nouveau."
 
 #. Check if okay to read
 #: src/read.c:207
@@ -8474,6 +8504,18 @@ msgid "[- Unavailable -]"
 msgstr "[- Indisponible -]"
 
 #.
+#. * Add the Message-ID headers to the cache, using the last Reference
+#. * as the parent
+#.
+#.
+#. * Add the References data to the cache
+#.
+#: src/refs.c:1015 src/refs.c:1077
+#, c-format
+msgid "Building References-trees (%d/%d)..."
+msgstr ""
+
+#.
 #. * preamble
 #. * TODO: -> lang.c
 #.
@@ -8491,7 +8533,7 @@ msgstr ""
 "ce qui suit peut paraître assez bizarre.\n"
 "\n"
 
-#: src/save.c:1069
+#: src/save.c:1075
 msgid "bytes"
 msgstr "octets"
 
@@ -8555,3 +8597,27 @@ msgstr "Échec de Slrnface : %s."
 
 #~ msgid "# What should we ask confirmation for.\n"
 #~ msgstr "# Demande de confirmation pour...\n"
+
+#~ msgid "Active file corrupt - %s"
+#~ msgstr "Fichier active corrompu - %s"
+
+#~ msgid "Invalid response to GROUP command, %s"
+#~ msgstr "Réponse de la commande GROUP invalide, %s"
+
+#~ msgid "unparseable \"LIST COUNTS\" line: \"%s\""
+#~ msgstr "ligne \"LIST COUNTS\" intraitable : \"%s\""
+
+#~ msgid ""
+#~ "Wrong newsgroup name (\"%s\") in response of \"GROUP %s\" command: \"%s\""
+#~ msgstr ""
+#~ "Nom de groupe erroné (\"%s\") dans la réponse de la commande \"GROUP%s"
+#~ "\" : \"%s\""
+
+#~ msgid "Enter maximum length of newsgroup names displayed. <CR> sets."
+#~ msgstr "Largeur max. à afficher des noms des groupes. <RETOUR> valide."
+
+#~ msgid "Max. length of group names shown"
+#~ msgstr "Largeur max. des noms des groupes"
+
+#~ msgid "# Maximum length of the names of newsgroups displayed\n"
+#~ msgstr "# Largeur maximum à afficher des noms des groupes.\n"

@@ -183,7 +183,7 @@ dnl Handle --enable-ebcdic
 
 AC_ARG_ENABLE(ebcdic,
 [  --enable-ebcdic         assume EBCDIC coding rather than ASCII],
-if test "$enableval" == "yes"; then
+if test "$enableval" = "yes"; then
   EBCDIC=-DEBCDIC=1
 fi
 )

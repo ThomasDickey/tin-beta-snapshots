@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2019-12-24
+.\" Updated   : 2020-05-22
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "December 24th, 2019" "2.4.4" "Usenet newsreader"
+.TH tin 1 "December 24th, 2019" "2.4.5" "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -194,7 +194,7 @@ Don't check for new newsgroups and skip loading the servers message of the day.
 .TP
 .B \-Q
 Quick start. Start \fBtin\fP as quickly as possible. Currently this is
-equivalent to ''\fB\-nqd\fP''.
+equivalent to ''\fB\-dnq\fP''.
 .TP
 .B \-r
 Read news remotely from the default NNTP server specified in the environment
@@ -219,7 +219,7 @@ option. This option is disabled if \fBtin\fP retrieves its index files via an
 NNTP server and \fBcache_overview_files\fP is turned off.
 .TP
 .B \-v
-Verbose mode for ''\fB\-D\fP'', ''\fB\-c\fP'', ''\fB\-M\fP'', ''\fB\-N\fP'',
+Verbose mode for ''\fB\-c\fP'', ''\fB\-D\fP'', ''\fB\-M\fP'', ''\fB\-N\fP'',
 \&''\fB\-S\fP'', ''\fB\-u\fP'' and ''\fB\-Z\fP'' options. Can be used multiple
 times to increase verbosity.
 .TP
@@ -1597,6 +1597,9 @@ Color of background for inverse text
 .B Color for inverse text (foreground) (col_invers_fg)
 Color of foreground for inverse text
 .TP
+.B Color of status messages (col_message)
+Color of status messages in last line
+.TP
 .B Color of highlighting with _dash_ (col_markdash)
 Color of words emphasized like _this_. See also \fBword_h_display_marks\fP
 and \fBword_highlight\fP.
@@ -2410,6 +2413,18 @@ Keep).
 .B No unsubscribed groups in newsrc (strip_newsrc)
 If ON, then unsubscribed groups will be permanently removed from your
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR file. Default is OFF.
+.TP
+.B Regex with Subject prefixes (strip_re_regex)
+A regular expression to find Subject prefixes like "Re:" to remove.
+If \fBstrip_re_regex\fP is blank, then
+.BR \%tin (1)
+uses a built-in default.
+.TP
+.B Regex with Subject suffixes (strip_was_regex)
+A regular expression to find Subject suffixes like "(was:" to remove.
+If \fBstrip_was_regex\fP is blank, then
+.BR \%tin (1)
+uses a built-in default.
 .TP
 .B Regex used to highlight \-strokes\- (strokes_regex)
 A regular expression that will be applied when reading articles. All
@@ -3835,7 +3850,6 @@ Urs Janssen <urs@tin.org>
 .\"
 .\"
 .SH "SEE ALSO"
-.BR \%cron (8),
 .BR \%elm (1),
 .BR \%emacs (1),
 .BR \%gpg (1),
@@ -3875,6 +3889,7 @@ Urs Janssen <urs@tin.org>
 .BR \%mmdf (5),
 .BR \%newsoverview (5),
 .BR \%tin (5),
+.BR \%cron (8),
 .BR RFC\%1345 ,
 .BR RFC\%1524 ,
 .BR RFC\%2045 ,

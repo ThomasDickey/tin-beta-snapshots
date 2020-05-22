@@ -117,7 +117,7 @@
  */
 
 static const char *_id = "plp_snprintf V1999.02.20 Copyright Patrick Powell 1988-1999 <papowell@astart.com> \
-@Id: plp_snprintf.c,v 1.4 1999/02/20 17:44:16 papowell Exp papowell @\
+$Id: plp_snprintf.c,v 1.4 1999/02/20 17:44:16 papowell Exp papowell $\
  LOCAL REVISIONS: tin 1.9.5-01";
 
 /* varargs declarations: */

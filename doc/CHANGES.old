@@ -3516,7 +3516,7 @@ U001) Urs Janssen <urs@tin.org>
      BUG. fixed uncritical memleak in free_attributes_array()
      BUG. fixed possible call of free(NULL)
      ADD. overview_xref_support() now handles Xref:full entries in
-          overview.ftm with traling garbage on the line
+          overview.ftm with trailing garbage on the line
      ADD. check for duplicated Newsgroups, Subject and Followup-To
           header before posting
      ADD. key to ignore Followup-To in followups
@@ -4123,7 +4123,7 @@ U001) Urs Janssen <urs@tin.org>
      ADD. strip doubled newsgroups from Followup-To: before checking
           if it contains several groups
      ADD. searching in posted_message-file disabled
-     ADD. allow <TAB> as fieldseperator in ~/.newsauth
+     ADD. allow <TAB> as fieldseparator in ~/.newsauth
      ADD. check for empty / all whitespace Subject
      ADD. updated pcre (1.07 -> 1.09)
      ADD. -X cmd-line switch

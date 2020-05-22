@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2019-07-16
+ *  Updated   : 2020-05-20
  *  Notes     :
  *
  * Copyright (c) 1997-2020 Urs Janssen <urs@tin.org>
@@ -178,7 +178,7 @@ extern void word_highlight_string(int row, int col, int size, int color);
 	extern void debug_print_comment(const char *comment);
 	extern void debug_print_filters(void);
 	extern void debug_print_header(struct t_article *s);
-	extern void debug_print_malloc(int is_malloc, const char *xfile, int line, size_t size);
+	extern void debug_print_malloc(t_bool is_malloc, const char *xfile, int line, size_t size);
 #	ifdef DEBUG
 	extern const char *logtime(void);
 #	endif /* DEBUG */

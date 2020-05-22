@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2019-12-24
+.\" Updated   : 2020-04-27
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "December 24th, 2019" 2.4.4 "Usenet newsreader"
+.TH tin 5 "December 24th, 2019" 2.4.5 "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -1299,6 +1299,9 @@ Colour of words emphasised like *this*. See also \fBword_h_display_marks\fP and
 Colour of words emphasised like \-this\-. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
+\fBcol_message\fP
+Colour of status messages in last line
+.TP 
 \fBcol_minihelp\fP
 Colour of mini help menu
 .TP 
@@ -2069,6 +2072,14 @@ Keep).
 \fBstrip_newsrc\fP
 If ON, then unsubscribed groups will be permanently removed from your
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP file. Default is OFF.
+.TP 
+\fBstrip_re_regex\fP
+A regular expression to find Subject prefixes like "Re:" to remove If
+\fBstrip_re_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
+.TP 
+\fBstrip_was_regex\fP
+A regular expression to find Subject suffixes like "(was:" to remove.  If
+\fBstrip_was_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
 .TP 
 \fBstrokes_regex\fP
 A regular expression that will be applied when reading articles. All

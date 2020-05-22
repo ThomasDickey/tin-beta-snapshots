@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2020-01-09
+dnl Updated   : 2020-04-23
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2020 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.4.4
+VERSION=2.4.5
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Define this to the package name])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define this to the package version])
 AC_SUBST(PACKAGE)
@@ -115,6 +115,9 @@ case "$host_cpu:$host_vendor:$host_os" in
 	mips:sei:seiux*)	#(vi
 		AC_DEFINE(SEIUX,1,[Define this to 1 for the MIPS/SEIUX system])
 		;;
+	# ISC Interactive Unix likewise
+	i386:pc:isc*)	#(vi
+		AC_DEFINE(ISC_UNIX,1,[Define this to 1 for the i386/ISC system])
 esac
 
 dnl TODO: also check for heapsort(3) in libbsd?
@@ -924,6 +927,7 @@ AC_CHECK_LIB(uu, UUInitialize,
 #  - uidna_openUTS46()
 #  - uidna_nameToUnicode()
 #  - unorm2_normalize()
+# get $CFLAGS/$LDFLAGS from pkg-config icu-uc if possible
 cf_try_icuuc="no"
 cf_try_icuuc46="no"
 AC_CHECK_HEADER(unicode/unorm.h,[
@@ -996,6 +1000,7 @@ fi
 
 # without icuuc try libidn for Internationalized Domain Names / IDN 2003
 # TODO: check for libidn2
+#       get $CFLAGS/$LDFLAGS from pkg-config libidn[2] if possible
 if test $cf_try_icuuc = no ; then
 	AC_CHECK_LIB(idn, stringprep_check_version,
 		[AC_CHECK_HEADER(stringprep.h,[
@@ -1099,6 +1104,7 @@ AC_CHECK_FUNCS(\
 	execlp \
 	explicit_bzero \
 	explicit_memset \
+	fchmod \
 	fcntl \
 	fdopen \
 	fork \

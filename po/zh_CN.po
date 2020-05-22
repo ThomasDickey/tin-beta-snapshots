@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-18 13:24+0100\n"
+"POT-Creation-Date: 2020-05-22 12:39+0200\n"
 "PO-Revision-Date: 2015-08-28 12:21+0800\n"
 "Last-Translator: Mingye Wang <arthur200126@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
@@ -19,6 +19,30 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 1.8.4\n"
+
+#. -> lang.c
+#: src/art.c:419
+#, fuzzy, c-format
+msgid "Reading %s\n"
+msgstr "重新读取 %s…"
+
+#. TODO: -> lang.c
+#: src/art.c:1173
+#, fuzzy
+msgid "Threading by multipart"
+msgstr "讨论串文章…"
+
+#. -> lang.c
+#: src/art.c:2509
+#, fuzzy, c-format
+msgid "Writing %s\n"
+msgstr "尝试 %s"
+
+#. TODO: -> lang.c
+#: src/art.c:2589
+#, fuzzy
+msgid "Writing overview cache..."
+msgstr "写入属性文件…"
 
 #: src/attrib.c:986
 msgid "Processing attributes... "
@@ -4677,7 +4701,8 @@ msgid "  -p port  use port as NNTP port [default=%d]"
 msgstr "  -p port  使用 port 作为 NNTP 通信端口 [缺省=%d]"
 
 #: src/lang.c:1118
-msgid "  -Q       quick start. Same as -nqd"
+#, fuzzy
+msgid "  -Q       quick start. Same as -dnq"
 msgstr "  -Q       快速开始。如同 -nqd"
 
 #: src/lang.c:1119
@@ -8066,21 +8091,27 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr "插入‘X-Comment-To:’标头"
 
 #. TODO: lang.c
-#: src/main.c:817
+#: src/main.c:819
 msgid "reading from local spool"
 msgstr ""
 
-#: src/misc.c:3877
+#. TODO: != ENOENT ? and -> lang.c
+#: src/misc.c:750
+#, c-format
+msgid "Error: unlink %s"
+msgstr ""
+
+#: src/misc.c:3905
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "版本：%s %s 发布 %s (“%s”) %s %s\n"
 
-#: src/misc.c:3880
+#: src/misc.c:3908
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "版本：%s %s 发布 %s (“%s”)\n"
 
-#: src/newsrc.c:460
+#: src/newsrc.c:472
 msgid "Unreachable?\n"
 msgstr "无法连接？\n"
 
@@ -8120,7 +8151,7 @@ msgstr "能力中并未宣告包含阅读器"
 msgid "MOTD: "
 msgstr "MOTD: "
 
-#: src/nrctbl.c:178
+#: src/nrctbl.c:184
 #, c-format
 msgid "couldn't expand %s\n"
 msgstr "无法展开 %s\n"
@@ -8154,12 +8185,12 @@ msgstr ""
 "第 %d 行长度超过 998 字节而，但是\n"
 "编码未被设置为 %s\n"
 
-#: src/post.c:2325
+#: src/post.c:2331
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "张贴：%.*s…"
 
-#: src/post.c:4075
+#: src/post.c:4099
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8185,6 +8216,18 @@ msgid "[- Unavailable -]"
 msgstr "[- 不可用 -]"
 
 #.
+#. * Add the Message-ID headers to the cache, using the last Reference
+#. * as the parent
+#.
+#.
+#. * Add the References data to the cache
+#.
+#: src/refs.c:1015 src/refs.c:1077
+#, c-format
+msgid "Building References-trees (%d/%d)..."
+msgstr ""
+
+#.
 #. * preamble
 #. * TODO: -> lang.c
 #.
@@ -8202,7 +8245,7 @@ msgstr ""
 "以了解新的格式，而随后而来的东西也许看起来会很怪异。\n"
 "\n"
 
-#: src/save.c:1069
+#: src/save.c:1075
 msgid "bytes"
 msgstr "字节"
 

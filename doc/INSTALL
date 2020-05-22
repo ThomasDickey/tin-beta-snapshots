@@ -524,8 +524,8 @@ purposed IDs you have to mess around with EVIL_INSIDE.
 --with-canlock[=PATH] (default: bundled copy of canlock)
 If --enable-cancel-locks is used, use this option to also specify if you
 wish to use an externally-installed copy of the canlock (Cancel-Locks)
-library.  If you specify a PATH, it should be the root of a directory
-containing the include- and lib-directories where canlock is installed. 
+library. If you specify a PATH, it should be the root of a directory
+containing the include- and lib-directories where canlock is installed.
 If you do not specify a PATH, the makefile will use the standard
 locations for this library.
 
@@ -543,11 +543,11 @@ The --enable-nls option enables Native Language Support (NLS), which allows
 tin to run in languages other than American English. Native Language
 Support is enabled by default, the --disable-nls option disables NLS.
 
---with-included-gettext  (default:off)
+--with-included-gettext (default:off)
 If NLS is enabled, the --with-included-gettext option causes the build
 procedure to prefer its copy of GNU gettext.
 
---disable-included-msgs  (default:off)
+--disable-included-msgs (default:off)
 If NLS is enabled, the --disable-included-msgs option causes the build
 procedure to assume message libraries are already installed, and to
 not build them.

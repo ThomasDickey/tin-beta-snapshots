@@ -74,7 +74,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-18 13:24+0100\n"
+"POT-Creation-Date: 2020-05-22 12:39+0200\n"
 "PO-Revision-Date: 2017-02-04 09:14+0100\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -83,6 +83,30 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
+
+#. -> lang.c
+#: src/art.c:419
+#, fuzzy, c-format
+msgid "Reading %s\n"
+msgstr "Genlæser %s ..."
+
+#. TODO: -> lang.c
+#: src/art.c:1173
+#, fuzzy
+msgid "Threading by multipart"
+msgstr "Opdeler artikler i tråde ..."
+
+#. -> lang.c
+#: src/art.c:2509
+#, fuzzy, c-format
+msgid "Writing %s\n"
+msgstr "Forsøger %s"
+
+#. TODO: -> lang.c
+#: src/art.c:2589
+#, fuzzy
+msgid "Writing overview cache..."
+msgstr "Skriver attributfil ..."
 
 #: src/attrib.c:986
 msgid "Processing attributes... "
@@ -4834,8 +4858,9 @@ msgid "  -p port  use port as NNTP port [default=%d]"
 msgstr "  -p port  brug port som NNTP-port [standard=%d]"
 
 #: src/lang.c:1118
-msgid "  -Q       quick start. Same as -nqd"
-msgstr "  -Q       hurtigstart. Samme som -nqd"
+#, fuzzy
+msgid "  -Q       quick start. Same as -dnq"
+msgstr "  -Q       hurtigstart. Samme som -dnq"
 
 #: src/lang.c:1119
 msgid "  -r       read news remotely from default NNTP server"
@@ -8284,21 +8309,27 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr "Indsæt »X-Comment-To:«-teksthoved"
 
 #. TODO: lang.c
-#: src/main.c:817
+#: src/main.c:819
 msgid "reading from local spool"
 msgstr "læser fra lokal kø"
 
-#: src/misc.c:3877
+#. TODO: != ENOENT ? and -> lang.c
+#: src/misc.c:750
+#, c-format
+msgid "Error: unlink %s"
+msgstr ""
+
+#: src/misc.c:3905
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Version: %s %s udgave %s (»%s«) %s %s\n"
 
-#: src/misc.c:3880
+#: src/misc.c:3908
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Version: %s %s udgave %s (»%s«)\n"
 
-#: src/newsrc.c:460
+#: src/newsrc.c:472
 msgid "Unreachable?\n"
 msgstr "Kan ikke nås?\n"
 
@@ -8338,7 +8369,7 @@ msgstr "FUNKTIONER annoncerede ikke LÆSER"
 msgid "MOTD: "
 msgstr "MOTD: "
 
-#: src/nrctbl.c:178
+#: src/nrctbl.c:184
 #, c-format
 msgid "couldn't expand %s\n"
 msgstr "kunne ikke udvide %s\n"
@@ -8373,12 +8404,12 @@ msgstr ""
 "Linje %d er længere end %d oktetter og bør foldes sammen, men\n"
 "kodningen er ikke sat til %s\n"
 
-#: src/post.c:2325
+#: src/post.c:2331
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Indsender: %.*s ..."
 
-#: src/post.c:4075
+#: src/post.c:4099
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8404,6 +8435,18 @@ msgid "[- Unavailable -]"
 msgstr "[- Utilgængelig -]"
 
 #.
+#. * Add the Message-ID headers to the cache, using the last Reference
+#. * as the parent
+#.
+#.
+#. * Add the References data to the cache
+#.
+#: src/refs.c:1015 src/refs.c:1077
+#, c-format
+msgid "Building References-trees (%d/%d)..."
+msgstr ""
+
+#.
 #. * preamble
 #. * TODO: -> lang.c
 #.
@@ -8422,7 +8465,7 @@ msgstr ""
 "mærkeligt ud.\n"
 "\n"
 
-#: src/save.c:1069
+#: src/save.c:1075
 msgid "bytes"
 msgstr "byte"
 

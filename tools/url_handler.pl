@@ -11,7 +11,7 @@ use warnings;
 die "Usage: $pname URL" if $#ARGV != 0;
 
 # version Number
-my $version = "0.1.2";
+my $version = "0.1.3";
 
 my ($method, $url, $match, @try);
 $method = $url = $ARGV[0];
@@ -127,7 +127,7 @@ B<url_handler.pl> was designed to work together with L<tin(1)> which only
 issues shell escaped absolute URLs thus B<url_handler.pl> does not try hard
 to shell escape its input nor does it convert relative URLs into absolute
 ones! If you use B<url_handler.pl> from other applications be sure to at
-least shell escaped its input!
+least shell escape its input!
 
 =head1 AUTHOR
 

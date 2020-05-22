@@ -1,3 +1,44 @@
+-- 2.4.5 release 20200522 "" --
+
+ 022) Dennis Preiser <dennis@d--p.de>
+      BUG. convert_tex2iso with UTF-8 as local charset did map "O to wrong
+           char
+      BUG. missing termination of conversion table for convert_tex2iso
+      ADD. don't show mime parse error for missing end marker if not running
+           in debug mode
+      ADD. increase hash-table sizes
+      ADD. speed up multipart threading
+      FIX. tin.h, art.c, charset.c, hashstr.c, screen.c, refs.c, rfc2046.c
+
+ 021) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      ADD. fallback to the bundled pcre if required
+      ADD. prefer systemwide libcanlock over bundled one
+      FIX. aclocal.m4, configure[.in], Makefile.[in], tin.h
+
+ 020) Urs Janssen <urs@tin.org>
+      ADD. config.guess, config.sub update
+      ADD. document strip_re_regex, strip_was_regex and col_message in manpage
+      ADD. configure check for fchmod(2) and fallback to chmod(2) if system
+           lacks it (e.g. Interactive UNIX)
+      ADD. speed up filter on Path:-header
+      BUG. when $TIN_INDEX_NEWSDIR was used INDEX_NEWSDIR was
+           automatically appended to the string, but for the '-I' cmd.line it
+           wasn't, now '-I' behaves exactly like $TIN_INDEX_NEWSDIR.
+      REM. redundant condition
+      FIX. art.c, attrib.c, config.c, debug.c, filter.c, init.c, main.c
+           memory.c, misc.c, newsrc.c, nrctbl.c, post.c, save.c, thread.c
+           tmpfile.c, proto.h, tin.h, tin.[15], configure[.in], autoconf.h[in]
+           config.guess, config.sub, en_GB.po
+
+ 019) Matt Anton <tin@lv223.org>
+      ADD. updated french translation
+      FIX. fr.po
+
+ 018) Toomas Soome <tsoome@me.com>
+      ADD. updated estonian translation
+      FIX. et.po
+
 -- 2.4.4 release 20191224 "Millburn" --
 
  017) Dennis Grevenstein <dennis.grevenstein@gmail.com>
