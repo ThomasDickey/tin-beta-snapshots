@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2019-06-12
+ *  Updated   : 2020-05-22
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -94,7 +94,7 @@ static t_compfunc eval_sort_arts_func(unsigned int sort_art_type);
 static time_t get_last_posting_date(long n);
 static void sort_base(unsigned int sort_threads_type);
 static void thread_by_multipart(void);
-static void thread_by_percentage(struct t_group *group);
+static void thread_by_percentage(unsigned int percentage);
 static void thread_by_subject(void);
 static void write_overview(struct t_group *group);
 #ifdef NNTP_ABLE
@@ -129,7 +129,8 @@ find_base(
 	grpmenu.max = 0;
 
 #ifdef DEBUG
-	debug_print_arts();
+	if (debug & DEBUG_FILTER)
+		debug_print_arts();
 #endif /* DEBUG */
 
 	for_each_art(i) {
@@ -413,6 +414,10 @@ index_group(
 
 	if (!batch_mode)
 		show_art_msg(group->name);
+	else {
+		if (verbose) /* -> lang.c */
+			wait_message(0, _("Reading %s\n"), group->name);
+	}
 
 	signal_context = cArt;			/* Set this only once curr_group is valid */
 
@@ -817,7 +822,7 @@ read_art_headers(
 		top = arts[top_art].artnum;	/* used if arts are killed */
 		top_art++;
 
-		if (++modified % MODULO_COUNT_NUM == 0)
+		if (++modified % (MODULO_COUNT_NUM * 20) == 0)
 			show_progress(group_msg, modified, total);
 	}
 
@@ -904,12 +909,11 @@ thread_by_subject(
  */
 static void
 thread_by_percentage(
-	struct t_group *group)
+	unsigned int percentage)
 {
 	int i, j, k;
 	int root_num = 0; /* The index number of the root we are currently working on. */
 	unsigned int unmatched; /* This is the number of characters that don't match between the two strings */
-	unsigned int percentage = 100 - group->attribute->thread_perc;
 	size_t slen;
 
 	/* First we need to sort art[] to simplify and speed up the matching. */
@@ -1069,8 +1073,7 @@ global_get_multiparts(
 	int aindex,
 	MultiPartInfo **malloc_and_setme_info)
 {
-	int i;
-	int part_index;
+	int i, part_index, part_cnt = 0;
 	MultiPartInfo tmp, tmp2;
 	MultiPartInfo *info = NULL;
 
@@ -1092,7 +1095,7 @@ global_get_multiparts(
 	}
 
 	/* try to find all the multiparts... */
-	for_each_art(i) {
+	for (i = aindex; i < top_art; i++) {
 		if (strncmp(arts[i].subject, tmp.subject, tmp.subject_compare_len))
 			continue;
 
@@ -1119,6 +1122,10 @@ global_get_multiparts(
 
 		/* we have a match, hooray! */
 		info[part_index] = tmp2;
+
+		/* all parts found? */
+		if (++part_cnt == tmp.total)
+			break;
 	}
 
 	/* see if we got them all. */
@@ -1162,6 +1169,8 @@ thread_by_multipart(
 			}
 		}
 		FreeAndNull(minfo);
+		if (i % MODULO_COUNT_NUM == 0) /* TODO: -> lang.c */
+			show_progress(_("Threading by multipart"), i, top_art);
 	}
 }
 
@@ -1195,8 +1204,10 @@ make_threads(
 	struct t_group *group,
 	t_bool rethread)
 {
-	if (!cmd_line && !batch_mode)
+	if (!cmd_line && !batch_mode) {
 		info_message((group->attribute->thread_articles == THREAD_NONE ? _(txt_unthreading_arts) : _(txt_threading_arts)));
+		my_flush();
+	}
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
@@ -1272,7 +1283,7 @@ make_threads(
 			break;
 
 		case THREAD_PERC:
-			thread_by_percentage(group);
+			thread_by_percentage(100 - group->attribute->thread_perc);
 			break;
 
 		default: /* not reached */
@@ -1539,7 +1550,8 @@ parse_headers(
 			h->subject = hash_str("<No subject>");
 
 #ifdef DEBUG
-		debug_print_header(h);
+		if (debug & DEBUG_FILTER)
+			debug_print_header(h);
 #endif /* DEBUG */
 		return TRUE;
 	}
@@ -1773,6 +1785,8 @@ get_path_header(
 	}
 
 	if (fp) {
+		int j = 0;
+
 		prep_msg = fmt_string(_(txt_prep_for_filter_on_path), cur, cnt);
 		while ((buf = tin_fgets(fp, FALSE)) != NULL && buf[0] != '.') {
 #	ifdef DEBUG
@@ -1784,10 +1798,12 @@ get_path_header(
 			artnum = atoartnum(ptr);
 			if ((ptr = tin_strtok(NULL, " ")) == NULL)
 				continue;
-			for_each_art(i) {
+			for (i = j; i < top_art; i++) {
 				if (arts[i].artnum == artnum) {
 					FreeIfNeeded(arts[i].path);
 					arts[i].path = my_strdup(ptr);
+					j = i;
+					break;
 				}
 			}
 			if (++artnum % MODULO_COUNT_NUM == 0)
@@ -2270,7 +2286,7 @@ read_overview(
 			continue;
 
 		/* we might lose accuracy here, but that shouldn't hurt */
-		if (artnum % MODULO_COUNT_NUM == 0)
+		if (artnum % (MODULO_COUNT_NUM * 20) == 0)
 			show_progress(group_msg, artnum - min, max - min);
 
 		top_art++;				/* Basically this statement commits the article */
@@ -2357,7 +2373,7 @@ read_overview(
 						art->xref = my_strdup(ptr);
 					}
 					/* we might lose accuracy here, but that shouldn't hurt */
-					if (artnum % MODULO_COUNT_NUM == 0)
+					if (artnum % (MODULO_COUNT_NUM * 20) == 0)
 						show_progress(group_msg, artnum - min, max - min);
 				}
 			}
@@ -2489,6 +2505,9 @@ write_overview(
 	}
 #endif /* CHARSET_CONVERSION */
 
+	if (verbose && batch_mode) /* -> lang.c */
+		wait_message(0, _("Writing %s\n"), group->name);
+
 	for_each_art(i) {
 		char *p;
 		char *q, *ref;
@@ -2566,8 +2585,16 @@ write_overview(
 				q = NULL;
 			}
 		}
+		if (i % (MODULO_COUNT_NUM * 20) == 0) /* TODO: -> lang.c */
+			show_progress(_("Writing overview cache..."), i, top_art);
 	}
+#ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));
+	/*
+	 * TODO:
+	 * add code for !HAVE_FCHMOD && HAVE_CHMOD
+	 */
+#endif /* HAVE_FCHMOD */
 	fclose(fp);
 }
 

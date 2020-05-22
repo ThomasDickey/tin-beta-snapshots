@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-07-03
+ *  Updated   : 2020-04-23
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -1486,7 +1486,13 @@ write_config_file(
 		}
 	}
 
+#ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
+#else
+#	ifdef HAVE_CHMOD
+	chmod(file_tmp, (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	if ((i = ferror(fp)) || fclose(fp)) {
 		error_message(2, _(txt_filesystem_full), CONFIG_FILE);
@@ -2225,7 +2231,13 @@ write_server_config(
 			fprintf(fp, "last_newnews=%lu (%s)\n", (unsigned long int) newnews[i].time, timestring);
 	}
 
+#ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
+#else
+#	ifdef HAVE_CHMOD
+	chmod(file_tmp, (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	if ((i = ferror(fp)) || fclose(fp)) {
 		error_message(2, _(txt_filesystem_full), SERVERCONFIG_FILE);

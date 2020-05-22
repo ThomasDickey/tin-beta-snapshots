@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2019-07-16
+ *  Updated   : 2020-05-22
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -289,7 +289,8 @@ main(
 	read_attributes_file(FALSE);
 	start_groupnum = read_news_active_file();
 #ifdef DEBUG
-	debug_print_active();
+	if (debug & DEBUG_MISC)
+		debug_print_active();
 #endif /* DEBUG */
 
 	/*
@@ -300,7 +301,8 @@ main(
 
 	no_write = TRUE;
 #ifdef DEBUG
-	debug_print_filters();
+	if (debug & DEBUG_FILTER)
+		debug_print_filters();
 #endif /* DEBUG */
 
 	/*
@@ -575,7 +577,7 @@ read_cmd_line_options(
 				/* FALLTHROUGH */
 
 			case 'I':
-				my_strncpy(index_newsdir, optarg, sizeof(index_newsdir) - 1);
+				joinpath(index_newsdir, sizeof(index_newsdir), optarg, INDEX_NEWSDIR);
 				break;
 
 			case 'l':
@@ -946,6 +948,8 @@ update_index_files(
 	cCOLS = 132;							/* set because curses has not started */
 	create_index_lock_file(lock_file);
 	tinrc.thread_articles = THREAD_NONE;	/* stop threading to run faster */
+	tinrc.sort_article_type = SORT_ARTICLES_BY_NOTHING;
+	tinrc.sort_threads_type = SORT_THREADS_BY_NOTHING;
 	do_update(catchup);
 	tin_done(EXIT_SUCCESS, NULL);
 }

@@ -920,7 +920,7 @@ static int hash(int testno, int loopno, int hashno,
   int err, i;
   uint8_t Message_Digest_Buf[USHAMaxHashSize];
   uint8_t *Message_Digest = Message_Digest_Buf;
-  char buf[20];
+  char buf[128];
 
   if (printResults == PRINTTEXT) {
     printf("\nTest %d: Iteration %d, Repeat %ld\n\t'", testno+1,
@@ -990,7 +990,7 @@ static int hash(int testno, int loopno, int hashno,
     return err;
   }
 
-  sprintf(buf, "%d", testno+1);
+  snprintf(buf, (size_t) 128, "%d", testno+1);
   printResult(Message_Digest, info ? okmlen : hashsize,
     hashes[hashno].name, info ? "hkdf standard test" :
     keyarray ? "hmac standard test" : "sha standard test", buf,
@@ -1012,7 +1012,7 @@ static int hashHkdf(int testno, int loopno, int hashno,
   int err;
   unsigned char prk[USHAMaxHashSize+1];
   uint8_t okm[255 * USHAMaxHashSize+1];
-  char buf[20];
+  char buf[128];
 
   (void) hashno;  /* Silence 'unused parameter' warning */
 
@@ -1043,7 +1043,7 @@ static int hashHkdf(int testno, int loopno, int hashno,
     fprintf(stderr, "hashHkdf(): hkdf Error %d.\n", err);
     return err;
   }
-  sprintf(buf, "hkdf %d", testno+1);
+  snprintf(buf, (size_t) 128, "hkdf %d", testno+1);
   printResult(okm, hkdfhashes[testno].okmlength,
     USHAHashName(hkdfhashes[testno].whichSha), "hkdf standard test",
     buf, hkdfhashes[testno].okmarray, printResults, printPassFail);
@@ -1059,7 +1059,7 @@ static int hashHkdf(int testno, int loopno, int hashno,
     fprintf(stderr, "hashHkdf(): hkdfExtract Error %d.\n", err);
     return err;
   }
-  sprintf(buf, "hkdfExtract %d", testno+1);
+  snprintf(buf, (size_t) 128, "hkdfExtract %d", testno+1);
   printResult(prk, USHAHashSize(hkdfhashes[testno].whichSha),
     USHAHashName(hkdfhashes[testno].whichSha), "hkdf standard test",
     buf, hkdfhashes[testno].prkarray, printResults, printPassFail);
@@ -1074,7 +1074,7 @@ static int hashHkdf(int testno, int loopno, int hashno,
     fprintf(stderr, "hashHkdf(): hkdfExpand Error %d.\n", err);
     return err;
   }
-  sprintf(buf, "hkdfExpand %d", testno+1);
+  snprintf(buf, (size_t) 128, "hkdfExpand %d", testno+1);
   printResult(okm, hkdfhashes[testno].okmlength,
     USHAHashName(hkdfhashes[testno].whichSha), "hkdf standard test",
     buf, hkdfhashes[testno].okmarray, printResults, printPassFail);
@@ -1202,7 +1202,8 @@ static void randomtest(int hashno, const char *seed, int hashsize,
     const char **resultarrays, int randomcount,
     int printResults, int printPassFail)
 {
-  int i, j; char buf[20];
+  int i, j;
+  char buf[128];
   unsigned char SEED[USHAMaxHashSize], MD[1003][USHAMaxHashSize];
 
   /* INPUT: Seed - A random seed n bits long */
@@ -1234,7 +1235,7 @@ static void randomtest(int hashno, const char *seed, int hashsize,
     memcpy(SEED, MD[i-1], hashsize);
 
     /* OUTPUT: MDj */
-    sprintf(buf, "%d", j);
+    snprintf(buf, (size_t) 128, "%d", j);
     printResult(SEED, hashsize, hashes[hashno].name, "random test",
       buf, resultarrays ? resultarrays[j] : 0, printResults,
       (j < RANDOMCOUNT) ? printPassFail : 0);

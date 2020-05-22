@@ -101,7 +101,13 @@ read_newsauth_file(
 			error_message(4, _(txt_error_insecure_permissions), filename, statbuf.st_mode);
 			/*
 			 * TODO: fix permissions?
-			 * fchmod(fd, S_IRUSR|S_IWUSR);
+			 * #ifdef HAVE_FCHMOD
+			 *  fchmod(fd, S_IRUSR|S_IWUSR);
+			 * #else
+			 * #	ifdef HAVE_CHMOD
+			 *  chmod(filename, S_IRUSR|S_IWUSR);
+			 * #	endif
+			 * #endif
 			 */
 		}
 #	endif /* !FILE_MODE_BROKEN */

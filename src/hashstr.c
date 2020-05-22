@@ -3,7 +3,7 @@
  *  Module    : hashstr.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-09-19
+ *  Updated   : 2020-05-13
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -52,11 +52,6 @@
  *
  * Spillovers are chained on the end
  */
-
-/*
- * Arbitrary table size, but make sure it's prime!
- */
-#define HASHNODE_TABLE_SIZE	2411
 
 static struct t_hashnode *table[HASHNODE_TABLE_SIZE];
 static struct t_hashnode *add_string(const char *s);

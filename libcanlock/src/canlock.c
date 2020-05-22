@@ -161,7 +161,7 @@ char *lock_strip(char *key, char *type)
  * the location pointed to by 'klstring' (no memory is allocated, the address
  * points to the memory used for 'input').
  *
- * Returns the hash alorithm ID for scheme (on success).
+ * Returns the hash algorithm ID for scheme (on success).
  * Returns CL_INVALID (on failure, NULL was written to 'klstring' in this case).
  */
 int cl_split(char *input, char **klstring)

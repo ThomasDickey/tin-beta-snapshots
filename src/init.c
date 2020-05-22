@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-08-20
+ *  Updated   : 2020-04-23
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -912,7 +912,13 @@ init_selfinfo(
 		if (!fstat(fileno(fp), &sb)) {
 			if (sb.st_size == 0) {
 				fprintf(fp, "%s", _(txt_posted_info_file));
+#ifdef HAVE_FCHMOD
 				fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+#else
+#	ifdef HAVE_CHMOD
+				chmod(posted_info_file, (mode_t) (S_IRUSR|S_IWUSR));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 			}
 		}
 		fclose(fp);

@@ -1115,7 +1115,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_usage_force_authentication[] = N_("  -A       force authentication on connect");
 	constext txt_usage_newsserver[] = N_("  -g serv  read news from NNTP server serv [default=%s]");
 	constext txt_usage_port[] = N_("  -p port  use port as NNTP port [default=%d]");
-	constext txt_usage_quickstart[] = N_("  -Q       quick start. Same as -nqd");
+	constext txt_usage_quickstart[] = N_("  -Q       quick start. Same as -dnq");
 	constext txt_usage_read_news_remotely[] = N_("  -r       read news remotely from default NNTP server");
 	constext txt_usage_read_only_active[] = N_("  -l       use only LIST instead of GROUP (-n) command");
 	constext txt_usage_read_only_subscribed[] = N_("  -n       only read subscribed .newsrc groups from NNTP server");

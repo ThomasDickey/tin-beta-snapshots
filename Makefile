@@ -9,9 +9,9 @@ SHELL	= @SHELL@
 PROJECT	= tin
 LVER	= 2
 PVER	= 4
-SVER	= 4
+SVER	= 5
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20191224
+DVER	= 20200522
 EXE	= tin
 
 # directory structure

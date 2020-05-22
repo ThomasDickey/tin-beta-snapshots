@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-11-23
+ *  Updated   : 2020-05-09
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -224,7 +224,13 @@ write_newsrc(
 
 	if ((fp_op = fopen(newnewsrc, "w")) != NULL) {
 		if (newsrc_mode)
+#ifdef HAVE_FCHMOD
 			fchmod(fileno(fp_op), newsrc_mode);
+#else
+#	ifdef HAVE_CHMOD
+			chmod(newnewsrc, newsrc_mode);
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 		while ((line = tin_fgets(fp_ip, FALSE)) != NULL)
 			tot += write_newsrc_line(fp_op, line);
@@ -341,7 +347,13 @@ auto_subscribe_groups(
 	}
 
 	if (newsrc_mode)
+#ifdef HAVE_FCHMOD
 		fchmod(fileno(fp_newsrc), newsrc_mode);
+#else
+#	ifdef HAVE_CHMOD
+		chmod(newsrc_file, newsrc_mode);
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	/* TODO: test me! */
 	while ((ptr = tin_fgets(fp_subs, FALSE)) != NULL) {
@@ -553,7 +565,13 @@ subscribe(
 		return;
 
 	if (newsrc_mode)
+#ifdef HAVE_FCHMOD
 		fchmod(fileno(newfp), newsrc_mode);
+#else
+#	ifdef HAVE_CHMOD
+		chmod(newnewsrc, newsrc_mode);
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	if ((fp = fopen(newsrc, "r")) != NULL) {
 		while ((line = tin_fgets(fp, FALSE)) != NULL) {
@@ -612,7 +630,13 @@ reset_newsrc(
 
 	if (!no_write && (newfp = fopen(newnewsrc, "w")) != NULL) {
 		if (newsrc_mode)
+#ifdef HAVE_FCHMOD
 			fchmod(fileno(newfp), newsrc_mode);
+#else
+#	ifdef HAVE_CHMOD
+			chmod(newnewsrc, newsrc_mode);
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 		if ((fp = fopen(newsrc, "r")) != NULL) {
 			while ((line = tin_fgets(fp, FALSE)) != NULL) {
@@ -655,7 +679,13 @@ delete_group(
 
 	if ((newfp = fopen(newnewsrc, "w")) != NULL) {
 		if (newsrc_mode)
+#ifdef HAVE_FCHMOD
 			fchmod(fileno(newfp), newsrc_mode);
+#else
+#	ifdef HAVE_CHMOD
+			chmod(newnewsrc, newsrc_mode);
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 		if ((fp = fopen(newsrc, "r")) != NULL) {
 			while ((line = tin_fgets(fp, FALSE)) != NULL) {
@@ -1213,7 +1243,13 @@ pos_group_in_newsrc(
 	newnewsrc_created = TRUE;
 
 	if (newsrc_mode)
+#ifdef HAVE_FCHMOD
 		fchmod(fileno(fp_out), newsrc_mode);
+#else
+#	ifdef HAVE_CHMOD
+		chmod(newnewsrc, newsrc_mode);
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	joinpath(filename, sizeof(filename), TMPDIR, ".subrc");
 	snprintf(sub, sizeof(sub), "%s.%ld", filename, (long) process_id);

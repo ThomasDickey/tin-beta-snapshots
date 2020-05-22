@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2019-01-17
+ *  Updated   : 2020-05-21
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -484,10 +484,10 @@ show_progress(
 	time_t curr_time;
 	static char last_display[LEN];
 	static int last_ratio;
+	static t_artnum last_count;
 	static t_artnum last_total;
 	static time_t last_update;
 #if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
-	static t_artnum last_count;
 	static int average;
 	static int samples;
 	static int last_secs_left;
@@ -504,7 +504,7 @@ show_progress(
 		return;
 
 	/* If this is a new progress meter, start recalculating */
-	if ((last_total != total) || (count == 1)) {
+	if ((last_total != total) || (count <= last_count)) {
 		last_ratio = -1;
 		last_display[0] = '\0';
 		last_update = time(NULL) - 2;
@@ -586,7 +586,6 @@ show_progress(
 	}
 	free(display_format);
 
-	last_count = count;
 	tin_gettime(&last_time);
 #else
 	snprintf(display, sizeof(display), DISPLAY_FMT, txt, ratio);
@@ -632,6 +631,7 @@ show_progress(
 		STRCPY(last_display, display);
 	}
 
+	last_count = count;
 	last_total = total;
 	last_ratio = ratio;
 }

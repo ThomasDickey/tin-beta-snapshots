@@ -1,13 +1,13 @@
 # Estonian translations for tin.
 # This file is distributed under the same license as the tin package.
-# Toomas Soome <tsoome@me.com>, 2018.
+# Toomas Soome <tsoome@me.com>, 2019.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin 2.4.3\n"
+"Project-Id-Version: tin 2.4.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-18 13:24+0100\n"
-"PO-Revision-Date: 2018-12-25 10:47+0200\n"
+"POT-Creation-Date: 2020-05-22 12:39+0200\n"
+"PO-Revision-Date: 2019-12-25 12:29+0200\n"
 "Last-Translator: Toomas Soome <tsoome@me.com>\n"
 "Language-Team: Estonian <linux-ee@lists.eenet.ee>\n"
 "Language: et\n"
@@ -15,6 +15,30 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
+
+#. -> lang.c
+#: src/art.c:419
+#, fuzzy, c-format
+msgid "Reading %s\n"
+msgstr "Loen %s uuesti..."
+
+#. TODO: -> lang.c
+#: src/art.c:1173
+#, fuzzy
+msgid "Threading by multipart"
+msgstr "Järjestan artiklid teemade kaupa..."
+
+#. -> lang.c
+#: src/art.c:2509
+#, fuzzy, c-format
+msgid "Writing %s\n"
+msgstr "Proovin %s"
+
+#. TODO: -> lang.c
+#: src/art.c:2589
+#, fuzzy
+msgid "Writing overview cache..."
+msgstr "Kirjutan atribuutide faili..."
 
 #: src/attrib.c:986
 msgid "Processing attributes... "
@@ -291,9 +315,9 @@ msgid "#  quick_select_header=NUM\n"
 msgstr "#  quick_select_header=NUM\n"
 
 #: src/attrib.c:1289
-#, fuzzy, c-format
+#, c-format
 msgid "#  quote_chars=STRING (%%I for initials)\n"
-msgstr "#  quote_chars=SÕNE (%%I annavad initsiaalid)\n"
+msgstr "#  quote_chars=SÕNE (%%I annab initsiaalid)\n"
 
 #: src/attrib.c:1291
 #, c-format
@@ -2637,7 +2661,7 @@ msgid ""
 msgstr ""
 "\n"
 "See on %s, täisekraan teemadega Netnews lugeja. Uudiseid saab lugeda\n"
-"lokaalselt (st <spool>/news) või üle võrgu (võti -r),  kasutades NNTP\n"
+"lokaalselt (st. <spool>/news) või üle võrgu (võti -r),  kasutades NNTP\n"
 "(Network News Transport Protocol) serverit. Võti -h annab teile kasutata-\n"
 "vate võtmete loendi.\n"
 "\n"
@@ -4721,8 +4745,8 @@ msgid "  -p port  use port as NNTP port [default=%d]"
 msgstr "  -p port  kasuta NNTP porti [vaikimisi=%d]"
 
 #: src/lang.c:1118
-msgid "  -Q       quick start. Same as -nqd"
-msgstr "  -Q       kiirstart. Sama kui -nqd"
+msgid "  -Q       quick start. Same as -dnq"
+msgstr "  -Q       kiirstart. Sama kui -dnq"
 
 #: src/lang.c:1119
 msgid "  -r       read news remotely from default NNTP server"
@@ -6485,7 +6509,6 @@ msgid "Which actions require confirmation"
 msgstr "Tegevused mis nõuavad kinnitust"
 
 #: src/lang.c:2084
-#, fuzzy
 msgid ""
 "# What should we ask confirmation for.\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6498,14 +6521,16 @@ msgid ""
 "#   6 = quit & select\n"
 "#   7 = commands & quit & select\n"
 msgstr ""
-"# Artiklite teemadesse jagamine\n"
+"# Mida me peaksime kinnitama.\n"
 "# Võimalikud väärtused on (vaikeväärtuse tähis on *):\n"
-"#   0 = ei jaga\n"
-"#   1 = Teema\n"
-"#   2 = Viited\n"
-"# * 3 = Mõlemad (Teema ja Viited)\n"
-"#   4 = Mitmeosaline teema\n"
-"#   5 = Protsentuaalne sobivus\n"
+"#   0 = ei kinnita\n"
+"#   1 = käsud\n"
+"#   2 = valik\n"
+"#   3 = väljumine\n"
+"# * 4 = käsud ja väljumine\n"
+"#   5 = käsud ja valik\n"
+"#   6 = väljumine ja valik\n"
+"#   7 = käsud, väljumine ja valik\n"
 
 #: src/lang.c:2098
 msgid "'Mark as (un)read' ignores tags"
@@ -7163,7 +7188,6 @@ msgid "# If ON add signature to reposted articles\n"
 msgstr "# Kui väärtus on ON, lisa uuestipostitatud artiklile signatuur\n"
 
 #: src/lang.c:2467
-#, fuzzy
 msgid "Enter quotation marks, %I for author's initials."
 msgstr "Sisestage tsitaadimärgid, %I annab autori initsiaalid."
 
@@ -7172,7 +7196,6 @@ msgid "Characters used as quote-marks"
 msgstr "Tsiteerimise märgid"
 
 #: src/lang.c:2469
-#, fuzzy
 msgid ""
 "# Characters used in quoting to followups and replies.\n"
 "# '_' is replaced by ' ', %I is replaced by author's initials.\n"
@@ -8192,21 +8215,27 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr "Sisestage 'X-Comment-To:' päis"
 
 #. TODO: lang.c
-#: src/main.c:817
+#: src/main.c:819
 msgid "reading from local spool"
 msgstr "loen lokaalsest spool kataloogist"
 
-#: src/misc.c:3877
+#. TODO: != ENOENT ? and -> lang.c
+#: src/misc.c:750
+#, c-format
+msgid "Error: unlink %s"
+msgstr ""
+
+#: src/misc.c:3905
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Versioon: %s %s väljalase %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3880
+#: src/misc.c:3908
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Versioon: %s %s väljalase %s (\"%s\")\n"
 
-#: src/newsrc.c:460
+#: src/newsrc.c:472
 msgid "Unreachable?\n"
 msgstr "Kättesaamatu?\n"
 
@@ -8245,7 +8274,7 @@ msgstr "CAPABILITIES ei sisalda READER"
 msgid "MOTD: "
 msgstr "MOTD: "
 
-#: src/nrctbl.c:178
+#: src/nrctbl.c:184
 #, c-format
 msgid "couldn't expand %s\n"
 msgstr "ei saa laiendada %s\n"
@@ -8279,14 +8308,14 @@ msgstr ""
 "Rida %d on pikem, kui %d sümbolit ja tuleks poolitada, aga kodeering\n"
 "pole %s\n"
 
-#: src/post.c:2325
+#: src/post.c:2331
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Postitan: %.*s ..."
 
-#: src/post.c:4075
+#: src/post.c:4099
 msgid "Can't supersede in mailgroups, try repost instead."
-msgstr ""
+msgstr "e-posti gruppides ei saa asendada, proovide uuesti postitada."
 
 #. Check if okay to read
 #: src/read.c:207
@@ -8310,6 +8339,18 @@ msgid "[- Unavailable -]"
 msgstr "[- Pole kasutatav -]"
 
 #.
+#. * Add the Message-ID headers to the cache, using the last Reference
+#. * as the parent
+#.
+#.
+#. * Add the References data to the cache
+#.
+#: src/refs.c:1015 src/refs.c:1077
+#, c-format
+msgid "Building References-trees (%d/%d)..."
+msgstr ""
+
+#.
 #. * preamble
 #. * TODO: -> lang.c
 #.
@@ -8327,7 +8368,7 @@ msgstr ""
 "vormingut kasutama ja järgnev tekst võib olla kummaline.\n"
 "\n"
 
-#: src/save.c:1069
+#: src/save.c:1075
 msgid "bytes"
 msgstr "baiti"
 
@@ -8394,6 +8435,3 @@ msgstr "Slrnface lõpetas veaga, kood %d."
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Slrnface ebaõnnestus: %s."
-
-#~ msgid "# What should we ask confirmation for.\n"
-#~ msgstr "# Millele me peaksime küsima kinnitust.\n"

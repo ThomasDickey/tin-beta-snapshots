@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2019-07-05
+ *  Updated   : 2020-02-18
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -2119,25 +2119,23 @@ filter_articles(
 						} else {
 #ifdef DEBUG
 							if (debug & DEBUG_FILTER) /* TODO: lang.c, _()? */
-								debug_print_file("FILTER", "Skipping xref filter");
+								debug_print_file("FILTER", "Skipping Xref filter");
 #endif /* DEBUG */
 							error = TRUE;
 							break;
 						}
 
-						if (ptr[j].xref != NULL) {
-							switch (test_regex(k, ptr[j].xref, ptr[j].icase, &regex_cache_xref[j])) {
-								case 1:
-									SET_FILTER(group, i, j);
-									break;
+						switch (test_regex(k, ptr[j].xref, ptr[j].icase, &regex_cache_xref[j])) {
+							case 1:
+								SET_FILTER(group, i, j);
+								break;
 
-								case -1:
-									error = TRUE;
-									break;
+							case -1:
+								error = TRUE;
+								break;
 
-								default:
-									break;
-							}
+							default:
+								break;
 						}
 						free(k);
 					}

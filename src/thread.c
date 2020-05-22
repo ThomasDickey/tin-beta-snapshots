@@ -1055,15 +1055,19 @@ num_of_responses(
 	int n)
 {
 	int i;
-	int oldi = -3;
 	int sum = 0;
+#ifndef NDEBUG
+	int oldi = -3;
 
 	assert(n < grpmenu.max && n >= 0);
+#endif /* !NDEBUG */
 
 	for_each_art_in_thread(i, n) {
+#ifndef NDEBUG
 		assert(i != ART_EXPIRED);
 		assert(i != oldi);
 		oldi = i;
+#endif /* !NDEBUG */
 		sum++;
 	}
 

@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2019-06-05
+ *  Updated   : 2020-04-23
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1002,7 +1002,13 @@ post_process_uud(
 				if (!(mode &= ~(S_ISUID|S_ISGID|S_ISVTX)))
 					mode = (S_IRUSR|S_IWUSR);
 
+#ifdef HAVE_FCHMOD
 				fchmod(fileno(fp_out), mode);
+#else
+#	ifdef HAVE_CHMOD
+				chmod(path, mode);
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 				fclose(fp_out);
 				fp_out = NULL;

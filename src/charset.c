@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2019-07-05
+ *  Updated   : 2020-02-26
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2020 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -147,12 +147,12 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
  * german tex style to latin1 conversion (by root@aspic, 12/04/93)
  */
 
-#define TEX_SUBST	15
+#define TEX_SUBST	16
 #define SPACES		"                                                                                                         "
 
 static const char *const tex_from[TEX_SUBST] =
 {
-	"\"a","\\\"a","\"o","\\\"o","\"u","\\\"u","\"A","\\\"A","\"O","\\\"O","\"U","\\\"U","\"s","\\\"s","\\3"
+	"\"a","\\\"a","\"o","\\\"o","\"u","\\\"u","\"A","\\\"A","\"O","\\\"O","\"U","\\\"U","\"s","\\\"s","\\3",'\0'
 };
 
 /*
@@ -272,6 +272,8 @@ convert_tex2iso(
 	t_bool ex;
 
 	/* initialize tex_to */
+	memset(tex_to,'\0', sizeof(tex_to));
+
 	/*
 	 * Charsets which have german umlauts incl. sharp s at the same
 	 * code position as ISO-8859-1
@@ -300,7 +302,7 @@ convert_tex2iso(
 		tex_to[3] = tex_to[2] = "\303\266";	/* ouml */
 		tex_to[5] = tex_to[4] = "\303\274";	/* uuml */
 		tex_to[7] = tex_to[6] = "\303\204";	/* Auml */
-		tex_to[9] = tex_to[8] = "\303\266";	/* Ouml */
+		tex_to[9] = tex_to[8] = "\303\226";	/* Ouml */
 		tex_to[11] = tex_to[10] = "\303\234";	/* Uuml */
 		tex_to[14] = tex_to[13] = tex_to[12] = "\303\237";	/* szlig */
 	} else {
@@ -314,7 +316,7 @@ convert_tex2iso(
 	while (col < len) {
 		i = 0;
 		ex = FALSE;
-		while ((i < TEX_SUBST) && !ex) {
+		while ((i < TEX_SUBST - 1) && !ex) {
 			subst_len = strlen(tex_from[i]);
 			if (!strncmp(from + col, tex_from[i], subst_len)) {
 				strcat(to, tex_to[i]);

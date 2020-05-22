@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2019-09-19
+ *  Updated   : 2020-05-19
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -238,7 +238,13 @@ backup_file(
 	ret = copy_fp(fp_in, fp_out);
 
 	if ((fd = fileno(fp_out)) != -1)
+#ifdef HAVE_FCHMOD
 		fchmod(fd, mode);
+#else
+#	ifdef HAVE_CHMOD
+		chmod(backupname, mode);
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	fclose(fp_out);
 	fclose(fp_in);
@@ -739,7 +745,12 @@ rename_file(
 	mode_t mode = (mode_t) (S_IRUSR|S_IWUSR);
 	struct stat statbuf;
 
-	unlink(new_filename);
+	if (unlink(new_filename) == -1) {
+		if (errno == EPERM) { /* TODO: != ENOENT ? and -> lang.c */
+			perror_message(_("Error: unlink %s"), new_filename);
+			return;
+		}
+	}
 
 #ifdef HAVE_LINK
 	if (link(old_filename, new_filename) == -1)
@@ -766,7 +777,13 @@ rename_file(
 			copy_fp(fp_old, fp_new);
 
 			if ((fd = fileno(fp_new)) != -1)
+#ifdef HAVE_FCHMOD
 				fchmod(fd, mode);
+#else
+#	ifdef HAVE_CHMOD
+				chmod(new_filename, mode);
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 			fclose(fp_new);
 			fclose(fp_old);
@@ -1140,7 +1157,13 @@ create_index_lock_file(
 		giveup();
 	}
 	if ((fp = fopen(the_lock_file, "w")) != NULL) {
+#ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+#else
+#	ifdef HAVE_CHMOD
+		chmod(the_lock_file, (mode_t) (S_IRUSR|S_IWUSR));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 		(void) time(&epoch);
 		fprintf(fp, "%6d  %s\n", (int) process_id, ctime(&epoch));
 		if ((err = ferror(fp)) || fclose(fp)) {
@@ -2276,8 +2299,13 @@ write_input_history_file(
 			}
 		}
 	}
-
+#ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
+#else
+#	ifdef HAVE_CHMOD
+	chmod(file_tmp, (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	if ((his_w = ferror(fp)) || fclose(fp)) {
 		error_message(2, _(txt_filesystem_full), local_input_history_file);

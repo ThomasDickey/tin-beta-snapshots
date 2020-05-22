@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2019-07-03
+ *  Updated   : 2020-04-23
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2020 Iain Lea <iain@bricbrac.de>
@@ -1557,7 +1557,13 @@ write_attributes_file(
 	}
 
 	/* rename_file() preserves mode, so this is safe */
+#ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+#else
+#	ifdef HAVE_CHMOD
+	chmod(new_file, (mode_t) (S_IRUSR|S_IWUSR));
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
 
 	if ((i = ferror(fp)) || fclose(fp)) {
 		error_message(2, _(txt_filesystem_full), ATTRIBUTES_FILE);

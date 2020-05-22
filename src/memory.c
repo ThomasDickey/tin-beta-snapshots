@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-07-02
+ *  Updated   : 2020-05-19
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -139,7 +139,11 @@ expand_art(
 
 	max_art += max_art >> 1;		/* increase by 50% */
 	arts = my_realloc(arts, sizeof(*arts) * max_art);
-	for (; i < max_art; i++)		/* use memset() instead? */
+		/*
+		 * memset(&arts[i].artnum, 0, (max_art - i - 1) * sizeof(*arts));
+		 * seems to be not faster at all
+		 */
+	for (; i < max_art; i++)
 		arts[i].subject = arts[i].from = arts[i].xref = arts[i].path = arts[i].refs = arts[i].msgid = NULL;
 }
 
@@ -529,7 +533,8 @@ my_malloc1(
 	void *p;
 
 #ifdef DEBUG
-	debug_print_malloc(TRUE, file, line, size);
+	if (debug & DEBUG_MEM)
+		debug_print_malloc(TRUE, file, line, size);
 #endif /* DEBUG */
 
 	if ((p = malloc(size)) == NULL) {
@@ -553,7 +558,8 @@ my_calloc1(
 	void *p;
 
 #ifdef DEBUG
-	debug_print_malloc(TRUE, file, line, nmemb * size);
+	if (debug & DEBUG_MEM)
+		debug_print_malloc(TRUE, file, line, nmemb * size);
 #endif /* DEBUG */
 
 	if ((p = calloc(nmemb, size)) == NULL) {
@@ -572,7 +578,8 @@ my_realloc1(
 	size_t size)
 {
 #ifdef DEBUG
-	debug_print_malloc(FALSE, file, line, size);
+	if (debug & DEBUG_MEM)
+		debug_print_malloc(FALSE, file, line, size);
 #endif /* DEBUG */
 
 	if (!size) {

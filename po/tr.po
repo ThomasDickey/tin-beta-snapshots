@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-18 13:24+0100\n"
+"POT-Creation-Date: 2020-05-22 12:39+0200\n"
 "PO-Revision-Date: 2017-05-29 18:40+0000\n"
 "Last-Translator: Mesutcan Kurt <mesutcank@gmail.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -21,6 +21,37 @@ msgstr ""
 "X-Generator: Pootle 2.5.1.1\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "X-POOTLE-MTIME: 1496083249.000000\n"
+
+# #-#-#-#-#  tin1.po (PACKAGE VERSION)  #-#-#-#-#
+#  TODO: -> lang.c
+# #-#-#-#-#  tin2.po (PACKAGE VERSION)  #-#-#-#-#
+#  TODO: -> lang.c
+# #-#-#-#-#  tin4.po (PACKAGE VERSION)  #-#-#-#-#
+#  TODO: -> lang.c
+#  TODO: -> lang.c
+#. -> lang.c
+#: src/art.c:419
+#, fuzzy, c-format
+msgid "Reading %s\n"
+msgstr "%s tekrar okunuyor..."
+
+#. TODO: -> lang.c
+#: src/art.c:1173
+#, fuzzy
+msgid "Threading by multipart"
+msgstr "Makaleler zincirleniyor..."
+
+#. -> lang.c
+#: src/art.c:2509
+#, fuzzy, c-format
+msgid "Writing %s\n"
+msgstr "%s deneniyor"
+
+#. TODO: -> lang.c
+#: src/art.c:2589
+#, fuzzy
+msgid "Writing overview cache..."
+msgstr "Öznitelikler dosylası yazılıyor..."
 
 #: src/attrib.c:986
 msgid "Processing attributes... "
@@ -4835,7 +4866,8 @@ msgstr ""
 "kullan [varsayılan=%d]"
 
 #: src/lang.c:1118
-msgid "  -Q       quick start. Same as -nqd"
+#, fuzzy
+msgid "  -Q       quick start. Same as -dnq"
 msgstr "  -Q       hızlı başlat. -nqd ile aynı"
 
 #: src/lang.c:1119
@@ -8449,21 +8481,27 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr "'X-Comment-To:' üst bilgisi ekle"
 
 #. TODO: lang.c
-#: src/main.c:817
+#: src/main.c:819
 msgid "reading from local spool"
 msgstr "yerel kuyruktan okunuyor"
 
-#: src/misc.c:3877
+#. TODO: != ENOENT ? and -> lang.c
+#: src/misc.c:750
+#, c-format
+msgid "Error: unlink %s"
+msgstr ""
+
+#: src/misc.c:3905
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Sürüm: %s yayım %s %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3880
+#: src/misc.c:3908
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Sürüm: %s yayım %s %s (\"%s\")\n"
 
-#: src/newsrc.c:460
+#: src/newsrc.c:472
 msgid "Unreachable?\n"
 msgstr "Ulaşılamaz?\n"
 
@@ -8502,7 +8540,7 @@ msgstr "CAPABILITIES, READER duyurmadı"
 msgid "MOTD: "
 msgstr "MOTD: "
 
-#: src/nrctbl.c:178
+#: src/nrctbl.c:184
 #, c-format
 msgid "couldn't expand %s\n"
 msgstr "%s genişletilemedi\n"
@@ -8537,12 +8575,12 @@ msgstr ""
 "%d satırı %d oktetten daha uzun ve kısaltılmalı, fakat\n"
 "kodlama %s değerine ayarlı değil\n"
 
-#: src/post.c:2325
+#: src/post.c:2331
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Gönderiliyor: %.*s ..."
 
-#: src/post.c:4075
+#: src/post.c:4099
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8571,6 +8609,18 @@ msgid "[- Unavailable -]"
 msgstr "[- Kullanılamıyor -]"
 
 #.
+#. * Add the Message-ID headers to the cache, using the last Reference
+#. * as the parent
+#.
+#.
+#. * Add the References data to the cache
+#.
+#: src/refs.c:1015 src/refs.c:1077
+#, c-format
+msgid "Building References-trees (%d/%d)..."
+msgstr ""
+
+#.
 #. * preamble
 #. * TODO: -> lang.c
 #.
@@ -8589,7 +8639,7 @@ msgstr ""
 "henüz değişikliğe uğramamış, ve gelecek birkaç şey garip görünebilir.\n"
 "\n"
 
-#: src/save.c:1069
+#: src/save.c:1075
 msgid "bytes"
 msgstr "bayt"
 
