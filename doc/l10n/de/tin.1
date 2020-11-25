@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2020-05-22
+.\" Updated   : 2020-11-17
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -116,11 +116,12 @@ Zugehörigen Newsserver und newsrc\-Datei aus
 via NNTP gelesen wird.
 .TP 
 \fB\-G\fP\fI Artikellimit\fP
-Limit the number of articles/group to retrieve from the server.  If
-\fIarticle\-limit\fP is > 0 not more than the last \fIarticle\-limit\fP
-articles/group are fetched from the server. If \fIarticle\-limit\fP is < 0
-\fBtin\fP will start fetching articles from your first unread minus absolute
-value of \fIarticle\-limit\fP. Default is 0, which means no limit.
+Beschränkt die Anzahl der Artikel pro Gruppe, die vom Server abgerufen
+werden sollen. Wenn \fIarticle\-limit\fP > 0 ist, werden nicht mehr als die
+letzten \fIarticle\-limit\fP Artikel pro Gruppe vom Server geholt. Wenn
+\fIarticle\-limit\fP < 0 ist, beginnt \fBtin\fP mit dem Abruf von Artikeln ab
+Ihrem ersten ungelesenen Artikel minus dem absoluten Wert von
+\fIarticle\-limit\fP. Die Voreinstellung ist 0, was keine Begrenzung bedeutet.
 .TP 
 \fB\-h\fP
 Kurzübersicht der verfügbaren Kommandozeilenoptionen.
@@ -529,7 +530,7 @@ are listed. You can use \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\
 to the menu.
 .TP 
 \fBVersion 'v'\fP
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 Versions\-Informationen ausgeben.
 .SS "BEFEHLE ZUR GRUPPENAUSWAHL"
@@ -671,7 +672,7 @@ Reread the \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file to
 see if any new news has arrived since starting \fBtin\fP.
 .TP 
 \fBSelectMarkGrpUnread 'z' 'Z'\fP
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 Alle Artikel in der aktuellen Gruppe als ungelesen markieren.
 .SS "GROUP INDEX COMMANDS"
@@ -890,7 +891,7 @@ Toggle tag\-status of current article / thread for \fBGroupMail\fP ('\fBm\fP')  
 .TP 
 \fBGroupTagParts 'T'\fP
 Alle Teile der aktuellen mehrteiligen Nachricht automatisch in der
-Reihenfolge markieren.
+Reihenfolge markieren bzw. die vorhandenen Markierungen entfernen.
 .TP 
 \fBGroupToggleThreading 'u'\fP
 Cycle the threading mode through no threading, threading by subject,
@@ -924,7 +925,7 @@ changes permanent.
 Aktuellen Artikel als ungelesen markieren.
 .TP 
 \fBMarkThdUnread 'Z'\fP
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 Mark current thread as unread. If a range of threads is set, the range will
 be marked as unread instead of the current thread. When tagged threads are
@@ -1071,6 +1072,10 @@ Markierte Artikel automatisch ohne weiteres Nachfragen speichern.
 Toggle tag status of current article for mailing, piping, printing, saving
 or reposting.
 .TP 
+\fBThreadTagParts 'T'\fP
+Alle Teile der aktuellen mehrteiligen Nachricht automatisch in der
+Reihenfolge markieren bzw. die vorhandenen Markierungen entfernen.
+.TP 
 \fBThreadUntag 'U'\fP
 Markierung aller markierten Threads entfernen.
 .TP 
@@ -1086,7 +1091,7 @@ range will be marked as unread instead of the current article. When tagged
 articles are present, a prompt asks how to proceed.
 .TP 
 \fBMarkThdUnread 'Z'\fP
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 Alle Artikel im aktuellen Thread als ungelesen markieren.
 .SS "ARTICLE VIEWER COMMANDS"
@@ -1343,7 +1348,7 @@ your own articles.
 Alle Artikel als ungelesen markieren.
 .TP 
 \fBMarkThdUnread 'Z'\fP
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 Markiere den aktuellen Thread als ungelesen.
 .SS "URL LISTE"
@@ -1377,7 +1382,7 @@ Hilfeseite der verfügbaren Befehle.
 \fBToggleHelpDisplay 'H'\fP
 Mini\-Hilfe am unterem Bildschirmrand ein\-/ausschalten.
 .RE
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 .SS "ATTACHMENT LISTING"
 \fBPageViewAttach\fP ('\fBV\fP') displays a list of attachments of the current
@@ -1431,7 +1436,7 @@ Hilfeseite der verfügbaren Befehle.
 \fBToggleHelpDisplay 'H'\fP
 Mini\-Hilfe am unterem Bildschirmrand ein\-/ausschalten.
 .RE
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 .SS "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
 .\" FIXME - add missing descriptions
@@ -2037,7 +2042,7 @@ Leerzeichen getrennte Werte angeben. Wenn Sie hier nichts definieren wird
 diese Option deaktiviert.
 .TP 
 \fBZeige folgende Header nicht an (news_headers_to_not_display)\fP
-Genau das gleiche wie 'news_headers_to_display', mit der Ausnahme, das es
+Genau das Gleiche wie 'news_headers_to_display', mit der Ausnahme, das es
 das Gegenteil bewirkt. Wenn Sie dachten, das die X\- Header eine tolle Sachen
 waren, nun aber festgestellt haben, das dort einiges überflüssiges steht,
 dann könnten Sie wie folgt vorgehen: \fBnews_headers_to_display=X\-\fP
@@ -2113,9 +2118,12 @@ following values are allowed:
 .RE
 .TP 
 \fBGepostete Artikel speichern in (posted_articles_file)\fP
-Keep posted articles in
-\fI${TIN_HOMEDIR:\-"$HOME"}/Mail/\fP\fBposted_articles_file\fP.  If no filename is
-set then postings will not be saved.  Default is 'posted'.
+Keep posted articles in given file. If the given filename does not contain
+any expandable strings it will be prefixed with
+\fI${TIN_HOMEDIR:\-"$HOME"}/Mail/\fP. If no filename is set then postings will
+not be saved. See the section "MAILING PIPING PRINTING REPOSTING AND SAVING
+ARTICLES" for more information about the various expansion
+characters. Default is 'posted'.
 .TP 
 \fBAlle Header beim Drucken ausgeben (print_header)\fP
 If ON, then the full article header is sent to the printer. Otherwise only
@@ -2786,9 +2794,9 @@ current news.group.name but without \fBsavedir\fP prefixed. %P is expanded to
 the news.group.name with all '.' replaced by '/'.
 .PP
 If saving multiple files at once the filename (if not referring to a
-mailbox)  will be extended by ".num" where "num" is a at least 3 digit
-number counting up from 1. Environment variables are allowed within a
-filename (e.g., \fI$SOURCES/dir/filename\fP).
+mailbox)  will be extended by ".num" where "num" is at least 3 digit number
+counting up from 1. Environment variables are allowed within a filename
+(e.g., \fI$SOURCES/dir/filename\fP).
 .PP
 .\"
 .\"
@@ -3163,7 +3171,7 @@ coffee. Subsequent readings of a group will only need to do incremental
 updating of the index file and will be much faster as only new articles will
 need to be cached.
 .PP
-As indexing might take some time you may want to run \fBtin\fP form the system
+As indexing might take some time you may want to run \fBtin\fP from the system
 batcher \fB\%cron\fP(8)  with the \*(rq\fB\-u\fP\*(rq option:
 .PP
 .RS
@@ -3341,7 +3349,7 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .\"
 .SH UMGEBUNGSVARIABLEN
 .\" TODO: - sort in a useful order
-.\"       - add undocumented env-vars (if any)
+.\"       - add undocumented env-vars (e.g. DEV_TCP (SCO))
 .TP 
 \fBTINRC\fP
 Setzen Sie diese Variable wenn Sie Befehlszeilenoptionen angeben möchten mit
@@ -3462,15 +3470,15 @@ Adresse erhalten möchten.
 angegeben ist, siehe auch \fBmail_address\fP.
 .TP 
 \fBREALNAME\fP
-Same as $\fBNAME\fP.
+Bewirkt das Gleiche wie $\fBNAME\fP.
 .TP 
 \fBHOME\fP
 Das Anmeldeverzeichnis des Benutzers. Weitere Informationen finden sich in
 \fB\%environ\fP(5).
 .TP 
 \fBMAILER\fP
-This variable has precedence over the default mailer that is used in all
-mailing operations within \fBtin\fP.
+Diese Variable hat Vorrang vor dem Standard\-Mailer, der bei allen
+Versandoperationen innerhalb von \fBtin\fP verwendet wird.
 .TP 
 \fBMAIL\fP
 Voller Pfad zum Postfach des Benutzers.

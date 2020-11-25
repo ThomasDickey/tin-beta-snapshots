@@ -27,7 +27,7 @@
 /* local prototype */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	static wint_t convert_c2wc (const char *input);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE*/
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 #ifdef USE_CURSES
 
@@ -616,7 +616,7 @@ RawState(
 #	ifndef CBREAK
 #		define CBREAK	0x00000002 /* half-cooked mode */
 #	endif /* !CBREAK */
-#endif /* sun || __sun && (!__SVR4 ||! __svr4__) && BSD && BSD < 199306 */
+#endif /* sun || __sun && (!__SVR4 || !__svr4__) && BSD && BSD < 199306 */
 /*
  * state is either TRUE or FALSE, as indicated by call
  */

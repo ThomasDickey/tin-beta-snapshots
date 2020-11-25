@@ -2079,7 +2079,7 @@ rc_post_update(
 				if (match_string(buf, "sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile))) {
 					size_t l = strlen(tinrc.sigfile);
 
-					if (tinrc.sigfile[0] == '!'&& (tinrc.sigfile[l - 2] != '%' || tinrc.sigfile[l - 1] != 'G')) {
+					if (tinrc.sigfile[0] == '!' && (tinrc.sigfile[l - 2] != '%' || tinrc.sigfile[l - 1] != 'G')) {
 						char *newbuf = my_malloc(sizeof(tinrc.sigfile) + 4);
 
 						sprintf(newbuf, "%s %s", tinrc.sigfile, "%G");

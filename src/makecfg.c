@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2019-02-04
+ *  Updated   : 2020-08-15
  *  Notes     : #defines and structs for options_menu.c
  *
  * Copyright (c) 1997-2020 Thomas E. Dickey <dickey@invisible-island.net>
@@ -123,8 +123,13 @@ parse_tbl(
 	char *t = s + strlen(s);
 
 	/* strip leading/trailing blanks */
-	while ((t-- != s) && isspace ((int)*t))
-		*t = '\0';
+	do {
+		t--;
+		if (isspace ((int)*t))
+			*t = '\0';
+		else
+			break;
+	} while (t > s);
 	while (isspace ((int)*s))
 		s++;
 	buffer = s;

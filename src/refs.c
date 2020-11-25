@@ -592,7 +592,7 @@ dump_thread(
 	/*
 	 * Dump the current article
 	 */
-	sprintf(ptr, "%3d %*s", msgid->article, 2*level, "  ");
+	sprintf(ptr, "%3d %*s", msgid->article, 2 * level, "  ");
 
 	len = strlen(ptr);
 	i = cCOLS - len - 20;

@@ -153,7 +153,7 @@ boundary_cmp(
 	/* remove trailing whites as per RFC 2046 5.1.1 */
 	l = my_strdup(line);
 	e = l + len - 1;
-	while(e > l + blen + 1 && isspace(*e))
+	while (e > l + blen + 1 && isspace(*e))
 		*e-- = '\0';
 
 	len = strlen(l);

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-05-13
+ *  Updated   : 2020-06-13
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1522,16 +1522,16 @@ struct t_article {
 	char *subject;			/* Subject: line from mail header */
 	char *from;			/* From: line from mail header (address) */
 	char *name;			/* From: line from mail header (full name) */
-	int gnksa_code;			/* From: line from mail header (GNKSA error code) */
-	time_t date;			/* Date: line from header in seconds */
 	char *xref;			/* Xref: cross posted article reference line */
 	char *path;			/* Path: line */
 	/* NB: The msgid and refs are only retained until the reference tree is built */
 	char *msgid;			/* Message-ID: unique message identifier */
 	char *refs;			/* References: article reference id's */
 	struct t_msgid *refptr;		/* Pointer to us in the reference tree */
-	int line_count;			/* Lines: number of lines in article */
 	struct t_archive *archive;	/* Archive-Name: header */
+	time_t date;			/* Date: line from header in seconds */
+	int line_count;			/* Lines: number of lines in article */
+	int gnksa_code;			/* From: line from mail header (GNKSA error code) */
 	int tagged;			/* 0 = not tagged, >0 = tagged */
 	int thread;
 	int prev;
@@ -1544,6 +1544,7 @@ struct t_article {
 	t_bool inrange:1;	/* TRUE = article selected via # range command */
 	t_bool matched:1;	/* TRUE = article matched regex in feed.c */
 	t_bool keep_in_base:1;	/* TRUE = keep (read) article in base[] (show_only_unread_arts) */
+	t_bool multipart_subj:1;	/* TRUE = subject looks like multipart subject */
 };
 
 
@@ -2005,7 +2006,7 @@ typedef struct {
 	int subject_compare_len;
 	int part_number;
 	int total;
-	int base_index;
+	int arts_index;
 } MultiPartInfo;
 
 

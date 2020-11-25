@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-05-19
+ *  Updated   : 2020-07-08
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -286,7 +286,7 @@ copy_body(
 		return;
 	}
 
-	while(maxlen > 0 && *q) {
+	while (maxlen > 0 && *q) {
 		if (*q == '%' && *(q + 1) == 'I') {
 			if (maxlen < ilen) /* not enough space left for %I expansion */
 				break;
@@ -2973,6 +2973,9 @@ gnksa_dequote_plainphrase(
 	int initialstate;	/* initial state */
 	int state;	/* current state */
 
+	if (!*realname)
+		return GNKSA_MISSING_REALNAME;
+
 	/* initialize state machine */
 	switch (addrtype) {
 		case GNKSA_ADDRTYPE_ROUTE:
@@ -3397,22 +3400,17 @@ gnksa_split_from(
 	*address = *realname = '\0';
 
 	/* copy raw address into work area */
-	strncpy(work, from, HEADER_LEN - 2);
-	work[HEADER_LEN - 2] = '\0';
-	work[HEADER_LEN - 1] = '\0';
+	STRCPY(work, from);
+	strip_line(work);
+	strcpy(address, work);
 
-	/* skip trailing whitespace */
-	addr_end = work + strlen(work) - 1;
-	while (addr_end >= work && (*addr_end == ' ' || *addr_end == '\t'))
-		addr_end--;
-
-	if (addr_end < work) {
+	if (!*work) {
 		*addrtype = GNKSA_ADDRTYPE_OLDSTYLE;
-		return GNKSA_LPAREN_MISSING;
+		return GNKSA_ATSIGN_MISSING; /* GNKSA_LPAREN_MISSING */
 	}
 
-	*(addr_end + 1) = '\0';
-	*(addr_end + 2) = '\0';
+	/* skip trailing whitespace */
+ 	addr_end = work + strlen(work) - 1;
 
 	if (*addr_end == '>') {
 		/* route-address used */
@@ -3426,25 +3424,33 @@ gnksa_split_from(
 		if (*addr_begin != '<') /* syntax error in mail address */
 			return GNKSA_LANGLE_MISSING;
 
-		/* copy route address */
 		*addr_end = *addr_begin = '\0';
+		/* copy route address */
 		strcpy(address, addr_begin + 1);
+
+		/* missing realname */
+		if (addr_begin == work)
+			return GNKSA_MISSING_REALNAME;
 
 		/* get realname part */
 		addr_end = addr_begin - 1;
 		addr_begin = work;
 
 		/* strip surrounding whitespace */
-		while (addr_end >= work && (*addr_end == ' '|| *addr_end == '\t'))
-			addr_end--;
-
+		strip_line(addr_end);
 		while ((*addr_begin == ' ') || (*addr_begin == '\t'))
 			addr_begin++;
 
-		*++addr_end = '\0';
+#if 0	/* whitespace only realname  */
+		strip_line(addr_begin);
+		if (!strlen(addr_begin))
+			return GNKSA_WHITESPACE_REALNAME;
+		else
+#endif /* 0 */
 		/* copy realname */
 		strcpy(realname, addr_begin);
 	} else {
+		size_t l;
 		/* old-style address used */
 		*addrtype = GNKSA_ADDRTYPE_OLDSTYLE;
 
@@ -3454,22 +3460,32 @@ gnksa_split_from(
 		while ((*addr_begin == ' ') || (*addr_begin == '\t'))
 			addr_begin++;
 
+		if (*addr_begin == '<') {
+			*addrtype = GNKSA_ADDRTYPE_ROUTE;
+			return GNKSA_RANGLE_MISSING;
+		}
+
 		/* scan forward to next whitespace or null */
+		l = strlen(addr_begin);
 		addr_end = addr_begin;
+
 		while ((*addr_end != ' ') && (*addr_end != '\t') && (*addr_end))
 			addr_end++;
 
 		*addr_end = '\0';
+
+		if (l == strlen(addr_begin))
+			return GNKSA_MISSING_REALNAME;
+
 		/* copy route address */
 		strcpy(address, addr_begin);
 
 		/* get realname part */
 		addr_begin = addr_end + 1;
-		addr_end = addr_begin + strlen(addr_begin) -1;
-		/* strip surrounding whitespace */
-		while ((*addr_end == ' ') || (*addr_end == '\t'))
-			addr_end--;
+		addr_end = addr_begin + strlen(addr_begin) - 1;
 
+		/* strip surrounding whitespace */
+		strip_line(addr_end);
 		while ((*addr_begin == ' ') || (*addr_begin == '\t'))
 			addr_begin++;
 
@@ -3627,12 +3643,19 @@ char *
 strip_line(
 	char *line)
 {
-	char *ptr = line + strlen(line) - 1;
+	char *ptr;
 
-	while ((ptr >= line) && (*ptr == ' ' || *ptr == '\t' || *ptr == '\r' || *ptr == '\n'))
+	if (!*line)
+		return line;
+
+	ptr = line + strlen(line);
+	do {
 		ptr--;
-
-	*++ptr = '\0';
+		if (*ptr == ' ' || *ptr == '\t' || *ptr == '\r' || *ptr == '\n')
+			*ptr = '\0';
+		else
+			break;
+	} while (ptr > line);
 
 	return line;
 }
@@ -3793,7 +3816,7 @@ idna_decode(
 		return out;
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-/* IDNA 2008 */
+	/* IDNA 2008 */
 #	if defined(HAVE_LIBIDNKIT) && defined(HAVE_IDN_DECODENAME)
 	{
 		idn_result_t res;
@@ -3820,7 +3843,7 @@ idna_decode(
 	}
 #	endif /* HAVE_LIBIDNKIT && HAVE_IDN_DECODENAME */
 
-/* IDNA 2003 */
+	/* IDNA 2003 */
 #	ifdef HAVE_LIBICUUC
 	{
 		UChar *src;

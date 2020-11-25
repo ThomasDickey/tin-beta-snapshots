@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2020-02-18
+ *  Updated   : 2020-05-28
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -1896,10 +1896,13 @@ filter_articles(
 
 	/*
 	 * loop through all arts applying global & local filtering rules
-	 *
-	 * TODO: allow iKeyAbort to stop filtering
 	 */
 	for (i = 0; (i < top_art) && !error; i++) {
+#ifdef HAVE_SELECT
+		if (wait_for_input())   /* allow abort */
+			break; /* to free the mem */
+#endif /* HAVE_SELECT */
+
 		arts[i].score = 0;
 
 		if (tinrc.kill_level == KILL_UNREAD && IS_READ(i)) /* skip only when the article is read */
@@ -2162,6 +2165,10 @@ filter_articles(
 				}
 			}
 		}
+		/*
+		 * if (i % (MODULO_COUNT_NUM * 20) == 0)
+		 *    show_progress("Filter", i, top_art);
+		 */
 	}
 
 	/*
@@ -2207,6 +2214,7 @@ filter_articles(
 			}
 		}
 	}
+
 	if (!cmd_line && !batch_mode)
 		clear_message();
 

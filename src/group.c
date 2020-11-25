@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2017-10-24
+ *  Updated   : 2020-06-10
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -593,7 +593,9 @@ group_page(
 
 			case GROUP_TAG_PARTS: /* tag all in order */
 				if (0 <= grpmenu.curr) {
-					if (tag_multipart(grpmenu.curr) != 0) {
+					int old_num = num_of_tagged_arts;
+
+					if (tag_multipart(base[grpmenu.curr]) != 0) {
 						/*
 						 * on success, move the pointer to the next
 						 * untagged article just for ease of use's sake
@@ -608,7 +610,10 @@ group_page(
 								break;
 							}
 						} while (n != grpmenu.curr);
-						info_message(_(txt_info_all_parts_tagged));
+						if (old_num < num_of_tagged_arts)
+							info_message(_(txt_info_all_parts_tagged));
+						else
+							info_message(_(txt_info_all_parts_untagged));
 					}
 				}
 				break;

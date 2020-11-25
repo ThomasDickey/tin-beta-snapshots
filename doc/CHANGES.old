@@ -397,7 +397,7 @@ U014) Urs Janssen <urs@tin.org>
       ADD. allow new IDN ccTLD of Mongolia
       ADD. allow gTLD post.
       ADD. tweaked manpage
-      ADD. make traget install_nls_man for translated manpages
+      ADD. make target install_nls_man for translated manpages
       ADD. config.guess update
       FIX. charset.c, config.c, init.c, options_menu.c, string.c, policy.h
            Makefile, Makefile.in, tin.1, tin.5, config.guess

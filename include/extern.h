@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-02-18
+ *  Updated   : 2020-06-16
  *  Notes     :
  *
  * Copyright (c) 1997-2020 Iain Lea <iain@bricbrac.de>
@@ -940,6 +940,7 @@ extern constext txt_help_thread_mark_article_read[];
 extern constext txt_help_thread_mark_article_unread[];
 extern constext txt_help_thread_mark_thread_unread[];
 extern constext txt_help_thread_read_article[];
+extern constext txt_help_thread_tag_parts[];
 extern constext txt_help_title_disp[];
 extern constext txt_help_title_misc[];
 extern constext txt_help_title_navi[];
@@ -961,6 +962,7 @@ extern constext txt_index_page_com[];
 extern constext txt_info_add_kill[];
 extern constext txt_info_add_select[];
 extern constext txt_info_all_parts_tagged[];
+extern constext txt_info_all_parts_untagged[];
 extern constext txt_info_do_postpone[];
 extern constext txt_info_enter_valid_character[];
 extern constext txt_info_missing_part[];
@@ -1575,6 +1577,7 @@ extern char *input_history[HIST_MAXNUM + 1][HIST_SIZE + 1];
 #define GNKSA_LPAREN_MISSING		101
 #define GNKSA_RPAREN_MISSING		102
 #define GNKSA_ATSIGN_MISSING		103
+#define GNKSA_RANGLE_MISSING		104
 /* FQDN checks */
 #define GNKSA_SINGLE_DOMAIN		200
 #define GNKSA_INVALID_DOMAIN		201
@@ -1599,6 +1602,7 @@ extern char *input_history[HIST_MAXNUM + 1][HIST_SIZE + 1];
 #define GNKSA_BAD_ENCODE_SYNTAX		403
 #define GNKSA_ILLEGAL_PAREN_CHAR		404
 #define GNKSA_INVALID_REALNAME		405
+#define GNKSA_MISSING_REALNAME		406
 
 /* address types */
 #define GNKSA_ADDRTYPE_ROUTE	0

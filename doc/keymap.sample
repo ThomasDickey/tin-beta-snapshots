@@ -247,6 +247,7 @@ ThreadReverseSel		@
 ThreadCancel			D
 ThreadMarkArtRead		K
 ThreadAutoSave			S
+ThreadTagParts			T
 ThreadUntag			U
 ThreadToggleSubjDisplay		d
 ThreadMail			m

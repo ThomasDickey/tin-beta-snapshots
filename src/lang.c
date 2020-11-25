@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-07-03
+ *  Updated   : 2020-06-10
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -271,7 +271,7 @@ constext txt_extracting_shar[] = N_("Extracting %s...");
 
 constext txt_filesystem_full[] = N_("Error writing %s file. Filesystem full? File reset to previous state.");
 constext txt_filesystem_full_backup[] = N_("Error making backup of %s file. Filesystem full?");
-constext txt_filter_global_rules[] = N_("Filtering global rules (%d/%d)...");
+constext txt_filter_global_rules[] = N_("Filtering global rules (%d/%d) ('q' to quit)...");
 constext txt_filter_rule_created[] = N_("Rule created by: ");
 constext txt_feed_pattern[] = N_("Enter pattern [%s]> ");
 constext txt_followup_newsgroups[] = N_("\nYou requested followups to your article to go to the following %s:\n");
@@ -462,7 +462,7 @@ constext txt_help_group_select_all[] = N_("select group (make \"hot\")");
 constext txt_help_group_select_thread[] = N_("select thread");
 constext txt_help_group_select_thread_if_unread_selected[] = N_("select threads if at least one unread article is selected");
 constext txt_help_group_select_thread_pattern[] = N_("select threads that match user specified pattern");
-constext txt_help_group_tag_parts[] = N_("tag all parts of current multipart-message in order");
+constext txt_help_group_tag_parts[] = N_("tag/untag all parts of current multipart-message in order");
 constext txt_help_group_thread_by_num[] = N_("0 - 9\t  choose thread by number");
 constext txt_help_group_toggle_getart_limit[] = N_("toggle limit number of articles to get, and reload");
 constext txt_help_group_toggle_read_articles[] = N_("toggle display of all/unread articles");
@@ -518,6 +518,7 @@ constext txt_help_thread_mark_article_read[] = N_("mark art, range or tagged art
 constext txt_help_thread_mark_article_unread[] = N_("mark article, range or tagged articles as unread");
 constext txt_help_thread_mark_thread_unread[] = N_("mark current thread as unread");
 constext txt_help_thread_read_article[] = N_("read chosen article");
+constext txt_help_thread_tag_parts[] = N_("tag/untag all parts of current multipart-message in order");
 constext txt_help_title_disp[] = N_("Display properties\n------------------");
 constext txt_help_title_misc[] = N_("Miscellaneous\n-------------");
 constext txt_help_title_navi[] = N_("Moving around\n-------------");
@@ -539,6 +540,7 @@ constext txt_index_page_com[] = N_("Group Level Commands");
 constext txt_info_add_kill[] = N_("Kill filter added");
 constext txt_info_add_select[] = N_("Auto-selection filter added");
 constext txt_info_all_parts_tagged[] = N_("All parts tagged");
+constext txt_info_all_parts_untagged[] = N_("All parts untagged");
 constext txt_info_do_postpone[] = N_("Storing article for later posting");
 constext txt_info_enter_valid_character[] = N_("Please enter a valid character");
 constext txt_info_missing_part[] = N_("Missing part #%d");

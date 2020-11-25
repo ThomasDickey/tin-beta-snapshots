@@ -194,7 +194,7 @@ do_authinfo_user(
 
 	if ((authpass == NULL) || (*authpass == '\0')) {
 #	ifdef DEBUG
-		if ((debug & DEBUG_NNTP) && verbose >1)
+		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "authorization failed: no password");
 #	endif /* DEBUG */
 		error_message(2, _(txt_auth_failed_nopass), server);
@@ -309,7 +309,7 @@ authinfo_plain(
 #	ifdef DEBUG
 		else {
 			if ((debug & DEBUG_NNTP) && verbose > 1)
-				 debug_print_file("NNTP", "read_newsauth_file(\"%s\", \"%s\", \"%s\") failed", server, authuser, authpass);
+				debug_print_file("NNTP", "read_newsauth_file(\"%s\", \"%s\", \"%s\") failed", server, authuser, authpass);
 		}
 #	endif /* DEBUG */
 	}

@@ -1,14 +1,28 @@
--- 2.4.5 release 20200522 "" --
+-- 2.4.5 release 20201125 "" --
 
  022) Dennis Preiser <dennis@d--p.de>
+      BUG. 'B'ody and '/'article search with wildcard matching (wildcard=0)
+           didn't work
       BUG. convert_tex2iso with UTF-8 as local charset did map "O to wrong
            char
       BUG. missing termination of conversion table for convert_tex2iso
+      BUG. avoid possible endless loop in search_group
+      BUG. tin_ltoa in some cases returned an error where it shouldn't
+      BUG. 'T'ag all parts of multipart message didn't work with thread_arts
+           4 (multipart) or 5 (percentage)
+      ADD. make {Group,Thread}TagParts 'T' toggle like 't'ag
       ADD. don't show mime parse error for missing end marker if not running
            in debug mode
       ADD. increase hash-table sizes
       ADD. speed up multipart threading
-      FIX. tin.h, art.c, charset.c, hashstr.c, screen.c, refs.c, rfc2046.c
+      ADD. multipart tagging ThreadTagParts 'T' to thread level
+      ADD. reduce memory usage by struct reordering to avoid padding
+      ADD. GNKSA_MISSING_REALNAME return code for filtering
+      REM. redundant conde
+      FIX. art.c, charset.c, group.c, hashstr.c, help.c, keymap.c, lang.c
+           misc.c, page.c, refs.c, rfc2046.c, screen.c, search.c, string.c
+           tags.c, thread.c, wildmat.c, extern.h, keymap.h, proto.h, tin.h
+           tin.[15]
 
  021) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. update configure macros
@@ -22,14 +36,26 @@
       ADD. configure check for fchmod(2) and fallback to chmod(2) if system
            lacks it (e.g. Interactive UNIX)
       ADD. speed up filter on Path:-header
+      ADD. allow abortion of subject/author search in group level
+      ADD. allow abortion of filtering
+      ADD. raise default max length for numbers in prompts from 6 to 10 digits
+      ADD. restrict multipart detection to messages with more than 1 part
+      ADD. show an error message if append_mail() fails
+      ADD. allow path for posted_articles_file
+      ADD. document gnksa-parser return codes in tin(5)
+      ADD. center_line() now does BiDi
+      ADD. don't fail on GNKSA_MISSING_REALNAME when posting
+      ADD. GNKSA_RANGLE_MISSING (104) error code to gnksa-filter
       BUG. when $TIN_INDEX_NEWSDIR was used INDEX_NEWSDIR was
            automatically appended to the string, but for the '-I' cmd.line it
-           wasn't, now '-I' behaves exactly like $TIN_INDEX_NEWSDIR.
+           wasn't, now '-I' behaves exactly like $TIN_INDEX_NEWSDIR
       REM. redundant condition
-      FIX. art.c, attrib.c, config.c, debug.c, filter.c, init.c, main.c
-           memory.c, misc.c, newsrc.c, nrctbl.c, post.c, save.c, thread.c
-           tmpfile.c, proto.h, tin.h, tin.[15], configure[.in], autoconf.h[in]
-           config.guess, config.sub, en_GB.po
+      FIX. art.c, attrib.c, config.c, debug.c, filter.c, getline.c, inews.c
+           init.c, lang.c, main.c, makecfg.c, memory.c, misc.c, newsrc.c
+           nrctbl.c, options_menu.c, post.c, read.c, save.c, screen.c
+           search.c, tags.c, thread.c, tmpfile.c, extern.h, proto.h, tin.h
+           tin.[15], configure[.in], autoconf.h[in], config.guess, config.sub
+           en_GB.po, keymap.sample
 
  019) Matt Anton <tin@lv223.org>
       ADD. updated french translation

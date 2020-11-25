@@ -524,7 +524,7 @@ read_attributes_file(
 				switch (my_tolower((unsigned char) line[0])) {
 					case 'a':
 						if (match_boolean(line, "auto_bcc=", &auto_bcc)) {
-							if (scopes[num_scope -1].attribute->auto_cc_bcc & AUTO_CC)
+							if (scopes[num_scope - 1].attribute->auto_cc_bcc & AUTO_CC)
 								auto_cc_bcc = (auto_bcc ? AUTO_CC_BCC : AUTO_CC);
 							else
 								auto_cc_bcc = (auto_bcc ? AUTO_BCC : 0);
@@ -533,7 +533,7 @@ read_attributes_file(
 							break;
 						}
 						if (match_boolean(line, "auto_cc=", &auto_cc)) {
-							if (scopes[num_scope -1].attribute->auto_cc_bcc & AUTO_BCC)
+							if (scopes[num_scope - 1].attribute->auto_cc_bcc & AUTO_BCC)
 								auto_cc_bcc = (auto_cc ? AUTO_CC_BCC : AUTO_BCC);
 							else
 								auto_cc_bcc = (auto_cc ? AUTO_CC : 0);

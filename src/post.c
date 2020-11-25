@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2020-04-29
+ *  Updated   : 2020-09-23
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -138,6 +138,7 @@ static FILE *create_mail_headers(char *filename, size_t filename_len, const char
 static char **build_nglist(char *ngs_list, int *ngcnt);
 static char **split_address_list(const char *addresses, unsigned int *cnt);
 static int add_mail_quote(FILE *fp, int respnum);
+static int append_mail(const char *the_article, const char *addr, const char *the_mailbox);
 static int check_article_to_be_posted(const char *the_article, int art_type, struct t_group **group, t_bool art_unchanged, t_bool use_cache);
 static int mail_loop(const char *filename, t_function func, char *subject, const char *groupname, const char *prompt, FILE *articlefp);
 static int msg_add_x_body(FILE *fp_out, const char *body);
@@ -147,7 +148,6 @@ static unsigned int get_recipients(struct t_header *hdr, char *buf, size_t bufle
 static size_t skip_id(const char *id);
 static struct t_group *check_moderated(const char *groups, int *art_type, const char *failmsg);
 static t_bool address_in_list(const char *addresses, const char *address);
-static t_bool append_mail(const char *the_article, const char *addr, const char *the_mailbox);
 static t_bool backup_article(const char *the_article);
 static t_bool check_for_spamtrap(const char *addr);
 static t_bool create_normal_article_headers(struct t_group *group, const char *newsgroups, int art_type);
@@ -622,7 +622,7 @@ update_posted_info_file(
  * appends the content of the_article to the_mailbox, with a From_ line of
  * addr, does mboxo/mboxrd From_ line quoting if needed (!MMDF-style mbox)
  */
-static t_bool
+static int
 append_mail(
 	const char *the_article,
 	const char *addr,
@@ -633,7 +633,7 @@ append_mail(
 	char buf[LEN];
 	time_t epoch;
 	t_bool mmdf = FALSE;
-	t_bool rval = FALSE;
+	int rval;
 #ifndef NO_LOCKING
 	int fd;
 	unsigned int retrys = 11;	/* maximum lock retrys + 1 */
@@ -643,14 +643,15 @@ append_mail(
 		mmdf = TRUE;
 
 	if ((fp_in = fopen(the_article, "r")) == NULL)
-		return rval;
+		return errno;
 
 	if ((fp_out = fopen(the_mailbox, "a+")) != NULL) {
 #ifndef NO_LOCKING
 		fd = fileno(fp_out);
-		/* TODO: move the retry/error stuff into a function? */
-		while (--retrys && fd_lock(fd, FALSE))
+
+		while ((rval = fd_lock(fd, FALSE)) && --retrys)
 			wait_message(1, _(txt_trying_lock), retrys, the_mailbox);
+
 		if (!retrys) {
 			wait_message(5, _(txt_error_couldnt_lock), the_mailbox);
 			fclose(fp_out);
@@ -658,14 +659,16 @@ append_mail(
 			return rval;
 		}
 		retrys++;
+
 		while (--retrys && !dot_lock(the_mailbox))
 			wait_message(1, _(txt_trying_dotlock), retrys, the_mailbox);
+
 		if (!retrys) {
 			wait_message(5, _(txt_error_couldnt_dotlock), the_mailbox);
 			fd_unlock(fd);
 			fclose(fp_out);
 			fclose(fp_in);
-			return rval;
+			return ENOENT; /* FIXME! dot_lock() doesn't return more info yet */
 		}
 #endif /* !NO_LOCKING */
 
@@ -699,13 +702,14 @@ append_mail(
 
 		fflush(fp_out);
 #ifndef NO_LOCKING
-		if (fd_unlock(fd) || !dot_unlock(the_mailbox))
+		if ((rval = fd_unlock(fd)) || !dot_unlock(the_mailbox))
 			wait_message(4, _(txt_error_cant_unlock), the_mailbox);
 #endif /* !NO_LOCKING */
 
 		fclose(fp_out);
-		rval = TRUE;
-	}
+	} else
+		rval = errno;
+
 	fclose(fp_in);
 	return rval;
 }
@@ -959,9 +963,11 @@ check_article_to_be_posted(
 #else
 			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
-			if ((i = gnksa_check_from(cp2 + (cp - line) + 1)) != GNKSA_OK) {
+			i = gnksa_check_from(cp2 + (cp - line) + 1);
+			if (i > GNKSA_OK && i < GNKSA_MISSING_REALNAME) {
 				StartInverse();
 				my_fprintf(stderr, "%s", _(txt_error_bad_approved));
+				my_fprintf(stderr, "%s\n", cp2);
 				my_fprintf(stderr, gnksa_strerror(i), i);
 				EndInverse();
 				my_fflush(stderr);
@@ -979,9 +985,11 @@ check_article_to_be_posted(
 #else
 			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
-			if ((i = gnksa_check_from(cp2 + (cp - line) + 1)) != GNKSA_OK) {
+			i = gnksa_check_from(cp2 + (cp - line) + 1);
+			if (i > GNKSA_OK && i < GNKSA_MISSING_REALNAME) {
 				StartInverse();
 				my_fprintf(stderr, "%s", _(txt_error_bad_from));
+				my_fprintf(stderr, "%s\n", cp2);
 				my_fprintf(stderr, gnksa_strerror(i), i);
 				EndInverse();
 				my_fflush(stderr);
@@ -998,9 +1006,11 @@ check_article_to_be_posted(
 #else
 			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
-			if ((i = gnksa_check_from(cp2 + (cp - line) + 1)) != GNKSA_OK) {
+			i = gnksa_check_from(cp2 + (cp - line) + 1);
+			if (i > GNKSA_OK && i < GNKSA_MISSING_REALNAME) {
 				StartInverse();
 				my_fprintf(stderr, "%s", _(txt_error_bad_replyto));
+				my_fprintf(stderr, "%s\n", cp2);
 				my_fprintf(stderr, gnksa_strerror(i), i);
 				EndInverse();
 				my_fflush(stderr);
@@ -1017,9 +1027,11 @@ check_article_to_be_posted(
 #else
 			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
-			if ((i = gnksa_check_from(cp2 + (cp - line) + 1)) != GNKSA_OK) {
+			i = gnksa_check_from(cp2 + (cp - line) + 1);
+			if (i > GNKSA_OK && i < GNKSA_MISSING_REALNAME) {
 				StartInverse();
 				my_fprintf(stderr, "%s", _(txt_error_bad_to));
+				my_fprintf(stderr, "%s\n", cp2);
 				my_fprintf(stderr, gnksa_strerror(i), i);
 				EndInverse();
 				my_fflush(stderr);
@@ -1046,6 +1058,7 @@ check_article_to_be_posted(
 			{
 				StartInverse();
 				my_fprintf(stderr, "%s", _(txt_error_bad_msgidfqdn));
+				my_fprintf(stderr, "%s\n", line);
 				my_fprintf(stderr, gnksa_strerror(i), i);
 				EndInverse();
 				my_fflush(stderr);
@@ -2054,20 +2067,29 @@ post_article_done:
 			my_strncpy(tinrc.default_post_subject, header.subj, sizeof(tinrc.default_post_subject) - 1);
 		}
 
-		if (*tinrc.posted_articles_file && type != POST_REPOST) {
-			char a_mailbox[LEN];
+		if (*tinrc.posted_articles_file && type != POST_REPOST) { /* TODO: either document the !POST_REPOST logic or remove it */
+			char a_mailbox[PATH_LEN];
 			char posted_msgs_file[PATH_LEN];
 
-			joinpath(posted_msgs_file, sizeof(posted_msgs_file), (cmdline.args & CMDLINE_MAILDIR) ? cmdline.maildir : (group ? group->attribute->maildir : tinrc.maildir), tinrc.posted_articles_file);
-			/*
-			 * log Message-ID if given in a_message_id,
-			 * add Date:, remove empty headers
-			 */
-			add_headers(article_name, a_message_id);
+			if (!strfpath(tinrc.posted_articles_file, posted_msgs_file, sizeof(posted_msgs_file), group, TRUE))
+				STRCPY(posted_msgs_file, tinrc.posted_articles_file);
+			else {
+				if (!strcmp(tinrc.posted_articles_file, posted_msgs_file)) /* only prefix tinrc.posted_articles_file if it was a plain file without path */
+					joinpath(posted_msgs_file, sizeof(posted_msgs_file), (cmdline.args & CMDLINE_MAILDIR) ? cmdline.maildir : (group ? group->attribute->maildir : tinrc.maildir), tinrc.posted_articles_file);
+			}
+
+			/* re-strfpath as maildir may also need expansion */
 			if (!strfpath(posted_msgs_file, a_mailbox, sizeof(a_mailbox), group, TRUE))
 				STRCPY(a_mailbox, posted_msgs_file);
-			if (!append_mail(article_name, userid, a_mailbox)) {
-				/* TODO: error handling */
+
+			/*
+			 * log Message-ID if given in a_message_id,
+			 * add Date: if required, remove empty headers
+			 */
+			add_headers(article_name, a_message_id);
+
+			if ((errno = append_mail(article_name, userid, a_mailbox))) {
+				perror_message(_(txt_cannot_open_for_saving), a_mailbox);
 			}
 		}
 		free_and_init_header(&header);
@@ -2526,9 +2548,8 @@ pickup_postponed_articles(
 			case PROMPT_NO:
 			case GLOBAL_QUIT:
 			case GLOBAL_ABORT:
-				if (!append_mail(article_name, userid, postponed_articles_file)) {
-					/* TODO: error handling */
-				}
+				if ((errno = append_mail(article_name, userid, postponed_articles_file)))
+					perror_message(_(txt_cannot_open_for_saving), postponed_articles_file);
 				unlink(article_name);
 				if (func != PROMPT_NO)
 					return TRUE;
@@ -2547,9 +2568,8 @@ postpone_article(
 	const char *the_article)
 {
 	wait_message(3, _(txt_info_do_postpone));
-	if (!append_mail(the_article, userid, postponed_articles_file)) {
-		/* TODO: error handling */
-	}
+	if ((errno = append_mail(the_article, userid, postponed_articles_file)))
+		perror_message(_(txt_cannot_open_for_saving), postponed_articles_file);
 }
 
 
@@ -4545,6 +4565,7 @@ insert_from_header(
 	char *p;
 	char from_name[HEADER_LEN];
 	char outfile[PATH_LEN];
+	int r;
 	t_bool from_found = FALSE;
 	t_bool in_header = TRUE;
 
@@ -4581,7 +4602,8 @@ insert_from_header(
 #	else
 					p = rfc1522_encode(from_buff, tinrc.mm_charset, TRUE);
 #	endif /* CHARSET_CONVERSION */
-					if (gnksa_check_from(p) != GNKSA_OK) { /* error in address */
+					r = gnksa_check_from(p);
+					if (r > GNKSA_OK && r < GNKSA_MISSING_REALNAME) { /* error in address */
 						error_message(2, _(txt_invalid_from), from_buff);
 						free(p);
 						unlink(outfile);
@@ -4599,7 +4621,8 @@ insert_from_header(
 #	else
 						p = rfc1522_encode(from_name, tinrc.mm_charset, FALSE);
 #	endif /* CHARSET_CONVERSION */
-						if (gnksa_check_from(p + 6) != GNKSA_OK) { /* error in address */
+						r = gnksa_check_from(p + 6);
+						if (r > GNKSA_OK && r < GNKSA_MISSING_REALNAME) { /* error in address */
 							error_message(2, _(txt_invalid_from), from_name + 6);
 							free(p);
 							unlink(outfile);
@@ -4807,9 +4830,8 @@ submit_mail_file(
 
 			if (!strfpath(fcc, a_mailbox, sizeof(a_mailbox), group, TRUE))
 				STRCPY(a_mailbox, fcc);
-			if (!append_mail(file, userid, a_mailbox)) {
-				/* TODO: error handling */
-			}
+			if ((errno = append_mail(file, userid, a_mailbox)))
+				perror_message(_(txt_cannot_open_for_saving), a_mailbox);
 		}
 		FreeIfNeeded(fcc);
 	}
@@ -5293,7 +5315,7 @@ get_secret(
 
 
 /*
- * adds Message-ID- and Date-Header to infile, removes empty headers
+ * adds Message-ID- and Date-header to infile, removes empty headers
  */
 static void
 add_headers(

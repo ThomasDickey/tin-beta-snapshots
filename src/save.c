@@ -1346,8 +1346,8 @@ decode_save_one(
 	 * View the attachment
 	 */
 	if ((postproc && curr_group->attribute->post_process_view) || !curr_group->attribute->ask_for_metamail) {
-			start_viewer(part, savepath);
-			my_printf(cCRLF);
+		start_viewer(part, savepath);
+		my_printf(cCRLF);
 	} else {
 		snprintf(buf, sizeof(buf), _(txt_view_attachment), savepath, content_types[part->type], part->subtype);
 		if ((i = prompt_yn(buf, TRUE)) == 1)
@@ -1528,7 +1528,7 @@ decode_save_mime(
 		 * the role of a multipart part. Check to see if we want to
 		 * save text and if not, skip this part.
 		 */
-		 /* check_save_mime_type() is done in decode_save_one() and the check for ptr->uue must be done unconditionally */
+		/* check_save_mime_type() is done in decode_save_one() and the check for ptr->uue must be done unconditionally */
 		if (ptr->type == TYPE_MULTIPART || (NULL != ptr->uue /* && !check_save_mime_type(ptr, curr_group->attribute->mime_types_to_save) */ ))
 			continue;
 

@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2020-05-22
+.\" Updated   : 2020-11-17
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -538,7 +538,7 @@ search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
 .TP
 .B Version 'v'
 Print \fBtin\fP version information.
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 .SS "NEWSGROUP SELECTION COMMANDS"
 .TP 10
@@ -673,7 +673,7 @@ to see if any new news has arrived since starting \fBtin\fP.
 .TP
 .B SelectMarkGrpUnread 'z' 'Z'
 Mark all articles in the current group as unread.
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 .SS "GROUP INDEX COMMANDS"
 All searches in this level are limited to unread articles if in
@@ -888,7 +888,8 @@ Toggle tag-status of current article / thread for \fBGroupMail\fP ('\fBm\fP')
 ('\fBs\fP') / \fBGroupRepost\fP ('\fBx\fP').
 .TP
 .B GroupTagParts 'T'
-Automatically tag in order all the parts of the current multi-part message.
+Automatically tag/untag all the parts of the current multi-part message in
+order.
 .TP
 .B GroupToggleThreading 'u'
 Cycle the threading mode through no threading, threading by subject,
@@ -926,7 +927,7 @@ Mark current article as unread.
 Mark current thread as unread. If a range of threads is set, the range will
 be marked as unread instead of the current thread. When tagged threads are
 present, a prompt asks how to proceed.
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 .SS "THREAD LISTING COMMANDS"
 .\" this sections should be complete
@@ -1070,6 +1071,10 @@ Save marked articles automatically without further prompting.
 Toggle tag status of current article for mailing, piping, printing, saving
 or reposting.
 .TP
+.B ThreadTagParts 'T'
+Automatically tag/untag all the parts of the current multi-part message in
+order.
+.TP
 .B ThreadUntag 'U'
 Untag all tagged threads.
 .TP
@@ -1087,7 +1092,7 @@ tagged articles are present, a prompt asks how to proceed.
 .TP
 .B MarkThdUnread 'Z'
 Mark all articles in thread as unread.
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 .SS "ARTICLE VIEWER COMMANDS"
 .\" FIXME - refine descriptions
@@ -1344,7 +1349,7 @@ Mark article as unread.
 .TP
 .B MarkThdUnread 'Z'
 Mark the current thread as unread.
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 .SS "URL LISTING"
 \fBPageViewUrl\fP ('\fBU\fP') displays a list of URLs in the current
@@ -1376,7 +1381,7 @@ Help screen of commands available.
 .B ToggleHelpDisplay 'H'
 Toggle the display of help mini menu at the bottom of the screen.
 .RE
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 .SS "ATTACHMENT LISTING"
 \fBPageViewAttach\fP ('\fBV\fP') displays a list of attachments of the current
@@ -1430,7 +1435,7 @@ Help screen of commands available.
 .B ToggleHelpDisplay 'H'
 Toggle the display of help mini menu at the bottom of the screen.
 .RE
-.\"--------------------------------------------------------------------
+.\" -------------------------------------------------------------------
 .\"
 .SS "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
 .\" FIXME - add missing descriptions
@@ -2140,10 +2145,12 @@ files only.
 .RE
 .TP
 .B Filename to be used for storing posted articles (posted_articles_file)
-Keep posted articles in
-\fI${TIN_HOMEDIR:\-"$HOME"}/Mail/\fBposted_articles_file\fP\fR.
-If no filename is set then postings will not be saved.
-Default is 'posted'.
+Keep posted articles in given file. If the given filename does not contain
+any expandable strings it will be prefixed with
+\fI${TIN_HOMEDIR:\-"$HOME"}/Mail/\fP. If no filename is set then postings
+will not be saved. See the section "MAILING PIPING PRINTING
+REPOSTING AND SAVING ARTICLES" for more information about the various
+expansion characters. Default is 'posted'.
 .TP
 .B Print all headers when printing (print_header)
 If ON, then the full article header is sent to the printer. Otherwise only
@@ -2838,7 +2845,7 @@ but without \fBsavedir\fP prefixed. %P is expanded to the news.group.name
 with all '.' replaced by '/'.
 .PP
 If saving multiple files at once the filename (if not referring to a mailbox)
-will be extended by ".num" where "num" is a at least 3 digit number counting
+will be extended by ".num" where "num" is at least 3 digit number counting
 up from 1. Environment variables are allowed within a filename (e.g.,
 \fI$SOURCES/dir/filename\fR).
 .PP
@@ -3219,7 +3226,7 @@ with \fBtin \-u \-v\fP and go for a coffee. Subsequent readings of a
 group will only need to do incremental updating of the index file and
 will be much faster as only new articles will need to be cached.
 .PP
-As indexing might take some time you may want to run \fBtin\fP form
+As indexing might take some time you may want to run \fBtin\fP from
 the system batcher
 .BR \%cron (8)
 with the ''\fB\-u\fP'' option:
@@ -3403,7 +3410,7 @@ For a detailed description see
 .\"
 .SH ENVIRONMENT
 .\" TODO: - sort in a useful order
-.\"       - add undocumented env-vars (if any)
+.\"       - add undocumented env-vars (e.g. DEV_TCP (SCO))
 .TP
 .B TINRC
 Define this variable if you want to specify command-line options that

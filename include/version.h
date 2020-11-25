@@ -45,12 +45,12 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"2.4.5"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20200522"
+#	define RELEASEDATE	"20201125"
 #	define RELEASENAME	"Millburn"
 /* config-file versions - must by dotted triples in the range 0 to 99 each */
 #	define TINRC_VERSION	"1.3.17"
 #	define ATTRIBUTES_VERSION	"1.0.10"
-#	define FILTER_VERSION	"1.0.1"
+#	define FILTER_VERSION	"1.0.2"
 #	define KEYMAP_VERSION	"1.0.9"
 #	define SERVERCONFIG_VERSION	"1.0.0"
 

@@ -272,7 +272,7 @@ convert_tex2iso(
 	t_bool ex;
 
 	/* initialize tex_to */
-	memset(tex_to,'\0', sizeof(tex_to));
+	memset(tex_to, '\0', sizeof(tex_to));
 
 	/*
 	 * Charsets which have german umlauts incl. sharp s at the same

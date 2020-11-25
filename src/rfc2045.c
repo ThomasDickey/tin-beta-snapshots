@@ -286,7 +286,7 @@ put_rest(
 	}
 	if (c == '\n') {
 		/* Look for CRLF spread over two lines. */
-		if (put_chars && (*line)[put_chars -1] == '\r')
+		if (put_chars && (*line)[put_chars - 1] == '\r')
 			--put_chars;
 		/*
 		 * FIXME: Adding a newline may be not correct. At least it may

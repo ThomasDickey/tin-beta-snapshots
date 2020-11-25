@@ -57,8 +57,9 @@ The following configure options and defines are documented in detail:
   FOLLOW_USEFOR_DRAFT                     NNTP_SERVER_FILE
   FORGERY                                 PROFILE
   REQUIRE_BRACKETS_IN_DOMAIN_LITERAL      SMALL_MEMORY_MACHINE
-  HAVE_LIBUU
+  HAVE_LIBUU                              REREAD_ACTIVE_FILE_SECS
   HAVE_BROKEN_SSCANF                      DISABLE_PIPELINING
+  OPTIMIZE_JUST_STAR                      MATCH_TAR_PATTERN
 
 
 Not yet documented configure options and defines:
@@ -67,10 +68,8 @@ TIN related:
   --with-socks                           --with-socks5
   --with-sum
 
-  DEBUG                                   MATCH_TAR_PATTERN
-  DEBUG_ART                               FILE_MODE_BROKEN
-  OPTIMIZE_JUST_STAR                      REREAD_ACTIVE_FILE_SECS
-  NO_LOCKING
+  DEBUG                                   FILE_MODE_BROKEN
+  DEBUG_ART                               NO_LOCKING
 
 System related:
   --datadir                               --localstatedir
@@ -672,6 +671,19 @@ ALLOW_FWS_IN_NEWSGROUPLIST
 issue a warning instead of an error-message if Newsgroups: or
 Followup-To:-header contains spaces, newlines or tabs.
 See RFC 5536 3.1.4. and RFC 5536 3.2.6.
+
+REREAD_ACTIVE_FILE_SECS
+initial default value for tinrc variable reread_active_file_secs,
+see tin(5) for details.
+
+OPTIMIZE_JUST_STAR
+treat a wildmat of * as a match without inspecting the text to match. this
+is a simple optimization and hard set to 1 in wildmat.c
+
+MATCH_TAR_PATTERN
+do tar(1) matching rules, which ignore a trailing slash. this is hard unset
+in wildmat.c to disable it.
+
 
 License
 -------

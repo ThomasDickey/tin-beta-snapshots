@@ -143,19 +143,19 @@ debug_print_header(
 		joinpath(file, sizeof(file), TMPDIR, "ARTS");
 
 	if ((fp = fopen(file, "a")) != NULL) {
-		fprintf(fp,"art=[%5"T_ARTNUM_PFMT"] tag=[%s] kill=[%s] selected=[%s]\n", s->artnum,
+		fprintf(fp, "art=[%5"T_ARTNUM_PFMT"] tag=[%s] kill=[%s] selected=[%s]\n", s->artnum,
 			bool_unparse(s->tagged),
 			bool_unparse(s->killed),
 			bool_unparse(s->selected));
-		fprintf(fp,"subj=[%-38s]\n", s->subject);
-		fprintf(fp,"date=[%ld]  from=[%s]  name=[%s]\n", (long) s->date, s->from,
+		fprintf(fp, "subj=[%-38s]\n", s->subject);
+		fprintf(fp, "date=[%ld]  from=[%s]  name=[%s]\n", (long) s->date, s->from,
 			BlankIfNull(s->name));
-		fprintf(fp,"msgid=[%s]  refs=[%s]\n",
+		fprintf(fp, "msgid=[%s]  refs=[%s]\n",
 			BlankIfNull(s->msgid),
 			BlankIfNull(s->refs));
 
 		if (s->killed)
-			fprintf(fp,"score=[%d] gnksa=[%d] lines=[%d]\n", s->score, s->gnksa_code, s->line_count);
+			fprintf(fp, "score=[%d] gnksa=[%d] lines=[%d]\n", s->score, s->gnksa_code, s->line_count);
 
 		if (s->archive) {
 			fprintf(fp, "archive.name=[%-38s]  ", s->archive->name);
@@ -164,7 +164,7 @@ debug_print_header(
 			if (s->archive->ispart)
 				fprintf(fp, "archive.ispart=[%s]\n", bool_unparse(s->archive->ispart));
 		}
-		fprintf(fp,"thread=[%d]  prev=[%d]  status=[%u]\n\n", s->thread, s->prev, s->status);
+		fprintf(fp, "thread=[%d]  prev=[%d]  status=[%u]\n\n", s->thread, s->prev, s->status);
 		fflush(fp);
 #ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
@@ -381,7 +381,7 @@ debug_print_file(
 	joinpath(file, sizeof(file), TMPDIR, fname);
 
 	if ((fp = fopen(file, "a")) != NULL) {
-		fprintf(fp,"%s\n", buf);
+		fprintf(fp, "%s\n", buf);
 #ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
 #else

@@ -6,7 +6,7 @@ Adding new tinrc variables:
 . Add an entry for it to the tin.1 man page under the
   "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" section
   and one to the tin.5 man page under the "FILES" section (subsection tinrc)
-. Add NAME with the correct type to the master declaration in tinrc.h
+. Add NAME with the correct type to the main declaration in tinrc.h
 . Add an initial value for NAME in the correct position in t_config tinrc={};
   in init.c
 . In config.c/options_menu.c, add the following:

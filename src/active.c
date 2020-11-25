@@ -688,7 +688,7 @@ read_active_counts(
 		if (cmd_line && !batch_mode)
 			my_fputc('\n', stderr);
 
-		tin_done(EXIT_FAILURE,_(txt_cannot_retrieve), ACTIVE_FILE);
+		tin_done(EXIT_FAILURE, _(txt_cannot_retrieve), ACTIVE_FILE);
 	}
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {

@@ -19,10 +19,6 @@ o  col_response is a misnomer as the counter doesn't count responses
    anymore (except on the very first article). The man-page is outdated too.
    [20080826 Urs Janssen <urs@tin.org>]
 
-o  'T'ag all parts of multipart message doesn't work (it never did)
-   with thread_arts 4 (multipart) or 5 (percentage)
-   [20080606 Urs Janssen <urs@tin.org>]
-
 o  cLINES < MIN_LINES_ON_TERMINAL || cCOLS < MIN_COLUMNS_ON_TERMINAL
    isn't checked on startup
    [20071210 Urs Janssen <urs@tin.org>]
@@ -74,9 +70,12 @@ o  if tin is falling back to HEAD/NEXT ([X]OVER not working) it doesn't honor
    tinrc.getart_limit
    [20090112 Urs Janssen <urs@tin.org>]
 
-o  the keys GroupToggleSubjDisplay and ThreadToggleSubjDisplay are misnamed,
+o  the keys GroupToggleSubjDisplay / GROUP_TOGGLE_SUBJECT_DISPLAY and
+   ThreadToggleSubjDisplay / THREAD_TOGGLE_SUBJECT_DISPLAY are misnamed,
    as they toggle the display of the sender address, not the subject.
    [20130839 Urs Janssen <urs@tin.org>]
+
+o  there is a memleak when $TINRC is set in read_cmd_line_options(envargs())
 
 Pager Problems
 --------------
@@ -141,7 +140,8 @@ o  add second pipe command when piping multiple articles to use one
    sense).
    [20160412 Urs Janssen <urs@tin.org>]
 
-o  allow abort piping multiple articles, ESC/'z' just aborts the current one
+o  allow abort piping / saving multiple articles, ESC/'z' just aborts the
+   current one
    [20160409 Urs Janssen <urs@tin.org>]
 
 o  add per scope getart_limit via attributes
@@ -177,9 +177,6 @@ o  add DEFAULT_SIGDASHES_REGEX and related 'M'enu-entry for signature
    detection in cook.c
    [20080925 Urs Janssen <urs@tin.org>]
 
-o  give an error message if append_mail() fails (grep TODO post.c)
-   [20080423 Urs Janssen <urs@tin.org>]
-
 o  allow remapping of the 'z' abort-key (lynx style) in wait_for_input().
 
 o  add user defined screen layout at different levels (e.g. posting
@@ -207,12 +204,10 @@ o  add more AUTHINFO SASL (RFC 4643, RFC 5802) support (DIGEST-MD5,
    or a handrolled version for at least PLAIN)
    [20080316 Urs Janssen <urs@tin.org>]
 
+o  make 'GNKSA'-parser RFC5322/USEFOR compliant and fix bugs
+
 o  add XZVER (and XZHDR) support (zlib compressed yyencoded overview data)
    <http://helpdesk.astraweb.com/index.php?_m=news&_a=viewnews&newsid=9>
-
-o  make 'GNKSA'-parser RFC5322/USEFOR compliant and fix bugs
-   (e.g. "<~$!~( )@( )example.com>" causes "illegal character in RHS", but
-   the address is valid)
 
 o  the TLD checking in the 'GNKSA'-parser needs some rework, keeping the
    list of valid TLDs up to date is more or less impossible with the ~1400
@@ -365,10 +360,6 @@ o  if using "-n" command-line switch you can't subscribe to newsgroups not
 o  item_by_item_etiquette_warnings [compile-time?]
    (e.g. enable x-posts without f'up warning, disable long-sig warning)
 
-o  don't prefix posted_articles_file with maildir if posted_articles_file
-   has an absolute path (after expanding ~).
-   [20130627 Urs Janssen <urs@tin.org>]
-
 o  posted_articles_file is not available in attributes
    [20130628 Urs Janssen <urs@tin.org>]
 
@@ -408,7 +399,6 @@ o  Additions to the thread menu:
      'f'  (post a followup) (maybe also 'F', '^W', ...)
      'N'  (next unread article)
      'P'  (previous unread article)
-     'T'  (tag all parts of current multipart-message in order)
      'V'  (View/pipe/save multimedia attachments)
      'X'  (mark all unread articles that have not been selected as read)
      ';'  (mark unread arts as hot if >= 1 art in thread is hot)
@@ -448,6 +438,9 @@ o  Add to the attachment menu ('V'):
      'x'  repost current attachment to another group
      '%'  (toggle rot13 encoding of screen content)
      '&'  (GLOBAL_TOGGLE_COLOR)
+
+o  integrate multi-part tagging with regular tagging, eg.
+   "This article appears to have multi-parts, try and find them (y/n)?"
 
 o  Add a command-line switch (-V) that prints out all values of cpp-symbols
    etc. [partly done, but should be cleaned up]
@@ -562,17 +555,13 @@ o  allow editing of the strings presented in the kill-Menu for
    the full filter-file
    [20120201 Urs Janssen <urs@tin.org>]
 
-o  allow to abort the filter loop with iKeyAbort when entering a (large)
-   group
-   [20160211 Urs Janssen <urs@tin.org>]
+o  allow ranges in gnksa-filters "gnksa=200-399" or "gnksa=101,103,201"
+   [20200709 Urs Janssen <urs@tin.org>]
 
 Pager enhancements
 ------------------
 o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
    about that part) for different content-types
-
-o  integrate multi-part tagging with regular tagging, eg.
-   "This article appears to have multi-parts, try and find them (y/n)?"
 
 o  add Content-Language (RFC 3282) analysis
 
@@ -583,6 +572,8 @@ o  add missing mailcap (RFC 1524) features: %n, %F, copiousoutput, print,
    if no %s appears in the view-command (or edit fields) the body part needs
    to be passed to the command as standard input, ...
    [20111205 Urs Janssen <urs@tin.org>]
+
+o  add BiDi handling to page header
 
 Internal Changes
 ----------------
@@ -728,11 +719,6 @@ o  check code with
    Splint (LCLint) <http://www.splint.org/> and
    zzuf (<http://caca.zoy.org/wiki/zzuf>)
 
-o  rewrite the tag code so that arts[].tagged becomes index in arts[]
-   of next tagged article. num_of_tagged_arts becomes index of first
-   tagged art. Traversing tagged arts becomes much easier & faster.
-   [Jason Faultless <jason@altarstone.com>]
-
 o  strip Xref:-header if saving news in batch mode (-S)?
    [Urs Janssen <urs@tin.org>]
 
@@ -794,6 +780,8 @@ o  rewrite ICU configure checks
 o  check for wcsftime() and if found use it instead of strftime() (at
    least in page.c).
    [20130129 Urs Janssen <urs@tin.org>]
+
+o  BiDi handling to select-, group-, thread-level
 
 Docs/online help
 ----------------
@@ -987,6 +975,11 @@ o  in several places only the latest keybinding is shown in prompts
      with "PostPost	p	y	w" in keymaps)
    should we try to show them all?
    [20050718 Urs Janssen <urs@tin.org>]
+
+o  remove hard coded keys (eg. 'q') from txt_filter_global_rules,
+   txt_reading_article, txt_select_config_file_option, txt_group and
+   replace with actual keybinding (after making it rebindable).
+   [20200526 Urs Janssen <urs@tin.org>]
 
 o  add PGP_INCLUDE_KEY to pgp_mail_keys?
    [20050426 Urs Janssen <urs@tin.org>]
