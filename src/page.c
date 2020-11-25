@@ -1295,7 +1295,7 @@ invoke_metamail(
 		fseek(fp, offset, SEEK_SET);	/* goto old position */
 
 #ifdef DONT_HAVE_PIPING
-		snprintf(buf, sizeof(buf) -1, "%s %s", tinrc.metamail_prog, mimefile);
+		snprintf(buf, sizeof(buf) - 1, "%s %s", tinrc.metamail_prog, mimefile);
 		invoke_cmd(buf);
 		fclose(mime_fp);
 		unlink(mimefile);
@@ -1373,14 +1373,14 @@ draw_page_header(
 	if (right_len > cCOLS / 3 + 1)
 		right_len = cCOLS / 3 + 1;
 
+#	ifdef HAVE_COLOR
+	fcol(tinrc.col_head);
+#	endif /* HAVE_COLOR */
+
 	/*
 	 * first line
 	 */
 	cur_pos = 0;
-
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_head);
-#	endif /* HAVE_COLOR */
 
 	/* date */
 	if ((wtmp = char2wchar_t(buf)) != NULL) {
@@ -1441,10 +1441,6 @@ draw_page_header(
 	 */
 	cur_pos = 0;
 
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_head);
-#	endif /* HAVE_COLOR */
-
 	/* line count */
 	if (arts[this_resp].line_count < 0)
 		strcpy(buf, "?");
@@ -1487,6 +1483,8 @@ draw_page_header(
 	 * TODO: why do we fall back to arts[this_resp].subject if !note_h->subj?
 	 *       if !note_h->subj then the article just has no subject, no matter
 	 *       what the overview says.
+	 *
+	 *       add BiDi handling
 	 */
 	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), line_len);
 	buf[line_len - 1] = '\0';
@@ -1549,6 +1547,8 @@ draw_page_header(
 	 * TODO: don't use arts[this_resp].name/arts[this_resp].from
 	 *       split up note_h->from and use that instead as it might
 	 *       be different _if_ the overviews are broken
+	 *
+	 *       add BiDi handling
 	 */
 	{
 		char *p = idna_decode(arts[this_resp].from);
@@ -1575,6 +1575,7 @@ draw_page_header(
 	 *
 	 * TODO: IDNA decoding, see also comment in
 	 *       cook.c:cook_article()
+	 *       add BiDi handling
 	 */
 	if (note_h->org) {
 		snprintf(buf, line_len, _(txt_at_s), note_h->org);
@@ -1605,14 +1606,14 @@ draw_page_header(
 	 */
 	right_len = MAX((strlen(_(txt_thread_x_of_n)) - 6 + 8), (strlen(_(txt_art_x_of_n)) - 6 + 8));
 
+#	ifdef HAVE_COLOR
+	fcol(tinrc.col_head);
+#	endif /* HAVE_COLOR */
+
 	/*
 	 * first line
 	 */
 	cur_pos = 0;
-
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_head);
-#	endif /* HAVE_COLOR */
 
 	/* date */
 	my_fputs(buf, stdout);
@@ -1663,10 +1664,6 @@ draw_page_header(
 	 * second line
 	 */
 	cur_pos = 0;
-
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_head);
-#	endif /* HAVE_COLOR */
 
 	/* line count */
 	/* an accurate line count will appear in the footer anymay */

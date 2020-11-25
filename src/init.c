@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2020-04-23
+ *  Updated   : 2020-09-28
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -803,10 +803,10 @@ init_selfinfo(
 	if (!*overviewfmt_file)
 		joinpath(overviewfmt_file, sizeof(overviewfmt_file), libdir, OVERVIEW_FMT);
 	if (!*default_organization) {
-		char buf[LEN];
-
 		joinpath(tmp, sizeof(tmp), libdir, "organization");
 		if ((fp = fopen(tmp, "r")) != NULL) {
+			char buf[LEN];
+
 			if (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 				ptr = strrchr(buf, '\n');
 				if (ptr != NULL)

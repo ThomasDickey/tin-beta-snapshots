@@ -3,7 +3,7 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2010-04-02
+ *  Updated   : 2020-08-04
  *  Notes     : Split out from other modules
  *
  * Copyright (c) 1999-2020 Jason Faultless <jason@altarstone.com>
@@ -42,162 +42,9 @@
 #endif /* !TIN_H */
 
 /* Local prototypes */
-static int get_multipart_info(int base_index, MultiPartInfo *setme);
-static int get_multiparts(int base_index, MultiPartInfo **malloc_and_setme_info);
-static int look_for_multipart_info(int base_index, MultiPartInfo *setme, char start, char stop, int *offset);
 static t_bool parse_range(char *range, int min, int max, int curr, int *range_start, int *range_end);
 
 int num_of_tagged_arts = 0;
-
-/*
- * Parses a subject header of the type "multipart message subject (01/42)"
- * into a MultiPartInfo struct, or fails if the message subject isn't in the
- * right form.
- *
- * @return nonzero on success
- */
-static int
-get_multipart_info(
-	int base_index,
-	MultiPartInfo *setme)
-{
-	int i, j, offi, offj;
-	MultiPartInfo setmei, setmej;
-
-	i = look_for_multipart_info(base_index, &setmei, '[', ']', &offi);
-	j = look_for_multipart_info(base_index, &setmej, '(', ')', &offj);
-
-	/* Ok i hits first */
-	if (offi > offj) {
-		*setme = setmei;
-		return i;
-	}
-
-	/* Its j or they are both the same (which must be zero!) so we don't care */
-	*setme = setmej;
-	return j;
-}
-
-
-static int
-look_for_multipart_info(
-	int base_index,
-	MultiPartInfo* setme,
-	char start,
-	char stop,
-	int *offset)
-{
-	MultiPartInfo tmp;
-	char *subj;
-	char *pch;
-
-	*offset = 0;
-
-	/* entry assertions */
-	assert(0 <= base_index && base_index < grpmenu.max && "invalid base_index");
-	assert(setme != NULL && "setme must not be NULL");
-
-	/* parse the message */
-	subj = arts[base[base_index]].subject;
-	if (!(pch = strrchr(subj, start)))
-		return 0;
-	if (!isdigit((int) pch[1]))
-		return 0;
-	tmp.base_index = base_index;
-	tmp.subject_compare_len = pch - subj;
-	tmp.part_number = (int) strtol(pch + 1, &pch, 10);
-	if (*pch != '/' && *pch != '|')
-		return 0;
-	if (!isdigit((int) pch[1]))
-		return 0;
-	tmp.total = (int) strtol(pch + 1, &pch, 10);
-	if (*pch != stop)
-		return 0;
-	tmp.subject = subj;
-	*setme = tmp;
-	*offset = pch - subj;
-	return 1;
-}
-
-
-/*
- * Tries to find all the parts to the multipart message pointed to by
- * base_index.
- *
- * Weakness(?): only walks through the base messages.
- *
- * @return on success, the number of parts found. On failure, zero if not a
- * multipart or the negative value of the first missing part.
- * @param base_index index pointing to one of the messages in a multipart
- * message.
- * @param malloc_and_setme_info on success, set to a malloced array the
- * parts found. Untouched on failure.
- */
-static int
-get_multiparts(
-	int base_index,
-	MultiPartInfo **malloc_and_setme_info)
-{
-	MultiPartInfo tmp, tmp2;
-	MultiPartInfo *info = NULL;
-	int i;
-	int part_index;
-
-	/* entry assertions */
-	assert(0 <= base_index && base_index < grpmenu.max && "Invalid base index");
-	assert(malloc_and_setme_info != NULL && "malloc_and_setme_info must not be NULL");
-
-	/* make sure this is a multipart message... */
-	if (!get_multipart_info(base_index, &tmp) || tmp.total < 1)
-		return 0;
-
-	/* make a temporary buffer to hold the multipart info... */
-	info = my_malloc(sizeof(MultiPartInfo) * tmp.total);
-
-	/* zero out part-number for the repost check below */
-	for (i = 0; i < tmp.total; ++i)
-		info[i].part_number = -1;
-
-	/* try to find all the multiparts... */
-	for (i = 0; i < grpmenu.max; ++i) {
-		if (strncmp(arts[base[i]].subject, tmp.subject, tmp.subject_compare_len))
-			continue;
-		if (!get_multipart_info(i, &tmp2))
-			continue;
-
-		part_index = tmp2.part_number - 1;
-
-		/* skip the "blah (00/102)" info messages... */
-		if (part_index < 0)
-			continue;
-
-		/* skip insane "blah (103/102) subjects... */
-		if (part_index >= tmp.total)
-			continue;
-
-		/* repost check: do we already have this part? */
-		if (info[part_index].part_number != -1) {
-			assert(info[part_index].part_number == tmp2.part_number && "bookkeeping error");
-			continue;
-		}
-
-		/* we have a match, hooray! */
-		info[part_index] = tmp2;
-	}
-
-	/* see if we got them all. */
-	for (i = 0; i < tmp.total; ++i) {
-		if (info[i].part_number != i + 1) {
-			free(info);
-			return -(i + 1); /* missing part #(i+1) */
-		}
-	}
-
-	/* looks like a success .. */
-	*malloc_and_setme_info = info;
-	return tmp.total;
-}
-
 
 /*
  * Tags all parts of a multipart index if base_index points
@@ -208,11 +55,19 @@ get_multiparts(
  */
 int
 tag_multipart(
-	int base_index)
+	int arts_index)
 {
 	MultiPartInfo *info = NULL;
 	int i;
-	const int qty = get_multiparts(base_index, &info);
+	int qty;
+	t_bool untagging = FALSE;
+
+	for_each_art(i) {
+		if (!global_look_for_multipart(i, '[', ']'))
+			global_look_for_multipart(i, '(', ')');
+	}
+
+	qty = global_get_multiparts(arts_index, &info, TRUE);
 
 	/* check for failure... */
 	if (qty == 0) {
@@ -225,20 +80,26 @@ tag_multipart(
 	}
 
 	/*
-	 * if any are already tagged, untag 'em first
-	 * so num_of_tagged_arts doesn't get corrupted
+	 * if any are already tagged, untag 'em
 	 */
 	for (i = 0; i < qty; ++i) {
-		if (arts[base[info[i].base_index]].tagged != 0)
-			untag_article(base[info[i].base_index]);
+		if (arts[info[i].arts_index].tagged != 0) {
+			untagging = TRUE;
+			while (i < qty)
+				untag_article(info[i++].arts_index);
+		}
 	}
 
 	/*
 	 * get_multiparts() sorts info by part number,
 	 * so a simple for loop tags in the right order
+	 *
+	 * only tag if we are not untagging
 	 */
-	for (i = 0; i < qty; ++i)
-		arts[base[info[i].base_index]].tagged = ++num_of_tagged_arts;
+	if (!untagging) {
+		for (i = 0; i < qty; ++i)
+			arts[info[i].arts_index].tagged = ++num_of_tagged_arts;
+	}
 
 	free(info);
 
@@ -360,7 +221,6 @@ set_range(
 	char *prompt;
 	int artnum;
 	int i;
-	int depth;
 	int range_min;
 	int range_max;
 
@@ -431,13 +291,13 @@ set_range(
 					arts[artnum].inrange = FALSE;
 			}
 
-			depth = 1;
+			i = 1;
 			for_each_art_in_thread(artnum, thread_basenote) {
-				if (depth > range_max)
+				if (i > range_max)
 					break;
-				if (depth >= range_min)
+				if (i >= range_min)
 					arts[artnum].inrange = TRUE;
-				depth++;
+				i++;
 			}
 			break;
 

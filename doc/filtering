@@ -192,6 +192,7 @@ code   error description
  101   left parenthesis ("(") missing in oldstyle address (realname comment)
  102   right parenthesis (")") missing in oldstyle address (realname comment)
  103   at-sign ("@") missing in mail address
+ 104   right angle bracket (">") missing in route address
 
    200-299: right hand side (FQDN part) of address, syntax and semantics
 code   error description
@@ -222,6 +223,7 @@ code   error description
  403   bad syntax in encoded word in realname part
  404   illegal character in oldstyle realname part (one of "()<>\")
  405   illegal character in realname part
+ 406   missing realname part
 
 
 Path:-filter

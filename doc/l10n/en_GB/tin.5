@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2020-04-27
+.\" Updated   : 2020-11-10
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -748,8 +748,8 @@ be changed in the future. Don't use '#' to mark comments as those lines are
 ignored and your comments will get lost on the next write of the file.
 .TP 
 \fBgroup\fP
-A comma\-separated list of newsgroup patterns (wildmat\-style) to which groups
-the filter rule will be applied. This line is mandatory!
+A comma\-separated list of newsgroup patterns in wildmat\-style to which
+groups the filter rule will be applied. This line is mandatory!
 .TP 
 \fBcase\fP
 0=case\-sensitive, 1=case\-insensitive
@@ -758,43 +758,91 @@ the filter rule will be applied. This line is mandatory!
 Score value of the rule; can also be one of the magic words "kill" or "hot".
 .TP 
 \fBsubj\fP
-Match against \*(rqSubject:\*(rq
+Match against \*(rqSubject:\*(rq. The matching type used (wildmat or regex)
+depends on the setting of the tinrc variable \fBwildcard\fP.
 .TP 
 \fBfrom\fP
 Match against \*(rqFrom:\*(rq.  \fB\%tin\fP(1)  converts the contents of the
 \&\*(rqFrom:\*(rq header to an old style e\-mail address, e.g. \*(rqsome@body.example
 (John Doe)\*(rq instead of \*(rqJohn Doe <some@body.example>\*(rq, before
-trying to match the patterns in the filter rule.
+trying to match the patterns in the filter rule. The matching type used
+(wildmat or regex) depends on the setting of the tinrc variable \fBwildcard\fP.
 .TP 
 \fBmsgid\fP
-Match against \*(rqMessage\-ID:\*(rq and full \*(rqReferences:\*(rq
+Match against \*(rqMessage\-ID:\*(rq and full \*(rqReferences:\*(rq. The matching type
+used (wildmat or regex) depends on the setting of the tinrc variable
+\fBwildcard\fP.
 .TP 
 \fBmsgid_last\fP
-Match against \*(rqMessage\-ID:\*(rq and last \*(rqReferences:\*(rq entry only
+Match against \*(rqMessage\-ID:\*(rq and last \*(rqReferences:\*(rq entry only. The
+matching type used (wildmat or regex) depends on the setting of the tinrc
+variable \fBwildcard\fP.
 .TP 
 \fBmsgid_only\fP
-Match against \*(rqMessage\-ID:\*(rq
+Match against \*(rqMessage\-ID:\*(rq. The matching type used (wildmat or regex)
+depends on the setting of the tinrc variable \fBwildcard\fP.
 .TP 
 \fBrefs_only\fP
-Match against \*(rqReferences:\*(rq
+Match against \*(rqReferences:\*(rq. The matching type used (wildmat or regex)
+depends on the setting of the tinrc variable \fBwildcard\fP.
 .TP 
 \fBlines\fP
 Match against \*(rqLines:\*(rq, <num matches less than, >num matches more
 than.
 .TP 
-.\" TODO: document option in detail
 \fBgnksa\fP
-Match against \*(rqFrom:\*(rq address parser return codes.
+Match against \*(rqFrom:\*(rq address parser return codes. <num matches less
+than, >num matches more than the returned numeric
+value. GNKSA_LOCAL_DOMAIN_LITERAL or GNKSA_INVALID_DOMAIN are only returned
+if \fBdisable_gnksa_domain_check\fP is set to false. As the built in domain
+list is outdated this should be considered carefully.
+.in +.3i
+.nf
+.ta \w'%406	'u +\w'GNKSA_ZERO_LENGTH_LOCAL_WORD'u
+  \fB0\fP	GNKSA_OK
+  \fB1\fP	GNKSA_INTERNAL_ERROR
+\fB100\fP	GNKSA_LANGLE_MISSING
+\fB101\fP	GNKSA_LPAREN_MISSING
+\fB102\fP	GNKSA_RPAREN_MISSING
+\fB103\fP	GNKSA_ATSIGN_MISSING
+\fB104\fP	GNKSA_RANGLE_MISSING
+\fB200\fP	GNKSA_SINGLE_DOMAIN
+\fB201\fP	GNKSA_INVALID_DOMAIN
+\fB202\fP	GNKSA_ILLEGAL_DOMAIN
+\fB203\fP	GNKSA_UNKNOWN_DOMAIN
+\fB204\fP	GNKSA_INVALID_FQDN_CHAR
+\fB205\fP	GNKSA_ZERO_LENGTH_LABEL
+\fB206\fP	GNKSA_ILLEGAL_LABEL_LENGTH
+\fB207\fP	GNKSA_ILLEGAL_LABEL_HYPHEN
+\fB208\fP	GNKSA_ILLEGAL_LABEL_BEGNUM
+\fB209\fP	GNKSA_BAD_DOMAIN_LITERAL
+\fB210\fP	GNKSA_LOCAL_DOMAIN_LITERAL
+\fB211\fP	GNKSA_RBRACKET_MISSING
+\fB300\fP	GNKSA_LOCALPART_MISSING
+\fB301\fP	GNKSA_INVALID_LOCALPART
+\fB302\fP	GNKSA_ZERO_LENGTH_LOCAL_WORD
+\fB400\fP	GNKSA_ILLEGAL_UNQUOTED_CHAR
+\fB401\fP	GNKSA_ILLEGAL_QUOTED_CHAR
+\fB402\fP	GNKSA_ILLEGAL_ENCODED_CHAR
+\fB403\fP	GNKSA_BAD_ENCODE_SYNTAX
+\fB404\fP	GNKSA_ILLEGAL_PAREN_CHAR
+\fB405\fP	GNKSA_INVALID_REALNAME
+\fB406\fP	GNKSA_MISSING_REALNAME
+.fi
+.in -.3i
 .TP 
 \fBxref\fP
 Match against \*(rqXref:\*(rq line. Before any matching is done the line is turned
 into the same format \*(rqNewsgroups:\*(rq has that is it is turned into a comma
 separated newsgroup list with all other information (i.e.  the article
-counter) removed.
+counter) removed. The matching type used (wildmat or regex)  depends on the
+setting of the tinrc variable \fBwildcard\fP.
 .TP 
 .\" TODO: document option in detail
 \fBpath\fP
-Match against \*(rqPath:\*(rq line. This may not work on some servers.
+Match against \*(rqPath:\*(rq line. This may not work on some servers. The
+matching type used (wildmat or regex) depends on the setting of the tinrc
+variable \fBwildcard\fP.
 .TP 
 \fBtime\fP
 time_t value when rule expires
@@ -1044,6 +1092,7 @@ defaults. If a keyname is bound to NULL it is unassigned.
 \fBThreadMail\fP	m
 \fBThreadSave\fP	s
 \fBThreadTag\fP	t
+\fBThreadTagParts\fP	T
 \fBThreadUndoSel\fP	~
 .sp
 \fBUrlSelect\fP	^J	^M
@@ -1791,9 +1840,12 @@ careful with this option.
 .RE
 .TP 
 \fBposted_articles_file\fP
-Keep posted articles in
-\fI${TIN_HOMEDIR:\-"$HOME"}/Mail/\fP\fBposted_articles_file\fP.  If no filename is
-set then postings will not be saved.  Default is 'posted'.
+Keep posted articles in given file. If the given filename does not contain
+any expandable strings it will be prefixed with
+\fI${TIN_HOMEDIR:\-"$HOME"}/Mail/\fP. If no filename is set then postings will
+not be saved. See the section "MAILING PIPING PRINTING REPOSTING AND SAVING
+ARTICLES" for more information about the various expansion
+characters. Default is 'posted'.
 .TP 
 \fBprint_header\fP
 If ON, then the full article header is sent to the printer. Otherwise only

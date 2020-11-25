@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2019-06-05
+ *  Updated   : 2020-06-10
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2020 Michael Bienia <michael@vorlon.ping.de>
@@ -2167,13 +2167,8 @@ config_page(
 							break;
 
 						case OPT_POSTED_ARTICLES_FILE:
-							if (prompt_option_string(option)) {
-								char buf[PATH_LEN];
-
-								strfpath(tinrc.posted_articles_file, buf, sizeof(buf), &CURR_GROUP, TRUE);
-								STRCPY(tinrc.posted_articles_file, buf);
+							if (prompt_option_string(option)) /* no expansion here, will be done in post_loop() */
 								changed |= MISC_OPTS;
-							}
 							break;
 
 #ifdef HAVE_COLOR

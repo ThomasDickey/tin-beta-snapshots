@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2017-03-28
+ *  Updated   : 2020-06-10
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -763,6 +763,24 @@ thread_page(
 
 			case GLOBAL_QUIT_TIN:			/* quit */
 				ret_code = GRP_QUIT;
+				break;
+
+			case THREAD_TAG_PARTS:			/* tag/untag article */
+				/* Find index of current article */
+				if ((n = find_response(thread_basenote, thdmenu.curr)) < 0)
+					break;
+				else {
+					int old_num = num_of_tagged_arts;
+
+					if (tag_multipart(n) != 0) {
+						update_thread_page();
+
+						if (old_num < num_of_tagged_arts)
+							info_message(_(txt_info_all_parts_tagged));
+						else
+							info_message(_(txt_info_all_parts_untagged));
+					}
+				}
 				break;
 
 			case THREAD_TAG:			/* tag/untag article */

@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2019-02-18
+ *  Updated   : 2020-06-27
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -153,8 +153,9 @@ submit_inews(
 	 *
 	 * check for valid From: line
 	 */
-	if (!(group ? group->attribute->post_8bit_header : tinrc.post_8bit_header) && GNKSA_OK != gnksa_check_from(from_name + 6)) { /* error in address */
-		error_message(2, _(txt_invalid_from), from_name + 6);
+	respcode = gnksa_check_from(from_name + 6);
+	if (!(group ? group->attribute->post_8bit_header : tinrc.post_8bit_header) && respcode > GNKSA_OK && respcode < GNKSA_MISSING_REALNAME) { /* error in address */
+		error_message(2, "inews158%s", _(txt_invalid_from), from_name + 6);
 		fclose(fp);
 		return ret_code;
 	}
@@ -457,6 +458,7 @@ sender_needed(
 	char sender_addr[HEADER_LEN];
 	char sender_line[HEADER_LEN];
 	char sender_name[HEADER_LEN];
+	int r;
 
 #	ifdef DEBUG
 	if (debug & DEBUG_MISC) {
@@ -471,7 +473,8 @@ sender_needed(
 	snprintf(sender_line, sizeof(sender_line), "Sender: %s", sender);
 
 	p = rfc1522_encode(sender_line, charset, FALSE);
-	if (GNKSA_OK != gnksa_do_check_from(p + 8, sender_addr, sender_name)) {
+	r = gnksa_do_check_from(p + 8, sender_addr, sender_name);
+	if (r > GNKSA_OK && r < GNKSA_MISSING_REALNAME) {
 		free(p);
 		return -2;
 	}

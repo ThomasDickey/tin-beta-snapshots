@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-02
+ *  Updated   : 2020-06-10
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
@@ -447,6 +447,7 @@ static t_help_page thread_help_page[] = {
 #endif /* !DISABLE_PRINTING */
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_global_tag, THREAD_TAG },
+	{ txt_help_thread_tag_parts, THREAD_TAG_PARTS },
 	{ txt_help_group_untag_thread, THREAD_UNTAG },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_thread_mark_article_read, THREAD_MARK_ARTICLE_READ },

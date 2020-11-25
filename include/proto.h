@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2020-05-20
+ *  Updated   : 2020-06-10
  *  Notes     :
  *
  * Copyright (c) 1997-2020 Urs Janssen <urs@tin.org>
@@ -69,6 +69,8 @@ extern void load_newnews_info(char *info);
 /* art.c */
 extern int find_artnum(t_artnum art);
 extern int global_get_multipart_info(int aindex, MultiPartInfo *setme);
+extern int global_get_multiparts(int aindex, MultiPartInfo **malloc_and_setme_info, t_bool tagging);
+extern t_bool global_look_for_multipart(int aindex, char start, char stop);
 extern t_bool index_group(struct t_group *group);
 extern void do_update(t_bool catchup);
 extern void find_base(struct t_group *group);
@@ -532,6 +534,9 @@ extern void prompt_yn_redraw(void);
 
 /* read.c */
 extern char *tin_fgets(FILE *fp, t_bool header);
+#ifdef HAVE_SELECT
+	extern t_bool wait_for_input(void);
+#endif /* HAVE_SELECT */
 #ifdef NNTP_ABLE
 	extern void drain_buffer(FILE *fp);
 #endif /* NNTP_ABLE */
@@ -718,7 +723,7 @@ extern int my_toupper(int);
 
 /* tags.c */
 extern int line_is_tagged(int n);
-extern int tag_multipart(int base_index);
+extern int tag_multipart(int arts_index);
 extern t_bool arts_selected(void);
 extern t_bool set_range(int level, int min, int max, int curr);
 extern t_bool tag_article(int art);

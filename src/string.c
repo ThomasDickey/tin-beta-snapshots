@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2019-01-08
+ *  Updated   : 2020-05-31
  *  Notes     :
  *
  * Copyright (c) 1997-2020 Urs Janssen <urs@tin.org>
@@ -94,9 +94,15 @@ tin_ltoa(
 	snprintf(buffer, sizeof(buffer), "%"T_ARTNUM_PFMT, value);
 	len = (int) strlen(buffer);
 
-	while (len > digits) {
-		len -= 3;
-		i++;
+	/*
+	 * only shorten if necessary,
+	 * then ensure that the metric prefix fits into the buffer
+	 */
+	if (len > digits) {
+		while (len >= digits) {
+			len -= 3;
+			i++;
+		}
 	}
 
 	if (i >= strlen(power)) {	/* buffer is to small */

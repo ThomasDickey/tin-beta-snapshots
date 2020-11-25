@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2018-01-29
+ *  Updated   : 2020-11-18
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -391,7 +391,7 @@ body_search(
 				return 1;
 			}
 		} else {
-			if (wildmatpos(line, searchbuf, TRUE, srch_offsets, srch_offsets_size)) {
+			if (wildmatpos(line, searchbuf, TRUE, srch_offsets, srch_offsets_size) == 1) {
 				srch_lineno = i;
 				art_close(&pgart);		/* Switch the pager over to matched art */
 				pgart = artinfo;
@@ -490,7 +490,7 @@ search_group(
 	char *searchbuff,
 	int (*search_func) (int i, char *searchbuff))
 {
-	int i, ret;
+	int i, ret, loop_cnt;
 
 	if (grpmenu.curr < 0) {
 		info_message(_(txt_no_arts));
@@ -504,6 +504,7 @@ search_group(
 		return -1;
 
 	i = current_art;
+	loop_cnt = 1;
 
 	do {
 		if (forward) {
@@ -532,7 +533,13 @@ search_group(
 			case -1:							/* User abort */
 				return -1;
 		}
-	} while (i != current_art);
+#ifdef HAVE_SELECT
+		if (wait_for_input())	/* allow abort */
+			return -1;
+#endif /* HAVE_SELECT */
+		if (loop_cnt % (MODULO_COUNT_NUM * 20) == 0)
+			show_progress(txt_searching, loop_cnt, top_art);
+	} while (i != current_art && loop_cnt++ <= top_art);
 
 	if (tinrc.wildcard) {
 		FreeAndNull(search_regex.re);

@@ -9,7 +9,9 @@ New features
 - options to color external quotes (extquote_handling, extquote_regex,
   col_extquote)
 - LookupMessage ('L') in select level if reading via NNTP
+- ThreadTagParts ('T') in thread level
 - filter articles based on Path, see doc/filtering for details
+- GNKSA_MISSING_REALNAME return code for filtering
 
 Changes
 -------
@@ -18,6 +20,10 @@ Subjects are now normalized if local charset is UTF-8 and system supports it
 
 The gTLD list is no longer actively maintained (too many new gTLD recently),
 disable_gnksa_domain_check=OFF might result in false positives.
+
+With the new GNKSA_MISSING_REALNAME return code for filtering filter rules
+with "gnksa=>NUM" may need inspection if filtering on missing real names is
+desired.
 
 --enable-heapsort is now default during configure (sort_function in tinrc
 still needs to be set accordingly if you like to use heapsort instead of

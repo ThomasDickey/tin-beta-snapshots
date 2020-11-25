@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-05-21
+ *  Updated   : 2020-06-23
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -260,10 +260,21 @@ center_line(
 	t_bool inverse,
 	const char *str)
 {
+	char *ln;
 	int pos;
 	int len;
 
 	len = strwidth(str);
+
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+	if (tinrc.render_bidi && IS_LOCAL_CHARSET("UTF-8") && len > 1) {
+		t_bool is_rtl;
+
+		if ((ln = render_bidi(str, &is_rtl)) == NULL)
+			ln = my_strdup(str);
+	} else
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
+		ln = my_strdup(str);
 
 	if (!cmd_line) {
 		if (cCOLS >= len)
@@ -281,11 +292,11 @@ center_line(
 	if (len >= cCOLS) {
 		char *buffer;
 
-		buffer = strunc(str, cCOLS - 2);
+		buffer = strunc(ln, cCOLS - 2);
 		my_fputs(buffer, stdout);
 		free(buffer);
 	} else
-		my_fputs(str, stdout);
+		my_fputs(ln, stdout);
 
 	if (cmd_line)
 		my_flush();
@@ -293,6 +304,7 @@ center_line(
 		if (inverse)
 			EndInverse();
 	}
+	free(ln);
 }
 
 

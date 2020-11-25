@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2019-06-05
+ *  Updated   : 2020-06-10
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2020 Dirk Nimmich <nimmich@muenster.de>
@@ -1773,6 +1773,11 @@ process_mapping(
 
 				return TRUE;
 			}
+			if (strcmp(keyname, "ThreadTagParts") == 0) {
+				process_keys(THREAD_TAG_PARTS, keys, &thread_keys);
+
+				return TRUE;
+			}
 			if (strcmp(keyname, "ThreadToggleArtSel") == 0) {
 				process_keys(THREAD_TOGGLE_ARTICLE_SELECTION, keys, &thread_keys);
 
@@ -2675,6 +2680,7 @@ setup_default_keys(
 	add_default_key(&thread_keys, "K", THREAD_MARK_ARTICLE_READ);
 	add_default_key(&thread_keys, "L", GLOBAL_LOOKUP_MESSAGEID);
 	add_default_key(&thread_keys, "S", THREAD_AUTOSAVE);
+	add_default_key(&thread_keys, "T", THREAD_TAG_PARTS);
 	add_default_key(&thread_keys, "U", THREAD_UNTAG);
 	add_default_key(&thread_keys, "Z", MARK_THREAD_UNREAD);
 	add_default_key(&thread_keys, "\t", THREAD_READ_NEXT_ARTICLE_OR_THREAD);

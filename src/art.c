@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-05-22
+ *  Updated   : 2020-07-08
  *  Notes     :
  *
  * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -73,7 +73,6 @@ static int date_comp_asc(t_comptype p1, t_comptype p2);
 static int date_comp_desc(t_comptype p1, t_comptype p2);
 static int from_comp_asc(t_comptype p1, t_comptype p2);
 static int from_comp_desc(t_comptype p1, t_comptype p2);
-static int global_get_multiparts(int aindex, MultiPartInfo **malloc_and_setme_info);
 static int global_look_for_multipart_info(int aindex, MultiPartInfo *setme, char start, char stop, int *offset);
 static int last_date_comp_base_asc(t_comptype p1, t_comptype p2);
 static int last_date_comp_base_desc(t_comptype p1, t_comptype p2);
@@ -973,9 +972,6 @@ thread_by_percentage(
 
 
 /*
- * This was brought over from tags.c, however this version doesn't
- * operate on base_index
- *
  * Parses a subject header of the type "multipart message subject (01/42)"
  * into a MultiPartInfo struct, or fails if the message subject isn't in the
  * right form.
@@ -1005,10 +1001,6 @@ global_get_multipart_info(
 }
 
 
-/*
- * Again this was taken from tags.c, but works on global indices into arts
- * rather than on base_index.
- */
 static int
 global_look_for_multipart_info(
 	int aindex,
@@ -1033,7 +1025,7 @@ global_look_for_multipart_info(
 	if (!pch || !isdigit((int) pch[1]))
 		return 0;
 
-	tmp.base_index = aindex; /* This could be confusing because we are actually storing the index into arts, not the base_index. */
+	tmp.arts_index = aindex;
 	tmp.subject_compare_len = pch - subj;
 	tmp.part_number = (int) strtol(pch + 1, &pch, 10);
 	if (*pch != '/' && *pch != '|')
@@ -1046,6 +1038,12 @@ global_look_for_multipart_info(
 	if (*pch != stop)
 		return 0;
 
+	/*
+	 * skip "blah (00/102)" or "blah (103/102)" subjects
+	 */
+	if (tmp.part_number < 1 || tmp.part_number > tmp.total)
+		return 0;
+
 	tmp.subject = subj;
 	*setme = tmp;
 	*offset = pch - subj;
@@ -1053,25 +1051,51 @@ global_look_for_multipart_info(
 }
 
 
+t_bool
+global_look_for_multipart(
+	int aindex,
+	char start,
+	char stop)
+{
+	char *pch;
+
+	pch = strrchr(arts[aindex].subject, start);
+	if (!pch || !isdigit((int) pch[1]))
+		return FALSE;
+
+	strtol(pch + 1, &pch, 10);
+	if (*pch != '/' && *pch != '|')
+		return FALSE;
+
+	if (!isdigit((int) pch[1]))
+		return FALSE;
+
+	strtol(pch + 1, &pch, 10);
+	if (*pch != stop)
+		return FALSE;
+
+	arts[aindex].multipart_subj = TRUE;
+	return TRUE;
+}
+
+
 /*
- * Taken from tags.c but changed to use indices into arts[] instead of
- * base_index. Changed so that even when we don't have all the parts we
- * return a valid array.
- *
  * Tries to find all the parts to the multipart message pointed to by
- * base_index.
+ * aindex.
  *
- * @return on success, the number of parts found. On failure, zero if not a
- * multipart or the negative value of the first missing part.
- * @param base_index index pointing to one of the messages in a multipart
+ * @return on success, the number of parts found. On failure, zero if not
+ * a multipart or the negative value of the first missing part in case of
+ * tagging.
+ * @param aindex index pointing to one of the messages in a multipart
  * message.
  * @param malloc_and_setme_info on success, set to a malloced array the
  * parts found.
  */
-static int
+int
 global_get_multiparts(
 	int aindex,
-	MultiPartInfo **malloc_and_setme_info)
+	MultiPartInfo **malloc_and_setme_info,
+	t_bool tagging)
 {
 	int i, part_index, part_cnt = 0;
 	MultiPartInfo tmp, tmp2;
@@ -1095,8 +1119,8 @@ global_get_multiparts(
 	}
 
 	/* try to find all the multiparts... */
-	for (i = aindex; i < top_art; i++) {
-		if (strncmp(arts[i].subject, tmp.subject, tmp.subject_compare_len))
+	for (i = (tagging ? 0 : aindex); i < top_art; i++) {
+		if (!arts[i].multipart_subj || strncmp(arts[i].subject, tmp.subject, tmp.subject_compare_len))
 			continue;
 
 		if (!global_get_multipart_info(i, &tmp2))
@@ -1108,12 +1132,6 @@ global_get_multiparts(
 
 		part_index = tmp2.part_number - 1;
 
-		/*
-		 * skip "blah (00/102)" or "blah (103/102)" subjects
-		 */
-		if (part_index < 0 || part_index >= tmp.total)
-			continue;
-
 		/* repost check: do we already have this part? */
 		if (info[part_index].part_number != -1) {
 			assert(info[part_index].part_number == tmp2.part_number && "bookkeeping error");
@@ -1123,16 +1141,20 @@ global_get_multiparts(
 		/* we have a match, hooray! */
 		info[part_index] = tmp2;
 
+		arts[i].multipart_subj = FALSE;
+
 		/* all parts found? */
 		if (++part_cnt == tmp.total)
 			break;
 	}
 
 	/* see if we got them all. */
-	for (i = 0; i < tmp.total; ++i) {
-		if (info[i].part_number != i + 1) {
-			*malloc_and_setme_info = info;
-			return -(i + 1); /* missing part #(i+1) */
+	if (tagging) {
+		for (i = 0; i < tmp.total; ++i) {
+			if (info[i].part_number != i + 1) {
+				free(info);
+				return -(i + 1); /* missing part #(i+1) */
+			}
 		}
 	}
 
@@ -1153,8 +1175,17 @@ thread_by_multipart(
 	MultiPartInfo *minfo = NULL;
 
 	for_each_art(i) {
-		if (IGNORE_ART_THREAD(i) || arts[i].prev >= 0 || !global_get_multiparts(i, &minfo)) {
+		if (!global_look_for_multipart(i, '[', ']'))
+			global_look_for_multipart(i, '(', ')');
+	}
+
+	for_each_art(i) {
+		if (!arts[i].multipart_subj)
+			continue;
+
+		if (IGNORE_ART_THREAD(i) || arts[i].prev >= 0 || !global_get_multiparts(i, &minfo, FALSE)) {
 			FreeAndNull(minfo);
+			arts[i].multipart_subj = FALSE;
 			continue;
 		}
 
@@ -1162,13 +1193,14 @@ thread_by_multipart(
 		for (j = minfo[0].total - 1; j >= 0; j--) {
 			if (minfo[j].part_number != -1) {
 				if (threadNum != -1) {
-					arts[minfo[j].base_index].thread = threadNum;
-					arts[threadNum].prev = minfo[j].base_index;
+					arts[minfo[j].arts_index].thread = threadNum;
+					arts[threadNum].prev = minfo[j].arts_index;
 				}
-				threadNum = minfo[j].base_index;
+				threadNum = minfo[j].arts_index;
 			}
 		}
 		FreeAndNull(minfo);
+		arts[i].multipart_subj = FALSE;
 		if (i % MODULO_COUNT_NUM == 0) /* TODO: -> lang.c */
 			show_progress(_("Threading by multipart"), i, top_art);
 	}
@@ -1212,7 +1244,7 @@ make_threads(
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
 		error_message(2, "rethread=[%d]  thread_articles=[%d]  attr_thread_articles=[%d]",
-				rethread, tinrc.thread_articles, group->attribute->thread_articles);
+			rethread, tinrc.thread_articles, group->attribute->thread_articles);
 #endif /* DEBUG */
 
 	/*
@@ -1700,9 +1732,8 @@ build_range_list(
 		res->cnt = res->end - res->start + 1;
 		gap_cnt = 1;
 #	ifdef DEBUG
-		if ((debug & DEBUG_NNTP) && verbose > 1) {
+		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "more then %d ranges after optimization, fetch all at once instead: start: %"T_ARTNUM_PFMT" end: %"T_ARTNUM_PFMT" cnt: %"T_ARTNUM_PFMT"", MAX_CNT, res->start, res->end, res->cnt);
-		}
 #	endif /* DEBUG */
 	}
 	*range_cnt = gap_cnt;
@@ -1817,7 +1848,7 @@ get_path_header(
 	supported = FALSE;
 	if (nntp_caps.xpat)
 		nntp_caps.xpat = FALSE;
-	/* as nntp_caps.hdr may work with other headers we don't disable it*/
+	/* as nntp_caps.hdr may work with other headers we don't disable it */
 
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
@@ -2148,8 +2179,7 @@ read_overview(
 
 							art->subject = hash_str(q);
 							free(q);
-						}
-						else {
+						} else {
 							art->subject = hash_str("");
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && verbose > 1)
@@ -3170,6 +3200,7 @@ set_article(
 	art->inrange = FALSE;
 	art->matched = FALSE;
 	art->keep_in_base = FALSE;
+	art->multipart_subj = FALSE;
 }
 
 
@@ -3248,10 +3279,10 @@ print_date(
 
 	if ((tm = gmtime(&secs)) != NULL)
 		snprintf(date, sizeof(date), "%02d %.3s %04d %02d:%02d:%02d GMT",
-				tm->tm_mday,
-				months_a[tm->tm_mon],
-				tm->tm_year + 1900,
-				tm->tm_hour, tm->tm_min, tm->tm_sec);
+			tm->tm_mday,
+			months_a[tm->tm_mon],
+			tm->tm_year + 1900,
+			tm->tm_hour, tm->tm_min, tm->tm_sec);
 	else
 		snprintf(date, sizeof(date), "01 Jan 1970 00:00:00 UTC");
 
@@ -3273,9 +3304,8 @@ print_from(
 	if (article->name != NULL) {
 		q = my_strdup(article->name);
 #ifdef CHARSET_CONVERSION
-		if (charset != -1) {
+		if (charset != -1)
 			buffer_to_network(q, charset);
-		}
 #endif /* CHARSET_CONVERSION */
 		p = rfc1522_encode(article->name, tinrc.mm_local_charset, FALSE);
 		unfold_header(p);
@@ -3287,7 +3317,7 @@ print_from(
 		free(p);
 		free(q);
 	} else
-		STRCPY(from, article->from);
+		snprintf(from, sizeof(from), "<%s>", article->from);
 
 	return from;
 }

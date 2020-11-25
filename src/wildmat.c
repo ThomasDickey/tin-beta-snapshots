@@ -200,12 +200,12 @@ wildmatpos(
 	px = my_strdup(p + 1);
 
 	for (t = txt + prev_offset; *t; t++)
-		if ((ret = (DoMatch(t, px))) == TRUE) {
+		if ((ret = (DoMatch(t, px))) == 1) {
 			/* remove the trailing '*' */
 			px[strlen(px) - 1] = '\0';
 			for (i = strlen(t); i > 0; i--) {
 				t[i] = '\0';
-				if ((ret = (DoMatch(t, px))) == TRUE) {
+				if ((ret = (DoMatch(t, px))) == 1) {
 					if (srch_offsets_size >= 2) {
 						srch_offsets[0] = t - txt;
 						srch_offsets[1] = srch_offsets[0] + i;

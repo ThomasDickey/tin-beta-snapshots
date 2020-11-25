@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2019-01-15
+ *  Updated   : 2020-06-01
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -116,7 +116,7 @@ tin_getline(
 
 	if (max_chars == 0) {
 		if (number_only)
-			gl_max = 6;
+			gl_max = 10;
 		else
 			gl_max = BUF_SIZE;
 	} else

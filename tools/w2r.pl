@@ -3,7 +3,7 @@
 # reads a tin filter file with wildmat filters on STDIN, converts it to
 # regexp filters and returns it on STDOUT
 #
-# 2000-04-27 <urs@tin.org>
+# 2020-11-10 <urs@tin.org>
 #
 # NOTE: don't use w2r.pl on regexp filters
 #
@@ -18,7 +18,7 @@
 require 5.004;
 
 # version Number
-# $VERSION = "0.2.7";
+# $VERSION = "0.2.8";
 
 while (defined($line = <>)) {
 	chomp $line;
@@ -33,7 +33,7 @@ while (defined($line = <>)) {
 	next if ($line =~ m/^[^=]+=$/o);
 
 	# lines which needs to be translated
-	if ($line =~ m/^(subj|from|msgid(?:|_last|_only)|refs_only|xref)=(.*)$/o) {
+	if ($line =~ m/^(subj|from|msgid(?:|_last|_only)|refs_only|xref|path=)=(.*)$/o) {
 		printf ("$1=%s\n", w2p($2));
 		next;
 	}

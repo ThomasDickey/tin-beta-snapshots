@@ -3,7 +3,7 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2019-03-12
+ *  Updated   : 2020-05-27
  *
  * Copyright (c) 1997-2020 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
@@ -65,12 +65,9 @@ static int offset = 0;
  * local prototypes
  */
 static char *tin_read(char *buffer, size_t len, FILE *fp, t_bool header);
-#if defined(NNTP_ABLE) && defined(HAVE_SELECT)
-	static t_bool wait_for_input(void);
-#endif /* NNTP_ABLE && HAVE_SELECT */
 
 
-#if defined(NNTP_ABLE) && defined(HAVE_SELECT)
+#ifdef HAVE_SELECT
 /*
  * Used by the I/O read routine to look for keyboard input
  * Returns TRUE if user aborted with 'q' or 'z' (lynx-style)
@@ -78,7 +75,7 @@ static char *tin_read(char *buffer, size_t len, FILE *fp, t_bool header);
  * TODO: document 'z' (, and allow it's remapping?) and 'Q'
  *       add a !HAVE_SELECT code path
  */
-static t_bool
+t_bool
 wait_for_input(
 	void)
 {
@@ -169,7 +166,7 @@ wait_for_input(
 
 	}
 }
-#endif /* NNTP_ABLE && HAVE_SELECT */
+#endif /* HAVE_SELECT */
 
 
 /*

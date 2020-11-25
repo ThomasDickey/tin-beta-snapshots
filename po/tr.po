@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-22 12:39+0200\n"
+"POT-Creation-Date: 2020-06-10 23:18+0200\n"
 "PO-Revision-Date: 2017-05-29 18:40+0000\n"
 "Last-Translator: Mesutcan Kurt <mesutcank@gmail.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -30,25 +30,25 @@ msgstr ""
 #  TODO: -> lang.c
 #  TODO: -> lang.c
 #. -> lang.c
-#: src/art.c:419
+#: src/art.c:418
 #, fuzzy, c-format
 msgid "Reading %s\n"
 msgstr "%s tekrar okunuyor..."
 
 #. TODO: -> lang.c
-#: src/art.c:1173
+#: src/art.c:1205
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "Makaleler zincirleniyor..."
 
 #. -> lang.c
-#: src/art.c:2509
+#: src/art.c:2541
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "%s deneniyor"
 
 #. TODO: -> lang.c
-#: src/art.c:2589
+#: src/art.c:2621
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "Öznitelikler dosylası yazılıyor..."
@@ -1002,7 +1002,7 @@ msgstr "Kaydedilen gruplar için aktif dosya oluşturuyor...\n"
 msgid "Creating newsrc file...\n"
 msgstr "Newsrc dosyası oluşturuluyor...\n"
 
-#: src/lang.c:161 src/lang.c:1314 src/lang.c:1334
+#: src/lang.c:161 src/lang.c:1316 src/lang.c:1336
 msgid "Default"
 msgstr "Öntanımlı"
 
@@ -1537,8 +1537,8 @@ msgid "Error making backup of %s file. Filesystem full?"
 msgstr "%s dosyasını yedeklerken hata oluştu. Dosya sistemi dolu olabilir mi?"
 
 #: src/lang.c:274
-#, c-format
-msgid "Filtering global rules (%d/%d)..."
+#, fuzzy, c-format
+msgid "Filtering global rules (%d/%d) ('q' to quit)..."
 msgstr "Genel kurallar filtreleniyor (%d/%d)..."
 
 #: src/lang.c:275
@@ -2301,8 +2301,9 @@ msgstr "en az bir okunmamış makalesi olan zincirleri seç"
 msgid "select threads that match user specified pattern"
 msgstr "kullanıcı tanımlı kalıba uyan eposta zincirlerini seç"
 
-#: src/lang.c:465
-msgid "tag all parts of current multipart-message in order"
+#: src/lang.c:465 src/lang.c:521
+#, fuzzy
+msgid "tag/untag all parts of current multipart-message in order"
 msgstr "mevcut çok-bölümlü iletinin bütün bölümlerini sırayla etiketle"
 
 #: src/lang.c:466
@@ -2419,7 +2420,7 @@ msgstr "listede seçilen grubu taşı"
 msgid "choose next group with unread news"
 msgstr "okunmamış haberli sonraki grubu seç"
 
-#: src/lang.c:496 src/lang.c:1396
+#: src/lang.c:496 src/lang.c:1398
 msgid "quit"
 msgstr "çık"
 
@@ -2527,7 +2528,7 @@ msgstr "mevcut eposta zincirini okunmamış olarak işaretle"
 msgid "read chosen article"
 msgstr "seçilen makaleyi oku"
 
-#: src/lang.c:521
+#: src/lang.c:522
 msgid ""
 "Display properties\n"
 "------------------"
@@ -2535,7 +2536,7 @@ msgstr ""
 "Özellikleri görüntüle\n"
 "------------------"
 
-#: src/lang.c:522
+#: src/lang.c:523
 msgid ""
 "Miscellaneous\n"
 "-------------"
@@ -2543,7 +2544,7 @@ msgstr ""
 "Diğer\n"
 "-------------"
 
-#: src/lang.c:523
+#: src/lang.c:524
 msgid ""
 "Moving around\n"
 "-------------"
@@ -2551,7 +2552,7 @@ msgstr ""
 "Etrafına taşı\n"
 "-------------"
 
-#: src/lang.c:524
+#: src/lang.c:525
 msgid ""
 "Group/thread/article operations\n"
 "-------------------------------"
@@ -2559,7 +2560,7 @@ msgstr ""
 "Grup/zincir/makale işlemleri\n"
 "-------------------------------"
 
-#: src/lang.c:525
+#: src/lang.c:526
 msgid ""
 "Attachment operations\n"
 "---------------------"
@@ -2567,7 +2568,7 @@ msgstr ""
 "Ek işlemleri\n"
 "---------------------"
 
-#: src/lang.c:526
+#: src/lang.c:527
 msgid ""
 "Attribute operations\n"
 "--------------------"
@@ -2575,7 +2576,7 @@ msgstr ""
 "Öznitelik işlemleri\n"
 "--------------------"
 
-#: src/lang.c:527
+#: src/lang.c:528
 msgid ""
 "Option operations\n"
 "-----------------"
@@ -2583,7 +2584,7 @@ msgstr ""
 "Seçenek işlemleri\n"
 "-----------------"
 
-#: src/lang.c:528
+#: src/lang.c:529
 msgid ""
 "Scope operations\n"
 "----------------"
@@ -2591,7 +2592,7 @@ msgstr ""
 "Etki alanı işlemleri\n"
 "----------------"
 
-#: src/lang.c:529
+#: src/lang.c:530
 msgid ""
 "URL operations\n"
 "--------------"
@@ -2599,91 +2600,96 @@ msgstr ""
 "URL işlemleri\n"
 "--------------"
 
-#: src/lang.c:530
+#: src/lang.c:531
 msgid "choose first URL in list"
 msgstr "listedeki ilk URL'yi seç"
 
-#: src/lang.c:531
+#: src/lang.c:532
 msgid "0 - 9\t  choose URL by number"
 msgstr "0 - 9\t  URL'yi sayıyla seç"
 
-#: src/lang.c:532
+#: src/lang.c:533
 msgid "choose last URL in list"
 msgstr "Listedeki son URL'yi seç"
 
-#: src/lang.c:533
+#: src/lang.c:534
 msgid "search for URLs forwards"
 msgstr "URL'leri ileriye doğru ara"
 
-#: src/lang.c:534
+#: src/lang.c:535
 msgid "search for URLs backwards"
 msgstr "URL'leri geriye doğru ara"
 
-#: src/lang.c:535
+#: src/lang.c:536
 msgid "Open URL in browser"
 msgstr "URL'yi tarayıcıda aç"
 
-#: src/lang.c:536
+#: src/lang.c:537
 msgid "toggle info message in last line (URL)"
 msgstr "son satırdaki bilgi iletisini değiştir (URL)"
 
-#: src/lang.c:538
+#: src/lang.c:539
 msgid "Group Level Commands"
 msgstr "Grup Seviyesi Komutları"
 
-#: src/lang.c:539
+#: src/lang.c:540
 msgid "Kill filter added"
 msgstr "Öldürme filtresi eklendi"
 
-#: src/lang.c:540
+#: src/lang.c:541
 msgid "Auto-selection filter added"
 msgstr "Otomatik seçme filtresi eklendi"
 
-#: src/lang.c:541
+#: src/lang.c:542
 msgid "All parts tagged"
 msgstr "Bütün bölümler etiketlendi"
 
-#: src/lang.c:542
+#: src/lang.c:543
+#, fuzzy
+msgid "All parts untagged"
+msgstr "Bütün bölümler etiketlendi"
+
+#: src/lang.c:544
 msgid "Storing article for later posting"
 msgstr "Makale daha sonra göndermek için saklanıyor"
 
-#: src/lang.c:543
+#: src/lang.c:545
 msgid "Please enter a valid character"
 msgstr "Lütfen geçerli bir karakter girin"
 
-#: src/lang.c:544
+#: src/lang.c:546
 #, c-format
 msgid "Missing part #%d"
 msgstr "Eksik bölüm #%d"
 
-#: src/lang.c:545
+#: src/lang.c:547
 msgid "*** No postponed articles ***"
 msgstr "*** Ertelenmiş makale yok ***"
 
-#: src/lang.c:546
+#: src/lang.c:548
 msgid "Not a multi-part message"
 msgstr "Çok-bölümlü ileti değil"
 
-#: src/lang.c:547
+#: src/lang.c:549
 msgid "You are not subscribed to this group"
 msgstr "Bu gruba abone değilsiniz"
 
-#: src/lang.c:548
+#: src/lang.c:550
 msgid "No previous expression"
 msgstr "Önceki ifade yok"
 
-#: src/lang.c:549
+#: src/lang.c:551
 msgid "Operation disabled in no-overwrite mode"
 msgstr "Üstüne yazılmayan kipte işlem geçersiz"
 
 #  TODO: replace hardcoded key-name in txt_info_postponed
 #. TODO: replace hard coded key-name in txt_info_postponed
-#: src/lang.c:551
+#: src/lang.c:553
 #, c-format
 msgid "%d postponed %s, reuse with ^O...\n"
 msgstr "%d ertelendi %s, ^O ile tekrar kullan...\n"
 
-#: src/lang.c:552
+#: src/lang.c:554
 msgid ""
 "X-Conversion-Note: multipart/alternative contents have been removed.\n"
 "  To get the whole article, turn alternative handling OFF in the Option "
@@ -2693,22 +2699,22 @@ msgstr ""
 "  Bütün makaleyi almak için, Seçenekler Menüsündeki alternatif kotarmayı "
 "KAPALI durumuna getirin\n"
 
-#: src/lang.c:554
+#: src/lang.c:556
 #, c-format
 msgid "Save filename for %s/%s is a mailbox. Attachment not saved"
 msgstr "Dosya adını %s/%s için kaydetmek bir posta kutusudur. Ek kaydedilmedi"
 
-#: src/lang.c:555
+#: src/lang.c:557
 msgid "TeX2Iso encoded article"
 msgstr "TeX2Iso ile kodlanmış makale"
 
-#: src/lang.c:556
+#: src/lang.c:558
 msgid "incomplete "
 msgstr "tamamlanmadı "
 
 #  TODO: replace hardcoded key-names
 #. TODO: replace hard coded key-names
-#: src/lang.c:558
+#: src/lang.c:560
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -2775,151 +2781,151 @@ msgstr ""
 "dosyalarını okuyun.\n"
 "Hata-raporlarını ve önerileri 'R' komutu ile %s'e gönderin.\n"
 
-#: src/lang.c:574
+#: src/lang.c:576
 #, c-format
 msgid "Invalid  From: %s  line. Read the INSTALL file again."
 msgstr "Geçersiz  Gönderen: %s  satırı. INSTALL dosyasını yeniden okuyun."
 
-#: src/lang.c:576
+#: src/lang.c:578
 msgid "Invalid multibyte sequence found\n"
 msgstr "Geçersiz çoklu bayt sırası bulundu\n"
 
-#: src/lang.c:579
+#: src/lang.c:581
 #, c-format
 msgid "Invalid  Sender:-header %s"
 msgstr "Geçersiz  Gönderen: -başlık %s"
 
-#: src/lang.c:581
+#: src/lang.c:583
 msgid "Inverse video disabled"
 msgstr "Ters video devre dışı"
 
-#: src/lang.c:582
+#: src/lang.c:584
 msgid "Inverse video enabled"
 msgstr "Ters video geçerli"
 
-#: src/lang.c:584
+#: src/lang.c:586
 #, c-format
 msgid "Missing definition for %s\n"
 msgstr "%s için tanım eksik\n"
 
-#: src/lang.c:585
+#: src/lang.c:587
 #, c-format
 msgid "Invalid key definition '%s'\n"
 msgstr "Geçersiz tuş tanımı '%s'\n"
 
-#: src/lang.c:586
+#: src/lang.c:588
 #, c-format
 msgid "Invalid keyname '%s'\n"
 msgstr "Geçersiz anahtar isim '%s'\n"
 
-#: src/lang.c:587
+#: src/lang.c:589
 #, c-format
 msgid "Keymap file was upgraded to version %s\n"
 msgstr "Tuşeşlem dosyası %s sürümüne yükseltildi\n"
 
-#: src/lang.c:588
+#: src/lang.c:590
 #, c-format
 msgid "Kill From:     [%s] (y/n): "
 msgstr "Gönderen: yok et     [%s] (e/h): "
 
-#: src/lang.c:589
+#: src/lang.c:591
 msgid "Kill Lines: (</>num): "
 msgstr "Satırlar: yok et(</>num): "
 
-#: src/lang.c:590
+#: src/lang.c:592
 msgid "Kill Article Menu"
 msgstr "Makale Menüsünü Yok Et"
 
-#: src/lang.c:591
+#: src/lang.c:593
 #, fuzzy, c-format
 msgid "Kill Msg-ID:   [%s] (f/l/o/n): "
 msgstr "İleti-Kimliği: yok et:  [%s] (f/l/o/n): "
 
-#: src/lang.c:592
+#: src/lang.c:594
 msgid "Kill pattern scope  : "
 msgstr "Örüntü kapsamını yok et  :  "
 
-#: src/lang.c:593
+#: src/lang.c:595
 #, c-format
 msgid "Kill Subject:  [%s] (y/n): "
 msgstr "Konuyu yok et:  [%s] (e/h): "
 
-#: src/lang.c:594
+#: src/lang.c:596
 msgid "Kill text pattern   : "
 msgstr "Metin örüntüsünü yok et   : "
 
-#: src/lang.c:595
+#: src/lang.c:597
 msgid "Kill time in days   : "
 msgstr "Şu kadar gün içinde öldür   : "
 
-#: src/lang.c:597
+#: src/lang.c:599
 msgid "Last"
 msgstr "Son"
 
-#: src/lang.c:598
+#: src/lang.c:600
 msgid "-- Last response --"
 msgstr "-- Son yanıt --"
 
-#: src/lang.c:599
+#: src/lang.c:601
 #, c-format
 msgid "Lines %s  "
 msgstr "Satırlar %s  "
 
-#: src/lang.c:602
+#: src/lang.c:604
 msgid "Function not available."
 msgstr "Fonksiyon mevcut değil."
 
-#: src/lang.c:603
+#: src/lang.c:605
 msgid "Not reading via NNTP."
 msgstr "NNTP üzerinden okunamıyor."
 
-#: src/lang.c:604
+#: src/lang.c:606
 #, c-format
 msgid "Group: %s"
 msgstr "Grup: %s"
 
-#: src/lang.c:605
+#: src/lang.c:607
 #, c-format
 msgid "Groups: %s"
 msgstr "Gruplar: %s"
 
-#: src/lang.c:608
+#: src/lang.c:610
 msgid "Mail"
 msgstr "Eposta"
 
-#: src/lang.c:609
+#: src/lang.c:611
 msgid "mailbox "
 msgstr "mailbox "
 
-#: src/lang.c:610
+#: src/lang.c:612
 #, c-format
 msgid "Mail article(s) to [%.*s]> "
 msgstr "Makaleleri şuraya gönder [%.*s]> "
 
-#: src/lang.c:611
+#: src/lang.c:613
 #, c-format
 msgid "Mailing log to %s\n"
 msgstr "Günlük %s'e postalanıyor\n"
 
-#: src/lang.c:612
+#: src/lang.c:614
 msgid "Mail bug report..."
 msgstr "Hata raporu postala..."
 
-#: src/lang.c:613
+#: src/lang.c:615
 #, c-format
 msgid "Mail BUG REPORT to %s?"
 msgstr "HATA RAPORUNU %s'e postala?"
 
-#: src/lang.c:614
+#: src/lang.c:616
 msgid "Mailed"
 msgstr "Postalandı"
 
-#: src/lang.c:615
+#: src/lang.c:617
 #, c-format
 msgid "Mailing to %s..."
 msgstr "%s'e postalanıyor..."
 
-#: src/lang.c:616
+#: src/lang.c:618
 msgid ""
 "# [Mail/Save] active file. Format is like news active file:\n"
 "#   groupname  max.artnum  min.artnum  /dir\n"
@@ -2931,63 +2937,63 @@ msgstr ""
 "# 4. alan temel dizin (örn.~/Mail or ~/News)\n"
 "#\n"
 
-#: src/lang.c:619
+#: src/lang.c:621
 #, c-format
 msgid "%s marked as read"
 msgstr "%s okunmuş olarak işaretlendi"
 
-#: src/lang.c:620
+#: src/lang.c:622
 #, c-format
 msgid "%s marked as unread"
 msgstr "%s okunmamış olarak işaretlendi"
 
-#: src/lang.c:621
+#: src/lang.c:623
 #, c-format
 msgid "Marked %d of %d %s as read"
 msgstr "%d içerisinde %d %s okunmuş olarak işaretlendi"
 
-#: src/lang.c:622
+#: src/lang.c:624
 #, c-format
 msgid "Marked %d of %d %s as unread"
 msgstr "%d içerisinde %d %s okunmamış olarak işaretlendi "
 
-#: src/lang.c:623 src/lang.c:1352
+#: src/lang.c:625 src/lang.c:1354
 msgid "Mark"
 msgstr "İşaretle"
 
-#: src/lang.c:624
+#: src/lang.c:626
 #, c-format
 msgid "Mark all articles as read%s?"
 msgstr "Bütün makaleleri okunmuş olarak işaretle%s?"
 
-#: src/lang.c:625
+#: src/lang.c:627
 #, c-format
 msgid "Mark article as read%s?"
 msgstr "Makaleyi okunmuş olarak işaretle%s?"
 
-#: src/lang.c:626
+#: src/lang.c:628
 #, c-format
 msgid "Mark group %s as read?"
 msgstr "%s grubunu okunmuş olarak işaretle?"
 
-#: src/lang.c:627
+#: src/lang.c:629
 #, c-format
 msgid "Mark thread as read%s?"
 msgstr "Eposta zincirini okunmuş olarak işaretle%s?"
 
-#: src/lang.c:628
+#: src/lang.c:630
 #, c-format
 msgid "Matching %s groups..."
 msgstr "%s grupları eşleştiriyor..."
 
-#: src/lang.c:629 src/lang.c:643 src/lang.c:649
+#: src/lang.c:631 src/lang.c:645 src/lang.c:651
 #, c-format
 msgid "<n>=set current to n; %s=line down; %s=line up; %s=help; %s=quit"
 msgstr ""
 "<n>=mevcutu n olarak ayarla; %s=satır aşağı; %s=satır yukarı; %s=yardım; "
 "%s=çıkış"
 
-#: src/lang.c:631
+#: src/lang.c:633
 #, c-format
 msgid ""
 "%s=view; %s=pipe; %s=pipe raw; %s=save; %s=tag; %s=tag pattern; %s=untag all"
@@ -2995,14 +3001,14 @@ msgstr ""
 "%s=görüntüle; %s=yönlendir; %s=ham yönlendir; %s=kaydet; %s=etiketle; "
 "%s=örüntüyü etiketle; %s=tümünün etiketini kaldır"
 
-#: src/lang.c:633
+#: src/lang.c:635
 #, c-format
 msgid "%s=view; %s=save; %s=tag; %s=tag pattern; %s=untag all"
 msgstr ""
 "%s=görüntüle; %s=kaydet; %s=etiketle; %s=deseni etiketle; %s=tamamının "
 "etiketini kaldır"
 
-#: src/lang.c:635
+#: src/lang.c:637
 #, c-format
 msgid ""
 "%s=reverse tagging; %s=search forwards; %s=search backwards; %s=repeat search"
@@ -3010,14 +3016,14 @@ msgstr ""
 "%s=geriye doğru etiketle; %s=ileriye doğru ara; %s=geriye doğru ara; "
 "%s=aramayı tekrarla"
 
-#: src/lang.c:636 src/lang.c:640
+#: src/lang.c:638 src/lang.c:642
 #, c-format
 msgid "<n>=set current to n; %s=next unread; %s=search pattern; %s=kill/select"
 msgstr ""
 "<n>=mevcutu n olarak ayarla; %s=sonraki okunmayan; %s=arama örüntüsü; %s=yok "
 "et/seç"
 
-#: src/lang.c:637
+#: src/lang.c:639
 #, c-format
 msgid ""
 "%s=author search; %s=catchup; %s=line down; %s=line up; %s=mark read; "
@@ -3026,37 +3032,37 @@ msgstr ""
 "%s=yazar araması; %s=yakala; %s=satır aşağı; %s=satır yukarı; %s= okunmuş "
 "işaretle; %s=eposta zinciri listele"
 
-#: src/lang.c:638
+#: src/lang.c:640
 #, c-format
 msgid "%s=line up; %s=line down; %s=page up; %s=page down; %s=top; %s=bottom"
 msgstr ""
 "%s=satır yukarı; %s=satır aşağı; %s=üst sayfa; %s=alt sayfa; %s=üst; %s=alt"
 
-#: src/lang.c:639
+#: src/lang.c:641
 #, c-format
 msgid "%s=search forwards; %s=search backwards; %s=quit"
 msgstr "%s=ileriye doğru ara; %s=geriye doğru ara; %s=çık"
 
-#: src/lang.c:641
+#: src/lang.c:643
 #, c-format
 msgid "%s=author search; %s=body search; %s=catchup; %s=followup; %s=mark read"
 msgstr ""
 "%s=yazar araması; %s=gövde araması; %s=yakala; %s=takip-et; %s=okumuş olarak "
 "işaretle"
 
-#: src/lang.c:642
+#: src/lang.c:644
 #, c-format
 msgid "%s=add; %s=move; %s=rename; %s=delete"
 msgstr "%s=ekle; %s=kaydır; %s=yeniden adlandır; %s=sil"
 
-#: src/lang.c:644
+#: src/lang.c:646
 #, c-format
 msgid "<n>=set current to n; %s=next unread; %s,%s=search pattern; %s=catchup"
 msgstr ""
 "<n>=mevcutu n olarak ayarla; %s=sonraki okunmayan; %s,%s=arama deseni; "
 "%s=yakala"
 
-#: src/lang.c:645
+#: src/lang.c:647
 #, c-format
 msgid ""
 "%s=line down; %s=line up; %s=help; %s=move; %s=quit; %s=toggle all/unread"
@@ -3064,7 +3070,7 @@ msgstr ""
 "%s=satır aşağı; %s=satır yukarı; %s=yardım; %s=taşı; %s=çık; %s=hepsi/"
 "okunmamışlar değiştir"
 
-#: src/lang.c:646
+#: src/lang.c:648
 #, c-format
 msgid ""
 "%s=subscribe; %s=sub pattern; %s=unsubscribe; %s=unsub pattern; %s=yank in/"
@@ -3073,232 +3079,232 @@ msgstr ""
 "%s=abone ol; %s=örüntüdekine abone ol; %s=abonelikten çık; %s=örüntüdeki "
 "abonelikten çık; %s=çekme içeri/dışarı"
 
-#: src/lang.c:647
+#: src/lang.c:649
 #, c-format
 msgid "<n>=set current to n; %s=next unread; %s=catchup; %s=display toggle"
 msgstr ""
 "<n>=mevcutu n olarak ayarla; %s=sonraki okunmayan; %s=yakala; %s=görünüm "
 "değiştir"
 
-#: src/lang.c:648
+#: src/lang.c:650
 #, c-format
 msgid "%s=help; %s=line down; %s=line up; %s=quit; %s=tag; %s=mark unread"
 msgstr ""
 "%s=yardım; %s=satır aşağı; %s=satır yukarı; %s=quit; %s=etiketle; "
 "%s=okunmamış olarak işaretle"
 
-#: src/lang.c:650
+#: src/lang.c:652
 #, c-format
 msgid "%s=search forwards; %s=search backwards; %s=repeat search"
 msgstr "%s=ileriye doğru ara; %s=geriye doğru ara; %s=aramayı tekrarla"
 
-#: src/lang.c:651
+#: src/lang.c:653
 msgid "--More--"
 msgstr "--Daha fazla--"
 
-#: src/lang.c:652
+#: src/lang.c:654
 #, c-format
 msgid "Moving %s..."
 msgstr "Taşınıyor %s..."
 
-#: src/lang.c:653
+#: src/lang.c:655
 msgid "Message-ID: & last Reference  "
 msgstr "İleti-Kimliği: & son Referans  "
 
-#: src/lang.c:654
+#: src/lang.c:656
 msgid "Message-ID: line              "
 msgstr "İleti-Kimliği: satır             "
 
-#: src/lang.c:655
+#: src/lang.c:657
 msgid "Message-ID: & References: line"
 msgstr "İleti-Kimliği & Referanslar: satırı"
 
-#: src/lang.c:657
+#: src/lang.c:659
 msgid ", name: "
 msgstr ", isim: "
 
-#: src/lang.c:658
+#: src/lang.c:660
 #, c-format
 msgid "Go to newsgroup [%s]> "
 msgstr "Haber grubuna git [%s]> "
 
-#: src/lang.c:659
+#: src/lang.c:661
 msgid "newsgroups"
 msgstr "haber grupları"
 
-#: src/lang.c:660
+#: src/lang.c:662
 #, c-format
 msgid "Position %s in group list (1,2,..,$) [%d]> "
 msgstr "Grup listesinde %s konumu (1,2,..,$) [%d]> "
 
-#: src/lang.c:661
+#: src/lang.c:663
 msgid "newsgroup"
 msgstr "haber grubu"
 
-#: src/lang.c:662
+#: src/lang.c:664
 msgid "Try and save newsrc file again?"
 msgstr "newsrc dosyasını yeniden dene ve kaydet?"
 
-#: src/lang.c:663
+#: src/lang.c:665
 msgid "Warning: No newsgroups were written to your newsrc file. Save aborted."
 msgstr ""
 "Uyarı: newsrc dosyanızda hiçbir haber grubu yazılı değil. Kaydetme "
 "durduruldu."
 
-#: src/lang.c:664
+#: src/lang.c:666
 msgid "newsrc file saved successfully.\n"
 msgstr "newsrc dosyası başarıyla kaydedildi.\n"
 
-#: src/lang.c:665
+#: src/lang.c:667
 msgid "-- Next response --"
 msgstr "-- Sonraki yanıt --"
 
-#: src/lang.c:666
+#: src/lang.c:668
 msgid "No  "
 msgstr "Hayır  "
 
-#: src/lang.c:667
+#: src/lang.c:669
 msgid "*** No articles ***"
 msgstr "*** Makale Yok ***"
 
-#: src/lang.c:668
+#: src/lang.c:670
 msgid "No articles have been posted"
 msgstr "Makale(ler) gönderilmedi"
 
-#: src/lang.c:669
+#: src/lang.c:671
 msgid "*** No attachments ***"
 msgstr "*** Ek yok ***"
 
-#: src/lang.c:670
+#: src/lang.c:672
 msgid "*** No description ***"
 msgstr "*** Tanım yok ***"
 
-#: src/lang.c:671
+#: src/lang.c:673
 msgid "No filename"
 msgstr "Dosya adı yok"
 
-#: src/lang.c:672
+#: src/lang.c:674
 msgid "No group"
 msgstr "Grup yok"
 
-#: src/lang.c:673
+#: src/lang.c:675
 msgid "*** No groups ***"
 msgstr "*** Grup(lar) yok ***"
 
-#: src/lang.c:674
+#: src/lang.c:676
 msgid "No more groups to read"
 msgstr "Okunacak başka grup yok"
 
-#: src/lang.c:675
+#: src/lang.c:677
 msgid "No last message"
 msgstr "Son ileti yok"
 
-#: src/lang.c:676
+#: src/lang.c:678
 msgid "No mail address"
 msgstr "Eposta adresi yok"
 
-#: src/lang.c:677
+#: src/lang.c:679
 msgid "No articles marked for saving"
 msgstr "Kaydetmek için işaretlenen makale yok"
 
-#: src/lang.c:678
+#: src/lang.c:680
 msgid "No match"
 msgstr "Eşleşme yok"
 
-#: src/lang.c:679
+#: src/lang.c:681
 msgid "No more groups"
 msgstr "Başka grup yok"
 
-#: src/lang.c:680
+#: src/lang.c:682
 msgid "No newsgroups"
 msgstr "Haber grubu yok"
 
-#: src/lang.c:681
+#: src/lang.c:683
 msgid "No next unread article"
 msgstr "Sonraki okunmayan makale yok"
 
-#: src/lang.c:682
+#: src/lang.c:684
 msgid "No previous group"
 msgstr "Önceki grup yok"
 
-#: src/lang.c:683
+#: src/lang.c:685
 msgid "No previous search, nothing to repeat"
 msgstr "Önceki arama yok, tekrarlanacak bir şey yok"
 
-#: src/lang.c:684
+#: src/lang.c:686
 msgid "No previous unread article"
 msgstr "Önceki okunmayan makale yok"
 
-#: src/lang.c:685
+#: src/lang.c:687
 msgid "No responses"
 msgstr "Yanıt yok"
 
-#: src/lang.c:686
+#: src/lang.c:688
 msgid "No responses to list in current thread"
 msgstr "Mevcut zincirde listelenecek yanıt yok"
 
-#: src/lang.c:687
+#: src/lang.c:689
 msgid "*** No scopes ***"
 msgstr "*** Kapsam yok ***"
 
-#: src/lang.c:688
+#: src/lang.c:690
 msgid "No search string"
 msgstr "Arama dizgisi yok"
 
-#: src/lang.c:689
+#: src/lang.c:691
 msgid "No subject"
 msgstr "Konu yok"
 
-#: src/lang.c:691
+#: src/lang.c:693
 #, c-format
 msgid "%s: Terminal must have clear to end-of-line (ce)\n"
 msgstr "%s: Uçbirim satır sonuna (ce) kadar silmek zorunda\n"
 
-#: src/lang.c:692
+#: src/lang.c:694
 #, c-format
 msgid "%s: Terminal must have clear to end-of-screen (cd)\n"
 msgstr "%s: Uçbirim ekran sonuna (cd) kadar silmek zorunda\n"
 
-#: src/lang.c:693
+#: src/lang.c:695
 #, c-format
 msgid "%s: Terminal must have clearscreen (cl) capability\n"
 msgstr "%s: Uçbirim'in ekran temizleme yeteneğini (cl) olmak zorunda\n"
 
-#: src/lang.c:694
+#: src/lang.c:696
 #, c-format
 msgid "%s: Terminal must have cursor motion (cm)\n"
 msgstr "%s: Uçbirim imleç hareketi'ne (cm) sahip olmak zorunda\n"
 
-#: src/lang.c:695
+#: src/lang.c:697
 #, c-format
 msgid "%s: TERM variable must be set to use screen capabilities\n"
 msgstr ""
 "%s: Ekran yeteneklerini kullanabilmek için TERM değişkeni ayarlanmalı\n"
 
-#: src/lang.c:697
+#: src/lang.c:699
 #, c-format
 msgid "No viewer found for %s/%s\n"
 msgstr "%s%s için görüntüleyici yok\n"
 
-#: src/lang.c:698
+#: src/lang.c:700
 msgid "Newsgroup does not exist on this server"
 msgstr "Bu sunucuda haber grubu yok"
 
-#: src/lang.c:699
+#: src/lang.c:701
 #, c-format
 msgid "Group %s not found in active file"
 msgstr "%s grubu aktif dosyada bulunamadı"
 
-#: src/lang.c:700
+#: src/lang.c:702
 msgid "c)reate it, use a)lternative name, use d)efault .newsrc, q)uit tin: "
 msgstr ""
 "o)luştur, a)lternatif isim kullan, v)arsayılan .newsrc kullan, tin'den ç)ık: "
 
-#: src/lang.c:701
+#: src/lang.c:703
 msgid "use a)lternative name, use d)efault .newsrc, q)uit tin: "
 msgstr "a)lternatif isim kullan, v)arsayılan .newsrc kullan, tin'den ç)ık: "
 
-#: src/lang.c:702
+#: src/lang.c:704
 #, c-format
 msgid ""
 "# NNTP-server -> newsrc translation table and NNTP-server\n"
@@ -3328,45 +3334,45 @@ msgstr ""
 "#   news.ka.nu    /tmp/nrc-nu      example    ex\n"
 "#\n"
 
-#: src/lang.c:709
+#: src/lang.c:711
 msgid "Only"
 msgstr "Sadece"
 
-#: src/lang.c:710
+#: src/lang.c:712
 #, c-format
 msgid "Option not enabled. Recompile with %s."
 msgstr "Seçenek etkin değil. %s ile tekrar derle."
 
-#: src/lang.c:711
+#: src/lang.c:713
 msgid "Options Menu"
 msgstr "Seçenekler menüsü"
 
-#: src/lang.c:712
+#: src/lang.c:714
 msgid "Options Menu Commands"
 msgstr "Seçenekler Menüsü Komutları"
 
-#: src/lang.c:715
+#: src/lang.c:717
 #, c-format
 msgid "Error in regex: %s at pos. %d '%s'"
 msgstr "Regex hatası: %s şu konumda %d '%s'"
 
-#: src/lang.c:716
+#: src/lang.c:718
 #, c-format
 msgid "Error in regex: pcre internal error %d"
 msgstr "Regex hatası: pcre iç hata %d"
 
-#: src/lang.c:717
+#: src/lang.c:719
 #, c-format
 msgid "Error in regex: study - pcre internal error %s"
 msgstr "Regex hatası: incele - pcre iç hatası %s"
 
-#: src/lang.c:718
+#: src/lang.c:720
 msgid "Post a followup..."
 msgstr "Takip gönder..."
 
 #  TODO: replace hardcoded key-name in txt_post_error_ask_postpone
 #. TODO: replace hard coded key-name in txt_post_error_ask_postpone
-#: src/lang.c:720
+#: src/lang.c:722
 msgid ""
 "An error has occurred while posting the article. If you think that this\n"
 "error is temporary or otherwise correctable, you can postpone the article\n"
@@ -3376,29 +3382,29 @@ msgstr ""
 "düşünüyorsanız ya da geçici bir hata ise, makaleyi erteleyebilir ve\n"
 "tekrar ^O komutunu kulanarak ulaşabilirsiniz.\n"
 
-#: src/lang.c:723
+#: src/lang.c:725
 msgid "Posted articles history"
 msgstr "Gönderilmiş makalelerin geçmişi"
 
-#: src/lang.c:724
+#: src/lang.c:726
 #, c-format
 msgid "Post to newsgroup(s) [%s]> "
 msgstr "Habergrup(lar)a gönder [%s]> "
 
-#: src/lang.c:725
+#: src/lang.c:727
 msgid "-- post processing started --"
 msgstr "-- sonradan işleme başladı --"
 
-#: src/lang.c:726
+#: src/lang.c:728
 msgid "-- post processing completed --"
 msgstr "-- sonradan işleme tamamlandı --"
 
-#: src/lang.c:727
+#: src/lang.c:729
 #, c-format
 msgid "Post subject [%s]> "
 msgstr "Konuyu gönder [%s]> "
 
-#: src/lang.c:728
+#: src/lang.c:730
 msgid ""
 "# Summary of mailed/posted messages viewable by 'W' command from within "
 "tin.\n"
@@ -3406,255 +3412,255 @@ msgstr ""
 "# Tin'deki 'W' komutundan görünebilir postalanmış/gönderilmiş iletilerin "
 "özeti.\n"
 
-#: src/lang.c:729
+#: src/lang.c:731
 msgid "Posting article..."
 msgstr "Makale gönderiliyor..."
 
-#: src/lang.c:730
+#: src/lang.c:732
 #, c-format
 msgid "Post postponed articles [%%s]? (%s/%s/%s/%s/%s): "
 msgstr "Ertelenmiş makaleleri gönder [%%s]? (%s/%s/%s/%s/%s): "
 
-#: src/lang.c:731
+#: src/lang.c:733
 #, c-format
 msgid "Hot %s"
 msgstr "Sıcak %s"
 
-#: src/lang.c:732
+#: src/lang.c:734
 #, c-format
 msgid "Tagged %s"
 msgstr "Etiketlenmiş %s"
 
-#: src/lang.c:733
+#: src/lang.c:735
 #, c-format
 msgid "Untagged %s"
 msgstr "Etiketlenmemiş %s"
 
-#: src/lang.c:735
+#: src/lang.c:737
 #, c-format
 msgid "Preparing for filtering on Path header (%d/%d)..."
 msgstr ""
 
-#: src/lang.c:737
+#: src/lang.c:739
 msgid "Processing mail messages marked for deletion."
 msgstr "Silinmek için işaretlenen iletiler işleniyor."
 
-#: src/lang.c:738
+#: src/lang.c:740
 msgid "Processing saved articles marked for deletion."
 msgstr "Silinmek için işaretlenen kaydedilmiş makaleler işleniyor."
 
-#: src/lang.c:739
+#: src/lang.c:741
 #, c-format
 msgid "Accept Followup-To? %s=post, %s=ignore, %s=quit: "
 msgstr "Takip etmeyi kabul et? %s=gönder, %s=yoksay, %s=çık: "
 
-#: src/lang.c:740
+#: src/lang.c:742
 msgid "Article unchanged, abort mailing?"
 msgstr "Makale değiştirilmedi, postalama iptal edilsin mi?"
 
-#: src/lang.c:741
+#: src/lang.c:743
 #, c-format
 msgid "Do you want to see postponed articles (%d)?"
 msgstr "Ertelenmiş makaleleri görmek ister misiniz (%d)?"
 
-#: src/lang.c:743
+#: src/lang.c:745
 msgid "Add quick kill filter?"
 msgstr "Hızlıca öldürme filtresi ekle?"
 
-#: src/lang.c:744
+#: src/lang.c:746
 msgid "Add quick selection filter?"
 msgstr "Hızlı seçme filtresi ekle?"
 
-#: src/lang.c:745
+#: src/lang.c:747
 msgid "Do you really want to quit?"
 msgstr "Gerçekten çıkmak istiyor musunuz?"
 
-#: src/lang.c:746
+#: src/lang.c:748
 #, c-format
 msgid "%s=edit cancel message, %s=quit, %s=delete (cancel) [%%s]: "
 msgstr "%s=iptal edilen iletiyi düzenle, %s=terk et, %s=sil (iptal) [%%s]: "
 
-#: src/lang.c:747
+#: src/lang.c:749
 msgid "You have tagged articles in this group - quit anyway?"
 msgstr "Bu grupta etiketlenmiş makaleleriniz var - yine de çıkılsın mı?"
 
-#: src/lang.c:748
+#: src/lang.c:750
 #, c-format
 msgid "%s=quit, %s=edit, %s=postpone: "
 msgstr "%s=çık, %s=düzenle, %s=ertele: "
 
-#: src/lang.c:749
+#: src/lang.c:751
 #, c-format
 msgid "%s=quit %s=edit %s=save kill description: "
 msgstr "%s=çık %s=düzenle %s=öldürme tanımı kaydet: "
 
-#: src/lang.c:750
+#: src/lang.c:752
 #, c-format
 msgid "%s=quit %s=edit %s=save select description: "
 msgstr "%s=çık %s=düzenle %s=tanım seçme kaydet: "
 
-#: src/lang.c:751
+#: src/lang.c:753
 msgid "Do you really want to quit without saving your configuration?"
 msgstr "Yapılandırmaları kaydetmeden çıkmak istediğinizden emin misiniz?"
 
-#: src/lang.c:754
+#: src/lang.c:756
 msgid "Invalid range - valid are '0-9.$' eg. 1-$"
 msgstr "Geçersiz aralık- 'geçerli aralık '0-9.$' örn. 1-$"
 
-#: src/lang.c:756
+#: src/lang.c:758
 msgid "Do you want to abort this operation?"
 msgstr "İşlem durdurulsun mu?"
 
-#: src/lang.c:757
+#: src/lang.c:759
 msgid "Do you want to exit tin immediately?"
 msgstr "tin'den hemen çıkmak istediğinizden emin misiniz?"
 
-#: src/lang.c:759
+#: src/lang.c:761
 msgid "Reading ('q' to quit)..."
 msgstr "okunuyor (çıkmak için 'q')..."
 
-#: src/lang.c:760
+#: src/lang.c:762
 #, c-format
 msgid "Reading %sarticles..."
 msgstr "%smakaleler okunuyor..."
 
-#: src/lang.c:761
+#: src/lang.c:763
 #, c-format
 msgid "Reading %sattributes file...\n"
 msgstr "%söznitelik dosyası okunuyor...\n"
 
-#: src/lang.c:762
+#: src/lang.c:764
 #, c-format
 msgid "Reading %sconfig file...\n"
 msgstr " %syapılandırma dosyası okunuyor...\n"
 
-#: src/lang.c:763
+#: src/lang.c:765
 msgid "Reading filter file...\n"
 msgstr "filtre dosyası okunuyor...\n"
 
-#: src/lang.c:764
+#: src/lang.c:766
 #, c-format
 msgid "Reading %s groups..."
 msgstr "%s gruplar okunuyor..."
 
-#: src/lang.c:765
+#: src/lang.c:767
 msgid "Reading input history file...\n"
 msgstr "Girdi geçmiş dosyası okunuyor...\n"
 
-#: src/lang.c:766
+#: src/lang.c:768
 msgid "Reading keymap file...\n"
 msgstr "tuşeşlem dosyası okunuyor...\n"
 
-#: src/lang.c:767
+#: src/lang.c:769
 msgid "Reading groups from active file... "
 msgstr "Gruplar etkin dosyadan okunuyor... "
 
-#: src/lang.c:768
+#: src/lang.c:770
 msgid "Reading groups from newsrc file... "
 msgstr "Gruplar newsrc dosyasından okunuyor... "
 
-#: src/lang.c:769
+#: src/lang.c:771
 msgid "Reading newsgroups file... "
 msgstr "haber grupları dosyası okunuyor... "
 
-#: src/lang.c:770
+#: src/lang.c:772
 msgid "Reading newsrc file..."
 msgstr "newsrc dosyası okunuyor..."
 
-#: src/lang.c:771
+#: src/lang.c:773
 msgid "References: line              "
 msgstr "Referanslar: satırı              "
 
-#: src/lang.c:773
+#: src/lang.c:775
 #, c-format
 msgid "(%d:%02d remaining)"
 msgstr "(%d:%02d kaldı)"
 
-#: src/lang.c:775
+#: src/lang.c:777
 #, c-format
 msgid "Bogus group %s removed."
 msgstr "Sahte grup %s kaldırıldı."
 
 #  * TODO: add to the right rule, give better explanation, -> lang.c
-#: src/lang.c:776
+#: src/lang.c:778
 msgid "Removed from the previous rule: "
 msgstr "Önceki kuraldan kaldırıldı: "
 
-#: src/lang.c:777
+#: src/lang.c:779
 #, c-format
 msgid "Error: rename %s to %s"
 msgstr "Hata: %s'den %s'ye yeniden adlandırma"
 
-#: src/lang.c:778
+#: src/lang.c:780
 msgid "Reply to author..."
 msgstr "Yazara yanıtla..."
 
-#: src/lang.c:779
+#: src/lang.c:781
 msgid "Repost"
 msgstr "Yeniden gönder"
 
-#: src/lang.c:780
+#: src/lang.c:782
 msgid "Reposting article..."
 msgstr "\"Makale yeniden gönderiliyor..."
 
-#: src/lang.c:781
+#: src/lang.c:783
 #, c-format
 msgid "Repost article(s) to group(s) [%s]> "
 msgstr "Makale(ler)i grup(lar)a gönder [%s]> "
 
-#: src/lang.c:782
+#: src/lang.c:784
 msgid "Reset newsrc?"
 msgstr "newsrc sıfırlansın mı?"
 
-#: src/lang.c:783
+#: src/lang.c:785
 msgid "Responses have been directed to the following newsgroups"
 msgstr "Yanıtlar şu haber gruplarına yönlendirildi"
 
-#: src/lang.c:784
+#: src/lang.c:786
 #, c-format
 msgid "Responses have been directed to poster. %s=mail, %s=post, %s=quit: "
 msgstr "Yanıtlar göndericiye yönlendirildi.  %s=postala, %s=gönder, %s=iptal: "
 
-#: src/lang.c:786
+#: src/lang.c:788
 msgid "Press <RETURN> to continue..."
 msgstr "Devam etmek için  <RETURN>..."
 
-#: src/lang.c:788
+#: src/lang.c:790
 #, c-format
 msgid "Select From    [%s] (y/n): "
 msgstr "Gönderen Seç    [%s] (e/h): "
 
-#: src/lang.c:789
+#: src/lang.c:791
 msgid "Select Lines: (</>num): "
 msgstr "Satırlar: Seç (</>num):"
 
-#: src/lang.c:790
+#: src/lang.c:792
 msgid "Auto-select Article Menu"
 msgstr "Makale Menüsünü Otomatik Seç"
 
-#: src/lang.c:791
+#: src/lang.c:793
 #, fuzzy, c-format
 msgid "Select Msg-ID  [%s] (f/l/o/n): "
 msgstr "İleti-kimliği seçiniz  [%s] (f/l/o/n): "
 
-#: src/lang.c:792
+#: src/lang.c:794
 msgid "Select pattern scope: "
 msgstr "Desen etki alanını seç: "
 
-#: src/lang.c:793
+#: src/lang.c:795
 #, c-format
 msgid "Select Subject [%s] (y/n): "
 msgstr "Konuyu Seç [%s] (e/h): "
 
-#: src/lang.c:794
+#: src/lang.c:796
 msgid "Select text pattern : "
 msgstr "Metin örüntüsü seç : "
 
-#: src/lang.c:795
+#: src/lang.c:797
 msgid "Select time in days   : "
 msgstr "Zamanı gün cinsinden seç   : "
 
-#: src/lang.c:796
+#: src/lang.c:798
 #, c-format
 msgid ""
 "# %s server configuration file\n"
@@ -3675,54 +3681,54 @@ msgstr ""
 "############################################################################\n"
 "\n"
 
-#: src/lang.c:802
+#: src/lang.c:804
 msgid "Showing unread groups only"
 msgstr "Sadece okunmamış gruplar gösteriliyor"
 
-#: src/lang.c:803
+#: src/lang.c:805
 msgid "Subject: line (ignore case)   "
 msgstr "Konu: satır (büyük küçük harf durumunu yoksay)   "
 
-#: src/lang.c:804
+#: src/lang.c:806
 msgid "Subject: line (case sensitive)"
 msgstr "Konu: satır (büyük-küçük harf duyarlı)"
 
-#: src/lang.c:805
+#: src/lang.c:807
 msgid "Save"
 msgstr "Kaydet"
 
-#: src/lang.c:806
+#: src/lang.c:808
 #, c-format
 msgid "Save '%s' (%s/%s)?"
 msgstr "'%s' Kaydedilsin mi (%s/%s)?"
 
-#: src/lang.c:807
+#: src/lang.c:809
 msgid "Save configuration before continuing?"
 msgstr "Devam etmeden yapılandırmayı kaydet?"
 
-#: src/lang.c:808
+#: src/lang.c:810
 msgid "Save filename> "
 msgstr "Kaydet dosyaadı> "
 
-#: src/lang.c:809
+#: src/lang.c:811
 msgid "Saved"
 msgstr "Kaydedildi"
 
-#: src/lang.c:810
+#: src/lang.c:812
 #, c-format
 msgid "%4d unread (%4d hot) %s in %s\n"
 msgstr "%4d okunmamış (%4d sıcak) %s şunun içinde %s\n"
 
-#: src/lang.c:811
+#: src/lang.c:813
 #, c-format
 msgid "Saved %s...\n"
 msgstr "%s kaydedildi...\n"
 
-#: src/lang.c:812
+#: src/lang.c:814
 msgid "Nothing was saved"
 msgstr "Hiçbir şey kaydedilmedi"
 
-#: src/lang.c:813
+#: src/lang.c:815
 #, c-format
 msgid ""
 "\n"
@@ -3731,184 +3737,184 @@ msgstr ""
 "\n"
 "%s %d %s şundan %d %s\n"
 
-#: src/lang.c:814
+#: src/lang.c:816
 #, c-format
 msgid "-- %s saved to %s%s --"
 msgstr "-- %s şuna kaydedildi %s%s --"
 
-#: src/lang.c:815
+#: src/lang.c:817
 #, c-format
 msgid "-- %s saved to %s - %s --"
 msgstr "-- %s şuna kaydedildi %s - %s --"
 
-#: src/lang.c:816
+#: src/lang.c:818
 msgid "Saving..."
 msgstr "Kaydediliyor..."
 
-#: src/lang.c:817
+#: src/lang.c:819
 #, c-format
 msgid "%s: Screen initialization failed"
 msgstr "%s: Ekran başlatma başarısız"
 
-#: src/lang.c:819
+#: src/lang.c:821
 #, c-format
 msgid "%s: screen is too small\n"
 msgstr "%s: ekran çok küçük\n"
 
-#: src/lang.c:821
+#: src/lang.c:823
 #, c-format
 msgid "screen is too small, %s is exiting"
 msgstr "ekran çok küçük, %s çıkıyor"
 
-#: src/lang.c:822
+#: src/lang.c:824
 msgid "Delete scope?"
 msgstr "Alanı sil?"
 
-#: src/lang.c:823
+#: src/lang.c:825
 msgid "Enter scope> "
 msgstr "Alan gir> "
 
-#: src/lang.c:824
+#: src/lang.c:826
 msgid "Select new position> "
 msgstr "Yeni konum seç> "
 
-#: src/lang.c:825
+#: src/lang.c:827
 msgid "New position cannot be a global scope"
 msgstr "Yeni konum küresel kapsam olamaz"
 
-#: src/lang.c:826
+#: src/lang.c:828
 msgid "Global scope, operation not allowed"
 msgstr "Genel etki alanı, işleme izin verilmedi"
 
-#: src/lang.c:827
+#: src/lang.c:829
 msgid "Rename scope> "
 msgstr "Kapsamı yeniden adlandır> "
 
-#: src/lang.c:828
+#: src/lang.c:830
 msgid "Select scope> "
 msgstr "Etki alanı seç> "
 
-#: src/lang.c:829
+#: src/lang.c:831
 msgid "Scopes Menu"
 msgstr "Etki Alanı Menüsü"
 
-#: src/lang.c:830
+#: src/lang.c:832
 msgid "Scopes Menu Commands"
 msgstr "Alan Menüsü Komutları"
 
-#: src/lang.c:831
+#: src/lang.c:833
 #, c-format
 msgid "Search backwards [%s]> "
 msgstr "Geriye doğru ara [%s]> "
 
-#: src/lang.c:832
+#: src/lang.c:834
 #, c-format
 msgid "Search body [%s]> "
 msgstr "Gövdeyi ara  [%s]> "
 
-#: src/lang.c:833
+#: src/lang.c:835
 #, c-format
 msgid "Search forwards [%s]> "
 msgstr "İleri ara [%s]> "
 
-#: src/lang.c:834
+#: src/lang.c:836
 msgid "Searching..."
 msgstr "Aranıyor..."
 
-#: src/lang.c:835
+#: src/lang.c:837
 #, c-format
 msgid "Searching article %d of %d ('q' to abort)..."
 msgstr "Makale aranıyor %d / %d ('q' durdur)..."
 
-#: src/lang.c:836
+#: src/lang.c:838
 msgid "Select article> "
 msgstr "Makale seç> "
 
-#: src/lang.c:837
+#: src/lang.c:839
 msgid ""
 "Select option number before text or use arrow keys and <CR>. 'q' to quit."
 msgstr ""
 "Metinden önce seçenek numarasını seçin ya da ok tuşları ve <CR> ile seçin. "
 "Çıkmak için 'q'."
 
-#: src/lang.c:838
+#: src/lang.c:840
 msgid "Select group> "
 msgstr "Grup seç> "
 
-#: src/lang.c:839
+#: src/lang.c:841
 #, c-format
 msgid "Enter selection pattern [%s]> "
 msgstr "Seçme örüntüsünü girin [%s]> "
 
-#: src/lang.c:840
+#: src/lang.c:842
 msgid "Select thread> "
 msgstr "eposta zinciri seç> "
 
-#: src/lang.c:841
+#: src/lang.c:843
 #, c-format
 msgid "%s %s %s (\"%s\"): send a DETAILED bug report to %s\n"
 msgstr "\"%s %s %s (\"%s\"): DETAYLI hata raporunu şuna gönder %s\n"
 
-#: src/lang.c:842
+#: src/lang.c:844
 msgid "servers active-file"
 msgstr "sunucular etkin-dosyası"
 
-#: src/lang.c:843
+#: src/lang.c:845
 msgid "Cannot move into new newsgroups. Subscribe first..."
 msgstr "Yeni habergruplarına giriş yapılamıyor. Önce abone ol..."
 
-#: src/lang.c:844
+#: src/lang.c:846
 msgid "<SPACE>"
 msgstr "<SPACE>"
 
-#: src/lang.c:845
+#: src/lang.c:847
 #, c-format
 msgid "Starting: (%s)"
 msgstr "Başlıyor: (%s)"
 
-#: src/lang.c:846
+#: src/lang.c:848
 #, c-format
 msgid "List Thread (%d of %d)"
 msgstr "Eposta zinciri listeleme (%d of %d)"
 
-#: src/lang.c:847
+#: src/lang.c:849
 #, c-format
 msgid "Thread (%.*s)"
 msgstr "Eposta zinciri (%.*s)"
 
-#: src/lang.c:848
+#: src/lang.c:850
 msgid "Enter wildcard subscribe pattern> "
 msgstr "Abone olma joker karakter örüntüsünü girin> "
 
-#: src/lang.c:849
+#: src/lang.c:851
 #, c-format
 msgid "subscribed to %d groups"
 msgstr "\"%d gruba abone olundu"
 
-#: src/lang.c:850
+#: src/lang.c:852
 #, c-format
 msgid "Subscribed to %s"
 msgstr "%s'e abone olundu"
 
-#: src/lang.c:851
+#: src/lang.c:853
 msgid "Subscribing... "
 msgstr "Abone olunuyor... "
 
-#: src/lang.c:852
+#: src/lang.c:854
 #, c-format
 msgid "Repost or supersede article(s) [%%s]? (%s/%s/%s): "
 msgstr "Makale(ler)i yeniden gönder yada değiştir [%%s]? (%s/%s/%s): "
 
-#: src/lang.c:853
+#: src/lang.c:855
 #, c-format
 msgid "Supersede article(s) to group(s) [%s]> "
 msgstr "Makale(ler)i Grup(lar)ın yerine al [%s]> "
 
-#: src/lang.c:854
+#: src/lang.c:856
 msgid "Superseding article ..."
 msgstr "Makale değiştiriliyor ..."
 
-#: src/lang.c:855
+#: src/lang.c:857
 #, c-format
 msgid ""
 "\n"
@@ -3917,24 +3923,24 @@ msgstr ""
 "\n"
 "Durduruldu. Yeniden başlatmak için 'fg' yaz %s\n"
 
-#: src/lang.c:857
+#: src/lang.c:859
 #, c-format
 msgid "%d days"
 msgstr "%d gün"
 
-#: src/lang.c:858
+#: src/lang.c:860
 msgid "<TAB>"
 msgstr "<TAB>"
 
-#: src/lang.c:859
+#: src/lang.c:861
 msgid "TeX "
 msgstr "TeX "
 
-#: src/lang.c:860
+#: src/lang.c:862
 msgid "# Default action/prompt strings\n"
 msgstr "# Varsayılan işlem/komut dizgileri\n"
 
-#: src/lang.c:861
+#: src/lang.c:863
 msgid ""
 "# Defaults for quick (1 key) kill & auto-selection filters\n"
 "# header=NUM  0,1=Subject: 2,3=From: 4=Message-ID: & full References: line\n"
@@ -3956,112 +3962,112 @@ msgstr ""
 "# süre doldur=AÇIK/KAPALI  AÇIK=default_filter_days değerine sınırla "
 "KAPALI=hiçbir zaman süresini doldurma\n"
 
-#: src/lang.c:874
+#: src/lang.c:876
 msgid ""
 "# If ON use print current subject or newsgroup description in the last line\n"
 msgstr ""
 "# eğer AÇIK durumdaysa mevcut konu yada son satırdaki haber grubu tanımı "
 "için yazdırır\n"
 
-#: src/lang.c:875
+#: src/lang.c:877
 msgid "# Host & time info used for detecting new groups (don't touch)\n"
 msgstr ""
 "# Yeni grupları algılamak için sunucu & zaman bilgileri kullanılır "
 "(dokunmayınız)\n"
 
-#: src/lang.c:876
+#: src/lang.c:878
 msgid "There is no news\n"
 msgstr "Hiçbir haber yok\n"
 
-#: src/lang.c:877
+#: src/lang.c:879
 msgid "Thread"
 msgstr "Eposta zinciri"
 
-#: src/lang.c:878
+#: src/lang.c:880
 msgid "Thread Level Commands"
 msgstr "Eposta Zinciri Seviyesi Komutları"
 
-#: src/lang.c:879
+#: src/lang.c:881
 msgid "Thread deselected"
 msgstr "Eposta zinciri seçimi kaldırıldı"
 
-#: src/lang.c:880
+#: src/lang.c:882
 msgid "Thread selected"
 msgstr "Eposta zinciri seçildi"
 
-#: src/lang.c:882
+#: src/lang.c:884
 msgid "threads"
 msgstr "eposta zincirleri"
 
-#: src/lang.c:884
+#: src/lang.c:886
 msgid "thread"
 msgstr "eposta zinciri"
 
-#: src/lang.c:885
+#: src/lang.c:887
 #, c-format
 msgid "Thread %4s of %4s"
 msgstr "Eposta zinciri %4s / %4s "
 
-#: src/lang.c:886
+#: src/lang.c:888
 msgid "Threading articles..."
 msgstr "Makaleler zincirleniyor..."
 
-#: src/lang.c:887
+#: src/lang.c:889
 #, c-format
 msgid "Toggled word highlighting %s"
 msgstr "Kelime vurgulaması değiştirildi %s"
 
-#: src/lang.c:888
+#: src/lang.c:890
 msgid "Toggled rot13 encoding"
 msgstr "rot13 kodlama değiştirildi"
 
-#: src/lang.c:889
+#: src/lang.c:891
 #, c-format
 msgid "Toggled german TeX encoding %s"
 msgstr "Almanca TeX kodlama değiştirildi %s"
 
-#: src/lang.c:890
+#: src/lang.c:892
 #, c-format
 msgid "Toggled tab-width to %d"
 msgstr "tab genişliği şuna değiştirildi %d"
 
-#: src/lang.c:892
+#: src/lang.c:894
 #, c-format
 msgid "%d Trying to dotlock %s"
 msgstr "\"%d dotlock yapılmaya çalışılıyor %s"
 
-#: src/lang.c:893
+#: src/lang.c:895
 #, c-format
 msgid "%d Trying to lock %s"
 msgstr "\"%d Kilitlemeye çalışılıyor %s"
 
-#: src/lang.c:895
+#: src/lang.c:897
 msgid "           h=help"
 msgstr "           h=yardım"
 
-#: src/lang.c:897
+#: src/lang.c:899
 msgid "Unlimited"
 msgstr "Sınırsız"
 
-#: src/lang.c:898
+#: src/lang.c:900
 msgid "Enter wildcard unsubscribe pattern> "
 msgstr "abonelikten çıkma joker karakter örüntüsünü girin> "
 
-#: src/lang.c:899
+#: src/lang.c:901
 #, c-format
 msgid "Error decoding %s : %s"
 msgstr "Çözülürken hata %s: %s"
 
-#: src/lang.c:900
+#: src/lang.c:902
 msgid "No end."
 msgstr "Son yok."
 
-#: src/lang.c:901
+#: src/lang.c:903
 #, c-format
 msgid "%s successfully decoded."
 msgstr "%s başarıyla çözüldü."
 
-#: src/lang.c:902
+#: src/lang.c:904
 #, c-format
 msgid ""
 "%*s[-- %s/%s, %suuencoded file, %d lines, name: %s --]\n"
@@ -4070,113 +4076,113 @@ msgstr ""
 "%*s[-- %s/%s, %s uuencoded dosya, %d satır, ad: %s --]\n"
 "\n"
 
-#: src/lang.c:903
+#: src/lang.c:905
 msgid "unread "
 msgstr "okunmamış "
 
-#: src/lang.c:904
+#: src/lang.c:906
 #, c-format
 msgid "unsubscribed from %d groups"
 msgstr "%d tane gruptan abonelikten çıkıldı"
 
-#: src/lang.c:905
+#: src/lang.c:907
 #, c-format
 msgid "Unsubscribed from %s"
 msgstr "%s aboneliğinden çıkıldı"
 
-#: src/lang.c:906
+#: src/lang.c:908
 msgid "Unsubscribing... "
 msgstr "Abonelik iptal ediliyor... "
 
-#: src/lang.c:907
+#: src/lang.c:909
 msgid "Unthreading articles..."
 msgstr "Makalelerin bağlantısı sonlanıyor..."
 
-#: src/lang.c:908
+#: src/lang.c:910
 msgid "Updated"
 msgstr "Güncellendi"
 
-#: src/lang.c:909
+#: src/lang.c:911
 msgid "Updating"
 msgstr "Güncelleniyor"
 
-#: src/lang.c:910
+#: src/lang.c:912
 msgid "URL Menu"
 msgstr "URL Menüsü"
 
-#: src/lang.c:911
+#: src/lang.c:913
 msgid "URL Menu Commands"
 msgstr "URL Menüsü Komutları"
 
-#: src/lang.c:912
+#: src/lang.c:914
 #, c-format
 msgid "Opening %s"
 msgstr "%s açılıyor"
 
-#: src/lang.c:913
+#: src/lang.c:915
 msgid "Select URL> "
 msgstr "URL seç> "
 
-#: src/lang.c:914
+#: src/lang.c:916
 msgid "No URLs in this article"
 msgstr "Makalede URL yok"
 
-#: src/lang.c:915
+#: src/lang.c:917
 msgid "Use MIME display program for this message?"
 msgstr "Bu ileti için MIME görüntüleme programı kullan?"
 
-#: src/lang.c:916
+#: src/lang.c:918
 msgid "  -c       mark all news as read in subscribed newsgroups (batch mode)"
 msgstr ""
 "  -c       abone olunmuş haber gruplarındaki tüm haberleri okunmuş olarak "
 "işaretle (toplu kip)"
 
-#: src/lang.c:917
+#: src/lang.c:919
 msgid "  -Z       return status indicating if any unread news (batch mode)"
 msgstr ""
 "  -Z       herhangi okunmamış haber varsa bu durumu gösteren durum geri "
 "döndür (toplu kip)"
 
-#: src/lang.c:918
+#: src/lang.c:920
 msgid "  -q       don't check for new newsgroups"
 msgstr "  -q       yeni haber grupları için kontrol etme"
 
-#: src/lang.c:919
+#: src/lang.c:921
 msgid "  -X       don't save any files on quit"
 msgstr "  -X       çıkışta hiçbir dosyayı kaydetme"
 
-#: src/lang.c:920
+#: src/lang.c:922
 msgid "  -d       don't show newsgroup descriptions"
 msgstr "  -d       habergrubu tanımları gösterme"
 
-#: src/lang.c:921
+#: src/lang.c:923
 msgid "  -G limit get only limit articles/group"
 msgstr "  -G sınır sadece sınır kadar makale/grup getir"
 
-#: src/lang.c:922
+#: src/lang.c:924
 #, c-format
 msgid "  -H       help information about %s"
 msgstr "  -H       %s hakkında yardım bilgisi"
 
-#: src/lang.c:923
+#: src/lang.c:925
 msgid "  -h       this help message"
 msgstr "  -h       bu yardım mesajı"
 
-#: src/lang.c:924
+#: src/lang.c:926
 #, c-format
 msgid "  -I dir   news index file directory [default=%s]"
 msgstr "  -I dizin   haber dizinleme dosyası dizini [varsayılan=%s]"
 
-#: src/lang.c:925
+#: src/lang.c:927
 msgid "  -u       update index files (batch mode)"
 msgstr "  -u       dizin dosyalarını güncelle (toplu kip)"
 
-#: src/lang.c:926
+#: src/lang.c:928
 #, c-format
 msgid "  -m dir   mailbox directory [default=%s]"
 msgstr "  -m dizin   posta kutusu dizini [varsayılan=%s]"
 
-#: src/lang.c:927
+#: src/lang.c:929
 #, c-format
 msgid ""
 "\n"
@@ -4185,50 +4191,50 @@ msgstr ""
 "\n"
 "hata raporu/yorumları %s adresine yolla"
 
-#: src/lang.c:928
+#: src/lang.c:930
 msgid "  -N       mail new news to your posts (batch mode)"
 msgstr "  -N       gönderilerinize yeni haberleri gönder (toplu kip)"
 
-#: src/lang.c:929
+#: src/lang.c:931
 msgid "  -M user  mail new news to specified user (batch mode)"
 msgstr ""
 "  -M kullanıcı  belirtilmiş kulanıcıya yeni haberleri gönder (toplu kip)"
 
-#: src/lang.c:930
+#: src/lang.c:932
 #, c-format
 msgid "  -f file  subscribed to newsgroups file [default=%s]"
 msgstr "  -f dosya  haber grupları dosyasına abone olundu [varsayılan=%s]"
 
-#: src/lang.c:931
+#: src/lang.c:933
 msgid "  -x       no-posting mode"
 msgstr "  -x       göndermeme kipi"
 
-#: src/lang.c:932
+#: src/lang.c:934
 msgid "  -w       post an article and exit"
 msgstr "  -w       makale gönder ve çık"
 
-#: src/lang.c:933
+#: src/lang.c:935
 msgid "  -o       post all postponed articles and exit"
 msgstr "  -o       ertelenmiş bütün makaleleri gönder ve çık"
 
-#: src/lang.c:934
+#: src/lang.c:936
 msgid "  -R       read news saved by -S option"
 msgstr "  -R       -S seçeneği ile kaydedilen haberleri oku"
 
-#: src/lang.c:935
+#: src/lang.c:937
 #, c-format
 msgid "  -s dir   save news directory [default=%s]"
 msgstr "  -s dizin   haber dizinini kaydet [varsayılan=%s]"
 
-#: src/lang.c:936
+#: src/lang.c:938
 msgid "  -S       save new news for later reading (batch mode)"
 msgstr "  -S       daha sonra okumak üzere yeni haberleri kaydet (toplu kip)"
 
-#: src/lang.c:937
+#: src/lang.c:939
 msgid "  -z       start if any unread news"
 msgstr "  -z       okunmamış haber varsa başla"
 
-#: src/lang.c:938
+#: src/lang.c:940
 #, c-format
 msgid ""
 "A Usenet reader.\n"
@@ -4239,35 +4245,35 @@ msgstr ""
 "\n"
 "Kullanım: %s [seçenekler] [habergrubu[,...]]"
 
-#: src/lang.c:939
+#: src/lang.c:941
 msgid "  -v       verbose output for batch mode options"
 msgstr "  -v       toplu kip seçenekleri için ayrıntılı çıkış"
 
-#: src/lang.c:940
+#: src/lang.c:942
 msgid "  -V       print version & date information"
 msgstr "  -V       sürüm ve tarih bilgilerini yazdır"
 
-#: src/lang.c:941
+#: src/lang.c:943
 #, c-format
 msgid "%s only useful without batch mode operations\n"
 msgstr "%s sadece toplu kip işlemleri yoksa kullanışlı\n"
 
-#: src/lang.c:942
+#: src/lang.c:944
 #, c-format
 msgid "%s only useful for batch mode operations\n"
 msgstr "%s sadece toplu kip işlemleri varsa kullanışlı\n"
 
-#: src/lang.c:943
+#: src/lang.c:945
 #, fuzzy, c-format
 msgid "%s only useful for batch or debug mode operations\n"
 msgstr "%s sadece toplu kip işlemleri varsa kullanışlı\n"
 
-#: src/lang.c:944
+#: src/lang.c:946
 #, c-format
 msgid "Useless combination %s and %s. Ignoring %s.\n"
 msgstr "Kombinasyon %s ve %s kullanışsız. %s önemsenmiyor.\n"
 
-#: src/lang.c:946
+#: src/lang.c:948
 #, c-format
 msgid ""
 "\n"
@@ -4276,12 +4282,12 @@ msgstr ""
 "\n"
 "%s%d aralık dışında (0 - %d). 0'a Sıfırla"
 
-#: src/lang.c:947
+#: src/lang.c:949
 #, c-format
 msgid "View '%s' (%s/%s)?"
 msgstr "Göster '%s' (%s/%s)?"
 
-#: src/lang.c:949
+#: src/lang.c:951
 #, c-format
 msgid ""
 "\n"
@@ -4292,7 +4298,7 @@ msgstr ""
 "Uyarı: gönderi %d sütunu aşıyor. %d en uzun ilk satır:\n"
 "%-100s\n"
 
-#: src/lang.c:950
+#: src/lang.c:952
 msgid ""
 "\n"
 "Warning: article unchanged after editing\n"
@@ -4300,7 +4306,7 @@ msgstr ""
 "\n"
 "Uyarı: makale düzenlendikten sonra değiştirilmedi\n"
 
-#: src/lang.c:951
+#: src/lang.c:953
 msgid ""
 "\n"
 "Warning: \"Subject:\" contains only whitespaces.\n"
@@ -4308,7 +4314,7 @@ msgstr ""
 "\n"
 "Uyarı: \"Konu:\" sadece beyaz boşluklardan oluşuyor. \n"
 
-#: src/lang.c:952
+#: src/lang.c:954
 msgid ""
 "\n"
 "Warning: \"Subject:\" begins with \"Re: \" but there are no \"References:"
@@ -4317,7 +4323,7 @@ msgstr ""
 "\n"
 "Uyarı: \"Konu:\", \"Re: \" ile başlıyor ama \"Referanslar:\" yok.\n"
 
-#: src/lang.c:954
+#: src/lang.c:956
 msgid ""
 "\n"
 "Warning: Article has \"References:\" but \"Subject:\" does not begin\n"
@@ -4327,7 +4333,7 @@ msgstr ""
 "Uyarı: Makalede \"Referanslar:\" var ama \"Konu:\" \"Re: \" ile\n"
 "         başlamıyor ve \"(was:\" yok.\n"
 
-#: src/lang.c:957
+#: src/lang.c:959
 msgid ""
 "Read carefully!\n"
 "\n"
@@ -4350,7 +4356,7 @@ msgstr ""
 "İptal etmek üzere olduğunuz makale bu:\n"
 "\n"
 
-#: src/lang.c:961
+#: src/lang.c:963
 msgid ""
 "\n"
 "Warning: You are using a non-plain transfer encoding (such as base64 or\n"
@@ -4366,7 +4372,7 @@ msgstr ""
 "          inews programı tarafından bir imza iliştirildiyse, uygun şekilde "
 "kodlanamaz.\n"
 
-#: src/lang.c:966
+#: src/lang.c:968
 msgid ""
 "\n"
 "Warning: \"example\" is a reserved hierarchy!\n"
@@ -4374,7 +4380,7 @@ msgstr ""
 "\n"
 "Uyarı: \"örnek\" ayrılmış bir hiyerarşidir!\n"
 
-#: src/lang.c:967
+#: src/lang.c:969
 #, c-format
 msgid ""
 "\n"
@@ -4389,7 +4395,7 @@ msgstr ""
 "%s dosyanızdaki bazı değerler değiştirilmiştir!\n"
 "WHATSNEW, vb dosyaları okuyun...\n"
 
-#: src/lang.c:969
+#: src/lang.c:971
 #, c-format
 msgid ""
 "\n"
@@ -4402,7 +4408,7 @@ msgstr ""
 "Yeni bir sürümden tin %s'e alçaltıyorsunuz!\n"
 "%s dosyanıdaki bazı değerler yoksayılabir, diğerleri değiştirilebilir!\n"
 
-#: src/lang.c:972
+#: src/lang.c:974
 #, c-format
 msgid ""
 "Warning: tin wrote fewer groups to your\n"
@@ -4418,7 +4424,7 @@ msgstr ""
 "bu oturum bir hataya işarettir ve tin'i tekrar başlatmadan %s'i\n"
 "yedeklemeniz gerekmektedir!\n"
 
-#: src/lang.c:976
+#: src/lang.c:978
 #, c-format
 msgid ""
 "\n"
@@ -4427,12 +4433,12 @@ msgstr ""
 "\n"
 "Uyarı: %d bulundu  '-- \\n' satır, bazı insanların kafası karışabilir.\n"
 
-#: src/lang.c:977
+#: src/lang.c:979
 #, c-format
 msgid "Warning: Only %d out of %d articles were saved"
 msgstr "Uyarı: Sadece %d'de %d makale kaydedildi"
 
-#: src/lang.c:978
+#: src/lang.c:980
 #, c-format
 msgid ""
 "\n"
@@ -4447,7 +4453,7 @@ msgstr ""
 "         işe yarar bilgi aktarmadıkları için, olabildikleri kadar kısa\n"
 "         olmalılar.\n"
 
-#: src/lang.c:982
+#: src/lang.c:984
 #, c-format
 msgid ""
 "Warning: this mail address may contain a spamtrap. %s=continue, %s=abort? "
@@ -4455,7 +4461,7 @@ msgstr ""
 "Uyarı: bu eposta adresinde mesaj yağanağı tuzağı olabilir. %s=devam, "
 "%s=durdur? "
 
-#: src/lang.c:983
+#: src/lang.c:985
 msgid ""
 "\n"
 "Warning: Signatures should start with '-- \\n' not with '--\\n'.\n"
@@ -4463,37 +4469,37 @@ msgstr ""
 "\n"
 "Uyarı: İmzalar '-- \\n ile başlamalı '--\\n ile değil'.\n"
 
-#: src/lang.c:984
+#: src/lang.c:986
 msgid "Writing attributes file..."
 msgstr "Öznitelikler dosylası yazılıyor..."
 
-#: src/lang.c:986
+#: src/lang.c:988
 #, c-format
 msgid "%d Responses"
 msgstr "%d Yanıt"
 
-#: src/lang.c:988
+#: src/lang.c:990
 #, c-format
 msgid "Added %d %s"
 msgstr "%d %s Eklendi"
 
-#: src/lang.c:989
+#: src/lang.c:991
 msgid "No unsubscribed groups to show"
 msgstr "Gösterilecek abonelikten çıkılmış grup yok"
 
-#: src/lang.c:990
+#: src/lang.c:992
 msgid "Showing subscribed to groups only"
 msgstr "Sadece abone olunan grupları göster"
 
-#: src/lang.c:991
+#: src/lang.c:993
 msgid "Yes "
 msgstr "Evet "
 
-#: src/lang.c:992
+#: src/lang.c:994
 msgid "    You have mail"
 msgstr "    Epostanız var"
 
-#: src/lang.c:997
+#: src/lang.c:999
 #, c-format
 msgid ""
 "\n"
@@ -4514,11 +4520,11 @@ msgstr ""
 "         ayarlarını M)enü seçeneği ile yollamak için daha uygun bir şekilde\n"
 "         değiştirin.\n"
 
-#: src/lang.c:1008
+#: src/lang.c:1010
 msgid "  -D mode  debug mode"
 msgstr "  -D kip  hata ayıklama kipi"
 
-#: src/lang.c:1012
+#: src/lang.c:1014
 msgid ""
 "Read carefully!\n"
 "\n"
@@ -4545,11 +4551,11 @@ msgstr ""
 "İptal etmek üzere olduğunuz makale bu:\n"
 "\n"
 
-#: src/lang.c:1021
+#: src/lang.c:1023
 msgid "toggle color"
 msgstr "renk değiştir"
 
-#: src/lang.c:1022
+#: src/lang.c:1024
 msgid ""
 "# Changing colors of several screen parts\n"
 "# Possible values are:\n"
@@ -4595,11 +4601,11 @@ msgstr ""
 "#  15 = açık beyaz\n"
 "\n"
 
-#: src/lang.c:1042
+#: src/lang.c:1044
 msgid "  -a       toggle color flag"
 msgstr "  -a       renk bayrağını değiştir"
 
-#: src/lang.c:1046
+#: src/lang.c:1048
 msgid ""
 "\n"
 "Error: Followup-To set to more than one newsgroup!\n"
@@ -4607,7 +4613,7 @@ msgstr ""
 "\n"
 "Hata: Birden fazla haber grubu için Takip-Et ayarlandı!\n"
 
-#: src/lang.c:1047
+#: src/lang.c:1049
 #, c-format
 msgid ""
 "\n"
@@ -4616,7 +4622,7 @@ msgstr ""
 "\n"
 "Hata: \"%s\" yeniden adlandırılmış, onun yerine \"%s\" kullanın!\n"
 
-#: src/lang.c:1048
+#: src/lang.c:1050
 #, c-format
 msgid ""
 "\n"
@@ -4625,7 +4631,7 @@ msgstr ""
 "\n"
 "Hata: %d haber gruubuna çapraz gönderiyor ve Takip-Et satırı yok!\n"
 
-#: src/lang.c:1049
+#: src/lang.c:1051
 #, c-format
 msgid ""
 "\n"
@@ -4634,7 +4640,7 @@ msgstr ""
 "\n"
 "Hata: \"%s\" geçerli bir haber grubu değil!\n"
 
-#: src/lang.c:1051
+#: src/lang.c:1053
 msgid ""
 "\n"
 "Warning: Followup-To set to more than one newsgroup!\n"
@@ -4642,7 +4648,7 @@ msgstr ""
 "\n"
 "Uyarı: Birden fazla haber grubu için Takip-Et ayarlandı!\n"
 
-#: src/lang.c:1052
+#: src/lang.c:1054
 #, c-format
 msgid ""
 "\n"
@@ -4651,7 +4657,7 @@ msgstr ""
 "\n"
 "Uyarı: \"%s\"nin ismi değişti, onun yerine \"%s\" kullanmalısınız!\n"
 
-#: src/lang.c:1053
+#: src/lang.c:1055
 #, c-format
 msgid ""
 "\n"
@@ -4660,7 +4666,7 @@ msgstr ""
 "\n"
 "Hata: %d haber grubuna çapraz gönderiyor ve Takip-Et satırı yok!\n"
 
-#: src/lang.c:1054
+#: src/lang.c:1056
 #, c-format
 msgid ""
 "\n"
@@ -4669,7 +4675,7 @@ msgstr ""
 "\n"
 "Uyarı: \"%s\" sizin newsrc'nizde mevcut değil, bu sitede geçersiz olabilir!\n"
 
-#: src/lang.c:1055
+#: src/lang.c:1057
 #, c-format
 msgid ""
 "\n"
@@ -4678,169 +4684,169 @@ msgstr ""
 "\n"
 "Uyaı:  \"%s\" bu sitede geçerli bir haber grubu değil!\n"
 
-#: src/lang.c:1059
+#: src/lang.c:1061
 #, c-format
 msgid "%d files successfully written from %d articles. %d %s occurred."
 msgstr "%d dosya %d makalelerinden başarıyla yazıldı. %d %s meydana geldi."
 
-#: src/lang.c:1060
+#: src/lang.c:1062
 msgid "Missing parts."
 msgstr "Eksik bölümler var."
 
-#: src/lang.c:1061
+#: src/lang.c:1063
 msgid "No beginning."
 msgstr "Başlangıç yok."
 
-#: src/lang.c:1062
+#: src/lang.c:1064
 msgid "No data."
 msgstr "Veri yok."
 
-#: src/lang.c:1063
+#: src/lang.c:1065
 msgid "Unknown error."
 msgstr "Bilinmeyen hata."
 
-#: src/lang.c:1066
+#: src/lang.c:1068
 #, c-format
 msgid "\tChecksum of %s (%ld %s)"
 msgstr "\tSağlama toplamı %s (%ld %s)"
 
-#: src/lang.c:1071
+#: src/lang.c:1073
 msgid "Reading mail active file... "
 msgstr "eposta etkin dosya okunuyor... "
 
-#: src/lang.c:1072
+#: src/lang.c:1074
 msgid "Reading mailgroups file... "
 msgstr "mailgroups dosyası okunuyor... "
 
-#: src/lang.c:1076
+#: src/lang.c:1078
 msgid "perform PGP operations on article"
 msgstr "makalede PGP işlemi gerçekleştir"
 
-#: src/lang.c:1077
+#: src/lang.c:1079
 msgid "Add key(s) to public keyring?"
 msgstr "Genel anahtar zincirine anahtar(lar) ekle?"
 
-#: src/lang.c:1078
+#: src/lang.c:1080
 #, c-format
 msgid "%s=encrypt, %s=sign, %s=both, %s=quit: "
 msgstr "%s=şifrele, %s=imzala. %s=ikisi de, %s=çık: "
 
-#: src/lang.c:1079
+#: src/lang.c:1081
 #, c-format
 msgid "%s=sign, %s=sign & include public key, %s=quit: "
 msgstr "%s=işaretle, %s=imzala & genel anahtarı dahil et, %s=çık: "
 
-#: src/lang.c:1080
+#: src/lang.c:1082
 #, c-format
 msgid "PGP has not been set up (can't open %s)"
 msgstr "PGP ayarlanmadı (%s açılamıyor)"
 
-#: src/lang.c:1081
+#: src/lang.c:1083
 msgid "Article not signed and no public keys found"
 msgstr "Makale imzalanmadı ve genel anahtar bulunamadı"
 
-#: src/lang.c:1083
+#: src/lang.c:1085
 #, c-format
 msgid "%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone: "
 msgstr "%s=çık, %s=düzenle, %s=ispell, %s=pgp, %s=menü, %s=gönder, %s=ertele: "
 
-#: src/lang.c:1084
+#: src/lang.c:1086
 #, c-format
 msgid "%s=quit, %s=edit, %s=ispell, %s=pgp, %s=send [%%s]: "
 msgstr "%s=çık, %s=düzenle, %s=ispell, %s=pgp, %s=gönder [%%s]: "
 
-#: src/lang.c:1085
+#: src/lang.c:1087
 #, c-format
 msgid ""
 "%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr ""
 "%s=çık, %s=düzenle, %s=ispell, %s=pgp, %s=menü, %s=gönder, %s=ertele [%%s]: "
 
-#: src/lang.c:1087
+#: src/lang.c:1089
 #, c-format
 msgid "%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone: "
 msgstr "%s=çık, %s=düzenle, %s=pgp, %s=menü, %s=yolla, %s=ertele: "
 
-#: src/lang.c:1088
+#: src/lang.c:1090
 #, c-format
 msgid "%s=quit, %s=edit, %s=pgp, %s=send [%%s]: "
 msgstr "%s=çık, %s=düzenle, %s=pgp, %s=gönder [%%s]: "
 
-#: src/lang.c:1089
+#: src/lang.c:1091
 #, c-format
 msgid "%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr "%s=çık, %s=düzenle, %s=pgp, %s=menü, %s=yolla, %s=ertele [%%s]: "
 
-#: src/lang.c:1093
+#: src/lang.c:1095
 #, c-format
 msgid "%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone: "
 msgstr "%s=çık, %s=düzenle, %s=ispell, %s=menü, %s=yolla, %s=ertele: "
 
-#: src/lang.c:1094
+#: src/lang.c:1096
 #, c-format
 msgid "%s=quit, %s=edit, %s=ispell, %s=send [%%s]: "
 msgstr "%s=çık, %s=düzenle, %s=ispell, %s=yolla [%%s]: "
 
-#: src/lang.c:1095
+#: src/lang.c:1097
 #, c-format
 msgid "%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr "%s=çık, %s=düzenle, %s=ispell, %s=menü, %s=yolla, %s=ertele [%%s]: "
 
-#: src/lang.c:1097
+#: src/lang.c:1099
 #, c-format
 msgid "%s=quit, %s=edit, %s=menu, %s=post, %s=postpone: "
 msgstr "%s=çık, %s=düzenle, %s=menü, %s=yolla, %s=ertele: "
 
-#: src/lang.c:1098
+#: src/lang.c:1100
 #, c-format
 msgid "%s=quit, %s=edit, %s=send [%%s]: "
 msgstr "%s=çık, %s=düzenle, %s=gönder [%%s]: "
 
-#: src/lang.c:1099
+#: src/lang.c:1101
 #, c-format
 msgid "%s=quit, %s=edit, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr "%s=çık, %s=düzenle, %s=menü, %s=yolla, %s=ertele [%%.*s]: "
 
-#: src/lang.c:1105
+#: src/lang.c:1107
 msgid "Try cache_overview_files to speed up things.\n"
 msgstr "Hızlandırmak için cace_overview_files deneyin.\n"
 
-#: src/lang.c:1106
+#: src/lang.c:1108
 msgid "Tin will use local index files instead.\n"
 msgstr "Tin yerel dizinleme dosyalarını kullanacak.\n"
 
-#: src/lang.c:1107
+#: src/lang.c:1109
 msgid "Cannot find NNTP server name"
 msgstr "NNTP sunucu ismi bulunamadı"
 
-#: src/lang.c:1108
+#: src/lang.c:1110
 #, c-format
 msgid "Connecting to %s:%u..."
 msgstr "Bağlanıyor %s:%u..."
 
-#: src/lang.c:1109
+#: src/lang.c:1111
 #, fuzzy
 msgid "Disconnecting from server..."
 msgstr "Sunucu bağlantısı kesiliyor...\n"
 
-#: src/lang.c:1110
+#: src/lang.c:1112
 #, c-format
 msgid "Failed to connect to NNTP server %s. Exiting..."
 msgstr "NNTP sunucusuna bağlantı başarısız %s. Çıkılıyor..."
 
-#: src/lang.c:1111
+#: src/lang.c:1113
 msgid "205  Closing connection"
 msgstr "205  Bağlantı kapanıyor"
 
-#: src/lang.c:1112
+#: src/lang.c:1114
 msgid "Your server does not support the NNTP XOVER or OVER command.\n"
 msgstr "Sunucunuz NNTP XOVER ya da OVER komutunu desteklemiyor.\n"
 
-#: src/lang.c:1113
+#: src/lang.c:1115
 msgid "Connection to news server has timed out. Reconnect?"
 msgstr "Haber sunucusu bağlantısı zaman aşımına uğradı. Tekrar bağlan?"
 
-#: src/lang.c:1114
+#: src/lang.c:1116
 #, c-format
 msgid ""
 "Put the server name in the file %s,\n"
@@ -4849,48 +4855,48 @@ msgstr ""
 "%s dosyasına sunucu ismini girin,\n"
 "ya da çevre değişkeni NNTPSERVERi ayarlayın"
 
-#: src/lang.c:1115
+#: src/lang.c:1117
 msgid "  -A       force authentication on connect"
 msgstr "  -A       bağlantıda kimlik doğrulamayı zorla"
 
-#: src/lang.c:1116
+#: src/lang.c:1118
 #, c-format
 msgid "  -g serv  read news from NNTP server serv [default=%s]"
 msgstr "  -g sunucu  NNTP sunucusundan haberleri oku [varsayılan=%s]"
 
-#: src/lang.c:1117
+#: src/lang.c:1119
 #, c-format
 msgid "  -p port  use port as NNTP port [default=%d]"
 msgstr ""
 "  -p bağlantı noktası  bağlantı noktasını NNTP bağlantı noktası olarak "
 "kullan [varsayılan=%d]"
 
-#: src/lang.c:1118
+#: src/lang.c:1120
 #, fuzzy
 msgid "  -Q       quick start. Same as -dnq"
 msgstr "  -Q       hızlı başlat. -nqd ile aynı"
 
-#: src/lang.c:1119
+#: src/lang.c:1121
 msgid "  -r       read news remotely from default NNTP server"
 msgstr "  -r       varsayılan NTTP sunucusundan haberleri uzaktan oku"
 
-#: src/lang.c:1120
+#: src/lang.c:1122
 msgid "  -l       use only LIST instead of GROUP (-n) command"
 msgstr "  -l       GROUP (-n) komutu yerine sadece LIST i kullan"
 
-#: src/lang.c:1121
+#: src/lang.c:1123
 msgid "  -n       only read subscribed .newsrc groups from NNTP server"
 msgstr "  -n       NNTP sunucusundan sadece abone olunan newsrc gruplarını oku"
 
-#: src/lang.c:1123
+#: src/lang.c:1125
 msgid "  -4       force connecting via IPv4"
 msgstr "  -4       IPv4 ile bağlanmayı zorla"
 
-#: src/lang.c:1124
+#: src/lang.c:1126
 msgid "  -6       force connecting via IPv6"
 msgstr "  -6       IPv6 ile bağlanmayı zorla"
 
-#: src/lang.c:1125
+#: src/lang.c:1127
 msgid ""
 "\n"
 "socket or connect problem\n"
@@ -4898,7 +4904,7 @@ msgstr ""
 "\n"
 "soket ya da bağlantı hatası\n"
 
-#: src/lang.c:1127
+#: src/lang.c:1129
 #, c-format
 msgid ""
 "\n"
@@ -4907,16 +4913,16 @@ msgstr ""
 "\n"
 "%s'e bağlantı: "
 
-#: src/lang.c:1128
+#: src/lang.c:1130
 msgid "Giving up...\n"
 msgstr "Bırakılıyor...\n"
 
-#: src/lang.c:1130
+#: src/lang.c:1132
 #, c-format
 msgid "%s/tcp: Unknown service.\n"
 msgstr "%s/tcp: Bilinmeyen servis.\n"
 
-#: src/lang.c:1134
+#: src/lang.c:1136
 msgid ""
 "Your server does not have Xref: in its XOVER information.\n"
 "Tin will try to use XHDR XREF instead (slows down things a bit).\n"
@@ -4924,89 +4930,89 @@ msgstr ""
 "Sunucunuzun XOVER bilgisinde Xref: yok.\n"
 "Tin XHDR XREF kullanmayı deneyecek (biraz yavaşlatır).\n"
 
-#: src/lang.c:1137
+#: src/lang.c:1139
 msgid "Your server does not have Xref: in its XOVER information.\n"
 msgstr "Sunucunuzun XOVER bilgisinde Xref: yok.\n"
 
-#: src/lang.c:1140
+#: src/lang.c:1142
 #, c-format
 msgid "Can't open %s. Try %s -r to read news via NNTP."
 msgstr "%s açılamıyor. NNTP aracılığıyla haber okumak için %s -r deneyin."
 
-#: src/lang.c:1143
+#: src/lang.c:1145
 msgid "  -Q       quick start. Same as -qd"
 msgstr "  -Q       hızlı başlat. -qd ile aynı"
 
-#: src/lang.c:1144
+#: src/lang.c:1146
 msgid "  -l       read only active file instead of scanning spool (-n) command"
 msgstr "  -l       kuyruk arama (-n) komutu yerine sadece etkin dosyayı oku"
 
-#: src/lang.c:1145
+#: src/lang.c:1147
 msgid "  -n       only read subscribed .newsrc groups from spool"
 msgstr "  -n       kuyruktan sadece abone olunan .newsrc gruplarını okuyun"
 
-#: src/lang.c:1146
+#: src/lang.c:1148
 msgid "Your server does not have Xref: in its NOV-files.\n"
 msgstr "Sunucunuzun NOV dosyalarında Xref: yok.\n"
 
-#: src/lang.c:1150
+#: src/lang.c:1152
 msgid "Posting using external inews failed. Use built in inews instead?"
 msgstr ""
 "Harici inews kullanılarak gönderme başarısız. Yerine dahili inews "
 "kullanılsın mı?"
 
-#: src/lang.c:1151
+#: src/lang.c:1153
 msgid "It worked! Should I always use my built in inews from now on?"
 msgstr "İşe yaradı! Bundan sonra hep dahili inews mi kullanmalıyım?"
 
-#: src/lang.c:1155
+#: src/lang.c:1157
 #, c-format
 msgid "%d %s printed"
 msgstr "%d %s yazdırıldı"
 
-#: src/lang.c:1156
+#: src/lang.c:1158
 msgid "output article/thread/hot/pattern/tagged articles to printer"
 msgstr "makale/eposta zinciri/hot/örüntü/imlenmiş makaleleri yazıcıya gönder"
 
-#: src/lang.c:1157
+#: src/lang.c:1159
 msgid "Print"
 msgstr "Yazdır"
 
-#: src/lang.c:1158
+#: src/lang.c:1160
 msgid "Printing..."
 msgstr "Yazdırılıyor..."
 
-#: src/lang.c:1162
+#: src/lang.c:1164
 #, c-format
 msgid "%d %s piped to \"%s\""
 msgstr "%d %s şuna yönlendirildi \"%s\""
 
-#: src/lang.c:1163
+#: src/lang.c:1165
 msgid "pipe article/thread/hot/pattern/tagged articles into command"
 msgstr "makale/zincir/sıcak/örüntü/imlenmiş makaleleri komuta yönlendir"
 
-#: src/lang.c:1164
+#: src/lang.c:1166
 msgid "No command"
 msgstr "Komut yok"
 
-#: src/lang.c:1165
+#: src/lang.c:1167
 msgid "Pipe"
 msgstr "Yönlendirme"
 
-#: src/lang.c:1166
+#: src/lang.c:1168
 #, c-format
 msgid "Pipe to command [%.*s]> "
 msgstr "Komuta yönlendir [%.*s]> "
 
-#: src/lang.c:1167
+#: src/lang.c:1169
 msgid "Piping..."
 msgstr "Yönlendiriliyor..."
 
-#: src/lang.c:1169
+#: src/lang.c:1171
 msgid "Piping not enabled."
 msgstr "Yönlendirme etkin değil."
 
-#: src/lang.c:1173
+#: src/lang.c:1175
 #, c-format
 msgid ""
 "\n"
@@ -5021,7 +5027,7 @@ msgstr ""
 "       boşluktur. Çoklu habergrubu isimlerini ayırmak için\n"
 "       virgül (,) kullanın.\n"
 
-#: src/lang.c:1178
+#: src/lang.c:1180
 #, c-format
 msgid ""
 "\n"
@@ -5034,7 +5040,7 @@ msgstr ""
 "       boşluk için içermeyebileceği için, buna izin verilmiyor.\n"
 "       Lütfen bütün haber gruplarını tek bir satıra yazın.\n"
 
-#: src/lang.c:1183
+#: src/lang.c:1185
 #, c-format
 msgid ""
 "\n"
@@ -5049,7 +5055,7 @@ msgstr ""
 "        Herhangi bir sorunla karşılaşmamak için bütün haber gruplarını tek "
 "bir satıra yazın.\n"
 
-#: src/lang.c:1187
+#: src/lang.c:1189
 #, c-format
 msgid ""
 "\n"
@@ -5058,7 +5064,7 @@ msgstr ""
 "\n"
 "Uyarı: \"%s:\" satırında SİLİNMESİ GEREKEN boşluklar var.\n"
 
-#: src/lang.c:1192
+#: src/lang.c:1194
 msgid ""
 "\n"
 "  If your article contains quoted text  please take some time to pare it "
@@ -5094,40 +5100,40 @@ msgstr ""
 "  dikkatli ve özenli olmazsanız, insanlar  onu tamamen yoksayarlar. Net  "
 "oldukça kalabalık bir yer.\n"
 
-#: src/lang.c:1205
+#: src/lang.c:1207
 msgid "shell escape"
 msgstr "kabuk çıkışı"
 
-#: src/lang.c:1206
+#: src/lang.c:1208
 #, c-format
 msgid "Shell Command (%s)"
 msgstr "Kabuk Komutu (%s)"
 
-#: src/lang.c:1207
+#: src/lang.c:1209
 #, c-format
 msgid "Enter shell command [%s]> "
 msgstr "Kabuk komutunu girin [%s]> "
 
-#: src/lang.c:1211
+#: src/lang.c:1213
 #, c-format
 msgid "%s: Can't get entry for TERM\n"
 msgstr "%s: TERM için girdi alınamıyor\n"
 
-#: src/lang.c:1215
+#: src/lang.c:1217
 #, c-format
 msgid "Group %.*s ('q' to quit)..."
 msgstr "Grup %.*s (çıkmak için 'q')..."
 
-#: src/lang.c:1217
+#: src/lang.c:1219
 #, c-format
 msgid "Group %.*s..."
 msgstr "Grup %.*s..."
 
-#: src/lang.c:1221
+#: src/lang.c:1223
 msgid "Server unavailable\n"
 msgstr "Sunucuya ulaşılamıyor\n"
 
-#: src/lang.c:1227
+#: src/lang.c:1229
 #, c-format
 msgid ""
 "%s=pipe; %s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; "
@@ -5136,7 +5142,7 @@ msgstr ""
 "%s=yönlendir, %s=eposta; %s=yazdır, %s=çık, %s=hepsini/okunmayanları "
 "değiştir; %s=kaydet; %s=etiketle; %s=gönder"
 
-#: src/lang.c:1228
+#: src/lang.c:1230
 #, c-format
 msgid ""
 "%s=pipe; %s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
@@ -5144,7 +5150,7 @@ msgstr ""
 "%s=yönlendir; %s=eposta; %s=yazdır; %s=çık; %s=cevap yaz; %s=kaydet; "
 "%s=etiketle; %s=gönder"
 
-#: src/lang.c:1230
+#: src/lang.c:1232
 #, c-format
 msgid ""
 "%s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
@@ -5152,13 +5158,13 @@ msgstr ""
 "%s=posta; %s=yazdır; %s=çık; %s=hepsini/okunmayanları değiştir; %s=kaydet; "
 "%s=etiketle; %s=gönder"
 
-#: src/lang.c:1231
+#: src/lang.c:1233
 #, c-format
 msgid "%s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr ""
 "%s=eposta; %s=yazdır; %s=çık; %s=cevap yaz; %s=kaydet; %s=etiketle; %s=gönder"
 
-#: src/lang.c:1235
+#: src/lang.c:1237
 #, c-format
 msgid ""
 "%s=pipe; %s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
@@ -5166,519 +5172,519 @@ msgstr ""
 "%s=yönlendir; %s=eposta; %s=çık; %s=hepsini/okunmayanları değiştir; "
 "%s=kaydet; %s=etiketle; %s=gönder"
 
-#: src/lang.c:1236
+#: src/lang.c:1238
 #, c-format
 msgid "%s=pipe; %s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr ""
 "%s=yönlendir; %s=eposta; %s=çık; %s=cevap yaz; %s=kaydet; %s=etiketle; "
 "%s=gönder"
 
-#: src/lang.c:1238
+#: src/lang.c:1240
 #, c-format
 msgid "%s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
 msgstr ""
 "%s=eposta; %s=çık; %s=hepsini/okunmayanları değiştir; %s=kaydet; "
 "%s=etiketle; %s=yolla"
 
-#: src/lang.c:1239
+#: src/lang.c:1241
 #, c-format
 msgid "%s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr "%s=eposta; %s=çık; %s=cevap yaz; %s=kaydet; %s=etiketle; %s=yolla"
 
-#: src/lang.c:1245
+#: src/lang.c:1247
 msgid "Terminal does not support color"
 msgstr "Uçbirim renk desteklemiyor"
 
-#: src/lang.c:1250
+#: src/lang.c:1252
 #, c-format
 msgid "Trying %s"
 msgstr "%s deneniyor"
 
-#: src/lang.c:1264 src/lang.c:1292 src/lang.c:1574 src/refs.c:292
+#: src/lang.c:1266 src/lang.c:1294 src/lang.c:1576 src/refs.c:292
 msgid "None"
 msgstr "Hiçbiri"
 
-#: src/lang.c:1265
+#: src/lang.c:1267
 msgid "Subject"
 msgstr "Konu"
 
-#: src/lang.c:1266
+#: src/lang.c:1268
 msgid "References"
 msgstr "Kaynaklar"
 
-#: src/lang.c:1267
+#: src/lang.c:1269
 msgid "Both Subject and References"
 msgstr "Konu ve Kaynaklar"
 
-#: src/lang.c:1268
+#: src/lang.c:1270
 msgid "Multipart Subject"
 msgstr "Çok parçalı Konu"
 
-#: src/lang.c:1269
+#: src/lang.c:1271
 msgid "Percentage Match"
 msgstr "Yüzde Eşleşmesi"
 
-#: src/lang.c:1282 src/lang.c:1373 src/lang.c:1463
+#: src/lang.c:1284 src/lang.c:1375 src/lang.c:1465
 msgid "No"
 msgstr "Hayır"
 
-#: src/lang.c:1283 src/lang.c:1465
+#: src/lang.c:1285 src/lang.c:1467
 msgid "Yes"
 msgstr "Evet"
 
-#: src/lang.c:1284
+#: src/lang.c:1286
 msgid "Hide All"
 msgstr "Tümünü Sakla"
 
-#: src/lang.c:1293
+#: src/lang.c:1295
 msgid "Address"
 msgstr "Adres"
 
-#: src/lang.c:1294
+#: src/lang.c:1296
 msgid "Full Name"
 msgstr "Tam İsim"
 
-#: src/lang.c:1295
+#: src/lang.c:1297
 msgid "Address and Name"
 msgstr "Adres ve İsim"
 
-#: src/lang.c:1303
+#: src/lang.c:1305
 msgid "Max"
 msgstr "En Çok"
 
-#: src/lang.c:1304
+#: src/lang.c:1306
 msgid "Sum"
 msgstr "Toplam"
 
-#: src/lang.c:1305
+#: src/lang.c:1307
 msgid "Average"
 msgstr "Ortalama"
 
-#: src/lang.c:1315 src/lang.c:1335
+#: src/lang.c:1317 src/lang.c:1337
 msgid "Black"
 msgstr "Siyah"
 
-#: src/lang.c:1316 src/lang.c:1336
+#: src/lang.c:1318 src/lang.c:1338
 msgid "Red"
 msgstr "Kırmızı"
 
-#: src/lang.c:1317 src/lang.c:1337
+#: src/lang.c:1319 src/lang.c:1339
 msgid "Green"
 msgstr "Yeşil"
 
-#: src/lang.c:1318 src/lang.c:1338
+#: src/lang.c:1320 src/lang.c:1340
 msgid "Brown"
 msgstr "Kahverengi"
 
-#: src/lang.c:1319 src/lang.c:1339
+#: src/lang.c:1321 src/lang.c:1341
 msgid "Blue"
 msgstr "Mavi"
 
-#: src/lang.c:1320 src/lang.c:1340
+#: src/lang.c:1322 src/lang.c:1342
 msgid "Pink"
 msgstr "Pembe"
 
-#: src/lang.c:1321 src/lang.c:1341
+#: src/lang.c:1323 src/lang.c:1343
 msgid "Cyan"
 msgstr "Camgöbeği"
 
-#: src/lang.c:1322 src/lang.c:1342
+#: src/lang.c:1324 src/lang.c:1344
 msgid "White"
 msgstr "Beyaz"
 
-#: src/lang.c:1323
+#: src/lang.c:1325
 msgid "Gray"
 msgstr "Gri"
 
-#: src/lang.c:1324
+#: src/lang.c:1326
 msgid "Light Red"
 msgstr "Açık Kırmızı"
 
-#: src/lang.c:1325
+#: src/lang.c:1327
 msgid "Light Green"
 msgstr "Açık Yeşil"
 
-#: src/lang.c:1326
+#: src/lang.c:1328
 msgid "Yellow"
 msgstr "Sarı"
 
-#: src/lang.c:1327
+#: src/lang.c:1329
 msgid "Light Blue"
 msgstr "Açık Mavi"
 
-#: src/lang.c:1328
+#: src/lang.c:1330
 msgid "Light Pink"
 msgstr "Açık Pembe"
 
-#: src/lang.c:1329
+#: src/lang.c:1331
 msgid "Light Cyan"
 msgstr "Açık Camgöbeği"
 
-#: src/lang.c:1330
+#: src/lang.c:1332
 msgid "Light White"
 msgstr "Açık Beyaz"
 
-#: src/lang.c:1351 src/lang.c:1470 src/lang.c:1485
+#: src/lang.c:1353 src/lang.c:1472 src/lang.c:1487
 msgid "Nothing"
 msgstr "Hiçbir şey"
 
-#: src/lang.c:1353
+#: src/lang.c:1355
 msgid "Space"
 msgstr "Boşluk"
 
-#: src/lang.c:1361
+#: src/lang.c:1363
 msgid "Normal"
 msgstr "Normal"
 
-#: src/lang.c:1362
+#: src/lang.c:1364
 msgid "Best highlighting"
 msgstr "En iyi vurgulama"
 
-#: src/lang.c:1363
+#: src/lang.c:1365
 msgid "Underline"
 msgstr "Altı çizili"
 
-#: src/lang.c:1364
+#: src/lang.c:1366
 msgid "Reverse video"
 msgstr "Ters video"
 
-#: src/lang.c:1365
+#: src/lang.c:1367
 msgid "Blinking"
 msgstr "Yanıp sönme"
 
-#: src/lang.c:1366
+#: src/lang.c:1368
 msgid "Half bright"
 msgstr "Yarı parlak"
 
-#: src/lang.c:1367
+#: src/lang.c:1369
 msgid "Bold"
 msgstr "Kalın"
 
-#: src/lang.c:1374
+#: src/lang.c:1376
 msgid "Cc"
 msgstr "Bilgi"
 
-#: src/lang.c:1375
+#: src/lang.c:1377
 msgid "Bcc"
 msgstr "Gizli Kopya"
 
-#: src/lang.c:1376
+#: src/lang.c:1378
 msgid "Cc and Bcc"
 msgstr "Kopya ve Gizli Kopya"
 
-#: src/lang.c:1393 src/lang.c:1406
+#: src/lang.c:1395 src/lang.c:1408
 msgid "none"
 msgstr "hiçbiri"
 
-#: src/lang.c:1394
+#: src/lang.c:1396
 msgid "commands"
 msgstr "komutlar"
 
-#: src/lang.c:1395
+#: src/lang.c:1397
 msgid "select"
 msgstr "seç"
 
-#: src/lang.c:1397
+#: src/lang.c:1399
 msgid "commands & quit"
 msgstr "komutlar & çık"
 
-#: src/lang.c:1398
+#: src/lang.c:1400
 msgid "commands & select"
 msgstr "komutlar & seç"
 
-#: src/lang.c:1399
+#: src/lang.c:1401
 msgid "quit & select"
 msgstr "çık & seç"
 
-#: src/lang.c:1400
+#: src/lang.c:1402
 msgid "commands & quit & select"
 msgstr "komutlar & çık & seç"
 
-#: src/lang.c:1407
+#: src/lang.c:1409
 msgid "PageDown"
 msgstr "PageDown"
 
-#: src/lang.c:1408
+#: src/lang.c:1410
 msgid "PageNextUnread"
 msgstr "PageNextUnread"
 
-#: src/lang.c:1409
+#: src/lang.c:1411
 msgid "PageDown or PageNextUnread"
 msgstr "PageDown ya da PageNextUnread"
 
-#: src/lang.c:1415
+#: src/lang.c:1417
 msgid "Subject: (case sensitive)"
 msgstr "Konu: (büyük-küçük harf duyarlı)"
 
-#: src/lang.c:1416
+#: src/lang.c:1418
 msgid "Subject: (ignore case)"
 msgstr "Konu: (büyük küçük harf yoksay)"
 
-#: src/lang.c:1417
+#: src/lang.c:1419
 msgid "From: (case sensitive)"
 msgstr "Gönderen: (büyük/küçük harf duyarlı)"
 
-#: src/lang.c:1418
+#: src/lang.c:1420
 msgid "From: (ignore case)"
 msgstr "Gönderen: (büyük/küçük harf yoksay)"
 
-#: src/lang.c:1419
+#: src/lang.c:1421
 msgid "Msg-ID: & full References: line"
 msgstr "İleti-Kimliği: & tüm Referanslar: satırı"
 
-#: src/lang.c:1420
+#: src/lang.c:1422
 msgid "Msg-ID: & last References: only"
 msgstr "İleti-Kimliği & sadece son Referanslar:"
 
-#: src/lang.c:1421
+#: src/lang.c:1423
 msgid "Message-ID: entry only"
 msgstr "İleti-Kimliği: sadece girdi"
 
-#: src/lang.c:1422
+#: src/lang.c:1424
 msgid "Lines:"
 msgstr "Satırlar: "
 
-#: src/lang.c:1428
+#: src/lang.c:1430
 msgid "Don't trim article body"
 msgstr "Makale gövdesini kırpma"
 
-#: src/lang.c:1429
+#: src/lang.c:1431
 msgid "Skip leading blank lines"
 msgstr "Baştaki boş satırları atla"
 
-#: src/lang.c:1430
+#: src/lang.c:1432
 msgid "Skip trailing blank lines"
 msgstr "Sondaki boş satırları atla"
 
-#: src/lang.c:1431
+#: src/lang.c:1433
 msgid "Skip leading and trailing blank l."
 msgstr "Baştaki ve sondaki I. boşluğu atla."
 
-#: src/lang.c:1432
+#: src/lang.c:1434
 msgid "Compact multiple between text"
 msgstr "Metin arasındaki çoklu olanları birleştir"
 
-#: src/lang.c:1433
+#: src/lang.c:1435
 msgid "Compact multiple and skip leading"
 msgstr "Çoklu olanları birleştir ve baştakini atla"
 
-#: src/lang.c:1434
+#: src/lang.c:1436
 msgid "Compact multiple and skip trailing"
 msgstr "Çoklu olanları birleştir ve sondakini atla"
 
-#: src/lang.c:1435
+#: src/lang.c:1437
 msgid "Compact mltpl., skip lead. & trai."
 msgstr "Çokluları sıkıştır, başı & sonu atla."
 
-#: src/lang.c:1464
+#: src/lang.c:1466
 msgid "Shell archive"
 msgstr "Kabuk arşivi"
 
-#: src/lang.c:1471
+#: src/lang.c:1473
 msgid "Subject: (descending)"
 msgstr "Konu: (azalan)"
 
-#: src/lang.c:1472
+#: src/lang.c:1474
 msgid "Subject: (ascending)"
 msgstr "Konu: (artan)"
 
-#: src/lang.c:1473
+#: src/lang.c:1475
 msgid "From: (descending)"
 msgstr "Gönderen: (azalan)"
 
-#: src/lang.c:1474
+#: src/lang.c:1476
 msgid "From: (ascending)"
 msgstr "Gönderen: (artan)"
 
-#: src/lang.c:1475
+#: src/lang.c:1477
 msgid "Date: (descending)"
 msgstr "Tarih: (azalan)"
 
-#: src/lang.c:1476
+#: src/lang.c:1478
 msgid "Date: (ascending)"
 msgstr "Tarih: (artan)"
 
-#: src/lang.c:1477 src/lang.c:1486
+#: src/lang.c:1479 src/lang.c:1488
 msgid "Score (descending)"
 msgstr "Skor: (azalan)"
 
-#: src/lang.c:1478 src/lang.c:1487
+#: src/lang.c:1480 src/lang.c:1489
 msgid "Score (ascending)"
 msgstr "Skor (artan)"
 
-#: src/lang.c:1479
+#: src/lang.c:1481
 msgid "Lines: (descending)"
 msgstr "Satırlar: (azalan)"
 
-#: src/lang.c:1480
+#: src/lang.c:1482
 msgid "Lines: (ascending)"
 msgstr "Satırlar: (artan)"
 
-#: src/lang.c:1488
+#: src/lang.c:1490
 msgid "Last posting date (descending)"
 msgstr "Son gönderim tarihi (azalan)"
 
-#: src/lang.c:1489
+#: src/lang.c:1491
 msgid "Last posting date (ascending)"
 msgstr "Son gönderim tarihi (artan)"
 
-#: src/lang.c:1495
+#: src/lang.c:1497
 msgid "Quick-sort"
 msgstr "Hızlı sıralama algoritması"
 
-#: src/lang.c:1496
+#: src/lang.c:1498
 msgid "Heap-sort"
 msgstr "Heap sıralama algoritması"
 
-#: src/lang.c:1503
+#: src/lang.c:1505
 msgid "Always Keep"
 msgstr "Her zaman Koru"
 
-#: src/lang.c:1504
+#: src/lang.c:1506
 msgid "Always Remove"
 msgstr "Her Zaman Kaldır"
 
-#: src/lang.c:1505
+#: src/lang.c:1507
 msgid "Mark with D on selection screen"
 msgstr "Seçim ekranında D ile işaretle"
 
-#: src/lang.c:1511
+#: src/lang.c:1513
 msgid "Kill only unread arts"
 msgstr "Sadece okunmayan makaleleri yok et"
 
-#: src/lang.c:1512
+#: src/lang.c:1514
 msgid "Kill all arts & show with K"
 msgstr "Tüm makaleleri yok et & K ile göster"
 
 #  TODO: s/K/art_marked_killed/
 #. TODO: s/K/art_marked_killed/
-#: src/lang.c:1513
+#: src/lang.c:1515
 msgid "Kill all arts and never show"
 msgstr "Tüm makaleleri yok et ve asla gösterme"
 
-#: src/lang.c:1519
+#: src/lang.c:1521
 msgid "Nothing special"
 msgstr "Özel bir şey yok"
 
-#: src/lang.c:1520
+#: src/lang.c:1522
 msgid "Compress quotes"
 msgstr "Alıntıları sıkıştır"
 
-#: src/lang.c:1521
+#: src/lang.c:1523
 msgid "Quote signatures"
 msgstr "İmzaları alıntıla"
 
-#: src/lang.c:1522
+#: src/lang.c:1524
 msgid "Compress quotes, quote sigs"
 msgstr "Alıntıları sıkıştır, imzaları alıntıla"
 
-#: src/lang.c:1523
+#: src/lang.c:1525
 msgid "Quote empty lines"
 msgstr "Boş satırları alıntıla"
 
-#: src/lang.c:1524
+#: src/lang.c:1526
 msgid "Compress quotes, quote empty lines"
 msgstr "Alıntıları sıkıştır, boş satırları alıntıla"
 
-#: src/lang.c:1525
+#: src/lang.c:1527
 msgid "Quote sigs & empty lines"
 msgstr "İmzaları ve boş satırları alıntıla"
 
-#: src/lang.c:1526
+#: src/lang.c:1528
 msgid "Comp. q., quote sigs & empty lines"
 msgstr "İmleri sıkıştır, imzaları & boş satırları alıntıla"
 
-#: src/lang.c:1566
+#: src/lang.c:1568
 msgid "no"
 msgstr "hayır"
 
-#: src/lang.c:1567
+#: src/lang.c:1569
 msgid "with headers"
 msgstr "başlıklarla birlikte"
 
-#: src/lang.c:1568
+#: src/lang.c:1570
 msgid "without headers"
 msgstr "üst bilgi olmadan"
 
-#: src/lang.c:1575
+#: src/lang.c:1577
 msgid "NFKC"
 msgstr "NFKC"
 
-#: src/lang.c:1577
+#: src/lang.c:1579
 msgid "NFKD"
 msgstr "NFKD"
 
-#: src/lang.c:1578
+#: src/lang.c:1580
 msgid "NFC"
 msgstr "NFC"
 
-#: src/lang.c:1579
+#: src/lang.c:1581
 msgid "NFD"
 msgstr "NFD"
 
-#: src/lang.c:1581
+#: src/lang.c:1583
 msgid "NFKC case fold"
 msgstr ""
 
-#: src/lang.c:1590
+#: src/lang.c:1592
 msgid "Display Options"
 msgstr "Görüntü Seçenekleri"
 
-#: src/lang.c:1597
+#: src/lang.c:1599
 msgid "Color Options"
 msgstr "Renk Seçenekleri"
 
-#: src/lang.c:1603
+#: src/lang.c:1605
 msgid "Highlight Options"
 msgstr "Vurgulama Seçenekleri"
 
-#: src/lang.c:1610
+#: src/lang.c:1612
 msgid "Article-Limiting Options"
 msgstr "Makale-Sınırlandırma Seçenekleri"
 
-#: src/lang.c:1616
+#: src/lang.c:1618
 msgid "Posting/Mailing Options"
 msgstr "Yollama/Postalama Seçenekleri"
 
-#: src/lang.c:1622
+#: src/lang.c:1624
 msgid "Saving/Printing Options"
 msgstr "Kaydetme/Yazdırma Seçenekleri"
 
-#: src/lang.c:1628
+#: src/lang.c:1630
 msgid "Expert Options"
 msgstr "Uzman Seçenekleri"
 
-#: src/lang.c:1634
+#: src/lang.c:1636
 msgid "Filtering Options"
 msgstr "Filtreleme Seçenekleri"
 
-#: src/lang.c:1639 src/lang.c:1670 src/lang.c:1676 src/lang.c:1703
-#: src/lang.c:1755 src/lang.c:1761 src/lang.c:1771 src/lang.c:1782
-#: src/lang.c:1800 src/lang.c:1869 src/lang.c:2070 src/lang.c:2076
-#: src/lang.c:2082 src/lang.c:2097 src/lang.c:2109 src/lang.c:2116
-#: src/lang.c:2170 src/lang.c:2179 src/lang.c:2185 src/lang.c:2192
-#: src/lang.c:2199 src/lang.c:2206 src/lang.c:2213 src/lang.c:2220
-#: src/lang.c:2227 src/lang.c:2234 src/lang.c:2241 src/lang.c:2248
-#: src/lang.c:2255 src/lang.c:2262 src/lang.c:2269 src/lang.c:2276
-#: src/lang.c:2283 src/lang.c:2290 src/lang.c:2297 src/lang.c:2304
-#: src/lang.c:2311 src/lang.c:2318 src/lang.c:2325 src/lang.c:2332
-#: src/lang.c:2339 src/lang.c:2346 src/lang.c:2353 src/lang.c:2361
-#: src/lang.c:2377 src/lang.c:2384 src/lang.c:2391 src/lang.c:2398
-#: src/lang.c:2404 src/lang.c:2410 src/lang.c:2427 src/lang.c:2439
-#: src/lang.c:2474 src/lang.c:2527 src/lang.c:2541 src/lang.c:2547
-#: src/lang.c:2572 src/lang.c:2590 src/lang.c:2607 src/lang.c:2619
-#: src/lang.c:2652 src/lang.c:2688 src/lang.c:2708 src/lang.c:2743
-#: src/lang.c:2753 src/lang.c:2760 src/lang.c:2786 src/lang.c:2810
-#: src/lang.c:2887 src/lang.c:2902 src/lang.c:2910 src/lang.c:2924
-#: src/lang.c:2930 src/lang.c:2968
+#: src/lang.c:1641 src/lang.c:1672 src/lang.c:1678 src/lang.c:1705
+#: src/lang.c:1757 src/lang.c:1763 src/lang.c:1773 src/lang.c:1784
+#: src/lang.c:1802 src/lang.c:1871 src/lang.c:2072 src/lang.c:2078
+#: src/lang.c:2084 src/lang.c:2099 src/lang.c:2111 src/lang.c:2118
+#: src/lang.c:2172 src/lang.c:2181 src/lang.c:2187 src/lang.c:2194
+#: src/lang.c:2201 src/lang.c:2208 src/lang.c:2215 src/lang.c:2222
+#: src/lang.c:2229 src/lang.c:2236 src/lang.c:2243 src/lang.c:2250
+#: src/lang.c:2257 src/lang.c:2264 src/lang.c:2271 src/lang.c:2278
+#: src/lang.c:2285 src/lang.c:2292 src/lang.c:2299 src/lang.c:2306
+#: src/lang.c:2313 src/lang.c:2320 src/lang.c:2327 src/lang.c:2334
+#: src/lang.c:2341 src/lang.c:2348 src/lang.c:2355 src/lang.c:2363
+#: src/lang.c:2379 src/lang.c:2386 src/lang.c:2393 src/lang.c:2400
+#: src/lang.c:2406 src/lang.c:2412 src/lang.c:2429 src/lang.c:2441
+#: src/lang.c:2476 src/lang.c:2529 src/lang.c:2543 src/lang.c:2549
+#: src/lang.c:2574 src/lang.c:2592 src/lang.c:2609 src/lang.c:2621
+#: src/lang.c:2654 src/lang.c:2690 src/lang.c:2710 src/lang.c:2745
+#: src/lang.c:2755 src/lang.c:2762 src/lang.c:2788 src/lang.c:2812
+#: src/lang.c:2889 src/lang.c:2904 src/lang.c:2912 src/lang.c:2926
+#: src/lang.c:2932 src/lang.c:2970
 msgid "<SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr "<SPACE> değiştirir, <CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:1640
+#: src/lang.c:1642
 msgid "Show mini menu & posting etiquette"
 msgstr "Mini menüyü ve gönderme etiketini göster"
 
-#: src/lang.c:1641
+#: src/lang.c:1643
 msgid ""
 "# If ON show a mini menu of useful commands at each level\n"
 "# and posting etiquette after composing an article\n"
@@ -5687,16 +5693,16 @@ msgstr ""
 "# düzeylerde kullanışlı komutların mini menüsünü ve yollama etiketini "
 "göster.\n"
 
-#: src/lang.c:1646
+#: src/lang.c:1648
 msgid "Show short description for each newsgroup. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Her haber grubu için kısa açıklama göster. <SPACE> değiştirir & <CR> ayarlar."
 
-#: src/lang.c:1647
+#: src/lang.c:1649
 msgid "Show description of each newsgroup"
 msgstr "Her haber grubu için açıklama göster"
 
-#: src/lang.c:1648
+#: src/lang.c:1650
 msgid ""
 "# If ON show group description text after newsgroup name at\n"
 "# group selection level\n"
@@ -5705,7 +5711,7 @@ msgstr ""
 "sonraki\n"
 "# grup açıklama metnini göster.\n"
 
-#: src/lang.c:1653
+#: src/lang.c:1655
 msgid ""
 "Show From (author) fields in group & thread level. <SPACE> toggles & <CR> "
 "sets."
@@ -5713,11 +5719,11 @@ msgstr ""
 "Grup & zincir seviyesinde Konu & Gönderen (yazar) alanlarını göster. <SPACE> "
 "değiştirir & <CR> ayarlar."
 
-#: src/lang.c:1654
+#: src/lang.c:1656
 msgid "In group and thread level, show author by"
 msgstr "Grup ve zincir seviyesinde, yazarı şuna göre göster"
 
-#: src/lang.c:1655
+#: src/lang.c:1657
 msgid ""
 "# Part of From field to display in group and thread level\n"
 "# Possible values are (the default is marked with *):\n"
@@ -5734,35 +5740,35 @@ msgstr ""
 "# * 2 = tam isim\n"
 "#   3 = her ikisi de\n"
 
-#: src/lang.c:1664
+#: src/lang.c:1666
 msgid "Draw -> or highlighted bar for selection. <SPACE> toggles & <CR> sets."
 msgstr ""
 "-> çiz ya da seçim için vurgulanmış çubuk. <SPACE> değiştirir & <CR> ayarlar."
 
-#: src/lang.c:1665
+#: src/lang.c:1667
 msgid "Draw -> instead of highlighted bar"
 msgstr "Çiz -> vurgulanmış çubuk yerine"
 
-#: src/lang.c:1666
+#: src/lang.c:1668
 msgid "# If ON use -> otherwise highlighted bar for selection\n"
 msgstr ""
 "# Eğer AÇIK durumundaysa kullan -> değilse seçim için vurgulanmış çubuk\n"
 
-#: src/lang.c:1671
+#: src/lang.c:1673
 msgid "Use inverse video for page headers"
 msgstr "Sayfa üst bilgileri için ters görüntü kullan"
 
-#: src/lang.c:1672
+#: src/lang.c:1674
 msgid "# If ON use inverse video for page headers at different levels\n"
 msgstr ""
 "# Eğer AÇIK durumundaysa farklı seviyelerdeki sayfa üst bilgileri için ters "
 "görüntü kullan\n"
 
-#: src/lang.c:1677
+#: src/lang.c:1679
 msgid "Thread articles by"
 msgstr "Zincir makaleleri şuna göre"
 
-#: src/lang.c:1678
+#: src/lang.c:1680
 msgid ""
 "# Thread articles by ...\n"
 "# Possible values are (the default is marked with *):\n"
@@ -5782,15 +5788,15 @@ msgstr ""
 "#    4 = Çok Bölümlü Konu\n"
 "#    5 = Yüzde Eşleşmesi\n"
 
-#: src/lang.c:1689
+#: src/lang.c:1691
 msgid "Enter percentage match required to thread together. <CR> sets."
 msgstr "Zincirlemek için gerekli eşleşme yüzdesini girin. <CR> ayarlar."
 
-#: src/lang.c:1690
+#: src/lang.c:1692
 msgid "Thread percentage match"
 msgstr "Zincir eşleşme yüzdesi"
 
-#: src/lang.c:1692
+#: src/lang.c:1694
 #, no-c-format
 msgid ""
 "# Thread percentage match...\n"
@@ -5815,11 +5821,11 @@ msgstr ""
 "# fakat 'mttllu', 'muuttl' ve 'mtluuu', 'mutlu'dan ayrı bir şekilde "
 "zincirlenecektir.\n"
 
-#: src/lang.c:1704
+#: src/lang.c:1706
 msgid "Score of a thread"
 msgstr "Eposta zincirinin skoru"
 
-#: src/lang.c:1705
+#: src/lang.c:1707
 msgid ""
 "# Thread score\n"
 "# Possible values are (the default is marked with *):\n"
@@ -5833,18 +5839,18 @@ msgstr ""
 "#   1 = toplam\n"
 "#   2 = ortalama\n"
 
-#: src/lang.c:1713
+#: src/lang.c:1715
 msgid ""
 "Sort articles by Subject, From, Date or Score. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Makaleleri Konu, Gönderen, Tarih ya da Skora göre sırala. <SPACE> değiştirir "
 "& <CR> ayarlar."
 
-#: src/lang.c:1714
+#: src/lang.c:1716
 msgid "Sort articles by"
 msgstr "Makaleleri şuna göre sırala"
 
-#: src/lang.c:1715
+#: src/lang.c:1717
 msgid ""
 "# Sort articles by ...\n"
 "# Possible values are (the default is marked with *):\n"
@@ -5874,17 +5880,17 @@ msgstr ""
 "#   9 = (Satırlar azalan)\n"
 "#  10 = (Satırlar artan)\n"
 
-#: src/lang.c:1731
+#: src/lang.c:1733
 msgid "Sort threads by Nothing or Score. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Eposta zincirlerini Hiçbir şeye ya da skora göre sırala. <SPACE> değiştirir "
 "& <CR> ayarlar."
 
-#: src/lang.c:1732
+#: src/lang.c:1734
 msgid "Sort threads by"
 msgstr "Eposta zincirlerini şuna göre sırala"
 
-#: src/lang.c:1733
+#: src/lang.c:1735
 msgid ""
 "# Sort thread by ...\n"
 "# Possible values are (the default is marked with *):\n"
@@ -5902,54 +5908,54 @@ msgstr ""
 "#   3 = Son gönderim tarihi azalan\n"
 "#   4 = Son gönderim tarihi artan\n"
 
-#: src/lang.c:1743
+#: src/lang.c:1745
 msgid ""
 "Put cursor at first/last unread art in groups. <SPACE> toggles & <CR> sets."
 msgstr ""
 "İmleci gruplardaki ilk/son okunmamış makalelere koy. <SPACE> değiştirir & "
 "<CR> ayarlar."
 
-#: src/lang.c:1744
+#: src/lang.c:1746
 msgid "Go to first unread article in group"
 msgstr "Gruptaki ilk okunmamış makaleye git"
 
-#: src/lang.c:1745
+#: src/lang.c:1747
 msgid "# If ON put cursor at first unread art in group otherwise last art\n"
 msgstr ""
 "# Eğer AÇIK durumundaysa imleci ilk okunmamış makeleye, değilse son makeleye "
 "koy\n"
 
-#: src/lang.c:1749
+#: src/lang.c:1751
 msgid "Show all articles or only unread articles. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Tüm makaleleri ya da sadece okunmamış makaleleri göster.<SPACE> değiştirir & "
 "<CR> ayarlar."
 
-#: src/lang.c:1750
+#: src/lang.c:1752
 msgid "Show only unread articles"
 msgstr "Sadece okunmayan makaleleri göster"
 
-#: src/lang.c:1751
+#: src/lang.c:1753
 msgid "# If ON show only new/unread articles otherwise show all.\n"
 msgstr ""
 "# Eğer AÇIK durumundaysa sadece yeni/okunmamış makaleleri, değilse hepsini "
 "göster.\n"
 
-#: src/lang.c:1756
+#: src/lang.c:1758
 msgid "Show only groups with unread arts"
 msgstr "Sadece okunmamış makale olan grupları göster"
 
-#: src/lang.c:1757
+#: src/lang.c:1759
 msgid "# If ON show only subscribed to groups that contain unread articles.\n"
 msgstr ""
 "# Eğer AÇIK durumundaysa sadece abone olunup okunmamış makaler içeren "
 "grupları göster.\n"
 
-#: src/lang.c:1762
+#: src/lang.c:1764
 msgid "Filter which articles"
 msgstr "Hangi makaleler filtrelenecek"
 
-#: src/lang.c:1763
+#: src/lang.c:1765
 msgid ""
 "# Filter which articles\n"
 "# Possible values are (the default is marked with *):\n"
@@ -5964,11 +5970,11 @@ msgstr ""
 "göster\n"
 "#   2 = Tüm makaleleri yok et ve bir daha gösterme.\n"
 
-#: src/lang.c:1772
+#: src/lang.c:1774
 msgid "Go to the next unread article with"
 msgstr "Sonraki okunmamış makaleye şununla git"
 
-#: src/lang.c:1773
+#: src/lang.c:1775
 msgid ""
 "# Go to the unread article with following key(s)\n"
 "# Possible values are (the default is marked with *):\n"
@@ -5984,11 +5990,11 @@ msgstr ""
 "# * 2 = TAB\n"
 "#   3 = PAGE DOWN ya da TAB\n"
 
-#: src/lang.c:1783
+#: src/lang.c:1785
 msgid "How to treat blank lines"
 msgstr "Boş satırlar nasıl işlensin"
 
-#: src/lang.c:1784
+#: src/lang.c:1786
 msgid ""
 "# Trim the article body, remove unnecessary blank lines.\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6018,28 +6024,28 @@ msgstr ""
 "# 7 = Metin blokları arasındaki birden fazla boş satırı birleştir ve\n"
 "#       baştaki ve sondaki boş satırları atla\n"
 
-#: src/lang.c:1801
+#: src/lang.c:1803
 msgid "List thread using right arrow key"
 msgstr "Sağ ok tuşunu kullanarak eposta zincirlerini listele"
 
-#: src/lang.c:1802
+#: src/lang.c:1804
 msgid ""
 "# If ON automatically list thread when entering it using right arrow key.\n"
 msgstr ""
 "# Eğer AÇIK durumundaysa zincirleri sağ ok tuşunu kullanarak girerken "
 "otomatik olarak listele.\n"
 
-#: src/lang.c:1806
+#: src/lang.c:1808
 msgid "Enter character to indicate deleted articles. <CR> sets, <ESC> cancels."
 msgstr ""
 "Silinmiş makaleleri göstermek için karakter giriniz. <CR> ayarlar, <ESC> "
 "iptal eder."
 
-#: src/lang.c:1807
+#: src/lang.c:1809
 msgid "Character to show deleted articles"
 msgstr "Silinmiş makaleleri gösterecek olan karakter"
 
-#: src/lang.c:1808
+#: src/lang.c:1810
 msgid ""
 "# Character used to show that an art was deleted (default 'D')\n"
 "# _ is turned into ' '\n"
@@ -6047,18 +6053,18 @@ msgstr ""
 "# Makalenin silindiğini göstermek için kullanılan karakter (varsayılan 'D')\n"
 "#_ şuna dönüşü ' '\n"
 
-#: src/lang.c:1813
+#: src/lang.c:1815
 msgid ""
 "Enter character to indicate articles in a range. <CR> sets, <ESC> cancels."
 msgstr ""
 "Bir aralıktaki makaleleri belirtmek için karakter girin. <CR> ayarlar, <ESC> "
 "iptal eder."
 
-#: src/lang.c:1814
+#: src/lang.c:1816
 msgid "Character to show inrange articles"
 msgstr "Sıralanmış makaleleri gösterecek olan karakter"
 
-#: src/lang.c:1815
+#: src/lang.c:1817
 msgid ""
 "# Character used to show that an art is in a range (default '#')\n"
 "# _ is turned into ' '\n"
@@ -6067,7 +6073,7 @@ msgstr ""
 "(varsayılan '#')\n"
 "# _ şuna dönüştü ' '\n"
 
-#: src/lang.c:1820
+#: src/lang.c:1822
 msgid ""
 "Enter character to indicate that article will return. <CR> sets, <ESC> "
 "cancels."
@@ -6075,11 +6081,11 @@ msgstr ""
 "Makalenin döneceğini göstermek için karakter girin. <CR> ayarlar, <ESC> "
 "iptal eder."
 
-#: src/lang.c:1821
+#: src/lang.c:1823
 msgid "Character to show returning arts"
 msgstr "Dönen makaleleri gösterecek olan karakter"
 
-#: src/lang.c:1822
+#: src/lang.c:1824
 msgid ""
 "# Character used to show that an art will return (default '-')\n"
 "# _ is turned into ' '\n"
@@ -6088,18 +6094,18 @@ msgstr ""
 "'-')\n"
 "# _ şuna dönüştü ' '\n"
 
-#: src/lang.c:1827
+#: src/lang.c:1829
 msgid ""
 "Enter character to indicate selected articles. <CR> sets, <ESC> cancels."
 msgstr ""
 "Seçilen makaleleri belirtmek için karakter girin. <CR> ayarlar, <ESC> iptal "
 "eder."
 
-#: src/lang.c:1828
+#: src/lang.c:1830
 msgid "Character to show selected articles"
 msgstr "Seçilen makaleleri gösterecek olan karakter"
 
-#: src/lang.c:1829
+#: src/lang.c:1831
 msgid ""
 "# Character used to show that an art was auto-selected (default '*')\n"
 "# _ is turned into ' '\n"
@@ -6108,16 +6114,16 @@ msgstr ""
 "(varsayılan '*')\n"
 "#_ şuna dönüşür ' '\n"
 
-#: src/lang.c:1834
+#: src/lang.c:1836
 msgid "Enter character to indicate recent articles. <CR> sets, <ESC> cancels."
 msgstr ""
 "Son makaleleri belirtmek için karakter girin. <CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:1835
+#: src/lang.c:1837
 msgid "Character to show recent articles"
 msgstr "Son makaleleri gösterecek olan karakter"
 
-#: src/lang.c:1836
+#: src/lang.c:1838
 msgid ""
 "# Character used to show that an art is recent (default 'o')\n"
 "# _ is turned into ' '\n"
@@ -6126,17 +6132,17 @@ msgstr ""
 "'o')\n"
 "# _ şuna dönüştü ' '\n"
 
-#: src/lang.c:1841
+#: src/lang.c:1843
 msgid "Enter character to indicate unread articles. <CR> sets, <ESC> cancels."
 msgstr ""
 "Okunmamış makaleleri belirtmek için karakter girin. <CR> ayarlar, <ESC> "
 "iptal eder."
 
-#: src/lang.c:1842
+#: src/lang.c:1844
 msgid "Character to show unread articles"
 msgstr "Okunmamış makaleleri gösterecek olan karakter"
 
-#: src/lang.c:1843
+#: src/lang.c:1845
 msgid ""
 "# Character used to show that an art is unread (default '+')\n"
 "# _ is turned into ' '\n"
@@ -6145,17 +6151,17 @@ msgstr ""
 "'+')\n"
 "# _ şuna dönüştü ' '\n"
 
-#: src/lang.c:1848
+#: src/lang.c:1850
 msgid "Enter character to indicate read articles. <CR> sets, <ESC> cancels."
 msgstr ""
 "Okunan makaleleri belirtmek için karakter girin. <CR> ayarlar, <ESC> iptal "
 "eder."
 
-#: src/lang.c:1849
+#: src/lang.c:1851
 msgid "Character to show read articles"
 msgstr "Okunmuş makaleleri gösterecek olan karakter"
 
-#: src/lang.c:1850
+#: src/lang.c:1852
 msgid ""
 "# Character used to show that an art was read (default ' ')\n"
 "# _ is turned into ' '\n"
@@ -6164,17 +6170,17 @@ msgstr ""
 "')\n"
 "# _ şuna dönüştü ' '\n"
 
-#: src/lang.c:1855
+#: src/lang.c:1857
 msgid "Enter character to indicate killed articles. <CR> sets, <ESC> cancels."
 msgstr ""
 "Yok olan makaleleri belirtmek için karakter girin. <CR> ayarlar, <ESC> iptal "
 "eder."
 
-#: src/lang.c:1856
+#: src/lang.c:1858
 msgid "Character to show killed articles"
 msgstr "Yok olan makaleleri gösterecek olan karakter"
 
-#: src/lang.c:1857
+#: src/lang.c:1859
 msgid ""
 "# Character used to show that an art was killed (default 'K')\n"
 "# kill_level must be set accordingly, _ is turned into ' '\n"
@@ -6183,18 +6189,18 @@ msgstr ""
 "'K')\n"
 "# kill_level ona göre ayarlanmalıdır, _ şuna dönüştü ' '\n"
 
-#: src/lang.c:1862
+#: src/lang.c:1864
 msgid ""
 "Enter character to indicate read selected articles. <CR> sets, <ESC> cancels."
 msgstr ""
 "Okunmuş seçilmiş makaleleri belirtmek için karakter girin. <CR> ayarlar, "
 "<ESC> iptal eder."
 
-#: src/lang.c:1863
+#: src/lang.c:1865
 msgid "Character to show readselected arts"
 msgstr "Okunmuş seçilmiş makaleleri gösteren karakter:"
 
-#: src/lang.c:1864
+#: src/lang.c:1866
 msgid ""
 "# Character used to show that an art was selected before read (default ':')\n"
 "# kill_level must be set accordingly, _ is turned into ' '\n"
@@ -6203,11 +6209,11 @@ msgstr ""
 "(varsayılan ':')\n"
 "# kill_level ona göre ayarlanmalıdır, _ şuna dönüştü ' '\n"
 
-#: src/lang.c:1870
+#: src/lang.c:1872
 msgid "Abbreviate long newsgroup names"
 msgstr "Uzun haber grubu isimlerini kısaltın"
 
-#: src/lang.c:1871
+#: src/lang.c:1873
 msgid ""
 "# If ON abbreviate (if necessary) long newsgroup names at group selection\n"
 "# level and article level like this:\n"
@@ -6218,7 +6224,7 @@ msgstr ""
 "# (eğer gerekliyse) şu şekilde kısalt:\n"
 "#   news.software.readers -> n.software.readers -> n.s.readers -> n.s.r.\n"
 
-#: src/lang.c:1877
+#: src/lang.c:1879
 msgid ""
 "0 = full page scrolling, -1 = show previous last line as first on next page, "
 "-2 = half page"
@@ -6226,11 +6232,11 @@ msgstr ""
 "0 = tüm sayfa kaydırımı, -1 = önceki son satırı bir sonraki sayfanın ilk "
 "satırında göster, -2 = yarım sayfa "
 
-#: src/lang.c:1878
+#: src/lang.c:1880
 msgid "Number of lines to scroll in pager"
 msgstr "Sayfalayıcıda kaydırılacak satır sayısı"
 
-#: src/lang.c:1879
+#: src/lang.c:1881
 msgid ""
 "# Number of lines that cursor-up/down will scroll in article pager\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6249,30 +6255,30 @@ msgstr ""
 "#   2 ya da daha fazla = 2 ya da daha fazla satır kaydır (sadece "
 "sayfalayıcıda)\n"
 
-#: src/lang.c:1889
+#: src/lang.c:1891
 msgid "Display signatures. <SPACE> toggles & <CR> sets."
 msgstr "İmzaları göster. <SPACE> değiştirir & <CR> ayarlar."
 
-#: src/lang.c:1890
+#: src/lang.c:1892
 msgid "Display signatures"
 msgstr "İmzaları göster"
 
-#: src/lang.c:1891
+#: src/lang.c:1893
 msgid "# If OFF don't show signatures when displaying articles\n"
 msgstr "# Eğer KAPALI ise makaleleri görüntülerken imzaları gösterme\n"
 
-#: src/lang.c:1895
+#: src/lang.c:1897
 msgid ""
 "Display uuencoded data as tagged attachments. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Uuencoded veriyi etiketli ek olarak göster. <SPACE> değiştirir & <CR> "
 "ayarlar."
 
-#: src/lang.c:1896
+#: src/lang.c:1898
 msgid "Display uue data as an attachment"
 msgstr "Uue verilerini ek olarak görüntüle"
 
-#: src/lang.c:1897
+#: src/lang.c:1899
 msgid ""
 "# Handling of uuencoded data in the pager\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6292,18 +6298,18 @@ msgstr ""
 "#   2 = hepsini gizle, 1 gibi fakat uuencoded veri gibi görünen veriler\n"
 "#                   etiket satırına küçültülecek.\n"
 
-#: src/lang.c:1907
+#: src/lang.c:1909
 msgid ""
 "Decode German style TeX umlaut codes to ISO. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Alman stili TeX noktalama kodlarını ISO'ya çöz. <SPACE> değiştirir & <CR> "
 "ayarlar."
 
-#: src/lang.c:1908
+#: src/lang.c:1910
 msgid "Display \"a as Umlaut-a"
 msgstr "\"a karaklerlerini noktalı a olarak göster"
 
-#: src/lang.c:1909
+#: src/lang.c:1911
 msgid ""
 "# If ON decode German style TeX umlaut codes to ISO and\n"
 "# show \"a as Umlaut-a, etc.\n"
@@ -6311,15 +6317,15 @@ msgstr ""
 "# Eğer AÇIK ise Alman stili TeX noktalama kodlarını ISO'ya çevir\n"
 "# ve \"a'yı noktalı a, vb. şekilde göster\n"
 
-#: src/lang.c:1914 src/lang.c:1924
+#: src/lang.c:1916 src/lang.c:1926
 msgid "Space separated list of header fields"
 msgstr "Boşluk ile ayrılmış başlık alanları listesi"
 
-#: src/lang.c:1915
+#: src/lang.c:1917
 msgid "Display these header fields (or *)"
 msgstr "Şu başlık alanlarını göster (ya da *)"
 
-#: src/lang.c:1916
+#: src/lang.c:1918
 msgid ""
 "# Which news headers you wish to see. If you want to see _all_ the headers,\n"
 "# place an '*' as this value. This is the only way a wildcard can be used.\n"
@@ -6338,11 +6344,11 @@ msgstr ""
 "listeleyebilirsiniz.\n"
 "# Hiçbir şey belirtmezseniz bu özellik kapanır.\n"
 
-#: src/lang.c:1925
+#: src/lang.c:1927
 msgid "Do not display these header fields"
 msgstr "Bu üst bilgi alanlarını gösterme"
 
-#: src/lang.c:1926
+#: src/lang.c:1928
 msgid ""
 "# Same as 'news_headers_to_display' except it denotes the opposite.\n"
 "# An example of using both options might be if you thought X- headers were\n"
@@ -6361,48 +6367,48 @@ msgstr ""
 "# news_headers_to_not_display=X-Alan X-Pape\n"
 "# Hiçbir şey belirtmezseniz bu özellik kapanır.\n"
 
-#: src/lang.c:1936
+#: src/lang.c:1938
 msgid ""
 "Do you want to enable automatic handling of multipart/alternative articles?"
 msgstr ""
 "multipart/alternative makalelerin otomatik işlenmesini etkinleştirmek "
 "istiyor musunuz?"
 
-#: src/lang.c:1937
+#: src/lang.c:1939
 msgid "Skip multipart/alternative parts"
 msgstr "multipart/alternative bölümleri atla"
 
-#: src/lang.c:1938
+#: src/lang.c:1940
 msgid "# If ON strip multipart/alternative messages automatically\n"
 msgstr "# Eğer AÇIK ise multipart/alternative iletileri otomatik olarak kırp\n"
 
-#: src/lang.c:1942
+#: src/lang.c:1944
 msgid "Enable detection of verbatim blocks? <SPACE> toggles & <CR> sets."
 msgstr ""
 "Birebir aynı blokların algılanmasını etkinleştir. <SPACE> değiştirir & <CR> "
 "ayarlar."
 
-#: src/lang.c:1943
+#: src/lang.c:1945
 msgid "Detection of verbatim blocks"
 msgstr "Birebir aynı blokların algılanması"
 
-#: src/lang.c:1944
+#: src/lang.c:1946
 msgid "# If ON detect verbatim blocks in articles\n"
 msgstr ""
 "# Eğer AÇIK ise makalelerde birebir aynı blokların algılanmasını "
 "etkinleştir\n"
 
-#: src/lang.c:1949
+#: src/lang.c:1951
 msgid "A regex used to decide which lines to show in col_quote."
 msgstr ""
 "Hangi satırların col_quote içinde gösterileceğine karar vermek için regex "
 "kullanıldı."
 
-#: src/lang.c:1950
+#: src/lang.c:1952
 msgid "Regex used to show quoted lines"
 msgstr "Alıntılanmış satırları göstermek için regex kullanıldı"
 
-#: src/lang.c:1951
+#: src/lang.c:1953
 msgid ""
 "# A regular expression that tin will use to decide which lines are\n"
 "# quoted when viewing articles. Quoted lines are shown in col_quote.\n"
@@ -6413,17 +6419,17 @@ msgstr ""
 "col_quote içerisinde gösteriliyor.\n"
 "# Eğer bunu boş bırakırsanız, tin yerleşik varsayılanı kullanacak.\n"
 
-#: src/lang.c:1957
+#: src/lang.c:1959
 msgid "A regex used to decide which lines to show in col_quote2."
 msgstr ""
 "Hangi satırların col_quote2 içinde gösterileceğine karar vermek için regex "
 "kullanıldı."
 
-#: src/lang.c:1958
+#: src/lang.c:1960
 msgid "Regex used to show twice quoted l."
 msgstr "İki kere alıntılanan dil için kullanılan regex."
 
-#: src/lang.c:1959
+#: src/lang.c:1961
 msgid ""
 "# A regular expression that tin will use to decide which lines are\n"
 "# quoted twice. Twice quoted lines are shown in col_quote2.\n"
@@ -6434,17 +6440,17 @@ msgstr ""
 "içerisinde gösteriliyor.\n"
 "# Eğer bunu boş bırakırsanız, tin yerleşik varsayılanı kullanacak.\n"
 
-#: src/lang.c:1965
+#: src/lang.c:1967
 msgid "A regex used to decide which lines to show in col_quote3."
 msgstr ""
 "Hangi satırların col_quote3 içinde gösterileceğine karar vermek için regex "
 "kullanıldı."
 
-#: src/lang.c:1966
+#: src/lang.c:1968
 msgid "Regex used to show >= 3 times q.l."
 msgstr "3 kere ya da daha fazla kullanılan sorgu dili için kullanılan regex."
 
-#: src/lang.c:1967
+#: src/lang.c:1969
 msgid ""
 "# A regular expression that tin will use to decide which lines are\n"
 "# quoted >=3 times. >=3 times quoted lines are shown in col_quote3.\n"
@@ -6456,33 +6462,33 @@ msgstr ""
 "gösteriliyor.\n"
 "# Eğer bunu boş bırakırsanız, tin yerleşik varsayılanı kullanacak.\n"
 
-#: src/lang.c:1973
+#: src/lang.c:1975
 msgid "Enable detection of external quotes? <SPACE> toggles & <CR> sets."
 msgstr ""
 "Harici alıntılar için algılamayı etkinleştir? <SPACE> değiştirir & <CR> "
 "ayarlar."
 
-#: src/lang.c:1974
+#: src/lang.c:1976
 msgid "Detection of external quotes"
 msgstr "Harici alıntılar algılandı"
 
-#: src/lang.c:1975
+#: src/lang.c:1977
 msgid "# If ON detect quoted text from external sources in articles\n"
 msgstr ""
 "# Eğer AÇIK ise makaledeki harici kaynaklardan alıntılanmış metinleri "
 "algıla\n"
 
-#: src/lang.c:1979
+#: src/lang.c:1981
 msgid "A regex used to decide which lines to show in col_extquote."
 msgstr ""
 "Hangi satırların col_extquote içinde gösterileceğine karar vermek için regex "
 "kullanıldı."
 
-#: src/lang.c:1980
+#: src/lang.c:1982
 msgid "Regex used to show quotes from external sources"
 msgstr "Harici kaynaklardan alıntıları göstermek için regex kullanıldı"
 
-#: src/lang.c:1981
+#: src/lang.c:1983
 msgid ""
 "# A regular expression that tin will use to decide which lines are\n"
 "# external quotes. Text from external quotes is shown in col_extquote.\n"
@@ -6493,17 +6499,17 @@ msgstr ""
 "içinde gösteriliyor.\n"
 "# Eğer bunu boş bırakırsanız, tin yerleşik varsayılanı kullanacak.\n"
 
-#: src/lang.c:1988
+#: src/lang.c:1990
 msgid "A regex used to decide which words to show in col_markslashes."
 msgstr ""
 "Hangi kelimelerin col_markslashes içinde gösterileceğine karar vermek için "
 "regex kullanıldı."
 
-#: src/lang.c:1989
+#: src/lang.c:1991
 msgid "Regex used to highlight /slashes/"
 msgstr "/taksimleri/ vurgulamak için regex kullanıldı"
 
-#: src/lang.c:1990
+#: src/lang.c:1992
 msgid ""
 "# A regular expression that tin will use to decide which words\n"
 "# bounded by '/' are to be shown in col_markslashes.\n"
@@ -6514,17 +6520,17 @@ msgstr ""
 "# gösterileceğine karar vermek için kullanacağı düzenli ifade\n"
 "# Eğer bunu boş bırakırsanız, tin yerleşik varsayılanı kullanacak.\n"
 
-#: src/lang.c:1996
+#: src/lang.c:1998
 msgid "A regex used to decide which words to show in col_markstars."
 msgstr ""
 "Hangi kelimelerin col_markstars içinde gösterileceğine karar vermek için "
 "regex kullanıldı."
 
-#: src/lang.c:1997
+#: src/lang.c:1999
 msgid "Regex used to highlight *stars*"
 msgstr "*yıldızları* vurgulamak için regex kullanıldı"
 
-#: src/lang.c:1998
+#: src/lang.c:2000
 msgid ""
 "# A regular expression that tin will use to decide which words\n"
 "# bounded by '*' are to be shown in col_markstars.\n"
@@ -6534,17 +6540,17 @@ msgstr ""
 "# gösterileceğine karar vermek için kullanacağı düzenli ifade\n"
 "# Eğer bunu boş bırakırsanız, tin yerleşik varsayılanı kullanacak.\n"
 
-#: src/lang.c:2004
+#: src/lang.c:2006
 msgid "A regex used to decide which words to show in col_markstroke."
 msgstr ""
 "Hangi kelimelerin col_markstroke içinde gösterileceğine karar vermek için "
 "regex kullanıldı."
 
-#: src/lang.c:2005
+#: src/lang.c:2007
 msgid "Regex used to highlight -strokes-"
 msgstr "-vuruş- ile vurgulama regex'i"
 
-#: src/lang.c:2006
+#: src/lang.c:2008
 msgid ""
 "# A regular expression that tin will use to decide which words\n"
 "# bounded by '-' are to be shown in col_markstroke.\n"
@@ -6554,17 +6560,17 @@ msgstr ""
 "# gösterileceğine karar vermek için kullanacağı düzenli ifade\n"
 "# Eğer bunu boş bırakırsanız, tin yerleşik varsayılanı kullanacak.\n"
 
-#: src/lang.c:2012
+#: src/lang.c:2014
 msgid "A regex used to decide which words to show in col_markdash."
 msgstr ""
 "Hangi kelimelerin col_markdash içinde kullanılacağına karar vermek için "
 "regex kullanıldı."
 
-#: src/lang.c:2013
+#: src/lang.c:2015
 msgid "Regex used to highlight _underline_"
 msgstr "_alt çizgiyi_ vurgulamak için regex kullanıldı"
 
-#: src/lang.c:2014
+#: src/lang.c:2016
 msgid ""
 "# A regular expression that tin will use to decide which words\n"
 "# bounded by '_' are to be shown in col_markdash.\n"
@@ -6574,17 +6580,17 @@ msgstr ""
 "# gösterileceğine karar vermek için kullanacağı düzenli ifade\n"
 "# Eğer bunu boş bırakırsanız, tin yerleşik varsayılanı kullanacak.\n"
 
-#: src/lang.c:2020
+#: src/lang.c:2022
 msgid "A regex used to find Subject prefixes to remove.  Use '|' as separator."
 msgstr ""
 "Çıkartılacak konu öneklerini bulmak için regex kullanıldı.  \"|\" ayırıcı "
 "olarak kullan."
 
-#: src/lang.c:2021
+#: src/lang.c:2023
 msgid "Regex with Subject prefixes"
 msgstr "Konu önekleriyle regex"
 
-#: src/lang.c:2022
+#: src/lang.c:2024
 msgid ""
 "# A regular expression that tin will use to find Subject prefixes\n"
 "# which will be removed before showing the header.\n"
@@ -6592,17 +6598,17 @@ msgstr ""
 "# Tin'in hangi konu öneklerinin başlık gösterilmeden önce\n"
 "# kaldırılacağını bulmak için kullanacağı düzenli ifade.\n"
 
-#: src/lang.c:2027
+#: src/lang.c:2029
 msgid "A regex used to find Subject suffixes to remove.  Use '|' as separator."
 msgstr ""
 "Çıkartılacak konu soneklerini bulmak için regex kullanıldı.  \"|\" ayırıcı "
 "olarak kullan."
 
-#: src/lang.c:2028
+#: src/lang.c:2030
 msgid "Regex with Subject suffixes"
 msgstr "Konu sonekleriyle regex"
 
-#: src/lang.c:2029
+#: src/lang.c:2031
 msgid ""
 "# A regular expression that tin will use to find Subject suffixes\n"
 "# which will be removed when replying or posting followup.\n"
@@ -6610,15 +6616,15 @@ msgstr ""
 "# Tin'in hangi konu soneklerinin takip edeni cevaplarken ya da gönderirken\n"
 "# kaldırılacağını bulmak için kullanacağı düzenli ifade.\n"
 
-#: src/lang.c:2034
+#: src/lang.c:2036
 msgid "A regex used to find the begin of a verbatim block."
 msgstr "Bloğun birebir aynısının başlangıcını bulmak için regex kullanıldı."
 
-#: src/lang.c:2035
+#: src/lang.c:2037
 msgid "Regex for begin of a verbatim block"
 msgstr "Bloğun birebir aynısının başlangıcı için regex"
 
-#: src/lang.c:2036
+#: src/lang.c:2038
 msgid ""
 "# A regular expression that tin will use to find the begin of\n"
 "# a verbatim block.\n"
@@ -6626,15 +6632,15 @@ msgstr ""
 "# Tin'in bloğun birebir aynısının başlangıcını bulmak için\n"
 "# kullanacağı düzenli ifade.\n"
 
-#: src/lang.c:2041
+#: src/lang.c:2043
 msgid "A regex used to find the end of a verbatim block."
 msgstr "Bloğun birebir aynısının sonunu bulmak için regex kullanıldı."
 
-#: src/lang.c:2042
+#: src/lang.c:2044
 msgid "Regex for end of a verbatim block"
 msgstr "Bloğun birebir aynısının sonu için regex"
 
-#: src/lang.c:2043
+#: src/lang.c:2045
 msgid ""
 "# A regular expression that tin will use to find the end of\n"
 "# a verbatim block.\n"
@@ -6642,7 +6648,7 @@ msgstr ""
 "# Tin'in bloğun birebir aynısının sonunu bulmak için\n"
 "# kullanacağı düzenli ifade.\n"
 
-#: src/lang.c:2048
+#: src/lang.c:2050
 msgid ""
 "Enter name and options for external MIME viewer, --internal for built-in "
 "viewer"
@@ -6650,11 +6656,11 @@ msgstr ""
 "Harici MIME görüntüleyici için isim ve seçenek girin, --internal for built-"
 "in viewer"
 
-#: src/lang.c:2049
+#: src/lang.c:2051
 msgid "MIME binary content viewer"
 msgstr "MIME ikili değeri içerik görüntüleyicisi"
 
-#: src/lang.c:2050
+#: src/lang.c:2052
 #, fuzzy
 msgid ""
 "# If --internal automatically use the built in MIME viewer for non-text\n"
@@ -6668,15 +6674,15 @@ msgstr ""
 "# Aksi takdirde harici görüntüleme programı (örn. metamail) belirtin ya da\n"
 "# otomatik görüntüleme istemiyorsanız boş bırakın\n"
 
-#: src/lang.c:2057
+#: src/lang.c:2059
 msgid "Confirm before starting non-text viewing program"
 msgstr "Metin olmayan görüntüleme programını başlatmadan önce onaylayın"
 
-#: src/lang.c:2058
+#: src/lang.c:2060
 msgid "Ask before using MIME viewer"
 msgstr "MIME görüntüleyiciyi kullanmadan önce sor"
 
-#: src/lang.c:2059
+#: src/lang.c:2061
 msgid ""
 "# If ON tin will ask before using metamail to display MIME messages\n"
 "# this only happens if metamail_prog is set to something\n"
@@ -6685,38 +6691,38 @@ msgstr ""
 "önce soracak\n"
 "# bu sadece metamail_prog bir şeye ayarlı ise olur\n"
 
-#: src/lang.c:2064
+#: src/lang.c:2066
 msgid "Ask to mark groups read when quitting. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Grupları kapatırken işaretlemek için sor. <SPACE> değiştirir & <CR> ayarlar."
 
-#: src/lang.c:2065
+#: src/lang.c:2067
 msgid "Catchup read groups when quitting"
 msgstr "Çıkmadan okunan gruplar yakalansın mı"
 
-#: src/lang.c:2066
+#: src/lang.c:2068
 msgid "# If ON ask user if read groups should all be marked read\n"
 msgstr ""
 "# Eğer AÇIK ise kullanıcıya okuma gruplarının tamamının okunmuş olarak "
 "işaretlenmesini sor\n"
 
-#: src/lang.c:2071
+#: src/lang.c:2073
 msgid "Catchup group using left key"
 msgstr "Sol tuş ile grubu yakala"
 
-#: src/lang.c:2072
+#: src/lang.c:2074
 msgid "# If ON catchup group/thread when leaving with the left arrow key.\n"
 msgstr "# Eğer AÇIKSA gruptan/zincirden sol ok tuş ile ayrılırken yakala.\n"
 
-#: src/lang.c:2077
+#: src/lang.c:2079
 msgid "Catchup thread by using left key"
 msgstr "Makaleyi sol tuş ile yakala"
 
-#: src/lang.c:2083
+#: src/lang.c:2085
 msgid "Which actions require confirmation"
 msgstr "Hangi eylemler onay gerektiriyor"
 
-#: src/lang.c:2084
+#: src/lang.c:2086
 #, fuzzy
 msgid ""
 "# What should we ask confirmation for.\n"
@@ -6739,58 +6745,58 @@ msgstr ""
 "#    4 = Çok Bölümlü Konu\n"
 "#    5 = Yüzde Eşleşmesi\n"
 
-#: src/lang.c:2098
+#: src/lang.c:2100
 msgid "'Mark as (un)read' ignores tags"
 msgstr "'Okun(ma)muş olarak işaretle' etiketleri yoksayar"
 
-#: src/lang.c:2099
+#: src/lang.c:2101
 msgid ""
 "# If ON the 'Mark as (un)read' function marks only the current article.\n"
 msgstr ""
 "# Eğer AÇIK durumundaysa 'makaleyi okunmuş/okunmamış olarak işaretle' işlevi "
 "sadece mevcut makale için geçerlidir.\n"
 
-#: src/lang.c:2103
+#: src/lang.c:2105
 msgid "Program to run to open URLs, <CR> sets, <ESC> cancels."
 msgstr "URL açmak için çalıştırılacak program, <CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:2104
+#: src/lang.c:2106
 msgid "Program that opens URLs"
 msgstr "URL'leri açan program"
 
-#: src/lang.c:2105
+#: src/lang.c:2107
 msgid "# The program used to open URLs. The actual URL will be appended\n"
 msgstr "# Program URL açıyordu. Asıl URL'ler sona eklenecek\n"
 
-#: src/lang.c:2110
+#: src/lang.c:2112
 msgid "Use mouse in xterm"
 msgstr "xterm'de fare kullan"
 
-#: src/lang.c:2111
+#: src/lang.c:2113
 msgid "# If ON enable mouse button support on xterm terminals\n"
 msgstr ""
 "# Eğer AÇIK durumundaysa xtrem uçbirimlerini destekleyen fare tuşunu "
 "etkinleştir.\n"
 
-#: src/lang.c:2117
+#: src/lang.c:2119
 msgid "Use scroll keys on keypad"
 msgstr "Tuş takımındaki ok tuşlarını kullan"
 
-#: src/lang.c:2118
+#: src/lang.c:2120
 msgid "# If ON enable scroll keys on terminals that support it\n"
 msgstr ""
 "# Eğer AÇIK durumunduysa uçbirimler tarafından desteklenen kaydırma "
 "tuşlarını etkinleştir\n"
 
-#: src/lang.c:2123
+#: src/lang.c:2125
 msgid "Enter maximum number of article to get. <CR> sets."
 msgstr "En fazla alınacak makalenin sayısını yazın. <CR> ayarlar. "
 
-#: src/lang.c:2124
+#: src/lang.c:2126
 msgid "Number of articles to get"
 msgstr "Alınacak makale sayısı"
 
-#: src/lang.c:2125
+#: src/lang.c:2127
 msgid ""
 "# Number of articles to get (0=no limit), if negative sets maximum number\n"
 "# of already read articles to be read before first unread one\n"
@@ -6799,30 +6805,30 @@ msgstr ""
 "okunmamıştan öncce\n"
 "# şu anki mevcut okunan makale sayısı okunur\n"
 
-#: src/lang.c:2130
+#: src/lang.c:2132
 msgid "Enter number of days article is considered recent. <CR> sets."
 msgstr "Makalenin yeni sayılacağı gün sayısını yazın. <CR> ayarlar."
 
-#: src/lang.c:2131
+#: src/lang.c:2133
 msgid "Article recentness time limit"
 msgstr "Makalenin yenilik zaman sınırı"
 
-#: src/lang.c:2132
+#: src/lang.c:2134
 msgid "# Number of days in which article is considered recent, (0=OFF)\n"
 msgstr "# Makalenin yeni sayıldığı gün sayısı, (0=KAPALI)\n"
 
-#: src/lang.c:2136
+#: src/lang.c:2138
 msgid ""
 "WILDMAT for normal wildcards, REGEX for full regular expression matching."
 msgstr ""
 "WILDMAT normal joker karakterler, REGEX tam düzenli ifade eşleştirmeleri "
 "içindir."
 
-#: src/lang.c:2137
+#: src/lang.c:2139
 msgid "Wildcard matching"
 msgstr "Joker karakterler eşleştiriyor"
 
-#: src/lang.c:2138
+#: src/lang.c:2140
 msgid ""
 "# Wildcard matching\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6834,62 +6840,62 @@ msgstr ""
 "# * 0 = wildmat\n"
 "#   1 = regex\n"
 
-#: src/lang.c:2145
+#: src/lang.c:2147
 msgid "Enter minimal score before an article is marked killed. <CR> sets."
 msgstr ""
 "Makale yok et olarak işaretlenmeden önce minimal skoru yazın. <CR> ayarlar."
 
-#: src/lang.c:2146
+#: src/lang.c:2148
 msgid "Score limit (kill)"
 msgstr "Skor sınırı (yok et)"
 
-#: src/lang.c:2147
+#: src/lang.c:2149
 msgid "# Score limit before an article is marked killed\n"
 msgstr "# Makale yok et olarak işaretlenmeden önceki skor sınırı\n"
 
-#: src/lang.c:2151
+#: src/lang.c:2153
 msgid "Enter default score to kill articles. <CR> sets."
 msgstr "Makaleleri yok etmek için varsayılan skoru yazın. <CR> ayarlar."
 
-#: src/lang.c:2152
+#: src/lang.c:2154
 msgid "Default score to kill articles"
 msgstr "Makaleleri yok etmek için öntanımlı skor"
 
-#: src/lang.c:2153
+#: src/lang.c:2155
 msgid "# Default score to kill articles\n"
 msgstr "# Makaleleri yok etmek için öntanımlı skor\n"
 
-#: src/lang.c:2157
+#: src/lang.c:2159
 msgid "Enter minimal score before an article is marked hot. <CR> sets."
 msgstr ""
 "Makale sıcak olarak işaretlenmeden önce gereken en az skoru yazın. <CR> "
 "ayarlar."
 
-#: src/lang.c:2158
+#: src/lang.c:2160
 msgid "Score limit (select)"
 msgstr "Skor sınırı (seç)          :"
 
-#: src/lang.c:2159
+#: src/lang.c:2161
 msgid "# Score limit before an article is marked hot\n"
 msgstr "# Makale sıcak olarak işaretlenmeden önceki skor sınırı\n"
 
-#: src/lang.c:2163
+#: src/lang.c:2165
 msgid "Enter default score to select articles. <CR> sets."
 msgstr "Makaleleri seçmek için öntanımlı skoru yazın. <CR> ayarlar."
 
-#: src/lang.c:2164
+#: src/lang.c:2166
 msgid "Default score to select articles"
 msgstr "Makaleleri seçmek için öntanımlı skor"
 
-#: src/lang.c:2165
+#: src/lang.c:2167
 msgid "# Default score to select articles\n"
 msgstr "# Makaleleri seçmek için öntanımlı skor\n"
 
-#: src/lang.c:2171
+#: src/lang.c:2173
 msgid "Use slrnface to show ''X-Face:''s"
 msgstr " ''X-Face:''leri göstermek için slmface kullan"
 
-#: src/lang.c:2172
+#: src/lang.c:2174
 msgid ""
 "# If ON using slrnface(1) to interpret the ''X-Face:'' header.\n"
 "# Only useful when running in an xterm.\n"
@@ -6898,19 +6904,19 @@ msgstr ""
 "kullanılır.\n"
 "# Sadece xterm'de çalışırken faydalı.\n"
 
-#: src/lang.c:2180
+#: src/lang.c:2182
 msgid "Use ANSI color"
 msgstr "ANSI renk kullan"
 
-#: src/lang.c:2181
+#: src/lang.c:2183
 msgid "# If ON using ANSI-color\n"
 msgstr "# Eğer AÇIK durumundaysa ANSI-renk kullanılıyor\n"
 
-#: src/lang.c:2186
+#: src/lang.c:2188
 msgid "Standard foreground color"
 msgstr "Standart önplan rengi"
 
-#: src/lang.c:2187
+#: src/lang.c:2189
 msgid ""
 "# Standard foreground color\n"
 "# Default: -1 (default color)\n"
@@ -6918,11 +6924,11 @@ msgstr ""
 "# Standart önplan rengi\n"
 "# Öntanımlı: -1 (varsayılan renk)\n"
 
-#: src/lang.c:2193
+#: src/lang.c:2195
 msgid "Standard background color"
 msgstr "Standart arkaplan rengi"
 
-#: src/lang.c:2194
+#: src/lang.c:2196
 msgid ""
 "# Standard background color\n"
 "# Default: -1 (default color)\n"
@@ -6930,11 +6936,11 @@ msgstr ""
 "# Standart arkaplan rengi\n"
 "# Öntanımlı: -1 (öntanımlı renk)\n"
 
-#: src/lang.c:2200
+#: src/lang.c:2202
 msgid "Color for inverse text (background)"
 msgstr "Ters metin için renk (arkaplan)"
 
-#: src/lang.c:2201
+#: src/lang.c:2203
 msgid ""
 "# Color of background for inverse text\n"
 "# Default: 4 (blue)\n"
@@ -6942,11 +6948,11 @@ msgstr ""
 "# Ters metin için arkaplan rengi\n"
 "# Öntanımlı: 4 (mavi)\n"
 
-#: src/lang.c:2207
+#: src/lang.c:2209
 msgid "Color for inverse text (foreground)"
 msgstr "Ters metin için renk (önplan)"
 
-#: src/lang.c:2208
+#: src/lang.c:2210
 msgid ""
 "# Color of foreground for inverse text\n"
 "# Default: 7 (white)\n"
@@ -6954,11 +6960,11 @@ msgstr ""
 "# Ters çerilmiş metin için önplan rengi\n"
 "# Öntanımlı: 7 (beyaz)\n"
 
-#: src/lang.c:2214
+#: src/lang.c:2216
 msgid "Color of text lines"
 msgstr "Metin satırları için renk"
 
-#: src/lang.c:2215
+#: src/lang.c:2217
 msgid ""
 "# Color of text lines\n"
 "# Default: -1 (default color)\n"
@@ -6966,11 +6972,11 @@ msgstr ""
 "# Metin satırlarının renkleri\n"
 "# Varsayılan: -1 (varsayılan renk)\n"
 
-#: src/lang.c:2221
+#: src/lang.c:2223
 msgid "Color of mini help menu"
 msgstr "Küçük yardım menüsü için renk"
 
-#: src/lang.c:2222
+#: src/lang.c:2224
 msgid ""
 "# Color of mini help menu\n"
 "# Default: 3 (brown)\n"
@@ -6978,11 +6984,11 @@ msgstr ""
 "# Küçük yardım menüsü için renk\n"
 "# Öntanımlı: 3 (kahverengi)\n"
 
-#: src/lang.c:2228
+#: src/lang.c:2230
 msgid "Color of help text"
 msgstr "Yardım metinleri için renk"
 
-#: src/lang.c:2229
+#: src/lang.c:2231
 msgid ""
 "# Color of help pages\n"
 "# Default: -1 (default color)\n"
@@ -6990,11 +6996,11 @@ msgstr ""
 "# Yardım sayfalarının renkleri\n"
 "# Varsayılan: -1 (varsayılan renk)\n"
 
-#: src/lang.c:2235
+#: src/lang.c:2237
 msgid "Color of status messages"
 msgstr "Durum mesajları için renk"
 
-#: src/lang.c:2236
+#: src/lang.c:2238
 msgid ""
 "# Color of messages in last line\n"
 "# Default: 6 (cyan)\n"
@@ -7002,11 +7008,11 @@ msgstr ""
 "# Son satırdaki iletilerin rengi\n"
 "# Öntanımlı: 6 (cam göbeği)\n"
 
-#: src/lang.c:2242
+#: src/lang.c:2244
 msgid "Color of quoted lines"
 msgstr "Alıntılanmış satırların rengi"
 
-#: src/lang.c:2243
+#: src/lang.c:2245
 msgid ""
 "# Color of quote-lines\n"
 "# Default: 2 (green)\n"
@@ -7014,11 +7020,11 @@ msgstr ""
 "# Alıntılanmış satır rengi\n"
 "# Öntanımlı: 2 (yeşil)\n"
 
-#: src/lang.c:2249
+#: src/lang.c:2251
 msgid "Color of twice quoted line"
 msgstr "İki kez alıntılanan satırların rengi"
 
-#: src/lang.c:2250
+#: src/lang.c:2252
 msgid ""
 "# Color of twice quoted lines\n"
 "# Default: 3 (brown)\n"
@@ -7026,32 +7032,32 @@ msgstr ""
 "# İki kez alıntılanan satırların rengi\n"
 "# Öntanımı: 3 (kahverengi)\n"
 
-#: src/lang.c:2256
+#: src/lang.c:2258
 msgid "Color of =>3 times quoted line"
 msgstr "3 ya da daha fazla alıntılanan satırların rengi"
 
-#: src/lang.c:2257
+#: src/lang.c:2259
 msgid ""
 "# Color of >=3 times quoted lines\n"
 "# Default: 4 (blue)\n"
 msgstr ""
 "# 3 ya da daha fazla alıntılanan satırların rengi# Öntanımlı: 4 (mavi)\n"
 
-#: src/lang.c:2263
+#: src/lang.c:2265
 msgid "Color of article header lines"
 msgstr "Makale üst bilgi satırlarının rengi"
 
-#: src/lang.c:2264
+#: src/lang.c:2266
 msgid ""
 "# Color of header-lines\n"
 "# Default: 2 (green)\n"
 msgstr "# Makale üst bilgi satırlarının rengi# Öntanımlı: 2 (yeşil)\n"
 
-#: src/lang.c:2270
+#: src/lang.c:2272
 msgid "Color of actual news header fields"
 msgstr "Mevcut haber üst bilgi alanları için renk"
 
-#: src/lang.c:2271
+#: src/lang.c:2273
 msgid ""
 "# Color of actual news header fields\n"
 "# Default: 9 (light red)\n"
@@ -7059,11 +7065,11 @@ msgstr ""
 "# Mevcut haber üst bilgi alanları için renk\n"
 "# Öntanımlı: 9 (açık kırmızı)\n"
 
-#: src/lang.c:2277
+#: src/lang.c:2279
 msgid "Color of article subject lines"
 msgstr "Makale başlık satırları için renk"
 
-#: src/lang.c:2278
+#: src/lang.c:2280
 msgid ""
 "# Color of article subject\n"
 "# Default: 6 (cyan)\n"
@@ -7071,11 +7077,11 @@ msgstr ""
 "# Makale başlığı rengi\n"
 "# Öntanımlı: 6 (camgöbeği)\n"
 
-#: src/lang.c:2284
+#: src/lang.c:2286
 msgid "Color of external quotes"
 msgstr "Harici alıntıların rengi"
 
-#: src/lang.c:2285
+#: src/lang.c:2287
 msgid ""
 "# Color of quoted text from external sources\n"
 "# Default: 5 (pink)\n"
@@ -7083,11 +7089,11 @@ msgstr ""
 "# Harici kaynaklardan alıntılanan metnin rengi\n"
 "# Varsayılan: 5 (pembe)\n"
 
-#: src/lang.c:2291
+#: src/lang.c:2293
 msgid "Color of response counter"
 msgstr "Yanıt sayacı rengi"
 
-#: src/lang.c:2292
+#: src/lang.c:2294
 msgid ""
 "# Color of response counter\n"
 "# Default: 2 (green)\n"
@@ -7095,11 +7101,11 @@ msgstr ""
 "# Yanıt sayacı rengi\n"
 "# Öntanımlı: 2 (yeşil)\n"
 
-#: src/lang.c:2298
+#: src/lang.c:2300
 msgid "Color of sender (From:)"
 msgstr "Gönderen rengi (Gönderen:)"
 
-#: src/lang.c:2299
+#: src/lang.c:2301
 msgid ""
 "# Color of sender (From:)\n"
 "# Default: 2 (green)\n"
@@ -7107,11 +7113,11 @@ msgstr ""
 "# Gönderen rengi (Gönderen:)\n"
 "# Öntanımlı: 2 (yeşil)\n"
 
-#: src/lang.c:2305
+#: src/lang.c:2307
 msgid "Color of help/mail sign"
 msgstr "Yardım/posta işaretinin rengi"
 
-#: src/lang.c:2306
+#: src/lang.c:2308
 msgid ""
 "# Color of Help/Mail-Sign\n"
 "# Default: 4 (blue)\n"
@@ -7119,11 +7125,11 @@ msgstr ""
 "# Yardım/Posta İşareti rengi\n"
 "# Öntanımlı: 4 (mavi)\n"
 
-#: src/lang.c:2312
+#: src/lang.c:2314
 msgid "Color of signatures"
 msgstr "İmzaların rengi"
 
-#: src/lang.c:2313
+#: src/lang.c:2315
 msgid ""
 "# Color of signature\n"
 "# Default: 4 (blue)\n"
@@ -7131,11 +7137,11 @@ msgstr ""
 "# İnzanın rengi\n"
 "# Öntanımlı: 4 (mavi)\n"
 
-#: src/lang.c:2319
+#: src/lang.c:2321
 msgid "Color of highlighted URLs"
 msgstr "Vurgulanmış URL'lerin rengi"
 
-#: src/lang.c:2320
+#: src/lang.c:2322
 msgid ""
 "# Color of highlighted URLs\n"
 "# Default: -1 (default color)\n"
@@ -7143,11 +7149,11 @@ msgstr ""
 "# Vurgulanmış URL renkleri\n"
 "# Default: -1 (varsayılan renk)\n"
 
-#: src/lang.c:2326
+#: src/lang.c:2328
 msgid "Color of verbatim blocks"
 msgstr "Birebir aynı blokların rengi"
 
-#: src/lang.c:2327
+#: src/lang.c:2329
 msgid ""
 "# Color of verbatim blocks\n"
 "# Default: 5 (pink)\n"
@@ -7155,11 +7161,11 @@ msgstr ""
 "# Birebir aynı blokların rengi\n"
 "# Varsayılan: 5 (pink)\n"
 
-#: src/lang.c:2333
+#: src/lang.c:2335
 msgid "Color of highlighting with *stars*"
 msgstr "*yıldız* ile vurgulama rengi"
 
-#: src/lang.c:2334
+#: src/lang.c:2336
 msgid ""
 "# Color of word highlighting with *stars*\n"
 "# Default: 11 (yellow)\n"
@@ -7167,11 +7173,11 @@ msgstr ""
 "# *yıldız* ile kelime vurgulama rengi\n"
 "# Öntanımlı: 11 (yeşil)\n"
 
-#: src/lang.c:2340
+#: src/lang.c:2342
 msgid "Color of highlighting with _dash_"
 msgstr "_alt çizgi_ ile vurgulama rengi"
 
-#: src/lang.c:2341
+#: src/lang.c:2343
 msgid ""
 "# Color of word highlighting with _dash_\n"
 "# Default: 13 (light pink)\n"
@@ -7179,11 +7185,11 @@ msgstr ""
 "# _alt çizgi_ ile kelime vurgulama rengi\n"
 "# Öntanımlı: 13 (açık pembe)\n"
 
-#: src/lang.c:2347
+#: src/lang.c:2349
 msgid "Color of highlighting with /slash/"
 msgstr "/taksim/ ile vurgulama rengi"
 
-#: src/lang.c:2348
+#: src/lang.c:2350
 msgid ""
 "# Color of word highlighting with /slash/\n"
 "# Default: 14 (light cyan)\n"
@@ -7191,11 +7197,11 @@ msgstr ""
 "# /taksim/ ile kelime vurgulama rengi\n"
 "# Öntanımlı: 14 (açık camgöbeği)\n"
 
-#: src/lang.c:2354
+#: src/lang.c:2356
 msgid "Color of highlighting with -stroke-"
 msgstr "-tire- ile vurgulama rengi"
 
-#: src/lang.c:2355
+#: src/lang.c:2357
 msgid ""
 "# Color of word highlighting with -stroke-\n"
 "# Default: 12 (light blue)\n"
@@ -7203,11 +7209,11 @@ msgstr ""
 "# -vuruş- ile kelime vurgulama rengi\n"
 "# Öntanımlı: 14 (açık mavi)\n"
 
-#: src/lang.c:2362
+#: src/lang.c:2364
 msgid "Attr. of highlighting with *stars*"
 msgstr "*yıldız* ile vurgulama özelliği"
 
-#: src/lang.c:2363
+#: src/lang.c:2365
 msgid ""
 "# Attributes of word highlighting on mono terminals\n"
 "# Possible values are:\n"
@@ -7235,11 +7241,11 @@ msgstr ""
 "# *yıldızlarla kelime vurgulama özelliği\n"
 "# Öntanımlı: 6 (kalın)\n"
 
-#: src/lang.c:2378
+#: src/lang.c:2380
 msgid "Attr. of highlighting with _dash_"
 msgstr "_alt çizgi_ ile vurgulama özelliği"
 
-#: src/lang.c:2379
+#: src/lang.c:2381
 msgid ""
 "# Attribute of word highlighting with _dash_\n"
 "# Default: 2 (best highlighting)\n"
@@ -7247,11 +7253,11 @@ msgstr ""
 "# _tire_ ile vurgulanan kelimenin rengi\n"
 "# Varsayılan: 2 (en iyi vurgu)\n"
 
-#: src/lang.c:2385
+#: src/lang.c:2387
 msgid "Attr. of highlighting with /slash/"
 msgstr "/bölü/ ile vurgulama özelliği"
 
-#: src/lang.c:2386
+#: src/lang.c:2388
 msgid ""
 "# Attribute of word highlighting with /slash/\n"
 "# Default: 5 (half bright)\n"
@@ -7259,11 +7265,11 @@ msgstr ""
 "# /taksim/ ile kelime vurgulama özelliği\n"
 "# Öntanımlı: 5 (hafif parlak)\n"
 
-#: src/lang.c:2392
+#: src/lang.c:2394
 msgid "Attr. of highlighting with -stroke-"
 msgstr "-tire- ile vurgulama özniteliği"
 
-#: src/lang.c:2393
+#: src/lang.c:2395
 msgid ""
 "# Attribute of word highlighting with -stroke-\n"
 "# Default: 3 (reverse video)\n"
@@ -7271,27 +7277,27 @@ msgstr ""
 "# -tire- ile kelime vurgulama özniteliği\n"
 "# Öntanımlı: 3 (ters video)\n"
 
-#: src/lang.c:2399
+#: src/lang.c:2401
 msgid "URL highlighting in message body"
 msgstr "İleti gövdesindeki URL vurgulaması"
 
-#: src/lang.c:2400
+#: src/lang.c:2402
 msgid "# Enable URL highlighting?\n"
 msgstr "# URL vurgulamasını etkinleştir?\n"
 
-#: src/lang.c:2405
+#: src/lang.c:2407
 msgid "Word highlighting in message body"
 msgstr "İleti gövdesinde kelime vurgulama"
 
-#: src/lang.c:2406
+#: src/lang.c:2408
 msgid "# Enable word highlighting?\n"
 msgstr "# Kelime vurgulamasını etkinleştir?\n"
 
-#: src/lang.c:2411
+#: src/lang.c:2413
 msgid "What to display instead of mark"
 msgstr "İşaretin yerine ne gösterilecek?"
 
-#: src/lang.c:2412
+#: src/lang.c:2414
 msgid ""
 "# Should the leading and ending stars and dashes also be displayed,\n"
 "# even when they are highlighting marks?\n"
@@ -7307,64 +7313,64 @@ msgstr ""
 "#   1 = evet, işareti göster\n"
 "# * 2 = onların yerine bir boşluk yaz\n"
 
-#: src/lang.c:2421
+#: src/lang.c:2423
 msgid "Enter column number to wrap article lines to in the pager. <CR> sets."
 msgstr ""
 "Sayfalayıcıdaki makale satırlarını çevrelemek için sütun mumarasını yazın. "
 "<CR> ayarlar."
 
-#: src/lang.c:2422
+#: src/lang.c:2424
 msgid "Page line wrap column"
 msgstr "Sayfa satırı sütunu çevreliyor"
 
-#: src/lang.c:2423
+#: src/lang.c:2425
 msgid "# Wrap article lines at column\n"
 msgstr "# Sütundaki makale satırlarını çevrele\n"
 
-#: src/lang.c:2428
+#: src/lang.c:2430
 msgid "Wrap around threads on next unread"
 msgstr "Sonraki okunmayanda zincirleri çevrele"
 
-#: src/lang.c:2429
+#: src/lang.c:2431
 msgid "# If ON wrap around threads on searching next unread article\n"
 msgstr ""
 "# Eğer AÇIK durumunduysa sonraki okunmayan makaleyi aramak için zincirleri "
 "çevrele\n"
 
-#: src/lang.c:2433
+#: src/lang.c:2435
 msgid "Enter default mail address (and fullname). <CR> sets."
 msgstr "Öntanımlı e-posta adresini (ve tüm ismi) yaz, <CR> ayarlar."
 
-#: src/lang.c:2434 src/lang.c:2949
+#: src/lang.c:2436 src/lang.c:2951
 msgid "Mail address (and fullname)"
 msgstr "E-posta adresi (ve tüm isim)"
 
-#: src/lang.c:2435
+#: src/lang.c:2437
 msgid "# User's mail address (and fullname), if not username@host (fullname)\n"
 msgstr ""
 "# Kullanıcının e-posta adresi (ve tüm ismi), yoksa kullanıcıadı@sistem (tüm "
 "isim)\n"
 
-#: src/lang.c:2440
+#: src/lang.c:2442
 msgid "Show empty Followup-To in editor"
 msgstr "Boş izleneni düzenleyicide göster"
 
-#: src/lang.c:2441
+#: src/lang.c:2443
 msgid "# If ON show empty Followup-To header when editing an article\n"
 msgstr ""
 "# Eğer AÇIK ise makaleyi düzenlerken boş izlenen üst bilgisini göster\n"
 
-#: src/lang.c:2445
+#: src/lang.c:2447
 msgid ""
 "Enter path/! command/--none to create your default signature. <CR> sets."
 msgstr ""
 "Öntanımlı imzayı oluşturmak için yol/! komut/--none  girin. <CR> ayarlar."
 
-#: src/lang.c:2446
+#: src/lang.c:2448
 msgid "Create signature from path/command"
 msgstr "Yoldan/komuttan imza oluştur"
 
-#: src/lang.c:2447
+#: src/lang.c:2449
 #, fuzzy, c-format
 msgid ""
 "# Signature path (random sigs)/file to be used when posting/replying\n"
@@ -7378,43 +7384,43 @@ msgstr ""
 "# sigfile=!komut   harici komutu imza oluşturmak için çalıştırır\n"
 "# sigfile=--none     imza eklemez\n"
 
-#: src/lang.c:2455
+#: src/lang.c:2457
 msgid ""
 "Prepend signature with \"-- \" on own line. <SPACE> toggles & <CR> sets."
 msgstr ""
 "İmzayı kendi satırında \"--\" ile başlat. <SPACE> değiştirir & <CR> ayarlar."
 
-#: src/lang.c:2456
+#: src/lang.c:2458
 msgid "Prepend signature with \"-- \""
 msgstr "İmzayı \"--\" ile başlat"
 
-#: src/lang.c:2457
+#: src/lang.c:2459
 msgid "# If ON prepend the signature with dashes '\\n-- \\n'\n"
 msgstr "# Eğer AÇIK ise imzayı tire ile başlat '\\n-- \\n'\n"
 
-#: src/lang.c:2461
+#: src/lang.c:2463
 msgid "Add signature when reposting articles. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Makaleleri yeniden gönderirken imza ekle. <SPACE> değiştirir & <CR> ayarlar."
 
-#: src/lang.c:2462
+#: src/lang.c:2464
 msgid "Add signature when reposting"
 msgstr "Tekrar gönderirken imza ekle"
 
-#: src/lang.c:2463
+#: src/lang.c:2465
 msgid "# If ON add signature to reposted articles\n"
 msgstr "# Eğer AÇIK ise tekrar gönderilmiş makaleler için imza ekle\n"
 
-#: src/lang.c:2467
+#: src/lang.c:2469
 #, fuzzy
 msgid "Enter quotation marks, %I for author's initials."
 msgstr "Yazarın başlangıçları için, %s ya da %S alıntı işaretleri gir."
 
-#: src/lang.c:2468
+#: src/lang.c:2470
 msgid "Characters used as quote-marks"
 msgstr "Tırnak işaretleri olarak kullanılmış karakterler"
 
-#: src/lang.c:2469
+#: src/lang.c:2471
 #, fuzzy
 msgid ""
 "# Characters used in quoting to followups and replies.\n"
@@ -7423,11 +7429,11 @@ msgstr ""
 "# Cevaplar ve takipleri alıntılamak için kullanılacak karakter\n"
 "# '_' şuna dönüştü ' ', %s, %S yazarın başlangıçlarıyla değiştiriliyor.\n"
 
-#: src/lang.c:2475
+#: src/lang.c:2477
 msgid "Quoting behavior"
 msgstr "Alıntılama davranışı"
 
-#: src/lang.c:2476
+#: src/lang.c:2478
 msgid ""
 "# How quoting should be handled when following up or replying.\n"
 "# Possible values are (the default is marked with *):\n"
@@ -7451,17 +7457,17 @@ msgstr ""
 "#   6 = İmzaları alıntıla, boş satırları alıntıla\n"
 "#   7 = Alıntıları sıkıştır, imzaları alıntıla, boş satırları alıntıla\n"
 
-#: src/lang.c:2489 src/lang.c:2497 src/lang.c:2503
+#: src/lang.c:2491 src/lang.c:2499 src/lang.c:2505
 msgid ""
 "%A Addr %D Date %F Addr+Name %G Groupname %M Message-ID %N Name %C First Name"
 msgstr ""
 "%A Adres %D Tarih %F Adres+Ad %G Grup adı %M İleti-Kimliği %N Ad %C İlk Ad"
 
-#: src/lang.c:2490
+#: src/lang.c:2492
 msgid "Quote line when following up"
 msgstr "Takip ederken satırı alıntıla"
 
-#: src/lang.c:2491
+#: src/lang.c:2493
 msgid ""
 "# Format of quote line when mailing/posting/following-up an article\n"
 "# %A Address    %D Date   %F Addr+Name   %G Groupname   %M Message-ID\n"
@@ -7472,40 +7478,40 @@ msgstr ""
 "# %A Adres    %D Tarih   %F Adres+Ad   %G Grupadı   %M İleti-Kimliği\n"
 "# %N Tam Ad  %C İlk Ad   %I İlk harfler\n"
 
-#: src/lang.c:2498
+#: src/lang.c:2500
 msgid "Quote line when cross-posting"
 msgstr "Çapraz gönderirken satırı alıntıla"
 
-#: src/lang.c:2504
+#: src/lang.c:2506
 msgid "Quote line when mailing"
 msgstr "E-posta gönderirken satırı alıntıla"
 
-#: src/lang.c:2509
+#: src/lang.c:2511
 msgid "If ON, include User-Agent: header. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Eğer AÇIK durumdaysa, User-Agent: başlığı ekler. <SPACE> değiştirir & <CR> "
 "ayarlar."
 
-#: src/lang.c:2510
+#: src/lang.c:2512
 msgid "Insert 'User-Agent:' header"
 msgstr "'User-Agent' başlığı ekle"
 
-#: src/lang.c:2511
+#: src/lang.c:2513
 msgid "# If ON include advertising User-Agent: header\n"
 msgstr "# Eğer AÇIK durumdaysa User-Agent: başlığını içer\n"
 
-#: src/lang.c:2516
+#: src/lang.c:2518
 msgid ""
 "Enter charset name for MIME (e.g. US-ASCII, ISO-8859-1, EUC-KR), <CR> to set."
 msgstr ""
 "MIME için karakter kümesi adı girin (örn. US-ASCII, ISO-8859-1, EUC-KR), "
 "<CR> ayarlar."
 
-#: src/lang.c:2517
+#: src/lang.c:2519
 msgid "MM_CHARSET"
 msgstr "MM_CHARSET"
 
-#: src/lang.c:2518
+#: src/lang.c:2520
 msgid ""
 "# Charset supported locally which is also used for MIME header and\n"
 "# Content-Type header.\n"
@@ -7523,43 +7529,43 @@ msgstr ""
 "# haricinde karakter kümeleri gösterilemez kabul edilir ve '?' olarak "
 "gösterilir.\n"
 
-#: src/lang.c:2528
+#: src/lang.c:2530
 msgid "MM_NETWORK_CHARSET"
 msgstr "MM_NETWORK_CHARSET"
 
-#: src/lang.c:2529
+#: src/lang.c:2531
 msgid "# Charset used for MIME (Content-Type) header in postings.\n"
 msgstr ""
 "Gönderilerde MIME (Content-Type) başlığı için kullanılan karakter kümesi.\n"
 
-#: src/lang.c:2533
+#: src/lang.c:2535
 msgid ""
 "Enter local charset name (e.g. US-ASCII, ISO-8859-1, EUC-KR), <CR> to set."
 msgstr ""
 "Yerel karakter kümesi adı giriniz (örneğin US-ASCII, ISO-8859-1, EUC-KR), "
 "<CR> ayarlar."
 
-#: src/lang.c:2534
+#: src/lang.c:2536
 msgid "MM_LOCAL_CHARSET"
 msgstr "MM_LOCAL_CHARSET"
 
-#: src/lang.c:2535
+#: src/lang.c:2537
 msgid "# Charset supported locally.\n"
 msgstr "# Karakter kümesi yerel olarak destekleniyor.\n"
 
-#: src/lang.c:2542
+#: src/lang.c:2544
 msgid "Mailbox format"
 msgstr "Mailbox biçimi"
 
-#: src/lang.c:2543
+#: src/lang.c:2545
 msgid "# Format of the mailbox.\n"
 msgstr "# mailbox biçimi.\n"
 
-#: src/lang.c:2548
+#: src/lang.c:2550
 msgid "MIME encoding in news messages"
 msgstr "Haber mesajlarında MIME kodlama"
 
-#: src/lang.c:2549
+#: src/lang.c:2551
 msgid ""
 "# MIME encoding (8bit, base64, quoted-printable, 7bit) of the body\n"
 "# for mails and posts, if necessary. QP is efficient for most European\n"
@@ -7575,15 +7581,15 @@ msgstr ""
 "# Anca Base64 çoğu 8bit Doğu Asya, Yunanca ve Rusça gibi çok fazla 8bit\n"
 "# karaktere sahip olaln karakter kümelerinde daha iyidir.\n"
 
-#: src/lang.c:2557 src/lang.c:2578
+#: src/lang.c:2559 src/lang.c:2580
 msgid "Don't change unless you know what you are doing. <ESC> cancels."
 msgstr "Ne yaptığını bilmiyorsan değiştirme. <ESC> iptal eder."
 
-#: src/lang.c:2558
+#: src/lang.c:2560
 msgid "Use 8bit characters in news headers"
 msgstr "Haber başlıklarında 8bit karakterler kullan."
 
-#: src/lang.c:2559
+#: src/lang.c:2561
 msgid ""
 "# If ON, 8bit characters in news headers are NOT encoded.\n"
 "# default is OFF. Thus 8bit characters are encoded by default.\n"
@@ -7595,32 +7601,32 @@ msgstr ""
 "# kodlanır. post_mime_encoding değeri 8bit ise bu değere bakılmaksızın\n"
 "# başlıklardaki 8bit karakterler kodlanır.\n"
 
-#: src/lang.c:2566
+#: src/lang.c:2568
 msgid ""
 "Auto-view post-processed files <SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr ""
 "Sonradan işlenmiş dosyaları otomatik olarak göster <SPACE> değiştirir, <CR> "
 "ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:2567
+#: src/lang.c:2569
 msgid "View post-processed files"
 msgstr "sonradan-işlenmiş dosyaları göster"
 
-#: src/lang.c:2568
+#: src/lang.c:2570
 msgid "# If set, post processed files will be opened in a viewer\n"
 msgstr ""
 "# Eğer ayarlandıysa, sonradan işlenmiş dosyalar bir görüntüleyicide "
 "açılacaktır\n"
 
-#: src/lang.c:2573
+#: src/lang.c:2575
 msgid "MIME encoding in mail messages"
 msgstr "E-posta iletilerinde MIME kodlama"
 
-#: src/lang.c:2579
+#: src/lang.c:2581
 msgid "Use 8bit characters in mail headers"
 msgstr "E-posta başlıklarında 8bit karakterler kullan"
 
-#: src/lang.c:2580
+#: src/lang.c:2582
 msgid ""
 "# If ON, 8bit characters in mail headers are NOT encoded.\n"
 "# default is OFF. Thus 8bit characters are encoded by default.\n"
@@ -7638,11 +7644,11 @@ msgstr ""
 "# yasaklar. Eğer çok önemli bir nedeniniz yoksa bunu AÇIK TUTMAMANI "
 "önerilir.\n"
 
-#: src/lang.c:2591
+#: src/lang.c:2593
 msgid "Strip blanks from ends of lines"
 msgstr "Satır sonu boşları yok et"
 
-#: src/lang.c:2592
+#: src/lang.c:2594
 msgid ""
 "# If ON strip blanks from ends of lines for faster display on slow "
 "terminals.\n"
@@ -7650,17 +7656,17 @@ msgstr ""
 "# Eğer AÇIK durumdaysa yavaş uçbirimde daha hızlı görüntü için boşları yok "
 "et.\n"
 
-#: src/lang.c:2598
+#: src/lang.c:2600
 msgid "If ON, use transliteration. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Eğer AÇIK durumdaysa damga çevirisi kullan. <SPACE> değiştirir & <CR> "
 "ayarlar."
 
-#: src/lang.c:2599
+#: src/lang.c:2601
 msgid "Transliteration"
 msgstr "Başka alfabe ile yazma"
 
-#: src/lang.c:2600
+#: src/lang.c:2602
 msgid ""
 "# If ON, use //TRANSLIT extension. This means that when a character cannot\n"
 "# be represented in the in the target character set, it can be approximated\n"
@@ -7671,11 +7677,11 @@ msgstr ""
 "karakterlerin\n"
 "# bir ya da birkaçı ile benzetilebilir.\n"
 
-#: src/lang.c:2608
+#: src/lang.c:2610
 msgid "Send you a Cc/Bcc automatically"
 msgstr "kopyasını/gizli kopyasını otomatik olarak kendine gönder"
 
-#: src/lang.c:2609
+#: src/lang.c:2611
 msgid ""
 "# Put your name in the Cc: and/or Bcc: field when mailing an article.\n"
 "# Possible values are (the default is marked with *):\n"
@@ -7691,25 +7697,25 @@ msgstr ""
 "#   2 = Gizli Bilgi\n"
 "#   3 = Bilgi ve Gizli Bilgi\n"
 
-#: src/lang.c:2620
+#: src/lang.c:2622
 msgid "Hash algorithm for Cancel-Lock/Cancel-Key"
 msgstr ""
 
-#: src/lang.c:2621
+#: src/lang.c:2623
 msgid ""
 "# Hash algorithm for Cancel-Lock/Cancel-Key (default 'sha1')\n"
 "# Use 'none' to not generate Cancel-Lock headers.\n"
 msgstr ""
 
-#: src/lang.c:2627
+#: src/lang.c:2629
 msgid "Enter address elements about which you want to be warned. <CR> sets."
 msgstr "Uyarılmak istediğiniz adres bileşenlerini girin. <CR> ayarlar."
 
-#: src/lang.c:2628
+#: src/lang.c:2630
 msgid "Spamtrap warning address parts"
 msgstr "Spam tuzağı uyarı adres bölümleri"
 
-#: src/lang.c:2629
+#: src/lang.c:2631
 msgid ""
 "# A comma-delimited list of address-parts you want to be warned\n"
 "# about when trying to reply by email.\n"
@@ -7717,30 +7723,30 @@ msgstr ""
 "# E-posta ile cevap yazmaya çalışırken\n"
 "# uyarılmak istediğin virgülle ayrılmış adres bölümleri listesi\n"
 
-#: src/lang.c:2634
+#: src/lang.c:2636
 msgid "Enter default number of days a filter entry will be valid. <CR> sets."
 msgstr ""
 "Bir filtre girdisinin geçerli olacağı varsayılan gün sayısına gir. <CR> "
 "ayarlar."
 
-#: src/lang.c:2635
+#: src/lang.c:2637
 msgid "No. of days a filter entry is valid"
 msgstr "Süzgeç girdisinin geçerli olduğu gün sayısı"
 
-#: src/lang.c:2636
+#: src/lang.c:2638
 msgid "# Number of days a short term filter will be active\n"
 msgstr "# Kısa süreli filtrenin aktif olacağı gün sayısı\n"
 
-#: src/lang.c:2640
+#: src/lang.c:2642
 msgid "Add posted articles to filter. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Gönderilmiş makaleleri süzgece ekle. <SPACE> değiştirir & <CR> ayarlar."
 
-#: src/lang.c:2641
+#: src/lang.c:2643
 msgid "Add posted articles to filter"
 msgstr "Gönderilen makaleleri süzgece ekle"
 
-#: src/lang.c:2642
+#: src/lang.c:2644
 msgid ""
 "# If ON add posted articles which start a new thread to filter for\n"
 "# highlighting follow-ups\n"
@@ -7749,26 +7755,26 @@ msgstr ""
 "oluşturan\n"
 "# gönderilmiş makaleleri ekle\n"
 
-#: src/lang.c:2646
+#: src/lang.c:2648
 msgid "The directory where articles/threads are to be saved in mailbox format."
 msgstr ""
 "makalelerin/e-posta zincirlerinin mailbox biçiminde kaydedileceği dizin"
 
-#: src/lang.c:2647
+#: src/lang.c:2649
 msgid "Mail directory"
 msgstr "Eposta dizini"
 
-#: src/lang.c:2648
+#: src/lang.c:2650
 msgid "# (-m) directory where articles/threads are saved in mailbox format\n"
 msgstr ""
 "# (-m) dizin makaleler/zincirlerin mailbox biçiminde kaydetmek istediğiniz "
 "dizin\n"
 
-#: src/lang.c:2653
+#: src/lang.c:2655
 msgid "Save articles in batch mode (-S)"
 msgstr "Makaleleri toplu modda kaydet (-S)"
 
-#: src/lang.c:2654
+#: src/lang.c:2656
 msgid ""
 "# If ON articles/threads will be saved in batch mode when save -S\n"
 "# or mail (-M/-N) is specified on the command line\n"
@@ -7776,19 +7782,19 @@ msgstr ""
 "# Eğer AÇIK durumdaysa komut satırından save -S ya da mail (-M/-N)\n"
 "# belirtilirse makaleler/zincirler toplu kipte kaydedilir\n"
 
-#: src/lang.c:2659
+#: src/lang.c:2661
 msgid "The directory where you want articles/threads saved."
 msgstr "makeleleri/e-pota zincirlerini kaydetmek istediğiniz dizin."
 
-#: src/lang.c:2660
+#: src/lang.c:2662
 msgid "Directory to save arts/threads in"
 msgstr "makaleler/zincirler şu dizine kaydedilir"
 
-#: src/lang.c:2661
+#: src/lang.c:2663
 msgid "# Directory where articles/threads are saved\n"
 msgstr "# Makalelerin/zincirlerin kaydedildiği dizin\n"
 
-#: src/lang.c:2665
+#: src/lang.c:2667
 msgid ""
 "Auto save article/thread by Archive-name: header. <SPACE> toggles & <CR> "
 "sets."
@@ -7796,11 +7802,11 @@ msgstr ""
 "Archive-name: başlığına göre makale/zincirleri otomatik kaydet. <SPACE> "
 "değiştirir & <CR> ayarlar."
 
-#: src/lang.c:2666
+#: src/lang.c:2668
 msgid "Use Archive-name: header for save"
 msgstr "Kaydetmek için Archive-name: üst bilgisini kullan"
 
-#: src/lang.c:2667
+#: src/lang.c:2669
 msgid ""
 "# If ON articles/threads with Archive-name: in mail header will\n"
 "# be automatically saved with the Archive-name & part/patch no.\n"
@@ -7808,7 +7814,7 @@ msgstr ""
 "# Eğer AÇIK ise Archive-name: olan başlık makaleler/zincirler\n"
 "# otomatik olarak Arcive-name & parti/ek no. ile kaydedilecektir.\n"
 
-#: src/lang.c:2672
+#: src/lang.c:2674
 msgid ""
 "Mark saved articles/threads as read. <SPACE> toggles, <CR> sets, <ESC> "
 "cancels."
@@ -7816,23 +7822,23 @@ msgstr ""
 "Kaydedilen makale/zincirleri okunmuş olarak işaretle. <SPACE> değiştirir, "
 "<CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:2673
+#: src/lang.c:2675
 msgid "Mark saved articles/threads as read"
 msgstr "Kaydedilmiş makaleleri/eposta zincirlerini okunmuş olarak işaretle"
 
-#: src/lang.c:2674
+#: src/lang.c:2676
 msgid "# If ON mark articles that are saved as read\n"
 msgstr "# AÇIK durumdaysa okunmuş olarak kaydedilmiş makaleleri işaretle\n"
 
-#: src/lang.c:2678
+#: src/lang.c:2680
 msgid "Do post processing (eg. extract attachments) for saved articles."
 msgstr "Kaydedilmiş makaleler için sonradan işleme uygula (örn. ek çıkartma)."
 
-#: src/lang.c:2679
+#: src/lang.c:2681
 msgid "Post process saved articles"
 msgstr "Kaydedilmiş makaleleri sonradan işle"
 
-#: src/lang.c:2680
+#: src/lang.c:2682
 msgid ""
 "# Perform post processing (saving binary attachments) from saved articles.\n"
 "# Possible values are (the default is marked with *):\n"
@@ -7846,11 +7852,11 @@ msgstr ""
 "#   1 = sadece kabuk arşivlerini (shar) çıkart\n"
 "#   2 = evet\n"
 
-#: src/lang.c:2689
+#: src/lang.c:2691
 msgid "Process only unread articles"
 msgstr "Sadece okunmayan makaleleri işle"
 
-#: src/lang.c:2690
+#: src/lang.c:2692
 msgid ""
 "# If ON only save/print/pipe/mail unread articles (tagged articles "
 "excepted)\n"
@@ -7858,23 +7864,23 @@ msgstr ""
 "# Eğer AÇIK durumundaysa okunmamış makaleleri sadece kaydet/yazdır/yönlendir/"
 "postala (etiketlenmiş makaleler hariç tutulur)\n"
 
-#: src/lang.c:2695
+#: src/lang.c:2697
 msgid "Print all or just part of header. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Başlığın tümünü ya da bir kısmını yazdır. <SPACE> değiştirir & <CR> ayarlar."
 
-#: src/lang.c:2696
+#: src/lang.c:2698
 msgid "Print all headers when printing"
 msgstr "Yazdırırken bütün üst bilgileri yazdır"
 
-#: src/lang.c:2697
+#: src/lang.c:2699
 msgid ""
 "# If ON print all of article header otherwise just the important lines\n"
 msgstr ""
 "# Eğer AÇIK durumundaysa makale başlığının tümünü değilse sadece önemli "
 "olanları yazdır\n"
 
-#: src/lang.c:2701
+#: src/lang.c:2703
 msgid ""
 "The printer program with options that is to be used to print articles/"
 "threads."
@@ -7882,39 +7888,39 @@ msgstr ""
 "Makaleleri/zincirleri yazdırmak için kullanılacak seçenekleriyle yazıcı "
 "programı"
 
-#: src/lang.c:2702
+#: src/lang.c:2704
 msgid "Printer program with options"
 msgstr "Seçenekleriyle yazıcı programı"
 
-#: src/lang.c:2703
+#: src/lang.c:2705
 msgid "# Print program with parameters used to print articles/threads\n"
 msgstr ""
 "# Programı makaleleri/zincirleri yazdırmak için kullanılan parametreleri "
 "kullanarak yazdır\n"
 
-#: src/lang.c:2709
+#: src/lang.c:2711
 msgid "Force redraw after certain commands"
 msgstr "Belli komutlardan sonra ekrandaki çizimin yenilenmesini zorla"
 
-#: src/lang.c:2710
+#: src/lang.c:2712
 msgid ""
 "# If ON a screen redraw will always be done after certain external commands\n"
 msgstr ""
 "# Eğer AÇIK durumdaysa ekrandaki çizimin yenilenmesi bazı dış komutlardan "
 "sonra tamamlanacak\n"
 
-#: src/lang.c:2714
+#: src/lang.c:2716
 msgid ""
 "Start editor with line offset. <SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr ""
 "Satır kaydırarak düzenleciyi başlat. <SPACE> değiştirir, <CR> ayarlar, <ESC> "
 "iptal eder."
 
-#: src/lang.c:2715
+#: src/lang.c:2717
 msgid "Start editor with line offset"
 msgstr "Düzenleyiciyi satır konumu ile başlat"
 
-#: src/lang.c:2716
+#: src/lang.c:2718
 msgid ""
 "# If ON editor will be started with cursor offset into the file\n"
 "# otherwise the cursor will be positioned at the first line\n"
@@ -7922,17 +7928,17 @@ msgstr ""
 "# AÇIK ise düzenleyici imleci dosyadaki kaldığı yerden başlatacak\n"
 "# aksi takdirde imleç ilk satırda yer alacak\n"
 
-#: src/lang.c:2721
+#: src/lang.c:2723
 msgid "Enter %E for editor, %F for filename, %N for line-number, <CR> to set."
 msgstr ""
 "Düzenleyici için %E, dosya adı için %F, satır numarası için %N, ayarlama "
 "için <CR>."
 
-#: src/lang.c:2722
+#: src/lang.c:2724
 msgid "Invocation of your editor"
 msgstr "Düzenleyicinizin başlatılması"
 
-#: src/lang.c:2723
+#: src/lang.c:2725
 msgid ""
 "# Format of editor line including parameters\n"
 "# %E Editor  %F Filename  %N Linenumber\n"
@@ -7940,17 +7946,17 @@ msgstr ""
 "# Parametrelerde düzenleyici satırı biçimi\n"
 "# %E Düzenleyici  %F Dosya adı  %N Satır numarası\n"
 
-#: src/lang.c:2728
+#: src/lang.c:2730
 msgid ""
 "Enter name and options for external-inews, --internal for internal inews"
 msgstr ""
 "Harici inews programı için isim ve seçenekler, dahili inews için --internal"
 
-#: src/lang.c:2729
+#: src/lang.c:2731
 msgid "External inews"
 msgstr "Harici inews"
 
-#: src/lang.c:2730
+#: src/lang.c:2732
 msgid ""
 "# If --internal use the built in mini inews for posting via NNTP\n"
 "# otherwise use an external inews program\n"
@@ -7958,18 +7964,18 @@ msgstr ""
 "# Eğer --internal ise NNTP üzerinden göndermek için dahili mini inews\n"
 "# kullan, aksi takdirde harici inews programı kullan\n"
 
-#: src/lang.c:2734
+#: src/lang.c:2736
 msgid ""
 "Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."
 msgstr ""
 "Posta gönderici için %M, konu için %S, gönderilen için %T, dosya adı için "
 "%F, ayarlamak için <CR>."
 
-#: src/lang.c:2735
+#: src/lang.c:2737
 msgid "Invocation of your mail command"
 msgstr "E-posta komutunuzun başlatılması"
 
-#: src/lang.c:2736
+#: src/lang.c:2738
 msgid ""
 "# Format of mailer line including parameters\n"
 "# %M Mailer  %S Subject  %T To  %F Filename\n"
@@ -7981,11 +7987,11 @@ msgstr ""
 "# örn. epostacı olarak elm:    elm -s \"%S\" \"%T\" < %F\n"
 "# örn. elm interaktif          :    elm -i %F -s \"%S\" \"%T\"\n"
 
-#: src/lang.c:2744
+#: src/lang.c:2746
 msgid "Use interactive mail reader"
 msgstr "Etkileşimli posta okuyucusu kullan"
 
-#: src/lang.c:2745
+#: src/lang.c:2747
 msgid ""
 "# Interactive mailreader\n"
 "# Possible values are (the default is marked with *):\n"
@@ -8001,36 +8007,36 @@ msgstr ""
 "#   2 = etkileşimli eposta okuyucusunu dosyada başlıklar olmayacak şekilde "
 "kullan\n"
 
-#: src/lang.c:2754
+#: src/lang.c:2756
 msgid "Remove ~/.article after posting"
 msgstr "Gönderim sonrası ~/.article dosyasını sil"
 
-#: src/lang.c:2755
+#: src/lang.c:2757
 msgid "# If ON remove ~/.article after posting.\n"
 msgstr "# AÇIK durumundaysa gönderim sonrası ~/.article dosyasını sil.\n"
 
-#: src/lang.c:2761
+#: src/lang.c:2763
 msgid "Use UTF-8 graphics (thread tree etc.)"
 msgstr "UTF-8 grafik kullan (zincir ağacı vb.)"
 
-#: src/lang.c:2762
+#: src/lang.c:2764
 msgid ""
 "# If ON use UTF-8 characters for indicator '->', tree and ellipsis '...'.\n"
 msgstr ""
 "# Eğer AÇIK ise belirtgeç '->', ağaç ve elips '...' için UTF-8 karakterler "
 "kullan.\n"
 
-#: src/lang.c:2767
+#: src/lang.c:2769
 msgid "Filename for all posted articles, <CR> sets, no filename=do not save."
 msgstr ""
 "Tüm gönderilen makaleler için dosya adı, <CR> ayarlar, dosya adı "
 "yok=kaydetme."
 
-#: src/lang.c:2768
+#: src/lang.c:2770
 msgid "Filename for posted articles"
 msgstr "Gönderilen makaleler için dosya adı"
 
-#: src/lang.c:2769
+#: src/lang.c:2771
 msgid ""
 "# Filename where to keep all postings (default posted)\n"
 "# If no filename is set then postings will not be saved\n"
@@ -8038,39 +8044,39 @@ msgstr ""
 "# Tüm gönderilerin tutulacağı dosya adı (gönderilmiş varsayılan)\n"
 "# Dosya adı ayarlanmazsa hiçbir gönderi kaydedilmeyecek\n"
 
-#: src/lang.c:2774
+#: src/lang.c:2776
 msgid ""
 "Keep all failed articles in ~/dead.articles. <SPACE> toggles & <CR> sets."
 msgstr ""
 "Tüm başarısız makaleleri ~/dead.articles altında tut. <SPACE> değiştirir & "
 "<CR> ayarlar."
 
-#: src/lang.c:2775
+#: src/lang.c:2777
 msgid "Keep failed arts in ~/dead.articles"
 msgstr "Başarısız makaleleri ~/dead.articles altında tut"
 
-#: src/lang.c:2776
+#: src/lang.c:2778
 msgid "# If ON keep all failed postings in ~/dead.articles\n"
 msgstr ""
 "# Eğer AÇIK ise tüm başarısız gönderileri ~/dead.articles içinde sakla\n"
 
-#: src/lang.c:2780
+#: src/lang.c:2782
 msgid "Do you want to strip unsubscribed groups from .newsrc"
 msgstr "Abone olmayan grupları çıkart .newsrc dosyasından çıkart"
 
-#: src/lang.c:2781
+#: src/lang.c:2783
 msgid "No unsubscribed groups in newsrc"
 msgstr "newsrc dosyasında abone olunmayan grup yok"
 
-#: src/lang.c:2782
+#: src/lang.c:2784
 msgid "# If ON strip unsubscribed groups from newsrc\n"
 msgstr "# Eğer AÇIK ise newsrc'den abonelikten çıkılmış grupları çıkart\n"
 
-#: src/lang.c:2787
+#: src/lang.c:2789
 msgid "Remove bogus groups from newsrc"
 msgstr "sahte gruplarını newsrc'den çıkart"
 
-#: src/lang.c:2788
+#: src/lang.c:2790
 msgid ""
 "# What to do with bogus groups in newsrc file\n"
 "# Possible values are (the default is marked with *):\n"
@@ -8084,75 +8090,75 @@ msgstr ""
 "#   1 = kaldır\n"
 "#   2 = seçim ekranında D ile vurgula\n"
 
-#: src/lang.c:2797
+#: src/lang.c:2799
 msgid ""
 "Enter number of seconds to wait for a response from the server. <CR> sets."
 msgstr ""
 "Sunucudan cevap gelene kadar beklenecek saniye miktarını girin. <CR> ayarlar."
 
-#: src/lang.c:2798
+#: src/lang.c:2800
 msgid "NNTP read timeout in seconds"
 msgstr "NNTP saniye cinsinden okuma zaman aşımı"
 
-#: src/lang.c:2799
+#: src/lang.c:2801
 msgid ""
 "# Time in seconds to wait for a response from the server (0=no timeout)\n"
 msgstr ""
 "# Sunucudan cevap gelmesi için saniye cinsinden beklenen süre (0=zaman aşımı "
 "yok)\n"
 
-#: src/lang.c:2804
+#: src/lang.c:2806
 msgid "Enter number of seconds until active file will be reread. <CR> sets."
 msgstr ""
 "Aktif dosya tekrar okunana kadar beklenecek saniye miktarını girin. <CR> "
 "ayarlar."
 
-#: src/lang.c:2805
+#: src/lang.c:2807
 msgid "Interval in secs to reread active"
 msgstr "Etkin olanı yeniden okmak için saniye cinsinden zaman aralığı"
 
-#: src/lang.c:2806
+#: src/lang.c:2808
 msgid ""
 "# Time interval in seconds between rereading the active file (0=never)\n"
 msgstr ""
 "# Aktif dosyalar tekrar okunurken saniye cinsinden zaman aralığı (0=asla)\n"
 
-#: src/lang.c:2811
+#: src/lang.c:2813
 msgid "Reconnect to server automatically"
 msgstr "Sunucuya otomatik olarak bağlan"
 
-#: src/lang.c:2812
+#: src/lang.c:2814
 msgid ""
 "# If ON automatically reconnect to NNTP server if the connection is broken\n"
 msgstr ""
 "# AÇIK konumunda ise bağlantı kesilirse NNTP sunucusuna otomatik olarak "
 "tekrar bağlan\n"
 
-#: src/lang.c:2816
+#: src/lang.c:2818
 msgid ""
 "Create local copies of NNTP overview files. <SPACE> toggles & <CR> sets."
 msgstr ""
 "NNTP önizleme dosyalarının yerel kopyalarını yarat. <SPACE> değiştirir & "
 "<CR> ayarlar."
 
-#: src/lang.c:2817
+#: src/lang.c:2819
 msgid "Cache NNTP overview files locally"
 msgstr "NNTP önizleme dosyalarını yerel olarak önbellekle"
 
-#: src/lang.c:2818
+#: src/lang.c:2820
 msgid "# If ON, create local copies of NNTP overview files.\n"
 msgstr ""
 "# AÇIK durumundaysa, NNTP önizleme dosyalarının yerel kopyalarını yarat.\n"
 
-#: src/lang.c:2822 src/lang.c:2837 src/lang.c:2857 src/lang.c:2876
+#: src/lang.c:2824 src/lang.c:2839 src/lang.c:2859 src/lang.c:2878
 msgid "Enter format string. <CR> sets, <ESC> cancels."
 msgstr "Biçimleme dizgesini girin. <CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:2823
+#: src/lang.c:2825
 msgid "Format string for selection level"
 msgstr "Seçim seviyesinde formatlama dizgesi"
 
-#: src/lang.c:2824
+#: src/lang.c:2826
 msgid ""
 "# Format string for selection level representation\n"
 "# Default: %f %n %U  %G  %d\n"
@@ -8177,11 +8183,11 @@ msgstr ""
 "#   %n              Sayı, ekrandaki satır sayısı\n"
 "#   %U              Okunmamış say\n"
 
-#: src/lang.c:2838
+#: src/lang.c:2840
 msgid "Format string for group level"
 msgstr "Grup seviyesinde biçimleme dizgesi"
 
-#: src/lang.c:2839
+#: src/lang.c:2841
 msgid ""
 "# Format string for group level representation\n"
 "# Default: %n %m %R %L  %s  %F\n"
@@ -8216,11 +8222,11 @@ msgstr ""
 "#   %s             Başlık (sadece grup seviyesinde)\n"
 "#   %S             Skor\n"
 
-#: src/lang.c:2858
+#: src/lang.c:2860
 msgid "Format string for thread level"
 msgstr "E-posta zinciri için dizge biçimi"
 
-#: src/lang.c:2859
+#: src/lang.c:2861
 msgid ""
 "# Format string for thread level representation\n"
 "# Default: %n %m  [%L]  %T  %F\n"
@@ -8253,19 +8259,19 @@ msgstr ""
 "#   %S             Skor\n"
 "#   %T             Zincir ağacı(sadece zincir seviyesinde)\n"
 
-#: src/lang.c:2877
+#: src/lang.c:2879
 msgid "Format string for display of dates"
 msgstr "Tarihlerin gösterilmesi için dizge biçimi"
 
-#: src/lang.c:2878
+#: src/lang.c:2880
 msgid "# Format string for date representation\n"
 msgstr "# Tarih gösterimi için dizge biçimi\n"
 
-#: src/lang.c:2888
+#: src/lang.c:2890
 msgid "Unicode normalization form"
 msgstr "Unicode normalleştirme biçimi"
 
-#: src/lang.c:2889
+#: src/lang.c:2891
 #, fuzzy
 msgid ""
 "# Unicode normalization form\n"
@@ -8285,19 +8291,19 @@ msgstr ""
 "#   3 = NFC\n"
 "#   4 = NFD\n"
 
-#: src/lang.c:2903
+#: src/lang.c:2905
 msgid "Render BiDi"
 msgstr "BiDi gerçekle"
 
-#: src/lang.c:2904
+#: src/lang.c:2906
 msgid "# If ON, bi-directional text is rendered by tin\n"
 msgstr "# Eğer AÇIK ise çift yönlü metinler tin tarafından gerçeklenir\n"
 
-#: src/lang.c:2911
+#: src/lang.c:2913
 msgid "Function for sorting articles"
 msgstr "Makaleleri sıralamak için fonksiyon"
 
-#: src/lang.c:2912
+#: src/lang.c:2914
 msgid ""
 "# Function for sorting articles\n"
 "# Possible values are (the default is marked with *):\n"
@@ -8309,174 +8315,174 @@ msgstr ""
 "# * 0 = qsort\n"
 "#   1 = heapsort\n"
 
-#: src/lang.c:2925
+#: src/lang.c:2927
 msgid "Automatically GroupMarkUnselArtRead"
 msgstr "Otomatik olarak GroupMarkUnselArtRead"
 
-#: src/lang.c:2931
+#: src/lang.c:2933
 msgid "Delete post-process files"
 msgstr "sonradan-işlenmiş dosyaları sil"
 
-#: src/lang.c:2936
+#: src/lang.c:2938
 msgid "Filename for all mailed articles, <CR> sets, no filename=do not save."
 msgstr ""
 "Tüm gönderilen makaleler için dosya adı, <CR> ayarlar, dosya adı "
 "yok=kaydetme."
 
-#: src/lang.c:2937
+#: src/lang.c:2939
 msgid "Mailbox to save sent mails"
 msgstr "Gönderilmiş postaları kaydetmek için posta kutusu"
 
-#: src/lang.c:2942
+#: src/lang.c:2944
 msgid "Set Followup-To: header to this group(s). <CR> sets, <ESC> cancels."
 msgstr ""
 "Takip-Et: başlığını bu grup(lar) için ayarla. <CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:2943
+#: src/lang.c:2945
 msgid "Followup-To: header"
 msgstr "Takip-Et: başlığı"
 
-#: src/lang.c:2948
+#: src/lang.c:2950
 msgid "Enter default mail address (and fullname). <CR> sets, <ESC> cancels."
 msgstr ""
 "Varsayılan e-posta adresi (ve tüm ismi) girin. <CR> ayarlar, <ESC> iptal "
 "eder."
 
-#: src/lang.c:2955
+#: src/lang.c:2957
 msgid ""
 "Path and options for ispell-like spell-checker. <CR> sets, <ESC> cancels."
 msgstr ""
 "ispell gibi imla kontrol araçları için yol ve seçenekler. <CR> ayarlar, "
 "<ESC> iptal eder."
 
-#: src/lang.c:2956
+#: src/lang.c:2958
 msgid "Ispell program"
 msgstr "Ispell programı"
 
-#: src/lang.c:2962
+#: src/lang.c:2964
 msgid "When group is a mailing list, send responses to this email address."
 msgstr "Grup bir posta listesi ise, yanıtları bu e-posta adresine yolla."
 
-#: src/lang.c:2963
+#: src/lang.c:2965
 msgid "Mailing list address"
 msgstr "Eposta listesi adresi"
 
-#: src/lang.c:2969
+#: src/lang.c:2971
 msgid "Forward articles as attachment"
 msgstr "Makaleleri ek olarak ilet"
 
-#: src/lang.c:2974
+#: src/lang.c:2976
 msgid ""
 "A comma separated list of MIME major/minor Content-Types. <ESC> cancels."
 msgstr ""
 "Virgülle ayrılmış MIME büyük/küçük Content-Type listesi. <ESC> iptal eder."
 
-#: src/lang.c:2975
+#: src/lang.c:2977
 msgid "Which MIME types will be saved"
 msgstr "Hangi MIME türleri kaydedilecek"
 
-#: src/lang.c:2980
+#: src/lang.c:2982
 msgid "Value of the Organization: header. <CR> sets, <ESC> cancels."
 msgstr "Organizasyon: başlığı için değer. <CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:2981
+#: src/lang.c:2983
 msgid "Organization: header"
 msgstr "Kurum: üst bilgi"
 
-#: src/lang.c:2986
+#: src/lang.c:2988
 msgid "Filename for saved articles. <CR> sets, <ESC> cancels."
 msgstr "Kaydedilmiş makaleler için dosya adı. <CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:2987
+#: src/lang.c:2989
 msgid "savefile"
 msgstr "kayıtdosyası"
 
-#: src/lang.c:2992 src/lang.c:3016
+#: src/lang.c:2994 src/lang.c:3018
 msgid "Scope for the filter rule. <CR> sets, <ESC> cancels."
 msgstr "Filtre kuralının kapsamı. <CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:2993
+#: src/lang.c:2995
 msgid "Quick (1 key) select filter scope"
 msgstr "Hızlı (1 tuş) filtre alanı seç"
 
-#: src/lang.c:2998 src/lang.c:3022
+#: src/lang.c:3000 src/lang.c:3024
 msgid "Header for filter rule. <CR> sets, <ESC> cancels."
 msgstr "Filtre kuralının üst bilgisi. <CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:2999
+#: src/lang.c:3001
 msgid "Quick (1 key) select filter header"
 msgstr "Filtre üst bilgisi hızlı seçimi (1 tuş)"
 
-#: src/lang.c:3004 src/lang.c:3028
+#: src/lang.c:3006 src/lang.c:3030
 msgid "ON = case sensitive, OFF = ignore case. <CR> sets, <ESC> cancels."
 msgstr ""
 "AÇIK = büyük küçük harf duyarlı, KAPALI = büyük küçük harf duyarsız. <CR> "
 "ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:3005
+#: src/lang.c:3007
 msgid "Quick (1 key) select filter case"
 msgstr "Hızlı filtre durumu seçme (1 tuş)"
 
-#: src/lang.c:3010 src/lang.c:3034
+#: src/lang.c:3012 src/lang.c:3036
 msgid "ON = expire, OFF = don't ever expire. <CR> sets, <ESC> cancels."
 msgstr ""
 "AÇIK = süresini doldur, KAPALI = hiçbir zaman süresini doldurma. <CR> "
 "ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:3011
+#: src/lang.c:3013
 msgid "Quick (1 key) select filter expire"
 msgstr "Hızlı (1 tuş) filtre bitiş seçme"
 
-#: src/lang.c:3017
+#: src/lang.c:3019
 msgid "Quick (1 key) kill filter scope"
 msgstr "Hızlı (1 tuş) filtre alanı öldür"
 
-#: src/lang.c:3023
+#: src/lang.c:3025
 msgid "Quick (1 key) kill filter header"
 msgstr "Hızlı (1 tuş) filtre başlığı yok etme"
 
-#: src/lang.c:3029
+#: src/lang.c:3031
 msgid "Quick (1 key) kill filter case"
 msgstr "Hızlı (1 tuş) filtre durumu öldür"
 
-#: src/lang.c:3035
+#: src/lang.c:3037
 msgid "Quick (1 key) kill filter expire"
 msgstr "Hızlı (1 tuş) filtre bitişi öldürme"
 
-#: src/lang.c:3041
+#: src/lang.c:3043
 msgid "Assume this charset if no charset declaration is present, <CR> to set."
 msgstr ""
 "Eğer hiçbir karakter kümesi tanımlamamışsa bu karakter kümesini varsay, "
 "ayarlamak için <CR>."
 
-#: src/lang.c:3042
+#: src/lang.c:3044
 msgid "UNDECLARED_CHARSET"
 msgstr "UNDECLARED_CHARSET"
 
-#: src/lang.c:3048
+#: src/lang.c:3050
 msgid ""
 "Add this text at the start of the message body. <CR> sets, <ESC> cancels."
 msgstr "Bu metni ileti gövdesinin başına ekle. <CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:3049
+#: src/lang.c:3051
 msgid "X_Body"
 msgstr "X_Body"
 
-#: src/lang.c:3054
+#: src/lang.c:3056
 msgid "Insert this header when posting. <CR> sets, <ESC> cancels."
 msgstr "Bu üst bilgiyi gönderirken ekle. <CR> ayarlar, <ESC> iptal eder."
 
-#: src/lang.c:3055
+#: src/lang.c:3057
 msgid "X_Headers"
 msgstr "X_Headers"
 
-#: src/lang.c:3060
+#: src/lang.c:3062
 msgid ""
 "Automatically insert an X-Comment-To: header? <SPACE> toggles & <CR> sets."
 msgstr ""
 "X-Comment-To: başlığını otomatik ekle? <SPACE> değiştirir & <CR> ayarlar."
 
-#: src/lang.c:3061
+#: src/lang.c:3063
 msgid "Insert 'X-Comment-To:' header"
 msgstr "'X-Comment-To:' üst bilgisi ekle"
 
@@ -8545,7 +8551,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "%s genişletilemedi\n"
 
-#: src/post.c:1344
+#: src/post.c:1348
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8554,7 +8560,7 @@ msgstr ""
 "%d satırı %d oktetten daha uzun ve kısaltılmalı, fakat\n"
 "kodlama %s ya da %s değerlerine ayarlanmadı\n"
 
-#: src/post.c:1349
+#: src/post.c:1353
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8566,7 +8572,7 @@ msgstr ""
 "gönderi hiçbir 8bit karakter içermiyor ve bu sebeple kısaltma "
 "gerçekleşmeyecek\n"
 
-#: src/post.c:1351
+#: src/post.c:1355
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8575,27 +8581,27 @@ msgstr ""
 "%d satırı %d oktetten daha uzun ve kısaltılmalı, fakat\n"
 "kodlama %s değerine ayarlı değil\n"
 
-#: src/post.c:2331
+#: src/post.c:2344
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Gönderiliyor: %.*s ..."
 
-#: src/post.c:4099
+#: src/post.c:4110
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
 #  fp
 #  Check if okay to read
 #. Check if okay to read
-#: src/read.c:207
+#: src/read.c:204
 msgid "Aborting read, please wait..."
 msgstr "Okuma durduruluyor, lütfen bekleyin..."
 
-#: src/read.c:354
+#: src/read.c:351
 msgid "Aborted read\n"
 msgstr "Okuma durduruldu\n"
 
-#: src/read.c:409
+#: src/read.c:406
 msgid "Draining\n"
 msgstr "Süzdürülüyor\n"
 

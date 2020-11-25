@@ -83,7 +83,7 @@ default_filter_days          *
 getart_limit                 *
 recent_time                  *
 mail_address                   from in attributes; should be split into
-                               username and addresse
+                               username and address
 mm_charset                     mm_network_charset
                                (if charset conversion is available)
 post_mime_encoding

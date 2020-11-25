@@ -896,7 +896,7 @@ yank_active_file(
 		selmenu.curr = save_restore_curr_group(FALSE);	/* Restore previous group position */
 		yanked_out = bool_not(yanked_out);
 		show_selection_page();
-		info_message(_(txt_yanked_groups), selmenu.max-prevmax, PLURAL(selmenu.max-prevmax, txt_group));
+		info_message(_(txt_yanked_groups), selmenu.max - prevmax, PLURAL(selmenu.max-prevmax, txt_group));
 	} else {							/* Yank out */
 		toggle_my_groups(NULL);
 		HpGlitch(erase_arrow());

@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2011-01-25
+ *  Updated   : 2020-06-10
  *  Notes     :
  *
  * Copyright (c) 1999-2020 Jason Faultless <jason@altarstone.com>
@@ -364,6 +364,7 @@ enum defined_functions {
 	THREAD_SAVE,
 	THREAD_SELECT_ARTICLE,
 	THREAD_TAG,
+	THREAD_TAG_PARTS,
 	THREAD_TOGGLE_ARTICLE_SELECTION,
 	THREAD_TOGGLE_SUBJECT_DISPLAY,
 	THREAD_UNDO_SELECTIONS,
