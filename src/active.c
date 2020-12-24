@@ -6,7 +6,7 @@
  *  Updated   : 2019-01-28
  *  Notes     :
  *
- * Copyright (c) 1992-2020 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2021 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

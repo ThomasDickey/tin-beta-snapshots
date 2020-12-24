@@ -6,7 +6,7 @@
  *  Updated   : 2019-07-08
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2020 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2021 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -4,7 +4,7 @@
 # signs the article and posts it.
 #
 #
-# Copyright (c) 2002-2020 Urs Janssen <urs@tin.org>,
+# Copyright (c) 2002-2021 Urs Janssen <urs@tin.org>,
 #                         Marc Brockschmidt <marc@marcbrockschmidt.de>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,43 +40,54 @@
 #       - check for /etc/nntpserver (and /etc/news/server)
 #       - add $PGPOPTS, $PGPPATH and $GNUPGHOME support
 #       - cleanup and remove duplicated code
-#       - option to convert CRLF to LF in input
-#       - use STARTTLS (if Net::NNTP is recent enough and server supports it)?
 #       - quote inpupt properly before passing to shell
+#       - $ENV{'NEWSHOST'} / $ENV{'NNTPSERVER'} and $ENV{'NNTPPORT'}
+#         do have higher precedence than settings in the script and
+#         config-file, but config-settig SSL may override $ENV{'NNTPPORT'}
 #       - if (!defined $ENV{'GPG_TTY'}) {if (open(my $T,'-|','tty')) {
 #           chomp(my $tty=<$T>); close($T);
 #           $ENV{'GPG_TTY'}=$tty if($tty =~ m/^\//)}}
 #         for gpg?
-#
+#       - option to break long header lines?
+#         use Text::Wrap; $Text::Wrap::columns=998; wrap("","\t",$_);
+#       - option to trim References
+#       ...
 
 use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.51";
+my $version = "1.1.57";
 
 my %config;
 
 # configuration, may be overwritten via ~/.tinewsrc
-$config{'NNTPServer'}	= 'news';	# your NNTP servers name, may be set via $NNTPSERVER
-$config{'NNTPPort'}		= 119;	# NNTP-port, may be set via $NNTPPORT
-$config{'NNTPUser'}		= '';	# username for nntp-auth, may be set via ~/.newsauth or ~/.nntpauth
-$config{'NNTPPass'}		= '';	# password for nntp-auth, may be set via ~/.newsauth or ~/.nntpauth
+$config{'nntp-server'}	= 'news';	# your NNTP servers name, may be set via $NNTPSERVER
+$config{'nntp-port'}	= 119;	# NNTP-port, may be set via $NNTPPORT
+$config{'nntp-user'}	= '';	# username for nntp-auth, may be set via ~/.newsauth or ~/.nntpauth
+$config{'nntp-pass'}	= '';	# password for nntp-auth, may be set via ~/.newsauth or ~/.nntpauth
 
-$config{'PGPSigner'}	= '';	# sign as who?
-$config{'PGPPass'}		= '';	# pgp2 only
-$config{'PathtoPGPPass'}= '';	# pgp2, pgp5, pgp6 and gpg
-$config{'PGPPassFD'}	= 9;	# file descriptor used for input redirection of PathtoPGPPass; GPG1, GPG2, PGP5 and PGP6 only
+$config{'ssl'}			= 0;	# set to 1 to use NNTPS if possible
+
+$config{'pgp-signer'}	= '';	# sign as who?
+$config{'pgp-pass'}		= '';	# pgp2 only
+$config{'path-to-pgp-pass'}= '';	# pgp2, pgp5, pgp6 and gpg
+$config{'pgp-pass-fd'}	= 9;	# file descriptor used for input redirection of path-to-pgp-pass; GPG1, GPG2, PGP5 and PGP6 only
 
 $config{'pgp'}			= '/usr/bin/pgp';	# path to pgp
-$config{'PGPVersion'}	= '2';	# Use 2 for 2.X, 5 for PGP5, 6 for PGP6, GPG or GPG1 for GPG1 and GPG2 for GPG2
+$config{'pgp-version'}	= '2';	# Use 2 for 2.X, 5 for PGP5, 6 for PGP6, GPG or GPG1 for GPG1 and GPG2 for GPG2
 $config{'digest-algo'}	= 'MD5';# Digest Algorithm for GPG. Must be supported by your installation
 
-$config{'Interactive'}	= 'yes';# allow interactive usage
+$config{'interactive'}	= 'yes';# allow interactive usage
 
-$config{'sig_path'}		= glob('~/.signature');	# path to signature
-$config{'add_signature'}= 'yes';# Add $config{'sig_path'} to posting if there is no sig
-$config{'sig_max_lines'}= 4;	# max number of signatures lines
+$config{'verbose'}		= 0;	# set to 1 to get warning messages
+$config{'debug'}		= 0;	# set to 1 to get some debug output
+
+$config{'sig-path'}		= glob('~/.signature');	# path to signature
+$config{'add-signature'}= 'yes';# Add $config{'sig-path'} to posting if there is no sig
+$config{'sig-max-lines'}= 4;	# max number of signatures lines
+
+$config{'max-header-length'} = 998;	# RFC 5536
 
 $config{'sendmail'}		= '/usr/sbin/sendmail -i -t'; # set to '' to disable mail-actions
 
@@ -86,16 +97,16 @@ $config{'pgpheader'}	= 'X-PGP-Sig';
 $config{'pgpbegin'}		= '-----BEGIN PGP SIGNATURE-----';	# Begin of PGP-Signature
 $config{'pgpend'}		= '-----END PGP SIGNATURE-----';	# End of PGP-Signature
 
-$config{'canlock_algorithm'}	= 'sha1'; 	# Digest algorithm used for cancel-lock and cancel-key; sha1, sha256 and sha512 are supported
-# $config{'canlock_secret'}	= '~/.cancelsecret';		# Path to canlock secret file
+$config{'canlock-algorithm'}	= 'sha1'; 	# Digest algorithm used for cancel-lock and cancel-key; sha1, sha256 and sha512 are supported
+# $config{'canlock-secret'}	= '~/.cancelsecret';		# Path to canlock secret file
 
-# $config{'ignore_headers'} = '';		# headers to be ignored during signing
+# $config{'ignore-headers'} = '';		# headers to be ignored during signing
 
-$config{'PGPSignHeaders'} = ['From', 'Newsgroups', 'Subject', 'Control',
+$config{'pgp-sign-headers'} = ['From', 'Newsgroups', 'Subject', 'Control',
 	'Supersedes', 'Followup-To', 'Date', 'Injection-Date', 'Sender', 'Approved',
 	'Message-ID', 'Reply-To', 'Cancel-Key', 'Also-Control',
 	'Distribution'];
-$config{'PGPorderheaders'} = ['from', 'newsgroups', 'subject', 'control',
+$config{'pgp-order-headers'} = ['from', 'newsgroups', 'subject', 'control',
 	'supersedes', 'followup-To', 'date', 'injection-date', 'organization',
 	'lines', 'sender', 'approved', 'distribution', 'message-id',
 	'references', 'reply-to', 'mime-version', 'content-type',
@@ -121,17 +132,31 @@ if ($ENV{'XDG_CONFIG_HOME'}) {
 }
 push(@try, (glob('~/.config/tinewsrc'))[0], (glob('~/.tinewsrc'))[0]);
 
-foreach (grep { ! $seen{$_}++ } @try) {
+foreach (@try) {
 	last if (open($TINEWSRC, '<', $_));
 	$TINEWSRC = undef;
 }
 if (defined($TINEWSRC)) {
+	my $changes = 0;
 	while (defined($_ = <$TINEWSRC>)) {
 		if (m/^([^#\s=]+)\s*=\s*(\S[^#]+)/io) {
-			chomp($config{$1} = $2);
+			# rename pre 1.1.56 tinewsrc-var names
+			my $key = $1;
+			my $val = $2;
+			$key =~ s#^followupto#follow-to# && $changes++;
+			$key =~ s#^replyto#reply-to# && $changes++;
+			$key =~ s#^NNTP(?!\-).#NNTP-# && $changes++;
+			$key =~ s#^PathtoPGPPass#path-to-pgp-pass# && $changes++;
+			$key =~ s#^PGPorderheaders#pgp-order-headers# && $changes++;
+			$key =~ s#^PGPPassFD#pgp-pass-fd# && $changes++;
+			$key =~ s#^PGPSignHeaders#pgp-sign-headers# && $changes++;
+			$key =~ s#^PGP(?!\-).#PGP-# && $changes++;
+			$key =~ s#_#-# && $changes++;
+			chomp($config{lc($key)} = $val);
 		}
 	}
 	close($TINEWSRC);
+	print "Old style tinewsrc option names found, you should adjust them.\n" if ($changes && ($config{'verbose'} || $config{'debug'}));
 }
 
 # as of tinews 1.1.51 we use 3 args open() to pipe to sendmail
@@ -143,39 +168,43 @@ $config{'sendmail'} =~ s/^\s*\|\s*//io;
 $config{'digest-algo'} = uc($config{'digest-algo'});
 
 # these env-vars have higher priority (order is important)
-$config{'NNTPServer'} = $ENV{'NEWSHOST'} if ($ENV{'NEWSHOST'});
-$config{'NNTPServer'} = $ENV{'NNTPSERVER'} if ($ENV{'NNTPSERVER'});
-$config{'NNTPPort'} = $ENV{'NNTPPORT'} if ($ENV{'NNTPPORT'});
+$config{'nntp-server'} = $ENV{'NEWSHOST'} if ($ENV{'NEWSHOST'});
+$config{'nntp-server'} = $ENV{'NNTPSERVER'} if ($ENV{'NNTPSERVER'});
+$config{'nntp-port'} = $ENV{'NNTPPORT'} if ($ENV{'NNTPPORT'});
 
 # Get options:
 $Getopt::Long::ignorecase=0;
 $Getopt::Long::bundling=1;
-GetOptions('A|V|W|O|no-organization|h|headers' => [], # do nothing
+GetOptions('A|V|W|h|headers' => [], # do nothing
 	'debug|D|N'	=> \$config{'debug'},
-	'port|p=i'	=> \$config{'NNTPPort'},
-	'no-sign|X'	=> \$config{'no_sign'},
-	'no-control|R'	=> \$config{'no_control'},
-	'no-signature|S'	=> \$config{'no_signature'},
-	'no-canlock|L'	=> \$config{'no_canlock'},
+	'port|p=i'	=> \$config{'nntp-port'},
+	'no-sign|X'	=> \$config{'no-sign'},
+	'no-control|R'	=> \$config{'no-control'},
+	'no-signature|S'	=> \$config{'no-signature'},
+	'no-canlock|L'	=> \$config{'no-canlock'},
 	'no-injection-date|I'	=> \$config{'no-injection-date'},
-	'force-auth|Y'	=> \$config{'force_auth'},
+	'no-organization|O'	=> \$config{'no-organization'},
+	'force-auth|Y'	=> \$config{'force-auth'},
 	'approved|a=s'	=> \$config{'approved'},
 	'control|c=s'	=> \$config{'control'},
-	'canlock-algorithm=s'	=> \$config{'canlock_algorithm'},
+	'canlock-algorithm=s'	=> \$config{'canlock-algorithm'},
 	'distribution|d=s'	=> \$config{'distribution'},
 	'expires|e=s'	=> \$config{'expires'},
 	'from|f=s'	=> \$config{'from'},
-	'ignore-headers|i=s'	=> \$config{'ignore_headers'},
-	'followupto|w=s'	=> \$config{'followup-to'},
+	'ignore-headers|i=s'	=> \$config{'ignore-headers'},
+	'followup-to|w=s'	=> \$config{'followup-to'},
 	'newsgroups|n=s'	=> \$config{'newsgroups'},
-	'replyto|r=s'	=> \$config{'reply-to'},
+	'reply-to|r=s'	=> \$config{'reply-to'},
 	'savedir|s=s'	=> \$config{'savedir'},
+	'ssl|nntps'	=> \$config{'ssl'},
 	'subject|t=s'	=> \$config{'subject'},
 	'references|F=s'	=> \$config{'references'},
 	'organization|o=s'	=> \$config{'organization'},
 	'path|x=s'	=> \$config{'path'},
 	'help|H'	=> \$config{'help'},
-	'version|v'	=> \$config{'version'}
+	'transform'	=> \$config{'transform'},
+	'verbose|v'	=> \$config{'verbose'},
+	'version'	=> \$config{'version'}
 );
 
 foreach (@ARGV) {
@@ -190,16 +219,32 @@ if ($config{'version'}) {
 
 usage() if ($config{'help'});
 
-my $sha_mod=undef;
-# Cancel-Locks require some more modules
-if ($config{'canlock_secret'} && !$config{'no_canlock'}) {
-	$config{'canlock_algorithm'} = lc($config{'canlock_algorithm'});
-	# we support sha1, sha256 and sha512, fallback to sha1 if something else is given
-	if (!($config{'canlock_algorithm'} =~ /^sha(1|256|512)$/)) {
-		warn "Digest algorithm " . $config{'canlock_algorithm'} . " not supported. Falling back to sha1.\n" if $config{'debug'};
-		$config{'canlock_algorithm'} = 'sha1';
+# check if SSL support is available
+if ($config{'ssl'}) {
+	eval "Net::NNTP->can_ssl";
+	if ($@) {
+		warn "Your Net::NNTP doesn't support SSL.\n" if ($config{'debug'} || $config{'verbose'});
+		$config{'ssl'} = 0;
 	}
-	if ($config{'canlock_algorithm'} eq 'sha1') {
+}
+# and now adjust default port depending on SSL requested and
+# available or not
+if ($config{'ssl'}) {
+	$config{'nntp-port'} = 563 if ($config{'nntp-port'} == 119);
+} else {
+	$config{'nntp-port'} = 119 if ($config{'nntp-port'} == 563);
+}
+
+my $sha_mod = undef;
+# Cancel-Locks require some more modules
+if ($config{'canlock-secret'} && !$config{'no-canlock'}) {
+	$config{'canlock-algorithm'} = lc($config{'canlock-algorithm'});
+	# we support sha1, sha256 and sha512, fallback to sha1 if something else is given
+	if (!($config{'canlock-algorithm'} =~ /^sha(1|256|512)$/)) {
+		warn "Digest algorithm " . $config{'canlock-algorithm'} . " not supported. Falling back to sha1.\n" if ($config{'debug'} || $config{'verbose'});
+		$config{'canlock-algorithm'} = 'sha1';
+	}
+	if ($config{'canlock-algorithm'} eq 'sha1') {
 		foreach ('Digest::SHA qw(sha1)', 'Digest::SHA1()') {
 			eval "use $_";
 			if (!$@) {
@@ -210,17 +255,17 @@ if ($config{'canlock_secret'} && !$config{'no_canlock'}) {
 		foreach ('MIME::Base64()', 'Digest::HMAC_SHA1()') {
 			eval "use $_";
 			if ($@ || !defined($sha_mod)) {
-				$config{'no_canlock'} = 1;
-				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if $config{'debug'};
+				$config{'no-canlock'} = 1;
+				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if ($config{'debug'} || $config{'verbose'});
 				last;
 			}
 		}
-	} elsif ($config{'canlock_algorithm'} eq 'sha256') {
+	} elsif ($config{'canlock-algorithm'} eq 'sha256') {
 		foreach ('MIME::Base64()', 'Digest::SHA qw(sha256 hmac_sha256)') {
 			eval "use $_";
 			if ($@) {
-	 			$config{'no_canlock'} = 1;
-				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if $config{'debug'};
+	 			$config{'no-canlock'} = 1;
+				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if ($config{'debug'} || $config{'verbose'});
 				last;
 			}
 		}
@@ -228,8 +273,8 @@ if ($config{'canlock_secret'} && !$config{'no_canlock'}) {
 		foreach ('MIME::Base64()', 'Digest::SHA qw(sha512 hmac_sha512)') {
 			eval "use $_";
 			if ($@) {
-	 			$config{'no_canlock'} = 1;
-				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if $config{'debug'};
+	 			$config{'no-canlock'} = 1;
+				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if ($config{'debug'} || $config{'verbose'});
 				last;
 			}
 		}
@@ -241,46 +286,44 @@ my $attribs = $term->Attribs;
 my $in_header = 1;
 my (%Header, @Body, $PGPCommand);
 
-if (! $config{'no_sign'}) {
-	$config{'PGPSigner'} = $ENV{'SIGNER'} if ($ENV{'SIGNER'});
-	$config{'PathtoPGPPass'} = $ENV{'PGPPASSFILE'} if ($ENV{'PGPPASSFILE'});
-	if ($config{'PathtoPGPPass'}) {
-		open(my $PGPPass, '<', (glob($config{'PathtoPGPPass'}))[0]) or
-			$config{'Interactive'} && die("$0: Can't open ".$config{'PathtoPGPPass'}.": $!");
-		chomp($config{'PGPPass'} = <$PGPPass>);
-		close($PGPPass);
+if (! $config{'no-sign'}) {
+	$config{'pgp-signer'} = $ENV{'SIGNER'} if ($ENV{'SIGNER'});
+	$config{'path-to-pgp-pass'} = $ENV{'PGPPASSFILE'} if ($ENV{'PGPPASSFILE'});
+	if ($config{'path-to-pgp-pass'}) {
+		open(my $pgppass, '<', (glob($config{'path-to-pgp-pass'}))[0]) or
+			$config{'interactive'} && die("$0: Can't open ".$config{'path-to-pgp-pass'}.": $!");
+		chomp($config{'pgp-pass'} = <$pgppass>);
+		close($pgppass);
 	}
-	if ($config{'PGPVersion'} eq '2' && $ENV{'PGPPASS'}) {
-		$config{'PGPPass'} = $ENV{'PGPPASS'};
+	if ($config{'pgp-version'} eq '2' && $ENV{'PGPPASS'}) {
+		$config{'pgp-pass'} = $ENV{'PGPPASS'};
 	}
 }
 
-# Remove unwanted headers from PGPSignHeaders
-if (${config{'ignore_headers'}}) {
-	my @hdr_to_ignore = split(/,/, ${config{'ignore_headers'}});
+# Remove unwanted headers from pgp-sign-headers
+if (${config{'ignore-headers'}}) {
+	my @hdr_to_ignore = split(/,/, ${config{'ignore-headers'}});
 	foreach my $hdr (@hdr_to_ignore) {
-		@{$config{'PGPSignHeaders'}} = map {lc($_) eq lc($hdr) ? () : $_} @{$config{'PGPSignHeaders'}};
+		@{$config{'pgp-sign-headers'}} = map {lc($_) eq lc($hdr) ? () : $_} @{$config{'pgp-sign-headers'}};
 	}
 }
 # Read the message and split the header
 readarticle(\%Header, \@Body);
 
 # Add signature if there is none
-if (!$config{'no_signature'}) {
-	if ($config{'add_signature'} && !grep {/^-- /} @Body) {
-		if (-r glob($config{'sig_path'})) {
+if (!$config{'no-signature'}) {
+	if ($config{'add-signature'} && !grep {/^-- /} @Body) {
+		if (-r glob($config{'sig-path'})) {
 			my $l = 0;
 			push @Body, "-- \n";
-			open(my $SIGNATURE, '<', glob($config{'sig_path'})) or die("Can't open " . $config{'sig_path'} . ": $!");
+			open(my $SIGNATURE, '<', glob($config{'sig-path'})) or die("Can't open " . $config{'sig-path'} . ": $!");
 			while (<$SIGNATURE>) {
-				die $config{'sig_path'} . " longer than " . $config{'sig_max_lines'}. " lines!" if (++$l > $config{'sig_max_lines'});
+				die $config{'sig-path'} . " longer than " . $config{'sig-max-lines'}. " lines!" if (++$l > $config{'sig-max-lines'});
 				push @Body, $_;
 			}
 			close($SIGNATURE);
 		} else {
-			if ($config{'debug'}) {
-				warn "Tried to add " . $config{'sig_path'} . ", but it is unreadable";
-			}
+			warn "Tried to add " . $config{'sig-path'} . ", but it is unreadable.\n" if ($config{'debug'} || $config{'verbose'});
 		}
 	}
 }
@@ -321,27 +364,28 @@ if (defined($Header{'user-agent'})) {
 	$Header{'user-agent'} = $Header{'user-agent'}." ".$pname."/".$version."\n";
 }
 
-delete $Header{'x-pgp-key'} if (!$config{'no_sign'} && defined($Header{'x-pgp-key'}));
+delete $Header{'x-pgp-key'} if (!$config{'no-sign'} && defined($Header{'x-pgp-key'}));
 
+delete $Header{'organization'} if ($config{'no-organization'} && defined($Header{'organization'}));
 
-# No control messages allowed when using -R|--no-control
-if ($config{'no_control'} and $Header{control}) {
+# No control. No control. You have no control.
+if ($config{'no-control'} and $Header{control}) {
 	print STDERR "No control messages allowed.\n";
 	exit 1;
 }
 
 # various checks
-if ($config{'debug'}) {
+if ($config{'debug'} || $config{'verbose'}) {
 	foreach (keys %Header) {
-		warn "Raw 8-bit data in the following header:\n$Header{$_}" if ($Header{$_} =~ m/[\x80-\xff]/o);
+		warn "Raw 8-bit data in the following header:\n$Header{$_}\n" if ($Header{$_} =~ m/[\x80-\xff]/o);
 	}
 	if (!defined($Header{'mime-version'}) || !defined($Header{'content-type'}) || !defined($Header{'content-transfer-encoding'})) {
 		warn "8bit body without MIME-headers\n" if (grep {/[\x80-\xff]/} @Body);
 	}
 }
 
-# try ~/.newsauth if no $config{'NNTPPass'} was set
-if (!$config{'NNTPPass'}) {
+# try ~/.newsauth if no $config{'nntp-pass'} was set
+if (!$config{'nntp-pass'}) {
 	my ($l, $server, $pass, $user);
 	if (-r (glob("~/.newsauth"))[0]) {
 		open (my $NEWSAUTH, '<', (glob("~/.newsauth"))[0]) or die("Can't open ~/.newsauth: $!");
@@ -349,12 +393,12 @@ if (!$config{'NNTPPass'}) {
 			chomp $l;
 			next if ($l =~ m/^[#\s]/);
 			($server, $pass, $user) = split(/\s+\b/, $l);
-			last if ($server =~ m/\Q$config{'NNTPServer'}\E/);
+			last if ($server =~ m/\Q$config{'nntp-server'}\E/);
 		}
 		close($NEWSAUTH);
-		if ($pass && $server =~ m/\Q$config{'NNTPServer'}\E/) {
-			$config{'NNTPPass'} = $pass;
-			$config{'NNTPUser'} = $user || getlogin || getpwuid($<) || $ENV{USER};
+		if ($pass && $server =~ m/\Q$config{'nntp-server'}\E/) {
+			$config{'nntp-pass'} = $pass;
+			$config{'nntp-user'} = $user || getlogin || getpwuid($<) || $ENV{USER};
 		} else {
 			$pass = $user = "";
 		}
@@ -367,43 +411,47 @@ if (!$config{'NNTPPass'}) {
 				chomp $l;
 				next if ($l =~ m/^[#\s]/);
 				($server, $user, $pass) = split(/\s+\b/, $l);
-				last if ($server =~ m/\Q$config{'NNTPServer'}\E/);
+				last if ($server =~ m/\Q$config{'nntp-server'}\E/);
 			}
 			close($NNTPAUTH);
-			if ($pass && $server =~ m/\Q$config{'NNTPServer'}\E/) {
-				$config{'NNTPPass'} = $pass;
-				$config{'NNTPUser'} = $user || getlogin || getpwuid($<) || $ENV{USER};
+			if ($pass && $server =~ m/\Q$config{'nntp-server'}\E/) {
+				$config{'nntp-pass'} = $pass;
+				$config{'nntp-user'} = $user || getlogin || getpwuid($<) || $ENV{USER};
 			}
 		}
 	}
 }
 
-if (! $config{'savedir'} && defined($Header{'newsgroups'}) && !defined($Header{'message-id'})) {
-	my $Server = AuthonNNTP();
-	my $ServerMsg = $Server->message();
-	$Server->datasend('.');
-	$Server->dataend();
-	$Server->quit();
-	$Header{'message-id'} = "Message-ID: $1\n" if ($ServerMsg =~ m/(<\S+\@\S+>)/o);
-}
-
-if (!defined($Header{'message-id'})) {
-	my $hname;
-	eval "use Sys::Hostname";
-	if ($@) {
-		chomp($hname = `hostname`);
-	} else {
-		$hname = hostname();
+# instead of abort posting just to prefetch a Messsage-ID we should (try
+# to keep) the the session open instead
+if (!($config{'no-sign'} && $config{'no-canlock'})) {
+	if (! $config{'savedir'} && defined($Header{'newsgroups'}) && !defined($Header{'message-id'})) {
+		my $Server = AuthonNNTP();
+		my $ServerMsg = $Server->message();
+		$Header{'message-id'} = "Message-ID: $1\n" if ($ServerMsg =~ m/(<\S+\@\S+>)/o);
+		#$Server->datasend('.');	# dataend() already sends "."
+		$Server->dataend();
+		$Server->quit();
 	}
-	my ($hostname,) = gethostbyname($hname);
-	if (defined($hostname) && $hostname =~ m/\./io) {
-		$Header{'message-id'} = "Message-ID: " . sprintf("<N%xI%xT%x@%s>\n", $>, timelocal(localtime), $$, $hostname);
+
+	if (!defined($Header{'message-id'})) {
+		my $hname;
+		eval "use Sys::Hostname";
+		if ($@) {
+			chomp($hname = `hostname`);
+		} else {
+			$hname = hostname();
+		}
+		my ($hostname,) = gethostbyname($hname);
+		if (defined($hostname) && $hostname =~ m/\./io) {
+			$Header{'message-id'} = "Message-ID: " . sprintf("<N%xI%xT%x@%s>\n", $>, timelocal(localtime), $$, $hostname);
+		}
 	}
 }
 
 # add Cancel-Lock (and Cancel-Key) header(s) if requested
-if ($config{'canlock_secret'} && !$config{'no_canlock'} && defined($Header{'message-id'})) {
-	open(my $CANLock, '<', (glob($config{'canlock_secret'}))[0]) or die("$0: Can't open " . $config{'canlock_secret'} . ": $!");
+if ($config{'canlock-secret'} && !$config{'no-canlock'} && defined($Header{'message-id'})) {
+	open(my $CANLock, '<', (glob($config{'canlock-secret'}))[0]) or die("$0: Can't open " . $config{'canlock-secret'} . ": $!");
 	chomp(my $key = <$CANLock>);
 	close($CANLock);
 	(my $data = $Header{'message-id'}) =~ s#^Message-ID: ##i;
@@ -412,9 +460,9 @@ if ($config{'canlock_secret'} && !$config{'no_canlock'} && defined($Header{'mess
 	my $cancel_lock = buildcancellock($cancel_key, $sha_mod);
 	if (defined($Header{'cancel-lock'})) {
 		chomp $Header{'cancel-lock'};
-		$Header{'cancel-lock'} .= " " . $config{'canlock_algorithm'} . ":" . $cancel_lock . "\n";
+		$Header{'cancel-lock'} .= " " . $config{'canlock-algorithm'} . ":" . $cancel_lock . "\n";
 	} else {
-		$Header{'cancel-lock'} = "Cancel-Lock: " . $config{'canlock_algorithm'} . ":" . $cancel_lock . "\n";
+		$Header{'cancel-lock'} = "Cancel-Lock: " . $config{'canlock-algorithm'} . ":" . $cancel_lock . "\n";
 	}
 
 	if ((defined($Header{'supersedes'}) && $Header{'supersedes'} =~ m/^Supersedes:\s+<\S+>\s*$/i) || (defined($Header{'control'}) && $Header{'control'} =~ m/^Control:\s+cancel\s+<\S+>\s*$/i) ||(defined($Header{'also-control'}) && $Header{'also-control'} =~ m/^Also-Control:\s+cancel\s+<\S+>\s*$/i)) {
@@ -437,9 +485,9 @@ if ($config{'canlock_secret'} && !$config{'no_canlock'} && defined($Header{'mess
 		}
 		if (defined($Header{'cancel-key'})) {
 			chomp $Header{'cancel-key'};
-			$Header{'cancel-key'} .= " " . $config{'canlock_algorithm'} . ":" . $cancel_key . "\n";
+			$Header{'cancel-key'} .= " " . $config{'canlock-algorithm'} . ":" . $cancel_key . "\n";
 		} else {
-			$Header{'cancel-key'} = "Cancel-Key: " . $config{'canlock_algorithm'} . ":" . $cancel_key . "\n";
+			$Header{'cancel-key'} = "Cancel-Key: " . $config{'canlock-algorithm'} . ":" . $cancel_key . "\n";
 		}
 	}
 }
@@ -454,12 +502,12 @@ if ($config{'sendmail'} && defined($Header{'newsgroups'}) && (defined($Header{'t
 	}
 }
 
-if (! $config{'no_sign'}) {
-	if (!$config{'PGPSigner'}) {
-		chomp($config{'PGPSigner'} = $Header{'from'});
-		$config{'PGPSigner'} =~ s/^[^\s:]+: (.*)/$1/;
+if (! $config{'no-sign'}) {
+	if (!$config{'pgp-signer'}) {
+		chomp($config{'pgp-signer'} = $Header{'from'});
+		$config{'pgp-signer'} =~ s/^[^\s:]+: (.*)/$1/;
 	}
-	$PGPCommand = getpgpcommand($config{'PGPVersion'});
+	$PGPCommand = getpgpcommand($config{'pgp-version'});
 }
 
 # (re)move mail-headers
@@ -472,7 +520,7 @@ $Newsgroups = $Header{'newsgroups'} if (defined($Header{'newsgroups'}));
 
 my $MessageR = [];
 
-if ($config{'no_sign'}) {
+if ($config{'no-sign'}) {
 	# don't sign article
 	push @$MessageR, $Header{$_} for (keys %Header);
 	push @$MessageR, "\n", @Body;
@@ -495,8 +543,17 @@ if (($To || $Cc || $Bcc) && $config{'sendmail'}) {
 	unshift @$MessageR, "$Cc" if ($Cc);
 	unshift @$MessageR, "$Bcc" if ($Bcc);
 	print($MAIL @$MessageR);
+
 	close($MAIL);
 }
+
+# exit with error if neither $Newsgroups nor any of $To, $Cc or $Bcc set
+my $required = 0;
+foreach ('Newsgroups', 'To,', 'Cc', 'Bcc') {
+	$required++ if (defined($Header{lc($_)}));
+	last if $required;
+}
+die("$0: neither Newsgroups: nor any of To:, Cc:, Bcc or present.\n") if (!$required);
 
 # Game over. Insert new coin.
 exit;
@@ -507,15 +564,22 @@ exit;
 sub readarticle {
 	my ($HeaderR, $BodyR) = @_;
 	my $currentheader;
+	my $l = 0;
 	while (defined($_ = <>)) {
+		s#\r\n$#\n# if ($config{'transform'});
 		if ($in_header) {
+			use bytes;
 			if (m/^$/o) { #end of header
 				$in_header = 0;
 			} elsif (m/^([^\s:]+): (.*)$/s) {
 				$currentheader = lc($1);
 				$$HeaderR{$currentheader} = "$1: $2";
+				$l = length($_);
+				print $1 . ":-header exceeds line length limit " . $l . " > " . $config{'max-header-length'} . " octets.\n" if (($config{'verbose'} || $config{'debug'}) && length($_) > $config{'max-header-length'});
 			} elsif (m/^[ \t]/o) {
 				$$HeaderR{$currentheader} .= $_;
+				$l = length($_);
+				print "Part of continued " . ucfirst($currentheader) . ":-header exceeds line length limit " . $l . " > " . $config{'max-header-length'} . " octets.\n" if (($config{'verbose'} || $config{'debug'}) && $l > $config{'max-header-length'});
 #			} elsif (m/^([^\s:]+):$/) { # skip over empty headers
 #				next;
 			} else {
@@ -562,34 +626,41 @@ sub getdate {
 # User, Password and Server are defined before as elements
 # of the global hash %config. If no values for user or password
 # are defined, the sub will try to ask the user (only if
-# $config{'Interactive'} is != 0).
+# $config{'interactive'} is != 0).
 sub AuthonNNTP {
-	my $Server = Net::NNTP->new($config{'NNTPServer'}, Reader => 1, Debug => $config{'debug'}, Port => $config{'NNTPPort'})
-		or die("$0: Can't connect to ".$config{'NNTPServer'}.":".$config{'NNTPPort'}."!\n");
-	my $ServerMsg = "";
+	my $Server = Net::NNTP->new(
+		Host 	=> $config{'nntp-server'},
+		Reader 	=> 1,
+		Debug 	=> $config{'debug'},
+		Port 	=> $config{'nntp-port'},
+		SSL 	=> $config{'ssl'},
+		SSL_verify_mode => 0
+	) or die("$0: Can't connect to ".$config{'nntp-server'}.":".$config{'nntp-port'}."!\n");
+	if ($config{'ssl'} && $config{'debug'}) {
+		printf("SSL_fingerprint: %s %s\n", split(/\$/, $Server->get_fingerprint));
+	}
+	my $ServerMsg = $Server->message();
 	my $ServerCod = $Server->code();
 
 	# no read and/or write access - give up
 	if ($ServerCod < 200 || $ServerCod > 201) {
-		$ServerMsg = $Server->message();
 		$Server->quit();
 		die($0.": ".$ServerCod." ".$ServerMsg."\n");
 	}
 
 	# read access - try auth
-	if ($ServerCod == 201 || $config{'force_auth'}) {
-		if ($config{'NNTPPass'} eq "") {
-			if ($config{'Interactive'}) {
-				$config{'NNTPUser'} = $term->readline("Your Username at ".$config{'NNTPServer'}.": ");
+	if ($ServerCod == 201 || $config{'force-auth'}) {
+		if ($config{'nntp-pass'} eq "") {
+			if ($config{'interactive'}) {
+				$config{'nntp-user'} = $term->readline("Your Username at ".$config{'nntp-server'}.": ");
 				$attribs->{redisplay_function} = $attribs->{shadow_redisplay};
-				$config{'NNTPPass'} = $term->readline("Password for ".$config{'NNTPUser'}." at ".$config{'NNTPServer'}.": ");
+				$config{'nntp-pass'} = $term->readline("Password for ".$config{'nntp-user'}." at ".$config{'nntp-server'}.": ");
 			} else {
-				$ServerMsg = $Server->message();
 				$Server->quit();
 				die($0.": ".$ServerCod." ".$ServerMsg."\n");
 			}
 		}
-		$Server->authinfo($config{'NNTPUser'}, $config{'NNTPPass'});
+		$Server->authinfo($config{'nntp-user'}, $config{'nntp-pass'});
 		$ServerCod = $Server->code();
 		$ServerMsg = $Server->message();
 		if ($ServerCod != 281) { # auth failed
@@ -601,18 +672,18 @@ sub AuthonNNTP {
 	$Server->post();
 	$ServerCod = $Server->code();
 	if ($ServerCod == 480) {
-		if ($config{'NNTPPass'} eq "") {
-			if ($config{'Interactive'}) {
-				$config{'NNTPUser'} = $term->readline("Your Username at ".$config{'NNTPServer'}.": ");
+		if ($config{'nntp-pass'} eq "") {
+			if ($config{'interactive'}) {
+				$config{'nntp-user'} = $term->readline("Your Username at ".$config{'nntp-server'}.": ");
 				$attribs->{redisplay_function} = $attribs->{shadow_redisplay};
-				$config{'NNTPPass'} = $term->readline("Password for ".$config{'NNTPUser'}." at ".$config{'NNTPServer'}.": ");
+				$config{'nntp-pass'} = $term->readline("Password for ".$config{'nntp-user'}." at ".$config{'nntp-server'}.": ");
 			} else {
 				$ServerMsg = $Server->message();
 				$Server->quit();
 				die($0.": ".$ServerCod." ".$ServerMsg."\n");
 			}
 		}
-		$Server->authinfo($config{'NNTPUser'}, $config{'NNTPPass'});
+		$Server->authinfo($config{'nntp-user'}, $config{'nntp-pass'});
 		$Server->post();
 	}
 	return $Server;
@@ -623,9 +694,9 @@ sub AuthonNNTP {
 # getpgpcommand generates the command to sign the message and returns it.
 #
 # Receives:
-# 	- $PGPVersion: A scalar holding the PGPVersion
+# 	- $pgpversion: A scalar holding the pgp-version
 sub getpgpcommand {
-	my ($PGPVersion) = @_;
+	my ($pgpversion) = @_;
 	my $found = 0;
 
 	if ($config{'pgp'} !~ /^\//) {
@@ -637,52 +708,52 @@ sub getpgpcommand {
 		}
 	}
 	if (!-x $config{'pgp'} && ! $found) {
-		warn "PGP signing disabled: Can't locate executable ".$config{'pgp'}."\n" if $config{'debug'};
-		$config{'no_sign'} = 1;
+		warn "PGP signing disabled: Can't locate executable ".$config{'pgp'}."\n" if ($config{'debug'} || $config{'verbose'});
+		$config{'no-sign'} = 1;
 	}
 
-	if ($PGPVersion eq '2') {
-		if ($config{'PGPPass'}) {
-			$PGPCommand = "PGPPASS=\"".$config{'PGPPass'}."\" ".$config{'pgp'}." -z -u \"".$config{'PGPSigner'}."\" +verbose=0 language='en' -saft <".$config{'pgptmpf'}.".txt >".$config{'pgptmpf'}.".txt.asc";
-		} elsif ($config{'Interactive'}) {
-			$PGPCommand = $config{'pgp'}." -z -u \"".$config{'PGPSigner'}."\" +verbose=0 language='en' -saft <".$config{'pgptmpf'}.".txt >".$config{'pgptmpf'}.".txt.asc";
+	if ($pgpversion eq '2') {
+		if ($config{'pgp-pass'}) {
+			$PGPCommand = "PGPPASS=\"".$config{'pgp-pass'}."\" ".$config{'pgp'}." -z -u \"".$config{'pgp-signer'}."\" +verbose=0 language='en' -saft <".$config{'pgptmpf'}.".txt >".$config{'pgptmpf'}.".txt.asc";
+		} elsif ($config{'interactive'}) {
+			$PGPCommand = $config{'pgp'}." -z -u \"".$config{'pgp-signer'}."\" +verbose=0 language='en' -saft <".$config{'pgptmpf'}.".txt >".$config{'pgptmpf'}.".txt.asc";
 		} else {
 			die("$0: Passphrase is unknown!\n");
 		}
-	} elsif ($PGPVersion eq '5') {
-		if ($config{'PathtoPGPPass'}) {
-			$PGPCommand = "PGPPASSFD=".$config{'PGPPassFD'}." ".$config{'pgp'}."s -u \"".$config{'PGPSigner'}."\" -t --armor -o ".$config{'pgptmpf'}.".txt.asc -z -f < ".$config{'pgptmpf'}.".txt ".$config{'PGPPassFD'}."<".$config{'PathtoPGPPass'};
-		} elsif ($config{'Interactive'}) {
-			$PGPCommand = $config{'pgp'}."s -u \"".$config{'PGPSigner'}."\" -t --armor -o ".$config{'pgptmpf'}.".txt.asc -z -f < ".$config{'pgptmpf'}.".txt";
+	} elsif ($pgpversion eq '5') {
+		if ($config{'path-to-pgp-pass'}) {
+			$PGPCommand = "PGPPASSFD=".$config{'pgp-pass-fd'}." ".$config{'pgp'}."s -u \"".$config{'pgp-signer'}."\" -t --armor -o ".$config{'pgptmpf'}.".txt.asc -z -f < ".$config{'pgptmpf'}.".txt ".$config{'pgp-pass-fd'}."<".$config{'path-to-pgp-pass'};
+		} elsif ($config{'interactive'}) {
+			$PGPCommand = $config{'pgp'}."s -u \"".$config{'pgp-signer'}."\" -t --armor -o ".$config{'pgptmpf'}.".txt.asc -z -f < ".$config{'pgptmpf'}.".txt";
 		} else {
 			die("$0: Passphrase is unknown!\n");
 		}
-	} elsif ($PGPVersion eq '6') { # this is untested
-		if ($config{'PathtoPGPPass'}) {
-			$PGPCommand = "PGPPASSFD=".$config{'PGPPassFD'}." ".$config{'pgp'}." -u \"".$config{'PGPSigner'}."\" -saft -o ".$config{'pgptmpf'}.".txt.asc < ".$config{'pgptmpf'}.".txt ".$config{'PGPPassFD'}."<".$config{'PathtoPGPPass'};
-		} elsif ($config{'Interactive'}) {
-			$PGPCommand = $config{'pgp'}." -u \"".$config{'PGPSigner'}."\" -saft -o ".$config{'pgptmpf'}.".txt.asc < ".$config{'pgptmpf'}.".txt";
+	} elsif ($pgpversion eq '6') { # this is untested
+		if ($config{'path-to-pgp-pass'}) {
+			$PGPCommand = "PGPPASSFD=".$config{'pgp-pass-fd'}." ".$config{'pgp'}." -u \"".$config{'pgp-signer'}."\" -saft -o ".$config{'pgptmpf'}.".txt.asc < ".$config{'pgptmpf'}.".txt ".$config{'pgp-pass-fd'}."<".$config{'path-to-pgp-pass'};
+		} elsif ($config{'interactive'}) {
+			$PGPCommand = $config{'pgp'}." -u \"".$config{'pgp-signer'}."\" -saft -o ".$config{'pgptmpf'}.".txt.asc < ".$config{'pgptmpf'}.".txt";
 		} else {
 			die("$0: Passphrase is unknown!\n");
 		}
-	} elsif ($PGPVersion =~ m/GPG1?$/io) {
-		if ($config{'PathtoPGPPass'}) {
-			$PGPCommand = $config{'pgp'}." --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-tty --batch --passphrase-fd ".$config{'PGPPassFD'}." ".$config{'PGPPassFD'}."<".$config{'PathtoPGPPass'}." --clearsign ".$config{'pgptmpf'}.".txt";
-		} elsif ($config{'Interactive'}) {
-			$PGPCommand = $config{'pgp'}." --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-secmem-warning --no-batch --clearsign ".$config{'pgptmpf'}.".txt";
+	} elsif ($pgpversion =~ m/GPG1?$/io) {
+		if ($config{'path-to-pgp-pass'}) {
+			$PGPCommand = $config{'pgp'}." --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'pgp-signer'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-tty --batch --passphrase-fd ".$config{'pgp-pass-fd'}." ".$config{'pgp-pass-fd'}."<".$config{'path-to-pgp-pass'}." --clearsign ".$config{'pgptmpf'}.".txt";
+		} elsif ($config{'interactive'}) {
+			$PGPCommand = $config{'pgp'}." --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'pgp-signer'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-secmem-warning --no-batch --clearsign ".$config{'pgptmpf'}.".txt";
 		} else {
 			die("$0: Passphrase is unknown!\n");
 		}
-	} elsif ($PGPVersion =~ m/GPG2$/io) {
-		if ($config{'PathtoPGPPass'}) {
-			$PGPCommand = $config{'pgp'}." --pinentry-mode loopback --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-tty --batch --passphrase-fd ".$config{'PGPPassFD'}." ".$config{'PGPPassFD'}."<".$config{'PathtoPGPPass'}." --clearsign ".$config{'pgptmpf'}.".txt";
-		} elsif ($config{'Interactive'}) {
-			$PGPCommand = $config{'pgp'}." --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'PGPSigner'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-secmem-warning --no-batch --clearsign ".$config{'pgptmpf'}.".txt";
+	} elsif ($pgpversion =~ m/GPG2$/io) {
+		if ($config{'path-to-pgp-pass'}) {
+			$PGPCommand = $config{'pgp'}." --pinentry-mode loopback --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'pgp-signer'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-tty --batch --passphrase-fd ".$config{'pgp-pass-fd'}." ".$config{'pgp-pass-fd'}."<".$config{'path-to-pgp-pass'}." --clearsign ".$config{'pgptmpf'}.".txt";
+		} elsif ($config{'interactive'}) {
+			$PGPCommand = $config{'pgp'}." --emit-version --digest-algo $config{'digest-algo'} -a -u \"".$config{'pgp-signer'}."\" -o ".$config{'pgptmpf'}.".txt.asc --no-secmem-warning --no-batch --clearsign ".$config{'pgptmpf'}.".txt";
 		} else {
 			die("$0: Passphrase is unknown!\n");
 		}
 	} else {
-		die("$0: Unknown PGP-Version $PGPVersion!");
+		die("$0: Unknown PGP-Version $pgpversion!");
 	}
 	return $PGPCommand;
 }
@@ -698,17 +769,21 @@ sub postarticle {
 
 	my $Server = AuthonNNTP();
 	my $ServerCod = $Server->code();
+	my $ServerMsg = $Server->message();
 	if ($ServerCod == 340) {
 		$Server->datasend(@$ArticleR);
+		## buggy Net::Cmd < 2.31
+		$Server->set_status(200, "");
 		$Server->dataend();
-		if (!$Server->ok()) {
-			my $ServerMsg = $Server->message();
+		$ServerCod = $Server->code();
+		$ServerMsg = $Server->message();
+		if (! $Server->ok()) {
 			$Server->quit();
-			die("\n$0: Posting failed! Response from news server:\n", $Server->code(), ' ', $ServerMsg);
+			die("\n$0: Posting failed! Response from news server:\n", $ServerCod, ' ', $ServerMsg);
 		}
 		$Server->quit();
 	} else {
-		die("\n".$0.": Posting failed!\n");
+		die("\n$0: Posting failed! Response from news server:\n", $ServerCod, ' ', $ServerMsg);
 	}
 	return;
 }
@@ -746,7 +821,7 @@ sub signarticle {
 	my ($HeaderR, $BodyR) = @_;
 	my (@pgphead, @pgpbody, $pgphead, $pgpbody, $signheaders, @signheaders);
 
-	foreach (@{$config{'PGPSignHeaders'}}) {
+	foreach (@{$config{'pgp-sign-headers'}}) {
 		if (defined($$HeaderR{lc($_)}) && $$HeaderR{lc($_)} =~ m/^[^\s:]+: .+/o) {
 			push @signheaders, $_;
 		}
@@ -769,7 +844,7 @@ sub signarticle {
 	unless (substr($pgpbody,-1,1)=~ /\n/ ) {$pgpbody.="\n"};
 	open(my $FH, '>', $config{'pgptmpf'} . ".txt") or die("$0: can't open ".$config{'pgptmpf'}.": $!\n");
 	print $FH $pgphead, "\n", $pgpbody;
-	print $FH "\n" if ($config{'PGPVersion'} =~ m/GPG/io); # workaround a pgp/gpg incompatibility - should IMHO be fixed in pgpverify
+	print $FH "\n" if ($config{'pgp-version'} =~ m/GPG/io); # workaround a pgp/gpg incompatibility - should IMHO be fixed in pgpverify
 	close($FH) or warn "$0: Couldn't close TMP: $!\n";
 
 	# Start PGP, then read the signature;
@@ -822,7 +897,7 @@ sub signarticle {
 	delete $$HeaderR{$config{'pgpheader'}};
 
 	@pgphead = ();
-	foreach my $header (@{$config{PGPorderheaders}}) {
+	foreach my $header (@{$config{'pgp-order-headers'}}) {
 		if ($$HeaderR{$header} && $$HeaderR{$header} ne "\n") {
 			push(@pgphead, "$$HeaderR{$header}");
 			delete $$HeaderR{$header};
@@ -837,7 +912,7 @@ sub signarticle {
 	}
 
 	push @pgphead, ("X-PGP-Hash: " . $config{'digest-algo'} . "\n") if (defined($config{'digest-algo'}));
-	push @pgphead, ("X-PGP-Key: " . $config{'PGPSigner'} . "\n"), $tmppgpheader;
+	push @pgphead, ("X-PGP-Key: " . $config{'pgp-signer'} . "\n"), $tmppgpheader;
 	undef $tmppgpheader;
 
 	@pgpbody = split(/$/m, $pgpbody);
@@ -857,9 +932,9 @@ sub signarticle {
 sub buildcancelkey {
 	my ($data, $key) = @_;
 	my $cancel_key;
-	if ($config{'canlock_algorithm'} eq 'sha1') {
+	if ($config{'canlock-algorithm'} eq 'sha1') {
 		$cancel_key = MIME::Base64::encode(Digest::HMAC_SHA1::hmac_sha1($data, $key), '');
-	} elsif ($config{'canlock_algorithm'} eq 'sha256') {
+	} elsif ($config{'canlock-algorithm'} eq 'sha256') {
 		$cancel_key = MIME::Base64::encode(Digest::SHA::hmac_sha256($data, $key), '');
 	} else {
 		$cancel_key = MIME::Base64::encode(Digest::SHA::hmac_sha512($data, $key), '');
@@ -880,13 +955,13 @@ sub buildcancelkey {
 sub buildcancellock {
 	my ($cancel_key, $sha_mod) = @_;
 	my $cancel_lock;
-	if ($config{'canlock_algorithm'} eq 'sha1') {
+	if ($config{'canlock-algorithm'} eq 'sha1') {
 		if ($sha_mod =~ m/SHA1/) {
 			$cancel_lock = MIME::Base64::encode(Digest::SHA1::sha1($cancel_key, ''), '');
 		} else {
 			$cancel_lock = MIME::Base64::encode(Digest::SHA::sha1($cancel_key, ''), '');
 		}
-	} elsif ($config{'canlock_algorithm'} eq 'sha256') {
+	} elsif ($config{'canlock-algorithm'} eq 'sha256') {
 		$cancel_lock = MIME::Base64::encode(Digest::SHA::sha256($cancel_key, ''), '');
 	} else {
 		$cancel_lock = MIME::Base64::encode(Digest::SHA::sha512($cancel_key, ''), '');
@@ -910,11 +985,11 @@ sub usage {
 	print "  -i string  list of headers to be ignored for signing\n";
 	print "  -n string  set Newsgroups:-header to string\n";
 	print "  -o string  set Organization:-header to string\n";
-	print "  -p port    use port as NNTP port [default=".$config{'NNTPPort'}."]\n";
+	print "  -p port    use port as NNTP port [default=".$config{'nntp-port'}."]\n";
 	print "  -r string  set Reply-To:-header to string\n";
 	print "  -s string  save signed article to directory string instead of posting\n";
 	print "  -t string  set Subject:-header to string\n";
-	print "  -v         show version\n";
+	print "  -v         show warnings about missing/disabled features\n";
 	print "  -w string  set Followup-To:-header to string\n";
 	print "  -x string  set Path:-header to string\n";
 	print "  -D         enable debugging\n";
@@ -922,10 +997,17 @@ sub usage {
 	print "  -H         show help\n";
 	print "  -I         do not add Injection-Date: header\n";
 	print "  -L         do not add Cancel-Lock: / Cancel-Key: headers\n";
+	print "  -O         do not add Organization:-header\n";
 	print "  -R         disallow control messages\n";
-	print "  -S         do not append " . $config{'sig_path'} . "\n";
+	print "  -S         do not append " . $config{'sig-path'} . "\n";
 	print "  -X         do not sign article\n";
 	print "  -Y         force authentication on connect\n";
+	print " --canlock-algorithm string\n";
+	print "             digest algorithm for Cancel-Lock (sha1, sha256 or sha512)\n";
+	print " --ssl       use NNTPS (via port 563) if available\n";
+	print " --transform convert <CR><LF> to <LF>\n";
+	print " --version   show version\n";
+	printf ("\nAvailable tinewsrc-vars: %s\n", join(", ",sort keys %config)) if ($config{'verbose'} || $config{'debug'});
 	exit 0;
 }
 
@@ -955,7 +1037,8 @@ to the article and send out the mail-copies.
 If a Cancel-Lock secret file is defined it will automatically add a
 Cancel-Lock: (and Cancel-Key: if required) header.
 
-The input should have unix line endings (<LF>, '\n').
+The input should have unix line endings (<LF>, '\n'). Use --B<transform>
+to convert from <CR><LF> to just <LF>.
 
 =head1 OPTIONS
 X<tinews, command-line options>
@@ -1016,8 +1099,8 @@ X<-p> X<--port>
 
 use C<port> as NNTP-port
 
-=item -B<r> C<Reply-To> | --B<replyto> C<Reply-To>
-X<-r> X<--replyto>
+=item -B<r> C<Reply-To> | --B<reply-to> C<Reply-To>
+X<-r> X<--reply-to>
 
 Set the article header field Reply-To: to the given value.
 
@@ -1031,13 +1114,14 @@ X<-t> X<--subject>
 
 Set the article header field Subject: to the given value.
 
-=item -B<v> | --B<version>
-X<-v> X<--version>
+=item -B<v> | --B<verbose>
+X<-v> X<--verbose>
 
-Show version.
+Warn about disabled options due to lacking perl-modules or executables and
+unreadable files and enable warnings about raw 8-bit data.
 
-=item -B<w> C<Followup-To> | --B<followupto> C<Followup-To>
-X<-w> X<--followupto>
+=item -B<w> C<Followup-To> | --B<followup-to> C<Followup-To>
+X<-w> X<--followup-to>
 
 Set the article header field Followup-To: to the given value.
 
@@ -1045,6 +1129,13 @@ Set the article header field Followup-To: to the given value.
 X<-x> X<--path>
 
 Set the article header field Path: to the given value.
+
+=item -B<D> | -B<N> | --B<debug>
+X<-D> X<-N> X<--debug>
+
+Set L<Net::NNTP(3pm)> to debug mode, enable warnings about raw 8-bit data,
+warn about disabled options due to lacking perl-modules or executables and
+unreadable files.
 
 =item -B<H> | --B<help>
 X<-H> X<--help>
@@ -1061,11 +1152,10 @@ X<-L> X<--no-canlock>
 
 Do not add Cancel-Lock: / Cancel-Key: headers.
 
-=item --B<canlock-algorithm> C<Algorithm>
-X<--canlock-algorithm>
+=item -B<O> | --B<no-organization>
+X<-O> X<--no-organization>
 
-Digest algorithm used for Cancel-Lock: / Cancel-Key: headers.
-Supported algorithms are sha1, sha256 and sha512. Default is sha1.
+Do not add Organization: header.
 
 =item -B<R> | --B<no-control>
 X<-R> X<--no-control>
@@ -1087,6 +1177,29 @@ X<-Y> X<--force-auth>
 
 Force authentication on connect even if not required by the server.
 
+=item --B<canlock-algorithm> C<Algorithm>
+X<--canlock-algorithm>
+
+Digest algorithm used for Cancel-Lock: / Cancel-Key: headers.
+Supported algorithms are sha1, sha256 and sha512. Default is sha1.
+
+=item --B<ssl> | --B<nntps>
+X<--ssl> X<--nntps>
+
+Use NNTPS (via port 563) if available. This requires a recent version
+of L<Net::NNTP(3pm)> and L<IO::Socket::SSL(3pm)>. Be aware that no SSL
+verification will be done.
+
+=item --B<transform>
+X<--transform>
+
+Convert network line endings (<CR><LF>) to unix line endings (<LF>).
+
+=item --B<version>
+X<--version>
+
+Show version.
+
 =item -B<A> -B<V> -B<W>
 X<-A> X<-V> X<-W>
 
@@ -1096,18 +1209,6 @@ These options are accepted for compatibility reasons but ignored.
 X<-h> X<--headers>
 
 These options are accepted for compatibility reasons but ignored.
-
-=item -B<O> | --B<no-organization>
-X<-O> X<--no-organization>
-
-These options are accepted for compatibility reasons but ignored.
-
-=item -B<D> | -B<N> | --B<debug>
-X<-D> X<-N> X<--debug>
-
-Enable warnings about raw 8-bit data and set L<Net::NNTP(3pm)> in debug
-mode, enable warnings about raw 8-bit data, warn about disabled options
-due to lacking perl-modules or executables and unreadable files.
 
 =back
 
@@ -1181,7 +1282,8 @@ X<$ORGANIZATION> X<ORGANIZATION>
 
 Set the article header field Organization: to the contents of the variable
 if there isn't already an Organization: header in the article. The '-B<o>'
-command-line option overrides B<$ORGANIZATION>.
+command-line option overrides B<$ORGANIZATION>, The '-B<O>' command-line
+option disables it.
 
 =item B<$DISTRIBUTION>
 X<$DISTRIBUTION> X<DISTRIBUTION>
@@ -1236,7 +1338,7 @@ F<$HOME/.newsauth> is checked first.
 =item F<$XDG_CONFIG_HOME/tinewsrc> F<$HOME/.config/tinewsrc> F<$HOME/.tinewsrc>
 
 "option=value" configuration pairs. Lines that start with "#" are ignored.
-If the file contains unencrypted passwords (e.g. NNTPPass or PGPPass), it
+If the file contains unencrypted passwords (e.g. nntp-pass or pgp-pass), it
 should be readable for the user only.
 
 =back
@@ -1248,6 +1350,8 @@ contained that password has been erased, it may be possible for someone to
 find that password, in plaintext, in a core dump. In short, if serious
 security is an issue, don't use this script.
 
+Be aware that even if NNTPS is used still no SSL verification will be done.
+
 =head1 NOTES
 
 B<tinews.pl> is designed to be used with L<pgp(1)>-2.6.3,
@@ -1256,6 +1360,10 @@ L<pgp(1)>-5, L<pgp(1)>-6, L<gpg(1)> and L<gpg2(1)>.
 B<tinews.pl> requires the following standard modules to be installed:
 L<Getopt::Long(3pm)>, L<Net::NNTP(3pm)>, <Time::Local(3pm)> and
 L<Term::Readline(3pm)>.
+
+NNTPS (NNTP with implicit TLS; RFC 4642 and RFC 8143) may be unavailable
+if L<Net::NNTP(3pm)> is too old or L<IO::Socket::SSL(3pm)> is missing on
+the system. B<tinews.pl> will fallback to unencrypted NNTP in that case.
 
 If the Cancel-Lock feature (RFC 8315) is enabled the following additional
 modules must be installed: L<MIME::Base64(3pm)>, L<Digest::SHA(3pm)> or
@@ -1281,7 +1389,7 @@ Marc Brockschmidt E<lt>marc@marcbrockschmidt.deE<gt>
 
 L<pgp(1)>, L<gpg(1)>, L<gpg2(1)>, L<pgps(1)>, L<Digest::HMAC_SHA1(3pm)>,
 L<Digest::SHA(3pm)>, L<Digest::SHA1(3pm)>, L<Getopt::Long(3pm)>,
-L<MIME::Base64(3pm)>, L<Net::NNTP(3pm)>, L<Time::Local(3pm)>,
-L<Term::Readline(3pm)>
+L<IO::Socket::SSL(3pm)>, L<MIME::Base64(3pm)>, L<Net::NNTP(3pm)>,
+L<Time::Local(3pm)>, L<Term::Readline(3pm)>
 
 =cut

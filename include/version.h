@@ -6,7 +6,7 @@
  *  Updated   : 2019-02-18
  *  Notes     :
  *
- * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,8 +45,8 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"2.4.5"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20201125"
-#	define RELEASENAME	"Millburn"
+#	define RELEASEDATE	"20201224"
+#	define RELEASENAME	"Glen Albyn"
 /* config-file versions - must by dotted triples in the range 0 to 99 each */
 #	define TINRC_VERSION	"1.3.17"
 #	define ATTRIBUTES_VERSION	"1.0.10"

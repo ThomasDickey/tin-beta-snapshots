@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tin-man 2.4.2\n"
-"POT-Creation-Date: 2020-11-11 00:26+0100\n"
+"POT-Creation-Date: 2020-12-01 11:58+0100\n"
 "PO-Revision-Date: 2019-01-18 13:45+0100\n"
 "Last-Translator: Francisco Javier Serrador <fserrador@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -27,7 +27,7 @@ msgstr "tin"
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9
 #, no-wrap
-msgid "December 24th, 2019"
+msgid "December 24th, 2020"
 msgstr ""
 
 #. type: TH

@@ -1,22 +1,22 @@
-MANIFEST for tin-2.4.5 (Wed Nov 25 16:20:23 CET 2020)
+MANIFEST for tin-2.4.5 (Thu Dec 24 12:47:24 CET 2020)
 ----------------------------------------------------
    15079 ./Makefile
     8797 ./MANIFEST
     1546 ./README
      747 ./README.MAC
      976 ./README.WIN
-  205467 ./aclocal.m4
+  209607 ./aclocal.m4
     1096 ./conf-tin
-   49288 ./config.guess
-   34193 ./config.sub
-  938523 ./configure
-   43278 ./configure.in
+   49418 ./config.guess
+   34257 ./config.sub
+  952989 ./configure
+   43287 ./configure.in
     7123 ./install-sh
      355 ./po4a.conf
     1575 ./tin.spec
    18847 ./doc/ABOUT-NLS
-   13420 ./doc/CHANGES
-  301441 ./doc/CHANGES.old
+   13509 ./doc/CHANGES
+  301442 ./doc/CHANGES.old
     5125 ./doc/CREDITS
     1305 ./doc/DEBUG_REFS
    32090 ./doc/INSTALL
@@ -24,7 +24,7 @@ MANIFEST for tin-2.4.5 (Wed Nov 25 16:20:23 CET 2020)
     1779 ./doc/WHATSNEW
     2618 ./doc/art_handling.txt
     1701 ./doc/article.txt
-    4375 ./doc/auth.txt
+    3499 ./doc/auth.txt
     3827 ./doc/config-anomalies
    12257 ./doc/filtering
    35305 ./doc/good-netkeeping-seal
@@ -48,7 +48,7 @@ MANIFEST for tin-2.4.5 (Wed Nov 25 16:20:23 CET 2020)
   140049 ./doc/tin.1
    84537 ./doc/tin.5
     5065 ./doc/tin.defaults
-   18163 ./doc/tinews.1
+   19286 ./doc/tinews.1
     2419 ./doc/tools.txt
     4345 ./doc/w2r.1
     2196 ./doc/wildmat.3
@@ -56,15 +56,15 @@ MANIFEST for tin-2.4.5 (Wed Nov 25 16:20:23 CET 2020)
     3816 ./tools/metamutt
     2791 ./tools/opt-case.pl
     1413 ./tools/tinlock
-   42935 ./tools/tinews.pl
+   47778 ./tools/tinews.pl
     3791 ./tools/url_handler.pl
     1657 ./tools/url_handler.sh
-    3354 ./tools/w2r.pl
+    3353 ./tools/w2r.pl
     1661 ./tools/expand_aliases.tgz
     2697 ./include/bool.h
     1886 ./include/bugrep.h
     2350 ./include/debug.h
-   68744 ./include/extern.h
+   68702 ./include/extern.h
    14190 ./include/keymap.h
     2992 ./include/missing_fd.h
     6435 ./include/newsrc.h
@@ -79,11 +79,11 @@ MANIFEST for tin-2.4.5 (Wed Nov 25 16:20:23 CET 2020)
    17549 ./include/tinrc.h
     4018 ./include/tnntp.h
     2366 ./include/trace.h
-    2245 ./include/version.h
+    2247 ./include/version.h
    35854 ./src/active.c
    90939 ./src/art.c
    79085 ./src/attrib.c
-   17167 ./src/auth.c
+   17319 ./src/auth.c
    12887 ./src/charset.c
     8781 ./src/color.c
    68426 ./src/config.c
@@ -104,7 +104,7 @@ MANIFEST for tin-2.4.5 (Wed Nov 25 16:20:23 CET 2020)
    38563 ./src/init.c
     2537 ./src/joinpath.c
   102350 ./src/keymap.c
-  139617 ./src/lang.c
+  139575 ./src/lang.c
     4486 ./src/langinfo.c
     7314 ./src/list.c
     6767 ./src/lock.c
@@ -115,7 +115,7 @@ MANIFEST for tin-2.4.5 (Wed Nov 25 16:20:23 CET 2020)
     5307 ./src/mimetypes.c
    96968 ./src/misc.c
    40342 ./src/newsrc.c
-   55617 ./src/nntplib.c
+   55616 ./src/nntplib.c
     8103 ./src/nrctbl.c
   105809 ./src/options_menu.c
    67323 ./src/page.c
@@ -129,7 +129,7 @@ MANIFEST for tin-2.4.5 (Wed Nov 25 16:20:23 CET 2020)
     5587 ./src/regex.c
    14622 ./src/rfc1524.c
    15302 ./src/rfc2045.c
-   39835 ./src/rfc2046.c
+   40032 ./src/rfc2046.c
    37149 ./src/rfc2047.c
    59487 ./src/save.c
    14117 ./src/screen.c
@@ -281,7 +281,7 @@ MANIFEST for tin-2.4.5 (Wed Nov 25 16:20:23 CET 2020)
       41 ./intl/VERSION
     5096 ./po/Makefile.inn
      544 ./po/POTFILES.in
-  146911 ./po/tin.pot
+  146902 ./po/tin.pot
   168735 ./po/da.gmo
   230118 ./po/da.po
   200910 ./po/de.gmo
@@ -307,7 +307,7 @@ MANIFEST for tin-2.4.5 (Wed Nov 25 16:20:23 CET 2020)
   150391 ./doc/l10n/de/tin.1
    90190 ./doc/l10n/de/tin.5
      130 ./doc/l10n/de.add
-  385249 ./doc/l10n/de.po
+  385246 ./doc/l10n/de.po
   143851 ./doc/l10n/en_GB/tin.1
    87122 ./doc/l10n/en_GB/tin.5
   475902 ./doc/l10n/en_GB.po
@@ -315,4 +315,4 @@ MANIFEST for tin-2.4.5 (Wed Nov 25 16:20:23 CET 2020)
    87113 ./doc/l10n/es/tin.5
   313398 ./doc/l10n/es.po
   299205 ./doc/l10n/tin-man.pot
-13355273 total
+13379515 total

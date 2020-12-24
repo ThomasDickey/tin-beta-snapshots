@@ -1183,6 +1183,7 @@ case $cpu-$vendor in
 			| i370 | i*86 | i860 | i960 | ia16 | ia64 \
 			| ip2k | iq2000 \
 			| k1om \
+			| loongarch32 | loongarch64 | loongarchx32 \
 			| le32 | le64 \
 			| lm32 \
 			| m32c | m32r | m32rle \
@@ -1241,6 +1242,7 @@ case $cpu-$vendor in
 			| sparcv8 | sparcv9 | sparcv9b | sparcv9v | sv1 | sx* \
 			| spu \
 			| tahoe \
+			| thumbv7* \
 			| tic30 | tic4x | tic54x | tic55x | tic6x | tic80 \
 			| tron \
 			| ubicom32 \

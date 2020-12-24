@@ -7,7 +7,7 @@
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2020 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 1997-2021 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -556,8 +556,9 @@ sasl_auth_plain(
 		gsasl_done(ctx);
 		return p;
 	}
-	gsasl_property_set(session, GSASL_AUTHID, user);
-	gsasl_property_set(session, GSASL_PASSWORD, pass);
+	/* GSASL_AUTHZID (authorization identity) is (usually) unused with NNTP */
+	gsasl_property_set(session, GSASL_AUTHID, user);	/* authentication identity */
+	gsasl_property_set(session, GSASL_PASSWORD, pass);	/* password of the authentication identity */
 	if (gsasl_step64(session, NULL, &p) != GSASL_OK)
 		FreeAndNull(p);
 	gsasl_finish(session);

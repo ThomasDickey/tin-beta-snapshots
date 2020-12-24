@@ -6,7 +6,7 @@
  *  Updated   : 2020-06-13
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2020 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

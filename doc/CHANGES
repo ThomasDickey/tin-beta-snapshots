@@ -1,4 +1,4 @@
--- 2.4.5 release 20201125 "" --
+-- 2.4.5 release 20201224 "Glen Albyn" --
 
  022) Dennis Preiser <dennis@d--p.de>
       BUG. 'B'ody and '/'article search with wildcard matching (wildcard=0)
@@ -10,6 +10,7 @@
       BUG. tin_ltoa in some cases returned an error where it shouldn't
       BUG. 'T'ag all parts of multipart message didn't work with thread_arts
            4 (multipart) or 5 (percentage)
+      BUG. hung on empty (lone '.') positive (220) response to ARTICLE command
       ADD. make {Group,Thread}TagParts 'T' toggle like 't'ag
       ADD. don't show mime parse error for missing end marker if not running
            in debug mode

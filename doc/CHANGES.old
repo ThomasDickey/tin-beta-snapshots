@@ -6090,7 +6090,7 @@ U001) Urs Janssen <urs@tin.org>
 
 --unoff BETA release 961222 --
 
-255) David-Michael Lincke <david-miachel.linke@iwi.unisg.ch>
+255) David-Michael Lincke <david-miachel.lincke@iwi.unisg.ch>
      ADD. missing DEFAULT_MAILER for hp-ux
      FIX. tin.h
 

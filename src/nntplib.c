@@ -1469,7 +1469,7 @@ nntp_open(
 #	endif /* DEBUG */
 			put_server("MODE READER");
 			switch (get_only_respcode(buf, sizeof(buf))) {
-				/* just honor ciritical errors */
+				/* just honor critical errors */
 				case ERR_GOODBYE:
 				case ERR_ACCESS:
 					error_message(2, "%s", buf);

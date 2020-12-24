@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2020-05-01
+ *  Updated   : 2020-12-17
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2020 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2021 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1459,6 +1459,12 @@ parse_rfc2045_article(
 	if ((ret = parse_rfc822_headers(&artinfo->hdr, infile, artinfo->raw)) != 0)
 		goto error;
 
+	/* no article data returned, just a '.' after 220er response */
+	if (ret == 0 && artinfo->hdr.ext->offset == 0) {
+		ret = ART_UNAVAILABLE;
+		goto error;
+	}
+
 	/*
 	 * Is this a MIME article ?
 	 * We don't bother to parse all plain text articles
@@ -1571,7 +1577,7 @@ art_open(
 	progress_mesg = pmesg;
 	if (parse_rfc2045_article(fp, art->line_count, artinfo, show_progress_meter) != 0) {
 		progress_mesg = NULL;
-		return ART_ABORT;
+		return ((tin_errno == 0) ? ART_UNAVAILABLE : ART_ABORT);
 	}
 	progress_mesg = NULL;
 

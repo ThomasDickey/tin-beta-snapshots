@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2020-04-23
+dnl Updated   : 2020-12-02
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2020 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2021 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -1600,7 +1600,7 @@ CF_DEFINE_STRING(TIN_CPP,      "$CPP")
 CF_DEFINE_STRING(TIN_CPPFLAGS, "$CPPFLAGS")
 CF_DEFINE_STRING(TIN_LD,       "$CC")
 CF_DEFINE_STRING(TIN_LDFLAGS,  "$LDFLAGS")
-CF_DEFINE_STRING(TIN_LIBS,     "$PCREDIR_LIBS $LIBS")
+CF_DEFINE_STRING(TIN_LIBS,     "$PCREDIR_LIBS $CANLIBS $LIBS")
 
 AC_OUTPUT($PCRE_MAKEFILE
 	$SUB_MAKEFILE

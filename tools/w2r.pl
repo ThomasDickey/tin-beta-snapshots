@@ -33,7 +33,7 @@ while (defined($line = <>)) {
 	next if ($line =~ m/^[^=]+=$/o);
 
 	# lines which needs to be translated
-	if ($line =~ m/^(subj|from|msgid(?:|_last|_only)|refs_only|xref|path=)=(.*)$/o) {
+	if ($line =~ m/^(subj|from|msgid(?:|_last|_only)|refs_only|xref|path)=(.*)$/o) {
 		printf ("$1=%s\n", w2p($2));
 		next;
 	}

@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2020-06-10
+ *  Updated   : 2020-12-02
  *  Notes     :
  *
- * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,7 +148,7 @@ constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=sha
 	constext txt_color_on[] = N_("ANSI color enabled");
 #endif /* HAVE_COLOR */
 constext txt_command_failed[] = N_("Command failed: %s");
-constext txt_copyright_notice[] = "%s (c) Copyright 1991-2020 Iain Lea.";
+constext txt_copyright_notice[] = "%s (c) Copyright 1991-2021 Iain Lea.";
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 #ifdef NNTP_ABLE
 	constext txt_connecting[] = N_("Connecting to %s...");
@@ -754,10 +754,8 @@ constext txt_quit_no_write[] = N_("Do you really want to quit without saving you
 constext txt_quoted_printable[] = "quoted-printable";
 
 constext txt_range_invalid[] = N_("Invalid range - valid are '0-9.$' eg. 1-$");
-#ifdef NNTP_ABLE
-	constext txt_read_abort[] = N_("Do you want to abort this operation?");
-	constext txt_read_exit[] = N_("Do you want to exit tin immediately?");
-#endif /* NNTP_ABLE */
+constext txt_read_abort[] = N_("Do you want to abort this operation?");
+constext txt_read_exit[] = N_("Do you want to exit tin immediately?");
 constext txt_reading_article[] = N_("Reading ('q' to quit)...");
 constext txt_reading_arts[] = N_("Reading %sarticles...");
 constext txt_reading_attributes_file[] = N_("Reading %sattributes file...\n");

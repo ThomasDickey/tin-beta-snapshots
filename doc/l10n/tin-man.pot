@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-11-11 00:26+0100\n"
+"POT-Creation-Date: 2020-12-01 11:58+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr ""
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9
 #, no-wrap
-msgid "December 24th, 2019"
+msgid "December 24th, 2020"
 msgstr ""
 
 #. type: TH
