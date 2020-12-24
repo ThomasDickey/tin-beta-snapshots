@@ -1,13 +1,13 @@
 # English (United Kingdom) translations for the tin man pages.
 # This file is distributed under the same license as the tin package.
-# Urs Janssen <urs@tin.org>, 2011-2020.
+# Urs Janssen <urs@tin.org>, 2011-2021.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: tin-man 2.4.5\n"
 "Report-Msgid-Bugs-To: translation@tin.org\n"
-"POT-Creation-Date: 2020-11-11 00:26+0100\n"
-"PO-Revision-Date: 2020-09-22 15:45+0200\n"
+"POT-Creation-Date: 2020-12-01 11:58+0100\n"
+"PO-Revision-Date: 2020-12-01 11:59+0100\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: en_GB\n"
@@ -24,8 +24,8 @@ msgstr "tin"
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9
 #, no-wrap
-msgid "December 24th, 2019"
-msgstr "December 24th, 2019"
+msgid "December 24th, 2020"
+msgstr "December 24th, 2020"
 
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9

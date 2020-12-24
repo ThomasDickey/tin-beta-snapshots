@@ -4,21 +4,22 @@ Tin is able to do authentication to news servers according to the "Common
 NNTP Extensions" (this document is available at [1]). There are several ways
 of authentication described in that text which are referred to as Original
 AUTHINFO, AUTHINFO GENERIC, and AUTHINFO SIMPLE. Tin supports the Original
-AUTHINFO and the AUTHINFO GENERIC methods and if tin is linked against
-libgsasl and the server announces it as described in RFC 3977 [2] it
-supports the AUTHINFO SASL PLAIN mechanisem as described in RFC 4643 [3]. In
-addition to answers to authentication requests as described in the "Common
-NNTP Extensions", tin also provides authentication at connection startup.
+AUTHINFO and if tin is linked against libgsasl and the server announces it
+as described in RFC 3977 [2] it supports the AUTHINFO SASL PLAIN mechanisem
+as described in RFC 4643 [3]. In addition to answers to authentication
+requests as described in the "Common NNTP Extensions", tin also provides
+authentication at connection startup.
 
 Unfortunately, you cannot rely on the response codes of authentication
 requests as described in the "Common NNTP Extensions"; today's news servers
 mostly send NNTP codes 480, regardless of the type of authentication they
 expect. Therefore, authentication is always done in the same manner: First,
-tin tries an AUTHINFO GENERIC authorization. If this fails, Original
-AUTHINFO is used. If this does not work for you (which it should), please
-contact me to track this problem down. There are known problems with the
-reference nntp server available at ftp.academ.com -- this is a server bug
-and not tin's fault; if you need a patch or workaround, drop me a mail.
+tin tries AUTHINFO SASL PLAIN authorization (see above). If this fails or is
+unavailable, Original AUTHINFO is used.  If this does not work for you
+(which it should), please contact me to track this problem down.  There are
+known problems with the reference nntp server available at ftp.academ.com --
+this is a server bug and not tin's fault; if you need a patch or workaround,
+drop me a mail.
 
 Authentication requests will be handled whenever they occur; the command
 that caused the request will be sent again.
@@ -50,22 +51,6 @@ connection startup, because there is no way for tin to find out if an
 authentication at this time is needed. If you need to authenticate at the
 beginning of your news session, use the -A option when invoking tin or just
 provide a .newsauth file.
-
-The AUTHINFO GENERIC authentication was implemented by someone else and has
-not been tested by me since I do not know a server that supports this.
-
-To use AUTHINFO GENERIC, set up an environment variable NNTPAUTH with the
-command and its parameters to invoke for authentication. The content of
-NNTPAUTH is also used as the authenticator in the AUTHINFO GENERIC response
-to the server. The environment variable NNTP_AUTH_FDS is used to store file
-descriptors for reading from and writing to the server, and for a temporary
-file ("cookie"); the three descriptors are separated by dots. The
-authentication command can take use of NNTP_AUTH_FDS when invoked; it should
-exit successful if the authentication was accepted.
-
-If NNTPAUTH is empty or not available, tin sends an "authinfo generic any
-<user-id>" command to the server and expects the result as an NNTP response
-code.
 
 The AUTHINFO SASL PLAIN authentication method requires tin to be linked
 against libgsasl.

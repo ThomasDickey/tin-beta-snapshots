@@ -1,13 +1,13 @@
 # German translations for the tin man pages.
 # This file is distributed under the same license as the tin package.
-# Urs Janssen <urs@tin.org>, 2008-2020.
+# Urs Janssen <urs@tin.org>, 2008-2021.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: tin-man 2.4.5\n"
 "Report-Msgid-Bugs-To: translation@tin.org\n"
-"POT-Creation-Date: 2020-11-11 00:26+0100\n"
-"PO-Revision-Date: 2020-11-21 16:50+0200\n"
+"POT-Creation-Date: 2020-12-01 11:58+0100\n"
+"PO-Revision-Date: 2020-12-01 12:00+0100\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -25,8 +25,8 @@ msgstr "tin"
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9
 #, no-wrap
-msgid "December 24th, 2019"
-msgstr "24. Dezember 2019"
+msgid "December 24th, 2020"
+msgstr "24. Dezember 2020"
 
 #. type: TH
 #: doc/tin.1:12 doc/tin.5:9
@@ -350,12 +350,11 @@ msgid ""
 "I<article-limit>. Default is 0, which means no limit."
 msgstr ""
 "Beschränkt die Anzahl der Artikel pro Gruppe, die vom Server abgerufen "
-"werden sollen. Wenn I<article-limit> E<gt> 0 ist, werden nicht mehr als "
-"die letzten I<article-limit> Artikel pro Gruppe vom Server geholt. "
-"Wenn I<article-limit> E<lt> 0 ist, beginnt B<tin> mit dem Abruf von "
-"Artikeln ab Ihrem ersten ungelesenen Artikel minus dem absoluten Wert "
-"von I<article-limit>. Die Voreinstellung ist 0, was keine Begrenzung "
-"bedeutet."
+"werden sollen. Wenn I<article-limit> E<gt> 0 ist, werden nicht mehr als die "
+"letzten I<article-limit> Artikel pro Gruppe vom Server geholt. Wenn "
+"I<article-limit> E<lt> 0 ist, beginnt B<tin> mit dem Abruf von Artikeln ab "
+"Ihrem ersten ungelesenen Artikel minus dem absoluten Wert von I<article-"
+"limit>. Die Voreinstellung ist 0, was keine Begrenzung bedeutet."
 
 #. type: TP
 #: doc/tin.1:139

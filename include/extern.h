@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2020-06-16
+ *  Updated   : 2020-12-02
  *  Notes     :
  *
- * Copyright (c) 1997-2020 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2021 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1140,10 +1140,8 @@ extern constext txt_quit_edit_xpost[];
 extern constext txt_quit_no_write[];
 extern constext txt_quoted_printable[];
 extern constext txt_range_invalid[];
-#ifdef NNTP_ABLE
-	extern constext txt_read_abort[];
-	extern constext txt_read_exit[];
-#endif /* NNTP_ABLE */
+extern constext txt_read_abort[];
+extern constext txt_read_exit[];
 extern constext txt_reading_article[];
 extern constext txt_reading_arts[];
 extern constext txt_reading_attributes_file[];

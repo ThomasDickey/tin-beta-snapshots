@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "tinews.pl 1"
-.TH tinews.pl 1 "December 19th, 2018" "1.1.50" "Post and sign an article via NNTP"
+.TH tinews.pl 1 "December 24th, 2020" "1.1.57" "Post and sign an article via NNTP"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -159,7 +159,8 @@ to the article and send out the mail-copies.
 If a Cancel-Lock secret file is defined it will automatically add a
 Cancel-Lock: (and Cancel-Key: if required) header.
 .PP
-The input should have unix line endings (<\s-1LF\s0>, '\en').
+The input should have unix line endings (<\s-1LF\s0>, '\en'). Use \-\-\fBtransform\fR
+to convert from <\s-1CR\s0><\s-1LF\s0> to just <\s-1LF\s0>.
 .SH "OPTIONS"
 .IX Xref "tinews, command-line options"
 .IX Header "OPTIONS"
@@ -216,10 +217,10 @@ Set the article header field Organization: to the given value.
 .IX Xref "-p --port"
 .IX Item "-p port | --port port"
 use \f(CW\*(C`port\*(C'\fR as NNTP-port
-.ie n .IP "\-\fBr\fR ""Reply\-To"" | \-\-\fBreplyto\fR ""Reply\-To""" 4
-.el .IP "\-\fBr\fR \f(CWReply\-To\fR | \-\-\fBreplyto\fR \f(CWReply\-To\fR" 4
-.IX Xref "-r --replyto"
-.IX Item "-r Reply-To | --replyto Reply-To"
+.ie n .IP "\-\fBr\fR ""Reply\-To"" | \-\-\fBreply-to\fR ""Reply\-To""" 4
+.el .IP "\-\fBr\fR \f(CWReply\-To\fR | \-\-\fBreply-to\fR \f(CWReply\-To\fR" 4
+.IX Xref "-r --reply-to"
+.IX Item "-r Reply-To | --reply-to Reply-To"
 Set the article header field Reply-To: to the given value.
 .IP "\-\fBs\fR \fIdirectory\fR | \-\-\fBsavedir\fR \fIdirectory\fR" 4
 .IX Xref "-s --savedir"
@@ -230,20 +231,27 @@ Save signed article to directory \fIdirectory\fR instead of posting.
 .IX Xref "-t --subject"
 .IX Item "-t Subject | --subject Subject"
 Set the article header field Subject: to the given value.
-.IP "\-\fBv\fR | \-\-\fBversion\fR" 4
-.IX Xref "-v --version"
-.IX Item "-v | --version"
-Show version.
-.ie n .IP "\-\fBw\fR ""Followup\-To"" | \-\-\fBfollowupto\fR ""Followup\-To""" 4
-.el .IP "\-\fBw\fR \f(CWFollowup\-To\fR | \-\-\fBfollowupto\fR \f(CWFollowup\-To\fR" 4
-.IX Xref "-w --followupto"
-.IX Item "-w Followup-To | --followupto Followup-To"
+.IP "\-\fBv\fR | \-\-\fBverbose\fR" 4
+.IX Xref "-v --verbose"
+.IX Item "-v | --verbose"
+Warn about disabled options due to lacking perl-modules or executables and
+unreadable files and enable warnings about raw 8\-bit data.
+.ie n .IP "\-\fBw\fR ""Followup\-To"" | \-\-\fBfollowup-to\fR ""Followup\-To""" 4
+.el .IP "\-\fBw\fR \f(CWFollowup\-To\fR | \-\-\fBfollowup-to\fR \f(CWFollowup\-To\fR" 4
+.IX Xref "-w --followup-to"
+.IX Item "-w Followup-To | --followup-to Followup-To"
 Set the article header field Followup-To: to the given value.
 .ie n .IP "\-\fBx\fR ""Path"" | \-\-\fBpath\fR ""Path""" 4
 .el .IP "\-\fBx\fR \f(CWPath\fR | \-\-\fBpath\fR \f(CWPath\fR" 4
 .IX Xref "-x --path"
 .IX Item "-x Path | --path Path"
 Set the article header field Path: to the given value.
+.IP "\-\fBD\fR | \-\fBN\fR | \-\-\fBdebug\fR" 4
+.IX Xref "-D -N --debug"
+.IX Item "-D | -N | --debug"
+Set \fINet::NNTP\fR\|(3pm) to debug mode, enable warnings about raw 8\-bit data,
+warn about disabled options due to lacking perl-modules or executables and
+unreadable files.
 .IP "\-\fBH\fR | \-\-\fBhelp\fR" 4
 .IX Xref "-H --help"
 .IX Item "-H | --help"
@@ -256,12 +264,10 @@ Do not add Injection-Date: header.
 .IX Xref "-L --no-canlock"
 .IX Item "-L | --no-canlock"
 Do not add Cancel-Lock: / Cancel-Key: headers.
-.ie n .IP "\-\-\fBcanlock-algorithm\fR ""Algorithm""" 4
-.el .IP "\-\-\fBcanlock-algorithm\fR \f(CWAlgorithm\fR" 4
-.IX Xref "--canlock-algorithm"
-.IX Item "--canlock-algorithm Algorithm"
-Digest algorithm used for Cancel-Lock: / Cancel-Key: headers.
-Supported algorithms are sha1, sha256 and sha512. Default is sha1.
+.IP "\-\fBO\fR | \-\-\fBno-organization\fR" 4
+.IX Xref "-O --no-organization"
+.IX Item "-O | --no-organization"
+Do not add Organization: header.
 .IP "\-\fBR\fR | \-\-\fBno-control\fR" 4
 .IX Xref "-R --no-control"
 .IX Item "-R | --no-control"
@@ -278,6 +284,26 @@ Do not sign the article.
 .IX Xref "-Y --force-auth"
 .IX Item "-Y | --force-auth"
 Force authentication on connect even if not required by the server.
+.ie n .IP "\-\-\fBcanlock-algorithm\fR ""Algorithm""" 4
+.el .IP "\-\-\fBcanlock-algorithm\fR \f(CWAlgorithm\fR" 4
+.IX Xref "--canlock-algorithm"
+.IX Item "--canlock-algorithm Algorithm"
+Digest algorithm used for Cancel-Lock: / Cancel-Key: headers.
+Supported algorithms are sha1, sha256 and sha512. Default is sha1.
+.IP "\-\-\fBssl\fR | \-\-\fBnntps\fR" 4
+.IX Xref "--ssl --nntps"
+.IX Item "--ssl | --nntps"
+Use \s-1NNTPS \s0(via port 563) if available. This requires a recent version
+of \fINet::NNTP\fR\|(3pm) and \fIIO::Socket::SSL\fR\|(3pm). Be aware that no \s-1SSL\s0
+verification will be done.
+.IP "\-\-\fBtransform\fR" 4
+.IX Xref "--transform"
+.IX Item "--transform"
+Convert network line endings (<\s-1CR\s0><\s-1LF\s0>) to unix line endings (<\s-1LF\s0>).
+.IP "\-\-\fBversion\fR" 4
+.IX Xref "--version"
+.IX Item "--version"
+Show version.
 .IP "\-\fBA\fR \-\fBV\fR \-\fBW\fR" 4
 .IX Xref "-A -V -W"
 .IX Item "-A -V -W"
@@ -286,16 +312,6 @@ These options are accepted for compatibility reasons but ignored.
 .IX Xref "-h --headers"
 .IX Item "-h | --headers"
 These options are accepted for compatibility reasons but ignored.
-.IP "\-\fBO\fR | \-\-\fBno-organization\fR" 4
-.IX Xref "-O --no-organization"
-.IX Item "-O | --no-organization"
-These options are accepted for compatibility reasons but ignored.
-.IP "\-\fBD\fR | \-\fBN\fR | \-\-\fBdebug\fR" 4
-.IX Xref "-D -N --debug"
-.IX Item "-D | -N | --debug"
-Enable warnings about raw 8\-bit data and set \fINet::NNTP\fR\|(3pm) in debug
-mode, enable warnings about raw 8\-bit data, warn about disabled options
-due to lacking perl-modules or executables and unreadable files.
 .SH "EXIT STATUS"
 .IX Header "EXIT STATUS"
 The following exit values are returned:
@@ -358,7 +374,8 @@ The '\-\fBr\fR' command-line option overrides \fB\f(CB$REPLYTO\fB\fR.
 .IX Item "$ORGANIZATION"
 Set the article header field Organization: to the contents of the variable
 if there isn't already an Organization: header in the article. The '\-\fBo\fR'
-command-line option overrides \fB\f(CB$ORGANIZATION\fB\fR.
+command-line option overrides \fB\f(CB$ORGANIZATION\fB\fR, The '\-\fBO\fR' command-line
+option disables it.
 .ie n .IP "\fB\fB$DISTRIBUTION\fB\fR" 4
 .el .IP "\fB\f(CB$DISTRIBUTION\fB\fR" 4
 .IX Xref "$DISTRIBUTION DISTRIBUTION"
@@ -407,7 +424,7 @@ it contains the user's unencrypted password for reading news.
 .el .IP "\fI\f(CI$XDG_CONFIG_HOME\fI/tinewsrc\fR \fI\f(CI$HOME\fI/.config/tinewsrc\fR \fI\f(CI$HOME\fI/.tinewsrc\fR" 4
 .IX Item "$XDG_CONFIG_HOME/tinewsrc $HOME/.config/tinewsrc $HOME/.tinewsrc"
 \&\*(L"option=value\*(R" configuration pairs. Lines that start with \*(L"#\*(R" are ignored.
-If the file contains unencrypted passwords (e.g. NNTPPass or PGPPass), it
+If the file contains unencrypted passwords (e.g. nntp-pass or pgp-pass), it
 should be readable for the user only.
 .SH "SECURITY"
 .IX Header "SECURITY"
@@ -415,6 +432,8 @@ If you've configured or entered a password, even if the variable that
 contained that password has been erased, it may be possible for someone to
 find that password, in plaintext, in a core dump. In short, if serious
 security is an issue, don't use this script.
+.PP
+Be aware that even if \s-1NNTPS\s0 is used still no \s-1SSL\s0 verification will be done.
 .SH "NOTES"
 .IX Header "NOTES"
 \&\fBtinews.pl\fR is designed to be used with \fIpgp\fR\|(1)\-2.6.3,
@@ -423,6 +442,10 @@ security is an issue, don't use this script.
 \&\fBtinews.pl\fR requires the following standard modules to be installed:
 \&\fIGetopt::Long\fR\|(3pm), \fINet::NNTP\fR\|(3pm), <\fITime::Local\fR\|(3pm)> and
 \&\fITerm::Readline\fR\|(3pm).
+.PP
+\&\s-1NNTPS \s0(\s-1NNTP\s0 with implicit \s-1TLS\s0; \s-1RFC 4642\s0 and \s-1RFC 8143\s0) may be unavailable
+if \fINet::NNTP\fR\|(3pm) is too old or \fIIO::Socket::SSL\fR\|(3pm) is missing on
+the system. \fBtinews.pl\fR will fallback to unencrypted \s-1NNTP\s0 in that case.
 .PP
 If the Cancel-Lock feature (\s-1RFC 8315\s0) is enabled the following additional
 modules must be installed: \fIMIME::Base64\fR\|(3pm), \fIDigest::SHA\fR\|(3pm) or
@@ -448,5 +471,5 @@ Marc Brockschmidt <marc@marcbrockschmidt.de>
 .IX Header "SEE ALSO"
 \&\fIpgp\fR\|(1), \fIgpg\fR\|(1), \fIgpg2\fR\|(1), \fIpgps\fR\|(1), \fIDigest::HMAC_SHA1\fR\|(3pm),
 \&\fIDigest::SHA\fR\|(3pm), \fIDigest::SHA1\fR\|(3pm), \fIGetopt::Long\fR\|(3pm),
-\&\fIMIME::Base64\fR\|(3pm), \fINet::NNTP\fR\|(3pm), \fITime::Local\fR\|(3pm),
-\&\fITerm::Readline\fR\|(3pm)
+\&\fIIO::Socket::SSL\fR\|(3pm), \fIMIME::Base64\fR\|(3pm), \fINet::NNTP\fR\|(3pm),
+\&\fITime::Local\fR\|(3pm), \fITerm::Readline\fR\|(3pm)

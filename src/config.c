@@ -6,7 +6,7 @@
  *  Updated   : 2020-04-23
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2020 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
