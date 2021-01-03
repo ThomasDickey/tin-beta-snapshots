@@ -227,7 +227,7 @@ CF_ARG_ENABLE(debug,
 	CFLAGS="-g $CFLAGS"
 	LDFLAGS="-g $LDFLAGS"],
 	[ENABLE_DEBUG='#'
-	test -z "$save_CFLAGS" && CFLAGS=`echo $CFLAGS|sed -e 's/-g //' -e 's/-g$//'`])
+	test -z "$save_CFLAGS" && CFLAGS="`echo $CFLAGS|sed -e 's/-g //' -e 's/-g$//'`"])
 AC_MSG_RESULT($enableval)
 AC_SUBST(ENABLE_DEBUG)
 
@@ -300,7 +300,7 @@ AC_MSG_CHECKING(for directory containing \"inews\")
 CF_WITH_PATH(inews-dir,
 	[  --with-inews-dir=PATH   directory containing "inews"],
 	INEWSDIR,$INEWSPATH)
-INEWSDIR=`echo $INEWSDIR |sed -e 's,/$,,'`
+INEWSDIR="`echo $INEWSDIR |sed -e 's,/$,,'`"
 AC_MSG_RESULT($INEWSDIR)
 
 AC_PATH_PROG(INEWS,
@@ -366,7 +366,7 @@ if test -n "$cf_cv_lockfile"; then
 	done
 ### if none of them matched use the one with the highest priority
 	if test "x$used_locking" = "x"; then
-		used_locking=`echo $cf_cv_lockfile|sed -e 's/^\([[^ ]]\+\).*/\1/g'`
+		used_locking="`echo $cf_cv_lockfile|sed -e 's/^\([[^ ]]\+\).*/\1/g'`"
 	fi
 	AC_MSG_RESULT($used_locking)
 	CF_UPPER(used_locking,$used_locking)
@@ -476,7 +476,7 @@ AC_ARG_WITH(trace,
 	AC_CHECK_FUNC(_tracef,[AC_DEFINE(HAVE__TRACEF,1,[Define this to 1 if we have function _tracef])],[
 	AC_CHECK_LIB(${cf_with_screen}_g,_tracef,
 		[AC_DEFINE(HAVE__TRACEF)
-		 LIBS=`echo "$LIBS" | sed -e s/-l${cf_with_screen}// -e s/-lcurses//`
+		 LIBS="`echo "$LIBS" | sed -e s/-l${cf_with_screen}// -e s/-lcurses//`"
 		 LIBS="-l${cf_with_screen}_g $LIBS"
 		 use_trace=yes
 		 AC_DEFINE(USE_TRACE,1,[Define this to 1 if we will use ncurses' trace-functions])
@@ -1575,7 +1575,7 @@ esac
 if test "$cf_cv_termlib" = pdcurses ; then
 	CF_PDCURSES_X11
 fi
-AC_CHECK_FUNCS(vw_printw)
+CF_CURSES_FUNCS(vw_printw)
 
 ### sum up warnings
 if test "$cf_cv_termlib" = none ; then
