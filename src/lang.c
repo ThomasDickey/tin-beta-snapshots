@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2020-12-02
+ *  Updated   : 2021-01-22
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -371,7 +371,7 @@ constext txt_help_article_toggle_headers[] = N_("toggle display of all headers")
 constext txt_help_article_toggle_highlight[] = N_("toggle word highlighting on/off");
 constext txt_help_article_toggle_rot13[] = N_("toggle ROT-13 (basic decode) for current article");
 constext txt_help_article_toggle_tabwidth[] = N_("toggle tabwidth 4 <-> 8");
-constext txt_help_article_toggle_tex2iso[] = N_("toggle german TeX style decoding for current article");
+constext txt_help_article_toggle_tex2iso[] = N_("toggle German TeX style decoding for current article");
 constext txt_help_article_toggle_uue[] = N_("toggle display of uuencoded sections");
 constext txt_help_article_view_attachments[] = N_("View/pipe/save multimedia attachments");
 constext txt_help_attachment_first[] = N_("choose first attachment in list");
@@ -441,7 +441,7 @@ constext txt_help_global_search_repeat[] = N_("repeat last search");
 constext txt_help_global_tag[] = N_("tag current article for reposting/mailing/piping/printing/saving");
 constext txt_help_global_toggle_info_line[] = N_("toggle info message in last line (subject/description)");
 constext txt_help_global_toggle_inverse_video[] = N_("toggle inverse video");
-constext txt_help_global_toggle_mini_help[] = N_("toggle mini help menu display");
+constext txt_help_global_toggle_mini_help[] = N_("toggle mini help menu and posting etiquette display");
 constext txt_help_global_toggle_subj_display[] = N_("cycle the display of authors email address, real name, both or neither");
 constext txt_help_global_version[] = N_("show version information");
 constext txt_help_group_catchup[] = N_("mark all articles as read and return to group selection menu");
@@ -886,7 +886,7 @@ constext txt_thread_x_of_n[] = N_("Thread %4s of %4s");
 constext txt_threading_arts[] = N_("Threading articles...");
 constext txt_toggled_high[] = N_("Toggled word highlighting %s");
 constext txt_toggled_rot13[] = N_("Toggled rot13 encoding");
-constext txt_toggled_tex2iso[] = N_("Toggled german TeX encoding %s");
+constext txt_toggled_tex2iso[] = N_("Toggled German TeX encoding %s");
 constext txt_toggled_tabwidth[] = N_("Toggled tab-width to %d");
 #ifndef NO_LOCKING
 	constext txt_trying_dotlock[] = N_("%d Trying to dotlock %s");
@@ -1140,7 +1140,7 @@ Tin will try to use XHDR XREF instead (slows down things a bit).\n");
 		constext txt_cannot_open_active_file[] = N_("Can't open %s. Try %s -r to read news via NNTP.");
 #	endif /* !NNTP_ONLY */
 #else
-	constext txt_usage_quickstart[] = N_("  -Q       quick start. Same as -qd");
+	constext txt_usage_quickstart[] = N_("  -Q       quick start. Same as -dq");
 	constext txt_usage_read_only_active[] = N_("  -l       read only active file instead of scanning spool (-n) command");
 	constext txt_usage_read_only_subscribed[] = N_("  -n       only read subscribed .newsrc groups from spool");
 	constext txt_warn_xref_not_supported[] = N_("Your server does not have Xref: in its NOV-files.\n");
@@ -2735,8 +2735,8 @@ struct opttxt txt_mailer_format = {
 	N_("Invocation of your mail command"),
 	N_("# Format of mailer line including parameters\n\
 # %M Mailer  %S Subject  %T To  %F Filename\n\
-# ie. to use elm as your mailer:    elm -s \"%S\" \"%T\" < %F\n\
-# ie. elm interactive          :    elm -i %F -s \"%S\" \"%T\"\n")
+# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n\
+# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n")
 };
 
 struct opttxt txt_interactive_mailer = {

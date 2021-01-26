@@ -324,7 +324,6 @@ repair_article(
 /*
  * make a backup copy of ~/TIN_ARTICLE_NAME, this is necessary since
  * submit_news_file adds headers, does q-p conversion etc
- * TODO: why not use BACKUP_FILE_EXT like in misc.c?
  */
 char *
 backup_article_name(
@@ -5176,7 +5175,7 @@ build_messageid(
 
 	/*
 	 * disallow .invalid TLD (gnksa_check_from() allows it)
-	 * and Message-IDs > 250 octects (RFC 3977, 3.6)
+	 * and Message-IDs > 250 octets (RFC 3977, 3.6)
 	 */
 	if ((j = strlen(buf) - 9) > 0) { /* strlen(".invalid>") */
 		if (!strcasecmp(".invalid>", buf + j) || j > 241) /* 250 - 9 */

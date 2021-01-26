@@ -3,8 +3,8 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2020-11-17
-.\" Notes     : use american english; still needs some work, e.g.:
+.\" Updated   : 2021-01-06
+.\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "December 24th, 2020" 2.4.5 "Usenet newsreader"
+.TH tin 1 "December 24th, 2020" 2.4.6 "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -504,7 +504,8 @@ Help screen of commands available on the current menu. You can use
 ('\fB\e\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Toggle the display of help mini menu at the bottom of the screen.
+Toggle the display of help mini menu at the bottom of the screen and posting
+etiquette after composing an article (\fBbeginner_level\fP).
 .TP 
 \fBDisplayPostHist 'W'\fP
 List articles posted by user. The date posted, the newsgroup and the subject
@@ -1350,7 +1351,8 @@ Toggle the display of the current URL in the last line.
 Help screen of commands available.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Toggle the display of help mini menu at the bottom of the screen.
+Toggle the display of help mini menu at the bottom of the screen and posting
+etiquette after composing an article (\fBbeginner_level\fP).
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1405,7 +1407,8 @@ last line.
 Help screen of commands available.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Toggle the display of help mini menu at the bottom of the screen.
+Toggle the display of help mini menu at the bottom of the screen and posting
+etiquette after composing an article (\fBbeginner_level\fP).
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1893,7 +1896,7 @@ details on MBOXO and MBOXRD and \fB\%mmdf\fP(5)  for more details about MMDF.
 .TP 
 \fBMail directory (maildir)\fP
 The directory where articles/threads are to be saved in \fB\%mbox\fP(5)
-format. This feature is mainly for use with the \fB\%elm\fP(1)  mail
+format. This feature is mainly for use with the \fB\%mutt\fP(1)  mail
 program. It allows the user to save articles/threads/groups simply by giving
 \&'=' as the filename to save to.  Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fP.
 .TP 
@@ -1905,7 +1908,7 @@ mailers with different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-elm \-s "%S" "%T" < "%F"
+mutt \-s "%S" \-\- "%T" < "%F"
 claws\-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
 .in -.3i
@@ -2493,12 +2496,12 @@ If ON verbatim blocks will be detected. Default is ON.
 .TP 
 \fBWildcard matching (wildcard)\fP
 Allows you to select how \fBtin\fP matches strings. The default is 0 and uses
-the wildmat notation, which is how this has traditionally been handled.
-Setting this to 1 allows you to use \fB\%perl\fP(1)  compatible regular
-expressions \fB\%pcre\fP(3)  (see also \fB\%perlre\fP(1)  and
+the \fB\%wildmat\fP(3) notation, which is how this has traditionally been
+handled.  Setting this to 1 allows you to use \fB\%perl\fP(1)  compatible
+regular expressions \fB\%pcre\fP(3)  (see also \fB\%perlre\fP(1)  and
 \fB\%pcrepattern\fP(3)).  You will probably want to update your filter file if
 you use this regularly.  NB: Newsgroup names will always be matched using
-the wildmat notation.
+the \fB\%wildmat\fP(3) notation.
 .TP 
 \fBWhat to display instead of mark (word_h_display_marks)\fP
 Should the leading and ending stars, slashes, strokes and dashes also be
@@ -2577,7 +2580,8 @@ attributes file, \fBScopeAdd\fP ('\fBa\fP') add a new scope, \fBScopeDelete\fP
 ('\fBd\fP') delete the current scope, \fBScopeMove\fP ('\fBm\fP') move the current
 scope to a new position, \fBScopeRename\fP ('\fBr\fP') rename the current
 scope. \fBToggleHelpDisplay\fP ('\fBH\fP') toggles the help mini menu at the
-bottom of the screen.
+bottom of the screen and posting etiquette after composing an article
+(\fBbeginner_level\fP).
 .SS "FILTERING ARTICLES"
 .\" FIXME - add scoring description
 When there is a subject or an author which you are either very interested
@@ -2806,7 +2810,8 @@ also use the same syntax. \fBtin\fP interprets this variable similarly to
 \fB\%rn\fP(1).  It contains a list of patterns, separated by commas and
 possibly prefixed with exclamation points. An exclamation point negates the
 meaning of a match on this pattern, and can be used to cancel certain
-matches. Some examples:
+matches. See \fB\%wildmat\fP(3)  for details about the understood
+patterns. Some examples:
 .sp
 \fIalt.config,news.*,!news.test\fP
 .sp
@@ -3284,7 +3289,8 @@ For a detailed description see \fB\%tin\fP(5).
 .\"
 .SH ENVIRONMENT
 .\" TODO: - sort in a useful order
-.\"       - add undocumented env-vars (e.g. DEV_TCP (SCO))
+.\"       - add undocumented env-vars (e.g. $DEV_TCP (SCO),
+.\"         ${HOST:-"$HOSTNAME"} fallback)
 .TP 
 \fBTINRC\fP
 Define this variable if you want to specify command\-line options that \fBtin\fP
@@ -3609,7 +3615,7 @@ copyright by the University of Cambridge, England.
 .br
 .\"
 .\"
-<ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/>
+<https://www.pcre.org/>
 .SH BUGS
 \fBCNews\fP NNTPd, \fB\%noffle\fP(1)  (<= V1.0\-pre5) and \fBNewsCache\fP (<=
 V1.1.91) can't handle pipelined GROUP commands. If you run into trouble with
@@ -3673,14 +3679,15 @@ Urs Janssen <urs@tin.org>
 .\"
 .SH "SEE ALSO"
 \fB\%elm\fP(1), \fB\%emacs\fP(1), \fB\%gpg\fP(1), \fB\%inews\fP(1), \fB\%ispell\fP(1),
-\fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%noffle\fP(1), \fB\%perl\fP(1),
-\fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1), \fB\%shar\fP(1),
-\fB\%slrnface\fP(1), \fB\%tass\fP(1), \fB\%unshar\fP(1), \fB\%uudecode\fP(1),
-\fB\%vi\fP(1), \fB\%xterm\fP(1x), \fB\%heapsort\fP(3), \fB\%iconv\fP(3),
-\fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3), \fB\%pcre\fP(3), \fB\%pcrepattern\fP(3),
-\fB\%qsort\fP(3), \fB\%snprintf\fP(3), \fB\%strftime\fP(3), \fB\%vsnprintf\fP(3),
-\fB\%wildmat\fP(3), \fB\%environ\fP(5), \fB\%locale\fP(5), \fB\%mailcap\fP(5),
-\fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5), \fB\%tin\fP(5), \fB\%cron\fP(8),
-\fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP,
-\fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
-\fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP
+\fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%mutt\fP(1), \fB\%noffle\fP(1),
+\fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1),
+\fB\%shar\fP(1), \fB\%slrnface\fP(1), \fB\%tass\fP(1), \fB\%unshar\fP(1),
+\fB\%uudecode\fP(1), \fB\%vi\fP(1), \fB\%xterm\fP(1x), \fB\%heapsort\fP(3),
+\fB\%iconv\fP(3), \fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3), \fB\%pcre\fP(3),
+\fB\%pcrepattern\fP(3), \fB\%qsort\fP(3), \fB\%snprintf\fP(3), \fB\%strftime\fP(3),
+\fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3), \fB\%environ\fP(5), \fB\%locale\fP(5),
+\fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5),
+\fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP,
+\fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP,
+\fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP,
+\fBRFC\%5537\fP, \fBRFC\%6048\fP

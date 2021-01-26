@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 1.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-24 00:24+0100\n"
+"POT-Creation-Date: 2021-01-26 07:32+0100\n"
 "PO-Revision-Date: 2006-04-21 15:39+0200\n"
 "Last-Translator: Andrei Emeltchenko <andrei.emeltchenko@finik.org>\n"
 "Language-Team: Russian <gnu@mx.ru>\n"
@@ -1848,7 +1848,8 @@ msgid "toggle tabwidth 4 <-> 8"
 msgstr "изменить ширину TAB 4 <-> 8"
 
 #: src/lang.c:374
-msgid "toggle german TeX style decoding for current article"
+#, fuzzy
+msgid "toggle German TeX style decoding for current article"
 msgstr "изменить немецкий TeX стиль декодирования для текущей статьи"
 
 #: src/lang.c:375
@@ -2137,7 +2138,8 @@ msgid "toggle inverse video"
 msgstr "изменить инверсию видео"
 
 #: src/lang.c:444
-msgid "toggle mini help menu display"
+#, fuzzy
+msgid "toggle mini help menu and posting etiquette display"
 msgstr "изменить миниподсказку"
 
 #: src/lang.c:445
@@ -3922,8 +3924,8 @@ msgid "Toggled rot13 encoding"
 msgstr "Переключение кодировки rot13"
 
 #: src/lang.c:889
-#, c-format
-msgid "Toggled german TeX encoding %s"
+#, fuzzy, c-format
+msgid "Toggled German TeX encoding %s"
 msgstr "Переключение немецкой TeX кодировки %s"
 
 #: src/lang.c:890
@@ -4768,7 +4770,7 @@ msgstr "  -p port  использовать port как NNTP порт [по умолчанию=%d]"
 #: src/lang.c:1118
 #, fuzzy
 msgid "  -Q       quick start. Same as -dnq"
-msgstr "  -Q       быстрый запуск. Как с опциями -nqd"
+msgstr "  -Q       быстрый запуск. Как с опциями -dnq"
 
 #: src/lang.c:1119
 msgid "  -r       read news remotely from default NNTP server"
@@ -4835,8 +4837,9 @@ msgid "Can't open %s. Try %s -r to read news via NNTP."
 msgstr "Не могу открыть %s. Попробуйте %s -r для чтения новостей по NNTP.\n"
 
 #: src/lang.c:1143
-msgid "  -Q       quick start. Same as -qd"
-msgstr "  -Q       быстрый запуск. То же самое как с опциями -qd"
+#, fuzzy
+msgid "  -Q       quick start. Same as -dq"
+msgstr "  -Q       быстрый запуск. Как с опциями -dq"
 
 #: src/lang.c:1144
 msgid "  -l       read only active file instead of scanning spool (-n) command"
@@ -7610,8 +7613,8 @@ msgstr "Запуск вашей команды отправки почты"
 msgid ""
 "# Format of mailer line including parameters\n"
 "# %M Mailer  %S Subject  %T To  %F Filename\n"
-"# ie. to use elm as your mailer:    elm -s \"%S\" \"%T\" < %F\n"
-"# ie. elm interactive          :    elm -i %F -s \"%S\" \"%T\"\n"
+"# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n"
+"# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n"
 msgstr ""
 
 #: src/lang.c:2744
@@ -8090,17 +8093,17 @@ msgid "reading from local spool"
 msgstr ""
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:750
+#: src/misc.c:749
 #, c-format
 msgid "Error: unlink %s"
 msgstr ""
 
-#: src/misc.c:3928
+#: src/misc.c:3927
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Версия: %s %s релиз %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3931
+#: src/misc.c:3930
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Версия: %s %s релиз %s (\"%s\")\n"
@@ -8150,7 +8153,7 @@ msgstr ""
 msgid "couldn't expand %s\n"
 msgstr "не получилось раскрыть %s\n"
 
-#: src/post.c:1357
+#: src/post.c:1356
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8159,7 +8162,7 @@ msgstr ""
 "Строка %d длиннее 998 октетов и должна быть разбита на части,\n"
 "но кодировка не установлена ни в %s, ни в %s\n"
 
-#: src/post.c:1362
+#: src/post.c:1361
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8171,7 +8174,7 @@ msgstr ""
 "или сообщение не содержит ни одного 8-битного символа, таким образом\n"
 "разбития на части не произойдёт.\n"
 
-#: src/post.c:1364
+#: src/post.c:1363
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8180,12 +8183,12 @@ msgstr ""
 "Строка %d длиннее 998 октетов и должна быть разбита на части,\n"
 "но кодировка не установлена в %s\n"
 
-#: src/post.c:2353
+#: src/post.c:2352
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Отправление в группу %.*s ..."
 
-#: src/post.c:4119
+#: src/post.c:4118
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8240,7 +8243,7 @@ msgstr ""
 "для работы с новым форматом и следующие данные могут выглядеть странно.\n"
 "\n"
 
-#: src/save.c:1075
+#: src/save.c:1084
 msgid "bytes"
 msgstr "байт"
 
@@ -8308,6 +8311,9 @@ msgstr "Slrnface неправильно завершена с кодом %d."
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Slrnface: ошибка запуска: %s."
+
+#~ msgid "  -Q       quick start. Same as -qd"
+#~ msgstr "  -Q       быстрый запуск. То же самое как с опциями -qd"
 
 #~ msgid "# What should we ask confirmation for.\n"
 #~ msgstr "# Какие действия требуют подтверждения.\n"

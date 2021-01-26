@@ -177,7 +177,7 @@ struct t_config {
 		int col_quote2;						/* color of twice quoted lines */
 		int col_quote3;						/* color of >=3 times quoted lines */
 		int col_extquote;					/* color of quoted external text */
-		int col_response;					/* color of respone counter */
+		int col_response;					/* color of response counter */
 		int col_signature;					/* color of signature */
 		int col_urls;						/* color of urls highlight */
 		int col_verbatim;					/* color of verbatim blocks */

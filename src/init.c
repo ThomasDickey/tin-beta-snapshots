@@ -142,7 +142,7 @@ t_bool disable_sender;			/* disable generation of Sender: header */
 t_bool list_active;
 t_bool newsrc_active;
 t_bool no_write = FALSE;		/* do not write newsrc on quit (-X cmd-line flag) */
-t_bool post_article_and_exit;		/* quick post of an article then exit(elm like) */
+t_bool post_article_and_exit;		/* quick post of an article then exit (elm like) */
 t_bool post_postponed_and_exit;		/* post postponed articles and exit */
 t_bool range_active;		/* Set if a range is defined */
 t_bool reread_active_for_posted_arts;

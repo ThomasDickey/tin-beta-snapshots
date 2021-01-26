@@ -9,9 +9,9 @@ SHELL	= @SHELL@
 PROJECT	= tin
 LVER	= 2
 PVER	= 4
-SVER	= 5
+SVER	= 6
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20201224
+DVER	= 20210126
 EXE	= tin
 
 # directory structure
@@ -167,8 +167,7 @@ TOL	= \
 	$(TOLDIR)/tinews.pl \
 	$(TOLDIR)/url_handler.pl \
 	$(TOLDIR)/url_handler.sh \
-	$(TOLDIR)/w2r.pl \
-	$(TOLDIR)/expand_aliases.tgz
+	$(TOLDIR)/w2r.pl
 
 TOP	= \
 	$(TOPDIR)/Makefile \

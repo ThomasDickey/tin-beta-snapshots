@@ -71,9 +71,9 @@ static enum SHAversion which_cl_hash(int which_hash)
  * Portable replacement for 'strdup()'
  *
  * 'strdup()' requires SUSv2, XSI extension or POSIX.1-2008
- * http://pubs.opengroup.org/onlinepubs/007908799/xsh/strdup.html
- * http://pubs.opengroup.org/onlinepubs/009695399/functions/strdup.html
- * http://pubs.opengroup.org/onlinepubs/9699919799/functions/strdup.html
+ * https://pubs.opengroup.org/onlinepubs/007908799/xsh/strdup.html
+ * https://pubs.opengroup.org/onlinepubs/009695399/functions/strdup.html
+ * https://pubs.opengroup.org/onlinepubs/9699919799/functions/strdup.html
  *
  * Note:
  * 'malloc()' already gives the correct return (and 'errno') values required by
@@ -106,6 +106,9 @@ static char *my_strdup(const char *s)
  * Returns a malloc()'d buffer on success, that the caller will need to free().
  * Returns NULL (on failure).
  */
+#if ! CL_API_V2
+static
+#endif  /* CL_API_V2 */
 char *lock_strip_alpha(char *key, char *type)
 {
    char *ret;
@@ -143,10 +146,12 @@ char *lock_strip_alpha(char *key, char *type)
 }
 
 
+#if CL_API_V2
 char *lock_strip(char *key, char *type)
 {
    return lock_strip_alpha(key, type);
 }
+#endif  /* CL_API_V2 */
 
 
 /*
@@ -194,6 +199,7 @@ int cl_split(char *input, char **klstring)
 }
 
 
+#if CL_API_V2
 /*
  * Generate a SHA1 cancel key
  * Returns a malloc()'d buffer that the caller will need to free() (on success).
@@ -204,6 +210,7 @@ char *sha_key(const unsigned char *secret, size_t seclen,
 {
    return cl_get_key(CL_SHA1, secret, seclen, message, msglen);
 }
+#endif  /* CL_API_V2 */
 
 
 /*
@@ -226,7 +233,8 @@ char *cl_get_key(int which_hash, const unsigned char *secret, size_t seclen,
    if ((size_t) INT_MAX < msglen || (size_t) INT_MAX < seclen)
       return NULL;
 
-   if (hmac(which_sha, message, (int) msglen, secret, (int) seclen, hmacbuff)
+   if (RFC2104Hmac(which_sha, message, (int) msglen, secret, (int) seclen,
+                   hmacbuff)
        != shaSuccess)
       return NULL;
 
@@ -270,6 +278,7 @@ char *cl_get_key(int which_hash, const unsigned char *secret, size_t seclen,
 }
 
 
+#if CL_API_V2
 /*
  * Generate a SHA1 cancel lock
  * Returns a malloc()'d buffer that the caller will need to free() (on success).
@@ -280,6 +289,7 @@ char *sha_lock(const unsigned char *secret, size_t seclen,
 {
    return cl_get_lock(CL_SHA1, secret, seclen, message, msglen);
 }
+#endif  /* CL_API_V2 */
 
 
 /*
@@ -374,6 +384,7 @@ char *cl_get_lock(int which_hash, const unsigned char *secret, size_t seclen,
 }
 
 
+#if CL_API_V2
 /*
  * Verify a SHA1 cancel key against a cancel lock
  * Returns 0 on success, nonzero on failure.
@@ -382,6 +393,8 @@ int sha_verify(const char *key, const char *lock)
 {
    return cl_verify(CL_SHA1, key, lock);
 }
+#endif  /* CL_API_V2 */
+
 
 /*
  * Verify a cancel key against a cancel lock

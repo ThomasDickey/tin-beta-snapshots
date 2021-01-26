@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-06-13
+ *  Updated   : 2021-01-23
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -596,6 +596,9 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	define PATH_PATCH	"p"
 #	define INDEX_LOCK	"%s.LCK"
 #endif /* HAVE_LONG_FILE_NAMES */
+
+/* inews.c:submit_inews() and save.c:save_and_process_art() */
+#define PATHMASTER 	"not-for-mail"
 
 /*
  * How often should the active file be reread for new news
@@ -2441,7 +2444,7 @@ extern struct tm *localtime(time_t *);
 #		define UNUSED(x) x __attribute__((unused))
 #	else
 #		define UNUSED(x) x
-#	endif /*  __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6) */
+#	endif /* __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6) */
 #else
 #	define UNUSED(x) x
 #endif /* __GNUC__ && !__cplusplus && !__APPLE_CC__ && !__NeXT__ */

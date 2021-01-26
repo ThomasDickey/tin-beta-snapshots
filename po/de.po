@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-24 00:24+0100\n"
-"PO-Revision-Date: 2020-12-24 00:25+0100\n"
+"POT-Creation-Date: 2021-01-26 07:32+0100\n"
+"PO-Revision-Date: 2020-01-26 07:33+0100\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -2028,7 +2028,7 @@ msgid "toggle tabwidth 4 <-> 8"
 msgstr "wechsle Tabulatorweite 4 <-> 8"
 
 #: src/lang.c:374
-msgid "toggle german TeX style decoding for current article"
+msgid "toggle German TeX style decoding for current article"
 msgstr "(de)aktiviere deutsche TeX-style Dekodierung für aktuellen Artikel"
 
 #: src/lang.c:375
@@ -2297,8 +2297,8 @@ msgid "toggle inverse video"
 msgstr "(de)aktiviert inverse Darstellung"
 
 #: src/lang.c:444
-msgid "toggle mini help menu display"
-msgstr "schaltet das Minihilfemenü ein/aus"
+msgid "toggle mini help menu and posting etiquette display"
+msgstr "schaltet das Minihilfemenü und Posting Etikette ein/aus"
 
 #: src/lang.c:445
 msgid "cycle the display of authors email address, real name, both or neither"
@@ -4079,7 +4079,7 @@ msgstr "ROT13-Kodierung (de)aktiviert"
 
 #: src/lang.c:889
 #, c-format
-msgid "Toggled german TeX encoding %s"
+msgid "Toggled German TeX encoding %s"
 msgstr "Deutsche TeX-Dekodierung: %s"
 
 #: src/lang.c:890
@@ -4996,8 +4996,8 @@ msgid "Can't open %s. Try %s -r to read news via NNTP."
 msgstr "Kann %s nicht öffnen. Probieren Sie %s -r um via NNTP zu lesen."
 
 #: src/lang.c:1143
-msgid "  -Q       quick start. Same as -qd"
-msgstr "  -Q       Schnellstart. Das Selbe wie -qd"
+msgid "  -Q       quick start. Same as -dq"
+msgstr "  -Q       Schnellstart. Das Selbe wie -dq"
 
 #: src/lang.c:1144
 msgid "  -l       read only active file instead of scanning spool (-n) command"
@@ -7656,7 +7656,7 @@ msgstr ""
 
 #: src/lang.c:2608
 msgid "Send you a Cc/Bcc automatically"
-msgstr "Sendet Ihnen automatisch ein Cc/Bbc"
+msgstr "Sendet Ihnen automatisch ein Cc/Bcc"
 
 #: src/lang.c:2609
 msgid ""
@@ -7689,7 +7689,7 @@ msgstr ""
 
 #: src/lang.c:2627
 msgid "Enter address elements about which you want to be warned. <CR> sets."
-msgstr "Geben Sie den Adressenteil an, vor dem Sie gewarnt werden. <CR> setzt."
+msgstr "Adressenteil angeben vor dem Sie gewarnt werden wollen. <CR> setzt."
 
 #: src/lang.c:2628
 msgid "Spamtrap warning address parts"
@@ -7706,7 +7706,7 @@ msgstr ""
 
 #: src/lang.c:2634
 msgid "Enter default number of days a filter entry will be valid. <CR> sets."
-msgstr "Gültigkeit eines Filtereintrags in Tagen. <CR> setzt."
+msgstr "Gültigkeit eines Filtereintrages in Tagen. <CR> setzt."
 
 #: src/lang.c:2635
 msgid "No. of days a filter entry is valid"
@@ -7946,13 +7946,13 @@ msgstr "Aufruf Ihres Mailkommandos"
 msgid ""
 "# Format of mailer line including parameters\n"
 "# %M Mailer  %S Subject  %T To  %F Filename\n"
-"# ie. to use elm as your mailer:    elm -s \"%S\" \"%T\" < %F\n"
-"# ie. elm interactive          :    elm -i %F -s \"%S\" \"%T\"\n"
+"# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n"
+"# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n"
 msgstr ""
 "# Format der Mailkommandozeile mit Ihren Parametern\n"
 "# %M Mailprogramm  %S Subject  %T To  %F Dateiname\n"
-"# Ein Beispiel für elm           :  elm -s \"%S\" \"%T\" < %F\n"
-"# Ein Beispiel für elm interaktiv:  elm -i %F -s \"%S\" \"%T\"\n"
+"# Ein Beispiel für mutt           :  mutt -s \"%S\" -- \"%T\" < %F\n"
+"# Ein Beispiel für mutt interaktiv:  mutt -i %F -s \"%S\" -- \"%T\"\n"
 
 #: src/lang.c:2744
 msgid "Use interactive mail reader"
@@ -8451,17 +8451,17 @@ msgid "reading from local spool"
 msgstr "Lese aus dem lokalen Spool"
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:750
+#: src/misc.c:749
 #, c-format
 msgid "Error: unlink %s"
 msgstr "Fehler: entferne %s"
 
-#: src/misc.c:3928
+#: src/misc.c:3927
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Version: %s %s Ausgabe %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3931
+#: src/misc.c:3930
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Version: %s %s Ausgabe %s (\"%s\")\n"
@@ -8510,7 +8510,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "Kann %s nicht expandieren\n"
 
-#: src/post.c:1357
+#: src/post.c:1356
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8519,7 +8519,7 @@ msgstr ""
 "Zeile %d ist länger als %d Oktette und sollte gefaltet werden,\n"
 "aber die Kodierung ist weder auf %s noch auf %s gestellt.\n"
 
-#: src/post.c:1362
+#: src/post.c:1361
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8531,7 +8531,7 @@ msgstr ""
 "angeschaltet zu haben, oder der Artikel enthält keine 8Bit Zeichen\n"
 "und wird daher nicht automatisch gefaltet wird.\n"
 
-#: src/post.c:1364
+#: src/post.c:1363
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8540,12 +8540,12 @@ msgstr ""
 "Zeile %d ist länger als %d Oktette und sollte gefaltet werden,\n"
 "aber die Kodierung ist nicht auf %s gesetzt.\n"
 
-#: src/post.c:2353
+#: src/post.c:2352
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Poste: %.*s ..."
 
-#: src/post.c:4119
+#: src/post.c:4118
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 "Überschreiben in Mailgruppen nicht möglich, stattdessen Reposting benutzen."
@@ -8603,7 +8603,7 @@ msgstr ""
 "aussehen.\n"
 "\n"
 
-#: src/save.c:1075
+#: src/save.c:1084
 msgid "bytes"
 msgstr "Bytes"
 

@@ -370,8 +370,7 @@ get_val(
 
 /*
  * IMHO it's not tins job to take care about dumb editor backupfiles
- * otherwise BACKUP_FILE_EXT should be configurable via configure
- * or 'M'enu
+ * otherwise BACKUP_FILE_EXT should be configurable via 'M'enu
  */
 #define BACKUP_FILE_EXT ".b"
 t_bool
@@ -3441,7 +3440,7 @@ gnksa_split_from(
 		while ((*addr_begin == ' ') || (*addr_begin == '\t'))
 			addr_begin++;
 
-#if 0	/* whitespace only realname  */
+#if 0	/* whitespace only realname */
 		strip_line(addr_begin);
 		if (!strlen(addr_begin))
 			return GNKSA_WHITESPACE_REALNAME;

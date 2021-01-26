@@ -39,6 +39,8 @@
 #ifndef _SHA_H_
 #define _SHA_H_
 
+#pragma GCC visibility push(internal)
+
 /*
  *  Description:
  *      This file implements the Secure Hash Algorithms
@@ -303,55 +305,58 @@ extern const char *USHAHashName(enum SHAversion whichSha);
  * for all SHAs.
  * This interface allows a fixed-length text input to be used.
  */
-extern int hmac(SHAversion whichSha, /* which SHA algorithm to use */
-    const unsigned char *text,     /* pointer to data stream */
-    int text_len,                  /* length of data stream */
-    const unsigned char *key,      /* pointer to authentication key */
-    int key_len,                   /* length of authentication key */
-    uint8_t digest[USHAMaxHashSize]); /* caller digest to fill in */
+extern int RFC2104Hmac(SHAversion whichSha, /* which SHA algorithm to use */
+    const unsigned char *text,              /* pointer to data stream */
+    int text_len,                           /* length of data stream */
+    const unsigned char *key,               /* pointer to authentication key */
+    int key_len,                            /* length of authentication key */
+    uint8_t digest[USHAMaxHashSize]);       /* caller digest to fill in */
 
 /*
  * HMAC Keyed-Hashing for Message Authentication, RFC 2104,
  * for all SHAs.
  * This interface allows any length of text input to be used.
  */
-extern int hmacReset(HMACContext *context, enum SHAversion whichSha,
-                     const unsigned char *key, int key_len);
-extern int hmacInput(HMACContext *context, const unsigned char *text,
-                     int text_len);
-extern int hmacFinalBits(HMACContext *context, uint8_t bits,
-                         unsigned int bit_count);
-extern int hmacResult(HMACContext *context,
-                      uint8_t digest[USHAMaxHashSize]);
+extern int RFC2104HmacReset(HMACContext *context, enum SHAversion whichSha,
+                            const unsigned char *key, int key_len);
+extern int RFC2104HmacInput(HMACContext *context, const unsigned char *text,
+                            int text_len);
+extern int RFC2104HmacFinalBits(HMACContext *context, uint8_t bits,
+                                unsigned int bit_count);
+extern int RFC2104HmacResult(HMACContext *context,
+                             uint8_t digest[USHAMaxHashSize]);
 
 /*
  * HKDF HMAC-based Extract-and-Expand Key Derivation Function,
  * RFC 5869, for all SHAs.
  */
-extern int hkdf(SHAversion whichSha, const unsigned char *salt,
-                int salt_len, const unsigned char *ikm, int ikm_len,
-                const unsigned char *info, int info_len,
-                uint8_t okm[ ], int okm_len);
-extern int hkdfExtract(SHAversion whichSha, const unsigned char *salt,
-                       int salt_len, const unsigned char *ikm,
-                       int ikm_len, uint8_t prk[USHAMaxHashSize]);
-extern int hkdfExpand(SHAversion whichSha, const uint8_t prk[ ],
-                      int prk_len, const unsigned char *info,
-                      int info_len, uint8_t okm[ ], int okm_len);
+extern int RFC5869Hkdf(SHAversion whichSha, const unsigned char *salt,
+                       int salt_len, const unsigned char *ikm, int ikm_len,
+                       const unsigned char *info, int info_len,
+                       uint8_t okm[ ], int okm_len);
+extern int RFC5869HkdfExtract(SHAversion whichSha, const unsigned char *salt,
+                              int salt_len, const unsigned char *ikm,
+                              int ikm_len, uint8_t prk[USHAMaxHashSize]);
+extern int RFC5869HkdfExpand(SHAversion whichSha, const uint8_t prk[ ],
+                             int prk_len, const unsigned char *info,
+                             int info_len, uint8_t okm[ ], int okm_len);
 
 /*
  * HKDF HMAC-based Extract-and-Expand Key Derivation Function,
  * RFC 5869, for all SHAs.
  * This interface allows any length of text input to be used.
  */
-extern int hkdfReset(HKDFContext *context, enum SHAversion whichSha,
-                     const unsigned char *salt, int salt_len);
-extern int hkdfInput(HKDFContext *context, const unsigned char *ikm,
-                     int ikm_len);
-extern int hkdfFinalBits(HKDFContext *context, uint8_t ikm_bits,
-                         unsigned int ikm_bit_count);
-extern int hkdfResult(HKDFContext *context,
-                      uint8_t prk[USHAMaxHashSize],
-                      const unsigned char *info, int info_len,
-                      uint8_t okm[USHAMaxHashSize], int okm_len);
+extern int RFC5869HkdfReset(HKDFContext *context, enum SHAversion whichSha,
+                            const unsigned char *salt, int salt_len);
+extern int RFC5869HkdfInput(HKDFContext *context, const unsigned char *ikm,
+                            int ikm_len);
+extern int RFC5869HkdfFinalBits(HKDFContext *context, uint8_t ikm_bits,
+                                unsigned int ikm_bit_count);
+extern int RFC5869HkdfResult(HKDFContext *context,
+                             uint8_t prk[USHAMaxHashSize],
+                             const unsigned char *info, int info_len,
+                             uint8_t okm[USHAMaxHashSize], int okm_len);
+
+#pragma GCC visibility pop
+
 #endif /* _SHA_H_ */

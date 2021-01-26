@@ -31,15 +31,17 @@
  * SUCH DAMAGE.
  */
 
-/* @Id: base64.h,v 1.2 1999/12/02 16:58:45 joda Exp @ */
-
 #ifndef _BASE64_H_
 #define _BASE64_H_
+
+#pragma GCC visibility push(internal)
 
 size_t base64_encode(const void *data, int size, char **str);
 
 #if 0 /* not used */
 size_t base64_decode(const char *str, void *data);
 #endif /* 0 */
+
+#pragma GCC visibility pop
 
 #endif

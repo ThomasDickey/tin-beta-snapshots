@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2020-06-27
+ *  Updated   : 2021-01-23
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -44,10 +44,6 @@
 #ifndef TNNTP_H
 #	include "tnntp.h"
 #endif /* !TNNTP_H */
-
-#if defined(NNTP_INEWS) && !defined(FORGERY)
-#	define PATHMASTER	"not-for-mail"
-#endif /* NNTP_INEWS && !FORGERY */
 
 
 /*

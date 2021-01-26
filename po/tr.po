@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-24 00:24+0100\n"
+"POT-Creation-Date: 2021-01-26 07:32+0100\n"
 "PO-Revision-Date: 2017-05-29 18:40+0000\n"
 "Last-Translator: Mesutcan Kurt <mesutcank@gmail.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -335,7 +335,7 @@ msgstr "#  quick_select_header=SAYI\n"
 #: src/attrib.c:1289
 #, fuzzy, c-format
 msgid "#  quote_chars=STRING (%%I for initials)\n"
-msgstr "#  quote_chars=DİZGE (başlangıç için %%s, %%S)\n"
+msgstr "#  quote_chars=DİZGE (başlangıç için %%I)\n"
 
 #: src/attrib.c:1291
 #, c-format
@@ -1939,7 +1939,8 @@ msgid "toggle tabwidth 4 <-> 8"
 msgstr "tab aralığını değiştir 4 <-> 8"
 
 #: src/lang.c:374
-msgid "toggle german TeX style decoding for current article"
+#, fuzzy
+msgid "toggle German TeX style decoding for current article"
 msgstr "mevcut makale için alman TeX biçimi kod çözmeyi değiştir"
 
 #: src/lang.c:375
@@ -2207,7 +2208,8 @@ msgid "toggle inverse video"
 msgstr "ters videoyu değiştir"
 
 #: src/lang.c:444
-msgid "toggle mini help menu display"
+#, fuzzy
+msgid "toggle mini help menu and posting etiquette display"
 msgstr "mini yardım menüsünün görünümünü değiştir"
 
 #: src/lang.c:445
@@ -4022,8 +4024,8 @@ msgid "Toggled rot13 encoding"
 msgstr "rot13 kodlama değiştirildi"
 
 #: src/lang.c:889
-#, c-format
-msgid "Toggled german TeX encoding %s"
+#, fuzzy, c-format
+msgid "Toggled German TeX encoding %s"
 msgstr "Almanca TeX kodlama değiştirildi %s"
 
 #: src/lang.c:890
@@ -4874,7 +4876,7 @@ msgstr ""
 #: src/lang.c:1118
 #, fuzzy
 msgid "  -Q       quick start. Same as -dnq"
-msgstr "  -Q       hızlı başlat. -nqd ile aynı"
+msgstr "  -Q       hızlı başlat. -dnq ile aynı"
 
 #: src/lang.c:1119
 msgid "  -r       read news remotely from default NNTP server"
@@ -4940,8 +4942,9 @@ msgid "Can't open %s. Try %s -r to read news via NNTP."
 msgstr "%s açılamıyor. NNTP aracılığıyla haber okumak için %s -r deneyin."
 
 #: src/lang.c:1143
-msgid "  -Q       quick start. Same as -qd"
-msgstr "  -Q       hızlı başlat. -qd ile aynı"
+#, fuzzy
+msgid "  -Q       quick start. Same as -dq"
+msgstr "  -Q       hızlı başlat. -dq ile aynı"
 
 #: src/lang.c:1144
 msgid "  -l       read only active file instead of scanning spool (-n) command"
@@ -7976,16 +7979,17 @@ msgid "Invocation of your mail command"
 msgstr "E-posta komutunuzun başlatılması"
 
 #: src/lang.c:2736
+#, fuzzy
 msgid ""
 "# Format of mailer line including parameters\n"
 "# %M Mailer  %S Subject  %T To  %F Filename\n"
-"# ie. to use elm as your mailer:    elm -s \"%S\" \"%T\" < %F\n"
-"# ie. elm interactive          :    elm -i %F -s \"%S\" \"%T\"\n"
+"# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n"
+"# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n"
 msgstr ""
 "# Gönderen satırının parametrelerle birlikte biçimi\n"
 "# %M Epostacı  %S Başlık  %T Kime  %F Dosya adı\n"
-"# örn. epostacı olarak elm:    elm -s \"%S\" \"%T\" < %F\n"
-"# örn. elm interaktif          :    elm -i %F -s \"%S\" \"%T\"\n"
+"# örn. epostacı olarak mutt :    mutt -s \"%S\" \"%T\" < %F\n"
+"# örn. mutt interaktif      :    mutt -i %F -s \"%S\" \"%T\"\n"
 
 #: src/lang.c:2744
 msgid "Use interactive mail reader"
@@ -8290,6 +8294,7 @@ msgstr ""
 "#   2 = NFKD\n"
 "#   3 = NFC\n"
 "#   4 = NFD\n"
+"#   5 = NFKC_CF\n"
 
 #: src/lang.c:2903
 msgid "Render BiDi"
@@ -8492,17 +8497,17 @@ msgid "reading from local spool"
 msgstr "yerel kuyruktan okunuyor"
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:750
+#: src/misc.c:749
 #, c-format
 msgid "Error: unlink %s"
 msgstr ""
 
-#: src/misc.c:3928
+#: src/misc.c:3927
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Sürüm: %s yayım %s %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3931
+#: src/misc.c:3930
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Sürüm: %s yayım %s %s (\"%s\")\n"
@@ -8551,7 +8556,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "%s genişletilemedi\n"
 
-#: src/post.c:1357
+#: src/post.c:1356
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8560,7 +8565,7 @@ msgstr ""
 "%d satırı %d oktetten daha uzun ve kısaltılmalı, fakat\n"
 "kodlama %s ya da %s değerlerine ayarlanmadı\n"
 
-#: src/post.c:1362
+#: src/post.c:1361
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8572,7 +8577,7 @@ msgstr ""
 "gönderi hiçbir 8bit karakter içermiyor ve bu sebeple kısaltma "
 "gerçekleşmeyecek\n"
 
-#: src/post.c:1364
+#: src/post.c:1363
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8581,12 +8586,12 @@ msgstr ""
 "%d satırı %d oktetten daha uzun ve kısaltılmalı, fakat\n"
 "kodlama %s değerine ayarlı değil\n"
 
-#: src/post.c:2353
+#: src/post.c:2352
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Gönderiliyor: %.*s ..."
 
-#: src/post.c:4119
+#: src/post.c:4118
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8645,7 +8650,7 @@ msgstr ""
 "henüz değişikliğe uğramamış, ve gelecek birkaç şey garip görünebilir.\n"
 "\n"
 
-#: src/save.c:1075
+#: src/save.c:1084
 msgid "bytes"
 msgstr "bayt"
 
@@ -8715,6 +8720,3 @@ msgstr "Slrnface beklenmedik şekilde sonlandırıldı, kod %d."
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Slrnface başarısız: %s"
-
-#~ msgid "# What should we ask confirmation for.\n"
-#~ msgstr "# Onay için ne sormalıyız.\n"

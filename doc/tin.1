@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2020-11-17
-.\" Notes     : use american english; still needs some work, e.g.:
+.\" Updated   : 2021-01-06
+.\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "December 24th, 2020" "2.4.5" "Usenet newsreader"
+.TH tin 1 "December 24th, 2020" "2.4.6" "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -528,7 +528,8 @@ Help screen of commands available on the current menu. You can use
 ('\fBq\fP') returns to the menu.
 .TP
 .B ToggleHelpDisplay 'H'
-Toggle the display of help mini menu at the bottom of the screen.
+Toggle the display of help mini menu at the bottom of the screen and
+posting etiquette after composing an article (\fBbeginner_level\fP).
 .TP
 .B DisplayPostHist 'W'
 List articles posted by user. The date posted, the newsgroup and the
@@ -1379,7 +1380,8 @@ Toggle the display of the current URL in the last line.
 Help screen of commands available.
 .TP
 .B ToggleHelpDisplay 'H'
-Toggle the display of help mini menu at the bottom of the screen.
+Toggle the display of help mini menu at the bottom of the screen and
+posting etiquette after composing an article (\fBbeginner_level\fP).
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1433,7 +1435,8 @@ last line.
 Help screen of commands available.
 .TP
 .B ToggleHelpDisplay 'H'
-Toggle the display of help mini menu at the bottom of the screen.
+Toggle the display of help mini menu at the bottom of the screen and
+posting etiquette after composing an article (\fBbeginner_level\fP).
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1946,7 +1949,7 @@ for more details about MMDF.
 The directory where articles/threads are to be saved in
 .BR \%mbox (5)
 format. This feature is mainly for use with the
-.BR \%elm (1)
+.BR \%mutt (1)
 mail program. It allows the user to save articles/threads/groups simply by
 giving '=' as the filename to save to.
 Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fR.
@@ -1959,7 +1962,7 @@ different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-elm \-s "%S" "%T" < "%F"
+mutt \-s "%S" \-\- "%T" < "%F"
 claws-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
 .in -.3i
@@ -2579,7 +2582,9 @@ If ON verbatim blocks will be detected. Default is ON.
 .TP
 .B Wildcard matching (wildcard)
 Allows you to select how \fBtin\fP matches strings. The default is 0 and
-uses the wildmat notation, which is how this has traditionally been handled.
+uses the
+.BR \%wildmat (3)
+notation, which is how this has traditionally been handled.
 Setting this to 1 allows you to use
 .BR \%perl (1)
 compatible regular expressions
@@ -2589,7 +2594,9 @@ compatible regular expressions
 and
 .BR \%pcrepattern (3)).
 You will probably want to update your filter file if you use this regularly.
-NB: Newsgroup names will always be matched using the wildmat notation.
+NB: Newsgroup names will always be matched using the
+.BR \%wildmat (3)
+notation.
 .TP
 .B What to display instead of mark (word_h_display_marks)
 Should the leading and ending stars, slashes, strokes and dashes also be
@@ -2670,7 +2677,8 @@ attributes file, \fBScopeAdd\fP ('\fBa\fP') add a new scope, \fBScopeDelete\fP
 ('\fBd\fP') delete the current scope, \fBScopeMove\fP ('\fBm\fP') move the
 current scope to a new position, \fBScopeRename\fP ('\fBr\fP') rename the
 current scope. \fBToggleHelpDisplay\fP ('\fBH\fP') toggles the help mini
-menu at the bottom of the screen.
+menu at the bottom of the screen and posting etiquette after composing an
+article (\fBbeginner_level\fP).
 .\"
 .\"
 .SS "FILTERING ARTICLES"
@@ -2912,10 +2920,11 @@ the AUTO[UN]SUBSCRIBE mechanism. The scope= attributes file tag and
 the filter file group= tag also use the same syntax. \fBtin\fP
 interprets this variable similarly to
 .BR \%rn (1).
-It contains a list of patterns, separated by commas and possibly
-prefixed with exclamation points. An exclamation point negates the
-meaning of a match on this pattern, and can be used to cancel certain
-matches. Some examples:
+It contains a list of patterns, separated by commas and possibly prefixed with exclamation
+points. An exclamation point negates the meaning of a match on this pattern,
+and can be used to cancel certain matches. See
+.BR \%wildmat (3)
+for details about the understood patterns. Some examples:
 .sp
 \fIalt.config,news.*,!news.test\fR
 .sp
@@ -3410,7 +3419,8 @@ For a detailed description see
 .\"
 .SH ENVIRONMENT
 .\" TODO: - sort in a useful order
-.\"       - add undocumented env-vars (e.g. DEV_TCP (SCO))
+.\"       - add undocumented env-vars (e.g. $DEV_TCP (SCO),
+.\"         ${HOST:-"$HOSTNAME"} fallback)
 .TP
 .B TINRC
 Define this variable if you want to specify command-line options that
@@ -3773,7 +3783,7 @@ Regular expression support is provided by the PCRE library package
 which is open source software, written by Philip Hazel, and copyright
 by the University of Cambridge, England.
 .br
-<ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/>
+<https://www.pcre.org/>
 .\"
 .\"
 .SH BUGS
@@ -3865,6 +3875,7 @@ Urs Janssen <urs@tin.org>
 .BR \%lp (1),
 .BR \%lpr (1),
 .BR \%metamail (1),
+.BR \%mutt (1),
 .BR \%noffle (1),
 .BR \%perl (1),
 .BR \%perlre (1),

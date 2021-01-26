@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2019-09-16
+ *  Updated   : 2021-01-24
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -896,7 +896,7 @@ yank_active_file(
 		selmenu.curr = save_restore_curr_group(FALSE);	/* Restore previous group position */
 		yanked_out = bool_not(yanked_out);
 		show_selection_page();
-		info_message(_(txt_yanked_groups), selmenu.max - prevmax, PLURAL(selmenu.max-prevmax, txt_group));
+		info_message(_(txt_yanked_groups), selmenu.max - prevmax, PLURAL(selmenu.max - prevmax, txt_group));
 	} else {							/* Yank out */
 		toggle_my_groups(NULL);
 		HpGlitch(erase_arrow());
@@ -1474,8 +1474,10 @@ lookup_msgid(
 									r = ptr + 2;
 							}
 
-							if (r)
+							if (r) {
+								FreeIfNeeded(x); /* only requird on bogus multi responses, just to be safe */
 								x = my_strdup(r);
+							}
 						}
 
 						if (x)
@@ -1520,8 +1522,10 @@ lookup_msgid(
 							if (!strncmp(ptr, msgid, strlen(msgid)))
 								r = ptr + strlen(msgid) + 1;
 
-							if (r)
+							if (r) {
+								FreeIfNeeded(x); /* only requird on bogus multi responses, just to be safe */
 								x = my_strdup(r);
+							}
 						}
 
 						if (x)

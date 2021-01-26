@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2020-12-17
+ *  Updated   : 2021-01-24
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2021 Jason Faultless <jason@altarstone.com>
@@ -1178,6 +1178,7 @@ parse_multipart_article(
 {
 	char *line;
 	char *ptr;
+	const char *bd = NULL;
 	int bnd;
 	int state = M_SEARCHING;
 	t_bool is_rfc822 = FALSE;
@@ -1216,8 +1217,10 @@ parse_multipart_article(
 			 * When we have reached the end boundary of the outermost envelope
 			 * just log any trailing data for the raw article format.
 			 */
-			if (boundary_cmp(line, get_param(artinfo->hdr.ext->params, "boundary")) == BOUND_END)
-				depth = 0;
+			if ((bd = get_param(artinfo->hdr.ext->params, "boundary")) != NULL) {
+				if (boundary_cmp(line, bd) == BOUND_END)
+					depth = 0;
+			}
 #if 0 /* doesn't count tailing lines after envelop mime part - correct but confusing */
 			if (read_news_via_nntp && depth == 0)
 				while ((line = tin_fgets(infile, FALSE)) != NULL)
@@ -1460,7 +1463,7 @@ parse_rfc2045_article(
 		goto error;
 
 	/* no article data returned, just a '.' after 220er response */
-	if (ret == 0 && artinfo->hdr.ext->offset == 0) {
+	if (artinfo->hdr.ext->offset == 0) {
 		ret = ART_UNAVAILABLE;
 		goto error;
 	}

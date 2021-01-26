@@ -1,5 +1,5 @@
 /* =============================================================================
- * Copyright (c) 2017 Michael Baeuerle
+ * Copyright (c) 2017-2018 Michael Baeuerle
  * Copyright (c) 2003 G.J. Andruk
  *
  * All rights reserved.
@@ -80,23 +80,21 @@ static const char *check_scheme(cl_hash_version hash)
 static int checker(cl_hash_version hash, char *key, char *lock)
 {
    int res = -1;
-   char *rawkey, *rawlock;
-   char keytype[BUFFSIZE], locktype[BUFFSIZE];
+   cl_hash_version hash_key, hash_lock;
+   char *string_key, *string_lock;
    const char *scheme;
 
    printf("%s\n%s,%s\n", "Check Cancel-Key,Cancel-Lock:", key, lock);
 
-   rawkey = lock_strip_alpha(key, keytype);
-   rawlock = lock_strip_alpha(lock, locktype);
+   hash_key = cl_split(key, &string_key);
+   hash_lock = cl_split(lock, &string_lock);
 
-   /* Check whether <scheme> matches */
-   if (!strcmp(keytype, locktype))
+   if (hash_key && hash_lock)
    {
-      /* Check whether <scheme> is supported */
-      scheme = check_scheme(hash);
-      if (NULL != scheme && !strcmp(keytype, scheme))
+      /* Check whether <scheme> matches */
+      if (hash_key == hash_lock)
       {
-         if (!cl_verify(hash, rawkey, rawlock))
+         if (!cl_verify(hash, string_key, string_lock))
          {
             printf("\nGOOD\n");
             res = 0;
@@ -105,10 +103,11 @@ static int checker(cl_hash_version hash, char *key, char *lock)
             printf("\nBAD\n");
       }
       else
-         printf("\nBAD: Scheme not supported\n");
+         printf("\nBAD: Scheme mismatch (%s/%s)\n",
+                check_scheme(hash_key), check_scheme(hash_lock));
    }
    else
-      printf("\nBAD: Scheme mismatch (%s/%s)\n", keytype, locktype);
+      printf("\nBAD: Scheme not supported\n");
 
    return res;
 }
@@ -224,10 +223,13 @@ int main(void)
 
    /* Test 5 (Check SHA1 with <clue-string> element) */
    printf("Test 5 (Check SHA1 with <clue-string> element)\n\n");
+#if 0  /* Skip because this requires V2 legacy API */
    c_key = "ShA1:aaaBBBcccDDDeeeFFF:bN";
    c_lock = "sha1:bNXHc6ohSmeHaRHHW56BIWZJt+4=";
    rv = checker(CL_SHA1, c_key, c_lock);
    if (rv) failed = 1;
+#endif
+   printf("SKIP: <clue-string> is obsolete since >20 years\n");
    printf("\n----------------------------------------"
           "----------------------------------------\n\n");
 
@@ -244,6 +246,28 @@ int main(void)
    printf("Test 7 (Check SHA256 with wrong key)\n\n");
    c_key = "shA256:sSkDke97Dh78/d+Diu1i3dQ2Fp/EMK3xE2GfEqZlvK9=";
    c_lock = "sHa256:RrKLp7YCQc9T8HmgSbxwIDlnCDWsgy1awqtiDuhedRo=";
+   rv = checker(CL_SHA256, c_key, c_lock);
+   /* BAD is expected and the correct result for this test */
+   printf("(Note: BAD is expected and the correct result for this test)\n");
+   if (!rv) failed = 1;
+   printf("\n----------------------------------------"
+          "----------------------------------------\n\n");
+
+   /* Test 8 (Check with unknown <scheme>) */
+   printf("Test 8 (Check with unknown <scheme>)\n\n");
+   c_key = "shA257:sSkDke97Dh78/d+Diu1i3dQ2Fp/EMK3xE2GfEqZlvK8=";
+   c_lock = "sHa256:RrKLp7YCQc9T8HmgSbxwIDlnCDWsgy1awqtiDuhedRo=";
+   rv = checker(CL_SHA256, c_key, c_lock);
+   /* BAD is expected and the correct result for this test */
+   printf("(Note: BAD is expected and the correct result for this test)\n");
+   if (!rv) failed = 1;
+   printf("\n----------------------------------------"
+          "----------------------------------------\n\n");
+
+   /* Test 9 (Check with <scheme> mismatch) */
+   printf("Test 9 (Check with <scheme> mismatch)\n\n");
+   c_key = "shA256:sSkDke97Dh78/d+Diu1i3dQ2Fp/EMK3xE2GfEqZlvK8=";
+   c_lock = "sha1:bNXHc6ohSmeHaRHHW56BIWZJt+4=";
    rv = checker(CL_SHA256, c_key, c_lock);
    /* BAD is expected and the correct result for this test */
    printf("(Note: BAD is expected and the correct result for this test)\n");

@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2020-02-26
+ *  Updated   : 2021-01-08
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2021 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -144,7 +144,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 };
 
 /*
- * german tex style to latin1 conversion (by root@aspic, 12/04/93)
+ * German tex style to latin1 conversion (by root@aspic, 12/04/93)
  */
 
 #define TEX_SUBST	16
@@ -152,7 +152,14 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 
 static const char *const tex_from[TEX_SUBST] =
 {
-	"\"a","\\\"a","\"o","\\\"o","\"u","\\\"u","\"A","\\\"A","\"O","\\\"O","\"U","\\\"U","\"s","\\\"s","\\3",'\0'
+	"\"a", "\\\"a",
+	"\"o", "\\\"o",
+	"\"u", "\\\"u",
+	"\"A", "\\\"A",
+	"\"O", "\\\"O",
+	"\"U", "\\\"U",
+	"\"s", "\\\"s", "\\3",
+	NULL
 };
 
 /*
@@ -275,7 +282,7 @@ convert_tex2iso(
 	memset(tex_to, '\0', sizeof(tex_to));
 
 	/*
-	 * Charsets which have german umlauts incl. sharp s at the same
+	 * Charsets which have German umlauts incl. sharp s at the same
 	 * code position as ISO-8859-1
 	 * DEC-MCS, Windows-1252
 	 */
@@ -339,7 +346,7 @@ convert_tex2iso(
 
 
 /*
- * Check for german TeX encoding in file open on fp
+ * Check for German TeX encoding in file open on fp
  */
 t_bool
 is_art_tex_encoded(

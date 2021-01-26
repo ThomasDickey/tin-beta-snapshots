@@ -6,6 +6,9 @@
 
 #ifndef _SHA_PRIVATE__H
 #define _SHA_PRIVATE__H
+
+#pragma GCC visibility push(internal)
+
 /*
  * These definitions are defined in FIPS 180-3, section 4.1.
  * Ch() and Maj() are defined identically in sections 4.1.1,
@@ -28,5 +31,7 @@
 #endif /* USE_MODIFIED_MACROS */
 
 #define SHA_Parity(x, y, z)  ((x) ^ (y) ^ (z))
+
+#pragma GCC visibility pop
 
 #endif /* _SHA_PRIVATE__H */

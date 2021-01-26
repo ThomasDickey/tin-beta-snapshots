@@ -3,8 +3,8 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2020-11-17
-.\" Notes     : use american english; still needs some work, e.g.:
+.\" Updated   : 2021-01-06
+.\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24. Dezember 2020" 2.4.5 "Usenet Newsreader"
+.TH tin 1 "24. Dezember 2020" 2.4.6 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -136,16 +136,16 @@ Option hat keine Auswirkung, falls \fBtin\fP seine Indexdateien über NNTP
 abruft und \fBcache_overview_files\fP ausgeschaltet ist.
 .TP 
 \fB\-l\fP
-Get number of articles per group from the
-\fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file. If reading
-via NNTP this is done with the LIST command (\fBRFC\%3977\fP). This might
-result in incorrect article counts but is usually faster than the default
-which is to read the
-\fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file (either
-directly or via LIST) and then check the article count via NNTP GROUP
-command (\fBRFC\%3977\fP) \*(rq\fB\-ln\fP\*(rq. If reading via NNTP and LIST COUNTS
-(\fBRFC\%6048\fP) is available that is used instead as it gives more accurate
-article counts.
+Ruft die Anzahl der Artikel pro Gruppe aus der Datei
+\fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP ab. Beim Lesen über
+NNTP erfolgt dies mit dem LIST Befehl (\fBRFC\%3977\fP). Dies kann zu falschen
+Artikelzahlen führen, ist aber normalerweise schneller als der Standard, der
+darin besteht, die Datei
+\fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP (entweder direkt
+oder über LIST) zu Lesen und dann die Artikelanzahl über den Befehl NNTP
+GROUP ((\fBRFC\%3977\fP) \*(rq\fB\-ln\fP\*(rq zu überprüfen. Wenn das Lesen über NNTP und
+LIST COUNTS (\fBRFC\%6048\fP) verfügbar ist, wird dies stattdessen verwendet,
+da es genauere Artikelzahlen liefert.
 .TP 
 \fB\-m\fP\fI Verzeichnis\fP
 Zu benutzendes Mailbox\-Verzeichnis. Voreinstellung ist
@@ -157,11 +157,12 @@ können. Für weitere Informationen siehe den Abschnitt "AUTOMATISCHES MAILEN
 UND SPEICHERN VON UNGELESENEN ARTIKELN".
 .TP 
 \fB\-n\fP
-Only load groups from the
-\fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file that are
-subscribed to in the user's \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP. This allows
-a noticeable speedup when connecting via a slow line, but \fBtin\fP may not be
-able detect which groups are moderated. See also \*(rq\fB\-l\fP\*(rq.
+Nur die Gruppen aus der Datei
+\fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP laden, die im
+\fI${TIN_HOMEDIR:\-"$HOME"""}/.newsrc\fP des Benutzers abonniert sind. Dies
+ermöglicht eine spürbare Beschleunigung beim verbinden über eine langsame
+Leitung, kann aber möglicherweise nicht erkennen, welche Gruppen moderiert
+werden. Siehe auch \*(rq\fB\-l\fP\*(rq.
 .TP 
 \fB\-N\fP
 Sende ungelesene Artikel an dich selbst um sie später lesen zu können. Für
@@ -225,9 +226,9 @@ Schnell\-Modus um nur einen Artikel zu posten. Diese Option beinhaltet
 Sie können keine Artikel veröffentlichen, wenn Sie diese Option verwenden.
 .TP 
 \fB\-X\fP
-No overwrite mode. \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP and files in
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin\fP will not be overwritten but may be created
-if they don't exist.
+Scheibgeschützter Modus. \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP und Dateien
+unter \fI${TIN_HOMEDIR:\-"$HOME"}/.tin\fP werden nicht überschrieben aber
+angelegt falls sie nicht existieren.
 .TP 
 \fB\-z\fP
 \fBtin\fP nur starten wenn es neue/ungelesene Artikel gibt. Falls das der Fall
@@ -521,7 +522,8 @@ Help screen of commands available on the current menu. You can use
 ('\fB\e\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Mini\-Hilfe am unterem Bildschirmrand ein\-/ausschalten.
+Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
+Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .TP 
 \fBDisplayPostHist 'W'\fP
 List articles posted by user. The date posted, the newsgroup and the subject
@@ -611,8 +613,8 @@ eighth group in the list etc. By entering '$' the group will be the last
 group displayed.
 .TP 
 \fBOptionMenu 'M'\fP
-User configurable options menu (for more information see section "GLOBAL
-OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES").
+Menü für benutzerkonfigurierbare Optionen (weitere Informationen finden sich
+im Abschnitt "GLOBALES OPTIONSMENÜ UND KONFIGURIERBARE TINRC VARIABLEN").
 .TP 
 \fBSelectNextUnreadGrp 'N'\fP
 Setzt den Cursor auf die nächste Gruppe mit ungelesenen Artikeln.
@@ -684,12 +686,12 @@ toggle the setting right before/after the search.
 Artikel 4 auswählen.
 .TP 
 \fBMenuFilterSelect '^A'\fP
-Auto select article(s) using a menu. Read the section "FILTERING ARTICLES"
-for more information.
+Automatische Hervorheben des/der Artikel(s) über ein Menü. Lesen Sie den
+Abschnitt "FILTERN VON ARTIKELN" für weitere Informationen.
 .TP 
 \fBMenuFilterKill '^K'\fP
-Kill article(s) using a menu. Read the section "FILTERING ARTICLES" for more
-information.
+Artikel mit Hilfe eines Menüs ausblenden. Lesen Sie für weitere
+Informationen den Abschnitt "FILTERN VON ARTIKELN".
 .TP 
 \fBMarkFeedRead '^X'\fP
 Mark current article, thread, range, auto\-selected (hot) articles, articles
@@ -750,9 +752,10 @@ Undo all selections on all articles. It clears the toggle effect of
 articles. Thus, one can iteratively whittle down uninteresting threads.
 .TP 
 \fBPipe '|'\fP
-Pipe current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles into command. See the section "MAILING
-PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
+Leitet den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel an den
+Befehl weiter. Mehr Informationen finden Sie im Abschnitt "MAILEN,
+WEITERLEITEN, DRUCKEN, NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBQuickFilterSelect '['\fP
 Auto select article(s) with a single key [after confirmation]. The defaults
@@ -798,8 +801,8 @@ Mark all articles as read [after confirmation] and enter the next group with
 unread news.
 .TP 
 \fBGroupToggleSubjDisplay 'd'\fP
-Cycle the display of the author through all the possible options for the
-tinrc variable \fBshow_author\fP.
+Durchläuft die Anzeige des Autors durch alle möglichen Optionen für die
+tinrc\-Variable \fBshow_author\fP.
 .TP 
 \fBGroupCancel 'D'\fP
 Löschen (cancel) oder Ersetzen (supersede) des aktuellen Artikels. Er muss
@@ -837,13 +840,14 @@ prompt asks how to proceed.
 Artikel anhand der \*(rqMessage\-ID:\*(rq nachschlagen.
 .TP 
 \fBGroupMail 'm'\fP
-Mail current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles to someone. See the section "MAILING
-PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
+Mailt den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel an
+jemanden weiter. Mehr Informationen finden Sie im Abschnitt "MAILEN,
+WEITERLEITEN, DRUCKEN, NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBOptionMenu 'M'\fP
-User configurable options menu (for more information see section "GLOBAL
-OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES").
+Menü für benutzerkonfigurierbare Optionen (weitere Informationen finden sich
+im Abschnitt "GLOBALES OPTIONSMENÜ UND KONFIGURIERBARE TINRC VARIABLEN").
 .TP 
 \fBGroupNextGroup 'n'\fP
 Zur nächsten Newsgruppe springen.
@@ -852,9 +856,10 @@ Zur nächsten Newsgruppe springen.
 Zum nächsten ungelesenen Artikel springen.
 .TP 
 \fBPrint 'o'\fP
-Send current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles to printer. See the section "MAILING
-PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
+Sendet den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel an den
+Drucker. Mehr Informationen finden Sie im Abschnitt "MAILEN, WEITERLEITEN,
+DRUCKEN, NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBGroupPrevGroup 'p'\fP
 Zur vorherigen Gruppe springen.
@@ -877,9 +882,10 @@ senden. Dies ist der sinnvollste Weg um Fehler zu melden und behoben zu
 bekommen bzw. nach neuen Funktionen zu fragen.
 .TP 
 \fBGroupSave 's'\fP
-Save current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles. See the section "MAILING PIPING PRINTING
-REPOSTING AND SAVING ARTICLES" for more information.
+Speichert den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel. Mehr
+Informationen finden Sie im Abschnitt "MAILEN, WEITERLEITEN, DRUCKEN,
+NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBGroupAutoSave 'S'\fP
 Markierte Artikel automatisch ohne weiteres Nachfragen speichern.
@@ -902,10 +908,12 @@ multipart articles into a thread (\*(rqSubject:\*(rq based).
 Markierung aller markierten Artikel entfernen.
 .TP 
 \fBPost 'w'\fP
-Post an article to the current group. If posting fails for some reason,
-you'll get the chance to edit the article again via \fBPostEdit\fP ('\fBe\fP'),
-postpone it for later processing via \fBPostPostpone\fP ('\fBo\fP') (see also
-\&\*(rq\fB\-o\fP\*(rq command\-line switch) or discard it via \fBQuit\fP ('\fBq\fP').
+Veröffentlichen Sie einen Artikel in der aktuellen Gruppe. Wenn das
+Versenden aus irgendeinem Grund fehlschlägt, haben Sie die Möglichkeit, den
+Artikel über \fBPostEdit\fP ('\fBe\fP') erneut zu bearbeiten, ihn über
+\fBPostPostpone\fP ('\fBo\fP') für eine spätere Bearbeitung zurückzustellen (siehe
+auch \*(rq\fB\-o\fP\*(rq Kommandozeilenschalter) oder ihn über \fBQuit\fP ('\fBq\fP') zu
+verwerfen.
 .TP 
 \fBGroupRepost 'x'\fP
 Repost an already posted article / thread / auto\-selected (hot) articles /
@@ -937,12 +945,12 @@ present, a prompt asks how to proceed.
 Artikel 4 aus dem Thread auswählen.
 .TP 
 \fBMenuFilterSelect '^A'\fP
-Auto select article(s) using a menu. Read the section "FILTERING ARTICLES"
-for more information.
+Automatische Hervorheben des/der Artikel(s) über ein Menü. Lesen Sie den
+Abschnitt "FILTERN VON ARTIKELN" für weitere Informationen.
 .TP 
 \fBMenuFilterKill '^K'\fP
-Kill article(s) using a menu. Read the section "FILTERING ARTICLES" for more
-information.
+Artikel mit Hilfe eines Menüs ausblenden. Lesen Sie für weitere
+Informationen den Abschnitt "FILTERN VON ARTIKELN".
 .TP 
 \fBMarkFeedRead '^X'\fP
 Mark current article, thread, range, auto\-selected (hot) articles, articles
@@ -983,9 +991,10 @@ Artikelauswahl invertieren.
 Alle Markierungen im aktuellen Thread rückgängig machen.
 .TP 
 \fBPipe '|'\fP
-Pipe current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles into command. See the section "MAILING
-PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
+Leitet den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel an den
+Befehl weiter. Mehr Informationen finden Sie im Abschnitt "MAILEN,
+WEITERLEITEN, DRUCKEN, NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBThreadReadArt '^J' '<CR>'\fP
 Aktuellen Artikel im Thread lesen.
@@ -1014,8 +1023,8 @@ Mark thread as read [after confirmation] and enter the next thread
 containing unread news.
 .TP 
 \fBThreadToggleSubjDisplay 'd'\fP
-Cycle the display of the author through all the possible options for the
-tinrc variable \fBshow_author\fP.
+Durchläuft die Anzeige des Autors durch alle möglichen Optionen für die
+tinrc\-Variable \fBshow_author\fP.
 .TP 
 \fBThreadCancel 'D'\fP
 Löschen (cancel) oder Ersetzen (supersede) des aktuellen Artikels. Er muss
@@ -1040,14 +1049,16 @@ article. When tagged articles are present, a prompt asks how to proceed.
 Artikel anhand der \*(rqMessage\-ID:\*(rq nachschlagen.
 .TP 
 \fBThreadMail 'm'\fP
-Mail current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles to someone. See the section "MAILING
-PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
+Mailt den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel an
+jemanden weiter. Mehr Informationen finden Sie im Abschnitt "MAILEN,
+WEITERLEITEN, DRUCKEN, NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBPrint 'o'\fP
-Send current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles to printer. See the section "MAILING
-PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
+Sendet den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel an den
+Drucker. Mehr Informationen finden Sie im Abschnitt "MAILEN, WEITERLEITEN,
+DRUCKEN, NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBQuit 'q'\fP
 Kehre zur vorherigen Ebene zurück.
@@ -1061,9 +1072,10 @@ senden. Dies ist der sinnvollste Weg um Fehler zu melden und behoben zu
 bekommen bzw. nach neuen Funktionen zu fragen.
 .TP 
 \fBThreadSave 's'\fP
-Save current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles. See the section "MAILING PIPING PRINTING
-REPOSTING AND SAVING ARTICLES" for more information.
+Speichert den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel. Mehr
+Informationen finden Sie im Abschnitt "MAILEN, WEITERLEITEN, DRUCKEN,
+NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBThreadAutoSave 'S'\fP
 Markierte Artikel automatisch ohne weiteres Nachfragen speichern.
@@ -1080,10 +1092,12 @@ Reihenfolge markieren bzw. die vorhandenen Markierungen entfernen.
 Markierung aller markierten Threads entfernen.
 .TP 
 \fBPost 'w'\fP
-Post an article to the current group. If posting fails for some reason,
-you'll get the chance to edit the article again via \fBPostEdit\fP ('\fBe\fP'),
-postpone it for later processing via \fBPostPostpone\fP ('\fBo\fP') (see also
-\&\*(rq\fB\-o\fP\*(rq command\-line switch) or discard it via \fBQuit\fP ('\fBq\fP').
+Veröffentlichen Sie einen Artikel in der aktuellen Gruppe. Wenn das
+Versenden aus irgendeinem Grund fehlschlägt, haben Sie die Möglichkeit, den
+Artikel über \fBPostEdit\fP ('\fBe\fP') erneut zu bearbeiten, ihn über
+\fBPostPostpone\fP ('\fBo\fP') für eine spätere Bearbeitung zurückzustellen (siehe
+auch \*(rq\fB\-o\fP\*(rq Kommandozeilenschalter) oder ihn über \fBQuit\fP ('\fBq\fP') zu
+verwerfen.
 .TP 
 \fBMarkArtUnread 'z'\fP
 Mark current article in thread as unread. If a range of articles is set, the
@@ -1104,8 +1118,8 @@ Den ersten (Basis) Artikel in diesem Thread lesen.
 Antwort 4 im diesem Thread lesen.
 .TP 
 \fBMenuFilterSelect '^A'\fP
-Auto select article(s) using a menu. Read the section "FILTERING ARTICLES"
-for more information.
+Automatische Hervorheben des/der Artikel(s) über ein Menü. Lesen Sie den
+Abschnitt "FILTERN VON ARTIKELN" für weitere Informationen.
 .TP 
 \fBPageReplyQuoteHeaders '^E'\fP
 Reply through mail to the author of the current article with a copy of the
@@ -1119,8 +1133,8 @@ Schaltet den Anzeigemodus um (Roh einschließlich aller Header zu
 Aufbereitet).
 .TP 
 \fBMenuFilterKill '^K'\fP
-Kill article(s) using a menu. Read the section "FILTERING ARTICLES" for more
-information.
+Artikel mit Hilfe eines Menüs ausblenden. Lesen Sie für weitere
+Informationen den Abschnitt "FILTERN VON ARTIKELN".
 .TP 
 \fBPageToggleTabs '^T'\fP
 Tabulatorbreite zwischen 4 und 8 Zeichen Umschalten.
@@ -1179,9 +1193,10 @@ Gehe zum letzten Artikel im aktuellen Thread.
 Wort\-Hervorheben ein\-/ausschalten.
 .TP 
 \fBPipe '|'\fP
-Pipe current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles into command. See the section "MAILING
-PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
+Leitet den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel an den
+Befehl weiter. Mehr Informationen finden Sie im Abschnitt "MAILEN,
+WEITERLEITEN, DRUCKEN, NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBQuickFilterSelect '['\fP
 Auto select article(s) with a single key. The defaults used for selection
@@ -1267,13 +1282,14 @@ Show the thread menu that the current article is a part of.
 Artikel anhand der \*(rqMessage\-ID:\*(rq nachschlagen.
 .TP 
 \fBPageMail 'm'\fP
-Mail current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles to someone. See the section "MAILING
-PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
+Mailt den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel an
+jemanden weiter. Mehr Informationen finden Sie im Abschnitt "MAILEN,
+WEITERLEITEN, DRUCKEN, NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBOptionMenu 'M'\fP
-User configurable options menu (for more information see section "GLOBAL
-OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES").
+Menü für benutzerkonfigurierbare Optionen (weitere Informationen finden sich
+im Abschnitt "GLOBALES OPTIONSMENÜ UND KONFIGURIERBARE TINRC VARIABLEN").
 .TP 
 \fBPageNextArt 'n'\fP
 Gehe zum nächsten Artikel.
@@ -1282,9 +1298,10 @@ Gehe zum nächsten Artikel.
 Zum nächsten ungelesenen Artikel springen.
 .TP 
 \fBPrint 'o'\fP
-Send current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles to printer. See the section "MAILING
-PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
+Sendet den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel an den
+Drucker. Mehr Informationen finden Sie im Abschnitt "MAILEN, WEITERLEITEN,
+DRUCKEN, NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBPagePrevArt 'p'\fP
 Gehe zum vorherigen Artikel.
@@ -1307,9 +1324,10 @@ Reply through mail to the author of the current article without including
 the original article.
 .TP 
 \fBPageSave 's'\fP
-Save current article / thread / auto\-selected (hot) articles / articles
-matching pattern / tagged articles. See the section "MAILING PIPING PRINTING
-REPOSTING AND SAVING ARTICLES" for more information.
+Speichert den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
+Artikel / Artikel, die dem Muster entsprechen / markierte Artikel. Mehr
+Informationen finden Sie im Abschnitt "MAILEN, WEITERLEITEN, DRUCKEN,
+NACHSENDEN UND SPEICHERN VON ARTIKELN".
 .TP 
 \fBPageAutoSave 'S'\fP
 Markierte Artikel automatisch ohne weiteres Nachfragen speichern.
@@ -1333,10 +1351,12 @@ Display a list of attachments of the current article. See the section
 "ATTACHMENT LISTING" for more information.
 .TP 
 \fBPost 'w'\fP
-Post an article to the current group. If posting fails for some reason,
-you'll get the chance to edit the article again via \fBPostEdit\fP ('\fBe\fP'),
-postpone it for later processing via \fBPostPostpone\fP ('\fBo\fP') (see also
-\&\*(rq\fB\-o\fP\*(rq command\-line switch) or discard it via \fBQuit\fP ('\fBq\fP').
+Veröffentlichen Sie einen Artikel in der aktuellen Gruppe. Wenn das
+Versenden aus irgendeinem Grund fehlschlägt, haben Sie die Möglichkeit, den
+Artikel über \fBPostEdit\fP ('\fBe\fP') erneut zu bearbeiten, ihn über
+\fBPostPostpone\fP ('\fBo\fP') für eine spätere Bearbeitung zurückzustellen (siehe
+auch \*(rq\fB\-o\fP\*(rq Kommandozeilenschalter) oder ihn über \fBQuit\fP ('\fBq\fP') zu
+verwerfen.
 .TP 
 \fBPageRepost 'x'\fP
 Repost an already posted article / thread / auto\-selected (hot) articles /
@@ -1380,7 +1400,8 @@ Anzeige der aktuellen URL in der letzten Zeile (de)aktivieren.
 Hilfeseite der verfügbaren Befehle.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Mini\-Hilfe am unterem Bildschirmrand ein\-/ausschalten.
+Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
+Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1434,7 +1455,8 @@ Name oder Beschreibung des Anhangs in der untersten Zeile anzeigen.
 Hilfeseite der verfügbaren Befehle.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Mini\-Hilfe am unterem Bildschirmrand ein\-/ausschalten.
+Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
+Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1533,8 +1555,9 @@ Zeichen das anzeigt, dass ein Artikel gekillt wurde. Voreinstellung ist
 \&'K'). \fBkill_level\fP muss passend gesetzt sein.
 .TP 
 \fBZeichen für gelesene wichtige Art. (art_marked_read_selected)\fP
-The character used to show that an article was hot before it was read.
-Default is ':'. \fBkill_level\fP must be set accordingly.
+Zeichen, das verwendet wird, um anzuzeigen, dass ein Artikel automatisch
+ausgewählt (heiß) war, bevor er gelesen wurde. Standard ist
+\&':'. \fBkill_level\fP muss entsprechend eingestellt werden.
 .TP 
 \fBStart des MIME\-Viewers bestätigen (ask_for_metamail)\fP
 If ON \fBtin\fP will ask before using a MIME viewer (\fBmetamail_prog\fP) to
@@ -1542,8 +1565,8 @@ display MIME messages. This only occurs if a MIME viewer is set. Default is
 OFF.
 .TP 
 \fBSendet Ihnen eine cc und/oder eine blinde cc autom. (auto_cc_bcc)\fP
-Automatically put your name in the \*(rqCc:\*(rq and/or \*(rqBcc:\*(rq field when
-mailing an article. Default is No.
+Setzt Ihren Namen automatisch in das Feld \*(rqCc:\*(rq und/oder \*(rqBcc:\*(rq, wenn
+Sie einen Artikel versenden. Die Voreinstellung ist Nein.
 .TP 
 \fBZeige Thread mit rechter Pfeilt. an (auto_list_thread)\fP
 Falls ON: Thread beim Betreten mit der rechten Cursortaste automatisch
@@ -1563,10 +1586,11 @@ Falls ON werden Artikel/Threads im Batchmode gespeichert wenn \*(rq\fB\-S\fP ode
 gemailt, wenn \*(rq\fB\-M\fP\*(rq bzw. \*(rq\fB\-N\fP\*(rq in der Kommandozeile angegeben
 wurde. Voreinstellung ist ON.
 .TP 
-\fBZeigt Minimenü & Posting etiquette (beginner_level)\fP
-If set ON a mini menu of the most useful commands will be displayed at the
-bottom of the screen for each level. Also a short posting etiquette will be
-displayed after composing an article. Default is ON.
+\fBZeigt Mini\-Menü & Posting\-Knigge (beginner_level)\fP
+Falls diese Funktion eingeschaltet ist (ON), wird am unteren Bildschirmrand
+für jede Ebene ein Mini\-Menü mit den nützlichsten Befehlen
+angezeigt. Außerdem wird nach dem Verfassen eines Artikels ein kurzer
+Posting\-Knigge angezeigt. Standard ist ON.
 .TP 
 \fBSpeichere NNTP Overview Daten lokal (cache_overview_files)\fP
 If ON, create local copies of NNTP overview files. This can be used to
@@ -1582,8 +1606,9 @@ sha512. Voreinstellung ist sha1.
 \fBCatchup der Gruppen beim Beenden (catchup_read_groups)\fP
 .\"
 .\" FIXME - I leave this to someone who's using colors
-If set ON the user is asked when quitting if all groups read during the
-current session should be marked read. Default is OFF.
+Falls auf ON gestelltt, wird der Benutzer beim Beenden gefragt, ob alle
+während der aktuellen Sitzung gelesenen Gruppen als gelesen markiert werden
+sollen. Voreinstellung ist OFF.
 .TP 
 \fBStandard Hintergrundfarbe (col_back)\fP
 Standard Hintergrundfarbe
@@ -1606,24 +1631,24 @@ Hintergrundfarbe für inversen Text
 \fBFarbe des inversen Text (Vordergr.) (col_invers_fg)\fP
 Vordergrundfarbe für inversen Text
 .TP 
-\fBColor of status messages (col_message)\fP
-Color of status messages in last line
+\fBFarbe der Statusmeldungen (col_message)\fP
+Farbe der Statusmeldungen in der letzten Zeile
 .TP 
 \fBFarbe der Hervorhebung _Striche_ (col_markdash)\fP
-Color of words emphasized like _this_. See also \fBword_h_display_marks\fP and
-\fBword_highlight\fP.
+Farbe der hervorgehobenen Wörter wie _hier_. Siehe auch
+\fBword_h_display_marks\fP und \fBword_highlight\fP.
 .TP 
 \fBFarbe der Hervorhebung /Schrägstr./ (col_markslash)\fP
-Color of words emphasized like /this/. See also \fBword_h_display_marks\fP and
-\fBword_highlight\fP.
+Farbe der hervorgehobenen Wörter wie /hier/. Siehe auch
+\fBword_h_display_marks\fP und \fBword_highlight\fP.
 .TP 
 \fBFarbe der Hervorhebung *Sterne* (col_markstar)\fP
-Color of words emphasized like *this*. See also \fBword_h_display_marks\fP and
-\fBword_highlight\fP.
+Farbe der hervorgehobenen Wörter wie *hier*. Siehe auch
+\fBword_h_display_marks\fP und \fBword_highlight\fP.
 .TP 
 \fBFarbe der Hervorhebung \-Durchstr.\- (col_markstroke)\fP
-Color of words emphasized like \-this\-. See also \fBword_h_display_marks\fP and
-\fBword_highlight\fP.
+Farbe der hervorgehobenen Wörter wie \-hier\-. Siehe auch
+\fBword_h_display_marks\fP und \fBword_highlight\fP.
 .TP 
 \fBFarbe des Minihilfemenü (col_minihelp)\fP
 Farbe des Minihilfemenü
@@ -1695,7 +1720,7 @@ fallback code.  Default is "%a, %d %b %Y %H:%M:%S".
 \fB(default_author_search)\fP
 .TP 
 \fB(default_config_search)\fP
-The last article/author/config option that was searched for.
+Der letzte Artikel/Autor/Konfigurationsoption, nach dem gesucht wurde.
 .TP 
 \fB(default_filter_days)\fP
 Voreinstellung ist 28.
@@ -1817,8 +1842,8 @@ matching lines are shown in \fBcol_extquote\fP. If \fBextquote_regex\fP is blank
 then \fBtin\fP uses a built\-in default.
 .TP 
 \fBAnzeigeauffrischung nach Kommandos (force_screen_redraw)\fP
-Specifies whether a screen redraw should always be done after certain
-external commands. Default is OFF.
+Legt fest, ob nach bestimmten externen Befehlen immer ein Neuaufbau des
+Bildschirms durchgeführt werden soll. Standard ist OFF.
 .TP 
 \fBAnzahl der zu holenden Artikel (getart_limit)\fP
 If \fBgetart_limit\fP is > 0 not more than the last \fBgetart_limit\fP
@@ -1933,7 +1958,7 @@ details on MBOXO and MBOXRD and \fB\%mmdf\fP(5)  for more details about MMDF.
 .TP 
 \fBMail Verzeichnis (maildir)\fP
 The directory where articles/threads are to be saved in \fB\%mbox\fP(5)
-format. This feature is mainly for use with the \fB\%elm\fP(1)  mail
+format. This feature is mainly for use with the \fB\%mutt\fP(1)  mail
 program. It allows the user to save articles/threads/groups simply by giving
 \&'=' as the filename to save to.  Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fP.
 .TP 
@@ -1945,7 +1970,7 @@ mailers with different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-elm \-s "%S" "%T" < "%F"
+mutt \-s "%S" \-\- "%T" < "%F"
 claws\-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
 .in -.3i
@@ -2060,7 +2085,7 @@ Time in seconds to wait for a response from the server. Default is 120.
 Setting this to 0 means no timeout.
 .TP 
 \fBUnicode Normalisierungsart (normalization_form)\fP
-Normalisierungsform dioe \fBtin\fP verwenden soll um die Unicode\-Eingabe zu
+Normalisierungsart die \fBtin\fP verwenden soll um die Unicode\-Eingabe zu
 normalisieren. Die möglichen Werte sind:
 .RS +.5i
 .IP 0 3
@@ -2077,7 +2102,7 @@ normalisieren. Die möglichen Werte sind:
 \fBNFKC_CF\fP: Kompatibilitätszerlegung, gefolgt von kanonischer
 Zusammensetzung und Faltung
 .RE
-Einige Normalisierungsmodi sind nur verfügbar, wenn sie von der Bibliothek
+Einige Normalisierungsarten sind nur verfügbar, wenn sie von der Bibliothek
 unterstützt werden, die \fBtin\fP verwendet, um die Normalisierung
 durchzuführen. Nach Möglichkeit sollte NFC verwendet werden.
 .TP 
@@ -2192,7 +2217,7 @@ reread at regular intervals to show if any new news has arrived. Default is
 Directory where articles/threads are saved. Default is
 \fI${TIN_HOMEDIR:\-"$HOME"}/News\fP.
 .TP 
-\fBkill) (score_limit_kill\fP
+\fBScore limit (kill) (score_limit_kill)\fP
 If the score of an article is below or equal this value the article gets
 marked as killed.
 .TP 
@@ -2513,7 +2538,7 @@ The program that will be run when launching URLs in the article viewer using
 Enable highlighting URLs in message body. Default is ON.
 .TP 
 \fBBenutze ANSI\-Farben (use_color)\fP
-AMSI\-Farben in \fBtin\fP benutzen. Voreinstellung ist OFF.
+ANSI\-Farben in \fBtin\fP benutzen. Voreinstellung ist OFF.
 .TP 
 \fBScrollt. vom Nummernblock nutzen (use_keypad)\fP
 Voreinstellung ist OFF.
@@ -2546,12 +2571,12 @@ ist ON.
 .TP 
 \fBPlatzhalter\-Übereinstimmung (wildcard)\fP
 Allows you to select how \fBtin\fP matches strings. The default is 0 and uses
-the wildmat notation, which is how this has traditionally been handled.
-Setting this to 1 allows you to use \fB\%perl\fP(1)  compatible regular
-expressions \fB\%pcre\fP(3)  (see also \fB\%perlre\fP(1)  and
+the \fB\%wildmat\fP(3)  notation, which is how this has traditionally been
+handled.  Setting this to 1 allows you to use \fB\%perl\fP(1)  compatible
+regular expressions \fB\%pcre\fP(3)  (see also \fB\%perlre\fP(1)  and
 \fB\%pcrepattern\fP(3)).  You will probably want to update your filter file if
 you use this regularly.  NB: Newsgroup names will always be matched using
-the wildmat notation.
+the \fB\%wildmat\fP(3)  notation.
 .TP 
 \fBAnstelle der Markierung anzeigen (word_h_display_marks)\fP
 Should the leading and ending stars, slashes, strokes and dashes also be
@@ -2630,8 +2655,9 @@ attributes file, \fBScopeAdd\fP ('\fBa\fP') add a new scope, \fBScopeDelete\fP
 ('\fBd\fP') delete the current scope, \fBScopeMove\fP ('\fBm\fP') move the current
 scope to a new position, \fBScopeRename\fP ('\fBr\fP') rename the current
 scope. \fBToggleHelpDisplay\fP ('\fBH\fP') toggles the help mini menu at the
-bottom of the screen.
-.SS "ARTIKEL FILTERN"
+bottom of the screen and posting etiquette after composing an article
+(\fBbeginner_level\fP).
+.SS "FILTERN VON ARTIKELN"
 .\" FIXME - add scoring description
 When there is a subject or an author which you are either very interested
 in, or find completely uninteresting, you can easily instruct \fBtin\fP to
@@ -2752,7 +2778,7 @@ at the beginning of each quoted line. The default quote string is set to
 \&'>_'. The default can be changed by setting the tinrc variable
 \fBquote_chars\fP to ones own preference. (Note that '_' underline is used to
 represent a space).
-.SS "MAILING PIPING PRINTING REPOSTING AND SAVING ARTICLES"
+.SS "MAILEN, WEITERLEITEN, DRUCKEN, NACHSENDEN UND SPEICHERN VON ARTIKELN"
 The command interface to \fBGroupMail\fP, \fBPageMail\fP, \fBPostMail\fP or
 \fBThreadMail\fP ('\fBm\fP'), \fBPipe\fP ('\fB|\fP'), \fBPrint\fP ('\fBo\fP'), \fBPageRepost\fP
 or \fBGroupRepost\fP ('\fBx\fP') and \fBGroupSave\fP, \fBPageSave\fP or \fBThreadSave\fP
@@ -2859,7 +2885,8 @@ also use the same syntax. \fBtin\fP interprets this variable similarly to
 \fB\%rn\fP(1).  It contains a list of patterns, separated by commas and
 possibly prefixed with exclamation points. An exclamation point negates the
 meaning of a match on this pattern, and can be used to cancel certain
-matches. Some examples:
+matches. See \fB\%wildmat\fP(3)  for details about the understood
+patterns. Some examples:
 .sp
 \fIalt.config,news.*,!news.test\fP
 .sp
@@ -3349,7 +3376,8 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .\"
 .SH UMGEBUNGSVARIABLEN
 .\" TODO: - sort in a useful order
-.\"       - add undocumented env-vars (e.g. DEV_TCP (SCO))
+.\"       - add undocumented env-vars (e.g. $DEV_TCP (SCO),
+.\"         ${HOST:-"$HOSTNAME"} fallback)
 .TP 
 \fBTINRC\fP
 Setzen Sie diese Variable wenn Sie Befehlszeilenoptionen angeben möchten mit
@@ -3416,8 +3444,8 @@ the TCP\-port is not 119 (the default).  The \*(rq\fB\-p\fP\*(rq command\-line o
 overrides $\fBNNTPPORT\fP.
 .TP 
 \fBDISTRIBUTION\fP
-Set the article header field \*(rqDistribution:\*(rq to the contents of the
-variable instead of the system default.
+Setzen den Artikel\-Header \*(rqDistribution:\*(rq auf den Inhalt der Variablen
+statt auf den Systemstandard.
 .TP 
 \fBISO2ASC\fP
 Auswahl einer ISO\-zu\-ASCII\-Zeichensatz\-Dekodierungstabelle für die
@@ -3678,7 +3706,7 @@ Hazel und das Urheberrecht liegt bei der University of Cambridge, England.
 .br
 .\"
 .\"
-<ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/>
+<https://www.pcre.org/>
 .SH FEHLER
 \fBCNews\fP NNTPd, \fB\%noffle\fP(1) (<= V1.0\-pre5) und \fBNewsCache\fP (<=
 V1.1.91) können nicht mit gepipelinten GROUP\-Befehlen umgehen. Falls Sie
@@ -3750,14 +3778,15 @@ Erika Mustermann <erika@example.org>
 .\"
 .SH "SIEHE AUCH"
 \fB\%elm\fP(1), \fB\%emacs\fP(1), \fB\%gpg\fP(1), \fB\%inews\fP(1), \fB\%ispell\fP(1),
-\fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%noffle\fP(1), \fB\%perl\fP(1),
-\fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1), \fB\%shar\fP(1),
-\fB\%slrnface\fP(1), \fB\%tass\fP(1), \fB\%unshar\fP(1), \fB\%uudecode\fP(1),
-\fB\%vi\fP(1), \fB\%xterm\fP(1x), \fB\%heapsort\fP(3), \fB\%iconv\fP(3),
-\fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3), \fB\%pcre\fP(3), \fB\%pcrepattern\fP(3),
-\fB\%qsort\fP(3), \fB\%snprintf\fP(3), \fB\%strftime\fP(3), \fB\%vsnprintf\fP(3),
-\fB\%wildmat\fP(3), \fB\%environ\fP(5), \fB\%locale\fP(5), \fB\%mailcap\fP(5),
-\fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5), \fB\%tin\fP(5), \fB\%cron\fP(8),
-\fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP,
-\fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
-\fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP
+\fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%mutt\fP(1), \fB\%noffle\fP(1),
+\fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1),
+\fB\%shar\fP(1), \fB\%slrnface\fP(1), \fB\%tass\fP(1), \fB\%unshar\fP(1),
+\fB\%uudecode\fP(1), \fB\%vi\fP(1), \fB\%xterm\fP(1x), \fB\%heapsort\fP(3),
+\fB\%iconv\fP(3), \fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3), \fB\%pcre\fP(3),
+\fB\%pcrepattern\fP(3), \fB\%qsort\fP(3), \fB\%snprintf\fP(3), \fB\%strftime\fP(3),
+\fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3), \fB\%environ\fP(5), \fB\%locale\fP(5),
+\fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5),
+\fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP,
+\fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP,
+\fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP,
+\fBRFC\%5537\fP, \fBRFC\%6048\fP

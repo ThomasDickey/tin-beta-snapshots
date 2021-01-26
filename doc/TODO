@@ -75,7 +75,13 @@ o  the keys GroupToggleSubjDisplay / GROUP_TOGGLE_SUBJECT_DISPLAY and
    as they toggle the display of the sender address, not the subject.
    [20130839 Urs Janssen <urs@tin.org>]
 
-o  there is a memleak when $TINRC is set in read_cmd_line_options(envargs())
+o  the key ToggleHelpDisplay / GLOBAL_TOGGLE_HELP_DISPLAY is misnamed
+   (like txt_help_global_toggle_mini_help, but at least text now is
+   updated) wrong as it toggles tinrc.beginner_level which also controls
+   displaying the posting etiquette
+   [20210106 Urs Janssen <urs@tin.org>]
+
+o  there is a memleak in read_cmd_line_options(envargs()) if $TINRC is set
 
 Pager Problems
 --------------
@@ -110,7 +116,7 @@ o  forged cancelling via Supersedes:/Also-Control:/Control:-header is possible
 o  when last articles in a newsgroup were cancelled, it shows that there are
    new articles in that group (except when using -n cmd-line flag)
 
-o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
+o  mailers other than sendmail (f.e. mutt) and use_mailreader_i=OFF may lead
    to 'duplicated'-headers and multiple signatures
 
 New features
@@ -563,7 +569,7 @@ Pager enhancements
 o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
    about that part) for different content-types
 
-o  add Content-Language (RFC 3282) analysis
+o  add Content-Language (RFC 3282 or even RFC 8255) analysis
 
 o  suppress hide_uue=2 checking unless first line in an article or following
    a blank line
@@ -627,7 +633,7 @@ o  move several (server related) files into the per-server dir e.g.:
       ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}/.news/
    [20050807 Urs Janssen <urs@tin.org>]
 
-o  remove untranslatable constructs like txt_prefix_*
+o  remove untranslatable constructs like txt_prefix_*, txt_marked_as_*, ...
    [20050413 Urs Janssen <urs@tin.org>]
 
 o  keys which could be renamed/merged:
@@ -807,7 +813,7 @@ o  exit status documentation in the man page isn't correct, we have more
    exit codes than just 0, 1, (2 in the -Z case) and 3.
    [20080320 Urs Janssen <urs@tin.org>]
 
-o  review the spanish, swedish and russian translations
+o  review the Spanish, Swedish and Russian translations
    (es.po, sv.po, ru.po); add/finish missing man-page translation(s).
 
 o  add installation guide (in html?)
@@ -823,8 +829,6 @@ o  man page always needs work and proof reading
    e.g. 'U', 'V' in pager need better documentation, random organization
    feature isn't documented at all.
 
-o  tin.defaults could use more documentation in man page (tin.5)
-
 o  submit short invocation examples to tldr
    <https://github.com/tldr-pages/tldr> and/or eg
    <https://github.com/srsudar/eg>
@@ -833,6 +837,9 @@ o  replace "\\" by "\e" in man pages (portable?)
 
 o  integrate doc/auth.txt into tin.1 man page
 
+o  document ${HOST:-"$HOSTNAME"} fallback if gethostname(2) and uname(2)
+   do not return a hostname
+
 Not yet classified
 ------------------
 o  allow per group cancel_lock_algo setting via attributes?
@@ -840,6 +847,10 @@ o  allow per group cancel_lock_algo setting via attributes?
 
 o  allow per group cache_overview_files setting via attributes?
    [20180215 Urs Janssen <urs@tin.org>]
+
+o  DIRSEP (set in tin.h (to '/')) is used in places in the code
+   and hardcoded '/' elsewere (i.e. joinpath(), ...)
+   [20210112 Urs Janssen <urs@tin.org>]
 
 o  abort HEAD/NEXT loop on 5xx responses to HEAD? (see
    art.c:open_art_header())

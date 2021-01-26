@@ -237,7 +237,7 @@ Restrictions - this will only work if:
 -- server does not support HDR but XHDR and returns "Path" data if requested or
 -- server supports XPAT and returns "Path" data if requested
 Side effects:
-When unsing a Path:-filer tin _may_ rebuild locally cached overview
+When using a Path:-filer tin _may_ rebuild locally cached overview
 data if cache_overview_files=ON is set to get the Path data into the
 local cache of the group where the filter is active. This will may cause
 more NNTP traffic once.

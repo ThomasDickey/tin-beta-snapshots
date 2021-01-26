@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-24 00:24+0100\n"
+"POT-Creation-Date: 2021-01-26 07:32+0100\n"
 "PO-Revision-Date: 2015-08-28 12:21+0800\n"
 "Last-Translator: Mingye Wang <arthur200126@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
@@ -1862,7 +1862,8 @@ msgid "toggle tabwidth 4 <-> 8"
 msgstr "切换跳格宽度 4 <-> 8"
 
 #: src/lang.c:374
-msgid "toggle german TeX style decoding for current article"
+#, fuzzy
+msgid "toggle German TeX style decoding for current article"
 msgstr "切换目前文章的德语 TeX 样式解码"
 
 #: src/lang.c:375
@@ -2127,7 +2128,8 @@ msgid "toggle inverse video"
 msgstr "切换反白显示"
 
 #: src/lang.c:444
-msgid "toggle mini help menu display"
+#, fuzzy
+msgid "toggle mini help menu and posting etiquette display"
 msgstr "切换迷你说明菜单显示"
 
 #: src/lang.c:445
@@ -3871,8 +3873,8 @@ msgid "Toggled rot13 encoding"
 msgstr "已切换 rot13 编码"
 
 #: src/lang.c:889
-#, c-format
-msgid "Toggled german TeX encoding %s"
+#, fuzzy, c-format
+msgid "Toggled German TeX encoding %s"
 msgstr "已切换德语 TeX 编码 %s"
 
 #: src/lang.c:890
@@ -4709,7 +4711,7 @@ msgstr "  -p port  使用 port 作为 NNTP 通信端口 [缺省=%d]"
 #: src/lang.c:1118
 #, fuzzy
 msgid "  -Q       quick start. Same as -dnq"
-msgstr "  -Q       快速开始。如同 -nqd"
+msgstr "  -Q       快速开始。如同 -dnq"
 
 #: src/lang.c:1119
 msgid "  -r       read news remotely from default NNTP server"
@@ -4775,8 +4777,8 @@ msgid "Can't open %s. Try %s -r to read news via NNTP."
 msgstr "无法打开 %s。尝试 %s -r 以透过 NNTP 读取新闻。\n"
 
 #: src/lang.c:1143
-msgid "  -Q       quick start. Same as -qd"
-msgstr "  -Q       快速开始。如同 -qd"
+msgid "  -Q       quick start. Same as -dq"
+msgstr "  -Q       快速开始。如同 -dq"
 
 #: src/lang.c:1144
 msgid "  -l       read only active file instead of scanning spool (-n) command"
@@ -7622,11 +7624,12 @@ msgid "Invocation of your mail command"
 msgstr "调用您的邮寄命令"
 
 #: src/lang.c:2736
+#, fuzzy
 msgid ""
 "# Format of mailer line including parameters\n"
 "# %M Mailer  %S Subject  %T To  %F Filename\n"
-"# ie. to use elm as your mailer:    elm -s \"%S\" \"%T\" < %F\n"
-"# ie. elm interactive          :    elm -i %F -s \"%S\" \"%T\"\n"
+"# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n"
+"# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n"
 msgstr ""
 "# 格式的邮件程序行包含参数\n"
 "# %M 邮件程序  %S 主旨  %T 到  %F 文件名\n"
@@ -7915,6 +7918,7 @@ msgstr ""
 "#   2 = NFKD\n"
 "#   3 = NFC\n"
 "#   4 = NFD\n"
+"#   5 = NFKC_CF\n"
 
 #: src/lang.c:2903
 msgid "Render BiDi"
@@ -8102,17 +8106,17 @@ msgid "reading from local spool"
 msgstr ""
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:750
+#: src/misc.c:749
 #, c-format
 msgid "Error: unlink %s"
 msgstr ""
 
-#: src/misc.c:3928
+#: src/misc.c:3927
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "版本：%s %s 发布 %s (“%s”) %s %s\n"
 
-#: src/misc.c:3931
+#: src/misc.c:3930
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "版本：%s %s 发布 %s (“%s”)\n"
@@ -8162,7 +8166,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "无法展开 %s\n"
 
-#: src/post.c:1357
+#: src/post.c:1356
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8171,7 +8175,7 @@ msgstr ""
 "第 %d 行长度超过 998 字节而应该被折叠，但是\n"
 "编码未被设置为 %s 亦非 %s\n"
 
-#: src/post.c:1362
+#: src/post.c:1361
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8182,7 +8186,7 @@ msgstr ""
 "编码被设置为 %s 而未启用 MIME_BREAK_LONG_LINES 或是\n"
 "贴文不包含任何 8 比特字符，因而无法发生折叠\n"
 
-#: src/post.c:1364
+#: src/post.c:1363
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8191,12 +8195,12 @@ msgstr ""
 "第 %d 行长度超过 998 字节而，但是\n"
 "编码未被设置为 %s\n"
 
-#: src/post.c:2353
+#: src/post.c:2352
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "张贴：%.*s…"
 
-#: src/post.c:4119
+#: src/post.c:4118
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8251,7 +8255,7 @@ msgstr ""
 "以了解新的格式，而随后而来的东西也许看起来会很怪异。\n"
 "\n"
 
-#: src/save.c:1075
+#: src/save.c:1084
 msgid "bytes"
 msgstr "字节"
 
@@ -8328,9 +8332,6 @@ msgstr "Slrnface 失败：%s。"
 
 #~ msgid "Invalid response to GROUP command, %s"
 #~ msgstr "对于 GROUP 命令的无效回应，%s"
-
-#~ msgid "unparseable \"LIST COUNTS\" line: \"%s\""
-#~ msgstr "无法解析的“清单计数”行：“%s”"
 
 #~ msgid ""
 #~ "Wrong newsgroup name (\"%s\") in response of \"GROUP %s\" command: \"%s\""

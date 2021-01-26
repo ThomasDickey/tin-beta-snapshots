@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2019-07-10
+ *  Updated   : 2021-01-11
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -651,7 +651,7 @@ page_goto_next_unread:
 				toggle_raw(group);
 				break;
 
-			case PAGE_TOGGLE_TEX2ISO:		/* toggle german TeX to ISO latin1 style conversion */
+			case PAGE_TOGGLE_TEX2ISO:		/* toggle German TeX to ISO latin1 style conversion */
 				if (((group->attribute->tex2iso_conv) = !(group->attribute->tex2iso_conv)))
 					pgart.tex2iso = is_art_tex_encoded(pgart.raw);
 				else
@@ -1336,7 +1336,10 @@ draw_page_header(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	whichresp = which_response(this_resp);
-	x_resp = num_of_responses(which_thread(this_resp));
+	if ((i = which_thread(this_resp)) >= 0)
+		x_resp = num_of_responses(i);
+	else
+		x_resp = 0;
 
 	line_len = LEN + 1;
 	buf = my_malloc(line_len);

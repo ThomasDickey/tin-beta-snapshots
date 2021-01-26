@@ -9,6 +9,9 @@
  *      This file implements the HKDF algorithm (HMAC-based
  *      Extract-and-Expand Key Derivation Function, RFC 5869),
  *      expressed in terms of the various SHA algorithms.
+ *
+ *  Note:
+ *      Prefix for internal API changed from "hkdf" to "RRFC5869Hkdf".
  */
 
 #include "sha.h"
@@ -16,7 +19,7 @@
 #include <stdlib.h>
 
 /*
- *  hkdf
+ *  RFC5869Hkdf
  *
  *  Description:
  *      This function will generate keying material using HKDF.
@@ -53,20 +56,20 @@
  *      sha Error Code.
  *
  */
-int hkdf(SHAversion whichSha,
-    const unsigned char *salt, int salt_len,
-    const unsigned char *ikm, int ikm_len,
-    const unsigned char *info, int info_len,
-    uint8_t okm[ ], int okm_len)
+int RFC5869Hkdf(SHAversion whichSha,
+                const unsigned char *salt, int salt_len,
+                const unsigned char *ikm, int ikm_len,
+                const unsigned char *info, int info_len,
+                uint8_t okm[ ], int okm_len)
 {
   uint8_t prk[USHAMaxHashSize];
-  return hkdfExtract(whichSha, salt, salt_len, ikm, ikm_len, prk) ||
-         hkdfExpand(whichSha, prk, USHAHashSize(whichSha), info,
+  return RFC5869HkdfExtract(whichSha, salt, salt_len, ikm, ikm_len, prk) ||
+         RFC5869HkdfExpand(whichSha, prk, USHAHashSize(whichSha), info,
                     info_len, okm, okm_len);
 }
 
 /*
- *  hkdfExtract
+ *  RFC5869HkdfExtract
  *
  *  Description:
  *      This function will perform HKDF extraction.
@@ -92,7 +95,7 @@ int hkdf(SHAversion whichSha,
  *      sha Error Code.
  *
  */
-int hkdfExtract(SHAversion whichSha,
+int RFC5869HkdfExtract(SHAversion whichSha,
     const unsigned char *salt, int salt_len,
     const unsigned char *ikm, int ikm_len,
     uint8_t prk[USHAMaxHashSize])
@@ -105,11 +108,11 @@ int hkdfExtract(SHAversion whichSha,
   } else if (salt_len < 0) {
     return shaBadParam;
   }
-  return hmac(whichSha, ikm, ikm_len, salt, salt_len, prk);
+  return RFC2104Hmac(whichSha, ikm, ikm_len, salt, salt_len, prk);
 }
 
 /*
- *  hkdfExpand
+ *  RFC5869HkdfExpand
  *
  *  Description:
  *      This function will perform HKDF expansion.
@@ -141,9 +144,9 @@ int hkdfExtract(SHAversion whichSha,
  *      sha Error Code.
  *
  */
-int hkdfExpand(SHAversion whichSha, const uint8_t prk[ ], int prk_len,
-    const unsigned char *info, int info_len,
-    uint8_t okm[ ], int okm_len)
+int RFC5869HkdfExpand(SHAversion whichSha, const uint8_t prk[ ], int prk_len,
+                      const unsigned char *info, int info_len,
+                      uint8_t okm[ ], int okm_len)
 {
   int hash_len, N;
   unsigned char T[USHAMaxHashSize];
@@ -169,11 +172,11 @@ int hkdfExpand(SHAversion whichSha, const uint8_t prk[ ], int prk_len,
   for (i = 1; i <= N; i++) {
     HMACContext context;
     unsigned char c = i;
-    int ret = hmacReset(&context, whichSha, prk, prk_len) ||
-              hmacInput(&context, T, Tlen) ||
-              hmacInput(&context, info, info_len) ||
-              hmacInput(&context, &c, 1) ||
-              hmacResult(&context, T);
+    int ret = RFC2104HmacReset(&context, whichSha, prk, prk_len) ||
+              RFC2104HmacInput(&context, T, Tlen) ||
+              RFC2104HmacInput(&context, info, info_len) ||
+              RFC2104HmacInput(&context, &c, 1) ||
+              RFC2104HmacResult(&context, T);
     if (ret != shaSuccess) return ret;
     memcpy(okm + where, T,
            (i != N) ? hash_len : (okm_len - where));
@@ -184,7 +187,7 @@ int hkdfExpand(SHAversion whichSha, const uint8_t prk[ ], int prk_len,
 }
 
 /*
- *  hkdfReset
+ *  RFC5869HkdfReset
  *
  *  Description:
  *      This function will initialize the hkdfContext in preparation
@@ -207,8 +210,8 @@ int hkdfExpand(SHAversion whichSha, const uint8_t prk[ ], int prk_len,
  *      sha Error Code.
  *
  */
-int hkdfReset(HKDFContext *context, enum SHAversion whichSha,
-              const unsigned char *salt, int salt_len)
+int RFC5869HkdfReset(HKDFContext *context, enum SHAversion whichSha,
+                     const unsigned char *salt, int salt_len)
 {
   unsigned char nullSalt[USHAMaxHashSize];
   if (!context) return shaNull;
@@ -221,7 +224,7 @@ int hkdfReset(HKDFContext *context, enum SHAversion whichSha,
     memset(nullSalt, '\0', salt_len);
   }
 
-  return hmacReset(&context->hmacContext, whichSha, salt, salt_len);
+  return RFC2104HmacReset(&context->hmacContext, whichSha, salt, salt_len);
 }
 
 /*
@@ -244,17 +247,17 @@ int hkdfReset(HKDFContext *context, enum SHAversion whichSha,
  *      sha Error Code.
  *
  */
-int hkdfInput(HKDFContext *context, const unsigned char *ikm,
-              int ikm_len)
+int RFC5869HkdfInput(HKDFContext *context, const unsigned char *ikm,
+                     int ikm_len)
 {
   if (!context) return shaNull;
   if (context->Corrupted) return context->Corrupted;
   if (context->Computed) return context->Corrupted = shaStateError;
-  return hmacInput(&context->hmacContext, ikm, ikm_len);
+  return RFC2104HmacInput(&context->hmacContext, ikm, ikm_len);
 }
 
 /*
- * hkdfFinalBits
+ * RFC5869HkdfFinalBits
  *
  * Description:
  *   This function will add in any final bits of the
@@ -273,17 +276,17 @@ int hkdfInput(HKDFContext *context, const unsigned char *ikm,
  * Returns:
  *   sha Error Code.
  */
-int hkdfFinalBits(HKDFContext *context, uint8_t ikm_bits,
-                  unsigned int ikm_bit_count)
+int RFC5869HkdfFinalBits(HKDFContext *context, uint8_t ikm_bits,
+                         unsigned int ikm_bit_count)
 {
   if (!context) return shaNull;
   if (context->Corrupted) return context->Corrupted;
   if (context->Computed) return context->Corrupted = shaStateError;
-  return hmacFinalBits(&context->hmacContext, ikm_bits, ikm_bit_count);
+  return RFC2104HmacFinalBits(&context->hmacContext, ikm_bits, ikm_bit_count);
 }
 
 /*
- * hkdfResult
+ * RFC5869HkdfResult
  *
  * Description:
  *   This function will finish the HKDF extraction and perform the
@@ -312,10 +315,10 @@ int hkdfFinalBits(HKDFContext *context, uint8_t ikm_bits,
  *   sha Error Code.
  *
  */
-int hkdfResult(HKDFContext *context,
-               uint8_t prk[USHAMaxHashSize],
-               const unsigned char *info, int info_len,
-               uint8_t okm[ ], int okm_len)
+int RFC5869HkdfResult(HKDFContext *context,
+                      uint8_t prk[USHAMaxHashSize],
+                      const unsigned char *info, int info_len,
+                      uint8_t okm[ ], int okm_len)
 {
   uint8_t prkbuf[USHAMaxHashSize];
   int ret;
@@ -326,8 +329,8 @@ int hkdfResult(HKDFContext *context,
   if (!okm) return context->Corrupted = shaBadParam;
   if (!prk) prk = prkbuf;
 
-  ret = hmacResult(&context->hmacContext, prk) ||
-        hkdfExpand(context->whichSha, prk, context->hashSize, info,
+  ret = RFC2104HmacResult(&context->hmacContext, prk) ||
+        RFC5869HkdfExpand(context->whichSha, prk, context->hashSize, info,
                    info_len, okm, okm_len);
   context->Computed = 1;
   return context->Corrupted = ret;

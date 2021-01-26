@@ -70,6 +70,7 @@ TIN related:
 
   DEBUG                                   FILE_MODE_BROKEN
   DEBUG_ART                               NO_LOCKING
+  BACKUP_FILE_EXT
 
 System related:
   --datadir                               --localstatedir
@@ -341,7 +342,7 @@ Input and screen output options
 If enabled, tin uses multi language support, as described in locale(7). If
 you don't have locale support installed on your system, try
 --disable-locale, otherwise you won't see any 8-bit-characters. See
-doc/umlauts.txt (english text) or doc/umlaute.txt (german text) for further
+doc/umlauts.txt (English text) or doc/umlaute.txt (German text) for further
 information.
 
 --with-mime-default-charset=charset (default: US-ASCII)
@@ -376,7 +377,7 @@ one of the following 7 conversion tables for different languages
         6  table for IBM PC character set (code page 437)
 
 E.g., adding --with-iso-to-ascii=2 to the configure options would be useful
-in german language newsgroups. For more detailed info read the file
+in German language newsgroups. For more detailed info read the file
 ./doc/iso2asc.txt. Default value for --with-iso-to-ascii is "-1", which
 means no conversion at all. Users can override this value by setting an
 environment variable ISO2ASC.
