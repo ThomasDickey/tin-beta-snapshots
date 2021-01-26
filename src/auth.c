@@ -183,6 +183,7 @@ do_authinfo_user(
 	char line[PATH_LEN];
 	int ret;
 
+	/* may violate RFC 3977 3.1; use MIN(NNTP_STRLEN, sizeof(line)) ? */
 	snprintf(line, sizeof(line), "AUTHINFO USER %s", authuser);
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
@@ -201,6 +202,7 @@ do_authinfo_user(
 		return ERR_AUTHBAD;
 	}
 
+	/* may violate RFC 3977 3.1; use MIN(NNTP_STRLEN, sizeof(line)) ? */
 	snprintf(line, sizeof(line), "AUTHINFO PASS %s", authpass);
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)

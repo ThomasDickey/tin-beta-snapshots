@@ -49,6 +49,7 @@
 #define BUFFSIZE 512
 
 
+#if CL_API_V2
 static int checker(char *key, char *lock)
 {
    int res = -1;
@@ -80,10 +81,12 @@ static int checker(char *key, char *lock)
 
    return res;
 }
+#endif  /* CL_API_V2 */
 
 
 int main(void)
 {
+#if CL_API_V2
    char cankey[256], canlock[256], *lkey, *llock;
    unsigned char secret[] = "fluffy",
       message[] = "<lkr905851929.22670@meow.invalid>";
@@ -146,4 +149,9 @@ int main(void)
    /* Check for success */
    if (!failed) exit(EXIT_SUCCESS);
    exit(EXIT_FAILURE);
+#else  /* CL_API_V2 */
+   /* Execute as NOP and return 77 (defined by automake and means "skipped") */
+   printf("---legacy API tests were skipped (Version 2 API disabled)---\n");
+   exit(77);
+#endif  /* CL_API_V2 */
 }

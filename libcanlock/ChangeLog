@@ -2,6 +2,74 @@
 Changelog
 =========
 
+3.2.2      2021-01-07
+           Bugfix: Header field name is not found by canlock-mhp if there
+            is another header field for which only the prefix differs (and
+            that other field is processed first)
+           Test suite for canlock-mhp parser extended: It now tests headers
+            larger than 4 KiByte and for the field prefix bug fixed in this
+            version
+           Lexer of canlock-hfp has problems to detect T_CTEXT tokens on
+            HP-UX (relevant only if the header field contains comments).
+            The syntax of the ERE for T_CTEXT was rewritten to be compatible
+            with the SysV lex of HP-UX 11.11
+           Test suite for canlock-hfp parser extended to test comments harder
+           Namespace clash of internal library functions with libc on NetBSD
+            Changed internal API function names hmac* to RFC2104Hmac*
+            Changed internal API function names hkdf* to RFC5869Hkdf*
+            Library API and ABI are fully compatible if no undocumented
+            functions are used
+           libcanlock-3.pc: Changed protocol in URL from http to https
+
+3.2.1      2020-11-28
+           Bugfix: off-by-one heap buffer overflow fixed in canlock-mhp
+            (If header is larger than 4 KiByte. Found by Valgrind)
+           Bugfix: canlock-mhp end of header detection fixed
+            (Found by test suite on openSUSE. Reported by Martin Hauke)
+
+3.2.0      2020-05-11
+           Support for pkg-config with option "--enable-pc-files" added
+            (Default behaviour is unchanged). This option installs the
+            pkg-config file "libcanlock-3.pc". The standard option
+            "--with-pkgconfigdir" can be used to specify the target directory
+           Shared library no longer exports internal symbols, if possible
+            (using #pragma GCC visibility). Library API and ABI are fully
+            compatible if no undocumented functions are used.
+           Build system: Distributed autotools files updated
+
+3.1.1      2019-12-29
+           Bugfix: Potential buffer overflows in code from RFC6234 fixed.
+            Related code is used for test suite only, installed library and
+            utilities are not affected (Reported by Florian Schlichting)
+           Build system: Makefile rules fixed that use DIST_SUBDIRS variable
+           src/canlock.c: Fixed typo in comment (Reported by Urs Janssen)
+
+3.1.0      2019-01-26
+           Merged canlock-hp into libcanlock package (now tracking the version
+            number of the libcanlock package)
+           Configure option "--disable-hp" added (Default is set to build
+            canlock-hp, use this option to get the behaviour from 3.0.x)
+           Manual page of canlock-hfp utility updated
+           Library API and ABI are unchanged
+
+3.0.3      2018-12-05
+           Build system fixed for cross build (Patch suggested by Helmut Grohne,
+            modified to work on macOS)
+
+3.0.2      2018-08-18
+           Configure option "--disable-legacy-api" added (Default behaviour is
+            unchanged)
+           Test suite updated:
+            API test 5 with <clue-string> removed (Obsolete since 20 years)
+            API test 8 with unknown <scheme> added
+            API test 9 with <scheme> mismatch added
+           Manual page of canlock utility updated
+
+3.0.1      2018-03-16
+           Man page section numbers fixed (Patch from Florian Schlichting)
+           Minimum required automake version set to 1.11.6 (there is a security
+            vulnerability in 1.11.5)
+
 3.0.0      2018-01-17
            API for arbitrary hash algorithm added (Written by Dennis Preiser)
            Support for SHA2 added (Using code from RFC6234 section 8)

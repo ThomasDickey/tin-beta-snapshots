@@ -938,10 +938,10 @@ static int hash(int testno, int loopno, int hashno,
   memset(&hmac, '\343', sizeof(hmac));
   memset(&hkdf, '\343', sizeof(hkdf));
 
-  err = info ? hkdfReset(&hkdf, hashes[hashno].whichSha,
-                             keyarray, keylen) :
-        keyarray ? hmacReset(&hmac, hashes[hashno].whichSha,
-                             keyarray, keylen) :
+  err = info ? RFC5869HkdfReset(&hkdf, hashes[hashno].whichSha,
+                                keyarray, keylen) :
+        keyarray ? RFC2104HmacReset(&hmac, hashes[hashno].whichSha,
+                                    keyarray, keylen) :
                    USHAReset(&sha, hashes[hashno].whichSha);
   if (err != shaSuccess) {
     fprintf(stderr, "hash(): %sReset Error %d.\n",
@@ -951,9 +951,9 @@ static int hash(int testno, int loopno, int hashno,
   }
 
   for (i = 0; i < repeatcount; ++i) {
-    err = info ? hkdfInput(&hkdf, (const uint8_t *)testarray, length) :
-          keyarray ? hmacInput(&hmac, (const uint8_t *) testarray,
-                               length) :
+    err = info ? RFC5869HkdfInput(&hkdf, (const uint8_t *)testarray, length) :
+          keyarray ? RFC2104HmacInput(&hmac, (const uint8_t *) testarray,
+                                      length) :
                      USHAInput(&sha, (const uint8_t *) testarray,
                                length);
     if (err != shaSuccess) {
@@ -965,9 +965,9 @@ static int hash(int testno, int loopno, int hashno,
   }
 
   if (numberExtrabits > 0) {
-    err = info ? hkdfFinalBits(&hkdf, extrabits, numberExtrabits) :
-          keyarray ? hmacFinalBits(&hmac, (uint8_t) extrabits,
-                                   numberExtrabits) :
+    err = info ? RFC5869HkdfFinalBits(&hkdf, extrabits, numberExtrabits) :
+          keyarray ? RFC2104HmacFinalBits(&hmac, (uint8_t) extrabits,
+                                          numberExtrabits) :
                      USHAFinalBits(&sha, (uint8_t) extrabits,
                                    numberExtrabits);
     if (err != shaSuccess) {
@@ -978,9 +978,9 @@ static int hash(int testno, int loopno, int hashno,
     }
   }
 
-  err = info ? hkdfResult(&hkdf, 0, info, infolen,
-                          Message_Digest, okmlen) :
-        keyarray ? hmacResult(&hmac, Message_Digest) :
+  err = info ? RFC5869HkdfResult(&hkdf, 0, info, infolen,
+                                 Message_Digest, okmlen) :
+        keyarray ? RFC2104HmacResult(&hmac, Message_Digest) :
                    USHAResult(&sha, Message_Digest);
   if (err != shaSuccess) {
     fprintf(stderr, "hash(): %s Result Error %d, could not compute "
@@ -1030,15 +1030,15 @@ static int hashHkdf(int testno, int loopno, int hashno,
     printf("    L=%d bytes\n", hkdfhashes[testno].okmlength);
   }
 
-  /* Run hkdf() against the test vectors */
-  err = hkdf(hkdfhashes[testno].whichSha,
-             (const uint8_t *) hkdfhashes[testno].saltarray,
-             hkdfhashes[testno].saltlength,
-             (const uint8_t *) hkdfhashes[testno].ikmarray,
-             hkdfhashes[testno].ikmlength,
-             (const uint8_t *) hkdfhashes[testno].infoarray,
-             hkdfhashes[testno].infolength, okm,
-             hkdfhashes[testno].okmlength);
+  /* Run RFC5869Hkdf() against the test vectors */
+  err = RFC5869Hkdf(hkdfhashes[testno].whichSha,
+                    (const uint8_t *) hkdfhashes[testno].saltarray,
+                    hkdfhashes[testno].saltlength,
+                    (const uint8_t *) hkdfhashes[testno].ikmarray,
+                    hkdfhashes[testno].ikmlength,
+                    (const uint8_t *) hkdfhashes[testno].infoarray,
+                    hkdfhashes[testno].infolength, okm,
+                    hkdfhashes[testno].okmlength);
   if (err != shaSuccess) {
     fprintf(stderr, "hashHkdf(): hkdf Error %d.\n", err);
     return err;
@@ -1048,15 +1048,15 @@ static int hashHkdf(int testno, int loopno, int hashno,
     USHAHashName(hkdfhashes[testno].whichSha), "hkdf standard test",
     buf, hkdfhashes[testno].okmarray, printResults, printPassFail);
 
-  /* Now run hkdfExtract() by itself against the test vectors */
+  /* Now run RFC5869HkdfExtract() by itself against the test vectors */
   /* to verify the intermediate results. */
-  err = hkdfExtract(hkdfhashes[testno].whichSha,
-                    (const uint8_t *) hkdfhashes[testno].saltarray,
-                    hkdfhashes[testno].saltlength,
-                    (const uint8_t *) hkdfhashes[testno].ikmarray,
-                    hkdfhashes[testno].ikmlength, prk);
+  err = RFC5869HkdfExtract(hkdfhashes[testno].whichSha,
+                           (const uint8_t *) hkdfhashes[testno].saltarray,
+                           hkdfhashes[testno].saltlength,
+                           (const uint8_t *) hkdfhashes[testno].ikmarray,
+                           hkdfhashes[testno].ikmlength, prk);
   if (err != shaSuccess) {
-    fprintf(stderr, "hashHkdf(): hkdfExtract Error %d.\n", err);
+    fprintf(stderr, "hashHkdf(): RFC5869HkdfExtract Error %d.\n", err);
     return err;
   }
   snprintf(buf, (size_t) 128, "hkdfExtract %d", testno+1);
@@ -1064,14 +1064,15 @@ static int hashHkdf(int testno, int loopno, int hashno,
     USHAHashName(hkdfhashes[testno].whichSha), "hkdf standard test",
     buf, hkdfhashes[testno].prkarray, printResults, printPassFail);
 
-  /* Now run hkdfExpand() by itself against the test vectors */
-  /* using the intermediate results from hkdfExtract. */
-  err = hkdfExpand(hkdfhashes[testno].whichSha, prk,
-    USHAHashSize(hkdfhashes[testno].whichSha),
-    (const uint8_t *)hkdfhashes[testno].infoarray,
-    hkdfhashes[testno].infolength, okm, hkdfhashes[testno].okmlength);
+  /* Now run RFC5869HkdfExpand() by itself against the test vectors */
+  /* using the intermediate results from RFC5869HkdfExtract. */
+  err = RFC5869HkdfExpand(hkdfhashes[testno].whichSha, prk,
+                          USHAHashSize(hkdfhashes[testno].whichSha),
+                          (const uint8_t *)hkdfhashes[testno].infoarray,
+                          hkdfhashes[testno].infolength, okm,
+                          hkdfhashes[testno].okmlength);
   if (err != shaSuccess) {
-    fprintf(stderr, "hashHkdf(): hkdfExpand Error %d.\n", err);
+    fprintf(stderr, "hashHkdf(): RFC5869HkdfExpand Error %d.\n", err);
     return err;
   }
   snprintf(buf, (size_t) 128, "hkdfExpand %d", testno+1);
@@ -1112,10 +1113,10 @@ static int hashfile(int hashno, const char *hashfilename, int bits,
   memset(&sha, '\343', sizeof(sha)); /* force bad data into struct */
   memset(&hmac, '\343', sizeof(hmac));
   memset(&hkdf, '\343', sizeof(hkdf));
-  err = info ? hkdfReset(&hkdf, hashes[hashno].whichSha,
-                             keyarray, keylen) :
-        keyarray ? hmacReset(&hmac, hashes[hashno].whichSha,
-                             keyarray, keylen) :
+  err = info ? RFC5869HkdfReset(&hkdf, hashes[hashno].whichSha,
+                                keyarray, keylen) :
+        keyarray ? RFC2104HmacReset(&hmac, hashes[hashno].whichSha,
+                                    keyarray, keylen) :
                    USHAReset(&sha, hashes[hashno].whichSha);
   if (err != shaSuccess) {
     fprintf(stderr, "hashfile(): %sReset Error %d.\n",
@@ -1129,8 +1130,8 @@ static int hashfile(int hashno, const char *hashfilename, int bits,
     while ((c = getc(hashfp)) != EOF) {
       if (!isspace(c)) {
         cc = (unsigned char)c;
-        err = info ? hkdfInput(&hkdf, &cc, 1) :
-              keyarray ? hmacInput(&hmac, &cc, 1) :
+        err = info ? RFC5869HkdfInput(&hkdf, &cc, 1) :
+              keyarray ? RFC2104HmacInput(&hmac, &cc, 1) :
                          USHAInput(&sha, &cc, 1);
         if (err != shaSuccess) {
           fprintf(stderr, "hashfile(): %sInput Error %d.\n",
@@ -1143,8 +1144,8 @@ static int hashfile(int hashno, const char *hashfilename, int bits,
     }
   else
     while ((nread = fread(buf, 1, sizeof(buf), hashfp)) > 0) {
-      err = info ? hkdfInput(&hkdf, buf, nread) :
-            keyarray ? hmacInput(&hmac, buf, nread) :
+      err = info ? RFC5869HkdfInput(&hkdf, buf, nread) :
+            keyarray ? RFC2104HmacInput(&hmac, buf, nread) :
                        USHAInput(&sha, buf, nread);
       if (err != shaSuccess) {
         fprintf(stderr, "hashfile(): %s Error %d.\n",
@@ -1157,8 +1158,8 @@ static int hashfile(int hashno, const char *hashfilename, int bits,
     }
 
   if (bitcount > 0)
-    err = info ? hkdfFinalBits(&hkdf, bits, bitcount) :
-          keyarray ? hmacFinalBits(&hmac, bits, bitcount) :
+    err = info ? RFC5869HkdfFinalBits(&hkdf, bits, bitcount) :
+          keyarray ? RFC2104HmacFinalBits(&hmac, bits, bitcount) :
                    USHAFinalBits(&sha, bits, bitcount);
   if (err != shaSuccess) {
     fprintf(stderr, "hashfile(): %s Error %d.\n",
@@ -1169,9 +1170,9 @@ static int hashfile(int hashno, const char *hashfilename, int bits,
     return err;
   }
 
-  err = info ? hkdfResult(&hkdf, 0, info, infolen,
-                          Message_Digest, okmlen) :
-        keyarray ? hmacResult(&hmac, Message_Digest) :
+  err = info ? RFC5869HkdfResult(&hkdf, 0, info, infolen,
+                                 Message_Digest, okmlen) :
+        keyarray ? RFC2104HmacResult(&hmac, Message_Digest) :
                    USHAResult(&sha, Message_Digest);
   if (err != shaSuccess) {
     fprintf(stderr, "hashfile(): %s Error %d.\n",

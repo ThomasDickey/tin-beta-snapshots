@@ -123,16 +123,19 @@ use Term::ReadLine;
 (my $pname = $0) =~ s#^.*/##;
 
 # read config file (first match counts) from
-# $XDG_CONFIG_HOME/tinewsrc ~/.config/tinewsrc ~/.tinewsrc
+#   $XDG_CONFIG_HOME/tinewsrc
+#   ~/.config/tinewsrc
+#   ~/.tinewsrc
 # if present
 my $TINEWSRC = undef;
 my (@try, %seen);
+
 if ($ENV{'XDG_CONFIG_HOME'}) {
 	push(@try, (glob("$ENV{'XDG_CONFIG_HOME'}/tinewsrc"))[0]);
 }
 push(@try, (glob('~/.config/tinewsrc'))[0], (glob('~/.tinewsrc'))[0]);
 
-foreach (@try) {
+foreach (grep { ! $seen{$_}++ } @try) {	# uniq @try
 	last if (open($TINEWSRC, '<', $_));
 	$TINEWSRC = undef;
 }
@@ -1321,15 +1324,15 @@ off by default.
 
 =item F<$HOME/.newsauth>
 
-"nntpserver password [user]" pairs for NNTP servers that require
-authorization. Any line that starts with "#" is a comment. Blank lines are
-ignored. This file should be readable only for the user as it contains the
-user's unencrypted password for reading news. First match counts. If no
+"nntpserver password [user]" pairs or triples for NNTP servers that require
+authorization. First match counts. Any line that starts with "#" is a
+comment. Blank lines are ignored. This file should be readable only for the
+user as it contains the user's unencrypted password for reading news. If no
 matching entry is found F<$HOME/.nntpauth> is checked.
 
 =item F<$HOME/.nntpauth>
 
-"nntpserver user password" pairs for NNTP servers that require
+"nntpserver user password" triples for NNTP servers that require
 authorization. First match counts. Lines starting with "#" are skipped and
 blank lines are ignored. This file should be readable only for the user as
 it contains the user's unencrypted password for reading news.
@@ -1337,9 +1340,11 @@ F<$HOME/.newsauth> is checked first.
 
 =item F<$XDG_CONFIG_HOME/tinewsrc> F<$HOME/.config/tinewsrc> F<$HOME/.tinewsrc>
 
-"option=value" configuration pairs. Lines that start with "#" are ignored.
-If the file contains unencrypted passwords (e.g. nntp-pass or pgp-pass), it
-should be readable for the user only.
+"option=value" configuration pairs, last match counts and only
+"value" is case sensitive. Lines that start with "#" are ignored. If the
+file contains unencrypted passwords (e.g. nntp-pass or pgp-pass), it
+should be readable for the user only. Use -B<vH> to get a dull list of
+all available configuration options.
 
 =back
 

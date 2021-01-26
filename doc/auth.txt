@@ -5,7 +5,7 @@ NNTP Extensions" (this document is available at [1]). There are several ways
 of authentication described in that text which are referred to as Original
 AUTHINFO, AUTHINFO GENERIC, and AUTHINFO SIMPLE. Tin supports the Original
 AUTHINFO and if tin is linked against libgsasl and the server announces it
-as described in RFC 3977 [2] it supports the AUTHINFO SASL PLAIN mechanisem
+as described in RFC 3977 [2] it supports the AUTHINFO SASL PLAIN mechanism
 as described in RFC 4643 [3]. In addition to answers to authentication
 requests as described in the "Common NNTP Extensions", tin also provides
 authentication at connection startup.

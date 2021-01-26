@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-24 00:24+0100\n"
+"POT-Creation-Date: 2021-01-26 07:32+0100\n"
 "PO-Revision-Date: 2018-04-19 13:04+0200\n"
 "Last-Translator: Francisco Javier Serrador <fserrador@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -23,9 +23,7 @@ msgstr ""
 #: src/art.c:418
 #, fuzzy, c-format
 msgid "Reading %s\n"
-msgstr ""
-"\n"
-" %s: "
+msgstr "Leyendo %s\n"
 
 #. TODO: -> lang.c
 #: src/art.c:1205
@@ -37,7 +35,7 @@ msgstr "Artículos anteriores"
 #: src/art.c:2539
 #, fuzzy, c-format
 msgid "Writing %s\n"
-msgstr "Tratando de hacer 'bal' a %s"
+msgstr "Escribir %s\n"
 
 #. TODO: -> lang.c
 #: src/art.c:2619
@@ -1867,7 +1865,7 @@ msgid "toggle tabwidth 4 <-> 8"
 msgstr ""
 
 #: src/lang.c:374
-msgid "toggle german TeX style decoding for current article"
+msgid "toggle German TeX style decoding for current article"
 msgstr ""
 
 #: src/lang.c:375
@@ -2172,7 +2170,7 @@ msgid "toggle inverse video"
 msgstr "_Invertir"
 
 #: src/lang.c:444
-msgid "toggle mini help menu display"
+msgid "toggle mini help menu and posting etiquette display"
 msgstr ""
 
 #: src/lang.c:445
@@ -4027,9 +4025,9 @@ msgid "Toggled rot13 encoding"
 msgstr "Codificación"
 
 #: src/lang.c:889
-#, c-format
-msgid "Toggled german TeX encoding %s"
-msgstr ""
+#, fuzzy, c-format
+msgid "Toggled German TeX encoding %s"
+msgstr "Codificación"
 
 #: src/lang.c:890
 #, fuzzy, c-format
@@ -4850,7 +4848,7 @@ msgid "Can't open %s. Try %s -r to read news via NNTP."
 msgstr ""
 
 #: src/lang.c:1143
-msgid "  -Q       quick start. Same as -qd"
+msgid "  -Q       quick start. Same as -dq"
 msgstr ""
 
 #: src/lang.c:1144
@@ -7526,8 +7524,8 @@ msgstr "Su contraseña en el servidor de correo"
 msgid ""
 "# Format of mailer line including parameters\n"
 "# %M Mailer  %S Subject  %T To  %F Filename\n"
-"# ie. to use elm as your mailer:    elm -s \"%S\" \"%T\" < %F\n"
-"# ie. elm interactive          :    elm -i %F -s \"%S\" \"%T\"\n"
+"# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n"
+"# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n"
 msgstr ""
 
 #: src/lang.c:2744
@@ -8004,17 +8002,17 @@ msgid "reading from local spool"
 msgstr "error leyendo desde `%s'"
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:750
+#: src/misc.c:749
 #, c-format
 msgid "Error: unlink %s"
 msgstr ""
 
-#: src/misc.c:3928
+#: src/misc.c:3927
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr ""
 
-#: src/misc.c:3931
+#: src/misc.c:3930
 #, fuzzy, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Regresar a la última publicación(es)"
@@ -8064,14 +8062,14 @@ msgstr ""
 msgid "couldn't expand %s\n"
 msgstr "Expandir"
 
-#: src/post.c:1357
+#: src/post.c:1356
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is neither set to %s nor to %s\n"
 msgstr ""
 
-#: src/post.c:1362
+#: src/post.c:1361
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8079,19 +8077,19 @@ msgid ""
 "posting doesn't contain any 8bit chars and thus folding won't happen\n"
 msgstr ""
 
-#: src/post.c:1364
+#: src/post.c:1363
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is not set to %s\n"
 msgstr ""
 
-#: src/post.c:2353
+#: src/post.c:2352
 #, fuzzy, c-format
 msgid "Posting: %.*s ..."
 msgstr "Publicación Fallida"
 
-#: src/post.c:4119
+#: src/post.c:4118
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8148,7 +8146,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: src/save.c:1075
+#: src/save.c:1084
 msgid "bytes"
 msgstr "bytes"
 

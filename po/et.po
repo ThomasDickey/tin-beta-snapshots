@@ -1,13 +1,13 @@
 # Estonian translations for tin.
 # This file is distributed under the same license as the tin package.
-# Toomas Soome <tsoome@me.com>, 2019.
+# Toomas Soome <tsoome@me.com>, 2020.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin 2.4.4\n"
+"Project-Id-Version: tin 2.4.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-24 00:24+0100\n"
-"PO-Revision-Date: 2019-12-25 12:29+0200\n"
+"POT-Creation-Date: 2021-01-26 07:32+0100\n"
+"PO-Revision-Date: 2020-12-25 20:39+0200\n"
 "Last-Translator: Toomas Soome <tsoome@me.com>\n"
 "Language-Team: Estonian <linux-ee@lists.eenet.ee>\n"
 "Language: et\n"
@@ -18,27 +18,25 @@ msgstr ""
 
 #. -> lang.c
 #: src/art.c:418
-#, fuzzy, c-format
+#, c-format
 msgid "Reading %s\n"
-msgstr "Loen %s uuesti..."
+msgstr "Loen %s\n"
 
 #. TODO: -> lang.c
 #: src/art.c:1205
-#, fuzzy
 msgid "Threading by multipart"
-msgstr "Järjestan artiklid teemade kaupa..."
+msgstr "Järjestan osade järgi"
 
 #. -> lang.c
 #: src/art.c:2539
-#, fuzzy, c-format
+#, c-format
 msgid "Writing %s\n"
-msgstr "Proovin %s"
+msgstr "Kirjutan %s\n"
 
 #. TODO: -> lang.c
 #: src/art.c:2619
-#, fuzzy
 msgid "Writing overview cache..."
-msgstr "Kirjutan atribuutide faili..."
+msgstr "Kirjutan ülevaate puhvri..."
 
 #: src/attrib.c:986
 msgid "Processing attributes... "
@@ -1499,9 +1497,9 @@ msgid "Error making backup of %s file. Filesystem full?"
 msgstr "Failist %s ei õnnestu varukoopiat luua. Failisüsteem on täis?"
 
 #: src/lang.c:274
-#, fuzzy, c-format
+#, c-format
 msgid "Filtering global rules (%d/%d) ('q' to quit)..."
-msgstr "Filtreerin globaalseid reegleid (%d/%d)..."
+msgstr "Filtreerin globaalseid reegleid (%d/%d) (väljumiseks 'q')..."
 
 #: src/lang.c:275
 msgid "Rule created by: "
@@ -1879,7 +1877,7 @@ msgid "toggle tabwidth 4 <-> 8"
 msgstr "lülita tabulaatori laius 4 <-> 8"
 
 #: src/lang.c:374
-msgid "toggle german TeX style decoding for current article"
+msgid "toggle German TeX style decoding for current article"
 msgstr "lülita jooksva artikli saksa TeX stiilis dekodeerimine"
 
 #: src/lang.c:375
@@ -2144,7 +2142,8 @@ msgid "toggle inverse video"
 msgstr "lülita pööratud video"
 
 #: src/lang.c:444
-msgid "toggle mini help menu display"
+#, fuzzy
+msgid "toggle mini help menu and posting etiquette display"
 msgstr "abiinfo lülita ekraanil miniabi menüüd"
 
 #: src/lang.c:445
@@ -2228,9 +2227,8 @@ msgid "select threads that match user specified pattern"
 msgstr "vali kasutaja määratud mustrile vastavad teemad"
 
 #: src/lang.c:465 src/lang.c:521
-#, fuzzy
 msgid "tag/untag all parts of current multipart-message in order"
-msgstr "märgi jooksva mitmeosalise teate kõik osad"
+msgstr "märgi/eemalda märk jooksva mitmeosalise teate kõik osad"
 
 #: src/lang.c:466
 msgid "0 - 9\t  choose thread by number"
@@ -2562,9 +2560,8 @@ msgid "All parts tagged"
 msgstr "Kõik osad on märgitud"
 
 #: src/lang.c:543
-#, fuzzy
 msgid "All parts untagged"
-msgstr "Kõik osad on märgitud"
+msgstr "Kõikidelt osadelt on märgk eemaldatud"
 
 #: src/lang.c:544
 msgid "Storing article for later posting"
@@ -3899,7 +3896,7 @@ msgstr "Lülitatud rot13 kodeerimine"
 
 #: src/lang.c:889
 #, c-format
-msgid "Toggled german TeX encoding %s"
+msgid "Toggled German TeX encoding %s"
 msgstr "Lülitatud saksa TeX kodeering %s"
 
 #: src/lang.c:890
@@ -4819,8 +4816,8 @@ msgid "Can't open %s. Try %s -r to read news via NNTP."
 msgstr "%s ei saa avada. Proovige %s -r, et lugeda uudiseid üle NNTP."
 
 #: src/lang.c:1143
-msgid "  -Q       quick start. Same as -qd"
-msgstr "  -Q       kiirstart. Sama kui -qd"
+msgid "  -Q       quick start. Same as -dq"
+msgstr "  -Q       kiirstart. Sama kui -dq"
 
 #: src/lang.c:1144
 msgid "  -l       read only active file instead of scanning spool (-n) command"
@@ -7736,16 +7733,17 @@ msgid "Invocation of your mail command"
 msgstr "Teie e-posti käsk"
 
 #: src/lang.c:2736
+#, fuzzy
 msgid ""
 "# Format of mailer line including parameters\n"
 "# %M Mailer  %S Subject  %T To  %F Filename\n"
-"# ie. to use elm as your mailer:    elm -s \"%S\" \"%T\" < %F\n"
-"# ie. elm interactive          :    elm -i %F -s \"%S\" \"%T\"\n"
+"# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n"
+"# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n"
 msgstr ""
 "# e-posti saatja käsurea formaat koos parameetritega\n"
 "# %M Programm  %S Teema  %T Saaja  %F Failinimi\n"
-"# näiteks. kasutada saatjana elm programmi:    elm -s \"%S\" \"%T\" < %F\n"
-"# näiteks. elm interaktiivses moodis      :    elm -i %F -s \"%S\" \"%T\"\n"
+"# näiteks. kasutada saatjana mutt programmi:    mutt -s \"%S\" \"%T\" < %F\n"
+"# näiteks. mutt interaktiivses moodis      :    mutt -i %F -s \"%S\" \"%T\"\n"
 
 #: src/lang.c:2744
 msgid "Use interactive mail reader"
@@ -8226,17 +8224,17 @@ msgid "reading from local spool"
 msgstr "loen lokaalsest spool kataloogist"
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:750
+#: src/misc.c:749
 #, c-format
 msgid "Error: unlink %s"
-msgstr ""
+msgstr "Viga: unlink %s"
 
-#: src/misc.c:3928
+#: src/misc.c:3927
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Versioon: %s %s väljalase %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3931
+#: src/misc.c:3930
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Versioon: %s %s väljalase %s (\"%s\")\n"
@@ -8285,7 +8283,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "ei saa laiendada %s\n"
 
-#: src/post.c:1357
+#: src/post.c:1356
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8294,7 +8292,7 @@ msgstr ""
 "Rida %d on pikem, kui %d sümbolit ja tuleks poolitada, aga kodeering\n"
 "pole ei %s ega %s\n"
 
-#: src/post.c:1362
+#: src/post.c:1361
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8305,7 +8303,7 @@ msgstr ""
 "on %s ja MIME_BREAK_LONG_LINES pole seatud või postitamine ei sisalda\n"
 "8 bitiseid sümboleid ja seetõttu poolitamist ei toimu\n"
 
-#: src/post.c:1364
+#: src/post.c:1363
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8314,12 +8312,12 @@ msgstr ""
 "Rida %d on pikem, kui %d sümbolit ja tuleks poolitada, aga kodeering\n"
 "pole %s\n"
 
-#: src/post.c:2353
+#: src/post.c:2352
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Postitan: %.*s ..."
 
-#: src/post.c:4119
+#: src/post.c:4118
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr "e-posti gruppides ei saa asendada, proovide uuesti postitada."
 
@@ -8354,7 +8352,7 @@ msgstr "[- Pole kasutatav -]"
 #: src/refs.c:1015 src/refs.c:1077
 #, c-format
 msgid "Building References-trees (%d/%d)..."
-msgstr ""
+msgstr "Ehitan viidete-puud (%d/%d)..."
 
 #.
 #. * preamble
@@ -8374,7 +8372,7 @@ msgstr ""
 "vormingut kasutama ja järgnev tekst võib olla kummaline.\n"
 "\n"
 
-#: src/save.c:1075
+#: src/save.c:1084
 msgid "bytes"
 msgstr "baiti"
 

@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2020-05-31
+ *  Updated   : 2021-01-03
  *  Notes     :
  *
  * Copyright (c) 1997-2021 Urs Janssen <urs@tin.org>
@@ -1245,8 +1245,8 @@ normalize(
 		UChar *ustr, *norm;
 		UErrorCode status = U_ZERO_ERROR;
 #ifdef HAVE_UNICODE_UNORM2_H
-		static const char *uname[] = {"nfc", "nfkc", "nfkc_cf"}; /* */
-		const char *unamep;
+		static const char *uni_name[] = {"nfc", "nfkc", "nfkc_cf"}; /* */
+		const char *uni_namep;
 		UNormalization2Mode mode;
 #else
 		UNormalizationMode mode;
@@ -1259,7 +1259,7 @@ normalize(
 		switch (tinrc.normalization_form) {
 			case NORMALIZE_NFD:
 #ifdef HAVE_UNICODE_UNORM2_H
-				unamep = uname[0];
+				uni_namep = uni_name[0];
 				mode = UNORM2_DECOMPOSE;
 #else
 				mode = UNORM_NFD;
@@ -1268,7 +1268,7 @@ normalize(
 
 			case NORMALIZE_NFC:
 #ifdef HAVE_UNICODE_UNORM2_H
-				unamep = uname[0];
+				uni_namep = uni_name[0];
 				mode = UNORM2_COMPOSE;
 #else
 				mode = UNORM_NFC;
@@ -1277,7 +1277,7 @@ normalize(
 
 			case NORMALIZE_NFKD:
 #ifdef HAVE_UNICODE_UNORM2_H
-				unamep = uname[1];
+				uni_namep = uni_name[1];
 				mode = UNORM2_DECOMPOSE;
 #else
 				mode = UNORM_NFKD;
@@ -1285,7 +1285,7 @@ normalize(
 				break;
 #ifdef HAVE_UNICODE_UNORM2_H
 			case NORMALIZE_NFKC_CF:
-				unamep = uname[2];
+				uni_namep = uni_name[2];
 				mode = UNORM2_COMPOSE;
 				break;
 #endif /* HAVE_UNICODE_UNORM2_H */
@@ -1293,7 +1293,7 @@ normalize(
 			case NORMALIZE_NFKC:
 			default:
 #ifdef HAVE_UNICODE_UNORM2_H
-				unamep = uname[1];
+				uni_namep = uni_name[1];
 				mode = UNORM2_COMPOSE;
 #else
 				mode = UNORM_NFKC;
@@ -1301,7 +1301,7 @@ normalize(
 		}
 
 #ifdef HAVE_UNICODE_UNORM2_H
-		needed = unorm2_normalize(unorm2_getInstance(NULL, unamep, mode, &status), ustr, -1, NULL, 0, &status);
+		needed = unorm2_normalize(unorm2_getInstance(NULL, uni_namep, mode, &status), ustr, -1, NULL, 0, &status);
 #else
 		needed = unorm_normalize(ustr, -1, mode, 0, NULL, 0, &status);
 #endif /* HAVE_UNICODE_UNORM2_H */
@@ -1310,7 +1310,7 @@ normalize(
 		norm_len = needed + 1;
 		norm = my_malloc(sizeof(UChar) * norm_len);
 #ifdef HAVE_UNICODE_UNORM2_H
-		(void) unorm2_normalize(unorm2_getInstance(NULL, unamep, mode, &status), ustr, -1, norm, norm_len, &status);
+		(void) unorm2_normalize(unorm2_getInstance(NULL, uni_namep, mode, &status), ustr, -1, norm, norm_len, &status);
 #else
 		(void) unorm_normalize(ustr, -1, mode, 0, norm, norm_len, &status);
 #endif /* HAVE_UNICODE_UNORM2_H */

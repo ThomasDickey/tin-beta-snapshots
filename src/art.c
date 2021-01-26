@@ -2055,7 +2055,7 @@ read_overview(
 						if (*ptr) {
 #ifdef HAVE_UNICODE_NORMALIZATION
 							if (IS_LOCAL_CHARSET("UTF-8"))
-								q =  normalize(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr), FALSE)), FALSE));
+								q = normalize(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr), FALSE)), FALSE));
 							else
 #endif /* HAVE_UNICODE_NORMALIZATION */
 								q = my_strdup(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr), FALSE)), FALSE));
@@ -2172,7 +2172,7 @@ read_overview(
 						if (*ptr) {
 #ifdef HAVE_UNICODE_NORMALIZATION
 							if (IS_LOCAL_CHARSET("UTF-8"))
-								q =  normalize(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr), FALSE)), FALSE));
+								q = normalize(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr), FALSE)), FALSE));
 							else
 #endif /* HAVE_UNICODE_NORMALIZATION */
 								q = my_strdup(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr), FALSE)), FALSE));
@@ -2366,7 +2366,7 @@ read_overview(
 					first = FALSE;
 				} else {
 					found = FALSE;
-					if (nntp_caps.headers_range && (ptr = strtok(nntp_caps.headers_range, "\n" )) != NULL) {
+					if (nntp_caps.headers_range && (ptr = strtok(nntp_caps.headers_range, "\n")) != NULL) {
 						do {
 							if ((*ptr == ':' && *(ptr + 1) == '\0') || !strncasecmp(ptr, "Xref", 4))
 								found = TRUE;

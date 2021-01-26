@@ -74,8 +74,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-24 00:24+0100\n"
-"PO-Revision-Date: 2017-02-04 09:14+0100\n"
+"POT-Creation-Date: 2021-01-26 07:32+0100\n"
+"PO-Revision-Date: 2020-12-27 11:41+0100\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -88,25 +88,25 @@ msgstr ""
 #: src/art.c:418
 #, fuzzy, c-format
 msgid "Reading %s\n"
-msgstr "Genlæser %s ..."
+msgstr "Læser %s\n"
 
 #. TODO: -> lang.c
 #: src/art.c:1205
 #, fuzzy
 msgid "Threading by multipart"
-msgstr "Opdeler artikler i tråde ..."
+msgstr "Trådning med multipart"
 
 #. -> lang.c
 #: src/art.c:2539
 #, fuzzy, c-format
 msgid "Writing %s\n"
-msgstr "Forsøger %s"
+msgstr "Skriver %s\n"
 
 #. TODO: -> lang.c
 #: src/art.c:2619
 #, fuzzy
 msgid "Writing overview cache..."
-msgstr "Skriver attributfil ..."
+msgstr "Skriver oversigtscache ..."
 
 #: src/attrib.c:986
 msgid "Processing attributes... "
@@ -384,9 +384,9 @@ msgid "#  quick_select_header=NUM\n"
 msgstr "#  quick_select_header=NUM\n"
 
 #: src/attrib.c:1289
-#, fuzzy, c-format
+#, c-format
 msgid "#  quote_chars=STRING (%%I for initials)\n"
-msgstr "#  quote_chars=STRING (%%s, %%S for initialer)\n"
+msgstr "#  quote_chars=STRING (%%I for initialer)\n"
 
 #: src/attrib.c:1291
 #, c-format
@@ -1980,7 +1980,7 @@ msgid "toggle tabwidth 4 <-> 8"
 msgstr "slå indrykningsbredde 4 <-> 8 til/fra"
 
 #: src/lang.c:374
-msgid "toggle german TeX style decoding for current article"
+msgid "toggle German TeX style decoding for current article"
 msgstr "skift tysk TeX-stilafkodning for nuværende artikel"
 
 #: src/lang.c:375
@@ -2249,7 +2249,8 @@ msgid "toggle inverse video"
 msgstr "slå omvendt video til/fra"
 
 #: src/lang.c:444
-msgid "toggle mini help menu display"
+#, fuzzy
+msgid "toggle mini help menu and posting etiquette display"
 msgstr "slå minihjælpens menuvisning til/fra"
 
 #: src/lang.c:445
@@ -4044,7 +4045,7 @@ msgstr "Skiftede rot13-kodning"
 
 #: src/lang.c:889
 #, c-format
-msgid "Toggled german TeX encoding %s"
+msgid "Toggled German TeX encoding %s"
 msgstr "Skiftede tysk TeX-kodning %s"
 
 #: src/lang.c:890
@@ -4933,8 +4934,9 @@ msgid "Can't open %s. Try %s -r to read news via NNTP."
 msgstr "Kan ikke åbne %s. Prøv %s -r for at læse nyheder via NNTP."
 
 #: src/lang.c:1143
-msgid "  -Q       quick start. Same as -qd"
-msgstr "  -Q       hurtigstart. Samme som -qd"
+#, fuzzy
+msgid "  -Q       quick start. Same as -dq"
+msgstr "  -Q       hurtigstart. Samme som -dq"
 
 #: src/lang.c:1144
 msgid "  -l       read only active file instead of scanning spool (-n) command"
@@ -7291,7 +7293,7 @@ msgstr "# Hvis slået til, så tilføj signatur til genindsendte artikler\n"
 #: src/lang.c:2467
 #, fuzzy
 msgid "Enter quotation marks, %I for author's initials."
-msgstr "Indtast anførselstegn, %s eller %S for forfatters initialer."
+msgstr "Indtast anførselstegn, %I for forfatters initialer."
 
 #: src/lang.c:2468
 msgid "Characters used as quote-marks"
@@ -7833,8 +7835,8 @@ msgstr "Igangsættelse af din postkommando"
 msgid ""
 "# Format of mailer line including parameters\n"
 "# %M Mailer  %S Subject  %T To  %F Filename\n"
-"# ie. to use elm as your mailer:    elm -s \"%S\" \"%T\" < %F\n"
-"# ie. elm interactive          :    elm -i %F -s \"%S\" \"%T\"\n"
+"# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n"
+"# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n"
 msgstr ""
 
 #: src/lang.c:2744
@@ -8127,6 +8129,7 @@ msgstr ""
 "#   2 = NFKD\n"
 "#   3 = NFC\n"
 "#   4 = NFD\n"
+"#   5 = NFKC_CF\n"
 
 #: src/lang.c:2903
 msgid "Render BiDi"
@@ -8320,17 +8323,17 @@ msgid "reading from local spool"
 msgstr "læser fra lokal kø"
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:750
+#: src/misc.c:749
 #, c-format
 msgid "Error: unlink %s"
 msgstr ""
 
-#: src/misc.c:3928
+#: src/misc.c:3927
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Version: %s %s udgave %s (»%s«) %s %s\n"
 
-#: src/misc.c:3931
+#: src/misc.c:3930
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Version: %s %s udgave %s (»%s«)\n"
@@ -8380,7 +8383,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "kunne ikke udvide %s\n"
 
-#: src/post.c:1357
+#: src/post.c:1356
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8389,7 +8392,7 @@ msgstr ""
 "Linje %d er længere end %d oktetter og bør foldes sammen, men\n"
 "kodningen er hverken sat til %s eller til %s\n"
 
-#: src/post.c:1362
+#: src/post.c:1361
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8401,7 +8404,7 @@ msgstr ""
 "eller beskeden indeholder ikke 8-bit tegn og foldning vil derfor\n"
 "ikke blive udført\n"
 
-#: src/post.c:1364
+#: src/post.c:1363
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8410,12 +8413,12 @@ msgstr ""
 "Linje %d er længere end %d oktetter og bør foldes sammen, men\n"
 "kodningen er ikke sat til %s\n"
 
-#: src/post.c:2353
+#: src/post.c:2352
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Indsender: %.*s ..."
 
-#: src/post.c:4119
+#: src/post.c:4118
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8471,7 +8474,7 @@ msgstr ""
 "mærkeligt ud.\n"
 "\n"
 
-#: src/save.c:1075
+#: src/save.c:1084
 msgid "bytes"
 msgstr "byte"
 
@@ -8542,6 +8545,3 @@ msgstr "Slrnface blev unormalt afbrudt, kode %d."
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Slrnface mislykkedes: %s."
-
-#~ msgid "# What should we ask confirmation for.\n"
-#~ msgstr "# Hvad skal vi spørge efter bekræftelse på.\n"

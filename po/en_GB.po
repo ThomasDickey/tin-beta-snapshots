@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-24 00:24+0100\n"
-"PO-Revision-Date: 2020-12-25 01:05+0100\n"
+"POT-Creation-Date: 2021-01-26 07:32+0100\n"
+"PO-Revision-Date: 2020-01-06 13:40+0100\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: \n"
 "Language: en_GB\n"
@@ -1875,8 +1875,8 @@ msgid "toggle tabwidth 4 <-> 8"
 msgstr "toggle tabwidth 4 <-> 8"
 
 #: src/lang.c:374
-msgid "toggle german TeX style decoding for current article"
-msgstr "toggle german TeX style decoding for current article"
+msgid "toggle German TeX style decoding for current article"
+msgstr "toggle German TeX style decoding for current article"
 
 #: src/lang.c:375
 msgid "toggle display of uuencoded sections"
@@ -2140,8 +2140,8 @@ msgid "toggle inverse video"
 msgstr "toggle inverse video"
 
 #: src/lang.c:444
-msgid "toggle mini help menu display"
-msgstr "toggle mini help menu display"
+msgid "toggle mini help menu and posting etiquette display"
+msgstr "toggle mini help menu and posting etiquette display"
 
 #: src/lang.c:445
 msgid "cycle the display of authors email address, real name, both or neither"
@@ -3905,8 +3905,8 @@ msgstr "Toggled rot13 encoding"
 
 #: src/lang.c:889
 #, c-format
-msgid "Toggled german TeX encoding %s"
-msgstr "Toggled german TeX encoding %s"
+msgid "Toggled German TeX encoding %s"
+msgstr "Toggled German TeX encoding %s"
 
 #: src/lang.c:890
 #, c-format
@@ -4816,8 +4816,8 @@ msgid "Can't open %s. Try %s -r to read news via NNTP."
 msgstr "Can't open %s. Try %s -r to read news via NNTP."
 
 #: src/lang.c:1143
-msgid "  -Q       quick start. Same as -qd"
-msgstr "  -Q       quick start. Same as -qd"
+msgid "  -Q       quick start. Same as -dq"
+msgstr "  -Q       quick start. Same as -dq"
 
 #: src/lang.c:1144
 msgid "  -l       read only active file instead of scanning spool (-n) command"
@@ -7721,13 +7721,13 @@ msgstr "Invocation of your mail command"
 msgid ""
 "# Format of mailer line including parameters\n"
 "# %M Mailer  %S Subject  %T To  %F Filename\n"
-"# ie. to use elm as your mailer:    elm -s \"%S\" \"%T\" < %F\n"
-"# ie. elm interactive          :    elm -i %F -s \"%S\" \"%T\"\n"
+"# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n"
+"# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n"
 msgstr ""
 "# Format of mailer line including parameters\n"
 "# %M Mailer  %S Subject  %T To  %F Filename\n"
-"# ie. to use elm as your mailer:    elm -s \"%S\" \"%T\" < %F\n"
-"# ie. elm interactive          :    elm -i %F -s \"%S\" \"%T\"\n"
+"# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n"
+"# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n"
 
 #: src/lang.c:2744
 msgid "Use interactive mail reader"
@@ -8207,17 +8207,17 @@ msgid "reading from local spool"
 msgstr "reading from local spool"
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:750
+#: src/misc.c:749
 #, c-format
 msgid "Error: unlink %s"
 msgstr "Error: unlink %s"
 
-#: src/misc.c:3928
+#: src/misc.c:3927
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Version: %s %s release %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3931
+#: src/misc.c:3930
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Version: %s %s release %s (\"%s\")\n"
@@ -8266,7 +8266,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "couldn't expand %s\n"
 
-#: src/post.c:1357
+#: src/post.c:1356
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8275,7 +8275,7 @@ msgstr ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is neither set to %s nor to %s\n"
 
-#: src/post.c:1362
+#: src/post.c:1361
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8286,7 +8286,7 @@ msgstr ""
 "encoding is set to %s without enabling MIME_BREAK_LONG_LINES or\n"
 "posting doesn't contain any 8bit chars and thus folding won't happen\n"
 
-#: src/post.c:1364
+#: src/post.c:1363
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8295,12 +8295,12 @@ msgstr ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is not set to %s\n"
 
-#: src/post.c:2353
+#: src/post.c:2352
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Posting: %.*s ..."
 
-#: src/post.c:4119
+#: src/post.c:4118
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr "Can't supersede in mailgroups, try repost instead."
 
@@ -8356,7 +8356,7 @@ msgstr ""
 "to understand the new format, and some of what follows may look strange.\n"
 "\n"
 
-#: src/save.c:1075
+#: src/save.c:1084
 msgid "bytes"
 msgstr "bytes"
 

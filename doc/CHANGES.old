@@ -8,7 +8,7 @@ U031) Thomas E. Dickey <dickey@invisible-island.net>
       FIX. aclocal.m4, configure, Makefile, conf-tin
 
 U030) Matt Anton <tin@syrius.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
 U029) Corinna Vinschen <vinschen@redhat.com>
@@ -30,11 +30,11 @@ U027) Urs Janssen <urs@tin.org>
            tin.[15]
 
 U026) Joe Hansen <joedalton2@yahoo.dk>
-      ADD. updated danish translation
+      ADD. updated Danish translation
       FIX. da.po
 
 U025) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 -- 2.3.4 release 20160628 "Newton" --
@@ -64,7 +64,7 @@ U023) Urs Janssen <urs@tin.org>
            xref.c, config.guess, config.sub, tin.1, de.po
 
 U022) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 -- 2.3.3 release 20160327 "Kinloch" --
@@ -74,7 +74,7 @@ U021) Glenn Spell <glenn@gs.fay.nc.us>
       FIX. extern.h, feed.c, lang.c, prompt.c, screen.c
 
 U020) Joe Hansen <joedalton2@yahoo.dk>
-      ADD. updated danish translation
+      ADD. updated Danish translation
       FIX. da.po
 
 U019) Urs Janssen <urs@tin.org>
@@ -93,7 +93,7 @@ U019) Urs Janssen <urs@tin.org>
       REM. idna_decode() from headers_to_display
       ADD. -D 128 to purge old debug files
       ADD. avoid useless strdup()/free()/realloc()
-      ADD. updated german translation
+      ADD. updated German translation
       ADD. config.guess, config.sub update
       ADD. improve -u error message
       ADD. don't resend "LIST [NEWSGROUPS|COUNTS] wildmat" on reconnect
@@ -102,7 +102,7 @@ U019) Urs Janssen <urs@tin.org>
       ADD. removed fixed buffer from create_path()
       ADD. --enable-break-long-lines is now default
       ADD. avoid several comma operators (to silence -Wcomma)
-      ADD. updated german translation
+      ADD. updated German translation
       FIX. active.c, art.c, auth.c, charset.c, cook.c, debug.c, filter.c
            group.c, lang.c, mail.c, main.c, misc.c, nntplib.c, page.c, post.c
            rfc2046.c, rfc2047.c, save.c, screen.c, thread.c, nntplib.h,de.po
@@ -132,11 +132,11 @@ U018) Dennis Preiser <dennis@d--p.de>
            options_menu.c, read.c, rfc2046.c, save.c, proto.h, rfc2046.h
 
 U017) Matt Anton <tin@syrius.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
 U016) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 -- 2.3.2 release 20151224 "Glenavullen" --
@@ -190,11 +190,11 @@ U011) Dennis Preiser <dennis@d--p.de>
            thread.c, tincfg.tbl, tin.[15], configure[.in]
 
 U010) Joe Hansen <joedalton2@yahoo.dk>
-      ADD. updated danish translation
+      ADD. updated Danish translation
       FIX. da.po
 
 U009) Urs Janssen <urs@tin.org>
-      ADD. updated german translation
+      ADD. updated German translation
       ADD. config.guess, config.sub update
       ADD. fix hypothetic null pointer dereference
       ADD. allow hand supplied Sender header with external news
@@ -214,7 +214,7 @@ U009) Urs Janssen <urs@tin.org>
            Makefile[.in]
 
 U008) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 -- 2.3.1 release 20141224 "Tallant" --
@@ -224,20 +224,20 @@ U007) Dennis Preiser <dennis@d--p.de>
       FIX. misc.c
 
 U006) Joe Hansen <joedalton2@yahoo.dk>
-      ADD. updated danish translation
+      ADD. updated Danish translation
       FIX. da.po
 
 U005) Urs Janssen <urs@tin.org>
       ADD. fix hypothetic null pointer dereference
       ADD. config.guess, config.sub update
-      ADD. updated german translation
+      ADD. updated German translation
       FIX. proto.h, filter.c, post.c, save.c, tin.1, config.guess, config.sub
            de.po
 
 -- 2.3.0 release 20141003 "Glenfoyle" --
 
 U004) Joe Hansen <joedalton2@yahoo.dk>
-      ADD. updated danish translation
+      ADD. updated Danish translation
       FIX. da.po
 
 U003) Urs Janssen <urs@tin.org>
@@ -256,7 +256,7 @@ U002) Dennis Preiser <dennis@d--p.de>
       FIX. rfc2047.c
 
 U001) Matt Anton <tin@syrius.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
 -- 2.2.1 release 20140504 "Tober an Righ" --
@@ -273,16 +273,16 @@ U001) Matt Anton <tin@syrius.org>
            tin.h
 
  003) Matt Anton <tin@syrius.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
  002) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
  001) Urs Janssen <urs@tin.org>
       ADD. config.guess, config.sub update
-      ADD. updated german translation
+      ADD. updated German translation
       ADD. no-c-format hint for xgettext
       BUG. hypothetic 1 byte buffer overrun in read_newsrc_active_file() with
            newsgoup names longer than 511 bytes (RFC 3977 guarantees them to
@@ -297,7 +297,7 @@ U001) Matt Anton <tin@syrius.org>
 -- 2.2.0 release 20131224 "Lochindaal" --
 
 U025) Joe Hansen <joedalton2@yahoo.dk>
-      ADD. updated danish translation
+      ADD. updated Danish translation
       FIX. da.po
 
 U024) Thomas E. Dickey <dickey@invisible-island.net>
@@ -310,7 +310,7 @@ U023) Dennis Preiser <dennis@d--p.de>
       FIX. group.c
 
 U022) Matt Anton <tin@syrius.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
 U021) Urs Janssen <urs@tin.org>
@@ -326,7 +326,7 @@ U021) Urs Janssen <urs@tin.org>
            string.c, thread.c, xref.c, config.guess
 
 U020) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 -- 2.1.5 release 20131126 "Meadowburn" --
@@ -339,11 +339,11 @@ U019) Dennis Preiser <dennis@d--p.de>
       FIX. select.c, string.c, tin.h
 
 U018) Matt Anton <tin@syrius.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
 U017) Urs Janssen <urs@tin.org>
-      ADD. updated german translation
+      ADD. updated German translation
       ADD. remove FWS from Newsgroups and Followup-To when posting a followup
       ADD. allow new gTLDs xn--ngbc5azd, xn--80asehdb, xn--80aswg, xn--unup4y
       ADD. allow new IDN ccTLD of Iran
@@ -370,7 +370,7 @@ U017) Urs Janssen <urs@tin.org>
            extern.h, policy.h, proto.h, de.po, mbox.5, mmdf.5
 
 U016) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 -- 2.1.4 release 20131019 "Killarow" --
@@ -418,11 +418,11 @@ UO11) Dennis Grevenstein <dennis@pcde.inka.de>
       FIX. art.c
 
 U010) Joe Hansen <joedalton2@yahoo.dk>
-      ADD. updated danish translation
+      ADD. updated Danish translation
       FIX. da.po
 
 U009) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 U008) Urs Janssen <urs@tin.org>
@@ -456,7 +456,7 @@ U006) Urs Janssen <urs@tin.org>
       FIX. auth.c, post.c, policy.h, configure[.in], config.guess, config.sub
 
 U005) Matt Anton <tin@syrius.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
 -- 2.1.1 release 20120623 "Mulindry" --
@@ -505,11 +505,11 @@ U003) Urs Janssen <urs@tin.org>
 -- 2.1.0 release 20111224 "Bridgend" --
 
  004) Matt Anton <tin@syrius.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
  003) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 U002) Dennis Preiser <dennis@d--p.de>
@@ -536,7 +536,7 @@ U001) Urs Janssen <urs@tin.org>
       ADD. timestamps to debugging output
       ADD. configure check for libidnkit (IDNA 2008)
       ADD. configure check for clock_gettime(2)
-      ADD. updated german translation, switch to UTF-8 encoding
+      ADD. updated German translation, switch to UTF-8 encoding
       ADD. configure check for inet_ntoa in libnsl
       ADD. configure check for idna_strerro in libidn
       ADD. use range in LISTGROUP if getart_limit is set
@@ -615,21 +615,21 @@ U027) Urs Janssen <urs@tin.org>
            config.sub, tin.1, rw.po
 
 U026) Matt Anton <tin@syrius.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
 -- 1.9.6 release 20101126 "Burnside" --
 
 U025) Matt Anton <tin@syrius.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
 U024) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 U023) Joe Hansen <joedalton2@yahoo.dk>
-      ADD. updated danish translation
+      ADD. updated Danish translation
       FIX. da.po
 
 U022) Thomas E. Dickey <dickey@invisible-island.net>
@@ -712,7 +712,7 @@ U018) Frederic Briere <fbriere@fbriere.net>
       FIX. feed.c, group.c, help.c, keymap.c, lang.c, extern.h, keymap.h, tin.h
 
 U017) Joe Hansen <joedalton2@yahoo.dk>
-      ADD. initial danish translation
+      ADD. initial Danish translation
       FIX. da.po
 
 U016) Volker Borchert <v.borchert@vistecprivat.de>
@@ -838,7 +838,7 @@ U011) Urs Janssen <urs@tin.org>
       ADD. configurable path via tin.defaults to overview.fmt file
       ADD. send "LIST HEADERS" before doing "HDR" if server supports it
       ADD. config.guess, config.sub update
-      ADD. started german manpage translation
+      ADD. started German manpage translation
       ADD. issue extra "GROUP" when NEXT receives 412
       ADD. issue a warning if attributes file has an unexpected version number
       ADD. check for 8bit chars in Newsgroups, Followup-To and Distribution
@@ -999,7 +999,7 @@ U005) Dirk Nimmich <nimmich@muenster.de>
       FIX. Makefile.in
 
  011) Andrey Simonenko <simon@comsys.ntu-kpi.kiev.ua>
-      ADD. updated russian translation
+      ADD. updated Russian translation
       FIX. ru.po
 
  010) Urs Janssen <urs@tin.org>
@@ -1017,7 +1017,7 @@ U004) Urs Janssen <urs@tin.org>
       ADD. disallow .so, .um TLDs
       ADD. warn about useless cmd-line option combinations
       ADD. enable CAPABILLITIES code
-      ADD. updated german translation
+      ADD. updated German translation
       FIX. Makefile, aclocal.m4, configure[.in], extern.h, policy.h, filter.c
            init.c, lang.c, main.c, mail.c, nntplib.c, options_menu.c, post.c
            pcre/*, config.guess, config.sub, de.po
@@ -1076,7 +1076,7 @@ U001) Urs Janssen <urs@tin.org>
       FIX. mail.c
 
  005) Daniel Nylander <po@danielnylander.se>
-      ADD. initial swedish translation
+      ADD. initial Swedish translation
       FIX. sv.po
 
  004) Chung-chieh Shan <ken@digitas.harvard.edu>
@@ -1093,7 +1093,7 @@ U001) Urs Janssen <urs@tin.org>
       FIX. config.guess, config.sub
 
  001) Andrey Simonenko <simon@comsys.ntu-kpi.kiev.ua>
-      ADD. updated russian translation
+      ADD. updated Russian translation
       FIX. ru.po
 
 -- 1.8.0 release 20051224 "Ronay" --
@@ -1122,7 +1122,7 @@ U054) Michael Bienia <michael@vorlon.ping.de>
            prompt.c
 
 U053) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 -- 1.7.10 release 20050929 "Tahay" --
@@ -1137,11 +1137,11 @@ U051) Matthias Buelow <mkb@incubus.de>
       FIX. auth.c
 
 U050) Thomas Bliem <bliem@math.uni-wuppertal.de>
-      BUG. typos in the german translation
+      BUG. typos in the German translation
       FIX. de.po
 
 U049) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 U048) Michael Bienia <michael@vorlon.ping.de>
@@ -1157,7 +1157,7 @@ U047) Urs Janssen <urs@tin.org>
       BUG. newsgroups file caching didn't work
       ADD. pcre update (6.1 -> 6.4)
       ADD. check replyto address before mailing
-      ADD. a few missing german translations
+      ADD. a few missing German translations
       ADD. config.guess, config.sub update
       ADD. allow unbinding keys by mapping them to "NULL"
       ADD. configure check for in_addr_t, mksh and fchmod declaration
@@ -1217,7 +1217,7 @@ U042) Steven Michael Murphy <murf@e-tools.com>
       FIX. rw.po
 
 U041) Andrei Emeltchenko <andrei.emeltchenko@finik.org>
-      ADD. started russian translation
+      ADD. started Russian translation
       FIX. ru.po
 
 U040) Michael Bienia <michael@vorlon.ping.de>
@@ -1231,15 +1231,15 @@ U040) Michael Bienia <michael@vorlon.ping.de>
 -- 1.7.8 release 20050321 "Hellisay" --
 
 U039) Matt Anton <tin@syrius.org>
-      ADD. added missing french translations
+      ADD. added missing French translations
       FIX. fr.po
 
 U038) Sebnem Korkmaz <sebnem_k@hotmail.com>
-      ADD. started turkish translation
+      ADD. started Turkish translation
       FIX. tr.po
 
 U037) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 U036) Michael Bienia <michael@vorlon.ping.de>
@@ -1258,7 +1258,7 @@ U035) Urs Janssen <urs@tin.org>
       ADD. EDIT_FILTER ('E') to select- and thread-level
       ADD. update online 'h'elp
       ADD. configure check and fallback for non ANSI-C strsep() function
-      BUG. typos in the german translation
+      BUG. typos in the German translation
       BUG. didn't compile if configured with --disable-printing
       BUG. description of a few keys in the online help was wrong
       BUG. out of bounds read in utf8_valid()
@@ -1284,7 +1284,7 @@ U034) Michael Velten <tin@michnet.de>
       FIX. proto.h, global.c, group.c, page.c, search.c, select.c, thread.c
 
 U033) Matt Anton <tin@syrius.org>
-      ADD. added missing french translations
+      ADD. added missing French translations
       FIX. fr.po
 
 U032) Michael Bienia <michael@vorlon.ping.de>
@@ -1384,7 +1384,7 @@ U027) Urs Janssen <urs@tin.org>
            config.guess, config.sub, fr.po, et.po
 
 U026) Matt Anton <tin@syrius.org>
-      ADD. added a some missing french translations
+      ADD. added a some missing French translations
       FIX. fr.po
 
 U025) Elmar W. Tischhauser <tischhau@rbg.informatik.tu-darmstadt.de>
@@ -1421,7 +1421,7 @@ U022) Lech Szychowski <lech7@pse.pl>
       FIX. refs.c
 
 U021) Matt Anton <tin@syrius.org>
-      ADD. added a few missing french translations
+      ADD. added a few missing French translations
       FIX. fr.po
 
 U020) Thomas E. Dickey <dickey@invisible-island.net>
@@ -1506,7 +1506,7 @@ U013) Joshua Crawford <mortarn@softhome.net>
       FIX. post.c, tin.5
 
 U012) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
  019) Urs Janssen <urs@tin.org>
@@ -1543,11 +1543,11 @@ U009) Lech Szychowski <lech7@pse.pl>
       FIX. config.c, tcurses.c
 
  017) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
  016) Matt Anton <tin@syrius.org>
-      ADD. added a few missing french translations
+      ADD. added a few missing French translations
       FIX. fr.po
 
 U008) Michael Bienia <michael@vorlon.ping.de>
@@ -1579,7 +1579,7 @@ U006) Urs Janssen <urs@tin.org>
       REM. amiga support
       REM. NO_LOCALE on MAC_OS_X
       ADD. replaced some sprintf() by snprintf() calls
-      ADD. a few missing german translations
+      ADD. a few missing German translations
       ADD. config.guess, config.sub update
       BUG. fixed a small memleak when using Fcc:
       BUG. fixed possible use of uninitialized attributes data
@@ -1705,7 +1705,7 @@ U001) Dirk Nimmich <nimmich@muenster.de>
 
  002) Urs Janssen <urs@tin.org>
       ADD. missing const
-      ADD. updated german, french and estonian translations
+      ADD. updated German, French and Estonian translations
       ADD. missing includes for SEIUX
       BUG. off by one malloc bug
       REM. unused parameter
@@ -1713,13 +1713,13 @@ U001) Dirk Nimmich <nimmich@muenster.de>
            post.c, de.po, fr.po. et.po, src/Makefile.in
 
  001) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 -- 1.6.0 release 20030714 "Vatersay" --
 
 U167) Matt Anton <tin@syrius.org>
-      ADD. added a few missing french translations
+      ADD. added a few missing French translations
       FIX. fr.po
 
 U166) Andreas Metzler <tin-dev@downhill.at.eu.org>
@@ -1764,12 +1764,12 @@ U161) Corinna Vinschen <corinna@vinschen.de>
       FIX. art.c, page.c, tin.h
 
 U160) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 U159) Urs Janssen <urs@tin.org>
       ADD. manpage updates
-      ADD. updated german and french translation
+      ADD. updated German and French translation
       ADD. config.guess, config.sub update
       ADD. cleanup SEIUX handling
       BUG. possible bufferoverrun with charset conversion
@@ -1778,7 +1778,7 @@ U159) Urs Janssen <urs@tin.org>
            fr.po, config.guess, config.sub, configure[.in], autoconf.h[in]
 
 U158) Andreas Metzler <tin-dev@downhill.at.eu.org>
-      ADD. updated german translation
+      ADD. updated German translation
       FIX. de.po
 
 -- 1.5.18 release 20030602 "Darts" --
@@ -1833,7 +1833,7 @@ U150) Michael Bienia <michael@vorlon.ping.de>
            tin.5
 
 U149) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 U148) Jason Faultless <jason@altarstone.com>
@@ -1857,12 +1857,12 @@ U148) Jason Faultless <jason@altarstone.com>
            tin.5
 
 U147) Matt Anton <tin@syrius.org>
-      ADD. added a few missing french translations
+      ADD. added a few missing French translations
       FIX. fr.po
 
 U146) Urs Janssen <urs@tin.org>
       ADD. pcre update (4.1 -> 4.3)
-      ADD. a few missing german translations
+      ADD. a few missing German translations
       ADD. tin(5)-man page updates
       ADD. filename extension guessing based on mimetype for unnamed
            attachments
@@ -1888,7 +1888,7 @@ U146) Urs Janssen <urs@tin.org>
       BUG. parse_rfc822_headers() did also decode the address-part of
            of headers like From/To
       BUG. removed some hard coded keys
-      BUG. fixed a few typos in the french translation
+      BUG. fixed a few typos in the French translation
       BUG. -S without -n did also save new groups
       BUG. $AUTOSUBSRIBE was broken
       BUG. mailing_list attribute was ignored on no posting servers at
@@ -1925,12 +1925,12 @@ U143) Andreas Metzler <tin-dev@downhill.at.eu.org>
       FIX. tin.1, tin.5
 
 U142) Matt Anton <tin@syrius.org>
-      ADD. started french translation
+      ADD. started French translation
       FIX. fr.po
 
 U141) Christian Garbs <tin-dev@cgarbs.de>
       ADD. updated MH mailgroups documentation
-      ADD. some german translations
+      ADD. some German translations
       FIX. reading-mail.txt, de.po
 
 U140) Jason Faultless <jason@altarstone.com>
@@ -1970,7 +1970,7 @@ U138) Dirk Nimmich <nimmich@muenster.de>
       FIX. curses.c, mail.c, nntplib.c, open.c, rfc2046.c, screen.c, TODO
 
 U137) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 U136) Corinna Vinschen <corinna@vinschen.de>
@@ -2114,7 +2114,7 @@ U125) Urs Janssen <urs@tin.org>
            en_GB.po, config.guess, config.sub, aclocal.m4, Makefile.[in]
 
 U124) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 -- 1.5.15 release 20021115 "Spiders" --
@@ -2140,7 +2140,7 @@ U121) Michael Bienia <michael@vorlon.ping.de>
       FIX. art.c
 
 U120) Toomas Soome <Toomas.Soome@microlink.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 U119) Michael Bienia <michael@vorlon.ping.de>
@@ -2157,7 +2157,7 @@ U118) Philip Paeps <philip@paeps.cx>
 
 U117) Andreas Metzler <tin-dev@downhill.at.eu.org>
       BUG. possible overrun while expanding \t
-      BUG. typos in the german translation
+      BUG. typos in the German translation
       BUG. wrong help-page entries
       ADD. from=filter exemplification
       FIX. cook.c, lang.c, tin.5, filtering, de.po
@@ -2180,7 +2180,7 @@ U114) Urs Janssen <urs@tin.org>
            timezone
       BUG. in some cases tin created incorrect overview data
       BUG. add_posted_to_filter didn't work with -w and -o
-      BUG. typo fixed in the english translation
+      BUG. typo fixed in the English translation
       BUG. description-toggle didn't work for mailgroups
       BUG. redraw problem in the config-menu
       BUG. dir concatenation problem under VMS
@@ -2231,7 +2231,7 @@ U109) Urs Janssen <urs@tin.org>
       ADD. config.guess, config.sub update
       ADD. stroke-highlighting
       ADD. word-highlighting without color
-      ADD. some missing german translations
+      ADD. some missing German translations
       ADD. smarter configure check for a shell, add dash to the list
            of sh shells
       ADD. reformat code, fixed a few typos
@@ -2289,7 +2289,7 @@ U104) Marc Prud'hommeaux <marc@solarmetric.com>
 
 U103) Andreas Metzler <tin-dev@downhill.at.eu.org>
       ADD. joined confirm_action and confirm_to_quit to confirm_choice
-      ADD. missing german translations
+      ADD. missing German translations
       ADD. mm_network_charset to attributes
       ADD. undeclared_charset to attributes
       FIX. tin.1, tin.5, extern.h, proto.h, tin.h, tinrc.h, art.c, attrib.c
@@ -2302,7 +2302,7 @@ U102) Urs Janssen <urs@tin.org>
            group attribute
       ADD. moved some var-declarations out of loops
       ADD. Big5 as possible network charset
-      ADD. some missing german translations
+      ADD. some missing German translations
       ADD. tinrcupdate.pl
       ADD. config.guess, config.sub update
       REM. some casts
@@ -2384,7 +2384,7 @@ U091) Andreas Metzler <tin-dev@downhill.at.eu.org>
       BUG. overlong translation in filtermenu
       BUG. unnecessary rfc1522_encode()-calls
       BUG. typo in CA_ERROR_MISSING_NEWSGROUPS error-message
-      ADD. some missing german translations
+      ADD. some missing German translations
       REM. $SPAMTRAP
       ADD. gettext update (0.10.35 -> 0.10.40)
       FIX. Makefile, aclocal.m4, configure[.in], autoconf.h[in], inews.c
@@ -3006,7 +3006,7 @@ U035) Dirk Nimmich <nimmich@muenster.de>
 U034) Urs Janssen <urs@tin.org>
       ADD. made some funcs static, renamed mailcap.c to mimetypes.c
       ADD. dynamic malloc space for mailcap meta expansion
-      ADD. updated german translation
+      ADD. updated German translation
       REM. unused vars
       REM. translations for low-level error/debug messages
       FIX. Makefile[.in], extern.h, auth.c, color.c, config.c, global.c
@@ -3017,16 +3017,16 @@ U034) Urs Janssen <urs@tin.org>
 -- 1.5.4 release 20000523 "1959" --
 
 U033) Robert Brady <rwb197@ecs.soton.ac.uk>
-      ADD. english translation
+      ADD. English translation
       FIX. en_GB.po
 
 U032) Toomas Soome <tsoome@ut.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 U031) Kai Bojens <kbojens@herkules.on-luebeck.de>
       Sven Hartge <hartge@ds9.argh.org>
-      ADD. updated german translation
+      ADD. updated German translation
       FIX. de.po
 
  024) Dirk Nimmich <nimmich@muenster.de>
@@ -3120,7 +3120,7 @@ U023) Jason Faultless <jason@altarstone.com>
            thread.c, wildmat.c
 
 U022) Toomas Soome <tsoome@ut.ee>
-      ADD. estonian translation
+      ADD. Estonian translation
       ADD. keep_posted_articles_file
       BUG. several _()/N_() macros missing
       FIX. extern.h, tinrc.h, config.c, feed.c, filter.c, group.c, help.c
@@ -3164,7 +3164,7 @@ U020) Jason Faultless <jason@altarstone.com>
       ADD. x-headers (via attributes) support to mails if not using
            use_mailreader_i
       ADD. minor code cleanup
-      ADD. extended DEFAULT_STRIP_RE_REGEX for danish prefixes, changed
+      ADD. extended DEFAULT_STRIP_RE_REGEX for Danish prefixes, changed
            quote_signatures default to false
       FIX. aclocal.m4, proto.h, tin.h, art.c, init.c, lang.c, misc.c, post.c
            save.c, screen.c, search.c
@@ -3261,7 +3261,7 @@ U014) Thomas E. Dickey <dickey@invisible-island.net>
 U013) Sven Hartge <hartge@ds9.argh.org>
       Kai Bojens <kbojens@on-luebeck.de>
       Urs Janssen <urs@tin.org>
-      ADD. (basic) german translation
+      ADD. (basic) German translation
       FIX. de.po
 
 U012) Jason Faultless <jason@altarstone.com>

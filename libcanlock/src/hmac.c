@@ -9,13 +9,17 @@
  *      This file implements the HMAC algorithm (Keyed-Hashing for
  *      Message Authentication, [RFC 2104]), expressed in terms of
  *      the various SHA algorithms.
+ *
+ *  Note:
+ *      Prefix for internal API changed from "hmac" to "RFC2104Hmac"
+ *      because of namespace clash with NetBSD libc.
  */
 
 #include "canlock-private.h"
 #include "sha.h"
 
 /*
- *  hmac
+ *  RFC2104Hmac
  *
  *  Description:
  *      This function will compute an HMAC message digest.
@@ -42,23 +46,23 @@
  *      sha Error Code.
  *
  */
-int hmac(SHAversion whichSha,
-    const unsigned char *message_array, int length,
-    const unsigned char *key, int key_len,
-    uint8_t digest[USHAMaxHashSize])
+int RFC2104Hmac(SHAversion whichSha,
+                const unsigned char *message_array, int length,
+                const unsigned char *key, int key_len,
+                uint8_t digest[USHAMaxHashSize])
 {
   int res;
   HMACContext context;  /* Security review: Location L1 */
 
-  res = hmacReset(&context, whichSha, key, key_len) ||
-        hmacInput(&context, message_array, length) ||
-        hmacResult(&context, digest);
+  res = RFC2104HmacReset(&context, whichSha, key, key_len) ||
+        RFC2104HmacInput(&context, message_array, length) ||
+        RFC2104HmacResult(&context, digest);
   cl_clear_secret((void *) &context, sizeof(HMACContext), sizeof(HMACContext));
   return res;
 }
 
 /*
- *  hmacReset
+ *  RFC2104HmacReset
  *
  *  Description:
  *      This function will initialize the hmacContext in preparation
@@ -78,8 +82,8 @@ int hmac(SHAversion whichSha,
  *      sha Error Code.
  *
  */
-int hmacReset(HMACContext *context, enum SHAversion whichSha,
-    const unsigned char *key, int key_len)
+int RFC2104HmacReset(HMACContext *context, enum SHAversion whichSha,
+                     const unsigned char *key, int key_len)
 {
   int i, blocksize, hashsize, ret;
 
@@ -148,7 +152,7 @@ int hmacReset(HMACContext *context, enum SHAversion whichSha,
 }
 
 /*
- *  hmacInput
+ *  RFC2104HmacInput
  *
  *  Description:
  *      This function accepts an array of octets as the next portion
@@ -167,8 +171,8 @@ int hmacReset(HMACContext *context, enum SHAversion whichSha,
  *      sha Error Code.
  *
  */
-int hmacInput(HMACContext *context, const unsigned char *text,
-    int text_len)
+int RFC2104HmacInput(HMACContext *context, const unsigned char *text,
+                     int text_len)
 {
   if (!context) return shaNull;
   if (context->Corrupted) return context->Corrupted;
@@ -179,7 +183,7 @@ int hmacInput(HMACContext *context, const unsigned char *text,
 }
 
 /*
- * hmacFinalBits
+ * RFC2104HmacFinalBits
  *
  * Description:
  *   This function will add in any final bits of the message.
@@ -197,8 +201,8 @@ int hmacInput(HMACContext *context, const unsigned char *text,
  * Returns:
  *   sha Error Code.
  */
-int hmacFinalBits(HMACContext *context,
-    uint8_t bits, unsigned int bit_count)
+int RFC2104HmacFinalBits(HMACContext *context,
+                         uint8_t bits, unsigned int bit_count)
 {
   if (!context) return shaNull;
   if (context->Corrupted) return context->Corrupted;
@@ -209,7 +213,7 @@ int hmacFinalBits(HMACContext *context,
 }
 
 /*
- * hmacResult
+ * RFC2104HmacResult
  *
  * Description:
  *   This function will return the N-byte message digest into the
@@ -227,7 +231,7 @@ int hmacFinalBits(HMACContext *context,
  *   sha Error Code.
  *
  */
-int hmacResult(HMACContext *context, uint8_t *digest)
+int RFC2104HmacResult(HMACContext *context, uint8_t *digest)
 {
   int ret;
   if (!context) return shaNull;

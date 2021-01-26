@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-04-23
+ *  Updated   : 2021-01-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -546,6 +546,9 @@ save_and_process_art(
 	else {
 		if (artinfo->hdr.from)
 			strip_name(artinfo->hdr.from, from);
+		else /* shouldn't show up */
+			snprintf(from, sizeof(from), "%s@%s", PATHMASTER, get_host_name());
+
 		(void) time(&epoch);
 		fprintf(fp, "From %s %s", from, ctime(&epoch));
 		/*
@@ -554,6 +557,12 @@ save_and_process_art(
 		 */
 	}
 
+	/*
+	 * TODO: currently does not quote From_ line in the !mmdf case
+	 *       like append_mail() (may it break postprocessing?) but
+	 *       then at least in the (is_mailbox && !post_process && !mmdf)
+	 *       case it should be done.
+	 */
 	if (copy_fp(artinfo->raw, fp)) /* Write tailing newline or MMDF-mailbox separator */
 		print_art_separator_line(fp, is_mailbox);
 	else {
@@ -1219,7 +1228,7 @@ print_art_separator_line(
 {
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		error_message(2, "Mailbox=[%d], mailbox_format=[%s]", is_mailbox, txt_mailbox_formats[tinrc.mailbox_format]);
+		error_message(2, "Mailbox=[%s], mailbox_format=[%s]", bool_unparse(is_mailbox), txt_mailbox_formats[tinrc.mailbox_format]);
 #endif /* DEBUG */
 
 	fprintf(fp, "%s", (is_mailbox && !strcasecmp(txt_mailbox_formats[tinrc.mailbox_format], "MMDF")) ? MMDFHDRTXT : "\n");

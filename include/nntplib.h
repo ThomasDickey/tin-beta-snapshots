@@ -139,7 +139,7 @@
 #define ERR_NOAUTH		480	/* authorization required for command */
 #define ERR_AUTHFAIL	481 /* Authentication failed/rejected */
 #define ERR_AUTHSEQ		482 /* Authentication commands issued out of sequence or SASL protocol error */
-#define ERR_ENCRYPT		483	/* encrpytion required */
+#define ERR_ENCRYPT		483	/* encryption required */
 
 #define ERR_COMMAND		500	/* Command not recognized */
 #define ERR_CMDSYN		501	/* Command syntax error */

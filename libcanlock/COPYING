@@ -14,17 +14,20 @@ Summary
 Note: The following list may not be up-to-date.
 Please use the license notes in the files as legal basis!
 
+Files: hp/*
+See hp/LICENSE.
+
 Files: configure.ac [*/]Makefile.am doc/*.in* src/secret.c util/canlock.c
-Copyright (c) 2018 Michael Baeuerle
+Copyright (c) 2018-2021 Michael Baeuerle
 License: MIT-like
 
-Files: src/canlock.c include/canlock.h
+Files: src/canlock.c include/canlock.h.in
 Copyright (c) 2017 Dennis Preiser
 Copyright (c) 2003 G. J. Andruk
 License: MIT-like
 
 Files: test/canlocktest.c
-Copyright (c) 2017 Michael Baeuerle
+Copyright (c) 2017-2018 Michael Baeuerle
 Copyright (c) 2003 G. J. Andruk
 License: MIT-like
 

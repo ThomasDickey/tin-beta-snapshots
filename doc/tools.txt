@@ -50,11 +50,6 @@ url_handler.pl
 	selected by the 'U' command to a related viewer/application. the
 	perl version has full $BROWSER support.
 
-expand_aliases.tgz
-	is a small c-source which reads you elm-aliasfile, translates the
-	alias into the real address and passes it to the MTA. see included
-	README-file/man-page for more details.
-
 expiretover
 	is a small shell script to expire old tin overview files. if you use
 	cache_overview_files=ON in your tinrc you might want to run this

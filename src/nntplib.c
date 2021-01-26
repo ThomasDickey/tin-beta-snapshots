@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2019-07-16
+ *  Updated   : 2021-01-24
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -1549,7 +1549,7 @@ nntp_open(
 			j = atoi(get_val("COLUMNS", "80"));
 			chr1 = my_strdup((sec ? bug_nntpserver2 : bug_nntpserver1));
 
-			if (((int) strlen(chr1)) >= j) {
+			if (j > MIN_COLUMNS_ON_TERMINAL && ((int) strlen(chr1)) >= j) {
 				chr2 = chr1 + strlen(chr1) - 1;
 				while (chr2 - chr1 >= j)
 					chr2--;

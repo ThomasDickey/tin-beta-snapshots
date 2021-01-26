@@ -636,7 +636,7 @@ rfc1522_do_encode(
 #endif /* 0 */
 					{
 						snprintf(buf2, sizeof(buf2), "=%2.2X", *EIGHT_BIT(what));
-						if ((size_t)(t - buffer + 3) >= bufferlen) {
+						if ((size_t) (t - buffer + 3) >= bufferlen) {
 							/* buffer too small, double its size */
 							offset = t - buffer;
 							bufferlen <<= 1;

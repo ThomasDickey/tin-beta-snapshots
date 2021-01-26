@@ -18,10 +18,19 @@ base64 algorithms (e.g. OpenSSL), it is recommended that you use them instead
 - C99 compiler with 'int' data type of at least 32 bit width
 
 Note:
-A POSIX style operating system is required only for the build system and the
-test-suite.
-The code of the library and CLI utility is intended to be portable C99 (with the
-exception that 16 bit platforms are not supported).
+A POSIX style operating system is required only for the build system, the test
+suite and the header parsers (see "canlock-hp" section below).
+The code of the library and canlock utility is intended to be portable C99 (with
+the exception that 16 bit platforms are not supported).
+
+For reliable overwriting of secret data in memory, libcanlock needs explicit
+memory access. The following functions are currently supported (automatically
+detected by configure script, if available):
+- memset_s() [available as option in C11 Annex K]
+- explicit_memset() [available e.g. since NetBSD 7]
+- explicit_bzero() [available e.g. since GNU libc 2.25]
+If none of them can be used, memset() is used as fallback. But a "too smart"
+compiler may optimize this call to NOP.
 
 
 3) API
@@ -35,13 +44,16 @@ notice.
 
 
 4) Backward compatibility
-The old API from version 2 is still emulated, but it is now deprecated and
-undocumented.
-
+The version 2 legacy API is still present by default, but it is now deprecated
+and undocumented.
 Including the header file from the new location, recompile and relink should
 be sufficient to port an existing application to version 3 of the library.
-It is also possible to install both version 2 and version 3 of the library
-in parallel.
+
+The version 2 legacy API can be removed from the library with the configure
+option "--disable-legacy-api".
+
+Note: It is possible to install both, version 2 and version 3 of the library in
+parallel.
 
 
 5) Versioning scheme
@@ -67,11 +79,30 @@ programs that use the library.
 Releases with different major numbers require changes in all programs that
 use the library.
 
+Note: Compatibility is not guaranteed if different configure options are used!
+
+
+6) pkg-config
+Since version 3.2.0 pkg-config is supported with the configure option
+"--enable-pc-files". With this option the data file "libcanlock-3.pc" is
+installed.
+
+The configure option "--with-pkgconfigdir" can be used to install this file
+into a nonstandard location.
+
 
 canlock
 =======
 Since version 3 the command line utility "canlock" is available as frontend.
 The utility and a man page for it are installed together with the library.
+
+
+canlock-hp
+==========
+The formerly separate package canlock-hp was merged into version 3.1.0 (see
+the README file in the "hp" subdirectory).
+
+canlock-hp can be disabled with the configure option "--disable-hp".
 
 
 EOF

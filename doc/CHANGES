@@ -1,3 +1,36 @@
+-- 2.4.6 release 2021026 "" --
+
+ 027) Dennis Preiser <dennis@d--p.de>
+      ADD. untaint variable used for connection info output
+      FIX. nntplib.c
+
+ 026) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      FIX. aclocal.m4, configure[.in]
+
+ 025) Urs Janssen <urs@tin.org>
+      REM. 3rd party tool expand_aliases
+      REM. redundant condition
+      BUG. after toggling through thread methods via 'u' go to parent in pager
+           could lead to crash if no more read article in thread were left
+      BUG. hypothetic use of uninitialized variable when saving article
+           without From-header in mbox format
+      BUG. hypothetic resource leak in lookup_msgid()
+      ADD. replace elm(1) with mutt(1) in examples
+      ADD. update included libcanlock
+      ADD. config.guess, config.sub update
+      FIX. charset.c, inews.c, lang.c, page.c, rfc2046.c, save.c, select.c
+           string.c, tin.h, tin.[15], libcanlock/*, expand_aliases.tgz
+           config.guess, config.sub
+
+ 024) Matt Anton <tin@lv223.org>
+      ADD. updated French translation
+      FIX. fr.po
+
+ 023) Toomas Soome <tsoome@me.com>
+      ADD. updated Estonian translation
+      FIX. et.po
+
 -- 2.4.5 release 20201224 "Glen Albyn" --
 
  022) Dennis Preiser <dennis@d--p.de>
@@ -59,11 +92,11 @@
            en_GB.po, keymap.sample
 
  019) Matt Anton <tin@lv223.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
  018) Toomas Soome <tsoome@me.com>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 -- 2.4.4 release 20191224 "Millburn" --
@@ -131,7 +164,7 @@
            config.guess, config.sub, configure[.in], autoconf.hin, tin.1, tin.5
 
  013) Toomas Soome <tsoome@me.com>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 -- 2.4.3 release 20181224 "Glen Mhor" --
@@ -143,11 +176,11 @@
            screen.c, string.c, tcurses.c
 
  011) Francisco Javier Serrador <fserrador@gmail.com>
-      ADD. spanish translation
+      ADD. Spanish translation
       FIX. es.po
 
  010) Matt Anton <tin@lv223.org>
-      ADD. updated french translation
+      ADD. updated French translation
       FIX. fr.po
 
  009) Dennis Preiser <dennis@d--p.de>
@@ -201,7 +234,7 @@
       FIX. aclocal.m4, configure[.in]
 
  006) Mesutcan Kurt <mesutcank@gmail.com>
-      ADD. updated turkish translation
+      ADD. updated Turkish translation
       FIX. tr.po
 
  005) Dennis Preiser <dennis@d--p.de>
@@ -224,7 +257,7 @@
            libcanlock/*, tin.1, tin.5
 
  004) Joe Hansen <joedalton2@yahoo.dk>
-      ADD. updated danish translation
+      ADD. updated Danish translation
       FIX. da.po
 
  003) Urs Janssen <urs@tin.org>

@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2020-11-10
+.\" Updated   : 2020-12-27
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "December 24th, 2020" 2.4.5 "Usenet newsreader"
+.TH tin 5 "December 24th, 2020" 2.4.6 "Usenet newsreader"
 
 .SH NOMBRE
 tin, rtin \- related files
@@ -1654,7 +1654,7 @@ details on MBOXO and MBOXRD and \fB\%mmdf\fP(5)  for more details about MMDF.
 .TP 
 \fBmaildir\fP
 The directory where articles/threads are to be saved in \fB\%mbox\fP(5)
-format. This feature is mainly for use with the \fB\%elm\fP(1)  mail
+format. This feature is mainly for use with the \fB\%mutt\fP(1)  mail
 program. It allows the user to save articles/threads/groups simply by giving
 \&'=' as the filename to save to.  Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fP.
 .TP 
@@ -1666,7 +1666,7 @@ mailers with different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-elm \-s "%S" "%T" < "%F"
+mutt \-s "%S" \-\- "%T" < "%F"
 claws\-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
 .in -.3i
@@ -2272,12 +2272,12 @@ If ON verbatim blocks will be detected. Default is ON.
 .TP 
 \fBwildcard\fP
 Allows you to select how \fB\%tin\fP(1)  matches strings. The default is 0 and
-uses the wildmat notation, which is how this has traditionally been
+uses the \fB\%wildmat\fP(3)  notation, which is how this has traditionally been
 handled.  Setting this to 1 allows you to use \fB\%perl\fP(1)  compatible
 regular expressions \fB\%pcre\fP(3).  (see also \fB\%perlre\fP(1)  and
 \fB\%pcrepattern\fP(3)).  You will probably want to update your filter file if
 you use this regularly.  NB: Newsgroup names will always be matched using
-the wildmat notation.
+the \fB\%wildmat\fP(3)  notation.
 .TP 
 \fBword_h_display_marks\fP
 Should the leading and ending stars, slashes, strokes and dashes also be
@@ -2382,34 +2382,34 @@ the same dir as \fIspooldir\fP), common values are \fI/var/spool/overview\fP,
 specified value.
 .TP 
 \fBoverviewfile\fP
-Name of a single overview file, common values are \fI.overview\fP,
+Name of a single overview file, common values are \fI.overview\fP or
 \fIover.view\fP. $\fBTIN_NOVFILENAME\fP overrides any specified value.
 .TP 
 \fBoverviewfmtfile\fP
-Full pathname of your newssystem's overview.fmt file; usually the
-overview.fmt file is in \fInewslibdir\fP, so you only have to change this
-setting if your configuration differs.
+Full pathname of your newssystem's overview.fmt file; usually the file
+residesin \fInewslibdir\fP and is named \fIoverview.fmt\fP, so you only have to
+change this setting if your configuration differs.
 .TP 
 \fBactivefile\fP
-Full pathname of your newssystem's active file; usually the active file
-resides in \fInewslibdir\fP and is named \fIactive\fP, so you only have to change
-this setting if your configuration differs. $\fBTIN_ACTIVEFILE\fP overrides any
+Full pathname of your newssystem's active file; usually the file resides in
+\fInewslibdir\fP and is named \fIactive\fP, so you only have to change this
+setting if your configuration differs. $\fBTIN_ACTIVEFILE\fP overrides any
 specified value.
 .TP 
 \fBactivetimesfile\fP
-Full pathname of your newssystem's active.times file; usually the
-active.times file is \fInewslibdir\fP, so you only have to change this setting
-if your configuration differs.
+Full pathname of your newssystem's active.times file; usually the file
+resides in \fInewslibdir\fP and is named \fIactive.times\fP, so you only have to
+change this setting if your configuration differs.
 .TP 
 \fBnewsgroupsfile\fP
-Full pathname of your newssystem's newsgroups file; usually the newsgroups
-file is in \fInewslibdir\fP, so you only have to change this setting if your
-configuration differs.
+Full pathname of your newssystem's newsgroups file; usually the file resides
+in \fInewslibdir\fP and is named \fInewsgroups\fP, so you only have to change this
+setting if your configuration differs.
 .TP 
 \fBsubscriptionsfile\fP
-Full pathname of your newssystem's subscriptions file; usually the
-subscriptions file is in \fInewslibdir\fP, so you only have to change this
-setting if your configuration differs.
+Full pathname of your newssystem's subscriptions file; usually the file
+resides in \fInewslibdir\fP and is named \fIsubscriptions\fP, so you only have to
+change this setting if your configuration differs.
 .RE
 .PP
 
@@ -2565,8 +2565,8 @@ command instead.
 .PP
 
 .SH "VEA ADEMÁS"
-\fB\%elm\fP(1), \fB\%inews\fP(1), \fB\%ispell\fP(1), \fB\%lp\fP(1), \fB\%lpr\fP(1),
-\fB\%metamail\fP(1), \fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1),
+\fB\%inews\fP(1), \fB\%ispell\fP(1), \fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1),
+\fB\%mutt\fP(1), \fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1),
 \fB\%shar\fP(1), \fB\%slrnface\fP(1), \fB\%tin\fP(1), \fB\%xterm\fP(1x),
 \fB\%heapsort\fP(3), \fB\%iconv\fP(3), \fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3),
 \fB\%pcre\fP(3), \fB\%pcrepattern\fP(3), \fB\%qsort\fP(3), \fB\%strftime\fP(3),
