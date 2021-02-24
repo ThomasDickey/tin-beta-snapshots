@@ -104,7 +104,7 @@
 
 #include <signal.h>
 
-enum context { cMain, cArt, cAttachment, cAttrib, cConfig, cFilter, cGroup, cHelp, cInfopager, cPage, cPost, cPostCancel, cPostFup, cReconnect, cScope, cSelect, cThread, cURL };
+enum context { cMain, cArt, cAttachment, cAttrib, cConfig, cFilter, cGroup, cHelp, cInfopager, cPage, cPOSTED, cPost, cPostCancel, cPostFup, cReconnect, cScope, cSelect, cThread, cURL };
 enum icontext { cNone, cGetline, cPromptCONT, cPromptSLK, cPromptYN };
 enum resizer { cNo, cYes, cRedraw };
 enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
@@ -1083,12 +1083,12 @@ enum {
 
 
 /*
- * used in curses.c and signal.c
- * it's useless trying to run tin below these sizes
+ * used in main.c, curses.c and signal.c
+ * it's useless trying to run tin interactively below these sizes
  * (values acquired by testing ;-) )
  */
 #define MIN_LINES_ON_TERMINAL		 8
-#define MIN_COLUMNS_ON_TERMINAL		50
+#define MIN_COLUMNS_ON_TERMINAL		40
 
 
 /*
@@ -1114,6 +1114,7 @@ enum {
 #define ATTRIB_LEVEL	8
 #define ATTACHMENT_LEVEL	9
 #define URL_LEVEL	10
+#define POSTED_LEVEL	11
 
 #define MINI_HELP_LINES		5
 
@@ -1253,6 +1254,19 @@ enum quote_enum {
 	sgl_quote
 };
 
+
+/*
+ * Values used in show_article_by_msid
+ */
+enum {
+	LOOKUP_OK           = 0,
+	LOOKUP_FAILED       = -1,
+	LOOKUP_QUIT         = -2,
+	LOOKUP_UNAVAIL      = -3,
+	LOOKUP_REPLY        = -4,
+	LOOKUP_ART_UNAVAIL  = -5,
+	LOOKUP_NO_LAST      = -6
+};
 
 /*
  * index_point variable values used throughout tin
@@ -1485,15 +1499,6 @@ struct t_cmdlineopts {
 };
 
 /*
- * Archive-Name: header
- */
-struct t_archive {
-	char *name;			/* name of archive */
-	char *partnum;			/* part/patch no. in archive */
-	t_bool ispart:1;		/* TRUE if part, FALSE if patch */
-};
-
-/*
  * struct t_msgid - message id
  */
 struct t_msgid {
@@ -1531,7 +1536,6 @@ struct t_article {
 	char *msgid;			/* Message-ID: unique message identifier */
 	char *refs;			/* References: article reference id's */
 	struct t_msgid *refptr;		/* Pointer to us in the reference tree */
-	struct t_archive *archive;	/* Archive-Name: header */
 	time_t date;			/* Date: line from header in seconds */
 	int line_count;			/* Lines: number of lines in article */
 	int gnksa_code;			/* From: line from mail header (GNKSA error code) */
@@ -1575,27 +1579,27 @@ struct t_newsheader {
 /*
  * Use these macros to quiet gcc warnings when assigning into a bitfield.
  */
-#define CAST_MASK(value,bits)	(((1U << (bits)) - 1) & (unsigned)(value))
-#define CAST_BOOL(value)	CAST_MASK(value,1)
-#define CAST_BITS(value,bits)	CAST_MASK(value,BITS_OF(bits))
+#define CAST_MASK(value,bits)	(((1U << (bits)) - 1) & (unsigned) (value))
+#define CAST_BOOL(value)	CAST_MASK(value, 1)
+#define CAST_BITS(value,bits)	CAST_MASK(value, BITS_OF(bits))
 #define BITS_OF(bits)		BITS_OF_ ## bits
 
 #define BoolField(value)	unsigned value:1
-#define IntField(value)		unsigned value:BITS_OF(value)
+#define IntField(value)	unsigned value:BITS_OF(value)
 
 #define BITS_OF_auto_cc_bcc		2
-#define	BITS_OF_mail_mime_encoding	2
-#define	BITS_OF_mm_network_charset	6
-#define	BITS_OF_post_mime_encoding	2
-#define	BITS_OF_post_process_type	2
-#define	BITS_OF_quick_kill_header	3
-#define	BITS_OF_quick_select_header	3
+#define BITS_OF_mail_mime_encoding	2
+#define BITS_OF_mm_network_charset	6
+#define BITS_OF_post_mime_encoding	2
+#define BITS_OF_post_process_type	2
+#define BITS_OF_quick_kill_header	3
+#define BITS_OF_quick_select_header	3
 #define BITS_OF_show_author		2
-#define	BITS_OF_sort_article_type	4
-#define	BITS_OF_sort_threads_type	3
-#define BITS_OF_thread_articles		3
-#define	BITS_OF_thread_perc		7
-#define	BITS_OF_trim_article_body	3
+#define BITS_OF_sort_article_type	4
+#define BITS_OF_sort_threads_type	3
+#define BITS_OF_thread_articles	3
+#define BITS_OF_thread_perc		7
+#define BITS_OF_trim_article_body	3
 
 /*
  * struct t_attribute - configurable attributes on a per group basis
@@ -1632,7 +1636,7 @@ struct t_attribute {
 #endif /* CHARSET_CONVERSION */
 	struct t_newsheader *headers_to_display;	/* array of which headers to display */
 	struct t_newsheader *headers_to_not_display;	/* array of which headers to not display */
-	BoolField(global);				/* global/group specific */
+	BoolField(global);			/* global/group specific */
 	IntField(quick_kill_header);	/* quick filter kill header */
 	BoolField(quick_kill_expire);	/* quick filter kill limited/unlimited time */
 	BoolField(quick_kill_case);		/* quick filter kill case sensitive? */
@@ -1646,7 +1650,6 @@ struct t_attribute {
 	IntField(auto_cc_bcc);			/* add your name to cc/bcc automatically */
 	BoolField(auto_list_thread);	/* list thread when entering it using right arrow */
 	BoolField(auto_select);			/* 0=show all unread, 1='X' just hot arts */
-	BoolField(auto_save);			/* 0=none, 1=save */
 	BoolField(batch_save);			/* 0=none, 1=save -S/mail -M */
 	BoolField(delete_tmp_files);	/* 0=leave, 1=delete */
 	BoolField(group_catchup_on_exit);	/* ask if read groups are to be marked read */
@@ -1667,12 +1670,12 @@ struct t_attribute {
 	BoolField(sigdashes);			/* set TRUE to prepend every signature with dashes */
 	BoolField(signature_repost);	/* set TRUE to add signature when reposting articles */
 	BoolField(start_editor_offset);	/* start editor with line offset */
-	IntField(thread_articles);		/* 0=unthread, 1=subject, 2=refs, 3=both, 4=multipart, 5=percentage */
+	IntField(thread_articles);			/* 0=unthread, 1=subject, 2=refs, 3=both, 4=multipart, 5=percentage */
 	BoolField(thread_catchup_on_exit);	/* catchup thread with left arrow key or not */
 	IntField(thread_perc);			/* percentage threading threshold */
 	IntField(show_author);			/* 0=none, 1=name, 2=addr, 3=both */
 	BoolField(show_signatures);		/* 0=none, 1=show signatures */
-	IntField(trim_article_body);		/* 0=Don't trim article body, 1=Skip leading blank lines,
+	IntField(trim_article_body);	/* 0=Don't trim article body, 1=Skip leading blank lines,
 						2=Skip trailing blank lines, 3=Skip leading and trailing blank lines,
 						4=Compact multiple blank lines between textblocks,
 						5=Compact multiple blank lines between textblocks and skip leading blank lines,
@@ -1684,7 +1687,7 @@ struct t_attribute {
 	BoolField(extquote_handling);		/* 0=none, 1=detect quoted text from external sources */
 #endif /* HAVE_COLOR */
 	BoolField(wrap_on_next_unread);	/* Wrap around threads when searching next unread article */
-	IntField(sort_article_type);	/* 0=none, 1=subj descend, 2=subj ascend,
+	IntField(sort_article_type);		/* 0=none, 1=subj descend, 2=subj ascend,
 						   3=from descend, 4=from ascend,
 						   5=date descend, 6=date ascend,
 						   7=score descend, 8=score ascend */
@@ -1707,7 +1710,6 @@ struct t_attribute_state {
 	BoolField(ask_for_metamail);
 	BoolField(auto_cc_bcc);
 	BoolField(auto_list_thread);
-	BoolField(auto_save);
 	BoolField(auto_select);
 	BoolField(batch_save);
 	BoolField(date_format);
@@ -1914,15 +1916,15 @@ struct t_filter {
 	char *subj;			/* Subject: line */
 	char *from;			/* From: line */
 	char *msgid;			/* Message-ID: line */
-	char lines_cmp;			/* Lines compare <> */
-	int lines_num;			/* Lines: line */
-	char gnksa_cmp;			/* GNKSA compare <> */
-	int gnksa_num;			/* GNKSA code */
-	int score;			/* score to give if rule matches */
 	char *xref;			/* groups in xref line */
 	char *path;			/* server in path line */
-	time_t time;			/* expire time in seconds */
 	struct t_filter *next;		/* next rule valid in group */
+	time_t time;			/* expire time in seconds */
+	int lines_num;			/* Lines: line */
+	int gnksa_num;			/* GNKSA code */
+	int score;			/* score to give if rule matches */
+	char lines_cmp;			/* Lines compare <> */
+	char gnksa_cmp;			/* GNKSA compare <> */
 	unsigned int inscope:4;		/* if group matches scope e.g. 'comp.os.*' */
 	unsigned int icase:2;		/* Case sensitive filtering */
 	unsigned int fullref:4;		/* use full references or last entry only */
@@ -1970,12 +1972,14 @@ struct t_screen {
 };
 #endif /* !USE_CURSES */
 
-struct t_posted {
+typedef struct posted {
 	char date[10];
 	char group[80];
 	char action;
 	char subj[120];
-};
+	char mid[256];
+	struct posted *next;
+} t_posted;
 
 struct t_art_stat {
 	char art_mark;		/* mark to use for this thread - not used for groups */
@@ -2228,13 +2232,13 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 
 /* Various function redefinitions */
 #if defined(USE_DBMALLOC) || defined(USE_DMALLOC)
-#	define my_malloc(size)	malloc((size_t)(size))
-#	define my_calloc(nmemb, size)	calloc((nmemb), (size_t)(size))
-#	define my_realloc(ptr, size)	realloc((ptr), (size_t)(size))
+#	define my_malloc(size)	malloc((size_t) (size))
+#	define my_calloc(nmemb, size)	calloc((nmemb), (size_t) (size))
+#	define my_realloc(ptr, size)	realloc((ptr), (size_t) (size))
 #else
-#	define my_malloc(size)	my_malloc1(__FILE__, __LINE__, (size_t)(size))
-#	define my_calloc(nmemb, size)	my_calloc1(__FILE__, __LINE__, (nmemb), (size_t)(size))
-#	define my_realloc(ptr, size)	my_realloc1(__FILE__, __LINE__, (ptr), (size_t)(size))
+#	define my_malloc(size)	my_malloc1(__FILE__, __LINE__, (size_t) (size))
+#	define my_calloc(nmemb, size)	my_calloc1(__FILE__, __LINE__, (nmemb), (size_t) (size))
+#	define my_realloc(ptr, size)	my_realloc1(__FILE__, __LINE__, (ptr), (size_t) (size))
 #endif /* USE_DBMALLOC || USE_DMALLOC */
 
 #define ARRAY_SIZE(array)	((int) (sizeof(array) / sizeof(array[0])))
@@ -2410,8 +2414,8 @@ extern struct tm *localtime(time_t *);
 #	undef my_realloc
 #	undef my_calloc
 #	define my_malloc(size)	malloc((size_t)(size))
-#	define my_realloc(ptr, size)	realloc((ptr), (size_t)(size))
-#	define my_calloc(nmemb, size) calloc((nmemb), (size_t)(size))
+#	define my_realloc(ptr, size)	realloc((ptr), (size_t) (size))
+#	define my_calloc(nmemb, size) calloc((nmemb), (size_t) (size))
 #endif /* MSS */
 
 /* libcanlock */

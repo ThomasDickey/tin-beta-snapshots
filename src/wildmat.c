@@ -184,7 +184,7 @@ wildmatpos(
 	if (p[0] == '*' && p[1] == '\0') {
 		if (srch_offsets_size >= 2) {
 			srch_offsets[0] = 0;
-			srch_offsets[1] = (int)strlen(text);
+			srch_offsets[1] = (int) strlen(text);
 		}
 		return TRUE;
 	}
@@ -203,11 +203,11 @@ wildmatpos(
 		if ((ret = (DoMatch(t, px))) == 1) {
 			/* remove the trailing '*' */
 			px[strlen(px) - 1] = '\0';
-			for (i = (int)strlen(t); i > 0; i--) {
+			for (i = (int) strlen(t); i > 0; i--) {
 				t[i] = '\0';
 				if ((ret = (DoMatch(t, px))) == 1) {
 					if (srch_offsets_size >= 2) {
-						srch_offsets[0] = (int)(t - txt);
+						srch_offsets[0] = (int) (t - txt);
 						srch_offsets[1] = srch_offsets[0] + i;
 					}
 					break;

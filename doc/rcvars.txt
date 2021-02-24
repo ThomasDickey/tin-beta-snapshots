@@ -54,6 +54,7 @@ Adding a new attribute:
 . In write_attributes_file(), add a minimal entry in the header to
   describe the usage of the attribute and add code to write out the
   attribute
+. In skip_scope() add code to check if the attribute is set
 . Add code to write out the attribute in dump_attributes() and dump_scopes()
 . In options_menu.c:config_page() add UPDATE_(INT_|STRING_)ATTRIBUTES
   under the appropriate case OPT_* section; add entries in option_is_visible(),

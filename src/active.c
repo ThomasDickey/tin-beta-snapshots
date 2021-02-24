@@ -244,7 +244,7 @@ parse_active_line(
 	if (!p || !q || !r || !lineok) {
 #ifdef DEBUG
 		/* TODO: This also logs broken non NNTP active lines (i.e. mail.active) to NNTP */
-		if (debug & DEBUG_NNTP && verbose > 1)
+		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "Active file corrupt - %s", line);
 #endif /* DEBUG */
 		return FALSE;
@@ -290,7 +290,7 @@ parse_count_line(
 
 	if (!p || !q || !r || !s || !lineok) {
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP && verbose > 1)
+		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "unparsable \"LIST COUNTS\" line: \"%s\"", line);
 #	endif /* DEBUG */
 		return FALSE;
@@ -415,13 +415,13 @@ do_read_newsrc_active_file(
 							snprintf(fmt, sizeof(fmt), "%%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%%ds", NNTP_GRPLEN);
 							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4) {
 #	ifdef DEBUG
-								if (debug & DEBUG_NNTP && verbose > 1)
+								if ((debug & DEBUG_NNTP) && verbose > 1)
 									debug_print_file("NNTP", "Invalid response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
 #	endif /* DEBUG */
 							}
 							if (strcmp(ngname, ngnames[index_o]) != 0) {
 #	ifdef DEBUG
-								if (debug & DEBUG_NNTP && verbose > 1)
+								if ((debug & DEBUG_NNTP) && verbose > 1)
 									debug_print_file("NNTP", "Groupname mismatch in response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
 #	endif /* DEBUG */
 							}
@@ -542,9 +542,8 @@ read_newsrc_active_file(
 
 #ifdef NNTP_ABLE
 	if (need_auth) { /* delayed auth */
-		if (!authenticate(nntp_server, userid, FALSE) || do_read_newsrc_active_file(fp)) {
+		if (!authenticate(nntp_server, userid, FALSE) || do_read_newsrc_active_file(fp))
 			tin_done(EXIT_FAILURE, _(txt_auth_failed), ERR_ACCESS);
-		}
 	}
 #endif /* NNTP_ABLE */
 
@@ -839,10 +838,10 @@ read_news_active_file(
 						put_server(buff);
 						r++;
 					}
-				} else {
+				} else
 					do_group_cmds = TRUE;
-				}
-				fclose(fp);
+
+ 				fclose(fp);
 
 				if (j < PIPELINE_LIMIT) {
 					for (i = 0; i < r && !did_reconnect; i++) {

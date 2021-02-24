@@ -71,7 +71,6 @@ static void sync_active_file(void);
 static void yank_active_file(void);
 #ifdef NNTP_ABLE
 	static char *lookup_msgid(char *msgid);
-	static int show_article_by_msgid(void);
 	static struct t_group *get_group_from_list(char *newsgroups);
 #endif /* NNTP_ABLE */
 
@@ -302,12 +301,16 @@ selection_page(
 
 #ifdef NNTP_ABLE
 			case GLOBAL_LOOKUP_MESSAGEID:
-				switch (show_article_by_msgid()) {
-					case 0:
+				switch (show_article_by_msgid(NULL)) {
+					case LOOKUP_OK:
 						show_selection_page();
 						break;
 
-					case GRP_QUIT:
+					case LOOKUP_UNAVAIL:
+						info_message("%s %s", _(txt_lookup_func_not_available), _(txt_lookup_func_not_nntp));
+						break;
+
+					case LOOKUP_QUIT:
 						select_quit();
 						break;
 
@@ -535,7 +538,7 @@ selection_page(
 				break;
 
 			case GLOBAL_DISPLAY_POST_HISTORY:	/* display messages posted by user */
-				if (user_posted_messages())
+				if (post_hist_page())
 					show_selection_page();
 				break;
 
@@ -556,7 +559,7 @@ selection_page(
 				}
 				grp_mark_unread(&CURR_GROUP);
 				if (CURR_GROUP.newsrc.num_unread)
-					STRCPY(buf, tin_ltoa(CURR_GROUP.newsrc.num_unread, (int)sel_fmt.len_ucnt));
+					STRCPY(buf, tin_ltoa(CURR_GROUP.newsrc.num_unread, (int) sel_fmt.len_ucnt));
 				else {
 					size_t j = 0;
 
@@ -568,7 +571,7 @@ selection_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, select_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, select_keys)));
 		}
 	}
 }
@@ -610,12 +613,12 @@ show_selection_page(
 		 */
 		if (yanked_out) {
 			for (i = 0; i < selmenu.max; i++) {
-				if ((len = (size_t)strwidth(active[my_group[i]].name)) > sel_fmt.len_grpname)
+				if ((len = (size_t) strwidth(active[my_group[i]].name)) > sel_fmt.len_grpname)
 					sel_fmt.len_grpname = len;
 			}
 		} else {
 			for_each_group(i) {
-				if ((len = (size_t)strwidth(active[i].name)) > sel_fmt.len_grpname)
+				if ((len = (size_t) strwidth(active[i].name)) > sel_fmt.len_grpname)
 					sel_fmt.len_grpname = len;
 			}
 		}
@@ -624,19 +627,19 @@ show_selection_page(
 	groupname_len = (sel_fmt.show_grpdesc && show_description) ? (int) sel_fmt.len_grpname_dsc : (int) sel_fmt.len_grpname;
 
 	if (groupname_len > (int) sel_fmt.len_grpname_max)
-		groupname_len = (int)sel_fmt.len_grpname_max;
+		groupname_len = (int) sel_fmt.len_grpname_max;
 	if (groupname_len < 0)
 		groupname_len = 0;
 
 	if (!sel_fmt.len_grpdesc)
-		sel_fmt.len_grpdesc = (sel_fmt.len_grpname_max - (size_t)groupname_len);
+		sel_fmt.len_grpdesc = (sel_fmt.len_grpname_max - (size_t) groupname_len);
 	else {
-		if (sel_fmt.len_grpdesc > (sel_fmt.len_grpname_max - (size_t)groupname_len))
-			sel_fmt.len_grpdesc = (sel_fmt.len_grpname_max - (size_t)groupname_len);
+		if (sel_fmt.len_grpdesc > (sel_fmt.len_grpname_max - (size_t) groupname_len))
+			sel_fmt.len_grpdesc = (sel_fmt.len_grpname_max - (size_t) groupname_len);
 	}
 
-	flags_offset = (int)(sel_fmt.flags_offset + (size_t)(sel_fmt.g_before_f ? groupname_len : 0) + (sel_fmt.d_before_f ? sel_fmt.len_grpdesc : 0));
-	ucnt_offset = (int)(sel_fmt.ucnt_offset + (size_t)(sel_fmt.g_before_u ? groupname_len : 0) + (sel_fmt.d_before_u ? sel_fmt.len_grpdesc : 0));
+	flags_offset = (int) (sel_fmt.flags_offset + (size_t) (sel_fmt.g_before_f ? groupname_len : 0) + (sel_fmt.d_before_f ? sel_fmt.len_grpdesc : 0));
+	ucnt_offset = (int) (sel_fmt.ucnt_offset + (size_t) (sel_fmt.g_before_u ? groupname_len : 0) + (sel_fmt.d_before_u ? sel_fmt.len_grpdesc : 0));
 
 	for (i = selmenu.first; i < selmenu.first + NOTESLINES && i < selmenu.max; i++)
 		build_gline(i);
@@ -712,7 +715,7 @@ build_gline(
 				if (show_description && active[n].description) {
 					active_desc = char2wchar_t(active[n].description);
 					if (active_desc) {
-						if ((active_desc2 = wcspart(active_desc, (int)sel_fmt.len_grpdesc, TRUE)) != NULL) {
+						if ((active_desc2 = wcspart(active_desc, (int) sel_fmt.len_grpdesc, TRUE)) != NULL) {
 							desc_buf = wchar_t2char(active_desc2);
 							free(active_desc);
 							free(active_desc2);
@@ -799,7 +802,7 @@ build_gline(
 				break;
 
 			case 'n':
-				strcat(sptr, tin_ltoa(i + 1, (int)sel_fmt.len_linenumber));
+				strcat(sptr, tin_ltoa(i + 1, (int) sel_fmt.len_linenumber));
 				break;
 
 			case 'U':
@@ -817,7 +820,7 @@ build_gline(
 					num_unread = active[my_group[i]].newsrc.num_unread;
 					if (getart_limit > 0 && getart_limit < num_unread)
 						num_unread = getart_limit;
-					strcat(sptr, tin_ltoa(num_unread, (int)sel_fmt.len_ucnt));
+					strcat(sptr, tin_ltoa(num_unread, (int) sel_fmt.len_ucnt));
 				} else {
 					buf = sptr + strlen(sptr);
 					for (j = 0; j < sel_fmt.len_ucnt; ++j)
@@ -1440,7 +1443,7 @@ lookup_msgid(
 		}
 		if (msgid) {
 			char *ptr, *r = NULL;
-			static char *x = NULL;
+			static char *x;
 			char buf[NNTP_STRLEN];
 			int ret;
 
@@ -1451,6 +1454,7 @@ lookup_msgid(
 				switch (ret) {
 					case OK_HEAD:
 					case OK_HDR:
+						x = NULL;
 						while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #		ifdef DEBUG
 							if (debug & DEBUG_NNTP)
@@ -1475,7 +1479,7 @@ lookup_msgid(
 							}
 
 							if (r) {
-								FreeIfNeeded(x); /* only requird on bogus multi responses, just to be safe */
+								FreeIfNeeded(x);	/* only required on bogus multi responses, just to be safe */
 								x = my_strdup(r);
 							}
 						}
@@ -1511,7 +1515,7 @@ lookup_msgid(
 			if (nntp_caps.xpat) {
 				snprintf(buf, sizeof(buf), "XPAT Newsgroups %s *", msgid);
 				ret = new_nntp_command(buf, OK_HEAD, NULL, 0);
-				r = NULL;
+				x = NULL;
 				switch (ret) {
 					case OK_HEAD:
 						while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
@@ -1523,7 +1527,7 @@ lookup_msgid(
 								r = ptr + strlen(msgid) + 1;
 
 							if (r) {
-								FreeIfNeeded(x); /* only requird on bogus multi responses, just to be safe */
+								FreeIfNeeded(x); /* only required on bogus multi responses, just to be safe */
 								x = my_strdup(r);
 							}
 						}
@@ -1565,9 +1569,9 @@ lookup_msgid(
  * If no group from the Newsgroups:-header is available, display the
  * contents of the header.
  */
-static int
+int
 show_article_by_msgid(
-	void)
+	char *messageid)
 {
 	char id[NNTP_STRLEN];	/* still way too big; RFC 3977 3.6 & RFC 5536 3.1.3 limit Message-ID to max 250 octets */
 	char *idptr;
@@ -1575,34 +1579,41 @@ show_article_by_msgid(
 	int i, ret = 0;
 	struct t_article *art;
 	struct t_group *group = NULL;
+	struct t_group *tmp_group = NULL;
 	struct t_msgid *msgid = NULL;
 	t_bool tmp_cache_overview_files;
 	t_bool tmp_show_only_unread_arts;
 
 	if (!(read_news_via_nntp && !read_saved_news)) {
-		info_message("%s %s", _(txt_lookup_func_not_available), _(txt_lookup_func_not_nntp));
-		return -1;
+		return LOOKUP_UNAVAIL;
 	}
 
-	if (prompt_string(_(txt_enter_message_id), id + 1, HIST_MESSAGE_ID) && id[1]) {
-		idptr = str_trim(id + 1);
-		if (id[1] != '<') {
-			id[0] = '<';
-			strcat(id, ">");
-			idptr = id;
-		}
+	if (messageid) {
+		idptr = messageid;
 		newsgroups = lookup_msgid(idptr);
+	} else {
+		if (prompt_string(_(txt_enter_message_id), id + 1, HIST_MESSAGE_ID) && id[1]) {
+			idptr = str_trim(id + 1);
+			if (id[1] != '<') {
+				id[0] = '<';
+				strcat(id, ">");
+				idptr = id;
+			}
+			newsgroups = lookup_msgid(idptr);
+		}
 	}
 
 	if (!newsgroups)
-		return -1;
+		return LOOKUP_ART_UNAVAIL;
 
 	if ((group = get_group_from_list(newsgroups)) == NULL) {
 		info_message(strchr(newsgroups, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), newsgroups);
 		free(newsgroups);
-		return -1;
+		return LOOKUP_FAILED;
 	}
 
+	if (curr_group)
+		tmp_group = curr_group;
 	curr_group = group;
 	num_of_tagged_arts = 0;
 	range_active = FALSE;
@@ -1620,32 +1631,29 @@ show_article_by_msgid(
 			FreeAndNull(art->msgid);
 		}
 		tin_errno = 0;
-		ret = -1;
+		ret = LOOKUP_FAILED;
 	}
 
 	if (!ret) {
 		grpmenu.first = 0;
 
 		if ((msgid = find_msgid(idptr)) == NULL) {
-			info_message(_(txt_art_unavailable));
-			ret = -1;
+			ret = LOOKUP_ART_UNAVAIL;
 		}
 
 		if (!ret && msgid->article == ART_UNAVAILABLE) {
-			info_message(_(txt_art_unavailable));
-			ret = -1;
+			ret = LOOKUP_ART_UNAVAIL;
 		}
 
 		if (!ret && which_thread(msgid->article) == -1) {
-			info_message(_(txt_no_last_message));
-			ret = -1;
+			ret = LOOKUP_NO_LAST;
 		}
 	}
 
 	if (!ret) {
 		switch (show_page(group, msgid->article, NULL)) {
 			case GRP_QUIT:
-				ret = GRP_QUIT;
+				ret = LOOKUP_QUIT;
 				break;
 
 			default:
@@ -1657,7 +1665,22 @@ show_article_by_msgid(
 	art_close(&pgart);
 	tinrc.cache_overview_files = tmp_cache_overview_files;
 	curr_group->attribute->show_only_unread_arts = CAST_BOOL(tmp_show_only_unread_arts);
-	curr_group = NULL;
+	if (tmp_group) {
+		curr_group = tmp_group;
+		if (!index_group(curr_group)) {
+			for_each_art(i) {
+				art = &arts[i];
+				FreeAndNull(art->refs);
+				FreeAndNull(art->msgid);
+			}
+			curr_group = NULL;
+			tin_errno = 0;
+			ret = LOOKUP_FAILED;
+		}
+	} else
+		curr_group = NULL;
+
+	this_resp = last_resp = -1;
 
 	return ret;
 }

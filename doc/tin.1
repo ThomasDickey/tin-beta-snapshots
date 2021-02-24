@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2021-01-06
+.\" Updated   : 2021-02-21
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -533,9 +533,8 @@ posting etiquette after composing an article (\fBbeginner_level\fP).
 .TP
 .B DisplayPostHist 'W'
 List articles posted by user. The date posted, the newsgroup and the
-subject are listed. You can use \fBSearchSubjF\fP ('\fB/\fP'),
-\fBSearchSubjB\fP ('\fB?\fP') and \fBSearchRepeat\fP ('\fB\\\fP') to
-search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
+subject are listed. See the section "POSTING HISTORY LISTING" for more
+information.
 .TP
 .B Version 'v'
 Print \fBtin\fP version information.
@@ -1437,6 +1436,51 @@ Help screen of commands available.
 .B ToggleHelpDisplay 'H'
 Toggle the display of help mini menu at the bottom of the screen and
 posting etiquette after composing an article (\fBbeginner_level\fP).
+.\" -------------------------------------------------------------------
+.\"
+.SS "POSTING HISTORY LISTING"
+\fBDisplayPostHist\fP ('\fBW\fP') displays a list of all previous posted
+articles stored in \fI${TIN_HOMEDIR:-"$HOME"}/.tin/posted\fR. The following
+informatiosn are shown: a time stamp in "dd-mm-yy"-format, a single letter
+indicating the action which initiated the message, the group names (evetually
+shortened, see also \fBabbreviate_groupname\fR) or a mail address the message
+was sent to and the subject of the message. Besides the common moving keys,
+the following commands are available:
+.RS 4
+.TP 10
+.B PostedArticlesSelect '^J' '<CR>'
+The article with the current ''Message\-ID:'' will be opened if available.
+Note that this requires that the ''Message\-ID:'' of the article was recorded
+in \fI${TIN_HOMEDIR:-"$HOME"}/.tin/posted\fR which may not always be the case.
+If using NNTP and the internal inews (\fBinews_prog\fP set to "\-\-internal")
+and either the server proposes a ''Message\-ID:'' during the POST
+(\fBRFC\%3977\fP) command or
+.B tin
+is build to generate ''Message\-ID:'' this should be the case. With an
+external inews (and reading from local spool) it is not.
+.TP
+.B SearchSubjF '/'
+URL forward search.
+.TP
+.B SearchSubjB '?'
+URL backward search.
+.TP
+.B SearchRepeat '\\\\'
+Repeat the previous search.
+.TP
+.B ShellEscape '!'
+Shell escape.
+.TP
+.B ToggleInfoLastLine 'i'
+Toggle the display of the current 'Message\-ID:'' in the last line.
+.TP
+.B Help 'h'
+Help screen of commands available.
+.TP
+.B ToggleHelpDisplay 'H'
+Toggle the display of help mini menu at the bottom of the screen and
+posting etiquette after composing an article (\fBbeginner_level\fP).
+.RE
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1549,12 +1593,6 @@ If ON automatically list thread when entering it using right arrow key.
 Default is ON.
 .TP
 .B Reconnect to server automatically (auto_reconnect)
-Default is OFF.
-.TP
-.B Use Archive\-name: header for save (auto_save)
-If ON articles/threads with ''Archive\-name:'' in header will be
-automatically saved with the Archive\-name & part/patch no and post
-processed if \fBpost_process_type\fP is set to something other than 'No'.
 Default is OFF.
 .TP
 .B Save articles in batch mode (batch_save)
@@ -1999,8 +2037,8 @@ To use the built-in viewer, set to \-\-internal. This is the default
 value when
 .BR \%metamail (1)
 is not installed. Leave it blank if you don't want any automatic
-viewing of non-textual attachments. The 'V' command can always be
-used to manually view any attachments. See also
+viewing of non-textual attachments. The \fBPageViewAttach\fP ('\fBV\fP')
+command can always be used to manually view any attachments. See also
 \fBask_for_metamail\fP.
 .TP
 .B MM_CHARSET (mm_charset)
@@ -2741,7 +2779,7 @@ e)dit the article again or p)ost the article to the specified newsgroup(s).
 Use the \fBDisplayPostHist\fP ('\fBW\fP') command to display a history of
 the articles you have posted. The date the article was posted, which
 newsgroups the article was posted to and the articles subject line are
-displayed.
+displayed. See the section "POSTING HISTORY LISTING" for more information.
 .PP
 Use the \fBPageFollowupQuote\fP ('\fBf\fP'), \fBPageFollowup\fP ('\fBF\fP')
 or \fBPageFollowupQuoteHeaders\fP ('\fB^W\fP') command to post a follow-up
@@ -3571,7 +3609,7 @@ for more info.
 If $\fBVISUAL\fP is unset, then this variable is looked up for a default
 editor. If $\fBEDITOR\fP and $\fBVISUAL\fP are both unset, \fBtin\fP uses
 the systems default editor (i.e.
-.BR \%vi (1))
+.BR \%vi (1)
 on UNIX-systems). See
 .BR \%environ (5)
 for more info.

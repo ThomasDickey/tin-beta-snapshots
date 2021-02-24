@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-07-17
+ *  Updated   : 2021-02-13
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -294,6 +294,7 @@ handle_resize(
 
 		case cAttachment:
 		case cGroup:
+		case cPOSTED:
 		case cScope:
 		case cSelect:
 		case cThread:

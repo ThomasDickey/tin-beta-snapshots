@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2020-09-28
+ *  Updated   : 2021-02-01
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -344,7 +344,6 @@ struct t_config tinrc = {
 	0,			/* auto_cc_bcc */
 	TRUE,		/* auto_list_thread */
 	FALSE,		/* auto_reconnect */
-	FALSE,		/* auto_save */
 	TRUE,		/* batch_save */
 	TRUE,		/* beginner_level */
 	FALSE,		/* cache_overview_files */
@@ -477,7 +476,6 @@ struct t_config tinrc = {
 	TRUE,		/* attrib_alternative_handling */
 	TRUE,		/* attrib_auto_list_thread */
 	FALSE,		/* attrib_auto_select */
-	FALSE,		/* attrib_auto_save */
 	TRUE,		/* attrib_batch_save */
 	TRUE,		/* attrib_delete_tmp_files */
 	TRUE,		/* attrib_group_catchup_on_exit */

@@ -939,13 +939,7 @@ collate_subjects(
 			 * is that we have to add later threads onto the end of the
 			 * previous thread
 			 */
-#if 1
-			if (arts[i].subject == arts[j].subject)
-#else
-			/* see also art.c:thread_by_subject() */
-			if ((arts[i].subject == arts[j].subject) || (arts[i].archive && arts[j].archive && (arts[i].archive->name == arts[j].archive->name)))
-#endif /* 1 */
-			{
+			if (arts[i].subject == arts[j].subject) {
 				/* DEBUG_PRINT((dbgfd, "RES: %d is now previous, at end of %d\n", i, j)); */
 				for (art = j; arts[art].thread >= 0; art = arts[art].thread)
 					;

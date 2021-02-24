@@ -95,7 +95,7 @@ msg_write_signature(
 					++cnt;
 
 				/* sigattr - (cnt * '%G') + (cnt * '"groupname"') + '\0' */
-				sigcmd = my_malloc(strlen(sigattr) + (size_t)cnt * strlen(thisgroup->name) + 1);
+				sigcmd = my_malloc(strlen(sigattr) + (size_t) cnt * strlen(thisgroup->name) + 1);
 				to = sigcmd;
 
 				while (*sigattr) {

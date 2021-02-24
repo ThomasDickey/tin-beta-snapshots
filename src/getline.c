@@ -141,7 +141,7 @@ tin_getline(
 
 		if ((wbuf = char2wchar_t(str)) != NULL) {
 			for (i = 0; wbuf[i]; i++)
-				gl_addwchar((wint_t)wbuf[i]);
+				gl_addwchar((wint_t) wbuf[i]);
 			free(wbuf);
 		}
 	}
@@ -283,7 +283,7 @@ tin_getline(
 				case TAB:
 					if (gl_tab_hook) {
 						tmp = gl_pos;
-						loc = gl_tab_hook(gl_buf, (int)strlen(gl_prompt), &tmp);
+						loc = gl_tab_hook(gl_buf, (int) strlen(gl_prompt), &tmp);
 						if (loc >= 0 || tmp != gl_pos)
 							gl_fixup(loc, tmp);
 					}
@@ -396,9 +396,9 @@ gl_newline(
 	if (gl_out_hook) {
 		change = gl_out_hook(gl_buf);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		len = (int)wcslen(gl_buf);
+		len = (int) wcslen(gl_buf);
 #else
-		len = (int)strlen(gl_buf);
+		len = (int) strlen(gl_buf);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	}
 	if (loc > len)
@@ -554,9 +554,9 @@ gl_fixup(
 	backup = gl_pos - gl_shift;
 	if (change >= 0) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		gl_cnt = (int)wcslen(gl_buf);
+		gl_cnt = (int) wcslen(gl_buf);
 #else
-		gl_cnt = (int)strlen(gl_buf);
+		gl_cnt = (int) strlen(gl_buf);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		if (change > gl_cnt)
 			change = gl_cnt;
@@ -657,14 +657,14 @@ gl_tab(
 	int i, count, len;
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	len = (int)wcslen(wbuf);
+	len = (int) wcslen(wbuf);
 	count = TAB_SIZE - (offset + *loc) % TAB_SIZE;
 	for (i = len; i >= *loc; i--)
 		wbuf[i + count] = wbuf[i];
 	for (i = 0; i < count; i++)
 		wbuf[*loc + i] = (wchar_t) ' ';
 #else
-	len = (int)strlen(buf);
+	len = (int) strlen(buf);
 	count = TAB_SIZE - (offset + *loc) % TAB_SIZE;
 	for (i = len; i >= *loc; i--)
 		buf[i + count] = buf[i];

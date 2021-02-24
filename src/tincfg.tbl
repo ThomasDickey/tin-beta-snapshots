@@ -243,7 +243,6 @@
 	mailbox_format			txt_mailbox_formats
 	batch_save			OPT_ON_OFF
 	savedir				OPT_STRING
-	auto_save			OPT_ON_OFF
 	mark_saved_read			OPT_ON_OFF
 	post_process_type		txt_post_process_types
 	post_process_view		OPT_ON_OFF
@@ -252,7 +251,6 @@
 	attrib_batch_save		OPT_ON_OFF
 	attrib_savedir			OPT_STRING
 	attrib_savefile			OPT_STRING
-	attrib_auto_save		OPT_ON_OFF
 	attrib_delete_tmp_files		OPT_ON_OFF
 	attrib_mark_saved_read		OPT_ON_OFF
 	attrib_post_process_type	txt_post_process_types

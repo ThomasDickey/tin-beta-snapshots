@@ -196,7 +196,7 @@ convert_iso2asc(
 			while (*p) {
 				*(asc++) = *(p++);
 				if ((asc - *asc_buffer) >= (int) *max_line_len) {
-					int offset = (int)(asc - *asc_buffer);
+					int offset = (int) (asc - *asc_buffer);
 					*max_line_len += 64;
 					*asc_buffer = my_realloc(*asc_buffer, *max_line_len);
 					asc = *asc_buffer + offset;
@@ -256,7 +256,7 @@ convert_iso2asc(
 			}
 		}
 		if ((asc - *asc_buffer) >= (int) *max_line_len) {
-			int offset = (int)(asc - *asc_buffer);
+			int offset = (int) (asc - *asc_buffer);
 			*max_line_len += 64;
 			*asc_buffer = my_realloc(*asc_buffer, *max_line_len);
 			asc = *asc_buffer + offset;
@@ -374,7 +374,7 @@ is_art_tex_encoded(
 		if (!isalnum((unsigned char) line[i]) && line[i] != '\"')
 			continue;	/* quoting char */
 
-		len = (int)strlen(line) - 1;
+		len = (int) strlen(line) - 1;
 		for (i = 1; i < len; i++) {
 			if (((line[i] == '\\') || (line[i] == '\"')) &&
 							(isalnum((unsigned char) line[i - 1])) &&

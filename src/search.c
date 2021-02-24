@@ -160,7 +160,7 @@ search_config(
 			if (n == last && forward)
 				n = 0;
 			else
-				n = (n + (enum option_enum)(forward ? 1 : -1));
+				n = (n + (enum option_enum) (forward ? 1 : -1));
 		}
 		/* search only visible options */
 		if (option_is_visible(n)) {
@@ -208,6 +208,7 @@ generic_search(
 	t_bool found = FALSE;
 	t_part *part;
 	t_url *urlptr;
+	t_posted *phptr;
 
 	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
 		return result;
@@ -233,6 +234,11 @@ generic_search(
 				}
 				charset = get_param(part->params, "charset");
 				snprintf(buf, sizeof(buf), "%s %s/%s %s, %s", name, content_types[part->type], part->subtype, content_encodings[part->encoding], charset ? charset : "");
+				break;
+
+			case POSTED_LEVEL:
+				phptr = find_post_hist(n);
+				snprintf(buf, sizeof(buf), "%s %s %s", phptr->date, phptr->group, phptr->subj);
 				break;
 
 			case URL_LEVEL:
@@ -378,7 +384,7 @@ body_search(
 			line = my_strdup(tmp);
 
 		if (tinrc.wildcard) {
-			if (pcre_exec(search_regex.re, search_regex.extra, line, (int)strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+			if (pcre_exec(search_regex.re, search_regex.extra, line, (int) strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
 				srch_lineno = i;
 				art_close(&pgart);		/* Switch the pager over to matched art */
 				pgart = artinfo;
@@ -509,7 +515,7 @@ search_group(
 	do {
 		if (forward) {
 			if ((i = next_response(i)) < 0)
-				i = (int)base[0];
+				i = (int) base[0];
 		} else {
 			if ((i = prev_response(i)) < 0)
 				i = find_response(grpmenu.max - 1, num_of_responses(grpmenu.max - 1));
@@ -560,7 +566,7 @@ search(
 	int current_art,
 	t_bool repeat)
 {
-	char *buf = NULL;
+	char *buf;
 	int (*search_func) (int i, char *searchbuff) = author_search;
 	t_bool forward;
 
@@ -648,7 +654,7 @@ search_article(
 			ptr = my_strdup(tmp);
 
 		if (tinrc.wildcard) {
-			while (pcre_exec(search_regex.re, search_regex.extra, ptr, (int)strlen(ptr), srch_offsets[1], 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+			while (pcre_exec(search_regex.re, search_regex.extra, ptr, (int) strlen(ptr), srch_offsets[1], 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
 				match = TRUE;
 				if (forward)
 					break;

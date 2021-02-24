@@ -323,7 +323,7 @@ draw_pager_line(
 			wchar_t wc;
 
 			num_bytes = mbtowc(&wc, c, MB_CUR_MAX);
-			if (num_bytes != -1 && iswprint((wint_t)wc)) {
+			if (num_bytes != -1 && iswprint((wint_t) wc)) {
 				my_fputwc((wint_t) wc, stdout);
 				c += num_bytes;
 			}

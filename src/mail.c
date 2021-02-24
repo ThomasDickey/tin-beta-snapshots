@@ -342,7 +342,7 @@ open_newsgroups_fp(
 							}
 							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #			ifdef DEBUG
-								if (debug & DEBUG_NNTP && verbose)
+								if ((debug & DEBUG_NNTP) && verbose)
 									debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #			endif /* DEBUG */
 								fprintf(result, "%s\n", str_trim(ptr));
@@ -368,7 +368,7 @@ open_newsgroups_fp(
 					}
 					while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #			ifdef DEBUG
-						if (debug & DEBUG_NNTP && verbose)
+						if ((debug & DEBUG_NNTP) && verbose)
 							debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #			endif /* DEBUG */
 						fprintf(result, "%s\n", str_trim(ptr));
@@ -474,11 +474,11 @@ read_groups_descriptions(
 			continue;
 
 		/*
-		 * This was moved from below and simplified. I can't test here for the
-		 * type of group being read, because that requires having found the
-		 * group in the active file, and that truncates the local copy of the
-		 * newsgroups file to only subscribed-to groups when tin is called
-		 * with the "-q" option.
+		 * This was moved from below and simplified. We can't test here for
+		 * the type of group being read, because that requires having found
+		 * the group in the active file, and that truncates the local copy
+		 * of the newsgroups file to only subscribed-to groups when tin is
+		 * called with the "-q" option.
 		 */
 		if ((fp_save != NULL) && read_news_via_nntp)
 			fprintf(fp_save, "%s\n", str_trim(ptr));

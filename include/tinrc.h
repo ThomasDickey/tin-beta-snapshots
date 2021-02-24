@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2017-08-13
+ *  Updated   : 2021-02-01
  *  Notes     :
  *
  * Copyright (c) 1999-2021 Jason Faultless <jason@altarstone.com>
@@ -203,7 +203,6 @@ struct t_config {
 	int auto_cc_bcc;					/* add your name to cc/bcc automatically */
 	t_bool auto_list_thread;			/* list thread when entering it using right arrow */
 	t_bool auto_reconnect;				/* automatically reconnect to news server */
-	t_bool auto_save;					/* save thread with name from Archive-name: field */
 	t_bool batch_save;					/* save arts if -M/-S command line switch specified */
 	t_bool beginner_level;				/* beginner level (shows mini help a la elm) */
 	t_bool cache_overview_files;		/* create local index files for NNTP overview files */
@@ -225,7 +224,7 @@ struct t_config {
 #	ifndef DISABLE_PRINTING
 		t_bool print_header;				/* print all of mail header or just Subject: & From lines */
 #	endif /* !DISABLE_PRINTING */
-	t_bool process_only_unread;			/* save/print//mail/pipe unread/all articles */
+	t_bool process_only_unread;			/* save/print/mail/pipe unread/all articles */
 	t_bool prompt_followupto;			/* display empty Followup-To header in editor */
 	int quote_style;					/* quoting behaviour */
 	t_bool show_description;
@@ -332,7 +331,6 @@ struct t_config {
 	t_bool attrib_alternative_handling;
 	t_bool attrib_auto_list_thread;
 	t_bool attrib_auto_select;
-	t_bool attrib_auto_save;
 	t_bool attrib_batch_save;
 	t_bool attrib_delete_tmp_files;
 	t_bool attrib_group_catchup_on_exit;

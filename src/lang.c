@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-01-22
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -167,6 +167,7 @@ constext txt_end_of_arts[] = N_("*** End of articles ***");
 constext txt_end_of_attachments[] = N_("*** End of attachments ***");
 constext txt_end_of_groups[] = N_("*** End of groups ***");
 constext txt_end_of_page[] = N_("*** End of page ***");
+constext txt_end_of_posted[] = N_("*** End of posted articles ***");
 constext txt_end_of_scopes[] = N_("*** End of scopes ***");
 constext txt_end_of_thread[] = N_("*** End of thread ***");
 constext txt_end_of_urls[] = N_("*** End of URLs ***");
@@ -462,7 +463,6 @@ constext txt_help_group_select_all[] = N_("select group (make \"hot\")");
 constext txt_help_group_select_thread[] = N_("select thread");
 constext txt_help_group_select_thread_if_unread_selected[] = N_("select threads if at least one unread article is selected");
 constext txt_help_group_select_thread_pattern[] = N_("select threads that match user specified pattern");
-constext txt_help_group_tag_parts[] = N_("tag/untag all parts of current multipart-message in order");
 constext txt_help_group_thread_by_num[] = N_("0 - 9\t  choose thread by number");
 constext txt_help_group_toggle_getart_limit[] = N_("toggle limit number of articles to get, and reload");
 constext txt_help_group_toggle_read_articles[] = N_("toggle display of all/unread articles");
@@ -470,6 +470,10 @@ constext txt_help_group_toggle_thread_selection[] = N_("toggle selection of thre
 constext txt_help_group_toggle_threading[] = N_("cycle through threading options available");
 constext txt_help_group_undo_thread_selection[] = N_("undo all selections (all articles)");
 constext txt_help_group_untag_thread[] = N_("untag all tagged threads");
+constext txt_help_post_hist_search_forwards[] = N_("search for articles forwards");
+constext txt_help_post_hist_search_backwards[] = N_("search for articles backwards");
+constext txt_help_post_hist_toggle_info_line[] = N_("toggle info message in last line (Message-ID)");
+constext txt_help_post_hist_select[] = N_("Open article by Message-ID");
 constext txt_help_scope_add[] = N_("add new scope");
 constext txt_help_scope_del[] = N_("delete scope");
 constext txt_help_scope_edit_attrib_file[] = N_("edit attributes file");
@@ -509,6 +513,7 @@ constext txt_help_select_unsubscribe[] = N_("unsubscribe from chosen group");
 constext txt_help_select_unsubscribe_pattern[] = N_("unsubscribe from groups that match pattern");
 constext txt_help_select_sort_active[] = N_("sort the list of groups");
 constext txt_help_select_yank_active[] = N_("toggle display to show all/subscribed groups");
+constext txt_help_tag_parts[] = N_("tag/untag all parts of current multipart-message in order");
 constext txt_help_thread_article_by_num[] = N_("0 - 9\t  choose article by number");
 constext txt_help_thread_catchup[] = N_("mark thread as read and return to group index page");
 constext txt_help_thread_catchup_next_unread[] = N_("mark thread as read and enter next unread thread or group");
@@ -518,7 +523,6 @@ constext txt_help_thread_mark_article_read[] = N_("mark art, range or tagged art
 constext txt_help_thread_mark_article_unread[] = N_("mark article, range or tagged articles as unread");
 constext txt_help_thread_mark_thread_unread[] = N_("mark current thread as unread");
 constext txt_help_thread_read_article[] = N_("read chosen article");
-constext txt_help_thread_tag_parts[] = N_("tag/untag all parts of current multipart-message in order");
 constext txt_help_title_disp[] = N_("Display properties\n------------------");
 constext txt_help_title_misc[] = N_("Miscellaneous\n-------------");
 constext txt_help_title_navi[] = N_("Moving around\n-------------");
@@ -526,6 +530,7 @@ constext txt_help_title_ops[] = N_("Group/thread/article operations\n-----------
 constext txt_help_title_attachment_ops[] = N_("Attachment operations\n---------------------");
 constext txt_help_title_attrib_ops[] = N_("Attribute operations\n--------------------");
 constext txt_help_title_config_ops[] = N_("Option operations\n-----------------");
+constext txt_help_title_post_hist_ops[] = N_("Posted article operations\n-------------------------");
 constext txt_help_title_scope_ops[] = N_("Scope operations\n----------------");
 constext txt_help_title_url_ops[] = N_("URL operations\n--------------");
 constext txt_help_url_first_url[] = N_("choose first URL in list");
@@ -600,9 +605,9 @@ constext txt_last[] = N_("Last");
 constext txt_last_resp[] = N_("-- Last response --");
 constext txt_lines[] = N_("Lines %s  ");
 
+constext txt_lookup_func_not_available[] = N_("Function not available.");
+constext txt_lookup_func_not_nntp[] = N_("Not reading via NNTP.");
 #ifdef NNTP_ABLE
-	constext txt_lookup_func_not_available[] = N_("Function not available.");
-	constext txt_lookup_func_not_nntp[] = N_("Not reading via NNTP.");
 	constext txt_lookup_show_group[] = N_("Group: %s");
 	constext txt_lookup_show_groups[] = N_("Groups: %s");
 #endif /* NNTP_ABLE */
@@ -641,6 +646,8 @@ constext txt_mini_info_1[] = N_("%s=line up; %s=line down; %s=page up; %s=page d
 constext txt_mini_info_2[] = N_("%s=search forwards; %s=search backwards; %s=quit");
 constext txt_mini_page_1[] = N_("<n>=set current to n; %s=next unread; %s=search pattern; %s=kill/select");
 constext txt_mini_page_2[] = N_("%s=author search; %s=body search; %s=catchup; %s=followup; %s=mark read");
+constext txt_mini_post_hist_1[] = N_("<n>=set current to n; %s=line down; %s=line up; %s=help; %s=quit");
+constext txt_mini_post_hist_2[] = N_("%s=search forwards; %s=search backwards; %s=repeat search");
 constext txt_mini_scope_1[] = N_("%s=add; %s=move; %s=rename; %s=delete");
 constext txt_mini_scope_2[] = N_("<n>=set current to n; %s=line down; %s=line up; %s=help; %s=quit");
 constext txt_mini_select_1[] = N_("<n>=set current to n; %s=next unread; %s,%s=search pattern; %s=catchup");
@@ -723,6 +730,9 @@ constext txt_post_error_ask_postpone[] = N_("An error has occurred while posting
 error is temporary or otherwise correctable, you can postpone the article\n\
 and pick it up again with ^O later.\n");
 constext txt_post_history_menu[] = N_("Posted articles history");
+constext txt_post_history_menu_com[] = N_("Posted Articles Menu Commands");
+constext txt_post_history_lookup_failed[] = N_("Lookup failed\n");
+constext txt_post_history_op_unavail_for_reply[] = N_("Operation not available for replies by mail\n");
 constext txt_post_newsgroups[] = N_("Post to newsgroup(s) [%s]> ");
 constext txt_post_processing[] = N_("-- post processing started --");
 constext txt_post_processing_finished[] = N_("-- post processing completed --");
@@ -2659,13 +2669,6 @@ struct opttxt txt_savedir = {
 	N_("The directory where you want articles/threads saved."),
 	N_("Directory to save arts/threads in"),
 	N_("# Directory where articles/threads are saved\n")
-};
-
-struct opttxt txt_auto_save = {
-	N_("Auto save article/thread by Archive-name: header. <SPACE> toggles & <CR> sets."),
-	N_("Use Archive-name: header for save"),
-	N_("# If ON articles/threads with Archive-name: in mail header will\n\
-# be automatically saved with the Archive-name & part/patch no.\n")
 };
 
 struct opttxt txt_mark_saved_read = {

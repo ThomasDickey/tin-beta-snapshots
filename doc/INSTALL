@@ -70,7 +70,8 @@ TIN related:
 
   DEBUG                                   FILE_MODE_BROKEN
   DEBUG_ART                               NO_LOCKING
-  BACKUP_FILE_EXT
+  BACKUP_FILE_EXT                         MIN_LINES_ON_TERMINAL
+  MIN_COLUMNS_ON_TERMINAL
 
 System related:
   --datadir                               --localstatedir

@@ -19,10 +19,6 @@ o  col_response is a misnomer as the counter doesn't count responses
    anymore (except on the very first article). The man-page is outdated too.
    [20080826 Urs Janssen <urs@tin.org>]
 
-o  cLINES < MIN_LINES_ON_TERMINAL || cCOLS < MIN_COLUMNS_ON_TERMINAL
-   isn't checked on startup
-   [20071210 Urs Janssen <urs@tin.org>]
-
 o  unexpected multiline responses confuse tin, e.g.:
    | 240 Article posted =?ISO-8859-1?Q?=3C=3D=3Fiso=2D8859=2D1=3Fq=3F=3F=3D87r7k8na?=
    |   =?ISO-8859-1?Q?vt=2Efsf=40urs=2Did=2Etest=2Eka=2Enu=3E?=
@@ -66,8 +62,8 @@ o  comments in attributes get lost (we need to do something like we do for
    the filter file)
    [20080425 Urs Janssen <urs@tin.org>]
 
-o  if tin is falling back to HEAD/NEXT ([X]OVER not working) it doesn't honor
-   tinrc.getart_limit
+o  if falling back to HEAD/NEXT ([X]OVER not working) tinrc.getart_limit
+   isn't honored
    [20090112 Urs Janssen <urs@tin.org>]
 
 o  the keys GroupToggleSubjDisplay / GROUP_TOGGLE_SUBJECT_DISPLAY and
@@ -93,11 +89,6 @@ o  8bit chars in some headers are RFC-2047-encoded where this is not allowed
    simply encodes all headers no matter if any of them must not be encoded
    (see parse_rfc822_headers()).
    [20090112 Urs Janssen <urs@tin.org>]
-
-o  the mime encoder may create two adjacent encoded words in the same line
-   e.g.       Subject: =?UTF-8?B?4oKs4oKs4oKs?= =?UTF-8?B?IOKCrOKCrOKCrA==?=
-   instead of Subject: =?UTF-8?B?4oKs4oKs4oKsIOKCrOKCrOKCrA==?=
-   [20140513 Urs Janssen <urs@tin.org>]
 
 o  remove Message-IDs with 8bit chars in them when they occur in
    Message-ID or References header
@@ -190,9 +181,9 @@ o  add user defined screen layout at different levels (e.g. posting
    (done for selection, group and thread level)
    [20041025 Urs Janssen <urs@tin.org>]
 
-o  add jump to article (if still available and Message-ID is known) to
-   posting history screen
-   [20170331 Urs Janssen <urs@tin.org>]
+o  add jump to article in posting history screen from group, thread and
+   page level as it's done in selection level
+   [20210214 Urs Janssen <urs@tin.org>]
 
 o  allow a Message-ID on the cmd. line to jump to the given article
    [20170718 Urs Janssen <urs@tin.org>]
@@ -445,6 +436,12 @@ o  Add to the attachment menu ('V'):
      '%'  (toggle rot13 encoding of screen content)
      '&'  (GLOBAL_TOGGLE_COLOR)
 
+o  Add to the posting history screen (W'):
+     'M'  OptionMenu
+
+o  Add to the URL Menu ('U'):
+     'M'  OptionMenu
+
 o  integrate multi-part tagging with regular tagging, eg.
    "This article appears to have multi-parts, try and find them (y/n)?"
 
@@ -674,7 +671,8 @@ o  clean up $AUTOSUBSCRIBE code (the NNTP code path is a mess)
 o  make configure look for strrstr() in libpub & publib.h
    [Urs Janssen <urs@tin.org>]
 
-o  reorder several structs to avoid padding (see gcc -Wpadded)
+o  reorder several structs to avoid padding e.g. t_capabilities (but that's
+   just used once, no big win here). (see gcc -Wpadded and/or pahole(1))
    [Urs Janssen <urs@tin.org>]
 
 o  what type is base[]? (long, see memory.c:init_alloc()~102)
@@ -743,6 +741,9 @@ o  mask inline PGP SIGNATURE/KEY BLOCK like we do for uu-sections
 o  some non fixed width strings could be formatted nicer (warp on last space
    before cCOLS), e.g. txt_warn_downgrade
    [20110325 Urs Janssen <urs@tin.org>]
+
+o  too much code is compiled when configured NO_POSTING
+   [20210206 Urs Janssen <urs@tin.org>]
 
 Unicode
 -------
@@ -849,7 +850,8 @@ o  allow per group cache_overview_files setting via attributes?
    [20180215 Urs Janssen <urs@tin.org>]
 
 o  DIRSEP (set in tin.h (to '/')) is used in places in the code
-   and hardcoded '/' elsewere (i.e. joinpath(), ...)
+   and hardcoded '/' elsewhere (i.e. joinpath(), ...); the DIRSEP
+   looks like a leftover from when removing the non UNIX code
    [20210112 Urs Janssen <urs@tin.org>]
 
 o  abort HEAD/NEXT loop on 5xx responses to HEAD? (see
@@ -1090,9 +1092,6 @@ o  add check for liblockfile and/or liblock and use if found?
 
 o  add check for heapsort(3) in libbsd? <http://libbsd.freedesktop.org/wiki/>
    [20130305 Urs Janssen <urs@tin.org>]
-
-o  add jump to selected article from DisplayPostHist ('W')
-   [20120220 Urs Janssen <urs@tin.org>]
 
 o  add check for libtre and offer TRE as matching method for "wildcard"?
    <http://laurikari.net/tre/about/>, <https://github.com/laurikari/tre/>

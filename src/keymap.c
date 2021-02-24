@@ -79,6 +79,7 @@ struct keylist post_edit_keys = { NULL, 0, 0 };
 struct keylist post_edit_ext_keys = { NULL, 0, 0 };
 struct keylist post_ignore_fupto_keys = { NULL, 0, 0 };
 struct keylist post_mail_fup_keys = { NULL, 0, 0 };
+struct keylist post_hist_keys = { NULL, 0, 0 };
 struct keylist post_post_keys = { NULL, 0, 0 };
 struct keylist post_postpone_keys = { NULL, 0, 0 };
 struct keylist post_send_keys = { NULL, 0, 0 };
@@ -237,6 +238,7 @@ free_keymaps(
 	free_keylist(&option_menu_keys);
 	free_keylist(&page_keys);
 	free_keylist(&info_keys);
+	free_keylist(&post_hist_keys);
 	free_keylist(&post_send_keys);
 	free_keylist(&post_edit_keys);
 	free_keylist(&post_edit_ext_keys);
@@ -280,7 +282,7 @@ printascii(
 		snprintf(buf, MAXKEYLEN, "%s", _("NULL"));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	else if (iswgraph(ch)) {	/* Regular printables */
-		int i = wctomb(buf, (wchar_t)ch);
+		int i = wctomb(buf, (wchar_t) ch);
 
 		if (i > 0)
 			buf[i] = '\0';
@@ -305,7 +307,7 @@ printascii(
 	} else if (iscntrl(ch)) {	/* Control keys */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		buf[0] = '^';
-		buf[1] = (char)(((int) ch & 0xFF) + '@');
+		buf[1] = (char) (((int) ch & 0xFF) + '@');
 		buf[2] = '\0';
 	} else if (ch == ' ')		/* SPACE */
 		snprintf(buf, MAXKEYLEN, "%s", _(txt_space));
@@ -520,7 +522,7 @@ process_keys(
 			}
 		} else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			if (iswdigit((wint_t)(key = wkeydef[0])))
+			if (iswdigit((wint_t) (key = wkeydef[0])))
 #else
 			if (isdigit(key = keydef[0]))
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -674,6 +676,7 @@ process_mapping(
 				process_keys(GLOBAL_LINE_DOWN, keys, &info_keys);
 				process_keys(GLOBAL_LINE_DOWN, keys, &option_menu_keys);
 				process_keys(GLOBAL_LINE_DOWN, keys, &page_keys);
+				process_keys(GLOBAL_LINE_DOWN, keys, &post_hist_keys);
 				process_keys(GLOBAL_LINE_DOWN, keys, &scope_keys);
 				process_keys(GLOBAL_LINE_DOWN, keys, &select_keys);
 				process_keys(GLOBAL_LINE_DOWN, keys, &thread_keys);
@@ -751,6 +754,7 @@ process_mapping(
 				process_keys(GLOBAL_FIRST_PAGE, keys, &info_keys);
 				process_keys(GLOBAL_FIRST_PAGE, keys, &option_menu_keys);
 				process_keys(GLOBAL_FIRST_PAGE, keys, &page_keys);
+				process_keys(GLOBAL_FIRST_PAGE, keys, &post_hist_keys);
 				process_keys(GLOBAL_FIRST_PAGE, keys, &scope_keys);
 				process_keys(GLOBAL_FIRST_PAGE, keys, &select_keys);
 				process_keys(GLOBAL_FIRST_PAGE, keys, &thread_keys);
@@ -914,6 +918,7 @@ process_mapping(
 				process_keys(GLOBAL_HELP, keys, &group_keys);
 				process_keys(GLOBAL_HELP, keys, &option_menu_keys);
 				process_keys(GLOBAL_HELP, keys, &page_keys);
+				process_keys(GLOBAL_HELP, keys, &post_hist_keys);
 				process_keys(GLOBAL_HELP, keys, &scope_keys);
 				process_keys(GLOBAL_HELP, keys, &select_keys);
 				process_keys(GLOBAL_HELP, keys, &thread_keys);
@@ -940,6 +945,7 @@ process_mapping(
 				process_keys(GLOBAL_LAST_PAGE, keys, &info_keys);
 				process_keys(GLOBAL_LAST_PAGE, keys, &option_menu_keys);
 				process_keys(GLOBAL_LAST_PAGE, keys, &page_keys);
+				process_keys(GLOBAL_LAST_PAGE, keys, &post_hist_keys);
 				process_keys(GLOBAL_LAST_PAGE, keys, &scope_keys);
 				process_keys(GLOBAL_LAST_PAGE, keys, &select_keys);
 				process_keys(GLOBAL_LAST_PAGE, keys, &thread_keys);
@@ -1044,6 +1050,7 @@ process_mapping(
 				process_keys(GLOBAL_PAGE_DOWN, keys, &info_keys);
 				process_keys(GLOBAL_PAGE_DOWN, keys, &option_menu_keys);
 				process_keys(GLOBAL_PAGE_DOWN, keys, &page_keys);
+				process_keys(GLOBAL_PAGE_DOWN, keys, &post_hist_keys);
 				process_keys(GLOBAL_PAGE_DOWN, keys, &scope_keys);
 				process_keys(GLOBAL_PAGE_DOWN, keys, &select_keys);
 				process_keys(GLOBAL_PAGE_DOWN, keys, &thread_keys);
@@ -1229,6 +1236,7 @@ process_mapping(
 				process_keys(GLOBAL_PAGE_UP, keys, &info_keys);
 				process_keys(GLOBAL_PAGE_UP, keys, &option_menu_keys);
 				process_keys(GLOBAL_PAGE_UP, keys, &page_keys);
+				process_keys(GLOBAL_PAGE_UP, keys, &post_hist_keys);
 				process_keys(GLOBAL_PAGE_UP, keys, &scope_keys);
 				process_keys(GLOBAL_PAGE_UP, keys, &select_keys);
 				process_keys(GLOBAL_PAGE_UP, keys, &thread_keys);
@@ -1345,6 +1353,11 @@ process_mapping(
 
 				return TRUE;
 			}
+			if (strcmp(keyname, "PostedArticlesSelect") == 0) {
+				process_keys(POSTED_SELECT, keys, &post_hist_keys);
+
+				return TRUE;
+			}
 			if (strcmp(keyname, "PostponeAll") == 0) {
 				process_keys(POSTPONE_ALL, keys, &post_postpone_keys);
 
@@ -1447,6 +1460,7 @@ process_mapping(
 				process_keys(GLOBAL_QUIT, keys, &info_keys);
 				process_keys(GLOBAL_QUIT, keys, &option_menu_keys);
 				process_keys(GLOBAL_QUIT, keys, &page_keys);
+				process_keys(GLOBAL_QUIT, keys, &post_hist_keys);
 #ifdef HAVE_PGP_GPG
 				process_keys(GLOBAL_QUIT, keys, &pgp_mail_keys);
 				process_keys(GLOBAL_QUIT, keys, &pgp_news_keys);
@@ -1539,6 +1553,7 @@ process_mapping(
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &attachment_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &group_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &option_menu_keys);
+				process_keys(GLOBAL_SCROLL_DOWN, keys, &post_hist_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &scope_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &select_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &thread_keys);
@@ -1550,6 +1565,7 @@ process_mapping(
 				process_keys(GLOBAL_SCROLL_UP, keys, &attachment_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &group_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &option_menu_keys);
+				process_keys(GLOBAL_SCROLL_UP, keys, &post_hist_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &scope_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &select_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &thread_keys);
@@ -1584,6 +1600,7 @@ process_mapping(
 				process_keys(GLOBAL_SEARCH_REPEAT, keys, &info_keys);
 				process_keys(GLOBAL_SEARCH_REPEAT, keys, &option_menu_keys);
 				process_keys(GLOBAL_SEARCH_REPEAT, keys, &page_keys);
+				process_keys(GLOBAL_SEARCH_REPEAT, keys, &post_hist_keys);
 				process_keys(GLOBAL_SEARCH_REPEAT, keys, &select_keys);
 				process_keys(GLOBAL_SEARCH_REPEAT, keys, &thread_keys);
 				process_keys(GLOBAL_SEARCH_REPEAT, keys, &url_keys);
@@ -1596,6 +1613,7 @@ process_mapping(
 				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &info_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &option_menu_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &page_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &post_hist_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &select_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &thread_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &url_keys);
@@ -1608,6 +1626,7 @@ process_mapping(
 				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &info_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &option_menu_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &page_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &post_hist_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &select_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &thread_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &url_keys);
@@ -1712,6 +1731,7 @@ process_mapping(
 				process_keys(GLOBAL_SHELL_ESCAPE, keys, &group_keys);
 				process_keys(GLOBAL_SHELL_ESCAPE, keys, &option_menu_keys);
 				process_keys(GLOBAL_SHELL_ESCAPE, keys, &page_keys);
+				process_keys(GLOBAL_SHELL_ESCAPE, keys, &post_hist_keys);
 				process_keys(GLOBAL_SHELL_ESCAPE, keys, &scope_keys);
 				process_keys(GLOBAL_SHELL_ESCAPE, keys, &select_keys);
 				process_keys(GLOBAL_SHELL_ESCAPE, keys, &thread_keys);
@@ -1845,6 +1865,7 @@ process_mapping(
 				process_keys(GLOBAL_LINE_UP, keys, &info_keys);
 				process_keys(GLOBAL_LINE_UP, keys, &option_menu_keys);
 				process_keys(GLOBAL_LINE_UP, keys, &page_keys);
+				process_keys(GLOBAL_LINE_UP, keys, &post_hist_keys);
 				process_keys(GLOBAL_LINE_UP, keys, &scope_keys);
 				process_keys(GLOBAL_LINE_UP, keys, &select_keys);
 				process_keys(GLOBAL_LINE_UP, keys, &thread_keys);
@@ -2801,6 +2822,38 @@ setup_default_keys(
 	add_default_key(&option_menu_keys, "\\", GLOBAL_SEARCH_REPEAT);
 #ifndef NO_SHELL_ESCAPE
 	add_default_key(&option_menu_keys, "!", GLOBAL_SHELL_ESCAPE);
+#endif /* !NO_SHELL_ESCAPE */
+
+	/* posted articles level */
+	add_default_key(&post_hist_keys, "", GLOBAL_ABORT);
+	add_default_key(&post_hist_keys, "1", DIGIT_1);
+	add_default_key(&post_hist_keys, "2", DIGIT_2);
+	add_default_key(&post_hist_keys, "3", DIGIT_3);
+	add_default_key(&post_hist_keys, "4", DIGIT_4);
+	add_default_key(&post_hist_keys, "5", DIGIT_5);
+	add_default_key(&post_hist_keys, "6", DIGIT_6);
+	add_default_key(&post_hist_keys, "7", DIGIT_7);
+	add_default_key(&post_hist_keys, "8", DIGIT_8);
+	add_default_key(&post_hist_keys, "9", DIGIT_9);
+	add_default_key(&post_hist_keys, "b", GLOBAL_PAGE_UP);
+	add_default_key(&post_hist_keys, " ", GLOBAL_PAGE_DOWN);
+	add_default_key(&post_hist_keys, "h", GLOBAL_HELP);
+	add_default_key(&post_hist_keys, "\n\r", POSTED_SELECT);
+	add_default_key(&post_hist_keys, "H", GLOBAL_TOGGLE_HELP_DISPLAY);
+	add_default_key(&post_hist_keys, "", GLOBAL_REDRAW_SCREEN);
+	add_default_key(&post_hist_keys, "j", GLOBAL_LINE_DOWN);
+	add_default_key(&post_hist_keys, "k", GLOBAL_LINE_UP);
+	add_default_key(&post_hist_keys, "g^", GLOBAL_FIRST_PAGE);
+	add_default_key(&post_hist_keys, "G$", GLOBAL_LAST_PAGE);
+	add_default_key(&post_hist_keys, "i", GLOBAL_TOGGLE_INFO_LAST_LINE);
+	add_default_key(&post_hist_keys, "q", GLOBAL_QUIT);
+	add_default_key(&post_hist_keys, ">", GLOBAL_SCROLL_DOWN);
+	add_default_key(&post_hist_keys, "<", GLOBAL_SCROLL_UP);
+	add_default_key(&post_hist_keys, "/", GLOBAL_SEARCH_SUBJECT_FORWARD);
+	add_default_key(&post_hist_keys, "?", GLOBAL_SEARCH_SUBJECT_BACKWARD);
+	add_default_key(&post_hist_keys, "\\", GLOBAL_SEARCH_REPEAT);
+#ifndef NO_SHELL_ESCAPE
+	add_default_key(&post_hist_keys, "!", GLOBAL_SHELL_ESCAPE);
 #endif /* !NO_SHELL_ESCAPE */
 
 	/* prompt keys */

@@ -98,7 +98,6 @@ hashstr.c:
 	hash_str() Hashes text strings
 	In the article header, the following text is hashed:
 		From: (including full name if supplied)
-		Archive-name:
 		Subject:
 
 list.c:

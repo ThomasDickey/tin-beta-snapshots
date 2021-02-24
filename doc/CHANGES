@@ -1,27 +1,53 @@
--- 2.4.6 release 2021026 "" --
+-- 2.4.6 release 20210224 "" --
 
  027) Dennis Preiser <dennis@d--p.de>
+      ADD. jump to article in posting history screen
       ADD. untaint variable used for connection info output
-      FIX. nntplib.c
+      ADD. skip_scope() to check if the attribute is set
+      BUG. crash when trying to respond to an article with an empty Subject
+      BUG. unfinished rfc2047 encodings may lead to out of bound reads
+      BUG. hypothetic resource leak in lookup_msgid()
+      FIX. art.c, attrib.c, group.c, help.c, keymap.c, lang.c, nntplib.c
+           page.c, post.c, rfc2047.c, search.c, select.c, signal.c, thread.c
+           extern.h, keymap.h, proto.h, tin.h
 
  026) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. update configure macros
-      FIX. aclocal.m4, configure[.in]
+      ADD. lots of casts to silence compiler warnings
+      FIX. art.c, attrib.c, charset.c, color.c, config.c, cook.c, curses.c
+           envarg.c, feed.c, filter.c, getline.c, global.c, group.c, header.c
+           help.c, inews.c, keymap.c, memory.c, misc.c, nntplib.c
+           options_menu.c, page.c, pgp.c, post.c, prompt.c, read.c, refs.c
+           regex.c, rfc1524.c, rfc2045.c, rfc2046.c, rfc2047.c, save.c
+           screen.c, search.c, select.c, sigfile.c, string.c, thread.c, trace.c
+           wildmat.c, parsdate.y, tcurses.h, tin.h, aclocal.m4, configure[.in]
 
  025) Urs Janssen <urs@tin.org>
       REM. 3rd party tool expand_aliases
       REM. redundant condition
+      REM. auto_save tinrc and attributes option
       BUG. after toggling through thread methods via 'u' go to parent in pager
            could lead to crash if no more read article in thread were left
       BUG. hypothetic use of uninitialized variable when saving article
            without From-header in mbox format
-      BUG. hypothetic resource leak in lookup_msgid()
+      BUG. using right-mouse actions (use_mouse=ON) outside the active
+           screen-aerea (clicking below the last group/subject on screen)
+           could lead to a crash
+      BUG. get_initials() may leave initials uninitiaized
+      BUG. detection of idn_decodename() from libidnkit may fail
       ADD. replace elm(1) with mutt(1) in examples
       ADD. update included libcanlock
       ADD. config.guess, config.sub update
-      FIX. charset.c, inews.c, lang.c, page.c, rfc2046.c, save.c, select.c
-           string.c, tin.h, tin.[15], libcanlock/*, expand_aliases.tgz
-           config.guess, config.sub
+      ADD. reorder t_filter to reduce mem usage
+      ADD. quit early if screen is too small, reduce MIN_COLUMNS_ON_TERMINAL
+           from 50 to 40
+      REM. some unnecessary initializations
+      FIX. art.c, attrib.c, charset.c, config.c, debug.c, feed.c, global.c
+           group.c, help.c, inews.c, init.c, lang.c, main.c, memory.c, misc.c
+           options_menu.c, page.c, post.c, rfc2046.c, save.c, search.c
+           string.c, thread.c, extern.h, proto.h, tin.h, tinrc.h, trace.h
+           version.h, tincfg.tbl, tin.[15], libcanlock/*, expand_aliases.tgz
+           config.guess, config.sub, configure[.in]
 
  024) Matt Anton <tin@lv223.org>
       ADD. updated French translation

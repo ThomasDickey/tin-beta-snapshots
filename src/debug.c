@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2020-05-19
+ *  Updated   : 2021-02-01
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -157,13 +157,6 @@ debug_print_header(
 		if (s->killed)
 			fprintf(fp, "score=[%d] gnksa=[%d] lines=[%d]\n", s->score, s->gnksa_code, s->line_count);
 
-		if (s->archive) {
-			fprintf(fp, "archive.name=[%-38s]  ", s->archive->name);
-			if (s->archive->partnum)
-				fprintf(fp, "archive.partnum=[%s]  ", s->archive->partnum);
-			if (s->archive->ispart)
-				fprintf(fp, "archive.ispart=[%s]\n", bool_unparse(s->archive->ispart));
-		}
 		fprintf(fp, "thread=[%d]  prev=[%d]  status=[%u]\n\n", s->thread, s->prev, s->status);
 		fflush(fp);
 #ifdef HAVE_FCHMOD
@@ -230,14 +223,13 @@ debug_print_attributes(
 	if (attr == NULL)
 		return;
 
-	fprintf(fp, "global=[%u] show=[%u] thread=[%u] sort=[%u] author=[%u] auto_select=[%u] auto_save=[%u] batch_save=[%u] process=[%u]\n",
+	fprintf(fp, "global=[%u] show=[%u] thread=[%u] sort=[%u] author=[%u] auto_select=[%u] batch_save=[%u] process=[%u]\n",
 		attr->global,
 		attr->show_only_unread_arts,
 		attr->thread_articles,
 		attr->sort_article_type,
 		attr->show_author,
 		attr->auto_select,
-		attr->auto_save,
 		attr->batch_save,
 		attr->post_process_type);
 	fprintf(fp, "select_header=[%u] select_global=[%s] select_expire=[%s]\n",

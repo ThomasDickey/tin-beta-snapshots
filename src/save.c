@@ -148,7 +148,7 @@ check_start_save_any_news(
 	struct t_article *art;
 	struct t_group *group;
 	t_bool log_opened = TRUE;
-	t_bool print_first = (t_bool)verbose;
+	t_bool print_first = (t_bool) verbose;
 	t_bool unread_news = FALSE;
 	time_t epoch;
 
@@ -291,7 +291,7 @@ check_start_save_any_news(
 						/*
 						 * wrap article in appropriate MIME type
 						 */
-						fprintf(savefp, "MIME-Version: 1.0\n");
+						fprintf(savefp, "MIME-Version: %s\n", MIME_SUPPORTED_VERSION);
 						fprintf(savefp, "Content-Type: message/rfc822\n");
 						/*
 						 * CTE should be 7bit if the article is in pure
@@ -413,9 +413,9 @@ open_save_filename(
 		func = prompt_slk_response((tinrc.default_save_mode == 'a' ? SAVE_APPEND_FILE : SAVE_OVERWRITE_FILE),
 				save_append_overwrite_keys,
 				_(txt_append_overwrite_quit), path,
-				printascii(keyappend, (wint_t)func_to_key(SAVE_APPEND_FILE, save_append_overwrite_keys)),
-				printascii(keyoverwrite, (wint_t)func_to_key(SAVE_OVERWRITE_FILE, save_append_overwrite_keys)),
-				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, save_append_overwrite_keys)));
+				printascii(keyappend, (wint_t) func_to_key(SAVE_APPEND_FILE, save_append_overwrite_keys)),
+				printascii(keyoverwrite, (wint_t) func_to_key(SAVE_OVERWRITE_FILE, save_append_overwrite_keys)),
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, save_append_overwrite_keys)));
 
 		switch (func) {
 			case SAVE_OVERWRITE_FILE:
@@ -449,13 +449,12 @@ open_save_filename(
  * This is where an article is actually copied to disk and processed
  * We only need to copy the art to disk if we are doing post-processing
  * 'artinfo' is parsed/cooked article to be saved
- * 'artptr' points to the article in arts[]
  * 'mailbox' is set if we are saving to a =mailbox
  * 'inpath' is the template save path/file to save to
  * 'max' is the number of articles we are saving
  * 'post_process' is set if we want post-processing
  * Expand the path appropriately, taking account of multiple file
- * extensions and the auto-save with Archive-Name: headers
+ * extensions.
  *
  * Extract binary attachments if !LIBUU
  * Start viewer if requested
@@ -468,7 +467,6 @@ open_save_filename(
 t_bool
 save_and_process_art(
 	t_openartinfo *artinfo,
-	struct t_article *artptr,
 	t_bool is_mailbox,
 	const char *inpath,
 	int max,
@@ -490,50 +488,14 @@ save_and_process_art(
 /* fprintf(stderr, "save_and_process_art max=%d num_save=%d starting path=(%s) postproc=%s\n", max, num_save, path, bool_unparse(post_process)); */
 
 	/*
-	 * If using the auto-save feature on an article with Archive-Name,
-	 * the path will be: <original-path>/<archive-name>/<part|patch><part#>
+	 * Mailbox saves are by definition to a single file as are single file
+	 * saves. Multiple file saves append a .NNN sequence number to the path
+	 * This is backward-contemptibility with older versions of tin
 	 */
-	if (!is_mailbox && curr_group->attribute->auto_save && artptr->archive) {
-		const char *partprefix;
-		char *ptr;
-		char archpath[PATH_LEN];
-		char filename[NAME_LEN + 1];
+	if (!is_mailbox && max > 1) {
+		const char suffixsep = '.';
 
-		/*
-		 * We need either a part or a patch number, part takes precedence
-		 */
-		if (artptr->archive->ispart)
-			partprefix = PATH_PART;
-		else
-			partprefix = PATH_PATCH;
-
-		/*
-		 * Strip off any existing filename
-		 */
-		if ((ptr = strrchr(path, DIRSEP)) != NULL)
-			*(ptr + 1) = '\0';
-
-		/* Add on the archive name as a directory */
-		/* TODO: maybe a s!/!.! on archive-name would be better */
-		joinpath(archpath, sizeof(archpath), path, artptr->archive->name);
-
-		/* Generate the filename part and append it */
-		snprintf(filename, sizeof(filename), "%s%s", partprefix, artptr->archive->partnum);
-		joinpath(path, sizeof(path), archpath, filename);
-/*fprintf(stderr, "save_and_process_art archive-name mangled path=(%s)\n", path);*/
-		if (!create_path(path))
-			return FALSE;
-	} else {
-		/*
-		 * Mailbox saves are by definition to a single file as are single file
-		 * saves. Multiple file saves append a .NNN sequence number to the path
-		 * This is backward-contemptibility with older versions of tin
-		 */
-		if (!is_mailbox && max > 1) {
-			const char suffixsep = '.';
-
-			sprintf(&path[strlen(path)], "%c%03d", suffixsep, num_save + 1);
-		}
+		sprintf(&path[strlen(path)], "%c%03d", suffixsep, num_save + 1);
 	}
 
 /* fprintf(stderr, "save_and_process_art expanded path now=(%s)\n", path); */
@@ -658,7 +620,7 @@ generate_filename(
 {
 	static int seqno = 0;
 
-	snprintf(buf, (size_t)buflen, "%s-%03d.%s", SAVEFILE_PREFIX, seqno++, suffix);
+	snprintf(buf, (size_t) buflen, "%s-%03d.%s", SAVEFILE_PREFIX, seqno++, suffix);
 }
 
 
@@ -922,7 +884,7 @@ post_process_uud(
 	/*
 	 * Grab the dirname portion
 	 */
-	my_strncpy(file_out_dir, save[0].path, (size_t)(save[0].file - save[0].path));
+	my_strncpy(file_out_dir, save[0].path, (size_t) (save[0].file - save[0].path));
 
 	t[0] = '\0';
 	u[0] = '\0';
@@ -1143,19 +1105,19 @@ uudecode_line(
 
 	for (++p; n > 0; p += 4, n -= 3) {
 		if (n >= 3) {
-			ch = (char)((DEC(p[0]) << 2) | (DEC(p[1]) >> 4));
+			ch = (char) ((DEC(p[0]) << 2) | (DEC(p[1]) >> 4));
 			fputc(ch, fp);
-			ch = (char)((DEC(p[1]) << 4) | (DEC(p[2]) >> 2));
+			ch = (char) ((DEC(p[1]) << 4) | (DEC(p[2]) >> 2));
 			fputc(ch, fp);
-			ch = (char)((DEC(p[2]) << 6) | DEC(p[3]));
+			ch = (char) ((DEC(p[2]) << 6) | DEC(p[3]));
 			fputc(ch, fp);
 		} else {
 			if (n >= 1) {
-				ch = (char)((DEC(p[0]) << 2) | (DEC(p[1]) >> 4));
+				ch = (char) ((DEC(p[0]) << 2) | (DEC(p[1]) >> 4));
 				fputc(ch, fp);
 			}
 			if (n >= 2) {
-				ch = (char)((DEC(p[1]) << 4) | (DEC(p[2]) >> 2));
+				ch = (char) ((DEC(p[1]) << 4) | (DEC(p[2]) >> 2));
 				fputc(ch, fp);
 			}
 		}
@@ -1182,7 +1144,7 @@ post_process_sh(
 	/*
 	 * Grab the dirname portion
 	 */
-	my_strncpy(file_out_dir, save[0].path, (size_t)(save[0].file - save[0].path));
+	my_strncpy(file_out_dir, save[0].path, (size_t) (save[0].file - save[0].path));
 	snprintf(file_out, sizeof(file_out), "%ssh%ld", file_out_dir, (long) process_id);
 
 	for (i = 0; i < num_save; i++) {
@@ -1193,7 +1155,7 @@ post_process_sh(
 
 		while (fgets(buf, (int) sizeof(buf), fp_in) != NULL) {
 			/* find #!/bin/sh style patterns */
-			if ((fp_out == NULL) && pcre_exec(shar_regex.re, shar_regex.extra, buf, (int)strlen(buf), 0, 0, NULL, 0) >= 0)
+			if ((fp_out == NULL) && pcre_exec(shar_regex.re, shar_regex.extra, buf, (int) strlen(buf), 0, 0, NULL, 0) >= 0)
 				fp_out = fopen(file_out, "w");
 
 			/* write to temp file */
@@ -1333,7 +1295,7 @@ decode_save_one(
 			case ENCODING_QP:
 			case ENCODING_BASE64:
 				count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2);
-				fwrite(buf2, (size_t)count, 1, fp);
+				fwrite(buf2, (size_t) count, 1, fp);
 				break;
 
 			case ENCODING_UUE:
@@ -1785,7 +1747,7 @@ attachment_page(
 #endif /* !DONT_HAVE_PIPING */
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, attachment_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, attachment_keys)));
 				break;
 		}
 	}
@@ -1885,7 +1847,7 @@ build_attachment_line(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	tmpname = spart(name, namelen, TRUE);
 	tmpbuf = spart(buf, info_len, TRUE);
-	snprintf(sptr, (size_t)cCOLS * MB_CUR_MAX, "  %s %s%*s%*s%s", tin_ltoa(i + 1, 4), buf2, namelen, BlankIfNull(tmpname), info_len, BlankIfNull(tmpbuf), cCRLF);
+	snprintf(sptr, (size_t) cCOLS * MB_CUR_MAX, "  %s %s%*s%*s%s", tin_ltoa(i + 1, 4), buf2, namelen, BlankIfNull(tmpname), info_len, BlankIfNull(tmpbuf), cCRLF);
 	FreeIfNeeded(tmpname);
 	FreeIfNeeded(tmpbuf);
 #else
@@ -1936,7 +1898,7 @@ build_tree(
 		}
 	}
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	tree = my_malloc(sizeof(wchar_t) * (size_t)prefix_ptr + 3 * sizeof(wchar_t));
+	tree = my_malloc(sizeof(wchar_t) * (size_t) prefix_ptr + 3 * sizeof(wchar_t));
 	tree[prefix_ptr + 2] = (wchar_t) '\0';
 #else
 	tree = my_malloc(prefix_ptr + 3);
@@ -2060,9 +2022,9 @@ tag_pattern(
 
 		snprintf(buf, sizeof(buf), "%s %s/%s %s, %s", name, content_types[part->type], part->subtype, content_encodings[part->encoding], charset ? charset : "");
 
-		if (!match_regex(buf, pat, &cache, TRUE)) {
+		if (!match_regex(buf, pat, &cache, TRUE))
 			continue;
-		}
+
 		if (!lptr->tagged)
 			lptr->tagged = ++num_of_tagged_parts;
 	}
@@ -2131,9 +2093,9 @@ untag_all_parts(
 	t_partl *lptr = part_list;
 
 	while (lptr) {
-		if (lptr->tagged) {
+		if (lptr->tagged)
 			lptr->tagged = 0;
-		}
+
 		lptr = lptr->next;
 	}
 	num_of_tagged_parts = 0;
@@ -2336,16 +2298,16 @@ process_part(
 					if ((count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2)) > 0) {
 #ifdef CHARSET_CONVERSION
 						if (what != SAVE && what != SAVE_TAGGED && !strncmp(content_types[part->type], "text", 4)) {
-							line_len = (size_t)count;
+							line_len = (size_t) count;
 							conv_buf = my_strdup(buf2);
 							network_charset = get_param(part->params, "charset");
 							process_charsets(&conv_buf, &line_len, network_charset ? network_charset : "US-ASCII", tinrc.mm_local_charset, FALSE);
 							strncpy(buf2, conv_buf, sizeof(buf2) - 1);
-							count = (int)strlen(buf2);
+							count = (int) strlen(buf2);
 							free(conv_buf);
 						}
 #endif /* CHARSET_CONVERSION */
-						fwrite(buf2, (size_t)count, 1, outfile);
+						fwrite(buf2, (size_t) count, 1, outfile);
 					}
 					break;
 
@@ -2403,7 +2365,7 @@ pipe_part(
 	FILE *fp, *pipe_fp;
 	char *prompt;
 
-	prompt = fmt_string(_(txt_pipe_to_command), (size_t)cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
+	prompt = fmt_string(_(txt_pipe_to_command), (size_t) cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
 	if (!(prompt_string_default(prompt, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND))) {
 		free(prompt);
 		return;

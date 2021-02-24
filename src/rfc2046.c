@@ -160,7 +160,7 @@ boundary_cmp(
 
 	nl = l[len - 1] == '\n';
 
-	if (len != blen + 2 + (size_t)nl && len != blen + 4 + (size_t)nl) {
+	if (len != blen + 2 + (size_t) nl && len != blen + 4 + (size_t) nl) {
 		free(l);
 		return BOUND_NONE;
 	}
@@ -388,7 +388,7 @@ decode_value(
 
 	while (*rptr) {
 		if (*rptr == '%' && IS_XDIGIT(*(rptr + 1)) && IS_XDIGIT(*(rptr + 2))) {
-			*wptr++ = (char)(XVAL(*(rptr + 1)) << 4 | XVAL(*(rptr + 2)));
+			*wptr++ = (char) (XVAL(*(rptr + 1)) << 4 | XVAL(*(rptr + 2)));
 			rptr += 3;
 		} else
 			*wptr++ = *rptr++;
@@ -992,6 +992,11 @@ parse_rfc822_headers(
 		if (line[0] == '\0') {
 			if (to)
 				hdr->ext->offset = ftell(to);	/* Offset of main body */
+
+			/* avoid null subject */
+			if (!hdr->subj)
+				hdr->subj = my_strdup("");
+
 			return 0;
 		}
 
@@ -1178,7 +1183,7 @@ parse_multipart_article(
 {
 	char *line;
 	char *ptr;
-	const char *bd = NULL;
+	const char *bd;
 	int bnd;
 	int state = M_SEARCHING;
 	t_bool is_rfc822 = FALSE;
@@ -1549,7 +1554,7 @@ open_art_fp(
 /* ------------------------for accessing articles ------------------- */
 
 /*
- * Open's and postprocesses and article
+ * Opens and postprocesses an article
  * Populates the passed in artinfo structure if successful
  *
  * Returns:

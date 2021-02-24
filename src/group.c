@@ -92,7 +92,7 @@ show_tagged_lines(
 	int i, j;
 
 	for (i = grpmenu.first; i < grpmenu.first + NOTESLINES && i < grpmenu.max; ++i) {
-		if ((i != grpmenu.curr) && (j = line_is_tagged((int)base[i])))
+		if ((i != grpmenu.curr) && (j = line_is_tagged((int) base[i])))
 			mark_screen(i, mark_offset - 2, tin_ltoa(j, 3));
 	}
 }
@@ -145,7 +145,7 @@ group_page(
 	char key[MAXKEYLEN];
 	int i, n, ii;
 	int thread_depth;	/* Starting depth in threads we enter */
-	t_artnum old_artnum = T_ARTNUM_CONST(0);
+	t_artnum old_artnum;
 	struct t_art_stat sbuf;
 	struct t_article *art;
 	t_bool flag;
@@ -189,7 +189,7 @@ group_page(
 	clear_note_area();
 
 	if (group->attribute->auto_select) {
-		error_message(2, _(txt_autoselecting_articles), printascii(key, (wint_t)func_to_key(GROUP_MARK_UNSELECTED_ARTICLES_READ, group_keys)));
+		error_message(2, _(txt_autoselecting_articles), printascii(key, (wint_t) func_to_key(GROUP_MARK_UNSELECTED_ARTICLES_READ, group_keys)));
 		do_auto_select_arts();						/* 'X' command */
 		xflag = TRUE;
 	}
@@ -595,7 +595,7 @@ group_page(
 				if (0 <= grpmenu.curr) {
 					int old_num = num_of_tagged_arts;
 
-					if (tag_multipart((int)base[grpmenu.curr]) != 0) {
+					if (tag_multipart((int) base[grpmenu.curr]) != 0) {
 						/*
 						 * on success, move the pointer to the next
 						 * untagged article just for ease of use's sake
@@ -683,7 +683,7 @@ group_page(
 			case GROUP_TOGGLE_THREADING:		/* Cycle through the threading types */
 				group->attribute->thread_articles = CAST_BITS((group->attribute->thread_articles + 1) % (THREAD_MAX + 1), thread_articles);
 				if (grpmenu.curr >= 0) {
-					i = (int)base[grpmenu.curr];								/* Save a copy of current thread */
+					i = (int) base[grpmenu.curr];								/* Save a copy of current thread */
 					make_threads(group, TRUE);
 					find_base(group);
 					if ((grpmenu.curr = which_thread(i)) < 0)			/* Restore current position in group */
@@ -717,8 +717,11 @@ group_page(
 				break;
 
 			case GLOBAL_DISPLAY_POST_HISTORY:	/* display messages posted by user */
-				if (user_posted_messages())
+				if (post_hist_page()) {
+					if (grpmenu.curr == -1 && grpmenu.max > 0)
+						grpmenu.curr = 0;
 					show_group_page();
+				}
 				break;
 
 			case MARK_ARTICLE_UNREAD:		/* mark base article of thread unread */
@@ -898,7 +901,7 @@ group_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, group_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, group_keys)));
 				break;
 		} /* switch(ch) */
 	} /* ret_code >= 0 */
@@ -954,7 +957,7 @@ update_group_page(
 	struct t_art_stat sbuf;
 
 	for (i = grpmenu.first; i < grpmenu.first + NOTESLINES && i < grpmenu.max; ++i) {
-		if ((j = line_is_tagged((int)base[i])))
+		if ((j = line_is_tagged((int) base[i])))
 			mark_screen(i, mark_offset - 2, tin_ltoa(j, 3));
 		else {
 			stat_thread(i, &sbuf);
@@ -983,7 +986,7 @@ draw_subject_arrow(
 		struct t_art_stat statbuf;
 
 		stat_thread(grpmenu.curr, &statbuf);
-		info_message("%s", arts[(statbuf.unread ? next_unread((int)base[grpmenu.curr]) : base[grpmenu.curr])].subject);
+		info_message("%s", arts[(statbuf.unread ? next_unread((int) base[grpmenu.curr]) : base[grpmenu.curr])].subject);
 	} else if (grpmenu.curr == grpmenu.max - 1)
 		info_message(_(txt_end_of_arts));
 }
@@ -1026,7 +1029,7 @@ toggle_read_unread(
 
 	if (grpmenu.curr >= 0) {
 		if (curr_group->attribute->show_only_unread_arts || new_responses(grpmenu.curr))
-			i = (int)base[grpmenu.curr];
+			i = (int) base[grpmenu.curr];
 		else if ((n = prev_unread((int) base[grpmenu.curr])) >= 0)
 			i = n;
 		else if ((n = next_unread((int) base[grpmenu.curr])) >= 0)
@@ -1131,11 +1134,11 @@ build_multipart_header(
 	char *ss;
 
 	if (cmplen > maxlen)
-		strncpy(dest, src, (size_t)maxlen);
+		strncpy(dest, src, (size_t) maxlen);
 	else {
-		strncpy(dest, src, (size_t)cmplen);
+		strncpy(dest, src, (size_t) cmplen);
 		ss = dest + cmplen;
-		snprintf(ss, (size_t)(maxlen - cmplen), "(%s/%d)", mark, total);
+		snprintf(ss, (size_t) (maxlen - cmplen), "(%s/%d)", mark, total);
 	}
 }
 
@@ -1217,7 +1220,7 @@ build_sline(
 				if (my_strftime(buf, LEN - 1, grp_fmt.date_str, localtime((const time_t *) &arts[j].date))) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					if ((wtmp = char2wchar_t(buf)) != NULL) {
-						wtmp2 = wcspart(wtmp, (int)grp_fmt.len_date_max, TRUE);
+						wtmp2 = wcspart(wtmp, (int) grp_fmt.len_date_max, TRUE);
 						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 							strcat(buffer, tmp);
 
@@ -1237,7 +1240,7 @@ build_sline(
 					get_author(FALSE, &arts[j], tmp, sizeof(tmp) - 1);
 
 					if ((wtmp = char2wchar_t(tmp)) != NULL) {
-						wtmp2 = wcspart(wtmp, (int)grp_fmt.len_from, TRUE);
+						wtmp2 = wcspart(wtmp, (int) grp_fmt.len_from, TRUE);
 						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 							strcat(buffer, tmp);
 
@@ -1258,9 +1261,9 @@ build_sline(
 
 			case 'I':	/* initials */
 				len = MIN(grp_fmt.len_initials, sizeof(tmp) - 1);
-				get_initials(&arts[j], tmp, (int)len);
+				get_initials(&arts[j], tmp, (int) len);
 				strcat(buffer, tmp);
-				if ((k = (int)(len - (size_t)strwidth(tmp))) > 0) {
+				if ((k = (int) (len - (size_t) strwidth(tmp))) > 0) {
 					buf = buffer + strlen(buffer);
 					for (; k > 0; --k)
 						*buf++ = ' ';
@@ -1270,10 +1273,10 @@ build_sline(
 
 			case 'L':	/* lines */
 				if (arts[j].line_count != -1)
-					strcat(buffer, tin_ltoa(arts[j].line_count, (int)grp_fmt.len_linecnt));
+					strcat(buffer, tin_ltoa(arts[j].line_count, (int) grp_fmt.len_linecnt));
 				else {
 					buf = buffer + strlen(buffer);
-					for (k = (int)grp_fmt.len_linecnt; k > 1; --k)
+					for (k = (int) grp_fmt.len_linecnt; k > 1; --k)
 						*buf++ = ' ';
 					*buf++ = '?';
 					*buf = '\0';
@@ -1282,7 +1285,7 @@ build_sline(
 
 			case 'm':	/* article flags, tag number, or whatever */
 				if (!grp_fmt.mark_offset)
-					grp_fmt.mark_offset = (size_t)(mark_offset = strwidth(buffer) + 2);
+					grp_fmt.mark_offset = (size_t) (mark_offset = strwidth(buffer) + 2);
 				if ((k = line_is_tagged(respnum)))
 					STRCPY(tmp_buf, tin_ltoa(k, 3));
 				else
@@ -1295,7 +1298,7 @@ build_sline(
 				strncpy(tmp, arts[j].refptr ? arts[j].refptr->txt : "", len);
 				tmp[len] = '\0';
 				strcat(buffer, tmp);
-				if ((k = (int)(len - (size_t)strwidth(tmp))) > 0) {
+				if ((k = (int) (len - (size_t) strwidth(tmp))) > 0) {
 					buf = buffer + strlen(buffer);
 					for (; k > 0; --k)
 						*buf++ = ' ';
@@ -1304,36 +1307,36 @@ build_sline(
 				break;
 
 			case 'n':
-				strcat(buffer, tin_ltoa(i + 1, (int)grp_fmt.len_linenumber));
+				strcat(buffer, tin_ltoa(i + 1, (int) grp_fmt.len_linenumber));
 				break;
 
 			case 'R':
 				n = ((curr_group->attribute->show_only_unread_arts) ? (sbuf.unread + sbuf.seen) : sbuf.total);
 				if (n > 1)
-					strcat(buffer, tin_ltoa(n, (int)grp_fmt.len_respcnt));
+					strcat(buffer, tin_ltoa(n, (int) grp_fmt.len_respcnt));
 				else {
 					buf = buffer + strlen(buffer);
-					for (k = (int)grp_fmt.len_respcnt; k > 0; --k)
+					for (k = (int) grp_fmt.len_respcnt; k > 0; --k)
 						*buf++ = ' ';
 					*buf = '\0';
 				}
 				break;
 
 			case 'S':	/* score */
-				strcat(buffer, tin_ltoa(sbuf.score, (int)grp_fmt.len_score));
+				strcat(buffer, tin_ltoa(sbuf.score, (int) grp_fmt.len_score));
 				break;
 
 			case 's':	/* thread/subject */
 				len = curr_group->attribute->show_author != SHOW_FROM_NONE ? grp_fmt.len_subj : grp_fmt.len_subj + grp_fmt.len_from;
 
 				if (sbuf.multipart_have > 1) /* We have a multipart msg so lets built our new header info. */
-					build_multipart_header(arts_sub, (int)len, arts[j].subject, sbuf.multipart_compare_len, sbuf.multipart_have, sbuf.multipart_total);
+					build_multipart_header(arts_sub, (int) len, arts[j].subject, sbuf.multipart_compare_len, sbuf.multipart_have, sbuf.multipart_total);
 				else
 					STRCPY(arts_sub, arts[j].subject);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if ((wtmp = char2wchar_t(arts_sub)) != NULL) {
-					wtmp2 = wcspart(wtmp, (int)len, TRUE);
+					wtmp2 = wcspart(wtmp, (int) len, TRUE);
 					if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 						strcat(buffer, tmp);
 

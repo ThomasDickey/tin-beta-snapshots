@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2021-01-06
+.\" Updated   : 2021-02-21
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -159,7 +159,7 @@ UND SPEICHERN VON UNGELESENEN ARTIKELN".
 \fB\-n\fP
 Nur die Gruppen aus der Datei
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP laden, die im
-\fI${TIN_HOMEDIR:\-"$HOME"""}/.newsrc\fP des Benutzers abonniert sind. Dies
+\fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP des Benutzers abonniert sind. Dies
 ermöglicht eine spürbare Beschleunigung beim verbinden über eine langsame
 Leitung, kann aber möglicherweise nicht erkennen, welche Gruppen moderiert
 werden. Siehe auch \*(rq\fB\-l\fP\*(rq.
@@ -526,10 +526,9 @@ Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
 Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .TP 
 \fBDisplayPostHist 'W'\fP
-List articles posted by user. The date posted, the newsgroup and the subject
-are listed. You can use \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') and
-\fBSearchRepeat\fP ('\fB\e\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns
-to the menu.
+Listet die vom Benutzer geposteten Artikel auf. Es werden das Datum des
+Postings, die Newsgruppe und das Thema aufgelistet. Weitere Informationen
+finden Sie im Abschnitt "POSTING VERLAUFSLISTE".
 .TP 
 \fBVersion 'v'\fP
 .\" -------------------------------------------------------------------
@@ -821,7 +820,7 @@ werden.
 Artikel/Gruppe Beschränkungen ein\-/ausschalten.
 .TP 
 \fBToggleInfoLastLine 'i'\fP
-Betreff des ersten Artikels im aktuellen Thread in der letzten Zeile
+Subject des ersten Artikels im aktuellen Thread in der letzten Zeile
 anzeigen.
 .TP 
 \fBToggleInverseVideo 'I'\fP
@@ -1307,7 +1306,7 @@ DRUCKEN, NACHSENDEN UND SPEICHERN VON ARTIKELN".
 Gehe zum vorherigen Artikel.
 .TP 
 \fBPagePrevUnreadArt 'P'\fP
-Go to the previous unread article.
+Gehe zum vorherigen ungelesenen Artikel.
 .TP 
 \fBQuit 'q'\fP
 Kehrt zur vorherigen Ebene zurück.
@@ -1340,7 +1339,7 @@ or reposting.
 Kehrt zur Auswahlebene zurück.
 .TP 
 \fBPageGotoParent 'u'\fP
-Go to parent article.
+Gehe zum übergeordneten Artikel.
 .TP 
 \fBPageViewUrl 'U'\fP
 Display a list of URLs in the current article. See the section "URL LISTING"
@@ -1405,7 +1404,7 @@ Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .RE
 .\" -------------------------------------------------------------------
 .\"
-.SS "ATTACHMENT LISTING"
+.SS ANHANGLISTE
 \fBPageViewAttach\fP ('\fBV\fP') displays a list of attachments of the current
 article. Besides the common moving keys, the following commands are
 available:
@@ -1415,13 +1414,13 @@ available:
 Anhang an Befehl weiterleiten.
 .TP 
 \fBAttachSave 's'\fP
-Save current attachment / tagged attachments to disk.
+Aktuellen Anhang / markierte Anhänge auf speichern.
 .TP 
 \fBAttachSelect '^J' '<CR>'\fP
 Multimediaanhänge anzeigen.
 .TP 
 \fBAttachTag 't'\fP
-Tag one or more attachments for saving.
+Einen oder mehrere Anhänge zum Speichern markieren.
 .TP 
 \fBAttachTagPattern '='\fP
 Prompts for a pattern to match. All attachments whose name/description or
@@ -1434,16 +1433,17 @@ Markierung der Anhänge umkehren.
 Markierung der markierten Anhängen aufheben.
 .TP 
 \fBSearchSubjF '/'\fP
-Attachment forward search.
+Vorwärtssuche nach Anhang.
 .TP 
 \fBSearchSubjB '?'\fP
-Attachment backward search.
+Rückwärtssuche nach Anhang.
 .TP 
 \fBSearchRepeat '\e'\fP
 Vorherige Suche wiederholen.
 .TP 
 \fBGlobalPipe '|'\fP
-Pipe attachment into command. Uses the raw attachment, no decoding is done.
+Pipe Anhang an den Befehl. Verwendet den rohen Anhang, es wird keine
+Dekodierung vorgenommen.
 .TP 
 \fBShellEscape '!'\fP
 Ausgang zur Shell.
@@ -1455,12 +1455,56 @@ Name oder Beschreibung des Anhangs in der untersten Zeile anzeigen.
 Hilfeseite der verfügbaren Befehle.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
+.\" -------------------------------------------------------------------
+.\"
+Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
+Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
+.SS "POSTING VERLAUFSLISTE"
+\fBDisplayPostHist\fP ('\fBW\fP') displays a list of all previous posted articles
+stored in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP. The following informatiosn
+are shown: a time stamp in "dd\-mm\-yy"\-format, a single letter indicating the
+action which initiated the message, the group names (evetually shortened,
+see also \fBabbreviate_groupname\fP) or a mail address the message was sent to
+and the subject of the message. Besides the common moving keys, the
+following commands are available:
+.RS 4
+.TP  10
+\fBPostedArticlesSelect '^J' '<CR>'\fP
+The article with the current \*(rqMessage\-ID:\*(rq will be opened if available.
+Note that this requires that the \*(rqMessage\-ID:\*(rq of the article was recorded
+in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP which may not always be the case.
+If using NNTP and the internal inews (\fBinews_prog\fP set to "\-\-internal")
+and either the server proposes a \*(rqMessage\-ID:\*(rq during the POST
+(\fBRFC\%3977\fP) command or \fBtin\fP is build to generate \*(rqMessage\-ID:\*(rq this
+should be the case. With an external inews (and reading from local spool) it
+is not.
+.TP 
+\fBSearchSubjF '/'\fP
+Suche nach URL (vorwärts).
+.TP 
+\fBSearchSubjB '?'\fP
+Suche nach URL (rückwärts).
+.TP 
+\fBSearchRepeat '\e'\fP
+Vorherige Suche wiederholen.
+.TP 
+\fBShellEscape '!'\fP
+Ausgang zur Shell.
+.TP 
+\fBToggleInfoLastLine 'i'\fP
+Umschalten der Anzeige der aktuellen 'Message\-ID:\*(rq in der letzten Zeile.
+.TP 
+\fBHelp 'h'\fP
+Hilfeseite der verfügbaren Befehle.
+.TP 
+\fBToggleHelpDisplay 'H'\fP
 Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
 Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .RE
+.RE
 .\" -------------------------------------------------------------------
 .\"
-.SS "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
+.SS "MENÜ DER GLOBALE OPTIONEN UND KONFIGURIERBAREN TINRC\-VARIABLEN"
 .\" FIXME - add missing descriptions
 .\"       - \fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fR is used
 .\"         in the !TIN_DEFAULTS_DIR config case
@@ -1574,12 +1618,6 @@ anzeigen? Voreinstellung ist ON.
 .TP 
 \fBAutom. Wiederverbindung zum Server (auto_reconnect)\fP
 Voreinstellung ist OFF.
-.TP 
-\fBNutze Archive\-name: zum Speichern (auto_save)\fP
-If ON articles/threads with \*(rqArchive\-name:\*(rq in header will be
-automatically saved with the Archive\-name & part/patch no and post processed
-if \fBpost_process_type\fP is set to something other than 'No'.  Default is
-OFF.
 .TP 
 \fBSpeicher Artikel im Batchmode (\-S) (batch_save)\fP
 Falls ON werden Artikel/Threads im Batchmode gespeichert wenn \*(rq\fB\-S\fP oder
@@ -2004,8 +2042,8 @@ Path, name and options of external \fB\%metamail\fP(1)  program used to view
 non\-textual parts of articles.  To use the built\-in viewer, set to
 \-\-internal. This is the default value when \fB\%metamail\fP(1)  is not
 installed. Leave it blank if you don't want any automatic viewing of
-non\-textual attachments. The 'V' command can always be used to manually view
-any attachments. See also \fBask_for_metamail\fP.
+non\-textual attachments. The \fBPageViewAttach\fP ('\fBV\fP')  command can always
+be used to manually view any attachments. See also \fBask_for_metamail\fP.
 .TP 
 \fBMM_CHARSET (mm_charset)\fP
 Charset supported locally, which is also used for MIME header (charset
@@ -2080,7 +2118,7 @@ Format der Einleitungszeile für Newsartikel (%A=Mailadresse, %D=Datum,
 %C=Vorname des Autors, %I=Initialen des Autor). Voreinstellung ist "%F
 wrote:".
 .TP 
-\fBNNTP read timeout in seconds (nntp_read_timeout_secs)\fP
+\fBNNTP\-lese Zeitlimit in Sekunden (nntp_read_timeout_secs)\fP
 Time in seconds to wait for a response from the server. Default is 120.
 Setting this to 0 means no timeout.
 .TP 
@@ -2217,7 +2255,7 @@ reread at regular intervals to show if any new news has arrived. Default is
 Directory where articles/threads are saved. Default is
 \fI${TIN_HOMEDIR:\-"$HOME"}/News\fP.
 .TP 
-\fBScore limit (kill) (score_limit_kill)\fP
+\fBBewertungsgrenze (kill) (score_limit_kill)\fP
 If the score of an article is below or equal this value the article gets
 marked as killed.
 .TP 
@@ -2414,11 +2452,11 @@ Keep).
 If ON, then unsubscribed groups will be permanently removed from your
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP file. Default is OFF.
 .TP 
-\fBRegex with Subject prefixes (strip_re_regex)\fP
+\fBReg. Ausd. für den Subjectanfang (strip_re_regex)\fP
 A regular expression to find Subject prefixes like "Re:" to remove.  If
 \fBstrip_re_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
 .TP 
-\fBRegex with Subject suffixes (strip_was_regex)\fP
+\fBReg. Ausd. für das Subjectende (strip_was_regex)\fP
 A regular expression to find Subject suffixes like "(was:" to remove.  If
 \fBstrip_was_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
 .TP 
@@ -2491,7 +2529,7 @@ represented in the target character set, it can be approximated through one
 or several similarly looking characters. On systems where this extension
 doesn't exist, this option is disabled. Default is OFF.
 .TP 
-\fBHow to treat blank lines (trim_article_body)\fP
+\fBWie mit Leerzeilen umgegangen werden soll (trim_article_body)\fP
 Allows you to select how \fBtin\fP treats blank lines in article bodies.
 Default is 0. This option does not affect lines within verbatim blocks.
 .RS +.5i
@@ -2712,9 +2750,11 @@ line at the beginning of the article. After saving and exiting the editor
 you are asked if you wish to a)bort posting the article, e)dit the article
 again or p)ost the article to the specified newsgroup(s).
 .PP
-Use the \fBDisplayPostHist\fP ('\fBW\fP') command to display a history of the
-articles you have posted. The date the article was posted, which newsgroups
-the article was posted to and the articles subject line are displayed.
+Verwenden Sie den Befehl \fBDisplayPostHist\fP ('\fBW\fP'), um eine Verlaufsliste
+der von Ihnen geposteten Artikel anzuzeigen. Angezeigt werden das Datum, an
+dem der Artikel gepostet wurde, in welchen Newsgruppen der Artikel gepostet
+wurde und die Subjectzeile des Artikels. Weitere Informationen finden Sie im
+Abschnitt "POSTING VERLAUFSLISTE".
 .PP
 Use the \fBPageFollowupQuote\fP ('\fBf\fP'), \fBPageFollowup\fP ('\fBF\fP')  or
 \fBPageFollowupQuoteHeaders\fP ('\fB^W\fP') command to post a follow\-up article to
@@ -3518,10 +3558,10 @@ replying, follow\-ups, ...). Evaluation order is
 \fI${VISUAL:\-"${EDITOR:\-vi}"}\fP. See \fB\%environ\fP(5)  for more info.
 .TP 
 \fBEDITOR\fP
-If $\fBVISUAL\fP is unset, then this variable is looked up for a default
-editor. If $\fBEDITOR\fP and $\fBVISUAL\fP are both unset, \fBtin\fP uses the systems
-default editor (i.e.  \fB\%vi\fP(1))  on UNIX\-systems). See \fB\%environ\fP(5)
-for more info.
+Falls $\fBVISUAL\fP nicht gesetzt ist, wird in dieser Variablen nach einem
+Standard\-Editor gesucht. Wenn $\fBEDITOR\fP und $\fBVISUAL\fP beide nicht gesetzt
+sind verwendet \fBtin\fP den Standard\-Editor des Systems (\fB\%vi\fP(1) bei
+UNIX\-Systemen). Weitere Informationen finden sich in \fB\%environ\fP(5).
 .TP 
 \fBAUTOSUBSCRIBE\fP
 A new group is checked against the list of patterns; if it matches, \fBtin\fP

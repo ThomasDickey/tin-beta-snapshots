@@ -3,7 +3,7 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2019-02-18
+ *  Updated   : 2021-02-01
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -45,13 +45,13 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"2.4.6"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20210126"
+#	define RELEASEDATE	"20210224"
 #	define RELEASENAME	"Glen Albyn"
 /* config-file versions - must by dotted triples in the range 0 to 99 each */
-#	define TINRC_VERSION	"1.3.17"
-#	define ATTRIBUTES_VERSION	"1.0.10"
+#	define TINRC_VERSION	"1.3.18"
+#	define ATTRIBUTES_VERSION	"1.0.11"
 #	define FILTER_VERSION	"1.0.2"
-#	define KEYMAP_VERSION	"1.0.9"
+#	define KEYMAP_VERSION	"1.0.10"
 #	define SERVERCONFIG_VERSION	"1.0.0"
 
 #endif /* !VERSION_H */

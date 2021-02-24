@@ -1036,8 +1036,10 @@ AC_CHECK_LIB(idnkit, idn_decodename, [
 			#include <string.h>], [
 			idn_result_t rs;
 			char in[255], out[255];
+			const char *i = in;
+			char *o = out;
 			strcpy(in, "xn--brenfe-fta9a2q.de");
-			rs = idn_decodename(IDN_DECODE_LOOKUP, &in, &out, 254);
+			rs = idn_decodename(IDN_DECODE_LOOKUP, i, o, 254);
 			idn_result_tostring(rs);], [
 			AC_DEFINE(HAVE_LIBIDNKIT,1,[Define this to 1 if we can link with idnkit library])
 			AC_DEFINE(HAVE_IDN_API_H,1,[Define this to 1 if we have header idn/api.h])

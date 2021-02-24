@@ -174,8 +174,12 @@ read_config_file(
 			if (match_boolean(buf, "auto_reconnect=", &tinrc.auto_reconnect))
 				break;
 
-			if (match_boolean(buf, "auto_save=", &tinrc.auto_save))
-				break;
+			if (upgrade && upgrade->file_version < 10318) {
+				t_bool ignore;
+				/* option removed */
+				if (match_boolean(buf, "auto_save=", &ignore))
+					break;
+			}
 
 			break;
 
@@ -935,9 +939,6 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_savedir.tinrc));
 	fprintf(fp, "savedir=%s\n\n", tinrc.savedir);
-
-	fprintf(fp, "%s", _(txt_auto_save.tinrc));
-	fprintf(fp, "auto_save=%s\n\n", print_boolean(tinrc.auto_save));
 
 	fprintf(fp, "%s", _(txt_mark_saved_read.tinrc));
 	fprintf(fp, "mark_saved_read=%s\n\n", print_boolean(tinrc.mark_saved_read));
@@ -1773,7 +1774,7 @@ ulBuildArgv(
 				tmp++;
 			}
 			i++;
-			new_argv = my_realloc(new_argv, ((size_t)(i + 1) * sizeof(char *)));
+			new_argv = my_realloc(new_argv, ((size_t) (i + 1) * sizeof(char *)));
 			new_argv[i] = NULL;
 		} else
 			tmp++;

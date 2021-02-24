@@ -3,7 +3,7 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2011-04-02
+ *  Updated   : 2021-02-23
  *  Notes     : curses #include files, #defines & struct's
  *
  * Copyright (c) 1997-2021 Thomas Dickey <dickey@invisible-island.net>
@@ -156,7 +156,7 @@ extern void write_line(int row, char *buffer);
 				if (fwide(stream, 0) <= 0) \
 					fprintf(stream, "%lc", wc); \
 				else \
-					fputwc((wchar_t)(wc), stream); \
+					fputwc((wchar_t) (wc), stream); \
 			}
 #			define my_fputws(wstr, stream)	{ \
 				if (fwide(stream, 0) <= 0) \
