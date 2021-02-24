@@ -1018,15 +1018,15 @@ show_mini_help(
 
 		case POSTED_LEVEL:
 			snprintf(buf, bufs, _(txt_mini_post_hist_1),
-				printascii(key[0], func_to_key(GLOBAL_LINE_DOWN, post_hist_keys)),
-				printascii(key[1], func_to_key(GLOBAL_LINE_UP, post_hist_keys)),
-				printascii(key[2], func_to_key(GLOBAL_HELP, post_hist_keys)),
-				printascii(key[3], func_to_key(GLOBAL_QUIT, post_hist_keys)));
+				printascii(key[0], (wint_t) func_to_key(GLOBAL_LINE_DOWN, post_hist_keys)),
+				printascii(key[1], (wint_t) func_to_key(GLOBAL_LINE_UP, post_hist_keys)),
+				printascii(key[2], (wint_t) func_to_key(GLOBAL_HELP, post_hist_keys)),
+				printascii(key[3], (wint_t) func_to_key(GLOBAL_QUIT, post_hist_keys)));
 			center_line(line, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_post_hist_2),
-				printascii(key[2], func_to_key(GLOBAL_SEARCH_SUBJECT_FORWARD, post_hist_keys)),
-				printascii(key[3], func_to_key(GLOBAL_SEARCH_SUBJECT_BACKWARD, post_hist_keys)),
-				printascii(key[4], func_to_key(GLOBAL_SEARCH_REPEAT, post_hist_keys)));
+				printascii(key[2], (wint_t) func_to_key(GLOBAL_SEARCH_SUBJECT_FORWARD, post_hist_keys)),
+				printascii(key[3], (wint_t) func_to_key(GLOBAL_SEARCH_SUBJECT_BACKWARD, post_hist_keys)),
+				printascii(key[4], (wint_t) func_to_key(GLOBAL_SEARCH_REPEAT, post_hist_keys)));
 			center_line(line + 1, FALSE, buf);
 			break;
 
