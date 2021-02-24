@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-01-24
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -556,7 +556,7 @@ selection_page(
 				}
 				grp_mark_unread(&CURR_GROUP);
 				if (CURR_GROUP.newsrc.num_unread)
-					STRCPY(buf, tin_ltoa(CURR_GROUP.newsrc.num_unread, sel_fmt.len_ucnt));
+					STRCPY(buf, tin_ltoa(CURR_GROUP.newsrc.num_unread, (int)sel_fmt.len_ucnt));
 				else {
 					size_t j = 0;
 
@@ -568,7 +568,7 @@ selection_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, select_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, select_keys)));
 		}
 	}
 }
@@ -610,12 +610,12 @@ show_selection_page(
 		 */
 		if (yanked_out) {
 			for (i = 0; i < selmenu.max; i++) {
-				if ((len = strwidth(active[my_group[i]].name)) > sel_fmt.len_grpname)
+				if ((len = (size_t)strwidth(active[my_group[i]].name)) > sel_fmt.len_grpname)
 					sel_fmt.len_grpname = len;
 			}
 		} else {
 			for_each_group(i) {
-				if ((len = strwidth(active[i].name)) > sel_fmt.len_grpname)
+				if ((len = (size_t)strwidth(active[i].name)) > sel_fmt.len_grpname)
 					sel_fmt.len_grpname = len;
 			}
 		}
@@ -624,19 +624,19 @@ show_selection_page(
 	groupname_len = (sel_fmt.show_grpdesc && show_description) ? (int) sel_fmt.len_grpname_dsc : (int) sel_fmt.len_grpname;
 
 	if (groupname_len > (int) sel_fmt.len_grpname_max)
-		groupname_len = sel_fmt.len_grpname_max;
+		groupname_len = (int)sel_fmt.len_grpname_max;
 	if (groupname_len < 0)
 		groupname_len = 0;
 
 	if (!sel_fmt.len_grpdesc)
-		sel_fmt.len_grpdesc = sel_fmt.len_grpname_max - groupname_len;
+		sel_fmt.len_grpdesc = (sel_fmt.len_grpname_max - (size_t)groupname_len);
 	else {
-		if (sel_fmt.len_grpdesc > sel_fmt.len_grpname_max - groupname_len)
-			sel_fmt.len_grpdesc = sel_fmt.len_grpname_max - groupname_len;
+		if (sel_fmt.len_grpdesc > (sel_fmt.len_grpname_max - (size_t)groupname_len))
+			sel_fmt.len_grpdesc = (sel_fmt.len_grpname_max - (size_t)groupname_len);
 	}
 
-	flags_offset = sel_fmt.flags_offset + (sel_fmt.g_before_f ? groupname_len : 0) + (sel_fmt.d_before_f ? sel_fmt.len_grpdesc : 0);
-	ucnt_offset = sel_fmt.ucnt_offset + (sel_fmt.g_before_u ? groupname_len : 0) + (sel_fmt.d_before_u ? sel_fmt.len_grpdesc : 0);
+	flags_offset = (int)(sel_fmt.flags_offset + (size_t)(sel_fmt.g_before_f ? groupname_len : 0) + (sel_fmt.d_before_f ? sel_fmt.len_grpdesc : 0));
+	ucnt_offset = (int)(sel_fmt.ucnt_offset + (size_t)(sel_fmt.g_before_u ? groupname_len : 0) + (sel_fmt.d_before_u ? sel_fmt.len_grpdesc : 0));
 
 	for (i = selmenu.first; i < selmenu.first + NOTESLINES && i < selmenu.max; i++)
 		build_gline(i);
@@ -712,7 +712,7 @@ build_gline(
 				if (show_description && active[n].description) {
 					active_desc = char2wchar_t(active[n].description);
 					if (active_desc) {
-						if ((active_desc2 = wcspart(active_desc, sel_fmt.len_grpdesc, TRUE)) != NULL) {
+						if ((active_desc2 = wcspart(active_desc, (int)sel_fmt.len_grpdesc, TRUE)) != NULL) {
 							desc_buf = wchar_t2char(active_desc2);
 							free(active_desc);
 							free(active_desc2);
@@ -799,7 +799,7 @@ build_gline(
 				break;
 
 			case 'n':
-				strcat(sptr, tin_ltoa(i + 1, sel_fmt.len_linenumber));
+				strcat(sptr, tin_ltoa(i + 1, (int)sel_fmt.len_linenumber));
 				break;
 
 			case 'U':
@@ -817,7 +817,7 @@ build_gline(
 					num_unread = active[my_group[i]].newsrc.num_unread;
 					if (getart_limit > 0 && getart_limit < num_unread)
 						num_unread = getart_limit;
-					strcat(sptr, tin_ltoa(num_unread, sel_fmt.len_ucnt));
+					strcat(sptr, tin_ltoa(num_unread, (int)sel_fmt.len_ucnt));
 				} else {
 					buf = sptr + strlen(sptr);
 					for (j = 0; j < sel_fmt.len_ucnt; ++j)
@@ -1656,7 +1656,7 @@ show_article_by_msgid(
 	free(newsgroups);
 	art_close(&pgart);
 	tinrc.cache_overview_files = tmp_cache_overview_files;
-	curr_group->attribute->show_only_unread_arts = tmp_show_only_unread_arts;
+	curr_group->attribute->show_only_unread_arts = CAST_BOOL(tmp_show_only_unread_arts);
 	curr_group = NULL;
 
 	return ret;

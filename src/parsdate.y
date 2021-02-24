@@ -4,7 +4,7 @@
  *  Module    : parsedate.y
  *  Author    : S. Bellovin, R. $alz, J. Berets, P. Eggert
  *  Created   : 1990-08-01
- *  Updated   : 2000-01-03
+ *  Updated   : 2021-02-23
  *  Notes     : This grammar has 6 shift/reduce conflicts.
  *              Originally written by Steven M. Bellovin <smb@research.att.com>
  *              while at the University of North Carolina at Chapel Hill.
@@ -230,13 +230,13 @@ numzone	: tSNUMBER {
 	    if ((int)$1 < 0) {
 		/* Don't work with negative modulus. */
 		$1 = -(int)$1;
-		if ($1 > 9999 || (i = $1 % 100) >= 60) {
+		if ($1 > 9999 || (i = (int)($1 % 100)) >= 60) {
 			YYABORT;
 		}
 		$$ = ($1 / 100) * 60 + i;
 	    }
 	    else {
-		if ($1 > 9999 || (i = $1 % 100) >= 60) {
+		if ($1 > 9999 || (i = (int)($1 % 100)) >= 60) {
 			YYABORT;
 		}
 		$$ = -(($1 / 100) * 60 + i);
@@ -747,10 +747,10 @@ date_lex(void)
 	if (CTYPE(isalpha, c)) {
 	    for (p = buff; (c = *yyInput++) == '.' || CTYPE(isalpha, c); )
 		if (p < &buff[sizeof buff - 1])
-		    *p++ = CTYPE(isupper, c) ? my_tolower(c) : c;
+		    *p++ = (char)(CTYPE(isupper, c) ? my_tolower(c) : c);
 	    *p = '\0';
 	    yyInput--;
-	    return LookupWord(buff, p - buff);
+	    return LookupWord(buff, (int)(p - buff));
 	}
 
 	return *yyInput++;

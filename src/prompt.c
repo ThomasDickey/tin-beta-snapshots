@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2017-10-18
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -179,8 +179,8 @@ prompt_yn(
 
 /*	fflush(stdin); */		/* Prevent finger trouble from making important decisions */
 
-	yes = func_to_key(PROMPT_YES, prompt_keys);
-	no = func_to_key(PROMPT_NO, prompt_keys);
+	yes = (wint_t)func_to_key(PROMPT_YES, prompt_keys);
+	no = (wint_t)func_to_key(PROMPT_NO, prompt_keys);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	printascii(keyyes, (default_answer ? towupper(yes) : yes));
@@ -202,7 +202,7 @@ prompt_yn(
 		prompt_ch = (default_answer ? yes : no);
 		keyprompt = (default_answer ? keyyes : keyno);
 
-		snprintf(prompt_yn_choice, prompt_len, " (%s/%s) %-*s", keyyes, keyno, maxlen, keyprompt);
+		snprintf(prompt_yn_choice, (size_t)prompt_len, " (%s/%s) %-*s", keyyes, keyno, maxlen, keyprompt);
 		prompt_yn_redraw();
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -240,7 +240,7 @@ prompt_yn(
 			default:
 				break;
 		}
-		func = key_to_func(ch, prompt_keys);
+		func = key_to_func((wchar_t)ch, prompt_keys);
 	} while (func == NOT_ASSIGNED);
 
 	input_context = cNone;
@@ -427,7 +427,7 @@ prompt_option_on_off(
 	t_bool old_value = *variable;
 
 	fmt_option_prompt(prompt, sizeof(prompt), TRUE, option);
-	*variable = prompt_list(option_row(option), 0, *variable, option_table[option].txt->help, prompt, txt_onoff, 2) ? TRUE : FALSE;
+	*variable = prompt_list(option_row(option), 0, (int)*variable, option_table[option].txt->help, prompt, txt_onoff, 2) ? TRUE : FALSE;
 	return bool_not(bool_equal(*variable, old_value));
 }
 
@@ -707,7 +707,7 @@ prompt_slk_response(
 		prompt_slk_redraw();		/* draw the prompt */
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if ((ch = ReadWch()) == '\r' || ch == '\n')
+		if ((ch = (wchar_t)ReadWch()) == '\r' || ch == '\n')
 #else
 		if ((ch = ReadCh()) == '\r' || ch == '\n')
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */

@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2021-01-24
+ *  Updated   : 2021-02-23
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2021 Jason Faultless <jason@altarstone.com>
@@ -160,7 +160,7 @@ boundary_cmp(
 
 	nl = l[len - 1] == '\n';
 
-	if (len != blen + 2 + nl && len != blen + 4 + nl) {
+	if (len != blen + 2 + (size_t)nl && len != blen + 4 + (size_t)nl) {
 		free(l);
 		return BOUND_NONE;
 	}
@@ -388,7 +388,7 @@ decode_value(
 
 	while (*rptr) {
 		if (*rptr == '%' && IS_XDIGIT(*(rptr + 1)) && IS_XDIGIT(*(rptr + 2))) {
-			*wptr++ = XVAL(*(rptr + 1)) << 4 | XVAL(*(rptr + 2));
+			*wptr++ = (char)(XVAL(*(rptr + 1)) << 4 | XVAL(*(rptr + 2)));
 			rptr += 3;
 		} else
 			*wptr++ = *rptr++;

@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2020-04-23
+ *  Updated   : 2021-02-23
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2021 Iain Lea <iain@bricbrac.de>
@@ -69,6 +69,8 @@ static void set_default_state(struct t_attribute_state *state);
 #	endif /* 0 */
 #endif /* DEBUG */
 
+#define CopyBits(target,source) attributes->target = CAST_BITS(source,target)
+#define CopyBool(target,source) attributes->target = CAST_BOOL(source)
 
 /*
  * Per group attributes. This fills out a basic template of defaults
@@ -102,65 +104,65 @@ set_default_attributes(
 	attributes->ispell = NULL;
 #endif /* HAVE_ISPELL */
 	attributes->quick_kill_scope = (scope ? scope->quick_kill_scope : (global ? (tinrc.default_filter_kill_global ? my_strdup("*") : NULL) : NULL));
-	attributes->quick_kill_header = tinrc.default_filter_kill_header;
-	attributes->quick_kill_case = tinrc.default_filter_kill_case;
-	attributes->quick_kill_expire = tinrc.default_filter_kill_expire;
+	CopyBits(quick_kill_header, tinrc.default_filter_kill_header);
+	CopyBool(quick_kill_case, tinrc.default_filter_kill_case);
+	CopyBool(quick_kill_expire, tinrc.default_filter_kill_expire);
 	attributes->quick_select_scope = (scope ? scope->quick_select_scope : (global ? (tinrc.default_filter_select_global ? my_strdup("*") : NULL) : NULL));
-	attributes->quick_select_header = tinrc.default_filter_select_header;
-	attributes->quick_select_case = tinrc.default_filter_select_case;
-	attributes->quick_select_expire = tinrc.default_filter_select_expire;
-	attributes->show_only_unread_arts = tinrc.show_only_unread_arts;
-	attributes->thread_articles = tinrc.thread_articles;
-	attributes->thread_catchup_on_exit = tinrc.thread_catchup_on_exit;
-	attributes->thread_perc = tinrc.thread_perc;
-	attributes->sort_article_type = tinrc.sort_article_type;
-	attributes->sort_threads_type = tinrc.sort_threads_type;
-	attributes->show_author = tinrc.show_author;
-	attributes->show_signatures = tinrc.show_signatures;
-	attributes->trim_article_body = tinrc.trim_article_body;
-	attributes->verbatim_handling = tinrc.verbatim_handling;
+	CopyBits(quick_select_header, tinrc.default_filter_select_header);
+	CopyBool(quick_select_case, tinrc.default_filter_select_case);
+	CopyBool(quick_select_expire, tinrc.default_filter_select_expire);
+	CopyBool(show_only_unread_arts, tinrc.show_only_unread_arts);
+	CopyBits(thread_articles, tinrc.thread_articles);
+	CopyBool(thread_catchup_on_exit, tinrc.thread_catchup_on_exit);
+	CopyBits(thread_perc, tinrc.thread_perc);
+	CopyBits(sort_article_type, tinrc.sort_article_type);
+	CopyBits(sort_threads_type, tinrc.sort_threads_type);
+	CopyBits(show_author, tinrc.show_author);
+	CopyBool(show_signatures, tinrc.show_signatures);
+	CopyBits(trim_article_body, tinrc.trim_article_body);
+	CopyBool(verbatim_handling, tinrc.verbatim_handling);
 #ifdef HAVE_COLOR
-	attributes->extquote_handling = tinrc.extquote_handling;
+	CopyBool(extquote_handling, tinrc.extquote_handling);
 #endif /* HAVE_COLOR */
-	attributes->wrap_on_next_unread = tinrc.wrap_on_next_unread;
-	attributes->add_posted_to_filter = tinrc.add_posted_to_filter;
-	attributes->advertising = tinrc.advertising;
-	attributes->alternative_handling = tinrc.alternative_handling;
-	attributes->ask_for_metamail = tinrc.ask_for_metamail;
-	attributes->auto_cc_bcc = tinrc.auto_cc_bcc;
-	attributes->auto_list_thread = tinrc.auto_list_thread;
-	attributes->auto_save = tinrc.auto_save;
+	CopyBool(wrap_on_next_unread, tinrc.wrap_on_next_unread);
+	CopyBool(add_posted_to_filter, tinrc.add_posted_to_filter);
+	CopyBool(advertising, tinrc.advertising);
+	CopyBool(alternative_handling, tinrc.alternative_handling);
+	CopyBool(ask_for_metamail, tinrc.ask_for_metamail);
+	CopyBits(auto_cc_bcc, tinrc.auto_cc_bcc);
+	CopyBool(auto_list_thread, tinrc.auto_list_thread);
+	CopyBool(auto_save, tinrc.auto_save);
 	attributes->auto_select = FALSE;
-	attributes->batch_save = tinrc.batch_save;
+	CopyBool(batch_save, tinrc.batch_save);
 	attributes->delete_tmp_files = FALSE;
-	attributes->group_catchup_on_exit = tinrc.group_catchup_on_exit;
-	attributes->mail_8bit_header = tinrc.mail_8bit_header;
-	attributes->mail_mime_encoding = tinrc.mail_mime_encoding;
-	attributes->mark_ignore_tags = tinrc.mark_ignore_tags;
-	attributes->mark_saved_read = tinrc.mark_saved_read;
+	CopyBool(group_catchup_on_exit, tinrc.group_catchup_on_exit);
+	CopyBool(mail_8bit_header, tinrc.mail_8bit_header);
+	CopyBits(mail_mime_encoding, tinrc.mail_mime_encoding);
+	CopyBool(mark_ignore_tags, tinrc.mark_ignore_tags);
+	CopyBool(mark_saved_read, tinrc.mark_saved_read);
 	attributes->news_headers_to_display = (global ? tinrc.news_headers_to_display : NULL);
 	attributes->headers_to_display = (scope ? (scope->headers_to_display ? scope->headers_to_display : NULL) : NULL);
 	attributes->news_headers_to_not_display = (global ? tinrc.news_headers_to_not_display : NULL);
 	attributes->headers_to_not_display = (scope ? (scope->headers_to_not_display ? scope->headers_to_not_display : NULL) : NULL);
-	attributes->pos_first_unread = tinrc.pos_first_unread;
-	attributes->post_8bit_header = tinrc.post_8bit_header;
-	attributes->post_mime_encoding = tinrc.post_mime_encoding;
-	attributes->post_process_view = tinrc.post_process_view;
-	attributes->post_process_type = tinrc.post_process_type;
+	CopyBool(pos_first_unread, tinrc.pos_first_unread);
+	CopyBool(post_8bit_header, tinrc.post_8bit_header);
+	CopyBits(post_mime_encoding, tinrc.post_mime_encoding);
+	CopyBool(post_process_view, tinrc.post_process_view);
+	CopyBits(post_process_type, tinrc.post_process_type);
 #ifndef DISABLE_PRINTING
-	attributes->print_header = tinrc.print_header;
+	CopyBool(print_header, tinrc.print_header);
 #endif /* !DISABLE_PRINTING */
-	attributes->process_only_unread = tinrc.process_only_unread;
-	attributes->prompt_followupto = tinrc.prompt_followupto;
-	attributes->sigdashes = tinrc.sigdashes;
-	attributes->signature_repost = tinrc.signature_repost;
-	attributes->start_editor_offset = tinrc.start_editor_offset;
+	CopyBool(process_only_unread, tinrc.process_only_unread);
+	CopyBool(prompt_followupto, tinrc.prompt_followupto);
+	CopyBool(sigdashes, tinrc.sigdashes);
+	CopyBool(signature_repost, tinrc.signature_repost);
+	CopyBool(start_editor_offset, tinrc.start_editor_offset);
 	attributes->x_comment_to = FALSE;
-	attributes->tex2iso_conv = tinrc.tex2iso_conv;
+	CopyBool(tex2iso_conv, tinrc.tex2iso_conv);
 	attributes->mime_forward = FALSE;
 	attributes->fcc = NULL;
 #ifdef CHARSET_CONVERSION
-	attributes->mm_network_charset = tinrc.mm_network_charset;
+	CopyBits(mm_network_charset, tinrc.mm_network_charset);
 	attributes->undeclared_charset = NULL;
 #endif /* CHARSET_CONVERSION */
 }
@@ -662,17 +664,21 @@ read_attributes_file(
 #endif /* DEBUG */
 }
 
-
 #define SET_STRING(string) \
 	FreeIfNeeded(curr_scope->attribute->string); \
 	curr_scope->attribute->string = my_strdup((char *) data); \
 	curr_scope->state->string = TRUE; \
 	break
-#define SET_INTEGER(integer) \
-	curr_scope->attribute->integer = *((int *) data); \
-	curr_scope->state->integer = TRUE; \
+
+#define SET_INTEGER(value) \
+	curr_scope->attribute->value = CAST_BITS(*((int *) data),value); \
+	curr_scope->state->value = TRUE; \
 	break
 
+#define SET_BOOLEAN(value) \
+	curr_scope->attribute->value = CAST_BOOL(*((int *) data)); \
+	curr_scope->state->value = TRUE; \
+	break
 
 static void
 set_attrib(
@@ -720,58 +726,58 @@ set_attrib(
 				SET_STRING(followup_to);
 
 			case OPT_ATTRIB_ADD_POSTED_TO_FILTER:
-				SET_INTEGER(add_posted_to_filter);
+				SET_BOOLEAN(add_posted_to_filter);
 
 			case OPT_ATTRIB_ADVERTISING:
-				SET_INTEGER(advertising);
+				SET_BOOLEAN(advertising);
 
 			case OPT_ATTRIB_ALTERNATIVE_HANDLING:
-				SET_INTEGER(alternative_handling);
+				SET_BOOLEAN(alternative_handling);
 
 			case OPT_ATTRIB_ASK_FOR_METAMAIL:
-				SET_INTEGER(ask_for_metamail);
+				SET_BOOLEAN(ask_for_metamail);
 
 			case OPT_ATTRIB_AUTO_CC_BCC:
 				SET_INTEGER(auto_cc_bcc);
 
 			case OPT_ATTRIB_AUTO_LIST_THREAD:
-				SET_INTEGER(auto_list_thread);
+				SET_BOOLEAN(auto_list_thread);
 
 			case OPT_ATTRIB_AUTO_SELECT:
-				SET_INTEGER(auto_select);
+				SET_BOOLEAN(auto_select);
 
 			case OPT_ATTRIB_AUTO_SAVE:
-				SET_INTEGER(auto_save);
+				SET_BOOLEAN(auto_save);
 
 			case OPT_ATTRIB_BATCH_SAVE:
-				SET_INTEGER(batch_save);
+				SET_BOOLEAN(batch_save);
 
 			case OPT_ATTRIB_DATE_FORMAT:
 				SET_STRING(date_format);
 
 			case OPT_ATTRIB_DELETE_TMP_FILES:
-				SET_INTEGER(delete_tmp_files);
+				SET_BOOLEAN(delete_tmp_files);
 
 			case OPT_ATTRIB_EDITOR_FORMAT:
 				SET_STRING(editor_format);
 
 			case OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT:
-				SET_INTEGER(group_catchup_on_exit);
+				SET_BOOLEAN(group_catchup_on_exit);
 
 			case OPT_ATTRIB_GROUP_FORMAT:
 				SET_STRING(group_format);
 
 			case OPT_ATTRIB_MAIL_8BIT_HEADER:
-				SET_INTEGER(mail_8bit_header);
+				SET_BOOLEAN(mail_8bit_header);
 
 			case OPT_ATTRIB_MAIL_MIME_ENCODING:
 				SET_INTEGER(mail_mime_encoding);
 
 			case OPT_ATTRIB_MARK_IGNORE_TAGS:
-				SET_INTEGER(mark_ignore_tags);
+				SET_BOOLEAN(mark_ignore_tags);
 
 			case OPT_ATTRIB_MARK_SAVED_READ:
-				SET_INTEGER(mark_saved_read);
+				SET_BOOLEAN(mark_saved_read);
 
 			case OPT_ATTRIB_NEWS_HEADERS_TO_DISPLAY:
 				FreeIfNeeded(curr_scope->attribute->news_headers_to_display);
@@ -788,50 +794,50 @@ set_attrib(
 				break;
 
 			case OPT_ATTRIB_POS_FIRST_UNREAD:
-				SET_INTEGER(pos_first_unread);
+				SET_BOOLEAN(pos_first_unread);
 
 			case OPT_ATTRIB_POST_8BIT_HEADER:
-				SET_INTEGER(post_8bit_header);
+				SET_BOOLEAN(post_8bit_header);
 
 			case OPT_ATTRIB_POST_MIME_ENCODING:
 				SET_INTEGER(post_mime_encoding);
 
 			case OPT_ATTRIB_POST_PROCESS_VIEW:
-				SET_INTEGER(post_process_view);
+				SET_BOOLEAN(post_process_view);
 
 #ifndef DISABLE_PRINTING
 			case OPT_ATTRIB_PRINT_HEADER:
-				SET_INTEGER(print_header);
+				SET_BOOLEAN(print_header);
 #endif /* !DISABLE_PRINTING */
 
 			case OPT_ATTRIB_PROCESS_ONLY_UNREAD:
-				SET_INTEGER(process_only_unread);
+				SET_BOOLEAN(process_only_unread);
 
 			case OPT_ATTRIB_PROMPT_FOLLOWUPTO:
-				SET_INTEGER(prompt_followupto);
+				SET_BOOLEAN(prompt_followupto);
 
 #ifdef HAVE_COLOR
 			case OPT_ATTRIB_EXTQUOTE_HANDLING:
-				SET_INTEGER(extquote_handling);
+				SET_BOOLEAN(extquote_handling);
 #endif /* HAVE_COLOR */
 
 			case OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS:
-				SET_INTEGER(show_only_unread_arts);
+				SET_BOOLEAN(show_only_unread_arts);
 
 			case OPT_ATTRIB_SIGDASHES:
-				SET_INTEGER(sigdashes);
+				SET_BOOLEAN(sigdashes);
 
 			case OPT_ATTRIB_SIGNATURE_REPOST:
-				SET_INTEGER(signature_repost);
+				SET_BOOLEAN(signature_repost);
 
 			case OPT_ATTRIB_START_EDITOR_OFFSET:
-				SET_INTEGER(start_editor_offset);
+				SET_BOOLEAN(start_editor_offset);
 
 			case OPT_ATTRIB_THREAD_ARTICLES:
 				SET_INTEGER(thread_articles);
 
 			case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
-				SET_INTEGER(thread_catchup_on_exit);
+				SET_BOOLEAN(thread_catchup_on_exit);
 
 			case OPT_ATTRIB_THREAD_FORMAT:
 				SET_STRING(thread_format);
@@ -843,16 +849,16 @@ set_attrib(
 				SET_INTEGER(show_author);
 
 			case OPT_ATTRIB_SHOW_SIGNATURES:
-				SET_INTEGER(show_signatures);
+				SET_BOOLEAN(show_signatures);
 
 			case OPT_ATTRIB_TRIM_ARTICLE_BODY:
 				SET_INTEGER(trim_article_body);
 
 			case OPT_ATTRIB_VERBATIM_HANDLING:
-				SET_INTEGER(verbatim_handling);
+				SET_BOOLEAN(verbatim_handling);
 
 			case OPT_ATTRIB_WRAP_ON_NEXT_UNREAD:
-				SET_INTEGER(wrap_on_next_unread);
+				SET_BOOLEAN(wrap_on_next_unread);
 
 			case OPT_ATTRIB_SORT_ARTICLE_TYPE:
 				SET_INTEGER(sort_article_type);
@@ -870,10 +876,10 @@ set_attrib(
 				SET_STRING(quick_kill_scope);
 
 			case OPT_ATTRIB_QUICK_KILL_EXPIRE:
-				SET_INTEGER(quick_kill_expire);
+				SET_BOOLEAN(quick_kill_expire);
 
 			case OPT_ATTRIB_QUICK_KILL_CASE:
-				SET_INTEGER(quick_kill_case);
+				SET_BOOLEAN(quick_kill_case);
 
 			case OPT_ATTRIB_QUICK_SELECT_HEADER:
 				SET_INTEGER(quick_select_header);
@@ -882,10 +888,10 @@ set_attrib(
 				SET_STRING(quick_select_scope);
 
 			case OPT_ATTRIB_QUICK_SELECT_EXPIRE:
-				SET_INTEGER(quick_select_expire);
+				SET_BOOLEAN(quick_select_expire);
 
 			case OPT_ATTRIB_QUICK_SELECT_CASE:
-				SET_INTEGER(quick_select_case);
+				SET_BOOLEAN(quick_select_case);
 
 			case OPT_ATTRIB_MAILING_LIST:
 				SET_STRING(mailing_list);
@@ -905,7 +911,7 @@ set_attrib(
 				SET_STRING(x_body);
 
 			case OPT_ATTRIB_X_COMMENT_TO:
-				SET_INTEGER(x_comment_to);
+				SET_BOOLEAN(x_comment_to);
 
 			case OPT_ATTRIB_FCC:
 				SET_STRING(fcc);
@@ -920,7 +926,7 @@ set_attrib(
 				SET_STRING(mime_types_to_save);
 
 			case OPT_ATTRIB_MIME_FORWARD:
-				SET_INTEGER(mime_forward);
+				SET_BOOLEAN(mime_forward);
 
 #ifdef HAVE_ISPELL
 			case OPT_ATTRIB_ISPELL:
@@ -928,7 +934,7 @@ set_attrib(
 #endif /* HAVE_ISPELL */
 
 			case OPT_ATTRIB_TEX2ISO_CONV:
-				SET_INTEGER(tex2iso_conv);
+				SET_BOOLEAN(tex2iso_conv);
 
 			default:
 				break;

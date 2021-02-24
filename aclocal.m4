@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2021-01-03
+dnl Updated   : 2021-02-22
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2021 Thomas E. Dickey <dickey@invisible-island.net>
@@ -426,7 +426,7 @@ fi
 AC_SUBST($1)dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl AM_WITH_NLS version: 30 updated: 2021/01/02 09:31:20
+dnl AM_WITH_NLS version: 31 updated: 2021/01/04 17:48:08
 dnl -----------
 dnl Inserted as requested by gettext 0.10.40
 dnl File from /usr/share/aclocal
@@ -530,13 +530,13 @@ AC_DEFUN([AM_WITH_NLS],
 
       dnl Search for GNU msgfmt in the PATH.
       AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
-          [$ac_dir/$ac_word --statistics /dev/null >/dev/null 2>&1], :)
+          ["$ac_dir/$ac_word" --statistics /dev/null >/dev/null 2>&1], :)
       AC_PATH_PROG(GMSGFMT, gmsgfmt, $MSGFMT)
       AC_SUBST(MSGFMT)
 
       dnl Search for GNU xgettext in the PATH.
       AM_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
-          [$ac_dir/$ac_word --omit-header /dev/null >/dev/null 2>&1], :)
+          ["$ac_dir/$ac_word" --omit-header /dev/null >/dev/null 2>&1], :)
 
       cf_save_OPTS_1="$CPPFLAGS"
       if test "x$cf_save_msgfmt_path" = "x$MSGFMT" && \
@@ -3950,14 +3950,15 @@ done
 ])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAKEFLAGS version: 19 updated: 2020/12/31 20:19:42
+dnl CF_MAKEFLAGS version: 20 updated: 2021/01/03 19:29:49
 dnl ------------
 dnl Some 'make' programs support ${MAKEFLAGS}, some ${MFLAGS}, to pass 'make'
 dnl options to lower-levels.  It's very useful for "make -n" -- if we have it.
 dnl (GNU 'make' does both, something POSIX 'make', which happens to make the
 dnl ${MAKEFLAGS} variable incompatible because it adds the assignments :-)
 AC_DEFUN([CF_MAKEFLAGS],
-[
+[AC_REQUIRE([AC_PROG_FGREP])dnl
+
 AC_CACHE_CHECK(for makeflags variable, cf_cv_makeflags,[
 	cf_cv_makeflags=''
 	for cf_option in '-${MAKEFLAGS}' '${MFLAGS}'
@@ -3967,7 +3968,7 @@ SHELL = $SHELL
 all :
 	@ echo '.$cf_option'
 CF_EOF
-		cf_result=`${MAKE:-make} -k -f cf_makeflags.tmp 2>/dev/null | fgrep -v "ing directory" | sed -e 's,[[ 	]]*$,,'`
+		cf_result=`${MAKE:-make} -k -f cf_makeflags.tmp 2>/dev/null | ${FGREP-fgrep} -v "ing directory" | sed -e 's,[[ 	]]*$,,'`
 		case "$cf_result" in
 		.*k|.*kw)
 			cf_result="`${MAKE:-make} -k -f cf_makeflags.tmp CC=cc 2>/dev/null`"
@@ -4243,7 +4244,7 @@ AC_DEFINE(NCURSES,1,[Define to 1 if we are using ncurses headers/libraries])
 CF_NCURSES_VERSION
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_HEADER version: 6 updated: 2021/01/02 09:31:20
+dnl CF_NCURSES_HEADER version: 7 updated: 2021/01/04 19:33:05
 dnl -----------------
 dnl Find a "curses" header file, e.g,. "curses.h", or one of the more common
 dnl variations of ncurses' installs.
@@ -4270,7 +4271,7 @@ AC_CACHE_CHECK(for $cf_ncuhdr_root include-path, cf_cv_ncurses_h2,[
 			CF_NCURSES_CC_CHECK(cf_cv_ncurses_h2,$cf_header,$1)
 			if test "$cf_cv_ncurses_h2" != no ; then
 				cf_cv_ncurses_h2=$cf_incdir/$cf_header
-				test -n "$verbose" && echo $ac_n "	... found $ac_c" 1>&AC_FD_MSG
+				test -n "$verbose" && echo $ECHO_N "	... found $ECHO_C" 1>&AC_FD_MSG
 				break
 			fi
 			test -n "$verbose" && echo "	... tested $cf_incdir/$cf_header" 1>&AC_FD_MSG
@@ -4534,7 +4535,7 @@ CF_ADD_LIBS($cf_cv_netlibs)
 test "$cf_test_netlibs" = no && echo "$cf_cv_netlibs" >&AC_FD_MSG
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NO_LEAKS_OPTION version: 7 updated: 2020/12/31 18:40:20
+dnl CF_NO_LEAKS_OPTION version: 8 updated: 2021/01/05 20:05:09
 dnl ------------------
 dnl see CF_WITH_NO_LEAKS
 AC_DEFUN([CF_NO_LEAKS_OPTION],[
@@ -4545,7 +4546,7 @@ AC_ARG_WITH($1,
 	 $4
 ])
 	: "${with_cflags:=-g}"
-	: "${with_no_leaks:=yes}"
+	: "${enable_leaks:=no}"
 	 with_$1=yes],
 	[with_$1=])
 AC_MSG_RESULT(${with_$1:-no})

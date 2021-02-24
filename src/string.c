@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2021-01-03
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1997-2021 Urs Janssen <urs@tin.org>
@@ -666,7 +666,7 @@ expand_tab(
 
 #define SH_FORMAT(c)	if (++result >= (int) len) \
 				break; \
-			*dst++ = c
+			*dst++ = (char)c
 
 #define SH_SINGLE "\\\'"
 #define SH_DOUBLE "\\\'\"`$"
@@ -917,7 +917,7 @@ wcspart(
 
 		gap = columns - wcswidth(wbuf, wcslen(wbuf) + 1);
 		assert(gap >= 0);
-		wbuf = my_realloc(wbuf, sizeof(wchar_t) * (wcslen(wbuf) + gap + 1));
+		wbuf = my_realloc(wbuf, sizeof(wchar_t) * (wcslen(wbuf) + (size_t)gap + 1));
 		ptr = wbuf + wcslen(wbuf); /* set ptr again to end of wbuf */
 
 		while (gap-- > 0)
@@ -1098,7 +1098,7 @@ strunc(
 		tmp = my_strdup(message);
 	else {
 		tmp = my_malloc(len + 1);
-		snprintf(tmp, len + 1, "%-.*s%s", len - 3, message, TRUNC_TAIL);
+		snprintf(tmp, (size_t)(len + 1), "%-.*s%s", len - 3, message, TRUNC_TAIL);
 	}
 
 	return tmp;
@@ -1134,7 +1134,7 @@ wstrunc(
 			tail = char2wchar_t(TRUNC_TAIL);
 
 		len_tail = tail ? wcslen(tail) : 0;
-		wtmp2 = wcspart(wtmp, len - len_tail, FALSE);
+		wtmp2 = wcspart(wtmp, (int)((size_t)len - len_tail), FALSE);
 		free(wtmp);
 		wtmp = my_realloc(wtmp2, sizeof(wchar_t) * (wcslen(wtmp2) + len_tail + 1));	/* wtmp2 isn't valid anymore and doesn't have to be free()ed */
 		if (!tail)
@@ -1512,13 +1512,13 @@ parse_format_string(
 		tmp_date_str[0] = '\0';
 		d_fmt = tmp_date_str;
 		if (*in > '0' && *in <= '9') {
-			len = atoi(in);
+			len = (size_t)atoi(in);
 			for (; *in >= '0' && *in <= '9'; in++)
 				;
 		}
 		if (*in == ',') {
 			if (*++in > '0' && *in <= '9') {
-				len2 = atoi(in);
+				len2 = (size_t)atoi(in);
 				for (; *in >= '0' && *in <= '9'; in++)
 					;
 			}
@@ -1539,7 +1539,7 @@ parse_format_string(
 				endp = startp = tmpp;
 
 			if (endp) {
-				tmplen = endp - in;
+				tmplen = (size_t)(endp - in);
 
 				for (in++; *in && --tmplen; in++)
 					*d_fmt++ = *in;
@@ -1587,7 +1587,7 @@ parse_format_string(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 						if ((wtmp = char2wchar_t(buf)) != NULL) {
 							if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1) {
-								fmt->len_date = strwidth(tmp);
+								fmt->len_date = (size_t)strwidth(tmp);
 							}
 							free(wtmp);
 						}
@@ -1779,7 +1779,7 @@ parse_format_string(
 				fmt->flags_offset = tinrc.draw_arrow ? 2 : 0;
 				fmt->ucnt_offset = tinrc.draw_arrow ? 10 : 8;
 				fmt->len_grpname_dsc = 32;
-				fmt->len_grpname_max = cCOLS - cnt - 1;
+				fmt->len_grpname_max = (size_t)cCOLS - cnt - 1;
 				fmt->len_ucnt = 5;
 				break;
 
@@ -1805,36 +1805,36 @@ parse_format_string(
 		}
 
 		if (flags & SUBJECT)
-			fmt->len_from = (cCOLS - cnt - 1) / 3;
+			fmt->len_from = ((size_t)cCOLS - cnt - 1) / 3;
 		else
-			fmt->len_from = (cCOLS - cnt - 1);
+			fmt->len_from = ((size_t)cCOLS - cnt - 1);
 
-		fmt->len_subj = cCOLS - fmt->len_from - cnt - 1;
+		fmt->len_subj = (size_t)cCOLS - fmt->len_from - cnt - 1;
 	} else {
 		if (flags & (GRP_NAME | GRP_DESC))
-			fmt->len_grpname_max = cCOLS - cnt - 1;
+			fmt->len_grpname_max = (size_t)cCOLS - cnt - 1;
 
 		if (!show_description && !(flags & GRP_NAME))
 			fmt->len_grpname_max = 0;
 
-		if (flags & DATE && fmt->len_date > (cCOLS - cnt - 1))
-			fmt->len_date = (cCOLS - cnt - 1);
+		if (flags & DATE && fmt->len_date > ((size_t)cCOLS - cnt - 1))
+			fmt->len_date = ((size_t)cCOLS - cnt - 1);
 
-		if (flags & DATE && (!fmt->len_date_max || fmt->len_date_max > (cCOLS - cnt - 1)))
+		if (flags & DATE && (!fmt->len_date_max || fmt->len_date_max > ((size_t)cCOLS - cnt - 1)))
 			fmt->len_date_max = fmt->len_date;
 
-		if (flags & FROM && (!fmt->len_from || fmt->len_from > (cCOLS - fmt->len_date_max - cnt - 1))) {
+		if (flags & FROM && (!fmt->len_from || fmt->len_from > ((size_t)cCOLS - fmt->len_date_max - cnt - 1))) {
 			if (flags & (SUBJECT | THREAD_TREE)) {
 				if (fmt->len_subj)
-					fmt->len_from = cCOLS - fmt->len_date_max - fmt->len_subj - cnt - 1;
+					fmt->len_from = (size_t)cCOLS - fmt->len_date_max - fmt->len_subj - cnt - 1;
 				else
-					fmt->len_from = (cCOLS - fmt->len_date_max - cnt - 1) / 3;
+					fmt->len_from = ((size_t)cCOLS - fmt->len_date_max - cnt - 1) / 3;
 			} else
-				fmt->len_from = (cCOLS - fmt->len_date_max - cnt - 1);
+				fmt->len_from = ((size_t)cCOLS - fmt->len_date_max - cnt - 1);
 		}
 
-		if (flags & (SUBJECT | THREAD_TREE) && (!fmt->len_subj || fmt->len_subj > (cCOLS - fmt->len_from - fmt->len_date_max - cnt - 1)))
-			fmt->len_subj = (cCOLS - fmt->len_from - fmt->len_date_max - cnt - 1);
+		if (flags & (SUBJECT | THREAD_TREE) && (!fmt->len_subj || fmt->len_subj > ((size_t)cCOLS - fmt->len_from - fmt->len_date_max - cnt - 1)))
+			fmt->len_subj = ((size_t)cCOLS - fmt->len_from - fmt->len_date_max - cnt - 1);
 	}
 }
 

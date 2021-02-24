@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2019-07-07
+ *  Updated   : 2021-02-23
  *
  * Copyright (c) 1997-2021 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -195,8 +195,8 @@ get_fqdn(
 				line[MAXLINELEN] = '\0';
 
 				if ((eos = strpbrk(line, WS)) != NULL) {
-					if ((j = eos - line)) {
-						if (!strncmp(line, "domain", j) || !strncmp(line, "search", j)) {
+					if ((j = (int)(eos - line))) {
+						if (!strncmp(line, "domain", (size_t)j) || !strncmp(line, "search", (size_t)j)) {
 							domain = strtok(eos, WS);
 							break;
 						}
@@ -286,7 +286,7 @@ get_full_name(
 			*p++ = '\0';
 			STRCPY(tmp, pw->pw_name);
 			if (*tmp && isalpha((int)(unsigned char) *tmp) && islower((int)(unsigned char) *tmp))
-				*tmp = my_toupper((int)(unsigned char) *tmp);
+				*tmp = (char)my_toupper((int)(unsigned char) *tmp);
 			snprintf(fullname, sizeof(fullname), "%s%s%s", buf, tmp, p);
 		} else
 			STRCPY(fullname, buf);

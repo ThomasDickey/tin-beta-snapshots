@@ -3,7 +3,7 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2018-11-22
+ *  Updated   : 2021-02-23
  *  Notes     : RFC 2045/2047 encoding
  *
  * Copyright (c) 1995-2021 Chris Blum <chris@resolution.de>
@@ -55,8 +55,8 @@ bin2hex(
 	unsigned int x)
 {
 	if (x < 10)
-		return x + '0';
-	return x - 10 + 'A';
+		return (unsigned char)(x + '0');
+	return (unsigned char)(x - 10 + 'A');
 }
 
 
@@ -182,8 +182,8 @@ rfc1521_encode(
 				}
 				if (!*l) {		/* trailing whitespace must be encoded */
 					*b++ = '=';
-					*b++ = bin2hex(HI4BITS(line));
-					*b++ = bin2hex(LO4BITS(line));
+					*b++ = (char)bin2hex(HI4BITS(line));
+					*b++ = (char)bin2hex(LO4BITS(line));
 					xpos += 3;
 					line++;
 				}
@@ -195,8 +195,8 @@ rfc1521_encode(
 					break;
 			} else {
 				*b++ = '=';
-				*b++ = bin2hex(HI4BITS(line));
-				*b++ = bin2hex(LO4BITS(line));
+				*b++ = (char)bin2hex(HI4BITS(line));
+				*b++ = (char)bin2hex(LO4BITS(line));
 				xpos += 3;
 				line++;
 			}
@@ -489,11 +489,11 @@ read_decoded_qp_line(
 		 * Join physical lines to a logical one; keep in mind that a LF is
 		 * added afterwards.
 		 */
-		if (chars_to_add > buflen - strlen(buf) - 2) {
+		if (chars_to_add > ((size_t)buflen - strlen(buf) - 2)) {
 			buflen <<= 1;
 			buf = my_realloc(buf, buflen);
 		}
-		strncat(buf, buf2, buflen - 2);
+		strncat(buf, buf2, (size_t)(buflen - 2));
 	} while ((c == '=') && (lines_read < max_lines_to_read));
 	/*
 	 * re-add newline and NULL termination at end of line

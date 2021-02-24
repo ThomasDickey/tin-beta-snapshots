@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2020-05-13
+ *  Updated   : 2021-02-23
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -115,7 +115,7 @@ hash_msgid(
 	unsigned int hash = 0;
 
 	while (*key && *key != '@') {
-		hash = (hash << 1) ^ *key;
+		hash = (hash << 1) ^ (unsigned) *key;
 		++key;
 	}
 

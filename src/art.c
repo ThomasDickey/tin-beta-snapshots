@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-07-08
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -947,7 +947,7 @@ thread_by_percentage(
 		 */
 		if (!(slen = strlen(arts[base[root_num]].subject)))
 			slen++;
-		unmatched += slen - strlen(arts[i].subject);
+		unmatched += (unsigned)(slen - strlen(arts[i].subject));
 		if (unmatched * 100 / slen > percentage) {
 			/*
 			 * If there is less greater than percentage% different start a
@@ -1026,7 +1026,7 @@ global_look_for_multipart_info(
 		return 0;
 
 	tmp.arts_index = aindex;
-	tmp.subject_compare_len = pch - subj;
+	tmp.subject_compare_len = (int)(pch - subj);
 	tmp.part_number = (int) strtol(pch + 1, &pch, 10);
 	if (*pch != '/' && *pch != '|')
 		return 0;
@@ -1046,7 +1046,7 @@ global_look_for_multipart_info(
 
 	tmp.subject = subj;
 	*setme = tmp;
-	*offset = pch - subj;
+	*offset = (int)(pch - subj);
 	return 1;
 }
 
@@ -1110,7 +1110,7 @@ global_get_multiparts(
 		return 0;
 
 	/* make a temporary buffer to hold the multipart info... */
-	info = my_malloc(sizeof(MultiPartInfo) * tmp.total);
+	info = my_malloc(sizeof(MultiPartInfo) * (size_t)tmp.total);
 
 	/* zero out part-number for the repost check below */
 	for (i = 0; i < tmp.total; ++i) {
@@ -1120,7 +1120,7 @@ global_get_multiparts(
 
 	/* try to find all the multiparts... */
 	for (i = (tagging ? 0 : aindex); i < top_art; i++) {
-		if (!arts[i].multipart_subj || strncmp(arts[i].subject, tmp.subject, tmp.subject_compare_len))
+		if (!arts[i].multipart_subj || strncmp(arts[i].subject, tmp.subject, (size_t)tmp.subject_compare_len))
 			continue;
 
 		if (!global_get_multipart_info(i, &tmp2))
@@ -1315,7 +1315,7 @@ make_threads(
 			break;
 
 		case THREAD_PERC:
-			thread_by_percentage(100 - group->attribute->thread_perc);
+			thread_by_percentage((unsigned)(100 - group->attribute->thread_perc));
 			break;
 
 		default: /* not reached */
@@ -1833,7 +1833,7 @@ get_path_header(
 				if (arts[i].artnum == artnum) {
 					FreeIfNeeded(arts[i].path);
 					arts[i].path = my_strdup(ptr);
-					j = i;
+					j = (int)i;
 					break;
 				}
 			}
@@ -3096,8 +3096,8 @@ score_comp_base(
 	t_comptype p1,
 	t_comptype p2)
 {
-	int a = get_score_of_thread(*(const long *) p1);
-	int b = get_score_of_thread(*(const long *) p2);
+	int a = get_score_of_thread((int) *(const long *) p1);
+	int b = get_score_of_thread((int) *(const long *) p2);
 
 	/* If scores are equal, compare using the article sort order.
 	 * This determines the order in a group of equally scored threads.

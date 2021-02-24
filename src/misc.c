@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-07-08
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -982,13 +982,13 @@ eat_re(
 		return "<No subject>"; /* also used in art.c:parse_headers() */
 
 	do {
-		data = pcre_exec(strip_re_regex.re, strip_re_regex.extra, s, strlen(s), 0, 0, offsets, size_offsets);
+		data = pcre_exec(strip_re_regex.re, strip_re_regex.extra, s, (int)strlen(s), 0, 0, offsets, size_offsets);
 		if (offsets[0] == 0)
 			s += offsets[1];
 	} while (data >= 0);
 
 	if (eat_was) do {
-		data = pcre_exec(strip_was_regex.re, strip_was_regex.extra, s, strlen(s), 0, 0, offsets, size_offsets);
+		data = pcre_exec(strip_was_regex.re, strip_was_regex.extra, s, (int)strlen(s), 0, 0, offsets, size_offsets);
 		if (offsets[0] > 0)
 			s[offsets[0]] = '\0';
 	} while (data >= 0);
@@ -1239,7 +1239,7 @@ strfquote(
 					tbuf[2] = '\0';
 					break;
 			}
-			i = strlen(tbuf);
+			i = (int)strlen(tbuf);
 			if (i) {
 				if (s + i < endp - 1) {
 					strcpy(s, tbuf);
@@ -1322,7 +1322,7 @@ strfquote(
 					tbuf[2] = '\0';
 					break;
 			}
-			i = strlen(tbuf);
+			i = (int)strlen(tbuf);
 			if (i) {
 				if (s + i < endp - 1) {
 					strcpy(s, tbuf);
@@ -1335,7 +1335,7 @@ strfquote(
 out:
 	if (s < endp && *format == '\0') {
 		*s = '\0';
-		return (s - start);
+		return (int)(s - start);
 	} else
 		return 0;
 }
@@ -1394,7 +1394,7 @@ strfeditor(
 					tbuf[2] = '\0';
 					break;
 			}
-			i = strlen(tbuf);
+			i = (int)strlen(tbuf);
 			if (i) {
 				if (s + i < endp - 1) {
 					strcpy(s, tbuf);
@@ -1433,7 +1433,7 @@ strfeditor(
 					tbuf[2] = '\0';
 					break;
 			}
-			i = strlen(tbuf);
+			i = (int)strlen(tbuf);
 			if (i) {
 				if (s + i < endp - 1) {
 					strcpy(s, tbuf);
@@ -1446,7 +1446,7 @@ strfeditor(
 out:
 	if (s < endp && *format == '\0') {
 		*s = '\0';
-		return (s - start);
+		return (int)(s - start);
 	} else
 		return 0;
 }
@@ -1664,7 +1664,7 @@ _strfpath(
 				if (group != NULL && *format == 'G') {
 					memset(tbuf, 0, sizeof(tbuf));
 					STRCPY(tbuf, group->name);
-					i = strlen(tbuf);
+					i = (int)strlen(tbuf);
 					if (((str + i) < (endp - 1)) && (i > 0)) {
 						strcpy(str, tbuf);
 						str += i;
@@ -1678,7 +1678,7 @@ _strfpath(
 					char *pbuf = my_malloc(strlen(group->name) + 2); /* trailing "/\0" */
 
 					make_group_path(group->name, pbuf);
-					if ((i = strlen(pbuf)))
+					if ((i = (int)strlen(pbuf)))
 						pbuf[i--] = '\0'; /* remove trailing '/' */
 					else {
 						str[0] = '\0';
@@ -1893,7 +1893,7 @@ strfmailer(
 					break;
 			}
 			if (*tbuf) {
-				if (sh_format(dest, endp - dest, "%s", tbuf) >= 0)
+				if (sh_format(dest, (size_t)(endp - dest), "%s", tbuf) >= 0)
 					dest += strlen(dest);
 				else
 					return 0;
@@ -1991,10 +1991,10 @@ strfmailer(
 			if (*tbuf) {
 				if (escaped) {
 					if (endp - dest > 0) {
-						strncpy(dest, tbuf, endp - dest);
+						strncpy(dest, tbuf, (size_t)(endp - dest));
 						dest += strlen(dest);
 					}
-				} else if (sh_format(dest, endp - dest, "%s", tbuf) >= 0) {
+				} else if (sh_format(dest, (size_t)(endp - dest), "%s", tbuf) >= 0) {
 					dest += strlen(dest);
 				} else
 					return 0;
@@ -2004,7 +2004,7 @@ strfmailer(
 out:
 	if (dest < endp && *format == '\0') {
 		*dest = '\0';
-		return (dest - start);
+		return (int)(dest - start);
 	} else
 		return 0;
 }
@@ -2032,7 +2032,7 @@ get_initials(
 	STRCPY(tbuf, ((art->name != NULL) ? art->name : art->from));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((wtmp = char2wchar_t(tbuf)) != NULL) {
-		wbuf = my_malloc(sizeof(wchar_t) * (maxsize + 1));
+		wbuf = my_malloc(sizeof(wchar_t) * (size_t)(maxsize + 1));
 		for (i = 0; wtmp[i] && j < maxsize; i++) {
 			if (iswalpha((wint_t) wtmp[i])) {
 				if (!iflag) {
@@ -2505,7 +2505,7 @@ buffer_to_local(
 					 */
 					cur_inbuf = inbuf;
 					cur_ibl = inbytesleft;
-					used = outbuf - obuf;
+					used = (int)(outbuf - obuf);
 					cur_obl = outbytesleft;
 
 					errno = 0;
@@ -3702,12 +3702,12 @@ utf8_valid(
 
 		if (c + numc > line + strlen(line)) { /* sequence runs past end of string */
 			illegal = TRUE;
-			numc = line + strlen(line) - c;
+			numc = (int)(line + strlen(line) - c);
 		}
 
 		if (!illegal) {
-			d = *c;
-			e = *(c + 1);
+			d = (unsigned char)*c;
+			e = (unsigned char)*(c + 1);
 
 			switch (numc) {
 				case 2:
@@ -3717,7 +3717,7 @@ utf8_valid(
 					break;
 
 				case 3:
-					f = *(c + 2);
+					f = (unsigned char)*(c + 2);
 					/* out of range or sequences which would also fit into 2 bytes */
 					if (d < 0xe0 || d > 0xef || (d == 0xe0 && e < 0xa0))
 						illegal = TRUE;
@@ -3733,8 +3733,8 @@ utf8_valid(
 					break;
 
 				case 4:
-					f = *(c + 2);
-					g = *(c + 3);
+					f = (unsigned char)*(c + 2);
+					g = (unsigned char)*(c + 3);
 					/* out of range or sequences which would also fit into 3 bytes */
 					if (d < 0xf0 || d > 0xf7 || (d == 0xf0 && e < 0x90))
 						illegal = TRUE;
@@ -3782,7 +3782,7 @@ utf8_valid(
 		}
 
 		for (d = 1; d < numc && !illegal; d++) {
-			e = *(c + d);
+			e = (unsigned char)*(c + d);
 			if (e < 0x80 || e > 0xbf || e == '\0' || e == '\n')
 				illegal = TRUE;
 		}

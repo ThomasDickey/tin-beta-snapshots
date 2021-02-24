@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-05-19
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -97,9 +97,9 @@ init_alloc(
 	max_active = DEFAULT_ACTIVE_NUM;
 	max_newnews = DEFAULT_NEWNEWS_NUM;
 
-	active = my_malloc(sizeof(*active) * max_active);
-	newnews = my_malloc(sizeof(*newnews) * max_newnews);
-	my_group = my_calloc(1, sizeof(int) * max_active);
+	active = my_malloc(sizeof(*active) * (size_t)max_active);
+	newnews = my_malloc(sizeof(*newnews) * (size_t)max_newnews);
+	my_group = my_calloc(1, sizeof(int) * (size_t)max_active);
 
 	/*
 	 * article headers array
@@ -107,8 +107,8 @@ init_alloc(
 	max_art = DEFAULT_ARTICLE_NUM;
 	max_base = DEFAULT_ARTICLE_NUM;
 
-	arts = my_calloc(1, sizeof(*arts) * max_art);
-	base = my_malloc(sizeof(t_artnum) * max_base);
+	arts = my_calloc(1, sizeof(*arts) * (size_t)max_art);
+	base = my_malloc(sizeof(t_artnum) * (size_t)max_base);
 
 	ofmt = my_calloc(1, sizeof(*ofmt) * 9);	/* initial number of overview fields */
 
@@ -117,7 +117,7 @@ init_alloc(
 	 */
 	max_save = DEFAULT_SAVE_NUM;
 
-	save = my_malloc(sizeof(*save) * max_save);
+	save = my_malloc(sizeof(*save) * (size_t)max_save);
 
 	/*
 	 * scope array
@@ -138,7 +138,7 @@ expand_art(
 	int i = max_art;
 
 	max_art += max_art >> 1;		/* increase by 50% */
-	arts = my_realloc(arts, sizeof(*arts) * max_art);
+	arts = my_realloc(arts, sizeof(*arts) * (size_t)max_art);
 		/*
 		 * memset(&arts[i].artnum, 0, (max_art - i - 1) * sizeof(*arts));
 		 * seems to be not faster at all
@@ -154,11 +154,11 @@ expand_active(
 {
 	max_active += max_active >> 1;		/* increase by 50% */
 	if (active == NULL) {
-		active = my_malloc(sizeof(*active) * max_active);
-		my_group = my_calloc(1, sizeof(int) * max_active);
+		active = my_malloc(sizeof(*active) * (size_t)max_active);
+		my_group = my_calloc(1, sizeof(int) * (size_t)max_active);
 	} else {
-		active = my_realloc(active, sizeof(*active) * max_active);
-		my_group = my_realloc(my_group, sizeof(int) * max_active);
+		active = my_realloc(active, sizeof(*active) * (size_t)max_active);
+		my_group = my_realloc(my_group, sizeof(int) * (size_t)max_active);
 	}
 }
 
@@ -168,7 +168,7 @@ expand_base(
 	void)
 {
 	max_base += max_base >> 1;		/* increase by 50% */
-	base = my_realloc(base, sizeof(t_artnum) * max_base);
+	base = my_realloc(base, sizeof(t_artnum) * (size_t)max_base);
 }
 
 
@@ -177,7 +177,7 @@ expand_save(
 	void)
 {
 	max_save += max_save >> 1;		/* increase by 50% */
-	save = my_realloc(save, sizeof(struct t_save) * max_save);
+	save = my_realloc(save, sizeof(struct t_save) * (size_t)max_save);
 }
 
 
@@ -187,11 +187,11 @@ expand_scope(
 {
 	if ((scopes == NULL) || (num_scope < 0)) {
 		if (scopes == NULL)
-			scopes = my_malloc(sizeof(*scopes) * max_scope);
+			scopes = my_malloc(sizeof(*scopes) * (size_t)max_scope);
 		num_scope = 0;
 	} else {
 		max_scope += max_scope >> 1;	/* increase by 50% */
-		scopes = my_realloc(scopes, sizeof(*scopes) * max_scope);
+		scopes = my_realloc(scopes, sizeof(*scopes) * (size_t)max_scope);
 	}
 }
 
@@ -201,7 +201,7 @@ expand_newnews(
 	void)
 {
 	max_newnews += max_newnews >> 1;			/* increase by 50% */
-	newnews = my_realloc(newnews, sizeof(struct t_newnews) * max_newnews);
+	newnews = my_realloc(newnews, sizeof(struct t_newnews) * (size_t)max_newnews);
 }
 
 
@@ -213,13 +213,13 @@ init_screen_array(
 	int i;
 
 	if (allocate) {
-		screen = my_malloc(sizeof(struct t_screen) * cLINES + 1);
+		screen = my_malloc(sizeof(struct t_screen) * (size_t)cLINES + 1);
 
 		for (i = 0; i < cLINES; i++)
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			screen[i].col = my_malloc((size_t) (cCOLS * MB_CUR_MAX + 2));
+			screen[i].col = my_malloc((size_t) ((size_t)cCOLS * MB_CUR_MAX + 2));
 #	else
-			screen[i].col = my_malloc((size_t) (cCOLS + 2));
+			screen[i].col = my_malloc((size_t) ((size_t)cCOLS + 2));
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	} else {
 		if (screen != NULL) {

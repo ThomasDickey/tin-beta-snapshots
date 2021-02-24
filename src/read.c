@@ -3,7 +3,7 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2020-05-27
+ *  Updated   : 2021-02-23
  *
  * Copyright (c) 1997-2021 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
@@ -216,9 +216,9 @@ tin_read(
 	 * Initially try and fit into supplied buffer
 	 */
 	if (fp == FAKE_NNTP_FP)
-		ptr = get_server(buffer, len);
+		ptr = get_server(buffer, (int)len);
 	else
-		ptr = fgets(buffer, len, fp);
+		ptr = fgets(buffer, (int)len, fp);
 #else
 	errno = 0;		/* To check errno after read, clear it here */
 
@@ -239,7 +239,7 @@ tin_read(
 	 * We strip trailing \r and \n here and here _only_
 	 * 'offset' is the # of chars which we read now
 	 */
-	i = strlen(buffer);
+	i = (int)strlen(buffer);
 	if (i >= 1 && buffer[i - 1] == '\n') {
 
 		if (i >= 2 && buffer[i - 2] == '\r') {
@@ -344,7 +344,7 @@ tin_fgets(
 	size = INIT;
 #endif /* 1 */
 
-	if (tin_read(dynbuf, size, fp, header) == NULL)
+	if (tin_read(dynbuf, (size_t)size, fp, header) == NULL)
 		return NULL;
 
 	if (tin_errno != 0) {
@@ -357,8 +357,8 @@ tin_fgets(
 	while (partial_read) {
 		if (next + RCHUNK > size)
 			size = next + RCHUNK;
-		dynbuf = my_realloc(dynbuf, size * sizeof(*dynbuf));
-		(void) tin_read(dynbuf + next, size - next, fp, header); /* What if == NULL? */
+		dynbuf = my_realloc(dynbuf, (size_t)size * sizeof(*dynbuf));
+		(void) tin_read(dynbuf + next, (size_t)(size - next), fp, header); /* What if == NULL? */
 		next += offset;
 
 		if (tin_errno != 0)

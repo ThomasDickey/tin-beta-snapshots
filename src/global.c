@@ -3,7 +3,7 @@
  *  Module    : global.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-12
- *  Updated   : 2005-10-19
+ *  Updated   : 2021-02-23
  *  Notes     : Generic navigation and key handling routines
  *
  * Copyright (c) 1999-2021 Jason Faultless <jason@altarstone.com>
@@ -416,7 +416,7 @@ handle_keypad(
 			break;
 
 		default:
-			func = key_to_func(ch, keys);
+			func = key_to_func((wchar_t)ch, keys);
 			break;
 	}
 	return func;

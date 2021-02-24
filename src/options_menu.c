@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2020-06-10
+ *  Updated   : 2021-02-23
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2021 Michael Bienia <michael@vorlon.ping.de>
@@ -51,17 +51,30 @@
 
 #define option_lines_per_page (cLINES - INDEX_TOP - 3)
 
+#define UPDATE_BOOL_ATTRIBUTES(option) do { \
+		scopes[0].attribute->option = CAST_BOOL(tinrc.option); \
+		changed |= MISC_OPTS; \
+	} while (0)
+
 #define UPDATE_INT_ATTRIBUTES(option) do { \
-		scopes[0].attribute->option = tinrc.option; \
+		scopes[0].attribute->option = CAST_BITS(tinrc.option, option); \
 		changed |= MISC_OPTS; \
 	} while (0)
 
 #define CAO(A, O) A ## O
-#define SET_NUM_ATTRIBUTE(option) do { \
-		curr_scope->attribute->option = CAO(tinrc.attrib_, option); \
+
+#define SET_BOOL_ATTRIBUTE(option) do { \
+		curr_scope->attribute->option = CAST_BOOL(CAO(tinrc.attrib_, option)); \
 		curr_scope->state->option = TRUE; \
 		changed |= MISC_OPTS; \
 	} while (0)
+
+#define SET_NUM_ATTRIBUTE(option) do { \
+		curr_scope->attribute->option = CAST_BITS(CAO(tinrc.attrib_, option), option); \
+		curr_scope->state->option = TRUE; \
+		changed |= MISC_OPTS; \
+	} while (0)
+
 #define SET_STRING_ATTRIBUTE(opt) do { \
 		if (!strlen(CAO(tinrc.attrib_, opt))) { \
 			reset_state(option); \
@@ -392,7 +405,7 @@ fmt_option_prompt(
 	enum option_enum option)
 {
 	char *buf;
-	size_t option_width = MAX(35, cCOLS / 2 - 9);
+	size_t option_width = (size_t)MAX(35, cCOLS / 2 - 9);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wbuf, *wbuf2;
 
@@ -407,21 +420,21 @@ fmt_option_prompt(
 		flag = (curr_scope && check_state(option)) ? '+' : ' ';
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (wbuf != NULL) {
-			wbuf2 = wstrunc(wbuf, option_width);
+			wbuf2 = wstrunc(wbuf, (int)option_width);
 			if ((buf = wchar_t2char(wbuf2)) == NULL) {
 				/* conversion failed, truncate original string */
-				buf = strunc(_(option_table[option].txt->opt), option_width);
+				buf = strunc(_(option_table[option].txt->opt), (int)option_width);
 				snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num, (int) option_width, (int) option_width, buf);
 			} else
 				snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num,
-					(int) (strlen(buf) + option_width - wcswidth(wbuf2, option_width + 1)),
-					(int) (strlen(buf) + option_width - wcswidth(wbuf2, option_width + 1)), buf);
+					(int) (strlen(buf) + option_width - (size_t)wcswidth(wbuf2, option_width + 1)),
+					(int) (strlen(buf) + option_width - (size_t)wcswidth(wbuf2, option_width + 1)), buf);
 			free(wbuf2);
 		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		{
 			/* truncate original string */
-			buf = strunc(_(option_table[option].txt->opt), option_width);
+			buf = strunc(_(option_table[option].txt->opt), (int)option_width);
 			snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num, (int) option_width, (int) option_width, buf);
 		}
 	} else {
@@ -510,9 +523,9 @@ print_any_option(
 	my_printf("%.*s", cCOLS - 1, temp);
 	/* draw_arrow_mark() will read this back for repainting */
 	if (tinrc.strip_blanks)
-		strncpy(screen[row - INDEX_TOP].col, temp, cCOLS - 1);
+		strncpy(screen[row - INDEX_TOP].col, temp, (size_t)(cCOLS - 1));
 	else
-		snprintf(screen[row - INDEX_TOP].col, cCOLS, "%-*s", cCOLS - 1, temp);
+		snprintf(screen[row - INDEX_TOP].col, (size_t)cCOLS, "%-*s", cCOLS - 1, temp);
 #endif /* USE_CURSES */
 }
 
@@ -1002,11 +1015,11 @@ config_page(
 					 * restore the cached state if no changes were made
 					 */
 					if (!(changed & SHOW_AUTHOR))
-						curr_group->attribute->show_author = old_show_author;
+						curr_group->attribute->show_author = CAST_BITS(old_show_author,show_author);
 					if (!(changed & SHOW_ONLY_UNREAD))
-						curr_group->attribute->show_only_unread_arts = old_show_unread;
+						curr_group->attribute->show_only_unread_arts = CAST_BOOL(old_show_unread);
 					if (!(changed & THREAD_ARTS))
-						curr_group->attribute->thread_articles = old_thread_arts;
+						curr_group->attribute->thread_articles = CAST_BITS(old_thread_arts,thread_articles);
 
 					if (changed) {
 						t_bool filtered = FALSE;
@@ -1056,7 +1069,7 @@ config_page(
 							find_base(curr_group);
 
 						if (level == cPage)
-							arts[this_resp].keep_in_base = old_keep_in_base;
+							arts[this_resp].keep_in_base = CAST_BOOL(old_keep_in_base);
 					}
 				}
 				clear_note_area();
@@ -1291,7 +1304,7 @@ config_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, option_menu_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, option_menu_keys)));
 				break;
 		} /* switch (ch) */
 
@@ -1325,37 +1338,37 @@ config_page(
 
 						case OPT_ADD_POSTED_TO_FILTER:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(add_posted_to_filter);
+								UPDATE_BOOL_ATTRIBUTES(add_posted_to_filter);
 							break;
 
 						case OPT_ADVERTISING:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(advertising);
+								UPDATE_BOOL_ATTRIBUTES(advertising);
 							break;
 
 						case OPT_ALTERNATIVE_HANDLING:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(alternative_handling);
+								UPDATE_BOOL_ATTRIBUTES(alternative_handling);
 							break;
 
 						case OPT_ASK_FOR_METAMAIL:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(ask_for_metamail);
+								UPDATE_BOOL_ATTRIBUTES(ask_for_metamail);
 							break;
 
 						case OPT_AUTO_LIST_THREAD:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(auto_list_thread);
+								UPDATE_BOOL_ATTRIBUTES(auto_list_thread);
 							break;
 
 						case OPT_AUTO_SAVE:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(auto_save);
+								UPDATE_BOOL_ATTRIBUTES(auto_save);
 							break;
 
 						case OPT_BATCH_SAVE:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(batch_save);
+								UPDATE_BOOL_ATTRIBUTES(batch_save);
 							break;
 
 #ifdef HAVE_COLOR
@@ -1365,7 +1378,7 @@ config_page(
 							 * options -> needs redraw_screen()
 							 */
 							if (prompt_option_on_off(option)) {
-								UPDATE_INT_ATTRIBUTES(extquote_handling);
+								UPDATE_BOOL_ATTRIBUTES(extquote_handling);
 								set_last_option_on_screen(first_option_on_screen);
 								redraw_screen(option);
 								changed |= DISPLAY_OPTS;
@@ -1375,64 +1388,64 @@ config_page(
 
 						case OPT_GROUP_CATCHUP_ON_EXIT:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(group_catchup_on_exit);
+								UPDATE_BOOL_ATTRIBUTES(group_catchup_on_exit);
 							break;
 
 						case OPT_MARK_IGNORE_TAGS:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(mark_ignore_tags);
+								UPDATE_BOOL_ATTRIBUTES(mark_ignore_tags);
 							break;
 
 						case OPT_MARK_SAVED_READ:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(mark_saved_read);
+								UPDATE_BOOL_ATTRIBUTES(mark_saved_read);
 							break;
 
 						case OPT_POST_PROCESS_VIEW:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(post_process_view);
+								UPDATE_BOOL_ATTRIBUTES(post_process_view);
 							break;
 
 						case OPT_POS_FIRST_UNREAD:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(pos_first_unread);
+								UPDATE_BOOL_ATTRIBUTES(pos_first_unread);
 							break;
 
 #ifndef DISABLE_PRINTING
 						case OPT_PRINT_HEADER:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(print_header);
+								UPDATE_BOOL_ATTRIBUTES(print_header);
 							break;
 #endif /* !DISABLE_PRINTING */
 
 						case OPT_PROCESS_ONLY_UNREAD:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(process_only_unread);
+								UPDATE_BOOL_ATTRIBUTES(process_only_unread);
 							break;
 
 						case OPT_PROMPT_FOLLOWUPTO:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(prompt_followupto);
+								UPDATE_BOOL_ATTRIBUTES(prompt_followupto);
 							break;
 
 						case OPT_SHOW_SIGNATURES:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(show_signatures);
+								UPDATE_BOOL_ATTRIBUTES(show_signatures);
 							break;
 
 						case OPT_SIGDASHES:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(sigdashes);
+								UPDATE_BOOL_ATTRIBUTES(sigdashes);
 							break;
 
 						case OPT_SIGNATURE_REPOST:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(signature_repost);
+								UPDATE_BOOL_ATTRIBUTES(signature_repost);
 							break;
 
 						case OPT_START_EDITOR_OFFSET:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(start_editor_offset);
+								UPDATE_BOOL_ATTRIBUTES(start_editor_offset);
 							break;
 
 #ifndef USE_CURSES
@@ -1446,17 +1459,17 @@ config_page(
 
 						case OPT_TEX2ISO_CONV:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(tex2iso_conv);
+								UPDATE_BOOL_ATTRIBUTES(tex2iso_conv);
 							break;
 
 						case OPT_THREAD_CATCHUP_ON_EXIT:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(thread_catchup_on_exit);
+								UPDATE_BOOL_ATTRIBUTES(thread_catchup_on_exit);
 							break;
 
 						case OPT_WRAP_ON_NEXT_UNREAD:
 							if (prompt_option_on_off(option))
-								UPDATE_INT_ATTRIBUTES(wrap_on_next_unread);
+								UPDATE_BOOL_ATTRIBUTES(wrap_on_next_unread);
 							break;
 
 						case OPT_VERBATIM_HANDLING:
@@ -1465,7 +1478,7 @@ config_page(
 							 * options -> needs redraw_screen()
 							 */
 							if (prompt_option_on_off(option)) {
-								UPDATE_INT_ATTRIBUTES(verbatim_handling);
+								UPDATE_BOOL_ATTRIBUTES(verbatim_handling);
 								set_last_option_on_screen(first_option_on_screen);
 								redraw_screen(option);
 							}
@@ -1482,7 +1495,7 @@ config_page(
 						/* show all arts or just new/unread arts */
 						case OPT_SHOW_ONLY_UNREAD_ARTS:
 							if (prompt_option_on_off(option)) {
-								UPDATE_INT_ATTRIBUTES(show_only_unread_arts);
+								UPDATE_BOOL_ATTRIBUTES(show_only_unread_arts);
 								changed |= SHOW_ONLY_UNREAD;
 							}
 							break;
@@ -1520,7 +1533,7 @@ config_page(
 									tinrc.mail_8bit_header = FALSE;
 									print_any_option(OPT_MAIL_8BIT_HEADER);
 								}
-								UPDATE_INT_ATTRIBUTES(mail_8bit_header);
+								UPDATE_BOOL_ATTRIBUTES(mail_8bit_header);
 							}
 							break;
 
@@ -1531,7 +1544,7 @@ config_page(
 									tinrc.post_8bit_header = FALSE;
 									print_any_option(OPT_POST_8BIT_HEADER);
 								}
-								UPDATE_INT_ATTRIBUTES(post_8bit_header);
+								UPDATE_BOOL_ATTRIBUTES(post_8bit_header);
 							}
 							break;
 
@@ -1594,183 +1607,183 @@ config_page(
 
 						case OPT_ATTRIB_ADD_POSTED_TO_FILTER:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(add_posted_to_filter);
+								SET_BOOL_ATTRIBUTE(add_posted_to_filter);
 							break;
 
 						case OPT_ATTRIB_ADVERTISING:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(advertising);
+								SET_BOOL_ATTRIBUTE(advertising);
 							break;
 
 						case OPT_ATTRIB_ALTERNATIVE_HANDLING:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(alternative_handling);
+								SET_BOOL_ATTRIBUTE(alternative_handling);
 							break;
 
 						case OPT_ATTRIB_ASK_FOR_METAMAIL:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(ask_for_metamail);
+								SET_BOOL_ATTRIBUTE(ask_for_metamail);
 							break;
 
 						case OPT_ATTRIB_AUTO_LIST_THREAD:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(auto_list_thread);
+								SET_BOOL_ATTRIBUTE(auto_list_thread);
 							break;
 
 						case OPT_ATTRIB_AUTO_SAVE:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(auto_save);
+								SET_BOOL_ATTRIBUTE(auto_save);
 							break;
 
 						case OPT_ATTRIB_AUTO_SELECT:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(auto_select);
+								SET_BOOL_ATTRIBUTE(auto_select);
 							break;
 
 						case OPT_ATTRIB_BATCH_SAVE:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(batch_save);
+								SET_BOOL_ATTRIBUTE(batch_save);
 							break;
 
 						case OPT_ATTRIB_DELETE_TMP_FILES:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(delete_tmp_files);
+								SET_BOOL_ATTRIBUTE(delete_tmp_files);
 							break;
 
 #ifdef HAVE_COLOR
 						case OPT_ATTRIB_EXTQUOTE_HANDLING:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(extquote_handling);
+								SET_BOOL_ATTRIBUTE(extquote_handling);
 							break;
 #endif /* HAVE_COLOR */
 
 						case OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(group_catchup_on_exit);
+								SET_BOOL_ATTRIBUTE(group_catchup_on_exit);
 							break;
 
 						case OPT_ATTRIB_MAIL_8BIT_HEADER:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(mail_8bit_header);
+								SET_BOOL_ATTRIBUTE(mail_8bit_header);
 							break;
 
 						case OPT_ATTRIB_MARK_IGNORE_TAGS:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(mark_ignore_tags);
+								SET_BOOL_ATTRIBUTE(mark_ignore_tags);
 							break;
 
 						case OPT_ATTRIB_MARK_SAVED_READ:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(mark_saved_read);
+								SET_BOOL_ATTRIBUTE(mark_saved_read);
 							break;
 
 						case OPT_ATTRIB_MIME_FORWARD:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(mime_forward);
+								SET_BOOL_ATTRIBUTE(mime_forward);
 							break;
 
 						case OPT_ATTRIB_POST_8BIT_HEADER:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(post_8bit_header);
+								SET_BOOL_ATTRIBUTE(post_8bit_header);
 							break;
 
 						case OPT_ATTRIB_POST_PROCESS_VIEW:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(post_process_view);
+								SET_BOOL_ATTRIBUTE(post_process_view);
 							break;
 
 						case OPT_ATTRIB_POS_FIRST_UNREAD:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(pos_first_unread);
+								SET_BOOL_ATTRIBUTE(pos_first_unread);
 							break;
 
 #ifndef DISABLE_PRINTING
 						case OPT_ATTRIB_PRINT_HEADER:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(print_header);
+								SET_BOOL_ATTRIBUTE(print_header);
 							break;
 #endif /* !DISABLE_PRINTING */
 
 						case OPT_ATTRIB_PROCESS_ONLY_UNREAD:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(process_only_unread);
+								SET_BOOL_ATTRIBUTE(process_only_unread);
 							break;
 
 						case OPT_ATTRIB_PROMPT_FOLLOWUPTO:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(prompt_followupto);
+								SET_BOOL_ATTRIBUTE(prompt_followupto);
 							break;
 
 						case OPT_ATTRIB_QUICK_KILL_CASE:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(quick_kill_case);
+								SET_BOOL_ATTRIBUTE(quick_kill_case);
 							break;
 
 						case OPT_ATTRIB_QUICK_KILL_EXPIRE:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(quick_kill_expire);
+								SET_BOOL_ATTRIBUTE(quick_kill_expire);
 							break;
 
 						case OPT_ATTRIB_QUICK_SELECT_CASE:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(quick_select_case);
+								SET_BOOL_ATTRIBUTE(quick_select_case);
 							break;
 
 						case OPT_ATTRIB_QUICK_SELECT_EXPIRE:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(quick_select_expire);
+								SET_BOOL_ATTRIBUTE(quick_select_expire);
 							break;
 
 						case OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS:
 							if (prompt_option_on_off(option)) {
-								SET_NUM_ATTRIBUTE(show_only_unread_arts);
+								SET_BOOL_ATTRIBUTE(show_only_unread_arts);
 								changed |= SHOW_ONLY_UNREAD;
 							}
 							break;
 
 						case OPT_ATTRIB_SHOW_SIGNATURES:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(show_signatures);
+								SET_BOOL_ATTRIBUTE(show_signatures);
 							break;
 
 						case OPT_ATTRIB_SIGDASHES:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(sigdashes);
+								SET_BOOL_ATTRIBUTE(sigdashes);
 							break;
 
 						case OPT_ATTRIB_SIGNATURE_REPOST:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(signature_repost);
+								SET_BOOL_ATTRIBUTE(signature_repost);
 							break;
 
 						case OPT_ATTRIB_START_EDITOR_OFFSET:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(start_editor_offset);
+								SET_BOOL_ATTRIBUTE(start_editor_offset);
 							break;
 
 						case OPT_ATTRIB_TEX2ISO_CONV:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(tex2iso_conv);
+								SET_BOOL_ATTRIBUTE(tex2iso_conv);
 							break;
 
 						case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(thread_catchup_on_exit);
+								SET_BOOL_ATTRIBUTE(thread_catchup_on_exit);
 							break;
 
 						case OPT_ATTRIB_VERBATIM_HANDLING:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(verbatim_handling);
+								SET_BOOL_ATTRIBUTE(verbatim_handling);
 							break;
 
 						case OPT_ATTRIB_WRAP_ON_NEXT_UNREAD:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(wrap_on_next_unread);
+								SET_BOOL_ATTRIBUTE(wrap_on_next_unread);
 							break;
 
 						case OPT_ATTRIB_X_COMMENT_TO:
 							if (prompt_option_on_off(option))
-								SET_NUM_ATTRIBUTE(x_comment_to);
+								SET_BOOL_ATTRIBUTE(x_comment_to);
 							break;
 
 						default:
@@ -1921,7 +1934,7 @@ config_page(
 								if (tinrc.mail_mime_encoding != MIME_ENCODING_8BIT) {
 									tinrc.mail_8bit_header = FALSE;
 									repaint_option(OPT_MAIL_8BIT_HEADER);
-									UPDATE_INT_ATTRIBUTES(mail_8bit_header);
+									UPDATE_BOOL_ATTRIBUTES(mail_8bit_header);
 								}
 							}
 							break;
@@ -1957,7 +1970,7 @@ config_page(
 								if (tinrc.post_mime_encoding != MIME_ENCODING_8BIT) {
 									tinrc.post_8bit_header = FALSE;
 									repaint_option(OPT_POST_8BIT_HEADER);
-									UPDATE_INT_ATTRIBUTES(post_8bit_header);
+									UPDATE_BOOL_ATTRIBUTES(post_8bit_header);
 								}
 							}
 							break;
@@ -1986,7 +1999,7 @@ config_page(
 										repaint_option(OPT_MAIL_MIME_ENCODING);
 										repaint_option(OPT_MAIL_8BIT_HEADER);
 										UPDATE_INT_ATTRIBUTES(mail_mime_encoding);
-										UPDATE_INT_ATTRIBUTES(mail_8bit_header);
+										UPDATE_BOOL_ATTRIBUTES(mail_8bit_header);
 									}
 									if (tinrc.post_mime_encoding != MIME_ENCODING_7BIT) {
 										tinrc.post_mime_encoding = MIME_ENCODING_7BIT;
@@ -1994,7 +2007,7 @@ config_page(
 										repaint_option(OPT_POST_MIME_ENCODING);
 										repaint_option(OPT_POST_8BIT_HEADER);
 										UPDATE_INT_ATTRIBUTES(post_mime_encoding);
-										UPDATE_INT_ATTRIBUTES(post_8bit_header);
+										UPDATE_BOOL_ATTRIBUTES(post_8bit_header);
 									}
 								} else {
 									if (tinrc.mail_mime_encoding == MIME_ENCODING_7BIT) {
@@ -2794,7 +2807,7 @@ scope_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, scope_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, scope_keys)));
 				break;
 		}
 	}
@@ -2828,7 +2841,7 @@ build_scope_line(
 	sptr = screen[INDEX2SNUM(i)].col;
 #endif /* USE_CURSES */
 
-	snprintf(sptr, cCOLS, "  %c %s  %-*.*s%s", (scopes[i + 1].global ? '!' : ' '), tin_ltoa(i + 1, 4), len, len, scopes[i + 1].scope, cCRLF);
+	snprintf(sptr, (size_t)cCOLS, "  %c %s  %-*.*s%s", (scopes[i + 1].global ? '!' : ' '), tin_ltoa(i + 1, 4), len, len, scopes[i + 1].scope, cCRLF);
 
 #ifndef USE_CURSES
 	if (tinrc.strip_blanks)
