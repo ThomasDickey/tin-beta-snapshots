@@ -246,7 +246,7 @@ put_cooked(
 			while (space > 0 && *p && *p != '\n') {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if ((bytes = mbtowc((wchar_t *) wp, p, MB_CUR_MAX)) > 0) {
-					if ((space -= wcwidth((wchar_t)*wp)) < 0)
+					if ((space -= wcwidth((wchar_t) *wp)) < 0)
 						break;
 					p += bytes;
 				} else
@@ -260,7 +260,7 @@ put_cooked(
 			while (*p && *p != '\n')
 				p++;
 		}
-		fwrite(bufp, 1, (size_t)(p - bufp), art->cooked);
+		fwrite(bufp, 1, (size_t) (p - bufp), art->cooked);
 		fputs("\n", art->cooked);
 		if (*p == '\n')
 			p++;
@@ -282,7 +282,7 @@ put_cooked(
 		 * Grow the array of lines if needed - we resize it properly at the end
 		 */
 		if (art->cooked_lines % CHUNK == 0)
-			art->cookl = my_realloc(art->cookl, sizeof(t_lineinfo) * CHUNK * (size_t)((art->cooked_lines / CHUNK) + 1));
+			art->cookl = my_realloc(art->cookl, sizeof(t_lineinfo) * CHUNK * (size_t) ((art->cooked_lines / CHUNK) + 1));
 
 		art->cookl[art->cooked_lines].offset = ftell(art->cooked);
 	}
@@ -985,7 +985,7 @@ cook_article(
 #endif /* DEBUG_ART */
 
 	if (art->cooked_lines > 0)
-		art->cookl = my_realloc(art->cookl, sizeof(t_lineinfo) * (size_t)art->cooked_lines);
+		art->cookl = my_realloc(art->cookl, sizeof(t_lineinfo) * (size_t) art->cooked_lines);
 
 	rewind(art->cooked);
 	return (tin_errno != 0) ? FALSE : TRUE;

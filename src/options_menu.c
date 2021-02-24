@@ -291,7 +291,6 @@ option_is_visible(
 		case OPT_ATTRIB_ASK_FOR_METAMAIL:
 		case OPT_ATTRIB_AUTO_CC_BCC:
 		case OPT_ATTRIB_AUTO_LIST_THREAD:
-		case OPT_ATTRIB_AUTO_SAVE:
 		case OPT_ATTRIB_AUTO_SELECT:
 		case OPT_ATTRIB_BATCH_SAVE:
 		case OPT_ATTRIB_DATE_FORMAT:
@@ -405,7 +404,7 @@ fmt_option_prompt(
 	enum option_enum option)
 {
 	char *buf;
-	size_t option_width = (size_t)MAX(35, cCOLS / 2 - 9);
+	size_t option_width = (size_t) MAX(35, cCOLS / 2 - 9);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wbuf, *wbuf2;
 
@@ -420,21 +419,21 @@ fmt_option_prompt(
 		flag = (curr_scope && check_state(option)) ? '+' : ' ';
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (wbuf != NULL) {
-			wbuf2 = wstrunc(wbuf, (int)option_width);
+			wbuf2 = wstrunc(wbuf, (int) option_width);
 			if ((buf = wchar_t2char(wbuf2)) == NULL) {
 				/* conversion failed, truncate original string */
-				buf = strunc(_(option_table[option].txt->opt), (int)option_width);
+				buf = strunc(_(option_table[option].txt->opt), (int) option_width);
 				snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num, (int) option_width, (int) option_width, buf);
 			} else
 				snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num,
-					(int) (strlen(buf) + option_width - (size_t)wcswidth(wbuf2, option_width + 1)),
-					(int) (strlen(buf) + option_width - (size_t)wcswidth(wbuf2, option_width + 1)), buf);
+					(int) (strlen(buf) + option_width - (size_t) wcswidth(wbuf2, option_width + 1)),
+					(int) (strlen(buf) + option_width - (size_t) wcswidth(wbuf2, option_width + 1)), buf);
 			free(wbuf2);
 		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		{
 			/* truncate original string */
-			buf = strunc(_(option_table[option].txt->opt), (int)option_width);
+			buf = strunc(_(option_table[option].txt->opt), (int) option_width);
 			snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num, (int) option_width, (int) option_width, buf);
 		}
 	} else {
@@ -523,9 +522,9 @@ print_any_option(
 	my_printf("%.*s", cCOLS - 1, temp);
 	/* draw_arrow_mark() will read this back for repainting */
 	if (tinrc.strip_blanks)
-		strncpy(screen[row - INDEX_TOP].col, temp, (size_t)(cCOLS - 1));
+		strncpy(screen[row - INDEX_TOP].col, temp, (size_t) (cCOLS - 1));
 	else
-		snprintf(screen[row - INDEX_TOP].col, (size_t)cCOLS, "%-*s", cCOLS - 1, temp);
+		snprintf(screen[row - INDEX_TOP].col, (size_t) cCOLS, "%-*s", cCOLS - 1, temp);
 #endif /* USE_CURSES */
 }
 
@@ -1015,11 +1014,11 @@ config_page(
 					 * restore the cached state if no changes were made
 					 */
 					if (!(changed & SHOW_AUTHOR))
-						curr_group->attribute->show_author = CAST_BITS(old_show_author,show_author);
+						curr_group->attribute->show_author = CAST_BITS(old_show_author, show_author);
 					if (!(changed & SHOW_ONLY_UNREAD))
 						curr_group->attribute->show_only_unread_arts = CAST_BOOL(old_show_unread);
 					if (!(changed & THREAD_ARTS))
-						curr_group->attribute->thread_articles = CAST_BITS(old_thread_arts,thread_articles);
+						curr_group->attribute->thread_articles = CAST_BITS(old_thread_arts, thread_articles);
 
 					if (changed) {
 						t_bool filtered = FALSE;
@@ -1304,7 +1303,7 @@ config_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, option_menu_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, option_menu_keys)));
 				break;
 		} /* switch (ch) */
 
@@ -1359,11 +1358,6 @@ config_page(
 						case OPT_AUTO_LIST_THREAD:
 							if (prompt_option_on_off(option))
 								UPDATE_BOOL_ATTRIBUTES(auto_list_thread);
-							break;
-
-						case OPT_AUTO_SAVE:
-							if (prompt_option_on_off(option))
-								UPDATE_BOOL_ATTRIBUTES(auto_save);
 							break;
 
 						case OPT_BATCH_SAVE:
@@ -1628,11 +1622,6 @@ config_page(
 						case OPT_ATTRIB_AUTO_LIST_THREAD:
 							if (prompt_option_on_off(option))
 								SET_BOOL_ATTRIBUTE(auto_list_thread);
-							break;
-
-						case OPT_ATTRIB_AUTO_SAVE:
-							if (prompt_option_on_off(option))
-								SET_BOOL_ATTRIBUTE(auto_save);
 							break;
 
 						case OPT_ATTRIB_AUTO_SELECT:
@@ -2807,7 +2796,7 @@ scope_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, scope_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, scope_keys)));
 				break;
 		}
 	}
@@ -2841,7 +2830,7 @@ build_scope_line(
 	sptr = screen[INDEX2SNUM(i)].col;
 #endif /* USE_CURSES */
 
-	snprintf(sptr, (size_t)cCOLS, "  %c %s  %-*.*s%s", (scopes[i + 1].global ? '!' : ' '), tin_ltoa(i + 1, 4), len, len, scopes[i + 1].scope, cCRLF);
+	snprintf(sptr, (size_t) cCOLS, "  %c %s  %-*.*s%s", (scopes[i + 1].global ? '!' : ' '), tin_ltoa(i + 1, 4), len, len, scopes[i + 1].scope, cCRLF);
 
 #ifndef USE_CURSES
 	if (tinrc.strip_blanks)
@@ -3061,8 +3050,6 @@ check_state(
 			return curr_scope->state->auto_cc_bcc;
 		case OPT_ATTRIB_AUTO_LIST_THREAD:
 			return curr_scope->state->auto_list_thread;
-		case OPT_ATTRIB_AUTO_SAVE:
-			return curr_scope->state->auto_save;
 		case OPT_ATTRIB_AUTO_SELECT:
 			return curr_scope->state->auto_select;
 		case OPT_ATTRIB_BATCH_SAVE:
@@ -3242,10 +3229,6 @@ reset_state(
 		case OPT_ATTRIB_AUTO_LIST_THREAD:
 			curr_scope->state->auto_list_thread = FALSE;
 			tinrc.attrib_auto_list_thread = default_scope->attribute->auto_list_thread;
-			break;
-		case OPT_ATTRIB_AUTO_SAVE:
-			curr_scope->state->auto_save = FALSE;
-			tinrc.attrib_auto_save = default_scope->attribute->auto_save;
 			break;
 		case OPT_ATTRIB_AUTO_SELECT:
 			curr_scope->state->auto_select = FALSE;
@@ -3573,7 +3556,6 @@ initialize_attributes(
 	INITIALIZE_NUM_ATTRIBUTE(ask_for_metamail);
 	INITIALIZE_NUM_ATTRIBUTE(auto_cc_bcc);
 	INITIALIZE_NUM_ATTRIBUTE(auto_list_thread);
-	INITIALIZE_NUM_ATTRIBUTE(auto_save);
 	INITIALIZE_NUM_ATTRIBUTE(auto_select);
 	INITIALIZE_NUM_ATTRIBUTE(batch_save);
 	INITIALIZE_NUM_ATTRIBUTE(delete_tmp_files);

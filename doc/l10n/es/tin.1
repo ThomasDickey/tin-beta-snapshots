@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2021-01-06
+.\" Updated   : 2021-02-21
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -509,9 +509,7 @@ etiquette after composing an article (\fBbeginner_level\fP).
 .TP 
 \fBDisplayPostHist 'W'\fP
 List articles posted by user. The date posted, the newsgroup and the subject
-are listed. You can use \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') and
-\fBSearchRepeat\fP ('\fB\e\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns
-to the menu.
+are listed. See the section "POSTING HISTORY LISTING" for more information.
 .TP 
 \fBVersion 'v'\fP
 .\" -------------------------------------------------------------------
@@ -1407,8 +1405,52 @@ last line.
 Help screen of commands available.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
+.\" -------------------------------------------------------------------
+.\"
 Toggle the display of help mini menu at the bottom of the screen and posting
 etiquette after composing an article (\fBbeginner_level\fP).
+.SS "POSTING HISTORY LISTING"
+\fBDisplayPostHist\fP ('\fBW\fP') displays a list of all previous posted articles
+stored in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP. The following informatiosn
+are shown: a time stamp in "dd\-mm\-yy"\-format, a single letter indicating the
+action which initiated the message, the group names (evetually shortened,
+see also \fBabbreviate_groupname\fP) or a mail address the message was sent to
+and the subject of the message. Besides the common moving keys, the
+following commands are available:
+.RS 4
+.TP  10
+\fBPostedArticlesSelect '^J' '<CR>'\fP
+The article with the current \*(rqMessage\-ID:\*(rq will be opened if available.
+Note that this requires that the \*(rqMessage\-ID:\*(rq of the article was recorded
+in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP which may not always be the case.
+If using NNTP and the internal inews (\fBinews_prog\fP set to "\-\-internal")
+and either the server proposes a \*(rqMessage\-ID:\*(rq during the POST
+(\fBRFC\%3977\fP) command or \fBtin\fP is build to generate \*(rqMessage\-ID:\*(rq this
+should be the case. With an external inews (and reading from local spool) it
+is not.
+.TP 
+\fBSearchSubjF '/'\fP
+URL forward search.
+.TP 
+\fBSearchSubjB '?'\fP
+URL backward search.
+.TP 
+\fBSearchRepeat '\e'\fP
+Repeat the previous search.
+.TP 
+\fBShellEscape '!'\fP
+Shell escape.
+.TP 
+\fBToggleInfoLastLine 'i'\fP
+Toggle the display of the current 'Message\-ID:\*(rq in the last line.
+.TP 
+\fBHelp 'h'\fP
+Help screen of commands available.
+.TP 
+\fBToggleHelpDisplay 'H'\fP
+Toggle the display of help mini menu at the bottom of the screen and posting
+etiquette after composing an article (\fBbeginner_level\fP).
+.RE
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1519,12 +1561,6 @@ Default is ON.
 .TP 
 \fBReconnect to server automatically (auto_reconnect)\fP
 Default is OFF.
-.TP 
-\fBUse Archive\-name: header for save (auto_save)\fP
-If ON articles/threads with \*(rqArchive\-name:\*(rq in header will be
-automatically saved with the Archive\-name & part/patch no and post processed
-if \fBpost_process_type\fP is set to something other than 'No'.  Default is
-OFF.
 .TP 
 \fBSave articles in batch mode (batch_save)\fP
 If set ON articles/threads will be saved in batch mode when save \&\*(rq\fB\-S\fP\*(rq
@@ -1942,8 +1978,8 @@ Path, name and options of external \fB\%metamail\fP(1)  program used to view
 non\-textual parts of articles.  To use the built\-in viewer, set to
 \-\-internal. This is the default value when \fB\%metamail\fP(1)  is not
 installed. Leave it blank if you don't want any automatic viewing of
-non\-textual attachments. The 'V' command can always be used to manually view
-any attachments. See also \fBask_for_metamail\fP.
+non\-textual attachments. The \fBPageViewAttach\fP ('\fBV\fP')  command can always
+be used to manually view any attachments. See also \fBask_for_metamail\fP.
 .TP 
 \fBMM_CHARSET (mm_charset)\fP
 Charset supported locally, which is also used for MIME header (charset
@@ -2639,7 +2675,8 @@ again or p)ost the article to the specified newsgroup(s).
 .PP
 Use the \fBDisplayPostHist\fP ('\fBW\fP') command to display a history of the
 articles you have posted. The date the article was posted, which newsgroups
-the article was posted to and the articles subject line are displayed.
+the article was posted to and the articles subject line are displayed. See
+the section "POSTING HISTORY LISTING" for more information.
 .PP
 Use the \fBPageFollowupQuote\fP ('\fBf\fP'), \fBPageFollowup\fP ('\fBF\fP')  or
 \fBPageFollowupQuoteHeaders\fP ('\fB^W\fP') command to post a follow\-up article to
@@ -3432,8 +3469,8 @@ replying, follow\-ups, ...). Evaluation order is
 \fBEDITOR\fP
 If $\fBVISUAL\fP is unset, then this variable is looked up for a default
 editor. If $\fBEDITOR\fP and $\fBVISUAL\fP are both unset, \fBtin\fP uses the systems
-default editor (i.e.  \fB\%vi\fP(1))  on UNIX\-systems). See \fB\%environ\fP(5)
-for more info.
+default editor (i.e.  \fB\%vi\fP(1)  on UNIX\-systems). See \fB\%environ\fP(5)  for
+more info.
 .TP 
 \fBAUTOSUBSCRIBE\fP
 A new group is checked against the list of patterns; if it matches, \fBtin\fP

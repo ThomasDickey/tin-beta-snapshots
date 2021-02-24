@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2020-12-02
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1997-2021 Iain Lea <iain@bricbrac.de>
@@ -595,6 +595,7 @@ extern constext txt_end_of_arts[];
 extern constext txt_end_of_attachments[];
 extern constext txt_end_of_groups[];
 extern constext txt_end_of_page[];
+extern constext txt_end_of_posted[];
 extern constext txt_end_of_scopes[];
 extern constext txt_end_of_thread[];
 extern constext txt_end_of_urls[];
@@ -882,7 +883,6 @@ extern constext txt_help_group_select_all[];
 extern constext txt_help_group_select_thread[];
 extern constext txt_help_group_select_thread_if_unread_selected[];
 extern constext txt_help_group_select_thread_pattern[];
-extern constext txt_help_group_tag_parts[];
 extern constext txt_help_group_thread_by_num[];
 extern constext txt_help_group_toggle_getart_limit[];
 extern constext txt_help_group_toggle_read_articles[];
@@ -891,6 +891,10 @@ extern constext txt_help_group_toggle_threading[];
 extern constext txt_help_group_undo_thread_selection[];
 extern constext txt_help_group_untag_thread[];
 extern constext txt_help_kill_scope[];
+extern constext txt_help_post_hist_search_forwards[];
+extern constext txt_help_post_hist_search_backwards[];
+extern constext txt_help_post_hist_toggle_info_line[];
+extern constext txt_help_post_hist_select[];
 extern constext txt_help_scope_add[];
 extern constext txt_help_scope_del[];
 extern constext txt_help_scope_edit_attrib_file[];
@@ -931,6 +935,7 @@ extern constext txt_help_select_unsubscribe[];
 extern constext txt_help_select_unsubscribe_pattern[];
 extern constext txt_help_select_sort_active[];
 extern constext txt_help_select_yank_active[];
+extern constext txt_help_tag_parts[];
 extern constext txt_help_thread_article_by_num[];
 extern constext txt_help_thread_catchup[];
 extern constext txt_help_thread_catchup_next_unread[];
@@ -940,7 +945,6 @@ extern constext txt_help_thread_mark_article_read[];
 extern constext txt_help_thread_mark_article_unread[];
 extern constext txt_help_thread_mark_thread_unread[];
 extern constext txt_help_thread_read_article[];
-extern constext txt_help_thread_tag_parts[];
 extern constext txt_help_title_disp[];
 extern constext txt_help_title_misc[];
 extern constext txt_help_title_navi[];
@@ -948,6 +952,7 @@ extern constext txt_help_title_ops[];
 extern constext txt_help_title_attachment_ops[];
 extern constext txt_help_title_attrib_ops[];
 extern constext txt_help_title_config_ops[];
+extern constext txt_help_title_post_hist_ops[];
 extern constext txt_help_title_scope_ops[];
 extern constext txt_help_title_url_ops[];
 extern constext txt_help_url_first_url[];
@@ -996,9 +1001,9 @@ extern constext txt_kill_time[];
 extern constext txt_last[];
 extern constext txt_last_resp[];
 extern constext txt_lines[];
+extern constext txt_lookup_func_not_available[];
+extern constext txt_lookup_func_not_nntp[];
 #ifdef NNTP_ABLE
-	extern constext txt_lookup_func_not_available[];
-	extern constext txt_lookup_func_not_nntp[];
 	extern constext txt_lookup_show_group[];
 	extern constext txt_lookup_show_groups[];
 #endif /* NNTP_ABLE */
@@ -1032,6 +1037,8 @@ extern constext txt_mini_info_2[];
 extern constext txt_mini_page_1[];
 extern constext txt_mini_page_2[];
 extern constext txt_mini_page_3[];
+extern constext txt_mini_post_hist_1[];
+extern constext txt_mini_post_hist_2[];
 extern constext txt_mini_scope_1[];
 extern constext txt_mini_scope_2[];
 extern constext txt_mini_select_1[];
@@ -1106,6 +1113,9 @@ extern constext txt_pcre_error_text[];
 extern constext txt_post_a_followup[];
 extern constext txt_post_error_ask_postpone[];
 extern constext txt_post_history_menu[];
+extern constext txt_post_history_menu_com[];
+extern constext txt_post_history_lookup_failed[];
+extern constext txt_post_history_op_unavail_for_reply[];
 extern constext txt_post_newsgroups[];
 extern constext txt_post_processing[];
 extern constext txt_post_processing_finished[];
@@ -1702,7 +1712,6 @@ extern struct opttxt txt_ask_for_metamail;
 extern struct opttxt txt_auto_cc_bcc;
 extern struct opttxt txt_auto_list_thread;
 extern struct opttxt txt_auto_reconnect;
-extern struct opttxt txt_auto_save;
 extern struct opttxt txt_auto_select;
 extern struct opttxt txt_delete_tmp_files;
 extern struct opttxt txt_batch_save;

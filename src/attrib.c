@@ -58,6 +58,7 @@ int attrib_file_offset;
 /*
  * Local prototypes
  */
+static t_bool skip_scope(struct t_scope *scope);
 static void set_attrib(int type, const char *scope, const char *line, void *data);
 static void set_default_attributes(struct t_attribute *attributes, struct t_attribute *scope, t_bool global);
 static void set_default_state(struct t_attribute_state *state);
@@ -131,7 +132,6 @@ set_default_attributes(
 	CopyBool(ask_for_metamail, tinrc.ask_for_metamail);
 	CopyBits(auto_cc_bcc, tinrc.auto_cc_bcc);
 	CopyBool(auto_list_thread, tinrc.auto_list_thread);
-	CopyBool(auto_save, tinrc.auto_save);
 	attributes->auto_select = FALSE;
 	CopyBool(batch_save, tinrc.batch_save);
 	attributes->delete_tmp_files = FALSE;
@@ -178,7 +178,6 @@ set_default_state(
 	state->ask_for_metamail = FALSE;
 	state->auto_cc_bcc = FALSE;
 	state->auto_list_thread = FALSE;
-	state->auto_save = FALSE;
 	state->auto_select = FALSE;
 	state->batch_save = FALSE;
 	state->date_format = FALSE;
@@ -354,7 +353,6 @@ read_attributes_file(
 					MATCH_BOOLEAN("ask_for_metamail=", OPT_ATTRIB_ASK_FOR_METAMAIL);
 					MATCH_INTEGER("auto_cc_bcc=", OPT_ATTRIB_AUTO_CC_BCC, AUTO_CC_BCC);
 					MATCH_BOOLEAN("auto_list_thread=", OPT_ATTRIB_AUTO_LIST_THREAD);
-					MATCH_BOOLEAN("auto_save=", OPT_ATTRIB_AUTO_SAVE);
 					MATCH_BOOLEAN("auto_select=", OPT_ATTRIB_AUTO_SELECT);
 					break;
 
@@ -543,6 +541,14 @@ read_attributes_file(
 							found = TRUE;
 							break;
 						}
+						/* option removed */
+						if (upgrade && upgrade->file_version < 10011) {
+							t_bool ignore;
+
+							if (match_boolean(line, "auto_save=", &ignore))
+								found = TRUE;
+							break;
+						}
 						break;
 
 					case 'p':
@@ -664,6 +670,7 @@ read_attributes_file(
 #endif /* DEBUG */
 }
 
+
 #define SET_STRING(string) \
 	FreeIfNeeded(curr_scope->attribute->string); \
 	curr_scope->attribute->string = my_strdup((char *) data); \
@@ -671,7 +678,7 @@ read_attributes_file(
 	break
 
 #define SET_INTEGER(value) \
-	curr_scope->attribute->value = CAST_BITS(*((int *) data),value); \
+	curr_scope->attribute->value = CAST_BITS(*((int *) data), value); \
 	curr_scope->state->value = TRUE; \
 	break
 
@@ -745,9 +752,6 @@ set_attrib(
 
 			case OPT_ATTRIB_AUTO_SELECT:
 				SET_BOOLEAN(auto_select);
-
-			case OPT_ATTRIB_AUTO_SAVE:
-				SET_BOOLEAN(auto_save);
 
 			case OPT_ATTRIB_BATCH_SAVE:
 				SET_BOOLEAN(batch_save);
@@ -1062,7 +1066,6 @@ assign_attributes_to_groups(
 				SET_ATTRIB(ask_for_metamail);
 				SET_ATTRIB(auto_cc_bcc);
 				SET_ATTRIB(auto_list_thread);
-				SET_ATTRIB(auto_save);
 				SET_ATTRIB(auto_select);
 				SET_ATTRIB(batch_save);
 				SET_ATTRIB(delete_tmp_files);
@@ -1217,7 +1220,6 @@ write_attributes_file(
 	fprintf(fp, _("#  auto_cc_bcc=NUM\n"));
 	fprintf(fp, _("#    0=No, 1=Cc, 2=Bcc, 3=Cc and Bcc\n"));
 	fprintf(fp, _("#  auto_list_thread=ON/OFF\n"));
-	fprintf(fp, _("#  auto_save=ON/OFF\n"));
 	fprintf(fp, _("#  auto_select=ON/OFF\n"));
 	fprintf(fp, _("#  batch_save=ON/OFF\n"));
 	fprintf(fp, _("#  date_format=STRING (eg. %%a, %%d %%b %%Y %%H:%%M:%%S)\n"));
@@ -1405,6 +1407,8 @@ write_attributes_file(
 		for (i = 1; i < num_scope; i++) {
 			scope = &scopes[i];
 			if (!scope->global) {
+				if (skip_scope(scope))
+					continue;
 				fprintf(fp, "\nscope=%s\n", scope->scope);
 				if (scope->state->add_posted_to_filter)
 					fprintf(fp, "add_posted_to_filter=%s\n", print_boolean(scope->attribute->add_posted_to_filter));
@@ -1420,8 +1424,6 @@ write_attributes_file(
 					fprintf(fp, "auto_list_thread=%s\n", print_boolean(scope->attribute->auto_list_thread));
 				if (scope->state->auto_select)
 					fprintf(fp, "auto_select=%s\n", print_boolean(scope->attribute->auto_select));
-				if (scope->state->auto_save)
-					fprintf(fp, "auto_save=%s\n", print_boolean(scope->attribute->auto_save));
 				if (scope->state->batch_save)
 					fprintf(fp, "batch_save=%s\n", print_boolean(scope->attribute->batch_save));
 				if (scope->state->date_format && scope->attribute->date_format)
@@ -1585,6 +1587,95 @@ write_attributes_file(
 }
 
 
+/*
+ * Returns true if given scope is empty, i.e. no attribute is set
+ */
+static t_bool
+skip_scope(
+	struct t_scope *scope)
+{
+	return !(scope->state->add_posted_to_filter
+		|| scope->state->advertising
+		|| scope->state->alternative_handling
+		|| scope->state->ask_for_metamail
+		|| scope->state->auto_cc_bcc
+		|| scope->state->auto_list_thread
+		|| scope->state->auto_select
+		|| scope->state->batch_save
+		|| (scope->state->date_format && scope->attribute->date_format)
+		|| scope->state->delete_tmp_files
+		|| (scope->state->editor_format && scope->attribute->editor_format)
+#ifdef HAVE_COLOR
+		|| scope->state->extquote_handling
+#endif /* HAVE_COLOR */
+		|| (scope->state->fcc && scope->attribute->fcc)
+		|| (scope->state->followup_to && scope->attribute->followup_to)
+		|| (scope->state->from && scope->attribute->from)
+		|| scope->state->group_catchup_on_exit
+		|| (scope->state->group_format && scope->attribute->group_format)
+		|| scope->state->mail_8bit_header
+		|| scope->state->mail_mime_encoding
+#ifdef HAVE_ISPELL
+		|| (scope->state->ispell && scope->attribute->ispell)
+#endif /* HAVE_ISPELL */
+		|| (scope->state->maildir && scope->attribute->maildir)
+		|| (scope->state->mailing_list && scope->attribute->mailing_list)
+		|| scope->state->mark_ignore_tags
+		|| scope->state->mark_saved_read
+		|| scope->state->mime_forward
+		|| (scope->state->mime_types_to_save && scope->attribute->mime_types_to_save)
+#ifdef CHARSET_CONVERSION
+		|| scope->state->mm_network_charset
+		|| (scope->state->undeclared_charset && scope->attribute->undeclared_charset)
+#endif /* CHARSET_CONVERSION */
+		|| (scope->state->news_headers_to_display && scope->attribute->news_headers_to_display)
+		|| (scope->state->news_headers_to_not_display && scope->attribute->news_headers_to_not_display)
+		|| (scope->state->news_quote_format && scope->attribute->news_quote_format)
+		|| (scope->state->organization && scope->attribute->organization)
+		|| scope->state->pos_first_unread
+		|| scope->state->post_8bit_header
+		|| scope->state->post_mime_encoding
+		|| scope->state->post_process_view
+		|| scope->state->post_process_type
+#ifndef DISABLE_PRINTING
+		|| scope->state->print_header
+#endif /* !DISABLE_PRINTING */
+		|| scope->state->process_only_unread
+		|| scope->state->prompt_followupto
+		|| (scope->state->quick_kill_scope && scope->attribute->quick_kill_scope)
+		|| scope->state->quick_kill_case
+		|| scope->state->quick_kill_expire
+		|| scope->state->quick_kill_header
+		|| (scope->state->quick_select_scope && scope->attribute->quick_select_scope)
+		|| scope->state->quick_select_case
+		|| scope->state->quick_select_expire
+		|| scope->state->quick_select_header
+		|| (scope->state->quote_chars && scope->attribute->quote_chars)
+		|| (scope->state->savedir && scope->attribute->savedir)
+		|| (scope->state->savefile && scope->attribute->savefile)
+		|| scope->state->show_author
+		|| scope->state->show_only_unread_arts
+		|| scope->state->show_signatures
+		|| scope->state->sigdashes
+		|| (scope->state->sigfile && scope->attribute->sigfile)
+		|| scope->state->signature_repost
+		|| scope->state->sort_article_type
+		|| scope->state->sort_threads_type
+		|| scope->state->start_editor_offset
+		|| scope->state->tex2iso_conv
+		|| scope->state->thread_articles
+		|| scope->state->thread_catchup_on_exit
+		|| (scope->state->thread_format && scope->attribute->thread_format)
+		|| scope->state->thread_perc
+		|| scope->state->trim_article_body
+		|| scope->state->verbatim_handling
+		|| scope->state->wrap_on_next_unread
+		|| (scope->state->x_headers && scope->attribute->x_headers)
+		|| (scope->state->x_body && scope->attribute->x_body)
+		|| scope->state->x_comment_to);
+}
+
+
 #ifdef DEBUG
 #	if 0
 static void
@@ -1656,7 +1747,6 @@ dump_attributes(
 			debug_print_file("ATTRIBUTES", "\tauto_cc_bcc=%d", group->attribute->auto_cc_bcc);
 			debug_print_file("ATTRIBUTES", "\tauto_list_thread=%s", print_boolean(group->attribute->auto_list_thread));
 			debug_print_file("ATTRIBUTES", "\tauto_select=%s", print_boolean(group->attribute->auto_select));
-			debug_print_file("ATTRIBUTES", "\tauto_save=%s", print_boolean(group->attribute->auto_save));
 			debug_print_file("ATTRIBUTES", "\tbatch_save=%s", print_boolean(group->attribute->batch_save));
 			debug_print_file("ATTRIBUTES", "\tdate_format=%s", BlankIfNull(group->attribute->date_format));
 			debug_print_file("ATTRIBUTES", "\tdelete_tmp_files=%s", print_boolean(group->attribute->delete_tmp_files));
@@ -1772,7 +1862,6 @@ dump_scopes(
 			debug_print_file(fname, "\t%sauto_cc_bcc=%d", DEBUG_PRINT_STATE(auto_cc_bcc), scope->attribute->auto_cc_bcc);
 			debug_print_file(fname, "\t%sauto_list_thread=%s", DEBUG_PRINT_STATE(auto_list_thread), print_boolean(scope->attribute->auto_list_thread));
 			debug_print_file(fname, "\t%sauto_select=%s", DEBUG_PRINT_STATE(auto_select), print_boolean(scope->attribute->auto_select));
-			debug_print_file(fname, "\t%sauto_save=%s", DEBUG_PRINT_STATE(auto_save), print_boolean(scope->attribute->auto_save));
 			debug_print_file(fname, "\t%sbatch_save=%s", DEBUG_PRINT_STATE(batch_save), print_boolean(scope->attribute->batch_save));
 			debug_print_file(fname, "\t%sdate_format=%s", DEBUG_PRINT_STATE(date_format), DEBUG_PRINT_STRING(date_format));
 			debug_print_file(fname, "\t%sdelete_tmp_files=%s", DEBUG_PRINT_STATE(delete_tmp_files), print_boolean(scope->attribute->delete_tmp_files));

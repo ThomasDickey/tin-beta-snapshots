@@ -66,10 +66,10 @@ struct t_counters {
 /*
  * Local prototypes
  */
-static char *get_save_filename(struct t_group *group, int function, char *filename, int filelen, int respnum);
+static char *get_save_filename(struct t_group *group, int function, char *filename, int filelen);
 static t_bool expand_feed_filename(char *outpath, size_t outpath_len, const char *path);
 static t_bool feed_article(int art, int function, struct t_counters *counter, t_bool use_current, const char *data, struct t_group *group);
-static t_function get_feed_key(int function, int level, struct t_group *group, struct t_art_stat *thread, int respnum);
+static t_function get_feed_key(int function, int level, struct t_art_stat *thread);
 static t_function get_post_proc_type(void);
 static void print_save_summary(t_function type, int fed);
 #ifndef DISABLE_PRINTING
@@ -93,8 +93,7 @@ get_save_filename(
 	struct t_group *group,
 	int function,
 	char *filename,
-	int filelen,
-	int respnum)
+	int filelen)
 {
 	char default_savefile[PATH_LEN];
 
@@ -106,9 +105,9 @@ get_save_filename(
 	my_strncpy(default_savefile, (group->attribute->savefile ? group->attribute->savefile : tinrc.default_save_file), sizeof(default_savefile) - 1);
 
 	/*
-	 * We don't ask when auto'S'aving or Archive-Name saving with auto_save
+	 * We don't ask when auto'S'aving
 	 */
-	if (!(function == FEED_AUTOSAVE || (group->attribute->auto_save && arts[respnum].archive))) {
+	if (!(function == FEED_AUTOSAVE)) {
 		if (!prompt_default_string(_(txt_save_filename), filename, filelen, default_savefile, HIST_SAVE_FILE)) {
 			clear_message();
 			return NULL;
@@ -126,7 +125,7 @@ get_save_filename(
 		 * None chosen (or AUTOSAVING), use tinrc default
 		 */
 		if (*default_savefile)
-			my_strncpy(filename, default_savefile, (size_t)(filelen - 1));
+			my_strncpy(filename, default_savefile, (size_t) (filelen - 1));
 		else {									/* No default either */
 			info_message(_(txt_no_filename));
 			return NULL;
@@ -205,10 +204,10 @@ get_post_proc_type(
 	}
 
 	func = prompt_slk_response(default_func, feed_post_process_keys, _(txt_choose_post_process_type),
-				printascii(keyno, (wint_t)func_to_key(POSTPROCESS_NO, feed_post_process_keys)),
-				printascii(keyyes, (wint_t)func_to_key(POSTPROCESS_YES, feed_post_process_keys)),
-				printascii(keyshar, (wint_t)func_to_key(POSTPROCESS_SHAR, feed_post_process_keys)),
-				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, feed_post_process_keys)));
+				printascii(keyno, (wint_t) func_to_key(POSTPROCESS_NO, feed_post_process_keys)),
+				printascii(keyyes, (wint_t) func_to_key(POSTPROCESS_YES, feed_post_process_keys)),
+				printascii(keyshar, (wint_t) func_to_key(POSTPROCESS_SHAR, feed_post_process_keys)),
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, feed_post_process_keys)));
 
 	if (func == GLOBAL_QUIT || func == GLOBAL_ABORT) {			/* exit */
 		clear_message();
@@ -230,9 +229,7 @@ static t_function
 get_feed_key(
 	int function,
 	int level,
-	struct t_group *group,
-	struct t_art_stat *thread,
-	int respnum)
+	struct t_art_stat *thread)
 {
 	constext *prompt;
 	t_function default_func, func;
@@ -291,10 +288,8 @@ get_feed_key(
 	/*
 	 * Don't bother querying when:
 	 *  auto'S'aving and there are tagged or selected(hot) articles
-	 *  using the auto_save feature on Archive postings
 	 */
-	if ((function == FEED_AUTOSAVE && (range_active || num_of_tagged_arts || arts_selected()))
-			|| (function == FEED_SAVE && group->attribute->auto_save && arts[respnum].archive))
+	if ((function == FEED_AUTOSAVE && (range_active || num_of_tagged_arts || arts_selected())))
 		func = default_func;
 	else {
 		char buf[LEN];
@@ -302,13 +297,13 @@ get_feed_key(
 		char keypat[MAXKEYLEN], keytag[MAXKEYLEN], keyquit[MAXKEYLEN];
 
 		snprintf(buf, sizeof(buf), _(txt_art_thread_regex_tag),
-			printascii(keyart, (wint_t)func_to_key(FEED_ARTICLE, feed_type_keys)),
-			printascii(keythread, (wint_t)func_to_key(FEED_THREAD, feed_type_keys)),
-			printascii(keyrange, (wint_t)func_to_key(FEED_RANGE, feed_type_keys)),
-			printascii(keyhot, (wint_t)func_to_key(FEED_HOT, feed_type_keys)),
-			printascii(keypat, (wint_t)func_to_key(FEED_PATTERN, feed_type_keys)),
-			printascii(keytag, (wint_t)func_to_key(FEED_TAGGED, feed_type_keys)),
-			printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, feed_type_keys)));
+			printascii(keyart, (wint_t) func_to_key(FEED_ARTICLE, feed_type_keys)),
+			printascii(keythread, (wint_t) func_to_key(FEED_THREAD, feed_type_keys)),
+			printascii(keyrange, (wint_t) func_to_key(FEED_RANGE, feed_type_keys)),
+			printascii(keyhot, (wint_t) func_to_key(FEED_HOT, feed_type_keys)),
+			printascii(keypat, (wint_t) func_to_key(FEED_PATTERN, feed_type_keys)),
+			printascii(keytag, (wint_t) func_to_key(FEED_TAGGED, feed_type_keys)),
+			printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, feed_type_keys)));
 
 		func = prompt_slk_response(default_func, feed_type_keys, "%s %s", _(prompt), buf);
 	}
@@ -514,7 +509,7 @@ feed_article(
 
 		case FEED_SAVE:
 		case FEED_AUTOSAVE:
-			ok = save_and_process_art(openartptr, &arts[art], is_mailbox, data /*filename*/, counter->max, (pproc_func != POSTPROCESS_NO));
+			ok = save_and_process_art(openartptr, is_mailbox, data /*filename*/, counter->max, (pproc_func != POSTPROCESS_NO));
 			if (ok && curr_group->attribute->mark_saved_read)
 				art_mark(curr_group, &arts[art], ART_READ);
 			break;
@@ -619,7 +614,7 @@ feed_articles(
 			break;
 
 		default:
-			if ((feed_type = get_feed_key(function, level, group, &sbuf, respnum)) == GLOBAL_ABORT)
+			if ((feed_type = get_feed_key(function, level, &sbuf)) == GLOBAL_ABORT)
 				return -1;
 			break;
 	}
@@ -684,7 +679,7 @@ feed_articles(
 				/* This will force automatic selection unless changed by user */
 				savefile[0] = '\0';
 
-				if (get_save_filename(group, function, savefile, sizeof(savefile), respnum) == NULL)
+				if (get_save_filename(group, function, savefile, sizeof(savefile)) == NULL)
 					return -1;
 
 				switch (curr_group->attribute->post_process_type) {
@@ -733,9 +728,9 @@ feed_articles(
 
 					/* repost or supersede? */
 					snprintf(buf, sizeof(buf), _(txt_supersede_article),
-							printascii(keyrepost, (wint_t)func_to_key(FEED_KEY_REPOST, feed_supersede_article_keys)),
-							printascii(keysupersede, (wint_t)func_to_key(FEED_SUPERSEDE, feed_supersede_article_keys)),
-							printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, feed_supersede_article_keys)));
+							printascii(keyrepost, (wint_t) func_to_key(FEED_KEY_REPOST, feed_supersede_article_keys)),
+							printascii(keysupersede, (wint_t) func_to_key(FEED_SUPERSEDE, feed_supersede_article_keys)),
+							printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, feed_supersede_article_keys)));
 					func = prompt_slk_response(FEED_SUPERSEDE,
 								feed_supersede_article_keys, "%s",
 								sized_message(&smsg, buf, arts[respnum].subject));

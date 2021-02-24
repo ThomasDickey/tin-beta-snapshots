@@ -413,7 +413,7 @@ submit_news_file(
 					strcpy(buf, "inews -h");
 			}
 			cp += strlen(cp);
-			sh_format(cp, sizeof(buf) - (size_t)(cp - buf), " < %s", name);
+			sh_format(cp, sizeof(buf) - (size_t) (cp - buf), " < %s", name);
 
 			ret_code = invoke_cmd(buf);
 
@@ -485,7 +485,7 @@ sender_needed(
 	if (from_at_pos == NULL || sender_dot_pos == NULL) /* as we build From and check Sender above this shouldn't happen at all */
 		return -2;
 
-	if (strncasecmp(from_addr, sender_addr, (size_t)(from_at_pos - from_addr)))
+	if (strncasecmp(from_addr, sender_addr, (size_t) (from_at_pos - from_addr)))
 		return 1; /* login differs */
 
 	if (strcasecmp(from_at_pos, sender_at_pos) && (strcasecmp(from_at_pos + 1, sender_dot_pos + 1)))

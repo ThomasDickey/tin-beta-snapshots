@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-05-22
+ *  Updated   : 2021-02-13
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -205,8 +205,13 @@ main(
 		setup_screen();
 	}
 
-	if (!batch_mode || verbose)
+	if (!batch_mode || verbose) {
+		if (!batch_mode && (cLINES < MIN_LINES_ON_TERMINAL || cCOLS < MIN_COLUMNS_ON_TERMINAL)) {
+			ring_bell();
+			tin_done(EXIT_FAILURE, _(txt_screen_too_small_exiting), tin_progname);
+		}
 		wait_message(0, "%s\n", cvers);
+	}
 
 	/*
 	 * Connect to nntp server?

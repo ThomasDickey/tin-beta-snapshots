@@ -921,13 +921,13 @@ get_server(
 	 *   -the network connection went down
 	 */
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
-	alarm((unsigned)tinrc.nntp_read_timeout_secs);
+	alarm((unsigned) tinrc.nntp_read_timeout_secs);
 #	endif /* HAVE_ALARM && SIGALRM */
 	while (nntp_rd_fp == NULL || s_gets(string, size, nntp_rd_fp) == NULL) {
 		if (errno == EINTR) {
 			errno = 0;
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
-			alarm((unsigned)tinrc.nntp_read_timeout_secs);		/* Restart the timer */
+			alarm((unsigned) tinrc.nntp_read_timeout_secs);		/* Restart the timer */
 #	endif /* HAVE_ALARM && SIGALRM */
 			continue;
 		}
@@ -965,7 +965,7 @@ get_server(
 			 * Use standard NNTP closing message and response code if user is
 			 * quitting tin and leave loop.
 			 */
-			strncpy(string, _(txt_nntp_ok_goodbye), (size_t)(size - 3));
+			strncpy(string, _(txt_nntp_ok_goodbye), (size_t) (size - 3));
 			strcat(string, "\r\n");		/* tin_fgets() needs CRLF */
 			break;
 		}

@@ -88,6 +88,6 @@ tin_tracechar(
 	int ch)
 {
 	static char result[2];
-	result[0] = (char)ch;
+	result[0] = (char) ch;
 	return result;
 }

@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2020-06-10
+ *  Updated   : 2021-02-13
  *  Notes     :
  *
  * Copyright (c) 1999-2021 Jason Faultless <jason@altarstone.com>
@@ -322,6 +322,7 @@ enum defined_functions {
 	POST_POSTPONE,
 	POST_SEND,
 	POST_SUPERSEDE,
+	POSTED_SELECT,
 	POSTPONE_ALL,
 	POSTPONE_OVERRIDE,
 	POSTPROCESS_NO,
@@ -399,6 +400,7 @@ extern struct keylist filter_keys;
 extern struct keylist group_keys;
 extern struct keylist info_keys;
 extern struct keylist option_menu_keys;
+extern struct keylist post_hist_keys;
 extern struct keylist page_keys;
 #ifdef HAVE_PGP_GPG
 	extern struct keylist pgp_mail_keys;

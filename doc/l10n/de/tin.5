@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2020-12-27
+.\" Updated   : 2021-02-14
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -376,11 +376,11 @@ mh\-mail\-handling support).
 \fBmail_group_name\fP
 must be the pathname of the mailbox relative to field #4 with / changed to .
 .TP 
-\fBmaxnum\fP
+\fBMaximalwert\fP
 just put a large number here, something higher than the highest message in
 the mailbox
 .TP 
-\fBminnum\fP
+\fBMinimalwert\fP
 hier 0 angeben
 .TP 
 \fBmailspool\fP
@@ -447,9 +447,6 @@ Identisch mit der tinrc\-Variable gleichen Namens
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
 \fBauto_list_thread\fP
-Identisch mit der tinrc\-Variable gleichen Namens
-.TP 
-\fBauto_save\fP
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
 \fBauto_select\fP
@@ -1048,18 +1045,20 @@ defaults. If a keyname is bound to NULL it is unassigned.
 \fBPostSupersede\fP	s
 \fBPostSend\fP	s	y
 .sp
+\fBPostedArticlesSelect\fP	^J	^M
+.sp
 \fBPostponeOverride\fP	Y
 \fBPostponeAll\fP	A
 .sp
 \fBPromptYes\fP	y	Y
 \fBPromptNo\fP	n	N
 .sp
-\fBSaveAppendFile\fP	a
-\fBSaveOverwriteFile\fP	o
-.sp
 \fBPProcNone\fP	n
 \fBPProcShar\fP	s
 \fBPProcYes\fP	y
+.sp
+\fBSaveAppendFile\fP	a
+\fBSaveOverwriteFile\fP	o
 .sp
 \fBSelectEnterNextUnreadGrp\fP	TAB	n
 \fBSelectReadGrp\fP	^J	^M
@@ -1134,7 +1133,7 @@ Vollständiger Name (FQDN) des Newsservers.
 \fBnewsrc\fP
 zugehörige newsrc\-Datei.
 .TP 
-\fBshortname\fP
+\fBKurzname\fP
 Kurzname(n) für den NNTP\-Server.
 .TP 
 Beispiel:
@@ -1151,7 +1150,13 @@ news.example.org /tmp/nrc\-ex example ex
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP
 .sp
 .RS
-Posting Verlaufsliste
+Posting history. The file is written by \fB\%tin\fP(1)  and used by
+\fBDisplayPostHist\fP ('\fBW\fP') command. It should not be altered manually. Any
+line that starts with "#" is a comment. Blank lines are ignored. All other
+lines shall consist of at least four pipe\-separated fields, starting with a
+time stamp "dd\-mm\-yy", a single letter indicating the action which initiated
+the message, a group name or a mail address the message was sent to, the
+subject of the message and optionally the messages \*(rqMessage\-ID\*(rq if known.
 .RE
 .PP
 
@@ -1296,12 +1301,6 @@ anzeigen? Voreinstellung ist ON.
 .TP 
 \fBauto_reconnect\fP
 Reconnect to server automatically. Default is OFF.
-.TP 
-\fBauto_save\fP
-If ON articles/threads with \*(rqArchive\-name:\*(rq in header will be
-automatically saved with the Archive\-name & part/patch no and post processed
-if \fBpost_process_type\fP is set to something other than 'No'.  Default is
-OFF.
 .TP 
 \fBbatch_save\fP
 Falls ON werden Artikel/Threads im Batchmode gespeichert wenn \*(rq\fB\-S\fP oder
@@ -1723,8 +1722,8 @@ Path, name and options of external \fB\%metamail\fP(1)  program used to view
 non\-textual parts of articles.  To use the built\-in viewer, set to
 \-\-internal. This is the default value when \fB\%metamail\fP(1)  is not
 installed. Leave it blank if you don't want any automatic viewing of
-non\-textual attachments. The 'V' command can always be used to manually view
-any attachments. See also \fBask_for_metamail\fP.
+non\-textual attachments. The \fBPageViewAttach\fP ('\fBV\fP')  command can always
+be used to manually view any attachments. See also \fBask_for_metamail\fP.
 .TP 
 \fBmm_charset\fP
 Charset supported locally, which is also used for MIME header (charset

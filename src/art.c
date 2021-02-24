@@ -805,10 +805,6 @@ read_art_headers(
 			FreeAndNull(arts[top_art].path);
 			FreeAndNull(arts[top_art].refs);
 			FreeAndNull(arts[top_art].msgid);
-			if (arts[top_art].archive) {
-				FreeAndNull(arts[top_art].archive->partnum);
-				FreeAndNull(arts[top_art].archive);
-			}
 			arts[top_art].tagged = 0;
 			arts[top_art].thread = ART_EXPIRED;
 			arts[top_art].prev = ART_NORMAL;
@@ -842,10 +838,7 @@ read_art_headers(
  * Mark i as being in j's thread list if
  * . The article is _not_ being ignored
  * . The article is not already threaded
- * . One of the following is true:
- *    1) The subject lines are the same
- *    2) Both are part of the same archive (name's match and arch bit set)
- * IMHO the tests for archive name are redundant and have been for years
+ * . The subject lines are the same
  */
 static void
 thread_by_subject(
@@ -866,13 +859,7 @@ thread_by_subject(
 		j = h->aptr;
 
 		if (j != -1 && j < i) {
-#if 1
-			if (arts[i].prev == ART_NORMAL && (arts[i].subject == arts[j].subject))
-#else
-			/* see also refs.c:collate_subjects() */
-			if (arts[i].prev == ART_NORMAL && ((arts[i].subject == arts[j].subject) || (arts[i].archive && arts[j].archive && (arts[i].archive->name == arts[j].archive->name))))
-#endif /* 1 */
-			{
+			if (arts[i].prev == ART_NORMAL && (arts[i].subject == arts[j].subject)) {
 				arts[j].thread = i;
 				arts[i].prev = j;
 			}
@@ -947,7 +934,7 @@ thread_by_percentage(
 		 */
 		if (!(slen = strlen(arts[base[root_num]].subject)))
 			slen++;
-		unmatched += (unsigned)(slen - strlen(arts[i].subject));
+		unmatched += (unsigned) (slen - strlen(arts[i].subject));
 		if (unmatched * 100 / slen > percentage) {
 			/*
 			 * If there is less greater than percentage% different start a
@@ -1026,7 +1013,7 @@ global_look_for_multipart_info(
 		return 0;
 
 	tmp.arts_index = aindex;
-	tmp.subject_compare_len = (int)(pch - subj);
+	tmp.subject_compare_len = (int) (pch - subj);
 	tmp.part_number = (int) strtol(pch + 1, &pch, 10);
 	if (*pch != '/' && *pch != '|')
 		return 0;
@@ -1046,7 +1033,7 @@ global_look_for_multipart_info(
 
 	tmp.subject = subj;
 	*setme = tmp;
-	*offset = (int)(pch - subj);
+	*offset = (int) (pch - subj);
 	return 1;
 }
 
@@ -1110,7 +1097,7 @@ global_get_multiparts(
 		return 0;
 
 	/* make a temporary buffer to hold the multipart info... */
-	info = my_malloc(sizeof(MultiPartInfo) * (size_t)tmp.total);
+	info = my_malloc(sizeof(MultiPartInfo) * (size_t) tmp.total);
 
 	/* zero out part-number for the repost check below */
 	for (i = 0; i < tmp.total; ++i) {
@@ -1120,7 +1107,7 @@ global_get_multiparts(
 
 	/* try to find all the multiparts... */
 	for (i = (tagging ? 0 : aindex); i < top_art; i++) {
-		if (!arts[i].multipart_subj || strncmp(arts[i].subject, tmp.subject, (size_t)tmp.subject_compare_len))
+		if (!arts[i].multipart_subj || strncmp(arts[i].subject, tmp.subject, (size_t) tmp.subject_compare_len))
 			continue;
 
 		if (!global_get_multipart_info(i, &tmp2))
@@ -1315,7 +1302,7 @@ make_threads(
 			break;
 
 		case THREAD_PERC:
-			thread_by_percentage((unsigned)(100 - group->attribute->thread_perc));
+			thread_by_percentage((unsigned) (100 - group->attribute->thread_perc));
 			break;
 
 		default: /* not reached */
@@ -1409,13 +1396,6 @@ sort_base(
 /*
  * This is called to get header info for articles not already found in the
  * overview files.
- * Code reads (max_lineno) lines of article to catch headers like Archive-name:
- * which are not normally included in XOVER or even the normal block of headers.
- * How this is supposed to be useful when 99% of the time we'll have overview
- * data I don't know...
- * TODO: move Archive-name: parsing to article body parsing, remove the
- * TODO: max_lineno nonsense and parse just the hdrs. Only parse if
- * TODO: currgrp->auto_save is set, otherwise it is redundant info
  */
 static t_bool
 parse_headers(
@@ -1425,11 +1405,9 @@ parse_headers(
 	char art_from_addr[HEADER_LEN];
 	char art_full_name[HEADER_LEN];
 	char *s, *hdr, *ptr;
-	unsigned int lineno = 0;
-	unsigned int max_lineno = 25;
-	t_bool got_from, got_lines, got_received;
+	t_bool got_from, got_lines;
 
-	got_from = got_lines = got_received = FALSE;
+	got_from = got_lines = FALSE;
 
 	while ((ptr = tin_fgets(fp, TRUE)) != NULL) {
 		/*
@@ -1438,42 +1416,13 @@ parse_headers(
 		 */
 
 		/*
-		 * as Archive-name: is placed in the body it's safe to exit
-		 * the loop if it was found. Don't mix up with Archive: from
-		 * RFC 5536.
+		 * End of headers ?
 		 */
-		if (lineno++ > max_lineno || h->archive)
+		if (ptr[0] == '\0')
 			break;
 
 		unfold_header(ptr);
 		switch (my_toupper((unsigned char) *ptr)) {
-			case 'A':	/* Archive-name:  optional */
-				/*
-				 * Archive-name: {name}/{part|patch}{number}
-				 * eg, acorn/faq/part01
-				 */
-				if ((hdr = parse_header(ptr + 1, "rchive-name", FALSE, FALSE, FALSE))) {
-					if ((s = strrchr(hdr, '/')) != NULL) {
-						struct t_archive *archptr = my_malloc(sizeof(struct t_archive));
-
-						if (STRNCASECMPEQ(s + 1, "part", 4)) {
-							archptr->partnum = my_strdup(s + 5);
-							archptr->ispart = TRUE;
-						} else if (STRNCASECMPEQ(s + 1, "patch", 5)) {
-							archptr->partnum = my_strdup(s + 6);
-							archptr->ispart = FALSE;
-						} else {		/* part or patch must be present */
-							free(archptr);
-							continue;
-						}
-						strtok(archptr->partnum, "\n");
-						*s = '\0';
-						archptr->name = hash_str(hdr);
-						h->archive = archptr;
-					}
-				}
-				break;
-
 			case 'D':	/* Date:  mandatory */
 				if (!h->date) {
 					if ((hdr = parse_header(ptr + 1, "ate", FALSE, FALSE, FALSE)))
@@ -1522,14 +1471,6 @@ parse_headers(
 					if ((hdr = parse_header(ptr + 1, "eferences", FALSE, FALSE, FALSE)))
 						h->refs = my_strdup(hdr);
 				}
-
-				/* Received:  If found it's probably a mail article */
-				if (!got_received) {
-					if (parse_header(ptr + 1, "eceived", FALSE, FALSE, FALSE)) {
-						max_lineno <<= 1;		/* double the max number of line to read for mails */
-						got_received = TRUE;
-					}
-				}
 				break;
 
 			case 'S':	/* Subject:  mandatory */
@@ -1574,12 +1515,11 @@ parse_headers(
 	 * also states that Subject, Newsgroups and Path are too. Ho hum.
 	 *
 	 * What about reading mail from local spool via ~/.tin/active.mail,
-	 * they might not have a Message-ID but got_received is very likely to
-	 * be true.
+	 * they might not have a Message-ID.
 	 */
 	if (got_from && h->date && h->msgid) {
 		if (!h->subject)
-			h->subject = hash_str("<No subject>");
+			h->subject = hash_str("");
 
 #ifdef DEBUG
 		if (debug & DEBUG_FILTER)
@@ -1833,7 +1773,7 @@ get_path_header(
 				if (arts[i].artnum == artnum) {
 					FreeIfNeeded(arts[i].path);
 					arts[i].path = my_strdup(ptr);
-					j = (int)i;
+					j = (int) i;
 					break;
 				}
 			}
@@ -2690,11 +2630,40 @@ find_nov_file(
 			 * updating system wide overviews is not safe wrt locking etc.
 			 *
 			 * See if local overview file $SPOOLDIR/<groupname>/.overview exists
+			 *
+			 * INN >= 2.3.0 seems to use a new naming schemme
+			 * see untested gross hack below
 			 */
 #ifndef NNTP_ONLY
 			if (!read_news_via_nntp) {
 				make_base_group_path(novrootdir, group->name, buf, sizeof(buf));
 				joinpath(nov_file, sizeof(nov_file), buf, novfilename);
+#if 0	/* TODO: FIXME - ugly hack for inn >= 2.3.0 */
+				{
+					char *gn = my_strdup(group->name);
+					size_t t, j;
+					t_bool w = FALSE;
+
+					for (t = 1, j = 1; t < strlen(group->name); t++) {
+						if (!w) {
+							if (group->name[t] == '.') {
+								gn[j++] = '/';
+								w = TRUE;
+							}
+						} else {
+							if (group->name[t] != '.') { /* illegal .. in name? */
+								gn[j++] = group->name[t];
+								w = FALSE;
+							}
+						}
+					}
+					gn[j] = '\0';
+
+					joinpath(nov_file, sizeof(nov_file), novrootdir, gn);
+					free(gn);
+					snprintf(nov_file + strlen(nov_file), sizeof(nov_file) - strlen(nov_file), "/%s.DAT", group->name);
+				}
+#endif /* 0 */
 				if (access(nov_file, R_OK) == 0) {
 					if (mode == R_OK)
 						return nov_file;		/* Use system wide overviews */
@@ -3187,7 +3156,6 @@ set_article(
 	art->refs = NULL;
 	art->refptr = NULL;
 	art->line_count = -1;
-	art->archive = NULL;
 	art->tagged = 0;
 	art->thread = ART_EXPIRED;
 	art->prev = ART_NORMAL;

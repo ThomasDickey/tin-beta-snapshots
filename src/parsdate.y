@@ -230,13 +230,13 @@ numzone	: tSNUMBER {
 	    if ((int)$1 < 0) {
 		/* Don't work with negative modulus. */
 		$1 = -(int)$1;
-		if ($1 > 9999 || (i = (int)($1 % 100)) >= 60) {
+		if ($1 > 9999 || (i = (int) ($1 % 100)) >= 60) {
 			YYABORT;
 		}
 		$$ = ($1 / 100) * 60 + i;
 	    }
 	    else {
-		if ($1 > 9999 || (i = (int)($1 % 100)) >= 60) {
+		if ($1 > 9999 || (i = (int) ($1 % 100)) >= 60) {
 			YYABORT;
 		}
 		$$ = -(($1 / 100) * 60 + i);
@@ -747,10 +747,10 @@ date_lex(void)
 	if (CTYPE(isalpha, c)) {
 	    for (p = buff; (c = *yyInput++) == '.' || CTYPE(isalpha, c); )
 		if (p < &buff[sizeof buff - 1])
-		    *p++ = (char)(CTYPE(isupper, c) ? my_tolower(c) : c);
+		    *p++ = (char) (CTYPE(isupper, c) ? my_tolower(c) : c);
 	    *p = '\0';
 	    yyInput--;
-	    return LookupWord(buff, (int)(p - buff));
+	    return LookupWord(buff, (int) (p - buff));
 	}
 
 	return *yyInput++;

@@ -1,4 +1,4 @@
-# Keymap file V1.0.9 for the TIN newsreader
+# Keymap file V1.0.10 for the TIN newsreader
 #
 # Sample keymap file
 # This file contains the default key mappings
@@ -189,6 +189,10 @@ PostPostpone			o
 
 #####
 
+PostedArticlesSelect		^J	^M
+
+#####
+
 PostponeOverride		Y
 PostponeAll			A
 
@@ -199,14 +203,14 @@ PromptNo			n	N
 
 #####
 
-SaveAppendFile			a
-SaveOverwriteFile		o
-
-#####
-
 PProcNo				n
 PProcShar			s
 PProcYes			y
+
+#####
+
+SaveAppendFile			a
+SaveOverwriteFile		o
 
 #####
 

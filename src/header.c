@@ -195,8 +195,8 @@ get_fqdn(
 				line[MAXLINELEN] = '\0';
 
 				if ((eos = strpbrk(line, WS)) != NULL) {
-					if ((j = (int)(eos - line))) {
-						if (!strncmp(line, "domain", (size_t)j) || !strncmp(line, "search", (size_t)j)) {
+					if ((j = (int) (eos - line))) {
+						if (!strncmp(line, "domain", (size_t) j) || !strncmp(line, "search", (size_t) j)) {
 							domain = strtok(eos, WS);
 							break;
 						}
@@ -286,7 +286,7 @@ get_full_name(
 			*p++ = '\0';
 			STRCPY(tmp, pw->pw_name);
 			if (*tmp && isalpha((int)(unsigned char) *tmp) && islower((int)(unsigned char) *tmp))
-				*tmp = (char)my_toupper((int)(unsigned char) *tmp);
+				*tmp = (char) my_toupper((int) (unsigned char) *tmp);
 			snprintf(fullname, sizeof(fullname), "%s%s%s", buf, tmp, p);
 		} else
 			STRCPY(fullname, buf);

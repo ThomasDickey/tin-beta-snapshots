@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2020-06-10
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1997-2021 Urs Janssen <urs@tin.org>
@@ -379,7 +379,6 @@ extern void copy_body(FILE *fp_ip, FILE *fp_op, char *prefix, char *initl, t_boo
 extern void create_index_lock_file(char *the_lock_file);
 extern void dir_name(const char *fullpath, char *dir);
 extern void draw_mark_selected(int i);
-extern void draw_percent_mark(long cur_num, long max_num);
 extern void get_author(t_bool thread, struct t_article *art, char *str, size_t len);
 extern void get_cwd(char *buf);
 extern void make_base_group_path(const char *base_dir, const char *group_name, char *group_path, size_t group_path_len);
@@ -501,9 +500,10 @@ extern int repost_article(const char *groupname, int respnum, t_bool supersede, 
 extern t_bool cancel_article(struct t_group *group, struct t_article *art, int respnum);
 extern t_bool mail_bug_report(void);
 extern t_bool pickup_postponed_articles(t_bool ask, t_bool all);
+extern t_bool post_hist_page(void);
 extern t_bool post_article(const char *groupname);
 extern t_bool reread_active_after_posting(void);
-extern t_bool user_posted_messages(void);
+extern t_posted *find_post_hist(int n);
 extern void init_postinfo(void);
 extern void quick_post_article(t_bool postponed_only, int num_cmd_line_groups);
 #if defined(SIGWINCH) || defined(SIGTSTP)
@@ -591,7 +591,7 @@ extern void compose_mail_text_plain(const char *filename, struct t_group *group)
 extern int check_start_save_any_news(int function, t_bool catchup);
 extern t_bool create_path(const char *path);
 extern t_bool post_process_files(t_function proc_type_func, t_bool auto_delete);
-extern t_bool save_and_process_art(t_openartinfo *artinfo, struct t_article *artptr, t_bool is_mailbox, const char *inpath, int max, t_bool post_process);
+extern t_bool save_and_process_art(t_openartinfo *artinfo, t_bool is_mailbox, const char *inpath, int max, t_bool post_process);
 extern t_part *get_part(int n);
 extern t_url *find_url(int n);
 extern void attachment_page(t_openartinfo *art);
@@ -627,6 +627,7 @@ extern void reset_srch_offsets(void);
 /* select.c */
 extern int add_my_group(const char *group, t_bool add, t_bool ignore_case);
 extern int choose_new_group(void);
+extern int show_article_by_msgid(char *messageid);
 extern int skip_newgroups(void);
 extern void selection_page(int start_groupnum, int num_cmd_line_groups);
 extern void show_selection_page(void);

@@ -331,7 +331,7 @@ global_mouse_action(
 				return GLOBAL_PAGE_DOWN;
 
 			erase_arrow();
-			currmenu->curr = xrow - INDEX_TOP + currmenu->first;
+			currmenu->curr = MIN(xrow - INDEX_TOP + currmenu->first, currmenu->max - INDEX_TOP + 1);
 			currmenu->draw_arrow();
 
 			if (xmouse == MOUSE_BUTTON_1)
@@ -416,7 +416,7 @@ handle_keypad(
 			break;
 
 		default:
-			func = key_to_func((wchar_t)ch, keys);
+			func = key_to_func((wchar_t) ch, keys);
 			break;
 	}
 	return func;

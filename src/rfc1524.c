@@ -96,7 +96,7 @@ get_mailcap_entry(
 		/* expand ~ and/or $HOME etc. */
 		if (strfpath(nptr, filename, sizeof(filename) - 1, &CURR_GROUP, FALSE)) {
 			if ((fp = fopen(filename, "r")) != NULL) {
-				while ((fgets(ptr, (int)(sizeof(buf) - strlen(buf)), fp)) != NULL) {
+				while ((fgets(ptr, (int) (sizeof(buf) - strlen(buf)), fp)) != NULL) {
 					if (*ptr == '#' || *ptr == '\n')		/* skip comments & blank lines */
 						continue;
 
@@ -401,7 +401,7 @@ expand_mailcap_meta(
 						const char *value;
 
 						parameter = my_calloc(1, end - ptr + 1);
-						strncpy(parameter, ptr + 1, (size_t)(end - ptr - 1));	/* extract parameter name */
+						strncpy(parameter, ptr + 1, (size_t) (end - ptr - 1));	/* extract parameter name */
 						if ((value = get_param(part->params, parameter)) != NULL) { /* match? */
 							const char *nptr = escape_shell_meta_chars ? escape_shell_meta(value, quote) : value;
 

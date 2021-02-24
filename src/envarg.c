@@ -94,7 +94,7 @@ envargs(
 	/*
 	 * allocate a vector large enough for all args
 	 */
-	argv = my_malloc((size_t)(argc + *Pargc + 1) * sizeof(char *));
+	argv = my_malloc((size_t) (argc + *Pargc + 1) * sizeof(char *));
 	argvect = argv;
 
 	/*

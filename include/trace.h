@@ -59,7 +59,7 @@ extern void	_tracef (const char *, ...)
 
 #		define TRACE(p) _tracef p
 
-extern char *tin_tracechar(int c);
+extern char *tin_tracechar(int ch);
 
 #	else
 #		define TRACE(p) /* nothing */

@@ -130,6 +130,7 @@ static struct msg_header {
 	char *text;
 } msg_headers[MAX_MSG_HEADERS];
 
+static t_posted *post_hist_list;
 
 /*
  * Local prototypes
@@ -139,11 +140,13 @@ static char **build_nglist(char *ngs_list, int *ngcnt);
 static char **split_address_list(const char *addresses, unsigned int *cnt);
 static int add_mail_quote(FILE *fp, int respnum);
 static int append_mail(const char *the_article, const char *addr, const char *the_mailbox);
+static int build_post_hist_list(void);
 static int check_article_to_be_posted(const char *the_article, int art_type, struct t_group **group, t_bool art_unchanged, t_bool use_cache);
 static int mail_loop(const char *filename, t_function func, char *subject, const char *groupname, const char *prompt, FILE *articlefp);
 static int msg_add_x_body(FILE *fp_out, const char *body);
 static int msg_write_headers(FILE *fp);
 static int post_loop(int type, struct t_group *group, t_function func, const char *posting_msg, int art_type, int offset);
+static int process_post_hist(int n);
 static unsigned int get_recipients(struct t_header *hdr, char *buf, size_t buflen);
 static size_t skip_id(const char *id);
 static struct t_group *check_moderated(const char *groups, int *art_type, const char *failmsg);
@@ -159,11 +162,16 @@ static t_bool must_include(const char *id);
 static t_bool repair_article(t_function *result, struct t_group *group);
 static t_bool stripped_double_ngs(char **newsgroups, int *ngcnt);
 static t_bool submit_mail_file(const char *file, struct t_group *group, FILE *articlefp, t_bool include_text);
+static t_function post_hist_left(void);
+static t_function post_hist_right(void);
 static t_function prompt_rejected(void);
 static t_function prompt_to_send(const char *subject);
 static void add_headers(const char *infile, const char *a_message_id);
+static void build_post_hist_line(int i);
+static void draw_post_hist_arrow(void);
 static void appendid(char **where, const char **what);
 static void find_reply_to_addr(char *from_addr, t_bool parse, struct t_header *hdr);
+static void free_post_hist_list(void);
 static void join_references(char *buffer, const char *oldrefs, const char *newref);
 static void msg_add_header(const char *name, const char *text);
 static void msg_add_x_headers(const char *headers);
@@ -173,6 +181,7 @@ static void post_postponed_article(int ask, const char *subject, const char *new
 static void postpone_article(const char *the_article);
 static void setup_check_article_screen(int *init);
 static void show_followup_info(void);
+static void show_post_hist_page(void);
 static void strip_double_ngs(char *ngs_list);
 static void update_active_after_posting(char *newsgroups);
 static void update_posted_info_file(const char *group, int action, const char *subj, const char *a_message_id);
@@ -190,6 +199,9 @@ static void update_posted_info_file(const char *group, int action, const char *s
 	static char *build_cankey(const char *messageid, const char *secret);
 	static cl_hash_version get_cancel_lock_algo(void);
 #endif /* USE_CANLOCK */
+
+
+static t_menu phmenu = { 0, 0, 0, show_post_hist_page, draw_post_hist_arrow, build_post_hist_line };
 
 
 static t_function
@@ -211,30 +223,30 @@ prompt_to_send(
 
 #if defined(HAVE_ISPELL) && defined(HAVE_PGP_GPG)
 	snprintf(buf, sizeof(buf), _(txt_quit_edit_send),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_send_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_send_keys)),
-					printascii(keyispell, (wint_t)func_to_key(POST_ISPELL, post_send_keys)),
-					printascii(keypgp, (wint_t)func_to_key(POST_PGP, post_send_keys)),
-					printascii(keysend, (wint_t)func_to_key(POST_SEND, post_send_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_send_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_send_keys)),
+					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_send_keys)),
+					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_send_keys)),
+					printascii(keysend, (wint_t) func_to_key(POST_SEND, post_send_keys)));
 #else
 #	ifdef HAVE_ISPELL
 	snprintf(buf, sizeof(buf), _(txt_quit_edit_send),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_send_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_send_keys)),
-					printascii(keyispell, (wint_t)func_to_key(POST_ISPELL, post_send_keys)),
-					printascii(keysend, (wint_t)func_to_key(POST_SEND, post_send_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_send_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_send_keys)),
+					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_send_keys)),
+					printascii(keysend, (wint_t) func_to_key(POST_SEND, post_send_keys)));
 #	else
 #		ifdef HAVE_PGP_GPG
 	snprintf(buf, sizeof(buf), _(txt_quit_edit_send),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_send_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_send_keys)),
-					printascii(keypgp, (wint_t)func_to_key(POST_PGP, post_send_keys)),
-					printascii(keysend, (wint_t)func_to_key(POST_SEND, post_send_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_send_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_send_keys)),
+					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_send_keys)),
+					printascii(keysend, (wint_t) func_to_key(POST_SEND, post_send_keys)));
 #		else
 	snprintf(buf, sizeof(buf), _(txt_quit_edit_send),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_send_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_send_keys)),
-					printascii(keysend, (wint_t)func_to_key(POST_SEND, post_send_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_send_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_send_keys)),
+					printascii(keysend, (wint_t) func_to_key(POST_SEND, post_send_keys)));
 #		endif /* HAVE_PGP_GPG */
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_ISPELL && HAVE_PGP_GPG */
@@ -261,9 +273,9 @@ prompt_rejected(
 
 	return prompt_slk_response(POST_EDIT, post_edit_keys,
 				_(txt_quit_edit_postpone),
-				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_edit_keys)),
-				printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_edit_keys)),
-				printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_edit_keys)));
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_edit_keys)),
+				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_edit_keys)),
+				printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_edit_keys)));
 }
 
 
@@ -305,9 +317,9 @@ repair_article(
 	t_function func;
 
 	func = prompt_slk_response(POST_EDIT, post_edit_ext_keys, _(txt_bad_article),
-				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_edit_ext_keys)),
-				printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_edit_ext_keys)),
-				printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_edit_ext_keys)));
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_edit_ext_keys)),
+				printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_edit_ext_keys)),
+				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_edit_ext_keys)));
 
 	*result = func;
 	if (func == POST_EDIT) {
@@ -378,7 +390,7 @@ msg_add_header(
 	const char *p;
 	char *ptr;
 	char *new_name;
-	char *new_text = NULL;
+	char *new_text;
 	int i;
 	t_bool done = FALSE;
 
@@ -401,12 +413,11 @@ msg_add_header(
 					for (p = text; *p && (*p == ' ' || *p == '\t'); p++)
 						;
 					new_text = my_strdup(p);
-					ptr = strrchr(new_text, '\n');
-					if (ptr)
+					if ((ptr = strrchr(new_text, '\n')) != NULL)
 						*ptr = '\0';
 
 					msg_headers[i].text = my_strdup(new_text);
-					FreeIfNeeded(new_text);
+					free(new_text);
 				}
 				done = TRUE;
 			}
@@ -421,12 +432,11 @@ msg_add_header(
 				for (p = text; *p && (*p == ' ' || *p == '\t'); p++)
 					;
 				new_text = my_strdup(p);
-				ptr = strrchr(new_text, '\n');
-				if (ptr)
+				if ((ptr = strrchr(new_text, '\n')) != NULL)
 					*ptr = '\0';
 
 				msg_headers[i].text = my_strdup(new_text);
-				FreeIfNeeded(new_text);
+				free(new_text);
 			}
 		}
 		FreeIfNeeded(new_name);
@@ -460,107 +470,488 @@ msg_write_headers(
 }
 
 
-/* TODO: handle optional Message-ID: field */
+/*
+ * Posted messages menu
+ */
+static t_function
+post_hist_left(
+	void)
+{
+	return GLOBAL_QUIT;
+}
+
+
+static t_function
+post_hist_right(
+	void)
+{
+	return POSTED_SELECT;
+}
+
+
+static void
+show_post_hist_page(
+	void)
+{
+	int i;
+
+	signal_context = cPOSTED;
+	currmenu = &phmenu;
+	mark_offset = 0;
+
+	if (phmenu.curr < 0)
+		phmenu.curr = 0;
+
+	ClearScreen();
+	set_first_screen_item();
+	center_line(0, TRUE, _(txt_post_history_menu));
+
+	for (i = phmenu.first; i < phmenu.first + NOTESLINES && i < phmenu.max; ++i)
+		build_post_hist_line(i);
+
+	show_mini_help(POSTED_LEVEL);
+
+	draw_post_hist_arrow();
+}
+
+
 t_bool
-user_posted_messages(
+post_hist_page(
+	void)
+{
+	char key[MAXKEYLEN];
+	t_function func;
+	t_menu *oldmenu = NULL;
+
+	if (currmenu)
+		oldmenu = currmenu;
+	phmenu.curr = 0;
+	phmenu.max = build_post_hist_list();
+	if (phmenu.max == 0)
+		return FALSE;
+
+	clear_note_area();
+	show_post_hist_page();
+	set_xclick_off();
+
+	forever {
+		switch ((func = handle_keypad(post_hist_left, post_hist_right, NULL, post_hist_keys))) {
+			case GLOBAL_QUIT:
+				free_post_hist_list();
+				if (oldmenu)
+					currmenu = oldmenu;
+				return TRUE;
+
+			case DIGIT_1:
+			case DIGIT_2:
+			case DIGIT_3:
+			case DIGIT_4:
+			case DIGIT_5:
+			case DIGIT_6:
+			case DIGIT_7:
+			case DIGIT_8:
+			case DIGIT_9:
+				if (phmenu.max)
+					prompt_item_num(func_to_key(func, post_hist_keys), _(txt_select_art));
+				break;
+
+#ifndef NO_SHELL_ESCAPE
+			case GLOBAL_SHELL_ESCAPE:
+				do_shell_escape();
+				break;
+#endif /* !NO_SHELL_ESCAPE */
+
+			case GLOBAL_HELP:
+				show_help_page(POSTED_LEVEL, _(txt_post_history_menu_com));
+				show_post_hist_page();
+				break;
+
+			case GLOBAL_FIRST_PAGE:
+				top_of_list();
+				break;
+
+			case GLOBAL_LAST_PAGE:
+				end_of_list();
+				break;
+
+			case GLOBAL_REDRAW_SCREEN:
+				my_retouch();
+				show_post_hist_page();
+				break;
+
+			case GLOBAL_LINE_DOWN:
+				move_down();
+				break;
+
+			case GLOBAL_LINE_UP:
+				move_up();
+				break;
+
+			case GLOBAL_PAGE_DOWN:
+				page_down();
+				break;
+
+			case GLOBAL_PAGE_UP:
+				page_up();
+				break;
+
+			case GLOBAL_SCROLL_DOWN:
+				scroll_down();
+				break;
+
+			case GLOBAL_SCROLL_UP:
+				scroll_up();
+				break;
+
+			case GLOBAL_TOGGLE_HELP_DISPLAY:
+				toggle_mini_help(POSTED_LEVEL);
+				show_post_hist_page();
+				break;
+
+			case GLOBAL_TOGGLE_INFO_LAST_LINE:
+				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
+				show_post_hist_page();
+				break;
+
+			case POSTED_SELECT:
+				if (phmenu.max) {
+					switch (process_post_hist(phmenu.curr)) {
+						case LOOKUP_REPLY:
+							info_message(_(txt_post_history_op_unavail_for_reply));
+							break;
+
+						case LOOKUP_ART_UNAVAIL:
+							info_message(_(txt_art_unavailable));
+							break;
+
+						case LOOKUP_NO_LAST:
+							info_message(_(txt_no_last_message));
+							break;
+
+						case LOOKUP_UNAVAIL:
+							info_message("%s %s", _(txt_lookup_func_not_available), _(txt_lookup_func_not_nntp));
+							break;
+
+						case LOOKUP_FAILED:
+							show_post_hist_page();
+							info_message(_(txt_post_history_lookup_failed));
+							break;
+
+						default:
+							show_post_hist_page();
+							break;
+					}
+				}
+				break;
+
+			case GLOBAL_SEARCH_SUBJECT_FORWARD:
+			case GLOBAL_SEARCH_SUBJECT_BACKWARD:
+			case GLOBAL_SEARCH_REPEAT:
+				if (func == GLOBAL_SEARCH_REPEAT && last_search != GLOBAL_SEARCH_SUBJECT_FORWARD && last_search != GLOBAL_SEARCH_SUBJECT_BACKWARD)
+					info_message(_(txt_no_prev_search));
+				else if (phmenu.max) {
+					int new_pos, old_pos = phmenu.curr;
+
+					new_pos = generic_search((func == GLOBAL_SEARCH_SUBJECT_FORWARD), (func == GLOBAL_SEARCH_REPEAT), phmenu.curr, phmenu.max - 1, POSTED_LEVEL);
+					if (new_pos != old_pos)
+						move_to_item(new_pos);
+				}
+				break;
+
+			default:
+				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, post_hist_keys)));
+				break;
+		}
+	}
+}
+
+
+static void
+draw_post_hist_arrow(
+	void)
+{
+	draw_arrow_mark(INDEX_TOP + phmenu.curr - phmenu.first);
+	if (tinrc.info_in_last_line) {
+		t_posted *lptr;
+
+		lptr = find_post_hist(phmenu.curr);
+		if (lptr->mid[0])
+			info_message("%s", lptr->mid);
+	} else if (phmenu.curr == phmenu.max - 1)
+		info_message(_(txt_end_of_posted));
+}
+
+
+t_posted *
+find_post_hist(
+	int n)
+{
+	t_posted *lptr;
+
+	lptr = post_hist_list;
+	while (n-- > 0 && lptr->next)
+		lptr = lptr->next;
+
+	return lptr;
+}
+
+
+static void
+build_post_hist_line(
+	int i)
+{
+	char *sptr;
+	int group_len = cCOLS / 5;
+	t_posted *lptr;
+	char *tmp = NULL;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	int len = cCOLS * MB_CUR_MAX;
+	wchar_t *wtmp, *wtmp2;
+#else
+	int len = cCOLS;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+#ifdef USE_CURSES
+	/*
+	 * Allocate line buffer
+	 * make it the same size like in !USE_CURSES case to simplify the code
+	 */
+	sptr = my_malloc(len + 2);
+#else
+	sptr = screen[INDEX2SNUM(i)].col;
+#endif /* USE_CURSES */
+
+	lptr = find_post_hist(i);
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if ((wtmp = char2wchar_t(lptr->group)) != NULL) {
+		if (!strchr(lptr->group, '@') && tinrc.abbreviate_groupname)
+			wtmp2 = abbr_wcsgroupname(wtmp, group_len);
+		else
+			wtmp2 = wcspart(wtmp, group_len, FALSE);
+
+		if (wtmp2) {
+			tmp = wchar_t2char(wtmp2);
+			free(wtmp2);
+		}
+		free(wtmp);
+	}
+#else
+	if (!strchr(lptr->group, '@') && tinrc.abbreviate_groupname)
+		tmp = abbr_groupname(lptr->group, group_len);
+	else
+		tmp = my_strdup(lptr->group);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+#if 1
+	snprintf(sptr, len, "  %s  %8s  %c  %-*.*s  \"%s\"", tin_ltoa(i + 1, 4),
+			lptr->date, lptr->action,
+			group_len, group_len, BlankIfNull(tmp),
+			lptr->subj);
+#else
+	/* also show MID */
+	snprintf(sptr, len, "  %s  %8s  %c  %-*.*s  \"%s\" %s", tin_ltoa(i + 1, 4),
+			lptr->date, lptr->action,
+			group_len, group_len, BlankIfNull(tmp),
+			lptr->subj,
+			lptr->mid);
+#endif /* 1 */
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if ((wtmp = char2wchar_t(sptr)) != NULL) {
+		wtmp2 = wcspart(wtmp, cCOLS - 1, FALSE);
+		if (wtmp2) {
+			free(wtmp);
+			FreeIfNeeded(tmp);
+			if ((tmp = wchar_t2char(wtmp2)) != NULL) {
+				snprintf(sptr, len, "%s", tmp);
+				FreeAndNull(tmp);
+			}
+			free(wtmp2);
+		} else
+			free(wtmp);
+	}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+#ifndef USE_CURSES
+	if (tinrc.strip_blanks)
+		strcat(strip_line(sptr), cCRLF);
+#endif /* !USE_CURSES */
+
+	WriteLine(INDEX2LNUM(i), sptr);
+	FreeIfNeeded(tmp);
+
+#ifdef USE_CURSES
+	free(sptr);
+#endif /* USE_CURSES */
+}
+
+
+static int
+process_post_hist(
+	int n)
+{
+	t_posted *lptr;
+	int ret;
+
+	lptr = find_post_hist(n);
+
+	if (strchr(lptr->group, '@'))
+		ret = LOOKUP_REPLY;
+#ifdef NNTP_ABLE
+	else
+		ret = show_article_by_msgid(lptr->mid);
+#endif /* NNTP_ABLE */
+
+	return ret;
+}
+
+
+static int
+build_post_hist_list(
 	void)
 {
 	FILE *fp;
+	char *p, *q;
 	char buf[LEN];
-	int no_of_lines = 0;
-	size_t group_len = 0, i = 0, j, k;
-	struct t_posted *posted;
+	int count = 0;
+	size_t i = 0, j, k, n;
+	t_posted *posted = NULL;
 
 	if ((fp = fopen(posted_info_file, "r")) == NULL) {
 		clear_message();
-		return FALSE;
+		return 0;
 	}
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL)
-		no_of_lines++;
+		count++;
 
-	if (!no_of_lines) {
+	if (!count) {
 		fclose(fp);
 		info_message(_(txt_no_arts_posted));
-		return FALSE;
+		return 0;
 	}
 	rewind(fp);
-	posted = my_malloc((size_t)(no_of_lines + 1) * sizeof(struct t_posted));
+	count = 0;
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 		if (buf[0] == '#' || buf[0] == '\n')
 			continue;
 
-		for (j = 0, k = 0; buf[j] != '|' && buf[j] != '\n'; j++)
-			if (k < sizeof(posted[i].date) - 1)
-				posted[i].date[k++] = buf[j];	/* posted date */
+		if (!posted) {
+			posted = post_hist_list = my_malloc(sizeof(t_posted));
+			posted->next = NULL;
+		} else {
+			posted = my_malloc(sizeof(t_posted));
+			posted->next = post_hist_list;
+			post_hist_list = posted;
+		}
+		++count;
 
-		if (buf[j] == '\n') {
+		n = 0;
+		q = my_strdup(buf);
+		if ((p = tin_strtok(q, "|")) != NULL) {
+			for (; (p = tin_strtok(NULL, "|")) != NULL; n++)
+				;
+		}
+		free(q);
+
+		for (j = 0, k = 0; buf[j] != '|' && buf[j] != '\n'; j++) {
+			if (k < sizeof(posted->date) - 1)
+				posted->date[k++] = buf[j];	/* posted date */
+		}
+
+		/* current expected actions [dfrwx] */
+		if (n < 3 || buf[++j] == '|') { /* too few args and/or empty action */
 			error_message(3, _(txt_error_corrupted_file), posted_info_file);
 			fclose(fp);
 			clear_message();
-			free(posted);
-			return FALSE;
+			free_post_hist_list();
+			return 0;
 		}
-		posted[i].date[k] = '\0';
-		posted[i + 1].date[0] = '\0';
+		posted->date[k] = '\0';
 
-		posted[i].action = buf[++j];
+		posted->action = buf[j];
 		j += 2;
 
 		for (k = 0; buf[j] != '|' && buf[j] != ','; j++) {
-			if (k < sizeof(posted[i].group) - 1)
-				posted[i].group[k++] = buf[j];
+			if (k < sizeof(posted->group) - 1)
+				posted->group[k++] = buf[j];
 		}
 		if (buf[j] == ',') {
 			while (buf[j] != '|' && buf[j] != '\n')
 				j++;
 
-			if (k > sizeof(posted[i].group) - 5)
-				k = sizeof(posted[i].group) - 5;
-			posted[i].group[k++] = ',';
-			posted[i].group[k++] = '.';
-			posted[i].group[k++] = '.';
-			posted[i].group[k++] = '.';
+			if (k > sizeof(posted->group) - 5)
+				k = sizeof(posted->group) - 5;
+
+			posted->group[k++] = ',';
+			posted->group[k++] = '.';
+			posted->group[k++] = '.';
+			posted->group[k++] = '.';
 		}
-		posted[i].group[k] = '\0';
-		if (k > group_len)
-			group_len = k;
+		posted->group[k] = '\0';
+
 		j++;
 
-		for (k = 0; buf[j] != '\n'; j++) {
-			if (k < sizeof(posted[i].subj) - 1)
-				posted[i].subj[k++] = buf[j];
+		p = buf;
+		while ((q = strstr(p, "|<" )) != NULL)
+			p = ++q;
+
+		if (strlen(p) >= 4 && *p == '<' && strlen(p) < sizeof(posted->mid) - 1) { /* <@> */
+			t_bool invalid = FALSE;
+			t_bool has_at = FALSE;
+
+			for (q = p, k = 0; *q != '\n' && !invalid; q++) {
+				if (*q < 33 || !isascii(*q)) {
+					invalid = TRUE;
+					break;
+				}
+				if (*q == '@')
+					has_at = TRUE;
+
+				posted->mid[k++] = *q;
+			}
+
+			if (*q != '\n' || *(q - 1) != '>')
+				invalid = TRUE;
+
+			if (!invalid && has_at) {
+				posted->mid[k] = '\0';
+				*(p - 1) = '\n'; /* so it does not end up in subj */
+			} else
+				posted->mid[0] = '\0';
 		}
-		posted[i].subj[k] = '\0';
+
+		if (p == buf || p == buf + j) /* subject looks like id and no id logged or no id given, clear id */
+			posted->mid[0] = '\0';
+		my_strncpy(posted->subj, buf + j, sizeof(posted->subj) - 1);
 		i++;
 	}
-	posted[i].date[0] = '\0';	/* end-marker for display */
 	fclose(fp);
 
-	if (!(fp = tmpfile())) {
-		free(posted);
-		return FALSE;
-	}
-	for (; i > 0; i--) {
-		snprintf(buf, sizeof(buf), "%8s  %c  %-*s  %s",
-			posted[i - 1].date, posted[i - 1].action,
-			(int) group_len, posted[i - 1].group, posted[i - 1].subj);
-		fprintf(fp, "%s%s", buf, cCRLF);
-	}
-	free(posted);
-	info_pager(fp, _(txt_post_history_menu), TRUE);
-	fclose(fp);
-	info_pager(NULL, NULL, TRUE); /* free mem */
+	return count;
+}
 
-	return TRUE;
+
+static void
+free_post_hist_list(
+	void)
+{
+	t_posted *p, *q;
+
+	for (p = post_hist_list; p != NULL; p = q) {
+		q = p->next;
+		free(p);
+	}
+	post_hist_list = NULL;
 }
 
 
 /*
  * TODO:
  * - mime-encode subject so we get the right charset (it may be different
- *   in subsequent sessions); update user_posted_messages accordingly.
+ *   in subsequent sessions)
  */
 static void
 update_posted_info_file(
@@ -669,6 +1060,8 @@ append_mail(
 			fclose(fp_in);
 			return ENOENT; /* FIXME! dot_lock() doesn't return more info yet */
 		}
+#else
+		rval = 0;
 #endif /* !NO_LOCKING */
 
 		if (mmdf)
@@ -922,7 +1315,7 @@ check_article_to_be_posted(
 
 		if (cp - line == 7 && !strncasecmp(line, "Subject", 7)) {
 			found_subject_lines++;
-			strncpy(subject, cp + 2, (size_t)(cCOLS - 6));
+			strncpy(subject, cp + 2, (size_t) (cCOLS - 6));
 			subject[cCOLS - 6] = '\0';
 		}
 
@@ -1081,18 +1474,16 @@ check_article_to_be_posted(
 			if ((cp2 = parse_header(line, "Date", FALSE, FALSE, FALSE))) {
 				if (parsedate(cp2, (struct _TIMEINFO *) 0) <= 0)
 					errors_catbp |= CA_ERROR_BAD_DATE;
-			} else {
+			} else
 				errors_catbp |= CA_ERROR_BAD_DATE;
-			}
 		}
 
 		if (cp - line == 7 && !strncasecmp(line, "Expires", 7)) {
 			if ((cp2 = parse_header(line, "Expires", FALSE, FALSE, FALSE))) {
 				if (parsedate(cp2, (struct _TIMEINFO *) 0) <= 0)
 					errors_catbp |= CA_ERROR_BAD_EXPIRES;
-			} else {
+			} else
 				errors_catbp |= CA_ERROR_BAD_EXPIRES;
-			}
 		}
 
 		/*
@@ -1318,7 +1709,7 @@ check_article_to_be_posted(
 						cp += num_bytes;
 						if (!contains_8bit && num_bytes > 1)
 							contains_8bit = TRUE;
-						if (iswprint((wint_t)wc) && ((wc_width = wcwidth(wc)) != -1))
+						if (iswprint((wint_t) wc) && ((wc_width = wcwidth(wc)) != -1))
 							col += wc_width;
 						else
 							col++;
@@ -1890,41 +2281,41 @@ post_article_loop:
 #if defined(HAVE_ISPELL) && defined(HAVE_PGP_GPG)
 			func = prompt_slk_response((i ? POST_EDIT : art_unchanged ? POST_POSTPONE : GLOBAL_POST),
 					post_post_keys, _(txt_quit_edit_post),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keyispell, (wint_t)func_to_key(POST_ISPELL, post_post_keys)),
-					printascii(keypgp, (wint_t)func_to_key(POST_PGP, post_post_keys)),
-					printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
+					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
+					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #else
 #	ifdef HAVE_ISPELL
 			func = prompt_slk_response((i ? POST_EDIT : art_unchanged ? POST_POSTPONE : GLOBAL_POST),
 					post_post_keys, _(txt_quit_edit_post),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keyispell, (wint_t)func_to_key(POST_ISPELL, post_post_keys)),
-					printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
+					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #	else
 #		ifdef HAVE_PGP_GPG
 			func = prompt_slk_response((i ? POST_EDIT : art_unchanged ? POST_POSTPONE : GLOBAL_POST),
 					post_post_keys, _(txt_quit_edit_post),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keypgp, (wint_t)func_to_key(POST_PGP, post_post_keys)),
-					printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
+					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #		else
 			func = prompt_slk_response((i ? POST_EDIT : art_unchanged ? POST_POSTPONE : GLOBAL_POST),
 					post_post_keys, _(txt_quit_edit_post),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #		endif /* HAVE_PGP_GPG */
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_ISPELL && HAVE_PGP_GPG */
@@ -1943,38 +2334,38 @@ post_article_loop:
 
 #if defined(HAVE_ISPELL) && defined(HAVE_PGP_GPG)
 			snprintf(buf, sizeof(buf), _(txt_quit_edit_xpost),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keyispell, (wint_t)func_to_key(POST_ISPELL, post_post_keys)),
-					printascii(keypgp, (wint_t)func_to_key(POST_PGP, post_post_keys)),
-					printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
+					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
+					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #else
 #	ifdef HAVE_ISPELL
 			snprintf(buf, sizeof(buf), _(txt_quit_edit_xpost),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keyispell, (wint_t)func_to_key(POST_ISPELL, post_post_keys)),
-					printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
+					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #	else
 #		ifdef HAVE_PGP_GPG
 			snprintf(buf, sizeof(buf), _(txt_quit_edit_xpost),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keypgp, (wint_t)func_to_key(POST_PGP, post_post_keys)),
-					printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
+					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #		else
 			snprintf(buf, sizeof(buf), _(txt_quit_edit_xpost),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #		endif /* HAVE_PGP_GPG */
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_ISPELL && HAVE_PGP_GPG */
@@ -2087,9 +2478,8 @@ post_article_done:
 			 */
 			add_headers(article_name, a_message_id);
 
-			if ((errno = append_mail(article_name, userid, a_mailbox))) {
+			if ((errno = append_mail(article_name, userid, a_mailbox)))
 				perror_message(_(txt_cannot_open_for_saving), a_mailbox);
-			}
 		}
 		free_and_init_header(&header);
 	}
@@ -2390,7 +2780,7 @@ fetch_postponed_article(
 {
 	FILE *in, *out;
 	FILE *tmp;
-	char *bufp = NULL;
+	char *bufp;
 	char postponed_tmp[PATH_LEN];
 	char line[HEADER_LEN];
 	t_bool first_article;
@@ -2519,11 +2909,11 @@ pickup_postponed_articles(
 			char keyquit[MAXKEYLEN], keyyes[MAXKEYLEN];
 
 			snprintf(buf, sizeof(buf), _(txt_postpone_repost),
-					printascii(keyyes, (wint_t)func_to_key(PROMPT_YES, post_postpone_keys)),
-					printascii(keyoverride, (wint_t)func_to_key(POSTPONE_OVERRIDE, post_postpone_keys)),
-					printascii(keyall, (wint_t)func_to_key(POSTPONE_ALL, post_postpone_keys)),
-					printascii(keyno, (wint_t)func_to_key(PROMPT_NO, post_postpone_keys)),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_postpone_keys)));
+					printascii(keyyes, (wint_t) func_to_key(PROMPT_YES, post_postpone_keys)),
+					printascii(keyoverride, (wint_t) func_to_key(POSTPONE_OVERRIDE, post_postpone_keys)),
+					printascii(keyall, (wint_t) func_to_key(POSTPONE_ALL, post_postpone_keys)),
+					printascii(keyno, (wint_t) func_to_key(PROMPT_NO, post_postpone_keys)),
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_postpone_keys)));
 
 			func = prompt_slk_response(PROMPT_YES, post_postpone_keys,
 					"%s", sized_message(&smsg, buf, subject));
@@ -2942,9 +3332,9 @@ post_response(
 
 /*		clear_message(); */
 		func = prompt_slk_response(PAGE_MAIL, post_mail_fup_keys, _(txt_resp_to_poster),
-				printascii(keymail, (wint_t)func_to_key(POST_MAIL, post_mail_fup_keys)),
-				printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_mail_fup_keys)),
-				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_mail_fup_keys)));
+				printascii(keymail, (wint_t) func_to_key(POST_MAIL, post_mail_fup_keys)),
+				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_mail_fup_keys)),
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_mail_fup_keys)));
 		switch (func) {
 			case GLOBAL_POST:
 				use_followup_to = FALSE;
@@ -2969,9 +3359,9 @@ post_response(
 		signal_context = cPostFup;
 		func = prompt_slk_response(GLOBAL_POST, post_ignore_fupto_keys,
 				_(txt_prompt_fup_ignore),
-				printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_ignore_fupto_keys)),
-				printascii(keyignore, (wint_t)func_to_key(POST_IGNORE_FUPTO, post_ignore_fupto_keys)),
-				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_ignore_fupto_keys)));
+				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_ignore_fupto_keys)),
+				printascii(keyignore, (wint_t) func_to_key(POST_IGNORE_FUPTO, post_ignore_fupto_keys)),
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_ignore_fupto_keys)));
 		signal_context = save_signal_context;
 		switch (func) {
 			case GLOBAL_QUIT:
@@ -3099,7 +3489,7 @@ post_response(
 
 				/* skip headers + header/body separator */
 				while (fgets(buffer, (int) sizeof(buffer), pgart.raw) != NULL) {
-					offset = (long)((size_t)offset + strlen(buffer));
+					offset = (long) ((size_t)offset + strlen(buffer));
 					if (buffer[0] == '\n' || buffer[0] == '\r')
 						break;
 				}
@@ -3616,8 +4006,8 @@ mail_to_author(
 
 		func = prompt_slk_response(POST_CONTINUE, post_continue_keys,
 				_(txt_warn_suspicious_mail),
-				printascii(keycont, (wint_t)func_to_key(POST_CONTINUE, post_continue_keys)),
-				printascii(keyabort, (wint_t)func_to_key(POST_ABORT, post_continue_keys)));
+				printascii(keycont, (wint_t) func_to_key(POST_CONTINUE, post_continue_keys)),
+				printascii(keyabort, (wint_t) func_to_key(POST_ABORT, post_continue_keys)));
 		switch (func) {
 			case POST_ABORT:
 			case GLOBAL_ABORT:
@@ -3660,7 +4050,7 @@ mail_to_author(
 
 				/* skip headers + header/body separator */
 				while (fgets(buffer, (int) sizeof(buffer), pgart.raw) != NULL) {
-					offset = (long)((size_t)offset + strlen(buffer));
+					offset = (long) ((size_t) offset + strlen(buffer));
 					if (buffer[0] == '\n' || buffer[0] == '\r')
 						break;
 				}
@@ -3859,9 +4249,9 @@ cancel_article(
 		char keycancel[MAXKEYLEN], keyquit[MAXKEYLEN], keysupersede[MAXKEYLEN];
 
 		snprintf(buff, sizeof(buff), _(txt_cancel_article),
-				printascii(keycancel, (wint_t)func_to_key(POST_CANCEL, post_delete_keys)),
-				printascii(keysupersede, (wint_t)func_to_key(POST_SUPERSEDE, post_delete_keys)),
-				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_delete_keys)));
+				printascii(keycancel, (wint_t) func_to_key(POST_CANCEL, post_delete_keys)),
+				printascii(keysupersede, (wint_t) func_to_key(POST_SUPERSEDE, post_delete_keys)),
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_delete_keys)));
 
 		func = prompt_slk_response(default_func, post_delete_keys,
 						"%s", sized_message(&smsg, buff, art->subject));
@@ -4005,9 +4395,9 @@ cancel_article(
 			int save_signal_context = signal_context;
 
 			snprintf(buff, sizeof(buff), _(txt_quit_cancel),
-					printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_cancel_keys)),
-					printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_cancel_keys)),
-					printascii(keycancel, (wint_t)func_to_key(POST_CANCEL, post_cancel_keys)));
+					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_cancel_keys)),
+					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_cancel_keys)),
+					printascii(keycancel, (wint_t) func_to_key(POST_CANCEL, post_cancel_keys)));
 
 			signal_context = cPostCancel;
 			func = prompt_slk_response(default_func, post_cancel_keys, "%s", sized_message(&smsg, buff, note_h.subj));
@@ -4233,10 +4623,10 @@ repost_article(
 		 *
 		 * TODO : use strunc() on note_h.subj?
 		 */
-		fprintf(fp, "[ %-*s ]\n", (int) (72 + strlen(_(txt_article_reposted)) - (size_t)strwidth(_(txt_article_reposted))), _(txt_article_reposted));
-		fprintf(fp, "[ From: %-*s ]\n", (int) (66 + strlen(note_h.from) - (size_t)strwidth(note_h.from)), note_h.from);
-		fprintf(fp, "[ Subject: %-*s ]\n", (int) (63 + strlen(note_h.subj) - (size_t)strwidth(note_h.subj)), note_h.subj);
-		fprintf(fp, "[ Newsgroups: %-*s ]\n", (int) (60 + strlen(note_h.newsgroups) - (size_t)strwidth(note_h.newsgroups)), note_h.newsgroups);
+		fprintf(fp, "[ %-*s ]\n", (int) (72 + strlen(_(txt_article_reposted)) - (size_t) strwidth(_(txt_article_reposted))), _(txt_article_reposted));
+		fprintf(fp, "[ From: %-*s ]\n", (int) (66 + strlen(note_h.from) - (size_t) strwidth(note_h.from)), note_h.from);
+		fprintf(fp, "[ Subject: %-*s ]\n", (int) (63 + strlen(note_h.subj) - (size_t) strwidth(note_h.subj)), note_h.subj);
+		fprintf(fp, "[ Newsgroups: %-*s ]\n", (int) (60 + strlen(note_h.newsgroups) - (size_t) strwidth(note_h.newsgroups)), note_h.newsgroups);
 		if (note_h.messageid)
 			fprintf(fp, "[ Message-ID: %-60s ]\n\n", note_h.messageid);
 	} else /* don't break long lines if superseeding. TODO: what about uu/mime-parts? */
@@ -4288,38 +4678,38 @@ repost_article(
 
 #if defined(HAVE_ISPELL) && defined(HAVE_PGP_GPG)
 		snprintf(buff, sizeof(buff), _(txt_quit_edit_xpost),
-				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-				printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-				printascii(keyispell, (wint_t)func_to_key(POST_ISPELL, post_post_keys)),
-				printascii(keypgp, (wint_t)func_to_key(POST_PGP, post_post_keys)),
-				printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-				printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-				printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+				printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
+				printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
+				printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+				printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #else
 #	ifdef HAVE_ISPELL
 		snprintf(buff, sizeof(buff), _(txt_quit_edit_xpost),
-				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-				printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-				printascii(keyispell, (wint_t)func_to_key(POST_ISPELL, post_post_keys)),
-				printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-				printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-				printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+				printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
+				printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+				printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #	else
 #		ifdef HAVE_PGP_GPG
 		snprintf(buff, sizeof(buff), _(txt_quit_edit_xpost),
-				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-				printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-				printascii(keypgp, (wint_t)func_to_key(POST_PGP, post_post_keys)),
-				printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-				printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-				printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+				printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
+				printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+				printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #		else
 		snprintf(buff, sizeof(buff), _(txt_quit_edit_xpost),
-				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, post_post_keys)),
-				printascii(keyedit, (wint_t)func_to_key(POST_EDIT, post_post_keys)),
-				printascii(keymenu, (wint_t)func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-				printascii(keypost, (wint_t)func_to_key(GLOBAL_POST, post_post_keys)),
-				printascii(keypostpone, (wint_t)func_to_key(POST_POSTPONE, post_post_keys)));
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
+				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
+				printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
+				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
+				printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
 #		endif /* HAVE_PGP_GPG */
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_ISPELL && HAVE_PGP_GPG */
@@ -4376,13 +4766,13 @@ msg_add_x_headers(
 		while (fgets(line, (int) sizeof(line), fp) != NULL) {
 			if (line[0] != '\n' && line[0] != '#') {
 				if (line[0] != ' ' && line[0] != '\t') {
-					x_hdrs = my_realloc(x_hdrs, (size_t)(num_x_hdrs + 1) * sizeof(char *));
+					x_hdrs = my_realloc(x_hdrs, (size_t) (num_x_hdrs + 1) * sizeof(char *));
 					x_hdrs[num_x_hdrs++] = my_strdup(line);
 				} else {
 					if (!num_x_hdrs) /* folded line, but no previous header */
 						continue;
-					i = (int)strlen(x_hdrs[num_x_hdrs - 1]);
-					x_hdrs[num_x_hdrs - 1] = my_realloc(x_hdrs[num_x_hdrs - 1], (size_t)i + strlen(line) + 1);
+					i = (int) strlen(x_hdrs[num_x_hdrs - 1]);
+					x_hdrs[num_x_hdrs - 1] = my_realloc(x_hdrs[num_x_hdrs - 1], (size_t) i + strlen(line) + 1);
 					strcpy(x_hdrs[num_x_hdrs - 1] + i, line);
 				}
 			}
@@ -4983,7 +5373,7 @@ split_address_list(
 				end--;	/* skip trailing white space */
 			if (!isspace((int) *end))
 				end++;
-			addr_len = (size_t)(end - start);
+			addr_len = (size_t) (end - start);
 			if (addr_len > 0) {
 				addr = my_malloc(addr_len + 1);
 				strncpy(addr, start, addr_len);
