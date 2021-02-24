@@ -705,7 +705,7 @@ build_post_hist_line(
 	t_posted *lptr;
 	char *tmp = NULL;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	int len = cCOLS * MB_CUR_MAX;
+	int len = (int)((size_t)cCOLS * MB_CUR_MAX);
 	wchar_t *wtmp, *wtmp2;
 #else
 	int len = cCOLS;
@@ -744,13 +744,13 @@ build_post_hist_line(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 #if 1
-	snprintf(sptr, len, "  %s  %8s  %c  %-*.*s  \"%s\"", tin_ltoa(i + 1, 4),
+	snprintf(sptr, (size_t)len, "  %s  %8s  %c  %-*.*s  \"%s\"", tin_ltoa(i + 1, 4),
 			lptr->date, lptr->action,
 			group_len, group_len, BlankIfNull(tmp),
 			lptr->subj);
 #else
 	/* also show MID */
-	snprintf(sptr, len, "  %s  %8s  %c  %-*.*s  \"%s\" %s", tin_ltoa(i + 1, 4),
+	snprintf(sptr, (size_t)len, "  %s  %8s  %c  %-*.*s  \"%s\" %s", tin_ltoa(i + 1, 4),
 			lptr->date, lptr->action,
 			group_len, group_len, BlankIfNull(tmp),
 			lptr->subj,
@@ -764,7 +764,7 @@ build_post_hist_line(
 			free(wtmp);
 			FreeIfNeeded(tmp);
 			if ((tmp = wchar_t2char(wtmp2)) != NULL) {
-				snprintf(sptr, len, "%s", tmp);
+				snprintf(sptr, (size_t)len, "%s", tmp);
 				FreeAndNull(tmp);
 			}
 			free(wtmp2);
