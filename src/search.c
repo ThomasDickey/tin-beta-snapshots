@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-11-18
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -160,7 +160,7 @@ search_config(
 			if (n == last && forward)
 				n = 0;
 			else
-				n += (forward ? 1 : -1);
+				n = (n + (enum option_enum)(forward ? 1 : -1));
 		}
 		/* search only visible options */
 		if (option_is_visible(n)) {
@@ -378,7 +378,7 @@ body_search(
 			line = my_strdup(tmp);
 
 		if (tinrc.wildcard) {
-			if (pcre_exec(search_regex.re, search_regex.extra, line, strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+			if (pcre_exec(search_regex.re, search_regex.extra, line, (int)strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
 				srch_lineno = i;
 				art_close(&pgart);		/* Switch the pager over to matched art */
 				pgart = artinfo;
@@ -509,7 +509,7 @@ search_group(
 	do {
 		if (forward) {
 			if ((i = next_response(i)) < 0)
-				i = base[0];
+				i = (int)base[0];
 		} else {
 			if ((i = prev_response(i)) < 0)
 				i = find_response(grpmenu.max - 1, num_of_responses(grpmenu.max - 1));
@@ -648,7 +648,7 @@ search_article(
 			ptr = my_strdup(tmp);
 
 		if (tinrc.wildcard) {
-			while (pcre_exec(search_regex.re, search_regex.extra, ptr, strlen(ptr), srch_offsets[1], 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+			while (pcre_exec(search_regex.re, search_regex.extra, ptr, (int)strlen(ptr), srch_offsets[1], 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
 				match = TRUE;
 				if (forward)
 					break;

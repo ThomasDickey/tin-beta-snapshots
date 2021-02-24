@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-06-23
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -546,8 +546,8 @@ show_progress(
 	} else {
 		/* Get the current time */
 		tin_gettime(&this_time);
-		time_diff = (this_time.tv_sec - last_time.tv_sec) * 1000000;
-		time_diff += ((this_time.tv_nsec - last_time.tv_nsec) / 1000);
+		time_diff = (int)((this_time.tv_sec - last_time.tv_sec) * 1000000);
+		time_diff = (int)(time_diff + ((this_time.tv_nsec - last_time.tv_nsec) / 1000));
 		count_diff = (count - last_count);
 
 		if (!count_diff) /* avoid div by zero */
@@ -565,17 +565,17 @@ show_progress(
 		 */
 		if (samples == 20) {
 			sum -= average;
-			sum += (time_diff / count_diff);
+			sum = (int)(sum + (time_diff / count_diff));
 			average = sum / 20;
 		} else {
-			sum += (time_diff / count_diff);
+			sum = (int)(sum + (time_diff / count_diff));
 			average = sum / ++samples;
 		}
 
 		if (average >= 1000000)
-			secs_left = (total - count) * (average / 1000000);
+			secs_left = (int)((total - count) * (average / 1000000));
 		else
-			secs_left = ((total - count) * average) / 1000000;
+			secs_left = (int)(((total - count) * average) / 1000000);
 
 		if (secs_left < 0)
 			secs_left = 0;

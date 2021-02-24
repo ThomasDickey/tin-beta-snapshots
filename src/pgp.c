@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2017-03-28
+ *  Updated   : 2021-02-23
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2021 Steven J. Madsen <steve@erinet.com>
@@ -355,10 +355,10 @@ invoke_pgp_mail(
 		return;
 
 	func = prompt_slk_response(default_func, pgp_mail_keys, _(txt_pgp_mail),
-			printascii(keyencrypt, func_to_key(PGP_KEY_ENCRYPT, pgp_mail_keys)),
-			printascii(keysign, func_to_key(PGP_KEY_SIGN, pgp_mail_keys)),
-			printascii(keyboth, func_to_key(PGP_KEY_ENCRYPT_SIGN, pgp_mail_keys)),
-			printascii(keyquit, func_to_key(GLOBAL_QUIT, pgp_mail_keys)));
+			printascii(keyencrypt, (wint_t) func_to_key(PGP_KEY_ENCRYPT, pgp_mail_keys)),
+			printascii(keysign, (wint_t) func_to_key(PGP_KEY_SIGN, pgp_mail_keys)),
+			printascii(keyboth, (wint_t) func_to_key(PGP_KEY_ENCRYPT_SIGN, pgp_mail_keys)),
+			printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, pgp_mail_keys)));
 	switch (func) {
 		case PGP_KEY_SIGN:
 #	ifdef HAVE_PGPK
@@ -399,9 +399,9 @@ invoke_pgp_news(
 		return;
 
 	func = prompt_slk_response(default_func, pgp_news_keys, _(txt_pgp_news),
-				printascii(keysign, func_to_key(PGP_KEY_SIGN, pgp_news_keys)),
-				printascii(keyinclude, func_to_key(PGP_INCLUDE_KEY, pgp_news_keys)),
-				printascii(keyquit, func_to_key(GLOBAL_QUIT, pgp_news_keys)));
+				printascii(keysign, (wint_t) func_to_key(PGP_KEY_SIGN, pgp_news_keys)),
+				printascii(keyinclude, (wint_t) func_to_key(PGP_INCLUDE_KEY, pgp_news_keys)),
+				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, pgp_news_keys)));
 	switch (func) {
 		case GLOBAL_ABORT:
 		case GLOBAL_QUIT:

@@ -156,7 +156,7 @@ extern void write_line(int row, char *buffer);
 				if (fwide(stream, 0) <= 0) \
 					fprintf(stream, "%lc", wc); \
 				else \
-					fputwc(wc, stream); \
+					fputwc((wchar_t)(wc), stream); \
 			}
 #			define my_fputws(wstr, stream)	{ \
 				if (fwide(stream, 0) <= 0) \

@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2017-02-17
+ *  Updated   : 2021-02-23
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -79,7 +79,7 @@ match_regex(
 		ptr_cache = &tmp_cache;
 	}
 
-	if ((error = pcre_exec(ptr_cache->re, ptr_cache->extra, string, strlen(string), 0, 0, NULL, 0)) >= 0) {
+	if ((error = pcre_exec(ptr_cache->re, ptr_cache->extra, string, (int)strlen(string), 0, 0, NULL, 0)) >= 0) {
 		if (ptr_cache == &tmp_cache) {
 			FreeIfNeeded(tmp_cache.re);
 			FreeIfNeeded(tmp_cache.extra);
@@ -168,13 +168,13 @@ highlight_regexes(
 	ptr = buf;
 
 	/* also check for 0 as offsets[] might be too small to hold all captured subpatterns */
-	while (pcre_exec(regex->re, regex->extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) >= 0) {
+	while (pcre_exec(regex->re, regex->extra, ptr, (int)strlen(ptr), 0, 0, offsets, offsets_size) >= 0) {
 		/* we have a match */
 		if (color >= 0) /* color the matching text */
-			word_highlight_string(row, (ptr - buf) + offsets[0], offsets[1] - offsets[0], color);
+			word_highlight_string(row, (int)((ptr - buf) + offsets[0]), offsets[1] - offsets[0], color);
 		else
 			/* inverse the matching text */
-			highlight_string(row, (ptr - buf) + offsets[0], offsets[1] - offsets[0]);
+			highlight_string(row, (int)((ptr - buf) + offsets[0]), offsets[1] - offsets[0]);
 
 		if (!tinrc.word_h_display_marks) {
 #ifdef USE_CURSES

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-01-23
+ *  Updated   : 2021-02-23
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1573,6 +1573,31 @@ struct t_newsheader {
 };
 
 /*
+ * Use these macros to quiet gcc warnings when assigning into a bitfield.
+ */
+#define CAST_MASK(value,bits)	(((1U << (bits)) - 1) & (unsigned)(value))
+#define CAST_BOOL(value)	CAST_MASK(value,1)
+#define CAST_BITS(value,bits)	CAST_MASK(value,BITS_OF(bits))
+#define BITS_OF(bits)		BITS_OF_ ## bits
+
+#define BoolField(value)	unsigned value:1
+#define IntField(value)		unsigned value:BITS_OF(value)
+
+#define BITS_OF_auto_cc_bcc		2
+#define	BITS_OF_mail_mime_encoding	2
+#define	BITS_OF_mm_network_charset	6
+#define	BITS_OF_post_mime_encoding	2
+#define	BITS_OF_post_process_type	2
+#define	BITS_OF_quick_kill_header	3
+#define	BITS_OF_quick_select_header	3
+#define BITS_OF_show_author		2
+#define	BITS_OF_sort_article_type	4
+#define	BITS_OF_sort_threads_type	3
+#define BITS_OF_thread_articles		3
+#define	BITS_OF_thread_perc		7
+#define	BITS_OF_trim_article_body	3
+
+/*
  * struct t_attribute - configurable attributes on a per group basis
  */
 struct t_attribute {
@@ -1603,72 +1628,72 @@ struct t_attribute {
 #endif /* HAVE_ISPELL */
 #ifdef CHARSET_CONVERSION
 	char *undeclared_charset;		/* charset of articles without MIME charset declaration */
-	int mm_network_charset;			/* network charset */
+	IntField(mm_network_charset);		/* network charset */
 #endif /* CHARSET_CONVERSION */
 	struct t_newsheader *headers_to_display;	/* array of which headers to display */
 	struct t_newsheader *headers_to_not_display;	/* array of which headers to not display */
-	unsigned global:1;			/* global/group specific */
-	unsigned quick_kill_header:3;	/* quick filter kill header */
-	unsigned quick_kill_expire:1;	/* quick filter kill limited/unlimited time */
-	unsigned quick_kill_case:1;		/* quick filter kill case sensitive? */
-	unsigned quick_select_header:3;	/* quick filter select header */
-	unsigned quick_select_expire:1;	/* quick filter select limited/unlimited time */
-	unsigned quick_select_case:1;	/* quick filter select case sensitive? */
-	unsigned add_posted_to_filter:1;	/* add posted articles to filter */
-	unsigned advertising:1;			/* add User-Agent: -header */
-	unsigned alternative_handling:1;	/* skip multipart/alternative parts */
-	unsigned ask_for_metamail:1;	/* ask before using MIME viewer */
-	unsigned auto_cc_bcc:2;			/* add your name to cc/bcc automatically */
-	unsigned auto_list_thread:1;	/* list thread when entering it using right arrow */
-	unsigned auto_select:1;			/* 0=show all unread, 1='X' just hot arts */
-	unsigned auto_save:1;			/* 0=none, 1=save */
-	unsigned batch_save:1;			/* 0=none, 1=save -S/mail -M */
-	unsigned delete_tmp_files:1;	/* 0=leave, 1=delete */
-	unsigned group_catchup_on_exit:1;	/* ask if read groups are to be marked read */
-	unsigned mail_8bit_header:1;	/* allow 8bit chars. in header of mail message */
-	unsigned mail_mime_encoding:2;
-	unsigned mark_ignore_tags:1;	/* Ignore tags for GROUP_MARK_THREAD_READ/THREAD_MARK_ARTICLE_READ */
-	unsigned mark_saved_read:1;		/* mark saved article/thread as read */
-	unsigned pos_first_unread:1;	/* position cursor at first/last unread article */
-	unsigned post_8bit_header:1;	/* allow 8bit chars. in header when posting to newsgroup */
-	unsigned post_mime_encoding:2;
-	unsigned post_process_view:1;	/* set TRUE to invoke mailcap viewer app */
+	BoolField(global);				/* global/group specific */
+	IntField(quick_kill_header);	/* quick filter kill header */
+	BoolField(quick_kill_expire);	/* quick filter kill limited/unlimited time */
+	BoolField(quick_kill_case);		/* quick filter kill case sensitive? */
+	IntField(quick_select_header);	/* quick filter select header */
+	BoolField(quick_select_expire);	/* quick filter select limited/unlimited time */
+	BoolField(quick_select_case);	/* quick filter select case sensitive? */
+	BoolField(add_posted_to_filter);	/* add posted articles to filter */
+	BoolField(advertising);			/* add User-Agent: -header */
+	BoolField(alternative_handling);	/* skip multipart/alternative parts */
+	BoolField(ask_for_metamail);	/* ask before using MIME viewer */
+	IntField(auto_cc_bcc);			/* add your name to cc/bcc automatically */
+	BoolField(auto_list_thread);	/* list thread when entering it using right arrow */
+	BoolField(auto_select);			/* 0=show all unread, 1='X' just hot arts */
+	BoolField(auto_save);			/* 0=none, 1=save */
+	BoolField(batch_save);			/* 0=none, 1=save -S/mail -M */
+	BoolField(delete_tmp_files);	/* 0=leave, 1=delete */
+	BoolField(group_catchup_on_exit);	/* ask if read groups are to be marked read */
+	BoolField(mail_8bit_header);	/* allow 8bit chars. in header of mail message */
+	IntField(mail_mime_encoding);
+	BoolField(mark_ignore_tags);	/* Ignore tags for GROUP_MARK_THREAD_READ/THREAD_MARK_ARTICLE_READ */
+	BoolField(mark_saved_read);		/* mark saved article/thread as read */
+	BoolField(pos_first_unread);	/* position cursor at first/last unread article */
+	BoolField(post_8bit_header);	/* allow 8bit chars. in header when posting to newsgroup */
+	IntField(post_mime_encoding);
+	BoolField(post_process_view);	/* set TRUE to invoke mailcap viewer app */
 #ifndef DISABLE_PRINTING
-	unsigned print_header:1;		/* print all of mail header or just Subject: & From lines */
+	BoolField(print_header);		/* print all of mail header or just Subject: & From lines */
 #endif /* !DISABLE_PRINTING */
-	unsigned process_only_unread:1;	/* save/print//mail/pipe unread/all articles */
-	unsigned prompt_followupto:1;	/* display empty Followup-To header in editor */
-	unsigned show_only_unread_arts:1;	/* 0=all, 1=only unread */
-	unsigned sigdashes:1;			/* set TRUE to prepend every signature with dashes */
-	unsigned signature_repost:1;	/* set TRUE to add signature when reposting articles */
-	unsigned start_editor_offset:1;	/* start editor with line offset */
-	unsigned thread_articles:3;			/* 0=unthread, 1=subject, 2=refs, 3=both, 4=multipart, 5=percentage */
-	unsigned thread_catchup_on_exit:1;	/* catchup thread with left arrow key or not */
-	unsigned thread_perc:7;			/* percentage threading threshold */
-	unsigned show_author:2;			/* 0=none, 1=name, 2=addr, 3=both */
-	unsigned show_signatures:1;		/* 0=none, 1=show signatures */
-	unsigned trim_article_body:3;	/* 0=Don't trim article body, 1=Skip leading blank lines,
+	BoolField(process_only_unread);	/* save/print//mail/pipe unread/all articles */
+	BoolField(prompt_followupto);	/* display empty Followup-To header in editor */
+	BoolField(show_only_unread_arts);	/* 0=all, 1=only unread */
+	BoolField(sigdashes);			/* set TRUE to prepend every signature with dashes */
+	BoolField(signature_repost);	/* set TRUE to add signature when reposting articles */
+	BoolField(start_editor_offset);	/* start editor with line offset */
+	IntField(thread_articles);		/* 0=unthread, 1=subject, 2=refs, 3=both, 4=multipart, 5=percentage */
+	BoolField(thread_catchup_on_exit);	/* catchup thread with left arrow key or not */
+	IntField(thread_perc);			/* percentage threading threshold */
+	IntField(show_author);			/* 0=none, 1=name, 2=addr, 3=both */
+	BoolField(show_signatures);		/* 0=none, 1=show signatures */
+	IntField(trim_article_body);		/* 0=Don't trim article body, 1=Skip leading blank lines,
 						2=Skip trailing blank lines, 3=Skip leading and trailing blank lines,
 						4=Compact multiple blank lines between textblocks,
 						5=Compact multiple blank lines between textblocks and skip leading blank lines,
 						6=Compact multiple blank lines between textblocks and skip trailing blank lines,
 						7=Compact multiple blank lines between textblocks and skip leading and trailing
 						  blank lines */
-	unsigned verbatim_handling:1;	/* 0=none, 1=detect verbatim blocks */
+	BoolField(verbatim_handling);	/* 0=none, 1=detect verbatim blocks */
 #ifdef HAVE_COLOR
-	unsigned extquote_handling:1;		/* 0=none, 1=detect quoted text from external sources */
+	BoolField(extquote_handling);		/* 0=none, 1=detect quoted text from external sources */
 #endif /* HAVE_COLOR */
-	unsigned wrap_on_next_unread:1;	/* Wrap around threads when searching next unread article */
-	unsigned sort_article_type:4;		/* 0=none, 1=subj descend, 2=subj ascend,
+	BoolField(wrap_on_next_unread);	/* Wrap around threads when searching next unread article */
+	IntField(sort_article_type);	/* 0=none, 1=subj descend, 2=subj ascend,
 						   3=from descend, 4=from ascend,
 						   5=date descend, 6=date ascend,
 						   7=score descend, 8=score ascend */
-	unsigned sort_threads_type:3;	/* 0=none, 1=score descend, 2=score ascend,
+	IntField(sort_threads_type);	/* 0=none, 1=score descend, 2=score ascend,
 						   3=last posting date descend, 4=last posting date ascend */
-	unsigned post_process_type:2;	/* 0=none, 1=shar, 2=uudecode */
-	unsigned x_comment_to:1;	/* insert X-Comment-To: in Followup */
-	unsigned tex2iso_conv:1;	/* Convert TeX2ISO */
-	unsigned mime_forward:1;	/* forward articles as attachment or inline */
+	IntField(post_process_type);	/* 0=none, 1=shar, 2=uudecode */
+	BoolField(x_comment_to);	/* insert X-Comment-To: in Followup */
+	BoolField(tex2iso_conv);	/* Convert TeX2ISO */
+	BoolField(mime_forward);	/* forward articles as attachment or inline */
 };
 
 /*
@@ -1676,86 +1701,86 @@ struct t_attribute {
  * about numeric attributes within a scope
  */
 struct t_attribute_state {
-	unsigned add_posted_to_filter:1;
-	unsigned advertising:1;
-	unsigned alternative_handling:1;
-	unsigned ask_for_metamail:1;
-	unsigned auto_cc_bcc:1;
-	unsigned auto_list_thread:1;
-	unsigned auto_save:1;
-	unsigned auto_select:1;
-	unsigned batch_save:1;
-	unsigned date_format:1;
-	unsigned delete_tmp_files:1;
-	unsigned editor_format:1;
-	unsigned fcc:1;
-	unsigned followup_to:1;
-	unsigned from:1;
-	unsigned group_catchup_on_exit:1;
-	unsigned group_format:1;
+	BoolField(add_posted_to_filter);
+	BoolField(advertising);
+	BoolField(alternative_handling);
+	BoolField(ask_for_metamail);
+	BoolField(auto_cc_bcc);
+	BoolField(auto_list_thread);
+	BoolField(auto_save);
+	BoolField(auto_select);
+	BoolField(batch_save);
+	BoolField(date_format);
+	BoolField(delete_tmp_files);
+	BoolField(editor_format);
+	BoolField(fcc);
+	BoolField(followup_to);
+	BoolField(from);
+	BoolField(group_catchup_on_exit);
+	BoolField(group_format);
 #ifdef HAVE_ISPELL
-	unsigned ispell:1;
+	BoolField(ispell);
 #endif /* HAVE_ISPELL */
-	unsigned mail_8bit_header:1;
-	unsigned mail_mime_encoding:1;
-	unsigned maildir:1;
-	unsigned mailing_list:1;
-	unsigned mark_ignore_tags:1;
-	unsigned mark_saved_read:1;
-	unsigned mime_forward:1;
-	unsigned mime_types_to_save:1;
-	unsigned news_headers_to_display:1;
-	unsigned news_headers_to_not_display:1;
-	unsigned news_quote_format:1;
-	unsigned organization:1;
-	unsigned pos_first_unread:1;
-	unsigned post_8bit_header:1;
-	unsigned post_mime_encoding:1;
-	unsigned post_process_view:1;
-	unsigned post_process_type:1;
+	BoolField(mail_8bit_header);
+	BoolField(mail_mime_encoding);
+	BoolField(maildir);
+	BoolField(mailing_list);
+	BoolField(mark_ignore_tags);
+	BoolField(mark_saved_read);
+	BoolField(mime_forward);
+	BoolField(mime_types_to_save);
+	BoolField(news_headers_to_display);
+	BoolField(news_headers_to_not_display);
+	BoolField(news_quote_format);
+	BoolField(organization);
+	BoolField(pos_first_unread);
+	BoolField(post_8bit_header);
+	BoolField(post_mime_encoding);
+	BoolField(post_process_view);
+	BoolField(post_process_type);
 #ifndef DISABLE_PRINTING
-	unsigned print_header:1;
+	BoolField(print_header);
 #endif /* !DISABLE_PRINTING */
-	unsigned process_only_unread:1;
-	unsigned prompt_followupto:1;
-	unsigned quick_kill_case:1;
-	unsigned quick_kill_expire:1;
-	unsigned quick_kill_header:1;
-	unsigned quick_kill_scope:1;
-	unsigned quick_select_case:1;
-	unsigned quick_select_expire:1;
-	unsigned quick_select_header:1;
-	unsigned quick_select_scope:1;
-	unsigned quote_chars:1;
-	unsigned savedir:1;
-	unsigned savefile:1;
-	unsigned show_author:1;
-	unsigned show_only_unread_arts:1;
-	unsigned show_signatures:1;
-	unsigned sigdashes:1;
-	unsigned sigfile:1;
-	unsigned signature_repost:1;
-	unsigned sort_article_type:1;
-	unsigned sort_threads_type:1;
-	unsigned start_editor_offset:1;
-	unsigned tex2iso_conv:1;
-	unsigned thread_articles:1;
-	unsigned thread_catchup_on_exit:1;
-	unsigned thread_format:1;
-	unsigned thread_perc:1;
-	unsigned trim_article_body:1;
+	BoolField(process_only_unread);
+	BoolField(prompt_followupto);
+	BoolField(quick_kill_case);
+	BoolField(quick_kill_expire);
+	BoolField(quick_kill_header);
+	BoolField(quick_kill_scope);
+	BoolField(quick_select_case);
+	BoolField(quick_select_expire);
+	BoolField(quick_select_header);
+	BoolField(quick_select_scope);
+	BoolField(quote_chars);
+	BoolField(savedir);
+	BoolField(savefile);
+	BoolField(show_author);
+	BoolField(show_only_unread_arts);
+	BoolField(show_signatures);
+	BoolField(sigdashes);
+	BoolField(sigfile);
+	BoolField(signature_repost);
+	BoolField(sort_article_type);
+	BoolField(sort_threads_type);
+	BoolField(start_editor_offset);
+	BoolField(tex2iso_conv);
+	BoolField(thread_articles);
+	BoolField(thread_catchup_on_exit);
+	BoolField(thread_format);
+	BoolField(thread_perc);
+	BoolField(trim_article_body);
 #ifdef CHARSET_CONVERSION
-	unsigned undeclared_charset:1;
-	unsigned mm_network_charset:1;
+	BoolField(undeclared_charset);
+	BoolField(mm_network_charset);
 #endif /* CHARSET_CONVERSION */
-	unsigned verbatim_handling:1;
+	BoolField(verbatim_handling);
 #ifdef HAVE_COLOR
-	unsigned extquote_handling:1;
+	BoolField(extquote_handling);
 #endif /* HAVE_COLOR */
-	unsigned wrap_on_next_unread:1;
-	unsigned x_body:1;
-	unsigned x_comment_to:1;
-	unsigned x_headers:1;
+	BoolField(wrap_on_next_unread);
+	BoolField(x_body);
+	BoolField(x_comment_to);
+	BoolField(x_headers);
 };
 
 /*
@@ -1765,7 +1790,7 @@ struct t_scope {
 	char *scope;				/* scope for these group attributes */
 	struct t_attribute *attribute;	/* the attributes itself */
 	struct t_attribute_state *state;	/* additional information about numeric attributes */
-	unsigned global:1;			/* TRUE for scopes from global_attributes_file */
+	BoolField(global);			/* TRUE for scopes from global_attributes_file */
 };
 
 /*
@@ -2203,13 +2228,13 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 
 /* Various function redefinitions */
 #if defined(USE_DBMALLOC) || defined(USE_DMALLOC)
-#	define my_malloc(size)	malloc(size)
-#	define my_calloc(nmemb, size)	calloc((nmemb), (size))
-#	define my_realloc(ptr, size)	realloc((ptr), (size))
+#	define my_malloc(size)	malloc((size_t)(size))
+#	define my_calloc(nmemb, size)	calloc((nmemb), (size_t)(size))
+#	define my_realloc(ptr, size)	realloc((ptr), (size_t)(size))
 #else
-#	define my_malloc(size)	my_malloc1(__FILE__, __LINE__, (size))
-#	define my_calloc(nmemb, size)	my_calloc1(__FILE__, __LINE__, (nmemb), (size))
-#	define my_realloc(ptr, size)	my_realloc1(__FILE__, __LINE__, (ptr), (size))
+#	define my_malloc(size)	my_malloc1(__FILE__, __LINE__, (size_t)(size))
+#	define my_calloc(nmemb, size)	my_calloc1(__FILE__, __LINE__, (nmemb), (size_t)(size))
+#	define my_realloc(ptr, size)	my_realloc1(__FILE__, __LINE__, (ptr), (size_t)(size))
 #endif /* USE_DBMALLOC || USE_DMALLOC */
 
 #define ARRAY_SIZE(array)	((int) (sizeof(array) / sizeof(array[0])))
@@ -2220,7 +2245,7 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 #define BlankIfNull(p)	((p) ? (p) : "")
 
 #define my_group_find(x)	add_my_group(x, FALSE, FALSE)
-#define my_group_add(x, y)		add_my_group(x, TRUE, y)
+#define my_group_add(x, y)	add_my_group(x, TRUE, y)
 #define for_each_group(x)	for (x = 0; x < num_active; x++)
 #define for_each_art(x)		for (x = 0; x < top_art; x++)
 #define for_each_art_in_thread(x, y)	for (x = (int) base[y]; x >= 0; x = arts[x].thread)
@@ -2384,9 +2409,9 @@ extern struct tm *localtime(time_t *);
 #	undef my_malloc
 #	undef my_realloc
 #	undef my_calloc
-#	define my_malloc(size)	malloc(size)
-#	define my_realloc(ptr, size)	realloc((ptr), (size))
-#	define my_calloc(nmemb, size) calloc((nmemb), (size))
+#	define my_malloc(size)	malloc((size_t)(size))
+#	define my_realloc(ptr, size)	realloc((ptr), (size_t)(size))
+#	define my_calloc(nmemb, size) calloc((nmemb), (size_t)(size))
 #endif /* MSS */
 
 /* libcanlock */

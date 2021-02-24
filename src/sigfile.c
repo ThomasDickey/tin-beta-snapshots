@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2019-07-17
+ *  Updated   : 2021-02-23
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2021 Mike Gleason
@@ -95,7 +95,7 @@ msg_write_signature(
 					++cnt;
 
 				/* sigattr - (cnt * '%G') + (cnt * '"groupname"') + '\0' */
-				sigcmd = my_malloc(strlen(sigattr) + cnt * strlen(thisgroup->name) + 1);
+				sigcmd = my_malloc(strlen(sigattr) + (size_t)cnt * strlen(thisgroup->name) + 1);
 				to = sigcmd;
 
 				while (*sigattr) {

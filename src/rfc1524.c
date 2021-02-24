@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2018-11-25
+ *  Updated   : 2021-02-23
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000-2021 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
@@ -96,7 +96,7 @@ get_mailcap_entry(
 		/* expand ~ and/or $HOME etc. */
 		if (strfpath(nptr, filename, sizeof(filename) - 1, &CURR_GROUP, FALSE)) {
 			if ((fp = fopen(filename, "r")) != NULL) {
-				while ((fgets(ptr, sizeof(buf) - strlen(buf), fp)) != NULL) {
+				while ((fgets(ptr, (int)(sizeof(buf) - strlen(buf)), fp)) != NULL) {
 					if (*ptr == '#' || *ptr == '\n')		/* skip comments & blank lines */
 						continue;
 
@@ -401,7 +401,7 @@ expand_mailcap_meta(
 						const char *value;
 
 						parameter = my_calloc(1, end - ptr + 1);
-						strncpy(parameter, ptr + 1, end - ptr - 1);	/* extract parameter name */
+						strncpy(parameter, ptr + 1, (size_t)(end - ptr - 1));	/* extract parameter name */
 						if ((value = get_param(part->params, parameter)) != NULL) { /* match? */
 							const char *nptr = escape_shell_meta_chars ? escape_shell_meta(value, quote) : value;
 

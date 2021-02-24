@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-01-23
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -148,7 +148,7 @@ check_start_save_any_news(
 	struct t_article *art;
 	struct t_group *group;
 	t_bool log_opened = TRUE;
-	t_bool print_first = verbose;
+	t_bool print_first = (t_bool)verbose;
 	t_bool unread_news = FALSE;
 	time_t epoch;
 
@@ -413,9 +413,9 @@ open_save_filename(
 		func = prompt_slk_response((tinrc.default_save_mode == 'a' ? SAVE_APPEND_FILE : SAVE_OVERWRITE_FILE),
 				save_append_overwrite_keys,
 				_(txt_append_overwrite_quit), path,
-				printascii(keyappend, func_to_key(SAVE_APPEND_FILE, save_append_overwrite_keys)),
-				printascii(keyoverwrite, func_to_key(SAVE_OVERWRITE_FILE, save_append_overwrite_keys)),
-				printascii(keyquit, func_to_key(GLOBAL_QUIT, save_append_overwrite_keys)));
+				printascii(keyappend, (wint_t)func_to_key(SAVE_APPEND_FILE, save_append_overwrite_keys)),
+				printascii(keyoverwrite, (wint_t)func_to_key(SAVE_OVERWRITE_FILE, save_append_overwrite_keys)),
+				printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, save_append_overwrite_keys)));
 
 		switch (func) {
 			case SAVE_OVERWRITE_FILE:
@@ -580,7 +580,7 @@ save_and_process_art(
 		expand_save();
 	save[num_save].path = my_strdup(path);
 	save[num_save].file = strrchr(save[num_save].path, DIRSEP) + 1;	/* ptr to filename portion */
-	save[num_save].mailbox = is_mailbox;
+	save[num_save].mailbox = CAST_BOOL(is_mailbox);
 /* fprintf(stderr, "SAPA (%s) (%s) mbox=%s\n", save[num_save].path, save[num_save].file, bool_unparse(save[num_save].mailbox)); */
 	num_save++;			/* NB: num_save is bumped here only */
 
@@ -658,7 +658,7 @@ generate_filename(
 {
 	static int seqno = 0;
 
-	snprintf(buf, buflen, "%s-%03d.%s", SAVEFILE_PREFIX, seqno++, suffix);
+	snprintf(buf, (size_t)buflen, "%s-%03d.%s", SAVEFILE_PREFIX, seqno++, suffix);
 }
 
 
@@ -922,7 +922,7 @@ post_process_uud(
 	/*
 	 * Grab the dirname portion
 	 */
-	my_strncpy(file_out_dir, save[0].path, save[0].file - save[0].path);
+	my_strncpy(file_out_dir, save[0].path, (size_t)(save[0].file - save[0].path));
 
 	t[0] = '\0';
 	u[0] = '\0';
@@ -1143,19 +1143,19 @@ uudecode_line(
 
 	for (++p; n > 0; p += 4, n -= 3) {
 		if (n >= 3) {
-			ch = ((DEC(p[0]) << 2) | (DEC(p[1]) >> 4));
+			ch = (char)((DEC(p[0]) << 2) | (DEC(p[1]) >> 4));
 			fputc(ch, fp);
-			ch = ((DEC(p[1]) << 4) | (DEC(p[2]) >> 2));
+			ch = (char)((DEC(p[1]) << 4) | (DEC(p[2]) >> 2));
 			fputc(ch, fp);
-			ch = ((DEC(p[2]) << 6) | DEC(p[3]));
+			ch = (char)((DEC(p[2]) << 6) | DEC(p[3]));
 			fputc(ch, fp);
 		} else {
 			if (n >= 1) {
-				ch = ((DEC(p[0]) << 2) | (DEC(p[1]) >> 4));
+				ch = (char)((DEC(p[0]) << 2) | (DEC(p[1]) >> 4));
 				fputc(ch, fp);
 			}
 			if (n >= 2) {
-				ch = ((DEC(p[1]) << 4) | (DEC(p[2]) >> 2));
+				ch = (char)((DEC(p[1]) << 4) | (DEC(p[2]) >> 2));
 				fputc(ch, fp);
 			}
 		}
@@ -1182,7 +1182,7 @@ post_process_sh(
 	/*
 	 * Grab the dirname portion
 	 */
-	my_strncpy(file_out_dir, save[0].path, save[0].file - save[0].path);
+	my_strncpy(file_out_dir, save[0].path, (size_t)(save[0].file - save[0].path));
 	snprintf(file_out, sizeof(file_out), "%ssh%ld", file_out_dir, (long) process_id);
 
 	for (i = 0; i < num_save; i++) {
@@ -1193,7 +1193,7 @@ post_process_sh(
 
 		while (fgets(buf, (int) sizeof(buf), fp_in) != NULL) {
 			/* find #!/bin/sh style patterns */
-			if ((fp_out == NULL) && pcre_exec(shar_regex.re, shar_regex.extra, buf, strlen(buf), 0, 0, NULL, 0) >= 0)
+			if ((fp_out == NULL) && pcre_exec(shar_regex.re, shar_regex.extra, buf, (int)strlen(buf), 0, 0, NULL, 0) >= 0)
 				fp_out = fopen(file_out, "w");
 
 			/* write to temp file */
@@ -1333,7 +1333,7 @@ decode_save_one(
 			case ENCODING_QP:
 			case ENCODING_BASE64:
 				count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2);
-				fwrite(buf2, count, 1, fp);
+				fwrite(buf2, (size_t)count, 1, fp);
 				break;
 
 			case ENCODING_UUE:
@@ -1785,7 +1785,7 @@ attachment_page(
 #endif /* !DONT_HAVE_PIPING */
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, attachment_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, attachment_keys)));
 				break;
 		}
 	}
@@ -1885,7 +1885,7 @@ build_attachment_line(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	tmpname = spart(name, namelen, TRUE);
 	tmpbuf = spart(buf, info_len, TRUE);
-	snprintf(sptr, cCOLS * MB_CUR_MAX, "  %s %s%*s%*s%s", tin_ltoa(i + 1, 4), buf2, namelen, BlankIfNull(tmpname), info_len, BlankIfNull(tmpbuf), cCRLF);
+	snprintf(sptr, (size_t)cCOLS * MB_CUR_MAX, "  %s %s%*s%*s%s", tin_ltoa(i + 1, 4), buf2, namelen, BlankIfNull(tmpname), info_len, BlankIfNull(tmpbuf), cCRLF);
 	FreeIfNeeded(tmpname);
 	FreeIfNeeded(tmpbuf);
 #else
@@ -1936,7 +1936,7 @@ build_tree(
 		}
 	}
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	tree = my_malloc(sizeof(wchar_t) * prefix_ptr + 3 * sizeof(wchar_t));
+	tree = my_malloc(sizeof(wchar_t) * (size_t)prefix_ptr + 3 * sizeof(wchar_t));
 	tree[prefix_ptr + 2] = (wchar_t) '\0';
 #else
 	tree = my_malloc(prefix_ptr + 3);
@@ -2336,16 +2336,16 @@ process_part(
 					if ((count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2)) > 0) {
 #ifdef CHARSET_CONVERSION
 						if (what != SAVE && what != SAVE_TAGGED && !strncmp(content_types[part->type], "text", 4)) {
-							line_len = count;
+							line_len = (size_t)count;
 							conv_buf = my_strdup(buf2);
 							network_charset = get_param(part->params, "charset");
 							process_charsets(&conv_buf, &line_len, network_charset ? network_charset : "US-ASCII", tinrc.mm_local_charset, FALSE);
 							strncpy(buf2, conv_buf, sizeof(buf2) - 1);
-							count = strlen(buf2);
+							count = (int)strlen(buf2);
 							free(conv_buf);
 						}
 #endif /* CHARSET_CONVERSION */
-						fwrite(buf2, count, 1, outfile);
+						fwrite(buf2, (size_t)count, 1, outfile);
 					}
 					break;
 
@@ -2403,7 +2403,7 @@ pipe_part(
 	FILE *fp, *pipe_fp;
 	char *prompt;
 
-	prompt = fmt_string(_(txt_pipe_to_command), cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
+	prompt = fmt_string(_(txt_pipe_to_command), (size_t)cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
 	if (!(prompt_string_default(prompt, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND))) {
 		free(prompt);
 		return;

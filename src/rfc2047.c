@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2019-07-08
+ *  Updated   : 2021-02-23
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2021 Chris Blum <chris@resolution.de>
@@ -119,7 +119,7 @@ build_base64_rank_table(
 		for (i = 0; i < 256; i++)
 			base64_rank[i] = NOT_RANKED;
 		for (i = 0; i < 64; i++)
-			base64_rank[(int) base64_alphabet[i]] = i;
+			base64_rank[(int) base64_alphabet[i]] = (unsigned char)i;
 		base64_rank_table_built = TRUE;
 	}
 }
@@ -130,11 +130,11 @@ hex2bin(
 	int x)
 {
 	if (x >= '0' && x <= '9')
-		return (x - '0');
+		return (unsigned)(x - '0');
 	if (x >= 'A' && x <= 'F')
-		return (x - 'A') + 10;
+		return (unsigned)((x - 'A') + 10);
 	if (x >= 'a' && x <= 'f')
-		return (x - 'a') + 10;
+		return (unsigned)((x - 'a') + 10);
 	return 255;
 }
 
@@ -186,10 +186,10 @@ mmdecode(
 			what++;
 			if (hi == 255 || lo == 255)
 				return -1;
-			x = (hi << 4) + lo;
-			*EIGHT_BIT(t)++ = x;
+			x = (int)((hi << 4) + lo);
+			*EIGHT_BIT(t)++ = (unsigned char)x;
 		}
-		return t - where;
+		return (int)(t - where);
 	} else if (encoding == 'b') {		/* base64 */
 		static unsigned short pattern = 0;
 		static int bits = 0;
@@ -212,12 +212,12 @@ mmdecode(
 			pattern |= x;
 			bits += 6;
 			if (bits >= 8) {
-				x = (pattern >> (bits - 8)) & 0xff;
-				*t++ = x;
+				x = (unsigned char)((pattern >> (bits - 8)) & 0xff);
+				*t++ = (char)x;
 				bits -= 8;
 			}
 		}
-		return t - where;
+		return (int)(t - where);
 	}
 	return -1;
 }
@@ -252,10 +252,10 @@ rfc1522_decode(
 	max_len = strlen(c) + 1;
 
 	if (!buffer) {
-		buffer_len = max_len;
+		buffer_len = (int)max_len;
 		buffer = my_malloc((size_t) buffer_len);
 	} else if (max_len > (size_t) buffer_len) {
-			buffer_len = max_len;
+			buffer_len = (int)max_len;
 			buffer = my_realloc(buffer, (size_t) buffer_len);
 	}
 
@@ -309,7 +309,7 @@ rfc1522_decode(
 			*e = '\0';
 			if (*c == '?') {
 				c++;
-				encoding = my_tolower((unsigned char) *c);
+				encoding = (char)my_tolower((unsigned char) *c);
 				if (encoding == 'b')
 					(void) mmdecode(NULL, 'b', 0, NULL);	/* flush */
 				c++;
@@ -323,15 +323,15 @@ rfc1522_decode(
 							char *tmpbuf;
 							int chars_to_copy;
 
-							max_len = i + 1;
+							max_len = (size_t)(i + 1);
 							tmpbuf = my_malloc(max_len);
-							strncpy(tmpbuf, t, i);
+							strncpy(tmpbuf, t, (size_t)i);
 							*(tmpbuf + i) = '\0';
 							process_charsets(&tmpbuf, &max_len, charset, tinrc.mm_local_charset, FALSE);
-							chars_to_copy = strlen(tmpbuf);
+							chars_to_copy = (int)strlen(tmpbuf);
 							if (chars_to_copy > buffer_len - (t - buffer) - 1)
-								chars_to_copy = buffer_len - (t - buffer) - 1;
-							strncpy(t, tmpbuf, chars_to_copy);
+								chars_to_copy = (int)(buffer_len - (t - buffer) - 1);
+							strncpy(t, tmpbuf, (size_t)chars_to_copy);
 							free(tmpbuf);
 							t += chars_to_copy;
 							e++;
@@ -393,7 +393,7 @@ do_b_encode(
 {
 	char tmp[60];				/* strings to be B encoded */
 	char *t = tmp;
-	int count = max_ewsize / 4 * 3;
+	int count = (int)(max_ewsize / 4 * 3);
 	t_bool isleading_between = TRUE;		/* are we still processing leading space */
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -431,7 +431,7 @@ do_b_encode(
 
 	str2b64(tmp, b);
 
-	return t - tmp;
+	return (int)(t - tmp);
 }
 
 
@@ -523,7 +523,7 @@ sizeofnextword(
 		x++;
 	while (*x && !isspace((unsigned char) *x))
 		x++;
-	return x - w;
+	return (int)(x - w);
 }
 
 
@@ -605,9 +605,9 @@ rfc1522_do_encode(
 			if (encoding == 'Q') {
 				if (!quoting) {
 					snprintf(buf2, sizeof(buf2), "=?%s?%c?", charset, encoding);
-					while (t - buffer + strlen(buf2) >= bufferlen) {
+					while ((size_t)(t - buffer) + strlen(buf2) >= bufferlen) {
 						/* buffer too small, double its size */
-						offset = t - buffer;
+						offset = (int)(t - buffer);
 						bufferlen <<= 1;
 						buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
 						t = buffer + offset;
@@ -621,7 +621,7 @@ rfc1522_do_encode(
 							 * since we cannot break the line
 							 * directly after the keyword.
 							 */
-							ewsize = t - buffer;
+							ewsize = (size_t)(t - buffer);
 						}
 					}
 					quoting = TRUE;
@@ -638,7 +638,7 @@ rfc1522_do_encode(
 						snprintf(buf2, sizeof(buf2), "=%2.2X", *EIGHT_BIT(what));
 						if ((size_t) (t - buffer + 3) >= bufferlen) {
 							/* buffer too small, double its size */
-							offset = t - buffer;
+							offset = (int)(t - buffer);
 							bufferlen <<= 1;
 							buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
 							t = buffer + offset;
@@ -650,7 +650,7 @@ rfc1522_do_encode(
 					} else {
 						if ((size_t) (t - buffer + 1) >= bufferlen) {
 							/* buffer too small, double its size */
-							offset = t - buffer;
+							offset = (int)(t - buffer);
 							bufferlen <<= 1;
 							buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
 							t = buffer + offset;
@@ -676,7 +676,7 @@ rfc1522_do_encode(
 					/* next word is 'clean', close encoding */
 					if ((size_t) (t - buffer + 2) >= bufferlen) {
 						/* buffer too small, double its size */
-						offset = t - buffer;
+						offset = (int)(t - buffer);
 						bufferlen <<= 1;
 						buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
 						t = buffer + offset;
@@ -689,7 +689,7 @@ rfc1522_do_encode(
 					if (ewsize >= 70 - strlen(charset) && (contains_nonprintables(what, isstruct_head) || isbroken_within)) {
 						if ((size_t) (t - buffer + 1) >= bufferlen) {
 							/* buffer too small, double its size */
-							offset = t - buffer;
+							offset = (int)(t - buffer);
 							bufferlen <<= 1;
 							buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
 							t = buffer + offset;
@@ -703,7 +703,7 @@ rfc1522_do_encode(
 					while (*what && isspace((unsigned char) *what)) {
 						if ((size_t) (t - buffer + 3) >= bufferlen) {
 							/* buffer probably too small, double its size */
-							offset = t - buffer;
+							offset = (int)(t - buffer);
 							bufferlen <<= 1;
 							buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
 							t = buffer + offset;
@@ -731,9 +731,9 @@ rfc1522_do_encode(
 				 */
 				while (*what && (!isbetween(*what, isstruct_head) || rightafter_ew)) {
 					snprintf(buf2, sizeof(buf2), "=?%s?%c?", charset, encoding);
-					while (t - buffer + strlen(buf2) >= bufferlen) {
+					while ((size_t)(t - buffer) + strlen(buf2) >= bufferlen) {
 						/* buffer too small, double its size */
-						offset = t - buffer;
+						offset = (int)(t - buffer);
 						bufferlen <<= 1;
 						buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
 						t = buffer + offset;
@@ -741,11 +741,11 @@ rfc1522_do_encode(
 					ewsize = mystrcat(&t, buf2);
 
 					if (word_cnt == 2)
-						ewsize = t - buffer;
+						ewsize = (size_t)(t - buffer);
 					what += do_b_encode(what, buf2, 75 - ew_taken_len, isstruct_head);
-					while (t - buffer + strlen(buf2) + 3 >= bufferlen) {
+					while ((size_t)(t - buffer) + strlen(buf2) + 3 >= bufferlen) {
 						/* buffer too small, double its size */
-						offset = t - buffer;
+						offset = (int)(t - buffer);
 						bufferlen <<= 1;
 						buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
 						t = buffer + offset;
@@ -775,7 +775,7 @@ rfc1522_do_encode(
 			while (*what && !isbetween(*what, isstruct_head)) {
 				if ((size_t) (t - buffer + 1) >= bufferlen) {
 					/* buffer too small, double its size */
-					offset = t - buffer;
+					offset = (int)(t - buffer);
 					bufferlen <<= 1;
 					buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
 					t = buffer + offset;
@@ -785,7 +785,7 @@ rfc1522_do_encode(
 			while (*what && isbetween(*what, isstruct_head)) {
 				if ((size_t) (t - buffer + 1) >= bufferlen) {
 					/* buffer too small, double its size */
-					offset = t - buffer;
+					offset = (int)(t - buffer);
 					bufferlen <<= 1;
 					buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
 					t = buffer + offset;
@@ -1068,7 +1068,7 @@ generate_random_mime_boundary(
 
 	srand((unsigned int) time(NULL));
 	for (i = 0; i < len - 1; i++)
-		boundary[i] = base64_alphabet[rand() % sizeof(base64_alphabet)];
+		boundary[i] = base64_alphabet[(size_t)rand() % sizeof(base64_alphabet)];
 	boundary[len - 1] = '\0';
 }
 

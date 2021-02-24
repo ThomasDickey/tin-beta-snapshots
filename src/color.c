@@ -7,7 +7,7 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@invisible-island.net> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 2015-10-09
+ *  Updated   : 2021-02-23
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
@@ -323,7 +323,7 @@ draw_pager_line(
 			wchar_t wc;
 
 			num_bytes = mbtowc(&wc, c, MB_CUR_MAX);
-			if (num_bytes != -1 && iswprint(wc)) {
+			if (num_bytes != -1 && iswprint((wint_t)wc)) {
 				my_fputwc((wint_t) wc, stdout);
 				c += num_bytes;
 			}

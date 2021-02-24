@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2019-03-12
+ *  Updated   : 2021-02-23
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -737,7 +737,7 @@ highlight_string(
 {
 	char output[LEN];
 
-	my_strncpy(output, &(screen[row].col[col]), size);
+	my_strncpy(output, &(screen[row].col[col]), (size_t)size);
 
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	/*
@@ -797,7 +797,7 @@ word_highlight_string(
 	attributes[5] = _dim;	/* Dim */
 	attributes[6] = _bold;	/* Bold */
 
-	my_strncpy(output, &(screen[row].col[byte_offset]), size);
+	my_strncpy(output, &(screen[row].col[byte_offset]), (size_t)size);
 
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	/*
@@ -836,7 +836,7 @@ word_highlight_string(
 				my_fputs(&(screen[row].col[byte_offset + size]), stdout);
 				output[0] = output[size - 1] = ' ';
 				str_trim(output);
-				strncpy(&(screen[row].col[byte_offset]), output, size - 2);
+				strncpy(&(screen[row].col[byte_offset]), output, (size_t)(size - 2));
 				src = &(screen[row].col[byte_offset + size]);
 				dest = &(screen[row].col[byte_offset + size - 2]);
 				while (*src)
@@ -1138,7 +1138,7 @@ ReadCh(
 #	ifdef EINTR
 
 	allow_resize(TRUE);
-	while ((result = read(0, &ch, 1)) < 0 && errno == EINTR) {		/* spin on signal interrupts */
+	while ((result = (int)read(0, &ch, 1)) < 0 && errno == EINTR) {		/* spin on signal interrupts */
 		if (need_resize) {
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
 			need_resize = cNo;
@@ -1192,7 +1192,7 @@ ReadWch(
 	 */
 #	ifdef EINTR
 	allow_resize(TRUE);
-	while ((result = read(0, mbs, 1)) < 0 && errno == EINTR) { /* spin on signal interrupts */
+	while ((result = (int)read(0, mbs, 1)) < 0 && errno == EINTR) { /* spin on signal interrupts */
 		if (need_resize) {
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
 			need_resize = cNo;
@@ -1220,7 +1220,7 @@ ReadWch(
 	 */
 	if (MB_CUR_MAX == 1) {
 		mbs[1] = '\0';
-		wch = convert_c2wc(mbs);
+		wch = (wchar_t)convert_c2wc(mbs);
 		free(mbs);
 
 		return (wint_t) wch;
@@ -1259,7 +1259,7 @@ ReadWch(
 		if (to_read > 0) {
 #	ifdef EINTR
 			allow_resize(TRUE);
-			while ((result = read(0, mbs + 1, to_read)) < 0 && errno == EINTR) { /* spin on signal interrupts */
+			while ((result = (int)read(0, mbs + 1, (size_t)to_read)) < 0 && errno == EINTR) { /* spin on signal interrupts */
 				if (need_resize) {
 					handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
 					need_resize = cNo;
@@ -1267,7 +1267,7 @@ ReadWch(
 			}
 			allow_resize(FALSE);
 #	else
-			result = read(0, mbs + 1, to_read);
+			result = read(0, mbs + 1, (size_t)to_read);
 #	endif /* EINTR */
 			if (result < 0) {
 				free(mbs);
@@ -1276,7 +1276,7 @@ ReadWch(
 			}
 		}
 		mbs[to_read + 1] = '\0';
-		wch = convert_c2wc(mbs);
+		wch = (wchar_t)convert_c2wc(mbs);
 		free (mbs);
 
 		return (wint_t) wch;

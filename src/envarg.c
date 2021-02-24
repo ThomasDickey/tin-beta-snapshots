@@ -3,7 +3,7 @@
  *  Module    : envarg.c
  *  Author    : B. Davidson
  *  Created   : 1991-10-13
- *  Updated   : 1993-03-10
+ *  Updated   : 2021-02-23
  *  Notes     : Adds default options from environment to command line
  *
  * Copyright (c) 1991-2021 Bill Davidson
@@ -94,7 +94,7 @@ envargs(
 	/*
 	 * allocate a vector large enough for all args
 	 */
-	argv = my_malloc((argc + *Pargc + 1) * sizeof(char *));
+	argv = my_malloc((size_t)(argc + *Pargc + 1) * sizeof(char *));
 	argvect = argv;
 
 	/*

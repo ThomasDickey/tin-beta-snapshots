@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2020-04-23
+ *  Updated   : 2021-02-23
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -1773,7 +1773,7 @@ ulBuildArgv(
 				tmp++;
 			}
 			i++;
-			new_argv = my_realloc(new_argv, ((i + 1) * sizeof(char *)));
+			new_argv = my_realloc(new_argv, ((size_t)(i + 1) * sizeof(char *)));
 			new_argv[i] = NULL;
 		} else
 			tmp++;

@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2020-06-10
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -169,7 +169,7 @@ build_tline(
 				if (my_strftime(buf, LEN - 1, thrd_fmt.date_str, localtime(&art->date))) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					if ((wtmp = char2wchar_t(buf)) != NULL) {
-						wtmp2 = wcspart(wtmp, thrd_fmt.len_date_max, TRUE);
+						wtmp2 = wcspart(wtmp, (int)thrd_fmt.len_date_max, TRUE);
 						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 							strcat(buffer, tmp);
 
@@ -188,7 +188,7 @@ build_tline(
 				get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
 				if ((wtmp = char2wchar_t(tmp)) != NULL) {
-					wtmp2 = wcspart(wtmp, thrd_fmt.len_from, TRUE);
+					wtmp2 = wcspart(wtmp, (int)thrd_fmt.len_from, TRUE);
 					if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 						strcat(buffer, tmp);
 
@@ -210,9 +210,9 @@ build_tline(
 
 			case 'I':	/* initials */
 				len = MIN(thrd_fmt.len_initials, sizeof(tmp) - 1);
-				get_initials(art, tmp, len);
+				get_initials(art, tmp, (int)len);
 				strcat(buffer, tmp);
-				if ((i = len - strwidth(tmp)) > 0) {
+				if ((i = (int)(len - (size_t)strwidth(tmp))) > 0) {
 					buf = buffer + strlen(buffer);
 					for (; i > 0; --i)
 						*buf++ = ' ';
@@ -222,10 +222,10 @@ build_tline(
 
 			case 'L':	/* lines */
 				if (art->line_count != -1)
-					strcat(buffer, tin_ltoa(art->line_count, thrd_fmt.len_linecnt));
+					strcat(buffer, tin_ltoa(art->line_count, (int)thrd_fmt.len_linecnt));
 				else {
 					buf = buffer + strlen(buffer);
-					for (i = thrd_fmt.len_linecnt; i > 1; --i)
+					for (i = (int)thrd_fmt.len_linecnt; i > 1; --i)
 						*buf++ = ' ';
 					*buf++ = '?';
 					*buf = '\0';
@@ -234,7 +234,7 @@ build_tline(
 
 			case 'm':	/* article flags, tag number, or whatever */
 				if (!thrd_fmt.mark_offset)
-					thrd_fmt.mark_offset = mark_offset = strwidth(buffer) + 2;
+					thrd_fmt.mark_offset = (size_t)(mark_offset = strwidth(buffer) + 2);
 				if (art->tagged) {
 					strcat(buffer, tin_ltoa(art->tagged, 3));
 					mark = '\0';
@@ -250,7 +250,7 @@ build_tline(
 				strncpy(tmp, art->refptr ? art->refptr->txt : "", len);
 				tmp[len] = '\0';
 				strcat(buffer, tmp);
-				if ((i = len - strwidth(tmp)) > 0) {
+				if ((i = (int)(len - (size_t)strwidth(tmp))) > 0) {
 					buf = buffer + strlen(buffer);
 					for (; i > 0; --i)
 						*buf++ = ' ';
@@ -259,16 +259,16 @@ build_tline(
 				break;
 
 			case 'n':
-				strcat(buffer, tin_ltoa(l + 1, thrd_fmt.len_linenumber));
+				strcat(buffer, tin_ltoa(l + 1, (int)thrd_fmt.len_linenumber));
 				break;
 
 			case 'S':	/* score */
-				strcat(buffer, tin_ltoa(art->score, thrd_fmt.len_score));
+				strcat(buffer, tin_ltoa(art->score, (int)thrd_fmt.len_score));
 				break;
 
 			case 'T':	/* thread/subject */
 				len = curr_group->attribute->show_author != SHOW_FROM_NONE ? thrd_fmt.len_subj : thrd_fmt.len_subj + thrd_fmt.len_from;
-				len_start = strwidth(buffer);
+				len_start = (size_t)strwidth(buffer);
 
 				switch (curr_group->attribute->thread_articles) {
 					case THREAD_REFS:
@@ -279,14 +279,14 @@ build_tline(
 						 */
 
 						if (art->refptr) {
-							make_prefix(art->refptr, buffer + strlen(buffer), len);
+							make_prefix(art->refptr, buffer + strlen(buffer), (int)len);
 
-							len_end = strwidth(buffer);
+							len_end = (size_t)strwidth(buffer);
 
 							/*
 							 * Copy in the subject up to where the author (if any) starts
 							 */
-							gap = len - (len_end - len_start);
+							gap = (len - (len_end - len_start));
 
 							/*
 							 * Mutt-like thread tree. by sjpark@sparcs.kaist.ac.kr
@@ -321,8 +321,8 @@ build_tline(
 					case THREAD_SUBJ:
 					case THREAD_MULTI:
 					case THREAD_PERC:
-						len_end = strwidth(buffer);
-						gap = len - (len_end - len_start);
+						len_end = (size_t)strwidth(buffer);
+						gap = (len - (len_end - len_start));
 						if (gap > 0) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 							{
@@ -349,8 +349,8 @@ build_tline(
 				}
 
 				/* pad out */
-				fill = len - (strwidth(buffer) - len_start);
-				gap = strlen(buffer);
+				fill = (len - ((size_t)strwidth(buffer) - len_start));
+				gap = (int)strlen(buffer);
 				for (i = 0; i < fill; i++)
 					buffer[gap + i] = ' ';
 				buffer[gap + fill] = '\0';
@@ -869,7 +869,7 @@ thread_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, thread_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, thread_keys)));
 		}
 	} /* ret_code >= 0 */
 
@@ -975,7 +975,7 @@ fixup_thread(
 	if (basenote >= 0) {
 		thread_basenote = basenote;
 		thdmenu.max = num_of_responses(thread_basenote) + 1;
-		thread_respnum = base[thread_basenote];
+		thread_respnum = (int)base[thread_basenote];
 		grpmenu.curr = basenote;
 		if (redraw && basenote != old_thread_basenote)
 			show_thread_page();
@@ -1321,7 +1321,7 @@ next_unread(
 	}
 
 	if (curr_group->attribute->wrap_on_next_unread) {
-		n = base[0];
+		n = (int)base[0];
 		while (n != cur_base_art && n >= 0) {
 			if (((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) && arts[n].thread != ART_EXPIRED)
 				return n;
@@ -1421,7 +1421,7 @@ make_prefix(
 	}
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	buf = my_malloc(sizeof(wchar_t) * prefix_ptr + 3 * sizeof(wchar_t));
+	buf = my_malloc(sizeof(wchar_t) * (size_t)prefix_ptr + 3 * sizeof(wchar_t));
 	buf[prefix_ptr + 2] = (wchar_t) '\0';
 #else
 	buf = my_malloc(prefix_ptr + 3);

@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2020-05-28
+ *  Updated   : 2021-02-23
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -183,7 +183,7 @@ expand_filter_array(
 
 	num = ++ptr->max;
 
-	block = num * sizeof(struct t_filter);
+	block = (size_t)num * sizeof(struct t_filter);
 
 	if (num == 1)	/* allocate */
 		ptr->filter = my_malloc(block);
@@ -215,7 +215,7 @@ test_regex(
 		if (!cache->re)
 			compile_regex(regex, cache, (nocase ? PCRE_CASELESS : 0));
 		if (cache->re) {
-			regex_errpos = pcre_exec(cache->re, cache->extra, string, strlen(string), 0, 0, NULL, 0);
+			regex_errpos = pcre_exec(cache->re, cache->extra, string, (int)strlen(string), 0, 0, NULL, 0);
 			if (regex_errpos >= 0)
 				return 1;
 			else if (regex_errpos != PCRE_ERROR_NOMATCH) { /* also exclude PCRE_ERROR_BADUTF8 ? */
@@ -1030,7 +1030,7 @@ fmt_filter_menu_prompt(
 		if ((buf = wchar_t2char(wbuf2)) == NULL) {
 			/* conversion failed, truncate original string */
 			buf = my_malloc(len + 1);
-			snprintf(buf, len + 1, "%-*.*s", len, len, text);
+			snprintf(buf, (size_t)(len + 1), "%-*.*s", len, len, text);
 		}
 
 		free(wbuf);
@@ -1039,7 +1039,7 @@ fmt_filter_menu_prompt(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	{
 		buf = my_malloc(len + 1);
-		snprintf(buf, len + 1, "%-*.*s", len, len, text);
+		snprintf(buf, (size_t)(len + 1), "%-*.*s", len, len, text);
 	}
 	snprintf(dest, dest_len, fmt_str, buf);
 	free(buf);
@@ -1098,9 +1098,9 @@ filter_menu(
 	/*
 	 * setup correct text for user selected menu
 	 */
-	printascii(keyedit, func_to_key(FILTER_EDIT, filter_keys));
-	printascii(keyquit, func_to_key(GLOBAL_QUIT, filter_keys));
-	printascii(keysave, func_to_key(FILTER_SAVE, filter_keys));
+	printascii(keyedit, (wint_t)func_to_key(FILTER_EDIT, filter_keys));
+	printascii(keyquit, (wint_t)func_to_key(GLOBAL_QUIT, filter_keys));
+	printascii(keysave, (wint_t)func_to_key(FILTER_SAVE, filter_keys));
 
 	if (type == GLOBAL_MENU_FILTER_KILL) {
 		ptr_filter_from = _(txt_kill_from);
@@ -1417,7 +1417,7 @@ filter_menu(
 			*(++ptr) = '*';
 			*(++ptr) = '\0';
 			j++;
-			list = my_realloc(list, sizeof(char *) * (j + 1)); /* one element more */
+			list = my_realloc(list, sizeof(char *) * (size_t)(j + 1)); /* one element more */
 			list[j] = my_strdup(list[j - 1]);
 			list[j][strlen(list[j]) - 2] = '\0';
 		}
@@ -1667,7 +1667,7 @@ add_filter_rule(
 	ptr[i].subj = NULL;
 	ptr[i].from = NULL;
 	ptr[i].msgid = NULL;
-	ptr[i].lines_cmp = rule->lines_cmp;
+	ptr[i].lines_cmp = (char)rule->lines_cmp;
 	ptr[i].lines_num = rule->lines_num;
 	ptr[i].gnksa_cmp = FILTER_LINES_NO;
 	ptr[i].gnksa_num = 0;
@@ -1874,7 +1874,7 @@ filter_articles(
 	if (tinrc.wildcard) {
 		size_t msiz;
 
-		msiz = sizeof(struct regex_cache) * num;
+		msiz = sizeof(struct regex_cache) * (size_t)num;
 		regex_cache_subj = my_malloc(msiz);
 		regex_cache_from = my_malloc(msiz);
 		regex_cache_msgid = my_malloc(msiz);

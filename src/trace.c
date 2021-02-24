@@ -3,7 +3,7 @@
  *  Module    : trace.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-22
- *  Updated   : 2001-07-22
+ *  Updated   : 2021-02-23
  *  Notes     : debugging support via TRACE macro.
  *
  * Copyright (c) 1997-2021 Thomas Dickey <dickey@invisible-island.net>
@@ -88,6 +88,6 @@ tin_tracechar(
 	int ch)
 {
 	static char result[2];
-	result[0] = ch;
+	result[0] = (char)ch;
 	return result;
 }

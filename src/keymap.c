@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2020-06-10
+ *  Updated   : 2021-02-23
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2021 Dirk Nimmich <nimmich@muenster.de>
@@ -280,7 +280,7 @@ printascii(
 		snprintf(buf, MAXKEYLEN, "%s", _("NULL"));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	else if (iswgraph(ch)) {	/* Regular printables */
-		int i = wctomb(buf, ch);
+		int i = wctomb(buf, (wchar_t)ch);
 
 		if (i > 0)
 			buf[i] = '\0';
@@ -305,7 +305,7 @@ printascii(
 	} else if (iscntrl(ch)) {	/* Control keys */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		buf[0] = '^';
-		buf[1] = ((int) ch & 0xFF) + '@';
+		buf[1] = (char)(((int) ch & 0xFF) + '@');
 		buf[2] = '\0';
 	} else if (ch == ' ')		/* SPACE */
 		snprintf(buf, MAXKEYLEN, "%s", _(txt_space));
@@ -520,7 +520,7 @@ process_keys(
 			}
 		} else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			if (iswdigit(key = wkeydef[0]))
+			if (iswdigit((wint_t)(key = wkeydef[0])))
 #else
 			if (isdigit(key = keydef[0]))
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */

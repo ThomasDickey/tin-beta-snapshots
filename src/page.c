@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-01-11
+ *  Updated   : 2021-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -331,7 +331,7 @@ show_page(
 		return i;
 
 	if (srch_lineno != -1)
-		process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
+		process_search(&curr_line, (size_t)artlines, (size_t)ARTLINES, PAGE_LEVEL);
 
 	forever {
 		if ((func = handle_keypad(page_left, page_right, page_mouse_action, page_keys)) == GLOBAL_SEARCH_REPEAT) {
@@ -583,7 +583,7 @@ page_goto_next_unread:
 					reveal_ctrl_l_lines = curr_line + ARTLINES - 1;
 					draw_page(group->name, 0);
 				}
-				process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
+				process_search(&curr_line, (size_t)artlines, (size_t)ARTLINES, PAGE_LEVEL);
 				break;
 
 			case GLOBAL_SEARCH_BODY:	/* article body search */
@@ -593,7 +593,7 @@ page_goto_next_unread:
 						XFACE_CLEAR();
 						return i;
 					}
-					process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
+					process_search(&curr_line, (size_t)artlines, (size_t)ARTLINES, PAGE_LEVEL);
 				}
 				break;
 
@@ -601,7 +601,7 @@ page_goto_next_unread:
 				if (arts[this_resp].prev >= 0) {
 					if ((n = which_thread(this_resp)) >= 0 && base[n] != this_resp) {
 						assert(n < grpmenu.max);
-						if ((i = load_article(base[n], group)) < 0) {
+						if ((i = load_article((int)base[n], group)) < 0) {
 							XFACE_CLEAR();
 							return i;
 						}
@@ -1022,7 +1022,7 @@ return_to_index:
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, page_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, page_keys)));
 		}
 	}
 	/* NOTREACHED */
@@ -1079,7 +1079,7 @@ print_message_page(
 		 * determine the correct position to truncate the line
 		 */
 		if ((help_level != INFO_PAGER) && (base_line + i < messagelines - 1)) {	/* not last line of message */
-			bytes = (curr + 1)->offset - curr->offset;
+			bytes = (int)((curr + 1)->offset - curr->offset);
 			line[bytes] = '\0';
 		}
 
@@ -1089,19 +1089,19 @@ print_message_page(
 		if ((rotate != 0) && ((curr->flags & (C_BODY | C_SIG)) || show_raw_article)) {
 			for (p = line; *p; p++) {
 				if (*p >= 'A' && *p <= 'Z')
-					*p = (*p - 'A' + rotate) % 26 + 'A';
+					*p = (char)((*p - 'A' + rotate) % 26 + 'A');
 				else if (*p >= 'a' && *p <= 'z')
-					*p = (*p - 'a' + rotate) % 26 + 'a';
+					*p = (char)((*p - 'a' + rotate) % 26 + 'a');
 			}
 		}
 
 		strip_line(line);
 
 #ifndef USE_CURSES
-		snprintf(screen[i + scroll_region_top].col, cCOLS, "%s" cCRLF, line);
+		snprintf(screen[i + (size_t)scroll_region_top].col, (size_t)cCOLS, "%s" cCRLF, line);
 #endif /* !USE_CURSES */
 
-		MoveCursor(i + scroll_region_top, 0);
+		MoveCursor((int)(i + (size_t)scroll_region_top), 0);
 		draw_pager_line(line, curr->flags, show_raw_article);
 
 		/*
@@ -1110,23 +1110,23 @@ print_message_page(
 		if (tinrc.url_highlight) {
 			if (curr->flags & C_URL)
 #ifdef HAVE_COLOR
-				highlight_regexes(i + scroll_region_top, &url_regex, use_color ? tinrc.col_urls : -1);
+				highlight_regexes((int)(i + (size_t)scroll_region_top), &url_regex, use_color ? tinrc.col_urls : -1);
 #else
-				highlight_regexes(i + scroll_region_top, &url_regex, -1);
+				highlight_regexes((int)(i + (size_t)scroll_region_top), &url_regex, -1);
 #endif /* HAVE_COLOR */
 
 			if (curr->flags & C_MAIL)
 #ifdef HAVE_COLOR
-				highlight_regexes(i + scroll_region_top, &mail_regex, use_color ? tinrc.col_urls : -1);
+				highlight_regexes((int)(i + (size_t)scroll_region_top), &mail_regex, use_color ? tinrc.col_urls : -1);
 #else
-				highlight_regexes(i + scroll_region_top, &mail_regex, -1);
+				highlight_regexes((int)(i + (size_t)scroll_region_top), &mail_regex, -1);
 #endif /* HAVE_COLOR */
 
 			if (curr->flags & C_NEWS)
 #ifdef HAVE_COLOR
-				highlight_regexes(i + scroll_region_top, &news_regex, use_color ? tinrc.col_urls : -1);
+				highlight_regexes((int)(i + (size_t)scroll_region_top), &news_regex, use_color ? tinrc.col_urls : -1);
 #else
-				highlight_regexes(i + scroll_region_top, &news_regex, -1);
+				highlight_regexes((int)(i + (size_t)scroll_region_top), &news_regex, -1);
 #endif /* HAVE_COLOR */
 		}
 
@@ -1135,15 +1135,15 @@ print_message_page(
 		 */
 		if (word_highlight && (curr->flags & C_BODY) && !(curr->flags & C_CTRLL)) {
 #ifdef HAVE_COLOR
-			highlight_regexes(i + scroll_region_top, &slashes_regex, use_color ? tinrc.col_markslash : tinrc.mono_markslash);
-			highlight_regexes(i + scroll_region_top, &stars_regex, use_color ? tinrc.col_markstar : tinrc.mono_markstar);
-			highlight_regexes(i + scroll_region_top, &underscores_regex, use_color ? tinrc.col_markdash : tinrc.mono_markdash);
-			highlight_regexes(i + scroll_region_top, &strokes_regex, use_color ? tinrc.col_markstroke : tinrc.mono_markstroke);
+			highlight_regexes((int)(i + (size_t)scroll_region_top), &slashes_regex, use_color ? tinrc.col_markslash : tinrc.mono_markslash);
+			highlight_regexes((int)(i + (size_t)scroll_region_top), &stars_regex, use_color ? tinrc.col_markstar : tinrc.mono_markstar);
+			highlight_regexes((int)(i + (size_t)scroll_region_top), &underscores_regex, use_color ? tinrc.col_markdash : tinrc.mono_markdash);
+			highlight_regexes((int)(i + (size_t)scroll_region_top), &strokes_regex, use_color ? tinrc.col_markstroke : tinrc.mono_markstroke);
 #else
-			highlight_regexes(i + scroll_region_top, &slashes_regex, tinrc.mono_markslash);
-			highlight_regexes(i + scroll_region_top, &stars_regex, tinrc.mono_markstar);
-			highlight_regexes(i + scroll_region_top, &underscores_regex, tinrc.mono_markdash);
-			highlight_regexes(i + scroll_region_top, &strokes_regex, tinrc.mono_markstroke);
+			highlight_regexes((int)(i + (size_t)scroll_region_top), &slashes_regex, tinrc.mono_markslash);
+			highlight_regexes((int)(i + (size_t)scroll_region_top), &stars_regex, tinrc.mono_markstar);
+			highlight_regexes((int)(i + (size_t)scroll_region_top), &underscores_regex, tinrc.mono_markdash);
+			highlight_regexes((int)(i + (size_t)scroll_region_top), &strokes_regex, tinrc.mono_markstroke);
 #endif /* HAVE_COLOR */
 		}
 
@@ -1215,7 +1215,7 @@ draw_page(
 	} else
 		MoveCursor(0, 0);
 
-	print_message_page(note_fp, artline, artlines, curr_line, start, end, PAGE_LEVEL);
+	print_message_page(note_fp, artline, (size_t)artlines, (size_t)curr_line, (size_t)start, (size_t)end, PAGE_LEVEL);
 
 	/*
 	 * Print an appropriate footer
@@ -1960,10 +1960,10 @@ process_search(
 	 * Reposition within article if needed, try to get matched line
 	 * in the middle of the screen
 	 */
-	if (i < *lcurr_line || i >= (int) (*lcurr_line + screen_lines)) {
-		*lcurr_line = i - (screen_lines / 2);
-		if (*lcurr_line + screen_lines > message_lines)	/* off the end */
-			*lcurr_line = message_lines - screen_lines;
+	if (i < *lcurr_line || i >= (int) ((size_t)*lcurr_line + screen_lines)) {
+		*lcurr_line = (int)((size_t)i - (screen_lines / 2));
+		if (((size_t)*lcurr_line + screen_lines) > message_lines)	/* off the end */
+			*lcurr_line = (int)(message_lines - screen_lines);
 		/* else pos. is just fine */
 	}
 
@@ -2013,7 +2013,7 @@ toggle_raw(
 
 			j = 0;
 			rewind(pgart.raw);
-			pgart.rawl = my_malloc(sizeof(t_lineinfo) * chunk);
+			pgart.rawl = my_malloc(sizeof(t_lineinfo) * (size_t)chunk);
 			offset = ftell(pgart.raw);
 
 			while ((line = tin_fgets(pgart.raw, FALSE)) != NULL) {
@@ -2028,7 +2028,7 @@ toggle_raw(
 				j++;
 				if (j >= chunk) {
 					chunk += 50;
-					pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * chunk);
+					pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * (size_t)chunk);
 				}
 
 				p = line;
@@ -2038,7 +2038,7 @@ toggle_raw(
 					while ((space > 0) && *p) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 						num_bytes = mbtowc(&wc, p, MB_CUR_MAX);
-						if (num_bytes != -1 && iswprint(wc)) {
+						if (num_bytes != -1 && iswprint((wint_t)wc)) {
 							if ((space -= wcwidth(wc)) < 0)
 								break;
 							p += num_bytes;
@@ -2082,7 +2082,7 @@ toggle_raw(
 						pgart.rawl[j].flags = 0;
 						if (++j >= chunk) {
 							chunk += 50;
-							pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * chunk);
+							pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * (size_t)chunk);
 						}
 					}
 				}
@@ -2094,7 +2094,7 @@ toggle_raw(
 				offset = ftell(pgart.raw);
 			}
 
-			pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * j);
+			pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * (size_t)j);
 		}
 		artline = pgart.rawl;
 		artlines = j;
@@ -2259,7 +2259,7 @@ info_pager(
 				if ((search_article((func == GLOBAL_SEARCH_SUBJECT_FORWARD), (func == GLOBAL_SEARCH_REPEAT), search_line, num_info_lines, infoline, num_info_lines - 1, info_file)) == -1)
 					break;
 
-				process_search(&curr_info_line, num_info_lines, NOTESLINES, INFO_PAGER);
+				process_search(&curr_info_line, (size_t)num_info_lines, (size_t)NOTESLINES, INFO_PAGER);
 				break;
 
 			case GLOBAL_QUIT:	/* quit */
@@ -2312,7 +2312,7 @@ display_info_page(
 		center_line(0, TRUE, info_title);
 	}
 
-	print_message_page(info_file, infoline, num_info_lines, curr_info_line, start, end, INFO_PAGER);
+	print_message_page(info_file, infoline, (size_t)num_info_lines, (size_t)curr_info_line, (size_t)start, (size_t)end, INFO_PAGER);
 
 	/* print footer */
 	draw_percent_mark(curr_info_line + (curr_info_line + NOTESLINES < num_info_lines ? NOTESLINES : num_info_lines - curr_info_line), num_info_lines);
@@ -2331,7 +2331,7 @@ preprocess_info_message(
 		return;
 
 	rewind(info_fh);
-	infoline = my_malloc(sizeof(t_lineinfo) * chunk);
+	infoline = my_malloc(sizeof(t_lineinfo) * (size_t)chunk);
 	num_info_lines = 0;
 
 	do {
@@ -2340,12 +2340,12 @@ preprocess_info_message(
 		num_info_lines++;
 		if (num_info_lines >= chunk) {
 			chunk += 50;
-			infoline = my_realloc(infoline, sizeof(t_lineinfo) * chunk);
+			infoline = my_realloc(infoline, sizeof(t_lineinfo) * (size_t)chunk);
 		}
 	} while (tin_fgets(info_fh, FALSE) != NULL);
 
 	num_info_lines--;
-	infoline = my_realloc(infoline, sizeof(t_lineinfo) * num_info_lines);
+	infoline = my_realloc(infoline, sizeof(t_lineinfo) * (size_t)num_info_lines);
 }
 
 
@@ -2516,7 +2516,7 @@ url_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, url_keys)));
+				info_message(_(txt_bad_command), printascii(key, (wint_t)func_to_key(GLOBAL_HELP, url_keys)));
 				break;
 		}
 	}
@@ -2571,7 +2571,7 @@ build_url_line(
 #endif /* USE_CURSES */
 
 	lptr = find_url(i);
-	snprintf(sptr, cCOLS, "  %s  %-*.*s%s", tin_ltoa(i + 1, 4), len, len, lptr->url, cCRLF);
+	snprintf(sptr, (size_t)cCOLS, "  %s  %-*.*s%s", tin_ltoa(i + 1, 4), len, len, lptr->url, cCRLF);
 	WriteLine(INDEX2LNUM(i), sptr);
 
 #ifdef USE_CURSES
@@ -2591,7 +2591,7 @@ process_url(
 	lptr = find_url(n);
 	len = strlen(lptr->url) << 1; /* double size; room for editing URL */
 	url = my_malloc(len + 1);
-	if (prompt_default_string("URL:", url, len, lptr->url, HIST_URL)) {
+	if (prompt_default_string("URL:", url, (int)len, lptr->url, HIST_URL)) {
 		if (!*url) {			/* Don't try and open nothing */
 			free(url);
 			return FALSE;
@@ -2638,9 +2638,9 @@ build_url_list(
 		 */
 		forever {
 			/* any matches left? */
-			if (pcre_exec(url_regex.re, url_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
-				if (pcre_exec(mail_regex.re, mail_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
-					if (pcre_exec(news_regex.re, news_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
+			if (pcre_exec(url_regex.re, url_regex.extra, ptr, (int)strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
+				if (pcre_exec(mail_regex.re, mail_regex.extra, ptr, (int)strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
+					if (pcre_exec(news_regex.re, news_regex.extra, ptr, (int)strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
 						break;
 
 			*(ptr + offsets[1]) = '\0';
