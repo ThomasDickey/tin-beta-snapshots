@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-25
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2021 Michael Bienia <michael@vorlon.ping.de>
@@ -1303,7 +1303,7 @@ config_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, option_menu_keys)));
+				info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, option_menu_keys));
 				break;
 		} /* switch (ch) */
 
@@ -2796,7 +2796,7 @@ scope_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, scope_keys)));
+				info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, scope_keys));
 				break;
 		}
 	}

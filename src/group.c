@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -189,7 +189,7 @@ group_page(
 	clear_note_area();
 
 	if (group->attribute->auto_select) {
-		error_message(2, _(txt_autoselecting_articles), printascii(key, (wint_t) func_to_key(GROUP_MARK_UNSELECTED_ARTICLES_READ, group_keys)));
+		error_message(2, _(txt_autoselecting_articles), PrintFuncKey(key, GROUP_MARK_UNSELECTED_ARTICLES_READ, group_keys));
 		do_auto_select_arts();						/* 'X' command */
 		xflag = TRUE;
 	}
@@ -901,7 +901,7 @@ group_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, group_keys)));
+				info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, group_keys));
 				break;
 		} /* switch(ch) */
 	} /* ret_code >= 0 */

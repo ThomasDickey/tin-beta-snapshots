@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-25
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -1098,9 +1098,9 @@ filter_menu(
 	/*
 	 * setup correct text for user selected menu
 	 */
-	printascii(keyedit, (wint_t) func_to_key(FILTER_EDIT, filter_keys));
-	printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, filter_keys));
-	printascii(keysave, (wint_t) func_to_key(FILTER_SAVE, filter_keys));
+	PrintFuncKey(keyedit, FILTER_EDIT, filter_keys);
+	PrintFuncKey(keyquit, GLOBAL_QUIT, filter_keys);
+	PrintFuncKey(keysave, FILTER_SAVE, filter_keys);
 
 	if (type == GLOBAL_MENU_FILTER_KILL) {
 		ptr_filter_from = _(txt_kill_from);

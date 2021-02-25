@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -413,9 +413,9 @@ open_save_filename(
 		func = prompt_slk_response((tinrc.default_save_mode == 'a' ? SAVE_APPEND_FILE : SAVE_OVERWRITE_FILE),
 				save_append_overwrite_keys,
 				_(txt_append_overwrite_quit), path,
-				printascii(keyappend, (wint_t) func_to_key(SAVE_APPEND_FILE, save_append_overwrite_keys)),
-				printascii(keyoverwrite, (wint_t) func_to_key(SAVE_OVERWRITE_FILE, save_append_overwrite_keys)),
-				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, save_append_overwrite_keys)));
+				PrintFuncKey(keyappend, SAVE_APPEND_FILE, save_append_overwrite_keys),
+				PrintFuncKey(keyoverwrite, SAVE_OVERWRITE_FILE, save_append_overwrite_keys),
+				PrintFuncKey(keyquit, GLOBAL_QUIT, save_append_overwrite_keys));
 
 		switch (func) {
 			case SAVE_OVERWRITE_FILE:
@@ -1747,7 +1747,7 @@ attachment_page(
 #endif /* !DONT_HAVE_PIPING */
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, attachment_keys)));
+				info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, attachment_keys));
 				break;
 		}
 	}
