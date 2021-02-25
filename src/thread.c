@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -869,7 +869,7 @@ thread_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, thread_keys)));
+				info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, thread_keys));
 		}
 	} /* ret_code >= 0 */
 

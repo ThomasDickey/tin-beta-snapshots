@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2021-02-13
+ *  Updated   : 2021-02-25
  *  Notes     :
  *
  * Copyright (c) 1999-2021 Jason Faultless <jason@altarstone.com>
@@ -437,9 +437,11 @@ extern t_function prompt_slk_response(t_function default_func, const struct keyl
 	extern char *printascii(char *buf, wint_t ch);
 	extern wchar_t func_to_key(t_function func, const struct keylist keys);
 	extern t_function key_to_func(const wchar_t key, const struct keylist keys);
+#define PrintFuncKey(buf, func, keys) printascii(buf, (wint_t) func_to_key(func, keys))
 #else
 	extern char *printascii(char *buf, int ch);
 	extern char func_to_key (t_function func, const struct keylist keys);
 	extern t_function key_to_func (const char key, const struct keylist keys);
+#define PrintFuncKey(buf, func, keys) printascii(buf, (int) func_to_key(func, keys))
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #endif /* !KEYMAP_H */

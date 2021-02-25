@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-25
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -223,30 +223,30 @@ prompt_to_send(
 
 #if defined(HAVE_ISPELL) && defined(HAVE_PGP_GPG)
 	snprintf(buf, sizeof(buf), _(txt_quit_edit_send),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_send_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_send_keys)),
-					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_send_keys)),
-					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_send_keys)),
-					printascii(keysend, (wint_t) func_to_key(POST_SEND, post_send_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_send_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_send_keys),
+					PrintFuncKey(keyispell, POST_ISPELL, post_send_keys),
+					PrintFuncKey(keypgp, POST_PGP, post_send_keys),
+					PrintFuncKey(keysend, POST_SEND, post_send_keys));
 #else
 #	ifdef HAVE_ISPELL
 	snprintf(buf, sizeof(buf), _(txt_quit_edit_send),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_send_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_send_keys)),
-					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_send_keys)),
-					printascii(keysend, (wint_t) func_to_key(POST_SEND, post_send_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_send_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_send_keys),
+					PrintFuncKey(keyispell, POST_ISPELL, post_send_keys),
+					PrintFuncKey(keysend, POST_SEND, post_send_keys));
 #	else
 #		ifdef HAVE_PGP_GPG
 	snprintf(buf, sizeof(buf), _(txt_quit_edit_send),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_send_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_send_keys)),
-					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_send_keys)),
-					printascii(keysend, (wint_t) func_to_key(POST_SEND, post_send_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_send_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_send_keys),
+					PrintFuncKey(keypgp, POST_PGP, post_send_keys),
+					PrintFuncKey(keysend, POST_SEND, post_send_keys));
 #		else
 	snprintf(buf, sizeof(buf), _(txt_quit_edit_send),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_send_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_send_keys)),
-					printascii(keysend, (wint_t) func_to_key(POST_SEND, post_send_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_send_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_send_keys),
+					PrintFuncKey(keysend, POST_SEND, post_send_keys));
 #		endif /* HAVE_PGP_GPG */
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_ISPELL && HAVE_PGP_GPG */
@@ -273,9 +273,9 @@ prompt_rejected(
 
 	return prompt_slk_response(POST_EDIT, post_edit_keys,
 				_(txt_quit_edit_postpone),
-				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_edit_keys)),
-				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_edit_keys)),
-				printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_edit_keys)));
+				PrintFuncKey(keyquit, GLOBAL_QUIT, post_edit_keys),
+				PrintFuncKey(keyedit, POST_EDIT, post_edit_keys),
+				PrintFuncKey(keypostpone, POST_POSTPONE, post_edit_keys));
 }
 
 
@@ -317,9 +317,9 @@ repair_article(
 	t_function func;
 
 	func = prompt_slk_response(POST_EDIT, post_edit_ext_keys, _(txt_bad_article),
-				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_edit_ext_keys)),
-				printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_edit_ext_keys)),
-				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_edit_ext_keys)));
+				PrintFuncKey(keyquit, GLOBAL_QUIT, post_edit_ext_keys),
+				PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_edit_ext_keys),
+				PrintFuncKey(keyedit, POST_EDIT, post_edit_ext_keys));
 
 	*result = func;
 	if (func == POST_EDIT) {
@@ -659,7 +659,7 @@ post_hist_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, post_hist_keys)));
+				info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, post_hist_keys));
 				break;
 		}
 	}
@@ -2281,41 +2281,41 @@ post_article_loop:
 #if defined(HAVE_ISPELL) && defined(HAVE_PGP_GPG)
 			func = prompt_slk_response((i ? POST_EDIT : art_unchanged ? POST_POSTPONE : GLOBAL_POST),
 					post_post_keys, _(txt_quit_edit_post),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
-					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
-					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+					PrintFuncKey(keyispell, POST_ISPELL, post_post_keys),
+					PrintFuncKey(keypgp, POST_PGP, post_post_keys),
+					PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+					PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+					PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #else
 #	ifdef HAVE_ISPELL
 			func = prompt_slk_response((i ? POST_EDIT : art_unchanged ? POST_POSTPONE : GLOBAL_POST),
 					post_post_keys, _(txt_quit_edit_post),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
-					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+					PrintFuncKey(keyispell, POST_ISPELL, post_post_keys),
+					PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+					PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+					PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #	else
 #		ifdef HAVE_PGP_GPG
 			func = prompt_slk_response((i ? POST_EDIT : art_unchanged ? POST_POSTPONE : GLOBAL_POST),
 					post_post_keys, _(txt_quit_edit_post),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
-					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+					PrintFuncKey(keypgp, POST_PGP, post_post_keys),
+					PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+					PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+					PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #		else
 			func = prompt_slk_response((i ? POST_EDIT : art_unchanged ? POST_POSTPONE : GLOBAL_POST),
 					post_post_keys, _(txt_quit_edit_post),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+					PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+					PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+					PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #		endif /* HAVE_PGP_GPG */
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_ISPELL && HAVE_PGP_GPG */
@@ -2334,38 +2334,38 @@ post_article_loop:
 
 #if defined(HAVE_ISPELL) && defined(HAVE_PGP_GPG)
 			snprintf(buf, sizeof(buf), _(txt_quit_edit_xpost),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
-					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
-					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+					PrintFuncKey(keyispell, POST_ISPELL, post_post_keys),
+					PrintFuncKey(keypgp, POST_PGP, post_post_keys),
+					PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+					PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+					PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #else
 #	ifdef HAVE_ISPELL
 			snprintf(buf, sizeof(buf), _(txt_quit_edit_xpost),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
-					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+					PrintFuncKey(keyispell, POST_ISPELL, post_post_keys),
+					PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+					PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+					PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #	else
 #		ifdef HAVE_PGP_GPG
 			snprintf(buf, sizeof(buf), _(txt_quit_edit_xpost),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
-					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+					PrintFuncKey(keypgp, POST_PGP, post_post_keys),
+					PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+					PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+					PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #		else
 			snprintf(buf, sizeof(buf), _(txt_quit_edit_xpost),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-					printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-					printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-					printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+					PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+					PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+					PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+					PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #		endif /* HAVE_PGP_GPG */
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_ISPELL && HAVE_PGP_GPG */
@@ -2909,11 +2909,11 @@ pickup_postponed_articles(
 			char keyquit[MAXKEYLEN], keyyes[MAXKEYLEN];
 
 			snprintf(buf, sizeof(buf), _(txt_postpone_repost),
-					printascii(keyyes, (wint_t) func_to_key(PROMPT_YES, post_postpone_keys)),
-					printascii(keyoverride, (wint_t) func_to_key(POSTPONE_OVERRIDE, post_postpone_keys)),
-					printascii(keyall, (wint_t) func_to_key(POSTPONE_ALL, post_postpone_keys)),
-					printascii(keyno, (wint_t) func_to_key(PROMPT_NO, post_postpone_keys)),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_postpone_keys)));
+					PrintFuncKey(keyyes, PROMPT_YES, post_postpone_keys),
+					PrintFuncKey(keyoverride, POSTPONE_OVERRIDE, post_postpone_keys),
+					PrintFuncKey(keyall, POSTPONE_ALL, post_postpone_keys),
+					PrintFuncKey(keyno, PROMPT_NO, post_postpone_keys),
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_postpone_keys));
 
 			func = prompt_slk_response(PROMPT_YES, post_postpone_keys,
 					"%s", sized_message(&smsg, buf, subject));
@@ -3332,9 +3332,9 @@ post_response(
 
 /*		clear_message(); */
 		func = prompt_slk_response(PAGE_MAIL, post_mail_fup_keys, _(txt_resp_to_poster),
-				printascii(keymail, (wint_t) func_to_key(POST_MAIL, post_mail_fup_keys)),
-				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_mail_fup_keys)),
-				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_mail_fup_keys)));
+				PrintFuncKey(keymail, POST_MAIL, post_mail_fup_keys),
+				PrintFuncKey(keypost, GLOBAL_POST, post_mail_fup_keys),
+				PrintFuncKey(keyquit, GLOBAL_QUIT, post_mail_fup_keys));
 		switch (func) {
 			case GLOBAL_POST:
 				use_followup_to = FALSE;
@@ -3359,9 +3359,9 @@ post_response(
 		signal_context = cPostFup;
 		func = prompt_slk_response(GLOBAL_POST, post_ignore_fupto_keys,
 				_(txt_prompt_fup_ignore),
-				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_ignore_fupto_keys)),
-				printascii(keyignore, (wint_t) func_to_key(POST_IGNORE_FUPTO, post_ignore_fupto_keys)),
-				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_ignore_fupto_keys)));
+				PrintFuncKey(keypost, GLOBAL_POST, post_ignore_fupto_keys),
+				PrintFuncKey(keyignore, POST_IGNORE_FUPTO, post_ignore_fupto_keys),
+				PrintFuncKey(keyquit, GLOBAL_QUIT, post_ignore_fupto_keys));
 		signal_context = save_signal_context;
 		switch (func) {
 			case GLOBAL_QUIT:
@@ -4006,8 +4006,8 @@ mail_to_author(
 
 		func = prompt_slk_response(POST_CONTINUE, post_continue_keys,
 				_(txt_warn_suspicious_mail),
-				printascii(keycont, (wint_t) func_to_key(POST_CONTINUE, post_continue_keys)),
-				printascii(keyabort, (wint_t) func_to_key(POST_ABORT, post_continue_keys)));
+				PrintFuncKey(keycont, POST_CONTINUE, post_continue_keys),
+				PrintFuncKey(keyabort, POST_ABORT, post_continue_keys));
 		switch (func) {
 			case POST_ABORT:
 			case GLOBAL_ABORT:
@@ -4249,9 +4249,9 @@ cancel_article(
 		char keycancel[MAXKEYLEN], keyquit[MAXKEYLEN], keysupersede[MAXKEYLEN];
 
 		snprintf(buff, sizeof(buff), _(txt_cancel_article),
-				printascii(keycancel, (wint_t) func_to_key(POST_CANCEL, post_delete_keys)),
-				printascii(keysupersede, (wint_t) func_to_key(POST_SUPERSEDE, post_delete_keys)),
-				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_delete_keys)));
+				PrintFuncKey(keycancel, POST_CANCEL, post_delete_keys),
+				PrintFuncKey(keysupersede, POST_SUPERSEDE, post_delete_keys),
+				PrintFuncKey(keyquit, GLOBAL_QUIT, post_delete_keys));
 
 		func = prompt_slk_response(default_func, post_delete_keys,
 						"%s", sized_message(&smsg, buff, art->subject));
@@ -4395,9 +4395,9 @@ cancel_article(
 			int save_signal_context = signal_context;
 
 			snprintf(buff, sizeof(buff), _(txt_quit_cancel),
-					printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_cancel_keys)),
-					printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_cancel_keys)),
-					printascii(keycancel, (wint_t) func_to_key(POST_CANCEL, post_cancel_keys)));
+					PrintFuncKey(keyedit, POST_EDIT, post_cancel_keys),
+					PrintFuncKey(keyquit, GLOBAL_QUIT, post_cancel_keys),
+					PrintFuncKey(keycancel, POST_CANCEL, post_cancel_keys));
 
 			signal_context = cPostCancel;
 			func = prompt_slk_response(default_func, post_cancel_keys, "%s", sized_message(&smsg, buff, note_h.subj));
@@ -4678,38 +4678,38 @@ repost_article(
 
 #if defined(HAVE_ISPELL) && defined(HAVE_PGP_GPG)
 		snprintf(buff, sizeof(buff), _(txt_quit_edit_xpost),
-				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-				printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
-				printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
-				printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-				printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+				PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+				PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+				PrintFuncKey(keyispell, POST_ISPELL, post_post_keys),
+				PrintFuncKey(keypgp, POST_PGP, post_post_keys),
+				PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+				PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+				PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #else
 #	ifdef HAVE_ISPELL
 		snprintf(buff, sizeof(buff), _(txt_quit_edit_xpost),
-				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-				printascii(keyispell, (wint_t) func_to_key(POST_ISPELL, post_post_keys)),
-				printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-				printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+				PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+				PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+				PrintFuncKey(keyispell, POST_ISPELL, post_post_keys),
+				PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+				PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+				PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #	else
 #		ifdef HAVE_PGP_GPG
 		snprintf(buff, sizeof(buff), _(txt_quit_edit_xpost),
-				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-				printascii(keypgp, (wint_t) func_to_key(POST_PGP, post_post_keys)),
-				printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-				printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+				PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+				PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+				PrintFuncKey(keypgp, POST_PGP, post_post_keys),
+				PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+				PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+				PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #		else
 		snprintf(buff, sizeof(buff), _(txt_quit_edit_xpost),
-				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, post_post_keys)),
-				printascii(keyedit, (wint_t) func_to_key(POST_EDIT, post_post_keys)),
-				printascii(keymenu, (wint_t) func_to_key(GLOBAL_OPTION_MENU, post_post_keys)),
-				printascii(keypost, (wint_t) func_to_key(GLOBAL_POST, post_post_keys)),
-				printascii(keypostpone, (wint_t) func_to_key(POST_POSTPONE, post_post_keys)));
+				PrintFuncKey(keyquit, GLOBAL_QUIT, post_post_keys),
+				PrintFuncKey(keyedit, POST_EDIT, post_post_keys),
+				PrintFuncKey(keymenu, GLOBAL_OPTION_MENU, post_post_keys),
+				PrintFuncKey(keypost, GLOBAL_POST, post_post_keys),
+				PrintFuncKey(keypostpone, POST_POSTPONE, post_post_keys));
 #		endif /* HAVE_PGP_GPG */
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_ISPELL && HAVE_PGP_GPG */

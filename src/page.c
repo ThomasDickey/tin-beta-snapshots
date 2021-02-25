@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1025,7 +1025,7 @@ return_to_index:
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, page_keys)));
+				info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, page_keys));
 		}
 	}
 	/* NOTREACHED */
@@ -2519,7 +2519,7 @@ url_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, (wint_t) func_to_key(GLOBAL_HELP, url_keys)));
+				info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, url_keys));
 				break;
 		}
 	}

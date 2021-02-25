@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-25
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -204,10 +204,10 @@ get_post_proc_type(
 	}
 
 	func = prompt_slk_response(default_func, feed_post_process_keys, _(txt_choose_post_process_type),
-				printascii(keyno, (wint_t) func_to_key(POSTPROCESS_NO, feed_post_process_keys)),
-				printascii(keyyes, (wint_t) func_to_key(POSTPROCESS_YES, feed_post_process_keys)),
-				printascii(keyshar, (wint_t) func_to_key(POSTPROCESS_SHAR, feed_post_process_keys)),
-				printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, feed_post_process_keys)));
+				PrintFuncKey(keyno, POSTPROCESS_NO, feed_post_process_keys),
+				PrintFuncKey(keyyes, POSTPROCESS_YES, feed_post_process_keys),
+				PrintFuncKey(keyshar, POSTPROCESS_SHAR, feed_post_process_keys),
+				PrintFuncKey(keyquit, GLOBAL_QUIT, feed_post_process_keys));
 
 	if (func == GLOBAL_QUIT || func == GLOBAL_ABORT) {			/* exit */
 		clear_message();
@@ -297,13 +297,13 @@ get_feed_key(
 		char keypat[MAXKEYLEN], keytag[MAXKEYLEN], keyquit[MAXKEYLEN];
 
 		snprintf(buf, sizeof(buf), _(txt_art_thread_regex_tag),
-			printascii(keyart, (wint_t) func_to_key(FEED_ARTICLE, feed_type_keys)),
-			printascii(keythread, (wint_t) func_to_key(FEED_THREAD, feed_type_keys)),
-			printascii(keyrange, (wint_t) func_to_key(FEED_RANGE, feed_type_keys)),
-			printascii(keyhot, (wint_t) func_to_key(FEED_HOT, feed_type_keys)),
-			printascii(keypat, (wint_t) func_to_key(FEED_PATTERN, feed_type_keys)),
-			printascii(keytag, (wint_t) func_to_key(FEED_TAGGED, feed_type_keys)),
-			printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, feed_type_keys)));
+			PrintFuncKey(keyart, FEED_ARTICLE, feed_type_keys),
+			PrintFuncKey(keythread, FEED_THREAD, feed_type_keys),
+			PrintFuncKey(keyrange, FEED_RANGE, feed_type_keys),
+			PrintFuncKey(keyhot, FEED_HOT, feed_type_keys),
+			PrintFuncKey(keypat, FEED_PATTERN, feed_type_keys),
+			PrintFuncKey(keytag, FEED_TAGGED, feed_type_keys),
+			PrintFuncKey(keyquit, GLOBAL_QUIT, feed_type_keys));
 
 		func = prompt_slk_response(default_func, feed_type_keys, "%s %s", _(prompt), buf);
 	}
@@ -728,9 +728,9 @@ feed_articles(
 
 					/* repost or supersede? */
 					snprintf(buf, sizeof(buf), _(txt_supersede_article),
-							printascii(keyrepost, (wint_t) func_to_key(FEED_KEY_REPOST, feed_supersede_article_keys)),
-							printascii(keysupersede, (wint_t) func_to_key(FEED_SUPERSEDE, feed_supersede_article_keys)),
-							printascii(keyquit, (wint_t) func_to_key(GLOBAL_QUIT, feed_supersede_article_keys)));
+							PrintFuncKey(keyrepost, FEED_KEY_REPOST, feed_supersede_article_keys),
+							PrintFuncKey(keysupersede, FEED_SUPERSEDE, feed_supersede_article_keys),
+							PrintFuncKey(keyquit, GLOBAL_QUIT, feed_supersede_article_keys));
 					func = prompt_slk_response(FEED_SUPERSEDE,
 								feed_supersede_article_keys, "%s",
 								sized_message(&smsg, buf, arts[respnum].subject));
