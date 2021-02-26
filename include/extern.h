@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-25
  *  Notes     :
  *
  * Copyright (c) 1997-2021 Iain Lea <iain@bricbrac.de>
@@ -664,8 +664,10 @@ extern constext txt_error_insecure_permissions[];
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	extern constext txt_error_locale[];
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
-extern constext txt_error_mime_end[];
-extern constext txt_error_mime_start[];
+#ifdef DEBUG
+	extern constext txt_error_mime_end[];
+	extern constext txt_error_mime_start[];
+#endif /* DEBUG */
 extern constext txt_error_no_domain_name[];
 extern constext txt_error_no_enter_permission[];
 #ifdef NNTP_INEWS
@@ -1116,6 +1118,7 @@ extern constext txt_post_history_menu[];
 extern constext txt_post_history_menu_com[];
 extern constext txt_post_history_lookup_failed[];
 extern constext txt_post_history_op_unavail_for_reply[];
+extern constext txt_post_history_recursion[];
 extern constext txt_post_newsgroups[];
 extern constext txt_post_processing[];
 extern constext txt_post_processing_finished[];

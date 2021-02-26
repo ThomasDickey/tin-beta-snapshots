@@ -1104,7 +1104,7 @@ print_message_page(
 		snprintf(screen[i + (size_t) scroll_region_top].col, (size_t) cCOLS, "%s" cCRLF, line);
 #endif /* !USE_CURSES */
 
-		MoveCursor((int) (i + (size_t)scroll_region_top), 0);
+		MoveCursor((int) (i + (size_t) scroll_region_top), 0);
 		draw_pager_line(line, curr->flags, show_raw_article);
 
 		/*

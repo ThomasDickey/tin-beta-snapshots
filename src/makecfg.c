@@ -302,7 +302,7 @@ generate_enum(
 			while (*s != '\0') {
 				fprintf(ofp2, "%c",
 					 (*s >= 'a' && *s <= 'z')
-					 ? ((unsigned char) ((*s) -'a' + 'A'))
+					 ? ((unsigned char) ((*s) - 'a' + 'A'))
 					 : *s);
 				s++;
 			}

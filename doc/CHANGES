@@ -1,4 +1,4 @@
--- 2.4.6 release 20210224 "" --
+-- 2.4.6 release 20210225 "" --
 
  027) Dennis Preiser <dennis@d--p.de>
       ADD. jump to article in posting history screen
@@ -7,6 +7,8 @@
       BUG. crash when trying to respond to an article with an empty Subject
       BUG. unfinished rfc2047 encodings may lead to out of bound reads
       BUG. hypothetic resource leak in lookup_msgid()
+      BUG. swapped check to avoid possible out of bound read in
+           find_first_unread()
       FIX. art.c, attrib.c, group.c, help.c, keymap.c, lang.c, nntplib.c
            page.c, post.c, rfc2047.c, search.c, select.c, signal.c, thread.c
            extern.h, keymap.h, proto.h, tin.h
@@ -20,7 +22,8 @@
            options_menu.c, page.c, pgp.c, post.c, prompt.c, read.c, refs.c
            regex.c, rfc1524.c, rfc2045.c, rfc2046.c, rfc2047.c, save.c
            screen.c, search.c, select.c, sigfile.c, string.c, thread.c, trace.c
-           wildmat.c, parsdate.y, tcurses.h, tin.h, aclocal.m4, configure[.in]
+           wildmat.c, parsdate.y, keymap.h, tcurses.h, tin.h, aclocal.m4
+           configure[.in]
 
  025) Urs Janssen <urs@tin.org>
       REM. 3rd party tool expand_aliases

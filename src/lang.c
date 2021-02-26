@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -246,8 +246,10 @@ constext txt_error_insecure_permissions[] = N_("Insecure permissions of %s (%o)"
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	constext txt_error_locale[] = "Can't set the specified locale!";
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
-constext txt_error_mime_end[] = N_("MIME parse error: Unexpected end of %s/%s article");
-constext txt_error_mime_start[] = N_("MIME parse error: Start boundary whilst reading headers");
+#ifdef DEBUG
+	constext txt_error_mime_end[] = N_("MIME parse error: Unexpected end of %s/%s article");
+	constext txt_error_mime_start[] = N_("MIME parse error: Start boundary whilst reading headers");
+#endif /* DEBUG */
 constext txt_error_newsgroups_poster[] = N_("\nError: \"poster\" is not allowed in Newsgroups!\n");
 constext txt_error_no_domain_name[] = N_("Can't get a (fully-qualified) domain-name!");
 constext txt_error_no_enter_permission[] = N_("No permissions to go into %s\n");
@@ -733,6 +735,7 @@ constext txt_post_history_menu[] = N_("Posted articles history");
 constext txt_post_history_menu_com[] = N_("Posted Articles Menu Commands");
 constext txt_post_history_lookup_failed[] = N_("Lookup failed\n");
 constext txt_post_history_op_unavail_for_reply[] = N_("Operation not available for replies by mail\n");
+constext txt_post_history_recursion[] = N_("Already in posted articles history level\n");
 constext txt_post_newsgroups[] = N_("Post to newsgroup(s) [%s]> ");
 constext txt_post_processing[] = N_("-- post processing started --");
 constext txt_post_processing_finished[] = N_("-- post processing completed --");

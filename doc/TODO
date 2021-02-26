@@ -181,10 +181,6 @@ o  add user defined screen layout at different levels (e.g. posting
    (done for selection, group and thread level)
    [20041025 Urs Janssen <urs@tin.org>]
 
-o  add jump to article in posting history screen from group, thread and
-   page level as it's done in selection level
-   [20210214 Urs Janssen <urs@tin.org>]
-
 o  allow a Message-ID on the cmd. line to jump to the given article
    [20170718 Urs Janssen <urs@tin.org>]
 
