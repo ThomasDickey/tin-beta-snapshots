@@ -445,7 +445,7 @@ read_config_file(
 			if (match_string(buf, "inews_prog=", tinrc.inews_prog, sizeof(tinrc.inews_prog)))
 				break;
 
-			if (match_integer(buf, "interactive_mailer=", &tinrc.interactive_mailer, INTERACTIVE_NONE))
+			if (match_integer(buf, "interactive_mailer=", &tinrc.interactive_mailer, (int) INTERACTIVE_NONE))
 				break;
 
 			break;
@@ -542,7 +542,7 @@ read_config_file(
 #endif /* HAVE_ALARM && SIGALRM */
 
 #ifdef HAVE_UNICODE_NORMALIZATION
-			if (match_integer(buf, "normalization_form=", &tinrc.normalization_form, NORMALIZE_MAX))
+			if (match_integer(buf, "normalization_form=", &tinrc.normalization_form, (int) NORMALIZE_MAX))
 				break;
 #endif /* HAVE_UNICODE_NORMALIZATION */
 

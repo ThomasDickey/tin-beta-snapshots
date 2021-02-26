@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -607,7 +607,7 @@ find_first_unread(
 
 	if ((p = group->newsrc.xbitmap)) {
 		end += group->newsrc.xbitlen / NBITS;
-		for (; *p == '\0' && p < end; p++, first += NBITS)
+		for (; p < end && *p == '\0'; p++, first += NBITS)
 			;
 	}
 	return first;
@@ -2552,7 +2552,6 @@ write_overview(
 			free(p);
 			if (article->refs) {
 				FreeIfNeeded(ref);
-				q = NULL;
 			}
 		}
 		if (i % (MODULO_COUNT_NUM * 20) == 0) /* TODO: -> lang.c */

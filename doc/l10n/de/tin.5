@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2021-02-14
+.\" Updated   : 2021-02-25
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -1150,13 +1150,15 @@ news.example.org /tmp/nrc\-ex example ex
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP
 .sp
 .RS
-Posting history. The file is written by \fB\%tin\fP(1)  and used by
-\fBDisplayPostHist\fP ('\fBW\fP') command. It should not be altered manually. Any
-line that starts with "#" is a comment. Blank lines are ignored. All other
-lines shall consist of at least four pipe\-separated fields, starting with a
-time stamp "dd\-mm\-yy", a single letter indicating the action which initiated
-the message, a group name or a mail address the message was sent to, the
-subject of the message and optionally the messages \*(rqMessage\-ID\*(rq if known.
+Verlaufsliste der geposteten Artikel. Die Datei wird von \fB\%tin\fP(1)
+geschrieben und vom Befehl \fBDisplayPostHist\fP ('\fBW\fP') verwendet. Sie sollte
+nicht manuell verändert werden. Jede Zeile, die mit "#" beginnt, ist ein
+Kommentar. Leerzeilen werden ignoriert. Alle anderen Zeilen müssen aus
+mindestens vier durch Pipes getrennten Feldern bestehen, beginnend mit einem
+Zeitstempel "dd\-mm\-yy", einem einzelnen Buchstaben, der die Aktion angibt,
+die die Nachricht ausgelöst hat, einem Gruppennamen oder einer Mailadresse,
+an die die Nachricht gesendet wurde, dem Subject der Nachricht und optional
+der \*(rqMessage\-ID\*(rq der Nachricht, falls bekannt.
 .RE
 .PP
 
@@ -1857,9 +1859,7 @@ are allowed:
 .IP 0 3
 \fBNo\fP (default), no post processing is done.
 .IP 1
-\fBShell archives\fP, unpacking of multi\-part \fB\%shar\fP(1)  files only. Because
-the shell archive may contain commands you may not want to be executed, be
-careful with this option.
+\fBShell archives\fP, unpacking of multi\-part \fB\%shar\fP(1)  files only.
 .IP 2
 \fBYes\fP, binary attachments and data will be decoded and saved.
 .RE

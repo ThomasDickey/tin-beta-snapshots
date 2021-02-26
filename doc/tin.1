@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2021-02-21
+.\" Updated   : 2021-02-25
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -2173,6 +2173,8 @@ file. Default is ON.
 .TP
 .B Post process saved articles (post_process_type)
 This specifies whether to perform post processing on saved articles.
+Because the shell archive may contain commands you may not want to
+be executed, be careful when extracting shell archives.
 The following values are allowed:
 .RS +.5i
 .IP 0 3

@@ -523,6 +523,11 @@ post_hist_page(
 	t_function func;
 	t_menu *oldmenu = NULL;
 
+	if (post_hist_list) {
+		info_message(_(txt_post_history_recursion));
+		return FALSE;
+	}
+
 	if (currmenu)
 		oldmenu = currmenu;
 	phmenu.curr = 0;
@@ -705,7 +710,7 @@ build_post_hist_line(
 	t_posted *lptr;
 	char *tmp = NULL;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	int len = (int)((size_t)cCOLS * MB_CUR_MAX);
+	int len = (int)((size_t) cCOLS * MB_CUR_MAX);
 	wchar_t *wtmp, *wtmp2;
 #else
 	int len = cCOLS;
@@ -744,13 +749,13 @@ build_post_hist_line(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 #if 1
-	snprintf(sptr, (size_t)len, "  %s  %8s  %c  %-*.*s  \"%s\"", tin_ltoa(i + 1, 4),
+	snprintf(sptr, (size_t) len, "  %s  %8s  %c  %-*.*s  \"%s\"", tin_ltoa(i + 1, 4),
 			lptr->date, lptr->action,
 			group_len, group_len, BlankIfNull(tmp),
 			lptr->subj);
 #else
 	/* also show MID */
-	snprintf(sptr, (size_t)len, "  %s  %8s  %c  %-*.*s  \"%s\" %s", tin_ltoa(i + 1, 4),
+	snprintf(sptr, (size_t) len, "  %s  %8s  %c  %-*.*s  \"%s\" %s", tin_ltoa(i + 1, 4),
 			lptr->date, lptr->action,
 			group_len, group_len, BlankIfNull(tmp),
 			lptr->subj,
@@ -764,7 +769,7 @@ build_post_hist_line(
 			free(wtmp);
 			FreeIfNeeded(tmp);
 			if ((tmp = wchar_t2char(wtmp2)) != NULL) {
-				snprintf(sptr, (size_t)len, "%s", tmp);
+				snprintf(sptr, (size_t) len, "%s", tmp);
 				FreeAndNull(tmp);
 			}
 			free(wtmp2);
@@ -792,17 +797,37 @@ process_post_hist(
 	int n)
 {
 	t_posted *lptr;
-	int ret;
+	int ret = LOOKUP_UNAVAIL;
 
 	lptr = find_post_hist(n);
 
 	if (strchr(lptr->group, '@'))
 		ret = LOOKUP_REPLY;
 #ifdef NNTP_ABLE
-	else
-		ret = show_article_by_msgid(lptr->mid);
+	else if (read_news_via_nntp && !read_saved_news) {
+			ret = show_article_by_msgid(lptr->mid);
+	}
 #endif /* NNTP_ABLE */
+	/*
+	 * reading from local spool or saved news
+	 * - select level is not covered
+	 * - if called from thread- or page-level one will be taken back
+	 *   to group-level after viewing an article
+	 */
+	else {
+		ret = LOOKUP_ART_UNAVAIL;
+		if (curr_group != NULL) { /* ! select level */
+			struct t_msgid *msgid;
 
+			if ((msgid = find_msgid(lptr->mid)) != NULL) {
+				if (msgid->article != ART_UNAVAILABLE) {
+					if (show_page(curr_group, msgid->article, NULL))
+							ret = LOOKUP_OK;
+				}
+			}
+		} else
+			ret = LOOKUP_UNAVAIL;
+	}
 	return ret;
 }
 
@@ -850,8 +875,8 @@ build_post_hist_list(
 
 		n = 0;
 		q = my_strdup(buf);
-		if ((p = tin_strtok(q, "|")) != NULL) {
-			for (; (p = tin_strtok(NULL, "|")) != NULL; n++)
+		if (tin_strtok(q, "|") != NULL) {
+			for (; tin_strtok(NULL, "|") != NULL; n++)
 				;
 		}
 		free(q);
@@ -3489,7 +3514,7 @@ post_response(
 
 				/* skip headers + header/body separator */
 				while (fgets(buffer, (int) sizeof(buffer), pgart.raw) != NULL) {
-					offset = (long) ((size_t)offset + strlen(buffer));
+					offset = (long) ((size_t) offset + strlen(buffer));
 					if (buffer[0] == '\n' || buffer[0] == '\r')
 						break;
 				}

@@ -1134,7 +1134,7 @@ wstrunc(
 			tail = char2wchar_t(TRUNC_TAIL);
 
 		len_tail = tail ? wcslen(tail) : 0;
-		wtmp2 = wcspart(wtmp, (int) ((size_t)len - len_tail), FALSE);
+		wtmp2 = wcspart(wtmp, (int) ((size_t) len - len_tail), FALSE);
 		free(wtmp);
 		wtmp = my_realloc(wtmp2, sizeof(wchar_t) * (wcslen(wtmp2) + len_tail + 1));	/* wtmp2 isn't valid anymore and doesn't have to be free()ed */
 		if (!tail)
