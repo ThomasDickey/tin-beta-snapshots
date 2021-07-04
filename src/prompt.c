@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-07-02
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -523,19 +523,35 @@ prompt_option_char(
 	enum option_enum option) /* return value is always ignored */
 {
 	char prompt[LEN];
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t input[2];
+	wchar_t *variable = OPT_CHAR_list[option_table[option].var_index];
+	int max_chars = (int) sizeof(wchar_t) + 1;
+	wchar_t *wp;
+	char *p;
+	char *curr_val;
+#else
 	char input[2];
-	char *p = &input[0];
 	char *variable = OPT_CHAR_list[option_table[option].var_index];
+	char *p = &input[0];
+	char *wp = p;
+	char *curr_val = p;
+	int max_chars = 1;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	input[0] = *variable;
 	input[1] = '\0';
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if ((curr_val = wchar_t2char(input))) {
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	do {
 		show_menu_help(option_table[option].txt->help);
 		MoveCursor(option_row(option), 0);
 		fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
 
-		if ((p = tin_getline(prompt, 0, p, 1, FALSE, HIST_OTHER)) == NULL) {
+		if ((p = tin_getline(prompt, 0, curr_val, max_chars, FALSE, HIST_OTHER)) == NULL) {
 			clear_message();
 			return FALSE;
 		}
@@ -543,7 +559,17 @@ prompt_option_char(
 			info_message(_(txt_info_enter_valid_character));
 	} while (!*p);
 
-	*variable = p[0];
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if ((wp = char2wchar_t(p))) {
+			*variable = wp[0];
+			free(wp);
+		}
+		free(curr_val);
+	}
+#else
+	*variable = wp[0];
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	clear_message();
 	return TRUE;
 }

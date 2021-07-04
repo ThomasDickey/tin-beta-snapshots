@@ -57,7 +57,7 @@ use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.57";
+my $version = "1.1.58";
 
 my %config;
 
@@ -426,7 +426,7 @@ if (!$config{'nntp-pass'}) {
 }
 
 # instead of abort posting just to prefetch a Messsage-ID we should (try
-# to keep) the the session open instead
+# to) keep the session open instead
 if (!($config{'no-sign'} && $config{'no-canlock'})) {
 	if (! $config{'savedir'} && defined($Header{'newsgroups'}) && !defined($Header{'message-id'})) {
 		my $Server = AuthonNNTP();
@@ -513,6 +513,14 @@ if (! $config{'no-sign'}) {
 	$PGPCommand = getpgpcommand($config{'pgp-version'});
 }
 
+# exit with error if neither $Newsgroups nor any of $To, $Cc or $Bcc are set
+my $required = 0;
+foreach ('Newsgroups', 'To,', 'Cc', 'Bcc') {
+	$required++ if (defined($Header{lc($_)}));
+	last if $required;
+}
+die("$0: neither Newsgroups: nor any of To:, Cc:, or Bcc: present.\n") if (!$required);
+
 # (re)move mail-headers
 my ($To, $Cc, $Bcc, $Newsgroups) = '';
 $To = $Header{'to'} if (defined($Header{'to'}));
@@ -549,14 +557,6 @@ if (($To || $Cc || $Bcc) && $config{'sendmail'}) {
 
 	close($MAIL);
 }
-
-# exit with error if neither $Newsgroups nor any of $To, $Cc or $Bcc set
-my $required = 0;
-foreach ('Newsgroups', 'To,', 'Cc', 'Bcc') {
-	$required++ if (defined($Header{lc($_)}));
-	last if $required;
-}
-die("$0: neither Newsgroups: nor any of To:, Cc:, Bcc or present.\n") if (!$required);
 
 # Game over. Insert new coin.
 exit;
@@ -1363,7 +1363,7 @@ B<tinews.pl> is designed to be used with L<pgp(1)>-2.6.3,
 L<pgp(1)>-5, L<pgp(1)>-6, L<gpg(1)> and L<gpg2(1)>.
 
 B<tinews.pl> requires the following standard modules to be installed:
-L<Getopt::Long(3pm)>, L<Net::NNTP(3pm)>, <Time::Local(3pm)> and
+L<Getopt::Long(3pm)>, L<Net::NNTP(3pm)>, L<Time::Local(3pm)> and
 L<Term::Readline(3pm)>.
 
 NNTPS (NNTP with implicit TLS; RFC 4642 and RFC 8143) may be unavailable

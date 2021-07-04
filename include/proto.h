@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-07-02
  *  Notes     :
  *
  * Copyright (c) 1997-2021 Urs Janssen <urs@tin.org>
@@ -228,7 +228,11 @@ extern void set_first_screen_item(void);
 extern int group_page(struct t_group *group);
 extern t_bool group_mark_postprocess(int function, t_function feed_type, int respnum);
 extern void clear_note_area(void);
-extern void mark_screen(int screen_row, int screen_col, const char *value);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern void mark_screen(int screen_row, int screen_col, const wchar_t *value);
+#else
+	extern void mark_screen(int screen_row, int screen_col, const char *value);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 extern void pos_first_unread_thread(void);
 extern void show_group_page(void);
 

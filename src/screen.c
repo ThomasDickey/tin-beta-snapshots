@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-07-02
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -338,10 +338,10 @@ draw_arrow_mark(
 			StartInverse();
 			my_fputws(wtmp, stdout);
 			EndInverse();
-			if (mark_offset && wtmp[mark_offset] == tinrc.art_marked_selected) {
-				MoveCursor(line, mark_offset);
-				EndInverse();
-				my_fputwc((wint_t) wtmp[mark_offset], stdout);
+			if (mark_offset && wtmp[mark_offset + (art_mark_width - wcwidth(tinrc.art_marked_selected))] == tinrc.art_marked_selected) {
+				MoveCursor(line, mark_offset + (art_mark_width - wcwidth(tinrc.art_marked_selected)));
+/*				EndInverse(); */ /* needed? */
+				my_fputwc((wint_t) wtmp[mark_offset + (art_mark_width - wcwidth(tinrc.art_marked_selected))], stdout);
 			}
 			free(wtmp);
 		}
@@ -351,7 +351,7 @@ draw_arrow_mark(
 		EndInverse();
 		if (mark_offset && s[mark_offset] == tinrc.art_marked_selected) {
 			MoveCursor(line, mark_offset);
-			EndInverse();
+/*			EndInverse(); */ /* needed? */
 			my_fputc(s[mark_offset], stdout);
 		}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -392,10 +392,10 @@ erase_arrow(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if ((wtmp = char2wchar_t(s)) != NULL) {
 			my_fputws(wtmp, stdout);
-			if (mark_offset && wtmp[mark_offset] == tinrc.art_marked_selected) {
-				MoveCursor(line, mark_offset);
+			if (mark_offset && wtmp[mark_offset + (art_mark_width - wcwidth(tinrc.art_marked_selected))] == tinrc.art_marked_selected) {
+				MoveCursor(line, mark_offset + (art_mark_width - wcwidth(tinrc.art_marked_selected)));
 				StartInverse();
-				my_fputwc((wint_t) wtmp[mark_offset], stdout);
+				my_fputwc((wint_t) wtmp[mark_offset + (art_mark_width - wcwidth(tinrc.art_marked_selected))], stdout);
 				EndInverse();
 			}
 			free(wtmp);

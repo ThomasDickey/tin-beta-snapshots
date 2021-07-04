@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin 2.4.5\n"
+"Project-Id-Version: tin 2.6.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-25 22:29+0100\n"
-"PO-Revision-Date: 2020-02-25 22:30+0100\n"
+"POT-Creation-Date: 2021-06-28 17:25+0200\n"
+"PO-Revision-Date: 2021-06-28 17:27+0200\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -27,18 +27,18 @@ msgid "Reading %s\n"
 msgstr "Lese %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:1192
+#: src/art.c:1199
 msgid "Threading by multipart"
 msgstr "Multipart Threading"
 
 #. -> lang.c
-#: src/art.c:2479
+#: src/art.c:2486
 #, c-format
 msgid "Writing %s\n"
 msgstr "Schreibe %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:2558
+#: src/art.c:2565
 msgid "Writing overview cache..."
 msgstr "Schreibe Overview Cache..."
 
@@ -1687,12 +1687,12 @@ msgid ""
 "#     score=STRING      One of the two keywords: 'hot' or 'kill'.\n"
 "#   subj=STRING       Optional. Subject: line (e.g. How to be a wizard).\n"
 "#   from=STRING       Optional. From: line (e.g. *Craig Shergold*).\n"
-"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@ether.net>) "
+"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@example.net>) "
 "with\n"
 "#                     full references.\n"
 "#   msgid_last=STRING Optional. Like above, but with last reference only.\n"
 "#   msgid_only=STRING Optional. Like above, but without references.\n"
-"#   refs_only=STRING  Optional. References: line (e.g. <123@ether.net>) "
+"#   refs_only=STRING  Optional. References: line (e.g. <123@example.net>) "
 "without\n"
 "#                     Message-ID:\n"
 "#   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n"
@@ -1722,7 +1722,7 @@ msgstr ""
 "#                     'hot' oder 'kill'\n"
 "#   subj=ZEICHENKETTE Subject(Betreff). (z.B. How to be a wizard)\n"
 "#   from=ZEICHENKETTE From(Absender). (z.B. *Erika Mustermann*)\n"
-"#   msgid=Z.KETTE     Message-ID (z.B. <123@@example.com>) kommt in Message-"
+"#   msgid=Z.KETTE     Message-ID (z.B. <123@example.com>) kommt in Message-"
 "ID-\n"
 "#                     oder References-Zeile vor. Regel wirkt auf den "
 "Artikel\n"
@@ -1730,8 +1730,8 @@ msgstr ""
 "#   msgid_last=ZKETTE Message-ID-Header selbst und das letzte Element von\n"
 "#                     References. Regel wirkt auf Posting selbst oder\n"
 "#                     _direkte_ Antworten.\n"
-"#   msgid_only=ZKETTE Message-ID lautet (z.B. <123@@ether.net>).\n"
-"#   refs_only=Z.KETTE References-Header (z.B. <123@@ether.net>), kein\n"
+"#   msgid_only=ZKETTE Message-ID lautet (z.B. <123@example.net>).\n"
+"#   refs_only=Z.KETTE References-Header (z.B. <123@example.net>), kein\n"
 "#                     Vergleich mit Message-ID-Header.\n"
 "#   lines=[<>]?ZAHL   Zeilenzahl (Lines-Header)\n"
 "#   gnksa=[<>]?ZAHL   Rückgabewert der Funktion GNKSA parse_from()\n"
@@ -2538,7 +2538,7 @@ msgstr "Sucht rückwärts nach einem Gruppennamen"
 
 #: src/lang.c:507
 msgid " \t  (all searches are case-insensitive and wrap around)"
-msgstr " \t  (alle Suchen sind case-insensitive und beginnen am Ende von vorn)"
+msgstr " \t  (Suchen beachten Groß-/Klein. und beginnen am Ende von vorn)"
 
 #: src/lang.c:508
 msgid "search forwards for a group name"
@@ -3473,16 +3473,16 @@ msgid "Posted Articles Menu Commands"
 msgstr "Gepostete Artikel Menübefehle"
 
 #: src/lang.c:736
-msgid "Lookup failed\n"
-msgstr "Suche fehlgeschlagen\n"
+msgid "Lookup failed"
+msgstr "Suche fehlgeschlagen"
 
 #: src/lang.c:737
-msgid "Operation not available for replies by mail\n"
-msgstr "Nicht verfügbar für Antworten per Mail\n"
+msgid "Operation not available for replies by mail"
+msgstr "Nicht verfügbar für Antworten per Mail"
 
 #: src/lang.c:738
-msgid "Already in posted articles history level\n"
-msgstr "Bereits in der Historie der gesendeten Artikel\n"
+msgid "Already in posted articles history level"
+msgstr "Bereits in der Historie der gesendeten Artikel"
 
 #: src/lang.c:739
 #, c-format
@@ -4053,7 +4053,7 @@ msgstr ""
 "#             5=Message-ID: & letzter Reference: Eintrag ausschließlich\n"
 "#             6=Message-ID: Eintrag nur 7=Zeilen:\n"
 "# global=ON/OFF  ON=alle Gruppen OFF=nur für die aktuellen Gruppe\n"
-"# case=ON/OFF    ON=Filter case sensitive OFF=ignoriere case\n"
+"# case=ON/OFF    ON=Filter Groß-Kl. beachten OFF=Groß-Kl. ignorieren\n"
 "# expire=ON/OFF  ON=Verfallen nach default_filter_days OFF=verfällt nie\n"
 
 #: src/lang.c:887
@@ -4098,7 +4098,7 @@ msgstr "Thread"
 #: src/lang.c:898
 #, c-format
 msgid "Thread %4s of %4s"
-msgstr "Thread %4s v. %4s"
+msgstr "Thread %4s von %4s"
 
 #: src/lang.c:899
 msgid "Threading articles..."
@@ -4563,8 +4563,8 @@ msgstr "Schreibe Datei mit den Eigenschaften der Newsgruppen..."
 
 #: src/lang.c:999
 #, c-format
-msgid "%d Responses"
-msgstr "%d Antworten"
+msgid "%4d Responses"
+msgstr "%4d Antworten"
 
 #: src/lang.c:1001
 #, c-format
@@ -4671,23 +4671,23 @@ msgstr ""
 "# Farbeinstellungen\n"
 "# Mögliche Werte sind:\n"
 "#  -1 = Voreinstellung (weißer Vordergrund, schwarzer Hintergrund)\n"
-"#   0 = schwarz\n"
-"#   1 = rot\n"
-"#   2 = grün\n"
-"#   3 = braun\n"
-"#   4 = blau\n"
-"#   5 = rosa\n"
-"#   6 = cyan\n"
-"#   7 = weiß\n"
+"#   0 = Schwarz\n"
+"#   1 = Rot\n"
+"#   2 = Grün\n"
+"#   3 = Braun\n"
+"#   4 = Blau\n"
+"#   5 = Rosa\n"
+"#   6 = Cyan\n"
+"#   7 = Weiß\n"
 "# Diese sind *nur* für den Vordergrund:\n"
-"#   8 = grau\n"
-"#   9 = hellrot\n"
-"#  10 = hellgrün\n"
-"#  11 = gelb\n"
-"#  12 = hellblau\n"
-"#  13 = hellrosa\n"
-"#  14 = hellcyan\n"
-"#  15 = hellweiß\n"
+"#   8 = Grau\n"
+"#   9 = Hellrot\n"
+"#  10 = Hellgrün\n"
+"#  11 = Gelb\n"
+"#  12 = Hellblau\n"
+"#  13 = Hellrosa\n"
+"#  14 = Hellcyan\n"
+"#  15 = Hellweiß\n"
 "\n"
 
 #: src/lang.c:1055
@@ -6968,7 +6968,7 @@ msgid ""
 "# Default: 4 (blue)\n"
 msgstr ""
 "# Farbe des Hintergrunds für inversen Text\n"
-"# Voreinstellung: 4 (blau)\n"
+"# Voreinstellung: 4 (Blau)\n"
 
 #: src/lang.c:2220
 msgid "Color for inverse text (foreground)"
@@ -6980,7 +6980,7 @@ msgid ""
 "# Default: 7 (white)\n"
 msgstr ""
 "# Farbe des Vordergrunds für inversen Text\n"
-"# Voreinstellung: 7 (weiß)\n"
+"# Voreinstellung: 7 (Weiß)\n"
 
 #: src/lang.c:2227
 msgid "Color of text lines"
@@ -7004,7 +7004,7 @@ msgid ""
 "# Default: 3 (brown)\n"
 msgstr ""
 "# Farbe des Minihilfemenü\n"
-"# Voreinstellung: 3 (braun)\n"
+"# Voreinstellung: 3 (Braun)\n"
 
 #: src/lang.c:2241
 msgid "Color of help text"
@@ -7028,7 +7028,7 @@ msgid ""
 "# Default: 6 (cyan)\n"
 msgstr ""
 "# Farbe der letzten Zeile im Artikel\n"
-"# Voreinstellung: 6 (cyan)\n"
+"# Voreinstellung: 6 (Cyan)\n"
 
 #: src/lang.c:2255
 msgid "Color of quoted lines"
@@ -7040,7 +7040,7 @@ msgid ""
 "# Default: 2 (green)\n"
 msgstr ""
 "# Farbe der zitierten Zeilen\n"
-"# Voreinstellung: 2 (grün)\n"
+"# Voreinstellung: 2 (Grün)\n"
 
 #: src/lang.c:2262
 msgid "Color of twice quoted line"
@@ -7052,7 +7052,7 @@ msgid ""
 "# Default: 3 (brown)\n"
 msgstr ""
 "# Farbe von zweifach zitierten Zeilen\n"
-"# Voreinstellung: 3 (braun)\n"
+"# Voreinstellung: 3 (Braun)\n"
 
 #: src/lang.c:2269
 msgid "Color of =>3 times quoted line"
@@ -7064,7 +7064,7 @@ msgid ""
 "# Default: 4 (blue)\n"
 msgstr ""
 "# Farbe von =>3-fach zitierten Zeilen\n"
-"# Voreinstellung: 4 (blau)\n"
+"# Voreinstellung: 4 (Blau)\n"
 
 #: src/lang.c:2276
 msgid "Color of article header lines"
@@ -7076,7 +7076,7 @@ msgid ""
 "# Default: 2 (green)\n"
 msgstr ""
 "# Farbe der Artikelheaderzeilen\n"
-"# Voreinstellung: 2 (grün)\n"
+"# Voreinstellung: 2 (Grün)\n"
 
 #: src/lang.c:2283
 msgid "Color of actual news header fields"
@@ -7088,7 +7088,7 @@ msgid ""
 "# Default: 9 (light red)\n"
 msgstr ""
 "# Farbe des angezeigten Headers\n"
-"# Voreinstellung: 9 (hellrot)\n"
+"# Voreinstellung: 9 (Hellrot)\n"
 
 #: src/lang.c:2290
 msgid "Color of article subject lines"
@@ -7100,7 +7100,7 @@ msgid ""
 "# Default: 6 (cyan)\n"
 msgstr ""
 "# Farbe der Subjectzeile\n"
-"# Voreinstellung: 6 (cyan)\n"
+"# Voreinstellung: 6 (Cyan)\n"
 
 #: src/lang.c:2297
 msgid "Color of external quotes"
@@ -7112,7 +7112,7 @@ msgid ""
 "# Default: 5 (pink)\n"
 msgstr ""
 "# Farbe des Fremdzitat-Textes\n"
-"# Voreinstellung: 5 (rosa)\n"
+"# Voreinstellung: 5 (Rosa)\n"
 
 #: src/lang.c:2304
 msgid "Color of response counter"
@@ -7124,7 +7124,7 @@ msgid ""
 "# Default: 2 (green)\n"
 msgstr ""
 "# Farbe des Antwortzählers\n"
-"# Voreinstellung: 2 (grün)\n"
+"# Voreinstellung: 2 (Grün)\n"
 
 #: src/lang.c:2311
 msgid "Color of sender (From:)"
@@ -7136,7 +7136,7 @@ msgid ""
 "# Default: 2 (green)\n"
 msgstr ""
 "# Farbe des Autors (From:)\n"
-"# Voreinstellung: 2 (grün)\n"
+"# Voreinstellung: 2 (Grün)\n"
 
 #: src/lang.c:2318
 msgid "Color of help/mail sign"
@@ -7148,7 +7148,7 @@ msgid ""
 "# Default: 4 (blue)\n"
 msgstr ""
 "# Farbe des Hilfe/Mail-Zeichens\n"
-"# Voreinstellung: 4 (blau)\n"
+"# Voreinstellung: 4 (Blau)\n"
 
 #: src/lang.c:2325
 msgid "Color of signatures"
@@ -7160,7 +7160,7 @@ msgid ""
 "# Default: 4 (blue)\n"
 msgstr ""
 "# Farbe von Signaturen\n"
-"# Voreinstellung: 4 (blau)\n"
+"# Voreinstellung: 4 (Blau)\n"
 
 #: src/lang.c:2332
 msgid "Color of highlighted URLs"
@@ -7184,7 +7184,7 @@ msgid ""
 "# Default: 5 (pink)\n"
 msgstr ""
 "# Farbe des wortgetreu darzustellenden Textes\n"
-"# Voreinstellung: 5 (rosa)\n"
+"# Voreinstellung: 5 (Rosa)\n"
 
 #: src/lang.c:2346
 msgid "Color of highlighting with *stars*"
@@ -7196,7 +7196,7 @@ msgid ""
 "# Default: 11 (yellow)\n"
 msgstr ""
 "# Farbe der Hervorhebung durch *Sterne*\n"
-"# Voreinstellung: 11 (gelb)\n"
+"# Voreinstellung: 11 (Gelb)\n"
 
 #: src/lang.c:2353
 msgid "Color of highlighting with _dash_"
@@ -7208,7 +7208,7 @@ msgid ""
 "# Default: 13 (light pink)\n"
 msgstr ""
 "# Farbe der Hervorhebung durch _Striche_\n"
-"# Voreinstellung: 13 (hellrosa)\n"
+"# Voreinstellung: 13 (Hellrosa)\n"
 
 #: src/lang.c:2360
 msgid "Color of highlighting with /slash/"
@@ -7220,7 +7220,7 @@ msgid ""
 "# Default: 14 (light cyan)\n"
 msgstr ""
 "# Farbe der Hervorhebung durch /Schrägstriche/\n"
-"# Voreinstellung: 14 (hellcyan)\n"
+"# Voreinstellung: 14 (Hellcyan)\n"
 
 #: src/lang.c:2367
 msgid "Color of highlighting with -stroke-"
@@ -7232,7 +7232,7 @@ msgid ""
 "# Default: 12 (light blue)\n"
 msgstr ""
 "# Farbe der Hervorhebung durch -Durchstreichen-\n"
-"# Voreinstellung: 12 (hellblau)\n"
+"# Voreinstellung: 12 (Hellblau)\n"
 
 #: src/lang.c:2375
 msgid "Attr. of highlighting with *stars*"
@@ -8198,7 +8198,7 @@ msgstr ""
 "#   %n              Zeilennummer\n"
 "#   %R              Anzahl der Antworten im Thread\n"
 "#   %s              Subject\n"
-"#   %S              Score\n"
+"#   %S              Bewertung (Score)\n"
 
 #: src/lang.c:2864
 msgid "Format string for thread level"
@@ -8233,7 +8233,7 @@ msgstr ""
 "#   %M              Message-ID\n"
 "#   %m              Artikelkennzeichnungen\n"
 "#   %n              Zeilennummer\n"
-"#   %S              Score\n"
+"#   %S              Bewertung (Score)\n"
 "#   %T              Subject und/oder Baumdarstellung des Thread\n"
 
 #: src/lang.c:2883
@@ -8467,17 +8467,17 @@ msgid "reading from local spool"
 msgstr "Lese aus dem lokalen Spool"
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:749
+#: src/misc.c:753
 #, c-format
 msgid "Error: unlink %s"
 msgstr "Fehler: entferne %s"
 
-#: src/misc.c:3904
+#: src/misc.c:3933
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Version: %s %s Ausgabe %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3907
+#: src/misc.c:3936
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Version: %s %s Ausgabe %s (\"%s\")\n"
@@ -8499,25 +8499,25 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr "NNTP Verbindungsfehler. Beende..."
 
-#: src/nntplib.c:872 src/nntplib.c:1864
+#: src/nntplib.c:872 src/nntplib.c:1865
 msgid "Rejoin current group\n"
 msgstr "Betrete aktuelle Gruppe neu\n"
 
-#: src/nntplib.c:880 src/nntplib.c:1872
+#: src/nntplib.c:881 src/nntplib.c:1874
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Lese (%s)\n"
 
-#: src/nntplib.c:882
+#: src/nntplib.c:883
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "Sende letztes Kommando (%s) neu\n"
 
-#: src/nntplib.c:1512
+#: src/nntplib.c:1513
 msgid "CAPABILITIES did not announce READER"
 msgstr "CAPABILITIES hat READER nicht bekannt geben"
 
-#: src/nntplib.c:2018
+#: src/nntplib.c:2020
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8526,7 +8526,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "Kann %s nicht expandieren\n"
 
-#: src/post.c:1772
+#: src/post.c:1775
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8535,7 +8535,7 @@ msgstr ""
 "Zeile %d ist länger als %d Oktette und sollte gefaltet werden,\n"
 "aber die Kodierung ist weder auf %s noch auf %s gestellt.\n"
 
-#: src/post.c:1777
+#: src/post.c:1780
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8547,7 +8547,7 @@ msgstr ""
 "angeschaltet zu haben, oder der Artikel enthält keine 8Bit Zeichen\n"
 "und wird daher nicht automatisch gefaltet wird.\n"
 
-#: src/post.c:1779
+#: src/post.c:1782
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8556,7 +8556,7 @@ msgstr ""
 "Zeile %d ist länger als %d Oktette und sollte gefaltet werden,\n"
 "aber die Kodierung ist nicht auf %s gesetzt.\n"
 
-#: src/post.c:2767
+#: src/post.c:2769
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Poste: %.*s ..."
@@ -8603,7 +8603,7 @@ msgstr "Baue References-Bäume (%d/%d)..."
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1324
+#: src/rfc2047.c:1330
 #, c-format
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
@@ -8635,21 +8635,21 @@ msgstr "Alle"
 msgid " R"
 msgstr " R"
 
-#: src/xface.c:73
+#: src/xface.c:75
 msgid "Can't run slrnface: Not running in an xterm."
 msgstr "Kann slrnface nicht starten: tin läuft nicht in einem xterm."
 
-#: src/xface.c:85 src/xface.c:96 src/xface.c:111
+#: src/xface.c:87 src/xface.c:98 src/xface.c:113
 #, c-format
 msgid "Can't run slrnface: Environment variable %s not found."
 msgstr "Kann slrnface nicht starten: Umgebungsvariable %s nicht gefunden."
 
-#: src/xface.c:120 src/xface.c:152
+#: src/xface.c:122 src/xface.c:154
 #, c-format
 msgid "Can't run slrnface: failed to create %s"
 msgstr "Kann slrnface nicht starten: Anlegen von %s fehlgeschlagen"
 
-#: src/xface.c:130
+#: src/xface.c:132
 msgid ""
 "This directory is used to create named pipes for communication between\n"
 "slrnface and its parent process. It should normally be empty because\n"
@@ -8674,16 +8674,16 @@ msgstr ""
 "dass der NFS-Server spezielle Dateien in diesem Verzeichnis erzeugt,\n"
 "während slrnface ausgeführt wird. Diese sollten nicht gelöscht werden.\n"
 
-#: src/xface.c:144
+#: src/xface.c:146
 msgid "Can't run slrnface: couldn't construct fifo name."
 msgstr "Kann slrnface nicht starten: konnte FIFO-Name nicht erzeugen."
 
-#: src/xface.c:183
+#: src/xface.c:185
 #, c-format
 msgid "Slrnface abnormally exited, code %d."
 msgstr "Slrnface wurde mit Fehler %d beendet."
 
-#: src/xface.c:230
+#: src/xface.c:231
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Fehler %s beim Aufruf von Slrnface."

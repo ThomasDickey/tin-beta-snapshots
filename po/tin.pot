@@ -3,11 +3,12 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-25 22:29+0100\n"
+"POT-Creation-Date: 2021-06-28 17:25+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,18 +24,18 @@ msgid "Reading %s\n"
 msgstr ""
 
 #. TODO: -> lang.c
-#: src/art.c:1192
+#: src/art.c:1199
 msgid "Threading by multipart"
 msgstr ""
 
 #. -> lang.c
-#: src/art.c:2479
+#: src/art.c:2486
 #, c-format
 msgid "Writing %s\n"
 msgstr ""
 
 #. TODO: -> lang.c
-#: src/art.c:2558
+#: src/art.c:2565
 msgid "Writing overview cache..."
 msgstr ""
 
@@ -1445,12 +1446,12 @@ msgid ""
 "#     score=STRING      One of the two keywords: 'hot' or 'kill'.\n"
 "#   subj=STRING       Optional. Subject: line (e.g. How to be a wizard).\n"
 "#   from=STRING       Optional. From: line (e.g. *Craig Shergold*).\n"
-"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@ether.net>) "
+"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@example.net>) "
 "with\n"
 "#                     full references.\n"
 "#   msgid_last=STRING Optional. Like above, but with last reference only.\n"
 "#   msgid_only=STRING Optional. Like above, but without references.\n"
-"#   refs_only=STRING  Optional. References: line (e.g. <123@ether.net>) "
+"#   refs_only=STRING  Optional. References: line (e.g. <123@example.net>) "
 "without\n"
 "#                     Message-ID:\n"
 "#   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n"
@@ -3084,15 +3085,15 @@ msgid "Posted Articles Menu Commands"
 msgstr ""
 
 #: src/lang.c:736
-msgid "Lookup failed\n"
+msgid "Lookup failed"
 msgstr ""
 
 #: src/lang.c:737
-msgid "Operation not available for replies by mail\n"
+msgid "Operation not available for replies by mail"
 msgstr ""
 
 #: src/lang.c:738
-msgid "Already in posted articles history level\n"
+msgid "Already in posted articles history level"
 msgstr ""
 
 #: src/lang.c:739
@@ -4083,7 +4084,7 @@ msgstr ""
 
 #: src/lang.c:999
 #, c-format
-msgid "%d Responses"
+msgid "%4d Responses"
 msgstr ""
 
 #: src/lang.c:1001
@@ -7357,17 +7358,17 @@ msgid "reading from local spool"
 msgstr ""
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:749
+#: src/misc.c:753
 #, c-format
 msgid "Error: unlink %s"
 msgstr ""
 
-#: src/misc.c:3904
+#: src/misc.c:3933
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr ""
 
-#: src/misc.c:3907
+#: src/misc.c:3936
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr ""
@@ -7387,25 +7388,25 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr ""
 
-#: src/nntplib.c:872 src/nntplib.c:1864
+#: src/nntplib.c:872 src/nntplib.c:1865
 msgid "Rejoin current group\n"
 msgstr ""
 
-#: src/nntplib.c:880 src/nntplib.c:1872
+#: src/nntplib.c:881 src/nntplib.c:1874
 #, c-format
 msgid "Read (%s)\n"
 msgstr ""
 
-#: src/nntplib.c:882
+#: src/nntplib.c:883
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr ""
 
-#: src/nntplib.c:1512
+#: src/nntplib.c:1513
 msgid "CAPABILITIES did not announce READER"
 msgstr ""
 
-#: src/nntplib.c:2018
+#: src/nntplib.c:2020
 msgid "MOTD: "
 msgstr ""
 
@@ -7414,14 +7415,14 @@ msgstr ""
 msgid "couldn't expand %s\n"
 msgstr ""
 
-#: src/post.c:1772
+#: src/post.c:1775
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is neither set to %s nor to %s\n"
 msgstr ""
 
-#: src/post.c:1777
+#: src/post.c:1780
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -7429,14 +7430,14 @@ msgid ""
 "posting doesn't contain any 8bit chars and thus folding won't happen\n"
 msgstr ""
 
-#: src/post.c:1779
+#: src/post.c:1782
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is not set to %s\n"
 msgstr ""
 
-#: src/post.c:2767
+#: src/post.c:2769
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr ""
@@ -7482,7 +7483,7 @@ msgstr ""
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1324
+#: src/rfc2047.c:1330
 #, c-format
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
@@ -7508,21 +7509,21 @@ msgstr ""
 msgid " R"
 msgstr ""
 
-#: src/xface.c:73
+#: src/xface.c:75
 msgid "Can't run slrnface: Not running in an xterm."
 msgstr ""
 
-#: src/xface.c:85 src/xface.c:96 src/xface.c:111
+#: src/xface.c:87 src/xface.c:98 src/xface.c:113
 #, c-format
 msgid "Can't run slrnface: Environment variable %s not found."
 msgstr ""
 
-#: src/xface.c:120 src/xface.c:152
+#: src/xface.c:122 src/xface.c:154
 #, c-format
 msgid "Can't run slrnface: failed to create %s"
 msgstr ""
 
-#: src/xface.c:130
+#: src/xface.c:132
 msgid ""
 "This directory is used to create named pipes for communication between\n"
 "slrnface and its parent process. It should normally be empty because\n"
@@ -7536,16 +7537,16 @@ msgid ""
 "Do not try to remove them.\n"
 msgstr ""
 
-#: src/xface.c:144
+#: src/xface.c:146
 msgid "Can't run slrnface: couldn't construct fifo name."
 msgstr ""
 
-#: src/xface.c:183
+#: src/xface.c:185
 #, c-format
 msgid "Slrnface abnormally exited, code %d."
 msgstr ""
 
-#: src/xface.c:230
+#: src/xface.c:231
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr ""

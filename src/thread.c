@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-07-03
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -56,7 +56,11 @@ t_bool show_subject;
 /*
  * Local prototypes
  */
-static char get_art_mark(struct t_article *art);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static wchar_t get_art_mark(struct t_article *art);
+#else
+	static char get_art_mark(struct t_article *art);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 static int enter_pager(int art, t_bool ignore_unavail, int level);
 static int thread_catchup(t_function func, struct t_group *group);
 static int thread_tab_pressed(void);
@@ -85,7 +89,11 @@ static int ret_code = 0;		/* Set to < 0 when it is time to leave this menu */
 /*
  * returns the mark which should be used for this article
  */
-static char
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static wchar_t
+#else
+	static char
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 get_art_mark(
 	struct t_article *art)
 {
@@ -121,7 +129,6 @@ build_tline(
 	int l,
 	struct t_article *art)
 {
-	char mark = '\0';
 	int gap, fill, i;
 	size_t len, len_start, len_end;
 	struct t_msgid *ptr;
@@ -129,7 +136,11 @@ build_tline(
 	char *fmt = thrd_fmt.str;
 	char tmp[LEN];
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	char markbuf[sizeof(wchar_t) * 2 + 4];
 	wchar_t *wtmp, *wtmp2;
+	wchar_t mark[] = { L'\0', L'\0' };
+#else
+	char mark[] = { '\0', '\0' };
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 #ifdef USE_CURSES
@@ -237,11 +248,20 @@ build_tline(
 					thrd_fmt.mark_offset = (size_t) (mark_offset = strwidth(buffer) + 2);
 				if (art->tagged) {
 					strcat(buffer, tin_ltoa(art->tagged, 3));
-					mark = '\0';
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					mark[0] = L'\0';
+#else
+					mark[0] = '\0';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				} else {
+					mark[0] = get_art_mark(art);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					snprintf(markbuf, sizeof(markbuf), "%*c%lc", 2 + (art_mark_width - wcwidth(mark[0])), ' ', mark[0]);
+					strcat(buffer, markbuf);
+#else
 					strcat(buffer, "   ");
-					mark = get_art_mark(art);
-					buffer[strlen(buffer) - 1] = mark;		/* insert mark */
+					buffer[strlen(buffer) - 1] = mark[0];		/* insert mark */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				}
 				break;
 
@@ -374,8 +394,9 @@ build_tline(
 	free(buffer);
 #endif /* USE_CURSES */
 
-	if (mark == tinrc.art_marked_selected)
+	if (mark[0] == tinrc.art_marked_selected)
 		draw_mark_selected(l);
+	my_flush();
 }
 
 
@@ -428,7 +449,12 @@ thread_page(
 	t_pagerinfo *page)			/* !NULL if we must go direct to the pager */
 {
 	char key[MAXKEYLEN];
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t mark[] = { L'\0', L'\0' };
+	wchar_t *wtmp;
+#else
 	char mark[] = { '\0', '\0' };
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	int i, n;
 	t_artnum old_artnum;
 	t_bool repeat_search;
@@ -790,9 +816,16 @@ thread_page(
 				else {
 					t_bool tagged;
 
-					if ((tagged = tag_article(n)))
+					if ((tagged = tag_article(n))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+						if ((wtmp = char2wchar_t(tin_ltoa((&arts[n])->tagged, 3)))) {
+							mark_screen(thdmenu.curr, mark_offset - (3 - art_mark_width), wtmp);
+							free(wtmp);
+						}
+#else
 						mark_screen(thdmenu.curr, mark_offset - 2, tin_ltoa((&arts[n])->tagged, 3));
-					else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+					} else
 						update_thread_page();						/* Must update whole page */
 
 					/* Automatically advance to next art if not at end of thread */
@@ -831,7 +864,11 @@ thread_page(
 				arts[n].selected = (!(func == THREAD_TOGGLE_ARTICLE_SELECTION && arts[n].selected));	/* TODO: optimise? */
 /*				update_thread_page(); */
 				mark[0] = get_art_mark(&arts[n]);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				mark_screen(thdmenu.curr, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
+#else
 				mark_screen(thdmenu.curr, mark_offset, mark);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				if (thdmenu.curr + 1 < thdmenu.max)
 					move_down();
 				else
@@ -920,19 +957,36 @@ static void
 update_thread_page(
 	void)
 {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t mark[] = { L'\0', L'\0' };
+	wchar_t *wtmp;
+#else
 	char mark[] = { '\0', '\0' };
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	int i, the_index;
 
 	the_index = find_response(thread_basenote, thdmenu.first);
 	assert(thdmenu.first != 0 || the_index == thread_respnum);
 
 	for (i = thdmenu.first; i < thdmenu.first + NOTESLINES && i < thdmenu.max; ++i) {
-		if ((&arts[the_index])->tagged)
+		if ((&arts[the_index])->tagged) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if ((wtmp = char2wchar_t(tin_ltoa((&arts[the_index])->tagged, 3)))) {
+				mark_screen(i, mark_offset - (3 - art_mark_width), wtmp);
+				free(wtmp);
+			}
+#else
 			mark_screen(i, mark_offset - 2, tin_ltoa((&arts[the_index])->tagged, 3));
-		else {
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		} else {
 			mark[0] = get_art_mark(&arts[the_index]);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			mark_screen(i, mark_offset - (3 - art_mark_width), L"   ");	/* clear space used by tag numbering */
+			mark_screen(i, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
+#else
 			mark_screen(i, mark_offset - 2, "  ");	/* clear space used by tag numbering */
 			mark_screen(i, mark_offset, mark);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			if (mark[0] == tinrc.art_marked_selected)
 				draw_mark_selected(i);
 		}
@@ -1627,14 +1681,22 @@ thread_mark_postprocess(
 	t_function feed_type,
 	int respnum)
 {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t mark[] = { L'\0', L'\0' };
+#else
 	char mark[] = { '\0', '\0' };
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	int n;
 
 	switch (function) {
 		case (FEED_MARK_READ):
 			if (feed_type == FEED_ARTICLE) {
 				mark[0] = get_art_mark(&arts[respnum]);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				mark_screen(thdmenu.curr, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
+#else
 				mark_screen(thdmenu.curr, mark_offset, mark);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			} else
 				show_thread_page();
 
@@ -1647,7 +1709,11 @@ thread_mark_postprocess(
 		case (FEED_MARK_UNREAD):
 			if (feed_type == FEED_ARTICLE) {
 				mark[0] = get_art_mark(&arts[respnum]);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				mark_screen(thdmenu.curr, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
+#else
 				mark_screen(thdmenu.curr, mark_offset, mark);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				draw_thread_arrow();
 			} else
 				show_thread_page();

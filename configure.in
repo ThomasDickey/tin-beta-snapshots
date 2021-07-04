@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.4.6
+VERSION=2.6.0
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Define this to the package name])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define this to the package version])
 AC_SUBST(PACKAGE)

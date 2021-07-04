@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-03-04
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2021 Mike Gleason
@@ -167,7 +167,13 @@ msg_write_signature(
 			}
 			copy_fp(sigfp, fp);
 			fclose(sigfp);
-			chdir(cwd);
+			if (chdir(cwd) == -1) {
+#ifdef DEBUG
+				int e = errno;
+				if (debug & DEBUG_MISC)
+					error_message(2, "chdir(%s): Error: %s", cwd, strerror(e));
+#endif /* DEBUG */
+			}
 			return;
 		}
 
@@ -301,7 +307,13 @@ thrashdir(
 							 * empty dir so try again.
 							 */
 							dp = NULL;
-							chdir(cwd);
+							if (chdir(cwd) == -1) {
+#ifdef DEBUG
+								int e = errno;
+								if (debug & DEBUG_MISC)
+									error_message(2, "chdir(%s): Error: %s", cwd, strerror(e));
+#endif /* DEBUG */
+							}
 						}
 					} else
 						dp = NULL;

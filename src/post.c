@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-03-14
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -797,7 +797,7 @@ process_post_hist(
 	int n)
 {
 	t_posted *lptr;
-	int ret = LOOKUP_UNAVAIL;
+	int ret;
 
 	lptr = find_post_hist(n);
 
@@ -899,6 +899,9 @@ build_post_hist_list(
 		posted->action = buf[j];
 		j += 2;
 
+		/* TODO:
+		 * - '|' in local-parts of mail addresses will confuse the code
+		 */
 		for (k = 0; buf[j] != '|' && buf[j] != ','; j++) {
 			if (k < sizeof(posted->group) - 1)
 				posted->group[k++] = buf[j];
@@ -2395,8 +2398,7 @@ post_article_loop:
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_ISPELL && HAVE_PGP_GPG */
 
-			/* Superfluous force_command stuff not used in current code */
-			func = ( /* force_command ? ch_default : */ prompt_slk_response(func,
+			func = (prompt_slk_response(func,
 						post_post_keys, "%s", sized_message(&smsg, buf,
 						"" /* TODO: was note_h.subj */ )));
 			free(smsg);
@@ -2827,9 +2829,7 @@ fetch_postponed_article(
 		return FALSE;
 	}
 
-	fgets(line, (int) sizeof(line), in);
-
-	if (strncmp(line, "From ", 5) != 0) {
+	if (fgets(line, (int) sizeof(line), in) == NULL || strncmp(line, "From ", 5) != 0) {
 		fclose(in);
 		fclose(out);
 		fclose(tmp);
@@ -5634,6 +5634,7 @@ get_cancel_lock_algo(
 	}
 }
 
+
 /*
  * build_canlock(messageid, secret)
  * returns *(cancel-lock) or NULL
@@ -5690,40 +5691,39 @@ get_secret(
 		error_message(2, _(txt_cannot_open), path_secret);
 #	endif /* DEBUG */
 		return NULL;
-	} else {
-		if ((fd = fileno(fp_secret)) == -1) {
-			fclose(fp_secret);
-			return NULL;
-		}
-		if (fstat(fd, &statbuf) == -1) {
-			fclose(fp_secret);
-			return NULL;
-		}
+	}
+
+	if ((fd = fileno(fp_secret)) == -1) {
+		fclose(fp_secret);
+		return NULL;
+	}
+
 #	ifndef FILE_MODE_BROKEN
-		if ((S_ISREG(statbuf.st_mode)) && ((statbuf.st_mode|S_IRUSR|S_IWUSR) != (S_IRUSR|S_IWUSR|S_IFREG)) && (statbuf.st_size > 0)) {
+	if (fstat(fd, &statbuf) == -1) {
+		fclose(fp_secret);
+		return NULL;
+	}
+	if ((S_ISREG(statbuf.st_mode)) && ((statbuf.st_mode|S_IRUSR|S_IWUSR) != (S_IRUSR|S_IWUSR|S_IFREG)) && (statbuf.st_size > 0)) {
 #		ifdef DEBUG
-			error_message(4, _(txt_error_insecure_permissions), path_secret, statbuf.st_mode);
-#		else
+		error_message(4, _(txt_error_insecure_permissions), path_secret, statbuf.st_mode);
+#		else /* endif here? */
 #			ifdef HAVE_FCHMOD
-			fchmod(fd, S_IRUSR|S_IWUSR);
+		fchmod(fd, S_IRUSR|S_IWUSR);
 #			else
 #				ifdef HAVE_CHMOD
-			chmod(path_secret, S_IRUSR|S_IWUSR);
+		chmod(path_secret, S_IRUSR|S_IWUSR);
 #				endif /* HAVE_CHMOD */
 #			endif /* HAVE_FCHMOD */
 #		endif /* DEBUG */
-		}
-#	endif /* !FILE_MODE_BROKEN */
-		(void) fread(cancel_secret, HEADER_LEN - 1, 1, fp_secret);
-		fclose(fp_secret);
 	}
+#	endif /* !FILE_MODE_BROKEN */
 
-	cancel_secret[HEADER_LEN - 1] = '\0';
+	/* TODO: allow empty secret with BlankIfNull()? */
+	if ((ptr = tin_fgets(fp_secret, FALSE)) != NULL)
+		my_strncpy(cancel_secret, ptr, sizeof(cancel_secret) - 1);
 
-	if ((ptr = strchr(cancel_secret, '\n')))
-		*ptr = '\0';
-
-	return cancel_secret;
+	fclose(fp_secret);
+	return (*cancel_secret ? cancel_secret : NULL);
 }
 #endif /* USE_CANLOCK */
 

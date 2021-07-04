@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2021-02-25
+.\" Updated   : 2021-02-27
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "December 24th, 2020" 2.4.6 "Usenet newsreader"
+.TH tin 5 "December 24th, 2020" 2.6.0 "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -370,7 +370,8 @@ quadruples) of user's mailgroups (requires \fB\%tin\fP(1)  to be build with
 mh\-mail\-handling support).
 .TP 
 \fBmail_group_name\fP
-must be the pathname of the mailbox relative to field #4 with / changed to .
+must be the pathname of the mailbox relative to field #4 with '/' changed to
+\&'.'
 .TP 
 \fBmaxnum\fP
 just put a large number here, something higher than the highest message in
@@ -2209,8 +2210,8 @@ Default is 0. This option does not affect lines within verbatim blocks.
 \fBSkip leading and trailing blank l.\fP, skip leading and trailing blank
 lines.
 .IP 4
-\fBCompact multiple between text\fP, replace multiple blank lines between
-textblocks with one blank line.
+\fBCompact multiple between text\fP, replace multiple blank lines between text
+blocks with one blank line.
 .IP 5
 \fBCompact multiple and skip leading\fP, 4 + 1
 .IP 6

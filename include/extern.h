@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-07-02
  *  Notes     :
  *
  * Copyright (c) 1997-2021 Iain Lea <iain@bricbrac.de>
@@ -359,7 +359,11 @@
 #	define txt_help_thd_C	txt_help_thd_BIGC
 #endif /* CASE_PROBLEM */
 
-extern char *OPT_CHAR_list[];
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern wchar_t *OPT_CHAR_list[];
+#else
+	extern char *OPT_CHAR_list[];
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 extern char *OPT_STRING_list[];
 extern char *nntp_server;
 extern char *tin_progname;
@@ -1420,6 +1424,7 @@ extern constext txt_uu_success[];
 extern int *my_group;
 extern int NOTESLINES;
 extern int _hp_glitch;
+extern int art_mark_width;
 extern int attrib_file_offset;
 extern int cCOLS;
 extern int cLINES;

@@ -2,7 +2,7 @@
 # Attempt to guess a canonical system name.
 #   Copyright 1992-2021 Free Software Foundation, Inc.
 
-timestamp='2021-01-25'
+timestamp='2021-04-21'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -133,7 +133,7 @@ fi
 
 UNAME_MACHINE=`(uname -m) 2>/dev/null` || UNAME_MACHINE=unknown
 UNAME_RELEASE=`(uname -r) 2>/dev/null` || UNAME_RELEASE=unknown
-UNAME_SYSTEM=`(uname -s) 2>/dev/null`  || UNAME_SYSTEM=unknown
+UNAME_SYSTEM=`(uname -s) 2>/dev/null` || UNAME_SYSTEM=unknown
 UNAME_VERSION=`(uname -v) 2>/dev/null` || UNAME_VERSION=unknown
 
 case "$UNAME_SYSTEM" in
@@ -260,6 +260,10 @@ case "$UNAME_MACHINE:$UNAME_SYSTEM:$UNAME_RELEASE:$UNAME_VERSION" in
     *:OpenBSD:*:*)
 	UNAME_MACHINE_ARCH=`arch | sed 's/OpenBSD.//'`
 	echo "$UNAME_MACHINE_ARCH"-unknown-openbsd"$UNAME_RELEASE"
+	exit ;;
+    *:SecBSD:*:*)
+	UNAME_MACHINE_ARCH=`arch | sed 's/SecBSD.//'`
+	echo "$UNAME_MACHINE_ARCH"-unknown-secbsd"$UNAME_RELEASE"
 	exit ;;
     *:LibertyBSD:*:*)
 	UNAME_MACHINE_ARCH=`arch | sed 's/^.*BSD\.//'`
@@ -585,7 +589,7 @@ EOF
 	exit ;;
     ????????:AIX?:[12].1:2)   # AIX 2.2.1 or AIX 2.1.1 is RT/PC AIX.
 	echo romp-ibm-aix     # uname -m gives an 8 hex-code CPU id
-	exit ;;               # Note that: echo "'`uname -s`'" gives 'AIX '
+	exit ;;               # Note that: echo "'$(uname -s)'" gives 'AIX '
     i*86:AIX:*:*)
 	echo i386-ibm-aix
 	exit ;;
@@ -949,7 +953,7 @@ EOF
 	if test "$?" = 0 ; then LIBC=gnulibc1 ; fi
 	echo "$UNAME_MACHINE"-unknown-linux-"$LIBC"
 	exit ;;
-    arc:Linux:*:* | arceb:Linux:*:*)
+    arc:Linux:*:* | arceb:Linux:*:* | arc64:Linux:*:*)
 	echo "$UNAME_MACHINE"-unknown-linux-"$LIBC"
 	exit ;;
     arm*:Linux:*:*)
@@ -1652,9 +1656,9 @@ This script (version $timestamp), has failed to recognize the
 operating system you are using. If your script is old, overwrite *all*
 copies of config.guess and config.sub with the latest versions from:
 
-  https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess
+  https://git.savannah.gnu.org/cgit/config.git/plain/config.guess
 and
-  https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub
+  https://git.savannah.gnu.org/cgit/config.git/plain/config.sub
 EOF
 
 year=`echo $timestamp | sed 's,-.*,,'`

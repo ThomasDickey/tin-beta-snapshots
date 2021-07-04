@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-06-28
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1353,31 +1353,6 @@ draw_page_header(
 	}
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	/* convert to wide-char format strings */
-	fmt_thread = char2wchar_t(_(txt_thread_x_of_n));
-	fmt_resp = char2wchar_t(_(txt_art_x_of_n));
-
-	/*
-	 * determine the needed space for the text at the right hand margin
-	 * the formatting info (%4s) needs 3 positions but we need 4 positions
-	 * on the screen for each counter.
-	 */
-	if (fmt_thread && fmt_resp)
-		right_len = MAX((wcswidth(fmt_thread, wcslen(fmt_thread)) - 6 + 8), (wcswidth(fmt_resp, wcslen(fmt_resp)) - 6 + 8));
-	else if (fmt_thread)
-		right_len = wcswidth(fmt_thread, wcslen(fmt_thread)) - 6 + 8;
-	else if (fmt_resp)
-		right_len = wcswidth(fmt_resp, wcslen(fmt_resp)) - 6 + 8;
-	else
-		right_len = 0;
-	FreeIfNeeded(fmt_thread);
-	FreeIfNeeded(fmt_resp);
-
-	/*
-	 * limit right_len to cCOLS / 3
-	 */
-	if (right_len > cCOLS / 3 + 1)
-		right_len = cCOLS / 3 + 1;
 
 #	ifdef HAVE_COLOR
 	fcol(tinrc.col_head);
@@ -1387,6 +1362,26 @@ draw_page_header(
 	 * first line
 	 */
 	cur_pos = 0;
+
+	/* convert to wide-char format string */
+	fmt_thread = char2wchar_t(_(txt_thread_x_of_n));
+
+	/*
+	 * Determine the needed space for the text at the right hand margin.
+	 * The formatting info (%4s) needs 3 positions but we need 4 positions
+	 * on the screen for each counter.
+	 */
+	if (fmt_thread)
+		right_len = wcswidth(fmt_thread, wcslen(fmt_thread)) - 6 + 8;
+	else
+		right_len = 0;
+	FreeIfNeeded(fmt_thread);
+
+	/*
+	 * limit right_len to cCOLS / 3
+	 */
+	if (right_len > cCOLS / 3 + 1)
+		right_len = cCOLS / 3 + 1;
 
 	/* date */
 	if ((wtmp = char2wchar_t(buf)) != NULL) {
@@ -1446,6 +1441,30 @@ draw_page_header(
 	 * second line
 	 */
 	cur_pos = 0;
+
+	/*
+	 * Convert to wide-char format string and determine the needed space
+	 * for the text at the right hand margin. The formatting info (%4s)
+	 * needs 3 positions but we need 4 positions on the screen for each
+	 * counter.
+	 */
+
+	right_len = 0;
+	if (whichresp && (fmt_resp = char2wchar_t(_(txt_art_x_of_n)))) {
+		right_len = wcswidth(fmt_resp, wcslen(fmt_resp)) - 6 + 8;
+	} else {
+		if ((!x_resp && (fmt_resp = char2wchar_t(_(txt_no_responses)))) || (x_resp == 1 && (fmt_resp = char2wchar_t(_(txt_1_resp)))))
+			right_len = wcswidth(fmt_resp, wcslen(fmt_resp));
+		else if ((fmt_resp = char2wchar_t(_(txt_x_resp))))
+			right_len = wcswidth(fmt_resp, wcslen(fmt_resp)) - 3 + 4;
+	}
+	FreeIfNeeded(fmt_resp);
+
+	/*
+	 * limit right_len to cCOLS / 3
+	 */
+	if (right_len > cCOLS / 3 + 1)
+		right_len = cCOLS / 3 + 1;
 
 	/* line count */
 	if (arts[this_resp].line_count < 0)
@@ -1605,12 +1624,6 @@ draw_page_header(
 	my_fputs(cCRLF, stdout);
 
 #else /* !MULTIBYTE_ABLE || NO_LOCALE */
-	/*
-	 * determine the needed space for the text at the right hand margin
-	 * the formatting info (%4s) needs 3 positions but we need 4 positions
-	 * on the screen for each counter
-	 */
-	right_len = MAX((strlen(_(txt_thread_x_of_n)) - 6 + 8), (strlen(_(txt_art_x_of_n)) - 6 + 8));
 
 #	ifdef HAVE_COLOR
 	fcol(tinrc.col_head);
@@ -1620,6 +1633,13 @@ draw_page_header(
 	 * first line
 	 */
 	cur_pos = 0;
+
+	/*
+	 * determine the needed space for the text at the right hand margin
+	 * the formatting info (%4s) needs 3 positions but we need 4 positions
+	 * on the screen for each counter
+	 */
+	right_len = strlen(_(txt_thread_x_of_n)) - 6 + 8;
 
 	/* date */
 	my_fputs(buf, stdout);
@@ -1670,6 +1690,22 @@ draw_page_header(
 	 * second line
 	 */
 	cur_pos = 0;
+
+	/*
+	 * determine the needed space for the text at the right hand margin
+	 * the formatting info (%4s) needs 3 positions but we need 4 positions
+	 * on the screen for each counter
+	 */
+	if (whichresp) {
+		right_len = strlen(_(txt_art_x_of_n)) - 6 + 8;
+	} else {
+		if (!x_resp)
+			right_len = strlen(_(txt_no_responses));
+		else if (x_resp == 1)
+			right_len = strlen(_(txt_1_resp));
+		else
+			right_len = strlen(_(txt_x_resp)) - 3 + 4;
+	}
 
 	/* line count */
 	/* an accurate line count will appear in the footer anymay */
@@ -1929,13 +1965,13 @@ prompt_response(
 
 	clear_message();
 
-	if ((num = (prompt_num(ch, _(txt_select_art)) - 1)) == -1) {
+	if ((num = prompt_num(ch, _(txt_select_art))) < 0) {
 		clear_message();
 		return -1;
 	}
 
 	if ((i = which_thread(curr_respnum)) >= 0)
-		return find_response(i, num);
+		return find_response(i, num - 1);
 	else
 		return -1;
 }

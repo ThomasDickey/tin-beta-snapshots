@@ -1,17 +1,24 @@
--- 2.4.6 release 20210225 "" --
+-- 2.6.0 release 20210703 "" --
 
  027) Dennis Preiser <dennis@d--p.de>
+      ADD. allow multibyte chars in art_marked_*
       ADD. jump to article in posting history screen
       ADD. untaint variable used for connection info output
       ADD. skip_scope() to check if the attribute is set
+      ADD. right-justify txt_thread_x_of_n and txt_x_resp in page level
       BUG. crash when trying to respond to an article with an empty Subject
       BUG. unfinished rfc2047 encodings may lead to out of bound reads
       BUG. hypothetic resource leak in lookup_msgid()
       BUG. swapped check to avoid possible out of bound read in
            find_first_unread()
-      FIX. art.c, attrib.c, group.c, help.c, keymap.c, lang.c, nntplib.c
-           page.c, post.c, rfc2047.c, search.c, select.c, signal.c, thread.c
-           extern.h, keymap.h, proto.h, tin.h
+      BUG. aborting jump to n-th article in thread in page level switched
+           to 1st article in thread instead of doing nothing
+      BUG. possible integer overflow if high watermark equals maximal
+           possible article number supporetd
+      FIX. art.c, attrib.c, config.c, group.c, help.c, init.c, keymap.c, lang.c
+           misc.c, newsrc.c, nntplib.c, options_menu.c, page.c, post.c
+           prompt.c, rfc2047.c, screen.c, search.c, select.c, signal.c
+           thread.c, extern.h, keymap.h, proto.h, tin.h, tinrc.h
 
  026) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. update configure macros
@@ -38,6 +45,8 @@
            could lead to a crash
       BUG. get_initials() may leave initials uninitiaized
       BUG. detection of idn_decodename() from libidnkit may fail
+      BUG. gnksa parser still prohibited some chars in dqotes which are
+           allowed since RFC 5322
       ADD. replace elm(1) with mutt(1) in examples
       ADD. update included libcanlock
       ADD. config.guess, config.sub update
@@ -45,12 +54,14 @@
       ADD. quit early if screen is too small, reduce MIN_COLUMNS_ON_TERMINAL
            from 50 to 40
       REM. some unnecessary initializations
-      FIX. art.c, attrib.c, charset.c, config.c, debug.c, feed.c, global.c
-           group.c, help.c, inews.c, init.c, lang.c, main.c, memory.c, misc.c
-           options_menu.c, page.c, post.c, rfc2046.c, save.c, search.c
-           string.c, thread.c, extern.h, proto.h, tin.h, tinrc.h, trace.h
-           version.h, tincfg.tbl, tin.[15], libcanlock/*, expand_aliases.tgz
-           config.guess, config.sub, configure[.in]
+      ADD. suppress some unused-result warnings
+      FIX. art.c, attrib.c, charset.c, config.c, cook.c, debug.c, feed.c
+           global.c, group.c, help.c, inews.c, init.c, lang.c, main.c
+           makecfg.c, memory.c, misc.c, nntplib.c, options_menu.c, page.c
+           pgp.c, post.c, rfc2046.c, rfc2047.c, save.c, search.c, sigfile.c
+           string.c, tcurses.c, thread.c, xface.c, extern.h, proto.h, tin.h
+           tinrc.h, trace.h, version.h, tincfg.tbl, tin.[15], libcanlock/*
+           expand_aliases.tgz, config.guess, config.sub, configure[.in]
 
  024) Matt Anton <tin@lv223.org>
       ADD. updated French translation

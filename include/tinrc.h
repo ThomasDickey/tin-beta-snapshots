@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2021-02-01
+ *  Updated   : 2021-07-02
  *  Notes     :
  *
  * Copyright (c) 1999-2021 Jason Faultless <jason@altarstone.com>
@@ -56,15 +56,27 @@ struct t_config {
 	/*
 	 * Chars used to show article status
 	 */
-	char art_marked_deleted;
-	char art_marked_inrange;	/* misnomer, as it's also used for other ranges */
-	char art_marked_return;
-	char art_marked_selected;
-	char art_marked_recent;
-	char art_marked_unread;
-	char art_marked_read;
-	char art_marked_killed;
-	char art_marked_read_selected;
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		wchar_t art_marked_deleted;
+		wchar_t art_marked_inrange;	/* misnomer, as it's also used for other ranges */
+		wchar_t art_marked_return;
+		wchar_t art_marked_selected;
+		wchar_t art_marked_recent;
+		wchar_t art_marked_unread;
+		wchar_t art_marked_read;
+		wchar_t art_marked_killed;
+		wchar_t art_marked_read_selected;
+#	else
+		char art_marked_deleted;
+		char art_marked_inrange;	/* misnomer, as it's also used for other ranges */
+		char art_marked_return;
+		char art_marked_selected;
+		char art_marked_recent;
+		char art_marked_unread;
+		char art_marked_read;
+		char art_marked_killed;
+		char art_marked_read_selected;
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	char editor_format[PATH_LEN];		/* editor + parameters  %E +%N %F */
 	char default_goto_group[HEADER_LEN];		/* default for the 'g' command */
 	char default_mail_address[HEADER_LEN];
@@ -234,24 +246,24 @@ struct t_config {
 	t_bool sigdashes;					/* set TRUE to prepend every signature with dashes */
 	t_bool signature_repost;			/* set TRUE to add signature when reposting articles */
 	t_bool start_editor_offset;
-#ifndef USE_CURSES
+#	ifndef USE_CURSES
 		t_bool strip_blanks;
-#endif /* !USE_CURSES */
+#	endif /* !USE_CURSES */
 	t_bool strip_newsrc;
 	t_bool tex2iso_conv;			/* convert "a to Umlaut-a */
 	t_bool thread_catchup_on_exit;		/* catchup thread with left arrow key or not */
 	t_bool unlink_article;
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		t_bool utf8_graphics;				/* use utf-8 characters for line drawing */
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	t_bool verbatim_handling;			/* Detection of verbatim blocks */
 #	ifdef HAVE_COLOR
 		t_bool extquote_handling;		/* Detection of quoted text from external sources */
 #	endif /* HAVE_COLOR */
 	char inews_prog[PATH_LEN];
-#ifdef USE_CANLOCK
+#	ifdef USE_CANLOCK
 		int cancel_lock_algo;			/* algorithm used for Cancel-Lock/Cancel-Key */
-#endif /* USE_CANLOCK */
+#	endif /* USE_CANLOCK */
 	int interactive_mailer;			/* invoke user's mailreader */
 	t_bool use_mouse;					/* enables/disables mouse support under xterm */
 #	ifdef HAVE_KEYPAD
@@ -312,13 +324,13 @@ struct t_config {
 	int attrib_quick_kill_header;
 	int attrib_quick_select_header;
 	int attrib_mail_mime_encoding;
-#if defined(HAVE_ALARM) && defined(SIGALRM)
+#	if defined(HAVE_ALARM) && defined(SIGALRM)
 		/*
 		 * # seconds after which a read from the NNTP will timeout
 		 * NB: This is different from the NNTP server timing us out due to inactivity
 		 */
 		int nntp_read_timeout_secs;
-#endif /* HAVE_ALARM && SIGALRM */
+#	endif /* HAVE_ALARM && SIGALRM */
 	int attrib_post_mime_encoding;
 	int attrib_post_process_type;
 	int attrib_show_author;

@@ -1111,7 +1111,7 @@ rm -f conftest.sh
 ac_config_headers="$ac_config_headers include/autoconf.h:include/autoconf.hin"
 
 PACKAGE=tin
-VERSION=2.4.6
+VERSION=2.6.0
 
 cat >>confdefs.h <<EOF
 #define PACKAGE "$PACKAGE"

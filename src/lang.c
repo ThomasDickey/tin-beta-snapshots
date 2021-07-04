@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-06-28
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -292,11 +292,11 @@ constext txt_filter_file[] = N_("# Format:\n\
 #     score=STRING      One of the two keywords: 'hot' or 'kill'.\n\
 #   subj=STRING       Optional. Subject: line (e.g. How to be a wizard).\n\
 #   from=STRING       Optional. From: line (e.g. *Craig Shergold*).\n\
-#   msgid=STRING      Optional. Message-ID: line (e.g. <123@ether.net>) with\n\
+#   msgid=STRING      Optional. Message-ID: line (e.g. <123@example.net>) with\n\
 #                     full references.\n\
 #   msgid_last=STRING Optional. Like above, but with last reference only.\n\
 #   msgid_only=STRING Optional. Like above, but without references.\n\
-#   refs_only=STRING  Optional. References: line (e.g. <123@ether.net>) without\n\
+#   refs_only=STRING  Optional. References: line (e.g. <123@example.net>) without\n\
 #                     Message-ID:\n\
 #   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n\
 #   gnksa=[<>]?NUM    Optional. GNKSA parse_from() return code. '<' or '>' opt.\n\
@@ -733,9 +733,9 @@ error is temporary or otherwise correctable, you can postpone the article\n\
 and pick it up again with ^O later.\n");
 constext txt_post_history_menu[] = N_("Posted articles history");
 constext txt_post_history_menu_com[] = N_("Posted Articles Menu Commands");
-constext txt_post_history_lookup_failed[] = N_("Lookup failed\n");
-constext txt_post_history_op_unavail_for_reply[] = N_("Operation not available for replies by mail\n");
-constext txt_post_history_recursion[] = N_("Already in posted articles history level\n");
+constext txt_post_history_lookup_failed[] = N_("Lookup failed");
+constext txt_post_history_op_unavail_for_reply[] = N_("Operation not available for replies by mail");
+constext txt_post_history_recursion[] = N_("Already in posted articles history level");
 constext txt_post_newsgroups[] = N_("Post to newsgroup(s) [%s]> ");
 constext txt_post_processing[] = N_("-- post processing started --");
 constext txt_post_processing_finished[] = N_("-- post processing completed --");
@@ -996,7 +996,7 @@ constext txt_warn_suspicious_mail[] = N_("Warning: this mail address may contain
 constext txt_warn_wrong_sig_format[] = N_("\nWarning: Signatures should start with '-- \\n' not with '--\\n'.\n");
 constext txt_writing_attributes_file[] = N_("Writing attributes file...");
 
-constext txt_x_resp[] = N_("%d Responses");
+constext txt_x_resp[] = N_("%4d Responses");
 
 constext txt_yanked_groups[] = N_("Added %d %s");
 constext txt_yanked_none[] = N_("No unsubscribed groups to show");

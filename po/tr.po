@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-25 22:29+0100\n"
+"POT-Creation-Date: 2021-06-28 17:25+0200\n"
 "PO-Revision-Date: 2017-05-29 18:40+0000\n"
 "Last-Translator: Mesutcan Kurt <mesutcank@gmail.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -36,19 +36,19 @@ msgid "Reading %s\n"
 msgstr "%s tekrar okunuyor..."
 
 #. TODO: -> lang.c
-#: src/art.c:1192
+#: src/art.c:1199
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "Makaleler zincirleniyor..."
 
 #. -> lang.c
-#: src/art.c:2479
+#: src/art.c:2486
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "%s deneniyor"
 
 #. TODO: -> lang.c
-#: src/art.c:2558
+#: src/art.c:2565
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "Öznitelikler dosylası yazılıyor..."
@@ -1588,12 +1588,12 @@ msgid ""
 "#     score=STRING      One of the two keywords: 'hot' or 'kill'.\n"
 "#   subj=STRING       Optional. Subject: line (e.g. How to be a wizard).\n"
 "#   from=STRING       Optional. From: line (e.g. *Craig Shergold*).\n"
-"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@ether.net>) "
+"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@example.net>) "
 "with\n"
 "#                     full references.\n"
 "#   msgid_last=STRING Optional. Like above, but with last reference only.\n"
 "#   msgid_only=STRING Optional. Like above, but without references.\n"
-"#   refs_only=STRING  Optional. References: line (e.g. <123@ether.net>) "
+"#   refs_only=STRING  Optional. References: line (e.g. <123@example.net>) "
 "without\n"
 "#                     Message-ID:\n"
 "#   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n"
@@ -1622,12 +1622,12 @@ msgstr ""
 "#     score=DİZGE     İki anahtar sözcükten biri: 'hot' ya da 'kill'.\n"
 "#   subj=DİZGE       Seçmeli. Konu: satır (örn. Nasıl sihirbaz olunur).\n"
 "#   from=DİZGE       Seçmeli. Gönderen: satır  (örn. *Craig Shergold*).\n"
-"#   msgid=DİZGE      Seçmeli. İleti-kimliği : satır (örn. <123@ether.net>) "
+"#   msgid=DİZGE      Seçmeli. İleti-kimliği : satır (örn. <123@example.net>) "
 "tüm \n"
 "                                                 referanslar ile.\n"
 "#   msgid_last=DİZGE Seçmeli. Yukarıdaki gibi, ama sadece son referansla.\n"
 "#   msgid_only=DİZGE Seçmeli. Yukarıdeki gibi, ama referans olmadan.\n"
-"#   refs_only=DİZGE  Seçmeli. Referanslar: satır (örn. <123@ether.net>)\n"
+"#   refs_only=DİZGE  Seçmeli. Referanslar: satır (örn. <123@example.net>)\n"
 "#                                               İleti-kimliği olmadan:\n"
 "#   lines=[<>]?SAYI    Seçmeli. Satırlar: satır '<' ya da '>' seçmeli.\n"
 "#   gnksa=[<>]?SAYI    Seçmeli. GNKSA rase_from() geri dönüş değeri.'<' or "
@@ -3423,16 +3423,17 @@ msgid "Posted Articles Menu Commands"
 msgstr "Öznitelik Menüsü Komutları"
 
 #: src/lang.c:736
-msgid "Lookup failed\n"
+msgid "Lookup failed"
 msgstr ""
 
 #: src/lang.c:737
-msgid "Operation not available for replies by mail\n"
-msgstr ""
+#, fuzzy
+msgid "Operation not available for replies by mail"
+msgstr "grup seçme seviyesine dön"
 
 #: src/lang.c:738
 #, fuzzy
-msgid "Already in posted articles history level\n"
+msgid "Already in posted articles history level"
 msgstr "Gönderilmiş makalelerin geçmişi"
 
 #: src/lang.c:739
@@ -4523,8 +4524,8 @@ msgid "Writing attributes file..."
 msgstr "Öznitelikler dosylası yazılıyor..."
 
 #: src/lang.c:999
-#, c-format
-msgid "%d Responses"
+#, fuzzy, c-format
+msgid "%4d Responses"
 msgstr "%d Yanıt"
 
 #: src/lang.c:1001
@@ -8524,17 +8525,17 @@ msgid "reading from local spool"
 msgstr "yerel kuyruktan okunuyor"
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:749
+#: src/misc.c:753
 #, c-format
 msgid "Error: unlink %s"
 msgstr ""
 
-#: src/misc.c:3904
+#: src/misc.c:3933
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Sürüm: %s yayım %s %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3907
+#: src/misc.c:3936
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Sürüm: %s yayım %s %s (\"%s\")\n"
@@ -8556,25 +8557,25 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr "NNTP sunucusuna bağlantı başarısız %s. Çıkıyor..."
 
-#: src/nntplib.c:872 src/nntplib.c:1864
+#: src/nntplib.c:872 src/nntplib.c:1865
 msgid "Rejoin current group\n"
 msgstr "Şu anki gruba tekrar katıl\n"
 
-#: src/nntplib.c:880 src/nntplib.c:1872
+#: src/nntplib.c:881 src/nntplib.c:1874
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Oku (%s)\n"
 
-#: src/nntplib.c:882
+#: src/nntplib.c:883
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "Son komutu tekrar yolla (%s)\n"
 
-#: src/nntplib.c:1512
+#: src/nntplib.c:1513
 msgid "CAPABILITIES did not announce READER"
 msgstr "CAPABILITIES, READER duyurmadı"
 
-#: src/nntplib.c:2018
+#: src/nntplib.c:2020
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8583,7 +8584,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "%s genişletilemedi\n"
 
-#: src/post.c:1772
+#: src/post.c:1775
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8592,7 +8593,7 @@ msgstr ""
 "%d satırı %d oktetten daha uzun ve kısaltılmalı, fakat\n"
 "kodlama %s ya da %s değerlerine ayarlanmadı\n"
 
-#: src/post.c:1777
+#: src/post.c:1780
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8604,7 +8605,7 @@ msgstr ""
 "gönderi hiçbir 8bit karakter içermiyor ve bu sebeple kısaltma "
 "gerçekleşmeyecek\n"
 
-#: src/post.c:1779
+#: src/post.c:1782
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8613,7 +8614,7 @@ msgstr ""
 "%d satırı %d oktetten daha uzun ve kısaltılmalı, fakat\n"
 "kodlama %s değerine ayarlı değil\n"
 
-#: src/post.c:2767
+#: src/post.c:2769
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Gönderiliyor: %.*s ..."
@@ -8662,7 +8663,7 @@ msgstr ""
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1324
+#: src/rfc2047.c:1330
 #, c-format
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
@@ -8693,23 +8694,23 @@ msgstr "Hepsi"
 msgid " R"
 msgstr " R"
 
-#: src/xface.c:73
+#: src/xface.c:75
 #, fuzzy
 msgid "Can't run slrnface: Not running in an xterm."
 msgstr "Slrnface çalıştırılamıyor: xterm içinde çalışmıyor"
 
 #  TODO: use tin global 'homedir' instead? or even rcdir?
-#: src/xface.c:85 src/xface.c:96 src/xface.c:111
+#: src/xface.c:87 src/xface.c:98 src/xface.c:113
 #, c-format
 msgid "Can't run slrnface: Environment variable %s not found."
 msgstr "Slrnface çalıştırılamıyor: Çevre değişkeni %s bulunamadı."
 
-#: src/xface.c:120 src/xface.c:152
+#: src/xface.c:122 src/xface.c:154
 #, c-format
 msgid "Can't run slrnface: failed to create %s"
 msgstr "Slrnface çalıştırılamıyor: %s oluşturulamıyor"
 
-#: src/xface.c:130
+#: src/xface.c:132
 msgid ""
 "This directory is used to create named pipes for communication between\n"
 "slrnface and its parent process. It should normally be empty because\n"
@@ -8734,16 +8735,16 @@ msgstr ""
 "NFS sunucunuzun yarattığı özel dosyalari görebilirsiniz.\n"
 "Onları silmeye çalışmayınız.\n"
 
-#: src/xface.c:144
+#: src/xface.c:146
 msgid "Can't run slrnface: couldn't construct fifo name."
 msgstr "Slrnface çalıştırılamıyor: fifo ismi oluşturulamadı."
 
-#: src/xface.c:183
+#: src/xface.c:185
 #, c-format
 msgid "Slrnface abnormally exited, code %d."
 msgstr "Slrnface beklenmedik şekilde sonlandırıldı, kod %d."
 
-#: src/xface.c:230
+#: src/xface.c:231
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Slrnface başarısız: %s"
@@ -8751,27 +8752,3 @@ msgstr "Slrnface başarısız: %s"
 #, fuzzy
 #~ msgid "Operation limited to articels of the current group."
 #~ msgstr "makaleyi mevcut gruba gönder (yaz)"
-
-#, fuzzy
-#~ msgid "Operation is not available at this level\n"
-#~ msgstr "grup seçme seviyesine dön"
-
-#~ msgid "#  auto_save=ON/OFF\n"
-#~ msgstr "#  auto_save=AÇIK/KAPALI\n"
-
-#~ msgid ""
-#~ "Auto save article/thread by Archive-name: header. <SPACE> toggles & <CR> "
-#~ "sets."
-#~ msgstr ""
-#~ "Archive-name: başlığına göre makale/zincirleri otomatik kaydet. <SPACE> "
-#~ "değiştirir & <CR> ayarlar."
-
-#~ msgid "Use Archive-name: header for save"
-#~ msgstr "Kaydetmek için Archive-name: üst bilgisini kullan"
-
-#~ msgid ""
-#~ "# If ON articles/threads with Archive-name: in mail header will\n"
-#~ "# be automatically saved with the Archive-name & part/patch no.\n"
-#~ msgstr ""
-#~ "# Eğer AÇIK ise Archive-name: olan başlık makaleler/zincirler\n"
-#~ "# otomatik olarak Arcive-name & parti/ek no. ile kaydedilecektir.\n"

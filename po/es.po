@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-25 22:29+0100\n"
+"POT-Creation-Date: 2021-06-28 17:25+0200\n"
 "PO-Revision-Date: 2018-04-19 13:04+0200\n"
 "Last-Translator: Francisco Javier Serrador <fserrador@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -26,19 +26,19 @@ msgid "Reading %s\n"
 msgstr "Leyendo %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:1192
+#: src/art.c:1199
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "Artículos anteriores"
 
 #. -> lang.c
-#: src/art.c:2479
+#: src/art.c:2486
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "Escribir %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:2558
+#: src/art.c:2565
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "Escribiendo fichero…"
@@ -1551,12 +1551,12 @@ msgid ""
 "#     score=STRING      One of the two keywords: 'hot' or 'kill'.\n"
 "#   subj=STRING       Optional. Subject: line (e.g. How to be a wizard).\n"
 "#   from=STRING       Optional. From: line (e.g. *Craig Shergold*).\n"
-"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@ether.net>) "
+"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@example.net>) "
 "with\n"
 "#                     full references.\n"
 "#   msgid_last=STRING Optional. Like above, but with last reference only.\n"
 "#   msgid_only=STRING Optional. Like above, but without references.\n"
-"#   refs_only=STRING  Optional. References: line (e.g. <123@ether.net>) "
+"#   refs_only=STRING  Optional. References: line (e.g. <123@example.net>) "
 "without\n"
 "#                     Message-ID:\n"
 "#   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n"
@@ -3379,16 +3379,16 @@ msgid "Posted Articles Menu Commands"
 msgstr "menú"
 
 #: src/lang.c:736
-msgid "Lookup failed\n"
+msgid "Lookup failed"
 msgstr ""
 
 #: src/lang.c:737
-msgid "Operation not available for replies by mail\n"
+msgid "Operation not available for replies by mail"
 msgstr ""
 
 #: src/lang.c:738
 #, fuzzy
-msgid "Already in posted articles history level\n"
+msgid "Already in posted articles history level"
 msgstr ""
 "\n"
 "Ningún artículo dentro de este grupo.\n"
@@ -4479,7 +4479,7 @@ msgstr "Escribiendo fichero…"
 
 #: src/lang.c:999
 #, fuzzy, c-format
-msgid "%d Responses"
+msgid "%4d Responses"
 msgstr "Respuestas existentes"
 
 #: src/lang.c:1001
@@ -8032,17 +8032,17 @@ msgid "reading from local spool"
 msgstr "error leyendo desde `%s'"
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:749
+#: src/misc.c:753
 #, c-format
 msgid "Error: unlink %s"
 msgstr ""
 
-#: src/misc.c:3904
+#: src/misc.c:3933
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr ""
 
-#: src/misc.c:3907
+#: src/misc.c:3936
 #, fuzzy, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Regresar a la última publicación(es)"
@@ -8064,26 +8064,26 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr "Error película capturada... Terminando."
 
-#: src/nntplib.c:872 src/nntplib.c:1864
+#: src/nntplib.c:872 src/nntplib.c:1865
 #, fuzzy
 msgid "Rejoin current group\n"
 msgstr "Grupo"
 
-#: src/nntplib.c:880 src/nntplib.c:1872
+#: src/nntplib.c:881 src/nntplib.c:1874
 #, fuzzy, c-format
 msgid "Read (%s)\n"
 msgstr "%s: leído: %s"
 
-#: src/nntplib.c:882
+#: src/nntplib.c:883
 #, fuzzy, c-format
 msgid "Resend last command (%s)\n"
 msgstr "última orden: %s\n"
 
-#: src/nntplib.c:1512
+#: src/nntplib.c:1513
 msgid "CAPABILITIES did not announce READER"
 msgstr ""
 
-#: src/nntplib.c:2018
+#: src/nntplib.c:2020
 msgid "MOTD: "
 msgstr ""
 
@@ -8092,14 +8092,14 @@ msgstr ""
 msgid "couldn't expand %s\n"
 msgstr "Expandir"
 
-#: src/post.c:1772
+#: src/post.c:1775
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is neither set to %s nor to %s\n"
 msgstr ""
 
-#: src/post.c:1777
+#: src/post.c:1780
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8107,14 +8107,14 @@ msgid ""
 "posting doesn't contain any 8bit chars and thus folding won't happen\n"
 msgstr ""
 
-#: src/post.c:1779
+#: src/post.c:1782
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is not set to %s\n"
 msgstr ""
 
-#: src/post.c:2767
+#: src/post.c:2769
 #, fuzzy, c-format
 msgid "Posting: %.*s ..."
 msgstr "Publicación Fallida"
@@ -8166,7 +8166,7 @@ msgstr ""
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1324
+#: src/rfc2047.c:1330
 #, c-format
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
@@ -8194,21 +8194,21 @@ msgstr "todo"
 msgid " R"
 msgstr "«C»"
 
-#: src/xface.c:73
+#: src/xface.c:75
 msgid "Can't run slrnface: Not running in an xterm."
 msgstr ""
 
-#: src/xface.c:85 src/xface.c:96 src/xface.c:111
+#: src/xface.c:87 src/xface.c:98 src/xface.c:113
 #, c-format
 msgid "Can't run slrnface: Environment variable %s not found."
 msgstr ""
 
-#: src/xface.c:120 src/xface.c:152
+#: src/xface.c:122 src/xface.c:154
 #, c-format
 msgid "Can't run slrnface: failed to create %s"
 msgstr ""
 
-#: src/xface.c:130
+#: src/xface.c:132
 msgid ""
 "This directory is used to create named pipes for communication between\n"
 "slrnface and its parent process. It should normally be empty because\n"
@@ -8222,20 +8222,16 @@ msgid ""
 "Do not try to remove them.\n"
 msgstr ""
 
-#: src/xface.c:144
+#: src/xface.c:146
 msgid "Can't run slrnface: couldn't construct fifo name."
 msgstr ""
 
-#: src/xface.c:183
+#: src/xface.c:185
 #, fuzzy, c-format
 msgid "Slrnface abnormally exited, code %d."
 msgstr "Programa terminado abnormalmente con valor de salida: %d\n"
 
-#: src/xface.c:230
+#: src/xface.c:231
 #, fuzzy, c-format
 msgid "Slrnface failed: %s."
 msgstr "fallado %s a «%s» (%s)"
-
-#, fuzzy
-#~ msgid "Use Archive-name: header for save"
-#~ msgstr "%s: archivo de nombre de encabezado mal formado en %zu"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-25 22:29+0100\n"
+"POT-Creation-Date: 2021-06-28 17:25+0200\n"
 "PO-Revision-Date: 2015-10-08 12:13+0800\n"
 "Last-Translator: Wei-Lun Chao <bluebat@member.fsf.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -25,19 +25,19 @@ msgid "Reading %s\n"
 msgstr "重新讀取 %s…"
 
 #. TODO: -> lang.c
-#: src/art.c:1192
+#: src/art.c:1199
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "討論串文章…"
 
 #. -> lang.c
-#: src/art.c:2479
+#: src/art.c:2486
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "嘗試 %s"
 
 #. TODO: -> lang.c
-#: src/art.c:2558
+#: src/art.c:2565
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "寫入屬性檔案…"
@@ -1544,12 +1544,12 @@ msgid ""
 "#     score=STRING      One of the two keywords: 'hot' or 'kill'.\n"
 "#   subj=STRING       Optional. Subject: line (e.g. How to be a wizard).\n"
 "#   from=STRING       Optional. From: line (e.g. *Craig Shergold*).\n"
-"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@ether.net>) "
+"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@example.net>) "
 "with\n"
 "#                     full references.\n"
 "#   msgid_last=STRING Optional. Like above, but with last reference only.\n"
 "#   msgid_only=STRING Optional. Like above, but without references.\n"
-"#   refs_only=STRING  Optional. References: line (e.g. <123@ether.net>) "
+"#   refs_only=STRING  Optional. References: line (e.g. <123@example.net>) "
 "without\n"
 "#                     Message-ID:\n"
 "#   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n"
@@ -1574,11 +1574,11 @@ msgstr ""
 "#     score=字串        兩個關鍵字之一：'hot' 或 'kill'。\n"
 "#   subj=字串         可選。 Subject: 列 (例如：如何做為一個精靈)。\n"
 "#   from=字串         可選。 From: 列 (例如：*Craig Shergold*)。\n"
-"#   msgid=字串        可選。 Message-ID: 列 (例如：<123@ether.net>) 附帶\n"
+"#   msgid=字串        可選。 Message-ID: 列 (例如：<123@example.net>) 附帶\n"
 "#                     完整的參照。\n"
 "#   msgid_last=字串   可選。如上，但是只附最後一次參照。\n"
 "#   msgid_only=字串   可選。如上，但是不附參照。\n"
-"#   refs_only=字串    可選。參照：列 (例如：<123@ether.net>) 不附 Message-"
+"#   refs_only=字串    可選。參照：列 (例如：<123@example.net>) 不附 Message-"
 "ID: \n"
 "#   lines=[<>]?數字   可選。列：列。 '<' 或 '>' 為可選的。\n"
 "#   gnksa=[<>]?數字   可選。GNKSA parse_from() 回傳值。 '<' 或 '>' 為可選"
@@ -3282,16 +3282,17 @@ msgid "Posted Articles Menu Commands"
 msgstr "屬性功能表指令"
 
 #: src/lang.c:736
-msgid "Lookup failed\n"
+msgid "Lookup failed"
 msgstr ""
 
 #: src/lang.c:737
-msgid "Operation not available for replies by mail\n"
-msgstr ""
+#, fuzzy
+msgid "Operation not available for replies by mail"
+msgstr "回到群組選擇層級"
 
 #: src/lang.c:738
 #, fuzzy
-msgid "Already in posted articles history level\n"
+msgid "Already in posted articles history level"
 msgstr "張貼文章歷史記錄"
 
 #: src/lang.c:739
@@ -4357,8 +4358,8 @@ msgid "Writing attributes file..."
 msgstr "寫入屬性檔案…"
 
 #: src/lang.c:999
-#, c-format
-msgid "%d Responses"
+#, fuzzy, c-format
+msgid "%4d Responses"
 msgstr "%d 篇回應"
 
 #: src/lang.c:1001
@@ -8130,17 +8131,17 @@ msgid "reading from local spool"
 msgstr ""
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:749
+#: src/misc.c:753
 #, c-format
 msgid "Error: unlink %s"
 msgstr ""
 
-#: src/misc.c:3904
+#: src/misc.c:3933
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "版本：%s %s 釋出 %s (「%s」) %s %s\n"
 
-#: src/misc.c:3907
+#: src/misc.c:3936
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "版本：%s %s 釋出 %s (「%s」)\n"
@@ -8163,25 +8164,25 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr "連線到 NNTP 伺服器 %s 時失敗。離開…"
 
-#: src/nntplib.c:872 src/nntplib.c:1864
+#: src/nntplib.c:872 src/nntplib.c:1865
 msgid "Rejoin current group\n"
 msgstr "重新連結目前的群組\n"
 
-#: src/nntplib.c:880 src/nntplib.c:1872
+#: src/nntplib.c:881 src/nntplib.c:1874
 #, c-format
 msgid "Read (%s)\n"
 msgstr "已讀 (%s)\n"
 
-#: src/nntplib.c:882
+#: src/nntplib.c:883
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "重新發送最近的命令 (%s)\n"
 
-#: src/nntplib.c:1512
+#: src/nntplib.c:1513
 msgid "CAPABILITIES did not announce READER"
 msgstr "能力中並未宣告包含閱讀器"
 
-#: src/nntplib.c:2018
+#: src/nntplib.c:2020
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8190,7 +8191,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "無法展開 %s\n"
 
-#: src/post.c:1772
+#: src/post.c:1775
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8199,7 +8200,7 @@ msgstr ""
 "第 %d 列長度超過 998 位元組而應該被折疊，但是\n"
 "編碼未被設定為 %s 亦非 %s\n"
 
-#: src/post.c:1777
+#: src/post.c:1780
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8210,7 +8211,7 @@ msgstr ""
 "編碼被設定為 %s 而未啟用 MIME_BREAK_LONG_LINES 或是\n"
 "貼文不包含任何 8 位元字元，因而無法發生折疊\n"
 
-#: src/post.c:1779
+#: src/post.c:1782
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8219,7 +8220,7 @@ msgstr ""
 "第 %d 列長度超過 998 位元組而，但是\n"
 "編碼未被設定為 %s\n"
 
-#: src/post.c:2767
+#: src/post.c:2769
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "張貼：%.*s…"
@@ -8265,7 +8266,7 @@ msgstr ""
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1324
+#: src/rfc2047.c:1330
 #, c-format
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
@@ -8295,22 +8296,22 @@ msgstr "所有"
 msgid " R"
 msgstr " R"
 
-#: src/xface.c:73
+#: src/xface.c:75
 #, fuzzy
 msgid "Can't run slrnface: Not running in an xterm."
 msgstr "無法運行 slrnface：無法在 xterm 中執行。"
 
-#: src/xface.c:85 src/xface.c:96 src/xface.c:111
+#: src/xface.c:87 src/xface.c:98 src/xface.c:113
 #, c-format
 msgid "Can't run slrnface: Environment variable %s not found."
 msgstr "無法運行 slrnface：找不到環境變數 %s。"
 
-#: src/xface.c:120 src/xface.c:152
+#: src/xface.c:122 src/xface.c:154
 #, c-format
 msgid "Can't run slrnface: failed to create %s"
 msgstr "無法運行 slrnface：無法建立 %s"
 
-#: src/xface.c:130
+#: src/xface.c:132
 msgid ""
 "This directory is used to create named pipes for communication between\n"
 "slrnface and its parent process. It should normally be empty because\n"
@@ -8334,16 +8335,16 @@ msgstr ""
 "您也許會看到由您的 NFS 伺服器所建立的特殊檔案。\n"
 "請不要嘗試去移除它們。\n"
 
-#: src/xface.c:144
+#: src/xface.c:146
 msgid "Can't run slrnface: couldn't construct fifo name."
 msgstr "無法運行 slrnface：無法建構 fifo 名稱。"
 
-#: src/xface.c:183
+#: src/xface.c:185
 #, c-format
 msgid "Slrnface abnormally exited, code %d."
 msgstr "Slrnface 不正常地離開，代碼 %d。"
 
-#: src/xface.c:230
+#: src/xface.c:231
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Slrnface 失敗：%s。"
@@ -8351,10 +8352,6 @@ msgstr "Slrnface 失敗：%s。"
 #, fuzzy
 #~ msgid "Operation limited to articels of the current group."
 #~ msgstr "張貼 (寫入) 文章到目前的群組"
-
-#, fuzzy
-#~ msgid "Operation is not available at this level\n"
-#~ msgstr "回到群組選擇層級"
 
 #~ msgid "#  auto_save=ON/OFF\n"
 #~ msgstr "#  auto_save=ON/OFF\n"

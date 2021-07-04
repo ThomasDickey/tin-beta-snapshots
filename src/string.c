@@ -252,6 +252,7 @@ mystrcat(
 	return len;
 }
 
+
 /*
  * get around broken tolower()/toupper() macros on
  * ancient BSDs (e.g. 4.2, 4.3, 4.3-Tahoe, 4.3-Reno and Net/2)

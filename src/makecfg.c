@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2020-08-15
+ *  Updated   : 2021-07-02
  *  Notes     : #defines and structs for options_menu.c
  *
  * Copyright (c) 1997-2021 Thomas E. Dickey <dickey@invisible-island.net>
@@ -199,8 +199,14 @@ static const char *
 typename_of(
 	MYDATA *p)
 {
-	if (!strcmp(p->type, "OPT_STRING") || !strcmp(p->type, "OPT_CHAR"))
+	if (!strcmp(p->type, "OPT_STRING"))
 		return "char *";
+	if (!strcmp(p->type, "OPT_CHAR"))
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		return "wchar_t *";
+#else
+		return "char *";
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	if (!strcmp(p->type, "OPT_ON_OFF"))
 		return "t_bool *";
 	return "int *";

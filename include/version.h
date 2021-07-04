@@ -43,9 +43,9 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.4.6"
+#		define VERSION		"2.6.0"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20210226"
+#	define RELEASEDATE	"20210704"
 #	define RELEASENAME	"Glen Albyn"
 /* config-file versions - must by dotted triples in the range 0 to 99 each */
 #	define TINRC_VERSION	"1.3.18"

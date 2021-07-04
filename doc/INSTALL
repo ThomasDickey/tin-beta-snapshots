@@ -68,10 +68,9 @@ TIN related:
   --with-socks                           --with-socks5
   --with-sum
 
-  DEBUG                                   FILE_MODE_BROKEN
+  BACKUP_FILE_EXT                         FILE_MODE_BROKEN
   DEBUG_ART                               NO_LOCKING
-  BACKUP_FILE_EXT                         MIN_LINES_ON_TERMINAL
-  MIN_COLUMNS_ON_TERMINAL
+  MIN_COLUMNS_ON_TERMINAL                 MIN_LINES_ON_TERMINAL
 
 System related:
   --datadir                               --localstatedir
@@ -686,6 +685,10 @@ MATCH_TAR_PATTERN
 do tar(1) matching rules, which ignore a trailing slash. this is hard unset
 in wildmat.c to disable it.
 
+DEBUG
+allow various debug levels via -D the command-line switch. this may expose
+sensitive data (i.e. your username & password used to autheticate on the
+news-server) on the local system; read the SECURITY-section in man-page.
 
 License
 -------

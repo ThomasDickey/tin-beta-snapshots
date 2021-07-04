@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-07-03
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -63,8 +63,22 @@ static void write_server_config(void);
 #endif /* HAVE_COLOR */
 
 
-#define DASH_TO_SPACE(mark)	((char) (mark == '_' ? ' ' : mark))
-#define SPACE_TO_DASH(mark)	((char) (mark == ' ' ? '_' : mark))
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	define DASH_TO_SPACE(mark)	((wchar_t) (mark == L'_' ? L' ' : mark))
+#	define SPACE_TO_DASH(mark)	((wchar_t) (mark == L' ' ? L'_' : mark))
+#	define SET_RC_VAL(buf, wbuf, rcval, defval) do { \
+		if ((wbuf = char2wchar_t(buf))) { \
+			wbuf[1] = (wchar_t) '\0'; \
+			rcval = !wtmp[0] ? (wchar_t) defval : DASH_TO_SPACE(wtmp[0]); \
+			if (art_mark_width < wcswidth(wbuf, 1)) \
+				art_mark_width = wcswidth(wbuf, 1); \
+			free(wbuf); \
+		} \
+	} while (0)
+#else
+#	define DASH_TO_SPACE(mark)	((char) (mark == '_' ? ' ' : mark))
+#	define SPACE_TO_DASH(mark)	((char) (mark == ' ' ? '_' : mark))
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
 /*
@@ -82,6 +96,9 @@ read_config_file(
 	int i;
 	t_bool is_7bit;
 #endif /* CHARSET_CONVERSION */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wtmp;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
@@ -118,47 +135,83 @@ read_config_file(
 				break;
 
 			if (match_string(buf, "art_marked_deleted=", tmp, sizeof(tmp))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_deleted, ART_MARK_DELETED);
+#else
 				tinrc.art_marked_deleted = !tmp[0] ? ART_MARK_DELETED : DASH_TO_SPACE(tmp[0]);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 			}
 
 			if (match_string(buf, "art_marked_inrange=", tmp, sizeof(tmp))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_inrange, MARK_INRANGE);
+#else
 				tinrc.art_marked_inrange = !tmp[0] ? MARK_INRANGE : DASH_TO_SPACE(tmp[0]);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 			}
 
 			if (match_string(buf, "art_marked_killed=", tmp, sizeof(tmp))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_killed, ART_MARK_KILLED);
+#else
 				tinrc.art_marked_killed = !tmp[0] ? ART_MARK_KILLED : DASH_TO_SPACE(tmp[0]);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 			}
 
 			if (match_string(buf, "art_marked_read=", tmp, sizeof(tmp))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_read, ART_MARK_READ);
+#else
 				tinrc.art_marked_read = !tmp[0] ? ART_MARK_READ : DASH_TO_SPACE(tmp[0]);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 			}
 
 			if (match_string(buf, "art_marked_read_selected=", tmp, sizeof(tmp))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_read_selected, ART_MARK_READ_SELECTED);
+#else
 				tinrc.art_marked_read_selected = !tmp[0] ? ART_MARK_READ_SELECTED : DASH_TO_SPACE(tmp[0]);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 			}
 
 			if (match_string(buf, "art_marked_recent=", tmp, sizeof(tmp))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_recent, ART_MARK_RECENT);
+#else
 				tinrc.art_marked_recent = !tmp[0] ? ART_MARK_RECENT : DASH_TO_SPACE(tmp[0]);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 			}
 
 			if (match_string(buf, "art_marked_return=", tmp, sizeof(tmp))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_return, ART_MARK_RETURN);
+#else
 				tinrc.art_marked_return = !tmp[0] ? ART_MARK_RETURN : DASH_TO_SPACE(tmp[0]);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 			}
 
 			if (match_string(buf, "art_marked_selected=", tmp, sizeof(tmp))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_selected, ART_MARK_SELECTED);
+#else
 				tinrc.art_marked_selected = !tmp[0] ? ART_MARK_SELECTED : DASH_TO_SPACE(tmp[0]);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 			}
 
 			if (match_string(buf, "art_marked_unread=", tmp, sizeof(tmp))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_unread, ART_MARK_UNREAD);
+#else
 				tinrc.art_marked_unread = !tmp[0] ? ART_MARK_UNREAD : DASH_TO_SPACE(tmp[0]);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 			}
 
@@ -1159,31 +1212,31 @@ write_config_file(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	fprintf(fp, "%s", _(txt_art_marked_deleted.tinrc));
-	fprintf(fp, "art_marked_deleted=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_deleted));
+	fprintf(fp, "art_marked_deleted=%"T_CHAR_FMT"\n\n", SPACE_TO_DASH(tinrc.art_marked_deleted));
 
 	fprintf(fp, "%s", _(txt_art_marked_inrange.tinrc));
-	fprintf(fp, "art_marked_inrange=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_inrange));
+	fprintf(fp, "art_marked_inrange=%"T_CHAR_FMT"\n\n", SPACE_TO_DASH(tinrc.art_marked_inrange));
 
 	fprintf(fp, "%s", _(txt_art_marked_return.tinrc));
-	fprintf(fp, "art_marked_return=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_return));
+	fprintf(fp, "art_marked_return=%"T_CHAR_FMT"\n\n", SPACE_TO_DASH(tinrc.art_marked_return));
 
 	fprintf(fp, "%s", _(txt_art_marked_selected.tinrc));
-	fprintf(fp, "art_marked_selected=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_selected));
+	fprintf(fp, "art_marked_selected=%"T_CHAR_FMT"\n\n", SPACE_TO_DASH(tinrc.art_marked_selected));
 
 	fprintf(fp, "%s", _(txt_art_marked_recent.tinrc));
-	fprintf(fp, "art_marked_recent=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_recent));
+	fprintf(fp, "art_marked_recent=%"T_CHAR_FMT"\n\n", SPACE_TO_DASH(tinrc.art_marked_recent));
 
 	fprintf(fp, "%s", _(txt_art_marked_unread.tinrc));
-	fprintf(fp, "art_marked_unread=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_unread));
+	fprintf(fp, "art_marked_unread=%"T_CHAR_FMT"\n\n", SPACE_TO_DASH(tinrc.art_marked_unread));
 
 	fprintf(fp, "%s", _(txt_art_marked_read.tinrc));
-	fprintf(fp, "art_marked_read=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_read));
+	fprintf(fp, "art_marked_read=%"T_CHAR_FMT"\n\n", SPACE_TO_DASH(tinrc.art_marked_read));
 
 	fprintf(fp, "%s", _(txt_art_marked_killed.tinrc));
-	fprintf(fp, "art_marked_killed=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_killed));
+	fprintf(fp, "art_marked_killed=%"T_CHAR_FMT"\n\n", SPACE_TO_DASH(tinrc.art_marked_killed));
 
 	fprintf(fp, "%s", _(txt_art_marked_read_selected.tinrc));
-	fprintf(fp, "art_marked_read_selected=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_read_selected));
+	fprintf(fp, "art_marked_read_selected=%"T_CHAR_FMT"\n\n", SPACE_TO_DASH(tinrc.art_marked_read_selected));
 
 	fprintf(fp, "%s", _(txt_force_screen_redraw.tinrc));
 	fprintf(fp, "force_screen_redraw=%s\n\n", print_boolean(tinrc.force_screen_redraw));

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-07-02
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -654,7 +654,11 @@ tin_done(
 
 	free_all_arrays();
 
-	/* TODO: why do we make this exception here? */
+	/*
+	 * TODO:
+	 * why do we make this exception "Terminate gracefully but do
+	 * not restore terminal" here?
+	 */
 #ifdef SIGUSR1
 	if (ret != -SIGUSR1) {
 #endif /* SIGUSR1 */
@@ -1061,7 +1065,7 @@ void
 show_inverse_video_status(
 	void)
 {
-		info_message((tinrc.inverse_okay ? _(txt_inverse_on) : _(txt_inverse_off)));
+	info_message((tinrc.inverse_okay ? _(txt_inverse_on) : _(txt_inverse_off)));
 }
 
 
@@ -2043,10 +2047,22 @@ get_cwd(
 	char *buf)
 {
 #ifdef HAVE_GETCWD
-	getcwd(buf, PATH_LEN);
+	if (getcwd(buf, PATH_LEN) == NULL) {
+#	ifdef DEBUG
+		int e = errno;
+		if (debug & DEBUG_MISC)
+			error_message(2, "getcwd(%s): Error: %s", buf, strerror(e));
+#	endif /* DEBUG */
+	}
 #else
 #	ifdef HAVE_GETWD
-	getwd(buf);
+	if (getwd(buf) == NULL) {
+#		ifdef DEBUG
+		int e = errno;
+		if (debug & DEBUG_MISC)
+			error_message(2, "getwd(%s): Error: %s", buf, strerror(e));
+#		endif /* DEBUG */
+	}
 #	else
 	*buf = '\0';
 #	endif /* HAVE_GETWD */
@@ -2283,7 +2299,13 @@ write_input_history_file(
 		error_message(2, _(txt_filesystem_full), local_input_history_file);
 #ifdef HAVE_CHMOD
 		/* fix modes for all pre 1.4.1 local_input_history_file files */
-		chmod(local_input_history_file, (mode_t) (S_IRUSR|S_IWUSR));
+		if (chmod(local_input_history_file, (mode_t) (S_IRUSR|S_IWUSR)) == -1) {
+#	ifdef DEBUG
+			int e = errno;
+			if (debug & DEBUG_MISC)
+				error_message(2, "chmod(%s, %d): Error: %s", local_input_history_file, (mode_t) (S_IRUSR|S_IWUSR), strerror(e));
+#	endif /* DEBUG */
+		}
 #endif /* HAVE_CHMOD */
 		if (his_w) {
 			clearerr(fp);
@@ -3023,10 +3045,17 @@ gnksa_dequote_plainphrase(
 						rpos++;
 						break;
 
+#if 0 /* RFC 5322 3.2.4. does not prohibit these anymore as RFC 1036 did */
 					case '(':
 					case ')':
 					case '<':
 					case '>':
+#endif /* 0 */
+					/*
+					 * FIXME: \ is allowed in dquotes as of 5322,
+					 * but we need to ensure that \" doesn't end
+					 * current state as it currently would.
+					 */
 					case '\\':
 						return GNKSA_ILLEGAL_QUOTED_CHAR;
 						/* NOTREACHED */
@@ -3382,7 +3411,7 @@ gnksa_split_from(
 	}
 
 	/* skip trailing whitespace */
- 	addr_end = work + strlen(work) - 1;
+	addr_end = work + strlen(work) - 1;
 
 	if (*addr_end == '>') {
 		/* route-address used */
@@ -4150,9 +4179,20 @@ void
 draw_mark_selected(
 	int i)
 {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	int j;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	MoveCursor(INDEX2LNUM(i), mark_offset);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	for (j = art_mark_width - wcwidth(tinrc.art_marked_selected); j > 0; --j)
+		my_fputc(' ', stdout);
+	StartInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
+	my_fputwc(tinrc.art_marked_selected, stdout);
+#else
 	StartInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
 	my_fputc(tinrc.art_marked_selected, stdout);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	EndInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
 }
 
