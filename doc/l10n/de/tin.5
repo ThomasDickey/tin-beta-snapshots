@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2021-02-25
+.\" Updated   : 2021-02-27
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "24. Dezember 2020" 2.4.6 "Usenet Newsreader"
+.TH tin 5 "24. Dezember 2020" 2.6.0 "Usenet Newsreader"
 
 .SH NAME
 tin, rtin \- zugehörige Dateien
@@ -374,7 +374,7 @@ quadruples) of user's mailgroups (requires \fB\%tin\fP(1)  to be build with
 mh\-mail\-handling support).
 .TP 
 \fBmail_group_name\fP
-must be the pathname of the mailbox relative to field #4 with / changed to .
+Pfad der Mailbox relativ zu Feld #4, wobei '/' in '.' umgewandelt sein muss.
 .TP 
 \fBMaximalwert\fP
 just put a large number here, something higher than the highest message in
@@ -2588,7 +2588,7 @@ Priorität falls gesetzt.
 .sp
 .RS
 Diese Datei gibt die Struktur der Nachrichtenübersichtsdatenbank an (siehe
-auch \fB\%newsoverview\fP(5)). Die Reihenfolge der Zeilen in dieser Dateiist
+auch \fB\%newsoverview\fP(5)). Die Reihenfolge der Zeilen in dieser Datei ist
 wichtig; sie bestimmt die Reihenfolge, in der die Felder in der Datenbank
 stehen.  Siehe auch \fB\%overview.fmt\fP(5). \fB\%tin\fP(1) versucht die Datei nur
 dann zu lesen. Falls Sie direkt vom lokalen Spool lesen, wenn Sie

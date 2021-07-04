@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-04-10
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -824,8 +824,15 @@ read_art_headers(
 	/*
 	 * Change back to previous dir before indexing started
 	 */
-	if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS)
-		chdir(dir);
+	if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS) {
+		if (chdir(dir) == -1) {
+#ifdef DEBUG
+			int e = errno;
+			if (debug & DEBUG_MISC)
+				error_message(2, "chdir(%s): Error: %s", dir, strerror(e));
+#endif /* DEBUG */
+		}
+	}
 
 	return modified;
 }
@@ -1812,7 +1819,7 @@ get_path_header(
  *	2. Subject: line  (ie. Which newsreader?)  [mandatory]
  *	3. From: line     (ie. iain@ecrc.de)       [mandatory]
  *	4. Date: line     (rfc822 format)          [mandatory]
- *	5. MessageID:     (ie. <123@ether.net>)    [mandatory]
+ *	5. MessageID:     (ie. <123@example.net>)  [mandatory]
  *	6. References:    (ie. <message-id> ....)  [optional]
  *	7. Byte count     (Skipped - not used)     [mandatory]
  *	8. Line count     (ie. 23)                 [mandatory]
@@ -2411,7 +2418,7 @@ read_overview(
  *	2. Subject: line  (ie. Which newsreader?)  [mandatory]
  *	3. From: line     (ie. iain@ecrc.de)       [mandatory]
  *	4. Date: line     (rfc822 format)          [mandatory]
- *	5. MessageID:     (ie. <123@ether.net>)    [mandatory]
+ *	5. MessageID:     (ie. <123@example.net>)  [mandatory]
  *	6. References:    (ie. <message-id> ....)  [optional]
  *	7. Byte count     (Skipped - not used)     [mandatory]
  *	8. Line count     (ie. 23)                 [mandatory]
@@ -2683,16 +2690,14 @@ find_nov_file(
 			 * Append -<nntpserver> to private cache dir
 			 */
 			if (!once_only && nntp_server) {
-				size_t sp, ln = strlen(index_newsdir);
+				size_t sp = sizeof(index_newsdir), ln = strlen(index_newsdir);
 
-				if ((sp = sizeof(index_newsdir) - ln - 1) >= 2) {
+				if (--sp - ln >= 2) {
 					char *srv = my_strdup(nntp_server);
 
-					strcat(index_newsdir, "-");
-					sp--;
-					ln++;
 					str_lwr(srv);
-					my_strncpy(index_newsdir + ln, srv, sp);
+					strcat(index_newsdir, "-");
+					my_strncpy(index_newsdir + ln + 1, srv, sp);
 					free(srv);
 				}
 				once_only = TRUE;

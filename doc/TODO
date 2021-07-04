@@ -197,7 +197,8 @@ o  add more AUTHINFO SASL (RFC 4643, RFC 5802) support (DIGEST-MD5,
    or a handrolled version for at least PLAIN)
    [20080316 Urs Janssen <urs@tin.org>]
 
-o  make 'GNKSA'-parser RFC5322/USEFOR compliant and fix bugs
+o  make 'GNKSA'-parser RFC5322/USEFOR compliant (e.g.
+   misc.c:gnksa_dequote_plainphrase()) and fix bugs
 
 o  add XZVER (and XZHDR) support (zlib compressed yyencoded overview data)
    <http://helpdesk.astraweb.com/index.php?_m=news&_a=viewnews&newsid=9>
@@ -369,6 +370,10 @@ o  pgpverify invocation with a single key instead of '|''a''pgpverify' or a
    built-in pgpverify solution.
 
 o  pgp-{6,7} support
+
+o  use runtime config for pgp instead of hardcoded values depending on
+   compile time detection, i.e. have tinrc vars for pgp_decode, pgp_verify, ...
+   like in mutt and/or
 
 o  add check for GPGME (<http://www.gnupg.org/related_software/gpgme/>) and if
    found use it for pgp actions.
@@ -715,7 +720,6 @@ o  check code with
    (<https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html>),
    clang-analyzer (<http://clang-analyzer.llvm.org/>),
    infer (<http://fbinfer.com/>)
-   AdLint (<http://adlint.sourceforge.net/>),
    Splint (LCLint) <http://www.splint.org/> and
    zzuf (<http://caca.zoy.org/wiki/zzuf>)
 
@@ -731,7 +735,7 @@ o  remove built in path of external commands (metamail, ispell, ...)
 o  add configure-switch for DISABLE_PIPELINING
    [20090612 Urs Janssen <urs@tin.org>]
 
-o  mask inline PGP SIGNATURE/KEY BLOCK like we do for uu-sections
+o  mask inline pgp signature/key block like we do for uu-sections
    [20090722 Urs Janssen <urs@tin.org>]
 
 o  some non fixed width strings could be formatted nicer (warp on last space
@@ -806,10 +810,6 @@ o  the online help of GroupMarkUnselArtRead 'X' is unclear as it doesn't
 o  document the different signals/actions
    [20080209 Urs Janssen <urs@tin.org>]
 
-o  exit status documentation in the man page isn't correct, we have more
-   exit codes than just 0, 1, (2 in the -Z case) and 3.
-   [20080320 Urs Janssen <urs@tin.org>]
-
 o  review the Spanish, Swedish and Russian translations
    (es.po, sv.po, ru.po); add/finish missing man-page translation(s).
 
@@ -836,6 +836,10 @@ o  integrate doc/auth.txt into tin.1 man page
 
 o  document ${HOST:-"$HOSTNAME"} fallback if gethostname(2) and uname(2)
    do not return a hostname
+
+o  the limited pgp support (inline pgp as of RFC 4880, just signature
+   verification or key import but no decryption ...) is nearly undocumented
+   in the man page
 
 Not yet classified
 ------------------
@@ -1049,7 +1053,7 @@ o  update gettext stuff to > gettext-0.12.1 (or drop it?)
 o  and pcre2 support (new API)
    <http://www.pcre.org/current/doc/html/>
 
-o  clean up included pcre stuff and update to >= pcre-8.44
+o  clean up included pcre stuff and update to >= pcre-8.45
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file

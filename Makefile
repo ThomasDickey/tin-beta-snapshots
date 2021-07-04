@@ -1,17 +1,17 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2019-03-12
+# Updated: 2021-04-17
 #
 
 SHELL	= @SHELL@
 
 PROJECT	= tin
 LVER	= 2
-PVER	= 4
-SVER	= 6
+PVER	= 6
+SVER	= 0
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20210226
+DVER	= 20210704
 EXE	= tin
 
 # directory structure
@@ -520,6 +520,8 @@ name:
 	$(SED) "s,RELEASEDATE[[:space:]]*\"[[:print:]]*\",RELEASEDATE	\"$$DATE\"," $(INCDIR)/version.h > $(INCDIR)/version.h.tmp && \
 	$(SED) "s, VERSION[[:space:]]*\"[[:print:]]*\", VERSION		\"$(VER)\"," $(INCDIR)/version.h.tmp > $(INCDIR)/version.h && \
 	$(RM) $(INCDIR)/version.h.tmp ;\
+	$(SED) -e "1,2 {s/# TIN \([0-9]\+\.[0-9]\+\.[0-9]\+\) \(.*\)/# TIN $(VER) \2/}" $(DOCDIR)/tin.defaults > $(DOCDIR)/tin.defaults.tmp && \
+	$(MV) $(DOCDIR)/tin.defaults.tmp $(DOCDIR)/tin.defaults ;\
 	$(MAKE) configure
 
 dist:
@@ -564,9 +566,3 @@ config.status: configure
 
 po4a:
 	@$(PO4A) po4a.conf
-
-cppcheck: FORCE
-	@-if $(TEST) ! -r $(SRCDIR)/options_menu.h -o ! -r $(SRCDIR)/tincfg.h ; then $(MAKE) build ; fi
-	@-if $(TEST) -r $(SRCDIR)/options_menu.h -a -r $(SRCDIR)/tincfg.h ; then cppcheck -f -v -I $(INCDIR) -I $(CANDIR) -I $(PCREDIR) -I $(SRCDIR) $(SRCDIR) 1>/dev/null 2>$(TOPDIR)/CPPCHECK ; fi
-
-FORCE:

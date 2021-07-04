@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-07-04
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -90,10 +90,21 @@ show_tagged_lines(
 	void)
 {
 	int i, j;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wtmp;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	for (i = grpmenu.first; i < grpmenu.first + NOTESLINES && i < grpmenu.max; ++i) {
-		if ((i != grpmenu.curr) && (j = line_is_tagged((int) base[i])))
+		if ((i != grpmenu.curr) && (j = line_is_tagged((int) base[i]))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if ((wtmp = char2wchar_t(tin_ltoa(j, 3)))) {
+				mark_screen(i, mark_offset - (3 - art_mark_width), wtmp);
+				free(wtmp);
+			}
+#else
 			mark_screen(i, mark_offset - 2, tin_ltoa(j, 3));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		}
 	}
 }
 
@@ -152,6 +163,9 @@ group_page(
 	t_bool xflag = FALSE;	/* 'X'-flag */
 	t_bool repeat_search;
 	t_function func;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wtmp;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	/*
 	 * Set the group attributes
@@ -196,10 +210,10 @@ group_page(
 
 	show_group_page();
 
-#	ifdef DEBUG
+#ifdef DEBUG
 	if (debug & DEBUG_NEWSRC)
 		debug_print_bitmap(group, NULL);
-#	endif /* DEBUG */
+#endif /* DEBUG */
 
 	/* reset ret_code */
 	ret_code = 0;
@@ -228,11 +242,11 @@ group_page(
 					prompt_item_num(func_to_key(func, group_keys), group->attribute->thread_articles == THREAD_NONE ? _(txt_select_art) : _(txt_select_thread));
 				break;
 
-#	ifndef NO_SHELL_ESCAPE
+#ifndef NO_SHELL_ESCAPE
 			case GLOBAL_SHELL_ESCAPE:
 				do_shell_escape();
 				break;
-#	endif /* !NO_SHELL_ESCAPE */
+#endif /* !NO_SHELL_ESCAPE */
 
 			case GLOBAL_FIRST_PAGE:		/* show first page of threads */
 				top_of_list();
@@ -456,14 +470,14 @@ group_page(
 				show_inverse_video_status();
 				break;
 
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 			case GLOBAL_TOGGLE_COLOR:
 				if (toggle_color()) {
 					show_group_page();
 					show_color_status();
 				}
 				break;
-#	endif /* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 
 			case GROUP_MARK_THREAD_READ:			/* mark current thread/range/tagged threads as read */
 			case MARK_THREAD_UNREAD:				/* or unread */
@@ -657,15 +671,31 @@ group_page(
 								arts[ii].tagged = ++num_of_tagged_arts;
 						}
 					}
-					if ((ii = line_is_tagged(n)))
+					if ((ii = line_is_tagged(n))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+						if ((wtmp = char2wchar_t(tin_ltoa(ii, 3)))) {
+							mark_screen(grpmenu.curr, mark_offset - (3 - art_mark_width), wtmp);
+							free(wtmp);
+						}
+#else
 						mark_screen(grpmenu.curr, mark_offset - 2, tin_ltoa(ii, 3));
-					else {
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+					} else {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+						wchar_t mark[] = { L'\0', L'\0' };
+#else
 						char mark[] = { '\0', '\0' };
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 						stat_thread(grpmenu.curr, &sbuf);
 						mark[0] = sbuf.art_mark;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+						mark_screen(grpmenu.curr, mark_offset - (3 - art_mark_width), L"   "); /* clear space used by tag numbering */
+						mark_screen(grpmenu.curr, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
+#else
 						mark_screen(grpmenu.curr, mark_offset - 2, "  "); /* clear space used by tag numbering */
 						mark_screen(grpmenu.curr, mark_offset, mark);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 					}
 					if (tagged)
 						show_tagged_lines();
@@ -788,11 +818,19 @@ group_page(
 				}
 				assert(n > 0);
 				{
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					wchar_t mark[] = { L'\0', L'\0' };
+#else
 					char mark[] = { '\0', '\0' };
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 					stat_thread(grpmenu.curr, &sbuf);
 					mark[0] = sbuf.art_mark;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					mark_screen(grpmenu.curr, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
+#else
 					mark_screen(grpmenu.curr, mark_offset, mark);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				}
 
 				show_group_title(TRUE);
@@ -953,17 +991,34 @@ update_group_page(
 	void)
 {
 	int i, j;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t mark[] = { L'\0', L'\0' };
+	wchar_t *wtmp;
+#else
 	char mark[] = { '\0', '\0' };
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	struct t_art_stat sbuf;
 
 	for (i = grpmenu.first; i < grpmenu.first + NOTESLINES && i < grpmenu.max; ++i) {
-		if ((j = line_is_tagged((int) base[i])))
+		if ((j = line_is_tagged((int) base[i]))) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if ((wtmp = char2wchar_t(tin_ltoa(j, 3)))) {
+				mark_screen(i, mark_offset - (3 - art_mark_width), wtmp);
+				free(wtmp);
+			}
+#else
 			mark_screen(i, mark_offset - 2, tin_ltoa(j, 3));
-		else {
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		} else {
 			stat_thread(i, &sbuf);
 			mark[0] = sbuf.art_mark;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			mark_screen(i, mark_offset - (3 - art_mark_width), L"   ");	/* clear space used by tag numbering */
+			mark_screen(i, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
+#else
 			mark_screen(i, mark_offset - 2, "  ");	/* clear space used by tag numbering */
 			mark_screen(i, mark_offset, mark);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			if (sbuf.art_mark == tinrc.art_marked_selected)
 				draw_mark_selected(i);
 		}
@@ -1092,25 +1147,51 @@ void
 mark_screen(
 	int screen_row,
 	int screen_col,
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	const wchar_t *value)
+#else
 	const char *value)
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 {
+
 	if (tinrc.draw_arrow) {
 		MoveCursor(INDEX2LNUM(screen_row), screen_col);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		my_fputws(value, stdout);
+#else
 		my_fputs(value, stdout);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		stow_cursor();
 		my_flush();
 	} else {
 #ifdef USE_CURSES
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		char *tmp;
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		int y, x;
+
 		getyx(stdscr, y, x);
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if ((tmp = wchar_t2char(value))) {
+			mvaddstr(INDEX2LNUM(screen_row), screen_col, tmp);
+			free(tmp);
+		}
+#	else
 		mvaddstr(INDEX2LNUM(screen_row), screen_col, value);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		MoveCursor(y, x);
 #else
 		int i;
+
 		for (i = 0; value[i] != '\0'; i++)
 			screen[INDEX2SNUM(screen_row)].col[screen_col + i] = value[i];
+
 		MoveCursor(INDEX2LNUM(screen_row), screen_col);
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		my_fputws(value, stdout);
+#	else
 		my_fputs(value, stdout);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #endif /* USE_CURSES */
 		currmenu->draw_arrow();
 	}
@@ -1165,6 +1246,7 @@ build_sline(
 	int j, k, n;
 	size_t len;
 	struct t_art_stat sbuf;
+	t_bool tagged = FALSE;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wtmp, *wtmp2;
 #else
@@ -1286,10 +1368,16 @@ build_sline(
 			case 'm':	/* article flags, tag number, or whatever */
 				if (!grp_fmt.mark_offset)
 					grp_fmt.mark_offset = (size_t) (mark_offset = strwidth(buffer) + 2);
-				if ((k = line_is_tagged(respnum)))
+				if ((k = line_is_tagged(respnum))) {
 					STRCPY(tmp_buf, tin_ltoa(k, 3));
-				else
+					strcat(buffer, " ");
+					tagged = TRUE;
+				} else
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					snprintf(tmp_buf, sizeof(tmp_buf), "%*c%lc", 2 + (art_mark_width - wcwidth(sbuf.art_mark)), ' ', sbuf.art_mark);
+#else
 					snprintf(tmp_buf, sizeof(tmp_buf), "  %c", sbuf.art_mark);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				strcat(buffer, tmp_buf);
 				break;
 
@@ -1371,7 +1459,7 @@ build_sline(
 #ifdef USE_CURSES
 	free(buffer);
 #endif /* USE_CURSES */
-	if (sbuf.art_mark == tinrc.art_marked_selected)
+	if (!tagged && sbuf.art_mark == tinrc.art_marked_selected)
 		draw_mark_selected(i);
 }
 
@@ -1421,39 +1509,72 @@ show_group_title(
 
 	/* article count */
 	if ((cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		snprintf(tmp, sizeof(tmp), " %d/%d%lc",
+			(cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit, art_cnt,
+			(curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
+#else
 		snprintf(tmp, sizeof(tmp), " %d/%d%c",
 			(cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit, art_cnt,
 			(curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	else
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		snprintf(tmp, sizeof(tmp), " %d%lc",
+			art_cnt,
+			(curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
+#else
 		snprintf(tmp, sizeof(tmp), " %d%c",
 			art_cnt,
 			(curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 
 	/* selected articles */
 	if (curr_group->attribute->show_only_unread_arts)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		snprintf(tmp, sizeof(tmp), " %d%lc",
+			selected_art_cnt, tinrc.art_marked_selected);
+#else
 		snprintf(tmp, sizeof(tmp), " %d%c",
 			selected_art_cnt, tinrc.art_marked_selected);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	else
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		snprintf(tmp, sizeof(tmp), " %d%lc %d%lc",
+			selected_art_cnt, tinrc.art_marked_selected,
+			read_selected_art_cnt, tinrc.art_marked_read_selected);
+#else
 		snprintf(tmp, sizeof(tmp), " %d%c %d%c",
 			selected_art_cnt, tinrc.art_marked_selected,
 			read_selected_art_cnt, tinrc.art_marked_read_selected);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 
 	/* recent articles */
 	if (tinrc.recent_time) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		snprintf(tmp, sizeof(tmp), " %d%lc",
+			recent_art_cnt, tinrc.art_marked_recent);
+#else
 		snprintf(tmp, sizeof(tmp), " %d%c",
 			recent_art_cnt, tinrc.art_marked_recent);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 		if (sizeof(buf) > strlen(buf) + strlen(tmp))
 			strcat(buf, tmp);
 	}
 
 	/* killed articles */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	snprintf(tmp, sizeof(tmp), " %d%lc",
+		killed_art_cnt, tinrc.art_marked_killed);
+#else
 	snprintf(tmp, sizeof(tmp), " %d%c",
 		killed_art_cnt, tinrc.art_marked_killed);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 

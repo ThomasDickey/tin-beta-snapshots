@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-01
+ *  Updated   : 2021-07-02
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -115,6 +115,7 @@ char userid[PATH_LEN];
 #endif /* !NNTP_ONLY */
 
 t_function last_search = GLOBAL_SEARCH_REPEAT;	/* for repeated search */
+int art_mark_width = 1;
 int hist_last[HIST_MAXNUM + 1];
 int hist_pos[HIST_MAXNUM + 1];
 int iso2asc_supported;			/* Convert ISO-Latin1 to Ascii */

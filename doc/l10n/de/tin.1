@@ -3,18 +3,19 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2021-02-25
+.\" Updated   : 2021-05-25
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
+.IX Title "tin 1"
 .\"*******************************************************************
 .\"
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24. Dezember 2020" 2.4.6 "Usenet Newsreader"
+.TH tin 1 "24. Dezember 2020" 2.6.0 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -22,6 +23,7 @@
 .\"
 tin, rtin \- Usenet Newsreader
 .SH ÜBERSICHT
+.IX Header ÜBERSICHT
 .\"
 .\"
 \fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|[\|\fB\-a\fP\|]
@@ -32,6 +34,7 @@ tin, rtin \- Usenet Newsreader
 [\|\fB\-g\fP \fIServer\fP\|] [\|\fB\-m\fP \fIMail\-Verz.\fP\|] [\|\fB\-p\fP \fIPort\fP\|] [\|\fB\-I\fP
 \fIindex\-Verz.\fP\|]\ \|[\fINewsgruppe\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH BESCHREIBUNG
+.IX Header BESCHREIBUNG
 \fBtin\fP ist ein einfach zu bedienender Newsreader für das Usenet. Er kann
 Artikel von einem lokalen (z. B. aus \fI/var/spool/news\fP) oder entfernten
 Server (\fBrtin\fP oder \fBtin \-r\fP Option) mittels NNTP (Network News Transport
@@ -57,6 +60,7 @@ ausgewählte Gruppe wird durch Drücken von '\fB<CR>\fP' betreten.
 Durch Drücken der \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') Taste wird
 die nächste Newsgruppe mit ungelesenen Artikeln betreten.
 .SH RÜCKGABEWERT
+.IX Header RÜCKGABEWERT
 .\" TODO: also exits with signalnr cought as exit status
 .TP 
 \fB0\fP
@@ -74,6 +78,7 @@ Ungelesene Nachrichten vorhanden (nur im Batch\-Modus (\*(rq\fB\-Z\fP\*(rq)).
 .\"
 NNTP Fehler.
 .SH OPTIONEN
+.IX Header OPTIONEN
 .TP  12
 \fB\-4\fP
 Verbindung via IPv4 zum NNTP Server erzwingen. Nur verfügbar, wenn \fBtin\fP
@@ -281,6 +286,7 @@ NB: With the \*(rq\fB\-n\fP\*(rq flag, only unsubscribed groups in the
 Kommandozeilenoptionen haben eine höhere Priorität als attributes und tinrc
 Optionen und übersteuern daher die konfigurierten Werte.
 .SH GEBRAUCH
+.IX Header GEBRAUCH
 .\"
 .\"
 .SS "NEWS ADMINISTRATION"
@@ -722,8 +728,8 @@ Rückwärts nach dem angegebenem Subject suchen.
 Wähle aktuellen Thread für die spätere Verarbeitung aus.
 .TP 
 \fBGroupDoAutoSel '+'\fP
-Selects all threads in current group. It is a shortcut for calling
-\fBGroupSelPattern\fP with a pattern of \*(rq*\*(rq.
+Wählt alle Threads in der aktuellen Gruppe aus. Es ist eine Abkürzung für
+\fBGroupSelPattern\fP mit einem Muster von \*(rq*\*(rq.
 .TP 
 \fBGroupToggleThdSel '.'\fP
 Toggle selection of current thread. If at least one unread article, (but not
@@ -1125,7 +1131,8 @@ Reply through mail to the author of the current article with a copy of the
 article with all headers included.
 .TP 
 \fBPagePGPCheckArticle '^G'\fP
-\fB\%pgp\fP(1) Operation auf den Artikel an anwenden.
+Perform \fB\%pgp\fP(1)  / \fB\%gpg\fP(1)  operations on article. This expects
+inline pgp (\fBRFC\%4880\fP) and not MIME pgp (\fBRFC\%3156\fP).
 .TP 
 \fBPageToggleRaw '^H'\fP
 Schaltet den Anzeigemodus um (Roh einschließlich aller Header zu
@@ -1159,9 +1166,9 @@ Toggle the display of uuencoded sections. The default behavior is taken from
 the \fBhide_uue\fP variable in the tinrc file.
 .TP 
 \fBPageReveal ')'\fP
-The formfeed character (^L) is often used to hide 'spoilers' that the reader
-may not initially wish to see when viewing an article. Any text after a
-formfeed is not displayed. This key\-press acts like a reveal key and turns
+The form feed character (^L) is often used to hide 'spoilers' that the
+reader may not initially wish to see when viewing an article. Any text after
+a formfeed is not displayed. This key\-press acts like a reveal key and turns
 the hidden text back on. Scrolling down will also reveal the text, scrolling
 up will hide it again.
 .TP 
@@ -1246,7 +1253,8 @@ vom selben Benutzer geschrieben worden sein. Die Nachricht zum Löschen ist
 in der Newsgroupe 'control' oder 'control.cancel' zu sehen.
 .TP 
 \fBPageEditArticle 'e'\fP
-Edit the current article. This is restricted to mailgroups and saved news.
+Aktuellen Artikel bearbeiten. Dies ist auf Mailgroups und gespeicherte
+Nachrichten beschränkt.
 .TP 
 \fBEditFilter 'E'\fP
 Filter\-Datei bearbeiten und danach anwenden.
@@ -1342,8 +1350,8 @@ Kehrt zur Auswahlebene zurück.
 Gehe zum übergeordneten Artikel.
 .TP 
 \fBPageViewUrl 'U'\fP
-Display a list of URLs in the current article. See the section "URL LISTING"
-for more information.
+Eine Liste der URLs im aktuellen Artikel anzeigen. Weitere Informationen
+finden Sie im Abschnitt "URL LISTE".
 .TP 
 \fBPageViewAttach 'V'\fP
 Display a list of attachments of the current article. See the section
@@ -1455,10 +1463,11 @@ Name oder Beschreibung des Anhangs in der untersten Zeile anzeigen.
 Hilfeseite der verfügbaren Befehle.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-.\" -------------------------------------------------------------------
-.\"
 Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
 Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
+.RE
+.\" -------------------------------------------------------------------
+.\"
 .SS "POSTING VERLAUFSLISTE"
 \fBDisplayPostHist\fP ('\fBW\fP') displays a list of all previous posted articles
 stored in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP. The following informatiosn
@@ -1500,7 +1509,6 @@ Hilfeseite der verfügbaren Befehle.
 \fBToggleHelpDisplay 'H'\fP
 Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
 Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
-.RE
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1977,7 +1985,8 @@ Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP). Default is OFF.
 .TP 
 \fBMailadresse (und Name) (mail_address)\fP
 User's mail address (and full name), if not username@host. This is used when
-creating articles, sending mail and when \fB\%pgp\fP(1)  signing.
+creating articles, sending mail and when \fB\%pgp\fP(1)  / \fB\%gpg\fP(1)  signing
+(\fBRFC\%4880\fP).
 .TP 
 \fBMIME\-Kodierung für E\-Mails (mail_mime_encoding)\fP
 MIME encoding of the body in mail message, if necessary (8bit, base64,
@@ -2932,12 +2941,12 @@ patterns. Some examples:
 .sp
 \fIalt.config,news.*,!news.test\fP
 .sp
-Matches alt.config and everything in the 'news' hierarchy except news.test
+Passt auf alt.config und alles in der 'news'\-Hierarchie außer news.test
 .PP
 .\"
 .\"
-See the explanation for the $\fBAUTOSUBSCRIBE\fP variables for further
-examples.
+See the explanation for the $\fBAUTOSUBSCRIBE\fP and $\fBAUTOUNSUBSCRIBE\fP
+variables for further examples.
 .SS SIGNATUREN
 \fBtin\fP will recognize a signature in either
 \fI${TIN_HOMEDIR:\-"$HOME"}/.signature\fP or \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP.
@@ -3262,6 +3271,7 @@ lesen, manuell zu bereinigen:
 .\"
 .\"
 .SH DATEIEN
+.IX Header DATEIEN
 .\" TODO: mention dead.article, dead.articles
 .\"               .article[.$$], .cancel[.$$], .letter[.$$]?
 .\"       ${XDG_RUNTIME_DIR:\-"$HOME"}/.slrnfaces
@@ -3417,6 +3427,7 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .\"
 .\"
 .SH UMGEBUNGSVARIABLEN
+.IX Header UMGEBUNGSVARIABLEN
 .\" TODO: - sort in a useful order
 .\"       - add undocumented env-vars (e.g. $DEV_TCP (SCO),
 .\"         ${HOST:-"$HOSTNAME"} fallback)
@@ -3702,6 +3713,7 @@ Der Pfadname der Login\-Shell des Benutzers. Dient zum Setzen von
 Pfadname des Verzeichnisses, in dem nicht zwingend benötigte Laufzeitdateien
 abgelegt werden sollen.
 .SH SIGNALE
+.IX Header SIGNALE
 .\" TODO: add missing, sort useful, document in detail
 \fBtin\fP verarbeitet folgende Signale:
 .TP 
@@ -3725,6 +3737,7 @@ Beenden ohne das Terminal (tty) wiederherzustellen.
 .\"
 Speichern der \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-Datei.
 .SH SICHERHEIT
+.IX Header SICHERHEIT
 .\"
 .\"
 Falls \fBtin\fP im Debug\-Modus (\*(rq\fB\-D n\fP\*(rq) gestartet wird, werden in
@@ -3734,6 +3747,7 @@ Multiuser\-Systemen sollte daher $TMPDIR auf einen sicheren Speicherort
 gesetzt werden, bevor \fBtin\fP im Debug\-Modus gestartet wird
 (z. B. TMPDIR=$HOME tin \-D 1).
 .SH "KONFORM ZU"
+.IX Header "KONFORM ZU"
 .\" - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
 .\"   RFC\%4643, RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
 .\"
@@ -3742,6 +3756,7 @@ gesetzt werden, bevor \fBtin\fP im Debug\-Modus gestartet wird
 Section 12, Utility Conventions (Utility Argument Syntax, Utility Syntax
 Guidelines).
 .SH ANMERKUNGEN
+.IX Header ANMERKUNGEN
 Unterstützung für reguläre Ausdrücke wird durch die PCRE\-Bibliothek
 \fBpcre\fP(3) bereitgestellt welche Open\-Source\-Software ist. Autor ist Philip
 Hazel und das Urheberrecht liegt bei der University of Cambridge, England.
@@ -3750,6 +3765,7 @@ Hazel und das Urheberrecht liegt bei der University of Cambridge, England.
 .\"
 <https://www.pcre.org/>
 .SH FEHLER
+.IX Header FEHLER
 \fBCNews\fP NNTPd, \fB\%noffle\fP(1) (<= V1.0\-pre5) und \fBNewsCache\fP (<=
 V1.1.91) können nicht mit gepipelinten GROUP\-Befehlen umgehen. Falls Sie
 Probleme mit einem der genannten Server haben, definieren Sie
@@ -3766,6 +3782,7 @@ haben benutzen Sie bitte die Funktion \fBBugReport\fP ('\fBR\fP') und schreiben
 auf Englisch. Bitte fügen Sie Ihrem Bug\-Report KEINE Core\-Datei bei \(em
 außer wir haben diese anfordert.
 .SH GESCHICHTE
+.IX Header GESCHICHTE
 \fBtin\fP basiert auf \fB\%tass\fP(1), einem Newsreader der von Rich Skrenta
 entwickelt und dessen Code im März 1991 von ihm in alt.sources
 veröffentlicht wurde. Die erste Version von \fBtin\fP wurde am 23. August 1991
@@ -3819,6 +3836,7 @@ Urs Janßen <urs@tin.org>
 Erika Mustermann <erika@example.org>
 .\"
 .SH "SIEHE AUCH"
+.IX Header "SIEHE AUCH"
 \fB\%elm\fP(1), \fB\%emacs\fP(1), \fB\%gpg\fP(1), \fB\%inews\fP(1), \fB\%ispell\fP(1),
 \fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%mutt\fP(1), \fB\%noffle\fP(1),
 \fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1),
@@ -3830,5 +3848,5 @@ Erika Mustermann <erika@example.org>
 \fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5),
 \fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP,
 \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP,
-\fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP,
-\fBRFC\%5537\fP, \fBRFC\%6048\fP
+\fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%4880\fP,
+\fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP

@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-02-27
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -872,7 +872,8 @@ reconnect(
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
 			snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
 			put_server(last_put);
-			s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
+			if (s_gets(last_put, NNTP_STRLEN, nntp_rd_fp) == NULL)
+				*last_put = '\0';
 #	ifdef DEBUG
 			if (debug & DEBUG_NNTP)
 				debug_print_file("NNTP", "<<<%s%s", logtime(), last_put);
@@ -1864,7 +1865,8 @@ get_respcode(
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
 			snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
 			put_server(last_put);
-			s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
+			if (s_gets(last_put, NNTP_STRLEN, nntp_rd_fp) == NULL)
+				*last_put = '\0';
 #	ifdef DEBUG
 			if (debug & DEBUG_NNTP)
 				debug_print_file("NNTP", "<<<%s%s", logtime(), last_put);

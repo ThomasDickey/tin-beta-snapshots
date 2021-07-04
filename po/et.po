@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-25 22:29+0100\n"
+"POT-Creation-Date: 2021-06-28 17:25+0200\n"
 "PO-Revision-Date: 2020-12-25 20:39+0200\n"
 "Last-Translator: Toomas Soome <tsoome@me.com>\n"
 "Language-Team: Estonian <linux-ee@lists.eenet.ee>\n"
@@ -23,18 +23,18 @@ msgid "Reading %s\n"
 msgstr "Loen %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:1192
+#: src/art.c:1199
 msgid "Threading by multipart"
 msgstr "Järjestan osade järgi"
 
 #. -> lang.c
-#: src/art.c:2479
+#: src/art.c:2486
 #, c-format
 msgid "Writing %s\n"
 msgstr "Kirjutan %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:2558
+#: src/art.c:2565
 msgid "Writing overview cache..."
 msgstr "Kirjutan ülevaate puhvri..."
 
@@ -1547,12 +1547,12 @@ msgid ""
 "#     score=STRING      One of the two keywords: 'hot' or 'kill'.\n"
 "#   subj=STRING       Optional. Subject: line (e.g. How to be a wizard).\n"
 "#   from=STRING       Optional. From: line (e.g. *Craig Shergold*).\n"
-"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@ether.net>) "
+"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@example.net>) "
 "with\n"
 "#                     full references.\n"
 "#   msgid_last=STRING Optional. Like above, but with last reference only.\n"
 "#   msgid_only=STRING Optional. Like above, but without references.\n"
-"#   refs_only=STRING  Optional. References: line (e.g. <123@ether.net>) "
+"#   refs_only=STRING  Optional. References: line (e.g. <123@example.net>) "
 "without\n"
 "#                     Message-ID:\n"
 "#   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n"
@@ -3304,16 +3304,17 @@ msgid "Posted Articles Menu Commands"
 msgstr "Atribuutide menüü käsud"
 
 #: src/lang.c:736
-msgid "Lookup failed\n"
+msgid "Lookup failed"
 msgstr ""
 
 #: src/lang.c:737
-msgid "Operation not available for replies by mail\n"
-msgstr ""
+#, fuzzy
+msgid "Operation not available for replies by mail"
+msgstr "tagasi gruppide valikusse"
 
 #: src/lang.c:738
 #, fuzzy
-msgid "Already in posted articles history level\n"
+msgid "Already in posted articles history level"
 msgstr "Postitatud artiklite ajalugu"
 
 #: src/lang.c:739
@@ -4397,8 +4398,8 @@ msgid "Writing attributes file..."
 msgstr "Kirjutan atribuutide faili..."
 
 #: src/lang.c:999
-#, c-format
-msgid "%d Responses"
+#, fuzzy, c-format
+msgid "%4d Responses"
 msgstr "%d Vastust"
 
 #: src/lang.c:1001
@@ -8252,17 +8253,17 @@ msgid "reading from local spool"
 msgstr "loen lokaalsest spool kataloogist"
 
 #. TODO: != ENOENT ? and -> lang.c
-#: src/misc.c:749
+#: src/misc.c:753
 #, c-format
 msgid "Error: unlink %s"
 msgstr "Viga: unlink %s"
 
-#: src/misc.c:3904
+#: src/misc.c:3933
 #, c-format
 msgid "Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr "Versioon: %s %s väljalase %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3907
+#: src/misc.c:3936
 #, c-format
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Versioon: %s %s väljalase %s (\"%s\")\n"
@@ -8284,25 +8285,25 @@ msgstr ""
 msgid "NNTP connection error. Exiting..."
 msgstr "NNTP ühenduse viga. Lõpetan..."
 
-#: src/nntplib.c:872 src/nntplib.c:1864
+#: src/nntplib.c:872 src/nntplib.c:1865
 msgid "Rejoin current group\n"
 msgstr "Taasühinen jooksva grupiga\n"
 
-#: src/nntplib.c:880 src/nntplib.c:1872
+#: src/nntplib.c:881 src/nntplib.c:1874
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Lugesin (%s)\n"
 
-#: src/nntplib.c:882
+#: src/nntplib.c:883
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "Saada viimane käsk uuesti (%s)\n"
 
-#: src/nntplib.c:1512
+#: src/nntplib.c:1513
 msgid "CAPABILITIES did not announce READER"
 msgstr "CAPABILITIES ei sisalda READER"
 
-#: src/nntplib.c:2018
+#: src/nntplib.c:2020
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8311,7 +8312,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "ei saa laiendada %s\n"
 
-#: src/post.c:1772
+#: src/post.c:1775
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8320,7 +8321,7 @@ msgstr ""
 "Rida %d on pikem, kui %d sümbolit ja tuleks poolitada, aga kodeering\n"
 "pole ei %s ega %s\n"
 
-#: src/post.c:1777
+#: src/post.c:1780
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8331,7 +8332,7 @@ msgstr ""
 "on %s ja MIME_BREAK_LONG_LINES pole seatud või postitamine ei sisalda\n"
 "8 bitiseid sümboleid ja seetõttu poolitamist ei toimu\n"
 
-#: src/post.c:1779
+#: src/post.c:1782
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8340,7 +8341,7 @@ msgstr ""
 "Rida %d on pikem, kui %d sümbolit ja tuleks poolitada, aga kodeering\n"
 "pole %s\n"
 
-#: src/post.c:2767
+#: src/post.c:2769
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Postitan: %.*s ..."
@@ -8386,7 +8387,7 @@ msgstr "Ehitan viidete-puud (%d/%d)..."
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1324
+#: src/rfc2047.c:1330
 #, c-format
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
@@ -8416,21 +8417,21 @@ msgstr "kõik"
 msgid " R"
 msgstr " L"
 
-#: src/xface.c:73
+#: src/xface.c:75
 msgid "Can't run slrnface: Not running in an xterm."
 msgstr "Slrnface ei saa käivitada: Ei tööta xterm terminalis."
 
-#: src/xface.c:85 src/xface.c:96 src/xface.c:111
+#: src/xface.c:87 src/xface.c:98 src/xface.c:113
 #, c-format
 msgid "Can't run slrnface: Environment variable %s not found."
 msgstr "Slrnface ei saa käivitada: Keskkonnamuutuja %s puudub."
 
-#: src/xface.c:120 src/xface.c:152
+#: src/xface.c:122 src/xface.c:154
 #, c-format
 msgid "Can't run slrnface: failed to create %s"
 msgstr "Slrnface ei saa käivitada: %s loomine ebaõnnestus"
 
-#: src/xface.c:130
+#: src/xface.c:132
 msgid ""
 "This directory is used to create named pipes for communication between\n"
 "slrnface and its parent process. It should normally be empty because\n"
@@ -8454,44 +8455,16 @@ msgstr ""
 "Kui see kataloog on haagitud NFS serverilt, võib slrnface töö ajal\n"
 "siiski näha ka vastavaid faile. Kui see on nii, ärge neid kustutage.\n"
 
-#: src/xface.c:144
+#: src/xface.c:146
 msgid "Can't run slrnface: couldn't construct fifo name."
 msgstr "Slrnface ei saa käivitada: ei õnnestu konstrueerida fifo nime."
 
-#: src/xface.c:183
+#: src/xface.c:185
 #, c-format
 msgid "Slrnface abnormally exited, code %d."
 msgstr "Slrnface lõpetas veaga, kood %d."
 
-#: src/xface.c:230
+#: src/xface.c:231
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Slrnface ebaõnnestus: %s."
-
-#, fuzzy
-#~ msgid "Operation limited to articels of the current group."
-#~ msgstr "postita (kirjuta) artikkel jooksvasse gruppi"
-
-#, fuzzy
-#~ msgid "Operation is not available at this level\n"
-#~ msgstr "tagasi gruppide valikusse"
-
-#~ msgid "#  auto_save=ON/OFF\n"
-#~ msgstr "#  auto_save=ON/OFF\n"
-
-#~ msgid ""
-#~ "Auto save article/thread by Archive-name: header. <SPACE> toggles & <CR> "
-#~ "sets."
-#~ msgstr ""
-#~ "Salvesta artiklid Archive-name: päiserea järgi. <TÜHIK> lülitab, <CR> "
-#~ "seab."
-
-#~ msgid "Use Archive-name: header for save"
-#~ msgstr "Kasuta salvestamisel Archive-name:"
-
-#~ msgid ""
-#~ "# If ON articles/threads with Archive-name: in mail header will\n"
-#~ "# be automatically saved with the Archive-name & part/patch no.\n"
-#~ msgstr ""
-#~ "# Kui väärtus on ON, salvestatakse artiklid/teemad, mis omavad päiserida\n"
-#~ "# Archive-name:, automaatselt selle reaga määratud nime ja osa numbriga.\n"

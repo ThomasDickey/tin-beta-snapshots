@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-02-27
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2021 Steven J. Madsen <steve@erinet.com>
@@ -109,6 +109,7 @@ PGPNAME, pgpopts, pt, mailto, pt
 PGPNAME, pgpopts, pt, mailto, mailfrom, pt
 #	endif /* HAVE_GPG */
 
+/* RFC 4880 6.2 */
 #	define PGP_SIG_TAG "-----BEGIN PGP SIGNED MESSAGE-----\n"
 #	define PGP_KEY_TAG "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
 
@@ -219,13 +220,14 @@ split_file(
 	if ((plaintext = fopen(pt, "w")) == NULL)
 		goto err_hdr;
 
-	fgets(buf, LEN, art);			/* Copy the hdr up to and including the \n */
-	while (strcmp(buf, "\n")) {
+	if (fgets(buf, LEN, art) != NULL) {			/* Copy the hdr up to and including the \n */
+		while (strcmp(buf, "\n")) {
+			fputs(buf, header);
+			fgets(buf, LEN, art);
+		}
 		fputs(buf, header);
-		fgets(buf, LEN, art);
+		copy_fp(art, plaintext);
 	}
-	fputs(buf, header);
-	copy_fp(art, plaintext);
 
 	fclose(plaintext);
 err_hdr:
@@ -458,14 +460,15 @@ pgp_check_article(
 		return FALSE;
 	}
 
-	fgets(buf, LEN, artinfo->raw);		/* Copy the body whilst looking for SIG/KEY tags */
-	while (!feof(artinfo->raw)) {
-		if (!pgp_signed && !strcmp(buf, PGP_SIG_TAG))
-			pgp_signed = TRUE;
-		if (!pgp_key && !strcmp(buf, PGP_KEY_TAG))
-			pgp_key = TRUE;
-		fputs(buf, art);
-		fgets(buf, LEN, artinfo->raw);
+	if (fgets(buf, LEN, artinfo->raw) != NULL) {		/* Copy the body whilst looking for SIG/KEY tags */
+		while (!feof(artinfo->raw)) {
+			if (!pgp_signed && !strcmp(buf, PGP_SIG_TAG))
+				pgp_signed = TRUE;
+			if (!pgp_key && !strcmp(buf, PGP_KEY_TAG))
+				pgp_key = TRUE;
+			fputs(buf, art);
+			fgets(buf, LEN, artinfo->raw);
+		}
 	}
 	fclose(art);
 

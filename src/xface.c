@@ -3,7 +3,7 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2013-11-06
+ *  Updated   : 2021-03-04
  *  Notes     :
  *
  * Copyright (c) 2003-2021 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
@@ -50,6 +50,8 @@
 #ifdef XFACE_ABLE
 
 static int slrnface_fd = -1;
+
+#define WRITE_FACE_FD(s)	if (write(slrnface_fd, s, strlen(s)) != (ssize_t) strlen(s)) {;}
 
 
 void
@@ -186,9 +188,8 @@ slrnface_start(
 
 				switch (WEXITSTATUS(status)) {
 					case 0:	/* All fine, open the pipe */
-						slrnface_fd = open(fifo, O_WRONLY, (S_IRUSR|S_IWUSR));
-						if (slrnface_fd != -1) {
-							write(slrnface_fd, "start\n", strlen("start\n"));
+						if ((slrnface_fd = open(fifo, O_WRONLY, (S_IRUSR|S_IWUSR))) != -1) {
+							WRITE_FACE_FD("start\n");
 							message = NULL;
 						} else
 							message = "can't open FIFO";
@@ -255,12 +256,12 @@ slrnface_display_xface(
 		return;
 
 	if (!face || !*face)
-		write(slrnface_fd, "clear\n", strlen("clear\n"));
+		slrnface_clear_xface();
 	else {
 		char buf[2000];	/* slrnface will ignore X-Faces larger than approx. 2000 chars. */
 
 		snprintf(buf, sizeof(buf), "xface %s\n", face);
-		write(slrnface_fd, buf, strlen(buf));
+		WRITE_FACE_FD(buf);
 	}
 }
 
@@ -272,7 +273,7 @@ slrnface_clear_xface(
 	if (slrnface_fd < 0)
 		return;
 
-	write(slrnface_fd, "clear\n", strlen("clear\n"));
+	WRITE_FACE_FD("clear\n");
 }
 
 
@@ -283,7 +284,7 @@ slrnface_suppress_xface(
 	if (slrnface_fd < 0)
 		return;
 
-	write(slrnface_fd, "suppress\n", strlen("suppress\n"));
+	WRITE_FACE_FD("suppress\n");
 }
 
 
@@ -294,7 +295,7 @@ slrnface_show_xface(
 	if (slrnface_fd < 0)
 		return;
 
-	write(slrnface_fd, "show\n", strlen("show\n"));
+	WRITE_FACE_FD("show\n");
 }
 
 #else

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-07-03
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -878,6 +878,11 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #ifndef DEFAULT_COMMENT
 #	define DEFAULT_COMMENT	"> "	/* used when by follow-ups & replies */
 #endif /* !DEFAULT_COMMENT */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	define T_CHAR_FMT "lc"
+#else
+#	define T_CHAR_FMT "c"
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #ifndef ART_MARK_UNREAD
 #	define ART_MARK_UNREAD	'+'	/* used to show that an art is unread */
 #endif /* !ART_MARK_UNREAD */
@@ -1982,7 +1987,11 @@ typedef struct posted {
 } t_posted;
 
 struct t_art_stat {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t art_mark;		/* mark to use for this thread - not used for groups */
+#else
 	char art_mark;		/* mark to use for this thread - not used for groups */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	int total;		/* total article count */
 	int unread;		/* number of unread articles (does not include seen) arts */
 	int seen;		/* number of seen articles (ART_WILL_RETURN) */

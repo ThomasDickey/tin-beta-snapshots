@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-03-13
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2021 Jason Faultless <jason@altarstone.com>
@@ -451,7 +451,7 @@ process_text_body_part(
 				 * especially if we must resize it.
 				 * So copy buf to line (and resize line if necessary).
 				 */
-				if (max_line_len < strlen(buf) + 2) {
+				if (max_line_len < strlen(buf) + 2 || !line) {
 					max_line_len = strlen(buf) + 2;
 					line = my_realloc(line, max_line_len);
 				}

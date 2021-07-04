@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-07-03
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2021 Michael Bienia <michael@vorlon.ping.de>
@@ -125,6 +125,9 @@ static void redraw_screen(enum option_enum option);
 static void repaint_option(enum option_enum option);
 static void reset_state(enum option_enum option);
 static void scope_page(enum context level);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static void set_art_mark_width(void);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 static void set_first_option_on_screen(enum option_enum last_option);
 static void set_last_opt(void);
 static void set_last_option_on_screen(enum option_enum first_option);
@@ -497,7 +500,7 @@ print_any_option(
 			break;
 
 		case OPT_CHAR:
-			snprintf(ptr, len, "%c", *OPT_CHAR_list[option_table[option].var_index]);
+			snprintf(ptr, len, "%"T_CHAR_FMT, *OPT_CHAR_list[option_table[option].var_index]);
 			break;
 
 		default:
@@ -512,9 +515,13 @@ print_any_option(
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		my_printf("%.*s", cCOLS - 1, temp);
 	{
+#	if 1 /* portable enough? */
+		int x = getcurx(stdscr);
+#	else
 		int y, x;
 
 		getyx(stdscr, y, x);
+#	endif /* 1 */
 		if (x < cCOLS)
 			clrtoeol();
 	}
@@ -2558,8 +2565,12 @@ config_page(
 						case OPT_ART_MARKED_READ:
 						case OPT_ART_MARKED_KILLED:
 						case OPT_ART_MARKED_READ_SELECTED:
-							if (prompt_option_char(option))
+							if (prompt_option_char(option)) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+								set_art_mark_width();
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 								changed |= MISC_OPTS;
+							}
 							break;
 
 						default:
@@ -2579,6 +2590,35 @@ config_page(
 	/* NOTREACHED */
 	return;
 }
+
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+static void
+set_art_mark_width(
+	void)
+{
+	art_mark_width = 1;
+
+	if (wcwidth(tinrc.art_marked_deleted) > art_mark_width)
+		art_mark_width = wcwidth(tinrc.art_marked_deleted);
+	if (wcwidth(tinrc.art_marked_inrange) > art_mark_width)
+		art_mark_width = wcwidth(tinrc.art_marked_inrange);
+	if (wcwidth(tinrc.art_marked_return) > art_mark_width)
+		art_mark_width = wcwidth(tinrc.art_marked_return);
+	if (wcwidth(tinrc.art_marked_selected) > art_mark_width)
+		art_mark_width = wcwidth(tinrc.art_marked_selected);
+	if (wcwidth(tinrc.art_marked_recent) > art_mark_width)
+		art_mark_width = wcwidth(tinrc.art_marked_recent);
+	if (wcwidth(tinrc.art_marked_unread) > art_mark_width)
+		art_mark_width = wcwidth(tinrc.art_marked_unread);
+	if (wcwidth(tinrc.art_marked_read) > art_mark_width)
+		art_mark_width = wcwidth(tinrc.art_marked_read);
+	if (wcwidth(tinrc.art_marked_killed) > art_mark_width)
+		art_mark_width = wcwidth(tinrc.art_marked_killed);
+	if (wcwidth(tinrc.art_marked_read_selected) > art_mark_width)
+		art_mark_width = wcwidth(tinrc.art_marked_read_selected);
+}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
 /*

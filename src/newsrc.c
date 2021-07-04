@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-05-09
+ *  Updated   : 2020-06-30
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1488,7 +1488,7 @@ expand_bitmap(
 		first = group->newsrc.xmin - ((group->newsrc.xmin - min + (NBITS - 1)) & ~(NBITS - 1));
 
 	/* adjust first */
-	if (first > group->newsrc.xmax + 1)
+	if (group->newsrc.xmax < first - 1)
 		first = first - ((first - (group->newsrc.xmax + 1) + (NBITS - 1)) & ~(NBITS - 1));
 
 	/* check first */

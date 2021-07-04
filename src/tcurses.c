@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2018-07-02
+ *  Updated   : 2021-04-14
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -880,9 +880,13 @@ screen_contents(
 	int col,
 	char *buffer)
 {
-	int y, x;
 	int len = COLS - col;
+#	ifdef USE_TRACE
+	int y, x;
+
 	getyx(stdscr, y, x);
+#	endif /* USE_TRACE */
+
 	move(row, col);
 	TRACE(("screen_contents(%d,%d)", row, col));
 	len = my_innstr(buffer, len);

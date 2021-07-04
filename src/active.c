@@ -841,7 +841,7 @@ read_news_active_file(
 				} else
 					do_group_cmds = TRUE;
 
- 				fclose(fp);
+				fclose(fp);
 
 				if (j < PIPELINE_LIMIT) {
 					for (i = 0; i < r && !did_reconnect; i++) {

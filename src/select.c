@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-07-03
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -113,6 +113,9 @@ selection_page(
 	char key[MAXKEYLEN];
 	int i, n;
 	t_function func;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wtmp;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	selmenu.curr = start_groupnum;
 
@@ -460,7 +463,11 @@ selection_page(
 					break;
 				}
 				if (CURR_GROUP.subscribed) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					mark_screen(selmenu.curr, flags_offset, CURR_GROUP.newgroup ? L"N" : L"u");
+#else
 					mark_screen(selmenu.curr, flags_offset, CURR_GROUP.newgroup ? "N" : "u");
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 					subscribe(&CURR_GROUP, UNSUBSCRIBED, TRUE);
 					info_message(_(txt_unsubscribed_to), CURR_GROUP.name);
 					move_down();
@@ -567,7 +574,14 @@ selection_page(
 						buf[j++] = ' ';
 					buf[j] = '\0';
 				}
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				if ((wtmp = char2wchar_t(buf))) {
+					mark_screen(selmenu.curr, ucnt_offset, wtmp);
+					free(wtmp);
+				}
+#else
 				mark_screen(selmenu.curr, ucnt_offset, buf);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 
 			default:
@@ -808,10 +822,20 @@ build_gline(
 			case 'U':
 				if (active[my_group[i]].inrange) {
 					buf = sptr + strlen(sptr);
-					for (j = 1; j < sel_fmt.len_ucnt; ++j)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					char tmp_buf[10];
+
+					for (j = 1; j <= sel_fmt.len_ucnt - (art_mark_width - (art_mark_width - wcwidth(tinrc.art_marked_inrange))); ++j)
 						*buf++ = ' ';
+					snprintf(tmp_buf, sizeof(tmp_buf), "%"T_CHAR_FMT, tinrc.art_marked_inrange);
+					*buf-- = '\0';
+					strcat(buf, tmp_buf);
+#else
+					for (j = 1; j < sel_fmt.len_ucnt; ++j)
+ 						*buf++ = ' ';
 					*buf++ = tinrc.art_marked_inrange;
 					*buf = '\0';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				} else if (active[my_group[i]].newsrc.num_unread) {
 					int getart_limit;
 					t_artnum num_unread;
@@ -1134,6 +1158,9 @@ catchup_group(
 	t_bool goto_next_unread_group)
 {
 	char *smsg = NULL;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wtmp;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if ((!TINRC_CONFIRM_ACTION) || prompt_yn(sized_message(&smsg, _(txt_mark_group_read), group->name), TRUE) == 1) {
 		grp_mark_read(group, NULL);
@@ -1144,7 +1171,14 @@ catchup_group(
 			while (i < sel_fmt.len_ucnt)
 				buf[i++] = ' ';
 			buf[i] = '\0';
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if ((wtmp = char2wchar_t(buf))) {
+				mark_screen(i, mark_offset - (3 - art_mark_width), wtmp);
+				free(wtmp);
+			}
+#else
 			mark_screen(selmenu.curr, ucnt_offset, buf);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
 
 		if (goto_next_unread_group)

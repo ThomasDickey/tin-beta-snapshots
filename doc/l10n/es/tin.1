@@ -3,18 +3,19 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2021-02-25
+.\" Updated   : 2021-05-25
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
+.IX Title "tin 1"
 .\"*******************************************************************
 .\"
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "December 24th, 2020" 2.4.6 "Usenet newsreader"
+.TH tin 1 "December 24th, 2020" 2.6.0 "Usenet newsreader"
 .\"
 .\"
 .SH NOMBRE
@@ -22,6 +23,7 @@
 .\"
 tin, rtin \- Usenet newsreader
 .SH SINOPSIS
+.IX Header SINOPSIS
 .\"
 .\"
 \fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|[\|\fB\-a\fP\|]
@@ -32,6 +34,7 @@ tin, rtin \- Usenet newsreader
 [\|\fB\-g\fP \fIserver\fP\|] [\|\fB\-m\fP \fIMail_dir\fP\|] [\|\fB\-p\fP \fIport\fP\|] [\|\fB\-I\fP
 \fIindex_dir\fP\|]\ \|[\fInewsgroup\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH DESCRIPCIÓN
+.IX Header DESCRIPCIÓN
 \fBtin\fP is a full\-screen easy to use Usenet newsreader. It can read news
 locally (e.g., \fI/var/spool/news\fP) or remotely (\fBrtin\fP or \fBtin \-r\fP option)
 via an NNTP (Network News Transport Protocol) server. It will automatically
@@ -55,6 +58,7 @@ pressing '\fB<CR>\fP'.
 The \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') key enters the next
 newsgroup with unread articles.
 .SH "ESTADO SALIENTE"
+.IX Header "ESTADO SALIENTE"
 .\" TODO: also exits with signalnr cought as exit status
 .TP 
 \fB0\fP
@@ -71,6 +75,7 @@ Unread news available (batch mode (\*(rq\fB\-Z\fP\*(rq) only).
 .\"
 Error NNTP
 .SH OPCIONES
+.IX Header OPCIONES
 .TP  12
 \fB\-4\fP
 Force connecting via IPv4 to the remote NNTP server. Only available when
@@ -268,6 +273,7 @@ NB: With the \*(rq\fB\-n\fP\*(rq flag, only unsubscribed groups in the
 Command\-line options have higher priority than attributes and tinrc
 options.  Thus, command\-line option takes precedence over configured values.
 .SH UTILIZACIÓN
+.IX Header UTILIZACIÓN
 .\"
 .\"
 .SS "ADMINISTRACIÓN DE NOTICIARIOS"
@@ -1084,7 +1090,8 @@ Reply through mail to the author of the current article with a copy of the
 article with all headers included.
 .TP 
 \fBPagePGPCheckArticle '^G'\fP
-Perform \fB\%pgp\fP(1)  operations on article.
+Perform \fB\%pgp\fP(1)  / \fB\%gpg\fP(1)  operations on article. This expects
+inline pgp (\fBRFC\%4880\fP) and not MIME pgp (\fBRFC\%3156\fP).
 .TP 
 \fBPageToggleRaw '^H'\fP
 Toggles the display mode (raw including all headers vs. cooked).
@@ -1116,9 +1123,9 @@ Toggle the display of uuencoded sections. The default behavior is taken from
 the \fBhide_uue\fP variable in the tinrc file.
 .TP 
 \fBPageReveal ')'\fP
-The formfeed character (^L) is often used to hide 'spoilers' that the reader
-may not initially wish to see when viewing an article. Any text after a
-formfeed is not displayed. This key\-press acts like a reveal key and turns
+The form feed character (^L) is often used to hide 'spoilers' that the
+reader may not initially wish to see when viewing an article. Any text after
+a formfeed is not displayed. This key\-press acts like a reveal key and turns
 the hidden text back on. Scrolling down will also reveal the text, scrolling
 up will hide it again.
 .TP 
@@ -1405,10 +1412,11 @@ last line.
 Help screen of commands available.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-.\" -------------------------------------------------------------------
-.\"
 Toggle the display of help mini menu at the bottom of the screen and posting
 etiquette after composing an article (\fBbeginner_level\fP).
+.RE
+.\" -------------------------------------------------------------------
+.\"
 .SS "POSTING HISTORY LISTING"
 \fBDisplayPostHist\fP ('\fBW\fP') displays a list of all previous posted articles
 stored in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP. The following informatiosn
@@ -1450,7 +1458,6 @@ Help screen of commands available.
 \fBToggleHelpDisplay 'H'\fP
 Toggle the display of help mini menu at the bottom of the screen and posting
 etiquette after composing an article (\fBbeginner_level\fP).
-.RE
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1914,7 +1921,8 @@ Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP). Default is OFF.
 .TP 
 \fBMail address (mail_address)\fP
 User's mail address (and full name), if not username@host. This is used when
-creating articles, sending mail and when \fB\%pgp\fP(1)  signing.
+creating articles, sending mail and when \fB\%pgp\fP(1)  / \fB\%gpg\fP(1)  signing
+(\fBRFC\%4880\fP).
 .TP 
 \fBMIME encoding in mail messages (mail_mime_encoding)\fP
 MIME encoding of the body in mail message, if necessary (8bit, base64,
@@ -2475,8 +2483,8 @@ Default is 0. This option does not affect lines within verbatim blocks.
 \fBSkip leading and trailing blank l.\fP, skip leading and trailing blank
 lines.
 .IP 4
-\fBCompact multiple between text\fP, replace multiple blank lines between
-textblocks with one blank line.
+\fBCompact multiple between text\fP, replace multiple blank lines between text
+blocks with one blank line.
 .IP 5
 \fBCompact multiple and skip leading\fP, 4 + 1
 .IP 6
@@ -2858,8 +2866,8 @@ Matches alt.config and everything in the 'news' hierarchy except news.test
 .PP
 .\"
 .\"
-See the explanation for the $\fBAUTOSUBSCRIBE\fP variables for further
-examples.
+See the explanation for the $\fBAUTOSUBSCRIBE\fP and $\fBAUTOUNSUBSCRIBE\fP
+variables for further examples.
 .SS FIRMAS
 \fBtin\fP will recognize a signature in either
 \fI${TIN_HOMEDIR:\-"$HOME"}/.signature\fP or \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP.
@@ -3172,6 +3180,7 @@ cached data for groups you are not reading anymore with something like:
 .\"
 .\"
 .SH FICHEROS
+.IX Header FICHEROS
 .\" TODO: mention dead.article, dead.articles
 .\"               .article[.$$], .cancel[.$$], .letter[.$$]?
 .\"       ${XDG_RUNTIME_DIR:\-"$HOME"}/.slrnfaces
@@ -3327,6 +3336,7 @@ For a detailed description see \fB\%tin\fP(5).
 .\"
 .\"
 .SH ENTORNO
+.IX Header ENTORNO
 .\" TODO: - sort in a useful order
 .\"       - add undocumented env-vars (e.g. $DEV_TCP (SCO),
 .\"         ${HOST:-"$HOSTNAME"} fallback)
@@ -3610,6 +3620,7 @@ The pathname of the user's login shell. Used to set
 .\"
 The pathname of the user's dir to put non\-essential run time files into.
 .SH SEÑALES
+.IX Header SEÑALES
 .\" TODO: add missing, sort useful, document in detail
 \fBtin\fP handles a couple of signals:
 .TP 
@@ -3633,6 +3644,7 @@ Terminate gracefully but do not restore terminal (tty).
 .\"
 Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-file.
 .SH GARANTÍA
+.IX Header GARANTÍA
 .\"
 .\"
 If \fBtin\fP is started in debug mode (\*(rq\fB\-D n\fP\*(rq) it will create world
@@ -3640,6 +3652,7 @@ readable files in \fB$TMPDIR\fP which may contain the users NNTP password in
 cleartext. On multiuser\-systems \fB$TMPDIR\fP should be set to a safe location
 before starting \fBtin\fP in debug mode (e.g.  \fBTMPDIR=$HOME tin \-D 1\fP).
 .SH "CONFORME A"
+.IX Header "CONFORME A"
 .\" - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
 .\"   RFC\%4643, RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
 .\"
@@ -3648,6 +3661,7 @@ before starting \fBtin\fP in debug mode (e.g.  \fBTMPDIR=$HOME tin \-D 1\fP).
 Section 12, Utility Conventions (Utility Argument Syntax, Utility Syntax
 Guidelines).
 .SH ANOTACIONES
+.IX Header ANOTACIONES
 Regular expression support is provided by the PCRE library package
 \fB\%pcre\fP(3), which is open source software, written by Philip Hazel, and
 copyright by the University of Cambridge, England.
@@ -3656,6 +3670,7 @@ copyright by the University of Cambridge, England.
 .\"
 <https://www.pcre.org/>
 .SH DEFECTOS
+.IX Header DEFECTOS
 \fBCNews\fP NNTPd, \fB\%noffle\fP(1)  (<= V1.0\-pre5) and \fBNewsCache\fP (<=
 V1.1.91) can't handle pipelined GROUP commands. If you run into trouble with
 any of the mentioned servers define DISABLE_PIPELINING in include/autoconf.h
@@ -3670,6 +3685,7 @@ found a bug, please use the \fBBugReport\fP ('\fBR\fP')  function and write in
 English. Please do NOT enclose a core\-file in your bug\-report until we
 request it.
 .SH HISTORIAL
+.IX Header HISTORIAL
 \fBtin\fP is based on the \fB\%tass\fP(1)  newsreader that was developed by Rich
 Skrenta and posted to alt.sources in March 1991; its first version was
 released on August 23rd 1991.  \fB\%tass\fP(1)  itself was heavily influenced
@@ -3717,6 +3733,7 @@ Urs Janssen <urs@tin.org>
 .\"
 .\"
 .SH "VEA ADEMÁS"
+.IX Header "VEA ADEMÁS"
 \fB\%elm\fP(1), \fB\%emacs\fP(1), \fB\%gpg\fP(1), \fB\%inews\fP(1), \fB\%ispell\fP(1),
 \fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%mutt\fP(1), \fB\%noffle\fP(1),
 \fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1),
@@ -3728,5 +3745,5 @@ Urs Janssen <urs@tin.org>
 \fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5),
 \fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP,
 \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP,
-\fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP,
-\fBRFC\%5537\fP, \fBRFC\%6048\fP
+\fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%4880\fP,
+\fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP

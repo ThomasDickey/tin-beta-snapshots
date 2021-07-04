@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-03-04
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2021 Chris Blum <chris@resolution.de>
@@ -964,7 +964,13 @@ do_rfc15211522_encode(
 	rewind(g);
 	rewind(f);
 #ifdef HAVE_FTRUNCATE
-	(void) ftruncate(fileno(f), 0);
+	if (ftruncate(fileno(f), 0) == -1) {
+#	ifdef DEBUG
+		int e = errno;
+		if (debug & DEBUG_MISC)
+			error_message(2, "ftruncate(): Error: %s", strerror(e));
+#	endif /* DEBUG */
+	}
 #endif /* HAVE_FTRUNCATE */
 
 	/* copy header */
