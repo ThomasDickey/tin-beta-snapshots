@@ -32,3 +32,5 @@ Retired Features
 . tinrc and attributes option auto_save for saving articles based on the
   Archive-name:-"header", it didn't work with NOV present and the logic
   was shar(1)-archive centric and didn't work for FAQs or the like.
+. tinrc and attributes option start_editor_offset as editor_format is flexible
+  enough

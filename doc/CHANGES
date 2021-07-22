@@ -1,4 +1,4 @@
--- 2.6.0 release 20210703 "" --
+-- 2.6.0 release 20210722 "" --
 
  027) Dennis Preiser <dennis@d--p.de>
       ADD. allow multibyte chars in art_marked_*
@@ -36,6 +36,7 @@
       REM. 3rd party tool expand_aliases
       REM. redundant condition
       REM. auto_save tinrc and attributes option
+      REM. start_editor_offset tinrc and attributes option
       BUG. after toggling through thread methods via 'u' go to parent in pager
            could lead to crash if no more read article in thread were left
       BUG. hypothetic use of uninitialized variable when saving article
@@ -58,10 +59,11 @@
       FIX. art.c, attrib.c, charset.c, config.c, cook.c, debug.c, feed.c
            global.c, group.c, help.c, inews.c, init.c, lang.c, main.c
            makecfg.c, memory.c, misc.c, nntplib.c, options_menu.c, page.c
-           pgp.c, post.c, rfc2046.c, rfc2047.c, save.c, search.c, sigfile.c
-           string.c, tcurses.c, thread.c, xface.c, extern.h, proto.h, tin.h
-           tinrc.h, trace.h, version.h, tincfg.tbl, tin.[15], libcanlock/*
-           expand_aliases.tgz, config.guess, config.sub, configure[.in]
+           pgp.c, post.c, prompt.c, rfc2046.c, rfc2047.c, save.c, search.c
+           sigfile.c, string.c, tcurses.c, thread.c, xface.c, extern.h, proto.h
+           tin.h, tinrc.h, trace.h, version.h, tincfg.tbl, tin.[15]
+           libcanlock/*, expand_aliases.tgz, config.guess, config.sub
+           configure[.in]
 
  024) Matt Anton <tin@lv223.org>
       ADD. updated French translation

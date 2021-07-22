@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-28 17:25+0200\n"
+"POT-Creation-Date: 2021-07-15 06:12+0200\n"
 "PO-Revision-Date: 2015-08-28 12:21+0800\n"
 "Last-Translator: Mingye Wang <arthur200126@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
@@ -44,11 +44,11 @@ msgstr "尝试 %s"
 msgid "Writing overview cache..."
 msgstr "写入属性文件…"
 
-#: src/attrib.c:996
+#: src/attrib.c:990
 msgid "Processing attributes... "
 msgstr "处理属性…"
 
-#: src/attrib.c:1214
+#: src/attrib.c:1207
 #, c-format
 msgid ""
 "# Do not edit this comment block\n"
@@ -57,392 +57,387 @@ msgstr ""
 "# 不编辑这个评论区块\n"
 "#\n"
 
-#: src/attrib.c:1215
+#: src/attrib.c:1208
 #, c-format
 msgid "#  scope=STRING (eg. alt.*,!alt.bin*) [mandatory]\n"
 msgstr "#  scope=字串 (例如：alt.*,!alt.bin*) [必要]\n"
 
-#: src/attrib.c:1216
+#: src/attrib.c:1209
 #, c-format
 msgid "#  add_posted_to_filter=ON/OFF\n"
 msgstr "#  add_posted_to_filter=ON/OFF\n"
 
-#: src/attrib.c:1217
+#: src/attrib.c:1210
 #, c-format
 msgid "#  advertising=ON/OFF\n"
 msgstr "#  advertising=ON/OFF\n"
 
-#: src/attrib.c:1218
+#: src/attrib.c:1211
 #, c-format
 msgid "#  alternative_handling=ON/OFF\n"
 msgstr "#  alternative_handling=ON/OFF\n"
 
-#: src/attrib.c:1219
+#: src/attrib.c:1212
 #, c-format
 msgid "#  ask_for_metamail=ON/OFF\n"
 msgstr "#  ask_for_metamail=ON/OFF\n"
 
-#: src/attrib.c:1220
+#: src/attrib.c:1213
 #, c-format
 msgid "#  auto_cc_bcc=NUM\n"
 msgstr "#  auto_cc_bcc=数字\n"
 
-#: src/attrib.c:1221
+#: src/attrib.c:1214
 #, c-format
 msgid "#    0=No, 1=Cc, 2=Bcc, 3=Cc and Bcc\n"
 msgstr "#    0=无，1=抄送，2=密件抄送，3=抄送和密件抄送\n"
 
-#: src/attrib.c:1222
+#: src/attrib.c:1215
 #, c-format
 msgid "#  auto_list_thread=ON/OFF\n"
 msgstr "#  auto_list_thread=ON/OFF\n"
 
-#: src/attrib.c:1223
+#: src/attrib.c:1216
 #, c-format
 msgid "#  auto_select=ON/OFF\n"
 msgstr "#  auto_select=ON/OFF\n"
 
-#: src/attrib.c:1224
+#: src/attrib.c:1217
 #, c-format
 msgid "#  batch_save=ON/OFF\n"
 msgstr "#  batch_save=ON/OFF\n"
 
-#: src/attrib.c:1225
+#: src/attrib.c:1218
 #, c-format
 msgid "#  date_format=STRING (eg. %%a, %%d %%b %%Y %%H:%%M:%%S)\n"
 msgstr "#  date_format=字串 (例如：%%a，%%d %%b %%Y %%H:%%M:%%S)\n"
 
-#: src/attrib.c:1226
+#: src/attrib.c:1219
 #, c-format
 msgid "#  delete_tmp_files=ON/OFF\n"
 msgstr "#  delete_tmp_files=ON/OFF\n"
 
-#: src/attrib.c:1227
+#: src/attrib.c:1220
 #, c-format
 msgid "#  editor_format=STRING (eg. %%E +%%N %%F)\n"
 msgstr "#  editor_format=字串 (例如：%%E+%%N %%F)\n"
 
-#: src/attrib.c:1228
+#: src/attrib.c:1221
 #, c-format
 msgid "#  fcc=STRING (eg. =mailbox)\n"
 msgstr "#  fcc=字串 (例如：=mailbox)\n"
 
-#: src/attrib.c:1229
+#: src/attrib.c:1222
 #, c-format
 msgid "#  followup_to=STRING\n"
 msgstr "#  followup_to=字串\n"
 
-#: src/attrib.c:1230
+#: src/attrib.c:1223
 #, c-format
 msgid "#  from=STRING (just append wanted From:-line, don't use quotes)\n"
 msgstr "#  from=字串 (仅附加想要的发信者 :-line，不使用引言)\n"
 
-#: src/attrib.c:1231
+#: src/attrib.c:1224
 #, c-format
 msgid "#  group_catchup_on_exit=ON/OFF\n"
 msgstr "#  group_catchup_on_exit=ON/OFF\n"
 
-#: src/attrib.c:1232
+#: src/attrib.c:1225
 #, c-format
 msgid "#  group_format=STRING (eg. %%n %%m %%R %%L  %%s  %%F)\n"
 msgstr "#  group_format=字串 (例如：%%n %%m %%R %%L  %%s  %%F)\n"
 
-#: src/attrib.c:1233
+#: src/attrib.c:1226
 #, c-format
 msgid "#  mail_8bit_header=ON/OFF\n"
 msgstr "#  mail_8 bit_header=ON/OFF\n"
 
-#: src/attrib.c:1234
+#: src/attrib.c:1227
 #, c-format
 msgid "#  mail_mime_encoding=supported_encoding"
 msgstr "#  mail_mime_encoding=supported_encoding"
 
-#: src/attrib.c:1242
+#: src/attrib.c:1235
 #, c-format
 msgid "#  ispell=STRING\n"
 msgstr "#  ispell=字串\n"
 
-#: src/attrib.c:1244
+#: src/attrib.c:1237
 #, c-format
 msgid "#  maildir=STRING (eg. ~/Mail)\n"
 msgstr "#  maildir=字串 (例如：~/Mail)\n"
 
-#: src/attrib.c:1245
+#: src/attrib.c:1238
 #, c-format
 msgid "#  mailing_list=STRING (eg. majordomo@example.org)\n"
 msgstr "#  mailing_list=字串 (例如：majordomo@example.org)\n"
 
-#: src/attrib.c:1246
+#: src/attrib.c:1239
 #, c-format
 msgid "#  mime_types_to_save=STRING (eg. image/*,!image/bmp)\n"
 msgstr "#  mime_types_to_save=字串 (例如：image/*,!image/bmp)\n"
 
-#: src/attrib.c:1247
+#: src/attrib.c:1240
 #, c-format
 msgid "#  mark_ignore_tags=ON/OFF\n"
 msgstr "#  mark_ignore_tags=ON/OFF\n"
 
-#: src/attrib.c:1248
+#: src/attrib.c:1241
 #, c-format
 msgid "#  mark_saved_read=ON/OFF\n"
 msgstr "#  mark_saved_read=ON/OFF\n"
 
-#: src/attrib.c:1249
+#: src/attrib.c:1242
 #, c-format
 msgid "#  mime_forward=ON/OFF\n"
 msgstr "#  mime_forward=ON/OFF\n"
 
-#: src/attrib.c:1251
+#: src/attrib.c:1244
 #, c-format
 msgid "#  mm_network_charset=supported_charset"
 msgstr "#  mm_network_charset=支持的字符集"
 
-#: src/attrib.c:1258
+#: src/attrib.c:1251
 #, c-format
 msgid "#  undeclared_charset=STRING (default is US-ASCII)\n"
 msgstr "#  undeclared_charset=字串 (缺省是 US-ASCII)\n"
 
-#: src/attrib.c:1260
+#: src/attrib.c:1253
 #, c-format
 msgid "#  news_headers_to_display=STRING\n"
 msgstr "#  news_headers_to_display=字串\n"
 
-#: src/attrib.c:1261
+#: src/attrib.c:1254
 #, c-format
 msgid "#  news_headers_to_not_display=STRING\n"
 msgstr "#  news_headers_to_not_display=字串\n"
 
-#: src/attrib.c:1262
+#: src/attrib.c:1255
 #, c-format
 msgid "#  news_quote_format=STRING\n"
 msgstr "#  news_quote_format=字串\n"
 
-#: src/attrib.c:1263
+#: src/attrib.c:1256
 #, c-format
 msgid "#  organization=STRING (if beginning with '/' read from file)\n"
 msgstr "#  organization=字串 (如果起始部分与‘/’读取从文件)\n"
 
-#: src/attrib.c:1264
+#: src/attrib.c:1257
 #, c-format
 msgid "#  pos_first_unread=ON/OFF\n"
 msgstr "#  pos_first_unread=ON/OFF\n"
 
-#: src/attrib.c:1265
+#: src/attrib.c:1258
 #, c-format
 msgid "#  post_8bit_header=ON/OFF\n"
 msgstr "#  post_8 bit_header=ON/OFF\n"
 
-#: src/attrib.c:1266
+#: src/attrib.c:1259
 #, c-format
 msgid "#  post_mime_encoding=supported_encoding"
 msgstr "#  post_mime_encoding=支持的编码"
 
-#: src/attrib.c:1273
+#: src/attrib.c:1266
 #, c-format
 msgid "#  post_process_type=NUM\n"
 msgstr "#  post_process_type=数字\n"
 
-#: src/attrib.c:1278
+#: src/attrib.c:1271
 #, c-format
 msgid "#  post_process_view=ON/OFF\n"
 msgstr "#  post_process_view=ON/OFF\n"
 
-#: src/attrib.c:1279
+#: src/attrib.c:1272
 #, c-format
 msgid "#  quick_kill_scope=STRING (ie. talk.*)\n"
 msgstr "#  quick_kill_scope=字串 (亦即 talk.*)\n"
 
-#: src/attrib.c:1280
+#: src/attrib.c:1273
 #, c-format
 msgid "#  quick_kill_expire=ON/OFF\n"
 msgstr "#  quick_kill_expire=ON/OFF\n"
 
-#: src/attrib.c:1281
+#: src/attrib.c:1274
 #, c-format
 msgid "#  quick_kill_case=ON/OFF\n"
 msgstr "#  quick_kill_case=ON/OFF\n"
 
-#: src/attrib.c:1282
+#: src/attrib.c:1275
 #, c-format
 msgid "#  quick_kill_header=NUM\n"
 msgstr "#  quick_kill_header=数字\n"
 
-#: src/attrib.c:1283 src/attrib.c:1292
+#: src/attrib.c:1276 src/attrib.c:1285
 #, c-format
 msgid "#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n"
 msgstr "#    0=Subject: (大小写相符)  1=Subject: (忽略大小写)\n"
 
-#: src/attrib.c:1284 src/attrib.c:1293
+#: src/attrib.c:1277 src/attrib.c:1286
 #, c-format
 msgid "#    2=From: (case sensitive)     3=From: (ignore case)\n"
 msgstr "#    2=From: (大小写相符)     3=From: (忽略大小写)\n"
 
-#: src/attrib.c:1285 src/attrib.c:1294
+#: src/attrib.c:1278 src/attrib.c:1287
 #, c-format
 msgid "#    4=Message-ID: & full References: line\n"
 msgstr "#    4=Message-ID: & 全部 References: 行\n"
 
-#: src/attrib.c:1286 src/attrib.c:1295
+#: src/attrib.c:1279 src/attrib.c:1288
 #, c-format
 msgid "#    5=Message-ID: & last References: entry only\n"
 msgstr "#    5=只有 Message-ID: & 最后一笔 References: 条目\n"
 
-#: src/attrib.c:1287 src/attrib.c:1296
+#: src/attrib.c:1280 src/attrib.c:1289
 #, c-format
 msgid "#    6=Message-ID: entry only     7=Lines:\n"
 msgstr "#    6=只有 Message-ID: 条目     7=Lines:\n"
 
-#: src/attrib.c:1288
+#: src/attrib.c:1281
 #, c-format
 msgid "#  quick_select_scope=STRING\n"
 msgstr "#  quick_select_scope=字串\n"
 
-#: src/attrib.c:1289
+#: src/attrib.c:1282
 #, c-format
 msgid "#  quick_select_expire=ON/OFF\n"
 msgstr "#  quick_select_expire=ON/OFF\n"
 
-#: src/attrib.c:1290
+#: src/attrib.c:1283
 #, c-format
 msgid "#  quick_select_case=ON/OFF\n"
 msgstr "#  quick_select_case=ON/OFF\n"
 
-#: src/attrib.c:1291
+#: src/attrib.c:1284
 #, c-format
 msgid "#  quick_select_header=NUM\n"
 msgstr "#  quick_select_header=数字\n"
 
-#: src/attrib.c:1297
+#: src/attrib.c:1290
 #, fuzzy, c-format
 msgid "#  quote_chars=STRING (%%I for initials)\n"
 msgstr "#  quote_chars=字串 (%%s，%%S 用于缩写)\n"
 
-#: src/attrib.c:1299
+#: src/attrib.c:1292
 #, c-format
 msgid "#  print_header=ON/OFF\n"
 msgstr "#  print_header=ON/OFF\n"
 
-#: src/attrib.c:1301
+#: src/attrib.c:1294
 #, c-format
 msgid "#  process_only_unread=ON/OFF\n"
 msgstr "#  process_only_unread=ON/OFF\n"
 
-#: src/attrib.c:1302
+#: src/attrib.c:1295
 #, c-format
 msgid "#  prompt_followupto=ON/OFF\n"
 msgstr "#  prompt_followupto=ON/OFF\n"
 
-#: src/attrib.c:1303
+#: src/attrib.c:1296
 #, c-format
 msgid "#  savedir=STRING (eg. ~user/News)\n"
 msgstr "#  savedir=字串 (例如：~user/News)\n"
 
-#: src/attrib.c:1304
+#: src/attrib.c:1297
 #, c-format
 msgid "#  savefile=STRING (eg. =linux)\n"
 msgstr "#  savefile=字串 (例如：=linux)\n"
 
-#: src/attrib.c:1305
+#: src/attrib.c:1298
 #, c-format
 msgid "#  sigfile=STRING (eg. $var/sig)\n"
 msgstr "#  sigfile=字串 (例如：$var/sig)\n"
 
-#: src/attrib.c:1306
+#: src/attrib.c:1299
 #, c-format
 msgid "#  show_author=NUM\n"
 msgstr "#  show_author=数字\n"
 
-#: src/attrib.c:1312
+#: src/attrib.c:1305
 #, c-format
 msgid "#  show_signatures=ON/OFF\n"
 msgstr "#  show_signatures=ON/OFF\n"
 
-#: src/attrib.c:1313
+#: src/attrib.c:1306
 #, c-format
 msgid "#  show_only_unread_arts=ON/OFF\n"
 msgstr "#  show_only_unread_arts=ON/OFF\n"
 
-#: src/attrib.c:1314
+#: src/attrib.c:1307
 #, c-format
 msgid "#  sigdashes=ON/OFF\n"
 msgstr "#  sigdashes=ON/OFF\n"
 
-#: src/attrib.c:1315
+#: src/attrib.c:1308
 #, c-format
 msgid "#  signature_repost=ON/OFF\n"
 msgstr "#  signature_repost=ON/OFF\n"
 
-#: src/attrib.c:1316
+#: src/attrib.c:1309
 #, c-format
 msgid "#  sort_article_type=NUM\n"
 msgstr "#  sort_article_type=数字\n"
 
-#: src/attrib.c:1334
+#: src/attrib.c:1327
 #, c-format
 msgid "#  sort_threads_type=NUM\n"
 msgstr "#  sort_threads_type=数字\n"
 
-#: src/attrib.c:1343
-#, c-format
-msgid "#  start_editor_offset=ON/OFF\n"
-msgstr "#  start_editor_offset=ON/OFF\n"
-
-#: src/attrib.c:1344
+#: src/attrib.c:1336
 #, c-format
 msgid "#  tex2iso_conv=ON/OFF\n"
 msgstr "#  tex2iso_conv=ON/OFF\n"
 
-#: src/attrib.c:1345
+#: src/attrib.c:1337
 #, c-format
 msgid "#  thread_catchup_on_exit=ON/OFF\n"
 msgstr "#  thread_catchup_on_exit=ON/OFF\n"
 
-#: src/attrib.c:1346
+#: src/attrib.c:1338
 #, c-format
 msgid "#  thread_articles=NUM"
 msgstr "#  thread_articles=数字"
 
-#: src/attrib.c:1353
+#: src/attrib.c:1345
 #, c-format
 msgid "#  thread_format=STRING (eg. %%n %%m [%%L]  %%T  %%F)\n"
 msgstr "#  thread_format=字串 (例如：%%n %%m [%%L]  %%T  %%F)\n"
 
-#: src/attrib.c:1354
+#: src/attrib.c:1346
 #, c-format
 msgid "#  thread_perc=NUM\n"
 msgstr "#  thread_perc=数字\n"
 
-#: src/attrib.c:1355
+#: src/attrib.c:1347
 #, c-format
 msgid "#  trim_article_body=NUM\n"
 msgstr "#  trim_article_body=数字\n"
 
-#: src/attrib.c:1356
+#: src/attrib.c:1348
 #, c-format
 msgid "#    0 = Don't trim article body\n"
 msgstr "#    0 = 不修剪文章内文\n"
 
-#: src/attrib.c:1357
+#: src/attrib.c:1349
 #, c-format
 msgid "#    1 = Skip leading blank lines\n"
 msgstr "#    1 = 跳过前导空行\n"
 
-#: src/attrib.c:1358
+#: src/attrib.c:1350
 #, c-format
 msgid "#    2 = Skip trailing blank lines\n"
 msgstr "#    2 = 跳过尾随空行\n"
 
-#: src/attrib.c:1359
+#: src/attrib.c:1351
 #, c-format
 msgid "#    3 = Skip leading and trailing blank lines\n"
 msgstr "#    3 = 跳过前导和尾随空行\n"
 
-#: src/attrib.c:1360
+#: src/attrib.c:1352
 #, c-format
 msgid "#    4 = Compact multiple blank lines between text blocks\n"
 msgstr "#    4 = 压缩文本区块之间的多重空行\n"
 
-#: src/attrib.c:1361
+#: src/attrib.c:1353
 #, c-format
 msgid ""
 "#    5 = Compact multiple blank lines between text blocks and skip\n"
@@ -451,7 +446,7 @@ msgstr ""
 "#    5 = 压缩文本区块之间的多重空行并跳过\n"
 "#        前导空行\n"
 
-#: src/attrib.c:1362
+#: src/attrib.c:1354
 #, c-format
 msgid ""
 "#    6 = Compact multiple blank lines between text blocks and skip\n"
@@ -460,7 +455,7 @@ msgstr ""
 "#    6 = 压缩文本区块之间的多重空行并跳过\n"
 "#        尾随空行\n"
 
-#: src/attrib.c:1363
+#: src/attrib.c:1355
 #, c-format
 msgid ""
 "#    7 = Compact multiple blank lines between text blocks and skip\n"
@@ -469,37 +464,37 @@ msgstr ""
 "#    7 = 压缩文本区块之间的多重空行并跳过\n"
 "#        前导和尾随空行\n"
 
-#: src/attrib.c:1364
+#: src/attrib.c:1356
 #, c-format
 msgid "#  verbatim_handling=ON/OFF\n"
 msgstr "#  verbatim_handling=ON/OFF\n"
 
-#: src/attrib.c:1366
+#: src/attrib.c:1358
 #, fuzzy, c-format
 msgid "#  extquote_handling=ON/OFF\n"
 msgstr "#  verbatim_handling=ON/OFF\n"
 
-#: src/attrib.c:1368
+#: src/attrib.c:1360
 #, c-format
 msgid "#  wrap_on_next_unread=ON/OFF\n"
 msgstr "#  wrap_on_next_unread=ON/OFF\n"
 
-#: src/attrib.c:1369
+#: src/attrib.c:1361
 #, c-format
 msgid "#  x_body=STRING (eg. ~/.tin/extra-body-text)\n"
 msgstr "#  x_body=字串 (例如：~/.tin/extra-body-text)\n"
 
-#: src/attrib.c:1370
+#: src/attrib.c:1362
 #, c-format
 msgid "#  x_comment_to=ON/OFF\n"
 msgstr "#  x_comment_to=ON/OFF\n"
 
-#: src/attrib.c:1371
+#: src/attrib.c:1363
 #, c-format
 msgid "#  x_headers=STRING (eg. ~/.tin/extra-headers)\n"
 msgstr "#  x_headers=字串 (例如：~/.tin/extra-headers)\n"
 
-#: src/attrib.c:1372
+#: src/attrib.c:1364
 #, c-format
 msgid ""
 "#\n"
@@ -508,7 +503,7 @@ msgstr ""
 "#\n"
 "# 要注意的是，最好是放到一般环境 (全局范围)\n"
 
-#: src/attrib.c:1373
+#: src/attrib.c:1365
 #, c-format
 msgid ""
 "# entries first followed by group specific entries.\n"
@@ -517,7 +512,7 @@ msgstr ""
 "# 条目先于群组特定的条目。\n"
 "#\n"
 
-#: src/attrib.c:1374
+#: src/attrib.c:1366
 #, c-format
 msgid "############################################################################\n"
 msgstr "############################################################################\n"
@@ -5539,10 +5534,10 @@ msgstr "筛选选项"
 #: src/lang.c:2417 src/lang.c:2423 src/lang.c:2440 src/lang.c:2452
 #: src/lang.c:2487 src/lang.c:2540 src/lang.c:2554 src/lang.c:2560
 #: src/lang.c:2585 src/lang.c:2603 src/lang.c:2620 src/lang.c:2632
-#: src/lang.c:2665 src/lang.c:2694 src/lang.c:2714 src/lang.c:2749
-#: src/lang.c:2759 src/lang.c:2766 src/lang.c:2792 src/lang.c:2816
-#: src/lang.c:2893 src/lang.c:2908 src/lang.c:2916 src/lang.c:2930
-#: src/lang.c:2936 src/lang.c:2974
+#: src/lang.c:2665 src/lang.c:2694 src/lang.c:2714 src/lang.c:2742
+#: src/lang.c:2752 src/lang.c:2759 src/lang.c:2785 src/lang.c:2809
+#: src/lang.c:2886 src/lang.c:2901 src/lang.c:2909 src/lang.c:2923
+#: src/lang.c:2929 src/lang.c:2967
 msgid "<SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr "<SPACE> 切换，<CR> 设置，<ESC> 取消。"
 
@@ -7091,7 +7086,7 @@ msgstr "# 如果打开就于搜索下一篇未读文章时回到开始部分讨�
 msgid "Enter default mail address (and fullname). <CR> sets."
 msgstr "输入缺省邮件地址 (以及全名)。<CR> 设置。"
 
-#: src/lang.c:2447 src/lang.c:2955
+#: src/lang.c:2447 src/lang.c:2948
 msgid "Mail address (and fullname)"
 msgstr "邮件地址 (以及全名)"
 
@@ -7593,31 +7588,14 @@ msgid ""
 msgstr "# 如果打开就于特定外部命令之后将一律完成屏幕重绘\n"
 
 #: src/lang.c:2720
-msgid ""
-"Start editor with line offset. <SPACE> toggles, <CR> sets, <ESC> cancels."
-msgstr "启始编辑器以及行偏移。<SPACE> 切换，<CR> 设置，<ESC> 取消。"
-
-#: src/lang.c:2721
-msgid "Start editor with line offset"
-msgstr "启始编辑器以及行偏移"
-
-#: src/lang.c:2722
-msgid ""
-"# If ON editor will be started with cursor offset into the file\n"
-"# otherwise the cursor will be positioned at the first line\n"
-msgstr ""
-"# 如果打开就启始编辑器以及进入文件后的光标偏移\n"
-"# 否则光标将被定位于第一行\n"
-
-#: src/lang.c:2727
 msgid "Enter %E for editor, %F for filename, %N for line-number, <CR> to set."
 msgstr "输入 %E 作为编辑器，%F 作为文件名，%N 作为行号，<CR> 以设置。"
 
-#: src/lang.c:2728
+#: src/lang.c:2721
 msgid "Invocation of your editor"
 msgstr "调用您的编辑器"
 
-#: src/lang.c:2729
+#: src/lang.c:2722
 msgid ""
 "# Format of editor line including parameters\n"
 "# %E Editor  %F Filename  %N Linenumber\n"
@@ -7625,16 +7603,16 @@ msgstr ""
 "# 格式的编辑器行包含参数\n"
 "# %E 编辑器  %F 文件名  %N Linenumber\n"
 
-#: src/lang.c:2734
+#: src/lang.c:2727
 msgid ""
 "Enter name and options for external-inews, --internal for internal inews"
 msgstr "输入用于外部 inews 的名称和选项，--internal 用于内部 inews"
 
-#: src/lang.c:2735
+#: src/lang.c:2728
 msgid "External inews"
 msgstr "外部 inews"
 
-#: src/lang.c:2736
+#: src/lang.c:2729
 msgid ""
 "# If --internal use the built in mini inews for posting via NNTP\n"
 "# otherwise use an external inews program\n"
@@ -7642,18 +7620,18 @@ msgstr ""
 "# 如果设置 --internal 就使用内置的迷你 inews 作为透过 NNTP 张贴\n"
 "# 否则使用外部 inews 程序\n"
 
-#: src/lang.c:2740
+#: src/lang.c:2733
 msgid ""
 "Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."
 msgstr ""
 "输入 %M 作为邮件程序，%S 作为主旨，%T 作为收件者，%F 作为文件名，<CR> 以设"
 "置。"
 
-#: src/lang.c:2741
+#: src/lang.c:2734
 msgid "Invocation of your mail command"
 msgstr "调用您的邮寄命令"
 
-#: src/lang.c:2742
+#: src/lang.c:2735
 #, fuzzy
 msgid ""
 "# Format of mailer line including parameters\n"
@@ -7666,11 +7644,11 @@ msgstr ""
 "# 我。以使用 elm 作为您的邮件程序：   elm -s“%S”“%T”<%F\n"
 "# 我。elm 交互式         ：   elm -i %F -s“%S”“%T”\n"
 
-#: src/lang.c:2750
+#: src/lang.c:2743
 msgid "Use interactive mail reader"
 msgstr "使用交互式邮件阅读器"
 
-#: src/lang.c:2751
+#: src/lang.c:2744
 msgid ""
 "# Interactive mailreader\n"
 "# Possible values are (the default is marked with *):\n"
@@ -7684,32 +7662,32 @@ msgstr ""
 "#   1 = 使用交互式邮件阅读器以及文件中的标头\n"
 "#   2 = 使用交互式邮件阅读器而无需文件中的标头\n"
 
-#: src/lang.c:2760
+#: src/lang.c:2753
 msgid "Remove ~/.article after posting"
 msgstr "张贴之后移除 ~/.article"
 
-#: src/lang.c:2761
+#: src/lang.c:2754
 msgid "# If ON remove ~/.article after posting.\n"
 msgstr "# 如果打开就于张贴之后移除 ~/.article。\n"
 
-#: src/lang.c:2767
+#: src/lang.c:2760
 msgid "Use UTF-8 graphics (thread tree etc.)"
 msgstr "使用 UTF-8 图形 (树状讨论串等等…)"
 
-#: src/lang.c:2768
+#: src/lang.c:2761
 msgid ""
 "# If ON use UTF-8 characters for indicator '->', tree and ellipsis '...'.\n"
 msgstr "# 如果打开就使用 UTF-8 字符作为指示器‘->’、树状结构和省略符号‘…’。\n"
 
-#: src/lang.c:2773
+#: src/lang.c:2766
 msgid "Filename for all posted articles, <CR> sets, no filename=do not save."
 msgstr "用于所有已张贴文章的文件名，<CR> 设置，没有文件名=不保存。"
 
-#: src/lang.c:2774
+#: src/lang.c:2767
 msgid "Filename for posted articles"
 msgstr "用于已张贴文章的文件名"
 
-#: src/lang.c:2775
+#: src/lang.c:2768
 msgid ""
 "# Filename where to keep all postings (default posted)\n"
 "# If no filename is set then postings will not be saved\n"
@@ -7717,36 +7695,36 @@ msgstr ""
 "# 保留所有贴文 (缺省为已张贴) 的文件位置\n"
 "# 如果没有设置文件名则不会保存贴文\n"
 
-#: src/lang.c:2780
+#: src/lang.c:2773
 msgid ""
 "Keep all failed articles in ~/dead.articles. <SPACE> toggles & <CR> sets."
 msgstr "保留所有张贴失败的文章于 ~/dead.articles。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2781
+#: src/lang.c:2774
 msgid "Keep failed arts in ~/dead.articles"
 msgstr "保留张贴失败的文章于 ~/dead.articles"
 
-#: src/lang.c:2782
+#: src/lang.c:2775
 msgid "# If ON keep all failed postings in ~/dead.articles\n"
 msgstr "# 如果打开就保留所有张贴失败的贴文于 ~/dead.articles\n"
 
-#: src/lang.c:2786
+#: src/lang.c:2779
 msgid "Do you want to strip unsubscribed groups from .newsrc"
 msgstr "您要从 .newsrc 截除已取消订阅的群组"
 
-#: src/lang.c:2787
+#: src/lang.c:2780
 msgid "No unsubscribed groups in newsrc"
 msgstr "在 newsrc 中没有已取消订阅的群组"
 
-#: src/lang.c:2788
+#: src/lang.c:2781
 msgid "# If ON strip unsubscribed groups from newsrc\n"
 msgstr "# 如果打开就从 newsrc 截除已取消订阅的群组\n"
 
-#: src/lang.c:2793
+#: src/lang.c:2786
 msgid "Remove bogus groups from newsrc"
 msgstr "从 newsrc 移除假造的群组"
 
-#: src/lang.c:2794
+#: src/lang.c:2787
 msgid ""
 "# What to do with bogus groups in newsrc file\n"
 "# Possible values are (the default is marked with *):\n"
@@ -7760,64 +7738,64 @@ msgstr ""
 "#   1 = 移除\n"
 "#   2 = 以 D 高亮度显示于选择屏幕\n"
 
-#: src/lang.c:2803
+#: src/lang.c:2796
 msgid ""
 "Enter number of seconds to wait for a response from the server. <CR> sets."
 msgstr "输入从服务器等待回应的秒数。<CR> 表示设置。"
 
-#: src/lang.c:2804
+#: src/lang.c:2797
 msgid "NNTP read timeout in seconds"
 msgstr "NNTP 读取超时的秒数"
 
-#: src/lang.c:2805
+#: src/lang.c:2798
 msgid ""
 "# Time in seconds to wait for a response from the server (0=no timeout)\n"
 msgstr "# 从服务器等待回应的秒数时间 (0=没有超时限制)\n"
 
-#: src/lang.c:2810
+#: src/lang.c:2803
 msgid "Enter number of seconds until active file will be reread. <CR> sets."
 msgstr "输入重新读取现用文件的间隔秒数。<CR> 设置。"
 
-#: src/lang.c:2811
+#: src/lang.c:2804
 msgid "Interval in secs to reread active"
 msgstr "重新读取现用文件的间隔(以秒为单位)"
 
-#: src/lang.c:2812
+#: src/lang.c:2805
 msgid ""
 "# Time interval in seconds between rereading the active file (0=never)\n"
 msgstr "# 重新读取现用文件的时间间隔秒数 (0=永不)\n"
 
-#: src/lang.c:2817
+#: src/lang.c:2810
 msgid "Reconnect to server automatically"
 msgstr "自动重新连接到服务器"
 
-#: src/lang.c:2818
+#: src/lang.c:2811
 msgid ""
 "# If ON automatically reconnect to NNTP server if the connection is broken\n"
 msgstr "# 如果打开就于连接中断时自动重新连接到 NNTP 服务器\n"
 
-#: src/lang.c:2822
+#: src/lang.c:2815
 msgid ""
 "Create local copies of NNTP overview files. <SPACE> toggles & <CR> sets."
 msgstr "创建 NNTP 概述文件的本地复本。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2823
+#: src/lang.c:2816
 msgid "Cache NNTP overview files locally"
 msgstr "产生 NNTP 概述文件的本地缓存"
 
-#: src/lang.c:2824
+#: src/lang.c:2817
 msgid "# If ON, create local copies of NNTP overview files.\n"
 msgstr "# 如果打开就创建 NNTP 概述文件的本地复本。\n"
 
-#: src/lang.c:2828 src/lang.c:2843 src/lang.c:2863 src/lang.c:2882
+#: src/lang.c:2821 src/lang.c:2836 src/lang.c:2856 src/lang.c:2875
 msgid "Enter format string. <CR> sets, <ESC> cancels."
 msgstr "输入格式字串。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2829
+#: src/lang.c:2822
 msgid "Format string for selection level"
 msgstr "用于选择层级表示的格式字串"
 
-#: src/lang.c:2830
+#: src/lang.c:2823
 msgid ""
 "# Format string for selection level representation\n"
 "# Default: %f %n %U  %G  %d\n"
@@ -7841,11 +7819,11 @@ msgstr ""
 "#   %n              数字，屏幕上的行数\n"
 "#   %U              未读数\n"
 
-#: src/lang.c:2844
+#: src/lang.c:2837
 msgid "Format string for group level"
 msgstr "用于组层级表示的格式字串"
 
-#: src/lang.c:2845
+#: src/lang.c:2838
 msgid ""
 "# Format string for group level representation\n"
 "# Default: %n %m %R %L  %s  %F\n"
@@ -7879,11 +7857,11 @@ msgstr ""
 "#   %s              主题（仅组级）\n"
 "#   %S              分数\n"
 
-#: src/lang.c:2864
+#: src/lang.c:2857
 msgid "Format string for thread level"
 msgstr "用于帖子层级的格式字串"
 
-#: src/lang.c:2865
+#: src/lang.c:2858
 msgid ""
 "# Format string for thread level representation\n"
 "# Default: %n %m  [%L]  %T  %F\n"
@@ -7917,19 +7895,19 @@ msgstr ""
 "#   %T              帖子树（仅帖级）\n"
 "\n"
 
-#: src/lang.c:2883
+#: src/lang.c:2876
 msgid "Format string for display of dates"
 msgstr "用于显示日期的格式字串"
 
-#: src/lang.c:2884
+#: src/lang.c:2877
 msgid "# Format string for date representation\n"
 msgstr "# 用于日期表示的格式字串\n"
 
-#: src/lang.c:2894
+#: src/lang.c:2887
 msgid "Unicode normalization form"
 msgstr "万国码范式形式"
 
-#: src/lang.c:2895
+#: src/lang.c:2888
 #, fuzzy
 msgid ""
 "# Unicode normalization form\n"
@@ -7950,19 +7928,19 @@ msgstr ""
 "#   4 = NFD\n"
 "#   5 = NFKC_CF\n"
 
-#: src/lang.c:2909
+#: src/lang.c:2902
 msgid "Render BiDi"
 msgstr "呈现双向文本"
 
-#: src/lang.c:2910
+#: src/lang.c:2903
 msgid "# If ON, bi-directional text is rendered by tin\n"
 msgstr "# 如果打开就由 tin 呈现双向文本\n"
 
-#: src/lang.c:2917
+#: src/lang.c:2910
 msgid "Function for sorting articles"
 msgstr "用于排序文章的函数"
 
-#: src/lang.c:2918
+#: src/lang.c:2911
 msgid ""
 "# Function for sorting articles\n"
 "# Possible values are (the default is marked with *):\n"
@@ -7974,159 +7952,159 @@ msgstr ""
 "# * 0 = 快速排序\n"
 "#   1 = 堆积排序\n"
 
-#: src/lang.c:2931
+#: src/lang.c:2924
 msgid "Automatically GroupMarkUnselArtRead"
 msgstr "自动 GroupMarkUnselArtRead"
 
-#: src/lang.c:2937
+#: src/lang.c:2930
 msgid "Delete post-process files"
 msgstr "删除后续处理文件"
 
-#: src/lang.c:2942
+#: src/lang.c:2935
 msgid "Filename for all mailed articles, <CR> sets, no filename=do not save."
 msgstr "用于所有已邮寄文章的文件名，<CR> 设置，没有文件名=不保存。"
 
-#: src/lang.c:2943
+#: src/lang.c:2936
 msgid "Mailbox to save sent mails"
 msgstr "要保存已发送邮件的信箱"
 
-#: src/lang.c:2948
+#: src/lang.c:2941
 msgid "Set Followup-To: header to this group(s). <CR> sets, <ESC> cancels."
 msgstr "设置 Followup-To: 标头为这个群组。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2949
+#: src/lang.c:2942
 msgid "Followup-To: header"
 msgstr "Followup-To: 标头"
 
-#: src/lang.c:2954
+#: src/lang.c:2947
 msgid "Enter default mail address (and fullname). <CR> sets, <ESC> cancels."
 msgstr "输入缺省邮件地址 (附全名)。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2961
+#: src/lang.c:2954
 msgid ""
 "Path and options for ispell-like spell-checker. <CR> sets, <ESC> cancels."
 msgstr "作为类似 ispell 拼写检查器的路径和选项。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2962
+#: src/lang.c:2955
 msgid "Ispell program"
 msgstr "Ispell 程序"
 
-#: src/lang.c:2968
+#: src/lang.c:2961
 msgid "When group is a mailing list, send responses to this email address."
 msgstr "当群组是个邮递论坛时，发送回应到这个电子邮件地址。"
 
-#: src/lang.c:2969
+#: src/lang.c:2962
 msgid "Mailing list address"
 msgstr "邮递论坛地址"
 
-#: src/lang.c:2975
+#: src/lang.c:2968
 msgid "Forward articles as attachment"
 msgstr "作为附件以转发文章"
 
-#: src/lang.c:2980
+#: src/lang.c:2973
 msgid ""
 "A comma separated list of MIME major/minor Content-Types. <ESC> cancels."
 msgstr "逗号分隔的 MIME 主要/次要内容类型清单。<ESC> 取消。"
 
-#: src/lang.c:2981
+#: src/lang.c:2974
 msgid "Which MIME types will be saved"
 msgstr "将被保存的 MIME 类型"
 
-#: src/lang.c:2986
+#: src/lang.c:2979
 msgid "Value of the Organization: header. <CR> sets, <ESC> cancels."
 msgstr "Organization: 标头的值。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2987
+#: src/lang.c:2980
 msgid "Organization: header"
 msgstr "Organization: 标头"
 
-#: src/lang.c:2992
+#: src/lang.c:2985
 msgid "Filename for saved articles. <CR> sets, <ESC> cancels."
 msgstr "用于已保存文章的文件名。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2993
+#: src/lang.c:2986
 msgid "savefile"
 msgstr "保存文件"
 
-#: src/lang.c:2998 src/lang.c:3022
+#: src/lang.c:2991 src/lang.c:3015
 msgid "Scope for the filter rule. <CR> sets, <ESC> cancels."
 msgstr "用于筛选器规则的范围。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2999
+#: src/lang.c:2992
 msgid "Quick (1 key) select filter scope"
 msgstr "快速 (1 键) 选取筛选器范围"
 
-#: src/lang.c:3004 src/lang.c:3028
+#: src/lang.c:2997 src/lang.c:3021
 msgid "Header for filter rule. <CR> sets, <ESC> cancels."
 msgstr "用于筛选器规则的标头。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3005
+#: src/lang.c:2998
 msgid "Quick (1 key) select filter header"
 msgstr "快速 (1 键) 选取筛选器标头"
 
-#: src/lang.c:3010 src/lang.c:3034
+#: src/lang.c:3003 src/lang.c:3027
 msgid "ON = case sensitive, OFF = ignore case. <CR> sets, <ESC> cancels."
 msgstr "ON = 大小写相符，OFF = 忽略大小写。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3011
+#: src/lang.c:3004
 msgid "Quick (1 key) select filter case"
 msgstr "快速 (1 键) 选取筛选器大小写"
 
-#: src/lang.c:3016 src/lang.c:3040
+#: src/lang.c:3009 src/lang.c:3033
 msgid "ON = expire, OFF = don't ever expire. <CR> sets, <ESC> cancels."
 msgstr "ON = 过期，OFF = 不会过期。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3017
+#: src/lang.c:3010
 msgid "Quick (1 key) select filter expire"
 msgstr "快速 (1 键) 选取筛选器过期"
 
-#: src/lang.c:3023
+#: src/lang.c:3016
 msgid "Quick (1 key) kill filter scope"
 msgstr "快速 (1 键) 砍除筛选器范围"
 
-#: src/lang.c:3029
+#: src/lang.c:3022
 msgid "Quick (1 key) kill filter header"
 msgstr "快速 (1 键) 砍除筛选器标头"
 
-#: src/lang.c:3035
+#: src/lang.c:3028
 msgid "Quick (1 key) kill filter case"
 msgstr "快速 (1 键) 砍除筛选器大小写"
 
-#: src/lang.c:3041
+#: src/lang.c:3034
 msgid "Quick (1 key) kill filter expire"
 msgstr "快速 (1 键) 砍除筛选器过期"
 
-#: src/lang.c:3047
+#: src/lang.c:3040
 msgid "Assume this charset if no charset declaration is present, <CR> to set."
 msgstr "如果不存在任何字符集宣告就假设为这个字符集，<CR> 以设置。"
 
-#: src/lang.c:3048
+#: src/lang.c:3041
 msgid "UNDECLARED_CHARSET"
 msgstr "未宣告字符集"
 
-#: src/lang.c:3054
+#: src/lang.c:3047
 msgid ""
 "Add this text at the start of the message body. <CR> sets, <ESC> cancels."
 msgstr "加入这个文本于消息内文的开始。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3055
+#: src/lang.c:3048
 msgid "X_Body"
 msgstr "X_Body"
 
-#: src/lang.c:3060
+#: src/lang.c:3053
 msgid "Insert this header when posting. <CR> sets, <ESC> cancels."
 msgstr "张贴时插入这个标头。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3061
+#: src/lang.c:3054
 msgid "X_Headers"
 msgstr "X_Headers"
 
-#: src/lang.c:3066
+#: src/lang.c:3059
 msgid ""
 "Automatically insert an X-Comment-To: header? <SPACE> toggles & <CR> sets."
 msgstr "自动插入 X-Comment-To: 标头？<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3067
+#: src/lang.c:3060
 msgid "Insert 'X-Comment-To:' header"
 msgstr "插入‘X-Comment-To:’标头"
 
@@ -8289,15 +8267,15 @@ msgstr ""
 msgid "bytes"
 msgstr "字节"
 
-#: src/select.c:414
+#: src/select.c:417
 msgid "unread"
 msgstr "未读"
 
-#: src/select.c:414
+#: src/select.c:417
 msgid "all"
 msgstr "所有"
 
-#: src/select.c:597 src/select.c:599
+#: src/select.c:611 src/select.c:613
 msgid " R"
 msgstr " R"
 
@@ -8353,6 +8331,23 @@ msgstr "Slrnface 不正常退出，代码 %d。"
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Slrnface 失败：%s。"
+
+#~ msgid "#  start_editor_offset=ON/OFF\n"
+#~ msgstr "#  start_editor_offset=ON/OFF\n"
+
+#~ msgid ""
+#~ "Start editor with line offset. <SPACE> toggles, <CR> sets, <ESC> cancels."
+#~ msgstr "启始编辑器以及行偏移。<SPACE> 切换，<CR> 设置，<ESC> 取消。"
+
+#~ msgid "Start editor with line offset"
+#~ msgstr "启始编辑器以及行偏移"
+
+#~ msgid ""
+#~ "# If ON editor will be started with cursor offset into the file\n"
+#~ "# otherwise the cursor will be positioned at the first line\n"
+#~ msgstr ""
+#~ "# 如果打开就启始编辑器以及进入文件后的光标偏移\n"
+#~ "# 否则光标将被定位于第一行\n"
 
 #, fuzzy
 #~ msgid "Operation limited to articels of the current group."

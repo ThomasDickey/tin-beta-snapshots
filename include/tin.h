@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-03
+ *  Updated   : 2021-07-09
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -104,7 +104,7 @@
 
 #include <signal.h>
 
-enum context { cMain, cArt, cAttachment, cAttrib, cConfig, cFilter, cGroup, cHelp, cInfopager, cPage, cPOSTED, cPost, cPostCancel, cPostFup, cReconnect, cScope, cSelect, cThread, cURL };
+enum context { cMain, cArt, cAttachment, cAttrib, cConfig, cFilter, cGroup, cInfopager, cPage, cPOSTED, cPost, cPostCancel, cPostFup, cReconnect, cScope, cSelect, cThread, cURL };
 enum icontext { cNone, cGetline, cPromptCONT, cPromptSLK, cPromptYN };
 enum resizer { cNo, cYes, cRedraw };
 enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
@@ -1674,7 +1674,6 @@ struct t_attribute {
 	BoolField(show_only_unread_arts);	/* 0=all, 1=only unread */
 	BoolField(sigdashes);			/* set TRUE to prepend every signature with dashes */
 	BoolField(signature_repost);	/* set TRUE to add signature when reposting articles */
-	BoolField(start_editor_offset);	/* start editor with line offset */
 	IntField(thread_articles);			/* 0=unthread, 1=subject, 2=refs, 3=both, 4=multipart, 5=percentage */
 	BoolField(thread_catchup_on_exit);	/* catchup thread with left arrow key or not */
 	IntField(thread_perc);			/* percentage threading threshold */
@@ -1769,7 +1768,6 @@ struct t_attribute_state {
 	BoolField(signature_repost);
 	BoolField(sort_article_type);
 	BoolField(sort_threads_type);
-	BoolField(start_editor_offset);
 	BoolField(tex2iso_conv);
 	BoolField(thread_articles);
 	BoolField(thread_catchup_on_exit);
@@ -2167,8 +2165,7 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 #define REDIRECT_PGP_OUTPUT		"> /dev/null"
 #define ENV_VAR_MAILER		"MAILER"
 #define ENV_VAR_SHELL		"SHELL"
-#define TIN_EDITOR_FMT_OFF		"%E %F"
-#define TIN_EDITOR_FMT_ON		"%E +%N %F"
+#define TIN_EDITOR_FMT		"%E +%N %F"
 #define MAILER_FORMAT		"%M -oi -t < %F"
 #define TMPDIR	get_val("TMPDIR", _PATH_TMP)
 #ifdef HAVE_KEY_PREFIX

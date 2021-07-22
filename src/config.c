@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-03
+ *  Updated   : 2021-07-14
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -66,10 +66,11 @@ static void write_server_config(void);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 #	define DASH_TO_SPACE(mark)	((wchar_t) (mark == L'_' ? L' ' : mark))
 #	define SPACE_TO_DASH(mark)	((wchar_t) (mark == L' ' ? L'_' : mark))
-#	define SET_RC_VAL(buf, wbuf, rcval, defval) do { \
+#	define SET_RC_VAL(buf, rcval, defval) do { \
+		wchar_t *wbuf; \
 		if ((wbuf = char2wchar_t(buf))) { \
 			wbuf[1] = (wchar_t) '\0'; \
-			rcval = !wtmp[0] ? (wchar_t) defval : DASH_TO_SPACE(wtmp[0]); \
+			rcval = !wbuf[0] ? (wchar_t) defval : DASH_TO_SPACE(wbuf[0]); \
 			if (art_mark_width < wcswidth(wbuf, 1)) \
 				art_mark_width = wcswidth(wbuf, 1); \
 			free(wbuf); \
@@ -78,6 +79,9 @@ static void write_server_config(void);
 #else
 #	define DASH_TO_SPACE(mark)	((char) (mark == '_' ? ' ' : mark))
 #	define SPACE_TO_DASH(mark)	((char) (mark == ' ' ? '_' : mark))
+#	define SET_RC_VAL(buf, rcval, defval) do { \
+		rcval = !buf[0] ? defval : DASH_TO_SPACE(buf[0]); \
+	} while (0)
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
@@ -96,9 +100,6 @@ read_config_file(
 	int i;
 	t_bool is_7bit;
 #endif /* CHARSET_CONVERSION */
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t *wtmp;
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
@@ -135,83 +136,47 @@ read_config_file(
 				break;
 
 			if (match_string(buf, "art_marked_deleted=", tmp, sizeof(tmp))) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_deleted, ART_MARK_DELETED);
-#else
-				tinrc.art_marked_deleted = !tmp[0] ? ART_MARK_DELETED : DASH_TO_SPACE(tmp[0]);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				SET_RC_VAL(tmp, tinrc.art_marked_deleted, ART_MARK_DELETED);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_inrange=", tmp, sizeof(tmp))) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_inrange, MARK_INRANGE);
-#else
-				tinrc.art_marked_inrange = !tmp[0] ? MARK_INRANGE : DASH_TO_SPACE(tmp[0]);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				SET_RC_VAL(tmp, tinrc.art_marked_inrange, MARK_INRANGE);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_killed=", tmp, sizeof(tmp))) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_killed, ART_MARK_KILLED);
-#else
-				tinrc.art_marked_killed = !tmp[0] ? ART_MARK_KILLED : DASH_TO_SPACE(tmp[0]);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				SET_RC_VAL(tmp, tinrc.art_marked_killed, ART_MARK_KILLED);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_read=", tmp, sizeof(tmp))) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_read, ART_MARK_READ);
-#else
-				tinrc.art_marked_read = !tmp[0] ? ART_MARK_READ : DASH_TO_SPACE(tmp[0]);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				SET_RC_VAL(tmp, tinrc.art_marked_read, ART_MARK_READ);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_read_selected=", tmp, sizeof(tmp))) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_read_selected, ART_MARK_READ_SELECTED);
-#else
-				tinrc.art_marked_read_selected = !tmp[0] ? ART_MARK_READ_SELECTED : DASH_TO_SPACE(tmp[0]);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				SET_RC_VAL(tmp, tinrc.art_marked_read_selected, ART_MARK_READ_SELECTED);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_recent=", tmp, sizeof(tmp))) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_recent, ART_MARK_RECENT);
-#else
-				tinrc.art_marked_recent = !tmp[0] ? ART_MARK_RECENT : DASH_TO_SPACE(tmp[0]);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				SET_RC_VAL(tmp, tinrc.art_marked_recent, ART_MARK_RECENT);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_return=", tmp, sizeof(tmp))) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_return, ART_MARK_RETURN);
-#else
-				tinrc.art_marked_return = !tmp[0] ? ART_MARK_RETURN : DASH_TO_SPACE(tmp[0]);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				SET_RC_VAL(tmp, tinrc.art_marked_return, ART_MARK_RETURN);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_selected=", tmp, sizeof(tmp))) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_selected, ART_MARK_SELECTED);
-#else
-				tinrc.art_marked_selected = !tmp[0] ? ART_MARK_SELECTED : DASH_TO_SPACE(tmp[0]);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				SET_RC_VAL(tmp, tinrc.art_marked_selected, ART_MARK_SELECTED);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_unread=", tmp, sizeof(tmp))) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				SET_RC_VAL(tmp, wtmp, tinrc.art_marked_unread, ART_MARK_UNREAD);
-#else
-				tinrc.art_marked_unread = !tmp[0] ? ART_MARK_UNREAD : DASH_TO_SPACE(tmp[0]);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				SET_RC_VAL(tmp, tinrc.art_marked_unread, ART_MARK_UNREAD);
 				break;
 			}
 
@@ -739,9 +704,6 @@ read_config_file(
 			if (match_string(buf, "spamtrap_warning_addresses=", tinrc.spamtrap_warning_addresses, sizeof(tinrc.spamtrap_warning_addresses)))
 				break;
 
-			if (match_boolean(buf, "start_editor_offset=", &tinrc.start_editor_offset))
-				break;
-
 			if (match_integer(buf, "sort_article_type=", &tinrc.sort_article_type, SORT_ARTICLES_BY_LINES_ASCEND))
 				break;
 
@@ -946,7 +908,7 @@ read_config_file(
 
 	/* set defaults if blank */
 	if (!*tinrc.editor_format)
-		STRCPY(tinrc.editor_format, TIN_EDITOR_FMT_ON);
+		STRCPY(tinrc.editor_format, TIN_EDITOR_FMT);
 	if (!*tinrc.select_format)
 		STRCPY(tinrc.select_format, DEFAULT_SELECT_FORMAT);
 	if (!*tinrc.group_format)
@@ -1096,9 +1058,6 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_batch_save.tinrc));
 	fprintf(fp, "batch_save=%s\n\n", print_boolean(tinrc.batch_save));
-
-	fprintf(fp, "%s", _(txt_start_editor_offset.tinrc));
-	fprintf(fp, "start_editor_offset=%s\n\n", print_boolean(tinrc.start_editor_offset));
 
 	fprintf(fp, "%s", _(txt_editor_format.tinrc));
 	fprintf(fp, "editor_format=%s\n\n", tinrc.editor_format);

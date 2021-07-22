@@ -173,6 +173,10 @@ read_newsauth_file(
  * code from server.
  *
  * we don't handle ERR_ENCRYPT right now
+ *
+ * we don't convert authuser and authpass to UTF-8 as required by 3977
+ * and we do in do_authinfo_sasl_plain(); if we want todo so it should
+ * lkely be done in authinfo_plain() instead.
  */
 static int
 do_authinfo_user(
@@ -231,6 +235,8 @@ do_authinfo_user(
  *   nntpserver1 password [user]
  *   nntpserver2 password [user]
  *   etc.
+ *
+ * TODO: convert authuser and authpass to UTF-8 as required by 3977?
  */
 static t_bool
 authinfo_plain(

@@ -1769,12 +1769,12 @@ check_article_to_be_posted(
  * TODO: cleanup, test me, move to the right location, strings -> lang.c, ...
  */
 	if (must_break_line && ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) != MIME_ENCODING_BASE64)) {
-#	ifdef MIME_BREAK_LONG_LINES
+#ifdef MIME_BREAK_LONG_LINES
 		if (contains_8bit) {
 			if ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) != MIME_ENCODING_QP)
 				my_fprintf(stderr, _("Line %d is longer than %d octets and should be folded, but\nencoding is neither set to %s nor to %s\n"), must_break_line, IMF_LINE_LEN, txt_quoted_printable, txt_base64);
 		} else
-#	endif /* MIME_BREAK_LONG_LINES */
+#endif /* MIME_BREAK_LONG_LINES */
 		{
 			if ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_QP)
 				my_fprintf(stderr, _("Line %d is longer than %d octets and should be folded, but\nencoding is set to %s without enabling MIME_BREAK_LONG_LINES or\nposting doesn't contain any 8bit chars and thus folding won't happen\n"), must_break_line, IMF_LINE_LEN, txt_quoted_printable);
@@ -4505,9 +4505,9 @@ repost_article(
 	struct t_group *group;
 	struct t_header note_h = artinfo->hdr;
 	t_bool force_command = FALSE;
-#	ifdef FORGERY
+#ifdef FORGERY
 	char line[HEADER_LEN];
-#	endif /* FORGERY */
+#endif /* FORGERY */
 	t_function func, default_func = GLOBAL_POST;
 
 	msg_init_headers();
@@ -4551,7 +4551,7 @@ repost_article(
 
 	if (Superseding) {
 
-#	ifdef FORGERY
+#ifdef FORGERY
 		make_path_header(line);
 		msg_add_header("Path", line);
 
@@ -4571,13 +4571,13 @@ repost_article(
 		if (FromSameUser) {	/* just add can-key for own articles */
 			ADD_CAN_KEY(note_h.messageid);
 		}
-#	else
+#else
 		msg_add_header("From", from_name);
 		if (*reply_to)
 			msg_add_header("Reply-To", reply_to);
 		ADD_MSG_ID_HEADER();
 		ADD_CAN_KEY(note_h.messageid);
-#	endif /* FORGERY */
+#endif /* FORGERY */
 		msg_add_header("Supersedes", note_h.messageid);
 
 		if (note_h.followup)

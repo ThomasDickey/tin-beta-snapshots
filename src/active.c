@@ -849,10 +849,10 @@ read_news_active_file(
 							/* TODO: add 483 (RFC 3977) code */
 							if (j == ERR_NOAUTH || j == NEED_AUTHINFO)
 								need_auth = TRUE;
-#if 0 /* do we need something like this? */
+#		if 0 /* do we need something like this? */
 							if (j == ERR_CMDSYN)
 								list_active = TRUE;
-#endif /* 0 */
+#		endif /* 0 */
 							continue;
 						} else {
 							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {

@@ -973,13 +973,13 @@ post_process_uud(
 				if (!(mode &= ~(S_ISUID|S_ISGID|S_ISVTX)))
 					mode = (S_IRUSR|S_IWUSR);
 
-#ifdef HAVE_FCHMOD
+#	ifdef HAVE_FCHMOD
 				fchmod(fileno(fp_out), mode);
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 				chmod(path, mode);
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
 
 				fclose(fp_out);
 				fp_out = NULL;

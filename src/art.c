@@ -2637,14 +2637,15 @@ find_nov_file(
 			 *
 			 * See if local overview file $SPOOLDIR/<groupname>/.overview exists
 			 *
-			 * INN >= 2.3.0 seems to use a new naming schemme
-			 * see untested gross hack below
+			 * INN >= 2.3.0 seems to use a new naming schemme with tradindexed
+			 * see untested gross hack below; buffindexed and ovdb are not
+			 * covered by the code at all.
 			 */
 #ifndef NNTP_ONLY
 			if (!read_news_via_nntp) {
 				make_base_group_path(novrootdir, group->name, buf, sizeof(buf));
 				joinpath(nov_file, sizeof(nov_file), buf, novfilename);
-#if 0	/* TODO: FIXME - ugly hack for inn >= 2.3.0 */
+#	if 0	/* TODO: FIXME - ugly hack for inn >= 2.3.0 with ovmethod tradindexed */
 				{
 					char *gn = my_strdup(group->name);
 					size_t t, j;
@@ -2669,7 +2670,7 @@ find_nov_file(
 					free(gn);
 					snprintf(nov_file + strlen(nov_file), sizeof(nov_file) - strlen(nov_file), "/%s.DAT", group->name);
 				}
-#endif /* 0 */
+#	endif /* 0 */
 				if (access(nov_file, R_OK) == 0) {
 					if (mode == R_OK)
 						return nov_file;		/* Use system wide overviews */

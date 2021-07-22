@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2021-02-22
+dnl Updated   : 2021-07-10
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2021 Thomas E. Dickey <dickey@invisible-island.net>
@@ -2077,7 +2077,7 @@ else
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CONST_X_STRING version: 6 updated: 2021/01/01 13:31:04
+dnl CF_CONST_X_STRING version: 7 updated: 2021/06/07 17:39:17
 dnl -----------------
 dnl The X11R4-X11R6 Xt specification uses an ambiguous String type for most
 dnl character-strings.
@@ -2107,7 +2107,7 @@ AC_TRY_COMPILE(
 #include <stdlib.h>
 #include <X11/Intrinsic.h>
 ],
-[String foo = malloc(1); (void)foo],[
+[String foo = malloc(1); free((void*)foo)],[
 
 AC_CACHE_CHECK(for X11/Xt const-feature,cf_cv_const_x_string,[
 	AC_TRY_COMPILE(
@@ -4063,7 +4063,7 @@ printf("old\\n");
 	,[$1=no])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_CONFIG version: 26 updated: 2021/01/03 08:05:37
+dnl CF_NCURSES_CONFIG version: 27 updated: 2021/05/19 19:35:25
 dnl -----------------
 dnl Tie together the configure-script macros for ncurses, preferring these in
 dnl order:
@@ -4105,7 +4105,7 @@ if test "x${PKG_CONFIG:=none}" != xnone; then
 				[initscr(); mousemask(0,0); tigetstr((char *)0);],
 				[AC_TRY_RUN([#include <${cf_cv_ncurses_header:-curses.h}>
 					int main(void)
-					{ char *xx = curses_version(); return (xx == 0); }],
+					{ const char *xx = curses_version(); return (xx == 0); }],
 					[cf_test_ncuconfig=yes],
 					[cf_test_ncuconfig=no],
 					[cf_test_ncuconfig=maybe])],
@@ -4131,7 +4131,7 @@ if test "x${PKG_CONFIG:=none}" != xnone; then
 			[initscr(); mousemask(0,0); tigetstr((char *)0);],
 			[AC_TRY_RUN([#include <${cf_cv_ncurses_header:-curses.h}>
 				int main(void)
-				{ char *xx = curses_version(); return (xx == 0); }],
+				{ const char *xx = curses_version(); return (xx == 0); }],
 				[cf_have_ncuconfig=yes],
 				[cf_have_ncuconfig=no],
 				[cf_have_ncuconfig=maybe])],
@@ -4535,19 +4535,29 @@ CF_ADD_LIBS($cf_cv_netlibs)
 test "$cf_test_netlibs" = no && echo "$cf_cv_netlibs" >&AC_FD_MSG
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NO_LEAKS_OPTION version: 8 updated: 2021/01/05 20:05:09
+dnl CF_NO_LEAKS_OPTION version: 9 updated: 2021/06/13 19:45:41
 dnl ------------------
 dnl see CF_WITH_NO_LEAKS
+dnl
+dnl $1 = option/name
+dnl $2 = help-text
+dnl $3 = symbol to define if the option is set
+dnl $4 = additional actions to take if the option is set
 AC_DEFUN([CF_NO_LEAKS_OPTION],[
 AC_MSG_CHECKING(if you want to use $1 for testing)
 AC_ARG_WITH($1,
 	[$2],
-	[AC_DEFINE_UNQUOTED($3,1,"Define to 1 if you want to use $1 for testing.")ifelse([$4],,[
+	[case "x$withval" in
+	x|xno) ;;
+	*)
+		: "${with_cflags:=-g}"
+		: "${enable_leaks:=no}"
+		with_$1=yes
+		AC_DEFINE_UNQUOTED($3,1,"Define to 1 if you want to use $1 for testing.")ifelse([$4],,[
 	 $4
 ])
-	: "${with_cflags:=-g}"
-	: "${enable_leaks:=no}"
-	 with_$1=yes],
+		;;
+	esac],
 	[with_$1=])
 AC_MSG_RESULT(${with_$1:-no})
 
@@ -5784,7 +5794,7 @@ AC_MSG_RESULT($cf_cv_use_tiocgwinsz)
 test $cf_cv_use_tiocgwinsz != yes && AC_DEFINE(DONT_HAVE_SIGWINCH,1,[Define this to 1 for working TIOCGWINSZ])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_TM_GMTOFF version: 4 updated: 2021/01/02 09:31:20
+dnl CF_TM_GMTOFF version: 5 updated: 2021/06/08 18:08:14
 dnl ------------
 dnl Check if the tm-struct defines the '.tm_gmtoff' member (useful in decoding
 dnl dates).
@@ -5804,8 +5814,8 @@ AC_CACHE_VAL(cf_cv_tm_gmtoff,[
 #	endif
 #endif
 ],[
-	struct tm foo;
-	long bar = foo.tm_gmtoff],
+	static struct tm foo;
+	long bar = foo.tm_gmtoff; (void) bar],
 	[cf_cv_tm_gmtoff=yes],
 	[cf_cv_tm_gmtoff=no])])
 AC_MSG_RESULT($cf_cv_tm_gmtoff)
@@ -6022,7 +6032,7 @@ AC_MSG_RESULT($cf_cv_type_sigaction)
 test "$cf_cv_type_sigaction" = yes && AC_DEFINE(HAVE_TYPE_SIGACTION,1,[Define to 1 if we have the sigaction_t type])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_UNION_WAIT version: 8 updated: 2021/01/02 09:31:20
+dnl CF_UNION_WAIT version: 9 updated: 2021/06/08 18:08:14
 dnl -------------
 dnl Check to see if the BSD-style union wait is declared.  Some platforms may
 dnl use this, though it is deprecated in favor of the 'int' type in Posix.
@@ -6042,7 +6052,7 @@ AC_REQUIRE([CF_WAIT_HEADERS])
 AC_MSG_CHECKING([for union wait])
 AC_CACHE_VAL(cf_cv_type_unionwait,[
 	AC_TRY_LINK($cf_wait_headers,
-	[int x;
+	[static int x;
 	 int y = WEXITSTATUS(x);
 	 int z = WTERMSIG(x);
 	 wait(&x);
@@ -6357,7 +6367,7 @@ AC_DEFUN([CF_WITH_VALUE],
  AC_DEFINE_UNQUOTED($3,"$withval",[Define a value for $1])dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_CURSES version: 16 updated: 2021/01/02 09:31:20
+dnl CF_XOPEN_CURSES version: 17 updated: 2021/07/10 12:22:27
 dnl ---------------
 dnl Test if we should define X/Open source for curses, needed on Digital Unix
 dnl 4.x, to see the extended functions, but breaks on IRIX 6.x.
@@ -6377,15 +6387,14 @@ AC_TRY_LINK([
 	make an error
 #endif
 #endif
-#ifdef NCURSES_VERSION
+#ifdef NCURSES_WIDECHAR
+make an error	/* prefer to fall-through on the second checks */
+#endif
 	cchar_t check;
 	int check2 = curs_set((int)sizeof(check));
-#endif
 	long x = winnstr(stdscr, "", 0);
 	int x1, y1;
-#ifdef NCURSES_VERSION
 	(void)check2;
-#endif
 	getbegyx(stdscr, y1, x1);
 	(void)x;
 	(void)y1;
@@ -6399,16 +6408,12 @@ AC_TRY_LINK([
 #define $cf_try_xopen_extension 1
 #include <stdlib.h>
 #include <${cf_cv_ncurses_header:-curses.h}>],[
-#ifdef NCURSES_VERSION
 		cchar_t check;
 		int check2 = curs_set((int)sizeof(check));
-#endif
 		long x = winnstr(stdscr, "", 0);
 		int x1, y1;
 		getbegyx(stdscr, y1, x1);
-#ifdef NCURSES_VERSION
 		(void)check2;
-#endif
 		(void)x;
 		(void)y1;
 		(void)x1;
@@ -6426,7 +6431,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 57 updated: 2021/01/01 16:53:59
+dnl CF_XOPEN_SOURCE version: 58 updated: 2021/05/01 17:49:36
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality,
@@ -6491,7 +6496,15 @@ mirbsd*)
 netbsd*)
 	cf_xopen_source="-D_NETBSD_SOURCE" # setting _XOPEN_SOURCE breaks IPv6 for lynx on NetBSD 1.6, breaks xterm, is not needed for ncursesw
 	;;
-openbsd[[4-9]]*)
+openbsd[[6-9]]*)
+	# OpenBSD 6.x has broken locale support, both compile-time and runtime.
+	# see https://www.mail-archive.com/bugs@openbsd.org/msg13200.html
+	# Abusing the conformance level is a workaround.
+	AC_MSG_WARN(this system does not provide usable locale support)
+	cf_xopen_source="-D_BSD_SOURCE"
+	cf_XOPEN_SOURCE=700
+	;;
+openbsd[[4-5]]*)
 	# setting _XOPEN_SOURCE lower than 500 breaks g++ compile with wchar.h, needed for ncursesw
 	cf_xopen_source="-D_BSD_SOURCE"
 	cf_XOPEN_SOURCE=600
@@ -6924,14 +6937,14 @@ define([CF__ICONV_HEAD],[
 #include <iconv.h>]
 )dnl
 dnl ---------------------------------------------------------------------------
-dnl CF__INTL_BODY version: 3 updated: 2017/07/10 20:13:33
+dnl CF__INTL_BODY version: 4 updated: 2021/05/19 19:35:25
 dnl -------------
 dnl Test-code needed for libintl compile-checks
 dnl $1 = parameter 2 from AM_WITH_NLS
 define([CF__INTL_BODY],[
 	bindtextdomain ("", "");
-	return (int) gettext ("")
-			ifelse([$1], need-ngettext, [ + (int) ngettext ("", "", 0)], [])
+	return (gettext ("") != 0)
+			ifelse([$1], need-ngettext, [ + (ngettext ("", "", 0) != 0)], [])
 #ifndef IGNORE_MSGFMT_HACK
 			[ + _nl_msg_cat_cntr]
 #endif

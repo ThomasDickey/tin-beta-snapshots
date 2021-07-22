@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-02
+ *  Updated   : 2021-07-06
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -394,9 +394,9 @@ invoke_editor(
 	}
 
 	if (group != NULL)
-		my_strncpy(editor_format, (*group->attribute->editor_format ? group->attribute->editor_format : (group->attribute->start_editor_offset ? TIN_EDITOR_FMT_ON : TIN_EDITOR_FMT_OFF)), sizeof(editor_format) - 1);
+		my_strncpy(editor_format, (*group->attribute->editor_format ? group->attribute->editor_format : TIN_EDITOR_FMT), sizeof(editor_format) - 1);
 	else
-		my_strncpy(editor_format, (*tinrc.editor_format ? tinrc.editor_format : (tinrc.start_editor_offset ? TIN_EDITOR_FMT_ON : TIN_EDITOR_FMT_OFF)), sizeof(editor_format) - 1);
+		my_strncpy(editor_format, (*tinrc.editor_format ? tinrc.editor_format : TIN_EDITOR_FMT), sizeof(editor_format) - 1);
 
 	if (!strfeditor(editor, lineno, filename, buf, sizeof(buf), editor_format))
 		sh_format(buf, sizeof(buf), "%s %s", editor, filename);

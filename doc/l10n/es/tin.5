@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2021-02-27
+.\" Updated   : 2021-07-06
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -600,9 +600,6 @@ Identical to the tinrc variable of the same name
 Identical to the tinrc variable \fBsort_article_type\fP
 .TP 
 \fBsort_threads_type\fP
-Identical to the tinrc variable of the same name
-.TP 
-\fBstart_editor_offset\fP
 Identical to the tinrc variable of the same name
 .TP 
 \fBtex2iso_conv\fP
@@ -1521,7 +1518,8 @@ highlighted bar if set OFF. Default is OFF.
 \fBeditor_format\fP
 The format string used to create the editor start command with parameters.
 Default is '%E +%N %F' with %E=Editor, %N=Linenumber and %F=Filename (e.g.,
-/bin/vi +7 .article).
+/bin/vi +7 .article). See also $\fBVISUAL\fP and $\fBEDITOR\fP under "ENVIRONMENT"
+in \fB\%tin\fP(1)
 .TP 
 \fBextquote_handling\fP
 If ON quotes from external sources will be detected. Default is OFF.
@@ -2100,11 +2098,6 @@ these strings. The matching is case\-insensitive. Example:
 A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markstar\fP or \fBmono_markstar\fP. If
 \fBstars_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
-.TP 
-\fBstart_editor_offset\fP
-Set ON if the editor used for posting, follow\-ups and bug reports has the
-capability of starting and positioning the cursor at a specified line within
-a file. Default is ON.
 .TP 
 \fBstrip_blanks\fP
 Strips the blanks from the end of each line therefore speeding up the

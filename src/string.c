@@ -1245,13 +1245,13 @@ normalize(
 		int32_t needed, norm_len;
 		UChar *ustr, *norm;
 		UErrorCode status = U_ZERO_ERROR;
-#ifdef HAVE_UNICODE_UNORM2_H
+#		ifdef HAVE_UNICODE_UNORM2_H
 		static const char *uni_name[] = {"nfc", "nfkc", "nfkc_cf"}; /* */
 		const char *uni_namep;
 		UNormalization2Mode mode;
-#else
+#		else
 		UNormalizationMode mode;
-#endif /* !HAVE_UNICODE_UNORM2_H */
+#		endif /* !HAVE_UNICODE_UNORM2_H */
 
 		/* convert to UTF-16 which is used internally by ICU */
 		if ((ustr = char2UChar(tmp)) == NULL) /* something went wrong, return the original string (as valid UTF8) */
@@ -1259,62 +1259,62 @@ normalize(
 
 		switch (tinrc.normalization_form) {
 			case NORMALIZE_NFD:
-#ifdef HAVE_UNICODE_UNORM2_H
+#		ifdef HAVE_UNICODE_UNORM2_H
 				uni_namep = uni_name[0];
 				mode = UNORM2_DECOMPOSE;
-#else
+#		else
 				mode = UNORM_NFD;
-#endif /* HAVE_UNICODE_UNORM2_H */
+#		endif /* HAVE_UNICODE_UNORM2_H */
 				break;
 
 			case NORMALIZE_NFC:
-#ifdef HAVE_UNICODE_UNORM2_H
+#		ifdef HAVE_UNICODE_UNORM2_H
 				uni_namep = uni_name[0];
 				mode = UNORM2_COMPOSE;
-#else
+#		else
 				mode = UNORM_NFC;
-#endif /* HAVE_UNICODE_UNORM2_H */
+#		endif /* HAVE_UNICODE_UNORM2_H */
 				break;
 
 			case NORMALIZE_NFKD:
-#ifdef HAVE_UNICODE_UNORM2_H
+#		ifdef HAVE_UNICODE_UNORM2_H
 				uni_namep = uni_name[1];
 				mode = UNORM2_DECOMPOSE;
-#else
+#		else
 				mode = UNORM_NFKD;
-#endif /* HAVE_UNICODE_UNORM2_H */
+#		endif /* HAVE_UNICODE_UNORM2_H */
 				break;
-#ifdef HAVE_UNICODE_UNORM2_H
+#		ifdef HAVE_UNICODE_UNORM2_H
 			case NORMALIZE_NFKC_CF:
 				uni_namep = uni_name[2];
 				mode = UNORM2_COMPOSE;
 				break;
-#endif /* HAVE_UNICODE_UNORM2_H */
+#		endif /* HAVE_UNICODE_UNORM2_H */
 
 			case NORMALIZE_NFKC:
 			default:
-#ifdef HAVE_UNICODE_UNORM2_H
+#		ifdef HAVE_UNICODE_UNORM2_H
 				uni_namep = uni_name[1];
 				mode = UNORM2_COMPOSE;
-#else
+#		else
 				mode = UNORM_NFKC;
-#endif /* HAVE_UNICODE_UNORM2_H */
+#		endif /* HAVE_UNICODE_UNORM2_H */
 		}
 
-#ifdef HAVE_UNICODE_UNORM2_H
+#		ifdef HAVE_UNICODE_UNORM2_H
 		needed = unorm2_normalize(unorm2_getInstance(NULL, uni_namep, mode, &status), ustr, -1, NULL, 0, &status);
-#else
+#		else
 		needed = unorm_normalize(ustr, -1, mode, 0, NULL, 0, &status);
-#endif /* HAVE_UNICODE_UNORM2_H */
+#		endif /* HAVE_UNICODE_UNORM2_H */
 
 		status = U_ZERO_ERROR;		/* reset status */
 		norm_len = needed + 1;
 		norm = my_malloc(sizeof(UChar) * norm_len);
-#ifdef HAVE_UNICODE_UNORM2_H
+#		ifdef HAVE_UNICODE_UNORM2_H
 		(void) unorm2_normalize(unorm2_getInstance(NULL, uni_namep, mode, &status), ustr, -1, norm, norm_len, &status);
-#else
+#		else
 		(void) unorm_normalize(ustr, -1, mode, 0, norm, norm_len, &status);
-#endif /* HAVE_UNICODE_UNORM2_H */
+#		endif /* HAVE_UNICODE_UNORM2_H */
 
 		if (U_FAILURE(status)) {
 			/* something went wrong, return the original string (as valid UTF8) */

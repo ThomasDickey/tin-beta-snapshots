@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-02
+ *  Updated   : 2021-07-06
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -383,7 +383,6 @@ struct t_config tinrc = {
 	TRUE,		/* show_signatures */
 	TRUE,		/* sigdashes */
 	TRUE,		/* signature_repost */
-	TRUE,		/* start_editor_offset */
 #ifndef USE_CURSES
 	TRUE,		/* strip_blanks */
 #endif /* !USE_CURSES */
@@ -496,7 +495,6 @@ struct t_config tinrc = {
 	TRUE,		/* attrib_show_signatures */
 	TRUE,		/* attrib_sigdashes */
 	TRUE,		/* attrib_signature_repost */
-	TRUE,		/* attrib_start_editor_offset */
 	FALSE,		/* attrib_tex2iso_conv */
 	TRUE,		/* attrib_thread_catchup_on_exit */
 	TRUE,		/* attrib_verbatim_handling */

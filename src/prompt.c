@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-02
+ *  Updated   : 2021-07-14
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -214,9 +214,9 @@ prompt_yn(
 
 		switch (ch) {
 			case ESC:	/* (ESC) common arrow keys */
-#	ifdef HAVE_KEY_PREFIX
+#ifdef HAVE_KEY_PREFIX
 			case KEY_PREFIX:
-#	endif /* HAVE_KEY_PREFIX */
+#endif /* HAVE_KEY_PREFIX */
 				switch (get_arrow_key((int) ch)) {
 					case KEYMAP_UP:
 					case KEYMAP_DOWN:
@@ -351,9 +351,9 @@ prompt_list(
 				break;
 
 			case ESC:	/* (ESC) common arrow keys */
-#	ifdef HAVE_KEY_PREFIX
+#ifdef HAVE_KEY_PREFIX
 			case KEY_PREFIX:
-#	endif /* HAVE_KEY_PREFIX */
+#endif /* HAVE_KEY_PREFIX */
 				switch (get_arrow_key(ch)) {
 					case KEYMAP_UP:
 						change = -1;
@@ -533,9 +533,8 @@ prompt_option_char(
 #else
 	char input[2];
 	char *variable = OPT_CHAR_list[option_table[option].var_index];
-	char *p = &input[0];
-	char *wp = p;
-	char *curr_val = p;
+	char *p;
+	char *curr_val = &input[0];
 	int max_chars = 1;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
@@ -567,7 +566,7 @@ prompt_option_char(
 		free(curr_val);
 	}
 #else
-	*variable = wp[0];
+	*variable = p[0];
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	clear_message();
@@ -810,9 +809,9 @@ prompt_continue(
 
 	switch ((ch = ReadCh())) {
 		case ESC:
-#	ifdef HAVE_KEY_PREFIX
+#ifdef HAVE_KEY_PREFIX
 		case KEY_PREFIX:
-#	endif /* HAVE_KEY_PREFIX */
+#endif /* HAVE_KEY_PREFIX */
 			(void) get_arrow_key(ch);
 			/* FALLTHROUGH */
 

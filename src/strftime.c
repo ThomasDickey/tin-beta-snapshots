@@ -103,13 +103,13 @@ my_strftime(
 	if (strchr(format, '%') == NULL && strlen(format) + 1 >= maxsize)
 		return 0;
 
-#ifdef HAVE_TZSET
+#	ifdef HAVE_TZSET
 	tzset();
-#else
-#	ifdef HAVE_SETTZ
+#	else
+#		ifdef HAVE_SETTZ
 	settz();
-#	endif /* HAVE_SETTZ */
-#endif /* HAVE_TZSET */
+#		endif /* HAVE_SETTZ */
+#	endif /* HAVE_TZSET */
 
 	endp = s + maxsize;
 	for (; *format && s < endp - 1; format++) {

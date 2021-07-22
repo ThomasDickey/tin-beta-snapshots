@@ -356,13 +356,13 @@ submit_inews(
 		}
 	}
 
-#if 0
+#	if 0
 	if (*message_id && *a_message_id) { /* check if returned ID matches purposed ID */
 		if (strcmp(message_id, a_message_id)) {
 			; /* shouldn't happen - warn user? */
 		}
 	}
-#endif /* 0 */
+#	endif /* 0 */
 
 	if (*message_id && (id_in_article || !*a_message_id))
 		strcpy(a_message_id, message_id);

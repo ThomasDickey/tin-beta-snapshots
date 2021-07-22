@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2021-07-03
+ *  Updated   : 2021-07-06
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2021 Michael Bienia <michael@vorlon.ping.de>
@@ -345,7 +345,6 @@ option_is_visible(
 		case OPT_ATTRIB_SIGDASHES:
 		case OPT_ATTRIB_SIGFILE:
 		case OPT_ATTRIB_SIGNATURE_REPOST:
-		case OPT_ATTRIB_START_EDITOR_OFFSET:
 		case OPT_ATTRIB_THREAD_ARTICLES:
 		case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
 		case OPT_ATTRIB_THREAD_FORMAT:
@@ -1444,11 +1443,6 @@ config_page(
 								UPDATE_BOOL_ATTRIBUTES(signature_repost);
 							break;
 
-						case OPT_START_EDITOR_OFFSET:
-							if (prompt_option_on_off(option))
-								UPDATE_BOOL_ATTRIBUTES(start_editor_offset);
-							break;
-
 #ifndef USE_CURSES
 						case OPT_STRIP_BLANKS:
 							if (prompt_option_on_off(option)) {
@@ -1750,11 +1744,6 @@ config_page(
 						case OPT_ATTRIB_SIGNATURE_REPOST:
 							if (prompt_option_on_off(option))
 								SET_BOOL_ATTRIBUTE(signature_repost);
-							break;
-
-						case OPT_ATTRIB_START_EDITOR_OFFSET:
-							if (prompt_option_on_off(option))
-								SET_BOOL_ATTRIBUTE(start_editor_offset);
 							break;
 
 						case OPT_ATTRIB_TEX2ISO_CONV:
@@ -2121,7 +2110,7 @@ config_page(
 						case OPT_EDITOR_FORMAT:
 							if (prompt_option_string(option)) {
 								if (!strlen(tinrc.editor_format))
-									STRCPY(tinrc.editor_format, TIN_EDITOR_FMT_ON);
+									STRCPY(tinrc.editor_format, TIN_EDITOR_FMT);
 								changed |= MISC_OPTS;
 							}
 							break;
@@ -3192,8 +3181,6 @@ check_state(
 			return curr_scope->state->sigfile;
 		case OPT_ATTRIB_SIGNATURE_REPOST:
 			return curr_scope->state->signature_repost;
-		case OPT_ATTRIB_START_EDITOR_OFFSET:
-			return curr_scope->state->start_editor_offset;
 		case OPT_ATTRIB_THREAD_ARTICLES:
 			return curr_scope->state->thread_articles;
 		case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
@@ -3490,10 +3477,6 @@ reset_state(
 			curr_scope->state->signature_repost = FALSE;
 			tinrc.attrib_signature_repost = default_scope->attribute->signature_repost;
 			break;
-		case OPT_ATTRIB_START_EDITOR_OFFSET:
-			curr_scope->state->start_editor_offset = FALSE;
-			tinrc.attrib_start_editor_offset = default_scope->attribute->start_editor_offset;
-			break;
 		case OPT_ATTRIB_THREAD_ARTICLES:
 			curr_scope->state->thread_articles = FALSE;
 			tinrc.attrib_thread_articles = default_scope->attribute->thread_articles;
@@ -3628,7 +3611,6 @@ initialize_attributes(
 	INITIALIZE_NUM_ATTRIBUTE(show_signatures);
 	INITIALIZE_NUM_ATTRIBUTE(sigdashes);
 	INITIALIZE_NUM_ATTRIBUTE(signature_repost);
-	INITIALIZE_NUM_ATTRIBUTE(start_editor_offset);
 	INITIALIZE_NUM_ATTRIBUTE(thread_articles);
 	INITIALIZE_NUM_ATTRIBUTE(thread_catchup_on_exit);
 	INITIALIZE_NUM_ATTRIBUTE(thread_perc);

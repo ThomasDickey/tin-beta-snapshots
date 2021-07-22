@@ -11,7 +11,7 @@ LVER	= 2
 PVER	= 6
 SVER	= 0
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20210704
+DVER	= 20210722
 EXE	= tin
 
 # directory structure

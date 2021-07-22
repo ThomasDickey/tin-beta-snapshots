@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-06-28
+ *  Updated   : 2021-07-06
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -2714,13 +2714,6 @@ struct opttxt txt_force_screen_redraw = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Force redraw after certain commands"),
 	N_("# If ON a screen redraw will always be done after certain external commands\n")
-};
-
-struct opttxt txt_start_editor_offset = {
-	N_("Start editor with line offset. <SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Start editor with line offset"),
-	N_("# If ON editor will be started with cursor offset into the file\n\
-# otherwise the cursor will be positioned at the first line\n")
 };
 
 struct opttxt txt_editor_format = {

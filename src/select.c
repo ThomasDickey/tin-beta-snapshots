@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-03
+ *  Updated   : 2021-07-06
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -762,7 +762,7 @@ build_gline(
 			case 'f':
 				/*
 				 * Display a flag for this group if needed
-				 * . Bogus groups are dumped immediately
+				 * . Bogus groups are dumped immediately 'D'
 				 * . Normal subscribed groups may be
 				 *   ' ' normal, 'X' not postable, 'M' moderated, '=' renamed
 				 * . Newgroups are 'N'
@@ -832,7 +832,7 @@ build_gline(
 					strcat(buf, tmp_buf);
 #else
 					for (j = 1; j < sel_fmt.len_ucnt; ++j)
- 						*buf++ = ' ';
+						*buf++ = ' ';
 					*buf++ = tinrc.art_marked_inrange;
 					*buf = '\0';
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1173,7 +1173,7 @@ catchup_group(
 			buf[i] = '\0';
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			if ((wtmp = char2wchar_t(buf))) {
-				mark_screen(i, mark_offset - (3 - art_mark_width), wtmp);
+				mark_screen(selmenu.curr, ucnt_offset, wtmp);
 				free(wtmp);
 			}
 #else

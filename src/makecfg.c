@@ -171,9 +171,8 @@ index_of(
 	MYDATA *q;
 
 	for (q = all_data; q != NULL && q != p; q = q->link) {
-		if (!strcmp(p->type, q->type)) {
+		if (!strcmp(p->type, q->type))
 			result++;
-		}
 	}
 	return result;
 }
