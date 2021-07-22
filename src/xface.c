@@ -51,7 +51,7 @@
 
 static int slrnface_fd = -1;
 
-#define WRITE_FACE_FD(s)	if (write(slrnface_fd, s, strlen(s)) != (ssize_t) strlen(s)) {;}
+#	define WRITE_FACE_FD(s)	if (write(slrnface_fd, s, strlen(s)) != (ssize_t) strlen(s)) {;}
 
 
 void
@@ -68,15 +68,15 @@ slrnface_start(
 	if (tinrc.use_slrnface == FALSE)
 		return;
 
-#ifdef HAVE_IS_XTERM
+#	ifdef HAVE_IS_XTERM
 	if (!is_xterm()) {
-#	ifdef DEBUG
+#		ifdef DEBUG
 		if (debug & DEBUG_MISC)
 			error_message(2, _("Can't run slrnface: Not running in an xterm."));
-#	endif /* DEBUG */
+#		endif /* DEBUG */
 		return;
 	}
-#endif /* HAVE_IS_XTERM */
+#	endif /* HAVE_IS_XTERM */
 
 	/*
 	 * $DISPLAY holds the (default) display name

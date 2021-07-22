@@ -59,7 +59,6 @@ sort_threads_type
 maildir
 print_header
 batch_save
-start_editor_offset
 editor_format
 posted_articles_file         *
 add_posted_to_filter

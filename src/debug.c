@@ -159,13 +159,13 @@ debug_print_header(
 
 		fprintf(fp, "thread=[%d]  prev=[%d]  status=[%u]\n\n", s->thread, s->prev, s->status);
 		fflush(fp);
-#ifdef HAVE_FCHMOD
+#	ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 		chmod(file, (S_IRUGO|S_IWUGO));
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
 		fclose(fp);
 	}
 }
@@ -203,13 +203,13 @@ debug_print_active(
 			if (debug & DEBUG_ATTRIB)
 				debug_print_attributes(group->attribute, fp);
 		}
-#ifdef HAVE_FCHMOD
+#	ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 		chmod(file, (S_IRUGO|S_IWUGO));
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
 		fclose(fp);
 	}
 }
@@ -269,13 +269,13 @@ debug_print_malloc(
 		total += size;
 		/* sometimes size_t is long */
 		fprintf(fp, "%12s:%-4d %s(%6lu). Total %lu\n", xfile, line, is_malloc ? " malloc" : "realloc", (unsigned long) size, (unsigned long) total);
-#ifdef HAVE_FCHMOD
+#	ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 		chmod(file, (S_IRUGO|S_IWUGO));
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
 		fclose(fp);
 	}
 }
@@ -340,13 +340,13 @@ debug_print_filters(
 		}
 		fprintf(fp, "*** END GLOBAL FILTER ***\n");
 
-#ifdef HAVE_FCHMOD
+#	ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 		chmod(file, (S_IRUGO|S_IWUGO));
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
 		fclose(fp);
 	}
 }
@@ -374,13 +374,13 @@ debug_print_file(
 
 	if ((fp = fopen(file, "a")) != NULL) {
 		fprintf(fp, "%s\n", buf);
-#ifdef HAVE_FCHMOD
+#	ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 		chmod(file, (S_IRUGO|S_IWUGO));
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
 		fclose(fp);
 	}
 	free(buf);
@@ -428,13 +428,13 @@ debug_print_bitmap(
 					(art->status == ART_READ ? "READ" : "UNREAD"));
 			}
 			debug_print_newsrc(&group->newsrc, fp);
-#ifdef HAVE_FCHMOD
+#	ifdef HAVE_FCHMOD
 			fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 			chmod(file, (S_IRUGO|S_IWUGO));
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
 			fclose(fp);
 		}
 	}

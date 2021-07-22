@@ -89,7 +89,7 @@ tmpfile(
 #		if defined(HAVE_CHMOD) && !defined(HAVE_MKSTEMP) && defined(HAVE_MKTEMP)
 		fchmod(p, (S_IRUGO|S_IWUGO) & ~u);
 #		endif /* HAVE_CHMOD && !HAVE_MKSTEMP && HAVE_MKTEMP */
-#endif /* HAVE_FCHMOD */
+#	endif /* HAVE_FCHMOD */
 	}
 
 	(void) sigprocmask(SIG_SETMASK, &oset, NULL);

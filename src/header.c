@@ -260,11 +260,11 @@ get_full_name(
 {
 	char *p;
 	static char fullname[128];
-#	ifndef DONT_HAVE_PW_GECOS
+#ifndef DONT_HAVE_PW_GECOS
 	char buf[128];
 	char tmp[128];
 	struct passwd *pw;
-#	endif /* !DONT_HAVE_PW_GECOS */
+#endif /* !DONT_HAVE_PW_GECOS */
 
 	fullname[0] = '\0';
 
@@ -277,7 +277,7 @@ get_full_name(
 		return fullname;
 	}
 
-#	ifndef DONT_HAVE_PW_GECOS
+#ifndef DONT_HAVE_PW_GECOS
 	if ((pw = getpwuid(getuid())) != NULL) {
 		STRCPY(buf, pw->pw_gecos);
 		if ((p = strchr(buf, ',')))
@@ -291,7 +291,7 @@ get_full_name(
 		} else
 			STRCPY(fullname, buf);
 	}
-#	endif /* !DONT_HAVE_PW_GECOS */
+#endif /* !DONT_HAVE_PW_GECOS */
 	return fullname;
 }
 
@@ -317,10 +317,10 @@ get_from_name(
 
 	sprintf(from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), BlankIfNull(get_full_name()), BlankIfNull(get_user_name()), BlankIfNull(fromhost));
 
-#	ifdef DEBUG
+#ifdef DEBUG
 	if (debug & DEBUG_MISC)
 		error_message(2, "FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", BlankIfNull(from_name), BlankIfNull(get_user_name()), domain_name, BlankIfNull(get_full_name()));
-#	endif /* DEBUG */
+#endif /* DEBUG */
 }
 
 

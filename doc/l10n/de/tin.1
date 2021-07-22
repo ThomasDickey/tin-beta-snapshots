@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2021-05-25
+.\" Updated   : 2021-07-06
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -1877,7 +1877,9 @@ highlighted bar if set OFF. Default is OFF.
 .TP 
 \fBAufruf Ihres Editors (editor_format)\fP
 The format string used to create the editor start command with parameters.
-Default is "%E +%N %F" (e.g., /bin/vi +7 .article).
+Default is '%E +%N %F' with %E=Editor, %N=Linenumber and %F=Filename (e.g.,
+/bin/vi +7 .article). See also $\fBVISUAL\fP and $\fBEDITOR\fP under
+"ENVIRONMENT".
 .TP 
 \fBFremdzitate erkennen (extquote_handling)\fP
 Falls ON werden Fremdzitate in Artikeln erkannt. Voreinstellung ist ON.
@@ -2438,11 +2440,6 @@ these strings. The matching is case\-insensitive. Example:
 A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markstar\fP or \fBmono_markstar\fP. If
 \fBstars_regex\fP is blank, then \fBtin\fP uses a built\-in default.
-.TP 
-\fBStarte Editor mit Einrückung (start_editor_offset)\fP
-Set ON if the editor used for posting, follow\-ups and bug reports has the
-capability of starting and positioning the cursor at a specified line within
-a file. Default is ON.
 .TP 
 \fBLeerzeichen am Zeilenende entfernen (strip_blanks)\fP
 .\" only done in select/thread level, not in group level (nor in the pager)

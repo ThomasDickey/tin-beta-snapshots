@@ -386,10 +386,10 @@ do_auto_select_arts(
 
 	for_each_art(i) {
 		if (arts[i].status == ART_UNREAD && !arts[i].selected) {
-#	ifdef DEBUG
+#ifdef DEBUG
 			if (debug & DEBUG_NEWSRC)
 				debug_print_comment("group.c: X command");
-#	endif /* DEBUG */
+#endif /* DEBUG */
 			art_mark(curr_group, &arts[i], ART_READ);
 			arts[i].zombie = TRUE;
 		}
@@ -413,10 +413,10 @@ undo_auto_select_arts(
 
 	for_each_art(i) {
 		if (arts[i].status == ART_READ && arts[i].zombie) {
-#	ifdef DEBUG
+#ifdef DEBUG
 			if (debug & DEBUG_NEWSRC)
 				debug_print_comment("group.c: + command");
-#	endif /* DEBUG */
+#endif /* DEBUG */
 			art_mark(curr_group, &arts[i], ART_UNREAD);
 			arts[i].zombie = FALSE;
 		}

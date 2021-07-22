@@ -245,7 +245,6 @@ struct t_config {
 	t_bool show_signatures;				/* show signatures when displaying articles */
 	t_bool sigdashes;					/* set TRUE to prepend every signature with dashes */
 	t_bool signature_repost;			/* set TRUE to add signature when reposting articles */
-	t_bool start_editor_offset;
 #	ifndef USE_CURSES
 		t_bool strip_blanks;
 #	endif /* !USE_CURSES */
@@ -362,7 +361,6 @@ struct t_config {
 	t_bool attrib_show_signatures;
 	t_bool attrib_sigdashes;
 	t_bool attrib_signature_repost;
-	t_bool attrib_start_editor_offset;
 	t_bool attrib_tex2iso_conv;
 	t_bool attrib_thread_catchup_on_exit;
 	t_bool attrib_verbatim_handling;

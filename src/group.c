@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-04
+ *  Updated   : 2021-07-14
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1374,7 +1374,7 @@ build_sline(
 					tagged = TRUE;
 				} else
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-					snprintf(tmp_buf, sizeof(tmp_buf), "%*c%lc", 2 + (art_mark_width - wcwidth(sbuf.art_mark)), ' ', sbuf.art_mark);
+					snprintf(tmp_buf, sizeof(tmp_buf), "  %*lc", art_mark_width, sbuf.art_mark);
 #else
 					snprintf(tmp_buf, sizeof(tmp_buf), "  %c", sbuf.art_mark);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1509,72 +1509,40 @@ show_group_title(
 
 	/* article count */
 	if ((cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit)
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		snprintf(tmp, sizeof(tmp), " %d/%d%lc",
+		snprintf(tmp, sizeof(tmp), " %d/%d%"T_CHAR_FMT,
 			(cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit, art_cnt,
 			(curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
-#else
-		snprintf(tmp, sizeof(tmp), " %d/%d%c",
-			(cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit, art_cnt,
-			(curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	else
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		snprintf(tmp, sizeof(tmp), " %d%lc",
+		snprintf(tmp, sizeof(tmp), " %d%"T_CHAR_FMT,
 			art_cnt,
 			(curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
-#else
-		snprintf(tmp, sizeof(tmp), " %d%c",
-			art_cnt,
-			(curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 
 	/* selected articles */
 	if (curr_group->attribute->show_only_unread_arts)
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		snprintf(tmp, sizeof(tmp), " %d%lc",
+		snprintf(tmp, sizeof(tmp), " %d%"T_CHAR_FMT,
 			selected_art_cnt, tinrc.art_marked_selected);
-#else
-		snprintf(tmp, sizeof(tmp), " %d%c",
-			selected_art_cnt, tinrc.art_marked_selected);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	else
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		snprintf(tmp, sizeof(tmp), " %d%lc %d%lc",
+		snprintf(tmp, sizeof(tmp), " %d%"T_CHAR_FMT" %d%"T_CHAR_FMT,
 			selected_art_cnt, tinrc.art_marked_selected,
 			read_selected_art_cnt, tinrc.art_marked_read_selected);
-#else
-		snprintf(tmp, sizeof(tmp), " %d%c %d%c",
-			selected_art_cnt, tinrc.art_marked_selected,
-			read_selected_art_cnt, tinrc.art_marked_read_selected);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 
 	/* recent articles */
 	if (tinrc.recent_time) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		snprintf(tmp, sizeof(tmp), " %d%lc",
+		snprintf(tmp, sizeof(tmp), " %d%"T_CHAR_FMT,
 			recent_art_cnt, tinrc.art_marked_recent);
-#else
-		snprintf(tmp, sizeof(tmp), " %d%c",
-			recent_art_cnt, tinrc.art_marked_recent);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 		if (sizeof(buf) > strlen(buf) + strlen(tmp))
 			strcat(buf, tmp);
 	}
 
 	/* killed articles */
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	snprintf(tmp, sizeof(tmp), " %d%lc",
+	snprintf(tmp, sizeof(tmp), " %d%"T_CHAR_FMT,
 		killed_art_cnt, tinrc.art_marked_killed);
-#else
-	snprintf(tmp, sizeof(tmp), " %d%c",
-		killed_art_cnt, tinrc.art_marked_killed);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 

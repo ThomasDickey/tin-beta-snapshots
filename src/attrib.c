@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-07-06
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2021 Iain Lea <iain@bricbrac.de>
@@ -156,7 +156,6 @@ set_default_attributes(
 	CopyBool(prompt_followupto, tinrc.prompt_followupto);
 	CopyBool(sigdashes, tinrc.sigdashes);
 	CopyBool(signature_repost, tinrc.signature_repost);
-	CopyBool(start_editor_offset, tinrc.start_editor_offset);
 	attributes->x_comment_to = FALSE;
 	CopyBool(tex2iso_conv, tinrc.tex2iso_conv);
 	attributes->mime_forward = FALSE;
@@ -232,7 +231,6 @@ set_default_state(
 	state->signature_repost = FALSE;
 	state->sort_article_type = FALSE;
 	state->sort_threads_type = FALSE;
-	state->start_editor_offset = FALSE;
 	state->tex2iso_conv = FALSE;
 	state->thread_articles = FALSE;
 	state->thread_catchup_on_exit = FALSE;
@@ -474,7 +472,6 @@ read_attributes_file(
 					MATCH_BOOLEAN("show_signatures=", OPT_ATTRIB_SHOW_SIGNATURES);
 					MATCH_BOOLEAN("sigdashes=", OPT_ATTRIB_SIGDASHES);
 					MATCH_BOOLEAN("signature_repost=", OPT_ATTRIB_SIGNATURE_REPOST);
-					MATCH_BOOLEAN("start_editor_offset=", OPT_ATTRIB_START_EDITOR_OFFSET);
 					MATCH_STRING("sigfile=", OPT_ATTRIB_SIGFILE);
 					MATCH_INTEGER("sort_article_type=", OPT_ATTRIB_SORT_ARTICLE_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
 					MATCH_INTEGER("sort_threads_type=", OPT_ATTRIB_SORT_THREADS_TYPE, SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND);
@@ -834,9 +831,6 @@ set_attrib(
 			case OPT_ATTRIB_SIGNATURE_REPOST:
 				SET_BOOLEAN(signature_repost);
 
-			case OPT_ATTRIB_START_EDITOR_OFFSET:
-				SET_BOOLEAN(start_editor_offset);
-
 			case OPT_ATTRIB_THREAD_ARTICLES:
 				SET_INTEGER(thread_articles);
 
@@ -1090,7 +1084,6 @@ assign_attributes_to_groups(
 				SET_ATTRIB(prompt_followupto);
 				SET_ATTRIB(sigdashes);
 				SET_ATTRIB(signature_repost);
-				SET_ATTRIB(start_editor_offset);
 				SET_ATTRIB(x_comment_to);
 				SET_ATTRIB(tex2iso_conv);
 				SET_ATTRIB(mime_forward);
@@ -1340,7 +1333,6 @@ write_attributes_file(
 		SORT_THREADS_BY_LAST_POSTING_DATE_DESCEND, _(txt_sort_t_type[SORT_THREADS_BY_LAST_POSTING_DATE_DESCEND]));
 	fprintf(fp, "#    %d=%s\n",
 		SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND, _(txt_sort_t_type[SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND]));
-	fprintf(fp, _("#  start_editor_offset=ON/OFF\n"));
 	fprintf(fp, _("#  tex2iso_conv=ON/OFF\n"));
 	fprintf(fp, _("#  thread_catchup_on_exit=ON/OFF\n"));
 	fprintf(fp, _("#  thread_articles=NUM"));
@@ -1536,8 +1528,6 @@ write_attributes_file(
 					fprintf(fp, "sort_article_type=%u\n", scope->attribute->sort_article_type);
 				if (scope->state->sort_threads_type)
 					fprintf(fp, "sort_threads_type=%u\n", scope->attribute->sort_threads_type);
-				if (scope->state->start_editor_offset)
-					fprintf(fp, "start_editor_offset=%s\n", print_boolean(scope->attribute->start_editor_offset));
 				if (scope->state->tex2iso_conv)
 					fprintf(fp, "tex2iso_conv=%s\n", print_boolean(scope->attribute->tex2iso_conv));
 				if (scope->state->thread_articles)
@@ -1661,7 +1651,6 @@ skip_scope(
 		|| scope->state->signature_repost
 		|| scope->state->sort_article_type
 		|| scope->state->sort_threads_type
-		|| scope->state->start_editor_offset
 		|| scope->state->tex2iso_conv
 		|| scope->state->thread_articles
 		|| scope->state->thread_catchup_on_exit
@@ -1787,7 +1776,6 @@ dump_attributes(
 			debug_print_file("ATTRIBUTES", "\tshow_signatures=%s", print_boolean(group->attribute->show_signatures));
 			debug_print_file("ATTRIBUTES", "\tsigdashes=%s", print_boolean(group->attribute->sigdashes));
 			debug_print_file("ATTRIBUTES", "\tsignature_repost=%s", print_boolean(group->attribute->signature_repost));
-			debug_print_file("ATTRIBUTES", "\tstart_editor_offset=%s", print_boolean(group->attribute->start_editor_offset));
 			debug_print_file("ATTRIBUTES", "\tthread_catchup_on_exit=%s", print_boolean(group->attribute->thread_catchup_on_exit));
 			debug_print_file("ATTRIBUTES", "\tthread_format=%s", BlankIfNull(group->attribute->thread_format));
 			debug_print_file("ATTRIBUTES", "\ttrim_article_body=%d", group->attribute->trim_article_body);
@@ -1902,7 +1890,6 @@ dump_scopes(
 			debug_print_file(fname, "\t%sshow_signatures=%s", DEBUG_PRINT_STATE(show_signatures), print_boolean(scope->attribute->show_signatures));
 			debug_print_file(fname, "\t%ssigdashes=%s", DEBUG_PRINT_STATE(sigdashes), print_boolean(scope->attribute->sigdashes));
 			debug_print_file(fname, "\t%ssignature_repost=%s", DEBUG_PRINT_STATE(signature_repost), print_boolean(scope->attribute->signature_repost));
-			debug_print_file(fname, "\t%sstart_editor_offset=%s", DEBUG_PRINT_STATE(start_editor_offset), print_boolean(scope->attribute->start_editor_offset));
 			debug_print_file(fname, "\t%sthread_catchup_on_exit=%s", DEBUG_PRINT_STATE(thread_catchup_on_exit), print_boolean(scope->attribute->thread_catchup_on_exit));
 			debug_print_file(fname, "\t%sthread_format=%s", DEBUG_PRINT_STATE(thread_format), DEBUG_PRINT_STRING(thread_format));
 			debug_print_file(fname, "\t%strim_article_body=%d", DEBUG_PRINT_STATE(trim_article_body), scope->attribute->trim_article_body);

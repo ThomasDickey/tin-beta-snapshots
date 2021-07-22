@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-02
+ *  Updated   : 2021-07-09
  *  Notes     :
  *
  * Copyright (c) 1997-2021 Iain Lea <iain@bricbrac.de>
@@ -1571,7 +1571,6 @@ enum {
 	HIST_SHELL_COMMAND,
 	HIST_SUBJECT_SEARCH,
 	HIST_CONFIG_SEARCH,
-	HIST_HELP_SEARCH,
 	HIST_URL
 };
 /* must always be the same as the highest HIST_ value except HIST_NONE */
@@ -1838,7 +1837,6 @@ extern struct opttxt txt_sort_article_type;
 extern struct opttxt txt_sort_threads_type;
 extern struct opttxt txt_spamtrap_warning_addresses;
 extern struct opttxt txt_stars_regex;
-extern struct opttxt txt_start_editor_offset;
 #ifndef USE_CURSES
 	extern struct opttxt txt_strip_blanks;
 #endif /* !USE_CURSES */

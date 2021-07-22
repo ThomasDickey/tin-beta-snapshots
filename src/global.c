@@ -369,9 +369,9 @@ handle_keypad(
 
 	switch (ch) {
 		case ESC:	/* common arrow keys */
-#	ifdef HAVE_KEY_PREFIX
+#ifdef HAVE_KEY_PREFIX
 		case KEY_PREFIX:
-#	endif /* HAVE_KEY_PREFIX */
+#endif /* HAVE_KEY_PREFIX */
 			switch (get_arrow_key((int) ch)) {
 				case KEYMAP_UP:
 					func = GLOBAL_LINE_UP;

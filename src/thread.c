@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-03
+ *  Updated   : 2021-07-12
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -256,7 +256,7 @@ build_tline(
 				} else {
 					mark[0] = get_art_mark(art);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-					snprintf(markbuf, sizeof(markbuf), "%*c%lc", 2 + (art_mark_width - wcwidth(mark[0])), ' ', mark[0]);
+					snprintf(markbuf, sizeof(markbuf), "  %*lc", art_mark_width, mark[0]);
 					strcat(buffer, markbuf);
 #else
 					strcat(buffer, "   ");
@@ -1693,6 +1693,7 @@ thread_mark_postprocess(
 			if (feed_type == FEED_ARTICLE) {
 				mark[0] = get_art_mark(&arts[respnum]);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				mark_screen(thdmenu.curr, mark_offset - (3 - art_mark_width), L"   ");
 				mark_screen(thdmenu.curr, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
 #else
 				mark_screen(thdmenu.curr, mark_offset, mark);
@@ -1710,6 +1711,7 @@ thread_mark_postprocess(
 			if (feed_type == FEED_ARTICLE) {
 				mark[0] = get_art_mark(&arts[respnum]);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				mark_screen(thdmenu.curr, mark_offset - (3 - art_mark_width), L"   ");
 				mark_screen(thdmenu.curr, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
 #else
 				mark_screen(thdmenu.curr, mark_offset, mark);
