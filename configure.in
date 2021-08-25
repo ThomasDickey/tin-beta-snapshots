@@ -1577,7 +1577,7 @@ esac
 if test "$cf_cv_termlib" = pdcurses ; then
 	CF_PDCURSES_X11
 fi
-CF_CURSES_FUNCS(vw_printw)
+CF_CURSES_FUNCS(vw_printw get_wch)
 
 ### sum up warnings
 if test "$cf_cv_termlib" = none ; then
