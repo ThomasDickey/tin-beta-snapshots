@@ -35720,7 +35720,7 @@ EOF
 	;;
 esac
 
-for cf_func in vw_printw
+for cf_func in vw_printw get_wch
 do
 
 cf_tr_func=`echo "$cf_func" | sed y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%`

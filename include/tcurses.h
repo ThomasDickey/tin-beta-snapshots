@@ -75,7 +75,7 @@
 #					endif /* HAVE_NCURSES_NCURSES_H */
 #				endif /* HAVE_NCURSES_H */
 #			endif /* HAVE_NCURSESW_NCURSES_H */
-#			if defined(NCURSES_WIDECHAR)
+#			if defined(NCURSES_WIDECHAR) && defined(HAVE_GET_WCH)
 #				define HAVE_NCURSESW 1
 #			endif
 #		endif /* HAVE_NCURSES_H */

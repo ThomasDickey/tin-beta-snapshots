@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2020-04-23
+ *  Updated   : 2021-08-25
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2021 Thomas Dickey <dickey@invisible-island.net>
@@ -256,6 +256,7 @@
 #	undef HAVE_GETSERVBYNAME
 #	undef HAVE_GETTIMEOFDAY
 #	undef HAVE_GETWD
+#	undef HAVE_GET_WCH
 #	undef HAVE_HEAPSORT
 #	undef HAVE_ICONV
 #	undef HAVE_INET_ADDR
