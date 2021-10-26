@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "tinews.pl 1"
-.TH tinews.pl 1 "June 27th, 2021" "1.1.58" "Post and sign an article via NNTP"
+.TH tinews.pl 1 "August 11th, 2021" "1.1.59" "Post and sign an article via NNTP"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -202,6 +202,11 @@ Cancel-Key, Also-Control and Distribution.
 Some of them may be altered on the Server (i.e. Cancel-Key) which would
 invalid the signature, this option can be used the exclude such headers
 if required.
+.ie n .IP "\-\fBm\fR ""Message\-ID"" | \-\-\fBmessage-id\fR ""Message\-ID""" 4
+.el .IP "\-\fBm\fR \f(CWMessage\-ID\fR | \-\-\fBmessage-id\fR \f(CWMessage\-ID\fR" 4
+.IX Xref "-m --message-id"
+.IX Item "-m Message-ID | --message-id Message-ID"
+Set the article header field Message-ID: to the given value.
 .ie n .IP "\-\fBn\fR ""Newsgroups"" | \-\-\fBnewsgroups\fR ""Newsgroups""" 4
 .el .IP "\-\fBn\fR \f(CWNewsgroups\fR | \-\-\fBnewsgroups\fR \f(CWNewsgroups\fR" 4
 .IX Xref "-n --newsgroups"
@@ -411,7 +416,7 @@ it contains the user's unencrypted password for reading news.
 \&\*(L"option=value\*(R" configuration pairs, last match counts and only
 \&\*(L"value\*(R" is case sensitive. Lines that start with \*(L"#\*(R" are ignored. If the
 file contains unencrypted passwords (e.g. nntp-pass or pgp-pass), it
-should be readable for the user only. Use \-\fBvH\fR to get a dull list of
+should be readable for the user only. Use \-\fBvH\fR to get a full list of
 all available configuration options.
 .SH "SECURITY"
 .IX Header "SECURITY"

@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-06
+ *  Updated   : 2021-08-07
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -786,7 +786,7 @@ constext txt_refs_line_only[] = N_("References: line              ");
 	constext txt_remaining[] = N_("(%d:%02d remaining)");
 #endif /* HAVE_GETTIMEOFDAY */
 constext txt_remove_bogus[] = N_("Bogus group %s removed.");
-constext txt_removed_rule[] = N_("Removed from the previous rule: ");
+constext txt_removed_rule[] = N_("Removed from this rule: ");
 constext txt_rename_error[] = N_("Error: rename %s to %s");
 constext txt_reply_to_author[] = N_("Reply to author...");
 constext txt_repost[] = N_("Repost");

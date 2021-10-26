@@ -74,7 +74,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-15 06:12+0200\n"
+"POT-Creation-Date: 2021-10-26 12:47+0200\n"
 "PO-Revision-Date: 2020-12-27 11:41+0100\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -3652,7 +3652,8 @@ msgid "Bogus group %s removed."
 msgstr "Fejlbehæftet gruppe %s fjernet."
 
 #: src/lang.c:789
-msgid "Removed from the previous rule: "
+#, fuzzy
+msgid "Removed from this rule: "
 msgstr "Fjernet fra den forrige regel: "
 
 #: src/lang.c:790
@@ -8344,7 +8345,7 @@ msgstr "Version: %s %s udgave %s (»%s«) %s %s\n"
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Version: %s %s udgave %s (»%s«)\n"
 
-#: src/newsrc.c:472
+#: src/newsrc.c:476
 msgid "Unreachable?\n"
 msgstr "Kan ikke nås?\n"
 

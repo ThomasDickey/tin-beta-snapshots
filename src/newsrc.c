@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2020-06-30
+ *  Updated   : 2021-08-27
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -108,8 +108,12 @@ read_newsrc(
 			wait_message(0, _(txt_reading_newsrc));
 
 		while ((grp = tin_fgets(fp, FALSE)) != NULL) {
+			strip_line(grp);
+			if (*grp == '#' || *grp == '\0')	/* skip comments and empty lines */
+				continue;
+
+			line_count++;	/* but count all other lines (incl. bogous ones) */
 			seq = parse_newsrc_line(grp, &sub);
-			line_count++;
 
 			if (sub == SUBSCRIBED) {
 				if ((i = my_group_add(grp, FALSE)) >= 0) {

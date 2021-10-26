@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-08-07
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -326,7 +326,8 @@ read_filter_file(
 	long secs = 0L;
 	struct t_filter_comment *comment = NULL;
 	struct t_filter *ptr = NULL;
-	t_bool expired = FALSE;
+	t_bool need_write = FALSE;
+	t_bool no_version_line = TRUE;
 	t_bool expired_time = FALSE;
 	time_t current_secs = (time_t) 0;
 	static t_bool first_read = TRUE;
@@ -356,9 +357,10 @@ read_filter_file(
 				filter_file_offset++;
 			if (upgrade == NULL && first_read && match_string(buf, "# Filter file V", NULL, 0)) {
 				first_read = FALSE;
+				no_version_line = FALSE;
 				upgrade = check_upgrade(buf, "# Filter file V", FILTER_VERSION);
 				if (upgrade->state != RC_IGNORE)
-					upgrade_prompt_quit(upgrade, FILTER_FILE); /* TODO: do something (more) useful here */
+					upgrade_prompt_quit(upgrade, file); /* FILTER_FILE */ /* TODO: do something (more) useful here */
 			}
 			continue;
 		}
@@ -599,7 +601,7 @@ read_filter_file(
 #endif /* DEBUG */
 							glob_filter.num--;
 							expired_time = TRUE;
-							expired = TRUE;
+							need_write = TRUE;
 						}
 					}
 				}
@@ -610,9 +612,9 @@ read_filter_file(
 				 * TODO: format has changed in FILTER_VERSION 1.0.0,
 				 *       should we comment out older xref rules like below?
 				 */
-				if (match_string(buf + 1, "ref=", xref, sizeof(xref))) {
+				if (ptr && match_string(buf + 1, "ref=", xref, sizeof(xref))) {
 					str_trim(xref);
-					if (ptr && !expired_time) {
+					if (!expired_time) {
 						if (tinrc.wildcard && ptr[i].xref != NULL) {
 							/* merge with already read value */
 							ptr[i].xref = my_realloc(ptr[i].xref, strlen(ptr[i].xref) + strlen(xref) + 2);
@@ -625,23 +627,21 @@ read_filter_file(
 					}
 					break;
 				}
-				if (upgrade && upgrade->state == RC_UPGRADE) {
+				if (ptr && ((upgrade && upgrade->state == RC_UPGRADE) || no_version_line)) {
 					char foo[HEADER_LEN];
 
 					if (match_string(buf + 1, "ref_max=", foo, LEN - 1)) {
-						/*
-						 * TODO: add to the right rule, give better explanation.
-						 */
+						/* TODO: give better explanation. */
 						snprintf(foo, HEADER_LEN, "%s%s", _(txt_removed_rule), str_trim(buf));
-						comment = add_filter_comment(comment, foo);
+						ptr[i].comment = add_filter_comment(ptr[i].comment, foo);
+						need_write = TRUE;
 						break;
 					}
 					if (match_string(buf + 1, "ref_score=", foo, LEN - 1)) {
-						/*
-						 * TODO: add to the right rule, give better explanation.
-						 */
+						/* TODO: give better explanation. */
 						snprintf(foo, HEADER_LEN, "%s%s", _(txt_removed_rule), str_trim(buf));
-						comment = add_filter_comment(comment, foo);
+						ptr[i].comment = add_filter_comment(ptr[i].comment, foo);
+						need_write = TRUE;
 					}
 				}
 				break;
@@ -656,7 +656,14 @@ read_filter_file(
 
 	fclose(fp);
 
-	if (expired || (upgrade && upgrade->state == RC_UPGRADE))
+	if (!upgrade && need_write) {
+		upgrade = my_malloc(sizeof(struct t_version));
+		upgrade->state = RC_UPGRADE;
+		upgrade->file_version = -1;
+		upgrade_prompt_quit(upgrade, file); /* TODO: do something (more) useful here */
+	}
+
+	if (need_write || (upgrade && upgrade->state == RC_UPGRADE))
 		write_filter_file(file);
 
 	if (!cmd_line && !batch_mode)

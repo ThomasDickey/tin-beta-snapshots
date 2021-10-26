@@ -239,7 +239,7 @@ Restrictions - this will only work if:
 Side effects:
 When using a Path:-filer tin _may_ rebuild locally cached overview
 data if cache_overview_files=ON is set to get the Path data into the
-local cache of the group where the filter is active. This will may cause
+local cache of the group where the filter is active. This may cause
 more NNTP traffic once.
 
 6. EXAMPLES

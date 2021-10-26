@@ -2484,6 +2484,25 @@ extern struct tm *localtime(time_t *);
 #	define UNUSED(x) x
 #endif /* __GNUC__ && !__cplusplus && !__APPLE_CC__ && !__NeXT__ */
 
+/* #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L */
+#ifdef STDC_NORETURN
+#	ifdef HAVE_STDNORETURN_H
+#		include <stdnoreturn.h>
+#	endif /* HAVE_STDNORETURN_H */
+#else
+#	undef _Noreturn
+#	if defined(__GNUC__) && !defined(__cplusplus) && !defined(__APPLE_CC__) && !defined(__NeXT__)
+#		if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6)
+#			define _Noreturn __attribute__((noreturn))
+#		else
+#			define _Noreturn /**/
+#		endif /* __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6) */
+#	else
+#		define _Noreturn /**/
+#	endif /* __GNUC__ && !__cplusplus && !__APPLE_CC__ && !__NeXT__ */
+#endif /* STDC_NORETURN */
+
+
 /* init_selfinfo() needs MM_CHARSET */
 #ifndef MM_CHARSET
 #	define MM_CHARSET "US-ASCII"

@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2019-01-28
+ *  Updated   : 2021-07-23
  *  Notes     :
  *
  * Copyright (c) 1992-2021 Iain Lea <iain@bricbrac.de>
@@ -618,11 +618,11 @@ read_active_file(
 			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #endif /* DEBUG && NNTP_ABLE */
 
-		if (!parse_active_line(ptr, &max, &min, moderated))
-			continue;
-
 		if (++processed % MODULO_COUNT_NUM == 0)
 			spin_cursor();
+
+		if (!parse_active_line(ptr, &max, &min, moderated))
+			continue;
 
 		/*
 		 * Load group into group hash table
@@ -696,11 +696,11 @@ read_active_counts(
 			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 
-		if (!parse_count_line(ptr, &max, &min, &count, moderated))
-			continue;
-
 		if (++processed % MODULO_COUNT_NUM == 0)
 			spin_cursor();
+
+		if (!parse_count_line(ptr, &max, &min, &count, moderated))
+			continue;
 
 		/*
 		 * Load group into group hash table
@@ -933,7 +933,7 @@ open_newgroups_fp(
 	if (read_news_via_nntp && !read_saved_news) {
 		/*
 		 * not checking for caps_type == CAPABILITIES && reader as some
-		 * servers do not support it even if advertizing READER so we must
+		 * servers do not support it even if advertising READER so we must
 		 * handle errors anyway and just issue the cmd.
 		 */
 		if (idx == -1 || ((ngtm = localtime(&newnews[idx].time)) == NULL))

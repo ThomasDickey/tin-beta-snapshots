@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-02
+ *  Updated   : 2021-09-28
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -169,10 +169,50 @@ wait_message(
 #endif /* HAVE_COLOR */
 	cursoron();
 	my_flush();
-
-	(void) sleep(sdelay);
-/*	clear_message(); would be nice, but tin doesn't expect this yet */
 	va_end(ap);
+
+#ifdef HAVE_SELECT
+	/* allow to skip sleep time via key-press */
+	{
+		int nfds;
+		fd_set readfds;
+		struct timeval tv;
+
+		forever {
+			FD_ZERO(&readfds);
+			FD_SET(STDIN_FILENO, &readfds);
+			tv.tv_sec = sdelay;
+			tv.tv_usec = 0;
+
+#	ifdef HAVE_SELECT_INTP
+			nfds = select(STDIN_FILENO + 1, (int *) &readfds, NULL, NULL, &tv);
+#	else
+			nfds = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &tv);
+#	endif /* HAVE_SELECT_INTP */
+			if (nfds == -1) {
+
+				if (errno != EINTR) {
+					perror_message("wait_message(select()) failed");
+					free(tin_progname);
+					giveup();
+				} else
+					return;
+			} else
+				break;
+		}
+
+		if (nfds > 0) {
+			if (FD_ISSET(STDIN_FILENO, &readfds))
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				ReadWch();
+#	else
+				ReadCh();
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		}
+	}
+#else
+	(void) sleep(sdelay);
+#endif /* HAVE_SELECT */
 }
 
 

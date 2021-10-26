@@ -116,7 +116,7 @@
 
 #ifndef SOCKS
 #	ifdef DECL_CONNECT
-	extern int connect(int sockfd, struct sockaddr *serv_addr, int addrlen);
+		extern int connect(int sockfd, struct sockaddr *serv_addr, int addrlen);
 #	endif /* DECL_CONNECT */
 #endif /* !SOCKS */
 

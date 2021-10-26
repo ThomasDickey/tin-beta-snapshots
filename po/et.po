@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-15 06:12+0200\n"
+"POT-Creation-Date: 2021-10-26 12:47+0200\n"
 "PO-Revision-Date: 2020-12-25 20:39+0200\n"
 "Last-Translator: Toomas Soome <tsoome@me.com>\n"
 "Language-Team: Estonian <linux-ee@lists.eenet.ee>\n"
@@ -3506,7 +3506,8 @@ msgid "Bogus group %s removed."
 msgstr "Vigane grupp %s on eemaldatud."
 
 #: src/lang.c:789
-msgid "Removed from the previous rule: "
+#, fuzzy
+msgid "Removed from this rule: "
 msgstr "Eelmisest reeglist eemaldatud: "
 
 #: src/lang.c:790
@@ -8243,7 +8244,7 @@ msgstr "Versioon: %s %s väljalase %s (\"%s\") %s %s\n"
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Versioon: %s %s väljalase %s (\"%s\")\n"
 
-#: src/newsrc.c:472
+#: src/newsrc.c:476
 msgid "Unreachable?\n"
 msgstr "Kättesaamatu?\n"
 

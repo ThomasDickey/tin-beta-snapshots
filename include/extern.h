@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-09
+ *  Updated   : 2021-09-21
  *  Notes     :
  *
  * Copyright (c) 1997-2021 Iain Lea <iain@bricbrac.de>
@@ -541,7 +541,9 @@ extern constext txt_cancel_article[];
 extern constext txt_cancelling_art[];
 extern constext txt_cannot_create[];
 extern constext txt_cannot_create_uniq_name[];
-extern constext txt_cannot_find_base_art[];
+#ifdef DEBUG
+	extern constext txt_cannot_find_base_art[];
+#endif /* DEBUG */
 extern constext txt_cannot_filter_on_path[];
 #ifdef NNTP_ABLE
 	extern constext txt_cannot_get_nntp_server_name[];

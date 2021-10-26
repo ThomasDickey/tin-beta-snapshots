@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin-2.4.5\n"
+"Project-Id-Version: tin-2.6.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-15 06:12+0200\n"
-"PO-Revision-Date: 2020-12-26 11:26+0100\n"
+"POT-Creation-Date: 2021-10-26 12:47+0200\n"
+"PO-Revision-Date: 2021-08-23 13:30+0200\n"
 "Last-Translator: Matt Anton <tin@lv223.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Poedit 2.2.4\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #. -> lang.c
@@ -1002,7 +1002,6 @@ msgid "*** End of page ***"
 msgstr "*** Fin de l'article ***"
 
 #: src/lang.c:170
-#, fuzzy
 msgid "*** End of posted articles ***"
 msgstr "*** Fin de la liste ***"
 
@@ -1591,21 +1590,24 @@ msgstr ""
 "#   subj=TERME        Facultatif. En-tête 'Subject:' (pe. Comment devenir un "
 "gourou).\n"
 "#   from=TERME        Facultatif. En-tête 'From:' (pe. *Craig Shergold*).\n"
-"#   msgid=TERME       Facultatif. En-tête 'Message-ID:' (pe. <123@ether."
+"#   msgid=TERME       Facultatif. En-tête 'Message-ID:' (pe. <123@example."
 "net>) avec\n"
 "#                     référence complète.\n"
 "#   msgid_last=TERME  Facultatif. Comme ci-dessus mais avec juste le dernier "
 "MID.\n"
 "#   msgid_only=TERME  Facultatif. Comme ci-dessus mais sans les références.\n"
-"#   refs_only=TERME   Facultatif. En-tête 'References:' (pe. <123@ether."
+"#   refs_only=TERME   Facultatif. En-tête 'References:' (pe. <123@example."
 "net>) sans\n"
 "#                     la ligne Message-ID:\n"
 "#   lines=[<>]?NUM    Facultatif. En-tête 'Lines:'. '<' ou '>' sont "
 "optionnels.\n"
-"#   gnksa=[<>]?NUM    Facultatif. Résultat du 'parse_from' du GNKSA. '<' ou "
-"'>'\n"
+"#   gnksa=[<>]?NUM    Facultatif. Résultat du 'parse_from()' du GNKSA. '<' "
+"ou '>'\n"
 "#                     sont optionnels.\n"
 "#   xref=CHAÎNE       Facultatif. Chaîne à filtrer (pe. alt.flame*)\n"
+"#   path=CHAÎNE       Facultatif. Chaîne à filtrer (pe. news.example.org)\n"
+"#                     Attention, filtrer sur le champ Path: peut\n"
+"#                     significativement ralentir le traitement du filtrage.\n"
 "#   time=NUM          Facultatif. La valeur de time_t indique la durée de la "
 "règle.\n"
 "#\n"
@@ -2159,9 +2161,8 @@ msgid "toggle inverse video"
 msgstr "afficher ou non la vidéo inversée"
 
 #: src/lang.c:447
-#, fuzzy
 msgid "toggle mini help menu and posting etiquette display"
-msgstr "afficher ou non le petit menu d'aide et de l'étiquette"
+msgstr "afficher ou non le petit menu d'aide et l'étiquette de postage"
 
 #: src/lang.c:448
 msgid "cycle the display of authors email address, real name, both or neither"
@@ -2272,22 +2273,18 @@ msgid "untag all tagged threads"
 msgstr "démarquer tout fil marqué"
 
 #: src/lang.c:475
-#, fuzzy
 msgid "search for articles forwards"
-msgstr "recherche avant d'articles par auteur"
+msgstr "recherche avant d'articles"
 
 #: src/lang.c:476
-#, fuzzy
 msgid "search for articles backwards"
-msgstr "recherche arrière d'articles par auteur"
+msgstr "recherche arrière d'articles"
 
 #: src/lang.c:477
-#, fuzzy
 msgid "toggle info message in last line (Message-ID)"
-msgstr "(dés)activer le message d'info. dans la dernière ligne (URL)"
+msgstr "(dés)activer le message d'info. dans la dernière ligne (Message-ID)"
 
 #: src/lang.c:478
-#, fuzzy
 msgid "Open article by Message-ID"
 msgstr "aller à l'article via son Message-ID"
 
@@ -2537,13 +2534,12 @@ msgstr ""
 "----------------------"
 
 #: src/lang.c:535
-#, fuzzy
 msgid ""
 "Posted article operations\n"
 "-------------------------"
 msgstr ""
-"Opérations sur les Groupes / fils / articles\n"
-"--------------------------------------------"
+"Opérations sur les articles postés\n"
+"----------------------------------"
 
 #: src/lang.c:536
 msgid ""
@@ -3332,24 +3328,20 @@ msgid "Posted articles history"
 msgstr "Historique des articles postés"
 
 #: src/lang.c:735
-#, fuzzy
 msgid "Posted Articles Menu Commands"
-msgstr "Menu des attributs"
+msgstr "Commandes pour le menu des articles postés"
 
 #: src/lang.c:736
-#, fuzzy
 msgid "Lookup failed"
-msgstr "La recherche a échoué"
+msgstr "Échec de la recherche"
 
 #: src/lang.c:737
-#, fuzzy
 msgid "Operation not available for replies by mail"
-msgstr "retourner à la vue sélection de groupe"
+msgstr "Opération impossible pour les réponses par courriel"
 
 #: src/lang.c:738
-#, fuzzy
 msgid "Already in posted articles history level"
-msgstr "Historique des articles postés"
+msgstr "Déjà dans l'historique des articles postés"
 
 #: src/lang.c:739
 #, c-format
@@ -3548,8 +3540,8 @@ msgid "Bogus group %s removed."
 msgstr "Effacement du groupe corrompu %s."
 
 #: src/lang.c:789
-msgid "Removed from the previous rule: "
-msgstr "Effacé de la règle précédente : "
+msgid "Removed from this rule: "
+msgstr "Effacé de la règle : "
 
 #: src/lang.c:790
 #, c-format
@@ -4443,9 +4435,9 @@ msgid "Writing attributes file..."
 msgstr "Écriture du fichier attributes..."
 
 #: src/lang.c:999
-#, fuzzy, c-format
+#, c-format
 msgid "%4d Responses"
-msgstr "%d Réponses"
+msgstr "%4d Réponses"
 
 #: src/lang.c:1001
 #, c-format
@@ -7889,10 +7881,10 @@ msgid ""
 "# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n"
 "# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n"
 msgstr ""
-"# Format des paramètres pour le MUA\n"
+"# Format des paramètres de ligne pour le MUA\n"
 "# %M MUA  %S Sujet  %T 'To:'  %F Fichier\n"
-"# p.e. pour utiliser mutt comme MUA : mutt -s \"%S\" \"%T\" < %F\n"
-"# p.e. pour mutt interactif         : mutt -i %F -s \"%S\" \"%T\"\n"
+"# p.e. pour utiliser mutt comme MUA :    mutt -s \"%S\" -- \"%T\" < %F\n"
+"# p.e. pour mutt interactif         :     mutt -i %F -s \"%S\" — \"%T\"\n"
 
 #: src/lang.c:2743
 msgid "Use interactive mail reader"
@@ -8405,7 +8397,7 @@ msgstr "Version : %s %s release %s (\"%s\") %s %s\n"
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Version : %s %s release %s (\"%s\")\n"
 
-#: src/newsrc.c:472
+#: src/newsrc.c:476
 msgid "Unreachable?\n"
 msgstr "Inacessible ?\n"
 

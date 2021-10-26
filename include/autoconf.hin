@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2021-08-25
+ *  Updated   : 2020-08-25
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2021 Thomas Dickey <dickey@invisible-island.net>
@@ -849,6 +849,9 @@ Added missing headers after gettext update, using autoheader
 
 /* Define if your struct stat has st_blocks. */
 #	undef HAVE_ST_BLOCKS
+
+#	undef STDC_NORETURN
+#	undef HAVE_STDNORETURN_H
 
 /* Define if you have the strcoll function and it is properly defined. */
 #	undef HAVE_STRCOLL

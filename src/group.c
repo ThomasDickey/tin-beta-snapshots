@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-14
+ *  Updated   : 2021-07-25
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1374,7 +1374,7 @@ build_sline(
 					tagged = TRUE;
 				} else
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-					snprintf(tmp_buf, sizeof(tmp_buf), "  %*lc", art_mark_width, sbuf.art_mark);
+					snprintf(tmp_buf, sizeof(tmp_buf), "%s%lc", art_mark_width > wcwidth(sbuf.art_mark) ? "   " : "  ", sbuf.art_mark);
 #else
 					snprintf(tmp_buf, sizeof(tmp_buf), "  %c", sbuf.art_mark);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
