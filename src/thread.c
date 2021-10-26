@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-12
+ *  Updated   : 2021-07-25
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -136,7 +136,7 @@ build_tline(
 	char *fmt = thrd_fmt.str;
 	char tmp[LEN];
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	char markbuf[sizeof(wchar_t) * 2 + 4];
+	char markbuf[sizeof(wchar_t) + 4];
 	wchar_t *wtmp, *wtmp2;
 	wchar_t mark[] = { L'\0', L'\0' };
 #else
@@ -247,6 +247,7 @@ build_tline(
 				if (!thrd_fmt.mark_offset)
 					thrd_fmt.mark_offset = (size_t) (mark_offset = strwidth(buffer) + 2);
 				if (art->tagged) {
+					strcat(buffer, " ");
 					strcat(buffer, tin_ltoa(art->tagged, 3));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					mark[0] = L'\0';
@@ -256,7 +257,7 @@ build_tline(
 				} else {
 					mark[0] = get_art_mark(art);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-					snprintf(markbuf, sizeof(markbuf), "  %*lc", art_mark_width, mark[0]);
+					snprintf(markbuf, sizeof(markbuf), "%s%lc", art_mark_width > wcwidth(mark[0]) ? "   " : "  ", mark[0]);
 					strcat(buffer, markbuf);
 #else
 					strcat(buffer, "   ");

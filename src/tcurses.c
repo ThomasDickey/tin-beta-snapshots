@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2021-04-14
+ *  Updated   : 2021-10-19
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -382,11 +382,11 @@ highlight_string(
 	 * In a multibyte locale we get byte offsets instead of character
 	 * offsets calculate now the correct starting column
 	 */
-	if (col > 0) {
+	if (col > 0 && col < (LEN / 2)) {
 		wchar_t *wtmp;
 
 		MoveCursor(row, 0);
-		my_innstr(tmp, cCOLS);
+		my_innstr(tmp, MIN(cCOLS, (LEN / 2) - 1));
 		tmp[col] = '\0';
 		if ((wtmp = char2wchar_t(tmp)) != NULL) {
 			col = wcswidth(wtmp, wcslen(wtmp) + 1);
@@ -396,8 +396,8 @@ highlight_string(
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	MoveCursor(row, col);
-	my_innstr(tmp, size);
-	tmp[size] = '\0';
+	my_innstr(tmp, MIN(size, (LEN / 2) - 1));
+	tmp[MIN(size, LEN - 1)] = '\0';
 	StartInverse();
 	my_fputs(tmp, stdout);
 	EndInverse();
@@ -437,9 +437,9 @@ word_highlight_string(
 	 * In a multibyte locale we get byte offsets instead of character offsets
 	 * calculate now the correct correct starting column
 	 */
-	if (col > 0) {
+	if (col > 0 && col < (LEN / 2)) {
 		MoveCursor(row, 0);
-		my_innstr(tmp, cCOLS);
+		my_innstr(tmp, MIN(cCOLS, (LEN / 2) - 1));
 		tmp[col] = '\0';
 		if ((wtmp = char2wchar_t(tmp)) != NULL) {
 			col = wcswidth(wtmp, wcslen(wtmp) + 1);
@@ -449,10 +449,10 @@ word_highlight_string(
 #		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	MoveCursor(row, col);
-	my_innstr(tmp, size);
+	my_innstr(tmp, MIN(size, (LEN / 2) - 1));
 
 #		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	tmp[size] = '\0';
+	tmp[MIN(size, LEN - 1)] = '\0';
 	if ((wtmp = char2wchar_t(tmp)) != NULL) {
 		wsize = wcswidth(wtmp, wcslen(wtmp) + 1);
 		free(wtmp);

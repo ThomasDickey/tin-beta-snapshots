@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2021-02-22
+dnl Updated   : 2021-08-25
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2021 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.6.0
+VERSION=2.6.1
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Define this to the package name])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define this to the package version])
 AC_SUBST(PACKAGE)
@@ -1514,6 +1514,28 @@ int main() {
                 AC_MSG_RESULT(unknown)
         ]
 )
+
+
+AC_CACHE_CHECK([for C11 _Noreturn feature], cf_cv_c11_noreturn,
+    [AC_TRY_COMPILE([
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdnoreturn.h>
+static _Noreturn void giveup(void) { exit(0); }
+    ],
+    [if (feof(stdin)) giveup()],
+    cf_cv_c11_noreturn=yes,
+    cf_cv_c11_noreturn=no)
+    ])
+if test "$cf_cv_c11_noreturn" = yes; then
+    AC_DEFINE(HAVE_STDNORETURN_H, 1,[Define if <stdnoreturn.h> header is availab and working])
+    AC_DEFINE_UNQUOTED(STDC_NORETURN,_Noreturn,[Define if C11 _Noreturn keyword is supported])
+    HAVE_STDNORETURN_H=1
+else
+    HAVE_STDNORETURN_H=0
+fi
+AC_SUBST(HAVE_STDNORETURN_H)
+AC_SUBST(STDC_NORETURN)
 
 
 CF_CHECK_HEADERS(iconv.h)

@@ -1,32 +1,32 @@
-MANIFEST for tin-2.6.0 (Do 22. Jul 22:50:48 CEST 2021)
+MANIFEST for tin-2.6.1 (Di 26. Okt 12:53:06 CEST 2021)
 ----------------------------------------------------
    14933 ./Makefile
     8762 ./MANIFEST
     1546 ./README
      747 ./README.MAC
      976 ./README.WIN
-  213888 ./aclocal.m4
+  215236 ./aclocal.m4
     1096 ./conf-tin
    49348 ./config.guess
-   35042 ./config.sub
-  969304 ./configure
-   43332 ./configure.in
+   35276 ./config.sub
+  978654 ./configure
+   43985 ./configure.in
     7123 ./install-sh
      355 ./po4a.conf
     1797 ./tin.spec
    18847 ./doc/ABOUT-NLS
-   17376 ./doc/CHANGES
-  301442 ./doc/CHANGES.old
+     909 ./doc/CHANGES
+  319065 ./doc/CHANGES.old
     5125 ./doc/CREDITS
     1305 ./doc/DEBUG_REFS
-   32381 ./doc/INSTALL
-   46341 ./doc/TODO
-    1318 ./doc/WHATSNEW
+   32949 ./doc/INSTALL
+   46613 ./doc/TODO
+     120 ./doc/WHATSNEW
     2618 ./doc/art_handling.txt
     1701 ./doc/article.txt
     3498 ./doc/auth.txt
     3807 ./doc/config-anomalies
-   12258 ./doc/filtering
+   12253 ./doc/filtering
    35305 ./doc/good-netkeeping-seal
     3789 ./doc/internals.txt
    23621 ./doc/iso2asc.txt
@@ -45,10 +45,10 @@ MANIFEST for tin-2.6.0 (Do 22. Jul 22:50:48 CEST 2021)
     4947 ./doc/umlaute.txt
     4246 ./doc/umlauts.txt
     7170 ./doc/url_handler.1
-  142333 ./doc/tin.1
-   84625 ./doc/tin.5
+  142331 ./doc/tin.1
+   84700 ./doc/tin.5
     5065 ./doc/tin.defaults
-   18707 ./doc/tinews.1
+   19012 ./doc/tinews.1
     2224 ./doc/tools.txt
     4565 ./doc/w2r.1
     2196 ./doc/wildmat.3
@@ -56,45 +56,45 @@ MANIFEST for tin-2.6.0 (Do 22. Jul 22:50:48 CEST 2021)
     3816 ./tools/metamutt
     2791 ./tools/opt-case.pl
     1413 ./tools/tinlock
-   47963 ./tools/tinews.pl
+   48223 ./tools/tinews.pl
     3791 ./tools/url_handler.pl
     1657 ./tools/url_handler.sh
     3353 ./tools/w2r.pl
     2697 ./include/bool.h
     1886 ./include/bugrep.h
     2350 ./include/debug.h
-   69315 ./include/extern.h
+   69348 ./include/extern.h
    14417 ./include/keymap.h
     2992 ./include/missing_fd.h
     6435 ./include/newsrc.h
     9034 ./include/nntplib.h
      664 ./include/plp_snprintf.h
    15637 ./include/policy.h
-   33785 ./include/proto.h
+   33805 ./include/proto.h
     5701 ./include/rfc2046.h
     3544 ./include/stpwatch.h
-    6145 ./include/tcurses.h
-   73752 ./include/tin.h
+    6267 ./include/tcurses.h
+   74387 ./include/tin.h
    17822 ./include/tinrc.h
-    4018 ./include/tnntp.h
+    4019 ./include/tnntp.h
     2367 ./include/trace.h
-    2248 ./include/version.h
+    2246 ./include/version.h
    35853 ./src/active.c
    89594 ./src/art.c
    81830 ./src/attrib.c
    17722 ./src/auth.c
    12931 ./src/charset.c
     8790 ./src/color.c
-   68811 ./src/config.c
+   68822 ./src/config.c
    28447 ./src/cook.c
-   26529 ./src/curses.c
+   26542 ./src/curses.c
    12420 ./src/debug.c
     3519 ./src/envarg.c
    30497 ./src/feed.c
-   59924 ./src/filter.c
+   60262 ./src/filter.c
    18146 ./src/getline.c
     9216 ./src/global.c
-   48601 ./src/group.c
+   48640 ./src/group.c
     3910 ./src/hashstr.c
     8729 ./src/header.c
     6252 ./src/heapsort.c
@@ -103,21 +103,21 @@ MANIFEST for tin-2.6.0 (Do 22. Jul 22:50:48 CEST 2021)
    38456 ./src/init.c
     2537 ./src/joinpath.c
   105124 ./src/keymap.c
-  139979 ./src/lang.c
+  139971 ./src/lang.c
     4486 ./src/langinfo.c
     7314 ./src/list.c
     6767 ./src/lock.c
    17179 ./src/mail.c
-   27306 ./src/main.c
+   27316 ./src/main.c
    11240 ./src/makecfg.c
-   14316 ./src/memory.c
+   14328 ./src/memory.c
     5307 ./src/mimetypes.c
-   97834 ./src/misc.c
-   40342 ./src/newsrc.c
+   97880 ./src/misc.c
+   40501 ./src/newsrc.c
    55748 ./src/nntplib.c
     8103 ./src/nrctbl.c
   106704 ./src/options_menu.c
-   69499 ./src/page.c
+   69506 ./src/page.c
    24173 ./src/parsdate.y
    17057 ./src/plp_snprintf.c
    13305 ./src/pgp.c
@@ -131,18 +131,18 @@ MANIFEST for tin-2.6.0 (Do 22. Jul 22:50:48 CEST 2021)
    40177 ./src/rfc2046.c
    37656 ./src/rfc2047.c
    58730 ./src/save.c
-   14560 ./src/screen.c
+   15339 ./src/screen.c
    18868 ./src/search.c
-   43113 ./src/select.c
-    8818 ./src/sigfile.c
-   14462 ./src/signal.c
+   43186 ./src/select.c
+    8810 ./src/sigfile.c
+   14488 ./src/signal.c
     7330 ./src/strftime.c
    40819 ./src/string.c
     9693 ./src/tags.c
-   17725 ./src/tcurses.c
+   17871 ./src/tcurses.c
     3406 ./src/tmpfile.c
     3661 ./src/my_tmpfile.c
-   45254 ./src/thread.c
+   45309 ./src/thread.c
     2581 ./src/trace.c
     5032 ./src/version.c
     5512 ./src/wildmat.c
@@ -215,7 +215,7 @@ MANIFEST for tin-2.6.0 (Do 22. Jul 22:50:48 CEST 2021)
   108966 ./pcre/testdata/testoutput7
    53056 ./pcre/testdata/testoutput8
    28769 ./pcre/testdata/testoutput9
-   21994 ./include/autoconf.hin
+   22065 ./include/autoconf.hin
    22598 ./src/Makefile.in
    10213 ./src/tincfg.tbl
     1439 ./libcanlock/COPYING
@@ -280,38 +280,38 @@ MANIFEST for tin-2.6.0 (Do 22. Jul 22:50:48 CEST 2021)
       41 ./intl/VERSION
     5096 ./po/Makefile.inn
      544 ./po/POTFILES.in
-  146799 ./po/tin.pot
-  167487 ./po/da.gmo
-  229839 ./po/da.po
-  200632 ./po/de.gmo
-  240434 ./po/de.po
-  187149 ./po/en_GB.gmo
-  225900 ./po/en_GB.po
+  146791 ./po/tin.pot
+  167406 ./po/da.gmo
+  229840 ./po/da.po
+  200619 ./po/de.gmo
+  240421 ./po/de.po
+  187133 ./po/en_GB.gmo
+  225884 ./po/en_GB.po
     1553 ./po/es.gmo
-  175804 ./po/es.po
-  188676 ./po/et.gmo
-  229059 ./po/et.po
-  198000 ./po/fr.gmo
-  238528 ./po/fr.po
-  116448 ./po/ru.gmo
-  211870 ./po/ru.po
+  175796 ./po/es.po
+  188595 ./po/et.gmo
+  229060 ./po/et.po
+  199398 ./po/fr.gmo
+  238686 ./po/fr.po
+  116367 ./po/ru.gmo
+  211871 ./po/ru.po
    22211 ./po/sv.gmo
-  157725 ./po/sv.po
-  188937 ./po/tr.gmo
-  243119 ./po/tr.po
-  229357 ./po/zh_CN.po
-  172556 ./po/zh_CN.gmo
-  228726 ./po/zh_TW.po
-  172684 ./po/zh_TW.gmo
-  154810 ./doc/l10n/de/tin.1
-   90964 ./doc/l10n/de/tin.5
+  157717 ./po/sv.po
+  188855 ./po/tr.gmo
+  243120 ./po/tr.po
+  229358 ./po/zh_CN.po
+  172476 ./po/zh_CN.gmo
+  228727 ./po/zh_TW.po
+  172604 ./po/zh_TW.gmo
+  154807 ./doc/l10n/de/tin.1
+   91038 ./doc/l10n/de/tin.5
      130 ./doc/l10n/de.add
-  398413 ./doc/l10n/de.po
-  146198 ./doc/l10n/en_GB/tin.1
-   87203 ./doc/l10n/en_GB/tin.5
-  481148 ./doc/l10n/en_GB.po
-  146304 ./doc/l10n/es/tin.1
-   87196 ./doc/l10n/es/tin.5
-  317931 ./doc/l10n/es.po
-  302353 ./doc/l10n/tin-man.pot
-13473758 total
+  398490 ./doc/l10n/de.po
+  146196 ./doc/l10n/en_GB/tin.1
+   87278 ./doc/l10n/en_GB/tin.5
+  481000 ./doc/l10n/en_GB.po
+  146302 ./doc/l10n/es/tin.1
+   87271 ./doc/l10n/es/tin.5
+  318032 ./doc/l10n/es.po
+  302442 ./doc/l10n/tin-man.pot
+13490683 total

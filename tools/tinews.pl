@@ -57,7 +57,7 @@ use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.58";
+my $version = "1.1.59";
 
 my %config;
 
@@ -196,6 +196,7 @@ GetOptions('A|V|W|h|headers' => [], # do nothing
 	'from|f=s'	=> \$config{'from'},
 	'ignore-headers|i=s'	=> \$config{'ignore-headers'},
 	'followup-to|w=s'	=> \$config{'followup-to'},
+	'message-id|m=s'	=> \$config{'message-id'},
 	'newsgroups|n=s'	=> \$config{'newsgroups'},
 	'reply-to|r=s'	=> \$config{'reply-to'},
 	'savedir|s=s'	=> \$config{'savedir'},
@@ -347,8 +348,8 @@ foreach ('DISTRIBUTION', 'ORGANIZATION') {
 
 # overwrite headers if specified via cmd-line
 foreach ('Approved', 'Control', 'Distribution', 'Expires',
-	'From', 'Followup-To', 'Newsgroups',' Reply-To', 'Subject',
-	'References', 'Organization', 'Path') {
+	'From', 'Followup-To', 'Message-ID', 'Newsgroups',' Reply-To',
+	'Subject', 'References', 'Organization', 'Path') {
 	next if (!defined($config{lc($_)}));
 	chomp($Header{lc($_)} = $_ . ": " . $config{lc($_)});
 	$Header{lc($_)} .= "\n";
@@ -986,6 +987,7 @@ sub usage {
 	print "  -e string  set Expires:-header to string\n";
 	print "  -f string  set From:-header to string\n";
 	print "  -i string  list of headers to be ignored for signing\n";
+	print "  -m string  set Message-ID:-header to string\n";
 	print "  -n string  set Newsgroups:-header to string\n";
 	print "  -o string  set Organization:-header to string\n";
 	print "  -p port    use port as NNTP port [default=".$config{'nntp-port'}."]\n";
@@ -1086,6 +1088,11 @@ Cancel-Key, Also-Control and Distribution.
 Some of them may be altered on the Server (i.e. Cancel-Key) which would
 invalid the signature, this option can be used the exclude such headers
 if required.
+
+=item -B<m> C<Message-ID> | --B<message-id> C<Message-ID>
+X<-m> X<--message-id>
+
+Set the article header field Message-ID: to the given value.
 
 =item -B<n> C<Newsgroups> | --B<newsgroups> C<Newsgroups>
 X<-n> X<--newsgroups>
@@ -1343,7 +1350,7 @@ F<$HOME/.newsauth> is checked first.
 "option=value" configuration pairs, last match counts and only
 "value" is case sensitive. Lines that start with "#" are ignored. If the
 file contains unencrypted passwords (e.g. nntp-pass or pgp-pass), it
-should be readable for the user only. Use -B<vH> to get a dull list of
+should be readable for the user only. Use -B<vH> to get a full list of
 all available configuration options.
 
 =back

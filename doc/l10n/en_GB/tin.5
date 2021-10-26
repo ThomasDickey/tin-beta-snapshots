@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2021-07-06
+.\" Updated   : 2021-08-27
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "December 24th, 2020" 2.6.0 "Usenet newsreader"
+.TH tin 5 "August 23rd, 2021" 2.6.1 "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -292,7 +292,8 @@ a flag indicating if the group is subscribed ':' or not '!'.
 .TP 
 \fBarticle\fP
 range of already read articles from that group; numbers separated by commas
-with sequential numbers collapsed with hyphens.
+with sequential numbers collapsed with hyphens. Empty lines and lines which
+start with "#" are ignored and not written back.
 .TP 
 Example:
 .RS

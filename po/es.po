@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-15 06:12+0200\n"
+"POT-Creation-Date: 2021-10-26 12:47+0200\n"
 "PO-Revision-Date: 2018-04-19 13:04+0200\n"
 "Last-Translator: Francisco Javier Serrador <fserrador@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -3599,7 +3599,7 @@ msgstr ", no eliminado: %s"
 
 #: src/lang.c:789
 #, fuzzy
-msgid "Removed from the previous rule: "
+msgid "Removed from this rule: "
 msgstr ".. quitado desde entorno"
 
 #: src/lang.c:790
@@ -8026,7 +8026,7 @@ msgstr ""
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Regresar a la última publicación(es)"
 
-#: src/newsrc.c:472
+#: src/newsrc.c:476
 #, fuzzy
 msgid "Unreachable?\n"
 msgstr "estado %s no alcanzable desde %s"

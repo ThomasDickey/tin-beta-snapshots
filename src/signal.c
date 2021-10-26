@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-13
+ *  Updated   : 2021-09-30
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -555,18 +555,20 @@ set_signal_handlers(
 			sigdisp(code, SIG_IGN);
 			break;
 #endif /* SIGPIPE */
+
 #ifdef SIGTSTP
 		case SIGTSTP:
 			ptr = sigdisp(code, SIG_DFL);
 			sigdisp(code, ptr);
-			if (ptr == SIG_IGN)
-				break;
-			/*
-			 * SIGTSTP is ignored when starting from shells
-			 * without job-control
-			 */
-			do_sigtstp = TRUE;
-			/* FALLTHROUGH */
+			if (ptr != SIG_IGN) {
+				/*
+				 * SIGTSTP is ignored when starting from shells
+				 * without job-control
+				 */
+				do_sigtstp = TRUE;
+				sigdisp(code, signal_handler);
+			}
+			break;
 #endif /* SIGTSTP */
 
 		default:

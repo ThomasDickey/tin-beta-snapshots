@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin 2.6.0\n"
+"Project-Id-Version: tin 2.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-15 06:12+0200\n"
-"PO-Revision-Date: 2021-07-15 06:13+0200\n"
+"POT-Creation-Date: 2021-10-26 12:47+0200\n"
+"PO-Revision-Date: 2021-08-20 12:40+0200\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -3673,8 +3673,8 @@ msgid "Bogus group %s removed."
 msgstr "Nicht vorhandene Gruppe %s entfernt."
 
 #: src/lang.c:789
-msgid "Removed from the previous rule: "
-msgstr "Aus der vorigen Regel gelöscht: "
+msgid "Removed from this rule: "
+msgstr "Aus dieser Regel gelöscht: "
 
 #: src/lang.c:790
 #, c-format
@@ -8459,7 +8459,7 @@ msgstr "Version: %s %s Ausgabe %s (\"%s\") %s %s\n"
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Version: %s %s Ausgabe %s (\"%s\")\n"
 
-#: src/newsrc.c:472
+#: src/newsrc.c:476
 msgid "Unreachable?\n"
 msgstr "Unerreichbar?\n"
 

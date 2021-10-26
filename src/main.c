@@ -1054,7 +1054,7 @@ create_mail_save_dirs(
  * already malloc()ed would be a PITA.
  */
 /* coverity[+kill] */
-void
+_Noreturn void
 giveup(
 	void)
 {

@@ -321,7 +321,7 @@ extern void grp_del_mail_art(struct t_article *article);
 /* main.c */
 extern int main(int argc, char *argv[]);
 extern int read_cmd_line_groups(void);
-extern void giveup(void);
+extern _Noreturn void giveup(void);
 
 /* memory.c */
 extern void expand_active(void);
@@ -392,7 +392,7 @@ extern void read_input_history_file(void);
 extern void rename_file(const char *old_filename, const char *new_filename);
 extern void show_inverse_video_status(void);
 extern void strip_name(const char *from, char *address);
-extern void tin_done(int ret, const char *fmt, ...);
+extern _Noreturn void tin_done(int ret, const char *fmt, ...);
 extern void toggle_inverse_video(void);
 #if defined(CHARSET_CONVERSION) || (defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE))
 	extern char *utf8_valid(char *line);

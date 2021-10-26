@@ -1,36 +1,10 @@
-New features and changes since tin-2.4.0
+New features and changes since tin-2.6.0
 
 New features
 ------------
-- jump to article in posting history screen ('W')
-- ThreadTagParts ('T') in thread level
-- filter articles based on Path, see doc/filtering for details
-- allow multibyte chars (e.g. emojis) as art_marked_*
 
 Changes
 -------
-Subjects are now normalized if local charset is UTF-8 and system supports it
-(for better threading).
-
-With the new GNKSA_MISSING_REALNAME return code for filtering filter rules
-with "gnksa=>NUM" may need inspection if filtering on missing real names is
-desired.
-
-sigfile=!/path/to/command no longer passes the name of the current
-newsgroup to command. One can specify %G which will be replaced by
-the name of the current newsgroup to match the old behaviour:
-'sigfile=!/path/to/command %G'.
-
---enable-cancel-locks requires libcanlock-3 (which is included, but
-some distros (e.g. debian) are linking against a shared lib which may
-be too old).
-
-"make install" no longer strips the tin binary
 
 Retired Features
 ----------------
-. tinrc and attributes option auto_save for saving articles based on the
-  Archive-name:-"header", it didn't work with NOV present and the logic
-  was shar(1)-archive centric and didn't work for FAQs or the like.
-. tinrc and attributes option start_editor_offset as editor_format is flexible
-  enough

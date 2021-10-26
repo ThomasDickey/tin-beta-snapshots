@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-09-20
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -744,7 +744,7 @@ highlight_string(
 	 * In a multibyte locale we get byte offsets instead of character
 	 * offsets; calculate now the correct starting column
 	 */
-	if (col > 0) {
+	if (col > 0 && col < LEN) {
 		char tmp[LEN];
 		wchar_t *wtmp;
 

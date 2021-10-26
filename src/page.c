@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-06-28
+ *  Updated   : 2021-09-21
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1333,7 +1333,7 @@ draw_page_header(
 	int len, right_len, center_pos, cur_pos;
 	size_t line_len;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t *fmt_resp, *fmt_thread, *wtmp, *wtmp2, *wbuf;
+	wchar_t *fmt_resp = NULL, *fmt_thread, *wtmp, *wtmp2, *wbuf;
 #else
 	char *tmp2;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-06
+ *  Updated   : 2021-09-22
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -78,7 +78,7 @@
 /*
  * Local prototypes
  */
-static char *strfpath_cp(char *str, char *tbuf, char *endp);
+static char *strfpath_cp(char *str, char *tbuf, const char *endp);
 static int _strfpath(const char *format, char *str, size_t maxsize, struct t_group *group, t_bool expand_all);
 static int gnksa_check_domain(char *domain);
 static int gnksa_check_domain_literal(char *domain);
@@ -558,7 +558,7 @@ do_shell_escape(
  * Has recursion protection - this may happen if the NNTP connection aborts
  * and is not re-established
  */
-void
+_Noreturn void
 tin_done(
 	int ret,
 	const char *fmt,
@@ -1172,7 +1172,7 @@ strfquote(
 	size_t maxsize,
 	char *format)
 {
-	char *endp;
+	const char *endp;
 	char *start = s;
 	char tbuf[LEN];
 	int i, j;
@@ -1332,7 +1332,7 @@ strfeditor(
 	size_t maxsize,
 	char *format)
 {
-	char *endp;
+	const char *endp;
 	char *start = s;
 	char tbuf[PATH_LEN];
 	int i;
@@ -1437,7 +1437,7 @@ static char *
 strfpath_cp(
 	char *str,
 	char *tbuf,
-	char *endp)
+	const char *endp)
 {
 	size_t i;
 
@@ -1486,7 +1486,7 @@ _strfpath(
 	struct t_group *group,
 	t_bool expand_all)
 {
-	char *endp;
+	const char *endp;
 	char *envptr;
 	char defbuf[PATH_LEN];
 	char tbuf[PATH_LEN];
@@ -1799,7 +1799,7 @@ strfmailer(
 	size_t maxsize,
 	const char *format)
 {
-	char *endp;
+	const char *endp;
 	char *start = dest;
 	char tbuf[PATH_LEN];
 	int quote_area = no_quote;

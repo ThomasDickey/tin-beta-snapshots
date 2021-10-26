@@ -48,9 +48,8 @@ The following configure options and defines are documented in detail:
   --enable-shell-escape                   --with-screen
   --enable-warnings                       --with-shell
   --enable-xhdr-xref                      --with-spooldir
-  --exec-prefix                           --with-trace
-  --mandir
-
+  --exec-prefix                           --with-sum
+  --mandir                                --with-trace
 
   ENFORCE_RFC1034                         HAVE_UUDEVIEW_H
   EVIL_INSIDE                             NNTP_INEWS
@@ -60,17 +59,16 @@ The following configure options and defines are documented in detail:
   HAVE_LIBUU                              REREAD_ACTIVE_FILE_SECS
   HAVE_BROKEN_SSCANF                      DISABLE_PIPELINING
   OPTIMIZE_JUST_STAR                      MATCH_TAR_PATTERN
+  MIN_COLUMNS_ON_TERMINAL                 MIN_LINES_ON_TERMINAL
 
 
 Not yet documented configure options and defines:
 -------------------------------------------------
 TIN related:
   --with-socks                           --with-socks5
-  --with-sum
 
   BACKUP_FILE_EXT                         FILE_MODE_BROKEN
   DEBUG_ART                               NO_LOCKING
-  MIN_COLUMNS_ON_TERMINAL                 MIN_LINES_ON_TERMINAL
 
 System related:
   --datadir                               --localstatedir
@@ -122,7 +120,7 @@ Tin can be compiled to read news in any of the following ways:
   o  remotely via NNTP (--enable-nntp-only).
 
 If the remote server supports NOV overview indexing, then tin will retrieve
-overview data on the fly using the NNTP XOVER extension. Otherwise tin will
+overview data on the fly using the NNTP [X]OVER extension. Otherwise tin will
 create its own NOV style index files on the local machine for each user in
 ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news/
 
@@ -323,7 +321,8 @@ can overwrite this value by setting default_editor_format in their tinrc
 file.
 
 --with-mailer=PROG (default: empty)
-Define the default mailer program.
+Define if the default mailer program should be anything other than the
+value of your MAILER environment variable.
 
 --with-mailbox=PATH (default: empty)
 Define the directory for incoming mailboxes. If none is given,
@@ -475,6 +474,11 @@ path, this is used automatically.
 --with-slrnface=PATH (default: set automatically)
 Define if you have slrnface installed and want to use it to show X-Faces. If
 found in search path, this is used automatically.
+
+--with-sum=PATH (default: set automatically)
+Define if you have sum to print checksum and block counts for saved files.
+If found in search path, this is used automatically if not linking against
+libuu (HAVE_LIBUU).
 
 --enable-posting (default: on)
 If disabled, TIN does not allow posting/followup of articles.
@@ -684,6 +688,14 @@ is a simple optimization and hard set to 1 in wildmat.c
 MATCH_TAR_PATTERN
 do tar(1) matching rules, which ignore a trailing slash. this is hard unset
 in wildmat.c to disable it.
+
+MIN_COLUMNS_ON_TERMINAL
+tin will exit if the terminal it runs in has less columns then the given
+value. the default is 40.
+
+MIN_LINES_ON_TERMINAL
+tin will exit if the terminal it runs in has less lines then the given
+value. the default is 8.
 
 DEBUG
 allow various debug levels via -D the command-line switch. this may expose

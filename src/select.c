@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-06
+ *  Updated   : 2021-08-28
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -821,16 +821,17 @@ build_gline(
 
 			case 'U':
 				if (active[my_group[i]].inrange) {
-					buf = sptr + strlen(sptr);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					char tmp_buf[10];
 
+					buf = sptr + strlen(sptr);
 					for (j = 1; j <= sel_fmt.len_ucnt - (art_mark_width - (art_mark_width - wcwidth(tinrc.art_marked_inrange))); ++j)
 						*buf++ = ' ';
 					snprintf(tmp_buf, sizeof(tmp_buf), "%"T_CHAR_FMT, tinrc.art_marked_inrange);
 					*buf-- = '\0';
 					strcat(buf, tmp_buf);
 #else
+					buf = sptr + strlen(sptr);
 					for (j = 1; j < sel_fmt.len_ucnt; ++j)
 						*buf++ = ' ';
 					*buf++ = tinrc.art_marked_inrange;
@@ -1608,7 +1609,7 @@ show_article_by_msgid(
 	char *messageid)
 {
 	char id[NNTP_STRLEN];	/* still way too big; RFC 3977 3.6 & RFC 5536 3.1.3 limit Message-ID to max 250 octets */
-	char *idptr;
+	char *idptr = NULL;
 	char *newsgroups = NULL;
 	int i, ret = 0;
 	struct t_article *art;
@@ -1671,17 +1672,17 @@ show_article_by_msgid(
 	if (!ret) {
 		grpmenu.first = 0;
 
-		if ((msgid = find_msgid(idptr)) == NULL) {
+		if (*idptr == '\0')
 			ret = LOOKUP_ART_UNAVAIL;
-		}
 
-		if (!ret && msgid->article == ART_UNAVAILABLE) {
+		if ((msgid = find_msgid(idptr)) == NULL)
 			ret = LOOKUP_ART_UNAVAIL;
-		}
 
-		if (!ret && which_thread(msgid->article) == -1) {
+		if (!ret && msgid->article == ART_UNAVAILABLE)
+			ret = LOOKUP_ART_UNAVAIL;
+
+		if (!ret && which_thread(msgid->article) == -1)
 			ret = LOOKUP_NO_LAST;
-		}
 	}
 
 	if (!ret) {

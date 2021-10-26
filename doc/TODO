@@ -121,6 +121,9 @@ o  add configure check for cl_clear_secret() in libcanlock and CL_API_MAJOR,
    libcanlock (--with-canlock).
    [20190212 Urs Janssen <urs@tin.org>]
 
+o  update included libcanlock to >= 3.3.0
+   [20211024 Urs Janssen <urs@tin.org>]
+
 o  allow per server cache_overview_files setting via serverrc.
    [20180215 Urs Janssen <urs@tin.org>]
 
@@ -191,7 +194,7 @@ o  allow a Message-ID on the cmd. line to jump to the given article
 o  add TLS (RFC 4642), NNTPS support
    (<http://www.gnu.org/software/gnutls/>, <http://www.openssl.org/>
     might be useful (but unfortunately we use fputs()/fgets() instead of
-    read()/write() - BIO_*() may be useful);
+    read()/write() - BIO_*() may be useful; see also <https://libevent.org/>);
     "stunnel -c -d 1119 -r news.example.org:563; tin -g localhost -p 1119"
     can be used for NNTPS)
    [20031210 Urs Janssen <urs@tin.org>]
@@ -585,6 +588,10 @@ o  add BiDi handling to page header
 
 Internal Changes
 ----------------
+o  add configure check for noreturn //  __attribute__((noreturn)) so we
+   could annotate main.c:giveup() with it
+   [20210831 Urs Janssen <urs@tin.org>]
+
 o  merge refs.c:valid_msgid() and post.c:damaged_id()
    [Urs Janssen <urs@tin.org>]
 

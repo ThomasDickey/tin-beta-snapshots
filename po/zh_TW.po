@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-15 06:12+0200\n"
+"POT-Creation-Date: 2021-10-26 12:47+0200\n"
 "PO-Revision-Date: 2015-10-08 12:13+0800\n"
 "Last-Translator: Wei-Lun Chao <bluebat@member.fsf.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -3484,7 +3484,8 @@ msgid "Bogus group %s removed."
 msgstr "假造的群組 %s 已移除。"
 
 #: src/lang.c:789
-msgid "Removed from the previous rule: "
+#, fuzzy
+msgid "Removed from this rule: "
 msgstr "已從上一個規則移除："
 
 #: src/lang.c:790
@@ -8124,7 +8125,7 @@ msgstr "版本：%s %s 釋出 %s (「%s」) %s %s\n"
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "版本：%s %s 釋出 %s (「%s」)\n"
 
-#: src/newsrc.c:472
+#: src/newsrc.c:476
 msgid "Unreachable?\n"
 msgstr "無法連線？\n"
 

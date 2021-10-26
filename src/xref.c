@@ -274,7 +274,7 @@ overview_xref_support(
 	if (fields < 2) {
 #ifdef DEBUG
 		if ((debug & DEBUG_NNTP) && verbose > 1)
-			debug_print_file("NNTP", fp ? "OVERVIEW.FMT: Empty response - using safe defaults" : "OVERVIEW.FMT: not advertized - using safe defaults");
+			debug_print_file("NNTP", fp ? "OVERVIEW.FMT: Empty response - using safe defaults" : "OVERVIEW.FMT: not advertised - using safe defaults");
 #endif /* DEBUG */
 		ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (8 + 1));
 		ofmt[1].type = OVER_T_STRING;

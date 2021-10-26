@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-09-22
  *  Notes     :
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -76,7 +76,7 @@ static void free_active_arrays(void);
 static void free_attributes(struct t_attribute *attributes);
 static void free_scopes_arrays(void);
 static void free_newnews_array(void);
-static void free_if_not_default(char **attrib, char *deflt);
+static void free_if_not_default(char **attrib, const char *deflt);
 static void free_input_history(void);
 
 
@@ -362,7 +362,7 @@ free_art_array(
 static void
 free_if_not_default(
 	char **attrib,
-	char *deflt)
+	const char *deflt)
 {
 	if (*attrib != deflt)
 		FreeAndNull(*attrib);

@@ -392,7 +392,7 @@ authinfo_plain(
 					 * "VERSION 2", no mode-switching indication, no reader
 					 * indication, no post indication, no authentication
 					 * indication, ... so in case AUTHINFO USER/PASS succeeds
-					 * if not advertized we simply go on but fully ignore
+					 * if not advertised we simply go on but fully ignore
 					 * CAPABILITIES
 					 */
 					if (nntp_caps.type == CAPABILITIES && !nntp_caps.authinfo_user && !nntp_caps.authinfo_sasl && ret == OK_AUTH)

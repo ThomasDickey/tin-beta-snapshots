@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2021-03-04
+ *  Updated   : 2021-07-26
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2021 Mike Gleason
@@ -83,7 +83,7 @@ msg_write_signature(
 			char *sigcmd, *sigattr, *ptr;
 			char cmd[PATH_LEN];
 
-			fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "\n");
+			fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "");
 			sigattr = thisgroup->attribute->sigfile + 1;
 
 			if ((ptr = strstr(sigattr, "%G"))) {
@@ -145,7 +145,7 @@ msg_write_signature(
 			if (debug & DEBUG_MISC)
 				error_message(2, "USING random sig=[%s]", sigfile);
 #endif /* DEBUG */
-			fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "\n");
+			fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "");
 			joinpath(pathfixed, sizeof(pathfixed), path, ".sigfixed");
 #ifdef DEBUG
 			if (debug & DEBUG_MISC)
@@ -178,7 +178,7 @@ msg_write_signature(
 		}
 
 		if ((sigfp = fopen(path, "r")) != NULL) {
-			fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "\n");
+			fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "");
 			copy_fp(sigfp, fp);
 			fclose(sigfp);
 			return;
@@ -190,7 +190,7 @@ msg_write_signature(
 		 */
 		if ((sigfp = fopen(default_signature, "r")) != NULL) {
 			if (include_dot_signature) {
-				fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "\n");
+				fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "");
 				copy_fp(sigfp, fp);
 			}
 			fclose(sigfp);

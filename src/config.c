@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-14
+ *  Updated   : 2021-08-05
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
@@ -114,7 +114,7 @@ read_config_file(
 			if (upgrade == NULL && !global_file && match_string(buf, "# tin configuration file V", NULL, 0)) {
 				upgrade = check_upgrade(buf, "# tin configuration file V", TINRC_VERSION);
 				if (upgrade->state != RC_IGNORE)
-					upgrade_prompt_quit(upgrade, CONFIG_FILE);
+					upgrade_prompt_quit(upgrade, file); /* CONFIG_FILE */
 				if (upgrade->state == RC_UPGRADE)
 					rc_update(fp);
 			}
