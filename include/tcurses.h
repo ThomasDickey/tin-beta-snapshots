@@ -3,7 +3,7 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2021-08-30
+ *  Updated   : 2021-12-14
  *  Notes     : curses #include files, #defines & struct's
  *
  * Copyright (c) 1997-2021 Thomas Dickey <dickey@invisible-island.net>
@@ -78,9 +78,9 @@
 #					endif /* HAVE_NCURSES_NCURSES_H */
 #				endif /* HAVE_NCURSES_H */
 #			endif /* HAVE_NCURSESW_NCURSES_H */
-#			if defined(NCURSES_WIDECHAR) && defined(HAVE_GET_WCH)
+#			if defined(NCURSES_WIDECHAR) && defined(HAVE_GET_WCH) && defined(HAVE_WGET_WCH)
 #				define HAVE_NCURSESW 1
-#			endif /* NCURSES_WIDECHAR && HAVE_GET_WCH */
+#			endif /* NCURSES_WIDECHAR && HAVE_GET_WCH && HAVE_WGET_WCH */
 #		endif /* HAVE_NCURSES_H */
 #	endif /* USE_CURSES || NEED_CURSES_H */
 

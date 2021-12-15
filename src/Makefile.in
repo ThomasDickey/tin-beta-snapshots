@@ -81,12 +81,15 @@ LIBS		= @LIBS@
 LINK_LIBS	= $(PCRE_LIBS) $(CANLIB) @LIBS@ $(INTL_LIBS)
 
 # Where do you want the binary & manual page installed?
-DESTDIR	= @DESTDIR@
+DESTDIR		= @DESTDIR@
 INS_BINARY_DIR	= @bindir@
 INS_MANUAL_DIR	= @mandir@/man
 INS_SYSDEF_DIR	= @TIN_DEFAULTS_DIR@
 INS_MANUAL_EXT	= 1
 INS_OLD_SUFFIX	= old
+
+REMAKE		= $(MAKE) @cf_cv_makeflags@ DESTDIR="$(DESTDIR)"
+
 
 MAN_LINGUAS = de en_GB es
 
@@ -408,27 +411,27 @@ uninstall_helpers :
 	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/url_handler.pl.$(INS_MANUAL_EXT)
 
 install : $(DESTDIR)$(INS_BINARY_DIR)
-	@$(MAKE) all
+	@$(REMAKE) all
 	@$(ECHO) "Installing $(EXE) v$(VER) to $(DESTDIR)$(INS_BINARY_DIR)/$(PROJEXE) ..."
 	@$(INSTALL) $(BINDIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/$(PROJEXE)
 	@( $(CD) $(DESTDIR)$(INS_BINARY_DIR) && $(RM) -f r$(PROJEXE) && $(LN) $(PROJEXE) r$(PROJEXE) )
-	@$(MAKE) install_helpers
-	@$(MAKE) install_manpage
-@MSG_DIR_MAKE@	@$(MAKE) install_nls
+	@$(REMAKE) install_helpers
+	@$(REMAKE) install_manpage
+@MSG_DIR_MAKE@	@$(REMAKE) install_nls
 
 uninstall :
 	@$(ECHO) "Uninstalling $(PROJEXE) in $(DESTDIR)$(INS_BINARY_DIR) ..."
 	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/$(PROJEXE)
 	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/r$(PROJEXE)
-	@$(MAKE) uninstall_helpers
-	@$(MAKE) uninstall_manpage
-@MSG_DIR_MAKE@	@$(MAKE) uninstall_nls
+	@$(REMAKE) uninstall_helpers
+	@$(REMAKE) uninstall_manpage
+@MSG_DIR_MAKE@	@$(REMAKE) uninstall_nls
 
 install_nls :
-@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(ECHO) "Installing NLS-files" ; $(CD) ../po/ && $(MAKE) install ; fi
+@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(ECHO) "Installing NLS-files" ; $(CD) ../po/ && $(REMAKE) install ; fi
 
 uninstall_nls :
-@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(ECHO) "Uninstalling NLS-files" ; $(CD) ../po/ && $(MAKE) uninstall ; fi
+@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(ECHO) "Uninstalling NLS-files" ; $(CD) ../po/ && $(REMAKE) uninstall ; fi
 
 tags :
 	@$(ECHO) "Generating tags (results in ./tags) ..."
@@ -453,9 +456,9 @@ clean :
 	@-$(RM) -rf makecfg.dSYM
 	@-$(RM) -f core *~
 	@-$(RM) -f $(EXE)
-@PCREDIR_MAKE@	@-if test -r ../pcre/Makefile ; then $(CD) ../pcre && $(ECHO) "Cleaning Philip Hazel's Perl-compatible regular expressions library ..." && $(MAKE) @cf_cv_makeflags@ clean ; fi
-@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(CD) ../po && $(MAKE) @cf_cv_makeflags@ $@ ; fi
-@INTLDIR_MAKE@	@-if test -r ../intl/Makefile ; then $(CD) ../intl && $(MAKE) @cf_cv_makeflags@ $@ ; fi
+@PCREDIR_MAKE@	@-if test -r ../pcre/Makefile ; then $(CD) ../pcre && $(ECHO) "Cleaning Philip Hazel's Perl-compatible regular expressions library ..." && $(REMAKE) clean ; fi
+@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(CD) ../po && $(REMAKE) $@ ; fi
+@INTLDIR_MAKE@	@-if test -r ../intl/Makefile ; then $(CD) ../intl && $(REMAKE) $@ ; fi
 
 laundry \
 dirty :
@@ -467,8 +470,8 @@ clobber :: clean
 	@-$(RM) -f $(OFILES) $(BINDIR)/$(EXE) tags TAGS LINT cflow.$(PACKAGE)
 
 distclean ::
-@INTLDIR_MAKE@	@-$(CD) ../intl && $(MAKE) @cf_cv_makeflags@ $@
-@MSG_DIR_MAKE@	@-$(CD) ../po && $(MAKE) @cf_cv_makeflags@ clean
+@INTLDIR_MAKE@	@-$(CD) ../intl && $(REMAKE) $@
+@MSG_DIR_MAKE@	@-$(CD) ../po && $(REMAKE) clean
 
 cflow :
 	@$(ECHO) "Creating cflow for $(PACKAGE) ..."
@@ -480,15 +483,15 @@ cscope :
 
 @PCREDIR_MAKE@../pcre/pcre.h ../pcre/$(PRELIB)pcre.a :
 @PCREDIR_MAKE@	@$(ECHO) "Building Philip Hazel's Perl regular expressions library ..."
-@PCREDIR_MAKE@	@$(CD) ../pcre && $(MAKE) @cf_cv_makeflags@ $(PRELIB)pcre.a
+@PCREDIR_MAKE@	@$(CD) ../pcre && $(REMAKE) $(PRELIB)pcre.a
 
 @INTLDIR_MAKE@@INTLLIBS@ :
 @INTLDIR_MAKE@	@$(ECHO) "Building GNU gettext library ..."
-@INTLDIR_MAKE@	@$(CD) ../intl && $(MAKE) @cf_cv_makeflags@
+@INTLDIR_MAKE@	@$(CD) ../intl && $(REMAKE)
 
 @CANDIR_MAKE@../libcanlock/$(PRELIB)canlock.a :
 @CANDIR_MAKE@	@$(ECHO) "Building Cancel-Lock library ..."
-@CANDIR_MAKE@	@$(CD) ../libcanlock && $(MAKE) @cf_cv_makeflags@ lib
+@CANDIR_MAKE@	@$(CD) ../libcanlock && $(REMAKE) lib
 
 options_menu.h :		$(SRCDIR)/tincfg.tbl \
 				makecfg$X

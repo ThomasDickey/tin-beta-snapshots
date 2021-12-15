@@ -2321,12 +2321,6 @@ typedef FILE TCP;
 #	include "nntplib.h"
 #endif /* !NNTPLIB_H */
 
-#ifndef __CPROTO__
-#	ifndef PROTO_H
-#		include "proto.h"
-#	endif /* !PROTO_H */
-#endif /* !__CPROTO__ */
-
 /*
  * rfc1521/rfc1522 interface
  */
@@ -2502,6 +2496,11 @@ extern struct tm *localtime(time_t *);
 #	endif /* __GNUC__ && !__cplusplus && !__APPLE_CC__ && !__NeXT__ */
 #endif /* STDC_NORETURN */
 
+#ifndef __CPROTO__
+#	ifndef PROTO_H
+#		include "proto.h"
+#	endif /* !PROTO_H */
+#endif /* !__CPROTO__ */
 
 /* init_selfinfo() needs MM_CHARSET */
 #ifndef MM_CHARSET

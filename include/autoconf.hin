@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2020-08-25
+ *  Updated   : 2021-12-14
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2021 Thomas Dickey <dickey@invisible-island.net>
@@ -314,6 +314,7 @@
 #	undef HAVE_VSNPRINTF
 #	undef HAVE_VW_PRINTW
 #	undef HAVE_WAITPID
+#	undef HAVE_WGET_WCH
 #	undef HAVE__TRACEF
 
 /*
