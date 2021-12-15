@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2021-08-25
+dnl Updated   : 2021-12-14
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2021 Thomas E. Dickey <dickey@invisible-island.net>
@@ -1599,7 +1599,7 @@ esac
 if test "$cf_cv_termlib" = pdcurses ; then
 	CF_PDCURSES_X11
 fi
-CF_CURSES_FUNCS(vw_printw get_wch)
+CF_CURSES_FUNCS(vw_printw get_wch wget_wch)
 
 ### sum up warnings
 if test "$cf_cv_termlib" = none ; then

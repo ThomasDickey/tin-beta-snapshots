@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2021-08-28
+dnl Updated   : 2021-12-13
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2021 Thomas E. Dickey <dickey@invisible-island.net>
@@ -873,9 +873,9 @@ AC_SUBST(EXTRA_CPPFLAGS)
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ADD_INCDIR version: 16 updated: 2020/12/31 20:19:42
+dnl CF_ADD_INCDIR version: 17 updated: 2021/09/04 06:35:04
 dnl -------------
-dnl Add an include-directory to $CPPFLAGS.  Don't add /usr/include, since it's
+dnl Add an include-directory to $CPPFLAGS.  Don't add /usr/include, since it is
 dnl redundant.  We don't normally need to add -I/usr/local/include for gcc,
 dnl but old versions (and some misinstalled ones) need that.  To make things
 dnl worse, gcc 3.x may give error messages if -I/usr/local/include is added to
@@ -1158,7 +1158,7 @@ You have the following choices:
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_APPEND_CFLAGS version: 1 updated: 2021/08/28 15:20:37
+dnl CF_APPEND_CFLAGS version: 3 updated: 2021/09/05 17:25:40
 dnl ----------------
 dnl Use CF_ADD_CFLAGS after first checking for potential redefinitions.
 dnl $1 = flags to add
@@ -1167,10 +1167,14 @@ define([CF_APPEND_CFLAGS],
 [
 for cf_add_cflags in $1
 do
-	CF_REMOVE_CFLAGS($cf_add_cflags,CFLAGS,[$2])
-	CF_REMOVE_CFLAGS($cf_add_cflags,CPPFLAGS,[$2])
+	case "x$cf_add_cflags" in
+	x-[[DU]]*)
+		CF_REMOVE_CFLAGS($cf_add_cflags,CFLAGS,[$2])
+		CF_REMOVE_CFLAGS($cf_add_cflags,CPPFLAGS,[$2])
+		;;
+	esac
+	CF_ADD_CFLAGS([$cf_add_cflags],[$2])
 done
-CF_ADD_CFLAGS([$1],[$2])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_APPEND_TEXT version: 1 updated: 2017/02/25 18:58:55
@@ -1850,10 +1854,10 @@ fi
 CF_CHECK_EXTERN_DATA($1,ifelse([$2],,int,[$2]))
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CHECK_EXTERN_DATA version: 4 updated: 2015/04/18 08:56:57
+dnl CF_CHECK_EXTERN_DATA version: 5 updated: 2021/09/04 06:35:04
 dnl --------------------
 dnl Check for existence of external data in the current set of libraries.  If
-dnl we can modify it, it's real enough.
+dnl we can modify it, it is real enough.
 dnl $1 = the name to check
 dnl $2 = its type
 AC_DEFUN([CF_CHECK_EXTERN_DATA],
@@ -2790,9 +2794,9 @@ dnl ----------
 dnl "dirname" is not portable, so we fake it with a shell script.
 AC_DEFUN([CF_DIRNAME],[$1=`echo "$2" | sed -e 's%/[[^/]]*$%%'`])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_DISABLE_ECHO version: 13 updated: 2015/04/18 08:56:57
+dnl CF_DISABLE_ECHO version: 14 updated: 2021/09/04 06:35:04
 dnl ---------------
-dnl You can always use "make -n" to see the actual options, but it's hard to
+dnl You can always use "make -n" to see the actual options, but it is hard to
 dnl pick out/analyze warning messages when the compile-line is long.
 dnl
 dnl Sets:
@@ -2835,7 +2839,7 @@ AC_DEFUN([CF_ERRNO],
 CF_CHECK_ERRNO(errno)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_FIND_CANLOCK version: 1 updated: 2020/01/09 20:03:25
+dnl CF_FIND_CANLOCK version: 2 updated: 2021/12/13 19:52:28
 dnl ---------------
 dnl Look for CANLOCK, to use instead of a bundled copy of CANLOCK.
 dnl
@@ -2850,7 +2854,7 @@ cf_save_CFLAGS="$CFLAGS"
 cf_save_LIBS="$LIBS"
 cf_find_CANLOCK=yes
 
-CF_TRY_PKG_CONFIG(libcanlock3,,[
+CF_TRY_PKG_CONFIG(libcanlock-3,,[
 	CF_TRY_PKG_CONFIG(libcanlock,,[
 		cf_pkgconfig_incs=
 		cf_pkgconfig_libs=
@@ -3965,10 +3969,10 @@ done
 ])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAKEFLAGS version: 20 updated: 2021/01/03 19:29:49
+dnl CF_MAKEFLAGS version: 21 updated: 2021/09/04 06:47:34
 dnl ------------
 dnl Some 'make' programs support ${MAKEFLAGS}, some ${MFLAGS}, to pass 'make'
-dnl options to lower-levels.  It's very useful for "make -n" -- if we have it.
+dnl options to lower-levels.  It is very useful for "make -n" -- if we have it.
 dnl (GNU 'make' does both, something POSIX 'make', which happens to make the
 dnl ${MAKEFLAGS} variable incompatible because it adds the assignments :-)
 AC_DEFUN([CF_MAKEFLAGS],
@@ -4325,7 +4329,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_LIBS version: 20 updated: 2021/01/03 08:05:37
+dnl CF_NCURSES_LIBS version: 21 updated: 2021/09/04 06:37:12
 dnl ---------------
 dnl Look for the ncurses library.  This is a little complicated on Linux,
 dnl because it may be linked with the gpm (general purpose mouse) library.
@@ -4354,7 +4358,7 @@ AC_CHECK_LIB(gpm,Gpm_Open,
 case "$host_os" in
 freebsd*)
 	# This is only necessary if you are linking against an obsolete
-	# version of ncurses (but it should do no harm, since it's static).
+	# version of ncurses (but it should do no harm, since it is static).
 	if test "$cf_nculib_root" = ncurses ; then
 		AC_CHECK_LIB(mytinfo,tgoto,[cf_ncurses_LIBS="-lmytinfo $cf_ncurses_LIBS"])
 	fi
@@ -4804,9 +4808,11 @@ else
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PKG_CONFIG version: 11 updated: 2021/01/01 13:31:04
+dnl CF_PKG_CONFIG version: 12 updated: 2021/10/10 20:18:09
 dnl -------------
 dnl Check for the package-config program, unless disabled by command-line.
+dnl
+dnl Sets $PKG_CONFIG to the pathname of the pkg-config program.
 AC_DEFUN([CF_PKG_CONFIG],
 [
 AC_MSG_CHECKING(if you want to use pkg-config)
@@ -5158,7 +5164,7 @@ AC_CHECK_LIB($2,$1,[
 	[[$]$3])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_REMOVE_CFLAGS version: 1 updated: 2021/08/28 15:20:37
+dnl CF_REMOVE_CFLAGS version: 3 updated: 2021/09/05 17:25:40
 dnl ----------------
 dnl Remove a given option from CFLAGS/CPPFLAGS
 dnl $1 = option to remove
@@ -5167,25 +5173,13 @@ dnl $3 = nonempty to allow verbose message
 define([CF_REMOVE_CFLAGS],
 [
 cf_tmp_cflag=`echo "x$1" | sed -e 's/^.//' -e 's/=.*//'`
-cf_old_cflag="[$]$2"
-
-case "[$]$2" in
-*$1=*)
-	cf_old_cflag=`echo "x$cf_old_cflag" | sed -e 's/^.//' -e "s%$cf_tmp_cflag=[[^ 	]]*%%g"`
-	;;
-*$1\ *)
-	cf_old_cflag=`echo "x$cf_old_cflag" | sed -e 's/^.//' -e "s%${cf_tmp_cflag}.%%"`
-	;;
-*$1)
-	cf_old_cflag=`echo "x$cf_old_cflag" | sed -e 's/^.//' -e "s%$cf_tmp_cflag%%"`
-	;;
-esac
-
-if test "[$]$2" != "$cf_old_cflag" ;
-then
+while true
+do
+	cf_old_cflag=`echo "x[$]$2" | sed -e 's/^.//' -e 's/[[ 	]][[ 	]]*-/ -/g' -e "s%$cf_tmp_cflag\\(=[[^ 	]][[^ 	]]*\\)\?%%" -e 's/^[[ 	]]*//' -e 's%[[ ]][[ ]]*-D% -D%g' -e 's%[[ ]][[ ]]*-I% -I%g'`
+	test "[$]$2" != "$cf_old_cflag" || break
 	ifelse([$3],,,[CF_VERBOSE(removing old option $1 from $2)])
-	$2="$cf_new_cflag"
-fi
+	$2="$cf_old_cflag"
+done
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_REMOVE_DEFINE version: 3 updated: 2010/01/09 11:05:50
@@ -5368,7 +5362,7 @@ AC_MSG_RESULT($cf_cv_sig_const)
 test "$cf_cv_sig_const" = yes && AC_DEFINE(DECL_SIG_CONST,1,[Define this to 1 for redefinable signal constants])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SIZECHANGE version: 17 updated: 2021/01/01 13:31:04
+dnl CF_SIZECHANGE version: 18 updated: 2021/09/04 06:35:04
 dnl -------------
 dnl Check for definitions & structures needed for window size-changing
 dnl
@@ -5399,7 +5393,7 @@ do
 
 #ifdef NEED_PTEM_H
 /* This is a workaround for SCO:  they neglected to define struct winsize in
- * termios.h -- it's only in termio.h and ptem.h
+ * termios.h -- it is only in termio.h and ptem.h
  */
 #include <sys/stream.h>
 #include <sys/ptem.h>
@@ -6340,7 +6334,7 @@ if test "$with_dmalloc" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_PATH version: 11 updated: 2012/09/29 15:04:19
+dnl CF_WITH_PATH version: 12 updated: 2021/09/04 06:35:04
 dnl ------------
 dnl Wrapper for AC_ARG_WITH to ensure that user supplies a pathname, not just
 dnl defaulting to yes/no.
@@ -6349,7 +6343,7 @@ dnl $1 = option name
 dnl $2 = help-text
 dnl $3 = environment variable to set
 dnl $4 = default value, shown in the help-message, must be a constant
-dnl $5 = default value, if it's an expression & cannot be in the help-message
+dnl $5 = default value, if it is an expression & cannot be in the help-message
 dnl
 AC_DEFUN([CF_WITH_PATH],
 [AC_ARG_WITH($1,[$2 ](default: ifelse([$4],,empty,[$4])),,
