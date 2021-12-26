@@ -144,7 +144,7 @@ o  add second pipe command when piping multiple articles to use one
    sense).
    [20160412 Urs Janssen <urs@tin.org>]
 
-o  allow abort piping / saving multiple articles, ESC/'z' just aborts the
+o  allow to cancel piping / saving multiple articles, ESC/'z' just stops the
    current one
    [20160409 Urs Janssen <urs@tin.org>]
 
@@ -588,10 +588,6 @@ o  add BiDi handling to page header
 
 Internal Changes
 ----------------
-o  add configure check for noreturn //  __attribute__((noreturn)) so we
-   could annotate main.c:giveup() with it
-   [20210831 Urs Janssen <urs@tin.org>]
-
 o  merge refs.c:valid_msgid() and post.c:damaged_id()
    [Urs Janssen <urs@tin.org>]
 
@@ -865,7 +861,7 @@ o  DIRSEP (set in tin.h (to '/')) is used in places in the code
    looks like a leftover from when removing the non UNIX code
    [20210112 Urs Janssen <urs@tin.org>]
 
-o  abort HEAD/NEXT loop on 5xx responses to HEAD? (see
+o  exit HEAD/NEXT loop on 5xx responses to HEAD? (see
    art.c:open_art_header())
    [20161011 Urs Janssen <urs@tin.org>]
 
@@ -1052,7 +1048,7 @@ o  commas in real-name might cause problems in mail-replies
    [20021007 Urs Janssen <urs@tin.org>]
 
 o  setting TIN_HOMEDIR to a non-existent dir gives a "Filesystem full"
-   error-message (but doesn't abort) instead of creating the dir. bug?
+   error-message (but doesn't force quit) instead of creating the dir. bug?
    feature? if the later we should give a more exact error-message.
    [20011112 Urs Janssen <urs@tin.org>]
 

@@ -6,7 +6,7 @@
  *  Updated   : 2021-02-01
  *  Notes     : debug routines
  *
- * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

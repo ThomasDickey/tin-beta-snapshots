@@ -6,7 +6,7 @@
  *  Updated   : 2021-08-07
  *  Notes     :
  *
- * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,7 +148,7 @@ constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=sha
 	constext txt_color_on[] = N_("ANSI color enabled");
 #endif /* HAVE_COLOR */
 constext txt_command_failed[] = N_("Command failed: %s");
-constext txt_copyright_notice[] = "%s (c) Copyright 1991-2021 Iain Lea.";
+constext txt_copyright_notice[] = "%s (c) Copyright 1991-2022 Iain Lea.";
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 #ifdef NNTP_ABLE
 	constext txt_connecting[] = N_("Connecting to %s...");

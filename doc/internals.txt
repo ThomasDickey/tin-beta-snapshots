@@ -7,7 +7,7 @@ and deals with timeouts, reconnections and user aborts.
 It always returns a full line of data - all memory management is handled
 internally.
 
-It supports the use of 'q' to abort the operation and 'Q' to exit tin
+It supports the use of 'q' to cancel the operation and 'Q' to exit tin
 without error recovery.
 
 tin_errno will be set to !0 to flag errors. Currently the only

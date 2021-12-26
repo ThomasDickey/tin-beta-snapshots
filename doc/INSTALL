@@ -487,7 +487,7 @@ If disabled, TIN does not allow posting/followup of articles.
 Enable if you want to restrict articles posted with your tin a bit to
 enforce some formal rules. This will change the following warnings to an
 error in the article checking routine therefore causing the user to reenter
-the editor and change the article or to abort posting:
+the editor and change the article or to cancel posting:
  - Group(s) in Newsgroups: or Followup-To: header were not found in
    the sites' active file
  - Approved: header was found when user was in beginner level

@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2021-02-23
+ *  Updated   : 2021-11-01
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2021 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2022 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -153,7 +153,7 @@ boundary_cmp(
 	/* remove trailing whites as per RFC 2046 5.1.1 */
 	l = my_strdup(line);
 	e = l + len - 1;
-	while (e > l + blen + 1 && isspace(*e))
+	while (e > l + blen + 1 && isspace((unsigned char) *e))
 		*e-- = '\0';
 
 	len = strlen(l);
