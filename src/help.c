@@ -3,10 +3,10 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-25
+ *  Updated   : 2021-10-29
  *  Notes     :
  *
- * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -709,7 +709,11 @@ make_help_page(
 			for (i = 0; i < keys.used; i++) {
 				if (keys.list[i].function == helppage->func && keys.list[i].key) {
 					buf = my_realloc(buf, LEN);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					snprintf(buf, LEN, "%s\t  %s", printascii(key, (wint_t) keys.list[i].key), _(helppage->helptext));
+#else
+					snprintf(buf, LEN, "%s\t  %s", printascii(key, keys.list[i].key), _(helppage->helptext));
+#endif /* MULTIBYTE_ABLE &&! NO_LOCALE*/
 					expand_ctrl_chars(&buf, &length, 8);
 					if (strcmp(last, buf)) {
 						fprintf(fp, "%s\n", buf);

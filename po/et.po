@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-26 12:47+0200\n"
+"POT-Creation-Date: 2021-12-22 14:35+0100\n"
 "PO-Revision-Date: 2020-12-25 20:39+0200\n"
 "Last-Translator: Toomas Soome <tsoome@me.com>\n"
 "Language-Team: Estonian <linux-ee@lists.eenet.ee>\n"
@@ -3299,8 +3299,9 @@ msgid "Posted Articles Menu Commands"
 msgstr "Atribuutide menüü käsud"
 
 #: src/lang.c:736
+#, fuzzy
 msgid "Lookup failed"
-msgstr ""
+msgstr "Otsing ebaõnnestus"
 
 #: src/lang.c:737
 #, fuzzy

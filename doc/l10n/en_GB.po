@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin-man 2.6.1\n"
 "Report-Msgid-Bugs-To: translation@tin.org\n"
-"POT-Creation-Date: 2021-08-27 12:34+0200\n"
+"POT-Creation-Date: 2021-12-22 14:29+0100\n"
 "PO-Revision-Date: 2021-08-27 12:35+0200\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -54,8 +54,8 @@ msgstr "tin"
 #. type: TH
 #: doc/tin.1:13 doc/tin.5:9
 #, no-wrap
-msgid "August 23rd, 2021"
-msgstr "August 23rd, 2021"
+msgid "December 24th, 2021"
+msgstr "December 24th, 2021"
 
 #. type: TH
 #: doc/tin.1:13 doc/tin.5:9

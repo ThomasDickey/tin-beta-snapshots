@@ -1,34 +1,34 @@
-MANIFEST for tin-2.6.1 (Di 26. Okt 12:53:06 CEST 2021)
+MANIFEST for tin-2.6.1 (So 26. Dez 15:00:10 CET 2021)
 ----------------------------------------------------
    14933 ./Makefile
-    8762 ./MANIFEST
+    8761 ./MANIFEST
     1546 ./README
      747 ./README.MAC
      976 ./README.WIN
-  215236 ./aclocal.m4
+  215261 ./aclocal.m4
     1096 ./conf-tin
-   49348 ./config.guess
-   35276 ./config.sub
-  978654 ./configure
-   43985 ./configure.in
+   49403 ./config.guess
+   35407 ./config.sub
+  976579 ./configure
+   43994 ./configure.in
     7123 ./install-sh
      355 ./po4a.conf
     1797 ./tin.spec
    18847 ./doc/ABOUT-NLS
-     909 ./doc/CHANGES
+    1260 ./doc/CHANGES
   319065 ./doc/CHANGES.old
     5125 ./doc/CREDITS
     1305 ./doc/DEBUG_REFS
-   32949 ./doc/INSTALL
-   46613 ./doc/TODO
-     120 ./doc/WHATSNEW
+   32950 ./doc/INSTALL
+   46465 ./doc/TODO
+     167 ./doc/WHATSNEW
     2618 ./doc/art_handling.txt
     1701 ./doc/article.txt
     3498 ./doc/auth.txt
     3807 ./doc/config-anomalies
    12253 ./doc/filtering
    35305 ./doc/good-netkeeping-seal
-    3789 ./doc/internals.txt
+    3790 ./doc/internals.txt
    23621 ./doc/iso2asc.txt
     3944 ./doc/keymap.sample
      633 ./doc/mailcap.sample
@@ -45,8 +45,8 @@ MANIFEST for tin-2.6.1 (Di 26. Okt 12:53:06 CEST 2021)
     4947 ./doc/umlaute.txt
     4246 ./doc/umlauts.txt
     7170 ./doc/url_handler.1
-  142331 ./doc/tin.1
-   84700 ./doc/tin.5
+  142333 ./doc/tin.1
+   84702 ./doc/tin.5
     5065 ./doc/tin.defaults
    19012 ./doc/tinews.1
     2224 ./doc/tools.txt
@@ -73,12 +73,12 @@ MANIFEST for tin-2.6.1 (Di 26. Okt 12:53:06 CEST 2021)
    33805 ./include/proto.h
     5701 ./include/rfc2046.h
     3544 ./include/stpwatch.h
-    6267 ./include/tcurses.h
-   74387 ./include/tin.h
+    6310 ./include/tcurses.h
+   74386 ./include/tin.h
    17822 ./include/tinrc.h
     4019 ./include/tnntp.h
     2367 ./include/trace.h
-    2246 ./include/version.h
+    2248 ./include/version.h
    35853 ./src/active.c
    89594 ./src/art.c
    81830 ./src/attrib.c
@@ -98,7 +98,7 @@ MANIFEST for tin-2.6.1 (Di 26. Okt 12:53:06 CEST 2021)
     3910 ./src/hashstr.c
     8729 ./src/header.c
     6252 ./src/heapsort.c
-   44787 ./src/help.c
+   44980 ./src/help.c
    13996 ./src/inews.c
    38456 ./src/init.c
     2537 ./src/joinpath.c
@@ -122,13 +122,13 @@ MANIFEST for tin-2.6.1 (Di 26. Okt 12:53:06 CEST 2021)
    17057 ./src/plp_snprintf.c
    13305 ./src/pgp.c
   162659 ./src/post.c
-   19700 ./src/prompt.c
+   19790 ./src/prompt.c
    10570 ./src/read.c
    27779 ./src/refs.c
     5615 ./src/regex.c
    14641 ./src/rfc1524.c
    15388 ./src/rfc2045.c
-   40177 ./src/rfc2046.c
+   40193 ./src/rfc2046.c
    37656 ./src/rfc2047.c
    58730 ./src/save.c
    15339 ./src/screen.c
@@ -215,8 +215,8 @@ MANIFEST for tin-2.6.1 (Di 26. Okt 12:53:06 CEST 2021)
   108966 ./pcre/testdata/testoutput7
    53056 ./pcre/testdata/testoutput8
    28769 ./pcre/testdata/testoutput9
-   22065 ./include/autoconf.hin
-   22598 ./src/Makefile.in
+   22087 ./include/autoconf.hin
+   22548 ./src/Makefile.in
    10213 ./src/tincfg.tbl
     1439 ./libcanlock/COPYING
     4149 ./libcanlock/ChangeLog
@@ -290,7 +290,7 @@ MANIFEST for tin-2.6.1 (Di 26. Okt 12:53:06 CEST 2021)
     1553 ./po/es.gmo
   175796 ./po/es.po
   188595 ./po/et.gmo
-  229060 ./po/et.po
+  229088 ./po/et.po
   199398 ./po/fr.gmo
   238686 ./po/fr.po
   116367 ./po/ru.gmo
@@ -303,15 +303,15 @@ MANIFEST for tin-2.6.1 (Di 26. Okt 12:53:06 CEST 2021)
   172476 ./po/zh_CN.gmo
   228727 ./po/zh_TW.po
   172604 ./po/zh_TW.gmo
-  154807 ./doc/l10n/de/tin.1
-   91038 ./doc/l10n/de/tin.5
+  154809 ./doc/l10n/de/tin.1
+   91040 ./doc/l10n/de/tin.5
      130 ./doc/l10n/de.add
-  398490 ./doc/l10n/de.po
-  146196 ./doc/l10n/en_GB/tin.1
-   87278 ./doc/l10n/en_GB/tin.5
-  481000 ./doc/l10n/en_GB.po
+  398494 ./doc/l10n/de.po
+  146198 ./doc/l10n/en_GB/tin.1
+   87280 ./doc/l10n/en_GB/tin.5
+  481004 ./doc/l10n/en_GB.po
   146302 ./doc/l10n/es/tin.1
    87271 ./doc/l10n/es/tin.5
-  318032 ./doc/l10n/es.po
-  302442 ./doc/l10n/tin-man.pot
-13490683 total
+  318030 ./doc/l10n/es.po
+  302444 ./doc/l10n/tin-man.pot
+13489442 total

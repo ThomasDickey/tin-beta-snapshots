@@ -3,10 +3,10 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-14
+ *  Updated   : 2021-10-29
  *  Notes     :
  *
- * Copyright (c) 1991-2021 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -179,16 +179,20 @@ prompt_yn(
 
 /*	fflush(stdin); */		/* Prevent finger trouble from making important decisions */
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	yes = (wint_t) func_to_key(PROMPT_YES, prompt_keys);
 	no = (wint_t) func_to_key(PROMPT_NO, prompt_keys);
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	printascii(keyyes, (default_answer ? towupper(yes) : yes));
 	printascii(keyno, (!default_answer ? towupper(no) : no));
 #else
+	yes = func_to_key(PROMPT_YES, prompt_keys);
+	no = func_to_key(PROMPT_NO, prompt_keys);
+
 	printascii(keyyes, (default_answer ? my_toupper(yes) : yes));
 	printascii(keyno, (!default_answer ? my_toupper(no) : no));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	keyyes_len = strwidth(keyyes);
 	keyno_len = strwidth(keyno);
 	maxlen = MAX(keyyes_len, keyno_len);

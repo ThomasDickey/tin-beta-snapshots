@@ -2,6 +2,7 @@ New features and changes since tin-2.6.0
 
 New features
 ------------
+- allow to cancel wait_message() via key press
 
 Changes
 -------
