@@ -31452,7 +31452,7 @@ done
       else
                 echo "$as_me:31453: checking version of $INTL_YACC" >&5
 echo $ECHO_N "checking version of $INTL_YACC... $ECHO_C" >&6
-        ac_prog_version=`$INTL_YACC --version 2>&1 | sed -n 's/^.*GNU Bison.* \([0-9]*\.[0-9.]*\).*$/\1/p;s/^\(byacc\) - \([0-9][0-9.]*\) \([0-9]*\).*$/\1-\2.\3/p'`
+        ac_prog_version=`$INTL_YACC -V 2>&1 | sed -n 's/^.*GNU Bison.* \([0-9]*\.[0-9.]*\).*$/\1/p;s/^\(byacc\) - \([0-9][0-9.]*\) \([0-9]*\).*$/\1-\2.\3/p'`
         case "$ac_prog_version" in
           byacc-[0-9].[0-9].20[1-9]*)
              ac_prog_version="$ac_prog_version, ok"; ac_verc_fail=no;;
