@@ -46,9 +46,9 @@ l = @INTL_LIBTOOL_SUFFIX_PREFIX@
 
 ARCHIVE = @AR@ @ARFLAGS@
 CC = @CC@
-LIBTOOL = @LIBTOOL@
+LIBTOOL = libtool
 RANLIB = @RANLIB@
-YACC = @INTLBISON@ -y -d
+YACC = @INTL_YACC@ -y -d
 YFLAGS = -p __gettext
 
 x = @EXEEXT@
@@ -95,9 +95,11 @@ LTV_AGE=0
 .c$o:
 	$(COMPILE) $<
 .c.lo:
+	rm -f $@
 	$(LIBTOOL) --mode=compile $(COMPILE) $<
 
 .y.c:
+	rm -f $@
 	$(YACC) $(YFLAGS) -o $@ $<
 	rm -f $*.h
 
