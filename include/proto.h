@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2021-07-02
+ *  Updated   : 2022-01-29
  *  Notes     :
  *
  * Copyright (c) 1997-2022 Urs Janssen <urs@tin.org>
@@ -376,7 +376,7 @@ extern t_bool invoke_cmd(const char *nam);
 extern t_bool invoke_editor(const char *filename, int lineno, struct t_group *group);
 extern t_bool mail_check(const char *mailbox_name);
 extern void append_file(char *old_filename, char *new_filename);
-extern void asfail(const char *file, int line, const char *cond);
+extern _Noreturn void asfail(const char *file, int line, const char *cond);
 extern void base_name(const char *fullpath, char *file);
 extern void cleanup_tmp_files(void);
 extern void copy_body(FILE *fp_ip, FILE *fp_op, char *prefix, char *initl, t_bool raw_data);

@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-01
+ *  Updated   : 2022-02-19
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -69,47 +69,47 @@ debug_delete_files(
 	char file[PATH_LEN];
 
 	if (debug & (DEBUG_NNTP | DEBUG_REMOVE)) {
-		joinpath(file, sizeof(file), TMPDIR, "NNTP");
+		joinpath(file, sizeof(file), tmpdir, "NNTP");
 		unlink(file);
 	}
 
 	if (debug & (DEBUG_FILTER | DEBUG_REMOVE)) {
-		joinpath(file, sizeof(file), TMPDIR, "ARTS");
+		joinpath(file, sizeof(file), tmpdir, "ARTS");
 		unlink(file);
-		joinpath(file, sizeof(file), TMPDIR, "FILTER");
+		joinpath(file, sizeof(file), tmpdir, "FILTER");
 		unlink(file);
 	}
 
 	if (debug & (DEBUG_NEWSRC | DEBUG_REMOVE)) {
-		joinpath(file, sizeof(file), TMPDIR, "BITMAP");
+		joinpath(file, sizeof(file), tmpdir, "BITMAP");
 		unlink(file);
 	}
 
 	if (debug & (DEBUG_REFS | DEBUG_REMOVE)) {
-		joinpath(file, sizeof(file), TMPDIR, "REFS.dump");
+		joinpath(file, sizeof(file), tmpdir, "REFS.dump");
 		unlink(file);
-		joinpath(file, sizeof(file), TMPDIR, "REFS.info");
+		joinpath(file, sizeof(file), tmpdir, "REFS.info");
 		unlink(file);
 	}
 
 	if (debug & (DEBUG_MEM | DEBUG_REMOVE)) {
-		joinpath(file, sizeof(file), TMPDIR, "MALLOC");
+		joinpath(file, sizeof(file), tmpdir, "MALLOC");
 		unlink(file);
 	}
 
 	if (debug & (DEBUG_ATTRIB | DEBUG_REMOVE)) {
-		joinpath(file, sizeof(file), TMPDIR, "ATTRIBUTES");
+		joinpath(file, sizeof(file), tmpdir, "ATTRIBUTES");
 		unlink(file);
-		joinpath(file, sizeof(file), TMPDIR, "SCOPES-R");
+		joinpath(file, sizeof(file), tmpdir, "SCOPES-R");
 		unlink(file);
-		joinpath(file, sizeof(file), TMPDIR, "SCOPES-W");
+		joinpath(file, sizeof(file), tmpdir, "SCOPES-W");
 		unlink(file);
 	}
 
 	if (debug & (DEBUG_MISC | DEBUG_REMOVE)) {
-		joinpath(file, sizeof(file), TMPDIR, "ACTIVE");
+		joinpath(file, sizeof(file), tmpdir, "ACTIVE");
 		unlink(file);
-		joinpath(file, sizeof(file), TMPDIR, "GNKSA");
+		joinpath(file, sizeof(file), tmpdir, "GNKSA");
 		unlink(file);
 	}
 }
@@ -140,7 +140,7 @@ debug_print_header(
 		return;
 
 	if (!*file)
-		joinpath(file, sizeof(file), TMPDIR, "ARTS");
+		joinpath(file, sizeof(file), tmpdir, "ARTS");
 
 	if ((fp = fopen(file, "a")) != NULL) {
 		fprintf(fp, "art=[%5"T_ARTNUM_PFMT"] tag=[%s] kill=[%s] selected=[%s]\n", s->artnum,
@@ -182,7 +182,7 @@ debug_print_active(
 		return;
 
 	if (!*file)
-		joinpath(file, sizeof(file), TMPDIR, "ACTIVE");
+		joinpath(file, sizeof(file), tmpdir, "ACTIVE");
 
 	if ((fp = fopen(file, "w")) != NULL) {
 		int i;
@@ -263,7 +263,7 @@ debug_print_malloc(
 	FILE *fp;
 
 	if (!*file)
-		joinpath(file, sizeof(file), TMPDIR, "MALLOC");
+		joinpath(file, sizeof(file), tmpdir, "MALLOC");
 
 	if ((fp = fopen(file, "a")) != NULL) {
 		total += size;
@@ -325,7 +325,7 @@ debug_print_filters(
 	FILE *fp;
 
 	if (!*file)
-		joinpath(file, sizeof(file), TMPDIR, "FILTER");
+		joinpath(file, sizeof(file), tmpdir, "FILTER");
 
 	if ((fp = fopen(file, "w")) != NULL) {
 		/*
@@ -370,7 +370,7 @@ debug_print_file(
 	buf = fmt_message(fmt, ap);
 	va_end(ap);
 
-	joinpath(file, sizeof(file), TMPDIR, fname);
+	joinpath(file, sizeof(file), tmpdir, fname);
 
 	if ((fp = fopen(file, "a")) != NULL) {
 		fprintf(fp, "%s\n", buf);
@@ -409,7 +409,7 @@ debug_print_bitmap(
 	if (!(debug & DEBUG_NEWSRC))
 		return;
 
-	joinpath(file, sizeof(file), TMPDIR, "BITMAP");
+	joinpath(file, sizeof(file), tmpdir, "BITMAP");
 	if (group != NULL) {
 		if ((fp = fopen(file, "a")) != NULL) {
 			fprintf(fp, "\nActive: Group=[%s] sub=[%c] min=[%"T_ARTNUM_PFMT"] max=[%"T_ARTNUM_PFMT"] count=[%"T_ARTNUM_PFMT"] num_unread=[%"T_ARTNUM_PFMT"]\n",

@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2021-07-06
+.\" Updated   : 2022-03-02
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -15,7 +15,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24 Dezember 2021" 2.6.1 "Usenet Newsreader"
+.TH tin 1 "24 Dezember 2021" 2.6.2 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -109,7 +109,10 @@ Keine Gruppenbeschreibungen und die Server Meldung des Tages laden
 \fB\-D\fP\fI Debuggrad\fP
 Debuggrad angeben (1 = NNTP, 2 = Filter, 4 = newsrc, 8 = Threading, 16 =
 Speicher, 32 = attributes, 64 = Diverses, 128 = vorhandene Debugdateien
-löschen). Im NNTP\-Level steuert \*(rq\fB\-v\fP\*(rq die Ausführlichkeit der Ausgabe.
+löschen). Im NNTP\-Level steuert \*(rq\fB\-v\fP\*(rq die Ausführlichkeit der Ausgabe.Je
+nach Debuggrad könnten verschiedene Dateien nach \fI$TMPDIR\fP geschrieben
+werden und/oder eine Bildschirmausgabe erfolgen. Auch den Abschnitt
+"SICHERHEIT" beachten!
 .TP 
 \fB\-f\fP\fI Datei\fP
 Benutze die angegebene newsrc\-Datei anstelle von
@@ -473,7 +476,7 @@ Zeichen links vom Cursor löschen.
 Lösche vom Cursor bis zum Zeilenende.
 .TP 
 \fB^P, ^N\fP
-Durch die Verlaufsliste vörwärts bzw. rückwärts bewegen.
+Durch die Verlaufsliste vorwärts bzw. rückwärts bewegen.
 .TP 
 \fB^L, ^R\fP
 Aktuelle Zeile neu aufbauen.
@@ -682,7 +685,7 @@ see if any new news has arrived since starting \fBtin\fP.
 .\" -------------------------------------------------------------------
 .\"
 Alle Artikel in der aktuellen Gruppe als ungelesen markieren.
-.SS "GROUP INDEX COMMANDS"
+.SS GRUPPEN\-INDEX\-BEFEHLE
 All searches in this level are limited to unread articles if in
 \fBshow_only_unread_arts\fP mode. \fBGroupToggleReadUnread\fP ('\fBr\fP')  can be use
 toggle the setting right before/after the search.
@@ -812,7 +815,7 @@ tinrc\-Variable \fBshow_author\fP.
 \fBGroupCancel 'D'\fP
 Löschen (cancel) oder Ersetzen (supersede) des aktuellen Artikels. Er muss
 vom selben Benutzer geschrieben worden sein. Die Nachricht zum Löschen ist
-in der Newsgroupe 'control' oder 'control.cancel' zu sehen.
+in der Newsgruppe 'control' oder 'control.cancel' zu sehen.
 .TP 
 \fBEditFilter 'E'\fP
 Filter\-Datei bearbeiten und danach anwenden.
@@ -943,7 +946,7 @@ Aktuellen Artikel als ungelesen markieren.
 Mark current thread as unread. If a range of threads is set, the range will
 be marked as unread instead of the current thread. When tagged threads are
 present, a prompt asks how to proceed.
-.SS "THREAD LISTING COMMANDS"
+.SS "BEFEHLE ZUM AUFLISTEN VON THREADS"
 .\" this sections should be complete
 .TP  10
 \fB4\fP
@@ -1034,7 +1037,7 @@ tinrc\-Variable \fBshow_author\fP.
 \fBThreadCancel 'D'\fP
 Löschen (cancel) oder Ersetzen (supersede) des aktuellen Artikels. Er muss
 vom selben Benutzer geschrieben worden sein. Die Nachricht zum Löschen ist
-in der Newsgroupe 'control' oder 'control.cancel' zu sehen.
+in der Newsgruppe 'control' oder 'control.cancel' zu sehen.
 .TP 
 \fBEditFilter 'E'\fP
 Filter\-Datei bearbeiten und danach anwenden.
@@ -1113,7 +1116,7 @@ articles are present, a prompt asks how to proceed.
 .\" -------------------------------------------------------------------
 .\"
 Alle Artikel im aktuellen Thread als ungelesen markieren.
-.SS "ARTICLE VIEWER COMMANDS"
+.SS "BEFEHLE ZUM ANZEIGEN VON ARTIKELN"
 .\" FIXME - refine descriptions
 .TP  10
 \fB0\fP
@@ -1250,7 +1253,7 @@ the next thread with unread articles.
 \fBPageCancel 'D'\fP
 Löschen (cancel) oder Ersetzen (supersede) des aktuellen Artikels. Er muss
 vom selben Benutzer geschrieben worden sein. Die Nachricht zum Löschen ist
-in der Newsgroupe 'control' oder 'control.cancel' zu sehen.
+in der Newsgruppe 'control' oder 'control.cancel' zu sehen.
 .TP 
 \fBPageEditArticle 'e'\fP
 Aktuellen Artikel bearbeiten. Dies ist auf Mailgroups und gespeicherte
@@ -1412,7 +1415,7 @@ Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .RE
 .\" -------------------------------------------------------------------
 .\"
-.SS ANHANGLISTE
+.SS ANHANGSVERZEICHNIS
 \fBPageViewAttach\fP ('\fBV\fP') displays a list of attachments of the current
 article. Besides the common moving keys, the following commands are
 available:
@@ -1470,9 +1473,9 @@ Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .\"
 .SS "POSTING VERLAUFSLISTE"
 \fBDisplayPostHist\fP ('\fBW\fP') displays a list of all previous posted articles
-stored in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP. The following informatiosn
-are shown: a time stamp in "dd\-mm\-yy"\-format, a single letter indicating the
-action which initiated the message, the group names (evetually shortened,
+stored in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP. The following information
+is shown: a time stamp in "dd\-mm\-yy"\-format, a single letter indicating the
+action which initiated the message, the group names (eventually shortened,
 see also \fBabbreviate_groupname\fP) or a mail address the message was sent to
 and the subject of the message. Besides the common moving keys, the
 following commands are available:
@@ -1501,7 +1504,7 @@ Vorherige Suche wiederholen.
 Ausgang zur Shell.
 .TP 
 \fBToggleInfoLastLine 'i'\fP
-Umschalten der Anzeige der aktuellen 'Message\-ID:\*(rq in der letzten Zeile.
+Umschalten der Anzeige der aktuellen \*(rqMessage\-ID:\*(rq in der letzten Zeile.
 .TP 
 \fBHelp 'h'\fP
 Hilfeseite der verfügbaren Befehle.
@@ -1652,7 +1655,7 @@ sha512. Voreinstellung ist sha1.
 \fBCatchup der Gruppen beim Beenden (catchup_read_groups)\fP
 .\"
 .\" FIXME - I leave this to someone who's using colors
-Falls auf ON gestelltt, wird der Benutzer beim Beenden gefragt, ob alle
+Falls auf ON gestellt, wird der Benutzer beim Beenden gefragt, ob alle
 während der aktuellen Sitzung gelesenen Gruppen als gelesen markiert werden
 sollen. Voreinstellung ist OFF.
 .TP 
@@ -2014,12 +2017,13 @@ program. It allows the user to save articles/threads/groups simply by giving
 \fBAufruf Ihres Mailkommandos (mailer_format)\fP
 The format string used to create the mailer command with parameters that is
 used for mailing articles to other people. Default is '%M "%T" < %F'
-(e.g., /bin/mail "iain" < .article). The flexible format allows other
+(e.g., /bin/mail "iain" < ~/.article). The flexible format allows other
 mailers with different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-mutt \-s "%S" \-\- "%T" < "%F"
+mutt \-s "%S" \-\- "%T" < %F
+mutt \-H %F
 claws\-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
 .in -.3i
@@ -2330,6 +2334,22 @@ Mit \fB\%qsort\fP(3) sortieren.
 .IP 1
 Mit \fB\%heapsort\fP(3) sortieren. Kann in großen Gruppen mit langen Threads
 schneller sein.
+.RE
+.TP 
+\fBShow help/mail sign in level titles (show_help_mail_sign)\fP
+Allows you to select whether \fBtin\fP shows a help indication, a new mail
+indication, both, or neither in the various level titles.  Default is 3.
+.RS +.5i
+.IP 0 3
+\fBKein Hilfe\- oder Mailanzeige\fP.
+.IP 1
+\fBNur Hilfe anzeigen\fP.
+.IP 2
+\fBShow only mail sign if new mail\fP, show only the mail sign, and only if new
+mail has arrived.
+.IP 3
+\fBShow mail if new mail else help s.\fP, show mail sign if new mail has
+arrived otherwise show help sign.
 .RE
 .TP 
 \fBZeige Zeilenz./Bewert. in Übersicht (show_info)\fP
@@ -3361,9 +3381,9 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .PP
 
 .nf
-\fI/etc/tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
-.br
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
+.br
+\fI/etc/tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
 .fi
 .PP
 
@@ -3621,7 +3641,7 @@ Define any additional options that you wish to pass to your \fB\%pgp\fP(1)  or
 \fB\%gpg\fP(1)  program.
 .TP 
 \fBPGPPATH\fP
-Übersteuert den Namen des \fB\%pgg\fP(1)\-Verzeichnisses in \fB$HOME\fP, dass deine
+Übersteuert den Namen des \fB\%pgp\fP(1)\-Verzeichnisses in \fB$HOME\fP, dass deine
 Schlüssel usw. enthält.
 .TP 
 \fBGNUPGHOME\fP
@@ -3629,8 +3649,6 @@ Schlüssel usw. enthält.
 Schlüssel usw. enthält.
 .TP 
 \fBLC_CTYPE\fP
-.\" TODO: document LC_CTYPEs influence on
-.\"       ~/.tin/keymap.*, 8bit char display, ...
 This variable determines the \fB\%locale\fP(5)  category for character handling
 functions. Usually it determines the character classes for pattern matching
 character classification and case conversion. Currently this is not true for
@@ -3764,10 +3782,10 @@ Hazel und das Urheberrecht liegt bei der University of Cambridge, England.
 .SH FEHLER
 .IX Header FEHLER
 \fBCNews\fP NNTPd, \fB\%noffle\fP(1) (<= V1.0\-pre5) und \fBNewsCache\fP (<=
-V1.1.91) können nicht mit gepipelinten GROUP\-Befehlen umgehen. Falls Sie
-Probleme mit einem der genannten Server haben, definieren Sie
-DISABLE_PIPELINING in include/autoconf.h und kompilieren Sie das Programm
-neu.
+V1.1.91) können nicht mit gepipelinten GROUP\-Befehlen (\fBRFC\%3977\fP)
+umgehen. Falls Sie Probleme mit einem der genannten historischen Server
+haben, definieren Sie DISABLE_PIPELINING in include/autoconf.h und
+kompilieren Sie das Programm neu.
 .br
 .\"
 .\"
@@ -3777,7 +3795,7 @@ falls nicht, bitte erst aktualisieren! Sehen Sie sich die doc/TODO\-Datei für
 bekannte Fehler an. Wenn Sie immer noch meinen einen Fehler gefunden zu
 haben benutzen Sie bitte die Funktion \fBBugReport\fP ('\fBR\fP') und schreiben
 auf Englisch. Bitte fügen Sie Ihrem Bug\-Report KEINE Core\-Datei bei \(em
-außer wir haben diese anfordert.
+außer wir haben diese angefordert.
 .SH GESCHICHTE
 .IX Header GESCHICHTE
 \fBtin\fP basiert auf \fB\%tass\fP(1), einem Newsreader der von Rich Skrenta

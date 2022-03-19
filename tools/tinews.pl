@@ -49,15 +49,20 @@
 #           $ENV{'GPG_TTY'}=$tty if($tty =~ m/^\//)}}
 #         for gpg?
 #       - option to break long header lines?
-#         use Text::Wrap; $Text::Wrap::columns=998; wrap("","\t",$_);
 #       - option to trim References
 #       ...
+#
+# cmd-line options used in other inews:
+# inews-xt (Olaf Titz):
+#    -C accepted for historic reasons and errors out
+# inews (inn)
+#    -P don't add Sender
 
 use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.59";
+my $version = "1.1.61";
 
 my %config;
 
@@ -192,6 +197,7 @@ GetOptions('A|V|W|h|headers' => [], # do nothing
 	'control|c=s'	=> \$config{'control'},
 	'canlock-algorithm=s'	=> \$config{'canlock-algorithm'},
 	'distribution|d=s'	=> \$config{'distribution'},
+	'discard-empty|E'	=> \$config{'discard-empty'},
 	'expires|e=s'	=> \$config{'expires'},
 	'from|f=s'	=> \$config{'from'},
 	'ignore-headers|i=s'	=> \$config{'ignore-headers'},
@@ -314,6 +320,12 @@ if (${config{'ignore-headers'}}) {
 # Read the message and split the header
 readarticle(\%Header, \@Body);
 
+# empty @Body
+if (scalar @Body == 0) {
+	warn("Empty article\n") if ($config{'verbose'});
+	exit 0 if ($config{'discard-empty'});
+}
+
 # Add signature if there is none
 if (!$config{'no-signature'}) {
 	if ($config{'add-signature'} && !grep {/^-- /} @Body) {
@@ -349,10 +361,21 @@ foreach ('DISTRIBUTION', 'ORGANIZATION') {
 # overwrite headers if specified via cmd-line
 foreach ('Approved', 'Control', 'Distribution', 'Expires',
 	'From', 'Followup-To', 'Message-ID', 'Newsgroups',' Reply-To',
-	'Subject', 'References', 'Organization', 'Path') {
+	'Subject', 'References', 'Organization') {
 	next if (!defined($config{lc($_)}));
 	chomp($Header{lc($_)} = $_ . ": " . $config{lc($_)});
 	$Header{lc($_)} .= "\n";
+}
+
+# -x doesn't overwrite but prefixes
+if (defined($config{'path'})) {
+	if (defined($Header{'path'})) {
+		(my $pbody = $Header{'path'}) =~ s#^Path: ##i;
+		chomp($Header{'path'} = "Path: " . $config{'path'} . "!" . $pbody);
+	} else {
+		chomp($Header{'path'} = "Path: " . $config{'path'});
+	}
+	$Header{'path'} .= "\n";
 }
 
 # verify/add/remove headers
@@ -996,8 +1019,9 @@ sub usage {
 	print "  -t string  set Subject:-header to string\n";
 	print "  -v         show warnings about missing/disabled features\n";
 	print "  -w string  set Followup-To:-header to string\n";
-	print "  -x string  set Path:-header to string\n";
+	print "  -x string  prepend Path:-header with string\n";
 	print "  -D         enable debugging\n";
+	print "  -E         silently discard empty article\n";
 	print "  -F string  set References:-header to string\n";
 	print "  -H         show help\n";
 	print "  -I         do not add Injection-Date: header\n";
@@ -1138,7 +1162,7 @@ Set the article header field Followup-To: to the given value.
 =item -B<x> C<Path> | --B<path> C<Path>
 X<-x> X<--path>
 
-Set the article header field Path: to the given value.
+Prepend the article header field Path: with the given value.
 
 =item -B<D> | -B<N> | --B<debug>
 X<-D> X<-N> X<--debug>
@@ -1146,6 +1170,16 @@ X<-D> X<-N> X<--debug>
 Set L<Net::NNTP(3pm)> to debug mode, enable warnings about raw 8-bit data,
 warn about disabled options due to lacking perl-modules or executables and
 unreadable files.
+
+=item -B<E> | --B<discard-empty>
+X<-E> X<--discard-empty>
+
+Silently discard an empty article.
+
+=item -B<F> | --B<references>
+X<-F> X<--references>
+
+Set the article header field References: to the given value.
 
 =item -B<H> | --B<help>
 X<-H> X<--help>

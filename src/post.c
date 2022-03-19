@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-03-14
+ *  Updated   : 2022-03-02
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -1220,6 +1220,9 @@ append_mail(
 
 /*
  * TODO: cleanup!
+ *       various messages (CA_WARNING_CHARSET_CONVERSION, ...) could give
+ *       more context (e.g. line number or even show the actual line with
+ *       the issue).
  *
  * return values:
  * 	0	article ok
@@ -1442,6 +1445,7 @@ check_article_to_be_posted(
 		}
 
 		if (cp - line == 2 && !strncasecmp(line, "To", 2)) {
+			FreeIfNeeded(to);
 #ifdef CHARSET_CONVERSION
 			cp2 = rfc1522_encode(line, txt_mime_charsets[mmnwcharset], FALSE);
 #else
@@ -1494,7 +1498,7 @@ check_article_to_be_posted(
 			for (cp = line + 11; *cp == ' '; cp++)
 				;
 			STRCPY(references, cp);
-			if (strlen(references))
+			if (*references)
 				saw_references = TRUE;
 		}
 
@@ -1519,6 +1523,7 @@ check_article_to_be_posted(
 		 *       a 'common' error is to use a semicolon instead of a comma.
 		 */
 		if (cp - line == 10 && !strncasecmp(line, "Newsgroups", 10)) {
+			FreeIfNeeded(newsgroups);
 			found_newsgroups_lines++;
 			for (cp = line + 11; *cp == ' '; cp++)
 				;
@@ -1559,16 +1564,17 @@ check_article_to_be_posted(
 					;
 				cp2 = groups = my_strdup(cp);
 
-				cp = strtok(groups, ",");
-				do {
-					if (!strcmp(cp, "poster"))
-						errors_catbp |= CA_ERROR_NEWSGROUPS_POSTER;
-					if (!strcmp(cp, "example"))
-						warnings_catbp |= CA_WARNING_NEWSGROUPS_EXAMPLE;
-					if (!strncmp(cp, "example.", 8))
-						warnings_catbp |= CA_WARNING_NEWSGROUPS_EXAMPLE;
-					/* TODO: also check for to, ctl, all, control, junk */
-				} while ((cp = strtok(NULL, ",")) != NULL);
+				if ((cp = strtok(groups, ",")) != NULL) {
+					do {
+						if (!strcmp(cp, "poster"))
+							errors_catbp |= CA_ERROR_NEWSGROUPS_POSTER;
+						if (!strcmp(cp, "example"))
+							warnings_catbp |= CA_WARNING_NEWSGROUPS_EXAMPLE;
+						if (!strncmp(cp, "example.", 8))
+							warnings_catbp |= CA_WARNING_NEWSGROUPS_EXAMPLE;
+						/* TODO: also check for to, ctl, all, control, junk */
+					} while ((cp = strtok(NULL, ",")) != NULL);
+				}
 				free(cp2);
 			}
 		}
@@ -1583,9 +1589,10 @@ check_article_to_be_posted(
 		}
 
 		if (cp - line == 11 && !strncasecmp(line, "Followup-To", 11)) {
+			FreeIfNeeded(followupto);
 			for (cp = line + 12; *cp == ' '; cp++)
 				;
-			if (strlen(cp)) /* Followup-To not empty */
+			if (*cp) /* Followup-To not empty */
 				found_followup_to_lines++;
 			if (strchr(cp, ' ') || strchr(cp, '\t')) {
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
@@ -1619,16 +1626,17 @@ check_article_to_be_posted(
 					;
 				cp2 = groups = my_strdup(cp);
 
-				cp = strtok(groups, ",");
-				do {
-					if (!strcmp(cp, "poster") && ftngcnt > 1)
-						errors_catbp |= CA_ERROR_FOLLOWUP_TO_POSTER;
-					if (!strcmp(cp, "example"))
-						warnings_catbp |= CA_WARNING_FOLLOWUP_TO_EXAMPLE;
-					if (!strncmp(cp, "example.", 8))
-						warnings_catbp |= CA_WARNING_FOLLOWUP_TO_EXAMPLE;
-					/* TODO: also check for to, ctl, all, control, junk */
-				} while ((cp = strtok(NULL, ",")) != NULL);
+				if ((cp = strtok(groups, ",")) != NULL) {
+					do {
+						if (!strcmp(cp, "poster") && ftngcnt > 1)
+							errors_catbp |= CA_ERROR_FOLLOWUP_TO_POSTER;
+						if (!strcmp(cp, "example"))
+							warnings_catbp |= CA_WARNING_FOLLOWUP_TO_EXAMPLE;
+						if (!strncmp(cp, "example.", 8))
+							warnings_catbp |= CA_WARNING_FOLLOWUP_TO_EXAMPLE;
+						/* TODO: also check for to, ctl, all, control, junk */
+					} while ((cp = strtok(NULL, ",")) != NULL);
+				}
 				free(cp2);
 			}
 		}
@@ -2284,6 +2292,7 @@ post_article_loop:
 							append_file(dead_article, dead_articles);
 						wait_message(2, _(txt_art_rejected), dead_article);
 					}
+					clear_message();
 					return ret_code;
 				}
 
@@ -2516,6 +2525,7 @@ post_article_postponed:
 	if (tinrc.unlink_article)
 		unlink(article_name);
 
+	clear_message();
 	return ret_code;
 }
 
@@ -2857,7 +2867,7 @@ fetch_postponed_article(
 			if (prev_line_nl)
 				fputc('\n', out);
 
-			if (strlen(line) && line[strlen(line) - 1] == '\n') {
+			if (*line && line[strlen(line) - 1] == '\n') {
 				prev_line_nl = TRUE;
 				line[strlen(line) - 1] = '\0';
 			} else
@@ -3168,6 +3178,9 @@ join_references(
 	const char *e;
 	int space = 0;
 
+	if (!oldrefs || !newref)
+		return;
+
 	b = my_malloc(strlen(oldrefs) + strlen(newref) + 64);
 	c = b;
 	e = oldrefs;
@@ -3454,12 +3467,14 @@ post_response(
 
 	/*
 	 * Append to References: line if its already there
+	 *
+	 * guard against missing messageid which may show up in mailgroups
 	 */
 	if (note_h.references) {
-		join_references(bigbuf, note_h.references, note_h.messageid);
+		join_references(bigbuf, note_h.references, BlankIfNull(note_h.messageid));
 		msg_add_header("References", bigbuf);
 	} else
-		msg_add_header("References", note_h.messageid);
+		msg_add_header("References", BlankIfNull(note_h.messageid));
 
 	if (group && group->attribute->organization != NULL)
 		msg_add_header("Organization", random_organization(group->attribute->organization));
@@ -3608,7 +3623,7 @@ create_mail_headers(
 			from_address = &from_buf[0];
 		} /* from_address is now always a valid pointer to a string */
 
-		if (strlen(from_address))
+		if (*from_address)
 			msg_add_header("From", from_address);
 
 		msg_add_header("To", to);
@@ -5069,6 +5084,9 @@ insert_from_header(
  * from Reply-To (or From as a fallback) into 'from_addr'
  * If 'parse' is set, full syntax validation is performed and
  * the address portion is split off.
+ *
+ * FIXME: pass size of from_addr to find_reply_to_addr instead of
+ *        hardcoding
  */
 static void
 find_reply_to_addr(
@@ -5097,8 +5115,8 @@ find_reply_to_addr(
 		parse_from(ptr, tmp, fname);
 		strcpy(from_addr, rfc1522_decode(tmp));
 #endif /* 1 */
-	} else
-		strcpy(from_addr, ptr);
+	} else /* FIXME: pass size of from_addr to find_reply_to_addr instead of hardcoding */
+		strncpy(from_addr, ptr, HEADER_LEN - 1);
 }
 
 
@@ -5757,7 +5775,7 @@ add_headers(
 
 	while ((line = tin_fgets(fp_in, inhdrs)) != NULL) {
 		if (inhdrs) {
-			if (strlen(line) == 0) {			/* End of headers */
+			if (!*line) {			/* End of headers */
 				inhdrs = FALSE;
 				if (addmid) {
 					char msgidbuf[HEADER_LEN];

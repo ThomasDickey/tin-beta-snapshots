@@ -1,3 +1,46 @@
+-- 2.6.2 release 20220318 "" --
+
+ 007) Dennis Preiser <dennis@d--p.de>
+      BUG. reading a faulty mime article via NNTP could hang tin
+           (debian bug #1005024)
+      BUG. a long group name isn't shortened appropriately in group level
+      BUG. after posting an article from selection or group level the cursor
+           remains visible in the lower left corner
+      ADD. tinrc.show_help_mail_sign
+      ADD. get $TMPDIR just once
+      BUG. show actual help-key in txt_type_h_for_help
+      FIX. config.c, debug.c, group.c, init.c, lang.c, mail.c, my_tmpfile.c
+           newsrc.c, options_menu.c, pgp.c, rfc2046.c, refs.c, save.c, screen.c
+           select.c, thread.c, extern.h, tin.h, tinrc.h, tincfg.tbl, tin.1
+           tin.5
+
+ 006) Thomas E. Dickey <dickey@invisible-island.net>
+      BUG. configure --with-included-gettext was non-functional since tin 2.4.2
+      FIX. aclocal.m4, intl/Makefile.in, intl/plural.c
+
+ 005) Urs Janssen <urs@tin.org>
+      ADD. config.guess update
+      ADD. code cleanup; remove redundant condition
+      ADD. ignore set but empty env.-vars
+      ADD. try harder when looking for keymap-file, try locale "suffixes"
+           from language[_territory[.codeset]][@modifier] with parts
+           stripped off in oder: codeset, normalized codeset, territory,
+           modifier
+      ADD. guard against empty inews_prog and empty mm_charset in
+           !CHARSET_CONVERSION case
+      BUG. typo in man page
+      BUG. possible memleak in check_article_to_be_posted if article has
+           multiple To:, Followup-To: or Newsgroups:-headers
+      BUG. possible buffer overflow in find_reply_to_addr
+      BUG. f'up to an article without a message-id (possible in mailgroups)
+           crashes
+      BUG. hypothetic missing string termination
+      BUG. need to convert utf8pass to network charset unconditionally in
+           do_authinfo_sasl_plain
+      FIX. art.c, auth.c, config.c, filter.c, init.c, keymap.c, misc.c
+           options_menu.c, page.c, post.c, pgp.c, rfc1524.c, select.c
+           signal.c, string.c, proto.h, tin.h, tin.1, tin.5, config.guess
+
 -- 2.6.1 release 20211226 "Convalmore" --
 
  004) Michael Baeuerle <michael.baeuerle@stz-e.de>

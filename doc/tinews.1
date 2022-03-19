@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "tinews.pl 1"
-.TH tinews.pl 1 "August 11th, 2021" "1.1.59" "Post and sign an article via NNTP"
+.TH tinews.pl 1 "Februar 21st, 2022" "1.1.61" "Post and sign an article via NNTP"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -250,13 +250,21 @@ Set the article header field Followup-To: to the given value.
 .el .IP "\-\fBx\fR \f(CWPath\fR | \-\-\fBpath\fR \f(CWPath\fR" 4
 .IX Xref "-x --path"
 .IX Item "-x Path | --path Path"
-Set the article header field Path: to the given value.
+Prepend the article header field Path: with the given value.
 .IP "\-\fBD\fR | \-\fBN\fR | \-\-\fBdebug\fR" 4
 .IX Xref "-D -N --debug"
 .IX Item "-D | -N | --debug"
 Set \fBNet::NNTP\fR\|(3pm) to debug mode, enable warnings about raw 8\-bit data,
 warn about disabled options due to lacking perl-modules or executables and
 unreadable files.
+.IP "\-\fBE\fR | \-\-\fBdiscard-empty\fR" 4
+.IX Xref "-E --discard-empty"
+.IX Item "-E | --discard-empty"
+Silently discard an empty article.
+.IP "\-\fBF\fR | \-\-\fBreferences\fR" 4
+.IX Xref "-F --references"
+.IX Item "-F | --references"
+Set the article header field References: to the given value.
 .IP "\-\fBH\fR | \-\-\fBhelp\fR" 4
 .IX Xref "-H --help"
 .IX Item "-H | --help"

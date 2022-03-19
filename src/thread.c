@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-25
+ *  Updated   : 2022-02-17
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -922,8 +922,10 @@ static void
 show_thread_page(
 	void)
 {
+	char keyhelp[MAXKEYLEN];
 	char *title;
-	int i, art;
+	int i, art, keyhelplen;
+	size_t len;
 
 	signal_context = cThread;
 	currmenu = &thdmenu;
@@ -937,8 +939,32 @@ show_thread_page(
 
 	if (show_subject)
 		title = fmt_string(_(txt_stp_list_thread), grpmenu.curr + 1, grpmenu.max);
-	else
-		title = fmt_string(_(txt_stp_thread), cCOLS - 23, arts[thread_respnum].subject);
+	else {
+		/*
+		 * determine max. length for centered title
+		 * txt_stp_thread: "Thread (%.*s)"
+		 *                          ^^^^
+		 * Subtracting 4 from strwidth results in a trimmed long title with
+		 * a space on the right and no space on the left edge of the screen
+		 * --> subtracting only 3 makes it symmetrical
+		 */
+		if (tinrc.show_help_mail_sign != SHOW_SIGN_NONE) {
+			if (tinrc.show_help_mail_sign == SHOW_SIGN_MAIL)
+				len = cCOLS - (2 * strwidth(_(txt_you_have_mail))) - (strwidth(_(txt_stp_thread)) - 3);
+			else {
+				PrintFuncKey(keyhelp, GLOBAL_HELP, thread_keys);
+				keyhelplen = strwidth(keyhelp);
+				if (tinrc.show_help_mail_sign == SHOW_SIGN_HELP)
+					len = cCOLS - (2 * (strwidth(_(txt_type_h_for_help)) - 2 + keyhelplen)) - (strwidth(_(txt_stp_thread)) - 3);
+				else
+					len = cCOLS - (2 * MAX(strwidth(_(txt_type_h_for_help)) - 2 + keyhelplen, strwidth(_(txt_you_have_mail)))) - (strwidth(_(txt_stp_thread)) - 3);
+			}
+		} else
+			len = cCOLS - (strwidth(_(txt_stp_thread)) - 3);
+
+		title = fmt_string(_(txt_stp_thread), len, arts[thread_respnum].subject);
+	}
+
 	show_title(title);
 	free(title);
 

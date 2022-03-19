@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-09-21
+ *  Updated   : 2022-02-01
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1352,16 +1352,14 @@ draw_page_header(
 		buf[line_len - 1] = '\0';
 	}
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-
 #	ifdef HAVE_COLOR
 	fcol(tinrc.col_head);
 #	endif /* HAVE_COLOR */
 
-	/*
-	 * first line
-	 */
+	/* first line */
 	cur_pos = 0;
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 
 	/* convert to wide-char format string */
 	fmt_thread = char2wchar_t(_(txt_thread_x_of_n));
@@ -1620,19 +1618,7 @@ draw_page_header(
 		}
 	}
 
-	my_fputs(cCRLF, stdout);
-	my_fputs(cCRLF, stdout);
-
 #else /* !MULTIBYTE_ABLE || NO_LOCALE */
-
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_head);
-#	endif /* HAVE_COLOR */
-
-	/*
-	 * first line
-	 */
-	cur_pos = 0;
 
 	/*
 	 * determine the needed space for the text at the right hand margin
@@ -1816,9 +1802,11 @@ draw_page_header(
 		free(tmp2);
 	}
 
-	my_fputs(cCRLF, stdout);
-	my_fputs(cCRLF, stdout);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+	my_fputs(cCRLF, stdout);
+	my_fputs(cCRLF, stdout);
+
 	free(buf);
 
 #ifdef HAVE_COLOR

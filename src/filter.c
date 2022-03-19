@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2021-08-07
+ *  Updated   : 2022-02-19
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -2111,7 +2111,7 @@ filter_articles(
 							}
 						}
 #endif /* DEBUG */
-						if (strlen(s)) {
+						if (*s) {
 							/* reformat */
 							k = e = my_malloc(strlen(s) + 1);
 							while (*s) {

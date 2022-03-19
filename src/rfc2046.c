@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2021-11-01
+ *  Updated   : 2022-02-07
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2022 Jason Faultless <jason@altarstone.com>
@@ -1237,6 +1237,7 @@ parse_multipart_article(
 						fprintf(artinfo->raw, "%s\n", line);
 					artinfo->hdr.ext->line_count++;
 				}
+				return tin_errno | TIN_EOF;		/* Flag EOF */
 			}
 #endif /* 0 */
 			return tin_errno;

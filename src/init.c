@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-06
+ *  Updated   : 2022-02-19
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -103,6 +103,7 @@ char spooldir[PATH_LEN];		/* directory where news is */
 char overviewfmt_file[PATH_LEN];	/* full path to overview.fmt */
 char subscriptions_file[PATH_LEN];	/* full path to subscriptions */
 char *tin_progname;		/* program name */
+const char *tmpdir;
 char txt_help_bug_report[LEN];		/* address to send bug reports to */
 char userid[PATH_LEN];
 #ifdef HAVE_MH_MAIL_HANDLING
@@ -300,6 +301,7 @@ struct t_config tinrc = {
 	-100,		/* score_kill */
 	100,		/* score_select */
 	0,		/* trim_article_body */
+	SHOW_SIGN_BOTH,	/* show help/mail sign in level title */
 #ifdef HAVE_COLOR
 	0,		/* col_back (initialised later) */
 	0,		/* col_from (initialised later) */
@@ -692,6 +694,8 @@ init_selfinfo(
 
 	my_strncpy(userid, myentry->pw_name, sizeof(userid) - 1);
 
+	tmpdir = get_val("TMPDIR", _PATH_TMP);
+
 	if (((ptr = getenv("TIN_HOMEDIR")) != NULL) && strlen(ptr)) {
 		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
 	} else if (((ptr = getenv("HOME")) != NULL) && strlen(ptr)) {
@@ -699,7 +703,7 @@ init_selfinfo(
 	} else if (strlen(myentry->pw_dir)) {
 		strncpy(homedir, myentry->pw_dir, sizeof(homedir) - 1);
 	} else
-		strncpy(homedir, TMPDIR, sizeof(homedir) - 1);
+		strncpy(homedir, tmpdir, sizeof(homedir) - 1);
 
 	created_rcdir = FALSE;
 	dangerous_signal_exit = FALSE;
@@ -899,7 +903,7 @@ init_selfinfo(
 	joinpath(save_active_file, sizeof(save_active_file), rcdir, ACTIVE_SAVE_FILE);
 
 	snprintf(tmp, sizeof(tmp), INDEX_LOCK, userid);
-	joinpath(lock_file, sizeof(lock_file), TMPDIR, tmp);
+	joinpath(lock_file, sizeof(lock_file), tmpdir, tmp);
 
 #ifdef NNTP_ABLE
 	nntp_tcp_port = (unsigned short) atoi(get_val("NNTPPORT", NNTP_TCP_PORT));
@@ -1021,11 +1025,11 @@ void
 postinit_regexp(
 	void)
 {
-	if (!strlen(tinrc.strip_re_regex))
+	if (!*tinrc.strip_re_regex)
 		STRCPY(tinrc.strip_re_regex, DEFAULT_STRIP_RE_REGEX);
 	compile_regex(tinrc.strip_re_regex, &strip_re_regex, PCRE_ANCHORED);
 
-	if (strlen(tinrc.strip_was_regex)) {
+	if (*tinrc.strip_was_regex) {
 		/*
 		 * try to be clever, if we still use the initial default value
 		 * convert it to our needs
@@ -1055,37 +1059,37 @@ postinit_regexp(
 	compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);
 
 #ifdef HAVE_COLOR
-	if (!strlen(tinrc.extquote_regex))
+	if (!*tinrc.extquote_regex)
 		STRCPY(tinrc.extquote_regex, DEFAULT_EXTQUOTE_REGEX);
 	compile_regex(tinrc.extquote_regex, &extquote_regex, PCRE_CASELESS);
-	if (!strlen(tinrc.quote_regex))
+	if (!*tinrc.quote_regex)
 		STRCPY(tinrc.quote_regex, DEFAULT_QUOTE_REGEX);
 	compile_regex(tinrc.quote_regex, &quote_regex, PCRE_CASELESS);
-	if (!strlen(tinrc.quote_regex2))
+	if (!*tinrc.quote_regex2)
 		STRCPY(tinrc.quote_regex2, DEFAULT_QUOTE_REGEX2);
 	compile_regex(tinrc.quote_regex2, &quote_regex2, PCRE_CASELESS);
-	if (!strlen(tinrc.quote_regex3))
+	if (!*tinrc.quote_regex3)
 		STRCPY(tinrc.quote_regex3, DEFAULT_QUOTE_REGEX3);
 	compile_regex(tinrc.quote_regex3, &quote_regex3, PCRE_CASELESS);
 #endif /* HAVE_COLOR */
 
-	if (!strlen(tinrc.slashes_regex))
+	if (!*tinrc.slashes_regex)
 		STRCPY(tinrc.slashes_regex, DEFAULT_SLASHES_REGEX);
 	compile_regex(tinrc.slashes_regex, &slashes_regex, PCRE_CASELESS);
-	if (!strlen(tinrc.stars_regex))
+	if (!*tinrc.stars_regex)
 		STRCPY(tinrc.stars_regex, DEFAULT_STARS_REGEX);
 	compile_regex(tinrc.stars_regex, &stars_regex, PCRE_CASELESS);
-	if (!strlen(tinrc.strokes_regex))
+	if (!*tinrc.strokes_regex)
 		STRCPY(tinrc.strokes_regex, DEFAULT_STROKES_REGEX);
 	compile_regex(tinrc.strokes_regex, &strokes_regex, PCRE_CASELESS);
-	if (!strlen(tinrc.underscores_regex))
+	if (!*tinrc.underscores_regex)
 		STRCPY(tinrc.underscores_regex, DEFAULT_UNDERSCORES_REGEX);
 	compile_regex(tinrc.underscores_regex, &underscores_regex, PCRE_CASELESS);
 
-	if (!strlen(tinrc.verbatim_begin_regex))
+	if (!*tinrc.verbatim_begin_regex)
 		STRCPY(tinrc.verbatim_begin_regex, DEFAULT_VERBATIM_BEGIN_REGEX);
 	compile_regex(tinrc.verbatim_begin_regex, &verbatim_begin_regex, PCRE_ANCHORED);
-	if (!strlen(tinrc.verbatim_end_regex))
+	if (!*tinrc.verbatim_end_regex)
 		STRCPY(tinrc.verbatim_end_regex, DEFAULT_VERBATIM_END_REGEX);
 	compile_regex(tinrc.verbatim_end_regex, &verbatim_end_regex, PCRE_ANCHORED);
 

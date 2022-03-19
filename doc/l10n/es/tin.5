@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2021-08-27
+.\" Updated   : 2022-02-22
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "24 diciembre 2021" 2.6.1 "Usenet newsreader"
+.TH tin 5 "24 diciembre 2021" 2.6.2 "Usenet newsreader"
 
 .SH NOMBRE
 tin, rtin \- related files
@@ -860,15 +860,19 @@ subj=\eb(cd|[rk]?)?tin(d|pre)?[\-.0\-9]*\eb
 
 .\" TODO: LC_CTYPE has a higher priority as LC_MESSAGES, does this make sense?
 .nf
-\fI/etc/tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
-.br
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
+.br
+\fI/etc/tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
 .fi
 .sp
 .RS
 Keymap\-file, containing "\fIkeyname\fP \fIvalue\fP \fI[value]\fP" pairs separated by
-spaces or tabs. Below is a list of all rebindable keynames and their
-defaults. If a keyname is bound to NULL it is unassigned.
+spaces or tabs. If the keymap\-file named with full specified \fB\%locale\fP(5)
+is not found, less specific ones are looked for. Various parts will be
+stripped off the name, in the following order codeset, normalized codeset,
+territory and modifier when looking for the keymap\-file.  Below is a list of
+all rebindable keynames and their defaults. If a keyname is bound to NULL it
+is unassigned.
 .sp
 .nf
 .ta \w'GroupSelThdIfUnreadSelected    'u +\w'SPACE'u +\w'SPACE'u
@@ -1660,12 +1664,13 @@ program. It allows the user to save articles/threads/groups simply by giving
 \fBmailer_format\fP
 The format string used to create the mailer command with parameters that is
 used for mailing articles to other people. Default is '%M "%T" < %F'
-(e.g., /bin/mail "iain" < .article). The flexible format allows other
+(e.g., /bin/mail "iain" < ~/.article). The flexible format allows other
 mailers with different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-mutt \-s "%S" \-\- "%T" < "%F"
+mutt \-s "%S" \-\- "%T" < %F
+mutt \-H %F
 claws\-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
 .in -.3i
@@ -1991,6 +1996,23 @@ and turn descriptions off. The text used is taken from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups\fP file and if supported (requires
 \fB\%tin\fP(1)  to be build with mh\-mail\-handling support) from
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups\fP for mailgroups. Default is ON.
+.TP 
+\fBshow_help_mail_sign\fP
+Allows you to select whether \fB\%tin\fP(1)  shows a help indication, a new
+mail indication, both, or neither in the various level titles.  Default is
+3.
+.RS +1i
+.IP 0 3
+\fBDon't show help or mail sign\fP.
+.IP 1
+\fBShow only help sign\fP.
+.IP 2
+\fBShow only mail sign if new mail\fP, show only the mail sign, and only if new
+mail has arrived.
+.IP 3
+\fBShow mail if new mail else help s.\fP, show mail sign if new mail has
+arrived otherwise show help sign.
+.RE
 .TP 
 \fBshow_info\fP
 Which information about the thread or article should be shown. Default is 1,

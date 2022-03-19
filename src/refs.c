@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2021-02-23
+ *  Updated   : 2022-02-19
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -862,7 +862,7 @@ thread_by_reference(
 	if (debug & DEBUG_REFS) {
 		char file[PATH_LEN];
 
-		joinpath(file, sizeof(file), TMPDIR, "REFS.info");
+		joinpath(file, sizeof(file), tmpdir, "REFS.info");
 		if ((dbgfd = fopen(file, "w")) != NULL)
 			dump_msgid_threads();
 	}
@@ -992,7 +992,7 @@ build_references(
 	if (debug & DEBUG_REFS) {
 		char file[PATH_LEN];
 
-		joinpath(file, sizeof(file), TMPDIR, "REFS.dump");
+		joinpath(file, sizeof(file), tmpdir, "REFS.dump");
 		if ((dbgfd = fopen(file, "w")) != NULL) {
 #	ifdef HAVE_SETVBUF
 			SETVBUF(dbgfd, NULL, _IONBF, 0);

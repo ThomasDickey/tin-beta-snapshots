@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2021-07-06
+.\" Updated   : 2022-03-02
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -15,7 +15,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "December 24th, 2021" 2.6.1 "Usenet newsreader"
+.TH tin 1 "December 24th, 2021" 2.6.2 "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -106,7 +106,9 @@ Don't load newsgroup descriptions and servers message of the day
 \fB\-D\fP\fI debug\-level\fP
 Enter debug\-level (1 = NNTP, 2 = filter, 4 = newsrc, 8 = threading, 16 =
 memory, 32 = attributes, 64 = misc, 128 = remove existing debug files).  For
-NNTP\-level \*(rq\fB\-v\fP\*(rq controls the verbosity of the output.
+NNTP\-level \*(rq\fB\-v\fP\*(rq controls the verbosity of the output.  Depending on the
+debug\-level various files may be written to \fI$TMPDIR\fP and/or on screen
+output may be given. See also the "SECURITY" section!
 .TP 
 \fB\-f\fP\fI file\fP
 Use the specified file of subscribed to newsgroups in place of
@@ -1419,9 +1421,9 @@ etiquette after composing an article (\fBbeginner_level\fP).
 .\"
 .SS "POSTING HISTORY LISTING"
 \fBDisplayPostHist\fP ('\fBW\fP') displays a list of all previous posted articles
-stored in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP. The following informatiosn
-are shown: a time stamp in "dd\-mm\-yy"\-format, a single letter indicating the
-action which initiated the message, the group names (evetually shortened,
+stored in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP. The following information
+is shown: a time stamp in "dd\-mm\-yy"\-format, a single letter indicating the
+action which initiated the message, the group names (eventually shortened,
 see also \fBabbreviate_groupname\fP) or a mail address the message was sent to
 and the subject of the message. Besides the common moving keys, the
 following commands are available:
@@ -1450,7 +1452,7 @@ Repeat the previous search.
 Shell escape.
 .TP 
 \fBToggleInfoLastLine 'i'\fP
-Toggle the display of the current 'Message\-ID:\*(rq in the last line.
+Toggle the display of the current \*(rqMessage\-ID:\*(rq in the last line.
 .TP 
 \fBHelp 'h'\fP
 Help screen of commands available.
@@ -1949,12 +1951,13 @@ program. It allows the user to save articles/threads/groups simply by giving
 \fBInvocation of your mail command (mailer_format)\fP
 The format string used to create the mailer command with parameters that is
 used for mailing articles to other people. Default is '%M "%T" < %F'
-(e.g., /bin/mail "iain" < .article). The flexible format allows other
+(e.g., /bin/mail "iain" <  ~/.article). The flexible format allows other
 mailers with different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-mutt \-s "%S" \-\- "%T" < "%F"
+mutt \-s "%S" \-\- "%T" < %F
+mutt \-H %F
 claws\-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
 .in -.3i
@@ -2261,6 +2264,22 @@ Use \fB\%qsort\fP(3)  for sorting.
 .IP 1
 Use \fB\%heapsort\fP(3)  for sorting. This might be faster in large groups with
 long threads (somewhat presorted data).
+.RE
+.TP 
+\fBShow help/mail sign in level titles (show_help_mail_sign)\fP
+Allows you to select whether \fBtin\fP shows a help indication, a new mail
+indication, both, or neither in the various level titles.  Default is 3.
+.RS +.5i
+.IP 0 3
+\fBDon't show help or mail sign\fP.
+.IP 1
+\fBShow only help sign\fP.
+.IP 2
+\fBShow only mail sign if new mail\fP, show only the mail sign, and only if new
+mail has arrived.
+.IP 3
+\fBShow mail if new mail else help s.\fP, show mail sign if new mail has
+arrived otherwise show help sign.
 .RE
 .TP 
 \fBShow lines/score in listings (show_info)\fP
@@ -3270,9 +3289,9 @@ For a detailed description see \fB\%tin\fP(5).
 .PP
 
 .nf
-\fI/etc/tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
-.br
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
+.br
+\fI/etc/tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
 .fi
 .PP
 
@@ -3537,8 +3556,6 @@ Override the name of the \fB\%gpg\fP(1)  directory in \fB$HOME\fP that holds you
 keys etc..
 .TP 
 \fBLC_CTYPE\fP
-.\" TODO: document LC_CTYPEs influence on
-.\"       ~/.tin/keymap.*, 8bit char display, ...
 This variable determines the \fB\%locale\fP(5)  category for character handling
 functions. Usually it determines the character classes for pattern matching
 character classification and case conversion. Currently this is not true for
@@ -3669,9 +3686,9 @@ copyright by the University of Cambridge, England.
 .SH BUGS
 .IX Header BUGS
 \fBCNews\fP NNTPd, \fB\%noffle\fP(1)  (<= V1.0\-pre5) and \fBNewsCache\fP (<=
-V1.1.91) can't handle pipelined GROUP commands. If you run into trouble with
-any of the mentioned servers define DISABLE_PIPELINING in include/autoconf.h
-and recompile.
+V1.1.91) can't handle pipelined GROUP commands (\fBRFC\%3977\fP).  If you run
+into trouble with any of the mentioned historical servers define
+DISABLE_PIPELINING in include/autoconf.h and recompile.
 .br
 .\"
 .\"

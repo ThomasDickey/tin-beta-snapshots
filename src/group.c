@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-07-25
+ *  Updated   : 2022-02-17
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1468,8 +1468,12 @@ static void
 show_group_title(
 	t_bool clear_title)
 {
-	char buf[LEN], tmp[LEN], flag;
-	int i, art_cnt = 0, recent_art_cnt = 0, selected_art_cnt = 0, read_selected_art_cnt = 0, killed_art_cnt = 0;
+	char buf[LEN], tmp[LEN], keyhelp[MAXKEYLEN], flag;
+	char *grpname;
+	int i, len, keyhelplen, art_cnt = 0, recent_art_cnt = 0, selected_art_cnt = 0, read_selected_art_cnt = 0, killed_art_cnt = 0;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wtmp, *wtmp2;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	for_each_art(i) {
 		if (arts[i].thread == ART_EXPIRED)
@@ -1502,10 +1506,9 @@ show_group_title(
 	/*
 	 * build the group title
 	 */
-	/* group name and thread count */
-	snprintf(buf, sizeof(buf), "%s (%d%c",
-		curr_group->name, grpmenu.max,
-		*txt_threading[curr_group->attribute->thread_articles]);
+	/* thread count */
+	snprintf(buf, sizeof(buf), " (%d%c",
+		grpmenu.max, *txt_threading[curr_group->attribute->thread_articles]);
 
 	/* article count */
 	if ((cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit)
@@ -1554,11 +1557,57 @@ show_group_title(
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 
+	/*
+	 * determine max len for centered group name
+	 */
+	if (tinrc.show_help_mail_sign != SHOW_SIGN_NONE) {
+		if (tinrc.show_help_mail_sign == SHOW_SIGN_MAIL)
+			len = cCOLS - (2 * strwidth(_(txt_you_have_mail))) - 2;
+		else {
+			PrintFuncKey(keyhelp, GLOBAL_HELP, group_keys);
+			keyhelplen = strwidth(keyhelp);
+			if (tinrc.show_help_mail_sign == SHOW_SIGN_HELP)
+				len = cCOLS - (2 * (strwidth(_(txt_type_h_for_help)) - 2 + keyhelplen)) - 2;
+			else
+				len = cCOLS - (2 * MAX(strwidth(_(txt_type_h_for_help)) - 2 + keyhelplen, strwidth(_(txt_you_have_mail)))) - 2;
+		}
+	} else
+		len = cCOLS - strwidth(buf) - 2;
+
+	/* group name */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if ((wtmp = char2wchar_t(curr_group->name)) != NULL) {
+		if (tinrc.abbreviate_groupname)
+			wtmp2 = abbr_wcsgroupname(wtmp, len);
+		else
+			wtmp2 = wstrunc(wtmp, len);
+		grpname = wchar_t2char(wtmp2);
+		free(wtmp);
+		free(wtmp2);
+		if (grpname) {
+			STRCPY(tmp, grpname);
+			strcat(tmp, buf);
+			free(grpname);
+		} else {
+			STRCPY(tmp, buf);
+		}
+	} else
+		STRCPY(tmp, buf);
+#else
+	if (tinrc.abbreviate_groupname)
+		grpname = abbr_groupname(curr_group->name, len);
+	else
+		grpname = strunc(curr_group->name, len);
+	STRCPY(tmp, grpname);
+	strcat(tmp, buf);
+	free(grpname);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	if (clear_title) {
 		MoveCursor(0, 0);
 		CleartoEOLN();
 	}
-	show_title(buf);
+	show_title(tmp);
 }
 
 

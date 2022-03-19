@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2021-02-23
+ *  Updated   : 2022-02-19
  *  Notes     :
  *
  * Copyright (c) 1997-2022 Urs Janssen <urs@tin.org>
@@ -1577,7 +1577,7 @@ parse_format_string(
 				/* Date */
 				if (cCOLS > min_cols && (!(flags & DATE) && (signal_context == cGroup || signal_context == cThread))) {
 					flags |= DATE;
-					if (strlen(tmp_date_str))
+					if (*tmp_date_str)
 						strcpy(fmt->date_str, tmp_date_str);
 					else
 						STRCPY(fmt->date_str, curr_group->attribute->date_format);

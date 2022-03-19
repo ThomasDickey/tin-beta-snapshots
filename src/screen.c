@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-09-28
+ *  Updated   : 2022-02-17
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -457,20 +457,64 @@ void
 show_title(
 	const char *title)
 {
+	char keyhelp[MAXKEYLEN];
+	char *helps;
+	const char *sign;
 	int col;
 
-	col = cCOLS - strwidth(_(txt_type_h_for_help));
-	if (col > 0) {
-		MoveCursor(0, col);
+	if (tinrc.show_help_mail_sign != SHOW_SIGN_NONE) {
+		col = MAXKEYLEN + strlen(_(txt_type_h_for_help)) + 1;
+		helps = my_malloc(col);
+
+		switch (signal_context) {
+			case cSelect:
+				PrintFuncKey(keyhelp, GLOBAL_HELP, select_keys);
+				break;
+
+			case cGroup:
+				PrintFuncKey(keyhelp, GLOBAL_HELP, group_keys);
+				break;
+
+			case cThread:
+				PrintFuncKey(keyhelp, GLOBAL_HELP, thread_keys);
+				break;
+
+			default:
+				keyhelp[0] = 'h';
+				keyhelp[1] = '\0';
+		}
+		snprintf(helps, col, _(txt_type_h_for_help), keyhelp);
+
+		switch (tinrc.show_help_mail_sign) {
+			case SHOW_SIGN_MAIL:
+				sign = mail_check(mailbox) ? _(txt_you_have_mail) : NULL;
+				break;
+
+			case SHOW_SIGN_BOTH:
+				sign = mail_check(mailbox) ? _(txt_you_have_mail) : helps;
+				break;
+
+			default:
+				sign = helps;
+				break;
+		}
+
+		if (sign) {
+			col = cCOLS - strwidth(sign);
+			if (col > 0) {
+				MoveCursor(0, col);
 #ifdef HAVE_COLOR
-		fcol(tinrc.col_title);
+				fcol(tinrc.col_title);
 #endif /* HAVE_COLOR */
-		/* you have mail message in */
-		my_fputs((mail_check(mailbox) ? _(txt_you_have_mail) : _(txt_type_h_for_help)), stdout);
+				/* you have mail message in */
+				my_fputs(sign, stdout);
 
 #ifdef HAVE_COLOR
-		fcol(tinrc.col_normal);
+				fcol(tinrc.col_normal);
 #endif /* HAVE_COLOR */
+			}
+		}
+		free(helps);
 	}
 	center_line(0, TRUE, title); /* wastes some space on the left */
 }

@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-08-05
+ *  Updated   : 2022-03-04
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -686,6 +686,9 @@ read_config_file(
 				break;
 			}
 
+			if (match_integer(buf, "show_help_mail_sign=", &tinrc.show_help_mail_sign, SHOW_SIGN_BOTH))
+				break;
+
 			if (match_boolean(buf, "show_only_unread_arts=", &tinrc.show_only_unread_arts))
 				break;
 
@@ -917,10 +920,15 @@ read_config_file(
 		STRCPY(tinrc.thread_format, DEFAULT_THREAD_FORMAT);
 	if (!*tinrc.date_format)
 		STRCPY(tinrc.date_format, DEFAULT_DATE_FORMAT);
+	if (!*tinrc.inews_prog)
+		STRCPY(tinrc.inews_prog, INTERNAL_CMD);
 	/* determine local charset */
-#if defined(NO_LOCALE) && !defined(CHARSET_CONVERSION)
+#ifndef CHARSET_CONVERSION
+	if (!*tinrc.mm_charset)
+		STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
 	strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
-#endif /* NO_LOCALE && !CHARSET_CONVERSION */
+#endif /* !CHARSET_CONVERSION */
+
 	return TRUE;
 }
 
@@ -1419,6 +1427,9 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_strip_bogus.tinrc));
 	fprintf(fp, "strip_bogus=%d\n\n", tinrc.strip_bogus);
+
+	fprintf(fp, "%s", _(txt_show_help_mail_sign.tinrc));
+	fprintf(fp, "show_help_mail_sign=%d\n\n", tinrc.show_help_mail_sign);
 
 	fprintf(fp, "%s", _(txt_select_format.tinrc));
 	fprintf(fp, "select_format=%s\n\n", tinrc.select_format);
@@ -2082,6 +2093,7 @@ rc_post_update(
 			case 'g':
 				if (match_integer(buf, "groupname_max_length=", &groupname_max_length, 132))
 					break;
+
 				break;
 
 			case 's':
@@ -2231,7 +2243,7 @@ write_server_config(
 	file_tmp = get_tmpfilename(file);
 
 	if ((fp = fopen(file_tmp, "w")) == NULL) {
-		error_message(2, _(txt_filesystem_full_backup), SERVERCONFIG_FILE);
+		error_message(2, _(txt_filesystem_full_backup), SERVERCONFIG_FILE); /* TODO: better error handling/message */
 		free(file_tmp);
 		return;
 	}

@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-09-30
+ *  Updated   : 2022-01-11
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -63,7 +63,9 @@
 #endif /* HAVE_TERMIOS_H */
 
 #ifdef NEED_PTEM_H
-#	include <sys/stream.h>
+#	ifdef HAVE_SYS_STREAM_H
+#		include <sys/stream.h>
+#	endif /* HAVE_SYS_STREAM_H */
 #	include <sys/ptem.h>
 #endif /* NEED_PTEM_H */
 

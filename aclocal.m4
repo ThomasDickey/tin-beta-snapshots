@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2022-01-27
+dnl Updated   : 2022-01-28
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2021 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2022 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -426,7 +426,7 @@ fi
 AC_SUBST($1)dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl AM_WITH_NLS version: 33 updated: 2022/01/28 08:32:11
+dnl AM_WITH_NLS version: 33 updated: 2022/01/28 19:50:27
 dnl -----------
 dnl Inserted as requested by gettext 0.10.40
 dnl File from /usr/share/aclocal

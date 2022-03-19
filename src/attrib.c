@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2021-07-06
+ *  Updated   : 2022-02-22
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2022 Iain Lea <iain@bricbrac.de>
@@ -1269,7 +1269,7 @@ write_attributes_file(
 		POST_PROC_SHAR, _(txt_post_process_types[POST_PROC_SHAR]),
 		POST_PROC_YES, _(txt_post_process_types[POST_PROC_YES]));
 	fprintf(fp, _("#  post_process_view=ON/OFF\n"));
-	fprintf(fp, _("#  quick_kill_scope=STRING (ie. talk.*)\n"));
+	fprintf(fp, _("#  quick_kill_scope=STRING (e.g. talk.*)\n"));
 	fprintf(fp, _("#  quick_kill_expire=ON/OFF\n"));
 	fprintf(fp, _("#  quick_kill_case=ON/OFF\n"));
 	fprintf(fp, _("#  quick_kill_header=NUM\n"));

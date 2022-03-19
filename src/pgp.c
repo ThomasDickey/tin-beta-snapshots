@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2021-02-27
+ *  Updated   : 2022-02-19
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2022 Steven J. Madsen <steve@erinet.com>
@@ -203,11 +203,11 @@ split_file(
 	mode_t mask;
 
 	snprintf(tmp, sizeof(tmp), HEADERS, (long) process_id);
-	joinpath(hdr, sizeof(hdr), TMPDIR, tmp);
+	joinpath(hdr, sizeof(hdr), tmpdir, tmp);
 	snprintf(tmp, sizeof(tmp), PLAINTEXT, (long) process_id);
-	joinpath(pt, sizeof(pt), TMPDIR, tmp);
+	joinpath(pt, sizeof(pt), tmpdir, tmp);
 	snprintf(tmp, sizeof(tmp), CIPHERTEXT, (long) process_id);
-	joinpath(ct, sizeof(ct), TMPDIR, tmp);
+	joinpath(ct, sizeof(ct), tmpdir, tmp);
 
 	if ((art = fopen(file, "r")) == NULL)
 		return;
@@ -260,7 +260,7 @@ do_pgp(
 
 	switch (what) {
 		case PGP_KEY_SIGN:
-			if (strlen(mailfrom))
+			if (*mailfrom)
 				sh_format(cmd, sizeof(cmd), DO_SIGN1);
 			else
 				sh_format(cmd, sizeof(cmd), DO_SIGN);
@@ -268,7 +268,7 @@ do_pgp(
 			break;
 
 		case PGP_KEY_ENCRYPT_SIGN:
-			if (strlen(mailfrom))
+			if (*mailfrom)
 				sh_format(cmd, sizeof(cmd), DO_BOTH1);
 			else
 				sh_format(cmd, sizeof(cmd), DO_BOTH);
@@ -302,7 +302,7 @@ pgp_append_public_key(
 		snprintf(buf, sizeof(buf), "%s@%s", userid, BlankIfNull(get_host_name()));
 
 	snprintf(tmp, sizeof(tmp), KEYFILE, (long) process_id);
-	joinpath(keyfile, sizeof(keyfile), TMPDIR, tmp);
+	joinpath(keyfile, sizeof(keyfile), tmpdir, tmp);
 
 /*
  * TODO: I'm guessing the pgp append key command creates 'keyfile' and that

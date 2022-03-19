@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-04-10
+ *  Updated   : 2022-01-28
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1010,8 +1010,8 @@ global_look_for_multipart_info(
 	*offset = 0;
 
 	/* entry assertions */
-	assert(0 <= aindex && aindex < top_art && "invalid index");
-	assert(setme != NULL && "setme must not be NULL");
+	assert(((void) "invalid index", 0 <= aindex && aindex < top_art));
+	assert(((void) "setme must not be NULL", setme != NULL));
 
 	/* parse the message */
 	subj = arts[aindex].subject;
@@ -1096,8 +1096,8 @@ global_get_multiparts(
 	MultiPartInfo *info = NULL;
 
 	/* entry assertions */
-	assert(0 <= aindex && aindex < top_art && "Invalid index");
-	assert(malloc_and_setme_info != NULL && "malloc_and_setme_info must not be NULL");
+	assert(((void) "Invalid index", 0 <= aindex && aindex < top_art));
+	assert(((void) "malloc_and_setme_info must not be NULL", malloc_and_setme_info != NULL));
 
 	/* make sure this is a multipart message... */
 	if (!global_get_multipart_info(aindex, &tmp) || tmp.total < 1)
@@ -1128,7 +1128,7 @@ global_get_multiparts(
 
 		/* repost check: do we already have this part? */
 		if (info[part_index].part_number != -1) {
-			assert(info[part_index].part_number == tmp2.part_number && "bookkeeping error");
+			assert(((void) "bookkeeping error", info[part_index].part_number == tmp2.part_number));
 			continue;
 		}
 
@@ -2313,7 +2313,7 @@ read_overview(
 					first = FALSE;
 				} else {
 					found = FALSE;
-					if (nntp_caps.headers_range && (ptr = strtok(nntp_caps.headers_range, "\n")) != NULL) {
+					if ((ptr = strtok(nntp_caps.headers_range, "\n")) != NULL) {
 						do {
 							if ((*ptr == ':' && *(ptr + 1) == '\0') || !strncasecmp(ptr, "Xref", 4))
 								found = TRUE;

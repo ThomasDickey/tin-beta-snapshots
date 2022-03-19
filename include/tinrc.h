@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2021-07-02
+ *  Updated   : 2022-02-16
  *  Notes     :
  *
  * Copyright (c) 1999-2022 Jason Faultless <jason@altarstone.com>
@@ -170,6 +170,7 @@ struct t_config {
 	int score_kill;						/* default score for "kill" filter rules */
 	int score_select;					/* default score for "hot" filter rules */
 	int trim_article_body;				/* remove unnecessary blank lines */
+	int show_help_mail_sign;			/* show help/mail sign in level title */
 #	ifdef HAVE_COLOR
 		int col_back;						/* standard background color */
 		int col_from;						/* color of sender (From:) */

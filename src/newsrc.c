@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-08-27
+ *  Updated   : 2022-02-19
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1255,10 +1255,10 @@ pos_group_in_newsrc(
 #	endif /* HAVE_CHMOD */
 #endif /* HAVE_FCHMOD */
 
-	joinpath(filename, sizeof(filename), TMPDIR, ".subrc");
+	joinpath(filename, sizeof(filename), tmpdir, ".subrc");
 	snprintf(sub, sizeof(sub), "%s.%ld", filename, (long) process_id);
 
-	joinpath(filename, sizeof(filename), TMPDIR, ".unsubrc");
+	joinpath(filename, sizeof(filename), tmpdir, ".unsubrc");
 	snprintf(unsub, sizeof(unsub), "%s.%ld", filename, (long) process_id);
 
 	if ((fp_sub = fopen(sub, "w")) == NULL)

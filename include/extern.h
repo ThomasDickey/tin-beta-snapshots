@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-09-21
+ *  Updated   : 2022-02-19
  *  Notes     :
  *
  * Copyright (c) 1997-2022 Iain Lea <iain@bricbrac.de>
@@ -367,6 +367,7 @@
 extern char *OPT_STRING_list[];
 extern char *nntp_server;
 extern char *tin_progname;
+extern const char *tmpdir;
 extern char active_times_file[PATH_LEN];
 extern char article_name[PATH_LEN];
 extern char bug_addr[LEN];
@@ -452,6 +453,7 @@ extern constext *txt_post_process_types[];
 extern constext *txt_quick_ks_header_options[];
 extern constext *txt_quote_style_type[];
 extern constext *txt_show_from[];
+extern constext *txt_show_help_mail_sign_options[];
 extern constext *txt_sort_a_type[];	/* a=articles */
 extern constext *txt_sort_t_type[];	/* t=threads */
 extern constext *txt_strip_bogus_type[];
@@ -1828,6 +1830,7 @@ extern struct opttxt txt_scroll_lines;
 extern struct opttxt txt_select_format;
 extern struct opttxt txt_show_author;
 extern struct opttxt txt_show_description;
+extern struct opttxt txt_show_help_mail_sign;
 extern struct opttxt txt_show_only_unread_arts;
 extern struct opttxt txt_show_only_unread_groups;
 extern struct opttxt txt_show_signatures;

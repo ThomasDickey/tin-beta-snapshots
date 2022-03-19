@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2021-07-06
+ *  Updated   : 2022-03-04
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2022 Michael Bienia <michael@vorlon.ping.de>
@@ -1820,6 +1820,7 @@ config_page(
 						case OPT_NORMALIZATION_FORM:
 #endif /* HAVE_UNICODE_NORMALIZATION */
 						case OPT_QUOTE_STYLE:
+						case OPT_SHOW_HELP_MAIL_SIGN:
 						case OPT_STRIP_BOGUS:
 						case OPT_WILDCARD:
 						case OPT_WORD_H_DISPLAY_MARKS:
@@ -2087,7 +2088,6 @@ config_page(
 
 				case OPT_STRING:
 					switch (option) {
-						case OPT_INEWS_PROG:
 						case OPT_MAILDIR:
 						case OPT_MAILER_FORMAT:
 						case OPT_MAIL_ADDRESS:
@@ -2123,6 +2123,14 @@ config_page(
 							}
 							break;
 
+						case OPT_INEWS_PROG:
+							if (prompt_option_string(option)) {
+								if (!strlen(tinrc.inews_prog))
+									STRCPY(tinrc.inews_prog, INTERNAL_CMD);
+								changed |= MISC_OPTS;
+							}
+							break;
+
 						case OPT_ATTRIB_GROUP_FORMAT:
 							if (prompt_option_string(option))
 								SET_STRING_ATTRIBUTE(group_format);
@@ -2131,6 +2139,8 @@ config_page(
 #ifndef CHARSET_CONVERSION
 						case OPT_MM_CHARSET:
 							if (prompt_option_string(option)) {
+								if (!strlen(tinrc.mm_charset))
+									STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
 								/*
 								 * No charset conversion available, assume local charset
 								 * to be network charset.

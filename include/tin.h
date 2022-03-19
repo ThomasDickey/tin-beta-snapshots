@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-12-13
+ *  Updated   : 2022-02-19
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -816,8 +816,14 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	define forever	for(;;)
 #endif /* !forever */
 
-/* safe strcpy into fixed-legth buffer */
-#define STRCPY(dst, src)	(dst[sizeof(dst) - 1] = '\0', strncpy(dst, src, sizeof(dst) - 1))
+/*
+ * safe strcpy into fixed-legth buffer
+ */
+#if 1
+#	define STRCPY(dst, src)	(strncpy(dst, src, sizeof(dst) - 1), dst[sizeof(dst) - 1] = '\0')
+#else
+#	define STRCPY(dst, src)	(*(dst) = '\0', strncat(dst, src, sizeof(dst) - 1))
+#endif /* 1 */
 
 #define STRCMPEQ(s1, s2)	(strcmp((s1), (s2)) == 0)
 #define STRNCMPEQ(s1, s2, n)	(strncmp((s1), (s2), n) == 0)
@@ -981,6 +987,16 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define SKIP_LEADING			1
 #define SKIP_TRAILING			2
 #define COMPACT_MULTIPLE		4
+
+/*
+ * defines for tinrc.show_help_mail_sign
+ */
+enum {
+	SHOW_SIGN_NONE = 0,
+	SHOW_SIGN_HELP,
+	SHOW_SIGN_MAIL,
+	SHOW_SIGN_BOTH
+};
 
 /*
  * MIME Encodings
@@ -2167,7 +2183,6 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 #define ENV_VAR_SHELL		"SHELL"
 #define TIN_EDITOR_FMT		"%E +%N %F"
 #define MAILER_FORMAT		"%M -oi -t < %F"
-#define TMPDIR	get_val("TMPDIR", _PATH_TMP)
 #ifdef HAVE_KEY_PREFIX
 #	define KEY_PREFIX		0x8f: case 0x9b
 #endif /* HAVE_KEY_PREFIX */

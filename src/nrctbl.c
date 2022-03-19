@@ -203,7 +203,7 @@ get_newsrcname(
 				 *       in newsrctable usually ends with
 				 *       "No permissions to go into /home/urs/.tin/${NNTPSERVER}"
 				 */
-				/* FIXME - write a global permssion check routine */
+				/* FIXME - write a global permission check routine */
 				if (access(dir, X_OK)) {
 					my_fprintf(stderr, _(txt_error_no_enter_permission), dir);
 					error = 1;

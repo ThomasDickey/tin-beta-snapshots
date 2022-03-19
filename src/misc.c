@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-09-22
+ *  Updated   : 2022-02-19
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -138,7 +138,7 @@ append_file(
 }
 
 
-void
+_Noreturn void
 asfail(
 	const char *file,
 	int line,
@@ -354,17 +354,17 @@ copy_body(
 
 
 /*
- * Lookup 'env' in the environment. If it exists, return its value,
+ * Lookup 'env' in the environment. If it exists, return its value if non-null,
  * else return 'def'
  */
 const char *
 get_val(
 	const char *env,	/* Environment variable we're looking for */
-	const char *def)	/* Default value if no environ value found */
+	const char *def)	/* Default value if no environ value found or null */
 {
 	const char *ptr;
 
-	return ((ptr = getenv(env)) != NULL ? ptr : def);
+	return ((ptr = getenv(env)) != NULL ? (*ptr ? ptr : def) : def);
 }
 
 
@@ -1566,9 +1566,9 @@ _strfpath(
 				 */
 				envptr = getenv(tbuf);
 				if (envptr == NULL || (*envptr == '\0'))
-					strncpy(tbuf, defbuf, sizeof(tbuf) - 1);
+					STRCPY(tbuf, defbuf);
 				else
-					strncpy(tbuf, envptr, sizeof(tbuf) - 1);
+					STRCPY(tbuf, envptr);
 				if ((str = strfpath_cp(str, tbuf, endp)) == NULL)
 					return 0;
 				else if (*tbuf == '\0') {
@@ -3708,7 +3708,7 @@ utf8_valid(
 		}
 
 		if (!illegal) {
-			d = (unsigned char)*c;
+			d = (unsigned char) *c;
 			e = (unsigned char) *(c + 1);
 
 			switch (numc) {

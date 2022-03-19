@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2018-06-04
+ *  Updated   : 2022-03-06
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -509,11 +509,10 @@ do_authinfo_sasl_plain(
 				if (!buffer_to_network(utf8user, c)) {
 					free(utf8user);
 					utf8user = my_strdup(authuser);
-				} else {
-					if (!buffer_to_network(utf8pass, c)) {
-						free(utf8pass);
-						utf8pass = my_strdup(authpass);
-					}
+				}
+				if (!buffer_to_network(utf8pass, c)) {
+					free(utf8pass);
+					utf8pass = my_strdup(authpass);
 				}
 			}
 		}

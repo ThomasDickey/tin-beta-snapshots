@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-08-07
+ *  Updated   : 2022-02-22
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -565,7 +565,7 @@ constext txt_is_tex_encoded[] = N_("TeX2Iso encoded article");
 constext txt_incomplete[] = N_("incomplete ");
 /* TODO: replace hard coded key-names */
 constext txt_intro_page[] = N_("\nWelcome to %s, a full screen threaded Netnews reader. It can read news locally\n\
-(ie. <spool>/news) or remotely (-r option) from an NNTP (Network News Transport\n\
+(i.e. <spool>/news) or remotely (-r option) from an NNTP (Network News Transport\n\
 Protocol) server. -h lists the available command line options.\n\n\
 %s  has four newsreading levels, the newsgroup selection page, the group index\n\
 page, the thread listing page and the article viewer. Help is available at each\n\
@@ -624,7 +624,7 @@ constext txt_mailed[] = N_("Mailed");
 constext txt_mailing_to[] = N_("Mailing to %s...");
 constext txt_mail_save_active_head[] = N_("# [Mail/Save] active file. Format is like news active file:\n\
 #   groupname  max.artnum  min.artnum  /dir\n\
-# The 4th field is the basedir (ie. ~/Mail or ~/News)\n#\n");
+# The 4th field is the basedir (i.e. ~/Mail or ~/News)\n#\n");
 constext txt_marked_as_read[] = N_("%s marked as read");
 constext txt_marked_as_unread[] = N_("%s marked as unread");
 constext txt_marked_arts_as_read[] = N_("Marked %d of %d %s as read");
@@ -766,7 +766,7 @@ constext txt_quit_edit_save_select[] = N_("%s=quit %s=edit %s=save select descri
 constext txt_quit_no_write[] = N_("Do you really want to quit without saving your configuration?");
 constext txt_quoted_printable[] = "quoted-printable";
 
-constext txt_range_invalid[] = N_("Invalid range - valid are '0-9.$' eg. 1-$");
+constext txt_range_invalid[] = N_("Invalid range - valid are '0-9.$' e.g. 1-$");
 constext txt_read_abort[] = N_("Do you want to abort this operation?");
 constext txt_read_exit[] = N_("Do you want to exit tin immediately?");
 constext txt_reading_article[] = N_("Reading ('q' to quit)...");
@@ -905,7 +905,7 @@ constext txt_toggled_tabwidth[] = N_("Toggled tab-width to %d");
 	constext txt_trying_dotlock[] = N_("%d Trying to dotlock %s");
 	constext txt_trying_lock[] = N_("%d Trying to lock %s");
 #endif /* !NO_LOCKING */
-constext txt_type_h_for_help[] = N_("           h=help");
+constext txt_type_h_for_help[] = N_("%s=help");
 
 constext txt_unlimited_time[] = N_("Unlimited");
 constext txt_unsubscribe_pattern[] = N_("Enter wildcard unsubscribe pattern> ");
@@ -1002,7 +1002,7 @@ constext txt_yanked_groups[] = N_("Added %d %s");
 constext txt_yanked_none[] = N_("No unsubscribed groups to show");
 constext txt_yanked_sub_groups[] = N_("Showing subscribed to groups only");
 constext txt_yes[] = N_("Yes ");
-constext txt_you_have_mail[] = N_("    You have mail");
+constext txt_you_have_mail[] = N_("You have mail");
 
 
 /* TODO: cleanup */
@@ -1449,6 +1449,15 @@ constext *txt_trim_article_body_options[] = {
 	NULL
 };
 
+/* different options for show_help_mail_sign */
+constext *txt_show_help_mail_sign_options[] = {
+	N_("Don't show help or mail sign"),
+	N_("Show only help sign"),
+	N_("Show only mail sign if new mail"),
+	N_("Show mail if new mail else help s."),
+	NULL
+};
+
 /*
  * MIME-Content-Transfer-Encodings.
  */
@@ -1705,10 +1714,10 @@ struct opttxt txt_thread_perc = {
 	N_("# Thread percentage match...\n\
 # the percentage of characters in the subject of an article that must match\n\
 # a base article for both those articles to be considered to belong to the\n\
-# same thread. This option is an integer percentage, eg. 80, no decimals may\n\
+# same thread. This option is an integer percentage, e.g. 80, no decimals may\n\
 # follow. If 80 is used here, then 80% of the characters must match exactly,\n\
 # no insertion of a character, for the two articles to be put in the same\n\
-# thread. eg. 'happy' and 'harpy' would match, but 'harpie', 'happie' and\n\
+# thread. e.g. 'happy' and 'harpy' would match, but 'harpie', 'happie' and\n\
 # 'harppy' would be threaded separately from 'happy'\n")
 };
 
@@ -1807,6 +1816,17 @@ struct opttxt txt_trim_article_body = {
 #       trailing blank lines\n\
 #   7 = Compact multiple blank lines between text blocks and skip\n\
 #       leading and trailing blank lines\n")
+};
+
+struct opttxt txt_show_help_mail_sign = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Show help/mail sign in level titles"),
+	N_("# Show help sign, new mail sign, both or nothing in level titles.\n\
+# Possible values are (the default is marked with *):\n\
+#   0 = Don't show help or mail sign\n\
+#   1 = Show only help sign\n\
+#   2 = Show only mail sign if new mail have arrived\n\
+# * 3 = Show mail sign if new mail has arrived else show help sign\n")
 };
 
 struct opttxt txt_auto_list_thread = {
@@ -2062,7 +2082,7 @@ struct opttxt txt_metamail_prog = {
 	N_("MIME binary content viewer"),
 	N_("# If --internal automatically use the built in MIME viewer for non-text\n\
 # parts of articles.\n\
-# Otherwise specify an external viewer program (eg. metamail) or leave blank\n\
+# Otherwise specify an external viewer program (e.g. metamail) or leave blank\n\
 # for no automatic viewing\n")
 };
 
@@ -2681,7 +2701,7 @@ struct opttxt txt_mark_saved_read = {
 };
 
 struct opttxt txt_post_process_type = {
-	N_("Do post processing (eg. extract attachments) for saved articles."),
+	N_("Do post processing (e.g. extract attachments) for saved articles."),
 	N_("Post process saved articles"),
 	N_("# Perform post processing (saving binary attachments) from saved articles.\n\
 # Possible values are (the default is marked with *):\n\
@@ -2734,8 +2754,8 @@ struct opttxt txt_mailer_format = {
 	N_("Invocation of your mail command"),
 	N_("# Format of mailer line including parameters\n\
 # %M Mailer  %S Subject  %T To  %F Filename\n\
-# ie. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n\
-# ie. mutt interactive          :    mutt -i %F -s \"%S\" -- \"%T\"\n")
+# e.g. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n\
+# e.g. mutt interactive          :    mutt -H %F\n")
 };
 
 struct opttxt txt_interactive_mailer = {

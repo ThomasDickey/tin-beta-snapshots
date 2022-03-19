@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-08-28
+ *  Updated   : 2022-02-19
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -142,7 +142,7 @@ selection_page(
 				show_selection_page();
 		} else {
 			if (!yanked_out)
-				yanked_out = bool_not(yanked_out); /* yank out if yanked in */
+				yanked_out = TRUE; /* yank out if yanked in */
 		}
 
 		set_xclick_on();
@@ -595,8 +595,9 @@ void
 show_selection_page(
 	void)
 {
-	char buf[LEN];
-	int i;
+	char buf[LEN], keyhelp[MAXKEYLEN];
+	char *title;
+	int i, keyhelplen;
 	size_t len;
 
 	signal_context = cSelect;
@@ -617,7 +618,27 @@ show_selection_page(
 
 	ClearScreen();
 	set_first_screen_item();
-	show_title(buf);
+
+	/*
+	 * determine max. length for centered title
+	 */
+	if (tinrc.show_help_mail_sign != SHOW_SIGN_NONE) {
+		if (tinrc.show_help_mail_sign == SHOW_SIGN_MAIL)
+			len = cCOLS - (2 * strwidth(_(txt_you_have_mail))) - 2;
+		else {
+			PrintFuncKey(keyhelp, GLOBAL_HELP, select_keys);
+			keyhelplen = strwidth(keyhelp);
+			if (tinrc.show_help_mail_sign == SHOW_SIGN_HELP)
+				len = cCOLS - (2 * (strwidth(_(txt_type_h_for_help)) - 2 + keyhelplen)) - 2;
+			else
+				len = cCOLS - (2 * MAX(strwidth(_(txt_type_h_for_help)) - 2 + keyhelplen, strwidth(_(txt_you_have_mail)))) - 2;
+		}
+	} else
+		len = cCOLS - 2;
+
+	title = strunc(buf, len);
+	show_title(title);
+	free(title);
 
 	if (sel_fmt.len_grpname_max && !sel_fmt.len_grpname) {
 		/*
@@ -1106,7 +1127,7 @@ reposition_group(
 	if (!prompt_string(buf, pos, HIST_MOVE_GROUP))
 		return default_num;
 
-	if (strlen(pos))
+	if (*pos)
 		pos_num = ((pos[0] == '$') ? selmenu.max : atoi(pos));
 	else {
 		if (tinrc.default_move_group)

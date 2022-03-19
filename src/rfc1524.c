@@ -135,7 +135,7 @@ get_mailcap_entry(
 							}
 						} /* else no match, no action required */
 					} /* else invalid mailcap line (no /), no action required */
-					if (strlen(wildcap)) {	/* we just had a wildmat match */
+					if (*wildcap) {	/* we just had a wildmat match */
 						fclose(fp);
 						free(mailcaps);
 						return foo;

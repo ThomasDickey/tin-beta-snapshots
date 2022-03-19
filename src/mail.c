@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2018-02-15
+ *  Updated   : 2022-02-19
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2022 Iain Lea <iain@bricbrac.de>
@@ -655,7 +655,7 @@ art_edit(
 	snprintf(buf, sizeof(buf), "%"T_ARTNUM_PFMT, article->artnum);
 	joinpath(article_filename, sizeof(article_filename), temp_filename, buf);
 	snprintf(buf, sizeof(buf), "%ld.art", (long) process_id);
-	joinpath(temp_filename, sizeof(temp_filename), TMPDIR, buf);
+	joinpath(temp_filename, sizeof(temp_filename), tmpdir, buf);
 
 	if (!backup_file(article_filename, temp_filename))
 		return FALSE;

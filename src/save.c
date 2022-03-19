@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-25
+ *  Updated   : 2022-02-19
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -160,7 +160,7 @@ check_start_save_any_news(
 			break;
 
 		case MAIL_ANY_NEWS:
-			joinpath(savefile, sizeof(savefile), TMPDIR, "tin");
+			joinpath(savefile, sizeof(savefile), tmpdir, "tin");
 #ifdef APPEND_PID
 			snprintf(savefile + strlen(savefile), sizeof(savefile) - strlen(savefile), ".%ld", (long) process_id);
 #endif /* APPEND_PID */

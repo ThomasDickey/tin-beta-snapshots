@@ -3,6 +3,7 @@ New features and changes since tin-2.6.0
 New features
 ------------
 - allow to cancel wait_message() via key press
+- option to hide help/mail-info in tite: show_help_mail_sign
 
 Changes
 -------

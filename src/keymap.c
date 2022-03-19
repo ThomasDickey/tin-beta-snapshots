@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2021-02-23
+ *  Updated   : 2022-02-19
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2022 Dirk Nimmich <nimmich@muenster.de>
@@ -329,8 +329,18 @@ read_keymap_file(
 {
 	FILE *fp = (FILE *) 0;
 	char *line, *keydef, *kname;
-	char *map, *ptr;
-	char buf[LEN], buff[NAME_LEN + 1], filename[PATH_LEN];
+	char *map;
+	char *l = NULL;
+	char *locale = NULL;
+	char *language = NULL;
+	char *territory = NULL;
+	char *codeset = NULL, *normcodeset = NULL;
+	char *modifier = NULL;
+	char fnames[2*6][PATH_LEN + NAME_LEN];
+	char dirs[3][PATH_LEN];
+	char *p, *q;
+	char buf[LEN];
+	int k = 0, j, i = 0;
 	struct t_version *upgrade = NULL;
 	t_bool ret = TRUE;
 
@@ -340,38 +350,107 @@ read_keymap_file(
 	 *
 	 * locale is first match from LC_ALL, LC_CTYPE, LC_MESSAGES, LANG
 	 *
-	 * TODO: LC_CTYPE has higher priority than LC_MESSAGES, does this make sense?
+	 * language[_territory[.codeset]][@modifier]
+	 * Beside the first part, all of them are allowed to be missing. If the
+	 * full specified locale is not found, less specific ones are looked
+	 * for.  The various parts will be stripped off, in the following
+	 * order:
+	 * - codeset
+	 * - normalized codeset (like _nl_normalize_codeset() in glibc)
+	 * - territory
+	 * - modifier
+	 *
+	 * TODO: - LC_CTYPE has higher priority than LC_MESSAGES,
+	 *         does this make sense?
 	 */
-	/* get locale suffix */
-	map = my_strdup(get_val("LC_ALL", get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LANG", "")))));
-	if (strlen(map)) {
-		if ((ptr = strchr(map, '.')))
-			*ptr = '\0';
-		snprintf(buff, sizeof(buff), "%s.%s", KEYMAP_FILE, map);
-		joinpath(filename, sizeof(filename), rcdir, buff);
-		fp = fopen(filename, "r");
-	}
-	if (!fp) {
-		joinpath(filename, sizeof(filename), rcdir, KEYMAP_FILE);
-		fp = fopen(filename, "r");
-	}
-#ifdef TIN_DEFAULTS_DIR
-	if (strlen(map) && !fp) {
-		joinpath(filename, sizeof(filename), TIN_DEFAULTS_DIR, buff);
-		fp = fopen(filename, "r");
-	}
-	if (!fp) {
-		joinpath(filename, sizeof(filename), TIN_DEFAULTS_DIR, KEYMAP_FILE);
-		fp = fopen(filename, "r");
-	}
-#endif /* TIN_DEFAULTS_DIR */
 
-	FreeIfNeeded(map);
+	sprintf(dirs[k++], "%s", rcdir);
+#ifdef TIN_DEFAULTS_DIR
+	sprintf(dirs[k++], "%s", TIN_DEFAULTS_DIR);
+#endif /* TIN_DEFAULTS_DIR */
+	dirs[k][0] = '\0';
+
+	l = my_strdup(get_val("LC_ALL", get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LANG", "")))));
+
+	if ((locale = strrchr(l, '/'))) /* skip path */
+		locale++;
+	else
+		locale = l;
+
+	if (*locale) {
+		language = my_strdup(locale);
+		if ((p = strchr(locale, '_'))) {
+			/* language */
+			if ((q = strchr(language, '_')))
+				*q = '\0';
+
+			/* _territory */
+			q = territory = malloc(strlen(p) + 1);
+			while (*p && *p != '.' && *p != '@')
+				*q++ = *p++;
+			*q = '\0';
+		} else {
+			if ((p = strchr(language, '.')))
+				*p = '\0';
+			else
+				if ((p = strchr(language, '@')))
+					*p = '\0';
+		}
+		/* @modifier */
+		if ((p = strchr(locale, '@')))
+			modifier = my_strdup(p);
+
+		/* .codeset */
+		if ((p = strchr(locale, '.'))) {
+			q = codeset = malloc(strlen(p) + 1);
+			while (*p && *p != '@')
+				*q++ = *p++;
+			*q = '\0';
+
+			/* normalized .codeset */
+			q = normcodeset = my_strdup(codeset);
+			for (p = codeset; *p != '\0'; p++) {
+				if (isalpha(*p) || isdigit(*p) || *p == '.')
+					*q++ = (char) tolower((unsigned char) *p);
+			}
+			*q = '\0';
+		}
+
+		if (codeset && normcodeset) {
+			if (!strcmp(codeset, normcodeset))
+				FreeAndNull(normcodeset);
+		}
+	}
+	/* TODO: use joinpath()? */
+	for (k = 0; dirs[k][0] != '\0' ; k++) {
+		if (*locale && codeset)
+			sprintf(fnames[i++], "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier));
+		if (*locale && normcodeset)
+			sprintf(fnames[i++], "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier));
+		if (*locale && territory)
+			sprintf(fnames[i++], "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), territory, BlankIfNull(modifier));
+		if (*locale && modifier)
+			sprintf(fnames[i++], "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), modifier);
+		if (*locale && language)
+			sprintf(fnames[i++], "%s/%s.%s", dirs[k], KEYMAP_FILE, language);
+		sprintf(fnames[i++], "%s/%s", dirs[k], KEYMAP_FILE);
+	}
+	for (j = 0; j < i && !fp; j++) {
+		if ((fp = fopen(fnames[j], "r")) != NULL)
+			break;
+	}
+
+	FreeIfNeeded(l);
+	FreeIfNeeded(language);
+	FreeIfNeeded(modifier);
+	FreeIfNeeded(codeset);
+	FreeIfNeeded(normcodeset);
+	FreeIfNeeded(territory);
 
 	if (!fp)
 		return TRUE; /* no keymap file is not an error */
 
-	map = my_strdup(filename); /* remember keymap-name */
+	map = my_strdup(fnames[j]); /* remember keymap-name */
 
 	/* check if keymap file is up-to-date */
 	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {

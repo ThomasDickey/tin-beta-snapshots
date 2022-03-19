@@ -43,9 +43,9 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.6.1"
+#		define VERSION		"2.6.2"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20211226"
+#	define RELEASEDATE	"20220319"
 #	define RELEASENAME	"Convalmore"
 /* config-file versions - must be dotted triples in the range 0 to 99 each */
 #	define TINRC_VERSION	"1.3.18"

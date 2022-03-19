@@ -3,7 +3,7 @@
  *  Module    : my_tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
- *  Updated   : 2014-05-13
+ *  Updated   : 2022-02-19
  *  Notes     :
  *
  * Copyright (c) 2001-2022 Urs Janssen <urs@tin.org>
@@ -81,7 +81,7 @@ my_tmpfile(
 			joinpath(filename, name_size, base_dir, buf);
 		} else {
 			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin_XXXXXX");
-			joinpath(filename, name_size, TMPDIR, buf);
+			joinpath(filename, name_size, tmpdir, buf);
 		}
 		mask = umask((mode_t) (S_IRWXO|S_IRWXG));
 #ifdef DEBUG

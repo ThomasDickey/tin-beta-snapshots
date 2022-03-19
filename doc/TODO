@@ -183,9 +183,9 @@ o  add DEFAULT_SIGDASHES_REGEX and related 'M'enu-entry for signature
 
 o  allow remapping of the 'z' abort-key (lynx style) in wait_for_input().
 
-o  add user defined screen layout at different levels (e.g. posting
+o  add more user defined screen layout at different levels (e.g. posting
    history screen)
-   (done for selection, group and thread level)
+   (mostly done for selection, group and thread level)
    [20041025 Urs Janssen <urs@tin.org>]
 
 o  allow a Message-ID on the cmd. line to jump to the given article
@@ -588,6 +588,15 @@ o  add BiDi handling to page header
 
 Internal Changes
 ----------------
+o  switch to pcre2 (new API)
+   <http://www.pcre.org/current/doc/html/>
+   as the old pcre-lib is EOL since pcre-8.45
+   <https://www.pcre.org/original/changelog.txt>
+   <https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=999941>
+
+o  use tin_gettime() in *StopWatch() instead of ftime(3)
+   [Urs Janssen <urs@tin.org>]
+
 o  merge refs.c:valid_msgid() and post.c:damaged_id()
    [Urs Janssen <urs@tin.org>]
 
@@ -727,8 +736,9 @@ o  check code with
    (<https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html>),
    clang-analyzer (<http://clang-analyzer.llvm.org/>),
    infer (<http://fbinfer.com/>)
-   Splint (LCLint) <http://www.splint.org/> and
-   zzuf (<http://caca.zoy.org/wiki/zzuf>)
+   Splint (LCLint) <http://www.splint.org/>,
+   zzuf (<http://caca.zoy.org/wiki/zzuf>) and
+   aflnet (<https://github.com/aflnet/aflnet>)
 
 o  strip Xref:-header if saving news in batch mode (-S)?
    [Urs Janssen <urs@tin.org>]
@@ -1053,11 +1063,6 @@ o  setting TIN_HOMEDIR to a non-existent dir gives a "Filesystem full"
    [20011112 Urs Janssen <urs@tin.org>]
 
 o  update gettext stuff to > gettext-0.12.1 (or drop it?)
-
-o  and pcre2 support (new API)
-   <http://www.pcre.org/current/doc/html/>
-
-o  clean up included pcre stuff and update to >= pcre-8.45
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file
