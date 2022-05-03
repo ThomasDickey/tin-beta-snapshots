@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-19
+ *  Updated   : 2022-04-09
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -63,7 +63,7 @@ static void catchup_group(struct t_group *group, t_bool goto_next_unread_group);
 static void draw_group_arrow(void);
 static void read_groups(void);
 static void select_done(void);
-static void select_quit(void);
+_Noreturn static void select_quit(void);
 static void select_read_group(void);
 static void sort_active_file(void);
 static void subscribe_pattern(const char *prompt, const char *message, const char *result, t_bool state);
@@ -1435,7 +1435,7 @@ subscribe_pattern(
 /*
  * Does NOT return
  */
-static void
+_Noreturn static void
 select_quit(
 	void)
 {

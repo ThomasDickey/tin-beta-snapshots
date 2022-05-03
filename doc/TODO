@@ -112,6 +112,8 @@ o  mailers other than sendmail (f.e. mutt) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  add possibillity to dump the current key mapping to a file
+
 o  make the group status flag (moderated, new, bogus, ...) configurable
    like the thread and article flag (select.c:build_gline(%f))
    [20210709 Urs Janssen <urs@tin.org>]

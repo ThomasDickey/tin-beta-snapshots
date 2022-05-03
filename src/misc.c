@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-19
+ *  Updated   : 2022-04-30
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -4201,20 +4201,20 @@ int
 tin_gettime(
 	struct t_tintime *tt)
 {
-#ifdef HAVE_CLOCK_GETTIME
+#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_REALTIME)
 	static struct timespec cgt;
-#endif /* HAVE_CLOCK_GETTIME */
+#endif /* HAVE_CLOCK_GETTIME && CLOCK_REALTIME */
 #ifdef HAVE_GETTIMEOFDAY
 	static struct timeval gt;
 #endif /* HAVE_GETTIMEOFDAY */
 
-#ifdef HAVE_CLOCK_GETTIME
+#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_REALTIME)
 	if (clock_gettime(CLOCK_REALTIME, &cgt) == 0) {
 		tt->tv_sec = cgt.tv_sec;
 		tt->tv_nsec = cgt.tv_nsec;
 		return 0;
 	}
-#endif /* HAVE_CLOCK_GETTIME */
+#endif /* HAVE_CLOCK_GETTIME && CLOCK_REALTIME */
 #ifdef HAVE_GETTIMEOFDAY
 	if (gettimeofday(&gt, NULL) == 0) {
 		tt->tv_sec = gt.tv_sec;

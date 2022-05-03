@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-13
+ *  Updated   : 2022-04-14
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -68,7 +68,7 @@ static t_bool start_any_unread = FALSE;	/* only start if unread news */
 static void create_mail_save_dirs(void);
 static void read_cmd_line_options(int argc, char *argv[]);
 static void show_intro_page(void);
-static void update_index_files(void);
+_Noreturn static void update_index_files(void);
 static void usage(char *theProgname);
 
 
@@ -187,6 +187,14 @@ main(
 			giveup();
 		}
 #endif /* !USE_CURSES */
+
+		/* exit early at -o without postponed articles */
+		if (post_postponed_and_exit && !count_postponed_articles()) {
+			no_write = TRUE;
+			/* TODO: looks ugly */
+			error_message(0, txt_info_nopostponed);
+			tin_done(EXIT_SUCCESS, NULL);
+		}
 
 		/*
 		 * Init curses emulation
@@ -782,13 +790,31 @@ read_cmd_line_options(
 			verbose = FALSE;
 		}
 	}
+	/*
+	 * TODO: also disallow
+	 *       -NM
+	 *       -oN, -oM (at this stage we no longer know if -N or -M was given)
+	 *       -wN, -wM (at this stage we no longer know if -N or -M was given)
+	 */
 	if (post_postponed_and_exit && force_no_post) {
 		wait_message(2, _(txt_useless_combination), "-o", "-x", "-x");
 		force_no_post = FALSE;
 	}
+	if (post_postponed_and_exit && start_any_unread) {
+		wait_message(2, _(txt_useless_combination), "-o", "-z", "-z");
+		start_any_unread = FALSE;
+	}
+	if (post_postponed_and_exit && post_article_and_exit) {
+		wait_message(2, _(txt_useless_combination), "-o", "-w", "-w");
+		post_article_and_exit = FALSE;
+	}
 	if (post_article_and_exit && force_no_post) {
 		wait_message(2, _(txt_useless_combination), "-w", "-x", "-x");
 		force_no_post = FALSE;
+	}
+	if (post_article_and_exit && start_any_unread) {
+		wait_message(2, _(txt_useless_combination), "-w", "-z", "-z");
+		start_any_unread = FALSE;
 	}
 	if (catchup && start_any_unread) {
 		wait_message(2, _(txt_useless_combination), "-c", "-z", "-c");
@@ -946,7 +972,7 @@ usage(
 /*
  * update index files
  */
-static void
+_Noreturn static void
 update_index_files(
 	void)
 {

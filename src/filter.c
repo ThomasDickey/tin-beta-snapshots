@@ -1906,7 +1906,7 @@ filter_articles(
 	 */
 	for (i = 0; (i < top_art) && !error; i++) {
 #ifdef HAVE_SELECT
-		if (wait_for_input())   /* allow abort */
+		if (wait_for_input()) /* allow abort */
 			break; /* to free the mem */
 #endif /* HAVE_SELECT */
 

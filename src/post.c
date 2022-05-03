@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-03-02
+ *  Updated   : 2022-04-08
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -840,7 +840,7 @@ build_post_hist_list(
 	char *p, *q;
 	char buf[LEN];
 	int count = 0;
-	size_t i = 0, j, k, n;
+	size_t j, k, n;
 	t_posted *posted = NULL;
 
 	if ((fp = fopen(posted_info_file, "r")) == NULL) {
@@ -954,7 +954,6 @@ build_post_hist_list(
 		if (p == buf || p == buf + j) /* subject looks like id and no id logged or no id given, clear id */
 			posted->mid[0] = '\0';
 		my_strncpy(posted->subj, buf + j, sizeof(posted->subj) - 1);
-		i++;
 	}
 	fclose(fp);
 

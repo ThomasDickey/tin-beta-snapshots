@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2022-02-07
+ *  Updated   : 2022-04-09
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2022 Jason Faultless <jason@altarstone.com>
@@ -688,7 +688,7 @@ parse_content_type(
 		content->subtype = my_strdup("octet-stream");
 		return;
 	} else
-		content->type = i;
+		content->type = (unsigned int) i;
 
 	subtype = strtok(NULL, PARAM_SEP);
 	/* save new subtype, or use pre-initialised value "plain" */

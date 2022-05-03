@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-22 13:40+0100\n"
+"POT-Creation-Date: 2022-05-03 07:11+0200\n"
 "PO-Revision-Date: 2018-04-19 13:04+0200\n"
 "Last-Translator: Francisco Javier Serrador <fserrador@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -5156,7 +5156,7 @@ msgstr "<sin asunto>"
 msgid "Percentage Match"
 msgstr "Porcentaje titulado: "
 
-#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485
+#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485 src/lang.c:1588
 msgid "No"
 msgstr ""
 
@@ -5167,7 +5167,7 @@ msgstr "sí"
 
 #: src/lang.c:1297
 #, fuzzy
-msgid "Hide All"
+msgid "Hide all"
 msgstr "_Mostrar/Ocultar"
 
 #: src/lang.c:1306
@@ -5604,18 +5604,14 @@ msgstr ""
 msgid "Comp. q., quote sigs & empty lines"
 msgstr ""
 
-#: src/lang.c:1588
-msgid "no"
-msgstr ""
-
 #: src/lang.c:1589
 #, fuzzy
-msgid "with headers"
+msgid "With headers"
 msgstr " con encabezados"
 
 #: src/lang.c:1590
 #, fuzzy
-msgid "without headers"
+msgid "Without headers"
 msgstr " sin encabezados"
 
 #: src/lang.c:1597
@@ -6173,10 +6169,10 @@ msgstr "Enseñar una lengüeta de los datos seleccionados."
 msgid ""
 "# Handling of uuencoded data in the pager\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no, display raw uuencoded data\n"
-"#   1 = yes, uuencoded data will be condensed to a single tag line showing\n"
+"# * 0 = No, display raw uuencoded data\n"
+"#   1 = Yes, uuencoded data will be condensed to a single tag line showing\n"
 "#       size and filename, similar to how MIME attachments are displayed\n"
-"#   2 = hide all, as for 1, but any line that looks like uuencoded data "
+"#   2 = Hide all, as for 1, but any line that looks like uuencoded data "
 "will\n"
 "#       be folded into a tag line.\n"
 msgstr ""
@@ -7468,9 +7464,9 @@ msgstr ""
 msgid ""
 "# Perform post processing (saving binary attachments) from saved articles.\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no\n"
+"# * 0 = No\n"
 "#   1 = extract shell archives (shar) only\n"
-"#   2 = yes\n"
+"#   2 = Yes\n"
 msgstr ""
 
 #: src/lang.c:2715
@@ -8038,7 +8034,7 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr " cabecera mágica = %x\n"
 
 #. TODO: lang.c
-#: src/main.c:824
+#: src/main.c:850
 #, fuzzy
 msgid "reading from local spool"
 msgstr "error leyendo desde `%s'"
@@ -8104,14 +8100,14 @@ msgstr ""
 msgid "couldn't expand %s\n"
 msgstr "Expandir"
 
-#: src/post.c:1780
+#: src/post.c:1782
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is neither set to %s nor to %s\n"
 msgstr ""
 
-#: src/post.c:1785
+#: src/post.c:1787
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8119,19 +8115,19 @@ msgid ""
 "posting doesn't contain any 8bit chars and thus folding won't happen\n"
 msgstr ""
 
-#: src/post.c:1787
+#: src/post.c:1789
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is not set to %s\n"
 msgstr ""
 
-#: src/post.c:2774
+#: src/post.c:2778
 #, fuzzy, c-format
 msgid "Posting: %.*s ..."
 msgstr "Publicación Fallida"
 
-#: src/post.c:4543
+#: src/post.c:4547
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 

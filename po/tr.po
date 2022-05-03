@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-22 13:40+0100\n"
+"POT-Creation-Date: 2022-05-03 07:11+0200\n"
 "PO-Revision-Date: 2017-05-29 18:40+0000\n"
 "Last-Translator: Mesutcan Kurt <mesutcank@gmail.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -5272,7 +5272,7 @@ msgstr "Çok parçalı Konu"
 msgid "Percentage Match"
 msgstr "Yüzde Eşleşmesi"
 
-#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485
+#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485 src/lang.c:1588
 msgid "No"
 msgstr "Hayır"
 
@@ -5281,7 +5281,8 @@ msgid "Yes"
 msgstr "Evet"
 
 #: src/lang.c:1297
-msgid "Hide All"
+#, fuzzy
+msgid "Hide all"
 msgstr "Tümünü Sakla"
 
 #: src/lang.c:1306
@@ -5660,16 +5661,14 @@ msgstr "İmzaları ve boş satırları alıntıla"
 msgid "Comp. q., quote sigs & empty lines"
 msgstr "İmleri sıkıştır, imzaları & boş satırları alıntıla"
 
-#: src/lang.c:1588
-msgid "no"
-msgstr "hayır"
-
 #: src/lang.c:1589
-msgid "with headers"
+#, fuzzy
+msgid "With headers"
 msgstr "başlıklarla birlikte"
 
 #: src/lang.c:1590
-msgid "without headers"
+#, fuzzy
+msgid "Without headers"
 msgstr "üst bilgi olmadan"
 
 #: src/lang.c:1597
@@ -6359,13 +6358,14 @@ msgid "Display uue data as an attachment"
 msgstr "Uue verilerini ek olarak görüntüle"
 
 #: src/lang.c:1930
+#, fuzzy
 msgid ""
 "# Handling of uuencoded data in the pager\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no, display raw uuencoded data\n"
-"#   1 = yes, uuencoded data will be condensed to a single tag line showing\n"
+"# * 0 = No, display raw uuencoded data\n"
+"#   1 = Yes, uuencoded data will be condensed to a single tag line showing\n"
 "#       size and filename, similar to how MIME attachments are displayed\n"
-"#   2 = hide all, as for 1, but any line that looks like uuencoded data "
+"#   2 = Hide all, as for 1, but any line that looks like uuencoded data "
 "will\n"
 "#       be folded into a tag line.\n"
 msgstr ""
@@ -7899,12 +7899,13 @@ msgid "Post process saved articles"
 msgstr "Kaydedilmiş makaleleri sonradan işle"
 
 #: src/lang.c:2706
+#, fuzzy
 msgid ""
 "# Perform post processing (saving binary attachments) from saved articles.\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no\n"
+"# * 0 = No\n"
 "#   1 = extract shell archives (shar) only\n"
-"#   2 = yes\n"
+"#   2 = Yes\n"
 msgstr ""
 "# Kaydedilmiş makalelerden sonradan işleme uygula (ikilik ekleri kaydetme).\n"
 "# Olası değerler (öntanımlı olan * ile işaretlenmiştir):\n"
@@ -8529,7 +8530,7 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr "'X-Comment-To:' üst bilgisi ekle"
 
 #. TODO: lang.c
-#: src/main.c:824
+#: src/main.c:850
 msgid "reading from local spool"
 msgstr "yerel kuyruktan okunuyor"
 
@@ -8593,7 +8594,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "%s genişletilemedi\n"
 
-#: src/post.c:1780
+#: src/post.c:1782
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8602,7 +8603,7 @@ msgstr ""
 "%d satırı %d oktetten daha uzun ve kısaltılmalı, fakat\n"
 "kodlama %s ya da %s değerlerine ayarlanmadı\n"
 
-#: src/post.c:1785
+#: src/post.c:1787
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8614,7 +8615,7 @@ msgstr ""
 "gönderi hiçbir 8bit karakter içermiyor ve bu sebeple kısaltma "
 "gerçekleşmeyecek\n"
 
-#: src/post.c:1787
+#: src/post.c:1789
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8623,12 +8624,12 @@ msgstr ""
 "%d satırı %d oktetten daha uzun ve kısaltılmalı, fakat\n"
 "kodlama %s değerine ayarlı değil\n"
 
-#: src/post.c:2774
+#: src/post.c:2778
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Gönderiliyor: %.*s ..."
 
-#: src/post.c:4543
+#: src/post.c:4547
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8757,6 +8758,9 @@ msgstr "Slrnface beklenmedik şekilde sonlandırıldı, kod %d."
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Slrnface başarısız: %s"
+
+#~ msgid "no"
+#~ msgstr "hayır"
 
 #~ msgid "#  start_editor_offset=ON/OFF\n"
 #~ msgstr "#  start_editor_offset=AÇIK/KAPALI\n"

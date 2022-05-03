@@ -940,7 +940,7 @@ open_newgroups_fp(
 			return (FILE *) 0;
 
 		/*
-		 * RFC 3077 states that we SHOULD use 4 digit year but some servers
+		 * RFC 3977 states that we SHOULD use 4 digit year but some servers
 		 * still do not support it.
 		 */
 		snprintf(line, sizeof(line), "NEWGROUPS %02d%02d%02d %02d%02d%02d",

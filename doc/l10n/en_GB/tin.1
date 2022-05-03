@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2022-03-02
+.\" Updated   : 2022-04-14
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -26,10 +26,10 @@ tin, rtin \- Usenet newsreader
 .IX Header SYNOPSIS
 .\"
 .\"
-\fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|[\|\fB\-a\fP\|]
+\fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|\fB\-a\fP\|]
 [\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-ArzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
 \|\|\fB\-s\fP \fINews_dir\fP\|] [\|\fB\-cuvZ\fP\|] [\|\fB\-4\fP\||\|\fB\-6\fP\|]
-[\|\fB\-N\fP\||\|\fB\-M\fP \fIaddress\fP\|] [\|\fB\-o\fP\||\|\fB\-w\fP\|]\|] [\|\fB\-D\fP
+[\|\fB\-o\fP\||\|\fB\-w\fP\||\|\fB\-N\fP\||\|\fB\-M\fP \fIaddress\fP\|] [\|\fB\-D\fP
 \fIdebug_level\fP\|] [\|\fB\-G\fP \fIarticle_limit\fP\|] [\|\fB\-f\fP \fInewsrc_file\fP\|]
 [\|\fB\-g\fP \fIserver\fP\|] [\|\fB\-m\fP \fIMail_dir\fP\|] [\|\fB\-p\fP \fIport\fP\|] [\|\fB\-I\fP
 \fIindex_dir\fP\|]\ \|[\fInewsgroup\fP\|[\|,.\|.\|.\|]\|]\|]
@@ -439,7 +439,6 @@ An \fB\%emacs\fP(1)  style editing package allows the easy editing of input
 strings.  A history list allows the easy reuse of previously entered
 strings.  In addition to the cursor keys, the following commands are
 available when editing a string:
-.PP
 .TP  10
 \fB^A, ^E\fP
 move to beginning or end of line, respectively.
@@ -474,7 +473,6 @@ aborts the present editing operation.
 .SS "GLOBAL COMMANDS"
 The following commands are available at all 4 menu levels and always have
 the same effect.
-.PP
 .TP  10
 \fBShellEscape '!'\fP
 Shell escape. \fBShellEscape\fP by itself will launch a shell, \fBShellEscape\fP
@@ -2838,17 +2836,14 @@ and then use the \fBbatch_save\fP attribute to fine tune which groups you want
 to have saved. For example, if you want to save most of your groups, then
 set \fBbatch_save\fP to ON in tinrc and selectively turn off the ones you don't
 want using attributes.
-.PP
 .TP  2i
 \fBtin \-M iain \-c \-f newsrc.mail\fP
 (mail any unread articles in newsgroups specified in file newsrc.mail to the
 local user iain and mark them as read)
-.PP
 .TP  2i
 \fBtin \-S \-c \-f newsrc.save\fP
 (save any unread articles in newsgroups specified in file newsrc.save and
 mark them as read)
-.PP
 .TP  2i
 \fBtin \-R\fP
 .\"
@@ -2864,7 +2859,6 @@ can be used in place of the current cursor position and '$' can be used to
 mean the highest number available. Currently the only commands that
 understand ranges are \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBMarkArtUnread\fP
 ('\fBz\fP') and \fBMarkThdUnread\fP ('\fBZ\fP').
-.PP
 .SS "NEWSGROUP LISTS & WILDCARDS"
 Several places in \fBtin\fP allow you to specify a list of newsgroups. These
 include command\-line groups, (un)subscribe groups, the AUTO[UN]SUBSCRIBE
@@ -3347,10 +3341,9 @@ For a detailed description see \fB\%tin\fP(5).
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/overview.fmt\fP
 .PP
 
+.\"
+.\"
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions\fP
-.PP
-.\"
-.\"
 .SH ENVIRONMENT
 .IX Header ENVIRONMENT
 .\" TODO: - sort in a useful order
@@ -3678,7 +3671,7 @@ Guidelines).
 .IX Header NOTES
 Regular expression support is provided by the PCRE library package
 \fB\%pcre\fP(3), which is open source software, written by Philip Hazel, and
-copyright by the University of Cambridge, England.
+copyright \(co by the University of Cambridge, England.
 .br
 .\"
 .\"
@@ -3711,7 +3704,6 @@ overview see
 .\"
 <http://www.tin.org/history.html>.
 .SH CREDITS
-.PP
 .IP "Rich Skrenta"
 author of \fB\%tass\fP(1)  v3.2 which this newsreader used as its base.
 .IP "Bill Davidsen"

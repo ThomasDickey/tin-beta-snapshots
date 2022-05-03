@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-22 13:40+0100\n"
-"PO-Revision-Date: 2022-02-22 13:45+0100\n"
+"POT-Creation-Date: 2022-05-03 07:11+0200\n"
+"PO-Revision-Date: 2022-05-03 07:12+0200\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -5306,7 +5306,7 @@ msgstr "Mehrteilige Artikel (Subject)"
 msgid "Percentage Match"
 msgstr "Prozentualer Treffer"
 
-#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485
+#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485 src/lang.c:1588
 msgid "No"
 msgstr "Nein"
 
@@ -5315,7 +5315,7 @@ msgid "Yes"
 msgstr "Ja"
 
 #: src/lang.c:1297
-msgid "Hide All"
+msgid "Hide all"
 msgstr "Alle ausblenden"
 
 #: src/lang.c:1306
@@ -5694,17 +5694,13 @@ msgstr "Signat. und Leerzeilen zitieren"
 msgid "Comp. q., quote sigs & empty lines"
 msgstr "Zitatz. kürzen, Sign & Leerz. zit."
 
-#: src/lang.c:1588
-msgid "no"
-msgstr "nein"
-
 #: src/lang.c:1589
-msgid "with headers"
-msgstr "mit Header"
+msgid "With headers"
+msgstr "Mit Header"
 
 #: src/lang.c:1590
-msgid "without headers"
-msgstr "ohne Header"
+msgid "Without headers"
+msgstr "Ohne Header"
 
 #: src/lang.c:1597
 msgid "NFKC"
@@ -6360,10 +6356,10 @@ msgstr "Zeige uue-Teile als Anhang an"
 msgid ""
 "# Handling of uuencoded data in the pager\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no, display raw uuencoded data\n"
-"#   1 = yes, uuencoded data will be condensed to a single tag line showing\n"
+"# * 0 = No, display raw uuencoded data\n"
+"#   1 = Yes, uuencoded data will be condensed to a single tag line showing\n"
 "#       size and filename, similar to how MIME attachments are displayed\n"
-"#   2 = hide all, as for 1, but any line that looks like uuencoded data "
+"#   2 = Hide all, as for 1, but any line that looks like uuencoded data "
 "will\n"
 "#       be folded into a tag line.\n"
 msgstr ""
@@ -7859,7 +7855,8 @@ msgstr "# Falls ON werden gespeicherte Artikel als gelesen markiert\n"
 #
 #: src/lang.c:2704
 msgid "Do post processing (e.g. extract attachments) for saved articles."
-msgstr "Nachbearbeitung (z.B. extrahieren von Anhängen) für gespeicherte Artikel."
+msgstr ""
+"Nachbearbeitung (z.B. extrahieren von Anhängen) für gespeicherte Artikel."
 
 #: src/lang.c:2705
 msgid "Post process saved articles"
@@ -7869,15 +7866,15 @@ msgstr "Nachbearbeiten gespeichert. Artikel"
 msgid ""
 "# Perform post processing (saving binary attachments) from saved articles.\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no\n"
+"# * 0 = No\n"
 "#   1 = extract shell archives (shar) only\n"
-"#   2 = yes\n"
+"#   2 = Yes\n"
 msgstr ""
 "# Nachbearbeiten gespeicherter Artikel\n"
 "# Mögliche Werte sind (die Voreinstellung ist mit * gekennzeichnet):\n"
-"# * 0 = nein\n"
-"#   1 = nur Shell Archive (shar) auspacken\n"
-"#   2 = ja\n"
+"# * 0 = Nein\n"
+"#   1 = Nur Shell Archive (shar) auspacken\n"
+"#   2 = Ja\n"
 
 #: src/lang.c:2715
 msgid "Process only unread articles"
@@ -8478,7 +8475,7 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr "Füge 'X-Comment-To:'-Header ein"
 
 #. TODO: lang.c
-#: src/main.c:824
+#: src/main.c:850
 msgid "reading from local spool"
 msgstr "Lese aus dem lokalen Spool"
 
@@ -8542,7 +8539,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "Kann %s nicht expandieren\n"
 
-#: src/post.c:1780
+#: src/post.c:1782
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8551,7 +8548,7 @@ msgstr ""
 "Zeile %d ist länger als %d Oktette und sollte gefaltet werden,\n"
 "aber die Kodierung ist weder auf %s noch auf %s gestellt.\n"
 
-#: src/post.c:1785
+#: src/post.c:1787
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8563,7 +8560,7 @@ msgstr ""
 "angeschaltet zu haben, oder der Artikel enthält keine 8Bit Zeichen\n"
 "und wird daher nicht automatisch gefaltet wird.\n"
 
-#: src/post.c:1787
+#: src/post.c:1789
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8572,12 +8569,12 @@ msgstr ""
 "Zeile %d ist länger als %d Oktette und sollte gefaltet werden,\n"
 "aber die Kodierung ist nicht auf %s gesetzt.\n"
 
-#: src/post.c:2774
+#: src/post.c:2778
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Poste: %.*s ..."
 
-#: src/post.c:4543
+#: src/post.c:4547
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 "Überschreiben in Mailgruppen nicht möglich, stattdessen Reposting benutzen."

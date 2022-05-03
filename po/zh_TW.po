@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-22 13:40+0100\n"
+"POT-Creation-Date: 2022-05-03 07:11+0200\n"
 "PO-Revision-Date: 2015-10-08 12:13+0800\n"
 "Last-Translator: Wei-Lun Chao <bluebat@member.fsf.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -5085,7 +5085,7 @@ msgstr "多部件主旨"
 msgid "Percentage Match"
 msgstr "百分比匹配"
 
-#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485
+#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485 src/lang.c:1588
 msgid "No"
 msgstr "否"
 
@@ -5094,7 +5094,8 @@ msgid "Yes"
 msgstr "是"
 
 #: src/lang.c:1297
-msgid "Hide All"
+#, fuzzy
+msgid "Hide all"
 msgstr "隱藏所有"
 
 #: src/lang.c:1306
@@ -5472,16 +5473,14 @@ msgstr "引用簽名 & 空列"
 msgid "Comp. q., quote sigs & empty lines"
 msgstr "壓縮引言，引用簽名 & 空列"
 
-#: src/lang.c:1588
-msgid "no"
-msgstr "無"
-
 #: src/lang.c:1589
-msgid "with headers"
+#, fuzzy
+msgid "With headers"
 msgstr "保留標頭"
 
 #: src/lang.c:1590
-msgid "without headers"
+#, fuzzy
+msgid "Without headers"
 msgstr "無需標頭"
 
 #: src/lang.c:1597
@@ -6114,13 +6113,14 @@ msgid "Display uue data as an attachment"
 msgstr "將 uue 資料做為附件顯示"
 
 #: src/lang.c:1930
+#, fuzzy
 msgid ""
 "# Handling of uuencoded data in the pager\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no, display raw uuencoded data\n"
-"#   1 = yes, uuencoded data will be condensed to a single tag line showing\n"
+"# * 0 = No, display raw uuencoded data\n"
+"#   1 = Yes, uuencoded data will be condensed to a single tag line showing\n"
 "#       size and filename, similar to how MIME attachments are displayed\n"
-"#   2 = hide all, as for 1, but any line that looks like uuencoded data "
+"#   2 = Hide all, as for 1, but any line that looks like uuencoded data "
 "will\n"
 "#       be folded into a tag line.\n"
 msgstr ""
@@ -7559,12 +7559,13 @@ msgid "Post process saved articles"
 msgstr "後續處理已儲存的文章"
 
 #: src/lang.c:2706
+#, fuzzy
 msgid ""
 "# Perform post processing (saving binary attachments) from saved articles.\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no\n"
+"# * 0 = No\n"
 "#   1 = extract shell archives (shar) only\n"
-"#   2 = yes\n"
+"#   2 = Yes\n"
 msgstr ""
 "# 對已儲存的文章施行後續處理 (儲存二進位附件)。\n"
 "# 可能的值包括 (預設值以 * 標記)：\n"
@@ -8138,7 +8139,7 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr "插入『X-Comment-To:』標頭"
 
 #. TODO: lang.c
-#: src/main.c:824
+#: src/main.c:850
 msgid "reading from local spool"
 msgstr ""
 
@@ -8203,7 +8204,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "無法展開 %s\n"
 
-#: src/post.c:1780
+#: src/post.c:1782
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8212,7 +8213,7 @@ msgstr ""
 "第 %d 列長度超過 998 位元組而應該被折疊，但是\n"
 "編碼未被設定為 %s 亦非 %s\n"
 
-#: src/post.c:1785
+#: src/post.c:1787
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8223,7 +8224,7 @@ msgstr ""
 "編碼被設定為 %s 而未啟用 MIME_BREAK_LONG_LINES 或是\n"
 "貼文不包含任何 8 位元字元，因而無法發生折疊\n"
 
-#: src/post.c:1787
+#: src/post.c:1789
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8232,12 +8233,12 @@ msgstr ""
 "第 %d 列長度超過 998 位元組而，但是\n"
 "編碼未被設定為 %s\n"
 
-#: src/post.c:2774
+#: src/post.c:2778
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "張貼：%.*s…"
 
-#: src/post.c:4543
+#: src/post.c:4547
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8360,6 +8361,9 @@ msgstr "Slrnface 不正常地離開，代碼 %d。"
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Slrnface 失敗：%s。"
+
+#~ msgid "no"
+#~ msgstr "無"
 
 #~ msgid "#  start_editor_offset=ON/OFF\n"
 #~ msgstr "#  start_editor_offset=ON/OFF\n"

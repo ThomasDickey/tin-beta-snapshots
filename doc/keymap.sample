@@ -174,18 +174,18 @@ PgpSign				s
 
 #####
 
+PostAbort			a
+PostContinue			c
 PostCancel			d
 PostEdit			e
 PostPGP				g
 PostIspell			i
-PostContinue			c
-PostAbort			a
 PostIgnore			i
 PostMail			m
+PostPostpone			o
 PostPost			p	y
 PostSend			s	y
 PostSupersede			s
-PostPostpone			o
 
 #####
 
@@ -193,13 +193,13 @@ PostedArticlesSelect		^J	^M
 
 #####
 
-PostponeOverride		Y
 PostponeAll			A
+PostponeOverride		Y
 
 #####
 
-PromptYes			y	Y
 PromptNo			n	N
+PromptYes			y	Y
 
 #####
 

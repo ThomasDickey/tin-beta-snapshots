@@ -41,7 +41,6 @@ the \fB\%tin\fP(1)  newsreader. All files are expected to have unix style
 .\" $TMPDIR/SCOPES-R   (-D 32)
 .\" $TMPDIR/SCOPES-W   (-D 32)
 .\" $TMPDIR/ACTIVE     (-D 64)
-.PP
 \fI$MAILCAPS\fP
 .br
 \fI~/.mailcap\fP
@@ -685,7 +684,6 @@ Assume (broken) articles without MIME charset declaration have this charset
 \(em default is US\-ASCII. This attribute works only on systems with working
 \fB\%iconv\fP(3), others might have to compile \fB\%tin\fP(1)  with
 \-\-disable\-mime\-strict\-charset.
-.PP
 .TP 
 Example:
 .RS
@@ -842,7 +840,6 @@ variable \fBwildcard\fP.
 .TP 
 \fBtime\fP
 time_t value when rule expires
-.PP
 .TP 
 Example:
 .RS
@@ -2275,11 +2272,11 @@ and ellipsis ('...'). Default is OFF.
 .TP 
 \fBverbatim_begin_regex\fP
 A regular expression that \fBtin\fP will use to find the begin of a verbatim
-block.  Default is #v+
+block. Default is #v+
 .TP 
 \fBverbatim_end_regex\fP
 A regular expression that \fBtin\fP will use to find the end of a verbatim
-block.  Default is #v\-
+block. Default is #v\-
 .TP 
 \fBverbatim_handling\fP
 If ON verbatim blocks will be detected. Default is ON.
@@ -2365,8 +2362,8 @@ administration if you want to deal with your lusers problems on your own.
 Defines the directory containing the \fB\%inews\fP(1)  executable.
 .TP 
 \fBmm_charset\fP
-Default charset to be used in MIME's \*(rqContent\-Type:\*(rq
-header. $\fBMM_CHARSET\fP overrides any specified value.
+Default charset to be used in MIME's \*(rqContent\-Type:\*(rq header.
+$\fBMM_CHARSET\fP overrides any specified value.
 .TP 
 \fBpost_mime_encoding\fP
 Default encoding scheme used in MIME articles. 8bit might be the best value.
@@ -2576,7 +2573,6 @@ tries to read the file if you read directly from the local spool, if you
 read news via NNTP, \fB\%tin\fP(1)  uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP)
 command instead.
 .RE
-.PP
 
 .SH "SEE ALSO"
 \fB\%inews\fP(1), \fB\%ispell\fP(1), \fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1),

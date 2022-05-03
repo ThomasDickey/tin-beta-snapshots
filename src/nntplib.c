@@ -952,7 +952,7 @@ get_server(
 		if (strcmp(last_put, "QUIT")) {
 			/*
 			 * Typhoon v2.1.1.363 colses the connection right after an unknown
-			 * command, (i.e. CAPABILITIES) so we avoid the reissue it on a
+			 * command, (i.e. CAPABILITIES) so we avoid to reissue it on a
 			 * reconnect if it was the last command.
 			 */
 			if (!strcmp(last_put, "CAPABILITIES")) {

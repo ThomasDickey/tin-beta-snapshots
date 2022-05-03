@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2021-07-02
+ *  Updated   : 2022-04-09
  *  Notes     : #defines and structs for options_menu.c
  *
  * Copyright (c) 1997-2022 Thomas E. Dickey <dickey@invisible-island.net>
@@ -60,7 +60,7 @@ MYDATA {
 static MYDATA *all_data;
 static int line_no;
 
-static void
+_Noreturn static void
 failed(
 	const char *message)
 {

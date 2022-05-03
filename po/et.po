@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-22 13:40+0100\n"
+"POT-Creation-Date: 2022-05-03 07:11+0200\n"
 "PO-Revision-Date: 2020-12-25 20:39+0200\n"
 "Last-Translator: Toomas Soome <tsoome@me.com>\n"
 "Language-Team: Estonian <linux-ee@lists.eenet.ee>\n"
@@ -5133,7 +5133,7 @@ msgstr "Mitmeosaliste teema"
 msgid "Percentage Match"
 msgstr "Percentage Match"
 
-#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485
+#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485 src/lang.c:1588
 msgid "No"
 msgstr "Ei"
 
@@ -5142,7 +5142,8 @@ msgid "Yes"
 msgstr "Jah"
 
 #: src/lang.c:1297
-msgid "Hide All"
+#, fuzzy
+msgid "Hide all"
 msgstr "Peida kõik"
 
 #: src/lang.c:1306
@@ -5520,16 +5521,14 @@ msgstr "Tsiteeri allkirju ja tühje ridu"
 msgid "Comp. q., quote sigs & empty lines"
 msgstr "Tihenda tsitaate, tsiteeri allkirju ja tühje ridu"
 
-#: src/lang.c:1588
-msgid "no"
-msgstr "ei"
-
 #: src/lang.c:1589
-msgid "with headers"
+#, fuzzy
+msgid "With headers"
 msgstr "päistega"
 
 #: src/lang.c:1590
-msgid "without headers"
+#, fuzzy
+msgid "Without headers"
 msgstr "päisteta"
 
 #: src/lang.c:1597
@@ -6177,13 +6176,14 @@ msgid "Display uue data as an attachment"
 msgstr "Näita uuenk. andmeid lisadena"
 
 #: src/lang.c:1930
+#, fuzzy
 msgid ""
 "# Handling of uuencoded data in the pager\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no, display raw uuencoded data\n"
-"#   1 = yes, uuencoded data will be condensed to a single tag line showing\n"
+"# * 0 = No, display raw uuencoded data\n"
+"#   1 = Yes, uuencoded data will be condensed to a single tag line showing\n"
 "#       size and filename, similar to how MIME attachments are displayed\n"
-"#   2 = hide all, as for 1, but any line that looks like uuencoded data "
+"#   2 = Hide all, as for 1, but any line that looks like uuencoded data "
 "will\n"
 "#       be folded into a tag line.\n"
 msgstr ""
@@ -7659,12 +7659,13 @@ msgid "Post process saved articles"
 msgstr "Salvestatud artikl. järeltöötlemine"
 
 #: src/lang.c:2706
+#, fuzzy
 msgid ""
 "# Perform post processing (saving binary attachments) from saved articles.\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no\n"
+"# * 0 = No\n"
 "#   1 = extract shell archives (shar) only\n"
-"#   2 = yes\n"
+"#   2 = Yes\n"
 msgstr ""
 "# Teosta salvestatud artiklite järeltöötlemist (lisade eraldamine).\n"
 "# Võimalikud väärtused on (vaikeväärtuse tähis on *):\n"
@@ -8257,7 +8258,7 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr "Sisestage 'X-Comment-To:' päis"
 
 #. TODO: lang.c
-#: src/main.c:824
+#: src/main.c:850
 msgid "reading from local spool"
 msgstr "loen lokaalsest spool kataloogist"
 
@@ -8321,7 +8322,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "ei saa laiendada %s\n"
 
-#: src/post.c:1780
+#: src/post.c:1782
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8330,7 +8331,7 @@ msgstr ""
 "Rida %d on pikem, kui %d sümbolit ja tuleks poolitada, aga kodeering\n"
 "pole ei %s ega %s\n"
 
-#: src/post.c:1785
+#: src/post.c:1787
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8341,7 +8342,7 @@ msgstr ""
 "on %s ja MIME_BREAK_LONG_LINES pole seatud või postitamine ei sisalda\n"
 "8 bitiseid sümboleid ja seetõttu poolitamist ei toimu\n"
 
-#: src/post.c:1787
+#: src/post.c:1789
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8350,12 +8351,12 @@ msgstr ""
 "Rida %d on pikem, kui %d sümbolit ja tuleks poolitada, aga kodeering\n"
 "pole %s\n"
 
-#: src/post.c:2774
+#: src/post.c:2778
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Postitan: %.*s ..."
 
-#: src/post.c:4543
+#: src/post.c:4547
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr "e-posti gruppides ei saa asendada, proovide uuesti postitada."
 

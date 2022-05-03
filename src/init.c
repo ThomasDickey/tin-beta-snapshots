@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-19
+ *  Updated   : 2022-03-26
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -854,6 +854,7 @@ init_selfinfo(
 	}
 	strcpy(tinrc.mailer_format, MAILER_FORMAT);
 	my_strncpy(mailer, get_val(ENV_VAR_MAILER, DEFAULT_MAILER), sizeof(mailer) - 1);
+	STRCPY(tinrc.editor_format, TIN_EDITOR_FMT);
 #ifndef DISABLE_PRINTING
 	strcpy(tinrc.printer, DEFAULT_PRINTER);
 #endif /* !DISABLE_PRINTING */

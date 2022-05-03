@@ -38,7 +38,6 @@ endings.
 .\" $TMPDIR/SCOPES-R   (-D 32)
 .\" $TMPDIR/SCOPES-W   (-D 32)
 .\" $TMPDIR/ACTIVE     (-D 64)
-.PP
 .IR $MAILCAPS
 .br
 .IR ~/.mailcap
@@ -285,7 +284,8 @@ news.example.com  "top secret"  james.bond@example.com
 .IR ${TIN_HOMEDIR:\-"$HOME"}/.newsrc
 .sp
 .RS
-"\fInewsgroup\fR\fIflag\fR [\fIarticle\fR[,\fIarticle\fR | \-\fIarticle\fR]...]" lines.
+"\fInewsgroup\fR\fIflag\fR [\fIarticle\fR[,\fIarticle\fR | \-\fIarticle\fR]...]"
+lines.
 .TP
 .B newsgroup
 the name of the newsgroup.
@@ -700,7 +700,6 @@ with working
 others might have to compile
 .BR \%tin (1)
 with \-\-disable\-mime\-strict\-charset.
-.PP
 .TP
 Example:
 .RS
@@ -859,7 +858,6 @@ variable \fBwildcard\fP.
 .TP
 .B time
 time_t value when rule expires
-.PP
 .TP
 Example:
 .RS
@@ -2411,12 +2409,12 @@ If ON use UTF-8 characters for indicator ('\->'), thread/attachment tree and
 ellipsis ('...'). Default is OFF.
 .TP
 .B verbatim_begin_regex
-A regular expression that \fBtin\fP will use to find the begin of a verbatim block.
-Default is #v+
+A regular expression that \fBtin\fP will use to find the begin of a verbatim
+block. Default is #v+
 .TP
 .B verbatim_end_regex
-A regular expression that \fBtin\fP will use to find the end of a verbatim block.
-Default is #v-
+A regular expression that \fBtin\fP will use to find the end of a verbatim
+block. Default is #v-
 .TP
 .B verbatim_handling
 If ON verbatim blocks will be detected. Default is ON.
@@ -2517,8 +2515,8 @@ Defines the directory containing the
 executable.
 .TP
 .B mm_charset
-Default charset to be used in MIME's ''Content\-Type:'' header. $\fBMM_CHARSET\fP
-overrides any specified value.
+Default charset to be used in MIME's ''Content\-Type:'' header.
+$\fBMM_CHARSET\fP overrides any specified value.
 .TP
 .B post_mime_encoding
 Default encoding scheme used in MIME articles. 8bit might be the best value.
@@ -2650,7 +2648,8 @@ articles are locally filed into the ''foo.bar'' group
 only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR \%tin (1)
-uses the LIST (\fBRFC\%3977\fP) or LIST COUNTS (\fBRFC\%6048\fP) command instead.
+uses the LIST (\fBRFC\%3977\fP) or LIST COUNTS (\fBRFC\%6048\fP) command
+instead.
 .RE
 .PP
 
@@ -2744,7 +2743,6 @@ if you read news via NNTP,
 .BR \%tin (1)
 uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .RE
-.PP
 
 .SH "SEE ALSO"
 .BR \%inews (1),

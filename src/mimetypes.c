@@ -3,7 +3,7 @@
  *  Module    : mimetypes.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-31
- *  Updated   : 2019-02-18
+ *  Updated   : 2022-04-09
  *  Notes     : mime.types handling
  *
  * Copyright (c) 2000-2022 Jason Faultless <jason@altarstone.com>
@@ -78,7 +78,7 @@ _lookup_mimetype(
 				if (strcasecmp(ext, exts) == 0) {
 					if ((i = content_type(strtok(buf, "/"))) != -1) {
 						if ((ptr = strtok(NULL, "\n")) != NULL) {
-							part->type = i;
+							part->type = (unsigned int) i;
 							FreeIfNeeded(part->subtype);
 							part->subtype = my_strdup(ptr);
 							fclose(fp);

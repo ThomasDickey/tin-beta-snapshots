@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin-2.6.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-22 13:40+0100\n"
+"POT-Creation-Date: 2022-05-03 07:11+0200\n"
 "PO-Revision-Date: 2021-12-15 17:39+0100\n"
 "Last-Translator: Matt Anton <tin@lv223.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -5193,7 +5193,7 @@ msgstr "Sujet multiparties"
 msgid "Percentage Match"
 msgstr "Taux de concordance"
 
-#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485
+#: src/lang.c:1295 src/lang.c:1386 src/lang.c:1485 src/lang.c:1588
 msgid "No"
 msgstr "Non"
 
@@ -5202,7 +5202,7 @@ msgid "Yes"
 msgstr "Oui"
 
 #: src/lang.c:1297
-msgid "Hide All"
+msgid "Hide all"
 msgstr "Tout masquer"
 
 #: src/lang.c:1306
@@ -5578,17 +5578,13 @@ msgstr "Citer les signatures & les lignes vides"
 msgid "Comp. q., quote sigs & empty lines"
 msgstr "Citations compr., signatures et lignes vides citées"
 
-#: src/lang.c:1588
-msgid "no"
-msgstr "non"
-
 #: src/lang.c:1589
-msgid "with headers"
-msgstr "avec les en-têtes"
+msgid "With headers"
+msgstr "Avec les en-têtes"
 
 #: src/lang.c:1590
-msgid "without headers"
-msgstr "sans les en-têtes"
+msgid "Without headers"
+msgstr "Sans les en-têtes"
 
 #: src/lang.c:1597
 msgid "NFKC"
@@ -6258,13 +6254,14 @@ msgid "Display uue data as an attachment"
 msgstr "Afficher donnée uue comme PJ"
 
 #: src/lang.c:1930
+#, fuzzy
 msgid ""
 "# Handling of uuencoded data in the pager\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no, display raw uuencoded data\n"
-"#   1 = yes, uuencoded data will be condensed to a single tag line showing\n"
+"# * 0 = No, display raw uuencoded data\n"
+"#   1 = Yes, uuencoded data will be condensed to a single tag line showing\n"
 "#       size and filename, similar to how MIME attachments are displayed\n"
-"#   2 = hide all, as for 1, but any line that looks like uuencoded data "
+"#   2 = Hide all, as for 1, but any line that looks like uuencoded data "
 "will\n"
 "#       be folded into a tag line.\n"
 msgstr ""
@@ -7791,12 +7788,13 @@ msgid "Post process saved articles"
 msgstr "Post-traiter les articles enregistrés"
 
 #: src/lang.c:2706
+#, fuzzy
 msgid ""
 "# Perform post processing (saving binary attachments) from saved articles.\n"
 "# Possible values are (the default is marked with *):\n"
-"# * 0 = no\n"
+"# * 0 = No\n"
 "#   1 = extract shell archives (shar) only\n"
-"#   2 = yes\n"
+"#   2 = Yes\n"
 msgstr ""
 "# Post-traitement (enregistrement des PJ) des articles enregistrés.\n"
 "# Les valeurs possibles sont (celle par défaut est marquée par *) :\n"
@@ -8408,7 +8406,7 @@ msgid "Insert 'X-Comment-To:' header"
 msgstr "Insérer l'en-tête 'X-Comment-To:'"
 
 #. TODO: lang.c
-#: src/main.c:824
+#: src/main.c:850
 msgid "reading from local spool"
 msgstr "lecture depuis le spool local"
 
@@ -8472,7 +8470,7 @@ msgstr "MOTD: "
 msgid "couldn't expand %s\n"
 msgstr "impossible de décompacter %s\n"
 
-#: src/post.c:1780
+#: src/post.c:1782
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8481,7 +8479,7 @@ msgstr ""
 "La ligne %d est plus longue que %d octets et devrait être réduite, mais\n"
 "l'encodage n'est ni %s ni %s\n"
 
-#: src/post.c:1785
+#: src/post.c:1787
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8493,7 +8491,7 @@ msgstr ""
 "activée ou l'article ne contient pas de caractères 8 bits donc pas\n"
 "besoin de réduire la ligne\n"
 
-#: src/post.c:1787
+#: src/post.c:1789
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8502,12 +8500,12 @@ msgstr ""
 "La ligne %d est plus longue que %d octets et devrait être réduite, mais\n"
 "l'encodage n'est pas %s\n"
 
-#: src/post.c:2774
+#: src/post.c:2778
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Postage : %.*s ..."
 
-#: src/post.c:4543
+#: src/post.c:4547
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 "Impossible de remplacer dans les groupes mail, essayez de poster à nouveau."

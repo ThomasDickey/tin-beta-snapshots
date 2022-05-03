@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-19
+ *  Updated   : 2022-04-15
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -2500,12 +2500,18 @@ extern struct tm *localtime(time_t *);
 #	endif /* HAVE_STDNORETURN_H */
 #else
 #	undef _Noreturn
+	/*
+	 * gcc says "The attribute noreturn is not implemented in GCC
+	 * versions earlier than 2.5" but gcc 2.7.2.3 on m68k-sony-newsos
+	 * or mips-dec-osf1 still doesn't know __attribute__((noreturn)).
+	 * __GNUC__ > 2 should be fine
+	 */
 #	if defined(__GNUC__) && !defined(__cplusplus) && !defined(__APPLE_CC__) && !defined(__NeXT__)
-#		if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6)
+#		if __GNUC__ > 2
 #			define _Noreturn __attribute__((noreturn))
 #		else
 #			define _Noreturn /**/
-#		endif /* __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6) */
+#		endif /* __GNUC__ > 2 */
 #	else
 #		define _Noreturn /**/
 #	endif /* __GNUC__ && !__cplusplus && !__APPLE_CC__ && !__NeXT__ */

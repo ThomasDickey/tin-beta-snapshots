@@ -1294,7 +1294,7 @@ constext *txt_wildcard_type[] = { "WILDMAT", "REGEX", NULL };
 constext *txt_hide_uue_type[] = {
 	N_("No"),
 	N_("Yes"),
-	N_("Hide All"),
+	N_("Hide all"),
 	NULL
 };
 
@@ -1585,9 +1585,9 @@ constext *txt_mailbox_formats[] = {
 
 /* interactive mailers */
 constext *txt_interactive_mailers[] = {
-	N_("no"),
-	N_("with headers"),
-	N_("without headers"),
+	N_("No"),
+	N_("With headers"),
+	N_("Without headers"),
 	NULL
 };
 
@@ -1929,10 +1929,10 @@ struct opttxt txt_hide_uue = {
 	N_("Display uue data as an attachment"),
 	N_("# Handling of uuencoded data in the pager\n\
 # Possible values are (the default is marked with *):\n\
-# * 0 = no, display raw uuencoded data\n\
-#   1 = yes, uuencoded data will be condensed to a single tag line showing\n\
+# * 0 = No, display raw uuencoded data\n\
+#   1 = Yes, uuencoded data will be condensed to a single tag line showing\n\
 #       size and filename, similar to how MIME attachments are displayed\n\
-#   2 = hide all, as for 1, but any line that looks like uuencoded data will\n\
+#   2 = Hide all, as for 1, but any line that looks like uuencoded data will\n\
 #       be folded into a tag line.\n")
 };
 
@@ -2705,9 +2705,9 @@ struct opttxt txt_post_process_type = {
 	N_("Post process saved articles"),
 	N_("# Perform post processing (saving binary attachments) from saved articles.\n\
 # Possible values are (the default is marked with *):\n\
-# * 0 = no\n\
+# * 0 = No\n\
 #   1 = extract shell archives (shar) only\n\
-#   2 = yes\n")
+#   2 = Yes\n")
 };
 
 struct opttxt txt_process_only_unread = {

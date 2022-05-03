@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2022-04-10
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -397,7 +397,7 @@ body_search(
 				return 1;
 			}
 		} else {
-			if (wildmatpos(line, searchbuf, TRUE, srch_offsets, srch_offsets_size) == 1) {
+			if (wildmatpos(line, searchbuf, TRUE, srch_offsets, srch_offsets_size)) {
 				srch_lineno = i;
 				art_close(&pgart);		/* Switch the pager over to matched art */
 				pgart = artinfo;
