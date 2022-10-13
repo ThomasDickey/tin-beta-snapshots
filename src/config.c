@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-03-04
+ *  Updated   : 2022-09-19
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -751,6 +751,11 @@ read_config_file(
 			if (match_string(buf, "strip_was_regex=", tinrc.strip_was_regex, sizeof(tinrc.strip_was_regex)))
 				break;
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if (match_boolean(buf, "suppress_soft_hyphens=", &tinrc.suppress_soft_hyphens))
+				break;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 			break;
 
 		case 't':
@@ -771,6 +776,11 @@ read_config_file(
 
 			if (match_boolean(buf, "thread_catchup_on_exit=", &tinrc.thread_catchup_on_exit))
 				break;
+
+#ifdef NNTPS_ABLE
+			if (match_string(buf, "tls_ca_cert_file=", tinrc.tls_ca_cert_file, sizeof(tinrc.tls_ca_cert_file)))
+				break;
+#endif /* NNTPS_ABLE */
 
 #if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 			if (match_boolean(buf, "translit=", &tinrc.translit))
@@ -1159,6 +1169,11 @@ write_config_file(
 	fprintf(fp, "%s", _(txt_show_signatures.tinrc));
 	fprintf(fp, "show_signatures=%s\n\n", print_boolean(tinrc.show_signatures));
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	fprintf(fp, "%s", _(txt_suppress_soft_hyphens.tinrc));
+	fprintf(fp, "suppress_soft_hyphens=%s\n\n", print_boolean(tinrc.suppress_soft_hyphens));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	fprintf(fp, "%s", _(txt_tex2iso_conv.tinrc));
 	fprintf(fp, "tex2iso_conv=%s\n\n", print_boolean(tinrc.tex2iso_conv));
 
@@ -1455,6 +1470,11 @@ write_config_file(
 	fprintf(fp, "%s", _(txt_render_bidi.tinrc));
 	fprintf(fp, "render_bidi=%s\n\n", print_boolean(tinrc.render_bidi));
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
+
+#ifdef NNTPS_ABLE
+	fprintf(fp, "%s", _(txt_tls_ca_cert_file.tinrc));
+	fprintf(fp, "tls_ca_cert_file=%s\n\n", tinrc.tls_ca_cert_file);
+#endif /* NNTPS_ABLE */
 
 	fprintf(fp, "%s", _(txt_tinrc_filter));
 	fprintf(fp, "default_filter_kill_header=%d\n", tinrc.default_filter_kill_header);

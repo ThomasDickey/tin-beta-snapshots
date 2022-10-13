@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-22
+ *  Updated   : 2022-10-12
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -179,7 +179,9 @@ constext txt_enter_next_unread_group[] = N_(" and enter next unread group");
 constext txt_enter_option_num[] = N_("Enter option number> ");
 constext txt_enter_range[] = N_("Enter range [%s]> ");
 constext txt_error_approved[] = N_("\nWarning: Approved: header used.\n");
-constext txt_error_asfail[] = "%s: assertion failure: %s (%d): %s\n";
+#ifndef NDEBUG
+	constext txt_error_asfail[] = "%s: assertion failure: %s (%d): %s\n";
+#endif /* ! NDEBUG */
 constext txt_error_bad_approved[] = N_("\nError: Bad address in Approved: header.\n");
 constext txt_error_bad_from[] = N_("\nError: Bad address in From: header.\n");
 constext txt_error_bad_msgidfqdn[] = N_("\nError: Bad FQDN in Message-ID: header.\n");
@@ -725,7 +727,9 @@ constext txt_out_of_memory[] = "%s: memory exhausted trying to allocate %lu byte
 
 constext txt_pcre_error_at[] = N_("Error in regex: %s at pos. %d '%s'");
 constext txt_pcre_error_num[] = N_("Error in regex: pcre internal error %d");
-constext txt_pcre_error_text[] = N_("Error in regex: study - pcre internal error %s");
+#ifndef HAVE_LIB_PCRE2
+	constext txt_pcre_error_text[] = N_("Error in regex: study - pcre internal error %s");
+#endif /* !HAVE_LIB_PCRE2 */
 constext txt_post_a_followup[] = N_("Post a followup...");
 /* TODO: replace hard coded key-name in txt_post_error_ask_postpone */
 constext txt_post_error_ask_postpone[] = N_("An error has occurred while posting the article. If you think that this\n\
@@ -1128,6 +1132,10 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_usage_force_authentication[] = N_("  -A       force authentication on connect");
 	constext txt_usage_newsserver[] = N_("  -g serv  read news from NNTP server serv [default=%s]");
 	constext txt_usage_port[] = N_("  -p port  use port as NNTP port [default=%d]");
+#if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
+	constext txt_usage_use_insecure_nntps[] = N_("  -k       skip verification for NNTPS");
+	constext txt_usage_use_nntps[] = N_("  -T       enable NNTPS");
+#endif /* NNTP_ABLE && NNTPS_ABLE */
 	constext txt_usage_quickstart[] = N_("  -Q       quick start. Same as -dnq");
 	constext txt_usage_read_news_remotely[] = N_("  -r       read news remotely from default NNTP server");
 	constext txt_usage_read_only_active[] = N_("  -l       use only LIST instead of GROUP (-n) command");
@@ -1923,6 +1931,14 @@ struct opttxt txt_show_signatures = {
 	N_("Display signatures"),
 	N_("# If OFF don't show signatures when displaying articles\n")
 };
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+struct opttxt txt_suppress_soft_hyphens = {
+	N_("Remove soft hyphens. <SPACE> toggles & <CR> sets."),
+	N_("Remove soft hyphens"),
+	N_("# If ON remove soft hyphens when displaying articles\n")
+};
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 struct opttxt txt_hide_uue = {
 	N_("Display uuencoded data as tagged attachments. <SPACE> toggles & <CR> sets."),
@@ -3080,3 +3096,11 @@ struct opttxt txt_x_comment_to = {
 	N_("Insert 'X-Comment-To:' header"),
 	NULL
 };
+
+#ifdef NNTPS_ABLE
+struct opttxt txt_tls_ca_cert_file = {
+	N_("Enter name of file containing trusted CA certificates. <CR> sets."),
+	N_("CA certificate file"),
+	N_("# name of file containing all trusted CA certificates (empty = system default)\n")
+};
+#endif /* NNTPS_ABLE */

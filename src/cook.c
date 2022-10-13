@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2021-03-13
+ *  Updated   : 2022-09-19
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2022 Jason Faultless <jason@altarstone.com>
@@ -55,7 +55,7 @@
 			(x)->hdr.ext->type == TYPE_MULTIPART && \
 			strcasecmp("alternative", (x)->hdr.ext->subtype) == 0)
 
-#define MATCH_REGEX(x,y,z)	(pcre_exec(x.re, x.extra, y, z, 0, 0, NULL, 0) >= 0)
+#define MATCH_REGEX(x,y,z)	(match_regex_ex(y, z, 0, 0, &(x)) >= 0)
 
 
 static t_bool charset_unsupported(const char *charset);
@@ -406,8 +406,6 @@ process_text_body_part(
 	const char *ncharset;
 	size_t max_line_len = 0;
 	int flags, len, lines_left, len_blank;
-	int offsets[6];
-	int size_offsets = ARRAY_SIZE(offsets);
 	unsigned int lines_skipped = 0;
 	t_bool in_sig = FALSE;			/* Set when in sig portion */
 	t_bool in_uue = FALSE;			/* Set when in uuencoded section */
@@ -477,8 +475,12 @@ process_text_body_part(
 		process_charsets(&line, &max_line_len, ncharset ? ncharset : "US-ASCII", tinrc.mm_local_charset, curr_group->attribute->tex2iso_conv && art->tex2iso);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (IS_LOCAL_CHARSET("UTF-8"))
+		if (IS_LOCAL_CHARSET("UTF-8")) {
 			utf8_valid(line);
+
+			if (!in_verbatim && curr_group->attribute->suppress_soft_hyphens && ncharset && !strcasecmp(ncharset, "UTF-8"))
+				remove_soft_hyphens(line);
+		}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 		len = (int) strlen(line);
@@ -572,9 +574,10 @@ process_text_body_part(
 			 * TODO: look for a tailing size line after end (non standard
 			 *       extension)?
 			 */
-			if (pcre_exec(uubegin_regex.re, uubegin_regex.extra, line, len, 0, 0, offsets, size_offsets) != PCRE_ERROR_NOMATCH) {
+			if (match_regex_ex(line, len, 0, 0, &uubegin_regex) >= 0) {
+				REGEX_SIZE* ovector = regex_get_ovector_pointer(&uubegin_regex);
 				in_uue = TRUE;
-				curruue = new_uue(&part, line + offsets[1]);
+				curruue = new_uue(&part, line + ovector[1]);
 				if (hide_uue)
 					continue;				/* Don't cook the 'begin' line */
 			} else if (strncmp(line, "end\n", 4) == 0) {

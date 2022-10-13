@@ -1,37 +1,63 @@
--- 2.6.2 release 20220503 "" --
+-- 2.6.2 release 20221013 "" --
+
+ 008) Enrik Berkhan <enrik@tin.org>
+      BUG. remove alleged Y2K38 safety issues
+      ADD. ~ and $VAR expansion to tinrc option tls_ca_cert_file
+      ADD. simplify code and refactor to fix an unused variable complaint
+      ADD. pcre2 support (debian bug #999941)
+      ADD. NNTPS support based on libressl/GNUttls/OpenSSL (RFC 8143)
+      ADD. switch from stdio to own buffer implementation
+      FIX. config.c, cook.c, feed.c, filter.c, group.c, init.c, lang.c, main.c
+           memory.c, misc.c, nntplib.c, nntps.c, options_menu.c, page.c, read.c
+           regex.c, save.c, screen.c, search.c, select.c, wildmat.c
+           autoconf.h[in], extern.h, nntplib.h, proto.h, tinrc.h, tin.h
+           tnntp.h, tnntps.h, tincfg.tbl, parsdate.y, configure[.in]
+           Makefile[.in], tin.1
 
  007) Dennis Preiser <dennis@d--p.de>
+      BUG. backward search for an non empty line got stuck in endless loop
       BUG. reading a faulty mime article via NNTP could hang tin
            (debian bug #1005024)
       BUG. a long group name isn't shortened appropriately in group level
+      BUG. config changes via 'M'enu were not immediately active for
+           show_signatures, verbatim_handling, tex2iso_conf and
+           trim_article_body
       BUG. after posting an article from selection or group level the cursor
            remains visible in the lower left corner
       ADD. tinrc.show_help_mail_sign
       ADD. get $TMPDIR just once
+      ADD. option to remove SOFT HYPHENs (U+00AD) from non verbatim blocks of
+           articles in UTF-8 and using an UTF-8 locale
       BUG. show actual help-key in txt_type_h_for_help
-      FIX. config.c, debug.c, group.c, init.c, lang.c, mail.c, my_tmpfile.c
-           newsrc.c, options_menu.c, pgp.c, rfc2046.c, refs.c, save.c, screen.c
-           search.c, select.c, thread.c, extern.h, tin.h, tinrc.h, tincfg.tbl
-           tin.1, tin.5
+      FIX. config.c, cook.c, debug.c, filter.c, group.c, init.c, lang.c, mail.c
+           misc.c, my_tmpfile.c, newsrc.c, options_menu.c, page.c pgp.c
+           regex.c, rfc2046.c, refs.c, save.c, screen.c, search.c, select.c
+           thread.c, extern.h, proto.h, tin.h, tinrc.h, tincfg.tbl, tin.1
+           tin.5
 
  006) Thomas E. Dickey <dickey@invisible-island.net>
       BUG. configure --with-included-gettext was non-functional since tin 2.4.2
       FIX. aclocal.m4, intl/Makefile.in, intl/plural.c
 
  005) Urs Janssen <urs@tin.org>
-      ADD. config.guess update
+      ADD. config.guess, config.sub update
       ADD. code cleanup; remove redundant condition and unused var;
            add some missing casts and _Noreturn
       ADD. ignore set but empty env.-vars
       ADD. try harder when looking for keymap-file, try locale "suffixes"
            from language[_territory[.codeset]][@modifier] with parts
-           stripped off in oder: codeset, normalized codeset, territory,
+           stripped off in order: codeset, normalized codeset, territory,
            modifier
       ADD. guard against empty inews_prog and empty mm_charset in
            !CHARSET_CONVERSION case
-      ADD. warn about some more nonsensical cmd.line option combinations
+      ADD. warn about some more nonsensical cmd.-line option combinations
            -ow|-oz|-wz
       ADD. exit early at -o when there are no postponed articles
+      ADD. reduce memory usage for xface
+      ADD. list of leap years from 2040 to 2068
+      ADD. restrict URL_REGEX to disallow non ascii chars in path
+      ADD. accept active file lines even without moderation flag
+      ADD. do not try NEXT again after an ERR_COMMAND response
       BUG. missing default tinrc.editor_format on first start
       BUG. typo in man page
       BUG. possible memleak in check_article_to_be_posted if article has
@@ -42,10 +68,11 @@
       BUG. hypothetic missing string termination
       BUG. need to convert utf8pass to network charset unconditionally in
            do_authinfo_sasl_plain
-      FIX. art.c, auth.c, config.c, filter.c, init.c, keymap.c, main.c
+      FIX. art.c, auth.c, config.c, filter.c, init.c, keymap.c, lang.c, main.c
            makecfg.c, mimetypes.c, misc.c, options_menu.c, page.c, post.c
-           pgp.c, rfc1524.c, rfc2046.c, select.c, signal.c, string.c, wildmat.c
-           proto.h, tin.h, tin.1, tin.5, config.guess, configure[.in]
+           pgp.c, rfc1524.c, rfc2046.c, save.c, select.c, signal.c, string.c
+           wildmat.c, xface.c, parsdate.y, extern.h, proto.h, tin.h, tin.1
+           tin.5, config.guess, config.sub, configure[.in]
 
 -- 2.6.1 release 20211226 "Convalmore" --
 

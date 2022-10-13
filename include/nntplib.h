@@ -3,7 +3,7 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2018-02-10
+ *  Updated   : 2022-09-19
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -47,6 +47,8 @@
 
 #define NNTP_TCP_NAME	"nntp"
 #define NNTP_TCP_PORT	"119"
+#define NNTPS_TCP_NAME	"nntps"
+#define NNTPS_TCP_PORT	"563"
 
 /*
  * # times to try and reconnect to server after timeout
@@ -121,7 +123,7 @@
 #define NEED_AUTHDATA_SASL	383 /* continue with SASL exchange */
 
 #define ERR_GOODBYE		400	/* Have to hang up for some reason */
-#define ERR_STATE		401 /* The client must change the state of the connection */
+#define ERR_CONNSTATE		401 /* The client must change the state of the connection */
 #define ERR_COMPRESS	403	/* Unable to activate compression */
 #define ERR_NOGROUP		411	/* No such newsgroup */
 #define ERR_NCING		412	/* Not currently in newsgroup */

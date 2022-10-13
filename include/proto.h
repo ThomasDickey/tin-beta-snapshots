@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2022-01-29
+ *  Updated   : 2022-10-04
  *  Notes     :
  *
  * Copyright (c) 1997-2022 Urs Janssen <urs@tin.org>
@@ -270,9 +270,6 @@ extern void postinit_regexp(void);
 #ifdef HAVE_COLOR
 	extern void postinit_colors(int last_color);
 #endif /* HAVE_COLOR */
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	extern t_bool utf8_pcre(void);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 /* joinpath.c */
 extern void joinpath(char *result, size_t result_size, const char *dir, const char *file);
@@ -376,7 +373,9 @@ extern t_bool invoke_cmd(const char *nam);
 extern t_bool invoke_editor(const char *filename, int lineno, struct t_group *group);
 extern t_bool mail_check(const char *mailbox_name);
 extern void append_file(char *old_filename, char *new_filename);
-extern _Noreturn void asfail(const char *file, int line, const char *cond);
+#ifndef NDEBUG
+	extern _Noreturn void asfail(const char *file, int line, const char *cond);
+#endif /* ! NDEBUG */
 extern void base_name(const char *fullpath, char *file);
 extern void cleanup_tmp_files(void);
 extern void copy_body(FILE *fp_ip, FILE *fp_op, char *prefix, char *initl, t_bool raw_data);
@@ -390,6 +389,9 @@ extern void make_group_path(const char *name, char *path);
 extern void process_charsets(char **line, size_t *max_line_len, const char *network_charset, const char *local_charset, t_bool conv_tex2iso);
 extern void read_input_history_file(void);
 extern void rename_file(const char *old_filename, const char *new_filename);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern void remove_soft_hyphens(char *line);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 extern void show_inverse_video_status(void);
 extern void strip_name(const char *from, char *address);
 extern _Noreturn void tin_done(int ret, const char *fmt, ...);
@@ -435,8 +437,6 @@ extern void thd_mark_unread(struct t_group *group, long thread);
 extern void set_default_bitmap(struct t_group *group);
 
 /* nntplib.c */
-extern FILE *get_nntp_fp(FILE *fp);
-/* extern FILE *get_nntp_wr_fp(FILE *fp); */
 extern char *getserverbyfile(const char *file);
 extern int nntp_open(void);
 extern void nntp_close(t_bool send_no_quit);
@@ -449,7 +449,20 @@ extern void nntp_close(t_bool send_no_quit);
 	extern int new_nntp_command(const char *command, int success, char *message, size_t mlen);
 	extern void put_server(const char *string);
 	extern void u_put_server(const char *string);
+	extern int fgetc_server(FILE *stream);
+	extern int ungetc_server(int c, FILE *stream);
 #endif /* NNTP_ABLE */
+
+/* nntps.c */
+	extern int tintls_init(void);
+	extern void tintls_exit(void);
+#if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
+	extern int tintls_open(const char *servername, int fd, void **session_ctx);
+	extern int tintls_close(void *session_ctx);
+	extern int tintls_handshake(void *session_ctx);
+	extern ssize_t tintls_read(void *session_ctx, void *buf, size_t count);
+	extern ssize_t tintls_write(void *session_ctx, const void *buf, size_t count);
+#endif /* NNTP_ABLE && NNTPS_ABLE */
 
 /* nrctbl.c */
 extern t_bool get_newsrcname(char *newsrc_name, size_t newsrc_name_len, const char *nntpserver_name);
@@ -555,9 +568,17 @@ extern void free_msgids(void);
 extern void thread_by_reference(void);
 
 /* regex.c */
-extern t_bool compile_regex(const char *regex, struct regex_cache *cache, int options);
+extern t_bool compile_regex(const char *regex, struct regex_cache *cache, REGEX_OPTIONS options);
 extern t_bool match_regex(const char *string, char *pattern, struct regex_cache *cache, t_bool icase);
+extern int match_regex_ex(const char *string, int length, int offset, REGEX_OPTIONS options, struct regex_cache *regex);
+
+extern REGEX_NOFFSET regex_get_ovector_count(struct regex_cache *regex);
+extern REGEX_SIZE* regex_get_ovector_pointer(struct regex_cache *regex);
+
 extern void highlight_regexes(int row, struct regex_cache *regex, int color);
+extern void regex_cache_init(struct regex_cache *regex);
+extern void regex_cache_destroy(struct regex_cache *regex);
+extern t_bool regex_use_utf8(void);
 
 /* rfc1524.c */
 extern t_mailcap *get_mailcap_entry(t_part *part, const char *path);
@@ -769,7 +790,7 @@ extern void upgrade_prompt_quit(struct t_version *upgrade, const char *file);
 
 /* wildmat.c */
 extern t_bool wildmat(const char *text, char *p, t_bool icase);
-extern t_bool wildmatpos(const char *text, char *p, t_bool icase, int *srch_offsets, int srch_offsets_size);
+extern t_bool wildmatpos(const char *text, char *p, t_bool icase, REGEX_SIZE *srch_offsets, REGEX_NOFFSET srch_offsets_size);
 
 /* xface.c */
 #ifdef XFACE_ABLE

@@ -3,7 +3,7 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2021-03-04
+ *  Updated   : 2022-08-17
  *  Notes     :
  *
  * Copyright (c) 2003-2022 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
@@ -165,8 +165,8 @@ slrnface_start(
 			/*
 			 * TODO: allow positioning, coloring, ...
 			 *       execl(PATH_SLRNFACE, "slrnface",
-			 *              "-xOffsetChar", tinrc.xfacex,
-			 *              "-yOffsetChar", tinrc.xfacey,
+			 *              "-xOffsetPix", tinrc.xfacex,
+			 *              "-yOffsetPix", tinrc.xfacey,
 			 *              "-ink", tinrc.xfacefg,
 			 *              "-paper", tinrc.xfacebg,
 			 *              fifo, NULL);
@@ -258,10 +258,11 @@ slrnface_display_xface(
 	if (!face || !*face)
 		slrnface_clear_xface();
 	else {
-		char buf[2000];	/* slrnface will ignore X-Faces larger than approx. 2000 chars. */
+		char *buf = my_malloc(strlen(face) + 8);
 
-		snprintf(buf, sizeof(buf), "xface %s\n", face);
+		sprintf(buf, "xface %s\n", face);
 		WRITE_FACE_FD(buf);
+		free(buf);
 	}
 }
 

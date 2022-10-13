@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2022-02-19
+ *  Updated   : 2022-08-29
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -102,7 +102,7 @@ static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr,
 static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
 static struct t_filter_comment *copy_filter_comment(struct t_filter_comment *from, struct t_filter_comment *to);
 static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule, t_bool quick_filter_rule);
-static int test_regex(const char *string, char *regex, t_bool nocase, struct regex_cache *cache);
+static int test_match(const char *string, char *regex, t_bool nocase, t_bool use_regex, struct regex_cache *cache);
 static void expand_filter_array(struct t_filters *ptr);
 static void fmt_filter_menu_prompt(char *dest, size_t dest_len, const char *fmt_str, int len, const char *text);
 static void free_filter_item(struct t_filter *ptr);
@@ -200,29 +200,30 @@ expand_filter_array(
  * In case of error prints an error message and returns -1
  */
 static int
-test_regex(
+test_match(
 	const char *string,
 	char *regex,
 	t_bool nocase,
+	t_bool use_regex,
 	struct regex_cache *cache)
 {
-	int regex_errpos;
+	int error;
 
-	if (!tinrc.wildcard) {
+	if (!use_regex) {
 		if (wildmat(string, regex, nocase))
 			return 1;
 	} else {
 		if (!cache->re)
-			compile_regex(regex, cache, (nocase ? PCRE_CASELESS : 0));
+			compile_regex(regex, cache, (nocase ? REGEX_CASELESS : 0));
 		if (cache->re) {
-			regex_errpos = pcre_exec(cache->re, cache->extra, string, (int) strlen(string), 0, 0, NULL, 0);
-			if (regex_errpos >= 0)
+			error = match_regex_ex(string, (int) strlen(string), 0, 0, cache);
+			if (error >= 0)
 				return 1;
-			else if (regex_errpos != PCRE_ERROR_NOMATCH) { /* also exclude PCRE_ERROR_BADUTF8 ? */
-				error_message(2, _(txt_pcre_error_num), regex_errpos);
+			else if (error != REGEX_ERROR_NOMATCH) { /* also exclude BADUTF8 ? */
+				error_message(2, _(txt_pcre_error_num), error);
 #ifdef DEBUG
 				if (debug & DEBUG_FILTER) {
-					debug_print_file("FILTER", _(txt_pcre_error_num), regex_errpos);
+					debug_print_file("FILTER", _(txt_pcre_error_num), error);
 					debug_print_file("FILTER", "\t regex: %s", regex);
 					debug_print_file("FILTER", "\tstring: %s", string);
 				}
@@ -1854,6 +1855,7 @@ filter_articles(
 	struct regex_cache *regex_cache_path = NULL;
 	t_bool filtered = FALSE;
 	t_bool error = FALSE;
+	t_bool use_regex = tinrc.wildcard;
 
 	/*
 	 * check if there are any global filter rules
@@ -1878,7 +1880,7 @@ filter_articles(
 	 * set up cache tables for all types of filter rules
 	 * (only for regexp matching)
 	 */
-	if (tinrc.wildcard) {
+	if (use_regex) {
 		size_t msiz;
 
 		msiz = sizeof(struct regex_cache) * (size_t) num;
@@ -1888,23 +1890,18 @@ filter_articles(
 		regex_cache_xref = my_malloc(msiz);
 		regex_cache_path = my_malloc(msiz);
 		for (j = 0; j < num; j++) {
-			regex_cache_subj[j].re = NULL;
-			regex_cache_subj[j].extra = NULL;
-			regex_cache_from[j].re = NULL;
-			regex_cache_from[j].extra = NULL;
-			regex_cache_msgid[j].re = NULL;
-			regex_cache_msgid[j].extra = NULL;
-			regex_cache_xref[j].re = NULL;
-			regex_cache_xref[j].extra = NULL;
-			regex_cache_path[j].re = NULL;
-			regex_cache_path[j].extra = NULL;
+			regex_cache_init(&regex_cache_subj[j]);
+			regex_cache_init(&regex_cache_from[j]);
+			regex_cache_init(&regex_cache_msgid[j]);
+			regex_cache_init(&regex_cache_xref[j]);
+			regex_cache_init(&regex_cache_path[j]);
 		}
 	}
 
 	/*
 	 * loop through all arts applying global & local filtering rules
 	 */
-	for (i = 0; (i < top_art) && !error; i++) {
+	for (i = 0; i < top_art && !error; i++) {
 #ifdef HAVE_SELECT
 		if (wait_for_input()) /* allow abort */
 			break; /* to free the mem */
@@ -1921,7 +1918,7 @@ filter_articles(
 				 * Filter on Subject: line
 				 */
 				if (ptr[j].subj != NULL) {
-					switch (test_regex(arts[i].subject, ptr[j].subj, ptr[j].icase, &regex_cache_subj[j])) {
+					switch (test_match(arts[i].subject, ptr[j].subj, ptr[j].icase, use_regex, &regex_cache_subj[j])) {
 						case 1:
 							SET_FILTER(group, i, j);
 							break;
@@ -1944,7 +1941,7 @@ filter_articles(
 					else
 						STRCPY(buf, arts[i].from);
 
-					switch (test_regex(buf, ptr[j].from, ptr[j].icase, &regex_cache_from[j])) {
+					switch (test_match(buf, ptr[j].from, ptr[j].icase, use_regex, &regex_cache_from[j])) {
 						case 1:
 							SET_FILTER(group, i, j);
 							break;
@@ -2007,8 +2004,8 @@ filter_articles(
 							break;
 					}
 
-					if ((x = test_regex(myrefs, ptr[j].msgid, FALSE, &regex_cache_msgid[j])) == 0) /* no match */
-						x = test_regex(mymsgid, ptr[j].msgid, FALSE, &regex_cache_msgid[j]);
+					if ((x = test_match(myrefs, ptr[j].msgid, FALSE, use_regex, &regex_cache_msgid[j])) == 0) /* no match */
+						x = test_match(mymsgid, ptr[j].msgid, FALSE, use_regex, &regex_cache_msgid[j]);
 
 					switch (x) {
 						case 1:
@@ -2135,7 +2132,7 @@ filter_articles(
 							break;
 						}
 
-						switch (test_regex(k, ptr[j].xref, ptr[j].icase, &regex_cache_xref[j])) {
+						switch (test_match(k, ptr[j].xref, ptr[j].icase, use_regex, &regex_cache_xref[j])) {
 							case 1:
 								SET_FILTER(group, i, j);
 								break;
@@ -2156,7 +2153,7 @@ filter_articles(
 				 */
 				if (arts[i].path && *arts[i].path) {
 					if (ptr[j].path != NULL) {
-						switch (test_regex(arts[i].path, ptr[j].path, ptr[j].icase, &regex_cache_path[j])) {
+						switch (test_match(arts[i].path, ptr[j].path, ptr[j].icase, use_regex, &regex_cache_path[j])) {
 							case 1:
 								SET_FILTER(group, i, j);
 								break;
@@ -2181,18 +2178,13 @@ filter_articles(
 	/*
 	 * throw away the contents of all regex_caches
 	 */
-	if (tinrc.wildcard) {
+	if (use_regex) {
 		for (j = 0; j < num; j++) {
-			FreeIfNeeded(regex_cache_subj[j].re);
-			FreeIfNeeded(regex_cache_subj[j].extra);
-			FreeIfNeeded(regex_cache_from[j].re);
-			FreeIfNeeded(regex_cache_from[j].extra);
-			FreeIfNeeded(regex_cache_msgid[j].re);
-			FreeIfNeeded(regex_cache_msgid[j].extra);
-			FreeIfNeeded(regex_cache_xref[j].re);
-			FreeIfNeeded(regex_cache_xref[j].extra);
-			FreeIfNeeded(regex_cache_path[j].re);
-			FreeIfNeeded(regex_cache_path[j].extra);
+			regex_cache_destroy(&regex_cache_subj[j]);
+			regex_cache_destroy(&regex_cache_from[j]);
+			regex_cache_destroy(&regex_cache_msgid[j]);
+			regex_cache_destroy(&regex_cache_xref[j]);
+			regex_cache_destroy(&regex_cache_path[j]);
 		}
 		free(regex_cache_subj);
 		free(regex_cache_from);

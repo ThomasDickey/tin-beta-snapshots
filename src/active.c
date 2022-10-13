@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2021-07-23
+ *  Updated   : 2022-09-20
  *  Notes     :
  *
  * Copyright (c) 1992-2022 Iain Lea <iain@bricbrac.de>
@@ -227,34 +227,54 @@ parse_active_line(
 	char *moderated)
 {
 	char *p = NULL, *q = NULL, *r = NULL;
+#ifdef DEBUG
+	char *l;
+#endif /* DEBUG */
 	t_bool lineok = FALSE;
 
 	if (line[0] == '#' || line[0] == '\0')
-		return FALSE;
+		return lineok;
+
+#ifdef DEBUG
+	l = my_strdup(line);
+#endif /* DEBUG */
 
 	if (strtok(line, ACTIVE_SEP)) {		/* skip group name */
 		if ((p = strtok(NULL, ACTIVE_SEP))) {	/* group max count */
 			if ((q = strtok(NULL, ACTIVE_SEP))) {	/* group min count */
-				r = strtok(NULL, ACTIVE_SEP);	/* mod status or path to mailgroup */
-				lineok = TRUE;
+				if ((r = strtok(NULL, ACTIVE_SEP)))	/* mod status or path to mailgroup */
+					lineok = TRUE;
 			}
 		}
 	}
 
-	if (!p || !q || !r || !lineok) {
+	if (!lineok) {
 #ifdef DEBUG
 		/* TODO: This also logs broken non NNTP active lines (i.e. mail.active) to NNTP */
 		if ((debug & DEBUG_NNTP) && verbose > 1)
-			debug_print_file("NNTP", "Active file corrupt - %s", line);
+			debug_print_file("NNTP", "Active file corrupt - %s", l);
+
+		free(l);
 #endif /* DEBUG */
-		return FALSE;
+		if (!p || !q) {
+			return lineok;
+		}
 	}
 
 	*max = atoartnum(p);
 	*min = atoartnum(q);
-	strcpy(moderated, r);
 
-	return TRUE;
+	if (!lineok) { /* missing moderation flag - seen on usenet.farm */
+		strcpy(moderated, "y");	/* guess posting is fine */
+		lineok = TRUE;
+	} else {
+#ifdef DEBUG
+		free(l);
+#endif /* DEBUG */
+		strcpy(moderated, r);
+	}
+
+	return lineok;
 }
 
 

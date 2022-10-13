@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2022-04-14
+.\" Updated   : 2022-10-13
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -27,7 +27,7 @@ tin, rtin \- Usenet newsreader
 .\"
 .\"
 \fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|\fB\-a\fP\|]
-[\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-ArzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
+[\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-AkrTzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
 \|\|\fB\-s\fP \fINews_dir\fP\|] [\|\fB\-cuvZ\fP\|] [\|\fB\-4\fP\||\|\fB\-6\fP\|]
 [\|\fB\-o\fP\||\|\fB\-w\fP\||\|\fB\-N\fP\||\|\fB\-M\fP \fIaddress\fP\|] [\|\fB\-D\fP
 \fIdebug_level\fP\|] [\|\fB\-G\fP \fIarticle_limit\fP\|] [\|\fB\-f\fP \fInewsrc_file\fP\|]
@@ -37,9 +37,10 @@ tin, rtin \- Usenet newsreader
 .IX Header DESCRIPCIÓN
 \fBtin\fP is a full\-screen easy to use Usenet newsreader. It can read news
 locally (e.g., \fI/var/spool/news\fP) or remotely (\fBrtin\fP or \fBtin \-r\fP option)
-via an NNTP (Network News Transport Protocol) server. It will automatically
-utilize NOV \fB\%newsoverview\fP(5)  style index files if available locally or
-via the NNTP [X]OVER command (\fBRFC\%2980\fP, \fBRFC\%3977\fP).
+via an NNTP (Network News Transport Protocol, \fBRFC\%3977\fP) or NNTPS
+(\fBRFC\%8143\fP) server. It will automatically utilize NOV
+\fB\%newsoverview\fP(5)  style index files if available locally or via the NNTP
+[X]OVER command (\fBRFC\%2980\fP, \fBRFC\%3977\fP).
 .PP
 \fBtin\fP has four separate levels of operation: Selection level, Group level,
 Thread level and Article level. Use the \fBHelp\fP ('\fBh\fP')  command to view a
@@ -59,7 +60,7 @@ The \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') key enters the next
 newsgroup with unread articles.
 .SH "ESTADO SALIENTE"
 .IX Header "ESTADO SALIENTE"
-.\" TODO: also exits with signalnr cought as exit status
+.\" TODO: also exits with signalnr caught as exit status
 .TP 
 \fB0\fP
 Successful program execution. No unread news available in batch mode.
@@ -139,6 +140,10 @@ Directory in which to store newsgroup index files. Default is
 has no effect if \fBtin\fP retrieves its index files via NNTP and
 \fBcache_overview_files\fP is turned off.
 .TP 
+\fB\-k\fP
+Skip the certificate verification step for NNTPS connections and proceed
+without checking. This option implies \*(rq\fB\-T\fP\*(rq.
+.TP 
 \fB\-l\fP
 Get number of articles per group from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file. If reading
@@ -174,9 +179,9 @@ Quick post all postponed articles and exit. In order for this to be really
 quick, it should be used with \*(rq\fB\-n\fP\*(rq if possible.
 .TP 
 \fB\-p\fP\fI port\fP
-Port to use if reading via NNTP (default is 119). This also overrides the
-environment variable $\fBNNTPPORT\fP if set. Only available when reading via
-NNTP.
+Port to use if reading via NNTP (default is 119 or 563 if NNTPS is enabled,
+see \*(rq\fB\-T\fP\*(rq). This also overrides the environment variable $\fBNNTPPORT\fP if
+set. Only available when reading via NNTP.
 .TP 
 \fB\-q\fP
 Don't check for new newsgroups and skip loading the servers message of the
@@ -200,6 +205,9 @@ Save/read articles to/in directory. Default is
 \fB\-S\fP
 Save unread articles for later reading by the \*(rq\fB\-R\fP\*(rq option. For more
 information read section "AUTOMATIC MAILING AND SAVING NEW NEWS".
+.TP 
+\fB\-T\fP
+Enable NNTPS (NNTP over TLS). Only available when reading via NNTP.
 .TP 
 \fB\-u\fP
 Create/update index files for every group in
@@ -296,11 +304,12 @@ Extensions (\fBRFC\%6048\fP) and all modern servers should understand it.
 \fBtin\fP has four separate levels of operation: Selection level, Group level,
 Thread level and Article level.
 .PP
-At the Selection level the title displays (the name of the news server and)
-the number of subscribed groups (containing new unread articles). The
-newsgroups are displayed in the middle of the screen usually with the number
-of unread articles displayed on the same line in front, but it can be
-customized via \fBselect_format\fP.
+At the Selection level the title displays (the name of the news server (with
+a "[T]"\- or "[k]"\-suffix if reading via NNTPS (insecurely)) and) the number
+of subscribed groups (containing new unread articles). The newsgroups are
+displayed in the middle of the screen usually with the number of unread
+articles displayed on the same line in front, but it can be customized via
+\fBselect_format\fP.
 .PP
 .\" FIXME - make this auto scale
 .nf
@@ -507,7 +516,7 @@ sequence instead: reload it with \fBPostponed\fP, enter editor with
 \fBHelp 'h'\fP
 Help screen of commands available on the current menu. You can use
 \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') and \fBSearchRepeat\fP
-('\fB\e\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
+('\fB\(rs\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
 Toggle the display of help mini menu at the bottom of the screen and posting
@@ -537,7 +546,7 @@ section "RANGES" for more information.
 \fBSelectSortActive '.'\fP
 Sort the list of newsgroups.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Repeat the previous search.
 .TP 
 \fBSearchSubjF '/'\fP
@@ -689,7 +698,7 @@ section "RANGES" for more information.
 \fBLastViewed '\-'\fP
 Re\-enter the last message that was viewed.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Repeat the previous search.
 .TP 
 \fBSearchSubjF '/'\fP
@@ -940,7 +949,7 @@ section "RANGES" for more information.
 \fBLastViewed '\-'\fP
 Re\-enter the last message that was viewed.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Repeat the previous search.
 .TP 
 \fBSearchSubjF '/'\fP
@@ -1132,7 +1141,7 @@ up will hide it again.
 \fBLastViewed '\-'\fP
 Re\-enter the last message that was viewed.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Repeat the previous search.
 .TP 
 \fBSearchSubjF '/'\fP
@@ -1343,7 +1352,7 @@ URL forward search.
 \fBSearchSubjB '?'\fP
 URL backward search.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Repeat the previous search.
 .TP 
 \fBShellEscape '!'\fP
@@ -1395,7 +1404,7 @@ Attachment forward search.
 \fBSearchSubjB '?'\fP
 Attachment backward search.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Repeat the previous search.
 .TP 
 \fBGlobalPipe '|'\fP
@@ -1443,7 +1452,7 @@ URL forward search.
 \fBSearchSubjB '?'\fP
 URL backward search.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Repeat the previous search.
 .TP 
 \fBShellEscape '!'\fP
@@ -1489,9 +1498,9 @@ toggle the available options. \fBConfigSelect\fP will save the new value,
 .PP
 As with the other menus, \fBRedrawScr\fP ('\fB^L\fP') will redraw the screen. You
 can use \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') and \fBSearchRepeat\fP
-('\fB\e\fP') to search for a specific option. Use \fBQuit\fP ('\fBq\fP') to exit the
-option menu and keep your changes. Use \fBQuitTin\fP ('\fBQ\fP') to exit without
-keeping your changes.
+('\fB\(rs\fP') to search for a specific option. Use \fBQuit\fP ('\fBq\fP') to exit
+the option menu and keep your changes. Use \fBQuitTin\fP ('\fBQ\fP') to exit
+without keeping your changes.
 .PP
 The options menu provides access to the attributes menu for the current
 group by the \fBConfigToggleAttrib\fP ('\fB<TAB>\fP') command. Pressing
@@ -2476,6 +2485,10 @@ in this thread.
 \fBAverage\fP, the average score in this thread.
 .RE
 .TP 
+\fBCA certificate file (tls_ca_cert_file)\fP
+The name of file containing all trusted CA certificates used for NNTPS
+(\fB\%RFC8143\fP) connections. If left empty the system default will be used.
+.TP 
 \fBTransliteration (translit)\fP
 If ON append //TRANSLIT to the first argument of \fB\%iconv_open\fP(3)  to
 enable transliteration. This means that when a character cannot be
@@ -2506,6 +2519,14 @@ blocks with one blank line.
 .IP 7
 \fBCompact mltpl., skip lead. & trai.\fP, 4 + 3
 .RE
+.TP 
+\fBSuppress soft hyphens (suppress_soft_hyphens)\fP
+If ON remove soft hyphens in non verbatim blocks of articles in UTF\-8 when
+they are displayed in a UTF\-8 locale. The character SOFT HYPHEN (U+00AD) is
+an invisible format character that merely indicates a preferred intraword
+line break position. However, some terminal emulators display a space or a
+hyphen, for example, in the place of the soft hyphen. This setting can be
+used to improve the display of those articles. Default is OFF.
 .TP 
 \fBRegex used to highlight _underline_ (underscores_regex)\fP
 A regular expression that will be applied when reading articles. All
@@ -3206,6 +3227,7 @@ cached data for groups you are not reading anymore with something like:
 .\"       $TMPDIR/SCOPES-R   (-D 32)
 .\"       $TMPDIR/SCOPES-W   (-D 32)
 .\"       $TMPDIR/ACTIVE     (-D 64)
+.\"       ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinmsglog
 For a detailed description see \fB\%tin\fP(5).
 .PP
 \fI$MAILCAPS\fP
@@ -3652,12 +3674,16 @@ Terminate gracefully but do not restore terminal (tty).
 Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-file.
 .SH GARANTÍA
 .IX Header GARANTÍA
-.\"
-.\"
 If \fBtin\fP is started in debug mode (\*(rq\fB\-D n\fP\*(rq) it will create world
 readable files in \fB$TMPDIR\fP which may contain the users NNTP password in
 cleartext. On multiuser\-systems \fB$TMPDIR\fP should be set to a safe location
 before starting \fBtin\fP in debug mode (e.g.  \fBTMPDIR=$HOME tin \-D 1\fP).
+.PP
+.\"
+.\"
+Using the \*(rq\fB\-k\fP\*(rq option to skip certificate verification makes the
+session insecure as the server's certificate is not checked; avoid this
+option whenever possible.
 .SH "CONFORME A"
 .IX Header "CONFORME A"
 .\" - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
@@ -3752,4 +3778,4 @@ Urs Janssen <urs@tin.org>
 \fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP,
 \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP,
 \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%4880\fP,
-\fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP
+\fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%8143\fP

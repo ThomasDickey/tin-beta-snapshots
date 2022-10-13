@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2021-12-14
+ *  Updated   : 2022-09-19
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2022 Thomas Dickey <dickey@invisible-island.net>
@@ -974,5 +974,28 @@ Added missing headers after gettext update, using autoheader
  * TODO: write configure option
  */
 #	undef DISABLE_PIPELINING
+
+/* Define to 1 if we can/should compile with the PCRE2 library */
+#	undef HAVE_LIB_PCRE2
+
+/*
+ * Define to 1 to enable NNTPS support
+ */
+#	undef NNTPS_ABLE
+
+/*
+ * Define to 1 if we can/should compile with the LibreSSL libtls library
+ */
+#	undef HAVE_LIB_LIBTLS
+
+/*
+ * Define to 1 if we can/should compile with the OpenSSL libraries
+ */
+#	undef HAVE_LIB_OPENSSL
+
+/*
+ * Define to 1 if we can/should compile with the GnuTLS library
+ */
+#	undef HAVE_LIB_GNUTLS
 
 #endif /* !TIN_AUTOCONF_H */

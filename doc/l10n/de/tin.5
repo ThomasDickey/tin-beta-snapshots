@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2022-02-22
+.\" Updated   : 2022-10-06
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -19,7 +19,7 @@ tin, rtin \- zugehörige Dateien
 .SH BESCHREIBUNG
 Diese Handbuchseite beschreibt die vom Newsreader \fB\%tin\fP(1) benutzen
 (Konfigurations)\-Dateien und deren Formate. Alle Dateien sollten Unixartige
-Zeilenenden ('\en' aka LF) haben.
+Zeilenenden ('\(rsn' aka LF) haben.
 
 .SH DATEIEN
 .\" TODO: mention
@@ -41,6 +41,7 @@ Zeilenenden ('\en' aka LF) haben.
 .\" $TMPDIR/SCOPES-R   (-D 32)
 .\" $TMPDIR/SCOPES-W   (-D 32)
 .\" $TMPDIR/ACTIVE     (-D 64)
+.\" ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinmsglog
 \fI$MAILCAPS\fP
 .br
 \fI~/.mailcap\fP
@@ -59,7 +60,8 @@ werden von \fB\%tin\fP(1) gelesen, um zu bestimmen, wie Nicht\-Text\-Nachrichten
 angezeigt werden können. Jede Zeile die mit "#" beginnt ist ein
 Kommentar. Leerzeilen werden ignoriert. Andernfalls definiert jede Zeile
 einen einzelnen Mailcap\-Eintrag für einen Inhaltstyp. Lange Zeilen können
-fortgesetzt werden, indem man sie mit einem Backslash\-Zeichen "\e" beendet.
+fortgesetzt werden, indem man sie mit einem Backslash\-Zeichen "\(rs"
+beendet.
 .sp
 Jeder einzelne Mailcap\-Eintrag besteht aus einer Content\-Typ\-Spezifikation,
 einem Befehl zum Ausführen und (möglicherweise) einem Satz optionaler
@@ -89,8 +91,8 @@ message. If it contains "%t", those two characters will be replaced by the
 content\-type field, including the subtype, if any. If it contains "%{"
 followed by a parameter name and a closing "}", then all those characters
 will be replaced by the value of the named parameter, if any, from the
-\&\*(rqContent\-Type:\*(rq header. Finally, if the field contains "\e%", those two
-characters will be replaced by a single "%" character.
+\&\*(rqContent\-Type:\*(rq header. Finally, if the field contains "\(rs%", those
+two characters will be replaced by a single "%" character.
 .sp
 Neben dem Typ und dem Befehlsfeld sind folgende "Flags" definiert:
 .TP 
@@ -346,7 +348,7 @@ Verlaufsliste der zuletzt verwendeten Zeichenfolgen
 \fI${TIN_INDEX_MAILDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.mail/\fP
 .sp
 .RS
-mailgroups index files
+Mailgruppen\-Indexdateien
 .RE
 .PP
 
@@ -355,7 +357,7 @@ mailgroups index files
 .fi
 .sp
 .RS
-newsgroups index files
+Newsgruppen\-Indexdateien
 .RE
 .PP
 
@@ -369,11 +371,11 @@ saved newsgroups index files
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail\fP
 .sp
 .RS
-active file ("\fImail_group_name\fP \fImaxnum\fP \fIminnum\fP \fImailspool\fP"
-quadruples) of user's mailgroups (requires \fB\%tin\fP(1)  to be build with
+active file ("\fImailgroupname\fP \fImaxnum\fP \fIminnum\fP \fImailspool\fP" quadruples)
+of user's mailgroups (requires \fB\%tin\fP(1)  to be build with
 mh\-mail\-handling support).
 .TP 
-\fBmail_group_name\fP
+\fBmailgroupname\fP
 Pfad der Mailbox relativ zu Feld #4, wobei '/' in '.' umgewandelt sein muss.
 .TP 
 \fBMaximalwert\fP
@@ -402,7 +404,8 @@ are accessed via /home/foo/Mail/inbox and /home/foo/Mail/outbox
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/active.save\fP
 .sp
 .RS
-active file of user's saved newsgroups, used by \fBtin \-R\fP.
+aktive Datei der gespeicherten Newsgroups des Benutzers, verwendet von \fBtin
+\-R\fP.
 .RE
 .PP
 
@@ -478,7 +481,7 @@ Mailbox to save sent mails. The format of the mailbox is controlled via the
 tinrc \fBmailbox_format\fP variable.
 .TP 
 \fBfollowup_to\fP
-Set \*(rqFollowup\-To:\*(rq header to the specified group(s).
+Setzt den \*(rqFollowup\-To:\*(rq\-Header auf die angegebene(n) Gruppe(n).
 .TP 
 \fBfrom\fP
 Identisch mit der tinrc\-Variable \fBmail_address\fP
@@ -623,6 +626,9 @@ Identisch mit der tinrc\-Variable gleichen Namens
 \fBtrim_article_body\fP
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
+\fBsuppress_soft_hyphens\fP
+Identisch mit der tinrc\-Variable gleichen Namens
+.TP 
 \fBverbatim_handling\fP
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
@@ -635,7 +641,7 @@ string starts with a / or ~ then it is assumed to be the name of a file
 containing the text to insert.
 .TP 
 \fBx_comment_to\fP
-Insert \*(rqX\-Comment\-To:\*(rq header, this is only useful in FIDO groups.
+Fügt Header „X\-Comment\-To:“ ein, dies ist nur in FIDO\-Gruppen nützlich.
 .TP 
 \fBx_headers\fP
 A string including header\-name and the contents of the header that will be
@@ -884,7 +890,7 @@ is unassigned.
 \fBLastPage\fP	$
 \fBToggleColor\fP	&
 \fBLastViewed\fP	\-
-\fBSearchRepeat\fP	\e
+\fBSearchRepeat\fP	\(rs
 \fBSearchSubjF\fP	/
 \fBSearchSubjB\fP	?
 \fBSearchAuthB\fP	A
@@ -1123,11 +1129,14 @@ ist die zugehörige Kurzbeschreibung
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP
 .sp
 .RS
-"\fInntpserver\fP \fInewsrc\fP [\fIshortname\fP [\fI...\fP]]" pairs to use with the
-\&\*(rq\fB\-g\fP\*(rq command\-line switch.
+"\fINNTPServer\fP \fInewsrc\fP [\fIKurzname\fP [\fI...\fP]]" Paare für den
+\&\*(rq\fB\-g\fP\*(rqKommandozeilenschalter. Bei der Suche wird nicht zwischen Groß\- und
+Kleinschreibung unterschieden und jede Zeile, die mit "#", ";" oder " "
+beginnt, wird als Kommentar behandelt.
 .TP 
 \fBNNTPServer\fP
-Vollständiger Name (FQDN) des Newsservers.
+full qualified domain name of the news server. The string "default" or "*"
+acts as wildcard to match any name, such a line should be placed last.
 .TP 
 \fBnewsrc\fP
 zugehörige newsrc\-Datei.
@@ -1142,6 +1151,8 @@ Beispiel:
 news.tin.org .newsrc\-tin.org tinorg
 .br
 news.example.org /tmp/nrc\-ex example ex
+.br
+* ~/.tin/newsrcs/${NNTPSERVER\-localhost}
 .RE
 .RE
 .PP
@@ -1301,7 +1312,7 @@ Falls ON: Thread beim Betreten mit der rechten Cursortaste automatisch
 anzeigen? Voreinstellung ist ON.
 .TP 
 \fBauto_reconnect\fP
-Reconnect to server automatically. Default is OFF.
+Automatisch Verbindung zum Server wiederherstellen. Voreinstellung ist OFF.
 .TP 
 \fBbatch_save\fP
 Falls ON werden Artikel/Threads im Batchmode gespeichert wenn \*(rq\fB\-S\fP oder
@@ -1710,7 +1721,8 @@ werden unterstützt:
 .in -.3i
 .TP 
 \fBmark_saved_read\fP
-If ON mark articles that are saved as read. Default is ON.
+Falls ON werden gespeicherte Artikel als gelesen markiert.Voreinstellung ist
+ON.
 .TP 
 \fBmark_ignore_tags\fP
 When this is ON, the \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBThreadMarkArtRead\fP
@@ -1858,11 +1870,11 @@ executed, be careful when extracting shell archives.  The following values
 are allowed:
 .RS +1i
 .IP 0 3
-\fBNo\fP (default), no post processing is done.
+\fBNein\fP (Voreinstellung), es wird keine Nachbearbeitung gemacht.
 .IP 1
-\fBShell archives\fP, unpacking of multi\-part \fB\%shar\fP(1)  files only.
+\fBShell\-Archive\fP, Entpacken nur von mehrteiligen \fB\%shar\fP(1)\-Dateien.
 .IP 2
-\fBYes\fP, binary attachments and data will be decoded and saved.
+\fBJa\fP, binäre Anhänge und Daten werden dekodiert und gespeichert.
 .RE
 .TP 
 \fBposted_articles_file\fP
@@ -1931,8 +1943,8 @@ matching lines are shown in \fBcol_quote3\fP. If \fBquote_regex3\fP is blank, th
 \fB\%tin\fP(1)  uses a built\-in default.
 .TP 
 \fBrecent_time\fP
-If set to 0, this feature is deactivated, otherwise it means the number of
-days. Default is 2.
+Wenn auf 0 gesetzt, ist diese Funktion deaktiviert, ansonsten bedeutet es
+die Anzahl der Tage.
 .TP 
 \fBrender_bidi\fP
 If ON \fB\%tin\fP(1)  does the rendering of bi\-directional text. If OFF
@@ -2070,7 +2082,8 @@ ist OFF.
 Falls OFF zeige keine Signaturen an. Voreinstellung ist ON.
 .TP 
 \fBsigdashes\fP
-If ON prepend the signature with sigdashes. Default is ON.
+Falls ON, wird der Signatur ein Signaturtrenner
+vorangestellt. Voreinstellung ist ON.
 .TP 
 \fBsigfile\fP
 The path that specifies the signature file to use when posting, following up
@@ -2234,6 +2247,10 @@ in this thread.
 \fBAverage\fP, Durchschnitt aller Bewertungen im Diskussionsfaden.
 .RE
 .TP 
+\fBtls_ca_cert_file\fP
+The name of file containing all trusted CA certificates used for NNTPS
+(\fBRFC\%8143\fP) connections. If left empty the system default will be used.
+.TP 
 \fBtranslit\fP
 If ON append //TRANSLIT to the first argument of \fB\%iconv_open\fP(3)  to
 enable transliteration. This means that when a character cannot be
@@ -2271,6 +2288,10 @@ Leerz. überspr.\fP, 4 + 3; Leerzeilen zwischen Textblöcken zusammenfassen und
 führende sowie abschließende Leerzeilen überspringen
 .RE
 .TP 
+\fBsuppress_soft_hyphens\fP
+Falls ON, werden weiche Bindestriche (U+00AD) von nicht wörtlichen Blöcken
+bei der Artikelanzeige entfernt. Voreinstellung ist OFF.
+.TP 
 \fBunderscores_regex\fP
 A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markdash\fP or \fBmono_markdash\fP. If
@@ -2286,7 +2307,7 @@ The program that will be run when launching URLs in the article viewer using
 \fBurl_handler.pl\fP.
 .TP 
 \fBurl_highlight\fP
-Enable highlighting URLs in message body. Default is ON.
+Aktivieren der URL\-Hervorhebung im Artikel. Voreinstellung ist ON.
 .TP 
 \fBuse_color\fP
 Falls aktiviert verwendet \fB\%tin\fP(1) ANSI\-Farben. Die Voreinstellung ist
@@ -2438,13 +2459,13 @@ Name einer Overview\-Datei, übliche Namen sind \fI.overview\fP oder
 \fIover.view\fP. $\fBTIN_NOVFILENAME\fP übersteuert den angegebenen Wert.
 .TP 
 \fBoverviewfmtfile\fP
-Vollständiger Pfadname der Newsgroups\-Datei Ihres Newssystems; normalerweise
-befindet sich die Datei in \fInewslibdir\fP und heißt \fIoverview.fmt\fP, so dass
-Sie diese Einstellung nur ändern müssen wenn sich Ihre Konfiguration
-unterscheidet.
+Vollständiger Pfadname der overview.fmt\-Datei Ihres Newssystems;
+normalerweise befindet sich die Datei in \fInewslibdir\fP und heißt
+\fIoverview.fmt\fP, so dass Sie diese Einstellung nur ändern müssen wenn sich
+Ihre Konfiguration unterscheidet.
 .TP 
 \fBactivefile\fP
-Vollständiger Pfadname der Newsgroups\-Datei Ihres Newssystems; normalerweise
+Vollständiger Pfadname der Aktive\-Datei Ihres Newssystems; normalerweise
 befindet sich die Datei in \fInewslibdir\fP und heißt \fIactive\fP, so dass Sie
 diese Einstellung nur ändern müssen wenn sich Ihre Konfiguration
 unterscheidet.
@@ -2632,4 +2653,4 @@ stattdessen den Befehl LIST SUBSCRIPTIONS (\fBRFC\%6048\fP).
 \fB\%newsoverview\fP(5), \fB\%overview.fmt\fP(5), \fB\%innd\fP(8), \fBRFC\%1524\fP,
 \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP,
 \fBRFC\%2980\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP,
-\fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP
+\fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%8143\fP

@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-01-28
+ *  Updated   : 2022-09-22
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -616,7 +616,7 @@ find_first_unread(
 
 /*
  * Open an article for reading just the header
- * 'next' is used/updated with the next article number
+ * 'NEXT' is used/updated with the next article number
  * to optimise the number of 'HEAD' commands issued on
  * groups with holes.
  */
@@ -632,6 +632,7 @@ open_art_header(
 	int i;
 
 	if (read_news_via_nntp && CURR_GROUP.type == GROUP_TYPE_NEWS) {
+		static t_bool no_next = FALSE; /* TODO: move to t_capabilities ? */
 		/*
 		 * Don't bother requesting if we have not got there yet.
 		 * This is a big win if the group has got holes in it (ie. if 000's
@@ -649,55 +650,67 @@ open_art_header(
 		 * shall we stop on 5xx?, i.e JamNNTPd/2 1.3 responds with
 		 * "503 Access denied" instead of 480 but NEXT still works,
 		 * so tin loops over all articles without getting useful data
+		 *
+		 * usenet.farm may return ERR_GOODBYE and NEXT then also fails
+         * we could flag that like no_next ...
 		 */
 
-		/*
-		 * HEAD failed, try to find NEXT
-		 * Should return "223 artno message-id more text...."
-		 */
-		i = new_nntp_command("NEXT", OK_NOTEXT, buf, sizeof(buf));
-		switch (i) {
-			case OK_NOTEXT:
-				*next = atoartnum(buf);		/* Set next art number */
-				break;
-
-#	ifndef BROKEN_LISTGROUP
+		if (!no_next) { /* usenet.farm doesn't do NEXT */
 			/*
-			 * might happen if LISTGROUP doesn't select group, but
-			 * we are not -DBROKEN_LISTGROUP
+			 * HEAD failed, try to find NEXT
+			 * Should return "223 artno message-id more text...."
 			 */
-			case ERR_NCING:
-				nntp_caps.broken_listgroup = TRUE;
-				snprintf(buf, sizeof(buf), "GROUP %s", groupname);
-				if (nntp_command(buf, OK_GROUP, NULL, 0) == NULL)
-					return NULL;
-				snprintf(buf, sizeof(buf), "HEAD %"T_ARTNUM_PFMT, art);
-				if ((fp = nntp_command(buf, OK_HEAD, NULL, 0)) != NULL)
-					return fp;
-				if (nntp_command("NEXT", OK_NOTEXT, buf, sizeof(buf)))
-					*next = atoartnum(buf);
-				break;
-#	endif /* !BROKEN_LISTGROUP */
+			i = new_nntp_command("NEXT", OK_NOTEXT, buf, sizeof(buf));
+			switch (i) {
+				case OK_NOTEXT:
+					*next = atoartnum(buf);		/* Set next art number */
+					break;
 
-			default:
-				/*
-				 * TODO: abort loop over all arts on ERR_NONEXT
-				 */
 #	ifndef BROKEN_LISTGROUP
 				/*
-				 * to avoid out of sync responses
-				 * (listgroup seems to work, but didn't select new group,
-				 *  so xover seems to work but returns old data)
-				 * we set listgroup_broken = TRUE; once we saw a
-				 * ERR_NOARTIG / ERR_NONEXT or the like - even if
-				 * ERR_NOARTIG may occur on servers where listgroup
-				 * isn't broken...
+				 * might happen if LISTGROUP doesn't select group, but
+				 * we are not -DBROKEN_LISTGROUP
 				 */
-				nntp_caps.broken_listgroup = TRUE;
+				case ERR_NCING:
+					nntp_caps.broken_listgroup = TRUE;
+					snprintf(buf, sizeof(buf), "GROUP %s", groupname);
+					if (nntp_command(buf, OK_GROUP, NULL, 0) == NULL)
+						return NULL;
+					snprintf(buf, sizeof(buf), "HEAD %"T_ARTNUM_PFMT, art);
+					if ((fp = nntp_command(buf, OK_HEAD, NULL, 0)) != NULL)
+						return fp;
+					if (nntp_command("NEXT", OK_NOTEXT, buf, sizeof(buf)))
+						*next = atoartnum(buf);
+					break;
 #	endif /* !BROKEN_LISTGROUP */
-				break;
-		}
 
+				case ERR_COMMAND:	/* TODO: abort loop over all arts */
+					no_next = TRUE;
+#	ifdef DEBUG
+					if ((debug & DEBUG_NNTP) && verbose > 1)
+						debug_print_file("NNTP", "!!! NEXT disabled after %d response", ERR_COMMAND);
+#	endif /* DEBUG */
+					break;
+
+				default:
+					/*
+					 * TODO: abort loop over all arts on ERR_NONEXT
+					 */
+#	ifndef BROKEN_LISTGROUP
+					/*
+					 * to avoid out of sync responses
+					 * (listgroup seems to work, but didn't select new group,
+					 *  so xover seems to work but returns old data)
+					 * we set listgroup_broken = TRUE; once we saw a
+					 * ERR_NOARTIG / ERR_NONEXT or the like - even if
+					 * ERR_NOARTIG may occur on servers where listgroup
+					 * isn't broken...
+					 */
+					nntp_caps.broken_listgroup = TRUE;
+#	endif /* !BROKEN_LISTGROUP */
+					break;
+			}
+		}
 		return NULL;
 	}
 #endif /* NNTP_ABLE */
@@ -754,6 +767,7 @@ read_art_headers(
 
 	snprintf(group_msg, sizeof(group_msg), _(txt_group), cCOLS - MIN(cCOLS - 1, strwidth(_(txt_group))) + 2 - 3, group->name);
 
+	/* TODO: add progress meter? HEAD/NEXT is slow */
 	for (i = 0; i < grpmenu.max; i++) {	/* for each article number */
 		art = base[i];
 
@@ -1093,7 +1107,7 @@ global_get_multiparts(
 {
 	int i, part_index, part_cnt = 0;
 	MultiPartInfo tmp, tmp2;
-	MultiPartInfo *info = NULL;
+	MultiPartInfo *info;
 
 	/* entry assertions */
 	assert(((void) "Invalid index", 0 <= aindex && aindex < top_art));

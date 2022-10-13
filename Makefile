@@ -11,7 +11,7 @@ LVER	= 2
 PVER	= 6
 SVER	= 2
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20220503
+DVER	= 20221013
 EXE	= tin
 
 # directory structure
@@ -45,6 +45,7 @@ HFILES	= \
 	$(INCDIR)/tin.h \
 	$(INCDIR)/tinrc.h \
 	$(INCDIR)/tnntp.h \
+	$(INCDIR)/tnntps.h \
 	$(INCDIR)/trace.h \
 	$(INCDIR)/version.h
 
@@ -85,6 +86,7 @@ CFILES	= \
 	$(SRCDIR)/misc.c \
 	$(SRCDIR)/newsrc.c\
 	$(SRCDIR)/nntplib.c \
+	$(SRCDIR)/nntps.c \
 	$(SRCDIR)/nrctbl.c \
 	$(SRCDIR)/options_menu.c \
 	$(SRCDIR)/page.c \

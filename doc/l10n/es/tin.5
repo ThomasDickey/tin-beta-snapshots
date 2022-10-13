@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2022-02-22
+.\" Updated   : 2022-10-06
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -19,7 +19,7 @@ tin, rtin \- related files
 .SH DESCRIPCIÓN
 This man page describes the various (config) files and their formats used by
 the \fB\%tin\fP(1)  newsreader. All files are expected to have unix style
-('\en' aka LF) line endings.
+('\(rsn' aka LF) line endings.
 
 .SH FICHEROS
 .\" TODO: mention
@@ -41,6 +41,7 @@ the \fB\%tin\fP(1)  newsreader. All files are expected to have unix style
 .\" $TMPDIR/SCOPES-R   (-D 32)
 .\" $TMPDIR/SCOPES-W   (-D 32)
 .\" $TMPDIR/ACTIVE     (-D 64)
+.\" ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinmsglog
 \fI$MAILCAPS\fP
 .br
 \fI~/.mailcap\fP
@@ -59,7 +60,7 @@ read by \fB\%tin\fP(1)  to determine how to display non\-text messages at the
 local site. Any line that starts with "#" is a comment. Blank lines are
 ignored. Otherwise, each line defines a single mailcap entry for a single
 content type. Long lines may be continued by ending them with a backslash
-character, "\e".
+character, "\(rs".
 .sp
 Each individual mailcap entry consists of a content\-type specification, a
 command to execute, and (possibly) a set of optional "flag" values.
@@ -87,8 +88,8 @@ message. If it contains "%t", those two characters will be replaced by the
 content\-type field, including the subtype, if any. If it contains "%{"
 followed by a parameter name and a closing "}", then all those characters
 will be replaced by the value of the named parameter, if any, from the
-\&\*(rqContent\-Type:\*(rq header. Finally, if the field contains "\e%", those two
-characters will be replaced by a single "%" character.
+\&\*(rqContent\-Type:\*(rq header. Finally, if the field contains "\(rs%", those
+two characters will be replaced by a single "%" character.
 .sp
 Besides the type and command field the following "flags" are defined:
 .TP 
@@ -365,11 +366,11 @@ saved newsgroups index files
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail\fP
 .sp
 .RS
-active file ("\fImail_group_name\fP \fImaxnum\fP \fIminnum\fP \fImailspool\fP"
-quadruples) of user's mailgroups (requires \fB\%tin\fP(1)  to be build with
+active file ("\fImailgroupname\fP \fImaxnum\fP \fIminnum\fP \fImailspool\fP" quadruples)
+of user's mailgroups (requires \fB\%tin\fP(1)  to be build with
 mh\-mail\-handling support).
 .TP 
-\fBmail_group_name\fP
+\fBmailgroupname\fP
 must be the pathname of the mailbox relative to field #4 with '/' changed to
 \&'.'
 .TP 
@@ -618,6 +619,9 @@ Identical to the tinrc variable of the same name
 Identical to the tinrc variable of the same name
 .TP 
 \fBtrim_article_body\fP
+Identical to the tinrc variable of the same name
+.TP 
+\fBsuppress_soft_hyphens\fP
 Identical to the tinrc variable of the same name
 .TP 
 \fBverbatim_handling\fP
@@ -878,7 +882,7 @@ is unassigned.
 \fBLastPage\fP	$
 \fBToggleColor\fP	&
 \fBLastViewed\fP	\-
-\fBSearchRepeat\fP	\e
+\fBSearchRepeat\fP	\(rs
 \fBSearchSubjF\fP	/
 \fBSearchSubjB\fP	?
 \fBSearchAuthB\fP	A
@@ -1118,10 +1122,12 @@ is a short single\-line description of the group
 .sp
 .RS
 "\fInntpserver\fP \fInewsrc\fP [\fIshortname\fP [\fI...\fP]]" pairs to use with the
-\&\*(rq\fB\-g\fP\*(rq command\-line switch.
+\&\*(rq\fB\-g\fP\*(rq command\-line switch. The matching is case\-insensitive and any line
+that starts with "#", ";" or " " is treated as a comment.
 .TP 
 \fBnntpserver\fP
-full qualified domain name of the news server.
+full qualified domain name of the news server. The string "default" or "*"
+acts as wildcard to match any name, such a line should be placed last.
 .TP 
 \fBnewsrc\fP
 related newsrc.
@@ -1136,6 +1142,8 @@ Example:
 news.tin.org .newsrc\-tin.org tinorg
 .br
 news.example.org /tmp/nrc\-ex example ex
+.br
+* ~/.tin/newsrcs/${NNTPSERVER\-localhost}
 .RE
 .RE
 .PP
@@ -2202,6 +2210,10 @@ in this thread.
 \fBAverage\fP, the average score in this thread.
 .RE
 .TP 
+\fBtls_ca_cert_file\fP
+The name of file containing all trusted CA certificates used for NNTPS
+(\fBRFC\%8143\fP) connections. If left empty the system default will be used.
+.TP 
 \fBtranslit\fP
 If ON append //TRANSLIT to the first argument of \fB\%iconv_open\fP(3)  to
 enable transliteration. This means that when a character cannot be
@@ -2232,6 +2244,10 @@ blocks with one blank line.
 .IP 7
 \fBCompact mltpl., skip lead. & trai.\fP, 4 + 3
 .RE
+.TP 
+\fBsuppress_soft_hyphens\fP
+If ON remove soft hyphens (U+00AD) from non verbatim blocks when displaying
+articles. Default is OFF.
 .TP 
 \fBunderscores_regex\fP
 A regular expression that will be applied when reading articles. All
@@ -2584,4 +2600,4 @@ command instead.
 \fB\%newsoverview\fP(5), \fB\%overview.fmt\fP(5), \fB\%innd\fP(8), \fBRFC\%1524\fP,
 \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP,
 \fBRFC\%2980\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP,
-\fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP
+\fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%8143\fP

@@ -3,7 +3,7 @@
  *  Module    : tnntp.h
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-05
- *  Updated   : 2019-02-18
+ *  Updated   : 2022-09-19
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2022 Thomas Dickey <dickey@invisible-island.net>
@@ -41,20 +41,12 @@
 #ifndef TNNTP_H
 #define TNNTP_H 1
 
-#define s_fdopen	fdopen
-#define s_flush	fflush
-#define s_fclose	fclose
-#define s_gets	fgets
-#define s_close	close
-#define s_puts	fputs
-#define s_dup	dup
-#define s_end()
-
 #if defined(NNTP_ABLE) || defined(HAVE_GETHOSTBYNAME)
 #	ifdef HAVE_NETDB_H
 #		include <netdb.h>
 #	endif /* HAVE_NETDB_H */
 #	define IPPORT_NNTP ((unsigned short) 119)
+#	define IPPORT_NNTPS ((unsigned short) 563)
 #	ifdef TLI
 #		ifdef HAVE_FCNTL_H
 #			include	<fcntl.h>

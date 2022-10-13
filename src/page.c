@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-01
+ *  Updated   : 2022-08-29
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1513,7 +1513,7 @@ draw_page_header(
 	buf[line_len - 1] = '\0';
 	if ((wtmp = char2wchar_t(buf)) != NULL) {
 		wbuf = wexpand_tab(wtmp, tabwidth);
-		wtmp2 = wstrunc(wbuf, cCOLS - 2 * right_len - 3);
+		wtmp2 = wstrunc(wbuf, cCOLS - 2 * right_len - 4);
 		center_pos = (cCOLS - wcswidth(wtmp2, wcslen(wtmp2))) / 2;
 
 		/* pad out to left */
@@ -2644,8 +2644,7 @@ build_url_list(
 {
 	char *ptr;
 	int i, count = 0;
-	int offsets[6];
-	int offsets_size = ARRAY_SIZE(offsets);
+	REGEX_SIZE *offsets = NULL;
 	t_url *lptr = NULL;
 
 	for (i = 0; i < artlines; ++i) {
@@ -2665,10 +2664,15 @@ build_url_list(
 		 */
 		forever {
 			/* any matches left? */
-			if (pcre_exec(url_regex.re, url_regex.extra, ptr, (int) strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
-				if (pcre_exec(mail_regex.re, mail_regex.extra, ptr, (int) strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
-					if (pcre_exec(news_regex.re, news_regex.extra, ptr, (int) strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
-						break;
+			if (match_regex_ex(ptr, (int) strlen(ptr), 0, 0, &url_regex) >= 0) {
+				offsets = regex_get_ovector_pointer(&url_regex);
+			} else if (match_regex_ex(ptr, (int) strlen(ptr), 0, 0, &mail_regex) >= 0) {
+				offsets = regex_get_ovector_pointer(&mail_regex);
+			} else if (match_regex_ex(ptr, (int) strlen(ptr), 0, 0, &news_regex) >= 0) {
+				offsets = regex_get_ovector_pointer(&news_regex);
+			} else {
+				break;
+			}
 
 			*(ptr + offsets[1]) = '\0';
 

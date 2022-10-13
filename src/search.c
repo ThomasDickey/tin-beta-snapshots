@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-04-10
+ *  Updated   : 2022-08-29
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -63,10 +63,30 @@ static int total_cnt = 0, curr_cnt = 0;
  * Used by article and body search - this saves passing around large numbers
  * of parameters all the time
  */
-static int srch_offsets[6];
-static int srch_offsets_size = ARRAY_SIZE(srch_offsets);
-static struct regex_cache search_regex = { NULL, NULL };
+static t_bool last_article_search_matched = FALSE;
+static REGEX_SIZE srch_offsets[2];
+static REGEX_NOFFSET srch_offsets_size = ARRAY_SIZE(srch_offsets);
+static struct regex_cache search_regex = REGEX_CACHE_INITIALIZER;
 
+/*
+ * Used to copy the per regex_cache offsets to the global ones.
+ */
+static void
+copy_offsets(
+	REGEX_SIZE* dst,
+	REGEX_NOFFSET dst_size,
+	struct regex_cache *re)
+{
+	REGEX_NOFFSET i;
+	REGEX_NOFFSET limit = 2 * regex_get_ovector_count(re);
+	REGEX_SIZE* ovector = regex_get_ovector_pointer(re);
+
+	if (limit > dst_size)
+		limit = dst_size;
+
+	for (i = 0; i < limit; i++)
+		dst[i] = ovector[i];
+}
 
 /*
  * Obtain the search pattern, save it in the default buffer.
@@ -150,7 +170,7 @@ search_config(
 	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
 		return result;
 
-	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, PCRE_CASELESS)))
+	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, REGEX_CASELESS)))
 		return result;
 
 	do {
@@ -182,8 +202,7 @@ search_config(
 
 	clear_message();
 	if (tinrc.wildcard) {
-		FreeAndNull(search_regex.re);
-		FreeAndNull(search_regex.extra);
+		regex_cache_destroy(&search_regex);
 	}
 	return result;
 }
@@ -213,7 +232,7 @@ generic_search(
 	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
 		return result;
 
-	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, PCRE_CASELESS)))
+	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, REGEX_CASELESS)))
 		return result;
 
 	do {
@@ -259,8 +278,7 @@ generic_search(
 
 	clear_message();
 	if (tinrc.wildcard) {
-		FreeAndNull(search_regex.re);
-		FreeAndNull(search_regex.extra);
+		regex_cache_destroy(&search_regex);
 	}
 	if (!found)
 		info_message(_(txt_no_match));
@@ -292,7 +310,7 @@ search_active(
 	if (!(buf = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_group, HIST_GROUP_SEARCH)))
 		return -1;
 
-	if (tinrc.wildcard && !(compile_regex(buf, &search_regex, PCRE_CASELESS)))
+	if (tinrc.wildcard && !(compile_regex(buf, &search_regex, REGEX_CASELESS)))
 		return -1;
 
 	i = selmenu.curr;
@@ -317,16 +335,14 @@ search_active(
 
 		if (match_regex(ptr, buf, &search_regex, TRUE)) {
 			if (tinrc.wildcard) {
-				FreeAndNull(search_regex.re);
-				FreeAndNull(search_regex.extra);
+				regex_cache_destroy(&search_regex);
 			}
 			return i;
 		}
 	} while (i != selmenu.curr);
 
 	if (tinrc.wildcard) {
-		FreeAndNull(search_regex.re);
-		FreeAndNull(search_regex.extra);
+		regex_cache_destroy(&search_regex);
 	}
 	info_message(_(txt_no_match));
 	return -1;
@@ -384,7 +400,8 @@ body_search(
 			line = my_strdup(tmp);
 
 		if (tinrc.wildcard) {
-			if (pcre_exec(search_regex.re, search_regex.extra, line, (int) strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+			if (match_regex_ex(line, (int) strlen(line), 0, 0, &search_regex) >= 0) {
+				copy_offsets(srch_offsets, srch_offsets_size, &search_regex);
 				srch_lineno = i;
 				art_close(&pgart);		/* Switch the pager over to matched art */
 				pgart = artinfo;
@@ -506,7 +523,7 @@ search_group(
 	/*
 	 * precompile if we're using full regex
 	 */
-	if (tinrc.wildcard && !(compile_regex(searchbuff, &search_regex, PCRE_CASELESS)))
+	if (tinrc.wildcard && !(compile_regex(searchbuff, &search_regex, REGEX_CASELESS)))
 		return -1;
 
 	i = current_art;
@@ -528,8 +545,7 @@ search_group(
 		ret = search_func(i, searchbuff);
 		if (tinrc.wildcard && (ret == 1 || ret == -1)) {
 			/* we will exit soon, clean up */
-			FreeAndNull(search_regex.re);
-			FreeAndNull(search_regex.extra);
+			regex_cache_destroy(&search_regex);
 		}
 		switch (ret) {
 			case 1:								/* Found */
@@ -548,8 +564,7 @@ search_group(
 	} while (i != current_art && loop_cnt++ <= top_art);
 
 	if (tinrc.wildcard) {
-		FreeAndNull(search_regex.re);
-		FreeAndNull(search_regex.extra);
+		regex_cache_destroy(&search_regex);
 	}
 	info_message(_(txt_no_match));
 	return -1;
@@ -612,14 +627,14 @@ search_article(
 {
 	char *pattern, *ptr, *tmp;
 	int i = start_line;
-	int tmp_srch_offsets[2] = {0, 0};
+	REGEX_SIZE tmp_srch_offsets[2] = {0, 0};
 	t_bool wrap = FALSE;
 	t_bool match = FALSE;
 
 	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_art, HIST_ART_SEARCH)))
 		return 0;
 
-	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, PCRE_CASELESS)))
+	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, REGEX_CASELESS)))
 		return -1;
 
 	srch_lineno = -1;
@@ -641,10 +656,12 @@ search_article(
 
 		if ((tmp = tin_fgets(fp, FALSE)) == NULL)
 			return -1;
-		if (!forward && srch_offsets[0] >= 0) {
-			tmp[srch_offsets[0]] = '\0';	/* ignore anything on this line after the last match */
-			srch_offsets[1] = 0;	/* start backwards search at the beginning of the line */
+
+		if (!forward && last_article_search_matched) {
+			tmp[srch_offsets[0]] = '\0';	/* ignore anything on this line after the beginning of the last match */
+			srch_offsets[1] = 0;	/* start backwards search always at the beginning of the line */
 		}
+		last_article_search_matched = FALSE;
 
 #ifdef HAVE_UNICODE_NORMALIZATION
 		if (IS_LOCAL_CHARSET("UTF-8"))
@@ -654,7 +671,8 @@ search_article(
 			ptr = my_strdup(tmp);
 
 		if (tinrc.wildcard) {
-			while (pcre_exec(search_regex.re, search_regex.extra, ptr, (int) strlen(ptr), srch_offsets[1], 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+			while (match_regex_ex(ptr, (int) strlen(ptr), srch_offsets[1], REGEX_NOTEMPTY, &search_regex) >= 0) {
+				copy_offsets(srch_offsets, srch_offsets_size, &search_regex);
 				match = TRUE;
 				if (forward)
 					break;
@@ -669,15 +687,16 @@ search_article(
 					srch_offsets[1] = tmp_srch_offsets[1];
 				}
 				srch_lineno = i;
-				FreeAndNull(search_regex.re);
-				FreeAndNull(search_regex.extra);
+				regex_cache_destroy(&search_regex);
 				free(ptr);
+				last_article_search_matched = TRUE;
 				return i;
 			}
 		} else {
 			if (wildmatpos(ptr, pattern, TRUE, srch_offsets, srch_offsets_size)) {
 				srch_lineno = i;
 				free(ptr);
+				last_article_search_matched = TRUE;
 				return i;
 			}
 		}
@@ -703,8 +722,7 @@ search_article(
 
 	info_message(_(txt_no_match));
 	if (tinrc.wildcard) {
-		FreeAndNull(search_regex.re);
-		FreeAndNull(search_regex.extra);
+		regex_cache_destroy(&search_regex);
 	}
 	return -1;
 }
@@ -785,4 +803,9 @@ reset_srch_offsets(
 	void)
 {
 	srch_offsets[0] = srch_offsets[1] = 0;
+	/*
+	 * bwd article search starts at the first line. This kludge avoids bwd
+     * search to match in the first line first.
+     */
+	last_article_search_matched = FALSE;
 }

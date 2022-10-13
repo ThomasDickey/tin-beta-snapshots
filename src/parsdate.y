@@ -4,7 +4,7 @@
  *  Module    : parsedate.y
  *  Author    : S. Bellovin, R. $alz, J. Berets, P. Eggert
  *  Created   : 1990-08-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2022-08-22
  *  Notes     : This grammar has 6 shift/reduce conflicts.
  *              Originally written by Steven M. Bellovin <smb@research.att.com>
  *              while at the University of North Carolina at Chapel Hill.
@@ -42,10 +42,9 @@ extern int date_parse(void);
 #define yylex		date_lex
 #define yyerror		date_error
 
-
     /* See the LeapYears table in Convert. */
 #define EPOCH		1970
-#define END_OF_TIME	2038
+#define END_OF_TIME	2070
 
     /* Constants for general time calculations. */
 #define DST_OFFSET	1
@@ -224,23 +223,29 @@ zone	: tZONE {
 	;
 
 numzone	: tSNUMBER {
-	    int	i;
+	    time_t offset = $1;
+	    time_t sign = -1;
+	    time_t hours;
+	    time_t minutes;
+
+	    /* offset can't have more than four decimal digits */
+	    if (offset < -9999 || offset > 9999) {
+		YYABORT;
+	    }
 
 	    /* Unix and GMT and numeric timezones -- a little confusing. */
-	    if ((int)$1 < 0) {
+	    if (offset < 0) {
 		/* Don't work with negative modulus. */
-		$1 = -(int)$1;
-		if ($1 > 9999 || (i = (int) ($1 % 100)) >= 60) {
-			YYABORT;
-		}
-		$$ = ($1 / 100) * 60 + i;
+		offset = -offset;
+		sign = 1;
 	    }
-	    else {
-		if ($1 > 9999 || (i = (int) ($1 % 100)) >= 60) {
-			YYABORT;
-		}
-		$$ = -(($1 / 100) * 60 + i);
+
+	    hours = offset / 100;
+	    minutes = offset % 100;
+	    if (minutes >= 60) {
+		YYABORT;
 	    }
+	    $$ = sign * (hours * 60 + minutes);
 	}
 	;
 
@@ -485,7 +490,7 @@ ToSeconds(
     MERIDIAN	Meridian)
 {
     if (Minutes < 0 || Minutes > 59 || Seconds < 0 || Seconds > 61)
-	return -1;
+    	return -1;
     if (Meridian == MER24) {
 	if (Hours < 0 || Hours > 23)
 	    return -1;
@@ -521,7 +526,9 @@ Convert(
     };
     static const int	LeapYears[] = {
 	1972, 1976, 1980, 1984, 1988, 1992, 1996,
-	2000, 2004, 2008, 2012, 2016, 2020, 2024, 2028, 2032, 2036
+	2000, 2004, 2008, 2012, 2016, 2020, 2024,
+	2028, 2032, 2036, 2040, 2044, 2048, 2052,
+	2056, 2060, 2064, 2068
     };
     const int *yp;
     const int *mp;
@@ -545,23 +552,24 @@ Convert(
     if (Year < EPOCH || Year > END_OF_TIME
      || Month < 1 || Month > 12
      /* NOSTRICT */ /* conversion from long may lose accuracy */
-     || Day < 1 || Day > mp[(int)Month])
+     || Day < 1 || Day > mp[Month])
 	return -1;
 
     Julian = Day - 1 + (Year - EPOCH) * 365;
-    for (yp = LeapYears; yp < ENDOF(LeapYears); yp++, Julian++)
+    for (yp = LeapYears; yp < ENDOF(LeapYears); yp++, Julian++) {
 	if (Year <= *yp)
 	    break;
+    }
     for (i = 1; i < Month; i++)
-	Julian += *++mp;
+    	Julian += *++mp;
     Julian *= SECSPERDAY;
     Julian += yyTimezone * 60L;
     if ((tod = ToSeconds(Hours, Minutes, Seconds, Meridian)) < 0)
-	return -1;
+    	return -1;
     Julian += tod;
     tod = Julian;
     if (dst == DSTon || (dst == DSTmaybe && localtime(&tod)->tm_isdst))
-	Julian -= DST_OFFSET * 60 * 60;
+    	Julian -= DST_OFFSET * 60 * 60;
     return Julian;
 }
 
@@ -605,7 +613,7 @@ LookupWord(
     char *buff,
     int length)
 {
-    char	*p;
+    char *p;
     const char *q;
     const TABLE *tp;
     int	c;
@@ -614,7 +622,7 @@ LookupWord(
     c = p[0];
 
     /* See if we have an abbreviation for a month. */
-    if (length == 3 || (length == 4 && p[3] == '.'))
+    if (length == 3 || (length == 4 && p[3] == '.')) {
 	for (tp = MonthDayTable; tp < ENDOF(MonthDayTable); tp++) {
 	    q = tp->name;
 	    if (c == q[0] && p[1] == q[1] && p[2] == q[2]) {
@@ -622,48 +630,54 @@ LookupWord(
 		return tp->type;
 	    }
 	}
-    else
-	for (tp = MonthDayTable; tp < ENDOF(MonthDayTable); tp++)
+	} else {
+	for (tp = MonthDayTable; tp < ENDOF(MonthDayTable); tp++) {
 	    if (c == tp->name[0] && strcmp(p, tp->name) == 0) {
 		yylval.Number = tp->value;
 		return tp->type;
 	    }
+	}
+    }
 
     /* Try for a timezone. */
-    for (tp = TimezoneTable; tp < ENDOF(TimezoneTable); tp++)
+    for (tp = TimezoneTable; tp < ENDOF(TimezoneTable); tp++) {
 	if (c == tp->name[0] && p[1] == tp->name[1]
 	 && strcmp(p, tp->name) == 0) {
 	    yylval.Number = tp->value;
 	    return tp->type;
 	}
+    }
 
     if (strcmp(buff, "dst") == 0)
       return tDST;
 
     /* Try the units table. */
-    for (tp = UnitsTable; tp < ENDOF(UnitsTable); tp++)
+    for (tp = UnitsTable; tp < ENDOF(UnitsTable); tp++) {
 	if (c == tp->name[0] && strcmp(p, tp->name) == 0) {
 	    yylval.Number = tp->value;
 	    return tp->type;
 	}
+    }
 
     /* Strip off any plural and try the units table again. */
     if (--length > 0 && p[length] == 's') {
 	p[length] = '\0';
-	for (tp = UnitsTable; tp < ENDOF(UnitsTable); tp++)
+	for (tp = UnitsTable; tp < ENDOF(UnitsTable); tp++) {
 	    if (c == tp->name[0] && strcmp(p, tp->name) == 0) {
 		p[length] = 's';
 		yylval.Number = tp->value;
 		return tp->type;
 	    }
+	}
 	p[length] = 's';
     }
     length++;
 
     /* Drop out any periods. */
-    for (p = buff, q = (STRING)buff; *q; q++)
+    for (p = buff, q = (STRING)buff; *q; q++) {
 	if (*q != '.')
 	    *p++ = *q;
+    }
     *p = '\0';
 
     /* Try the meridians. */
@@ -681,12 +695,13 @@ LookupWord(
     /* If we saw any periods, try the timezones again. */
     if (p - buff != length) {
 	c = buff[0];
-	for (p = buff, tp = TimezoneTable; tp < ENDOF(TimezoneTable); tp++)
+	for (p = buff, tp = TimezoneTable; tp < ENDOF(TimezoneTable); tp++) {
 	    if (c == tp->name[0] && p[1] == tp->name[1]
 	    && strcmp(p, tp->name) == 0) {
 		yylval.Number = tp->value;
 		return tp->type;
 	    }
+    }
     }
 
     /* Unknown word -- assume GMT timezone. */
@@ -699,8 +714,8 @@ static int
 date_lex(void)
 {
     int	c;
-    char	*p;
-    char		buff[20];
+    char *p;
+    char buff[20];
     int	sign;
     int	i;
     int	nesting;
@@ -710,18 +725,22 @@ date_lex(void)
 	forever {
 	    while (CTYPE(isspace, *yyInput))
 		yyInput++;
+
 	    c = *yyInput;
 
 	    /* Ignore RFC 822 comments, typically time zone names. */
 	    if (c != LPAREN)
 		break;
-	    for (nesting = 1; (c = *++yyInput) != RPAREN || --nesting; )
-		if (c == LPAREN)
+
+	    for (nesting = 1; (c = *++yyInput) != RPAREN || --nesting; ) {
+		if (c == LPAREN) {
 		    nesting++;
-		else if (!IS7BIT(c) || c == '\0' || c == '\r'
-		     || (c == '\\' && ((c = *++yyInput) == '\0' || !IS7BIT(c))))
+		} else if (!IS7BIT(c) || c == '\0' || c == '\r'
+		     || (c == '\\' && ((c = *++yyInput) == '\0' || !IS7BIT(c)))) {
 		    /* Lexical error: bad comment. */
 		    return '?';
+		}
+		}
 	    yyInput++;
 	}
 

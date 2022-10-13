@@ -20,6 +20,7 @@ src/misc.c
 src/my_tmpfile.c
 src/newsrc.c
 src/nntplib.c
+src/nntps.c
 src/nrctbl.c
 src/options_menu.c
 src/page.c

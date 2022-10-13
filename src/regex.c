@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2021-02-23
+ *  Updated   : 2022-08-29
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -63,7 +63,7 @@ match_regex(
 	t_bool icase)
 {
 	int error;
-	struct regex_cache tmp_cache = { NULL, NULL };
+	struct regex_cache tmp_cache = REGEX_CACHE_INITIALIZER;
 	struct regex_cache *ptr_cache;
 
 	if (!tinrc.wildcard)	/* wildmat matching */
@@ -74,33 +74,89 @@ match_regex(
 		ptr_cache = cache;	/* use the provided regex cache */
 	else {
 		/* compile the regex internally */
-		if (!compile_regex(pattern, &tmp_cache, (icase ? PCRE_CASELESS : 0)))
+		if (!compile_regex(pattern, &tmp_cache, (icase ? REGEX_CASELESS : 0)))
 			return FALSE;
+
 		ptr_cache = &tmp_cache;
 	}
 
-	if ((error = pcre_exec(ptr_cache->re, ptr_cache->extra, string, (int) strlen(string), 0, 0, NULL, 0)) >= 0) {
-		if (ptr_cache == &tmp_cache) {
-			FreeIfNeeded(tmp_cache.re);
-			FreeIfNeeded(tmp_cache.extra);
-		}
-
+	error = match_regex_ex(string, (int) strlen(string), 0, 0, ptr_cache);
+	if (error >= 0) {
+		regex_cache_destroy(&tmp_cache);
 		return TRUE;
 	}
 
-#if 0
 	/*
 	 * match_regex() is mostly used within loops and we don't want to display
 	 * an error message on each call
 	 */
-	if (error != PCRE_ERROR_NOMATCH)
+#if 0
+	if (error != REGEX_ERROR_NOMATCH)
 		error_message(2, _(txt_pcre_error_num), error);
 #endif /* 0 */
 
-	FreeIfNeeded(tmp_cache.re);
-	FreeIfNeeded(tmp_cache.extra);
-
+	regex_cache_destroy(&tmp_cache);
 	return FALSE;
+}
+
+
+/*
+ * See if pattern is matched in string. Return the number of captured strings,
+ * if so, like pcre and pcre2, or a negative error.
+ *
+ * A precompiled regex MUST be provided.
+ *
+ */
+int
+match_regex_ex(
+	const char *string,
+	int length,
+	int offset,
+	REGEX_OPTIONS options,
+	struct regex_cache *regex)
+{
+#ifndef HAVE_LIB_PCRE2
+	int error;
+
+	error = pcre_exec(regex->re, regex->extra, string, length, offset, options, regex->ovector, regex->ovecalloc);
+	if (error >= 0) {
+		/* error == 0 means 'matched, but not enough space in ovector' */
+		regex->oveccount = error;
+		if (regex->oveccount == 0 && regex->ovecmax > 0)
+			regex->oveccount = 1;
+		/* should not happen ... */
+		if (regex->oveccount > regex->ovecmax)
+			regex->oveccount = regex->ovecmax;
+
+	} else
+		regex->oveccount = 0;
+
+	return error;
+#else
+	return pcre2_match_8(regex->re, (const PCRE2_UCHAR8*)string, length, offset, options, regex->match, NULL);
+#endif /* !HAVE_LIB_PCRE2 */
+}
+
+
+REGEX_NOFFSET
+regex_get_ovector_count(struct regex_cache *regex)
+{
+#ifdef HAVE_LIB_PCRE2
+	return pcre2_get_ovector_count_8(regex->match);
+#else
+	return regex->oveccount;
+#endif /* HAVE_LIB_PCRE2 */
+}
+
+
+REGEX_SIZE*
+regex_get_ovector_pointer(struct regex_cache *regex)
+{
+#ifdef HAVE_LIB_PCRE2
+	return pcre2_get_ovector_pointer_8(regex->match);
+#else
+	return regex->ovector;
+#endif /* HAVE_LIB_PCRE2 */
 }
 
 
@@ -111,33 +167,73 @@ t_bool
 compile_regex(
 	const char *regex,
 	struct regex_cache *cache,
-	int options)
+	REGEX_OPTIONS options)
 {
-	const char *regex_errmsg = NULL;
-	int regex_errpos, my_options = options;
+#ifdef HAVE_LIB_PCRE2
+	int regex_errcode;
+	PCRE2_SIZE regex_errpos;
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE) && (defined(PCRE_MAJOR) && PCRE_MAJOR >= 4)
-	if (IS_LOCAL_CHARSET("UTF-8")) {
-		int i;
+	if (regex_use_utf8())
+		options |= PCRE2_UTF;
 
-		pcre_config(PCRE_CONFIG_UTF8, &i);
-		if (i)
-			my_options |= PCRE_UTF8;
+	cache->re = pcre2_compile_8((const PCRE2_UCHAR8*)regex, PCRE2_ZERO_TERMINATED, options,
+			&regex_errcode, &regex_errpos, NULL);
+	if (cache->re == NULL) {
+		PCRE2_UCHAR8 regex_errmsg[256];
+		pcre2_get_error_message_8(regex_errcode, regex_errmsg, sizeof(regex_errmsg));
+		error_message(2, _(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
+	} else {
+		cache->match = pcre2_match_data_create_from_pattern_8(cache->re, NULL);
+		if (cache->match == NULL) {
+			/* out of memory ... */
+			regex_cache_destroy(cache);
+			regex_cache_init(cache);
+		} else
+			return TRUE;
 	}
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE && PCRE_MAJOR && PCRE_MAJOR >= 4 */
 
-	if ((cache->re = pcre_compile(regex, my_options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
+	return FALSE;
+
+#else
+	const char *regex_errmsg = NULL;
+	int regex_errpos;
+
+	if (regex_use_utf8())
+		options |= PCRE_UTF8;
+
+
+	if ((cache->re = pcre_compile(regex, options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
 		error_message(2, _(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
 	else {
 		cache->extra = pcre_study(cache->re, 0, &regex_errmsg);
 		if (regex_errmsg != NULL) {
 			/* we failed, clean up */
-			FreeAndNull(cache->re);
+			regex_cache_destroy(cache);
+			regex_cache_init(cache);
 			error_message(2, _(txt_pcre_error_text), regex_errmsg);
-		} else
-			return TRUE;
+		} else {
+			int n;
+			int error;
+
+			error = pcre_fullinfo(cache->re, cache->extra, PCRE_INFO_CAPTURECOUNT, &n);
+			if (error != 0)
+				error_message(2, _(txt_pcre_error_num), error);
+			else {
+				if (n <= 0)
+					n = 1;
+
+				cache->ovecalloc = (n + 1) * 3;
+				cache->ovecmax = n;
+				cache->oveccount = 0;
+				cache->ovector = my_malloc(cache->ovecalloc * sizeof(int));
+				return TRUE;
+			}
+		}
 	}
+
 	return FALSE;
+
+#endif /* HAVE_LIB_PCRE2 */
 }
 
 
@@ -151,8 +247,6 @@ highlight_regexes(
 	int color)
 {
 	char *ptr;
-	int offsets[6]; /* we are not interested in any subpatterns, so 6 is sufficient */
-	int offsets_size = ARRAY_SIZE(offsets);
 #ifdef USE_CURSES
 	char buf[LEN];
 #else
@@ -168,7 +262,8 @@ highlight_regexes(
 	ptr = buf;
 
 	/* also check for 0 as offsets[] might be too small to hold all captured subpatterns */
-	while (pcre_exec(regex->re, regex->extra, ptr, (int) strlen(ptr), 0, 0, offsets, offsets_size) >= 0) {
+	while (match_regex_ex(ptr, (int) strlen(ptr), 0, 0, regex) >= 0) {
+		REGEX_SIZE *offsets = regex_get_ovector_pointer(regex);
 		/* we have a match */
 		if (color >= 0) /* color the matching text */
 			word_highlight_string(row, (int) ((ptr - buf) + offsets[0]), offsets[1] - offsets[0], color);
@@ -184,4 +279,68 @@ highlight_regexes(
 		} else
 			ptr += offsets[1];
 	}
+}
+
+void
+regex_cache_init(struct regex_cache *regex)
+{
+#ifdef HAVE_LIB_PCRE2
+	regex->re = NULL;
+	regex->match = NULL;
+#else
+	regex->re = NULL;
+	regex->extra = NULL;
+	regex->ovector = NULL;
+	regex->ovecalloc = 0;
+	regex->ovecmax = 0;
+	regex->oveccount = 0;
+#endif /* HAVE_LIB_PCRE2 */
+}
+
+
+void
+regex_cache_destroy(struct regex_cache *regex)
+{
+#ifdef HAVE_LIB_PCRE2
+	pcre2_code_free_8(regex->re);
+	regex->re = NULL;
+	pcre2_match_data_free_8(regex->match);
+	regex->match = NULL;
+#else
+	FreeAndNull(regex->re);
+	FreeAndNull(regex->extra);
+	FreeAndNull(regex->ovector);
+	regex->ovecalloc = 0;
+	regex->ovecmax = 0;
+	regex->oveccount = 0;
+#endif /* HAVE_LIB_PCRE2 */
+}
+
+
+t_bool
+regex_use_utf8(
+	void)
+{
+	/* TODO: clarify PCRE_MAJOR, as it does not seem to be set by any
+	 * configure variant anymore */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	int i = 0;
+
+#	ifdef HAVE_LIB_PCRE2
+	(void) pcre2_config_8(PCRE2_CONFIG_UNICODE, &i);
+#	else
+#		if defined(PCRE_MAJOR) && PCRE_MAJOR >= 4
+			(void) pcre_config(PCRE_CONFIG_UTF8, &i);
+#		else
+			/* nothing */
+#		endif /* defined(PCRE_MAJOR) && PCRE_MAJOR >= 4 */
+#	endif /* HAVE_LIB_PCRE2 */
+
+	return (IS_LOCAL_CHARSET("UTF-8") && i ? TRUE : FALSE);
+
+#else
+
+	return FALSE;
+
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 }

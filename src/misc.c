@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-04-30
+ *  Updated   : 2022-10-04
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -64,6 +64,20 @@
 #if defined(HAVE_IDN_API_H) && !defined(IDN_API_H)
 #	include <idn/api.h>
 #endif /* HAVE_IDN_API_H && !IDN_API_H */
+
+#ifdef NNTPS_ABLE
+#   ifdef HAVE_LIB_LIBTLS
+#       include <tls.h>
+#   else
+#       ifdef HAVE_LIB_OPENSSL
+#           include <openssl/opensslv.h>
+#       else
+#           ifdef HAVE_LIB_GNUTLS
+#               include <gnutls/gnutls.h>
+#           endif /* HAVE_LIB_GNUTLS */
+#       endif /* HAVE_LIB_OPENSSL */
+#   endif /* HAVE_LIB_LIBTLS */
+#endif /* NNTPS_ABLE */
 
 
 /*
@@ -138,6 +152,7 @@ append_file(
 }
 
 
+#ifndef NDEBUG
 _Noreturn void
 asfail(
 	const char *file,
@@ -150,25 +165,26 @@ asfail(
 /*
  * create a core dump
  */
-#ifdef HAVE_COREFILE
-#	ifdef SIGABRT
+#	ifdef HAVE_COREFILE
+#		ifdef SIGABRT
 		sigdisp(SIGABRT, SIG_DFL);
 		kill(process_id, SIGABRT);
-#	else
-#		ifdef SIGILL
+#		else
+#			ifdef SIGILL
 			sigdisp(SIGILL, SIG_DFL);
 			kill(process_id, SIGILL);
-#		else
-#			ifdef SIGIOT
+#			else
+#				ifdef SIGIOT
 				sigdisp(SIGIOT, SIG_DFL);
 				kill(process_id, SIGIOT);
-#			endif /* SIGIOT */
-#		endif /* SIGILL */
-#	endif /* SIGABRT */
-#endif /* HAVE_COREFILE */
+#				endif /* SIGIOT */
+#			endif /* SIGILL */
+#		endif /* SIGABRT */
+#	endif /* HAVE_COREFILE */
 
 	giveup();
 }
+#endif /* !NDEBUG */
 
 
 /*
@@ -652,6 +668,8 @@ tin_done(
 	/* Do this sometime after we save the newsrc in case this hangs up for any reason */
 	nntp_close((ret == NNTP_ERROR_EXIT));			/* disconnect from NNTP server */
 
+	tintls_exit();
+
 	free_all_arrays();
 
 	/*
@@ -733,7 +751,7 @@ my_mkdir(
 	} else
 		return -1;
 #else
-		return mkdir(path, mode);
+	return mkdir(path, mode);
 #endif /* !HAVE_MKDIR */
 }
 
@@ -950,24 +968,26 @@ eat_re(
 	char *s,
 	t_bool eat_was)
 {
-	int data;
-	int offsets[6];
-	int size_offsets = ARRAY_SIZE(offsets);
+	int match;
 
 	if (!s || !*s)
 		return "";
 
 	do {
-		data = pcre_exec(strip_re_regex.re, strip_re_regex.extra, s, (int) strlen(s), 0, 0, offsets, size_offsets);
-		if (offsets[0] == 0)
+		REGEX_SIZE* offsets;
+		match = match_regex_ex(s, (int) strlen(s), 0, 0, &strip_re_regex);
+		offsets = regex_get_ovector_pointer(&strip_re_regex);
+		if (match >= 0 && offsets[0] == 0)
 			s += offsets[1];
-	} while (data >= 0);
+	} while (match >= 0);
 
 	if (eat_was) do {
-		data = pcre_exec(strip_was_regex.re, strip_was_regex.extra, s, (int) strlen(s), 0, 0, offsets, size_offsets);
-		if (offsets[0] > 0)
+		REGEX_SIZE* offsets;
+		match = match_regex_ex(s, (int) strlen(s), 0, 0, &strip_was_regex);
+		offsets = regex_get_ovector_pointer(&strip_was_regex);
+		if (match >= 0 && offsets[0] > 0)
 			s[offsets[0]] = '\0';
-	} while (data >= 0);
+	} while (match >= 0);
 
 	return s;
 }
@@ -3806,6 +3826,48 @@ utf8_valid(
 #endif /* CHARSET_CONVERSION || (MULTIBYTE_ABLE && !NO_LOCALE) */
 
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+/*
+ * Unicode Standard Annex #14 5.4 "Use of Soft Hyphens"
+ * <https://www.unicode.org/reports/tr14/#SoftHyphen> states:
+ *
+ * "[...] the character U+00AD SOFT HYPHEN (SHY) is an invisible format
+ * character that merely indicates a preferred intraword line break
+ * position."
+ *
+ * -> remove SOFT HYPHENs from the given UTF-8 string to prevent
+ *    terminal programs from displaying them incorrectly
+ */
+void
+remove_soft_hyphens(
+	char *line)
+{
+	char *buffer;
+	size_t len;
+	wchar_t *wbuffer, *rptr, *wptr;
+
+	if ((wbuffer = char2wchar_t(line)) != NULL) {
+		rptr = wptr = wbuffer;
+		while (*rptr) {
+			if (*rptr == 0xad)
+				++rptr;
+			if (*rptr)
+				*wptr++ = *rptr++;
+		}
+		*wptr = '\0';
+
+		if ((buffer = wchar_t2char(wbuffer)) != NULL) {
+			len = strlen(line) + 1;
+			strncpy(line, buffer, len);
+			line[len - 1] = '\0';
+			free(buffer);
+		}
+		free(wbuffer);
+	}
+}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+
 char *
 idna_decode(
 	char *in)
@@ -3928,6 +3990,10 @@ tin_version_info(
 	FILE *fp)
 {
 	int wlines = 0;	/* written lines */
+#ifdef HAVE_LIB_PCRE2
+	char *pcre2_version = NULL;
+	int pcre2_version_length;
+#endif /* HAVE_LIB_PCRE2 */
 
 #if defined(__DATE__) && defined(__TIME__)
 	fprintf(fp, _("Version: %s %s release %s (\"%s\") %s %s\n"),
@@ -3975,7 +4041,31 @@ tin_version_info(
 		wlines++;
 #	endif /* TIN_LIBS */
 #endif /* TIN_LD */
+#ifdef NNTPS_ABLE
+#	ifdef HAVE_LIB_LIBTLS
+				fprintf(fp, "\tTLS      = \"LibreSSL %d\"\n", TLS_API);
+#	else
+#		ifdef HAVE_LIB_OPENSSL
+				fprintf(fp, "\tTLS      = \"%s\"\n", OPENSSL_VERSION_TEXT);
+#		else
+#			ifdef HAVE_LIB_GNUTLS
+				fprintf(fp, "\tTLS      = \"GnuTLS %s\"\n", gnutls_check_version(NULL));
+#			endif /* HAVE_LIB_GNUTLS */
+#		endif /* HAVE_LIB_OPENSSL */
+#	endif /* HAVE_LIB_LIBTLS */
+	wlines++;
+#endif /* NNTPS_ABLE */
+#ifdef HAVE_LIB_PCRE2
+	pcre2_version_length = pcre2_config_8(PCRE2_CONFIG_VERSION, NULL);
+	if (pcre2_version_length > 0) {
+		pcre2_version = my_malloc(pcre2_version_length);
+		(void) pcre2_config_8(PCRE2_CONFIG_VERSION, pcre2_version);
+	}
+	fprintf(fp, "\tPCRE     = \"%s\"\n", pcre2_version ? pcre2_version : "unknown");
+	FreeIfNeeded(pcre2_version);
+#else
 	fprintf(fp, "\tPCRE     = \"%s\"\n", pcre_version());
+#endif /* HAVE_LIB_PCRE2 */
 	wlines++;
 
 	fprintf(fp, "Characteristics:\n\t"
@@ -3986,10 +4076,19 @@ tin_version_info(
 			"-DEBUG "
 #endif /* DEBUG */
 #ifdef NNTP_ONLY
+#	ifdef NNTPS_ABLE
+			"+NNTP(S)_ONLY "
+#	else
 			"+NNTP_ONLY "
+#	endif /* NNTPS_ABLE */
 #else
 #	ifdef NNTP_ABLE
 			"+NNTP_ABLE "
+#		ifdef NNTPS_ABLE
+			"+NNTPS_ABLE "
+#		else
+			"-NNTPS_ABLE "
+#		endif /* NNTPS_ABLE */
 #	else
 			"-NNTP_ABLE "
 #	endif /* NNTP_ABLE */

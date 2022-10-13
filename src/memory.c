@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2021-09-22
+ *  Updated   : 2022-08-26
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -252,43 +252,25 @@ free_all_arrays(
 	free_scopes_arrays();
 
 #ifdef HAVE_COLOR
-	FreeIfNeeded(quote_regex.re);
-	FreeIfNeeded(quote_regex.extra);
-	FreeIfNeeded(quote_regex2.re);
-	FreeIfNeeded(quote_regex2.extra);
-	FreeIfNeeded(quote_regex3.re);
-	FreeIfNeeded(quote_regex3.extra);
-	FreeIfNeeded(extquote_regex.re);
-	FreeIfNeeded(extquote_regex.extra);
+	regex_cache_destroy(&quote_regex);
+	regex_cache_destroy(&quote_regex2);
+	regex_cache_destroy(&quote_regex3);
+	regex_cache_destroy(&extquote_regex);
 #endif /* HAVE_COLOR */
-	FreeIfNeeded(slashes_regex.re);
-	FreeIfNeeded(slashes_regex.extra);
-	FreeIfNeeded(stars_regex.re);
-	FreeIfNeeded(stars_regex.extra);
-	FreeIfNeeded(strokes_regex.re);
-	FreeIfNeeded(strokes_regex.extra);
-	FreeIfNeeded(underscores_regex.re);
-	FreeIfNeeded(underscores_regex.extra);
-	FreeIfNeeded(strip_re_regex.re);
-	FreeIfNeeded(strip_re_regex.extra);
-	FreeIfNeeded(strip_was_regex.re);
-	FreeIfNeeded(strip_was_regex.extra);
-	FreeIfNeeded(uubegin_regex.re);
-	FreeIfNeeded(uubegin_regex.extra);
-	FreeIfNeeded(uubody_regex.re);
-	FreeIfNeeded(uubody_regex.extra);
-	FreeIfNeeded(verbatim_begin_regex.re);
-	FreeIfNeeded(verbatim_begin_regex.extra);
-	FreeIfNeeded(verbatim_end_regex.re);
-	FreeIfNeeded(verbatim_end_regex.extra);
-	FreeIfNeeded(url_regex.re);
-	FreeIfNeeded(url_regex.extra);
-	FreeIfNeeded(mail_regex.re);
-	FreeIfNeeded(mail_regex.extra);
-	FreeIfNeeded(news_regex.re);
-	FreeIfNeeded(news_regex.extra);
-	FreeIfNeeded(shar_regex.re);
-	FreeIfNeeded(shar_regex.extra);
+	regex_cache_destroy(&slashes_regex);
+	regex_cache_destroy(&stars_regex);
+	regex_cache_destroy(&strokes_regex);
+	regex_cache_destroy(&underscores_regex);
+	regex_cache_destroy(&strip_re_regex);
+	regex_cache_destroy(&strip_was_regex);
+	regex_cache_destroy(&uubegin_regex);
+	regex_cache_destroy(&uubody_regex);
+	regex_cache_destroy(&verbatim_begin_regex);
+	regex_cache_destroy(&verbatim_end_regex);
+	regex_cache_destroy(&url_regex);
+	regex_cache_destroy(&mail_regex);
+	regex_cache_destroy(&news_regex);
+	regex_cache_destroy(&shar_regex);
 
 	if (!batch_mode) {
 		free_keymaps();

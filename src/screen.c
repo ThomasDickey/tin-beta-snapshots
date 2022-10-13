@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-17
+ *  Updated   : 2022-10-13
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -51,6 +51,7 @@ int mark_offset = 0;
 	struct t_screen *screen;
 #endif /* !USE_CURSES */
 
+static void log_formatted_msg(const char* tag, const char *msg);
 
 /*
  * Move the cursor to the lower-left of the screen, where it won't be annoying
@@ -162,6 +163,7 @@ wait_message(
 		my_fputs(msg, stdout);
 		free(msg);
 	}
+	log_formatted_msg(NULL, buf);
 	free(buf);
 
 #ifdef HAVE_COLOR
@@ -237,6 +239,7 @@ error_message(
 	buf = fmt_message(fmt, ap);
 	my_fputs(buf, stderr);	/* don't use my_fprintf() here due to %format chars */
 	my_fflush(stderr);
+	log_formatted_msg("ERR", buf);
 	free(buf);
 
 	if (cmd_line) {
@@ -730,4 +733,51 @@ show_progress(
 	last_count = count;
 	last_total = total;
 	last_ratio = ratio;
+}
+
+
+/*
+ * TODO: move to
+ *       ${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}/msglog
+ *       like serverrc, see config.c:read_server_config()/write_server_config()
+ *       and document tin tin.[15]
+ */
+void
+log_formatted_msg(
+	const char *tag,
+	const char *msg)
+{
+	static t_bool first = TRUE;
+	FILE *fp;
+	char logfile[PATH_LEN];
+
+	if (msg == NULL || strlen(msg) == 0)
+		return;
+
+	joinpath(logfile, sizeof(logfile), rcdir, "tinmsglog");
+
+	if (first) {
+		unlink(logfile);
+		first = FALSE;
+	}
+
+	if ((fp = fopen(logfile, "a")) != NULL) {
+		if (tag)
+			fprintf(fp, "%s: %s", tag, msg);
+		else
+			fprintf(fp, "%s", msg);
+
+		if (msg[strlen(msg)-1] != '\n')
+			fputc('\n', fp);
+
+#ifdef HAVE_FCHMOD
+		fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+#else
+#       ifdef HAVE_CHMOD
+		chmod(logfile, (mode_t) (S_IRUSR|S_IWUSR));
+#       endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
+
+		fclose(fp);
+	}
 }

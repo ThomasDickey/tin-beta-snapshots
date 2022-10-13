@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2022-02-22
+ *  Updated   : 2022-06-29
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2022 Iain Lea <iain@bricbrac.de>
@@ -120,6 +120,9 @@ set_default_attributes(
 	CopyBits(sort_threads_type, tinrc.sort_threads_type);
 	CopyBits(show_author, tinrc.show_author);
 	CopyBool(show_signatures, tinrc.show_signatures);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	CopyBool(suppress_soft_hyphens, tinrc.suppress_soft_hyphens);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	CopyBits(trim_article_body, tinrc.trim_article_body);
 	CopyBool(verbatim_handling, tinrc.verbatim_handling);
 #ifdef HAVE_COLOR
@@ -231,6 +234,9 @@ set_default_state(
 	state->signature_repost = FALSE;
 	state->sort_article_type = FALSE;
 	state->sort_threads_type = FALSE;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	state->suppress_soft_hyphens = FALSE;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	state->tex2iso_conv = FALSE;
 	state->thread_articles = FALSE;
 	state->thread_catchup_on_exit = FALSE;
@@ -475,6 +481,9 @@ read_attributes_file(
 					MATCH_STRING("sigfile=", OPT_ATTRIB_SIGFILE);
 					MATCH_INTEGER("sort_article_type=", OPT_ATTRIB_SORT_ARTICLE_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
 					MATCH_INTEGER("sort_threads_type=", OPT_ATTRIB_SORT_THREADS_TYPE, SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					MATCH_BOOLEAN("suppress_soft_hyphens=", OPT_ATTRIB_SUPPRESS_SOFT_HYPHENS);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 					break;
 
 				case 't':
@@ -849,6 +858,11 @@ set_attrib(
 			case OPT_ATTRIB_SHOW_SIGNATURES:
 				SET_BOOLEAN(show_signatures);
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			case OPT_ATTRIB_SUPPRESS_SOFT_HYPHENS:
+				SET_BOOLEAN(suppress_soft_hyphens);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 			case OPT_ATTRIB_TRIM_ARTICLE_BODY:
 				SET_INTEGER(trim_article_body);
 
@@ -1048,6 +1062,9 @@ assign_attributes_to_groups(
 				SET_ATTRIB(sort_threads_type);
 				SET_ATTRIB(show_author);
 				SET_ATTRIB(show_signatures);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				SET_ATTRIB(suppress_soft_hyphens);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				SET_ATTRIB(trim_article_body);
 				SET_ATTRIB(verbatim_handling);
 #ifdef HAVE_COLOR
@@ -1303,6 +1320,9 @@ write_attributes_file(
 		SHOW_FROM_NAME, _(txt_show_from[SHOW_FROM_NAME]),
 		SHOW_FROM_BOTH, _(txt_show_from[SHOW_FROM_BOTH]));
 	fprintf(fp, _("#  show_signatures=ON/OFF\n"));
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	fprintf(fp, _("#  suppress_soft_hyphens=ON/OFF\n"));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	fprintf(fp, _("#  show_only_unread_arts=ON/OFF\n"));
 	fprintf(fp, _("#  sigdashes=ON/OFF\n"));
 	fprintf(fp, _("#  signature_repost=ON/OFF\n"));
@@ -1528,6 +1548,10 @@ write_attributes_file(
 					fprintf(fp, "sort_article_type=%u\n", scope->attribute->sort_article_type);
 				if (scope->state->sort_threads_type)
 					fprintf(fp, "sort_threads_type=%u\n", scope->attribute->sort_threads_type);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				if (scope->state->suppress_soft_hyphens)
+					fprintf(fp, "suppress_soft_hyphens=%s\n", print_boolean(scope->attribute->suppress_soft_hyphens));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				if (scope->state->tex2iso_conv)
 					fprintf(fp, "tex2iso_conv=%s\n", print_boolean(scope->attribute->tex2iso_conv));
 				if (scope->state->thread_articles)
@@ -1651,6 +1675,9 @@ skip_scope(
 		|| scope->state->signature_repost
 		|| scope->state->sort_article_type
 		|| scope->state->sort_threads_type
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		|| scope->state->suppress_soft_hyphens
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		|| scope->state->tex2iso_conv
 		|| scope->state->thread_articles
 		|| scope->state->thread_catchup_on_exit
@@ -1776,6 +1803,9 @@ dump_attributes(
 			debug_print_file("ATTRIBUTES", "\tshow_signatures=%s", print_boolean(group->attribute->show_signatures));
 			debug_print_file("ATTRIBUTES", "\tsigdashes=%s", print_boolean(group->attribute->sigdashes));
 			debug_print_file("ATTRIBUTES", "\tsignature_repost=%s", print_boolean(group->attribute->signature_repost));
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			debug_print_file("ATTRIBUTES", "\tsuppress_soft_hyphens=%s", print_boolean(group->attribute->suppress_soft_hyphens));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			debug_print_file("ATTRIBUTES", "\tthread_catchup_on_exit=%s", print_boolean(group->attribute->thread_catchup_on_exit));
 			debug_print_file("ATTRIBUTES", "\tthread_format=%s", BlankIfNull(group->attribute->thread_format));
 			debug_print_file("ATTRIBUTES", "\ttrim_article_body=%d", group->attribute->trim_article_body);
@@ -1890,6 +1920,9 @@ dump_scopes(
 			debug_print_file(fname, "\t%sshow_signatures=%s", DEBUG_PRINT_STATE(show_signatures), print_boolean(scope->attribute->show_signatures));
 			debug_print_file(fname, "\t%ssigdashes=%s", DEBUG_PRINT_STATE(sigdashes), print_boolean(scope->attribute->sigdashes));
 			debug_print_file(fname, "\t%ssignature_repost=%s", DEBUG_PRINT_STATE(signature_repost), print_boolean(scope->attribute->signature_repost));
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			debug_print_file(fname, "\t%ssuppress_soft_hyphens=%s", DEBUG_PRINT_STATE(suppress_soft_hyphens), print_boolean(scope->attribute->suppress_soft_hyphens));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			debug_print_file(fname, "\t%sthread_catchup_on_exit=%s", DEBUG_PRINT_STATE(thread_catchup_on_exit), print_boolean(scope->attribute->thread_catchup_on_exit));
 			debug_print_file(fname, "\t%sthread_format=%s", DEBUG_PRINT_STATE(thread_format), DEBUG_PRINT_STRING(thread_format));
 			debug_print_file(fname, "\t%strim_article_body=%d", DEBUG_PRINT_STATE(trim_article_body), scope->attribute->trim_article_body);

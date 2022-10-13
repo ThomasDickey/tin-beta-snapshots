@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-04-15
+ *  Updated   : 2022-09-20
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -698,15 +698,16 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 /*
  * URL related regexs:
  * add TELNET (RFC 4248), WAIS (RFC 4156), IMAP (RFC 2192), NFS (RFC 2224)
- *     LDAP (RFC 2255), POP (RFC 2384)
- * add IPv6 (RFC 2732, RFC 2373) support
+ *     LDAP (RFC 2255), POP (RFC 2384), ...
+ * add IPv6 (RFC 3986) support
  */
 /*
  * case insensitive
  * TODO: - split out ftp (only ftp allows username:passwd@, RFC 1738)?
  *       - test IDNA (RFC 3490) case
+ *       - adjust to follow RFC 3986 (section 2.3)
  */
-#define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-|[^\\W_]){0,61}(?<!---)[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,14}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?(?=[^\\)\\]\\>\"\\s]*\\()(?:/[^\\]\\>\"\\s]*|$|(?=[)\\]\\>\"\\s]))|(?:/[^)\\]\\>\"\\s]*|$|(?=[)\\]\\>\"\\s])))"
+#define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-|[^\\W_]){0,61}(?<!---)[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,18}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=\\$,]*)"
 /*
  * case insensitive
  * TOFO: check against RFC 6068
@@ -753,7 +754,36 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #endif /* BOOL_H */
 
 /* Philip Hazel's Perl regular expressions library */
+#ifdef HAVE_LIB_PCRE2
+
+#define PCRE2_CODE_UNIT_WIDTH 0
+#include <pcre2.h>
+
+#define REGEX_CASELESS PCRE2_CASELESS
+#define REGEX_ANCHORED PCRE2_ANCHORED
+#define REGEX_NOTEMPTY PCRE2_NOTEMPTY
+
+#define REGEX_ERROR_NOMATCH PCRE2_ERROR_NOMATCH
+
+#define REGEX_OPTIONS uint32_t
+#define REGEX_NOFFSET uint32_t
+#define REGEX_SIZE size_t
+
+#else /* HAVE_LIB_PCRE2 */
+
 #include <pcre.h>
+
+#define REGEX_CASELESS PCRE_CASELESS
+#define REGEX_ANCHORED PCRE_ANCHORED
+#define REGEX_NOTEMPTY PCRE_NOTEMPTY
+
+#define REGEX_ERROR_NOMATCH PCRE_ERROR_NOMATCH
+
+#define REGEX_OPTIONS int
+#define REGEX_NOFFSET int
+#define REGEX_SIZE int
+
+#endif /* HAVE_LIB_PCRE2 */
 
 #ifdef HAVE_ICONV
 #	define CHARSET_CONVERSION 1
@@ -1695,6 +1725,9 @@ struct t_attribute {
 	IntField(thread_perc);			/* percentage threading threshold */
 	IntField(show_author);			/* 0=none, 1=name, 2=addr, 3=both */
 	BoolField(show_signatures);		/* 0=none, 1=show signatures */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	BoolField(suppress_soft_hyphens);	/* set TRUE to remove soft hyphens (U+00AD) from articles */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	IntField(trim_article_body);	/* 0=Don't trim article body, 1=Skip leading blank lines,
 						2=Skip trailing blank lines, 3=Skip leading and trailing blank lines,
 						4=Compact multiple blank lines between textblocks,
@@ -1784,6 +1817,9 @@ struct t_attribute_state {
 	BoolField(signature_repost);
 	BoolField(sort_article_type);
 	BoolField(sort_threads_type);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	BoolField(suppress_soft_hyphens);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	BoolField(tex2iso_conv);
 	BoolField(thread_articles);
 	BoolField(thread_catchup_on_exit);
@@ -1974,10 +2010,29 @@ struct t_filter_rule {
  * Filter cache structure using Philip Hazel's Perl regular expression
  * library (see pcre/pcre.[ch] for details)
  */
+#ifdef HAVE_LIB_PCRE2
+
+struct regex_cache {
+	pcre2_code_8 *re;
+	pcre2_match_data_8 *match;
+};
+
+#define REGEX_CACHE_INITIALIZER { NULL, NULL }
+
+#else /* HAVE_LIB_PCRE2 */
+
 struct regex_cache {
 	pcre *re;
 	pcre_extra *extra;
+	int *ovector;
+	int ovecalloc;	/* number of allocated integers */
+	int ovecmax;	/* max valid pairs in ovector, i.e. max capturecount */
+	int oveccount;	/* valid capture count from last regex_exec */
 };
+
+#define REGEX_CACHE_INITIALIZER { NULL, NULL, NULL, 0, 0, 0 }
+
+#endif /* HAVE_LIB_PCRE2 */
 
 struct t_save {
 	char *path;

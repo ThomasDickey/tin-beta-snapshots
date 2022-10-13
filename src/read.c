@@ -3,7 +3,7 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2021-02-23
+ *  Updated   : 2022-09-19
  *
  * Copyright (c) 1997-2022 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
@@ -267,7 +267,13 @@ tin_read(
 				if (!i) { /* EMPTY */
 					/* Find a header separator, don't check next line. */
 				} else {
-					if ((c = fgetc(get_nntp_fp(fp))) == ' ' || c == '\t') {
+#ifdef NNTP_ABLE
+					if (fp == FAKE_NNTP_FP)
+						c = fgetc_server(fp);
+					else
+#endif /* NNTP_ABLE */
+						c = fgetc(fp);
+					if (c == ' ' || c == '\t') {
 						partial_read = TRUE;
 						/* This is safe because we removed at least one char above */
 						buffer[offset++] = '\n';
@@ -275,8 +281,14 @@ tin_read(
 					}
 
 					/* Push back the 1st char of next line */
-					if (c != EOF)
-						ungetc(c, get_nntp_fp(fp));
+					if (c != EOF) {
+#ifdef NNTP_ABLE
+						if (fp == FAKE_NNTP_FP)
+							ungetc_server(c, fp);
+						else
+#endif /* NNTP_ABLE */
+							ungetc(c, fp);
+					}
 				}
 			}
 		}

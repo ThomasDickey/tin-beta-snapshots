@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2021-02-27
+ *  Updated   : 2022-10-12
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -39,10 +39,7 @@ char *nntp_server = NULL;
 	t_bool did_reconnect = FALSE;
 #endif /* NNTP_ABLE */
 
-static TCP *nntp_rd_fp = NULL;
-
 #ifdef NNTP_ABLE
-	static TCP *nntp_wr_fp = NULL;
 	/* Copy of last NNTP command sent, so we can retry it if needed */
 	static char last_put[NNTP_STRLEN];
 	static constext *xover_cmds = "XOVER";
@@ -68,29 +65,41 @@ static TCP *nntp_rd_fp = NULL;
 #	ifdef DECNET
 		static int get_dnet_socket(char *machine, char *service);
 #	endif /* DECNET */
+
+struct simplebuf {
+	unsigned char buf[4096];
+	unsigned lb; /* lower bound */
+	unsigned ub; /* upper bound */
+};
+
+struct nntpbuf {
+	struct simplebuf rd;
+	struct simplebuf wr;
+	int fd;
+#ifdef NNTPS_ABLE
+	void *tls_ctx;
+#endif /* NNTPS_ABLE */
+};
+
+#ifdef NNTPS_ABLE
+#	define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, NULL }
+#else
+#	define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1 }
+#endif /* NNTPS_ABLE */
+
+static struct nntpbuf nntp_buf = NNTPBUF_INITIALIZER;
+
+static int nntpbuf_refill(struct nntpbuf *buf);
+static int nntpbuf_flush(struct nntpbuf* buf);
+static int nntpbuf_puts(const char* data, struct nntpbuf* buf);
+static int nntpbuf_getc(struct nntpbuf *buf);
+static int nntpbuf_ungetc(int c, struct nntpbuf *buf);
+static char *nntpbuf_gets(char *s, int size, struct nntpbuf *buf);
+static void nntpbuf_close(struct nntpbuf *buf);
+static int nntpbuf_is_open(struct nntpbuf *buf);
+
 #endif /* NNTP_ABLE */
 
-
-/*
- * Return the actual fd in use for the nntp read-side socket
- * This is a leak of internal state and should go away if possible
- */
-FILE *
-get_nntp_fp(
-	FILE *fp)
-{
-	return (fp == FAKE_NNTP_FP ? nntp_rd_fp : fp);
-}
-
-
-#if 0 /* unused */
-FILE *
-get_nntp_wr_fp(
-	FILE *fp)
-{
-	return (fp == FAKE_NNTP_FP ? nntp_wr_fp : fp);
-}
-#endif /* 0 */
 
 /*
  * getserverbyfile(file)
@@ -210,7 +219,7 @@ server_init(
 	char temp[256];
 	char *service = strncpy(temp, cservice, sizeof(temp) - 1); /* ...calls non-const funcs */
 #	endif /* !INET6 */
-	int sockt_rd, sockt_wr;
+	int sock_fd;
 
 #	ifdef DECNET
 	char *cp;
@@ -219,56 +228,47 @@ server_init(
 
 	if (cp && cp[1] == ':') {
 		*cp = '\0';
-		sockt_rd = get_dnet_socket(machine, service);
+		sock_fd = get_dnet_socket(machine, service);
 	} else
-		sockt_rd = get_tcp_socket(machine, service, port);
+		sock_fd = get_tcp_socket(machine, service, port);
 #	else
 #		ifdef INET6
-	sockt_rd = get_tcp6_socket(machine, port);
+	sock_fd = get_tcp6_socket(machine, port);
 #		else
-	sockt_rd = get_tcp_socket(machine, service, port);
+	sock_fd = get_tcp_socket(machine, service, port);
 #		endif /* INET6 */
 #	endif /* DECNET */
 
-	if (sockt_rd < 0)
-		return sockt_rd;
-
-	/*
-	 * Now we'll make file pointers (i.e., buffered I/O) out of
-	 * the socket file descriptor. Note that we can't just
-	 * open a fp for reading and writing -- we have to open
-	 * up two separate fp's, one for reading, one for writing.
-	 */
-
-	if ((nntp_rd_fp = (TCP *) s_fdopen(sockt_rd, "r")) == NULL) {
-		perror("server_init: fdopen() #1");
-		s_close(sockt_rd);
-		return -errno;
-	}
-
-	if ((sockt_wr = s_dup(sockt_rd)) < 0) {
-		perror("server_init: dup()");
-		s_fclose(nntp_rd_fp);
-		nntp_rd_fp = NULL;
-		return -errno;
-	}
+	if (sock_fd < 0)
+		return sock_fd;
 
 #	ifdef TLI /* Transport Level Interface */
-	if (t_sync(sockt_rd) < 0) {	/* Sync up new fd with TLI */
+	if (t_sync(sock_fd) < 0) {	/* Sync up new fd with TLI */
 		t_error("server_init: t_sync()");
-		s_fclose(nntp_rd_fp);
-		nntp_rd_fp = NULL;
+		close(sock_fd);
 		return -EPROTO;
 	}
-#	else
-	if ((nntp_wr_fp = (TCP *) s_fdopen(sockt_wr, "w")) == NULL) {
-		perror("server_init: fdopen() #2");
-		s_close(sockt_wr);
-		s_fclose(nntp_rd_fp);
-		nntp_rd_fp = NULL;
-		return -errno;
-	}
 #	endif /* TLI */
+
+#ifdef NNTPS_ABLE
+
+	if (use_nntps) {
+		int result;
+
+		result = tintls_open(machine, sock_fd, &nntp_buf.tls_ctx);
+		if (result < 0) {
+			return result;
+		}
+
+		result = tintls_handshake(nntp_buf.tls_ctx);
+		if (result < 0) {
+			return result;
+		}
+	}
+
+#endif /* NNTPS_ABLE */
+
+	nntp_buf.fd = sock_fd;
 
 	last_put[0] = '\0';		/* no retries in get_respcode */
 	/*
@@ -637,7 +637,7 @@ get_tcp6_socket(
 		}
 		if (connect(s, res->ai_addr, res->ai_addrlen) != 0) {
 			ec = errno;
-			s_close(s);
+			close(s);
 		} else {
 			es = ec = err = 0;
 			break;
@@ -748,7 +748,7 @@ void
 u_put_server(
 	const char *string)
 {
-	s_puts(string, nntp_wr_fp);
+	nntpbuf_puts(string, &nntp_buf);
 #	ifdef DEBUG
 	if (debug & DEBUG_NNTP) {
 		if (strcmp(string, "\r\n"))
@@ -778,8 +778,8 @@ put_server(
 {
 	if (*string && strlen(string)) {
 		DEBUG_IO((stderr, "put_server(%s)\n", string));
-		s_puts(string, nntp_wr_fp);
-		s_puts("\r\n", nntp_wr_fp);
+		nntpbuf_puts(string, &nntp_buf);
+		nntpbuf_puts("\r\n", &nntp_buf);
 #	ifdef DEBUG
 		if (debug & DEBUG_NNTP)
 			debug_print_file("NNTP", ">>>%s%s", logtime(), string);
@@ -802,7 +802,7 @@ put_server(
 		else if (!strncmp(string, "LIST NEWSGROUPS ", 16))
 			last_put[15] = '\0'; /* "LIST NEWSGROUPS" */
 	}
-	(void) s_flush(nntp_wr_fp);
+	(void) nntpbuf_flush(&nntp_buf);
 }
 
 
@@ -821,11 +821,7 @@ reconnect(
 	 * Tear down current connection
 	 * Close the NNTP connection with prejudice
 	 */
-	if (nntp_wr_fp)
-		s_fclose(nntp_wr_fp);
-	if (nntp_rd_fp)
-		s_fclose(nntp_rd_fp);
-	nntp_rd_fp = nntp_wr_fp = NULL;
+	nntpbuf_close(&nntp_buf);
 
 	if (!tinrc.auto_reconnect)
 		ring_bell();
@@ -872,7 +868,7 @@ reconnect(
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
 			snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
 			put_server(last_put);
-			if (s_gets(last_put, NNTP_STRLEN, nntp_rd_fp) == NULL)
+			if (nntpbuf_gets(last_put, NNTP_STRLEN, &nntp_buf) == NULL)
 				*last_put = '\0';
 #	ifdef DEBUG
 			if (debug & DEBUG_NNTP)
@@ -887,6 +883,40 @@ reconnect(
 	}
 
 	return retry;
+}
+
+
+int
+fgetc_server(
+	FILE *stream)
+{
+	int c = EOF;
+
+	if (stream != FAKE_NNTP_FP) {
+		DEBUG_IO((stderr, "fgetc_server: BAD fp\n"));
+		return EOF;
+	}
+
+	c = nntpbuf_getc(&nntp_buf);
+	DEBUG_IO((stderr, "fgetc_server: %c / %d\n", c, c));
+
+	return c;
+}
+
+
+int
+ungetc_server(
+	int c,
+	FILE *stream)
+{
+	if (stream != FAKE_NNTP_FP) {
+		DEBUG_IO((stderr, "fgetc_server: BAD fp\n"));
+		return EOF;
+	}
+
+	DEBUG_IO((stderr, "ungetc_server: %c / %d\n", c, c));
+
+	return nntpbuf_ungetc(c, &nntp_buf);
 }
 
 
@@ -924,7 +954,7 @@ get_server(
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
 	alarm((unsigned) tinrc.nntp_read_timeout_secs);
 #	endif /* HAVE_ALARM && SIGALRM */
-	while (nntp_rd_fp == NULL || s_gets(string, size, nntp_rd_fp) == NULL) {
+	while (!nntpbuf_is_open(&nntp_buf) || nntpbuf_gets(string, size, &nntp_buf) == NULL) {
 		if (errno == EINTR) {
 			errno = 0;
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
@@ -994,8 +1024,7 @@ static void
 close_server(
 	t_bool send_no_quit)
 {
-	if (!send_no_quit && nntp_wr_fp && nntp_rd_fp) {
-
+	if (!send_no_quit && nntpbuf_is_open(&nntp_buf)) {
 		if (!batch_mode || verbose) {
 			char *msg;
 
@@ -1007,12 +1036,7 @@ close_server(
 		nntp_command("QUIT", OK_GOODBYE, NULL, 0);
 		quitting = TRUE;										/* Don't reconnect just for this */
 	}
-	if (nntp_wr_fp)
-		(void) s_fclose(nntp_wr_fp);
-	if (nntp_rd_fp)
-		(void) s_fclose(nntp_rd_fp);
-	s_end();
-	nntp_wr_fp = nntp_rd_fp = NULL;
+	nntpbuf_close(&nntp_buf);
 }
 
 
@@ -1379,6 +1403,9 @@ nntp_open(
 			wait_message(0, _(txt_connecting), nntp_server);
 	}
 
+	if ((!batch_mode || verbose) && use_nntps)
+		my_fputc('\n', stdout);
+
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "nntp_open() %s:%d", nntp_server, nntp_tcp_port);
@@ -1387,7 +1414,7 @@ nntp_open(
 	ret = server_init(nntp_server, NNTP_TCP_NAME, nntp_tcp_port, line, sizeof(line));
 	DEBUG_IO((stderr, "server_init returns %d,%s\n", ret, line));
 
-	if ((!batch_mode || verbose) && ret >= 0)
+	if ((!batch_mode || verbose) && ret >= 0 && !use_nntps)
 		my_fputc('\n', stdout);
 
 #	ifdef DEBUG
@@ -1568,6 +1595,8 @@ nntp_open(
 	/*
 	 * If CAPABILITIES failed, check if NNTP supports XOVER or OVER command
 	 * We have to check that we _don't_ get an ERR_COMMAND
+	 *
+	 * TODO: this should be done when the command is first used
 	 */
 	if (nntp_caps.type != CAPABILITIES) {
 		int i, j = 0;
@@ -1865,7 +1894,7 @@ get_respcode(
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
 			snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
 			put_server(last_put);
-			if (s_gets(last_put, NNTP_STRLEN, nntp_rd_fp) == NULL)
+			if (nntpbuf_gets(last_put, NNTP_STRLEN, &nntp_buf) == NULL)
 				*last_put = '\0';
 #	ifdef DEBUG
 			if (debug & DEBUG_NNTP)
@@ -2034,4 +2063,234 @@ list_motd(
 			break;
 	}
 }
+
+#define SZ(a) sizeof((a))
+
+/*
+ * write data from write buffer to NNTP connection when requested
+ */
+static int
+nntpbuf_flush(
+	struct nntpbuf* buf)
+{
+	if (!buf)
+		return EOF;
+
+	while(buf->wr.ub > buf->wr.lb)
+	{
+		ssize_t bytes_written;
+#ifdef NNTPS_ABLE
+		if (buf->tls_ctx)
+			bytes_written = tintls_write(buf->tls_ctx, buf->wr.buf + buf->wr.lb, buf->wr.ub - buf->wr.lb);
+		else
+			bytes_written = write(buf->fd, buf->wr.buf + buf->wr.lb, buf->wr.ub - buf->wr.lb);
+#else
+		bytes_written = write(buf->fd, buf->wr.buf + buf->wr.lb, buf->wr.ub - buf->wr.lb);
+#endif /* NNTPS_ABLE */
+		if (bytes_written < 0)
+			return EOF;
+
+		buf->wr.lb += bytes_written;
+	}
+
+	buf->wr.ub = buf->wr.lb = 0;
+
+	return 0;
+}
+
+
+/*
+ * fputs(3) replacement using the NNTP connection
+ */
+static int
+nntpbuf_puts(
+	const char* data,
+	struct nntpbuf* buf)
+{
+	int bytes_written = 0;
+	unsigned len, l;
+
+	if (!buf || SZ(buf->wr.buf) == 0 || buf->wr.lb > buf->wr.ub)
+		return EOF;
+
+	if (!data)
+		return 0;
+
+	len = strlen(data);
+	while (len) {
+		if (buf->wr.ub == SZ(buf->wr.buf)) {
+			int retval = nntpbuf_flush(buf);
+			if (retval != 0)
+				return retval;
+		}
+
+		l = len;
+		if (l > SZ(buf->wr.buf) - buf->wr.ub)
+			l = SZ(buf->wr.buf) - buf->wr.ub;;
+
+		memcpy(buf->wr.buf + buf->wr.ub, data, l);
+		buf->wr.ub += l;
+		data += l;
+		bytes_written += l;
+		len -= l;
+	}
+
+	return bytes_written;
+}
+
+
+/*
+ * internal helper to refill the read buffer using the NNTP connection
+ */
+static int
+nntpbuf_refill(
+	struct nntpbuf *buf)
+{
+	unsigned free_b;
+
+	if (buf->rd.ub == buf->rd.lb)
+		buf->rd.ub = buf->rd.lb = 0;
+
+	free_b = SZ(buf->rd.buf) - buf->rd.ub;
+	if (free_b) {
+		ssize_t bytes_read;
+#ifdef NNTPS_ABLE
+		if (buf->tls_ctx)
+			bytes_read = tintls_read(buf->tls_ctx, buf->rd.buf + buf->rd.ub, free_b);
+		else
+			bytes_read = read(buf->fd, buf->rd.buf + buf->rd.ub, free_b);
+#else
+		bytes_read = read(buf->fd, buf->rd.buf + buf->rd.ub, free_b);
+#endif /* NNTPS_ABLE */
+
+		if (bytes_read > 0)
+			buf->rd.ub += bytes_read;
+
+		return (int) bytes_read;
+	}
+	return 0;
+}
+
+
+/*
+ * fgetc(3) replacement using the NNTP connection
+ */
+static int
+nntpbuf_getc(
+	struct nntpbuf *buf)
+{
+	int c = EOF;
+
+	if (buf->rd.ub - buf->rd.lb == 0) {
+		int retval = nntpbuf_refill(buf);
+		if (retval <= 0)
+			return retval;
+	}
+
+	c = buf->rd.buf[buf->rd.lb];
+	buf->rd.lb += 1;
+
+	return c;
+}
+
+
+/*
+ * ungetc(3) replacement using the NNTP connection
+ */
+static int
+nntpbuf_ungetc(
+	int c,
+	struct nntpbuf *buf)
+{
+	if (buf->rd.lb == 0) {
+		if (buf->rd.ub == SZ(buf->rd.buf)) {
+			errno = ENOSPC;
+			return EOF;
+		}
+		memmove(buf->rd.buf+1, buf->rd.buf, buf->rd.ub);
+		buf->rd.lb += 1;
+	}
+
+	buf->rd.lb -= 1;
+	buf->rd.buf[buf->rd.lb] = (unsigned char)c;
+
+	return c;
+}
+
+/*
+ * fgets(3) replacement using the NNTP connection
+ */
+static char *
+nntpbuf_gets(
+	char *s,
+	int size,
+	struct nntpbuf *buf)
+{
+	int write_at = 0;
+
+	if (s == NULL || size == 0)
+		return s;
+
+	s[size-1] = '\0';
+	size -= 1;
+
+	while (size) {
+		if (buf->rd.ub - buf->rd.lb == 0) {
+			int retval = nntpbuf_refill(buf);
+			if (retval <= 0)
+				return NULL;
+		}
+
+		while (size && (buf->rd.ub - buf->rd.lb) > 0) {
+			s[write_at++] = buf->rd.buf[buf->rd.lb++];
+			size -= 1;
+
+			if (s[write_at-1] == '\n' && size) {
+				s[write_at] = '\0';
+				goto out;
+			}
+		}
+	}
+
+out:
+	return s;
+}
+
+
+static void
+nntpbuf_close(
+	struct nntpbuf *buf)
+{
+	if (!buf)
+		return;
+
+#ifdef NNTPS_ABLE
+	if (buf->tls_ctx) {
+		int result = tintls_close(buf->tls_ctx);
+		if (result != 0) {
+			/* warn? */
+		}
+	}
+	buf->tls_ctx = NULL;
+#endif /* NNTPS_ABLE */
+
+	if (buf->fd >= 0)
+		close(buf->fd);
+
+	buf->fd = -1;
+
+	buf->rd.lb = buf->rd.ub = 0;
+	buf->wr.lb = buf->wr.ub = 0;
+}
+
+
+static int
+nntpbuf_is_open(
+	struct nntpbuf *buf)
+{
+	return buf->fd != -1;
+}
+
+#undef SZ
+
 #endif /* NNTP_ABLE */

@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-04-14
+ *  Updated   : 2022-10-12
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -226,10 +226,19 @@ main(
 	 */
 	if (!nntp_server || !*nntp_server)
 		nntp_server = getserverbyfile(NNTP_SERVER_FILE);
-	if (read_news_via_nntp && !read_saved_news && nntp_open()) {
-		nntp_close(FALSE);
-		free_all_arrays();
-		giveup();
+	if (read_news_via_nntp && !read_saved_news) {
+		if (use_nntps && tintls_init()) {
+			tintls_exit();
+			free_all_arrays();
+			giveup();
+		}
+
+		if (nntp_open()) {
+			nntp_close(FALSE);
+			tintls_exit();
+			free_all_arrays();
+			giveup();
+		}
 	}
 
 	read_server_config();
@@ -454,7 +463,7 @@ main(
 
 /*
  * process command line options
- * [01235789beEFijJkKLOtTyY] are unused
+ * [01235789beEFijJKLOtyY] are unused
  * [W] is reserved
  * [BCPU] have been in use at some time, but now are unused:
  *   B BBS mode (M_AMIGA only)
@@ -462,7 +471,7 @@ main(
  *   P purge group index files of articles that no longer exist
  *   U update index files in background
  */
-#define OPTIONS "46aAcdD:f:g:G:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
+#define OPTIONS "46aAcdD:f:g:G:hHI:klm:M:nNop:qQrRs:STuvVwxXzZ"
 
 static void
 read_cmd_line_options(
@@ -593,6 +602,19 @@ read_cmd_line_options(
 				joinpath(index_newsdir, sizeof(index_newsdir), optarg, INDEX_NEWSDIR);
 				break;
 
+			case 'k':
+#ifdef NNTPS_ABLE
+				insecure_nntps = TRUE;
+				use_nntps = TRUE;
+#else
+				error_message(2, _(txt_option_not_enabled), "--with-nntps");
+				free_all_arrays();
+				giveup();
+				/* keep lint quiet: */
+				/* NOTREACHED */
+#endif /* NNTPS_ABLE */
+				break;
+
 			case 'l':
 				list_active = TRUE;
 				break;
@@ -689,6 +711,18 @@ read_cmd_line_options(
 				batch_mode = TRUE;
 				break;
 
+			case 'T':
+#ifdef NNTPS_ABLE
+				use_nntps = TRUE;
+#else
+				error_message(2, _(txt_option_not_enabled), "--with-nntps");
+				free_all_arrays();
+				giveup();
+				/* keep lint quiet: */
+				/* NOTREACHED */
+#endif /* NNTPS_ABLE */
+				break;
+
 			case 'u':	/* update index files */
 				batch_mode = TRUE;
 				update_index = TRUE;
@@ -748,6 +782,18 @@ read_cmd_line_options(
 				exit(EXIT_SUCCESS);
 		}
 	}
+
+#ifdef NNTP_ABLE
+	if (nntp_tcp_port == 0) {
+#ifdef NNTPS_ABLE
+		if (use_nntps)
+			nntp_tcp_port = nntps_tcp_default_port;
+		else
+#endif /* NNTPS_ABLE */
+			nntp_tcp_port = nntp_tcp_default_port;
+	}
+#endif /* NNTP_ABLE*/
+
 	cmdargs = argv;
 	num_cmdargs = optind;
 	max_cmdargs = argc;
@@ -934,6 +980,13 @@ usage(
 	error_message(2, _(txt_usage_help_message));
 	error_message(2, _(txt_usage_help_information), theProgname);
 	error_message(2, _(txt_usage_index_newsdir), index_newsdir);
+
+#ifdef NNTP_ABLE
+#	ifdef NNTPS_ABLE
+	error_message(2, _(txt_usage_use_insecure_nntps));
+#	endif /* NNTPS_ABLE */
+#endif /* NNTP_ABLE */
+
 	error_message(2, _(txt_usage_read_only_active));
 	error_message(2, _(txt_usage_maildir), tinrc.maildir);
 	error_message(2, _(txt_usage_mail_new_news_to_user));
@@ -942,7 +995,11 @@ usage(
 	error_message(2, _(txt_usage_post_postponed_arts));
 
 #ifdef NNTP_ABLE
-	error_message(2, _(txt_usage_port), nntp_tcp_port);
+#	ifdef NNTPS_ABLE
+	error_message(2, _(txt_usage_port), use_nntps ? nntps_tcp_default_port : nntp_tcp_default_port);
+#	else
+	error_message(2, _(txt_usage_port), nntp_tcp_default_port);
+#	endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 
 	error_message(2, _(txt_usage_dont_check_new_newsgroups));
@@ -956,6 +1013,11 @@ usage(
 	error_message(2, _(txt_usage_read_saved_news));
 	error_message(2, _(txt_usage_savedir), tinrc.savedir);
 	error_message(2, _(txt_usage_save_new_news));
+#ifdef NNTP_ABLE
+#	ifdef NNTPS_ABLE
+	error_message(2, _(txt_usage_use_nntps));
+#	endif /* NNTPS_ABLE */
+#endif /* NNTP_ABLE */
 	error_message(2, _(txt_usage_update_index_files));
 	error_message(2, _(txt_usage_verbose));
 	error_message(2, _(txt_usage_version));

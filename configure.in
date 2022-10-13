@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2022-04-15
+dnl Updated   : 2022-09-19
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2021 Thomas E. Dickey <dickey@invisible-island.net>
@@ -452,17 +452,61 @@ AC_ARG_WITH(pcre,
 	[PCRE_HOME=$withval],
 	[PCRE_HOME=no])
 AC_MSG_RESULT($PCRE_HOME)
-CF_BUNDLED_PCRE($PCRE_HOME)
+
+## Preliminary check for PCRE2
+AC_MSG_CHECKING(if you want to use pcre2 in favour of pcre)
+AC_ARG_WITH(pcre2-config,
+	[  --with-pcre2-config=PATH use pcre2 in favour of pcre],
+	[pcre2_config=$withval],
+	[pcre2_config=no])
+AC_MSG_RESULT($pcre2_config)
+
+if test "$PCRE_HOME" != no && test "$pcre2_config" != no ; then
+	AC_MSG_ERROR([cannot use PCRE and PCRE2 at the same time])
+fi
+
+if test "$pcre2_config" != no ; then
+	if test "$pcre2_config" != yes ; then
+		PCRE2_CONFIG=$withval
+	else
+		CF_ACVERSION_CHECK(2.52,
+			[AC_PATH_TOOL(PCRE2_CONFIG,pcre2-config,none)],
+			[AC_PATH_PROG(PCRE2_CONFIG,pcre2-config,none)])
+	fi
+
+	if test "$PCRE2_CONFIG" != none && "$PCRE2_CONFIG" --version >/dev/null ; then
+		PCRE2_LIBS=`$PCRE2_CONFIG --libs8`
+		PCRE2_CFLAGS=`$PCRE2_CONFIG --cflags`
+		if test -n "$PCRE2_LIBS" ; then
+			LIBS="$LIBS $PCRE2_LIBS"
+		fi
+		if test -n "$PCRE2_CFLAGS" ; then
+			CFLAGS="$CFLAGS $PCRE2_CFLAGS"
+		fi
+		AC_DEFINE(HAVE_LIB_PCRE2,1,[Define to 1 if we can/should compile with the PCRE2 library])
+		# TODO: header / link checks?
+	else
+		AC_MSG_WARN([pcre2-config not found or not working, trying fallback to pcre])
+		pcre2_config=no
+	fi
+fi
 
 PCRE_MAKEFILE=
-if test "$cf_pcre_home" = "no" ; then
-	LINK_SIZE="-DLINK_SIZE=2"
-	AC_SUBST(LINK_SIZE)
-	UTF8="-DSUPPORT_UTF8"
-	UCP="-DSUPPORT_UCP"
-	AC_SUBST(UTF8)
-	AC_SUBST(UCP)
-	PCRE_MAKEFILE="$PCRE_MAKEFILE pcre/Makefile pcre/RunTest"
+if test "$pcre2_config" = no ; then
+
+	CF_BUNDLED_PCRE($PCRE_HOME)
+
+	if test "$cf_pcre_home" = "no" ; then
+		LINK_SIZE="-DLINK_SIZE=2"
+		AC_SUBST(LINK_SIZE)
+		UTF8="-DSUPPORT_UTF8"
+		UCP="-DSUPPORT_UCP"
+		AC_SUBST(UTF8)
+		AC_SUBST(UCP)
+		PCRE_MAKEFILE="$PCRE_MAKEFILE pcre/Makefile pcre/RunTest"
+	fi
+else
+	PCREDIR_MAKE='#'
 fi
 
 ## debugging libraries (do this after other libraries)
@@ -723,6 +767,36 @@ CF_ARG_ENABLE(long-article-numbers,
                           enable long article numbers (default: disabled)],
 [AC_DEFINE(ENABLE_LONG_ARTICLE_NUMBERS,1,[Define this to 1 to enable long article numbers])])
 AC_MSG_RESULT($enableval)
+
+### TLS support
+if test "$USE_NNTP" = "yes" ; then
+AC_MSG_CHECKING([wether to enable NNTPS support])
+AC_ARG_WITH(
+	nntps,
+	[  --with-nntps=ssl        enable NNTPS, needs LibreSSL, OpenSSL or GnuTLS
+	                  possible values: libtls, openssl, gnutls],
+	[enable_nntps=$withval],
+	[enable_nntps="no"])
+AC_MSG_RESULT($enable_nntps)
+
+# Todo: check versions
+AS_IF([test "$enable_nntps" != "no"],
+      [AS_IF([test "$enable_nntps" = "yes" || test "$enable_nntps" = "libtls"],
+             [CF_TRY_PKG_CONFIG([libtls],[have_libtls=yes],[have_libtls=no])])
+       AS_IF([test "$enable_nntps" = "yes" && test "$have_libtls" = "no" || test "$enable_nntps" = "openssl"],
+             [CF_TRY_PKG_CONFIG([openssl],[have_openssl=yes],[have_openssl=no])])
+       AS_IF([test "$enable_nntps" = "yes" && test "$have_libtls" = "no" && test "$have_openssl" = "no" || test "$enable_nntps" = "gnutls"],
+             [CF_TRY_PKG_CONFIG([gnutls],[have_gnutls=yes],[have_gnutls=no])])
+
+       AS_IF([test "$have_libtls" != "yes" && test "$have_openssl" != "yes" && test "$have_gnutls" != "yes"],
+             [AC_MSG_ERROR([You requested NNTPS support but no usable TLS implementation was found])],
+             [AC_DEFINE(NNTPS_ABLE,1,[Define to 1 to enable NNTPS support])
+             AS_IF([test "$have_libtls" = "yes"],
+                   [AC_DEFINE(HAVE_LIB_LIBTLS,1,[Define to 1 if we can/should compile with the LibreSSL libtls library])],
+                    [AS_IF([test "$have_openssl" = "yes"],
+                           [AC_DEFINE(HAVE_LIB_OPENSSL,1,[Define to 1 if we can/should compile with the OpenSSL libraries])],
+                           [AC_DEFINE(HAVE_LIB_GNUTLS,1,[Define to 1 if we can/should compile with the GNUTLS library])])])])])
+fi
 
 ### checks for operator characteristics (should be the last option)
 AC_MSG_CHECKING(whether to make a coffee while compiling)

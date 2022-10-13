@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2020-12-14
+# Updated: 2022-09-19
 #
 # Copyright (c) 1995-2022 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -142,6 +142,7 @@ HFILES	= \
 	$(INCDIR)/tin.h \
 	$(INCDIR)/tinrc.h \
 	$(INCDIR)/tnntp.h \
+	$(INCDIR)/tnntps.h \
 	$(INCDIR)/version.h
 
 CFILES	= \
@@ -180,6 +181,7 @@ CFILES	= \
 	$(SRCDIR)/my_tmpfile.c \
 	$(SRCDIR)/newsrc.c \
 	$(SRCDIR)/nntplib.c \
+	$(SRCDIR)/nntps.c \
 	$(SRCDIR)/nrctbl.c \
 	$(SRCDIR)/options_menu.c \
 	$(SRCDIR)/page.c \
@@ -255,6 +257,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/my_tmpfile$o \
 	$(OBJDIR)/newsrc$o \
 	$(OBJDIR)/nntplib$o \
+	$(OBJDIR)/nntps$o \
 	$(OBJDIR)/nrctbl$o \
 	$(OBJDIR)/options_menu$o \
 	$(OBJDIR)/page$o \
@@ -588,6 +591,8 @@ $(OBJDIR)/newsrc$o :		$(SRCDIR)/newsrc.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h
 $(OBJDIR)/nntplib$o :		$(SRCDIR)/nntplib.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h
+$(OBJDIR)/nntps$o :		$(SRCDIR)/nntps.c $(TIN_DEP) \
+				$(INCDIR)/tnntps.h
 $(OBJDIR)/nrctbl$o :		$(SRCDIR)/nrctbl.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h \
 				$(INCDIR)/version.h

@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2022-02-22
+.\" Updated   : 2022-10-06
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -15,7 +15,7 @@ tin, rtin \- related files
 This man page describes the various (config) files and their formats used by
 the
 .BR \%tin (1)
-newsreader. All files are expected to have unix style ('\\n' aka LF) line
+newsreader. All files are expected to have unix style ('\(rsn' aka LF) line
 endings.
 
 .SH FILES
@@ -38,6 +38,7 @@ endings.
 .\" $TMPDIR/SCOPES-R   (-D 32)
 .\" $TMPDIR/SCOPES-W   (-D 32)
 .\" $TMPDIR/ACTIVE     (-D 64)
+.\" ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinmsglog
 .IR $MAILCAPS
 .br
 .IR ~/.mailcap
@@ -57,7 +58,7 @@ files as defined in \fBRFC\%1524\fP. The mailcap files are read by
 to determine how to display non-text messages at the local site. Any line
 that starts with "#" is a comment. Blank lines are ignored. Otherwise, each
 line defines a single mailcap entry for a single content type. Long lines
-may be continued by ending them with a backslash character, "\\".
+may be continued by ending them with a backslash character, "\(rs".
 .sp
 Each individual mailcap entry consists of a content-type specification, a
 command to execute, and (possibly) a set of optional "flag" values.
@@ -80,7 +81,7 @@ message. If it contains "%t", those two characters will be replaced by the
 content-type field, including the subtype, if any. If it contains "%{"
 followed by a parameter name and a closing "}", then all those characters
 will be replaced by the value of the named parameter, if any, from the
-\&''Content\-Type:'' header. Finally, if the field contains "\\%", those two
+\&''Content\-Type:'' header. Finally, if the field contains "\(rs%", those two
 characters will be replaced by a single "%" character.
 .\"
 .\" Two special codes can appear in the viewing command for objects of type
@@ -369,12 +370,12 @@ saved newsgroups index files
 .IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail
 .sp
 .RS
-active file ("\fImail_group_name\fR \fImaxnum\fR \fIminnum\fR
+active file ("\fImailgroupname\fR \fImaxnum\fR \fIminnum\fR
 \fImailspool\fR" quadruples) of user's mailgroups (requires
 .BR \%tin (1)
 to be build with mh-mail-handling support).
 .TP
-.B mail_group_name
+.B mailgroupname
 must be the pathname of the mailbox relative to field #4 with '/' changed
 to '.'
 .TP
@@ -629,6 +630,9 @@ Identical to the tinrc variable of the same name
 Identical to the tinrc variable of the same name
 .TP
 .B trim_article_body
+Identical to the tinrc variable of the same name
+.TP
+.B suppress_soft_hyphens
 Identical to the tinrc variable of the same name
 .TP
 .B verbatim_handling
@@ -898,7 +902,7 @@ is bound to NULL it is unassigned.
 \fBLastPage\fP	$
 \fBToggleColor\fP	&
 \fBLastViewed\fP	\-
-\fBSearchRepeat\fP	\\
+\fBSearchRepeat\fP	\(rs
 \fBSearchSubjF\fP	/
 \fBSearchSubjB\fP	?
 \fBSearchAuthB\fP	A
@@ -1139,10 +1143,13 @@ is a short single-line description of the group
 .sp
 .RS
 "\fInntpserver\fR \fInewsrc\fR [\fIshortname\fR [\fI...\fR]]"
-pairs to use with the ''\fB\-g\fP'' command-line switch.
+pairs to use with the ''\fB\-g\fP'' command-line switch. The matching is
+case-insensitive and any line that starts with "#", ";" or " " is treated
+as a comment.
 .TP
 .B nntpserver
-full qualified domain name of the news server.
+full qualified domain name of the news server. The string "default" or "*"
+acts as wildcard to match any name, such a line should be placed last.
 .TP
 .B newsrc
 related newsrc.
@@ -1157,6 +1164,8 @@ Example:
 news.tin.org .newsrc\-tin.org tinorg
 .br
 news.example.org /tmp/nrc\-ex example ex
+.br
+* ~/.tin/newsrcs/${NNTPSERVER-localhost}
 .RE
 .RE
 .PP
@@ -2326,6 +2335,11 @@ score in this thread.
 \fBAverage\fP, the average score in this thread.
 .RE
 .TP
+.B tls_ca_cert_file
+The name of file containing all trusted CA certificates used for NNTPS
+(\fBRFC\%8143\fP) connections. If left empty the system default will be
+used.
+.TP
 .B translit
 If ON append //TRANSLIT to the first argument of
 .BR \%iconv_open (3)
@@ -2358,6 +2372,10 @@ text blocks with one blank line.
 .IP 7
 \fBCompact mltpl., skip lead. & trai.\fP, 4 + 3
 .RE
+.TP
+.B suppress_soft_hyphens
+If ON remove soft hyphens (U+00AD) from non verbatim blocks when displaying
+articles. Default is OFF.
 .TP
 .B underscores_regex
 A regular expression that will be applied when reading articles. All
@@ -2788,4 +2806,5 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR RFC\%5322 ,
 .BR RFC\%5536 ,
 .BR RFC\%5537 ,
-.BR RFC\%6048
+.BR RFC\%6048 ,
+.BR RFC\%8143

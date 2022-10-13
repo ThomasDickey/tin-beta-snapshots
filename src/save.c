@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-19
+ *  Updated   : 2022-08-29
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1155,7 +1155,7 @@ post_process_sh(
 
 		while (fgets(buf, (int) sizeof(buf), fp_in) != NULL) {
 			/* find #!/bin/sh style patterns */
-			if ((fp_out == NULL) && pcre_exec(shar_regex.re, shar_regex.extra, buf, (int) strlen(buf), 0, 0, NULL, 0) >= 0)
+			if ((fp_out == NULL) && match_regex_ex(buf, (int) strlen(buf), 0, 0, &shar_regex) >= 0)
 				fp_out = fopen(file_out, "w");
 
 			/* write to temp file */
@@ -1377,11 +1377,10 @@ match_content_type(
 
 	/* Check for negation */
 	if (*type == '!') {
-		negate = TRUE;
-		++type;
-
-		if (!*type)				/* Invalid type */
+		if (!*(++type))				/* Invalid type */
 			return NO;
+
+		negate = TRUE;
 	}
 
 	/* Split type and subtype */
@@ -1983,7 +1982,7 @@ tag_pattern(
 	char *prompt;
 	const char *name;
 	const char *charset;
-	struct regex_cache cache = { NULL, NULL };
+	struct regex_cache cache = REGEX_CACHE_INITIALIZER;
 	t_part *part;
 	t_partl *lptr;
 
@@ -2007,7 +2006,7 @@ tag_pattern(
 	} else
 		snprintf(pat, sizeof(pat), REGEX_FMT, tinrc.default_select_pattern);
 
-	if (tinrc.wildcard && !(compile_regex(pat, &cache, PCRE_CASELESS)))
+	if (tinrc.wildcard && !(compile_regex(pat, &cache, REGEX_CASELESS)))
 		return;
 
 	lptr = find_part(0);
@@ -2030,8 +2029,7 @@ tag_pattern(
 	}
 
 	if (tinrc.wildcard) {
-		FreeIfNeeded(cache.re);
-		FreeIfNeeded(cache.extra);
+		regex_cache_destroy(&cache);
 	}
 }
 

@@ -165,11 +165,12 @@ wildmatpos(
 	const char *text,
 	char *p,
 	t_bool icase,
-	int *srch_offsets,
-	int srch_offsets_size)
+	REGEX_SIZE *srch_offsets,
+	REGEX_NOFFSET srch_offsets_size)
 {
 	char *txt, *t, *px;
-	int i, prev_offset = srch_offsets[1];
+	int i;
+	REGEX_SIZE prev_offset = srch_offsets[1];
 	t_bool ret = FALSE;
 
 	if (srch_offsets_size >= 2)
@@ -184,7 +185,7 @@ wildmatpos(
 	if (p[0] == '*' && p[1] == '\0') {
 		if (srch_offsets_size >= 2) {
 			srch_offsets[0] = 0;
-			srch_offsets[1] = (int) strlen(text);
+			srch_offsets[1] = (REGEX_SIZE) strlen(text);
 		}
 		return TRUE;
 	}
@@ -207,7 +208,7 @@ wildmatpos(
 				t[i] = '\0';
 				if ((ret = (DoMatch(t, px) == 1))) {
 					if (srch_offsets_size >= 2) {
-						srch_offsets[0] = (int) (t - txt);
+						srch_offsets[0] = (REGEX_SIZE) (t - txt);
 						srch_offsets[1] = srch_offsets[0] + i;
 					}
 					break;

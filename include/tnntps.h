@@ -1,12 +1,12 @@
 /*
  *  Project   : tin - a Usenet reader
- *  Module    : version.h
- *  Author    : I. Lea
- *  Created   : 1991-04-01
- *  Updated   : 2021-02-01
- *  Notes     :
+ *  Module    : tnntps.h
+ *  Author    : Enrik Berkhan
+ *  Created   : 2022-09-10
+ *  Updated   : 2022-09-20
+ *  Notes     : TLS #include files, #defines & struct's
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 2022 Enrik Berkhan <Enrik.Berkhan@inka.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,20 +38,47 @@
  */
 
 
-#ifndef VERSION_H
-#	define VERSION_H	1
+#ifndef TNNTPS_H
+#	define TNNTPS_H 1
 
-#	define PRODUCT		"tin"
-#	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.6.2"
-#	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20221013"
-#	define RELEASENAME	"Convalmore"
-/* config-file versions - must be dotted triples in the range 0 to 99 each */
-#	define TINRC_VERSION	"1.3.18"
-#	define ATTRIBUTES_VERSION	"1.0.11"
-#	define FILTER_VERSION	"1.0.2"
-#	define KEYMAP_VERSION	"1.0.10"
-#	define SERVERCONFIG_VERSION	"1.0.0"
+#	ifdef HAVE_LIB_LIBTLS
 
-#endif /* !VERSION_H */
+#		include <tls.h>
+
+#		if TLS_API < 20200120
+#			error Please use LibreSSL TLS_API >= 20200120
+#		else
+#			define USE_LIBTLS 1
+#		endif /* TLS_API < 20200120 */
+
+#	else
+
+#		ifdef HAVE_LIB_OPENSSL
+#			include <openssl/ssl.h>
+#			include <openssl/err.h>
+#			include <openssl/rand.h>
+
+#			if OPENSSL_VERSION_NUMBER < 0x1010100fL
+#				error Please use OpenSSL >= 1.1.1
+#			else
+#				define USE_OPENSSL 1
+#			endif /* OPENSSL_VERSION_NUMBER < 0x1010100fL */
+
+#		else
+
+#			ifdef HAVE_LIB_GNUTLS
+#				include <gnutls/gnutls.h>
+#				include <gnutls/x509.h>
+
+#				if GNUTLS_VERSION_NUMBER < 0x030700
+#					error Please use GnuTLS >= 3.7.0
+#				else
+#					define USE_GNUTLS 1
+#				endif /* GNUTLS_VERSION_NUMBER < 0x030700 */
+#			endif /* HAVE_LIB_GNUTLS */
+
+#		endif /* HAVE_LIB_OPENSSL */
+
+#	endif /* HAVE_LIB_LIBTLS */
+
+#endif /* !TNNTPS_H */

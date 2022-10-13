@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2021-02-25
+ *  Updated   : 2022-08-26
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -846,9 +846,9 @@ feed_articles(
 		case FEED_HOT:		/* hot (auto-selected) articles */
 		case FEED_PATTERN:	/* pattern matched articles */
 			{
-				struct regex_cache cache = { NULL, NULL };
+				struct regex_cache cache = REGEX_CACHE_INITIALIZER;
 
-				if ((feed_type == FEED_PATTERN) && tinrc.wildcard && !(compile_regex(tinrc.default_pattern, &cache, PCRE_CASELESS)))
+				if ((feed_type == FEED_PATTERN) && tinrc.wildcard && !(compile_regex(tinrc.default_pattern, &cache, REGEX_CASELESS)))
 					break;
 
 				for_each_art(art) {
@@ -866,8 +866,7 @@ feed_articles(
 				}
 
 				if (tinrc.wildcard) {
-					FreeIfNeeded(cache.re);
-					FreeIfNeeded(cache.extra);
+					regex_cache_destroy(&cache);
 				}
 			}
 

@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-03-26
+ *  Updated   : 2022-10-13
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -152,6 +152,8 @@ t_bool read_local_newsgroups_file;	/* read newsgroups file locally or via NNTP *
 t_bool read_news_via_nntp = FALSE;	/* read news locally or via NNTP */
 t_bool read_saved_news = FALSE;		/* tin -R read saved news from tin -S */
 t_bool show_description = TRUE;		/* current copy of tinrc flag */
+t_bool use_nntps = FALSE;		/* use NNTPS */
+t_bool insecure_nntps = FALSE;		/* allow insecure NNTPS, i.e. disable peer cert verification */
 int verbose = 0;			/* batch or debug mode */
 t_bool word_highlight;		/* word highlighting on/off */
 t_bool xref_supported = TRUE;
@@ -160,7 +162,11 @@ t_bool xref_supported = TRUE;
 #endif /* HAVE_COLOR */
 #ifdef NNTP_ABLE
 	t_bool force_auth_on_conn_open = FALSE;	/* authenticate on connection startup */
-	unsigned short nntp_tcp_port;
+	unsigned short nntp_tcp_port = 0;
+	unsigned short nntp_tcp_default_port;
+#ifdef NNTPS_ABLE
+	unsigned short nntps_tcp_default_port;
+#endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 
 /* Currently active menu parameters */
@@ -183,10 +189,7 @@ struct regex_cache
 #ifdef HAVE_COLOR
 		, extquote_regex, quote_regex, quote_regex2, quote_regex3
 #endif /* HAVE_COLOR */
-	= {
-		NULL,
-		NULL
-	};
+	= REGEX_CACHE_INITIALIZER;
 
 struct t_cmdlineopts cmdline;
 
@@ -268,6 +271,9 @@ struct t_config tinrc = {
 	"",		/* verbatim_end_regex */
 	"",		/* savedir */
 	"",		/* spamtrap_warning_addresses */
+#ifdef NNTPS_ABLE
+	"",		/* tls_ca_cert_file */
+#endif /* NNTPS_ABLE */
 	DEFAULT_URL_HANDLER,	/* url_handler */
 	"In %G %F wrote:",			/* xpost_quote_format */
 	DEFAULT_FILTER_DAYS,			/* filter_days */
@@ -389,6 +395,9 @@ struct t_config tinrc = {
 	TRUE,		/* strip_blanks */
 #endif /* !USE_CURSES */
 	FALSE,		/* strip_newsrc */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	FALSE,		/* suppress_soft_hyphens */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	FALSE,		/* tex2iso_conv */
 	TRUE,		/* thread_catchup_on_exit */
 	TRUE,		/* unlink_article */
@@ -497,6 +506,9 @@ struct t_config tinrc = {
 	TRUE,		/* attrib_show_signatures */
 	TRUE,		/* attrib_sigdashes */
 	TRUE,		/* attrib_signature_repost */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	FALSE,		/* suppress_soft_hyphens */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	FALSE,		/* attrib_tex2iso_conv */
 	TRUE,		/* attrib_thread_catchup_on_exit */
 	TRUE,		/* attrib_verbatim_handling */
@@ -907,7 +919,10 @@ init_selfinfo(
 	joinpath(lock_file, sizeof(lock_file), tmpdir, tmp);
 
 #ifdef NNTP_ABLE
-	nntp_tcp_port = (unsigned short) atoi(get_val("NNTPPORT", NNTP_TCP_PORT));
+	nntp_tcp_default_port = (unsigned short) atoi(get_val("NNTPPORT", NNTP_TCP_PORT));
+#ifdef NNTPS_ABLE
+	nntps_tcp_default_port = (unsigned short) atoi(get_val("NNTPSPORT", NNTPS_TCP_PORT));
+#endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 
 	if ((fp = fopen(posted_info_file, "a")) != NULL) {
@@ -1028,7 +1043,7 @@ postinit_regexp(
 {
 	if (!*tinrc.strip_re_regex)
 		STRCPY(tinrc.strip_re_regex, DEFAULT_STRIP_RE_REGEX);
-	compile_regex(tinrc.strip_re_regex, &strip_re_regex, PCRE_ANCHORED);
+	compile_regex(tinrc.strip_re_regex, &strip_re_regex, REGEX_ANCHORED);
 
 	if (*tinrc.strip_was_regex) {
 		/*
@@ -1037,24 +1052,17 @@ postinit_regexp(
 		 *
 		 * TODO: a global solution
 		 */
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			if (IS_LOCAL_CHARSET("UTF-8") && utf8_pcre()) {
-				if (!strcmp(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX))
-					STRCPY(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX);
-			} else {
-				if (!strcmp(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX))
-					STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
-			}
-#else
+		if (regex_use_utf8()) {
+			if (!strcmp(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX))
+				STRCPY(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX);
+		} else {
 			if (!strcmp(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX))
 				STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		}
 	} else {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (IS_LOCAL_CHARSET("UTF-8") && utf8_pcre())
+		if (regex_use_utf8())
 			STRCPY(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX);
 		else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
 	}
 	compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);
@@ -1062,60 +1070,44 @@ postinit_regexp(
 #ifdef HAVE_COLOR
 	if (!*tinrc.extquote_regex)
 		STRCPY(tinrc.extquote_regex, DEFAULT_EXTQUOTE_REGEX);
-	compile_regex(tinrc.extquote_regex, &extquote_regex, PCRE_CASELESS);
+	compile_regex(tinrc.extquote_regex, &extquote_regex, REGEX_CASELESS);
 	if (!*tinrc.quote_regex)
 		STRCPY(tinrc.quote_regex, DEFAULT_QUOTE_REGEX);
-	compile_regex(tinrc.quote_regex, &quote_regex, PCRE_CASELESS);
+	compile_regex(tinrc.quote_regex, &quote_regex, REGEX_CASELESS);
 	if (!*tinrc.quote_regex2)
 		STRCPY(tinrc.quote_regex2, DEFAULT_QUOTE_REGEX2);
-	compile_regex(tinrc.quote_regex2, &quote_regex2, PCRE_CASELESS);
+	compile_regex(tinrc.quote_regex2, &quote_regex2, REGEX_CASELESS);
 	if (!*tinrc.quote_regex3)
 		STRCPY(tinrc.quote_regex3, DEFAULT_QUOTE_REGEX3);
-	compile_regex(tinrc.quote_regex3, &quote_regex3, PCRE_CASELESS);
+	compile_regex(tinrc.quote_regex3, &quote_regex3, REGEX_CASELESS);
 #endif /* HAVE_COLOR */
 
 	if (!*tinrc.slashes_regex)
 		STRCPY(tinrc.slashes_regex, DEFAULT_SLASHES_REGEX);
-	compile_regex(tinrc.slashes_regex, &slashes_regex, PCRE_CASELESS);
+	compile_regex(tinrc.slashes_regex, &slashes_regex, REGEX_CASELESS);
 	if (!*tinrc.stars_regex)
 		STRCPY(tinrc.stars_regex, DEFAULT_STARS_REGEX);
-	compile_regex(tinrc.stars_regex, &stars_regex, PCRE_CASELESS);
+	compile_regex(tinrc.stars_regex, &stars_regex, REGEX_CASELESS);
 	if (!*tinrc.strokes_regex)
 		STRCPY(tinrc.strokes_regex, DEFAULT_STROKES_REGEX);
-	compile_regex(tinrc.strokes_regex, &strokes_regex, PCRE_CASELESS);
+	compile_regex(tinrc.strokes_regex, &strokes_regex, REGEX_CASELESS);
 	if (!*tinrc.underscores_regex)
 		STRCPY(tinrc.underscores_regex, DEFAULT_UNDERSCORES_REGEX);
-	compile_regex(tinrc.underscores_regex, &underscores_regex, PCRE_CASELESS);
+	compile_regex(tinrc.underscores_regex, &underscores_regex, REGEX_CASELESS);
 
 	if (!*tinrc.verbatim_begin_regex)
 		STRCPY(tinrc.verbatim_begin_regex, DEFAULT_VERBATIM_BEGIN_REGEX);
-	compile_regex(tinrc.verbatim_begin_regex, &verbatim_begin_regex, PCRE_ANCHORED);
+	compile_regex(tinrc.verbatim_begin_regex, &verbatim_begin_regex, REGEX_ANCHORED);
 	if (!*tinrc.verbatim_end_regex)
 		STRCPY(tinrc.verbatim_end_regex, DEFAULT_VERBATIM_END_REGEX);
-	compile_regex(tinrc.verbatim_end_regex, &verbatim_end_regex, PCRE_ANCHORED);
+	compile_regex(tinrc.verbatim_end_regex, &verbatim_end_regex, REGEX_ANCHORED);
 
-	compile_regex(UUBEGIN_REGEX, &uubegin_regex, PCRE_ANCHORED);
-	compile_regex(UUBODY_REGEX, &uubody_regex, PCRE_ANCHORED);
+	compile_regex(UUBEGIN_REGEX, &uubegin_regex, REGEX_ANCHORED);
+	compile_regex(UUBODY_REGEX, &uubody_regex, REGEX_ANCHORED);
 
-	compile_regex(URL_REGEX, &url_regex, PCRE_CASELESS);
-	compile_regex(MAIL_REGEX, &mail_regex, PCRE_CASELESS);
-	compile_regex(NEWS_REGEX, &news_regex, PCRE_CASELESS);
+	compile_regex(URL_REGEX, &url_regex, REGEX_CASELESS);
+	compile_regex(MAIL_REGEX, &mail_regex, REGEX_CASELESS);
+	compile_regex(NEWS_REGEX, &news_regex, REGEX_CASELESS);
 
-	compile_regex(SHAR_REGEX, &shar_regex, PCRE_ANCHORED);
+	compile_regex(SHAR_REGEX, &shar_regex, REGEX_ANCHORED);
 }
-
-
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-t_bool
-utf8_pcre(
-	void)
-{
-	int i = 0;
-
-#	if (defined(PCRE_MAJOR) && PCRE_MAJOR >= 4)
-	(void) pcre_config(PCRE_CONFIG_UTF8, &i);
-#	endif /* PCRE_MAJOR && PCRE_MAJOR >= 4 */
-
-	return (i ? TRUE : FALSE);
-}
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */

@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2022-02-16
+ *  Updated   : 2022-09-19
  *  Notes     :
  *
  * Copyright (c) 1999-2022 Jason Faultless <jason@altarstone.com>
@@ -137,6 +137,9 @@ struct t_config {
 	char verbatim_end_regex[LEN];			/* regex used to find the end of a verbatim block */
 	char savedir[PATH_LEN];				/* directory to save articles to */
 	char spamtrap_warning_addresses[LEN];
+#	ifdef NNTPS_ABLE
+		char tls_ca_cert_file[PATH_LEN];	/* file containing trusted CA certificates */
+#	endif /* NNTPS_ABLE */
 	char url_handler[LEN];				/* Helper app for opening URL's */
 	char xpost_quote_format[LEN];
 	int filter_days;					/* num of days an article filter can be active */
@@ -250,6 +253,9 @@ struct t_config {
 		t_bool strip_blanks;
 #	endif /* !USE_CURSES */
 	t_bool strip_newsrc;
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		t_bool suppress_soft_hyphens;	/* set TRUE to remove soft hyphens (U+00AD) from articles */
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	t_bool tex2iso_conv;			/* convert "a to Umlaut-a */
 	t_bool thread_catchup_on_exit;		/* catchup thread with left arrow key or not */
 	t_bool unlink_article;
@@ -362,6 +368,9 @@ struct t_config {
 	t_bool attrib_show_signatures;
 	t_bool attrib_sigdashes;
 	t_bool attrib_signature_repost;
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		t_bool attrib_suppress_soft_hyphens;
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	t_bool attrib_tex2iso_conv;
 	t_bool attrib_thread_catchup_on_exit;
 	t_bool attrib_verbatim_handling;

@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-17
+ *  Updated   : 2022-08-26
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -861,7 +861,7 @@ group_page(
 				if (grpmenu.curr >= 0) {
 					char pat[128];
 					char *prompt;
-					struct regex_cache cache = { NULL, NULL };
+					struct regex_cache cache = REGEX_CACHE_INITIALIZER;
 
 					prompt = fmt_string(_(txt_select_pattern), tinrc.default_select_pattern);
 					if (!(prompt_string_default(prompt, tinrc.default_select_pattern, _(txt_info_no_previous_expression), HIST_SELECT_PATTERN))) {
@@ -878,7 +878,7 @@ group_page(
 					} else
 						snprintf(pat, sizeof(pat), REGEX_FMT, tinrc.default_select_pattern);
 
-					if (tinrc.wildcard && !(compile_regex(pat, &cache, PCRE_CASELESS)))
+					if (tinrc.wildcard && !(compile_regex(pat, &cache, REGEX_CASELESS)))
 						break;
 
 					flag = FALSE;
@@ -896,8 +896,7 @@ group_page(
 						update_group_page();
 					}
 					if (tinrc.wildcard) {
-						FreeIfNeeded(cache.re);
-						FreeIfNeeded(cache.extra);
+						regex_cache_destroy(&cache);
 					}
 				}
 				break;

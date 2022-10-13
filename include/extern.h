@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-19
+ *  Updated   : 2022-10-13
  *  Notes     :
  *
  * Copyright (c) 1997-2022 Iain Lea <iain@bricbrac.de>
@@ -615,7 +615,9 @@ extern constext txt_enter_next_unread_group[];
 extern constext txt_enter_option_num[];
 extern constext txt_enter_range[];
 extern constext txt_error_approved[];
-extern constext txt_error_asfail[];
+#ifndef NDEBUG
+	extern constext txt_error_asfail[];
+#endif /* ! NDEBUG */
 extern constext txt_error_bad_approved[];
 extern constext txt_error_bad_from[];
 extern constext txt_error_bad_msgidfqdn[];
@@ -1119,7 +1121,9 @@ extern constext txt_options_menu_com[];
 extern constext txt_out_of_memory[];
 extern constext txt_pcre_error_at[];
 extern constext txt_pcre_error_num[];
-extern constext txt_pcre_error_text[];
+#ifndef HAVE_LIB_PCRE2
+	extern constext txt_pcre_error_text[];
+#endif /* !HAVE_LIB_PCRE2 */
 extern constext txt_post_a_followup[];
 extern constext txt_post_error_ask_postpone[];
 extern constext txt_post_history_menu[];
@@ -1313,13 +1317,17 @@ extern constext txt_usage_dont_save_files_on_quit[];
 extern constext txt_usage_dont_show_descriptions[];
 #ifdef NNTP_ABLE
 	extern constext txt_usage_force_authentication[];
-#ifdef INET6
+#	ifdef INET6
 	extern constext txt_usage_force_ipv4[];
 	extern constext txt_usage_force_ipv6[];
-#endif /* INET6 */
+#	endif /* INET6 */
 	extern constext txt_usage_newsserver[];
 	extern constext txt_usage_port[];
 	extern constext txt_usage_read_news_remotely[];
+#	ifdef NNTPS_ABLE
+	extern constext txt_usage_use_insecure_nntps[];
+	extern constext txt_usage_use_nntps[];
+#	endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 extern constext txt_usage_getart_limit[];
 extern constext txt_usage_help_information[];
@@ -1541,6 +1549,8 @@ extern t_bool read_saved_news;
 extern t_bool reread_active_for_posted_arts;
 extern t_bool show_description;
 extern t_bool show_subject;
+extern t_bool use_nntps;
+extern t_bool insecure_nntps;
 extern t_bool batch_mode;
 extern int verbose;
 extern t_bool xref_supported;
@@ -1703,6 +1713,10 @@ extern constext txt_processing_saved_arts[];
 #ifdef NNTP_ABLE
 	extern constext txt_nntp_ok_goodbye[];
 	extern unsigned short nntp_tcp_port;
+	extern unsigned short nntp_tcp_default_port;
+#ifdef NNTPS_ABLE
+	extern unsigned short nntps_tcp_default_port;
+#endif /* NNTPS_ABLE */
 	extern t_bool force_auth_on_conn_open;
 #endif /* NNTP_ABLE */
 
@@ -1850,6 +1864,9 @@ extern struct opttxt txt_strip_newsrc;
 extern struct opttxt txt_strip_re_regex;
 extern struct opttxt txt_strip_was_regex;
 extern struct opttxt txt_strokes_regex;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern struct opttxt txt_suppress_soft_hyphens;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 extern struct opttxt txt_tex2iso_conv;
 extern struct opttxt txt_thread_articles;
 extern struct opttxt txt_thread_perc;
@@ -1857,6 +1874,9 @@ extern struct opttxt txt_thread_catchup_on_exit;
 extern struct opttxt txt_thread_format;
 extern struct opttxt txt_thread_score;
 extern struct opttxt txt_trim_article_body;
+#ifdef NNTPS_ABLE
+extern struct opttxt txt_tls_ca_cert_file;
+#endif /* NNTPS_ABLE */
 extern struct opttxt txt_underscores_regex;
 extern struct opttxt txt_unlink_article;
 extern struct opttxt txt_url_handler;

@@ -112,7 +112,15 @@ o  mailers other than sendmail (f.e. mutt) and use_mailreader_i=OFF may lead
 
 New features
 ------------
-o  add possibillity to dump the current key mapping to a file
+o  add code for other TLS/SSL libraries (wolfSSL, mbed TLS, ...)
+   (<mbedtls/version.h> MBEDTLS_VERSION_STRING_FULL
+    <wolfssl/version.h> LIBWOLFSSL_VERSION_STRING || OPENSSL_VERSION_TEXT)
+
+o  add "COMPRESS DEFLATE" support
+   <https://www.rfc-editor.org/rfc/rfc8054.txt>
+   [20100122 Urs Janssen <urs@tin.org>]
+
+o  add possibility to dump the current key mapping to a file
 
 o  make the group status flag (moderated, new, bogus, ...) configurable
    like the thread and article flag (select.c:build_gline(%f))
@@ -192,14 +200,6 @@ o  add more user defined screen layout at different levels (e.g. posting
 
 o  allow a Message-ID on the cmd. line to jump to the given article
    [20170718 Urs Janssen <urs@tin.org>]
-
-o  add TLS (RFC 4642), NNTPS support
-   (<http://www.gnu.org/software/gnutls/>, <http://www.openssl.org/>
-    might be useful (but unfortunately we use fputs()/fgets() instead of
-    read()/write() - BIO_*() may be useful; see also <https://libevent.org/>);
-    "stunnel -c -d 1119 -r news.example.org:563; tin -g localhost -p 1119"
-    can be used for NNTPS)
-   [20031210 Urs Janssen <urs@tin.org>]
 
 o  add more AUTHINFO SASL (RFC 4643, RFC 5802) support (DIGEST-MD5,
    EXTERNAL, ...) and a fallback if no libgsasl is found (e.g cyrus-sasl
@@ -499,6 +499,8 @@ o  replace gettimeofday() with clock_gettime() if available in parsdate.y
 
 o  Add 'M'enu option to define chars for utf8_graphics.
 
+o  allow user defined mouse button bindings (like keymap).
+
 Posting enhancements
 --------------------
 o  sort Followup-To:/Newsgroups: after stripping doubled newsgroups and
@@ -590,12 +592,6 @@ o  add BiDi handling to page header
 
 Internal Changes
 ----------------
-o  switch to pcre2 (new API)
-   <http://www.pcre.org/current/doc/html/>
-   as the old pcre-lib is EOL since pcre-8.45
-   <https://www.pcre.org/original/changelog.txt>
-   <https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=999941>
-
 o  use tin_gettime() in *StopWatch() instead of ftime(3)
    [Urs Janssen <urs@tin.org>]
 
@@ -640,8 +636,6 @@ o  rewrite auth.c
 o  fix aclocal.m4:CF_FUNC_SYSTEM and/or misc.c:invoke_cmd() that
    --enable-broken-system-fix/IGNORE_SYSTEM_STATUS isn't needed anymore.
    [20090520 Urs Janssen <urs@tin.org>]
-
-o  use read()/write() instead of fputs()/fgets() on socket
 
 o  move several (server related) files into the per-server dir e.g.:
       ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news${NNTPSERVER+"-$NNTPSERVER"}/
@@ -811,6 +805,11 @@ o  BiDi handling to select-, group-, thread-level
 
 Docs/online help
 ----------------
+o  document ${TIN_HOMEDIR:-"$HOME"}/.tin/tinmsglog in tin.[15]
+   (and move to
+    ${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}/msglog
+    like serverrc, see config.c:read_server_config()/write_server_config().
+
 o  document the difference between
    - "-D 1" (nntp dialog with likely long multilines responses skipped)
    - "-vD 1" (full nntp dialog)
@@ -862,6 +861,8 @@ o  the limited pgp support (inline pgp as of RFC 4880, just signature
 
 Not yet classified
 ------------------
+o  verbatim regions can't be nested, should they?
+
 o  allow per group cancel_lock_algo setting via attributes?
    [20170810 Urs Janssen <urs@tin.org>]
 
@@ -934,12 +935,6 @@ o  charset conversion fails when converting articles from multibyte charsets
    with 0 bytes (UCS2, UCS4, UTF-16[[LB]E], UTF-32[[LB]E], ...), currently
    we just skip over such parts instead of handling them properly
    [20100905 Urs Janssen <urs@tin.org>]
-
-o  add "COMPRESS DEFLATE" support? this would require a
-   rewrite of the code which reads data from the network (which should be
-   done anyway for TLS) as we must handle null-bytes in the stream.
-   <https://www.rfc-editor.org/rfc/rfc8054.txt>
-   [20100122 Urs Janssen <urs@tin.org>]
 
 o  the documentation suggests that novrootdir/$TIN_NOVROOTDIR defaults to
    spooldir/$TIN_SPOOLDIR if unset, which is not exactly what happens as

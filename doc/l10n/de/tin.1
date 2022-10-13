@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2022-04-14
+.\" Updated   : 2022-10-13
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -27,7 +27,7 @@ tin, rtin \- Usenet Newsreader
 .\"
 .\"
 \fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|\fB\-a\fP\|]
-[\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-ArzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
+[\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-AkrTzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
 \|\|\fB\-s\fP \fINews\-Verz.\fP\|] [\|\fB\-cuvZ\fP\|]
 [\|\fB\-4\fP\||\|\fB\-6\fP[\|\fB\-o\fP\||\|\fB\-w\fP\||\|\fB\-N\fP\||\|\fB\-M\fP \fIAdresse\fP\|]
 [\|\fB\-D\fP \fIDebuggrad\fP\|] [\|\fB\-G\fP \fIArtikellimit\fP\|] [\|\fB\-f\fP
@@ -38,9 +38,9 @@ tin, rtin \- Usenet Newsreader
 \fBtin\fP ist ein einfach zu bedienender Newsreader für das Usenet. Er kann
 Artikel von einem lokalen (z. B. aus \fI/var/spool/news\fP) oder entfernten
 Server (\fBrtin\fP oder \fBtin \-r\fP Option) mittels NNTP (Network News Transport
-Protocol) lesen. Er benutzt, sofern vorhanden, lokale NOV
-\fB\%newsoverview\fP(5) Indexdateien bzw. den [X]OVER NNTP\-Befehl
-(\fBRFC\%2980\fP, \fBRFC\%3977\fP).
+Protocol, \fBRFC\%3977\fP) oder NNTPS (\fBRFC\%8143\fP) lesen. Er benutzt, sofern
+vorhanden, lokale NOV \fB\%newsoverview\fP(5) Indexdateien bzw. den [X]OVER
+NNTP\-Befehl (\fBRFC\%2980\fP, \fBRFC\%3977\fP).
 .PP
 \fBtin\fP hat vier unterschiedliche Arbeitsebenen: Auswahlebene, Gruppenebene,
 Threadebene und Artikelebene. Mit dem \fBHelp\fP ('\fBh\fP') Befehl können die
@@ -61,7 +61,7 @@ Durch Drücken der \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') Taste wird
 die nächste Newsgruppe mit ungelesenen Artikeln betreten.
 .SH RÜCKGABEWERT
 .IX Header RÜCKGABEWERT
-.\" TODO: also exits with signalnr cought as exit status
+.\" TODO: also exits with signalnr caught as exit status
 .TP 
 \fB0\fP
 Programm erfolgreich beendet. Im Batch\-Modus: keine ungelesenen Nachrichten
@@ -143,6 +143,10 @@ ist \fI${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news\fP. Diese
 Option hat keine Auswirkung, falls \fBtin\fP seine Indexdateien über NNTP
 abruft und \fBcache_overview_files\fP ausgeschaltet ist.
 .TP 
+\fB\-k\fP
+Zertifikatsüberprüfungsschritt für NNTPS\-Verbindungen überspringen und ohne
+Überprüfung fort fahren. Diese Option beinhaltet \*(rq\fB\-T\fP\*(rq.
+.TP 
 \fB\-l\fP
 Ruft die Anzahl der Artikel pro Gruppe aus der Datei
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP ab. Beim Lesen über
@@ -182,9 +186,9 @@ Schnell\-Modus um alle zurückgestellten Artikel zu posten und danach \fBtin\fP
 wieder beenden. Nach Möglichkeit mit \*(rq\fB\-n\fP\*(rq kombinieren.
 .TP 
 \fB\-p\fP\fI Port\fP
-Zu benutzende Portnummer falls per NNTP gelesen wird (Voreinstellung ist
-119). Übersteuert die Umgebungsvariable $\fBNNTPPORT\fP. Nur verfügbar, wenn
-via NNTP gelesen wird.
+Zu benutzende Portnummer falls per NNTP gelesen wird (Voreinstellung ist 119
+oder 563 falls NNTPS benutzt wird, siehe \*(rq\fB\-T\fP\*(rq). Übersteuert die
+Umgebungsvariable $\fBNNTPPORT\fP. Nur verfügbar, wenn via NNTP gelesen wird.
 .TP 
 \fB\-q\fP
 Nicht prüfen ob neue Newsgruppen vorhanden sind und die Server Meldung des
@@ -210,6 +214,9 @@ Artikel in/aus Verzeichnis speichern/lesen. Standard ist
 Speichere ungelesene Artikel zum späteren Lesen mittels \*(rq\fB\-R\fP\*(rq. Für
 weitere Informationen siehe den Abschnitt "AUTOMATISCHES MAILEN UND
 SPEICHERN VON UNGELESENEN ARTIKELN".
+.TP 
+\fB\-T\fP
+NNTPS (NNTP over TLS) verwenden. Nur möglich wenn via NNTP gelesen wird.
 .TP 
 \fB\-u\fP
 Erstellt/aktualisiert Indexdateien für jede Gruppe in
@@ -310,8 +317,9 @@ Extensions (\fBRFC\%6048\fP) and all modern servers should understand it.
 \fBtin\fP hat vier unterschiedliche Arbeitsebenen: Auswahlebene, Gruppenebene,
 Threadebene und Artikelebene.
 .PP
-In der Auswahlebene zeigt der Titel (der Name des News\-Server und) die
-Anzahl der abonnierten Gruppen (mit neuen ungelesenen Artikel). Die
+In der Auswahlebene zeigt der Titel (den Name des News\-Servers (mit einem
+"/[T]"\- oder "[k]"\-Suffix falls per NNTPS (unsicher) gelesen wird) und) die
+Anzahl der abonnierten Gruppen (mit neuen ungelesenen Artikeln). Die
 Newsgruppen werden in der Mitte des Bildschirms, in der Regel mit der Anzahl
 der ungelesenen Artikel in der gleichen Zeile davor, abgebildet, aber das
 kann mittels \fBselect_format\fP angepasst werden.
@@ -462,7 +470,7 @@ Verfügung:
 An den Zeilenanfang bzw. das Zeilenende springen.
 .TP 
 \fB^F, ^B\fP
-non\-destructive move forward or back one location, respectively.
+Zerstörungsfreie Bewegung um eine Position vorwärts bzw. zurück.
 .TP 
 \fB^D\fP
 das aktuell unter dem Cursor befindliche Zeichen löschen oder EOF senden,
@@ -526,7 +534,7 @@ sequence instead: reload it with \fBPostponed\fP, enter editor with
 \fBHelp 'h'\fP
 Help screen of commands available on the current menu. You can use
 \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') and \fBSearchRepeat\fP
-('\fB\e\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
+('\fB\(rs\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
 Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
@@ -558,7 +566,7 @@ wird. Siehe Abschnitt "BEREICHE" für weitere Informationen.
 \fBSelectSortActive '.'\fP
 Liste vorhandener Newsgruppen sortieren.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Vorherige Suche wiederholen.
 .TP 
 \fBSearchSubjF '/'\fP
@@ -577,12 +585,12 @@ Nächste Gruppe mit ungelesenen Nachrichten betreten. Wechselt zum Anfang der
 Gruppenliste und sucht nach ungelesenen Gruppen.
 .TP 
 \fBCatchup 'c'\fP
-Make current group as all read [after confirmation] and move to the next
-group in the group selection list.
+Aktuelle Gruppe als gelesen markieren [nach Bestätigung] und zur nächsten
+Gruppe in der Gruppenauswahlliste wechseln.
 .TP 
 \fBCatchupNextUnread 'C'\fP
-Mark current group as all read [after confirmation] and enter the next
-unread group in the group selection list.
+Aktuelle Gruppe als gelesen markieren [nach Bestätigung] und zur nächsten
+ungelesenen Gruppe in der Gruppenauswahlliste wechseln.
 .TP 
 \fBSelectToggleDescriptions 'd'\fP
 Schaltet die Anzeige zwischen nur den Gruppennamen oder den Gruppennamen und
@@ -597,9 +605,9 @@ Gruppe zugegriffen werden, auch auf solche, die gerade nicht eingeblendet
 werden.
 .TP 
 \fBToggleInfoLastLine 'i'\fP
-Toggle the display of the description of the current newsgroup in the last
-line. This will not be available if \fBtin\fP was started with the \&\*(rq\fB\-d\fP\*(rq
-option.
+Umschalten der Anzeige der Beschreibung der aktuellen Newsgroup in der
+letzten Zeile. Dies ist nicht verfügbar, wenn \fBtin\fP mit \&\*(rq\fB\-d\fP\*(rq
+gestartet wurde
 .TP 
 \fBToggleInverseVideo 'I'\fP
 (De)aktiviere inverse Darstellung.
@@ -716,7 +724,7 @@ wird. Siehe Abschnitt "BEREICHE" für weitere Informationen.
 \fBLastViewed '\-'\fP
 Zur zuletzt angezeigte Nachricht springen.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Vorherige Suche wiederholen.
 .TP 
 \fBSearchSubjF '/'\fP
@@ -785,7 +793,7 @@ on filtering.
 Lese den aktuelle Artikel.
 .TP 
 \fBGroupNextUnreadArtOrGrp '<TAB>'\fP
-Zeige nächsten den ungelesenen Artikel oder die nächste Gruppe.
+Zeige den nächsten ungelesenen Artikel oder die nächste ungelesene Gruppe.
 .TP 
 \fBSearchAuthF 'a'\fP
 Autoren\-Suche vorwärts. Sucht nach Artikeln mit einem bestimmtem
@@ -975,7 +983,7 @@ wird. Siehe Abschnitt "BEREICHE" für weitere Informationen.
 \fBLastViewed '\-'\fP
 Zur zuletzt angezeigte Nachricht springen.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Vorherige Suche wiederholen.
 .TP 
 \fBSearchSubjF '/'\fP
@@ -1156,8 +1164,8 @@ Standardverhalten wird der Variable \fBtex2iso_conv\fP aus der tinrc\-Datei
 entnommen.
 .TP 
 \fBPageToggleAllHeaders '*'\fP
-Toggles the display of all headers vs. headers in
-\fBnews_headers_to_display\fP.
+Schaltet die Anzeige aller Header vs. Header in \fBnews_headers_to_display\fP
+um.
 .TP 
 \fBPageToggleRot '%'\fP
 ROT\-13 Entschlüsseln ein\-/ausschalten.
@@ -1176,7 +1184,7 @@ up will hide it again.
 \fBLastViewed '\-'\fP
 Zur zuletzt angezeigte Nachricht springen.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Vorherige Suche wiederholen.
 .TP 
 \fBSearchSubjF '/'\fP
@@ -1261,11 +1269,12 @@ Nachrichten beschränkt.
 Filter\-Datei bearbeiten und danach anwenden.
 .TP 
 \fBPageFollowupQuote 'f'\fP
-Post a followup to the current article with a copy of the article included.
+Veröffentlicht ein Follow\-up zum aktuellen Artikel mit einer Kopie des
+Artikels.
 .TP 
 \fBPageFollowup 'F'\fP
-Post a followup to the current article without including a copy of the
-article.
+Veröffentlicht ein Follow\-up zum aktuellen Artikel ohne eine Kopie des
+Artikels.
 .TP 
 \fBPageFirstPage 'g'\fP
 Zum Anfang des Artikels springen.
@@ -1284,7 +1293,7 @@ Markiere den Rest des Threads als gelesen und springe zu nächstem
 ungelesenen Thread.
 .TP 
 \fBPageListThd 'l'\fP
-Show the thread menu that the current article is a part of.
+Zeigt das Thread\-Menü an, zu dem der aktuelle Artikel gehört.
 .TP 
 \fBLookupMessage 'L'\fP
 Artikel anhand der \*(rqMessage\-ID:\*(rq nachschlagen.
@@ -1395,7 +1404,7 @@ Suche nach URL (vorwärts).
 \fBSearchSubjB '?'\fP
 Suche nach URL (rückwärts).
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Vorherige Suche wiederholen.
 .TP 
 \fBShellEscape '!'\fP
@@ -1447,7 +1456,7 @@ Vorwärtssuche nach Anhang.
 \fBSearchSubjB '?'\fP
 Rückwärtssuche nach Anhang.
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Vorherige Suche wiederholen.
 .TP 
 \fBGlobalPipe '|'\fP
@@ -1495,7 +1504,7 @@ Suche nach URL (vorwärts).
 \fBSearchSubjB '?'\fP
 Suche nach URL (rückwärts).
 .TP 
-\fBSearchRepeat '\e'\fP
+\fBSearchRepeat '\(rs'\fP
 Vorherige Suche wiederholen.
 .TP 
 \fBShellEscape '!'\fP
@@ -1541,9 +1550,9 @@ toggle the available options. \fBConfigSelect\fP will save the new value,
 .PP
 As with the other menus, \fBRedrawScr\fP ('\fB^L\fP') will redraw the screen. You
 can use \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') and \fBSearchRepeat\fP
-('\fB\e\fP') to search for a specific option. Use \fBQuit\fP ('\fBq\fP') to exit the
-option menu and keep your changes. Use \fBQuitTin\fP ('\fBQ\fP') to exit without
-keeping your changes.
+('\fB\(rs\fP') to search for a specific option. Use \fBQuit\fP ('\fBq\fP') to exit
+the option menu and keep your changes. Use \fBQuitTin\fP ('\fBQ\fP') to exit
+without keeping your changes.
 .PP
 The options menu provides access to the attributes menu for the current
 group by the \fBConfigToggleAttrib\fP ('\fB<TAB>\fP') command. Pressing
@@ -2048,7 +2057,8 @@ presents a menu with choices of the current thread or article, all tagged,
 unread articles, or nothing.
 .TP 
 \fBMark. gesp. Artikel/Threads gelesen (mark_saved_read)\fP
-If ON mark articles that are saved as read. Default is ON.
+Falls ON werden gespeicherte Artikel als gelesen markiert.Voreinstellung ist
+ON.
 .TP 
 \fBMIME\-Viewer (metamail_prog)\fP
 Path, name and options of external \fB\%metamail\fP(1)  program used to view
@@ -2188,11 +2198,11 @@ executed, be careful when extracting shell archives.  The following values
 are allowed:
 .RS +.5i
 .IP 0 3
-\fBNo\fP (default), no post processing is done.
+\fBNein\fP (Voreinstellung), es wird keine Nachbearbeitung gemacht.
 .IP 1
-\fBShell archives\fP, unpacking of multi\-part \fB\%shar\fP(1)  files only.
+\fBShell\-Archive\fP, Entpacken nur von mehrteiligen \fB\%shar\fP(1)\-Dateien.
 .IP 2
-\fBYes\fP, binary attachments and data will be decoded and saved.
+\fBJa\fP, binäre Anhänge und Daten werden dekodiert und gespeichert.
 .RE
 .TP 
 \fBGepostete Artikel speichern in (posted_articles_file)\fP
@@ -2254,8 +2264,8 @@ matching lines are shown in \fBcol_quote3\fP. If \fBquote_regex3\fP is blank, th
 \fBtin\fP uses a built\-in default.
 .TP 
 \fBArtikel Neuheitszeit\-Limit (recent_time)\fP
-If set to 0, this feature is deactivated, otherwise it means the number of
-days. Default is 2.
+Wenn auf 0 gesetzt, ist diese Funktion deaktiviert, ansonsten bedeutet es
+die Anzahl der Tage.
 .TP 
 \fBBiDi wiedergeben (render_bidi)\fP
 If ON \fBtin\fP does the rendering of bi\-directional text. If OFF \fBtin\fP leaves
@@ -2334,7 +2344,7 @@ Mit \fB\%heapsort\fP(3) sortieren. Kann in großen Gruppen mit langen Threads
 schneller sein.
 .RE
 .TP 
-\fBShow help/mail sign in level titles (show_help_mail_sign)\fP
+\fBZeige Hilfe/Mail\-Zeichen im Ebenentitel (show_help_mail_sign)\fP
 Allows you to select whether \fBtin\fP shows a help indication, a new mail
 indication, both, or neither in the various level titles.  Default is 3.
 .RS +.5i
@@ -2380,7 +2390,8 @@ ist OFF.
 Falls OFF zeige keine Signaturen an. Voreinstellung ist ON.
 .TP 
 \fBTrenne Sig mit '\en\-\- \en' ab (sigdashes)\fP
-If ON prepend the signature with sigdashes. Default is ON.
+Falls ON, wird der Signatur ein Signaturtrenner
+vorangestellt. Voreinstellung ist ON.
 .TP 
 \fBErzeuge Signatur aus Pfad/Kommando (sigfile)\fP
 The path that specifies the signature file to use when posting, following up
@@ -2508,7 +2519,7 @@ type on a per group basis by setting the group attribute variable
 The default is Both Subject and References.  The choices are:
 .RS +.5i
 .IP 0 3
-\fBNone\fP, don't thread.
+\fBNone\fP, keinen Diskussionsfaden aufbauen.
 .IP 1
 \fBSubject\fP, Diskussionsfaden nur anhand von \*(rqSubject:\*(rq aufbauen.
 .IP 2
@@ -2517,7 +2528,8 @@ The default is Both Subject and References.  The choices are:
 \fBBoth Subject and References\fP, Diskussionsfaden anhand von \*(rqReferences:\*(rq
 und \*(rqSubject:\*(rq aufbauen (Voreinstellung).
 .IP 4
-\fBMultipart Subject\fP, thread multipart articles on \*(rqSubject:\*(rq.
+\fBMultipart Subject\fP, Diskussionsfaden mehrteiliger Artike anhand von
+\&'Subject:\*(rq aufbauen.
 .IP 5
 \fBPercentage Match\fP, thread base upon a partial character match on
 \&\*(rqSubject:\*(rq.
@@ -2547,6 +2559,10 @@ in this thread.
 .IP 2
 \fBAverage\fP, Durchschnitt aller Bewertungen im Diskussionsfaden.
 .RE
+.TP 
+\fBCA\-Zertifikatsdatei (tls_ca_cert_file)\fP
+The name of file containing all trusted CA certificates used for NNTPS
+(\fB\%RFC8143\fP) connections. If left empty the system default will be used.
 .TP 
 \fBVerwende Umschreibungen (translit)\fP
 If ON append //TRANSLIT to the first argument of \fB\%iconv_open\fP(3)  to
@@ -2585,6 +2601,14 @@ Leerz. überspr.\fP, 4 + 3; Leerzeilen zwischen Textblöcken zusammenfassen und
 führende sowie abschließende Leerzeilen überspringen
 .RE
 .TP 
+\fBWeiche Bindestriche unterdrücken (suppress_soft_hyphens)\fP
+If ON remove soft hyphens in non verbatim blocks of articles in UTF\-8 when
+they are displayed in a UTF\-8 locale. The character SOFT HYPHEN (U+00AD) is
+an invisible format character that merely indicates a preferred intraword
+line break position. However, some terminal emulators display a space or a
+hyphen, for example, in the place of the soft hyphen. This setting can be
+used to improve the display of those articles. Default is OFF.
+.TP 
 \fBReg. für _Unterstr._ Hervorhebungen (underscores_regex)\fP
 A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markdash\fP or \fBmono_markdash\fP. If
@@ -2599,7 +2623,7 @@ The program that will be run when launching URLs in the article viewer using
 \fBurl_handler.pl\fP.
 .TP 
 \fBURL\-Hervorhebung im Artikel (url_highlight)\fP
-Enable highlighting URLs in message body. Default is ON.
+Aktivieren der URL\-Hervorhebung im Artikel. Voreinstellung ist ON.
 .TP 
 \fBBenutze ANSI\-Farben (use_color)\fP
 ANSI\-Farben in \fBtin\fP benutzen. Voreinstellung ist OFF.
@@ -2677,7 +2701,7 @@ wrapping at the current screen width.
 .\"
 Format is the same as for \fBnews_quote_format\fP, this is used when answering
 to a crossposting to several groups with no \*(rqFollowup\-To:\*(rq set.
-.SS "ATTRIBUTES MENU AND GROUP ATTRIBUTES"
+.SS "ATTRIBUTE UND GRUPPENATTRIBUTE MENÜ"
 \fBtin\fP allows certain attributes to be set on a per group basis. If it
 exists, the global attributes file, \fI${TIN_LIBDIR:\-NEWSLIBDIR}/attributes\fP
 is read. After that, the user's own attributes file
@@ -2704,7 +2728,7 @@ marked with '+' to the left of the attributes number.
 Besides the keys for moving around and changing values known from the
 options menu the attributes menu provides the following command:
 \fBConfigResetAttrib\fP ('\fBr\fP') which resets an attribute to a default value.
-.SS "SCOPES MENU"
+.SS GÜLTIGKEITSBEREICHS\-MENÜ
 The scopes menu (accessible from the options menu with \fBConfigScopeMenu\fP
 ('\fBS\fP')) shows all scopes read from the global and local attributes file.
 Scopes from the global attributes file are marked with '!' to the left of
@@ -2928,7 +2952,7 @@ mark them as read)
 \fBtin \-R\fP
 .\"
 .\"
-(read any articles saved by \fBtin \-S\fP)
+(mittels \fBtin \-S\fP gespeicherte Artikel lesen)
 .SS BEREICHE
 A range is simply a group of items marked using the \fBSetRange\fP (\fB'#'\fP)
 key. Certain \fBtin\fP commands will operate on a range if one exists rather
@@ -3177,10 +3201,11 @@ die Maustasten benutzt werden um Gruppen oder Artikel auszuwählen. Es wird
 davon ausgegangen, dass die Maustasten normal zugeteilt sind (Maustaste1 ist
 die linke Maustaste).
 .PP
-In general (i.e., for the group, thread and article menus),
+Im Allgemein (d. h. für die Gruppen\-, Thread\- und Artikelmenüs),
 .TP  10
 Maustaste1 (Links)
-enters next (lower) level if you click on an article, otherwise pages down.
+Geht in die nächste (untere) Ebene, wenn Sie auf einen Artikel klicken,
+sonst nach unten blättern.
 .TP 
 Maustaste2 (Mitte)
 returns to the previous (upper) level if you click on an article, otherwise
@@ -3190,20 +3215,19 @@ Maustaste3 (Rechts)
 positions on the article line under mouse cursor, or pages down if you've
 clicked outside the list of articles.
 .PP
-In the group selection menu, if the mouse is pointing at a group then:
+Im Gruppenauswahlmenü, wenn die Maus auf eine Gruppe zeigt, dann:
 .TP  10
 Linke Maustaste
 moves to and selects the group pointed at, just like \fBSelectReadGrp\fP
 ('\fB<CR>\fP').
 .TP 
 Mittlere Maustaste
-quits the program, just like \fBQuit\fP ('\fBq\fP').
+Beendet das Programm, genau wie \fBQuit\fP ('\fBq\fP').
 .TP 
 Rechte Maustaste
-moves to the group pointed at.
+springt zu der Gruppe, auf die gezeigt wird.
 .PP
-In the article menu, if the mouse is pointing at an article (or thread)
-then:
+Wenn die Maus im Artikelmenü auf einen Artikel (oder Thread) zeigt, dann:
 .TP  10
 Linke Maustaste
 reads the article pointed at, just like \fBGroupReadBasenote\fP
@@ -3215,12 +3239,13 @@ exits the menu, catching up on the group if you have
 ('\fBq\fP').
 .TP 
 Rechte Maustaste
-moves to the article (or thread) pointed at.
+springt zu dem Artikel (oder Thread), auf den gezeigt wird.
 .PP
-In the thread menu, if the mouse is pointing at an article then:
+Im Thread\-Menü, wenn die Maus auf einen Artikel zeigt, dann:
 .TP  10
 Linke Maustaste
-reads article pointed at, just like \fBThreadReadArt\fP ('\fB<CR>\fP').
+liest den Artikel, auf den verwiesen wird, genau wie \fBThreadReadArt\fP
+('\fB<CR>\fP').
 .TP 
 Mittlere Maustaste
 exits the menu, catching up on the thread if you have
@@ -3228,7 +3253,7 @@ exits the menu, catching up on the thread if you have
 ('\fBq\fP').
 .TP 
 Rechte Maustaste
-moves to the article pointed at.
+springt zu dem Artikel, auf den gezeigt wird.
 .PP
 .\"
 .\"
@@ -3298,6 +3323,7 @@ lesen, manuell zu bereinigen:
 .\"       $TMPDIR/SCOPES-R   (-D 32)
 .\"       $TMPDIR/SCOPES-W   (-D 32)
 .\"       $TMPDIR/ACTIVE     (-D 64)
+.\"       ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinmsglog
 Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .PP
 \fI$MAILCAPS\fP
@@ -3746,14 +3772,18 @@ Beenden ohne das Terminal (tty) wiederherzustellen.
 Speichern der \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-Datei.
 .SH SICHERHEIT
 .IX Header SICHERHEIT
-.\"
-.\"
 Falls \fBtin\fP im Debug\-Modus (\*(rq\fB\-D n\fP\*(rq) gestartet wird, werden in
 \fB$TMPDIR\fP für alle Benutzer lesbare Dateien erzeugt, welche das
 NNTP\-Passwort des aktuellen Benutzers im Klartext enthalten können. Auf
 Multiuser\-Systemen sollte daher $TMPDIR auf einen sicheren Speicherort
 gesetzt werden, bevor \fBtin\fP im Debug\-Modus gestartet wird
 (z. B. TMPDIR=$HOME tin \-D 1).
+.PP
+.\"
+.\"
+Die Verwendung der Option \*(rq\fB\-k\fP\*(rq zum Überspringen der
+Zertifikatsüberprüfung macht die Sitzung unsicher, da das Zertifikat des
+Servers nicht überprüft wird; Vermeiden Sie diese Option nach Möglichkeit.
 .SH "KONFORM ZU"
 .IX Header "KONFORM ZU"
 .\" - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
@@ -3857,4 +3887,4 @@ Erika Mustermann <erika@example.org>
 \fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP,
 \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP,
 \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%4880\fP,
-\fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP
+\fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%8143\fP

@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-04-09
+ *  Updated   : 2022-10-13
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -599,6 +599,7 @@ show_selection_page(
 	char *title;
 	int i, keyhelplen;
 	size_t len;
+	const char *secflag = "";
 
 	signal_context = cSelect;
 	currmenu = &selmenu;
@@ -608,8 +609,15 @@ show_selection_page(
 	mark_offset = 0;
 	ucnt_offset = 0;
 
+	if (use_nntps) {
+		if (insecure_nntps)
+			secflag=_("[k]");
+		else
+			secflag=_("[T]");
+	}
+
 	if (read_news_via_nntp)
-		snprintf(buf, sizeof(buf), "%s (%s  %d%s)", _(txt_group_selection), nntp_server, selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
+		snprintf(buf, sizeof(buf), "%s (%s%s  %d%s)", _(txt_group_selection), nntp_server, secflag, selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
 	else
 		snprintf(buf, sizeof(buf), "%s (%d%s)", _(txt_group_selection), selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
 

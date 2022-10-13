@@ -2,11 +2,18 @@ New features and changes since tin-2.6.0
 
 New features
 ------------
+- pcre2 support (configure --with-pcre2-config[=PATH] vs.
+  --with-pcre[=PATH])
+- NNTPS support based on libressl/gnuttls/OpenSSL (RFC 8143)
+  (configure --with-nntps[=[libtls|openssl|gnutls]])
 - allow to cancel wait_message() via key press
-- option to hide help/mail-info in tite: show_help_mail_sign
+- option to hide help/mail-info in title: show_help_mail_sign
+- option remove SOFT HYPHENs (U+00AD) from non verbatim blocks:
+  suppress_soft_hyphens
 
 Changes
 -------
+switch from stdio to own buffer implementation
 
 Retired Features
 ----------------

@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2022-03-04
+ *  Updated   : 2022-09-19
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2022 Michael Bienia <michael@vorlon.ping.de>
@@ -345,6 +345,9 @@ option_is_visible(
 		case OPT_ATTRIB_SIGDASHES:
 		case OPT_ATTRIB_SIGFILE:
 		case OPT_ATTRIB_SIGNATURE_REPOST:
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		case OPT_ATTRIB_SUPPRESS_SOFT_HYPHENS:
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		case OPT_ATTRIB_THREAD_ARTICLES:
 		case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
 		case OPT_ATTRIB_THREAD_FORMAT:
@@ -951,7 +954,8 @@ config_page(
 		SHOW_ONLY_UNREAD	= 1 << 4,
 		SORT_OPTS			= 1 << 5,
 		THREAD_ARTS			= 1 << 6,
-		THREAD_SCORE		= 1 << 7
+		THREAD_SCORE		= 1 << 7,
+		TEX2ISO_CONV		= 1 << 8
 	} changed = NOT_CHANGED;
 	int i, scope_idx = 0;
 	t_bool change_option = FALSE;
@@ -1030,6 +1034,19 @@ config_page(
 						t_bool filtered = FALSE;
 						t_bool old_keep_in_base = TRUE;
 
+						/*
+						 * adjust tex2iso_conf parameter
+						 */
+						if (changed & TEX2ISO_CONV) {
+							if (pgart.raw) {
+								if (curr_group->attribute->tex2iso_conv)
+									pgart.tex2iso = is_art_tex_encoded(pgart.raw);
+								else
+									pgart.tex2iso = FALSE;
+								/* force recooking the current article */
+								changed |= DISPLAY_OPTS;
+							}
+						}
 						/*
 						 * recook if an article is open
 						 */
@@ -1429,8 +1446,10 @@ config_page(
 							break;
 
 						case OPT_SHOW_SIGNATURES:
-							if (prompt_option_on_off(option))
+							if (prompt_option_on_off(option)) {
 								UPDATE_BOOL_ATTRIBUTES(show_signatures);
+								changed |= DISPLAY_OPTS;
+							}
 							break;
 
 						case OPT_SIGDASHES:
@@ -1452,9 +1471,20 @@ config_page(
 							break;
 #endif /* !USE_CURSES */
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+						case OPT_SUPPRESS_SOFT_HYPHENS:
+							if (prompt_option_on_off(option)) {
+								UPDATE_BOOL_ATTRIBUTES(suppress_soft_hyphens);
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 						case OPT_TEX2ISO_CONV:
-							if (prompt_option_on_off(option))
+							if (prompt_option_on_off(option)) {
 								UPDATE_BOOL_ATTRIBUTES(tex2iso_conv);
+								changed |= TEX2ISO_CONV;
+							}
 							break;
 
 						case OPT_THREAD_CATCHUP_ON_EXIT:
@@ -1476,6 +1506,7 @@ config_page(
 								UPDATE_BOOL_ATTRIBUTES(verbatim_handling);
 								set_last_option_on_screen(first_option_on_screen);
 								redraw_screen(option);
+								changed |= DISPLAY_OPTS;
 							}
 							break;
 
@@ -1732,8 +1763,10 @@ config_page(
 							break;
 
 						case OPT_ATTRIB_SHOW_SIGNATURES:
-							if (prompt_option_on_off(option))
+							if (prompt_option_on_off(option)) {
 								SET_BOOL_ATTRIBUTE(show_signatures);
+								changed |= DISPLAY_OPTS;
+							}
 							break;
 
 						case OPT_ATTRIB_SIGDASHES:
@@ -1746,9 +1779,20 @@ config_page(
 								SET_BOOL_ATTRIBUTE(signature_repost);
 							break;
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+						case OPT_ATTRIB_SUPPRESS_SOFT_HYPHENS:
+							if (prompt_option_on_off(option)) {
+								SET_BOOL_ATTRIBUTE(suppress_soft_hyphens);
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 						case OPT_ATTRIB_TEX2ISO_CONV:
-							if (prompt_option_on_off(option))
+							if (prompt_option_on_off(option)) {
 								SET_BOOL_ATTRIBUTE(tex2iso_conv);
+								changed |= TEX2ISO_CONV;
+							}
 							break;
 
 						case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
@@ -1757,8 +1801,10 @@ config_page(
 							break;
 
 						case OPT_ATTRIB_VERBATIM_HANDLING:
-							if (prompt_option_on_off(option))
+							if (prompt_option_on_off(option)) {
 								SET_BOOL_ATTRIBUTE(verbatim_handling);
+								changed |= DISPLAY_OPTS;
+							}
 							break;
 
 						case OPT_ATTRIB_WRAP_ON_NEXT_UNREAD:
@@ -1873,8 +1919,10 @@ config_page(
 							break;
 
 						case OPT_TRIM_ARTICLE_BODY:
-							if (prompt_option_list(option))
+							if (prompt_option_list(option)) {
 								UPDATE_INT_ATTRIBUTES(trim_article_body);
+								changed |= DISPLAY_OPTS;
+							}
 							break;
 
 						case OPT_POST_PROCESS_TYPE:
@@ -2077,8 +2125,10 @@ config_page(
 							break;
 
 						case OPT_ATTRIB_TRIM_ARTICLE_BODY:
-							if (prompt_option_list(option))
+							if (prompt_option_list(option)) {
 								SET_NUM_ATTRIBUTE(trim_article_body);
+								changed |= DISPLAY_OPTS;
+							}
 							break;
 
 						default:
@@ -2103,6 +2153,9 @@ config_page(
 						case OPT_SPAMTRAP_WARNING_ADDRESSES:
 						case OPT_URL_HANDLER:
 						case OPT_XPOST_QUOTE_FORMAT:
+#ifdef NNTPS_ABLE
+						case OPT_TLS_CA_CERT_FILE:
+#endif /* NNTPS_ABLE */
 							if (prompt_option_string(option))
 								changed |= MISC_OPTS;
 							break;
@@ -2182,44 +2235,40 @@ config_page(
 #ifdef HAVE_COLOR
 						case OPT_QUOTE_REGEX:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(quote_regex.re);
-								FreeIfNeeded(quote_regex.extra);
+								regex_cache_destroy(&quote_regex);
 								if (!strlen(tinrc.quote_regex))
 									STRCPY(tinrc.quote_regex, DEFAULT_QUOTE_REGEX);
-								compile_regex(tinrc.quote_regex, &quote_regex, PCRE_CASELESS);
+								compile_regex(tinrc.quote_regex, &quote_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
 
 						case OPT_QUOTE_REGEX2:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(quote_regex2.re);
-								FreeIfNeeded(quote_regex2.extra);
+								regex_cache_destroy(&quote_regex2);
 								if (!strlen(tinrc.quote_regex2))
 									STRCPY(tinrc.quote_regex2, DEFAULT_QUOTE_REGEX2);
-								compile_regex(tinrc.quote_regex2, &quote_regex2, PCRE_CASELESS);
+								compile_regex(tinrc.quote_regex2, &quote_regex2, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
 
 						case OPT_QUOTE_REGEX3:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(quote_regex3.re);
-								FreeIfNeeded(quote_regex3.extra);
+								regex_cache_destroy(&quote_regex3);
 								if (!strlen(tinrc.quote_regex3))
 									STRCPY(tinrc.quote_regex3, DEFAULT_QUOTE_REGEX3);
-								compile_regex(tinrc.quote_regex3, &quote_regex3, PCRE_CASELESS);
+								compile_regex(tinrc.quote_regex3, &quote_regex3, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
 
 						case OPT_EXTQUOTE_REGEX:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(extquote_regex.re);
-								FreeIfNeeded(extquote_regex.extra);
+								regex_cache_destroy(&extquote_regex);
 								if (!strlen(tinrc.extquote_regex))
 									STRCPY(tinrc.extquote_regex, DEFAULT_EXTQUOTE_REGEX);
-								compile_regex(tinrc.extquote_regex, &extquote_regex, PCRE_CASELESS);
+								compile_regex(tinrc.extquote_regex, &extquote_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
@@ -2235,69 +2284,61 @@ config_page(
 
 						case OPT_SLASHES_REGEX:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(slashes_regex.re);
-								FreeIfNeeded(slashes_regex.extra);
+								regex_cache_destroy(&slashes_regex);
 								if (!strlen(tinrc.slashes_regex))
 									STRCPY(tinrc.slashes_regex, DEFAULT_SLASHES_REGEX);
-								compile_regex(tinrc.slashes_regex, &slashes_regex, PCRE_CASELESS);
+								compile_regex(tinrc.slashes_regex, &slashes_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
 
 						case OPT_STARS_REGEX:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(stars_regex.re);
-								FreeIfNeeded(stars_regex.extra);
+								regex_cache_destroy(&stars_regex);
 								if (!strlen(tinrc.stars_regex))
 									STRCPY(tinrc.stars_regex, DEFAULT_STARS_REGEX);
-								compile_regex(tinrc.stars_regex, &stars_regex, PCRE_CASELESS);
+								compile_regex(tinrc.stars_regex, &stars_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
 
 						case OPT_STROKES_REGEX:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(strokes_regex.re);
-								FreeIfNeeded(strokes_regex.extra);
+								regex_cache_destroy(&strokes_regex);
 								if (!strlen(tinrc.strokes_regex))
 									STRCPY(tinrc.strokes_regex, DEFAULT_STROKES_REGEX);
-								compile_regex(tinrc.strokes_regex, &strokes_regex, PCRE_CASELESS);
+								compile_regex(tinrc.strokes_regex, &strokes_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
 
 						case OPT_UNDERSCORES_REGEX:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(underscores_regex.re);
-								FreeIfNeeded(underscores_regex.extra);
+								regex_cache_destroy(&underscores_regex);
 								if (!strlen(tinrc.underscores_regex))
 									STRCPY(tinrc.underscores_regex, DEFAULT_UNDERSCORES_REGEX);
-								compile_regex(tinrc.underscores_regex, &underscores_regex, PCRE_CASELESS);
+								compile_regex(tinrc.underscores_regex, &underscores_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
 
 						case OPT_STRIP_RE_REGEX:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(strip_re_regex.re);
-								FreeIfNeeded(strip_re_regex.extra);
+								regex_cache_destroy(&strip_re_regex);
 								if (!strlen(tinrc.strip_re_regex))
 									STRCPY(tinrc.strip_re_regex, DEFAULT_STRIP_RE_REGEX);
-								compile_regex(tinrc.strip_re_regex, &strip_re_regex, PCRE_ANCHORED);
+								compile_regex(tinrc.strip_re_regex, &strip_re_regex, REGEX_ANCHORED);
 								changed |= MISC_OPTS;
 							}
 							break;
 
 						case OPT_STRIP_WAS_REGEX:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(strip_was_regex.re);
-								FreeIfNeeded(strip_was_regex.extra);
+								regex_cache_destroy(&strip_was_regex);
 								if (!strlen(tinrc.strip_was_regex)) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-									if (IS_LOCAL_CHARSET("UTF-8") && utf8_pcre())
+									if (regex_use_utf8())
 										STRCPY(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX);
 									else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 										STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
 								}
 								compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);
@@ -2320,22 +2361,20 @@ config_page(
 
 						case OPT_VERBATIM_BEGIN_REGEX:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(verbatim_begin_regex.re);
-								FreeIfNeeded(verbatim_begin_regex.extra);
+								regex_cache_destroy(&verbatim_begin_regex);
 								if (!strlen(tinrc.verbatim_begin_regex))
 									STRCPY(tinrc.verbatim_begin_regex, DEFAULT_VERBATIM_BEGIN_REGEX);
-								compile_regex(tinrc.verbatim_begin_regex, &verbatim_begin_regex, PCRE_ANCHORED);
+								compile_regex(tinrc.verbatim_begin_regex, &verbatim_begin_regex, REGEX_ANCHORED);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
 
 						case OPT_VERBATIM_END_REGEX:
 							if (prompt_option_string(option)) {
-								FreeIfNeeded(verbatim_end_regex.re);
-								FreeIfNeeded(verbatim_end_regex.extra);
+								regex_cache_destroy(&verbatim_end_regex);
 								if (!strlen(tinrc.verbatim_end_regex))
 									STRCPY(tinrc.verbatim_end_regex, DEFAULT_VERBATIM_END_REGEX);
-								compile_regex(tinrc.verbatim_end_regex, &verbatim_end_regex, PCRE_ANCHORED);
+								compile_regex(tinrc.verbatim_end_regex, &verbatim_end_regex, REGEX_ANCHORED);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
@@ -3191,6 +3230,10 @@ check_state(
 			return curr_scope->state->sigfile;
 		case OPT_ATTRIB_SIGNATURE_REPOST:
 			return curr_scope->state->signature_repost;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		case OPT_ATTRIB_SUPPRESS_SOFT_HYPHENS:
+			return curr_scope->state->suppress_soft_hyphens;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		case OPT_ATTRIB_THREAD_ARTICLES:
 			return curr_scope->state->thread_articles;
 		case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
@@ -3487,6 +3530,12 @@ reset_state(
 			curr_scope->state->signature_repost = FALSE;
 			tinrc.attrib_signature_repost = default_scope->attribute->signature_repost;
 			break;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		case OPT_ATTRIB_SUPPRESS_SOFT_HYPHENS:
+			curr_scope->state->suppress_soft_hyphens = FALSE;
+			tinrc.attrib_suppress_soft_hyphens = default_scope->attribute->suppress_soft_hyphens;
+			break;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		case OPT_ATTRIB_THREAD_ARTICLES:
 			curr_scope->state->thread_articles = FALSE;
 			tinrc.attrib_thread_articles = default_scope->attribute->thread_articles;
@@ -3621,6 +3670,9 @@ initialize_attributes(
 	INITIALIZE_NUM_ATTRIBUTE(show_signatures);
 	INITIALIZE_NUM_ATTRIBUTE(sigdashes);
 	INITIALIZE_NUM_ATTRIBUTE(signature_repost);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	INITIALIZE_NUM_ATTRIBUTE(suppress_soft_hyphens);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	INITIALIZE_NUM_ATTRIBUTE(thread_articles);
 	INITIALIZE_NUM_ATTRIBUTE(thread_catchup_on_exit);
 	INITIALIZE_NUM_ATTRIBUTE(thread_perc);
