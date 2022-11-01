@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2022-10-12
+ *  Updated   : 2022-10-31
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -2076,9 +2076,9 @@ nntpbuf_flush(
 	if (!buf)
 		return EOF;
 
-	while(buf->wr.ub > buf->wr.lb)
-	{
+	while (buf->wr.ub > buf->wr.lb) {
 		ssize_t bytes_written;
+
 #ifdef NNTPS_ABLE
 		if (buf->tls_ctx)
 			bytes_written = tintls_write(buf->tls_ctx, buf->wr.buf + buf->wr.lb, buf->wr.ub - buf->wr.lb);
@@ -2087,6 +2087,7 @@ nntpbuf_flush(
 #else
 		bytes_written = write(buf->fd, buf->wr.buf + buf->wr.lb, buf->wr.ub - buf->wr.lb);
 #endif /* NNTPS_ABLE */
+
 		if (bytes_written < 0)
 			return EOF;
 
@@ -2120,6 +2121,7 @@ nntpbuf_puts(
 	while (len) {
 		if (buf->wr.ub == SZ(buf->wr.buf)) {
 			int retval = nntpbuf_flush(buf);
+
 			if (retval != 0)
 				return retval;
 		}
@@ -2154,6 +2156,7 @@ nntpbuf_refill(
 	free_b = SZ(buf->rd.buf) - buf->rd.ub;
 	if (free_b) {
 		ssize_t bytes_read;
+
 #ifdef NNTPS_ABLE
 		if (buf->tls_ctx)
 			bytes_read = tintls_read(buf->tls_ctx, buf->rd.buf + buf->rd.ub, free_b);
@@ -2183,6 +2186,7 @@ nntpbuf_getc(
 
 	if (buf->rd.ub - buf->rd.lb == 0) {
 		int retval = nntpbuf_refill(buf);
+
 		if (retval <= 0)
 			return retval;
 	}
@@ -2231,12 +2235,13 @@ nntpbuf_gets(
 	if (s == NULL || size == 0)
 		return s;
 
-	s[size-1] = '\0';
+	s[size - 1] = '\0';
 	size -= 1;
 
 	while (size) {
 		if (buf->rd.ub - buf->rd.lb == 0) {
 			int retval = nntpbuf_refill(buf);
+
 			if (retval <= 0)
 				return NULL;
 		}
@@ -2245,7 +2250,7 @@ nntpbuf_gets(
 			s[write_at++] = buf->rd.buf[buf->rd.lb++];
 			size -= 1;
 
-			if (s[write_at-1] == '\n' && size) {
+			if (s[write_at - 1] == '\n' && size) {
 				s[write_at] = '\0';
 				goto out;
 			}
@@ -2267,6 +2272,7 @@ nntpbuf_close(
 #ifdef NNTPS_ABLE
 	if (buf->tls_ctx) {
 		int result = tintls_close(buf->tls_ctx);
+
 		if (result != 0) {
 			/* warn? */
 		}
@@ -2292,5 +2298,20 @@ nntpbuf_is_open(
 }
 
 #undef SZ
+
+int
+nntp_conninfo(
+	FILE *stream)
+{
+	int retval = 0;
+#ifdef NNTPS_ABLE
+	if (nntp_buf.tls_ctx)
+		retval = tintls_conninfo(nntp_buf.tls_ctx, stream);
+	if (retval != 0)
+		return retval;
+#endif /* NNTPS_ABLE */
+	/* can add something here */
+	return retval;
+}
 
 #endif /* NNTP_ABLE */

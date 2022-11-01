@@ -1796,7 +1796,7 @@ build_attachment_line(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	char *tmpname;
 	char *tmpbuf;
-#endif /* MULTIBYTE_ABLE && !NOLOCALE */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	char buf[BUFSIZ];
 	char buf2[BUFSIZ];
 	char *tree = NULL;
@@ -1851,7 +1851,7 @@ build_attachment_line(
 	FreeIfNeeded(tmpbuf);
 #else
 	snprintf(sptr, cCOLS, "  %s %s%-*.*s%*.*s%s", tin_ltoa(i + 1, 4), buf2, namelen, namelen, name, info_len, info_len, buf, cCRLF);
-#endif /* MULTIBYTE_ABLE && !NOLOCALE */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	WriteLine(INDEX2LNUM(i), sptr);
 

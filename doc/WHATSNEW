@@ -10,6 +10,8 @@ New features
 - option to hide help/mail-info in title: show_help_mail_sign
 - option remove SOFT HYPHENs (U+00AD) from non verbatim blocks:
   suppress_soft_hyphens
+- ConnectionInfo page ('J')
+- ${TIN_HOMEDIR:-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
 
 Changes
 -------

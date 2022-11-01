@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-13
+ *  Updated   : 2022-10-27
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -299,6 +299,11 @@ selection_page(
 
 			case GLOBAL_HELP:
 				show_help_page(SELECT_LEVEL, _(txt_group_select_com));
+				show_selection_page();
+				break;
+
+			case GLOBAL_CONNECTION_INFO:
+				show_connection_page(SELECT_LEVEL, _(txt_connection_info));
 				show_selection_page();
 				break;
 

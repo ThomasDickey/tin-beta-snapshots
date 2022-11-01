@@ -805,11 +805,6 @@ o  BiDi handling to select-, group-, thread-level
 
 Docs/online help
 ----------------
-o  document ${TIN_HOMEDIR:-"$HOME"}/.tin/tinmsglog in tin.[15]
-   (and move to
-    ${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}/msglog
-    like serverrc, see config.c:read_server_config()/write_server_config().
-
 o  document the difference between
    - "-D 1" (nntp dialog with likely long multilines responses skipped)
    - "-vD 1" (full nntp dialog)

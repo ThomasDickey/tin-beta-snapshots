@@ -2275,7 +2275,8 @@ set_filter_scope(
 
 
 /*
- * This will come in useful for filtering on non-overview hdr fields
+ * This will come in useful for filtering on non-overview hdr fields.
+ * See also art.c:get_path_header().
  */
 #if 0
 static FILE *

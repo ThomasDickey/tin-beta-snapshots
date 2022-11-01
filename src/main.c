@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-12
+ *  Updated   : 2022-11-01
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -226,6 +226,9 @@ main(
 	 */
 	if (!nntp_server || !*nntp_server)
 		nntp_server = getserverbyfile(NNTP_SERVER_FILE);
+
+	open_msglog(); /* depends on nntp_server */
+
 	if (read_news_via_nntp && !read_saved_news) {
 		if (use_nntps && tintls_init()) {
 			tintls_exit();
@@ -1157,5 +1160,7 @@ giveup(
 		EndWin();
 		Raw(FALSE);
 	}
+	close_msglog();
+
 	exit(EXIT_FAILURE);
 }

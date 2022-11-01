@@ -1285,7 +1285,6 @@ group_flag(
 }
 
 
-/* ex actived.c functions */
 void
 create_save_active_file(
 	void)

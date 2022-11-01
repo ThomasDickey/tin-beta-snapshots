@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-08-26
+ *  Updated   : 2022-10-27
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -456,6 +456,11 @@ group_page(
 
 			case GLOBAL_HELP:
 				show_help_page(GROUP_LEVEL, _(txt_index_page_com));
+				show_group_page();
+				break;
+
+			case GLOBAL_CONNECTION_INFO:
+				show_connection_page(GROUP_LEVEL, _(txt_connection_info));
 				show_group_page();
 				break;
 

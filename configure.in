@@ -770,7 +770,7 @@ AC_MSG_RESULT($enableval)
 
 ### TLS support
 if test "$USE_NNTP" = "yes" ; then
-AC_MSG_CHECKING([wether to enable NNTPS support])
+AC_MSG_CHECKING([whether to enable NNTPS support])
 AC_ARG_WITH(
 	nntps,
 	[  --with-nntps=ssl        enable NNTPS, needs LibreSSL, OpenSSL or GnuTLS

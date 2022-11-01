@@ -21202,8 +21202,8 @@ echo "${ECHO_T}$enableval" >&6
 
 ### TLS support
 if test "$USE_NNTP" = "yes" ; then
-echo "$as_me:21205: checking wether to enable NNTPS support" >&5
-echo $ECHO_N "checking wether to enable NNTPS support... $ECHO_C" >&6
+echo "$as_me:21205: checking whether to enable NNTPS support" >&5
+echo $ECHO_N "checking whether to enable NNTPS support... $ECHO_C" >&6
 
 # Check whether --with-nntps or --without-nntps was given.
 if test "${with_nntps+set}" = set; then

@@ -1,11 +1,12 @@
--- 2.6.2 release 20221013 "" --
+-- 2.6.2 release 20221031 "" --
 
  008) Enrik Berkhan <enrik@tin.org>
       BUG. remove alleged Y2K38 safety issues
       ADD. ~ and $VAR expansion to tinrc option tls_ca_cert_file
       ADD. simplify code and refactor to fix an unused variable complaint
-      ADD. pcre2 support (debian bug #999941)
+      ADD. pcre2 support (debian bug #999941, fedora bug #2128388)
       ADD. NNTPS support based on libressl/GNUttls/OpenSSL (RFC 8143)
+      ADD. TLS connection info
       ADD. switch from stdio to own buffer implementation
       FIX. config.c, cook.c, feed.c, filter.c, group.c, init.c, lang.c, main.c
            memory.c, misc.c, nntplib.c, nntps.c, options_menu.c, page.c, read.c
@@ -30,13 +31,14 @@
            articles in UTF-8 and using an UTF-8 locale
       BUG. show actual help-key in txt_type_h_for_help
       FIX. config.c, cook.c, debug.c, filter.c, group.c, init.c, lang.c, mail.c
-           misc.c, my_tmpfile.c, newsrc.c, options_menu.c, page.c pgp.c
+           misc.c, my_tmpfile.c, newsrc.c, options_menu.c, page.c, pgp.c
            regex.c, rfc2046.c, refs.c, save.c, screen.c, search.c, select.c
            thread.c, extern.h, proto.h, tin.h, tinrc.h, tincfg.tbl, tin.1
            tin.5
 
  006) Thomas E. Dickey <dickey@invisible-island.net>
       BUG. configure --with-included-gettext was non-functional since tin 2.4.2
+      ADD. update configure macros
       FIX. aclocal.m4, intl/Makefile.in, intl/plural.c
 
  005) Urs Janssen <urs@tin.org>
@@ -58,6 +60,7 @@
       ADD. restrict URL_REGEX to disallow non ascii chars in path
       ADD. accept active file lines even without moderation flag
       ADD. do not try NEXT again after an ERR_COMMAND response
+      ADD. ConnectionInfo page ('J')
       BUG. missing default tinrc.editor_format on first start
       BUG. typo in man page
       BUG. possible memleak in check_article_to_be_posted if article has
@@ -68,11 +71,12 @@
       BUG. hypothetic missing string termination
       BUG. need to convert utf8pass to network charset unconditionally in
            do_authinfo_sasl_plain
-      FIX. art.c, auth.c, config.c, filter.c, init.c, keymap.c, lang.c, main.c
-           makecfg.c, mimetypes.c, misc.c, options_menu.c, page.c, post.c
-           pgp.c, rfc1524.c, rfc2046.c, save.c, select.c, signal.c, string.c
-           wildmat.c, xface.c, parsdate.y, extern.h, proto.h, tin.h, tin.1
-           tin.5, config.guess, config.sub, configure[.in]
+      FIX. art.c, auth.c, config.c, filter.c, group.c, help.c, inews.c, init.c
+           keymap.c, lang.c, main.c, makecfg.c, mimetypes.c, misc.c
+           options_menu.c, page.c, post.c, pgp.c, rfc1524.c, rfc2046.c
+           save.c, select.c, signal.c, string.c, thread.c, wildmat.c, xface.c
+           parsdate.y, extern.h, keymap.h, proto.h, tin.h, tin.1, tin.5
+           config.guess, config.sub, configure[.in]
 
 -- 2.6.1 release 20211226 "Convalmore" --
 

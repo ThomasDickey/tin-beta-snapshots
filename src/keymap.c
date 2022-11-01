@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2022-02-19
+ *  Updated   : 2022-10-27
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2022 Dirk Nimmich <nimmich@muenster.de>
@@ -735,6 +735,14 @@ process_mapping(
 			}
 			if (strcmp(keyname, "ConfigToggleAttrib") == 0) {
 				process_keys(CONFIG_TOGGLE_ATTRIB, keys, &option_menu_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ConnectionInfo") == 0) {
+				process_keys(GLOBAL_CONNECTION_INFO, keys, &group_keys);
+				process_keys(GLOBAL_CONNECTION_INFO, keys, &page_keys);
+				process_keys(GLOBAL_CONNECTION_INFO, keys, &select_keys);
+				process_keys(GLOBAL_CONNECTION_INFO, keys, &thread_keys);
 
 				return TRUE;
 			}
@@ -2688,6 +2696,7 @@ setup_default_keys(
 	add_default_key(&select_keys, "z", SELECT_MARK_GROUP_UNREAD);
 	add_default_key(&select_keys, "C", CATCHUP_NEXT_UNREAD);
 	add_default_key(&select_keys, "E", GLOBAL_EDIT_FILTER);
+	add_default_key(&select_keys, "J", GLOBAL_CONNECTION_INFO);
 #ifdef NNTP_ABLE
 	add_default_key(&select_keys, "L", GLOBAL_LOOKUP_MESSAGEID);
 #endif /* NNTP_ABLE */
@@ -2731,6 +2740,7 @@ setup_default_keys(
 	add_default_key(&group_keys, "D", GROUP_CANCEL);
 	add_default_key(&group_keys, "E", GLOBAL_EDIT_FILTER);
 	add_default_key(&group_keys, "G", GROUP_TOGGLE_GET_ARTICLES_LIMIT);
+	add_default_key(&group_keys, "J", GLOBAL_CONNECTION_INFO);
 	add_default_key(&group_keys, "K", GROUP_MARK_THREAD_READ);
 	add_default_key(&group_keys, "L", GLOBAL_LOOKUP_MESSAGEID);
 	add_default_key(&group_keys, "N", GROUP_NEXT_UNREAD_ARTICLE);
@@ -2777,6 +2787,7 @@ setup_default_keys(
 	add_default_key(&thread_keys, "C", CATCHUP_NEXT_UNREAD);
 	add_default_key(&thread_keys, "D", THREAD_CANCEL);
 	add_default_key(&thread_keys, "E", GLOBAL_EDIT_FILTER);
+	add_default_key(&thread_keys, "J", GLOBAL_CONNECTION_INFO);
 	add_default_key(&thread_keys, "K", THREAD_MARK_ARTICLE_READ);
 	add_default_key(&thread_keys, "L", GLOBAL_LOOKUP_MESSAGEID);
 	add_default_key(&thread_keys, "S", THREAD_AUTOSAVE);
@@ -2830,6 +2841,7 @@ setup_default_keys(
 	add_default_key(&page_keys, "E", GLOBAL_EDIT_FILTER);
 	add_default_key(&page_keys, "F", PAGE_FOLLOWUP);
 	add_default_key(&page_keys, "G", GLOBAL_LAST_PAGE);
+	add_default_key(&page_keys, "J", GLOBAL_CONNECTION_INFO);
 	add_default_key(&page_keys, "K", PAGE_MARK_THREAD_READ);
 	add_default_key(&page_keys, "L", GLOBAL_LOOKUP_MESSAGEID);
 	add_default_key(&page_keys, "N", PAGE_NEXT_UNREAD_ARTICLE);

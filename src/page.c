@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-08-29
+ *  Updated   : 2022-10-27
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -818,6 +818,12 @@ page_goto_next_unread:
 				draw_page(group->name, 0);
 				break;
 
+			case GLOBAL_CONNECTION_INFO:
+				XFACE_CLEAR();
+				show_connection_page(PAGE_LEVEL, _(txt_connection_info));
+				draw_page(group->name, 0);
+				break;
+
 			case GLOBAL_TOGGLE_HELP_DISPLAY:	/* toggle mini help menu */
 				toggle_mini_help(PAGE_LEVEL);
 				draw_page(group->name, 0);
@@ -923,13 +929,6 @@ return_to_index:
 				break;
 
 			case PAGE_GROUP_SELECT:	/* return to group selection page */
-#if 0
-				/* Hasn't been used since tin 1.1 PL4 */
-				if (filter_state == FILTERING) {
-					filter_articles(group);
-					make_threads(group, FALSE);
-				}
-#endif /* 0 */
 				XFACE_CLEAR();
 				return GRP_RETSELECT;
 
@@ -2162,7 +2161,7 @@ void
 info_pager(
 	FILE *info_fh,
 	const char *title,
-	t_bool wrap_at_ends)	/* currently always TRUE */
+	t_bool wrap_at_ends)
 {
 	int offset;
 	t_function func;

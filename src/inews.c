@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2021-02-23
+ *  Updated   : 2022-10-25
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -55,19 +55,6 @@
 #if defined(NNTP_INEWS) && !defined(FORGERY)
 	static int sender_needed(char *from, char *sender, const char *charset);
 #endif /* NNTP_INEWS && !FORGERY */
-
-#if 0
-#	ifdef HAVE_NETDB_H
-#		include <netdb.h>
-#	endif /* HAVE_NETDB_H */
-
-#	ifdef HAVE_SYS_SOCKET_H
-#		include <sys/socket.h>
-#	endif /* HAVE_SYS_SOCKET_H */
-#	ifdef HAVE_NETINET_IN_H
-#		include <netinet/in.h>
-#	endif /* HAVE_NETINET_IN_H */
-#endif /* 0 */
 
 
 /*
@@ -356,10 +343,15 @@ submit_inews(
 		}
 	}
 
-#	if 0
-	if (*message_id && *a_message_id) { /* check if returned ID matches purposed ID */
-		if (strcmp(message_id, a_message_id)) {
-			; /* shouldn't happen - warn user? */
+#	if 0 /* DEBUG */
+	if ((debug & DEBUG_NNTP) && verbose > 1) {
+		if (*message_id && *a_message_id) { /* check if purposed ID matches returned ID */
+			if (strcmp(message_id, a_message_id)) {
+				if (id_in_article)
+					debug_print_file("NNTP", "Returned Message-ID: %s doesn't match given Message-ID: %s", a_message_id, message_id);
+				else
+					debug_print_file("NNTP", "Returned Message-ID: %s doesn't match purposed Message-ID: %s", a_message_id, message_id);
+			}
 		}
 	}
 #	endif /* 0 */

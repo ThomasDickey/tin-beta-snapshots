@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2022-10-13
+ *  Updated   : 2022-10-31
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -31,6 +31,8 @@ static struct tls_config *libtls_config = NULL;
 #else
 #	ifdef USE_GNUTLS
 static gnutls_certificate_credentials_t tls_xcreds = NULL;
+static char *gnutls_servername = NULL;
+static unsigned gnutls_verification_status = 0;
 #	else
 #		ifdef USE_OPENSSL
 static SSL_CTX *openssl_ctx = NULL;
@@ -40,6 +42,7 @@ static SSL_CTX *openssl_ctx = NULL;
 
 #ifdef USE_GNUTLS
 #	ifdef DEBUG
+static int verification_func(gnutls_session_t session);
 static void log_func(int level, const char *msg);
 #	endif /* DEBUG */
 #else
@@ -50,6 +53,7 @@ static void info_callback(const SSL *s, int where, int ret);
 static void show_errors(const char *msg_fmt);
 #	endif /* USE_OPENSSL */
 #endif /* USE_GNUTLS */
+
 
 static char ca_cert_file_expanded[PATH_LEN];
 
@@ -241,6 +245,7 @@ tintls_open(
 #	ifdef USE_GNUTLS
 	int result;
 	gnutls_session_t client;
+	size_t servername_len;
 
 	if (!session_ctx)
 		return -EINVAL;
@@ -270,8 +275,11 @@ tintls_open(
 		return -EINVAL;
 	}
 
-	if (!insecure_nntps)
-		gnutls_session_set_verify_cert(client, servername, 0);
+	servername_len = strlen(servername) + 1;
+	gnutls_servername = my_malloc(servername_len);
+	strncpy(gnutls_servername, servername, servername_len);
+	gnutls_session_set_verify_function(client, &verification_func);
+
 	gnutls_transport_set_int(client, fd);
 	gnutls_handshake_set_timeout(client, GNUTLS_DEFAULT_HANDSHAKE_TIMEOUT);
 
@@ -390,20 +398,18 @@ tintls_handshake(
 	} while (result < 0 && gnutls_error_is_fatal(result) == 0);
 
 	if (result < 0) {
-		if (result == GNUTLS_E_CERTIFICATE_VERIFICATION_ERROR) {
+		if (gnutls_verification_status != 0) {
 			int status_result;
 			int type;
-			unsigned status;
 			gnutls_datum_t msg;
 
-			type = gnutls_certificate_type_get(client);
-			status = gnutls_session_get_verify_cert_status(client);
-			status_result = gnutls_certificate_verification_status_print(status, type, &msg, 0);
+			type = gnutls_certificate_type_get2(client, GNUTLS_CTYPE_SERVER);
+			status_result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
 
 			if (status_result == 0)
-				wait_message(0, "cert verify output: %s\n", msg.data);
+				wait_message(0, _("TLS peer verification failed: %s\n"), msg.data);
 			else
-				wait_message(0, "cert verify output: <unable to retrieve status>\n");
+				wait_message(0, _("TLS peer verification failed: %s\n"), "<unable to retrieve status>");
 
 			gnutls_free(msg.data);
 		}
@@ -416,8 +422,32 @@ tintls_handshake(
 		const gnutls_datum_t *raw_servercert_chain;
 		unsigned int servercert_chainlen;
 
+		if (gnutls_verification_status != 0) {
+			int type;
+			gnutls_datum_t msg;
+
+			if (!insecure_nntps) {
+				error_message(2, "unexpected certificate verification status!");
+				return -EPROTO;
+			}
+
+			type = gnutls_certificate_type_get2(client, GNUTLS_CTYPE_SERVER);
+			result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
+
+			if (result == 0) {
+				wait_message(0, _("TLS peer verification failed, continuing anyway as requested: %s\n"), msg.data);
+			} else {
+				wait_message(0, _("TLS peer verification failed, continuing anyway as requested: %s\n"), "<unable to retrieve status>");
+			}
+
+			gnutls_free(msg.data);
+
+			if (!insecure_nntps)
+				return -EPROTO;
+		}
+
 		raw_servercert_chain = gnutls_certificate_get_peers(client, &servercert_chainlen);
-		if (servercert_chainlen > 1) {
+		if (servercert_chainlen > 0) {
 			gnutls_x509_crt_t servercert = NULL;
 			gnutls_datum_t subject = { NULL, 0 };
 			gnutls_datum_t issuer = { NULL, 0 };
@@ -495,7 +525,7 @@ err_cert:
 	} else if (insecure_nntps) {
 		long_result = SSL_get_verify_result(ssl);
 		if (long_result != X509_V_OK && (!batch_mode || verbose))
-			wait_message(0, _("TLS peer verification failed, continuing anyway as requested: %s\n"), X509_verify_cert_error_string(long_result));
+			wait_message(0, _("TLS peer verification failed: %s.\nContinuing anyway as requested.\n"), X509_verify_cert_error_string(long_result));
 	}
 
 	peer = SSL_get_peer_certificate(ssl);
@@ -649,6 +679,7 @@ tintls_close(
 	} while (result < 0 && gnutls_error_is_fatal(result) == 0);
 
 	gnutls_deinit(client);
+	FreeAndNull(gnutls_servername);
 
 	if (result < 0)
 		return -EPROTO;
@@ -663,6 +694,225 @@ tintls_close(
 #endif /* USE_LIBTLS */
 
 	return 0;
+}
+
+
+int
+tintls_conninfo(
+	void *session_ctx,
+	FILE *fp)
+{
+#ifdef USE_LIBTLS
+	int result;
+	struct tls *client = session_ctx;
+	time_t t;
+	struct tm *tm;
+	char fmt_time[64]; /* time zone name could long... */
+
+	fprintf(fp, "\nTLS information:\n");
+	fprintf(fp,   "----------------\n");
+	fprintf(fp, "%s %s (strength %d)\n", tls_conn_version(client), tls_conn_cipher(client), tls_conn_cipher_strength(client));
+	fprintf(fp, "\nServer certificate information:\n");
+	fprintf(fp,   "-------------------------------\n");
+	fprintf(fp, "Subject: %s\n", tls_peer_cert_subject(client));
+	fprintf(fp, "Issuer:  %s\n", tls_peer_cert_issuer(client));
+
+	t = tls_peer_cert_notbefore(client);
+	tm = localtime(&t);
+	result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm); /* make format configurable? */
+	if (result < 0)
+		my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
+	fprintf(fp, "Valid not before: %s\n", fmt_time);
+
+	t = tls_peer_cert_notafter(client);
+	tm = localtime(&t);
+	result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm);
+	if (result < 0)
+		my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
+	fprintf(fp, "Valid not after:  %s\n", fmt_time);
+
+	return 0;
+#else
+
+#	ifdef USE_GNUTLS
+	int retval = -1;
+	int result;
+	gnutls_session_t client = session_ctx;
+	char *desc;
+	gnutls_datum_t msg;
+	const gnutls_datum_t *raw_servercert_chain;
+	unsigned int servercert_chainlen;
+	unsigned int i;
+	time_t t;
+	struct tm *tm;
+	char fmt_time[64]; /* time zone name could long... */
+
+	desc = gnutls_session_get_desc(client);
+	fprintf(fp, "\nTLS information:\n");
+	fprintf(fp,   "----------------\n");
+	fprintf(fp, "%s\n", desc);
+	gnutls_free(desc);
+
+	msg.data = NULL;
+
+	if (gnutls_verification_status != 0) {
+		int type;
+		type = gnutls_certificate_type_get2(client, GNUTLS_CTYPE_SERVER);
+		result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
+
+		if (result == 0) {
+			fprintf(fp, "Server certificate verification FAILED:\n\t%s (%s)\n", msg.data,
+					insecure_nntps ? "tolerated as -k (insecure) requested" : "UNEXPECTED, possible BUG");
+		} else
+			fprintf(fp, "Server certificate verification FAILED: <can't get reason>\n");
+
+		gnutls_free(msg.data);
+	} else
+		fprintf(fp, "Server certificate verified successfully.\n");
+
+	raw_servercert_chain = gnutls_certificate_get_peers(client, &servercert_chainlen);
+	if (servercert_chainlen > 0) {
+		fprintf(fp, "\nServer certificate information:\n");
+		fprintf(fp,   "-------------------------------\n");
+	}
+
+	for (i = 0; i < servercert_chainlen; i++) {
+		gnutls_x509_crt_t servercert = NULL;
+		gnutls_datum_t subject = { NULL, 0 };
+		gnutls_datum_t issuer = { NULL, 0 };
+
+		if (i > 0)
+			fputs("\n", fp);
+		fprintf(fp, "Certificate #%d\n", i);
+
+		result = gnutls_x509_crt_init(&servercert);
+		if (result < 0) {
+			goto err_cert;
+		}
+
+		result = gnutls_x509_crt_import(servercert, &raw_servercert_chain[i], GNUTLS_X509_FMT_DER);
+		if (result < 0) {
+			goto err_cert;
+		}
+
+		result = gnutls_x509_crt_get_dn3(servercert, &subject, 0);
+		if (result < 0) {
+			goto err_cert;
+		}
+		fprintf(fp, "Subject: %s\n", subject.data);
+
+		result = gnutls_x509_crt_get_issuer_dn3(servercert, &issuer, 0);
+		if (result < 0) {
+			goto err_cert;
+		}
+		fprintf(fp, "Issuer:  %s\n", issuer.data);
+
+		t = gnutls_x509_crt_get_activation_time(servercert);
+		if (t == -1) {
+			goto err_cert;
+		}
+		tm = localtime(&t);
+		result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm); /* make format configurable? */
+		if (result < 0)
+			my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
+		fprintf(fp, "Valid not before: %s\n", fmt_time);
+
+		t = gnutls_x509_crt_get_expiration_time(servercert);
+		if (t == -1) {
+			goto err_cert;
+		}
+		tm = localtime(&t);
+		result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm);
+		if (result < 0)
+			my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
+		fprintf(fp, "Valid not after:  %s\n", fmt_time);
+
+		retval = 0;
+
+err_cert:
+		if (issuer.data)
+			gnutls_free(issuer.data);
+		if (subject.data)
+			gnutls_free(subject.data);
+		if (servercert)
+			gnutls_x509_crt_deinit(servercert);
+
+	}
+
+	return retval;
+#	else
+
+#		ifdef USE_OPENSSL
+	int result;
+	long long_result;
+	long verification_result;
+	BIO *client = session_ctx;
+	SSL *ssl;
+	STACK_OF(X509) *chain;
+
+	long_result = BIO_get_ssl(client, &ssl);
+	if (long_result != 1)
+		return -1;
+
+	fprintf(fp, "\nTLS information:\n");
+	fprintf(fp,   "----------------\n");
+	fprintf(fp, "%s %s\n", SSL_get_version(ssl), SSL_get_cipher_name(ssl));
+
+	verification_result = SSL_get_verify_result(ssl);
+	if (verification_result != X509_V_OK)
+		fprintf(fp, "Server certificate verification FAILED:\n\t%s (%s)\n",
+			X509_verify_cert_error_string(verification_result),
+			insecure_nntps ? "tolerated as -k (insecure) requested" : "UNEXPECTED, possible BUG");
+	else
+		fprintf(fp, "Server certificate verified successfully.\n");
+
+	fprintf(fp, "\nServer certificate information:\n");
+	fprintf(fp,   "-------------------------------\n");
+
+	if (verification_result == X509_V_OK)
+		chain = SSL_get_peer_cert_chain(ssl);
+	else
+		chain = SSL_get0_verified_chain(ssl);
+
+	if (chain) {
+		char name[128];
+		const ASN1_TIME *asn1;
+		struct tm tm;
+		int i;
+
+		for (i = 0; i < sk_X509_num(chain); i++) {
+			X509* cert = sk_X509_value(chain, i);
+
+			if (i > 0)
+				fputs("\n", fp);
+			fprintf(fp, "Certificate #%d\n", i);
+			fprintf(fp, "Subject: %s\n", X509_NAME_oneline(X509_get_subject_name(cert), name, sizeof(name)));
+			fprintf(fp, "Issuer:  %s\n", X509_NAME_oneline(X509_get_issuer_name(cert), name, sizeof(name)));
+
+			asn1 = X509_get0_notBefore(cert);
+			result = ASN1_TIME_to_tm(asn1, &tm);
+			if (result == 1) {
+				result = my_strftime(name, sizeof(name), "%Y-%m-%dT%H:%M%z", &tm); /* make format configurable? */
+				if (result < 0)
+					my_strncpy(name, "<formatting error>", sizeof(name) - 1);
+				fprintf(fp, "Valid not before: %s\n", name);
+			}
+
+			asn1 = X509_get0_notAfter(cert);
+			result = ASN1_TIME_to_tm(asn1, &tm);
+			if (result == 1) {
+				result = my_strftime(name, sizeof(name), "%Y-%m-%dT%H:%M%z", &tm);
+				if (result < 0)
+					my_strncpy(name, "<formatting error>", sizeof(name) - 1);
+				fprintf(fp, "Valid not after:  %s\n", name);
+			}
+		}
+	}
+
+	return 0;
+#		endif /* USE_OPENSSL */
+#	endif /* USE_GNUTLS */
+#endif /* USE_LIBTLS */
 }
 
 
@@ -682,6 +932,25 @@ show_errors(
 
 #ifdef DEBUG
 #	ifdef USE_GNUTLS
+static int
+verification_func(
+	gnutls_session_t session)
+{
+	int result;
+
+	gnutls_verification_status = ~0;
+
+	result = gnutls_certificate_verify_peers3(session, gnutls_servername, &gnutls_verification_status);
+
+	if (insecure_nntps)
+		return 0;
+
+	if (result != 0)
+		return result;
+
+	return gnutls_verification_status;
+}
+
 static void
 log_func(
 	int level,
@@ -758,4 +1027,4 @@ tintls_exit(
 {
 	return;
 }
-#endif /* NNTP_ABLE */
+#endif /* NNTP_ABLE && NNTPS_ABLE */

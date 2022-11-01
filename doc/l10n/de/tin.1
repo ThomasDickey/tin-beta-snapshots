@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2022-10-13
+.\" Updated   : 2022-11-01
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -612,6 +612,9 @@ gestartet wurde
 \fBToggleInverseVideo 'I'\fP
 (De)aktiviere inverse Darstellung.
 .TP 
+\fBConnectionInfo 'J'\fP
+Informationen zur aktuellen Verbindung anzeigen.
+.TP 
 \fBLookupMessage 'L'\fP
 Artikel anhand der \*(rqMessage\-ID:\*(rq Nachschlagen. Wenn keine der in den
 \&\*(rqNewsgroups:\*(rq\-Kopfzeilen des referenzierten Artikels aufgeführten Gruppen
@@ -841,6 +844,9 @@ anzeigen.
 \fBToggleInverseVideo 'I'\fP
 (De)aktiviere inverse Darstellung.
 .TP 
+\fBConnectionInfo 'J'\fP
+Informationen zur aktuellen Verbindung anzeigen.
+.TP 
 \fBGroupMarkThdRead 'K'\fP
 Mark article/thread as read and move onto the next unread article/thread. If
 a range of articles/threads is set, the range will be marked as read instead
@@ -1053,6 +1059,9 @@ Subject des geöffneten Artikels in der untersten Zeile anzeigen.
 .TP 
 \fBToggleInverseVideo 'I'\fP
 (De)aktiviere inverse Darstellung.
+.TP 
+\fBConnectionInfo 'J'\fP
+Informationen zur aktuellen Verbindung anzeigen.
 .TP 
 \fBThreadMarkArtRead 'K'\fP
 Mark article as read and move onto the next unread article. If a range of
@@ -1287,6 +1296,9 @@ Subject des geöffneten Artikels in der untersten Zeile anzeigen.
 .TP 
 \fBToggleInverseVideo 'I'\fP
 (De)aktiviere inverse Darstellung.
+.TP 
+\fBConnectionInfo 'J'\fP
+Informationen zur aktuellen Verbindung anzeigen.
 .TP 
 \fBPageKillThd 'K'\fP
 Markiere den Rest des Threads als gelesen und springe zu nächstem
@@ -2661,10 +2673,10 @@ ist ON.
 Allows you to select how \fBtin\fP matches strings. The default is 0 and uses
 the \fB\%wildmat\fP(3)  notation, which is how this has traditionally been
 handled.  Setting this to 1 allows you to use \fB\%perl\fP(1)  compatible
-regular expressions \fB\%pcre\fP(3)  (see also \fB\%perlre\fP(1)  and
-\fB\%pcrepattern\fP(3)).  You will probably want to update your filter file if
-you use this regularly.  NB: Newsgroup names will always be matched using
-the \fB\%wildmat\fP(3)  notation.
+regular expressions \fB\%pcre\fP(3)  or \fB\%pcre2\fP(3)  (see also \fB\%perlre\fP(1)
+and \fB\%pcrepattern\fP(3)  or \fB\%pcre2pattern\fP(3)).  You will probably want
+to update your filter file if you use this regularly.  NB: Newsgroup names
+will always be matched using the \fB\%wildmat\fP(3)  notation.
 .TP 
 \fBAnstelle der Markierung anzeigen (word_h_display_marks)\fP
 Should the leading and ending stars, slashes, strokes and dashes also be
@@ -3323,7 +3335,6 @@ lesen, manuell zu bereinigen:
 .\"       $TMPDIR/SCOPES-R   (-D 32)
 .\"       $TMPDIR/SCOPES-W   (-D 32)
 .\"       $TMPDIR/ACTIVE     (-D 64)
-.\"       ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinmsglog
 Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .PP
 \fI$MAILCAPS\fP
@@ -3423,12 +3434,17 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .PP
 
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER:${NNTPPORT:+":$NNTPPORT"}/newsgroups\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups\fP
 .fi
 .PP
 
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER:${NNTPPORT:+":$NNTPPORT"}/serverrc\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc\fP
+.fi
+.PP
+
+.nf
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog\fP
 .fi
 .PP
 
@@ -3796,9 +3812,9 @@ Guidelines).
 .SH ANMERKUNGEN
 .IX Header ANMERKUNGEN
 Unterstützung für reguläre Ausdrücke wird durch die PCRE\-Bibliothek
-\fBpcre\fP(3) bereitgestellt welche Open\-Source\-Software ist. Autor ist Philip
-Hazel und das Urheberrecht \(co liegt bei der University of Cambridge,
-England.
+\fB\%pcre\fP(3) oder \fB\%pcre2\fP(3) bereitgestellt welche Open\-Source\-Software
+ist. Autor ist Philip Hazel und das Urheberrecht \(co liegt bei der
+University of Cambridge, England.
 .br
 .\"
 .\"
@@ -3854,7 +3870,8 @@ Autor von getline.c, \fB\%emacs\fP(1)\-artige Eingaberoutine.
 .IP "Steven Madsen"
 für \fB\%pgp\fP(1) (Pretty Good Privacy) Unterstützung.
 .IP "Philip Hazel <ph10@cam.ac.uk>"
-für \fB\%pcre\fP(3) (Bibliothek für Perl\-kompatible reguläre Ausdrücke).
+für \fB\%pcre\fP(3), \fB\%pcre2\fP(3) (Bibliothek für Perl\-kompatible reguläre
+Ausdrücke).
 .IP "Patrick Powell <papowell@astart.com>"
 .\"
 .\"
@@ -3881,10 +3898,11 @@ Erika Mustermann <erika@example.org>
 \fB\%shar\fP(1), \fB\%slrnface\fP(1), \fB\%tass\fP(1), \fB\%unshar\fP(1),
 \fB\%uudecode\fP(1), \fB\%vi\fP(1), \fB\%xterm\fP(1x), \fB\%heapsort\fP(3),
 \fB\%iconv\fP(3), \fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3), \fB\%pcre\fP(3),
-\fB\%pcrepattern\fP(3), \fB\%qsort\fP(3), \fB\%snprintf\fP(3), \fB\%strftime\fP(3),
-\fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3), \fB\%environ\fP(5), \fB\%locale\fP(5),
-\fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5),
-\fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%2045\fP,
-\fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP,
-\fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%4880\fP,
-\fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%8143\fP
+\fB\%pcre2\fP(3), \fB\%pcrepattern\fP(3), \fB\%pcre2pattern\fP(3), \fB\%qsort\fP(3),
+\fB\%snprintf\fP(3), \fB\%strftime\fP(3), \fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3),
+\fB\%environ\fP(5), \fB\%locale\fP(5), \fB\%mailcap\fP(5), \fB\%mbox\fP(5),
+\fB\%mmdf\fP(5), \fB\%newsoverview\fP(5), \fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP,
+\fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP,
+\fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
+\fBRFC\%4643\fP, \fBRFC\%4880\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP,
+\fBRFC\%6048\fP, \fBRFC\%8143\fP

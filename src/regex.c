@@ -139,7 +139,8 @@ match_regex_ex(
 
 
 REGEX_NOFFSET
-regex_get_ovector_count(struct regex_cache *regex)
+regex_get_ovector_count(
+	struct regex_cache *regex)
 {
 #ifdef HAVE_LIB_PCRE2
 	return pcre2_get_ovector_count_8(regex->match);
@@ -149,8 +150,9 @@ regex_get_ovector_count(struct regex_cache *regex)
 }
 
 
-REGEX_SIZE*
-regex_get_ovector_pointer(struct regex_cache *regex)
+REGEX_SIZE
+*regex_get_ovector_pointer(
+	struct regex_cache *regex)
 {
 #ifdef HAVE_LIB_PCRE2
 	return pcre2_get_ovector_pointer_8(regex->match);
@@ -282,7 +284,8 @@ highlight_regexes(
 }
 
 void
-regex_cache_init(struct regex_cache *regex)
+regex_cache_init(
+	struct regex_cache *regex)
 {
 #ifdef HAVE_LIB_PCRE2
 	regex->re = NULL;
@@ -299,7 +302,8 @@ regex_cache_init(struct regex_cache *regex)
 
 
 void
-regex_cache_destroy(struct regex_cache *regex)
+regex_cache_destroy(
+	struct regex_cache *regex)
 {
 #ifdef HAVE_LIB_PCRE2
 	pcre2_code_free_8(regex->re);

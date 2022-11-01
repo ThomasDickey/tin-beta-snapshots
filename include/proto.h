@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2022-10-04
+ *  Updated   : 2022-10-31
  *  Notes     :
  *
  * Copyright (c) 1997-2022 Urs Janssen <urs@tin.org>
@@ -384,6 +384,7 @@ extern void dir_name(const char *fullpath, char *dir);
 extern void draw_mark_selected(int i);
 extern void get_author(t_bool thread, struct t_article *art, char *str, size_t len);
 extern void get_cwd(char *buf);
+extern void show_connection_page(const int level, const char *title);
 extern void make_base_group_path(const char *base_dir, const char *group_name, char *group_path, size_t group_path_len);
 extern void make_group_path(const char *name, char *path);
 extern void process_charsets(char **line, size_t *max_line_len, const char *network_charset, const char *local_charset, t_bool conv_tex2iso);
@@ -451,6 +452,7 @@ extern void nntp_close(t_bool send_no_quit);
 	extern void u_put_server(const char *string);
 	extern int fgetc_server(FILE *stream);
 	extern int ungetc_server(int c, FILE *stream);
+	extern int nntp_conninfo(FILE *stream);
 #endif /* NNTP_ABLE */
 
 /* nntps.c */
@@ -462,6 +464,7 @@ extern void nntp_close(t_bool send_no_quit);
 	extern int tintls_handshake(void *session_ctx);
 	extern ssize_t tintls_read(void *session_ctx, void *buf, size_t count);
 	extern ssize_t tintls_write(void *session_ctx, const void *buf, size_t count);
+	extern int tintls_conninfo(void *session_ctx, FILE *stream);
 #endif /* NNTP_ABLE && NNTPS_ABLE */
 
 /* nrctbl.c */
@@ -573,7 +576,7 @@ extern t_bool match_regex(const char *string, char *pattern, struct regex_cache 
 extern int match_regex_ex(const char *string, int length, int offset, REGEX_OPTIONS options, struct regex_cache *regex);
 
 extern REGEX_NOFFSET regex_get_ovector_count(struct regex_cache *regex);
-extern REGEX_SIZE* regex_get_ovector_pointer(struct regex_cache *regex);
+extern REGEX_SIZE *regex_get_ovector_pointer(struct regex_cache *regex);
 
 extern void highlight_regexes(int row, struct regex_cache *regex, int color);
 extern void regex_cache_init(struct regex_cache *regex);
@@ -638,6 +641,8 @@ extern void show_title(const char *title);
 extern void spin_cursor(void);
 extern void stow_cursor(void);
 extern void wait_message(unsigned int sdelay, const char *fmt, ...);
+extern void open_msglog(void);
+extern void close_msglog(void);
 
 /* search.c */
 extern enum option_enum search_config(t_bool forward, t_bool repeat, enum option_enum current, enum option_enum last);

@@ -26,9 +26,10 @@ CFLAGS="$RPM_OPT_FLAGS" ./configure --with-install-prefix=$RPM_BUILD_ROOT \
  --disable-echo \
  --enable-prototypes \
  --enable-nntp-only \
+ --with-nntps \
  --enable-cancel-locks \
  --enable-long-article-numbers \
- --with-pcre
+ --with-pcre2-config
 
 %build
 make build

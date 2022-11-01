@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-10-29
+ *  Updated   : 2022-11-01
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -281,6 +281,7 @@ static t_help_page select_help_page[] = {
 	{ txt_help_select_reset_newsrc, SELECT_RESET_NEWSRC },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
+	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ txt_help_bug_report, GLOBAL_BUGREPORT },
 	{ NULL, NOT_ASSIGNED }
 };
@@ -390,6 +391,7 @@ static t_help_page group_help_page[] = {
 	{ txt_help_global_posting_history, GLOBAL_DISPLAY_POST_HISTORY },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
+	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ txt_help_bug_report, GLOBAL_BUGREPORT },
 	{ NULL, NOT_ASSIGNED }
 };
@@ -481,6 +483,7 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_global_posting_history, GLOBAL_DISPLAY_POST_HISTORY },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
+	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ txt_help_bug_report, GLOBAL_BUGREPORT },
 	{ NULL, NOT_ASSIGNED }
 };
@@ -591,6 +594,7 @@ static t_help_page page_help_page[] = {
 	{ txt_help_article_pgp, PAGE_PGP_CHECK_ARTICLE },
 #endif /* HAVE_PGP_GPG */
 	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ txt_help_global_version, GLOBAL_VERSION },
 	{ NULL, NOT_ASSIGNED }
 };

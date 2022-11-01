@@ -45,13 +45,13 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"2.6.2"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20221013"
+#	define RELEASEDATE	"20221101"
 #	define RELEASENAME	"Convalmore"
 /* config-file versions - must be dotted triples in the range 0 to 99 each */
 #	define TINRC_VERSION	"1.3.18"
 #	define ATTRIBUTES_VERSION	"1.0.11"
 #	define FILTER_VERSION	"1.0.2"
-#	define KEYMAP_VERSION	"1.0.10"
+#	define KEYMAP_VERSION	"1.0.11"
 #	define SERVERCONFIG_VERSION	"1.0.0"
 
 #endif /* !VERSION_H */

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-04
+ *  Updated   : 2022-11-01
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -99,6 +99,7 @@ static int gnksa_check_domain_literal(char *domain);
 static int gnksa_check_localpart(const char *localpart);
 static int gnksa_dequote_plainphrase(char *realname, char *decoded, int addrtype);
 static int strfeditor(char *editor, int linenum, const char *filename, char *s, size_t maxsize, char *format);
+static void make_connection_page(FILE *fp);
 static void write_input_history_file(void);
 #ifdef CHARSET_CONVERSION
 	static t_bool buffer_to_local(char **line, size_t *max_line_len, const char *network_charset, const char *local_charset);
@@ -713,6 +714,8 @@ tin_done(
 		my_fflush(stderr);
 		free(buf);
 	}
+
+	close_msglog();
 
 #ifdef DOALLOC
 	no_leaks();	/* free permanent stuff */
@@ -4359,3 +4362,106 @@ stat_article(
 	}
 }
 #endif /* 0 */
+
+
+/*
+ * show connection details
+ *
+ * TODO: add to more levels?
+ */
+void
+show_connection_page(
+	const int level,
+	const char *title)
+{
+	FILE *fp;
+
+	if (!(fp = tmpfile()))
+		return;
+
+	switch (level) {
+		case GROUP_LEVEL:
+		case PAGE_LEVEL:
+		case SELECT_LEVEL:
+		case THREAD_LEVEL:
+			make_connection_page(fp);
+			break;
+
+		default:
+			error_message(2, _(txt_error_unknown_dlevel));
+			fclose(fp);
+			return;
+	}
+
+	info_pager(fp, title, FALSE); /* all other pagers do wrap */
+	fclose(fp);
+	info_pager(NULL, NULL, TRUE); /* free mem */
+}
+
+
+/*
+ * TODO:
+ * - detected NNTP features
+ * - connection type (IPv4 vs IPv6), remote IP, ...
+ * - strings to lang.c
+ */
+static void
+make_connection_page(
+	FILE *fp)
+{
+	if (!read_news_via_nntp)
+		fprintf(fp, "Reading from local spool.\n");
+	else {
+		if (read_saved_news)
+			fprintf(fp, "Reading saved news.\n");
+#if defined(NNTP_ABLE)
+#	if defined(NNTPS_ABLE)
+		else {
+			if (use_nntps) {
+				if (insecure_nntps)
+					fprintf(fp, "Reading untrusted via NNTPS ");
+				else
+					fprintf(fp, "Reading trusted via NNTPS ");
+
+#		ifdef HAVE_LIB_LIBTLS
+			fprintf(fp, "(LibreSSL %d).\n", TLS_API);
+#		else
+#			ifdef HAVE_LIB_OPENSSL
+			fprintf(fp, "(%s).\n", OPENSSL_VERSION_TEXT);
+#			else
+#				ifdef HAVE_LIB_GNUTLS
+			fprintf(fp, "(GnuTLS %s).\n", gnutls_check_version(NULL));
+#				endif /* HAVE_LIB_GNUTLS */
+#			endif /* HAVE_LIB_OPENSSL */
+#		endif /* HAVE_LIB_LIBTLS */
+			} else
+#	endif /* NNTPS_ABLE */
+			{
+				fprintf(fp, "Reading via NNTP.\n");
+			}
+			fprintf(fp, "\nConnection details:\n");
+			fprintf(fp, "-------------------\n");
+			fprintf(fp, "NNTPSERVER    : %s\n", nntp_server);
+			fprintf(fp, "NNTPPORT      : %d\n", nntp_tcp_port);
+			if (nntp_caps.type == CAPABILITIES && *nntp_caps.implementation)
+				fprintf(fp, "IMPLEMENTATION: %s\n", nntp_caps.implementation);
+
+			(void) nntp_conninfo(fp);
+		}
+#endif /* NNTP_ABLE */
+	}
+#ifndef NNTP_ONLY
+	if (!read_news_via_nntp && !read_saved_news) {
+		fprintf(fp, "\nLocal spool config:\n");
+		fprintf(fp, "-------------------\n");
+		fprintf(fp, "SPOOLDIR          : %s\n", spooldir);
+		fprintf(fp, "NOVROOTDIR        : %s\n", novrootdir);
+		fprintf(fp, "OVERVIEW_FILE     : %s\n", novfilename);
+		fprintf(fp, "OVERVIEW_FMT      : %s\n", overviewfmt_file);
+		fprintf(fp, "NEWSGROUPS_FILE   : %s\n", newsgroups_file);
+		fprintf(fp, "ACTIVE_FILE       : %s\n", news_active_file);
+		fprintf(fp, "ACTIVE_TIMES_FILE : %s\n", active_times_file);
+		fprintf(fp, "SUBSCRIPTIONS_FILE: %s\n", subscriptions_file);
+	}
+#endif /* !NNTP_ONLY */
+}

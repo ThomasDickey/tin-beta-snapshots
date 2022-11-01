@@ -259,7 +259,7 @@ mystrcat(
  */
 int
 my_tolower(
-int c)
+	int c)
 {
 #ifdef TOLOWER_BROKEN
 	if (c >= 'A' && c <= 'Z')
@@ -274,7 +274,7 @@ int c)
 
 int
 my_toupper(
-int c)
+	int c)
 {
 #ifdef TOUPPER_BROKEN
 	if (c >= 'a' && c <= 'z')
@@ -1040,7 +1040,7 @@ abbr_groupname(
 
 	return new_grpname;
 }
-#endif /* MULTIBYTE_ABLE && !NOLOCALE */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
 /*

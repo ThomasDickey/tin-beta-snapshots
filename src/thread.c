@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-17
+ *  Updated   : 2022-10-27
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -737,6 +737,11 @@ thread_page(
 
 			case GLOBAL_HELP:					/* help */
 				show_help_page(THREAD_LEVEL, _(txt_thread_com));
+				show_thread_page();
+				break;
+
+			case GLOBAL_CONNECTION_INFO:
+				show_connection_page(THREAD_LEVEL, _(txt_connection_info));
 				show_thread_page();
 				break;
 

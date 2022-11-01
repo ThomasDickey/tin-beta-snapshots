@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-13
+ *  Updated   : 2022-11-01
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -44,8 +44,13 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
+#ifndef TNNTP_H
+#	include "tnntp.h"
+#endif /* !TNNTP_H */
 
 int mark_offset = 0;
+
+static FILE* msglog = NULL;
 
 #ifndef USE_CURSES
 	struct t_screen *screen;
@@ -451,7 +456,7 @@ erase_arrow(
 			my_fputc(s[mark_offset], stdout);
 			EndInverse();
 		}
-#endif /* MULTIBYTE_ABLE && !NOLOCALE */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	}
 }
 
@@ -736,48 +741,65 @@ show_progress(
 }
 
 
-/*
- * TODO: move to
- *       ${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}/msglog
- *       like serverrc, see config.c:read_server_config()/write_server_config()
- *       and document tin tin.[15]
- */
 void
-log_formatted_msg(
-	const char *tag,
-	const char *msg)
+open_msglog(
+	void)
 {
-	static t_bool first = TRUE;
-	FILE *fp;
 	char logfile[PATH_LEN];
+	char serverdir[PATH_LEN];
 
-	if (msg == NULL || strlen(msg) == 0)
+	if (msglog != NULL)
 		return;
 
-	joinpath(logfile, sizeof(logfile), rcdir, "tinmsglog");
+#ifdef NNTP_ABLE
+        if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
+                snprintf(logfile, sizeof(logfile), "%s:%u", nntp_server, nntp_tcp_port);
+        else
+#endif /* NNTP_ABLE */
+        {
+                snprintf(logfile, sizeof(logfile), "%s", nntp_server);
+        }
+        joinpath(serverdir, sizeof(serverdir), rcdir, logfile);
+        joinpath(logfile, sizeof(logfile), serverdir, "msglog");
 
-	if (first) {
-		unlink(logfile);
-		first = FALSE;
-	}
-
-	if ((fp = fopen(logfile, "a")) != NULL) {
-		if (tag)
-			fprintf(fp, "%s: %s", tag, msg);
-		else
-			fprintf(fp, "%s", msg);
-
-		if (msg[strlen(msg)-1] != '\n')
-			fputc('\n', fp);
-
+	if ((msglog = fopen(logfile, "w")) != NULL) {
 #ifdef HAVE_FCHMOD
-		fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
+		fchmod(fileno(msglog), (mode_t) (S_IRUSR|S_IWUSR));
 #else
 #       ifdef HAVE_CHMOD
 		chmod(logfile, (mode_t) (S_IRUSR|S_IWUSR));
 #       endif /* HAVE_CHMOD */
 #endif /* HAVE_FCHMOD */
-
-		fclose(fp);
 	}
+}
+
+
+void
+close_msglog(
+	void)
+{
+	if (msglog)
+		fclose(msglog);
+	msglog = NULL;
+}
+
+
+void
+log_formatted_msg(
+	const char *tag,
+	const char *msg)
+{
+
+	if (msglog == NULL || msg == NULL || strlen(msg) == 0)
+		return;
+
+	if (tag)
+		fprintf(msglog, "%s: %s", tag, msg);
+	else
+		fprintf(msglog, "%s", msg);
+
+	if (msg[strlen(msg) - 1] != '\n')
+		fputc('\n', msglog);
+
+	fflush(msglog);
 }

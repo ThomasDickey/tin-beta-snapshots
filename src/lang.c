@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-12
+ *  Updated   : 2022-11-01
  *  Notes     :
  *
  * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
@@ -153,6 +153,7 @@ constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 #ifdef NNTP_ABLE
 	constext txt_connecting[] = N_("Connecting to %s...");
 #endif /* NNTP_ABLE */
+constext txt_connection_info[] = N_("Connection Info");
 constext txt_cook_article_failed_exiting[] = N_("Cook article failed, %s is exiting");
 constext txt_cr[] = N_("<CR>");
 constext txt_creating_active[] = N_("Creating active file for saved groups...\n");
@@ -511,6 +512,7 @@ constext txt_help_select_search_group_forwards[] = N_("search forwards for a gro
 constext txt_help_select_subscribe[] = N_("subscribe to chosen group");
 constext txt_help_select_subscribe_pattern[] = N_("subscribe to groups that match pattern");
 constext txt_help_select_sync_with_active[] = N_("reread active file to check for any new news");
+constext txt_help_global_connection_info[] = N_("show NNTP[S] connection details");
 constext txt_help_select_toggle_descriptions[] = N_("toggle display of group name only or group name plus description");
 constext txt_help_select_toggle_read_groups[] = N_("toggle display to show all/unread subscribed groups");
 constext txt_help_select_unsubscribe[] = N_("unsubscribe from chosen group");
@@ -895,9 +897,6 @@ constext txt_thread_upper[] = N_("Thread");
 constext txt_thread_com[] = N_("Thread Level Commands");
 constext txt_thread_marked_as_deselected[] = N_("Thread deselected");
 constext txt_thread_marked_as_selected[] = N_("Thread selected");
-#if 0 /* unused */
-	constext txt_thread_plural[] = N_("threads");
-#endif /* 0 */
 constext txt_thread_singular[] = N_("thread");
 constext txt_thread_x_of_n[] = N_("Thread %4s of %4s");
 constext txt_threading_arts[] = N_("Threading articles...");

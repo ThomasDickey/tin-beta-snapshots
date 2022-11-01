@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2022-10-13
+.\" Updated   : 2022-11-01
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -614,6 +614,9 @@ line. This will not be available if \fBtin\fP was started with the
 .B ToggleInverseVideo 'I'
 Toggle inverse video.
 .TP
+.B ConnectionInfo 'J'
+Show details about current connection.
+.TP
 .B LookupMessage 'L'
 Look up article by ''Message\-ID:''. If none of the groups listed in
 the ''Newsgroups:''-header of the referenced article is available, just the
@@ -838,6 +841,9 @@ line.
 .B ToggleInverseVideo 'I'
 Toggle inverse video.
 .TP
+.B ConnectionInfo 'J'
+Show details about current connection.
+.TP
 .B GroupMarkThdRead 'K'
 Mark article/thread as read and move onto the next unread article/thread. If
 a range of articles/threads is set, the range will be marked as read instead
@@ -1044,6 +1050,9 @@ Display the subject of the current article in the last line.
 .TP
 .B ToggleInverseVideo 'I'
 Toggle inverse video.
+.TP
+.B ConnectionInfo 'J'
+Show details about current connection.
 .TP
 .B ThreadMarkArtRead 'K'
 Mark article as read and move onto the next unread article. If a range
@@ -1273,6 +1282,9 @@ Display the subject of the current article in the last line.
 .TP
 .B ToggleInverseVideo 'I'
 Toggle inverse video.
+.TP
+.B ConnectionInfo 'J'
+Show details about current connection.
 .TP
 .B PageKillThd 'K'
 Mark rest of thread as read and move onto the next unread thread.
@@ -2680,10 +2692,14 @@ Setting this to 1 allows you to use
 .BR \%perl (1)
 compatible regular expressions
 .BR \%pcre (3)
+or
+.BR \%pcre2 (3)
 (see also
 .BR \%perlre (1)
 and
-.BR \%pcrepattern (3)).
+.BR \%pcrepattern (3)
+or
+.BR \%pcre2pattern (3)).
 You will probably want to update your filter file if you use this regularly.
 NB: Newsgroup names will always be matched using the
 .BR \%wildmat (3)
@@ -3365,7 +3381,6 @@ find ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \\
 .\"       $TMPDIR/SCOPES-R   (-D 32)
 .\"       $TMPDIR/SCOPES-W   (-D 32)
 .\"       $TMPDIR/ACTIVE     (-D 64)
-.\"       ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinmsglog
 For a detailed description see
 .BR \%tin (5).
 .PP
@@ -3466,12 +3481,17 @@ For a detailed description see
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER:${NNTPPORT:+":$NNTPPORT"}/newsgroups
+.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups
 .fi
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER:${NNTPPORT:+":$NNTPPORT"}/serverrc
+.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc
+.fi
+.PP
+
+.nf
+.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
 .fi
 .PP
 
@@ -3877,7 +3897,9 @@ does conform to the Base Definitions volume of IEEE Std 1003.1-2008, Section
 .SH NOTES
 .IX Header NOTES
 Regular expression support is provided by the PCRE library package
-.BR \%pcre (3),
+.BR \%pcre (3)
+or
+.BR \%pcre2 (3)
 which is open source software, written by Philip Hazel, and copyright \(co
 by the University of Cambridge, England.
 .br
@@ -3945,7 +3967,8 @@ for adding
 (Pretty Good Privacy) support.
 .IP "Philip Hazel <ph10@cam.ac.uk>"
 for
-.BR \%pcre (3)
+.BR \%pcre (3),
+.BR \%pcre2 (3)
 (Perl-compatible regular expression library).
 .IP "Patrick Powell <papowell@astart.com>"
 for
@@ -3994,7 +4017,9 @@ Urs Janssen <urs@tin.org>
 .BR \%iconv_open (3),
 .BR \%nl_langinfo (3),
 .BR \%pcre (3),
+.BR \%pcre2 (3),
 .BR \%pcrepattern (3),
+.BR \%pcre2pattern (3),
 .BR \%qsort (3),
 .BR \%snprintf (3),
 .BR \%strftime (3),

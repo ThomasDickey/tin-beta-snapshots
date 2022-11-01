@@ -1,4 +1,4 @@
-# Keymap file V1.0.10 for the TIN newsreader
+# Keymap file V1.0.11 for the TIN newsreader
 #
 # Sample keymap file
 # This file contains the default key mappings
@@ -19,6 +19,7 @@ CatchupNextUnread		C
 EditFilter			E
 ToggleHelpDisplay		H
 ToggleInverseVideo		I
+ConnectionInfo			J
 LookupMessage			L
 OptionMenu			M
 Postponed			O	^O

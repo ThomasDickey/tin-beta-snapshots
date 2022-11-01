@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-13
+ *  Updated   : 2022-10-27
  *  Notes     :
  *
  * Copyright (c) 1997-2022 Iain Lea <iain@bricbrac.de>
@@ -588,6 +588,7 @@ extern constext txt_confirm_select_on_exit[];
 #if defined(NNTP_ABLE) && !defined(INET6)
 	extern constext txt_connection_to[];
 #endif /* NNTP_ABLE && !INET6 */
+extern constext txt_connection_info[];
 extern constext txt_copyright_notice[];
 extern constext txt_cr[];
 extern constext txt_creating_active[];
@@ -941,6 +942,7 @@ extern constext txt_help_select_search_group_forwards[];
 extern constext txt_help_select_subscribe[];
 extern constext txt_help_select_subscribe_pattern[];
 extern constext txt_help_select_sync_with_active[];
+extern constext txt_help_global_connection_info[];
 extern constext txt_help_select_toggle_descriptions[];
 extern constext txt_help_select_toggle_read_groups[];
 extern constext txt_help_select_unsubscribe[];
@@ -1269,9 +1271,6 @@ extern constext txt_thread_upper[];
 extern constext txt_thread_com[];
 extern constext txt_thread_marked_as_deselected[];
 extern constext txt_thread_marked_as_selected[];
-#if 0 /* unused */
-	extern constext txt_thread_plural[];
-#endif /* 0 */
 extern constext txt_thread_singular[];
 extern constext txt_thread_x_of_n[];
 extern constext txt_threading_arts[];

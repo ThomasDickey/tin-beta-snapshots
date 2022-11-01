@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2021-02-25
+ *  Updated   : 2022-10-27
  *  Notes     :
  *
  * Copyright (c) 1999-2022 Jason Faultless <jason@altarstone.com>
@@ -185,6 +185,7 @@ enum defined_functions {
 	FILTER_SAVE,
 	GLOBAL_ABORT,
 	GLOBAL_BUGREPORT,
+	GLOBAL_CONNECTION_INFO,
 	GLOBAL_DISPLAY_POST_HISTORY,
 	GLOBAL_EDIT_FILTER,
 	GLOBAL_FIRST_PAGE,
