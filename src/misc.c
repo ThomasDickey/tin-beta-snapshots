@@ -4447,7 +4447,9 @@ make_connection_page(
 				fprintf(fp, "IMPLEMENTATION: %s\n", nntp_caps.implementation);
 
 			(void) nntp_conninfo(fp);
+#	if defined(NNTPS_ABLE)
 		}
+#	endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 	}
 #ifndef NNTP_ONLY

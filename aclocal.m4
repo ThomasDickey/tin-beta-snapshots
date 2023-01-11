@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2022-10-02
+dnl Updated   : 2022-01-10
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2022 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2023 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,6 @@ dnl ---------------------------------------------------------------------------
 dnl See
 dnl     https://invisible-island.net/autoconf/autoconf.html
 dnl     https://invisible-island.net/autoconf/my-autoconf.html
-dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
 dnl AC_ISC_POSIX version: 2 updated: 2002/04/17 21:09:56
@@ -1328,7 +1327,7 @@ fi
 AC_SUBST(ARFLAGS)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_BUILD_CC version: 10 updated: 2022/09/24 16:36:41
+dnl CF_BUILD_CC version: 11 updated: 2022/12/04 15:40:08
 dnl -----------
 dnl If we're cross-compiling, allow the user to override the tools and their
 dnl options.  The configure script is oriented toward identifying the host
@@ -1399,7 +1398,9 @@ if test "$cross_compiling" = yes ; then
 	cf_save_crossed=$cross_compiling
 	cf_save_ac_link=$ac_link
 	cross_compiling=no
-	ac_link='$BUILD_CC -o "conftest$ac_exeext" $BUILD_CFLAGS $BUILD_CPPFLAGS $BUILD_LDFLAGS "conftest.$ac_ext" $BUILD_LIBS >&AS_MESSAGE_LOG_FD'
+	cf_build_cppflags=$BUILD_CPPFLAGS
+	test "$cf_build_cppflags" = "#" && cf_build_cppflags=
+	ac_link='$BUILD_CC -o "conftest$ac_exeext" $BUILD_CFLAGS $cf_build_cppflags $BUILD_LDFLAGS "conftest.$ac_ext" $BUILD_LIBS >&AS_MESSAGE_LOG_FD'
 
 	AC_TRY_RUN([#include <stdio.h>
 		int main(int argc, char *argv[])
@@ -1498,7 +1499,7 @@ AC_SUBST(CAN_CPPFLAGS)
 AC_SUBST(CAN_MAKEFILE)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_BUNDLED_INTL version: 20 updated: 2021/01/02 09:31:20
+dnl CF_BUNDLED_INTL version: 21 updated: 2023/01/10 19:35:04
 dnl ---------------
 dnl Top-level macro for configuring an application with a bundled copy of
 dnl the intl and po directories for gettext.
@@ -1569,7 +1570,7 @@ CF_OUR_MESSAGES($1)
 if test "$USE_INCLUDED_LIBINTL" = yes ; then
 	if test "$nls_cv_force_use_gnu_gettext" = yes ; then
 		:
-	elif test "$nls_cv_use_gnu_gettext" = yes ; then
+	elif test "$nls_cv_use_gnu_gettext" != no ; then
 		:
 	else
 		INTLDIR_MAKE="#"
@@ -2196,10 +2197,12 @@ AC_DEFUN([CF_COREFILE],
 AC_MSG_CHECKING([if application can dump core])
 AC_CACHE_VAL(cf_cv_corefile,[
 	AC_TRY_RUN([
+$ac_includes_default
 #include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-int found()
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
+int found(void)
 {
 	struct stat sb;
 	return ((stat("core", &sb) == 0			/* UNIX */
@@ -2207,7 +2210,7 @@ int found()
 		)
 		&& ((sb.st_mode & S_IFMT) == S_IFREG));
 }
-int main()
+int main(void)
 {
 #ifdef __amiga__
 /* Nicholas d'Alterio (nagd@ic.ac.uk) reports that the check for ability to
@@ -2360,7 +2363,7 @@ if (foo + 1234L > 5678L)
 done
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_HEADER version: 5 updated: 2015/04/23 20:35:30
+dnl CF_CURSES_HEADER version: 6 updated: 2022/12/02 20:06:52
 dnl ----------------
 dnl Find a "curses" header file, e.g,. "curses.h", or one of the more common
 dnl variations of ncurses' installs.
@@ -2374,7 +2377,7 @@ for cf_header in \
 	curses.h ifelse($1,,,[$1/curses.h]) ifelse($1,,[ncurses/ncurses.h ncurses/curses.h])
 do
 AC_TRY_COMPILE([#include <${cf_header}>],
-	[initscr(); tgoto("?", 0,0)],
+	[initscr(); endwin()],
 	[cf_cv_ncurses_header=$cf_header; break],[])
 done
 ])
@@ -2387,7 +2390,7 @@ fi
 AC_CHECK_HEADERS($cf_cv_ncurses_header)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_LIBS version: 44 updated: 2021/01/02 09:31:20
+dnl CF_CURSES_LIBS version: 45 updated: 2022/12/02 20:06:52
 dnl --------------
 dnl Look for the curses libraries.  Older curses implementations may require
 dnl termcap/termlib to be linked as well.  Call CF_CURSES_CPPFLAGS first.
@@ -2396,7 +2399,7 @@ AC_DEFUN([CF_CURSES_LIBS],[
 AC_REQUIRE([CF_CURSES_CPPFLAGS])dnl
 AC_MSG_CHECKING(if we have identified curses libraries)
 AC_TRY_LINK([#include <${cf_cv_ncurses_header:-curses.h}>],
-	[initscr(); tgoto("?", 0,0)],
+	[initscr(); endwin()],
 	cf_result=yes,
 	cf_result=no)
 AC_MSG_RESULT($cf_result)
@@ -2497,7 +2500,7 @@ if test ".$ac_cv_func_initscr" != .yes ; then
 			elif test "$cf_term_lib" != predefined ; then
 				AC_MSG_CHECKING(if we need both $cf_curs_lib and $cf_term_lib libraries)
 				AC_TRY_LINK([#include <${cf_cv_ncurses_header:-curses.h}>],
-					[initscr(); tgoto((char *)0, 0, 0);],
+					[initscr(); endwin();],
 					[cf_result=no],
 					[
 					LIBS="-l$cf_curs_lib -l$cf_term_lib $cf_save_LIBS"
@@ -2517,7 +2520,7 @@ fi
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_TERMCAP version: 12 updated: 2015/05/15 19:42:24
+dnl CF_CURSES_TERMCAP version: 14 updated: 2023/01/09 20:20:18
 dnl -----------------
 dnl Check if we should include <curses.h> to pick up prototypes for termcap
 dnl functions.  On terminfo systems, these are normally declared in <curses.h>,
@@ -2542,10 +2545,13 @@ do
     CPPFLAGS="$cf_save_CPPFLAGS $CHECK_DECL_FLAG"
     test -n "$cf_c_opts" && CPPFLAGS="$CPPFLAGS -D$cf_c_opts"
     test -n "$cf_t_opts" && CPPFLAGS="$CPPFLAGS -D$cf_t_opts"
+	cf_tgoto_decl="
+	extern char *tgoto(char*,int,int);"
+	test -n "${cf_c_opts}${cf_t_opts}" && cf_tgoto_decl=
 
     AC_TRY_LINK([/* $cf_c_opts $cf_t_opts */
-$CHECK_DECL_HDRS],
-	[char *x = (char *)tgoto("")],
+$CHECK_DECL_HDRS $cf_tgoto_decl],
+	[char *x = tgoto(""); (void)x],
 	[test "$cf_cv_need_curses_h" = no && {
 	     cf_cv_need_curses_h=maybe
 	     cf_ok_c_opts=$cf_c_opts
@@ -2553,8 +2559,8 @@ $CHECK_DECL_HDRS],
 	}],
 	[echo "Recompiling with corrected call (C:$cf_c_opts, T:$cf_t_opts)" >&AC_FD_CC
 	AC_TRY_LINK([
-$CHECK_DECL_HDRS],
-	[char *x = (char *)tgoto("",0,0)],
+$CHECK_DECL_HDRS $cf_tgoto_decl],
+	[char *x = tgoto("",0,0); (void)x],
 	[cf_cv_need_curses_h=yes
 	 cf_ok_c_opts=$cf_c_opts
 	 cf_ok_t_opts=$cf_t_opts])])
@@ -3351,7 +3357,8 @@ AC_DEFUN([CF_FUNC_FORK],
 [AC_MSG_CHECKING([for fork])
 AC_CACHE_VAL(cf_cv_func_fork,[
 AC_TRY_RUN([
-int main()
+$ac_includes_default
+int main(void)
 {
 	if (fork() < 0)
 		${cf_cv_main_return:-return}(1);
@@ -3364,15 +3371,15 @@ AC_MSG_RESULT($cf_cv_func_fork)
 test $cf_cv_func_fork = yes && AC_DEFINE(HAVE_FORK)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_FUNC_GETADDRINFO version: 9 updated: 2017/05/10 18:31:29
+dnl CF_FUNC_GETADDRINFO version: 10 updated: 2023/01/05 18:06:22
 dnl -------------------
 dnl Look for a working version of getaddrinfo(), for IPV6 support.
 AC_DEFUN([CF_FUNC_GETADDRINFO],[
 AC_CACHE_CHECK(working getaddrinfo, cf_cv_getaddrinfo,[
 AC_TRY_RUN([
-#include <sys/types.h>
+$ac_includes_default
+
 #include <netdb.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
@@ -3455,7 +3462,7 @@ if test "$cf_cv_getaddrinfo" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_FUNC_MEMMOVE version: 9 updated: 2017/01/21 11:06:25
+dnl CF_FUNC_MEMMOVE version: 10 updated: 2023/01/05 18:51:28
 dnl ---------------
 dnl Check for memmove, or a bcopy that can handle overlapping copy.  If neither
 dnl is found, add our own version of memmove to the list of objects.
@@ -3465,6 +3472,8 @@ AC_CHECK_FUNC(memmove,,[
 AC_CHECK_FUNC(bcopy,[
 	AC_CACHE_CHECK(if bcopy does overlapping moves,cf_cv_good_bcopy,[
 		AC_TRY_RUN([
+$ac_includes_default
+
 int main(void) {
 	static char data[] = "abcdefghijklmnopqrstuwwxyz";
 	char temp[40];
@@ -3486,7 +3495,7 @@ int main(void) {
 	fi
 ])])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_FUNC_SYSTEM version: 6 updated: 2019/12/31 20:39:42
+dnl CF_FUNC_SYSTEM version: 7 updated: 2022/12/21 18:52:11
 dnl --------------
 dnl Check if the 'system()' function returns a usable status, or if not, try
 dnl to use the status returned by a SIGCHLD.
@@ -3496,7 +3505,8 @@ AC_REQUIRE([CF_UNION_WAIT])
 AC_MSG_CHECKING(if the system function returns usable child-status)
 AC_CACHE_VAL(cf_cv_system_status,[
 	AC_TRY_RUN([
-#include <stdio.h>
+$ac_includes_default
+
 #include <signal.h>
 #if HAVE_SYS_WAIT_H
 #include <sys/wait.h>
@@ -3515,7 +3525,7 @@ RETSIGTYPE signal_handler (int sig)
 	${cf_cv_main_return:-return}(system_status != 23);
 }
 
-int main()
+int main(void)
 {
 	/* this looks weird, but apparently the SIGCHLD gets there first on
 	 * machines where 'system()' doesn't return a usable code, so ...
@@ -3526,8 +3536,10 @@ int main()
 }
 ],
 	[cf_cv_system_status=no],
-	[AC_TRY_RUN(
-	[int main() { ${cf_cv_main_return:-return}(system("exit 23") != (23 << 8)); }],
+	[AC_TRY_RUN([
+$ac_includes_default
+
+int main(void) { ${cf_cv_main_return:-return}(system("exit 23") != (23 << 8)); }],
 	[cf_cv_system_status=yes],
 	[cf_cv_system_status=unknown],
 	[cf_cv_system_status=unknown])],
@@ -4429,7 +4441,7 @@ CF_UPPER(cf_nculib_ROOT,HAVE_LIB$cf_nculib_root)
 AC_DEFINE_UNQUOTED($cf_nculib_ROOT)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_VERSION version: 16 updated: 2020/12/31 20:19:42
+dnl CF_NCURSES_VERSION version: 17 updated: 2023/01/05 18:54:02
 dnl ------------------
 dnl Check for the version of ncurses, to aid in reporting bugs, etc.
 dnl Call CF_CURSES_CPPFLAGS first, or CF_NCURSES_CPPFLAGS.  We don't use
@@ -4442,8 +4454,10 @@ AC_CACHE_CHECK(for ncurses version, cf_cv_ncurses_version,[
 	cf_tempfile=out$$
 	rm -f "$cf_tempfile"
 	AC_TRY_RUN([
+$ac_includes_default
+
 #include <${cf_cv_ncurses_header:-curses.h}>
-#include <stdio.h>
+
 int main(void)
 {
 	FILE *fp = fopen("$cf_tempfile", "w");
@@ -5100,7 +5114,7 @@ AC_MSG_RESULT($ac_cv_prog_sum_r)
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PROG_YACC version: 2 updated: 1997/12/16 11:20:41
+dnl CF_PROG_YACC version: 3 updated: 2022/12/21 19:22:20
 dnl ------------
 dnl A better version of AC_PROC_YACC, verifies that we'll only choose bison if
 dnl we'll be able to compile with it.  Bison uses alloca, which isn't all that
@@ -5114,15 +5128,17 @@ if test -n "$YACC" ; then
 else
 cat >conftest.y <<EOF
 %{
-void yyerror(s) char *s; { }
+int yylex(void);
+void yyerror(const char *s);
+void yyerror(const char *s) { (void)s; }
 %}
 %token	NUMBER
 %%
 time	: NUMBER ':' NUMBER
 	;
 %%
-int yylex() { return NUMBER; }
-int main() { return yyparse(); }
+int yylex(void) { return NUMBER; }
+int main(void) { return yyparse(); }
 EOF
   for cf_prog in 'bison -y' byacc yacc
   do
@@ -5348,7 +5364,7 @@ AC_MSG_RESULT($cf_cv_sig_args)
 AC_DEFINE_UNQUOTED(SIG_ARGS,$cf_cv_sig_args,[Define this to 1 if signal handlers are prototyped with more than one argument])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SIG_CONST version: 5 updated: 2019/12/31 20:39:42
+dnl CF_SIG_CONST version: 6 updated: 2022/12/21 18:53:00
 dnl ------------
 dnl Check for systems where the special signal constants aren't prototyped
 dnl (there's a lot of them, and the compiler can generate a lot of warning
@@ -5368,7 +5384,7 @@ if test -n "$cf_cv_sig_args"; then
 
 #include <signal.h>
 
-int main()
+int main(void)
 {
 	if (NEW_DFL != SIG_DFL
 	 || NEW_IGN != SIG_IGN
@@ -5677,7 +5693,7 @@ AC_MSG_RESULT($cf_cv_sys_select_timeval)
 test $cf_cv_sys_select_timeval = yes && AC_DEFINE(NEED_TIMEVAL_FIX,1,[Define this to 1 if sys/time.h conflicts with sys/select.h])
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_TERMCAP_LIBS version: 15 updated: 2015/04/15 19:08:48
+dnl CF_TERMCAP_LIBS version: 17 updated: 2022/12/21 19:42:05
 dnl ---------------
 dnl Look for termcap libraries, or the equivalent in terminfo.
 dnl
@@ -5686,8 +5702,12 @@ AC_DEFUN([CF_TERMCAP_LIBS],
 [
 AC_CACHE_VAL(cf_cv_termlib,[
 cf_cv_termlib=none
-AC_TRY_LINK([],[char *x=(char*)tgoto("",0,0)],
-[AC_TRY_LINK([],[int x=tigetstr("")],
+AC_TRY_LINK(
+	[extern char *tgoto(const char*,int,int);],
+	[char *x=tgoto("",0,0); (void)x;],
+[AC_TRY_LINK(
+	[extern char *tigetstr(const char *);],
+	[char *x=tigetstr(""); (void)x;],
 	[cf_cv_termlib=terminfo],
 	[cf_cv_termlib=termcap])
 	CF_VERBOSE(using functions in predefined $cf_cv_termlib LIBS)
@@ -5710,7 +5730,11 @@ if test "$cf_cv_termlib" = none; then
 		for cf_func in tigetstr tgetstr
 		do
 			AC_MSG_CHECKING(for $cf_func in -l$cf_lib)
-			AC_TRY_LINK([],[int x=$cf_func("")],[cf_result=yes],[cf_result=no])
+			AC_TRY_LINK(
+				[extern char *$cf_func(const char *);],
+				[int x=$cf_func(""); (void)x],
+				[cf_result=yes],
+				[cf_result=no])
 			AC_MSG_RESULT($cf_result)
 			if test "$cf_result" = yes ; then
 				if test "$cf_func" = tigetstr ; then
@@ -5817,7 +5841,7 @@ ncursesw/term.h)
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_TIOCGWINSZ version: 6 updated: 2019/12/31 20:39:42
+dnl CF_TIOCGWINSZ version: 7 updated: 2022/12/21 18:53:11
 dnl -------------
 dnl On some systems ioctl(fd, TIOCGWINSZ, &size) will always return {0,0} until
 dnl ioctl(fd, TIOCSWINSZ, &size) is called to explicitly set the size of the
@@ -5836,7 +5860,7 @@ AC_CACHE_VAL(cf_cv_use_tiocgwinsz,[
 	CFLAGS="$CFLAGS -D__CPROTO__ $CHECK_DECL_FLAG"
 	AC_TRY_RUN([
 $CHECK_DECL_HDRS
-int main()
+int main(void)
 {
 	int fd;
 	for (fd = 0; fd <= 2; fd++) {	/* try in/out/err in case redirected */
@@ -6488,7 +6512,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 62 updated: 2022/10/02 19:55:56
+dnl CF_XOPEN_SOURCE version: 63 updated: 2022/12/29 10:10:26
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality,
@@ -6591,10 +6615,12 @@ sysv4.2uw2.*) # Novell/SCO UnixWare 2.x (tested on 2.1.2)
 	cf_save_xopen_cppflags="$CPPFLAGS"
 	CF_POSIX_C_SOURCE($cf_POSIX_C_SOURCE)
 	# Some of these niche implementations use copy/paste, double-check...
-	CF_VERBOSE(checking if _POSIX_C_SOURCE inteferes)
-	AC_TRY_COMPILE(CF__XOPEN_SOURCE_HEAD,CF__XOPEN_SOURCE_BODY,,[
-		AC_MSG_WARN(_POSIX_C_SOURCE definition is not usable)
-		CPPFLAGS="$cf_save_xopen_cppflags"])
+	if test "$cf_cv_xopen_source" != no ; then
+		CF_VERBOSE(checking if _POSIX_C_SOURCE inteferes)
+		AC_TRY_COMPILE(CF__XOPEN_SOURCE_HEAD,CF__XOPEN_SOURCE_BODY,,[
+			AC_MSG_WARN(_POSIX_C_SOURCE definition is not usable)
+			CPPFLAGS="$cf_save_xopen_cppflags"])
+	fi
 	;;
 esac
 

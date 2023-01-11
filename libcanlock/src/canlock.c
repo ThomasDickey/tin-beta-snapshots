@@ -88,8 +88,7 @@ static char *my_strdup(const char *s)
    res = (char *) malloc(len + (size_t) 1);
    if (NULL != res)
    {
-      strncpy(res, s, len);
-      res[len] = 0;
+      strcpy(res, s);
    }
 
    return res;

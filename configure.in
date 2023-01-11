@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2022-09-19
+dnl Updated   : 2023-01-10
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2021 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2023 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -91,13 +91,17 @@ AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 CF_PROG_YACC
 AC_CHECK_PROGS(LINT, lint alint lclint tdlint splint, :)
-CF_XOPEN_SOURCE
-CF_SIGWINCH
 CF_PROG_EXT
 CF_LIB_PREFIX(LIB_PREFIX)
 AC_PROG_LN_S
 
 CF_BUILD_CC([-I$(INCDIR)],[])
+
+#### initialize $ac_includes_default
+AC_CHECK_DECL(exit)
+
+CF_XOPEN_SOURCE
+CF_SIGWINCH
 
 dnl These are standard among *NIX systems, but not when cross-compiling
 AC_CHECK_TOOL(RANLIB, ranlib, ':')
