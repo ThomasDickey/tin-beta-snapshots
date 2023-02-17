@@ -3,9 +3,9 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2022-10-31
+ *  Updated   : 2022-12-14
  *  Notes     : simple abstraction for various TLS implementations
- *  Copyright : (c) Copyright 2022 Enrik Berkhan <Enrik.Berkhan@inka.de>
+ *  Copyright : (c) Copyright 2022-2023 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
  *              or otherwise use this software  as long as: there is no
  *              monetary  profit  gained  specifically  from the use or
@@ -41,8 +41,8 @@ static SSL_CTX *openssl_ctx = NULL;
 #endif /* USE_LIBTLS */
 
 #ifdef USE_GNUTLS
-#	ifdef DEBUG
 static int verification_func(gnutls_session_t session);
+#	ifdef DEBUG
 static void log_func(int level, const char *msg);
 #	endif /* DEBUG */
 #else
@@ -697,6 +697,9 @@ tintls_close(
 }
 
 
+/*
+ * TODO: -> lang.c
+ */
 int
 tintls_conninfo(
 	void *session_ctx,
@@ -710,26 +713,26 @@ tintls_conninfo(
 	char fmt_time[64]; /* time zone name could long... */
 
 	fprintf(fp, "\nTLS information:\n");
-	fprintf(fp,   "----------------\n");
+	fprintf(fp, "----------------\n");
 	fprintf(fp, "%s %s (strength %d)\n", tls_conn_version(client), tls_conn_cipher(client), tls_conn_cipher_strength(client));
 	fprintf(fp, "\nServer certificate information:\n");
-	fprintf(fp,   "-------------------------------\n");
+	fprintf(fp, "-------------------------------\n");
 	fprintf(fp, "Subject: %s\n", tls_peer_cert_subject(client));
-	fprintf(fp, "Issuer:  %s\n", tls_peer_cert_issuer(client));
+	fprintf(fp, "Issuer : %s\n", tls_peer_cert_issuer(client));
 
 	t = tls_peer_cert_notbefore(client);
 	tm = localtime(&t);
 	result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm); /* make format configurable? */
 	if (result < 0)
 		my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
-	fprintf(fp, "Valid not before: %s\n", fmt_time);
+	fprintf(fp, txt_valid_not_before, fmt_time);
 
 	t = tls_peer_cert_notafter(client);
 	tm = localtime(&t);
 	result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm);
 	if (result < 0)
 		my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
-	fprintf(fp, "Valid not after:  %s\n", fmt_time);
+	fprintf(fp, txt_valid_not_after, fmt_time);
 
 	return 0;
 #else
@@ -749,7 +752,7 @@ tintls_conninfo(
 
 	desc = gnutls_session_get_desc(client);
 	fprintf(fp, "\nTLS information:\n");
-	fprintf(fp,   "----------------\n");
+	fprintf(fp, "----------------\n");
 	fprintf(fp, "%s\n", desc);
 	gnutls_free(desc);
 
@@ -773,7 +776,7 @@ tintls_conninfo(
 	raw_servercert_chain = gnutls_certificate_get_peers(client, &servercert_chainlen);
 	if (servercert_chainlen > 0) {
 		fprintf(fp, "\nServer certificate information:\n");
-		fprintf(fp,   "-------------------------------\n");
+		fprintf(fp, "-------------------------------\n");
 	}
 
 	for (i = 0; i < servercert_chainlen; i++) {
@@ -805,7 +808,7 @@ tintls_conninfo(
 		if (result < 0) {
 			goto err_cert;
 		}
-		fprintf(fp, "Issuer:  %s\n", issuer.data);
+		fprintf(fp, "Issuer : %s\n", issuer.data);
 
 		t = gnutls_x509_crt_get_activation_time(servercert);
 		if (t == -1) {
@@ -815,7 +818,7 @@ tintls_conninfo(
 		result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm); /* make format configurable? */
 		if (result < 0)
 			my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
-		fprintf(fp, "Valid not before: %s\n", fmt_time);
+		fprintf(fp, txt_valid_not_before, fmt_time);
 
 		t = gnutls_x509_crt_get_expiration_time(servercert);
 		if (t == -1) {
@@ -825,7 +828,7 @@ tintls_conninfo(
 		result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm);
 		if (result < 0)
 			my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
-		fprintf(fp, "Valid not after:  %s\n", fmt_time);
+		fprintf(fp, txt_valid_not_after, fmt_time);
 
 		retval = 0;
 
@@ -855,7 +858,7 @@ err_cert:
 		return -1;
 
 	fprintf(fp, "\nTLS information:\n");
-	fprintf(fp,   "----------------\n");
+	fprintf(fp, "----------------\n");
 	fprintf(fp, "%s %s\n", SSL_get_version(ssl), SSL_get_cipher_name(ssl));
 
 	verification_result = SSL_get_verify_result(ssl);
@@ -867,7 +870,7 @@ err_cert:
 		fprintf(fp, "Server certificate verified successfully.\n");
 
 	fprintf(fp, "\nServer certificate information:\n");
-	fprintf(fp,   "-------------------------------\n");
+	fprintf(fp, "-------------------------------\n");
 
 	if (verification_result == X509_V_OK)
 		chain = SSL_get_peer_cert_chain(ssl);
@@ -887,7 +890,7 @@ err_cert:
 				fputs("\n", fp);
 			fprintf(fp, "Certificate #%d\n", i);
 			fprintf(fp, "Subject: %s\n", X509_NAME_oneline(X509_get_subject_name(cert), name, sizeof(name)));
-			fprintf(fp, "Issuer:  %s\n", X509_NAME_oneline(X509_get_issuer_name(cert), name, sizeof(name)));
+			fprintf(fp, "Issuer : %s\n", X509_NAME_oneline(X509_get_issuer_name(cert), name, sizeof(name)));
 
 			asn1 = X509_get0_notBefore(cert);
 			result = ASN1_TIME_to_tm(asn1, &tm);
@@ -895,7 +898,7 @@ err_cert:
 				result = my_strftime(name, sizeof(name), "%Y-%m-%dT%H:%M%z", &tm); /* make format configurable? */
 				if (result < 0)
 					my_strncpy(name, "<formatting error>", sizeof(name) - 1);
-				fprintf(fp, "Valid not before: %s\n", name);
+				fprintf(fp, txt_valid_not_before, name);
 			}
 
 			asn1 = X509_get0_notAfter(cert);
@@ -904,7 +907,7 @@ err_cert:
 				result = my_strftime(name, sizeof(name), "%Y-%m-%dT%H:%M%z", &tm);
 				if (result < 0)
 					my_strncpy(name, "<formatting error>", sizeof(name) - 1);
-				fprintf(fp, "Valid not after:  %s\n", name);
+				fprintf(fp, txt_valid_not_after, name);
 			}
 		}
 	}
@@ -930,8 +933,7 @@ show_errors(
 #endif /* USE_OPENSSL */
 
 
-#ifdef DEBUG
-#	ifdef USE_GNUTLS
+#ifdef USE_GNUTLS
 static int
 verification_func(
 	gnutls_session_t session)
@@ -950,7 +952,11 @@ verification_func(
 
 	return gnutls_verification_status;
 }
+#endif /* USE_GNUTLS */
 
+
+#ifdef DEBUG
+#	ifdef USE_GNUTLS
 static void
 log_func(
 	int level,

@@ -3,11 +3,11 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2022-06-16
+ *  Updated   : 2023-02-06
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2022 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 1997-2023 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -125,13 +125,27 @@ read_newsauth_file(
 			/* Get server from 1st part of the line */
 			ptr = strpbrk(line, " \t");
 
-			if (ptr == NULL)		/* no passwd, no auth, skip */
+			if (ptr == NULL || *line == '#')		/* comment or no passwd, no auth, skip */
 				continue;
 
 			*ptr++ = '\0';		/* cut off server part */
 
-			if ((strcasecmp(line, server)))
-				continue;		/* wrong server, keep on */
+			/* allow ":port" suffix in .newsauth - no IPv6-address support yet */
+			{
+				char *p;
+				char hn[262];
+
+				if ((p = strchr(line, ':')) != NULL) {
+					if (strrchr(line, ':') == p) {
+						snprintf(hn, 262, "%s:%u", server, nntp_tcp_port);
+						if ((strcasecmp(line, hn)))
+							continue;
+					}
+				} else {
+					if ((strcasecmp(line, server)))
+						continue;
+				}
+			}
 
 			/* Get password from 2nd part of the line */
 			while (*ptr == ' ' || *ptr == '\t')
@@ -184,11 +198,10 @@ do_authinfo_user(
 	char *authuser,
 	char *authpass)
 {
-	char line[PATH_LEN];
+	char line[NNTP_STRLEN];
 	int ret;
 
-	/* may violate RFC 3977 3.1; use MIN(NNTP_STRLEN, sizeof(line)) ? */
-	snprintf(line, sizeof(line), "AUTHINFO USER %s", authuser);
+	snprintf(line, sizeof(line), "AUTHINFO USER %.497s", authuser); /* RFC 3977 3.1 */
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "authorization %s", line);
@@ -206,8 +219,7 @@ do_authinfo_user(
 		return ERR_AUTHBAD;
 	}
 
-	/* may violate RFC 3977 3.1; use MIN(NNTP_STRLEN, sizeof(line)) ? */
-	snprintf(line, sizeof(line), "AUTHINFO PASS %s", authpass);
+	snprintf(line, sizeof(line), "AUTHINFO PASS %.497s", authpass); /* RFC 3977 3.1 */
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "authorization %s", line);

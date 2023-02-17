@@ -6,7 +6,7 @@
  *  Updated   : 2022-09-19
  *  Notes     :
  *
- * Copyright (c) 1999-2022 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2023 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

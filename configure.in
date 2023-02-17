@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2023-01-10
+dnl Updated   : 2023-01-24
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2023 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.6.2
+VERSION=2.6.3
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Define this to the package name])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define this to the package version])
 AC_SUBST(PACKAGE)
@@ -783,23 +783,108 @@ AC_ARG_WITH(
 	[enable_nntps="no"])
 AC_MSG_RESULT($enable_nntps)
 
-# Todo: check versions
+# Todo: checklib for openssl in non pkg-config case
+#       version checking in non pkg-config case for openssl
+#       cleanup (duplicate code, messages, forating, ...)
 AS_IF([test "$enable_nntps" != "no"],
-      [AS_IF([test "$enable_nntps" = "yes" || test "$enable_nntps" = "libtls"],
-             [CF_TRY_PKG_CONFIG([libtls],[have_libtls=yes],[have_libtls=no])])
-       AS_IF([test "$enable_nntps" = "yes" && test "$have_libtls" = "no" || test "$enable_nntps" = "openssl"],
-             [CF_TRY_PKG_CONFIG([openssl],[have_openssl=yes],[have_openssl=no])])
-       AS_IF([test "$enable_nntps" = "yes" && test "$have_libtls" = "no" && test "$have_openssl" = "no" || test "$enable_nntps" = "gnutls"],
-             [CF_TRY_PKG_CONFIG([gnutls],[have_gnutls=yes],[have_gnutls=no])])
 
-       AS_IF([test "$have_libtls" != "yes" && test "$have_openssl" != "yes" && test "$have_gnutls" != "yes"],
-             [AC_MSG_ERROR([You requested NNTPS support but no usable TLS implementation was found])],
-             [AC_DEFINE(NNTPS_ABLE,1,[Define to 1 to enable NNTPS support])
-             AS_IF([test "$have_libtls" = "yes"],
-                   [AC_DEFINE(HAVE_LIB_LIBTLS,1,[Define to 1 if we can/should compile with the LibreSSL libtls library])],
-                    [AS_IF([test "$have_openssl" = "yes"],
-                           [AC_DEFINE(HAVE_LIB_OPENSSL,1,[Define to 1 if we can/should compile with the OpenSSL libraries])],
-                           [AC_DEFINE(HAVE_LIB_GNUTLS,1,[Define to 1 if we can/should compile with the GNUTLS library])])])])])
+	[AS_IF([test "$enable_nntps" = "yes" || test "$enable_nntps" = "libtls"],[
+AC_MSG_CHECKING(for LibreSSL)
+CF_TRY_PKG_CONFIG([libtls],[
+AC_TRY_COMPILE([
+#include <tls.h>
+],[
+#if TLS_API < 20200120
+#error "Please use LibreSSL TLS_API >= 20200120"
+#endif /* TLS_API < 20200120 */
+],[have_libtls=yes],[
+have_libtls=no
+AC_MSG_RESULT([\tLibreSSL TLS_API too old (< 20200120)])
+])],[
+AC_CHECK_LIB(tls,tls_config_new,[
+AC_CHECK_HEADERS(tls.h,[
+AC_TRY_COMPILE([
+#include <tls.h>
+],[
+#if TLS_API < 20200120
+#error "Please use LibreSSL TLS_API >= 20200120"
+#endif /* TLS_API < 20200120 */
+],[
+LIBS="$LIBS -ltls"
+have_libtls=yes
+],[have_libtls=no
+AC_MSG_RESULT([\tLibreSSL TLS_API too old (< 20200120)])
+])
+],[have_libtls=no])
+],[
+have_libtls=no
+AC_MSG_RESULT($have_libtls)
+])])])
+
+	AS_IF([test "$enable_nntps" = "yes" && test "$have_libtls" = "no" || test "$enable_nntps" = "openssl"],[
+AC_MSG_CHECKING(for OpenSSL)
+CF_TRY_PKG_CONFIG([openssl],[
+AC_TRY_COMPILE([
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/rand.h>
+],[
+#if OPENSSL_VERSION_NUMBER < 0x1010100fL
+#error "Please use OpenSSL >= 1.1.1"
+#endif /* OPENSSL_VERSION_NUMBER < 0x1010100fL */
+#if defined(LIBRESSL_VERSION_NUMBER)
+#error "Please use real OpenSSL >= 1.1.1"
+#endif /* LIBRESSL pretending to be OPENSSL */
+],[have_openssl=yes],[
+have_openssl=no
+AC_MSG_RESULT([\tOpenSSL too old (< 1.1.1)])
+])],[
+have_openssl=no
+AC_MSG_RESULT($have_openssl)
+])])
+
+	AS_IF([test "$enable_nntps" = "yes" && test "$have_libtls" = "no" && test "$have_openssl" = "no" || test "$enable_nntps" = "gnutls"],[
+AC_MSG_CHECKING(for GnuTLS)
+CF_TRY_PKG_CONFIG([gnutls],[
+AC_TRY_COMPILE([
+#include <gnutls/gnutls.h>
+#include <gnutls/x509.h>
+],[
+#if GNUTLS_VERSION_NUMBER < 0x030700
+#error "Please use GnuTLS >= 3.7.0"
+#endif /* GNUTLS_VERSION_NUMBER < 0x030700 */
+],[have_gnutls=yes],[
+AC_MSG_RESULT([\tGnuTLS too old (< 3.7.0)])
+])],[
+AC_CHECK_LIB(gnutls,gnutls_certificate_allocate_credentials,[
+AC_CHECK_HEADERS(gnutls/gnutls.h gnutls/x509.h,[
+AC_TRY_COMPILE([
+#include <gnutls/gnutls.h>
+#include <gnutls/x509.h>
+],[
+#if GNUTLS_VERSION_NUMBER < 0x030700
+#error "Please use GnuTLS >= 3.7.0"
+#endif /* GNUTLS_VERSION_NUMBER < 0x030700 */
+],[
+LIBS="$LIBS -lgnutls"
+have_gnutls=yes
+],[have_gnutls=no
+AC_MSG_RESULT([\tGnuTLS too old (< 3.7.0)])
+])
+],[have_gnutls=no])
+],[
+have_gnutls=no=no
+AC_MSG_RESULT($have_gnutls)
+])])])
+
+	AS_IF([test "$have_libtls" != "yes" && test "$have_openssl" != "yes" && test "$have_gnutls" != "yes"],
+		[AC_MSG_ERROR([You requested NNTPS support but no usable TLS implementation was found])],
+		[AC_DEFINE(NNTPS_ABLE,1,[Define to 1 to enable NNTPS support])
+		AS_IF([test "$have_libtls" = "yes"],
+			[AC_DEFINE(HAVE_LIB_LIBTLS,1,[Define to 1 if we can/should compile with the LibreSSL libtls library])],
+			[AS_IF([test "$have_openssl" = "yes"],
+				[AC_DEFINE(HAVE_LIB_OPENSSL,1,[Define to 1 if we can/should compile with the OpenSSL libraries])],
+				[AC_DEFINE(HAVE_LIB_GNUTLS,1,[Define to 1 if we can/should compile with the GNUTLS library])])])])])
 fi
 
 ### checks for operator characteristics (should be the last option)
@@ -1567,7 +1652,7 @@ int main() {
 )
 
 # toupper is known to be broken on 4.2BSD by
-# not checking if input is an lowercase letter
+# not checking if input is a lowercase letter
 # /* #define toupper(c)	((c)-'a'+'A') */
 AC_MSG_CHECKING(for working toupper())
 AC_TRY_RUN([

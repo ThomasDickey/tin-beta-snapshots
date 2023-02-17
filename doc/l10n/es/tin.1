@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2022-11-01
+.\" Updated   : 2023-02-01
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -15,7 +15,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24 diciembre 2021" 2.6.2 "Usenet newsreader"
+.TH tin 1 "24 diciembre 2022" 2.6.3 "Usenet newsreader"
 .\"
 .\"
 .SH NOMBRE
@@ -80,11 +80,11 @@ Error NNTP
 .TP  12
 \fB\-4\fP
 Force connecting via IPv4 to the remote NNTP server. Only available when
-build with IPv6 support.
+built with IPv6 support.
 .TP 
 \fB\-6\fP
 Force connecting via IPv6 to the remote NNTP server. Only available when
-build with IPv6 support.
+built with IPv6 support.
 .TP 
 \fB\-a\fP
 Toggle ANSI color (default is off).
@@ -207,7 +207,8 @@ Save unread articles for later reading by the \*(rq\fB\-R\fP\*(rq option. For mo
 information read section "AUTOMATIC MAILING AND SAVING NEW NEWS".
 .TP 
 \fB\-T\fP
-Enable NNTPS (NNTP over TLS). Only available when reading via NNTP.
+Enable NNTPS (NNTP over TLS). This also overrides the environment variable
+$\fBNNTPPORT\fP if set. Only available when reading via NNTP.
 .TP 
 \fB\-u\fP
 Create/update index files for every group in
@@ -221,7 +222,7 @@ Verbose mode for \*(rq\fB\-c\fP\*(rq, \*(rq\fB\-D\fP\*(rq, \*(rq\fB\-M\fP\*(rq, 
 verbosity.
 .TP 
 \fB\-V\fP
-Print version and date information.
+Print version information and compilation options.
 .TP 
 \fB\-w\fP
 Quick mode to post an article and then exit. This option implies
@@ -1454,7 +1455,7 @@ Note that this requires that the \*(rqMessage\-ID:\*(rq of the article was recor
 in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP which may not always be the case.
 If using NNTP and the internal inews (\fBinews_prog\fP set to "\-\-internal")
 and either the server proposes a \*(rqMessage\-ID:\*(rq during the POST
-(\fBRFC\%3977\fP) command or \fBtin\fP is build to generate \*(rqMessage\-ID:\*(rq this
+(\fBRFC\%3977\fP) command or \fBtin\fP is built to generate \*(rqMessage\-ID:\*(rq this
 should be the case. With an external inews (and reading from local spool) it
 is not.
 .TP 
@@ -1605,7 +1606,7 @@ considerably speed up accessing large groups when using a slow connection.
 See also "INDEX FILES". Default is OFF.
 .TP 
 \fBHash algorithm for cancel\-locks (cancel_lock_algo)\fP
-Use this hash algorithm for cancel\-locks. Only available when build with
+Use this hash algorithm for cancel\-locks. Only available when built with
 cancel\-lock support. none disables the generation of cancel\-locks. Valid
 values are none, sha1, sha256 and sha512.  Default is sha1.
 .TP 
@@ -1745,22 +1746,22 @@ OFF=apply to current group. Default is ON.
 \fB(default_filter_kill_header)\fP
 Default for quick (1 key) kill filter header.
 .RS +.5i
-.IP 0 4
- \*(rqSubject:\*(rq (case sensitive)
+.IP 0 3
+\%\*(rqSubject:\*(rq (case sensitive)
 .IP 1
- \*(rqSubject:\*(rq (ignore case)
+\%\*(rqSubject:\*(rq (ignore case)
 .IP 2
- \*(rqFrom:\*(rq (case sensitive)
+\%\*(rqFrom:\*(rq (case sensitive)
 .IP 3
- \*(rqFrom:\*(rq (ignore case)
+\%\*(rqFrom:\*(rq (ignore case)
 .IP 4
- \*(rqMessage\-ID:\*(rq & full \*(rqReferences:\*(rq line
+\%\*(rqMessage\-ID:\*(rq & full \*(rqReferences:\*(rq line
 .IP 5
- \*(rqMessage\-ID:\*(rq & last \*(rqReferences:\*(rq entry only
+\%\*(rqMessage\-ID:\*(rq & last \*(rqReferences:\*(rq entry only
 .IP 6
- \*(rqMessage\-ID:\*(rq entry only
+\%\*(rqMessage\-ID:\*(rq entry only
 .IP 7
- \*(rqLines:\*(rq
+\%\*(rqLines:\*(rq
 .RE
 .TP 
 \fB(default_filter_select_case)\fP
@@ -1778,22 +1779,22 @@ groups, OFF=apply to current group. Default is ON.
 \fB(default_filter_select_header)\fP
 Default for quick (1 key) auto\-selection filter header.
 .RS +.5i
-.IP 0 4
- \*(rqSubject:\*(rq (case sensitive)
+.IP 0 3
+\%\*(rqSubject:\*(rq (case sensitive)
 .IP 1
- \*(rqSubject:\*(rq (ignore case)
+\%\*(rqSubject:\*(rq (ignore case)
 .IP 2
- \*(rqFrom:\*(rq (case sensitive)
+\%\*(rqFrom:\*(rq (case sensitive)
 .IP 3
- \*(rqFrom:\*(rq (ignore case)
+\%\*(rqFrom:\*(rq (ignore case)
 .IP 4
- \*(rqMessage\-ID:\*(rq & full \*(rqReferences:\*(rq line
+\%\*(rqMessage\-ID:\*(rq & full \*(rqReferences:\*(rq line
 .IP 5
- \*(rqMessage\-ID:\*(rq & last \*(rqReferences:\*(rq entry only
+\%\*(rqMessage\-ID:\*(rq & last \*(rqReferences:\*(rq entry only
 .IP 6
- \*(rqMessage\-ID:\*(rq entry only
+\%\*(rqMessage\-ID:\*(rq entry only
 .IP 7
- \*(rqLines:\*(rq
+\%\*(rqLines:\*(rq
 .RE
 .TP 
 \fB(default_goto_group)\fP
@@ -2272,7 +2273,7 @@ If ON show a short group description text after newsgroup name at the group
 selection level. The \*(rq\fB\-d\fP\*(rq command\-line flag will override the setting
 and turn descriptions off. The text used is taken from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups\fP file and if supported (requires
-\fBtin\fP to be build with mh\-mail\-handling support) from
+\fBtin\fP to be built with mh\-mail\-handling support) from
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups\fP for mailgroups. Default is ON.
 .TP 
 \fBFunction for sorting articles (sort_function)\fP
@@ -3450,8 +3451,8 @@ overrides $\fBNNTPSERVER\fP.
 .TP 
 \fBNNTPPORT\fP
 The NNTP TCP\-port to read news from. This variable only needs to be set if
-the TCP\-port is not 119 (the default).  The \*(rq\fB\-p\fP\*(rq command\-line option
-overrides $\fBNNTPPORT\fP.
+the TCP\-port is not 119 (the default). The \*(rq\fB\-p\fP\*(rq and \*(rq\fB\-T\fP\*(rq
+command\-line options do override $\fBNNTPPORT\fP.
 .TP 
 \fBDISTRIBUTION\fP
 Set the article header field \*(rqDistribution:\*(rq to the contents of the
@@ -3591,37 +3592,37 @@ This variable determines the \fB\%locale\fP(5)  category for character handling
 functions. Usually it determines the character classes for pattern matching
 character classification and case conversion. Currently this is not true for
 \fBtin\fP (which temporary unsets \fB$LC_CTYPE\fP right before any match is done
-to avoid confusion).  It's value should be of the form
+to avoid confusion).  Its value should be of the form
 \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fB\%environ\fP(5)
 for more information.
 .TP 
 \fBLC_MESSAGES\fP
 Formats of informative and diagnostic messages and interactive responses.
-It's value should be of the form
+Its value should be of the form
 \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fB\%locale\fP(5)
 and \fB\%environ\fP(5)  for more information.
 .TP 
 \fBLC_TIME\fP
-Date and time formats. It's value should be of the form
+Date and time formats. Its value should be of the form
 \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fB\%locale\fP(5)
 and \fB\%environ\fP(5)  for more information.
 .TP 
 \fBLC_ALL\fP
 This variable overrides the value of the \fB$LANG\fP variable and any other
-\fB$LC_\fP variable. It's value should be of the form
+\fB$LC_\fP variable. Its value should be of the form
 \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP]. See \fB\%locale\fP(5)  and
 \fB\%environ\fP(5)  for more information.
 .TP 
 \fBLANG\fP
 This variable determines the \fB\%locale\fP(5)  category for any category not
-specifically selected with a variable starting with \fB$LC_\fP. It's value
+specifically selected with a variable starting with \fB$LC_\fP. Its value
 should be of the form \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP]. See
 \fB\%environ\fP(5)  for more information.
 .TP 
 \fBLANGUAGE\fP
 This variable defines a priority list for translations. Whenever a
 translation is not available in the language selected via \fB$LC_ALL\fP or
-\fB$LANG\fP the next language from the list is tried. It's value should be of
+\fB$LANG\fP the next language from the list is tried. Its value should be of
 the form \fIlanguage:language[:language]\fP. See \fB\%environ\fP(5)  for more
 information.
 .TP 

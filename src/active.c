@@ -3,10 +3,10 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2022-09-20
+ *  Updated   : 2022-12-23
  *  Notes     :
  *
- * Copyright (c) 1992-2022 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2023 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -280,7 +280,7 @@ parse_active_line(
 
 #ifdef NNTP_ABLE
 /*
- * Parse line from "LIST COUNTS" (RFC 6048)
+ * Parse line from "LIST COUNTS" (RFC 6048 2.2.)
  * group high low count status
  */
 static t_bool
@@ -562,7 +562,12 @@ read_newsrc_active_file(
 
 #ifdef NNTP_ABLE
 	if (need_auth) { /* delayed auth */
-		if (!authenticate(nntp_server, userid, FALSE) || do_read_newsrc_active_file(fp))
+		if (!authenticate(nntp_server, userid, FALSE))
+			tin_done(EXIT_FAILURE, _(txt_auth_failed), ERR_ACCESS);
+#	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+		set_maxartnum(FALSE);
+#	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
+		if (do_read_newsrc_active_file(fp))
 			tin_done(EXIT_FAILURE, _(txt_auth_failed), ERR_ACCESS);
 	}
 #endif /* NNTP_ABLE */
@@ -909,6 +914,7 @@ read_news_active_file(
 					if (need_auth) { /* retry after auth is overkill here, so just auth */
 						if (!authenticate(nntp_server, userid, FALSE))
 							tin_done(EXIT_FAILURE, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
+						/* no set_maxartnum() here after auth as we're pipelining ... */
 					}
 				}
 				did_reconnect = FALSE;

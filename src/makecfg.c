@@ -3,10 +3,10 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2022-04-09
+ *  Updated   : 2023-02-05
  *  Notes     : #defines and structs for options_menu.c
  *
- * Copyright (c) 1997-2022 Thomas E. Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2023 Thomas E. Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,12 +37,48 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/* replace tin.h {{ */
 
-#define __BUILD__
-#define PROTO_H 1	/* don't include proto.h */
-#ifndef TIN_H
-#	include "tin.h"
-#endif /* !TIN_H */
+#ifdef HAVE_CONFIG_H
+#include <autoconf.h>
+#endif /* HAVE_CONFIG_H */
+
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#else
+#define EXIT_SUCCESS 0
+#define EXIT_FAILURE 1
+extern void exit(int);
+extern void free(void*);
+#endif
+
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#elif !defined(HAVE_STDLIB_H)
+extern void *malloc(size_t);
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+extern char* strcpy(char*, const char *);
+extern int strcmp(const char*, const char *);
+extern int strncmp(const char*, const char *, size_t);
+extern size_t strlen(const char*);
+#endif
+
+#include <stdio.h>
+#include <ctype.h>
+
+#define TRUE 1
+#define FALSE 0
+#define FreeIfNeeded(p)	if (p != NULL) free((void *) p)
+
+/* }} replace tin.h */
 
 #define L_CURL '{'
 #define R_CURL '}'

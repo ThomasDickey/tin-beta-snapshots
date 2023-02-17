@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2022-02-19
+ *  Updated   : 2022-11-28
  *  Notes     :
  *
- * Copyright (c) 1997-2022 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2023 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,13 +68,13 @@
 	static wchar_t *my_wcsdup(const wchar_t *wstr);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
+
 /*
  * special ltoa()
  * converts value into a string with a maxlen of digits (usually should be
  * >=4), last char may be one of the following:
  * 'k'ilo, 'M'ega, 'G'iga, 'T'era, 'P'eta, 'E'xa, 'Z'etta, 'Y'otta,
- * 'X'ona, 'W'eka, 'V'unda, 'U'da (these last 4 are no official SI-prefixes)
- * or 'e' if an error occurs
+ * 'R'onna, 'Q'uetta or 'e' if an error occurs
  */
 char *
 tin_ltoa(
@@ -82,7 +82,7 @@ tin_ltoa(
 	int digits)
 {
 	static char buffer[64];
-	static const char power[] = { ' ', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'X', 'W', 'V', 'U', '\0' };
+	static const char power[] = { ' ', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'R', 'Q', '\0' };
 	int len;
 	size_t i = 0;
 

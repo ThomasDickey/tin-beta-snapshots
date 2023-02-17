@@ -112,9 +112,10 @@ o  mailers other than sendmail (f.e. mutt) and use_mailreader_i=OFF may lead
 
 New features
 ------------
-o  add code for other TLS/SSL libraries (wolfSSL, mbed TLS, ...)
-   (<mbedtls/version.h> MBEDTLS_VERSION_STRING_FULL
-    <wolfssl/version.h> LIBWOLFSSL_VERSION_STRING || OPENSSL_VERSION_TEXT)
+o  add code for more TLS/SSL libraries (wolfSSL, mbed TLS, BearSSL, MatrixSSL,
+   axTLS, ...)
+
+o  configure check for OpenSSL currently depends on pkg-config
 
 o  add "COMPRESS DEFLATE" support
    <https://www.rfc-editor.org/rfc/rfc8054.txt>
@@ -208,6 +209,11 @@ o  add more AUTHINFO SASL (RFC 4643, RFC 5802) support (DIGEST-MD5,
 
 o  make 'GNKSA'-parser RFC5322/USEFOR compliant (e.g.
    misc.c:gnksa_dequote_plainphrase()) and fix bugs
+
+o  multiple names/addresses in From like in:
+   From: ole-fg@gmx.de (Olaf Schneider), adrian.suter@schweiz.org (Adrian Suter)
+   are parsed incorrectly (ie. %F in group_format ends up in
+   "Olaf Schneider), adrian.suter@schweiz.org (Adrian Suter <ole-fg@gmx.de>"
 
 o  add XZVER (and XZHDR) support (zlib compressed yyencoded overview data)
    <http://helpdesk.astraweb.com/index.php?_m=news&_a=viewnews&newsid=9>
@@ -856,6 +862,9 @@ o  the limited pgp support (inline pgp as of RFC 4880, just signature
 
 Not yet classified
 ------------------
+o  should -X (no overwrite) and/or -G/tinrc.getart_limit with
+   cache_overview_files=ON warn that tin will not cache the overviews?
+
 o  verbatim regions can't be nested, should they?
 
 o  allow per group cancel_lock_algo setting via attributes?
@@ -887,9 +896,6 @@ o  sometimes we convert the supplied server name to lowercaes (for cached
    Should we always lowercase $NNTPSERVER / -g? (but still allow
    upper/camelcase for -f or a fixed filename in newsrctable).
    [20160225 Urs Janssen <urs@tin.org>]
-
-o  add "host:port" notation support for -g as shortcut for -p port -g host
-   [20160222 Urs Janssen <urs@tin.org>]
 
 o  allow "begin-base64"/"====\n" as start/end marker for UUE-blocks besides
    the traditional "begin"/"end\n"?
@@ -1018,9 +1024,10 @@ o  trn and perls Net::NNTP::Auth use ~/.nntpauth (format is
    ${TIN_HOMEDIR:-"$HOME"}/.tin/.newsauth if ~/.newsauth is not found?
    [20040128 Urs Janssen <urs@tin.org>]
 
-o  allow a different port in newsauth- and/or newsrctable-file
-   (server:port [...])? if we do, what's the precedence?
-   [high] -p, newsauth, newsrctable, $NNTPORT, 119 [low]?
+o  rework port in newsauth-, newsrctable-file and -g to allow
+   IPv6-addresses (in brackets?)
+   [implemented but without IPv6-address support. precedence is
+    [high] newsrctable, -p, -g, -T (563), $NNTPORT, 119 [low]]
    [20140504 Urs Janssen <urs@tin.org>]
 
 o  what todo if in a CTE: x-uue the CD: filename differs from the one given

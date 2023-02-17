@@ -6,7 +6,7 @@
  *  Updated   : 2021-03-04
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2022 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2023 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -869,7 +869,7 @@ rfc1522_encode(
 #else
 	/*
 	 * Even if MIME_BREAK_LONG_LINES is NOT defined, long headers in mail
-	 * messages should be broken up in accordance with RFC 2047(1522)
+	 * messages should be broken up in accordance with RFC 2047 (1522)
 	 */
 	t_bool break_long_line = ismail;
 #endif /* MIME_BREAK_LONG_LINES */

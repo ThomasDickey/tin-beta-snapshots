@@ -3,10 +3,10 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-13
+ *  Updated   : 2022-12-25
  *  Notes     :
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -558,6 +558,9 @@ struct t_capabilities nntp_caps = {
 	SASL_NONE, /* SASL CRAM-MD5 DIGEST-MD5 PLAIN GSSAPI EXTERNAL OTP NTLM LOGIN */
 	FALSE, /* COMPRESS */
 	COMPRESS_NONE, /* COMPRESS_NONE, COMPRESS_DEFLATE */
+#if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+	T_ARTNUM_CONST(0), /* MAXARTNUM */
+#endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 #if 0
 	FALSE, /* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
 	FALSE /* IHAVE */

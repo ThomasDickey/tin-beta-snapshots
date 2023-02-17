@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-11-01
+ *  Updated   : 2022-11-03
  *  Notes     :
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,7 +148,7 @@ constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=sha
 	constext txt_color_on[] = N_("ANSI color enabled");
 #endif /* HAVE_COLOR */
 constext txt_command_failed[] = N_("Command failed: %s");
-constext txt_copyright_notice[] = "%s (c) Copyright 1991-2022 Iain Lea.";
+constext txt_copyright_notice[] = "%s (c) Copyright 1991-2023 Iain Lea.";
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 #ifdef NNTP_ABLE
 	constext txt_connecting[] = N_("Connecting to %s...");
@@ -959,6 +959,10 @@ constext txt_useful_with_batch_mode[] = N_("%s only useful for batch mode operat
 constext txt_useful_with_batch_or_debug_mode[] = N_("%s only useful for batch or debug mode operations\n");
 constext txt_useless_combination[] = N_("Useless combination %s and %s. Ignoring %s.\n");
 
+#ifdef NNTPS_ABLE
+	constext txt_valid_not_after[] = "Valid not after : %s\n";
+	constext txt_valid_not_before[] = "Valid not before: %s\n";
+#endif /* NNTPS_ABLE */
 constext txt_value_out_of_range[] = N_("\n%s%d out of range (0 - %d). Reset to 0");
 constext txt_view_attachment[] = N_("View '%s' (%s/%s)?");
 

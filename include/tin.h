@@ -3,10 +3,10 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-09-20
+ *  Updated   : 2023-02-06
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -127,7 +127,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	endif /* DECL_ERRNO */
 #endif /* !errno */
 #if !defined(EHOSTUNREACH)
-#   define EHOSTUNREACH 113
+#	define EHOSTUNREACH 113
 #endif /* !EHOSTUNREACH */
 
 #ifdef HAVE_STDDEF_H
@@ -191,6 +191,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  * TODO: what if !CPP_DOES_CONCAT
  *       add configure check for PRIdLEAST64
  *       add configure check for SCNdLEAST64
+ *       add configure check for INT64_MAX, LLONG_MAX, LONG_MAX
  */
 #	if defined(HAVE_INT_LEAST64_T) && !defined(HAVE_INTTYPES_H)
 #		undef HAVE_INT_LEAST64_T
@@ -213,11 +214,13 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #		define T_ARTNUM_PFMT PRIdLEAST64
 #		define T_ARTNUM_SFMT SCNdLEAST64
 #		define T_ARTNUM_CONST(v) INT64_C(v)
+#		define ARTNUM_MAX INT64_MAX
 #	else
 		typedef long long t_artnum;
 #		define T_ARTNUM_PFMT "lld"
 #		define T_ARTNUM_SFMT "lld"
 #		define T_ARTNUM_CONST(v) v ## LL
+#		define ARTNUM_MAX LLONG_MAX
 #	endif /* HAVE_INT_LEAST64_T && HAVE_INT64_C */
 #	ifdef HAVE_ATOLL
 #		define atoartnum atoll
@@ -230,6 +233,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	define T_ARTNUM_PFMT "ld"
 #	define T_ARTNUM_SFMT "ld"
 #	define T_ARTNUM_CONST(v) v ## L
+#	define ARTNUM_MAX LONG_MAX
 #	define atoartnum atol
 #	define strtoartnum strtol
 #endif /* USE_LONG_ARTICLE_NUMBERS */
@@ -590,11 +594,11 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #ifdef HAVE_LONG_FILE_NAMES
 #	define PATH_PART	"part"
 #	define PATH_PATCH	"patch"
-#	define INDEX_LOCK	"tin.%s.LCK"
+#	define INDEX_LOCK	"tin.%.256s.LCK"
 #else
 #	define PATH_PART	""
 #	define PATH_PATCH	"p"
-#	define INDEX_LOCK	"%s.LCK"
+#	define INDEX_LOCK	"%.10s.LCK"
 #endif /* HAVE_LONG_FILE_NAMES */
 
 /* inews.c:submit_inews() and save.c:save_and_process_art() */
@@ -2536,6 +2540,15 @@ extern struct tm *localtime(time_t *);
 #ifndef HAVE_VSNPRINTF
 #	define vsnprintf	plp_vsnprintf
 #endif /* HAVE_VSNPRINTF */
+
+#ifdef HAVE_MEMMOVE
+#	define my_memmove memmove
+#else
+#	ifdef HAVE_BCOPY
+#		define my_memmove(d,s,n) bcopy(s,d,n)
+	/* else memory.c:my_memmove() */
+#	endif /* HAVE_BCOPY */
+#endif /* HAVE_MEMMOVE */
 
 /* gcc-specific attributes */
 #if defined(__GNUC__) && !defined(__cplusplus) && !defined(__APPLE_CC__) && !defined(__NeXT__)

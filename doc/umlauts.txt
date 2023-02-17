@@ -23,9 +23,8 @@ Umlauts when writing
 
 If you answer to a posting, the converted posting will be handed over to
 your editor. The editor should be able to cope with characters in your local
-charset, of course. Joe, for example, has difficulties with UTF-8, so you
-shouldn't use it in such an environment. Finish your response in the editor
-as normal and leave it to get back to tin.
+charset, of course. Finish your response in the editor as normal and leave it
+to get back to tin.
 
 When you post the message, tin determines the charset you want to use. You
 set this charset with the variable mm_network_charset either in your

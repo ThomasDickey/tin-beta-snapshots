@@ -6,7 +6,7 @@
  *  Updated   : 2022-11-01
  *  Notes     :
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -752,23 +752,23 @@ open_msglog(
 		return;
 
 #ifdef NNTP_ABLE
-        if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
-                snprintf(logfile, sizeof(logfile), "%s:%u", nntp_server, nntp_tcp_port);
-        else
+	if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
+		snprintf(logfile, sizeof(logfile), "%s:%u", nntp_server, nntp_tcp_port);
+	else
 #endif /* NNTP_ABLE */
-        {
-                snprintf(logfile, sizeof(logfile), "%s", nntp_server);
-        }
-        joinpath(serverdir, sizeof(serverdir), rcdir, logfile);
-        joinpath(logfile, sizeof(logfile), serverdir, "msglog");
+	{
+		snprintf(logfile, sizeof(logfile), "%s", nntp_server);
+	}
+	joinpath(serverdir, sizeof(serverdir), rcdir, logfile);
+	joinpath(logfile, sizeof(logfile), serverdir, "msglog");
 
 	if ((msglog = fopen(logfile, "w")) != NULL) {
 #ifdef HAVE_FCHMOD
 		fchmod(fileno(msglog), (mode_t) (S_IRUSR|S_IWUSR));
 #else
-#       ifdef HAVE_CHMOD
+#	ifdef HAVE_CHMOD
 		chmod(logfile, (mode_t) (S_IRUSR|S_IWUSR));
-#       endif /* HAVE_CHMOD */
+#	endif /* HAVE_CHMOD */
 #endif /* HAVE_FCHMOD */
 	}
 }

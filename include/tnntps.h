@@ -6,7 +6,7 @@
  *  Updated   : 2022-10-19
  *  Notes     : TLS #include files, #defines & struct's
  *
- * Copyright (c) 2022 Enrik Berkhan <Enrik.Berkhan@inka.de>
+ * Copyright (c) 2022-2023 Enrik Berkhan <Enrik.Berkhan@inka.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

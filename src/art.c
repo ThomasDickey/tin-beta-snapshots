@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-09-22
+ *  Updated   : 2023-02-01
  *  Notes     :
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -652,7 +652,7 @@ open_art_header(
 		 * so tin loops over all articles without getting useful data
 		 *
 		 * usenet.farm may return ERR_GOODBYE and NEXT then also fails
-         * we could flag that like no_next ...
+		 * we could flag that like no_next ...
 		 */
 
 		if (!no_next) { /* usenet.farm doesn't do NEXT */
@@ -1593,7 +1593,7 @@ build_range_list(
 			 * if we reached top_art all arts have path
 			 * so we use max
 			 */
-			curr->start = i == top_art ? max : arts[i--].artnum;
+			curr->start = ((i == top_art) ? max : arts[i--].artnum);
 		} else {
 			for (; i < top_art && !arts[i].path; i++)
 				;
@@ -1764,7 +1764,7 @@ get_path_header(
 		if (min == max)
 			snprintf(cmd, sizeof(cmd), "%s Path %"T_ARTNUM_PFMT, nntp_caps.hdr_cmd, min);
 		else
-			snprintf(cmd, sizeof(cmd), "%s Path %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT, nntp_caps.hdr_cmd, min, max);
+			snprintf(cmd, sizeof(cmd), "%s Path %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT, nntp_caps.hdr_cmd, min, MAX(min, max));
 		fp = nntp_command(cmd, nntp_caps.hdr_cmd[0] == 'X' ? OK_XHDR : OK_HDR, NULL, 0);
 		if (!nntp_caps.hdr && fp)
 			nntp_caps.hdr = TRUE;
@@ -1772,7 +1772,7 @@ get_path_header(
 		if (min == max)
 			snprintf(cmd, sizeof(cmd), "XPAT Path %"T_ARTNUM_PFMT" *", min);
 		else
-			snprintf(cmd, sizeof(cmd), "XPAT Path %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT" *", min, max);
+			snprintf(cmd, sizeof(cmd), "XPAT Path %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT" *", min, MAX(min, max));
 		fp = nntp_command(cmd, OK_XPAT, NULL, 0);
 	}
 

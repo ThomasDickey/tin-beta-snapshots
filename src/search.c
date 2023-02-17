@@ -6,7 +6,7 @@
  *  Updated   : 2022-08-29
  *  Notes     :
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,13 +73,13 @@ static struct regex_cache search_regex = REGEX_CACHE_INITIALIZER;
  */
 static void
 copy_offsets(
-	REGEX_SIZE* dst,
+	REGEX_SIZE *dst,
 	REGEX_NOFFSET dst_size,
 	struct regex_cache *re)
 {
 	REGEX_NOFFSET i;
 	REGEX_NOFFSET limit = 2 * regex_get_ovector_count(re);
-	REGEX_SIZE* ovector = regex_get_ovector_pointer(re);
+	REGEX_SIZE *ovector = regex_get_ovector_pointer(re);
 
 	if (limit > dst_size)
 		limit = dst_size;
@@ -87,6 +87,7 @@ copy_offsets(
 	for (i = 0; i < limit; i++)
 		dst[i] = ovector[i];
 }
+
 
 /*
  * Obtain the search pattern, save it in the default buffer.
@@ -805,7 +806,7 @@ reset_srch_offsets(
 	srch_offsets[0] = srch_offsets[1] = 0;
 	/*
 	 * bwd article search starts at the first line. This kludge avoids bwd
-     * search to match in the first line first.
-     */
+	 * search to match in the first line first.
+	 */
 	last_article_search_matched = FALSE;
 }

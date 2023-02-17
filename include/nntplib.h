@@ -3,10 +3,10 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-09-19
+ *  Updated   : 2022-12-23
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -219,7 +219,11 @@ struct t_capabilities {
 	enum sasl_types sasl;			/* SASL_NONE, SASL_PLAIN, SASL_CRAM_MD5, SASL_DIGEST_MD5, SASL_GSSAPI, SASL_EXTERNAL, SASL_OTP, SASL_NTLM, SASL_LOGIN */
 	t_bool compress:1;				/* COMPRESS */
 	enum c_algorithms compress_algorithm;	/* COMPRESS_NONE, COMPRESS_DEFLATE */
+#if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+	t_artnum maxartnum;				/* MAXARTNUM indicating article numbers >=2^31 */
+#endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 #if 0
+	/* we don't do MODE STREAM, CHECK, TAKETHIS or IHAVE*/
 	t_bool streaming:1;				/* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
 	t_bool ihave:1;					/* IHAVE: "IHAVE" */
 #endif /* 0 */

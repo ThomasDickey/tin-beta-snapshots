@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-27
+ *  Updated   : 2022-11-03
  *  Notes     :
  *
- * Copyright (c) 1997-2022 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1359,6 +1359,10 @@ extern constext txt_useful_with_batch_mode[];
 extern constext txt_useful_with_batch_or_debug_mode[];
 extern constext txt_useless_combination[];
 extern constext txt_use_mime[];
+#ifdef NNTPS_ABLE
+	extern constext txt_valid_not_after[];
+	extern constext txt_valid_not_before[];
+#endif /* NNTPS_ABLE */
 extern constext txt_value_out_of_range[];
 extern constext txt_view_attachment[];
 extern constext txt_warn_art_line_too_long[];

@@ -7,7 +7,7 @@
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
- * Copyright (c) 1997-2022 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2023 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -282,6 +282,7 @@ highlight_regexes(
 			ptr += offsets[1];
 	}
 }
+
 
 void
 regex_cache_init(

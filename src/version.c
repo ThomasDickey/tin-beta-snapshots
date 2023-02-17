@@ -6,7 +6,7 @@
  *  Updated   : 2019-02-04
  *  Notes     :
  *
- * Copyright (c) 2003-2022 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2003-2023 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -3,14 +3,14 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2022-11-01
+.\" Updated   : 2023-02-01
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
 .IX Title "tin 1"
-.TH tin 1 "December 24th, 2021" "2.6.2" "Usenet newsreader"
+.TH tin 1 "December 24th, 2022" "2.6.3" "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -38,7 +38,7 @@ tin, rtin \- Usenet newsreader
 .RB [\| \-f
 .IR newsrc_file \|]
 .RB [\| \-g
-.IR server \|]
+.IR server \|[\|: port \|]\|]
 .RB [\| \-m
 .IR Mail_dir \|]
 .RB [\| \-p
@@ -98,11 +98,11 @@ NNTP error.
 .TP 12
 .B \-4
 Force connecting via IPv4 to the remote NNTP server. Only available when
-build with IPv6 support.
+built with IPv6 support.
 .TP
 .B \-6
 Force connecting via IPv6 to the remote NNTP server. Only available when
-build with IPv6 support.
+built with IPv6 support.
 .TP
 .B \-a
 Toggle ANSI color (default is off).
@@ -132,8 +132,8 @@ and/or on screen output may be given. See also the "SECURITY" section!
 Use the specified file of subscribed to newsgroups in place of
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR.
 .TP
-.BI \-g " server"
-Use the server and newsrc specified in
+.BI \-g " server[:port]"
+Use the server[:port] and newsrc specified in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fR. Only available when
 reading via NNTP.
 .TP
@@ -225,7 +225,8 @@ Save unread articles for later reading by the ''\fB\-R\fP'' option. For more
 information read section "AUTOMATIC MAILING AND SAVING NEW NEWS".
 .TP
 .B \-T
-Enable NNTPS (NNTP over TLS). Only available when reading via NNTP.
+Enable NNTPS (NNTP over TLS). This also overrides the environment
+variable $\fBNNTPPORT\fP if set. Only available when reading via NNTP.
 .TP
 .B \-u
 Create/update index files for every group in
@@ -239,7 +240,7 @@ Verbose mode for ''\fB\-c\fP'', ''\fB\-D\fP'', ''\fB\-M\fP'', ''\fB\-N\fP'',
 times to increase verbosity.
 .TP
 .B \-V
-Print version and date information.
+Print version information and compilation options.
 .TP
 .B \-w
 Quick mode to post an article and then exit. This option implies
@@ -1487,7 +1488,7 @@ If using NNTP and the internal inews (\fBinews_prog\fP set to "\-\-internal")
 and either the server proposes a ''Message\-ID:'' during the POST
 (\fBRFC\%3977\fP) command or
 .B tin
-is build to generate ''Message\-ID:'' this should be the case. With an
+is built to generate ''Message\-ID:'' this should be the case. With an
 external inews (and reading from local spool) it is not.
 .TP
 .B SearchSubjF '/'
@@ -1641,7 +1642,7 @@ considerably speed up accessing large groups when using a slow connection.
 See also "INDEX FILES". Default is OFF.
 .TP
 .B Hash algorithm for cancel-locks (cancel_lock_algo)
-Use this hash algorithm for cancel-locks. Only available when build with
+Use this hash algorithm for cancel-locks. Only available when built with
 cancel-lock support. none disables the generation of cancel-locks. Valid
 values are none, sha1, sha256 and sha512.
 Default is sha1.
@@ -1789,22 +1790,22 @@ ON=apply to all groups, OFF=apply to current group. Default is ON.
 .B (default_filter_kill_header)
 Default for quick (1 key) kill filter header.
 .RS +.5i
-.IP 0 4
- ''Subject:'' (case sensitive)
+.IP 0 3
+\%''Subject:'' (case sensitive)
 .IP 1
- ''Subject:'' (ignore case)
+\%''Subject:'' (ignore case)
 .IP 2
- ''From:'' (case sensitive)
+\%''From:'' (case sensitive)
 .IP 3
- ''From:'' (ignore case)
+\%''From:'' (ignore case)
 .IP 4
- ''Message\-ID:'' & full ''References:'' line
+\%''Message\-ID:'' & full ''References:'' line
 .IP 5
- ''Message\-ID:'' & last ''References:'' entry only
+\%''Message\-ID:'' & last ''References:'' entry only
 .IP 6
- ''Message\-ID:'' entry only
+\%''Message\-ID:'' entry only
 .IP 7
- ''Lines:''
+\%''Lines:''
 .RE
 .TP
 .B (default_filter_select_case)
@@ -1823,22 +1824,22 @@ ON=apply to all groups, OFF=apply to current group. Default is ON.
 .B (default_filter_select_header)
 Default for quick (1 key) auto-selection filter header.
 .RS +.5i
-.IP 0 4
- ''Subject:'' (case sensitive)
+.IP 0 3
+\%''Subject:'' (case sensitive)
 .IP 1
- ''Subject:'' (ignore case)
+\%''Subject:'' (ignore case)
 .IP 2
- ''From:'' (case sensitive)
+\%''From:'' (case sensitive)
 .IP 3
- ''From:'' (ignore case)
+\%''From:'' (ignore case)
 .IP 4
- ''Message\-ID:'' & full ''References:'' line
+\%''Message\-ID:'' & full ''References:'' line
 .IP 5
- ''Message\-ID:'' & last ''References:'' entry only
+\%''Message\-ID:'' & last ''References:'' entry only
 .IP 6
- ''Message\-ID:'' entry only
+\%''Message\-ID:'' entry only
 .IP 7
- ''Lines:''
+\%''Lines:''
 .RE
 .TP
 .B (default_goto_group)
@@ -2350,7 +2351,7 @@ selection level. The ''\fB\-d\fP'' command-line flag will override the
 setting and turn descriptions off. The text used is taken from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups\fR file and if supported (requires
 .B tin
-to be build with mh-mail-handling support) from
+to be built with mh-mail-handling support) from
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups\fR for mailgroups. Default is ON.
 .TP
 .B Function for sorting articles (sort_function)
@@ -3597,9 +3598,9 @@ the file \fI/etc/nntpserver\fR does not exist. The ''\fB\-g\fP'' command
 line option overrides $\fBNNTPSERVER\fP.
 .TP
 .B NNTPPORT
-The NNTP TCP-port to read news from. This variable only
-needs to be set if the TCP-port is not 119 (the default).
-The ''\fB\-p\fP'' command-line option overrides $\fBNNTPPORT\fP.
+The NNTP TCP-port to read news from. This variable only needs to be set if
+the TCP-port is not 119 (the default). The ''\fB\-p\fP'' and ''\fB\-T\fP''
+command-line options do override $\fBNNTPPORT\fP.
 .TP
 .B DISTRIBUTION
 Set the article header field ''Distribution:'' to the contents of the
@@ -3758,14 +3759,14 @@ category for character handling functions. Usually it determines the
 character classes for pattern matching character classification and case
 conversion. Currently this is not true for \fBtin\fP (which temporary
 unsets \fB$LC_CTYPE\fP right before any match is done to avoid confusion).
-It's value should be of the form
+Its value should be of the form
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
 .BR \%environ (5)
 for more information.
 .TP
 .B LC_MESSAGES
 Formats of informative and diagnostic messages and interactive responses.
-It's value should be of the form
+Its value should be of the form
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
 .BR \%locale (5)
 and
@@ -3773,7 +3774,7 @@ and
 for more information.
 .TP
 .B LC_TIME
-Date and time formats. It's value should be of the form
+Date and time formats. Its value should be of the form
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
 .BR \%locale (5)
 and
@@ -3782,7 +3783,7 @@ for more information.
 .TP
 .B LC_ALL
 This variable overrides the value of the \fB$LANG\fP variable and any
-other \fB$LC_\fP variable. It's value should be of the form
+other \fB$LC_\fP variable. Its value should be of the form
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR]. See
 .BR \%locale (5)
 and
@@ -3793,7 +3794,7 @@ for more information.
 This variable determines the
 .BR \%locale (5)
 category for any category not specifically selected with a variable
-starting with \fB$LC_\fP. It's value should be of the form
+starting with \fB$LC_\fP. Its value should be of the form
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR]. See
 .BR \%environ (5)
 for more information.
@@ -3801,7 +3802,7 @@ for more information.
 .B LANGUAGE
 This variable defines a priority list for translations. Whenever a
 translation is not available in the language selected via \fB$LC_ALL\fP
-or \fB$LANG\fP the next language from the list is tried. It's value should
+or \fB$LANG\fP the next language from the list is tried. Its value should
 be of the form \fIlanguage:language[:language]\fR. See
 .BR \%environ (5)
 for more information.

@@ -6,7 +6,7 @@
  *  Updated   : 2022-02-19
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,7 +112,7 @@ read_newsrc(
 			if (*grp == '#' || *grp == '\0')	/* skip comments and empty lines */
 				continue;
 
-			line_count++;	/* but count all other lines (incl. bogous ones) */
+			line_count++;	/* but count all other lines (incl. bogus ones) */
 			seq = parse_newsrc_line(grp, &sub);
 
 			if (sub == SUBSCRIBED) {

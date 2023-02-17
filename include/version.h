@@ -6,7 +6,7 @@
  *  Updated   : 2021-02-01
  *  Notes     :
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,10 +43,10 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.6.2"
+#		define VERSION		"2.6.3"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20221101"
-#	define RELEASENAME	"Convalmore"
+#	define RELEASEDATE	"20230217"
+#	define RELEASENAME	"Pittyvaich"
 /* config-file versions - must be dotted triples in the range 0 to 99 each */
 #	define TINRC_VERSION	"1.3.18"
 #	define ATTRIBUTES_VERSION	"1.0.11"

@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2022-10-31
+ *  Updated   : 2023-02-02
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -144,6 +144,28 @@ getserverbyfile(
 #ifdef NNTP_ABLE
 	if (cmdline.args & CMDLINE_NNTPSERVER) {
 		get_nntpserver(buf, sizeof(buf), cmdline.nntpserver);
+		/*
+		 * - given port in NEWSRCTABLE_FILE overrides -p, -T and $NNTPPORT
+		 * - no IPv6 address support yet (should be simple if address is
+		 *   brackets)
+		 *
+		 * news.example.com[:123]    ~/.tin/${NNTPSERVER-localhost}/.newsrc  ex
+		 */
+		if ((cp = strchr(buf, ':')) != NULL) { /* >= 1 x ':' in servername? */
+			if (strrchr(buf, ':') == cp) { /* == 1 x ':' in servername? otherwise (IPv6, syntaxerror) skip */
+				int i;
+
+				*cp++ = '\0';
+				if ((i = atoi(cp)) != 0)
+					nntp_tcp_port = (unsigned short) i;
+#	ifdef DEBUG
+				else {
+					if (debug & DEBUG_MISC) /* -> lang.c and _()? */
+						wait_message(3, "Port in %s isn't numeric: %s:%s\n", local_newsrctable_file, buf, cp);
+				}
+#	endif /* DEBUG */
+			}
+		}
 #	ifdef HAVE_SETENV
 		setenv("NNTPSERVER", buf, 1);
 #	else
@@ -160,6 +182,21 @@ getserverbyfile(
 
 	if ((cp = getenv("NNTPSERVER")) != NULL) {
 		get_nntpserver(buf, sizeof(buf), cp);
+		if ((cp = strchr(buf, ':')) != NULL) {
+			if (strrchr(buf, ':') == cp) {
+				int i;
+
+				*cp++ = '\0';
+				if ((i = atoi(cp)) != 0)
+					nntp_tcp_port = (unsigned short) i;
+#	ifdef DEBUG
+				else {
+					if (debug & DEBUG_MISC) /* -> lang.c and _()? */
+						wait_message(3, "Port in $NNTPSERVER isn't numeric: %s:%s\n", buf, cp);
+				}
+#	endif /* DEBUG */
+			}
+		}
 		return buf;
 	}
 
@@ -523,7 +560,7 @@ get_tcp_socket(
 		my_fprintf(stderr, _(txt_connection_to), (char *) inet_ntoa(sock_in.sin_addr));
 		perror("");
 #			endif /* HAVE_INET_NTOA */
-		(void) s_close(s);
+		(void) close(s);
 	}
 
 	if (x < 0) {
@@ -552,7 +589,7 @@ get_tcp_socket(
 	if (connect(s, (struct sockaddr *) &sock_in) < 0) {
 		save_errno = errno;
 		perror("connect");
-		(void) s_close(s);
+		(void) close(s);
 		return -save_errno;
 	}
 
@@ -571,7 +608,7 @@ get_tcp_socket(
 	if (connect(s, (struct sockaddr *) &sock_in, sizeof(sock_in)) < 0) {
 		save_errno = errno;
 		perror("connect");
-		(void) s_close(s);
+		(void) close(s);
 		return -save_errno;
 	}
 
@@ -723,7 +760,7 @@ get_dnet_socket(
 
 	if (connect(s, (struct sockaddr *) &sdn, sizeof(sdn)) < 0) {
 		nerror("connect");
-		s_close(s);
+		close(s);
 		return -1;
 	}
 
@@ -1097,6 +1134,7 @@ check_extensions(
 			nntp_caps.sasl = SASL_NONE;
 			nntp_caps.compress = FALSE;
 			nntp_caps.compress_algorithm = COMPRESS_NONE;
+			/* nntp_caps.maxartnum will be init it nntp_open() */
 #	if 0
 			nntp_caps.streaming = FALSE;
 			nntp_caps.ihave = FALSE;
@@ -1264,12 +1302,31 @@ check_extensions(
 							}
 						}
 					}
-#		if 0 /* we don't need these */
+#	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+					/*
+					 * MAXARTNUM - <tnqm14$35bas$1@news.trigofacile.com>
+					 *
+					 * if server responds with MAXARTNUM we (re)parse it
+					 * as we may have changed the state (auth) and it's
+					 * the servers job to not advertised MAXARTNUM again
+					 * after it had been used ...
+					 */
+					else if (!strncasecmp(ptr, "MAXARTNUM", 9) && nntp_caps.maxartnum == T_ARTNUM_CONST(0)) {
+						d = ptr + 9;
+						d = strpbrk(d, " \t");
+						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
+							d++;
+							nntp_caps.maxartnum = MIN(atoartnum(d), ARTNUM_MAX);
+							d = strpbrk(d, " \t");
+						}
+					}
+#	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
+#	if 0 /* we don't need these */
 					else if (!strcasecmp(ptr, "IHAVE"))
 						nntp_caps.ihave = TRUE;
 					else if (!strcasecmp(ptr, "STREAMING"))
 						nntp_caps.streaming = TRUE;
-#		endif /* 0 */
+#	endif /* 0 */
 				/* XZVER, XZHDR, ... */
 				} else
 					nntp_caps.type = NONE;
@@ -1282,16 +1339,21 @@ check_extensions(
 		 * you use tin on a XanaNewz 2 Server comment out the following
 		 * case.
 		 */
-#		if 1
+#	if 1
 		case ERR_GOODBYE:
 			ret = i;
 			error_message(2, "%s", buf);
 			break;
-#		endif /* 1 */
+#	endif /* 1 */
 
 		default:
 			break;
 	}
+
+#	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+	if (nntp_caps.maxartnum <= T_ARTNUM_CONST(2147483647)) /* RFC 3977 "Article numbers MUST lie between 1 and 2,147,483,647, inclusive." */
+		nntp_caps.maxartnum = T_ARTNUM_CONST(0);
+#	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 
 	return ret;
 }
@@ -1376,7 +1438,7 @@ nntp_open(
 {
 #ifdef NNTP_ABLE
 	char *linep;
-	char line[NNTP_STRLEN]= { '\0' };
+	char line[NNTP_STRLEN] = { '\0' };
 	int ret;
 	t_bool sec = FALSE;
 	/* It appears that is_reconnect guards code that should be run only once */
@@ -1408,7 +1470,7 @@ nntp_open(
 
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
-		debug_print_file("NNTP", "nntp_open() %s:%d", nntp_server, nntp_tcp_port);
+		debug_print_file("NNTP", "nntp_open() %s:%u", nntp_server, nntp_tcp_port);
 #	endif /* DEBUG */
 
 	ret = server_init(nntp_server, NNTP_TCP_NAME, nntp_tcp_port, line, sizeof(line));
@@ -1464,6 +1526,10 @@ nntp_open(
 
 		STRCPY(bug_nntpserver1, linep);
 	}
+
+#	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+	nntp_caps.maxartnum = T_ARTNUM_CONST(0);
+#	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 
 	/*
 	 * Find out which NNTP extensions are available
@@ -1727,6 +1793,10 @@ nntp_open(
 	}
 #	endif /* 0 */
 
+#	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+	set_maxartnum(is_reconnect);
+#	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
+
 	if (!is_reconnect && !batch_mode && show_description && check_for_new_newsgroups) {
 		/*
 		 * TODO:
@@ -1738,7 +1808,6 @@ nntp_open(
 	}
 
 	is_reconnect = TRUE;
-
 #endif /* NNTP_ABLE */
 
 	DEBUG_IO((stderr, "nntp_open okay\n"));
@@ -2128,7 +2197,7 @@ nntpbuf_puts(
 
 		l = len;
 		if (l > SZ(buf->wr.buf) - buf->wr.ub)
-			l = SZ(buf->wr.buf) - buf->wr.ub;;
+			l = SZ(buf->wr.buf) - buf->wr.ub;
 
 		memcpy(buf->wr.buf + buf->wr.ub, data, l);
 		buf->wr.ub += l;
@@ -2211,7 +2280,7 @@ nntpbuf_ungetc(
 			errno = ENOSPC;
 			return EOF;
 		}
-		memmove(buf->rd.buf+1, buf->rd.buf, buf->rd.ub);
+		my_memmove(buf->rd.buf + 1, buf->rd.buf, buf->rd.ub);
 		buf->rd.lb += 1;
 	}
 
@@ -2220,6 +2289,7 @@ nntpbuf_ungetc(
 
 	return c;
 }
+
 
 /*
  * fgets(3) replacement using the NNTP connection
@@ -2304,14 +2374,61 @@ nntp_conninfo(
 	FILE *stream)
 {
 	int retval = 0;
+
+	fprintf(stream, "\nConnection details:\n");
+	fprintf(stream, "-------------------\n");
+	fprintf(stream, "NNTPSERVER    : %s\n", nntp_server);
+	fprintf(stream, "NNTPPORT      : %u\n", nntp_tcp_port);
+	if (nntp_caps.type == CAPABILITIES) {
+		if (*nntp_caps.implementation)
+			fprintf(stream, "IMPLEMENTATION: %s\n", nntp_caps.implementation);
+#if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+		if (nntp_caps.maxartnum)
+			fprintf(stream, "MAXARTNUM     : %"T_ARTNUM_PFMT"\n", nntp_caps.maxartnum);
+#endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
+	}
+
 #ifdef NNTPS_ABLE
 	if (nntp_buf.tls_ctx)
 		retval = tintls_conninfo(nntp_buf.tls_ctx, stream);
-	if (retval != 0)
-		return retval;
+
 #endif /* NNTPS_ABLE */
-	/* can add something here */
+
 	return retval;
 }
 
+
+#	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+/*
+ * MAXARTNUM - <tnqm14$35bas$1@news.trigofacile.com>
+ */
+void
+set_maxartnum(
+	t_bool reconnect)
+{
+	char cmd[NNTP_STRLEN];
+	char line[NNTP_STRLEN] = { '\0' };
+	static int cnt = 0;
+
+	if (nntp_caps.maxartnum < T_ARTNUM_CONST(2147483647) || (!reconnect && cnt))
+		return;
+	else
+		cnt++;
+
+	snprintf(cmd, sizeof(cmd), "MAXARTNUM %"T_ARTNUM_PFMT, nntp_caps.maxartnum);
+
+	switch (new_nntp_command(cmd, OK_EXTENSIONS, line, sizeof(line))) {
+		case OK_EXTENSIONS:
+			nntp_caps.mode_reader = FALSE;
+			nntp_caps.reader = TRUE;
+			nntp_caps.list_newsgroups = TRUE;
+			nntp_caps.list_active = TRUE;
+			break;
+
+		default:
+			nntp_caps.maxartnum = T_ARTNUM_CONST(0);
+			break;
+	}
+}
+#	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 #endif /* NNTP_ABLE */

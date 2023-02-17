@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-11-01
+ *  Updated   : 2023-02-02
  *  Notes     :
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,17 +66,18 @@
 #endif /* HAVE_IDN_API_H && !IDN_API_H */
 
 #ifdef NNTPS_ABLE
-#   ifdef HAVE_LIB_LIBTLS
-#       include <tls.h>
-#   else
-#       ifdef HAVE_LIB_OPENSSL
-#           include <openssl/opensslv.h>
-#       else
-#           ifdef HAVE_LIB_GNUTLS
-#               include <gnutls/gnutls.h>
-#           endif /* HAVE_LIB_GNUTLS */
-#       endif /* HAVE_LIB_OPENSSL */
-#   endif /* HAVE_LIB_LIBTLS */
+#	ifdef HAVE_LIB_LIBTLS
+#		include <tls.h>
+#	else
+#		ifdef HAVE_LIB_OPENSSL
+#			include <openssl/opensslv.h>
+#			include <openssl/crypto.h>
+#		else
+#			ifdef HAVE_LIB_GNUTLS
+#				include <gnutls/gnutls.h>
+#			endif /* HAVE_LIB_GNUTLS */
+#		endif /* HAVE_LIB_OPENSSL */
+#	endif /* HAVE_LIB_LIBTLS */
 #endif /* NNTPS_ABLE */
 
 
@@ -977,7 +978,8 @@ eat_re(
 		return "";
 
 	do {
-		REGEX_SIZE* offsets;
+		REGEX_SIZE *offsets;
+
 		match = match_regex_ex(s, (int) strlen(s), 0, 0, &strip_re_regex);
 		offsets = regex_get_ovector_pointer(&strip_re_regex);
 		if (match >= 0 && offsets[0] == 0)
@@ -985,7 +987,8 @@ eat_re(
 	} while (match >= 0);
 
 	if (eat_was) do {
-		REGEX_SIZE* offsets;
+		REGEX_SIZE *offsets;
+
 		match = match_regex_ex(s, (int) strlen(s), 0, 0, &strip_was_regex);
 		offsets = regex_get_ovector_pointer(&strip_was_regex);
 		if (match >= 0 && offsets[0] > 0)
@@ -2644,7 +2647,8 @@ buffer_to_network(
 			strcpy(line, obuf); /* FIXME: here we assume that line is big enough to hold obuf */
 			free(obuf);
 			iconv_close(cd);
-		}
+		} else
+			conv_success = FALSE;
 	}
 	return conv_success;
 }
@@ -4049,7 +4053,7 @@ tin_version_info(
 				fprintf(fp, "\tTLS      = \"LibreSSL %d\"\n", TLS_API);
 #	else
 #		ifdef HAVE_LIB_OPENSSL
-				fprintf(fp, "\tTLS      = \"%s\"\n", OPENSSL_VERSION_TEXT);
+				fprintf(fp, "\tTLS      = \"%s\"\n", OpenSSL_version(OPENSSL_VERSION));
 #		else
 #			ifdef HAVE_LIB_GNUTLS
 				fprintf(fp, "\tTLS      = \"GnuTLS %s\"\n", gnutls_check_version(NULL));
@@ -4427,7 +4431,7 @@ make_connection_page(
 			fprintf(fp, "(LibreSSL %d).\n", TLS_API);
 #		else
 #			ifdef HAVE_LIB_OPENSSL
-			fprintf(fp, "(%s).\n", OPENSSL_VERSION_TEXT);
+			fprintf(fp, "(%s).\n", OpenSSL_version(OPENSSL_VERSION));
 #			else
 #				ifdef HAVE_LIB_GNUTLS
 			fprintf(fp, "(GnuTLS %s).\n", gnutls_check_version(NULL));
@@ -4435,21 +4439,15 @@ make_connection_page(
 #			endif /* HAVE_LIB_OPENSSL */
 #		endif /* HAVE_LIB_LIBTLS */
 			} else
+#	else
+			{
 #	endif /* NNTPS_ABLE */
 			{
 				fprintf(fp, "Reading via NNTP.\n");
 			}
-			fprintf(fp, "\nConnection details:\n");
-			fprintf(fp, "-------------------\n");
-			fprintf(fp, "NNTPSERVER    : %s\n", nntp_server);
-			fprintf(fp, "NNTPPORT      : %d\n", nntp_tcp_port);
-			if (nntp_caps.type == CAPABILITIES && *nntp_caps.implementation)
-				fprintf(fp, "IMPLEMENTATION: %s\n", nntp_caps.implementation);
 
 			(void) nntp_conninfo(fp);
-#	if defined(NNTPS_ABLE)
 		}
-#	endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 	}
 #ifndef NNTP_ONLY

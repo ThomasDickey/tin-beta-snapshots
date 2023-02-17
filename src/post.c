@@ -6,7 +6,7 @@
  *  Updated   : 2022-04-08
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -3231,27 +3231,8 @@ join_references(
 		*d++ = ' ';	/* and mark this appropriately */
 		while (*c == ' ')
 			c++;
-#ifdef HAVE_MEMMOVE	/* TODO: put into a function? */
-		memmove(d, c, strlen(c) + 1);
-#else
-#	ifdef HAVE_BCOPY
-		bcopy(c, d, strlen(c) + 1);
-#	else
-		{
-			size_t l = strlen(c) + 1;
 
-			if (c < d && d < c + l) {
-				d += l;
-				c += l;
-				while (l--)
-					*--d= *--c;
-			} else {
-				while (l--)
-					*d++ = *c++;
-			}
-		}
-#	endif /* HAVE_BCOPY */
-#endif /* HAVE_MEMMOVE */
+		my_memmove(d, c, strlen(c) + 1);
 	}
 
 	strcpy(buffer, b);
@@ -3933,7 +3914,7 @@ mail_bug_report(
 	t_bool ret_code = FALSE;
 
 	wait_message(0, _(txt_mail_bug_report));
-	snprintf(subject, sizeof(subject), "BUG REPORT %s\n", page_header);
+	snprintf(subject, sizeof(subject), "BUG REPORT %.1010s\n", page_header);
 
 	if ((fp = create_mail_headers(nam, sizeof(nam), TIN_BUGREPORT_NAME, bug_addr, subject, NULL)) == NULL)
 		return FALSE;
@@ -4668,7 +4649,7 @@ repost_article(
 		fprintf(fp, "[ Newsgroups: %-*s ]\n", (int) (60 + strlen(note_h.newsgroups) - (size_t) strwidth(note_h.newsgroups)), note_h.newsgroups);
 		if (note_h.messageid)
 			fprintf(fp, "[ Message-ID: %-60s ]\n\n", note_h.messageid);
-	} else /* don't break long lines if superseeding. TODO: what about uu/mime-parts? */
+	} else /* don't break long lines if superseding. TODO: what about uu/mime-parts? */
 		resize_article(FALSE, artinfo);
 
 	{

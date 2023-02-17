@@ -6,7 +6,7 @@
  *  Updated   : 2022-08-17
  *  Notes     :
  *
- * Copyright (c) 2003-2022 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
+ * Copyright (c) 2003-2023 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

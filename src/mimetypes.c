@@ -6,7 +6,7 @@
  *  Updated   : 2022-04-09
  *  Notes     : mime.types handling
  *
- * Copyright (c) 2000-2022 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2023 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

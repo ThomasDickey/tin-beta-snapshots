@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2022-11-01
+.\" Updated   : 2023-02-01
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -15,7 +15,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24 Dezember 2021" 2.6.2 "Usenet Newsreader"
+.TH tin 1 "24 Dezember 2022" 2.6.3 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -216,7 +216,8 @@ weitere Informationen siehe den Abschnitt "AUTOMATISCHES MAILEN UND
 SPEICHERN VON UNGELESENEN ARTIKELN".
 .TP 
 \fB\-T\fP
-NNTPS (NNTP over TLS) verwenden. Nur möglich wenn via NNTP gelesen wird.
+Enable NNTPS (NNTP over TLS). This also overrides the environment variable
+$\fBNNTPPORT\fP if set. Only available when reading via NNTP.
 .TP 
 \fB\-u\fP
 Erstellt/aktualisiert Indexdateien für jede Gruppe in
@@ -231,7 +232,7 @@ Ausführliche Ausgabe für \*(rq\fB\-c\fP\*(rq, \*(rq\fB\-D\fP\*(rq, \*(rq\fB\-M
 werden, um die Ausführlichkeit zu erhöhen.
 .TP 
 \fB\-V\fP
-Versionsinformationen ausgeben.
+Versionsinformationen und Kompilieroptionen ausgeben.
 .TP 
 \fB\-w\fP
 Schnell\-Modus um nur einen Artikel zu posten. Diese Option beinhaltet
@@ -1506,7 +1507,7 @@ Note that this requires that the \*(rqMessage\-ID:\*(rq of the article was recor
 in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP which may not always be the case.
 If using NNTP and the internal inews (\fBinews_prog\fP set to "\-\-internal")
 and either the server proposes a \*(rqMessage\-ID:\*(rq during the POST
-(\fBRFC\%3977\fP) command or \fBtin\fP is build to generate \*(rqMessage\-ID:\*(rq this
+(\fBRFC\%3977\fP) command or \fBtin\fP is built to generate \*(rqMessage\-ID:\*(rq this
 should be the case. With an external inews (and reading from local spool) it
 is not.
 .TP 
@@ -1808,22 +1809,22 @@ OFF=apply to current group. Default is ON.
 \fB(default_filter_kill_header)\fP
 Voreinstellung für Schnell (1 Tasten) Killfilter Header.
 .RS +.5i
-.IP 0 4
- \*(rqSubject:\*(rq (Groß/Kleinschreibung beachten)
+.IP 0 3
+\%\*(rqSubject:\*(rq (Groß/Kleinschreibung beachten)
 .IP 1
- \*(rqSubject:\*(rq (Groß/Kleinschreibung ignorieren)
+\%\*(rqSubject:\*(rq (Groß/Kleinschreibung ignorieren)
 .IP 2
- \*(rqFrom:\*(rq (Groß/Kleinschreibung beachten)
+\%\*(rqFrom:\*(rq (Groß/Kleinschreibung beachten)
 .IP 3
- \*(rqFrom:\*(rq (Groß/Kleinschreibung ignorieren)
+\%\*(rqFrom:\*(rq (Groß/Kleinschreibung ignorieren)
 .IP 4
- \*(rqMessage\-ID:\*(rq & alle \*(rqReferences:\*(rq Einträge
+\%\*(rqMessage\-ID:\*(rq & alle \*(rqReferences:\*(rq Einträge
 .IP 5
- \*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
+\%\*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
 .IP 6
- \*(rqMessage\-ID:\*(rq allein
+\%\*(rqMessage\-ID:\*(rq allein
 .IP 7
- \*(rqLines:\*(rq
+\%\*(rqLines:\*(rq
 .RE
 .TP 
 \fB(default_filter_select_case)\fP
@@ -1841,22 +1842,22 @@ groups, OFF=apply to current group. Default is ON.
 \fB(default_filter_select_header)\fP
 Default for quick (1 key) auto\-selection filter header.
 .RS +.5i
-.IP 0 4
- \*(rqSubject:\*(rq (Groß/Kleinschreibung beachten)
+.IP 0 3
+\%\*(rqSubject:\*(rq (Groß/Kleinschreibung beachten)
 .IP 1
- \*(rqSubject:\*(rq (Groß/Kleinschreibung ignorieren)
+\%\*(rqSubject:\*(rq (Groß/Kleinschreibung ignorieren)
 .IP 2
- \*(rqFrom:\*(rq (Groß/Kleinschreibung beachten)
+\%\*(rqFrom:\*(rq (Groß/Kleinschreibung beachten)
 .IP 3
- \*(rqFrom:\*(rq (Groß/Kleinschreibung ignorieren)
+\%\*(rqFrom:\*(rq (Groß/Kleinschreibung ignorieren)
 .IP 4
- \*(rqMessage\-ID:\*(rq & alle \*(rqReferences:\*(rq Einträge
+\%\*(rqMessage\-ID:\*(rq & alle \*(rqReferences:\*(rq Einträge
 .IP 5
- \*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
+\%\*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
 .IP 6
- \*(rqMessage\-ID:\*(rq allein
+\%\*(rqMessage\-ID:\*(rq allein
 .IP 7
- \*(rqLines:\*(rq
+\%\*(rqLines:\*(rq
 .RE
 .TP 
 \fB(default_goto_group)\fP
@@ -2343,7 +2344,7 @@ If ON show a short group description text after newsgroup name at the group
 selection level. The \*(rq\fB\-d\fP\*(rq command\-line flag will override the setting
 and turn descriptions off. The text used is taken from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups\fP file and if supported (requires
-\fBtin\fP to be build with mh\-mail\-handling support) from
+\fBtin\fP to be built with mh\-mail\-handling support) from
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups\fP for mailgroups. Default is ON.
 .TP 
 \fBSortierfunktion (sort_function)\fP
@@ -3545,8 +3546,8 @@ overrides $\fBNNTPSERVER\fP.
 .TP 
 \fBNNTPPORT\fP
 The NNTP TCP\-port to read news from. This variable only needs to be set if
-the TCP\-port is not 119 (the default).  The \*(rq\fB\-p\fP\*(rq command\-line option
-overrides $\fBNNTPPORT\fP.
+the TCP\-port is not 119 (the default). The \*(rq\fB\-p\fP\*(rq and \*(rq\fB\-T\fP\*(rq
+command\-line options do override $\fBNNTPPORT\fP.
 .TP 
 \fBDISTRIBUTION\fP
 Setzen den Artikel\-Header \*(rqDistribution:\*(rq auf den Inhalt der Variablen
@@ -3688,15 +3689,14 @@ This variable determines the \fB\%locale\fP(5)  category for character handling
 functions. Usually it determines the character classes for pattern matching
 character classification and case conversion. Currently this is not true for
 \fBtin\fP (which temporary unsets \fB$LC_CTYPE\fP right before any match is done
-to avoid confusion).  It's value should be of the form
+to avoid confusion).  Its value should be of the form
 \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fB\%environ\fP(5)
 for more information.
 .TP 
 \fBLC_MESSAGES\fP
-Formats of informative and diagnostic messages and interactive responses.
-It's value should be of the form
-\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fB\%locale\fP(5)
-and \fB\%environ\fP(5)  for more information.
+Datums\- und Zeitformate. Sein Wert sollte der Form
+\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP] entsprechen. Für
+weitere Informationen siehe \fB\%locale\fP(5) und \fB\%environ\fP(5).
 .TP 
 \fBLC_TIME\fP
 Datums\- und Zeitformate. Sein Wert sollte der Form
@@ -3704,21 +3704,19 @@ Datums\- und Zeitformate. Sein Wert sollte der Form
 weitere Informationen siehe \fB\%locale\fP(5) und \fB\%environ\fP(5).
 .TP 
 \fBLC_ALL\fP
-This variable overrides the value of the \fB$LANG\fP variable and any other
-\fB$LC_\fP variable. It's value should be of the form
-\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP]. See \fB\%locale\fP(5)  and
-\fB\%environ\fP(5)  for more information.
+Datums\- und Zeitformate. Sein Wert sollte der Form
+\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP] entsprechen. Für
+weitere Informationen siehe \fB\%locale\fP(5) und \fB\%environ\fP(5).
 .TP 
 \fBLANG\fP
-This variable determines the \fB\%locale\fP(5)  category for any category not
-specifically selected with a variable starting with \fB$LC_\fP. It's value
-should be of the form \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP]. See
-\fB\%environ\fP(5)  for more information.
+Datums\- und Zeitformate. Sein Wert sollte der Form
+\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP] entsprechen. Für
+weitere Informationen siehe \fB\%locale\fP(5) und \fB\%environ\fP(5).
 .TP 
 \fBLANGUAGE\fP
 This variable defines a priority list for translations. Whenever a
 translation is not available in the language selected via \fB$LC_ALL\fP or
-\fB$LANG\fP the next language from the list is tried. It's value should be of
+\fB$LANG\fP the next language from the list is tried. Its value should be of
 the form \fIlanguage:language[:language]\fP. See \fB\%environ\fP(5)  for more
 information.
 .TP 

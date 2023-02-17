@@ -6,7 +6,7 @@
  *  Updated   : 2022-09-19
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2022 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2023 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -575,7 +575,8 @@ process_text_body_part(
 			 *       extension)?
 			 */
 			if (match_regex_ex(line, len, 0, 0, &uubegin_regex) >= 0) {
-				REGEX_SIZE* ovector = regex_get_ovector_pointer(&uubegin_regex);
+				REGEX_SIZE *ovector = regex_get_ovector_pointer(&uubegin_regex);
+
 				in_uue = TRUE;
 				curruue = new_uue(&part, line + ovector[1]);
 				if (hide_uue)

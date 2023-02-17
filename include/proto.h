@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2022-10-31
+ *  Updated   : 2023-01-28
  *  Notes     :
  *
- * Copyright (c) 1997-2022 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2023 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -338,6 +338,9 @@ extern void *my_realloc1(const char *file, int line, void *p, size_t size);
 #ifndef USE_CURSES
 	extern void init_screen_array(t_bool allocate);
 #endif /* !USE_CURSES */
+#if !defined(HAVE_MEMMOVE) && !defined(HAVE_BCOPY)
+	extern void my_memmove(void *dest, const void *src, size_t n);
+#endif /* !HAVE_MEMMOVE && !HAVE_BCOPY */
 
 /* mimetypes.c */
 extern void lookup_mimetype(const char *ext, t_part *part);
@@ -453,6 +456,9 @@ extern void nntp_close(t_bool send_no_quit);
 	extern int fgetc_server(FILE *stream);
 	extern int ungetc_server(int c, FILE *stream);
 	extern int nntp_conninfo(FILE *stream);
+#	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+	extern void set_maxartnum(t_bool reconnect);
+#	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 #endif /* NNTP_ABLE */
 
 /* nntps.c */

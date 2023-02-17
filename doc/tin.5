@@ -2,11 +2,11 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2022-11-01
+.\" Updated   : 2023-02-01
 .\" Notes     : needs a some work
 .\"
 .\"
-.TH tin 5 "December 24th, 2021" "2.6.2" "Usenet newsreader"
+.TH tin 5 "December 24th, 2022" "2.6.3" "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -232,7 +232,7 @@ priority.
 .RS
 secret to be used for cancel-locks if
 .BR \%tin (1)
-is build with support for it. An empty secret file disables the cancel-lock
+is built with support for it. An empty secret file disables the cancel-lock
 creation in that case. This file should be readable only by the user.
 .RE
 .PP
@@ -251,7 +251,7 @@ mime type / filename extension pairs
 .IR ${TIN_HOMEDIR:\-"$HOME"}/.newsauth
 .sp
 .RS
-"\fInntpserver\fR \fIpassword\fR [\fIuser\fR]" pairs for NNTP servers that
+"\fInntpserver[:port]\fR \fIpassword\fR [\fIuser\fR]" pairs for NNTP servers that
 require authorization. If the password contains a space or a tab it must be
 enclosed in double quotes ("). Usernames must not be enclosed in double quotes
 and thus can't contain spaces or tabs. Any line that starts with "#" is a
@@ -259,7 +259,8 @@ comment. Blank lines are ignored. This file should be readable only for the
 user as it contains the user's unencrypted password for reading news!
 .TP
 .B nntpserver
-full qualified domain name of the news server.
+full qualified domain name of the news server. Additionally, a port can be
+specified by appending :portnumber.
 .TP
 .B password
 user's unencrypted password for reading news.
@@ -372,7 +373,7 @@ saved newsgroups index files
 active file ("\fImailgroupname\fR \fImaxnum\fR \fIminnum\fR
 \fImailspool\fR" quadruples) of user's mailgroups (requires
 .BR \%tin (1)
-to be build with mh-mail-handling support).
+to be built with mh-mail-handling support).
 .TP
 .B mailgroupname
 must be the pathname of the mailbox relative to field #4 with '/' changed
@@ -1128,7 +1129,7 @@ is bound to NULL it is unassigned.
 .RS
 This file provides short descriptions of each mailgroup. (requires
 .BR \%tin (1)
-to be build with mh-mail-handling support). Each line consist of two
+to be built with mh-mail-handling support). Each line consist of two
 tab-separated fields "\fImailgroupname\fR \fIone-line description\fR".
 .TP
 .B mailgroupname
@@ -1142,14 +1143,15 @@ is a short single-line description of the group
 .IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable
 .sp
 .RS
-"\fInntpserver\fR \fInewsrc\fR [\fIshortname\fR [\fI...\fR]]"
+"\fInntpserver[:port]\fR \fInewsrc\fR [\fIshortname\fR [\fI...\fR]]"
 pairs to use with the ''\fB\-g\fP'' command-line switch. The matching is
 case-insensitive and any line that starts with "#", ";" or " " is treated
 as a comment.
 .TP
 .B nntpserver
-full qualified domain name of the news server. The string "default" or "*"
-acts as wildcard to match any name, such a line should be placed last.
+full qualified domain name of the news server. Additionally, a port can be
+specified by appending :portnumber. The string "default" or "*" acts as
+wildcard to match any name, such a line should be placed last.
 .TP
 .B newsrc
 related newsrc.
@@ -1356,7 +1358,7 @@ considerably speed up accessing large groups when using a slow connection.
 Default is OFF.
 .TP
 .B cancel_lock_algo
-Use this hash algorithm for cancel-locks. Only available when build with
+Use this hash algorithm for cancel-locks. Only available when built with
 cancel-lock support. none disables the generation of cancel-locks. Valid
 values are none, sha1, sha256 and sha512.
 Default is sha1.
@@ -2119,7 +2121,7 @@ selection level. The ''\fB\-d\fP'' command-line flag will override the
 setting and turn descriptions off. The text used is taken from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups\fR file and if supported (requires
 .BR \%tin (1)
-to be build with mh-mail-handling support) from
+to be built with mh-mail-handling support) from
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups\fR for mailgroups. Default is ON.
 .TP
 .B show_help_mail_sign
@@ -2296,10 +2298,20 @@ toggled in the article viewer via \fBPageToggleTex2iso\fP ('\fB"\fP').
 .TP
 .B thread_articles
 Defines which threading method to use. The choices are:
-0) Don't thread, 1) Thread on Subject only 2) Thread on References only,
-3) Thread on References then Subject (default)
-4) Thread multipart articles on Subject.
-5) Thread on Percentage Match of the Subjects
+.RS +1i
+.IP 0 3
+Don't thread
+.IP 1
+Thread on Subject only
+.IP 2
+Thread on References only
+.IP 3
+Thread on References then Subject (default)
+.IP 4
+Thread multipart articles on Subject
+.IP 5
+Thread on Percentage Match of the Subjects
+.RE
 It's also possible to set the threading type on a per group basis by setting
 the group attribute variable \fBthread_articles\fP to 0 \(en 5 in the file
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fR.

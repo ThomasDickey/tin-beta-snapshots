@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-11-01
+ *  Updated   : 2023-02-01
  *  Notes     :
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -583,6 +583,25 @@ read_cmd_line_options(
 			case 'g':	/* select alternative NNTP-server, implies -r */
 #ifdef NNTP_ABLE
 				my_strncpy(cmdline.nntpserver, optarg, sizeof(cmdline.nntpserver) - 1);
+				{ /* ":port" suffix - no IPv6-address support yet */
+					char *p;
+					unsigned short i;
+
+					if ((p = strchr(cmdline.nntpserver, ':')) != NULL) {
+						if (strrchr(cmdline.nntpserver, ':') == p) {
+							*p++ = '\0';
+
+							if ((i = (unsigned short) atoi(p)) != 0)
+								nntp_tcp_port = i;
+#	ifdef DEBUG
+							else {
+								if (debug & DEBUG_MISC) /* -> lang.c and _()? */
+									wait_message(3, "Port isn't numeric: %s:%s\n", cmdline.nntpserver, p);
+							}
+#	endif /* DEBUG */
+						}
+					}
+				}
 				cmdline.args |= CMDLINE_NNTPSERVER;
 				read_news_via_nntp = TRUE;
 #else

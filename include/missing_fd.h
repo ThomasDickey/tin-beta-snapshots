@@ -6,7 +6,7 @@
  *  Updated   : 2019-03-13
  *  Notes     :
  *
- * Copyright (c) 2019-2022 Dennis Grevenstein <dennis.grevenstein@gmail.com>
+ * Copyright (c) 2019-2023 Dennis Grevenstein <dennis.grevenstein@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

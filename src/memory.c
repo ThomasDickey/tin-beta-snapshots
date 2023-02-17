@@ -3,10 +3,10 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-08-26
+ *  Updated   : 2023-01-28
  *  Notes     :
  *
- * Copyright (c) 1991-2022 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -584,3 +584,26 @@ my_realloc1(
 	}
 	return p;
 }
+
+
+#if !defined(HAVE_MEMMOVE) && !defined(HAVE_BCOPY)
+void
+my_memmove(
+	void *dest,
+	const void *src,
+	size_t n)
+{
+	char *d = (char *) dest;
+	const char *c = (const char *) src;
+
+	if (c < d && d < c + n) {
+		d += n;
+		c += n;
+		while (n--)
+			*--d= *--c;
+	} else {
+		while (n--)
+			*d++ = *c++;
+	}
+}
+#endif /* !HAVE_MEMMOVE && !HAVE_BCOPY */
