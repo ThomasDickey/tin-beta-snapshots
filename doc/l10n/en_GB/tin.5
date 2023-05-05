@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2022-12-24
+.\" Updated   : 2023-02-01
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -248,15 +248,16 @@ mime type / filename extension pairs
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsauth\fP
 .sp
 .RS
-"\fInntpserver\fP \fIpassword\fP [\fIuser\fP]" pairs for NNTP servers that require
-authorisation. If the password contains a space or a tab it must be enclosed
-in double quotes ("). Usernames must not be enclosed in double quotes and
-thus can't contain spaces or tabs. Any line that starts with "#" is a
-comment. Blank lines are ignored. This file should be readable only for the
-user as it contains the user's unencrypted password for reading news!
+"\fInntpserver[:port]\fP \fIpassword\fP [\fIuser\fP]" pairs for NNTP servers that
+require authorisation. If the password contains a space or a tab it must be
+enclosed in double quotes ("). Usernames must not be enclosed in double
+quotes and thus can't contain spaces or tabs. Any line that starts with "#"
+is a comment. Blank lines are ignored. This file should be readable only for
+the user as it contains the user's unencrypted password for reading news!
 .TP 
 \fBnntpserver\fP
-full qualified domain name of the news server.
+full qualified domain name of the news server. Additionally, a port can be
+specified by appending :portnumber.
 .TP 
 \fBpassword\fP
 user's unencrypted password for reading news.
@@ -1121,13 +1122,14 @@ is a short single\-line description of the group
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP
 .sp
 .RS
-"\fInntpserver\fP \fInewsrc\fP [\fIshortname\fP [\fI...\fP]]" pairs to use with the
-\&\*(rq\fB\-g\fP\*(rq command\-line switch. The matching is case\-insensitive and any line
-that starts with "#", ";" or " " is treated as a comment.
+"\fInntpserver[:port]\fP \fInewsrc\fP [\fIshortname\fP [\fI...\fP]]" pairs to use with
+the \*(rq\fB\-g\fP\*(rq command\-line switch. The matching is case\-insensitive and any
+line that starts with "#", ";" or " " is treated as a comment.
 .TP 
 \fBnntpserver\fP
-full qualified domain name of the news server. The string "default" or "*"
-acts as wildcard to match any name, such a line should be placed last.
+full qualified domain name of the news server. Additionally, a port can be
+pecified by appending :portnumber. The string "default" or "*" acts as
+wildcard to match any name, such a line should be placed last.
 .TP 
 \fBnewsrc\fP
 related newsrc.

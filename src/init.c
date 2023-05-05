@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-12-25
+ *  Updated   : 2023-04-29
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -164,6 +164,9 @@ t_bool xref_supported = TRUE;
 	t_bool force_auth_on_conn_open = FALSE;	/* authenticate on connection startup */
 	unsigned short nntp_tcp_port = 0;
 	unsigned short nntp_tcp_default_port;
+#ifdef USE_ZLIB
+	t_bool use_compress = FALSE;
+#endif /* USE_ZLIB */
 #ifdef NNTPS_ABLE
 	unsigned short nntps_tcp_default_port;
 #endif /* NNTPS_ABLE */
@@ -247,9 +250,9 @@ struct t_config tinrc = {
 	-1,		/* mm_network_charset, defaults to $MM_CHARSET */
 #endif /* !CHARSET_CONVERSION */
 	"US-ASCII",		/* mm_local_charset, display charset */
-#ifdef HAVE_ICONV_OPEN_TRANSLIT
+#if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 	FALSE,	/* translit */
-#endif /* HAVE_ICONV_OPEN_TRANSLIT */
+#endif /* HAVE_ICONV_OPEN_TRANSLIT && CHARSET_CONVERSION */
 	"Newsgroups Followup-To Summary Keywords X-Comment-To",		/* news_headers_to_display */
 	"",		/* news_headers_to_not_display */
 	"%F wrote:",		/* news_quote_format */

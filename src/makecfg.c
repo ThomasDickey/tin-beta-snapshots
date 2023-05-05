@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2023-02-05
+ *  Updated   : 2023-04-09
  *  Notes     : #defines and structs for options_menu.c
  *
  * Copyright (c) 1997-2023 Thomas E. Dickey <dickey@invisible-island.net>
@@ -45,22 +45,30 @@
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
-#endif
+#endif /* HAVE_CONFIG_H */
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #else
-#define EXIT_SUCCESS 0
-#define EXIT_FAILURE 1
 extern void exit(int);
 extern void free(void*);
-#endif
+#endif /* HAVE_STDLIB_H */
+
+#ifndef EXIT_SUCCESS
+#define EXIT_SUCCESS 0
+#endif /* !EXIT_SUCCESS */
+
+#ifndef EXIT_FAILURE
+#define EXIT_FAILURE 1
+#endif /* !EXIT_FAILURE */
 
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
-#elif !defined(HAVE_STDLIB_H)
+#else
+#if !defined(HAVE_STDLIB_H)
 extern void *malloc(size_t);
-#endif
+#endif /* !HAVE_STDLIB_H */
+#endif /* HAVE_MALLOC_H */
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -69,7 +77,7 @@ extern char* strcpy(char*, const char *);
 extern int strcmp(const char*, const char *);
 extern int strncmp(const char*, const char *, size_t);
 extern size_t strlen(const char*);
-#endif
+#endif /* HAVE_STRING_H */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -96,7 +104,7 @@ MYDATA {
 static MYDATA *all_data;
 static int line_no;
 
-_Noreturn static void
+static void
 failed(
 	const char *message)
 {

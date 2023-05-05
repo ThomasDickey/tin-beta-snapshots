@@ -998,4 +998,9 @@ Added missing headers after gettext update, using autoheader
  */
 #	undef HAVE_LIB_GNUTLS
 
+/*
+ * Define to 1 if we can/should compile with zlib for COMPRESS DEFLATE
+ */
+#	undef USE_ZLIB
+
 #endif /* !TIN_AUTOCONF_H */

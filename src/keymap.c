@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2022-10-27
+ *  Updated   : 2023-04-09
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2023 Dirk Nimmich <nimmich@muenster.de>
@@ -385,7 +385,7 @@ read_keymap_file(
 				*q = '\0';
 
 			/* _territory */
-			q = territory = malloc(strlen(p) + 1);
+			q = territory = my_malloc(strlen(p) + 1);
 			while (*p && *p != '.' && *p != '@')
 				*q++ = *p++;
 			*q = '\0';
@@ -402,7 +402,7 @@ read_keymap_file(
 
 		/* .codeset */
 		if ((p = strchr(locale, '.'))) {
-			q = codeset = malloc(strlen(p) + 1);
+			q = codeset = my_malloc(strlen(p) + 1);
 			while (*p && *p != '@')
 				*q++ = *p++;
 			*q = '\0';
@@ -411,7 +411,7 @@ read_keymap_file(
 			q = normcodeset = my_strdup(codeset);
 			for (p = codeset; *p != '\0'; p++) {
 				if (isalpha(*p) || isdigit(*p) || *p == '.')
-					*q++ = (char) tolower((unsigned char) *p);
+					*q++ = (char) my_tolower((unsigned char) *p);
 			}
 			*q = '\0';
 		}

@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2022-12-14
+ *  Updated   : 2023-03-15
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2023 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -77,6 +77,10 @@ tintls_init(
 
 #ifdef USE_LIBTLS
 
+	/*
+	 * libtls does not support compression, no actions needed to disable.
+	 */
+
 	libtls_config = tls_config_new();
 	if (!libtls_config)
 		return -ENOMEM;
@@ -99,6 +103,13 @@ tintls_init(
 
 #else
 #	ifdef USE_GNUTLS
+
+	/*
+	 * GnuTLS does no longer support any compression since 3.6.0, no
+	 * actions needed to disable, see:
+	 * https://www.gnutls.org/manual/gnutls.html#Compression-algorithms-and-the-record-layer
+	 */
+
 #		ifdef DEBUG
 	if (debug & DEBUG_NNTP) {
 		gnutls_global_set_log_level(2);
@@ -142,6 +153,14 @@ tintls_init(
 		show_errors(_("SSL_CTX_new: %s!\n"));
 		return -ENOMEM;
 	}
+
+	/*
+	 * OpenSSL still can support compression, but this option should
+	 * already be enabled by default. We want to make sure that TLS
+	 * compression is not enabled in any case.
+	 * See e.g. RFC 8054 Section 1.1
+	 */
+	SSL_CTX_set_options(openssl_ctx, SSL_OP_NO_COMPRESSION);
 
 	if (ca_cert_file[0] == '\0') {
 		result = SSL_CTX_set_default_verify_paths(openssl_ctx);
@@ -223,9 +242,8 @@ tintls_open(
 	*session_ctx = NULL;
 
 	client = tls_client();
-	if (!client) {
+	if (!client)
 		return -ENOMEM;
-	}
 
 	result = tls_configure(client, libtls_config);
 	if (result == -1) {
@@ -252,10 +270,9 @@ tintls_open(
 
 	*session_ctx = NULL;
 
-	result = gnutls_init(&client, GNUTLS_CLIENT|GNUTLS_AUTO_REAUTH|GNUTLS_POST_HANDSHAKE_AUTH);
-	if (result < 0) {
+	result = gnutls_init(&client, GNUTLS_CLIENT | GNUTLS_AUTO_REAUTH | GNUTLS_POST_HANDSHAKE_AUTH);
+	if (result < 0)
 		return -ENOMEM;
-	}
 
 	result = gnutls_server_name_set(client, GNUTLS_NAME_DNS, servername, strlen(servername));
 	if (result < 0) {
@@ -364,6 +381,7 @@ tintls_handshake(
 
 	if (result < 0) {
 		const char *err = tls_error(client);
+
 		error_message(2, "TLS handshake failed: %s!\n", err ? err : "unknown error");
 		return -EPROTO;
 	}
@@ -414,7 +432,7 @@ tintls_handshake(
 			gnutls_free(msg.data);
 		}
 
-		error_message(2, "TLS handshake failed: %s!\n", gnutls_strerror(result));
+		error_message(2, "TLS handshake failed: %s (%d)\n", gnutls_strerror(result), result);
 
 		return -EPROTO;
 	} else {
@@ -454,25 +472,25 @@ tintls_handshake(
 
 			result = gnutls_x509_crt_init(&servercert);
 			if (result < 0) {
-				error_message(1, "gnutls_x509_crt_init: %s\n", gnutls_strerror(result));
+				error_message(1, "gnutls_x509_crt_init: %s (%d)\n", gnutls_strerror(result), result);
 				goto err_cert;
 			}
 
 			result = gnutls_x509_crt_import(servercert, &raw_servercert_chain[0], GNUTLS_X509_FMT_DER);
 			if (result < 0) {
-				error_message(1, "gnutls_x509_crt_import: %s\n", gnutls_strerror(result));
+				error_message(1, "gnutls_x509_crt_import: %s (%d)\n", gnutls_strerror(result), result);
 				goto err_cert;
 			}
 
 			result = gnutls_x509_crt_get_dn3(servercert, &subject, 0);
 			if (result < 0) {
-				error_message(1, "gnutls_x509_crt_get_dn3: %s\n", gnutls_strerror(result));
+				error_message(1, "gnutls_x509_crt_get_dn3: %s (%d)\n", gnutls_strerror(result), result);
 				goto err_cert;
 			}
 
 			result = gnutls_x509_crt_get_issuer_dn3(servercert, &issuer, 0);
 			if (result < 0) {
-				error_message(1, "gnutls_x509_crt_get_issuer_dn3: %s\n", gnutls_strerror(result));
+				error_message(1, "gnutls_x509_crt_get_issuer_dn3: %s (%d)\n", gnutls_strerror(result), result);
 				goto err_cert;
 			}
 
@@ -488,7 +506,6 @@ err_cert:
 				gnutls_free(subject.data);
 			if (servercert)
 				gnutls_x509_crt_deinit(servercert);
-
 		}
 
 		desc = gnutls_session_get_desc(client);
@@ -565,7 +582,7 @@ tintls_read(
 	} while (result == TLS_WANT_POLLIN || result == TLS_WANT_POLLOUT);
 
 	return result;
-	/*NOTREACHED*/
+	/* NOTREACHED */
 #else
 #	ifdef USE_GNUTLS
 	ssize_t result = GNUTLS_E_AGAIN;
@@ -576,7 +593,7 @@ tintls_read(
 	}
 
 	return result;
-	/*NOTREACHED*/
+	/* NOTREACHED */
 #	else
 #		ifdef USE_OPENSSL
 	size_t bytes_read;
@@ -615,7 +632,7 @@ tintls_write(
 	} while (result == TLS_WANT_POLLOUT || result == TLS_WANT_POLLIN);
 
 	return result;
-	/*NOTREACHED*/
+	/* NOTREACHED */
 #else
 #	ifdef USE_GNUTLS
 	ssize_t result = GNUTLS_E_AGAIN;
@@ -626,7 +643,7 @@ tintls_write(
 	}
 
 	return result;
-	/*NOTREACHED*/
+	/* NOTREACHED */
 #	else
 #		ifdef USE_OPENSSL
 	int result;
@@ -668,7 +685,7 @@ tintls_close(
 		return -EPROTO;
 
 	return result;
-	/*NOTREACHED*/
+	/* NOTREACHED */
 #else
 #	ifdef USE_GNUTLS
 	int result;
@@ -765,7 +782,7 @@ tintls_conninfo(
 
 		if (result == 0) {
 			fprintf(fp, "Server certificate verification FAILED:\n\t%s (%s)\n", msg.data,
-					insecure_nntps ? "tolerated as -k (insecure) requested" : "UNEXPECTED, possible BUG");
+					insecure_nntps ? "tolerated as \"-k\" (insecure) requested" : "UNEXPECTED, possible BUG");
 		} else
 			fprintf(fp, "Server certificate verification FAILED: <can't get reason>\n");
 
@@ -789,31 +806,29 @@ tintls_conninfo(
 		fprintf(fp, "Certificate #%d\n", i);
 
 		result = gnutls_x509_crt_init(&servercert);
-		if (result < 0) {
+		if (result < 0)
 			goto err_cert;
-		}
 
 		result = gnutls_x509_crt_import(servercert, &raw_servercert_chain[i], GNUTLS_X509_FMT_DER);
-		if (result < 0) {
+		if (result < 0)
 			goto err_cert;
-		}
 
 		result = gnutls_x509_crt_get_dn3(servercert, &subject, 0);
-		if (result < 0) {
+		if (result < 0)
 			goto err_cert;
-		}
+
 		fprintf(fp, "Subject: %s\n", subject.data);
 
 		result = gnutls_x509_crt_get_issuer_dn3(servercert, &issuer, 0);
-		if (result < 0) {
+		if (result < 0)
 			goto err_cert;
-		}
+
 		fprintf(fp, "Issuer : %s\n", issuer.data);
 
 		t = gnutls_x509_crt_get_activation_time(servercert);
-		if (t == -1) {
+		if (t == -1)
 			goto err_cert;
-		}
+
 		tm = localtime(&t);
 		result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm); /* make format configurable? */
 		if (result < 0)
@@ -821,9 +836,9 @@ tintls_conninfo(
 		fprintf(fp, txt_valid_not_before, fmt_time);
 
 		t = gnutls_x509_crt_get_expiration_time(servercert);
-		if (t == -1) {
+		if (t == -1)
 			goto err_cert;
-		}
+
 		tm = localtime(&t);
 		result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm);
 		if (result < 0)
@@ -839,7 +854,6 @@ err_cert:
 			gnutls_free(subject.data);
 		if (servercert)
 			gnutls_x509_crt_deinit(servercert);
-
 	}
 
 	return retval;
@@ -865,7 +879,7 @@ err_cert:
 	if (verification_result != X509_V_OK)
 		fprintf(fp, "Server certificate verification FAILED:\n\t%s (%s)\n",
 			X509_verify_cert_error_string(verification_result),
-			insecure_nntps ? "tolerated as -k (insecure) requested" : "UNEXPECTED, possible BUG");
+			insecure_nntps ? "tolerated as \"-k\" (insecure) requested" : "UNEXPECTED, possible BUG");
 	else
 		fprintf(fp, "Server certificate verified successfully.\n");
 
@@ -880,8 +894,8 @@ err_cert:
 	if (chain) {
 		char name[128];
 		const ASN1_TIME *asn1;
-		struct tm tm;
 		int i;
+		struct tm tm;
 
 		for (i = 0; i < sk_X509_num(chain); i++) {
 			X509* cert = sk_X509_value(chain, i);
@@ -963,6 +977,7 @@ log_func(
 	const char *msg)
 {
 	int msglen = (int) strlen(msg);
+
 	if (msglen <= 0)
 		return;
 

@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-27
+ *  Updated   : 2023-02-22
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -2669,9 +2669,8 @@ build_url_list(
 				offsets = regex_get_ovector_pointer(&mail_regex);
 			} else if (match_regex_ex(ptr, (int) strlen(ptr), 0, 0, &news_regex) >= 0) {
 				offsets = regex_get_ovector_pointer(&news_regex);
-			} else {
+			} else
 				break;
-			}
 
 			*(ptr + offsets[1]) = '\0';
 

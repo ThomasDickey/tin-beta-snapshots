@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-27
+ *  Updated   : 2023-02-22
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1653,9 +1653,8 @@ show_article_by_msgid(
 	t_bool tmp_cache_overview_files;
 	t_bool tmp_show_only_unread_arts;
 
-	if (!(read_news_via_nntp && !read_saved_news)) {
+	if (!(read_news_via_nntp && !read_saved_news))
 		return LOOKUP_UNAVAIL;
-	}
 
 	if (messageid) {
 		idptr = messageid;

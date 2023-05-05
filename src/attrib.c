@@ -1221,27 +1221,27 @@ write_attributes_file(
 	 *       move strings to lang.c
 	 */
 	fprintf(fp, "# Group attributes file V%s for the TIN newsreader\n", ATTRIBUTES_VERSION);
-	fprintf(fp, _("# Do not edit this comment block\n#\n"));
-	fprintf(fp, _("#  scope=STRING (eg. alt.*,!alt.bin*) [mandatory]\n"));
-	fprintf(fp, _("#  add_posted_to_filter=ON/OFF\n"));
-	fprintf(fp, _("#  advertising=ON/OFF\n"));
-	fprintf(fp, _("#  alternative_handling=ON/OFF\n"));
-	fprintf(fp, _("#  ask_for_metamail=ON/OFF\n"));
-	fprintf(fp, _("#  auto_cc_bcc=NUM\n"));
-	fprintf(fp, _("#    0=No, 1=Cc, 2=Bcc, 3=Cc and Bcc\n"));
-	fprintf(fp, _("#  auto_list_thread=ON/OFF\n"));
-	fprintf(fp, _("#  auto_select=ON/OFF\n"));
-	fprintf(fp, _("#  batch_save=ON/OFF\n"));
-	fprintf(fp, _("#  date_format=STRING (eg. %%a, %%d %%b %%Y %%H:%%M:%%S)\n"));
-	fprintf(fp, _("#  delete_tmp_files=ON/OFF\n"));
-	fprintf(fp, _("#  editor_format=STRING (eg. %%E +%%N %%F)\n"));
-	fprintf(fp, _("#  fcc=STRING (eg. =mailbox)\n"));
-	fprintf(fp, _("#  followup_to=STRING\n"));
-	fprintf(fp, _("#  from=STRING (just append wanted From:-line, don't use quotes)\n"));
-	fprintf(fp, _("#  group_catchup_on_exit=ON/OFF\n"));
-	fprintf(fp, _("#  group_format=STRING (eg. %%n %%m %%R %%L  %%s  %%F)\n"));
-	fprintf(fp, _("#  mail_8bit_header=ON/OFF\n"));
-	fprintf(fp, _("#  mail_mime_encoding=supported_encoding"));
+	fprintf(fp, "%s", _("# Do not edit this comment block\n#\n"));
+	fprintf(fp, "%s", _("#  scope=STRING (eg. alt.*,!alt.bin*) [mandatory]\n"));
+	fprintf(fp, "%s", _("#  add_posted_to_filter=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  advertising=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  alternative_handling=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  ask_for_metamail=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  auto_cc_bcc=NUM\n"));
+	fprintf(fp, "%s", _("#    0=No, 1=Cc, 2=Bcc, 3=Cc and Bcc\n"));
+	fprintf(fp, "%s", _("#  auto_list_thread=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  auto_select=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  batch_save=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  date_format=STRING (eg. %%a, %%d %%b %%Y %%H:%%M:%%S)\n"));
+	fprintf(fp, "%s", _("#  delete_tmp_files=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  editor_format=STRING (eg. %%E +%%N %%F)\n"));
+	fprintf(fp, "%s", _("#  fcc=STRING (eg. =mailbox)\n"));
+	fprintf(fp, "%s", _("#  followup_to=STRING\n"));
+	fprintf(fp, "%s", _("#  from=STRING (just append wanted From:-line, don't use quotes)\n"));
+	fprintf(fp, "%s", _("#  group_catchup_on_exit=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  group_format=STRING (eg. %%n %%m %%R %%L  %%s  %%F)\n"));
+	fprintf(fp, "%s", _("#  mail_8bit_header=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  mail_mime_encoding=supported_encoding"));
 	for (i = 0; txt_mime_encodings[i] != NULL; i++) {
 		if (!(i % 5))
 			fprintf(fp, "\n#    ");
@@ -1249,84 +1249,84 @@ write_attributes_file(
 	}
 	fprintf(fp, "\n");
 #ifdef HAVE_ISPELL
-	fprintf(fp, _("#  ispell=STRING\n"));
+	fprintf(fp, "%s", _("#  ispell=STRING\n"));
 #endif /* HAVE_ISPELL */
-	fprintf(fp, _("#  maildir=STRING (eg. ~/Mail)\n"));
-	fprintf(fp, _("#  mailing_list=STRING (eg. majordomo@example.org)\n"));
-	fprintf(fp, _("#  mime_types_to_save=STRING (eg. image/*,!image/bmp)\n"));
-	fprintf(fp, _("#  mark_ignore_tags=ON/OFF\n"));
-	fprintf(fp, _("#  mark_saved_read=ON/OFF\n"));
-	fprintf(fp, _("#  mime_forward=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  maildir=STRING (eg. ~/Mail)\n"));
+	fprintf(fp, "%s", _("#  mailing_list=STRING (eg. majordomo@example.org)\n"));
+	fprintf(fp, "%s", _("#  mime_types_to_save=STRING (eg. image/*,!image/bmp)\n"));
+	fprintf(fp, "%s", _("#  mark_ignore_tags=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  mark_saved_read=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  mime_forward=ON/OFF\n"));
 #ifdef CHARSET_CONVERSION
-	fprintf(fp, _("#  mm_network_charset=supported_charset"));
+	fprintf(fp, "%s", _("#  mm_network_charset=supported_charset"));
 	for (i = 0; txt_mime_charsets[i] != NULL; i++) {
 		if (!(i % 5)) /* start new line */
 			fprintf(fp, "\n#    ");
 		fprintf(fp, "%s, ", txt_mime_charsets[i]);
 	}
 	fprintf(fp, "\n");
-	fprintf(fp, _("#  undeclared_charset=STRING (default is US-ASCII)\n"));
+	fprintf(fp, "%s", _("#  undeclared_charset=STRING (default is US-ASCII)\n"));
 #endif /* CHARSET_CONVERSION */
-	fprintf(fp, _("#  news_headers_to_display=STRING\n"));
-	fprintf(fp, _("#  news_headers_to_not_display=STRING\n"));
-	fprintf(fp, _("#  news_quote_format=STRING\n"));
-	fprintf(fp, _("#  organization=STRING (if beginning with '/' read from file)\n"));
-	fprintf(fp, _("#  pos_first_unread=ON/OFF\n"));
-	fprintf(fp, _("#  post_8bit_header=ON/OFF\n"));
-	fprintf(fp, _("#  post_mime_encoding=supported_encoding"));
+	fprintf(fp, "%s", _("#  news_headers_to_display=STRING\n"));
+	fprintf(fp, "%s", _("#  news_headers_to_not_display=STRING\n"));
+	fprintf(fp, "%s", _("#  news_quote_format=STRING\n"));
+	fprintf(fp, "%s", _("#  organization=STRING (if beginning with '/' read from file)\n"));
+	fprintf(fp, "%s", _("#  pos_first_unread=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  post_8bit_header=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  post_mime_encoding=supported_encoding"));
 	for (i = 0; txt_mime_encodings[i] != NULL; i++) {
 		if (!(i % 5))
 			fprintf(fp, "\n#    ");
 		fprintf(fp, "%s, ", txt_mime_encodings[i]);
 	}
 	fprintf(fp, "\n");
-	fprintf(fp, _("#  post_process_type=NUM\n"));
+	fprintf(fp, "%s", _("#  post_process_type=NUM\n"));
 	fprintf(fp, "#    %d=%s, %d=%s, %d=%s\n",
 		POST_PROC_NO, _(txt_post_process_types[POST_PROC_NO]),
 		POST_PROC_SHAR, _(txt_post_process_types[POST_PROC_SHAR]),
 		POST_PROC_YES, _(txt_post_process_types[POST_PROC_YES]));
-	fprintf(fp, _("#  post_process_view=ON/OFF\n"));
-	fprintf(fp, _("#  quick_kill_scope=STRING (e.g. talk.*)\n"));
-	fprintf(fp, _("#  quick_kill_expire=ON/OFF\n"));
-	fprintf(fp, _("#  quick_kill_case=ON/OFF\n"));
-	fprintf(fp, _("#  quick_kill_header=NUM\n"));
-	fprintf(fp, _("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n"));
-	fprintf(fp, _("#    2=From: (case sensitive)     3=From: (ignore case)\n"));
-	fprintf(fp, _("#    4=Message-ID: & full References: line\n"));
-	fprintf(fp, _("#    5=Message-ID: & last References: entry only\n"));
-	fprintf(fp, _("#    6=Message-ID: entry only     7=Lines:\n"));
-	fprintf(fp, _("#  quick_select_scope=STRING\n"));
-	fprintf(fp, _("#  quick_select_expire=ON/OFF\n"));
-	fprintf(fp, _("#  quick_select_case=ON/OFF\n"));
-	fprintf(fp, _("#  quick_select_header=NUM\n"));
-	fprintf(fp, _("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n"));
-	fprintf(fp, _("#    2=From: (case sensitive)     3=From: (ignore case)\n"));
-	fprintf(fp, _("#    4=Message-ID: & full References: line\n"));
-	fprintf(fp, _("#    5=Message-ID: & last References: entry only\n"));
-	fprintf(fp, _("#    6=Message-ID: entry only     7=Lines:\n"));
-	fprintf(fp, _("#  quote_chars=STRING (%%I for initials)\n"));
+	fprintf(fp, "%s", _("#  post_process_view=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  quick_kill_scope=STRING (e.g. talk.*)\n"));
+	fprintf(fp, "%s", _("#  quick_kill_expire=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  quick_kill_case=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  quick_kill_header=NUM\n"));
+	fprintf(fp, "%s", _("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n"));
+	fprintf(fp, "%s", _("#    2=From: (case sensitive)     3=From: (ignore case)\n"));
+	fprintf(fp, "%s", _("#    4=Message-ID: & full References: line\n"));
+	fprintf(fp, "%s", _("#    5=Message-ID: & last References: entry only\n"));
+	fprintf(fp, "%s", _("#    6=Message-ID: entry only     7=Lines:\n"));
+	fprintf(fp, "%s", _("#  quick_select_scope=STRING\n"));
+	fprintf(fp, "%s", _("#  quick_select_expire=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  quick_select_case=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  quick_select_header=NUM\n"));
+	fprintf(fp, "%s", _("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n"));
+	fprintf(fp, "%s", _("#    2=From: (case sensitive)     3=From: (ignore case)\n"));
+	fprintf(fp, "%s", _("#    4=Message-ID: & full References: line\n"));
+	fprintf(fp, "%s", _("#    5=Message-ID: & last References: entry only\n"));
+	fprintf(fp, "%s", _("#    6=Message-ID: entry only     7=Lines:\n"));
+	fprintf(fp, "%s", _("#  quote_chars=STRING (%%I for initials)\n"));
 #ifndef DISABLE_PRINTING
-	fprintf(fp, _("#  print_header=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  print_header=ON/OFF\n"));
 #endif /* !DISABLE_PRINTING */
-	fprintf(fp, _("#  process_only_unread=ON/OFF\n"));
-	fprintf(fp, _("#  prompt_followupto=ON/OFF\n"));
-	fprintf(fp, _("#  savedir=STRING (eg. ~user/News)\n"));
-	fprintf(fp, _("#  savefile=STRING (eg. =linux)\n"));
-	fprintf(fp, _("#  sigfile=STRING (eg. $var/sig)\n"));
-	fprintf(fp, _("#  show_author=NUM\n"));
+	fprintf(fp, "%s", _("#  process_only_unread=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  prompt_followupto=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  savedir=STRING (eg. ~user/News)\n"));
+	fprintf(fp, "%s", _("#  savefile=STRING (eg. =linux)\n"));
+	fprintf(fp, "%s", _("#  sigfile=STRING (eg. $var/sig)\n"));
+	fprintf(fp, "%s", _("#  show_author=NUM\n"));
 	fprintf(fp, "#    %d=%s, %d=%s, %d=%s, %d=%s\n",
 		SHOW_FROM_NONE, _(txt_show_from[SHOW_FROM_NONE]),
 		SHOW_FROM_ADDR, _(txt_show_from[SHOW_FROM_ADDR]),
 		SHOW_FROM_NAME, _(txt_show_from[SHOW_FROM_NAME]),
 		SHOW_FROM_BOTH, _(txt_show_from[SHOW_FROM_BOTH]));
-	fprintf(fp, _("#  show_signatures=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  show_signatures=ON/OFF\n"));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	fprintf(fp, _("#  suppress_soft_hyphens=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  suppress_soft_hyphens=ON/OFF\n"));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	fprintf(fp, _("#  show_only_unread_arts=ON/OFF\n"));
-	fprintf(fp, _("#  sigdashes=ON/OFF\n"));
-	fprintf(fp, _("#  signature_repost=ON/OFF\n"));
-	fprintf(fp, _("#  sort_article_type=NUM\n"));
+	fprintf(fp, "%s", _("#  show_only_unread_arts=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  sigdashes=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  signature_repost=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  sort_article_type=NUM\n"));
 	fprintf(fp, "#    %d=%s,\n",
 		SORT_ARTICLES_BY_NOTHING, _(txt_sort_a_type[SORT_ARTICLES_BY_NOTHING]));
 	fprintf(fp, "#    %d=%s, %d=%s,\n",
@@ -1344,7 +1344,7 @@ write_attributes_file(
 	fprintf(fp, "#    %d=%s, %d=%s\n",
 		SORT_ARTICLES_BY_LINES_DESCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_LINES_DESCEND]),
 		SORT_ARTICLES_BY_LINES_ASCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_LINES_ASCEND]));
-	fprintf(fp, _("#  sort_threads_type=NUM\n"));
+	fprintf(fp, "%s", _("#  sort_threads_type=NUM\n"));
 	fprintf(fp, "#    %d=%s, %d=%s, %d=%s\n",
 		SORT_THREADS_BY_NOTHING, _(txt_sort_t_type[SORT_THREADS_BY_NOTHING]),
 		SORT_THREADS_BY_SCORE_DESCEND, _(txt_sort_t_type[SORT_THREADS_BY_SCORE_DESCEND]),
@@ -1353,37 +1353,37 @@ write_attributes_file(
 		SORT_THREADS_BY_LAST_POSTING_DATE_DESCEND, _(txt_sort_t_type[SORT_THREADS_BY_LAST_POSTING_DATE_DESCEND]));
 	fprintf(fp, "#    %d=%s\n",
 		SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND, _(txt_sort_t_type[SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND]));
-	fprintf(fp, _("#  tex2iso_conv=ON/OFF\n"));
-	fprintf(fp, _("#  thread_catchup_on_exit=ON/OFF\n"));
-	fprintf(fp, _("#  thread_articles=NUM"));
+	fprintf(fp, "%s", _("#  tex2iso_conv=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  thread_catchup_on_exit=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  thread_articles=NUM"));
 	for (i = 0; i <= THREAD_MAX; i++) {
 		if (!(i % 2))
 			fprintf(fp, "\n#    ");
 		fprintf(fp, "%d=%s, ", i, _(txt_threading[i]));
 	}
 	fprintf(fp, "\n");
-	fprintf(fp, _("#  thread_format=STRING (eg. %%n %%m [%%L]  %%T  %%F)\n"));
-	fprintf(fp, _("#  thread_perc=NUM\n"));
-	fprintf(fp, _("#  trim_article_body=NUM\n"));
-	fprintf(fp, _("#    0 = Don't trim article body\n"));
-	fprintf(fp, _("#    1 = Skip leading blank lines\n"));
-	fprintf(fp, _("#    2 = Skip trailing blank lines\n"));
-	fprintf(fp, _("#    3 = Skip leading and trailing blank lines\n"));
-	fprintf(fp, _("#    4 = Compact multiple blank lines between text blocks\n"));
-	fprintf(fp, _("#    5 = Compact multiple blank lines between text blocks and skip\n#        leading blank lines\n"));
-	fprintf(fp, _("#    6 = Compact multiple blank lines between text blocks and skip\n#        trailing blank lines\n"));
-	fprintf(fp, _("#    7 = Compact multiple blank lines between text blocks and skip\n#        leading and trailing blank lines\n"));
-	fprintf(fp, _("#  verbatim_handling=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  thread_format=STRING (eg. %%n %%m [%%L]  %%T  %%F)\n"));
+	fprintf(fp, "%s", _("#  thread_perc=NUM\n"));
+	fprintf(fp, "%s", _("#  trim_article_body=NUM\n"));
+	fprintf(fp, "%s", _("#    0 = Don't trim article body\n"));
+	fprintf(fp, "%s", _("#    1 = Skip leading blank lines\n"));
+	fprintf(fp, "%s", _("#    2 = Skip trailing blank lines\n"));
+	fprintf(fp, "%s", _("#    3 = Skip leading and trailing blank lines\n"));
+	fprintf(fp, "%s", _("#    4 = Compact multiple blank lines between text blocks\n"));
+	fprintf(fp, "%s", _("#    5 = Compact multiple blank lines between text blocks and skip\n#        leading blank lines\n"));
+	fprintf(fp, "%s", _("#    6 = Compact multiple blank lines between text blocks and skip\n#        trailing blank lines\n"));
+	fprintf(fp, "%s", _("#    7 = Compact multiple blank lines between text blocks and skip\n#        leading and trailing blank lines\n"));
+	fprintf(fp, "%s", _("#  verbatim_handling=ON/OFF\n"));
 #ifdef HAVE_COLOR
-	fprintf(fp, _("#  extquote_handling=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  extquote_handling=ON/OFF\n"));
 #endif /* HAVE_COLOR */
-	fprintf(fp, _("#  wrap_on_next_unread=ON/OFF\n"));
-	fprintf(fp, _("#  x_body=STRING (eg. ~/.tin/extra-body-text)\n"));
-	fprintf(fp, _("#  x_comment_to=ON/OFF\n"));
-	fprintf(fp, _("#  x_headers=STRING (eg. ~/.tin/extra-headers)\n"));
-	fprintf(fp, _("#\n# Note that it is best to put general (global scoping)\n"));
-	fprintf(fp, _("# entries first followed by group specific entries.\n#\n"));
-	fprintf(fp, _("############################################################################\n"));
+	fprintf(fp, "%s", _("#  wrap_on_next_unread=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  x_body=STRING (eg. ~/.tin/extra-body-text)\n"));
+	fprintf(fp, "%s", _("#  x_comment_to=ON/OFF\n"));
+	fprintf(fp, "%s", _("#  x_headers=STRING (eg. ~/.tin/extra-headers)\n"));
+	fprintf(fp, "%s", _("#\n# Note that it is best to put general (global scoping)\n"));
+	fprintf(fp, "%s", _("# entries first followed by group specific entries.\n#\n"));
+	fprintf(fp, "%s", _("############################################################################\n"));
 
 	/*
 	 * determine the file offset

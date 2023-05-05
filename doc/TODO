@@ -117,10 +117,6 @@ o  add code for more TLS/SSL libraries (wolfSSL, mbed TLS, BearSSL, MatrixSSL,
 
 o  configure check for OpenSSL currently depends on pkg-config
 
-o  add "COMPRESS DEFLATE" support
-   <https://www.rfc-editor.org/rfc/rfc8054.txt>
-   [20100122 Urs Janssen <urs@tin.org>]
-
 o  add possibility to dump the current key mapping to a file
 
 o  make the group status flag (moderated, new, bogus, ...) configurable
@@ -596,6 +592,9 @@ o  add missing mailcap (RFC 1524) features: %n, %F, copiousoutput, print,
 
 o  add BiDi handling to page header
 
+o  add trn like $HIDELINE tinrc-option to skip lines matching the given
+   regex when displaying (pipeing, printing, saving or quoting) an article.
+
 Internal Changes
 ----------------
 o  use tin_gettime() in *StopWatch() instead of ftime(3)
@@ -761,7 +760,7 @@ o  some non fixed width strings could be formatted nicer (warp on last space
    before cCOLS), e.g. txt_warn_downgrade
    [20110325 Urs Janssen <urs@tin.org>]
 
-o  too much code is compiled when configured NO_POSTING
+o  too much code is compiled when configured NO_POSTING or without NNTP
    [20210206 Urs Janssen <urs@tin.org>]
 
 Unicode
@@ -796,7 +795,8 @@ o  add IDNA 2003 (RFC 3490ff.) and IDNA 2008 (RFC 5890ff.) support,
 o  add normalization
    (via <http://site.icu-project.org/> or
    <http://www.gnu.org/software/libidn/> or
-   <http://www.gnu.org/software/libunistring/>)
+   <http://www.gnu.org/software/libunistring/> or
+   <https://github.com/JuliaStrings/utf8proc/>)
    (done for search strings and threading, missing for filtering etc. pp.)
    [20031209 Michael Bienia <michael@vorlon.ping.de>]
 
@@ -862,6 +862,9 @@ o  the limited pgp support (inline pgp as of RFC 4880, just signature
 
 Not yet classified
 ------------------
+o  shouldn't misc.c:strfmailer() handle '\n' like misc.c:strfeditor()
+   and pass it on as is?
+
 o  should -X (no overwrite) and/or -G/tinrc.getart_limit with
    cache_overview_files=ON warn that tin will not cache the overviews?
 

@@ -4,7 +4,7 @@
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
  *  Updated   : 2016-01-01
- *  Notes     : rfc2046 MIME article definitions
+ *  Notes     : RFC 2046 MIME article definitions
  *
  * Copyright (c) 2000-2023 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
@@ -121,7 +121,7 @@ typedef struct partlist {
 
 
 /*
- * RFC822 compliant header with RFC2045 MIME extensions
+ * RFC 822 compliant header with RFC 2045 MIME extensions
  */
 struct t_header
 {

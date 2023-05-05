@@ -22,7 +22,8 @@ The following configure options and defines are documented in detail:
   --disable-break-long-lines              --with-coffee
   --enable-broken-listgroup-fix           --with-curses-dir
   --enable-broken-system-fix              --with-dbmalloc
-  --enable-cancel-locks                   --with-defaults-dir
+  --enable-cancel-locks                   --with-canlock
+                                          --with-defaults-dir
   --enable-color                          --with-dmalloc
   --enable-curses                         --with-domain-name
   --enable-debug                          --with-editor
@@ -52,6 +53,7 @@ The following configure options and defines are documented in detail:
   --enable-xhdr-xref                      --with-spooldir
   --exec-prefix                           --with-sum
   --mandir                                --with-trace
+                                          --with-zlib
 
   ENFORCE_RFC1034                         HAVE_UUDEVIEW_H
   EVIL_INSIDE                             NNTP_INEWS
@@ -308,6 +310,10 @@ the NNTP RFC and support for them may sensible increases tins memory usage.
 If SMALL_MEMORY_MACHINE is defined --enable-long-article-numbers has no
 effect.
 
+--with-zlib (default: on)
+Check for zlib compression/decompression library and link against it if
+available. This is a prerequisite for the -C cmd-line switch which can be
+used to activate NNTP compression as defined in RFC 8054.
 
 Options to set some default values
 ----------------------------------
@@ -565,11 +571,11 @@ The --enable-nls option enables Native Language Support (NLS), which allows
 tin to run in languages other than American English. Native Language
 Support is enabled by default, the --disable-nls option disables NLS.
 
---with-included-gettext (default:off)
+--with-included-gettext (default: off)
 If NLS is enabled, the --with-included-gettext option causes the build
 procedure to prefer its copy of GNU gettext.
 
---disable-included-msgs (default:off)
+--disable-included-msgs (default: off)
 If NLS is enabled, the --disable-included-msgs option causes the build
 procedure to assume message libraries are already installed, and to
 not build them.

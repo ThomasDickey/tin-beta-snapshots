@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-11-03
+ *  Updated   : 2023-05-03
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -150,9 +150,6 @@ constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=sha
 constext txt_command_failed[] = N_("Command failed: %s");
 constext txt_copyright_notice[] = "%s (c) Copyright 1991-2023 Iain Lea.";
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
-#ifdef NNTP_ABLE
-	constext txt_connecting[] = N_("Connecting to %s...");
-#endif /* NNTP_ABLE */
 constext txt_connection_info[] = N_("Connection Info");
 constext txt_cook_article_failed_exiting[] = N_("Cook article failed, %s is exiting");
 constext txt_cr[] = N_("<CR>");
@@ -193,6 +190,9 @@ constext txt_error_bad_to[] = N_("\nError: Bad address in To: header.\n");
 	constext txt_error_couldnt_dotlock[] = N_("Couldn't dotlock %s - article not appended!");
 	constext txt_error_couldnt_lock[] = N_("Couldn't lock %s - article not appended!");
 #endif /* !NO_LOCKING */
+#if defined(NNTP_ABLE) && defined(USE_ZLIB)
+	constext txt_error_compression_auth[] = N_("Server requires authentication but compression (-C) is already active.\nRestart %s with -A cmd.-line switch in conjunction with -C.\n");
+#endif /* NNTP_ABLE && USE_ZLIB */
 constext txt_error_copy_fp[] = "copy_fp() failed";
 constext txt_error_corrupted_file[] = N_("Corrupted file %s");
 constext txt_error_fseek[] = "fseek() error on [%s]";
@@ -1132,6 +1132,9 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_no_xover_support[] = N_("Your server does not support the NNTP XOVER or OVER command.\n");
 	constext txt_reconnect_to_news_server[] = N_("Connection to news server has timed out. Reconnect?");
 	constext txt_server_name_in_file_env_var[] = N_("Put the server name in the file %s,\nor set the environment variable NNTPSERVER");
+#ifdef USE_ZLIB
+	constext txt_usage_compress[] = N_("  -C       try COMPRESS NNTP extension");
+#endif /* USE_ZLIB */
 	constext txt_usage_force_authentication[] = N_("  -A       force authentication on connect");
 	constext txt_usage_newsserver[] = N_("  -g serv  read news from NNTP server serv [default=%s]");
 	constext txt_usage_port[] = N_("  -p port  use port as NNTP port [default=%d]");
@@ -2645,7 +2648,7 @@ struct opttxt txt_strip_blanks = {
 };
 #endif /* !USE_CURSES */
 
-#ifdef HAVE_ICONV_OPEN_TRANSLIT
+#if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 struct opttxt txt_translit = {
 	N_("If ON, use transliteration. <SPACE> toggles & <CR> sets."),
 	N_("Transliteration"),
@@ -2653,7 +2656,7 @@ struct opttxt txt_translit = {
 # be represented in the in the target character set, it can be approximated\n\
 # through one or several similarly looking characters.\n")
 };
-#endif /* HAVE_ICONV_OPEN_TRANSLIT */
+#endif /* HAVE_ICONV_OPEN_TRANSLIT && CHARSET_CONVERSION */
 
 struct opttxt txt_auto_cc_bcc = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),

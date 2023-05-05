@@ -1828,11 +1828,11 @@ get_path_header(
  * If 'local' is set then always open local overview cache in preference to
  * using NNTP XOVER
  *
- * Format (mandatory as far as line count [RFC2980]):
+ * Format (mandatory as far as line count [RFC 2980]):
  *	1. article number (ie. 183)                [mandatory]
  *	2. Subject: line  (ie. Which newsreader?)  [mandatory]
  *	3. From: line     (ie. iain@ecrc.de)       [mandatory]
- *	4. Date: line     (rfc822 format)          [mandatory]
+ *	4. Date: line     (RFC 822 format)         [mandatory]
  *	5. MessageID:     (ie. <123@example.net>)  [mandatory]
  *	6. References:    (ie. <message-id> ....)  [optional]
  *	7. Byte count     (Skipped - not used)     [mandatory]
@@ -2431,7 +2431,7 @@ read_overview(
  *	1. article number (ie. 183)                [mandatory]
  *	2. Subject: line  (ie. Which newsreader?)  [mandatory]
  *	3. From: line     (ie. iain@ecrc.de)       [mandatory]
- *	4. Date: line     (rfc822 format)          [mandatory]
+ *	4. Date: line     (RFC 822 format)         [mandatory]
  *	5. MessageID:     (ie. <123@example.net>)  [mandatory]
  *	6. References:    (ie. <message-id> ....)  [optional]
  *	7. Byte count     (Skipped - not used)     [mandatory]

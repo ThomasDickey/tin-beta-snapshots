@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-02-01
+.\" Updated   : 2023-05-02
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -27,7 +27,7 @@ tin, rtin \- Usenet Newsreader
 .\"
 .\"
 \fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|\fB\-a\fP\|]
-[\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-AkrTzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
+[\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-ACkrTzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
 \|\|\fB\-s\fP \fINews\-Verz.\fP\|] [\|\fB\-cuvZ\fP\|]
 [\|\fB\-4\fP\||\|\fB\-6\fP[\|\fB\-o\fP\||\|\fB\-w\fP\||\|\fB\-N\fP\||\|\fB\-M\fP \fIAdresse\fP\|]
 [\|\fB\-D\fP \fIDebuggrad\fP\|] [\|\fB\-G\fP \fIArtikellimit\fP\|] [\|\fB\-f\fP
@@ -100,6 +100,10 @@ Erstelle bzw. aktualisiere Index\-Dateien für alle Gruppen in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP bzw. der mittels \*(rq\fB\-f\fP\*(rq angegebenen
 Datei und markiere alle Artikel als gelesen.
 .TP 
+\fB\-C\fP
+Use COMPRESS NNTP extension (\fBRFC\%8054\fP) if available. See also the
+"SECURITY" section.
+.TP 
 \fB\-d\fP
 .\"
 .\" FIXME: explain debug levels
@@ -118,8 +122,8 @@ werden und/oder eine Bildschirmausgabe erfolgen. Auch den Abschnitt
 Benutze die angegebene newsrc\-Datei anstelle von
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP.
 .TP 
-\fB\-g\fP\fI Server\fP
-Zugehörigen Newsserver und newsrc\-Datei aus
+\fB\-g\fP\fI Server[:Port]\fP
+Zugehörigen Newsserver[:Port] und newsrc\-Datei aus
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP benutzen. Nur verfügbar, wenn
 via NNTP gelesen wird.
 .TP 
@@ -3793,11 +3797,16 @@ Multiuser\-Systemen sollte daher $TMPDIR auf einen sicheren Speicherort
 gesetzt werden, bevor \fBtin\fP im Debug\-Modus gestartet wird
 (z. B. TMPDIR=$HOME tin \-D 1).
 .PP
-.\"
-.\"
 Die Verwendung der Option \*(rq\fB\-k\fP\*(rq zum Überspringen der
 Zertifikatsüberprüfung macht die Sitzung unsicher, da das Zertifikat des
 Servers nicht überprüft wird; Vermeiden Sie diese Option nach Möglichkeit.
+.PP
+.\"
+.\"
+If the server does not initially require authentication but supports
+compression and compression is requested, \fBtin\fP will exit when
+authentication is required later on. Using the \fB\-A\fP command line option in
+conjunction with \fB\-C\fP circumvents this behavior.
 .SH "KONFORM ZU"
 .IX Header "KONFORM ZU"
 .\" - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
@@ -3903,4 +3912,4 @@ Erika Mustermann <erika@example.org>
 \fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP,
 \fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
 \fBRFC\%4643\fP, \fBRFC\%4880\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP,
-\fBRFC\%6048\fP, \fBRFC\%8143\fP
+\fBRFC\%6048\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP

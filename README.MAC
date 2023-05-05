@@ -13,9 +13,8 @@ Note for Mac OS X 10.6 / Darwin 10.0.0 users: you may also set an FQDN with
 `/usr/sbin/scutil --set HostName` if you set the "disable_sender" option to
 ON on /etc/tin/tin.defaults
 
-Here are two other ways to build and install tin:
+Other way to build and install tin:
 - MacPorts  <http://www.macports.org/>
-- Fink      <http://fink.sf.net/>
 
-Instead of using the shell-script url_handler.sh you might want to use
-open(1) as URL-handler.
+Instead of using the shell-script url_handler.sh or perl-script 
+url_handler.pl you might want to use open(1) as URL-handler.

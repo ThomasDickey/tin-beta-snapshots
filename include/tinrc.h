@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2022-09-19
+ *  Updated   : 2023-04-19
  *  Notes     :
  *
  * Copyright (c) 1999-2023 Jason Faultless <jason@altarstone.com>
@@ -113,9 +113,9 @@ struct t_config {
 		int mm_network_charset;				/* MIME charset */
 #	endif /* !CHARSET_CONVERSION */
 	char mm_local_charset[LEN];		/* display charset, not a rc/Menu-option anymore -> should be moved elsewhere */
-#	ifdef HAVE_ICONV_OPEN_TRANSLIT
+#	if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 		t_bool translit;						/* use //TRANSLIT */
-#	endif /* HAVE_ICONV_OPEN_TRANSLIT */
+#	endif /* HAVE_ICONV_OPEN_TRANSLIT && CHARSET_CONVERSION */
 	char news_headers_to_display[LEN];	/* which headers to display */
 	char news_headers_to_not_display[LEN];	/* which headers to not display */
 	char news_quote_format[LEN];

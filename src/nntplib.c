@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2023-02-02
+ *  Updated   : 2023-05-03
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -24,6 +24,10 @@
 #ifndef TNNTP_H
 #	include "tnntp.h"
 #endif /* !TNNTP_H */
+
+#ifdef USE_ZLIB
+#	include <zlib.h>
+#endif /* USE_ZLIB */
 
 char *nntp_server = NULL;
 #ifdef NO_POSTING
@@ -46,6 +50,9 @@ char *nntp_server = NULL;
 	static constext *xhdr_cmds = "XHDR";
 	/* Set so we don't reconnect just to QUIT */
 	static t_bool quitting = FALSE;
+#	ifdef USE_ZLIB
+	static t_bool deflate_active = FALSE;
+#	endif /* USE_ZLIB */
 #endif /* NNTP_ABLE */
 
 /*
@@ -65,39 +72,49 @@ char *nntp_server = NULL;
 #	ifdef DECNET
 		static int get_dnet_socket(char *machine, char *service);
 #	endif /* DECNET */
+	static ssize_t nntp_read(int fd, void *tls, void *buf, size_t n);
 
-struct simplebuf {
-	unsigned char buf[4096];
-	unsigned lb; /* lower bound */
-	unsigned ub; /* upper bound */
+	struct simplebuf {
+		unsigned char buf[4096];
+		unsigned lb; /* lower bound */
+		unsigned ub; /* upper bound */
+	};
+
+	struct nntpbuf {
+		struct simplebuf rd;
+		struct simplebuf wr;
+		int fd;
+#	ifdef USE_ZLIB
+		z_streamp z_wr;
+		z_streamp z_rd;
+		unsigned char* z_wr_buf;
+		unsigned char* z_rd_buf;
+#	endif /* USE_ZLIB */
+		void *tls_ctx;
 };
 
-struct nntpbuf {
-	struct simplebuf rd;
-	struct simplebuf wr;
-	int fd;
-#ifdef NNTPS_ABLE
-	void *tls_ctx;
-#endif /* NNTPS_ABLE */
-};
+#	ifdef USE_ZLIB
+/* because compression can make the buffer increase, choose a larger size than
+ * for the uncompressed data */
+#		define DEFLATE_BUFSZ (5000U)
+#		define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, NULL, NULL, NULL, NULL, NULL }
+#	else /* USE_ZLIB */
+#		define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, NULL }
+#	endif /* USE_ZLIB */
 
-#ifdef NNTPS_ABLE
-#	define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, NULL }
-#else
-#	define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1 }
-#endif /* NNTPS_ABLE */
+	static struct nntpbuf nntp_buf = NNTPBUF_INITIALIZER;
 
-static struct nntpbuf nntp_buf = NNTPBUF_INITIALIZER;
-
-static int nntpbuf_refill(struct nntpbuf *buf);
-static int nntpbuf_flush(struct nntpbuf* buf);
-static int nntpbuf_puts(const char* data, struct nntpbuf* buf);
-static int nntpbuf_getc(struct nntpbuf *buf);
-static int nntpbuf_ungetc(int c, struct nntpbuf *buf);
-static char *nntpbuf_gets(char *s, int size, struct nntpbuf *buf);
-static void nntpbuf_close(struct nntpbuf *buf);
-static int nntpbuf_is_open(struct nntpbuf *buf);
-
+#	ifdef USE_ZLIB
+		static void enable_deflate(struct nntpbuf* buf);
+#	endif /* USE_ZLIB */
+	static int nntpbuf_refill(struct nntpbuf *buf);
+	static int nntpbuf_flush(struct nntpbuf* buf);
+	static int nntpbuf_puts(const char* data, struct nntpbuf* buf);
+	static int nntpbuf_getc(struct nntpbuf *buf);
+	static int nntpbuf_ungetc(int c, struct nntpbuf *buf);
+	static char *nntpbuf_gets(char *s, int size, struct nntpbuf *buf);
+	static void nntpbuf_close(struct nntpbuf *buf);
+	static int nntpbuf_is_open(struct nntpbuf *buf);
 #endif /* NNTP_ABLE */
 
 
@@ -293,14 +310,12 @@ server_init(
 		int result;
 
 		result = tintls_open(machine, sock_fd, &nntp_buf.tls_ctx);
-		if (result < 0) {
+		if (result < 0)
 			return result;
-		}
 
 		result = tintls_handshake(nntp_buf.tls_ctx);
-		if (result < 0) {
+		if (result < 0)
 			return result;
-		}
 	}
 
 #endif /* NNTPS_ABLE */
@@ -1458,12 +1473,8 @@ nntp_open(
 		return -EHOSTUNREACH;
 	}
 
-	if (!batch_mode || verbose) {
-		if (nntp_tcp_port != IPPORT_NNTP)
-			wait_message(0, _(txt_connecting_port), nntp_server, nntp_tcp_port);
-		else
-			wait_message(0, _(txt_connecting), nntp_server);
-	}
+	if (!batch_mode || verbose)
+		wait_message(0, _(txt_connecting_port), nntp_server, nntp_tcp_port);
 
 	if ((!batch_mode || verbose) && use_nntps)
 		my_fputc('\n', stdout);
@@ -1808,6 +1819,17 @@ nntp_open(
 	}
 
 	is_reconnect = TRUE;
+
+#	ifdef USE_ZLIB
+	/*
+	 * Enable compression if available
+	 * Note: after enabling compression, authentication shall not work anymore
+	 */
+	if (nntp_caps.compress && use_compress) {
+		if ((nntp_caps.compress_algorithm & COMPRESS_DEFLATE) == COMPRESS_DEFLATE)
+		  enable_deflate(&nntp_buf);
+	}
+#	endif /* USE_ZLIB */
 #endif /* NNTP_ABLE */
 
 	DEBUG_IO((stderr, "nntp_open okay\n"));
@@ -1879,6 +1901,10 @@ get_only_respcode(
 	 * what about other LIST cmds? (ACTIVE|COUNTS|OVERVIEW.FMT|...)
 	 */
 	if (last_put[0] != '\0' && ((respcode == ERR_FAULT && (!strncmp(last_put, "ARTICLE", 7) || !strcmp(last_put, "POST") || !strcmp(last_put, "LIST"))) || respcode == ERR_GOODBYE || respcode == OK_GOODBYE) && strcmp(last_put, "QUIT")) {
+		if (respcode == ERR_GOODBYE && !strncmp(last_put, "HEAD ", 5)) {
+			/* usenetfarm may send ERR_GOODBYE in response to HEAD, we don't want to retry that */
+			return respcode;
+		}
 		/*
 		 * Maybe server timed out.
 		 * If so, retrying will force a reconnect.
@@ -1940,6 +1966,11 @@ get_respcode(
 
 	respcode = get_only_respcode(message, mlen);
 	if ((respcode == ERR_NOAUTH) || (respcode == NEED_AUTHINFO)) {
+#	ifdef USE_ZLIB
+		if (deflate_active) /* Do not auth if compression is active */
+			tin_done(EXIT_FAILURE, _(txt_error_compression_auth), tin_progname);
+#	endif /* USE_ZLIB */
+
 		/*
 		 * Server requires authentication.
 		 */
@@ -2133,7 +2164,238 @@ list_motd(
 	}
 }
 
+
+static ssize_t
+nntp_write(
+	int fd,
+	void *tls,
+	const void *buf,
+	size_t n)
+{
+	ssize_t bytes_written;
+
+#ifdef NNTPS_ABLE
+	if (tls)
+		bytes_written = tintls_write(tls, buf, n);
+	else
+		bytes_written = write(fd, buf, n);
+#else
+	bytes_written = write(fd, buf, n);
+#endif /* NNTPS_ABLE */
+
+	return bytes_written;
+}
+
+
+ssize_t nntp_read(
+	int fd,
+	void *tls,
+	void *buf,
+	size_t n)
+{
+	ssize_t bytes_read;
+
+#ifdef NNTPS_ABLE
+	if (tls)
+		bytes_read = tintls_read(tls, buf, n);
+	else
+		bytes_read = read(fd, buf, n);
+#else
+	bytes_read = read(fd, buf, n);
+#endif /* NNTPS_ABLE */
+
+	return bytes_read;
+}
+
+
 #define SZ(a) sizeof((a))
+
+#ifdef USE_ZLIB
+static void *
+deflate_alloc(
+	void *user,
+	uInt items,
+	uInt size)
+{
+	(void) user;
+	return my_calloc(items, size);
+}
+
+
+static void
+deflate_free(
+	void *user,
+	void *ptr)
+{
+	(void) user;
+	FreeIfNeeded(ptr);
+}
+
+
+static z_streamp
+z_stream_init(
+	t_bool is_deflate)
+{
+	int result;
+
+	z_streamp strm = my_calloc(1, sizeof(z_stream));
+	strm->zalloc = deflate_alloc;
+	strm->zfree = deflate_free;
+
+	if (is_deflate)
+		result = deflateInit2(strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY);
+	else
+		result = inflateInit2(strm, -15);
+
+	if (result != Z_OK)
+		FreeAndNull(strm);
+
+	return strm;
+}
+
+
+static void
+enable_deflate(
+	struct nntpbuf* nntpbuf)
+{
+	char buf[NNTP_STRLEN];
+	int result;
+
+	if (nntpbuf->z_rd || nntpbuf->z_wr)
+		return;
+
+	nntpbuf->z_rd = z_stream_init(FALSE);
+	nntpbuf->z_wr = z_stream_init(TRUE);
+
+	if (nntpbuf->z_rd == NULL || nntpbuf->z_wr == NULL)
+		goto error_out;
+
+	nntpbuf->z_rd_buf = my_malloc(DEFLATE_BUFSZ);
+	nntpbuf->z_rd->next_in = nntpbuf->z_rd_buf;
+	nntpbuf->z_rd->avail_in = 0;
+
+	nntpbuf->z_wr_buf = my_malloc(DEFLATE_BUFSZ);
+	nntpbuf->z_wr->next_out = nntpbuf->z_wr_buf;
+	nntpbuf->z_wr->avail_out = DEFLATE_BUFSZ;
+
+	buf[0] = '\0';
+	result = new_nntp_command("COMPRESS DEFLATE", OK_COMPRESS, buf, sizeof(buf));
+
+	switch (result) {
+		case OK_COMPRESS:
+			deflate_active = TRUE;
+			return;
+
+		case ERR_COMPRESS_ALG:
+		case ERR_COMPRESS:
+		default: /* unexpected */
+			break;
+	}
+
+error_out:
+	FreeAndNull(nntpbuf->z_rd);
+	FreeAndNull(nntpbuf->z_wr);
+	FreeAndNull(nntpbuf->z_rd_buf);
+	FreeAndNull(nntpbuf->z_wr_buf);
+	return;
+}
+
+
+static ssize_t
+nntpbuf_deflate_write(
+	struct nntpbuf* buf)
+{
+	ssize_t bytes_written = 0;
+	t_bool deflate_again = TRUE;
+
+	buf->z_wr->next_in = buf->wr.buf + buf->wr.lb;
+	buf->z_wr->avail_in = buf->wr.ub - buf->wr.lb;
+
+	while (deflate_again) {
+		int result;
+		Bytef *out = buf->z_wr->next_out;
+
+		result = deflate(buf->z_wr, Z_PARTIAL_FLUSH);
+		if (result < 0)
+			return EOF;
+
+		if (buf->z_wr->avail_in > 0 || buf->z_wr->avail_out == 0)
+			deflate_again = TRUE;
+		else
+			deflate_again = FALSE;
+
+		while (buf->z_wr->avail_out < DEFLATE_BUFSZ) {
+			ssize_t bwritten;
+			bwritten = nntp_write(buf->fd, buf->tls_ctx, out, DEFLATE_BUFSZ - buf->z_wr->avail_out);
+			if (bwritten < 0)
+				return EOF;
+
+			buf->z_wr->avail_out += bwritten;
+			out += bwritten;
+		}
+
+		buf->z_wr->next_out = buf->z_wr_buf;
+	}
+
+	buf->wr.lb = buf->wr.ub;
+
+	return bytes_written;
+}
+
+
+static ssize_t
+nntpbuf_inflate(
+	struct nntpbuf* buf)
+{
+	int result;
+
+	result = inflate(buf->z_rd, Z_NO_FLUSH);
+	if (result < 0 && result != Z_BUF_ERROR)
+		return EOF;
+
+	/* move leftover input data to beginning of input buffer */
+	memmove(buf->z_rd_buf, buf->z_rd->next_in, buf->z_rd->avail_in);
+	buf->z_rd->next_in = buf->z_rd_buf;
+
+	return (SZ(buf->rd.buf) - buf->rd.ub) - buf->z_rd->avail_out;
+}
+
+
+static ssize_t
+nntpbuf_inflate_read(
+	struct nntpbuf* buf)
+{
+	ssize_t bytes_read;
+	ssize_t bread;
+
+	buf->z_rd->next_out = buf->rd.buf + buf->rd.ub;
+	buf->z_rd->avail_out = SZ(buf->rd.buf) - buf->rd.ub;
+
+	/* call inflate unconditionally to make sure there is no pending output
+	   left, before calling the possibly blocking read below */
+	bytes_read = nntpbuf_inflate(buf);
+	if (bytes_read < 0)
+		return bytes_read;
+
+	while (bytes_read == 0) {
+
+		if (buf->z_rd->avail_in < DEFLATE_BUFSZ) {
+			bread = nntp_read(buf->fd, buf->tls_ctx, buf->z_rd->next_in, DEFLATE_BUFSZ - buf->z_rd->avail_in);
+			if (bread <= 0)
+				return EOF;
+
+			buf->z_rd->avail_in += bread;
+		}
+
+		bread = nntpbuf_inflate(buf);
+		if (bread < 0)
+			return bread;
+
+		bytes_read += bread;
+	}
+	return bytes_read;
+}
+#endif /* USE_ZLIB */
 
 /*
  * write data from write buffer to NNTP connection when requested
@@ -2148,14 +2410,12 @@ nntpbuf_flush(
 	while (buf->wr.ub > buf->wr.lb) {
 		ssize_t bytes_written;
 
-#ifdef NNTPS_ABLE
-		if (buf->tls_ctx)
-			bytes_written = tintls_write(buf->tls_ctx, buf->wr.buf + buf->wr.lb, buf->wr.ub - buf->wr.lb);
+#ifdef USE_ZLIB
+		if (deflate_active)
+			bytes_written = nntpbuf_deflate_write(buf);
 		else
-			bytes_written = write(buf->fd, buf->wr.buf + buf->wr.lb, buf->wr.ub - buf->wr.lb);
-#else
-		bytes_written = write(buf->fd, buf->wr.buf + buf->wr.lb, buf->wr.ub - buf->wr.lb);
-#endif /* NNTPS_ABLE */
+#endif /* USE_ZLIB */
+			bytes_written = nntp_write(buf->fd, buf->tls_ctx, buf->wr.buf + buf->wr.lb, buf->wr.ub - buf->wr.lb);
 
 		if (bytes_written < 0)
 			return EOF;
@@ -2226,14 +2486,12 @@ nntpbuf_refill(
 	if (free_b) {
 		ssize_t bytes_read;
 
-#ifdef NNTPS_ABLE
-		if (buf->tls_ctx)
-			bytes_read = tintls_read(buf->tls_ctx, buf->rd.buf + buf->rd.ub, free_b);
+#ifdef USE_ZLIB
+		if (deflate_active)
+			bytes_read = nntpbuf_inflate_read(buf);
 		else
-			bytes_read = read(buf->fd, buf->rd.buf + buf->rd.ub, free_b);
-#else
-		bytes_read = read(buf->fd, buf->rd.buf + buf->rd.ub, free_b);
-#endif /* NNTPS_ABLE */
+#endif /* USE_ZLIB */
+			bytes_read = nntp_read(buf->fd, buf->tls_ctx, buf->rd.buf + buf->rd.ub, free_b);
 
 		if (bytes_read > 0)
 			buf->rd.ub += bytes_read;
@@ -2357,6 +2615,22 @@ nntpbuf_close(
 
 	buf->rd.lb = buf->rd.ub = 0;
 	buf->wr.lb = buf->wr.ub = 0;
+
+#ifdef USE_ZLIB
+	if (deflate_active) {
+		if (buf->z_rd)
+			inflateEnd(buf->z_rd);
+		FreeAndNull(buf->z_rd);
+		FreeAndNull(buf->z_rd_buf);
+
+		if (buf->z_wr)
+			deflateEnd(buf->z_wr);
+		FreeAndNull(buf->z_wr);
+		FreeAndNull(buf->z_wr_buf);
+
+		deflate_active = FALSE;
+	}
+#endif /* USE_ZLIB */
 }
 
 
@@ -2382,6 +2656,15 @@ nntp_conninfo(
 	if (nntp_caps.type == CAPABILITIES) {
 		if (*nntp_caps.implementation)
 			fprintf(stream, "IMPLEMENTATION: %s\n", nntp_caps.implementation);
+		if (nntp_caps.compress) {
+			fprintf(stream, "COMPRESS      :");
+			if ((nntp_caps.compress_algorithm & COMPRESS_DEFLATE) == COMPRESS_DEFLATE)
+#ifdef USE_ZLIB
+				fprintf(stream, " DEFLATE %s\n", deflate_active ? "(enabled)" : "(inactive)");
+#else
+				fprintf(stream, " DEFLATE (not supported)\n");
+#endif /* USE_ZLIB */
+		}
 #if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
 		if (nntp_caps.maxartnum)
 			fprintf(stream, "MAXARTNUM     : %"T_ARTNUM_PFMT"\n", nntp_caps.maxartnum);

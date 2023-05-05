@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2022-12-23
+ *  Updated   : 2023-02-22
  *  Notes     :
  *
  * Copyright (c) 1992-2023 Iain Lea <iain@bricbrac.de>
@@ -256,9 +256,8 @@ parse_active_line(
 
 		free(l);
 #endif /* DEBUG */
-		if (!p || !q) {
+		if (!p || !q)
 			return lineok;
-		}
 	}
 
 	*max = atoartnum(p);

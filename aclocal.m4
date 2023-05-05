@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2022-01-10
+dnl Updated   : 2023-05-01
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2023 Thomas E. Dickey <dickey@invisible-island.net>
@@ -7095,3 +7095,20 @@ AC_CACHE_CHECK(whether we are using the GNU C Library 2.1 or newer,
 	AC_SUBST(GLIBC21)
 	GLIBC21="$ac_cv_gnu_library_2_1"
 ])
+dnl ---------------------------------------------------------------------------
+dnl CF_WITH_ZLIB version: 4 updated: 2011/05/28 12:10:58
+dnl ------------
+dnl check for libz aka "zlib"
+AC_DEFUN([CF_WITH_ZLIB],[
+  CF_ADD_OPTIONAL_PATH($1)
+
+  CF_FIND_LINKAGE([
+#include <zlib.h>
+],[
+	gzopen("name","mode")
+],z,,,zlib)
+
+AC_CHECK_FUNCS( \
+	zError \
+)
+])dnl

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-02-02
+ *  Updated   : 2023-04-29
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1212,12 +1212,12 @@ strfquote(
 
 	endp = s + maxsize;
 	for (; *format && s < endp - 1; format++) {
-		tbuf[0] = '\0';
-
 		if (*format != '\\' && *format != '%') {
 			*s++ = *format;
 			continue;
 		}
+
+		tbuf[0] = '\0';
 
 		if (*format == '\\') {
 			switch (*++format) {
@@ -1371,41 +1371,12 @@ strfeditor(
 
 	endp = s + maxsize;
 	for (; *format && s < endp - 1; format++) {
-		tbuf[0] = '\0';
-
-		if (*format != '\\' && *format != '%') {
+		if (*format != '%') {
 			*s++ = *format;
 			continue;
-		}
+		} else {
+			tbuf[0] = '\0';
 
-		if (*format == '\\') {
-			switch (*++format) {
-				case '\0':
-					*s++ = '\\';
-					goto out;
-					/* NOTREACHED */
-					break;
-
-				case 'n':	/* linefeed */
-					strcpy(tbuf, "\n");
-					break;
-
-				default:
-					tbuf[0] = '%';
-					tbuf[1] = *format;
-					tbuf[2] = '\0';
-					break;
-			}
-			i = (int) strlen(tbuf);
-			if (i) {
-				if (s + i < endp - 1) {
-					strcpy(s, tbuf);
-					s += i;
-				} else
-					return 0;
-			}
-		}
-		if (*format == '%') {
 			switch (*++format) {
 				case '\0':
 					*s++ = '%';
@@ -1435,8 +1406,8 @@ strfeditor(
 					tbuf[2] = '\0';
 					break;
 			}
-			i = (int) strlen(tbuf);
-			if (i) {
+
+			if ((i = (int) strlen(tbuf))) {
 				if (s + i < endp - 1) {
 					strcpy(s, tbuf);
 					s += i;
@@ -1529,8 +1500,6 @@ _strfpath(
 
 	endp = str + maxsize;
 	for (; *format && str < endp - 1; format++) {
-		tbuf[0] = '\0';
-
 		/*
 		 * If just a normal part of the pathname copy it
 		 */
@@ -1538,6 +1507,8 @@ _strfpath(
 			*str++ = *format;
 			continue;
 		}
+
+		tbuf[0] = '\0';
 
 		switch (*format) {
 			case '~':			/* Users or another users homedir */
@@ -1572,6 +1543,7 @@ _strfpath(
 					format++;
 					while (*format && !(strchr("}-", *format)))
 						tbuf[i++] = *format++;
+
 					tbuf[i] = '\0';
 					i = 0;
 					if (*format == '-') {
@@ -1583,6 +1555,7 @@ _strfpath(
 				} else {
 					while (*format && *format != '/')
 						tbuf[i++] = *format++;
+
 					tbuf[i] = '\0';
 					format--;
 					defbuf[0] = '\0';
@@ -1854,8 +1827,6 @@ strfmailer(
 	 */
 	endp = dest + maxsize;
 	for (; *format && dest < endp - 1; format++) {
-		tbuf[0] = '\0';
-
 		/*
 		 * take over any character other than '\' and '%' and continue with
 		 * next character in format; remember quote area
@@ -1869,9 +1840,11 @@ strfmailer(
 			continue;
 		}
 
+		tbuf[0] = '\0';
+
 		/*
 		 * handle sequences introduced by '\':
-		 * - "\n" gets line feed
+		 * - "\n" gets line feed (why?)
 		 * - '\' followed by NULL gets '\' and leaves loop
 		 * - '\' followed by any other character is copied literally and
 		 *   shell escaped; if that exceeds the available space, return 0
@@ -2980,7 +2953,7 @@ gnksa_strerror(
 
 /*
  * decode realname into displayable string
- * this only does RFC822 decoding, decoding RFC2047 encoded parts must
+ * this only does RFC 822 decoding, decoding RFC 2047 encoded parts must
  * be done by another call to the appropriate function
  */
 static int
@@ -4100,6 +4073,11 @@ tin_version_info(
 			"-NNTP_ABLE "
 #	endif /* NNTP_ABLE */
 #endif /* NNTP_ONLY */
+#ifdef USE_ZLIB
+			"+USE_ZLIB "
+#else
+			"-USE_ZLIB "
+#endif /* USE_ZLIB */
 #ifdef NO_POSTING
 			"+NO_POSTING "
 #else

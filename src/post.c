@@ -3159,8 +3159,8 @@ join_references(
 	/*
 	 * First of all: shortening references is a VERY BAD IDEA.
 	 * Nevertheless, current software usually has restrictions in
-	 * header length (their programmers seem to misinterpret RFC821
-	 * as valid for news, and the command length limit of RFC977
+	 * header length (their programmers seem to misinterpret RFC 821
+	 * as valid for news, and the command length limit of RFC 977
 	 * as valid for headers)
 	 *
 	 * construct a new references line, then trim it if necessary

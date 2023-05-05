@@ -96,7 +96,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"a","a","a","a","{","}","{","c","e","`","e","e","i","i","i","i",
 	"d","n","o","o","o","o","|",":","|","u","u","u","~","y","th","y"
 	},
-	/* table with RFC1345 codes in brackets */
+	/* table with RFC 1345 codes in brackets */
 	{
 	"[NS]","[!I]","[Ct]","[Pd]","[Cu]","[Ye]","[BB]","[SE]",
 	"[':]","[Co]","[-a]","[<<]","[NO]","[--]","[Rg]","['-]",

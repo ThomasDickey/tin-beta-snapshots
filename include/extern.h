@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-11-03
+ *  Updated   : 2023-05-03
  *  Notes     :
  *
  * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>
@@ -582,7 +582,6 @@ extern constext txt_command_failed[];
 extern constext txt_cook_article_failed_exiting[];
 extern constext txt_confirm_select_on_exit[];
 #ifdef NNTP_ABLE
-	extern constext txt_connecting[];
 	extern constext txt_connecting_port[];
 #endif /* NNTP_ABLE */
 #if defined(NNTP_ABLE) && !defined(INET6)
@@ -629,6 +628,9 @@ extern constext txt_error_bad_to[];
 	extern constext txt_error_couldnt_dotlock[];
 	extern constext txt_error_couldnt_lock[];
 #endif /* NO_LOCKING */
+#if defined(NNTP_ABLE) && defined(USE_ZLIB)
+	extern constext txt_error_compression_auth[];
+#endif /* NNTP_ABLE && USE_ZLIB */
 extern constext txt_error_copy_fp[];
 extern constext txt_error_corrupted_file[];
 extern constext txt_error_fseek[];
@@ -1308,6 +1310,9 @@ extern constext txt_url_select[];
 extern constext txt_url_done[];
 extern constext txt_usage_catchup[];
 extern constext txt_usage_check_for_unread_news[];
+#ifdef USE_ZLIB
+	extern constext txt_usage_compress[];
+#endif /* USE_ZLIB */
 #ifdef DEBUG
 	extern constext txt_usage_debug[];
 #endif /* DEBUG */
@@ -1530,6 +1535,9 @@ extern t_bool dangerous_signal_exit; /* TRUE if SIGHUP, SIGTERM, SIGUSR1 */
 #ifdef NNTP_ABLE
 	extern t_bool did_reconnect;
 	extern t_bool reconnected_in_last_get_server;
+#	ifdef USE_ZLIB
+		extern t_bool use_compress;
+#	endif /* USE_ZLIB */
 #endif /* NNTP_ABLE */
 extern t_bool disable_gnksa_domain_check;
 extern t_bool disable_sender;
@@ -1937,9 +1945,9 @@ extern struct opttxt txt_xpost_quote_format;
 	extern struct opttxt txt_col_markslash;
 	extern struct opttxt txt_col_markstroke;
 #endif /* HAVE_COLOR */
-#ifdef HAVE_ICONV_OPEN_TRANSLIT
+#if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 	extern struct opttxt txt_translit;
-#endif /* HAVE_ICONV_OPEN_TRANSLIT */
+#endif /* HAVE_ICONV_OPEN_TRANSLIT && CHARSET_CONVERSION */
 #ifdef HAVE_KEYPAD
 	extern struct opttxt txt_use_keypad;
 #endif /* HAVE_KEYPAD */

@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-08-29
+ *  Updated   : 2023-02-22
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -2028,9 +2028,8 @@ tag_pattern(
 			lptr->tagged = ++num_of_tagged_parts;
 	}
 
-	if (tinrc.wildcard) {
+	if (tinrc.wildcard)
 		regex_cache_destroy(&cache);
-	}
 }
 
 

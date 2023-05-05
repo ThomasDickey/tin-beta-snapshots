@@ -2396,7 +2396,7 @@ typedef FILE TCP;
 #endif /* !NNTPLIB_H */
 
 /*
- * rfc1521/rfc1522 interface
+ * RFC 1521 / RFC 1522 interface
  */
 typedef void (*BodyPtr) (char *, FILE *, int);
 

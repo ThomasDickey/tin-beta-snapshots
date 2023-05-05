@@ -298,7 +298,7 @@ rfc1522_decode(
 			e = charset;
 			c++;
 			while (*c && *c != '?') {
-				/* skip over optional language tags (RFC2231, RFC5646) */
+				/* skip over optional language tags (RFC 2231, RFC 5646) */
 				if (*c == '*') {
 					while (*++c && *c != '?')
 						;
@@ -817,7 +817,7 @@ every "word" were a space ... */
 		while (*c) {
 			if (isspace((unsigned char) *c)) {
 				/*
-				 * According to rfc1522, header lines containing encoded
+				 * According to RFC 1522, header lines containing encoded
 				 * words are limited to 76 chars, but if the first line is
 				 * too long (due to a long header keyword), we cannot stick
 				 * to that, since we would break the line directly after the
@@ -1327,7 +1327,7 @@ compose_multipart_mixed(
 	 * preamble
 	 * TODO: -> lang.c
 	 */
-	fprintf(fp, _("This message has been composed in the 'multipart/mixed' MIME-format. If you\n\
+	fprintf(fp, "%s", _("This message has been composed in the 'multipart/mixed' MIME-format. If you\n\
 are reading this prefix, your mail reader probably has not yet been modified\n\
 to understand the new format, and some of what follows may look strange.\n\n"));
 

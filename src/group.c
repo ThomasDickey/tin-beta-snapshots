@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-27
+ *  Updated   : 2023-02-22
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -338,11 +338,9 @@ group_page(
 			case GROUP_CANCEL:	/* cancel current basenote */
 				if (grpmenu.curr >= 0) {
 					if (can_post || group->attribute->mailing_list != NULL) {
-						int ret;
-
 						n = (int) base[grpmenu.curr];
-						ret = art_open(TRUE, &arts[n], group, &pgart, TRUE, _(txt_reading_article));
-						if (ret != ART_UNAVAILABLE && ret != ART_ABORT && cancel_article(group, &arts[n], n))
+						ii = art_open(TRUE, &arts[n], group, &pgart, TRUE, _(txt_reading_article));
+						if (ii != ART_UNAVAILABLE && ii != ART_ABORT && cancel_article(group, &arts[n], n))
 							show_group_page();
 						art_close(&pgart);
 					} else
@@ -900,9 +898,8 @@ group_page(
 						show_group_title(TRUE);
 						update_group_page();
 					}
-					if (tinrc.wildcard) {
+					if (tinrc.wildcard)
 						regex_cache_destroy(&cache);
-					}
 				}
 				break;
 

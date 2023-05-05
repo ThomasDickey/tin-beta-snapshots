@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-02-01
+ *  Updated   : 2023-05-03
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -468,13 +468,14 @@ main(
  * process command line options
  * [01235789beEFijJKLOtyY] are unused
  * [W] is reserved
- * [BCPU] have been in use at some time, but now are unused:
+ * [BPU] have been in use at some time, but now are unused:
  *   B BBS mode (M_AMIGA only)
- *   C count articles
  *   P purge group index files of articles that no longer exist
  *   U update index files in background
+ * resued with different function:
+ *   C was count articles, now is activate COMPRESS DEFLATE
  */
-#define OPTIONS "46aAcdD:f:g:G:hHI:klm:M:nNop:qQrRs:STuvVwxXzZ"
+#define OPTIONS "46aAcCdD:f:g:G:hHI:klm:M:nNop:qQrRs:STuvVwxXzZ"
 
 static void
 read_cmd_line_options(
@@ -551,6 +552,26 @@ read_cmd_line_options(
 			case 'c':
 				batch_mode = TRUE;
 				catchup = TRUE;
+				break;
+
+			case 'C':
+#ifdef NNTP_ABLE
+#	ifdef USE_ZLIB
+				use_compress = TRUE;
+#	else
+				error_message(2, _(txt_option_not_enabled), "-DUSE_ZLIB");
+				free_all_arrays();
+				giveup();
+				/* keep lint quiet: */
+				/* NOTREACHED */
+#	endif /* USE_ZLIB */
+#else
+				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				free_all_arrays();
+				giveup();
+				/* keep lint quiet: */
+				/* NOTREACHED */
+#endif /* NNTP_ABLE */
 				break;
 
 			case 'd':
@@ -982,6 +1003,9 @@ usage(
 #endif /* NNTP_ABLE */
 
 	error_message(2, _(txt_usage_catchup));
+#if defined(NNTP_ABLE) && defined(USE_ZLIB)
+	error_message(2, _(txt_usage_compress));
+#endif /* NNTP_ABLE && USE_ZLIB */
 	error_message(2, _(txt_usage_dont_show_descriptions));
 
 #ifdef DEBUG

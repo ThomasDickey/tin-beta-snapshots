@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-02-01
+.\" Updated   : 2023-05-02
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -23,7 +23,7 @@ tin, rtin \- Usenet newsreader
 .RB [\|[\| \-h \||\| \-H \||\| \-V \|]\ \||
 .RB [\|[\| \-a \|]
 .RB [\| \-dlnq \||\| \-Q \|]
-.RB [\| \-AkrTzxX \|]\|]
+.RB [\| \-ACkrTzxX \|]\|]
 .RB [\|[\| \-R \||\| \-S \|]
 .RB \|\| \-s
 .IR News_dir \|]
@@ -114,6 +114,10 @@ Force authentication on initial connect. Only available when reading via NNTP.
 Create/update index files for every group in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR or file specified by the ''\fB\-f\fP''
 option and mark all articles as read.
+.TP
+.B \-C
+Use COMPRESS NNTP extension (\fBRFC\%8054\fP) if available. See also
+the "SECURITY" section.
 .TP
 .B \-d
 Don't load newsgroup descriptions and servers message of the day
@@ -3884,6 +3888,11 @@ to a safe location before starting \fBtin\fP in debug mode (e.g.
 Using the ''\fB\-k\fP'' option to skip certificate verification makes the
 session insecure as the server's certificate is not checked; avoid this
 option whenever possible.
+.PP
+If the server does not initially require authentication but supports
+compression and compression is requested, \fBtin\fP will exit when
+authentication is required later on. Using the \fB\-A\fP command line
+option in conjunction with \fB\-C\fP circumvents this behavior.
 .\"
 .\"
 .SH "CONFORMING TO"
@@ -4051,4 +4060,5 @@ Urs Janssen <urs@tin.org>
 .BR RFC\%5536 ,
 .BR RFC\%5537 ,
 .BR RFC\%6048 ,
+.BR RFC\%8054 ,
 .BR RFC\%8143

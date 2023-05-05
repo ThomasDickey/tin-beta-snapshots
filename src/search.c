@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-08-29
+ *  Updated   : 2023-02-22
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -202,9 +202,9 @@ search_config(
 	} while (n != current);
 
 	clear_message();
-	if (tinrc.wildcard) {
+	if (tinrc.wildcard)
 		regex_cache_destroy(&search_regex);
-	}
+
 	return result;
 }
 
@@ -278,9 +278,9 @@ generic_search(
 	} while (n != current);
 
 	clear_message();
-	if (tinrc.wildcard) {
+	if (tinrc.wildcard)
 		regex_cache_destroy(&search_regex);
-	}
+
 	if (!found)
 		info_message(_(txt_no_match));
 
@@ -335,16 +335,16 @@ search_active(
 			ptr = active[my_group[i]].name;
 
 		if (match_regex(ptr, buf, &search_regex, TRUE)) {
-			if (tinrc.wildcard) {
+			if (tinrc.wildcard)
 				regex_cache_destroy(&search_regex);
-			}
+
 			return i;
 		}
 	} while (i != selmenu.curr);
 
-	if (tinrc.wildcard) {
+	if (tinrc.wildcard)
 		regex_cache_destroy(&search_regex);
-	}
+
 	info_message(_(txt_no_match));
 	return -1;
 }
@@ -564,9 +564,9 @@ search_group(
 			show_progress(txt_searching, loop_cnt, top_art);
 	} while (i != current_art && loop_cnt++ <= top_art);
 
-	if (tinrc.wildcard) {
+	if (tinrc.wildcard)
 		regex_cache_destroy(&search_regex);
-	}
+
 	info_message(_(txt_no_match));
 	return -1;
 }
@@ -722,9 +722,9 @@ search_article(
 	}
 
 	info_message(_(txt_no_match));
-	if (tinrc.wildcard) {
+	if (tinrc.wildcard)
 		regex_cache_destroy(&search_regex);
-	}
+
 	return -1;
 }
 

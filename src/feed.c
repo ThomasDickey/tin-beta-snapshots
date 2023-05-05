@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2022-08-26
+ *  Updated   : 2023-02-22
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -529,6 +529,7 @@ feed_article(
 
 	if (!use_current)
 		art_close(openartptr);
+
 	return ok;
 }
 
@@ -865,9 +866,8 @@ feed_articles(
 					counter.max++;
 				}
 
-				if (tinrc.wildcard) {
+				if (tinrc.wildcard)
 					regex_cache_destroy(&cache);
-				}
 			}
 
 			/* I think we nest like this to preserve any 'ordering' of the arts */

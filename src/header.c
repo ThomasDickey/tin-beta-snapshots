@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2021-02-23
+ *  Updated   : 2023-03-15
  *
  * Copyright (c) 1997-2023 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -319,7 +319,7 @@ get_from_name(
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		error_message(2, "FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", BlankIfNull(from_name), BlankIfNull(get_user_name()), domain_name, BlankIfNull(get_full_name()));
+		error_message(2, "FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, BlankIfNull(get_user_name()), domain_name, BlankIfNull(get_full_name()));
 #endif /* DEBUG */
 }
 

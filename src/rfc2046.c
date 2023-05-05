@@ -199,7 +199,7 @@ boundary_cmp(
 
 
 /*
- * RFC2046 5.1.2 says that we are required to check for all possible
+ * RFC 2046 5.1.2 says that we are required to check for all possible
  * boundaries, not only the one that is expected. Iterate through all
  * the parts.
  */
@@ -898,7 +898,7 @@ free_and_init_header(
 /*
  * buf:         Article header
  * pat:         Text to match in header
- * decode:      RFC2047-decode the header
+ * decode:      RFC 2047-decode the header
  * structured:  extract address-part before decoding the header
  *
  * Returns:

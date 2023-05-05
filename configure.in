@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2023-01-24
+dnl Updated   : 2023-05-02
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2023 Thomas E. Dickey <dickey@invisible-island.net>
@@ -221,6 +221,19 @@ CF_ARG_ENABLE(nntp-only,
 	 USE_SPOOLDIR=no],
 	[AC_DEFINE(NNTP_ABLE,1,[Define this to 1 to be NNTP-capable])])
 AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(if you want to use zlib for COMPRESS DEFLATE support)
+AC_ARG_WITH(zlib,
+	[  --with-zlib             use zlib for COMPRESS DEFLATE],
+	[use_zlib=$withval],
+	[use_zlib=yes])
+AC_MSG_RESULT($use_zlib)
+
+if test ".$use_zlib" != ".no" ; then
+	CF_WITH_ZLIB($use_zlib)
+	test "x$cf_cv_find_linkage_z" = "xyes" && AC_DEFINE(USE_ZLIB,1,[Define to 1 if you want to use zlib for COMPRESS DEFLATE])
+fi
+
 fi
 
 ###	use option --enable-debug to compile-in test/development code
@@ -602,7 +615,7 @@ USE_CANLOCK=$enableval
 if test "$USE_CANLOCK" = yes ; then
 	AC_MSG_CHECKING(whether to use installed canlock rather than bundled)
 	AC_ARG_WITH(canlock,
-		[  --with-cancel-locks=PATH use installed canlock versus bundled],
+		[  --with-canlock=PATH use installed canlock versus bundled],
 		[CANLOCK_HOME=$withval],
 		[CANLOCK_HOME=$USE_CANLOCK])
 	AC_MSG_RESULT($CANLOCK_HOME)

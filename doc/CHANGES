@@ -1,17 +1,40 @@
--- 2.6.3 release 20230217 "" --
+-- 2.6.3 release 20230505 "" --
+
+ 017) Enrik Berkhan <enrik@tin.org>
+      ADD. "COMPRESS DEFLATE" support (RFC 8054)
+      ADD. ensure that no TLS implementation can activate compression
+      BUG. typo in configure[.in]
+      FIX. init.c, main.c, misc.c, nntplib.c, extern.h, autoconf.hin
+           aclocal.m4, configure[.in]
+
+ 016) Dennis Grevenstein <dennis.grevenstein@gmail.com>
+      ADD. EXIT_*-fallback for NEWS-OS 3.3
+      FIX. makecfg.c
+
+ 015) Dennis Preiser <dennis@d--p.de>
+      ADD. do not interpret \n in editor_format
+      FIX. misc.c
 
  014) Matt Anton <tin@lv223.org>
       ADD. updated French translation
       FIX. fr.po
 
  013) Urs Janssen <urs@tin.org>
+      BUG. "\x" sequences (x != '\0', 'n') in editor_format got
+           replaced by "%x"
       BUG. verification_func undefined with HAVE_LIB_GNUTLS but without DEBUG
       BUG. missing HAVE_MEMMOVE / HAVE_BCOPY guards in nntplib.c
+      BUG. without including tin.h we can no longer use _Noreturn in makecfg.c
+      BUG. txt_translit was included in binary without HAVE_ICONV
+      ADD. do not resend HEAD after ERR_GOODBYE response
       ADD. config.guess, config.sub update
       ADD. version checking during configure for SSL/TLS libraries
+      ADD. reformat code
       ADD. :port suffix in newsauth, newsrctable and -g
-      FIX. art.c, auth.c, main.c, memory.c, misc.c, nntplib.c, nntps.c, post.c
-           proto.h, tin.h, tin.1, tin.5, configure[.in], config.guess
+      FIX. active.c, art.c, auth.c, feed.c, group.c, header.c, init.c, keymap.c
+           lang.c, main.c, makecfg.c, memory.c, misc.c, nntplib.c, nntps.c
+           page.c, post.c, save.c, search.c, select.c, string.c, extern.h
+           proto.h, tin.h, tinrc.h, tin.1, tin.5, configure[.in], config.guess
            config.sub
 
  012) Thomas E. Dickey <dickey@invisible-island.net>

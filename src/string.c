@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2022-11-28
+ *  Updated   : 2023-02-22
  *  Notes     :
  *
  * Copyright (c) 1997-2023 Urs Janssen <urs@tin.org>
@@ -1586,9 +1586,9 @@ parse_format_string(
 					if (my_strftime(buf, LEN - 1, fmt->date_str, localtime(&tmptime))) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 						if ((wtmp = char2wchar_t(buf)) != NULL) {
-							if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1) {
+							if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 								fmt->len_date = (size_t) strwidth(tmp);
-							}
+
 							free(wtmp);
 						}
 #else
@@ -1621,9 +1621,9 @@ parse_format_string(
 				/* From */
 				if (!(flags & FROM) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= FROM;
-					if (len) {
+					if (len)
 						fmt->len_from = len;
-					}
+
 				} else
 					out -= 2;
 				break;
@@ -1632,9 +1632,9 @@ parse_format_string(
 				/* Newsgroup name */
 				if (cCOLS > min_cols && !(flags & GRP_NAME) && signal_context == cSelect) {
 					flags |= GRP_NAME;
-					if (len) {
+					if (len)
 						fmt->len_grpname = len;
-					}
+
 					fmt->len_grpname_dsc = (len2 ? len2 : 32);
 				} else
 					out -= 2;

@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2022-12-24
+.\" Updated   : 2023-02-01
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -252,15 +252,16 @@ mime type / filename extension pairs
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsauth\fP
 .sp
 .RS
-"\fInntpserver\fP \fIpassword\fP [\fIuser\fP]" pairs for NNTP servers that require
-authorization. If the password contains a space or a tab it must be enclosed
-in double quotes ("). Usernames must not be enclosed in double quotes and
-thus can't contain spaces or tabs. Any line that starts with "#" is a
-comment. Blank lines are ignored. This file should be readable only for the
-user as it contains the user's unencrypted password for reading news!
+"\fInntpserver[:port]\fP \fIpassword\fP [\fIuser\fP]" pairs for NNTP servers that
+require authorization. If the password contains a space or a tab it must be
+enclosed in double quotes ("). Usernames must not be enclosed in double
+quotes and thus can't contain spaces or tabs. Any line that starts with "#"
+is a comment. Blank lines are ignored. This file should be readable only for
+the user as it contains the user's unencrypted password for reading news!
 .TP 
 \fBNNTPServer\fP
-Vollständiger Name (FQDN) des Newsservers.
+full qualified domain name of the news server. Additionally, a port can be
+specified by appending :portnumber.
 .TP 
 \fBPasswort\fP
 Unverschlüsseltes Passwort für den Newsserver.
@@ -1130,14 +1131,15 @@ ist die zugehörige Kurzbeschreibung
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP
 .sp
 .RS
-"\fINNTPServer\fP \fInewsrc\fP [\fIKurzname\fP [\fI...\fP]]" Paare für den
+"\fINNTPServer[:Port]\fP \fInewsrc\fP [\fIKurzname\fP [\fI...\fP]]" Paare für den
 \&\*(rq\fB\-g\fP\*(rqKommandozeilenschalter. Bei der Suche wird nicht zwischen Groß\- und
 Kleinschreibung unterschieden und jede Zeile, die mit "#", ";" oder " "
 beginnt, wird als Kommentar behandelt.
 .TP 
 \fBNNTPServer\fP
-full qualified domain name of the news server. The string "default" or "*"
-acts as wildcard to match any name, such a line should be placed last.
+full qualified domain name of the news server. Additionally, a port can be
+specified by appending :portnumber. The string "default" or "*" acts as
+wildcard to match any name, such a line should be placed last.
 .TP 
 \fBnewsrc\fP
 zugehörige newsrc\-Datei.
