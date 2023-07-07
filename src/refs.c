@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2022-02-19
+ *  Updated   : 2023-05-10
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -609,8 +609,6 @@ dump_thread(
 
 	if (msgid->sibling != NULL)
 		dump_thread(fp, msgid->sibling, level);
-
-	return;
 }
 
 
@@ -711,8 +709,6 @@ dump_msgid_thread(
 
 	if (ptr->sibling != NULL)
 		dump_msgid_thread(ptr->sibling, level);
-
-	return;
 }
 
 
@@ -1006,7 +1002,7 @@ build_references(
 	 * Add the Message-ID headers to the cache, using the last Reference
 	 * as the parent
 	 */
-	snprintf(msg, sizeof(msg), _("Building References-trees (%d/%d)..."), 1, 2); /* TODO: -> lang.c */
+	snprintf(msg, sizeof(msg), _(txt_info_building_ref_tree), 1, 2);
 	for_each_art(i) {
 		art = &arts[i];
 
@@ -1068,7 +1064,7 @@ build_references(
 	/*
 	 * Add the References data to the cache
 	 */
-	snprintf(msg, sizeof(msg), _("Building References-trees (%d/%d)..."), 2, 2); /* TODO: -> lang.c */
+	snprintf(msg, sizeof(msg), _(txt_info_building_ref_tree), 2, 2);
 	for_each_art(i) {
 		if (!arts[i].refs)						/* No refs - skip */
 			continue;

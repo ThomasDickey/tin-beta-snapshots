@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2023-03-15
+ *  Updated   : 2023-05-20
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2023 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -82,17 +82,26 @@ tintls_init(
 	 */
 
 	libtls_config = tls_config_new();
-	if (!libtls_config)
+	if (!libtls_config) {
+		error_message(2, "tls_config_new: out of memory!\n");
 		return -ENOMEM;
+	}
 
-	if (ca_cert_file[0] == '\0')
-		ca_cert_file = tls_default_ca_cert_file();
-
-	result = tls_config_set_ca_file(libtls_config, ca_cert_file);
-	if (result != 0) {
-		tls_config_free(libtls_config);
-		libtls_config = NULL;
-		return -EINVAL;
+	/*
+	 * Only call tls_config_set_ca_file(3) if ca_cert_file has been
+	 * configured by the user. Don't use tls_default_ca_cert_file(3).
+	 * Otherwise, a behavioural difference between libretls and libressl
+	 * can be triggered.
+	 * (see https://git.causal.agency/libretls/about/#Compatibility)
+	 */
+	if (ca_cert_file[0] != '\0') {
+		result = tls_config_set_ca_file(libtls_config, ca_cert_file);
+		if (result != 0) {
+			tls_config_free(libtls_config);
+			libtls_config = NULL;
+			error_message(2, "tls_config_set_ca_file: %d!\n", result);
+			return -EINVAL;
+		}
 	}
 
 	if (insecure_nntps) {
@@ -119,14 +128,17 @@ tintls_init(
 #		endif /* DEBUG */
 
 	result = gnutls_certificate_allocate_credentials(&tls_xcreds);
-	if (result < 0)
+	if (result < 0) {
+		error_message(2, "gnutls_certificate_allocate_credentials: out of memory!\n");
 		return -ENOMEM;
+	}
 
 	if (ca_cert_file[0] == '\0') {
 		result = gnutls_certificate_set_x509_system_trust(tls_xcreds);
 		if (result < 0) {
 			gnutls_certificate_free_credentials(tls_xcreds);
 			tls_xcreds = NULL;
+			error_message(2, "gnutls_certificate_set_x509_system_trust: %d!\n", result);
 			return -EINVAL;
 		}
 	} else {
@@ -134,6 +146,7 @@ tintls_init(
 		if (result < 0) {
 			gnutls_certificate_free_credentials(tls_xcreds);
 			tls_xcreds = NULL;
+			error_message(2, "gnutls_certificate_set_x509_trust_file: %d!\n", result);
 			return -EINVAL;
 		}
 	}

@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2023-02-22
+ *  Updated   : 2023-06-22
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -161,7 +161,7 @@ expand_feed_filename(
 	 * If no path exists or the above failed in some way, use sensible defaults
 	 * Put the generic path into 'outpath'
 	 */
-	if ((ret == 0) || !(strrchr(outpath, DIRSEP))) {
+	if ((ret == 0) || !(strrchr(outpath, '/'))) {
 		char buf[PATH_LEN];
 
 		if (!strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : curr_group->attribute->savedir, buf, sizeof(buf), curr_group, FALSE))
@@ -984,7 +984,7 @@ got_epipe_while_piping:
 			curr_line = saved_curr_line;
 
 		if (redraw_screen)
-			draw_page(group->name, 0);
+			draw_page(0);
 		else {
 			if (function == FEED_PIPE)
 				clear_message();

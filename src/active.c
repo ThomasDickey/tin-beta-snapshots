@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2023-02-22
+ *  Updated   : 2023-05-09
  *  Notes     :
  *
  * Copyright (c) 1992-2023 Iain Lea <iain@bricbrac.de>
@@ -435,13 +435,13 @@ do_read_newsrc_active_file(
 							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4) {
 #	ifdef DEBUG
 								if ((debug & DEBUG_NNTP) && verbose > 1)
-									debug_print_file("NNTP", "Invalid response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
+									debug_print_file("NNTP", "Invalid response to \"GROUP %s\txt_log_data_hidden%s\"", ngnames[index_o], line);
 #	endif /* DEBUG */
 							}
 							if (strcmp(ngname, ngnames[index_o]) != 0) {
 #	ifdef DEBUG
 								if ((debug & DEBUG_NNTP) && verbose > 1)
-									debug_print_file("NNTP", "Groupname mismatch in response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
+									debug_print_file("NNTP", "Groupname mismatch in response to \"GROUP %s\txt_log_data_hidden%s\"", ngnames[index_o], line);
 #	endif /* DEBUG */
 							}
 							ptr = ngname;
@@ -675,6 +675,10 @@ read_active_file(
 		 */
 		active_add(grpptr, count, max, min, moderated);
 	}
+#	ifdef DEBUG
+	if ((debug & DEBUG_NNTP) && !verbose)
+		debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+#	endif /* DEBUG */
 
 	TIN_FCLOSE(fp);
 
@@ -753,6 +757,11 @@ read_active_counts(
 		 */
 		active_add(grpptr, count, max, min, moderated);
 	}
+#	ifdef DEBUG
+	/* log end of multiline response to get timing data */
+	if ((debug & DEBUG_NNTP) && !verbose)
+		debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+#	endif /* DEBUG */
 
 	/*
 	 * Exit if active file wasn't read correctly or is empty
@@ -908,6 +917,11 @@ read_news_active_file(
 								}
 								active_add(grpptr, count, max, min, moderated);
 							}
+#	ifdef DEBUG
+							/* log end of multiline response to get timing data */
+							if ((debug & DEBUG_NNTP) && !verbose)
+								debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+#	endif /* DEBUG */
 						}
 					}
 					if (need_auth) { /* retry after auth is overkill here, so just auth */

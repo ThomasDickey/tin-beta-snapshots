@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-05-02
+.\" Updated   : 2023-06-29
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -146,7 +146,8 @@ has no effect if \fBtin\fP retrieves its index files via NNTP and
 .TP 
 \fB\-k\fP
 Skip the certificate verification step for NNTPS connections and proceed
-without checking. This option implies \*(rq\fB\-T\fP\*(rq.
+without checking. This option implies \*(rq\fB\-T\fP\*(rq. See also the "SECURITY"
+section.
 .TP 
 \fB\-l\fP
 Get number of articles per group from the
@@ -3696,9 +3697,10 @@ Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-file.
 .SH SECURITY
 .IX Header SECURITY
 If \fBtin\fP is started in debug mode (\*(rq\fB\-D n\fP\*(rq) it will create world
-readable files in \fB$TMPDIR\fP which may contain the users NNTP password in
-cleartext. On multiuser\-systems \fB$TMPDIR\fP should be set to a safe location
-before starting \fBtin\fP in debug mode (e.g.  \fBTMPDIR=$HOME tin \-D 1\fP).
+readable files in \fB$TMPDIR\fP which may contain sensitive data like the users
+NNTP password in cleartext (if running verbose). On multiuser\-systems
+\fB$TMPDIR\fP should be set to a safe location before starting \fBtin\fP in
+(verbose) debug mode (e.g. \fBTMPDIR=$HOME tin \-vD 1\fP).
 .PP
 Using the \*(rq\fB\-k\fP\*(rq option to skip certificate verification makes the
 session insecure as the server's certificate is not checked; avoid this
@@ -3708,8 +3710,8 @@ option whenever possible.
 .\"
 If the server does not initially require authentication but supports
 compression and compression is requested, \fBtin\fP will exit when
-authentication is required later on. Using the \fB\-A\fP command line option in
-conjunction with \fB\-C\fP circumvents this behavior.
+authentication is required later on. Using the \*(rq\fB\-A\fP\*(rq command line option
+in conjunction with \*(rq\fB\-C\fP\*(rq circumvents this behaviour.
 .SH "CONFORMING TO"
 .IX Header "CONFORMING TO"
 .\" - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
@@ -3730,11 +3732,16 @@ Philip Hazel, and copyright \(co by the University of Cambridge, England.
 <https://www.pcre.org/>
 .SH BUGS
 .IX Header BUGS
-\fBCNews\fP NNTPd, \fB\%noffle\fP(1)  (<= V1.0\-pre5) and \fBNewsCache\fP (<=
+\fBCNews\fP\0NNTPd, \fB\%noffle\fP(1)  (<= V1.0\-pre5) and \fBNewsCache\fP (<=
 V1.1.91) can't handle pipelined GROUP commands (\fBRFC\%3977\fP).  If you run
 into trouble with any of the mentioned historical servers define
 DISABLE_PIPELINING in include/autoconf.h and recompile.
-.br
+.PP
+Using the \*(rq\fB\-C\fP\*(rq (COMPRESS) flag with \fBINN\fP\0nnrpd versions between
+2.6.1 and 2.7.1 (both incl.) may cause \fBtin\fP to hang and later timeout when
+posting. This has been fixed in \fBINN\fP\0nnrpd version 2.7.2. As a workaround
+simply don't use \*(rq\fB\-C\fP\*(rq.
+.PP
 .\"
 .\"
 Before mailing a bug\-report to <tin\-bugs@tin.org> please check if

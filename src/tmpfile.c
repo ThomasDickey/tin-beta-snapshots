@@ -87,7 +87,7 @@ tmpfile(
 		(void) fchmod(fd, (S_IRUGO|S_IWUGO) & ~u);
 #	else
 #		if defined(HAVE_CHMOD) && !defined(HAVE_MKSTEMP) && defined(HAVE_MKTEMP)
-		fchmod(p, (S_IRUGO|S_IWUGO) & ~u);
+		chmod(p, (S_IRUGO|S_IWUGO) & ~u);
 #		endif /* HAVE_CHMOD && !HAVE_MKSTEMP && HAVE_MKTEMP */
 #	endif /* HAVE_FCHMOD */
 	}

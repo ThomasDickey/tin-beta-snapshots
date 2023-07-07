@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2022-08-29
+ *  Updated   : 2023-05-09
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -1168,7 +1168,7 @@ filter_menu(
 		comment_line[0] = '\0';
 	}
 	if (!proceed) {
-		rule.comment = free_filter_comment(rule.comment);
+		free_filter_comment(rule.comment);
 		return FALSE;
 	}
 
@@ -1177,7 +1177,7 @@ filter_menu(
 	 */
 	show_menu_help(_(txt_help_filter_text));
 	if (!prompt_menu_string(INDEX_TOP + 2, ptr_filter_text, rule.text)) {
-		rule.comment = free_filter_comment(rule.comment);
+		free_filter_comment(rule.comment);
 		return FALSE;
 	}
 
@@ -1196,7 +1196,7 @@ filter_menu(
 		free(list);
 
 		if (i == -1) {
-			rule.comment = free_filter_comment(rule.comment);
+			free_filter_comment(rule.comment);
 			return FALSE;
 		}
 
@@ -1234,7 +1234,7 @@ filter_menu(
 		free(list);
 
 		if (i == -1) {
-			rule.comment = free_filter_comment(rule.comment);
+			free_filter_comment(rule.comment);
 			return FALSE;
 		} else
 			rule.subj_ok = (i == 0);
@@ -1254,7 +1254,7 @@ filter_menu(
 		free(list);
 
 		if (i == -1) {
-			rule.comment = free_filter_comment(rule.comment);
+			free_filter_comment(rule.comment);
 			return FALSE;
 		} else
 			rule.from_ok = rule.subj_ok ? (i != 0) : (i == 0);
@@ -1278,7 +1278,7 @@ filter_menu(
 		free(list);
 
 		if (i == -1) {
-			rule.comment = free_filter_comment(rule.comment);
+			free_filter_comment(rule.comment);
 			return FALSE;
 		} else {
 			switch ((rule.subj_ok || rule.from_ok) ? i : i + 1) {
@@ -1320,7 +1320,7 @@ filter_menu(
 	buf[0] = '\0';
 
 	if (!prompt_menu_string(INDEX_TOP + 9, ptr_filter_lines, buf)) {
-		rule.comment = free_filter_comment(rule.comment);
+		free_filter_comment(rule.comment);
 		return FALSE;
 	}
 
@@ -1359,7 +1359,7 @@ filter_menu(
 
 	buf[0] = '\0';
 	if (!prompt_menu_string(INDEX_TOP + 10, text_score, buf)) {
-		rule.comment = free_filter_comment(rule.comment);
+		free_filter_comment(rule.comment);
 		return FALSE;
 	}
 
@@ -1376,7 +1376,7 @@ filter_menu(
 	}
 
 	if (!rule.score) { /* ignore 0 scores */
-		rule.comment = free_filter_comment(rule.comment);
+		free_filter_comment(rule.comment);
 		return FALSE;
 	}
 
@@ -1406,7 +1406,7 @@ filter_menu(
 	free(list);
 
 	if (i == -1) {
-		rule.comment = free_filter_comment(rule.comment);
+		free_filter_comment(rule.comment);
 		return FALSE;
 	}
 
@@ -1440,11 +1440,11 @@ filter_menu(
 		free(list);
 
 		if (i == -1) {
-			rule.comment = free_filter_comment(rule.comment);
+			free_filter_comment(rule.comment);
 			return FALSE;
 		}
 	} else {
-		rule.comment = free_filter_comment(rule.comment);
+		free_filter_comment(rule.comment);
 		return FALSE;
 	}
 
@@ -1466,7 +1466,7 @@ filter_menu(
 
 		case GLOBAL_QUIT:
 		case GLOBAL_ABORT:
-			rule.comment = free_filter_comment(rule.comment);
+			free_filter_comment(rule.comment);
 			return FALSE;
 			/* keep lint quiet: */
 			/* FALLTHROUGH */
@@ -1476,7 +1476,7 @@ filter_menu(
 			 * Add the filter rule and save it to the filter file
 			 */
 			ret = add_filter_rule(group, art, &rule, FALSE);
-			rule.comment = free_filter_comment(rule.comment);
+			free_filter_comment(rule.comment);
 			return ret;
 			/* keep lint quiet: */
 			/* FALLTHROUGH */
@@ -1553,7 +1553,7 @@ quick_filter(
 	rule.score = (type == GLOBAL_QUICK_FILTER_KILL) ? tinrc.score_kill : tinrc.score_select;
 
 	ret = add_filter_rule(group, art, &rule, TRUE);
-	rule.comment = free_filter_comment(rule.comment);
+	free_filter_comment(rule.comment);
 	return ret;
 }
 

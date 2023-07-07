@@ -1,10 +1,13 @@
--- 2.6.3 release 20230505 "" --
+-- 2.6.3 release 20230707 "" --
 
  017) Enrik Berkhan <enrik@tin.org>
       ADD. "COMPRESS DEFLATE" support (RFC 8054)
       ADD. ensure that no TLS implementation can activate compression
+      ADD. some more error messages for various TLS issues
+      ADD. don't use tls_default_ca_cert_file(3) due to a behavioural
+           difference between libretls and libressl
       BUG. typo in configure[.in]
-      FIX. init.c, main.c, misc.c, nntplib.c, extern.h, autoconf.hin
+      FIX. init.c, main.c, misc.c, nntplib.c, nntps.c, extern.h, autoconf.hin
            aclocal.m4, configure[.in]
 
  016) Dennis Grevenstein <dennis.grevenstein@gmail.com>
@@ -13,7 +16,7 @@
 
  015) Dennis Preiser <dennis@d--p.de>
       ADD. do not interpret \n in editor_format
-      FIX. misc.c
+      FIX. misc.c, nntplib.c
 
  014) Matt Anton <tin@lv223.org>
       ADD. updated French translation
@@ -26,15 +29,24 @@
       BUG. missing HAVE_MEMMOVE / HAVE_BCOPY guards in nntplib.c
       BUG. without including tin.h we can no longer use _Noreturn in makecfg.c
       BUG. txt_translit was included in binary without HAVE_ICONV
+      BUG. timeout counter was not reset on reconnect
       ADD. do not resend HEAD after ERR_GOODBYE response
       ADD. config.guess, config.sub update
       ADD. version checking during configure for SSL/TLS libraries
-      ADD. reformat code
+      ADD. log end of long multiline responses with -D 1 when not using -v
+           (for timestamps)
+      ADD. reformat code, remove unnecessary assignments and parameters,
+           remove DIRSEP, avoid implicit double negative
       ADD. :port suffix in newsauth, newsrctable and -g
-      FIX. active.c, art.c, auth.c, feed.c, group.c, header.c, init.c, keymap.c
-           lang.c, main.c, makecfg.c, memory.c, misc.c, nntplib.c, nntps.c
-           page.c, post.c, save.c, search.c, select.c, string.c, extern.h
-           proto.h, tin.h, tinrc.h, tin.1, tin.5, configure[.in], config.guess
+      ADD. cmd. execution via ! for x_body
+      ADD. missing fchmod fallback code to write_overview()
+      ADD. only log sensitive auth data if running verbose (-vD 1)
+      ADD. warn if body contains non printable chars in current locale
+      FIX. active.c, art.c, auth.c, cook.c, feed.c, filter.c, group.c, header.c
+           init.c, keymap.c, lang.c, mail.c, main.c, makecfg.c, memory.c, misc.c
+           nntplib.c, nntps.c, options_menu.c, page.c, post.c, refs.c, save.c
+           search.c, select.c, signal.c, string.c, tmpfile.c, extern.h, proto.h
+           tin.h, tinrc.h, tin.1, tin.5, configure[.in], config.guess
            config.sub
 
  012) Thomas E. Dickey <dickey@invisible-island.net>

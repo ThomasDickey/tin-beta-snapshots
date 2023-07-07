@@ -360,7 +360,7 @@ expand_mailcap_meta(
 	size_t linelen, space, olen;
 
 	if (!(strchr(mailcap, '%'))) /* nothing to expand */
-		return my_strdup(mailcap); /* waste of mem, but simplyfies the frees */
+		return my_strdup(mailcap); /* waste of mem, but simplifies the frees */
 
 	linelen = LEN * 2;					/* initial maxlen */
 	space = linelen - 1;					/* available space in string */

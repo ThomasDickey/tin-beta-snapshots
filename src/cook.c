@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2022-09-19
+ *  Updated   : 2023-05-10
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2023 Jason Faultless <jason@altarstone.com>
@@ -361,7 +361,7 @@ get_filename(
 			return NULL;
 	}
 
-	if ((p = strrchr(name, DIRSEP)))
+	if ((p = strrchr(name, '/')))
 		return p + 1;
 
 	return name;

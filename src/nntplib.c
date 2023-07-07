@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2023-05-03
+ *  Updated   : 2023-07-03
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -832,13 +832,32 @@ put_server(
 		DEBUG_IO((stderr, "put_server(%s)\n", string));
 		nntpbuf_puts(string, &nntp_buf);
 		nntpbuf_puts("\r\n", &nntp_buf);
+
 #	ifdef DEBUG
-		if (debug & DEBUG_NNTP)
-			debug_print_file("NNTP", ">>>%s%s", logtime(), string);
+		if (debug & DEBUG_NNTP) {
+			if (verbose)	/* only log password when running verbose */
+				debug_print_file("NNTP", ">>>%s%s", logtime(), string);
+			else {
+				char *c = strdup(string);
+				int l = 0;
+
+				if (!strncmp(string,"AUTHINFO PASS", 13))
+					l = 13;
+				if (!l && !strncmp(string,"AUTHINFO SASL PLAIN", 19))
+					l = 19;
+
+				if (l)
+					*(c+l) = '\0';
+
+				debug_print_file("NNTP", ">>>%s%s%s", logtime(), c, l ? " [data hidden, rerun with -v]" : "");
+				free(c);
+			}
+		}
 #	endif /* DEBUG */
+
 		/*
-		 * remember the last command we wrote to be able to resend it after a
-		 * reconnect. reconnection is handled by get_server()
+		 * remember the last command we wrote to be able to resend it after
+		 * a reconnect. reconnection is handled by get_server()
 		 *
 		 * don't cache "LIST [ACTIVE|COUNTS|NEWSGROUPS] something" as we
 		 * would need to resend all of them but we remember just the last
@@ -893,6 +912,7 @@ reconnect(
 	 */
 	if (retry > NNTP_TRY_RECONNECT || (!tinrc.auto_reconnect && prompt_yn(_(txt_reconnect_to_news_server), TRUE) != 1)) {
 		if (!strcmp("POST", last_put)) {
+			/* TODO: also/only postpone_article(article_name) ? */
 			unlink(backup_article_name(article_name));
 			rename_file(article_name, dead_article);
 			if (tinrc.keep_dead_articles)
@@ -910,6 +930,9 @@ reconnect(
 
 	/* reset signal_context */
 	signal_context = save_signal_context;
+#	if defined(HAVE_ALARM) && defined(SIGALRM)
+		alarm((unsigned) tinrc.nntp_read_timeout_secs);
+#	endif /* HAVE_ALARM && SIGALRM */
 
 	clear_message();
 	strcpy(buf, last_put);			/* Keep copy here, it will be clobbered a lot otherwise */
@@ -933,6 +956,10 @@ reconnect(
 		did_reconnect = TRUE;
 		retry = NNTP_TRY_RECONNECT;
 	}
+
+#	if defined(HAVE_ALARM) && defined(SIGALRM)
+		alarm(0);
+#	endif /* HAVE_ALARM && SIGALRM */
 
 	return retry;
 }
@@ -2178,10 +2205,8 @@ nntp_write(
 	if (tls)
 		bytes_written = tintls_write(tls, buf, n);
 	else
-		bytes_written = write(fd, buf, n);
-#else
-	bytes_written = write(fd, buf, n);
 #endif /* NNTPS_ABLE */
+		bytes_written = write(fd, buf, n);
 
 	return bytes_written;
 }
@@ -2199,10 +2224,8 @@ ssize_t nntp_read(
 	if (tls)
 		bytes_read = tintls_read(tls, buf, n);
 	else
-		bytes_read = read(fd, buf, n);
-#else
-	bytes_read = read(fd, buf, n);
 #endif /* NNTPS_ABLE */
+		bytes_read = read(fd, buf, n);
 
 	return bytes_read;
 }
@@ -2297,7 +2320,6 @@ error_out:
 	FreeAndNull(nntpbuf->z_wr);
 	FreeAndNull(nntpbuf->z_rd_buf);
 	FreeAndNull(nntpbuf->z_wr_buf);
-	return;
 }
 
 
@@ -2326,17 +2348,16 @@ nntpbuf_deflate_write(
 
 		while (buf->z_wr->avail_out < DEFLATE_BUFSZ) {
 			ssize_t bwritten;
+
 			bwritten = nntp_write(buf->fd, buf->tls_ctx, out, DEFLATE_BUFSZ - buf->z_wr->avail_out);
 			if (bwritten < 0)
 				return EOF;
 
 			buf->z_wr->avail_out += bwritten;
 			out += bwritten;
+			bytes_written += bwritten;
 		}
-
-		buf->z_wr->next_out = buf->z_wr_buf;
 	}
-
 	buf->wr.lb = buf->wr.ub;
 
 	return bytes_written;
@@ -2580,12 +2601,11 @@ nntpbuf_gets(
 
 			if (s[write_at - 1] == '\n' && size) {
 				s[write_at] = '\0';
-				goto out;
+				return s;
 			}
 		}
 	}
 
-out:
 	return s;
 }
 

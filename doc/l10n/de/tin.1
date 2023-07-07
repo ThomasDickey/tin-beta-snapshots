@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-05-02
+.\" Updated   : 2023-06-29
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -101,8 +101,8 @@ Erstelle bzw. aktualisiere Index\-Dateien für alle Gruppen in
 Datei und markiere alle Artikel als gelesen.
 .TP 
 \fB\-C\fP
-Use COMPRESS NNTP extension (\fBRFC\%8054\fP) if available. See also the
-"SECURITY" section.
+Die NNTP\-Erweiterung COMPRESS (\fBRFC\%8054\fP) verwenden, falls
+verfügbar. Auch den Abschnitt "SICHERHEIT" beachten.
 .TP 
 \fB\-d\fP
 .\"
@@ -149,7 +149,8 @@ abruft und \fBcache_overview_files\fP ausgeschaltet ist.
 .TP 
 \fB\-k\fP
 Zertifikatsüberprüfungsschritt für NNTPS\-Verbindungen überspringen und ohne
-Überprüfung fort fahren. Diese Option beinhaltet \*(rq\fB\-T\fP\*(rq.
+Überprüfung fort fahren. Diese Option beinhaltet \*(rq\fB\-T\fP\*(rq. Auch den
+Abschnitt "SICHERHEIT" beachten.
 .TP 
 \fB\-l\fP
 Ruft die Anzahl der Artikel pro Gruppe aus der Datei
@@ -220,8 +221,9 @@ weitere Informationen siehe den Abschnitt "AUTOMATISCHES MAILEN UND
 SPEICHERN VON UNGELESENEN ARTIKELN".
 .TP 
 \fB\-T\fP
-Enable NNTPS (NNTP over TLS). This also overrides the environment variable
-$\fBNNTPPORT\fP if set. Only available when reading via NNTP.
+NNTPS (NNTP über TLS) aktivieren. Dies setzt auch die Umgebungsvariable
+$\fBNNTPPORT\fP außer Kraft, falls diese gesetzt ist. Nur verfügbar, wenn über
+NNTP gelesen wird.
 .TP 
 \fB\-u\fP
 Erstellt/aktualisiert Indexdateien für jede Gruppe in
@@ -3277,15 +3279,17 @@ springt zu dem Artikel, auf den gezeigt wird.
 In other menus and areas button pressing reverts back to usual cut and paste
 of \fB\%xterm\fP(1x), but after one click of any button.
 .SS "INDEX DATEIEN"
-If your news server supports NOV index files (see \fB\%newsoverview\fP(5), most
-modern installations will) and you have a fast connection to your news
-server then this section can be ignored.
+Wenn Ihr Newsserver NOV\-Indexdateien unterstützt (siehe
+\fB\%newsoverview\fP(5), die meisten modernen Installationen tun dies) und Sie
+eine schnelle Verbindung zu Ihrem Newsserver haben, können Sie diesen
+Abschnitt ignorieren.
 .PP
-If your news server doesn't support NOV index files or you have a very slow
-connection to your news server then \fBtin\fP can cache the index for each
-newsgroup if \fBcache_overview_files\fP is set to ON.  Note that this cache can
-use up large amounts of disk space if you read a lot of groups and/or high
-traffic groups.
+Wenn Ihr Newsserver keine NOV\-Indexdateien unterstützt oder Sie eine sehr
+sehr langsame Verbindung zu Ihrem Newsserver haben, kann \fBtin\fP den Index
+für jede Newsgruppe zwischenspeichern wenn \fBcache_overview_files\fP auf ON
+gesetzt ist. Beachten Sie, daß dieser Cache große Mengen an Speicherplatz
+verbrauchen kann, wenn Sie sehr viele Gruppen und/oder Gruppen mit hohem
+Datenverkehr lesen.
 .PP
 Each user creates/updates his/her own index files that are stored in
 \fI${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news/\fP. If you are
@@ -3792,10 +3796,10 @@ Speichern der \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-Datei.
 .IX Header SICHERHEIT
 Falls \fBtin\fP im Debug\-Modus (\*(rq\fB\-D n\fP\*(rq) gestartet wird, werden in
 \fB$TMPDIR\fP für alle Benutzer lesbare Dateien erzeugt, welche das
-NNTP\-Passwort des aktuellen Benutzers im Klartext enthalten können. Auf
-Multiuser\-Systemen sollte daher $TMPDIR auf einen sicheren Speicherort
-gesetzt werden, bevor \fBtin\fP im Debug\-Modus gestartet wird
-(z. B. TMPDIR=$HOME tin \-D 1).
+NNTP\-Passwort des aktuellen Benutzers im Klartext enthalten können (falls
+Verbose angeschaltet ist). Auf Multiuser\-Systemen sollte daher $TMPDIR auf
+einen sicheren Speicherort gesetzt werden, bevor \fBtin\fP im (verbosen)
+Debug\-Modus gestartet wird (z. B. TMPDIR=$HOME tin \-vD 1).
 .PP
 Die Verwendung der Option \*(rq\fB\-k\fP\*(rq zum Überspringen der
 Zertifikatsüberprüfung macht die Sitzung unsicher, da das Zertifikat des
@@ -3803,10 +3807,11 @@ Servers nicht überprüft wird; Vermeiden Sie diese Option nach Möglichkeit.
 .PP
 .\"
 .\"
-If the server does not initially require authentication but supports
-compression and compression is requested, \fBtin\fP will exit when
-authentication is required later on. Using the \fB\-A\fP command line option in
-conjunction with \fB\-C\fP circumvents this behavior.
+Falls der Server anfangs keine Authentifizierung verlangt, aber
+Komprimierung unterstützt und Komprimierung angefordert wird, beendet sich
+\fBtin\fP falls später eine Authentifizierung verlangt wird. Durch Benutzung
+der Befehlszeilenoption \*(rq\fB\-A\fP\*(rq in Verbindung mit \*(rq\fB\-C\fP\*(rq kann dieses
+Verhalten umgangen werden.
 .SH "KONFORM ZU"
 .IX Header "KONFORM ZU"
 .\" - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
@@ -3828,12 +3833,17 @@ University of Cambridge, England.
 <https://www.pcre.org/>
 .SH FEHLER
 .IX Header FEHLER
-\fBCNews\fP NNTPd, \fB\%noffle\fP(1) (<= V1.0\-pre5) und \fBNewsCache\fP (<=
+\fBCNews\fP\0NNTPd, \fB\%noffle\fP(1) (<= V1.0\-pre5) und \fBNewsCache\fP (<=
 V1.1.91) können nicht mit gepipelinten GROUP\-Befehlen (\fBRFC\%3977\fP)
 umgehen. Falls Sie Probleme mit einem der genannten historischen Server
 haben, definieren Sie DISABLE_PIPELINING in include/autoconf.h und
 kompilieren Sie das Programm neu.
-.br
+.PP
+Die Verwendung des \*(rq\-C\*(rq (COMPRESS)\-Flags mit \fBINN\fP\-Versionen zwischen
+2.6.1 und 2.7.1 (beide einschl.) kann dazu führen, dass \fBtin\fP beim Posten
+hängt und sich mit einem Timeout beendet. Dies wurde in der \fBINN\fP\-Version
+2.7.2 behoben. Als Workaround verwenden Sie einfach kein \*(rq\-C\*(rq.
+.PP
 .\"
 .\"
 Bevor Sie einen Bug\-Report an <tin\-bugs@tin.org> schicken,

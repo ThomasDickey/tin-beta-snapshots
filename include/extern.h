@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-05-03
+ *  Updated   : 2023-07-07
  *  Notes     :
  *
  * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>
@@ -984,6 +984,7 @@ extern constext txt_info_add_kill[];
 extern constext txt_info_add_select[];
 extern constext txt_info_all_parts_tagged[];
 extern constext txt_info_all_parts_untagged[];
+extern constext txt_info_building_ref_tree[];
 extern constext txt_info_do_postpone[];
 extern constext txt_info_enter_valid_character[];
 extern constext txt_info_missing_part[];
@@ -1017,6 +1018,9 @@ extern constext txt_kill_time[];
 extern constext txt_last[];
 extern constext txt_last_resp[];
 extern constext txt_lines[];
+#if defined(NNTP_ABLE) && defined(DEBUG)
+	extern constext txt_log_data_hidden[];
+#endif /* NNTP_ABLE && DEBUG */
 extern constext txt_lookup_func_not_available[];
 extern constext txt_lookup_func_not_nntp[];
 #ifdef NNTP_ABLE
@@ -1392,6 +1396,7 @@ extern constext txt_warn_references_but_no_re[];
 extern constext txt_warn_sig_too_long[];
 extern constext txt_warn_suspicious_mail[];
 extern constext txt_warn_update[];
+extern constext txt_warn_unprintable_char[];
 extern constext txt_warn_unrecognized_version[];
 extern constext txt_warn_wrong_sig_format[];
 extern constext txt_warn_xref_not_supported[];

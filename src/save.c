@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-02-22
+ *  Updated   : 2023-05-10
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -541,7 +541,7 @@ save_and_process_art(
 	if (num_save == max_save - 1)
 		expand_save();
 	save[num_save].path = my_strdup(path);
-	save[num_save].file = strrchr(save[num_save].path, DIRSEP) + 1;	/* ptr to filename portion */
+	save[num_save].file = strrchr(save[num_save].path, '/') + 1;	/* ptr to filename portion */
 	save[num_save].mailbox = CAST_BOOL(is_mailbox);
 /* fprintf(stderr, "SAPA (%s) (%s) mbox=%s\n", save[num_save].path, save[num_save].file, bool_unparse(save[num_save].mailbox)); */
 	num_save++;			/* NB: num_save is bumped here only */
@@ -590,7 +590,7 @@ create_path(
 		return FALSE;
 	}
 
-	while ((p = strchr(p, DIRSEP)) != NULL) {
+	while ((p = strchr(p, '/')) != NULL) {
 		*p = '\0';
 		if (stat(buf, &st) == -1) {
 			if (my_mkdir(buf, (mode_t) (S_IRWXU|S_IRUGO|S_IXUGO)) == -1) {
@@ -601,7 +601,7 @@ create_path(
 				}
 			}
 		}
-		*p++ = DIRSEP;
+		*p++ = '/';
 	}
 	free(buf);
 	return TRUE;
@@ -831,7 +831,7 @@ post_process_uud(
 			/* item->mimetype seems not to be available for uudecoded files etc */
 			if (curr_group->attribute->post_process_view) {
 				joinpath(path, sizeof(path), file_out_dir, item->filename);
-				view_file(path, strrchr(path, DIRSEP) + 1);
+				view_file(path, strrchr(path, '/') + 1);
 			}
 		} else {
 			errors++;
@@ -920,7 +920,7 @@ post_process_uud(
 
 						filename = name;
 						expand_save_filename(path, sizeof(path), filename);
-						filename = strrchr(path, DIRSEP) + 1;	/* ptr to filename portion */
+						filename = strrchr(path, '/') + 1;	/* ptr to filename portion */
 						if ((fp_out = fopen(path, "w")) == NULL) {
 							perror_message(_(txt_cannot_open), path);
 							fclose(fp_in);
@@ -1010,7 +1010,6 @@ post_process_uud(
 		my_printf(_(txt_uu_error_decode), filename, _(txt_uu_error_no_end));
 		my_printf(cCRLF);
 	}
-	return;
 }
 
 

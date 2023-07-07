@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-01-11
+ *  Updated   : 2023-06-22
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -307,7 +307,7 @@ handle_resize(
 
 		case cPage:
 			resize_article(TRUE, &pgart);
-			draw_page(curr_group->name, 0);
+			draw_page(0);
 			break;
 
 		case cPost:
@@ -317,7 +317,7 @@ handle_resize(
 
 		case cPostFup:
 			resize_article(TRUE, &pgart);
-			draw_page(curr_group->name, 0);
+			draw_page(0);
 			/*
 			 * Reset signal_context because draw_page()
 			 * sets signal_context to cPage.

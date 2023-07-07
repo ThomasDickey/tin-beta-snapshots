@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-05-03
+ *  Updated   : 2023-07-07
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -552,6 +552,7 @@ constext txt_info_add_kill[] = N_("Kill filter added");
 constext txt_info_add_select[] = N_("Auto-selection filter added");
 constext txt_info_all_parts_tagged[] = N_("All parts tagged");
 constext txt_info_all_parts_untagged[] = N_("All parts untagged");
+constext txt_info_building_ref_tree[] = N_("Building References-trees (%d/%d)...");
 constext txt_info_do_postpone[] = N_("Storing article for later posting");
 constext txt_info_enter_valid_character[] = N_("Please enter a valid character");
 constext txt_info_missing_part[] = N_("Missing part #%d");
@@ -610,6 +611,10 @@ constext txt_kill_time[] = N_("Kill time in days   : ");
 constext txt_last[] = N_("Last");
 constext txt_last_resp[] = N_("-- Last response --");
 constext txt_lines[] = N_("Lines %s  ");
+
+#if defined(NNTP_ABLE) && defined(DEBUG)
+	constext txt_log_data_hidden[] = ". [full data hidden, rerun with -v]";
+#endif /* NNTP_ABLE && DEBUG */
 
 constext txt_lookup_func_not_available[] = N_("Function not available.");
 constext txt_lookup_func_not_nntp[] = N_("Not reading via NNTP.");
@@ -1000,6 +1005,7 @@ Warning: Your signature  is longer than %d lines.  Since signatures usually do\n
          not  transport any  useful information,  they should be as  short as\n\
          possible.\n");
 constext txt_warn_suspicious_mail[] = N_("Warning: this mail address may contain a spamtrap. %s=continue, %s=abort? ");
+constext txt_warn_unprintable_char[] = N_("Warning: line %d contains unprintable chars:\n\t%s\n");
 constext txt_warn_wrong_sig_format[] = N_("\nWarning: Signatures should start with '-- \\n' not with '--\\n'.\n");
 constext txt_writing_attributes_file[] = N_("Writing attributes file...");
 

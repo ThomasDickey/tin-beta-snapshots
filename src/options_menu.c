@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2022-09-19
+ *  Updated   : 2023-07-05
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2023 Michael Bienia <michael@vorlon.ping.de>
@@ -1605,10 +1605,10 @@ config_page(
 						/* use slrnface */
 						case OPT_USE_SLRNFACE:
 							if (prompt_option_on_off(option)) {
-								if (!tinrc.use_slrnface)
-									slrnface_stop();
-								else
+								if (tinrc.use_slrnface)
 									slrnface_start();
+								else
+									slrnface_stop();
 								changed |= MISC_OPTS;
 							}
 							break;

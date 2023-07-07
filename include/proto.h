@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2023-01-28
+ *  Updated   : 2023-06-22
  *  Notes     :
  *
  * Copyright (c) 1997-2023 Urs Janssen <urs@tin.org>
@@ -491,10 +491,10 @@ extern void show_menu_help(const char *help_message);
 /* page.c */
 extern int show_page(struct t_group *group, int start_respnum, int *threadnum);
 extern void display_info_page(int part);
-extern void draw_page(const char *group, int part);
+extern void draw_page(int part);
 extern void info_pager(FILE *info_fh, const char *title, t_bool wrap_at_ends);
 extern void resize_article(t_bool wrap_lines, t_openartinfo *artinfo);
-extern void toggle_raw(struct t_group *group);
+extern void toggle_raw(void);
 
 /* parsdate.y */
 extern time_t parsedate(char *p, TIMEINFO *now);

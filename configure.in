@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2023-05-02
+dnl Updated   : 2023-05-15
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2023 Thomas E. Dickey <dickey@invisible-island.net>
@@ -1115,7 +1115,8 @@ AC_CHECK_HEADER(unicode/unorm.h,[
 		cf_try_icuuc="no"
 		LIBS="$LIBS -licuuc"
 		AC_TRY_LINK([#include <unicode/unorm.h>], [
-			int32_t needed, ustr = NULL;
+			int32_t needed;
+			const UChar *ustr = NULL;
  			UErrorCode status;
 			needed = unorm_normalize(ustr, -1, UNORM_DEFAULT, 0, NULL, 0, &status);], [
 			AC_DEFINE(HAVE_LIBICUUC,1,[Define this to 1 if we have libicuuc])

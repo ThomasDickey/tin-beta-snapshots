@@ -422,7 +422,7 @@ read_keymap_file(
 		}
 	}
 	/* TODO: use joinpath()? */
-	for (k = 0; dirs[k][0] != '\0' ; k++) {
+	for (k = 0; dirs[k][0] != '\0'; k++) {
 		if (*locale && codeset)
 			sprintf(fnames[i++], "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier));
 		if (*locale && normcodeset)

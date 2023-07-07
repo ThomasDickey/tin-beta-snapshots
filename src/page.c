@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-02-22
+ *  Updated   : 2023-06-22
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -106,7 +106,7 @@ static t_function page_mouse_action(t_function (*left_action) (void), t_function
 static t_function url_left(void);
 static t_function url_right(void);
 static void build_url_line(int i);
-static void draw_page_header(const char *group);
+static void draw_page_header(void);
 static void draw_percent_mark(long cur_num, long max_num);
 static void draw_url_arrow(void);
 static void free_url_list(void);
@@ -369,7 +369,7 @@ show_page(
 			case GLOBAL_SHELL_ESCAPE:
 				XFACE_CLEAR();
 				shell_escape();
-				draw_page(group->name, 0);
+				draw_page(0);
 				break;
 #endif /* !NO_SHELL_ESCAPE */
 
@@ -383,13 +383,13 @@ show_page(
 
 			case GLOBAL_PAGE_UP:
 				if (activate_last_ctrl_l())
-					draw_page(group->name, 0);
+					draw_page(0);
 				else {
 					if (curr_line == 0)
 						info_message(_(txt_begin_of_art));
 					else {
 						curr_line -= ((tinrc.scroll_lines == -2) ? ARTLINES / 2 : ARTLINES);
-						draw_page(group->name, 0);
+						draw_page(0);
 					}
 				}
 				break;
@@ -397,7 +397,7 @@ show_page(
 			case GLOBAL_PAGE_DOWN:		/* page down or next response */
 			case PAGE_NEXT_UNREAD:
 				if (!((func == PAGE_NEXT_UNREAD) && (tinrc.goto_next_unread & GOTO_NEXT_UNREAD_TAB)) && deactivate_next_ctrl_l())
-					draw_page(group->name, 0);
+					draw_page(0);
 				else {
 					if (curr_line + ARTLINES >= artlines) {	/* End is already on screen */
 						switch (func) {
@@ -421,7 +421,7 @@ show_page(
 
 						if (tinrc.scroll_lines == -1)		/* formerly show_last_line_prev_page */
 							curr_line--;
-						draw_page(group->name, 0);
+						draw_page(0);
 					}
 				}
 				break;
@@ -438,7 +438,7 @@ page_goto_next_unread:
 				if (reveal_ctrl_l_lines > -1 || curr_line != 0) {
 					reveal_ctrl_l_lines = -1;
 					curr_line = 0;
-					draw_page(group->name, 0);
+					draw_page(0);
 				}
 				break;
 
@@ -447,13 +447,13 @@ page_goto_next_unread:
 					reveal_ctrl_l_lines = artlines - 1;
 					/* Display a full last page for neatness */
 					curr_line = artlines - ARTLINES;
-					draw_page(group->name, 0);
+					draw_page(0);
 				}
 				break;
 
 			case GLOBAL_LINE_UP:
 				if (activate_last_ctrl_l())
-					draw_page(group->name, 0);
+					draw_page(0);
 				else {
 					if (curr_line == 0) {
 						info_message(_(txt_begin_of_art));
@@ -462,13 +462,13 @@ page_goto_next_unread:
 
 					i = scroll_page(KEYMAP_UP);
 					curr_line += i;
-					draw_page(group->name, i);
+					draw_page(i);
 				}
 				break;
 
 			case GLOBAL_LINE_DOWN:
 				if (deactivate_next_ctrl_l())
-					draw_page(group->name, 0);
+					draw_page(0);
 				else {
 					if (curr_line + ARTLINES >= artlines) {
 						info_message(_(txt_end_of_art));
@@ -477,7 +477,7 @@ page_goto_next_unread:
 
 					i = scroll_page(KEYMAP_DOWN);
 					curr_line += i;
-					draw_page(group->name, i);
+					draw_page(i);
 				}
 				break;
 
@@ -582,7 +582,7 @@ page_goto_next_unread:
 
 				if (func == GLOBAL_SEARCH_SUBJECT_BACKWARD && !reveal_ctrl_l) {
 					reveal_ctrl_l_lines = curr_line + ARTLINES - 1;
-					draw_page(group->name, 0);
+					draw_page(0);
 				}
 				process_search(&curr_line, (size_t) artlines, (size_t) ARTLINES, PAGE_LEVEL);
 				break;
@@ -634,7 +634,7 @@ page_goto_next_unread:
 			case PAGE_PGP_CHECK_ARTICLE:
 				XFACE_SUPPRESS();
 				if (pgp_check_article(&pgart))
-					draw_page(group->name, 0);
+					draw_page(0);
 				XFACE_SHOW();
 				break;
 #endif /* HAVE_PGP_GPG */
@@ -644,12 +644,12 @@ page_goto_next_unread:
 				show_all_headers = bool_not(show_all_headers);
 				resize_article(TRUE, &pgart);	/* Also recooks it.. */
 				curr_line = 0;
-				draw_page(group->name, 0);
+				draw_page(0);
 				break;
 
 			case PAGE_TOGGLE_RAW:	/* toggle display of whole 'raw' article */
 				XFACE_CLEAR();
-				toggle_raw(group);
+				toggle_raw();
 				break;
 
 			case PAGE_TOGGLE_TEX2ISO:		/* toggle German TeX to ISO latin1 style conversion */
@@ -659,14 +659,14 @@ page_goto_next_unread:
 					pgart.tex2iso = FALSE;
 
 				resize_article(TRUE, &pgart);	/* Also recooks it.. */
-				draw_page(group->name, 0);
+				draw_page(0);
 				info_message(_(txt_toggled_tex2iso), txt_onoff[group->attribute->tex2iso_conv != FALSE ? 1 : 0]);
 				break;
 
 			case PAGE_TOGGLE_TABS:		/* toggle tab stops 8 vs 4 */
 				tabwidth = (tabwidth == 8) ? 4 : 8;
 				resize_article(TRUE, &pgart);	/* Also recooks it.. */
-				draw_page(group->name, 0);
+				draw_page(0);
 				info_message(_(txt_toggled_tabwidth), tabwidth);
 				break;
 
@@ -679,7 +679,7 @@ page_goto_next_unread:
 				 */
 				if (hide_uue && curr_line + ARTLINES > artlines)
 					curr_line = artlines - ARTLINES;
-				draw_page(group->name, 0);
+				draw_page(0);
 				/* TODO: info_message()? */
 				break;
 
@@ -690,7 +690,7 @@ page_goto_next_unread:
 					curr_line = 0;
 				} else
 					reveal_ctrl_l_lines = artlines - 1;
-				draw_page(group->name, 0);
+				draw_page(0);
 				/* TODO: info_message()? */
 				break;
 
@@ -704,7 +704,7 @@ page_goto_next_unread:
 					if ((n = find_artnum(old_artnum)) == -1 || which_thread(n) == -1) /* We have lost the thread */
 						return GRP_KILLED;
 					this_resp = n;
-					draw_page(group->name, 0);
+					draw_page(0);
 					info_message((func == GLOBAL_QUICK_FILTER_KILL) ? _(txt_info_add_kill) : _(txt_info_add_select));
 				}
 				break;
@@ -721,7 +721,7 @@ page_goto_next_unread:
 						return GRP_KILLED;
 					this_resp = n;
 				}
-				draw_page(group->name, 0);
+				draw_page(0);
 				break;
 
 			case GLOBAL_EDIT_FILTER:
@@ -736,17 +736,17 @@ page_goto_next_unread:
 						return GRP_KILLED;
 					this_resp = n;
 				}
-				draw_page(group->name, 0);
+				draw_page(0);
 				break;
 
 			case GLOBAL_REDRAW_SCREEN:		/* redraw current page of article */
 				my_retouch();
-				draw_page(group->name, 0);
+				draw_page(0);
 				break;
 
 			case PAGE_TOGGLE_ROT13:	/* toggle rot-13 mode */
 				rotate = rotate ? 0 : 13;
-				draw_page(group->name, 0);
+				draw_page(0);
 				info_message(_(txt_toggled_rot13));
 				break;
 
@@ -785,7 +785,7 @@ page_goto_next_unread:
 				if (can_post || art_type != GROUP_TYPE_NEWS) {
 					XFACE_SUPPRESS();
 					if (cancel_article(group, &arts[this_resp], this_resp))
-						draw_page(group->name, 0);
+						draw_page(0);
 					XFACE_SHOW();
 				} else
 					info_message(_(txt_cannot_post));
@@ -794,7 +794,7 @@ page_goto_next_unread:
 			case PAGE_EDIT_ARTICLE:		/* edit an article (mailgroup only) */
 				XFACE_SUPPRESS();
 				if (art_edit(group, &arts[this_resp]))
-					draw_page(group->name, 0);
+					draw_page(0);
 				XFACE_SHOW();
 				break;
 
@@ -809,24 +809,24 @@ page_goto_next_unread:
 				(void) post_response(group->name, this_resp,
 				  (func == PAGE_FOLLOWUP_QUOTE || func == PAGE_FOLLOWUP_QUOTE_HEADERS) ? TRUE : FALSE,
 				  func == PAGE_FOLLOWUP_QUOTE_HEADERS ? TRUE : FALSE, show_raw_article);
-				draw_page(group->name, 0);
+				draw_page(0);
 				break;
 
 			case GLOBAL_HELP:	/* help */
 				XFACE_CLEAR();
 				show_help_page(PAGE_LEVEL, _(txt_art_pager_com));
-				draw_page(group->name, 0);
+				draw_page(0);
 				break;
 
 			case GLOBAL_CONNECTION_INFO:
 				XFACE_CLEAR();
 				show_connection_page(PAGE_LEVEL, _(txt_connection_info));
-				draw_page(group->name, 0);
+				draw_page(0);
 				break;
 
 			case GLOBAL_TOGGLE_HELP_DISPLAY:	/* toggle mini help menu */
 				toggle_mini_help(PAGE_LEVEL);
-				draw_page(group->name, 0);
+				draw_page(0);
 				break;
 
 			case GLOBAL_QUIT:	/* return to index page */
@@ -840,14 +840,14 @@ return_to_index:
 
 			case GLOBAL_TOGGLE_INVERSE_VIDEO:	/* toggle inverse video */
 				toggle_inverse_video();
-				draw_page(group->name, 0);
+				draw_page(0);
 				show_inverse_video_status();
 				break;
 
 #ifdef HAVE_COLOR
 			case GLOBAL_TOGGLE_COLOR:		/* toggle color */
 				if (toggle_color()) {
-					draw_page(group->name, 0);
+					draw_page(0);
 					show_color_status();
 				}
 				break;
@@ -867,7 +867,7 @@ return_to_index:
 					return GRP_EXIT;
 				}
 				fixup_thread(this_resp, FALSE);
-				draw_page(group->name, 0);
+				draw_page(0);
 				break;
 
 			case PAGE_NEXT_ARTICLE:	/* skip to next article */
@@ -921,7 +921,7 @@ return_to_index:
 			case PAGE_REPLY:
 				XFACE_CLEAR();
 				mail_to_author(group->name, this_resp, (func == PAGE_REPLY_QUOTE || func == PAGE_REPLY_QUOTE_HEADERS) ? TRUE : FALSE, func == PAGE_REPLY_QUOTE_HEADERS ? TRUE : FALSE, show_raw_article);
-				draw_page(group->name, 0);
+				draw_page(0);
 				break;
 
 			case PAGE_TAG:	/* tag/untag article for saving */
@@ -939,7 +939,7 @@ return_to_index:
 			case GLOBAL_POST:	/* post a basenote */
 				XFACE_SUPPRESS();
 				if (post_article(group->name))
-					draw_page(group->name, 0);
+					draw_page(0);
 				XFACE_SHOW();
 				break;
 
@@ -947,7 +947,7 @@ return_to_index:
 				if (can_post || art_type != GROUP_TYPE_NEWS) {
 					XFACE_SUPPRESS();
 					if (pickup_postponed_articles(FALSE, FALSE))
-						draw_page(group->name, 0);
+						draw_page(0);
 					XFACE_SHOW();
 				} else
 					info_message(_(txt_cannot_post));
@@ -982,7 +982,7 @@ return_to_index:
 
 				if (j != curr_line) {
 					curr_line = j;
-					draw_page(group->name, 0);
+					draw_page(0);
 				}
 				break;
 
@@ -992,7 +992,7 @@ return_to_index:
 
 			case PAGE_TOGGLE_HIGHLIGHTING:
 				word_highlight = bool_not(word_highlight);
-				draw_page(group->name, 0);
+				draw_page(0);
 				info_message(_(txt_toggled_high), txt_onoff[word_highlight != FALSE ? 1 : 0]);
 				break;
 
@@ -1004,7 +1004,7 @@ return_to_index:
 				attachment_page(&pgart);
 				hide_uue = hide_uue_tmp;
 				resize_article(TRUE, &pgart);
-				draw_page(group->name, 0);
+				draw_page(0);
 				XFACE_SHOW();
 				break;
 
@@ -1016,7 +1016,7 @@ return_to_index:
 					resize_article(FALSE, &pgart); /* unbreak long lines */
 					success = url_page();
 					resize_article(TRUE, &pgart); /* rebreak long lines */
-					draw_page(group->name, 0);
+					draw_page(0);
 					if (!success)
 						info_message(_(txt_url_done));
 					XFACE_SHOW();
@@ -1172,7 +1172,6 @@ print_message_page(
  */
 void
 draw_page(
-	const char *group,
 	int part)
 {
 	int start, end;	/* 1st, last line to draw */
@@ -1213,7 +1212,7 @@ draw_page(
 	 */
 	if ((end - start >= ARTLINES) || (part == 0)) {
 		ClearScreen();
-		draw_page_header(group);
+		draw_page_header();
 	} else
 		MoveCursor(0, 0);
 
@@ -1324,7 +1323,7 @@ invoke_metamail(
  */
 static void
 draw_page_header(
-	const char *group)
+	void)
 {
 	char *buf, *tmp;
 	int i;
@@ -1394,7 +1393,7 @@ draw_page_header(
 	len = cCOLS - 2 * MAX(cur_pos, right_len) - 3;
 
 	/* group name */
-	if ((wtmp = char2wchar_t(group)) != NULL) {
+	if ((wtmp = char2wchar_t(curr_group->name)) != NULL) {
 		/* wconvert_to_printable(wtmp, FALSE); */
 		if (tinrc.abbreviate_groupname)
 			wtmp2 = abbr_wcsgroupname(wtmp, len);
@@ -1638,9 +1637,9 @@ draw_page_header(
 
 	/* group name */
 	if (tinrc.abbreviate_groupname)
-		tmp = abbr_groupname(group, len);
+		tmp = abbr_groupname(curr_group->name, len);
 	else
-		tmp = strunc(group, len);
+		tmp = strunc(curr_group->name, len);
 
 	if ((i = strlen(tmp)) < len)
 		len = i;
@@ -1917,7 +1916,7 @@ load_article(
 	reveal_ctrl_l_lines = -1;	/* all ^L's active */
 	hide_uue = tinrc.hide_uue;
 
-	draw_page(group->name, 0);
+	draw_page(0);
 
 	/*
 	 * Automatically invoke attachment viewing if requested
@@ -1995,7 +1994,7 @@ process_search(
 
 	switch (help_level) {
 		case PAGE_LEVEL:
-			draw_page(curr_group->name, 0);
+			draw_page(0);
 			break;
 
 		case INFO_PAGER:
@@ -2019,7 +2018,7 @@ process_search(
  */
 void
 toggle_raw(
-	struct t_group *group)
+	void)
 {
 	if (show_raw_article) {
 		artline = pgart.cookl;
@@ -2128,7 +2127,7 @@ toggle_raw(
 	}
 	curr_line = 0;
 	show_raw_article = bool_not(show_raw_article);
-	draw_page(group ? group->name : "", 0);
+	draw_page(0);
 }
 
 

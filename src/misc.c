@@ -888,7 +888,7 @@ base_name(
 	strcpy(file, fullpath);
 
 	for (i = strlen(fullpath) - 1; i; i--) {
-		if (fullpath[i] == DIRSEP) {
+		if (fullpath[i] == '/') {
 			strcpy(file, fullpath + i + 1);
 			break;
 		}
@@ -3759,7 +3759,7 @@ utf8_valid(
 						illegal = TRUE;
 					break;
 
-#	if 0	/* currently not used, see also check above */
+#	if 0	/* currently not used, see also check above; RFC 3629 limits UTF-8 to <= U+10FFFF */
 				case 5:
 					/* out of range or sequences which would also fit into 4 bytes */
 					if (d < 0xf8 || d > 0xfb || (d == 0xf8 && e < 0x88))

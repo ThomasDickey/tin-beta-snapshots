@@ -171,9 +171,6 @@ o  add a key to "drop" pending data from the server (either by
    dot-stuffed lone '.' in it or the like)
    [20130615 Urs Janssen <urs@tin.org>]
 
-o  x_body currently doesn't allow cmd. execution via ! like x_headers
-   [20110912 Urs Janssen <urs@tin.org>]
-
 o  add nntp_default_server to tin.defaults to override compile time setting.
    if given strings starts with / or ~ the value is taken from the referenced
    file, if it starts with $ it is read from the referenced variable.
@@ -493,6 +490,11 @@ o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo, lzlib, liblz4,
 o  rewrite/cleanup all the debugging code, the output in /tmp is messy; the
    on screen output either slows down things dramatically or is unreadable;
    split DEBUG_MISC?
+   always log the terminating "." in multiline responses, so we
+   have a timestamp even if not running with -vD 1 (make verbose and
+   non verbose more consistent).
+   document the different debug levels/files and the effects of increasing
+   the verbosity.
    [Urs Janssen <urs@tin.org>]
 
 o  replace gettimeofday() with clock_gettime() if available in parsdate.y
@@ -812,7 +814,8 @@ o  BiDi handling to select-, group-, thread-level
 Docs/online help
 ----------------
 o  document the difference between
-   - "-D 1" (nntp dialog with likely long multilines responses skipped)
+   - "-D 1" (nntp dialog with likely long multilines responses and
+             sensitive auth data skipped)
    - "-vD 1" (full nntp dialog)
    - "-vvD 1" (full nntp dialog plus diagnostic messages)
 
@@ -862,6 +865,14 @@ o  the limited pgp support (inline pgp as of RFC 4880, just signature
 
 Not yet classified
 ------------------
+o  when reconnection fails or is unwanted during "POST", also/only
+   postpone_article(article_name) besides/instead of
+   rename_file(article_name, dead_article) and
+   append_file(dead_article, dead_articles);
+   see nntplib.c:reconnect() ~894
+
+o  make NNTP_TRY_RECONNECT configurable via tinrc?
+
 o  shouldn't misc.c:strfmailer() handle '\n' like misc.c:strfeditor()
    and pass it on as is?
 
@@ -875,11 +886,6 @@ o  allow per group cancel_lock_algo setting via attributes?
 
 o  allow per group cache_overview_files setting via attributes?
    [20180215 Urs Janssen <urs@tin.org>]
-
-o  DIRSEP (set in tin.h (to '/')) is used in places in the code
-   and hardcoded '/' elsewhere (i.e. joinpath(), ...); the DIRSEP
-   looks like a leftover from when removing the non UNIX code
-   [20210112 Urs Janssen <urs@tin.org>]
 
 o  exit HEAD/NEXT loop on 5xx responses to HEAD? (see
    art.c:open_art_header())
@@ -970,10 +976,11 @@ o  what about REDIRECT_OUTPUT? shouldn't we better add this to DEFAULT_PRINTER
    [20080625 Urs Janssen <urs@tin.org>]
 
 o  create debug output in
-   ${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}
+   ${TIN_HOMEDIR:-"$HOME"}/.tin${NNTPSERVER:+"/$NNTPSERVER"}${NNTPPORT:+":$NNTPPORT"}/
    instead of in $TMPDIR (as it may contain username and password,
    access restrictions in $TMPDIR are a bad idea as other users
    need to be able to overwrite the file (multi user system)).
+   maybe also add "-O dir" cmd.line option to change the location?
    [20080211 Urs Janssen <urs@tin.org>]
 
 o  -M/-N report is mailed to userid, should we use tinrc.mail_address

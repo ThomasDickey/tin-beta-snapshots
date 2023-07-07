@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-02-01
+ *  Updated   : 2023-06-12
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -292,6 +292,11 @@ setup_hard_base(
 					base[grpmenu.max++] = atoartnum(ptr);
 					total++;
 				}
+#	ifdef DEBUG
+				/* log end of multiline response to get timing data */
+				if ((debug & DEBUG_NNTP) && !verbose)
+					debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+#	endif /* DEBUG */
 
 				if (tin_errno)
 					return -1;
@@ -1801,6 +1806,11 @@ get_path_header(
 			if (++artnum % MODULO_COUNT_NUM == 0)
 				show_progress(prep_msg, artnum - min, max - min);
 		}
+#	ifdef DEBUG
+		/* log end of multiline response to get timing data */
+		if ((debug & DEBUG_NNTP) && !verbose)
+			debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+#	endif /* DEBUG */
 		free(prep_msg);
 		return supported;
 	}
@@ -2282,6 +2292,11 @@ read_overview(
 
 		top_art++;				/* Basically this statement commits the article */
 	}
+#	ifdef DEBUG
+	/* log end of multiline response to get timing data */
+	if ((debug & DEBUG_NNTP) && !verbose)
+		debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+#	endif /* DEBUG */
 
 	free(group_msg);
 	TIN_FCLOSE(fp);
@@ -2367,6 +2382,11 @@ read_overview(
 					if (artnum % (MODULO_COUNT_NUM * 20) == 0)
 						show_progress(group_msg, artnum - min, max - min);
 				}
+#	ifdef DEBUG
+				/* log end of multiline response to get timing data */
+				if ((debug & DEBUG_NNTP) && !verbose)
+					debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+#	endif /* DEBUG */
 			}
 			free(group_msg);
 		}
@@ -2579,11 +2599,11 @@ write_overview(
 			show_progress(_("Writing overview cache..."), i, top_art);
 	}
 #ifdef HAVE_FCHMOD
-	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));
-	/*
-	 * TODO:
-	 * add code for !HAVE_FCHMOD && HAVE_CHMOD
-	 */
+	fchmod(fileno(fp), (mode_t) (S_IWUSR|S_IRUGO));
+#else
+#	ifdef HAVE_CHMOD
+		chmod(find_nov_file(group,R_OK), (mode_t) (S_IWUSR|S_IRUGO));
+#	endif /* HAVE_CHMOD */
 #endif /* HAVE_FCHMOD */
 	fclose(fp);
 }

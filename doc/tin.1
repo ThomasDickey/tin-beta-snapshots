@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-05-02
+.\" Updated   : 2023-06-29
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -164,7 +164,8 @@ NNTP and \fBcache_overview_files\fP is turned off.
 .TP
 .BI \-k
 Skip the certificate verification step for NNTPS connections and proceed
-without checking. This option implies ''\fB\-T\fP''.
+without checking. This option implies ''\fB\-T\fP''. See also the "SECURITY"
+section.
 .TP
 .BI \-l
 Get number of articles per group from the
@@ -3880,10 +3881,10 @@ Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR-file.
 .SH SECURITY
 .IX Header SECURITY
 If \fBtin\fP is started in debug mode (''\fB\-D n\fP'') it will create
-world readable files in \fB$TMPDIR\fP which may contain the users NNTP
-password in cleartext. On multiuser-systems \fB$TMPDIR\fP should be set
-to a safe location before starting \fBtin\fP in debug mode (e.g.
-\fBTMPDIR=$HOME tin \-D 1\fP).
+world readable files in \fB$TMPDIR\fP which may contain sensitive data
+like the users NNTP password in cleartext (if running verbose). On
+multiuser-systems \fB$TMPDIR\fP should be set to a safe location before
+starting \fBtin\fP in (verbose) debug mode (e.g. \fBTMPDIR=$HOME tin \-vD 1\fP).
 .PP
 Using the ''\fB\-k\fP'' option to skip certificate verification makes the
 session insecure as the server's certificate is not checked; avoid this
@@ -3891,8 +3892,8 @@ option whenever possible.
 .PP
 If the server does not initially require authentication but supports
 compression and compression is requested, \fBtin\fP will exit when
-authentication is required later on. Using the \fB\-A\fP command line
-option in conjunction with \fB\-C\fP circumvents this behavior.
+authentication is required later on. Using the ''\fB\-A\fP'' command line
+option in conjunction with ''\fB\-C\fP'' circumvents this behavior.
 .\"
 .\"
 .SH "CONFORMING TO"
@@ -3918,14 +3919,21 @@ by the University of Cambridge, England.
 .\"
 .SH BUGS
 .IX Header BUGS
-\fBCNews\fP NNTPd,
+.BR CNews \0NNTPd,
 .BR \%noffle (1)
 (<= V1.0-pre5) and
 .BR NewsCache
 (<= V1.1.91) can't handle pipelined GROUP commands (\fBRFC\%3977\fP).
 If you run into trouble with any of the mentioned historical servers define
 DISABLE_PIPELINING in include/autoconf.h and recompile.
-.br
+.PP
+Using the ''\fB-C\fP'' (COMPRESS) flag with
+.BR INN \0nnrpd
+versions between 2.6.1 and 2.7.1 (both incl.) may cause \fBtin\fP to hang
+and later timeout when posting. This has been fixed in
+.BR INN \0nnrpd
+version 2.7.2. As a workaround simply don't use ''\fB-C\fP''.
+.PP
 Before mailing a bug-report to <tin\-bugs@tin.org> please check if you
 are using the latest (stable) release, and if not, please upgrade
 first! Have a look at the doc/TODO file for known bugs. If you still

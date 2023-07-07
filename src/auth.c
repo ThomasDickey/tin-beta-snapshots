@@ -133,7 +133,7 @@ read_newsauth_file(
 			/* allow ":port" suffix in .newsauth - no IPv6-address support yet */
 			{
 				char *p;
-				char hn[262];
+				char hn[262]; /* [^\W_]{1,255}(:\d{,5})? */
 
 				if ((p = strchr(line, ':')) != NULL) {
 					if (strrchr(line, ':') == p) {
@@ -426,7 +426,7 @@ authinfo_plain(
 				debug_print_file("NNTP", "\tCAPABILITIES: %s", nntp_caps.type ? (nntp_caps.type < 2 ? "CAPABILITIES" : "BROKEN" ) : "NONE");
 				debug_print_file("NNTP", "\t%cREADER, %cMODE READER", nntp_caps.reader ? '+' : '-', nntp_caps.mode_reader ? '+' : '-');
 				debug_print_file("NNTP", "\t%cSTARTTLS", nntp_caps.starttls ? '+' : '-');
-				debug_print_file("NNTP", "\t%cAUTHINFO %s%s", nntp_caps.authinfo_state ? '+' : '-', nntp_caps.authinfo_user ? "USER " : "" , nntp_caps.authinfo_sasl ? "SASL" : "");
+				debug_print_file("NNTP", "\t%cAUTHINFO %s%s", nntp_caps.authinfo_state ? '+' : '-', nntp_caps.authinfo_user ? "USER " : "", nntp_caps.authinfo_sasl ? "SASL" : "");
 			}
 #	endif /* DEBUG */
 			/*

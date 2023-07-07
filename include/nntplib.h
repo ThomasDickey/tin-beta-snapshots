@@ -52,6 +52,7 @@
 
 /*
  * # times to try and reconnect to server after timeout
+ * TODO: make this configurable via tinrc
  */
 #define NNTP_TRY_RECONNECT		2
 

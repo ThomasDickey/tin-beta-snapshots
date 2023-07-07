@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-02-06
+ *  Updated   : 2023-05-10
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -2224,9 +2224,6 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 #else
 #	define MAX_SORT_FUNCS 1
 #endif /* !USE_HEAPSORT */
-
-/* Separator between dir part of path & the filename */
-#define DIRSEP	'/'
 
 /*
  * mouse buttons for use in xterm

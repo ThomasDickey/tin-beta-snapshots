@@ -472,7 +472,7 @@ main(
  *   B BBS mode (M_AMIGA only)
  *   P purge group index files of articles that no longer exist
  *   U update index files in background
- * resued with different function:
+ * reused with different function:
  *   C was count articles, now is activate COMPRESS DEFLATE
  */
 #define OPTIONS "46aAcCdD:f:g:G:hHI:klm:M:nNop:qQrRs:STuvVwxXzZ"

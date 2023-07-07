@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-04-08
+ *  Updated   : 2023-07-07
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -1732,7 +1732,15 @@ check_article_to_be_posted(
 			int num_bytes, wc_width;
 			wchar_t wc;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			int seen = 0; /* already reported a unprintable char in that line? */
 
+			/*
+			 * TODO:
+			 * - convert unprintable chars to octal values like
+			 *   in draw_pager_line()?
+			 * - do we need a Big5 exception (like in draw_pager_line())?
+			 * - is warning strong enough or shall we use error?
+			 */
 			col = 0;
 			for (cp = line; *cp; ) {
 				if (*cp == '\t') {
@@ -1746,26 +1754,43 @@ check_article_to_be_posted(
 							contains_8bit = TRUE;
 						if (iswprint((wint_t) wc) && ((wc_width = wcwidth(wc)) != -1))
 							col += wc_width;
-						else
+						else {
 							col++;
+							if (seen != cnt) { /* warn just once per line */
+								seen = cnt;
+								my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, line);
+								warnings++;
+							}
+						}
 					} else {
 						cp++;
 						col++;
+						if (seen != cnt) { /* warn just once per line */
+							seen = cnt;
+							my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, line);
+							warnings++;
+						}
 					}
 #else
 					if (!contains_8bit && !isascii(*cp))
 						contains_8bit = TRUE;
+					if (!my_isprint(*cp) && seen != cnt) { /* warn just once per line */
+						seen = cnt;
+						my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, line);
+						warnings++;
+					}
 					cp++;
 					col++;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				}
 			}
+			if (seen) /* any unprintable char errors? */
+				my_fflush(stderr);
 		}
 		if (col > MAX_COL && !got_long_line) {
 			my_fprintf(stderr, _(txt_warn_art_line_too_long), MAX_COL, cnt, line);
 			my_fflush(stderr);
 			got_long_line = TRUE;
-
 			warnings++;
 		}
 		if (strlen(line) > IMF_LINE_LEN && !must_break_line)
@@ -2690,7 +2715,6 @@ create_normal_article_headers(
 	msg_add_x_headers(group->attribute->x_headers);
 
 	start_line_offset = msg_write_headers(fp) + 1;
-	fprintf(fp, "\n");			/* add a newline to keep vi from bitching */
 	msg_free_headers();
 
 	start_line_offset += msg_add_x_body(fp, group->attribute->x_body);
@@ -3546,7 +3570,7 @@ post_response(
 
 	resize_article(TRUE, &pgart);	/* rebreak long lines */
 	if (raw_data)	/* we've been in raw mode, reenter it */
-		toggle_raw(group);
+		toggle_raw();
 
 	return (post_loop(POST_RESPONSE, group, POST_EDIT, _(txt_posting), art_type, start_line_offset));
 }
@@ -4139,7 +4163,7 @@ mail_to_author(
 	resize_article(TRUE, &pgart);	/* rebreak long lines */
 
 	if (raw_data)	/* we've been in raw mode */
-		toggle_raw(group_find(group, FALSE));
+		toggle_raw();
 
 	return ret_code;
 }
@@ -4821,7 +4845,7 @@ msg_add_x_headers(
 
 /*
  * Add an x_body attribute to an article if it exists.
- * Can be a piece of text or the name of a file to append
+ * Can be a piece of text, the name of a file to append or a cmd. to execute
  * Returns the # of lines appended.
  */
 static int
@@ -4829,16 +4853,20 @@ msg_add_x_body(
 	FILE *fp_out,
 	const char *body)
 {
-	FILE *fp;
+	FILE *fp = NULL;
 	char *ptr;
 	char file[PATH_LEN];
 	char line[HEADER_LEN];
 	int wrote = 0;
 
-	if (!body)
+	if (!body || !fp_out)
 		return 0;
 
-	if (body[0] != '/' && body[0] != '~') { /* FIXME: Unix'ism */
+	if (body[0] != '/' && body[0] != '~' && body[0] != '!') {
+		/*
+		 * copy string as is, no \-format expansion
+		 * if \n is needed the text must come from a file or command
+		 */
 		STRCPY(line, body);
 		if ((ptr = strrchr(line, '\n')) != NULL)
 			*ptr = '\0';
@@ -4849,17 +4877,26 @@ msg_add_x_body(
 		if (!strfpath(body, file, sizeof(file), &CURR_GROUP, FALSE))
 			STRCPY(file, body);
 
-		if ((fp = fopen(file, "r")) != NULL) {
-			while (fgets(line, (int) sizeof(line), fp) != NULL) {
-				fputs(line, fp_out);
-				wrote++;
-			}
-			fclose(fp);
+#ifndef DONT_HAVE_PIPING
+		if (file[0] == '!') {
+			if ((fp = popen(file + 1, "r")) == NULL)
+				return 0;
 		}
-	}
-	if (wrote > 1) {
-		fputc('\n', fp_out);
-		wrote++;
+#endif /* !DONT_HAVE_PIPING */
+
+		if (!fp && ((fp = fopen(file, "r")) == NULL))
+			return 0;
+
+		while (fgets(line, (int) sizeof(line), fp) != NULL) {
+			fputs(line, fp_out);
+			wrote++;
+		}
+#ifndef DONT_HAVE_PIPING
+		if (file[0] == '!')
+			pclose(fp);
+		else
+#endif /* !DONT_HAVE_PIPING */
+			fclose(fp);
 	}
 	return wrote;
 }
@@ -5261,7 +5298,6 @@ make_path_header(
 
 	get_user_info(user_name, full_name);
 	sprintf(line, "%s!%s", domain_name, user_name);
-	return;
 }
 #endif /* FORGERY */
 
