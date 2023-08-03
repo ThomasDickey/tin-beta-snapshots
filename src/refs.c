@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2023-05-10
+ *  Updated   : 2023-07-31
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -161,28 +161,79 @@ add_to_parent(
 /*
  * Checks if Message-ID has valid format
  * Returns TRUE if it does, FALSE if it does not
+ * modifies *msgid
  *
- * TODO: combine with post.c:damaged_id()
+ * see also post.c:damaged_id(), which does not modify its input,
+ * has swapped return values and does not allow trailing spaces
  */
 static t_bool
 valid_msgid(
 	char *msgid)
 {
-	size_t mlen = 0;
+	signed int bracket = 0;
+	size_t mlen;
 	t_bool at_present = FALSE;
 
 	str_trim(msgid);
-	if (!msgid || *msgid != '<')
+	mlen = strlen(msgid);
+
+	/* must start with '<' and have exactly one '>' (at the very end) */
+	if (!mlen || mlen < 5 /* || mlen > 250 */ || *(msgid + mlen -1) != '>' || strchr(msgid, '>') != (msgid + mlen - 1) || *msgid++ != '<')
 		return FALSE;
 
-	while (isascii((unsigned char) *msgid) && isgraph((unsigned char) *msgid) && !iscntrl((unsigned char) *msgid) && *msgid != '>') {
-		if (*msgid == '@')
-			at_present = TRUE;
-		mlen++;
+	while (*msgid) {
+		if (*msgid < 33 || *msgid > 126 || *msgid == '<' || *msgid == '\\' || (*msgid == '>' && *(msgid + 1) != '\0'))
+			return FALSE;
+
+		switch (*msgid) {
+			case '[': /* '[' ']' are only allowed in id-right as first/last char */
+				if (bracket != 0 || !at_present || *(msgid - 1) != '@')
+					return FALSE;
+				else
+					bracket++;
+				break;
+
+			case ']':
+				if (bracket != 1 || !at_present || *(msgid + 1) != '>')
+					return FALSE;
+				else
+					bracket--;
+				break;
+
+			case '@':
+				if (!at_present) {
+					if (*(msgid + 1) == '.')
+						return FALSE;
+
+					at_present = TRUE;
+				} else {	/* multiple '@' are only ok inside [] */
+					if (!bracket)
+						return FALSE;
+				}
+				break;
+
+			case '.':
+				if (*(msgid + 1) == '.' || *(msgid + 1) == '@' || *(msgid + 1) == '>' || *(msgid + 1) == ']' || *(msgid - 1) == '<')
+					return FALSE;
+				break;
+
+			case '(':
+			case ')':
+			case ':':
+			case ';':
+			case ',':
+			case '"':
+				if (!bracket)
+					return FALSE;
+				break;
+
+			default:
+				break;
+		}
 		msgid++;
 	}
 
-	if (!at_present || (*msgid != '>') || mlen <= 2 /* || mlen > 250 */|| *(msgid + 1))
+	if (bracket != 0 || !at_present)
 		return FALSE;
 
 	return TRUE;
@@ -506,7 +557,6 @@ _get_references(
 
 	len += strlen(refptr->txt) + 1;	/* msgid + space */
 	if (refptr->parent == NULL || depth > MAX_REFS) {
-
 #ifdef DEBUG
 		if (debug & DEBUG_REFS) {
 			if (depth > MAX_REFS)

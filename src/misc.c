@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-04-29
+ *  Updated   : 2023-07-25
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -2153,7 +2153,7 @@ file_mtime(
 
 
 /*
- * TODO: this feature isn't documented anywhere
+ * if pointing to a file (absolute path) return a random line from it
  */
 char *
 random_organization(
@@ -2168,8 +2168,6 @@ random_organization(
 	if (*in_org != '/')
 		return in_org;
 
-	srand((unsigned int) time(NULL));
-
 	if ((orgfp = fopen(in_org, "r")) == NULL)
 		return selorg;
 
@@ -2183,13 +2181,15 @@ random_organization(
 	}
 
 	rewind(orgfp);
+
+	srand((unsigned int) time(NULL));
 	sol = rand() % nool + 1;
 	nool = 0;
+
 	while ((nool != sol) && (fgets(selorg, (int) sizeof(selorg), orgfp)))
 		nool++;
 
 	fclose(orgfp);
-
 	return selorg;
 }
 
@@ -4400,19 +4400,16 @@ make_connection_page(
 #	if defined(NNTPS_ABLE)
 		else {
 			if (use_nntps) {
-				if (insecure_nntps)
-					fprintf(fp, "Reading untrusted via NNTPS ");
-				else
-					fprintf(fp, "Reading trusted via NNTPS ");
+				fprintf(fp, "Reading %s via NNTPS (%s; ", insecure_nntps ? "untrusted" : "trusted", can_post ? "read/write" : "read only");
 
 #		ifdef HAVE_LIB_LIBTLS
-			fprintf(fp, "(LibreSSL %d).\n", TLS_API);
+			fprintf(fp, "LibreSSL %d).\n", TLS_API);
 #		else
 #			ifdef HAVE_LIB_OPENSSL
-			fprintf(fp, "(%s).\n", OpenSSL_version(OPENSSL_VERSION));
+			fprintf(fp, "%s).\n", OpenSSL_version(OPENSSL_VERSION));
 #			else
 #				ifdef HAVE_LIB_GNUTLS
-			fprintf(fp, "(GnuTLS %s).\n", gnutls_check_version(NULL));
+			fprintf(fp, "GnuTLS %s).\n", gnutls_check_version(NULL));
 #				endif /* HAVE_LIB_GNUTLS */
 #			endif /* HAVE_LIB_OPENSSL */
 #		endif /* HAVE_LIB_LIBTLS */
@@ -4421,7 +4418,7 @@ make_connection_page(
 			{
 #	endif /* NNTPS_ABLE */
 			{
-				fprintf(fp, "Reading via NNTP.\n");
+				fprintf(fp, "Reading via NNTP (%s).\n", can_post ? "read/write" : "read only");
 			}
 
 			(void) nntp_conninfo(fp);

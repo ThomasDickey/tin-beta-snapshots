@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2023-04-09
+ *  Updated   : 2023-08-03
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2023 Dirk Nimmich <nimmich@muenster.de>
@@ -410,7 +410,7 @@ read_keymap_file(
 			/* normalized .codeset */
 			q = normcodeset = my_strdup(codeset);
 			for (p = codeset; *p != '\0'; p++) {
-				if (isalpha(*p) || isdigit(*p) || *p == '.')
+				if (isalpha((int) *p) || isdigit((int) *p) || *p == '.')
 					*q++ = (char) my_tolower((unsigned char) *p);
 			}
 			*q = '\0';

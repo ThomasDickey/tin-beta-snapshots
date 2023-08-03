@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-07 11:14+0200\n"
+"POT-Creation-Date: 2023-08-01 17:54+0200\n"
 "PO-Revision-Date: 2018-04-19 13:04+0200\n"
 "Last-Translator: Francisco Javier Serrador <fserrador@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -20,25 +20,25 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. -> lang.c
-#: src/art.c:423
+#: src/art.c:438
 #, fuzzy, c-format
 msgid "Reading %s\n"
 msgstr "Leyendo %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:1218
+#: src/art.c:1232
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "Artículos anteriores"
 
 #. -> lang.c
-#: src/art.c:2520
+#: src/art.c:2534
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "Escribir %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:2599
+#: src/art.c:2613
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "Escribiendo fichero…"
@@ -4396,7 +4396,7 @@ msgstr ""
 #, c-format
 msgid ""
 "Warning: line %d contains unprintable chars:\n"
-"\t%s\n"
+"%s\n"
 msgstr ""
 
 #: src/lang.c:1009
@@ -5078,7 +5078,7 @@ msgstr "La instrucción no admite las =N direcciones"
 msgid "Trying %s"
 msgstr "Tratando de hacer 'bal' a %s"
 
-#: src/lang.c:1297 src/lang.c:1325 src/lang.c:1616 src/refs.c:292
+#: src/lang.c:1297 src/lang.c:1325 src/lang.c:1616 src/refs.c:343
 #, fuzzy
 msgid "None"
 msgstr "Ninguno"
@@ -8013,7 +8013,7 @@ msgid ""
 msgstr ""
 
 #. TODO: lang.c
-#: src/main.c:939
+#: src/main.c:951
 #, fuzzy
 msgid "reading from local spool"
 msgstr "error leyendo desde `%s'"
@@ -8034,43 +8034,43 @@ msgstr ""
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Regresar a la última publicación(es)"
 
-#: src/newsrc.c:476
+#: src/newsrc.c:486
 #, fuzzy
 msgid "Unreachable?\n"
 msgstr "estado %s no alcanzable desde %s"
 
-#: src/nntplib.c:900
+#: src/nntplib.c:898
 #, c-format
 msgid ""
 "\n"
 "Server timed out, trying reconnect # %d\n"
 msgstr ""
 
-#: src/nntplib.c:928 src/signal.c:435
+#: src/nntplib.c:926 src/signal.c:447
 #, fuzzy
 msgid "NNTP connection error. Exiting..."
 msgstr "Error película capturada... Terminando."
 
-#: src/nntplib.c:943 src/nntplib.c:2021
+#: src/nntplib.c:941 src/nntplib.c:2019
 #, fuzzy
 msgid "Rejoin current group\n"
 msgstr "Grupo"
 
-#: src/nntplib.c:952 src/nntplib.c:2030
+#: src/nntplib.c:950 src/nntplib.c:2028
 #, fuzzy, c-format
 msgid "Read (%s)\n"
 msgstr "%s: leído: %s"
 
-#: src/nntplib.c:954
+#: src/nntplib.c:952
 #, fuzzy, c-format
 msgid "Resend last command (%s)\n"
 msgstr "última orden: %s\n"
 
-#: src/nntplib.c:1644
+#: src/nntplib.c:1642
 msgid "CAPABILITIES did not announce READER"
 msgstr ""
 
-#: src/nntplib.c:2176
+#: src/nntplib.c:2174
 msgid "MOTD: "
 msgstr ""
 
@@ -8146,14 +8146,14 @@ msgstr ""
 msgid "couldn't expand %s\n"
 msgstr "Expandir"
 
-#: src/post.c:1807
+#: src/post.c:1811
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is neither set to %s nor to %s\n"
 msgstr ""
 
-#: src/post.c:1812
+#: src/post.c:1816
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8161,19 +8161,19 @@ msgid ""
 "posting doesn't contain any 8bit chars and thus folding won't happen\n"
 msgstr ""
 
-#: src/post.c:1814
+#: src/post.c:1818
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
 "encoding is not set to %s\n"
 msgstr ""
 
-#: src/post.c:2802
+#: src/post.c:2806
 #, fuzzy, c-format
 msgid "Posting: %.*s ..."
 msgstr "Publicación Fallida"
 
-#: src/post.c:4552
+#: src/post.c:4616
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8192,14 +8192,14 @@ msgstr "Lectura abortada."
 msgid "Draining\n"
 msgstr ""
 
-#: src/refs.c:236
+#: src/refs.c:287
 #, fuzzy
 msgid "unchanged"
 msgstr ""
 "el fichero «$filename» no ha sido modificado, no debería ser incluido en la "
 "modificación "
 
-#: src/refs.c:603
+#: src/refs.c:653
 #, fuzzy
 msgid "[- Unavailable -]"
 msgstr "NO DISPONIBLE"
@@ -8217,7 +8217,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: src/save.c:1045
+#: src/save.c:1048
 msgid "bytes"
 msgstr "bytes"
 
@@ -8241,6 +8241,17 @@ msgstr ""
 #, fuzzy
 msgid " R"
 msgstr " R"
+
+#.
+#. * response compression from the server may take a while
+#. * when running interactively and not being in connection
+#. * phase give the user a chance to go on instead of exiting
+#. *
+#. * TODO: strings to lang.c and incl. nntp_read_timeout_secs
+#.
+#: src/signal.c:445
+msgid "Read timeout from server - quit tin?"
+msgstr ""
 
 #: src/xface.c:75
 msgid "Can't run slrnface: Not running in an xterm."

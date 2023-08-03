@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-05-10
+ *  Updated   : 2023-07-23
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1094,6 +1094,7 @@ enum {
  */
 #ifdef NNTP_ABLE
 #	define TIN_FCLOSE(x)	if (x != FAKE_NNTP_FP) fclose(x)
+#	define TIN_NNTP_TIMEOUT ((cmdline.args & CMDLINE_NNTP_TIMEOUT) ? cmdline.nntp_timeout : tinrc.nntp_read_timeout_secs)
 #else
 #	define TIN_FCLOSE(x)	fclose(x)
 #endif /* NNTP_ABLE */
@@ -1154,6 +1155,7 @@ enum {
 #define CMDLINE_NNTPSERVER		4
 #define CMDLINE_SAVEDIR			8
 #define CMDLINE_USE_COLOR		16
+#define CMDLINE_NNTP_TIMEOUT	32
 
 
 /*
@@ -1547,10 +1549,11 @@ typedef unsigned char	t_bitmap;
  */
 struct t_cmdlineopts {
 	int getart_limit;			/* getart_limit */
+	int nntp_timeout;			/* nntp_read_timeout_secs */
 	char maildir[PATH_LEN];		/* maildir */
 	char nntpserver[PATH_LEN];	/* nntpserver */
 	char savedir[PATH_LEN];		/* savedir */
-	unsigned int args:5;		/* given options */
+	unsigned int args:6;		/* given options */
 };
 
 /*

@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2023-05-09
+ *  Updated   : 2023-08-02
  *  Notes     :
  *
  * Copyright (c) 1992-2023 Iain Lea <iain@bricbrac.de>
@@ -44,6 +44,9 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
+#ifndef STPWATCH_H
+#	include "stpwatch.h"
+#endif /* !STPWATCH_H */
 
 /*
  * List of allowed separator chars in active file
@@ -353,9 +356,8 @@ do_read_newsrc_active_file(
 	struct t_group *grpptr;
 #ifdef NNTP_ABLE
 	t_bool need_auth = FALSE;
-	char *ngnames[NUM_SIMULTANEOUS_GROUP_COMMAND];
-	int index_i = 0;
-	int index_o = 0;
+	char *ngnames[NUM_SIMULTANEOUS_GROUP_COMMAND] = { NULL };
+	int index_i = 0, index_o = 0;
 #endif /* NNTP_ABLE */
 
 	rewind(fp);
@@ -408,6 +410,7 @@ do_read_newsrc_active_file(
 					 */
 					int i;
 					int j = index_o;
+
 					for (i = 0; i < window - 1; i++) {
 						snprintf(buf, sizeof(buf), "GROUP %s", ngnames[j]);
 #	ifdef DEBUG
@@ -951,7 +954,9 @@ read_news_active_file(
 	/*
 	 * finally we have a list of all groups and can set the attributes
 	 */
+	BegStopWatch();
 	assign_attributes_to_groups();
+	EndStopWatch("assign_attributes_to_groups()");
 
 	return newgrps;
 }

@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-05-03
+ *  Updated   : 2023-07-19
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -399,12 +399,8 @@ main(
 		tin_done(check_start_save_any_news(CHECK_ANY_NEWS, catchup), NULL);
 
 	if (start_any_unread) {
-		batch_mode = TRUE;			/* Suppress some unwanted on-screen garbage */
-		if ((start_groupnum = check_start_save_any_news(START_ANY_NEWS, catchup)) == -1) {
-			batch_mode = FALSE;
+		if ((start_groupnum = check_start_save_any_news(START_ANY_NEWS, catchup)) == -1)
 			tin_done(EXIT_SUCCESS, NULL);
-		}
-		batch_mode = FALSE;
 	}
 
 	/*
@@ -466,7 +462,7 @@ main(
 
 /*
  * process command line options
- * [01235789beEFijJKLOtyY] are unused
+ * [01235789beEFijJKLOyY] are unused
  * [W] is reserved
  * [BPU] have been in use at some time, but now are unused:
  *   B BBS mode (M_AMIGA only)
@@ -475,7 +471,7 @@ main(
  * reused with different function:
  *   C was count articles, now is activate COMPRESS DEFLATE
  */
-#define OPTIONS "46aAcCdD:f:g:G:hHI:klm:M:nNop:qQrRs:STuvVwxXzZ"
+#define OPTIONS "46aAcCdD:f:g:G:hHI:klm:M:nNop:qQrRs:St:TuvVwxXzZ"
 
 static void
 read_cmd_line_options(
@@ -754,6 +750,21 @@ read_cmd_line_options(
 				batch_mode = TRUE;
 				break;
 
+			case 't':
+#if defined(NNTP_ABLE) && defined(HAVE_ALARM) && defined(SIGALRM)
+				cmdline.nntp_timeout = atoi(optarg);
+				if (cmdline.nntp_timeout < 0)
+					cmdline.nntp_timeout = 0;
+				cmdline.args |= CMDLINE_NNTP_TIMEOUT;
+#else
+				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				free_all_arrays();
+				giveup();
+				/* keep lint quiet: */
+				/* NOTREACHED */
+#endif /* NNTP_ABLE && HAVE_ALARM && SIGALRM */
+				break;
+
 			case 'T':
 #ifdef NNTPS_ABLE
 				use_nntps = TRUE;
@@ -884,6 +895,7 @@ read_cmd_line_options(
 	 *       -NM
 	 *       -oN, -oM (at this stage we no longer know if -N or -M was given)
 	 *       -wN, -wM (at this stage we no longer know if -N or -M was given)
+	 *       -NZ, -MZ (at this stage we no longer know if -N or -M was given)
 	 */
 	if (post_postponed_and_exit && force_no_post) {
 		wait_message(2, _(txt_useless_combination), "-o", "-x", "-x");

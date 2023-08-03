@@ -1,4 +1,4 @@
--- 2.6.3 release 20230707 "" --
+-- 2.6.3 release 20230803 "" --
 
  017) Enrik Berkhan <enrik@tin.org>
       ADD. "COMPRESS DEFLATE" support (RFC 8054)
@@ -30,6 +30,8 @@
       BUG. without including tin.h we can no longer use _Noreturn in makecfg.c
       BUG. txt_translit was included in binary without HAVE_ICONV
       BUG. timeout counter was not reset on reconnect
+      BUG. fix uncritical TOCTOU issue in read_newsrc()
+      ADD. replace stpwatch.h macros avoiding ftime()
       ADD. do not resend HEAD after ERR_GOODBYE response
       ADD. config.guess, config.sub update
       ADD. version checking during configure for SSL/TLS libraries
@@ -42,11 +44,15 @@
       ADD. missing fchmod fallback code to write_overview()
       ADD. only log sensitive auth data if running verbose (-vD 1)
       ADD. warn if body contains non printable chars in current locale
-      FIX. active.c, art.c, auth.c, cook.c, feed.c, filter.c, group.c, header.c
-           init.c, keymap.c, lang.c, mail.c, main.c, makecfg.c, memory.c, misc.c
-           nntplib.c, nntps.c, options_menu.c, page.c, post.c, refs.c, save.c
-           search.c, select.c, signal.c, string.c, tmpfile.c, extern.h, proto.h
-           tin.h, tinrc.h, tin.1, tin.5, configure[.in], config.guess
+      ADD. speedup str_trim(), refine valid_msgid() and damaged_id()
+      ADD. -t timeout cmd.-line option
+      ADD. -vvN / -vvM writes the skipped groups (unset batch_save) to the log
+      FIX. active.c, art.c, auth.c, config.c, cook.c, feed.c, filter.c, group.c
+           header.c, init.c, keymap.c, lang.c, mail.c, main.c, makecfg.c
+           memory.c, misc.c, newsrc.c, nntplib.c, nntps.c, options_menu.c
+           page.c, post.c, refs.c, save.c, search.c, select.c, signal.c
+           string.c, thread.c, tmpfile.c, extern.h, proto.h, tin.h, tinrc.h
+           Makefile[.in]m tin.1, tin.5, configure[.in], config.guess
            config.sub
 
  012) Thomas E. Dickey <dickey@invisible-island.net>

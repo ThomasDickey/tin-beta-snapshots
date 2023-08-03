@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-19
+ *  Updated   : 2023-07-29
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -96,44 +96,54 @@ read_newsrc(
 	/*
 	 * make a .newsrc if none exist & auto subscribe to set groups
 	 */
-	if (stat(newsrc_file, &statbuf) == -1) {
+	if ((fp = fopen(newsrc_file, "r")) == NULL) {
 		if (!create_newsrc(newsrc_file))
 			return -1L; /* ouch */
+
 		auto_subscribe_groups(newsrc_file);
-	} else
-		newsrc_mode = statbuf.st_mode;
-
-	if ((fp = fopen(newsrc_file, "r")) != NULL) {
-		if (!batch_mode || verbose)
-			wait_message(0, _(txt_reading_newsrc));
-
-		while ((grp = tin_fgets(fp, FALSE)) != NULL) {
-			strip_line(grp);
-			if (*grp == '#' || *grp == '\0')	/* skip comments and empty lines */
-				continue;
-
-			line_count++;	/* but count all other lines (incl. bogus ones) */
-			seq = parse_newsrc_line(grp, &sub);
-
-			if (sub == SUBSCRIBED) {
-				if ((i = my_group_add(grp, FALSE)) >= 0) {
-					if (!active[my_group[i]].bogus) {
-						active[my_group[i]].subscribed = SUB_BOOL(sub);
-						parse_bitmap_seq(&active[my_group[i]], seq);
-					}
-				} else
-					process_bogus(grp);
-			}
-		}
-		fclose(fp);
-		/* If you aborted with 'q', then you get what you get. */
-
-		if (!batch_mode || verbose)
-			my_fputc('\n', stdout);
-
-		if (!cmd_line && !batch_mode)
-			clear_message();
 	}
+	if (!fp) {
+		if ((fp = fopen(newsrc_file, "r")) == NULL)
+			return -1L;
+	}
+
+	if (fstat(fileno(fp), &statbuf) != -1)
+		newsrc_mode = statbuf.st_mode;
+	else {
+		fclose(fp);
+		return -1L;
+	}
+
+	if (!batch_mode || verbose)
+		wait_message(0, _(txt_reading_newsrc));
+
+	while ((grp = tin_fgets(fp, FALSE)) != NULL) {
+		strip_line(grp);
+		if (*grp == '#' || *grp == '\0')	/* skip comments and empty lines */
+			continue;
+
+		line_count++;	/* but count all other lines (incl. bogus ones) */
+		seq = parse_newsrc_line(grp, &sub);
+
+		if (sub == SUBSCRIBED) {
+			if ((i = my_group_add(grp, FALSE)) >= 0) {
+				if (!active[my_group[i]].bogus) {
+					active[my_group[i]].subscribed = SUB_BOOL(sub);
+					parse_bitmap_seq(&active[my_group[i]], seq);
+				}
+			} else
+				process_bogus(grp);
+		}
+	}
+	fclose(fp);
+	/* If you aborted with 'q', then you get what you get. */
+
+	if (!batch_mode || verbose)
+		my_fputc('\n', stdout);
+
+	if (!cmd_line && !batch_mode)
+		clear_message();
+
 	return line_count;
 }
 

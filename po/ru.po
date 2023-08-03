@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 1.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-07 11:14+0200\n"
+"POT-Creation-Date: 2023-08-01 17:54+0200\n"
 "PO-Revision-Date: 2006-04-21 15:39+0200\n"
 "Last-Translator: Andrei Emeltchenko <andrei.emeltchenko@finik.org>\n"
 "Language-Team: Russian <gnu@mx.ru>\n"
@@ -17,25 +17,25 @@ msgstr ""
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #. -> lang.c
-#: src/art.c:423
+#: src/art.c:438
 #, fuzzy, c-format
 msgid "Reading %s\n"
 msgstr "Перечитываю %s..."
 
 #. TODO: -> lang.c
-#: src/art.c:1218
+#: src/art.c:1232
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "Разбор дискуссий..."
 
 #. -> lang.c
-#: src/art.c:2520
+#: src/art.c:2534
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "Стартую: (%s)"
 
 #. TODO: -> lang.c
-#: src/art.c:2599
+#: src/art.c:2613
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "Запись файла атрибутов..."
@@ -4368,7 +4368,7 @@ msgstr ""
 #, c-format
 msgid ""
 "Warning: line %d contains unprintable chars:\n"
-"\t%s\n"
+"%s\n"
 msgstr ""
 
 #: src/lang.c:1009
@@ -5102,7 +5102,7 @@ msgstr "Терминал не поддерживает цвет"
 msgid "Trying %s"
 msgstr ""
 
-#: src/lang.c:1297 src/lang.c:1325 src/lang.c:1616 src/refs.c:292
+#: src/lang.c:1297 src/lang.c:1325 src/lang.c:1616 src/refs.c:343
 msgid "None"
 msgstr "Ничего"
 
@@ -8143,7 +8143,7 @@ msgid ""
 msgstr ""
 
 #. TODO: lang.c
-#: src/main.c:939
+#: src/main.c:951
 msgid "reading from local spool"
 msgstr ""
 
@@ -8163,11 +8163,11 @@ msgstr "Версия: %s %s релиз %s (\"%s\") %s %s\n"
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Версия: %s %s релиз %s (\"%s\")\n"
 
-#: src/newsrc.c:476
+#: src/newsrc.c:486
 msgid "Unreachable?\n"
 msgstr "Недостижимо?\n"
 
-#: src/nntplib.c:900
+#: src/nntplib.c:898
 #, c-format
 msgid ""
 "\n"
@@ -8176,30 +8176,30 @@ msgstr ""
 "\n"
 "Сервер не отвечает, попытка соединиться снова # %d\n"
 
-#: src/nntplib.c:928 src/signal.c:435
+#: src/nntplib.c:926 src/signal.c:447
 #, fuzzy
 msgid "NNTP connection error. Exiting..."
 msgstr "Не удалось соединиться с NNTP сервером %s. Выход..."
 
-#: src/nntplib.c:943 src/nntplib.c:2021
+#: src/nntplib.c:941 src/nntplib.c:2019
 msgid "Rejoin current group\n"
 msgstr "Вступить снова в текущую группу\n"
 
-#: src/nntplib.c:952 src/nntplib.c:2030
+#: src/nntplib.c:950 src/nntplib.c:2028
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Чтение (%s)\n"
 
-#: src/nntplib.c:954
+#: src/nntplib.c:952
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "Переслать последнюю команду (%s)\n"
 
-#: src/nntplib.c:1644
+#: src/nntplib.c:1642
 msgid "CAPABILITIES did not announce READER"
 msgstr ""
 
-#: src/nntplib.c:2176
+#: src/nntplib.c:2174
 msgid "MOTD: "
 msgstr ""
 
@@ -8275,7 +8275,7 @@ msgstr ""
 msgid "couldn't expand %s\n"
 msgstr "не получилось раскрыть %s\n"
 
-#: src/post.c:1807
+#: src/post.c:1811
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8284,7 +8284,7 @@ msgstr ""
 "Строка %d длиннее 998 октетов и должна быть разбита на части,\n"
 "но кодировка не установлена ни в %s, ни в %s\n"
 
-#: src/post.c:1812
+#: src/post.c:1816
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8296,7 +8296,7 @@ msgstr ""
 "или сообщение не содержит ни одного 8-битного символа, таким образом\n"
 "разбития на части не произойдёт.\n"
 
-#: src/post.c:1814
+#: src/post.c:1818
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8305,12 +8305,12 @@ msgstr ""
 "Строка %d длиннее 998 октетов и должна быть разбита на части,\n"
 "но кодировка не установлена в %s\n"
 
-#: src/post.c:2802
+#: src/post.c:2806
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Отправление в группу %.*s ..."
 
-#: src/post.c:4552
+#: src/post.c:4616
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8327,11 +8327,11 @@ msgstr "Чтение прервано\n"
 msgid "Draining\n"
 msgstr "Осушение\n"
 
-#: src/refs.c:236
+#: src/refs.c:287
 msgid "unchanged"
 msgstr "неизменено"
 
-#: src/refs.c:603
+#: src/refs.c:653
 msgid "[- Unavailable -]"
 msgstr "[- Недоступно -]"
 
@@ -8352,7 +8352,7 @@ msgstr ""
 "для работы с новым форматом и следующие данные могут выглядеть странно.\n"
 "\n"
 
-#: src/save.c:1045
+#: src/save.c:1048
 msgid "bytes"
 msgstr "байт"
 
@@ -8374,6 +8374,17 @@ msgstr ""
 
 #: src/select.c:625 src/select.c:627
 msgid " R"
+msgstr ""
+
+#.
+#. * response compression from the server may take a while
+#. * when running interactively and not being in connection
+#. * phase give the user a chance to go on instead of exiting
+#. *
+#. * TODO: strings to lang.c and incl. nntp_read_timeout_secs
+#.
+#: src/signal.c:445
+msgid "Read timeout from server - quit tin?"
 msgstr ""
 
 #: src/xface.c:75

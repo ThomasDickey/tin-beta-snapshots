@@ -445,7 +445,7 @@ o  Add to the attachment menu ('V'):
      '%'  (toggle rot13 encoding of screen content)
      '&'  (GLOBAL_TOGGLE_COLOR)
 
-o  Add to the posting history screen (W'):
+o  Add to the posting history screen ('W'):
      'M'  OptionMenu
 
 o  Add to the URL Menu ('U'):
@@ -599,12 +599,6 @@ o  add trn like $HIDELINE tinrc-option to skip lines matching the given
 
 Internal Changes
 ----------------
-o  use tin_gettime() in *StopWatch() instead of ftime(3)
-   [Urs Janssen <urs@tin.org>]
-
-o  merge refs.c:valid_msgid() and post.c:damaged_id()
-   [Urs Janssen <urs@tin.org>]
-
 o  in ENABLE_NLS case replace PLURAL() macro with proper use of
    ngettext(3) (if found by configure) to support languages with
    more than one plural form.
@@ -1097,11 +1091,6 @@ o  configure checks for fdopen(3) and defines HAVE_FDOPEN if found, but we
    don't have any code guarded with that macro nor any fallback code if not
    found.
 
-o  re add innlib support? (the old one was dropped as the lib has retired
-   all (which were not that many) features we used and our code didn't
-   use the innlibs code where ever it was possible (and useful).
-   [20080211 Urs Janssen <urs@tin.org>]
-
 o  add check for libarchive <http://www.libarchive.org/>
    and use for post-processing?
    [20111225 Urs Janssen <urs@tin.org>]
@@ -1117,3 +1106,6 @@ o  add check for libtre and offer TRE as matching method for "wildcard"?
 
 o  eval $NEWSHOST if $NNTPSERVER is unset (like Net::NNTP(3perl))
    [20141225 Urs Janssen <urs@tin.org>]
+
+o  add show_progress to art.c:setup_hard_base() and filter.c:filter_articles(),
+   both can be slow in huge groups

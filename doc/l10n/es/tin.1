@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-06-29
+.\" Updated   : 2023-07-31
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -32,7 +32,7 @@ tin, rtin \- Usenet newsreader
 [\|\fB\-o\fP\||\|\fB\-w\fP\||\|\fB\-N\fP\||\|\fB\-M\fP \fIaddress\fP\|] [\|\fB\-D\fP
 \fIdebug_level\fP\|] [\|\fB\-G\fP \fIarticle_limit\fP\|] [\|\fB\-f\fP \fInewsrc_file\fP\|]
 [\|\fB\-g\fP \fIserver\fP\|[\|:\fIport\fP\|]\|] [\|\fB\-m\fP \fIMail_dir\fP\|] [\|\fB\-p\fP
-\fIport\fP\|] [\|\fB\-I\fP \fIindex_dir\fP\|]\ \|[\fInewsgroup\fP\|[\|,.\|.\|.\|]\|]\|]
+\fIport\fP\|] [\|\fB\-t\fP \fItimeout\fP\|] [\|\fB\-I\fP \fIindex_dir\fP\|]\ \|[\fInewsgroup\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH DESCRIPCIÓN
 .IX Header DESCRIPCIÓN
 \fBtin\fP is a full\-screen easy to use Usenet newsreader. It can read news
@@ -99,8 +99,8 @@ Create/update index files for every group in
 and mark all articles as read.
 .TP 
 \fB\-C\fP
-Use COMPRESS NNTP extension (\fBRFC\%8054\fP) if available. See also the
-"SECURITY" section.
+Use COMPRESS NNTP extension (\fBRFC\%8054\fP) if available. See also
+\fBnntp_read_timeout_secs\fP, '\fB\-t\fP\*(rq and the "SECURITY" and "BUGS" section.
 .TP 
 \fB\-d\fP
 .\"
@@ -194,7 +194,8 @@ day.
 .TP 
 \fB\-Q\fP
 Quick start. Start \fBtin\fP as quickly as possible. Currently this is
-equivalent to \*(rq\fB\-dnq\fP\*(rq.
+equivalent to \*(rq\fB\-dnq\fP\*(rq. See also the \*(rq\fB\-C\fP\*(rq and \*(rq\fB\-G\fP\*(rq command\-line
+options.
 .TP 
 \fB\-r\fP
 Read news remotely from the default NNTP server specified in the environment
@@ -210,6 +211,9 @@ Save/read articles to/in directory. Default is
 \fB\-S\fP
 Save unread articles for later reading by the \*(rq\fB\-R\fP\*(rq option. For more
 information read section "AUTOMATIC MAILING AND SAVING NEW NEWS".
+.TP 
+\fB\-t\fP\fI timeout\fP
+Override the \fBnntp_read_timeout_secs\fP setting. Default is 120 seconds.
 .TP 
 \fB\-T\fP
 Enable NNTPS (NNTP over TLS). This also overrides the environment variable
@@ -2092,7 +2096,12 @@ Format of quote line when posting/following up an article (%A=Address,
 .TP 
 \fBNNTP read timeout in seconds (nntp_read_timeout_secs)\fP
 Time in seconds to wait for a response from the server. Default is 120.
-Setting this to 0 means no timeout.
+Setting this to 0 means no timeout. As if you use the "\fB\-C\fP" option in
+conjunction with a low value for \fBnntp_read_timeout_secs\fP may result in a
+timeout (and disconnect in batch mode) when connecting to large servers or
+entering large groups, because the timer is set when the command is sent to
+the server and that needs some time to compress the large response, the
+value should not be set too small.
 .TP 
 \fBUnicode normalization form (normalization_form)\fP
 The normalization form \fBtin\fP should use to normalize unicode input.  The
@@ -3496,7 +3505,8 @@ table for IBM PC character set (code page 437)
 .TP 
 \fBORGANIZATION\fP
 Set the article header field \*(rqOrganization:\*(rq to the contents of the
-variable instead of the system default. If reading news on an Apollo
+variable instead of the system default. If it points to a readable file a
+random line from that file will be used.If reading news on an Apollo
 DomainOS machine the environment variable $\fBNEWSORG\fP has to be used instead
 of $\fBORGANIZATION\fP.
 .TP 

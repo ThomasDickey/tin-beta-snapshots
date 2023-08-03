@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-06-29
+.\" Updated   : 2023-07-31
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -43,6 +43,8 @@ tin, rtin \- Usenet newsreader
 .IR Mail_dir \|]
 .RB [\| \-p
 .IR port \|]
+.RB [\| \-t
+.IR timeout \|]
 .RB [\| \-I
 .IR index_dir \|]\ \|[ newsgroup \|[\|,.\|.\|.\|]\|]\|]
 .\"
@@ -117,7 +119,8 @@ option and mark all articles as read.
 .TP
 .B \-C
 Use COMPRESS NNTP extension (\fBRFC\%8054\fP) if available. See also
-the "SECURITY" section.
+\fBnntp_read_timeout_secs\fP, '\fB\-t\fP'' and the "SECURITY" and "BUGS"
+section.
 .TP
 .B \-d
 Don't load newsgroup descriptions and servers message of the day
@@ -211,7 +214,8 @@ Don't check for new newsgroups and skip loading the servers message of the day.
 .TP
 .B \-Q
 Quick start. Start \fBtin\fP as quickly as possible. Currently this is
-equivalent to ''\fB\-dnq\fP''.
+equivalent to ''\fB\-dnq\fP''. See also the ''\fB\-C\fP'' and ''\fB\-G\fP''
+command-line options.
 .TP
 .B \-r
 Read news remotely from the default NNTP server specified in the environment
@@ -228,6 +232,9 @@ Save/read articles to/in directory. Default is
 .B \-S
 Save unread articles for later reading by the ''\fB\-R\fP'' option. For more
 information read section "AUTOMATIC MAILING AND SAVING NEW NEWS".
+.TP
+.BI \-t " timeout"
+Override the \fBnntp_read_timeout_secs\fP setting. Default is 120 seconds.
 .TP
 .B \-T
 Enable NNTPS (NNTP over TLS). This also overrides the environment
@@ -2162,7 +2169,12 @@ Format of quote line when posting/following up an article (%A=Address,
 .TP
 .B NNTP read timeout in seconds (nntp_read_timeout_secs)
 Time in seconds to wait for a response from the server. Default is 120.
-Setting this to 0 means no timeout.
+Setting this to 0 means no timeout. As if you use the "\fB\-C\fP" option
+in conjunction with a low value for \fBnntp_read_timeout_secs\fP may
+result in a timeout (and disconnect in batch mode) when connecting to large
+servers or entering large groups, because the timer is set when the command
+is sent to the server and that needs some time to compress the large
+response, the value should not be set too small.
 .TP
 .B Unicode normalization form (normalization_form)
 The normalization form \fBtin\fP should use to normalize unicode input.
@@ -3644,7 +3656,8 @@ table for IBM PC character set (code page 437)
 .TP
 .B ORGANIZATION
 Set the article header field ''Organization:'' to the contents of the
-variable instead of the system default. If reading news on an Apollo
+variable instead of the system default. If it points to a readable file
+a random line from that file will be used.If reading news on an Apollo
 DomainOS machine the environment variable $\fBNEWSORG\fP has to be used
 instead of $\fBORGANIZATION\fP.
 .TP

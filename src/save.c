@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-05-10
+ *  Updated   : 2023-07-19
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -147,7 +147,6 @@ check_start_save_any_news(
 	int saved_arts = 0;					/* Total # saved arts */
 	struct t_article *art;
 	struct t_group *group;
-	t_bool log_opened = TRUE;
 	t_bool print_first = (t_bool) verbose;
 	t_bool unread_news = FALSE;
 	time_t epoch;
@@ -173,7 +172,6 @@ check_start_save_any_news(
 				perror_message(_(txt_cannot_open), logfile);
 				fp_log = stdout;
 				verbose = FALSE;
-				log_opened = FALSE;
 			}
 			fprintf(fp_log, "To: %s\n", userid);
 			(void) time(&epoch);
@@ -199,12 +197,17 @@ check_start_save_any_news(
 		 */
 		selmenu.curr = i;
 
+		/* TODO: also log with verbose > 1? */
 		if (group->bogus || !group->subscribed)
 			continue;
 
 		if (function == MAIL_ANY_NEWS || function == SAVE_ANY_NEWS) {
-			if (!group->attribute->batch_save)
+			if (!group->attribute->batch_save) { /* TODO: string -> lang.c */
+				if (verbose > 1 && function == MAIL_ANY_NEWS)
+					fprintf(fp_log, "Skipped %s", group->name);
+
 				continue;
+			}
 
 			group_count++;
 			snprintf(buf, sizeof(buf), _(txt_saved_groupname), group->name);
@@ -362,7 +365,7 @@ check_start_save_any_news(
 			if (verbose)
 				wait_message(0, "%s", buf);
 
-			if (log_opened) {
+			if (fp_log != stdout) {
 				fclose(fp_log);
 				if (verbose)
 					wait_message(0, _(txt_mail_log_to), (function == MAIL_ANY_NEWS ? mail_news_user : userid));

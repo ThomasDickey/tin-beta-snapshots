@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2023-02-22
+ *  Updated   : 2023-08-03
  *  Notes     :
  *
  * Copyright (c) 1997-2023 Urs Janssen <urs@tin.org>
@@ -527,7 +527,7 @@ strsep(
 
 
 /*
- * str_trim - leading and trailing whitespace
+ * str_trim - in-place string trim leading and trailing whitespace
  *
  * INPUT:  string  - string to trim
  *
@@ -539,29 +539,32 @@ char *
 str_trim(
 	char *string)
 {
-	char *rp;		/* reading string pointer */
-	char *wp;		/* writing string pointer */
-	char *ls;		/* last space */
+	char *rp, *wp, *ep;
+	size_t s;
 
 	if (string == NULL)
 		return NULL;
 
-	for (rp = wp = ls = string; isspace((int) *rp); rp++)		/* Skip leading space */
+	if (!(s = strlen(string)))
+		return string;
+
+	/* remove training spaces */
+	ep = string + s - 1;
+    while (ep >= string && isspace((int) *ep))
+        ep--;
+    *(ep + 1) = '\0';
+
+	/* skip leading space */
+	for (rp = wp = string; isspace((int) *rp); rp++)
 		;
 
-	while (*rp) {
-		if (isspace((int) *rp)) {
-			if (ls == NULL)		/* Remember last written space */
-				ls = wp;
-		} else
-			ls = NULL;			/* It wasn't the last space */
-		*wp++ = *rp++;
-	}
+	/* copy if required to keep address */
+	if (rp != string) {
+		while (*rp)
+			*wp++ = *rp++;
 
-	if (ls)						/* ie, there is trailing space */
-		*ls = '\0';
-	else
 		*wp = '\0';
+	}
 
 	return string;
 }
@@ -1548,7 +1551,7 @@ parse_format_string(
 				*d_fmt = '\0';
 				in++;
 			} else {
-				out -= 1;
+				out--;
 				*out++ = *in;
 				continue;
 			}

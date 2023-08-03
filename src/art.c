@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-06-12
+ *  Updated   : 2023-07-26
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -47,10 +47,10 @@
 #ifndef NEWSRC_H
 #	include "newsrc.h"
 #endif /* !NEWSRC_H */
-
 #ifndef STPWATCH_H
 #	include "stpwatch.h"
 #endif /* !STPWATCH_H */
+
 
 /*
  * TODO: fixup to remove CURR_GROUP dependency in all sort funcs
@@ -429,16 +429,14 @@ index_group(
 	free_art_array();
 	free_msgids();
 
-	BegStopWatch("setup_hard_base()");
-
+	BegStopWatch();
 	/*
 	 * Get list of valid article numbers
 	 */
 	if (setup_hard_base(group) < 0)
 		return FALSE;
 
-	EndStopWatch();
-	PrintStopWatch();
+	EndStopWatch("setup_hard_base()");
 
 #ifdef DEBUG
 	if (debug & DEBUG_NEWSRC) {
@@ -575,22 +573,23 @@ index_group(
 	 * Create the reference tree. The msgid and ref ptrs will
 	 * be free()d now that the NovFile has been written.
 	 */
+	BegStopWatch();
 	build_references(group);
+	EndStopWatch("build_references()");
 
 	/*
 	 * Needs access to the reference tree
 	 */
+	BegStopWatch();
 	filtered = filter_articles(group);
-
-	BegStopWatch("make_threads()");
+	EndStopWatch("filter_articles()");
 
 	/*
 	 * Thread the group
 	 */
+	BegStopWatch();
 	make_threads(group, FALSE);
-
-	EndStopWatch();
-	PrintStopWatch();
+	EndStopWatch("make_threads()");
 
 	if ((changed > 0 || filtered) && !batch_mode)
 		clear_message();
@@ -2257,7 +2256,7 @@ read_overview(
 					/* if we're lucky we've Path in NOV */
 					/*
 					 * if reading locally cached overview data try
-					 * path regardless of the server OVERVIEW.FMT
+					 * path regardless of the servers OVERVIEW.FMT
 					 */
 					if (local || !strcasecmp(ofmt[count].name, "Path:")) {
 						if ((q = parse_header(ptr, "Path", FALSE, FALSE, FALSE)) != NULL) {
@@ -3117,11 +3116,13 @@ score_comp_base(
 
 		if (comp_func)
 			return (*comp_func)(s1, s2);
+
 		return 0;
 	}
 
 	if (CURR_GROUP.attribute->sort_threads_type == SORT_THREADS_BY_SCORE_ASCEND)
 		return a > b ? 1 : -1;
+
 	return a < b ? 1 : -1;
 }
 

@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2023-07-05
+ *  Updated   : 2023-07-20
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2023 Michael Bienia <michael@vorlon.ping.de>
@@ -2525,6 +2525,9 @@ config_page(
 						case OPT_NNTP_READ_TIMEOUT_SECS:
 							if (prompt_option_num(option)) {
 								if (tinrc.nntp_read_timeout_secs < 0)
+									tinrc.nntp_read_timeout_secs = 0;
+								/* as in read_config_file() */
+								if (tinrc.nntp_read_timeout_secs > 16383)
 									tinrc.nntp_read_timeout_secs = 0;
 								changed |= MISC_OPTS;
 							}

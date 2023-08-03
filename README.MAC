@@ -16,5 +16,5 @@ ON on /etc/tin/tin.defaults
 Other way to build and install tin:
 - MacPorts  <http://www.macports.org/>
 
-Instead of using the shell-script url_handler.sh or perl-script 
+Instead of using the shell-script url_handler.sh or the perl-script
 url_handler.pl you might want to use open(1) as URL-handler.

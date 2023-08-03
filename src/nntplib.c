@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2023-07-03
+ *  Updated   : 2023-07-20
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -304,8 +304,7 @@ server_init(
 	}
 #	endif /* TLI */
 
-#ifdef NNTPS_ABLE
-
+#	ifdef NNTPS_ABLE
 	if (use_nntps) {
 		int result;
 
@@ -317,8 +316,7 @@ server_init(
 		if (result < 0)
 			return result;
 	}
-
-#endif /* NNTPS_ABLE */
+#	endif /* NNTPS_ABLE */
 
 	nntp_buf.fd = sock_fd;
 
@@ -838,7 +836,7 @@ put_server(
 			if (verbose)	/* only log password when running verbose */
 				debug_print_file("NNTP", ">>>%s%s", logtime(), string);
 			else {
-				char *c = strdup(string);
+				char *c = my_strdup(string);
 				int l = 0;
 
 				if (!strncmp(string,"AUTHINFO PASS", 13))
@@ -931,7 +929,7 @@ reconnect(
 	/* reset signal_context */
 	signal_context = save_signal_context;
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
-		alarm((unsigned) tinrc.nntp_read_timeout_secs);
+		alarm((unsigned) TIN_NNTP_TIMEOUT);
 #	endif /* HAVE_ALARM && SIGALRM */
 
 	clear_message();
@@ -1031,13 +1029,13 @@ get_server(
 	 *   -the network connection went down
 	 */
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
-	alarm((unsigned) tinrc.nntp_read_timeout_secs);
+	alarm((unsigned) TIN_NNTP_TIMEOUT);
 #	endif /* HAVE_ALARM && SIGALRM */
 	while (!nntpbuf_is_open(&nntp_buf) || nntpbuf_gets(string, size, &nntp_buf) == NULL) {
 		if (errno == EINTR) {
 			errno = 0;
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
-			alarm((unsigned) tinrc.nntp_read_timeout_secs);		/* Restart the timer */
+			alarm((unsigned) TIN_NNTP_TIMEOUT);		/* Restart the timer */
 #	endif /* HAVE_ALARM && SIGALRM */
 			continue;
 		}
@@ -1669,7 +1667,7 @@ nntp_open(
 
 		/*
 		 * Show user last server response line, do some nice formatting if
-		 * response is longer than a screen wide.
+		 * response is longer than the screen width.
 		 *
 		 * TODO: This only breaks the line once, but the response could be
 		 * longer than two lines ...
@@ -1854,7 +1852,7 @@ nntp_open(
 	 */
 	if (nntp_caps.compress && use_compress) {
 		if ((nntp_caps.compress_algorithm & COMPRESS_DEFLATE) == COMPRESS_DEFLATE)
-		  enable_deflate(&nntp_buf);
+			enable_deflate(&nntp_buf);
 	}
 #	endif /* USE_ZLIB */
 #endif /* NNTP_ABLE */
@@ -2201,11 +2199,11 @@ nntp_write(
 {
 	ssize_t bytes_written;
 
-#ifdef NNTPS_ABLE
+#	ifdef NNTPS_ABLE
 	if (tls)
 		bytes_written = tintls_write(tls, buf, n);
 	else
-#endif /* NNTPS_ABLE */
+#	endif /* NNTPS_ABLE */
 		bytes_written = write(fd, buf, n);
 
 	return bytes_written;
@@ -2220,11 +2218,11 @@ ssize_t nntp_read(
 {
 	ssize_t bytes_read;
 
-#ifdef NNTPS_ABLE
+#	ifdef NNTPS_ABLE
 	if (tls)
 		bytes_read = tintls_read(tls, buf, n);
 	else
-#endif /* NNTPS_ABLE */
+#	endif /* NNTPS_ABLE */
 		bytes_read = read(fd, buf, n);
 
 	return bytes_read;
@@ -2233,7 +2231,7 @@ ssize_t nntp_read(
 
 #define SZ(a) sizeof((a))
 
-#ifdef USE_ZLIB
+#	ifdef USE_ZLIB
 static void *
 deflate_alloc(
 	void *user,
@@ -2327,14 +2325,14 @@ static ssize_t
 nntpbuf_deflate_write(
 	struct nntpbuf* buf)
 {
-	ssize_t bytes_written = 0;
+	int result;
+	ssize_t bytes_written = 0, bwritten;
 	t_bool deflate_again = TRUE;
 
 	buf->z_wr->next_in = buf->wr.buf + buf->wr.lb;
 	buf->z_wr->avail_in = buf->wr.ub - buf->wr.lb;
 
 	while (deflate_again) {
-		int result;
 		Bytef *out = buf->z_wr->next_out;
 
 		result = deflate(buf->z_wr, Z_PARTIAL_FLUSH);
@@ -2347,8 +2345,6 @@ nntpbuf_deflate_write(
 			deflate_again = FALSE;
 
 		while (buf->z_wr->avail_out < DEFLATE_BUFSZ) {
-			ssize_t bwritten;
-
 			bwritten = nntp_write(buf->fd, buf->tls_ctx, out, DEFLATE_BUFSZ - buf->z_wr->avail_out);
 			if (bwritten < 0)
 				return EOF;
@@ -2375,7 +2371,7 @@ nntpbuf_inflate(
 		return EOF;
 
 	/* move leftover input data to beginning of input buffer */
-	memmove(buf->z_rd_buf, buf->z_rd->next_in, buf->z_rd->avail_in);
+	my_memmove(buf->z_rd_buf, buf->z_rd->next_in, buf->z_rd->avail_in);
 	buf->z_rd->next_in = buf->z_rd_buf;
 
 	return (SZ(buf->rd.buf) - buf->rd.ub) - buf->z_rd->avail_out;
@@ -2399,7 +2395,6 @@ nntpbuf_inflate_read(
 		return bytes_read;
 
 	while (bytes_read == 0) {
-
 		if (buf->z_rd->avail_in < DEFLATE_BUFSZ) {
 			bread = nntp_read(buf->fd, buf->tls_ctx, buf->z_rd->next_in, DEFLATE_BUFSZ - buf->z_rd->avail_in);
 			if (bread <= 0)
@@ -2416,7 +2411,8 @@ nntpbuf_inflate_read(
 	}
 	return bytes_read;
 }
-#endif /* USE_ZLIB */
+#	endif /* USE_ZLIB */
+
 
 /*
  * write data from write buffer to NNTP connection when requested
@@ -2431,11 +2427,11 @@ nntpbuf_flush(
 	while (buf->wr.ub > buf->wr.lb) {
 		ssize_t bytes_written;
 
-#ifdef USE_ZLIB
+#	ifdef USE_ZLIB
 		if (deflate_active)
 			bytes_written = nntpbuf_deflate_write(buf);
 		else
-#endif /* USE_ZLIB */
+#	endif /* USE_ZLIB */
 			bytes_written = nntp_write(buf->fd, buf->tls_ctx, buf->wr.buf + buf->wr.lb, buf->wr.ub - buf->wr.lb);
 
 		if (bytes_written < 0)
@@ -2458,7 +2454,7 @@ nntpbuf_puts(
 	const char* data,
 	struct nntpbuf* buf)
 {
-	int bytes_written = 0;
+	int bytes_written = 0, retval;
 	unsigned len, l;
 
 	if (!buf || SZ(buf->wr.buf) == 0 || buf->wr.lb > buf->wr.ub)
@@ -2470,7 +2466,7 @@ nntpbuf_puts(
 	len = strlen(data);
 	while (len) {
 		if (buf->wr.ub == SZ(buf->wr.buf)) {
-			int retval = nntpbuf_flush(buf);
+			retval = nntpbuf_flush(buf);
 
 			if (retval != 0)
 				return retval;
@@ -2507,11 +2503,11 @@ nntpbuf_refill(
 	if (free_b) {
 		ssize_t bytes_read;
 
-#ifdef USE_ZLIB
+#	ifdef USE_ZLIB
 		if (deflate_active)
 			bytes_read = nntpbuf_inflate_read(buf);
 		else
-#endif /* USE_ZLIB */
+#	endif /* USE_ZLIB */
 			bytes_read = nntp_read(buf->fd, buf->tls_ctx, buf->rd.buf + buf->rd.ub, free_b);
 
 		if (bytes_read > 0)
@@ -2530,17 +2526,17 @@ static int
 nntpbuf_getc(
 	struct nntpbuf *buf)
 {
-	int c = EOF;
+	int c = EOF, retval;
 
 	if (buf->rd.ub - buf->rd.lb == 0) {
-		int retval = nntpbuf_refill(buf);
+		retval = nntpbuf_refill(buf);
 
 		if (retval <= 0)
 			return retval;
 	}
 
 	c = buf->rd.buf[buf->rd.lb];
-	buf->rd.lb += 1;
+	buf->rd.lb++;
 
 	return c;
 }
@@ -2560,10 +2556,10 @@ nntpbuf_ungetc(
 			return EOF;
 		}
 		my_memmove(buf->rd.buf + 1, buf->rd.buf, buf->rd.ub);
-		buf->rd.lb += 1;
+		buf->rd.lb++;
 	}
 
-	buf->rd.lb -= 1;
+	buf->rd.lb--;
 	buf->rd.buf[buf->rd.lb] = (unsigned char)c;
 
 	return c;
@@ -2579,17 +2575,16 @@ nntpbuf_gets(
 	int size,
 	struct nntpbuf *buf)
 {
-	int write_at = 0;
+	int write_at = 0, retval;
 
 	if (s == NULL || size == 0)
 		return s;
 
-	s[size - 1] = '\0';
-	size -= 1;
+	s[--size] = '\0';
 
 	while (size) {
 		if (buf->rd.ub - buf->rd.lb == 0) {
-			int retval = nntpbuf_refill(buf);
+			retval = nntpbuf_refill(buf);
 
 			if (retval <= 0)
 				return NULL;
@@ -2597,7 +2592,7 @@ nntpbuf_gets(
 
 		while (size && (buf->rd.ub - buf->rd.lb) > 0) {
 			s[write_at++] = buf->rd.buf[buf->rd.lb++];
-			size -= 1;
+			size--;
 
 			if (s[write_at - 1] == '\n' && size) {
 				s[write_at] = '\0';
@@ -2617,7 +2612,7 @@ nntpbuf_close(
 	if (!buf)
 		return;
 
-#ifdef NNTPS_ABLE
+#	ifdef NNTPS_ABLE
 	if (buf->tls_ctx) {
 		int result = tintls_close(buf->tls_ctx);
 
@@ -2626,7 +2621,7 @@ nntpbuf_close(
 		}
 	}
 	buf->tls_ctx = NULL;
-#endif /* NNTPS_ABLE */
+#	endif /* NNTPS_ABLE */
 
 	if (buf->fd >= 0)
 		close(buf->fd);
@@ -2636,7 +2631,7 @@ nntpbuf_close(
 	buf->rd.lb = buf->rd.ub = 0;
 	buf->wr.lb = buf->wr.ub = 0;
 
-#ifdef USE_ZLIB
+#	ifdef USE_ZLIB
 	if (deflate_active) {
 		if (buf->z_rd)
 			inflateEnd(buf->z_rd);
@@ -2650,7 +2645,7 @@ nntpbuf_close(
 
 		deflate_active = FALSE;
 	}
-#endif /* USE_ZLIB */
+#	endif /* USE_ZLIB */
 }
 
 
@@ -2679,23 +2674,27 @@ nntp_conninfo(
 		if (nntp_caps.compress) {
 			fprintf(stream, "COMPRESS      :");
 			if ((nntp_caps.compress_algorithm & COMPRESS_DEFLATE) == COMPRESS_DEFLATE)
-#ifdef USE_ZLIB
+#	ifdef USE_ZLIB
 				fprintf(stream, " DEFLATE %s\n", deflate_active ? "(enabled)" : "(inactive)");
-#else
+#	else
 				fprintf(stream, " DEFLATE (not supported)\n");
-#endif /* USE_ZLIB */
+#	endif /* USE_ZLIB */
 		}
-#if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+#	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
 		if (nntp_caps.maxartnum)
 			fprintf(stream, "MAXARTNUM     : %"T_ARTNUM_PFMT"\n", nntp_caps.maxartnum);
-#endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
+#	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 	}
 
-#ifdef NNTPS_ABLE
+#	if defined(HAVE_ALARM) && defined(SIGALRM)
+	fprintf(stream, "NNTP TIMEOUT  : %d seconds %s\n", TIN_NNTP_TIMEOUT, TIN_NNTP_TIMEOUT ? "" : "(disabled)");
+#	endif /* HAVE_ALARM && SIGALRM */
+
+#	ifdef NNTPS_ABLE
 	if (nntp_buf.tls_ctx)
 		retval = tintls_conninfo(nntp_buf.tls_ctx, stream);
 
-#endif /* NNTPS_ABLE */
+#	endif /* NNTPS_ABLE */
 
 	return retval;
 }

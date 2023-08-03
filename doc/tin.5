@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2023-06-27
+.\" Updated   : 2023-07-31
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -552,7 +552,8 @@ Identical to the tinrc variable of the same name
 This can be used to set the article header field ''Organization:''. It
 overrides the setting (if any) of organization in
 \fI/etc/tin/tin.defaults\fR and $\fBORGANIZATION\fP (or $\fBNEWSORG\fP on
-Apollo DomainOS). Note that some news servers might still overwrite the
+Apollo DomainOS). If it points to a readable file a random line from that
+file will be used. Note that some news servers might still overwrite the
 \&''Organization:'' header.
 .TP
 .B pos_first_unread

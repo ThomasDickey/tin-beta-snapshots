@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2022-09-19
+ *  Updated   : 2023-07-26
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2023 Thomas Dickey <dickey@invisible-island.net>
@@ -245,7 +245,6 @@
 #	undef HAVE_FDOPEN
 #	undef HAVE_FLOCK
 #	undef HAVE_FORK
-#	undef HAVE_FTIME
 #	undef HAVE_FTRUNCATE
 #	undef HAVE_FSYNC
 #	undef HAVE_GAI_STRERROR

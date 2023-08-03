@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-09-19
+ *  Updated   : 2023-07-29
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -1610,7 +1610,7 @@ match_color(
 
 /*
  * If pat matches the start of line, convert rest of line to an integer, dst
- * If maxval is set, constrain value to 0 <= dst <= maxlen and return TRUE.
+ * If maxval is set, constrain value to 0 <= dst <= maxval and return TRUE.
  * If no match is made, return FALSE.
  */
 t_bool
@@ -2228,17 +2228,18 @@ static void
 write_server_config(
 	void)
 {
+	DIR *dirp;
 	FILE *fp;
 	char *file_tmp;
 	char file[PATH_LEN];
 	char timestring[30];
 	char serverdir[PATH_LEN];
 	int i;
-	struct stat statbuf;
 
 	if (read_saved_news)
 		/* don't update server files while reading locally stored articles */
 		return;
+
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && nntp_tcp_port != IPPORT_NNTP)
 		snprintf(file, sizeof(file), "%s:%u", nntp_server, nntp_tcp_port);
@@ -2253,11 +2254,23 @@ write_server_config(
 	if ((no_write || post_article_and_exit || post_postponed_and_exit) && file_size(file) != -1L)
 		return;
 
-	if (stat(serverdir, &statbuf) == -1) {
-		if (my_mkdir(serverdir, (mode_t) (S_IRWXU)) == -1)
-			/* Can't create directory TODO: Add error handling */
-			return;
-	}
+	errno = 0;
+	if (!(dirp = opendir(serverdir))) {
+		switch (errno) {
+			case ENOENT:
+				if (my_mkdir(serverdir, (mode_t) (S_IRWXU)) == -1) {
+					/* Can't create directory TODO: Add error handling */
+					;
+				}
+				break;
+
+			default:
+				wait_message(2, "write_server_config(%s)", strerror(errno));
+				break;
+		}
+        return;
+	} else
+		CLOSEDIR(dirp);
 
 	/* generate tmp-filename */
 	file_tmp = get_tmpfilename(file);

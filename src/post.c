@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-07
+ *  Updated   : 2023-07-31
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -1735,11 +1735,12 @@ check_article_to_be_posted(
 			int seen = 0; /* already reported a unprintable char in that line? */
 
 			/*
-			 * TODO:
+			 * TODO for txt_warn_unprintable_char:
+			 * - prefix message with "..." if cp != line?
+			 * - honor utf8_graphics?
 			 * - convert unprintable chars to octal values like
 			 *   in draw_pager_line()?
 			 * - do we need a Big5 exception (like in draw_pager_line())?
-			 * - is warning strong enough or shall we use error?
 			 */
 			col = 0;
 			for (cp = line; *cp; ) {
@@ -1749,34 +1750,34 @@ check_article_to_be_posted(
 				} else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					if ((num_bytes = mbtowc(&wc, cp, MB_CUR_MAX)) != -1) {
-						cp += num_bytes;
-						if (!contains_8bit && num_bytes > 1)
+						if (!contains_8bit && (num_bytes > 1 || !isascii(*cp)))
 							contains_8bit = TRUE;
 						if (iswprint((wint_t) wc) && ((wc_width = wcwidth(wc)) != -1))
 							col += wc_width;
 						else {
-							col++;
 							if (seen != cnt) { /* warn just once per line */
 								seen = cnt;
-								my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, line);
+								my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, strunc(cp, cCOLS - 1));
 								warnings++;
 							}
+							col++;
 						}
+						cp += num_bytes;
 					} else {
-						cp++;
-						col++;
 						if (seen != cnt) { /* warn just once per line */
 							seen = cnt;
-							my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, line);
+							my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, strunc(cp, cCOLS - 1));
 							warnings++;
 						}
+						cp++;
+						col++;
 					}
 #else
 					if (!contains_8bit && !isascii(*cp))
 						contains_8bit = TRUE;
 					if (!my_isprint(*cp) && seen != cnt) { /* warn just once per line */
 						seen = cnt;
-						my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, line);
+						my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, strunc(cp, cCOLS - 1));
 						warnings++;
 					}
 					cp++;
@@ -1788,8 +1789,11 @@ check_article_to_be_posted(
 				my_fflush(stderr);
 		}
 		if (col > MAX_COL && !got_long_line) {
-			my_fprintf(stderr, _(txt_warn_art_line_too_long), MAX_COL, cnt, line);
+			char *m = strunc(line, MAX_COL - 1);
+
+			my_fprintf(stderr, _(txt_warn_art_line_too_long), MAX_COL, cnt, m);
 			my_fflush(stderr);
+			free (m);
 			got_long_line = TRUE;
 			warnings++;
 		}
@@ -3117,22 +3121,82 @@ skip_id(
 /*
  * Checks if Message-ID has valid format
  * Returns FALSE if it does, TRUE if it does not
- * TODO: combine with refs.c:valid_msgid() (return values swapped)
+ * does NOT modify its input
+ * does NOT accept trailing spaces
+ *
+ * see also refs.c:valid_msgid() which has swapped return
+ * values, accepts trailing spaces and DOES modify its input
  */
 static t_bool
 damaged_id(
 	const char *id)
 {
+	signed int bracket = 0;
+	size_t mlen;
+	t_bool at_present = FALSE;
+
 	while (*id && isspace((unsigned char) *id))
 		id++;
 
-	if (*id != '<')
+	mlen = strlen(id);
+
+	/* must start with '<' and have exactly one '>' (at the very end) */
+	if (!mlen || mlen < 5 /* || mlen > 250 */ || *(id + mlen - 1) != '>' || strchr(id, '>') != (id + mlen - 1) || *id++ != '<')
 		return TRUE;
 
-	while (isascii((unsigned char) *id) && isgraph((unsigned char) *id) && !iscntrl((unsigned char) *id) && *id != '>')
-		id++;
+	while (*id) {
+		if (*id < 33 || *id > 126 || *id == '<' || *id == '\\' || (*id == '>' && *(id + 1) != '\0'))
+			return TRUE;
 
-	if (*id != '>')
+		switch (*id) {
+			case '[':  /* '[' and ']' are only allowed in id-right */
+				if (bracket != 0 || !at_present || *(id - 1) != '@' || strchr(id, '@'))
+					return TRUE;
+				else
+					bracket++;
+				break;
+
+			case ']':
+				if (bracket != 1 || !at_present || *(id + 1) != '>')
+					return TRUE;
+				else
+					bracket--;
+				break;
+
+			case '@':
+				if (!at_present) {
+					if (*(id + 1) == '.')
+						return TRUE;
+
+					at_present = TRUE;
+				} else {  /* multiple '@' are only ok inside [] */
+					if (!bracket)
+						return TRUE;
+				}
+				break;
+
+			case '.':
+				if (*(id + 1) == '.' || *(id + 1) == '@' || *(id + 1) == '>' || *(id + 1) == ']' || *(id - 1) == '<')
+					return TRUE;
+				break;
+
+			case '(':
+			case ')':
+			case ':':
+			case ';':
+			case ',':
+			case '"':
+				if (!bracket)
+					return TRUE;
+				break;
+
+			default:
+				break;
+		}
+		id++;
+	}
+
+	if (bracket != 0 || !at_present)
 		return TRUE;
 
 	return FALSE;

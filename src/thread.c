@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-10-27
+ *  Updated   : 2023-07-27
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -1514,7 +1514,7 @@ make_prefix(
 	buf[prefix_ptr] = TREE_HORIZ;
 	buf[--prefix_ptr] = (has_sibling(art) ? TREE_VERT_RIGHT : TREE_UP_RIGHT);
 
-	for (ptr = art->parent; prefix_ptr > 1; ptr = ptr->parent) {
+	for (ptr = art->parent; ptr && prefix_ptr > 1; ptr = ptr->parent) {
 		if (IS_EXPIRED(ptr))
 			continue;
 		buf[--prefix_ptr] = TREE_BLANK;

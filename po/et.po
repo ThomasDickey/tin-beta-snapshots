@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.6.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-07 11:14+0200\n"
+"POT-Creation-Date: 2023-08-01 17:54+0200\n"
 "PO-Revision-Date: 2022-12-26 21:03+0200\n"
 "Last-Translator: Toomas Soome <tsoome@me.com>\n"
 "Language-Team: Estonian <linux-ee@lists.eenet.ee>\n"
@@ -17,24 +17,24 @@ msgstr ""
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 
 #. -> lang.c
-#: src/art.c:423
+#: src/art.c:438
 #, c-format
 msgid "Reading %s\n"
 msgstr "Loen %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:1218
+#: src/art.c:1232
 msgid "Threading by multipart"
 msgstr "Järjestan osade järgi"
 
 #. -> lang.c
-#: src/art.c:2520
+#: src/art.c:2534
 #, c-format
 msgid "Writing %s\n"
 msgstr "Kirjutan %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:2599
+#: src/art.c:2613
 msgid "Writing overview cache..."
 msgstr "Kirjutan ülevaate puhvri..."
 
@@ -4306,7 +4306,7 @@ msgstr ""
 #, c-format
 msgid ""
 "Warning: line %d contains unprintable chars:\n"
-"\t%s\n"
+"%s\n"
 msgstr ""
 
 #: src/lang.c:1009
@@ -5047,7 +5047,7 @@ msgstr "Terminal ei toeta värve"
 msgid "Trying %s"
 msgstr "Proovin %s"
 
-#: src/lang.c:1297 src/lang.c:1325 src/lang.c:1616 src/refs.c:292
+#: src/lang.c:1297 src/lang.c:1325 src/lang.c:1616 src/refs.c:343
 msgid "None"
 msgstr "Pole"
 
@@ -8224,7 +8224,7 @@ msgstr ""
 "vaikimisi)\n"
 
 #. TODO: lang.c
-#: src/main.c:939
+#: src/main.c:951
 msgid "reading from local spool"
 msgstr "loen lokaalsest spool kataloogist"
 
@@ -8244,11 +8244,11 @@ msgstr "Versioon: %s %s väljalase %s (\"%s\") %s %s\n"
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "Versioon: %s %s väljalase %s (\"%s\")\n"
 
-#: src/newsrc.c:476
+#: src/newsrc.c:486
 msgid "Unreachable?\n"
 msgstr "Kättesaamatu?\n"
 
-#: src/nntplib.c:900
+#: src/nntplib.c:898
 #, c-format
 msgid ""
 "\n"
@@ -8257,29 +8257,29 @@ msgstr ""
 "\n"
 "Ühendus serveriga aegus, proovin taastada, katse %d\n"
 
-#: src/nntplib.c:928 src/signal.c:435
+#: src/nntplib.c:926 src/signal.c:447
 msgid "NNTP connection error. Exiting..."
 msgstr "NNTP ühenduse viga. Lõpetan..."
 
-#: src/nntplib.c:943 src/nntplib.c:2021
+#: src/nntplib.c:941 src/nntplib.c:2019
 msgid "Rejoin current group\n"
 msgstr "Taasühinen jooksva grupiga\n"
 
-#: src/nntplib.c:952 src/nntplib.c:2030
+#: src/nntplib.c:950 src/nntplib.c:2028
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Lugesin (%s)\n"
 
-#: src/nntplib.c:954
+#: src/nntplib.c:952
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "Saada viimane käsk uuesti (%s)\n"
 
-#: src/nntplib.c:1644
+#: src/nntplib.c:1642
 msgid "CAPABILITIES did not announce READER"
 msgstr "CAPABILITIES ei sisalda READER"
 
-#: src/nntplib.c:2176
+#: src/nntplib.c:2174
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8357,7 +8357,7 @@ msgstr ""
 msgid "couldn't expand %s\n"
 msgstr "ei saa laiendada %s\n"
 
-#: src/post.c:1807
+#: src/post.c:1811
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8366,7 +8366,7 @@ msgstr ""
 "Rida %d on pikem, kui %d sümbolit ja tuleks poolitada, aga kodeering\n"
 "pole ei %s ega %s\n"
 
-#: src/post.c:1812
+#: src/post.c:1816
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8377,7 +8377,7 @@ msgstr ""
 "on %s ja MIME_BREAK_LONG_LINES pole seatud või postitamine ei sisalda\n"
 "8 bitiseid sümboleid ja seetõttu poolitamist ei toimu\n"
 
-#: src/post.c:1814
+#: src/post.c:1818
 #, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8386,12 +8386,12 @@ msgstr ""
 "Rida %d on pikem, kui %d sümbolit ja tuleks poolitada, aga kodeering\n"
 "pole %s\n"
 
-#: src/post.c:2802
+#: src/post.c:2806
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Postitan: %.*s ..."
 
-#: src/post.c:4552
+#: src/post.c:4616
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr "e-posti gruppides ei saa asendada, proovide uuesti postitada."
 
@@ -8408,11 +8408,11 @@ msgstr "Katkestatud lugemine\n"
 msgid "Draining\n"
 msgstr "Tühjendan\n"
 
-#: src/refs.c:236
+#: src/refs.c:287
 msgid "unchanged"
 msgstr "muutmata"
 
-#: src/refs.c:603
+#: src/refs.c:653
 msgid "[- Unavailable -]"
 msgstr "[- Pole kasutatav -]"
 
@@ -8433,7 +8433,7 @@ msgstr ""
 "vormingut kasutama ja järgnev tekst võib olla kummaline.\n"
 "\n"
 
-#: src/save.c:1045
+#: src/save.c:1048
 msgid "bytes"
 msgstr "baiti"
 
@@ -8456,6 +8456,17 @@ msgstr "[T]"
 #: src/select.c:625 src/select.c:627
 msgid " R"
 msgstr " L"
+
+#.
+#. * response compression from the server may take a while
+#. * when running interactively and not being in connection
+#. * phase give the user a chance to go on instead of exiting
+#. *
+#. * TODO: strings to lang.c and incl. nntp_read_timeout_secs
+#.
+#: src/signal.c:445
+msgid "Read timeout from server - quit tin?"
+msgstr ""
 
 #: src/xface.c:75
 msgid "Can't run slrnface: Not running in an xterm."

@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2023-05-20
+ *  Updated   : 2023-07-18
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2023 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -994,8 +994,8 @@ log_func(
 	if (msglen <= 0)
 		return;
 
-	if (msg[msglen-1] == '\n')
-		msglen -= 1;
+	if (msg[msglen - 1] == '\n')
+		msglen--;
 
 	debug_print_file("NNTP", "TLS%s%.*s [%d]", logtime(), msglen, msg, level);
 }

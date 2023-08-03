@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-02-22
+ *  Updated   : 2023-07-29
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1039,10 +1039,13 @@ draw_subject_arrow(
 	draw_arrow_mark(INDEX_TOP + grpmenu.curr - grpmenu.first);
 
 	if (tinrc.info_in_last_line) {
+		int n;
 		struct t_art_stat statbuf;
 
 		stat_thread(grpmenu.curr, &statbuf);
-		info_message("%s", arts[(statbuf.unread ? next_unread((int) base[grpmenu.curr]) : base[grpmenu.curr])].subject);
+		if (!statbuf.unread || (n = next_unread((int) base[grpmenu.curr])) == -1)
+			n = base[grpmenu.curr];
+		info_message("%s", arts[n].subject);
 	} else if (grpmenu.curr == grpmenu.max - 1)
 		info_message(_(txt_end_of_arts));
 }

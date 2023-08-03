@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2023-05-09
+ *  Updated   : 2023-07-12
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -2116,7 +2116,7 @@ filter_articles(
 									*e++ = ',';
 									skip = TRUE;
 								}
-								if (*s != ':' && !isspace((int) *s) && !skip)
+								if (!skip && *s != ':' && !isspace((int) *s))
 									*e++ = *s;
 								if (isspace((int) *s))
 									skip = FALSE;
@@ -2169,10 +2169,11 @@ filter_articles(
 				}
 			}
 		}
-		/*
-		 * if (i % (MODULO_COUNT_NUM * 20) == 0)
-		 *    show_progress("Filter", i, top_art);
-		 */
+#if 0
+		/* useful in very high volume groups, usually it just flashes by */
+		if (i % (MODULO_COUNT_NUM * 20) == 0)
+			show_progress("Filtering", i, top_art);
+#endif /* 0 */
 	}
 
 	/*

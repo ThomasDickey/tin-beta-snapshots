@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-06-29
+.\" Updated   : 2023-07-31
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -32,7 +32,7 @@ tin, rtin \- Usenet Newsreader
 [\|\fB\-4\fP\||\|\fB\-6\fP[\|\fB\-o\fP\||\|\fB\-w\fP\||\|\fB\-N\fP\||\|\fB\-M\fP \fIAdresse\fP\|]
 [\|\fB\-D\fP \fIDebuggrad\fP\|] [\|\fB\-G\fP \fIArtikellimit\fP\|] [\|\fB\-f\fP
 \fInewsrc\-Datei\fP\|] [\|\fB\-g\fP \fIServer\fP\|] [\|\fB\-m\fP \fIMail\-Verz.\fP\|] [\|\fB\-p\fP
-\fIPort\fP\|] [\|\fB\-I\fP \fIindex\-Verz.\fP\|]\ \|[\fINewsgruppe\fP\|[\|,.\|.\|.\|]\|]\|]
+\fIPort\fP\|] [\|\fB\-t\fP \fITimeout\fP\|] [\|\fB\-I\fP \fIindex\-Verz.\fP\|]\ \|[\fINewsgruppe\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH BESCHREIBUNG
 .IX Header BESCHREIBUNG
 \fBtin\fP ist ein einfach zu bedienender Newsreader für das Usenet. Er kann
@@ -102,7 +102,8 @@ Datei und markiere alle Artikel als gelesen.
 .TP 
 \fB\-C\fP
 Die NNTP\-Erweiterung COMPRESS (\fBRFC\%8054\fP) verwenden, falls
-verfügbar. Auch den Abschnitt "SICHERHEIT" beachten.
+verfügbar. Auch \fBnntp_read_timeout_secs\fP, '\fB\-t\fP\*(rq und die Abschnitte
+"SICHERHEIT" und "FEHLER" beachten.
 .TP 
 \fB\-d\fP
 .\"
@@ -201,7 +202,8 @@ Tages nicht laden.
 .TP 
 \fB\-Q\fP
 Schnellstart. \fBtin\fP so schnell wie möglich starten, zur Zeit entspricht
-diese Option \*(rq\fB\-dnq\fP\*(rq.
+diese Option \*(rq\fB\-dnq\fP\*(rq. Siehe auch die Befehlszeilenoptionen '\fB\-C\fP\*(rq und
+\&\*(rq\fB\-G\fP\*(rq.
 .TP 
 \fB\-r\fP
 Nachrichten aus der Ferne vom Standard\-NTP\-Server, der in der
@@ -219,6 +221,9 @@ Artikel in/aus Verzeichnis speichern/lesen. Standard ist
 Speichere ungelesene Artikel zum späteren Lesen mittels \*(rq\fB\-R\fP\*(rq. Für
 weitere Informationen siehe den Abschnitt "AUTOMATISCHES MAILEN UND
 SPEICHERN VON UNGELESENEN ARTIKELN".
+.TP 
+\fB\-t\fP\fI Timeout\fP
+Override the \fBnntp_read_timeout_secs\fP setting. Default is 120 seconds.
 .TP 
 \fB\-T\fP
 NNTPS (NNTP über TLS) aktivieren. Dies setzt auch die Umgebungsvariable
@@ -265,10 +270,11 @@ Rückgabewert von 0 bedeutet keine ungelesene Artikel, 1 das ein Fehler
 aufgetreten ist und 2 das ungelesene Artikel vorhanden sind. Nützlich in
 Skripten.
 .PP
-\fBtin\fP can also dynamically change its options by the \fBOptionMenu\fP ('\fBM\fP')
-command. Any changes are written to
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP. For more information see section
-"GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" and \fB\%tin\fP(5).
+\fBtin\fP kann seine Optionen auch dynamisch mit dem Befehl \fBOptionMenu\fP
+('\fBM\fP') ändern. Alle Änderungen werden in
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP geschrieben. Weitere Informationen
+finden Sie im Abschnitt "MENÜ DER GLOBALE OPTIONEN UND KONFIGURIERBAREN
+TINRC\-VARIABLEN" und \fB\%tin\fP(5).
 .PP
 Eine Liste von Gruppen kann nach den anderen Befehlszeilenoptionen angegeben
 werden. Dies kann nützlich sein, falls Sie eine handverlesene Untermenge der
@@ -2162,7 +2168,12 @@ wrote:".
 .TP 
 \fBNNTP\-lese Zeitlimit in Sekunden (nntp_read_timeout_secs)\fP
 Time in seconds to wait for a response from the server. Default is 120.
-Setting this to 0 means no timeout.
+Setting this to 0 means no timeout. As if you use the "\fB\-C\fP" option in
+conjunction with a low value for \fBnntp_read_timeout_secs\fP may result in a
+timeout (and disconnect in batch mode) when connecting to large servers or
+entering large groups, because the timer is set when the command is sent to
+the server and that needs some time to compress the large response, the
+value should not be set too small.
 .TP 
 \fBUnicode Normalisierungsart (normalization_form)\fP
 Normalisierungsart die \fBtin\fP verwenden soll um die Unicode\-Eingabe zu
@@ -3594,7 +3605,8 @@ Tabelle für IBM PC\-Zeichensatz (Codepage 437)
 .TP 
 \fBORGANIZATION\fP
 Set the article header field \*(rqOrganization:\*(rq to the contents of the
-variable instead of the system default. If reading news on an Apollo
+variable instead of the system default. If it points to a readable file a
+random line from that file will be used.If reading news on an Apollo
 DomainOS machine the environment variable $\fBNEWSORG\fP has to be used instead
 of $\fBORGANIZATION\fP.
 .TP 
@@ -3661,8 +3673,8 @@ Gruppen die mit u beginnen (Universitätsgruppen), mit Ausnahme von
 UK\-Gruppen (die wie gewohnt abgefragt werden), abmelden.
 .TP 
 \fBTMPDIR\fP
-A pathname of a directory made available for \fBtin\fP to create temporary
-files.
+Pfadname eines Verzeichnisses, das \fBtin\fP für die Erstellung temporärer
+Dateien zur Verfügung gestellt wird.
 .TP 
 \fBMAILCAPS\fP
 Diese Variable kann verwendet werden, um den Standard\-Suchpfad für

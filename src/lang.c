@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-07
+ *  Updated   : 2023-07-26
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -793,9 +793,9 @@ constext txt_reading_news_newsrc_file[] = N_("Reading groups from newsrc file...
 constext txt_reading_newsgroups_file[] = N_("Reading newsgroups file... ");
 constext txt_reading_newsrc[] = N_("Reading newsrc file...");
 constext txt_refs_line_only[] = N_("References: line              ");
-#ifdef HAVE_GETTIMEOFDAY
+#if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
 	constext txt_remaining[] = N_("(%d:%02d remaining)");
-#endif /* HAVE_GETTIMEOFDAY */
+#endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
 constext txt_remove_bogus[] = N_("Bogus group %s removed.");
 constext txt_removed_rule[] = N_("Removed from this rule: ");
 constext txt_rename_error[] = N_("Error: rename %s to %s");
@@ -1005,7 +1005,7 @@ Warning: Your signature  is longer than %d lines.  Since signatures usually do\n
          not  transport any  useful information,  they should be as  short as\n\
          possible.\n");
 constext txt_warn_suspicious_mail[] = N_("Warning: this mail address may contain a spamtrap. %s=continue, %s=abort? ");
-constext txt_warn_unprintable_char[] = N_("Warning: line %d contains unprintable chars:\n\t%s\n");
+constext txt_warn_unprintable_char[] = N_("Warning: line %d contains unprintable chars:\n%s\n");
 constext txt_warn_wrong_sig_format[] = N_("\nWarning: Signatures should start with '-- \\n' not with '--\\n'.\n");
 constext txt_writing_attributes_file[] = N_("Writing attributes file...");
 

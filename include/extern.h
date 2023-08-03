@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-07
+ *  Updated   : 2023-07-26
  *  Notes     :
  *
  * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>
@@ -1191,9 +1191,9 @@ extern constext txt_reading_newsrc[];
 	extern constext txt_reconnect_to_news_server[];
 #endif /* NNTP_ABLE */
 extern constext txt_refs_line_only[];
-#ifdef HAVE_GETTIMEOFDAY
+#if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
 	extern constext txt_remaining[];
-#endif /* HAVE_GETTIMEOFDAY */
+#endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
 extern constext txt_remove_bogus[];
 extern constext txt_removed_rule[];
 extern constext txt_rename_error[];

@@ -3,9 +3,8 @@
  *  Module    : stpwatch.h
  *  Author    : I. Lea
  *  Created   : 1993-08-03
- *  Updated   : 2008-11-22
- *  Notes     : Simple stopwatch routines for timing code using timeb
- *	             or gettimeofday structs
+ *  Updated   : 2023-08-02
+ *  Notes     : Simple stopwatch routines for timing code; avoid nesting!
  *
  * Copyright (c) 1993-2023 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
@@ -41,62 +40,22 @@
 
 #ifndef STPWATCH_H
 #	define STPWATCH_H 1
-
-#	ifdef PROFILE
-
-#		if defined(HAVE_SYS_TIMEB_H) && defined(HAVE_FTIME)
-#			include <sys/timeb.h>
-
-char msg_tb[LEN];
-char tmp_tb[LEN];
-struct timeb beg_tb;
-struct timeb end_tb;
-
-#			define LSECS 700000000	/* offset to keep numbers smaller (1992-03-07 20:26:40 UTC) */
-
-#			define BegStopWatch(msg)	{strcpy (msg_tb, msg); ftime (&beg_tb);}
-
-#			define EndStopWatch()		{ftime (&end_tb);}
-
-#			define PrintStopWatch()	{sprintf (tmp_tb, "%s: Beg=[%ld.%d] End=[%ld.%d] Elap=[%ld ms]", \
-				 msg_tb, beg_tb.time, beg_tb.millitm, \
-				 end_tb.time, end_tb.millitm, \
-				 (((end_tb.time - LSECS) * 1000) + end_tb.millitm) - \
-				 (((beg_tb.time - LSECS) * 1000) + beg_tb.millitm)); \
-				 error_message(2, tmp_tb);}
-
-#		else	/* HAVE_SYS_TIMEB_H && HAVE_FTIME */
-
-#		ifdef	HAVE_SYS_TIME_H
-#			include <sys/time.h>
-
-char msg_tb[LEN];
-char tmp_tb[LEN];
-float d_time;
-struct timeval beg_tb, end_tb;
-
-#			define BegStopWatch(msg)	{strcpy (msg_tb, msg); \
-				 (void) gettimeofday (&beg_tb, NULL);}
-
-#			define EndStopWatch()		{(void) gettimeofday (&end_tb, NULL); \
-				if ((end_tb.tv_usec -= beg_tb.tv_usec) < 0) { \
-					end_tb.tv_sec--; \
-					end_tb.tv_usec += 1000000; \
-				 } \
-				 end_tb.tv_sec -= beg_tb.tv_sec; \
-				 d_time = (end_tb.tv_sec * 1000.0 + ((float) end_tb.tv_usec) / 1000.0);}
-
-#			define PrintStopWatch()	{sprintf (tmp_tb, "StopWatch(%s): %6.3f ms", msg_tb, d_time); \
-				 error_message(2, tmp_tb);}
-
-#		endif /* HAVE_SYS_TIME_H */
-#	endif /* HAVE_SYS_TIMEB_H && HAVE_FTIME */
-
-#	else	/* PROFILE */
-
-#		define BegStopWatch(msg)
-#		define EndStopWatch()
-#		define PrintStopWatch()
-
+#	if defined(PROFILE) /* TODO: write to some log? */
+#		if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
+			static struct t_tintime start_time;
+			static struct t_tintime stop_time;
+#			define BegStopWatch()	tin_gettime(&start_time)
+#			define EndStopWatch(msg)	{ \
+				if (tin_gettime(&stop_time) == 0) \
+					error_message(2, "%s:%d:%s: %.6f sec", __FILE__, __LINE__, msg, ((stop_time.tv_sec - start_time.tv_sec) * 1000000000.0 + stop_time.tv_nsec - start_time.tv_nsec) / 1000000000.0); \
+			}
+#		else
+			/* no ftime() fallback (we've also dropped the configure check for ftime) */
+#			define BegStopWatch()
+#			define EndStopWatch(msg)
+#		endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
+#	else
+#		define BegStopWatch()
+#		define EndStopWatch(msg)
 #	endif /* PROFILE */
 #endif /* !STPWATCH_H */

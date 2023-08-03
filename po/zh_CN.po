@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-07 11:14+0200\n"
+"POT-Creation-Date: 2023-08-01 17:54+0200\n"
 "PO-Revision-Date: 2015-08-28 12:21+0800\n"
 "Last-Translator: Mingye Wang <arthur200126@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
@@ -21,25 +21,25 @@ msgstr ""
 "X-Generator: Poedit 1.8.4\n"
 
 #. -> lang.c
-#: src/art.c:423
+#: src/art.c:438
 #, fuzzy, c-format
 msgid "Reading %s\n"
 msgstr "重新读取 %s…"
 
 #. TODO: -> lang.c
-#: src/art.c:1218
+#: src/art.c:1232
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "讨论串文章…"
 
 #. -> lang.c
-#: src/art.c:2520
+#: src/art.c:2534
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "尝试 %s"
 
 #. TODO: -> lang.c
-#: src/art.c:2599
+#: src/art.c:2613
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "写入属性文件…"
@@ -4285,7 +4285,7 @@ msgstr "警告：这个邮件地址可能包含垃圾陷阱。%s=继续，%s=放
 #, c-format
 msgid ""
 "Warning: line %d contains unprintable chars:\n"
-"\t%s\n"
+"%s\n"
 msgstr ""
 
 #: src/lang.c:1009
@@ -5019,7 +5019,7 @@ msgstr "终端机不支持颜色"
 msgid "Trying %s"
 msgstr "尝试 %s"
 
-#: src/lang.c:1297 src/lang.c:1325 src/lang.c:1616 src/refs.c:292
+#: src/lang.c:1297 src/lang.c:1325 src/lang.c:1616 src/refs.c:343
 msgid "None"
 msgstr "无"
 
@@ -8130,7 +8130,7 @@ msgid ""
 msgstr ""
 
 #. TODO: lang.c
-#: src/main.c:939
+#: src/main.c:951
 msgid "reading from local spool"
 msgstr ""
 
@@ -8150,11 +8150,11 @@ msgstr "版本：%s %s 发布 %s (“%s”) %s %s\n"
 msgid "Version: %s %s release %s (\"%s\")\n"
 msgstr "版本：%s %s 发布 %s (“%s”)\n"
 
-#: src/newsrc.c:476
+#: src/newsrc.c:486
 msgid "Unreachable?\n"
 msgstr "无法连接？\n"
 
-#: src/nntplib.c:900
+#: src/nntplib.c:898
 #, c-format
 msgid ""
 "\n"
@@ -8163,30 +8163,30 @@ msgstr ""
 "\n"
 "服务器已超时，尝试重新连接 # %d\n"
 
-#: src/nntplib.c:928 src/signal.c:435
+#: src/nntplib.c:926 src/signal.c:447
 #, fuzzy
 msgid "NNTP connection error. Exiting..."
 msgstr "连接到 NNTP 服务器 %s 时失败。离开…"
 
-#: src/nntplib.c:943 src/nntplib.c:2021
+#: src/nntplib.c:941 src/nntplib.c:2019
 msgid "Rejoin current group\n"
 msgstr "重新链接目前的群组\n"
 
-#: src/nntplib.c:952 src/nntplib.c:2030
+#: src/nntplib.c:950 src/nntplib.c:2028
 #, c-format
 msgid "Read (%s)\n"
 msgstr "已读 (%s)\n"
 
-#: src/nntplib.c:954
+#: src/nntplib.c:952
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "重新发送最近的命令 (%s)\n"
 
-#: src/nntplib.c:1644
+#: src/nntplib.c:1642
 msgid "CAPABILITIES did not announce READER"
 msgstr "能力中并未宣告包含阅读器"
 
-#: src/nntplib.c:2176
+#: src/nntplib.c:2174
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8262,7 +8262,7 @@ msgstr ""
 msgid "couldn't expand %s\n"
 msgstr "无法展开 %s\n"
 
-#: src/post.c:1807
+#: src/post.c:1811
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8271,7 +8271,7 @@ msgstr ""
 "第 %d 行长度超过 998 字节而应该被折叠，但是\n"
 "编码未被设置为 %s 亦非 %s\n"
 
-#: src/post.c:1812
+#: src/post.c:1816
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8282,7 +8282,7 @@ msgstr ""
 "编码被设置为 %s 而未启用 MIME_BREAK_LONG_LINES 或是\n"
 "贴文不包含任何 8 比特字符，因而无法发生折叠\n"
 
-#: src/post.c:1814
+#: src/post.c:1818
 #, fuzzy, c-format
 msgid ""
 "Line %d is longer than %d octets and should be folded, but\n"
@@ -8291,12 +8291,12 @@ msgstr ""
 "第 %d 行长度超过 998 字节而，但是\n"
 "编码未被设置为 %s\n"
 
-#: src/post.c:2802
+#: src/post.c:2806
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "张贴：%.*s…"
 
-#: src/post.c:4552
+#: src/post.c:4616
 msgid "Can't supersede in mailgroups, try repost instead."
 msgstr ""
 
@@ -8313,11 +8313,11 @@ msgstr "已放弃读取\n"
 msgid "Draining\n"
 msgstr "排放\n"
 
-#: src/refs.c:236
+#: src/refs.c:287
 msgid "unchanged"
 msgstr "未变更"
 
-#: src/refs.c:603
+#: src/refs.c:653
 msgid "[- Unavailable -]"
 msgstr "[- 不可用 -]"
 
@@ -8338,7 +8338,7 @@ msgstr ""
 "以了解新的格式，而随后而来的东西也许看起来会很怪异。\n"
 "\n"
 
-#: src/save.c:1045
+#: src/save.c:1048
 msgid "bytes"
 msgstr "字节"
 
@@ -8361,6 +8361,17 @@ msgstr ""
 #: src/select.c:625 src/select.c:627
 msgid " R"
 msgstr " R"
+
+#.
+#. * response compression from the server may take a while
+#. * when running interactively and not being in connection
+#. * phase give the user a chance to go on instead of exiting
+#. *
+#. * TODO: strings to lang.c and incl. nntp_read_timeout_secs
+#.
+#: src/signal.c:445
+msgid "Read timeout from server - quit tin?"
+msgstr ""
 
 #: src/xface.c:75
 #, fuzzy

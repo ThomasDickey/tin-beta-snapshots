@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2022-09-19
+# Updated: 2023-08-02
 #
 # Copyright (c) 1995-2023 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -523,7 +523,8 @@ TIN_DEP	= \
 	$(INCDIR)/tcurses.h \
 	$(INCDIR)/proto.h $(EXTRA_PCREHDRS) $(EXTRA_INTLLIBS)
 
-$(OBJDIR)/active$o :		$(SRCDIR)/active.c $(TIN_DEP)
+$(OBJDIR)/active$o :		$(SRCDIR)/active.c $(TIN_DEP) \
+				$(INCDIR)/stpwatch.h
 $(OBJDIR)/art$o :		$(SRCDIR)/art.c $(TIN_DEP) \
 				$(INCDIR)/newsrc.h \
 				$(INCDIR)/stpwatch.h

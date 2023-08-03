@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-06-22
+ *  Updated   : 2023-07-23
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -428,11 +428,30 @@ signal_handler(
  */
 #if defined(HAVE_ALARM) && defined(SIGALRM)
 		case SIGALRM:
+#	ifdef NNTP_ABLE
 #	ifdef DEBUG
 			if ((debug & DEBUG_NNTP) && verbose > 1)
-				debug_print_file("NNTP", "get_server() %d sec elapsed without response", tinrc.nntp_read_timeout_secs);
+				debug_print_file("NNTP", "get_server() %d sec elapsed without response", TIN_NNTP_TIMEOUT);
 #	endif /* DEBUG */
-			tin_done(NNTP_ERROR_EXIT, _("NNTP connection error. Exiting..."));
+
+#	ifdef USE_ZLIB
+			/*
+			 * response compression from the server may take a while
+			 * when running interactively and not being in connection
+			 * phase give the user a chance to go on instead of exiting
+			 *
+			 * TODO: strings to lang.c and incl. nntp_read_timeout_secs
+			 */
+			if (signal_context == cReconnect || batch_mode || !use_compress || !nntp_caps.compress || prompt_yn(_("Read timeout from server - quit tin?"), FALSE) == 1)
+#	endif /* USE_ZLIB */
+				tin_done(NNTP_ERROR_EXIT, _("NNTP connection error. Exiting..."));
+#	ifdef USE_ZLIB
+			else {
+				RESTORE_HANDLER(sig, signal_handler);
+				wait_message(0, "Continuing...");
+			}
+#	endif /* USE_ZLIB */
+#	endif /* NNTP_ABLE */
 			return;
 #endif /* HAVE_ALARM && SIGALRM */
 
