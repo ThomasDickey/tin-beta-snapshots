@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2023-05-09
+ *  Updated   : 2023-08-23
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2023 Iain Lea <iain@bricbrac.de>
@@ -349,7 +349,7 @@ open_newsgroups_fp(
 							}
 #			ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && !verbose)
-								debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+								debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
 #			endif /* DEBUG */
 
 #		else
@@ -380,7 +380,7 @@ open_newsgroups_fp(
 					}
 #			ifdef DEBUG
 					if ((debug & DEBUG_NNTP) && !verbose)
-						debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+						debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
 #			endif /* DEBUG */
 				}
 				/* TODO: add 483 (RFC 3977) support */
@@ -532,10 +532,10 @@ read_groups_descriptions(
 		if (++count % 100 == 0)
 			spin_cursor();
 	}
-#	ifdef DEBUG
+#	if defined(DEBUG) && defined(NNTP_ABLE)
 	if ((debug & DEBUG_NNTP) && !verbose)
-		debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
-#	endif /* DEBUG */
+		debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
+#	endif /* DEBUG && NNTP_ABLE */
 	FreeIfNeeded(groupname);
 }
 

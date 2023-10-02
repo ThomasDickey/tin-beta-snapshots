@@ -73,9 +73,10 @@ tin_nl_langinfo(
       memcpy(buf, "ISO-8859-\0\0", 12);
       p += 5;
       if (digit(*p)) {
-	buf[9] = *p++;
-	if (digit(*p)) buf[10] = *p++;
-	return buf;
+        buf[9] = *p++;
+        if (digit(*p))
+          buf[10] = *p++;
+        return buf;
       }
     }
     if (strstr(l, "KOI8-R")) return "KOI8-R";

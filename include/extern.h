@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-26
+ *  Updated   : 2023-08-28
  *  Notes     :
  *
  * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>
@@ -673,7 +673,9 @@ extern constext txt_error_header_line_empty[];
 extern constext txt_error_header_line_missing[];
 extern constext txt_error_header_line_not_7bit[];
 extern constext txt_error_header_line_space[];
-extern constext txt_error_insecure_permissions[];
+#ifndef FILE_MODE_BROKEN
+	extern constext txt_error_insecure_permissions[];
+#endif /* !FILE_MODE_BROKEN */
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	extern constext txt_error_locale[];
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
@@ -691,9 +693,11 @@ extern constext txt_error_no_such_file[];
 extern constext txt_error_no_write_permission[];
 extern constext txt_error_newsgroups_poster[];
 extern constext txt_error_passwd_missing[];
-extern constext txt_error_plural[];
+#ifdef HAVE_LIBUU
+	extern constext txt_error_plural[];
+	extern constext txt_error_singular[];
+#endif /* HAVE_LIBUU */
 extern constext txt_error_server_has_no_listed_groups[];
-extern constext txt_error_singular[];
 #if defined(NNTP_ABLE) && defined(INET6)
 	extern constext txt_error_socket_or_connect_problem[];
 #endif /* NNTP_ABLE && INET6 */
@@ -1368,10 +1372,10 @@ extern constext txt_useful_with_batch_mode[];
 extern constext txt_useful_with_batch_or_debug_mode[];
 extern constext txt_useless_combination[];
 extern constext txt_use_mime[];
-#ifdef NNTPS_ABLE
+#if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
 	extern constext txt_valid_not_after[];
 	extern constext txt_valid_not_before[];
-#endif /* NNTPS_ABLE */
+#endif /* NNTP_ABLE && NNTPS_ABLE */
 extern constext txt_value_out_of_range[];
 extern constext txt_view_attachment[];
 extern constext txt_warn_art_line_too_long[];

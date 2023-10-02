@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2023-08-02
+ *  Updated   : 2023-08-23
  *  Notes     :
  *
  * Copyright (c) 1992-2023 Iain Lea <iain@bricbrac.de>
@@ -176,7 +176,7 @@ active_add(
 
 	if (moderated[0] == '/') {
 		ptr->type = GROUP_TYPE_SAVE;
-		ptr->spooldir = my_strdup(moderated); /* TODO: Unix'ism, other OSs need transformation */
+		ptr->spooldir = my_strdup(moderated);
 	} else {
 		ptr->type = GROUP_TYPE_NEWS;
 		ptr->spooldir = spooldir;		/* another global - sigh */
@@ -437,14 +437,11 @@ do_read_newsrc_active_file(
 							snprintf(fmt, sizeof(fmt), "%%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%%ds", NNTP_GRPLEN);
 							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4) {
 #	ifdef DEBUG
-								if ((debug & DEBUG_NNTP) && verbose > 1)
-									debug_print_file("NNTP", "Invalid response to \"GROUP %s\txt_log_data_hidden%s\"", ngnames[index_o], line);
-#	endif /* DEBUG */
-							}
-							if (strcmp(ngname, ngnames[index_o]) != 0) {
-#	ifdef DEBUG
-								if ((debug & DEBUG_NNTP) && verbose > 1)
-									debug_print_file("NNTP", "Groupname mismatch in response to \"GROUP %s\txt_log_data_hidden%s\"", ngnames[index_o], line);
+								if ((debug & DEBUG_NNTP) && verbose > 1) {
+									debug_print_file("NNTP", "Invalid response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
+									if (strcmp(ngname, ngnames[index_o]) != 0)
+										debug_print_file("NNTP", "Groupname mismatch in response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
+								}
 #	endif /* DEBUG */
 							}
 							ptr = ngname;
@@ -678,10 +675,10 @@ read_active_file(
 		 */
 		active_add(grpptr, count, max, min, moderated);
 	}
-#	ifdef DEBUG
+#	if defined(DEBUG) && defined(NNTP_ABLE)
 	if ((debug & DEBUG_NNTP) && !verbose)
-		debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
-#	endif /* DEBUG */
+		debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
+#	endif /* DEBUG && NNTP_ABLE */
 
 	TIN_FCLOSE(fp);
 
@@ -763,7 +760,7 @@ read_active_counts(
 #	ifdef DEBUG
 	/* log end of multiline response to get timing data */
 	if ((debug & DEBUG_NNTP) && !verbose)
-		debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+		debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
 #	endif /* DEBUG */
 
 	/*
@@ -923,7 +920,7 @@ read_news_active_file(
 #	ifdef DEBUG
 							/* log end of multiline response to get timing data */
 							if ((debug & DEBUG_NNTP) && !verbose)
-								debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+								debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
 #	endif /* DEBUG */
 						}
 					}

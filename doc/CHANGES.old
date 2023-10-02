@@ -1266,7 +1266,7 @@ U008) Rado S <regrado@web.de>
       FIX. misc.c, regex.c
 
 U007) Urs Janssen <urs@tin.org>
-      ADD. enable some more CAPABILLITIES related code
+      ADD. enable some more CAPABILITIES related code
       ADD. minor code cleanup
       ADD. config.guess, config.sub update
       ADD. allow .kp, .me, .rs, .tel and .asia TLDs
@@ -1371,7 +1371,7 @@ U004) Urs Janssen <urs@tin.org>
       ADD. hide some regex in 'M'enu if the related option is off
       ADD. disallow .so, .um TLDs
       ADD. warn about useless cmd-line option combinations
-      ADD. enable CAPABILLITIES code
+      ADD. enable CAPABILITIES code
       ADD. updated German translation
       FIX. Makefile, aclocal.m4, configure[.in], extern.h, policy.h, filter.c
            init.c, lang.c, main.c, mail.c, nntplib.c, options_menu.c, post.c

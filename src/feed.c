@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2023-06-22
+ *  Updated   : 2023-08-22
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -705,7 +705,7 @@ feed_articles(
 					if (function != FEED_AUTOSAVE && (pproc_func = get_post_proc_type()) == GLOBAL_ABORT)
 						return -1;
 				}
-				if (!create_path(outpath))
+				if (create_path(outpath) != 0)
 					return -1;
 			}
 			break;

@@ -74,7 +74,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-01 17:54+0200\n"
+"POT-Creation-Date: 2023-08-17 06:23+0200\n"
 "PO-Revision-Date: 2020-12-27 11:41+0100\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -85,25 +85,25 @@ msgstr ""
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 
 #. -> lang.c
-#: src/art.c:438
+#: src/art.c:423
 #, fuzzy, c-format
 msgid "Reading %s\n"
 msgstr "Læser %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:1232
+#: src/art.c:1217
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "Trådning med multipart"
 
 #. -> lang.c
-#: src/art.c:2534
+#: src/art.c:2519
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "Skriver %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:2613
+#: src/art.c:2598
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "Skriver oversigtscache ..."
@@ -916,8 +916,9 @@ msgid "Checking for new groups... "
 msgstr "Kontrollerer for nye grupper ..."
 
 #: src/lang.c:144
-msgid "Checking for news..."
-msgstr "Kontrollerer efter nyheder ..."
+#, fuzzy
+msgid "Checking for news...\n"
+msgstr "Kontrollerer efter nyheder ...\n"
 
 #: src/lang.c:145
 #, c-format
@@ -2563,13 +2564,10 @@ msgstr ""
 "------------------"
 
 #: src/lang.c:539
-#, fuzzy
 msgid ""
 "Posted article operations\n"
 "-------------------------"
 msgstr ""
-"Gruppe/tråd/artikel-handlinger\n"
-"------------------------------"
 
 #: src/lang.c:540
 msgid ""
@@ -8347,7 +8345,7 @@ msgid ""
 msgstr ""
 
 #. TODO: lang.c
-#: src/main.c:951
+#: src/main.c:953
 msgid "reading from local spool"
 msgstr "læser fra lokal kø"
 
@@ -8371,7 +8369,7 @@ msgstr "Version: %s %s udgave %s (»%s«)\n"
 msgid "Unreachable?\n"
 msgstr "Kan ikke nås?\n"
 
-#: src/nntplib.c:898
+#: src/nntplib.c:901
 #, c-format
 msgid ""
 "\n"
@@ -8380,30 +8378,30 @@ msgstr ""
 "\n"
 "Server fik tidsudløb, prøver at forbinde igen # %d\n"
 
-#: src/nntplib.c:926 src/signal.c:447
+#: src/nntplib.c:929 src/signal.c:447
 msgid "NNTP connection error. Exiting..."
 msgstr "NNTP-forbindelsesfejl. Afslutter ..."
 
-#: src/nntplib.c:941 src/nntplib.c:2019
+#: src/nntplib.c:944 src/nntplib.c:2022
 msgid "Rejoin current group\n"
 msgstr "Tilslut igen til nuværende gruppe\n"
 
-#: src/nntplib.c:950 src/nntplib.c:2028
+#: src/nntplib.c:953 src/nntplib.c:2031
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Læst (%s)\n"
 
-#: src/nntplib.c:952
+#: src/nntplib.c:955
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "Send sidste kommando igen (%s)\n"
 
-#: src/nntplib.c:1642
+#: src/nntplib.c:1645
 msgid "CAPABILITIES did not announce READER"
 msgstr "FUNKTIONER annoncerede ikke LÆSER"
 
 # noget bud?
-#: src/nntplib.c:2174
+#: src/nntplib.c:2177
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8453,9 +8451,9 @@ msgid "SSL_set1_host: %s!\n"
 msgstr ""
 
 #: src/nntps.c:441 src/nntps.c:443
-#, fuzzy, c-format
+#, c-format
 msgid "TLS peer verification failed: %s\n"
-msgstr "Slrnface mislykkedes: %s."
+msgstr ""
 
 #: src/nntps.c:469 src/nntps.c:471
 #, c-format
@@ -8463,9 +8461,9 @@ msgid "TLS peer verification failed, continuing anyway as requested: %s\n"
 msgstr ""
 
 #: src/nntps.c:550 src/nntps.c:552
-#, fuzzy, c-format
+#, c-format
 msgid "TLS handshake failed: %s\n"
-msgstr "Slrnface mislykkedes: %s."
+msgstr ""
 
 #: src/nntps.c:558
 #, c-format
@@ -8543,7 +8541,7 @@ msgstr "[- Utilgængelig -]"
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1330
+#: src/rfc2047.c:1329
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
 "are reading this prefix, your mail reader probably has not yet been "
@@ -8557,7 +8555,7 @@ msgstr ""
 "mærkeligt ud.\n"
 "\n"
 
-#: src/save.c:1048
+#: src/save.c:1054
 msgid "bytes"
 msgstr "byte"
 

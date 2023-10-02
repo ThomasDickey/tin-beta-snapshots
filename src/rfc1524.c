@@ -44,7 +44,6 @@
 
 /*
  * As defined in RFC 1524, Appendix A
- * TODO: what about !unix systems?
  */
 #define DEFAULT_MAILCAPS "~/.mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap:/etc/mail/mailcap"
 

@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-19
+ *  Updated   : 2023-08-14
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -93,8 +93,10 @@ main(
 		bindtextdomain(NLS_TEXTDOMAIN, LOCALEDIR);
 		textdomain(NLS_TEXTDOMAIN);
 #	endif /* ENABLE_NLS */
-	} else
-		error_message(4, txt_error_locale);
+	} else {
+		my_fprintf(stderr, "%s\n", txt_error_locale);
+		sleep(4);
+	}
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
 	/*
@@ -105,9 +107,7 @@ main(
 		const char *p;
 
 		if ((p = tin_nl_langinfo(CODESET)) != NULL) {
-			if (!strcasecmp(p, "ANSI_X3.4-1968"))
-				STRCPY(tinrc.mm_local_charset, "US-ASCII");
-			else
+			if (strcasecmp(p, "ANSI_X3.4-1968")) /* !US-ASCII */
 				STRCPY(tinrc.mm_local_charset, p);
 		}
 	}
@@ -118,7 +118,7 @@ main(
 
 	set_signal_handlers();
 
-	debug = 0;	/* debug OFF */
+	debug = 0;	/* can't use if (debug) before read_cmd_line_options() */
 
 	tin_progname = my_malloc(strlen(argv[0]) + 1);
 	base_name(argv[0], tin_progname);
@@ -133,7 +133,9 @@ main(
 #	ifdef NNTP_ABLE
 		read_news_via_nntp = TRUE;
 #	else
-		error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+		my_fprintf(stderr, _(txt_option_not_enabled), "-DNNTP_ABLE");
+		my_fprintf(stderr, "\n");
+		sleep(2);
 		free(tin_progname);
 		giveup();
 #	endif /* NNTP_ABLE */
@@ -396,10 +398,10 @@ main(
 	 * Check/start if any new/unread articles
 	 */
 	if (check_any_unread)
-		tin_done(check_start_save_any_news(CHECK_ANY_NEWS, catchup), NULL);
+		tin_done(check_start_save_any_news(CHECK_ANY_NEWS, catchup, num_cmd_line_groups), NULL);
 
 	if (start_any_unread) {
-		if ((start_groupnum = check_start_save_any_news(START_ANY_NEWS, catchup)) == -1)
+		if ((start_groupnum = check_start_save_any_news(START_ANY_NEWS, catchup, num_cmd_line_groups)) == -1)
 			tin_done(EXIT_SUCCESS, NULL);
 	}
 
@@ -413,7 +415,7 @@ main(
 	 *       for speed reasons?
 	 */
 	if (mail_news || save_news) {
-		check_start_save_any_news(mail_news ? MAIL_ANY_NEWS : SAVE_ANY_NEWS, catchup);
+		check_start_save_any_news(mail_news ? MAIL_ANY_NEWS : SAVE_ANY_NEWS, catchup, num_cmd_line_groups);
 		tin_done(EXIT_SUCCESS, NULL);
 	}
 
@@ -839,14 +841,14 @@ read_cmd_line_options(
 
 #ifdef NNTP_ABLE
 	if (nntp_tcp_port == 0) {
-#ifdef NNTPS_ABLE
+#	ifdef NNTPS_ABLE
 		if (use_nntps)
 			nntp_tcp_port = nntps_tcp_default_port;
 		else
-#endif /* NNTPS_ABLE */
+#	endif /* NNTPS_ABLE */
 			nntp_tcp_port = nntp_tcp_default_port;
 	}
-#endif /* NNTP_ABLE*/
+#endif /* NNTP_ABLE */
 
 	cmdargs = argv;
 	num_cmdargs = optind;
@@ -1161,6 +1163,7 @@ read_cmd_line_groups(
 							my_strncpy(tinrc.default_post_newsgroups, active[i].name, sizeof(tinrc.default_post_newsgroups) - 1);
 							break;
 						}
+						active[i].read_during_session = TRUE; /* misuse for "-[zZMN] grp" */
 					}
 				}
 			}

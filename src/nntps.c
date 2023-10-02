@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2023-07-18
+ *  Updated   : 2023-09-26
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2023 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -619,7 +619,7 @@ tintls_read(
 	if (result == 1)
 		return (ssize_t) bytes_read;
 
-#		endif /* USE_OPENSSL*/
+#		endif /* USE_OPENSSL */
 #	endif /* USE_GNUTLS */
 #endif /* USE_LIBTLS */
 
@@ -735,8 +735,8 @@ tintls_conninfo(
 	void *session_ctx,
 	FILE *fp)
 {
-#ifdef USE_LIBTLS
 	int result;
+#ifdef USE_LIBTLS
 	struct tls *client = session_ctx;
 	time_t t;
 	struct tm *tm;
@@ -764,12 +764,10 @@ tintls_conninfo(
 		my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
 	fprintf(fp, txt_valid_not_after, fmt_time);
 
-	return 0;
 #else
 
 #	ifdef USE_GNUTLS
 	int retval = -1;
-	int result;
 	gnutls_session_t client = session_ctx;
 	char *desc;
 	gnutls_datum_t msg;
@@ -790,6 +788,7 @@ tintls_conninfo(
 
 	if (gnutls_verification_status != 0) {
 		int type;
+
 		type = gnutls_certificate_type_get2(client, GNUTLS_CTYPE_SERVER);
 		result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
 
@@ -873,7 +872,6 @@ err_cert:
 #	else
 
 #		ifdef USE_OPENSSL
-	int result;
 	long long_result;
 	long verification_result;
 	BIO *client = session_ctx;
@@ -938,11 +936,10 @@ err_cert:
 			}
 		}
 	}
-
-	return 0;
 #		endif /* USE_OPENSSL */
 #	endif /* USE_GNUTLS */
 #endif /* USE_LIBTLS */
+	return 0;
 }
 
 

@@ -550,9 +550,9 @@ str_trim(
 
 	/* remove training spaces */
 	ep = string + s - 1;
-    while (ep >= string && isspace((int) *ep))
-        ep--;
-    *(ep + 1) = '\0';
+	while (ep >= string && isspace((int) *ep))
+		ep--;
+	*(ep + 1) = '\0';
 
 	/* skip leading space */
 	for (rp = wp = string; isspace((int) *rp); rp++)
@@ -730,11 +730,6 @@ sh_format(
 			while (*src != '\0') {
 				t_bool fix;
 
-				/*
-				 * This logic works for Unix. Non-Unix systems may require a
-				 * different set of problem chars, and may need quotes around
-				 * the whole string rather than escaping individual chars.
-				 */
 				if (quote == '"') {
 					fix = (strchr(SH_DOUBLE, *src) != NULL);
 				} else if (quote == '\'') {

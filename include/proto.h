@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2023-06-22
+ *  Updated   : 2023-08-23
  *  Notes     :
  *
  * Copyright (c) 1997-2023 Urs Janssen <urs@tin.org>
@@ -357,6 +357,7 @@ extern char *strip_line(char *line);
 extern const char *eat_re(char *s, t_bool eat_was);
 extern const char *get_val(const char *env, const char *def);
 extern const char *gnksa_strerror(int errcode);
+extern const char *validate_charset(const char *charset);
 extern int gnksa_check_from(char *from);
 extern int gnksa_split_from(const char *from, char *address, char *realname, int *addrtype);
 extern int get_initials(struct t_article *art, char *s, int maxsize);
@@ -622,8 +623,8 @@ extern void compose_mail_mime_forwarded(const char *filename, FILE *articlefp, t
 extern void compose_mail_text_plain(const char *filename, struct t_group *group);
 
 /* save.c */
-extern int check_start_save_any_news(int function, t_bool catchup);
-extern t_bool create_path(const char *path);
+extern int check_start_save_any_news(int function, t_bool catchup, int num_cmd_line_groups);
+extern int create_path(const char *path);
 extern t_bool post_process_files(t_function proc_type_func, t_bool auto_delete);
 extern t_bool save_and_process_art(t_openartinfo *artinfo, t_bool is_mailbox, const char *inpath, int max, t_bool post_process);
 extern t_part *get_part(int n);

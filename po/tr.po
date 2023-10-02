@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-01 17:54+0200\n"
+"POT-Creation-Date: 2023-08-17 06:23+0200\n"
 "PO-Revision-Date: 2017-05-29 18:40+0000\n"
 "Last-Translator: Mesutcan Kurt <mesutcank@gmail.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -30,25 +30,25 @@ msgstr ""
 #  TODO: -> lang.c
 #  TODO: -> lang.c
 #. -> lang.c
-#: src/art.c:438
+#: src/art.c:423
 #, fuzzy, c-format
 msgid "Reading %s\n"
 msgstr "%s tekrar okunuyor..."
 
 #. TODO: -> lang.c
-#: src/art.c:1232
+#: src/art.c:1217
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "Makaleler zincirleniyor..."
 
 #. -> lang.c
-#: src/art.c:2534
+#: src/art.c:2519
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "%s deneniyor"
 
 #. TODO: -> lang.c
-#: src/art.c:2613
+#: src/art.c:2598
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "Öznitelikler dosylası yazılıyor..."
@@ -866,7 +866,8 @@ msgid "Checking for new groups... "
 msgstr "Yeni gruplar kontrol ediliyor... "
 
 #: src/lang.c:144
-msgid "Checking for news..."
+#, fuzzy
+msgid "Checking for news...\n"
 msgstr "Haberler kontrol ediliyor..."
 
 #: src/lang.c:145
@@ -8515,7 +8516,7 @@ msgid ""
 msgstr ""
 
 #. TODO: lang.c
-#: src/main.c:951
+#: src/main.c:953
 msgid "reading from local spool"
 msgstr "yerel kuyruktan okunuyor"
 
@@ -8539,7 +8540,7 @@ msgstr "Sürüm: %s yayım %s %s (\"%s\")\n"
 msgid "Unreachable?\n"
 msgstr "Ulaşılamaz?\n"
 
-#: src/nntplib.c:898
+#: src/nntplib.c:901
 #, c-format
 msgid ""
 "\n"
@@ -8548,29 +8549,29 @@ msgstr ""
 "\n"
 "Sunucu zaman aşımına uğradı, tekrar bağlanmaya çalışıyor # %d\n"
 
-#: src/nntplib.c:926 src/signal.c:447
+#: src/nntplib.c:929 src/signal.c:447
 msgid "NNTP connection error. Exiting..."
 msgstr "NNTP sunucusuna bağlantı başarısız %s. Çıkıyor..."
 
-#: src/nntplib.c:941 src/nntplib.c:2019
+#: src/nntplib.c:944 src/nntplib.c:2022
 msgid "Rejoin current group\n"
 msgstr "Şu anki gruba tekrar katıl\n"
 
-#: src/nntplib.c:950 src/nntplib.c:2028
+#: src/nntplib.c:953 src/nntplib.c:2031
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Oku (%s)\n"
 
-#: src/nntplib.c:952
+#: src/nntplib.c:955
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "Son komutu tekrar yolla (%s)\n"
 
-#: src/nntplib.c:1642
+#: src/nntplib.c:1645
 msgid "CAPABILITIES did not announce READER"
 msgstr "CAPABILITIES, READER duyurmadı"
 
-#: src/nntplib.c:2174
+#: src/nntplib.c:2177
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8713,7 +8714,7 @@ msgstr "[- Kullanılamıyor -]"
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1330
+#: src/rfc2047.c:1329
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
 "are reading this prefix, your mail reader probably has not yet been "
@@ -8727,7 +8728,7 @@ msgstr ""
 "henüz değişikliğe uğramamış, ve gelecek birkaç şey garip görünebilir.\n"
 "\n"
 
-#: src/save.c:1048
+#: src/save.c:1054
 msgid "bytes"
 msgstr "bayt"
 

@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-19
+ *  Updated   : 2023-08-23
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -132,7 +132,8 @@ static t_partl *part_list;
 int
 check_start_save_any_news(
 	int function,
-	t_bool catchup)
+	t_bool catchup,
+	int num_cmd_line_groups)
 {
 	FILE *artfp, *savefp;
 	FILE *fp_log = (FILE *) 0;
@@ -142,12 +143,11 @@ check_start_save_any_news(
 	char logfile[PATH_LEN], savefile[PATH_LEN];
 	char subject[HEADER_LEN];
 	int group_count = 0;
-	int i, j;
+	int i, j, k;
 	int art_count, hot_count;
 	int saved_arts = 0;					/* Total # saved arts */
 	struct t_article *art;
 	struct t_group *group;
-	t_bool print_first = (t_bool) verbose;
 	t_bool unread_news = FALSE;
 	time_t epoch;
 
@@ -183,6 +183,7 @@ check_start_save_any_news(
 			break;
 	}
 
+	k = num_cmd_line_groups;
 	/*
 	 * For each group we subscribe to...
 	 */
@@ -197,9 +198,18 @@ check_start_save_any_news(
 		 */
 		selmenu.curr = i;
 
-		/* TODO: also log with verbose > 1? */
-		if (group->bogus || !group->subscribed)
+		/*
+		 * read_during_session is missued as indicator for a cmdline group
+		 *
+		 * TODO: log "skipped" groups with verbose > 1?
+		 */
+		if (group->bogus || (!k && !group->subscribed) || (k && !group->read_during_session))
 			continue;
+
+		if (k && group->read_during_session) {
+			k--; /* just to make the test above faster once we've done the cmd-line grpups */
+			group->read_during_session = FALSE; /* reset in case we do NOT enter the group later */
+		}
 
 		if (function == MAIL_ANY_NEWS || function == SAVE_ANY_NEWS) {
 			if (!group->attribute->batch_save) { /* TODO: string -> lang.c */
@@ -247,10 +257,6 @@ check_start_save_any_news(
 
 			switch (function) {
 				case CHECK_ANY_NEWS:
-					if (print_first) {
-						my_fputc('\n', stdout);
-						print_first = FALSE;
-					}
 					if (!verbose && !catchup) /* we don't need details */
 						return NEWS_AVAIL_EXIT;
 					art_count++;
@@ -393,54 +399,55 @@ open_save_filename(
 {
 	FILE *fp;
 	char keyappend[MAXKEYLEN], keyoverwrite[MAXKEYLEN], keyquit[MAXKEYLEN];
-	char mode[3];
 	struct stat st;
 	t_function func;
 
-	strcpy(mode, "a+");
+	if ((fp = fopen(path, "a+")) == NULL) {
+		perror_message(_(txt_cannot_open_for_saving), path);
+		return NULL;
+	}
 
-	/*
-	 * Mailboxes will always be appended to
-	 */
-	if (!mbox && stat(path, &st) != -1) {
+	if (fstat(fileno(fp), &st) != -1) {
 		/*
 		 * Admittedly a special case hack, but it saves failing later on
 		 */
 		if (S_ISDIR(st.st_mode)) {
 			wait_message(2, _(txt_cannot_write_to_directory), path);
+			fclose(fp);
 			return NULL;
 		}
 /* TODO: will this get called every art? Should only be done once/batch */
-/* TODO: or add an option for defaulting on all future queries */
+/* TODO: or add an option for defaulting on all future queries (e.g. A/O) */
 /* TODO: 'truncate' path if query exceeds screen-width */
-		func = prompt_slk_response((tinrc.default_save_mode == 'a' ? SAVE_APPEND_FILE : SAVE_OVERWRITE_FILE),
-				save_append_overwrite_keys,
-				_(txt_append_overwrite_quit), path,
-				PrintFuncKey(keyappend, SAVE_APPEND_FILE, save_append_overwrite_keys),
-				PrintFuncKey(keyoverwrite, SAVE_OVERWRITE_FILE, save_append_overwrite_keys),
-				PrintFuncKey(keyquit, GLOBAL_QUIT, save_append_overwrite_keys));
+		if (!mbox && (S_ISREG(st.st_mode) && st.st_size > 0L)) { /* Mailboxes will always be appended to; empty files will be "overwritten" */
+			func = prompt_slk_response((tinrc.default_save_mode == 'a' ? SAVE_APPEND_FILE : SAVE_OVERWRITE_FILE),
+					save_append_overwrite_keys,
+					_(txt_append_overwrite_quit), path,
+					PrintFuncKey(keyappend, SAVE_APPEND_FILE, save_append_overwrite_keys),
+					PrintFuncKey(keyoverwrite, SAVE_OVERWRITE_FILE, save_append_overwrite_keys),
+					PrintFuncKey(keyquit, GLOBAL_QUIT, save_append_overwrite_keys));
 
-		switch (func) {
-			case SAVE_OVERWRITE_FILE:
-				strcpy(mode, "w");
-				break;
+			switch (func) {
+				case SAVE_OVERWRITE_FILE:
+					tinrc.default_save_mode = 'o';
+					if (!ftruncate(fileno(fp), 0L))
+						(void) fseek(fp, 0L, SEEK_SET);
+					break;
 
-			case GLOBAL_ABORT:
-			case GLOBAL_QUIT:
-				wait_message(1, _(txt_art_not_saved));
-				return NULL;
+				case GLOBAL_ABORT:
+				case GLOBAL_QUIT:
+					fclose(fp);
+					wait_message(1, _(txt_art_not_saved));
+					return NULL;
 
-			default:	/* SAVE_APPEND_FILE */
-				break;
+				default:	/* SAVE_APPEND_FILE */
+					tinrc.default_save_mode = 'a';
+					break;
+			}
 		}
-		if (func == SAVE_OVERWRITE_FILE)
-			tinrc.default_save_mode = 'o';
-		else
-			tinrc.default_save_mode = 'a';
-	}
-
-	if ((fp = fopen(path, mode)) == NULL) {
-		error_message(2, _(txt_cannot_open_for_saving), path);
+	} else { /* fstat() failed */
+		perror_message(_(txt_cannot_open_for_saving), path);
+		fclose(fp);
 		return NULL;
 	}
 
@@ -573,41 +580,38 @@ save_and_process_art(
  * Create the supplied path. Create intermediate directories as needed
  * Don't create the last component (which would be the filename) unless the
  * path is / terminated.
- * Return FALSE if it somehow fails.
+ * Return errno if it somehow fails.
  */
-t_bool
+int
 create_path(
 	const char *path)
 {
 	char *buf, *p;
+	int pe = 0;
 	struct stat st;
 
-	if (!strlen(path))
-		return FALSE;
+	if (!*path || !*(path + 1))
+		return ENOTDIR;
 
-	buf = my_strdup(path);
-	p = buf + 1;
-
-	if (!strlen(p)) {
-		free(buf);
-		return FALSE;
-	}
+	p = buf = my_strdup(path);
+	p++;
 
 	while ((p = strchr(p, '/')) != NULL) {
 		*p = '\0';
 		if (stat(buf, &st) == -1) {
 			if (my_mkdir(buf, (mode_t) (S_IRWXU|S_IRUGO|S_IXUGO)) == -1) {
 				if (errno != EEXIST) {
+					pe = errno;
 					perror_message(_(txt_cannot_create), buf);
 					free(buf);
-					return FALSE;
+					return pe;
 				}
 			}
 		}
 		*p++ = '/';
 	}
 	free(buf);
-	return TRUE;
+	return pe;
 }
 
 
@@ -664,8 +668,8 @@ generate_savepath(
 		return NULL;
 	}
 
-	if (!(create_path(savepath))) {
-		error_message(2, _(txt_cannot_open_for_saving), savepath);
+	if ((errno = create_path(savepath)) != 0) {
+		perror_message(_(txt_cannot_open_for_saving), savepath);
 		free(savepath);
 		return NULL;
 	}
@@ -2299,7 +2303,7 @@ process_part(
 						if (what != SAVE && what != SAVE_TAGGED && !strncmp(content_types[part->type], "text", 4)) {
 							line_len = (size_t) count;
 							conv_buf = my_strdup(buf2);
-							network_charset = get_param(part->params, "charset");
+							network_charset = validate_charset(get_param(part->params, "charset"));
 							process_charsets(&conv_buf, &line_len, network_charset ? network_charset : "US-ASCII", tinrc.mm_local_charset, FALSE);
 							strncpy(buf2, conv_buf, sizeof(buf2) - 1);
 							count = (int) strlen(buf2);
@@ -2324,7 +2328,7 @@ process_part(
 						if (what != SAVE && what != SAVE_TAGGED && !strncmp(content_types[part->type], "text", 4)) {
 							conv_buf = my_strdup(buf);
 							line_len = strlen(conv_buf);
-							network_charset = get_param(part->params, "charset");
+							network_charset = validate_charset(get_param(part->params, "charset"));
 							process_charsets(&conv_buf, &line_len, network_charset ? network_charset : "US-ASCII", tinrc.mm_local_charset, FALSE);
 							strncpy(buf, conv_buf, sizeof(buf) - 1);
 							free(conv_buf);

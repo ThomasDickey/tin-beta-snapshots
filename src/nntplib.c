@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2023-07-20
+ *  Updated   : 2023-08-10
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -670,6 +670,9 @@ get_tcp6_socket(
 #			define ADDRFAM	AF_INET
 #		endif /* PF_UNSPEC */
 #	endif /* AF_UNSPEC */
+#	ifndef AF_INET6 /* i.e. sco3.2v5.0.7 */
+#		define  AF_INET6 AF_INET
+#	endif /* ! AF_INET6 */
 	memset(&hints, 0, sizeof(hints));
 /*	hints.ai_flags = AI_CANONNAME; */
 	hints.ai_family = (force_ipv4 ? AF_INET : (force_ipv6 ? AF_INET6 : ADDRFAM));
@@ -1058,7 +1061,7 @@ get_server(
 		 */
 		if (strcmp(last_put, "QUIT")) {
 			/*
-			 * Typhoon v2.1.1.363 colses the connection right after an unknown
+			 * Typhoon v2.1.1.363 closes the connection right after an unknown
 			 * command, (i.e. CAPABILITIES) so we avoid to reissue it on a
 			 * reconnect if it was the last command.
 			 */
@@ -1698,7 +1701,7 @@ nntp_open(
 	 * If CAPABILITIES failed, check if NNTP supports XOVER or OVER command
 	 * We have to check that we _don't_ get an ERR_COMMAND
 	 *
-	 * TODO: this should be done when the command is first used
+	 * TODO: this should be done when the command is first used!
 	 */
 	if (nntp_caps.type != CAPABILITIES) {
 		int i, j = 0;

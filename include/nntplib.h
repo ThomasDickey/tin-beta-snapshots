@@ -224,7 +224,7 @@ struct t_capabilities {
 	t_artnum maxartnum;				/* MAXARTNUM indicating article numbers >=2^31 */
 #endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 #if 0
-	/* we don't do MODE STREAM, CHECK, TAKETHIS or IHAVE*/
+	/* we don't do MODE STREAM, CHECK, TAKETHIS or IHAVE */
 	t_bool streaming:1;				/* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
 	t_bool ihave:1;					/* IHAVE: "IHAVE" */
 #endif /* 0 */

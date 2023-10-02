@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-23
+ *  Updated   : 2023-09-20
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -339,7 +339,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #endif /* !WIFEXITED */
 
 /*
- * Needed for timeout in user abort of indexing a group (BSD & SYSV variaties)
+ * Needed for timeout in user abort of indexing a group (BSD & SYSV varieties)
  */
 #ifdef HAVE_SYS_SELECT_H
 #	ifdef NEED_TIMEVAL_FIX
@@ -853,11 +853,11 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 /*
  * safe strcpy into fixed-legth buffer
  */
-#if 1
+#if 0
 #	define STRCPY(dst, src)	(strncpy(dst, src, sizeof(dst) - 1), dst[sizeof(dst) - 1] = '\0')
 #else
 #	define STRCPY(dst, src)	(*(dst) = '\0', strncat(dst, src, sizeof(dst) - 1))
-#endif /* 1 */
+#endif /* 0 */
 
 #define STRCMPEQ(s1, s2)	(strcmp((s1), (s2)) == 0)
 #define STRNCMPEQ(s1, s2, n)	(strncmp((s1), (s2), n) == 0)
@@ -1364,7 +1364,7 @@ enum {
 #	undef assert
 #endif /* assert */
 #ifdef NDEBUG
-#	define assert(p)        ((void) 0)
+#	define assert(p)		((void) 0)
 #else
 #	ifdef CPP_DOES_EXPAND
 #		define assert(p)	if(!(p)) asfail(__FILE__, __LINE__, #p); else (void) 0;
@@ -2449,15 +2449,19 @@ typedef void (*BodyPtr) (char *, FILE *, int);
  * for the stdio functions as well as the network functions.
  */
 #ifdef USE_SOCKS5
-#	define SOCKS
+#	ifndef SOCKS /* autoconf.h */
+#		define SOCKS
+#	endif /* !SOCKS */
 #	include <socks.h>
 /* socks.h doesn't define prototypes for use */
-extern size_t read(int, char *, size_t);
 extern int dup(int);
 extern int close(int);
 extern int fprintf(FILE *, const char *, ...);
 extern int fclose(FILE *);
-extern struct tm *localtime(time_t *);
+#if 0
+	extern size_t read(int, char *, size_t);
+	extern struct tm *localtime(const time_t *);
+#endif /* 0 */
 #endif /* USE_SOCKS5 */
 
 #ifdef SETVBUF_REVERSED

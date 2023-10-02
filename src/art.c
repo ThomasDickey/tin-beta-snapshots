@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-26
+ *  Updated   : 2023-08-23
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -295,7 +295,7 @@ setup_hard_base(
 #	ifdef DEBUG
 				/* log end of multiline response to get timing data */
 				if ((debug & DEBUG_NNTP) && !verbose)
-					debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+					debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
 #	endif /* DEBUG */
 
 				if (tin_errno)
@@ -1808,7 +1808,7 @@ get_path_header(
 #	ifdef DEBUG
 		/* log end of multiline response to get timing data */
 		if ((debug & DEBUG_NNTP) && !verbose)
-			debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+			debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
 #	endif /* DEBUG */
 		free(prep_msg);
 		return supported;
@@ -2291,11 +2291,11 @@ read_overview(
 
 		top_art++;				/* Basically this statement commits the article */
 	}
-#	ifdef DEBUG
+#	if defined(DEBUG) && defined(NNTP_ABLE)
 	/* log end of multiline response to get timing data */
 	if ((debug & DEBUG_NNTP) && !verbose)
-		debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
-#	endif /* DEBUG */
+		debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
+#	endif /* DEBUG && NNTP_ABLE */
 
 	free(group_msg);
 	TIN_FCLOSE(fp);
@@ -2384,7 +2384,7 @@ read_overview(
 #	ifdef DEBUG
 				/* log end of multiline response to get timing data */
 				if ((debug & DEBUG_NNTP) && !verbose)
-					debug_print_file("NNTP", "<<<%s%s", logtime(), ". [full data hidden, rerun with -v]");
+					debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
 #	endif /* DEBUG */
 			}
 			free(group_msg);

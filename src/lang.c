@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-26
+ *  Updated   : 2023-08-28
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -141,7 +141,7 @@ constext txt_catchup_update_info[] = N_("%s %d %s in %lu seconds\n");
 constext txt_caughtup[] = N_("Caughtup");
 constext txt_check_article[] = N_("Check Prepared Article");
 constext txt_checking_new_groups[] = N_("Checking for new groups... ");
-constext txt_checking_for_news[] = N_("Checking for news...");
+constext txt_checking_for_news[] = N_("Checking for news...\n");
 constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=shar, %s=quit: ");
 #ifdef HAVE_COLOR
 	constext txt_color_off[] = N_("ANSI color disabled");
@@ -245,7 +245,9 @@ constext txt_error_header_line_missing[] = N_("\nError: The \"%s:\" line is miss
 constext txt_error_header_line_not_7bit[] = N_("\nError: %s contains non 7bit chars.\n");
 constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not have a space after the colon:\n%s\n");
 constext txt_error_header_duplicate[] = N_("\nError: There are multiple (%d) \"%s:\" lines in the header.\n");
-constext txt_error_insecure_permissions[] = N_("Insecure permissions of %s (%o)");
+# ifndef FILE_MODE_BROKEN
+	constext txt_error_insecure_permissions[] = N_("Insecure permissions of %s (%o)");
+#endif /* !FILE_MODE_BROKEN */
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	constext txt_error_locale[] = "Can't set the specified locale!";
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
@@ -263,12 +265,14 @@ constext txt_error_no_read_permission[] = N_("No read permissions for %s\n");
 constext txt_error_no_such_file[] = N_("File %s does not exist\n");
 constext txt_error_no_write_permission[] = N_("No write permissions for %s\n");
 constext txt_error_passwd_missing[] = N_("Can't get user information (/etc/passwd missing?)");
-constext txt_error_plural[] = N_("errors");
+#ifdef HAVE_LIBUU
+	constext txt_error_plural[] = N_("errors");
+	constext txt_error_singular[] = N_("error");
+#endif /* HAVE_LIBUU */
 #ifndef FORGERY
 	constext txt_error_sender_in_header_not_allowed[] = N_("\nError on line %d: \"Sender:\" header not allowed (it will be added for you)\n");
 #endif /* !FORGERY */
 constext txt_error_server_has_no_listed_groups[] = N_("Server has non of the groups listed in %s");
-constext txt_error_singular[] = N_("error");
 constext txt_error_unknown_dlevel[] = N_("Unknown display level");
 constext txt_esc[] = N_("<ESC>");
 constext txt_exiting[] = N_("Exiting...");
@@ -964,10 +968,11 @@ constext txt_useful_with_batch_mode[] = N_("%s only useful for batch mode operat
 constext txt_useful_with_batch_or_debug_mode[] = N_("%s only useful for batch or debug mode operations\n");
 constext txt_useless_combination[] = N_("Useless combination %s and %s. Ignoring %s.\n");
 
-#ifdef NNTPS_ABLE
+#if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
 	constext txt_valid_not_after[] = "Valid not after : %s\n";
 	constext txt_valid_not_before[] = "Valid not before: %s\n";
-#endif /* NNTPS_ABLE */
+#endif /* NNTP_ABLE && NNTPS_ABLE */
+
 constext txt_value_out_of_range[] = N_("\n%s%d out of range (0 - %d). Reset to 0");
 constext txt_view_attachment[] = N_("View '%s' (%s/%s)?");
 

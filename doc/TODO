@@ -32,8 +32,6 @@ o  better integrate saving of MIME/non-MIME articles when not using libuu.
    [Jason Faultless <jason@altarstone.com>]
 
 o  batch mode has several bugs
-   - -Z and giving a cmd-line group the cmd-line group is not displayed in
-     the statistics nor taken into account for the 'any unread news' status.
    - -vc could be more verbose (like -vcZ is)
    - -o currently is not a 'batch_mode' option
    - -u could be faster if not building threads etc. pp.
@@ -90,10 +88,6 @@ o  8bit chars in some headers are RFC-2047-encoded where this is not allowed
    (see parse_rfc822_headers()).
    [20090112 Urs Janssen <urs@tin.org>]
 
-o  remove Message-IDs with 8bit chars in them when they occur in
-   Message-ID or References header
-   [done for References in replies/followups, Urs]
-
 o  keep RFC 6532 in mind as parts of it will sooner or later make it into
    NNTP (sic!).
    [20120220 Urs Janssen <urs@tin.org>]
@@ -103,9 +97,6 @@ o  repost ('x') ignores some ~/.tin/attributes
 
 o  forged cancelling via Supersedes:/Also-Control:/Control:-header is possible
    if it is supplied by hand (inews_prog=--internal)
-
-o  when last articles in a newsgroup were cancelled, it shows that there are
-   new articles in that group (except when using -n cmd-line flag)
 
 o  mailers other than sendmail (f.e. mutt) and use_mailreader_i=OFF may lead
    to 'duplicated'-headers and multiple signatures
@@ -647,6 +638,8 @@ o  move several (server related) files into the per-server dir e.g.:
 o  remove untranslatable constructs like txt_prefix_*, txt_marked_as_*, ...
    [20050413 Urs Janssen <urs@tin.org>]
 
+o  move (localized) srings to lang.c (attrib.c, art.c, post.c, ...)
+
 o  keys which could be renamed/merged:
    - 'l' GroupListThd, PageListThd
    - 'm' GroupMail, PageMail, PostMail, ThreadMail
@@ -686,7 +679,8 @@ o  make configure look for strrstr() in libpub & publib.h
    [Urs Janssen <urs@tin.org>]
 
 o  reorder several structs to avoid padding e.g. t_capabilities (but that's
-   just used once, no big win here). (see gcc -Wpadded and/or pahole(1))
+   just used once, no big win here), t_group, ... (see gcc -Wpadded
+   and/or pahole(1))
    [Urs Janssen <urs@tin.org>]
 
 o  what type is base[]? (long, see memory.c:init_alloc()~102)
@@ -729,7 +723,7 @@ o  check code with
    valgrind (<http://valgrind.org/>),
    cppcheck (<https://trac.cppcheck.net/>),
    Coverity (<https://scan.coverity.com/projects/993>),
-   gcc-10 -fanalyzer
+   gcc -fanalyzer
    (<https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html>),
    clang-analyzer (<http://clang-analyzer.llvm.org/>),
    infer (<http://fbinfer.com/>)
@@ -862,8 +856,10 @@ Not yet classified
 o  when reconnection fails or is unwanted during "POST", also/only
    postpone_article(article_name) besides/instead of
    rename_file(article_name, dead_article) and
-   append_file(dead_article, dead_articles);
+   append_file(dead_article, dead_articles)?
    see nntplib.c:reconnect() ~894
+
+o  multipart/multilingual support (RFC 8255)?
 
 o  make NNTP_TRY_RECONNECT configurable via tinrc?
 
@@ -948,7 +944,8 @@ o  the documentation suggests that novrootdir/$TIN_NOVROOTDIR defaults to
    fix the documentation or the behaviour.
    [20100103 Urs Janssen <urs@tin.org>]
 
-o  un/subscribe_pattern() is very slow on servers with a huge active file
+o  un/subscribe_pattern() can be very slow on servers with a huge active
+   file. (see "strace -e file" for one reason)
    [20091223 Urs Janssen <urs@tin.org>]
 
 o  replace wildmat.c with uwildmat.c
@@ -1017,10 +1014,6 @@ o  there is no command to undo a range ('#') selection
 
 o  'article loss' reported in
    <nntp://news.tin.org/20020915165856.GA1541@martinkl.dialup.fu-berlin.de>
-
-o  should 'tin -z foo.bar' only start up if there is any unread news in
-   foo.bar?
-   [20040325 Urs Janssen <urs@tin.org>]
 
 o  trn and perls Net::NNTP::Auth use ~/.nntpauth (format is
    "^server\s+user\s+password"), shall we also try ~/.nntpauth if we can't

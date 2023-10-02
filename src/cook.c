@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2023-05-10
+ *  Updated   : 2023-08-24
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2023 Jason Faultless <jason@altarstone.com>
@@ -471,8 +471,13 @@ process_text_body_part(
 		}
 
 		/* convert network to local charset, tex2iso, iso2asc etc. */
-		ncharset = get_param(part->params, "charset");
-		process_charsets(&line, &max_line_len, ncharset ? ncharset : "US-ASCII", tinrc.mm_local_charset, curr_group->attribute->tex2iso_conv && art->tex2iso);
+		ncharset = validate_charset(get_param(part->params, "charset"));
+		/* TODO: ok to fall back to undeclared_charset if charset is illegal or should we always hard fail to US-ASCII? */
+		process_charsets(&line, &max_line_len, ncharset ? ncharset :
+#ifdef CHARSET_CONVERSION
+			curr_group->attribute->undeclared_charset ? curr_group->attribute->undeclared_charset :
+#endif /* CHARSET_CONVERSION */
+			 "US-ASCII", tinrc.mm_local_charset, curr_group->attribute->tex2iso_conv && art->tex2iso);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (IS_LOCAL_CHARSET("UTF-8")) {
@@ -798,6 +803,9 @@ charset_unsupported(
 		if (!strncasecmp(charset, *charsetptr, strlen(*charsetptr)))
 			ret = TRUE;
 	} while (!ret && *(++charsetptr) != NULL);
+
+	if (!validate_charset(charset))
+		return FALSE;
 
 	return ret;
 }

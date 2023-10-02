@@ -423,8 +423,7 @@ do_b_encode(
 		*(t++) = *(w++);
 	}
 
-/* if (len8 & (unsigned long) 1 && !isbetween(*w,isstruct_head)) */
-	if (len8 != len8 / 2 * 2 && !isbetween(*w, isstruct_head) && (*w))
+	if ((len8 % 2) && !isbetween(*w, isstruct_head) && (*w))
 		t--;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 

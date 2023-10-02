@@ -2058,7 +2058,7 @@ toggle_raw(
 
 				p = line;
 				while (*p) {
-					space = cCOLS - 1;
+					space = cCOLS - 1; /* -1 to work around differences in terminal wrapping. ANSI vs. VT100 and eat_newline_glitch / xenl / xn */
 
 					while ((space > 0) && *p) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)

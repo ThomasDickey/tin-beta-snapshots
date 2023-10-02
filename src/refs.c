@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2023-07-31
+ *  Updated   : 2023-08-11
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -178,7 +178,7 @@ valid_msgid(
 	mlen = strlen(msgid);
 
 	/* must start with '<' and have exactly one '>' (at the very end) */
-	if (!mlen || mlen < 5 /* || mlen > 250 */ || *(msgid + mlen -1) != '>' || strchr(msgid, '>') != (msgid + mlen - 1) || *msgid++ != '<')
+	if (mlen < 5 /* || mlen > 250 */ || *(msgid + mlen - 1) != '>' || strchr(msgid, '>') != (msgid + mlen - 1) || *msgid++ != '<')
 		return FALSE;
 
 	while (*msgid) {

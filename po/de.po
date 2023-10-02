@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.6.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-01 17:54+0200\n"
-"PO-Revision-Date: 2023-08-01 17:55+0200\n"
+"POT-Creation-Date: 2023-08-17 06:23+0200\n"
+"PO-Revision-Date: 2023-08-11 14:00+0200\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -21,24 +21,24 @@ msgstr ""
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 
 #. -> lang.c
-#: src/art.c:438
+#: src/art.c:423
 #, c-format
 msgid "Reading %s\n"
 msgstr "Lese %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:1232
+#: src/art.c:1217
 msgid "Threading by multipart"
 msgstr "Multipart Threading"
 
 #. -> lang.c
-#: src/art.c:2534
+#: src/art.c:2519
 #, c-format
 msgid "Writing %s\n"
 msgstr "Schreibe %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:2613
+#: src/art.c:2598
 msgid "Writing overview cache..."
 msgstr "Schreibe Overview Cache..."
 
@@ -983,8 +983,8 @@ msgid "Checking for new groups... "
 msgstr "Prüfe, ob neue Gruppen vorhanden sind... "
 
 #: src/lang.c:144
-msgid "Checking for news..."
-msgstr "Prüfe, ob neue Artikel vorhanden sind..."
+msgid "Checking for news...\n"
+msgstr "Prüfe, ob neue Artikel vorhanden sind...\n"
 
 #: src/lang.c:145
 #, c-format
@@ -8461,7 +8461,7 @@ msgstr ""
 "# (leer = Systemvoreinstellung)\n"
 
 #. TODO: lang.c
-#: src/main.c:951
+#: src/main.c:953
 msgid "reading from local spool"
 msgstr "Lese aus dem lokalen Spool"
 
@@ -8485,7 +8485,7 @@ msgstr "Version: %s %s Ausgabe %s (\"%s\")\n"
 msgid "Unreachable?\n"
 msgstr "Unerreichbar?\n"
 
-#: src/nntplib.c:898
+#: src/nntplib.c:901
 #, c-format
 msgid ""
 "\n"
@@ -8494,29 +8494,29 @@ msgstr ""
 "\n"
 "Server reagierte nicht, Wiederholung Nummer # %d\n"
 
-#: src/nntplib.c:926 src/signal.c:447
+#: src/nntplib.c:929 src/signal.c:447
 msgid "NNTP connection error. Exiting..."
 msgstr "NNTP Verbindungsfehler. Beende..."
 
-#: src/nntplib.c:941 src/nntplib.c:2019
+#: src/nntplib.c:944 src/nntplib.c:2022
 msgid "Rejoin current group\n"
 msgstr "Betrete aktuelle Gruppe neu\n"
 
-#: src/nntplib.c:950 src/nntplib.c:2028
+#: src/nntplib.c:953 src/nntplib.c:2031
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Lese (%s)\n"
 
-#: src/nntplib.c:952
+#: src/nntplib.c:955
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "Sende letztes Kommando (%s) neu\n"
 
-#: src/nntplib.c:1642
+#: src/nntplib.c:1645
 msgid "CAPABILITIES did not announce READER"
 msgstr "CAPABILITIES hat READER nicht bekannt geben"
 
-#: src/nntplib.c:2174
+#: src/nntplib.c:2177
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8660,7 +8660,7 @@ msgstr "[- Nicht Verfügbar -]"
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1330
+#: src/rfc2047.c:1329
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
 "are reading this prefix, your mail reader probably has not yet been "
@@ -8675,7 +8675,7 @@ msgstr ""
 "aussehen.\n"
 "\n"
 
-#: src/save.c:1048
+#: src/save.c:1054
 msgid "bytes"
 msgstr "Bytes"
 

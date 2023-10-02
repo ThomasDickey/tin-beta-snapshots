@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-31
+ *  Updated   : 2023-09-29
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -923,7 +923,7 @@ build_post_hist_list(
 		j++;
 
 		p = buf;
-		while ((q = strstr(p, "|<" )) != NULL)
+		while ((q = strstr(p, "|<")) != NULL)
 			p = ++q;
 
 		if (strlen(p) >= 4 && *p == '<' && strlen(p) < sizeof(posted->mid) - 1) { /* <@> */
@@ -1741,6 +1741,7 @@ check_article_to_be_posted(
 			 * - convert unprintable chars to octal values like
 			 *   in draw_pager_line()?
 			 * - do we need a Big5 exception (like in draw_pager_line())?
+			 * - raise warning to error if HAVE_FASCIST_NEWSADMIN
 			 */
 			col = 0;
 			for (cp = line; *cp; ) {
@@ -1775,7 +1776,7 @@ check_article_to_be_posted(
 #else
 					if (!contains_8bit && !isascii(*cp))
 						contains_8bit = TRUE;
-					if (!my_isprint(*cp) && seen != cnt) { /* warn just once per line */
+					if (!my_isprint((unsigned char) *cp) && seen != cnt) { /* warn just once per line */
 						seen = cnt;
 						my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, strunc(cp, cCOLS - 1));
 						warnings++;
@@ -3141,7 +3142,7 @@ damaged_id(
 	mlen = strlen(id);
 
 	/* must start with '<' and have exactly one '>' (at the very end) */
-	if (!mlen || mlen < 5 /* || mlen > 250 */ || *(id + mlen - 1) != '>' || strchr(id, '>') != (id + mlen - 1) || *id++ != '<')
+	if (mlen < 5 /* || mlen > 250 */ || *(id + mlen - 1) != '>' || strchr(id, '>') != (id + mlen - 1) || *id++ != '<')
 		return TRUE;
 
 	while (*id) {
@@ -3939,7 +3940,7 @@ mail_to_someone(
 			t_bool in_head = TRUE;
 
 			/* intentionally no undeclared_charset support here! */
-			if (!(charset = get_param(note_h.ext->params, "charset")))
+			if (!(charset = validate_charset(get_param(note_h.ext->params, "charset"))))
 				charset = "US-ASCII";
 
 			while ((line = tin_fgets(artinfo->raw, FALSE)) != NULL) {
@@ -4841,6 +4842,9 @@ msg_add_x_headers(
 	char line[HEADER_LEN];
 	int num_x_hdrs = 0;
 	int i;
+#ifndef DONT_HAVE_PIPING
+	t_bool pipe = FALSE;
+#endif /* !DONT_HAVE_PIPING */
 
 	if (!headers)
 		return;
@@ -4866,10 +4870,14 @@ msg_add_x_headers(
 		if (file[0] == '!') {
 			if ((fp = popen(file + 1, "r")) == NULL)
 				return;
+			pipe = TRUE;
 		}
+		if (!pipe)
 #endif /* !DONT_HAVE_PIPING */
-		if (!fp && ((fp = fopen(file, "r")) == NULL))
-			return;
+		{
+			if ((fp = fopen(file, "r")) == NULL)
+				return;
+		}
 
 		while (fgets(line, (int) sizeof(line), fp) != NULL) {
 			if (line[0] != '\n' && line[0] != '#') {
@@ -4898,7 +4906,7 @@ msg_add_x_headers(
 		}
 
 #ifndef DONT_HAVE_PIPING
-		if (file[0] == '!')
+		if (pipe)
 			pclose(fp);
 		else
 #endif /* !DONT_HAVE_PIPING */
@@ -4922,6 +4930,9 @@ msg_add_x_body(
 	char file[PATH_LEN];
 	char line[HEADER_LEN];
 	int wrote = 0;
+#ifndef DONT_HAVE_PIPING
+	t_bool pipe = FALSE;
+#endif /* !DONT_HAVE_PIPING */
 
 	if (!body || !fp_out)
 		return 0;
@@ -4945,18 +4956,21 @@ msg_add_x_body(
 		if (file[0] == '!') {
 			if ((fp = popen(file + 1, "r")) == NULL)
 				return 0;
+			pipe = TRUE;
 		}
+		if (!pipe)
 #endif /* !DONT_HAVE_PIPING */
-
-		if (!fp && ((fp = fopen(file, "r")) == NULL))
-			return 0;
+		{
+			if ((fp = fopen(file, "r")) == NULL)
+				return 0;
+		}
 
 		while (fgets(line, (int) sizeof(line), fp) != NULL) {
 			fputs(line, fp_out);
 			wrote++;
 		}
 #ifndef DONT_HAVE_PIPING
-		if (file[0] == '!')
+		if (pipe)
 			pclose(fp);
 		else
 #endif /* !DONT_HAVE_PIPING */
@@ -5535,8 +5549,10 @@ address_in_list(
 		return FALSE;
 
 	addr_list = split_address_list(addresses, &num_addr);
-	if (num_addr == 0)
+	if (num_addr == 0) {
+		FreeIfNeeded(addr_list);
 		return FALSE;
+	}
 
 	this_address = my_malloc(strlen(address) + 1);
 	strip_name(address, this_address);
@@ -5577,19 +5593,23 @@ get_recipients(
 	cc_addresses = split_address_list(hdr->cc, &num_cc);
 	bcc_addresses = split_address_list(hdr->bcc, &num_bcc);
 
-	if (!(num_all = num_to + num_cc + num_bcc))
+	if (!(num_all = num_to + num_cc + num_bcc)) {
+		FreeIfNeeded(to_addresses);
+		FreeIfNeeded(cc_addresses);
+		FreeIfNeeded(bcc_addresses);
 		return 0;
+	}
 
 	all_addresses = my_malloc(num_all * sizeof(char *));
-	for (i = 0; i < num_to; i++, j++) {
+	for (i = 0; to_addresses && i < num_to; i++, j++) {
 		all_addresses[j] = my_malloc(strlen(to_addresses[i]) + 1);
 		strip_name(to_addresses[i], all_addresses[j]);
 	}
-	for (i = 0; i < num_cc; i++, j++) {
+	for (i = 0; cc_addresses && i < num_cc; i++, j++) {
 		all_addresses[j] = my_malloc(strlen(cc_addresses[i]) + 1);
 		strip_name(cc_addresses[i], all_addresses[j]);
 	}
-	for (i = 0; i < num_bcc; i++, j++) {
+	for (i = 0; bcc_addresses && i < num_bcc; i++, j++) {
 		all_addresses[j] = my_malloc(strlen(bcc_addresses[i]) + 1);
 		strip_name(bcc_addresses[i], all_addresses[j]);
 	}

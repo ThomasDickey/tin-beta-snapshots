@@ -2268,7 +2268,7 @@ write_server_config(
 				wait_message(2, "write_server_config(%s)", strerror(errno));
 				break;
 		}
-        return;
+		return;
 	} else
 		CLOSEDIR(dirp);
 

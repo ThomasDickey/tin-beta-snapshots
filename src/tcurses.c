@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2021-10-19
+ *  Updated   : 2023-08-14
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -428,7 +428,7 @@ word_highlight_string(
 		A_DIM,
 		A_BOLD
 	};
-	char tmp[LEN];
+	char tmp[LEN] =  { '\0' };
 	int wsize = size;
 #		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wtmp;

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-25
+ *  Updated   : 2023-08-23
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1008,7 +1008,7 @@ my_isprint(
 	/* use locale */
 	return isprint(c);
 #	else
-	if (IS_LOCAL_CHARSET("ISO-8859"))
+	if (IS_LOCAL_CHARSET("ISO-8859") || IS_LOCAL_CHARSET("ISO8859"))
 		return (isprint(c) || (c >= 0xa0 && c <= 0xff));
 	else if (IS_LOCAL_CHARSET("ISO-2022"))
 		return (isprint(c) || (c == 0x1b));
@@ -4439,4 +4439,23 @@ make_connection_page(
 		fprintf(fp, "SUBSCRIPTIONS_FILE: %s\n", subscriptions_file);
 	}
 #endif /* !NNTP_ONLY */
+}
+
+
+/*
+ * restrict it to [a-zA-Z0-9_-]+
+ */
+const char *
+validate_charset(
+	const char *charset)
+{
+	const char *c = charset;
+
+	while (*c) {
+		if (*c < 45 || *c > 122 || *c == 46 || *c == 47 || (*c >= 58 && *c <= 64) || (*c >= 91 && *c <= 94) || *c == 96)
+			return NULL;
+
+		c++;
+	}
+	return charset;
 }

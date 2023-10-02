@@ -52,7 +52,9 @@ The following configure options and defines are documented in detail:
   --enable-warnings                       --with-shell
   --enable-xhdr-xref                      --with-spooldir
   --exec-prefix                           --with-sum
-  --mandir                                --with-trace
+  --mandir                                --with-socks
+                                          --with-socks5
+                                          --with-trace
                                           --with-zlib
 
   ENFORCE_RFC1034                         HAVE_UUDEVIEW_H
@@ -70,10 +72,9 @@ The following configure options and defines are documented in detail:
 Not yet documented configure options and defines:
 -------------------------------------------------
 TIN related:
-  --with-socks                           --with-socks5
-
-  BACKUP_FILE_EXT                         FILE_MODE_BROKEN
-  DEBUG_ART                               NO_LOCKING
+  BACKUP_FILE_EXT (see misc.c:invoke_editor())
+  FILE_MODE_BROKEN                        NO_LOCKING
+  DEBUG_ART
 
 System related:
   --datadir                               --localstatedir
@@ -314,6 +315,14 @@ effect.
 Check for zlib compression/decompression library and link against it if
 available. This is a prerequisite for the -C cmd-line switch which can be
 used to activate NNTP compression as defined in RFC 8054.
+
+--with-socks (default: off)
+Check for socks proxy library (SOCKS Version 4) and link against it if
+available.
+
+--with-socks5 (default: off)
+Check for socks5 proxy library (SOCKS Version 5; RFC 1928) and link against
+it if available.
 
 Options to set some default values
 ----------------------------------

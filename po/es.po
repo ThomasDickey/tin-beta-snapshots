@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-01 17:54+0200\n"
+"POT-Creation-Date: 2023-08-17 06:23+0200\n"
 "PO-Revision-Date: 2018-04-19 13:04+0200\n"
 "Last-Translator: Francisco Javier Serrador <fserrador@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -20,25 +20,25 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. -> lang.c
-#: src/art.c:438
+#: src/art.c:423
 #, fuzzy, c-format
 msgid "Reading %s\n"
 msgstr "Leyendo %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:1232
+#: src/art.c:1217
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "Artículos anteriores"
 
 #. -> lang.c
-#: src/art.c:2534
+#: src/art.c:2519
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "Escribir %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:2613
+#: src/art.c:2598
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "Escribiendo fichero…"
@@ -875,7 +875,7 @@ msgstr "Comprobando un nuevo disco\n"
 
 #: src/lang.c:144
 #, fuzzy
-msgid "Checking for news..."
+msgid "Checking for news...\n"
 msgstr " comprobando..."
 
 #: src/lang.c:145
@@ -8013,7 +8013,7 @@ msgid ""
 msgstr ""
 
 #. TODO: lang.c
-#: src/main.c:951
+#: src/main.c:953
 #, fuzzy
 msgid "reading from local spool"
 msgstr "error leyendo desde `%s'"
@@ -8039,38 +8039,38 @@ msgstr "Regresar a la última publicación(es)"
 msgid "Unreachable?\n"
 msgstr "estado %s no alcanzable desde %s"
 
-#: src/nntplib.c:898
+#: src/nntplib.c:901
 #, c-format
 msgid ""
 "\n"
 "Server timed out, trying reconnect # %d\n"
 msgstr ""
 
-#: src/nntplib.c:926 src/signal.c:447
+#: src/nntplib.c:929 src/signal.c:447
 #, fuzzy
 msgid "NNTP connection error. Exiting..."
 msgstr "Error película capturada... Terminando."
 
-#: src/nntplib.c:941 src/nntplib.c:2019
+#: src/nntplib.c:944 src/nntplib.c:2022
 #, fuzzy
 msgid "Rejoin current group\n"
 msgstr "Grupo"
 
-#: src/nntplib.c:950 src/nntplib.c:2028
+#: src/nntplib.c:953 src/nntplib.c:2031
 #, fuzzy, c-format
 msgid "Read (%s)\n"
 msgstr "%s: leído: %s"
 
-#: src/nntplib.c:952
+#: src/nntplib.c:955
 #, fuzzy, c-format
 msgid "Resend last command (%s)\n"
 msgstr "última orden: %s\n"
 
-#: src/nntplib.c:1642
+#: src/nntplib.c:1645
 msgid "CAPABILITIES did not announce READER"
 msgstr ""
 
-#: src/nntplib.c:2174
+#: src/nntplib.c:2177
 msgid "MOTD: "
 msgstr ""
 
@@ -8208,7 +8208,7 @@ msgstr "NO DISPONIBLE"
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1330
+#: src/rfc2047.c:1329
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
 "are reading this prefix, your mail reader probably has not yet been "
@@ -8217,7 +8217,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: src/save.c:1048
+#: src/save.c:1054
 msgid "bytes"
 msgstr "bytes"
 

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.6.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-01 17:54+0200\n"
-"PO-Revision-Date: 2023-08-01 17:56+0200\n"
+"POT-Creation-Date: 2023-08-17 06:23+0200\n"
+"PO-Revision-Date: 2023-08-11 14:00+0200\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: \n"
 "Language: en_GB\n"
@@ -17,24 +17,24 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. -> lang.c
-#: src/art.c:438
+#: src/art.c:423
 #, c-format
 msgid "Reading %s\n"
 msgstr "Rereading %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:1232
+#: src/art.c:1217
 msgid "Threading by multipart"
 msgstr "Threading by multipart"
 
 #. -> lang.c
-#: src/art.c:2534
+#: src/art.c:2519
 #, c-format
 msgid "Writing %s\n"
 msgstr "Writing %s\n"
 
 #. TODO: -> lang.c
-#: src/art.c:2613
+#: src/art.c:2598
 msgid "Writing overview cache..."
 msgstr "Writing overview cache..."
 
@@ -838,8 +838,8 @@ msgid "Checking for new groups... "
 msgstr "Checking for new groups... "
 
 #: src/lang.c:144
-msgid "Checking for news..."
-msgstr "Checking for news..."
+msgid "Checking for news...\n"
+msgstr "Checking for news...\n"
 
 #: src/lang.c:145
 #, c-format
@@ -8213,7 +8213,7 @@ msgstr ""
 "default)\n"
 
 #. TODO: lang.c
-#: src/main.c:951
+#: src/main.c:953
 msgid "reading from local spool"
 msgstr "reading from local spool"
 
@@ -8237,7 +8237,7 @@ msgstr "Version: %s %s release %s (\"%s\")\n"
 msgid "Unreachable?\n"
 msgstr "Unreachable?\n"
 
-#: src/nntplib.c:898
+#: src/nntplib.c:901
 #, c-format
 msgid ""
 "\n"
@@ -8246,29 +8246,29 @@ msgstr ""
 "\n"
 "Server timed out, trying reconnect # %d\n"
 
-#: src/nntplib.c:926 src/signal.c:447
+#: src/nntplib.c:929 src/signal.c:447
 msgid "NNTP connection error. Exiting..."
 msgstr "NNTP connection error. Exiting..."
 
-#: src/nntplib.c:941 src/nntplib.c:2019
+#: src/nntplib.c:944 src/nntplib.c:2022
 msgid "Rejoin current group\n"
 msgstr "Rejoin current group\n"
 
-#: src/nntplib.c:950 src/nntplib.c:2028
+#: src/nntplib.c:953 src/nntplib.c:2031
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Read (%s)\n"
 
-#: src/nntplib.c:952
+#: src/nntplib.c:955
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "Resend last command (%s)\n"
 
-#: src/nntplib.c:1642
+#: src/nntplib.c:1645
 msgid "CAPABILITIES did not announce READER"
 msgstr "CAPABILITIES did not announce READER"
 
-#: src/nntplib.c:2174
+#: src/nntplib.c:2177
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8409,7 +8409,7 @@ msgstr "[- Unavailable -]"
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1330
+#: src/rfc2047.c:1329
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
 "are reading this prefix, your mail reader probably has not yet been "
@@ -8423,7 +8423,7 @@ msgstr ""
 "to understand the new format, and some of what follows may look strange.\n"
 "\n"
 
-#: src/save.c:1048
+#: src/save.c:1054
 msgid "bytes"
 msgstr "bytes"
 

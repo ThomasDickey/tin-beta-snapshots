@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 1.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-01 17:54+0200\n"
+"POT-Creation-Date: 2023-08-17 06:23+0200\n"
 "PO-Revision-Date: 2006-04-21 15:39+0200\n"
 "Last-Translator: Andrei Emeltchenko <andrei.emeltchenko@finik.org>\n"
 "Language-Team: Russian <gnu@mx.ru>\n"
@@ -17,25 +17,25 @@ msgstr ""
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #. -> lang.c
-#: src/art.c:438
+#: src/art.c:423
 #, fuzzy, c-format
 msgid "Reading %s\n"
 msgstr "Перечитываю %s..."
 
 #. TODO: -> lang.c
-#: src/art.c:1232
+#: src/art.c:1217
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "Разбор дискуссий..."
 
 #. -> lang.c
-#: src/art.c:2534
+#: src/art.c:2519
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "Стартую: (%s)"
 
 #. TODO: -> lang.c
-#: src/art.c:2613
+#: src/art.c:2598
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "Запись файла атрибутов..."
@@ -865,7 +865,8 @@ msgid "Checking for new groups... "
 msgstr "Поиск новых групп... "
 
 #: src/lang.c:144
-msgid "Checking for news..."
+#, fuzzy
+msgid "Checking for news...\n"
 msgstr "Проверка новостей..."
 
 #: src/lang.c:145
@@ -8143,7 +8144,7 @@ msgid ""
 msgstr ""
 
 #. TODO: lang.c
-#: src/main.c:951
+#: src/main.c:953
 msgid "reading from local spool"
 msgstr ""
 
@@ -8167,7 +8168,7 @@ msgstr "Версия: %s %s релиз %s (\"%s\")\n"
 msgid "Unreachable?\n"
 msgstr "Недостижимо?\n"
 
-#: src/nntplib.c:898
+#: src/nntplib.c:901
 #, c-format
 msgid ""
 "\n"
@@ -8176,30 +8177,30 @@ msgstr ""
 "\n"
 "Сервер не отвечает, попытка соединиться снова # %d\n"
 
-#: src/nntplib.c:926 src/signal.c:447
+#: src/nntplib.c:929 src/signal.c:447
 #, fuzzy
 msgid "NNTP connection error. Exiting..."
 msgstr "Не удалось соединиться с NNTP сервером %s. Выход..."
 
-#: src/nntplib.c:941 src/nntplib.c:2019
+#: src/nntplib.c:944 src/nntplib.c:2022
 msgid "Rejoin current group\n"
 msgstr "Вступить снова в текущую группу\n"
 
-#: src/nntplib.c:950 src/nntplib.c:2028
+#: src/nntplib.c:953 src/nntplib.c:2031
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Чтение (%s)\n"
 
-#: src/nntplib.c:952
+#: src/nntplib.c:955
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "Переслать последнюю команду (%s)\n"
 
-#: src/nntplib.c:1642
+#: src/nntplib.c:1645
 msgid "CAPABILITIES did not announce READER"
 msgstr ""
 
-#: src/nntplib.c:2174
+#: src/nntplib.c:2177
 msgid "MOTD: "
 msgstr ""
 
@@ -8339,7 +8340,7 @@ msgstr "[- Недоступно -]"
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1330
+#: src/rfc2047.c:1329
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
 "are reading this prefix, your mail reader probably has not yet been "
@@ -8352,7 +8353,7 @@ msgstr ""
 "для работы с новым форматом и следующие данные могут выглядеть странно.\n"
 "\n"
 
-#: src/save.c:1048
+#: src/save.c:1054
 msgid "bytes"
 msgstr "байт"
 

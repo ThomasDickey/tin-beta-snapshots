@@ -717,7 +717,7 @@ make_help_page(
 					snprintf(buf, LEN, "%s\t  %s", printascii(key, (wint_t) keys.list[i].key), _(helppage->helptext));
 #else
 					snprintf(buf, LEN, "%s\t  %s", printascii(key, keys.list[i].key), _(helppage->helptext));
-#endif /* MULTIBYTE_ABLE &&! NO_LOCALE*/
+#endif /* MULTIBYTE_ABLE &&! NO_LOCALE */
 					expand_ctrl_chars(&buf, &length, 8);
 					if (strcmp(last, buf)) {
 						fprintf(fp, "%s\n", buf);

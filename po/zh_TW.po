@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-01 17:54+0200\n"
+"POT-Creation-Date: 2023-08-17 06:23+0200\n"
 "PO-Revision-Date: 2015-10-08 12:13+0800\n"
 "Last-Translator: Wei-Lun Chao <bluebat@member.fsf.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -19,25 +19,25 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #. -> lang.c
-#: src/art.c:438
+#: src/art.c:423
 #, fuzzy, c-format
 msgid "Reading %s\n"
 msgstr "重新讀取 %s…"
 
 #. TODO: -> lang.c
-#: src/art.c:1232
+#: src/art.c:1217
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "討論串文章…"
 
 #. -> lang.c
-#: src/art.c:2534
+#: src/art.c:2519
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "嘗試 %s"
 
 #. TODO: -> lang.c
-#: src/art.c:2613
+#: src/art.c:2598
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "寫入屬性檔案…"
@@ -842,7 +842,8 @@ msgid "Checking for new groups... "
 msgstr "檢查看看新群組…"
 
 #: src/lang.c:144
-msgid "Checking for news..."
+#, fuzzy
+msgid "Checking for news...\n"
 msgstr "檢查看看新聞…"
 
 #: src/lang.c:145
@@ -8125,7 +8126,7 @@ msgid ""
 msgstr ""
 
 #. TODO: lang.c
-#: src/main.c:951
+#: src/main.c:953
 msgid "reading from local spool"
 msgstr ""
 
@@ -8149,7 +8150,7 @@ msgstr "版本：%s %s 釋出 %s (「%s」)\n"
 msgid "Unreachable?\n"
 msgstr "無法連線？\n"
 
-#: src/nntplib.c:898
+#: src/nntplib.c:901
 #, c-format
 msgid ""
 "\n"
@@ -8158,30 +8159,30 @@ msgstr ""
 "\n"
 "伺服器已逾時，嘗試重新連線 # %d\n"
 
-#: src/nntplib.c:926 src/signal.c:447
+#: src/nntplib.c:929 src/signal.c:447
 #, fuzzy
 msgid "NNTP connection error. Exiting..."
 msgstr "連線到 NNTP 伺服器 %s 時失敗。離開…"
 
-#: src/nntplib.c:941 src/nntplib.c:2019
+#: src/nntplib.c:944 src/nntplib.c:2022
 msgid "Rejoin current group\n"
 msgstr "重新連結目前的群組\n"
 
-#: src/nntplib.c:950 src/nntplib.c:2028
+#: src/nntplib.c:953 src/nntplib.c:2031
 #, c-format
 msgid "Read (%s)\n"
 msgstr "已讀 (%s)\n"
 
-#: src/nntplib.c:952
+#: src/nntplib.c:955
 #, c-format
 msgid "Resend last command (%s)\n"
 msgstr "重新發送最近的命令 (%s)\n"
 
-#: src/nntplib.c:1642
+#: src/nntplib.c:1645
 msgid "CAPABILITIES did not announce READER"
 msgstr "能力中並未宣告包含閱讀器"
 
-#: src/nntplib.c:2174
+#: src/nntplib.c:2177
 msgid "MOTD: "
 msgstr "MOTD: "
 
@@ -8320,7 +8321,7 @@ msgstr "[- 無法使用 -]"
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1330
+#: src/rfc2047.c:1329
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
 "are reading this prefix, your mail reader probably has not yet been "
@@ -8333,7 +8334,7 @@ msgstr ""
 "以了解新的格式，而隨後而來的東西也許看起來會很怪異。\n"
 "\n"
 
-#: src/save.c:1048
+#: src/save.c:1054
 msgid "bytes"
 msgstr "位元組"
 
