@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-29
+ *  Updated   : 2023-10-17
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1374,7 +1374,10 @@ build_sline(
 					grp_fmt.mark_offset = (size_t) (mark_offset = strwidth(buffer) + 2);
 				if ((k = line_is_tagged(respnum))) {
 					STRCPY(tmp_buf, tin_ltoa(k, 3));
-					strcat(buffer, " ");
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					if (art_mark_width > 1)
+						strcat(buffer, " ");
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 					tagged = TRUE;
 				} else
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)

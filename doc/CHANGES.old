@@ -1313,7 +1313,7 @@ U007) Urs Janssen <urs@tin.org>
       FIX. tcurses.c
 
  017) Antonio Querubin <tony@lava.net>
-      BUG. missplaced ||
+      BUG. misplaced ||
       FIX. nntplib.c
 
 U006) Thomas E. Dickey <dickey@invisible-island.net>
@@ -4641,7 +4641,7 @@ U001) Urs Janssen <urs@tin.org>
      ADD. check for HP-UX >=10
      BUG. #ifdef NO_SHELL_ESCAPE was missing
      BUG. TIN_DEFAULTS_DIR didn't get defined due misspelling
-     BUG. removed missplaced brace
+     BUG. removed misplaced brace
      BUG. no automatic aggregate initialization
      FIX. init.c, misc.c, select.c, tin.h, autoconf.h[in]
 

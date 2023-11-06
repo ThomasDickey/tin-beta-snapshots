@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-08-23
+ *  Updated   : 2023-10-29
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -502,11 +502,8 @@ save_and_process_art(
 	 * saves. Multiple file saves append a .NNN sequence number to the path
 	 * This is backward-contemptibility with older versions of tin
 	 */
-	if (!is_mailbox && max > 1) {
-		const char suffixsep = '.';
-
-		sprintf(&path[strlen(path)], "%c%03d", suffixsep, num_save + 1);
-	}
+	if (!is_mailbox && max > 1)
+		sprintf(&path[strlen(path)], ".%03d", num_save + 1);
 
 /* fprintf(stderr, "save_and_process_art expanded path now=(%s)\n", path); */
 
@@ -1521,6 +1518,7 @@ static void
 show_attachment_page(
 	void)
 {
+	char *attach_line;
 	char buf[BUFSIZ];
 	const char *charset;
 	int i, tmp_len, max_depth;
@@ -1536,11 +1534,11 @@ show_attachment_page(
 	info_len = max_depth = 0;
 	for (i = 0; i < attmenu.max; ++i) {
 		part = get_part(i);
-		snprintf(buf, sizeof(buf), _(txt_attachment_lines), part->line_count);
-		tmp_len = strwidth(buf);
 		charset = get_param(part->params, "charset");
-		snprintf(buf, sizeof(buf), "  %s/%s, %s, %s%s", content_types[part->type], part->subtype, content_encodings[part->encoding], charset ? charset : "", charset ? ", " : "");
-		tmp_len += strwidth(buf);
+		attach_line = build_attach_line(part, 0, cCOLS - 2, 0, NULL, charset);
+		snprintf(buf, sizeof(buf), "  %s", attach_line);
+		FreeIfNeeded(attach_line);
+		tmp_len = strwidth(buf);
 		if (tmp_len > info_len)
 			info_len = tmp_len;
 
@@ -1796,6 +1794,7 @@ static void
 build_attachment_line(
 	int i)
 {
+	char *attach_line;
 	char *sptr;
 	const char *name;
 	const char *charset;
@@ -1833,12 +1832,6 @@ build_attachment_line(
 	}
 
 	charset = get_param(part->params, "charset");
-	snprintf(buf2, sizeof(buf2), _(txt_attachment_lines), part->line_count);
-	/* TODO: make the layout configurable? */
-	if (!strcmp(content_types[part->type], "text"))
-		snprintf(buf, sizeof(buf), "  %s/%s, %s, %s%s%s", content_types[part->type], part->subtype, content_encodings[part->encoding], charset ? charset : "", charset ? ", " : "", buf2);
-	else
-		snprintf(buf, sizeof(buf), "  %s/%s, %s, %s", content_types[part->type], part->subtype, content_encodings[part->encoding], buf2);
 	if (part->depth > 0) {
 		treelen = cCOLS - 13 - info_len - namelen;
 		tree = build_tree(part->depth, treelen, i);
@@ -1848,6 +1841,10 @@ build_attachment_line(
 	len = strwidth(buf2);
 	if (namelen + len + info_len + 8 <= cCOLS)
 		namelen = cCOLS - 8 - info_len - len;
+
+	attach_line = build_attach_line(part, 0, info_len - 2, 0, NULL, charset);
+	snprintf(buf, sizeof(buf), "  %s", attach_line);
+	FreeIfNeeded(attach_line);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	tmpname = spart(name, namelen, TRUE);

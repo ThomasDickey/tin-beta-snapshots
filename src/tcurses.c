@@ -416,6 +416,7 @@ word_highlight_string(
 	int size,
 	int color)
 {
+	char tmp[LEN] = { '\0' };
 	/*
 	 * Mapping of the tinrc.mono_mark* values to the ncurses attributes
 	 */
@@ -428,7 +429,6 @@ word_highlight_string(
 		A_DIM,
 		A_BOLD
 	};
-	char tmp[LEN] =  { '\0' };
 	int wsize = size;
 #		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wtmp;

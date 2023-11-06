@@ -6,12 +6,21 @@ New features
   --with-pcre[=PATH])
 - NNTPS support based on libressl/gnuttls/OpenSSL (RFC 8143)
   (configure --with-nntps[=[libtls|openssl|gnutls]])
+- "COMPRESS DEFLATE" support (RFC 8054)
 - allow to cancel wait_message() via key press
 - option to hide help/mail-info in title: show_help_mail_sign
 - option remove SOFT HYPHENs (U+00AD) from non verbatim blocks:
   suppress_soft_hyphens
-- ConnectionInfo page ('J')
+- ConnectionInfo page ('J') incl. TLS connection info
 - ${TIN_HOMEDIR:-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
+- -t timeout cmd.-line option
+- :port suffix in newsauth, newsrctable and -g
+- -[zZMN] now note unsubscribed cmd-line groups
+- cmd. execution via ! for x_body
+- mime encode and fold long header-lines (> 998 octets) if !post_8bit_header
+- post f'up from thread-level ('f' and 'F')
+- configurable display format of attachments
+  (page_mime_format, page_uue_format, attachment_format)
 
 Changes
 -------

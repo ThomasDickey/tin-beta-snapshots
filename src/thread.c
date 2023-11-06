@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-27
+ *  Updated   : 2023-10-17
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -247,7 +247,10 @@ build_tline(
 				if (!thrd_fmt.mark_offset)
 					thrd_fmt.mark_offset = (size_t) (mark_offset = strwidth(buffer) + 2);
 				if (art->tagged) {
-					strcat(buffer, " ");
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					if (art_mark_width > 1)
+						strcat(buffer, " ");
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 					strcat(buffer, tin_ltoa(art->tagged, 3));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					mark[0] = L'\0';
@@ -641,6 +644,29 @@ thread_page(
 
 			case THREAD_READ_ARTICLE:	/* read current article within thread */
 				ret_code = enter_pager(find_response(thread_basenote, thdmenu.curr), FALSE, THREAD_LEVEL);
+				break;
+
+/*
+			case THREAD_FOLLOWUP_QUOTE_HEADERS:
+			may need
+					if (func == THREAD_FOLLOWUP_QUOTE_HEADERS)
+						resize_article(TRUE, &pgart);
+			but as '^W' is already taken by MARK_FEED_UNREAD
+			we leave that function out for now
+*/
+			case THREAD_FOLLOWUP_QUOTE:
+			case THREAD_FOLLOWUP:
+				if (can_post || group->attribute->mailing_list != NULL) {
+					int ret;
+
+					n = find_response(thread_basenote, thdmenu.curr);
+					ret = art_open(TRUE, &arts[n], group, &pgart, TRUE, _(txt_reading_article));
+					if (ret != ART_UNAVAILABLE && ret != ART_ABORT && n >= 0) {
+						post_response(group->name, n, (func == THREAD_FOLLOWUP_QUOTE) ? TRUE : FALSE, FALSE, FALSE);
+						show_thread_page();
+					}
+					art_close(&pgart);
+				}
 				break;
 
 			case THREAD_READ_NEXT_ARTICLE_OR_THREAD:

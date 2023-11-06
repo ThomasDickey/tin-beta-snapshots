@@ -61,7 +61,7 @@ _lookup_mimetype(
 	t_part *part)
 {
 	FILE *fp;
-	char *exts;
+	const char *exts;
 	char *ptr;
 	char buf[PATH_LEN];
 	int i;

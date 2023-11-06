@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-07-31
+.\" Updated   : 2023-10-30
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.IX Title "tin 1"
+.IX Titel "tin 1"
 .\"*******************************************************************
 .\"
 .\" This file was generated with po4a. Translate the source file.
@@ -206,7 +206,7 @@ diese Option \*(rq\fB\-dnq\fP\*(rq. Siehe auch die Befehlszeilenoptionen '\fB\-C
 \&\*(rq\fB\-G\fP\*(rq.
 .TP 
 \fB\-r\fP
-Nachrichten aus der Ferne vom Standard\-NTP\-Server, der in der
+Nachrichten aus der Ferne vom Standard\-NNTP\-Server, der in der
 Umgebungsvariable $\fBNNTPSERVER\fP angegeben oder in der Datei
 \fI/etc/nntpserver\fP enthalten ist lesen.
 .TP 
@@ -223,7 +223,8 @@ weitere Informationen siehe den Abschnitt "AUTOMATISCHES MAILEN UND
 SPEICHERN VON UNGELESENEN ARTIKELN".
 .TP 
 \fB\-t\fP\fI Timeout\fP
-Override the \fBnntp_read_timeout_secs\fP setting. Default is 120 seconds.
+Übersteuert die \fBnntp_read_timeout_secs\fP Einstellung. Voreinstellung sind
+120 Sekunden.
 .TP 
 \fB\-T\fP
 NNTPS (NNTP über TLS) aktivieren. Dies setzt auch die Umgebungsvariable
@@ -550,8 +551,8 @@ Help screen of commands available on the current menu. You can use
 ('\fB\(rs\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
-Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
+Mini\-Hilfe am unterem Bildschirmrand und Posting Etikette nach dem Verfassen
+eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .TP 
 \fBDisplayPostHist 'W'\fP
 Listet die vom Benutzer geposteten Artikel auf. Es werden das Datum des
@@ -1067,6 +1068,14 @@ in der Newsgruppe 'control' oder 'control.cancel' zu sehen.
 \fBEditFilter 'E'\fP
 Filter\-Datei bearbeiten und danach anwenden.
 .TP 
+\fBThreadFollowupQuote 'f'\fP
+Veröffentlicht ein Follow\-up zum aktuellen Artikel mit einer Kopie des
+Artikels.
+.TP 
+\fBThreadFollowup 'F'\fP
+Veröffentlicht ein Follow\-up zum aktuellen Artikel ohne eine Kopie des
+Artikels.
+.TP 
 \fBToggleInfoLastLine 'i'\fP
 Subject des geöffneten Artikels in der untersten Zeile anzeigen.
 .TP 
@@ -1442,8 +1451,8 @@ Anzeige der aktuellen URL in der letzten Zeile (de)aktivieren.
 Hilfeseite der verfügbaren Befehle.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
-Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
+Mini\-Hilfe am unterem Bildschirmrand und Posting Etikette nach dem Verfassen
+eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1498,8 +1507,8 @@ Name oder Beschreibung des Anhangs in der untersten Zeile anzeigen.
 Hilfeseite der verfügbaren Befehle.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
-Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
+Mini\-Hilfe am unterem Bildschirmrand und Posting Etikette nach dem Verfassen
+eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1542,8 +1551,8 @@ Umschalten der Anzeige der aktuellen \*(rqMessage\-ID:\*(rq in der letzten Zeile
 Hilfeseite der verfügbaren Befehle.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
-Mini\-Hilfe am unterem Bildschirmrand und Posting Etiquette nach dem
-Verfassen eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
+Mini\-Hilfe am unterem Bildschirmrand und Posting Etikette nach dem Verfassen
+eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .RE
 .\" -------------------------------------------------------------------
 .\"
@@ -1650,6 +1659,11 @@ ausgewählt (heiß) war, bevor er gelesen wurde. Standard ist
 If ON \fBtin\fP will ask before using a MIME viewer (\fBmetamail_prog\fP) to
 display MIME messages. This only occurs if a MIME viewer is set. Default is
 OFF.
+.TP 
+\fBFormatanweisung für die Anhangsebene (attachment_format)\fP
+Diese Formatanweisung wird von \fBtin\fP zur Darstellung der Anhangsebene
+benutzt. Für weitere Informationen sei auf den Abschnitt "ANSICHTEN
+ANPASSEN" verwiesen. Voreingestellt ist "%t%s%e%c%d".
 .TP 
 \fBSendet Ihnen eine cc und/oder eine blinde cc autom. (auto_cc_bcc)\fP
 Setzt Ihren Namen automatisch in das Feld \*(rqCc:\*(rq und/oder \*(rqBcc:\*(rq, wenn
@@ -2197,6 +2211,18 @@ Einige Normalisierungsarten sind nur verfügbar, wenn sie von der Bibliothek
 unterstützt werden, die \fBtin\fP verwendet, um die Normalisierung
 durchzuführen. Nach Möglichkeit sollte NFC verwendet werden.
 .TP 
+\fBFormat string for the display of mime header at Article level (page_mime_format)\fP
+Diese Formatanweisung wird von \fBtin\fP zur Darstellung von Mime\-Headern auf
+Artikelebene benutzt. Fr weitere Informationen sei auf den Abschnitt
+"ANSICHTEN ANPASSEN" verwiesen. Voreingestellt ist "[\-\-
+%T%S%*n%z%*l%!c%!d%*e\-\-]".
+.TP 
+\fBFormat string for the display of uue header at Article level (page_uue_format)\fP
+Diese Formatanweisung wird von \fBtin\fP zur Darstellung von UUE\-Headern auf
+Artikelebene benutzt. Für weitere Informationen sei auf den Abschnitt
+"ANSICHTEN ANPASSEN" verwiesen. Voreingestellt ist "[\-\- %T%S%*n%I%!d%*e
+\-\-]".
+.TP 
 \fBSetze Cursor auf ersten ungel. Art. (pos_first_unread)\fP
 If ON put cursor at first unread article in group otherwise at last
 article. Default is ON.
@@ -2340,8 +2366,8 @@ benutzt. Für weitere Informationen sei auf den Abschnitt "ANSICHTEN
 ANPASSEN" verwiesen. Voreingestellt ist "%f\ %n\ %U\ \ %G\ \ %d".
 .TP 
 \fBIm Gruppen\- und Threadlevel, zeige Autor an mit (show_author)\fP
-Which information about the author should be shown. Default is 2, authors
-full name.
+Welche Informationen über den Autor sollen angezeigt werden. Die
+Voreinstellung ist 2, der vollständige Name des Autors.
 .RS +.5i
 .IP 0 3
 \fBNichts\fP, nur die \*(rqSubject:\*(rq Zeile wird angezeigt.
@@ -3185,13 +3211,91 @@ ein '\fB>\fP' vorangestellt wird. Soll z. B. der Score erst ab einer
 Bildschirmbreite größer 100 Zeichen angezeigt werden, lautet die
 Formatanweisung '\fB%>100S\fP'.
 .PP
-.\"
-.\"
 Wenn eine Längenangabe und eine Mindestbildschirmbreite angegeben werden
 soll, muss zuerst die Länge und danach die Mindestbreite in der
 Formatanweisung stehen. Um den Score 10 Zeichen breit und erst ab einer
 Bildschirmbreite über 100 Zeichen darzustellen, lautet die Anweisung
 \&'\fB%10>100S\fP'.
+.PP
+The look of the Attachment level and the mime and uue header at Page level
+can be customized too via format strings.  The following variables are
+available:
+.PP
+.in +.3i
+.nf
+.ta \w'%G    'u +\w'Complete/incomplete UUE part indicator'u
+\fB%C\fP	Zeichensatz
+\fB%c\fP	Wie %C aber mit Beschreibung
+\fB%D\fP	Zeilenanzahl
+\fB%d\fP	Wie %D aber mit Beschreibung
+\fB%E\fP	Content Kodierung
+\fB%e\fP	Wie %E aber mit Beschreibung
+\fB%I\fP	Kennzeichen für vollständige/unvollständige UUE\-Teile
+\fB%L\fP	Sprache
+\fB%l\fP	Wie %L aber mit Beschreibung
+\fB%N\fP	Name
+\fB%n\fP	Wie %N aber mit Beschreibung
+\fB%S\fP	Content Untertyp
+\fB%s\fP	Wie %S aber mit Beschreibung
+\fB%T\fP	Content Typ
+\fB%t\fP	Wie %T aber mit Beschreibung
+\fB%Z\fP	Größe in Bytes
+\fB%z\fP	Wie %Z aber mit Beschreibung
+\fB%%\fP	%
+.fi
+.in -.3i
+.PP
+Not all items can be used in each variable. The following table provides an
+overview:
+.PP
+.in +.3i
+.nf
+.ta \w'%G   'uC +\w'\fBattachment_format\fP 'uC +\w'\fBpage_mime_format\fP 'uC +\w'\fBpage_uue_format\fP'uC
+	\fBattachment_format\fP	\fBpage_mime_format\fP	\fBpage_uue_format\fP
+\fB%C\fP	X	X
+\fB%c\fP	X	X
+\fB%D\fP	X	X	X
+\fB%d\fP	X	X	X
+\fB%E\fP	X	X	X
+\fB%e\fP	X	X	X
+\fB%I\fP			X
+\fB%L\fP	X	X
+\fB%l\fP	X	X
+\fB%N\fP		X	X
+\fB%n\fP		X	X
+\fB%S\fP	X	X	X
+\fB%s\fP	X	X	X
+\fB%T\fP	X	X	X
+\fB%t\fP	X	X	X
+\fB%Z\fP	X	X	X
+\fB%z\fP	X	X	X
+\fB%%\fP	X	X	X
+.fi
+.in -.3i
+.PP
+By default, the string is not truncated. If it exceeds the screen width, it
+is wrapped. If the % sign is followed by an exclamation mark ('!') for
+uppercase letters, the element is omitted if there is not enough space. If
+the % sign is followed by an asterisk ('*') for a lowercase letter, the
+description is omitted if there is not enough space. If the % sign is
+followed by an exclamation mark ('!') for a lowercase letter, the
+description is omitted first and then the content. The shortening is always
+from right to left, first the description is omitted and when no more
+description is displayed, the content is omitted. If %T and %S follow each
+other directly a '/' will be inserted in between. %Z will always have one
+decimal point and may have a one letter bi\-suffix.
+.PP
+Voreingestellt sind folgende Formatanweisungen:
+.PP
+.in +.3i
+.nf
+.ta \w'attachment_format'u +\w'"\fB%T%S%E%C%d\fP"'u
+\fBattachment_format\fP:	"\fB%T%S%E%C%d\fP"
+\fBpage_mime_format\fP:	"\fB[\-\- %T%S%*n%z%*l%!c%!d%*e \-\-]\fP"
+\fBpage_uue_format\fP:		"\fB[\-\- %T%S%*n%I%!d%*e \-\-]\fP"
+.fi
+.\"
+.\"
 .SS "TIPPS UND TRICKS"
 In \fBtin\fP kann weitgehend mit den vier Cursortasten navigiert werden. Die
 linke Pfeiltaste geht eine Ebene nach oben, die rechte Pfeiltaste eine Ebene
@@ -3584,7 +3688,7 @@ Keine Umformung
 Universal\-Tabelle für viele Sprachen
 .TP 
 \fB1\fP
-single\-spacing universal table
+Universal\-Tabelle mit einfachem Abstand
 .TP 
 \fB2\fP
 Tabelle für Dänisch, Niederländisch, Deutsch, Norwegisch und Schwedisch
@@ -3606,7 +3710,7 @@ Tabelle für IBM PC\-Zeichensatz (Codepage 437)
 \fBORGANIZATION\fP
 Set the article header field \*(rqOrganization:\*(rq to the contents of the
 variable instead of the system default. If it points to a readable file a
-random line from that file will be used.If reading news on an Apollo
+random line from that file will be used. If reading news on an Apollo
 DomainOS machine the environment variable $\fBNEWSORG\fP has to be used instead
 of $\fBORGANIZATION\fP.
 .TP 

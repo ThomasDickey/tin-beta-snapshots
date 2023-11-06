@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-08-28
+ *  Updated   : 2023-10-29
  *  Notes     :
  *
  * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>
@@ -494,10 +494,17 @@ extern constext txt_articles_mailed[];
 #ifndef DONT_HAVE_PIPING
 	extern constext txt_articles_piped[];
 #endif /* !DONT_HAVE_PIPING */
-extern constext txt_attach[];
-extern constext txt_attach_charset[];
-extern constext txt_attach_description[];
-extern constext txt_attachment_lines[];
+extern constext txt_mime_charset[];
+extern constext txt_mime_content_subtype[];
+extern constext txt_mime_content_type[];
+extern constext txt_mime_description[];
+extern constext txt_mime_encoding[];
+extern constext txt_mime_lang[];
+extern constext txt_mime_lines[];
+extern constext txt_mime_name[];
+extern constext txt_mime_sep[];
+extern constext txt_mime_size[];
+extern constext txt_mime_unsup_charset[];
 extern constext txt_attachment_menu[];
 extern constext txt_attachment_menu_com[];
 extern constext txt_attachment_no_name[];
@@ -507,10 +514,8 @@ extern constext txt_attachment_select[];
 extern constext txt_attachment_tagged[];
 extern constext txt_attachments_tagged[];
 extern constext txt_attachment_untagged[];
-extern constext txt_attach_unsup_charset[];
 extern constext txt_attrib_menu_com[];
 extern constext txt_attrib_no_scope[];
-extern constext txt_uue[];
 extern constext txt_at_s[];
 #ifdef NNTP_ABLE
 	extern constext txt_auth_failed[];
@@ -982,7 +987,6 @@ extern constext txt_help_url_search_forwards[];
 extern constext txt_help_url_search_backwards[];
 extern constext txt_help_url_select[];
 extern constext txt_help_url_toggle_info_line[];
-extern constext txt_incomplete[];
 extern constext txt_index_page_com[];
 extern constext txt_info_add_kill[];
 extern constext txt_info_add_select[];
@@ -1077,7 +1081,6 @@ extern constext txt_moving[];
 extern constext txt_msgid_line_last[];
 extern constext txt_msgid_line_only[];
 extern constext txt_msgid_refs_line[];
-extern constext txt_name[];
 extern constext txt_newsgroup[];
 extern constext txt_newsgroup_plural[];
 extern constext txt_newsgroup_position[];
@@ -1177,8 +1180,10 @@ extern constext txt_quit_edit_xpost[];
 extern constext txt_quit_no_write[];
 extern constext txt_quoted_printable[];
 extern constext txt_range_invalid[];
-extern constext txt_read_abort[];
-extern constext txt_read_exit[];
+#ifdef HAVE_SELECT
+	extern constext txt_read_abort[];
+	extern constext txt_read_exit[];
+#endif /* HAVE_SELECT */
 extern constext txt_reading_article[];
 extern constext txt_reading_arts[];
 extern constext txt_reading_attributes_file[];
@@ -1372,6 +1377,8 @@ extern constext txt_useful_with_batch_mode[];
 extern constext txt_useful_with_batch_or_debug_mode[];
 extern constext txt_useless_combination[];
 extern constext txt_use_mime[];
+extern constext txt_uue_complete[];
+extern constext txt_uue_incomplete[];
 #if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
 	extern constext txt_valid_not_after[];
 	extern constext txt_valid_not_before[];
@@ -1387,6 +1394,11 @@ extern constext txt_warn_cancel[];
 #endif /* CHARSET_CONVERSION */
 extern constext txt_warn_downgrade[];
 extern constext txt_warn_encoding_and_external_inews[];
+extern constext txt_warn_long_line_not_base[];
+extern constext txt_warn_long_line_not_break[];
+#ifdef MIME_BREAK_LONG_LINES
+	extern constext txt_warn_long_line_not_qp[];
+#endif /* MIME_BREAK_LONG_LINES */
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 	extern constext txt_warn_header_line_comma[];
 	extern constext txt_warn_header_line_groups_contd[];
@@ -1754,6 +1766,7 @@ extern struct opttxt txt_art_marked_return;
 extern struct opttxt txt_art_marked_selected;
 extern struct opttxt txt_art_marked_unread;
 extern struct opttxt txt_ask_for_metamail;
+extern struct opttxt txt_attachment_format;
 extern struct opttxt txt_auto_cc_bcc;
 extern struct opttxt txt_auto_list_thread;
 extern struct opttxt txt_auto_reconnect;
@@ -1828,6 +1841,8 @@ extern struct opttxt txt_news_quote_format;
 	extern struct opttxt txt_nntp_read_timeout_secs;
 #endif /* HAVE_ALARM && SIGALRM */
 extern struct opttxt txt_organization;
+extern struct opttxt txt_page_mime_format;
+extern struct opttxt txt_page_uue_format;
 extern struct opttxt txt_pos_first_unread;
 extern struct opttxt txt_post_8bit_header;
 extern struct opttxt txt_post_mime_encoding;

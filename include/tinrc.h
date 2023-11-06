@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2023-04-19
+ *  Updated   : 2023-10-29
  *  Notes     :
  *
  * Copyright (c) 1999-2023 Jason Faultless <jason@altarstone.com>
@@ -289,6 +289,9 @@ struct t_config {
 	char select_format[LEN];		/* format string for the selection level */
 	char group_format[LEN];			/* format string for the group level */
 	char thread_format[LEN];		/* format string for the thread level */
+	char attachment_format[LEN];	/* format string for the attachment level */
+	char page_mime_format[LEN];		/* format string for the mime header in page level */
+	char page_uue_format[LEN];		/* format string for the uue header in page level */
 	char date_format[LEN];			/* format string for the date display in the page header */
 #	ifdef HAVE_UNICODE_NORMALIZATION
 		int normalization_form;

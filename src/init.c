@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-04-29
+ *  Updated   : 2023-10-29
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -116,7 +116,9 @@ char userid[PATH_LEN];
 #endif /* !NNTP_ONLY */
 
 t_function last_search = GLOBAL_SEARCH_REPEAT;	/* for repeated search */
-int art_mark_width = 1;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	int art_mark_width = 1;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 int hist_last[HIST_MAXNUM + 1];
 int hist_pos[HIST_MAXNUM + 1];
 int iso2asc_supported;			/* Convert ISO-Latin1 to Ascii */
@@ -431,10 +433,13 @@ struct t_config tinrc = {
 	FALSE,		/* use_slrnface */
 #endif /* XFACE_ABLE */
 	TRUE,		/* default_filter_select_global */
-	DEFAULT_SELECT_FORMAT,	/* select_format */
-	DEFAULT_GROUP_FORMAT,	/* group_format */
-	DEFAULT_THREAD_FORMAT,	/* thread_format */
-	DEFAULT_DATE_FORMAT,	/* date_format */
+	DEFAULT_SELECT_FORMAT,		/* select_format */
+	DEFAULT_GROUP_FORMAT,		/* group_format */
+	DEFAULT_THREAD_FORMAT,		/* thread_format */
+	DEFAULT_ATTACHMENT_FORMAT,	/* attachment_format */
+	DEFAULT_PAGE_MIME_FORMAT,	/* page_mime_format */
+	DEFAULT_PAGE_UUE_FORMAT,	/* page_uue_format */
+	DEFAULT_DATE_FORMAT,		/* date_format */
 #ifdef HAVE_UNICODE_NORMALIZATION
 	DEFAULT_NORMALIZE,		/* normalization form */
 #endif /* HAVE_UNICODE_NORMALIZATION */

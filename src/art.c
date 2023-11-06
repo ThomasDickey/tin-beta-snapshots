@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-08-23
+ *  Updated   : 2023-10-11
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -2395,9 +2395,9 @@ read_overview(
 	if (local) {
 #ifdef NNTP_ABLE
 		if (filter_on_path(group)) {
+			int curr_range, range_cnt;
 			struct t_article_range *ranges, *curr;
 			t_bool supported = TRUE;
-			int curr_range, range_cnt;
 
 			/*
 			 * Get the ranges without Path: header and try to fetch the
@@ -2519,8 +2519,7 @@ write_overview(
 		wait_message(0, _("Writing %s\n"), group->name);
 
 	for_each_art(i) {
-		char *p;
-		char *q, *ref;
+		char *p, *q, *ref;
 
 		article = &arts[i];
 
@@ -3349,10 +3348,12 @@ open_xover_fp(
 
 		if (!max)
 			return NULL;
+
 		if (min == max)
 			snprintf(line, sizeof(line), "%s %"T_ARTNUM_PFMT, nntp_caps.over_cmd, min);
 		else
 			snprintf(line, sizeof(line), "%s %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT, nntp_caps.over_cmd, min, MAX(min, max));
+
 		return (nntp_command(line, OK_XOVER, NULL, 0));
 	}
 #endif /* NNTP_ABLE */
@@ -3365,7 +3366,7 @@ open_xover_fp(
 				return fp;
 
 			if (*mode != 'r')
-				error_message(2, _(txt_cannot_open), nov_file);
+				perror_message(_(txt_cannot_open), nov_file);
 		}
 	}
 	return NULL;

@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-02-19
+ *  Updated   : 2023-10-10
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -150,11 +150,13 @@ debug_print_header(
 		fprintf(fp, "subj=[%-38s]\n", s->subject);
 		fprintf(fp, "date=[%ld]  from=[%s]  name=[%s]\n", (long) s->date, s->from,
 			BlankIfNull(s->name));
-		fprintf(fp, "msgid=[%s]  refs=[%s]\n",
-			BlankIfNull(s->msgid),
-			BlankIfNull(s->refs));
 
-		if (s->killed)
+#if 0	/* msgid and refs are only retained until the reference tree is built */
+		if (s->msgid || s->refs)
+			fprintf(fp, "msgid=[%s]  refs=[%s]\n", BlankIfNull(s->msgid), BlankIfNull(s->refs));
+#endif /* 0 */
+
+		if (s->score != 0)
 			fprintf(fp, "score=[%d] gnksa=[%d] lines=[%d]\n", s->score, s->gnksa_code, s->line_count);
 
 		fprintf(fp, "thread=[%d]  prev=[%d]  status=[%u]\n\n", s->thread, s->prev, s->status);

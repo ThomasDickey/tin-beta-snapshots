@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-06-22
+ *  Updated   : 2023-11-03
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1002,6 +1002,7 @@ return_to_index:
 				hide_uue = UUE_NO;
 				resize_article(TRUE, &pgart);
 				attachment_page(&pgart);
+				signal_context = cPage;
 				hide_uue = hide_uue_tmp;
 				resize_article(TRUE, &pgart);
 				draw_page(0);
@@ -2131,6 +2132,15 @@ toggle_raw(
 }
 
 
+void
+update_hide_uue(
+	void)
+{
+	if (hide_uue != tinrc.hide_uue)
+		hide_uue = tinrc.hide_uue;
+}
+
+
 /*
  * Re-cook an article
  */
@@ -2274,6 +2284,15 @@ info_pager(
 				toggle_mini_help(INFO_PAGER);
 				display_info_page(0);
 				break;
+
+#ifdef HAVE_COLOR
+			case GLOBAL_TOGGLE_COLOR:
+				if (toggle_color()) {
+					display_info_page(0);
+					show_color_status();
+				}
+				break;
+#endif /* HAVE_COLOR */
 
 			case GLOBAL_SEARCH_SUBJECT_FORWARD:
 			case GLOBAL_SEARCH_SUBJECT_BACKWARD:

@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2022-04-09
+ *  Updated   : 2023-11-03
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2023 Jason Faultless <jason@altarstone.com>
@@ -53,7 +53,7 @@ static char *strip_charset(char **value);
 static char *skip_equal_sign(char *source);
 static char *skip_space(char *source);
 static int boundary_cmp(const char *line, const char *boundary);
-static int count_lines(char *line);
+static int count_lines(const char *line);
 static int parse_multipart_article(FILE *infile, t_openartinfo *artinfo, t_part *part, int depth, t_bool show_progress_meter);
 static int parse_normal_article(FILE *in, t_openartinfo *artinfo, t_bool show_progress_meter);
 static int parse_rfc2045_article(FILE *infile, int line_count, t_openartinfo *artinfo, t_bool show_progress_meter);
@@ -749,15 +749,17 @@ parse_content_encoding(
 	}
 
 	/*
-	 * TODO: check rfc - may need to switch Content-Type to
-	 * application/octet-steam where this header exists but is unparsable.
+	 * RFC 2045 6.2
+	 * "Labelling unencoded data containing 8bit characters as "7bit" is not
+	 *  allowed, nor is labelling unencoded non-line-oriented data as anything
+	 *  other than "binary" allowed."
 	 *
-	 * RFC 2045 6.2:
-	 * Labelling unencoded data containing 8bit characters as "7bit" is not
-	 * allowed, nor is labelling unencoded non-line-oriented data as anything
-	 * other than "binary" allowed.
+	 * RFC 2045 6.4
+	 * "Any entity with an unrecognized Content-Transfer-Encoding must be
+	 *  treated as if it has a Content-Type of "application/octet-stream",
+	 *  regardless of what the Content-Type header field actually says."
 	 */
-	return ENCODING_BINARY;
+	return ENCODING_UNKNOWN;
 }
 
 
@@ -801,6 +803,7 @@ new_part(
 	ptr->type = TYPE_TEXT;					/* Defaults per RFC */
 	ptr->subtype = my_strdup("plain");
 	ptr->description = NULL;
+	ptr->language = NULL;
 	ptr->encoding = ENCODING_7BIT;
 	ptr->format = FORMAT_FIXED;
 	ptr->params = NULL;
@@ -824,6 +827,7 @@ new_part(
 
 	ptr->offset = 0;
 	ptr->line_count = 0;
+	ptr->bytes = 0;
 	ptr->depth = 0;							/* Not an embedded object (yet) */
 	ptr->uue = NULL;
 	ptr->next = NULL;
@@ -853,6 +857,7 @@ free_parts(
 
 	free(ptr->subtype);
 	FreeAndNull(ptr->description);
+	FreeAndNull(ptr->language);
 	if (ptr->params)
 		free_list(ptr->params);
 	if (ptr->uue)
@@ -997,6 +1002,13 @@ parse_rfc822_headers(
 			if (!hdr->subj)
 				hdr->subj = my_strdup("");
 
+			if (hdr->ext->encoding == ENCODING_UNKNOWN) { /* RFC 2046 6.4*/
+				hdr->ext->encoding = ENCODING_BINARY;
+				hdr->ext->type = TYPE_APPLICATION;
+				FreeIfNeeded(hdr->ext->subtype);
+				hdr->ext->subtype = my_strdup("octet-stream");
+			}
+
 			return 0;
 		}
 
@@ -1114,6 +1126,13 @@ parse_rfc822_headers(
 			parse_content_disposition(ptr, hdr->ext);
 			continue;
 		}
+		if ((ptr = parse_header(line, "Content-Language", TRUE, FALSE, FALSE))) {
+			remove_cwsp(ptr);
+			FreeIfNeeded(hdr->ext->language);
+			/* TODO: add RFC 5646 check */
+			hdr->ext->language = my_strdup(ptr);
+			continue;
+		}
 	}
 
 	return tin_errno;
@@ -1126,9 +1145,9 @@ parse_rfc822_headers(
  */
 static int
 count_lines(
-	char *line)
+	const char *line)
 {
-	char *src = line;
+	const char *src = line;
 	char c;
 	int lines = 1;
 
@@ -1148,7 +1167,8 @@ void
 unfold_header(
 	char *line)
 {
-	char *src = line, *dst = line;
+	const char *src = line;
+	char *dst = line;
 	char c;
 
 	while ((c = *src++)) {
@@ -1185,6 +1205,7 @@ parse_multipart_article(
 	char *ptr;
 	const char *bd;
 	int bnd;
+	int bytes;
 	int state = M_SEARCHING;
 	t_bool is_rfc822 = FALSE;
 	t_part *curr_part = NULL, *rfc822_part = NULL;
@@ -1205,19 +1226,35 @@ parse_multipart_article(
 #endif /* DEBUG */
 		}
 
+		bytes = strlen(line) + 1; /* \n */
 		artinfo->hdr.ext->line_count += count_lines(line);
+		artinfo->hdr.ext->bytes += bytes;
 		if (show_progress_meter)
 			progress(artinfo->hdr.ext->line_count);		/* Overall line count */
 
-		if (part && part != artinfo->hdr.ext)
+		if (part && part != artinfo->hdr.ext) {
 			part->line_count += count_lines(line);
+			part->bytes += bytes;
+		}
 
-		if (is_rfc822 && rfc822_part)
+		if (is_rfc822 && rfc822_part) {
 			rfc822_part->line_count += count_lines(line);
+			rfc822_part->bytes += bytes;
+		}
 
-		if (bnd == BOUND_END) {							/* End of this part detected */
-			if (is_rfc822 && rfc822_part)
+		if (bnd == BOUND_END) {		/* End of this part detected */
+			if (is_rfc822 && rfc822_part) {
 				rfc822_part->line_count -= count_lines(line);
+				rfc822_part->bytes -= bytes;
+			}
+
+			if (curr_part && curr_part->encoding == ENCODING_UNKNOWN) { /* RFC 2046 6.4*/
+				curr_part->encoding = ENCODING_BINARY;
+				curr_part->type = TYPE_APPLICATION;
+				FreeIfNeeded(curr_part->subtype);
+				curr_part->subtype = my_strdup("octet-stream");
+			}
+
 			/*
 			 * When we have reached the end boundary of the outermost envelope
 			 * just log any trailing data for the raw article format.
@@ -1236,6 +1273,7 @@ parse_multipart_article(
 					if (read_news_via_nntp)
 						fprintf(artinfo->raw, "%s\n", line);
 					artinfo->hdr.ext->line_count++;
+					artinfo->hdr.ext->bytes += strlen(line) + 1;
 				}
 				return tin_errno | TIN_EOF;		/* Flag EOF */
 			}
@@ -1275,15 +1313,20 @@ parse_multipart_article(
 					curr_part->offset = ftell(artinfo->raw);
 
 					if (curr_part->type == TYPE_MULTIPART) {	/* Complex multipart article */
-						int ret, old_line_count;
+						int ret, old_bytes, old_line_count;
 
 						old_line_count = curr_part->line_count;
+						old_bytes = curr_part->bytes;
 						if ((ret = parse_multipart_article(infile, artinfo, curr_part, depth + 1, show_progress_meter)) != 0)
 							return ret;							/* User abort or EOF reached */
-						if (part && part != artinfo->hdr.ext)
+						if (part && part != artinfo->hdr.ext) {
 							part->line_count += curr_part->line_count - old_line_count;
-						if (is_rfc822 && rfc822_part)
+							part->bytes += curr_part->bytes - old_bytes;
+						}
+						if (is_rfc822 && rfc822_part) {
 							rfc822_part->line_count += curr_part->line_count - old_line_count;
+							rfc822_part->bytes += curr_part->bytes - old_bytes;
+						}
 					} else if (curr_part->type == TYPE_MESSAGE && !strcasecmp("RFC822", curr_part->subtype)) {
 						is_rfc822 = TRUE;
 						rfc822_part = curr_part;
@@ -1316,6 +1359,13 @@ parse_multipart_article(
 					curr_part->description = my_strdup(ptr);
 					break;
 				}
+				if ((ptr = parse_header(line, "Content-Language", TRUE, FALSE, FALSE))) {
+					remove_cwsp(ptr);
+					FreeIfNeeded(curr_part->language);
+					/* TODO: add RFC 5646 check */
+					curr_part->language = my_strdup(ptr);
+					break;
+				}
 				break;
 
 			case M_BODY:
@@ -1323,6 +1373,7 @@ parse_multipart_article(
 					case BOUND_NONE:
 /* fprintf(stderr, "BOD:%s\n", line); */
 						curr_part->line_count++;
+						curr_part->bytes += bytes;
 						break;
 
 					case BOUND_START:		/* Start new attachment */
@@ -1331,6 +1382,12 @@ parse_multipart_article(
 							rfc822_part->line_count--;
 							rfc822_part = NULL;
 							is_rfc822 = FALSE;
+						}
+						if (curr_part && curr_part->encoding == ENCODING_UNKNOWN) { /* RFC 2046 6.4*/
+							curr_part->encoding = ENCODING_BINARY;
+							curr_part->type = TYPE_APPLICATION;
+							FreeIfNeeded(curr_part->subtype);
+							curr_part->subtype = my_strdup("octet-stream");
 						}
 						state = M_HDR;
 						curr_part = new_part(part);

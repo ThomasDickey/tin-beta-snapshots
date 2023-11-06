@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-29
+ *  Updated   : 2023-11-05
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -572,10 +572,7 @@ subscribe(
 	int sub;
 	t_bool found = FALSE;
 
-	if (no_write)
-		return;
-
-	if ((newfp = fopen(newnewsrc, "w")) == NULL)
+	if (no_write || (newfp = fopen(newnewsrc, "w")) == NULL)
 		return;
 
 	if (newsrc_mode)
@@ -618,6 +615,90 @@ subscribe(
 					fprintf(newfp, "1\n");
 			} else
 				fprintf(newfp, "%s%c\n", group->name, sub_state);
+		}
+	}
+
+	if ((sub = ferror(newfp)) || fclose(newfp)) {
+		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+		if (sub) {
+			clearerr(newfp);
+			fclose(newfp);
+		}
+		unlink(newnewsrc);
+	} else
+		rename_file(newnewsrc, newsrc);
+}
+
+
+/*
+ * Like subscribe() but for a bunch of groups.
+ */
+void
+bulk_subscribe(
+	struct t_group **groups,
+	int groups_cnt,
+	int sub_state,
+	t_bool get_info)
+{
+	FILE *fp;
+	FILE *newfp;
+	char *line;
+	char *seq;
+	int i, sub;
+	t_bool found = FALSE;
+
+	if (no_write || (newfp = fopen(newnewsrc, "w")) == NULL)
+		return;
+
+	if (newsrc_mode)
+#ifdef HAVE_FCHMOD
+		fchmod(fileno(newfp), newsrc_mode);
+#else
+#	ifdef HAVE_CHMOD
+		chmod(newnewsrc, newsrc_mode);
+#	endif /* HAVE_CHMOD */
+#endif /* HAVE_FCHMOD */
+
+	if ((fp = fopen(newsrc, "r")) != NULL) {
+		while ((line = tin_fgets(fp, FALSE)) != NULL) {
+			if ((seq = parse_newsrc_line(line, &sub))) {
+				found = FALSE;
+				for (i = 0; i < groups_cnt; i++) {
+					if (groups[i] && STRCMPEQ(line, groups[i]->name)) {
+						fprintf(newfp, "%s%c %s\n", line, sub_state, seq);
+						groups[i]->subscribed = SUB_BOOL(sub_state);
+
+						/* If previously subscribed to in .newsrc, load up any existing information */
+						if (sub_state == SUBSCRIBED)
+							parse_bitmap_seq(groups[i], seq);
+
+						groups[i] = NULL;
+						found = TRUE;
+						break;
+					}
+				}
+				if (!found)
+					fprintf(newfp, "%s%c %s\n", line, sub, seq);
+			}
+		}
+
+		fclose(fp);
+
+		for (i = 0; i < groups_cnt; i++) {
+			if (groups[i]) {
+				wait_message(0, _(txt_subscribing));
+				spin_cursor();
+				groups[i]->subscribed = SUB_BOOL(sub_state);
+				if (sub_state == SUBSCRIBED) {
+					fprintf(newfp, "%s%c ", groups[i]->name, sub_state);
+					if (get_info) {
+						get_subscribe_info(groups[i]);
+						print_bitmap_seq(newfp, groups[i]);
+					} else /* we are not allowed to issue NNTP cmds during AUTOSUBSCRIBE loop */
+						fprintf(newfp, "1\n");
+				} else
+					fprintf(newfp, "%s%c\n", groups[i]->name, sub_state);
+			}
 		}
 	}
 
@@ -1245,10 +1326,7 @@ pos_group_in_newsrc(
 	t_bool unsub_created = FALSE;
 	t_bool fs_error = FALSE;
 
-	if (no_write)
-		goto rewrite_group_done;
-
-	if ((fp_in = fopen(newsrc, "r")) == NULL)
+	if (no_write || (fp_in = fopen(newsrc, "r")) == NULL)
 		goto rewrite_group_done;
 
 	if ((fp_out = fopen(newnewsrc, "w")) == NULL)

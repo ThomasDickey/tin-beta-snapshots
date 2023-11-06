@@ -3,7 +3,7 @@
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2016-01-01
+ *  Updated   : 2023-10-25
  *  Notes     : RFC 2046 MIME article definitions
  *
  * Copyright (c) 2000-2023 Jason Faultless <jason@altarstone.com>
@@ -58,6 +58,7 @@
 #	define ENCODING_8BIT		3
 #	define ENCODING_BINARY		4
 #	define ENCODING_UUE			5
+#	define ENCODING_UNKNOWN		6
 
 #	define DISP_INLINE			0
 #	define DISP_ATTACH			1
@@ -87,7 +88,7 @@ typedef struct param
 
 /*
  * Describes the properties of an article or article attachment
- * We re-use this to describe uuencoded sections
+ * We reuse this to describe uuencoded sections
  */
 typedef struct part
 {
@@ -99,8 +100,10 @@ typedef struct part
 #	endif /* 0 */
 	char *subtype;			/* Content subtype */
 	char *description;		/* Content-Description */
+	char *language;			/* Content-Language RFC 3282 */
 	t_param *params;		/* List of Content-Type parameters */
 	long offset;			/* offset in article of the text of attachment */
+	unsigned long bytes;	/* part size in bytes */
 	int line_count;			/* # lines in this part */
 	int depth;				/* For multipart within multipart */
 	struct part *uue;		/* UUencoded section information */

@@ -1,4 +1,4 @@
--- 2.6.3 release 20231002 "" --
+-- 2.6.3 release 20231106 "" --
 
  017) Enrik Berkhan <enrik@tin.org>
       ADD. "COMPRESS DEFLATE" support (RFC 8054)
@@ -16,8 +16,22 @@
 
  015) Dennis Preiser <dennis@d--p.de>
       ADD. do not interpret \n in editor_format
+      ADD. mime encode long header-lines (> 998 octets) if !post_8bit_header
+           and warn about long unbroken header-lines otherwise
+      ADD. configurable display format of attachments
+           (page_mime_format, page_uue_format, attachment_format)
+      ADD. avoid fopen()/fclose() overhead in subscribe_pattern()
       BUG. -vZ output was ugly due to one missing and one superfluous newline
-      FIX. active.c, lang.c, misc.c, nntplib.c, save.c
+      BUG. tagging articles in group and thread level may grabble the
+           screen after reading them and returning to that level if
+           art_mark_width = 1
+      BUG. crafting a f'up to a non existent group lead to a crash
+      BUG. changing hide_uue via 'M'enu in pager missed to recook
+           the article
+      FIX. active.c, config.c, cook.c, group.c, init.c, lang.c, misc.c
+           newsrc.c, nntplib.c, options_menu.c, page.c, post.c, rfc2047.c
+           save.c, select.c, thread.c, extern.h, proto.h, tin.h, tinrc.h
+           tin.[15]
 
  014) Matt Anton <tin@lv223.org>
       ADD. updated French translation
@@ -33,6 +47,11 @@
       BUG. timeout counter was not reset on reconnect
       BUG. fix uncritical TOCTOU issue in read_newsrc() and
            open_save_filename()
+      BUG. use of potentially uninitialized this_resp instead of respnum
+           in strfquote() when calling my_strftime()
+      BUG. an unknown Content-Transfer-Encoding was correctly treated as
+           binary but without updating Content-Type to
+           application/octet-stream (RFC2045 6.4)
       ADD. -[zZMN] now note unsubscribed cmd-line groups
       ADD. replace stpwatch.h macros avoiding ftime()
       ADD. do not resend HEAD after ERR_GOODBYE response
@@ -53,12 +72,19 @@
       ADD. allow ISO8859* (without hyphen) as mm_charset in
            my_isprint()-fallback when compiling with -DNO_LOCALE
       ADD. validate_charset() if charset name is read from an article
-      FIX. active.c, art.c, auth.c, config.c, cook.c, feed.c, filter.c, group.c
-           header.c, init.c, keymap.c, lang.c, mail.c, main.c, makecfg.c
-           memory.c, misc.c, newsrc.c, nntplib.c, nntps.c, options_menu.c
-           page.c, post.c, refs.c, save.c, search.c, select.c, signal.c
-           string.c, tcurses.c, thread.c, tmpfile.c, extern.h, proto.h, tin.h
-           tinrc.h, Makefile[.in]m tin.1, tin.5, configure[.in], config.guess
+      ADD. show score in "-D 2" filter output if != 0 (instead of only for
+           killed articles)
+      ADD. add 'f' / 'F' (post a followup (without quotes)) to thread menu
+      ADD. add Content-Language (RFC 3282) evaluation (pager only)
+      ADD. GLOBAL_TOGGLE_COLOR ('&') to info-pager ('h' help-page,
+           'J' connection-info and 'M' menu)
+      FIX. active.c, art.c, auth.c, config.c, cook.c, debug.c, feed.c, filter.c
+           group.c, header.c, init.c, keymap.c, lang.c, mail.c, main.c
+           makecfg.c, memory.c, misc.c, newsrc.c, nntplib.c, nntps.c
+           options_menu.c, page.c, post.c, refs.c, rfc2046.c, rfc2047.c, save.c
+           search.c, select.c, signal.c, string.c, tcurses.c, thread.c
+           tmpfile.c, extern.h, keymap.h, proto.h, rfc2046.h, tin.h, tinrc.h
+           Makefile[.in], tin.1, tin.5, configure[.in], config.guess
            config.sub
 
  012) Thomas E. Dickey <dickey@invisible-island.net>

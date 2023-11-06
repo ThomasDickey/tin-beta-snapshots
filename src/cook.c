@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2023-08-24
+ *  Updated   : 2023-11-02
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2023 Jason Faultless <jason@altarstone.com>
@@ -58,10 +58,14 @@
 #define MATCH_REGEX(x,y,z)	(match_regex_ex(y, z, 0, 0, &(x)) >= 0)
 
 
+static char *ltobi(unsigned long i);
+static struct t_attach_item *add_attach_line_item(struct t_attach_item **item);
 static t_bool charset_unsupported(const char *charset);
 static t_bool header_wanted(const char *line);
+static t_bool shorten_attach_line(struct t_attach_item *item);
 static t_part *new_uue(t_part **part, char *name);
 static void process_text_body_part(t_bool wrap_lines, FILE *in, t_part *part, int hide_uue);
+static void put_attach(t_bool wrap_lines, t_part *part, int depth, int is_uue, const char *name, const char *charset);
 static void put_cooked(size_t buf_len, t_bool wrap_lines, int flags, const char *fmt, ...);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	static t_bool wexpand_ctrl_chars(wchar_t **wline, size_t *length, size_t lcook_width);
@@ -309,7 +313,7 @@ put_cooked(
 
 
 /*
- * Add a new uuencode attachment description to the current part
+ * Add a new UUE-uuencode attachment description to the current part
  */
 static t_part *
 new_uue(
@@ -368,28 +372,491 @@ get_filename(
 }
 
 
-#define PUT_UUE(part, qualifier_text) \
-	put_cooked(LEN, wrap_lines, C_UUE, _(txt_uue), \
-		part->depth ? (part->depth - 1) * 4 : 0, "", \
-		content_types[part->type], part->subtype, \
-		qualifier_text, part->line_count, get_filename(part->params))
+#define SMALL_LETTER_CONDITIONALS() do { \
+		curr->flags |= ATTACH_SHOW_BOTH; \
+		if (excl_seen) \
+			curr->flags |= ATTACH_OMIT_BOTH; \
+		else if (star_seen) \
+			curr->flags |= ATTACH_OMIT_DESC; \
+	} while (0)
 
-#define PUT_ATTACH(part, depth, name, charset) \
-	put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_attach), \
-		depth, "", \
-		content_types[part->type], part->subtype, \
-		content_encodings[part->encoding], \
-		charset ? _(txt_attach_charset) : "", BlankIfNull(charset), \
-		part->line_count, \
-		name ? _(txt_name) : "", BlankIfNull(name)); \
-		\
-	if (part->description) \
-		put_cooked(LEN, wrap_lines, C_ATTACH, \
-			_(txt_attach_description), \
-			depth, "", \
-			part->description); \
-	if (part->next != NULL || IS_PLAINTEXT(part)) \
-		put_cooked(1, wrap_lines, C_ATTACH, "\n")
+#define CAPITAL_LETTER_CONDITIONALS() do { \
+		curr->flags |= ATTACH_SHOW_CONTENT; \
+		if (excl_seen) \
+			curr->flags |= ATTACH_OMIT_BOTH; \
+	} while (0)
+
+#define INSERT_SEP() do { \
+		if (curr->prev && (curr->flags & (ATTACH_SHOW_CONTENT | ATTACH_SHOW_BOTH)) && (space_left -= strlen(_(txt_mime_sep)) > 0)) { \
+			strcat(attach_line, _(txt_mime_sep)); \
+			al_ptr = attach_line + strlen(attach_line); \
+		} \
+	} while (0)
+
+#define INSERT_SLASH() do { \
+		if ((curr->flags & (ATTACH_SHOW_CONTENT | ATTACH_SHOW_BOTH)) && (space_left -= 2 > 0)) { \
+			*al_ptr++ = '/'; \
+			*al_ptr = '\0'; \
+		} \
+	} while (0)
+
+#define BUILD_ATTACH_ITEM() do { \
+		if (curr->flags & (ATTACH_SHOW_CONTENT | ATTACH_SHOW_BOTH)) { \
+			if (curr->flags & ATTACH_SHOW_BOTH) \
+				snprintf(buf, sizeof(buf), curr->description, curr->content); \
+			else \
+				snprintf(buf, sizeof(buf), curr->fmt, curr->content); \
+			if ((space_left -= strlen(buf) > 0)) \
+				strcat(attach_line, buf); \
+		} \
+		curr = curr->next; \
+		al_ptr = attach_line + strlen(attach_line); \
+	} while (0)
+
+
+static struct t_attach_item *
+add_attach_line_item(
+		struct t_attach_item **item)
+{
+	struct t_attach_item *curr;
+	struct t_attach_item *prev = NULL;
+
+	if (!*item)
+		curr = *item = my_malloc(sizeof(struct t_attach_item));
+	else {
+		curr = (*item)->next;
+		prev = *item;
+		while (curr) {
+			prev = curr;
+			curr = curr->next;
+		}
+		curr = my_malloc(sizeof(struct t_attach_item));
+		prev->next = curr;
+	}
+	curr->content = NULL;
+	curr->description = NULL;
+	curr->fmt = "%s";
+	curr->flags = 0;
+	curr->prev = prev;
+	curr->next = NULL;
+	return curr;
+}
+
+
+static t_bool
+shorten_attach_line(
+		struct t_attach_item *item)
+{
+	struct t_attach_item *curr = item;
+
+	while (curr) {
+		if ((curr->flags & ATTACH_SHOW_BOTH) && (curr->flags & (ATTACH_OMIT_DESC | ATTACH_OMIT_BOTH))) {
+			curr->flags ^= ATTACH_SHOW_BOTH;
+			curr->flags |= ATTACH_SHOW_CONTENT;
+			return TRUE;
+		}
+		curr = curr->prev;
+	}
+	curr = item;
+	while (curr) {
+		if ((curr->flags & ATTACH_SHOW_CONTENT) && (curr->flags & ATTACH_OMIT_BOTH)) {
+			curr->flags ^= ATTACH_SHOW_CONTENT;
+			return TRUE;
+		}
+		curr = curr->prev;
+	}
+	return FALSE;
+}
+
+
+char *
+build_attach_line(
+	t_part *part,
+	int depth,
+	int max_len,
+	int is_uue,
+	const char *name,
+	const char *charset)
+{
+	char *attach_line;
+	char *al_ptr;
+	char *fmt_ptr;
+	char *line_cnt_str = NULL;
+	char buf[BUFSIZ];
+	char *fmt;
+	int i, line_cnt_str_len;
+	ssize_t space_left;
+	struct t_attach_item *curr = NULL;
+	struct t_attach_item *items = NULL;
+	struct t_attach_item *last = NULL;
+	t_bool init = TRUE;
+	t_bool excl_seen = FALSE;
+	t_bool star_seen = FALSE;
+
+	if (is_uue)
+		fmt = tinrc.page_uue_format;
+	else if (signal_context == cAttachment)
+		fmt = tinrc.attachment_format;
+	else
+		fmt = tinrc.page_mime_format;
+
+	fmt_ptr = fmt;
+	for (; *fmt_ptr; fmt_ptr++) {
+		if (*fmt_ptr != '%' && !(excl_seen || star_seen))
+			continue;
+
+		switch (*++fmt_ptr) {
+			case '\0':
+			case '%':
+				break;
+
+			case '!':
+				excl_seen = TRUE;
+				--fmt_ptr;
+				break;
+
+			case '*':
+				star_seen = TRUE;
+				--fmt_ptr;
+				break;
+
+			case 'c':
+				if (charset) {
+					curr = add_attach_line_item(&items);
+					curr->content = charset;
+					curr->description = _(txt_mime_charset);
+					SMALL_LETTER_CONDITIONALS();
+				}
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'd':
+				curr = add_attach_line_item(&items);
+				if (!line_cnt_str) {
+					line_cnt_str_len = snprintf(NULL, 0, "%d", part->line_count);
+					line_cnt_str = my_malloc(line_cnt_str_len + 1);
+					snprintf(line_cnt_str, line_cnt_str_len + 1, "%d", part->line_count);
+				}
+				curr->content = line_cnt_str;
+				curr->description = _(txt_mime_lines);
+				SMALL_LETTER_CONDITIONALS();
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'e':
+				curr = add_attach_line_item(&items);
+				curr->content = content_encodings[part->encoding];
+				curr->description = _(txt_mime_encoding);
+				SMALL_LETTER_CONDITIONALS();
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'l':
+				if (!is_uue && part->language) {
+					curr = add_attach_line_item(&items);
+					curr->content = part->language;
+					curr->description = _(txt_mime_lang);
+					SMALL_LETTER_CONDITIONALS();
+				}
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'n':
+				if (name) {
+					curr = add_attach_line_item(&items);
+					curr->content = name;
+					curr->description = _(txt_mime_name);
+					SMALL_LETTER_CONDITIONALS();
+				}
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 's':
+				curr = add_attach_line_item(&items);
+				curr->content = part->subtype;
+				curr->description = _(txt_mime_content_subtype);
+				curr->flags |= ATTACH_ITEM_IS_SUBTYPE;
+				SMALL_LETTER_CONDITIONALS();
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 't':
+				curr = add_attach_line_item(&items);
+				curr->content = content_types[part->type];
+				curr->description = _(txt_mime_content_type);
+				curr->flags |= ATTACH_ITEM_IS_TYPE;
+				SMALL_LETTER_CONDITIONALS();
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'z':
+				curr = add_attach_line_item(&items);
+				curr->content = ltobi(part->bytes);
+				curr->description = _(txt_mime_size);
+				SMALL_LETTER_CONDITIONALS();
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'C':
+				if (charset) {
+					curr = add_attach_line_item(&items);
+					curr->content = charset;
+					curr->description = _(txt_mime_charset);
+					CAPITAL_LETTER_CONDITIONALS();
+				}
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'D':
+				curr = add_attach_line_item(&items);
+				if (!line_cnt_str) {
+					line_cnt_str_len = snprintf(NULL, 0, "%d", part->line_count);
+					line_cnt_str = my_malloc(line_cnt_str_len + 1);
+					snprintf(line_cnt_str, line_cnt_str_len + 1, "%d", part->line_count);
+				}
+				curr->content = line_cnt_str;
+				curr->description = _(txt_mime_lines);
+				CAPITAL_LETTER_CONDITIONALS();
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'E':
+				curr = add_attach_line_item(&items);
+				curr->content = content_encodings[part->encoding];
+				curr->description = _(txt_mime_encoding);
+				CAPITAL_LETTER_CONDITIONALS();
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'I':
+				if (is_uue) {
+					curr = add_attach_line_item(&items);
+					curr->content = is_uue == UUE_COMPLETE ? _(txt_uue_complete) : _(txt_uue_incomplete);
+					CAPITAL_LETTER_CONDITIONALS();
+				}
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'L':
+				if (!is_uue && part->language) {
+					curr = add_attach_line_item(&items);
+					curr->content = part->language;
+					curr->description = _(txt_mime_lang);
+					CAPITAL_LETTER_CONDITIONALS();
+				}
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'N':
+				if (name) {
+					curr = add_attach_line_item(&items);
+					curr->content = name;
+					curr->description = _(txt_mime_name);
+					CAPITAL_LETTER_CONDITIONALS();
+				}
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'S':
+				curr = add_attach_line_item(&items);
+				curr->content = part->subtype;
+				curr->description = _(txt_mime_content_subtype);
+				curr->flags |= ATTACH_ITEM_IS_SUBTYPE;
+				CAPITAL_LETTER_CONDITIONALS();
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'T':
+				curr = add_attach_line_item(&items);
+				curr->content = content_types[part->type];
+				curr->description = _(txt_mime_content_type);
+				curr->flags |= ATTACH_ITEM_IS_TYPE;
+				CAPITAL_LETTER_CONDITIONALS();
+				excl_seen = star_seen = FALSE;
+				break;
+
+			case 'Z':
+				curr = add_attach_line_item(&items);
+				curr->content = ltobi(part->bytes);
+				curr->description = _(txt_mime_size);
+				CAPITAL_LETTER_CONDITIONALS();
+				excl_seen = star_seen = FALSE;
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	last = curr;
+	star_seen = excl_seen = FALSE;
+	attach_line = my_malloc(LEN);
+	space_left = LEN - 2;
+	attach_line[0] = '\0';
+
+	while (space_left > 0 && (init || ((strwidth(attach_line) > max_len && shorten_attach_line(last))))) {
+		init = FALSE;
+		fmt_ptr = fmt;
+		curr = items;
+		al_ptr = attach_line;
+		for (i = 0; i < depth; i++)
+			*al_ptr++ = ' ';
+
+		*al_ptr = '\0';
+		for (; *fmt_ptr; fmt_ptr++) {
+			if (*fmt_ptr != '%' && !(excl_seen || star_seen)) {
+				*al_ptr++ = *fmt_ptr;
+				*al_ptr = '\0';
+				space_left -= 2;
+				continue;
+			}
+			switch (*++fmt_ptr) {
+				case '\0':
+					break;
+
+				case '%':
+					*al_ptr++ = *fmt_ptr;
+					*al_ptr = '\0';
+					break;
+
+				case '!':
+					excl_seen = TRUE;
+					--fmt_ptr;
+					break;
+
+				case '*':
+					star_seen = TRUE;
+					--fmt_ptr;
+					break;
+
+				case 'c':
+				case 'C':
+					if (charset && curr) {
+						INSERT_SEP();
+						BUILD_ATTACH_ITEM();
+					}
+					excl_seen = star_seen = FALSE;
+					break;
+
+				case 'd':
+				case 'D':
+					if (curr) {
+						INSERT_SEP();
+						BUILD_ATTACH_ITEM();
+					}
+					excl_seen = star_seen = FALSE;
+					break;
+
+				case 'l':
+				case 'L':
+					if (!is_uue && part->language && curr) {
+						INSERT_SEP();
+						BUILD_ATTACH_ITEM();
+					}
+					excl_seen = star_seen = FALSE;
+					break;
+
+				case 'n':
+				case 'N':
+				case 'e':
+				case 'E':
+					if (curr) {
+						INSERT_SEP();
+						BUILD_ATTACH_ITEM();
+					}
+					excl_seen = star_seen = FALSE;
+					break;
+
+				case 'I':
+					if (is_uue && curr) {
+						INSERT_SEP();
+						BUILD_ATTACH_ITEM();
+					}
+					excl_seen = star_seen = FALSE;
+					break;
+
+				case 's':
+				case 'S':
+					if (curr) {
+						if (curr->prev && (curr->prev->flags & ATTACH_ITEM_IS_TYPE))
+							INSERT_SLASH();
+						else
+							INSERT_SEP();
+						BUILD_ATTACH_ITEM();
+					}
+					excl_seen = star_seen = FALSE;
+					break;
+
+				case 't':
+				case 'T':
+					if (curr) {
+						if (curr->prev && (curr->prev->flags & ATTACH_ITEM_IS_SUBTYPE))
+							INSERT_SLASH();
+						else
+							INSERT_SEP();
+						BUILD_ATTACH_ITEM();
+					}
+					excl_seen = star_seen = FALSE;
+					break;
+
+				case 'z':
+				case 'Z':
+					if (curr) {
+						INSERT_SEP();
+						BUILD_ATTACH_ITEM();
+					}
+					excl_seen = star_seen = FALSE;
+					break;
+
+				default:
+					break;
+			}
+		}
+	}
+
+	FreeIfNeeded(line_cnt_str);
+
+	if (items) {
+		while (last) {
+			curr = last;
+			last = last->prev;
+			free(curr);
+		}
+	}
+
+	return (attach_line);
+}
+
+
+static void
+put_attach(
+	t_bool wrap_lines,
+	t_part *part,
+	int depth,
+	int is_uue,
+	const char *name,
+	const char *charset)
+{
+	char *attach_line = build_attach_line(part, depth, cCOLS - 1, is_uue, name, charset);
+
+	if (is_uue)
+		put_cooked(LEN, wrap_lines, C_UUE, "%s", attach_line);
+	else
+		put_cooked(LEN, wrap_lines, C_ATTACH, "%s", attach_line);
+
+	FreeIfNeeded(attach_line);
+
+	if (!is_uue && part->description)
+		put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_mime_description), depth, "", part->description);
+
+	if (part->next != NULL || IS_PLAINTEXT(part)) {
+		if (is_uue)
+			put_cooked(1, wrap_lines, C_UUE, "\n");
+		else
+			put_cooked(1, wrap_lines, C_ATTACH, "\n");
+	}
+}
+
 
 /*
  * Decodes text bodies, remove sig's, detects uuencoded sections
@@ -411,6 +878,7 @@ process_text_body_part(
 	t_bool in_uue = FALSE;			/* Set when in uuencoded section */
 	t_bool in_verbatim = FALSE;		/* Set when in verbatim section */
 	t_bool verbatim_begin = FALSE;	/* Set when verbatim_begin_regex matches */
+	t_bool is_uubegin;				/* Set when current line starts a uue part */
 	t_bool is_uubody;				/* Set when current line looks like a uuencoded line */
 	t_bool first_line_blank = TRUE;	/* Unset when first non-blank line is reached */
 	t_bool put_blank_lines = FALSE;	/* Set when previously skipped lines needs to put */
@@ -564,7 +1032,7 @@ process_text_body_part(
 					if (in_uue) {
 						in_uue = FALSE;
 						if (hide_uue)
-							PUT_UUE(curruue, _(txt_incomplete));
+							put_attach(wrap_lines, curruue, (curruue->depth - 1) * 4, UUE_INCOMPLETE, get_filename(curruue->params), content_encodings[curruue->encoding]);
 					}
 				}
 			}
@@ -579,10 +1047,19 @@ process_text_body_part(
 			 * TODO: look for a tailing size line after end (non standard
 			 *       extension)?
 			 */
+
+			is_uubegin = FALSE;
+
 			if (match_regex_ex(line, len, 0, 0, &uubegin_regex) >= 0) {
 				REGEX_SIZE *ovector = regex_get_ovector_pointer(&uubegin_regex);
 
-				in_uue = TRUE;
+				if (in_uue) { /* previous uue part incomplete and the current one follows without gap */
+					if (hide_uue)
+						put_attach(wrap_lines, curruue, (curruue->depth - 1) * 4, UUE_INCOMPLETE, get_filename(curruue->params), content_encodings[curruue->encoding]);
+				} else
+					in_uue = TRUE;
+
+				is_uubegin = TRUE;
 				curruue = new_uue(&part, line + ovector[1]);
 				if (hide_uue)
 					continue;				/* Don't cook the 'begin' line */
@@ -590,7 +1067,7 @@ process_text_body_part(
 				if (in_uue) {
 					in_uue = FALSE;
 					if (hide_uue) {
-						PUT_UUE(curruue, "");
+						put_attach(wrap_lines, curruue, (curruue->depth - 1) * 4, UUE_COMPLETE, get_filename(curruue->params), content_encodings[curruue->encoding]);
 						continue;			/* Don't cook the 'end' line */
 					}
 				}
@@ -616,15 +1093,21 @@ process_text_body_part(
 			}
 
 			if (in_uue) {
-				if (is_uubody)
+				if (is_uubody) {
 					curruue->line_count++;
-				else {
+					curruue->bytes += len;
+				} else {
 					if (line[0] == '\n') {		/* Blank line in a uubody - definitely a failure */
 						/* fprintf(stderr, "not a uue line while reading a uue body?\n"); */
 						in_uue = FALSE;
 						if (hide_uue)
 							/* don't continue here, so we see the line that 'broke' in_uue */
-							PUT_UUE(curruue, _(txt_incomplete));
+							put_attach(wrap_lines, curruue, (curruue->depth - 1) * 4, UUE_INCOMPLETE, get_filename(curruue->params), content_encodings[curruue->encoding]);
+					} else {
+						if (!is_uubegin) { /* xxencoding or the like */
+							curruue->line_count++;
+							curruue->bytes += len;
+						}
 					}
 				}
 			} else {
@@ -633,11 +1116,12 @@ process_text_body_part(
 				 * when uue sections are split across > 1 article
 				 */
 				if (is_uubody && hide_uue == UUE_ALL) {
-					char name[] = N_("(unknown)");
+					char name[] = N_("(unknown)"); /* TODO: -> lang.c */
 
+					in_uue = TRUE;
 					curruue = new_uue(&part, name);
 					curruue->line_count++;
-					in_uue = TRUE;
+					curruue->bytes += len;
 					continue;
 				}
 			}
@@ -713,7 +1197,7 @@ process_text_body_part(
 	 * Were we reading uue and ran off the end ?
 	 */
 	if (in_uue && hide_uue)
-		PUT_UUE(curruue, _(txt_incomplete));
+		put_attach(wrap_lines, curruue, (curruue->depth - 1) * 4, UUE_INCOMPLETE, get_filename(curruue->params), content_encodings[curruue->encoding]);
 
 	free(line);
 }
@@ -958,12 +1442,12 @@ cook_article(
 				charset = get_param(ptr->params, "charset");
 			else
 				charset = NULL;
-			PUT_ATTACH(ptr, (ptr->depth - 1) * 4, name, charset);
+			put_attach(wrap_lines, ptr, (ptr->depth - 1) * 4, 0, name, charset);
 
 			/* Try to view anything of type text, may need to review this */
 			if (IS_PLAINTEXT(ptr)) {
 				if (charset_unsupported(charset)) {
-					put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_attach_unsup_charset), (ptr->depth - 1) * 4, "", charset);
+					put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_mime_unsup_charset), (ptr->depth - 1) * 4, "", charset);
 					if (ptr->next)
 						put_cooked(1, wrap_lines, C_ATTACH, "\n");
 				} else
@@ -980,7 +1464,7 @@ cook_article(
 		 */
 		if (IS_PLAINTEXT(hdr->ext)) {
 			if (charset_unsupported(charset))
-				put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_attach_unsup_charset), 0, "", charset);
+				put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_mime_unsup_charset), 0, "", charset);
 			else
 				process_text_body_part(wrap_lines, artinfo->raw, hdr->ext, hide_uue);
 		} else {
@@ -988,7 +1472,7 @@ cook_article(
 			 * Non-textual main body
 			 */
 			name = get_filename(hdr->ext->params);
-			PUT_ATTACH(hdr->ext, 0, name, charset);
+			put_attach(wrap_lines, hdr->ext, 0, 0, name, charset);
 		}
 	}
 
@@ -1001,4 +1485,32 @@ cook_article(
 
 	rewind(art->cooked);
 	return (tin_errno != 0) ? FALSE : TRUE;
+}
+
+
+/*
+ * tin_ltoa() like function; IEC binary notation (base 1024)
+ * with one decimal point. positive numbers only
+ */
+#define BI_BASE 1024
+static char *
+ltobi(
+	unsigned long i)
+{
+	static const char power[] = { ' ', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'R', 'Q', '\0' };
+	static char buffer[9];
+	unsigned d = 0, e = 0;
+
+	while (i >= BI_BASE) {
+		d = (unsigned) (i % BI_BASE * 10 / BI_BASE);
+		i /= BI_BASE;
+		e++;
+	}
+
+	if (e)
+		sprintf(buffer, "%u.%u%c", (unsigned) i, d, power[e]);
+	else
+		sprintf(buffer, "0.%u%c", (unsigned) (i * 10 / BI_BASE), power[1]);
+
+	return buffer;
 }

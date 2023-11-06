@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-07-31
+.\" Updated   : 2023-10-30
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -1029,6 +1029,13 @@ newsgroup 'control' or 'control.cancel'.
 \fBEditFilter 'E'\fP
 Edit the filter file and reload it afterwards.
 .TP 
+\fBThreadFollowupQuote 'f'\fP
+Post a followup to the current article with a copy of the article included.
+.TP 
+\fBThreadFollowup 'F'\fP
+Post a followup to the current article without a copy of the article
+included.
+.TP 
 \fBToggleInfoLastLine 'i'\fP
 Display the subject of the current article in the last line.
 .TP 
@@ -1589,6 +1596,10 @@ If ON \fBtin\fP will ask before using a MIME viewer (\fBmetamail_prog\fP) to
 display MIME messages. This only occurs if a MIME viewer is set. Default is
 OFF.
 .TP 
+\fBFormat string for the Attachment level (attachment_format)\fP
+Format string \fBtin\fP uses for Attachment level representation. See the
+section "CUSTOMIZING THE SCREEN FORMAT".  Default is "%t%s%e%c%d".
+.TP 
 \fBSend you a cc and/or bcc automatically (auto_cc_bcc)\fP
 Automatically put your name in the \*(rqCc:\*(rq and/or \*(rqBcc:\*(rq field when
 mailing an article. Default is No.
@@ -2123,6 +2134,15 @@ and Case Folding
 .RE
 Some normalization modes are only available if they are supported by the
 library \fBtin\fP uses to do the normalization. NFC should be used if possible.
+.TP 
+\fBFormat string for the display of mime header at Article level (page_mime_format)\fP
+Format string \fBtin\fP uses for mime header at Page level. See the section
+"CUSTOMIZING THE SCREEN FORMAT".  Default is "[\-\- %T%S%*n%z%*l%!c%!d%*e
+\-\-]".
+.TP 
+\fBFormat string for the display of uue header at Article level (page_uue_format)\fP
+Format string \fBtin\fP uses for uue header at Page level. See the section
+"CUSTOMIZING THE SCREEN FORMAT".  Default is "[\-\- %T%S%*n%I%!d%*e \-\-]".
 .TP 
 \fBGo to first unread article in group (pos_first_unread)\fP
 If ON put cursor at first unread article in group otherwise at last
@@ -3089,13 +3109,91 @@ be specified by a positive number preceded by an '\fB>\fP'. In the
 following example \fBtin\fP will display the score only if the screen is wider
 than 100 characters: '\fB%>100S\fP'.
 .PP
-.\"
-.\"
 If both the length and the minimum screen width should be specified for an
 item, the length must be the first parameter and the minimum screen width
 must be the second one. The following example displays the score with a
 length of 10 characters only if the screen is wider than 100 characters:
 \&'\fB%10>100S\fP'.
+.PP
+The look of the Attachment level and the mime and uue header at Page level
+can be customized too via format strings.  The following variables are
+available:
+.PP
+.in +.3i
+.nf
+.ta \w'%G    'u +\w'Complete/incomplete UUE part indicator'u
+\fB%C\fP	Charset
+\fB%c\fP	Like %C but with description
+\fB%D\fP	Line count
+\fB%d\fP	Like %D but with description
+\fB%E\fP	Content encoding
+\fB%e\fP	Like %E but with description
+\fB%I\fP	Complete/incomplete UUE part indicator
+\fB%L\fP	Language
+\fB%l\fP	Like %L but with description
+\fB%N\fP	Name
+\fB%n\fP	Like %N but with description
+\fB%S\fP	Content subtype
+\fB%s\fP	Like %S but with description
+\fB%T\fP	Content type
+\fB%t\fP	Like %T but with description
+\fB%Z\fP	Size in bytes
+\fB%z\fP	Like %Z but with description
+\fB%%\fP	%
+.fi
+.in -.3i
+.PP
+Not all items can be used in each variable. The following table provides an
+overview:
+.PP
+.in +.3i
+.nf
+.ta \w'%G   'uC +\w'\fBattachment_format\fP 'uC +\w'\fBpage_mime_format\fP 'uC +\w'\fBpage_uue_format\fP'uC
+	\fBattachment_format\fP	\fBpage_mime_format\fP	\fBpage_uue_format\fP
+\fB%C\fP	X	X
+\fB%c\fP	X	X
+\fB%D\fP	X	X	X
+\fB%d\fP	X	X	X
+\fB%E\fP	X	X	X
+\fB%e\fP	X	X	X
+\fB%I\fP			X
+\fB%L\fP	X	X
+\fB%l\fP	X	X
+\fB%N\fP		X	X
+\fB%n\fP		X	X
+\fB%S\fP	X	X	X
+\fB%s\fP	X	X	X
+\fB%T\fP	X	X	X
+\fB%t\fP	X	X	X
+\fB%Z\fP	X	X	X
+\fB%z\fP	X	X	X
+\fB%%\fP	X	X	X
+.fi
+.in -.3i
+.PP
+By default, the string is not truncated. If it exceeds the screen width, it
+is wrapped. If the % sign is followed by an exclamation mark ('!') for
+uppercase letters, the element is omitted if there is not enough space. If
+the % sign is followed by an asterisk ('*') for a lowercase letter, the
+description is omitted if there is not enough space. If the % sign is
+followed by an exclamation mark ('!') for a lowercase letter, the
+description is omitted first and then the content. The shortening is always
+from right to left, first the description is omitted and when no more
+description is displayed, the content is omitted. If %T and %S follow each
+other directly a '/' will be inserted in between. %Z will always have one
+decimal point and may have a one letter bi\-suffix.
+.PP
+Defaults for the format strings:
+.PP
+.in +.3i
+.nf
+.ta \w'attachment_format'u +\w'"\fB%T%S%E%C%d\fP"'u
+\fBattachment_format\fP:	"\fB%T%S%E%C%d\fP"
+\fBpage_mime_format\fP:	"\fB[\-\- %T%S%*n%z%*l%!c%!d%*e \-\-]\fP"
+\fBpage_uue_format\fP:		"\fB[\-\- %T%S%*n%I%!d%*e \-\-]\fP"
+.fi
+.\"
+.\"
 .SS "CONSEJOS Y TRUCOS"
 \fBtin\fP can be pretty much be navigated by using the four cursor keys.  The
 left arrow key goes up a level, the right arrow key goes down a level, the
@@ -3506,7 +3604,7 @@ table for IBM PC character set (code page 437)
 \fBORGANIZATION\fP
 Set the article header field \*(rqOrganization:\*(rq to the contents of the
 variable instead of the system default. If it points to a readable file a
-random line from that file will be used.If reading news on an Apollo
+random line from that file will be used. If reading news on an Apollo
 DomainOS machine the environment variable $\fBNEWSORG\fP has to be used instead
 of $\fBORGANIZATION\fP.
 .TP 

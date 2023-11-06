@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2023-08-03
+ *  Updated   : 2023-11-03
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2023 Dirk Nimmich <nimmich@muenster.de>
@@ -1840,6 +1840,16 @@ process_mapping(
 
 				return TRUE;
 			}
+			if (strcmp(keyname, "ThreadFollowup") == 0) {
+				process_keys(THREAD_FOLLOWUP, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadFollowupQuote") == 0) {
+				process_keys(THREAD_FOLLOWUP_QUOTE, keys, &thread_keys);
+
+				return TRUE;
+			}
 			if (strcmp(keyname, "ThreadMail") == 0) {
 				process_keys(THREAD_MAIL, keys, &thread_keys);
 
@@ -1908,6 +1918,8 @@ process_mapping(
 			if (strcmp(keyname, "ToggleColor") == 0) {
 #ifdef HAVE_COLOR
 				process_keys(GLOBAL_TOGGLE_COLOR, keys, &group_keys);
+				process_keys(GLOBAL_TOGGLE_COLOR, keys, &info_keys);
+				process_keys(GLOBAL_TOGGLE_COLOR, keys, &option_menu_keys);
 				process_keys(GLOBAL_TOGGLE_COLOR, keys, &page_keys);
 				process_keys(GLOBAL_TOGGLE_COLOR, keys, &select_keys);
 				process_keys(GLOBAL_TOGGLE_COLOR, keys, &thread_keys);
@@ -2775,6 +2787,7 @@ setup_default_keys(
 	add_default_key(&thread_keys, "a", GLOBAL_SEARCH_AUTHOR_FORWARD);
 	add_default_key(&thread_keys, "c", CATCHUP);
 	add_default_key(&thread_keys, "d", THREAD_TOGGLE_SUBJECT_DISPLAY);
+	add_default_key(&thread_keys, "f", THREAD_FOLLOWUP_QUOTE);
 	add_default_key(&thread_keys, "m", THREAD_MAIL);
 #ifndef DISABLE_PRINTING
 	add_default_key(&thread_keys, "o", GLOBAL_PRINT);
@@ -2787,6 +2800,7 @@ setup_default_keys(
 	add_default_key(&thread_keys, "C", CATCHUP_NEXT_UNREAD);
 	add_default_key(&thread_keys, "D", THREAD_CANCEL);
 	add_default_key(&thread_keys, "E", GLOBAL_EDIT_FILTER);
+	add_default_key(&thread_keys, "F", THREAD_FOLLOWUP);
 	add_default_key(&thread_keys, "J", GLOBAL_CONNECTION_INFO);
 	add_default_key(&thread_keys, "K", THREAD_MARK_ARTICLE_READ);
 	add_default_key(&thread_keys, "L", GLOBAL_LOOKUP_MESSAGEID);

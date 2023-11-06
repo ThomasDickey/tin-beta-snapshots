@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2022-10-27
+ *  Updated   : 2023-10-17
  *  Notes     :
  *
  * Copyright (c) 1999-2023 Jason Faultless <jason@altarstone.com>
@@ -358,6 +358,8 @@ enum defined_functions {
 	SELECT_YANK_ACTIVE,
 	THREAD_AUTOSAVE,
 	THREAD_CANCEL,
+	THREAD_FOLLOWUP,
+	THREAD_FOLLOWUP_QUOTE,
 	THREAD_MAIL,
 	THREAD_MARK_ARTICLE_READ,
 	THREAD_READ_NEXT_ARTICLE_OR_THREAD,

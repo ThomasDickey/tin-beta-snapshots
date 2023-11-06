@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2023-07-20
+ *  Updated   : 2023-11-03
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2023 Michael Bienia <michael@vorlon.ping.de>
@@ -1325,6 +1325,15 @@ config_page(
 				info_message(cvers);
 				break;
 
+#ifdef HAVE_COLOR
+			case GLOBAL_TOGGLE_COLOR:
+				if (toggle_color()) {
+					show_color_status();
+					redraw_screen(option);
+				}
+			break;
+#endif /* HAVE_COLOR */
+
 			default:
 				info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, option_menu_keys));
 				break;
@@ -1854,7 +1863,6 @@ config_page(
 #endif /* HAVE_COLOR */
 						case OPT_CONFIRM_CHOICE:
 						case OPT_GOTO_NEXT_UNREAD:
-						case OPT_HIDE_UUE:
 						case OPT_INTERACTIVE_MAILER:
 						case OPT_KILL_LEVEL:
 						case OPT_MAILBOX_FORMAT:
@@ -1890,6 +1898,13 @@ config_page(
 						case OPT_AUTO_CC_BCC:
 							if (prompt_option_list(option))
 								UPDATE_INT_ATTRIBUTES(auto_cc_bcc);
+							break;
+
+						case OPT_HIDE_UUE:
+							if (prompt_option_list(option)) {
+								update_hide_uue();
+								changed |= DISPLAY_OPTS;
+							}
 							break;
 
 						case OPT_THREAD_ARTICLES:
@@ -2160,6 +2175,14 @@ config_page(
 								changed |= MISC_OPTS;
 							break;
 
+						case OPT_ATTACHMENT_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!strlen(tinrc.attachment_format))
+									STRCPY(tinrc.attachment_format, DEFAULT_ATTACHMENT_FORMAT);
+								changed |= MISC_OPTS;
+							}
+							break;
+
 						case OPT_EDITOR_FORMAT:
 							if (prompt_option_string(option)) {
 								if (!strlen(tinrc.editor_format))
@@ -2187,6 +2210,22 @@ config_page(
 						case OPT_ATTRIB_GROUP_FORMAT:
 							if (prompt_option_string(option))
 								SET_STRING_ATTRIBUTE(group_format);
+							break;
+
+						case OPT_PAGE_MIME_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!strlen(tinrc.page_mime_format))
+									STRCPY(tinrc.page_mime_format, DEFAULT_PAGE_MIME_FORMAT);
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
+						case OPT_PAGE_UUE_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!strlen(tinrc.page_uue_format))
+									STRCPY(tinrc.page_uue_format, DEFAULT_PAGE_UUE_FORMAT);
+								changed |= DISPLAY_OPTS;
+							}
 							break;
 
 #ifndef CHARSET_CONVERSION
@@ -3018,7 +3057,7 @@ static int
 move_scope(
 	int curr_pos)
 {
-	char *p;
+	const char *p;
 	int new_pos;
 
 	clear_message();

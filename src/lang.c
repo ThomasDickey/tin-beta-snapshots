@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-08-28
+ *  Updated   : 2023-10-31
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -47,7 +47,7 @@ constext txt_7bit[] = "7bit";
 constext txt_8bit[] = "8bit";
 
 constext txt_active_file_is_empty[] = N_("\n%s contains no newsgroups. Exiting.");
-constext txt_all[] = N_("all ");
+constext txt_all[] = N_("all");
 constext txt_all_groups[] = N_("All groups");
 constext txt_append_overwrite_quit[] = N_("File %s exists. %s=append, %s=overwrite, %s=quit: ");
 constext txt_art_cancel[] = N_("Article cancelled (deleted).");
@@ -76,11 +76,17 @@ constext txt_article_singular[] = N_("article");
 constext txt_article_upper[] = N_("Article");
 constext txt_articles_mailed[] = N_("-- %d %s mailed --");
 constext txt_at_s[] = N_(" at %s");
-constext txt_attach[] = N_("%*s[-- %s/%s, encoding %s%s%s, %d lines%s%s --]\n");
-constext txt_attach_charset[] = N_(", charset: ");
-constext txt_attach_unsup_charset[] = N_("%*s[-- charset %s not supported --]\n");
-constext txt_attach_description[] = N_("%*s[-- Description: %s --]\n");
-constext txt_attachment_lines[] = N_("%d lines");
+constext txt_mime_charset[] = N_("charset %s");
+constext txt_mime_content_subtype[] = N_("content subtype %s");
+constext txt_mime_content_type[] = N_("content type %s");
+constext txt_mime_unsup_charset[] = N_("%*s[-- charset %s not supported --]\n");
+constext txt_mime_description[] = N_("%*s[-- Description: %s --]\n");
+constext txt_mime_encoding[] = N_("encoding %s");
+constext txt_mime_lang[] = N_("lang %s");
+constext txt_mime_lines[] = N_("%s lines");
+constext txt_mime_name[] = N_("name %s");
+constext txt_mime_sep[] = N_(", ");
+constext txt_mime_size[] = N_("size %s");
 constext txt_attachment_menu[] = N_("Attachment Menu");
 constext txt_attachment_menu_com[] = N_("Attachment Menu Commands");
 constext txt_attachment_no_name[] = N_("<no name>");
@@ -571,7 +577,6 @@ constext txt_info_x_conversion_note[] = N_("X-Conversion-Note: multipart/alterna
   To get the whole article, turn alternative handling OFF in the Option Menu\n");
 constext txt_is_mailbox[] = N_("Save filename for %s/%s is a mailbox. Attachment not saved");
 constext txt_is_tex_encoded[] = N_("TeX2Iso encoded article");
-constext txt_incomplete[] = N_("incomplete ");
 /* TODO: replace hard coded key-names */
 constext txt_intro_page[] = N_("\nWelcome to %s, a full screen threaded Netnews reader. It can read news locally\n\
 (i.e. <spool>/news) or remotely (-r option) from an NNTP (Network News Transport\n\
@@ -677,8 +682,6 @@ constext txt_moving[] = N_("Moving %s...");
 constext txt_msgid_line_last[] = N_("Message-ID: & last Reference  ");
 constext txt_msgid_line_only[] = N_("Message-ID: line              ");
 constext txt_msgid_refs_line[] = N_("Message-ID: & References: line");
-
-constext txt_name[] = N_(", name: ");
 constext txt_newsgroup[] = N_("Go to newsgroup [%s]> ");
 constext txt_newsgroup_plural[] = N_("newsgroups");
 constext txt_newsgroup_position[] = N_("Position %s in group list (1,2,..,$) [%d]> ");
@@ -776,16 +779,18 @@ constext txt_quit[] = N_("Do you really want to quit?");
 constext txt_quit_cancel[] = N_("%s=edit cancel message, %s=quit, %s=delete (cancel) [%%s]: ");
 constext txt_quit_despite_tags[] = N_("You have tagged articles in this group - quit anyway?");
 constext txt_quit_edit_postpone[] = N_("%s=quit, %s=edit, %s=postpone: ");
-constext txt_quit_edit_save_kill[] = N_("%s=quit %s=edit %s=save kill description: ");
-constext txt_quit_edit_save_select[] = N_("%s=quit %s=edit %s=save select description: ");
+constext txt_quit_edit_save_kill[] = N_("%s=quit, %s=edit, %s=save kill description: ");
+constext txt_quit_edit_save_select[] = N_("%s=quit, %s=edit, %s=save select description: ");
 constext txt_quit_no_write[] = N_("Do you really want to quit without saving your configuration?");
 constext txt_quoted_printable[] = "quoted-printable";
 
 constext txt_range_invalid[] = N_("Invalid range - valid are '0-9.$' e.g. 1-$");
-constext txt_read_abort[] = N_("Do you want to abort this operation?");
-constext txt_read_exit[] = N_("Do you want to exit tin immediately?");
+#ifdef HAVE_SELECT
+	constext txt_read_abort[] = N_("Do you want to abort this operation?");
+	constext txt_read_exit[] = N_("Do you want to exit tin immediately?");
+#endif /* HAVE_SELECT */
 constext txt_reading_article[] = N_("Reading ('q' to quit)...");
-constext txt_reading_arts[] = N_("Reading %sarticles...");
+constext txt_reading_arts[] = N_("Reading %s articles...");
 constext txt_reading_attributes_file[] = N_("Reading %sattributes file...\n");
 constext txt_reading_config_file[] = N_("Reading %sconfig file...\n");
 constext txt_reading_filter_file[] = N_("Reading filter file...\n");
@@ -924,8 +929,7 @@ constext txt_unsubscribe_pattern[] = N_("Enter wildcard unsubscribe pattern> ");
 constext txt_uu_error_decode[] = N_("Error decoding %s : %s");
 constext txt_uu_error_no_end[] = N_("No end.");
 constext txt_uu_success[] = N_("%s successfully decoded.");
-constext txt_uue[] = N_("%*s[-- %s/%s, %suuencoded file, %d lines, name: %s --]\n\n");
-constext txt_unread[] = N_("unread ");
+constext txt_unread[] = N_("unread");
 constext txt_unsubscribed_num_groups[] = N_("unsubscribed from %d groups");
 constext txt_unsubscribed_to[] = N_("Unsubscribed from %s");
 constext txt_unsubscribing[] = N_("Unsubscribing... ");
@@ -967,6 +971,8 @@ constext txt_useful_without_batch_mode[] = N_("%s only useful without batch mode
 constext txt_useful_with_batch_mode[] = N_("%s only useful for batch mode operations\n");
 constext txt_useful_with_batch_or_debug_mode[] = N_("%s only useful for batch or debug mode operations\n");
 constext txt_useless_combination[] = N_("Useless combination %s and %s. Ignoring %s.\n");
+constext txt_uue_complete[] = N_("uuencoded file");
+constext txt_uue_incomplete[] = N_("incomplete uuencoded file");
 
 #if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
 	constext txt_valid_not_after[] = "Valid not after : %s\n";
@@ -993,6 +999,18 @@ Warning: You are using a non-plain transfer encoding (such as base64 or\n\
          quoted-printable) and an external inews program to submit your\n\
          article. If a signature is appended by that inews program it will\n\
          not be encoded properly.\n");
+#ifdef MIME_BREAK_LONG_LINES
+	constext txt_warn_long_line_not_qp[] = N_("\n\
+Line %d is longer than %d octets and should be folded, but encoding\n\
+is neither set to %s nor to %s.\n");
+#endif /* MIME_BREAK_LONG_LINES */
+constext txt_warn_long_line_not_break[] = N_("\n\
+Line %d is longer than %d octets and should be folded, but encoding\n\
+is set to %s without enabling MIME_BREAK_LONG_LINES or\n\
+posting doesn't contain any 8bit chars and thus folding won't happen.\n");
+constext txt_warn_long_line_not_base[] = N_("\n\
+Line %d is longer than %d octets and should be folded, but encoding\n\
+is not set to %s.\n");
 constext txt_warn_example_hierarchy[] = N_("\nWarning: \"example\" is a reserved hierarchy!\n");
 constext txt_warn_update[] = N_("\n\nYou are upgrading to tin %s from an earlier version.\n\
 Some values in your %s file have changed!\nRead WHATSNEW, etc...\n");
@@ -1493,7 +1511,7 @@ constext *txt_mime_encodings[] = {
 };
 
 constext *content_encodings[] = {
-	"7bit", "quoted-printable", "base64", "8bit", "binary", "x-uuencode",
+	"7bit", "quoted-printable", "base64", "8bit", "binary", "x-uuencode", "unknown",
 	NULL
 };
 
@@ -2903,6 +2921,76 @@ struct opttxt txt_group_format = {
 #   %R              Count, number of responses in thread\n\
 #   %s              Subject (only group level)\n\
 #   %S              Score\n")
+};
+
+struct opttxt txt_attachment_format = {
+	N_("Enter format string. <CR> sets, <ESC> cancels."),
+	N_("Format string for attachment level"),
+	N_("# Format string for attachment level representation\n\
+# Default: %t%s%e%c%d\n\
+# Possible values are:\n\
+#   %%              '%'\n\
+#   %C              Charset\n\
+#   %c              Like %C but with description\n\
+#   %D              Line count\n\
+#   %d              Like %D but with description\n\
+#   %E              Content encoding\n\
+#   %e              Like %E but with description\n\
+#   %L              Language\n\
+#   %l              Like %L but with description\n\
+#   %S              Content subtype\n\
+#   %s              Like %S but with description\n\
+#   %T              Content type\n\
+#   %t              Like %T but with description\n\
+#   %Z              Size in bytes\n\
+#   %z              Like %Z but with description\n")
+};
+
+struct opttxt txt_page_mime_format = {
+	N_("Enter format string. <CR> sets, <ESC> cancels."),
+	N_("Format string for display of mime header"),
+	N_("# Format string for mime header at article level\n\
+# Default: [-- %T%S%*n%z%*l%!c%!d%*e --]\n\
+# Possible values are:\n\
+#   %%              '%'\n\
+#   %C              Charset\n\
+#   %c              Like %C but with description\n\
+#   %D              Line count\n\
+#   %d              Like %D but with description\n\
+#   %E              Content encoding\n\
+#   %e              Like %E but with description\n\
+#   %L              Language\n\
+#   %l              Like %L but with description\n\
+#   %N              Name\n\
+#   %n              Like %N but with description\n\
+#   %S              Content subtype\n\
+#   %s              Like %S but with description\n\
+#   %T              Content type\n\
+#   %t              Like %T but with description\n\
+#   %Z              Size in bytes\n\
+#   %z              Like %Z but with description\n")
+};
+
+struct opttxt txt_page_uue_format = {
+	N_("Enter format string. <CR> sets, <ESC> cancels."),
+	N_("Format string for display of uue header"),
+	N_("# Format string for uue header at article level\n\
+# Default: [-- %T%S%*n%I%!d%*e --]\n\
+# Possible values are:\n\
+#   %%              '%'\n\
+#   %D              Line count\n\
+#   %d              Like %D but with description\n\
+#   %E              Content encoding\n\
+#   %e              Like %E but with description\n\
+#   %I              Complete/incomplete UUE part indicator\n\
+#   %N              Name\n\
+#   %n              Like %N but with description\n\
+#   %S              Content subtype\n\
+#   %s              Like %S but with description\n\
+#   %T              Content type\n\
+#   %t              Like %T but with description\n\
+#   %Z              Size in bytes\n\
+#   %z              Like %Z but with description\n")
 };
 
 struct opttxt txt_thread_format = {

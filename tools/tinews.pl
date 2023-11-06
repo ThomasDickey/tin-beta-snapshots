@@ -4,7 +4,7 @@
 # signs the article and posts it.
 #
 #
-# Copyright (c) 2002-2023 Urs Janssen <urs@tin.org>,
+# Copyright (c) 2002-2024 Urs Janssen <urs@tin.org>,
 #                         Marc Brockschmidt <marc@marcbrockschmidt.de>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.61";
+my $version = "1.1.64";
 
 my %config;
 
@@ -214,11 +214,12 @@ GetOptions('A|V|W|h|headers' => [], # do nothing
 	'help|H'	=> \$config{'help'},
 	'transform'	=> \$config{'transform'},
 	'verbose|v'	=> \$config{'verbose'},
-	'version'	=> \$config{'version'}
+	'version'	=> \$config{'version'},
+	'man'	=>	\$config{'man'}
 );
 
 foreach (@ARGV) {
-	print STDERR "Unknown argument $_.";
+	print STDERR "Unknown argument $_.\n";
 	usage();
 }
 
@@ -228,6 +229,18 @@ if ($config{'version'}) {
 }
 
 usage() if ($config{'help'});
+
+# not listed in usage() or man-page as it may not work
+if ($config{'man'}) {
+	eval "use Pod::Usage";
+	if ($@) {
+		$config{'man'} = 0;
+		print STDERR "Unknown option: man.\n";
+		usage();
+	} else {
+		pod2usage(-verbose => 2, -exit => 0);
+	}
+}
 
 # check if SSL support is available
 if ($config{'ssl'}) {
@@ -406,7 +419,8 @@ if ($config{'debug'} || $config{'verbose'}) {
 	foreach (keys %Header) {
 		warn "Raw 8-bit data in the following header:\n$Header{$_}\n" if ($Header{$_} =~ m/[\x80-\xff]/o);
 	}
-	if (!defined($Header{'mime-version'}) || !defined($Header{'content-type'}) || !defined($Header{'content-transfer-encoding'})) {
+	# do not check for CTE as it's not required for miltipart/*
+	if (!defined($Header{'mime-version'}) || !defined($Header{'content-type'})) {
 		warn "8bit body without MIME-headers\n" if (grep {/[\x80-\xff]/} @Body);
 	}
 }
@@ -418,7 +432,7 @@ if (!$config{'nntp-pass'}) {
 		open (my $NEWSAUTH, '<', (glob("~/.newsauth"))[0]) or die("Can't open ~/.newsauth: $!");
 		while ($l = <$NEWSAUTH>) {
 			chomp $l;
-			next if ($l =~ m/^[#\s]/);
+			next if ($l =~ m/(^[#\s]|)/);
 			($server, $pass, $user) = split(/\s+\b/, $l);
 			last if ($server =~ m/\Q$config{'nntp-server'}\E/);
 		}
@@ -436,7 +450,7 @@ if (!$config{'nntp-pass'}) {
 			open (my $NNTPAUTH, '<', (glob("~/.nntpauth"))[0]) or die("Can't open ~/.nntpauth: $!");
 			while ($l = <$NNTPAUTH>) {
 				chomp $l;
-				next if ($l =~ m/^[#\s]/);
+				next if ($l =~ m/(^[#\s]|)/);
 				($server, $user, $pass) = split(/\s+\b/, $l);
 				last if ($server =~ m/\Q$config{'nntp-server'}\E/);
 			}

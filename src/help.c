@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-11-01
+ *  Updated   : 2022-11-17
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -432,6 +432,8 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_article_next_unread, THREAD_READ_NEXT_ARTICLE_OR_THREAD },
 #ifndef NO_POSTING
 	{ txt_help_global_post, GLOBAL_POST },
+	{ txt_help_article_followup, THREAD_FOLLOWUP_QUOTE },
+	{ txt_help_article_followup_no_quote, THREAD_FOLLOWUP },
 	{ txt_help_global_post_postponed, GLOBAL_POSTPONED },
 	{ txt_help_article_cancel, THREAD_CANCEL },
 #endif /* NO_POSTING */

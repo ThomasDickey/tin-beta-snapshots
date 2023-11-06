@@ -82,12 +82,6 @@ Pager Problems
 
 Posting Problems
 ----------------
-o  8bit chars in some headers are RFC-2047-encoded where this is not allowed
-   according to usefor (Newsgrous, Distribution, ...) - do_rfc15211522_encode()
-   simply encodes all headers no matter if any of them must not be encoded
-   (see parse_rfc822_headers()).
-   [20090112 Urs Janssen <urs@tin.org>]
-
 o  keep RFC 6532 in mind as parts of it will sooner or later make it into
    NNTP (sic!).
    [20120220 Urs Janssen <urs@tin.org>]
@@ -392,8 +386,8 @@ o  Additions to the thread menu:
      ']'  (GLOBAL_QUICK_FILTER_KILL)
      '['  (GLOBAL_QUICK_FILTER_SELECT)
      'r'  (reply to) /* not 'R' cause it conflicts with mail_bugreport */
-     ''   r should be toggle show all/show only unread
-     'f'  (post a followup) (maybe also 'F', '^W', ...)
+          r should be toggle show all/show only unread
+     ''   (f'up with all headers included) ^W conflicts with MARK_FEED_UNREAD
      'N'  (next unread article)
      'P'  (previous unread article)
      'V'  (View/pipe/save multimedia attachments)
@@ -417,10 +411,6 @@ o  Additions to the select menu:
      '%'  (toggle rot13 encoding of screen content)
      key to toggle groupname abbreviation
 
-o  Add to the 'M'enu:
-     '&'  (GLOBAL_TOGGLE_COLOR)
-     and maybe a way to change built in path like DEFAULT_MAILER, PATH_PGP, ...
-
 o  Add to the attachment menu ('V'):
      'F'  post followup to current article, not including current attachment
      'f'  post followup to current article, including current (or tagged)
@@ -438,9 +428,11 @@ o  Add to the attachment menu ('V'):
 
 o  Add to the posting history screen ('W'):
      'M'  OptionMenu
+     '&'  (GLOBAL_TOGGLE_COLOR)
 
 o  Add to the URL Menu ('U'):
      'M'  OptionMenu
+     '&'  (GLOBAL_TOGGLE_COLOR)
 
 o  integrate multi-part tagging with regular tagging, eg.
    "This article appears to have multi-parts, try and find them (y/n)?"
@@ -573,7 +565,11 @@ Pager enhancements
 o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
    about that part) for different content-types
 
-o  add Content-Language (RFC 3282 or even RFC 8255) analysis
+o  add MIME Multiple Language Content Type (RFC 8255) analysis
+
+o  add toggle attachment depth indentation 4 <-> 2 like ^T for tabs
+
+o  add hide_uu toggle-key
 
 o  suppress hide_uue=2 checking unless first line in an article or following
    a blank line
@@ -635,10 +631,11 @@ o  move several (server related) files into the per-server dir e.g.:
       ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}/.news/
    [20050807 Urs Janssen <urs@tin.org>]
 
-o  remove untranslatable constructs like txt_prefix_*, txt_marked_as_*, ...
+o  remove untranslatable constructs like txt_prefix_*, txt_marked_as_*,
+   txt_reading_*, ...
    [20050413 Urs Janssen <urs@tin.org>]
 
-o  move (localized) srings to lang.c (attrib.c, art.c, post.c, ...)
+o  move (localized) strings to lang.c (attrib.c, art.c, post.c, ...)
 
 o  keys which could be renamed/merged:
    - 'l' GroupListThd, PageListThd
@@ -793,6 +790,9 @@ o  add normalization
 o  rewrite ICU configure checks
    [20180710 Urs Janssen <urs@tin.org>]
 
+o  check for libutf8proc <https://github.com/JuliaStrings/utf8proc>
+   and use it (as fallback)?
+
 o  check for wcsftime() and if found use it instead of strftime() (at
    least in page.c).
    [20130129 Urs Janssen <urs@tin.org>]
@@ -943,10 +943,6 @@ o  the documentation suggests that novrootdir/$TIN_NOVROOTDIR defaults to
    automatically adjust $TIN_NOVROOTDIR at runtime. we should either
    fix the documentation or the behaviour.
    [20100103 Urs Janssen <urs@tin.org>]
-
-o  un/subscribe_pattern() can be very slow on servers with a huge active
-   file. (see "strace -e file" for one reason)
-   [20091223 Urs Janssen <urs@tin.org>]
 
 o  replace wildmat.c with uwildmat.c
    <http://inn.eyrie.org/trac/browser/trunk/lib/uwildmat.c>? It knows poison

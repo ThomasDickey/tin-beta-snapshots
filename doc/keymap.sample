@@ -250,11 +250,13 @@ ThreadSelArt			*
 ThreadToggleArtSel		.
 ThreadReverseSel		@
 ThreadCancel			D
+ThreadFollowup			F
 ThreadMarkArtRead		K
 ThreadAutoSave			S
 ThreadTagParts			T
 ThreadUntag			U
 ThreadToggleSubjDisplay		d
+ThreadFollowupQuote		f
 ThreadMail			m
 ThreadSave			s
 ThreadTag			t

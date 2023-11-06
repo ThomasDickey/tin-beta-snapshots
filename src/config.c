@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-29
+ *  Updated   : 2023-10-29
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -181,6 +181,9 @@ read_config_file(
 			}
 
 			if (match_boolean(buf, "ask_for_metamail=", &tinrc.ask_for_metamail))
+				break;
+
+			if (match_string(buf, "attachment_format=", tinrc.attachment_format, sizeof(tinrc.attachment_format)))
 				break;
 
 			if (match_integer(buf, "auto_cc_bcc=", &tinrc.auto_cc_bcc, AUTO_CC_BCC))
@@ -567,6 +570,12 @@ read_config_file(
 			break;
 
 		case 'p':
+			if (match_string(buf, "page_mime_format=", tinrc.page_mime_format, sizeof(tinrc.page_mime_format)))
+				break;
+
+			if (match_string(buf, "page_uue_format=", tinrc.page_uue_format, sizeof(tinrc.page_uue_format)))
+				break;
+
 			if (match_list(buf, "post_mime_encoding=", txt_mime_encodings, &tinrc.post_mime_encoding))
 				break;
 
@@ -920,6 +929,8 @@ read_config_file(
 		tinrc.post_8bit_header = FALSE;
 
 	/* set defaults if blank */
+	if (!*tinrc.attachment_format)
+		STRCPY(tinrc.attachment_format, DEFAULT_ATTACHMENT_FORMAT);
 	if (!*tinrc.editor_format)
 		STRCPY(tinrc.editor_format, TIN_EDITOR_FMT);
 	if (!*tinrc.select_format)
@@ -938,6 +949,10 @@ read_config_file(
 		STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
 	strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
 #endif /* !CHARSET_CONVERSION */
+	if (!*tinrc.page_mime_format)
+		STRCPY(tinrc.page_mime_format, DEFAULT_PAGE_MIME_FORMAT);
+	if (!*tinrc.page_uue_format)
+		STRCPY(tinrc.page_uue_format, DEFAULT_PAGE_UUE_FORMAT);
 
 	return TRUE;
 }
@@ -1454,6 +1469,15 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_thread_format.tinrc));
 	fprintf(fp, "thread_format=%s\n\n", tinrc.thread_format);
+
+	fprintf(fp, "%s", _(txt_attachment_format.tinrc));
+	fprintf(fp, "attachment_format=%s\n\n", tinrc.attachment_format);
+
+	fprintf(fp, "%s", _(txt_page_mime_format.tinrc));
+	fprintf(fp, "page_mime_format=%s\n\n", tinrc.page_mime_format);
+
+	fprintf(fp, "%s", _(txt_page_uue_format.tinrc));
+	fprintf(fp, "page_uue_format=%s\n\n", tinrc.page_uue_format);
 
 	fprintf(fp, "%s", _(txt_date_format.tinrc));
 	fprintf(fp, "date_format=%s\n\n", tinrc.date_format);

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-08-23
+ *  Updated   : 2023-10-17
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1278,7 +1278,7 @@ strfquote(
 					break;
 
 				case 'D':	/* Articles Date (reformatted as specified in attributes->date_format) */
-					if (!my_strftime(tbuf, LEN - 1, curr_group->attribute->date_format, localtime(&arts[this_resp].date))) {
+					if (!my_strftime(tbuf, LEN - 1, curr_group->attribute->date_format, localtime(&arts[respnum].date))) {
 						STRCPY(tbuf, BlankIfNull(pgart.hdr.date));
 					}
 					break;

@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-02-22
+ *  Updated   : 2023-11-05
  *  Notes     :
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -419,7 +419,7 @@ selection_page(
 				 * as we effectively do a yank out on each change, set yanked_out accordingly
 				 */
 				yanked_out = TRUE;
-				wait_message(0, _(txt_reading_groups), (tinrc.show_only_unread_groups) ? _("unread") : _("all"));
+				wait_message(0, _(txt_reading_groups), (tinrc.show_only_unread_groups) ? _(txt_unread) : _(txt_all));
 
 				toggle_my_groups(NULL);
 				show_selection_page();
@@ -1410,6 +1410,8 @@ subscribe_pattern(
 {
 	char buf[LEN];
 	int i, subscribe_num = 0;
+	size_t groups_size = 100;
+	struct t_group **groups;
 
 	if (!num_active || no_write)
 		return;
@@ -1419,14 +1421,20 @@ subscribe_pattern(
 		return;
 	}
 
+	groups = my_malloc(groups_size * sizeof(struct t_group *));
+
 	wait_message(0, "%s", message);
 
 	for_each_group(i) {
 		if (match_group_list(active[i].name, buf)) {
 			if (active[i].subscribed != (state != FALSE)) {
 				spin_cursor();
+				if ((size_t) subscribe_num == groups_size) {
+					groups_size <<= 1;
+					groups = my_realloc(groups, groups_size * sizeof(struct t_group *));
+				}
+				groups[subscribe_num] = &active[i];
 				/* If found and group is not subscribed add it to end of my_group[]. */
-				subscribe(&active[i], SUB_CHAR(state), TRUE);
 				if (state) {
 					my_group_add(active[i].name, FALSE);
 					grp_mark_unread(&active[i]);
@@ -1435,6 +1443,10 @@ subscribe_pattern(
 			}
 		}
 	}
+
+	bulk_subscribe(groups, subscribe_num, SUB_CHAR(state), TRUE);
+
+	free(groups);
 
 	if (subscribe_num) {
 		toggle_my_groups(NULL);

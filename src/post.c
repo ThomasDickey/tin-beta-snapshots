@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-09-29
+ *  Updated   : 2023-10-31
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -838,26 +838,15 @@ build_post_hist_list(
 {
 	FILE *fp;
 	char *p, *q;
-	char buf[LEN];
+	char buf[4 * LEN]; /* TODO: make this dynamic (we log subjects, looooong subjects) */
 	int count = 0;
 	size_t j, k, n;
 	t_posted *posted = NULL;
 
 	if ((fp = fopen(posted_info_file, "r")) == NULL) {
-		clear_message();
-		return 0;
-	}
-
-	while (fgets(buf, (int) sizeof(buf), fp) != NULL)
-		count++;
-
-	if (!count) {
-		fclose(fp);
 		info_message(_(txt_no_arts_posted));
 		return 0;
 	}
-	rewind(fp);
-	count = 0;
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 		if (buf[0] == '#' || buf[0] == '\n')
@@ -871,7 +860,6 @@ build_post_hist_list(
 			posted->next = post_hist_list;
 			post_hist_list = posted;
 		}
-		++count;
 
 		n = 0;
 		q = my_strdup(buf);
@@ -888,7 +876,12 @@ build_post_hist_list(
 
 		/* current expected actions [dfrwx] */
 		if (n < 3 || buf[++j] == '|') { /* too few args and/or empty action */
+			/* TODO: skip over broken line but do not bail out */
 			error_message(3, _(txt_error_corrupted_file), posted_info_file);
+#ifdef DEBUG
+			if (debug & DEBUG_MISC)
+				error_message(3, "Line: %s", buf);
+#endif /* DEBUG */
 			fclose(fp);
 			clear_message();
 			free_post_hist_list();
@@ -954,8 +947,12 @@ build_post_hist_list(
 		if (p == buf || p == buf + j) /* subject looks like id and no id logged or no id given, clear id */
 			posted->mid[0] = '\0';
 		my_strncpy(posted->subj, buf + j, sizeof(posted->subj) - 1);
+		count++;
 	}
 	fclose(fp);
+
+	if (!count)
+		info_message(_(txt_no_arts_posted));
 
 	return count;
 }
@@ -1002,8 +999,8 @@ update_posted_info_file(
 	}
 
 	if ((fp = fopen(posted_info_file, "a")) != NULL) {
-		int err;
 		char logdate[10];
+		int err;
 
 		if (time(&epoch) != (time_t) -1) {
 			if (!my_strftime(logdate, sizeof(logdate) - 1, "%d-%m-%y", localtime(&epoch)))
@@ -1259,6 +1256,7 @@ check_article_to_be_posted(
 	int errors_catbp = 0; /* sum of error-codes */
 	int warnings_catbp = 0; /* sum of warning-codes */
 	int must_break_line = 0;
+	int enc; /* mime encoding */
 	struct t_group *psGrp;
 	t_bool end_of_header = FALSE;
 	t_bool got_long_line = FALSE;
@@ -1290,6 +1288,7 @@ check_article_to_be_posted(
 #ifdef CHARSET_CONVERSION
 	mmnwcharset = *c_group ? (*c_group)->attribute->mm_network_charset : tinrc.mm_network_charset;
 #endif /* CHARSET_CONVERSION */
+	enc = *c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding;
 
 	if ((fp = fopen(c_article, "r")) == NULL) {
 		perror_message(_(txt_cannot_open), c_article);
@@ -1303,6 +1302,7 @@ check_article_to_be_posted(
 
 	while ((line = tin_fgets(fp, TRUE)) != NULL) {
 		cnt++;
+		contains_8bit = FALSE; /* in header we need to check line wise */
 		if (!end_of_header && !strlen(line)) { /* end of header reached */
 			if (cnt == 1)
 				errors_catbp |= CA_ERROR_HEADER_LINE_BLANK;
@@ -1317,9 +1317,25 @@ check_article_to_be_posted(
 			}
 		}
 
+		/* line is longer than > 998 and will not be encoded */
+#ifdef MIME_BREAK_LONG_LINES
+		if (*c_group ? (*c_group)->attribute->post_8bit_header : tinrc.post_8bit_header)
+#endif /* MIME_BREAK_LONG_LINES */
+		{
+			if (strlen(line) > IMF_LINE_LEN) {  /* TODO: -> lang.c */
+#ifdef MIME_BREAK_LONG_LINES
+				my_fprintf(stderr, _("Line %d is longer than %d octets and should be folded.\n"), cnt, IMF_LINE_LEN);
+#else
+				my_fprintf(stderr, _("Line %d is longer than %d octets and should be shortened.\n"), cnt, IMF_LINE_LEN);
+#endif /* MIME_BREAK_LONG_LINES */
+				my_fflush(stderr);
+				warnings++;
+			}
+		}
+
 #ifdef CHARSET_CONVERSION
 		/* are all characters in article contained in network_charset? */
-		if (strcasecmp(tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset]) && !charset_conversion_fails) { /* local_charset != network_charset */
+		if (!charset_conversion_fails && strcasecmp(tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset])) { /* local_charset != network_charset */
 			cp = my_malloc(strlen(line) * 4 + 1);
 			strcpy(cp, line);
 			charset_conversion_fails = !buffer_to_network(cp, mmnwcharset);
@@ -1627,7 +1643,7 @@ check_article_to_be_posted(
 
 				if ((cp = strtok(groups, ",")) != NULL) {
 					do {
-						if (!strcmp(cp, "poster") && ftngcnt > 1)
+						if (ftngcnt > 1 && !strcmp(cp, "poster"))
 							errors_catbp |= CA_ERROR_FOLLOWUP_TO_POSTER;
 						if (!strcmp(cp, "example"))
 							warnings_catbp |= CA_WARNING_FOLLOWUP_TO_EXAMPLE;
@@ -1651,7 +1667,7 @@ check_article_to_be_posted(
 		} else {
 			free(cp2);
 			/* Warn if Subject: begins with "Re: " but there are no References: */
-			if (!strncmp(subject, "Re: ", 4) && !saw_references)
+			if (!saw_references && !strncmp(subject, "Re: ", 4))
 				warnings_catbp |= CA_WARNING_RE_WITHOUT_REFERENCES;
 			/*
 			 * Warn if there are References: but no "Re: " at the beginning of
@@ -1712,14 +1728,14 @@ check_article_to_be_posted(
 		}
 
 		/* SIGDASHES excluding the tailing SPACE (and '\n', see comment above) */
-		if (strlen(line) == 2 && !strncmp(line, SIGDASHES, 2) && !saw_sig_dashes) {
+		if (!saw_sig_dashes && strlen(line) == 2 && !strncmp(line, SIGDASHES, 2)) {
 			saw_wrong_sig_dashes = TRUE;
 			sig_lines = 0;
 		}
 
 #ifdef CHARSET_CONVERSION
 		/* are all characters in article contained in network_charset? */
-		if (strcasecmp(tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset]) && !charset_conversion_fails) { /* local_charset != network_charset */
+		if (!charset_conversion_fails && strcasecmp(tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset])) { /* local_charset != network_charset */
 			cp = my_malloc(strlen(line) * 4 + 1);
 			strcpy(cp, line);
 			charset_conversion_fails = !buffer_to_network(cp, mmnwcharset);
@@ -1789,7 +1805,7 @@ check_article_to_be_posted(
 			if (seen) /* any unprintable char errors? */
 				my_fflush(stderr);
 		}
-		if (col > MAX_COL && !got_long_line) {
+		if (!got_long_line && col > MAX_COL) {
 			char *m = strunc(line, MAX_COL - 1);
 
 			my_fprintf(stderr, _(txt_warn_art_line_too_long), MAX_COL, cnt, m);
@@ -1798,25 +1814,25 @@ check_article_to_be_posted(
 			got_long_line = TRUE;
 			warnings++;
 		}
-		if (strlen(line) > IMF_LINE_LEN && !must_break_line)
+		if (!must_break_line && strlen(line) > IMF_LINE_LEN)
 			must_break_line = cnt;
 	}
 
 /*
- * TODO: cleanup, test me, move to the right location, strings -> lang.c, ...
+ * TODO: cleanup, test me, move to the right location, ...
  */
-	if (must_break_line && ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) != MIME_ENCODING_BASE64)) {
+	if (must_break_line && enc != MIME_ENCODING_BASE64) {
 #ifdef MIME_BREAK_LONG_LINES
 		if (contains_8bit) {
-			if ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) != MIME_ENCODING_QP)
-				my_fprintf(stderr, _("Line %d is longer than %d octets and should be folded, but\nencoding is neither set to %s nor to %s\n"), must_break_line, IMF_LINE_LEN, txt_quoted_printable, txt_base64);
+			if (enc != MIME_ENCODING_QP)
+				my_fprintf(stderr, _(txt_warn_long_line_not_qp), must_break_line, IMF_LINE_LEN, txt_quoted_printable, txt_base64);
 		} else
 #endif /* MIME_BREAK_LONG_LINES */
 		{
-			if ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_QP)
-				my_fprintf(stderr, _("Line %d is longer than %d octets and should be folded, but\nencoding is set to %s without enabling MIME_BREAK_LONG_LINES or\nposting doesn't contain any 8bit chars and thus folding won't happen\n"), must_break_line, IMF_LINE_LEN, txt_quoted_printable);
+			if (enc == MIME_ENCODING_QP)
+				my_fprintf(stderr, _(txt_warn_long_line_not_break), must_break_line, IMF_LINE_LEN, txt_quoted_printable);
 			else
-				my_fprintf(stderr, _("Line %d is longer than %d octets and should be folded, but\nencoding is not set to %s\n"), must_break_line, IMF_LINE_LEN, txt_base64);
+				my_fprintf(stderr, _(txt_warn_long_line_not_base), must_break_line, IMF_LINE_LEN, txt_base64);
 		}
 		my_fflush(stderr);
 		warnings++;
@@ -1854,8 +1870,11 @@ check_article_to_be_posted(
 	 *
 	 * Is this correct for crosspostings?
 	 */
-	if (ngcnt)
-		*c_group = group_find(newsgroups[0], FALSE);
+	if (ngcnt) {
+		psGrp = *c_group;
+		if (!(*c_group = group_find(newsgroups[0], FALSE)))
+			*c_group = psGrp;
+	}
 
 	/*
 	 * check for known 7bit charsets
@@ -1871,7 +1890,7 @@ check_article_to_be_posted(
 			break;
 		}
 	}
-	if ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) != MIME_ENCODING_7BIT)
+	if (enc != MIME_ENCODING_7BIT)
 		mime_7bit = FALSE;
 	if (contains_8bit && mime_usascii)
 #ifndef CHARSET_CONVERSION
@@ -1889,7 +1908,7 @@ check_article_to_be_posted(
 	 * signature it will not be encoded. We might additionally check if there's
 	 * a file named ~/.signature and skip the warning if it is not present.
 	 */
-	if ((((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_QP) || ((*c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_BASE64)) && strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
+	if ((enc == MIME_ENCODING_QP || enc == MIME_ENCODING_BASE64) && strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
 		warnings_catbp |= CA_WARNING_ENCODING_EXTERNAL_INEWS;
 
 	/* give most error messages */
@@ -1971,7 +1990,6 @@ check_article_to_be_posted(
 
 	/* give most warnings */
 	if (warnings_catbp) {
-
 		if (warnings_catbp & CA_WARNING_SPACES_ONLY_SUBJECT)
 			my_fprintf(stderr, "%s", _(txt_warn_blank_subject));
 		if (warnings_catbp & CA_WARNING_RE_WITHOUT_REFERENCES)
@@ -3150,7 +3168,7 @@ damaged_id(
 			return TRUE;
 
 		switch (*id) {
-			case '[':  /* '[' and ']' are only allowed in id-right */
+			case '[':	/* '[' and ']' are only allowed in id-right */
 				if (bracket != 0 || !at_present || *(id - 1) != '@' || strchr(id, '@'))
 					return TRUE;
 				else
@@ -3170,7 +3188,7 @@ damaged_id(
 						return TRUE;
 
 					at_present = TRUE;
-				} else {  /* multiple '@' are only ok inside [] */
+				} else {	/* multiple '@' are only ok inside [] */
 					if (!bracket)
 						return TRUE;
 				}
@@ -5982,6 +6000,7 @@ radix32(
 			*ptr-- = ralphabet[(int) (num & 0x1f)];
 	} else
 		*ptr-- = ralphabet[0];
+
 	return ++ptr;
 }
 #endif /* EVIL_INSIDE */

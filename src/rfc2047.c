@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2021-03-04
+ *  Updated   : 2023-10-16
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2023 Chris Blum <chris@resolution.de>
@@ -453,6 +453,9 @@ which_encoding(
 	int chars = 0;
 	int schars = 0;
 	int nonprint = 0;
+#ifdef MIME_BREAK_LONG_LINES
+	char *s = w;
+#endif /* MIME_BREAK_LONG_LINES */
 
 	while (*w && isspace((unsigned char) *w))
 		w++;
@@ -472,6 +475,10 @@ which_encoding(
 			return 'B';
 		return 'Q';
 	}
+#ifdef MIME_BREAK_LONG_LINES
+	else if (strlen(s) > IMF_LINE_LEN)
+		return 'X';
+#endif /* MIME_BREAK_LONG_LINES */
 	return 0;
 }
 
@@ -573,6 +580,10 @@ rfc1522_do_encode(
 	t_bool isbroken_within = FALSE;	/* is word broken due to length restriction on encoded of word? */
 	t_bool isstruct_head = FALSE;		/* are we dealing with structured header? */
 	t_bool rightafter_ew = FALSE;
+#ifdef MIME_BREAK_LONG_LINES
+	t_bool colon_seen = FALSE;
+	t_bool long_line = FALSE;
+#endif /* MIME_BREAK_LONG_LINES */
 /*
  * the list of structured header fields where '(' and ')' are
  * treated specially in rfc 1522 encoding
@@ -592,6 +603,12 @@ rfc1522_do_encode(
 
 	t = buffer = my_malloc(bufferlen);
 	encoding = which_encoding(what);
+#ifdef MIME_BREAK_LONG_LINES
+	if (encoding == 'X') {
+		long_line = TRUE;
+		encoding = 'B';
+	}
+#endif /* MIME_BREAK_LONG_LINES */
 	ew_taken_len = strlen(charset) + 7 /* =?c?E?d?= */;
 	while (*what) {
 		if (break_long_line)
@@ -601,7 +618,11 @@ rfc1522_do_encode(
 		 * follows after the point where it's split should be encoded (i.e.
 		 * even if they are made of only 7bit chars)
 		 */
+#ifdef MIME_BREAK_LONG_LINES
+		if (contains_nonprintables(what, isstruct_head) || isbroken_within || (long_line && colon_seen)) {
+#else
 		if (contains_nonprintables(what, isstruct_head) || isbroken_within) {
+#endif /* MIME_BREAK_LONG_LINES */
 			if (encoding == 'Q') {
 				if (!quoting) {
 					snprintf(buf2, sizeof(buf2), "=?%s?%c?", charset, encoding);
@@ -766,7 +787,11 @@ rfc1522_do_encode(
 				 * if encoded word is followed by 7bit-only fragment, we need to
 				 * eliminate ' ' inserted in while-block above
 				 */
+#ifdef MIME_BREAK_LONG_LINES
+				if (!contains_nonprintables(what, isstruct_head) && !long_line) {
+#else
 				if (!contains_nonprintables(what, isstruct_head)) {
+#endif /* MIME_BREAK_LONG_LINES */
 					t--;
 					ewsize--;
 				}
@@ -780,6 +805,10 @@ rfc1522_do_encode(
 					buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
 					t = buffer + offset;
 				}
+#ifdef MIME_BREAK_LONG_LINES
+				if (*what == ':')
+					colon_seen = TRUE;
+#endif /* MIME_BREAK_LONG_LINES */
 				*t++ = *what++;		/* output word unencoded */
 			}
 			while (*what && isbetween(*what, isstruct_head)) {
@@ -923,9 +952,8 @@ do_rfc15211522_encode(
 		/*
 		 * TODO: - what about 8bit chars in the mentioned headers
 		 *         when !allow_8bit_header?
-		 *       - what about lines longer 998 octets?
 		 */
-		if (allow_8bit_header || (!strncasecmp(header, "References: ", 12) || !strncasecmp(header, "Message-ID: ", 12) || !strncasecmp(header, "Date: ", 6) || !strncasecmp(header, "Newsgroups: ", 12) || !strncasecmp(header, "Distribution: ", 14) || !strncasecmp(header, "Followup-To: ", 13) || !strncasecmp(header, "X-Face: ", 8) || !strncasecmp(header, "Cancel-Lock: ", 13) || !strncasecmp(header, "Cancel-Key: ", 12)))
+		if (allow_8bit_header || (!strncasecmp(header, "References: ", 12) || !strncasecmp(header, "Message-ID: ", 12) || !strncasecmp(header, "Date: ", 6) || !strncasecmp(header, "Newsgroups: ", 12) || !strncasecmp(header, "Distribution: ", 14) || !strncasecmp(header, "Followup-To: ", 13) || !strncasecmp(header, "X-Face: ", 8) || !strncasecmp(header, "Cancel-Lock: ", 13) || !strncasecmp(header, "Cancel-Key: ", 12) || !strncasecmp(header, "Path: ", 6)))
 			fputs(header, g);
 		else {
 			char *p;
@@ -1300,7 +1328,7 @@ compose_multipart_mixed(
 {
 	FILE *fp;
 	FILE *messagefp;
-	char boundary[MIME_BOUNDARY_SIZE];
+	char *boundary;
 	t_bool requires_8bit;
 
 	if ((fp = tmpfile()) == NULL)
@@ -1313,6 +1341,7 @@ compose_multipart_mixed(
 	}
 
 	requires_8bit = (requires_8bit || contains_8bit_characters(textfp));
+	boundary = my_malloc(MIME_BOUNDARY_SIZE);
 
 	/*
 	 * Header: CT with multipart boundary, CTE
@@ -1349,6 +1378,7 @@ to understand the new format, and some of what follows may look strange.\n\n"));
 	/* closing boundary */
 	fprintf(fp, "--%s--\n", boundary);
 	/* TODO: insert an epilogue here? */
+	free(boundary);
 	return fp;
 }
 

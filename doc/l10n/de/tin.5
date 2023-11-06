@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2023-07-31
+.\" Updated   : 2023-10-31
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -747,7 +747,9 @@ undeclared_charset=ISO\-2022\-JP\-2
 .RS
 The filter file is used to assign scores to certain articles. Based on the
 score an article can be filtered out (hidden) or marked hot. Empty lines or
-lines beginning with a '#' are ignored.
+lines beginning with a '#' are ignored. Multiple matching\-rules in the same
+scope are all applied individually and not only when they all hit at the
+same time (logical OR not AND).
 .TP 
 \fBcomment\fP
 Every entry (rule) in the filter file might get a comment. Multiple lines
@@ -785,9 +787,9 @@ Vergleichstyp (Wildmat oder Regex) hängt von der Einstellung der
 tinrc\-Variablen \fBwildcard\fP ab.
 .TP 
 \fBmsgid_last\fP
-Vergleiche mit \*(rqMessage\-ID:\*(rq und letztem \*(rqReferences:\*(rq Eintrag. Der
-verwendete Vergleichstyp (Wildmat oder Regex) hängt von der Einstellung der
-tinrc\-Variable \fBwildcard\fP ab.
+Vergleiche mit \*(rqMessage\-ID:\*(rq und letztem \*(rqReferences:\*(rq Eintrag (direkte
+Antworten). Der verwendete Vergleichstyp (Wildmat oder Regex) hängt von der
+Einstellung der tinrc\-Variable \fBwildcard\fP ab.
 .TP 
 \fBmsgid_only\fP
 Vergleiche mit \*(rqMessage\-ID:\*(rq. Der verwendete Vergleichstyp (Wildmat oder
@@ -867,6 +869,15 @@ group=*
 case=1
 score=hot
 subj=\eb(cd|[rk]?)?tin(d|pre)?[\-.0\-9]*\eb
+
+comment=downscore postings in nsr from google base on
+comment=message\-id or path, if both hit they end up with
+comment=a score of \-66 which is enough to mark them killed
+group=news.software.readers
+case=1
+score=\-33
+path=\e.googlegroups\e.com!not\-for\-mail$
+msgid_only=@googlegroups\e.com>
 .fi
 .RE
 .RE
@@ -1102,10 +1113,12 @@ is unassigned.
 \fBThreadToggleArtSel\fP	.
 \fBThreadReverseSel\fP	@
 \fBThreadCancel\fP	D
+\fBThreadFollowup\fP	F
 \fBThreadMarkArtRead\fP	K
 \fBThreadAutoSave\fP	S
 \fBThreadUntag\fP	U
 \fBThreadToggleSubjDisplay\fP	d
+\fBThreadFollowupQuote\fP	f
 \fBThreadMail\fP	m
 \fBThreadSave\fP	s
 \fBThreadTag\fP	t
@@ -1319,6 +1332,10 @@ ausgewählt (heiß) war, bevor er gelesen wurde. Standard ist
 If ON \fB\%tin\fP(1)  will ask before using a MIME viewer (\fBmetamail_prog\fP) to
 display MIME messages. This only occurs if a MIME viewer is set. Default is
 OFF.
+.TP 
+\fBattachment_format\fP
+Diese Formatanweisung wird von \fB\%tin\fP(1) zur Darstellung der Anhangsebene
+benutzt. Voreingestellt ist "%t%s%e%c%d".
 .TP 
 \fBauto_cc_bcc\fP
 Setzt Ihren Namen automatisch in das Feld \*(rqCc:\*(rq und/oder \*(rqBcc:\*(rq, wenn
@@ -1856,6 +1873,16 @@ Some normalization modes are only available if they are supported by the
 library \fB\%tin\fP(1)  uses to do the normalization. NFC should be used if
 possible.
 .TP 
+\fBpage_mime_format\fP
+Diese Formatanweisung wird von tin \fB\%tin\fP(1) zur Darstellung von
+Mime\-Headern auf Artikelebene benutzt. Voreingestellt ist "[\-\-
+%T%S%*n%z%*l%!c%!d%*e \-\-]".
+.TP 
+\fBpage_uue_format\fP
+Diese Formatanweisung wird von tin \fB\%tin\fP(1) zur Darstellung von
+UUE\-Headern auf Artikelebene benutzt. Voreingestellt ist "[\-\-
+%T%S%*n%I%!d%*e \-\-]".
+.TP 
 \fBpos_first_unread\fP
 If ON put cursor at first unread article in group otherwise at last
 article. Default is ON.
@@ -1996,10 +2023,10 @@ Score of an article which should be marked hot, this must be >=
 \fBscroll_lines\fP
 The number of lines that will be scrolled up/down in the article pager when
 using cursor\-up/down. The default is 1 (line\-by\-line). Set to 0 to get
-traditional \fBtin\fP page\-by\-page scrolling. Set to \-1 to get page\-by\-page
-scrolling where the top/bottom line is carried over onto the next page.
-This setting supersedes show_last_line_prev_page=ON. Set to \-2 to get
-half\-page scrolling. This setting supersedes \fBfull_page_scroll\fP=OFF.
+traditional \fB\%tin\fP(1)  page\-by\-page scrolling. Set to \-1 to get
+page\-by\-page scrolling where the top/bottom line is carried over onto the
+next page.  This setting supersedes show_last_line_prev_page=ON. Set to \-2
+to get half\-page scrolling. This setting supersedes \fBfull_page_scroll\fP=OFF.
 .TP 
 \fBselect_format\fP
 Diese Formatanweisung wird von \fBtin\fP zur Darstellung der Auswahlebene
@@ -2028,8 +2055,8 @@ schneller sein.
 .RE
 .TP 
 \fBshow_author\fP
-Which information about the author should be shown. Default is 2, authors
-full name.
+Welche Informationen über den Autor sollen angezeigt werden. Die
+Voreinstellung ist 2, der vollständige Name des Autors.
 .RS +1i
 .IP 0 3
 \fBNichts\fP, nur die \*(rqSubject:\*(rq Zeile wird angezeigt.

@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2023-08-23
+ *  Updated   : 2023-11-05
  *  Notes     :
  *
  * Copyright (c) 1997-2023 Urs Janssen <urs@tin.org>
@@ -125,6 +125,7 @@ extern void read_server_config(void);
 extern void write_config_file(char *file);
 
 /* cook.c */
+extern char *build_attach_line(t_part *part, int depth, int max_len, int is_uue, const char *name, const char *charset);
 extern const char *get_filename(t_param *ptr);
 extern t_bool cook_article(t_bool wrap_lines, t_openartinfo *artinfo, int hide_uue, t_bool show_all_headers);
 extern t_bool expand_ctrl_chars(char **line, size_t *length, size_t lcook_width);
@@ -429,6 +430,7 @@ extern signed long int write_newsrc(void);
 extern t_bool pos_group_in_newsrc(struct t_group *group, int pos);
 extern void art_mark(struct t_group *group, struct t_article *art, int flag);
 extern void backup_newsrc(void);
+extern void bulk_subscribe(struct t_group **groups, int groups_cnt, int sub_state, t_bool get_info);
 extern void catchup_newsrc_file(void);
 extern void delete_group(char *group);
 extern void expand_bitmap(struct t_group *group, t_artnum min);
@@ -495,6 +497,7 @@ extern void display_info_page(int part);
 extern void draw_page(int part);
 extern void info_pager(FILE *info_fh, const char *title, t_bool wrap_at_ends);
 extern void resize_article(t_bool wrap_lines, t_openartinfo *artinfo);
+extern void update_hide_uue(void);
 extern void toggle_raw(void);
 
 /* parsdate.y */

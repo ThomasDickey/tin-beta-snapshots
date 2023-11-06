@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2023-08-22
+ *  Updated   : 2023-10-16
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
@@ -355,7 +355,6 @@ print_save_summary(
 	t_function type,
 	int fed)
 {
-	const char *first, *last;
 	char buf[LEN];
 	char what[LEN];
 
@@ -382,18 +381,15 @@ print_save_summary(
 			break;
 	}
 
-	first = (save[0].mailbox) ? save[0].path : save[0].file;
-	last = (save[num_save - 1].mailbox) ? save[num_save - 1].path : save[num_save - 1].file;
-
 	/*
 	 * We report the range of saved-to files for regular saves of > 1 articles
 	 */
 	if (num_save == 1 || save[0].mailbox)
 		snprintf(buf, sizeof(buf), _(txt_saved_to),
-			what, (save[0].mailbox ? _(txt_mailbox) : ""), first);
+			what, (save[0].mailbox ? _(txt_mailbox) : ""), save[0].path);
 	else
 		snprintf(buf, sizeof(buf), _(txt_saved_to_range),
-			what, first, last);
+			what, save[0].file, save[num_save - 1].file);
 
 	wait_message((tinrc.beginner_level) ? 4 : 2, buf);
 }
@@ -775,7 +771,7 @@ feed_articles(
 
 	/*
 	 * Performance hack - If we feed a single art from the pager then we can
-	 * re-use the currently open article
+	 * reuse the currently open article
 	 * Also no need to fetch articles just to mark them (un)read
 	 */
 	if (feed_mark_function || (level == PAGE_LEVEL && (feed_type == FEED_ARTICLE || feed_type == FEED_THREAD))) {

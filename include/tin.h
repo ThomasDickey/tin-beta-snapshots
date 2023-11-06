@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-09-20
+ *  Updated   : 2023-10-29
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1301,6 +1301,8 @@ enum {
 #define UUE_NO			0		/* Don't hide uue data */
 #define UUE_YES			1		/* Hide uue data */
 #define UUE_ALL			2		/* Hide uue data harder */
+#define UUE_COMPLETE	3		/* uue part is complete */
+#define UUE_INCOMPLETE	4		/* uue part is not complete */
 
 /*
  * used in misc.c/rfc1524.c
@@ -1443,14 +1445,17 @@ enum {
 #define FILTER_LINES_GT		3
 
 /*
- * default format strings for selection, group, thread level
- * and the date display in the page header.
+ * default format strings for selection, group, thread, attachment level,
+ * the mime header in the pager and the date display in the page header.
  * Don't change without adjusting rc_update() and the like accordingly!
  */
-#define DEFAULT_SELECT_FORMAT	"%f %n %U  %G  %d"
-#define DEFAULT_GROUP_FORMAT	"%n %m %R %L  %s  %F"
-#define DEFAULT_THREAD_FORMAT	"%n %m  [%L]  %T  %F"
-#define DEFAULT_DATE_FORMAT		"%a, %d %b %Y %H:%M:%S"
+#define DEFAULT_SELECT_FORMAT		"%f %n %U  %G  %d"
+#define DEFAULT_GROUP_FORMAT		"%n %m %R %L  %s  %F"
+#define DEFAULT_THREAD_FORMAT		"%n %m  [%L]  %T  %F"
+#define DEFAULT_ATTACHMENT_FORMAT	"%T%S%E%C%d"
+#define DEFAULT_PAGE_MIME_FORMAT	"[-- %T%S%*n%z%*l%!c%!d%*e --]"
+#define DEFAULT_PAGE_UUE_FORMAT		"[-- %T%S%*n%I%!d%*e --]"
+#define DEFAULT_DATE_FORMAT			"%a, %d %b %Y %H:%M:%S"
 
 /*
  * unicode normalization
@@ -1658,6 +1663,28 @@ struct t_newsheader {
 #define BITS_OF_thread_articles	3
 #define BITS_OF_thread_perc		7
 #define BITS_OF_trim_article_body	3
+
+/*
+ * used as flags for t_attach_item
+ */
+#define ATTACH_SHOW_CONTENT		1 << 0 /* content visible */
+#define ATTACH_SHOW_BOTH		1 << 1 /* description and content visible */
+#define ATTACH_OMIT_DESC		1 << 2 /* description can be omitted */
+#define ATTACH_OMIT_BOTH		1 << 3 /* description and content can be omitted */
+#define ATTACH_ITEM_IS_TYPE		1 << 4 /* content type */
+#define ATTACH_ITEM_IS_SUBTYPE	1 << 5 /* content subtype */
+
+/*
+ * struct t_attach_item - information about a specific header part of a mime attachment
+ */
+struct t_attach_item {
+	const char *content;		/* "7bit", "US-ASCII" etc. */
+	const char *description;	/* "encoding ", "charset " etc. */
+	const char *fmt;			/* %s */
+	unsigned int flags;
+	struct t_attach_item *prev;
+	struct t_attach_item *next;
+};
 
 /*
  * struct t_attribute - configurable attributes on a per group basis

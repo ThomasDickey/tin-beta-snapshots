@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2023-07-31
+.\" Updated   : 2023-10-31
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -739,7 +739,9 @@ undeclared_charset=ISO\-2022\-JP\-2
 .RS
 The filter file is used to assign scores to certain articles. Based on the
 score an article can be filtered out (hidden) or marked hot. Empty lines or
-lines beginning with a '#' are ignored.
+lines beginning with a '#' are ignored. Multiple matching\-rules in the same
+scope are all applied individually and not only when they all hit at the
+same time (logical OR not AND).
 .TP 
 \fBcomment\fP
 Every entry (rule) in the filter file might get a comment. Multiple lines
@@ -776,9 +778,9 @@ used (wildmat or regex) depends on the setting of the tinrc variable
 \fBwildcard\fP.
 .TP 
 \fBmsgid_last\fP
-Match against \*(rqMessage\-ID:\*(rq and last \*(rqReferences:\*(rq entry only. The
-matching type used (wildmat or regex) depends on the setting of the tinrc
-variable \fBwildcard\fP.
+Match against \*(rqMessage\-ID:\*(rq and last \*(rqReferences:\*(rq entry (direct
+responses) only. The matching type used (wildmat or regex) depends on the
+setting of the tinrc variable \fBwildcard\fP.
 .TP 
 \fBmsgid_only\fP
 Match against \*(rqMessage\-ID:\*(rq. The matching type used (wildmat or regex)
@@ -858,6 +860,15 @@ group=*
 case=1
 score=hot
 subj=\eb(cd|[rk]?)?tin(d|pre)?[\-.0\-9]*\eb
+
+comment=downscore postings in nsr from google base on
+comment=message\-id or path, if both hit they end up with
+comment=a score of \-66 which is enough to mark them killed
+group=news.software.readers
+case=1
+score=\-33
+path=\e.googlegroups\e.com!not\-for\-mail$
+msgid_only=@googlegroups\e.com>
 .fi
 .RE
 .RE
@@ -1093,10 +1104,12 @@ is unassigned.
 \fBThreadToggleArtSel\fP	.
 \fBThreadReverseSel\fP	@
 \fBThreadCancel\fP	D
+\fBThreadFollowup\fP	F
 \fBThreadMarkArtRead\fP	K
 \fBThreadAutoSave\fP	S
 \fBThreadUntag\fP	U
 \fBThreadToggleSubjDisplay\fP	d
+\fBThreadFollowupQuote\fP	f
 \fBThreadMail\fP	m
 \fBThreadSave\fP	s
 \fBThreadTag\fP	t
@@ -1298,6 +1311,10 @@ Default is ':'. \fBkill_level\fP must be set accordingly.
 If ON \fB\%tin\fP(1)  will ask before using a MIME viewer (\fBmetamail_prog\fP) to
 display MIME messages. This only occurs if a MIME viewer is set. Default is
 OFF.
+.TP 
+\fBattachment_format\fP
+Format string \fB\%tin\fP(1) uses for Attachment level representation. Default
+is "%t%s%e%c%d".
 .TP 
 \fBauto_cc_bcc\fP
 Automatically put your name in the \*(rqCc:\*(rq and/or \*(rqBcc:\*(rq field when
@@ -1537,8 +1554,8 @@ Default for quick (1 key) auto\-selection filter header.
 \fBdefault_subject_search\fP
 .TP 
 \fBdraw_arrow\fP
-Allows groups/articles to be selected by an arrow '\->' if set ON or by
-ahighlighted bar if set OFF. Default is OFF.
+Allows groups/articles to be selected by an arrow '\->' if set ON or by a
+highlighted bar if set OFF. Default is OFF.
 .TP 
 \fBeditor_format\fP
 The format string used to create the editor start command with parameters.
@@ -1684,7 +1701,7 @@ program. It allows the user to save articles/threads/groups simply by giving
 \fBmailer_format\fP
 The format string used to create the mailer command with parameters that is
 used for mailing articles to other people. Default is '%M "%T" < %F'
-(e.g., /bin/mail "iain" <  ~/.article). The flexible format allows other
+(e.g., /bin/mail "iain" < ~/.article). The flexible format allows other
 mailers with different command line parameters to be used such as
 .in +.3i
 .nf
@@ -1822,6 +1839,14 @@ and Case Folding
 Some normalisation modes are only available if they are supported by the
 library \fB\%tin\fP(1)  uses to do the normalisation. NFC should be used if
 possible.
+.TP 
+\fBpage_mime_format\fP
+Format string \fB\%tin\fP(1) uses for mime header at Page level.  Default is
+"[\-\- %T%S%*n%z%*l%!c%!d%*e \-\-]".
+.TP 
+\fBpage_uue_format\fP
+Format string \fB\%tin\fP(1) uses for uue header at Page level.  Default is
+"[\-\- %T%S%*n%I%!d%*e \-\-]".
 .TP 
 \fBpos_first_unread\fP
 If ON put cursor at first unread article in group otherwise at last
@@ -1963,10 +1988,10 @@ Score of an article which should be marked hot, this must be >=
 \fBscroll_lines\fP
 The number of lines that will be scrolled up/down in the article pager when
 using cursor\-up/down. The default is 1 (line\-by\-line). Set to 0 to get
-traditional \fBtin\fP tin page\-by\-page scrolling. Set to \-1 to get page\-by\-page
-scrolling where the top/bottom line is carried over onto the next page.
-This setting supersedes show_last_line_prev_page=ON. Set to \-2 to get
-half\-page scrolling. This setting supersedes \fBfull_page_scroll\fP=OFF.
+traditional \fB\%tin\fP(1) page\-by\-page scrolling. Set to \-1 to get
+page\-by\-page scrolling where the top/bottom line is carried over onto the
+next page.  This setting supersedes show_last_line_prev_page=ON. Set to \-2
+to get half\-page scrolling. This setting supersedes \fBfull_page_scroll\fP=OFF.
 .TP 
 \fBselect_format\fP
 The format string used for the Selection level. Default is "%f\ %n\ %U\ \ %G\ \ %d". The following substitutions are supported:
@@ -2181,7 +2206,7 @@ viewer via \fBPageToggleTex2iso\fP ('\fB"\fP').
 Defines which threading method to use. The choices are:
 .RS +1i
 .IP 0 3
-Don't thread.
+Don't thread
 .IP 1
 Thread on Subject only
 .IP 2
@@ -2313,11 +2338,11 @@ If ON use UTF\-8 characters for indicator ('\->'), thread/attachment tree
 and ellipsis ('...'). Default is OFF.
 .TP 
 \fBverbatim_begin_regex\fP
-A regular expression that \fBtin\fP will use to find the begin of a verbatim
-block. Default is #v+
+A regular expression that \fB\%tin\fP(1) will use to find the begin of a
+verbatim block. Default is #v+
 .TP 
 \fBverbatim_end_regex\fP
-A regular expression that \fBtin\fP will use to find the end of a verbatim
+A regular expression that \fB\%tin\fP(1) will use to find the end of a verbatim
 block. Default is #v\-
 .TP 
 \fBverbatim_handling\fP
