@@ -6,7 +6,7 @@
  *  Updated   : 2023-10-25
  *  Notes     : RFC 2046 MIME article definitions
  *
- * Copyright (c) 2000-2023 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

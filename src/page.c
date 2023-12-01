@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-03
+ *  Updated   : 2023-11-27
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -680,7 +680,8 @@ page_goto_next_unread:
 				if (hide_uue && curr_line + ARTLINES > artlines)
 					curr_line = artlines - ARTLINES;
 				draw_page(0);
-				/* TODO: info_message()? */
+				/* TODO: use translateable sentences */
+				info_message("%s: %s", _(txt_hide_uue.opt), _(txt_hide_uue_type[hide_uue]));
 				break;
 
 			case PAGE_REVEAL:			/* toggle hiding after ^L */
@@ -820,7 +821,7 @@ page_goto_next_unread:
 
 			case GLOBAL_CONNECTION_INFO:
 				XFACE_CLEAR();
-				show_connection_page(PAGE_LEVEL, _(txt_connection_info));
+				show_connection_page();
 				draw_page(0);
 				break;
 
@@ -1242,6 +1243,43 @@ draw_page(
 	} else
 		draw_percent_mark(curr_line + ARTLINES, artlines);
 
+	if (CURR_GROUP.attribute->show_art_score && arts[this_resp].score != 0) {
+		char *buf;
+#ifdef HAVE_COLOR
+		int tmp_col = tinrc.col_invers_bg;
+#endif /* HAVE_COLOR */
+		size_t buflen = strlen(_(txt_art_score)) + 3;
+
+		buf = my_malloc(buflen + 1);
+		snprintf(buf, buflen, _(txt_art_score), tin_ltoa(arts[this_resp].score, 4));
+		MoveCursor(cLINES, 0);
+#ifdef HAVE_COLOR
+		fcol(tinrc.col_normal);
+		if (tinrc.inverse_okay) {
+			if (arts[this_resp].score < 0)
+				tinrc.col_invers_bg = tinrc.col_score_neg;
+			else
+				tinrc.col_invers_bg = tinrc.col_score_pos;
+		} else {
+			if (arts[this_resp].score < 0)
+				fcol(tinrc.col_score_neg);
+			else
+				fcol(tinrc.col_score_pos);
+		}
+#endif /* HAVE_COLOR */
+		StartInverse();
+		my_fputs(buf, stdout);
+		EndInverse();
+		my_flush();
+#ifdef HAVE_COLOR
+		if (tinrc.inverse_okay)
+			tinrc.col_invers_bg = tmp_col;
+		else
+			fcol(tinrc.col_normal);
+#endif /* HAVE_COLOR */
+		free(buf);
+	}
+
 #ifdef XFACE_ABLE
 	if (tinrc.use_slrnface && !show_raw_article)
 		slrnface_display_xface(note_h->xface);
@@ -1288,17 +1326,44 @@ invoke_metamail(
 	if ((mime_fp = popen(ptr, "w")))
 #endif /* DONT_HAVE_PIPING */
 	{
+		t_bool seek_error = FALSE;
+
 		rewind(fp);
 		while (fgets(buf, (int) sizeof(buf), fp) != NULL)
 			fputs(buf, mime_fp);
 
 		fflush(mime_fp);
 		/* This is needed if we are viewing the raw art */
-		fseek(fp, offset, SEEK_SET);	/* goto old position */
+		if (fseek(fp, offset, SEEK_SET) != -1)	{ /* goto old position */
+		}
+#ifdef DEBUG
+		else {
+			int e = errno;
+			/*
+			 * TODO: always show to user?
+			 *       then use something less technical and move to lang.c
+			 */
+			perror_message("%s:%d invoke_metamail(fseek(fp)) failed", __FILE__, __LINE__);
+			seek_error = TRUE;
+			errno = e;
+		}
+#endif /* DEBUG */
+
+		if (!seek_error) {
+#ifdef DONT_HAVE_PIPING
+			char *pbuf;
+			size_t len;
+
+			len = snprintf(NULL, 0, "%s %s", tinrc.metamail_prog, mimefile);
+			pbuf= my_malloc(++len);
+			snprintf(pbuf, len, "%s %s", tinrc.metamail_prog, mimefile);
+			invoke_cmd(pbuf);
+			free(pbuf);
+#endif /* DONT_HAVE_PIPING */
+		} else
+			perror_message(_(txt_command_failed), ptr);
 
 #ifdef DONT_HAVE_PIPING
-		snprintf(buf, sizeof(buf) - 1, "%s %s", tinrc.metamail_prog, mimefile);
-		invoke_cmd(buf);
 		fclose(mime_fp);
 		unlink(mimefile);
 #else
@@ -1934,7 +1999,7 @@ load_article(
 	}
 
 	XFACE_SUPPRESS();
-	if (strcmp(tinrc.metamail_prog, INTERNAL_CMD) == 0)	/* Use internal viewer */
+	if (STRCMPEQ(tinrc.metamail_prog, INTERNAL_CMD))	/* Use internal viewer */
 		decode_save_mime(&pgart, FALSE);
 	else
 		invoke_metamail(pgart.raw);
@@ -2526,6 +2591,15 @@ url_page(
 				scroll_up();
 				break;
 
+#ifdef HAVE_COLOR
+			case GLOBAL_TOGGLE_COLOR:
+				if (toggle_color()) {
+					show_url_page();
+					show_color_status();
+				}
+				break;
+#endif /* HAVE_COLOR */
+
 			case GLOBAL_TOGGLE_HELP_DISPLAY:
 				toggle_mini_help(URL_LEVEL);
 				show_url_page();
@@ -2534,6 +2608,16 @@ url_page(
 			case GLOBAL_TOGGLE_INFO_LAST_LINE:
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
 				show_url_page();
+				break;
+
+			case GLOBAL_TOGGLE_INVERSE_VIDEO:
+				toggle_inverse_video();
+				show_url_page();
+				show_inverse_video_status();
+				break;
+
+			case GLOBAL_VERSION:
+				info_message(cvers);
 				break;
 
 			case URL_SELECT:
@@ -2642,8 +2726,8 @@ process_url(
 		}
 		wait_message(2, _(txt_url_open), url);
 		url_esc = escape_shell_meta(url, no_quote);
-		len = strlen(url_esc) + strlen(tinrc.url_handler) + 2;
-		url = my_realloc(url, len);
+		len = snprintf(NULL, 0, "%s %s", tinrc.url_handler, url_esc);
+		url = my_realloc(url, ++len);
 		snprintf(url, len, "%s %s", tinrc.url_handler, url_esc);
 		invoke_cmd(url);
 		free(url);

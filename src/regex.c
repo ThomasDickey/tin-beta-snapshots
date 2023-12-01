@@ -7,7 +7,7 @@
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
- * Copyright (c) 1997-2023 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2024 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -202,7 +202,6 @@ compile_regex(
 
 	if (regex_use_utf8())
 		options |= PCRE_UTF8;
-
 
 	if ((cache->re = pcre_compile(regex, options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
 		error_message(2, _(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);

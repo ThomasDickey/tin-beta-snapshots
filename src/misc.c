@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-17
+ *  Updated   : 2023-11-19
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -364,7 +364,7 @@ copy_body(
 				retcode = fprintf(fp_op, "\n");
 		}
 		if (retcode == EOF) {
-			perror_message("copy_body() failed");
+			perror_message("copy_body() failed"); /* TODO: -> lang.c */
 			return;
 		}
 	}
@@ -771,8 +771,8 @@ rename_file(
 	struct stat statbuf;
 
 	if (unlink(new_filename) == -1) {
-		if (errno == EPERM) { /* TODO: != ENOENT ? and -> lang.c */
-			perror_message(_("Error: unlink %s"), new_filename);
+		if (errno == EPERM) { /* TODO: != ENOENT ? */
+			perror_message(_(txt_error_unlink), new_filename);
 			return;
 		}
 	}
@@ -1359,7 +1359,7 @@ strfeditor(
 	char *format)
 {
 	const char *endp;
-	char *start = s;
+	const char *start = s;
 	char tbuf[PATH_LEN];
 	int i;
 
@@ -1718,7 +1718,7 @@ strfpath(
 
 
 /*
- * TODO: Properly explain this
+ * TODO: Properly explain this (quote_areas)
  */
 char *
 escape_shell_meta(
@@ -1799,7 +1799,7 @@ strfmailer(
 	const char *format)
 {
 	const char *endp;
-	char *start = dest;
+	const char *start = dest;
 	char tbuf[PATH_LEN];
 	int quote_area = no_quote;
 
@@ -1890,6 +1890,7 @@ strfmailer(
 			char *p;
 			t_bool ismail = TRUE;
 			t_bool escaped = FALSE;
+
 			switch (*++format) {
 				case '\0':
 					*dest++ = '%';
@@ -3831,7 +3832,7 @@ remove_soft_hyphens(
 		while (*rptr) {
 			if (*rptr == 0xad)
 				++rptr;
-			if (*rptr)
+			if (*rptr && *rptr != 0xad)
 				*wptr++ = *rptr++;
 		}
 		*wptr = '\0';
@@ -3975,13 +3976,11 @@ tin_version_info(
 	int pcre2_version_length;
 #endif /* HAVE_LIB_PCRE2 */
 
+	fprintf(fp, _(txt_tin_version), PRODUCT, VERSION, RELEASEDATE, RELEASENAME);
 #if defined(__DATE__) && defined(__TIME__)
-	fprintf(fp, _("Version: %s %s release %s (\"%s\") %s %s\n"),
-		PRODUCT, VERSION, RELEASEDATE, RELEASENAME, __DATE__, __TIME__);
-#else
-	fprintf(fp, _("Version: %s %s release %s (\"%s\")\n"),
-		PRODUCT, VERSION, RELEASEDATE, RELEASENAME);
+	fprintf(fp, " %s %s", __DATE__, __TIME__);
 #endif /* __DATE__ && __TIME__ */
+	fprintf(fp, "\n");
 	wlines++;
 
 #ifdef SYSTEM_NAME
@@ -4348,34 +4347,18 @@ stat_article(
 
 /*
  * show connection details
- *
- * TODO: add to more levels?
  */
 void
 show_connection_page(
-	const int level,
-	const char *title)
+	void)
 {
 	FILE *fp;
 
 	if (!(fp = tmpfile()))
 		return;
 
-	switch (level) {
-		case GROUP_LEVEL:
-		case PAGE_LEVEL:
-		case SELECT_LEVEL:
-		case THREAD_LEVEL:
-			make_connection_page(fp);
-			break;
-
-		default:
-			error_message(2, _(txt_error_unknown_dlevel));
-			fclose(fp);
-			return;
-	}
-
-	info_pager(fp, title, FALSE); /* all other pagers do wrap */
+	make_connection_page(fp);
+	info_pager(fp, _(txt_connection_info), FALSE); /* all other pagers do wrap */
 	fclose(fp);
 	info_pager(NULL, NULL, TRUE); /* free mem */
 }
@@ -4385,31 +4368,30 @@ show_connection_page(
  * TODO:
  * - detected NNTP features
  * - connection type (IPv4 vs IPv6), remote IP, ...
- * - strings to lang.c
  */
 static void
 make_connection_page(
 	FILE *fp)
 {
 	if (!read_news_via_nntp)
-		fprintf(fp, "Reading from local spool.\n");
+		fprintf(fp, "%s", _(txt_conninfo_local_spool));
 	else {
 		if (read_saved_news)
-			fprintf(fp, "Reading saved news.\n");
+			fprintf(fp, "%s", _(txt_conninfo_saved_news));
 #if defined(NNTP_ABLE)
 #	if defined(NNTPS_ABLE)
 		else {
 			if (use_nntps) {
-				fprintf(fp, "Reading %s via NNTPS (%s; ", insecure_nntps ? "untrusted" : "trusted", can_post ? "read/write" : "read only");
+				fprintf(fp, _(txt_conninfo_nntps), insecure_nntps ? _(txt_conninfo_untrusted) : _(txt_conninfo_trusted), can_post ? _(txt_conninfo_rw) : _(txt_conninfo_ro));
 
 #		ifdef HAVE_LIB_LIBTLS
-			fprintf(fp, "LibreSSL %d).\n", TLS_API);
+				fprintf(fp, txt_conninfo_libressl, TLS_API);
 #		else
 #			ifdef HAVE_LIB_OPENSSL
-			fprintf(fp, "%s).\n", OpenSSL_version(OPENSSL_VERSION));
+				fprintf(fp, txt_conninfo_openssl, OpenSSL_version(OPENSSL_VERSION));
 #			else
 #				ifdef HAVE_LIB_GNUTLS
-			fprintf(fp, "GnuTLS %s).\n", gnutls_check_version(NULL));
+				fprintf(fp, txt_conninfo_gnutls, gnutls_check_version(NULL));
 #				endif /* HAVE_LIB_GNUTLS */
 #			endif /* HAVE_LIB_OPENSSL */
 #		endif /* HAVE_LIB_LIBTLS */
@@ -4418,7 +4400,7 @@ make_connection_page(
 			{
 #	endif /* NNTPS_ABLE */
 			{
-				fprintf(fp, "Reading via NNTP (%s).\n", can_post ? "read/write" : "read only");
+				fprintf(fp, _(txt_conninfo_nntp), can_post ? _(txt_conninfo_rw) : _(txt_conninfo_ro));
 			}
 
 			(void) nntp_conninfo(fp);
@@ -4427,16 +4409,15 @@ make_connection_page(
 	}
 #ifndef NNTP_ONLY
 	if (!read_news_via_nntp && !read_saved_news) {
-		fprintf(fp, "\nLocal spool config:\n");
-		fprintf(fp, "-------------------\n");
-		fprintf(fp, "SPOOLDIR          : %s\n", spooldir);
-		fprintf(fp, "NOVROOTDIR        : %s\n", novrootdir);
-		fprintf(fp, "OVERVIEW_FILE     : %s\n", novfilename);
-		fprintf(fp, "OVERVIEW_FMT      : %s\n", overviewfmt_file);
-		fprintf(fp, "NEWSGROUPS_FILE   : %s\n", newsgroups_file);
-		fprintf(fp, "ACTIVE_FILE       : %s\n", news_active_file);
-		fprintf(fp, "ACTIVE_TIMES_FILE : %s\n", active_times_file);
-		fprintf(fp, "SUBSCRIPTIONS_FILE: %s\n", subscriptions_file);
+		fprintf(fp, "%s", txt_conninfo_spool_config);
+		fprintf(fp, txt_conninfo_spooldir, spooldir);
+		fprintf(fp, txt_conninfo_novrootdir, novrootdir);
+		fprintf(fp, txt_conninfo_overview_file, novfilename);
+		fprintf(fp, txt_conninfo_overview_fmt, overviewfmt_file);
+		fprintf(fp, txt_conninfo_newsgroups_file, newsgroups_file);
+		fprintf(fp, txt_conninfo_active_file, news_active_file);
+		fprintf(fp, txt_conninfo_active_times_file, active_times_file);
+		fprintf(fp, txt_conninfo_subscriptions_file, subscriptions_file);
 	}
 #endif /* !NNTP_ONLY */
 }

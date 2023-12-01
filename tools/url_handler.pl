@@ -136,6 +136,5 @@ Urs Janssen E<lt>urs@tin.orgE<gt>
 =head1 SEE ALSO
 
 L<http://www.catb.org/~esr/BROWSER/>
-L<http://www.dwheeler.com/browse/secure_browser.html>
 
 =cut

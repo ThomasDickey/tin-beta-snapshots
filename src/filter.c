@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2023-07-12
+ *  Updated   : 2023-11-22
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -110,7 +110,7 @@ static void print_filter_menu(void);
 static void set_filter(struct t_filter *ptr);
 static void write_filter_array(FILE *fp, struct t_filters *ptr);
 #if 0 /* currently unused */
-	static FILE *open_xhdr_fp(char *header, long min, long max);
+	static FILE *open_xhdr_fp(char *header, t_artnum min, t_artnum max);
 #endif /* 0 */
 
 
@@ -260,7 +260,6 @@ set_filter(
 		ptr->xref = NULL;
 		ptr->path = NULL;
 		ptr->time = (time_t) 0;
-		ptr->next = (struct t_filter *) 0;
 	}
 }
 
@@ -370,7 +369,7 @@ read_filter_file(
 			case 'c':
 				if (match_integer(buf + 1, "ase=", &icase, 1)) {
 					if (ptr && !expired_time)
-						ptr[i].icase = (unsigned) icase;
+						ptr[i].icase = (t_bool) icase;
 
 					break;
 				}
@@ -704,8 +703,7 @@ write_filter_file(
 		return;
 	}
 
-	/* TODO: -> lang.c */
-	fprintf(fp, "# Filter file V%s for the TIN newsreader\n#\n", FILTER_VERSION);
+	fprintf(fp, txt_filter_file_version, FILTER_VERSION);
 	fprintf(fp, "%s", _(txt_filter_file));
 
 	fflush(fp);
@@ -798,7 +796,7 @@ write_filter_array(
 
 		fprintf(fp, "group=%s\n", (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
 
-		fprintf(fp, "case=%u\n", ptr->filter[i].icase);
+		fprintf(fp, "case=%u\n", ptr->filter[i].icase ? 1U : 0U);
 
 		if (ptr->filter[i].score == tinrc.score_kill)
 			fprintf(fp, "score=kill\n");
@@ -882,6 +880,7 @@ write_filter_array(
 
 		if (ptr->filter[i].time) {
 			char timestring[25];
+
 			if (my_strftime(timestring, sizeof(timestring) - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(ptr->filter[i].time))))
 				fprintf(fp, "time=%lu (%s)\n", (unsigned long int) ptr->filter[i].time, timestring);
 		}
@@ -1075,8 +1074,8 @@ filter_menu(
 	char buf[LEN];
 	char keyedit[MAXKEYLEN], keyquit[MAXKEYLEN], keysave[MAXKEYLEN];
 	char text_time[PATH_LEN];
-	char double_time[PATH_LEN];
-	char quat_time[PATH_LEN];
+	char *double_time;
+	char *quat_time;
 	int i, len, clen, flen;
 	struct t_filter_rule rule;
 	t_bool proceed;
@@ -1395,8 +1394,10 @@ filter_menu(
 	/*
 	 * Expire time
 	 */
-	snprintf(double_time, sizeof(double_time), "2x %s", text_time);
-	snprintf(quat_time, sizeof(quat_time), "4x %s", text_time);
+	double_time = my_malloc(strlen(text_time) + 4); /* "2x " prefix */
+	quat_time = my_malloc(strlen(text_time) + 4); /* "4x " prefix*/
+	sprintf(double_time, "2x %s", text_time);
+	sprintf(quat_time, "4x %s", text_time);
 	list = my_malloc(sizeof(char *) * 4);
 	list[0] = (char *) _(txt_unlimited_time);
 	list[1] = text_time;
@@ -1404,6 +1405,8 @@ filter_menu(
 	list[3] = quat_time;
 	i = get_choice(INDEX_TOP + 11, _(txt_help_filter_time), ptr_filter_time, list, 4);
 	free(list);
+	free(double_time);
+	free(quat_time);
 
 	if (i == -1) {
 		free_filter_comment(rule.comment);
@@ -1501,9 +1504,9 @@ quick_filter(
 {
 	char *scope;
 	char txt[LEN];
-	int header, expire, icase;
+	int header, expire;
 	struct t_filter_rule rule;
-	t_bool ret;
+	t_bool icase, ret;
 
 	if (type == GLOBAL_QUICK_FILTER_KILL) {
 		header = group->attribute->quick_kill_header;
@@ -1521,7 +1524,7 @@ quick_filter(
 
 #ifdef DEBUG
 	if (debug & DEBUG_FILTER)
-		error_message(2, "%s header=[%d] scope=[%s] expire=[%s] case=[%d]", (type == GLOBAL_QUICK_FILTER_KILL) ? "KILL" : "SELECT", header, BlankIfNull(scope), txt_onoff[expire != FALSE ? 1 : 0], icase);
+		error_message(2, "%s header=[%d] scope=[%s] expire=[%s] case=[%c]", (type == GLOBAL_QUICK_FILTER_KILL) ? "KILL" : "SELECT", header, BlankIfNull(scope), txt_onoff[expire != FALSE ? 1 : 0], icase ? "I" : "C");
 #endif /* DEBUG */
 
 	/*
@@ -1801,7 +1804,7 @@ add_filter_rule(
 	if (filtered) {
 #ifdef DEBUG
 		if (debug & DEBUG_FILTER)
-			wait_message(2, "inscope=[%s] scope=[%s] case=[%d] subj=[%s] from=[%s] msgid=[%s] fullref=[%u] line=[%d %d] time=[%lu]", bool_unparse(ptr[i].inscope), BlankIfNull(rule->scope), ptr[i].icase, BlankIfNull(ptr[i].subj), BlankIfNull(ptr[i].from), BlankIfNull(ptr[i].msgid), ptr[i].fullref, ptr[i].lines_cmp, ptr[i].lines_num, (unsigned long int) ptr[i].time);
+			wait_message(2, "inscope=[%s] scope=[%s] case=[%c] subj=[%s] from=[%s] msgid=[%s] fullref=[%u] line=[%d %d] time=[%lu]", bool_unparse(ptr[i].inscope), BlankIfNull(rule->scope), ptr[i].icase ? "I" : "C", BlankIfNull(ptr[i].subj), BlankIfNull(ptr[i].from), BlankIfNull(ptr[i].msgid), ptr[i].fullref, ptr[i].lines_cmp, ptr[i].lines_num, (unsigned long int) ptr[i].time);
 #endif /* DEBUG */
 		write_filter_file(filter_file);
 	}
@@ -2102,9 +2105,9 @@ filter_articles(
 						}
 #ifdef DEBUG
 						else { /* server name missing in overview, i.e. colobus 2.1 */
-							if (debug & DEBUG_FILTER) { /* TODO: lang.c, _()? */
-								debug_print_file("FILTER", "Malformed overview entry: servername missing.");
-								debug_print_file("FILTER", "\t Xref: %s", arts[i].xref);
+							if (debug & DEBUG_FILTER) {
+								debug_print_file("FILTER", _(txt_filter_error_overview_no_servername));
+								debug_print_file("FILTER", _(txt_filter_error_overview_xref), arts[i].xref);
 							}
 						}
 #endif /* DEBUG */
@@ -2125,8 +2128,8 @@ filter_articles(
 							*--e = '\0';
 						} else {
 #ifdef DEBUG
-							if (debug & DEBUG_FILTER) /* TODO: lang.c, _()? */
-								debug_print_file("FILTER", "Skipping Xref filter");
+							if (debug & DEBUG_FILTER)
+								debug_print_file("FILTER", _(txt_filter_error_skipping_xref_filter));
 #endif /* DEBUG */
 							error = TRUE;
 							break;
@@ -2254,22 +2257,19 @@ set_filter_scope(
 	struct t_group *group)
 {
 	int i, num, inscope;
-	struct t_filter *ptr, *prev;
+	struct t_filter *ptr;
 
 	inscope = num = group->glob_filter->num;
-	prev = ptr = group->glob_filter->filter;
+	ptr = group->glob_filter->filter;
 
 	for (i = 0; i < num; i++) {
 		ptr[i].inscope = TRUE;
-		ptr[i].next = (struct t_filter *) 0;
 		if (ptr[i].scope != NULL) {
 			if (!match_group_list(group->name, ptr[i].scope)) {
 				ptr[i].inscope = FALSE;
 				inscope--;
 			}
 		}
-		if (i != 0 && ptr[i].inscope)
-			prev = prev->next = &ptr[i];
 	}
 	return inscope;
 }
@@ -2283,17 +2283,17 @@ set_filter_scope(
 static FILE *
 open_xhdr_fp(
 	char *header,
-	long min,
-	long max)
+	t_artnum min,
+	t_artnum max)
 {
 #	ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news && nntp_caps.hdr_cmd) {
 		char buf[NNTP_STRLEN];
 
-		snprintf(buf, sizeof(buf), "%s %s %ld-%ld", nntp_caps.hdr_cmd, header, min, max);
+		snprintf(buf, sizeof(buf), "%s %s %"T_ARTNUM_PFMT,"-%"T_ARTNUM_PFMT,, nntp_caps.hdr_cmd, header, min, max);
 		return (nntp_command(buf, OK_HEAD, NULL, 0));
 	} else
 #	endif /* NNTP_ABLE */
-		return (FILE *) 0;		/* Some trick implementation for local spool... */
+		return (FILE *) 0;		/* Some tricky implementation for local spool... */
 }
 #endif /* 0 */

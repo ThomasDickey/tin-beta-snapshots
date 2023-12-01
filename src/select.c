@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-05
+ *  Updated   : 2023-11-15
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -303,7 +303,7 @@ selection_page(
 				break;
 
 			case GLOBAL_CONNECTION_INFO:
-				show_connection_page(SELECT_LEVEL, _(txt_connection_info));
+				show_connection_page();
 				show_selection_page();
 				break;
 
@@ -519,7 +519,7 @@ selection_page(
 #if 1 /* TODO: fix the rest of the code so we don't need this anymore */
 						/*
 						 * this is a gross hack to avoid a crash in the
-						 * CHARSET_CONVERSION conversion case in new_part()
+						 * CHARSET_CONVERSION case in new_part()
 						 * which currently relies on CURR_GROUP
 						 */
 						selmenu.curr = my_group_add(buf, FALSE);
@@ -616,15 +616,15 @@ show_selection_page(
 
 	if (use_nntps) {
 		if (insecure_nntps)
-			secflag=_("[k]");
+			secflag=_(txt_selection_flag_insecure);
 		else
-			secflag=_("[T]");
+			secflag=_(txt_selection_flag_secure);
 	}
 
 	if (read_news_via_nntp)
-		snprintf(buf, sizeof(buf), "%s (%s%s  %d%s)", _(txt_group_selection), nntp_server, secflag, selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
+		snprintf(buf, sizeof(buf), "%s (%s%s  %d%s)", _(txt_group_selection), nntp_server, secflag, selmenu.max, (tinrc.show_only_unread_groups ? _(txt_selection_flag_only_unread) : ""));
 	else
-		snprintf(buf, sizeof(buf), "%s (%d%s)", _(txt_group_selection), selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
+		snprintf(buf, sizeof(buf), "%s (%d%s)", _(txt_group_selection), selmenu.max, (tinrc.show_only_unread_groups ? _(txt_selection_flag_only_unread) : ""));
 
 	if (selmenu.curr < 0)
 		selmenu.curr = 0;
@@ -1488,7 +1488,7 @@ static void
 select_read_group(
 	void)
 {
-	struct t_group *currgrp;
+	static struct t_group *currgrp;
 
 	if (!selmenu.max || selmenu.curr == -1) {
 		info_message(_(txt_no_groups));

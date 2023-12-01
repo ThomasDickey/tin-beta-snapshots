@@ -3,10 +3,10 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2023-08-23
+ *  Updated   : 2023-11-12
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -341,16 +341,16 @@ open_newsgroups_fp(
 								break;
 							}
 							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
-#			ifdef DEBUG
+#			if defined(DEBUG) && defined(NNTP_ABLE)
 								if ((debug & DEBUG_NNTP) && verbose)
 									debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
-#			endif /* DEBUG */
+#			endif /* DEBUG && NNTP_ABLE */
 								fprintf(result, "%s\n", str_trim(ptr));
 							}
-#			ifdef DEBUG
+#			if defined(DEBUG) && defined(NNTP_ABLE)
 							if ((debug & DEBUG_NNTP) && !verbose)
 								debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
-#			endif /* DEBUG */
+#			endif /* DEBUG && NNTP_ABLE */
 
 #		else
 							put_server(buff);
@@ -372,16 +372,16 @@ open_newsgroups_fp(
 						continue;
 					}
 					while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
-#			ifdef DEBUG
+#			if defined(DEBUG) && defined(NNTP_ABLE)
 						if ((debug & DEBUG_NNTP) && verbose)
 							debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
-#			endif /* DEBUG */
+#			endif /* DEBUG && NNTP_ABLE */
 						fprintf(result, "%s\n", str_trim(ptr));
 					}
-#			ifdef DEBUG
+#			if defined(DEBUG) && defined(NNTP_ABLE)
 					if ((debug & DEBUG_NNTP) && !verbose)
 						debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
-#			endif /* DEBUG */
+#			endif /* DEBUG && NNTP_ABLE */
 				}
 				/* TODO: add 483 (RFC 3977) support */
 				if (no_more_wildmat == ERR_NOAUTH || no_more_wildmat == NEED_AUTHINFO) {
@@ -475,10 +475,10 @@ read_groups_descriptions(
 	struct t_group *group;
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
-#ifdef DEBUG
+#if defined(DEBUG) && defined(NNTP_ABLE)
 		if ((debug & DEBUG_NNTP) && fp == FAKE_NNTP_FP && verbose)
 			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
-#endif /* DEBUG */
+#endif /* DEBUG && NNTP_ABLE */
 		if (*ptr == '#' || *ptr == '\0')
 			continue;
 

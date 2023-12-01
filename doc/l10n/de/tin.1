@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-10-30
+.\" Updated   : 2023-11-30
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -224,7 +224,7 @@ SPEICHERN VON UNGELESENEN ARTIKELN".
 .TP 
 \fB\-t\fP\fI Timeout\fP
 Übersteuert die \fBnntp_read_timeout_secs\fP Einstellung. Voreinstellung sind
-120 Sekunden.
+120, das Maximum 16383 Sekunden.
 .TP 
 \fB\-T\fP
 NNTPS (NNTP über TLS) aktivieren. Dies setzt auch die Umgebungsvariable
@@ -293,12 +293,12 @@ verwendet. Falls mehr als eine Gruppe oder ein Platzhalter angegeben wird,
 wird nur die erste Gruppe bzw. die erste Gruppe verwendet, die
 übereinstimmt.
 .PP
-Once you use \fBSelectYankActive\fP ('\fBy\fP') to yank in all active groups, or
-\fBSelectToggleReadDisplay\fP ('\fBr\fP') to toggle the read/unread status, then
-the command\-line groups will be gone. You can use \fBSelectSyncWithActive\fP
-('\fBY\fP') to reread the
-\fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file and get them
-back.
+Sobald Sie \fBSelectYankActive\fP ('\fBy\fP') verwenden, um alle aktiven Gruppen
+einzublenden, oder \fBSelectToggleReadDisplay\fP ('\fBr\fP') verwenden, um den
+Status gelesen/ungelesen umzuschalten, sind die Befehlszeilengruppen
+verschwunden. Sie können \fBSelectSyncWithActive\fP ('\fBY\fP') verwenden, um die
+Datei \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP erneut zu
+lesen um diese wieder anzuzeigen.
 .PP
 NB: With the \*(rq\fB\-n\fP\*(rq flag, only unsubscribed groups in the
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP file (or the newsrc\-file given by the
@@ -411,10 +411,8 @@ articles within the thread it might be marked with \fBart_marked_recent\fP in
 front of the total number of articles in the thread \(em this is controlled
 by the \fBrecent_time\fP option. If a thread has hot articles in it (see also
 section "FILTERING ARTICLES") it's marked with \fBart_marked_selected\fP in
-front of the total number of articles in the thread. The number of lines of
-the first (unread) article in the thread might also be shown right before
-the subject \(em this is controlled by the \fBshow_info\fP option. The display
-can be customized via \fBgroup_format\fP.
+front of the total number of articles in the thread. The display can be
+customized via \fBgroup_format\fP.
 .PP
 .\" FIXME - make this auto scale
 .nf
@@ -1770,6 +1768,12 @@ the article viewer.
 \fBFarbe von Signaturen (col_signature)\fP
 Farbe von Signaturen
 .TP 
+\fBFarbe negativer Bewertung (col_score_neg)\fP
+Farbe negativer Bewertung
+.TP 
+\fBFarbe positiver Bewertung (col_score_pos)\fP
+Farbe positiver Bewertung
+.TP 
 \fBFarbe der hervorgehobenen URLs (col_urls)\fP
 Farbe der hervorgehobenen URLs
 .TP 
@@ -1998,8 +2002,8 @@ use_mailreader_i=ON option). 0 turns off usage. This option has to suit
 .\"       mono_mark* currently do allow "Reverse video" even if
 .\"       inverse_okay=FALSE
 \fBInverse Darstellung für die Header (inverse_okay)\fP
-If ON use inverse video for page headers and URL highlighting.  Default is
-ON.
+Falls ON: inverse Darstellung für Header und das Hervorheben von URLs
+benutzen. Voreinstellung ist ON.
 .TP 
 \fBHalte Fehlschl. in ~/dead.articles (keep_dead_articles)\fP
 If ON keep all failed postings in \fI${TIN_HOMEDIR:\-"$HOME"}/dead.articles\fP
@@ -2211,13 +2215,13 @@ Einige Normalisierungsarten sind nur verfügbar, wenn sie von der Bibliothek
 unterstützt werden, die \fBtin\fP verwendet, um die Normalisierung
 durchzuführen. Nach Möglichkeit sollte NFC verwendet werden.
 .TP 
-\fBFormat string for the display of mime header at Article level (page_mime_format)\fP
+\fBFormatanweisung für Mime\-Header auf Artikelebene (page_mime_format)\fP
 Diese Formatanweisung wird von \fBtin\fP zur Darstellung von Mime\-Headern auf
 Artikelebene benutzt. Fr weitere Informationen sei auf den Abschnitt
 "ANSICHTEN ANPASSEN" verwiesen. Voreingestellt ist "[\-\-
 %T%S%*n%z%*l%!c%!d%*e\-\-]".
 .TP 
-\fBFormat string for the display of uue header at Article level (page_uue_format)\fP
+\fBFormatanweisung für die Anzeige des UUE\-Headers auf Artikelebene (page_uue_format)\fP
 Diese Formatanweisung wird von \fBtin\fP zur Darstellung von UUE\-Headern auf
 Artikelebene benutzt. Für weitere Informationen sei auf den Abschnitt
 "ANSICHTEN ANPASSEN" verwiesen. Voreingestellt ist "[\-\- %T%S%*n%I%!d%*e
@@ -2340,7 +2344,7 @@ Directory where articles/threads are saved. Default is
 If the score of an article is below or equal this value the article gets
 marked as killed.
 .TP 
-\fBselect) (score_limit_select\fP
+\fBBewertungsgrenze (select) (score_limit_select)\fP
 If the score of an article is above or equal this value the article gets
 marked as hot.
 .TP 
@@ -2416,24 +2420,6 @@ mail has arrived.
 arrived otherwise show help sign.
 .RE
 .TP 
-\fBZeige Zeilenz./Bewert. in Übersicht (show_info)\fP
-Which information about the thread or article should be shown. Default is 1,
-show only the line count.
-.RS +.5i
-.IP 0 3
-\fBNichts\fP. Keine weiteren Informationen werden angezeigt.
-.IP 1
-\fBLines\fP, in article listing the line count of an article will be displayed
-and in thread listing the line count of first (unread) article will be
-displayed.
-.IP 2
-\fBScore\fP, in article listing the score of an article will be displayed and
-in thread listing the score of the thread will be displayed \(em see also
-\fBthread_score\fP.
-.IP 3
-\fBZeilen und Bewertung\fP, Zeilenzahl und Bewertung zusätzlich anzeigen.
-.RE
-.TP 
 \fBZeige nur ungelesene Artikel (show_only_unread_arts)\fP
 If ON show only new/unread articles otherwise show all articles.  Default is
 ON.
@@ -2444,6 +2430,11 @@ ist OFF.
 .TP 
 \fBZeige Signaturen an (show_signatures)\fP
 Falls OFF zeige keine Signaturen an. Voreinstellung ist ON.
+.TP 
+\fBZeige Bewertung an (show_art_score)\fP
+Falls ON, wird die Bewertung bei der Anzeige von Artikeln in der unteren
+linken Ecke gezeigt. Voreinstellung ist OFF. Siehe auch \fBcol_score_neg\fP und
+\fBcol_score_pos\fP.
 .TP 
 \fBTrenne Sig mit '\en\-\- \en' ab (sigdashes)\fP
 Falls ON, wird der Signatur ein Signaturtrenner
@@ -2487,9 +2478,9 @@ the default. The following sort types are allowed:
 .IP 6
 \fBDate: (aufsteigend)\fP, Artikel aufsteigend nach \*(rqDate:\*(rq sortieren.
 .IP 7
-\fBScore (absteigend)\fP, Artikel absteigend nach Score sortieren.
+\fBBewertung (absteigend)\fP, Artikel absteigend nach Bewertung sortieren.
 .IP 8
-\fBScore (aufsteigend)\fP, Artikel aufsteigend nach Score sortieren.
+\fBBewertung (aufsteigend)\fP, Artikel aufsteigend nach Bewertung sortieren.
 .IP 9
 \fBLines: (absteigend)\fP, Artikel absteigend nach \*(rqLines:\*(rq sortieren.
 .IP 10
@@ -2503,9 +2494,9 @@ the default. The following sort types are allowed:
 .IP 0 3
 \fBNichts\fP, keine Sortierung der Threads.
 .IP 1
-\fBScore (absteigend)\fP, Threads absteigend nach Score sortieren.
+\fBBewertung (absteigend)\fP, Threads absteigend nach Bewertung sortieren.
 .IP 2
-\fBScore (aufsteigend)\fP, Threads aufsteigend nach Score sortieren.
+\fBBewertung (aufsteigend)\fP, Threads aufsteigend nach Bewertung sortieren.
 .IP 3
 \fBLast posting date (descending)\fP, sort threads by date of last posting
 descending.
@@ -3016,7 +3007,8 @@ than just the current item. A range is an expression of the form
 <min>\(en<max>, e.g. 10\(en15 will highlight items 10
 through 15 on the current screen. Other than absolute numeric positions, '.'
 can be used in place of the current cursor position and '$' can be used to
-mean the highest number available. Currently the only commands that
+mean the highest number available. Entering '0' at the prompt undoes the
+previously entered range selection. Currently the only commands that
 understand ranges are \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBMarkArtUnread\fP
 ('\fBz\fP') and \fBMarkThdUnread\fP ('\fBZ\fP').
 .SS "NEWSGROUP LISTEN & WILDCARDS"
@@ -3086,7 +3078,7 @@ werden. Folgende Platzhalter stehen zur Verfügung:
 \fB%L\fP	Anzahl der Zeilen
 \fB%M\fP	Message\-ID
 \fB%R\fP	Anzahl der Antworten im Thread
-\fB%S\fP	Score
+\fB%S\fP	Bewertung
 \fB%T\fP	Subject und/oder Baumdarstellung des Thread
 \fB%U\fP	Anzahl ungelesener Artikel
 \fB%d\fP	Gruppenbeschreibung
@@ -3153,7 +3145,7 @@ weiterführende Informationen).
 .PP
 Die Länge der einzelnen Elemente (außer '\fB%%\fP') kann mit einer positiven
 Zahl nach dem '\fB%\fP' definiert werden. Das folgende Beispiel stellt den
-Score in der Threadebene 10 Zeichen breit dar: '\fB%10S\fP'.
+Bewertung in der Threadebene 10 Zeichen breit dar: '\fB%10S\fP'.
 .PP
 Wenn der Gruppenname zusammen mit der Gruppenbeschreibung angezeigt wird,
 kann die Breite des Gruppennamens über einen optionalen, durch Komma
@@ -3207,13 +3199,13 @@ auf dem Bildschirm mehr Zeichen als angegeben dargestellt werden können. Das
 ist hilfreich, um die Anzeige bei kleineren Bildschirmen oder
 Terminalfenstern nicht zu überfrachten. Hier erfolgt die Angabe vor dem den
 Platzhalter charakterisierenden Buchstaben durch eine positive Zahl, welcher
-ein '\fB>\fP' vorangestellt wird. Soll z. B. der Score erst ab einer
+ein '\fB>\fP' vorangestellt wird. Soll z. B. der Bewertung erst ab einer
 Bildschirmbreite größer 100 Zeichen angezeigt werden, lautet die
 Formatanweisung '\fB%>100S\fP'.
 .PP
 Wenn eine Längenangabe und eine Mindestbildschirmbreite angegeben werden
 soll, muss zuerst die Länge und danach die Mindestbreite in der
-Formatanweisung stehen. Um den Score 10 Zeichen breit und erst ab einer
+Formatanweisung stehen. Um die Bewertung 10 Zeichen breit und erst ab einer
 Bildschirmbreite über 100 Zeichen darzustellen, lautet die Anweisung
 \&'\fB%10>100S\fP'.
 .PP
@@ -3536,9 +3528,9 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .PP
 
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}\fP
 .br
-\fI/etc/tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
+\fI/etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}\fP
 .fi
 .PP
 
@@ -4020,8 +4012,9 @@ Urs Janßen <urs@tin.org>
 .\"
 .\"
 .SH ÜBERSETZUNG
-.TP 1i
-Erika Mustermann <erika@example.org>
+.IP "Erika Mustermann <erika@example.org>"
+Wenn Sie Fehler in der Übersetzung finden, schicken Sie bitte eine E-Mail
+an <translation@tin.org>.
 .\"
 .SH "SIEHE AUCH"
 .IX Header "SIEHE AUCH"

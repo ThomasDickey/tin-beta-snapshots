@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-10-30
+.\" Updated   : 2023-11-30
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -234,7 +234,8 @@ Save unread articles for later reading by the ''\fB\-R\fP'' option. For more
 information read section "AUTOMATIC MAILING AND SAVING NEW NEWS".
 .TP
 .BI \-t " timeout"
-Override the \fBnntp_read_timeout_secs\fP setting. Default is 120 seconds.
+Override the \fBnntp_read_timeout_secs\fP setting. Default is 120 seconds,
+allowed maximum is 16383.
 .TP
 .B \-T
 Enable NNTPS (NNTP over TLS). This also overrides the environment
@@ -416,9 +417,7 @@ recent articles within the thread it might be marked with
 thread \(em this is controlled by the \fBrecent_time\fP option. If a thread has
 hot articles in it (see also section "FILTERING ARTICLES") it's marked with
 \fBart_marked_selected\fP in front of the total number of articles in the
-thread. The number of lines of the first (unread) article in the thread
-might also be shown right before the subject \(em this is controlled by the
-\fBshow_info\fP option. The display can be customized via \fBgroup_format\fP.
+thread. The display can be customized via \fBgroup_format\fP.
 .PP
 .\" FIXME - make this auto scale
 .nf
@@ -1741,6 +1740,12 @@ in the article viewer.
 .B Color of signatures (col_signature)
 Color of signatures
 .TP
+.B Color of negative score (col_score_neg)
+Color of negative score
+.TP
+.B Color of positive score (col_score_pos)
+Color of positive score
+.TP
 .B Color of urls highlight (col_urls)
 Color of urls highlight
 .TP
@@ -2423,24 +2428,6 @@ new mail has arrived.
 arrived otherwise show help sign.
 .RE
 .TP
-.B Show lines/score in listings (show_info)
-Which information about the thread or article should be shown. Default is 1,
-show only the line count.
-.RS +.5i
-.IP 0 3
-\fBNone\fP, no information will be displayed.
-.IP 1
-\fBLines\fP, in article listing the line count of an article will be
-displayed and in thread listing the line count of first (unread) article
-will be displayed.
-.IP 2
-\fBScore\fP, in article listing the score of an article will be displayed
-and in thread listing the score of the thread will be displayed \(em see also
-\fBthread_score\fP.
-.IP 3
-\fBLines & Score\fP, display line count and score.
-.RE
-.TP
 .B Show only unread articles (show_only_unread_arts)
 If ON show only new/unread articles otherwise show all articles.
 Default is ON.
@@ -2451,6 +2438,10 @@ is OFF.
 .TP
 .B Display signatures (show_signatures)
 If OFF don't show signatures when displaying articles. Default is ON.
+.TP
+.B Display score (show_art_score)
+If ON show article score in the lower left corner when displaying articles.
+Default is OFF. See also \fBcol_score_neg\fP and \fBcol_score_pos\fP.
 .TP
 .B Prepend signature with '\en\-\- \en' (sigdashes)
 If ON prepend the signature with sigdashes. Default is ON.
@@ -3051,7 +3042,8 @@ if one exists rather than just the current item. A range is an
 expression of the form <min>\(en<max>, e.g. 10\(en15 will highlight items
 10 through 15 on the current screen. Other than absolute numeric
 positions, '.' can be used in place of the current cursor position
-and '$' can be used to mean the highest number available. Currently
+and '$' can be used to mean the highest number available. Entering '0'
+at the prompt undoes the previously entered range selection. Currently
 the only commands that understand ranges are \fBGroupMarkThdRead\fP
 ('\fBK\fP'), \fBMarkArtUnread\fP ('\fBz\fP') and
 \fBMarkThdUnread\fP ('\fBZ\fP').
@@ -3576,9 +3568,9 @@ For a detailed description see
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}
+.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
 .br
-.IR /etc/tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}
+.IR /etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
 .fi
 .PP
 

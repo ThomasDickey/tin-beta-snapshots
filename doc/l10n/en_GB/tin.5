@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2023-10-31
+.\" Updated   : 2023-11-30
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -577,10 +577,10 @@ Identical to the tinrc variable of the same name
 .\" TODO: document option
 \fBsavefile\fP
 .TP 
-\fBshow_author\fP
+\fBshow_art_score\fP
 Identical to the tinrc variable of the same name
 .TP 
-\fBshow_info\fP
+\fBshow_author\fP
 Identical to the tinrc variable of the same name
 .TP 
 \fBshow_only_unread_arts\fP
@@ -874,11 +874,10 @@ msgid_only=@googlegroups\e.com>
 .RE
 .PP
 
-.\" TODO: LC_CTYPE has a higher priority as LC_MESSAGES, does this make sense?
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}\fP
 .br
-\fI/etc/tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
+\fI/etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}\fP
 .fi
 .sp
 .RS
@@ -1414,6 +1413,12 @@ the article viewer.
 .TP 
 \fBcol_signature\fP
 Colour of signatures
+.TP 
+\fBcol_score_neg\fP
+Colour of negative score
+.TP 
+\fBcol_score_pos\fP
+Colour of positive score
 .TP 
 \fBcol_urls\fP
 Colour of urls highlight
@@ -2034,6 +2039,10 @@ displayed.
 displayed.
 .RE
 .TP 
+\fBshow_art_score\fP
+If ON show article score in the lower left corner when displaying articles.
+Default is OFF. See also \fBcol_score_neg\fP and \fBcol_score_pos\fP.
+.TP 
 \fBshow_description\fP
 If ON show a short group description text after newsgroup name at the group
 selection level. The \*(rq\fB\-d\fP\*(rq command\-line flag will override the setting
@@ -2057,24 +2066,6 @@ mail has arrived.
 .IP 3
 \fBShow mail if new mail else help s.\fP, show mail sign if new mail has
 arrived otherwise show help sign.
-.RE
-.TP 
-\fBshow_info\fP
-Which information about the thread or article should be shown. Default is 1,
-show only the line count.
-.RS +1i
-.IP 0 3
-\fBNone\fP, no information will be displayed.
-.IP 1
-\fBLines\fP, in article listing the line count of an article will be displayed
-and in thread listing the line count of first (unread) article will be
-displayed.
-.IP 2
-\fBScore\fP, in article listing the score of an article will be displayed and
-in thread listing the score of the thread will be displayed \(em see also
-\fBthread_score\fP.
-.IP 3
-\fBLines & Score\fP, display line count and score.
 .RE
 .TP 
 \fBshow_only_unread_arts\fP

@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-29
+ *  Updated   : 2023-11-27
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -281,6 +281,12 @@ read_config_file(
 				break;
 
 			if (match_color(buf, "col_signature=", &tinrc.col_signature, MAX_COLOR))
+				break;
+
+			if (match_color(buf, "col_score_neg=", &tinrc.col_score_neg, MAX_COLOR))
+				break;
+
+			if (match_color(buf, "col_score_pos=", &tinrc.col_score_pos, MAX_COLOR))
 				break;
 
 			if (match_color(buf, "col_urls=", &tinrc.col_urls, MAX_COLOR))
@@ -558,7 +564,7 @@ read_config_file(
 
 #if defined(HAVE_ALARM) && defined(SIGALRM)
 			/* the number of seconds is limited on some systems (e.g. Free/OpenBSD: 100000000) */
-			if (match_integer(buf, "nntp_read_timeout_secs=", &tinrc.nntp_read_timeout_secs, 16383))
+			if (match_integer(buf, "nntp_read_timeout_secs=", &tinrc.nntp_read_timeout_secs, TIN_NNTP_TIMEOUT_MAX))
 				break;
 #endif /* HAVE_ALARM && SIGALRM */
 
@@ -731,6 +737,9 @@ read_config_file(
 				break;
 
 			if (match_boolean(buf, "show_signatures=", &tinrc.show_signatures))
+				break;
+
+			if (match_boolean(buf, "show_art_score=", &tinrc.show_art_score))
 				break;
 
 			if (match_string(buf, "slashes_regex=", tinrc.slashes_regex, sizeof(tinrc.slashes_regex)))
@@ -1184,6 +1193,9 @@ write_config_file(
 	fprintf(fp, "%s", _(txt_show_signatures.tinrc));
 	fprintf(fp, "show_signatures=%s\n\n", print_boolean(tinrc.show_signatures));
 
+	fprintf(fp, "%s", _(txt_show_art_score.tinrc));
+	fprintf(fp, "show_art_score=%s\n\n", print_boolean(tinrc.show_art_score));
+
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	fprintf(fp, "%s", _(txt_suppress_soft_hyphens.tinrc));
 	fprintf(fp, "suppress_soft_hyphens=%s\n\n", print_boolean(tinrc.suppress_soft_hyphens));
@@ -1352,6 +1364,12 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_col_signature.tinrc));
 	fprintf(fp, "col_signature=%d\n\n", tinrc.col_signature);
+
+	fprintf(fp, "%s", _(txt_col_score_neg.tinrc));
+	fprintf(fp, "col_score_neg=%d\n\n", tinrc.col_score_neg);
+
+	fprintf(fp, "%s", _(txt_col_score_pos.tinrc));
+	fprintf(fp, "col_score_pos=%d\n\n", tinrc.col_score_pos);
 
 	fprintf(fp, "%s", _(txt_col_urls.tinrc));
 	fprintf(fp, "col_urls=%d\n\n", tinrc.col_urls);
@@ -1782,9 +1800,10 @@ quote_dash_to_space(
  */
 char *
 quote_space_to_dash(
-	char *str)
+	const char *str)
 {
-	char *ptr, *dst;
+	char *dst;
+	const char *ptr;
 	static char buf[PATH_LEN];
 
 	dst = buf;
@@ -2222,9 +2241,11 @@ read_server_config(
 			continue;
 
 		if (match_string(line, "last_newnews=", newnews_info, sizeof(newnews_info))) {
-			size_t tmp_len = strlen(nntp_server) + strlen(newnews_info) + 2;
-			char *tmp_info = my_malloc(tmp_len);
+			char *tmp_info;
+			int tmp_len;
 
+			tmp_len = snprintf(NULL, 0, "%s %s", nntp_server, newnews_info);
+			tmp_info = my_malloc(++tmp_len);
 			snprintf(tmp_info, tmp_len, "%s %s", nntp_server, newnews_info);
 			load_newnews_info(tmp_info);
 			free(tmp_info);

@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2023-08-10
+ *  Updated   : 2023-11-24
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -177,8 +177,8 @@ getserverbyfile(
 					nntp_tcp_port = (unsigned short) i;
 #	ifdef DEBUG
 				else {
-					if (debug & DEBUG_MISC) /* -> lang.c and _()? */
-						wait_message(3, "Port in %s isn't numeric: %s:%s\n", local_newsrctable_file, buf, cp);
+					if (debug & DEBUG_MISC)
+						wait_message(3, _(txt_port_not_numeric_in), local_newsrctable_file, buf, cp);
 				}
 #	endif /* DEBUG */
 			}
@@ -208,8 +208,8 @@ getserverbyfile(
 					nntp_tcp_port = (unsigned short) i;
 #	ifdef DEBUG
 				else {
-					if (debug & DEBUG_MISC) /* -> lang.c and _()? */
-						wait_message(3, "Port in $NNTPSERVER isn't numeric: %s:%s\n", buf, cp);
+					if (debug & DEBUG_MISC)
+						wait_message(3, _(txt_port_not_numeric_in), "$NNTPSERVER", buf, cp);
 				}
 #	endif /* DEBUG */
 			}
@@ -239,7 +239,9 @@ getserverbyfile(
 	if (*(NNTP_DEFAULT_SERVER))
 		return strcpy(buf, NNTP_DEFAULT_SERVER);
 #	endif /* NNTP_DEFAULT_SERVER */
-
+#else
+	/* silence compiler warning (unused parameter) */
+	(void) file;
 #endif /* NNTP_ABLE */
 	return NULL;	/* No entry */
 }
@@ -269,12 +271,11 @@ server_init(
 	char *text,
 	size_t mlen)
 {
+	int sock_fd;
 #	ifndef INET6
 	char temp[256];
-	char *service = strncpy(temp, cservice, sizeof(temp) - 1); /* ...calls non-const funcs */
+	char *service = strncpy(temp, cservice, sizeof(temp) - 1); /* ...calls non-const funcs; temp will be terminated few lines below */
 #	endif /* !INET6 */
-	int sock_fd;
-
 #	ifdef DECNET
 	char *cp;
 
@@ -289,9 +290,15 @@ server_init(
 #		ifdef INET6
 	sock_fd = get_tcp6_socket(machine, port);
 #		else
+	temp[sizeof(temp) - 1] = '\0'; /* ensure service pints to a terminated string */
 	sock_fd = get_tcp_socket(machine, service, port);
 #		endif /* INET6 */
 #	endif /* DECNET */
+
+#      ifdef INET6
+	/* silence compiler warning (unused parameter) */
+	(void) cservice;
+#      endif /* INET6 */
 
 	if (sock_fd < 0)
 		return sock_fd;
@@ -842,9 +849,9 @@ put_server(
 				char *c = my_strdup(string);
 				int l = 0;
 
-				if (!strncmp(string,"AUTHINFO PASS", 13))
+				if (!strncmp(string, "AUTHINFO PASS", 13))
 					l = 13;
-				if (!l && !strncmp(string,"AUTHINFO SASL PLAIN", 19))
+				if (!l && !strncmp(string, "AUTHINFO SASL PLAIN", 19))
 					l = 19;
 
 				if (l)
@@ -914,19 +921,18 @@ reconnect(
 	if (retry > NNTP_TRY_RECONNECT || (!tinrc.auto_reconnect && prompt_yn(_(txt_reconnect_to_news_server), TRUE) != 1)) {
 		if (!strcmp("POST", last_put)) {
 			/* TODO: also/only postpone_article(article_name) ? */
-			unlink(backup_article_name(article_name));
+			unlink(backup_article_name);
 			rename_file(article_name, dead_article);
 			if (tinrc.keep_dead_articles)
 				append_file(dead_article, dead_articles);
 		}
 		if (retry > NNTP_TRY_RECONNECT) {
 #	ifdef DEBUG
-			/* TODO: -> lang.c */
 			if ((debug & DEBUG_NNTP) && verbose > 1)
-				debug_print_file("NNTP", "reconnect(%d) limit %d reached, giving up.", retry, NNTP_TRY_RECONNECT);
+				debug_print_file("NNTP", _(txt_reconnect_limit_reached), retry, NNTP_TRY_RECONNECT);
 #	endif /* DEBUG */
 		}
-		tin_done(NNTP_ERROR_EXIT, _("NNTP connection error. Exiting..."));		/* user said no to reconnect or no more retries */
+		tin_done(NNTP_ERROR_EXIT, _(txt_connection_error));		/* user said no to reconnect or no more retries */
 	}
 
 	/* reset signal_context */
@@ -1077,6 +1083,7 @@ get_server(
 			 * quitting tin and leave loop.
 			 */
 			strncpy(string, _(txt_nntp_ok_goodbye), (size_t) (size - 3));
+			string[size - 3] = '\0';
 			strcat(string, "\r\n");		/* tin_fgets() needs CRLF */
 			break;
 		}
@@ -1640,9 +1647,9 @@ nntp_open(
 		if (!nntp_caps.reader) {
 #	ifdef DEBUG
 			if ((debug & DEBUG_NNTP) && verbose > 1)
-				debug_print_file("NNTP", "CAPABILITIES did not announce READER");
+				debug_print_file("NNTP", _(txt_capabilities_without_reader));
 #	endif /* DEBUG */
-			error_message(2, _("CAPABILITIES did not announce READER")); /* TODO: -> lang.c */
+			error_message(2, _(txt_capabilities_without_reader));
 			return -1; /* give up */
 		}
 		can_post = nntp_caps.post && !force_no_post;
@@ -1880,6 +1887,9 @@ nntp_close(
 #	endif /* DEBUG */
 		close_server(send_no_quit);
 	}
+#else
+	/* silence compiler warning (unused parameter) */
+	(void) send_no_quit;
 #endif /* NNTP_ABLE */
 }
 
@@ -2026,9 +2036,9 @@ get_respcode(
 				*last_put = '\0';
 #	ifdef DEBUG
 			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "<<<%s%s", logtime(), last_put);
+				debug_print_file("NNTP", "<<<%s%s", logtime(), *last_put ? last_put : "NULL");
 #	endif /* DEBUG */
-			DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
+			DEBUG_IO((stderr, _("Read (%s)\n"), *last_put ? last_put : txt_null));
 		}
 		STRCPY(last_put, savebuf);
 
@@ -2054,8 +2064,10 @@ get_respcode(
 		if (end == ptr)	/* no leading numbers in response */
 			return -1;
 
-		if (message != NULL && mlen > 1)				/* Pass out the rest of the text */
+		if (message != NULL && mlen > 1) {				/* Pass out the rest of the text */
 			strncpy(message, end, mlen - 1);
+			message[mlen - 1] = '\0';
+		}
 	}
 	return respcode;
 }
@@ -2169,12 +2181,11 @@ list_motd(
 				 *         and only if it differs from the old value display the
 				 *         motd?
 				 *       - use some sort of pager?
-				 *       - -> lang.c
 				 */
 				p = my_strdup(ptr);
 				len = strlen(p);
 				process_charsets(&p, &len, "UTF-8", tinrc.mm_local_charset, FALSE);
-				my_printf("%s%s\n", _("MOTD: "), p);
+				my_printf(_(txt_motd), p);
 				free(p);
 				l++;
 			}
@@ -2209,6 +2220,9 @@ nntp_write(
 #	endif /* NNTPS_ABLE */
 		bytes_written = write(fd, buf, n);
 
+	/* silence compiler warning (unused parameter) */
+	(void) tls;
+
 	return bytes_written;
 }
 
@@ -2227,6 +2241,9 @@ ssize_t nntp_read(
 	else
 #	endif /* NNTPS_ABLE */
 		bytes_read = read(fd, buf, n);
+
+	/* silence compiler warning (unused parameter) */
+	(void) tls;
 
 	return bytes_read;
 }
@@ -2667,36 +2684,40 @@ nntp_conninfo(
 {
 	int retval = 0;
 
-	fprintf(stream, "\nConnection details:\n");
-	fprintf(stream, "-------------------\n");
-	fprintf(stream, "NNTPSERVER    : %s\n", nntp_server);
-	fprintf(stream, "NNTPPORT      : %u\n", nntp_tcp_port);
+	fprintf(stream, "%s", _(txt_conninfo_conn_details));
+	fprintf(stream, _(txt_conninfo_server), nntp_server);
+	fprintf(stream, _(txt_conninfo_port), nntp_tcp_port);
 	if (nntp_caps.type == CAPABILITIES) {
 		if (*nntp_caps.implementation)
-			fprintf(stream, "IMPLEMENTATION: %s\n", nntp_caps.implementation);
+			fprintf(stream, _(txt_conninfo_implementation), nntp_caps.implementation);
 		if (nntp_caps.compress) {
-			fprintf(stream, "COMPRESS      :");
+			fprintf(stream, "%s", _(txt_conninfo_compress));
 			if ((nntp_caps.compress_algorithm & COMPRESS_DEFLATE) == COMPRESS_DEFLATE)
 #	ifdef USE_ZLIB
-				fprintf(stream, " DEFLATE %s\n", deflate_active ? "(enabled)" : "(inactive)");
+				fprintf(stream, _(txt_conninfo_deflate), deflate_active ? _(txt_conninfo_enabled) : _(txt_conninfo_inactive));
 #	else
-				fprintf(stream, " DEFLATE (not supported)\n");
+				fprintf(stream, "%s", _(txt_conninfo_deflate_unsupported));
 #	endif /* USE_ZLIB */
 		}
 #	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
-		if (nntp_caps.maxartnum)
-			fprintf(stream, "MAXARTNUM     : %"T_ARTNUM_PFMT"\n", nntp_caps.maxartnum);
+		if (nntp_caps.maxartnum) {
+			size_t len = snprintf(NULL, 0, "%"T_ARTNUM_PFMT, nntp_caps.maxartnum) + 1;
+			char *buf = my_malloc(len);
+
+			snprintf(buf, len, "%"T_ARTNUM_PFMT, nntp_caps.maxartnum);
+			fprintf(stream, _(txt_conninfo_maxartnum), buf);
+			free(buf);
+		}
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 	}
 
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
-	fprintf(stream, "NNTP TIMEOUT  : %d seconds %s\n", TIN_NNTP_TIMEOUT, TIN_NNTP_TIMEOUT ? "" : "(disabled)");
+	fprintf(stream, _(txt_conninfo_timeout), TIN_NNTP_TIMEOUT, TIN_NNTP_TIMEOUT ? "" : _(txt_conninfo_disabled));
 #	endif /* HAVE_ALARM && SIGALRM */
 
 #	ifdef NNTPS_ABLE
 	if (nntp_buf.tls_ctx)
 		retval = tintls_conninfo(nntp_buf.tls_ctx, stream);
-
 #	endif /* NNTPS_ABLE */
 
 	return retval;

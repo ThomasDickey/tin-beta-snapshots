@@ -3,10 +3,10 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-11-17
+ *  Updated   : 2023-11-09
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -99,6 +99,8 @@ static t_help_page attachment_help_page[] = {
 #ifndef NO_SHELL_ESCAPE
 	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_version, GLOBAL_VERSION },
 	{ NULL, NOT_ASSIGNED }
 };
 
@@ -623,6 +625,10 @@ static t_help_page post_hist_help_page[] = {
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_title_disp, NOT_ASSIGNED },
 	{ txt_help_post_hist_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
+	{ txt_help_global_toggle_inverse_video, GLOBAL_TOGGLE_INVERSE_VIDEO },
+#ifdef HAVE_COLOR
+	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
+#endif /* HAVE_COLOR */
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_select_quit, GLOBAL_QUIT },
@@ -633,6 +639,8 @@ static t_help_page post_hist_help_page[] = {
 #ifndef NO_SHELL_ESCAPE
 	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_version, GLOBAL_VERSION },
 	{ NULL, NOT_ASSIGNED }
 };
 
@@ -658,6 +666,10 @@ static t_help_page url_help_page[] = {
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_title_disp, NOT_ASSIGNED },
 	{ txt_help_url_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
+	{ txt_help_global_toggle_inverse_video, GLOBAL_TOGGLE_INVERSE_VIDEO },
+#ifdef HAVE_COLOR
+	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
+#endif /* HAVE_COLOR */
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_select_quit, GLOBAL_QUIT },
@@ -668,6 +680,8 @@ static t_help_page url_help_page[] = {
 #ifndef NO_SHELL_ESCAPE
 	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_version, GLOBAL_VERSION },
 	{ NULL, NOT_ASSIGNED }
 };
 

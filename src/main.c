@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-08-14
+ *  Updated   : 2023-11-26
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,11 +65,19 @@ static t_bool start_any_unread = FALSE;	/* only start if unread news */
 /*
  * Local prototypes
  */
+static char **read_cmd_line_options(int argc, char *argv[]);
 static void create_mail_save_dirs(void);
-static void read_cmd_line_options(int argc, char *argv[]);
 static void show_intro_page(void);
 _Noreturn static void update_index_files(void);
 static void usage(char *theProgname);
+
+
+#define FREE_ARGV_IF_NEEDED(orig, new) do { \
+		if (orig != new) { \
+			free(*(new + 1)); \
+			free(new); \
+		} \
+	} while (0)
 
 
 /*
@@ -80,6 +88,7 @@ main(
 	int argc,
 	char *argv[])
 {
+	char **argv_orig = argv;
 	int count, start_groupnum;
 	int num_cmd_line_groups = 0;
 	t_bool tmp_no_write;
@@ -163,7 +172,7 @@ main(
 	 * Process envargs & command line options
 	 * These override the configured in values
 	 */
-	read_cmd_line_options(argc, argv);
+	cmdargs = read_cmd_line_options(argc, argv);
 
 	/* preinit keybindings if interactive */
 	if (!batch_mode)
@@ -185,6 +194,7 @@ main(
 #ifndef USE_CURSES
 		if (!get_termcaps()) {
 			error_message(2, _(txt_screen_init_failed), tin_progname);
+			FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 			free_all_arrays();
 			giveup();
 		}
@@ -195,6 +205,7 @@ main(
 			no_write = TRUE;
 			/* TODO: looks ugly */
 			error_message(0, txt_info_nopostponed);
+			FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 			tin_done(EXIT_SUCCESS, NULL);
 		}
 
@@ -203,6 +214,7 @@ main(
 		 */
 		if (!InitScreen()) {
 			error_message(2, _(txt_screen_init_failed), tin_progname);
+			FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 			free_all_arrays();
 			giveup();
 		}
@@ -218,6 +230,7 @@ main(
 	if (!batch_mode || verbose) {
 		if (!batch_mode && (cLINES < MIN_LINES_ON_TERMINAL || cCOLS < MIN_COLUMNS_ON_TERMINAL)) {
 			ring_bell();
+			FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 			tin_done(EXIT_FAILURE, _(txt_screen_too_small_exiting), tin_progname);
 		}
 		wait_message(0, "%s\n", cvers);
@@ -234,6 +247,7 @@ main(
 	if (read_news_via_nntp && !read_saved_news) {
 		if (use_nntps && tintls_init()) {
 			tintls_exit();
+			FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 			free_all_arrays();
 			giveup();
 		}
@@ -241,6 +255,7 @@ main(
 		if (nntp_open()) {
 			nntp_close(FALSE);
 			tintls_exit();
+			FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 			free_all_arrays();
 			giveup();
 		}
@@ -258,6 +273,7 @@ main(
 	 */
 	if (update_index && nntp_caps.over_cmd && !tinrc.cache_overview_files) {
 		error_message(2, _(txt_batch_update_unavail), tin_progname, print_boolean(tinrc.cache_overview_files));
+		FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 		free_all_arrays();
 		giveup();
 	}
@@ -281,7 +297,6 @@ main(
 		/*
 		 * Read user specific keybindings and input history
 		 */
-		wait_message(0, _(txt_reading_keymap_file));
 		read_keymap_file();
 		read_input_history_file();
 
@@ -338,6 +353,12 @@ main(
 	 */
 	if (!post_postponed_and_exit)
 		num_cmd_line_groups = read_cmd_line_groups();
+
+	/*
+	 * If TINRC environment variable exist, envarg.c:envargs() allocates
+	 * memory for a new argv. Free it now as it is no longer needed.
+	 */
+	FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 
 	/*
 	 * Quick post an article and exit if -w or -o specified
@@ -475,11 +496,12 @@ main(
  */
 #define OPTIONS "46aAcCdD:f:g:G:hHI:klm:M:nNop:qQrRs:St:TuvVwxXzZ"
 
-static void
+static char **
 read_cmd_line_options(
 	int argc,
 	char *argv[])
 {
+	char **argv_orig = argv;
 	int ch;
 	t_bool newsrc_set = FALSE;
 
@@ -498,6 +520,7 @@ read_cmd_line_options(
 #	else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
 #	endif /* NNTP_ABLE */
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -515,6 +538,7 @@ read_cmd_line_options(
 #	else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
 #	endif /* NNTP_ABLE */
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -527,6 +551,7 @@ read_cmd_line_options(
 				cmdline.args |= CMDLINE_USE_COLOR;
 #else
 				error_message(2, _(txt_option_not_enabled), "-DHAVE_COLOR");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -540,6 +565,7 @@ read_cmd_line_options(
 				read_news_via_nntp = TRUE;
 #else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -558,6 +584,7 @@ read_cmd_line_options(
 				use_compress = TRUE;
 #	else
 				error_message(2, _(txt_option_not_enabled), "-DUSE_ZLIB");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -565,6 +592,7 @@ read_cmd_line_options(
 #	endif /* USE_ZLIB */
 #else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -582,6 +610,7 @@ read_cmd_line_options(
 				debug_delete_files();
 #else
 				error_message(2, _(txt_option_not_enabled), "-DDEBUG");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -614,8 +643,8 @@ read_cmd_line_options(
 								nntp_tcp_port = i;
 #	ifdef DEBUG
 							else {
-								if (debug & DEBUG_MISC) /* -> lang.c and _()? */
-									wait_message(3, "Port isn't numeric: %s:%s\n", cmdline.nntpserver, p);
+								if (debug & DEBUG_MISC)
+									wait_message(3, _(txt_port_not_numeric), cmdline.nntpserver, p);
 							}
 #	endif /* DEBUG */
 						}
@@ -625,6 +654,7 @@ read_cmd_line_options(
 				read_news_via_nntp = TRUE;
 #else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -634,6 +664,7 @@ read_cmd_line_options(
 
 			case 'H':
 				show_intro_page();
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				exit(EXIT_SUCCESS);
 				/* keep lint quiet: */
@@ -649,6 +680,7 @@ read_cmd_line_options(
 				use_nntps = TRUE;
 #else
 				error_message(2, _(txt_option_not_enabled), "--with-nntps");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -691,6 +723,7 @@ read_cmd_line_options(
 				check_for_new_newsgroups = FALSE;
 #else
 				error_message(2, _(txt_option_not_enabled), "-UNO_POSTING");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -705,6 +738,7 @@ read_cmd_line_options(
 					nntp_tcp_port = (unsigned short) atoi(optarg);
 #else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -727,6 +761,7 @@ read_cmd_line_options(
 				read_news_via_nntp = TRUE;
 #else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -754,12 +789,17 @@ read_cmd_line_options(
 
 			case 't':
 #if defined(NNTP_ABLE) && defined(HAVE_ALARM) && defined(SIGALRM)
-				cmdline.nntp_timeout = atoi(optarg);
-				if (cmdline.nntp_timeout < 0)
+				cmdline.nntp_timeout = MIN(abs(atoi(optarg)), TIN_NNTP_TIMEOUT_MAX);
+				if ((cmdline.nntp_timeout = atoi(optarg)) < 0)
 					cmdline.nntp_timeout = 0;
+				else { /* as for nntp_read_timeout_secs */
+					if (cmdline.nntp_timeout > TIN_NNTP_TIMEOUT_MAX)
+						cmdline.nntp_timeout = 0;
+				}
 				cmdline.args |= CMDLINE_NNTP_TIMEOUT;
 #else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -772,6 +812,7 @@ read_cmd_line_options(
 				use_nntps = TRUE;
 #else
 				error_message(2, _(txt_option_not_enabled), "--with-nntps");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -790,6 +831,7 @@ read_cmd_line_options(
 
 			case 'V':
 				tin_version_info(stderr);
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				exit(EXIT_SUCCESS);
 				/* keep lint quiet: */
@@ -801,6 +843,7 @@ read_cmd_line_options(
 				check_for_new_newsgroups = FALSE;
 #else
 				error_message(2, _(txt_option_not_enabled), "-UNO_POSTING");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
 				/* keep lint quiet: */
@@ -834,6 +877,7 @@ read_cmd_line_options(
 			case '?':
 			default:
 				usage(tin_progname);
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				exit(EXIT_SUCCESS);
 		}
@@ -850,7 +894,7 @@ read_cmd_line_options(
 	}
 #endif /* NNTP_ABLE */
 
-	cmdargs = argv;
+	/* cmdargs = argv; */
 	num_cmdargs = optind;
 	max_cmdargs = argc;
 	if (!newsrc_set) {
@@ -949,8 +993,7 @@ read_cmd_line_options(
 	}
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && !read_news_via_nntp) {
-		/* TODO: lang.c */
-		wait_message(3, _(txt_useless_combination), _("reading from local spool"), "-D nntp", "-D nntp");
+		wait_message(3, _(txt_useless_combination), _(txt_reading_from_spool), "-D nntp", "-D nntp");
 		debug &= ~DEBUG_NNTP;
 	}
 #	endif /* DEBUG */
@@ -992,6 +1035,8 @@ read_cmd_line_options(
 	 */
 	if (!list_active && !newsrc_active)
 		list_active = newsrc_active = TRUE;
+
+	return argv;
 }
 
 
@@ -1186,14 +1231,18 @@ create_mail_save_dirs(
 	if (!strfpath(tinrc.maildir, path, sizeof(path), NULL, FALSE))
 		joinpath(path, sizeof(path), homedir, DEFAULT_MAILDIR);
 
-	if (stat(path, &sb) == -1)
-		my_mkdir(path, (mode_t) (S_IRWXU));
+	if (stat(path, &sb) == -1) {
+		if (my_mkdir(path, (mode_t) (S_IRWXU)) == -1)
+			error_message(2, _(txt_cannot_create), path);
+	}
 
 	if (!strfpath(tinrc.savedir, path, sizeof(path), NULL, FALSE))
 		joinpath(path, sizeof(path), homedir, DEFAULT_SAVEDIR);
 
-	if (stat(path, &sb) == -1)
-		my_mkdir(path, (mode_t) (S_IRWXU));
+	if (stat(path, &sb) == -1) {
+		if (my_mkdir(path, (mode_t) (S_IRWXU)) == -1)
+			error_message(2, _(txt_cannot_create), path);
+	}
 }
 
 

@@ -3,10 +3,10 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-10
+ *  Updated   : 2023-11-22
  *  Notes     : debug routines
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -295,7 +295,7 @@ debug_print_filter(
 		num, BlankIfNull(the_filter->scope),
 		(the_filter->inscope ? "TRUE" : "FILTER"),
 		the_filter->score,
-		the_filter->icase ? "C" : "I");
+		the_filter->icase ? "I" : "C");
 
 	if (the_filter->subj)
 		fprintf(fp, "       subj=[%s]\n", the_filter->subj);

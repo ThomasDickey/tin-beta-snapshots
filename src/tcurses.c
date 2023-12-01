@@ -3,11 +3,11 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2023-08-14
+ *  Updated   : 2023-11-24
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
- * Copyright (c) 1997-2023 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2024 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -394,6 +394,10 @@ highlight_string(
 		}
 	}
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	if (row < 0)
+		row = 0;
+	if (col < 0)
+		col = 0;
 
 	MoveCursor(row, col);
 	my_innstr(tmp, MIN(size, (LEN / 2) - 1));
@@ -447,7 +451,10 @@ word_highlight_string(
 		}
 	}
 #		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-
+	if (row < 0)
+		row = 0;
+	if (col < 0)
+		col = 0;
 	MoveCursor(row, col);
 	my_innstr(tmp, MIN(size, (LEN / 2) - 1));
 

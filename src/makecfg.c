@@ -6,7 +6,7 @@
  *  Updated   : 2023-04-09
  *  Notes     : #defines and structs for options_menu.c
  *
- * Copyright (c) 1997-2023 Thomas E. Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2024 Thomas E. Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

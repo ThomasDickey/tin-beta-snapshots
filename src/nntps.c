@@ -3,9 +3,9 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2023-09-26
+ *  Updated   : 2023-11-16
  *  Notes     : simple abstraction for various TLS implementations
- *  Copyright : (c) Copyright 2022-2023 Enrik Berkhan <Enrik.Berkhan@inka.de>
+ *  Copyright : (c) Copyright 2022-2024 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
  *              or otherwise use this software  as long as: there is no
  *              monetary  profit  gained  specifically  from the use or
@@ -395,7 +395,7 @@ tintls_handshake(
 	if (result < 0) {
 		const char *err = tls_error(client);
 
-		error_message(2, "TLS handshake failed: %s!\n", err ? err : "unknown error");
+		error_message(2, _(txt_tls_handshake_failed), err ? err : _(txt_tls_unknown_error));
 		return -EPROTO;
 	}
 
@@ -405,18 +405,18 @@ tintls_handshake(
 	cipher = tls_conn_cipher(client);
 
 	if (!subject)
-		subject = "<failed to retrieve subject>";
+		subject = _(txt_retr_subject_failed);
 	if (!issuer)
-		issuer = "<failed to retrieve issuer>";
+		issuer = _(txt_retr_issuer_failed);
 	if (!version)
-		version = "<failed to retrieve version>";
+		version = _(txt_retr_version_failed);
 	if (!cipher)
-		cipher = "<failed to retrieve cipher>";
+		cipher = _(txt_retr_cipher_failed);
 
 	if (!batch_mode || verbose) {
-		wait_message(0, "subject: %s\n", subject);
-		wait_message(0, " issuer: %s\n", issuer);
-		wait_message(0, "%s handshake done: %s\n", version, cipher);
+		wait_message(0, _(txt_conninfo_subject), subject);
+		wait_message(0, _(txt_conninfo_issuer), issuer);
+		wait_message(0, _(txt_tls_handshake_done), version, cipher);
 	}
 
 #else
@@ -438,14 +438,14 @@ tintls_handshake(
 			status_result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
 
 			if (status_result == 0)
-				wait_message(0, _("TLS peer verification failed: %s\n"), msg.data);
+				wait_message(0, _(txt_tls_peer_verify_failed), msg.data);
 			else
-				wait_message(0, _("TLS peer verification failed: %s\n"), "<unable to retrieve status>");
+				wait_message(0, _(txt_tls_peer_verify_failed), _(txt_tls_unable_to_get_status));
 
 			gnutls_free(msg.data);
 		}
 
-		error_message(2, "TLS handshake failed: %s (%d)\n", gnutls_strerror(result), result);
+		error_message(2, _(txt_tls_handshake_failed_with_err_num), gnutls_strerror(result), result);
 
 		return -EPROTO;
 	} else {
@@ -458,7 +458,7 @@ tintls_handshake(
 			gnutls_datum_t msg;
 
 			if (!insecure_nntps) {
-				error_message(2, "unexpected certificate verification status!");
+				error_message(2, _(txt_tls_unexpected_status));
 				return -EPROTO;
 			}
 
@@ -466,9 +466,9 @@ tintls_handshake(
 			result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
 
 			if (result == 0) {
-				wait_message(0, _("TLS peer verification failed, continuing anyway as requested: %s\n"), msg.data);
+				wait_message(0, _(txt_tls_peer_verify_failed_continuing), msg.data);
 			} else {
-				wait_message(0, _("TLS peer verification failed, continuing anyway as requested: %s\n"), "<unable to retrieve status>");
+				wait_message(0, _(txt_tls_peer_verify_failed_continuing), _(txt_tls_unable_to_get_status));
 			}
 
 			gnutls_free(msg.data);
@@ -508,8 +508,8 @@ tintls_handshake(
 			}
 
 			if (!batch_mode || verbose) {
-				wait_message(0, "subject: %s\n", subject.data);
-				wait_message(0, " issuer: %s\n", issuer.data);
+				wait_message(0, _(txt_conninfo_subject), subject.data);
+				wait_message(0, _(txt_conninfo_issuer), issuer.data);
 			}
 
 err_cert:
@@ -523,7 +523,7 @@ err_cert:
 
 		desc = gnutls_session_get_desc(client);
 		if (!batch_mode || verbose)
-			wait_message(0, "TLS handshake done: %s\n", desc);
+			wait_message(0, _(txt_tls_handshake_done), desc);
 		gnutls_free(desc);
 	}
 
@@ -547,28 +547,28 @@ err_cert:
 	if (long_result != 1) {
 		long_result = SSL_get_verify_result(ssl);
 		if (long_result != X509_V_OK) {
-			error_message(0, _("TLS handshake failed: %s\n"), X509_verify_cert_error_string(long_result));
+			error_message(2, _(txt_tls_handshake_failed), X509_verify_cert_error_string(long_result));
 		} else
-			show_errors(_("TLS handshake failed: %s\n"));
+			show_errors(_(txt_tls_handshake_failed));
 
 		return -EPROTO;
 	} else if (insecure_nntps) {
 		long_result = SSL_get_verify_result(ssl);
 		if (long_result != X509_V_OK && (!batch_mode || verbose))
-			wait_message(0, _("TLS peer verification failed: %s.\nContinuing anyway as requested.\n"), X509_verify_cert_error_string(long_result));
+			wait_message(0, _(txt_tls_peer_verify_failed_continuing), X509_verify_cert_error_string(long_result));
 	}
 
 	peer = SSL_get_peer_certificate(ssl);
 	if (peer) {
 		if (!batch_mode || verbose) {
-			wait_message(0, "subject: %s\n", X509_NAME_oneline(X509_get_subject_name(peer), name, sizeof(name)));
-			wait_message(0, " issuer: %s\n", X509_NAME_oneline(X509_get_issuer_name(peer), name, sizeof(name)));
+			wait_message(0, _(txt_conninfo_subject), X509_NAME_oneline(X509_get_subject_name(peer), name, sizeof(name)));
+			wait_message(0, _(txt_conninfo_issuer), X509_NAME_oneline(X509_get_issuer_name(peer), name, sizeof(name)));
 		}
 		X509_free(peer);
 	}
 
 	if (!batch_mode || verbose)
-		wait_message(0, "TLS handshake done: %s\n", SSL_get_cipher_name(ssl));
+		wait_message(0, _(txt_tls_handshake_done), SSL_get_cipher_name(ssl));
 #		endif /* USE_OPENSSL */
 #	endif /* USE_GNUTLS */
 #endif /* USE_LIBTLS */
@@ -726,10 +726,23 @@ tintls_close(
 	return 0;
 }
 
+/* TODO: make date-format configurable? */
+#define PRINT_VALID_AFTER(ts, what) do { \
+		result = my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", ts); \
+		if (result < 0) \
+			fprintf(fp, "%s", txt_conninfo_fmt_error); \
+		else \
+			fprintf(fp, _(txt_valid_not_after), (what)); \
+	} while (0)
+#define PRINT_VALID_BEFORE(ts, what) do { \
+		result = my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", ts); \
+		if (result < 0) \
+			fprintf(fp, "%s", txt_conninfo_fmt_error); \
+		else \
+			fprintf(fp, _(txt_valid_not_before), (what)); \
+	} while (0)
 
-/*
- * TODO: -> lang.c
- */
+
 int
 tintls_conninfo(
 	void *session_ctx,
@@ -742,27 +755,19 @@ tintls_conninfo(
 	struct tm *tm;
 	char fmt_time[64]; /* time zone name could long... */
 
-	fprintf(fp, "\nTLS information:\n");
-	fprintf(fp, "----------------\n");
-	fprintf(fp, "%s %s (strength %d)\n", tls_conn_version(client), tls_conn_cipher(client), tls_conn_cipher_strength(client));
-	fprintf(fp, "\nServer certificate information:\n");
-	fprintf(fp, "-------------------------------\n");
-	fprintf(fp, "Subject: %s\n", tls_peer_cert_subject(client));
-	fprintf(fp, "Issuer : %s\n", tls_peer_cert_issuer(client));
+	fprintf(fp, "%s", _(txt_conninfo_tls_info));
+	fprintf(fp, _(txt_conninfo_libtls_info), tls_conn_version(client), tls_conn_cipher(client), tls_conn_cipher_strength(client));
+	fprintf(fp, "%s", _(txt_conninfo_server_cert_info));
+	fprintf(fp, _(txt_conninfo_subject), tls_peer_cert_subject(client));
+	fprintf(fp, _(txt_conninfo_issuer), tls_peer_cert_issuer(client));
 
 	t = tls_peer_cert_notbefore(client);
 	tm = localtime(&t);
-	result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm); /* make format configurable? */
-	if (result < 0)
-		my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
-	fprintf(fp, txt_valid_not_before, fmt_time);
+	PRINT_VALID_BEFORE(tm, fmt_time);
 
 	t = tls_peer_cert_notafter(client);
 	tm = localtime(&t);
-	result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm);
-	if (result < 0)
-		my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
-	fprintf(fp, txt_valid_not_after, fmt_time);
+	PRINT_VALID_AFTER(tm, fmt_time);
 
 #else
 
@@ -779,8 +784,7 @@ tintls_conninfo(
 	char fmt_time[64]; /* time zone name could long... */
 
 	desc = gnutls_session_get_desc(client);
-	fprintf(fp, "\nTLS information:\n");
-	fprintf(fp, "----------------\n");
+	fprintf(fp, "%s", _(txt_conninfo_tls_info));
 	fprintf(fp, "%s\n", desc);
 	gnutls_free(desc);
 
@@ -793,19 +797,18 @@ tintls_conninfo(
 		result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
 
 		if (result == 0) {
-			fprintf(fp, "Server certificate verification FAILED:\n\t%s (%s)\n", msg.data,
-					insecure_nntps ? "tolerated as \"-k\" (insecure) requested" : "UNEXPECTED, possible BUG");
+			fprintf(fp, _(txt_conninfo_verify_failed), msg.data,
+					insecure_nntps ? _(txt_conninfo_error_tolerated) : _(txt_conninfo_error_unexpected));
 		} else
-			fprintf(fp, "Server certificate verification FAILED: <can't get reason>\n");
+			fprintf(fp, "%s", _(txt_conninfo_verify_failed_no_reason));
 
 		gnutls_free(msg.data);
 	} else
-		fprintf(fp, "Server certificate verified successfully.\n");
+		fprintf(fp, "%s", _(txt_conninfo_verify_successful));
 
 	raw_servercert_chain = gnutls_certificate_get_peers(client, &servercert_chainlen);
 	if (servercert_chainlen > 0) {
-		fprintf(fp, "\nServer certificate information:\n");
-		fprintf(fp, "-------------------------------\n");
+		fprintf(fp, "%s", _(txt_conninfo_server_cert_info));
 	}
 
 	for (i = 0; i < servercert_chainlen; i++) {
@@ -815,7 +818,7 @@ tintls_conninfo(
 
 		if (i > 0)
 			fputs("\n", fp);
-		fprintf(fp, "Certificate #%d\n", i);
+		fprintf(fp, _(txt_conninfo_cert), i);
 
 		result = gnutls_x509_crt_init(&servercert);
 		if (result < 0)
@@ -829,33 +832,27 @@ tintls_conninfo(
 		if (result < 0)
 			goto err_cert;
 
-		fprintf(fp, "Subject: %s\n", subject.data);
+		fprintf(fp, _(txt_conninfo_subject), subject.data);
 
 		result = gnutls_x509_crt_get_issuer_dn3(servercert, &issuer, 0);
 		if (result < 0)
 			goto err_cert;
 
-		fprintf(fp, "Issuer : %s\n", issuer.data);
+		fprintf(fp, _(txt_conninfo_issuer), issuer.data);
 
 		t = gnutls_x509_crt_get_activation_time(servercert);
 		if (t == -1)
 			goto err_cert;
 
 		tm = localtime(&t);
-		result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm); /* make format configurable? */
-		if (result < 0)
-			my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
-		fprintf(fp, txt_valid_not_before, fmt_time);
+		PRINT_VALID_BEFORE(tm, fmt_time);
 
 		t = gnutls_x509_crt_get_expiration_time(servercert);
 		if (t == -1)
 			goto err_cert;
 
 		tm = localtime(&t);
-		result = my_strftime(fmt_time, sizeof(fmt_time), "%Y-%m-%dT%H:%M%z (%Z)", tm);
-		if (result < 0)
-			my_strncpy(fmt_time, "<formatting error>", sizeof(fmt_time) - 1);
-		fprintf(fp, txt_valid_not_after, fmt_time);
+		PRINT_VALID_AFTER(tm, fmt_time);
 
 		retval = 0;
 
@@ -882,20 +879,18 @@ err_cert:
 	if (long_result != 1)
 		return -1;
 
-	fprintf(fp, "\nTLS information:\n");
-	fprintf(fp, "----------------\n");
+	fprintf(fp, "%s", _(txt_conninfo_tls_info));
 	fprintf(fp, "%s %s\n", SSL_get_version(ssl), SSL_get_cipher_name(ssl));
 
 	verification_result = SSL_get_verify_result(ssl);
 	if (verification_result != X509_V_OK)
-		fprintf(fp, "Server certificate verification FAILED:\n\t%s (%s)\n",
+		fprintf(fp, _(txt_conninfo_verify_failed),
 			X509_verify_cert_error_string(verification_result),
-			insecure_nntps ? "tolerated as \"-k\" (insecure) requested" : "UNEXPECTED, possible BUG");
+			insecure_nntps ? _(txt_conninfo_error_tolerated) : _(txt_conninfo_error_unexpected));
 	else
-		fprintf(fp, "Server certificate verified successfully.\n");
+		fprintf(fp, "%s", _(txt_conninfo_verify_successful));
 
-	fprintf(fp, "\nServer certificate information:\n");
-	fprintf(fp, "-------------------------------\n");
+	fprintf(fp, "%s", _(txt_conninfo_server_cert_info));
 
 	if (verification_result == X509_V_OK)
 		chain = SSL_get_peer_cert_chain(ssl);
@@ -913,26 +908,20 @@ err_cert:
 
 			if (i > 0)
 				fputs("\n", fp);
-			fprintf(fp, "Certificate #%d\n", i);
-			fprintf(fp, "Subject: %s\n", X509_NAME_oneline(X509_get_subject_name(cert), name, sizeof(name)));
-			fprintf(fp, "Issuer : %s\n", X509_NAME_oneline(X509_get_issuer_name(cert), name, sizeof(name)));
+			fprintf(fp, _(txt_conninfo_cert), i);
+			fprintf(fp, _(txt_conninfo_subject), X509_NAME_oneline(X509_get_subject_name(cert), name, sizeof(name)));
+			fprintf(fp, _(txt_conninfo_issuer), X509_NAME_oneline(X509_get_issuer_name(cert), name, sizeof(name)));
 
 			asn1 = X509_get0_notBefore(cert);
 			result = ASN1_TIME_to_tm(asn1, &tm);
 			if (result == 1) {
-				result = my_strftime(name, sizeof(name), "%Y-%m-%dT%H:%M%z", &tm); /* make format configurable? */
-				if (result < 0)
-					my_strncpy(name, "<formatting error>", sizeof(name) - 1);
-				fprintf(fp, txt_valid_not_before, name);
+				PRINT_VALID_BEFORE(&tm, name);
 			}
 
 			asn1 = X509_get0_notAfter(cert);
 			result = ASN1_TIME_to_tm(asn1, &tm);
 			if (result == 1) {
-				result = my_strftime(name, sizeof(name), "%Y-%m-%dT%H:%M%z", &tm);
-				if (result < 0)
-					my_strncpy(name, "<formatting error>", sizeof(name) - 1);
-				fprintf(fp, txt_valid_not_after, name);
+				PRINT_VALID_AFTER(&tm, name);
 			}
 		}
 	}
@@ -941,6 +930,10 @@ err_cert:
 #endif /* USE_LIBTLS */
 	return 0;
 }
+
+
+#undef PRINT_VALID_AFTER
+#undef PRINT_VALID_BEFORE
 
 
 #ifdef USE_OPENSSL

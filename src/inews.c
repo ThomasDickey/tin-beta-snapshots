@@ -3,10 +3,10 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2022-10-25
+ *  Updated   : 2023-11-27
  *  Notes     : NNTP built in version of inews
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -236,16 +236,18 @@ submit_inews(
 
 		/*
 		 * check if Message-ID comes from the server
+		 *
+		 * IDs must be no longer than 250 chars, but ...
 		 */
-		if (*message_id) {
+		if (*message_id && strlen(message_id) <= NNTP_STRLEN) {
 			if (!id_in_article) {
-				snprintf(buf, sizeof(buf), "Message-ID: %s", message_id);
+				snprintf(buf, sizeof(buf), "Message-ID: %.512s", message_id);
 				u_put_server(buf);
 				u_put_server("\r\n");
 			}
 #	ifdef USE_CANLOCK
 			if (tinrc.cancel_lock_algo && !can_lock_in_article) {
-				char lock[1024];
+				char lock[1000];
 				char *lptr;
 
 				lock[0] = '\0';
@@ -323,8 +325,7 @@ submit_inews(
 	 * response.)
 	 */
 	if (respcode != OK_POSTED) {
-		/* TODO: -> lang.c */
-		error_message(2, "Posting failed (%s)", str_trim(response));
+		error_message(2, _(txt_posting_failed), str_trim(response));
 		return ret_code;
 	}
 

@@ -3,10 +3,10 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-17
+ *  Updated   : 2023-11-24
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -458,7 +458,7 @@ group_page(
 				break;
 
 			case GLOBAL_CONNECTION_INFO:
-				show_connection_page(GROUP_LEVEL, _(txt_connection_info));
+				show_connection_page();
 				show_group_page();
 				break;
 
@@ -1175,6 +1175,10 @@ mark_screen(
 		int y, x;
 
 		getyx(stdscr, y, x);
+		if (x < 0)
+			x = 0;
+		if (y < 0)
+			y = 0;
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if ((tmp = wchar_t2char(value))) {
 			mvaddstr(INDEX2LNUM(screen_row), screen_col, tmp);

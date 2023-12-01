@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-29
+ *  Updated   : 2023-11-28
  *  Notes     :
  *
- * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -370,9 +370,12 @@ extern char *tin_progname;
 extern const char *tmpdir;
 extern char active_times_file[PATH_LEN];
 extern char article_name[PATH_LEN];
+extern char *backup_article_name;
 extern char bug_addr[LEN];
-extern char bug_nntpserver1[PATH_LEN];
-extern char bug_nntpserver2[PATH_LEN];
+#ifdef NNTP_ABLE
+	extern char bug_nntpserver1[PATH_LEN];
+	extern char bug_nntpserver2[PATH_LEN];
+#endif /* NNTP_ABLE */
 extern char cvers[LEN];
 extern char dead_article[PATH_LEN];
 extern char dead_articles[PATH_LEN];
@@ -464,6 +467,9 @@ extern constext *txt_wildcard_type[];
 extern constext txt_1_resp[];
 extern constext txt_7bit[];
 extern constext txt_8bit[];
+#if defined(NNTP_ABLE) && defined(HAVE_SELECT)
+	extern constext txt_abort_reading[];
+#endif /* defined(NNTP_ABLE) && defined(HAVE_SELECT) */
 extern constext txt_active_file_is_empty[];
 extern constext txt_all[];
 extern constext txt_all_groups[];
@@ -479,6 +485,7 @@ extern constext txt_art_parent_none[];
 extern constext txt_art_parent_unavail[];
 extern constext txt_art_posted[];
 extern constext txt_art_rejected[];
+extern constext txt_art_score[];
 extern constext txt_art_thread_regex_tag[];
 extern constext txt_art_unavailable[];
 extern constext txt_art_x_of_n[];
@@ -494,17 +501,26 @@ extern constext txt_articles_mailed[];
 #ifndef DONT_HAVE_PIPING
 	extern constext txt_articles_piped[];
 #endif /* !DONT_HAVE_PIPING */
+extern constext txt_mime_boundary[];
+extern constext txt_mime_boundary_end[];
 extern constext txt_mime_charset[];
 extern constext txt_mime_content_subtype[];
 extern constext txt_mime_content_type[];
 extern constext txt_mime_description[];
 extern constext txt_mime_encoding[];
+extern constext txt_mime_hdr_c_disposition_inline[];
+extern constext txt_mime_hdr_c_transfer_encoding[];
+extern constext txt_mime_hdr_c_type_msg_rfc822[];
+extern constext txt_mime_hdr_c_type_multipart_mixed[];
+extern constext txt_mime_hdr_c_type_text_plain_charset[];
 extern constext txt_mime_lang[];
 extern constext txt_mime_lines[];
 extern constext txt_mime_name[];
 extern constext txt_mime_sep[];
 extern constext txt_mime_size[];
+extern constext txt_mime_preamble_multipart_mixed[];
 extern constext txt_mime_unsup_charset[];
+extern constext txt_mime_version[];
 extern constext txt_attachment_menu[];
 extern constext txt_attachment_menu_com[];
 extern constext txt_attachment_no_name[];
@@ -514,6 +530,113 @@ extern constext txt_attachment_select[];
 extern constext txt_attachment_tagged[];
 extern constext txt_attachments_tagged[];
 extern constext txt_attachment_untagged[];
+extern constext txt_attrib_file_version[];
+extern constext txt_attrib_file_header[];
+extern constext txt_attrib_file_scope[];
+extern constext txt_attrib_file_posted_to_filter[];
+extern constext txt_attrib_file_advertising[];
+extern constext txt_attrib_file_alt_handling[];
+extern constext txt_attrib_file_metamail[];
+extern constext txt_attrib_file_auto_cc_bcc[];
+extern constext txt_attrib_file_auto_cc_bcc_opts[];
+extern constext txt_attrib_file_auto_list_thrd[];
+extern constext txt_attrib_file_auto_select[];
+extern constext txt_attrib_file_batch_save[];
+extern constext txt_attrib_file_date_fmt[];
+extern constext txt_attrib_file_delete_tmp[];
+extern constext txt_attrib_file_editor_fmt[];
+extern constext txt_attrib_file_fcc[];
+extern constext txt_attrib_file_followup_to[];
+extern constext txt_attrib_file_from[];
+extern constext txt_attrib_file_grp_catchup[];
+extern constext txt_attrib_file_grp_fmt[];
+extern constext txt_attrib_file_mail_8bit_hdr[];
+extern constext txt_attrib_file_mail_mime_enc[];
+#ifdef HAVE_ISPELL
+	extern constext txt_attrib_file_ispell[];
+#endif /* HAVE_ISPELL */
+extern constext txt_attrib_file_maildir[];
+extern constext txt_attrib_file_mailing_list[];
+extern constext txt_attrib_file_mime_types_to_save[];
+extern constext txt_attrib_file_mark_ignore_tags[];
+extern constext txt_attrib_file_mark_saved_read[];
+extern constext txt_attrib_file_mime_forward[];
+#ifdef CHARSET_CONVERSION
+	extern constext txt_attrib_file_mm_network_charset[];
+	extern constext txt_attrib_file_undeclared_charset[];
+#endif /* CHARSET_CONVERSION */
+extern constext txt_attrib_file_hdr_to_disp[];
+extern constext txt_attrib_file_hdr_to_not_disp[];
+extern constext txt_attrib_file_quote_fmt[];
+extern constext txt_attrib_file_organization[];
+extern constext txt_attrib_file_pos_first_unread[];
+extern constext txt_attrib_file_post_8bit_hdr[];
+extern constext txt_attrib_file_post_mime_enc[];
+extern constext txt_attrib_file_post_proc_type[];
+extern constext txt_attrib_file_post_proc_view[];
+extern constext txt_attrib_file_quick_kill_scope[];
+extern constext txt_attrib_file_quick_kill_expire[];
+extern constext txt_attrib_file_quick_kill_case[];
+extern constext txt_attrib_file_quick_kill_hdr[];
+extern constext txt_attrib_file_quick_kill_hdr_0_1[];
+extern constext txt_attrib_file_quick_kill_hdr_2_3[];
+extern constext txt_attrib_file_quick_kill_hdr_4[];
+extern constext txt_attrib_file_quick_kill_hdr_5[];
+extern constext txt_attrib_file_quick_kill_hdr_6[];
+extern constext txt_attrib_file_quick_select_scope[];
+extern constext txt_attrib_file_quick_select_expire[];
+extern constext txt_attrib_file_quick_select_case[];
+extern constext txt_attrib_file_quick_select_hdr[];
+extern constext txt_attrib_file_quick_select_hdr_0_1[];
+extern constext txt_attrib_file_quick_select_hdr_2_3[];
+extern constext txt_attrib_file_quick_select_hdr_4[];
+extern constext txt_attrib_file_quick_select_hdr_5[];
+extern constext txt_attrib_file_quick_select_hdr_6[];
+extern constext txt_attrib_file_quote_chars[];
+#ifndef DISABLE_PRINTING
+	extern constext txt_attrib_file_print_hdr[];
+#endif /* !DISABLE_PRINTING */
+extern constext txt_attrib_file_process_only_unread[];
+extern constext txt_attrib_file_prompt_followup[];
+extern constext txt_attrib_file_savedir[];
+extern constext txt_attrib_file_savefile[];
+extern constext txt_attrib_file_sigfile[];
+extern constext txt_attrib_file_show_author[];
+extern constext txt_attrib_file_show_signatures[];
+extern constext txt_attrib_file_show_art_score[];
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern constext txt_attrib_file_suppress_soft_hyphens[];
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+extern constext txt_attrib_file_show_only_unread[];
+extern constext txt_attrib_file_sigdashes[];
+extern constext txt_attrib_file_signature_repost[];
+extern constext txt_attrib_file_sort_art_type[];
+extern constext txt_attrib_file_sort_thrd_type[];
+extern constext txt_attrib_file_tex2iso[];
+extern constext txt_attrib_file_thrd_catchup[];
+extern constext txt_attrib_file_thrd_arts[];
+extern constext txt_attrib_file_thrd_fmt[];
+extern constext txt_attrib_file_thrd_perc[];
+extern constext txt_attrib_file_trim_art_body[];
+extern constext txt_attrib_file_trim_art_body_0[];
+extern constext txt_attrib_file_trim_art_body_1[];
+extern constext txt_attrib_file_trim_art_body_2[];
+extern constext txt_attrib_file_trim_art_body_3[];
+extern constext txt_attrib_file_trim_art_body_4[];
+extern constext txt_attrib_file_trim_art_body_5[];
+extern constext txt_attrib_file_trim_art_body_6[];
+extern constext txt_attrib_file_trim_art_body_7[];
+extern constext txt_attrib_file_verbatim_handling[];
+#ifdef HAVE_COLOR
+	extern constext txt_attrib_file_extquote_handling[];
+#endif /* HAVE_COLOR */
+extern constext txt_attrib_file_wrap_on_unread[];
+extern constext txt_attrib_file_x_body[];
+extern constext txt_attrib_file_x_comment[];
+extern constext txt_attrib_file_x_headers[];
+extern constext txt_attrib_file_note_1[];
+extern constext txt_attrib_file_note_2[];
+extern constext txt_attrib_file_footer[];
 extern constext txt_attrib_menu_com[];
 extern constext txt_attrib_no_scope[];
 extern constext txt_at_s[];
@@ -540,6 +663,9 @@ extern constext txt_base_article_range[];
 extern constext txt_batch_update_unavail[];
 extern constext txt_begin_of_art[];
 extern constext txt_begin_of_page[];
+#if !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
+	extern constext txt_bytes[];
+#endif /* !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING) */
 #ifdef NNTP_ABLE
 	extern constext txt_caching_off[];
 	extern constext txt_caching_on[];
@@ -565,7 +691,11 @@ extern constext txt_cannot_post_group[];
 #ifdef NNTP_ABLE
 	extern constext txt_cannot_retrieve[];
 #endif /* NNTP_ABLE */
+extern constext txt_cannot_supersede_mailgroups[];
 extern constext txt_cannot_write_to_directory[];
+#ifdef NNTP_ABLE
+	extern constext txt_capabilities_without_reader[];
+#endif /* NNTP_ABLE */
 extern constext txt_catchup[];
 extern constext txt_catchup_group[];
 extern constext txt_catchup_all_read_groups[];
@@ -588,11 +718,79 @@ extern constext txt_cook_article_failed_exiting[];
 extern constext txt_confirm_select_on_exit[];
 #ifdef NNTP_ABLE
 	extern constext txt_connecting_port[];
+	extern constext txt_connection_error[];
 #endif /* NNTP_ABLE */
 #if defined(NNTP_ABLE) && !defined(INET6)
 	extern constext txt_connection_to[];
 #endif /* NNTP_ABLE && !INET6 */
 extern constext txt_connection_info[];
+extern constext txt_conninfo_local_spool[];
+extern constext txt_conninfo_saved_news[];
+#ifndef NNTP_ONLY
+	extern constext txt_conninfo_active_file[];
+	extern constext txt_conninfo_active_times_file[];
+	extern constext txt_conninfo_newsgroups_file[];
+	extern constext txt_conninfo_novrootdir[];
+	extern constext txt_conninfo_overview_file[];
+	extern constext txt_conninfo_overview_fmt[];
+	extern constext txt_conninfo_spool_config[];
+	extern constext txt_conninfo_spooldir[];
+	extern constext txt_conninfo_subscriptions_file[];
+#endif /* !NNTP_ONLY */
+#ifdef NNTP_ABLE
+	extern constext txt_conninfo_compress[];
+	extern constext txt_conninfo_conn_details[];
+#	ifdef USE_ZLIB
+	extern constext txt_conninfo_deflate[];
+	extern constext txt_conninfo_enabled[];
+	extern constext txt_conninfo_inactive[];
+#	else
+	extern constext txt_conninfo_deflate_unsupported[];
+#	endif /* USE_ZLIB */
+#	if defined(HAVE_ALARM) && defined(SIGALRM)
+	extern constext txt_conninfo_disabled[];
+	extern constext txt_conninfo_timeout[];
+#	endif /* HAVE_ALARM && SIGALRM */
+	extern constext txt_conninfo_implementation[];
+#	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+	extern constext txt_conninfo_maxartnum[];
+#	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
+	extern constext txt_conninfo_nntp[];
+	extern constext txt_conninfo_port[];
+	extern constext txt_conninfo_ro[];
+	extern constext txt_conninfo_rw[];
+	extern constext txt_conninfo_server[];
+#	ifdef NNTPS_ABLE
+	extern constext txt_conninfo_nntps[];
+#		if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_LIBTLS) || defined(HAVE_LIB_OPENSSL)
+		extern constext txt_conninfo_fmt_error[];
+		extern constext txt_conninfo_issuer[];
+		extern constext txt_conninfo_server_cert_info[];
+		extern constext txt_conninfo_subject[];
+		extern constext txt_conninfo_tls_info[];
+#		endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_LIBTLS) || defined(HAVE_LIB_OPENSSL) */
+#		if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL)
+		extern constext txt_conninfo_cert[];
+		extern constext txt_conninfo_error_unexpected[];
+		extern constext txt_conninfo_error_tolerated[];
+		extern constext txt_conninfo_verify_failed[];
+		extern constext txt_conninfo_verify_successful[];
+#		endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL) */
+	extern constext txt_conninfo_trusted[];
+	extern constext txt_conninfo_untrusted[];
+#		ifdef HAVE_LIB_GNUTLS
+		extern constext txt_conninfo_gnutls[];
+		extern constext txt_conninfo_verify_failed_no_reason[];
+#		endif /* HAVE_LIB_GNUTLS */
+#		ifdef HAVE_LIB_LIBTLS
+		extern constext txt_conninfo_libressl[];
+		extern constext txt_conninfo_libtls_info[];
+#		endif /* HAVE_LIB_LIBTLS */
+#		ifdef HAVE_LIB_OPENSSL
+		extern constext txt_conninfo_openssl[];
+#		endif /* HAVE_LIB_OPENSSL */
+#	endif /* NNTPS_ABLE */
+#endif /* NNTP_ABLE */
 extern constext txt_copyright_notice[];
 extern constext txt_cr[];
 extern constext txt_creating_active[];
@@ -638,6 +836,7 @@ extern constext txt_error_bad_to[];
 #endif /* NNTP_ABLE && USE_ZLIB */
 extern constext txt_error_copy_fp[];
 extern constext txt_error_corrupted_file[];
+extern constext txt_error_couldnt_expand[];
 extern constext txt_error_fseek[];
 extern constext txt_error_followup_poster[];
 extern constext txt_error_format_string[];
@@ -678,9 +877,15 @@ extern constext txt_error_header_line_empty[];
 extern constext txt_error_header_line_missing[];
 extern constext txt_error_header_line_not_7bit[];
 extern constext txt_error_header_line_space[];
+extern constext txt_error_header_no_name[];
 #ifndef FILE_MODE_BROKEN
 	extern constext txt_error_insecure_permissions[];
 #endif /* !FILE_MODE_BROKEN */
+#ifdef MIME_BREAK_LONG_LINES
+	extern constext txt_error_should_be_folded[];
+#else
+	extern constext txt_error_should_be_shortened[];
+#endif /* MIME_BREAK_LONG_LINES */
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	extern constext txt_error_locale[];
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
@@ -710,10 +915,14 @@ extern constext txt_error_server_has_no_listed_groups[];
 	extern constext txt_error_server_unavailable[];
 	extern constext txt_error_topen[];
 #endif /* NNTP_ABLE && TLI && !INET6 */
+extern constext txt_error_unlink[];
 extern constext txt_error_unknown_dlevel[];
 #if defined(NNTP_ABLE) && defined(HAVE_GETSERVBYNAME) && !defined(INET6)
 	extern constext txt_error_unknown_service[];
 #endif /* NNTP_ABLE && HAVE_GETSERVBYNAME && !INET6 */
+#ifndef NNTP_ABLE
+	extern constext txt_error_unreachable[];
+#endif /* !NNTP_ABLE */
 extern constext txt_esc[];
 extern constext txt_exiting[];
 extern constext txt_external_mail_done[];
@@ -725,7 +934,13 @@ extern constext txt_feed_pattern[];
 extern constext txt_filesystem_full[];
 extern constext txt_filesystem_full_backup[];
 extern constext txt_filter_comment[];
+#ifdef DEBUG
+	extern constext txt_filter_error_overview_no_servername[];
+	extern constext txt_filter_error_overview_xref[];
+	extern constext txt_filter_error_skipping_xref_filter[];
+#endif /* DEBUG */
 extern constext txt_filter_file[];
+extern constext txt_filter_file_version[];
 extern constext txt_filter_global_rules[];
 extern constext txt_filter_rule_created[];
 extern constext txt_filter_score[];
@@ -1077,6 +1292,9 @@ extern constext txt_mini_thread_2[];
 extern constext txt_mini_url_1[];
 extern constext txt_mini_url_2[];
 extern constext txt_more[];
+#ifdef NNTP_ABLE
+	extern constext txt_motd[];
+#endif /* NNTP_ABLE */
 extern constext txt_moving[];
 extern constext txt_msgid_line_last[];
 extern constext txt_msgid_line_only[];
@@ -1124,11 +1342,13 @@ extern constext txt_no_viewer_found[];
 #ifdef NNTP_ABLE
 	extern constext txt_no_xover_support[];
 #endif /* NNTP_ABLE */
+extern constext txt_none[];
 extern constext txt_not_exist[];
 extern constext txt_not_in_active_file[];
 extern constext txt_nrctbl_create[];
 extern constext txt_nrctbl_default[];
 extern constext txt_nrctbl_info[];
+extern constext txt_null[];
 extern constext txt_only[];
 extern constext txt_option_not_enabled[];
 extern constext txt_options_menu[];
@@ -1139,6 +1359,12 @@ extern constext txt_pcre_error_num[];
 #ifndef HAVE_LIB_PCRE2
 	extern constext txt_pcre_error_text[];
 #endif /* !HAVE_LIB_PCRE2 */
+#ifdef NNTP_ABLE
+#	ifdef DEBUG
+	extern constext txt_port_not_numeric[];
+	extern constext txt_port_not_numeric_in[];
+#	endif /* DEBUG */
+#endif /* NNTP_ABLE */
 extern constext txt_post_a_followup[];
 extern constext txt_post_error_ask_postpone[];
 extern constext txt_post_history_menu[];
@@ -1156,6 +1382,10 @@ extern constext txt_post_subject[];
 #endif /* NNTP_INEWS */
 extern constext txt_posted_info_file[];
 extern constext txt_posting[];
+#ifdef NNTP_INEWS
+	extern constext txt_posting_failed[];
+#endif /* NNTP_INEWS */
+extern constext txt_postpone_post[];
 extern constext txt_postpone_repost[];
 extern constext txt_prefix_hot[];
 extern constext txt_prefix_tagged[];
@@ -1189,6 +1419,10 @@ extern constext txt_reading_arts[];
 extern constext txt_reading_attributes_file[];
 extern constext txt_reading_config_file[];
 extern constext txt_reading_filter_file[];
+#ifdef DEBUG
+	extern constext txt_reading_from_spool[];
+#endif /* DEBUG */
+extern constext txt_reading_group[];
 extern constext txt_reading_groups[];
 extern constext txt_reading_input_history_file[];
 extern constext txt_reading_keymap_file[];
@@ -1197,6 +1431,9 @@ extern constext txt_reading_news_newsrc_file[];
 extern constext txt_reading_newsgroups_file[];
 extern constext txt_reading_newsrc[];
 #ifdef NNTP_ABLE
+#	ifdef DEBUG
+		extern constext txt_reconnect_limit_reached[];
+#	endif /* DEBUG */
 	extern constext txt_reconnect_to_news_server[];
 #endif /* NNTP_ABLE */
 extern constext txt_refs_line_only[];
@@ -1258,12 +1495,16 @@ extern constext txt_select_subj[];
 extern constext txt_select_text[];
 extern constext txt_select_thread[];
 extern constext txt_select_time[];
+extern constext txt_selection_flag_insecure[];
+extern constext txt_selection_flag_secure[];
+extern constext txt_selection_flag_only_unread[];
 extern constext txt_send_bugreport[];
 #ifdef NNTP_ABLE
 	extern constext txt_server_name_in_file_env_var[];
 #endif /* NNTP_ABLE */
 extern constext txt_serverconfig_header[];
 extern constext txt_servers_active[];
+extern constext txt_skipped_group[];
 extern constext txt_skipping_newgroups[];
 extern constext txt_space[];
 extern constext txt_starting_command[];
@@ -1289,12 +1530,34 @@ extern constext txt_thread_marked_as_selected[];
 extern constext txt_thread_singular[];
 extern constext txt_thread_x_of_n[];
 extern constext txt_threading_arts[];
+extern constext txt_threading_by_multipart[];
 extern constext txt_time_default_days[];
+extern constext txt_tin_version[];
 extern constext txt_tinrc_defaults[];
 extern constext txt_tinrc_filter[];
 extern constext txt_tinrc_header[];
 extern constext txt_tinrc_info_in_last_line[];
 extern constext txt_tinrc_newnews[];
+#if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
+	extern constext txt_tls_handshake_done[];
+	extern constext txt_tls_handshake_failed[];
+#	ifdef HAVE_LIB_LIBTLS
+	extern constext txt_retr_cipher_failed[];
+	extern constext txt_retr_issuer_failed[];
+	extern constext txt_retr_subject_failed[];
+	extern constext txt_retr_version_failed[];
+	extern constext txt_tls_unknown_error[];
+#	endif /* HAVE_LIB_LIBTLS */
+#	ifdef HAVE_LIB_GNUTLS
+	extern constext txt_tls_handshake_failed_with_err_num[];
+	extern constext txt_tls_peer_verify_failed[];
+	extern constext txt_tls_unable_to_get_status[];
+	extern constext txt_tls_unexpected_status[];
+#	endif /* HAVE_LIB_GNUTLS */
+#	if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL)
+	extern constext txt_tls_peer_verify_failed_continuing[];
+#	endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL) */
+#endif /* NNTP_ABLE && NNTPS_ABLE */
 extern constext txt_toggled_high[];
 extern constext txt_toggled_rot13[];
 extern constext txt_toggled_tex2iso[];
@@ -1308,6 +1571,8 @@ extern constext txt_toggled_tabwidth[];
 #endif /* NO_LOCKING */
 extern constext txt_type_h_for_help[];
 extern constext txt_unlimited_time[];
+extern constext txt_unchanged[];
+extern constext txt_unknown[];
 extern constext txt_unread[];
 extern constext txt_unsubscribe_pattern[];
 extern constext txt_unsubscribed_num_groups[];
@@ -1323,9 +1588,13 @@ extern constext txt_url_select[];
 extern constext txt_url_done[];
 extern constext txt_usage_catchup[];
 extern constext txt_usage_check_for_unread_news[];
-#ifdef USE_ZLIB
+#ifdef NNTP_ABLE
+#	ifdef USE_ZLIB
+	extern constext txt_continuing[];
+	extern constext txt_read_timeout_quit[];
 	extern constext txt_usage_compress[];
-#endif /* USE_ZLIB */
+#	endif /* USE_ZLIB */
+#endif /* NNTP_ABLE */
 #ifdef DEBUG
 	extern constext txt_usage_debug[];
 #endif /* DEBUG */
@@ -1417,7 +1686,29 @@ extern constext txt_warn_unrecognized_version[];
 extern constext txt_warn_wrong_sig_format[];
 extern constext txt_warn_xref_not_supported[];
 extern constext txt_writing_attributes_file[];
+extern constext txt_writing_group[];
+extern constext txt_writing_overview[];
 extern constext txt_x_resp[];
+#ifdef XFACE_ABLE
+	extern constext txt_xface_error_construct_fifo_name[];
+	extern constext txt_xface_error_create_failed[];
+	extern constext txt_xface_error_exited_abnormal[];
+	extern constext txt_xface_error_finally_failed[];
+	extern constext txt_xface_error_missing_env_var[];
+	extern constext txt_xface_error_no_xterm[];
+	extern constext txt_xface_msg_cannot_connect_display[];
+	extern constext txt_xface_msg_cannot_open_fifo[];
+	extern constext txt_xface_msg_executable_not_found[];
+	extern constext txt_xface_msg_fork_failed[];
+	extern constext txt_xface_msg_no_controlling_terminal[];
+	extern constext txt_xface_msg_no_width_and_height_avail[];
+	extern constext txt_xface_msg_unknown_error[];
+	extern constext txt_xface_msg_windowid_not_found[];
+	extern constext txt_xface_readme[];
+#endif /* XFACE_ABLE */
+#if defined(NNTP_ABLE) && defined(XHDR_XREF)
+	extern constext txt_xref_loop[];
+#endif /* NNTP_ABLE && XHDR_XREF */
 extern constext txt_yanked_groups[];
 extern constext txt_yanked_none[];
 extern constext txt_yanked_sub_groups[];
@@ -1726,6 +2017,7 @@ extern t_bool word_highlight;
 extern constext txt_art_deleted[];
 extern constext txt_art_undeleted[];
 extern constext txt_intro_page[];
+extern constext txt_processing_attributes[];
 extern constext txt_processing_mail_arts[];
 extern constext txt_processing_saved_arts[];
 
@@ -1883,6 +2175,7 @@ extern struct opttxt txt_show_help_mail_sign;
 extern struct opttxt txt_show_only_unread_arts;
 extern struct opttxt txt_show_only_unread_groups;
 extern struct opttxt txt_show_signatures;
+extern struct opttxt txt_show_art_score;
 extern struct opttxt txt_sigdashes;
 extern struct opttxt txt_sigfile;
 extern struct opttxt txt_signature_repost;
@@ -1962,6 +2255,8 @@ extern struct opttxt txt_xpost_quote_format;
 	extern struct opttxt txt_col_from;
 	extern struct opttxt txt_col_title;
 	extern struct opttxt txt_col_signature;
+	extern struct opttxt txt_col_score_neg;
+	extern struct opttxt txt_col_score_pos;
 	extern struct opttxt txt_col_urls;
 	extern struct opttxt txt_col_verbatim;
 	extern struct opttxt txt_col_markstar;

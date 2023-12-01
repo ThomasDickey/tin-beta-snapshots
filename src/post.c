@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-31
+ *  Updated   : 2023-11-30
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -333,26 +333,11 @@ repair_article(
 }
 
 
-/*
- * make a backup copy of ~/TIN_ARTICLE_NAME, this is necessary since
- * submit_news_file adds headers, does q-p conversion etc
- */
-char *
-backup_article_name(
-	const char *the_article)
-{
-	static char name[PATH_LEN];
-
-	snprintf(name, sizeof(name), "%s.bak", the_article);
-	return name;
-}
-
-
 static t_bool
 backup_article(
 	const char *the_article)
 {
-	return backup_file(the_article, backup_article_name(the_article));
+	return backup_file(the_article, backup_article_name);
 }
 
 
@@ -608,6 +593,15 @@ post_hist_page(
 				scroll_up();
 				break;
 
+#ifdef HAVE_COLOR
+			case GLOBAL_TOGGLE_COLOR:
+				if (toggle_color()) {
+					show_post_hist_page();
+					show_color_status();
+				}
+				break;
+#endif /* HAVE_COLOR */
+
 			case GLOBAL_TOGGLE_HELP_DISPLAY:
 				toggle_mini_help(POSTED_LEVEL);
 				show_post_hist_page();
@@ -616,6 +610,16 @@ post_hist_page(
 			case GLOBAL_TOGGLE_INFO_LAST_LINE:
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
 				show_post_hist_page();
+				break;
+
+			case GLOBAL_TOGGLE_INVERSE_VIDEO:
+				toggle_inverse_video();
+				show_post_hist_page();
+				show_inverse_video_status();
+				break;
+
+			case GLOBAL_VERSION:
+				info_message(cvers);
 				break;
 
 			case POSTED_SELECT:
@@ -710,7 +714,7 @@ build_post_hist_line(
 	t_posted *lptr;
 	char *tmp = NULL;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	int len = (int)((size_t) cCOLS * MB_CUR_MAX);
+	int len = cCOLS * MB_CUR_MAX;
 	wchar_t *wtmp, *wtmp2;
 #else
 	int len = cCOLS;
@@ -838,9 +842,10 @@ build_post_hist_list(
 {
 	FILE *fp;
 	char *p, *q;
-	char buf[4 * LEN]; /* TODO: make this dynamic (we log subjects, looooong subjects) */
+	char *buf;
 	int count = 0;
-	size_t j, k, n;
+	long fpos = 0;
+	size_t j, k, n, buflen = LEN;
 	t_posted *posted = NULL;
 
 	if ((fp = fopen(posted_info_file, "r")) == NULL) {
@@ -848,7 +853,28 @@ build_post_hist_list(
 		return 0;
 	}
 
-	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
+	buf = my_malloc(buflen);
+	/*
+	 * Enlarge the buffer so that the longest line fits into it.
+	 * Read in the current line repeatedly until the buffer size
+	 * is set correctly.
+	 */
+	while (fgets(buf, (int) buflen, fp) != NULL) {
+		if (buflen >= 65536) { /* bail out at > 64k lines */
+			errno = E2BIG; /* EMSGSIZE? EOVERFLOW? EFBIG? */
+			break;
+		}
+		if (strlen(buf) == buflen - 1 && buf[buflen - 1] != '\n') {
+			buflen <<= 1;
+			buf = my_realloc(buf, buflen);
+			if (fseek(fp, fpos, SEEK_SET) == -1)
+				break;
+
+			continue;
+		}
+		if ((fpos = ftell(fp)) == -1)
+			break;
+
 		if (buf[0] == '#' || buf[0] == '\n')
 			continue;
 
@@ -882,6 +908,7 @@ build_post_hist_list(
 			if (debug & DEBUG_MISC)
 				error_message(3, "Line: %s", buf);
 #endif /* DEBUG */
+			free(buf);
 			fclose(fp);
 			clear_message();
 			free_post_hist_list();
@@ -949,6 +976,13 @@ build_post_hist_list(
 		my_strncpy(posted->subj, buf + j, sizeof(posted->subj) - 1);
 		count++;
 	}
+
+	if (errno) {
+		perror_message(_(txt_error_corrupted_file), posted_info_file);
+		clearerr(fp);
+	}
+
+	free(buf);
 	fclose(fp);
 
 	if (!count)
@@ -1079,7 +1113,7 @@ append_mail(
 
 		if (!retrys) {
 			wait_message(5, _(txt_error_couldnt_dotlock), the_mailbox);
-			fd_unlock(fd);
+			(void) fd_unlock(fd);
 			fclose(fp_out);
 			fclose(fp_in);
 			return ENOENT; /* FIXME! dot_lock() doesn't return more info yet */
@@ -1105,10 +1139,10 @@ append_mail(
 					bufp = buf;
 					while (*bufp == '>')
 						bufp++;
-					if (strncmp(bufp, "From ", 5) == 0)
+					if (STRNCMPEQ(bufp, "From ", 5))
 						fputc('>', fp_out);
 				} else { /* MBOXO (MBOXCL) */
-					if (strncmp(buf, "From ", 5) == 0)
+					if (STRNCMPEQ(buf, "From ", 5))
 						fputc('>', fp_out);
 				}
 			}
@@ -1236,7 +1270,7 @@ check_article_to_be_posted(
 	FILE *fp;
 	char **newsgroups = NULL;
 	char **followupto = NULL;
-	char *line, *cp, *cp2;
+	char *line, *cp, *cp2, *hp;
 	char *to = NULL;
 	char references[HEADER_LEN];
 	char subject[HEADER_LEN];
@@ -1322,11 +1356,11 @@ check_article_to_be_posted(
 		if (*c_group ? (*c_group)->attribute->post_8bit_header : tinrc.post_8bit_header)
 #endif /* MIME_BREAK_LONG_LINES */
 		{
-			if (strlen(line) > IMF_LINE_LEN) {  /* TODO: -> lang.c */
+			if (strlen(line) > IMF_LINE_LEN) {
 #ifdef MIME_BREAK_LONG_LINES
-				my_fprintf(stderr, _("Line %d is longer than %d octets and should be folded.\n"), cnt, IMF_LINE_LEN);
+				my_fprintf(stderr, _(txt_error_should_be_folded), cnt, IMF_LINE_LEN);
 #else
-				my_fprintf(stderr, _("Line %d is longer than %d octets and should be shortened.\n"), cnt, IMF_LINE_LEN);
+				my_fprintf(stderr, _(txt_error_should_be_shortened), cnt, IMF_LINE_LEN);
 #endif /* MIME_BREAK_LONG_LINES */
 				my_fflush(stderr);
 				warnings++;
@@ -1349,14 +1383,31 @@ check_article_to_be_posted(
 			EndInverse();
 			my_fflush(stderr);
 			errors++;
+			continue; /* code below (till end of while) relies on set cp != NULL, don't modify cp */
+		}
+		if (cp - line == 0) { /* RFC 5322 3.6.8 */
+			StartInverse();
+			my_fprintf(stderr, _(txt_error_header_no_name), cnt, line);
+			EndInverse();
+			my_fflush(stderr);
+			errors++;
 			continue;
 		}
+		/*
+		 * TODO: disallow more stuff like ^[.-]
+		 *       RFC 5322 3.6.8 allows %d33-57, %d59-126
+		 *       at least we should give a warning like:
+		 *       "Header starts with unusual char %c"
+		 *       if *line is not in [a-zA-Z0-9].
+		 */
+
 		if (cp[1] != ' ') {
 			StartInverse();
 			my_fprintf(stderr, _(txt_error_header_line_space), cnt, line);
 			EndInverse();
 			my_fflush(stderr);
 			errors++;
+			continue;
 		}
 
 		if (cp - line == 7 && !strncasecmp(line, "Subject", 7)) {
@@ -1381,6 +1432,7 @@ check_article_to_be_posted(
 			EndInverse();
 			my_fflush(stderr);
 			errors++;
+			continue;
 		}
 #endif /* !FORGERY */
 
@@ -1414,6 +1466,7 @@ check_article_to_be_posted(
 #endif /* !FORGERY */
 			}
 			free(cp2);
+			continue;
 		}
 
 		if (cp - line == 4 && !strncasecmp(line, "From", 4)) {
@@ -1436,6 +1489,7 @@ check_article_to_be_posted(
 #endif /* !FORGERY */
 			}
 			free(cp2);
+			continue;
 		}
 
 		if (cp - line == 8 && !strncasecmp(line, "Reply-To", 8)) {
@@ -1457,6 +1511,7 @@ check_article_to_be_posted(
 #endif /* !FORGERY */
 			}
 			free(cp2);
+			continue;
 		}
 
 		if (cp - line == 2 && !strncasecmp(line, "To", 2)) {
@@ -1480,18 +1535,20 @@ check_article_to_be_posted(
 			}
 			to = my_strdup(cp2 + (cp - line) + 1);
 			free(cp2);
+			continue;
 		}
 
 		if (cp - line == 10 && !strncasecmp(line, "Message-ID", 10)) {
+			hp = cp;
 #if 0 /* see comment about "<>" in misc.c:gnksa_split_from() */
 			char addr[HEADER_LEN], name[HEADER_LEN];
 			int type;
 
-			i = gnksa_check_from(++cp);
-			gnksa_split_from(cp, addr, name, &type);
+			i = gnksa_check_from(++hp);
+			gnksa_split_from(hp, addr, name, &type);
 			if (((GNKSA_OK != i) && (GNKSA_LOCALPART_MISSING > i)) || !*addr)
 #else
-			i = gnksa_check_from(++cp);
+			i = gnksa_check_from(++hp);
 			if ((GNKSA_OK != i) && (GNKSA_LOCALPART_MISSING > i))
 #endif /* 0 */
 			{
@@ -1505,16 +1562,21 @@ check_article_to_be_posted(
 				errors++;
 #endif /* !FORGERY */
 			}
-			if (damaged_id(cp))
+			cp2 = my_strdup(hp);
+			if (!valid_msgid(cp2))
 				errors_catbp |= CA_ERROR_BAD_MESSAGE_ID;
+			free(cp2);
+			continue;
 		}
 
 		if (cp - line == 10 && !strncasecmp(line, "References", 10)) {
-			for (cp = line + 11; *cp == ' '; cp++)
+			for (hp = line + 11; *hp == ' '; hp++)
 				;
-			STRCPY(references, cp);
+			STRCPY(references, hp);
 			if (*references)
 				saw_references = TRUE;
+
+			continue;
 		}
 
 		if (cp - line == 4 && !strncasecmp(line, "Date", 4)) {
@@ -1523,6 +1585,8 @@ check_article_to_be_posted(
 					errors_catbp |= CA_ERROR_BAD_DATE;
 			} else
 				errors_catbp |= CA_ERROR_BAD_DATE;
+
+			continue;
 		}
 
 		if (cp - line == 7 && !strncasecmp(line, "Expires", 7)) {
@@ -1531,6 +1595,8 @@ check_article_to_be_posted(
 					errors_catbp |= CA_ERROR_BAD_EXPIRES;
 			} else
 				errors_catbp |= CA_ERROR_BAD_EXPIRES;
+
+			continue;
 		}
 
 		/*
@@ -1540,16 +1606,16 @@ check_article_to_be_posted(
 		if (cp - line == 10 && !strncasecmp(line, "Newsgroups", 10)) {
 			FreeIfNeeded(newsgroups);
 			found_newsgroups_lines++;
-			for (cp = line + 11; *cp == ' '; cp++)
+			for (hp = line + 11; *hp == ' '; hp++)
 				;
-			if (strchr(cp, ' ') || strchr(cp, '\t')) {
+			if (strchr(hp, ' ') || strchr(hp, '\t')) {
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 				warnings_catbp |= CA_WARNING_SPACE_IN_NEWSGROUPS;
 #else
 				errors_catbp |= CA_ERROR_SPACE_IN_NEWSGROUPS;
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 			}
-			if (strchr(cp, '\n')) {
+			if (strchr(hp, '\n')) {
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 				warnings_catbp |= CA_WARNING_NEWLINE_IN_NEWSGROUPS;
 #else
@@ -1558,15 +1624,15 @@ check_article_to_be_posted(
 				unfold_header(line);
 			}
 
-			newsgroups = build_nglist(cp, &ngcnt);
+			newsgroups = build_nglist(hp, &ngcnt);
 			if (newsgroups && ngcnt)
 				(void) stripped_double_ngs(newsgroups, &ngcnt);
 
 			if (!ngcnt)
 				errors_catbp |= CA_ERROR_EMPTY_NEWSGROUPS;
 			else {
-				for (cp = line + 11; *cp; cp++) {
-					if (!isascii(*cp)) {
+				for (hp = line + 11; *hp; hp++) {
+					if (!isascii(*hp)) {
 						errors_catbp |= CA_ERROR_NEWSGROUPS_NOT_7BIT;
 						break;
 					}
@@ -1575,48 +1641,50 @@ check_article_to_be_posted(
 			{ /* check for poster, example, example.* */
 				char *groups;
 
-				for (cp = line + 11; *cp == ' '; cp++)
+				for (hp = line + 11; *hp == ' '; hp++)
 					;
-				cp2 = groups = my_strdup(cp);
+				cp2 = groups = my_strdup(hp);
 
-				if ((cp = strtok(groups, ",")) != NULL) {
+				if ((hp = strtok(groups, ",")) != NULL) {
 					do {
-						if (!strcmp(cp, "poster"))
+						if (!strcmp(hp, "poster"))
 							errors_catbp |= CA_ERROR_NEWSGROUPS_POSTER;
-						if (!strcmp(cp, "example"))
+						if (!strcmp(hp, "example"))
 							warnings_catbp |= CA_WARNING_NEWSGROUPS_EXAMPLE;
-						if (!strncmp(cp, "example.", 8))
+						if (!strncmp(hp, "example.", 8))
 							warnings_catbp |= CA_WARNING_NEWSGROUPS_EXAMPLE;
 						/* TODO: also check for to, ctl, all, control, junk */
-					} while ((cp = strtok(NULL, ",")) != NULL);
+					} while ((hp = strtok(NULL, ",")) != NULL);
 				}
 				free(cp2);
 			}
+			continue;
 		}
 
 		if (cp - line == 12 && !strncasecmp(line, "Distribution", 12)) {
-			for (cp = line + 13; *cp; cp++) {
-				if (!isascii(*cp)) {
+			for (hp = line + 13; *hp; hp++) {
+				if (!isascii(*hp)) {
 					errors_catbp |= CA_ERROR_DISTRIBUTIOIN_NOT_7BIT;
 					break;
 				}
 			}
+			continue;
 		}
 
 		if (cp - line == 11 && !strncasecmp(line, "Followup-To", 11)) {
 			FreeIfNeeded(followupto);
-			for (cp = line + 12; *cp == ' '; cp++)
+			for (hp = line + 12; *hp == ' '; hp++)
 				;
-			if (*cp) /* Followup-To not empty */
+			if (*hp) /* Followup-To not empty */
 				found_followup_to_lines++;
-			if (strchr(cp, ' ') || strchr(cp, '\t')) {
+			if (strchr(hp, ' ') || strchr(hp, '\t')) {
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 				warnings_catbp |= CA_WARNING_SPACE_IN_FOLLOWUP_TO;
 #else
 				errors_catbp |= CA_ERROR_SPACE_IN_FOLLOWUP_TO;
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 			}
-			if (strchr(cp, '\n')) {
+			if (strchr(hp, '\n')) {
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 				warnings_catbp |= CA_WARNING_NEWLINE_IN_FOLLOWUP_TO;
 #else
@@ -1625,37 +1693,38 @@ check_article_to_be_posted(
 				unfold_header(line);
 			}
 
-			followupto = build_nglist(cp, &ftngcnt);
+			followupto = build_nglist(hp, &ftngcnt);
 			if (followupto && ftngcnt) {
 				char *groups;
 
 				(void) stripped_double_ngs(followupto, &ftngcnt);
-				for (cp = line + 12; *cp; cp++) {
-					if (!isascii(*cp)) {
+				for (hp = line + 12; *hp; hp++) {
+					if (!isascii(*hp)) {
 						errors_catbp |= CA_ERROR_FOLLOWUP_TO_NOT_7BIT;
 						break;
 					}
 				}
 
-				for (cp = line + 12; *cp == ' '; cp++)
+				for (hp = line + 12; *hp == ' '; hp++)
 					;
-				cp2 = groups = my_strdup(cp);
+				cp2 = groups = my_strdup(hp);
 
-				if ((cp = strtok(groups, ",")) != NULL) {
+				if ((hp = strtok(groups, ",")) != NULL) {
 					do {
-						if (ftngcnt > 1 && !strcmp(cp, "poster"))
+						if (ftngcnt > 1 && !strcmp(hp, "poster"))
 							errors_catbp |= CA_ERROR_FOLLOWUP_TO_POSTER;
-						if (!strcmp(cp, "example"))
+						if (!strcmp(hp, "example"))
 							warnings_catbp |= CA_WARNING_FOLLOWUP_TO_EXAMPLE;
-						if (!strncmp(cp, "example.", 8))
+						if (!strncmp(hp, "example.", 8))
 							warnings_catbp |= CA_WARNING_FOLLOWUP_TO_EXAMPLE;
 						/* TODO: also check for to, ctl, all, control, junk */
-					} while ((cp = strtok(NULL, ",")) != NULL);
+					} while ((hp = strtok(NULL, ",")) != NULL);
 				}
 				free(cp2);
 			}
+			continue;
 		}
-	}
+	} /* end of headers */
 
 	if (subject[0] == '\0')
 		errors_catbp |= CA_ERROR_EMPTY_SUBJECT;
@@ -1678,7 +1747,7 @@ check_article_to_be_posted(
 
 				cp2 = subject;
 				while (!was_found && (cp2 = strchr(cp2, '(')))
-					was_found = (strncmp(++cp2, "was:", 4) == 0);
+					was_found = (STRNCMPEQ(++cp2, "was:", 4));
 
 				if (!was_found)
 					warnings_catbp |= CA_WARNING_REFERENCES_WITHOUT_RE;
@@ -2255,7 +2324,7 @@ post_article_loop:
 				if (!invoke_editor(article_name, offset, group)) {
 					if (file_size(article_name) > 0L) {
 						if (artchanged != file_mtime(article_name)) {
-							unlink(backup_article_name(article_name));
+							unlink(backup_article_name);
 							rename_file(article_name, dead_article);
 							if (tinrc.keep_dead_articles)
 								append_file(dead_article, dead_articles);
@@ -2321,19 +2390,19 @@ post_article_loop:
 				}
 
 				if (ret_code == POSTED_OK) {
-					unlink(backup_article_name(article_name));
+					unlink(backup_article_name);
 					wait_message(2, _(txt_art_posted), *a_message_id ? a_message_id : "");
 					goto post_article_done;
 				} else {
 					if ((func = prompt_rejected()) == POST_POSTPONE)
 						/* reuse clean copy which didn't get modified by submit_news_file() */
-						postpone_article(backup_article_name(article_name));
+						postpone_article(backup_article_name);
 					else if (func == POST_EDIT) {
 						/* replace modified article with clean backup */
-						rename_file(backup_article_name(article_name), article_name);
+						rename_file(backup_article_name, article_name);
 						goto post_article_loop;
 					} else {
-						unlink(backup_article_name(article_name));
+						unlink(backup_article_name);
 						rename_file(article_name, dead_article);
 						if (tinrc.keep_dead_articles)
 							append_file(dead_article, dead_articles);
@@ -2822,7 +2891,7 @@ post_postponed_article(
 	if ((p = strchr(ng, ',')) != NULL)
 		*p = '\0';
 
-	snprintf(buf, sizeof(buf), _("Posting: %.*s ..."), cCOLS - 14, subject); /* TODO: -> lang.c, use strunc() */
+	snprintf(buf, sizeof(buf), _(txt_postpone_post), cCOLS - 14, subject); /* TODO: use strunc() */
 	post_loop(POST_POSTPONED, group_find(ng, FALSE), (ask ? POST_EDIT : GLOBAL_POST), buf, GROUP_TYPE_NEWS, 0);
 	free(ng);
 }
@@ -2844,7 +2913,7 @@ count_postponed_articles(
 		return 0;
 
 	while (fgets(line, (int) sizeof(line), fp)) {
-		if (strncmp(line, "From ", 5) == 0)
+		if (STRNCMPEQ(line, "From ", 5))
 			count++;
 	}
 	fclose(fp);
@@ -2864,13 +2933,16 @@ fetch_postponed_article(
 	FILE *in, *out;
 	FILE *tmp;
 	char *bufp;
-	char postponed_tmp[PATH_LEN];
+	char *postponed_tmp;
 	char line[HEADER_LEN];
 	t_bool first_article;
 	t_bool prev_line_nl;
 	t_bool anything_left;
+	size_t len;
 
-	snprintf(postponed_tmp, sizeof(postponed_tmp), "%s_", postponed_articles_file);
+	len = snprintf(NULL, 0, "%s_", postponed_articles_file);
+	postponed_tmp = my_malloc(++len);
+	snprintf(postponed_tmp, len, "%s_", postponed_articles_file);
 	in = fopen(postponed_articles_file, "r");
 	out = fopen(tmp_file, "w");
 	tmp = fopen(postponed_tmp, "w");
@@ -2882,6 +2954,7 @@ fetch_postponed_article(
 			fclose(out);
 		if (tmp)
 			fclose(tmp);
+		free(postponed_tmp);
 		return FALSE;
 	}
 
@@ -2889,6 +2962,7 @@ fetch_postponed_article(
 		fclose(in);
 		fclose(out);
 		fclose(tmp);
+		free(postponed_tmp);
 		return FALSE;
 	}
 
@@ -2904,7 +2978,7 @@ fetch_postponed_article(
 	 */
 
 	while (fgets(line, (int) sizeof(line), in) != NULL) {
-		if (strncmp(line, "From ", 5) == 0)
+		if (STRNCMPEQ(line, "From ", 5))
 			first_article = FALSE;
 		if (first_article) {
 			match_string(line, "Newsgroups: ", newsgroups, HEADER_LEN);
@@ -2924,12 +2998,12 @@ fetch_postponed_article(
 				bufp = line;
 				while (*bufp == '>')
 					bufp++;
-				if (strncmp(bufp, "From ", 5) == 0)
+				if (STRNCMPEQ(bufp, "From ", 5))
 					fputs(line + 1, out);
 				else
 					fputs(line, out);
 			} else {
-				if (strncmp(line, ">From ", 6) == 0)
+				if (STRNCMPEQ(line, ">From ", 6))
 					fputs(line + 1, out);
 				else
 					fputs(line, out);
@@ -2951,6 +3025,7 @@ fetch_postponed_article(
 	else
 		unlink(postponed_tmp);
 
+	free(postponed_tmp);
 	return TRUE;
 }
 
@@ -3138,84 +3213,23 @@ skip_id(
 
 
 /*
- * Checks if Message-ID has valid format
+ * Checks if a (line of) Message-ID(s) has valid format
  * Returns FALSE if it does, TRUE if it does not
- * does NOT modify its input
- * does NOT accept trailing spaces
- *
- * see also refs.c:valid_msgid() which has swapped return
- * values, accepts trailing spaces and DOES modify its input
  */
 static t_bool
 damaged_id(
 	const char *id)
 {
-	signed int bracket = 0;
-	size_t mlen;
-	t_bool at_present = FALSE;
-
 	while (*id && isspace((unsigned char) *id))
 		id++;
 
-	mlen = strlen(id);
-
-	/* must start with '<' and have exactly one '>' (at the very end) */
-	if (mlen < 5 /* || mlen > 250 */ || *(id + mlen - 1) != '>' || strchr(id, '>') != (id + mlen - 1) || *id++ != '<')
+	if (*id != '<')
 		return TRUE;
 
-	while (*id) {
-		if (*id < 33 || *id > 126 || *id == '<' || *id == '\\' || (*id == '>' && *(id + 1) != '\0'))
-			return TRUE;
-
-		switch (*id) {
-			case '[':	/* '[' and ']' are only allowed in id-right */
-				if (bracket != 0 || !at_present || *(id - 1) != '@' || strchr(id, '@'))
-					return TRUE;
-				else
-					bracket++;
-				break;
-
-			case ']':
-				if (bracket != 1 || !at_present || *(id + 1) != '>')
-					return TRUE;
-				else
-					bracket--;
-				break;
-
-			case '@':
-				if (!at_present) {
-					if (*(id + 1) == '.')
-						return TRUE;
-
-					at_present = TRUE;
-				} else {	/* multiple '@' are only ok inside [] */
-					if (!bracket)
-						return TRUE;
-				}
-				break;
-
-			case '.':
-				if (*(id + 1) == '.' || *(id + 1) == '@' || *(id + 1) == '>' || *(id + 1) == ']' || *(id - 1) == '<')
-					return TRUE;
-				break;
-
-			case '(':
-			case ')':
-			case ':':
-			case ';':
-			case ',':
-			case '"':
-				if (!bracket)
-					return TRUE;
-				break;
-
-			default:
-				break;
-		}
+	while (isascii((unsigned char) *id) && isgraph((unsigned char) *id) && !iscntrl((unsigned char) *id) && *id != '>')
 		id++;
-	}
 
-	if (bracket != 0 || !at_present)
+	if (*id != '>')
 		return TRUE;
 
 	return FALSE;
@@ -3410,7 +3424,11 @@ show_followup_info(
 }
 
 
-int /* return code is currently ignored! */
+/*
+ * return code is currently ignored!
+ * seems to have a lot of code in common with mail_to_author
+ */
+int
 post_response(
 	const char *groupname,
 	int respnum,
@@ -3604,9 +3622,19 @@ post_response(
 
 		get_initials(&arts[respnum], initials, sizeof(initials) - 1);
 
-		if (raw_data) /* rewind raw article if needed */
-			fseek(pgart.raw, 0L, SEEK_SET);
-
+		if (raw_data) { /* rewind raw article if needed */
+			if (fseek(pgart.raw, 0L, SEEK_SET) != -1) {
+			} else {
+#ifdef DEBUG
+				/*
+				 * TODO: always show to user?
+				 *       then use something less technical and move to lang.c
+				 */
+				perror_message("%s:%d post_response(fseek(pgart.raw)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+				goto pout;
+			}
+		}
 		if (with_headers && raw_data)
 			copy_body(pgart.raw, fp, (group ? group->attribute->quote_chars : tinrc.quote_chars), initials, TRUE);
 		else {
@@ -3620,8 +3648,18 @@ post_response(
 					if (buffer[0] == '\n' || buffer[0] == '\r')
 						break;
 				}
-				fseek(pgart.raw, offset, SEEK_SET);
-				copy_body(pgart.raw, fp, (group ? group->attribute->quote_chars : tinrc.quote_chars), initials, TRUE);
+				if (fseek(pgart.raw, offset, SEEK_SET) != -1)
+					copy_body(pgart.raw, fp, (group ? group->attribute->quote_chars : tinrc.quote_chars), initials, TRUE);
+				else {
+#ifdef DEBUG
+					/*
+					 * TODO: always show to user?
+					 *       then use something less technical and move to lang.c
+					 */
+					perror_message("%s:%d post_response(fseek(pgart.raw)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+					goto pout;
+				}
 			} else { /* cooked art */
 				resize_article(FALSE, &pgart);
 				if (with_headers) {
@@ -3630,7 +3668,17 @@ post_response(
 					 * mentioned in news_headers_to_display as article
 					 * cooking 'hides' all other headers
 					 */
-					fseek(pgart.cooked, 0L, SEEK_SET); /* rewind cooked art */
+					if (fseek(pgart.cooked, 0L, SEEK_SET) != -1) { /* rewind cooked art */
+					} else {
+#ifdef DEBUG
+						/*
+						 * TODO: always show to user?
+						 *       then use something less technical and move to lang.c
+						 */
+						perror_message("%s:%d post_response(fseek(pgart.cooked)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+						goto pout;
+					}
 				} else { /* without headers */
 					int i = 0;
 
@@ -3640,7 +3688,17 @@ post_response(
 					if (i) /* cooked art contained any headers, so skip also the header/body separator */
 						i++;
 
-					fseek(pgart.cooked, pgart.cookl[i].offset, SEEK_SET); /* skip headers and header/body separator */
+					if (fseek(pgart.cooked, pgart.cookl[i].offset, SEEK_SET) != -1) { /* skip headers and header/body separator */
+					} else {
+#ifdef DEBUG
+						/*
+						 * TODO: always show to user?
+						 *       then use something less technical and move to lang.c
+						 */
+						perror_message("%s:%d post_response(fseek(pgart.cooked)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+						goto pout;
+					}
 				}
 				copy_body(pgart.cooked, fp, (group ? group->attribute->quote_chars : tinrc.quote_chars), initials, FALSE);
 			}
@@ -3649,6 +3707,7 @@ post_response(
 		fprintf(fp, "\n");	/* add a newline to keep vi from bitching */
 
 	msg_write_signature(fp, FALSE, group);
+pout:
 	fclose(fp);
 
 	resize_article(TRUE, &pgart);	/* rebreak long lines */
@@ -4165,9 +4224,19 @@ mail_to_author(
 		start_line_offset += add_mail_quote(fp, respnum);
 		get_initials(&arts[respnum], initials, sizeof(initials) - 1);
 
-		if (raw_data) /* rewind raw article if needed */
-			fseek(pgart.raw, 0L, SEEK_SET);
-
+		if (raw_data) {/* rewind raw article if needed */
+			if (fseek(pgart.raw, 0L, SEEK_SET) != -1) {
+			} else {
+#ifdef DEBUG
+				/*
+				 * TODO: always show to user?
+				 *       then use something less technical and move to lang.c
+				 */
+				perror_message("%s:%d mail_to_author(fseek(pgart.raw)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+				goto mout;
+ 			}
+		}
 		if (with_headers && raw_data)
 			copy_body(pgart.raw, fp, tinrc.quote_chars, initials, TRUE);
 		else {
@@ -4181,8 +4250,18 @@ mail_to_author(
 					if (buffer[0] == '\n' || buffer[0] == '\r')
 						break;
 				}
-				fseek(pgart.raw, offset, SEEK_SET);
-				copy_body(pgart.raw, fp, tinrc.quote_chars, initials, TRUE);
+				if (fseek(pgart.raw, offset, SEEK_SET) != 1)
+					copy_body(pgart.raw, fp, tinrc.quote_chars, initials, TRUE);
+				else {
+#ifdef DEBUG
+					/*
+					 * TODO: always show to user?
+					 *       then use something less technical and move to lang.c
+					 */
+					perror_message("%s:%d mail_to_author(fseek(pgart.raw)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+					goto mout;
+				}
 			} else { /* cooked art */
 				resize_article(FALSE, &pgart);
 				if (with_headers) {
@@ -4191,14 +4270,36 @@ mail_to_author(
 					 * mentioned in news_headers_to_display as article
 					 * cooking 'hides' all other headers
 					 */
-					fseek(pgart.cooked, 0L, SEEK_SET);
+					if (fseek(pgart.cooked, 0L, SEEK_SET) != -1) {
+					} else {
+#ifdef DEBUG
+						/*
+						 * TODO: always show to user?
+						 *       then use something less technical and move to lang.c
+						 */
+						perror_message("%s:%d mail_to_author(fseek(pgart.cooked)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+						goto mout;
+					}
 				} else { /* without headers */
 					i = 0;
 					while (pgart.cookl[i].flags & C_HEADER) /* skip headers in cooked art if any */
 						i++;
+
 					if (i) /* cooked art contained any headers, so skip also the header/body separator */
 						i++;
-					fseek(pgart.cooked, pgart.cookl[i].offset, SEEK_SET);
+
+					if (fseek(pgart.cooked, pgart.cookl[i].offset, SEEK_SET) != -1) {
+					} else {
+#ifdef DEBUG
+						/*
+						 * TODO: always show to user?
+						 *       then use something less technical and move to lang.c
+						 */
+						perror_message("%s:%d mail_to_author(fseek(pgart.cooked)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+						goto mout;
+					}
 				}
 				copy_body(pgart.cooked, fp, tinrc.quote_chars, initials, FALSE);
 			}
@@ -4208,7 +4309,7 @@ mail_to_author(
 
 	if (tinrc.interactive_mailer == INTERACTIVE_NONE)
 		msg_write_signature(fp, TRUE, &CURR_GROUP);
-
+mout:
 	fclose(fp);
 
 	{
@@ -4273,7 +4374,7 @@ check_for_spamtrap(
 		ptr = strchr(tmp, ',');
 		if (ptr != NULL)
 			*ptr = '\0';
-		if (strcasestr(addr, tmp)) {
+		if (strcasestr(addr, tmp)) { /* although the local part is actually case sensitive, ignoring it here is intentional */
 			free(env);
 			return TRUE;
 		}
@@ -4351,7 +4452,7 @@ cancel_article(
 		grp_del_mail_art(art);
 		return FALSE;
 	}
-	get_from_name(from_name, group);
+	get_from_name(from_name, group); /* TODO: strip_name() for both? */
 #ifdef FORGERY
 	make_path_header(line);
 #endif /* FORGERY */
@@ -4361,7 +4462,7 @@ cancel_article(
 		error_message(2, "From=[%s]  Cancel=[%s]", art->from, from_name);
 #endif /* DEBUG */
 
-	if (!strcasestr(from_name, art->from)) {
+	if (!strcasestr(from_name, art->from)) { /* TODO: the local-part IS case sensitive! */
 #ifdef FORGERY
 		author = FALSE;
 #else
@@ -4577,7 +4678,7 @@ cancel_article(
 	return redraw_screen;
 }
 
-
+/* TODO: the local-part IS case sensitive! we also compare the realname part if existent, desired? */
 #define FromSameUser	(strcasestr(from_name, arts[respnum].from))
 #ifndef FORGERY
 #	define NotSuperseding	(!supersede || (!FromSameUser) || art_type != GROUP_TYPE_NEWS)
@@ -4607,6 +4708,7 @@ repost_article(
 	struct t_group *group;
 	struct t_header note_h = artinfo->hdr;
 	t_bool force_command = FALSE;
+	t_bool add_sig;
 #ifdef FORGERY
 	char line[HEADER_LEN];
 #endif /* FORGERY */
@@ -4632,7 +4734,7 @@ repost_article(
 		art_type = GROUP_TYPE_MAIL;
 
 	if (art_type == GROUP_TYPE_MAIL && supersede) {
-		error_message(3, _("Can't supersede in mailgroups, try repost instead.")); /* TODO: -> lang.c */
+		error_message(3, _(txt_cannot_supersede_mailgroups));
 		return ret_code;
 	}
 
@@ -4759,6 +4861,8 @@ repost_article(
 	} else /* don't break long lines if superseding. TODO: what about uu/mime-parts? */
 		resize_article(FALSE, artinfo);
 
+	add_sig = (NotSuperseding && group->attribute->signature_repost);
+
 	{
 		int i = 0;
 
@@ -4766,12 +4870,22 @@ repost_article(
 			i++;
 		if (i) /* cooked art contained any headers, so skip also the header/body separator */
 			i++;
-		fseek(artinfo->cooked, artinfo->cookl[i].offset, SEEK_SET);
-		copy_fp(artinfo->cooked, fp);
+		if (fseek(artinfo->cooked, artinfo->cookl[i].offset, SEEK_SET) != -1)
+			copy_fp(artinfo->cooked, fp);
+		else {
+#ifdef DEBUG
+			/*
+			 * TODO: always show to user?
+			 *       then use something less technical and move to lang.c
+			 */
+			perror_message("%s:%d repost_article(fseek(artinfo->cooked)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+			add_sig = FALSE;
+		}
 	}
 
 	/* only append signature when NOT superseding own articles */
-	if (NotSuperseding && group->attribute->signature_repost)
+	if (add_sig)
 		msg_write_signature(fp, FALSE, group);
 
 	fclose(fp);
@@ -4861,7 +4975,7 @@ msg_add_x_headers(
 	int num_x_hdrs = 0;
 	int i;
 #ifndef DONT_HAVE_PIPING
-	t_bool pipe = FALSE;
+	t_bool is_pipe = FALSE;
 #endif /* !DONT_HAVE_PIPING */
 
 	if (!headers)
@@ -4888,9 +5002,9 @@ msg_add_x_headers(
 		if (file[0] == '!') {
 			if ((fp = popen(file + 1, "r")) == NULL)
 				return;
-			pipe = TRUE;
+			is_pipe = TRUE;
 		}
-		if (!pipe)
+		if (!is_pipe)
 #endif /* !DONT_HAVE_PIPING */
 		{
 			if ((fp = fopen(file, "r")) == NULL)
@@ -4924,7 +5038,7 @@ msg_add_x_headers(
 		}
 
 #ifndef DONT_HAVE_PIPING
-		if (pipe)
+		if (is_pipe)
 			pclose(fp);
 		else
 #endif /* !DONT_HAVE_PIPING */
@@ -4949,7 +5063,7 @@ msg_add_x_body(
 	char line[HEADER_LEN];
 	int wrote = 0;
 #ifndef DONT_HAVE_PIPING
-	t_bool pipe = FALSE;
+	t_bool is_pipe = FALSE;
 #endif /* !DONT_HAVE_PIPING */
 
 	if (!body || !fp_out)
@@ -4974,9 +5088,9 @@ msg_add_x_body(
 		if (file[0] == '!') {
 			if ((fp = popen(file + 1, "r")) == NULL)
 				return 0;
-			pipe = TRUE;
+			is_pipe = TRUE;
 		}
-		if (!pipe)
+		if (!is_pipe)
 #endif /* !DONT_HAVE_PIPING */
 		{
 			if ((fp = fopen(file, "r")) == NULL)
@@ -4988,7 +5102,7 @@ msg_add_x_body(
 			wrote++;
 		}
 #ifndef DONT_HAVE_PIPING
-		if (pipe)
+		if (is_pipe)
 			pclose(fp);
 		else
 #endif /* !DONT_HAVE_PIPING */
@@ -5035,9 +5149,17 @@ checknadd_headers(
 			break;
 
 		if ((ptr = parse_header(l, "Newsgroups", FALSE, FALSE, FALSE))) {
+			int ret;
+
 			strip_double_ngs(ptr);
 			STRCPY(newsgroups, ptr);
-			snprintf(line, sizeof(line), "Newsgroups: %s\n", newsgroups);
+			ret = snprintf(line, sizeof(line), "Newsgroups: %s\n", newsgroups);
+			if (ret == -1 || ret > (int) sizeof(line)) {
+				error_message(2, "checknadd_headers(snprintf(\"Newsgroups:\")) failed");
+				fclose(fp_in);
+				fclose(fp_out);
+				return NULL;
+			}
 			fputs(line, fp_out);
 		} else if ((ptr = parse_header(l, "Followup-To", FALSE, FALSE, FALSE))) {
 			strip_double_ngs(ptr);
@@ -5078,7 +5200,7 @@ checknadd_headers(
 		}
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 #ifdef SYSTEM_NAME
-		if (!*suffix && strlen(SYSTEM_NAME))
+		if (!*suffix && strlen(SYSTEM_NAME) > 0)
 				snprintf(suffix, sizeof(suffix), "(%s)", SYSTEM_NAME);
 #endif /* SYSTEM_NAME */
 
@@ -5115,8 +5237,8 @@ insert_from_header(
 		snprintf(outfile, sizeof(outfile), "%s.%ld", infile, (long) process_id);
 		if ((fp_out = fopen(outfile, "w")) != NULL) {
 			strcpy(from_name, "From: ");
-			if (*tinrc.mail_address)
-				snprintf(from_name + 6, sizeof(from_name) - 7, "%s", tinrc.mail_address);
+			if (*tinrc.mail_address) /* FIXME: avoid hardcoded length */
+				snprintf(from_name + 6, sizeof(from_name) - 7, "%.1016s", tinrc.mail_address);
 			else
 				get_from_name(from_name + 6, (struct t_group *) 0);
 
@@ -5567,7 +5689,7 @@ address_in_list(
 		return FALSE;
 
 	addr_list = split_address_list(addresses, &num_addr);
-	if (num_addr == 0) {
+	if (num_addr == 0 || addr_list == NULL) {
 		FreeIfNeeded(addr_list);
 		return FALSE;
 	}
@@ -5742,7 +5864,7 @@ build_messageid(
 	 * that in the !FROGERY case -> disallow 'common' junk which is not
 	 * caught by the gnksa_check_from()
 	 */
-	if (damaged_id(buf))
+	if (!valid_msgid(buf))
 		return NULL;
 
 	return buf;
@@ -5880,7 +6002,7 @@ add_headers(
 	t_bool addmid = TRUE;
 	t_bool adddate = TRUE;
 
-	if (!(*a_message_id))
+	if (!(*a_message_id) || strlen(a_message_id) > NNTP_STRLEN)
 		addmid = FALSE;
 
 	if ((fp_in = fopen(infile, "r")) == NULL)
@@ -5896,13 +6018,18 @@ add_headers(
 			if (!*line) {			/* End of headers */
 				inhdrs = FALSE;
 				if (addmid) {
-					char msgidbuf[HEADER_LEN];
+					char *msgidbuf;
+					int len;
 
-					snprintf(msgidbuf, sizeof(msgidbuf), "Message-ID: %s\n", a_message_id);
+					len = snprintf(NULL, 0, "Message-ID: %s\n", a_message_id);
+					msgidbuf = my_malloc(++len);
+					snprintf(msgidbuf, len, "Message-ID: %.512s\n", a_message_id);
 					if (write(fd_out, msgidbuf, strlen(msgidbuf)) == (ssize_t) -1) /* abort on write errors */ {
 						writesuccess = FALSE;
+						free(msgidbuf);
 						break;
 					}
+					free(msgidbuf);
 				}
 				if (adddate) {
 					time_t epoch;

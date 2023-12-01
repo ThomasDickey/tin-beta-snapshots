@@ -6,7 +6,7 @@
  *  Updated   : 2003-11-18
  *  Notes     : newsrc bit handling
  *
- * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

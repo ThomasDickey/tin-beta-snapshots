@@ -6,7 +6,7 @@
  *  Updated   : 2019-09-11
  *  Notes     :
  *
- * Copyright (c) 1993-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,7 +112,7 @@ overview_xref_support(
 
 			if ((p = strchr(ptr, ':'))) {
 				if (p == ptr) { /* metadata items start with : */
-					/* currently there is only :lines ands :bytes reserved */
+					/* currently only :lines and :bytes are reserved */
 					if (!strcasecmp(ptr, ":lines")) {
 						ofmt[fields].type = OVER_T_INT;
 						ofmt[fields].name = my_strdup("Lines:");

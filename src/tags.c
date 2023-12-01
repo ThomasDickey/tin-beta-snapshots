@@ -6,7 +6,7 @@
  *  Updated   : 2020-08-04
  *  Notes     : Split out from other modules
  *
- * Copyright (c) 1999-2023 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2024 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -119,6 +119,7 @@ line_is_tagged(
 
 	if (curr_group->attribute->thread_articles) {
 		int i;
+
 		for (i = n; i >= 0; i = arts[i].thread) {
 			if (arts[i].tagged > code)
 				code = arts[i].tagged;
@@ -223,6 +224,7 @@ set_range(
 	int i;
 	int range_min;
 	int range_max;
+	t_bool only_clear = FALSE;
 
 	switch (level) {
 		case SELECT_LEVEL:
@@ -256,8 +258,12 @@ set_range(
 	 * Parse range string
 	 */
 	if (!parse_range(range, min, max, curr, &range_min, &range_max)) {
-		info_message(_(txt_range_invalid));
-		return FALSE;
+		if (range_min == 0 && range_max == -1)
+			only_clear = TRUE;
+		else {
+			info_message(_(txt_range_invalid));
+			return FALSE;
+		}
 	}
 
 	switch (level) {
@@ -265,8 +271,10 @@ set_range(
 			for (i = 0; i < max; i++)			/* Clear existing range */
 				active[my_group[i]].inrange = FALSE;
 
-			for (i = range_min - 1; i < range_max; i++)
-				active[my_group[i]].inrange = TRUE;
+			if (!only_clear) {
+				for (i = range_min - 1; i < range_max; i++)
+					active[my_group[i]].inrange = TRUE;
+			}
 			break;
 
 		case GROUP_LEVEL:
@@ -275,9 +283,11 @@ set_range(
 					arts[artnum].inrange = FALSE;
 			}
 
-			for (i = range_min - 1; i < range_max; i++) {
-				for_each_art_in_thread(artnum, i)
-					arts[artnum].inrange = TRUE;
+			if (!only_clear) {
+				for (i = range_min - 1; i < range_max; i++) {
+					for_each_art_in_thread(artnum, i)
+						arts[artnum].inrange = TRUE;
+				}
 			}
 			break;
 
@@ -291,13 +301,15 @@ set_range(
 					arts[artnum].inrange = FALSE;
 			}
 
-			i = 1;
-			for_each_art_in_thread(artnum, thread_basenote) {
-				if (i > range_max)
-					break;
-				if (i >= range_min)
-					arts[artnum].inrange = TRUE;
-				i++;
+			if (!only_clear) {
+				i = 1;
+				for_each_art_in_thread(artnum, thread_basenote) {
+					if (i > range_max)
+						break;
+					if (i >= range_min)
+						arts[artnum].inrange = TRUE;
+					i++;
+				}
 			}
 			break;
 

@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2023-08-03
+ *  Updated   : 2023-11-24
  *  Notes     :
  *
- * Copyright (c) 1997-2023 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -237,6 +237,7 @@ strcasestr(
 #endif /* !HAVE_STRCASESTR */
 
 
+/* strcat() returning the number of appended octets */
 size_t
 mystrcat(
 	char **t,
@@ -477,6 +478,7 @@ strcasecmp(
 	const char *q)
 {
 	int r;
+
 	for (; (r = FOLD_TO_UPPER (*p) - FOLD_TO_UPPER (*q)) == 0; ++p, ++q) {
 		if (*p == '\0')
 			return 0;
@@ -802,7 +804,7 @@ strrstr(
 
 		if ((plen != 0) && (plen <= slen)) {
 			for (ptr = str + (slen - plen); ptr > str; --ptr) {
-				if (*ptr == *pat && strncmp(ptr, pat, plen) == 0)
+				if (*ptr == *pat && STRNCMPEQ(ptr, pat, plen))
 					return (char *) ptr;
 			}
 		}

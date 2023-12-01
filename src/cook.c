@@ -3,10 +3,10 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2023-11-02
+ *  Updated   : 2023-11-26
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2023 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,7 +104,7 @@ expand_ctrl_chars(
 	 * in the development branch
 	 */
 	assert(wline != NULL);
-	wlen = wcslen(wline);
+	wlen = wcslen(wline) + 1; /* add one to make coverity happy */
 	ctrl_L = wexpand_ctrl_chars(&wline, &wlen, lcook_width);
 	free(*line);
 	*line = wchar_t2char(wline);
@@ -889,7 +889,16 @@ process_text_body_part(
 		part->uue = NULL;
 	}
 
-	fseek(in, part->offset, SEEK_SET);
+	if (fseek(in, part->offset, SEEK_SET) == -1) { /* should not happen */
+#ifdef DEBUG
+		/*
+		 * TODO: always show to user?
+		 *       hen use something less technical and move to lang.c
+		 */
+		perror_message("%s:%d process_text_body_part(fseek(in)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+		return;
+	}
 
 	if (part->encoding == ENCODING_BASE64)
 		(void) mmdecode(NULL, 'b', 0, NULL);		/* flush */
@@ -1027,7 +1036,7 @@ process_text_body_part(
 			 * Detect and skip signatures if necessary
 			 */
 			if (!in_sig) {
-				if (strcmp(line, SIGDASHES) == 0) {
+				if (STRCMPEQ(line, SIGDASHES)) {
 					in_sig = TRUE;
 					if (in_uue) {
 						in_uue = FALSE;
@@ -1063,7 +1072,7 @@ process_text_body_part(
 				curruue = new_uue(&part, line + ovector[1]);
 				if (hide_uue)
 					continue;				/* Don't cook the 'begin' line */
-			} else if (strncmp(line, "end\n", 4) == 0) {
+			} else if (STRNCMPEQ(line, "end\n", 4)) {
 				if (in_uue) {
 					in_uue = FALSE;
 					if (hide_uue) {
@@ -1116,12 +1125,14 @@ process_text_body_part(
 				 * when uue sections are split across > 1 article
 				 */
 				if (is_uubody && hide_uue == UUE_ALL) {
-					char name[] = N_("(unknown)"); /* TODO: -> lang.c */
+					/* _(txt_unknown) cannot be used directly in new_uue() due to str_trim() there */
+					char *name = my_strdup(_(txt_unknown));
 
 					in_uue = TRUE;
 					curruue = new_uue(&part, name);
 					curruue->line_count++;
 					curruue->bytes += len;
+					free(name);
 					continue;
 				}
 			}

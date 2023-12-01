@@ -3,10 +3,10 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-07-23
+ *  Updated   : 2023-11-12
  *  Notes     : signal handlers for different modes and window resizing
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -439,16 +439,24 @@ signal_handler(
 			 * response compression from the server may take a while
 			 * when running interactively and not being in connection
 			 * phase give the user a chance to go on instead of exiting
-			 *
-			 * TODO: strings to lang.c and incl. nntp_read_timeout_secs
 			 */
-			if (signal_context == cReconnect || batch_mode || !use_compress || !nntp_caps.compress || prompt_yn(_("Read timeout from server - quit tin?"), FALSE) == 1)
+			{
+				char *prompt;
+				size_t len;
+
+				len = strlen(_(txt_read_timeout_quit)) + snprintf(NULL, 0, "%d", tinrc.nntp_read_timeout_secs) - 1;
+				prompt = my_malloc(len);
+				snprintf(prompt, len, _(txt_read_timeout_quit), tinrc.nntp_read_timeout_secs);
+				if (signal_context == cReconnect || batch_mode || !use_compress || !nntp_caps.compress || prompt_yn(prompt, FALSE) == 1) {
+					free(prompt);
 #	endif /* USE_ZLIB */
-				tin_done(NNTP_ERROR_EXIT, _("NNTP connection error. Exiting..."));
+					tin_done(NNTP_ERROR_EXIT, _(txt_connection_error));
 #	ifdef USE_ZLIB
-			else {
-				RESTORE_HANDLER(sig, signal_handler);
-				wait_message(0, "Continuing...");
+				} else {
+					free(prompt);
+					RESTORE_HANDLER(sig, signal_handler);
+					wait_message(0, _(txt_continuing));
+				}
 			}
 #	endif /* USE_ZLIB */
 #	endif /* NNTP_ABLE */

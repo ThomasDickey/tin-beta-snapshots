@@ -3,10 +3,10 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2019-02-04
+ *  Updated   : 2023-11-27
  *  Notes     :
  *
- * Copyright (c) 2003-2023 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2003-2024 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,7 @@ check_upgrade(
 	char fmt[10];
 	int rc_majorv, rc_minorv, rc_subv; /* version numbers in the file */
 	int current_version, c_majorv, c_minorv, c_subv;	/* version numbers we require */
-	size_t len;
+	int len;
 	struct t_version *fversion = my_malloc(sizeof(struct t_version));
 
 	fversion->state = RC_ERROR;
@@ -81,8 +81,8 @@ check_upgrade(
 
 	rc_majorv = rc_minorv = rc_subv = c_majorv = c_minorv = c_subv = -1;
 	strcpy(fmt, "%d.%d.%d"); /* we are expecting dotted triples */
-	len = strlen(lskip) + strlen(fmt) + 1; /* format buffer len */
-	format = my_malloc(len + 1);
+	len = snprintf(NULL, 0, "%s%s", lskip, fmt);
+	format = my_malloc(++len);
 	snprintf(format, len, "%s%s", lskip, fmt);
 	free(lskip);
 

@@ -3,10 +3,10 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-29
+ *  Updated   : 2023-11-22
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,8 +65,11 @@ static int read_site_config(void);
 
 char active_times_file[PATH_LEN];
 char article_name[PATH_LEN];			/* ~/TIN_ARTICLE_NAME file */
-char bug_nntpserver1[PATH_LEN];		/* welcome message of NNTP server used */
-char bug_nntpserver2[PATH_LEN];		/* welcome message of NNTP server used */
+char *backup_article_name;			/* ~/TIN_ARTICLE_NAME[.pid].b[ak] file */
+#ifdef NNTP_ABLE
+	char bug_nntpserver1[PATH_LEN];		/* welcome message of NNTP server used */
+	char bug_nntpserver2[PATH_LEN];		/* welcome message of NNTP server used */
+#endif /* NNTP_ABLE */
 char cvers[LEN];
 char dead_article[PATH_LEN];		/* ~/dead.article file */
 char dead_articles[PATH_LEN];		/* ~/dead.articles file */
@@ -334,6 +337,8 @@ struct t_config tinrc = {
 	0,		/* col_extquote (initialised later) */
 	0,		/* col_response (initialised later) */
 	0,		/* col_signature (initialised later) */
+	0,		/* col_score_neg (initialised later) */
+	0,		/* col_score_pos (initialised later) */
 	0,		/* col_urls (initialised later) */
 	0,		/* col_verbatim (initialised later) */
 	0,		/* col_subject (initialised later) */
@@ -394,6 +399,7 @@ struct t_config tinrc = {
 	TRUE,		/* show_only_unread_arts */
 	FALSE,		/* show_only_unread_groups */
 	TRUE,		/* show_signatures */
+	FALSE,		/* show_art_score */
 	TRUE,		/* sigdashes */
 	TRUE,		/* signature_repost */
 #ifndef USE_CURSES
@@ -512,6 +518,7 @@ struct t_config tinrc = {
 	FALSE,		/* attrib_prompt_followupto */
 	TRUE,		/* attrib_show_only_unread_arts */
 	TRUE,		/* attrib_show_signatures */
+	FALSE,		/* attrib_show_art_score */
 	TRUE,		/* attrib_sigdashes */
 	TRUE,		/* attrib_signature_repost */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -613,6 +620,8 @@ static const struct {
 	{ &tinrc.col_extquote,    5 },
 	{ &tinrc.col_response,    2 },
 	{ &tinrc.col_signature,   4 },
+	{ &tinrc.col_score_neg,   1 },
+	{ &tinrc.col_score_pos,   2 },
 	{ &tinrc.col_urls,       DFT_FORE },
 	{ &tinrc.col_verbatim,    5 },
 	{ &tinrc.col_subject,     6 },
@@ -676,6 +685,7 @@ init_selfinfo(
 #if defined(DOMAIN_NAME) || defined(HAVE_GETHOSTBYNAME)
 	const char *cptr;
 #endif /* DOMAIN_NAME || HAVE_GETHOSTBYNAME */
+	size_t space;
 
 	domain_name[0] = '\0';
 
@@ -766,8 +776,10 @@ init_selfinfo(
 
 	strncpy(bug_addr, BUG_REPORT_ADDRESS, sizeof(bug_addr) - 1);
 
+#ifdef NNTP_ABLE
 	bug_nntpserver1[0] = '\0';
 	bug_nntpserver2[0] = '\0';
+#endif /* NNTP_ABLE */
 
 #ifdef INEWSDIR
 	strncpy(inewsdir, INEWSDIR, sizeof(inewsdir) - 1);
@@ -816,8 +828,15 @@ init_selfinfo(
 	 * TODO: do we really want that read_site_config() overwrites
 	 * values given in env-vars? ($MM_CHARSET, $TIN_ACTIVEFILE)
 	 */
-	if (!*news_active_file) /* TODO: really prepend libdir here in case of $TIN_ACTIVEFILE is set? */
-		joinpath(news_active_file, sizeof(news_active_file), libdir, get_val("TIN_ACTIVEFILE", ACTIVE_FILE));
+	if (!*news_active_file) {
+		const char *p;
+
+		p = get_val("TIN_ACTIVEFILE", ACTIVE_FILE);
+		if (*p != '/')
+			joinpath(news_active_file, sizeof(news_active_file), libdir, p);
+		else
+			my_strncpy(news_active_file, p, sizeof(news_active_file) - 1);
+	}
 	if (!*active_times_file)
 		joinpath(active_times_file, sizeof(active_times_file), libdir, ACTIVE_TIMES_FILE);
 	if (!*newsgroups_file)
@@ -849,7 +868,7 @@ init_selfinfo(
 		STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
 #else
 	if (tinrc.mm_network_charset < 0) {
-		size_t space = 255;
+		space = 255;
 
 		ptr = my_malloc(space + 1);
 
@@ -872,8 +891,12 @@ init_selfinfo(
 
 	joinpath(rcdir, sizeof(rcdir), homedir, RCDIR);
 	if (stat(rcdir, &sb) == -1) {
-		my_mkdir(rcdir, (mode_t) (S_IRWXU)); /* TODO: bail out? give error message? no_write = TRUE? */
-		created_rcdir = TRUE;
+		if (my_mkdir(rcdir, (mode_t) (S_IRWXU)) == -1) {
+			error_message(0, _(txt_cannot_create), rcdir);
+			free_all_arrays();
+			giveup();
+		} else
+			created_rcdir = TRUE;
 	}
 	strcpy(tinrc.mailer_format, MAILER_FORMAT);
 	my_strncpy(mailer, get_val(ENV_VAR_MAILER, DEFAULT_MAILER), sizeof(mailer) - 1);
@@ -886,6 +909,19 @@ init_selfinfo(
 #ifdef APPEND_PID
 	snprintf(article_name + strlen(article_name), sizeof(article_name) - strlen(article_name), ".%ld", (long) process_id);
 #endif /* APPEND_PID */
+
+#ifdef HAVE_LONG_FILE_NAMES
+	space = snprintf(NULL, 0, "%s.bak", article_name);
+#else
+	space = snprintf(NULL, 0, "%s.b", article_name);
+#endif /* HAVE_LONG_FILE_NAMES */
+	backup_article_name = my_malloc(++space);
+#ifdef HAVE_LONG_FILE_NAMES
+	snprintf(backup_article_name, space , "%s.bak", article_name);
+#else
+	snprintf(backup_article_name, space , "%s.b", article_name);
+#endif /* HAVE_LONG_FILE_NAMES */
+
 	joinpath(dead_article, sizeof(dead_article), homedir, "dead.article");
 	joinpath(dead_articles, sizeof(dead_articles), homedir, "dead.articles");
 	joinpath(tinrc.maildir, sizeof(tinrc.maildir), homedir, DEFAULT_MAILDIR);
@@ -896,11 +932,15 @@ init_selfinfo(
 	if (!index_newsdir[0])
 		joinpath(index_newsdir, sizeof(index_newsdir), get_val("TIN_INDEX_NEWSDIR", rcdir), INDEX_NEWSDIR);
 	joinpath(index_maildir, sizeof(index_maildir), get_val("TIN_INDEX_MAILDIR", rcdir), INDEX_MAILDIR);
-	if (stat(index_maildir, &sb) == -1)
-		my_mkdir(index_maildir, (mode_t) S_IRWXU);
+	if (stat(index_maildir, &sb) == -1) {
+		if (my_mkdir(index_maildir, (mode_t) S_IRWXU) == -1)
+			error_message(2, _(txt_cannot_create), index_maildir);
+	}
 	joinpath(index_savedir, sizeof(index_savedir), get_val("TIN_INDEX_SAVEDIR", rcdir), INDEX_SAVEDIR);
-	if (stat(index_savedir, &sb) == -1)
-		my_mkdir(index_savedir, (mode_t) S_IRWXU);
+	if (stat(index_savedir, &sb) == -1) {
+		if (my_mkdir(index_savedir, (mode_t) S_IRWXU) == -1)
+			error_message(2, _(txt_cannot_create), index_savedir);
+	}
 	joinpath(local_attributes_file, sizeof(local_attributes_file), rcdir, ATTRIBUTES_FILE);
 	joinpath(local_config_file, sizeof(local_config_file), rcdir, CONFIG_FILE);
 	joinpath(filter_file, sizeof(filter_file), rcdir, FILTER_FILE);

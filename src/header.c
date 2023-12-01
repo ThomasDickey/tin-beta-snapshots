@@ -3,9 +3,9 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2023-03-15
+ *  Updated   : 2023-11-27
  *
- * Copyright (c) 1997-2023 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -279,6 +279,8 @@ get_full_name(
 
 #ifndef DONT_HAVE_PW_GECOS
 	if ((pw = getpwuid(getuid())) != NULL) {
+		int ret;
+
 		STRCPY(buf, pw->pw_gecos);
 		if ((p = strchr(buf, ',')))
 			*p = '\0';
@@ -287,7 +289,9 @@ get_full_name(
 			STRCPY(tmp, pw->pw_name);
 			if (*tmp && isalpha((int)(unsigned char) *tmp) && islower((int)(unsigned char) *tmp))
 				*tmp = (char) my_toupper((int) (unsigned char) *tmp);
-			snprintf(fullname, sizeof(fullname), "%s%s%s", buf, tmp, p);
+			ret = snprintf(fullname, sizeof(fullname), "%s%s%s", buf, tmp, p);
+			if (ret == -1 || ret > (int) sizeof(fullname))
+				error_message(2, "Fullname truncated");
 		} else
 			STRCPY(fullname, buf);
 	}

@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-11
+ *  Updated   : 2023-11-24
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,6 @@ int top_art = 0;				/* # of articles in arts[] */
 static FILE *open_art_header(char *groupname, t_artnum art, t_artnum *next);
 static FILE *open_xover_fp(struct t_group *group, const char *mode, t_artnum min, t_artnum max, t_bool local);
 static char *find_nov_file(struct t_group *group, int mode);
-static char *print_date(time_t secs);
 static char *print_from(struct t_group *group, struct t_article *article, int charset);
 static int artnum_comp(t_comptype p1, t_comptype p2);
 static int base_comp(t_comptype p1, t_comptype p2);
@@ -419,8 +418,8 @@ index_group(
 	if (!batch_mode)
 		show_art_msg(group->name);
 	else {
-		if (verbose) /* -> lang.c */
-			wait_message(0, _("Reading %s\n"), group->name);
+		if (verbose > 1)
+			wait_message(0, _(txt_reading_group), group->name);
 	}
 
 	signal_context = cArt;			/* Set this only once curr_group is valid */
@@ -717,6 +716,10 @@ open_art_header(
 		}
 		return NULL;
 	}
+#else
+	/* silence compiler warning (unused parameter) */
+	(void) groupname;
+	(void) next;
 #endif /* NNTP_ABLE */
 
 	snprintf(buf, sizeof(buf), "%"T_ARTNUM_PFMT, art);
@@ -879,7 +882,7 @@ thread_by_subject(
 		/*
 		 * Get the contents of the magic marker in the hashnode
 		 */
-		h = (struct t_hashnode *) (arts[i].subject - sizeof(int) - sizeof(void *)); /* FIXME: cast increases required alignment of target type */
+		h = (void *) (arts[i].subject - sizeof(int) - sizeof(void *)); /* FIXME: cast increases required alignment of target type */
 
 		j = h->aptr;
 
@@ -1213,8 +1216,8 @@ thread_by_multipart(
 		}
 		FreeAndNull(minfo);
 		arts[i].multipart_subj = FALSE;
-		if (i % MODULO_COUNT_NUM == 0) /* TODO: -> lang.c */
-			show_progress(_("Threading by multipart"), i, top_art);
+		if (i % MODULO_COUNT_NUM == 0)
+			show_progress(_(txt_threading_by_multipart), i, top_art);
 	}
 }
 
@@ -1450,8 +1453,16 @@ parse_headers(
 		switch (my_toupper((unsigned char) *ptr)) {
 			case 'D':	/* Date:  mandatory */
 				if (!h->date) {
-					if ((hdr = parse_header(ptr + 1, "ate", FALSE, FALSE, FALSE)))
-						h->date = parsedate(hdr, (struct _TIMEINFO *) 0);
+					if ((hdr = parse_header(ptr + 1, "ate", FALSE, FALSE, FALSE))) {
+						str_trim(hdr);
+						if ((h->date = parsedate(hdr, (struct _TIMEINFO *) 0)) <= 0) {
+							/* date parsing failed, cut off at last ' ' and try again */
+							if ((s = strrchr(hdr, ' ')) != NULL) {
+								*s = '\0';
+								h->date = parsedate(hdr, (struct _TIMEINFO *) 0);
+							}
+						}
+					}
 				}
 				break;
 
@@ -1914,10 +1925,10 @@ read_overview(
 	}
 
 	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
-#ifdef DEBUG
+#if defined(DEBUG) && defined(NNTP_ABLE)
 		if ((debug & DEBUG_NNTP) && fp == FAKE_NNTP_FP && verbose)
 			debug_print_file("NNTP", "<<<%s%s", logtime(), buf);
-#endif /* DEBUG */
+#endif /* DEBUG && NNTP_ABLE */
 
 		if (need_resize) {
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
@@ -2059,11 +2070,18 @@ read_overview(
 					}
 
 					if (!strcasecmp(ofmt[count].name, "Date:")) {
-						art->date = parsedate(ptr, (TIMEINFO *) 0);
+						str_trim(ptr);
+						if ((art->date = parsedate(ptr, (TIMEINFO *) 0)) <= 0) {
 #ifdef DEBUG
-						if ((debug & DEBUG_NNTP) && verbose > 1 && art->date == (time_t) -1)
-							debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
+							if ((debug & DEBUG_NNTP) && verbose > 1)
+								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
 #endif /* DEBUG */
+							/* date parsing failed, cut off at last ' ' and try again */
+							if ((q = strrchr(ptr, ' ')) != NULL) {
+								*q = '\0';
+								art->date = parsedate(ptr, (TIMEINFO *) 0);
+							}
+						}
 						continue;
 					}
 
@@ -2174,11 +2192,18 @@ read_overview(
 						break;
 
 					case 3:	/* Date: */
-						art->date = parsedate(ptr, (TIMEINFO *) 0);
+						str_trim(ptr);
+						if ((art->date = parsedate(ptr, (TIMEINFO *) 0)) <= 0) {
 #ifdef DEBUG
-						if ((debug & DEBUG_NNTP) && verbose > 1 && art->date == (time_t) -1)
-							debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
+							if ((debug & DEBUG_NNTP) && verbose > 1)
+								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
 #endif /* DEBUG */
+							/* date parsing failed, cut off at last ' ' and try again */
+							if ((q = strrchr(ptr, ' ')) != NULL) {
+								*q = '\0';
+								art->date = parsedate(ptr, (TIMEINFO *) 0);
+							}
+						}
 						break;
 
 					case 4:	/* Message-ID: */
@@ -2353,7 +2378,7 @@ read_overview(
 
 		if (found) {
 			snprintf(cbuf, sizeof(cbuf), "%s XREF %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT, nntp_caps.hdr_cmd, min, MAX(min, max));
-			group_msg = fmt_string("%s XREF loop", nntp_caps.hdr_cmd); /* TODO: find a better message, move to lang.c */
+			group_msg = fmt_string(txt_xref_loop, nntp_caps.hdr_cmd); /* TODO: find a better message */
 			if ((fp = nntp_command(cbuf, nntp_caps.hdr ? OK_HDR : OK_HEAD, NULL, 0)) != NULL) { /* RFC 2980 (XHDR) uses 221; RFC 3977 (HDR) uses 225 */
 				while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 #	ifdef DEBUG
@@ -2439,6 +2464,10 @@ read_overview(
 #endif /* NNTP_ABLE */
 				wait_message(2, _(txt_cannot_filter_on_path));
 		}
+#ifndef NNTP_ABLE
+	/* silence compiler warning (unused parameter) */
+	(void) rebuild_cache;
+#endif /* !NNTP_ABLE */
 	return expired;
 }
 
@@ -2515,8 +2544,8 @@ write_overview(
 	}
 #endif /* CHARSET_CONVERSION */
 
-	if (verbose && batch_mode) /* -> lang.c */
-		wait_message(0, _("Writing %s\n"), group->name);
+	if (batch_mode && verbose > 1)
+		wait_message(0, _(txt_writing_group), group->name);
 
 	for_each_art(i) {
 		char *p, *q, *ref;
@@ -2567,19 +2596,48 @@ write_overview(
 				}
 			}
 
-			fprintf(fp, "%"T_ARTNUM_PFMT"\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
-				article->artnum,
-				p,
+			{
+				char date[30];
+#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
+				char *old_lc_all = NULL, *old_lc_time = NULL;
+
+				/* Unlocalized date-header */
+				if (getenv("LC_ALL") != NULL) {
+					old_lc_all = my_strdup(setlocale(LC_ALL, NULL));
+					setlocale(LC_ALL, "POSIX");
+				} else {
+					old_lc_time = my_strdup(setlocale(LC_TIME, NULL));
+					setlocale(LC_TIME, "POSIX");
+				}
+#endif /* HAVE_SETLOCALE && !NO_LOCALE */
+
+				if (!my_strftime(date, sizeof(date) - 1, "%d %b %Y %H:%M:%S GMT", gmtime(&article->date)))
+					snprintf(date, sizeof(date) - 1, "01 Jan 1970 00:00:00 UTC");
+
+				fprintf(fp, "%"T_ARTNUM_PFMT"\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
+					article->artnum,
+					p,
 #ifdef CHARSET_CONVERSION
-				print_from(group, article, c),
+					print_from(group, article, c),
 #else
-				print_from(group, article, -1),
+					print_from(group, article, -1),
 #endif /* CHARSET_CONVERSION */
-				print_date(article->date),
-				BlankIfNull(article->msgid),
-				BlankIfNull(ref),
-				0,	/* bytes */
-				article->line_count);
+					date,
+					BlankIfNull(article->msgid),
+					BlankIfNull(ref),
+					0,	/* bytes */
+					article->line_count);
+#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
+				/* change back LC_* */
+				if (old_lc_all != NULL) {
+					setlocale(LC_ALL, old_lc_all);
+					free(old_lc_all);
+				} else if (old_lc_time != NULL) {
+					setlocale(LC_TIME, old_lc_time);
+					free(old_lc_time);
+				}
+#endif /* HAVE_SETLOCALE && !NO_LOCALE */
+			}
 
 			if (article->xref)
 				fprintf(fp, "\tXref: %s", article->xref);
@@ -2588,19 +2646,20 @@ write_overview(
 				fprintf(fp, "\tPath: %s", article->path);
 
 			fprintf(fp, "\n");
+
 			free(p);
 			if (article->refs) {
 				FreeIfNeeded(ref);
 			}
 		}
-		if (i % (MODULO_COUNT_NUM * 20) == 0) /* TODO: -> lang.c */
-			show_progress(_("Writing overview cache..."), i, top_art);
+		if (i % (MODULO_COUNT_NUM * 20) == 0)
+			show_progress(_(txt_writing_overview), i, top_art);
 	}
 #ifdef HAVE_FCHMOD
 	fchmod(fileno(fp), (mode_t) (S_IWUSR|S_IRUGO));
 #else
 #	ifdef HAVE_CHMOD
-		chmod(find_nov_file(group,R_OK), (mode_t) (S_IWUSR|S_IRUGO));
+		chmod(find_nov_file(group, R_OK), (mode_t) (S_IWUSR|S_IRUGO));
 #	endif /* HAVE_CHMOD */
 #endif /* HAVE_FCHMOD */
 	fclose(fp);
@@ -2796,7 +2855,7 @@ find_nov_file(
 		if ((ptr = strrchr(buf, '\n')) != NULL)
 			*ptr = '\0';
 
-		if (strcmp(buf, group->name) == 0)
+		if (STRCMPEQ(buf, group->name))
 			break;
 	}
 
@@ -3267,36 +3326,6 @@ find_artnum(
 }
 
 
-/*----------------------------- Overview handling -----------------------*/
-/* TODO: use
- *           setlocale(LC_ALL, "POSIX"); setlocale(LC_TIME, "POSIX");
- *           my_strftime(date, sizeof(date) -1, "%d %b %Y %H:%M:%S GMT", gmtime(&secs));
- *       instead?
- */
-static char *
-print_date(
-	time_t secs)
-{
-	static char date[25];
-	struct tm *tm;
-	static const char *const months_a[] = {
-		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-	};
-
-	if ((tm = gmtime(&secs)) != NULL)
-		snprintf(date, sizeof(date), "%02d %.3s %04d %02d:%02d:%02d GMT",
-			tm->tm_mday,
-			months_a[tm->tm_mon],
-			tm->tm_year + 1900,
-			tm->tm_hour, tm->tm_min, tm->tm_sec);
-	else
-		snprintf(date, sizeof(date), "01 Jan 1970 00:00:00 UTC");
-
-	return date;
-}
-
-
 static char *
 print_from(
 	struct t_group *group,
@@ -3356,6 +3385,11 @@ open_xover_fp(
 
 		return (nntp_command(line, OK_XOVER, NULL, 0));
 	}
+#else
+	/* silence compiler warning (unused parameter) */
+	(void) min;
+	(void) max;
+	(void) local;
 #endif /* NNTP_ABLE */
 	{
 		FILE *fp;

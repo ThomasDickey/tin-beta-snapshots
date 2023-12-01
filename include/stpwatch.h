@@ -6,7 +6,7 @@
  *  Updated   : 2023-08-02
  *  Notes     : Simple stopwatch routines for timing code; avoid nesting!
  *
- * Copyright (c) 1993-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

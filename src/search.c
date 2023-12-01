@@ -3,10 +3,10 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-02-22
+ *  Updated   : 2023-11-27
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -452,9 +452,10 @@ author_search(
 	if (arts[i].name == NULL)
 		tmp = my_strdup(arts[i].from);
 	else {
-		size_t len = strlen(arts[i].from) + strlen(arts[i].name) + 4;
+		int len;
 
-		tmp = my_malloc(len);
+		len = snprintf(NULL, 0, "%s <%s>", arts[i].name, arts[i].from);
+		tmp = my_malloc(++len);
 		snprintf(tmp, len, "%s <%s>", arts[i].name, arts[i].from);
 	}
 

@@ -3,9 +3,9 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2022-09-19
+ *  Updated   : 2023-11-15
  *
- * Copyright (c) 1997-2023 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2024 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -201,7 +201,7 @@ tin_read(
 #ifdef NNTP_ABLE
 #	ifdef HAVE_SELECT
 	if (wait_for_input()) {			/* Check if okay to read */
-		info_message(_("Aborting read, please wait..."));
+		info_message(_(txt_abort_reading));
 		drain_buffer(fp);
 		clear_message();
 		tin_errno = TIN_ABORT;

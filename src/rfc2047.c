@@ -3,10 +3,10 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2023-10-16
+ *  Updated   : 2023-11-20
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2023 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2024 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -894,6 +894,8 @@ rfc1522_encode(
 	 */
 #ifdef MIME_BREAK_LONG_LINES
 	t_bool break_long_line = TRUE;
+	/* silence compiler warning (unused parameter) */
+	(void) ismail;
 #else
 	/*
 	 * Even if MIME_BREAK_LONG_LINES is NOT defined, long headers in mail
@@ -1027,13 +1029,13 @@ do_rfc15211522_encode(
 		 */
 		if (mime_headers_needed) {
 			if (contains_headers)
-				fprintf(f, "MIME-Version: %s\n", MIME_SUPPORTED_VERSION);
+				fprintf(f, txt_mime_version, MIME_SUPPORTED_VERSION);
 #ifdef CHARSET_CONVERSION
-			fprintf(f, "Content-Type: text/plain; charset=%s\n", txt_mime_charsets[mmnwcharset]);
+			fprintf(f, txt_mime_hdr_c_type_text_plain_charset, txt_mime_charsets[mmnwcharset]);
 #else
-			fprintf(f, "Content-Type: text/plain; charset=%s\n", tinrc.mm_charset);
+			fprintf(f, txt_mime_hdr_c_type_text_plain_charset, tinrc.mm_charset);
 #endif /* CHARSET_CONVERSION */
-			fprintf(f, "Content-Transfer-Encoding: %s\n", mime_encoding);
+			fprintf(f, txt_mime_hdr_c_transfer_encoding, mime_encoding);
 		}
 	}
 	fputc('\n', f);
@@ -1275,7 +1277,7 @@ compose_mail_mime_forwarded(
 		if (*line != '\0')
 			fprintf(fp, "%s\n", line);
 	}
-	fprintf(fp, "MIME-Version: %s\n", MIME_SUPPORTED_VERSION);
+	fprintf(fp, txt_mime_version, MIME_SUPPORTED_VERSION);
 	rewind(entityfp);
 	copy_fp(entityfp, fp);
 
@@ -1304,9 +1306,9 @@ compose_message_rfc822(
 	*is_8bit = contains_8bit_characters(articlefp);
 
 	/* Header: CT, CD, CTE */
-	fprintf(fp, "Content-Type: message/rfc822\n");
-	fprintf(fp, "Content-Disposition: inline\n");
-	fprintf(fp, "Content-Transfer-Encoding: %s\n", *is_8bit ? txt_8bit : txt_7bit);
+	fprintf(fp, "%s", txt_mime_hdr_c_type_msg_rfc822);
+	fprintf(fp, "%s", txt_mime_hdr_c_disposition_inline);
+	fprintf(fp, txt_mime_hdr_c_transfer_encoding, *is_8bit ? txt_8bit : txt_7bit);
 	fputc('\n', fp);
 
 	/* Body: articlefp */
@@ -1345,38 +1347,35 @@ compose_multipart_mixed(
 
 	/*
 	 * Header: CT with multipart boundary, CTE
-	 * TODO: -> lang.c
 	 */
 	generate_mime_boundary(boundary, textfp, articlefp);
-	fprintf(fp, "Content-Type: multipart/mixed; boundary=\"%s\"\n", boundary);
-	fprintf(fp, "Content-Transfer-Encoding: %s\n\n", requires_8bit ? txt_8bit : txt_7bit);
+	fprintf(fp, txt_mime_hdr_c_type_multipart_mixed, boundary);
+	fprintf(fp, txt_mime_hdr_c_transfer_encoding, requires_8bit ? txt_8bit : txt_7bit);
+	fputc('\n', fp);
 
 	/*
 	 * preamble
-	 * TODO: -> lang.c
 	 */
-	fprintf(fp, "%s", _("This message has been composed in the 'multipart/mixed' MIME-format. If you\n\
-are reading this prefix, your mail reader probably has not yet been modified\n\
-to understand the new format, and some of what follows may look strange.\n\n"));
+	fprintf(fp, "%s", _(txt_mime_preamble_multipart_mixed));
 
 	/*
 	 * Body: boundary+text, message/rfc822 part, closing boundary
 	 */
 	/* text */
-	fprintf(fp, "--%s\n", boundary);
+	fprintf(fp, txt_mime_boundary, boundary);
 	rewind(textfp);
 	copy_fp(textfp, fp);
 	fputc('\n', fp);
 
 	/* message/rfc822 part */
-	fprintf(fp, "--%s\n", boundary);
+	fprintf(fp, txt_mime_boundary, boundary);
 	rewind(messagefp);
 	copy_fp(messagefp, fp);
 	fclose(messagefp);
 	fputc('\n', fp);
 
 	/* closing boundary */
-	fprintf(fp, "--%s--\n", boundary);
+	fprintf(fp, txt_mime_boundary_end, boundary);
 	/* TODO: insert an epilogue here? */
 	free(boundary);
 	return fp;

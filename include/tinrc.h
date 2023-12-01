@@ -6,7 +6,7 @@
  *  Updated   : 2023-10-29
  *  Notes     :
  *
- * Copyright (c) 1999-2023 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2024 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -195,6 +195,8 @@ struct t_config {
 		int col_extquote;					/* color of quoted external text */
 		int col_response;					/* color of response counter */
 		int col_signature;					/* color of signature */
+		int col_score_neg;					/* color of negative article score */
+		int col_score_pos;					/* color of positive article score */
 		int col_urls;						/* color of urls highlight */
 		int col_verbatim;					/* color of verbatim blocks */
 		int col_subject;					/* color of article subject */
@@ -247,6 +249,7 @@ struct t_config {
 	t_bool show_only_unread_arts;		/* show only new/unread arts or all arts */
 	t_bool show_only_unread_groups;		/* set TRUE to see only subscribed groups with new news */
 	t_bool show_signatures;				/* show signatures when displaying articles */
+	t_bool show_art_score;				/* show article score when displaying articles */
 	t_bool sigdashes;					/* set TRUE to prepend every signature with dashes */
 	t_bool signature_repost;			/* set TRUE to add signature when reposting articles */
 #	ifndef USE_CURSES
@@ -369,6 +372,7 @@ struct t_config {
 	t_bool attrib_prompt_followupto;
 	t_bool attrib_show_only_unread_arts;
 	t_bool attrib_show_signatures;
+	t_bool attrib_show_art_score;
 	t_bool attrib_sigdashes;
 	t_bool attrib_signature_repost;
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)

@@ -3,10 +3,10 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2021-02-23
+ *  Updated   : 2023-11-10
  *  Notes     : RFC 2045/2047 encoding
  *
- * Copyright (c) 1995-2023 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2024 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -440,7 +440,7 @@ read_decoded_qp_line(
 	const int max_lines_to_read)	/* don't read more physical lines than told here */
 {
 	char *buf, *buf2;
-	char *ptr;
+	const char *ptr;
 	char c;
 	int buflen = LEN;
 	int count;

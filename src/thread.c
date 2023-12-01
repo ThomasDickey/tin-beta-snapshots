@@ -3,10 +3,10 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-17
+ *  Updated   : 2023-11-14
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -767,7 +767,7 @@ thread_page(
 				break;
 
 			case GLOBAL_CONNECTION_INFO:
-				show_connection_page(THREAD_LEVEL, _(txt_connection_info));
+				show_connection_page();
 				show_thread_page();
 				break;
 

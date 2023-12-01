@@ -3,10 +3,10 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2023-11-03
+ *  Updated   : 2023-11-13
  *  Notes     : Split from config.c
  *
- * Copyright (c) 2004-2023 Michael Bienia <michael@vorlon.ping.de>
+ * Copyright (c) 2004-2024 Michael Bienia <michael@vorlon.ping.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -221,6 +221,8 @@ option_is_visible(
 		case OPT_COL_EXTQUOTE:
 		case OPT_COL_RESPONSE:
 		case OPT_COL_SIGNATURE:
+		case OPT_COL_SCORE_NEG:
+		case OPT_COL_SCORE_POS:
 		case OPT_COL_SUBJECT:
 		case OPT_COL_TEXT:
 		case OPT_COL_TITLE:
@@ -342,6 +344,7 @@ option_is_visible(
 		case OPT_ATTRIB_SHOW_AUTHOR:
 		case OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS:
 		case OPT_ATTRIB_SHOW_SIGNATURES:
+		case OPT_ATTRIB_SHOW_ART_SCORE:
 		case OPT_ATTRIB_SIGDASHES:
 		case OPT_ATTRIB_SIGFILE:
 		case OPT_ATTRIB_SIGNATURE_REPOST:
@@ -1461,6 +1464,13 @@ config_page(
 							}
 							break;
 
+						case OPT_SHOW_ART_SCORE:
+							if (prompt_option_on_off(option)) {
+								UPDATE_BOOL_ATTRIBUTES(show_art_score);
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
 						case OPT_SIGDASHES:
 							if (prompt_option_on_off(option))
 								UPDATE_BOOL_ATTRIBUTES(sigdashes);
@@ -1778,6 +1788,13 @@ config_page(
 							}
 							break;
 
+						case OPT_ATTRIB_SHOW_ART_SCORE:
+							if (prompt_option_on_off(option)) {
+								SET_BOOL_ATTRIBUTE(show_art_score);
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
 						case OPT_ATTRIB_SIGDASHES:
 							if (prompt_option_on_off(option))
 								SET_BOOL_ATTRIBUTE(sigdashes);
@@ -1851,6 +1868,8 @@ config_page(
 						case OPT_COL_EXTQUOTE:
 						case OPT_COL_RESPONSE:
 						case OPT_COL_SIGNATURE:
+						case OPT_COL_SCORE_NEG:
+						case OPT_COL_SCORE_POS:
 						case OPT_COL_SUBJECT:
 						case OPT_COL_TEXT:
 						case OPT_COL_TITLE:
@@ -2566,7 +2585,7 @@ config_page(
 								if (tinrc.nntp_read_timeout_secs < 0)
 									tinrc.nntp_read_timeout_secs = 0;
 								/* as in read_config_file() */
-								if (tinrc.nntp_read_timeout_secs > 16383)
+								if (tinrc.nntp_read_timeout_secs > TIN_NNTP_TIMEOUT_MAX)
 									tinrc.nntp_read_timeout_secs = 0;
 								changed |= MISC_OPTS;
 							}
@@ -3266,6 +3285,8 @@ check_state(
 			return curr_scope->state->show_only_unread_arts;
 		case OPT_ATTRIB_SHOW_SIGNATURES:
 			return curr_scope->state->show_signatures;
+		case OPT_ATTRIB_SHOW_ART_SCORE:
+			return curr_scope->state->show_art_score;
 		case OPT_ATTRIB_SIGDASHES:
 			return curr_scope->state->sigdashes;
 		case OPT_ATTRIB_SIGFILE:
@@ -3559,6 +3580,10 @@ reset_state(
 			curr_scope->state->show_signatures = FALSE;
 			tinrc.attrib_show_signatures = default_scope->attribute->show_signatures;
 			break;
+		case OPT_ATTRIB_SHOW_ART_SCORE:
+			curr_scope->state->show_art_score = FALSE;
+			tinrc.attrib_show_art_score = default_scope->attribute->show_art_score;
+			break;
 		case OPT_ATTRIB_SIGDASHES:
 			curr_scope->state->sigdashes = FALSE;
 			tinrc.attrib_sigdashes = default_scope->attribute->sigdashes;
@@ -3710,6 +3735,7 @@ initialize_attributes(
 	INITIALIZE_NUM_ATTRIBUTE(show_author);
 	INITIALIZE_NUM_ATTRIBUTE(show_only_unread_arts);
 	INITIALIZE_NUM_ATTRIBUTE(show_signatures);
+	INITIALIZE_NUM_ATTRIBUTE(show_art_score);
 	INITIALIZE_NUM_ATTRIBUTE(sigdashes);
 	INITIALIZE_NUM_ATTRIBUTE(signature_repost);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)

@@ -3,10 +3,10 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-05
+ *  Updated   : 2023-11-22
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -483,11 +483,12 @@ group_get_art_info(
 				return -1;
 		}
 #else
-		my_fprintf(stderr, _("Unreachable?\n")); /* TODO: -> lang.c */
+		my_fprintf(stderr, "%s", _(txt_error_unreachable));
 		return 0;
 #endif /* NNTP_ABLE */
 	} else {
 		char group_path[PATH_LEN];
+
 		*art_count = T_ARTNUM_CONST(0);
 		*art_min = T_ARTNUM_CONST(0);
 		*art_max = T_ARTNUM_CONST(0);
@@ -1312,11 +1313,11 @@ pos_group_in_newsrc(
 	char *newsgroup = NULL;
 	char *line;
 	char filename[PATH_LEN];
-	char sub[PATH_LEN];
-	char unsub[PATH_LEN];
+	char *sub = NULL;
+	char *unsub = NULL;
 	int subscribed_pos = 1;
 	int err;
-	size_t group_len;
+	size_t len;
 	t_bool found = FALSE;
 	t_bool newnewsrc_created = FALSE;
 	t_bool option_line = FALSE;
@@ -1344,10 +1345,14 @@ pos_group_in_newsrc(
 #endif /* HAVE_FCHMOD */
 
 	joinpath(filename, sizeof(filename), tmpdir, ".subrc");
-	snprintf(sub, sizeof(sub), "%s.%ld", filename, (long) process_id);
+	len = snprintf(NULL, 0, "%s.%ld", filename, (long) process_id);
+	sub = my_malloc(++len);
+	snprintf(sub, len, "%s.%ld", filename, (long) process_id);
 
 	joinpath(filename, sizeof(filename), tmpdir, ".unsubrc");
-	snprintf(unsub, sizeof(unsub), "%s.%ld", filename, (long) process_id);
+	len = snprintf(NULL, 0, "%s.%ld", filename, (long) process_id);
+	unsub = my_malloc(++len);
+	snprintf(unsub, len, "%s.%ld", filename, (long) process_id);
 
 	if ((fp_sub = fopen(sub, "w")) == NULL)
 		goto rewrite_group_done;
@@ -1362,10 +1367,10 @@ pos_group_in_newsrc(
 	/*
 	 * split newsrc into subscribed and unsubscribed to files
 	 */
-	group_len = strlen(group->name);
+	len = strlen(group->name);
 
 	while ((line = tin_fgets(fp_in, FALSE)) != NULL) {
-		if (STRNCMPEQ(group->name, line, group_len) && line[group_len] == SUBSCRIBED) {
+		if (STRNCMPEQ(group->name, line, len) && line[len] == SUBSCRIBED) {
 			FreeIfNeeded(newsgroup);
 			newsgroup = my_strdup(line);		/* Take a copy of this line */
 			found = TRUE;
@@ -1487,6 +1492,8 @@ rewrite_group_done:
 		unlink(unsub);
 
 	FreeIfNeeded(newsgroup);
+	FreeIfNeeded(sub);
+	FreeIfNeeded(unsub);
 
 	return ret_code;
 }

@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-29
+ *  Updated   : 2023-11-24
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -212,9 +212,9 @@ check_start_save_any_news(
 		}
 
 		if (function == MAIL_ANY_NEWS || function == SAVE_ANY_NEWS) {
-			if (!group->attribute->batch_save) { /* TODO: string -> lang.c */
+			if (!group->attribute->batch_save) {
 				if (verbose > 1 && function == MAIL_ANY_NEWS)
-					fprintf(fp_log, "Skipped %s", group->name);
+					fprintf(fp_log, _(txt_skipped_group), group->name);
 
 				continue;
 			}
@@ -567,6 +567,8 @@ save_and_process_art(
 		scrollok(stdscr, FALSE);
 #	endif /* USE_CURSES */
 	}
+#else	/* silence compiler warning (unused parameter) */
+	(void) post_process;
 #endif /* !HAVE_LIBUU */
 
 	return TRUE;
@@ -900,7 +902,7 @@ post_process_uud(
 		while (fgets(s, (int) sizeof(s), fp_in) != NULL) {
 			switch (state) {
 				case INITIAL:
-					if (strncmp("begin ", s, 6) == 0) {
+					if (STRNCMPEQ("begin ", s, 6)) {
 						char fmt[15];
 						char name[PATH_LEN];
 						char buf[PATH_LEN];
@@ -1046,7 +1048,7 @@ sum_file(
 		fflush(fp_in);
 		pclose(fp_in);
 
-		my_printf(_(txt_checksum_of_file), file, file_size(path), _("bytes"));
+		my_printf(_(txt_checksum_of_file), file, file_size(path), _(txt_bytes));
 		my_printf(cCRLF);
 		my_printf("\t%s%s", buf, cCRLF);
 	} else {
@@ -1140,15 +1142,18 @@ post_process_sh(
 {
 	FILE *fp_in, *fp_out = NULL;
 	char buf[LEN];
-	char file_out[PATH_LEN];
+	char *file_out;
 	char file_out_dir[PATH_LEN];
 	int i;
+	size_t len;
 
 	/*
 	 * Grab the dirname portion
 	 */
 	my_strncpy(file_out_dir, save[0].path, (size_t) (save[0].file - save[0].path));
-	snprintf(file_out, sizeof(file_out), "%ssh%ld", file_out_dir, (long) process_id);
+	len = snprintf(NULL, 0, "%ssh%ld", file_out_dir, (long) process_id);
+	file_out = my_malloc(++len);
+	snprintf(file_out, len, "%ssh%ld", file_out_dir, (long) process_id);
 
 	for (i = 0; i < num_save; i++) {
 		if ((fp_in = fopen(save[i].path, "r")) == NULL)
@@ -1180,6 +1185,7 @@ post_process_sh(
 		invoke_cmd(buf);			/* Handles its own errors */
 		unlink(file_out);
 	}
+	free(file_out);
 }
 
 
@@ -1284,7 +1290,19 @@ decode_save_one(
 	if (part->encoding == ENCODING_BASE64)
 		mmdecode(NULL, 'b', 0, NULL);				/* flush */
 
-	fseek(rawfp, part->offset, SEEK_SET);
+	if (fseek(rawfp, part->offset, SEEK_SET) == -1) {
+#ifdef DEBUG
+		/*
+		 * TODO: always show to user?
+		 *       then use something less technical and move to lang.c
+		 *
+		 */
+		perror_message("%s:%d decode_save_one(fseek(rawfp,)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+		free(savepath);
+		fclose(fp);
+		return FALSE;
+	}
 
 	for (i = 0; i < part->line_count; i++) {
 		if ((fgets(buf, sizeof(buf), rawfp)) == NULL)
@@ -1395,7 +1413,7 @@ match_content_type(
 		return NO;
 
 	/* Try and match major */
-	if (strcmp(type, "*") == 0)
+	if (STRCMPEQ(type, "*"))
 		found = TRUE;
 	else if (((typeindex = content_type(type)) != -1) && typeindex == part->type)
 		found = TRUE;
@@ -1405,9 +1423,9 @@ match_content_type(
 
 	/* Try and match subtype */
 	found = FALSE;
-	if (strcmp(subtype, "*") == 0)
+	if (STRCMPEQ(subtype, "*"))
 		found = TRUE;
-	else if (strcmp(subtype, part->subtype) == 0)
+	else if (STRCMPEQ(subtype, part->subtype))
 		found = TRUE;
 
 	if (!found)
@@ -1668,6 +1686,10 @@ attachment_page(
 			case GLOBAL_TOGGLE_INFO_LAST_LINE:
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
 				show_attachment_page();
+				break;
+
+			case GLOBAL_VERSION:
+				info_message(cvers);
 				break;
 
 			case ATTACHMENT_SAVE:
@@ -2267,7 +2289,16 @@ process_part(
 	if (what != PIPE_RAW && part->encoding == ENCODING_BASE64)
 		mmdecode(NULL, 'b', 0, NULL);				/* flush */
 
-	fseek(infile, part->offset, SEEK_SET);
+	if (fseek(infile, part->offset, SEEK_SET) == -1) {
+#ifdef DEBUG
+		/*
+		 * TODO: always show to user?
+		 *       then use something less technical and move to lang.c
+		 */
+		perror_message("%s:%d process_part(fseek(infile)) failed", __FILE__, __LINE__);
+#endif /* DEBUG */
+		return;
+	}
 
 	line_count = part->line_count;
 

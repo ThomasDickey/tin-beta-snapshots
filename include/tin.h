@@ -3,10 +3,10 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-29
+ *  Updated   : 2023-11-22
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1098,6 +1098,7 @@ enum {
 #else
 #	define TIN_FCLOSE(x)	fclose(x)
 #endif /* NNTP_ABLE */
+#define TIN_NNTP_TIMEOUT_MAX	16383
 
 /*
  * Often used macro to point to the group we are currently in
@@ -1759,6 +1760,7 @@ struct t_attribute {
 	IntField(thread_perc);			/* percentage threading threshold */
 	IntField(show_author);			/* 0=none, 1=name, 2=addr, 3=both */
 	BoolField(show_signatures);		/* 0=none, 1=show signatures */
+	BoolField(show_art_score);		/* 0=none, 1=show score */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	BoolField(suppress_soft_hyphens);	/* set TRUE to remove soft hyphens (U+00AD) from articles */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1846,6 +1848,7 @@ struct t_attribute_state {
 	BoolField(show_author);
 	BoolField(show_only_unread_arts);
 	BoolField(show_signatures);
+	BoolField(show_art_score);
 	BoolField(sigdashes);
 	BoolField(sigfile);
 	BoolField(signature_repost);
@@ -2007,16 +2010,15 @@ struct t_filter {
 	char *msgid;			/* Message-ID: line */
 	char *xref;			/* groups in xref line */
 	char *path;			/* server in path line */
-	struct t_filter *next;		/* next rule valid in group */
 	time_t time;			/* expire time in seconds */
 	int lines_num;			/* Lines: line */
 	int gnksa_num;			/* GNKSA code */
 	int score;			/* score to give if rule matches */
 	char lines_cmp;			/* Lines compare <> */
 	char gnksa_cmp;			/* GNKSA compare <> */
-	unsigned int inscope:4;		/* if group matches scope e.g. 'comp.os.*' */
-	unsigned int icase:2;		/* Case sensitive filtering */
 	unsigned int fullref:4;		/* use full references or last entry only */
+	t_bool icase:1;			/* Case sensitive filtering */
+	t_bool inscope:1;		/* if group matches scope e.g. 'comp.os.*' */
 };
 
 /*

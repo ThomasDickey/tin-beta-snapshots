@@ -7,11 +7,11 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@invisible-island.net> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 2021-02-23
+ *  Updated   : 2023-11-20
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
- * Copyright (c) 1995-2023 Roland Rosenfeld <roland@spinnaker.rhein.de>
+ * Copyright (c) 1995-2024 Roland Rosenfeld <roland@spinnaker.rhein.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -132,7 +132,7 @@ set_colors(
 				p->pair = pair = nextpair;
 				p->link = list;
 				list = p;
-				init_pair(pair, fcolor, bcolor);
+				init_pair((short) pair, (short) fcolor, (short) bcolor);
 			} else {
 				pair = 0;
 			}
@@ -268,6 +268,9 @@ draw_pager_line(
 				fcol(tinrc.col_text);
 		}
 	}
+#else
+	/* silence compiler warning (unused parameter) */
+	(void) flags;
 #endif /* HAVE_COLOR */
 
 	if (!raw_data) {

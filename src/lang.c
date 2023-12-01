@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-10-31
+ *  Updated   : 2023-11-28
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,9 @@ constext txt_7bit[] = "7bit";
 constext txt_8bit[] = "8bit";
 
 constext txt_active_file_is_empty[] = N_("\n%s contains no newsgroups. Exiting.");
+#if defined(NNTP_ABLE) && defined(HAVE_SELECT)
+	constext txt_abort_reading[] = N_("Aborting read, please wait...");
+#endif /* defined(NNTP_ABLE) && defined(HAVE_SELECT) */
 constext txt_all[] = N_("all");
 constext txt_all_groups[] = N_("All groups");
 constext txt_append_overwrite_quit[] = N_("File %s exists. %s=append, %s=overwrite, %s=quit: ");
@@ -76,17 +79,28 @@ constext txt_article_singular[] = N_("article");
 constext txt_article_upper[] = N_("Article");
 constext txt_articles_mailed[] = N_("-- %d %s mailed --");
 constext txt_at_s[] = N_(" at %s");
+constext txt_mime_boundary[] = "--%s\n";
+constext txt_mime_boundary_end[] = "--%s--\n";
 constext txt_mime_charset[] = N_("charset %s");
 constext txt_mime_content_subtype[] = N_("content subtype %s");
 constext txt_mime_content_type[] = N_("content type %s");
 constext txt_mime_unsup_charset[] = N_("%*s[-- charset %s not supported --]\n");
 constext txt_mime_description[] = N_("%*s[-- Description: %s --]\n");
 constext txt_mime_encoding[] = N_("encoding %s");
+constext txt_mime_hdr_c_disposition_inline[] = "Content-Disposition: inline\n";
+constext txt_mime_hdr_c_transfer_encoding[] = "Content-Transfer-Encoding: %s\n";
+constext txt_mime_hdr_c_type_msg_rfc822[] = "Content-Type: message/rfc822\n";
+constext txt_mime_hdr_c_type_multipart_mixed[] = "Content-Type: multipart/mixed; boundary=\"%s\"\n";
+constext txt_mime_hdr_c_type_text_plain_charset[] = "Content-Type: text/plain; charset=%s\n";
 constext txt_mime_lang[] = N_("lang %s");
 constext txt_mime_lines[] = N_("%s lines");
 constext txt_mime_name[] = N_("name %s");
 constext txt_mime_sep[] = N_(", ");
 constext txt_mime_size[] = N_("size %s");
+constext txt_mime_preamble_multipart_mixed[] = N_("This message has been composed in the 'multipart/mixed' MIME-format. If you\n\
+are reading this prefix, your mail reader probably has not yet been modified\n\
+to understand the new format, and some of what follows may look strange.\n\n");
+constext txt_mime_version[] = "MIME-Version: %s\n";
 constext txt_attachment_menu[] = N_("Attachment Menu");
 constext txt_attachment_menu_com[] = N_("Attachment Menu Commands");
 constext txt_attachment_no_name[] = N_("<no name>");
@@ -96,6 +110,114 @@ constext txt_attachment_select[] = N_("Select attachment> ");
 constext txt_attachment_tagged[] = N_("Tagged attachment");
 constext txt_attachments_tagged[] = N_("%d attachments tagged");
 constext txt_attachment_untagged[] = N_("Untagged attachment");
+/* do NOT localize the next string! */
+constext txt_attrib_file_version[] = "# Group attributes file V%s for the TIN newsreader\n";
+constext txt_attrib_file_header[] = N_("# Do not edit this comment block\n#\n");
+constext txt_attrib_file_scope[] = N_("#  scope=STRING (eg. alt.*,!alt.bin*) [mandatory]\n");
+constext txt_attrib_file_posted_to_filter[] = N_("#  add_posted_to_filter=ON/OFF\n");
+constext txt_attrib_file_advertising[] = N_("#  advertising=ON/OFF\n");
+constext txt_attrib_file_alt_handling[] = N_("#  alternative_handling=ON/OFF\n");
+constext txt_attrib_file_metamail[] = N_("#  ask_for_metamail=ON/OFF\n");
+constext txt_attrib_file_auto_cc_bcc[] = N_("#  auto_cc_bcc=NUM\n");
+constext txt_attrib_file_auto_cc_bcc_opts[] = N_("#    0=No, 1=Cc, 2=Bcc, 3=Cc and Bcc\n");
+constext txt_attrib_file_auto_list_thrd[] = N_("#  auto_list_thread=ON/OFF\n");
+constext txt_attrib_file_auto_select[] = N_("#  auto_select=ON/OFF\n");
+constext txt_attrib_file_batch_save[] = N_("#  batch_save=ON/OFF\n");
+constext txt_attrib_file_date_fmt[] = N_("#  date_format=STRING (eg. %a, %d %b %Y %H:%M:%S)\n");
+constext txt_attrib_file_delete_tmp[] = N_("#  delete_tmp_files=ON/OFF\n");
+constext txt_attrib_file_editor_fmt[] = N_("#  editor_format=STRING (eg. %E +%N %F)\n");
+constext txt_attrib_file_fcc[] = N_("#  fcc=STRING (eg. =mailbox)\n");
+constext txt_attrib_file_followup_to[] = N_("#  followup_to=STRING\n");
+constext txt_attrib_file_from[] = N_("#  from=STRING (just append wanted From:-line, don't use quotes)\n");
+constext txt_attrib_file_grp_catchup[] = N_("#  group_catchup_on_exit=ON/OFF\n");
+constext txt_attrib_file_grp_fmt[] = N_("#  group_format=STRING (eg. %n %m %R %L  %s  %F)\n");
+constext txt_attrib_file_mail_8bit_hdr[] = N_("#  mail_8bit_header=ON/OFF\n");
+constext txt_attrib_file_mail_mime_enc[] = N_("#  mail_mime_encoding=supported_encoding");
+#ifdef HAVE_ISPELL
+	constext txt_attrib_file_ispell[] = N_("#  ispell=STRING\n");
+#endif /* HAVE_ISPELL */
+constext txt_attrib_file_maildir[] = N_("#  maildir=STRING (eg. ~/Mail)\n");
+constext txt_attrib_file_mailing_list[] = N_("#  mailing_list=STRING (eg. majordomo@example.org)\n");
+constext txt_attrib_file_mime_types_to_save[] = N_("#  mime_types_to_save=STRING (eg. image/*,!image/bmp)\n");
+constext txt_attrib_file_mark_ignore_tags[] = N_("#  mark_ignore_tags=ON/OFF\n");
+constext txt_attrib_file_mark_saved_read[] = N_("#  mark_saved_read=ON/OFF\n");
+constext txt_attrib_file_mime_forward[] = N_("#  mime_forward=ON/OFF\n");
+#ifdef CHARSET_CONVERSION
+	constext txt_attrib_file_mm_network_charset[] = N_("#  mm_network_charset=supported_charset");
+	constext txt_attrib_file_undeclared_charset[] = N_("#  undeclared_charset=STRING (default is US-ASCII)\n");
+#endif /* CHARSET_CONVERSION */
+constext txt_attrib_file_hdr_to_disp[] = N_("#  news_headers_to_display=STRING\n");
+constext txt_attrib_file_hdr_to_not_disp[] = N_("#  news_headers_to_not_display=STRING\n");
+constext txt_attrib_file_quote_fmt[] = N_("#  news_quote_format=STRING\n");
+constext txt_attrib_file_organization[] = N_("#  organization=STRING (if beginning with '/' read from file)\n");
+constext txt_attrib_file_pos_first_unread[] = N_("#  pos_first_unread=ON/OFF\n");
+constext txt_attrib_file_post_8bit_hdr[] = N_("#  post_8bit_header=ON/OFF\n");
+constext txt_attrib_file_post_mime_enc[] = N_("#  post_mime_encoding=supported_encoding");
+constext txt_attrib_file_post_proc_type[] = N_("#  post_process_type=NUM\n");
+constext txt_attrib_file_post_proc_view[] = N_("#  post_process_view=ON/OFF\n");
+constext txt_attrib_file_quick_kill_scope[] = N_("#  quick_kill_scope=STRING (e.g. talk.*)\n");
+constext txt_attrib_file_quick_kill_expire[] = N_("#  quick_kill_expire=ON/OFF\n");
+constext txt_attrib_file_quick_kill_case[] = N_("#  quick_kill_case=ON/OFF\n");
+constext txt_attrib_file_quick_kill_hdr[] = N_("#  quick_kill_header=NUM\n");
+constext txt_attrib_file_quick_kill_hdr_0_1[] = N_("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n");
+constext txt_attrib_file_quick_kill_hdr_2_3[] = N_("#    2=From: (case sensitive)     3=From: (ignore case)\n");
+constext txt_attrib_file_quick_kill_hdr_4[] = N_("#    4=Message-ID: & full References: line\n");
+constext txt_attrib_file_quick_kill_hdr_5[] = N_("#    5=Message-ID: & last References: entry only\n");
+constext txt_attrib_file_quick_kill_hdr_6[] = N_("#    6=Message-ID: entry only     7=Lines:\n");
+constext txt_attrib_file_quick_select_scope[] = N_("#  quick_select_scope=STRING\n");
+constext txt_attrib_file_quick_select_expire[] = N_("#  quick_select_expire=ON/OFF\n");
+constext txt_attrib_file_quick_select_case[] = N_("#  quick_select_case=ON/OFF\n");
+constext txt_attrib_file_quick_select_hdr[] = N_("#  quick_select_header=NUM\n");
+constext txt_attrib_file_quick_select_hdr_0_1[] = N_("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n");
+constext txt_attrib_file_quick_select_hdr_2_3[] = N_("#    2=From: (case sensitive)     3=From: (ignore case)\n");
+constext txt_attrib_file_quick_select_hdr_4[] = N_("#    4=Message-ID: & full References: line\n");
+constext txt_attrib_file_quick_select_hdr_5[] = N_("#    5=Message-ID: & last References: entry only\n");
+constext txt_attrib_file_quick_select_hdr_6[] = N_("#    6=Message-ID: entry only     7=Lines:\n");
+constext txt_attrib_file_quote_chars[] = N_("#  quote_chars=STRING (%I for initials)\n");
+#ifndef DISABLE_PRINTING
+	constext txt_attrib_file_print_hdr[] = N_("#  print_header=ON/OFF\n");
+#endif /* !DISABLE_PRINTING */
+constext txt_attrib_file_process_only_unread[] = N_("#  process_only_unread=ON/OFF\n");
+constext txt_attrib_file_prompt_followup[] = N_("#  prompt_followupto=ON/OFF\n");
+constext txt_attrib_file_savedir[] = N_("#  savedir=STRING (eg. ~user/News)\n");
+constext txt_attrib_file_savefile[] = N_("#  savefile=STRING (eg. =linux)\n");
+constext txt_attrib_file_sigfile[] = N_("#  sigfile=STRING (eg. $var/sig)\n");
+constext txt_attrib_file_show_author[] = N_("#  show_author=NUM\n");
+constext txt_attrib_file_show_signatures[] = N_("#  show_signatures=ON/OFF\n");
+constext txt_attrib_file_show_art_score[] = N_("#  show_art_score=ON/OFF\n");
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	constext txt_attrib_file_suppress_soft_hyphens[] = N_("#  suppress_soft_hyphens=ON/OFF\n");
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+constext txt_attrib_file_show_only_unread[] = N_("#  show_only_unread_arts=ON/OFF\n");
+constext txt_attrib_file_sigdashes[] = N_("#  sigdashes=ON/OFF\n");
+constext txt_attrib_file_signature_repost[] = N_("#  signature_repost=ON/OFF\n");
+constext txt_attrib_file_sort_art_type[] = N_("#  sort_article_type=NUM\n");
+constext txt_attrib_file_sort_thrd_type[] = N_("#  sort_threads_type=NUM\n");
+constext txt_attrib_file_tex2iso[] = N_("#  tex2iso_conv=ON/OFF\n");
+constext txt_attrib_file_thrd_catchup[] = N_("#  thread_catchup_on_exit=ON/OFF\n");
+constext txt_attrib_file_thrd_arts[] = N_("#  thread_articles=NUM");
+constext txt_attrib_file_thrd_fmt[] = N_("#  thread_format=STRING (eg. %n %m [%L]  %T  %F)\n");
+constext txt_attrib_file_thrd_perc[] = N_("#  thread_perc=NUM\n");
+constext txt_attrib_file_trim_art_body[] = N_("#  trim_article_body=NUM\n");
+constext txt_attrib_file_trim_art_body_0[] = N_("#    0 = Don't trim article body\n");
+constext txt_attrib_file_trim_art_body_1[] = N_("#    1 = Skip leading blank lines\n");
+constext txt_attrib_file_trim_art_body_2[] = N_("#    2 = Skip trailing blank lines\n");
+constext txt_attrib_file_trim_art_body_3[] = N_("#    3 = Skip leading and trailing blank lines\n");
+constext txt_attrib_file_trim_art_body_4[] = N_("#    4 = Compact multiple blank lines between text blocks\n");
+constext txt_attrib_file_trim_art_body_5[] = N_("#    5 = Compact multiple blank lines between text blocks and skip\n#        leading blank lines\n");
+constext txt_attrib_file_trim_art_body_6[] = N_("#    6 = Compact multiple blank lines between text blocks and skip\n#        trailing blank lines\n");
+constext txt_attrib_file_trim_art_body_7[] = N_("#    7 = Compact multiple blank lines between text blocks and skip\n#        leading and trailing blank lines\n");
+constext txt_attrib_file_verbatim_handling[] = N_("#  verbatim_handling=ON/OFF\n");
+#ifdef HAVE_COLOR
+	constext txt_attrib_file_extquote_handling[] = N_("#  extquote_handling=ON/OFF\n");
+#endif /* HAVE_COLOR */
+constext txt_attrib_file_wrap_on_unread[] = N_("#  wrap_on_next_unread=ON/OFF\n");
+constext txt_attrib_file_x_body[] = N_("#  x_body=STRING (eg. ~/.tin/extra-body-text)\n");
+constext txt_attrib_file_x_comment[] = N_("#  x_comment_to=ON/OFF\n");
+constext txt_attrib_file_x_headers[] = N_("#  x_headers=STRING (eg. ~/.tin/extra-headers)\n");
+constext txt_attrib_file_note_1[] = N_("#\n# Note that it is best to put general (global scoping)\n");
+constext txt_attrib_file_note_2[] = N_("# entries first followed by group specific entries.\n#\n");
+constext txt_attrib_file_footer[] = N_("############################################################################\n");
 constext txt_attrib_menu_com[] = N_("Attributes Menu Commands");
 constext txt_attrib_no_scope[] = N_("attribute with no scope: %s");
 #ifdef NNTP_ABLE
@@ -122,6 +244,9 @@ constext txt_base_article_range[] = N_("Base article range");
 constext txt_batch_update_unavail[] = N_("%s: Updating of index files not supported: cache_overview_files=%s");
 constext txt_begin_of_art[] = N_("*** Beginning of article ***");
 constext txt_begin_of_page[] = N_("*** Beginning of page ***");
+#if !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
+	constext txt_bytes[] = N_("bytes");
+#endif /* !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING) */
 
 constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) article [%%s]? (%s/%s/%s): ");
 constext txt_cancelling_art[] = N_("Cancelling article...");
@@ -138,6 +263,7 @@ constext txt_cannot_post_group[] = N_("Posting is not allowed to %s");
 #ifdef NNTP_ABLE
 	constext txt_cannot_retrieve[] = N_("Can't retrieve %s");
 #endif /* NNTP_ABLE */
+constext txt_cannot_supersede_mailgroups[] = N_("Can't supersede in mailgroups, try repost instead.");
 constext txt_cannot_write_to_directory[] = N_("%s is a directory");
 constext txt_catchup[] = N_("Catchup");
 constext txt_catchup_group[] = N_("Catchup %s...");
@@ -154,9 +280,76 @@ constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=sha
 	constext txt_color_on[] = N_("ANSI color enabled");
 #endif /* HAVE_COLOR */
 constext txt_command_failed[] = N_("Command failed: %s");
-constext txt_copyright_notice[] = "%s (c) Copyright 1991-2023 Iain Lea.";
+constext txt_copyright_notice[] = "%s (c) Copyright 1991-2024 Iain Lea.";
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 constext txt_connection_info[] = N_("Connection Info");
+constext txt_conninfo_local_spool[] = N_("Reading from local spool.\n");
+constext txt_conninfo_saved_news[] = N_("Reading saved news.\n");
+#ifndef NNTP_ONLY
+	constext txt_conninfo_active_file[] = "ACTIVE_FILE       : %s\n";
+	constext txt_conninfo_active_times_file[] = "ACTIVE_TIMES_FILE : %s\n";
+	constext txt_conninfo_newsgroups_file[] = "NEWSGROUPS_FILE   : %s\n";
+	constext txt_conninfo_novrootdir[] = "NOVROOTDIR        : %s\n";
+	constext txt_conninfo_overview_file[] = "OVERVIEW_FILE     : %s\n";
+	constext txt_conninfo_overview_fmt[] = "OVERVIEW_FMT      : %s\n";
+	constext txt_conninfo_spool_config[] = N_("\nLocal spool config:\n-------------------\n");
+	constext txt_conninfo_spooldir[] = "SPOOLDIR          : %s\n";
+	constext txt_conninfo_subscriptions_file[] = "SUBSCRIPTIONS_FILE: %s\n";
+#endif /* !NNTP_ONLY */
+#ifdef NNTP_ABLE
+	constext txt_conninfo_compress[] = N_("COMPRESS      :");
+	constext txt_conninfo_conn_details[] = N_("\nConnection details:\n-------------------\n");
+#	ifdef USE_ZLIB
+	constext txt_conninfo_deflate[] = N_(" DEFLATE %s\n");
+	constext txt_conninfo_enabled[] = N_("(enabled)");
+	constext txt_conninfo_inactive[] = N_("(inactive)");
+#	else
+	constext txt_conninfo_deflate_unsupported[] = N_(" DEFLATE (not supported)\n");
+#	endif /* USE_ZLIB */
+#	if defined(HAVE_ALARM) && defined(SIGALRM)
+	constext txt_conninfo_disabled[] = N_("(disabled)");
+	constext txt_conninfo_timeout[] = N_("NNTP TIMEOUT  : %d seconds %s\n");
+#	endif /* HAVE_ALARM && SIGALRM */
+	constext txt_conninfo_implementation[] = N_("IMPLEMENTATION: %s\n");
+#	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
+	constext txt_conninfo_maxartnum[] = N_("MAXARTNUM     : %s\n");
+#	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
+	constext txt_conninfo_nntp[] = N_("Reading via NNTP (%s).\n");
+	constext txt_conninfo_port[] = N_("NNTPPORT      : %u\n");
+	constext txt_conninfo_ro[] = N_("read only");
+	constext txt_conninfo_rw[] = N_("read/write");
+	constext txt_conninfo_server[] = N_("NNTPSERVER    : %s\n");
+#	ifdef NNTPS_ABLE
+	constext txt_conninfo_nntps[] = N_("Reading %s via NNTPS (%s; ");
+#		if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_LIBTLS) || defined(HAVE_LIB_OPENSSL)
+		constext txt_conninfo_fmt_error[] = "<formatting error>";
+		constext txt_conninfo_issuer[] = N_("Issuer : %s\n");
+		constext txt_conninfo_server_cert_info[] = N_("\nServer certificate information:\n-------------------------------\n");
+		constext txt_conninfo_subject[] = N_("Subject: %s\n");
+		constext txt_conninfo_tls_info[] = N_("\nTLS information:\n----------------\n");
+#		endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_LIBTLS) || defined(HAVE_LIB_OPENSSL) */
+#		if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL)
+		constext txt_conninfo_cert[] = N_("Certificate #%d\n");
+		constext txt_conninfo_error_unexpected[] = N_("UNEXPECTED, possible BUG");
+		constext txt_conninfo_error_tolerated[] = N_("tolerated as \"-k\" (insecure) requested");
+		constext txt_conninfo_verify_failed[] = N_("Server certificate verification FAILED:\n\t%s (%s)\n");
+		constext txt_conninfo_verify_successful[] = N_("Server certificate verified successfully.\n");
+#		endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL) */
+	constext txt_conninfo_trusted[] = N_("trusted");
+	constext txt_conninfo_untrusted[] = N_("untrusted");
+#		ifdef HAVE_LIB_GNUTLS
+		constext txt_conninfo_gnutls[] = "GnuTLS %s).\n";
+		constext txt_conninfo_verify_failed_no_reason[] = N_("Server certificate verification FAILED: <can't get reason>\n");
+#		endif /* HAVE_LIB_GNUTLS */
+#		ifdef HAVE_LIB_LIBTLS
+		constext txt_conninfo_libressl[] = "LibreSSL %d).\n";
+		constext txt_conninfo_libtls_info[] = N_("%s %s (strength %d)\n");
+#		endif /* HAVE_LIB_LIBTLS */
+#		ifdef HAVE_LIB_OPENSSL
+		constext txt_conninfo_openssl[] = "%s).\n";
+#		endif /* HAVE_LIB_OPENSSL */
+#	endif /* NNTPS_ABLE */
+#endif /* NNTP_ABLE */
 constext txt_cook_article_failed_exiting[] = N_("Cook article failed, %s is exiting");
 constext txt_cr[] = N_("<CR>");
 constext txt_creating_active[] = N_("Creating active file for saved groups...\n");
@@ -201,6 +394,7 @@ constext txt_error_bad_to[] = N_("\nError: Bad address in To: header.\n");
 #endif /* NNTP_ABLE && USE_ZLIB */
 constext txt_error_copy_fp[] = "copy_fp() failed";
 constext txt_error_corrupted_file[] = N_("Corrupted file %s");
+constext txt_error_couldnt_expand[] = N_("couldn't expand %s\n");
 constext txt_error_fseek[] = "fseek() error on [%s]";
 constext txt_error_followup_poster[] = N_("\nError: Followup-To \"poster\" and a newsgroup is not allowed!\n");
 constext txt_error_format_string[] = N_("Error: Custom format exceeds screen width. Using default \"%s\".");
@@ -251,9 +445,15 @@ constext txt_error_header_line_missing[] = N_("\nError: The \"%s:\" line is miss
 constext txt_error_header_line_not_7bit[] = N_("\nError: %s contains non 7bit chars.\n");
 constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not have a space after the colon:\n%s\n");
 constext txt_error_header_duplicate[] = N_("\nError: There are multiple (%d) \"%s:\" lines in the header.\n");
+constext txt_error_header_no_name[] = N_("\nError: Header on line %d has no name:\n%s\n");
 # ifndef FILE_MODE_BROKEN
 	constext txt_error_insecure_permissions[] = N_("Insecure permissions of %s (%o)");
 #endif /* !FILE_MODE_BROKEN */
+#ifdef MIME_BREAK_LONG_LINES
+	constext txt_error_should_be_folded[] = N_("Line %d is longer than %d octets and should be folded.\n");
+#else
+	constext txt_error_should_be_shortened[] = N_("Line %d is longer than %d octets and should be shortened.\n");
+#endif /* MIME_BREAK_LONG_LINES */
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	constext txt_error_locale[] = "Can't set the specified locale!";
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
@@ -279,7 +479,11 @@ constext txt_error_passwd_missing[] = N_("Can't get user information (/etc/passw
 	constext txt_error_sender_in_header_not_allowed[] = N_("\nError on line %d: \"Sender:\" header not allowed (it will be added for you)\n");
 #endif /* !FORGERY */
 constext txt_error_server_has_no_listed_groups[] = N_("Server has non of the groups listed in %s");
+constext txt_error_unlink[] = N_("Error: unlink %s");
 constext txt_error_unknown_dlevel[] = N_("Unknown display level");
+#ifndef NNTP_ABLE
+	constext txt_error_unreachable[] = N_("Unreachable?\n");
+#endif /* !NNTP_ABLE */
 constext txt_esc[] = N_("<ESC>");
 constext txt_exiting[] = N_("Exiting...");
 constext txt_external_mail_done[] = N_("leaving external mail-reader");
@@ -289,11 +493,6 @@ constext txt_filesystem_full[] = N_("Error writing %s file. Filesystem full? Fil
 constext txt_filesystem_full_backup[] = N_("Error making backup of %s file. Filesystem full?");
 constext txt_filter_global_rules[] = N_("Filtering global rules (%d/%d) ('q' to quit)...");
 constext txt_filter_rule_created[] = N_("Rule created by: ");
-constext txt_feed_pattern[] = N_("Enter pattern [%s]> ");
-constext txt_followup_newsgroups[] = N_("\nYou requested followups to your article to go to the following %s:\n");
-constext txt_followup_poster[] = N_("  %s\t Answers will be directed to you by mail.\n");
-constext txt_forwarded[] = N_("-- forwarded message --\n");
-constext txt_forwarded_end[] = N_("-- end of forwarded message --\n");
 constext txt_filter_file[] = N_("# Format:\n\
 #   comment=STRING    Optional. Multiple lines allowed. Comments must be placed\n\
 #                     at the beginning of a rule, or they will be moved to the\n\
@@ -318,13 +517,26 @@ constext txt_filter_file[] = N_("# Format:\n\
 #                     Be aware that filtering on Path: may significantly slow\n\
 #                     down the process.\n\
 #   time=NUM          Optional. time_t value when rule expires\n#\n");
+/* do NOT localize the next string! */
+constext txt_filter_file_version[] = "# Filter file V%s for the TIN newsreader\n#\n";
 constext txt_filter_score[] = N_("Enter score for rule (default=%d): ");
 constext txt_filter_score_help[] = N_("Enter the score weight (range 0 < score <= %d)"); /* SCORE_MAX */
 constext txt_full[] = N_("Full");
 constext txt_filter_comment[] = N_("Comment (optional)  : ");
+#ifdef DEBUG
+	constext txt_filter_error_overview_no_servername[] = N_("Malformed overview entry: servername missing.");
+	constext txt_filter_error_overview_xref[] = N_("\t Xref: %s");
+	constext txt_filter_error_skipping_xref_filter[] = N_("Skipping Xref filter");
+#endif /* DEBUG */
 constext txt_filter_text_type[] = N_("Apply pattern to    : ");
+constext txt_feed_pattern[] = N_("Enter pattern [%s]> ");
+constext txt_followup_newsgroups[] = N_("\nYou requested followups to your article to go to the following %s:\n");
+constext txt_followup_poster[] = N_("  %s\t Answers will be directed to you by mail.\n");
+constext txt_forwarded[] = N_("-- forwarded message --\n");
+constext txt_forwarded_end[] = N_("-- end of forwarded message --\n");
 constext txt_from_line_only[] = N_("From: line (ignore case)      ");
 constext txt_from_line_only_case[] = N_("From: line (case sensitive)   ");
+
 #ifdef NNTP_ABLE
 	constext txt_gethostbyname[] = N_("%s%s: Unknown host.\n");
 #endif /* NNTP_ABLE */
@@ -678,10 +890,14 @@ constext txt_mini_thread_2[] = N_("%s=help; %s=line down; %s=line up; %s=quit; %
 constext txt_mini_url_1[] = N_("<n>=set current to n; %s=line down; %s=line up; %s=help; %s=quit");
 constext txt_mini_url_2[] = N_("%s=search forwards; %s=search backwards; %s=repeat search");
 constext txt_more[] = N_("--More--");
+#ifdef NNTP_ABLE
+	constext txt_motd[] = N_("MOTD: %s\n");
+#endif /* NNTP_ABLE */
 constext txt_moving[] = N_("Moving %s...");
 constext txt_msgid_line_last[] = N_("Message-ID: & last Reference  ");
 constext txt_msgid_line_only[] = N_("Message-ID: line              ");
 constext txt_msgid_refs_line[] = N_("Message-ID: & References: line");
+
 constext txt_newsgroup[] = N_("Go to newsgroup [%s]> ");
 constext txt_newsgroup_plural[] = N_("newsgroups");
 constext txt_newsgroup_position[] = N_("Position %s in group list (1,2,..,$) [%d]> ");
@@ -722,6 +938,7 @@ constext txt_no_subject[] = N_("No subject");
 	constext txt_no_term_set[] = N_("%s: TERM variable must be set to use screen capabilities\n");
 #endif /* !USE_CURSES */
 constext txt_no_viewer_found[] = N_("No viewer found for %s/%s\n");
+constext txt_none[] = N_("None");
 constext txt_not_exist[] = N_("Newsgroup does not exist on this server");
 constext txt_not_in_active_file[] = N_("Group %s not found in active file");
 constext txt_nrctbl_create[] = N_("c)reate it, use a)lternative name, use d)efault .newsrc, q)uit tin: ");
@@ -732,6 +949,7 @@ constext txt_nrctbl_info[] = N_("# NNTP-server -> newsrc translation table and N
 # if <newsrc file> is given without path, $HOME is assumed as its location\n\
 #\n# examples:\n#   news.tin.org      .newsrc-tin.org  tinorg\n\
 #   news.example.org  /tmp/nrc-ex      example    ex\n#\n");
+constext txt_null[] = N_("NULL");
 
 constext txt_only[] = N_("Only");
 constext txt_option_not_enabled[] = N_("Option not enabled. Recompile with %s.");
@@ -760,6 +978,10 @@ constext txt_post_processing_finished[] = N_("-- post processing completed --");
 constext txt_post_subject[] = N_("Post subject [%s]> ");
 constext txt_posted_info_file[] = N_("# Summary of mailed/posted messages viewable by 'W' command from within tin.\n");
 constext txt_posting[] = N_("Posting article...");
+#ifdef NNTP_INEWS
+	constext txt_posting_failed[] = N_("Posting failed (%s)");
+#endif /* NNTP_INEWS */
+constext txt_postpone_post[] = N_("Posting: %.*s ...");
 constext txt_postpone_repost[] = N_("Post postponed articles [%%s]? (%s/%s/%s/%s/%s): ");
 constext txt_prefix_hot[] = N_("Hot %s");
 constext txt_prefix_tagged[] = N_("Tagged %s");
@@ -767,6 +989,7 @@ constext txt_prefix_untagged[] = N_("Untagged %s");
 #ifdef NNTP_ABLE
 	constext txt_prep_for_filter_on_path[] = N_("Preparing for filtering on Path header (%d/%d)...");
 #endif /* NNTP_ABLE */
+constext txt_processing_attributes[] = N_("Processing attributes...");
 constext txt_processing_mail_arts[] = N_("Processing mail messages marked for deletion.");
 constext txt_processing_saved_arts[] = N_("Processing saved articles marked for deletion.");
 constext txt_prompt_fup_ignore[] = N_("Accept Followup-To? %s=post, %s=ignore, %s=quit: ");
@@ -794,9 +1017,13 @@ constext txt_reading_arts[] = N_("Reading %s articles...");
 constext txt_reading_attributes_file[] = N_("Reading %sattributes file...\n");
 constext txt_reading_config_file[] = N_("Reading %sconfig file...\n");
 constext txt_reading_filter_file[] = N_("Reading filter file...\n");
+#ifdef DEBUG
+	constext txt_reading_from_spool[] = N_("reading from local spool");
+#endif /* DEBUG */
+constext txt_reading_group[] = N_("Reading %s\n");
 constext txt_reading_groups[] = N_("Reading %s groups...");
 constext txt_reading_input_history_file[] = N_("Reading input history file...\n");
-constext txt_reading_keymap_file[] = N_("Reading keymap file...\n");
+constext txt_reading_keymap_file[] = N_("Reading keymap file: %s\n");
 constext txt_reading_news_active_file[] = N_("Reading groups from active file... ");
 constext txt_reading_news_newsrc_file[] = N_("Reading groups from newsrc file... ");
 constext txt_reading_newsgroups_file[] = N_("Reading newsgroups file... ");
@@ -815,9 +1042,9 @@ constext txt_repost_group[] = N_("Repost article(s) to group(s) [%s]> ");
 constext txt_reset_newsrc[] = N_("Reset newsrc?");
 constext txt_resp_redirect[] = N_("Responses have been directed to the following newsgroups");
 constext txt_resp_to_poster[] = N_("Responses have been directed to poster. %s=mail, %s=post, %s=quit: ");
-
 constext txt_return_key[] = N_("Press <RETURN> to continue...");
 
+constext txt_art_score[] = N_("Score: %s");
 constext txt_select_from[] = N_("Select From    [%s] (y/n): ");
 constext txt_select_lines[] = N_("Select Lines: (</>num): ");
 constext txt_select_menu[] = N_("Auto-select Article Menu");
@@ -826,6 +1053,9 @@ constext txt_select_scope[] = N_("Select pattern scope: ");
 constext txt_select_subj[] = N_("Select Subject [%s] (y/n): ");
 constext txt_select_text[] = N_("Select text pattern : ");
 constext txt_select_time[] = N_("Select time in days   : ");
+constext txt_selection_flag_insecure[] = N_("[k]");
+constext txt_selection_flag_secure[] = N_("[T]");
+constext txt_selection_flag_only_unread[] = N_(" R");
 constext txt_serverconfig_header[] = N_("# %s server configuration file\n\
 # This file was automatically saved by %s %s %s (\"%s\")\n#\n\
 # Do not edit while %s is running, since all your changes to this file\n\
@@ -873,6 +1103,7 @@ constext txt_select_pattern[] = N_("Enter selection pattern [%s]> ");
 constext txt_select_thread[] = N_("Select thread> ");
 constext txt_send_bugreport[] = N_("%s %s %s (\"%s\"): send a DETAILED bug report to %s\n");
 constext txt_servers_active[] = N_("servers active-file");
+constext txt_skipped_group[] = N_("Skipped %s");
 constext txt_skipping_newgroups[] = N_("Cannot move into new newsgroups. Subscribe first...");
 constext txt_space[] = N_("<SPACE>");
 constext txt_starting_command[] = N_("Starting: (%s)");
@@ -890,6 +1121,7 @@ constext txt_suspended_message[] = N_("\nStopped. Type 'fg' to restart %s\n");
 constext txt_time_default_days[] = N_("%d days");
 constext txt_tab[] = N_("<TAB>");
 constext txt_tex[] = N_("TeX ");
+constext txt_tin_version[] = N_("Version: %s %s release %s (\"%s\")");
 constext txt_tinrc_defaults[] = N_("# Default action/prompt strings\n");
 constext txt_tinrc_filter[] = N_("# Defaults for quick (1 key) kill & auto-selection filters\n\
 # header=NUM  0,1=Subject: 2,3=From: 4=Message-ID: & full References: line\n\
@@ -914,6 +1146,31 @@ constext txt_thread_marked_as_selected[] = N_("Thread selected");
 constext txt_thread_singular[] = N_("thread");
 constext txt_thread_x_of_n[] = N_("Thread %4s of %4s");
 constext txt_threading_arts[] = N_("Threading articles...");
+constext txt_threading_by_multipart[] = N_("Threading by multipart");
+#if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
+	constext txt_tls_handshake_failed[] = N_("TLS handshake failed: %s\n");
+#	ifdef HAVE_LIB_LIBTLS
+	constext txt_retr_cipher_failed[] = N_("<failed to retrieve cipher>");
+	constext txt_retr_issuer_failed[] = N_("<failed to retrieve issuer>");
+	constext txt_retr_subject_failed[] = N_("<failed to retrieve subject>");
+	constext txt_retr_version_failed[] = N_("<failed to retrieve version>");
+	constext txt_tls_handshake_done[] = N_("%s handshake done: %s\n");
+	constext txt_tls_unknown_error[] = N_("unknown error");
+#	endif /* HAVE_LIB_LIBTLS */
+#	ifdef HAVE_LIB_GNUTLS
+	constext txt_tls_handshake_failed_with_err_num[] = N_("TLS handshake failed: %s (%d)\n");
+	constext txt_tls_peer_verify_failed[] = N_("TLS peer verification failed: %s\n");
+	constext txt_tls_peer_verify_failed_continuing[] = N_("TLS peer verification failed, continuing anyway as requested: %s\n");
+	constext txt_tls_unable_to_get_status[] = N_("<unable to retrieve status>");
+	constext txt_tls_unexpected_status[] = N_("unexpected certificate verification status!");
+#	endif /* HAVE_LIB_GNUTLS */
+#	ifdef HAVE_LIB_OPENSSL
+	constext txt_tls_peer_verify_failed_continuing[] = N_("TLS peer verification failed: %s.\nContinuing anyway as requested.\n");
+#	endif /* HAVE_LIB_OPENSSL */
+#	if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL)
+	constext txt_tls_handshake_done[] = N_("TLS handshake done: %s\n");
+#	endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL) */
+#endif /* NNTP_ABLE && NNTPS_ABLE */
 constext txt_toggled_high[] = N_("Toggled word highlighting %s");
 constext txt_toggled_rot13[] = N_("Toggled rot13 encoding");
 constext txt_toggled_tex2iso[] = N_("Toggled German TeX encoding %s");
@@ -929,6 +1186,8 @@ constext txt_unsubscribe_pattern[] = N_("Enter wildcard unsubscribe pattern> ");
 constext txt_uu_error_decode[] = N_("Error decoding %s : %s");
 constext txt_uu_error_no_end[] = N_("No end.");
 constext txt_uu_success[] = N_("%s successfully decoded.");
+constext txt_unchanged[] = N_("unchanged");
+constext txt_unknown[] = N_("(unknown)");
 constext txt_unread[] = N_("unread");
 constext txt_unsubscribed_num_groups[] = N_("unsubscribed from %d groups");
 constext txt_unsubscribed_to[] = N_("Unsubscribed from %s");
@@ -975,10 +1234,9 @@ constext txt_uue_complete[] = N_("uuencoded file");
 constext txt_uue_incomplete[] = N_("incomplete uuencoded file");
 
 #if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
-	constext txt_valid_not_after[] = "Valid not after : %s\n";
-	constext txt_valid_not_before[] = "Valid not before: %s\n";
+	constext txt_valid_not_after[] = N_("Valid not after : %s\n");
+	constext txt_valid_not_before[] = N_("Valid not before: %s\n");
 #endif /* NNTP_ABLE && NNTPS_ABLE */
-
 constext txt_value_out_of_range[] = N_("\n%s%d out of range (0 - %d). Reset to 0");
 constext txt_view_attachment[] = N_("View '%s' (%s/%s)?");
 
@@ -1031,8 +1289,37 @@ constext txt_warn_suspicious_mail[] = N_("Warning: this mail address may contain
 constext txt_warn_unprintable_char[] = N_("Warning: line %d contains unprintable chars:\n%s\n");
 constext txt_warn_wrong_sig_format[] = N_("\nWarning: Signatures should start with '-- \\n' not with '--\\n'.\n");
 constext txt_writing_attributes_file[] = N_("Writing attributes file...");
+constext txt_writing_group[] = N_("Writing %s\n");
+constext txt_writing_overview[] = N_("Writing overview cache...");
 
 constext txt_x_resp[] = N_("%4d Responses");
+#ifdef XFACE_ABLE
+	constext txt_xface_error_construct_fifo_name[] = N_("Can't run slrnface: couldn't construct fifo name.");
+	constext txt_xface_error_create_failed[] = N_("Can't run slrnface: failed to create %s");
+	constext txt_xface_error_exited_abnormal[] = N_("Slrnface abnormally exited, code %d.");
+	constext txt_xface_error_finally_failed[] = N_("Slrnface failed: %s.");
+	constext txt_xface_error_missing_env_var[] = N_("Can't run slrnface: Environment variable %s not found.");
+	constext txt_xface_error_no_xterm[] = N_("Can't run slrnface: Not running in an xterm.");
+	constext txt_xface_msg_cannot_connect_display[] = N_("couldn't connect to display");
+	constext txt_xface_msg_cannot_open_fifo[] = N_("can't open FIFO");
+	constext txt_xface_msg_executable_not_found[] = N_("executable not found");
+	constext txt_xface_msg_fork_failed[] = N_("fork() failed");
+	constext txt_xface_msg_no_controlling_terminal[] = N_("couldn't find controlling terminal");
+	constext txt_xface_msg_no_width_and_height_avail[] = N_("terminal doesn't export width and height");
+	constext txt_xface_msg_unknown_error[] = N_("unknown error");
+	constext txt_xface_msg_windowid_not_found[] = N_("WINDOWID not found in environment");
+	constext txt_xface_readme[] = N_("This directory is used to create named pipes for communication between\n\
+slrnface and its parent process. It should normally be empty because\n\
+the pipe is deleted right after it has been opened by both processes.\n\n\
+File names generated by slrnface have the form \"hostname.pid\". It is\n\
+probably an error if they linger here longer than a fraction of a second.\n\n\
+However, if the directory is mounted from an NFS server, you might see\n\
+special files created by your NFS server while slrnface is running.\n\
+Do not try to remove them.\n");
+#endif /* XFACE_ABLE */
+#if defined(NNTP_ABLE) && defined(XHDR_XREF)
+	constext txt_xref_loop[] = "%s XREF loop";
+#endif /* NNTP_ABLE && XHDR_XREF */
 
 constext txt_yanked_groups[] = N_("Added %d %s");
 constext txt_yanked_none[] = N_("No unsubscribed groups to show");
@@ -1154,15 +1441,24 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_caching_off[] = N_("Try cache_overview_files to speed up things.\n");
 	constext txt_caching_on[] = N_("Tin will use local index files instead.\n");
 	constext txt_cannot_get_nntp_server_name[] = N_("Cannot find NNTP server name");
+	constext txt_capabilities_without_reader[] = N_("CAPABILITIES did not announce READER");
 	constext txt_connecting_port[] = N_("Connecting to %s:%u...");
+	constext txt_connection_error[] = N_("NNTP connection error. Exiting...");
 	constext txt_disconnecting[] = N_("Disconnecting from server...");
 	constext txt_failed_to_connect_to_server[] = N_("Failed to connect to NNTP server %s. Exiting...");
 	constext txt_nntp_ok_goodbye[] = N_("205  Closing connection");
 	constext txt_no_xover_support[] = N_("Your server does not support the NNTP XOVER or OVER command.\n");
+#	ifdef DEBUG
+		constext txt_port_not_numeric[] = N_("Port isn't numeric: %s:%s\n");
+		constext txt_port_not_numeric_in[] = N_("Port in %s isn't numeric: %s:%s\n");
+		constext txt_reconnect_limit_reached[] = N_("reconnect (%d) limit %d reached, giving up.");
+#	endif /* DEBUG */
 	constext txt_reconnect_to_news_server[] = N_("Connection to news server has timed out. Reconnect?");
 	constext txt_server_name_in_file_env_var[] = N_("Put the server name in the file %s,\nor set the environment variable NNTPSERVER");
 #ifdef USE_ZLIB
-	constext txt_usage_compress[] = N_("  -C       try COMPRESS NNTP extension");
+		constext txt_continuing[] = N_("Continuing...");
+		constext txt_read_timeout_quit[] = N_("Read timeout from server (%d seconds) - quit tin?");
+		constext txt_usage_compress[] = N_("  -C       try COMPRESS NNTP extension");
 #endif /* USE_ZLIB */
 	constext txt_usage_force_authentication[] = N_("  -A       force authentication on connect");
 	constext txt_usage_newsserver[] = N_("  -g serv  read news from NNTP server serv [default=%s]");
@@ -1967,6 +2263,12 @@ struct opttxt txt_show_signatures = {
 	N_("# If OFF don't show signatures when displaying articles\n")
 };
 
+struct opttxt txt_show_art_score = {
+	N_("Display article score. <SPACE> toggles & <CR> sets."),
+	N_("Display article score"),
+	N_("# If ON show article score when displaying articles\n")
+};
+
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 struct opttxt txt_suppress_soft_hyphens = {
 	N_("Remove soft hyphens. <SPACE> toggles & <CR> sets."),
@@ -2396,6 +2698,20 @@ struct opttxt txt_col_signature = {
 	N_("Color of signatures"),
 	N_("# Color of signature\n\
 # Default: 4 (blue)\n")
+};
+
+struct opttxt txt_col_score_neg = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Color of negative score"),
+	N_("# Color of negative score\n\
+# Default: 1 (red)\n")
+};
+
+struct opttxt txt_col_score_pos = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Color of positive score"),
+	N_("# Color of positive score\n\
+# Default: 2 (green)\n")
 };
 
 struct opttxt txt_col_urls = {

@@ -3,10 +3,10 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2022-02-19
+ *  Updated   : 2023-11-27
  *  Notes     : PGP support
  *
- * Copyright (c) 1995-2023 Steven J. Madsen <steve@erinet.com>
+ * Copyright (c) 1995-2024 Steven J. Madsen <steve@erinet.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -298,8 +298,8 @@ pgp_append_public_key(
 
 	if ((CURR_GROUP.attribute->from) != NULL && strlen(CURR_GROUP.attribute->from))
 		strip_name(CURR_GROUP.attribute->from, buf);
-	else
-		snprintf(buf, sizeof(buf), "%s@%s", userid, BlankIfNull(get_host_name()));
+	else /* FIXME: avoid hardcoded length */
+		snprintf(buf, sizeof(buf), "%.255s@%.765s", userid, BlankIfNull(get_host_name()));
 
 	snprintf(tmp, sizeof(tmp), KEYFILE, (long) process_id);
 	joinpath(keyfile, sizeof(keyfile), tmpdir, tmp);
@@ -439,7 +439,8 @@ pgp_check_article(
 	t_openartinfo *artinfo)
 {
 	FILE *art;
-	char artfile[PATH_LEN], buf[LEN], cmd[LEN];
+	char artfile[PATH_LEN], buf[LEN], *cmd;
+	size_t len;
 	t_bool pgp_signed = FALSE;
 	t_bool pgp_key = FALSE;
 
@@ -480,12 +481,14 @@ pgp_check_article(
 
 	if (pgp_signed) {
 		Raw(FALSE);
-
 		/*
-		 * We don't use sh_format here else the redirection get misquoted
+		 * We don't use sh_format here else the redirection gets misquoted
 		 */
-		snprintf(cmd, sizeof(cmd), CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT);
+		len = snprintf(NULL, 0, CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT);
+		cmd = my_malloc(++len);
+		snprintf(cmd, len, CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT);
 		invoke_cmd(cmd);
+		free(cmd);
 		my_printf("\n");
 		Raw(TRUE);
 	}
@@ -501,9 +504,12 @@ pgp_check_article(
 	if (pgp_key) {
 		if (prompt_yn(_(txt_pgp_add), FALSE) == 1) {
 			Raw(FALSE);
-
-			sh_format(cmd, sizeof(cmd), ADD_KEY, PGPNAME, pgpopts, artfile);
+			len = snprintf(NULL, 0, ADD_KEY, PGPNAME, pgpopts, artfile);
+			len <<= 1; /* double size for quoting */
+			cmd = my_malloc(++len);
+			sh_format(cmd, len, ADD_KEY, PGPNAME, pgpopts, artfile);
 			invoke_cmd(cmd);
+			free(cmd);
 			my_printf("\n");
 			Raw(TRUE);
 		}

@@ -3,10 +3,10 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-01-28
+ *  Updated   : 2023-11-22
  *  Notes     :
  *
- * Copyright (c) 1991-2023 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -295,6 +295,7 @@ free_all_arrays(
 
 	if (ofmt) { /* ofmt might not be allocated yet on early abort */
 		int i;
+
 		for (i = 0; ofmt[i].name; i++)
 			free(ofmt[i].name);
 		free(ofmt);
@@ -303,6 +304,7 @@ free_all_arrays(
 	tin_fgets(NULL, FALSE);
 	rfc1522_decode(NULL);
 
+	free(backup_article_name);
 	free(tin_progname);
 }
 

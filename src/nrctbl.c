@@ -3,13 +3,13 @@
  *  Module    : nrctbl.c
  *  Author    : Sven Paulus <sven@tin.org>
  *  Created   : 1996-10-06
- *  Updated   : 2020-04-23
+ *  Updated   : 2023-11-12
  *  Notes     : This module does the NNTP server name lookup in
  *              ~/.tin/newsrctable and returns the real hostname
  *              and the name of the newsrc file for a given
  *              alias of the server.
  *
- * Copyright (c) 1996-2023 Sven Paulus <sven@tin.org>
+ * Copyright (c) 1996-2024 Sven Paulus <sven@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -181,7 +181,7 @@ get_newsrcname(
 			int error = 0;
 
 			if (!strfpath(name_found, tmp_newsrc, sizeof(tmp_newsrc), NULL, FALSE)) {
-				my_fprintf(stderr, _("couldn't expand %s\n"), name_found); /* TODO: -> lang.c */
+				my_fprintf(stderr, _(txt_error_couldnt_expand), name_found);
 				error = 1;
 			} else {
 				if (tmp_newsrc[0] == '/') {

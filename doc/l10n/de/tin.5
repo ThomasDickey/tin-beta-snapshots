@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2023-10-31
+.\" Updated   : 2023-11-30
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -222,9 +222,10 @@ needsterminal
 \fI/etc/nntpserver\fP
 .sp
 .RS
-default NNTP\-server to read news from if not reading from the local spool.
-\&'\fB\-g\fP \fIserver\fP', $\fBNNTPSERVER\fP have higher priority (in that order),
-the default server given at compile time has lower priority.
+Standard\-NNTP\-Server zum Lesen von Nachrichten, wenn nicht vom lokalen Spool
+gelesen wird. '\fB\-g\fP \fIServer\fP', $\fBNNTPSERVER\fP haben eine höhere Priorität
+(in dieser Reihenfolge), der zur Kompilierungszeit angegebene Standardserver
+hat eine niedrigere Priorität.
 .RE
 .PP
 
@@ -245,7 +246,7 @@ Benutzer lesbar sein.
 \fI/etc/tin/mime.types\fP
 .sp
 .RS
-mime type / filename extension pairs
+Mime\-Typ / Dateinamen Erweiterungspaare
 .RE
 .PP
 
@@ -297,9 +298,10 @@ Der Name der Newsgruppe.
 Markierung die angibt ob die Gruppe abonniert ist ':' oder nicht '!'.
 .TP 
 \fBArtikel\fP
-range of already read articles from that group; numbers separated by commas
-with sequential numbers collapsed with hyphens. Empty lines and lines which
-start with "#" are ignored and not written back.
+Bereich bereits gelesener Artikel aus dieser Gruppe; durch Kommas getrennte
+Zahlen mit aufeinanderfolgenden Zahlen, die durch Bindestriche
+zusammengefasst sind. Leere Zeilen und Zeilen, die mit "#" beginnen werden
+ignoriert und nicht zurückgeschrieben.
 .TP 
 Beispiel:
 .RS
@@ -365,7 +367,7 @@ Newsgruppen\-Indexdateien
 \fI${TIN_INDEX_SAVEDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.save/\fP
 .sp
 .RS
-saved newsgroups index files
+Indexdateien für gespeicherte Newsgruppen
 .RE
 .PP
 
@@ -380,15 +382,15 @@ mh\-mail\-handling support).
 Pfad der Mailbox relativ zu Feld #4, wobei '/' in '.' umgewandelt sein muss.
 .TP 
 \fBMaximalwert\fP
-just put a large number here, something higher than the highest message in
-the mailbox
+Geben Sie hier einfach eine große Zahl ein, die höher ist als die der
+höchsten Nachricht im Postfach
 .TP 
 \fBMinimalwert\fP
 hier 0 angeben
 .TP 
-\fBmailspool\fP
-path of mail spool directory. This must be the full pathname to the root of
-the mail folder area.
+\fBMailspool\fP
+Pfad des Mail\-Spool\-Verzeichnisses. Dies muss der vollständige Pfadname zum
+Stammverzeichnis des E\-Mail Ordnerbereichs sein.
 .TP 
 Beispiel:
 .RS
@@ -583,10 +585,10 @@ Identisch mit der tinrc\-Variable gleichen Namens
 .\" TODO: document option
 \fBsavefile\fP
 .TP 
-\fBshow_author\fP
+\fBshow_art_score\fP
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
-\fBshow_info\fP
+\fBshow_author\fP
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
 \fBshow_only_unread_arts\fP
@@ -883,11 +885,10 @@ msgid_only=@googlegroups\e.com>
 .RE
 .PP
 
-.\" TODO: LC_CTYPE has a higher priority as LC_MESSAGES, does this make sense?
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}\fP
 .br
-\fI/etc/tin/keymap${${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_CTYPE:\-"${LC_MESSAGES:\-"$LANG"}"}"}"}\fP
+\fI/etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}\fP
 .fi
 .sp
 .RS
@@ -1440,6 +1441,12 @@ the article viewer.
 \fBcol_signature\fP
 Farbe von Signaturen
 .TP 
+\fBcol_score_neg\fP
+Farbe negativer Bewertung
+.TP 
+\fBcol_score_pos\fP
+Farbe positiver Bewertung
+.TP 
 \fBcol_urls\fP
 Farbe der hervorgehobenen URLs
 .TP 
@@ -1631,7 +1638,7 @@ Ersetzungen werden unterstützt:
 %L	Anzahl der Zeilen
 %M	Message\-ID
 %R	Anzahl der Antworten im Thread
-%S	Score
+%S	Bewertung
 %m	Artikelkennzeichnungen
 %n	aktuelle Threadnummer
 %s	Subject
@@ -1667,8 +1674,8 @@ can use more of its features (e.g. MIME, pgp, ...). 1 means include headers,
 usage. This option has to suit \fBmailer_format\fP. Default is 0.
 .TP 
 \fBinverse_okay\fP
-If ON use inverse video for page headers and URL highlighting.  Default is
-ON.
+Falls ON: inverse Darstellung für Header und das Hervorheben von URLs
+benutzen. Voreinstellung ist ON.
 .TP 
 \fBkeep_dead_articles\fP
 If ON keep all failed postings in \fI${TIN_HOMEDIR:\-"$HOME"}/dead.articles\fP
@@ -2071,6 +2078,11 @@ displayed.
 displayed.
 .RE
 .TP 
+\fBshow_art_score\fP
+Falls ON, wird die Bewertung bei der Anzeige von Artikeln in der unteren
+linken Ecke gezeigt. Voreinstellung ist OFF. Siehe auch \fBcol_score_neg\fP und
+\fBcol_score_pos\fP.
+.TP 
 \fBshow_description\fP
 If ON show a short group description text after newsgroup name at the group
 selection level. The \*(rq\fB\-d\fP\*(rq command\-line flag will override the setting
@@ -2094,24 +2106,6 @@ mail has arrived.
 .IP 3
 \fBShow mail if new mail else help s.\fP, show mail sign if new mail has
 arrived otherwise show help sign.
-.RE
-.TP 
-\fBshow_info\fP
-Which information about the thread or article should be shown. Default is 1,
-show only the line count.
-.RS +1i
-.IP 0 3
-\fBNichts\fP. Keine weiteren Informationen werden angezeigt.
-.IP 1
-\fBLines\fP, in article listing the line count of an article will be displayed
-and in thread listing the line count of first (unread) article will be
-displayed.
-.IP 2
-\fBScore\fP, in article listing the score of an article will be displayed and
-in thread listing the score of the thread will be displayed \(em see also
-\fBthread_score\fP.
-.IP 3
-\fBZeilen und Bewertung\fP, Zeilenzahl und Bewertung zusätzlich anzeigen.
 .RE
 .TP 
 \fBshow_only_unread_arts\fP
@@ -2167,9 +2161,9 @@ the default. The following sort types are allowed:
 .IP 6
 \fBDate: (aufsteigend)\fP, Artikel aufsteigend nach \*(rqDate:\*(rq sortieren.
 .IP 7
-\fBScore (absteigend)\fP, Artikel absteigend nach Score sortieren.
+\fBBewertung (absteigend)\fP, Artikel absteigend nach Bewertung sortieren.
 .IP 8
-\fBScore (aufsteigend)\fP, Artikel aufsteigend nach Score sortieren.
+\fBBewertung (aufsteigend)\fP, Artikel aufsteigend nach Bewertung sortieren.
 .IP 9
 \fBLines: (absteigend)\fP, Artikel absteigend nach \*(rqLines:\*(rq sortieren.
 .IP 10
@@ -2183,9 +2177,9 @@ the default. The following sort types are allowed:
 .IP 0 3
 \fBNichts\fP, keine Sortierung der Threads.
 .IP 1
-\fBScore (absteigend)\fP, Threads absteigend nach Score sortieren.
+\fBBewertung (absteigend)\fP, Threads absteigend nach Bewertung sortieren.
 .IP 2
-\fBScore (aufsteigend)\fP, Threads aufsteigend nach Score sortieren.
+\fBBewertung (aufsteigend)\fP, Threads aufsteigend nach Bewertung sortieren.
 .IP 3
 \fBLast posting date (descending)\fP, sort threads by date of last posting
 descending.
@@ -2274,7 +2268,7 @@ Ersetzungen werden unterstützt:
 %I	Initialen des Absenders
 %L	Anzahl der Zeilen
 %M	Message\-ID
-%S	Score
+%S	Bewertung
 %T	Subject und/oder Baumdarstellung des Thread
 %m	Artikelkennzeichnungen
 %n	aktuelle Artikelnummer

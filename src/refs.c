@@ -3,12 +3,12 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2023-08-11
+ *  Updated   : 2023-11-20
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
  *
- * Copyright (c) 1996-2023 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1996-2024 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,6 @@ static char *_get_references(struct t_msgid *refptr, int depth);
 static struct t_msgid *add_msgid(int key, const char *msgid, struct t_msgid *newparent);
 static struct t_msgid *find_next(struct t_msgid *ptr);
 static struct t_msgid *parse_references(char *r);
-static t_bool valid_msgid(char *msgid);
 static unsigned int hash_msgid(const char *key);
 static void add_to_parent(struct t_msgid *ptr);
 static void build_thread(struct t_msgid *ptr);
@@ -159,14 +158,15 @@ add_to_parent(
 
 
 /*
- * Checks if Message-ID has valid format
+ * Checks if a single Message-ID has valid format
  * Returns TRUE if it does, FALSE if it does not
  * modifies *msgid
  *
  * see also post.c:damaged_id(), which does not modify its input,
  * has swapped return values and does not allow trailing spaces
+ * but doesn't error on whitespace in between.
  */
-static t_bool
+t_bool
 valid_msgid(
 	char *msgid)
 {
@@ -177,8 +177,11 @@ valid_msgid(
 	str_trim(msgid);
 	mlen = strlen(msgid);
 
-	/* must start with '<' and have exactly one '>' (at the very end) */
-	if (mlen < 5 /* || mlen > 250 */ || *(msgid + mlen - 1) != '>' || strchr(msgid, '>') != (msgid + mlen - 1) || *msgid++ != '<')
+	/*
+	 * must start with '<' and have exactly one '>' (at the very end)
+	 *
+	 */
+	if (mlen < 8 /* || mlen > 250 */ || *(msgid + mlen - 1) != '>' || strchr(msgid, '>') != (msgid + mlen - 1) || *msgid++ != '<')
 		return FALSE;
 
 	while (*msgid) {
@@ -202,7 +205,7 @@ valid_msgid(
 
 			case '@':
 				if (!at_present) {
-					if (*(msgid + 1) == '.')
+					if (*(msgid + 1) == '.' || *(msgid - 1) == '<')
 						return FALSE;
 
 					at_present = TRUE;
@@ -284,7 +287,7 @@ add_msgid(
 
 #ifdef DEBUG
 	if (debug & DEBUG_REFS)
-		DEBUG_PRINT((dbgfd, "---------------- Add %s %s with parent %s\n", (key == MSGID_REF) ? "MSG" : "REF", msgid, (newparent == NULL) ? _("unchanged") : newparent->txt));
+		DEBUG_PRINT((dbgfd, "---------------- Add %s %s with parent %s\n", (key == MSGID_REF) ? "MSG" : "REF", msgid, (newparent == NULL) ? _(txt_unchanged) : newparent->txt));
 #endif /* DEBUG */
 
 	/*
@@ -340,7 +343,7 @@ add_msgid(
 			add_to_parent(i);
 #ifdef DEBUG
 			if (debug & DEBUG_REFS)
-				DEBUG_PRINT((dbgfd, "set: %s -> %s\n", i->txt, newparent ? newparent->txt : _("None")));
+				DEBUG_PRINT((dbgfd, "set: %s -> %s\n", i->txt, newparent ? newparent->txt : _(txt_none)));
 #endif /* DEBUG */
 			return i;
 		}
@@ -976,7 +979,7 @@ collate_subjects(
 		/*
 		 * Get the contents of the magic marker in the hashnode
 		 */
-		h = (struct t_hashnode *) (arts[i].subject - sizeof(int) - sizeof(void *)); /* FIXME: cast increases required alignment of target type */
+		h = (void *) (arts[i].subject - sizeof(int) - sizeof(void *)); /* FIXME: cast increases required alignment of target type */
 		j = h->aptr;
 
 		if (j != -1 && j < i) {

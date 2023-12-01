@@ -3,10 +3,10 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2023-08-23
+ *  Updated   : 2023-11-27
  *  Notes     :
  *
- * Copyright (c) 1992-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -257,10 +257,13 @@ parse_active_line(
 		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "Active file corrupt - %s", l);
 
-		free(l);
 #endif /* DEBUG */
-		if (!p || !q)
+		if (!p || !q) {
+#ifdef DEBUG
+			free(l);
+#endif /* DEBUG */
 			return lineok;
+		}
 	}
 
 	*max = atoartnum(p);
@@ -269,12 +272,12 @@ parse_active_line(
 	if (!lineok) { /* missing moderation flag - seen on usenet.farm */
 		strcpy(moderated, "y");	/* guess posting is fine */
 		lineok = TRUE;
-	} else {
-#ifdef DEBUG
-		free(l);
-#endif /* DEBUG */
+	} else
 		strcpy(moderated, r);
-	}
+
+#ifdef DEBUG
+	free(l);
+#endif /* DEBUG */
 
 	return lineok;
 }
@@ -621,17 +624,20 @@ read_active_file(
 		wait_message(0, _(txt_reading_news_active_file));
 
 	if ((fp = open_news_active_fp()) == NULL) {
-		if (cmd_line && !batch_mode)
+		if ((cmd_line && !batch_mode) || verbose)
 			my_fputc('\n', stderr);
 
 #ifdef NNTP_ABLE
 		if (read_news_via_nntp)
 			tin_done(EXIT_FAILURE, _(txt_cannot_retrieve), ACTIVE_FILE);
 #	ifndef NNTP_ONLY
-		else
+		else {
+			perror_message("%s", news_active_file);
 			tin_done(EXIT_FAILURE, _(txt_cannot_open_active_file), news_active_file, tin_progname);
+		}
 #	endif /* !NNTP_ONLY */
 #else
+		perror_message("%s", news_active_file);
 		tin_done(EXIT_FAILURE, _(txt_cannot_open), news_active_file);
 #endif /* NNTP_ABLE */
 	}
@@ -990,6 +996,9 @@ open_newgroups_fp(
 
 		return (nntp_command(line, OK_NEWGROUPS, NULL, 0));
 	}
+#else
+	/* silence compiler warning (unused parameter) */
+	(void) idx;
 #endif /* NNTP_ABLE */
 	return (fopen(active_times_file, "r"));
 }

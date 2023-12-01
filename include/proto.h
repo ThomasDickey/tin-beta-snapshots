@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2023-11-05
+ *  Updated   : 2023-11-22
  *  Notes     :
  *
- * Copyright (c) 1997-2023 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,7 +112,7 @@ extern void draw_pager_line(const char *str, int flags, t_bool raw_data);
 
 /* config.c */
 extern char **ulBuildArgv(char *cmd, int *new_argc);
-extern char *quote_space_to_dash(char *str);
+extern char *quote_space_to_dash(const char *str);
 extern const char *print_boolean(t_bool value);
 extern t_bool match_boolean(char *line, const char *pat, t_bool *dst);
 extern t_bool match_integer(char *line, const char *pat, int *dst, int maxval);
@@ -182,9 +182,9 @@ extern void word_highlight_string(int row, int col, int size, int color);
 	extern void debug_print_filters(void);
 	extern void debug_print_header(struct t_article *s);
 	extern void debug_print_malloc(t_bool is_malloc, const char *xfile, int line, size_t size);
-#	ifdef DEBUG
+#	ifdef NNTP_ABLE
 	extern const char *logtime(void);
-#	endif /* DEBUG */
+#	endif /* NNTP_ABLE */
 #endif /* DEBUG */
 
 /* envarg.c */
@@ -389,7 +389,7 @@ extern void dir_name(const char *fullpath, char *dir);
 extern void draw_mark_selected(int i);
 extern void get_author(t_bool thread, struct t_article *art, char *str, size_t len);
 extern void get_cwd(char *buf);
-extern void show_connection_page(const int level, const char *title);
+extern void show_connection_page(void);
 extern void make_base_group_path(const char *base_dir, const char *group_name, char *group_path, size_t group_path_len);
 extern void make_group_path(const char *name, char *path);
 extern void process_charsets(char **line, size_t *max_line_len, const char *network_charset, const char *local_charset, t_bool conv_tex2iso);
@@ -520,7 +520,6 @@ extern time_t parsedate(char *p, TIMEINFO *now);
 #endif /* !HAVE_VSNPRINTF */
 
 /* post.c */
-extern char *backup_article_name(const char *the_article);
 extern char *checknadd_headers(const char *infile, struct t_group *group);
 extern int count_postponed_articles(void);
 extern int mail_to_author(const char *group, int respnum, t_bool copy_text, t_bool with_headers, t_bool raw_data);
@@ -574,6 +573,7 @@ extern char *tin_fgets(FILE *fp, t_bool header);
 /* refs.c */
 extern char *get_references(struct t_msgid *refptr);
 extern struct t_msgid *find_msgid(const char *msgid);
+extern t_bool valid_msgid(char *msgid);
 extern void build_references(struct t_group *group);
 extern void clear_art_ptrs(void);
 extern void collate_subjects(void);
@@ -667,7 +667,9 @@ extern void reset_srch_offsets(void);
 /* select.c */
 extern int add_my_group(const char *group, t_bool add, t_bool ignore_case);
 extern int choose_new_group(void);
-extern int show_article_by_msgid(char *messageid);
+#ifdef NNTP_ABLE
+	extern int show_article_by_msgid(char *messageid);
+#endif /* NNTP_ABLE */
 extern int skip_newgroups(void);
 extern void selection_page(int start_groupnum, int num_cmd_line_groups);
 extern void show_selection_page(void);

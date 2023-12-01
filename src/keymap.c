@@ -3,10 +3,10 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2023-11-03
+ *  Updated   : 2023-11-30
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2023 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2024 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -279,7 +279,7 @@ printascii(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 {
 	if (ch == 0)
-		snprintf(buf, MAXKEYLEN, "%s", _("NULL"));
+		snprintf(buf, MAXKEYLEN, "%s", _(txt_null));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	else if (iswgraph(ch)) {	/* Regular printables */
 		int i = wctomb(buf, (wchar_t) ch);
@@ -329,39 +329,36 @@ read_keymap_file(
 {
 	FILE *fp = (FILE *) 0;
 	char *line, *keydef, *kname;
-	char *map;
+	char *p, *q;
+	char *map = NULL;
 	char *l = NULL;
 	char *locale = NULL;
 	char *language = NULL;
 	char *territory = NULL;
 	char *codeset = NULL, *normcodeset = NULL;
 	char *modifier = NULL;
-	char fnames[2*6][PATH_LEN + NAME_LEN];
-	char dirs[3][PATH_LEN];
-	char *p, *q;
+	char *fnames[2 * 6] = { NULL }; /* 2 dirs x 6 variants */
+	char dirs[3][PATH_LEN]; /* 2 dirs + endmark */
 	char buf[LEN];
-	int k = 0, j, i = 0;
+	int k = 0, j, i = 0, n;
 	struct t_version *upgrade = NULL;
 	t_bool ret = TRUE;
 
 	/*
-	 * checks TIN_HOMEDIR/HOME/TIN_DEFAULTS_DIR
+	 * checks ${TIN_HOMEDIR:-"$HOME"}, TIN_DEFAULTS_DIR
 	 * for KEYMAP_FILE."locale" or KEYMAP_FILE
 	 *
-	 * locale is first match from LC_ALL, LC_CTYPE, LC_MESSAGES, LANG
+	 * locale is first match from LC_ALL, LC_MESSAGES, LC_CTYPE, LANG
 	 *
 	 * language[_territory[.codeset]][@modifier]
 	 * Beside the first part, all of them are allowed to be missing. If the
 	 * full specified locale is not found, less specific ones are looked
-	 * for.  The various parts will be stripped off, in the following
+	 * for. The various parts will be stripped off, in the following
 	 * order:
 	 * - codeset
 	 * - normalized codeset (like _nl_normalize_codeset() in glibc)
 	 * - territory
 	 * - modifier
-	 *
-	 * TODO: - LC_CTYPE has higher priority than LC_MESSAGES,
-	 *         does this make sense?
 	 */
 
 	sprintf(dirs[k++], "%s", rcdir);
@@ -370,7 +367,7 @@ read_keymap_file(
 #endif /* TIN_DEFAULTS_DIR */
 	dirs[k][0] = '\0';
 
-	l = my_strdup(get_val("LC_ALL", get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LANG", "")))));
+	l = my_strdup(get_val("LC_ALL", get_val("LC_MESSAGES", get_val("LC_CTYPE", get_val("LANG", "")))));
 
 	if ((locale = strrchr(l, '/'))) /* skip path */
 		locale++;
@@ -417,40 +414,83 @@ read_keymap_file(
 		}
 
 		if (codeset && normcodeset) {
-			if (!strcmp(codeset, normcodeset))
+			if (STRCMPEQ(codeset, normcodeset))
 				FreeAndNull(normcodeset);
 		}
 	}
-	/* TODO: use joinpath()? */
+
+	/* build array of keymap-files to look for */
 	for (k = 0; dirs[k][0] != '\0'; k++) {
-		if (*locale && codeset)
-			sprintf(fnames[i++], "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier));
-		if (*locale && normcodeset)
-			sprintf(fnames[i++], "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier));
-		if (*locale && territory)
-			sprintf(fnames[i++], "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), territory, BlankIfNull(modifier));
-		if (*locale && modifier)
-			sprintf(fnames[i++], "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), modifier);
-		if (*locale && language)
-			sprintf(fnames[i++], "%s/%s.%s", dirs[k], KEYMAP_FILE, language);
-		sprintf(fnames[i++], "%s/%s", dirs[k], KEYMAP_FILE);
-	}
-	for (j = 0; j < i && !fp; j++) {
-		if ((fp = fopen(fnames[j], "r")) != NULL)
-			break;
+		if (*locale) {
+			if (codeset) {
+				n = snprintf(NULL, 0, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier));
+				fnames[i] = my_malloc(++n);
+				snprintf(fnames[i++], n, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier));
+			}
+			if (normcodeset) {
+				n = snprintf(NULL, 0, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier));
+				fnames[i] = my_malloc(++n);
+				snprintf(fnames[i++], n, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier));
+			}
+			if (territory) {
+				n = snprintf(NULL, 0, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), territory, BlankIfNull(modifier));
+				fnames[i] = my_malloc(++n);
+				snprintf(fnames[i++], n, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), territory, BlankIfNull(modifier));
+			}
+			if (modifier) {
+				n = snprintf(NULL, 0, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), modifier);
+				fnames[i] = my_malloc(++n);
+				snprintf(fnames[i++], n, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), modifier);
+			}
+			if (language) {
+				n = snprintf(NULL, 0, "%s/%s.%s", dirs[k], KEYMAP_FILE, language);
+				fnames[i] = my_malloc(++n);
+				snprintf(fnames[i++], n, "%s/%s.%s", dirs[k], KEYMAP_FILE, language);
+			}
+		}
+		n = snprintf(NULL, 0, "%s/%s", dirs[k], KEYMAP_FILE);
+		fnames[i] = my_malloc(++n);
+		snprintf(fnames[i++], n, "%s/%s", dirs[k], KEYMAP_FILE);
 	}
 
-	FreeIfNeeded(l);
+	/* first non empty match wins */
+	for (j = 0; j < i && !fp; j++) {
+		if ((fp = fopen(fnames[j], "r")) != NULL) {
+			struct stat st;
+
+			if (fstat(fileno(fp), &st) != -1) { /* disallow symlinks? */
+				if (/*S_ISREG(st.st_mode) && */st.st_size > 0L)
+					break;
+#ifdef DEBUG
+				else {
+					if (debug & DEBUG_MISC)
+						error_message(2, "Skipping empty keymap-file: %s", fnames[j]);
+				}
+#endif /* DEBUG */
+			}
+			fclose(fp);
+			fp = NULL;
+		}
+	}
+
+	free(l);
 	FreeIfNeeded(language);
 	FreeIfNeeded(modifier);
 	FreeIfNeeded(codeset);
 	FreeIfNeeded(normcodeset);
 	FreeIfNeeded(territory);
 
+	if (fp) /* remember matching keymap-name */
+		map = my_strdup(fnames[j]);
+
+	/* free the array of names */
+	for (j = 0; j < i; j++)
+		FreeIfNeeded(fnames[j]);
+
+	wait_message(0, _(txt_reading_keymap_file), fp ? map : _(txt_none));
+
 	if (!fp)
 		return TRUE; /* no keymap file is not an error */
-
-	map = my_strdup(fnames[j]); /* remember keymap-name */
 
 	/* check if keymap file is up-to-date */
 	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
@@ -473,8 +513,8 @@ read_keymap_file(
 		}
 	}
 	rewind(fp);
-
 	free_keymaps();
+
 	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
 		/*
 		 * Ignore blank and comment lines
@@ -482,7 +522,9 @@ read_keymap_file(
 		if (line[0] == '#' || line[0] == '\n')
 			continue;
 
-		if ((kname = strsep(&line, KEYSEPS)) != NULL) {
+		if ((kname = strsep(&line, KEYSEPS)) == NULL)
+			continue;
+		else {
 			keydef = str_trim(line);
 			/*
 			 * Warn about basic syntax errors
@@ -492,8 +534,7 @@ read_keymap_file(
 				ret = FALSE;
 				continue;
 			}
-		} else
-			continue;
+		}
 
 		/*
 		 * TODO: useful? shared keymaps (NFS-Home) may differ
@@ -505,7 +546,6 @@ read_keymap_file(
 			ret = FALSE;
 			continue;
 		}
-
 	}
 	fclose(fp);
 	setup_default_keys();
@@ -637,37 +677,37 @@ process_mapping(
 {
 	switch (keyname[0]) {
 		case 'A':
-			if (strcmp(keyname, "AttachPipe") == 0) {
+			if (STRCMPEQ(keyname, "AttachPipe")) {
 				process_keys(ATTACHMENT_PIPE, keys, &attachment_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "AttachSelect") == 0) {
+			if (STRCMPEQ(keyname, "AttachSelect")) {
 				process_keys(ATTACHMENT_SELECT, keys, &attachment_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "AttachSave") == 0) {
+			if (STRCMPEQ(keyname, "AttachSave")) {
 				process_keys(ATTACHMENT_SAVE, keys, &attachment_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "AttachTag") == 0) {
+			if (STRCMPEQ(keyname, "AttachTag")) {
 				process_keys(ATTACHMENT_TAG, keys, &attachment_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "AttachTagPattern") == 0) {
+			if (STRCMPEQ(keyname, "AttachTagPattern")) {
 				process_keys(ATTACHMENT_TAG_PATTERN, keys, &attachment_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "AttachToggleTagged") == 0) {
+			if (STRCMPEQ(keyname, "AttachToggleTagged")) {
 				process_keys(ATTACHMENT_TOGGLE_TAGGED, keys, &attachment_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "AttachUntag") == 0) {
+			if (STRCMPEQ(keyname, "AttachUntag")) {
 				process_keys(ATTACHMENT_UNTAG, keys, &attachment_keys);
 
 				return TRUE;
@@ -675,7 +715,7 @@ process_mapping(
 			break;
 
 		case 'B':
-			if (strcmp(keyname, "BugReport") == 0) {
+			if (STRCMPEQ(keyname, "BugReport")) {
 				process_keys(GLOBAL_BUGREPORT, keys, &attachment_keys);
 				process_keys(GLOBAL_BUGREPORT, keys, &group_keys);
 				process_keys(GLOBAL_BUGREPORT, keys, &option_menu_keys);
@@ -687,7 +727,7 @@ process_mapping(
 			break;
 
 		case 'C':
-			if (strcmp(keyname, "Catchup") == 0) {
+			if (STRCMPEQ(keyname, "Catchup")) {
 				process_keys(CATCHUP, keys, &group_keys);
 				process_keys(CATCHUP, keys, &page_keys);
 				process_keys(CATCHUP, keys, &select_keys);
@@ -695,7 +735,7 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "CatchupNextUnread") == 0) {
+			if (STRCMPEQ(keyname, "CatchupNextUnread")) {
 				process_keys(CATCHUP_NEXT_UNREAD, keys, &group_keys);
 				process_keys(CATCHUP_NEXT_UNREAD, keys, &page_keys);
 				process_keys(CATCHUP_NEXT_UNREAD, keys, &select_keys);
@@ -703,42 +743,42 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ConfigFirstPage") == 0) {
+			if (STRCMPEQ(keyname, "ConfigFirstPage")) {
 				process_keys(GLOBAL_FIRST_PAGE, keys, &option_menu_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ConfigLastPage") == 0) {
+			if (STRCMPEQ(keyname, "ConfigLastPage")) {
 				process_keys(GLOBAL_LAST_PAGE, keys, &option_menu_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ConfigNoSave") == 0) {
+			if (STRCMPEQ(keyname, "ConfigNoSave")) {
 				process_keys(CONFIG_NO_SAVE, keys, &option_menu_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ConfigResetAttrib") == 0) {
+			if (STRCMPEQ(keyname, "ConfigResetAttrib")) {
 				process_keys(CONFIG_RESET_ATTRIB, keys, &option_menu_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ConfigScopeMenu") == 0) {
+			if (STRCMPEQ(keyname, "ConfigScopeMenu")) {
 				process_keys(CONFIG_SCOPE_MENU, keys, &option_menu_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ConfigSelect") == 0) {
+			if (STRCMPEQ(keyname, "ConfigSelect")) {
 				process_keys(CONFIG_SELECT, keys, &option_menu_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ConfigToggleAttrib") == 0) {
+			if (STRCMPEQ(keyname, "ConfigToggleAttrib")) {
 				process_keys(CONFIG_TOGGLE_ATTRIB, keys, &option_menu_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ConnectionInfo") == 0) {
+			if (STRCMPEQ(keyname, "ConnectionInfo")) {
 				process_keys(GLOBAL_CONNECTION_INFO, keys, &group_keys);
 				process_keys(GLOBAL_CONNECTION_INFO, keys, &page_keys);
 				process_keys(GLOBAL_CONNECTION_INFO, keys, &select_keys);
@@ -749,7 +789,7 @@ process_mapping(
 			break;
 
 		case 'D':
-			if (strcmp(keyname, "DisplayPostHist") == 0) {
+			if (STRCMPEQ(keyname, "DisplayPostHist")) {
 				process_keys(GLOBAL_DISPLAY_POST_HISTORY, keys, &group_keys);
 				process_keys(GLOBAL_DISPLAY_POST_HISTORY, keys, &page_keys);
 				process_keys(GLOBAL_DISPLAY_POST_HISTORY, keys, &select_keys);
@@ -757,7 +797,7 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "Down") == 0) {
+			if (STRCMPEQ(keyname, "Down")) {
 				process_keys(GLOBAL_LINE_DOWN, keys, &attachment_keys);
 				process_keys(GLOBAL_LINE_DOWN, keys, &group_keys);
 				process_keys(GLOBAL_LINE_DOWN, keys, &info_keys);
@@ -774,7 +814,7 @@ process_mapping(
 			break;
 
 		case 'E':
-			if (strcmp(keyname, "EditFilter") == 0) {
+			if (STRCMPEQ(keyname, "EditFilter")) {
 				process_keys(GLOBAL_EDIT_FILTER, keys, &group_keys);
 				process_keys(GLOBAL_EDIT_FILTER, keys, &page_keys);
 				process_keys(GLOBAL_EDIT_FILTER, keys, &select_keys);
@@ -785,57 +825,57 @@ process_mapping(
 			break;
 
 		case 'F':
-			if (strcmp(keyname, "FeedArt") == 0) {
+			if (STRCMPEQ(keyname, "FeedArt")) {
 				process_keys(FEED_ARTICLE, keys, &feed_type_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "FeedHot") == 0) {
+			if (STRCMPEQ(keyname, "FeedHot")) {
 				process_keys(FEED_HOT, keys, &feed_type_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "FeedPat") == 0) {
+			if (STRCMPEQ(keyname, "FeedPat")) {
 				process_keys(FEED_PATTERN, keys, &feed_type_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "FeedRange") == 0) {
+			if (STRCMPEQ(keyname, "FeedRange")) {
 				process_keys(FEED_RANGE, keys, &feed_type_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "FeedRepost") == 0) {
+			if (STRCMPEQ(keyname, "FeedRepost")) {
 				process_keys(FEED_KEY_REPOST, keys, &feed_supersede_article_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "FeedSupersede") == 0) {
+			if (STRCMPEQ(keyname, "FeedSupersede")) {
 				process_keys(FEED_SUPERSEDE, keys, &feed_supersede_article_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "FeedTag") == 0) {
+			if (STRCMPEQ(keyname, "FeedTag")) {
 				process_keys(FEED_TAGGED, keys, &feed_type_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "FeedThd") == 0) {
+			if (STRCMPEQ(keyname, "FeedThd")) {
 				process_keys(FEED_THREAD, keys, &feed_type_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "FilterEdit") == 0) {
+			if (STRCMPEQ(keyname, "FilterEdit")) {
 				process_keys(FILTER_EDIT, keys, &filter_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "FilterSave") == 0) {
+			if (STRCMPEQ(keyname, "FilterSave")) {
 				process_keys(FILTER_SAVE, keys, &filter_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "FirstPage") == 0) {
+			if (STRCMPEQ(keyname, "FirstPage")) {
 				process_keys(GLOBAL_FIRST_PAGE, keys, &attachment_keys);
 				process_keys(GLOBAL_FIRST_PAGE, keys, &group_keys);
 				process_keys(GLOBAL_FIRST_PAGE, keys, &info_keys);
@@ -852,147 +892,147 @@ process_mapping(
 			break;
 
 		case 'G':
-			if (strcmp(keyname, "GroupAutoSave") == 0) {
+			if (STRCMPEQ(keyname, "GroupAutoSave")) {
 				process_keys(GROUP_AUTOSAVE, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupCancel") == 0) {
+			if (STRCMPEQ(keyname, "GroupCancel")) {
 				process_keys(GROUP_CANCEL, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupDoAutoSel") == 0) {
+			if (STRCMPEQ(keyname, "GroupDoAutoSel")) {
 				process_keys(GROUP_DO_AUTOSELECT, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupGoto") == 0) {
+			if (STRCMPEQ(keyname, "GroupGoto")) {
 				process_keys(GROUP_GOTO, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupListThd") == 0) {
+			if (STRCMPEQ(keyname, "GroupListThd")) {
 				process_keys(GROUP_LIST_THREAD, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupMail") == 0) {
+			if (STRCMPEQ(keyname, "GroupMail")) {
 				process_keys(GROUP_MAIL, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupMarkThdRead") == 0) {
+			if (STRCMPEQ(keyname, "GroupMarkThdRead")) {
 				process_keys(GROUP_MARK_THREAD_READ, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupMarkUnselArtRead") == 0) {
+			if (STRCMPEQ(keyname, "GroupMarkUnselArtRead")) {
 				process_keys(GROUP_MARK_UNSELECTED_ARTICLES_READ, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupNextGroup") == 0) {
+			if (STRCMPEQ(keyname, "GroupNextGroup")) {
 				process_keys(GROUP_NEXT_GROUP, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupNextUnreadArt") == 0) {
+			if (STRCMPEQ(keyname, "GroupNextUnreadArt")) {
 				process_keys(GROUP_NEXT_UNREAD_ARTICLE, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupNextUnreadArtOrGrp") == 0) {
+			if (STRCMPEQ(keyname, "GroupNextUnreadArtOrGrp")) {
 				process_keys(GROUP_NEXT_UNREAD_ARTICLE_OR_GROUP, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupPrevGroup") == 0) {
+			if (STRCMPEQ(keyname, "GroupPrevGroup")) {
 				process_keys(GROUP_PREVIOUS_GROUP, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupPrevUnreadArt") == 0) {
+			if (STRCMPEQ(keyname, "GroupPrevUnreadArt")) {
 				process_keys(GROUP_PREVIOUS_UNREAD_ARTICLE, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupReadBasenote") == 0) {
+			if (STRCMPEQ(keyname, "GroupReadBasenote")) {
 				process_keys(GROUP_READ_BASENOTE, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupRepost") == 0) {
+			if (STRCMPEQ(keyname, "GroupRepost")) {
 				process_keys(GROUP_REPOST, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupReverseSel") == 0) {
+			if (STRCMPEQ(keyname, "GroupReverseSel")) {
 				process_keys(GROUP_REVERSE_SELECTIONS, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupSave") == 0) {
+			if (STRCMPEQ(keyname, "GroupSave")) {
 				process_keys(GROUP_SAVE, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupSelPattern") == 0) {
+			if (STRCMPEQ(keyname, "GroupSelPattern")) {
 				process_keys(GROUP_SELECT_PATTERN, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupSelThd") == 0) {
+			if (STRCMPEQ(keyname, "GroupSelThd")) {
 				process_keys(GROUP_SELECT_THREAD, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupSelThdIfUnreadSelected") == 0) {
+			if (STRCMPEQ(keyname, "GroupSelThdIfUnreadSelected")) {
 				process_keys(GROUP_SELECT_THREAD_IF_UNREAD_SELECTED, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupTag") == 0) {
+			if (STRCMPEQ(keyname, "GroupTag")) {
 				process_keys(GROUP_TAG, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupTagParts") == 0) {
+			if (STRCMPEQ(keyname, "GroupTagParts")) {
 				process_keys(GROUP_TAG_PARTS, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupToggleGetartLimit") == 0) {
+			if (STRCMPEQ(keyname, "GroupToggleGetartLimit")) {
 				process_keys(GROUP_TOGGLE_GET_ARTICLES_LIMIT, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupToggleReadUnread") == 0) {
+			if (STRCMPEQ(keyname, "GroupToggleReadUnread")) {
 				process_keys(GROUP_TOGGLE_READ_UNREAD, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupToggleSubjDisplay") == 0) {
+			if (STRCMPEQ(keyname, "GroupToggleSubjDisplay")) {
 				process_keys(GROUP_TOGGLE_SUBJECT_DISPLAY, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupToggleThdSel") == 0) {
+			if (STRCMPEQ(keyname, "GroupToggleThdSel")) {
 				process_keys(GROUP_TOGGLE_SELECT_THREAD, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupToggleThreading") == 0) {
+			if (STRCMPEQ(keyname, "GroupToggleThreading")) {
 				process_keys(GROUP_TOGGLE_THREADING, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupUndoSel") == 0) {
+			if (STRCMPEQ(keyname, "GroupUndoSel")) {
 				process_keys(GROUP_UNDO_SELECTIONS, keys, &group_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "GroupUntag") == 0) {
+			if (STRCMPEQ(keyname, "GroupUntag")) {
 				process_keys(GROUP_UNTAG, keys, &group_keys);
 
 				return TRUE;
@@ -1000,7 +1040,7 @@ process_mapping(
 			break;
 
 		case 'H':
-			if (strcmp(keyname, "Help") == 0) {
+			if (STRCMPEQ(keyname, "Help")) {
 				process_keys(GLOBAL_HELP, keys, &attachment_keys);
 				process_keys(GLOBAL_HELP, keys, &group_keys);
 				process_keys(GLOBAL_HELP, keys, &option_menu_keys);
@@ -1013,12 +1053,12 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "HelpFirstPage") == 0) {
+			if (STRCMPEQ(keyname, "HelpFirstPage")) {
 				process_keys(GLOBAL_FIRST_PAGE, keys, &info_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "HelpLastPage") == 0) {
+			if (STRCMPEQ(keyname, "HelpLastPage")) {
 				process_keys(GLOBAL_LAST_PAGE, keys, &info_keys);
 
 				return TRUE;
@@ -1026,7 +1066,7 @@ process_mapping(
 			break;
 
 		case 'L':
-			if (strcmp(keyname, "LastPage") == 0) {
+			if (STRCMPEQ(keyname, "LastPage")) {
 				process_keys(GLOBAL_LAST_PAGE, keys, &attachment_keys);
 				process_keys(GLOBAL_LAST_PAGE, keys, &group_keys);
 				process_keys(GLOBAL_LAST_PAGE, keys, &info_keys);
@@ -1040,14 +1080,14 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "LastViewed") == 0) {
+			if (STRCMPEQ(keyname, "LastViewed")) {
 				process_keys(GLOBAL_LAST_VIEWED, keys, &group_keys);
 				process_keys(GLOBAL_LAST_VIEWED, keys, &page_keys);
 				process_keys(GLOBAL_LAST_VIEWED, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "LookupMessage") == 0) {
+			if (STRCMPEQ(keyname, "LookupMessage")) {
 				process_keys(GLOBAL_LOOKUP_MESSAGEID, keys, &group_keys);
 				process_keys(GLOBAL_LOOKUP_MESSAGEID, keys, &page_keys);
 #ifdef NNTP_ABLE
@@ -1060,40 +1100,40 @@ process_mapping(
 			break;
 
 		case 'M':
-			if (strcmp(keyname, "MarkArticleUnread") == 0) {
+			if (STRCMPEQ(keyname, "MarkArticleUnread")) {
 				process_keys(MARK_ARTICLE_UNREAD, keys, &group_keys);
 				process_keys(MARK_ARTICLE_UNREAD, keys, &page_keys);
 				process_keys(MARK_ARTICLE_UNREAD, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "MarkThreadUnread") == 0) {
+			if (STRCMPEQ(keyname, "MarkThreadUnread")) {
 				process_keys(MARK_THREAD_UNREAD, keys, &group_keys);
 				process_keys(MARK_THREAD_UNREAD, keys, &page_keys);
 				process_keys(MARK_THREAD_UNREAD, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "MarkFeedRead") == 0) {
+			if (STRCMPEQ(keyname, "MarkFeedRead")) {
 				process_keys(MARK_FEED_READ, keys, &group_keys);
 				process_keys(MARK_FEED_READ, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "MarkFeedUnread") == 0) {
+			if (STRCMPEQ(keyname, "MarkFeedUnread")) {
 				process_keys(MARK_FEED_UNREAD, keys, &group_keys);
 				process_keys(MARK_FEED_UNREAD, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "MenuFilterKill") == 0) {
+			if (STRCMPEQ(keyname, "MenuFilterKill")) {
 				process_keys(GLOBAL_MENU_FILTER_KILL, keys, &group_keys);
 				process_keys(GLOBAL_MENU_FILTER_KILL, keys, &page_keys);
 				process_keys(GLOBAL_MENU_FILTER_KILL, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "MenuFilterSelect") == 0) {
+			if (STRCMPEQ(keyname, "MenuFilterSelect")) {
 				process_keys(GLOBAL_MENU_FILTER_SELECT, keys, &group_keys);
 				process_keys(GLOBAL_MENU_FILTER_SELECT, keys, &page_keys);
 				process_keys(GLOBAL_MENU_FILTER_SELECT, keys, &thread_keys);
@@ -1103,7 +1143,7 @@ process_mapping(
 			break;
 
 		case 'O':
-			if (strcmp(keyname, "OptionMenu") == 0) {
+			if (STRCMPEQ(keyname, "OptionMenu")) {
 				process_keys(GLOBAL_OPTION_MENU, keys, &group_keys);
 				process_keys(GLOBAL_OPTION_MENU, keys, &page_keys);
 				process_keys(GLOBAL_OPTION_MENU, keys, &post_edit_ext_keys);
@@ -1116,22 +1156,22 @@ process_mapping(
 			break;
 
 		case 'P':
-			if (strcmp(keyname, "PageAutoSave") == 0) {
+			if (STRCMPEQ(keyname, "PageAutoSave")) {
 				process_keys(PAGE_AUTOSAVE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageBotThd") == 0) {
+			if (STRCMPEQ(keyname, "PageBotThd")) {
 				process_keys(PAGE_BOTTOM_THREAD, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageCancel") == 0) {
+			if (STRCMPEQ(keyname, "PageCancel")) {
 				process_keys(PAGE_CANCEL, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageDown") == 0) {
+			if (STRCMPEQ(keyname, "PageDown")) {
 				process_keys(GLOBAL_PAGE_DOWN, keys, &attachment_keys);
 				process_keys(GLOBAL_PAGE_DOWN, keys, &group_keys);
 				process_keys(GLOBAL_PAGE_DOWN, keys, &info_keys);
@@ -1145,179 +1185,179 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageEditArticle") == 0) {
+			if (STRCMPEQ(keyname, "PageEditArticle")) {
 				process_keys(PAGE_EDIT_ARTICLE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageFirstPage") == 0) {
+			if (STRCMPEQ(keyname, "PageFirstPage")) {
 				process_keys(GLOBAL_FIRST_PAGE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageFollowup") == 0) {
+			if (STRCMPEQ(keyname, "PageFollowup")) {
 				process_keys(PAGE_FOLLOWUP, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageFollowupQuote") == 0) {
+			if (STRCMPEQ(keyname, "PageFollowupQuote")) {
 				process_keys(PAGE_FOLLOWUP_QUOTE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageFollowupQuoteHeaders") == 0) {
+			if (STRCMPEQ(keyname, "PageFollowupQuoteHeaders")) {
 				process_keys(PAGE_FOLLOWUP_QUOTE_HEADERS, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageGotoParent") == 0) {
+			if (STRCMPEQ(keyname, "PageGotoParent")) {
 				process_keys(PAGE_GOTO_PARENT, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageGroupSel") == 0) {
+			if (STRCMPEQ(keyname, "PageGroupSel")) {
 				process_keys(PAGE_GROUP_SELECT, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageLastPage") == 0) {
+			if (STRCMPEQ(keyname, "PageLastPage")) {
 				process_keys(GLOBAL_LAST_PAGE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageListThd") == 0) {
+			if (STRCMPEQ(keyname, "PageListThd")) {
 				process_keys(PAGE_LIST_THREAD, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageKillThd") == 0) {
+			if (STRCMPEQ(keyname, "PageKillThd")) {
 				process_keys(PAGE_MARK_THREAD_READ, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageMail") == 0) {
+			if (STRCMPEQ(keyname, "PageMail")) {
 				process_keys(PAGE_MAIL, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageNextArt") == 0) {
+			if (STRCMPEQ(keyname, "PageNextArt")) {
 				process_keys(PAGE_NEXT_ARTICLE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageNextThd") == 0) {
+			if (STRCMPEQ(keyname, "PageNextThd")) {
 				process_keys(PAGE_NEXT_THREAD, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageNextUnread") == 0) {
+			if (STRCMPEQ(keyname, "PageNextUnread")) {
 				process_keys(PAGE_NEXT_UNREAD, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageNextUnreadArt") == 0) {
+			if (STRCMPEQ(keyname, "PageNextUnreadArt")) {
 				process_keys(PAGE_NEXT_UNREAD_ARTICLE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PagePGPCheckArticle") == 0) {
+			if (STRCMPEQ(keyname, "PagePGPCheckArticle")) {
 #ifdef HAVE_PGP_GPG
 				process_keys(PAGE_PGP_CHECK_ARTICLE, keys, &page_keys);
 #endif /* HAVE_PGP_GPG */
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PagePrevArt") == 0) {
+			if (STRCMPEQ(keyname, "PagePrevArt")) {
 				process_keys(PAGE_PREVIOUS_ARTICLE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PagePrevUnreadArt") == 0) {
+			if (STRCMPEQ(keyname, "PagePrevUnreadArt")) {
 				process_keys(PAGE_PREVIOUS_UNREAD_ARTICLE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageReply") == 0) {
+			if (STRCMPEQ(keyname, "PageReply")) {
 				process_keys(PAGE_REPLY, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageReplyQuote") == 0) {
+			if (STRCMPEQ(keyname, "PageReplyQuote")) {
 				process_keys(PAGE_REPLY_QUOTE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageReplyQuoteHeaders") == 0) {
+			if (STRCMPEQ(keyname, "PageReplyQuoteHeaders")) {
 				process_keys(PAGE_REPLY_QUOTE_HEADERS, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageRepost") == 0) {
+			if (STRCMPEQ(keyname, "PageRepost")) {
 				process_keys(PAGE_REPOST, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageReveal") == 0) {
+			if (STRCMPEQ(keyname, "PageReveal")) {
 				process_keys(PAGE_REVEAL, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageSave") == 0) {
+			if (STRCMPEQ(keyname, "PageSave")) {
 				process_keys(PAGE_SAVE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageSkipIncludedText") == 0) {
+			if (STRCMPEQ(keyname, "PageSkipIncludedText")) {
 				process_keys(PAGE_SKIP_INCLUDED_TEXT, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageTag") == 0) {
+			if (STRCMPEQ(keyname, "PageTag")) {
 				process_keys(PAGE_TAG, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageTopThd") == 0) {
+			if (STRCMPEQ(keyname, "PageTopThd")) {
 				process_keys(PAGE_TOP_THREAD, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageToggleAllHeaders") == 0) {
+			if (STRCMPEQ(keyname, "PageToggleAllHeaders")) {
 				process_keys(PAGE_TOGGLE_HEADERS, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageToggleHighlight") == 0) {
+			if (STRCMPEQ(keyname, "PageToggleHighlight")) {
 				process_keys(PAGE_TOGGLE_HIGHLIGHTING, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageToggleRaw") == 0) {
+			if (STRCMPEQ(keyname, "PageToggleRaw")) {
 				process_keys(PAGE_TOGGLE_RAW, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageToggleRot") == 0) {
+			if (STRCMPEQ(keyname, "PageToggleRot")) {
 				process_keys(PAGE_TOGGLE_ROT13, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageToggleTabs") == 0) {
+			if (STRCMPEQ(keyname, "PageToggleTabs")) {
 				process_keys(PAGE_TOGGLE_TABS, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageToggleTex2iso") == 0) {
+			if (STRCMPEQ(keyname, "PageToggleTex2iso")) {
 				process_keys(PAGE_TOGGLE_TEX2ISO, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageToggleUue") == 0) {
+			if (STRCMPEQ(keyname, "PageToggleUue")) {
 				process_keys(PAGE_TOGGLE_UUE, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageUp") == 0) {
+			if (STRCMPEQ(keyname, "PageUp")) {
 				process_keys(GLOBAL_PAGE_UP, keys, &attachment_keys);
 				process_keys(GLOBAL_PAGE_UP, keys, &group_keys);
 				process_keys(GLOBAL_PAGE_UP, keys, &info_keys);
@@ -1331,38 +1371,38 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageViewAttach") == 0) {
+			if (STRCMPEQ(keyname, "PageViewAttach")) {
 				process_keys(PAGE_VIEW_ATTACHMENTS, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageViewUrl") == 0) {
+			if (STRCMPEQ(keyname, "PageViewUrl")) {
 				process_keys(PAGE_VIEW_URL, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PgpEncrypt") == 0) {
+			if (STRCMPEQ(keyname, "PgpEncrypt")) {
 #ifdef HAVE_PGP_GPG
 				process_keys(PGP_KEY_ENCRYPT, keys, &pgp_mail_keys);
 #endif /* HAVE_PGP_GPG */
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PgpEncSign") == 0) {
+			if (STRCMPEQ(keyname, "PgpEncSign")) {
 #ifdef HAVE_PGP_GPG
 				process_keys(PGP_KEY_ENCRYPT_SIGN, keys, &pgp_mail_keys);
 #endif /* HAVE_PGP_GPG */
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PgpIncludekey") == 0) {
+			if (STRCMPEQ(keyname, "PgpIncludekey")) {
 #ifdef HAVE_PGP_GPG
 				process_keys(PGP_INCLUDE_KEY, keys, &pgp_news_keys);
 #endif /* HAVE_PGP_GPG */
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PgpSign") == 0) {
+			if (STRCMPEQ(keyname, "PgpSign")) {
 #ifdef HAVE_PGP_GPG
 				process_keys(PGP_KEY_SIGN, keys, &pgp_news_keys);
 				process_keys(PGP_KEY_SIGN, keys, &pgp_mail_keys);
@@ -1370,7 +1410,7 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "Pipe") == 0) {
+			if (STRCMPEQ(keyname, "Pipe")) {
 				process_keys(GLOBAL_PIPE, keys, &attachment_keys);
 				process_keys(GLOBAL_PIPE, keys, &group_keys);
 				process_keys(GLOBAL_PIPE, keys, &page_keys);
@@ -1378,7 +1418,7 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "Post") == 0) {
+			if (STRCMPEQ(keyname, "Post")) {
 				process_keys(GLOBAL_POST, keys, &group_keys);
 				process_keys(GLOBAL_POST, keys, &page_keys);
 				process_keys(GLOBAL_POST, keys, &post_ignore_fupto_keys);
@@ -1389,23 +1429,23 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostAbort") == 0) {
+			if (STRCMPEQ(keyname, "PostAbort")) {
 				process_keys(POST_ABORT, keys, &post_continue_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostCancel") == 0) {
+			if (STRCMPEQ(keyname, "PostCancel")) {
 				process_keys(POST_CANCEL, keys, &post_cancel_keys);
 				process_keys(POST_CANCEL, keys, &post_delete_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostContinue") == 0) {
+			if (STRCMPEQ(keyname, "PostContinue")) {
 				process_keys(POST_CONTINUE, keys, &post_continue_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostEdit") == 0) {
+			if (STRCMPEQ(keyname, "PostEdit")) {
 				process_keys(POST_EDIT, keys, &post_cancel_keys);
 				process_keys(POST_EDIT, keys, &post_edit_keys);
 				process_keys(POST_EDIT, keys, &post_edit_ext_keys);
@@ -1414,12 +1454,12 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostIgnore") == 0) {
+			if (STRCMPEQ(keyname, "PostIgnore")) {
 				process_keys(POST_IGNORE_FUPTO, keys, &post_ignore_fupto_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostIspell") == 0) {
+			if (STRCMPEQ(keyname, "PostIspell")) {
 #ifdef HAVE_ISPELL
 				process_keys(POST_ISPELL, keys, &post_post_keys);
 				process_keys(POST_ISPELL, keys, &post_send_keys);
@@ -1427,12 +1467,12 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostMail") == 0) {
+			if (STRCMPEQ(keyname, "PostMail")) {
 				process_keys(POST_MAIL, keys, &post_mail_fup_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostPGP") == 0) {
+			if (STRCMPEQ(keyname, "PostPGP")) {
 #ifdef HAVE_PGP_GPG
 				process_keys(POST_PGP, keys, &post_post_keys);
 				process_keys(POST_PGP, keys, &post_send_keys);
@@ -1440,17 +1480,17 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostedArticlesSelect") == 0) {
+			if (STRCMPEQ(keyname, "PostedArticlesSelect")) {
 				process_keys(POSTED_SELECT, keys, &post_hist_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostponeAll") == 0) {
+			if (STRCMPEQ(keyname, "PostponeAll")) {
 				process_keys(POSTPONE_ALL, keys, &post_postpone_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "Postponed") == 0) {
+			if (STRCMPEQ(keyname, "Postponed")) {
 				process_keys(GLOBAL_POSTPONED, keys, &group_keys);
 				process_keys(GLOBAL_POSTPONED, keys, &page_keys);
 				process_keys(GLOBAL_POSTPONED, keys, &select_keys);
@@ -1458,50 +1498,50 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostponeOverride") == 0) {
+			if (STRCMPEQ(keyname, "PostponeOverride")) {
 				process_keys(POSTPONE_OVERRIDE, keys, &post_postpone_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostPost") == 0) {
+			if (STRCMPEQ(keyname, "PostPost")) {
 				process_keys(GLOBAL_POST, keys, &post_ignore_fupto_keys);
 				process_keys(GLOBAL_POST, keys, &post_mail_fup_keys);
 				process_keys(GLOBAL_POST, keys, &post_post_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostPostpone") == 0) {
+			if (STRCMPEQ(keyname, "PostPostpone")) {
 				process_keys(POST_POSTPONE, keys, &post_edit_keys);
 				process_keys(POST_POSTPONE, keys, &post_post_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostSend") == 0) {
+			if (STRCMPEQ(keyname, "PostSend")) {
 				process_keys(POST_SEND, keys, &post_send_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PostSupersede") == 0) {
+			if (STRCMPEQ(keyname, "PostSupersede")) {
 				process_keys(POST_SUPERSEDE, keys, &post_delete_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PProcNo") == 0) {
+			if (STRCMPEQ(keyname, "PProcNo")) {
 				process_keys(POSTPROCESS_NO, keys, &feed_post_process_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PProcShar") == 0) {
+			if (STRCMPEQ(keyname, "PProcShar")) {
 				process_keys(POSTPROCESS_SHAR, keys, &feed_post_process_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PProcYes") == 0) {
+			if (STRCMPEQ(keyname, "PProcYes")) {
 				process_keys(POSTPROCESS_YES, keys, &feed_post_process_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "Print") == 0) {
+			if (STRCMPEQ(keyname, "Print")) {
 #ifndef DISABLE_PRINTING
 				process_keys(GLOBAL_PRINT, keys, &group_keys);
 				process_keys(GLOBAL_PRINT, keys, &page_keys);
@@ -1510,13 +1550,13 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PromptNo") == 0) {
+			if (STRCMPEQ(keyname, "PromptNo")) {
 				process_keys(PROMPT_NO, keys, &post_postpone_keys);
 				process_keys(PROMPT_NO, keys, &prompt_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PromptYes") == 0) {
+			if (STRCMPEQ(keyname, "PromptYes")) {
 				process_keys(PROMPT_YES, keys, &post_postpone_keys);
 				process_keys(PROMPT_YES, keys, &prompt_keys);
 
@@ -1525,19 +1565,19 @@ process_mapping(
 			break;
 
 		case 'Q':
-			if (strcmp(keyname, "QuickFilterKill") == 0) {
+			if (STRCMPEQ(keyname, "QuickFilterKill")) {
 				process_keys(GLOBAL_QUICK_FILTER_KILL, keys, &group_keys);
 				process_keys(GLOBAL_QUICK_FILTER_KILL, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "QuickFilterSelect") == 0) {
+			if (STRCMPEQ(keyname, "QuickFilterSelect")) {
 				process_keys(GLOBAL_QUICK_FILTER_SELECT, keys, &group_keys);
 				process_keys(GLOBAL_QUICK_FILTER_SELECT, keys, &page_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "Quit") == 0) {
+			if (STRCMPEQ(keyname, "Quit")) {
 				process_keys(GLOBAL_QUIT, keys, &attachment_keys);
 				process_keys(GLOBAL_QUIT, keys, &feed_post_process_keys);
 				process_keys(GLOBAL_QUIT, keys, &feed_supersede_article_keys);
@@ -1571,7 +1611,7 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "QuitTin") == 0) {
+			if (STRCMPEQ(keyname, "QuitTin")) {
 				process_keys(GLOBAL_QUIT_TIN, keys, &group_keys);
 				process_keys(GLOBAL_QUIT_TIN, keys, &page_keys);
 				process_keys(GLOBAL_QUIT_TIN, keys, &select_keys);
@@ -1582,7 +1622,7 @@ process_mapping(
 			break;
 
 		case 'R':
-			if (strcmp(keyname, "RedrawScr") == 0) {
+			if (STRCMPEQ(keyname, "RedrawScr")) {
 				process_keys(GLOBAL_REDRAW_SCREEN, keys, &attachment_keys);
 				process_keys(GLOBAL_REDRAW_SCREEN, keys, &group_keys);
 				process_keys(GLOBAL_REDRAW_SCREEN, keys, &option_menu_keys);
@@ -1596,47 +1636,47 @@ process_mapping(
 			break;
 
 		case 'S':
-			if (strcmp(keyname, "SaveAppendFile") == 0) {
+			if (STRCMPEQ(keyname, "SaveAppendFile")) {
 				process_keys(SAVE_APPEND_FILE, keys, &save_append_overwrite_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SaveOverwriteFile") == 0) {
+			if (STRCMPEQ(keyname, "SaveOverwriteFile")) {
 				process_keys(SAVE_OVERWRITE_FILE, keys, &save_append_overwrite_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ScopeAdd") == 0) {
+			if (STRCMPEQ(keyname, "ScopeAdd")) {
 				process_keys(SCOPE_ADD, keys, &scope_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ScopeDelete") == 0) {
+			if (STRCMPEQ(keyname, "ScopeDelete")) {
 				process_keys(SCOPE_DELETE, keys, &scope_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ScopeEditAttributesFile") == 0) {
+			if (STRCMPEQ(keyname, "ScopeEditAttributesFile")) {
 				process_keys(SCOPE_EDIT_ATTRIBUTES_FILE, keys, &scope_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ScopeMove") == 0) {
+			if (STRCMPEQ(keyname, "ScopeMove")) {
 				process_keys(SCOPE_MOVE, keys, &scope_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ScopeRename") == 0) {
+			if (STRCMPEQ(keyname, "ScopeRename")) {
 				process_keys(SCOPE_RENAME, keys, &scope_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ScopeSelect") == 0) {
+			if (STRCMPEQ(keyname, "ScopeSelect")) {
 				process_keys(SCOPE_SELECT, keys, &scope_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ScrollDown") == 0) {
+			if (STRCMPEQ(keyname, "ScrollDown")) {
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &attachment_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &group_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &option_menu_keys);
@@ -1648,7 +1688,7 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ScrollUp") == 0) {
+			if (STRCMPEQ(keyname, "ScrollUp")) {
 				process_keys(GLOBAL_SCROLL_UP, keys, &attachment_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &group_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &option_menu_keys);
@@ -1660,28 +1700,28 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SearchAuthB") == 0) {
+			if (STRCMPEQ(keyname, "SearchAuthB")) {
 				process_keys(GLOBAL_SEARCH_AUTHOR_BACKWARD, keys, &group_keys);
 				process_keys(GLOBAL_SEARCH_AUTHOR_BACKWARD, keys, &page_keys);
 				process_keys(GLOBAL_SEARCH_AUTHOR_BACKWARD, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SearchAuthF") == 0) {
+			if (STRCMPEQ(keyname, "SearchAuthF")) {
 				process_keys(GLOBAL_SEARCH_AUTHOR_FORWARD, keys, &group_keys);
 				process_keys(GLOBAL_SEARCH_AUTHOR_FORWARD, keys, &page_keys);
 				process_keys(GLOBAL_SEARCH_AUTHOR_FORWARD, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SearchBody") == 0) {
+			if (STRCMPEQ(keyname, "SearchBody")) {
 				process_keys(GLOBAL_SEARCH_BODY, keys, &group_keys);
 				process_keys(GLOBAL_SEARCH_BODY, keys, &page_keys);
 				process_keys(GLOBAL_SEARCH_BODY, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SearchRepeat") == 0) {
+			if (STRCMPEQ(keyname, "SearchRepeat")) {
 				process_keys(GLOBAL_SEARCH_REPEAT, keys, &attachment_keys);
 				process_keys(GLOBAL_SEARCH_REPEAT, keys, &group_keys);
 				process_keys(GLOBAL_SEARCH_REPEAT, keys, &info_keys);
@@ -1694,7 +1734,7 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SearchSubjB") == 0) {
+			if (STRCMPEQ(keyname, "SearchSubjB")) {
 				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &attachment_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &group_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &info_keys);
@@ -1707,7 +1747,7 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SearchSubjF") == 0) {
+			if (STRCMPEQ(keyname, "SearchSubjF")) {
 				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &attachment_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &group_keys);
 				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &info_keys);
@@ -1720,99 +1760,99 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectEnterNextUnreadGrp") == 0) {
+			if (STRCMPEQ(keyname, "SelectEnterNextUnreadGrp")) {
 				process_keys(SELECT_ENTER_NEXT_UNREAD_GROUP, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectGoto") == 0) {
+			if (STRCMPEQ(keyname, "SelectGoto")) {
 				process_keys(SELECT_GOTO, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectMarkGrpUnread") == 0) {
+			if (STRCMPEQ(keyname, "SelectMarkGrpUnread")) {
 				process_keys(SELECT_MARK_GROUP_UNREAD, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectMoveGrp") == 0) {
+			if (STRCMPEQ(keyname, "SelectMoveGrp")) {
 				process_keys(SELECT_MOVE_GROUP, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectNextUnreadGrp") == 0) {
+			if (STRCMPEQ(keyname, "SelectNextUnreadGrp")) {
 				process_keys(SELECT_NEXT_UNREAD_GROUP, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectQuitNoWrite") == 0) {
+			if (STRCMPEQ(keyname, "SelectQuitNoWrite")) {
 				process_keys(SELECT_QUIT_NO_WRITE, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectReadGrp") == 0) {
+			if (STRCMPEQ(keyname, "SelectReadGrp")) {
 				process_keys(SELECT_ENTER_GROUP, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectResetNewsrc") == 0) {
+			if (STRCMPEQ(keyname, "SelectResetNewsrc")) {
 				process_keys(SELECT_RESET_NEWSRC, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectSortActive") == 0) {
+			if (STRCMPEQ(keyname, "SelectSortActive")) {
 				process_keys(SELECT_SORT_ACTIVE, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectSubscribe") == 0) {
+			if (STRCMPEQ(keyname, "SelectSubscribe")) {
 				process_keys(SELECT_SUBSCRIBE, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectSubscribePat") == 0) {
+			if (STRCMPEQ(keyname, "SelectSubscribePat")) {
 				process_keys(SELECT_SUBSCRIBE_PATTERN, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectSyncWithActive") == 0) {
+			if (STRCMPEQ(keyname, "SelectSyncWithActive")) {
 				process_keys(SELECT_SYNC_WITH_ACTIVE, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectToggleDescriptions") == 0) {
+			if (STRCMPEQ(keyname, "SelectToggleDescriptions")) {
 				process_keys(SELECT_TOGGLE_DESCRIPTIONS, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectToggleReadDisplay") == 0) {
+			if (STRCMPEQ(keyname, "SelectToggleReadDisplay")) {
 				process_keys(SELECT_TOGGLE_READ_DISPLAY, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectUnsubscribe") == 0) {
+			if (STRCMPEQ(keyname, "SelectUnsubscribe")) {
 				process_keys(SELECT_UNSUBSCRIBE, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectUnsubscribePat") == 0) {
+			if (STRCMPEQ(keyname, "SelectUnsubscribePat")) {
 				process_keys(SELECT_UNSUBSCRIBE_PATTERN, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SelectYankActive") == 0) {
+			if (STRCMPEQ(keyname, "SelectYankActive")) {
 				process_keys(SELECT_YANK_ACTIVE, keys, &select_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "SetRange") == 0) {
+			if (STRCMPEQ(keyname, "SetRange")) {
 				process_keys(GLOBAL_SET_RANGE, keys, &group_keys);
 				process_keys(GLOBAL_SET_RANGE, keys, &select_keys);
 				process_keys(GLOBAL_SET_RANGE, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ShellEscape") == 0) {
+			if (STRCMPEQ(keyname, "ShellEscape")) {
 #ifndef NO_SHELL_ESCAPE
 				process_keys(GLOBAL_SHELL_ESCAPE, keys, &attachment_keys);
 				process_keys(GLOBAL_SHELL_ESCAPE, keys, &group_keys);
@@ -1830,104 +1870,106 @@ process_mapping(
 			break;
 
 		case 'T':
-			if (strcmp(keyname, "ThreadAutoSave") == 0) {
+			if (STRCMPEQ(keyname, "ThreadAutoSave")) {
 				process_keys(THREAD_AUTOSAVE, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadCancel") == 0) {
+			if (STRCMPEQ(keyname, "ThreadCancel")) {
 				process_keys(THREAD_CANCEL, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadFollowup") == 0) {
+			if (STRCMPEQ(keyname, "ThreadFollowup")) {
 				process_keys(THREAD_FOLLOWUP, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadFollowupQuote") == 0) {
+			if (STRCMPEQ(keyname, "ThreadFollowupQuote")) {
 				process_keys(THREAD_FOLLOWUP_QUOTE, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadMail") == 0) {
+			if (STRCMPEQ(keyname, "ThreadMail")) {
 				process_keys(THREAD_MAIL, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadMarkArtRead") == 0) {
+			if (STRCMPEQ(keyname, "ThreadMarkArtRead")) {
 				process_keys(THREAD_MARK_ARTICLE_READ, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadReadArt") == 0) {
+			if (STRCMPEQ(keyname, "ThreadReadArt")) {
 				process_keys(THREAD_READ_ARTICLE, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadReadNextArtOrThread") == 0) {
+			if (STRCMPEQ(keyname, "ThreadReadNextArtOrThread")) {
 				process_keys(THREAD_READ_NEXT_ARTICLE_OR_THREAD, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadReverseSel") == 0) {
+			if (STRCMPEQ(keyname, "ThreadReverseSel")) {
 				process_keys(THREAD_REVERSE_SELECTIONS, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadSave") == 0) {
+			if (STRCMPEQ(keyname, "ThreadSave")) {
 				process_keys(THREAD_SAVE, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadSelArt") == 0) {
+			if (STRCMPEQ(keyname, "ThreadSelArt")) {
 				process_keys(THREAD_SELECT_ARTICLE, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadTag") == 0) {
+			if (STRCMPEQ(keyname, "ThreadTag")) {
 				process_keys(THREAD_TAG, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadTagParts") == 0) {
+			if (STRCMPEQ(keyname, "ThreadTagParts")) {
 				process_keys(THREAD_TAG_PARTS, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadToggleArtSel") == 0) {
+			if (STRCMPEQ(keyname, "ThreadToggleArtSel")) {
 				process_keys(THREAD_TOGGLE_ARTICLE_SELECTION, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadToggleSubjDisplay") == 0) {
+			if (STRCMPEQ(keyname, "ThreadToggleSubjDisplay")) {
 				process_keys(THREAD_TOGGLE_SUBJECT_DISPLAY, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadUndoSel") == 0) {
+			if (STRCMPEQ(keyname, "ThreadUndoSel")) {
 				process_keys(THREAD_UNDO_SELECTIONS, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ThreadUntag") == 0) {
+			if (STRCMPEQ(keyname, "ThreadUntag")) {
 				process_keys(THREAD_UNTAG, keys, &thread_keys);
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ToggleColor") == 0) {
+			if (STRCMPEQ(keyname, "ToggleColor")) {
 #ifdef HAVE_COLOR
 				process_keys(GLOBAL_TOGGLE_COLOR, keys, &group_keys);
 				process_keys(GLOBAL_TOGGLE_COLOR, keys, &info_keys);
 				process_keys(GLOBAL_TOGGLE_COLOR, keys, &option_menu_keys);
 				process_keys(GLOBAL_TOGGLE_COLOR, keys, &page_keys);
+				process_keys(GLOBAL_TOGGLE_COLOR, keys, &post_hist_keys);
 				process_keys(GLOBAL_TOGGLE_COLOR, keys, &select_keys);
 				process_keys(GLOBAL_TOGGLE_COLOR, keys, &thread_keys);
+				process_keys(GLOBAL_TOGGLE_COLOR, keys, &url_keys);
 #endif /* HAVE_COLOR */
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ToggleHelpDisplay") == 0) {
+			if (STRCMPEQ(keyname, "ToggleHelpDisplay")) {
 				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &attachment_keys);
 				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &group_keys);
 				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &info_keys);
@@ -1938,7 +1980,7 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ToggleInfoLastLine") == 0) {
+			if (STRCMPEQ(keyname, "ToggleInfoLastLine")) {
 				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &attachment_keys);
 				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &group_keys);
 				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &page_keys);
@@ -1947,18 +1989,20 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "ToggleInverseVideo") == 0) {
+			if (STRCMPEQ(keyname, "ToggleInverseVideo")) {
 				process_keys(GLOBAL_TOGGLE_INVERSE_VIDEO, keys, &group_keys);
 				process_keys(GLOBAL_TOGGLE_INVERSE_VIDEO, keys, &page_keys);
+				process_keys(GLOBAL_TOGGLE_INVERSE_VIDEO, keys, &post_hist_keys);
 				process_keys(GLOBAL_TOGGLE_INVERSE_VIDEO, keys, &select_keys);
 				process_keys(GLOBAL_TOGGLE_INVERSE_VIDEO, keys, &thread_keys);
+				process_keys(GLOBAL_TOGGLE_INVERSE_VIDEO, keys, &url_keys);
 
 				return TRUE;
 			}
 			break;
 
 		case 'U':
-			if (strcmp(keyname, "Up") == 0) {
+			if (STRCMPEQ(keyname, "Up")) {
 				process_keys(GLOBAL_LINE_UP, keys, &attachment_keys);
 				process_keys(GLOBAL_LINE_UP, keys, &group_keys);
 				process_keys(GLOBAL_LINE_UP, keys, &info_keys);
@@ -1972,7 +2016,7 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "UrlSelect") == 0) {
+			if (STRCMPEQ(keyname, "UrlSelect")) {
 				process_keys(URL_SELECT, keys, &url_keys);
 
 				return TRUE;
@@ -1980,11 +2024,14 @@ process_mapping(
 			break;
 
 		case 'V':
-			if (strcmp(keyname, "Version") == 0) {
+			if (STRCMPEQ(keyname, "Version")) {
+				process_keys(GLOBAL_VERSION, keys, &attachment_keys);
 				process_keys(GLOBAL_VERSION, keys, &group_keys);
 				process_keys(GLOBAL_VERSION, keys, &page_keys);
+				process_keys(GLOBAL_VERSION, keys, &post_hist_keys);
 				process_keys(GLOBAL_VERSION, keys, &select_keys);
 				process_keys(GLOBAL_VERSION, keys, &thread_keys);
+				process_keys(GLOBAL_VERSION, keys, &url_keys);
 
 				return TRUE;
 			}
@@ -2226,60 +2273,60 @@ upgrade_keymap_file(
 
 		switch (keyname[0]) {
 			case 'C':
-				if (strcmp(keyname, "ConfigFirstPage2") == 0)
+				if (STRCMPEQ(keyname, "ConfigFirstPage2"))
 					fprintf(newfp, "ConfigFirstPage\t\t\t%s\n", keydef);
-				else if (strcmp(keyname, "ConfigLastPage2") == 0)
+				else if (STRCMPEQ(keyname, "ConfigLastPage2"))
 					fprintf(newfp, "ConfigLastPage\t\t\t%s\n", keydef);
-				else if (strcmp(keyname, "ConfigSelect") == 0)
+				else if (STRCMPEQ(keyname, "ConfigSelect"))
 					config_select[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "ConfigSelect2") == 0)
+				else if (STRCMPEQ(keyname, "ConfigSelect2"))
 					config_select[1] = my_strdup(keydef);
 				else
 					fprintf(newfp, "%s", backup);
 				break;
 
 			case 'D':
-				if (strcmp(keyname, "Down") == 0)
+				if (STRCMPEQ(keyname, "Down"))
 					down[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "Down2") == 0)
+				else if (STRCMPEQ(keyname, "Down2"))
 					down[1] = my_strdup(keydef);
 				else
 					fprintf(newfp, "%s", backup);
 				break;
 
 			case 'G':
-				if (strcmp(keyname, "GroupAutoSel") == 0)
+				if (STRCMPEQ(keyname, "GroupAutoSel"))
 					menu_filter_select[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "GroupQuickAutoSel") == 0)
+				else if (STRCMPEQ(keyname, "GroupQuickAutoSel"))
 					quick_filter_select[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "GroupQuickKill") == 0)
+				else if (STRCMPEQ(keyname, "GroupQuickKill"))
 					quick_filter_kill[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "GroupKill") == 0)
+				else if (STRCMPEQ(keyname, "GroupKill"))
 					menu_filter_kill[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "GroupReadBasenote") == 0)
+				else if (STRCMPEQ(keyname, "GroupReadBasenote"))
 					groupreadbasenote[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "GroupReadBasenote2") == 0)
+				else if (STRCMPEQ(keyname, "GroupReadBasenote2"))
 					groupreadbasenote[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "GroupEditFilter") == 0)
+				else if (STRCMPEQ(keyname, "GroupEditFilter"))
 					edit_filter[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "GroupBugReport") == 0)
+				else if (STRCMPEQ(keyname, "GroupBugReport"))
 					bugreport[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "GroupMarkArtUnread") == 0)
+				else if (STRCMPEQ(keyname, "GroupMarkArtUnread"))
 					mark_article_unread[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "GroupMarkThdUnread") == 0)
+				else if (STRCMPEQ(keyname, "GroupMarkThdUnread"))
 					mark_thread_unread[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "GroupCatchup") == 0)
+				else if (STRCMPEQ(keyname, "GroupCatchup"))
 					catchup[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "GroupCatchupNextUnread") == 0)
+				else if (STRCMPEQ(keyname, "GroupCatchupNextUnread"))
 					catchup_next_unread[0] = my_strdup(keydef);
 				else
 					fprintf(newfp, "%s", backup);
 				break;
 
 			case 'H':
-				if (strcmp(keyname, "HelpFirstPage2") == 0)
+				if (STRCMPEQ(keyname, "HelpFirstPage2"))
 					fprintf(newfp, "HelpFirstPage\t\t\t%s\n", keydef);
-				else if (strcmp(keyname, "HelpLastPage2") == 0)
+				else if (STRCMPEQ(keyname, "HelpLastPage2"))
 					fprintf(newfp, "HelpLastPage\t\t\t%s\n", keydef);
 				else
 					fprintf(newfp, "%s", backup);
@@ -2287,70 +2334,70 @@ upgrade_keymap_file(
 
 			case 'N':
 				/* Nrc* got removed */
-				if (strcmp(keyname, "NrctblCreate") == 0)
+				if (STRCMPEQ(keyname, "NrctblCreate"))
 					;
-				else if (strcmp(keyname, "NrctblDefault") == 0)
+				else if (STRCMPEQ(keyname, "NrctblDefault"))
 					;
-				else if (strcmp(keyname, "NrctblAlternative") == 0)
+				else if (STRCMPEQ(keyname, "NrctblAlternative"))
 					;
-				else if (strcmp(keyname, "NrctblQuit") == 0)
+				else if (STRCMPEQ(keyname, "NrctblQuit"))
 					;
 				else
 					fprintf(newfp, "%s", backup);
 				break;
 
 			case 'P':
-				if (strcmp(keyname, "PageAutoSel") == 0)
+				if (STRCMPEQ(keyname, "PageAutoSel"))
 					menu_filter_select[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageQuickAutoSel") == 0)
+				else if (STRCMPEQ(keyname, "PageQuickAutoSel"))
 					quick_filter_select[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageQuickKill") == 0)
+				else if (STRCMPEQ(keyname, "PageQuickKill"))
 					quick_filter_kill[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageAutoKill") == 0)
+				else if (STRCMPEQ(keyname, "PageAutoKill"))
 					menu_filter_kill[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageDown") == 0)
+				else if (STRCMPEQ(keyname, "PageDown"))
 					pagedown[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageDown2") == 0)
+				else if (STRCMPEQ(keyname, "PageDown2"))
 					pagedown[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageDown3") == 0)
+				else if (STRCMPEQ(keyname, "PageDown3"))
 					pagedown[2] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageEditFilter") == 0)
+				else if (STRCMPEQ(keyname, "PageEditFilter"))
 					edit_filter[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageNextThd") == 0)
+				else if (STRCMPEQ(keyname, "PageNextThd"))
 					pagenextthd[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageNextThd2") == 0)
+				else if (STRCMPEQ(keyname, "PageNextThd2"))
 					pagenextthd[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageUp") == 0)
+				else if (STRCMPEQ(keyname, "PageUp"))
 					pageup[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageUp2") == 0)
+				else if (STRCMPEQ(keyname, "PageUp2"))
 					pageup[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageUp3") == 0)
+				else if (STRCMPEQ(keyname, "PageUp3"))
 					pageup[2] = my_strdup(keydef);
-				else if (strcmp(keyname, "Postponed") == 0)
+				else if (STRCMPEQ(keyname, "Postponed"))
 					postponed[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "Postponed2") == 0)
+				else if (STRCMPEQ(keyname, "Postponed2"))
 					postponed[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PostPost") == 0)
+				else if (STRCMPEQ(keyname, "PostPost"))
 					postpost[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "PostPost2") == 0)
+				else if (STRCMPEQ(keyname, "PostPost2"))
 					postpost[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PostPost3") == 0)
+				else if (STRCMPEQ(keyname, "PostPost3"))
 					postpost[2] = my_strdup(keydef);
-				else if (strcmp(keyname, "PostSend") == 0)
+				else if (STRCMPEQ(keyname, "PostSend"))
 					postsend[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "PostSend2") == 0)
+				else if (STRCMPEQ(keyname, "PostSend2"))
 					postsend[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageMarkArtUnread") == 0)
+				else if (STRCMPEQ(keyname, "PageMarkArtUnread"))
 					mark_article_unread[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageMarkThdUnread") == 0)
+				else if (STRCMPEQ(keyname, "PageMarkThdUnread"))
 					mark_thread_unread[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageCatchup") == 0)
+				else if (STRCMPEQ(keyname, "PageCatchup"))
 					catchup[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageCatchupNextUnread") == 0)
+				else if (STRCMPEQ(keyname, "PageCatchupNextUnread"))
 					catchup_next_unread[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "PageToggleHeaders") == 0)
+				else if (STRCMPEQ(keyname, "PageToggleHeaders"))
 					fprintf(newfp, "PageToggleRaw\t\t\t%s\n", keydef);
-				else if (strcmp(keyname, "PromptNo") == 0 || strcmp(keyname, "PromptYes") == 0) {
+				else if (STRCMPEQ(keyname, "PromptNo") || STRCMPEQ(keyname, "PromptYes")) {
 					if (strlen(keydef) == 1 && islower((int)(unsigned char) keydef[0]))
 						fprintf(newfp, "%s\t\t\t%c\t%c\n", keyname, keydef[0], my_toupper((int)(unsigned char) keydef[0]));
 					else
@@ -2360,59 +2407,59 @@ upgrade_keymap_file(
 				break;
 
 			case 'S':
-				if (strcmp(keyname, "SelectEditFilter") == 0)
+				if (STRCMPEQ(keyname, "SelectEditFilter"))
 					;
-				else if (strcmp(keyname, "SelectEnterNextUnreadGrp") == 0)
+				else if (STRCMPEQ(keyname, "SelectEnterNextUnreadGrp"))
 					selectentergroup[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "SelectEnterNextUnreadGrp2") == 0)
+				else if (STRCMPEQ(keyname, "SelectEnterNextUnreadGrp2"))
 					selectentergroup[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "SelectMarkGrpUnread") == 0)
+				else if (STRCMPEQ(keyname, "SelectMarkGrpUnread"))
 					selectmarkgrpunread[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "SelectMarkGrpUnread2") == 0)
+				else if (STRCMPEQ(keyname, "SelectMarkGrpUnread2"))
 					selectmarkgrpunread[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "SelectReadGrp") == 0)
+				else if (STRCMPEQ(keyname, "SelectReadGrp"))
 					selectreadgrp[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "SelectReadGrp2") == 0)
+				else if (STRCMPEQ(keyname, "SelectReadGrp2"))
 					selectreadgrp[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "SelectBugReport") == 0)
+				else if (STRCMPEQ(keyname, "SelectBugReport"))
 					bugreport[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "SelectCatchup") == 0)
+				else if (STRCMPEQ(keyname, "SelectCatchup"))
 					catchup[2] = my_strdup(keydef);
-				else if (strcmp(keyname, "SelectCatchupNextUnread") == 0)
+				else if (STRCMPEQ(keyname, "SelectCatchupNextUnread"))
 					catchup_next_unread[2] = my_strdup(keydef);
 				else
 					fprintf(newfp, "%s", backup);
 				break;
 
 			case 'T':
-				if (strcmp(keyname, "ThreadEditFilter") == 0)
+				if (STRCMPEQ(keyname, "ThreadEditFilter"))
 					;
-				else if (strcmp(keyname, "ThreadAutoSel") == 0)
+				else if (STRCMPEQ(keyname, "ThreadAutoSel"))
 					menu_filter_select[2] = my_strdup(keydef);
-				else if (strcmp(keyname, "ThreadKill") == 0)
+				else if (STRCMPEQ(keyname, "ThreadKill"))
 					menu_filter_kill[2] = my_strdup(keydef);
-				else if (strcmp(keyname, "ThreadReadArt") == 0)
+				else if (STRCMPEQ(keyname, "ThreadReadArt"))
 					threadreadart[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "ThreadReadArt2") == 0)
+				else if (STRCMPEQ(keyname, "ThreadReadArt2"))
 					threadreadart[1] = my_strdup(keydef);
-				else if (strcmp(keyname, "ThreadBugReport") == 0)
+				else if (STRCMPEQ(keyname, "ThreadBugReport"))
 					bugreport[2] = my_strdup(keydef);
-				else if (strcmp(keyname, "ThreadMarkArtUnread") == 0)
+				else if (STRCMPEQ(keyname, "ThreadMarkArtUnread"))
 					mark_article_unread[2] = my_strdup(keydef);
-				else if (strcmp(keyname, "ThreadMarkThdUnread") == 0)
+				else if (STRCMPEQ(keyname, "ThreadMarkThdUnread"))
 					mark_thread_unread[2] = my_strdup(keydef);
-				else if (strcmp(keyname, "ThreadCatchup") == 0)
+				else if (STRCMPEQ(keyname, "ThreadCatchup"))
 					catchup[3] = my_strdup(keydef);
-				else if (strcmp(keyname, "ThreadCatchupNextUnread") == 0)
+				else if (STRCMPEQ(keyname, "ThreadCatchupNextUnread"))
 					catchup_next_unread[3] = my_strdup(keydef);
 				else
 					fprintf(newfp, "%s", backup);
 				break;
 
 			case 'U':
-				if (strcmp(keyname, "Up") == 0)
+				if (STRCMPEQ(keyname, "Up"))
 					up[0] = my_strdup(keydef);
-				else if (strcmp(keyname, "Up2") == 0)
+				else if (STRCMPEQ(keyname, "Up2"))
 					up[1] = my_strdup(keydef);
 				else
 					fprintf(newfp, "%s", backup);
@@ -2647,6 +2694,7 @@ setup_default_keys(
 	add_default_key(&attachment_keys, "q", GLOBAL_QUIT);
 	add_default_key(&attachment_keys, "s", ATTACHMENT_SAVE);
 	add_default_key(&attachment_keys, "t", ATTACHMENT_TAG);
+	add_default_key(&attachment_keys, "v", GLOBAL_VERSION);
 	add_default_key(&attachment_keys, "U", ATTACHMENT_UNTAG);
 	add_default_key(&attachment_keys, "=", ATTACHMENT_TAG_PATTERN);
 	add_default_key(&attachment_keys, "@", ATTACHMENT_TOGGLE_TAGGED);
@@ -2945,6 +2993,7 @@ setup_default_keys(
 	add_default_key(&post_hist_keys, "h", GLOBAL_HELP);
 	add_default_key(&post_hist_keys, "\n\r", POSTED_SELECT);
 	add_default_key(&post_hist_keys, "H", GLOBAL_TOGGLE_HELP_DISPLAY);
+	add_default_key(&post_hist_keys, "I", GLOBAL_TOGGLE_INVERSE_VIDEO);
 	add_default_key(&post_hist_keys, "", GLOBAL_REDRAW_SCREEN);
 	add_default_key(&post_hist_keys, "j", GLOBAL_LINE_DOWN);
 	add_default_key(&post_hist_keys, "k", GLOBAL_LINE_UP);
@@ -2952,6 +3001,7 @@ setup_default_keys(
 	add_default_key(&post_hist_keys, "G$", GLOBAL_LAST_PAGE);
 	add_default_key(&post_hist_keys, "i", GLOBAL_TOGGLE_INFO_LAST_LINE);
 	add_default_key(&post_hist_keys, "q", GLOBAL_QUIT);
+	add_default_key(&post_hist_keys, "v", GLOBAL_VERSION);
 	add_default_key(&post_hist_keys, ">", GLOBAL_SCROLL_DOWN);
 	add_default_key(&post_hist_keys, "<", GLOBAL_SCROLL_UP);
 	add_default_key(&post_hist_keys, "/", GLOBAL_SEARCH_SUBJECT_FORWARD);
@@ -2960,6 +3010,9 @@ setup_default_keys(
 #ifndef NO_SHELL_ESCAPE
 	add_default_key(&post_hist_keys, "!", GLOBAL_SHELL_ESCAPE);
 #endif /* !NO_SHELL_ESCAPE */
+#ifdef HAVE_COLOR
+    add_default_key(&post_hist_keys, "&", GLOBAL_TOGGLE_COLOR);
+#endif /* HAVE COLOR */
 
 	/* prompt keys */
 	add_default_key(&prompt_keys, "", GLOBAL_ABORT);
@@ -3098,6 +3151,7 @@ setup_default_keys(
 	add_default_key(&url_keys, "h", GLOBAL_HELP);
 	add_default_key(&url_keys, "\n\r", URL_SELECT);
 	add_default_key(&url_keys, "H", GLOBAL_TOGGLE_HELP_DISPLAY);
+	add_default_key(&url_keys, "I", GLOBAL_TOGGLE_INVERSE_VIDEO);
 	add_default_key(&url_keys, "", GLOBAL_REDRAW_SCREEN);
 	add_default_key(&url_keys, "j", GLOBAL_LINE_DOWN);
 	add_default_key(&url_keys, "k", GLOBAL_LINE_UP);
@@ -3105,6 +3159,7 @@ setup_default_keys(
 	add_default_key(&url_keys, "G$", GLOBAL_LAST_PAGE);
 	add_default_key(&url_keys, "i", GLOBAL_TOGGLE_INFO_LAST_LINE);
 	add_default_key(&url_keys, "q", GLOBAL_QUIT);
+	add_default_key(&url_keys, "v", GLOBAL_VERSION);
 	add_default_key(&url_keys, ">", GLOBAL_SCROLL_DOWN);
 	add_default_key(&url_keys, "<", GLOBAL_SCROLL_UP);
 	add_default_key(&url_keys, "/", GLOBAL_SEARCH_SUBJECT_FORWARD);
@@ -3113,6 +3168,9 @@ setup_default_keys(
 #ifndef NO_SHELL_ESCAPE
 	add_default_key(&url_keys, "!", GLOBAL_SHELL_ESCAPE);
 #endif /* !NO_SHELL_ESCAPE */
+#ifdef HAVE_COLOR
+	add_default_key(&url_keys, "&", GLOBAL_TOGGLE_COLOR);
+#endif /* HAVE COLOR */
 }
 
 

@@ -3,10 +3,10 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2022-06-29
+ *  Updated   : 2023-11-16
  *  Notes     : Group attribute routines
  *
- * Copyright (c) 1993-2023 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -120,6 +120,7 @@ set_default_attributes(
 	CopyBits(sort_threads_type, tinrc.sort_threads_type);
 	CopyBits(show_author, tinrc.show_author);
 	CopyBool(show_signatures, tinrc.show_signatures);
+	CopyBool(show_art_score, tinrc.show_art_score);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	CopyBool(suppress_soft_hyphens, tinrc.suppress_soft_hyphens);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -229,6 +230,7 @@ set_default_state(
 	state->show_author = FALSE;
 	state->show_only_unread_arts = FALSE;
 	state->show_signatures = FALSE;
+	state->show_art_score = FALSE;
 	state->sigdashes = FALSE;
 	state->sigfile = FALSE;
 	state->signature_repost = FALSE;
@@ -476,6 +478,7 @@ read_attributes_file(
 					MATCH_INTEGER("show_author=", OPT_ATTRIB_SHOW_AUTHOR, SHOW_FROM_BOTH);
 					MATCH_BOOLEAN("show_only_unread_arts=", OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS);
 					MATCH_BOOLEAN("show_signatures=", OPT_ATTRIB_SHOW_SIGNATURES);
+					MATCH_BOOLEAN("show_art_score=", OPT_ATTRIB_SHOW_ART_SCORE);
 					MATCH_BOOLEAN("sigdashes=", OPT_ATTRIB_SIGDASHES);
 					MATCH_BOOLEAN("signature_repost=", OPT_ATTRIB_SIGNATURE_REPOST);
 					MATCH_STRING("sigfile=", OPT_ATTRIB_SIGFILE);
@@ -858,6 +861,9 @@ set_attrib(
 			case OPT_ATTRIB_SHOW_SIGNATURES:
 				SET_BOOLEAN(show_signatures);
 
+			case OPT_ATTRIB_SHOW_ART_SCORE:
+				SET_BOOLEAN(show_art_score);
+
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			case OPT_ATTRIB_SUPPRESS_SOFT_HYPHENS:
 				SET_BOOLEAN(suppress_soft_hyphens);
@@ -1001,7 +1007,7 @@ assign_attributes_to_groups(
 #endif /* CHARSET_CONVERSION */
 
 	if (!batch_mode || verbose)
-		wait_message(0, _("Processing attributes... ")); /* TODO: -> lang.c */
+		wait_message(0, _(txt_processing_attributes));
 
 	default_scope = &scopes[0];
 	for_each_group(i) {
@@ -1062,6 +1068,7 @@ assign_attributes_to_groups(
 				SET_ATTRIB(sort_threads_type);
 				SET_ATTRIB(show_author);
 				SET_ATTRIB(show_signatures);
+				SET_ATTRIB(show_art_score);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				SET_ATTRIB(suppress_soft_hyphens);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1218,30 +1225,29 @@ write_attributes_file(
 
 	/*
 	 * TODO: sort in a useful order
-	 *       move strings to lang.c
 	 */
-	fprintf(fp, "# Group attributes file V%s for the TIN newsreader\n", ATTRIBUTES_VERSION);
-	fprintf(fp, "%s", _("# Do not edit this comment block\n#\n"));
-	fprintf(fp, "%s", _("#  scope=STRING (eg. alt.*,!alt.bin*) [mandatory]\n"));
-	fprintf(fp, "%s", _("#  add_posted_to_filter=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  advertising=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  alternative_handling=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  ask_for_metamail=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  auto_cc_bcc=NUM\n"));
-	fprintf(fp, "%s", _("#    0=No, 1=Cc, 2=Bcc, 3=Cc and Bcc\n"));
-	fprintf(fp, "%s", _("#  auto_list_thread=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  auto_select=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  batch_save=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  date_format=STRING (eg. %%a, %%d %%b %%Y %%H:%%M:%%S)\n"));
-	fprintf(fp, "%s", _("#  delete_tmp_files=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  editor_format=STRING (eg. %%E +%%N %%F)\n"));
-	fprintf(fp, "%s", _("#  fcc=STRING (eg. =mailbox)\n"));
-	fprintf(fp, "%s", _("#  followup_to=STRING\n"));
-	fprintf(fp, "%s", _("#  from=STRING (just append wanted From:-line, don't use quotes)\n"));
-	fprintf(fp, "%s", _("#  group_catchup_on_exit=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  group_format=STRING (eg. %%n %%m %%R %%L  %%s  %%F)\n"));
-	fprintf(fp, "%s", _("#  mail_8bit_header=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  mail_mime_encoding=supported_encoding"));
+	fprintf(fp, txt_attrib_file_version, ATTRIBUTES_VERSION);
+	fprintf(fp, "%s", _(txt_attrib_file_header));
+	fprintf(fp, "%s", _(txt_attrib_file_scope));
+	fprintf(fp, "%s", _(txt_attrib_file_posted_to_filter));
+	fprintf(fp, "%s", _(txt_attrib_file_advertising));
+	fprintf(fp, "%s", _(txt_attrib_file_alt_handling));
+	fprintf(fp, "%s", _(txt_attrib_file_metamail));
+	fprintf(fp, "%s", _(txt_attrib_file_auto_cc_bcc));
+	fprintf(fp, "%s", _(txt_attrib_file_auto_cc_bcc_opts));
+	fprintf(fp, "%s", _(txt_attrib_file_auto_list_thrd));
+	fprintf(fp, "%s", _(txt_attrib_file_auto_select));
+	fprintf(fp, "%s", _(txt_attrib_file_batch_save));
+	fprintf(fp, "%s", _(txt_attrib_file_date_fmt));
+	fprintf(fp, "%s", _(txt_attrib_file_delete_tmp));
+	fprintf(fp, "%s", _(txt_attrib_file_editor_fmt));
+	fprintf(fp, "%s", _(txt_attrib_file_fcc));
+	fprintf(fp, "%s", _(txt_attrib_file_followup_to));
+	fprintf(fp, "%s", _(txt_attrib_file_from));
+	fprintf(fp, "%s", _(txt_attrib_file_grp_catchup));
+	fprintf(fp, "%s", _(txt_attrib_file_grp_fmt));
+	fprintf(fp, "%s", _(txt_attrib_file_mail_8bit_hdr));
+	fprintf(fp, "%s", _(txt_attrib_file_mail_mime_enc));
 	for (i = 0; txt_mime_encodings[i] != NULL; i++) {
 		if (!(i % 5))
 			fprintf(fp, "\n#    ");
@@ -1249,84 +1255,85 @@ write_attributes_file(
 	}
 	fprintf(fp, "\n");
 #ifdef HAVE_ISPELL
-	fprintf(fp, "%s", _("#  ispell=STRING\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_ispell));
 #endif /* HAVE_ISPELL */
-	fprintf(fp, "%s", _("#  maildir=STRING (eg. ~/Mail)\n"));
-	fprintf(fp, "%s", _("#  mailing_list=STRING (eg. majordomo@example.org)\n"));
-	fprintf(fp, "%s", _("#  mime_types_to_save=STRING (eg. image/*,!image/bmp)\n"));
-	fprintf(fp, "%s", _("#  mark_ignore_tags=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  mark_saved_read=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  mime_forward=ON/OFF\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_maildir));
+	fprintf(fp, "%s", _(txt_attrib_file_mailing_list));
+	fprintf(fp, "%s", _(txt_attrib_file_mime_types_to_save));
+	fprintf(fp, "%s", _(txt_attrib_file_mark_ignore_tags));
+	fprintf(fp, "%s", _(txt_attrib_file_mark_saved_read));
+	fprintf(fp, "%s", _(txt_attrib_file_mime_forward));
 #ifdef CHARSET_CONVERSION
-	fprintf(fp, "%s", _("#  mm_network_charset=supported_charset"));
+	fprintf(fp, "%s", _(txt_attrib_file_mm_network_charset));
 	for (i = 0; txt_mime_charsets[i] != NULL; i++) {
 		if (!(i % 5)) /* start new line */
 			fprintf(fp, "\n#    ");
 		fprintf(fp, "%s, ", txt_mime_charsets[i]);
 	}
 	fprintf(fp, "\n");
-	fprintf(fp, "%s", _("#  undeclared_charset=STRING (default is US-ASCII)\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_undeclared_charset));
 #endif /* CHARSET_CONVERSION */
-	fprintf(fp, "%s", _("#  news_headers_to_display=STRING\n"));
-	fprintf(fp, "%s", _("#  news_headers_to_not_display=STRING\n"));
-	fprintf(fp, "%s", _("#  news_quote_format=STRING\n"));
-	fprintf(fp, "%s", _("#  organization=STRING (if beginning with '/' read from file)\n"));
-	fprintf(fp, "%s", _("#  pos_first_unread=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  post_8bit_header=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  post_mime_encoding=supported_encoding"));
+	fprintf(fp, "%s", _(txt_attrib_file_hdr_to_disp));
+	fprintf(fp, "%s", _(txt_attrib_file_hdr_to_not_disp));
+	fprintf(fp, "%s", _(txt_attrib_file_quote_fmt));
+	fprintf(fp, "%s", _(txt_attrib_file_organization));
+	fprintf(fp, "%s", _(txt_attrib_file_pos_first_unread));
+	fprintf(fp, "%s", _(txt_attrib_file_post_8bit_hdr));
+	fprintf(fp, "%s", _(txt_attrib_file_post_mime_enc));
 	for (i = 0; txt_mime_encodings[i] != NULL; i++) {
 		if (!(i % 5))
 			fprintf(fp, "\n#    ");
 		fprintf(fp, "%s, ", txt_mime_encodings[i]);
 	}
 	fprintf(fp, "\n");
-	fprintf(fp, "%s", _("#  post_process_type=NUM\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_post_proc_type));
 	fprintf(fp, "#    %d=%s, %d=%s, %d=%s\n",
 		POST_PROC_NO, _(txt_post_process_types[POST_PROC_NO]),
 		POST_PROC_SHAR, _(txt_post_process_types[POST_PROC_SHAR]),
 		POST_PROC_YES, _(txt_post_process_types[POST_PROC_YES]));
-	fprintf(fp, "%s", _("#  post_process_view=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  quick_kill_scope=STRING (e.g. talk.*)\n"));
-	fprintf(fp, "%s", _("#  quick_kill_expire=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  quick_kill_case=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  quick_kill_header=NUM\n"));
-	fprintf(fp, "%s", _("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n"));
-	fprintf(fp, "%s", _("#    2=From: (case sensitive)     3=From: (ignore case)\n"));
-	fprintf(fp, "%s", _("#    4=Message-ID: & full References: line\n"));
-	fprintf(fp, "%s", _("#    5=Message-ID: & last References: entry only\n"));
-	fprintf(fp, "%s", _("#    6=Message-ID: entry only     7=Lines:\n"));
-	fprintf(fp, "%s", _("#  quick_select_scope=STRING\n"));
-	fprintf(fp, "%s", _("#  quick_select_expire=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  quick_select_case=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  quick_select_header=NUM\n"));
-	fprintf(fp, "%s", _("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n"));
-	fprintf(fp, "%s", _("#    2=From: (case sensitive)     3=From: (ignore case)\n"));
-	fprintf(fp, "%s", _("#    4=Message-ID: & full References: line\n"));
-	fprintf(fp, "%s", _("#    5=Message-ID: & last References: entry only\n"));
-	fprintf(fp, "%s", _("#    6=Message-ID: entry only     7=Lines:\n"));
-	fprintf(fp, "%s", _("#  quote_chars=STRING (%%I for initials)\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_post_proc_view));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_scope));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_expire));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_case));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr_0_1));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr_2_3));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr_4));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr_5));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr_6));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_select_scope));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_select_expire));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_select_case));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr_0_1));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr_2_3));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr_4));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr_5));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr_6));
+	fprintf(fp, "%s", _(txt_attrib_file_quote_chars));
 #ifndef DISABLE_PRINTING
-	fprintf(fp, "%s", _("#  print_header=ON/OFF\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_print_hdr));
 #endif /* !DISABLE_PRINTING */
-	fprintf(fp, "%s", _("#  process_only_unread=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  prompt_followupto=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  savedir=STRING (eg. ~user/News)\n"));
-	fprintf(fp, "%s", _("#  savefile=STRING (eg. =linux)\n"));
-	fprintf(fp, "%s", _("#  sigfile=STRING (eg. $var/sig)\n"));
-	fprintf(fp, "%s", _("#  show_author=NUM\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_process_only_unread));
+	fprintf(fp, "%s", _(txt_attrib_file_prompt_followup));
+	fprintf(fp, "%s", _(txt_attrib_file_savedir));
+	fprintf(fp, "%s", _(txt_attrib_file_savefile));
+	fprintf(fp, "%s", _(txt_attrib_file_sigfile));
+	fprintf(fp, "%s", _(txt_attrib_file_show_author));
 	fprintf(fp, "#    %d=%s, %d=%s, %d=%s, %d=%s\n",
 		SHOW_FROM_NONE, _(txt_show_from[SHOW_FROM_NONE]),
 		SHOW_FROM_ADDR, _(txt_show_from[SHOW_FROM_ADDR]),
 		SHOW_FROM_NAME, _(txt_show_from[SHOW_FROM_NAME]),
 		SHOW_FROM_BOTH, _(txt_show_from[SHOW_FROM_BOTH]));
-	fprintf(fp, "%s", _("#  show_signatures=ON/OFF\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_show_signatures));
+	fprintf(fp, "%s", _(txt_attrib_file_show_art_score));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	fprintf(fp, "%s", _("#  suppress_soft_hyphens=ON/OFF\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_suppress_soft_hyphens));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	fprintf(fp, "%s", _("#  show_only_unread_arts=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  sigdashes=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  signature_repost=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  sort_article_type=NUM\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_show_only_unread));
+	fprintf(fp, "%s", _(txt_attrib_file_sigdashes));
+	fprintf(fp, "%s", _(txt_attrib_file_signature_repost));
+	fprintf(fp, "%s", _(txt_attrib_file_sort_art_type));
 	fprintf(fp, "#    %d=%s,\n",
 		SORT_ARTICLES_BY_NOTHING, _(txt_sort_a_type[SORT_ARTICLES_BY_NOTHING]));
 	fprintf(fp, "#    %d=%s, %d=%s,\n",
@@ -1344,7 +1351,7 @@ write_attributes_file(
 	fprintf(fp, "#    %d=%s, %d=%s\n",
 		SORT_ARTICLES_BY_LINES_DESCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_LINES_DESCEND]),
 		SORT_ARTICLES_BY_LINES_ASCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_LINES_ASCEND]));
-	fprintf(fp, "%s", _("#  sort_threads_type=NUM\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_sort_thrd_type));
 	fprintf(fp, "#    %d=%s, %d=%s, %d=%s\n",
 		SORT_THREADS_BY_NOTHING, _(txt_sort_t_type[SORT_THREADS_BY_NOTHING]),
 		SORT_THREADS_BY_SCORE_DESCEND, _(txt_sort_t_type[SORT_THREADS_BY_SCORE_DESCEND]),
@@ -1353,37 +1360,37 @@ write_attributes_file(
 		SORT_THREADS_BY_LAST_POSTING_DATE_DESCEND, _(txt_sort_t_type[SORT_THREADS_BY_LAST_POSTING_DATE_DESCEND]));
 	fprintf(fp, "#    %d=%s\n",
 		SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND, _(txt_sort_t_type[SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND]));
-	fprintf(fp, "%s", _("#  tex2iso_conv=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  thread_catchup_on_exit=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  thread_articles=NUM"));
+	fprintf(fp, "%s", _(txt_attrib_file_tex2iso));
+	fprintf(fp, "%s", _(txt_attrib_file_thrd_catchup));
+	fprintf(fp, "%s", _(txt_attrib_file_thrd_arts));
 	for (i = 0; i <= THREAD_MAX; i++) {
 		if (!(i % 2))
 			fprintf(fp, "\n#    ");
 		fprintf(fp, "%d=%s, ", i, _(txt_threading[i]));
 	}
 	fprintf(fp, "\n");
-	fprintf(fp, "%s", _("#  thread_format=STRING (eg. %%n %%m [%%L]  %%T  %%F)\n"));
-	fprintf(fp, "%s", _("#  thread_perc=NUM\n"));
-	fprintf(fp, "%s", _("#  trim_article_body=NUM\n"));
-	fprintf(fp, "%s", _("#    0 = Don't trim article body\n"));
-	fprintf(fp, "%s", _("#    1 = Skip leading blank lines\n"));
-	fprintf(fp, "%s", _("#    2 = Skip trailing blank lines\n"));
-	fprintf(fp, "%s", _("#    3 = Skip leading and trailing blank lines\n"));
-	fprintf(fp, "%s", _("#    4 = Compact multiple blank lines between text blocks\n"));
-	fprintf(fp, "%s", _("#    5 = Compact multiple blank lines between text blocks and skip\n#        leading blank lines\n"));
-	fprintf(fp, "%s", _("#    6 = Compact multiple blank lines between text blocks and skip\n#        trailing blank lines\n"));
-	fprintf(fp, "%s", _("#    7 = Compact multiple blank lines between text blocks and skip\n#        leading and trailing blank lines\n"));
-	fprintf(fp, "%s", _("#  verbatim_handling=ON/OFF\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_thrd_fmt));
+	fprintf(fp, "%s", _(txt_attrib_file_thrd_perc));
+	fprintf(fp, "%s", _(txt_attrib_file_trim_art_body));
+	fprintf(fp, "%s", _(txt_attrib_file_trim_art_body_0));
+	fprintf(fp, "%s", _(txt_attrib_file_trim_art_body_1));
+	fprintf(fp, "%s", _(txt_attrib_file_trim_art_body_2));
+	fprintf(fp, "%s", _(txt_attrib_file_trim_art_body_3));
+	fprintf(fp, "%s", _(txt_attrib_file_trim_art_body_4));
+	fprintf(fp, "%s", _(txt_attrib_file_trim_art_body_5));
+	fprintf(fp, "%s", _(txt_attrib_file_trim_art_body_6));
+	fprintf(fp, "%s", _(txt_attrib_file_trim_art_body_7));
+	fprintf(fp, "%s", _(txt_attrib_file_verbatim_handling));
 #ifdef HAVE_COLOR
-	fprintf(fp, "%s", _("#  extquote_handling=ON/OFF\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_extquote_handling));
 #endif /* HAVE_COLOR */
-	fprintf(fp, "%s", _("#  wrap_on_next_unread=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  x_body=STRING (eg. ~/.tin/extra-body-text)\n"));
-	fprintf(fp, "%s", _("#  x_comment_to=ON/OFF\n"));
-	fprintf(fp, "%s", _("#  x_headers=STRING (eg. ~/.tin/extra-headers)\n"));
-	fprintf(fp, "%s", _("#\n# Note that it is best to put general (global scoping)\n"));
-	fprintf(fp, "%s", _("# entries first followed by group specific entries.\n#\n"));
-	fprintf(fp, "%s", _("############################################################################\n"));
+	fprintf(fp, "%s", _(txt_attrib_file_wrap_on_unread));
+	fprintf(fp, "%s", _(txt_attrib_file_x_body));
+	fprintf(fp, "%s", _(txt_attrib_file_x_comment));
+	fprintf(fp, "%s", _(txt_attrib_file_x_headers));
+	fprintf(fp, "%s", _(txt_attrib_file_note_1));
+	fprintf(fp, "%s", _(txt_attrib_file_note_2));
+	fprintf(fp, "%s", _(txt_attrib_file_footer));
 
 	/*
 	 * determine the file offset
@@ -1538,6 +1545,8 @@ write_attributes_file(
 					fprintf(fp, "show_only_unread_arts=%s\n", print_boolean(scope->attribute->show_only_unread_arts));
 				if (scope->state->show_signatures)
 					fprintf(fp, "show_signatures=%s\n", print_boolean(scope->attribute->show_signatures));
+				if (scope->state->show_art_score)
+					fprintf(fp, "show_art_score=%s\n", print_boolean(scope->attribute->show_art_score));
 				if (scope->state->sigdashes)
 					fprintf(fp, "sigdashes=%s\n", print_boolean(scope->attribute->sigdashes));
 				if (scope->state->sigfile && scope->attribute->sigfile)
@@ -1670,6 +1679,7 @@ skip_scope(
 		|| scope->state->show_author
 		|| scope->state->show_only_unread_arts
 		|| scope->state->show_signatures
+		|| scope->state->show_art_score
 		|| scope->state->sigdashes
 		|| (scope->state->sigfile && scope->attribute->sigfile)
 		|| scope->state->signature_repost
@@ -1801,6 +1811,7 @@ dump_attributes(
 			debug_print_file("ATTRIBUTES", "\tsort_threads_type=%d", group->attribute->sort_threads_type);
 			debug_print_file("ATTRIBUTES", "\tshow_author=%d", group->attribute->show_author);
 			debug_print_file("ATTRIBUTES", "\tshow_signatures=%s", print_boolean(group->attribute->show_signatures));
+			debug_print_file("ATTRIBUTES", "\tshow_art_score=%s", print_boolean(group->attribute->show_art_score));
 			debug_print_file("ATTRIBUTES", "\tsigdashes=%s", print_boolean(group->attribute->sigdashes));
 			debug_print_file("ATTRIBUTES", "\tsignature_repost=%s", print_boolean(group->attribute->signature_repost));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -1918,6 +1929,7 @@ dump_scopes(
 			debug_print_file(fname, "\t%ssort_threads_type=%d", DEBUG_PRINT_STATE(sort_threads_type), scope->attribute->sort_threads_type);
 			debug_print_file(fname, "\t%sshow_author=%d", DEBUG_PRINT_STATE(show_author), scope->attribute->show_author);
 			debug_print_file(fname, "\t%sshow_signatures=%s", DEBUG_PRINT_STATE(show_signatures), print_boolean(scope->attribute->show_signatures));
+			debug_print_file(fname, "\t%sshow_art_score=%s", DEBUG_PRINT_STATE(show_art_score), print_boolean(scope->attribute->show_art_score));
 			debug_print_file(fname, "\t%ssigdashes=%s", DEBUG_PRINT_STATE(sigdashes), print_boolean(scope->attribute->sigdashes));
 			debug_print_file(fname, "\t%ssignature_repost=%s", DEBUG_PRINT_STATE(signature_repost), print_boolean(scope->attribute->signature_repost));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
