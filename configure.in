@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2023-07-27
+dnl Updated   : 2023-12-17
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -136,8 +136,7 @@ if test "x$cf_use_heapsort" = xyes; then
 	if test x"$ac_cv_func_heapsort" = xyes; then
 		AC_MSG_CHECKING(if its prototype is compatible with qsort)
 		AC_TRY_COMPILE([
-#include <stdlib.h>
-#include <sys/types.h>
+$ac_includes_default
 extern int my_compare(const void *, const void *);
 ],[
 	char *base = 0;
@@ -1010,12 +1009,8 @@ AC_TYPE_UID_T
 dnl test to see if quad_t is defined
 AC_MSG_CHECKING(for quad_t)
 AC_TRY_COMPILE([
-#include <sys/types.h>
-#if 0
-#include <stdlib.h>
-#include <stddef.h>
-#endif /* 0 */
-],[quad_t x; x = 0],
+$ac_includes_default
+],[quad_t x; x = 0; (void)x],
 ac_cv_quad_t=yes, ac_cv_quad_t=no)
 AC_MSG_RESULT($ac_cv_quad_t)
 if test $ac_cv_quad_t = yes; then
@@ -1025,8 +1020,8 @@ fi
 dnl test to see if long long is defined
 AC_MSG_CHECKING(for long long)
 AC_TRY_COMPILE([
-#include <sys/types.h>
-],[long long x; x = 0],
+$ac_includes_default
+],[long long x; x = 0; (void)x],
 ac_cv_long_long=yes, ac_cv_long_long=no)
 AC_MSG_RESULT($ac_cv_long_long)
 if test $ac_cv_long_long = yes; then
@@ -1036,13 +1031,8 @@ fi
 dnl test to see if int_least64_t is defined
 AC_MSG_CHECKING(for int_least64_t)
 AC_TRY_COMPILE([
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
-#endif
-#ifdef HAVE_HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
-],[int_least64_t x; x = 0],
+$ac_includes_default
+],[int_least64_t x; x = 0; (void)x],
 ac_cv_int_least64_t=yes, ac_cv_int_least64_t=no)
 AC_MSG_RESULT($ac_cv_int_least64_t)
 if test $ac_cv_int_least64_t = yes; then
@@ -1050,13 +1040,8 @@ if test $ac_cv_int_least64_t = yes; then
 
 	AC_MSG_CHECKING(for INT64_C)
 	AC_TRY_COMPILE([
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
-#endif
-#ifdef HAVE_HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
-],[int_least64_t x; x = INT64_C(0)],
+$ac_includes_default
+],[int_least64_t x; x = INT64_C(0); (void)x],
 	ac_cv_int64_c=yes, ac_cv_int64_c=no)
 	AC_MSG_RESULT($ac_cv_int64_c)
 	if test $ac_cv_int64_c = yes; then
@@ -1068,6 +1053,7 @@ fi
 dnl test to see if nl_item is defined
 AC_MSG_CHECKING(for nl_item)
 AC_TRY_COMPILE([
+$ac_includes_default
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #else
@@ -1075,7 +1061,7 @@ AC_TRY_COMPILE([
 #include <nl_types.h>
 #endif
 #endif
-],[nl_item x; x = 0],
+],[nl_item x; x = 0; (void)x],
 ac_cv_nl_item=yes, ac_cv_nl_item=no)
 AC_MSG_RESULT($ac_cv_nl_item)
 if test $ac_cv_nl_item = yes; then
@@ -1114,11 +1100,13 @@ AC_CHECK_HEADER(unicode/unorm.h,[
 		cf_save_LIBS="$LIBS"
 		cf_try_icuuc="no"
 		LIBS="$LIBS -licuuc"
-		AC_TRY_LINK([#include <unicode/unorm.h>], [
+		AC_TRY_LINK([$ac_includes_default
+			#include <unicode/unorm.h>], [
 			int32_t needed;
 			const UChar *ustr = NULL;
  			UErrorCode status;
-			needed = unorm_normalize(ustr, -1, UNORM_DEFAULT, 0, NULL, 0, &status);], [
+			needed = unorm_normalize(ustr, -1, UNORM_DEFAULT, 0, NULL, 0, &status);
+			(void)needed], [
 			AC_DEFINE(HAVE_LIBICUUC,1,[Define this to 1 if we have libicuuc])
 			cf_try_icuuc="yes"],
 			LIBS=$cf_save_LIBS
@@ -1358,9 +1346,9 @@ AC_MSG_CHECKING([for memset_s])
 AC_TRY_RUN([
 /* Request C11 Annex K */
 #define __STDC_WANT_LIB_EXT1__ 1
+$ac_includes_default
 #include <string.h>
-#include <stddef.h>
-int main()
+int main(void)
 {
 	char buf[10] = { 1 };
 	if (memset_s((void*) buf, (size_t) 100, 0, (size_t) 1))
@@ -1378,11 +1366,12 @@ AM_MULTIBYTE_ABLE
 
 AC_MSG_CHECKING(if gettimeofday takes two arguments)
 AC_TRY_COMPILE([
+$ac_includes_default
 #if HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif],
-[struct timeval *tv;
-struct timezone *tz;
+[static struct timeval tv;
+static struct timezone tz;
 gettimeofday(&tv, &tz);],
 ac_cv_func_gettimeofday_2args=yes, ac_cv_func_gettimeofday_2args=no)
 AC_MSG_RESULT($ac_cv_func_gettimeofday_2args)
@@ -1466,6 +1455,7 @@ CF_COREFILE
 # Setup includes for test-program to verify declarations
 CHECK_DECL_FLAG="-I$srcdir/include -I$srcdir/pcre"
 CHECK_DECL_HDRS='
+#undef __CPROTO__
 #define __CPROTO__
 #define HAVE_CONFDEFS_H
 #include <tin.h>'
@@ -1622,12 +1612,13 @@ fi
 # if struct hostent contains h_addr_list or not (SunOS-3.5)
 AC_MSG_CHECKING(for h_addr_list in struct hostent)
 AC_TRY_COMPILE([
+$ac_includes_default
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif
 ],[
-struct hostent h;
-h.h_addr_list[0]=0;
+static struct hostent h;
+h.h_addr_list[0] = malloc(1);
 ],ac_cv_hostent_h_addr_list=yes,ac_cv_hostent_h_addr_list=no)
 AC_MSG_RESULT($ac_cv_hostent_h_addr_list)
 if test $ac_cv_hostent_h_addr_list = yes; then
@@ -1642,7 +1633,7 @@ CF_CHECK_FD_SET
 AC_MSG_CHECKING(for working tolower())
 AC_TRY_RUN([
 #include <ctype.h>
-int main() {
+int main(void) {
 	unsigned char str;
 
 	for (str = 1; str < 127; str++) {
@@ -1669,7 +1660,7 @@ int main() {
 AC_MSG_CHECKING(for working toupper())
 AC_TRY_RUN([
 #include <ctype.h>
-int main() {
+int main(void) {
 	unsigned char str;
 
 	for (str = 1; str < 127; str++) {
@@ -1694,10 +1685,9 @@ int main() {
 AC_CHECK_HEADER(stdnoreturn.h,[
 	AC_MSG_CHECKING(for C11 _Noreturn feature)
 	AC_TRY_COMPILE([
-#include <stdio.h>
-#include <stdlib.h>
+$ac_includes_default
 #include <stdnoreturn.h>
-static _Noreturn void giveup(void);],
+static _Noreturn void giveup(void) { exit(0);}],
 	[if (feof(stdin)) giveup()],
 	[cf_cv_c11_noreturn=yes
 	AC_MSG_RESULT($cf_cv_c11_noreturn)],
@@ -1726,7 +1716,7 @@ AC_TRY_RUN([
 #ifdef HAVE_STDLIB_H
 #	include <stdlib.h>
 #endif /* HAVE_STDLIB_H */
-int main() {
+int main(void) {
 	iconv_t cd;
 
 	if ((cd = iconv_open("US-ASCII//TRANSLIT", "ISO-8859-1")) == (iconv_t) (-1))
