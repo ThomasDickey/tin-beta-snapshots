@@ -3,7 +3,7 @@
  *  Module    : tnntp.h
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-05
- *  Updated   : 2022-09-19
+ *  Updated   : 2024-01-19
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2024 Thomas Dickey <dickey@invisible-island.net>
@@ -51,7 +51,13 @@
 #		ifdef HAVE_FCNTL_H
 #			include	<fcntl.h>
 #		endif /* HAVE_FCNTL_H */
-#		include	<tiuser.h>
+#		ifdef HAVE_TIUSER_H
+#			include	<tiuser.h>
+#		else
+#			ifdef HAVE_SYS_TIUSER_H
+#				include <sys/tiuser.h>
+#			endif /* HAVE_SYS_TIUSER_H */
+#		endif /* HAVE_TIUSER_H */
 #		ifdef HAVE_STROPTS_H
 #			include	<stropts.h>
 #		endif /* HAVE_STROPTS_H */

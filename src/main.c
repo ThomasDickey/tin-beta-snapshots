@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-26
+ *  Updated   : 2024-02-07
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -633,12 +633,12 @@ read_cmd_line_options(
 				my_strncpy(cmdline.nntpserver, optarg, sizeof(cmdline.nntpserver) - 1);
 				{ /* ":port" suffix - no IPv6-address support yet */
 					char *p;
-					unsigned short i;
 
 					if ((p = strchr(cmdline.nntpserver, ':')) != NULL) {
 						if (strrchr(cmdline.nntpserver, ':') == p) {
-							*p++ = '\0';
+							unsigned short i;
 
+							*p++ = '\0';
 							if ((i = (unsigned short) atoi(p)) != 0)
 								nntp_tcp_port = i;
 #	ifdef DEBUG
@@ -733,9 +733,19 @@ read_cmd_line_options(
 
 			case 'p': /* implies -r */
 #ifdef NNTP_ABLE
-				read_news_via_nntp = TRUE;
-				if (atoi(optarg) != 0)
-					nntp_tcp_port = (unsigned short) atoi(optarg);
+				{
+					unsigned short i;
+
+					read_news_via_nntp = TRUE;
+					if ((i = (unsigned short) atoi(optarg)) != 0)
+						nntp_tcp_port = i;
+#	ifdef DEBUG
+					else {
+						if (debug & DEBUG_MISC) /* FIXME: output is ugly */
+							wait_message(3, _(txt_port_not_numeric), "", optarg);
+					}
+#	endif /* DEBUG */
+				}
 #else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
@@ -789,13 +799,9 @@ read_cmd_line_options(
 
 			case 't':
 #if defined(NNTP_ABLE) && defined(HAVE_ALARM) && defined(SIGALRM)
-				cmdline.nntp_timeout = MIN(abs(atoi(optarg)), TIN_NNTP_TIMEOUT_MAX);
-				if ((cmdline.nntp_timeout = atoi(optarg)) < 0)
+				cmdline.nntp_timeout = atoi(optarg);
+				if (cmdline.nntp_timeout < 0 || cmdline.nntp_timeout > TIN_NNTP_TIMEOUT_MAX)
 					cmdline.nntp_timeout = 0;
-				else { /* as for nntp_read_timeout_secs */
-					if (cmdline.nntp_timeout > TIN_NNTP_TIMEOUT_MAX)
-						cmdline.nntp_timeout = 0;
-				}
 				cmdline.args |= CMDLINE_NNTP_TIMEOUT;
 #else
 				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
@@ -1118,11 +1124,16 @@ usage(
 	error_message(2, _(txt_usage_read_saved_news));
 	error_message(2, _(txt_usage_savedir), tinrc.savedir);
 	error_message(2, _(txt_usage_save_new_news));
+
 #ifdef NNTP_ABLE
+#	if defined(HAVE_ALARM) && defined(SIGALRM)
+	error_message(2, _(txt_usage_nntp_timeout), TIN_NNTP_TIMEOUT);
+#	endif /* HAVE_ALARM && SIGALRM */
 #	ifdef NNTPS_ABLE
 	error_message(2, _(txt_usage_use_nntps));
 #	endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
+
 	error_message(2, _(txt_usage_update_index_files));
 	error_message(2, _(txt_usage_verbose));
 	error_message(2, _(txt_usage_version));

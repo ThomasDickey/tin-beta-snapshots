@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2023-11-20
+ *  Updated   : 2024-02-13
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2024 Chris Blum <chris@resolution.de>
@@ -191,7 +191,7 @@ mmdecode(
 		}
 		return (int) (t - where);
 	} else if (encoding == 'b') {		/* base64 */
-		static unsigned short pattern = 0;
+		static unsigned pattern = 0;
 		static int bits = 0;
 		unsigned char x;
 
@@ -619,10 +619,11 @@ rfc1522_do_encode(
 		 * even if they are made of only 7bit chars)
 		 */
 #ifdef MIME_BREAK_LONG_LINES
-		if (contains_nonprintables(what, isstruct_head) || isbroken_within || (long_line && colon_seen)) {
+		if (contains_nonprintables(what, isstruct_head) || isbroken_within || (long_line && colon_seen))
 #else
-		if (contains_nonprintables(what, isstruct_head) || isbroken_within) {
+		if (contains_nonprintables(what, isstruct_head) || isbroken_within)
 #endif /* MIME_BREAK_LONG_LINES */
+		{
 			if (encoding == 'Q') {
 				if (!quoting) {
 					snprintf(buf2, sizeof(buf2), "=?%s?%c?", charset, encoding);
@@ -653,7 +654,7 @@ rfc1522_do_encode(
 #if 0
 					if (is_EIGHT_BIT(what) || (strchr(RFC2047_ESPECIALS, *what)))
 #else
-					if (is_EIGHT_BIT(what) || !isalnum((int)(unsigned char) *what))
+					if (is_EIGHT_BIT(what) || !isalnum((unsigned char) *what))
 #endif /* 0 */
 					{
 						snprintf(buf2, sizeof(buf2), "=%2.2X", *EIGHT_BIT(what));
@@ -788,10 +789,11 @@ rfc1522_do_encode(
 				 * eliminate ' ' inserted in while-block above
 				 */
 #ifdef MIME_BREAK_LONG_LINES
-				if (!contains_nonprintables(what, isstruct_head) && !long_line) {
+				if (!contains_nonprintables(what, isstruct_head) && !long_line)
 #else
-				if (!contains_nonprintables(what, isstruct_head)) {
+				if (!contains_nonprintables(what, isstruct_head))
 #endif /* MIME_BREAK_LONG_LINES */
+				{
 					t--;
 					ewsize--;
 				}
@@ -939,9 +941,11 @@ do_rfc15211522_encode(
 		mmnwcharset = group->attribute->mm_network_charset;
 	else /* E-Mail */
 		mmnwcharset = tinrc.mm_network_charset;
+#else
+	(void) group;
 #endif /* CHARSET_CONVERSION */
 
-	if ((g = tmpfile()) == NULL)
+	if ((g = my_tmpfile()) == NULL)
 		return;
 
 	while (contains_headers && (header = tin_fgets(f, TRUE))) {
@@ -1102,9 +1106,9 @@ generate_random_mime_boundary(
 {
 	size_t i;
 
-	srand((unsigned int) time(NULL));
+	srndm();
 	for (i = 0; i < len - 1; i++)
-		boundary[i] = base64_alphabet[(size_t) rand() % sizeof(base64_alphabet)];
+		boundary[i] = base64_alphabet[(size_t) rndm() % sizeof(base64_alphabet)];
 	boundary[len - 1] = '\0';
 }
 
@@ -1176,7 +1180,7 @@ split_mail(
 		return FALSE;
 
 	/* Header */
-	if ((*headerfp = tmpfile()) == NULL) {
+	if ((*headerfp = my_tmpfile()) == NULL) {
 		fclose(fp);
 		return FALSE;
 	}
@@ -1190,7 +1194,7 @@ split_mail(
 
 	/* Body */
 	if (textfp != NULL) {
-		if ((*textfp = tmpfile()) == NULL) {
+		if ((*textfp = my_tmpfile()) == NULL) {
 			fclose(fp);
 			fclose(*headerfp);
 			return FALSE;
@@ -1300,7 +1304,7 @@ compose_message_rfc822(
 {
 	FILE *fp;
 
-	if ((fp = tmpfile()) == NULL)
+	if ((fp = my_tmpfile()) == NULL)
 		return NULL;
 
 	*is_8bit = contains_8bit_characters(articlefp);
@@ -1333,7 +1337,7 @@ compose_multipart_mixed(
 	char *boundary;
 	t_bool requires_8bit;
 
-	if ((fp = tmpfile()) == NULL)
+	if ((fp = my_tmpfile()) == NULL)
 		return NULL;
 
 	/* First compose message/rfc822 part (needed for choosing the appropriate CTE) */

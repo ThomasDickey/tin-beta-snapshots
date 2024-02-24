@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-22
+ *  Updated   : 2023-12-06
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -51,7 +51,10 @@
 #	include "newsrc.h"
 #endif /* !NEWSRC_H */
 
-static mode_t newsrc_mode = 0;
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
+	static mode_t newsrc_mode = 0;
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
+
 
 /*
  * Local prototypes
@@ -107,12 +110,14 @@ read_newsrc(
 			return -1L;
 	}
 
-	if (fstat(fileno(fp), &statbuf) != -1)
-		newsrc_mode = statbuf.st_mode;
-	else {
+	if (fstat(fileno(fp), &statbuf) == -1) {
 		fclose(fp);
 		return -1L;
 	}
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
+	else
+		newsrc_mode = statbuf.st_mode;
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_newsrc));
@@ -237,14 +242,17 @@ write_newsrc(
 	}
 
 	if ((fp_op = fopen(newnewsrc, "w")) != NULL) {
-		if (newsrc_mode)
-#ifdef HAVE_FCHMOD
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
+		if (newsrc_mode) {
+#	ifdef HAVE_FCHMOD
 			fchmod(fileno(fp_op), newsrc_mode);
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 			chmod(newnewsrc, newsrc_mode);
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
+		}
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 		while ((line = tin_fgets(fp_ip, FALSE)) != NULL)
 			tot += write_newsrc_line(fp_op, line);
@@ -360,14 +368,17 @@ auto_subscribe_groups(
 		return;
 	}
 
-	if (newsrc_mode)
-#ifdef HAVE_FCHMOD
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
+	if (newsrc_mode) {
+#	ifdef HAVE_FCHMOD
 		fchmod(fileno(fp_newsrc), newsrc_mode);
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 		chmod(newsrc_file, newsrc_mode);
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
+	}
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 	/* TODO: test me! */
 	while ((ptr = tin_fgets(fp_subs, FALSE)) != NULL) {
@@ -576,14 +587,17 @@ subscribe(
 	if (no_write || (newfp = fopen(newnewsrc, "w")) == NULL)
 		return;
 
-	if (newsrc_mode)
-#ifdef HAVE_FCHMOD
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
+	if (newsrc_mode) {
+#	ifdef HAVE_FCHMOD
 		fchmod(fileno(newfp), newsrc_mode);
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 		chmod(newnewsrc, newsrc_mode);
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
+	}
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 	if ((fp = fopen(newsrc, "r")) != NULL) {
 		while ((line = tin_fgets(fp, FALSE)) != NULL) {
@@ -651,14 +665,17 @@ bulk_subscribe(
 	if (no_write || (newfp = fopen(newnewsrc, "w")) == NULL)
 		return;
 
-	if (newsrc_mode)
-#ifdef HAVE_FCHMOD
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
+	if (newsrc_mode) {
+#	ifdef HAVE_FCHMOD
 		fchmod(fileno(newfp), newsrc_mode);
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 		chmod(newnewsrc, newsrc_mode);
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
+	}
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 	if ((fp = fopen(newsrc, "r")) != NULL) {
 		while ((line = tin_fgets(fp, FALSE)) != NULL) {
@@ -725,14 +742,17 @@ reset_newsrc(
 	int sub, i;
 
 	if (!no_write && (newfp = fopen(newnewsrc, "w")) != NULL) {
-		if (newsrc_mode)
-#ifdef HAVE_FCHMOD
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
+		if (newsrc_mode) {
+#	ifdef HAVE_FCHMOD
 			fchmod(fileno(newfp), newsrc_mode);
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 			chmod(newnewsrc, newsrc_mode);
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
+		}
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 		if ((fp = fopen(newsrc, "r")) != NULL) {
 			while ((line = tin_fgets(fp, FALSE)) != NULL) {
@@ -774,14 +794,17 @@ delete_group(
 		return;
 
 	if ((newfp = fopen(newnewsrc, "w")) != NULL) {
-		if (newsrc_mode)
-#ifdef HAVE_FCHMOD
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
+		if (newsrc_mode) {
+#	ifdef HAVE_FCHMOD
 			fchmod(fileno(newfp), newsrc_mode);
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 			chmod(newnewsrc, newsrc_mode);
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
+	}
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 		if ((fp = fopen(newsrc, "r")) != NULL) {
 			while ((line = tin_fgets(fp, FALSE)) != NULL) {
@@ -1335,14 +1358,17 @@ pos_group_in_newsrc(
 
 	newnewsrc_created = TRUE;
 
-	if (newsrc_mode)
-#ifdef HAVE_FCHMOD
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
+	if (newsrc_mode) {
+#	ifdef HAVE_FCHMOD
 		fchmod(fileno(fp_out), newsrc_mode);
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 		chmod(newnewsrc, newsrc_mode);
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
+	}
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 	joinpath(filename, sizeof(filename), tmpdir, ".subrc");
 	len = snprintf(NULL, 0, "%s.%ld", filename, (long) process_id);

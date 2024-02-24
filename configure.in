@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2023-12-17
+dnl Updated   : 2024-02-12
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.6.3
+VERSION=2.6.4
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Define this to the package name])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define this to the package version])
 AC_SUBST(PACKAGE)
@@ -124,7 +124,12 @@ case "$host_cpu:$host_vendor:$host_os" in
 		AC_DEFINE(ISC_UNIX,1,[Define this to 1 for the i386/ISC system])
 esac
 
-dnl TODO: also check for heapsort(3) in libbsd?
+dnl TODO: also check for heapsort(3) in libbsd? like
+dnl AS_IF([test x"ac_cv_func_heapsort" != "xyes"],
+dnl  [AC_CHECK_LIB(bsd, heapsort,
+dnl   [CF_TRY_PKG_CONFIG([libbsd-overlay], [AC_DEFINE(HAVE_HEAPSORT)])]
+dnl   )]
+dnl )
 AC_MSG_CHECKING(if you would like to use heapsort)
 CF_ARG_DISABLE(heapsort,
 	[  --disable-heapsort      disable heapsort() as alternative to qsort],
@@ -146,7 +151,7 @@ extern int my_compare(const void *, const void *);
 	else
 		CF_VERBOSE(will use our own heapsort function)
 		EXTRAO_DEP=''
-		EXTRAOBJS="$EXTRAOBJS \$(OBJDIR)/heapsort.o"
+		EXTRAOBJS="\$(OBJDIR)/heapsort.o $EXTRAOBJS"
 	fi
 fi
 if test "x$cf_use_heapsort" = xyes; then
@@ -192,8 +197,8 @@ fi
 CF_WITH_PROGRAM(slrnface,
 [  --with-slrnface         (default: from system path)])
 if test -n "$ac_cv_path_PATH_SLRNFACE"; then
-	EXTRAO_DEP=""
-	EXTRAOBJS="$EXTRAOBJS \$(OBJDIR)/xface.o"
+	EXTRAO_DEP=''
+	EXTRAOBJS="\$(OBJDIR)/xface.o $EXTRAOBJS"
 fi
 
 ## Default shell
@@ -541,7 +546,7 @@ AC_ARG_WITH(trace,
 		 use_trace=yes
 		 AC_DEFINE(USE_TRACE,1,[Define this to 1 if we will use ncurses' trace-functions])
 		 EXTRAO_DEP=''
-		 EXTRAOBJS="$EXTRAOBJS \$(OBJDIR)/trace.o"],
+		 EXTRAOBJS="\$(OBJDIR)/trace.o $EXTRAOBJS"],
 		 use_trace=no)])],
 	[use_trace=no])
 #AC_MSG_CHECKING(if you want debugging-trace)
@@ -795,9 +800,9 @@ AC_ARG_WITH(
 	[enable_nntps="no"])
 AC_MSG_RESULT($enable_nntps)
 
-# Todo: checklib for openssl in non pkg-config case
+# TODO: checklib for openssl in non pkg-config case
 #       version checking in non pkg-config case for openssl
-#       cleanup (duplicate code, messages, forating, ...)
+#       cleanup (duplicate code, messages, formatting, ...)
 AS_IF([test "$enable_nntps" != "no"],
 
 	[AS_IF([test "$enable_nntps" = "yes" || test "$enable_nntps" = "libtls"],[
@@ -897,6 +902,51 @@ AC_MSG_RESULT($have_gnutls)
 			[AS_IF([test "$have_openssl" = "yes"],
 				[AC_DEFINE(HAVE_LIB_OPENSSL,1,[Define to 1 if we can/should compile with the OpenSSL libraries])],
 				[AC_DEFINE(HAVE_LIB_GNUTLS,1,[Define to 1 if we can/should compile with the GNUTLS library])])])])])
+
+### as the above is already complicated enough, the following will be dealt
+### with separately
+AS_IF([test "$have_libtls" = "yes"],[
+	AC_MSG_CHECKING(for libcrypto)
+	CF_TRY_PKG_CONFIG([crypto],[
+		AC_TRY_COMPILE([
+#include <openssl/ssl.h>
+],[
+BIO_free(NULL);
+],
+			[
+			have_libcrypto=yes
+			AC_DEFINE(HAVE_LIB_CRYPTO,1,[Define to 1 if we can/should compile with the OpenSSL crypto library])
+			],
+ 			[
+			have_libcrypto=no
+			AC_MSG_RESULT($have_libcrypto)
+			]
+		)
+	],[
+		AC_CHECK_LIB(crypto,BIO_free,[
+			AC_CHECK_HEADERS(openssl/ssl.h,[
+				AC_TRY_COMPILE(
+[
+#include <openssl/ssl.h>
+],[
+BIO_free(NULL);
+],[
+				LIBS="$LIBS -lcrypto"
+				have_libcrypto=yes
+				AC_CHECK_HEADERS(openssl/asn1.h openssl/bio.h openssl/pem.h openssl/x509.h)
+				AC_DEFINE(HAVE_LIB_CRYPTO,1,[Define to 1 if we can/should compile with the OpenSSL crypto library])
+				],[
+				have_libcrypto=no
+				AC_MSG_RESULT($have_libcrypto)
+				])
+			],[have_libcrypto=no])
+		],[
+		have_libcrypto=no
+		AC_MSG_RESULT($have_libcrypto)
+		])
+	])
+])
+
 fi
 
 ### checks for operator characteristics (should be the last option)
@@ -1005,6 +1055,11 @@ AC_EGREP_HEADER(in_addr_t, netinet/in.h, ,[
 	)]
 )
 AC_TYPE_UID_T
+
+AC_MSG_CHECKING(for tcflag_t defined in termios.h)
+AC_EGREP_HEADER(tcflag_t, termios.h, AC_MSG_RESULT(yes),[
+	AC_CHECK_TYPE(tcflag_t, unsigned int)
+])
 
 dnl test to see if quad_t is defined
 AC_MSG_CHECKING(for quad_t)
@@ -1267,6 +1322,7 @@ AC_CHECK_FUNCS(\
 	atoq \
 	bcopy \
 	chmod \
+	dirfd \
 	execlp \
 	explicit_bzero \
 	explicit_memset \
@@ -1283,6 +1339,7 @@ AC_CHECK_FUNCS(\
 	is_xterm \
 	isascii \
 	lockf \
+	lrand48 \
 	memcmp \
 	memcpy \
 	memmove \
@@ -1294,6 +1351,7 @@ AC_CHECK_FUNCS(\
 	nl_langinfo \
 	poll \
 	putenv \
+	random \
 	rewinddir \
 	resizeterm \
 	select \
@@ -1316,7 +1374,6 @@ AC_CHECK_FUNCS(\
 	strstr \
 	strtol \
 	strtoll \
-	tmpfile \
 	tzset \
 	uname \
 	unlink \
@@ -1453,7 +1510,13 @@ CF_COREFILE
 
 ### test this last, since it uses a partly-built autoconf.h
 # Setup includes for test-program to verify declarations
-CHECK_DECL_FLAG="-I$srcdir/include -I$srcdir/pcre"
+CHECK_DECL_FLAG="-I$srcdir/include"
+if test "$PCREDIR_MAKE" != "#" ; then
+	CHECK_DECL_FLAG=$CHECK_DECL_FLAG" -I$srcdir/pcre"
+fi
+if test "$CANDIR_MAKE" != "#" ; then
+	CHECK_DECL_FLAG=$CHECK_DECL_FLAG" -I$srcdir/libcanlock/include"
+fi
 CHECK_DECL_HDRS='
 #undef __CPROTO__
 #define __CPROTO__
@@ -1471,7 +1534,6 @@ CF_CHECK_DECL(\
 	strchr \
 	strcasestr \
 	strsep \
-	tmpfile \
 )
 
 dnl Check network stuff separately, to limit the effect of inconsistent headers
@@ -1627,6 +1689,42 @@ fi
 
 CF_CHECK_FD_SET
 
+# snprintf() doesn't return length
+# wrap into
+#	if test "$ac_cv_func_snprintf" == "yes" ; then
+#	fi
+#?
+AC_MSG_CHECKING(for working snprintf())
+AC_TRY_RUN([
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main(void) {
+	char *format;
+	char skip[5], fmt[9];
+	int len;
+
+	strcpy(fmt, "%d.%d.%d");
+	strcpy(skip, "Test");
+	len = snprintf(NULL, 0, "%s%s", skip, fmt);
+	if (len != (int)strlen(fmt) + (int)strlen(skip))
+		exit(1);
+	exit(0);
+}],
+	[
+		AC_MSG_RESULT(yes)
+	],
+	[
+		AC_DEFINE(SNPRINTF_BROKEN,1,[Define this to 1 if function SNPRINTF is buggy])
+		AC_MSG_RESULT(no)
+	],
+	[
+		AC_MSG_RESULT(unknown)
+	]
+)
+
+
 # tolower() is known to be broken on 4.2BSD by
 # not checking if input is an uppercase letter
 # /* #define tolower(c)	((c)-'A'+'a') */
@@ -1646,13 +1744,14 @@ int main(void) {
                 AC_MSG_RESULT(yes)
         ],
         [
-		AC_DEFINE(TOLOWER_BROKEN,1,[Define this to 1 if function tolower if broken])
+		AC_DEFINE(TOLOWER_BROKEN,1,[Define this to 1 if function tolower is broken])
                 AC_MSG_RESULT(no)
         ],
         [
                 AC_MSG_RESULT(unknown)
         ]
 )
+
 
 # toupper is known to be broken on 4.2BSD by
 # not checking if input is a lowercase letter
@@ -1673,7 +1772,7 @@ int main(void) {
 		AC_MSG_RESULT(yes)
 	],
 	[
-		AC_DEFINE(TOUPPER_BROKEN,1,[Define this to 1 if function toupper if broken])
+		AC_DEFINE(TOUPPER_BROKEN,1,[Define this to 1 if function toupper is broken])
 		AC_MSG_RESULT(no)
 	],
 	[
@@ -1687,8 +1786,12 @@ AC_CHECK_HEADER(stdnoreturn.h,[
 	AC_TRY_COMPILE([
 $ac_includes_default
 #include <stdnoreturn.h>
-static _Noreturn void giveup(void) { exit(0);}],
-	[if (feof(stdin)) giveup()],
+static _Noreturn void giveup(void) { exit(0);}],[
+#if defined(__STDC__) && defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+	if (feof(stdin)) giveup()
+#else
+#	error "__STDC_VERSION__ < 201112L"
+#endif],
 	[cf_cv_c11_noreturn=yes
 	AC_MSG_RESULT($cf_cv_c11_noreturn)],
 	[cf_cv_c11_noreturn=no
@@ -1696,15 +1799,75 @@ static _Noreturn void giveup(void) { exit(0);}],
 ],
 [cf_cv_c11_noreturn=no]
 )
-if test "$cf_cv_c11_noreturn" = yes; then
+AS_IF([test x"$cf_cv_c11_noreturn" = "xyes" && test x"$ac_cv_header_stdnoreturn_h" = "xyes"],
+[
 	AC_DEFINE(HAVE_STDNORETURN_H, 1,[Define if <stdnoreturn.h> header is available and working])
 	AC_DEFINE_UNQUOTED(STDC_NORETURN,_Noreturn,[Define if C11 _Noreturn keyword is supported])
-	HAVE_STDNORETURN_H=1
-else
-	HAVE_STDNORETURN_H=0
-fi
-AC_SUBST(HAVE_STDNORETURN_H)
-AC_SUBST(STDC_NORETURN)
+])
+
+# signal type - all but POSIX is untested
+CF_CHECK_HEADERS(signal.h)
+AC_MSG_CHECKING([for POSIX signal support])
+AC_TRY_COMPILE([
+#ifdef HAVE_STDDEF_H
+#	include <stddef.h>
+#endif /* HAVE_STDDEF_H */
+#ifdef HAVE_SIGNAL_H
+#	include <signal.h>
+#endif HAVE_SIGNAL_H
+],[
+sigset_t set;
+
+sigfillset(&set);
+(void) sigprocmask(SIG_SETMASK, &set, NULL);
+],[
+have_posix_signal=yes
+AC_DEFINE(HAVE_POSIX_SIGNALS,1)
+],[
+have_posix_signal=no
+])
+AC_MSG_RESULT($have_posix_signal)
+
+AS_IF([test x"$have_posix_signal" != "xyes"],
+[
+AC_MSG_CHECKING([for BSD signal support])
+AC_TRY_COMPILE([
+#ifdef HAVE_SIGNAL_H
+#	include <signal.h>
+#endif HAVE_SIGNAL_H
+],[
+sigblock(0);
+],[
+have_bsd_signal=yes
+AC_DEFINE(HAVE_BSD_SIGNALS,1)
+],[
+have_bsd_signal=no
+])
+AC_MSG_RESULT($have_bsd_signal)
+])
+
+AS_IF([test x"$have_posix_signal" != "xyes" && test x"$have_bsd_signal" != "xyes"],
+[
+AC_MSG_CHECKING([for SYSV signal support])
+AC_TRY_COMPILE([
+#ifdef HAVE_SIGNAL_H
+#	include <signal.h>
+#endif HAVE_SIGNAL_H
+],[
+sigignore(0);
+],[
+have_sysv_signal=yes
+AC_DEFINE(HAVE_SYSV_SIGNALS,1)
+],[
+have_sysv_signal=no
+])
+AC_MSG_RESULT($have_sysv_signal)
+])
+
+AS_IF(
+[test x"$have_posix_signal" = "xno" && test x"$have_bsd_signal" = "xno" && test x"$have_sysv_signal" = "xno"],
+[AC_DEFINE(HAVE_NO_SIGNAL_BLOCKING,1)
+AC_MSG_WARN([[not having blockable signals]])])
 
 
 CF_CHECK_HEADERS(iconv.h)
@@ -1734,6 +1897,17 @@ int main(void) {
 		AC_MSG_RESULT(unknown)
 	]
 )
+
+
+# TLI, Transport Layer Interface; SVR3, SVR4
+# TODO check for funcs: t_sync(), t_open(), t_bind(), t_connect(), t_alloc()
+#                       t_free(), t_close(), t_error()
+#      check for types: t_errno, t_call
+#      libs may be covered already by CF_NETLIBS
+# XTI, X/Open Transport Interface
+#      AC_CHECK_LIB([xnet], [t_open])
+CF_CHECK_HEADERS(tiuser.h sys/tiuser.h)
+
 
 # FIXME / TESTME
 # locale is broken on cygwin < 1.7.0

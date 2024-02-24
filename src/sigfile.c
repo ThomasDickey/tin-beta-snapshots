@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2021-07-26
+ *  Updated   : 2024-02-01
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2024 Mike Gleason
@@ -203,7 +203,7 @@ static FILE *
 open_random_sig(
 	char *sigdir)
 {
-	srand((unsigned int) time(NULL));
+	srndm();
 
 	if (chdir(sigdir) == 0) {
 		if (thrashdir(sigdir) || !*sigfile) {
@@ -277,7 +277,7 @@ thrashdir(
 			return 1;
 		}
 #endif /* HAVE_REWINDDIR */
-		pick = rand() % numentries + 1;
+		pick = rndm() % numentries + 1;
 		while (--pick >= 0) {
 			if ((dp = readdir(dirp)) == NULL)
 				break;
@@ -286,7 +286,18 @@ thrashdir(
 			if (!strcmp(dp->d_name, CURRENTDIR) || (dp->d_name[0] == '.'))
 				dp = NULL;
 			else {	/* if we have a non-dot entry */
-				if (stat(dp->d_name, &st) == -1) {
+#ifdef HAVE_DIRFD
+				int dfd = dirfd(dirp);
+
+				if (dfd < 0)
+					goto err_out;
+
+				if (fstat(dfd, &st) == -1)
+#else
+				if (stat(dp->d_name, &st) == -1)
+#endif /* HAVE_DIRFD */
+				{
+err_out:
 					CLOSEDIR(dirp);
 					free(cwd);
 					return 1;

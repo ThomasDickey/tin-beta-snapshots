@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2023-10-16
+ *  Updated   : 2023-12-27
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -574,7 +574,7 @@ feed_articles(
 	int saved_curr_line = -1;
 	int thread_base;
 	struct t_art_stat sbuf;
-	struct t_counters counter = {0, 0, 0};
+	struct t_counters counter = { 0, 0, 0 };
 	t_bool feed_mark_function = function == FEED_MARK_READ || function == FEED_MARK_UNREAD;
 	t_bool mark_saved = FALSE;
 	t_bool no_next_unread = FALSE;
@@ -657,8 +657,9 @@ feed_articles(
 
 #ifndef DISABLE_PRINTING
 		/* Setup printing - get print command line */
+		/* FIXME: don't use fixed length buffer */
 		case FEED_PRINT:
-			snprintf(outpath, sizeof(outpath), "%s %s", tinrc.printer, REDIRECT_OUTPUT);
+			snprintf(outpath, sizeof(outpath), "%.1000s %s", tinrc.printer, REDIRECT_OUTPUT);
 			break;
 #endif /* !DISABLE_PRINTING */
 
@@ -1053,7 +1054,7 @@ print_file(
 	t_openartinfo *artinfo)
 {
 	FILE *fp;
-	struct t_header *hdr = &artinfo->hdr;
+	const struct t_header *hdr = &artinfo->hdr;
 	t_bool ok;
 #	ifdef DONT_HAVE_PIPING
 	char cmd[PATH_LEN], file[PATH_LEN];

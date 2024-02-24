@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2023-11-13
+ *  Updated   : 2024-02-22
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2024 Michael Bienia <michael@vorlon.ping.de>
@@ -505,7 +505,7 @@ print_any_option(
 			break;
 
 		case OPT_CHAR:
-			snprintf(ptr, len, "%"T_CHAR_FMT, *OPT_CHAR_list[option_table[option].var_index]);
+			snprintf(ptr, len, "%"T_CHAR_FMT, (wint_t) *OPT_CHAR_list[option_table[option].var_index]);
 			break;
 
 		default:

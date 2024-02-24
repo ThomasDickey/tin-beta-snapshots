@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2023-07-26
+ *  Updated   : 2024-02-12
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2024 Thomas Dickey <dickey@invisible-island.net>
@@ -142,6 +142,7 @@
 #	undef quad_t
 #	undef size_t
 #	undef ssize_t
+#	undef tcflag_t
 #	undef time_t
 #	undef uid_t
 #	undef RETSIGTYPE
@@ -239,6 +240,7 @@
 #	undef HAVE_BCOPY
 #	undef HAVE_CHMOD
 #	undef HAVE_CLOCK_GETTIME
+#	undef HAVE_DIRFD
 #	undef HAVE_EXECLP
 #	undef HAVE_FCHMOD
 #	undef HAVE_FCNTL
@@ -304,7 +306,6 @@
 #	undef HAVE_TCSETATTR
 #	undef HAVE_TIGETINT
 #	undef HAVE_TIGETNUM
-#	undef HAVE_TMPFILE
 #	undef HAVE_TZSET
 #	undef HAVE_UNAME
 #	undef HAVE_UNLINK
@@ -331,7 +332,6 @@
 #	undef DECL_STRCASESTR
 #	undef DECL_STRSEP
 #	undef DECL_SYS_ERRLIST
-#	undef DECL_TMPFILE
 #	undef DECL_TGETSTR
 #	undef DECL_TGOTO
 #	undef DECL_TIGETSTR
@@ -953,6 +953,11 @@ Added missing headers after gettext update, using autoheader
 #	undef FILE_MODE_BROKEN
 
 /*
+ * define if snprintf() doesn't work correctly as on SCO Openserver 5.0.7 MP5
+ */
+#   undef SNPRINTF_BROKEN
+
+/*
  * define if tolower() doesn't work correctly as on NEWS-OS3.3
  */
 #	undef TOLOWER_BROKEN
@@ -988,6 +993,16 @@ Added missing headers after gettext update, using autoheader
 #	undef HAVE_LIB_LIBTLS
 
 /*
+ * Define to 1 if we can/should compile with the OpenSSL crypto library
+ */
+#	undef HAVE_LIB_CRYPTO
+#	undef HAVE_OPENSSL_SSL_H
+#	undef HAVE_OPENSSL_ASN1_H
+#	undef HAVE_OPENSSL_BIO_H
+#	undef HAVE_OPENSSL_PEM_H
+#	undef HAVE_OPENSSL_X509_H
+
+/*
  * Define to 1 if we can/should compile with the OpenSSL libraries
  */
 #	undef HAVE_LIB_OPENSSL
@@ -1002,4 +1017,26 @@ Added missing headers after gettext update, using autoheader
  */
 #	undef USE_ZLIB
 
+/*
+ * signal-types
+ */
+#	undef HAVE_SIGNAL_H
+#	undef HAVE_POSIX_SIGNALS
+#	undef HAVE_BSD_SIGNALS
+#	undef HAVE_SYSV_SIGNALS
+#	undef HAVE_NO_SIGNAL_BLOCKING
+
+/*
+ * TLI, Transport Layer Interface; SVR3, SVR4
+ * XTI, X/Open Transport Interface
+ */
+#	undef HAVE_TIUSER_H
+#	undef HAVE_SYS_TIUSER_H
+
+/*
+ * use lanrand48/srand() if found, otherwiese
+ * use random()/srandom() if found, otherwise use rand()/srand()
+ */
+#	undef HAVE_LRAND48
+#	undef HAVE_RANDOM
 #endif /* !TIN_AUTOCONF_H */

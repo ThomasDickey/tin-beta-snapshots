@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2023-11-24
+ *  Updated   : 2024-02-11
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -63,7 +63,7 @@ char *nntp_server = NULL;
 	static int reconnect(int retry);
 	static int server_init(char *machine, const char *cservice, unsigned short port, char *text, size_t mlen);
 	static void close_server(t_bool send_no_quit);
-	static void list_motd(void);
+	static void list_motd(FILE *stream);
 #	ifdef INET6
 		static int get_tcp6_socket(char *machine, unsigned short port);
 #	else
@@ -295,10 +295,10 @@ server_init(
 #		endif /* INET6 */
 #	endif /* DECNET */
 
-#      ifdef INET6
+#	ifdef INET6
 	/* silence compiler warning (unused parameter) */
 	(void) cservice;
-#      endif /* INET6 */
+#	endif /* INET6 */
 
 	if (sock_fd < 0)
 		return sock_fd;
@@ -316,12 +316,16 @@ server_init(
 		int result;
 
 		result = tintls_open(machine, sock_fd, &nntp_buf.tls_ctx);
-		if (result < 0)
+		if (result < 0) {
+			close(sock_fd);
 			return result;
+		}
 
 		result = tintls_handshake(nntp_buf.tls_ctx);
-		if (result < 0)
+		if (result < 0) {
+			close(sock_fd);
 			return result;
+		}
 	}
 #	endif /* NNTPS_ABLE */
 
@@ -467,7 +471,7 @@ get_tcp_socket(
 	char **cp;
 #			endif /* h_addr */
 #			ifdef HAVE_HOSTENT_H_ADDR_LIST
-	static char *alist[2] = {0, 0};
+	static char *alist[2] = { 0, 0 };
 #			endif /* HAVE_HOSTENT_H_ADDR_LIST */
 	static struct hostent def;
 	static struct in_addr defaddr;
@@ -679,7 +683,7 @@ get_tcp6_socket(
 #	endif /* AF_UNSPEC */
 #	ifndef AF_INET6 /* i.e. sco3.2v5.0.7 */
 #		define  AF_INET6 AF_INET
-#	endif /* ! AF_INET6 */
+#	endif /* !AF_INET6 */
 	memset(&hints, 0, sizeof(hints));
 /*	hints.ai_flags = AI_CANONNAME; */
 	hints.ai_family = (force_ipv4 ? AF_INET : (force_ipv6 ? AF_INET6 : ADDRFAM));
@@ -1567,7 +1571,7 @@ nntp_open(
 	if (!is_reconnect && *line) {
 		/* remove leading whitespace and save server's initial response */
 		linep = line;
-		while (isspace((int) *linep))
+		while (isspace((unsigned char) *linep))
 			linep++;
 
 		STRCPY(bug_nntpserver1, linep);
@@ -1670,7 +1674,7 @@ nntp_open(
 
 		/* Remove leading white space and save server's second response */
 		linep = line;
-		while (isspace((int) *linep))
+		while (isspace((unsigned char) *linep))
 			linep++;
 
 		STRCPY(bug_nntpserver2, linep);
@@ -1850,7 +1854,7 @@ nntp_open(
 		 *   (currently done automatically for -d, -q and -Q)
 		 */
 		if (nntp_caps.list_motd)
-			list_motd();
+			list_motd(NULL);
 	}
 
 	is_reconnect = TRUE;
@@ -2152,7 +2156,7 @@ DEBUG_IO((stderr, "new_nntp_command(%s)\n", command));
 
 static void
 list_motd(
-	void)
+	FILE *stream)
 {
 	char *ptr;
 	char *p;
@@ -2167,8 +2171,10 @@ list_motd(
 	switch (i) {
 		case OK_MOTD:
 #	ifdef HAVE_COLOR
-			fcol(tinrc.col_message);
+			if (!stream) /* just on startup */
+				fcol(tinrc.col_message);
 #	endif /* HAVE_COLOR */
+
 			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #	ifdef DEBUG
 				if (debug & DEBUG_NNTP)
@@ -2176,23 +2182,24 @@ list_motd(
 #	endif /* DEBUG */
 				/*
 				 * RFC 6048 2.5.2 "The information MUST be in UTF-8"
-				 *
-				 * TODO: - store a hash value of the entire motd in the server-rc
-				 *         and only if it differs from the old value display the
-				 *         motd?
-				 *       - use some sort of pager?
 				 */
 				p = my_strdup(ptr);
 				len = strlen(p);
 				process_charsets(&p, &len, "UTF-8", tinrc.mm_local_charset, FALSE);
-				my_printf(_(txt_motd), p);
+				if (stream) {
+					if (!l)
+						fprintf(stream, "\n");
+					fprintf(stream, _(txt_motd), p);
+				} else
+					my_printf(_(txt_motd), p);
 				free(p);
 				l++;
 			}
 #	ifdef HAVE_COLOR
-			fcol(tinrc.col_normal);
+			if (!stream)
+				fcol(tinrc.col_normal);
 #	endif /* HAVE_COLOR */
-			if (l) {
+			if (l && !stream) { /* no sleep in nntp_conninfo() */
 				my_flush();
 				sleep((l >> 1) | 0x01);
 			}
@@ -2611,7 +2618,7 @@ nntpbuf_gets(
 		}
 
 		while (size && (buf->rd.ub - buf->rd.lb) > 0) {
-			s[write_at++] = buf->rd.buf[buf->rd.lb++];
+			((unsigned char*)s)[write_at++] = buf->rd.buf[buf->rd.lb++];
 			size--;
 
 			if (s[write_at - 1] == '\n' && size) {
@@ -2678,6 +2685,7 @@ nntpbuf_is_open(
 
 #undef SZ
 
+
 int
 nntp_conninfo(
 	FILE *stream)
@@ -2688,16 +2696,17 @@ nntp_conninfo(
 	fprintf(stream, _(txt_conninfo_server), nntp_server);
 	fprintf(stream, _(txt_conninfo_port), nntp_tcp_port);
 	if (nntp_caps.type == CAPABILITIES) {
-		if (*nntp_caps.implementation)
+		if (nntp_caps.implementation)
 			fprintf(stream, _(txt_conninfo_implementation), nntp_caps.implementation);
 		if (nntp_caps.compress) {
 			fprintf(stream, "%s", _(txt_conninfo_compress));
-			if ((nntp_caps.compress_algorithm & COMPRESS_DEFLATE) == COMPRESS_DEFLATE)
+			if ((nntp_caps.compress_algorithm & COMPRESS_DEFLATE) == COMPRESS_DEFLATE) {
 #	ifdef USE_ZLIB
 				fprintf(stream, _(txt_conninfo_deflate), deflate_active ? _(txt_conninfo_enabled) : _(txt_conninfo_inactive));
 #	else
 				fprintf(stream, "%s", _(txt_conninfo_deflate_unsupported));
 #	endif /* USE_ZLIB */
+			}
 		}
 #	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
 		if (nntp_caps.maxartnum) {
@@ -2714,6 +2723,10 @@ nntp_conninfo(
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
 	fprintf(stream, _(txt_conninfo_timeout), TIN_NNTP_TIMEOUT, TIN_NNTP_TIMEOUT ? "" : _(txt_conninfo_disabled));
 #	endif /* HAVE_ALARM && SIGALRM */
+
+#	ifdef NNTP_ABLE
+	list_motd(stream);
+#	endif /* NNTPS_ABLE */
 
 #	ifdef NNTPS_ABLE
 	if (nntp_buf.tls_ctx)

@@ -189,8 +189,8 @@ prompt_yn(
 	yes = func_to_key(PROMPT_YES, prompt_keys);
 	no = func_to_key(PROMPT_NO, prompt_keys);
 
-	printascii(keyyes, (default_answer ? my_toupper(yes) : yes));
-	printascii(keyno, (!default_answer ? my_toupper(no) : no));
+	printascii(keyyes, (default_answer ? my_toupper((unsigned char) yes) : yes));
+	printascii(keyno, (!default_answer ? my_toupper((unsigned char) no) : no));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	keyyes_len = strwidth(keyyes);

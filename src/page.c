@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-27
+ *  Updated   : 2024-01-16
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1112,26 +1112,29 @@ print_message_page(
 		 * Highlight URL's and mail addresses
 		 */
 		if (tinrc.url_highlight) {
-			if (curr->flags & C_URL)
+			if (curr->flags & C_URL) {
 #ifdef HAVE_COLOR
 				highlight_regexes((int) (i + (size_t) scroll_region_top), &url_regex, use_color ? tinrc.col_urls : -1);
 #else
 				highlight_regexes((int) (i + (size_t) scroll_region_top), &url_regex, -1);
 #endif /* HAVE_COLOR */
+			}
 
-			if (curr->flags & C_MAIL)
+			if (curr->flags & C_MAIL) {
 #ifdef HAVE_COLOR
 				highlight_regexes((int) (i + (size_t) scroll_region_top), &mail_regex, use_color ? tinrc.col_urls : -1);
 #else
 				highlight_regexes((int) (i + (size_t) scroll_region_top), &mail_regex, -1);
 #endif /* HAVE_COLOR */
+			}
 
-			if (curr->flags & C_NEWS)
+			if (curr->flags & C_NEWS) {
 #ifdef HAVE_COLOR
 				highlight_regexes((int) (i + (size_t) scroll_region_top), &news_regex, use_color ? tinrc.col_urls : -1);
 #else
 				highlight_regexes((int) (i + (size_t) scroll_region_top), &news_regex, -1);
 #endif /* HAVE_COLOR */
+			}
 		}
 
 		/*
@@ -1317,7 +1320,7 @@ invoke_metamail(
 	Raw(FALSE);
 
 #ifdef DONT_HAVE_PIPING
-	if ((fd_mime = my_tmpfile(mimefile, sizeof(mimefile) - 1, homedir)) == -1) {
+	if ((fd_mime = my_mktmp(mimefile, sizeof(mimefile) - 1, homedir)) == -1) {
 		perror_message(_(txt_command_failed), ptr);
 		return;
 	}

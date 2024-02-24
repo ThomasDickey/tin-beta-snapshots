@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-11-30
+.\" Updated   : 2024-01-10
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -15,7 +15,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24 diciembre 2022" 2.6.3 "Usenet newsreader"
+.TH tin 1 "24 diciembre 2023" 2.6.4 "Usenet newsreader"
 .\"
 .\"
 .SH NOMBRE
@@ -61,7 +61,7 @@ newsgroup with unread articles.
 .SH "ESTADO SALIENTE"
 .IX Header "ESTADO SALIENTE"
 .\" TODO: also exits with signalnr caught as exit status
-.TP 
+.TP  12
 \fB0\fP
 Successful program execution. No unread news available in batch mode.
 .TP 
@@ -322,13 +322,12 @@ displayed in the middle of the screen usually with the number of unread
 articles displayed on the same line in front, but it can be customized via
 \fBselect_format\fP.
 .PP
-.\" FIXME - make this auto scale
 .nf
-\->M    1     2  comp.security.announce  Announcements from the CERT abou
+\f(CR\->M    1     2  comp.security.announce  Announcements from the CERT abou
   M    2     1  news.admin.announce     Announcements for news adminstra
        3    22  news.software.misc      News\-related software other than
        4  1475  news.software.nntp      The Network News Transfer Protoc
-  X    5   124  news.software.readers   Discussion of software used to r
+  X    5   124  news.software.readers   Discussion of software used to r\fR
 .fi
 .PP
 There may also be a character prefixing the line. An explanation follows:
@@ -396,39 +395,36 @@ section "FILTERING ARTICLES") it's marked with \fBart_marked_selected\fP in
 front of the total number of articles in the thread. The display can be
 customized via \fBgroup_format\fP.
 .PP
-.\" FIXME - make this auto scale
 .nf
-                de.admin.net\-abuse.announce (11B 13+ 1* 1o 0K) M
+\f(CR                de.admin.net\-abuse.announce (11B 13+ 1* 1o 0K) M\fR
 
-\->   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg <l
+\f(CR\->   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg <l
      2   +       69 EMP/ECP gecancelt. xynx. BI= 10  Henning Weede <hwee
      3   o       93 EMP gecancelt. SouthBeach/Palms  Henning Weede <hwee
-     4   *      368 <1997\-11\-12> Fremdcancel\-FAQ     Thomas Roessler <ro
+     4   *      368 <1997\-11\-12> Fremdcancel\-FAQ     Thomas Roessler <ro\fR
 .fi
 .PP
 .\" FIXME - add description of fields
 At the Thread level the screen usually (depends on the threading method
 used) looks like this, but can be customized via \fBthread_format\fP:
 .PP
-.\" FIXME - make this auto scale
 .nf
-\->   1      [   7]  What is this funny tree in the thr  Robert F. Simmig
+\f(CR\->   1      [   7]  What is this funny tree in the thr  Robert F. Simmig
      2      [  12]  +\->                                 Sephan Wagner <s
      3      [ 230]  | `\->Tin thread\-level (was: What is Bob Johnson <bob
-     4      [  22]  `\->tin threading menu               Brian Richardson
+     4      [  22]  `\->tin threading menu               Brian Richardson\fR
 
 .fi
 .PP
 .\" FIXME - add description of fields
 At the Article level the page header has the following format:
 .PP
-.\" FIXME - make this auto scale
 .nf
-Sun, 28 Dec 1997 21:21:01   de.admin.news.groups      Thread   20 of 86
+\f(CRSun, 28 Dec 1997 21:21:01   de.admin.news.groups      Thread   20 of 86
 Lines 50   Re: EINSPRUCH zu RESULT:de.comm.mobil.ALL   Article  47 of 59
-Urs Janssen <urs@akk.org>        at Arbeitskreis Kultur und Kommunikati
+Urs Janssen <urs@akk.org>        at Arbeitskreis Kultur und Kommunikati\fR
 
-article\-body
+\f(CRarticle\-body\fR
 .fi
 .PP
 .\"
@@ -3884,7 +3880,7 @@ for adding \fB\%pgp\fP(1)  (Pretty Good Privacy) support.
 .IP "Philip Hazel <ph10@cam.ac.uk>"
 for \fB\%pcre\fP(3), \fB\%pcre2\fP(3)  (Perl\-compatible regular expression
 library).
-.IP "Patrick Powell <papowell@astart.com>"
+.IP "Mark Martinec <mark.martinec@ijs.si>"
 .\"
 .\"
 for \fB\%snprintf\fP(3)  and \fB\%vsnprintf\fP(3)  fallbacks.

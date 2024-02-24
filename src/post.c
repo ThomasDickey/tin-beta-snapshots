@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-30
+ *  Updated   : 2024-02-23
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -384,8 +384,7 @@ msg_add_header(
 		 * Remove : if one is attached to name
 		 */
 		new_name = my_strdup(name);
-		ptr = strchr(new_name, ':');
-		if (ptr)
+		if ((ptr = strchr(new_name, ':')) != NULL)
 			*ptr = '\0';
 
 		/*
@@ -714,10 +713,10 @@ build_post_hist_line(
 	t_posted *lptr;
 	char *tmp = NULL;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	int len = cCOLS * MB_CUR_MAX;
+	size_t len = cCOLS * MB_CUR_MAX;
 	wchar_t *wtmp, *wtmp2;
 #else
-	int len = cCOLS;
+	size_t len = cCOLS;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 #ifdef USE_CURSES
@@ -753,13 +752,13 @@ build_post_hist_line(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 #if 1
-	snprintf(sptr, (size_t) len, "  %s  %8s  %c  %-*.*s  \"%s\"", tin_ltoa(i + 1, 4),
+	snprintf(sptr, len, "  %s  %8s  %c  %-*.*s  \"%s\"", tin_ltoa(i + 1, 4),
 			lptr->date, lptr->action,
 			group_len, group_len, BlankIfNull(tmp),
 			lptr->subj);
 #else
 	/* also show MID */
-	snprintf(sptr, (size_t) len, "  %s  %8s  %c  %-*.*s  \"%s\" %s", tin_ltoa(i + 1, 4),
+	snprintf(sptr, len, "  %s  %8s  %c  %-*.*s  \"%s\" %s", tin_ltoa(i + 1, 4),
 			lptr->date, lptr->action,
 			group_len, group_len, BlankIfNull(tmp),
 			lptr->subj,
@@ -773,7 +772,7 @@ build_post_hist_line(
 			free(wtmp);
 			FreeIfNeeded(tmp);
 			if ((tmp = wchar_t2char(wtmp2)) != NULL) {
-				snprintf(sptr, (size_t) len, "%s", tmp);
+				snprintf(sptr, len, "%s", tmp);
 				FreeAndNull(tmp);
 			}
 			free(wtmp2);
@@ -1351,7 +1350,7 @@ check_article_to_be_posted(
 			}
 		}
 
-		/* line is longer than > 998 and will not be encoded */
+		/* line is longer than > IMF_LINE_LEN (998) and will not be encoded */
 #ifdef MIME_BREAK_LONG_LINES
 		if (*c_group ? (*c_group)->attribute->post_8bit_header : tinrc.post_8bit_header)
 #endif /* MIME_BREAK_LONG_LINES */
@@ -1961,12 +1960,13 @@ check_article_to_be_posted(
 	}
 	if (enc != MIME_ENCODING_7BIT)
 		mime_7bit = FALSE;
-	if (contains_8bit && mime_usascii)
+	if (contains_8bit && mime_usascii) {
 #ifndef CHARSET_CONVERSION
 		errors_catbp |= CA_ERROR_BAD_CHARSET;
 #else /* we catch this case later on again */
 		warnings_catbp |= CA_WARNING_CHARSET_CONVERSION;
 #endif /* !CHARSET_CONVERSION */
+	}
 
 	if (contains_8bit && mime_7bit)
 		errors_catbp |= CA_ERROR_BAD_ENCODING;
@@ -2118,11 +2118,11 @@ check_article_to_be_posted(
 #ifdef HAVE_FASCIST_NEWSADMIN
 						StartInverse();
 						errors++;
-						my_fprintf(stderr, N_(txt_error_grp_renamed), newsgroups[i], psGrp->aliasedto);
+						my_fprintf(stderr, _(txt_error_grp_renamed), newsgroups[i], psGrp->aliasedto);
 						EndInverse();
 						my_fflush(stderr);
 #else
-						my_fprintf(stderr, N_(txt_warn_grp_renamed), newsgroups[i], psGrp->aliasedto);
+						my_fprintf(stderr, _(txt_warn_grp_renamed), newsgroups[i], psGrp->aliasedto);
 						warnings++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 					} else
@@ -2176,11 +2176,11 @@ check_article_to_be_posted(
 #ifdef HAVE_FASCIST_NEWSADMIN
 								StartInverse();
 								errors++;
-								my_fprintf(stderr, N_(txt_error_grp_renamed), followupto[i], psGrp->aliasedto);
+								my_fprintf(stderr, _(txt_error_grp_renamed), followupto[i], psGrp->aliasedto);
 								EndInverse();
 								my_fflush(stderr);
 #else
-								my_fprintf(stderr, N_(txt_warn_grp_renamed), followupto[i], psGrp->aliasedto);
+								my_fprintf(stderr, _(txt_warn_grp_renamed), followupto[i], psGrp->aliasedto);
 								warnings++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 							} else
@@ -3261,7 +3261,7 @@ is_crosspost(
  *  CRLF), it MUST be trimmed (and otherwise MAY be trimmed)."
  */
 #ifdef NNTP_ONLY
-#	define MAXREFSIZE 998
+#	define MAXREFSIZE IMF_LINE_LEN
 #else /* some extern inews (required for posting right into the spool) can't handle 1k-lines */
 #	define MAXREFSIZE 512
 #endif /* NNTP_ONLY */
@@ -4235,7 +4235,7 @@ mail_to_author(
 				perror_message("%s:%d mail_to_author(fseek(pgart.raw)) failed", __FILE__, __LINE__);
 #endif /* DEBUG */
 				goto mout;
- 			}
+			}
 		}
 		if (with_headers && raw_data)
 			copy_body(pgart.raw, fp, tinrc.quote_chars, initials, TRUE);
@@ -4371,8 +4371,7 @@ check_for_spamtrap(
 	tmp = env = my_strdup(tinrc.spamtrap_warning_addresses);
 
 	while (strlen(tmp)) {
-		ptr = strchr(tmp, ',');
-		if (ptr != NULL)
+		if ((ptr = strchr(tmp, ',')) != NULL)
 			*ptr = '\0';
 		if (strcasestr(addr, tmp)) { /* although the local part is actually case sensitive, ignoring it here is intentional */
 			free(env);
@@ -4754,7 +4753,6 @@ repost_article(
 	get_user_info(user_name, full_name);
 
 	if (Superseding) {
-
 #ifdef FORGERY
 		make_path_header(line);
 		msg_add_header("Path", line);
@@ -5550,7 +5548,7 @@ split_address_list(
 
 	while (len > 0) {
 		/* skip white space at beginning */
-		while (len && isspace((int) *curr)) {
+		while (len && isspace((unsigned char) *curr)) {
 			curr++;
 			len--;
 		}
@@ -5646,9 +5644,9 @@ split_address_list(
 		end = curr;
 		if (end > start) {
 			end--;
-			while ((end > start) && isspace((int) *end))
+			while ((end > start) && isspace((unsigned char) *end))
 				end--;	/* skip trailing white space */
-			if (!isspace((int) *end))
+			if (!isspace((unsigned char) *end))
 				end++;
 			addr_len = (size_t) (end - start);
 			if (addr_len > 0) {
@@ -6008,7 +6006,7 @@ add_headers(
 	if ((fp_in = fopen(infile, "r")) == NULL)
 		return;
 
-	if ((fd_out = my_tmpfile(outfile, sizeof(outfile) - 1, homedir)) == -1) {
+	if ((fd_out = my_mktmp(outfile, sizeof(outfile) - 1, homedir)) == -1) {
 		fclose(fp_in);
 		return;
 	}
@@ -6031,6 +6029,7 @@ add_headers(
 					}
 					free(msgidbuf);
 				}
+
 				if (adddate) {
 					time_t epoch;
 					char dateheader[50];
@@ -6073,15 +6072,18 @@ add_headers(
 				char *cp;
 				t_bool emptyhdr = TRUE;
 
-				/*
-				 * check_article_to_be_posted takes care that we have at
-				 * least ": " in and "\n" at the end of every (unfolded) header
-				 * line
-				 */
-				for (cp = strchr(line, ':'), cp++; *cp; cp++) {
-					if (!isspace((int) *cp)) {
-						emptyhdr = FALSE;
-						break;
+				if ((cp = strchr(line, ':')) != NULL) {
+					cp++; /* skip past : */
+
+					/*
+					 * check_article_to_be_posted takes care that we have at
+					 * least ": " in and "\n" at the end of every (unfolded) header
+					 * line
+					 */
+					while (emptyhdr && *cp) {
+						if (!isspace((unsigned char) *cp))
+							emptyhdr = FALSE;
+						cp++;
 					}
 				}
 				if (emptyhdr)

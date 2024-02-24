@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2023-11-26
+ *  Updated   : 2024-01-16
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -893,7 +893,7 @@ process_text_body_part(
 #ifdef DEBUG
 		/*
 		 * TODO: always show to user?
-		 *       hen use something less technical and move to lang.c
+		 *       then use something less technical and move to lang.c
 		 */
 		perror_message("%s:%d process_text_body_part(fseek(in)) failed", __FILE__, __LINE__);
 #endif /* DEBUG */
@@ -1055,6 +1055,7 @@ process_text_body_part(
 			 *
 			 * TODO: look for a tailing size line after end (non standard
 			 *       extension)?
+			 *       do we want to cook uue-parts in signatures?
 			 */
 
 			is_uubegin = FALSE;
@@ -1350,7 +1351,7 @@ cook_article(
 
 	art = artinfo;				/* Global saves lots of passing artinfo around */
 
-	if (!(art->cooked = tmpfile()))
+	if (!(art->cooked = my_tmpfile()))
 		return FALSE;
 
 	art->cooked_lines = 0;

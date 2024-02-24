@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2021-04-17
+# Updated: 2024-01-16
 #
 
 SHELL	= @SHELL@
@@ -9,9 +9,9 @@ SHELL	= @SHELL@
 PROJECT	= tin
 LVER	= 2
 PVER	= 6
-SVER	= 3
+SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20231201
+DVER	= 20240224
 EXE	= tin
 
 # directory structure
@@ -36,10 +36,10 @@ HFILES	= \
 	$(INCDIR)/missing_fd.h \
 	$(INCDIR)/newsrc.h \
 	$(INCDIR)/nntplib.h \
-	$(INCDIR)/plp_snprintf.h \
 	$(INCDIR)/policy.h \
 	$(INCDIR)/proto.h \
 	$(INCDIR)/rfc2046.h \
+	$(INCDIR)/snprintf.h \
 	$(INCDIR)/stpwatch.h \
 	$(INCDIR)/tcurses.h \
 	$(INCDIR)/tin.h \
@@ -91,7 +91,6 @@ CFILES	= \
 	$(SRCDIR)/options_menu.c \
 	$(SRCDIR)/page.c \
 	$(SRCDIR)/parsdate.y \
-	$(SRCDIR)/plp_snprintf.c \
 	$(SRCDIR)/pgp.c \
 	$(SRCDIR)/post.c \
 	$(SRCDIR)/prompt.c \
@@ -108,11 +107,11 @@ CFILES	= \
 	$(SRCDIR)/select.c \
 	$(SRCDIR)/sigfile.c \
 	$(SRCDIR)/signal.c \
+	$(SRCDIR)/snprintf.c \
 	$(SRCDIR)/strftime.c \
 	$(SRCDIR)/string.c \
 	$(SRCDIR)/tags.c \
 	$(SRCDIR)/tcurses.c \
-	$(SRCDIR)/tmpfile.c \
 	$(SRCDIR)/my_tmpfile.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/trace.c \
@@ -146,7 +145,6 @@ DOC	= \
 	$(DOCDIR)/newsoverview.5 \
 	$(DOCDIR)/nov_tests \
 	$(DOCDIR)/opt-case.1 \
-	$(DOCDIR)/plp_snprintf.3 \
 	$(DOCDIR)/pgp.txt \
 	$(DOCDIR)/rcvars.txt \
 	$(DOCDIR)/reading-mail.txt \

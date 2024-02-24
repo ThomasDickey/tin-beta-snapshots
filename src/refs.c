@@ -75,7 +75,7 @@ static void rearrange_siblings(void);
 /*
  * The msgids are all hashed into a big array, with overspill
  */
-static struct t_msgid *msgids[MSGID_HASH_SIZE] = {0};
+static struct t_msgid *msgids[MSGID_HASH_SIZE] = { 0 };
 
 /*
  * This part of the code deals with the caching and retrieval

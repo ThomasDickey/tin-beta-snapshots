@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2023-11-16
+ *  Updated   : 2024-02-13
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
@@ -345,7 +345,7 @@ read_attributes_file(
 					if (startup && upgrade == NULL && match_string(line, "# Group attributes file V", NULL, 0)) {
 						upgrade = check_upgrade(line, "# Group attributes file V", ATTRIBUTES_VERSION);
 						if (upgrade->state != RC_IGNORE)
-							upgrade_prompt_quit(upgrade, file); /* TODO: do something (more) useful here */
+							upgrade_prompt_quit(upgrade, file, fp); /* TODO: do something (more) useful here */
 					}
 				}
 				continue;
@@ -1438,7 +1438,7 @@ write_attributes_file(
 				if (scope->state->ask_for_metamail)
 					fprintf(fp, "ask_for_metamail=%s\n", print_boolean(scope->attribute->ask_for_metamail));
 				if (scope->state->auto_cc_bcc)
-					fprintf(fp, "auto_cc_bcc=%u\n", scope->attribute->auto_cc_bcc);
+					fprintf(fp, "auto_cc_bcc=%u\n", (unsigned) scope->attribute->auto_cc_bcc);
 				if (scope->state->auto_list_thread)
 					fprintf(fp, "auto_list_thread=%s\n", print_boolean(scope->attribute->auto_list_thread));
 				if (scope->state->auto_select)
@@ -1508,7 +1508,7 @@ write_attributes_file(
 				if (scope->state->post_process_view)
 					fprintf(fp, "post_process_view=%s\n", print_boolean(scope->attribute->post_process_view));
 				if (scope->state->post_process_type)
-					fprintf(fp, "post_process_type=%u\n", scope->attribute->post_process_type);
+					fprintf(fp, "post_process_type=%u\n", (unsigned) scope->attribute->post_process_type);
 #ifndef DISABLE_PRINTING
 				if (scope->state->print_header)
 					fprintf(fp, "print_header=%s\n", print_boolean(scope->attribute->print_header));
@@ -1524,7 +1524,7 @@ write_attributes_file(
 				if (scope->state->quick_kill_expire)
 					fprintf(fp, "quick_kill_expire=%s\n", print_boolean(scope->attribute->quick_kill_expire));
 				if (scope->state->quick_kill_header)
-					fprintf(fp, "quick_kill_header=%u\n", scope->attribute->quick_kill_header);
+					fprintf(fp, "quick_kill_header=%u\n", (unsigned) scope->attribute->quick_kill_header);
 				if (scope->state->quick_select_scope && scope->attribute->quick_select_scope)
 					fprintf(fp, "quick_select_scope=%s\n", scope->attribute->quick_select_scope);
 				if (scope->state->quick_select_case)
@@ -1532,7 +1532,7 @@ write_attributes_file(
 				if (scope->state->quick_select_expire)
 					fprintf(fp, "quick_select_expire=%s\n", print_boolean(scope->attribute->quick_select_expire));
 				if (scope->state->quick_select_header)
-					fprintf(fp, "quick_select_header=%u\n", scope->attribute->quick_select_header);
+					fprintf(fp, "quick_select_header=%u\n", (unsigned) scope->attribute->quick_select_header);
 				if (scope->state->quote_chars && scope->attribute->quote_chars)
 					fprintf(fp, "quote_chars=%s\n", quote_space_to_dash(scope->attribute->quote_chars));
 				if (scope->state->savedir && scope->attribute->savedir)
@@ -1540,7 +1540,7 @@ write_attributes_file(
 				if (scope->state->savefile && scope->attribute->savefile)
 					fprintf(fp, "savefile=%s\n", scope->attribute->savefile);
 				if (scope->state->show_author)
-					fprintf(fp, "show_author=%u\n", scope->attribute->show_author);
+					fprintf(fp, "show_author=%u\n", (unsigned) scope->attribute->show_author);
 				if (scope->state->show_only_unread_arts)
 					fprintf(fp, "show_only_unread_arts=%s\n", print_boolean(scope->attribute->show_only_unread_arts));
 				if (scope->state->show_signatures)
@@ -1554,9 +1554,9 @@ write_attributes_file(
 				if (scope->state->signature_repost)
 					fprintf(fp, "signature_repost=%s\n", print_boolean(scope->attribute->signature_repost));
 				if (scope->state->sort_article_type)
-					fprintf(fp, "sort_article_type=%u\n", scope->attribute->sort_article_type);
+					fprintf(fp, "sort_article_type=%u\n", (unsigned) scope->attribute->sort_article_type);
 				if (scope->state->sort_threads_type)
-					fprintf(fp, "sort_threads_type=%u\n", scope->attribute->sort_threads_type);
+					fprintf(fp, "sort_threads_type=%u\n", (unsigned) scope->attribute->sort_threads_type);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if (scope->state->suppress_soft_hyphens)
 					fprintf(fp, "suppress_soft_hyphens=%s\n", print_boolean(scope->attribute->suppress_soft_hyphens));
@@ -1564,15 +1564,15 @@ write_attributes_file(
 				if (scope->state->tex2iso_conv)
 					fprintf(fp, "tex2iso_conv=%s\n", print_boolean(scope->attribute->tex2iso_conv));
 				if (scope->state->thread_articles)
-					fprintf(fp, "thread_articles=%u\n", scope->attribute->thread_articles);
+					fprintf(fp, "thread_articles=%u\n", (unsigned) scope->attribute->thread_articles);
 				if (scope->state->thread_catchup_on_exit)
 					fprintf(fp, "thread_catchup_on_exit=%s\n", print_boolean(scope->attribute->thread_catchup_on_exit));
 				if (scope->state->thread_format && scope->attribute->thread_format)
 					fprintf(fp, "thread_format=%s\n", scope->attribute->thread_format);
 				if (scope->state->thread_perc)
-					fprintf(fp, "thread_perc=%u\n", scope->attribute->thread_perc);
+					fprintf(fp, "thread_perc=%u\n", (unsigned) scope->attribute->thread_perc);
 				if (scope->state->trim_article_body)
-					fprintf(fp, "trim_article_body=%u\n", scope->attribute->trim_article_body);
+					fprintf(fp, "trim_article_body=%u\n", (unsigned) scope->attribute->trim_article_body);
 				if (scope->state->verbatim_handling)
 					fprintf(fp, "verbatim_handling=%s\n", print_boolean(scope->attribute->verbatim_handling));
 				if (scope->state->wrap_on_next_unread)

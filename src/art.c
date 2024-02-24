@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-24
+ *  Updated   : 2024-01-17
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1037,7 +1037,7 @@ global_look_for_multipart_info(
 	/* parse the message */
 	subj = arts[aindex].subject;
 	pch = strrchr(subj, start);
-	if (!pch || !isdigit((int) pch[1]))
+	if (!pch || !isdigit((unsigned char) pch[1]))
 		return 0;
 
 	tmp.arts_index = aindex;
@@ -1046,7 +1046,7 @@ global_look_for_multipart_info(
 	if (*pch != '/' && *pch != '|')
 		return 0;
 
-	if (!isdigit((int) pch[1]))
+	if (!isdigit((unsigned char) pch[1]))
 		return 0;
 
 	tmp.total = (int) strtol(pch + 1, &pch, 10);
@@ -1075,14 +1075,14 @@ global_look_for_multipart(
 	char *pch;
 
 	pch = strrchr(arts[aindex].subject, start);
-	if (!pch || !isdigit((int) pch[1]))
+	if (!pch || !isdigit((unsigned char) pch[1]))
 		return FALSE;
 
 	strtol(pch + 1, &pch, 10);
 	if (*pch != '/' && *pch != '|')
 		return FALSE;
 
-	if (!isdigit((int) pch[1]))
+	if (!isdigit((unsigned char) pch[1]))
 		return FALSE;
 
 	strtol(pch + 1, &pch, 10);
@@ -2395,10 +2395,9 @@ read_overview(
 						if ((q = strchr(ptr, ' ')) == NULL) /* skip article number */
 							continue;
 						ptr = q;
-						while (*ptr && isspace((int) *ptr))
+						while (*ptr && isspace((unsigned char) *ptr))
 							ptr++;
-						q = strchr(ptr, '\n');
-						if (q)
+						if ((q = strchr(ptr, '\n')) != NULL)
 							*q = '\0';
 						art->xref = my_strdup(ptr);
 					}
@@ -3342,6 +3341,8 @@ print_from(
 #ifdef CHARSET_CONVERSION
 		if (charset != -1)
 			buffer_to_network(q, charset);
+#else
+		(void) charset;
 #endif /* CHARSET_CONVERSION */
 		p = rfc1522_encode(article->name, tinrc.mm_local_charset, FALSE);
 		unfold_header(p);

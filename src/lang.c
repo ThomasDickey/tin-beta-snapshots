@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-28
+ *  Updated   : 2024-01-20
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -49,7 +49,7 @@ constext txt_8bit[] = "8bit";
 constext txt_active_file_is_empty[] = N_("\n%s contains no newsgroups. Exiting.");
 #if defined(NNTP_ABLE) && defined(HAVE_SELECT)
 	constext txt_abort_reading[] = N_("Aborting read, please wait...");
-#endif /* defined(NNTP_ABLE) && defined(HAVE_SELECT) */
+#endif /* NNTP_ABLE && HAVE_SELECT */
 constext txt_all[] = N_("all");
 constext txt_all_groups[] = N_("All groups");
 constext txt_append_overwrite_quit[] = N_("File %s exists. %s=append, %s=overwrite, %s=quit: ");
@@ -246,7 +246,7 @@ constext txt_begin_of_art[] = N_("*** Beginning of article ***");
 constext txt_begin_of_page[] = N_("*** Beginning of page ***");
 #if !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
 	constext txt_bytes[] = N_("bytes");
-#endif /* !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING) */
+#endif /* !HAVE_LIBUU && HAVE_SUM && !DONT_HAVE_PIPING */
 
 constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) article [%%s]? (%s/%s/%s): ");
 constext txt_cancelling_art[] = N_("Cancelling article...");
@@ -321,22 +321,20 @@ constext txt_conninfo_saved_news[] = N_("Reading saved news.\n");
 	constext txt_conninfo_server[] = N_("NNTPSERVER    : %s\n");
 #	ifdef NNTPS_ABLE
 	constext txt_conninfo_nntps[] = N_("Reading %s via NNTPS (%s; ");
-#		if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_LIBTLS) || defined(HAVE_LIB_OPENSSL)
-		constext txt_conninfo_fmt_error[] = "<formatting error>";
-		constext txt_conninfo_issuer[] = N_("Issuer : %s\n");
-		constext txt_conninfo_server_cert_info[] = N_("\nServer certificate information:\n-------------------------------\n");
-		constext txt_conninfo_subject[] = N_("Subject: %s\n");
-		constext txt_conninfo_tls_info[] = N_("\nTLS information:\n----------------\n");
-#		endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_LIBTLS) || defined(HAVE_LIB_OPENSSL) */
+	constext txt_conninfo_cert[] = N_("Certificate #%d\n");
+	constext txt_conninfo_fmt_error[] = "<formatting error>";
+	constext txt_conninfo_issuer[] = N_("Issuer : %s\n");
+	constext txt_conninfo_server_cert_info[] = N_("\nServer certificate information:\n-------------------------------\n");
+	constext txt_conninfo_subject[] = N_("Subject: %s\n");
+	constext txt_conninfo_tls_info[] = N_("\nTLS information:\n----------------\n");
+	constext txt_conninfo_trusted[] = N_("trusted");
+	constext txt_conninfo_untrusted[] = N_("untrusted");
 #		if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL)
-		constext txt_conninfo_cert[] = N_("Certificate #%d\n");
 		constext txt_conninfo_error_unexpected[] = N_("UNEXPECTED, possible BUG");
 		constext txt_conninfo_error_tolerated[] = N_("tolerated as \"-k\" (insecure) requested");
 		constext txt_conninfo_verify_failed[] = N_("Server certificate verification FAILED:\n\t%s (%s)\n");
 		constext txt_conninfo_verify_successful[] = N_("Server certificate verified successfully.\n");
-#		endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL) */
-	constext txt_conninfo_trusted[] = N_("trusted");
-	constext txt_conninfo_untrusted[] = N_("untrusted");
+#		endif /* HAVE_LIB_GNUTLS || HAVE_LIB_OPENSSL */
 #		ifdef HAVE_LIB_GNUTLS
 		constext txt_conninfo_gnutls[] = "GnuTLS %s).\n";
 		constext txt_conninfo_verify_failed_no_reason[] = N_("Server certificate verification FAILED: <can't get reason>\n");
@@ -378,7 +376,7 @@ constext txt_enter_range[] = N_("Enter range [%s]> ");
 constext txt_error_approved[] = N_("\nWarning: Approved: header used.\n");
 #ifndef NDEBUG
 	constext txt_error_asfail[] = "%s: assertion failure: %s (%d): %s\n";
-#endif /* ! NDEBUG */
+#endif /* !NDEBUG */
 constext txt_error_bad_approved[] = N_("\nError: Bad address in Approved: header.\n");
 constext txt_error_bad_from[] = N_("\nError: Bad address in From: header.\n");
 constext txt_error_bad_msgidfqdn[] = N_("\nError: Bad FQDN in Message-ID: header.\n");
@@ -1169,7 +1167,7 @@ constext txt_threading_by_multipart[] = N_("Threading by multipart");
 #	endif /* HAVE_LIB_OPENSSL */
 #	if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL)
 	constext txt_tls_handshake_done[] = N_("TLS handshake done: %s\n");
-#	endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL) */
+#	endif /* HAVE_LIB_GNUTLS || HAVE_LIB_OPENSSL */
 #endif /* NNTP_ABLE && NNTPS_ABLE */
 constext txt_toggled_high[] = N_("Toggled word highlighting %s");
 constext txt_toggled_rot13[] = N_("Toggled rot13 encoding");
@@ -1216,6 +1214,9 @@ constext txt_usage_mail_bugreport[] = N_("\nMail bug reports/comments to %s");
 constext txt_usage_mail_new_news[] = N_("  -N       mail new news to your posts (batch mode)");
 constext txt_usage_mail_new_news_to_user[] = N_("  -M user  mail new news to specified user (batch mode)");
 constext txt_usage_newsrc_file[] = N_("  -f file  subscribed to newsgroups file [default=%s]");
+#if defined(NNTP_ABLE) && defined(HAVE_ALARM) && defined(SIGALRM)
+	constext txt_usage_nntp_timeout[] = N_("  -t sec   override nntp_read_timeout_secs setting [default=%d]");
+#endif /* NNTP_ABLE && HAVE_ALARM && SIGALRM */
 constext txt_usage_no_posting[] = N_("  -x       no-posting mode");
 constext txt_usage_post_article[] = N_("  -w       post an article and exit");
 constext txt_usage_post_postponed_arts[] = N_("  -o       post all postponed articles and exit");
@@ -1274,7 +1275,7 @@ constext txt_warn_update[] = N_("\n\nYou are upgrading to tin %s from an earlier
 Some values in your %s file have changed!\nRead WHATSNEW, etc...\n");
 constext txt_warn_downgrade[] = N_("\n\nYou are downgrading to tin %s from a more recent version!\n\
 Some values in your %s file may be ignored, others might have changed!\n");
-constext txt_warn_unrecognized_version[] = "\n\nUnrecognized version string!\n";
+constext txt_warn_unrecognized_version[] = "\n\nUnrecognized version string in %s!\n";
 constext txt_warn_newsrc[] = N_("Warning: tin wrote fewer groups to your\n\t%s\n\
 than it read at startup. If you didn't unsubscribe from %ld %s during\n\
 this session this indicates an error and you should backup your %s\n\
@@ -1299,7 +1300,9 @@ constext txt_x_resp[] = N_("%4d Responses");
 	constext txt_xface_error_exited_abnormal[] = N_("Slrnface abnormally exited, code %d.");
 	constext txt_xface_error_finally_failed[] = N_("Slrnface failed: %s.");
 	constext txt_xface_error_missing_env_var[] = N_("Can't run slrnface: Environment variable %s not found.");
+#	if defined(DEBUG) && defined(HAVE_IS_XTERM)
 	constext txt_xface_error_no_xterm[] = N_("Can't run slrnface: Not running in an xterm.");
+#	endif /* DEBUG && HAVE_IS_XTERM */
 	constext txt_xface_msg_cannot_connect_display[] = N_("couldn't connect to display");
 	constext txt_xface_msg_cannot_open_fifo[] = N_("can't open FIFO");
 	constext txt_xface_msg_executable_not_found[] = N_("executable not found");

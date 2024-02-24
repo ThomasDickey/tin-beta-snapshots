@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2022-11-01
+ *  Updated   : 2023-12-06
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -209,12 +209,13 @@ wait_message(
 		}
 
 		if (nfds > 0) {
-			if (FD_ISSET(STDIN_FILENO, &readfds))
+			if (FD_ISSET(STDIN_FILENO, &readfds)) {
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				ReadWch();
 #	else
 				ReadCh();
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			}
 		}
 	}
 #else

@@ -629,7 +629,7 @@ search_article(
 {
 	char *pattern, *ptr, *tmp;
 	int i = start_line;
-	REGEX_SIZE tmp_srch_offsets[2] = {0, 0};
+	REGEX_SIZE tmp_srch_offsets[2] = { 0, 0 };
 	t_bool wrap = FALSE;
 	t_bool match = FALSE;
 

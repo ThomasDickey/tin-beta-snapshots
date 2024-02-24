@@ -182,6 +182,7 @@ compile_regex(
 			&regex_errcode, &regex_errpos, NULL);
 	if (cache->re == NULL) {
 		PCRE2_UCHAR8 regex_errmsg[256];
+
 		pcre2_get_error_message_8(regex_errcode, regex_errmsg, sizeof(regex_errmsg));
 		error_message(2, _(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
 	} else {
@@ -337,7 +338,7 @@ regex_use_utf8(
 			(void) pcre_config(PCRE_CONFIG_UTF8, &i);
 #		else
 			/* nothing */
-#		endif /* defined(PCRE_MAJOR) && PCRE_MAJOR >= 4 */
+#		endif /* PCRE_MAJOR && PCRE_MAJOR >= 4 */
 #	endif /* HAVE_LIB_PCRE2 */
 
 	return (IS_LOCAL_CHARSET("UTF-8") && i ? TRUE : FALSE);

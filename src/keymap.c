@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2023-11-30
+ *  Updated   : 2024-01-19
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2024 Dirk Nimmich <nimmich@muenster.de>
@@ -206,12 +206,13 @@ add_default_key(
 	if (func_to_key(func, *key_list) != '?')
 		return;
 
-	for (; *key != '\0'; key++)
+	for (; *key != '\0'; key++) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		add_key(key_list, (wchar_t) *key, func, FALSE);
 #else
 		add_key(key_list, *key, func, FALSE);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	}
 }
 
 
@@ -405,12 +406,18 @@ read_keymap_file(
 			*q = '\0';
 
 			/* normalized .codeset */
-			q = normcodeset = my_strdup(codeset);
-			for (p = codeset; *p != '\0'; p++) {
-				if (isalpha((int) *p) || isdigit((int) *p) || *p == '.')
+			q = normcodeset = my_malloc(strlen(codeset) + 1);
+			*q++ = *codeset; /* skip initial '.' */
+			for (p = codeset + 1; *p != '\0'; p++) {
+				if (isdigit((unsigned char) *p)) {
+					*q++ = *p;
+					continue;
+				}
+				if (isalpha((unsigned char) *p))
 					*q++ = (char) my_tolower((unsigned char) *p);
 			}
 			*q = '\0';
+			/* TODO: prefix "iso" to normcodeset if it consist only of numbers? */
 		}
 
 		if (codeset && normcodeset) {
@@ -423,34 +430,46 @@ read_keymap_file(
 	for (k = 0; dirs[k][0] != '\0'; k++) {
 		if (*locale) {
 			if (codeset) {
-				n = snprintf(NULL, 0, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier));
-				fnames[i] = my_malloc(++n);
-				snprintf(fnames[i++], n, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier));
+				if ((n = snprintf(NULL, 0, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier))) > 0) {
+					fnames[i] = my_malloc(++n);
+					if (snprintf(fnames[i], n, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier)) == n - 1)
+						++i;
+				}
 			}
 			if (normcodeset) {
-				n = snprintf(NULL, 0, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier));
-				fnames[i] = my_malloc(++n);
-				snprintf(fnames[i++], n, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier));
+				if ((n = snprintf(NULL, 0, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier))) > 0) {
+					fnames[i] = my_malloc(++n);
+					if (snprintf(fnames[i], n, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier)) == n - 1)
+						++i;
+				}
 			}
 			if (territory) {
-				n = snprintf(NULL, 0, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), territory, BlankIfNull(modifier));
-				fnames[i] = my_malloc(++n);
-				snprintf(fnames[i++], n, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), territory, BlankIfNull(modifier));
+				if ((n = snprintf(NULL, 0, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), territory, BlankIfNull(modifier))) > 0) {
+					fnames[i] = my_malloc(++n);
+					if (snprintf(fnames[i], n, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), territory, BlankIfNull(modifier)) == n - 1)
+						++i;
+				}
 			}
 			if (modifier) {
-				n = snprintf(NULL, 0, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), modifier);
-				fnames[i] = my_malloc(++n);
-				snprintf(fnames[i++], n, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), modifier);
+				if ((n = snprintf(NULL, 0, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), modifier)) > 0) {
+					fnames[i] = my_malloc(++n);
+					if (snprintf(fnames[i], n, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), modifier)== n - 1)
+						++i;
+				}
 			}
 			if (language) {
-				n = snprintf(NULL, 0, "%s/%s.%s", dirs[k], KEYMAP_FILE, language);
-				fnames[i] = my_malloc(++n);
-				snprintf(fnames[i++], n, "%s/%s.%s", dirs[k], KEYMAP_FILE, language);
+				if ((n = snprintf(NULL, 0, "%s/%s.%s", dirs[k], KEYMAP_FILE, language)) > 0) {
+					fnames[i] = my_malloc(++n);
+					if (snprintf(fnames[i], n, "%s/%s.%s", dirs[k], KEYMAP_FILE, language) == n - 1)
+						++i;
+				}
 			}
 		}
-		n = snprintf(NULL, 0, "%s/%s", dirs[k], KEYMAP_FILE);
-		fnames[i] = my_malloc(++n);
-		snprintf(fnames[i++], n, "%s/%s", dirs[k], KEYMAP_FILE);
+		if ((n = snprintf(NULL, 0, "%s/%s", dirs[k], KEYMAP_FILE)) > 0) {
+			fnames[i] = my_malloc(++n);
+			if (snprintf(fnames[i], n, "%s/%s", dirs[k], KEYMAP_FILE) == n - 1)
+				++i;
+		}
 	}
 
 	/* first non empty match wins */
@@ -550,7 +569,7 @@ read_keymap_file(
 	fclose(fp);
 	setup_default_keys();
 	if (upgrade && upgrade->state != RC_IGNORE)
-		upgrade_prompt_quit(upgrade, map);
+		upgrade_prompt_quit(upgrade, map, NULL);
 
 	free(map);
 	FreeAndNull(upgrade);
@@ -627,7 +646,7 @@ process_keys(
 						break;
 					}
 #else
-					if (isupper((int)(unsigned char) keydef[1])) {
+					if (isupper((unsigned char) keydef[1])) {
 						key = ctrl(keydef[1]);
 						break;
 					}
@@ -2398,8 +2417,8 @@ upgrade_keymap_file(
 				else if (STRCMPEQ(keyname, "PageToggleHeaders"))
 					fprintf(newfp, "PageToggleRaw\t\t\t%s\n", keydef);
 				else if (STRCMPEQ(keyname, "PromptNo") || STRCMPEQ(keyname, "PromptYes")) {
-					if (strlen(keydef) == 1 && islower((int)(unsigned char) keydef[0]))
-						fprintf(newfp, "%s\t\t\t%c\t%c\n", keyname, keydef[0], my_toupper((int)(unsigned char) keydef[0]));
+					if (strlen(keydef) == 1 && islower((unsigned char) keydef[0]))
+						fprintf(newfp, "%s\t\t\t%c\t%c\n", keyname, keydef[0], my_toupper((unsigned char) keydef[0]));
 					else
 						fprintf(newfp, "%s", backup);
 				} else
@@ -2474,16 +2493,18 @@ upgrade_keymap_file(
 	/* joined/renamed keys from different sections */
 	if (bugreport[0] || bugreport[1] || bugreport[2]) {
 		fprintf(newfp, "BugReport\t");
-		if (bugreport[0] && bugreport[1] && !strcmp(bugreport[0], bugreport[1]))
-			FreeAndNull(bugreport[1]);
-		if (bugreport[0] && bugreport[2] && !strcmp(bugreport[0], bugreport[2]))
-			FreeAndNull(bugreport[2]);
-		if (bugreport[1] && bugreport[2] && !strcmp(bugreport[1], bugreport[2]))
-			FreeAndNull(bugreport[2]);
-		if (bugreport[0])
+		if (bugreport[0]) {
 			fprintf(newfp, "\t%s", bugreport[0]);
-		if (bugreport[1])
+			if (bugreport[1] && !strcmp(bugreport[0], bugreport[1]))
+				FreeAndNull(bugreport[1]);
+			if (bugreport[2] && !strcmp(bugreport[0], bugreport[2]))
+				FreeAndNull(bugreport[2]);
+		}
+		if (bugreport[1]) {
 			fprintf(newfp, "\t%s", bugreport[1]);
+			if (bugreport[2] && !strcmp(bugreport[1], bugreport[2]))
+				FreeAndNull(bugreport[2]);
+		}
 		if (bugreport[2])
 			fprintf(newfp, "\t%s", bugreport[2]);
 		fprintf(newfp, "\n");
@@ -2493,24 +2514,27 @@ upgrade_keymap_file(
 	}
 	if (catchup[0] || catchup[1] || catchup[2] || catchup[3]) {
 		fprintf(newfp, "Catchup\t");
-		if (catchup[0] && catchup[1] && !strcmp(catchup[0], catchup[1]))
-			FreeAndNull(catchup[1]);
-		if (catchup[0] && catchup[2] && !strcmp(catchup[0], catchup[2]))
-			FreeAndNull(catchup[2]);
-		if (catchup[0] && catchup[3] && !strcmp(catchup[0], catchup[3]))
-			FreeAndNull(catchup[3]);
-		if (catchup[1] && catchup[2] && !strcmp(catchup[1], catchup[2]))
-			FreeAndNull(catchup[2]);
-		if (catchup[1] && catchup[3] && !strcmp(catchup[1], catchup[3]))
-			FreeAndNull(catchup[3]);
-		if (catchup[2] && catchup[3] && !strcmp(catchup[2], catchup[3]))
-			FreeAndNull(catchup[3]);
-		if (catchup[0])
+		if (catchup[0]) {
 			fprintf(newfp, "\t%s", catchup[0]);
-		if (catchup[1])
+			if (catchup[1] && !strcmp(catchup[0], catchup[1]))
+				FreeAndNull(catchup[1]);
+			if (catchup[2] && !strcmp(catchup[0], catchup[2]))
+				FreeAndNull(catchup[2]);
+			if (catchup[3] && !strcmp(catchup[0], catchup[3]))
+				FreeAndNull(catchup[3]);
+		}
+		if (catchup[1]) {
 			fprintf(newfp, "\t%s", catchup[1]);
-		if (catchup[2])
+			if (catchup[2] && !strcmp(catchup[1], catchup[2]))
+				FreeAndNull(catchup[2]);
+			if (catchup[3] && !strcmp(catchup[1], catchup[3]))
+				FreeAndNull(catchup[3]);
+		}
+		if (catchup[2]) {
 			fprintf(newfp, "\t%s", catchup[2]);
+			if (catchup[3] && !strcmp(catchup[2], catchup[3]))
+				FreeAndNull(catchup[3]);
+		}
 		if (catchup[3])
 			fprintf(newfp, "\t%s", catchup[3]);
 		fprintf(newfp, "\n");
@@ -2521,24 +2545,27 @@ upgrade_keymap_file(
 	}
 	if (catchup_next_unread[0] || catchup_next_unread[1] || catchup_next_unread[2] || catchup_next_unread[3]) {
 		fprintf(newfp, "CatchupNextUnread\t");
-		if (catchup_next_unread[0] && catchup_next_unread[1] && !strcmp(catchup_next_unread[0], catchup_next_unread[1]))
-			FreeAndNull(catchup_next_unread[1]);
-		if (catchup_next_unread[0] && catchup_next_unread[2] && !strcmp(catchup_next_unread[0], catchup_next_unread[2]))
-			FreeAndNull(catchup_next_unread[2]);
-		if (catchup_next_unread[0] && catchup_next_unread[3] && !strcmp(catchup_next_unread[0], catchup_next_unread[3]))
-			FreeAndNull(catchup_next_unread[3]);
-		if (catchup_next_unread[1] && catchup_next_unread[2] && !strcmp(catchup_next_unread[1], catchup_next_unread[2]))
-			FreeAndNull(catchup_next_unread[2]);
-		if (catchup_next_unread[1] && catchup_next_unread[3] && !strcmp(catchup_next_unread[1], catchup_next_unread[3]))
-			FreeAndNull(catchup_next_unread[3]);
-		if (catchup_next_unread[2] && catchup_next_unread[3] && !strcmp(catchup_next_unread[2], catchup_next_unread[3]))
-			FreeAndNull(catchup_next_unread[3]);
-		if (catchup_next_unread[0])
+		if (catchup_next_unread[0]) {
 			fprintf(newfp, "\t%s", catchup_next_unread[0]);
-		if (catchup_next_unread[1])
+			if (catchup_next_unread[1] && !strcmp(catchup_next_unread[0], catchup_next_unread[1]))
+				FreeAndNull(catchup_next_unread[1]);
+			if (catchup_next_unread[2] && !strcmp(catchup_next_unread[0], catchup_next_unread[2]))
+				FreeAndNull(catchup_next_unread[2]);
+			if (catchup_next_unread[3] && !strcmp(catchup_next_unread[0], catchup_next_unread[3]))
+				FreeAndNull(catchup_next_unread[3]);
+		}
+		if (catchup_next_unread[1]) {
 			fprintf(newfp, "\t%s", catchup_next_unread[1]);
-		if (catchup_next_unread[2])
+			if (catchup_next_unread[2] && !strcmp(catchup_next_unread[1], catchup_next_unread[2]))
+				FreeAndNull(catchup_next_unread[2]);
+			if (catchup_next_unread[3] && !strcmp(catchup_next_unread[1], catchup_next_unread[3]))
+				FreeAndNull(catchup_next_unread[3]);
+		}
+		if (catchup_next_unread[2]) {
 			fprintf(newfp, "\t%s", catchup_next_unread[2]);
+			if (catchup_next_unread[3] && !strcmp(catchup_next_unread[2], catchup_next_unread[3]))
+				FreeAndNull(catchup_next_unread[3]);
+		}
 		if (catchup_next_unread[3])
 			fprintf(newfp, "\t%s", catchup_next_unread[3]);
 		fprintf(newfp, "\n");
@@ -2559,16 +2586,18 @@ upgrade_keymap_file(
 	}
 	if (mark_article_unread[0] || mark_article_unread[1] || mark_article_unread[2]) {
 		fprintf(newfp, "MarkArticleUnread\t");
-		if (mark_article_unread[0] && mark_article_unread[1] && !strcmp(mark_article_unread[0], mark_article_unread[1]))
-			FreeAndNull(mark_article_unread[1]);
-		if (mark_article_unread[0] && mark_article_unread[2] && !strcmp(mark_article_unread[0], mark_article_unread[2]))
-			FreeAndNull(mark_article_unread[2]);
-		if (mark_article_unread[1] && mark_article_unread[2] && !strcmp(mark_article_unread[1], mark_article_unread[2]))
-			FreeAndNull(mark_article_unread[2]);
-		if (mark_article_unread[0])
+		if (mark_article_unread[0]) {
 			fprintf(newfp, "\t%s", mark_article_unread[0]);
-		if (mark_article_unread[1])
+			if (mark_article_unread[1] && !strcmp(mark_article_unread[0], mark_article_unread[1]))
+				FreeAndNull(mark_article_unread[1]);
+			if (mark_article_unread[2] && !strcmp(mark_article_unread[0], mark_article_unread[2]))
+				FreeAndNull(mark_article_unread[2]);
+		}
+		if (mark_article_unread[1]) {
 			fprintf(newfp, "\t%s", mark_article_unread[1]);
+			if (mark_article_unread[2] && !strcmp(mark_article_unread[1], mark_article_unread[2]))
+				FreeAndNull(mark_article_unread[2]);
+		}
 		if (mark_article_unread[2])
 			fprintf(newfp, "\t%s", mark_article_unread[2]);
 		fprintf(newfp, "\n");
@@ -2578,16 +2607,18 @@ upgrade_keymap_file(
 	}
 	if (mark_thread_unread[0] || mark_thread_unread[1] || mark_thread_unread[2]) {
 		fprintf(newfp, "MarkThreadUnread\t");
-		if (mark_thread_unread[0] && mark_thread_unread[1] && !strcmp(mark_thread_unread[0], mark_thread_unread[1]))
-			FreeAndNull(mark_thread_unread[1]);
-		if (mark_thread_unread[0] && mark_thread_unread[2] && !strcmp(mark_thread_unread[0], mark_thread_unread[2]))
-			FreeAndNull(mark_thread_unread[2]);
-		if (mark_thread_unread[1] && mark_thread_unread[2] && !strcmp(mark_thread_unread[1], mark_thread_unread[2]))
-			FreeAndNull(mark_thread_unread[2]);
-		if (mark_thread_unread[0])
+		if (mark_thread_unread[0]) {
 			fprintf(newfp, "\t%s", mark_thread_unread[0]);
-		if (mark_thread_unread[1])
+			if (mark_thread_unread[1] && !strcmp(mark_thread_unread[0], mark_thread_unread[1]))
+				FreeAndNull(mark_thread_unread[1]);
+			if (mark_thread_unread[2] && !strcmp(mark_thread_unread[0], mark_thread_unread[2]))
+				FreeAndNull(mark_thread_unread[2]);
+		}
+		if (mark_thread_unread[1]) {
 			fprintf(newfp, "\t%s", mark_thread_unread[1]);
+			if (mark_thread_unread[2] && !strcmp(mark_thread_unread[1], mark_thread_unread[2]))
+				FreeAndNull(mark_thread_unread[2]);
+		}
 		if (mark_thread_unread[2])
 			fprintf(newfp, "\t%s", mark_thread_unread[2]);
 		fprintf(newfp, "\n");
@@ -2597,16 +2628,18 @@ upgrade_keymap_file(
 	}
 	if (menu_filter_kill[0] || menu_filter_kill[1] || menu_filter_kill[2]) {
 		fprintf(newfp, "MenuFilterKill\t");
-		if (menu_filter_kill[0] && menu_filter_kill[1] && !strcmp(menu_filter_kill[0], menu_filter_kill[1]))
-			FreeAndNull(menu_filter_kill[1]);
-		if (menu_filter_kill[0] && menu_filter_kill[2] && !strcmp(menu_filter_kill[0], menu_filter_kill[2]))
-			FreeAndNull(menu_filter_kill[2]);
-		if (menu_filter_kill[1] && menu_filter_kill[2] && !strcmp(menu_filter_kill[1], menu_filter_kill[2]))
-			FreeAndNull(menu_filter_kill[2]);
-		if (menu_filter_kill[0])
+		if (menu_filter_kill[0]) {
 			fprintf(newfp, "\t%s", menu_filter_kill[0]);
-		if (menu_filter_kill[1])
+			if (menu_filter_kill[1] && !strcmp(menu_filter_kill[0], menu_filter_kill[1]))
+				FreeAndNull(menu_filter_kill[1]);
+			if (menu_filter_kill[2] && !strcmp(menu_filter_kill[0], menu_filter_kill[2]))
+				FreeAndNull(menu_filter_kill[2]);
+		}
+		if (menu_filter_kill[1]) {
 			fprintf(newfp, "\t%s", menu_filter_kill[1]);
+			if (menu_filter_kill[2] && !strcmp(menu_filter_kill[1], menu_filter_kill[2]))
+				FreeAndNull(menu_filter_kill[2]);
+		}
 		if (menu_filter_kill[2])
 			fprintf(newfp, "\t%s", menu_filter_kill[2]);
 		fprintf(newfp, "\n");
@@ -2616,16 +2649,18 @@ upgrade_keymap_file(
 	}
 	if (menu_filter_select[0] || menu_filter_select[1] || menu_filter_select[2]) {
 		fprintf(newfp, "MenuFilterSelect\t");
-		if (menu_filter_select[0] && menu_filter_select[1] && !strcmp(menu_filter_select[0], menu_filter_select[1]))
-			FreeAndNull(menu_filter_select[1]);
-		if (menu_filter_select[0] && menu_filter_select[2] && !strcmp(menu_filter_select[0], menu_filter_select[2]))
-			FreeAndNull(menu_filter_select[2]);
-		if (menu_filter_select[1] && menu_filter_select[2] && !strcmp(menu_filter_select[1], menu_filter_select[2]))
-			FreeAndNull(menu_filter_select[2]);
-		if (menu_filter_select[0])
+		if (menu_filter_select[0]) {
 			fprintf(newfp, "\t%s", menu_filter_select[0]);
-		if (menu_filter_select[1])
+			if (menu_filter_select[1] && !strcmp(menu_filter_select[0], menu_filter_select[1]))
+				FreeAndNull(menu_filter_select[1]);
+			if (menu_filter_select[2] && !strcmp(menu_filter_select[0], menu_filter_select[2]))
+				FreeAndNull(menu_filter_select[2]);
+		}
+		if (menu_filter_select[1]) {
 			fprintf(newfp, "\t%s", menu_filter_select[1]);
+			if (menu_filter_select[2] && !strcmp(menu_filter_select[1], menu_filter_select[2]))
+				FreeAndNull(menu_filter_select[2]);
+		}
 		if (menu_filter_select[2])
 			fprintf(newfp, "\t%s", menu_filter_select[2]);
 		fprintf(newfp, "\n");
@@ -2656,7 +2691,7 @@ upgrade_keymap_file(
 
 	fclose(oldfp);
 	fclose(newfp);
-	rename(newk, old);
+	rename_file(newk, old);
 	wait_message(0, _(txt_keymap_upgraded), KEYMAP_VERSION);
 	prompt_continue();
 }
@@ -3011,8 +3046,8 @@ setup_default_keys(
 	add_default_key(&post_hist_keys, "!", GLOBAL_SHELL_ESCAPE);
 #endif /* !NO_SHELL_ESCAPE */
 #ifdef HAVE_COLOR
-    add_default_key(&post_hist_keys, "&", GLOBAL_TOGGLE_COLOR);
-#endif /* HAVE COLOR */
+	add_default_key(&post_hist_keys, "&", GLOBAL_TOGGLE_COLOR);
+#endif /* HAVE_COLOR */
 
 	/* prompt keys */
 	add_default_key(&prompt_keys, "", GLOBAL_ABORT);
@@ -3170,7 +3205,7 @@ setup_default_keys(
 #endif /* !NO_SHELL_ESCAPE */
 #ifdef HAVE_COLOR
 	add_default_key(&url_keys, "&", GLOBAL_TOGGLE_COLOR);
-#endif /* HAVE COLOR */
+#endif /* HAVE_COLOR */
 }
 
 
@@ -3221,5 +3256,5 @@ add_global_keys(
 #endif /* !NO_SHELL_ESCAPE */
 #ifdef HAVE_COLOR
 	add_default_key(keys, "&", GLOBAL_TOGGLE_COLOR);
-#endif /* HAVE COLOR */
+#endif /* HAVE_COLOR */
 }

@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-14
+ *  Updated   : 2024-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -81,7 +81,7 @@ static void update_thread_page(void);
  * thdmenu.max		Essentially = # threaded arts in current thread
  * thdmenu.first	Response # at top of screen
  */
-static t_menu thdmenu = {0, 0, 0, show_thread_page, draw_thread_arrow, draw_thread_item };
+static t_menu thdmenu = { 0, 0, 0, show_thread_page, draw_thread_arrow, draw_thread_item };
 
 /* TODO: find a better solution */
 static int ret_code = 0;		/* Set to < 0 when it is time to leave this menu */
@@ -260,7 +260,7 @@ build_tline(
 				} else {
 					mark[0] = get_art_mark(art);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-					snprintf(markbuf, sizeof(markbuf), "%s%lc", art_mark_width > wcwidth(mark[0]) ? "   " : "  ", mark[0]);
+					snprintf(markbuf, sizeof(markbuf), "%s%"T_CHAR_FMT, art_mark_width > wcwidth(mark[0]) ? "   " : "  ", (wint_t) mark[0]);
 					strcat(buffer, markbuf);
 #else
 					strcat(buffer, "   ");
@@ -1251,7 +1251,7 @@ stat_thread(
 	struct t_art_stat *sbuf) /* return value is always ignored */
 {
 	int i;
-	MultiPartInfo minfo = {0};
+	MultiPartInfo minfo = { NULL, 0, 0, 0, 0 };
 
 	sbuf->total = 0;
 	sbuf->unread = 0;

@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2023-04-09
+ *  Updated   : 2024-02-13
  *  Notes     : #defines and structs for options_menu.c
  *
  * Copyright (c) 1997-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -169,12 +169,12 @@ parse_tbl(
 	/* strip leading/trailing blanks */
 	do {
 		t--;
-		if (isspace ((int)*t))
+		if (isspace ((unsigned char) *t))
 			*t = '\0';
 		else
 			break;
 	} while (t > s);
-	while (isspace ((int)*s))
+	while (isspace ((unsigned char) *s))
 		s++;
 	buffer = s;
 
@@ -187,9 +187,9 @@ parse_tbl(
 			 * otherwise the data consists of 2 blank
 			 * separated columns (name, type).
 			 */
-			while (*s && !isspace ((int)*s))
+			while (*s && !isspace ((unsigned char) *s))
 				s++;
-			while (isspace ((int)*s))
+			while (isspace ((unsigned char) *s))
 				*s++ = '\0';
 			store_data(buffer, s);
 		}
@@ -244,12 +244,13 @@ typename_of(
 {
 	if (!strcmp(p->type, "OPT_STRING"))
 		return "char *";
-	if (!strcmp(p->type, "OPT_CHAR"))
+	if (!strcmp(p->type, "OPT_CHAR")) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		return "wchar_t *";
 #else
 		return "char *";
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	}
 	if (!strcmp(p->type, "OPT_ON_OFF"))
 		return "t_bool *";
 	return "int *";
@@ -370,7 +371,8 @@ generate_ptr(
 {
 	MYDATA *p, *q;
 	int after;
-	const char *addr = !strcmp(opt_type, "OPT_STRING") ? "" : "&";
+	const char *addr = "&";
+	const char *sqrbr = !strcmp(opt_type, "OPT_STRING") ? "[0]" : "";
 
 	switch (mode) {
 	case 0:
@@ -404,10 +406,11 @@ generate_ptr(
 			}
 			switch (mode) {
 			case 0:
-				fprintf(ofp, "\t%stinrc.%s,%*s/* %2d: %s__ */\n",
+				fprintf(ofp, "\t%stinrc.%s%s,%*s/* %2d: %s__ */\n",
 					addr,
 					p->name,
-					MAXNAME - (int)(strlen(addr) + strlen(p->name)),
+					sqrbr,
+					MAXNAME - (int)(strlen(addr) - strlen(sqrbr) + strlen(p->name)),
 					" ",
 					index_of(p),
 					p->name);

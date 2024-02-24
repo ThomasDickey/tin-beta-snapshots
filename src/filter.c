@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2023-11-22
+ *  Updated   : 2024-01-10
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -360,7 +360,7 @@ read_filter_file(
 				no_version_line = FALSE;
 				upgrade = check_upgrade(buf, "# Filter file V", FILTER_VERSION);
 				if (upgrade->state != RC_IGNORE)
-					upgrade_prompt_quit(upgrade, file); /* FILTER_FILE */ /* TODO: do something (more) useful here */
+					upgrade_prompt_quit(upgrade, file, fp); /* FILTER_FILE */ /* TODO: do something (more) useful here */
 			}
 			continue;
 		}
@@ -660,7 +660,7 @@ read_filter_file(
 		upgrade = my_malloc(sizeof(struct t_version));
 		upgrade->state = RC_UPGRADE;
 		upgrade->file_version = -1;
-		upgrade_prompt_quit(upgrade, file); /* TODO: do something (more) useful here */
+		upgrade_prompt_quit(upgrade, file, NULL); /* TODO: do something (more) useful here */
 	}
 
 	if (need_write || (upgrade && upgrade->state == RC_UPGRADE))
@@ -2004,6 +2004,8 @@ filter_articles(
 						default: /* should not happen */
 							/* CONSTANTCONDITION */
 							assert(0 != 0);
+							myrefs = "";
+							mymsgid = "";
 							break;
 					}
 
@@ -2098,9 +2100,9 @@ filter_articles(
 
 						s = arts[i].xref;
 						if (strchr(s, ' ') || strchr(s, '\t')) {
-							while (*s && !isspace((int) *s))	/* skip server name */
+							while (*s && !isspace((unsigned char) *s))	/* skip server name */
 								s++;
-							while (*s && isspace((int) *s))
+							while (*s && isspace((unsigned char) *s))
 								s++;
 						}
 #ifdef DEBUG
@@ -2119,9 +2121,9 @@ filter_articles(
 									*e++ = ',';
 									skip = TRUE;
 								}
-								if (!skip && *s != ':' && !isspace((int) *s))
+								if (!skip && *s != ':' && !isspace((unsigned char) *s))
 									*e++ = *s;
-								if (isspace((int) *s))
+								if (isspace((unsigned char) *s))
 									skip = FALSE;
 								s++;
 							}
@@ -2233,7 +2235,7 @@ filter_on_path(
 	struct t_group *group)
 {
 	int i;
-	struct t_filter *flt;
+	const struct t_filter *flt;
 	t_bool ret = FALSE;
 
 	if (group->glob_filter->num == 0)

@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-22
+ *  Updated   : 2024-02-21
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -159,7 +159,7 @@ debug_print_header(
 		if (s->score != 0)
 			fprintf(fp, "score=[%d] gnksa=[%d] lines=[%d]\n", s->score, s->gnksa_code, s->line_count);
 
-		fprintf(fp, "thread=[%d]  prev=[%d]  status=[%u]\n\n", s->thread, s->prev, s->status);
+		fprintf(fp, "thread=[%d]  prev=[%d]  status=[%u]\n\n", s->thread, s->prev, (unsigned) s->status);
 		fflush(fp);
 #	ifdef HAVE_FCHMOD
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
@@ -226,20 +226,20 @@ debug_print_attributes(
 		return;
 
 	fprintf(fp, "global=[%u] show=[%u] thread=[%u] sort=[%u] author=[%u] auto_select=[%u] batch_save=[%u] process=[%u]\n",
-		attr->global,
-		attr->show_only_unread_arts,
-		attr->thread_articles,
-		attr->sort_article_type,
-		attr->show_author,
-		attr->auto_select,
-		attr->batch_save,
-		attr->post_process_type);
+		(unsigned) attr->global,
+		(unsigned) attr->show_only_unread_arts,
+		(unsigned) attr->thread_articles,
+		(unsigned) attr->sort_article_type,
+		(unsigned) attr->show_author,
+		(unsigned) attr->auto_select,
+		(unsigned) attr->batch_save,
+		(unsigned) attr->post_process_type);
 	fprintf(fp, "select_header=[%u] select_global=[%s] select_expire=[%s]\n",
-		attr->quick_select_header,
+		(unsigned) attr->quick_select_header,
 		BlankIfNull(attr->quick_select_scope),
 		bool_unparse(attr->quick_select_expire));
 	fprintf(fp, "kill_header  =[%u] kill_global  =[%s] kill_expire  =[%s]\n",
-		attr->quick_kill_header,
+		(unsigned) attr->quick_kill_header,
 		BlankIfNull(attr->quick_kill_scope),
 		bool_unparse(attr->quick_kill_expire));
 	fprintf(fp, "maildir=[%s] savedir=[%s] savefile=[%s]\n",
@@ -481,7 +481,7 @@ logtime(
 
 	if (tin_gettime(&log_time) == 0) {
 		if (my_strftime(out, 39, " [%H:%M:%S.", gmtime(&(log_time.tv_sec)))) {
-			sprintf(out + 11, "%09ld", log_time.tv_nsec); /* strlen(" [hh:mm:ss.") */
+			snprintf(out + 11, sizeof(out) - 11, "%09ld", log_time.tv_nsec); /* strlen(" [hh:mm:ss.") */
 			out[17] = '\0'; /* strlen(" [hh:mm:ss.uuuuuu") */
 			strcat(out, "] ");
 			return out;

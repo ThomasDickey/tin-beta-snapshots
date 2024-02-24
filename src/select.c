@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-15
+ *  Updated   : 2024-02-22
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -616,9 +616,9 @@ show_selection_page(
 
 	if (use_nntps) {
 		if (insecure_nntps)
-			secflag=_(txt_selection_flag_insecure);
+			secflag = _(txt_selection_flag_insecure);
 		else
-			secflag=_(txt_selection_flag_secure);
+			secflag = _(txt_selection_flag_secure);
 	}
 
 	if (read_news_via_nntp)
@@ -861,7 +861,7 @@ build_gline(
 					buf = sptr + strlen(sptr);
 					for (j = 1; j <= sel_fmt.len_ucnt - (art_mark_width - (art_mark_width - wcwidth(tinrc.art_marked_inrange))); ++j)
 						*buf++ = ' ';
-					snprintf(tmp_buf, sizeof(tmp_buf), "%"T_CHAR_FMT, tinrc.art_marked_inrange);
+					snprintf(tmp_buf, sizeof(tmp_buf), "%"T_CHAR_FMT, (wint_t) tinrc.art_marked_inrange);
 					*buf-- = '\0';
 					strcat(buf, tmp_buf);
 #else

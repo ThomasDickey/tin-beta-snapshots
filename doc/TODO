@@ -1,6 +1,6 @@
 Items which are showstoppers for the next major release are marked with '!'
 in front of them (feel free to up/downgrade and/or add or fix bugs, this
-file is not read only ,-).
+file is not read only ,-). See also grep -E 'FIXME|TODO' src/*.c include/*.h
 
 Bugs
 ----
@@ -96,6 +96,15 @@ o  add code for more TLS/SSL libraries (wolfSSL, mbed TLS, BearSSL, MatrixSSL,
    axTLS, ...)
 
 o  configure check for OpenSSL currently depends on pkg-config
+
+o  with -T and an expired cert we could try to give more info then just
+   "certificate has expired" and then quitting, e.g. "was valid till ... "
+   or "not yet valid ..."  with the corresponding dates (and the current
+   date); with -k we could emphasise the fact on connect.
+
+o  with -T and hostname mismatch we could give more info than just
+   "TLS handshake failed: hostname mismatch" (show CN (vs. used hostname));
+   with -k we could mention the mismatch on the 'J' ConnectionInfo-page.
 
 o  add possibility to dump the current key mapping to a file
 
@@ -555,6 +564,10 @@ o  allow editing of the strings presented in the kill-Menu for
 o  allow ranges in gnksa-filters "gnksa=200-399" or "gnksa=101,103,201"
    [20200709 Urs Janssen <urs@tin.org>]
 
+o  add a cmd.-line switch to skip reading the filter file ('-F'?) as
+   filtering may be very time consuming with huge groups. what if a user
+   likes to add a filter entry during such a session?
+
 Pager enhancements
 ------------------
 o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
@@ -696,7 +709,7 @@ o  close potential security holes:
    - check where we should use strncpy() instead of strcpy()
    - check possible races with access()/link()/rename()/stat()/
                                unlink()/chdir()/fopen()/fstat()/open()/
-                               opendir()/t_open()/tmpfile()
+                               opendir()/t_open()
    - check getenv() results before using it
    - check where my_strncpy() or STRCPY() should be used
    [Urs Janssen <urs@tin.org>]
@@ -875,6 +888,10 @@ o  allow per group cache_overview_files setting via attributes?
 o  exit HEAD/NEXT loop on 5xx responses to HEAD? (see
    art.c:open_art_header())
    [20161011 Urs Janssen <urs@tin.org>]
+
+o  motd is only shown/checked for if using nntp, subscriptions is also
+   evaluated if reading from local spool - look for motd[.nnrpd|.innd] in
+   the same dir if not using nntp?
 
 o  follow $LC_COLLATE (e.g. add strxfrm() to subj_comp_*/from_comp_*)?
    [20160421 Urs Janssen <urs@tin.org>]
@@ -1086,3 +1103,8 @@ o  eval $NEWSHOST if $NNTPSERVER is unset (like Net::NNTP(3perl))
 
 o  add show_progress to art.c:setup_hard_base() and filter.c:filter_articles(),
    both can be slow in huge groups
+
+o  option to {display,warn,hide} article if it has an Expires:-header in the
+   past? or doe something via filter?
+
+o  also check for $NEWS_ORGANIZATION (see lynx(1))?

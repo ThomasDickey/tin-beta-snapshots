@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2023-11-30
+.\" Updated   : 2024-01-10
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -15,7 +15,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24 Dezember 2022" 2.6.3 "Usenet Newsreader"
+.TH tin 1 "24 Dezember 2023" 2.6.4 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -62,7 +62,7 @@ die nächste Newsgruppe mit ungelesenen Artikeln betreten.
 .SH RÜCKGABEWERT
 .IX Header RÜCKGABEWERT
 .\" TODO: also exits with signalnr caught as exit status
-.TP 
+.TP  12
 \fB0\fP
 Programm erfolgreich beendet. Im Batch\-Modus: keine ungelesenen Nachrichten
 vorhanden.
@@ -114,10 +114,10 @@ Keine Gruppenbeschreibungen und die Server Meldung des Tages laden
 \fB\-D\fP\fI Debuggrad\fP
 Debuggrad angeben (1 = NNTP, 2 = Filter, 4 = newsrc, 8 = Threading, 16 =
 Speicher, 32 = attributes, 64 = Diverses, 128 = vorhandene Debugdateien
-löschen). Im NNTP\-Level steuert \*(rq\fB\-v\fP\*(rq die Ausführlichkeit der Ausgabe.Je
-nach Debuggrad könnten verschiedene Dateien nach \fI$TMPDIR\fP geschrieben
-werden und/oder eine Bildschirmausgabe erfolgen. Auch den Abschnitt
-"SICHERHEIT" beachten!
+löschen). Im NNTP\-Level steuert \*(rq\fB\-v\fP\*(rq die Ausführlichkeit der
+Ausgabe. Je nach Debuggrad könnten verschiedene Dateien nach \fI$TMPDIR\fP
+geschrieben werden und/oder eine Bildschirmausgabe erfolgen. Auch den
+Abschnitt "SICHERHEIT" beachten!
 .TP 
 \fB\-f\fP\fI Datei\fP
 Benutze die angegebene newsrc\-Datei anstelle von
@@ -254,7 +254,7 @@ Schnell\-Modus um nur einen Artikel zu posten. Diese Option beinhaltet
 Sie können keine Artikel veröffentlichen, wenn Sie diese Option verwenden.
 .TP 
 \fB\-X\fP
-Scheibgeschützter Modus. \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP und Dateien
+Schreibgeschützter Modus. \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP und Dateien
 unter \fI${TIN_HOMEDIR:\-"$HOME"}/.tin\fP werden nicht überschrieben aber
 angelegt falls sie nicht existieren.
 .TP 
@@ -338,13 +338,12 @@ Newsgruppen werden in der Mitte des Bildschirms, in der Regel mit der Anzahl
 der ungelesenen Artikel in der gleichen Zeile davor, abgebildet, aber das
 kann mittels \fBselect_format\fP angepasst werden.
 .PP
-.\" FIXME - make this auto scale
 .nf
-\->M    1     2  comp.security.announce  Announcements from the CERT abou
+\f(CR\->M    1     2  comp.security.announce  Announcements from the CERT abou
   M    2     1  news.admin.announce     Announcements for news adminstra
        3    22  news.software.misc      News\-related software other than
        4  1475  news.software.nntp      The Network News Transfer Protoc
-  X    5   124  news.software.readers   Discussion of software used to r
+  X    5   124  news.software.readers   Discussion of software used to r\fR
 .fi
 .PP
 Eventuell steht am Anfang der Zeile noch eines der folgende Zeichen:
@@ -414,14 +413,13 @@ section "FILTERING ARTICLES") it's marked with \fBart_marked_selected\fP in
 front of the total number of articles in the thread. The display can be
 customized via \fBgroup_format\fP.
 .PP
-.\" FIXME - make this auto scale
 .nf
-                de.admin.net\-abuse.announce (11B 13+ 1* 1o 0K) M
+\f(CR                de.admin.net\-abuse.announce (11B 13+ 1* 1o 0K) M\fR
 
-\->   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg <l
+\f(CR\->   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg <l
      2   +       69 EMP/ECP gecancelt. xynx. BI= 10  Henning Weede <hwee
      3   o       93 EMP gecancelt. SouthBeach/Palms  Henning Weede <hwee
-     4   *      368 <1997\-11\-12> Fremdcancel\-FAQ     Thomas Roessler <ro
+     4   *      368 <1997\-11\-12> Fremdcancel\-FAQ     Thomas Roessler <ro\fR
 .fi
 .PP
 .\" FIXME - add description of fields
@@ -429,25 +427,23 @@ Auf Thread\-Ebene sieht der Bildschirm normalerweise (abhängig von der
 verwendeten Thread\-Methode) so aus, kann aber über \fBthread_format\fP
 angepasst werden:
 .PP
-.\" FIXME - make this auto scale
 .nf
-\->   1      [   7]  What is this funny tree in the thr  Robert F. Simmig
+\f(CR\->   1      [   7]  What is this funny tree in the thr  Robert F. Simmig
      2      [  12]  +\->                                 Sephan Wagner <s
      3      [ 230]  | `\->Tin thread\-level (was: What is Bob Johnson <bob
-     4      [  22]  `\->tin threading menu               Brian Richardson
+     4      [  22]  `\->tin threading menu               Brian Richardson\fR
 
 .fi
 .PP
 .\" FIXME - add description of fields
 In der Artikelebene hat der Kopf der Seite folgendes Format:
 .PP
-.\" FIXME - make this auto scale
 .nf
-So, 28 Dez 1997 21:21:01    de.admin.news.groups      Thread   20 v. 86
+\f(CRSo, 28 Dez 1997 21:21:01    de.admin.news.groups      Thread   20 v. 86
 Zeilen 50   Re: EINSPRUCH zu RESULT:de.comm.mobil.ALL Artikel  47 von 59
-Urs Janssen <urs@akk.org>       bei Arbeitskreis Kultur und Kommunikati
+Urs Janssen <urs@akk.org>       bei Arbeitskreis Kultur und Kommunikati\fR
 
-Artikel\-Körper
+\f(CRArtikel\-Körper\fR
 .fi
 .PP
 .\"
@@ -619,7 +615,7 @@ werden.
 \fBToggleInfoLastLine 'i'\fP
 Umschalten der Anzeige der Beschreibung der aktuellen Newsgroup in der
 letzten Zeile. Dies ist nicht verfügbar, wenn \fBtin\fP mit \&\*(rq\fB\-d\fP\*(rq
-gestartet wurde
+gestartet wurde.
 .TP 
 \fBToggleInverseVideo 'I'\fP
 (De)aktiviere inverse Darstellung.
@@ -699,17 +695,18 @@ the \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file and just
 those that are subscribed to in \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP.
 .TP 
 \fBSelectSyncWithActive 'Y'\fP
-Reread the \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file to
-see if any new news has arrived since starting \fBtin\fP.
+Liest die Datei \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP
+erneut ein, um zu sehen, ob seit dem Start von \fBtin\fP neue Nachrichten
+eingetroffen sind.
 .TP 
 \fBSelectMarkGrpUnread 'z' 'Z'\fP
 .\" -------------------------------------------------------------------
 .\"
 Alle Artikel in der aktuellen Gruppe als ungelesen markieren.
 .SS GRUPPEN\-INDEX\-BEFEHLE
-All searches in this level are limited to unread articles if in
-\fBshow_only_unread_arts\fP mode. \fBGroupToggleReadUnread\fP ('\fBr\fP')  can be use
-toggle the setting right before/after the search.
+Alle Suchen auf dieser Ebene sind im \fBshow_only_unread_arts\fP\-Modus auf
+ungelesene Artikel beschränkt. \fBGroupToggleReadUnread\fP ('\fBr\fP') kann
+verwendet werden, um die Einstellung direkt vor/nach der Suche umzuschalten.
 .TP  10
 \fB4\fP
 Artikel 4 auswählen.
@@ -822,12 +819,12 @@ Durchsuche die Körper aller Artikel in der Gruppe (kann langsam sein). Die
 Suche kann mit \fBQuit\fP ('\fBq\fP') abgebrochen werden.
 .TP 
 \fBCatchup 'c'\fP
-Mark all articles as read [after confirmation] then return to the group
-selection list. Move cursor to next group.
+Markiert alle Artikel als gelesen [nach Bestätigung] und kehrt dann zur
+Gruppenauswahlliste zurück.
 .TP 
 \fBCatchupNextUnread 'C'\fP
-Mark all articles as read [after confirmation] and enter the next group with
-unread news.
+Markiert alle Artikel als gelesen [nach Bestätigung] und betritt die nächste
+Gruppe mit ungelesenen Nachrichten.
 .TP 
 \fBGroupToggleSubjDisplay 'd'\fP
 Durchläuft die Anzeige des Autors durch alle möglichen Optionen für die
@@ -1047,12 +1044,12 @@ Durchsuche die Körper aller Artikel in der Gruppe (kann langsam sein). Die
 Suche kann mit \fBQuit\fP ('\fBq\fP') abgebrochen werden.
 .TP 
 \fBCatchup 'c'\fP
-Mark thread as read [after confirmation] and return to the group index
-page.  Move cursor to next thread.
+Thread [nach Bestätigung] als gelesen markieren und zur Gruppenindexseite
+zurückkehren.
 .TP 
 \fBCatchupNextUnread 'C'\fP
-Mark thread as read [after confirmation] and enter the next thread
-containing unread news.
+Thread [nach Bestätigung] als gelesen markieren und zum nächsten Thread mit
+ungelesenen Nachrichten wechseln.
 .TP 
 \fBThreadToggleSubjDisplay 'd'\fP
 Durchläuft die Anzeige des Autors durch alle möglichen Optionen für die
@@ -1124,8 +1121,8 @@ NACHSENDEN UND SPEICHERN VON ARTIKELN".
 Markierte Artikel automatisch ohne weiteres Nachfragen speichern.
 .TP 
 \fBThreadTag 't'\fP
-Toggle tag status of current article for mailing, piping, printing, saving
-or reposting.
+Tag\-Status des aktuellen Artikels zum Versenden, Weiterleiten, Drucken,
+Speichern oder erneuten Veröffentlichen umschalten.
 .TP 
 \fBThreadTagParts 'T'\fP
 Alle Teile der aktuellen mehrteiligen Nachricht automatisch in der
@@ -1165,8 +1162,8 @@ Automatische Hervorheben des/der Artikel(s) über ein Menü. Lesen Sie den
 Abschnitt "FILTERN VON ARTIKELN" für weitere Informationen.
 .TP 
 \fBPageReplyQuoteHeaders '^E'\fP
-Reply through mail to the author of the current article with a copy of the
-article with all headers included.
+Dem Autor des aktuellen Artikels per E\-Mail mit einer Kopie des Artikels
+einschließlich aller Header anworten.
 .TP 
 \fBPagePGPCheckArticle '^G'\fP
 Perform \fB\%pgp\fP(1)  / \fB\%gpg\fP(1)  operations on article. This expects
@@ -1184,8 +1181,8 @@ Informationen den Abschnitt "FILTERN VON ARTIKELN".
 Tabulatorbreite zwischen 4 und 8 Zeichen Umschalten.
 .TP 
 \fBPageFollowupQuoteHeaders '^W'\fP
-Post a followup to the current article with a copy of the article with all
-headers included.
+Follow\-up zum aktuellen Artikel mit einer Kopie des Artikels einschließlich
+aller Header veröffentlichen.
 .TP 
 \fBPageToggleTex2iso '"'\fP
 TeX auf ISO\-Dekodierung für aktuellen Artikel umschalten. Das
@@ -1382,8 +1379,8 @@ NACHSENDEN UND SPEICHERN VON ARTIKELN".
 Markierte Artikel automatisch ohne weiteres Nachfragen speichern.
 .TP 
 \fBPageTag 't'\fP
-Toggle tag status of current article for mailing, piping, printing, saving
-or reposting.
+Tag\-Status des aktuellen Artikels zum Versenden, Weiterleiten, Drucken,
+Speichern oder erneuten Veröffentlichen umschalten.
 .TP 
 \fBPageGroupSel 'T'\fP
 Kehrt zur Auswahlebene zurück.
@@ -1421,14 +1418,14 @@ Alle Artikel als ungelesen markieren.
 .\"
 Markiere den aktuellen Thread als ungelesen.
 .SS "URL LISTE"
-\fBPageViewUrl\fP ('\fBU\fP') displays a list of URLs in the current
-article. Besides the common moving keys, the following commands are
-available:
+\fBPageViewUrl\fP ('\fBU\fP') zeigt eine Liste der URLs im aktuellen Artikel
+an. Neben den üblichen Bewegungstasten stehen folgende Befehle zur
+Verfügung:
 .RS 4
 .TP  10
 \fBUrlSelect '^J' '<CR>'\fP
-The current URL will be prompted and opened using the
-\fBurl_handler\fP. '\fB<ESC>\fP' or no input will skip the URL.
+Die aktuelle URL wird abgefragt und mit dem \fBurl_handler\fP
+geöffnet. '\fB<ESC>\fP' oder keine Eingabe überspringt die URL.
 .TP 
 \fBSearchSubjF '/'\fP
 Suche nach URL (vorwärts).
@@ -1455,9 +1452,9 @@ eines Artikels ein\-/ausschalten (\fBbeginner_level\fP).
 .\" -------------------------------------------------------------------
 .\"
 .SS ANHANGSVERZEICHNIS
-\fBPageViewAttach\fP ('\fBV\fP') displays a list of attachments of the current
-article. Besides the common moving keys, the following commands are
-available:
+\fBPageViewAttach\fP ('\fBV\fP') zeigt eine Liste der Anhänge des aktuellen
+Artikels an. Neben den üblichen Bewegungstasten stehen folgende Befehle zur
+Verfügung:
 .RS 4
 .TP  10
 \fBAttachPipe 'p'\fP
@@ -1762,8 +1759,8 @@ Farbe von zweifach zitierten Zeilen
 Farbe von =>3\-fach zitierten Zeilen
 .TP 
 \fBFarbe des Antwortzählers (col_response)\fP
-Color of response counter. This is the text that says "Response x of y" in
-the article viewer.
+Farbe des Antwortzählers. Das ist der Text "Antwort x von y" im
+Artikel\-Viewer.
 .TP 
 \fBFarbe von Signaturen (col_signature)\fP
 Farbe von Signaturen
@@ -2044,8 +2041,8 @@ creating articles, sending mail and when \fB\%pgp\fP(1)  / \fB\%gpg\fP(1)  signi
 (\fBRFC\%4880\fP).
 .TP 
 \fBMIME\-Kodierung für E\-Mails (mail_mime_encoding)\fP
-MIME encoding of the body in mail message, if necessary (8bit, base64,
-quoted\-printable, 7bit). Default is quoted\-printable.
+MIME\-Kodierung des Textkörpers in E\-Mail\-Nachrichten falls erforderlich
+(8bit, base64, quoted\-printable, 7bit). Voreinstellung ist quoted\-printable.
 .TP 
 \fBEinleitungszeile bei Mailantwort (mail_quote_format)\fP
 Format der Einleitungszeile für Mailantworten (%A=Mailadresse, %D=Datum,
@@ -2100,8 +2097,8 @@ presents a menu with choices of the current thread or article, all tagged,
 unread articles, or nothing.
 .TP 
 \fBMark. gesp. Artikel/Threads gelesen (mark_saved_read)\fP
-Falls ON werden gespeicherte Artikel als gelesen markiert.Voreinstellung ist
-ON.
+Falls ON werden gespeicherte Artikel als gelesen markiert. Voreinstellung
+ist ON.
 .TP 
 \fBMIME\-Viewer (metamail_prog)\fP
 Path, name and options of external \fB\%metamail\fP(1)  program used to view
@@ -2228,8 +2225,8 @@ Artikelebene benutzt. Für weitere Informationen sei auf den Abschnitt
 \-\-]".
 .TP 
 \fBSetze Cursor auf ersten ungel. Art. (pos_first_unread)\fP
-If ON put cursor at first unread article in group otherwise at last
-article. Default is ON.
+Falls ON wird der Cursor auf den ersten ungelesenen Artikel in der Gruppe
+gesetzt, andernfalls auf den letzten Artikel.
 .TP 
 \fBBenutze 8bit\-Zeichen im Newsheader (post_8bit_header)\fP
 Allows 8bit characters unencoded in the header of a news article, if set
@@ -2337,7 +2334,7 @@ reread at regular intervals to show if any new news has arrived. Default is
 1200. Setting this to 0 will disable this feature.
 .TP 
 \fBVerz. um Art/Threads zu speichern (savedir)\fP
-Directory where articles/threads are saved. Default is
+Verzeichnis, in dem Artikel/Threads gespeichert werden. Voreinstellung ist
 \fI${TIN_HOMEDIR:\-"$HOME"}/News\fP.
 .TP 
 \fBBewertungsgrenze (kill) (score_limit_kill)\fP
@@ -2421,8 +2418,8 @@ arrived otherwise show help sign.
 .RE
 .TP 
 \fBZeige nur ungelesene Artikel (show_only_unread_arts)\fP
-If ON show only new/unread articles otherwise show all articles.  Default is
-ON.
+Falls ON, werden nur neue/ungelesene Artikel angezeigt, andernfalls werden
+alle Artikel angezeigt.
 .TP 
 \fBZeige nur Gruppen mit ungel. Art. (show_only_unread_groups)\fP
 Falls ON zeige nur abonnierte Gruppen mit ungelesen Artikeln. Voreinstellung
@@ -2575,7 +2572,7 @@ The default is Both Subject and References.  The choices are:
 \fBBoth Subject and References\fP, Diskussionsfaden anhand von \*(rqReferences:\*(rq
 und \*(rqSubject:\*(rq aufbauen (Voreinstellung).
 .IP 4
-\fBMultipart Subject\fP, Diskussionsfaden mehrteiliger Artike anhand von
+\fBMultipart Subject\fP, Diskussionsfaden mehrteiliger Artikel anhand von
 \&'Subject:\*(rq aufbauen.
 .IP 5
 \fBPercentage Match\fP, thread base upon a partial character match on
@@ -2596,8 +2593,8 @@ How closely the subjects must match for two threads to be considered part of
 the same thread. This is a percentage and the default if 75%.
 .TP 
 \fBBewertung eines Threads (thread_score)\fP
-How the total score of a thread is computed. Default is 0, the maximum score
-in this thread.
+Wie die Gesamtpunktzahl eines Threads berechnet wird. Voreinstellung ist 0,
+die maximale Punktzahl in diesem Diskussionsfaden (Thread).
 .RS +.5i
 .IP 0 3
 \fBMax\fP, Maximalwert im Diskussionsfaden.
@@ -2989,12 +2986,12 @@ set \fBbatch_save\fP to ON in tinrc and selectively turn off the ones you don't
 want using attributes.
 .TP  2i
 \fBtin \-M iain \-c \-f newsrc.mail\fP
-(mail any unread articles in newsgroups specified in file newsrc.mail to the
-local user iain and mark them as read)
+(alle ungelesenen Artikel in den in der Datei newsrc.mail angegebenen
+Newsgruppen an den lokalen Benutzer iain senden und als gelesen markieren)
 .TP  2i
 \fBtin \-S \-c \-f newsrc.save\fP
-(save any unread articles in newsgroups specified in file newsrc.save and
-mark them as read)
+(alle ungelesenen Artikel in den in der Datei newsrc.save angegebenen
+Newsgruppen speichern und als gelesen markieren)
 .TP  2i
 \fBtin \-R\fP
 .\"
@@ -3038,8 +3035,8 @@ pulled into the editor for mail commands only. A signature in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.signature\fP will not be pulled into the editor for
 posting commands since \fB\%inews\fP(1)  will append the signature itself.
 .PP
-A signature in \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP will be pulled into the
-editor for both posting and mailing commands.
+Eine Signatur in \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP wird sowohl für Post\- als
+auch für Mail\-Befehle in den Editor geladen.
 .PP
 Nachstehend eine Beispiel \fI.Sig\fP Datei:
 .RS
@@ -3319,8 +3316,9 @@ intervals (\fBreread_active_file_secs\fP) to show any newly arrived news.
 .PP
 .\"
 .\"
-If you find large number of new newsgroups cluttering up your screen,
-pressing \fBSelectToggleReadDisplay\fP ('\fBr\fP') will make them go away.
+Falls Sie feststellen, dass eine große Anzahl neuer Newsgruppen den
+Bildschirm füllt, können diese durch Drücken von \fBSelectToggleReadDisplay\fP
+(„\fBr\fP“) ausgeblendet werden.
 .SS "XTERM BUTTONS"
 Falls die Umgebungsvariable \fB$TERM\fP auf \fB\%xterm\fP(1x) gesetzt ist können
 die Maustasten benutzt werden um Gruppen oder Artikel auszuwählen. Es wird
@@ -3334,8 +3332,8 @@ Geht in die nächste (untere) Ebene, wenn Sie auf einen Artikel klicken,
 sonst nach unten blättern.
 .TP 
 Maustaste2 (Mitte)
-returns to the previous (upper) level if you click on an article, otherwise
-pages up.
+kehrt zur vorherigen (oberen) Ebene zurück, wenn Sie auf einen Artikel
+klicken, andernfalls wird eine Seite nach oben geblättert.
 .TP 
 Maustaste3 (Rechts)
 positions on the article line under mouse cursor, or pages down if you've
@@ -3602,7 +3600,7 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .TP 
 \fBTINRC\fP
 Setzen Sie diese Variable wenn Sie Befehlszeilenoptionen angeben möchten mit
-denen \fBtin\fP gestartet werden soll um die Eingabe, jedesmal wenn \fBtin\fP
+denen \fBtin\fP gestartet werden soll um die Eingabe, jedes Mal wenn \fBtin\fP
 ausgeführt wird, zu sparen. Der Inhalt der Umgebungsvariablen wird den
 angegebenen Befehlszeilenoptionen vorangestellt \(em bevor diese auf
 Gültigkeit überprüft werden \(em um Sie manuell übersteuern zu können.
@@ -3789,8 +3787,8 @@ Set this variable to point to \fB\%ispell\fP(1)  or a replacement and its
 cmd\-line options.
 .TP 
 \fBPGPOPTS\fP
-Define any additional options that you wish to pass to your \fB\%pgp\fP(1)  or
-\fB\%gpg\fP(1)  program.
+Zusätzliche Optionen, die Sie an Ihr \fB\%pgp\fP(1)\- oder \fB\%gpg\fP(1)\-Programm
+übergeben möchten.
 .TP 
 \fBPGPPATH\fP
 Übersteuert den Namen des \fB\%pgp\fP(1)\-Verzeichnisses in \fB$HOME\fP, dass deine
@@ -3926,8 +3924,8 @@ Verhalten umgangen werden.
 .\"   RFC\%4643, RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
 .\"
 .\"
-\fBtin\fP does conform to the Base Definitions volume of IEEE Std 1003.1\-2008,
-Section 12, Utility Conventions (Utility Argument Syntax, Utility Syntax
+\fBtin\fP ist konform zu dem Basisdefinitionsband von IEEE Std 1003.1\-2008,
+Abschnitt 12, Utility\-Konventionen (Utility Argument Syntax, Utility Syntax
 Guidelines).
 .SH ANMERKUNGEN
 .IX Header ANMERKUNGEN
@@ -3997,7 +3995,7 @@ für \fB\%pgp\fP(1) (Pretty Good Privacy) Unterstützung.
 .IP "Philip Hazel <ph10@cam.ac.uk>"
 für \fB\%pcre\fP(3), \fB\%pcre2\fP(3) (Bibliothek für Perl\-kompatible reguläre
 Ausdrücke).
-.IP "Patrick Powell <papowell@astart.com>"
+.IP "Mark Martinec <mark.martinec@ijs.si>"
 .\"
 .\"
 für \fB\%snprintf\fP(3) und \fB\%vsnprintf\fP(3) Fallbacks.

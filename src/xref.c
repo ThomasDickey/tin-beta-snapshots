@@ -3,7 +3,7 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2019-09-11
+ *  Updated   : 2024-01-31
  *  Notes     :
  *
  * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
@@ -346,32 +346,33 @@ art_mark_xref_read(
 
 	xref_ptr = art->xref;
 
-	/*
-	 * check sitename matches nodename of current machine (ignore for now!)
-	 */
-	while (*xref_ptr != ' ' && *xref_ptr)
+	/* skip sitename */
+	while (*xref_ptr != ' ' && *xref_ptr != '\t' && *xref_ptr)
 		xref_ptr++;
 
 	/*
 	 * tokenize each pair and update that newsgroup if it is in my_group[].
 	 */
 	forever {
-		while (*xref_ptr == ' ')
+		while (*xref_ptr == ' ' || *xref_ptr == '\t')
 			xref_ptr++;
 
 		groupname = xref_ptr;
-		while (*xref_ptr != ':' && *xref_ptr)
+		while (*xref_ptr != ':' && *xref_ptr != ' ' && *xref_ptr != '\t' && *xref_ptr)
 			xref_ptr++;
 
 		if (*xref_ptr != ':')
 			break;
 
 		ptr = xref_ptr++;
-		artnum = atoartnum(xref_ptr);
-		while (isdigit((int) *xref_ptr))
+		if ((artnum = atoartnum(xref_ptr)) <= 0)
+			break;
+		while (isdigit((unsigned char) *xref_ptr))
 			xref_ptr++;
 
 		if (&ptr[1] == xref_ptr)
+			break;
+		if (*xref_ptr && *xref_ptr != ' ' && *xref_ptr != '\t')
 			break;
 
 		c = *ptr;
@@ -426,12 +427,7 @@ NSETRNG1(
 {
 	t_artnum i;
 
-	if (bitmap == NULL) {
-#ifdef DEBUG
-		error_message(2, "NSETRNG1() failed. Bitmap == NULL");
-#endif /* DEBUG */
-		return;
-	}
+    assert(((void) "NSETRNG1() failed. bitmap == NULL", bitmap != NULL));
 
 	if (high >= low) {
 		if (NOFFSET(high) == NOFFSET(low)) {
@@ -460,10 +456,7 @@ NSETRNG0(
 {
 	t_artnum i;
 
-	if (bitmap == NULL) {
-		error_message(2, "NSETRNG0() failed. Bitmap == NULL");
-		return;
-	}
+	assert(((void) "NSETRNG0() failed. bitmap == NULL", bitmap != NULL));
 
 	if (high >= low) {
 		if (NOFFSET(high) == NOFFSET(low)) {

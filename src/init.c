@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-22
+ *  Updated   : 2024-02-23
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -680,12 +680,25 @@ init_selfinfo(
 	FILE *fp;
 	char *ptr;
 	char tmp[PATH_LEN];
-	struct stat sb;
+	size_t space;
 	struct passwd *myentry;
+	struct stat sb;
 #if defined(DOMAIN_NAME) || defined(HAVE_GETHOSTBYNAME)
 	const char *cptr;
 #endif /* DOMAIN_NAME || HAVE_GETHOSTBYNAME */
-	size_t space;
+
+	process_id = getpid();
+
+	real_umask = umask(0);
+	(void) umask(real_umask);
+
+	if ((myentry = getpwuid(getuid())) == NULL) {
+		error_message(2, _(txt_error_passwd_missing));
+		free(tin_progname);
+		giveup();
+	}
+
+	my_strncpy(userid, myentry->pw_name, sizeof(userid) - 1);
 
 	domain_name[0] = '\0';
 
@@ -713,19 +726,6 @@ init_selfinfo(
 			my_strncpy(domain_name, cptr, MAXHOSTNAMELEN);
 	}
 #endif /* HAVE_GETHOSTBYNAME */
-
-	process_id = getpid();
-
-	real_umask = umask(0);
-	(void) umask(real_umask);
-
-	if ((myentry = getpwuid(getuid())) == NULL) {
-		error_message(2, _(txt_error_passwd_missing));
-		free(tin_progname);
-		giveup();
-	}
-
-	my_strncpy(userid, myentry->pw_name, sizeof(userid) - 1);
 
 	tmpdir = get_val("TMPDIR", _PATH_TMP);
 
@@ -851,8 +851,7 @@ init_selfinfo(
 			char buf[LEN];
 
 			if (fgets(buf, (int) sizeof(buf), fp) != NULL) {
-				ptr = strrchr(buf, '\n');
-				if (ptr != NULL)
+				if ((ptr = strrchr(buf, '\n')) != NULL)
 					*ptr = '\0';
 			}
 			fclose(fp);
@@ -917,9 +916,9 @@ init_selfinfo(
 #endif /* HAVE_LONG_FILE_NAMES */
 	backup_article_name = my_malloc(++space);
 #ifdef HAVE_LONG_FILE_NAMES
-	snprintf(backup_article_name, space , "%s.bak", article_name);
+	snprintf(backup_article_name, space, "%s.bak", article_name);
 #else
-	snprintf(backup_article_name, space , "%s.b", article_name);
+	snprintf(backup_article_name, space, "%s.b", article_name);
 #endif /* HAVE_LONG_FILE_NAMES */
 
 	joinpath(dead_article, sizeof(dead_article), homedir, "dead.article");

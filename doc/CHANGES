@@ -1,4 +1,58 @@
--- 2.6.3 release 20231129 "" --
+-- 2.6.4 release 20240224 "" --
+
+ 022) Enrik Berkhan <enrik@tin.org>
+      ADD. avoid implicit conversion
+      FIX. curses.c, misc.c, nntplib.c, rfc2047.c
+
+ 021) Matt Anton <tin@lv223.org>
+      ADD. updated French translation
+      FIX. fr.po
+
+ 020) Dennis Preiser <dennis@d--p.de>
+      ADD. always cast arg to is*()-functions to unsigned char
+      ADD. avoid implicit conversion if char is signed by default
+      FIX. art.c, config.c, filter.c, getline.c, header.c, keymap.c, makecfg.c
+           misc.c, nntplib.c, post.c, rfc2046.c, rfc2047.c, string.c, tags.c
+           xref.c, parsdate.y, newsrc.h, tin.h
+
+ 019) Urs Janssen <urs@tin.org>
+      ADD. silence some unused parameter warnings
+      ADD. avoid sscanf(3) in check_upgrade()
+      ADD. avoid fixed length buffer in my_mktmp()
+      ADD. configure check for buggy snprintf(3)
+      ADD. changed snprintf(3) fallback implementation from Patrick Powell
+           to the one by Mark Martinec
+      ADD. use snprintf(3) in STRCPY macro
+      ADD. config.guess, config.sub update
+      ADD. avoid tmpfile(3) usage
+      ADD. configure check for blockable signal-type (POSIX, BSD, SYSV, NONE)
+      ADD. configure check for tiuser.h (TLI; SVR3, SVR4)
+      ADD. configure check for lrand48(3) and random(3), prefer over rand(3)
+      ADD. configure check for dirfd(3)
+      ADD. configure check for tcflag_t
+      ADD. simplify _Noreturn check, just note the C11 standard
+      REM. tmpfile.c
+      BUG. -t not mentioned in -h
+      BUG. fopen(3)-leak on early exit due to file-version mismatch
+      BUG. didn't remove '.' from normalized charset when looking for a
+           keymap-file
+      BUG. socket(3)-leak on early exit due to TLS-errors
+      BUG. possible NULL-pointer dereference in connection-info ('J') if
+           CAPABILITIES does not return IMPLEMENTATION
+      BUG. art_mark_xref_read() didn't allow '\t' between locations
+      FIX. art.c, attrib.c, auth.c, config.c, cook.c, debug.c, group.c, help.c
+           init.c, keymap.c, lang.c, lock.c, main.c, misc.c, my_tmpfile.c
+           nntplib.c, nntps.c, options_menu.c, page.c, post.c, rfc2046.c
+           rfc2047.c, save.c, select.c, sigfile.c, snprintf.c, thread.c
+           version.c, xref.c, extern.h, proto.h, snprintf.h, tin.h, tnntp.h
+           autoconf.h[in], configure[.in], Makefile[.in], config.guess
+           config.sub
+
+-- 2.6.3 release 20231224 "Banff" --
+
+ 018) Florian Weimer <fweimer@redhat.com>
+      ADD. fix incompatible pointer types
+      FIX. aclocal.m4, configure.[in]
 
  017) Enrik Berkhan <enrik@tin.org>
       ADD. "COMPRESS DEFLATE" support (RFC 8054)
@@ -21,13 +75,18 @@
       ADD. configurable display format of attachments
            (page_mime_format, page_uue_format, attachment_format)
       ADD. new options show_art_score, col_score_neg, col_score_pos
-      ADD. avoid fopen()/fclose() overhead in subscribe_pattern()
+      ADD. avoid fopen(3)/fclose(3) overhead in subscribe_pattern()
       ADD. allow up to 64k long lines in posted_info_file
       ADD. make -vZ less verbose (skip Reading messages)
            current output now available via -vvZ
       ADD. move strings to lang.c
       ADD. silence some compiler warnings
       ADD. unset of ranges
+      ADD. display umlauts in ssl-certs with OpenSSL and GnuTLS and LibreSSL
+           if also lybcrypto is available
+      BUG. tls_peer_cert_notbefore(3)/tls_peer_cert_notafter(3) used with
+           LibreSSL without crypto-lib (from OpenSSL) returns time in UTC
+           not localtime
       BUG. with several consecutive soft hyphens, every second one is
            displayed despite suppress_soft_hyphens=ON
       BUG. -vZ output was ugly due to one missing and one superfluous newline
@@ -40,12 +99,13 @@
       REM. show_info from manuals, unused t_filter->next
       BUG. fix the memleak in read_cmd_line_options(envargs()) if $TINRC is
            set
+      BUG. -I$srcdir/libcanlock/include missing in CHECK_DECL_FLAG
       FIX. active.c, art.c, attrib.c, color.c, config.c, cook.c, filter.c
            group.c, inews.c, init.c, keymap.c, lang.c, main.c, misc.c, newsrc.c
            nntplib.c, nntps.c, nrctbl.c, options_menu.c, page.c, pgp.c, post.c
            read.c, refs.c, rfc2046.c, rfc2047.c, save.c, select.c, signal.c
            tags.c, thread.c, xface.c, extern.h, proto.h, tin.h, tinrc.h
-           tincfg.tbl, tin.[15]
+           tnntps.h, tincfg.tbl, tin.[15], configure[.in]
 
  014) Matt Anton <tin@lv223.org>
       ADD. updated French translation
@@ -102,14 +162,17 @@
       ADD. make date-parsing more fault tolerant
       ADD. quit early if rcdir doesn't exist and can't be created
       ADD. init backup_article_name just one
+      ADD. MOTD to connection-info ('J')
+      ADD. configure check for libcrypto when using LibreSSL
       FIX. active.c, art.c, auth.c, config.c, cook.c, debug.c, feed.c, filter.c
-           group.c, header.c, help.c, init.c, keymap.c, lang.c, mail.c, main.c
-           makecfg.c, memory.c, misc.c, newsrc.c, nntplib.c, nntps.c
-           options_menu.c, page.c, pgp.c, post.c, refs.c, rfc2045.c, rfc2046.c
-           rfc2047.c, save.c, search.c, select.c, signal.c, string.c
-           tcurses.c, thread.c, tmpfile.c, xface.c, extern.h, keymap.h, proto.h
-           rfc2046.h, tin.h, tinrc.h, Makefile[.in], tin.1, tin.5
-           configure[.in], config.guess, config.sub
+           group.c, header.c, heapsort.c, help.c, init.c, keymap.c, lang.c
+           mail.c, main.c, makecfg.c, memory.c, misc.c, newsrc.c, nntplib.c
+           nntps.c, options_menu.c, page.c, pgp.c, post.c, refs.c, rfc2045.c
+           rfc2046.c, rfc2047.c, save.c, screen.c, search.c, select.c, signal.c
+           string.c, tcurses.c, thread.c, tmpfile.c, xface.c, parsdate.y
+           autoconf.h[in], extern.h, keymap.h, proto.h, rfc2046.h, tin.h
+           tinrc.h, tin.1, tin.5, Makefile[.in], configure[.in], config.guess
+           config.sub
 
  012) Thomas E. Dickey <dickey@invisible-island.net>
       BUG. HAVE_LIBINTL_H may get set even when unavailable

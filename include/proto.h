@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2023-11-22
+ *  Updated   : 2024-01-27
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -365,6 +365,7 @@ extern int get_initials(struct t_article *art, char *s, int maxsize);
 extern int gnksa_do_check_from(const char *from, char *address, char *realname);
 extern int my_mkdir(char *path, mode_t mode);
 extern int parse_from(const char *from, char *address, char *realname);
+extern int rndm(void);
 extern int strfmailer(const char *mail_prog, char *subject, char *to, const char *filename, char *dest, size_t maxsize, const char *format);
 extern int strfpath(const char *format, char *str, size_t maxsize, struct t_group *group, t_bool expand_all);
 extern int strfquote(const char *group, int respnum, char *s, size_t maxsize, char *format);
@@ -380,7 +381,7 @@ extern t_bool mail_check(const char *mailbox_name);
 extern void append_file(char *old_filename, char *new_filename);
 #ifndef NDEBUG
 	extern _Noreturn void asfail(const char *file, int line, const char *cond);
-#endif /* ! NDEBUG */
+#endif /* !NDEBUG */
 extern void base_name(const char *fullpath, char *file);
 extern void cleanup_tmp_files(void);
 extern void copy_body(FILE *fp_ip, FILE *fp_op, char *prefix, char *initl, t_bool raw_data);
@@ -399,6 +400,7 @@ extern void rename_file(const char *old_filename, const char *new_filename);
 	extern void remove_soft_hyphens(char *line);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 extern void show_inverse_video_status(void);
+extern void srndm(void);
 extern void strip_name(const char *from, char *address);
 extern _Noreturn void tin_done(int ret, const char *fmt, ...);
 extern void toggle_inverse_video(void);
@@ -422,6 +424,10 @@ extern void toggle_inverse_video(void);
 	extern void shell_escape(void);
 	extern void do_shell_escape(void);
 #endif /* !NO_SHELL_ESCAPE */
+
+/* my_tmpfile.c */
+extern int my_mktmp(char *filename, size_t name_size, const char *base_dir);
+extern FILE *my_tmpfile(void);
 
 /* newsrc.c */
 extern int group_get_art_info(char *tin_spooldir, char *groupname, int grouptype, t_artnum *art_count, t_artnum *art_max, t_artnum *art_min);
@@ -512,12 +518,12 @@ extern time_t parsedate(char *p, TIMEINFO *now);
 #endif /* HAVE_PGP_GPG */
 
 /* plp_snprintf.c */
-#ifndef HAVE_SNPRINTF
+#if !defined(HAVE_SNPRINTF) || defined(SNPRINTF_BROKEN)
 	extern int plp_snprintf(char *, size_t, const char *, ...);
-#endif /* !HAVE_SNPRINTF */
-#ifndef HAVE_VSNPRINTF
+#endif /* !HAVE_SNPRINTF || SNPRINTF_BROKEN */
+#if !defined(HAVE_VSNPRINTF) || defined(SNPRINTF_BROKEN)
 	extern int plp_vsnprintf(char *, size_t, const char *, va_list);
-#endif /* !HAVE_VSNPRINTF */
+#endif /* !HAVE_VSNPRINTF || SNPRINTF_BROKEN */
 
 /* post.c */
 extern char *checknadd_headers(const char *infile, struct t_group *group);
@@ -720,7 +726,7 @@ extern int my_toupper(int);
 #endif /* !HAVE_STRSTR */
 #ifndef HAVE_STRCASECMP
 	extern int strcasecmp(const char *p, const char *q);
-#endif /* !HAVE STRCASECMP */
+#endif /* !HAVE_STRCASECMP */
 #ifndef HAVE_STRNCASECMP
 	extern int strncasecmp(const char *p, const char *q, size_t n);
 #endif /* !HAVE_STRNCASECMP */
@@ -732,7 +738,7 @@ extern int my_toupper(int);
 #endif /* !HAVE_ATOL */
 #ifndef HAVE_STRTOL
 	extern long strtol(const char *str, char **ptr, int use_base);
-#endif /* !HAVE STRTOL */
+#endif /* !HAVE_STRTOL */
 #ifndef HAVE_STRERROR
 	extern char *my_strerror(int n);
 #	define strerror(n) my_strerror(n)
@@ -776,14 +782,6 @@ extern void undo_auto_select_arts(void);
 extern void undo_selections(void);
 extern void untag_article(long art);
 
-/* tmpfile.c */
-#ifndef HAVE_TMPFILE
-	extern FILE *tmpfile(void);
-#endif /* !HAVE_TMPFILE */
-
-/* my_tmpfile.c */
-extern int my_tmpfile(char *filename, size_t name_size, const char *base_dir);
-
 /* thread.c */
 extern int find_response(int i, int n);
 extern int get_score_of_thread(int n);
@@ -803,7 +801,7 @@ extern void fixup_thread(int respnum, t_bool redraw);
 
 /* version.c */
 extern struct t_version *check_upgrade(char *line, const char *skip, const char *version);
-extern void upgrade_prompt_quit(struct t_version *upgrade, const char *file);
+extern void upgrade_prompt_quit(struct t_version *upgrade, const char *file, FILE *fp);
 
 /* wildmat.c */
 extern t_bool wildmat(const char *text, char *p, t_bool icase);

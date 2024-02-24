@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-19
+ *  Updated   : 2024-02-19
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -233,10 +233,12 @@ backup_file(
 	const char *backupname)
 {
 	FILE *fp_in, *fp_out;
+	t_bool ret = FALSE;
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
 	int fd;
 	mode_t mode = (mode_t) (S_IRUSR|S_IWUSR);
 	struct stat statbuf;
-	t_bool ret = FALSE;
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 	if ((fp_in = fopen(filename, "r")) == NULL)	/* a missing sourcefile is not a real bug */
 		return TRUE;
@@ -248,21 +250,26 @@ backup_file(
 		return ret;
 	}
 
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
 	if ((fd = fileno(fp_in)) != -1) {
 		if (!fstat(fd, &statbuf))
 			mode = statbuf.st_mode;
 	}
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 	ret = copy_fp(fp_in, fp_out);
 
-	if ((fd = fileno(fp_out)) != -1)
-#ifdef HAVE_FCHMOD
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
+	if ((fd = fileno(fp_out)) != -1) {
+#	ifdef HAVE_FCHMOD
 		fchmod(fd, mode);
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 		chmod(backupname, mode);
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
+	}
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 	fclose(fp_out);
 	fclose(fp_in);
@@ -345,7 +352,7 @@ copy_body(
 						buf2[i] = buf[i];
 						if (buf[i] != ' ')
 							status_space = TRUE;
-						if ((status_space) && !(isalpha((int)(unsigned char) buf[i]) || buf[i] == '>'))
+						if ((status_space) && !(isalpha((unsigned char) buf[i]) || buf[i] == '>'))
 							status_char = FALSE;
 					}
 					buf2[i] = '\0';
@@ -525,7 +532,7 @@ shell_escape(
 	}
 	free(tmp);
 
-	for (p = shell; *p && isspace((int) *p); p++)
+	for (p = shell; *p && isspace((unsigned char) *p); p++)
 		continue;
 
 	if (*p)
@@ -766,9 +773,11 @@ rename_file(
 	const char *new_filename)
 {
 	FILE *fp_old, *fp_new;
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
 	int fd;
 	mode_t mode = (mode_t) (S_IRUSR|S_IWUSR);
 	struct stat statbuf;
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 	if (unlink(new_filename) == -1) {
 		if (errno == EPERM) { /* TODO: != ENOENT ? */
@@ -794,21 +803,26 @@ rename_file(
 				return;
 			}
 
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
 			if ((fd = fileno(fp_old)) != -1) {
 				if (!fstat(fd, &statbuf))
 					mode = statbuf.st_mode;
 			}
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 			copy_fp(fp_old, fp_new);
 
-			if ((fd = fileno(fp_new)) != -1)
-#ifdef HAVE_FCHMOD
+#if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
+			if ((fd = fileno(fp_new)) != -1) {
+#	ifdef HAVE_FCHMOD
 				fchmod(fd, mode);
-#else
-#	ifdef HAVE_CHMOD
+#	else
+#		ifdef HAVE_CHMOD
 				chmod(new_filename, mode);
-#	endif /* HAVE_CHMOD */
-#endif /* HAVE_FCHMOD */
+#		endif /* HAVE_CHMOD */
+#	endif /* HAVE_FCHMOD */
+			}
+#endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 			fclose(fp_new);
 			fclose(fp_old);
@@ -1153,7 +1167,15 @@ create_index_lock_file(
 	if ((fp = fopen(the_lock_file, "r")) != NULL) {
 		err = (fgets(buf, (int) sizeof(buf), fp) == NULL);
 		fclose(fp);
-		error_message(2, "\n%s: Already started pid=[%d] on %s", tin_progname, err ? 0 : atoi(buf), err ? "-" : buf + 8);
+		error_message(2, "%s: Already started pid=[%d] on %s", tin_progname, err ? 0 : atoi(buf), err ? "-" : buf + 9);
+
+#ifdef DEBUG
+		if (debug & DEBUG_MISC) {
+			if (!err)
+				error_message(0, "Lockfile: %s", the_lock_file);
+		}
+#endif /* DEBUG */
+
 		free(tin_progname);
 		giveup();
 	}
@@ -2028,7 +2050,7 @@ get_initials(
 	}
 #else
 	for (i = 0; tbuf[i] && j < maxsize; i++) {
-		if (isalpha((int)(unsigned char) tbuf[i])) {
+		if (isalpha((unsigned char) tbuf[i])) {
 			if (!iflag) {
 				s[j++] = tbuf[i];
 				iflag = TRUE;
@@ -2183,8 +2205,8 @@ random_organization(
 
 	rewind(orgfp);
 
-	srand((unsigned int) time(NULL));
-	sol = rand() % nool + 1;
+	srndm();
+	sol = rndm() % nool + 1;
 	nool = 0;
 
 	while ((nool != sol) && (fgets(selorg, (int) sizeof(selorg), orgfp)))
@@ -2679,6 +2701,8 @@ process_charsets(
 	if ((local_charset && strcasecmp(network_charset, local_charset)) || !strcasecmp(network_charset, "US-ASCII"))
 		/* different charsets || network charset is US-ASCII (see below) */
 		buffer_to_ascii(*line);
+#	else
+	(void) local_charset;
 #	endif /* MIME_STRICT_CHARSET && !NO_LOCALE */
 	/* charset conversion (codepage version) */
 #endif /* CHARSET_CONVERSION */
@@ -3684,6 +3708,7 @@ utf8_valid(
 {
 	char *c;
 	unsigned char d, e, f, g;
+	unsigned bits;
 	int numc;
 	t_bool illegal;
 
@@ -3697,11 +3722,11 @@ utf8_valid(
 
 		numc = 0;
 		illegal = FALSE;
-		d = (*c & 0x7c);	/* remove bits 7,1,0 */
+		bits = (*c & 0x7c);	/* remove bits 7,1,0 */
 
 		do {
 			numc++;
-		} while ((d <<= 1) & 0x80);	/* get sequence length */
+		} while ((bits <<= 1) & 0x80);	/* get sequence length */
 
 		if (c + numc > line + strlen(line)) { /* sequence runs past end of string */
 			illegal = TRUE;
@@ -3949,12 +3974,13 @@ idna_decode(
 			strcpy(t, s);
 #			ifdef DEBUG
 		else {
-			if (debug & DEBUG_MISC)
+			if (debug & DEBUG_MISC) {
 #				ifdef HAVE_IDNA_STRERROR
 				wait_message(2, "idna_to_unicode_lzlz(%s): %s", t, idna_strerror(rs));
 #				else
 				wait_message(2, "idna_to_unicode_lzlz(%s): %d", t, rs);
 #				endif /* HAVE_IDNA_STRERROR */
+			}
 		}
 #			endif /* DEBUG */
 		FreeIfNeeded(s);
@@ -4062,11 +4088,10 @@ tin_version_info(
 #	endif /* NNTPS_ABLE */
 #else
 #	ifdef NNTP_ABLE
-			"+NNTP_ABLE "
 #		ifdef NNTPS_ABLE
-			"+NNTPS_ABLE "
+			"+NNTP(S)_ABLE "
 #		else
-			"-NNTPS_ABLE "
+			"+NNTP_ABLE -NNTPS_ABLE "
 #		endif /* NNTPS_ABLE */
 #	else
 			"-NNTP_ABLE "
@@ -4354,7 +4379,7 @@ show_connection_page(
 {
 	FILE *fp;
 
-	if (!(fp = tmpfile()))
+	if (!(fp = my_tmpfile()))
 		return;
 
 	make_connection_page(fp);
@@ -4439,4 +4464,43 @@ validate_charset(
 		c++;
 	}
 	return charset;
+}
+
+
+/* pseudo random number; extend with arc4random() or the like if needed */
+int
+rndm(
+	void)
+{
+#ifdef HAVE_LRAND48
+	return (int) (lrand48() & INT_MAX);
+#else
+#	ifdef HAVE_RANDOM
+	return (int) (random() & INT_MAX);
+#	else
+	return rand();
+#	endif /* HAVE_RANDOM */
+#endif /* HAVE_LRAND48 */
+}
+
+
+/* seed rndm() */
+void
+srndm(
+	void)
+{
+ 	time_t t = time(NULL);
+
+ 	if (t >= 1041379200) /* 2003-01-01 00:00:00 GMT */
+ 		t -= 1041379200;
+
+#ifdef HAVE_LRAND48
+	srand48(t);
+#else
+#	ifdef HAVE_RANDOM
+	srandom(t);
+#	else
+	srand((unsigned int) t);
+#	endif /* HAVE_RANDOM */
+#endif /* HAVE_LRAND48 */
 }

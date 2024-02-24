@@ -3,7 +3,7 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2023-11-27
+ *  Updated   : 2024-01-17
  *  Notes     :
  *
  * Copyright (c) 2003-2024 Urs Janssen <urs@tin.org>
@@ -58,8 +58,11 @@
  *         ->file_version     version number in file as int
  *              (rc_majorv * 10000 + rc_minorv * 100 + rc_subv) or -1
  *
- * Don't make the arguments to sscanf() consts, as some old systems require
- * them to writable (but do not change them)
+ * usage:
+ * if (upgrade == NULL && match_string(line, skip, NULL, 0)) {
+ *     upgrade = check_upgrade(line, skip, version);
+ *     upgrade_prompt_quit(upgrade, file);
+ * }
  */
 struct t_version *
 check_upgrade(
@@ -67,40 +70,50 @@ check_upgrade(
 	const char *skip,
 	const char *version)
 {
-	char *format;
-	char *lskip = my_strdup(skip);
-	char *lversion = my_strdup(version);
-	char fmt[10];
+	const char *p;
 	int rc_majorv, rc_minorv, rc_subv; /* version numbers in the file */
 	int current_version, c_majorv, c_minorv, c_subv;	/* version numbers we require */
-	int len;
 	struct t_version *fversion = my_malloc(sizeof(struct t_version));
 
 	fversion->state = RC_ERROR;
 	fversion->file_version = -1;
 
-	rc_majorv = rc_minorv = rc_subv = c_majorv = c_minorv = c_subv = -1;
-	strcpy(fmt, "%d.%d.%d"); /* we are expecting dotted triples */
-	len = snprintf(NULL, 0, "%s%s", lskip, fmt);
-	format = my_malloc(++len);
-	snprintf(format, len, "%s%s", lskip, fmt);
-	free(lskip);
-
-	if (sscanf(line, format, &rc_majorv, &rc_minorv, &rc_subv) != 3) {
-		free(format);
-		free(lversion);
+	/* we pre-checked that the beginning of line matches skip via
+	   match_string() before calling check_upgrade(), no need to
+	   strncmp() again.
+	 */
+	p = line + strlen(skip);
+	if (!isdigit(*p))
 		return fversion;
-	}
-	free(format);
+	rc_majorv = atoi(p);
+	while (isdigit(*p))
+		p++;
+	if (*p != '.' || !isdigit(*++p))
+		return fversion;
+	rc_minorv = atoi(p);
+	while (isdigit(*p))
+		p++;
+	if (*p != '.' || !isdigit(*++p))
+		return fversion;
+	rc_subv = atoi(p);
 
 	fversion->file_version = rc_majorv * 10000 + rc_minorv * 100 + rc_subv;
 
-	/* we can't parse our own version number - should never happen */
-	if (sscanf(lversion, fmt, &c_majorv, &c_minorv, &c_subv) != 3) {
-		free(lversion);
+	p = version;
+	c_majorv = atoi(p);
+	while (isdigit(*p))
+		p++;
+	if (*p != '.')
 		return fversion;
-	}
-	free(lversion);
+
+	c_minorv = atoi(++p);
+	while (isdigit(*p))
+		p++;
+	if (*p != '.')
+		return fversion;
+
+	c_subv = atoi(++p);
+	/* we don't care about trailing text */
 
 	current_version = c_majorv * 10000 + c_minorv * 100 + c_subv;
 
@@ -120,7 +133,8 @@ check_upgrade(
 void
 upgrade_prompt_quit(
 	struct t_version *upgrade,
-	const char *file)
+	const char *file,
+	FILE *fp)
 {
 	switch (upgrade->state) {
 		case RC_UPGRADE:
@@ -132,18 +146,14 @@ upgrade_prompt_quit(
 			break;
 
 		case RC_ERROR: /* can't parse internal version string, should not happen */
-			error_message(2, txt_warn_unrecognized_version);
-			free(upgrade);
-			free(tin_progname);
-			giveup();
-			/* NOTREACHED */
+			error_message(2, txt_warn_unrecognized_version, file);
 			break;
 
 		default:	/* should no happen */
 			return;
 	}
 
-	error_message(2, _(txt_return_key));
+	error_message(2, _(txt_return_key)); /* TODO: mention 'q'/'Q' */
 
 	/*
 	 * TODO: document, use something unbuffered here
@@ -154,8 +164,9 @@ upgrade_prompt_quit(
 		case 'Q':
 		case ESC:
 			free(upgrade);
-			free(tin_progname);
-			giveup();
+			if (fp)
+				fclose(fp);
+			tin_done(EXIT_FAILURE, NULL); /* TODO: leaks cmdargs from $TINRC */
 			/* NOTREACHED */
 			break;
 

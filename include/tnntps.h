@@ -3,7 +3,7 @@
  *  Module    : tnntps.h
  *  Author    : Enrik Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2022-10-19
+ *  Updated   : 2022-12-13
  *  Notes     : TLS #include files, #defines & struct's
  *
  * Copyright (c) 2022-2024 Enrik Berkhan <Enrik.Berkhan@inka.de>
@@ -44,6 +44,21 @@
 #	ifdef HAVE_LIB_LIBTLS
 
 #		include <tls.h>
+#		ifdef HAVE_OPENSSL_SSL_H
+#			include <openssl/ssl.h>
+#		endif /* HAVE_OPENSSL_SSL_H */
+#		ifdef HAVE_OPENSSL_ASN1_H
+#			include <openssl/asn1.h>
+#		endif /* HAVE_OPENSSL_ASN1_H */
+#		ifdef HAVE_OPENSSL_BIO_H
+#			include <openssl/bio.h>
+#		endif /* HAVE_OPENSSL_BIO_H */
+#		ifdef HAVE_OPENSSL_PEM_H
+#			include <openssl/pem.h>
+#		endif /* HAVE_OPENSSL_PEM_H */
+#		ifdef HAVE_OPENSSL_X509_H
+#			include <openssl/x509.h>
+#		endif /* HAVE_OPENSSL_X509_H */
 
 #		if TLS_API < 20200120
 #			error "Please use LibreSSL TLS_API >= 20200120"

@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-09
+ *  Updated   : 2024-01-16
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -733,7 +733,7 @@ make_help_page(
 					snprintf(buf, LEN, "%s\t  %s", printascii(key, (wint_t) keys.list[i].key), _(helppage->helptext));
 #else
 					snprintf(buf, LEN, "%s\t  %s", printascii(key, keys.list[i].key), _(helppage->helptext));
-#endif /* MULTIBYTE_ABLE &&! NO_LOCALE */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 					expand_ctrl_chars(&buf, &length, 8);
 					if (strcmp(last, buf)) {
 						fprintf(fp, "%s\n", buf);
@@ -757,7 +757,7 @@ show_help_page(
 {
 	FILE *fp;
 
-	if (!(fp = tmpfile()))
+	if (!(fp = my_tmpfile()))
 		return;
 
 	switch (level) {

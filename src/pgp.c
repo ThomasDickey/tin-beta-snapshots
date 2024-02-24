@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2023-11-27
+ *  Updated   : 2023-12-05
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2024 Steven J. Madsen <steve@erinet.com>
@@ -221,11 +221,19 @@ split_file(
 		goto err_hdr;
 
 	if (fgets(buf, LEN, art) != NULL) {			/* Copy the hdr up to and including the \n */
+		t_bool success = TRUE;
+
 		while (strcmp(buf, "\n")) {
 			fputs(buf, header);
-			fgets(buf, LEN, art);
+			if (fgets(buf, LEN, art) == NULL) {
+				success = FALSE;
+				break;
+			}
 		}
-		fputs(buf, header);
+		if (success)
+			fputs(buf, header);
+		else
+			fputs("\n", header);
 		copy_fp(art, plaintext);
 	}
 
@@ -468,7 +476,8 @@ pgp_check_article(
 			if (!pgp_key && !strcmp(buf, PGP_KEY_TAG))
 				pgp_key = TRUE;
 			fputs(buf, art);
-			fgets(buf, LEN, artinfo->raw);
+			if (fgets(buf, LEN, artinfo->raw) == NULL)
+				break;
 		}
 	}
 	fclose(art);

@@ -3,7 +3,7 @@
  *  Module    : lock.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1998-07-27
- *  Updated   : 2013-11-17
+ *  Updated   : 2014-02-01
  *  Notes     :
  *
  * Copyright (c) 1998-2024 Urs Janssen <urs@tin.org>
@@ -230,14 +230,14 @@ dot_lock(
 	dir_name(filename, base_dir);
 	if (!strcmp(filename, base_dir)) /* no filename portion */
 		return rval;
-	if ((dot_fd = my_tmpfile(tempfile, sizeof(tempfile) - 1, base_dir)) == -1)
+	if ((dot_fd = my_mktmp(tempfile, sizeof(tempfile) - 1, base_dir)) == -1)
 		return rval;
 	snprintf(lockfile, sizeof(lockfile), "%s%s", filename, LOCK_SUFFIX);
 
 #ifdef HAVE_LINK
 	if (stat(lockfile, &statbuf)) {	/* lockfile doesn't exist */
 		if (!link(tempfile, lockfile)) {			/* link successful */
-			if (!stat(tempfile, &statbuf)) {	/* tempfile exist */
+			if (!fstat(dot_fd, &statbuf)) {	/* tempfile exist */
 				if (statbuf.st_nlink == 2)			/* link count ok */
 					rval = TRUE;
 			}

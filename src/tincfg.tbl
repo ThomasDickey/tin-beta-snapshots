@@ -74,7 +74,7 @@
 	thread_score			txt_thread_score_type
 	scroll_lines			OPT_NUM
 	show_signatures			OPT_ON_OFF
-	show_art_score				OPT_ON_OFF
+	show_art_score			OPT_ON_OFF
 	news_headers_to_display		OPT_STRING
 	news_headers_to_not_display	OPT_STRING
 	alternative_handling		OPT_ON_OFF

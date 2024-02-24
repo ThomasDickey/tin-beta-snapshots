@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tin-man 2.4.2\n"
-"POT-Creation-Date: 2023-11-30 12:43+0100\n"
-"PO-Revision-Date: 2023-10-17 23:25+0200\n"
+"POT-Creation-Date: 2024-01-22 13:04+0100\n"
+"PO-Revision-Date: 2024-01-14 18:28+0100\n"
 "Last-Translator: Francisco Javier Serrador <fserrador@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -23,7 +23,7 @@ msgstr ""
 #.  Module    : tin.1
 #.  Author    : I. Lea, U. Janssen
 #.  Created   : 1991-08-23
-#.  Updated   : 2023-11-30
+#.  Updated   : 2024-01-10
 #.  Notes     : use American English; still needs some work, e.g.:
 #.              - document authorization (.newsauth)
 #.              - document random organization feature
@@ -38,7 +38,7 @@ msgstr ""
 #.  Module    : tin.1
 #.  Author    : I. Lea, U. Janssen
 #.  Created   : 1991-08-23
-#.  Updated   : 2023-11-30
+#.  Updated   : 2024-01-10
 #.  Notes     : use American English; still needs some work, e.g.:
 #.              - document authorization (.newsauth)
 #.              - document random organization feature
@@ -57,14 +57,14 @@ msgstr "tin"
 #. type: TH
 #: doc/tin.1:13 doc/tin.5:9
 #, no-wrap
-msgid "December 24th, 2022"
-msgstr "24 diciembre 2022"
+msgid "December 24th, 2023"
+msgstr "24 diciembre 2023"
 
 #. type: TH
 #: doc/tin.1:13 doc/tin.5:9
 #, no-wrap
-msgid "2.6.3"
-msgstr "2.6.3"
+msgid "2.6.4"
+msgstr "2.6.4"
 
 #. type: TH
 #: doc/tin.1:13 doc/tin.5:9
@@ -844,12 +844,17 @@ msgstr ""
 #: doc/tin.1:354
 #, no-wrap
 msgid ""
-"-E<gt>M    1     2  comp.security.announce  Announcements from the CERT abou\n"
+"\\f(CR-E<gt>M    1     2  comp.security.announce  Announcements from the CERT abou\n"
 "  M    2     1  news.admin.announce     Announcements for news adminstra\n"
 "       3    22  news.software.misc      News-related software other than\n"
 "       4  1475  news.software.nntp      The Network News Transfer Protoc\n"
-"  X    5   124  news.software.readers   Discussion of software used to r\n"
+"  X    5   124  news.software.readers   Discussion of software used to r\\fR\n"
 msgstr ""
+"\\f(CR-E<gt>M    1     2  comp.security.announce  Announcements from the CERT abou\n"
+"  M    2     1  news.admin.announce     Announcements for news adminstra\n"
+"       3    22  news.software.misc      News-related software other than\n"
+"       4  1475  news.software.nntp      The Network News Transfer Protoc\n"
+"  X    5   124  news.software.readers   Discussion of software used to r\\fR\n"
 
 #. type: Plain text
 #: doc/tin.1:357
@@ -991,18 +996,22 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.1:425
 #, no-wrap
-msgid "                de.admin.net-abuse.announce (11B 13+ 1* 1o 0K) M\n"
-msgstr ""
+msgid "\\f(CR                de.admin.net-abuse.announce (11B 13+ 1* 1o 0K) M\\fR\n"
+msgstr "\\f(CR                de.admin.net-abuse.announce (11B 13+ 1* 1o 0K) M\\fR\n"
 
 #. type: Plain text
 #: doc/tin.1:430
 #, no-wrap
 msgid ""
-"-E<gt>   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg E<lt>l\n"
+"\\f(CR-E<gt>   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg E<lt>l\n"
 "     2   +       69 EMP/ECP gecancelt. xynx. BI= 10  Henning Weede E<lt>hwee\n"
 "     3   o       93 EMP gecancelt. SouthBeach/Palms  Henning Weede E<lt>hwee\n"
-"     4   *      368 E<lt>1997-11-12E<gt> Fremdcancel-FAQ     Thomas Roessler E<lt>ro\n"
+"     4   *      368 E<lt>1997-11-12E<gt> Fremdcancel-FAQ     Thomas Roessler E<lt>ro\\fR\n"
 msgstr ""
+"\\f(CR-E<gt>   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg E<lt>l\n"
+"     2   +       69 EMP/ECP gecancelt. xynx. BI= 10  Henning Weede E<lt>hwee\n"
+"     3   o       93 EMP gecancelt. SouthBeach/Palms  Henning Weede E<lt>hwee\n"
+"     4   *      368 E<lt>1997-11-12E<gt> Fremdcancel-FAQ     Thomas Roessler E<lt>ro\\fR\n"
 
 #.  FIXME - add description of fields
 #. type: Plain text
@@ -1016,11 +1025,15 @@ msgstr ""
 #: doc/tin.1:442
 #, no-wrap
 msgid ""
-"-E<gt>   1      [   7]  What is this funny tree in the thr  Robert F. Simmig\n"
+"\\f(CR-E<gt>   1      [   7]  What is this funny tree in the thr  Robert F. Simmig\n"
 "     2      [  12]  +-E<gt>                                 Sephan Wagner E<lt>s\n"
 "     3      [ 230]  | `-E<gt>Tin thread-level (was: What is Bob Johnson E<lt>bob\n"
-"     4      [  22]  `-E<gt>tin threading menu               Brian Richardson\n"
+"     4      [  22]  `-E<gt>tin threading menu               Brian Richardson\\fR\n"
 msgstr ""
+"\\f(CR-E<gt>   1      [   7]  What is this funny tree in the thr  Robert F. Simmig\n"
+"     2      [  12]  +-E<gt>                                 Sephan Wagner E<lt>s\n"
+"     3      [ 230]  | `-E<gt>Tin thread-level (was: What is Bob Johnson E<lt>bob\n"
+"     4      [  22]  `-E<gt>tin threading menu               Brian Richardson\\fR\n"
 
 #.  FIXME - add description of fields
 #. type: Plain text
@@ -1032,16 +1045,19 @@ msgstr ""
 #: doc/tin.1:453
 #, no-wrap
 msgid ""
-"Sun, 28 Dec 1997 21:21:01   de.admin.news.groups      Thread   20 of 86\n"
+"\\f(CRSun, 28 Dec 1997 21:21:01   de.admin.news.groups      Thread   20 of 86\n"
 "Lines 50   Re: EINSPRUCH zu RESULT:de.comm.mobil.ALL   Article  47 of 59\n"
-"Urs Janssen E<lt>urs@akk.orgE<gt>        at Arbeitskreis Kultur und Kommunikati\n"
+"Urs Janssen E<lt>urs@akk.orgE<gt>        at Arbeitskreis Kultur und Kommunikati\\fR\n"
 msgstr ""
+"\\f(CRSun, 28 Dec 1997 21:21:01   de.admin.news.groups      Thread   20 of 86\n"
+"Lines 50   Re: EINSPRUCH zu RESULT:de.comm.mobil.ALL   Article  47 of 59\n"
+"Urs Janssen E<lt>urs@akk.orgE<gt>        at Arbeitskreis Kultur und Kommunikati\\fR\n"
 
 #. type: Plain text
 #: doc/tin.1:455
 #, no-wrap
-msgid "article-body\n"
-msgstr ""
+msgid "\\f(CRarticle-body\\fR\n"
+msgstr "\\f(CRarticle-body\\fR\n"
 
 #. type: Plain text
 #: doc/tin.1:461
@@ -9019,8 +9035,8 @@ msgstr ""
 #. type: IP
 #: doc/tin.1:4095
 #, no-wrap
-msgid "Patrick Powell E<lt>papowell@astart.comE<gt>"
-msgstr "Patrick Powell E<lt>papowell@astart.comE<gt>"
+msgid "Mark Martinec E<lt>mark.martinec@ijs.siE<gt>"
+msgstr "Mark Martinec E<lt>mark.martinec@ijs.siE<gt>"
 
 #. type: Plain text
 #: doc/tin.1:4103
@@ -10692,7 +10708,7 @@ msgstr ""
 #: doc/tin.5:891
 #, no-wrap
 msgid ""
-"comment=downscore postings in nsr from google base on\n"
+"comment=downscore postings in nsr from google based on\n"
 "comment=message-id or path, if both hit they end up with\n"
 "comment=a score of -66 which is enough to mark them killed\n"
 "group=news.software.readers\n"
@@ -13188,7 +13204,3 @@ msgstr ""
 "\\%2045>, B<RFC\\%2046>, B<RFC\\%2047>, B<RFC\\%2048>, B<RFC\\%2231>, B<RFC\\"
 "%2980>, B<RFC\\%3977>, B<RFC\\%4155>, B<RFC\\%4643>, B<RFC\\%5322>, B<RFC\\"
 "%5536>, B<RFC\\%5537>, B<RFC\\%6048>, B<RFC\\%8143>"
-
-#, no-wrap
-#~ msgid "B<show_info>"
-#~ msgstr "B<show_info>"

@@ -185,4 +185,11 @@ heapsort(
 	free(k);
 	return (0);
 }
+#else
+static void no_own_heapsort(void);	/* proto-type */
+static void
+no_own_heapsort(	/* ANSI C requires non-empty source file */
+	void)
+{
+}
 #endif /* USE_HEAPSORT && !HAVE_HEAPSORT */

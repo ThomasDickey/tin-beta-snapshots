@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2023-11-28
+ *  Updated   : 2024-01-16
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -301,7 +301,7 @@ get_token(
 	char *dest = my_strdup(source);
 	char *ptr = dest;
 
-	while (isascii((int) *ptr) && isprint((int) *ptr) && *ptr != ' ' && !strchr(ATTRIBUTE_DELIMS, *ptr))
+	while (isascii((unsigned char) *ptr) && isprint((unsigned char) *ptr) && *ptr != ' ' && !strchr(ATTRIBUTE_DELIMS, *ptr))
 		ptr++;
 	*ptr = '\0';
 
@@ -1515,7 +1515,7 @@ parse_rfc2045_article(
 {
 	int ret = ART_ABORT;
 
-	if (read_news_via_nntp && !(artinfo->raw = tmpfile()))
+	if (read_news_via_nntp && !(artinfo->raw = my_tmpfile()))
 		goto error;
 
 	if (!read_news_via_nntp)

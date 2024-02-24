@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-22
+ *  Updated   : 2024-02-19
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -102,7 +102,9 @@
 #	define SMALL_MEMORY_MACHINE
 #endif /* __amiga__ || __amiga */
 
-#include <signal.h>
+#ifdef HAVE_SIGNAL_H
+#	include <signal.h>
+#endif /* HAVE_SIGNAL_H */
 
 enum context { cMain, cArt, cAttachment, cAttrib, cConfig, cFilter, cGroup, cInfopager, cPage, cPOSTED, cPost, cPostCancel, cPostFup, cReconnect, cScope, cSelect, cThread, cURL };
 enum icontext { cNone, cGetline, cPromptCONT, cPromptSLK, cPromptYN };
@@ -184,6 +186,10 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	include <getopt.h>
 #endif /* HAVE_GETOPT_H */
 
+#ifdef HAVE_LIMITS_H
+#	include <limits.h>
+#endif /* HAVE_GETOPT_H */
+
 #if defined(ENABLE_LONG_ARTICLE_NUMBERS) && !defined(SMALL_MEMORY_MACHINE)
 /*
  * defines and typedefs for 64 bit article numbers
@@ -205,7 +211,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	endif /* HAVE_INT_LEAST64_T || HAVE_LONG_LONG || quad_t */
 #	ifdef HAVE_STDINT_H
 #		include <stdint.h>
-#	endif	/* HAVE_STDINT_H */
+#	endif /* HAVE_STDINT_H */
 #endif /* ENABLE_LONG_ARTICLE_NUMBERS && !SMALL_MEMORY_MACHINE */
 #ifdef USE_LONG_ARTICLE_NUMBERS
 #	if defined(HAVE_INT_LEAST64_T) && defined(HAVE_INT64_C)
@@ -408,6 +414,10 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	define _PATH_TMP	"/tmp/"
 #endif /* _PATH_TMP */
 
+#if !defined(INT_MAX)
+#	define INT_MAX 2147483647 /* 2^31-1 */
+#endif /* INT_MAX */
+
 /*
  * If OS misses the isascii() function
  */
@@ -592,12 +602,8 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #endif /* PATH_SUM */
 
 #ifdef HAVE_LONG_FILE_NAMES
-#	define PATH_PART	"part"
-#	define PATH_PATCH	"patch"
 #	define INDEX_LOCK	"tin.%.256s.LCK"
 #else
-#	define PATH_PART	""
-#	define PATH_PATCH	"p"
 #	define INDEX_LOCK	"%.10s.LCK"
 #endif /* HAVE_LONG_FILE_NAMES */
 
@@ -851,13 +857,20 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #endif /* !forever */
 
 /*
- * safe strcpy into fixed-legth buffer
+ * safe ('0'-terminates but may truncate) strcpy into fixed-legth buffer
  */
-#if 0
-#	define STRCPY(dst, src)	(strncpy(dst, src, sizeof(dst) - 1), dst[sizeof(dst) - 1] = '\0')
-#else
-#	define STRCPY(dst, src)	(*(dst) = '\0', strncat(dst, src, sizeof(dst) - 1))
-#endif /* 0 */
+#define STRCPY(dst, src) ((void) snprintf(dst, sizeof(dst), "%s", src))
+/*
+	#ifdef HAVE_STRLCPY
+	#	define STRCPY(dst, src) (strlcpy(dst, src, sizeof(dst)))
+	#else
+	#	if 0
+	#		define STRCPY(dst, src)	(strncpy(dst, src, sizeof(dst) - 1)[sizeof(dst) - 1] = '\0')
+	#	else
+	#		define STRCPY(dst, src)	(*(dst) = '\0', strncat(dst, src, sizeof(dst) - 1))
+	#	endif
+	#endif
+*/
 
 #define STRCMPEQ(s1, s2)	(strcmp((s1), (s2)) == 0)
 #define STRNCMPEQ(s1, s2, n)	(strncmp((s1), (s2), n) == 0)
@@ -2368,7 +2381,7 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
  * sign-extension, and a corresponding test-macro.
  */
 #define EIGHT_BIT(ptr)	(unsigned char *)ptr
-#define is_EIGHT_BIT(p)	((*EIGHT_BIT(p) < 32 && !isspace((int)*p)) || *EIGHT_BIT(p) > 127)
+#define is_EIGHT_BIT(p)	((*EIGHT_BIT(p) < 32 && !isspace((unsigned char) *p)) || *EIGHT_BIT(p) > 127)
 
 /*
  * function prototypes & extern definitions
@@ -2566,14 +2579,6 @@ extern int fclose(FILE *);
 #	endif /* va_copy || HAVE_VA_COPY */
 #endif /* HAVE___VA_COPY */
 
-/* snprintf(), vsnprintf() */
-#ifndef HAVE_SNPRINTF
-#	define snprintf	plp_snprintf
-#endif /* HAVE_SNPRINTF */
-#ifndef HAVE_VSNPRINTF
-#	define vsnprintf	plp_vsnprintf
-#endif /* HAVE_VSNPRINTF */
-
 #ifdef HAVE_MEMMOVE
 #	define my_memmove memmove
 #else
@@ -2594,28 +2599,15 @@ extern int fclose(FILE *);
 #	define UNUSED(x) x
 #endif /* __GNUC__ && !__cplusplus && !__APPLE_CC__ && !__NeXT__ */
 
-/* #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L */
 #ifdef STDC_NORETURN
 #	ifdef HAVE_STDNORETURN_H
 #		include <stdnoreturn.h>
 #	endif /* HAVE_STDNORETURN_H */
 #else
-#	undef _Noreturn
-	/*
-	 * gcc says "The attribute noreturn is not implemented in GCC
-	 * versions earlier than 2.5" but gcc 2.7.2.3 on m68k-sony-newsos
-	 * or mips-dec-osf1 still doesn't know __attribute__((noreturn)).
-	 * __GNUC__ > 2 should be fine
-	 */
-#	if defined(__GNUC__) && !defined(__cplusplus) && !defined(__APPLE_CC__) && !defined(__NeXT__)
-#		if __GNUC__ > 2
-#			define _Noreturn __attribute__((noreturn))
-#		else
-#			define _Noreturn /**/
-#		endif /* __GNUC__ > 2 */
-#	else
-#		define _Noreturn /**/
-#	endif /* __GNUC__ && !__cplusplus && !__APPLE_CC__ && !__NeXT__ */
+#	if defined(_Noreturn)
+#		undef _Noreturn
+#	endif /* _Noreturn */
+#	define _Noreturn /**/
 #endif /* STDC_NORETURN */
 
 #ifndef __CPROTO__

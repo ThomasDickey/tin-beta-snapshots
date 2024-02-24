@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2023-11-24
+ *  Updated   : 2024-02-09
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -411,7 +411,6 @@ atol(
 #endif /* !HAVE_ATOL */
 
 #ifndef HAVE_STRTOL
-/* fix me - put me in tin.h */
 #	define DIGIT(x) (isdigit((unsigned char) x) ? ((x) - '0') : (10 + my_tolower((unsigned char) x) - 'a'))
 #	define MBASE 36
 long
@@ -423,15 +422,20 @@ strtol(
 	long val = 0L;
 	int xx = 0, sign = 1;
 
-	if (use_base < 0 || use_base > MBASE)
+	if (use_base < 0 || use_base == 1 || use_base > MBASE) {
+		errno = EINVAL;
 		goto OUT;
+	}
+
 	while (isspace((unsigned char) *str))
 		++str;
+
 	if (*str == '-') {
 		++str;
 		sign = -1;
 	} else if (*str == '+')
 		++str;
+
 	if (use_base == 0) {
 		if (*str == '0') {
 			++str;
@@ -454,6 +458,7 @@ strtol(
 		val = use_base * val - xx;
 		++str;
 	}
+
 OUT:
 	if (ptr != NULL)
 		*ptr = str;
@@ -465,7 +470,6 @@ OUT:
 #endif /* !HAVE_STRTOL */
 
 #if !defined(HAVE_STRCASECMP) || !defined(HAVE_STRNCASECMP)
-	/* fix me - put me in tin.h */
 #	define FOLD_TO_UPPER(a)	(my_toupper((unsigned char) (a)))
 #endif /* !HAVE_STRCASECMP || !HAVE_STRNCASECMP */
 /*
@@ -552,12 +556,12 @@ str_trim(
 
 	/* remove training spaces */
 	ep = string + s - 1;
-	while (ep >= string && isspace((int) *ep))
+	while (ep >= string && isspace((unsigned char) *ep))
 		ep--;
 	*(ep + 1) = '\0';
 
 	/* skip leading space */
-	for (rp = wp = string; isspace((int) *rp); rp++)
+	for (rp = wp = string; isspace((unsigned char) *rp); rp++)
 		;
 
 	/* copy if required to keep address */
@@ -1130,7 +1134,7 @@ wstrunc(
 			 * we gain two additional screen positions
 			 */
 			tail = my_calloc(2, sizeof(wchar_t));
-			tail[0] = 8230; /* U+2026 */
+			tail[0] = 0x2026;
 		} else
 			tail = char2wchar_t(TRUNC_TAIL);
 
@@ -1246,7 +1250,7 @@ normalize(
 		UChar *ustr, *norm;
 		UErrorCode status = U_ZERO_ERROR;
 #		ifdef HAVE_UNICODE_UNORM2_H
-		static const char *uni_name[] = {"nfc", "nfkc", "nfkc_cf"}; /* */
+		static const char *uni_name[] = { "nfc", "nfkc", "nfkc_cf" };
 		const char *uni_namep;
 		UNormalization2Mode mode;
 #		else
@@ -1768,6 +1772,15 @@ parse_format_string(
 		flags = NO_FLAGS;
 		fmt->len_linenumber = 4;
 		switch (signal_context) {
+			case cGroup:
+				error_message(2, _(txt_error_format_string), DEFAULT_GROUP_FORMAT);
+				STRCPY(fmt->str, DEFAULT_GROUP_FORMAT);
+				flags = (LINE_NUMBER | ART_MARKS | RESP_COUNT | LINE_CNT | SUBJECT | FROM);
+				cnt = tinrc.draw_arrow ? 23 : 21;
+				fmt->len_linecnt = 4;
+				fmt->len_respcnt = 3;
+				break;
+
 			case cSelect:
 				error_message(2, _(txt_error_format_string), DEFAULT_SELECT_FORMAT);
 				STRCPY(fmt->str, DEFAULT_SELECT_FORMAT);
@@ -1779,15 +1792,6 @@ parse_format_string(
 				fmt->len_grpname_dsc = 32;
 				fmt->len_grpname_max = (size_t) cCOLS - cnt - 1;
 				fmt->len_ucnt = 5;
-				break;
-
-			case cGroup:
-				error_message(2, _(txt_error_format_string), DEFAULT_GROUP_FORMAT);
-				STRCPY(fmt->str, DEFAULT_GROUP_FORMAT);
-				flags = (LINE_NUMBER | ART_MARKS | RESP_COUNT | LINE_CNT | SUBJECT | FROM);
-				cnt = tinrc.draw_arrow ? 23 : 21;
-				fmt->len_linecnt = 4;
-				fmt->len_respcnt = 3;
 				break;
 
 			case cThread:
@@ -1815,13 +1819,13 @@ parse_format_string(
 		if (!show_description && !(flags & GRP_NAME))
 			fmt->len_grpname_max = 0;
 
-		if (flags & DATE && fmt->len_date > ((size_t) cCOLS - cnt - 1))
+		if ((flags & DATE) && fmt->len_date > ((size_t) cCOLS - cnt - 1))
 			fmt->len_date = ((size_t) cCOLS - cnt - 1);
 
-		if (flags & DATE && (!fmt->len_date_max || fmt->len_date_max > ((size_t) cCOLS - cnt - 1)))
+		if ((flags & DATE) && (!fmt->len_date_max || fmt->len_date_max > ((size_t) cCOLS - cnt - 1)))
 			fmt->len_date_max = fmt->len_date;
 
-		if (flags & FROM && (!fmt->len_from || fmt->len_from > ((size_t) cCOLS - fmt->len_date_max - cnt - 1))) {
+		if ((flags & FROM) && (!fmt->len_from || fmt->len_from > ((size_t) cCOLS - fmt->len_date_max - cnt - 1))) {
 			if (flags & (SUBJECT | THREAD_TREE)) {
 				if (fmt->len_subj)
 					fmt->len_from = (size_t) cCOLS - fmt->len_date_max - fmt->len_subj - cnt - 1;
@@ -1831,7 +1835,7 @@ parse_format_string(
 				fmt->len_from = ((size_t) cCOLS - fmt->len_date_max - cnt - 1);
 		}
 
-		if (flags & (SUBJECT | THREAD_TREE) && (!fmt->len_subj || fmt->len_subj > ((size_t) cCOLS - fmt->len_from - fmt->len_date_max - cnt - 1)))
+		if ((flags & (SUBJECT | THREAD_TREE)) && (!fmt->len_subj || fmt->len_subj > ((size_t) cCOLS - fmt->len_from - fmt->len_date_max - cnt - 1)))
 			fmt->len_subj = ((size_t) cCOLS - fmt->len_from - fmt->len_date_max - cnt - 1);
 	}
 }

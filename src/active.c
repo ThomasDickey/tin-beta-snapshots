@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2023-11-27
+ *  Updated   : 2023-12-22
  *  Notes     :
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -1425,11 +1425,7 @@ append_group_line(
 				clearerr(fp);
 				fclose(fp);
 			}
-			err = rename(file_tmp, active_file);
-#ifdef DEBUG
-			if ((debug & DEBUG_MISC) && err) /* TODO: is this the right debug-level? */
-				perror_message(_(txt_rename_error), file_tmp, active_file);
-#endif /* DEBUG */
+			rename_file(file_tmp, active_file);
 		}
 		free(group_name);
 	}

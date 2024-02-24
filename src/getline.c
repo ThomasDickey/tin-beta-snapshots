@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2021-02-23
+ *  Updated   : 2024-01-10
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -474,15 +474,15 @@ gl_kill_back_word(
 		;
 #else
 	/* delete spaces */
-	for (i = gl_pos - 1; i >= 0 && isspace((int) gl_buf[i]); --i)
+	for (i = gl_pos - 1; i >= 0 && isspace((unsigned char) gl_buf[i]); --i)
 		;
 
 	/* delete not alnum characters but graph characters */
-	for (; i >= 0 && isgraph((int) gl_buf[i]) && !isalnum((int) gl_buf[i]); --i)
+	for (; i >= 0 && isgraph((unsigned char) gl_buf[i]) && !isalnum((unsigned char) gl_buf[i]); --i)
 		;
 
 	/* delete all graph characters except '/' */
-	for (; i >= 0 && gl_buf[i] != '/' && isgraph((int) gl_buf[i]); --i)
+	for (; i >= 0 && gl_buf[i] != '/' && isgraph((unsigned char) gl_buf[i]); --i)
 		;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 

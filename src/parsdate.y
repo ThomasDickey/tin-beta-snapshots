@@ -4,7 +4,7 @@
  *  Module    : parsedate.y
  *  Author    : S. Bellovin, R. $alz, J. Berets, P. Eggert
  *  Created   : 1990-08-01
- *  Updated   : 2022-08-22
+ *  Updated   : 2024-01-10
  *  Notes     : This grammar has 6 shift/reduce conflicts.
  *              Originally written by Steven M. Bellovin <smb@research.att.com>
  *              while at the University of North Carolina at Chapel Hill.
@@ -32,7 +32,7 @@
 */
 #define ENDOF(array)	(&array[ARRAY_SIZE(array)])
 
-#define CTYPE(isXXXXX, c)	(((unsigned char)(c) < 128) && isXXXXX(((int)c)))
+#define CTYPE(isXXXXX, c)	(((unsigned char)(c) < 128) && isXXXXX((c)))
 
 typedef char	*STRING;
 
@@ -141,7 +141,7 @@ item	: time {
 	    if (yyHaveTime == -1) {
 		YYERROR;
 	    }
-#endif	/* defined(lint) */
+#endif /* lint */
 	}
 	| time zone {
 	    yyHaveTime++;
@@ -479,7 +479,7 @@ static const TABLE	TimezoneTable[] = {
     { "nt",	tZONE,     HOUR(11) },	/* -- expired 1967 */
     { "ahst",	tZONE,     HOUR(10) },	/* -- expired 1983 */
     { "hdt",	tDAYZONE,  HOUR(10) },	/* -- expired 1986 */
-#endif	/* 0 */
+#endif /* 0 */
 };
 
 static time_t
@@ -618,6 +618,11 @@ LookupWord(
     const TABLE *tp;
     int	c;
 
+    if (!*buff) { /* assume GMT timezone */
+        yylval.Number = 0;
+        return tZONE;
+    }
+
     p = buff;
     c = p[0];
 
@@ -630,7 +635,7 @@ LookupWord(
 		return tp->type;
 	    }
 	}
-	} else {
+    } else {
 	for (tp = MonthDayTable; tp < ENDOF(MonthDayTable); tp++) {
 	    if (c == tp->name[0] && strcmp(p, tp->name) == 0) {
 		yylval.Number = tp->value;
@@ -723,7 +728,7 @@ date_lex(void)
     forever {
 	/* Get first character after the whitespace. */
 	forever {
-	    while (CTYPE(isspace, *yyInput))
+	    while (CTYPE(isspace, (unsigned char) *yyInput))
 		yyInput++;
 
 	    c = *yyInput;
@@ -749,7 +754,7 @@ date_lex(void)
 	    if (c == '-' || c == '+') {
 		sign = c == '-' ? -1 : 1;
 		yyInput++;
-		if (!CTYPE(isdigit, *yyInput))
+		if (!CTYPE(isdigit, (unsigned char) *yyInput))
 		    /* Skip the plus or minus sign. */
 		    continue;
 	    }
@@ -786,11 +791,11 @@ GetTimeInfo(
     struct tm		*tm;
 #if defined(HAVE_GETTIMEOFDAY)
     struct timeval	tv;
-#endif	/* defined(HAVE_GETTIMEOFDAY) */
+#endif /* HAVE_GETTIMEOFDAY */
 #if defined(DONT_HAVE_TM_GMTOFF)
     struct tm		local;
     struct tm		gmt;
-#endif	/* !defined(DONT_HAVE_TM_GMTOFF) */
+#endif /* !DONT_HAVE_TM_GMTOFF */
 
     /* Get the basic time. */
 #if defined(HAVE_GETTIMEOFDAY)
@@ -802,7 +807,7 @@ GetTimeInfo(
     /* Can't check for -1 since that might be a time, I guess. */
     (void)time(&Now->time);
     Now->usec = 0;
-#endif /* defined(HAVE_GETTIMEOFDAY) */
+#endif /* HAVE_GETTIMEOFDAY */
 
     /* Now get the timezone if it's been an hour since the last time. */
     if (Now->time - LastTime > 60 * 60) {
@@ -831,7 +836,7 @@ GetTimeInfo(
 	LastTzone += gmt.tm_min - local.tm_min;
 #else
 	LastTzone = (0 - tm->tm_gmtoff) / 60;
-#endif	/* defined(DONT_HAVE_TM_GMTOFF) */
+#endif /* DONT_HAVE_TM_GMTOFF */
     }
     Now->tzone = LastTzone;
     return 0;

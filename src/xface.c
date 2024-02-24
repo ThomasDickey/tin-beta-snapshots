@@ -125,7 +125,6 @@ slrnface_start(
 	} else {
 		FILE *fp;
 
-		/* We abuse fifo filename memory here. It is long enough. */
 		free(fifo);
 		pathlen = snprintf(NULL, 0, "%s/.slrnfaces/README", ptr);
 		fifo = my_malloc(++pathlen);

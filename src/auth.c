@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2023-02-06
+ *  Updated   : 2024-01-17
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -118,8 +118,7 @@ read_newsauth_file(
 		 */
 		while (fgets(line, sizeof(line), fp) != NULL) {
 			/* strip trailing newline character */
-			ptr = strchr(line, '\n');
-			if (ptr != NULL)
+			if ((ptr = strchr(line, '\n')) != NULL)
 				*ptr = '\0';
 
 			/* Get server from 1st part of the line */
@@ -189,8 +188,8 @@ read_newsauth_file(
  * we don't handle ERR_ENCRYPT right now
  *
  * we don't convert authuser and authpass to UTF-8 as required by 3977
- * and we do in do_authinfo_sasl_plain(); if we want todo so it should
- * lkely be done in authinfo_plain() instead.
+ * and we do in do_authinfo_sasl_plain(); if we want to do so it should
+ * likely be done in authinfo_plain() instead.
  */
 static int
 do_authinfo_user(

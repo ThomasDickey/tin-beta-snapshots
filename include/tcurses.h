@@ -181,7 +181,7 @@ extern void write_line(int row, char *buffer);
 
 #		define HpGlitch(func)			if (_hp_glitch) func
 
-#	endif /* USE_CURSES/!USE_CURSES */
+#	endif /* USE_CURSES */
 
 extern void my_dummy(void);
 

@@ -3,7 +3,7 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2020-08-04
+ *  Updated   : 2024-01-10
  *  Notes     : Split out from other modules
  *
  * Copyright (c) 1999-2024 Jason Faultless <jason@altarstone.com>
@@ -344,13 +344,13 @@ parse_range(
 	*range_end = -1;
 
 	while (*ptr && state != DONE) {
-		if (isdigit((int) *ptr)) {
+		if (isdigit((unsigned char) *ptr)) {
 			if (state == FINDMAX) {
 				*range_end = atoi(ptr);
 				state = DONE;
 			} else
 				*range_start = atoi(ptr);
-			while (isdigit((int) *ptr))
+			while (isdigit((unsigned char) *ptr))
 				ptr++;
 		} else {
 			switch (*ptr) {

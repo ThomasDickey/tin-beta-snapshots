@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-27
+ *  Updated   : 2024-02-22
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -65,7 +65,7 @@ static void write_server_config(void);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 #	define DASH_TO_SPACE(mark)	((wchar_t) (mark == L'_' ? L' ' : mark))
-#	define SPACE_TO_DASH(mark)	((wchar_t) (mark == L' ' ? L'_' : mark))
+#	define SPACE_TO_DASH(mark)	((wint_t) (mark == L' ' ? L'_' : mark))
 #	define SET_RC_VAL(buf, rcval, defval) do { \
 		wchar_t *wbuf; \
 		if ((wbuf = char2wchar_t(buf))) { \
@@ -114,7 +114,7 @@ read_config_file(
 			if (upgrade == NULL && !global_file && match_string(buf, "# tin configuration file V", NULL, 0)) {
 				upgrade = check_upgrade(buf, "# tin configuration file V", TINRC_VERSION);
 				if (upgrade->state != RC_IGNORE)
-					upgrade_prompt_quit(upgrade, file); /* CONFIG_FILE */
+					upgrade_prompt_quit(upgrade, file, fp); /* CONFIG_FILE */
 				if (upgrade->state == RC_UPGRADE)
 					rc_update(fp);
 			}
@@ -1842,7 +1842,7 @@ ulBuildArgv(
 		return NULL;
 	}
 
-	for (tmp = cmd; isspace((int) *tmp); tmp++)
+	for (tmp = cmd; isspace((unsigned char) *tmp); tmp++)
 		;
 
 	buf = my_strdup(tmp);
@@ -1851,9 +1851,9 @@ ulBuildArgv(
 	new_argv = my_calloc(1, sizeof(char *));
 
 	while (*tmp) {
-		if (!isspace((int) *tmp)) { /* found the beginning of a word */
+		if (!isspace((unsigned char) *tmp)) { /* found the beginning of a word */
 			new_argv[i] = tmp;
-			for (; *tmp && !isspace((int) *tmp); tmp++)
+			for (; *tmp && !isspace((unsigned char) *tmp); tmp++)
 				;
 			if (*tmp) {
 				*tmp = '\0';
@@ -2066,7 +2066,7 @@ rc_update(
 		tinrc.hide_uue = 1;
 
 	if (keep_posted_articles)
-		STRCPY(tinrc.posted_articles_file, "posted");
+		STRCPY(tinrc.posted_articles_file, POSTED_FILE);
 
 	tinrc.quote_style = (compress_quotes ? QUOTE_COMPRESS : 0) + (quote_empty_lines ? QUOTE_EMPTY : 0) + (quote_signatures ? QUOTE_SIGS : 0);
 

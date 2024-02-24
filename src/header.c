@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2023-11-27
+ *  Updated   : 2024-01-10
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -110,10 +110,9 @@ get_domain_name(
 					strcpy(domain, buff);
 				}
 			}
+			fclose(fp);
 			if (domain[0] == '/')	/* '/' is not allowed in domainames -> file was empty */
 				domain[0] = '\0';
-
-			fclose(fp);
 		} else
 			domain[0] = '\0';
 	}
@@ -136,7 +135,7 @@ get_fqdn(
 	char name[MAXHOSTNAMELEN + 1];
 	static char fqdn[1024];
 	struct hostent *hp;
-	struct in_addr in = {0};
+	struct in_addr in = { 0 };
 
 	*fqdn = '\0';
 	domain = NULL;
@@ -157,16 +156,17 @@ get_fqdn(
 	if (*name >= '0' && *name <= '9') {
 		in_addr_t addr = inet_addr(name);
 
-		if ((hp = gethostbyaddr((char *) &addr, 4, AF_INET)))
+		if ((hp = gethostbyaddr((char *) &addr, 4, AF_INET))) {
 #		ifdef HAVE_HOSTENT_H_ADDR_LIST
 			in.s_addr = (*hp->h_addr_list[0]);
 #		else
 			in.s_addr = (*hp->h_addr);
 #		endif /* HAVE_HOSTENT_H_ADDR_LIST */
+		}
 		return (hp && strchr(hp->h_name, '.') ? hp->h_name : inet_ntoa(in));
 	}
 #	endif /* HAVE_INET_ADDR */
-	if ((hp = gethostbyname(name)) && !strchr(hp->h_name, '.'))
+	if ((hp = gethostbyname(name)) && !strchr(hp->h_name, '.')) {
 #	ifdef HAVE_HOSTENT_H_ADDR_LIST
 		if ((hp = gethostbyaddr(hp->h_addr_list[0], hp->h_length, hp->h_addrtype)))
 			in.s_addr = (*hp->h_addr_list[0]);
@@ -174,6 +174,7 @@ get_fqdn(
 		if ((hp = gethostbyaddr(hp->h_addr, hp->h_length, hp->h_addrtype)))
 			in.s_addr = (*hp->h_addr);
 #	endif /* HAVE_HOSTENT_H_ADDR_LIST */
+	}
 	snprintf(fqdn, sizeof(fqdn), "%s", hp
 		? strchr(hp->h_name, '.')
 			? hp->h_name : inet_ntoa(in)
@@ -287,8 +288,8 @@ get_full_name(
 		if ((p = strchr(buf, '&'))) {
 			*p++ = '\0';
 			STRCPY(tmp, pw->pw_name);
-			if (*tmp && isalpha((int)(unsigned char) *tmp) && islower((int)(unsigned char) *tmp))
-				*tmp = (char) my_toupper((int) (unsigned char) *tmp);
+			if (*tmp && isalpha((unsigned char) *tmp) && islower((unsigned char) *tmp))
+				*tmp = (char) my_toupper((unsigned char) *tmp);
 			ret = snprintf(fullname, sizeof(fullname), "%s%s%s", buf, tmp, p);
 			if (ret == -1 || ret > (int) sizeof(fullname))
 				error_message(2, "Fullname truncated");

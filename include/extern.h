@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-28
+ *  Updated   : 2024-01-20
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>
@@ -266,9 +266,6 @@
 #ifdef DECL_SYSTEM
 	extern int system(const char *);
 #endif /* DECL_SYSTEM */
-#ifdef DECL_TMPFILE
-	extern FILE *tmpfile(void);
-#endif /* DECL_TMPFILE */
 #ifdef DECL_TGETENT
 	extern int tgetent(char *, char *);
 #endif /* DECL_TGETENT */
@@ -469,7 +466,7 @@ extern constext txt_7bit[];
 extern constext txt_8bit[];
 #if defined(NNTP_ABLE) && defined(HAVE_SELECT)
 	extern constext txt_abort_reading[];
-#endif /* defined(NNTP_ABLE) && defined(HAVE_SELECT) */
+#endif /* NNTP_ABLE && HAVE_SELECT */
 extern constext txt_active_file_is_empty[];
 extern constext txt_all[];
 extern constext txt_all_groups[];
@@ -665,7 +662,7 @@ extern constext txt_begin_of_art[];
 extern constext txt_begin_of_page[];
 #if !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
 	extern constext txt_bytes[];
-#endif /* !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING) */
+#endif /* !HAVE_LIBUU && HAVE_SUM && !DONT_HAVE_PIPING */
 #ifdef NNTP_ABLE
 	extern constext txt_caching_off[];
 	extern constext txt_caching_on[];
@@ -762,22 +759,20 @@ extern constext txt_conninfo_saved_news[];
 	extern constext txt_conninfo_server[];
 #	ifdef NNTPS_ABLE
 	extern constext txt_conninfo_nntps[];
-#		if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_LIBTLS) || defined(HAVE_LIB_OPENSSL)
-		extern constext txt_conninfo_fmt_error[];
-		extern constext txt_conninfo_issuer[];
-		extern constext txt_conninfo_server_cert_info[];
-		extern constext txt_conninfo_subject[];
-		extern constext txt_conninfo_tls_info[];
-#		endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_LIBTLS) || defined(HAVE_LIB_OPENSSL) */
+	extern constext txt_conninfo_trusted[];
+	extern constext txt_conninfo_untrusted[];
+	extern constext txt_conninfo_cert[];
+	extern constext txt_conninfo_fmt_error[];
+	extern constext txt_conninfo_issuer[];
+	extern constext txt_conninfo_server_cert_info[];
+	extern constext txt_conninfo_subject[];
+	extern constext txt_conninfo_tls_info[];
 #		if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL)
-		extern constext txt_conninfo_cert[];
 		extern constext txt_conninfo_error_unexpected[];
 		extern constext txt_conninfo_error_tolerated[];
 		extern constext txt_conninfo_verify_failed[];
 		extern constext txt_conninfo_verify_successful[];
-#		endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL) */
-	extern constext txt_conninfo_trusted[];
-	extern constext txt_conninfo_untrusted[];
+#		endif /* HAVE_LIB_GNUTLS || HAVE_LIB_OPENSSL */
 #		ifdef HAVE_LIB_GNUTLS
 		extern constext txt_conninfo_gnutls[];
 		extern constext txt_conninfo_verify_failed_no_reason[];
@@ -820,7 +815,7 @@ extern constext txt_enter_range[];
 extern constext txt_error_approved[];
 #ifndef NDEBUG
 	extern constext txt_error_asfail[];
-#endif /* ! NDEBUG */
+#endif /* !NDEBUG */
 extern constext txt_error_bad_approved[];
 extern constext txt_error_bad_from[];
 extern constext txt_error_bad_msgidfqdn[];
@@ -1556,7 +1551,7 @@ extern constext txt_tinrc_newnews[];
 #	endif /* HAVE_LIB_GNUTLS */
 #	if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL)
 	extern constext txt_tls_peer_verify_failed_continuing[];
-#	endif /* defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL) */
+#	endif /* HAVE_LIB_GNUTLS || HAVE_LIB_OPENSSL */
 #endif /* NNTP_ABLE && NNTPS_ABLE */
 extern constext txt_toggled_high[];
 extern constext txt_toggled_rot13[];
@@ -1608,6 +1603,9 @@ extern constext txt_usage_dont_show_descriptions[];
 	extern constext txt_usage_force_ipv6[];
 #	endif /* INET6 */
 	extern constext txt_usage_newsserver[];
+#if defined(HAVE_ALARM) && defined(SIGALRM)
+	extern constext txt_usage_nntp_timeout[];
+#endif /* HAVE_ALARM && SIGALRM */
 	extern constext txt_usage_port[];
 	extern constext txt_usage_read_news_remotely[];
 #	ifdef NNTPS_ABLE
@@ -1695,7 +1693,9 @@ extern constext txt_x_resp[];
 	extern constext txt_xface_error_exited_abnormal[];
 	extern constext txt_xface_error_finally_failed[];
 	extern constext txt_xface_error_missing_env_var[];
+#	if defined(DEBUG) && defined(HAVE_IS_XTERM)
 	extern constext txt_xface_error_no_xterm[];
+#	endif /* DEBUG && HAVE_IS_XTERM */
 	extern constext txt_xface_msg_cannot_connect_display[];
 	extern constext txt_xface_msg_cannot_open_fifo[];
 	extern constext txt_xface_msg_executable_not_found[];

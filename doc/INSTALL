@@ -71,6 +71,13 @@ The following configure options and defines are documented in detail:
 
 Not yet documented configure options and defines:
 -------------------------------------------------
+Networking related
+  TLI     - use Transport Layer Interface (SVR3, SVR4)
+            or X/Open Transport Interface instead of
+            BSD/POSIX sockets)
+  DECNET
+  EXCELAN
+
 TIN related:
   BACKUP_FILE_EXT (see misc.c:invoke_editor())
   FILE_MODE_BROKEN                        NO_LOCKING

@@ -3,7 +3,7 @@
  *  Module    : newsrc.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-11-18
+ *  Updated   : 2024-01-14
  *  Notes     : newsrc bit handling
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -133,9 +133,9 @@
 #	include <dbmalloc.h> /* dbmalloc 1.4 */
 #else
 #	define NSET1(n,b)	(n[NOFFSET(b)] |= (1 << NBITIDX(b)))
-#	define NSET0(n,b)	(n[NOFFSET(b)] &= ~(1 << NBITIDX(b)))
-#	define BIT_OR(n, b, mask)	n[NOFFSET(b)] |= mask
-#	define BIT_AND(n, b, mask)	n[NOFFSET(b)] &= mask
+#	define NSET0(n,b)	(n[NOFFSET(b)] &= 0xff & ~(1 << NBITIDX(b)))
+#	define BIT_OR(n, b, mask)	n[NOFFSET(b)] |= 0xff & mask
+#	define BIT_AND(n, b, mask)	n[NOFFSET(b)] &= 0xff & mask
 #endif /* USE_DBMALLOC */
 
 #define BITS_TO_BYTES(n)	((size_t) ((n + NBITS - 1) / NBITS))

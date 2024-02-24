@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2023-11-16
+ *  Updated   : 2024-02-23
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2024 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -54,6 +54,9 @@ static void show_errors(const char *msg_fmt);
 #	endif /* USE_OPENSSL */
 #endif /* USE_GNUTLS */
 
+#if (defined(USE_LIBTLS) && defined(HAVE_LIB_CRYPTO)) || defined(USE_OPENSSL)
+static char **get_cert_info(const X509 *cert);
+#endif /* (USE_LIBTLS && HAVE_LIB_CRYPTO) || USE_OPENSSL */
 
 static char ca_cert_file_expanded[PATH_LEN];
 
@@ -157,13 +160,13 @@ tintls_init(
 
 	result = RAND_status();
 	if (result != 1) {
-		show_errors(_("RAND_status: %s!\n"));
+		show_errors("RAND_status: %s!\n");
 		return -EINVAL;
 	}
 
 	openssl_ctx = SSL_CTX_new(TLS_method());
 	if (!openssl_ctx) {
-		show_errors(_("SSL_CTX_new: %s!\n"));
+		show_errors("SSL_CTX_new: %s!\n");
 		return -ENOMEM;
 	}
 
@@ -180,7 +183,7 @@ tintls_init(
 		if (result != 1) {
 			SSL_CTX_free(openssl_ctx);
 			openssl_ctx = NULL;
-			show_errors(_("SSL_CTX_set_default_verify_paths: %s!\n"));
+			show_errors("SSL_CTX_set_default_verify_paths: %s!\n");
 			return -EINVAL;
 		}
 	} else {
@@ -188,7 +191,7 @@ tintls_init(
 		if (result != 1) {
 			SSL_CTX_free(openssl_ctx);
 			openssl_ctx = NULL;
-			show_errors(_("SSL_CTX_load_verify_locations: %s!\n"));
+			show_errors("SSL_CTX_load_verify_locations: %s!\n");
 			return -EINVAL;
 		}
 	}
@@ -245,8 +248,8 @@ tintls_open(
 	int fd,
 	void **session_ctx)
 {
-#ifdef USE_LIBTLS
 	int result;
+#ifdef USE_LIBTLS
 	struct tls *client;
 
 	if (!session_ctx)
@@ -267,6 +270,7 @@ tintls_open(
 	result = tls_connect_socket(client, fd, servername);
 	if (result == -1) {
 		tls_free(client);
+		tintls_exit();
 		return -ENOMEM;
 	}
 
@@ -274,7 +278,6 @@ tintls_open(
 
 #else
 #	ifdef USE_GNUTLS
-	int result;
 	gnutls_session_t client;
 	size_t servername_len;
 
@@ -317,7 +320,6 @@ tintls_open(
 
 #	else
 #		ifdef USE_OPENSSL
-	int result;
 	int long_result;
 	SSL *ssl;
 	BIO *sock;
@@ -332,14 +334,14 @@ tintls_open(
 
 	sock = BIO_new_socket(fd, 1);
 	if (!sock) {
-		show_errors(_("BIO_new_socket: %s!\n"));
+		show_errors("BIO_new_socket: %s!\n");
 		return -ENOMEM;
 	}
 
 	client = BIO_new_ssl(openssl_ctx, 1);
 	if (!client) {
 		BIO_free(sock);
-		show_errors(_("BIO_new_ssl: %s!\n"));
+		show_errors("BIO_new_ssl: %s!\n");
 		return -ENOMEM;
 	}
 
@@ -347,7 +349,7 @@ tintls_open(
 	if (long_result != 1) {
 		BIO_free(client);
 		BIO_free(sock);
-		show_errors(_("BIO_get_ssl: %s!\n"));
+		show_errors("BIO_get_ssl: %s!\n");
 		return -EINVAL;
 	}
 
@@ -355,7 +357,7 @@ tintls_open(
 	if (result != 1) {
 		BIO_free(client);
 		BIO_free(sock);
-		show_errors(_("SSL_set_tlsext_host_name: %s!\n"));
+		show_errors("SSL_set_tlsext_host_name: %s!\n");
 		return -EINVAL;
 	}
 
@@ -363,7 +365,7 @@ tintls_open(
 	if (result != 1) {
 		BIO_free(client);
 		BIO_free(sock);
-		show_errors(_("SSL_set1_host: %s!\n"));
+		show_errors("SSL_set1_host: %s!\n");
 		return -EINVAL;
 	}
 
@@ -387,6 +389,11 @@ tintls_handshake(
 	int result;
 	struct tls *client = session_ctx;
 	const char *subject, *issuer, *version, *cipher;
+#	ifdef HAVE_LIB_CRYPTO
+	BIO *io_buf = NULL;
+	const uint8_t *chain;
+	size_t chain_size;
+#	endif /* HAVE_LIB_CRYPTO */
 
 	do {
 		result = tls_handshake(client);
@@ -399,26 +406,53 @@ tintls_handshake(
 		return -EPROTO;
 	}
 
-	subject = tls_peer_cert_subject(client);
-	issuer = tls_peer_cert_issuer(client);
-	version = tls_conn_version(client);
-	cipher = tls_conn_cipher(client);
+#	ifdef HAVE_LIB_CRYPTO
+	if ((chain = tls_peer_cert_chain_pem(client, &chain_size)))
+		io_buf = BIO_new(BIO_s_mem());
 
-	if (!subject)
-		subject = _(txt_retr_subject_failed);
-	if (!issuer)
-		issuer = _(txt_retr_issuer_failed);
-	if (!version)
-		version = _(txt_retr_version_failed);
-	if (!cipher)
-		cipher = _(txt_retr_cipher_failed);
+	if (chain && io_buf) {
+		X509 *cert;
+		char **cert_info;
 
-	if (!batch_mode || verbose) {
-		wait_message(0, _(txt_conninfo_subject), subject);
-		wait_message(0, _(txt_conninfo_issuer), issuer);
-		wait_message(0, _(txt_tls_handshake_done), version, cipher);
+		if (chain_size > 0 && BIO_write(io_buf, chain, chain_size) > 0) {
+			cert = PEM_read_bio_X509(io_buf, NULL, 0, NULL);
+			if (cert && ((cert_info = get_cert_info(cert)))) {
+				wait_message(0, _(txt_conninfo_subject), cert_info[0] ? cert_info[0] : _(txt_retr_subject_failed));
+				wait_message(0, _(txt_conninfo_issuer), cert_info[1] ? cert_info[1] : _(txt_retr_issuer_failed));
+				FreeIfNeeded(cert_info[0]);
+				FreeIfNeeded(cert_info[1]);
+				free(cert_info);
+				X509_free(cert);
+			}
+		}
+		BIO_free(io_buf);
+	} else
+#	endif /* HAVE_LIB_CRYPTO */
+	{ /* Fallback if access to the certificate chain has failed */
+		if (!batch_mode || verbose) {
+			subject = tls_peer_cert_subject(client);
+			issuer = tls_peer_cert_issuer(client);
+
+			if (!subject)
+				subject = _(txt_retr_subject_failed);
+			if (!issuer)
+				issuer = _(txt_retr_issuer_failed);
+			wait_message(0, _(txt_conninfo_subject), subject);
+			wait_message(0, _(txt_conninfo_issuer), issuer);
+		}
 	}
 
+	if (!batch_mode || verbose) {
+		version = tls_conn_version(client);
+		cipher = tls_conn_cipher(client);
+
+		if (!version)
+			version = _(txt_retr_version_failed);
+		if (!cipher)
+			cipher = _(txt_retr_cipher_failed);
+
+		wait_message(0, _(txt_tls_handshake_done), version, cipher);
+	}
 #else
 #	ifdef USE_GNUTLS
 	int result;
@@ -508,8 +542,22 @@ tintls_handshake(
 			}
 
 			if (!batch_mode || verbose) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				char *sub = my_strdup((char *) subject.data);
+				char *iss = my_strdup((char *) issuer.data);
+				size_t len_s = strlen(sub);
+				size_t len_i = strlen(iss);
+
+				process_charsets(&sub, &len_s, "UTF-8", tinrc.mm_local_charset, FALSE);
+				process_charsets(&iss, &len_i, "UTF-8", tinrc.mm_local_charset, FALSE);
+				wait_message(0, _(txt_conninfo_subject), sub);
+				wait_message(0, _(txt_conninfo_issuer), iss);
+				free(sub);
+				free(iss);
+#else
 				wait_message(0, _(txt_conninfo_subject), subject.data);
 				wait_message(0, _(txt_conninfo_issuer), issuer.data);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			}
 
 err_cert:
@@ -521,25 +569,25 @@ err_cert:
 				gnutls_x509_crt_deinit(servercert);
 		}
 
-		desc = gnutls_session_get_desc(client);
-		if (!batch_mode || verbose)
-			wait_message(0, _(txt_tls_handshake_done), desc);
-		gnutls_free(desc);
+		if (!batch_mode || verbose) {
+			if ((desc = gnutls_session_get_desc(client)) != NULL) {
+				wait_message(0, _(txt_tls_handshake_done), desc);
+				gnutls_free(desc);
+			}
+		}
 	}
-
 #	else
 #		ifdef USE_OPENSSL
 	long long_result;
 	BIO *client = session_ctx;
 	SSL *ssl;
 	X509 *peer;
-	char name[128];
 
 	ERR_clear_error();
 
 	long_result = BIO_get_ssl(client, &ssl);
 	if (long_result != 1) {
-		show_errors(_("BIO_get_ssl: %s!\n"));
+		show_errors("BIO_get_ssl: %s!\n");
 		return -EINVAL;
 	}
 
@@ -558,17 +606,22 @@ err_cert:
 			wait_message(0, _(txt_tls_peer_verify_failed_continuing), X509_verify_cert_error_string(long_result));
 	}
 
-	peer = SSL_get_peer_certificate(ssl);
-	if (peer) {
-		if (!batch_mode || verbose) {
-			wait_message(0, _(txt_conninfo_subject), X509_NAME_oneline(X509_get_subject_name(peer), name, sizeof(name)));
-			wait_message(0, _(txt_conninfo_issuer), X509_NAME_oneline(X509_get_issuer_name(peer), name, sizeof(name)));
-		}
-		X509_free(peer);
-	}
+	if (!batch_mode || verbose) {
+		if ((peer = SSL_get_peer_certificate(ssl))) {
+			char **cert_info;
 
-	if (!batch_mode || verbose)
+			if ((cert_info = get_cert_info(peer))) {
+				wait_message(0, _(txt_conninfo_subject), BlankIfNull(cert_info[0]));
+				wait_message(0, _(txt_conninfo_issuer), BlankIfNull(cert_info[1]));
+				FreeIfNeeded(cert_info[0]);
+				FreeIfNeeded(cert_info[1]);
+				free(cert_info);
+			}
+			X509_free(peer);
+		}
+
 		wait_message(0, _(txt_tls_handshake_done), SSL_get_cipher_name(ssl));
+	}
 #		endif /* USE_OPENSSL */
 #	endif /* USE_GNUTLS */
 #endif /* USE_LIBTLS */
@@ -609,9 +662,9 @@ tintls_read(
 	/* NOTREACHED */
 #	else
 #		ifdef USE_OPENSSL
+	int result;
 	size_t bytes_read;
 	BIO *client = session_ctx;
-	int result;
 
 	ERR_clear_error();
 
@@ -728,18 +781,17 @@ tintls_close(
 
 /* TODO: make date-format configurable? */
 #define PRINT_VALID_AFTER(ts, what) do { \
-		result = my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", ts); \
-		if (result < 0) \
-			fprintf(fp, "%s", txt_conninfo_fmt_error); \
-		else \
+		if (my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", ts)) \
 			fprintf(fp, _(txt_valid_not_after), (what)); \
-	} while (0)
-#define PRINT_VALID_BEFORE(ts, what) do { \
-		result = my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", ts); \
-		if (result < 0) \
-			fprintf(fp, "%s", txt_conninfo_fmt_error); \
 		else \
+			fprintf(fp, "%s", txt_conninfo_fmt_error); \
+	} while (0)
+
+#define PRINT_VALID_BEFORE(ts, what) do { \
+		if (my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", ts)) \
 			fprintf(fp, _(txt_valid_not_before), (what)); \
+		else \
+			fprintf(fp, "%s", txt_conninfo_fmt_error); \
 	} while (0)
 
 
@@ -748,40 +800,106 @@ tintls_conninfo(
 	void *session_ctx,
 	FILE *fp)
 {
-	int result;
 #ifdef USE_LIBTLS
 	struct tls *client = session_ctx;
-	time_t t;
-	struct tm *tm;
-	char fmt_time[64]; /* time zone name could long... */
+	char fmt_time[22]; /* %Y-%m-%dT%H:%M%z */
+#	ifdef HAVE_LIB_CRYPTO
+	BIO *io_buf = NULL;
+	const uint8_t *chain;
+	size_t chain_size;
 
 	fprintf(fp, "%s", _(txt_conninfo_tls_info));
 	fprintf(fp, _(txt_conninfo_libtls_info), tls_conn_version(client), tls_conn_cipher(client), tls_conn_cipher_strength(client));
+
+	if ((chain = tls_peer_cert_chain_pem(client, &chain_size)))
+		io_buf = BIO_new(BIO_s_mem());
+
+	if (chain && io_buf) {
+		X509 *cert;
+		char **cert_info;
+		const ASN1_TIME *asn1;
+		char *wchain, *cptr;
+		int i = 0;
+		size_t cl;
+		struct tm tm;
+
+		fprintf(fp, "%s", _(txt_conninfo_server_cert_info));
+
+		/* string copy of chain */
+		cl = snprintf(NULL, 0, "%.*s", (int) chain_size, chain);
+		wchain = my_malloc(++cl);
+		snprintf(wchain, cl, "%.*s", (int) chain_size, chain);
+		cptr = wchain;
+
+		while ((cptr = strstr(cptr, "-----BEGIN CERTIFICATE-----"))) {
+			chain_size = strlen(cptr);
+			if (chain_size > 0 && BIO_write(io_buf, cptr, chain_size) > 0) {
+				cert = PEM_read_bio_X509(io_buf, NULL, 0, NULL);
+				if (cert && ((cert_info = get_cert_info(cert)))) {
+					if (i)
+						fputs("\n", fp);
+					fprintf(fp, _(txt_conninfo_cert), i++);
+
+					fprintf(fp, _(txt_conninfo_subject), BlankIfNull(cert_info[0]));
+					fprintf(fp, _(txt_conninfo_issuer), BlankIfNull(cert_info[1]));
+					FreeIfNeeded(cert_info[0]);
+					FreeIfNeeded(cert_info[1]);
+					free(cert_info);
+
+					if ((asn1 = X509_get0_notBefore(cert)) != NULL) {
+						if (ASN1_TIME_to_tm(asn1, &tm) == 1) {
+							PRINT_VALID_BEFORE(&tm, fmt_time);
+						}
+					}
+					if ((asn1 = X509_get0_notAfter(cert)) != NULL) {
+						if (ASN1_TIME_to_tm(asn1, &tm) == 1) {
+							PRINT_VALID_AFTER(&tm, fmt_time);
+						}
+					}
+					X509_free(cert);
+				}
+			}
+			BIO_reset(io_buf);
+			cptr += 26; /* "-----BEGIN CERTIFICATE-----" */
+		}
+		free(wchain);
+		BIO_free(io_buf);
+	} else /* Fallback if access to the certificate chain has failed */
+#	else
+	fprintf(fp, "%s", _(txt_conninfo_tls_info));
+	fprintf(fp, _(txt_conninfo_libtls_info), tls_conn_version(client), tls_conn_cipher(client), tls_conn_cipher_strength(client));
 	fprintf(fp, "%s", _(txt_conninfo_server_cert_info));
-	fprintf(fp, _(txt_conninfo_subject), tls_peer_cert_subject(client));
-	fprintf(fp, _(txt_conninfo_issuer), tls_peer_cert_issuer(client));
+#	endif /* HAVE_LIB_CRYPTO */
+	{
+		struct tm *tm;
+		time_t t;
 
-	t = tls_peer_cert_notbefore(client);
-	tm = localtime(&t);
-	PRINT_VALID_BEFORE(tm, fmt_time);
+		fprintf(fp, _(txt_conninfo_subject), tls_peer_cert_subject(client));
+		fprintf(fp, _(txt_conninfo_issuer), tls_peer_cert_issuer(client));
 
-	t = tls_peer_cert_notafter(client);
-	tm = localtime(&t);
-	PRINT_VALID_AFTER(tm, fmt_time);
+		if ((t = tls_peer_cert_notbefore(client)) != -1) {
+			tm = gmtime(&t);
+			PRINT_VALID_BEFORE(tm, fmt_time);
+		}
 
+		if ((t = tls_peer_cert_notafter(client)) != -1) {
+			tm = gmtime(&t);
+			PRINT_VALID_AFTER(tm, fmt_time);
+		}
+	}
 #else
-
 #	ifdef USE_GNUTLS
-	int retval = -1;
-	gnutls_session_t client = session_ctx;
 	char *desc;
+	char fmt_time[22]; /* %Y-%m-%dT%H:%M%z */
+	int retval = -1;
+	int result;
+	gnutls_session_t client = session_ctx;
 	gnutls_datum_t msg;
 	const gnutls_datum_t *raw_servercert_chain;
 	unsigned int servercert_chainlen;
 	unsigned int i;
 	time_t t;
 	struct tm *tm;
-	char fmt_time[64]; /* time zone name could long... */
 
 	desc = gnutls_session_get_desc(client);
 	fprintf(fp, "%s", _(txt_conninfo_tls_info));
@@ -791,9 +909,8 @@ tintls_conninfo(
 	msg.data = NULL;
 
 	if (gnutls_verification_status != 0) {
-		int type;
+		int type = gnutls_certificate_type_get2(client, GNUTLS_CTYPE_SERVER);
 
-		type = gnutls_certificate_type_get2(client, GNUTLS_CTYPE_SERVER);
 		result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
 
 		if (result == 0) {
@@ -807,16 +924,21 @@ tintls_conninfo(
 		fprintf(fp, "%s", _(txt_conninfo_verify_successful));
 
 	raw_servercert_chain = gnutls_certificate_get_peers(client, &servercert_chainlen);
-	if (servercert_chainlen > 0) {
+	if (servercert_chainlen > 0)
 		fprintf(fp, "%s", _(txt_conninfo_server_cert_info));
-	}
 
 	for (i = 0; i < servercert_chainlen; i++) {
 		gnutls_x509_crt_t servercert = NULL;
 		gnutls_datum_t subject = { NULL, 0 };
 		gnutls_datum_t issuer = { NULL, 0 };
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		char *sub;
+		char *iss;
+		size_t len_s;
+		size_t len_i;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-		if (i > 0)
+		if (i)
 			fputs("\n", fp);
 		fprintf(fp, _(txt_conninfo_cert), i);
 
@@ -831,14 +953,30 @@ tintls_conninfo(
 		result = gnutls_x509_crt_get_dn3(servercert, &subject, 0);
 		if (result < 0)
 			goto err_cert;
-
-		fprintf(fp, _(txt_conninfo_subject), subject.data);
+		else {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			sub = (char *) subject.data;
+			len_s = strlen(sub);
+			process_charsets(&sub, &len_s, "UTF-8", tinrc.mm_local_charset, FALSE);
+			fprintf(fp, _(txt_conninfo_subject), sub);
+#else
+			fprintf(fp, _(txt_conninfo_subject), subject.data);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		}
 
 		result = gnutls_x509_crt_get_issuer_dn3(servercert, &issuer, 0);
 		if (result < 0)
 			goto err_cert;
-
-		fprintf(fp, _(txt_conninfo_issuer), issuer.data);
+		else {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			iss = (char *) issuer.data;
+			len_i = strlen(iss);
+			process_charsets(&iss, &len_i, "UTF-8", tinrc.mm_local_charset, FALSE);
+			fprintf(fp, _(txt_conninfo_issuer), iss);
+#else
+			fprintf(fp, _(txt_conninfo_issuer), issuer.data);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		}
 
 		t = gnutls_x509_crt_get_activation_time(servercert);
 		if (t == -1)
@@ -898,7 +1036,8 @@ err_cert:
 		chain = SSL_get0_verified_chain(ssl);
 
 	if (chain) {
-		char name[128];
+		char name[22]; /* %Y-%m-%dT%H:%M%z */
+		char **cert_info;
 		const ASN1_TIME *asn1;
 		int i;
 		struct tm tm;
@@ -906,22 +1045,28 @@ err_cert:
 		for (i = 0; i < sk_X509_num(chain); i++) {
 			X509* cert = sk_X509_value(chain, i);
 
-			if (i > 0)
+			if (i)
 				fputs("\n", fp);
 			fprintf(fp, _(txt_conninfo_cert), i);
-			fprintf(fp, _(txt_conninfo_subject), X509_NAME_oneline(X509_get_subject_name(cert), name, sizeof(name)));
-			fprintf(fp, _(txt_conninfo_issuer), X509_NAME_oneline(X509_get_issuer_name(cert), name, sizeof(name)));
 
-			asn1 = X509_get0_notBefore(cert);
-			result = ASN1_TIME_to_tm(asn1, &tm);
-			if (result == 1) {
-				PRINT_VALID_BEFORE(&tm, name);
+			if ((cert_info = get_cert_info(cert))) {
+				fprintf(fp, _(txt_conninfo_subject), BlankIfNull(cert_info[0]));
+				fprintf(fp, _(txt_conninfo_issuer), BlankIfNull(cert_info[1]));
+				FreeIfNeeded(cert_info[0]);
+				FreeIfNeeded(cert_info[1]);
+				free(cert_info);
 			}
 
-			asn1 = X509_get0_notAfter(cert);
-			result = ASN1_TIME_to_tm(asn1, &tm);
-			if (result == 1) {
-				PRINT_VALID_AFTER(&tm, name);
+			if ((asn1 = X509_get0_notBefore(cert)) != NULL) {
+				if (ASN1_TIME_to_tm(asn1, &tm) == 1) {
+					PRINT_VALID_BEFORE(&tm, name);
+				}
+			}
+
+			if ((asn1 = X509_get0_notAfter(cert)) != NULL) {
+				if (ASN1_TIME_to_tm(asn1, &tm) == 1) {
+					PRINT_VALID_AFTER(&tm, name);
+				}
 			}
 		}
 	}
@@ -934,6 +1079,54 @@ err_cert:
 
 #undef PRINT_VALID_AFTER
 #undef PRINT_VALID_BEFORE
+
+
+#if (defined(USE_LIBTLS) && defined(HAVE_LIB_CRYPTO)) || defined(USE_OPENSSL)
+static char **
+get_cert_info(
+	const X509 *cert)
+{
+	BIO *io_buf;
+	char **res = NULL;
+	char *tmp, *subject = NULL, *issuer = NULL;
+	long len;
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	unsigned long flags = XN_FLAG_ONELINE & ~ASN1_STRFLGS_ESC_MSB & ~XN_FLAG_SPC_EQ;
+#	else
+	unsigned long flags = XN_FLAG_ONELINE & ~XN_FLAG_SPC_EQ;
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+	if (cert && (io_buf = BIO_new(BIO_s_mem()))) {
+		res = my_malloc(sizeof(char *) * 2);
+		if (X509_NAME_print_ex(io_buf, X509_get_subject_name(cert), 0, flags) != -1) {
+			len = BIO_get_mem_data(io_buf, &tmp);
+			if (len > 0) {
+				subject = my_malloc((size_t) len + 1);
+				memcpy(subject, tmp, len);
+				subject[len] = '\0';
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				process_charsets(&subject, (size_t *) &len, "UTF-8", tinrc.mm_local_charset, FALSE);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			}
+		}
+		if (BIO_reset(io_buf) != -1 && X509_NAME_print_ex(io_buf, X509_get_issuer_name(cert), 0, flags) != -1) {
+			len = BIO_get_mem_data(io_buf, &tmp);
+			if (len > 0) {
+				issuer = my_malloc((size_t) len + 1);
+				memcpy(issuer, tmp, len);
+				issuer[len] = '\0';
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				process_charsets(&issuer, (size_t *) &len, "UTF-8", tinrc.mm_local_charset, FALSE);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			}
+		}
+		res[0] = subject;
+		res[1] = issuer;
+		BIO_free(io_buf);
+	}
+	return res;
+}
+#endif /* (USE_LIBTLS && HAVE_LIB_CRYPTO) || USE_OPENSSL */
 
 
 #ifdef USE_OPENSSL

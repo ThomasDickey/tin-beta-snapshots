@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2023-11-12
+ *  Updated   : 2023-12-22
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -214,11 +214,7 @@ write_mail_active_file(
 				clearerr(fp);
 				fclose(fp);
 			}
-			i = rename(file_tmp, mail_active_file);
-#	ifdef DEBUG
-			if ((debug & DEBUG_MISC) && i) /* TODO: is this the right debug-level? */
-				perror_message(_(txt_rename_error), file_tmp, mail_active_file);
-#	endif /* DEBUG */
+			rename_file(file_tmp, mail_active_file);
 		} else
 			unlink(file_tmp);
 	}

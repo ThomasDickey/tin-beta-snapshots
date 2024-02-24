@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-24
+ *  Updated   : 2024-01-23
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1056,7 +1056,10 @@ sum_file(
 		my_printf(cCRLF);
 	}
 	my_flush();
-#	endif /* HAVE SUM && !DONT_HAVE_PIPING */
+#	else
+	(void) path;
+	(void) file;
+#	endif /* HAVE_SUM && !DONT_HAVE_PIPING */
 }
 #endif /* HAVE_LIBUU */
 
@@ -2003,7 +2006,7 @@ tag_pattern(
 	void)
 {
 	char buf[BUFSIZ];
-	char pat[128];
+	char pat[LEN];
 	char *prompt;
 	const char *name;
 	const char *charset;
@@ -2269,8 +2272,7 @@ process_part(
 {
 	FILE *infile;
 	char buf[2048], buf2[2048];
-	int count;
-	int i, line_count;
+	int count, i, line_count;
 #ifdef CHARSET_CONVERSION
 	char *conv_buf;
 	const char *network_charset;
@@ -2323,15 +2325,13 @@ process_part(
 			switch (part->encoding) {
 				case ENCODING_QP:
 				case ENCODING_BASE64:
-#ifdef CHARSET_CONVERSION
 					memset(buf2, '\0', sizeof(buf2));
-#endif /* CHARSET_CONVERSION */
 					if ((count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2)) > 0) {
 #ifdef CHARSET_CONVERSION
 						if (what != SAVE && what != SAVE_TAGGED && !strncmp(content_types[part->type], "text", 4)) {
+							network_charset = validate_charset(get_param(part->params, "charset"));
 							line_len = (size_t) count;
 							conv_buf = my_strdup(buf2);
-							network_charset = validate_charset(get_param(part->params, "charset"));
 							process_charsets(&conv_buf, &line_len, network_charset ? network_charset : "US-ASCII", tinrc.mm_local_charset, FALSE);
 							strncpy(buf2, conv_buf, sizeof(buf2) - 1);
 							count = (int) strlen(buf2);
@@ -2343,9 +2343,12 @@ process_part(
 					break;
 
 				case ENCODING_UUE:
-					/* TODO: if postproc, don't decode these since the traditional uudecoder will get them */
 					/*
-					 * x-uuencode attachments have all the header info etc which we must ignore
+					 * TODO: if postproc, don't decode these since the
+					 *       traditional uudecoder will get them
+					 *
+					 * x-uuencode attachments have all the header info etc
+					 * which we must ignore
 					 */
 					if (strncmp(buf, "begin ", 6) != 0 && strncmp(buf, "end\n", 4) != 0 && buf[0] != '\n')
 						uudecode_line(buf, outfile);

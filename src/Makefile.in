@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2023-08-02
+# Updated: 2024-02-12
 #
 # Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -90,7 +90,6 @@ INS_OLD_SUFFIX	= old
 
 REMAKE		= $(MAKE) @cf_cv_makeflags@ DESTDIR="$(DESTDIR)"
 
-
 MAN_LINGUAS = de en_GB es
 
 # Project
@@ -134,10 +133,10 @@ HFILES	= \
 	$(INCDIR)/keymap.h \
 	$(INCDIR)/newsrc.h \
 	$(INCDIR)/nntplib.h \
-	$(INCDIR)/plp_snprintf.h \
 	$(INCDIR)/policy.h \
 	$(INCDIR)/proto.h \
 	$(INCDIR)/rfc2046.h \
+	$(INCDIR)/snprintf.h \
 	$(INCDIR)/stpwatch.h \
 	$(INCDIR)/tin.h \
 	$(INCDIR)/tinrc.h \
@@ -187,7 +186,6 @@ CFILES	= \
 	$(SRCDIR)/page.c \
 	$(SRCDIR)/parsdate.y \
 	$(SRCDIR)/pgp.c \
-	$(SRCDIR)/plp_snprintf.c \
 	$(SRCDIR)/post.c \
 	$(SRCDIR)/prompt.c \
 	$(SRCDIR)/read.c \
@@ -203,17 +201,15 @@ CFILES	= \
 	$(SRCDIR)/select.c \
 	$(SRCDIR)/sigfile.c \
 	$(SRCDIR)/signal.c \
+	$(SRCDIR)/snprintf.c \
 	$(SRCDIR)/strftime.c \
 	$(SRCDIR)/string.c \
 	$(SRCDIR)/tags.c \
 	$(SRCDIR)/tcurses.c \
-	$(SRCDIR)/tmpfile.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/version.c \
 	$(SRCDIR)/wildmat.c \
 	$(SRCDIR)/xref.c
-
-EXTRAOBJS = @EXTRAOBJS@
 
 EXTRA_INTLLIBS = @INTLDIR_MAKE@ @INTLLIBS@
 EXTRA_PCREHDRS = @PCREDIR_MAKE@ ../pcre/pcre.h
@@ -221,7 +217,7 @@ EXTRA_PCRELIBS = @PCREDIR_MAKE@ ../pcre/$(PRELIB)pcre.a
 EXTRA_CANLIBS = @CANDIR_MAKE@ ../libcanlock/$(PRELIB)canlock.a
 EXTRALIBS = $(EXTRA_INTLLIBS) $(EXTRA_PCRELIBS) $(EXTRA_CANLIBS)
 
-OFILES	= @ALLOCA@ $(EXTRAOBJS) \
+OFILES	= @ALLOCA@ @EXTRAOBJS@ \
 	$(OBJDIR)/active$o \
 	$(OBJDIR)/art$o \
 	$(OBJDIR)/attrib$o \
@@ -263,7 +259,6 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/page$o \
 	$(OBJDIR)/parsdate$o \
 	$(OBJDIR)/pgp$o \
-	$(OBJDIR)/plp_snprintf$o \
 	$(OBJDIR)/post$o \
 	$(OBJDIR)/prompt$o \
 	$(OBJDIR)/read$o \
@@ -279,11 +274,11 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/select$o \
 	$(OBJDIR)/sigfile$o \
 	$(OBJDIR)/signal$o \
+	$(OBJDIR)/snprintf$o \
 	$(OBJDIR)/strftime$o \
 	$(OBJDIR)/string$o \
 	$(OBJDIR)/tags$o \
 	$(OBJDIR)/tcurses$o \
-	$(OBJDIR)/tmpfile$o \
 	$(OBJDIR)/thread$o \
 	$(OBJDIR)/version$o \
 	$(OBJDIR)/wildmat$o \
@@ -446,9 +441,9 @@ TAGS :
 	@-$(RM) -f TAGS
 	@$(ETAGS) $(HFILES) $(CFILES)
 
-lint :	$(CFILES) $(OBJDIR)/parsdate.c tincfg.h options_menu.h
+lint :	$(CFILES) $(SRCDIR)/heapsort.c $(SRCDIR)/xface.c $(OBJDIR)/parsdate.c tincfg.h options_menu.h
 	@$(ECHO) "Linting source (results in ./LINT) ..."
-	@$(LINT) $(LINTFLAGS) `$(ECHO) $(CFILES)|$(SED) -e 's/\.y/.c/'` $(LIBS) 1>LINT 2>&1
+	@$(LINT) $(LINTFLAGS) `$(ECHO) $(SRCDIR)/heapsort.c $(SRCDIR)/xface.c $(CFILES)|$(SED) -e 's/\.y/.c/'` $(LIBS) 1>LINT 2>&1
 
 clean :
 	@$(ECHO) "Cleaning ..."
@@ -605,8 +600,6 @@ $(OBJDIR)/page$o :		$(SRCDIR)/page.c $(TIN_DEP) \
 $(OBJDIR)/parsdate$o :		$(OBJDIR)/parsdate.y $(TIN_DEP)
 $(OBJDIR)/pgp$o :		$(SRCDIR)/pgp.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h
-$(OBJDIR)/plp_snprintf$o :	$(SRCDIR)/plp_snprintf.c $(TIN_DEP) \
-				$(INCDIR)/plp_snprintf.h
 $(OBJDIR)/post$o :		$(SRCDIR)/post.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h \
 				$(INCDIR)/rfc2046.h \
@@ -637,18 +630,18 @@ $(OBJDIR)/select$o :		$(SRCDIR)/select.c $(TIN_DEP) \
 $(OBJDIR)/sigfile$o :		$(SRCDIR)/sigfile.c $(TIN_DEP)
 $(OBJDIR)/signal$o :		$(SRCDIR)/signal.c $(TIN_DEP) \
 				$(INCDIR)/version.h
+$(OBJDIR)/snprintf$o :	$(SRCDIR)/snprintf.c $(TIN_DEP) \
+				$(INCDIR)/snprintf.h
 $(OBJDIR)/strftime$o :		$(SRCDIR)/strftime.c $(TIN_DEP)
 $(OBJDIR)/string$o :		$(SRCDIR)/string.c $(TIN_DEP)
 $(OBJDIR)/tags$o :		$(SRCDIR)/tags.c $(TIN_DEP)
 $(OBJDIR)/tcurses$o :		$(SRCDIR)/tcurses.c $(TIN_DEP)
 $(OBJDIR)/thread$o :		$(SRCDIR)/thread.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h
-$(OBJDIR)/tmpfile$o :		$(SRCDIR)/tmpfile.c $(TIN_DEP)
 $(OBJDIR)/version$o :		$(SRCDIR)/version.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/wildmat$o :		$(SRCDIR)/wildmat.c $(TIN_DEP)
-$(OBJDIR)/xface$o :		$(SRCDIR)/xface.c $(TIN_DEP)
 $(OBJDIR)/xref$o :		$(SRCDIR)/xref.c $(TIN_DEP) \
 				$(INCDIR)/newsrc.h
-@EXTRAO_DEP@$(EXTRAOBJS) :	$(TIN_DEP)
+@EXTRAO_DEP@@EXTRAOBJS@ :	$(TIN_DEP)

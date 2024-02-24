@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2023-11-30
+.\" Updated   : 2024-01-22
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "24 Dezember 2022" 2.6.3 "Usenet Newsreader"
+.TH tin 5 "24 Dezember 2023" 2.6.4 "Usenet Newsreader"
 
 .SH NAME
 tin, rtin \- zugehörige Dateien
@@ -155,9 +155,10 @@ paged or made scroll\-able. Note that it is probably a mistake if
 needsterminal and copiousoutput are both specified.
 .TP 
 \fBdescription\fP
-The "description" field simply provides a textual description, optionally
-quoted, that describes the type of data, to be used optionally by mail
-readers that wish to describe the data before offering to display it.
+Das Feld "description" stellt eine Textbeschreibung (optional in
+Anführungszeichen) bereit, die den Datentyp beschreibt und von
+E\-Mail\-Programmen verwendet werden kann, die die Daten beschreiben möchten,
+bevor sie ihre Anzeige anbieten.
 .TP 
 \fBtextualnewlines\fP
 The "textualnewlines" field, if set to any non\-zero value, indicates that
@@ -299,7 +300,7 @@ Markierung die angibt ob die Gruppe abonniert ist ':' oder nicht '!'.
 .TP 
 \fBArtikel\fP
 Bereich bereits gelesener Artikel aus dieser Gruppe; durch Kommas getrennte
-Zahlen mit aufeinanderfolgenden Zahlen, die durch Bindestriche
+Zahlen mit aufeinander folgenden Zahlen, die durch Bindestriche
 zusammengefasst sind. Leere Zeilen und Zeilen, die mit "#" beginnen werden
 ignoriert und nicht zurückgeschrieben.
 .TP 
@@ -374,11 +375,11 @@ Indexdateien für gespeicherte Newsgruppen
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail\fP
 .sp
 .RS
-active file ("\fImailgroupname\fP \fImaxnum\fP \fIminnum\fP \fImailspool\fP" quadruples)
-of user's mailgroups (requires \fB\%tin\fP(1)  to be built with
-mh\-mail\-handling support).
+Active Datei ("\fIMailgroupname\fP \fIMaximalwert\fP \fIMinimalwert\fP \fIMailspool\fP"
+Quadrupel) der E\-Mail\-Gruppen des Benutzers (erfordert, dass \fB\%tin\fP(1) mit
+mh\-Mail\-Handling\-Unterstützung gebaut wurde).
 .TP 
-\fBmailgroupname\fP
+\fBMailgroupname\fP
 Pfad der Mailbox relativ zu Feld #4, wobei '/' in '.' umgewandelt sein muss.
 .TP 
 \fBMaximalwert\fP
@@ -456,8 +457,8 @@ Identisch mit der tinrc\-Variable gleichen Namens
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
 \fBauto_select\fP
-Automatically perform the \fBGroupMarkUnselArtRead\fP ('\fBX\fP') command after
-entering the group.
+Führt nach dem Betreten der Gruppe automatisch den Befehl
+\fBGroupMarkUnselArtRead\fP ('\fBX\fP') aus.
 .TP 
 \fBbatch_save\fP
 Sende ungelesene Artikel an den angegebenen Benutzer um sie später lesen zu
@@ -480,8 +481,8 @@ Identisch mit der tinrc\-Variable gleichen Namens
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
 \fBfcc\fP
-Mailbox to save sent mails. The format of the mailbox is controlled via the
-tinrc \fBmailbox_format\fP variable.
+Postfach zum Speichern gesendeter E\-Mails. Das verwendete Format wird über
+die Variable tinrc \fBmailbox_format\fP festgelegt.
 .TP 
 \fBfollowup_to\fP
 Setzt den \*(rqFollowup\-To:\*(rq\-Header auf die angegebene(n) Gruppe(n).
@@ -505,8 +506,8 @@ Identisch mit der tinrc\-Variable gleichen Namens
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
 \fBmailing_list\fP
-Used when a group is a mailing list. All responses to the group will be
-directed to this email address instead
+Wird verwendet, falls eine Gruppe eine Mailingliste ist. Alle Antworten an
+die Gruppe werden stattdessen an diese E\-Mail\-Adresse weitergeleitet.
 .TP 
 \fBmark_ignore_tags\fP
 Identisch mit der tinrc\-Variable gleichen Namens
@@ -712,7 +713,7 @@ scope=*
 x_headers=~/.tin/headers
 undeclared_charset=ISO\-8859\-1
 
-# in *sources* set post process type to shar only
+# in *sources* Postprozesstyp auf nur Shell Archive setzen
 scope=*sources*
 post_process_type=1
 
@@ -770,7 +771,7 @@ erforderlich!
 0=Groß/Kleinschreibung beachten, 1=Groß/Kleinschreibung ignorieren
 .TP 
 \fBscore\fP
-Score value of the rule; can also be one of the magic words "kill" or "hot".
+Wert der Regel; kann auch eines der Zauberwörter "kill" oder "hot" sein.
 .TP 
 \fBsubj\fP
 Vergleiche mit \*(rqSubject:\*(rq. Der verwendete Vergleichstyp (Wildmat oder
@@ -802,8 +803,8 @@ Vergleiche mit \*(rqReferences:\*(rq. Der verwendete Vergleichstyp (Wildmat oder
 Regex) hängt von der Einstellung der tinrc\-Variable \fBwildcard\fP ab.
 .TP 
 \fBlines\fP
-Match against \*(rqLines:\*(rq, <num matches less than, >num matches more
-than.
+Übereinstimmung mit \*(rqLines:\*(rq, <Zahl entspricht weniger als, >Zahl
+entspricht mehr als.
 .TP 
 \fBgnksa\fP
 Match against \*(rqFrom:\*(rq address parser return codes. <num matches less
@@ -872,7 +873,7 @@ case=1
 score=hot
 subj=\eb(cd|[rk]?)?tin(d|pre)?[\-.0\-9]*\eb
 
-comment=downscore postings in nsr from google base on
+comment=downscore postings in nsr from google based on
 comment=message\-id or path, if both hit they end up with
 comment=a score of \-66 which is enough to mark them killed
 group=news.software.readers
@@ -1139,7 +1140,7 @@ normalerweise durch die lokalen Newsserver aktualisiert (zB. \fB\%innd\fP(8))
 sobald eine neue Gruppe wird erstellt. Jede Zeile besteht aus zwei durch
 Tabulator getrennten Feldern "\fIGruppen.Name\fP	\fIKurzbeschreibung\fP".
 .TP 
-\fBmailgroupname\fP
+\fBMailgroupname\fP
 ist der Name der Newsgruppe
 .TP 
 \fBdescription\fP
@@ -1156,9 +1157,10 @@ Kleinschreibung unterschieden und jede Zeile, die mit "#", ";" oder " "
 beginnt, wird als Kommentar behandelt.
 .TP 
 \fBNNTPServer\fP
-full qualified domain name of the news server. Additionally, a port can be
-specified by appending :portnumber. The string "default" or "*" acts as
-wildcard to match any name, such a line should be placed last.
+Vollständig qualifizierter Domänenname des Newsservers. Zusätzlich kann ein
+Port durch Anhängen von :portnumber angegeben werden. Die Zeichenfolge
+"default" oder "*" fungiert als Platzhalter für die Übereinstimmung mit
+jedem Namen. Eine solche Zeile sollte an letzter Stelle stehen.
 .TP 
 \fBnewsrc\fP
 zugehörige newsrc\-Datei.
@@ -1242,8 +1244,8 @@ are not meant to be changed by the user.
 Interne Versionsnummer.
 .TP 
 \fBlast_newnews\fP
-Internal timestamp used by \fB\%tin\fP(1)  to keep track of new newsgroups on
-the server.
+Interner Zeitstempel, der von \fB\%tin\fP(1) verwendet wird, um neue
+Newsgruppen auf dem Server zu erkennen.
 .RE
 .PP
 
@@ -1252,8 +1254,9 @@ the server.
 .fi
 .sp
 .RS
-File to store $\fBNNTPSERVER\fP and $\fBNNTPPORT\fP related info\- and
-error\-messages. The file is overwritten on startup and meant for debugging.
+Datei zum Speichern von $\fBNNTPSERVER\fP und $\fBNNTPPORT\fP bezogenen Info\- und
+Fehlermeldungen. Die Datei wird beim Start überschrieben und ist zur
+Debuggen gedacht.
 .RE
 .PP
 
@@ -1435,8 +1438,8 @@ Farbe von zweifach zitierten Zeilen
 Farbe von =>3\-fach zitierten Zeilen
 .TP 
 \fBcol_response\fP
-Color of response counter. This is the text that says "Response x of y" in
-the article viewer.
+Farbe des Antwortzählers. Das ist der Text "Antwort x von y" im
+Artikel\-Viewer.
 .TP 
 \fBcol_signature\fP
 Farbe von Signaturen
@@ -1710,12 +1713,13 @@ OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set to
 Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP). Default is OFF.
 .TP 
 \fBmail_address\fP
-User's mail address (and full name), if not username@host. This is used when
-creating articles, sending mail and when \fB\%pgp\fP(1)  signing.
+E\-Mail\-Adresse des Benutzers (und vollständiger Name), falls nicht
+benutzername@host. Wird beim Erstellen von Artikeln, beim Versenden von
+E\-Mails und beim Signieren mit \fB\%pgp\fP(1) verwendet.
 .TP 
 \fBmail_mime_encoding\fP
-MIME encoding of the body in mail message, if necessary (8bit, base64,
-quoted\-printable, 7bit). Default is quoted\-printable.
+MIME\-Kodierung des Textkörpers in E\-Mail\-Nachrichten falls erforderlich
+(8bit, base64, quoted\-printable, 7bit). Voreinstellung ist quoted\-printable.
 .TP 
 \fBmail_quote_format\fP
 Format der Einleitungszeile für Mailantworten (%A=Mailadresse, %D=Datum,
@@ -1762,8 +1766,8 @@ werden unterstützt:
 .in -.3i
 .TP 
 \fBmark_saved_read\fP
-Falls ON werden gespeicherte Artikel als gelesen markiert.Voreinstellung ist
-ON.
+Falls ON werden gespeicherte Artikel als gelesen markiert. Voreinstellung
+ist ON.
 .TP 
 \fBmark_ignore_tags\fP
 When this is ON, the \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBThreadMarkArtRead\fP
@@ -1829,8 +1833,9 @@ terminal which attributes are usable. See also \fBword_h_display_marks\fP and
 \fBword_highlight\fP.
 .TP 
 \fBnewnews\fP
-These are internal timers used by \fB\%tin\fP(1)  to keep track of new
-newsgroups. Do not change them unless you understand what they are for.
+Interne Timer, die von \fB\%tin\fP(1) verwendet werden, um den Überblick über
+neue Newsgroups zu behalten. Nicht ändern, es sei denn, Sie verstehen genau
+wozu sie dienen.
 .TP 
 \fBnews_headers_to_display\fP
 Welche Header wollen Sie sehen. Wenn Sie _alle_ sehen wollen, setzen Sie ein
@@ -1876,9 +1881,9 @@ normalisieren. Die möglichen Werte sind:
 \fBNFKC_CF\fP: Kompatibilitätszerlegung, gefolgt von kanonischer
 Zusammensetzung und Faltung
 .RE
-Some normalization modes are only available if they are supported by the
-library \fB\%tin\fP(1)  uses to do the normalization. NFC should be used if
-possible.
+Einige Normalisierungsarten sind nur verfügbar, wenn sie von der Bibliothek
+unterstützt werden, die \fB\%tin\fP(1) für die Normalisierung verwendet. Nach
+Möglichkeit sollte NFC verwendet werden.
 .TP 
 \fBpage_mime_format\fP
 Diese Formatanweisung wird von tin \fB\%tin\fP(1) zur Darstellung von
@@ -1891,8 +1896,8 @@ UUE\-Headern auf Artikelebene benutzt. Voreingestellt ist "[\-\-
 %T%S%*n%I%!d%*e \-\-]".
 .TP 
 \fBpos_first_unread\fP
-If ON put cursor at first unread article in group otherwise at last
-article. Default is ON.
+Falls ON wird der Cursor auf den ersten ungelesenen Artikel in der Gruppe
+gesetzt, andernfalls auf den letzten Artikel.
 .TP 
 \fBpost_8bit_header\fP
 Allows 8bit characters unencoded in the header of a news article, if set
@@ -1998,9 +2003,9 @@ Wenn auf 0 gesetzt, ist diese Funktion deaktiviert, ansonsten bedeutet es
 die Anzahl der Tage.
 .TP 
 \fBrender_bidi\fP
-If ON \fB\%tin\fP(1)  does the rendering of bi\-directional text. If OFF
-\fB\%tin\fP(1)  leaves the rendering of bi\-directional text to the
-terminal. Default is OFF.
+Falls ON, kümmert sich \fB\%tin\fP(1) um die Darstellung von bidirektionalem
+Text. Bei OFF, überlässt \fB\%tin\fP(1) die Darstellung von bidirektionalem
+Text dem Terminal.
 .TP 
 \fBreread_active_file_secs\fP
 The news \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file is
@@ -2008,7 +2013,7 @@ reread at regular intervals to show if any new news has arrived. Default is
 1200. Setting this to 0 will disable this feature.
 .TP 
 \fBsavedir\fP
-Directory where articles/threads are saved. Default is
+Verzeichnis, in dem Artikel/Threads gespeichert werden. Voreinstellung ist
 \fI${TIN_HOMEDIR:\-"$HOME"}/News\fP.
 .TP 
 \fBscore_limit_kill\fP
@@ -2109,8 +2114,8 @@ arrived otherwise show help sign.
 .RE
 .TP 
 \fBshow_only_unread_arts\fP
-If ON show only new/unread articles otherwise show all articles.  Default is
-ON.
+Falls ON, werden nur neue/ungelesene Artikel angezeigt, andernfalls werden
+alle Artikel angezeigt.
 .TP 
 \fBshow_only_unread_groups\fP
 Falls ON zeige nur abonnierte Gruppen mit ungelesen Artikeln. Voreinstellung
@@ -2218,8 +2223,9 @@ If ON, then unsubscribed groups will be permanently removed from your
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP file. Default is OFF.
 .TP 
 \fBstrip_re_regex\fP
-A regular expression to find Subject prefixes like "Re:" to remove If
-\fBstrip_re_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
+Ein regulärer Ausdruck zum Suchen nach Betreffpräfixen wie "Re:", die
+entfernt werden sollen. Wenn \fBstrip_re_regex\fP leer ist, verwendet
+\fB\%tin\fP(1) einen integrierten Standardwert.
 .TP 
 \fBstrip_was_regex\fP
 A regular expression to find Subject suffixes like "(was:" to remove.  If
@@ -2248,9 +2254,9 @@ Diskussionsfaden nur anhand von \*(rqReferences:\*(rq aufbauen.
 Diskussionsfaden anhand von \*(rqReferences:\*(rq und \*(rqSubject:\*(rq aufbauen
 (Voreinstellung).
 .IP 4
-Diskussionsfaden mehrteiliger Artike anhand von 'Subject:\*(rq aufbauen.
+Diskussionsfaden mehrteiliger Artikel anhand von 'Subject:\*(rq aufbauen.
 .IP 5
-Thread on Percentage Match of the Subjects
+Anhand der prozentualen Übereinstimmung der Subjects gruppieren
 .RE
 It's also possible to set the threading type on a per group basis by setting
 the group attribute variable \fBthread_articles\fP to 0 \(en 5 in the file
@@ -2286,8 +2292,8 @@ Falls ON: Catchup (als gelesen markieren) der Gruppe/des Threads beim
 Verlassen mit der linken Cursortaste. Voreinstellung ist ON.
 .TP 
 \fBthread_score\fP
-How the total score of a thread is computed. Default is 0, the maximum score
-in this thread.
+Wie die Gesamtpunktzahl eines Threads berechnet wird. Voreinstellung ist 0,
+die maximale Punktzahl in diesem Diskussionsfaden (Thread).
 .RS +1i
 .IP 0 3
 \fBMax\fP, Maximalwert im Diskussionsfaden.
@@ -2298,8 +2304,9 @@ in this thread.
 .RE
 .TP 
 \fBtls_ca_cert_file\fP
-The name of file containing all trusted CA certificates used for NNTPS
-(\fBRFC\%8143\fP) connections. If left empty the system default will be used.
+Name der Datei, die alle vertrauenswürdigen CA\-Zertifikate enthält, die für
+NNTPS\-Verbindungen (\fBRFC\%8143\fP) verwendet werden. Falls es leer bleibt,
+wird der Systemstandard verwendet.
 .TP 
 \fBtranslit\fP
 If ON append //TRANSLIT to the first argument of \fB\%iconv_open\fP(3)  to
@@ -2309,8 +2316,9 @@ or several similarly looking characters. On systems where this extension
 doesn't exist, this option is disabled. Default is OFF.
 .TP 
 \fBtrim_article_body\fP
-Allows you to select how \fB\%tin\fP(1)  treats blank lines in article bodies.
-Default is 0. This option does not affect lines within verbatim blocks.
+Auswahl, wie \fB\%tin\fP(1) Leerzeilen in Artikelkörpern behandelt. Der
+Voreinstellung ist 0. Diese Option wirkt sich nicht auf Zeilen innerhalb von
+wortgetreu wiederzugebenden Textblöcken aus.
 .RS +1i
 .IP 0 3
 \fBArtikelrumpf nicht anpassen\fP.
@@ -2343,9 +2351,10 @@ Falls ON, werden weiche Bindestriche (U+00AD) von nicht wörtlichen Blöcken
 bei der Artikelanzeige entfernt. Voreinstellung ist OFF.
 .TP 
 \fBunderscores_regex\fP
-A regular expression that will be applied when reading articles. All
-matching words are shown in \fBcol_markdash\fP or \fBmono_markdash\fP. If
-\fBunderscores_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
+Regulärer Ausdruck, der beim Lesen von Artikeln angewendet wird. Alle
+passenden Wörter werden in \fBcol_markdash\fP oder \fBmono_markdash\fP
+angezeigt. Falls \fBunderscores_regex\fP leer ist, verwendet \fB\%tin\fP(1) einen
+integrierten Standardwert.
 .TP 
 \fBunlink_article\fP
 Falls ON entferne \fI${TIN_HOMEDIR:\-"$HOME"}/.article\fP nach dem
@@ -2459,9 +2468,9 @@ Legt den Namen Ihrer Organisation fest. $\fBORGANIZATION\fP überschreibt den
 angegebenen Wert.
 .TP 
 \fBnewslibdir\fP
-Defines the default place for some configuration files, common values are
-\fI/usr/lib/news\fP, \fI/var/lib/news\fP, \fI/usr/local/lib/news\fP or
-\fI/news/db\fP. $\fBTIN_LIBDIR\fP overrides any specified value.
+Definiert den Standardspeicherort für einige Konfigurationsdateien. Übliche
+Werte sind \fI/usr/lib/news\fP, \fI/var/lib/news\fP, \fI/usr/local/lib/news\fP oder
+\fI/news/db\fP. $\fBTIN_LIBDIR\fP übersteuert den angegebenen Wert.
 .TP 
 \fBbugaddress\fP
 Definiert die E\-Mail\-Adresse, an die Benutzer Fehlerberichte über eine
@@ -2500,7 +2509,7 @@ Spool\-Stil), übliche Werte sind \fI/var/spool/news,\fP, \fI/usr/spool/news\fP,
 .TP 
 \fBoverviewdir\fP
 Basisverzeichnis Ihrer NOV Daten \fB\%newsoverview\fP(5) (traditioneller
-Spool\-Stil, kann indentisch mit \fIspooldir\fP sein), übliche Werte sind
+Spool\-Stil, kann identisch mit \fIspooldir\fP sein), übliche Werte sind
 \fI/var/spool/overview\fP, \fI/usr/spool/overview\fP,
 \fI/news/overview\fP. $\fBTIN_NOVROOTDIR\fP überschreibt einen angegebenen Wert.
 .TP 
@@ -2521,9 +2530,10 @@ diese Einstellung nur ändern müssen wenn sich Ihre Konfiguration
 unterscheidet.
 .TP 
 \fBactivetimesfile\fP
-Full pathname of your newssystem's active.times file; usually the file
-resides in \fInewslibdir\fP and is named \fIactive.times\fP, so you only have to
-change this setting if your configuration differs.
+Vollständiger Pfadname der active.times\-Datei Ihres Newssystems;
+normalerweise befindet sich die Datei in \fInewslibdir\fP und heißt
+\fIactive.times\fP, daher müssen Sie diese Einstellung nur ändern, wenn Ihre
+Konfiguration abweicht.
 .TP 
 \fBnewsgroupsfile\fP
 Vollständiger Pfadname der Newsgroups\-Datei Ihres Newssystems; normalerweise
