@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-22
+ *  Updated   : 2024-03-16
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -107,7 +107,8 @@ select_right(
 void
 selection_page(
 	int start_groupnum,
-	int num_cmd_line_groups)
+	int num_cmd_line_groups,
+	char *messageid)
 {
 	char buf[LEN];
 	char key[MAXKEYLEN];
@@ -126,6 +127,17 @@ selection_page(
 	Raw(TRUE);
 	ClearScreen();
 
+	if (cmdline.args & CMDLINE_MSGID) { /* -L cmd */
+		switch(show_article_by_msgid(messageid)) {
+			case LOOKUP_ART_UNAVAIL:
+				wait_message(2, _(txt_art_unavailable));
+				break;
+
+			default:
+				break;
+		}
+	}
+
 	/*
 	 * If user specified only 1 cmd line groupname (eg. tin -r alt.sources)
 	 * then go there immediately.
@@ -134,6 +146,7 @@ selection_page(
 		select_read_group();
 
 	cursoroff();
+
 	show_selection_page();	/* display group selection page */
 
 	forever {
@@ -1669,18 +1682,20 @@ show_article_by_msgid(
 		return LOOKUP_UNAVAIL;
 
 	if (messageid) {
-		idptr = messageid;
-		newsgroups = lookup_msgid(idptr);
-	} else {
-		if (prompt_string(_(txt_enter_message_id), id + 1, HIST_MESSAGE_ID) && id[1]) {
+		/* sizeof(id) - 2 to have space for '>' later on if necessary */
+		if (snprintf(id + 1, sizeof(id) - 2, "%s", messageid) > 0)
 			idptr = str_trim(id + 1);
-			if (id[1] != '<') {
-				id[0] = '<';
-				strcat(id, ">");
-				idptr = id;
-			}
-			newsgroups = lookup_msgid(idptr);
+	} else {
+		if (prompt_string(_(txt_enter_message_id), id + 1, HIST_MESSAGE_ID) && id[1])
+			idptr = str_trim(id + 1);
+	}
+
+	if (idptr) {
+		if (*idptr != '<') {
+			*(--idptr) = '<';
+			strcat(idptr, ">");
 		}
+		newsgroups = lookup_msgid(idptr);
 	}
 
 	if (!newsgroups)

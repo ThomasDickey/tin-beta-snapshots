@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-19
+ *  Updated   : 2024-03-15
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -195,8 +195,6 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  * defines and typedefs for 64 bit article numbers
  *
  * TODO: what if !CPP_DOES_CONCAT
- *       add configure check for PRIdLEAST64
- *       add configure check for SCNdLEAST64
  *       add configure check for INT64_MAX, LLONG_MAX, LONG_MAX
  */
 #	if defined(HAVE_INT_LEAST64_T) && !defined(HAVE_INTTYPES_H)
@@ -214,7 +212,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	endif /* HAVE_STDINT_H */
 #endif /* ENABLE_LONG_ARTICLE_NUMBERS && !SMALL_MEMORY_MACHINE */
 #ifdef USE_LONG_ARTICLE_NUMBERS
-#	if defined(HAVE_INT_LEAST64_T) && defined(HAVE_INT64_C)
+#	if defined(HAVE_INT_LEAST64_T) && defined(HAVE_PRIDLEAST64) && defined(HAVE_SCNDLEAST64) && defined(HAVE_INT64_C)
 #		include <inttypes.h>
 		typedef int_least64_t t_artnum;
 #		define T_ARTNUM_PFMT PRIdLEAST64
@@ -227,7 +225,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #		define T_ARTNUM_SFMT "lld"
 #		define T_ARTNUM_CONST(v) v ## LL
 #		define ARTNUM_MAX LLONG_MAX
-#	endif /* HAVE_INT_LEAST64_T && HAVE_INT64_C */
+#	endif /* HAVE_INT_LEAST64_T && HAVE_PRIDLEAST64 && HAVE_SCNDLEAST64 && HAVE_INT64_C */
 #	ifdef HAVE_ATOLL
 #		define atoartnum atoll
 #	else
@@ -1164,12 +1162,13 @@ enum {
 /*
  * indicate given cmd-line options
  */
-#define CMDLINE_GETART_LIMIT	1
-#define CMDLINE_MAILDIR			2
-#define CMDLINE_NNTPSERVER		4
-#define CMDLINE_SAVEDIR			8
-#define CMDLINE_USE_COLOR		16
-#define CMDLINE_NNTP_TIMEOUT	32
+#define CMDLINE_GETART_LIMIT	(1 << 0)
+#define CMDLINE_MAILDIR			(1 << 1)
+#define CMDLINE_NNTPSERVER		(1 << 2)
+#define CMDLINE_SAVEDIR			(1 << 3)
+#define CMDLINE_USE_COLOR		(1 << 4)
+#define CMDLINE_NNTP_TIMEOUT	(1 << 5)
+#define CMDLINE_MSGID			(1 << 6)
 
 
 /*
@@ -1572,7 +1571,8 @@ struct t_cmdlineopts {
 	char maildir[PATH_LEN];		/* maildir */
 	char nntpserver[PATH_LEN];	/* nntpserver */
 	char savedir[PATH_LEN];		/* savedir */
-	unsigned int args:6;		/* given options */
+	char msgid[PATH_LEN];	/* messageid (TODO: reduce to 250 as of RFC 3977 3.6 & RFC 5536 3.1.3 if done everywhere in the code) */
+	unsigned int args:7;		/* given options */
 };
 
 /*
@@ -1681,12 +1681,12 @@ struct t_newsheader {
 /*
  * used as flags for t_attach_item
  */
-#define ATTACH_SHOW_CONTENT		1 << 0 /* content visible */
-#define ATTACH_SHOW_BOTH		1 << 1 /* description and content visible */
-#define ATTACH_OMIT_DESC		1 << 2 /* description can be omitted */
-#define ATTACH_OMIT_BOTH		1 << 3 /* description and content can be omitted */
-#define ATTACH_ITEM_IS_TYPE		1 << 4 /* content type */
-#define ATTACH_ITEM_IS_SUBTYPE	1 << 5 /* content subtype */
+#define ATTACH_SHOW_CONTENT		(1 << 0) /* content visible */
+#define ATTACH_SHOW_BOTH		(1 << 1) /* description and content visible */
+#define ATTACH_OMIT_DESC		(1 << 2) /* description can be omitted */
+#define ATTACH_OMIT_BOTH		(1 << 3) /* description and content can be omitted */
+#define ATTACH_ITEM_IS_TYPE		(1 << 4) /* content type */
+#define ATTACH_ITEM_IS_SUBTYPE	(1 << 5) /* content subtype */
 
 /*
  * struct t_attach_item - information about a specific header part of a mime attachment
@@ -2548,9 +2548,9 @@ extern int fclose(FILE *);
 #endif /* USE_CANLOCK */
 
 /* gsasl */
-#ifdef USE_SASL
+#ifdef USE_GSASL
 #	include <gsasl.h>
-#endif /* USE_SASL */
+#endif /* USE_GSASL */
 
 /*
  * adapted from ncurses curses.priv.h:

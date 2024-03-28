@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-07
+ *  Updated   : 2024-03-27
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -173,6 +173,8 @@ main(
 	 * These override the configured in values
 	 */
 	cmdargs = read_cmd_line_options(argc, argv);
+	if (cmdargs != argv_orig)
+		handle_cmdargs(TRUE);
 
 	/* preinit keybindings if interactive */
 	if (!batch_mode)
@@ -477,7 +479,7 @@ main(
 	/*
 	 * Work loop
 	 */
-	selection_page(start_groupnum, num_cmd_line_groups);
+	selection_page(start_groupnum, num_cmd_line_groups, (cmdline.args & CMDLINE_MSGID) ? cmdline.msgid : NULL);
 	/* NOTREACHED */
 	return 0;
 }
@@ -485,7 +487,7 @@ main(
 
 /*
  * process command line options
- * [01235789beEFijJKLOyY] are unused
+ * [01235789beEFijJKOyY] are unused
  * [W] is reserved
  * [BPU] have been in use at some time, but now are unused:
  *   B BBS mode (M_AMIGA only)
@@ -494,7 +496,7 @@ main(
  * reused with different function:
  *   C was count articles, now is activate COMPRESS DEFLATE
  */
-#define OPTIONS "46aAcCdD:f:g:G:hHI:klm:M:nNop:qQrRs:St:TuvVwxXzZ"
+#define OPTIONS "46aAcCdD:f:g:G:hHI:klL:m:M:nNop:qQrRs:St:TuvVwxXzZ"
 
 static char **
 read_cmd_line_options(
@@ -691,6 +693,20 @@ read_cmd_line_options(
 			case 'l':
 				list_active = TRUE;
 				break;
+
+			case 'L':
+#ifdef NNTP_ABLE
+				my_strncpy(cmdline.msgid, optarg, sizeof(cmdline.msgid) - 1);
+				cmdline.args |= CMDLINE_MSGID;
+				break;
+#else
+				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				FREE_ARGV_IF_NEEDED(argv_orig, argv);
+				free_all_arrays();
+				giveup();
+				/* keep lint quiet: */
+				/* NOTREACHED */
+#endif /* NNTP_ABLE */
 
 			case 'm':
 				my_strncpy(cmdline.maildir, optarg, sizeof(cmdline.maildir) - 1);
@@ -913,7 +929,7 @@ read_cmd_line_options(
 			(void) uname(&uts);
 			get_newsrcname(newsrc, sizeof(newsrc), uts.nodename);
 #else
-			char nodenamebuf[256]; /* SUSv2 limit; better use HOST_NAME_MAX */
+			char nodenamebuf[256] = { '\0' }; /* SUSv2 limit; better use HOST_NAME_MAX */
 #	ifdef HAVE_GETHOSTNAME
 			(void) gethostname(nodenamebuf, sizeof(nodenamebuf));
 #	endif /* HAVE_GETHOSTNAME */
@@ -1000,7 +1016,7 @@ read_cmd_line_options(
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && !read_news_via_nntp) {
 		wait_message(3, _(txt_useless_combination), _(txt_reading_from_spool), "-D nntp", "-D nntp");
-		debug &= ~DEBUG_NNTP;
+		debug &= ~((unsigned) DEBUG_NNTP);
 	}
 #	endif /* DEBUG */
 
@@ -1099,6 +1115,11 @@ usage(
 #endif /* NNTP_ABLE */
 
 	error_message(2, _(txt_usage_read_only_active));
+
+#ifdef NNTP_ABLE
+	error_message(2, _(txt_usage_lookup_id));
+#endif /* NNTP_ABLE */
+
 	error_message(2, _(txt_usage_maildir), tinrc.maildir);
 	error_message(2, _(txt_usage_mail_new_news_to_user));
 	error_message(2, _(txt_usage_read_only_subscribed));
@@ -1258,6 +1279,24 @@ create_mail_save_dirs(
 
 
 /*
+ * TODO: find a better solution to free() cmdargs from outside main.c
+ */
+void
+handle_cmdargs(
+	t_bool init)
+{
+	static t_bool argv_modified = FALSE;
+
+	if (init)
+		argv_modified = TRUE;
+	else if (argv_modified) {
+		free(*(cmdargs + 1));
+		free(cmdargs);
+	}
+}
+
+
+/*
  * we don't try do free() any previously malloc()ed mem here as exit via
  * giveup() indicates a serious error and keeping track of what we've
  * already malloc()ed would be a PITA.
@@ -1281,4 +1320,4 @@ giveup(
 	close_msglog();
 
 	exit(EXIT_FAILURE);
-}
+  }

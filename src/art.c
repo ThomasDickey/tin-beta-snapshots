@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-01-17
+ *  Updated   : 2024-03-22
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -848,9 +848,8 @@ read_art_headers(
 	if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS) {
 		if (chdir(dir) == -1) {
 #ifdef DEBUG
-			int e = errno;
 			if (debug & DEBUG_MISC)
-				error_message(2, "chdir(%s): Error: %s", dir, strerror(e));
+				perror_message("chdir(%s)", dir);
 #endif /* DEBUG */
 		}
 	}
@@ -1792,7 +1791,7 @@ get_path_header(
 	}
 
 	if (fp) {
-		int j = 0;
+		t_artnum j = 0;
 
 		prep_msg = fmt_string(_(txt_prep_for_filter_on_path), cur, cnt);
 		while ((buf = tin_fgets(fp, FALSE)) != NULL && buf[0] != '.') {
@@ -1809,7 +1808,7 @@ get_path_header(
 				if (arts[i].artnum == artnum) {
 					FreeIfNeeded(arts[i].path);
 					arts[i].path = my_strdup(ptr);
-					j = (int) i;
+					j = i;
 					break;
 				}
 			}
@@ -2380,6 +2379,7 @@ read_overview(
 			snprintf(cbuf, sizeof(cbuf), "%s XREF %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT, nntp_caps.hdr_cmd, min, MAX(min, max));
 			group_msg = fmt_string(txt_xref_loop, nntp_caps.hdr_cmd); /* TODO: find a better message */
 			if ((fp = nntp_command(cbuf, nntp_caps.hdr ? OK_HDR : OK_HEAD, NULL, 0)) != NULL) { /* RFC 2980 (XHDR) uses 221; RFC 3977 (HDR) uses 225 */
+				top_art = 0;
 				while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 #	ifdef DEBUG
 					if ((debug & DEBUG_NNTP) && verbose)
@@ -2390,8 +2390,10 @@ read_overview(
 					if (artnum <= 0 || artnum < group->xmin || artnum > group->xmax)
 						continue;
 					art = &arts[top_art];
-					set_article(art);
-					if (!art->xref && !strstr(ptr, "(none)")) {
+					if (artnum != art->artnum) /* try harder to find a match? while (&arts[i++].artnum != artnum) ...? */
+						continue;
+					FreeAndNull(art->xref);
+					if (!strstr(ptr, "(none)")) {
 						if ((q = strchr(ptr, ' ')) == NULL) /* skip article number */
 							continue;
 						ptr = q;
@@ -2404,6 +2406,8 @@ read_overview(
 					/* we might lose accuracy here, but that shouldn't hurt */
 					if (artnum % (MODULO_COUNT_NUM * 20) == 0)
 						show_progress(group_msg, artnum - min, max - min);
+
+					top_art++;
 				}
 #	ifdef DEBUG
 				/* log end of multiline response to get timing data */
@@ -3167,8 +3171,8 @@ score_comp_base(
 	 * This determines the order in a group of equally scored threads.
 	 */
 	if (a == b) {
-		const struct t_article *s1 = &arts[*(const long *) p1];
-		const struct t_article *s2 = &arts[*(const long *) p2];
+		t_comptype s1 = &arts[*(const long *) p1];
+		t_comptype s2 = &arts[*(const long *) p2];
 		t_compfunc comp_func = eval_sort_arts_func(CURR_GROUP.attribute->sort_article_type);
 
 		if (comp_func)

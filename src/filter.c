@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2024-01-10
+ *  Updated   : 2024-03-21
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -216,7 +216,7 @@ test_match(
 		if (!cache->re)
 			compile_regex(regex, cache, (nocase ? REGEX_CASELESS : 0));
 		if (cache->re) {
-			error = match_regex_ex(string, (int) strlen(string), 0, 0, cache);
+			error = match_regex_ex(string, (REGEX_SIZE) strlen(string), 0, 0, cache);
 			if (error >= 0)
 				return 1;
 			else if (error != REGEX_ERROR_NOMATCH) { /* also exclude BADUTF8 ? */
@@ -333,8 +333,13 @@ read_filter_file(
 	static t_bool first_read = TRUE;
 	struct t_version *upgrade = NULL;
 
-	if ((fp = fopen(file, "r")) == NULL)
+	if ((fp = fopen(file, "r")) == NULL) {
+#ifdef DEBUG
+		if (debug & DEBUG_FILTER)
+			perror_message(_(txt_cannot_open), file);
+#endif /* DEBUG */
 		return FALSE;
+	}
 
 	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_filter_file));
@@ -699,6 +704,7 @@ write_filter_file(
 	}
 
 	if ((fp = fopen(filename, "w+")) == NULL) {
+		perror_message("write_filter_file(%s)", filename);
 		free(file_tmp);
 		return;
 	}
@@ -1150,7 +1156,7 @@ filter_menu(
 
 	snprintf(text_time, sizeof(text_time), _(txt_time_default_days), tinrc.filter_days);
 	fmt_filter_menu_prompt(text_subj, sizeof(text_subj), ptr_filter_subj, len, art->subject);
-	snprintf(text_score, sizeof(text_score), _(txt_filter_score), (type == GLOBAL_MENU_FILTER_KILL ? -tinrc.score_kill : tinrc.score_select));
+	snprintf(text_score, sizeof(text_score), _(txt_filter_score), (type == GLOBAL_MENU_FILTER_KILL ? tinrc.score_kill : tinrc.score_select));
 	fmt_filter_menu_prompt(text_from, sizeof(text_from), ptr_filter_from, len, art->from);
 	fmt_filter_menu_prompt(text_msgid, sizeof(text_msgid), ptr_filter_msgid, len - 4, MSGID(art));
 
@@ -1395,7 +1401,7 @@ filter_menu(
 	 * Expire time
 	 */
 	double_time = my_malloc(strlen(text_time) + 4); /* "2x " prefix */
-	quat_time = my_malloc(strlen(text_time) + 4); /* "4x " prefix*/
+	quat_time = my_malloc(strlen(text_time) + 4); /* "4x " prefix */
 	sprintf(double_time, "2x %s", text_time);
 	sprintf(quat_time, "4x %s", text_time);
 	list = my_malloc(sizeof(char *) * 4);
@@ -1550,7 +1556,7 @@ quick_filter(
 	rule.comment = add_filter_comment(NULL, txt);
 
 	rule.text[0] = '\0';
-	rule.icase = icase;
+	rule.icase = icase ? 1 : 0;
 	rule.expire_time = expire;
 	rule.check_string = TRUE;
 	rule.score = (type == GLOBAL_QUICK_FILTER_KILL) ? tinrc.score_kill : tinrc.score_select;
@@ -1858,7 +1864,7 @@ filter_articles(
 	struct regex_cache *regex_cache_path = NULL;
 	t_bool filtered = FALSE;
 	t_bool error = FALSE;
-	t_bool use_regex = tinrc.wildcard;
+	t_bool use_regex = tinrc.wildcard ? TRUE : FALSE;
 
 	/*
 	 * check if there are any global filter rules
@@ -1937,6 +1943,9 @@ filter_articles(
 
 				/*
 				 * Filter on From: line
+				 *
+				 * TODO: switch to angle-addr format (RFC 5322 3.4)
+				 *       as that is what we use elsewhere?
 				 */
 				if (ptr[j].from != NULL) {
 					if (arts[i].name != NULL)
@@ -2292,7 +2301,7 @@ open_xhdr_fp(
 	if (read_news_via_nntp && !read_saved_news && nntp_caps.hdr_cmd) {
 		char buf[NNTP_STRLEN];
 
-		snprintf(buf, sizeof(buf), "%s %s %"T_ARTNUM_PFMT,"-%"T_ARTNUM_PFMT,, nntp_caps.hdr_cmd, header, min, max);
+		snprintf(buf, sizeof(buf), "%s %s %"T_ARTNUM_PFMT, "-%"T_ARTNUM_PFMT, nntp_caps.hdr_cmd, header, min, max);
 		return (nntp_command(buf, OK_HEAD, NULL, 0));
 	} else
 #	endif /* NNTP_ABLE */

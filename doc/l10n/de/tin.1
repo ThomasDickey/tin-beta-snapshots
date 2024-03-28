@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-01-10
+.\" Updated   : 2024-03-28
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -28,11 +28,12 @@ tin, rtin \- Usenet Newsreader
 .\"
 \fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|\fB\-a\fP\|]
 [\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-ACkrTzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
-\|\|\fB\-s\fP \fINews\-Verz.\fP\|] [\|\fB\-cuvZ\fP\|]
-[\|\fB\-4\fP\||\|\fB\-6\fP[\|\fB\-o\fP\||\|\fB\-w\fP\||\|\fB\-N\fP\||\|\fB\-M\fP \fIAdresse\fP\|]
-[\|\fB\-D\fP \fIDebuggrad\fP\|] [\|\fB\-G\fP \fIArtikellimit\fP\|] [\|\fB\-f\fP
-\fInewsrc\-Datei\fP\|] [\|\fB\-g\fP \fIServer\fP\|] [\|\fB\-m\fP \fIMail\-Verz.\fP\|] [\|\fB\-p\fP
-\fIPort\fP\|] [\|\fB\-t\fP \fITimeout\fP\|] [\|\fB\-I\fP \fIindex\-Verz.\fP\|]\ \|[\fINewsgruppe\fP\|[\|,.\|.\|.\|]\|]\|]
+\|\|\fB\-s\fP \fINews\-Verz.\fP\|] [\|\fB\-cuvZ\fP\|] [\|\fB\-4\fP\||\|\fB\-6\fP\|]
+[\|\fB\-o\fP\||\|\fB\-w\fP\||\|\fB\-N\fP\||\|\fB\-M\fP \fIAdresse\fP\|] [\|\fB\-D\fP
+\fIDebuggrad\fP\|] [\|\fB\-G\fP \fIArtikellimit\fP\|] [\|\fB\-f\fP \fInewsrc\-Datei\fP\|]
+[\|\fB\-g\fP \fIServer\fP\|[\|:\fIPort\fP\|]\|] [\|\fB\-L\fP \fIMessage\-ID\fP\|] [\|\fB\-m\fP
+\fIMail\-Verz.\fP\|] [\|\fB\-p\fP \fIPort\fP\|] [\|\fB\-t\fP \fITimeout\fP\|] [\|\fB\-I\fP
+\fIindex\-Verz.\fP\|]\ \|[\fINewsgruppe\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH BESCHREIBUNG
 .IX Header BESCHREIBUNG
 \fBtin\fP ist ein einfach zu bedienender Newsreader für das Usenet. Er kann
@@ -164,6 +165,10 @@ oder über LIST) zu Lesen und dann die Artikelanzahl über den Befehl NNTP
 GROUP ((\fBRFC\%3977\fP) \*(rq\fB\-ln\fP\*(rq zu überprüfen. Wenn das Lesen über NNTP und
 LIST COUNTS (\fBRFC\%6048\fP) verfügbar ist, wird dies stattdessen verwendet,
 da es genauere Artikelzahlen liefert.
+.TP 
+\fB\-L\fP
+Zeigt die Nachricht mit der angegebenen Message\-ID an, falls diese verfügbar
+ist. Nur verfügbar, wenn via NNTP gelesen wird.
 .TP 
 \fB\-m\fP\fI Verzeichnis\fP
 Zu benutzendes Mailbox\-Verzeichnis. Voreinstellung ist
@@ -765,7 +770,7 @@ auto\-selection on author where reader wants to see entire thread.
 \fBGroupSelPattern '='\fP
 Prompts for a pattern with which to match on. All threads whose subjects
 match the pattern will be marked selected. A pattern of \*(rq*\*(rq will match all
-subjects. Entering just '\fB<CR>\fP' will re\-use the last pattern that
+subjects. Entering just '\fB<CR>\fP' will reuse the last pattern that
 was entered.
 .TP 
 \fBGroupReverseSel '@'\fP
@@ -866,7 +871,8 @@ prompt asks how to proceed.
 Öffnet den Thread unter der aktuellen Cursorposition.
 .TP 
 \fBLookupMessage 'L'\fP
-Artikel anhand der \*(rqMessage\-ID:\*(rq nachschlagen.
+Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
+current group are searched.
 .TP 
 \fBGroupMail 'm'\fP
 Mailt den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
@@ -1086,7 +1092,8 @@ articles is set, the range will be marked as read instead of the current
 article. When tagged articles are present, a prompt asks how to proceed.
 .TP 
 \fBLookupMessage 'L'\fP
-Artikel anhand der \*(rqMessage\-ID:\*(rq nachschlagen.
+Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
+current group are searched.
 .TP 
 \fBThreadMail 'm'\fP
 Mailt den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
@@ -1197,8 +1204,9 @@ um.
 ROT\-13 Entschlüsseln ein\-/ausschalten.
 .TP 
 \fBPageToggleUue '('\fP
-Toggle the display of uuencoded sections. The default behavior is taken from
-the \fBhide_uue\fP variable in the tinrc file.
+Schalten Sie die Anzeige von uuencodierten Abschnitten um. Das
+Standardverhalten wird durch die Variable \fBhide_uue\fP in der tinrc\-Datei
+festgelegt.
 .TP 
 \fBPageReveal ')'\fP
 The form feed character (^L) is often used to hide 'spoilers' that the
@@ -1325,7 +1333,8 @@ ungelesenen Thread.
 Zeigt das Thread\-Menü an, zu dem der aktuelle Artikel gehört.
 .TP 
 \fBLookupMessage 'L'\fP
-Artikel anhand der \*(rqMessage\-ID:\*(rq nachschlagen.
+Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
+current group are searched.
 .TP 
 \fBPageMail 'm'\fP
 Mailt den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
@@ -1362,12 +1371,12 @@ Kehrt zur vorherigen Ebene zurück.
 Beendet \fBtin\fP sofort, ohne Bestätigungsnachfrage.
 .TP 
 \fBPageReplyQuote 'r'\fP
-Reply through mail to the author of the current article with a copy of the
-article included.
+Per E\-Mail an den Autor des aktuellen Artikels antworten und eine Kopie des
+Artikels beifügen.
 .TP 
 \fBPageReply 'R'\fP
-Reply through mail to the author of the current article without including
-the original article.
+Per E\-Mail an den Autor des aktuellen Artikels antworten ohne eine Kopie des
+Artikels beizufügen.
 .TP 
 \fBPageSave 's'\fP
 Speichert den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
@@ -1393,8 +1402,8 @@ Eine Liste der URLs im aktuellen Artikel anzeigen. Weitere Informationen
 finden Sie im Abschnitt "URL LISTE".
 .TP 
 \fBPageViewAttach 'V'\fP
-Display a list of attachments of the current article. See the section
-"ATTACHMENT LISTING" for more information.
+Zeigt eine Liste der Anhänge des aktuellen Artikels an. Weitere
+Informationen finden Sie im Abschnitt "ANHANGSVERZEICHNIS".
 .TP 
 \fBPost 'w'\fP
 Veröffentlichen Sie einen Artikel in der aktuellen Gruppe. Wenn das

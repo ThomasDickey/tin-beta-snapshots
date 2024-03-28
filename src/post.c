@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-23
+ *  Updated   : 2024-02-27
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -950,7 +950,7 @@ build_post_hist_list(
 			t_bool has_at = FALSE;
 
 			for (q = p, k = 0; *q != '\n' && !invalid; q++) {
-				if (*q < 33 || !isascii(*q)) {
+				if (*q < 33 || !isascii((unsigned char) *q)) {
 					invalid = TRUE;
 					break;
 				}
@@ -1344,7 +1344,7 @@ check_article_to_be_posted(
 		}
 
 		for (cp = line; *cp && !contains_8bit; cp++) {
-			if (!isascii(*cp)) {
+			if (!isascii((unsigned char) *cp)) {
 				contains_8bit = TRUE;
 				break;
 			}
@@ -1631,7 +1631,7 @@ check_article_to_be_posted(
 				errors_catbp |= CA_ERROR_EMPTY_NEWSGROUPS;
 			else {
 				for (hp = line + 11; *hp; hp++) {
-					if (!isascii(*hp)) {
+					if (!isascii((unsigned char) *hp)) {
 						errors_catbp |= CA_ERROR_NEWSGROUPS_NOT_7BIT;
 						break;
 					}
@@ -1662,7 +1662,7 @@ check_article_to_be_posted(
 
 		if (cp - line == 12 && !strncasecmp(line, "Distribution", 12)) {
 			for (hp = line + 13; *hp; hp++) {
-				if (!isascii(*hp)) {
+				if (!isascii((unsigned char) *hp)) {
 					errors_catbp |= CA_ERROR_DISTRIBUTIOIN_NOT_7BIT;
 					break;
 				}
@@ -1698,7 +1698,7 @@ check_article_to_be_posted(
 
 				(void) stripped_double_ngs(followupto, &ftngcnt);
 				for (hp = line + 12; *hp; hp++) {
-					if (!isascii(*hp)) {
+					if (!isascii((unsigned char) *hp)) {
 						errors_catbp |= CA_ERROR_FOLLOWUP_TO_NOT_7BIT;
 						break;
 					}
@@ -1835,7 +1835,7 @@ check_article_to_be_posted(
 				} else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					if ((num_bytes = mbtowc(&wc, cp, MB_CUR_MAX)) != -1) {
-						if (!contains_8bit && (num_bytes > 1 || !isascii(*cp)))
+						if (!contains_8bit && (num_bytes > 1 || !isascii((unsigned char) *cp)))
 							contains_8bit = TRUE;
 						if (iswprint((wint_t) wc) && ((wc_width = wcwidth(wc)) != -1))
 							col += wc_width;
@@ -1858,7 +1858,7 @@ check_article_to_be_posted(
 						col++;
 					}
 #else
-					if (!contains_8bit && !isascii(*cp))
+					if (!contains_8bit && !isascii((unsigned char) *cp))
 						contains_8bit = TRUE;
 					if (!my_isprint((unsigned char) *cp) && seen != cnt) { /* warn just once per line */
 						seen = cnt;
@@ -2935,14 +2935,21 @@ fetch_postponed_article(
 	char *bufp;
 	char *postponed_tmp;
 	char line[HEADER_LEN];
+	int n;
 	t_bool first_article;
 	t_bool prev_line_nl;
 	t_bool anything_left;
 	size_t len;
 
-	len = snprintf(NULL, 0, "%s_", postponed_articles_file);
-	postponed_tmp = my_malloc(++len);
-	snprintf(postponed_tmp, len, "%s_", postponed_articles_file);
+	if ((n = snprintf(NULL, 0, "%s_", postponed_articles_file)) < 0)
+		return FALSE;
+
+	len = (size_t) n + 1;
+	postponed_tmp = my_malloc(len);
+	if (snprintf(postponed_tmp, len, "%s_", postponed_articles_file) != n) {
+		free(postponed_tmp);
+		return FALSE;
+	}
 	in = fopen(postponed_articles_file, "r");
 	out = fopen(tmp_file, "w");
 	tmp = fopen(postponed_tmp, "w");
@@ -3358,7 +3365,6 @@ join_references(
 
 	strcpy(buffer, b);
 	free(b);
-	return;
 
 	/*
 	 * son of RFC 1036 says:
@@ -6000,7 +6006,7 @@ add_headers(
 	t_bool addmid = TRUE;
 	t_bool adddate = TRUE;
 
-	if (!(*a_message_id) || strlen(a_message_id) > NNTP_STRLEN)
+	if (!(*a_message_id) || strlen(a_message_id) > NNTP_STRLEN - 12) /* IDs are limited to 250 octets, but ... 12 = strlen("Message-ID: ") */
 		addmid = FALSE;
 
 	if ((fp_in = fopen(infile, "r")) == NULL)
@@ -6017,17 +6023,22 @@ add_headers(
 				inhdrs = FALSE;
 				if (addmid) {
 					char *msgidbuf;
-					int len;
+					int n;
+					size_t len;
 
-					len = snprintf(NULL, 0, "Message-ID: %s\n", a_message_id);
-					msgidbuf = my_malloc(++len);
-					snprintf(msgidbuf, len, "Message-ID: %.512s\n", a_message_id);
-					if (write(fd_out, msgidbuf, strlen(msgidbuf)) == (ssize_t) -1) /* abort on write errors */ {
-						writesuccess = FALSE;
+					n = snprintf(NULL, 0, "Message-ID: %s\n", a_message_id);
+					if (n > 0 && n < NNTP_STRLEN - 12) { /* IDs are limited to 250 octets, but ... */
+						len = (size_t) n + 1;
+						msgidbuf = my_malloc(len);
+						if (snprintf(msgidbuf, len, "Message-ID: %s\n", a_message_id) == n) {
+							if (write(fd_out, msgidbuf, strlen(msgidbuf)) == (ssize_t) -1) { /* abort on write errors only */
+								writesuccess = FALSE;
+								free(msgidbuf);
+								break;
+							}
+						}
 						free(msgidbuf);
-						break;
 					}
-					free(msgidbuf);
 				}
 
 				if (adddate) {

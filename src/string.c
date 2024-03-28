@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2024-02-09
+ *  Updated   : 2024-02-26
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -400,7 +400,7 @@ atol(
 		s++;
 
 	while (*s) {
-		if (isdigit(*s))
+		if (isdigit((unsigned char) *s))
 			ret = ret * 10 + (*s - '0');
 		else
 			return -1;
@@ -1079,7 +1079,7 @@ strwidth(
 char *
 strunc(
 	const char *message,
-	int len)
+	size_t len)
 {
 	char *tmp;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -1099,11 +1099,11 @@ strunc(
 	/* something went wrong using wide-chars, default back to normal chars */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-	if ((int) strlen(message) <= len)
+	if (strlen(message) <= len)
 		tmp = my_strdup(message);
 	else {
 		tmp = my_malloc(len + 1);
-		snprintf(tmp, (size_t) (len + 1), "%-.*s%s", len - 3, message, TRUNC_TAIL);
+		snprintf(tmp, len + 1, "%-.*s%s", (int) (len - 3), message, TRUNC_TAIL);
 	}
 
 	return tmp;
@@ -1115,7 +1115,7 @@ strunc(
 wchar_t *
 wstrunc(
 	const wchar_t *wmessage,
-	int len)
+	size_t len)
 {
 	wchar_t *wtmp;
 
@@ -1123,7 +1123,7 @@ wstrunc(
 	wtmp = my_wcsdup(wmessage);
 	wconvert_to_printable(wtmp, FALSE);
 
-	if (wcswidth(wtmp, wcslen(wtmp)) > len) {
+	if (wcswidth(wtmp, wcslen(wtmp)) > (int) len) {
 		/* wtmp must be truncated */
 		size_t len_tail;
 		wchar_t *wtmp2, *tail;
@@ -1139,7 +1139,7 @@ wstrunc(
 			tail = char2wchar_t(TRUNC_TAIL);
 
 		len_tail = tail ? wcslen(tail) : 0;
-		wtmp2 = wcspart(wtmp, (int) ((size_t) len - len_tail), FALSE);
+		wtmp2 = wcspart(wtmp, (int) (len - len_tail), FALSE);
 		free(wtmp);
 		wtmp = my_realloc(wtmp2, sizeof(wchar_t) * (wcslen(wtmp2) + len_tail + 1));	/* wtmp2 isn't valid anymore and doesn't have to be free()ed */
 		if (!tail)
@@ -1646,7 +1646,7 @@ parse_format_string(
 
 			case 'I':
 				/* Initials */
-				if (cCOLS > (int) min_cols && !(flags & INITIALS) && (signal_context == cGroup || signal_context == cThread)) {
+				if (cCOLS > min_cols && !(flags & INITIALS) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= INITIALS;
 					fmt->len_initials = (len ? len : 3);
 					cnt += fmt->len_initials;
@@ -1666,7 +1666,7 @@ parse_format_string(
 
 			case 'm':
 				/* Article marks */
-				if (cCOLS > (int) min_cols && !(flags & ART_MARKS) && (signal_context == cGroup || signal_context == cThread)) {
+				if (cCOLS > min_cols && !(flags & ART_MARKS) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= ART_MARKS;
 					cnt += 3;
 				} else

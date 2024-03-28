@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2023-12-22
+ *  Updated   : 2024-03-21
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -319,7 +319,7 @@ open_newsgroups_fp(
 										snprintf(buff + strlen(buff), sizeof(buff) - strlen(buff), ",%s", active[i].name);
 										continue;
 									} else {
-										put_server(buff);
+										put_server(buff, FALSE);
 										*buff = '\0';
 										j++;
 									}
@@ -349,7 +349,7 @@ open_newsgroups_fp(
 #			endif /* DEBUG && NNTP_ABLE */
 
 #		else
-							put_server(buff);
+							put_server(buff, FALSE);
 							*buff = '\0';
 							j++;
 #		endif /* DISABLE_PIPELINING */
@@ -357,7 +357,7 @@ open_newsgroups_fp(
 					}
 				}
 				if (*buff) {
-					put_server(buff);
+					put_server(buff, FALSE);
 					j++;
 				}
 #		ifndef DISABLE_PIPELINING
@@ -381,8 +381,10 @@ open_newsgroups_fp(
 				}
 				/* TODO: add 483 (RFC 3977) support */
 				if (no_more_wildmat == ERR_NOAUTH || no_more_wildmat == NEED_AUTHINFO) {
-					if (!authenticate(nntp_server, userid, FALSE))
+					if (!authenticate(nntp_server, userid, FALSE)) {
+						fclose(result);
 						tin_done(EXIT_FAILURE, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
+					}
 				}
 #		endif /* !DISABLE_PIPELINING */
 				fclose(result);

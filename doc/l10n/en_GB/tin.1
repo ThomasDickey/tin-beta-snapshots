@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-01-10
+.\" Updated   : 2024-03-28
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -31,8 +31,9 @@ tin, rtin \- Usenet newsreader
 \|\|\fB\-s\fP \fINews_dir\fP\|] [\|\fB\-cuvZ\fP\|] [\|\fB\-4\fP\||\|\fB\-6\fP\|]
 [\|\fB\-o\fP\||\|\fB\-w\fP\||\|\fB\-N\fP\||\|\fB\-M\fP \fIaddress\fP\|] [\|\fB\-D\fP
 \fIdebug_level\fP\|] [\|\fB\-G\fP \fIarticle_limit\fP\|] [\|\fB\-f\fP \fInewsrc_file\fP\|]
-[\|\fB\-g\fP \fIserver\fP\|[\|:\fIport\fP\|]\|] [\|\fB\-m\fP \fIMail_dir\fP\|] [\|\fB\-p\fP
-\fIport\fP\|] [\|\fB\-t\fP \fItimeout\fP\|] [\|\fB\-I\fP \fIindex_dir\fP\|]\ \|[\fInewsgroup\fP\|[\|,.\|.\|.\|]\|]\|]
+[\|\fB\-g\fP \fIserver\fP\|[\|:\fIport\fP\|]\|] [\|\fB\-L\fP \fIMessage\-ID\fP\|] [\|\fB\-m\fP
+\fIMail_dir\fP\|] [\|\fB\-p\fP \fIport\fP\|] [\|\fB\-t\fP \fItimeout\fP\|] [\|\fB\-I\fP
+\fIindex_dir\fP\|]\ \|[\fInewsgroup\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH DESCRIPTION
 .IX Header DESCRIPTION
 \fBtin\fP is a full\-screen easy to use Usenet newsreader. It can read news
@@ -160,6 +161,10 @@ directly or via LIST) and then check the article count via NNTP GROUP
 command (\fBRFC\%3977\fP) \*(rq\fB\-ln\fP\*(rq. If reading via NNTP and LIST COUNTS
 (\fBRFC\%6048\fP) is available that is used instead as it gives more accurate
 article counts.
+.TP 
+\fB\-L\fP
+Show the message with the given Message\-ID if available. Only available when
+reading via NNTP.
 .TP 
 \fB\-m\fP\fI dir\fP
 Mailbox directory to use. Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fP.
@@ -735,7 +740,7 @@ auto\-selection on author where reader wants to see entire thread.
 \fBGroupSelPattern '='\fP
 Prompts for a pattern with which to match on. All threads whose subjects
 match the pattern will be marked selected. A pattern of \*(rq*\*(rq will match all
-subjects. Entering just '\fB<CR>\fP' will re\-use the last pattern that
+subjects. Entering just '\fB<CR>\fP' will reuse the last pattern that
 was entered.
 .TP 
 \fBGroupReverseSel '@'\fP
@@ -834,7 +839,8 @@ prompt asks how to proceed.
 Open the thread under the current cursor position.
 .TP 
 \fBLookupMessage 'L'\fP
-Look up article by \*(rqMessage\-ID:\*(rq.
+Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
+current group are searched.
 .TP 
 \fBGroupMail 'm'\fP
 Mail current article / thread / auto\-selected (hot) articles / articles
@@ -1046,7 +1052,8 @@ articles is set, the range will be marked as read instead of the current
 article. When tagged articles are present, a prompt asks how to proceed.
 .TP 
 \fBLookupMessage 'L'\fP
-Look up article by \*(rqMessage\-ID:\*(rq.
+Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
+current group are searched.
 .TP 
 \fBThreadMail 'm'\fP
 Mail current article / thread / auto\-selected (hot) articles / articles
@@ -1273,7 +1280,8 @@ Mark rest of thread as read and move onto the next unread thread.
 Show the thread menu that the current article is a part of.
 .TP 
 \fBLookupMessage 'L'\fP
-Look up article by \*(rqMessage\-ID:\*(rq.
+Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
+current group are searched.
 .TP 
 \fBPageMail 'm'\fP
 Mail current article / thread / auto\-selected (hot) articles / articles

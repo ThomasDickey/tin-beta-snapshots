@@ -3,7 +3,7 @@
  *  Module    : mimetypes.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-31
- *  Updated   : 2022-04-09
+ *  Updated   : 2024-03-07
  *  Notes     : mime.types handling
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -174,16 +174,25 @@ lookup_extension(
 {
 	char *type;
 	char buf[PATH_LEN];
+	int n;
+	size_t tlen;
 
 	if (!major || !minor) {
 		*extension = '\0';
 		return FALSE;
 	}
 
-	type = my_malloc(strlen(major) + 1 + strlen(minor) + 1);
-	strcpy(type, major);
-	strcat(type, "/");
-	strcat(type, minor);
+	if ((n = snprintf(NULL, 0, "%s/%s", major, minor)) < 0) {
+		*extension = '\0';
+		return FALSE;
+	}
+	tlen = (size_t) n + 1;
+	type = my_malloc(tlen);
+	if (snprintf(type, tlen, "%s/%s", major, minor) != n) {
+		*extension = '\0';
+		free(type);
+		return FALSE;
+	}
 
 	joinpath(buf, sizeof(buf), homedir, ".mime.types");
 	if (_lookup_extension(extension, ext_len, buf, type)) {

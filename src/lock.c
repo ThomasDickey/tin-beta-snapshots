@@ -3,7 +3,7 @@
  *  Module    : lock.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1998-07-27
- *  Updated   : 2014-02-01
+ *  Updated   : 2024-02-27
  *  Notes     :
  *
  * Copyright (c) 1998-2024 Urs Janssen <urs@tin.org>
@@ -268,13 +268,19 @@ dot_unlock(
 	const char *filename)
 {
 	char *lockfile;
+	int n;
+	size_t llen;
 	t_bool rval = FALSE;
 
-	lockfile = my_malloc(strlen(filename) + strlen(LOCK_SUFFIX) + 2);
-	strcpy(lockfile, filename);
-	strcat(lockfile, LOCK_SUFFIX);
-	if (!unlink(lockfile))
-		rval = TRUE;
+	if ((n = snprintf(NULL, 0, "%s%s", filename, LOCK_SUFFIX)) < 0)
+		return rval;
+
+	llen = (size_t) n + 1;
+	lockfile = my_malloc(llen);
+	if (snprintf(lockfile, llen, "%s%s", filename, LOCK_SUFFIX) == n) {
+		if (!unlink(lockfile))
+			rval = TRUE;
+	}
 	free(lockfile);
 	return rval;
 }

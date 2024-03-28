@@ -169,7 +169,7 @@ wildmatpos(
 	REGEX_NOFFSET srch_offsets_size)
 {
 	char *txt, *t, *px;
-	int i;
+	size_t i;
 	REGEX_SIZE prev_offset = srch_offsets[1];
 	t_bool ret = FALSE;
 
@@ -204,7 +204,7 @@ wildmatpos(
 		if ((ret = (DoMatch(t, px) == 1))) {
 			/* remove the trailing '*' */
 			px[strlen(px) - 1] = '\0';
-			for (i = (int) strlen(t); i > 0; i--) {
+			for (i = strlen(t); i > 0; i--) {
 				t[i] = '\0';
 				if ((ret = (DoMatch(t, px) == 1))) {
 					if (srch_offsets_size >= 2) {

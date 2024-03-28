@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2024-01-19
+ *  Updated   : 2024-03-21
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2024 Dirk Nimmich <nimmich@muenster.de>
@@ -59,7 +59,7 @@ static t_bool process_mapping(char *keyname, char *keys);
 	static t_bool add_key(struct keylist *keys, const char key, t_function func, t_bool override);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-struct keylist attachment_keys = { NULL, 0, 0};
+struct keylist attachment_keys = { NULL, 0, 0 };
 struct keylist feed_post_process_keys = { NULL, 0, 0 };
 struct keylist feed_supersede_article_keys = { NULL, 0, 0 };
 struct keylist feed_type_keys = { NULL, 0, 0 };
@@ -332,8 +332,7 @@ read_keymap_file(
 	char *line, *keydef, *kname;
 	char *p, *q;
 	char *map = NULL;
-	char *l = NULL;
-	char *locale = NULL;
+	char *l, *locale;
 	char *language = NULL;
 	char *territory = NULL;
 	char *codeset = NULL, *normcodeset = NULL;
@@ -342,6 +341,7 @@ read_keymap_file(
 	char dirs[3][PATH_LEN]; /* 2 dirs + endmark */
 	char buf[LEN];
 	int k = 0, j, i = 0, n;
+	size_t s;
 	struct t_version *upgrade = NULL;
 	t_bool ret = TRUE;
 
@@ -431,43 +431,49 @@ read_keymap_file(
 		if (*locale) {
 			if (codeset) {
 				if ((n = snprintf(NULL, 0, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier))) > 0) {
-					fnames[i] = my_malloc(++n);
-					if (snprintf(fnames[i], n, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier)) == n - 1)
+					s = (size_t) n + 1;
+					fnames[i] = my_malloc(s);
+					if (snprintf(fnames[i], s, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), codeset, BlankIfNull(modifier)) == n)
 						++i;
 				}
 			}
 			if (normcodeset) {
 				if ((n = snprintf(NULL, 0, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier))) > 0) {
-					fnames[i] = my_malloc(++n);
-					if (snprintf(fnames[i], n, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier)) == n - 1)
+					s = (size_t) n + 1;
+					fnames[i] = my_malloc(s);
+					if (snprintf(fnames[i], s, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier)) == n)
 						++i;
 				}
 			}
 			if (territory) {
 				if ((n = snprintf(NULL, 0, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), territory, BlankIfNull(modifier))) > 0) {
-					fnames[i] = my_malloc(++n);
-					if (snprintf(fnames[i], n, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), territory, BlankIfNull(modifier)) == n - 1)
+					s = (size_t) n + 1;
+					fnames[i] = my_malloc(s);
+					if (snprintf(fnames[i], s, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), territory, BlankIfNull(modifier)) == n)
 						++i;
 				}
 			}
 			if (modifier) {
 				if ((n = snprintf(NULL, 0, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), modifier)) > 0) {
-					fnames[i] = my_malloc(++n);
-					if (snprintf(fnames[i], n, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), modifier)== n - 1)
+					s = (size_t) n + 1;
+					fnames[i] = my_malloc(s);
+					if (snprintf(fnames[i], s, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), modifier) == n)
 						++i;
 				}
 			}
 			if (language) {
 				if ((n = snprintf(NULL, 0, "%s/%s.%s", dirs[k], KEYMAP_FILE, language)) > 0) {
-					fnames[i] = my_malloc(++n);
-					if (snprintf(fnames[i], n, "%s/%s.%s", dirs[k], KEYMAP_FILE, language) == n - 1)
+					s = (size_t) n + 1;
+					fnames[i] = my_malloc(s);
+					if (snprintf(fnames[i], s, "%s/%s.%s", dirs[k], KEYMAP_FILE, language) == n)
 						++i;
 				}
 			}
 		}
 		if ((n = snprintf(NULL, 0, "%s/%s", dirs[k], KEYMAP_FILE)) > 0) {
-			fnames[i] = my_malloc(++n);
-			if (snprintf(fnames[i], n, "%s/%s", dirs[k], KEYMAP_FILE) == n - 1)
+			s = (size_t) n + 1;
+			fnames[i] = my_malloc(s);
+			if (snprintf(fnames[i], s, "%s/%s", dirs[k], KEYMAP_FILE) == n)
 				++i;
 		}
 	}
@@ -662,7 +668,7 @@ process_keys(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			if (iswdigit((wint_t) (key = wkeydef[0])))
 #else
-			if (isdigit(key = keydef[0]))
+			if (isdigit((int) (key = keydef[0])))
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			{
 				error_message(0, _(txt_keymap_invalid_key), keydef);
@@ -2100,11 +2106,14 @@ upgrade_keymap_file(
 	char *threadreadart[2] = { NULL, NULL };
 	char *up[2] = { NULL, NULL };
 
-	if ((oldfp = fopen(old, "r")) == NULL)
+	if ((oldfp = fopen(old, "r")) == NULL) {
+		perror_message(_(txt_cannot_open), old);
 		return;
+	}
 
 	snprintf(newk, sizeof(newk), "%s.%ld", old, (long) process_id);
 	if ((newfp = fopen(newk, "w")) == NULL) {
+		perror_message(_(txt_cannot_open_for_saving), newk);
 		fclose(oldfp);
 		return;
 	}

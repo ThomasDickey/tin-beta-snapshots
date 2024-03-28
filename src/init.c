@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-23
+ *  Updated   : 2024-03-01
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -570,7 +570,8 @@ struct t_capabilities nntp_caps = {
 	FALSE, /* AUTHINFO USER/PASS */
 	FALSE, /* AUTHINFO SASL */
 	FALSE, /* AUTHINFO available but not in current state */
-	SASL_NONE, /* SASL CRAM-MD5 DIGEST-MD5 PLAIN GSSAPI EXTERNAL OTP NTLM LOGIN */
+	NULL, /* SASL mechs implemented on both sides */
+	NULL, /* SASL mech used after handshake */
 	FALSE, /* COMPRESS */
 	COMPRESS_NONE, /* COMPRESS_NONE, COMPRESS_DEFLATE */
 #if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)

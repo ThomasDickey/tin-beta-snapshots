@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2024-02-12
+ *  Updated   : 2024-03-26
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2024 Thomas Dickey <dickey@invisible-island.net>
@@ -147,6 +147,8 @@
 #	undef uid_t
 #	undef RETSIGTYPE
 #	undef HAVE_INT_LEAST64_T
+#	undef HAVE_PRIDLEAST64
+#	undef HAVE_SCNDLEAST64
 #	undef HAVE_LONG_LONG
 #	undef HAVE_NL_ITEM
 
@@ -373,6 +375,7 @@
 #	undef DECL_IOCTL
 #	undef DECL_ISASCII
 #	undef DECL_KILL
+#	undef DECL_LRAND48
 #	undef DECL_MALLOC
 #	undef DECL_MEMSET
 #	undef DECL_MKSTEMP
@@ -389,6 +392,7 @@
 #	undef DECL_SETENV
 #	undef DECL_SNPRINTF
 #	undef DECL_SOCKET
+#	undef DECL_SRAND48
 #	undef DECL_SSCANF
 #	undef DECL_STRCASECMP
 #	undef DECL_STRCHR
@@ -411,6 +415,8 @@
 #	undef DECL_USLEEP
 #	undef DECL_VSNPRINTF
 #	undef DECL_VSPRINTF
+#	undef DECL_WCSWIDTH
+#	undef DECL_WCWIDTH
 #	undef DECL__FLSBUF
 
 
@@ -648,7 +654,7 @@
 /*
  * use libgsasl for AUTH
  */
-#	undef USE_SASL
+#	undef USE_GSASL
 
 #	undef HAVE_COFFEE
 

@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-12-06
+ *  Updated   : 2024-03-01
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -293,6 +293,8 @@ free_all_arrays(
 	FreeAndNull(nntp_caps.headers_range);
 	FreeAndNull(nntp_caps.headers_id);
 	FreeAndNull(nntp_caps.implementation);
+	FreeAndNull(nntp_caps.sasl_mechs);
+	FreeAndNull(nntp_caps.sasl_mech_used);
 
 	if (ofmt) { /* ofmt might not be allocated yet on early abort */
 		int i;

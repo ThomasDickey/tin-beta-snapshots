@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-02-12
+dnl Updated   : 2024-03-26
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -630,16 +630,18 @@ fi
 AC_SUBST(CANDIR_MAKE)
 
 ## gsasl - used for AUTH SASL PLAIN
+## we currently check for gsasl_free() (avail since 0.2.19)
+## update if we ever use calls from a newer API
 gsasl=no
 AC_CHECK_HEADER(gsasl.h,
-	[AC_CHECK_LIB(gsasl, gsasl_check_version, gsasl=yes)]
+	[AC_CHECK_LIB(gsasl, gsasl_free, gsasl=yes)]
 )
 if test "$gsasl" = "yes"; then
 	CF_ARG_DISABLE(gsasl,
 		[  --disable-gsasl         don't use GNU SASL],
-		USE_SASL=no,
-		[USE_SASL=yes
-		AC_DEFINE(USE_SASL, 1, [Define to 1 if you want GNU SASL.])
+		USE_GSASL=no,
+		[USE_GSASL=yes
+		AC_DEFINE(USE_GSASL, 1, [Define to 1 if you want GNU SASL.])
 		LIBS="$LIBS -lgsasl"])
 fi
 
@@ -1102,8 +1104,31 @@ $ac_includes_default
 	if test $ac_cv_int64_c = yes; then
 		AC_DEFINE(HAVE_INT64_C,1,[Define this to 1 if we have function INT64_C])
 	fi
+	AC_MSG_CHECKING(for PRIdLEAST64)
+	AC_TRY_COMPILE([
+$ac_includes_default
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif /* HAVE_INTTYPES_H */
+],[printf("%"PRIdLEAST64, (long int) 0);],
+    ac_cv_pridleast64=yes, ac_cv_pridleast64=no)
+    AC_MSG_RESULT($ac_cv_pridleast64)
+    if test $ac_cv_pridleast64 = yes; then
+        AC_DEFINE(HAVE_PRIDLEAST64,1,[Define this to 1 if we have PRIdLEAST64])
+    fi
+	AC_MSG_CHECKING(for SCNdLEAST64)
+	AC_TRY_COMPILE([
+$ac_includes_default
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif /* HAVE_INTTYPES_H */
+],[printf("%"SCNdLEAST64, (long int) 0);],
+    ac_cv_scndleast64=yes, ac_cv_scndleast64=no)
+    AC_MSG_RESULT($ac_cv_scndleast64)
+    if test $ac_cv_scndleast64 = yes; then
+        AC_DEFINE(HAVE_SCNDLEAST64,1,[Define this to 1 if we have SCNdLEAST64])
+    fi
 fi
-
 
 dnl test to see if nl_item is defined
 AC_MSG_CHECKING(for nl_item)
@@ -1588,6 +1613,7 @@ CF_CHECK_DECL(\
 	ioctl \
 	isascii \
 	kill \
+	lrand48 \
 	malloc \
 	memset \
 	mkstemp \
@@ -1603,6 +1629,7 @@ CF_CHECK_DECL(\
 	select \
 	setenv \
 	snprintf \
+	srand48 \
 	sscanf \
 	strcasecmp \
 	strftime \
@@ -1617,6 +1644,8 @@ CF_CHECK_DECL(\
 	usleep \
 	vsprintf \
 	vsnprintf \
+	wcswidth \
+	wcwidth \
 )
 
 if test $use_curses = no ; then

@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-22
+ *  Updated   : 2024-02-27
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -599,7 +599,7 @@ group_page(
 					 * tinrc.getart_limit
 					 */
 					if (cmdline.args & CMDLINE_GETART_LIMIT)
-						cmdline.args &= ~CMDLINE_GETART_LIMIT;
+						cmdline.args &= ~((unsigned) CMDLINE_GETART_LIMIT);
 					ret_code = GRP_NEXTUNREAD;
 				}
 				break;
@@ -1044,7 +1044,7 @@ draw_subject_arrow(
 
 		stat_thread(grpmenu.curr, &statbuf);
 		if (!statbuf.unread || (n = next_unread((int) base[grpmenu.curr])) == -1)
-			n = base[grpmenu.curr];
+			n = (int) base[grpmenu.curr];
 		info_message("%s", arts[n].subject);
 	} else if (grpmenu.curr == grpmenu.max - 1)
 		info_message(_(txt_end_of_arts));

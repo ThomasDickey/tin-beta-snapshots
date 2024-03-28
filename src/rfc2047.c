@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2024-02-13
+ *  Updated   : 2024-03-21
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2024 Chris Blum <chris@resolution.de>
@@ -61,7 +61,7 @@
 #	define isbetween(c, s) (isspace((unsigned char) c) || ((s) && ((c) == '(' || (c) == ')' || (c) == '"')))
 #else
 #	define my_isspace(c) ((c) == '\t' || (c) == '\n' || (c) == '\v' || (c) == '\f' || (c) == '\r' || (c) == ' ')
-#	define isbetween(c, s) (my_isspace(c) || ((s) && ((c) == '(' || (c) == ')' || (c) == '"')))
+#	define isbetween(c, s) (my_isspace((unsigned char) c) || ((s) && ((c) == '(' || (c) == ')' || (c) == '"')))
 #endif /* 0 */
 #define NOT_RANKED 255
 
@@ -999,9 +999,8 @@ do_rfc15211522_encode(
 #ifdef HAVE_FTRUNCATE
 	if (ftruncate(fileno(f), 0) == -1) {
 #	ifdef DEBUG
-		int e = errno;
 		if (debug & DEBUG_MISC)
-			error_message(2, "ftruncate(): Error: %s", strerror(e));
+			perror_message("ftruncate()");
 #	endif /* DEBUG */
 	}
 #endif /* HAVE_FTRUNCATE */

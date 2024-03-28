@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-22
+ *  Updated   : 2024-03-21
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -2244,11 +2244,12 @@ read_server_config(
 			char *tmp_info;
 			int tmp_len;
 
-			tmp_len = snprintf(NULL, 0, "%s %s", nntp_server, newnews_info);
-			tmp_info = my_malloc(++tmp_len);
-			snprintf(tmp_info, tmp_len, "%s %s", nntp_server, newnews_info);
-			load_newnews_info(tmp_info);
-			free(tmp_info);
+			if ((tmp_len = snprintf(NULL, 0, "%s %s", nntp_server, newnews_info)) > 0) {
+				tmp_info = my_malloc(++tmp_len);
+				if (snprintf(tmp_info, (size_t) tmp_len, "%s %s", nntp_server, newnews_info) == tmp_len -1)
+					load_newnews_info(tmp_info);
+				free(tmp_info);
+			}
 			continue;
 		}
 
@@ -2310,7 +2311,7 @@ write_server_config(
 				break;
 
 			default:
-				wait_message(2, "write_server_config(%s)", strerror(errno));
+				perror_message("write_server_config(%s)", serverdir);
 				break;
 		}
 		return;

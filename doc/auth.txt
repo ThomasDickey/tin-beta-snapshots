@@ -53,7 +53,7 @@ beginning of your news session, use the -A option when invoking tin or just
 provide a .newsauth file.
 
 The AUTHINFO SASL PLAIN authentication method requires tin to be linked
-against libgsasl.
+against libgsasl (GNU SASL).
 
 The AUTHINFO SIMPLE authentication method is not supported by tin (and
 possibly won't be since nobody seems to use it and there are some problems

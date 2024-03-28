@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-19
+ *  Updated   : 2024-03-10
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -282,7 +282,7 @@ backup_file(
  * prefix (= quote_chars), initials of the articles author
  * with_sig is set if the signature should be quoted
  *
- * TODO: rewrite from scratch, the code is awful.
+ * TODO: rewrite from scratch, the code is awful!
  */
 void
 copy_body(
@@ -292,8 +292,8 @@ copy_body(
 	char *initl,
 	t_bool raw_data)
 {
-	char buf[8192];
-	char buf2[8192];
+	char *buf;
+	char *buf2;
 	char prefixbuf[256];
 	char *p = prefixbuf;
 	char *q = prefix;
@@ -339,13 +339,17 @@ copy_body(
 	 * tinrc tells us not to do so. This extraordinary behavior occurs when
 	 * replying or following up with the 'raw' message shown.
 	 */
-	while (fgets(buf, (int) sizeof(buf), fp_ip) != NULL) {
-		if (!(tinrc.quote_style & QUOTE_SIGS) && !strcmp(buf, SIGDASHES) && !raw_data)
+	buf2 = my_malloc(1024);
+	while ((buf = tin_fgets(fp_ip, FALSE)) != NULL) {
+		ilen = strlen(buf);
+		if (!(tinrc.quote_style & QUOTE_SIGS) && !strncmp(buf, SIGDASHES, 3) && ilen == 3 && !raw_data)
 			break;
 
 		if (initials) { /* initials wanted */
-			if (buf[0] != '\n') { /* line is not empty */
+			if (ilen) { /* line is not empty */
 				if (strchr(buf, '>')) {
+					if (ilen > sizeof(buf2))
+						buf2 = my_realloc(buf2, ilen + 1);
 					status_space = FALSE;
 					status_char = TRUE;
 					for (i = 0; buf[i] && (buf[i] != '>'); i++) {
@@ -357,24 +361,26 @@ copy_body(
 					}
 					buf2[i] = '\0';
 					if (status_char)	/* already quoted */
-						retcode = fprintf(fp_op, "%s>%s", buf2, BlankIfNull(strchr(buf, '>')));
+						retcode = fprintf(fp_op, "%s>%s\n", buf2, BlankIfNull(strchr(buf, '>')));
 					else	/* ... to be quoted ... */
-						retcode = fprintf(fp_op, "%s%s", prefixbuf, buf);
+						retcode = fprintf(fp_op, "%s%s\n", prefixbuf, buf);
 				} else	/* line was not already quoted (no >) */
-					retcode = fprintf(fp_op, "%s%s", prefixbuf, buf);
+					retcode = fprintf(fp_op, "%s%s\n", prefixbuf, buf);
 			} else	/* line is empty */
 				retcode = fprintf(fp_op, "%s\n", ((tinrc.quote_style & QUOTE_EMPTY) ? prefixbuf : ""));
 		} else {		/* no initials in quote_string, just copy */
-			if ((buf[0] != '\n') || (tinrc.quote_style & QUOTE_EMPTY))
-				retcode = fprintf(fp_op, "%s%s", (buf[0] == '>' ? prefixbuf : prefix), buf);	/* use blank-stripped quote string if line is already quoted */
+			if (ilen || (tinrc.quote_style & QUOTE_EMPTY))
+				retcode = fprintf(fp_op, "%s%s\n", (buf[0] == '>' ? prefixbuf : prefix), buf);	/* use blank-stripped quote string if line is already quoted */
 			else
 				retcode = fprintf(fp_op, "\n");
 		}
 		if (retcode == EOF) {
 			perror_message("copy_body() failed"); /* TODO: -> lang.c */
+			FreeIfNeeded(buf2);
 			return;
 		}
 	}
+	FreeIfNeeded(buf2);
 }
 
 
@@ -994,7 +1000,7 @@ eat_re(
 	do {
 		REGEX_SIZE *offsets;
 
-		match = match_regex_ex(s, (int) strlen(s), 0, 0, &strip_re_regex);
+		match = match_regex_ex(s, (REGEX_SIZE) strlen(s), 0, 0, &strip_re_regex);
 		offsets = regex_get_ovector_pointer(&strip_re_regex);
 		if (match >= 0 && offsets[0] == 0)
 			s += offsets[1];
@@ -1003,7 +1009,7 @@ eat_re(
 	if (eat_was) do {
 		REGEX_SIZE *offsets;
 
-		match = match_regex_ex(s, (int) strlen(s), 0, 0, &strip_was_regex);
+		match = match_regex_ex(s, (REGEX_SIZE) strlen(s), 0, 0, &strip_was_regex);
 		offsets = regex_get_ovector_pointer(&strip_was_regex);
 		if (match >= 0 && offsets[0] > 0)
 			s[offsets[0]] = '\0';
@@ -2071,18 +2077,16 @@ get_cwd(
 #ifdef HAVE_GETCWD
 	if (getcwd(buf, PATH_LEN) == NULL) {
 #	ifdef DEBUG
-		int e = errno;
 		if (debug & DEBUG_MISC)
-			error_message(2, "getcwd(%s): Error: %s", buf, strerror(e));
+			perror_message("getcwd(%s)", buf);
 #	endif /* DEBUG */
 	}
 #else
 #	ifdef HAVE_GETWD
 	if (getwd(buf) == NULL) {
 #		ifdef DEBUG
-		int e = errno;
 		if (debug & DEBUG_MISC)
-			error_message(2, "getwd(%s): Error: %s", buf, strerror(e));
+			perror_message("getwd(%s)", buf);
 #		endif /* DEBUG */
 	}
 #	else
@@ -2323,9 +2327,8 @@ write_input_history_file(
 		/* fix modes for all pre 1.4.1 local_input_history_file files */
 		if (chmod(local_input_history_file, (mode_t) (S_IRUSR|S_IWUSR)) == -1) {
 #	ifdef DEBUG
-			int e = errno;
 			if (debug & DEBUG_MISC)
-				error_message(2, "chmod(%s, %d): Error: %s", local_input_history_file, (mode_t) (S_IRUSR|S_IWUSR), strerror(e));
+				perror_message("chmod(%s, %d)", local_input_history_file, (mode_t) (S_IRUSR|S_IWUSR));
 #	endif /* DEBUG */
 		}
 #endif /* HAVE_CHMOD */
@@ -4072,6 +4075,10 @@ tin_version_info(
 	fprintf(fp, "\tPCRE     = \"%s\"\n", pcre_version());
 #endif /* HAVE_LIB_PCRE2 */
 	wlines++;
+#	ifdef USE_GSASL
+	fprintf(fp, "\tGNU SASL = \"%s\"\n", gsasl_check_version(NULL));
+	wlines++;
+#	endif /* USE_GSASL */
 
 	fprintf(fp, "Characteristics:\n\t"
 /* TODO: complete list and do some useful grouping; show only in -vV case? */
@@ -4498,7 +4505,7 @@ srndm(
 	srand48(t);
 #else
 #	ifdef HAVE_RANDOM
-	srandom(t);
+	srandom((unsigned int) t);
 #	else
 	srand((unsigned int) t);
 #	endif /* HAVE_RANDOM */

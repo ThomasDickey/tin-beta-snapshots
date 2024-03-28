@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2024-02-01
+ *  Updated   : 2024-03-21
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2024 Mike Gleason
@@ -88,7 +88,7 @@ msg_write_signature(
 
 			if ((ptr = strstr(sigattr, "%G"))) {
 				char *to, *grpname;
-				int cnt = 1;
+				size_t cnt = 1;
 
 				/* check if %G occurs more than once */
 				while (strstr(++ptr, "%G"))
@@ -169,9 +169,8 @@ msg_write_signature(
 			fclose(sigfp);
 			if (chdir(cwd) == -1) {
 #ifdef DEBUG
-				int e = errno;
 				if (debug & DEBUG_MISC)
-					error_message(2, "chdir(%s): Error: %s", cwd, strerror(e));
+					perror_message("chdir(%s)", cwd);
 #endif /* DEBUG */
 			}
 			return;
@@ -297,7 +296,9 @@ thrashdir(
 				if (stat(dp->d_name, &st) == -1)
 #endif /* HAVE_DIRFD */
 				{
+#ifdef HAVE_DIRFD
 err_out:
+#endif /* HAVE_DIRFD */
 					CLOSEDIR(dirp);
 					free(cwd);
 					return 1;
@@ -320,9 +321,8 @@ err_out:
 							dp = NULL;
 							if (chdir(cwd) == -1) {
 #ifdef DEBUG
-								int e = errno;
 								if (debug & DEBUG_MISC)
-									error_message(2, "chdir(%s): Error: %s", cwd, strerror(e));
+									perror_message("chdir(%s)", cwd);
 #endif /* DEBUG */
 							}
 						}

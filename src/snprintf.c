@@ -293,7 +293,6 @@
 #if 0
 #define PORTABLE_SNPRINTF_VERSION_MAJOR 2
 #define PORTABLE_SNPRINTF_VERSION_MINOR 2
-#endif /* 0 */
 
 #if defined(NEED_ASPRINTF) || defined(NEED_ASNPRINTF) || defined(NEED_VASPRINTF) || defined(NEED_VASNPRINTF)
 # if defined(NEED_SNPRINTF_ONLY)
@@ -304,7 +303,6 @@
 # endif
 #endif
 
-#if 0
 #if defined(SOLARIS_BUG_COMPATIBLE) && !defined(SOLARIS_COMPATIBLE)
 #define SOLARIS_COMPATIBLE
 #endif
@@ -455,9 +453,17 @@ int vasprintf(char **ptr, const char *fmt, va_list ap) {
 
   *ptr = NULL;
   { va_list ap2;
+#if 1
+	begin_va_copy(ap2, ap);
+#else
     va_copy(ap2, ap);  /* don't consume the original ap, we'll need it again */
+#endif /* 1 */
     str_l = portable_vsnprintf(NULL, (size_t)0, fmt, ap2);/*get required size*/
+#if 1
+	end_va_copy(ap2);
+#else
     va_end(ap2);
+#endif /* 1 */
   }
   assert(str_l >= 0);        /* possible integer overflow if str_m > INT_MAX */
   *ptr = (char *) malloc(str_m = (size_t)str_l + 1);
@@ -504,9 +510,17 @@ int vasnprintf (char **ptr, size_t str_m, const char *fmt, va_list ap) {
 
   *ptr = NULL;
   { va_list ap2;
+#if 1
+	begin_va_copy(ap2, ap);
+#else
     va_copy(ap2, ap);  /* don't consume the original ap, we'll need it again */
+#endif /* 1 */
     str_l = portable_vsnprintf(NULL, (size_t)0, fmt, ap2);/*get required size*/
+#if 1
+	end_va_copy(ap2);
+#else
     va_end(ap2);
+#endif /* 1 */
   }
   assert(str_l >= 0);        /* possible integer overflow if str_m > INT_MAX */
   if ((size_t)str_l + 1 < str_m) str_m = (size_t)str_l + 1;      /* truncate */

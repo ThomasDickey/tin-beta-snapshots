@@ -3,7 +3,7 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2023-11-27
+ *  Updated   : 2024-02-27
  *  Notes     :
  *
  * Copyright (c) 2003-2024 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
@@ -59,7 +59,7 @@ slrnface_start(
 {
 	char *fifo;
 	const char *ptr;
-	int status;
+	int n;
 	pid_t pid, pidst;
 	size_t pathlen;
 	struct utsname u;
@@ -113,9 +113,14 @@ slrnface_start(
 #	endif /* DEBUG */
 		return;
 	}
-	pathlen = snprintf(NULL, 0, "%s/.slrnfaces", ptr);
-	fifo = my_malloc(++pathlen);
-	snprintf(fifo, pathlen, "%s/.slrnfaces", ptr);
+	if ((n = snprintf(NULL, 0, "%s/.slrnfaces", ptr)) < 0)
+		return;
+	pathlen = (size_t) n + 1;
+	fifo = my_malloc(pathlen);
+	if (snprintf(fifo, pathlen, "%s/.slrnfaces", ptr) != n) {
+		free(fifo);
+		return;
+	}
 	if (my_mkdir(fifo, (mode_t) S_IRWXU)) {
 		if (errno != EEXIST) {
 			perror_message(_(txt_xface_error_create_failed), fifo);
@@ -126,19 +131,25 @@ slrnface_start(
 		FILE *fp;
 
 		free(fifo);
-		pathlen = snprintf(NULL, 0, "%s/.slrnfaces/README", ptr);
-		fifo = my_malloc(++pathlen);
-		snprintf(fifo, pathlen, "%s/.slrnfaces/README", ptr);
+		if ((n = snprintf(NULL, 0, "%s/.slrnfaces/README", ptr)) < 0)
+			return;
+		pathlen = (size_t) n + 1;
+		fifo = my_malloc(pathlen);
+		if (snprintf(fifo, pathlen, "%s/.slrnfaces/README", ptr) != n) {
+			free(fifo);
+			return;
+		}
 		if ((fp = fopen(fifo, "w")) != NULL) {
 			fputs(_(txt_xface_readme), fp);
 			fclose(fp);
 		}
 	}
 	free(fifo);
-	pathlen = snprintf(NULL, 0, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) getpid());
-	fifo = my_malloc(++pathlen);
-	status = snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) getpid());
-	if (status <= 0 || status >= (int) pathlen) {
+	if ((n = snprintf(NULL, 0, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) getpid())) < 0)
+		return;
+	pathlen = (size_t) n + 1;
+	fifo = my_malloc(pathlen);
+	if (snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) getpid()) != n) {
 		error_message(2, "%s", _(txt_xface_error_construct_fifo_name));
 		unlink(fifo);
 		free(fifo);
@@ -175,14 +186,14 @@ slrnface_start(
 
 		default:
 			do {
-				pidst = waitpid(pid, &status, 0);
+				pidst = waitpid(pid, &n, 0);
 			} while (pidst == -1 && errno == EINTR);
-			if (!WIFEXITED(status))
-				error_message(2, _(txt_xface_error_exited_abnormal), status);
+			if (!WIFEXITED(n))
+				error_message(2, _(txt_xface_error_exited_abnormal), n);
 			else {
 				const char *message;
 
-				switch (WEXITSTATUS(status)) {
+				switch (WEXITSTATUS(n)) {
 					case 0:	/* All fine, open the pipe */
 						if ((slrnface_fd = open(fifo, O_WRONLY, (S_IRUSR|S_IWUSR))) != -1) {
 							WRITE_FACE_FD("start\n");

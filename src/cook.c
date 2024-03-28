@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2024-01-16
+ *  Updated   : 2024-03-13
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -55,7 +55,7 @@
 			(x)->hdr.ext->type == TYPE_MULTIPART && \
 			strcasecmp("alternative", (x)->hdr.ext->subtype) == 0)
 
-#define MATCH_REGEX(x,y,z)	(match_regex_ex(y, z, 0, 0, &(x)) >= 0)
+#define MATCH_REGEX(x,y,z)	(match_regex_ex(y, (REGEX_SIZE) z, 0, 0, &(x)) >= 0)
 
 
 static char *ltobi(unsigned long i);
@@ -488,7 +488,7 @@ build_attach_line(
 	ssize_t space_left;
 	struct t_attach_item *curr = NULL;
 	struct t_attach_item *items = NULL;
-	struct t_attach_item *last = NULL;
+	struct t_attach_item *last;
 	t_bool init = TRUE;
 	t_bool excl_seen = FALSE;
 	t_bool star_seen = FALSE;
@@ -871,8 +871,8 @@ process_text_body_part(
 	char *rest = NULL;
 	char *line = NULL, *buf, *tmpline;
 	const char *ncharset;
-	size_t max_line_len = 0;
-	int flags, len, lines_left, len_blank;
+	size_t max_line_len = 0, len, len_blank;
+	int flags, lines_left;
 	unsigned int lines_skipped = 0;
 	t_bool in_sig = FALSE;			/* Set when in sig portion */
 	t_bool in_uue = FALSE;			/* Set when in uuencoded section */
@@ -965,7 +965,7 @@ process_text_body_part(
 		}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-		len = (int) strlen(line);
+		len = strlen(line);
 
 		/*
 		 * trim article body and sig (not verbatim blocks):
@@ -1060,7 +1060,7 @@ process_text_body_part(
 
 			is_uubegin = FALSE;
 
-			if (match_regex_ex(line, len, 0, 0, &uubegin_regex) >= 0) {
+			if (MATCH_REGEX(uubegin_regex, line, len)) {
 				REGEX_SIZE *ovector = regex_get_ovector_pointer(&uubegin_regex);
 
 				if (in_uue) { /* previous uue part incomplete and the current one follows without gap */
@@ -1094,11 +1094,11 @@ process_text_body_part(
 				/* sum = 0 in a uubody only on the last line, a single ` */
 				if (sum == 0 && len == 1 + 1)			/* +1 for the \n */
 					is_uubody = TRUE;
-				else if (len == sum + 1 + 1)
+				else if (len == (unsigned) (sum + 1 + 1))
 					is_uubody = TRUE;
 #ifdef DEBUG_ART
 				if (debug & DEBUG_MISC)
-					fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, line);
+					fprintf(stderr, "%s sum=%d len=%lu (%s)\n", bool_unparse(is_uubody), sum, len, line);
 #endif /* DEBUG_ART */
 			}
 

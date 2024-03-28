@@ -3,7 +3,7 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2024-01-17
+ *  Updated   : 2024-03-28
  *  Notes     :
  *
  * Copyright (c) 2003-2024 Urs Janssen <urs@tin.org>
@@ -83,17 +83,17 @@ check_upgrade(
 	   strncmp() again.
 	 */
 	p = line + strlen(skip);
-	if (!isdigit(*p))
+	if (!isdigit((unsigned char) *p))
 		return fversion;
 	rc_majorv = atoi(p);
-	while (isdigit(*p))
+	while (isdigit((unsigned char) *p))
 		p++;
-	if (*p != '.' || !isdigit(*++p))
+	if (*p != '.' || !isdigit((unsigned char) *++p))
 		return fversion;
 	rc_minorv = atoi(p);
-	while (isdigit(*p))
+	while (isdigit((unsigned char) *p))
 		p++;
-	if (*p != '.' || !isdigit(*++p))
+	if (*p != '.' || !isdigit((unsigned char) *++p))
 		return fversion;
 	rc_subv = atoi(p);
 
@@ -101,13 +101,13 @@ check_upgrade(
 
 	p = version;
 	c_majorv = atoi(p);
-	while (isdigit(*p))
+	while (isdigit((unsigned char) *p))
 		p++;
 	if (*p != '.')
 		return fversion;
 
 	c_minorv = atoi(++p);
-	while (isdigit(*p))
+	while (isdigit((unsigned char) *p))
 		p++;
 	if (*p != '.')
 		return fversion;
@@ -166,7 +166,9 @@ upgrade_prompt_quit(
 			free(upgrade);
 			if (fp)
 				fclose(fp);
-			tin_done(EXIT_FAILURE, NULL); /* TODO: leaks cmdargs from $TINRC */
+			handle_cmdargs(FALSE);
+			no_write = TRUE;
+			tin_done(EXIT_FAILURE, _(txt_exiting));
 			/* NOTREACHED */
 			break;
 

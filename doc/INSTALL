@@ -331,6 +331,9 @@ available.
 Check for socks5 proxy library (SOCKS Version 5; RFC 1928) and link against
 it if available.
 
+--disable-gsasl
+Disable check for GNU SASL library (needed for SASL authentication).
+
 Options to set some default values
 ----------------------------------
 --with-shell=PROG (default: sh, except on BSD where csh is used)

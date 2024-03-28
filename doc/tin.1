@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-01-10
+.\" Updated   : 2024-03-28
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -39,6 +39,8 @@ tin, rtin \- Usenet newsreader
 .IR newsrc_file \|]
 .RB [\| \-g
 .IR server \|[\|: port \|]\|]
+.RB [\| \-L
+.IR Message-ID \|]
 .RB [\| \-m
 .IR Mail_dir \|]
 .RB [\| \-p
@@ -181,6 +183,10 @@ default which is to read the
 NNTP GROUP command (\fBRFC\%3977\fP) ''\fB\-ln\fP''. If reading via
 NNTP and LIST COUNTS (\fBRFC\%6048\fP) is available that is used instead
 as it gives more accurate article counts.
+.TP
+.BI \-L
+Show the message with the given Message-ID if available. Only available
+when reading via NNTP.
 .TP
 .BI \-m " dir"
 Mailbox directory to use. Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fR.
@@ -767,7 +773,7 @@ auto-selection on author where reader wants to see entire thread.
 .B GroupSelPattern '='
 Prompts for a pattern with which to match on. All threads whose subjects
 match the pattern will be marked selected. A pattern of ''*'' will match all
-subjects. Entering just '\fB<CR>\fP' will re-use the last pattern that
+subjects. Entering just '\fB<CR>\fP' will reuse the last pattern that
 was entered.
 .TP
 .B GroupReverseSel '@'
@@ -866,7 +872,8 @@ prompt asks how to proceed.
 Open the thread under the current cursor position.
 .TP
 .B LookupMessage 'L'
-Look up article by ''Message\-ID:''.
+Look up article by ''Message\-ID:''. In this level only the IDs in the
+current group are searched.
 .TP
 .B GroupMail 'm'
 Mail current article / thread / auto-selected (hot) articles / articles
@@ -1079,7 +1086,8 @@ current article. When tagged articles are present, a prompt asks how
 to proceed.
 .TP
 .B LookupMessage 'L'
-Look up article by ''Message\-ID:''.
+Look up article by ''Message\-ID:''. In this level only the IDs in the
+current group are searched.
 .TP
 .B ThreadMail 'm'
 Mail current article / thread / auto-selected (hot) articles / articles
@@ -1311,7 +1319,8 @@ Mark rest of thread as read and move onto the next unread thread.
 Show the thread menu that the current article is a part of.
 .TP
 .B LookupMessage 'L'
-Look up article by ''Message\-ID:''.
+Look up article by ''Message\-ID:''. In this level only the IDs in the
+current group are searched.
 .TP
 .B PageMail 'm'
 Mail current article / thread / auto-selected (hot) articles / articles

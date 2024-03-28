@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2024-02-23
+ *  Updated   : 2024-03-07
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2024 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -69,7 +69,7 @@ tintls_init(
 	void)
 {
 	int result = 0;
-	const char *ca_cert_file = ca_cert_file_expanded;
+	char *ca_cert_file = ca_cert_file_expanded;
 
 	if (tinrc.tls_ca_cert_file[0] != '\0') {
 		result = strfpath(tinrc.tls_ca_cert_file, ca_cert_file_expanded, sizeof(ca_cert_file_expanded), NULL, FALSE);

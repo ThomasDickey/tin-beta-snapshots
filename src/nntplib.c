@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2024-02-11
+ *  Updated   : 2024-03-28
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -131,7 +131,7 @@ char *nntp_server = NULL;
  *	         first non-ws/comment line in the file.
  *	         NULL on error (or lack of entry in file).
  *
- *	Side effects: None.
+ *	Side effects: sets/updates $NNTPSERVER in the env.
  */
 char *
 getserverbyfile(
@@ -142,9 +142,10 @@ getserverbyfile(
 	FILE *fp;
 	char *cp;
 #	if !defined(HAVE_SETENV) && defined(HAVE_PUTENV)
-	char tmpbuf[256];
 	char *new_env;
-	static char *old_env = NULL;
+	static char *serv_env = NULL;
+	int n;
+	size_t len;
 #	endif /* !HAVE_SETENV && HAVE_PUTENV */
 #endif /* NNTP_ABLE */
 
@@ -164,7 +165,7 @@ getserverbyfile(
 		/*
 		 * - given port in NEWSRCTABLE_FILE overrides -p, -T and $NNTPPORT
 		 * - no IPv6 address support yet (should be simple if address is
-		 *   brackets)
+		 *   in brackets)
 		 *
 		 * news.example.com[:123]    ~/.tin/${NNTPSERVER-localhost}/.newsrc  ex
 		 */
@@ -172,7 +173,7 @@ getserverbyfile(
 			if (strrchr(buf, ':') == cp) { /* == 1 x ':' in servername? otherwise (IPv6, syntaxerror) skip */
 				int i;
 
-				*cp++ = '\0';
+				*cp++ = '\0'; /* cut off port from the name */
 				if ((i = atoi(cp)) != 0)
 					nntp_tcp_port = (unsigned short) i;
 #	ifdef DEBUG
@@ -184,14 +185,29 @@ getserverbyfile(
 			}
 		}
 #	ifdef HAVE_SETENV
-		setenv("NNTPSERVER", buf, 1);
+		if (setenv("NNTPSERVER", buf, 1)) {
+#		ifdef DEBUG
+			perror_message("setenv(\"NNTPSERVER\", \"%s\", 1)", buf);
+#		endif /* DEBUG */
+		}
 #	else
 #		ifdef HAVE_PUTENV
-		snprintf(tmpbuf, sizeof(tmpbuf), "NNTPSERVER=%s", buf);
-		new_env = my_strdup(tmpbuf);
-		putenv(new_env);
-		FreeIfNeeded(old_env);
-		old_env = new_env; /* we are 'leaking' the last malloced mem at exit here */
+		if ((n = snprintf(NULL, 0, "NNTPSERVER=%s", buf)) >= 0) {
+			len = (size_t) n + 1;
+			new_env = my_malloc(len);
+			if (snprintf(new_env, len, "NNTPSERVER=%s", buf) == n) {
+				if (putenv(new_env) != 0) {
+#			ifdef DEBUG
+					perror_message("putenv(\"%s\")", new_env);
+#			endif /* DEBUG */
+					free(new_env);
+				} else {
+					FreeIfNeeded(serv_env);
+					serv_env = new_env; /* we are 'leaking' the last malloced mem at exit here */
+				}
+			} else
+				free(new_env);
+		}
 #		endif /* HAVE_PUTENV */
 #	endif /* HAVE_SETENV */
 		return buf;
@@ -200,10 +216,10 @@ getserverbyfile(
 	if ((cp = getenv("NNTPSERVER")) != NULL) {
 		get_nntpserver(buf, sizeof(buf), cp);
 		if ((cp = strchr(buf, ':')) != NULL) {
-			if (strrchr(buf, ':') == cp) {
+			if (strrchr(buf, ':') == cp) { /* "count" ':'s to be sure it's not an IPv6 address */
 				int i;
 
-				*cp++ = '\0';
+				*cp++ = '\0'; /* cut off port from the name */
 				if ((i = atoi(cp)) != 0)
 					nntp_tcp_port = (unsigned short) i;
 #	ifdef DEBUG
@@ -221,7 +237,6 @@ getserverbyfile(
 		return NULL;
 
 	if ((fp = fopen(file, "r")) != NULL) {
-
 		while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 			if (*buf == '\n' || *buf == '#')
 				continue;
@@ -229,7 +244,16 @@ getserverbyfile(
 			if ((cp = strrchr(buf, '\n')) != NULL)
 				*cp = '\0';
 
+			/*
+			 * TODO:
+			 *       - we do not export $NNTPSERVER here
+			 *       - we do not care about any port here
+			 *       should we?
+			 */
+
 			(void) fclose(fp);
+			str_trim(buf);
+			str_lwr(buf);
 			return buf;
 		}
 		(void) fclose(fp);
@@ -464,7 +488,6 @@ get_tcp_socket(
 
 #	else
 #		ifndef EXCELAN
-	struct servent *sp;
 	struct hostent *hp;
 #			ifdef h_addr
 	int x = 0;
@@ -478,13 +501,10 @@ get_tcp_socket(
 	static char namebuf[256];
 
 #			ifdef HAVE_GETSERVBYNAME
-	if ((sp = (struct servent *) getservbyname(service, "tcp")) == NULL) {
+	if (getservbyname(service, "tcp") == NULL) {
 		my_fprintf(stderr, _(txt_error_unknown_service), service);
 		return -EHOSTUNREACH;
 	}
-#			else
-	sp = my_malloc(sizeof(struct servent));
-	sp->s_port = htons(IPPORT_NNTP);
 #			endif /* HAVE_GETSERVBYNAME */
 
 	/* If not a raw ip address, try nameserver */
@@ -523,7 +543,6 @@ get_tcp_socket(
 	memset((char *) &sock_in, '\0', sizeof(sock_in));
 	sock_in.sin_family = hp->h_addrtype;
 	sock_in.sin_port = htons(port);
-/*	sock_in.sin_port = sp->s_port; */
 #		else
 	memset((char *) &sock_in, '\0', sizeof(sock_in));
 	sock_in.sin_family = AF_INET;
@@ -838,7 +857,8 @@ u_put_server(
  */
 void
 put_server(
-	const char *string)
+	const char *string,
+	t_bool hide_from_log)
 {
 	if (*string && strlen(string)) {
 		DEBUG_IO((stderr, "put_server(%s)\n", string));
@@ -849,21 +869,8 @@ put_server(
 		if (debug & DEBUG_NNTP) {
 			if (verbose)	/* only log password when running verbose */
 				debug_print_file("NNTP", ">>>%s%s", logtime(), string);
-			else {
-				char *c = my_strdup(string);
-				int l = 0;
-
-				if (!strncmp(string, "AUTHINFO PASS", 13))
-					l = 13;
-				if (!l && !strncmp(string, "AUTHINFO SASL PLAIN", 19))
-					l = 19;
-
-				if (l)
-					*(c+l) = '\0';
-
-				debug_print_file("NNTP", ">>>%s%s%s", logtime(), c, l ? " [data hidden, rerun with -v]" : "");
-				free(c);
-			}
+			else
+				debug_print_file("NNTP", ">>>%s%s", logtime(), hide_from_log ? "[data hidden, rerun with -v]" : string);
 		}
 #	endif /* DEBUG */
 
@@ -876,7 +883,7 @@ put_server(
 		 * one. we cache "LIST cmd." instead, this will slow down things, but
 		 * that's ok on reconnect.
 		 */
-		if (strcmp(last_put, string))
+		if (!hide_from_log && strcmp(last_put, string))
 			STRCPY(last_put, string);
 		if (!strncmp(string, "LIST ACTIVE ", 12))
 			last_put[11] = '\0'; /* "LIST ACTIVE" */
@@ -953,7 +960,7 @@ reconnect(
 		if (curr_group != NULL) {
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
 			snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
-			put_server(last_put);
+			put_server(last_put, FALSE);
 			if (nntpbuf_gets(last_put, NNTP_STRLEN, &nntp_buf) == NULL)
 				*last_put = '\0';
 #	ifdef DEBUG
@@ -963,7 +970,7 @@ reconnect(
 			DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
 		}
 		DEBUG_IO((stderr, _("Resend last command (%s)\n"), buf));
-		put_server(buf);
+		put_server(buf, FALSE);
 		did_reconnect = TRUE;
 		retry = NNTP_TRY_RECONNECT;
 	}
@@ -1131,6 +1138,7 @@ close_server(
 }
 
 
+#define WS	" \t"
 /*
  * Try and use CAPABILITIES here. Get this list before issuing other NNTP
  * commands because the correct methods may be mentioned in the list of
@@ -1147,6 +1155,33 @@ check_extensions(
 	char buf[NNTP_STRLEN];
 	int i;
 	int ret = 0;
+	static unsigned int cap_vers[] = { 2, /* 3,*/ 0 }; /* array of all capabilitie version we do support */
+ 	static const char *tin_mechs[] = { /* SASL mechanisms our code can handle */
+		"PLAIN",			/* RFC 4616 */
+		"ANONYMOUS",		/* RFC 4505 */
+		"LOGIN",			/* just for testing, remove b4 release */
+#if 0
+		"EXTERNAL",			/* RFC 4422 */
+		"OTP",				/* RFC 2444 */
+		"SECURID",			/* RFC 2808 */
+
+		"SCRAM-SHA-224",	/* RFC 5802, RFC 7677 */
+		"SCRAM-SHA-256",	/* RFC 5802, RFC 7677 */
+
+		"GSSAPI",			/* RFC 4643 7.3, RFC 4752 */
+		"GS2",				/* RFC 5801 */
+		"SAML20",			/* RFC 6595 */
+		"OPENID",			/* RFC 6616 */
+		/* ... */
+#endif /* 0 */
+		/*
+		 * we exclude weak/obsolete
+		 * CRAM_MD5, DIGEST_MD5 (via RFC 6151, RFC 6331)
+		 * NTLM, LOGIN
+		 * SRP, PSSDSS
+		 */
+		NULL
+	};
 
 	buf[0] = '\0';
 
@@ -1185,7 +1220,8 @@ check_extensions(
 			nntp_caps.authinfo_user = FALSE;
 			nntp_caps.authinfo_sasl = FALSE;
 			nntp_caps.authinfo_state = FALSE;
-			nntp_caps.sasl = SASL_NONE;
+			FreeAndNull(nntp_caps.sasl_mechs);
+			/* nntp_caps.sasl_mech_used will be init in sasl_auth() */
 			nntp_caps.compress = FALSE;
 			nntp_caps.compress_algorithm = COMPRESS_NONE;
 			/* nntp_caps.maxartnum will be init it nntp_open() */
@@ -1207,48 +1243,48 @@ check_extensions(
 				/* look for version number(s) */
 				if (!nntp_caps.version && nntp_caps.type == CAPABILITIES) {
 					if (!strncasecmp(ptr, "VERSION", 7)) {
-						d = ptr + 7;
-						d = strpbrk(d, " \t");
-						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
-							d++;
-							nntp_caps.version = (unsigned int) atoi(d);
-							d = strpbrk(d, " \t");
+						unsigned int v, j;
+
+						if (strtok(ptr, WS) != NULL) { /* skip initial VERSION */
+							while ((d = strtok(NULL, WS)) != NULL) { /* find highest version we do support */
+								v = (unsigned int) atoi(d);
+								for (j = 0; cap_vers[j]; j++) {
+									if (v == cap_vers[j])
+										nntp_caps.version = MAX(nntp_caps.version, v);
+								}
+							}
 						}
 					}
 				}
-				/* we currently only support CAPABILITIES VERSION 2 */
+				/* CAPABILITIES VERSION 2 (we currently only support that) */
 				if (nntp_caps.version == 2) {
-					/*
-					 * check for LIST variants
-					 */
+					/* check for LIST variants */
 					if (!strncasecmp(ptr, "LIST", 4)) {
-						d = ptr + 4;
-						d = strpbrk(d, " \t");
-						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
-							d++;
-							if (!strncasecmp(d, "ACTIVE.TIMES", 12))
-								nntp_caps.list_active_times = TRUE;
-							else if (!strncasecmp(d, "ACTIVE", 6))
-								nntp_caps.list_active = TRUE;
-							else if (!strncasecmp(d, "DISTRIB.PATS", 12))
-								nntp_caps.list_distrib_pats = TRUE;
-							else if (!strncasecmp(d, "DISTRIBUTIONS", 13)) /* RFC 6048 */
-								nntp_caps.list_distributions = TRUE;
-							else if (!strncasecmp(d, "HEADERS", 7))
-								nntp_caps.list_headers = TRUE; /* HDR requires LIST HEADERS, but not vice versa */
-							else if (!strncasecmp(d, "NEWSGROUPS", 10))
-								nntp_caps.list_newsgroups = TRUE;
-							else if (!strncasecmp(d, "OVERVIEW.FMT", 12)) /* OVER requires OVERVIEW.FMT, but not vice versa */
-								nntp_caps.list_overview_fmt = TRUE;
-							else if (!strncasecmp(d, "MOTD", 4)) /* RFC 6048 */
-								nntp_caps.list_motd = TRUE;
-							else if (!strncasecmp(d, "SUBSCRIPTIONS", 13)) /* RFC 6048 */
-								nntp_caps.list_subscriptions = TRUE;
-							else if (!strncasecmp(d, "MODERATORS", 10)) /* RFC 6048 */
-								nntp_caps.list_moderators = TRUE;
-							else if (!strncasecmp(d, "COUNTS", 6)) /* RFC 6048 */
-								nntp_caps.list_counts = TRUE;
-							d = strpbrk(d, " \t");
+						if (strtok(ptr, WS) != NULL) { /* skip initial LIST */
+							while ((d = strtok(NULL, WS)) != NULL) {
+								if (!strcasecmp(d, "ACTIVE.TIMES"))
+									nntp_caps.list_active_times = TRUE;
+								else if (!strcasecmp(d, "ACTIVE"))
+									nntp_caps.list_active = TRUE;
+								else if (!strcasecmp(d, "DISTRIB.PATS"))
+									nntp_caps.list_distrib_pats = TRUE;
+								else if (!strcasecmp(d, "DISTRIBUTIONS")) /* RFC 6048 */
+									nntp_caps.list_distributions = TRUE;
+								else if (!strcasecmp(d, "HEADERS"))
+									nntp_caps.list_headers = TRUE; /* HDR requires LIST HEADERS, but not vice versa */
+								else if (!strcasecmp(d, "NEWSGROUPS"))
+									nntp_caps.list_newsgroups = TRUE;
+								else if (!strcasecmp(d, "OVERVIEW.FMT")) /* OVER requires OVERVIEW.FMT, but not vice versa */
+									nntp_caps.list_overview_fmt = TRUE;
+								else if (!strcasecmp(d, "MOTD")) /* RFC 6048 */
+									nntp_caps.list_motd = TRUE;
+								else if (!strcasecmp(d, "SUBSCRIPTIONS")) /* RFC 6048 */
+									nntp_caps.list_subscriptions = TRUE;
+								else if (!strcasecmp(d, "MODERATORS")) /* RFC 6048 */
+									nntp_caps.list_moderators = TRUE;
+								else if (!strcasecmp(d, "COUNTS")) /* RFC 6048 */
+									nntp_caps.list_counts = TRUE;
+							}
 						}
 					} else if (!strncasecmp(ptr, "IMPLEMENTATION", 14)) {
 						FreeIfNeeded(nntp_caps.implementation);
@@ -1276,13 +1312,11 @@ check_extensions(
 					else if (!strncasecmp(ptr, &xover_cmds[1], strlen(&xover_cmds[1]))) {
 						nntp_caps.list_overview_fmt = nntp_caps.over = TRUE;
 						nntp_caps.over_cmd = &xover_cmds[1];
-						d = ptr + strlen(&xover_cmds[1]);
-						d = strpbrk(d, " \t");
-						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
-							d++;
-							if (!strcasecmp(d, "MSGID"))
-								nntp_caps.over_msgid = TRUE;
-							d = strpbrk(d, " \t");
+						if (strtok(ptr, WS) != NULL) {
+							while ((d = strtok(NULL, WS)) != NULL) {
+								if (!strcasecmp(d, "MSGID"))
+									nntp_caps.over_msgid = TRUE;
+							}
 						}
 					}
 					/*
@@ -1294,65 +1328,47 @@ check_extensions(
 						nntp_caps.headers_range = my_strdup("");
 						nntp_caps.headers_id = my_strdup("");
 					} else if (!strncasecmp(ptr, "AUTHINFO", 8)) {
-						d = ptr + 8;
-						d = strpbrk(d, " \t");
-						if (d == NULL) /* AUTHINFO without args */
+						if (strtok(ptr, WS) == NULL) /* AUTHINFO without args */
 							nntp_caps.authinfo_state = TRUE;
-						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
-							d++;
-							if (!strncasecmp(d, "USER", 4))
-								nntp_caps.authinfo_user = TRUE;
-							if (!strncasecmp(d, "SASL", 4))
-								nntp_caps.authinfo_sasl = TRUE;
-							d = strpbrk(d, " \t");
+						else {
+							while ((d = strtok(NULL, WS)) != NULL) {
+								if (!strcasecmp(d, "USER"))
+									nntp_caps.authinfo_user = TRUE;
+								if (!strcasecmp(d, "SASL"))
+									nntp_caps.authinfo_sasl = TRUE;
+							}
 						}
 					} else if (!strncasecmp(ptr, "SASL", 4)) {
-						d = ptr + 4;
-						d = strpbrk(d, " \t");
-						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
-							d++;
-							if (!strncasecmp(d, "CRAM-MD5", 8)) { /* RFC 2195 */
-								nntp_caps.authinfo_sasl = TRUE;
-								nntp_caps.sasl |= SASL_CRAM_MD5;
+						int m;
+
+						nntp_caps.authinfo_sasl = FALSE;
+						FreeAndNull(nntp_caps.sasl_mechs);
+						nntp_caps.sasl_mechs = my_malloc(strlen(ptr) + 1); /* more than enough */
+						nntp_caps.sasl_mechs[0] = '\0';
+
+						if (strtok(ptr, WS) != NULL) { /* skip initial "SASL" */
+							while ((d = strtok(NULL, WS)) != NULL) {
+								m = 0;
+								while (tin_mechs[m]) { /* remember servers mechs we like */
+									if (!strcasecmp(d, tin_mechs[m])) {
+										strcat(nntp_caps.sasl_mechs, d);
+										strcat(nntp_caps.sasl_mechs, " ");
+										break;
+									}
+									m++;
+								}
 							}
-							if (!strncasecmp(d, "DIGEST-MD5", 10)) { /* RFC 2831 */
+							str_trim(nntp_caps.sasl_mechs);
+							if (strlen(nntp_caps.sasl_mechs))
 								nntp_caps.authinfo_sasl = TRUE;
-								nntp_caps.sasl |= SASL_DIGEST_MD5;
-							}
-							if (!strncasecmp(d, "PLAIN", 5)) { /* RFC 4616 */
-								nntp_caps.authinfo_sasl = TRUE;
-								nntp_caps.sasl |= SASL_PLAIN;
-							}
-							if (!strncasecmp(d, "GSSAPI", 6)) { /* RFC 4752 */
-								nntp_caps.authinfo_sasl = TRUE;
-								nntp_caps.sasl |= SASL_GSSAPI;
-							}
-							if (!strncasecmp(d, "EXTERNAL", 8)) { /* RFC 4422 */
-								nntp_caps.authinfo_sasl = TRUE;
-								nntp_caps.sasl |= SASL_EXTERNAL;
-							}
-							/* inn also can do these */
-							if (!strncasecmp(d, "OTP", 3)) { /* RFC 2444 */
-								nntp_caps.authinfo_sasl = TRUE;
-								nntp_caps.sasl |= SASL_OTP;
-							}
-							if (!strncasecmp(d, "NTLM", 4)) { /* Microsoft */
-								nntp_caps.authinfo_sasl = TRUE;
-								nntp_caps.sasl |= SASL_NTLM;
-							}
-							if (!strncasecmp(d, "LOGIN", 5)) { /* Microsoft */
-								nntp_caps.authinfo_sasl = TRUE;
-								nntp_caps.sasl |= SASL_LOGIN;
-							}
 						}
 					} else if (!strncasecmp(ptr, "COMPRESS", 8)) { /* RFC 8054 */
-						d = ptr + 8;
-						d = strpbrk(d, " \t");
-						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
-							d++;
-							if (!strncasecmp(d, "DEFLATE", 7)) {
-								nntp_caps.compress = TRUE;
-								nntp_caps.compress_algorithm |= COMPRESS_DEFLATE;
+						if (strtok(ptr, WS) != NULL) {
+							while ((d = strtok(NULL, WS)) != NULL) {
+								if (!strcasecmp(d, "DEFLATE")) {
+									nntp_caps.compress = TRUE;
+									nntp_caps.compress_algorithm |= COMPRESS_DEFLATE;
+								}
 							}
 						}
 					}
@@ -1366,12 +1382,9 @@ check_extensions(
 					 * after it had been used ...
 					 */
 					else if (!strncasecmp(ptr, "MAXARTNUM", 9) && nntp_caps.maxartnum == T_ARTNUM_CONST(0)) {
-						d = ptr + 9;
-						d = strpbrk(d, " \t");
-						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
-							d++;
-							nntp_caps.maxartnum = MIN(atoartnum(d), ARTNUM_MAX);
-							d = strpbrk(d, " \t");
+						if (strtok(ptr, WS) != NULL) {
+							while ((d = strtok(NULL, WS)) != NULL)
+								nntp_caps.maxartnum = MIN(atoartnum(d), ARTNUM_MAX);
 						}
 					}
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
@@ -1429,7 +1442,7 @@ mode_reader(
 			debug_print_file("NNTP", "mode_reader(MODE READER)");
 #	endif /* DEBUG */
 		DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
-		put_server("MODE READER");
+		put_server("MODE READER", FALSE);
 
 		/*
 		 * According to RFC 3977 (5.3), MODE READER may only return the
@@ -1611,7 +1624,7 @@ nntp_open(
 			if ((debug & DEBUG_NNTP) && verbose > 1)
 				debug_print_file("NNTP", "nntp_open(MODE READER)");
 #	endif /* DEBUG */
-			put_server("MODE READER");
+			put_server("MODE READER", FALSE);
 			switch (get_only_respcode(buf, sizeof(buf))) {
 				/* just honor critical errors */
 				case ERR_GOODBYE:
@@ -1955,7 +1968,7 @@ get_only_respcode(
 		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "get_only_respcode() timeout");
 #	endif /* DEBUG */
-		put_server(last_put);
+		put_server(last_put, FALSE);
 		ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
 
 		if (tin_errno || ptr == NULL) {
@@ -2028,14 +2041,14 @@ get_respcode(
 		if (nntp_caps.type == CAPABILITIES)
 			can_post = nntp_caps.post && !force_no_post;
 		else {
-			put_server("MODE READER");
+			put_server("MODE READER", FALSE);
 			if (get_only_respcode(message, mlen) == OK_CANPOST)
 				can_post = TRUE && !force_no_post;
 		}
 		if (curr_group != NULL) {
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
 			snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
-			put_server(last_put);
+			put_server(last_put, FALSE);
 			if (nntpbuf_gets(last_put, NNTP_STRLEN, &nntp_buf) == NULL)
 				*last_put = '\0';
 #	ifdef DEBUG
@@ -2046,7 +2059,7 @@ get_respcode(
 		}
 		STRCPY(last_put, savebuf);
 
-		put_server(last_put);
+		put_server(last_put, FALSE);
 		ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
 
 		if (tin_errno) {
@@ -2096,7 +2109,7 @@ DEBUG_IO((stderr, "nntp_command(%s)\n", command));
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "nntp_command(%s)", command);
 #	endif /* DEBUG */
-	put_server(command);
+	put_server(command, FALSE);
 
 	if (!bool_equal(dangerous_signal_exit, TRUE)) {
 		if (get_respcode(message, mlen) != success) {
@@ -2135,7 +2148,7 @@ DEBUG_IO((stderr, "new_nntp_command(%s)\n", command));
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "new_nntp_command(%s)", command);
 #	endif /* DEBUG */
-	put_server(command);
+	put_server(command, FALSE);
 
 	if (!bool_equal(dangerous_signal_exit, TRUE)) {
 		if ((respcode = get_respcode(message, mlen)) != success) {
@@ -2234,7 +2247,8 @@ nntp_write(
 }
 
 
-ssize_t nntp_read(
+static ssize_t
+nntp_read(
 	int fd,
 	void *tls,
 	void *buf,
@@ -2259,9 +2273,9 @@ ssize_t nntp_read(
 #define SZ(a) sizeof((a))
 
 #	ifdef USE_ZLIB
-static void *
+static voidpf
 deflate_alloc(
-	void *user,
+	voidpf user,
 	uInt items,
 	uInt size)
 {
@@ -2272,8 +2286,8 @@ deflate_alloc(
 
 static void
 deflate_free(
-	void *user,
-	void *ptr)
+	voidpf user,
+	voidpf ptr)
 {
 	(void) user;
 	FreeIfNeeded(ptr);
@@ -2482,7 +2496,7 @@ nntpbuf_puts(
 	struct nntpbuf* buf)
 {
 	int bytes_written = 0, retval;
-	unsigned len, l;
+	size_t len, l;
 
 	if (!buf || SZ(buf->wr.buf) == 0 || buf->wr.lb > buf->wr.ub)
 		return EOF;
@@ -2587,7 +2601,7 @@ nntpbuf_ungetc(
 	}
 
 	buf->rd.lb--;
-	buf->rd.buf[buf->rd.lb] = (unsigned char)c;
+	buf->rd.buf[buf->rd.lb] = (unsigned char) c;
 
 	return c;
 }
@@ -2618,7 +2632,7 @@ nntpbuf_gets(
 		}
 
 		while (size && (buf->rd.ub - buf->rd.lb) > 0) {
-			((unsigned char*)s)[write_at++] = buf->rd.buf[buf->rd.lb++];
+			((unsigned char *) s)[write_at++] = buf->rd.buf[buf->rd.lb++];
 			size--;
 
 			if (s[write_at - 1] == '\n' && size) {
@@ -2723,6 +2737,13 @@ nntp_conninfo(
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
 	fprintf(stream, _(txt_conninfo_timeout), TIN_NNTP_TIMEOUT, TIN_NNTP_TIMEOUT ? "" : _(txt_conninfo_disabled));
 #	endif /* HAVE_ALARM && SIGALRM */
+
+#	ifdef USE_GSASL
+	if (nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_sasl) {
+		fprintf(stream, _(txt_usable_sasl_mechs), nntp_caps.sasl_mechs ? nntp_caps.sasl_mechs : _(txt_none));
+		fprintf(stream, _(txt_used_sasl_mech), nntp_caps.sasl_mech_used ? nntp_caps.sasl_mech_used : _(txt_none));
+	}
+#	endif /* USE_GSASL */
 
 #	ifdef NNTP_ABLE
 	list_motd(stream);

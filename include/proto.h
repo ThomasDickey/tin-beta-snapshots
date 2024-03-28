@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2024-01-27
+ *  Updated   : 2024-03-27
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -319,6 +319,7 @@ extern void grp_del_mail_art(struct t_article *article);
 /* main.c */
 extern int main(int argc, char *argv[]);
 extern int read_cmd_line_groups(void);
+extern void handle_cmdargs(t_bool init);
 extern _Noreturn void giveup(void);
 
 /* memory.c */
@@ -460,7 +461,7 @@ extern void nntp_close(t_bool send_no_quit);
 	extern int get_respcode(char *, size_t);
 	extern int get_only_respcode(char *, size_t);
 	extern int new_nntp_command(const char *command, int success, char *message, size_t mlen);
-	extern void put_server(const char *string);
+	extern void put_server(const char *string, t_bool hide_from_log);
 	extern void u_put_server(const char *string);
 	extern int fgetc_server(FILE *stream);
 	extern int ungetc_server(int c, FILE *stream);
@@ -471,8 +472,8 @@ extern void nntp_close(t_bool send_no_quit);
 #endif /* NNTP_ABLE */
 
 /* nntps.c */
-	extern int tintls_init(void);
-	extern void tintls_exit(void);
+extern int tintls_init(void);
+extern void tintls_exit(void);
 #if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
 	extern int tintls_open(const char *servername, int fd, void **session_ctx);
 	extern int tintls_close(void *session_ctx);
@@ -516,14 +517,6 @@ extern time_t parsedate(char *p, TIMEINFO *now);
 	extern void invoke_pgp_mail(const char *nam, char *mail_to);
 	extern void invoke_pgp_news(char *artfile);
 #endif /* HAVE_PGP_GPG */
-
-/* plp_snprintf.c */
-#if !defined(HAVE_SNPRINTF) || defined(SNPRINTF_BROKEN)
-	extern int plp_snprintf(char *, size_t, const char *, ...);
-#endif /* !HAVE_SNPRINTF || SNPRINTF_BROKEN */
-#if !defined(HAVE_VSNPRINTF) || defined(SNPRINTF_BROKEN)
-	extern int plp_vsnprintf(char *, size_t, const char *, va_list);
-#endif /* !HAVE_VSNPRINTF || SNPRINTF_BROKEN */
 
 /* post.c */
 extern char *checknadd_headers(const char *infile, struct t_group *group);
@@ -589,11 +582,9 @@ extern void thread_by_reference(void);
 /* regex.c */
 extern t_bool compile_regex(const char *regex, struct regex_cache *cache, REGEX_OPTIONS options);
 extern t_bool match_regex(const char *string, char *pattern, struct regex_cache *cache, t_bool icase);
-extern int match_regex_ex(const char *string, int length, int offset, REGEX_OPTIONS options, struct regex_cache *regex);
-
+extern int match_regex_ex(const char *string, REGEX_SIZE length, REGEX_SIZE offset, REGEX_OPTIONS options, struct regex_cache *regex);
 extern REGEX_NOFFSET regex_get_ovector_count(struct regex_cache *regex);
 extern REGEX_SIZE *regex_get_ovector_pointer(struct regex_cache *regex);
-
 extern void highlight_regexes(int row, struct regex_cache *regex, int color);
 extern void regex_cache_init(struct regex_cache *regex);
 extern void regex_cache_destroy(struct regex_cache *regex);
@@ -662,7 +653,7 @@ extern void close_msglog(void);
 
 /* search.c */
 extern enum option_enum search_config(t_bool forward, t_bool repeat, enum option_enum current, enum option_enum last);
-extern int get_search_vectors(int *start, int *end);
+extern int get_search_vectors(REGEX_SIZE *start, REGEX_SIZE *end);
 extern int search(t_function func, int current_art, t_bool repeat);
 extern int search_active(t_bool forward, t_bool repeat);
 extern int search_article(t_bool forward, t_bool repeat, int start_line, int lines, t_lineinfo *line, int reveal_ctrl_l_lines, FILE *fp);
@@ -677,7 +668,7 @@ extern int choose_new_group(void);
 	extern int show_article_by_msgid(char *messageid);
 #endif /* NNTP_ABLE */
 extern int skip_newgroups(void);
-extern void selection_page(int start_groupnum, int num_cmd_line_groups);
+extern void selection_page(int start_groupnum, int num_cmd_line_groups, char *messgeid);
 extern void show_selection_page(void);
 extern void toggle_my_groups(const char *group);
 
@@ -701,7 +692,7 @@ extern char *eat_tab(char *s);
 extern char *fmt_string(const char *fmt, ...);
 extern char *my_strdup(const char *str);
 extern char *str_trim(char *string);
-extern char *strunc(const char *message, int len);
+extern char *strunc(const char *message, size_t len);
 extern char *tin_ltoa(t_artnum value, int digits);
 extern char *tin_strtok(char *str, const char *delim);
 extern int sh_format(char *dst, size_t len, const char *fmt, ...);
@@ -754,7 +745,7 @@ extern int my_toupper(int);
 	extern wchar_t *char2wchar_t(const char *str);
 	extern wchar_t *wcspart(const wchar_t *wstr, int columns, t_bool pad);
 	extern wchar_t *wexpand_tab(wchar_t *wstr, size_t tab_width);
-	extern wchar_t *wstrunc(const wchar_t *wmessage, int len);
+	extern wchar_t *wstrunc(const wchar_t *wmessage, size_t len);
 #else
 	extern char *abbr_groupname(const char *grpname, size_t len);
 	extern char *expand_tab(char *str, size_t tab_width);

@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-01-23
+ *  Updated   : 2024-02-28
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1166,7 +1166,7 @@ post_process_sh(
 
 		while (fgets(buf, (int) sizeof(buf), fp_in) != NULL) {
 			/* find #!/bin/sh style patterns */
-			if ((fp_out == NULL) && match_regex_ex(buf, (int) strlen(buf), 0, 0, &shar_regex) >= 0)
+			if ((fp_out == NULL) && match_regex_ex(buf, (REGEX_SIZE) strlen(buf), 0, 0, &shar_regex) >= 0)
 				fp_out = fopen(file_out, "w");
 
 			/* write to temp file */

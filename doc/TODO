@@ -177,9 +177,6 @@ o  add more user defined screen layout at different levels (e.g. posting
    (mostly done for selection, group, thread, attachment and page level)
    [20041025 Urs Janssen <urs@tin.org>]
 
-o  allow a Message-ID on the cmd. line to jump to the given article
-   [20170718 Urs Janssen <urs@tin.org>]
-
 o  add more AUTHINFO SASL (RFC 4643, RFC 5802) support (DIGEST-MD5,
    EXTERNAL, ...) and a fallback if no libgsasl is found (e.g cyrus-sasl
    or a handrolled version for at least PLAIN)
@@ -624,8 +621,13 @@ o  rewrite mini-help, remove the long strings and generate them dynamically
    [20100326 Urs Janssen <urs@tin.org>]
 
 o  rewrite auth.c
-   - turn t_bool authinfo_user, authinfo_sasl, authinfo_state into
-     enum authinfo { NONE = 0, USER = 1, SASL = 2 }
+   - it is overcomplex and the current codeflow has issues (e.g. prompts
+     for user/pass if not in newsauth even for e.g. SASL ANONYMOUS).
+   - sasl-libs likely have callbacks, make use of them!
+   - add config option (per server?) to force the use of SASL or USER/PASS
+     only (or disallow SASL (mech list?) or USER/PASS):
+     - I saw at least one bigger server which announced SASL (compiled in)
+       but did not support it (intentional lacking local config!).
 
 o  fix aclocal.m4:CF_FUNC_SYSTEM and/or misc.c:invoke_cmd() that
    --enable-broken-system-fix/IGNORE_SYSTEM_STATUS isn't needed anymore.
@@ -754,6 +756,9 @@ o  some non fixed width strings could be formatted nicer (warp on last space
 o  too much code is compiled when configured NO_POSTING or without NNTP
    [20210206 Urs Janssen <urs@tin.org>]
 
+o  replace rewind(stream) with fseek(stream, 0L, SEEK_SET) to be able
+   to handle errors
+
 Unicode
 -------
 o  make mm_network_charset an "option_list" to avoid junk input or
@@ -850,7 +855,9 @@ o  submit short invocation examples to tldr
 
 o  replace "\\" by "\e" in man pages (portable?)
 
-o  integrate doc/auth.txt into tin.1 man page
+o  integrate doc/auth.txt into tin.1 man page, mention RFCs for
+   avail auth methods (AUTHINFO SASL: RFC 4643, SASL PLAIN: RFC 4616,
+   SASL ANONYMOUS: RFC 4505, ...)
 
 o  document ${HOST:-"$HOSTNAME"} fallback if gethostname(2) and uname(2)
    do not return a hostname
@@ -920,14 +927,6 @@ o  articles without a Message-ID are skipped as the code currently depends
    on Message-IDs, but they might show up in mailgroups - assign a pseudo
    Message-ID to them?
    [20151111 Urs Janssen <urs@tin.org>]
-
-o  create missing dir(s) in path to newsrc, right now get_newsrcname()
-   usually comes up with
-   "No permissions to go into /home/$USER/.tin/${NNTPSERVER}"
-   if one uses something like
-   *  ~/.tin/${NNTPSERVER-localhost}/.newsrc
-   in newsrctable
-   [20150121 Urs Janssen <urs@tin.org>]
 
 o  make --with-defaults-dir= default to $sysconfdir/tin
    (=/usr/local/etc/tin)?
@@ -1101,10 +1100,10 @@ o  add check for libtre and offer TRE as matching method for "wildcard"?
 o  eval $NEWSHOST if $NNTPSERVER is unset (like Net::NNTP(3perl))
    [20141225 Urs Janssen <urs@tin.org>]
 
-o  add show_progress to art.c:setup_hard_base() and filter.c:filter_articles(),
+o  add show_progress to art.c:setup_hard_base() and filter.c:filter_articles()
    both can be slow in huge groups
 
 o  option to {display,warn,hide} article if it has an Expires:-header in the
-   past? or doe something via filter?
+   past? or do something via filter?
 
 o  also check for $NEWS_ORGANIZATION (see lynx(1))?

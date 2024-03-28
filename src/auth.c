@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2024-01-17
+ *  Updated   : 2024-03-13
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -57,10 +57,13 @@
 static int do_authinfo_user(char *server, char *authuser, char *authpass);
 static t_bool read_newsauth_file(char *server, char *authuser, char *authpass);
 static t_bool authinfo_plain(char *server, char *authuser, t_bool startup);
-#	ifdef USE_SASL
-	static char *sasl_auth_plain(char *user, char *pass);
-	static int do_authinfo_sasl_plain(char *authuser, char *authpass);
-#	endif /* USE_SASL */
+static char *prompt_for_authid(char *authuser);
+static char *prompt_for_password(void);
+#	ifdef USE_GSASL
+	static int sasl_auth(char *user, char *pass);
+	static int do_authinfo_sasl(char *authuser, char *authpass);
+	/* static int callback(Gsasl *ctx, Gsasl_session *sctx, Gsasl_property prop); */
+#	endif /* USE_GSASL */
 
 
 /*
@@ -188,7 +191,7 @@ read_newsauth_file(
  * we don't handle ERR_ENCRYPT right now
  *
  * we don't convert authuser and authpass to UTF-8 as required by 3977
- * and we do in do_authinfo_sasl_plain(); if we want to do so it should
+ * and we do in do_authinfo_sasl(); if we want to do so it should
  * likely be done in authinfo_plain() instead.
  */
 static int
@@ -205,7 +208,7 @@ do_authinfo_user(
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "authorization %s", line);
 #	endif /* DEBUG */
-	put_server(line);
+	put_server(line, FALSE);
 	if ((ret = get_only_respcode(NULL, 0)) != NEED_AUTHDATA)
 		return ret;
 
@@ -223,7 +226,7 @@ do_authinfo_user(
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "authorization %s", line);
 #	endif /* DEBUG */
-	put_server(line);
+	put_server(line, TRUE);
 	ret = get_only_respcode(line, sizeof(line));
 	if (!batch_mode || verbose || ret != OK_AUTH)
 		wait_message(2, (ret == OK_AUTH ? _(txt_authorization_ok) : _(txt_authorization_fail)), authuser);
@@ -247,7 +250,18 @@ do_authinfo_user(
  *   nntpserver2 password [user]
  *   etc.
  *
- * TODO: convert authuser and authpass to UTF-8 as required by 3977?
+ * TODO: - convert authuser and authpass to UTF-8 as required by 3977?
+ *         (instead of doing so in do_authinfo_sasl())
+ *       - prompt logic does NOT work with SASL mechs which do not
+ *         require a username and/or password
+ *       - rewrite from scratch like:
+ *         - fill username/password from cache (reconnecting)
+ *         - if still unset lookup user/password from file
+ *         - if avail try sasl_auth (with callback if still unset user/password
+ *           and _return_ username/password so it can be used with non sasl
+ *           too)
+ *         - if user/password are still empty prompt user
+ *         - authinfo user/pass
  */
 static t_bool
 authinfo_plain(
@@ -271,16 +285,16 @@ authinfo_plain(
 	 * Else, proceed to the other mechanisms.
 	 */
 	if (initialized && !changed && !already_failed) {
-#	ifdef USE_SASL
-		if (nntp_caps.sasl & SASL_PLAIN)
-			ret = do_authinfo_sasl_plain(authusername, authpassword);
-		if (ret != OK_AUTH)
-#	endif /* USE_SASL */
+#	ifdef USE_GSASL
+		if (nntp_caps.authinfo_sasl && *nntp_caps.sasl_mechs)
+			ret = do_authinfo_sasl(authusername, authpassword);
+		if (ret != OK_AUTH_SASL && ret != OK_AUTH)
+#	endif /* USE_GSASL */
 		{
 			if (nntp_caps.type != CAPABILITIES || nntp_caps.authinfo_user)
 				ret = do_authinfo_user(server, authusername, authpassword);
 		}
-		return (ret == OK_AUTH);
+		return (ret == OK_AUTH || ret == OK_AUTH_SASL);
 	}
 
 	authpassword[0] = '\0';
@@ -304,19 +318,19 @@ authinfo_plain(
 	 */
 	if ((changed || !initialized) && !already_failed) {
 		if (read_newsauth_file(server, authuser, authpass)) {
-#	ifdef USE_SASL
-			if (nntp_caps.sasl & SASL_PLAIN)
-				ret = do_authinfo_sasl_plain(authuser, authpass);
+#	ifdef USE_GSASL
+			if (nntp_caps.authinfo_sasl && *nntp_caps.sasl_mechs)
+				ret = do_authinfo_sasl(authuser, authpass);
 
-			if (ret != OK_AUTH)
-#	endif /* USE_SASL */
+			if (ret != OK_AUTH_SASL && ret != OK_AUTH)
+#	endif /* USE_GSASL */
 			{
 				if (force_auth_on_conn_open || nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_user))
 					ret = do_authinfo_user(server, authuser, authpass);
 			}
-			already_failed = (ret != OK_AUTH);
+			already_failed = (ret != OK_AUTH && ret != OK_AUTH_SASL);
 
-			if (ret == OK_AUTH) {
+			if (ret == OK_AUTH || ret == OK_AUTH_SASL) {
 #	ifdef DEBUG
 				if ((debug & DEBUG_NNTP) && verbose > 1)
 					debug_print_file("NNTP", "authorization succeeded");
@@ -349,46 +363,36 @@ authinfo_plain(
 	if (force_auth_on_conn_open || !startup) {
 		if (batch_mode) { /* no interactive username/password prompting */
 			error_message(0, _(txt_auth_needed));
-			return (ret == OK_AUTH);
+			return (ret == OK_AUTH || ret == OK_AUTH_SASL);
 		}
-		if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && !nntp_caps.authinfo_state && ((nntp_caps.sasl & SASL_PLAIN) || nntp_caps.authinfo_user || (!nntp_caps.authinfo_user && !(nntp_caps.sasl & SASL_PLAIN))))) {
-#	ifdef USE_CURSES
-			int state = RawState();
-#	endif /* USE_CURSES */
+		if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && !nntp_caps.authinfo_state && ((nntp_caps.authinfo_sasl && *nntp_caps.sasl_mechs) || nntp_caps.authinfo_user))) {
+			char *u, *p;
 
 			wait_message(0, _(txt_auth_needed));
-#	ifdef USE_CURSES
-			Raw(TRUE);
-#	endif /* USE_CURSES */
-			if (!prompt_default_string(_(txt_auth_user), authuser, sizeof(authusername) - 1, authusername, HIST_NONE)) {
-#	ifdef DEBUG
-				if ((debug & DEBUG_NNTP) && verbose > 1)
-					debug_print_file("NNTP", "authorization failed: no username");
-#	endif /* DEBUG */
-				return FALSE;
-			}
 
-#	ifdef USE_CURSES
-			Raw(state);
-			my_printf("%s", _(txt_auth_pass));
-			wgetnstr(stdscr, authpassword, sizeof(authpassword) - 1);
-			authpassword[sizeof(authpassword) - 1] = '\0';
-			Raw(TRUE);
-#	else
-			/*
-			 * on some systems (i.e. Solaris) getpass(3) is limited
-			 * to 8 chars -> we use tin_getline()
-			 */
-			STRCPY(authpassword, tin_getline(_(txt_auth_pass), 0, NULL, sizeof(authpassword) - 1, TRUE, HIST_NONE));
-#	endif /* USE_CURSES */
+			u = prompt_for_authid(authuser);
+			p = prompt_for_password();
 
-#	ifdef USE_SASL
-			if (nntp_caps.sasl & SASL_PLAIN)
-				ret = do_authinfo_sasl_plain(authuser, authpass);
-			if (ret != OK_AUTH)
-#	endif /* USE_SASL */
+			if (p && *p)  /* authpass points to authpassword */
+				STRCPY(authpassword, p);
+			else
+				authpassword[0] = '\0';
+
+			if (u && *u) /* authuser points to authusername */
+				STRCPY(authusername, u);
+			else
+				authusername[0] = '\0';
+
+			free(p);
+			free(u);
+
+#	ifdef USE_GSASL
+			if (nntp_caps.authinfo_sasl && *nntp_caps.sasl_mechs)
+				ret = do_authinfo_sasl(authuser, authpass);
+			if (ret != OK_AUTH_SASL && ret != OK_AUTH)
+#	endif /* USE_GSASL */
 			{
-				if (nntp_caps.type != CAPABILITIES || (nntp_caps.authinfo_user || !nntp_caps.authinfo_sasl)) {
+				if (*authpass && *authuser && (nntp_caps.type != CAPABILITIES || (nntp_caps.authinfo_user || !nntp_caps.authinfo_sasl))) {
 #	ifdef DEBUG
 					if (debug & DEBUG_NNTP) {
 						if (nntp_caps.type == CAPABILITIES && !nntp_caps.authinfo_sasl && !nntp_caps.authinfo_user)
@@ -416,8 +420,8 @@ authinfo_plain(
 			/*
 			 * TODO:
 			 * nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_state
-			 * can we change the state here? and if so how? SARTTLS? MODE
-			 * READER?
+			 * can we change the state here? and if so how? SARTTLS (which
+			 * we do not support, RFC 7525 3.2)? MODE READER?
 			 */
 #	ifdef DEBUG
 			if ((debug & DEBUG_NNTP) && verbose > 1) {
@@ -425,7 +429,7 @@ authinfo_plain(
 				debug_print_file("NNTP", "\tCAPABILITIES: %s", nntp_caps.type ? (nntp_caps.type < 2 ? "CAPABILITIES" : "BROKEN") : "NONE");
 				debug_print_file("NNTP", "\t%cREADER, %cMODE READER", nntp_caps.reader ? '+' : '-', nntp_caps.mode_reader ? '+' : '-');
 				debug_print_file("NNTP", "\t%cSTARTTLS", nntp_caps.starttls ? '+' : '-');
-				debug_print_file("NNTP", "\t%cAUTHINFO %s%s", nntp_caps.authinfo_state ? '+' : '-', nntp_caps.authinfo_user ? "USER " : "", nntp_caps.authinfo_sasl ? "SASL" : "");
+				debug_print_file("NNTP", "\t%cAUTHINFO %s%s", nntp_caps.authinfo_state ? '-' : '+', nntp_caps.authinfo_user ? "USER " : "", nntp_caps.authinfo_sasl ? "SASL" : "");
 			}
 #	endif /* DEBUG */
 			/*
@@ -439,10 +443,10 @@ authinfo_plain(
 
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
-		debug_print_file("NNTP", "authorization %s", (ret == OK_AUTH ? "succeeded" : "failed"));
+		debug_print_file("NNTP", "authorization %s", (ret == OK_AUTH || ret == OK_AUTH_SASL) ? "succeeded" : "failed");
 #	endif /* DEBUG */
 
-	return (ret == OK_AUTH);
+	return (ret == OK_AUTH || ret == OK_AUTH_SASL);
 }
 
 
@@ -471,7 +475,7 @@ authenticate(
 		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "authenticate(%s)", line);
 #	endif /* DEBUG */
-		put_server(line);
+		put_server(line, FALSE);
 
 		check_extensions(get_only_respcode(line, sizeof(line)));
 	}
@@ -480,16 +484,14 @@ authenticate(
 }
 
 
-#	ifdef USE_SASL
+#	ifdef USE_GSASL
 static int
-do_authinfo_sasl_plain(
+do_authinfo_sasl(
 	char *authuser,
 	char *authpass)
 {
-	char line[PATH_LEN];
-	char *foo;
-	char *utf8user;
-	char *utf8pass;
+	char *utf8user = NULL;
+	char *utf8pass = NULL;
 	int ret;
 #		ifdef CHARSET_CONVERSION
 	char *cp;
@@ -497,21 +499,28 @@ do_authinfo_sasl_plain(
 	t_bool contains_8bit = FALSE;
 #		endif /* CHARSET_CONVERSION */
 
-	utf8user = my_strdup(authuser);
-	utf8pass = my_strdup(authpass);
+	if (authuser && *authuser)
+		utf8user = my_strdup(authuser);
+
+	if (authpass && *authpass)
+		utf8pass = my_strdup(authpass);
 #		ifdef CHARSET_CONVERSION
 	/* RFC 4616 */
 	if (!IS_LOCAL_CHARSET("UTF-8")) {
-		for (cp = utf8user; *cp && !contains_8bit; cp++) {
-			if (!isascii(*cp)) {
-				contains_8bit = TRUE;
-				break;
+		if (utf8user) {
+			for (cp = utf8user; *cp && !contains_8bit; cp++) {
+				if (!isascii((unsigned char) *cp)) {
+					contains_8bit = TRUE;
+					break;
+				}
 			}
 		}
-		for (cp = utf8pass; *cp && !contains_8bit; cp++) {
-			if (!isascii(*cp)) {
-				contains_8bit = TRUE;
-				break;
+		if (utf8pass) {
+			for (cp = utf8pass; *cp && !contains_8bit; cp++) {
+				if (!isascii((unsigned char) *cp)) {
+					contains_8bit = TRUE;
+					break;
+				}
 			}
 		}
 		if (contains_8bit) {
@@ -522,11 +531,11 @@ do_authinfo_sasl_plain(
 				}
 			}
 			if (c == i) { /* should never fail */
-				if (!buffer_to_network(utf8user, c)) {
+				if (utf8user && !buffer_to_network(utf8user, c)) {
 					free(utf8user);
 					utf8user = my_strdup(authuser);
 				}
-				if (!buffer_to_network(utf8pass, c)) {
+				if (utf8pass && !buffer_to_network(utf8pass, c)) {
 					free(utf8pass);
 					utf8pass = my_strdup(authpass);
 				}
@@ -537,58 +546,262 @@ do_authinfo_sasl_plain(
 
 #		ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
-		debug_print_file("NNTP", "do_authinfo_sasl_plain(\"%s\", \"%s\")", BlankIfNull(authuser), BlankIfNull(authpass));
+		debug_print_file("NNTP", "do_authinfo_sasl(\"%s\", \"%s\")", BlankIfNull(authuser), BlankIfNull(authpass));
 #		endif /* DEBUG */
 
-	if ((foo = sasl_auth_plain(utf8user, utf8pass)) == NULL) {
-		free(utf8user);
-		free(utf8pass);
-		return ERR_AUTHBAD;
-	}
+	ret = sasl_auth(utf8user, utf8pass);
+	FreeIfNeeded(utf8user);
+	FreeIfNeeded(utf8pass);
 
-	free(utf8user);
-	free(utf8pass);
-
-	snprintf(line, sizeof(line), "AUTHINFO SASL PLAIN %s", foo);
-	FreeIfNeeded(foo);
-#		ifdef DEBUG
-	if ((debug & DEBUG_NNTP) && verbose > 1)
-		debug_print_file("NNTP", "authorization %s", line);
-#		endif /* DEBUG */
-	put_server(line);
-	ret = get_only_respcode(line, sizeof(line));
-	if (!batch_mode || verbose || ret != OK_AUTH)
-		wait_message(2, (ret == OK_AUTH ? _(txt_authorization_ok) : _(txt_authorization_fail)), authuser);
+	if (!batch_mode || verbose || (ret != OK_AUTH_SASL && ret != OK_AUTH))
+		wait_message(2, ((ret == OK_AUTH_SASL || ret == OK_AUTH) ? _(txt_authorization_ok) : _(txt_authorization_fail)), BlankIfNull(authuser));
 	return ret;
 }
 
 
-static char *
-sasl_auth_plain(
+/*
+ * TODO: add cyrus-sasl variant
+ *       support more mechs
+ *       callbacks
+ */
+static int
+sasl_auth(
 	char *user,
 	char *pass)
 {
 	Gsasl *ctx = NULL;
-	Gsasl_session *session;
-	char *p = NULL;
-	const char *mech = "PLAIN";
+	Gsasl_session *session = NULL;
+	char *out = NULL;
+	char *in = NULL;
+	const char *mech;
+	char *suggest = nntp_caps.sasl_mechs;
+	char line[8192]; /* hope that fits RFC 4643 2.4.1 */
+	int rc, ret = ERR_AUTHFAIL;
+	int sasl_prop;
 
-	if (gsasl_init(&ctx) != GSASL_OK) /* TODO: do this only once at startup */
-		return p;
-	if (gsasl_client_start(ctx, mech, &session) != GSASL_OK) {
+	if (gsasl_init(&ctx) != GSASL_OK) /* TODO: do this only once at startup? */
+		goto sasl_done;
+
+	if ((mech = gsasl_client_suggest_mechanism(ctx, suggest)) == NULL)
+		goto sasl_done;
+
+	if (gsasl_client_start(ctx, mech, &session) != GSASL_OK)
+		goto sasl_done;
+
+	/* callback to prompt for missing data if needed */
+	/* gsasl_callback_set(ctx, callback); */
+
+	FreeIfNeeded(nntp_caps.sasl_mech_used);
+	nntp_caps.sasl_mech_used = my_strdup(mech);
+	sasl_prop = SASL_NEED_NONE;
+
+	/* figure out required properties - align mechs with nntplib.c:check_extensions() */
+	if (!strcasecmp(mech, "PLAIN") || !strcasecmp(mech, "LOGIN"))
+		sasl_prop = (SASL_NEED_AUTHID | SASL_NEED_PASSWORD);
+	if (!strcasecmp(mech, "ANONYMOUS"))
+		sasl_prop = SASL_NEED_ANONYMOUS_TOKEN;
+
+	/* set required props  ... see also callback() */
+#if 0
+	if (user && sasl_prop & SASL_NEED_AUTHZID) /* authorization identity, usually not used with NNTP, but GSSAPI? */
+		gsasl_property_set(session, GSASL_AUTHZID, user);
+#endif /* 0 */
+
+	if (user && sasl_prop & SASL_NEED_AUTHID)	/* authentication identity */
+		gsasl_property_set(session, GSASL_AUTHID, user);
+
+	if (pass && sasl_prop & SASL_NEED_PASSWORD)	/* password of the authentication identity */
+		gsasl_property_set(session, GSASL_PASSWORD, pass);
+
+	if (sasl_prop & SASL_NEED_ANONYMOUS_TOKEN)
+		gsasl_property_set(session, GSASL_ANONYMOUS_TOKEN, "dummy"); /* use a base64(randstr(len=whatever))?? */
+
+	/* authenticate */
+	snprintf(line, sizeof(line), "AUTHINFO SASL %s", mech);
+	put_server(line, FALSE);
+
+	do {
+		ret = get_only_respcode(line, sizeof(line));
+		rc = gsasl_step64(session, in, &out);
+
+		if (ret != NEED_AUTHDATA_SASL || !out)
+			break;
+
+		if (rc == GSASL_NEEDS_MORE || ret == NEED_AUTHDATA_SASL)
+			put_server(out, TRUE);
+
+		if (rc == GSASL_NEEDS_MORE || rc == GSASL_OK)
+			gsasl_free(out);
+	} while (rc == GSASL_NEEDS_MORE);
+
+	if (ret == NEED_AUTHDATA_SASL && rc == GSASL_OK)
+		ret = get_only_respcode(line, sizeof(line));
+
+	if (rc != GSASL_OK)
+		error_message(batch_mode ? 0 : 4, "%s", gsasl_strerror(rc));
+
+sasl_done:
+	if (session)
+		gsasl_finish(session);
+	if (ctx)
 		gsasl_done(ctx);
-		return p;
-	}
-	/* GSASL_AUTHZID (authorization identity) is (usually) unused with NNTP */
-	gsasl_property_set(session, GSASL_AUTHID, user);	/* authentication identity */
-	gsasl_property_set(session, GSASL_PASSWORD, pass);	/* password of the authentication identity */
-	if (gsasl_step64(session, NULL, &p) != GSASL_OK)
-		FreeAndNull(p);
-	gsasl_finish(session);
-	gsasl_done(ctx);
-	return p;
+
+	if (ret != OK_AUTH_SASL && ret != OK_AUTH)
+		FreeAndNull(nntp_caps.sasl_mech_used)
+
+	return ret;
 }
-#	endif /* USE_SASL */
+
+
+#if 0 /* prototype */
+static int
+callback(
+	Gsasl *ctx,
+	Gsasl_session *sctx,
+	Gsasl_property prop
+) {
+	char *u, *p;
+	int rc = GSASL_NO_CALLBACK;
+	int c = 0, i = -1;
+
+	(void) ctx;
+	if (!IS_LOCAL_CHARSET("UTF-8")) { /* charset conversion likely (we don't check for 7bit only) needed? */
+		for (i = 0; txt_mime_charsets[i] != NULL; i++) {
+			if (!strcasecmp("UTF-8", txt_mime_charsets[i])) {
+				c = i;
+				break;
+			}
+		}
+	}
+
+	switch (prop) {
+		case GSASL_AUTHID:
+			if ((u = prompt_for_authid(NULL)) != NULL) {
+				if (c == i) { /* convert to utf-8 */
+					char *u8 = my_strdup(u);
+
+					if (buffer_to_network(u8, c))
+						gsasl_property_set(sctx, prop, u8);
+					else /* conversion failed, try plain string */
+						gsasl_property_set(sctx, prop, u);
+
+					free(u8);
+				} else
+					gsasl_property_set(sctx, prop, u);
+
+				free(u);
+				rc = GSASL_OK;
+			}
+			break;
+
+		case GSASL_PASSWORD:
+			if ((p = prompt_for_password()) != NULL) {
+				if (c == i) { /* convert to utf-8 */
+					char *p8 = my_strdup(p);
+
+					if (buffer_to_network(p8, c))
+						gsasl_property_set(sctx, prop, p8);
+					else /* conversion failed, try plain string */
+						gsasl_property_set(sctx, prop, p);
+
+					free(p8);
+				} else
+					gsasl_property_set(sctx, prop, p);
+
+				free(p);
+				rc = GSASL_OK;
+			}
+			break;
+
+		GSASL_ANONYMOUS_TOKEN:
+			gsasl_property_set(sctx, GSASL_ANONYMOUS_TOKEN, "dummy");
+			rc = GSASL_OK;
+			break;
+
+		GSASL_SERVICE:
+			gsasl_property_set(sctx, GSASL_SERVICE, "nntp");
+			rc = GSASL_OK;
+			break;
+
+		case GSASL_HOSTNAME:
+			gsasl_property_set(sctx, GSASL_HOSTNAME, nntp_server /* get_host_name() ? */);
+			rc = GSASL_OK;
+			break;
+
+#if 0
+		case GSASL_AUTHZID:
+		case GSASL_PASSCODE:
+		case GSASL_PIN:
+		case GSASL_REALM:
+#endif /* 0 */
+		default: /* unhandled property */
+			break;
+	}
+	return rc;
+}
+#endif /* 0 */
+#	endif /* USE_GSASL */
+
+
+/*
+ * prompts for authid, suggests authuser
+ * returns freshly allocated authid
+ * caller must free result.
+ */
+static char *
+prompt_for_authid(
+	char *authuser
+) {
+	char *authid = my_malloc(128);
+#	ifdef USE_CURSES
+	int state = RawState();
+#	endif /* USE_CURSES */
+
+#	ifdef USE_CURSES
+	Raw(TRUE);
+#	endif /* USE_CURSES */
+
+	if (!prompt_default_string(_(txt_auth_user), authid, sizeof(authid) - 1, authuser, HIST_NONE)) {
+#	ifdef DEBUG
+		if ((debug & DEBUG_NNTP) && verbose > 1)
+			debug_print_file("NNTP", "authorization failed: no username");
+#	endif /* DEBUG */
+
+		authid[0] = '\0';
+	}
+#	ifdef USE_CURSES
+	Raw(state);
+#	endif /* USE_CURSES */
+
+	return authid;
+}
+
+
+/*
+ * prompts for authid related password
+ * returns freshly allocated password
+ * caller must free result.
+ */
+static char *
+prompt_for_password(
+	void
+) {
+	char *pass = my_malloc(128);
+
+#	ifdef USE_CURSES
+	my_printf("%s", _(txt_auth_pass));
+	wgetnstr(stdscr, pass, sizeof(pass) - 1);
+	pass[sizeof(pass) - 1] = '\0';
+#	else
+	/*
+	 * on some systems (i.e. Solaris) getpass(3) is limited
+	 * to 8 chars -> we use tin_getline()
+	 */
+	STRCPY(pass, tin_getline(_(txt_auth_pass), 0, NULL, sizeof(pass) - 1, TRUE, HIST_NONE));
+#	endif /* USE_CURSES */
+
+	return pass;
+}
 
 #else
 static void no_authenticate(void);			/* proto-type */

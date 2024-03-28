@@ -3,7 +3,7 @@
  *  Module    : my_tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
- *  Updated   : 2024-01-18
+ *  Updated   : 2024-03-21
  *  Notes     :
  *
  * Copyright (c) 2001-2024 Urs Janssen <urs@tin.org>
@@ -44,14 +44,12 @@
 /*
  * my_mktmp(filename, name_size, base_dir)
  *
- * try to create a unique tmp-file descriptor
+ * try to create a unique tmp-file descriptor (in base_dir if set)
  *
  * return codes:
  * >0 = file descriptor of tmpfile
- *      if need_name is set to true and/or we have to unlink the file
- *      ourself filename is set to the name of the tmp file located in
- *      base_dir
- * -1 = some error occurred
+ *      filename is set to the name of the tmp file
+ * -1 = some error occurred, errno should hold the details
  *
  * TODO: add/verify code for
  *       HAVE_BSD_SIGNALS
@@ -66,18 +64,17 @@ my_mktmp(
 	char *buf;
 	int fd = -1;
 	mode_t mask;
-#ifdef DEBUG
-	int sverrno;
-#endif /* DEBUG */
+	int sverrno = errno;
 
 	if (filename != NULL && name_size > 0) {
-		int len;
+		int n;
+		size_t len;
 #ifdef HAVE_POSIX_SIGNALS
 		sigset_t set, oset;
 #else
 #	ifdef HAVE_BSD_SIGNALS
 		int smask;
-#	endif	/* HAVE_BSD_SIGNALS */
+#	endif /* HAVE_BSD_SIGNALS */
 #endif /* HAVE_POSIX_SIGNALS */
 
 		if (base_dir) {
@@ -86,20 +83,22 @@ my_mktmp(
 			 * base_dir may reside on a shared network device
 			 * so add hostname/pid if allowed.
 			 */
-			if ((len = snprintf(NULL, 0, "tin-%s-%ld-XXXXXX", get_host_name(), (long) process_id)) < 0)
+			if ((n = snprintf(NULL, 0, "tin-%s-%ld-XXXXXX", get_host_name(), (long) process_id)) < 0)
 				goto error_out;
 
-			buf = my_malloc(++len);
-			if (snprintf(buf, len, "tin-%s-%ld-XXXXXX", get_host_name(), (long) process_id) != len - 1) {
+			len = (size_t) n + 1;
+			buf = my_malloc(len);
+			if (snprintf(buf, len, "tin-%s-%ld-XXXXXX", get_host_name(), (long) process_id) != n) {
 				free(buf);
 				goto error_out;
 			}
 #else
-			if ((len = snprintf(NULL, 0, "tin-XXXXXX")) < 0)
+			if ((n = snprintf(NULL, 0, "tin-XXXXXX")) < 0)
 				goto error_out;
 
-			buf = my_malloc(++len);
-			if (snprintf(buf, len, "tin-XXXXXX") != len - 1) {
+			len = (size_t) n + 1;
+			buf = my_malloc(len);
+			if (snprintf(buf, len, "tin-XXXXXX") != n) {
 				free(buf);
 				goto error_out;
 			}
@@ -110,11 +109,19 @@ my_mktmp(
 			 * so don't bother to distinguish between HAVE_LONG_FILE_NAMES
 			 * or not.
 			 */
-			if ((len = snprintf(NULL, 0, "tin_XXXXXX")) < 0)
+			if ((n = snprintf(NULL, 0, "tin_XXXXXX")) < 0) {
+#ifdef DEBUG
+wait_message(5, "snprintf(NULL, 0, \"tin_XXXXXX\")=%d", n);
+#endif /* DEBUG */
 				goto error_out;
+			}
 
-			buf = my_malloc(++len);
-			if (snprintf(buf, len, "tin_XXXXXX") != len - 1) {
+			len = (size_t) n + 1;
+			buf = my_malloc(len);
+			if (snprintf(buf, len, "tin_XXXXXX") != n) {
+#ifdef DEBUG
+wait_message(5, "snprintf(%s, %d, \"tin_XXXXXX\")=%d", BlankIfNull(buf), len, n);
+#endif /* DEBUG */
 				free(buf);
 				goto error_out;
 			}
@@ -146,19 +153,27 @@ my_mktmp(
 
 #ifdef HAVE_MKSTEMP
 		fd = mkstemp(filename);
-#	ifdef DEBUG
 		sverrno = errno;
-		if (fd == -1 && sverrno)
-			wait_message(5, "HAVE_MKSTEMP %s: %s", filename, strerror(sverrno));
+#	ifdef DEBUG
+		if (fd == -1 || sverrno)
+			perror_message("HAVE_MKSTEMP mkstemp(%s)==%d", filename, fd);
 #	endif /* DEBUG */
 #else
 #	ifdef HAVE_MKTEMP
-		if ((buf = mktemp(filename)) != NULL)
-			fd = open(buf, (O_WRONLY|O_CREAT|O_EXCL), (mode_t) (S_IRUSR|S_IWUSR));
-#		ifdef DEBUG
+		buf = mktemp(filename);
 		sverrno = errno;
-		if (sverrno)
-			wait_message(5, "HAVE_MKTEMP %s: %s", filename, strerror(sverrno));
+		if (!sverrno) {
+			if ((fd = open(buf, (O_RDWR|O_CREAT|O_EXCL), (mode_t) (S_IRUSR|S_IWUSR))) == -1) {
+				sverrno = errno;
+#		ifdef DEBUG
+				if (fd == -1 || sverrno)
+					perror_message("HAVE_MKTEMP open(%s)==%d", filename, fd);
+#		endif /* DEBUG */
+			}
+		}
+#		ifdef DEBUG
+		else
+			perror_message("HAVE_MKTEMP mktemp(%s)", filename);
 #		endif /* DEBUG */
 #	endif /* HAVE_MKTEMP */
 #endif /* HAVE_MKSTEMP */
@@ -177,11 +192,16 @@ my_mktmp(
 #	endif /* HAVE_BSD_SIGNALS */
 #endif /* HAVE_POSIX_SIGNALS */
 	}
+#ifdef DEBUG
+	else
+		wait_message(5, "my_mktmp(NULL, %lu, ...)", name_size);
+#endif /* DEBUG */
 
 error_out:
 	if (fd == -1)
 		error_message(2, _(txt_cannot_create_uniq_name));
 
+	errno = sverrno;
 	return fd;
 }
 
@@ -193,16 +213,28 @@ my_tmpfile(
 {
 	char f[PATH_LEN];
 	int fd;
-	size_t s= sizeof(f);
+ 	int sverrno = errno;
+	size_t s = sizeof(f);
 	FILE *fp;
 
 	if ((fd = my_mktmp(f, s, NULL)) != -1) {
 		if ((fp = fdopen(fd, "w+")) != NULL) {
+			sverrno = errno;
 			unlink(f);
+			errno = sverrno;
 			return(fp);
 		}
+#ifdef DEBUG
+		sverrno = errno;
+		perror_message("fdopen(%d, \"w+\")", fd);
+#endif /* DEBUG */
 		unlink(f);
+		close(fd);
 	}
+#ifdef DEBUG
+	perror_message("my_mktmp(f, %lu, NULL)==%d", s, fd);
+#endif /* DEBUG */
 
+	errno = sverrno;
 	return NULL;
 }

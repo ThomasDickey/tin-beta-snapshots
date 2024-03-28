@@ -1,4 +1,4 @@
--- 2.6.4 release 20240224 "" --
+-- 2.6.4 release 20240328 "" --
 
  022) Enrik Berkhan <enrik@tin.org>
       ADD. avoid implicit conversion
@@ -10,10 +10,18 @@
 
  020) Dennis Preiser <dennis@d--p.de>
       ADD. always cast arg to is*()-functions to unsigned char
-      ADD. avoid implicit conversion if char is signed by default
-      FIX. art.c, config.c, filter.c, getline.c, header.c, keymap.c, makecfg.c
-           misc.c, nntplib.c, post.c, rfc2046.c, rfc2047.c, string.c, tags.c
-           xref.c, parsdate.y, newsrc.h, tin.h
+      ADD. avoid implicit conversion
+      BUG. txt_help_config_search_opt_forwards,
+           txt_help_config_search_opt_forwards and
+           txt_help_attrib_search_opt_backwards,
+           txt_help_attrib_search_opt_forwards were mixed up
+      BUG. memleak when using bsd-sockets without getservbyname() 
+      BUG. possible memleak on quit in version.c:upgrade_prompt_quit()
+      FIX. art.c, config.c, cook.c, filter.c, getline.c, group.c, header.c
+           keymap.c, lang.c, main.c, makecfg.c, misc.c, nntplib.c, page.c
+           post.c, regex.c, rfc2046.c, rfc2047.c, save.c, search.c, select.c
+           string.c, tags.c, version.c, xref.c, parsdate.y, newsrc.h, proto.h
+           tin.h
 
  019) Urs Janssen <urs@tin.org>
       ADD. silence some unused parameter warnings
@@ -30,23 +38,33 @@
       ADD. configure check for lrand48(3) and random(3), prefer over rand(3)
       ADD. configure check for dirfd(3)
       ADD. configure check for tcflag_t
+      ADD. configure check for PRIdLEAST64 and SCNdLEAST64
       ADD. simplify _Noreturn check, just note the C11 standard
+      ADD. removed fixed buffer from copy_body()
+      ADD. SASL info to connection-info ('J')
+      ADD. -L cmd.line switch
+      ADD. create missing newsrc-dir
+      ADD. :port suffix handling in newsrctable
       REM. tmpfile.c
+      BUG. AUTHINFO SASL * didn't check possible 283 return code
+           (as we do not support anything but SASL PLAIN yet, not an issue)
       BUG. -t not mentioned in -h
-      BUG. fopen(3)-leak on early exit due to file-version mismatch
+      BUG. malloc(3)- and fopen(3)-leaks on error exits
       BUG. didn't remove '.' from normalized charset when looking for a
            keymap-file
       BUG. socket(3)-leak on early exit due to TLS-errors
       BUG. possible NULL-pointer dereference in connection-info ('J') if
            CAPABILITIES does not return IMPLEMENTATION
+      BUG. wrong sign for shown default kill-score value in kill-menu
       BUG. art_mark_xref_read() didn't allow '\t' between locations
-      FIX. art.c, attrib.c, auth.c, config.c, cook.c, debug.c, group.c, help.c
-           init.c, keymap.c, lang.c, lock.c, main.c, misc.c, my_tmpfile.c
-           nntplib.c, nntps.c, options_menu.c, page.c, post.c, rfc2046.c
-           rfc2047.c, save.c, select.c, sigfile.c, snprintf.c, thread.c
-           version.c, xref.c, extern.h, proto.h, snprintf.h, tin.h, tnntp.h
-           autoconf.h[in], configure[.in], Makefile[.in], config.guess
-           config.sub
+      FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, debug.c
+           filter.c, group.c, help.c, inews.c, init.c, keymap.c, lang.c, lock.c
+           mail.c, main.c, misc.c, my_tmpfile.c, newsrc.c, nntplib.c, nntps.c
+           nrctbl.c, options_menu.c, page.c, post.c, prompt.c, rfc2046.c
+           rfc2047.c, save.c, search.c, select.c, sigfile.c, snprintf.c
+           string.c, thread.c, version.c, xface.c, xref.c, extern.h, nntplib.h
+           proto.h, snprintf.h, tin.h, tnntp.h, autoconf.h[in], configure[.in]
+           Makefile[.in], config.guess, config.sub, tin.1, tin.5
 
 -- 2.6.3 release 20231224 "Banff" --
 

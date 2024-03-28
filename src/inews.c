@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2023-11-27
+ *  Updated   : 2024-03-03
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -293,7 +293,7 @@ submit_inews(
 		}
 
 		u_put_server(".\r\n");
-		put_server(""); /* flush */
+		put_server("", FALSE); /* flush */
 
 		/*
 		 * Receive OK_POSTED or ERROR response code from NNTP server

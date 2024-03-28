@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-01-20
+ *  Updated   : 2024-03-15
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -620,8 +620,8 @@ constext txt_help_attrib_first_opt[] = N_("choose first attribute in list");
 constext txt_help_attrib_goto_opt[] = N_("0 - 9\t  choose attribute by number");
 constext txt_help_attrib_last_opt[] = N_("choose last attribute in list");
 constext txt_help_attrib_reset_attrib[] = N_("reset attribute to a default value");
-constext txt_help_attrib_search_opt_backwards[] = N_("search forwards for an attribute");
-constext txt_help_attrib_search_opt_forwards[] = N_("search backwards for an attribute");
+constext txt_help_attrib_search_opt_backwards[] = N_("search backwards for an attribute");
+constext txt_help_attrib_search_opt_forwards[] = N_("search forwards for an attribute");
 constext txt_help_attrib_select[] = N_("select attribute");
 constext txt_help_attrib_toggle_attrib[] = N_("toggle back to options menu when invoked from there");
 constext txt_help_bug[] = N_("report bug or comment via mail to %s");
@@ -629,8 +629,8 @@ constext txt_help_config_first_opt[] = N_("choose first option in list");
 constext txt_help_config_goto_opt[] = N_("0 - 9\t  choose option by number");
 constext txt_help_config_last_opt[] = N_("choose last option in list");
 constext txt_help_config_scope_menu[] = N_("start scopes menu");
-constext txt_help_config_search_opt_backwards[] = N_("search forwards for an option");
-constext txt_help_config_search_opt_forwards[] = N_("search backwards for an option");
+constext txt_help_config_search_opt_backwards[] = N_("search backwards for an option");
+constext txt_help_config_search_opt_forwards[] = N_("search forwards for an option");
 constext txt_help_config_select[] = N_("select option");
 constext txt_help_config_toggle_attrib[] = N_("toggle to attributes menu");
 constext txt_help_global_article_range[] = N_("choose range of articles to be affected by next command");
@@ -1198,7 +1198,10 @@ constext txt_url_menu_com[] = N_("URL Menu Commands");
 constext txt_url_open[] = N_("Opening %s");
 constext txt_url_select[] = N_("Select URL> ");
 constext txt_url_done[] = N_("No URLs in this article");
-constext txt_use_mime[] = N_("Use MIME display program for this message?");
+#if defined(NNTP_ABLE) && defined(USE_GSASL)
+	constext txt_usable_sasl_mechs[] = N_("SASL MECHS    : %s\n");
+	constext txt_used_sasl_mech[] = N_("SASL MECH used: %s\n");
+#endif /* NNTP_ABLE && USE_GSASL */
 constext txt_usage_catchup[] = N_("  -c       mark all news as read in subscribed newsgroups (batch mode)");
 constext txt_usage_check_for_unread_news[] = N_("  -Z       return status indicating if any unread news (batch mode)");
 constext txt_usage_dont_check_new_newsgroups[] = N_("  -q       don't check for new newsgroups");
@@ -1208,6 +1211,9 @@ constext txt_usage_getart_limit[] = N_("  -G limit get only limit articles/group
 constext txt_usage_help_information[] = N_("  -H       help information about %s");
 constext txt_usage_help_message[] = N_("  -h       this help message");
 constext txt_usage_index_newsdir[] = N_("  -I dir   news index file directory [default=%s]");
+#ifdef NNTP_ABLE
+	constext txt_usage_lookup_id[] = N_("  -L msgid show the message with that Message-ID");
+#endif /* NNTP_ABLE */
 constext txt_usage_update_index_files[] = N_("  -u       update index files (batch mode)");
 constext txt_usage_maildir[] = N_("  -m dir   mailbox directory [default=%s]");
 constext txt_usage_mail_bugreport[] = N_("\nMail bug reports/comments to %s");
@@ -1227,6 +1233,7 @@ constext txt_usage_start_if_unread_news[] = N_("  -z       start if any unread n
 constext txt_usage_tin[] = N_("A Usenet reader.\n\nUsage: %s [options] [newsgroup[,...]]");
 constext txt_usage_verbose[] = N_("  -v       verbose output for batch mode options");
 constext txt_usage_version[] = N_("  -V       print version & date information");
+constext txt_use_mime[] = N_("Use MIME display program for this message?");
 constext txt_useful_without_batch_mode[] = N_("%s only useful without batch mode operations\n");
 constext txt_useful_with_batch_mode[] = N_("%s only useful for batch mode operations\n");
 constext txt_useful_with_batch_or_debug_mode[] = N_("%s only useful for batch or debug mode operations\n");

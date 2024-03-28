@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2024-02-22
+ *  Updated   : 2024-02-26
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2024 Michael Bienia <michael@vorlon.ping.de>
@@ -2686,8 +2686,6 @@ config_page(
 			highlight_option(option);
 		} /* if (change_option) */
 	} /* forever */
-	/* NOTREACHED */
-	return;
 }
 
 

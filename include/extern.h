@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-01-20
+ *  Updated   : 2024-03-26
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>
@@ -185,6 +185,9 @@
 #ifdef DECL_KILL
 	extern int kill(pid_t, int);
 #endif /* DECL_KILL */
+#ifdef DECL_LRAND48
+	extern long lrand48(void);
+#endif /* DECL_LRAND48 */
 #ifdef DECL_MALLOC
 	extern void *malloc(size_t);
 #endif /* DECL_MALLOC */
@@ -236,6 +239,9 @@
 #ifdef DECL_SNPRINTF
 	extern int snprintf(char *, size_t, const char *, ...);
 #endif /* DECL_SNPRINTF */
+#ifdef DECL_SRAND48
+	extern void srand48(long seedval);
+#endif /* DECL_SRAND48 */
 #ifdef DECL_SSCANF
 	extern int sscanf(const char *, const char *, ...);
 #endif /* DECL_SSCANF */
@@ -308,6 +314,12 @@
 #ifdef DECL_UNGETC
 	extern int ungetc(int, FILE *);
 #endif /* DECL_UNGETC */
+#ifdef DECL_WCSWIDTH
+	extern int wcswidth(const wchar_t *, size_t);
+#endif /* DECL_WCSWIDTH */
+#ifdef DECL_WCWIDTH
+	extern int wcwidth(wchar_t);
+#endif /* DECL_WCWIDTH */
 
 #if 0 /* SUSv2 changed that to "int usleep(unsigned long)" */
 #	ifdef DECL_USLEEP
@@ -1584,6 +1596,10 @@ extern constext txt_url_done[];
 extern constext txt_usage_catchup[];
 extern constext txt_usage_check_for_unread_news[];
 #ifdef NNTP_ABLE
+#	ifdef USE_GSASL
+	extern constext txt_usable_sasl_mechs[];
+	extern constext txt_used_sasl_mech[];
+#	endif /* USE_GSASL */
 #	ifdef USE_ZLIB
 	extern constext txt_continuing[];
 	extern constext txt_read_timeout_quit[];
@@ -1598,6 +1614,7 @@ extern constext txt_usage_dont_save_files_on_quit[];
 extern constext txt_usage_dont_show_descriptions[];
 #ifdef NNTP_ABLE
 	extern constext txt_usage_force_authentication[];
+	extern constext txt_usage_lookup_id[];
 #	ifdef INET6
 	extern constext txt_usage_force_ipv4[];
 	extern constext txt_usage_force_ipv6[];

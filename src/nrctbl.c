@@ -3,7 +3,7 @@
  *  Module    : nrctbl.c
  *  Author    : Sven Paulus <sven@tin.org>
  *  Created   : 1996-10-06
- *  Updated   : 2023-11-12
+ *  Updated   : 2024-03-28
  *  Notes     : This module does the NNTP server name lookup in
  *              ~/.tin/newsrctable and returns the real hostname
  *              and the name of the newsrc file for a given
@@ -144,39 +144,64 @@ get_newsrcname(
 {
 	FILE *fp;
 	char *line_entry;
+	char *x = NULL;
 	char line[LEN];
-	char name_found[PATH_LEN];
+	char name_found[PATH_LEN] = { '\0' };
 	int line_entry_counter;
 	int found = 0;
 	t_bool do_cpy = FALSE;
+	t_bool check_port = TRUE;
 
 	if ((fp = fopen(local_newsrctable_file, "r")) != NULL) {
+		if (strchr(nntpserver_name, ':')) /* FIXME: check we we have exact 1 x ':' */
+			check_port = FALSE;
+		else {
+			x = my_malloc(strlen(nntpserver_name) + strlen(NNTP_TCP_PORT) + 2);
+			sprintf(x, "%s:%d", nntpserver_name, nntp_tcp_port);
+		}
+
 		while ((fgets(line, (int) sizeof(line), fp) != NULL) && (found != 1)) {
+			if (strchr("# ;", line[0])) /* comment? */
+				continue;
+
 			line_entry_counter = 0;
+			while ((line_entry = strtok(line_entry_counter ? NULL : line, " \t\n")) != NULL) {
+				line_entry_counter++;
 
-			if (!strchr("# ;", line[0])) {
-				while ((line_entry = strtok(line_entry_counter ? NULL : line, " \t\n")) != NULL) {
-					line_entry_counter++;
-
-					if ((line_entry_counter == 1) && (!strcasecmp(line_entry, nntpserver_name))) {
+				if (line_entry_counter == 1) {
+					if (check_port)	{
+						if (!found && !strcasecmp(line_entry, x)) {
+							found = 1;
+							do_cpy = TRUE;
+						}
+					}
+					if (!found && !strcasecmp(line_entry, nntpserver_name)) {
 						found = 1;
 						do_cpy = TRUE;
 					}
 
-					if ((line_entry_counter == 1) && ((!strcasecmp(line_entry, "default")) || (!strcmp(line_entry, "*")))) {
+					if (!found && check_port) {
+						if (!strcasecmp(line_entry, nntp_tcp_port == 563 ? "default:"NNTPS_TCP_PORT : "default:"NNTP_TCP_PORT) || !strcasecmp(line_entry, nntp_tcp_port == 563 ? "*:"NNTPS_TCP_PORT : "*:"NNTP_TCP_PORT)) {
+							found = 2;
+							do_cpy = TRUE;
+						}
+					}
+					if (!found && (!strcasecmp(line_entry, "default") || !strcmp(line_entry, "*"))) {
 						found = 2;
 						do_cpy = TRUE;
 					}
-					if (do_cpy && (line_entry_counter == 2)) {
-						STRCPY(name_found, line_entry);
-						do_cpy = FALSE;
-					}
+				}
+
+				if (do_cpy && (line_entry_counter == 2)) {
+					STRCPY(name_found, line_entry);
+					do_cpy = FALSE;
 				}
 			}
 		}
+		FreeIfNeeded(x);
 		fclose(fp);
 		if (found) {
-			char dir[PATH_LEN];
+			char dir[PATH_LEN] = { '\0' };
 			char tmp_newsrc[PATH_LEN];
 			int error = 0;
 
@@ -196,17 +221,14 @@ get_newsrcname(
 						*line_entry-- = '\0';
 				}
 
-				/*
-				 * TODO: shall we create a missing dir?
-				 *       currently something like
-				 *       ~/.tin/${NNTPSERVER-localhost}/.newsrc
-				 *       in newsrctable usually ends with
-				 *       "No permissions to go into /home/urs/.tin/${NNTPSERVER}"
-				 */
-				/* FIXME - write a global permission check routine */
 				if (access(dir, X_OK)) {
-					my_fprintf(stderr, _(txt_error_no_enter_permission), dir);
-					error = 1;
+					if (errno != ENOENT) {
+						my_fprintf(stderr, _(txt_error_no_enter_permission), dir);
+						error = 1;
+					} else {
+						my_fprintf(stderr, _(txt_error_no_such_file), dir);
+						error = 2;
+					}
 				} else if (access(newsrc_name, F_OK)) {
 					my_fprintf(stderr, _(txt_error_no_such_file), newsrc_name);
 					error = 2;
@@ -244,12 +266,26 @@ get_newsrcname(
 				/* NOTE: these keys can not be remapped */
 				switch (ch) {
 					case 'c':
-						/* FIXME this doesn't check if we could create the file */
-						return TRUE;
+						if (*dir) {
+							errno = 0;
+							my_mkdir(dir, (mode_t) (S_IRWXU));
+							if (!errno || errno == EEXIST)
+								return TRUE;
+							printf("mkdir(%s): Error: %s\n", dir, strerror(errno));
+						}
+
+						no_write = TRUE;
+						tin_done(EXIT_FAILURE, _(txt_cannot_create), *dir ? dir : "NULL");
+						/* keep lint quiet: */
+						/* NOTREACHED */
+						break;
 
 					case 'd':
 						joinpath(newsrc_name, newsrc_name_len, homedir, ".newsrc");
 						return TRUE;
+						/* keep lint quiet: */
+						/* NOTREACHED */
+						break;
 
 					case 'a':
 						/*
@@ -259,6 +295,9 @@ get_newsrcname(
 						snprintf(name_found, sizeof(name_found), ".newsrc-%s", nntpserver_name);
 						joinpath(newsrc_name, newsrc_name_len, homedir, name_found);
 						return TRUE;
+						/* keep lint quiet: */
+						/* NOTREACHED */
+						break;
 
 					case 'q':
 						exit(EXIT_SUCCESS);

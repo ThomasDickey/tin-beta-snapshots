@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2022-08-29
+ *  Updated   : 2024-02-28
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -80,7 +80,7 @@ match_regex(
 		ptr_cache = &tmp_cache;
 	}
 
-	error = match_regex_ex(string, (int) strlen(string), 0, 0, ptr_cache);
+	error = match_regex_ex(string, (REGEX_SIZE) strlen(string), 0, 0, ptr_cache);
 	if (error >= 0) {
 		regex_cache_destroy(&tmp_cache);
 		return TRUE;
@@ -110,8 +110,8 @@ match_regex(
 int
 match_regex_ex(
 	const char *string,
-	int length,
-	int offset,
+	REGEX_SIZE length,
+	REGEX_SIZE offset,
 	REGEX_OPTIONS options,
 	struct regex_cache *regex)
 {
@@ -264,7 +264,7 @@ highlight_regexes(
 	ptr = buf;
 
 	/* also check for 0 as offsets[] might be too small to hold all captured subpatterns */
-	while (match_regex_ex(ptr, (int) strlen(ptr), 0, 0, regex) >= 0) {
+	while (match_regex_ex(ptr, (REGEX_SIZE) strlen(ptr), 0, 0, regex) >= 0) {
 		REGEX_SIZE *offsets = regex_get_ovector_pointer(regex);
 		/* we have a match */
 		if (color >= 0) /* color the matching text */

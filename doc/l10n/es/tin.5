@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2024-01-22
+.\" Updated   : 2024-03-28
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -1162,7 +1162,13 @@ news.tin.org .newsrc\-tin.org tinorg
 .br
 news.example.org /tmp/nrc\-ex example ex
 .br
-* ~/.tin/newsrcs/${NNTPSERVER\-localhost}
+# catch all rules should go last
+.br
+# with the more specific one on top
+.br
+*:563 ~/.tin/newsrcs/${NNTPSERVER\-localhost}:563/newsrc
+.br
+* ~/.tin/newsrcs/${NNTPSERVER\-localhost}/newsrc
 .RE
 .RE
 .PP
@@ -1929,7 +1935,9 @@ following up or replying to them. Any of the following options can be
 combined by adding all relevant values. Default is 5, which means that quote
 characters are compressed and empty lines are quoted.
 .RS +1i
-.IP 1 3
+.IP 0 3
+\fBNothing special\fP Non empty lines are quoted.
+.IP 1
 \fBCompress quotes\fP Compress quote characters together when quoting multiple
 times (for example, '> > >' will be turned into
 \&'>>>'). This option is on by default.

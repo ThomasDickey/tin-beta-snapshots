@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-01-16
+ *  Updated   : 2024-02-28
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -2044,7 +2044,8 @@ process_search(
 	size_t screen_lines,
 	int help_level)
 {
-	int i, start, end;
+	int i;
+	REGEX_SIZE start, end;
 
 	if ((i = get_search_vectors(&start, &end)) == -1)
 		return;
@@ -2716,6 +2717,7 @@ process_url(
 	int n)
 {
 	char *url, *url_esc;
+	int l;
 	size_t len;
 	t_url *lptr;
 
@@ -2727,11 +2729,18 @@ process_url(
 			free(url);
 			return FALSE;
 		}
-		wait_message(2, _(txt_url_open), url);
 		url_esc = escape_shell_meta(url, no_quote);
-		len = snprintf(NULL, 0, "%s %s", tinrc.url_handler, url_esc);
-		url = my_realloc(url, ++len);
-		snprintf(url, len, "%s %s", tinrc.url_handler, url_esc);
+		if ((l = snprintf(NULL, 0, "%s %s", tinrc.url_handler, url_esc)) < 0) {
+			free(url);
+			return FALSE;
+		}
+		wait_message(2, _(txt_url_open), url);
+		len = (size_t) l + 1;
+		url = my_realloc(url, len);
+		if (snprintf(url, len, "%s %s", tinrc.url_handler, url_esc) != l) {
+			free(url);
+			return FALSE;
+		}
 		invoke_cmd(url);
 		free(url);
 		cursoroff();
@@ -2768,11 +2777,11 @@ build_url_list(
 		 */
 		forever {
 			/* any matches left? */
-			if (match_regex_ex(ptr, (int) strlen(ptr), 0, 0, &url_regex) >= 0) {
+			if (match_regex_ex(ptr, (REGEX_SIZE) strlen(ptr), 0, 0, &url_regex) >= 0) {
 				offsets = regex_get_ovector_pointer(&url_regex);
-			} else if (match_regex_ex(ptr, (int) strlen(ptr), 0, 0, &mail_regex) >= 0) {
+			} else if (match_regex_ex(ptr, (REGEX_SIZE) strlen(ptr), 0, 0, &mail_regex) >= 0) {
 				offsets = regex_get_ovector_pointer(&mail_regex);
-			} else if (match_regex_ex(ptr, (int) strlen(ptr), 0, 0, &news_regex) >= 0) {
+			} else if (match_regex_ex(ptr, (REGEX_SIZE) strlen(ptr), 0, 0, &news_regex) >= 0) {
 				offsets = regex_get_ovector_pointer(&news_regex);
 			} else
 				break;

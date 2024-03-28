@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2021-10-29
+ *  Updated   : 2024-03-16
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -703,7 +703,9 @@ prompt_slk_response(
 	...)
 {
 	va_list ap;
-	char buf[LEN];
+	char *buf;
+	int n, r;
+	size_t blen;
 	t_function func;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t ch;
@@ -712,10 +714,26 @@ prompt_slk_response(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	va_start(ap, fmt);
-	vsnprintf(buf, sizeof(buf), fmt, ap);
+	n = vsnprintf(NULL, 0, fmt, ap);
 	va_end(ap);
 
-	prompt_slk_message = my_malloc(strlen(buf) + 2);
+	if (n < 0)
+		return default_func;
+
+	blen = (size_t) n + 1;
+	buf = my_malloc(blen);
+
+	va_start(ap, fmt);
+	r = vsnprintf(buf, blen, fmt, ap);
+	va_end(ap);
+
+	if (r != n) {
+		free(buf);
+		return default_func;
+	}
+
+	blen +=2;
+	prompt_slk_message = my_malloc(blen);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	{
 		char *tmp;
@@ -723,13 +741,14 @@ prompt_slk_response(
 
 		wtmp[0] = func_to_key(default_func, keys);
 		tmp = wchar_t2char(wtmp);
-		snprintf(prompt_slk_message, strlen(buf) + 2, "%s%s", buf, tmp);
+		snprintf(prompt_slk_message, blen, "%s%s", buf, tmp);
 		FreeIfNeeded(tmp);
 	}
 #else
-	snprintf(prompt_slk_message, strlen(buf) + 2, "%s%c", buf, func_to_key(default_func, keys));
+	snprintf(prompt_slk_message, blen, "%s%c", buf, func_to_key(default_func, keys));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
+	free(buf);
 	input_context = cPromptSLK;
 
 	do {

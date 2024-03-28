@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2023-12-22
+ *  Updated   : 2024-03-23
  *  Notes     :
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -397,7 +397,7 @@ do_read_newsrc_active_file(
 				if ((debug & DEBUG_NNTP) && verbose > 1)
 					debug_print_file("NNTP", "read_newsrc_active_file() %s", buf);
 #	endif /* DEBUG */
-				put_server(buf);
+				put_server(buf, FALSE);
 				index_i = (index_i + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
 				window++;
 			}
@@ -420,7 +420,7 @@ do_read_newsrc_active_file(
 						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "read_newsrc_active_file() %s", buf);
 #	endif /* DEBUG */
-						put_server(buf);
+						put_server(buf, FALSE);
 						j = (j + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
 					}
 					if (--index_o < 0)
@@ -467,6 +467,9 @@ do_read_newsrc_active_file(
 						continue;
 
 					case ERR_ACCESS:
+						for (index_i = 0; index_i < NUM_SIMULTANEOUS_GROUP_COMMAND - 1; index_i++) {
+							FreeIfNeeded(ngnames[index_i]);
+						}
 						tin_done(NNTP_ERROR_EXIT, "%s", line);
 						/* keep lint quiet: */
 						/* FALLTHROUGH */
@@ -564,13 +567,17 @@ read_newsrc_active_file(
 
 #ifdef NNTP_ABLE
 	if (need_auth) { /* delayed auth */
-		if (!authenticate(nntp_server, userid, FALSE))
+		if (!authenticate(nntp_server, userid, FALSE)) {
+			fclose(fp);
 			tin_done(EXIT_FAILURE, _(txt_auth_failed), ERR_ACCESS);
+		}
 #	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
 		set_maxartnum(FALSE);
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
-		if (do_read_newsrc_active_file(fp))
+		if (do_read_newsrc_active_file(fp)) {
+			fclose(fp);
 			tin_done(EXIT_FAILURE, _(txt_auth_failed), ERR_ACCESS);
+		}
 	}
 #endif /* NNTP_ABLE */
 
@@ -636,10 +643,11 @@ read_active_file(
 			tin_done(EXIT_FAILURE, _(txt_cannot_open_active_file), news_active_file, tin_progname);
 		}
 #	endif /* !NNTP_ONLY */
-#else
-		perror_message("%s", news_active_file);
-		tin_done(EXIT_FAILURE, _(txt_cannot_open), news_active_file);
 #endif /* NNTP_ABLE */
+		{
+			perror_message("%s", news_active_file);
+			tin_done(EXIT_FAILURE, _(txt_cannot_open), news_active_file);
+		}
 	}
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
@@ -861,7 +869,7 @@ read_news_active_file(
 								snprintf(buff + strlen(buff), sizeof(buff) - strlen(buff), ",%s", ptr);
 							} else {
 								if (*buff) {
-									put_server(buff);
+									put_server(buff, FALSE);
 									r++;
 								}
 								snprintf(buff, sizeof(buff), "LIST %s %s", nntp_caps.list_counts ? "COUNTS" : "ACTIVE", ptr);
@@ -869,12 +877,12 @@ read_news_active_file(
 							continue;
 						} else
 							snprintf(buff, sizeof(buff), "LIST ACTIVE %s", ptr);
-						put_server(buff);
+						put_server(buff, FALSE);
 						r++;
 						*buff = '\0';
 					}
 					if (*buff) {
-						put_server(buff);
+						put_server(buff, FALSE);
 						r++;
 					}
 				} else

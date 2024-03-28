@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-27
+ *  Updated   : 2024-02-28
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -175,14 +175,18 @@ search_config(
 		return result;
 
 	do {
-		if (n == 0 && !forward)
-			n = last;
-		else {
-			if (n == last && forward)
+		if (forward) {
+			if (n == last)
 				n = 0;
 			else
-				n = (n + (enum option_enum) (forward ? 1 : -1));
+				n++;
+		} else {
+			if (n > 0)
+				n--;
+			else
+				n = last;
 		}
+
 		/* search only visible options */
 		if (option_is_visible(n)) {
 #ifdef HAVE_UNICODE_NORMALIZATION
@@ -237,14 +241,18 @@ generic_search(
 		return result;
 
 	do {
-		if (n == 0 && !forward)
-			n = last;
-		else {
-			if (n == last && forward)
+		if (forward) {
+			if (n == last)
 				n = 0;
 			else
-				n += (forward ? 1 : -1);
+				n++;
+		} else {
+			if (n > 0)
+				n--;
+			else
+				n = last;
 		}
+
 		switch (level) {
 			case ATTACHMENT_LEVEL:
 				part = get_part(n);
@@ -401,7 +409,7 @@ body_search(
 			line = my_strdup(tmp);
 
 		if (tinrc.wildcard) {
-			if (match_regex_ex(line, (int) strlen(line), 0, 0, &search_regex) >= 0) {
+			if (match_regex_ex(line, (REGEX_SIZE) strlen(line), 0, 0, &search_regex) >= 0) {
 				copy_offsets(srch_offsets, srch_offsets_size, &search_regex);
 				srch_lineno = i;
 				art_close(&pgart);		/* Switch the pager over to matched art */
@@ -673,7 +681,7 @@ search_article(
 			ptr = my_strdup(tmp);
 
 		if (tinrc.wildcard) {
-			while (match_regex_ex(ptr, (int) strlen(ptr), srch_offsets[1], REGEX_NOTEMPTY, &search_regex) >= 0) {
+			while (match_regex_ex(ptr, (REGEX_SIZE) strlen(ptr), srch_offsets[1], REGEX_NOTEMPTY, &search_regex) >= 0) {
 				copy_offsets(srch_offsets, srch_offsets_size, &search_regex);
 				match = TRUE;
 				if (forward)
@@ -784,14 +792,15 @@ search_body(
  */
 int
 get_search_vectors(
-	int *start,
-	int *end)
+	REGEX_SIZE *start,
+	REGEX_SIZE *end)
 {
 	int i = srch_lineno;
 
 	*start = srch_offsets[0];
 	*end = srch_offsets[1];
 	srch_lineno = -1;			/* We can only retrieve this info once */
+
 	return i;
 }
 

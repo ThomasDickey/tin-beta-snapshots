@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2024-01-10
+ *  Updated   : 2024-03-21
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -111,6 +111,7 @@ get_domain_name(
 				}
 			}
 			fclose(fp);
+			str_trim(domain);
 			if (domain[0] == '/')	/* '/' is not allowed in domainames -> file was empty */
 				domain[0] = '\0';
 		} else
@@ -124,7 +125,7 @@ get_domain_name(
 
 #ifdef HAVE_GETHOSTBYNAME
 #	define MAXLINELEN	1024
-#	define WS	" \f\t\v"
+#	define WSP	" \f\t\v"
 /* find FQDN - gethostbyaddr() */
 const char *
 get_fqdn(
@@ -195,10 +196,10 @@ get_fqdn(
 
 				line[MAXLINELEN] = '\0';
 
-				if ((eos = strpbrk(line, WS)) != NULL) {
+				if ((eos = strpbrk(line, WSP)) != NULL) {
 					if ((j = (int) (eos - line))) {
 						if (!strncmp(line, "domain", (size_t) j) || !strncmp(line, "search", (size_t) j)) {
-							domain = strtok(eos, WS);
+							domain = strtok(eos, WSP);
 							break;
 						}
 					}

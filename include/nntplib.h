@@ -3,7 +3,7 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2022-12-23
+ *  Updated   : 2024-03-05
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -173,17 +173,17 @@ enum f_type { OVER_T_ERROR, OVER_T_INT, OVER_T_STRING, OVER_T_FSTRING };
  */
 enum extension_type { NONE, CAPABILITIES, BROKEN };
 
-enum sasl_types {
-	SASL_NONE 		= 0,
-	SASL_PLAIN		= 1 << 0,
-	SASL_CRAM_MD5	= 1 << 1,
-	SASL_DIGEST_MD5	= 1 << 2,
-	SASL_GSSAPI		= 1 << 3,
-	SASL_EXTERNAL	= 1 << 4,
-	SASL_OTP		= 1 << 5,
-	SASL_NTLM		= 1 << 6,
-	SASL_LOGIN		= 1 << 7
+enum sasl_props {
+	SASL_NEED_NONE 				= 0,
+	SASL_NEED_AUTHZID			= 1 << 0,
+	SASL_NEED_AUTHID			= 1 << 1,
+	SASL_NEED_PASSWORD			= 1 << 2,
+	SASL_NEED_SERVICE			= 1 << 3,
+	SASL_NEED_ANONYMOUS_TOKEN	= 1 << 4,
+	SASL_NEED_HOSTNAME			= 1 << 5,
+	/* ... */
 };
+
 enum c_algorithms { COMPRESS_NONE, COMPRESS_DEFLATE };
 
 struct t_capabilities {
@@ -213,11 +213,12 @@ struct t_capabilities {
 	const char *over_cmd;			/* [X]OVER */
 	t_bool newnews:1;				/* NEWNEWS */
 	char *implementation;			/* IMPLEMENTATION */
-	t_bool starttls:1;				/* STARTTLS */
+	t_bool starttls:1;				/* STARTTLS (not supported; RFC 7525 3.2, RFC 8143 2) */
 	t_bool authinfo_user:1;			/* AUTHINFO USER/PASS */
 	t_bool authinfo_sasl:1;			/* AUTHINFO SASL */
-	t_bool authinfo_state:1;		/* AUTHINFO not supported in current state */
-	enum sasl_types sasl;			/* SASL_NONE, SASL_PLAIN, SASL_CRAM_MD5, SASL_DIGEST_MD5, SASL_GSSAPI, SASL_EXTERNAL, SASL_OTP, SASL_NTLM, SASL_LOGIN */
+	t_bool authinfo_state:1;		/* AUTHINFO not supported in current state (FALSE==auth allowed) */
+	char *sasl_mechs;				/* SASL mechs of the server which our code supports */
+	char *sasl_mech_used;			/* SASL mech in use */
 	t_bool compress:1;				/* COMPRESS */
 	enum c_algorithms compress_algorithm;	/* COMPRESS_NONE, COMPRESS_DEFLATE */
 #if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)

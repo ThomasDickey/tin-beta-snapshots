@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-23
+ *  Updated   : 2024-02-28
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -953,10 +953,9 @@ static void
 show_thread_page(
 	void)
 {
-	char keyhelp[MAXKEYLEN];
 	char *title;
-	int i, art, keyhelplen;
-	size_t len;
+	char keyhelp[MAXKEYLEN];
+	int i, art, keyhelplen, len;
 
 	signal_context = cThread;
 	currmenu = &thdmenu;

@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2024-02-13
+ *  Updated   : 2024-03-07
  *  Notes     : #defines and structs for options_menu.c
  *
  * Copyright (c) 1997-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -43,6 +43,9 @@
 #include <autoconf.h>
 #endif /* HAVE_CONFIG_H */
 
+#ifdef HAVE_STDDEF_H
+#include <stddef.h>
+#endif /* HAVE_STDDEF_H */
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif /* HAVE_CONFIG_H */
@@ -169,12 +172,12 @@ parse_tbl(
 	/* strip leading/trailing blanks */
 	do {
 		t--;
-		if (isspace ((unsigned char) *t))
+		if (isspace((unsigned char) *t))
 			*t = '\0';
 		else
 			break;
 	} while (t > s);
-	while (isspace ((unsigned char) *s))
+	while (isspace((unsigned char) *s))
 		s++;
 	buffer = s;
 
@@ -187,9 +190,9 @@ parse_tbl(
 			 * otherwise the data consists of 2 blank
 			 * separated columns (name, type).
 			 */
-			while (*s && !isspace ((unsigned char) *s))
+			while (*s && !isspace((unsigned char) *s))
 				s++;
-			while (isspace ((unsigned char) *s))
+			while (isspace((unsigned char) *s))
 				*s++ = '\0';
 			store_data(buffer, s);
 		}
@@ -371,8 +374,12 @@ generate_ptr(
 {
 	MYDATA *p, *q;
 	int after;
+#ifdef __KEFIRCC__ /* && KEFIR_VERSION_MAJOR == 0 && KEFIR_VERSION_MINOR < 4 && *//* workaround a bug in kefir (0.3.1) */
 	const char *addr = "&";
 	const char *sqrbr = !strcmp(opt_type, "OPT_STRING") ? "[0]" : "";
+#else
+	const char *addr = !strcmp(opt_type, "OPT_STRING") ? "" : "&";
+#endif /* __KEFIRCC__ */
 
 	switch (mode) {
 	case 0:
@@ -406,14 +413,24 @@ generate_ptr(
 			}
 			switch (mode) {
 			case 0:
+#ifdef __KEFIRCC__ /* see above */
 				fprintf(ofp, "\t%stinrc.%s%s,%*s/* %2d: %s__ */\n",
 					addr,
 					p->name,
 					sqrbr,
-					MAXNAME - (int)(strlen(addr) - strlen(sqrbr) + strlen(p->name)),
+					MAXNAME - (int) (strlen(addr) - strlen(sqrbr) + strlen(p->name)),
 					" ",
 					index_of(p),
 					p->name);
+#else
+				fprintf(ofp, "\t%stinrc.%s,%*s/* %2d: %s__ */\n",
+					addr,
+					p->name,
+					MAXNAME - (int) (strlen(addr) + strlen(p->name)),
+					" ",
+					index_of(p),
+					p->name);
+#endif /* __KEFIRCC__ */
 				break;
 			case 1:
 				fprintf(ofp, "\tOVAL(oinx_%.*s, %s__)\n",

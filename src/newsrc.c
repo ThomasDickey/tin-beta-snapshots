@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-12-06
+ *  Updated   : 2024-03-21
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -449,8 +449,6 @@ group_get_art_info(
 	t_artnum *art_max,
 	t_artnum *art_min)
 {
-	DIR *dir;
-	DIR_BUF *direntry;
 	t_artnum artnum;
 
 	if (read_news_via_nntp && grouptype == GROUP_TYPE_NEWS) {
@@ -462,7 +460,7 @@ group_get_art_info(
 		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "group_get_art_info %s", line);
 #	endif /* DEBUG */
-		put_server(line);
+		put_server(line, FALSE);
 
 		switch (get_respcode(line, sizeof(line))) {
 			case OK_GROUP:
@@ -499,6 +497,8 @@ group_get_art_info(
 #endif /* NNTP_ABLE */
 	} else {
 		char group_path[PATH_LEN];
+		DIR *dir;
+		DIR_BUF *direntry;
 
 		*art_count = T_ARTNUM_CONST(0);
 		*art_min = T_ARTNUM_CONST(0);
@@ -1339,7 +1339,7 @@ pos_group_in_newsrc(
 	char *sub = NULL;
 	char *unsub = NULL;
 	int subscribed_pos = 1;
-	int err;
+	int err, n;
 	size_t len;
 	t_bool found = FALSE;
 	t_bool newnewsrc_created = FALSE;
@@ -1371,14 +1371,22 @@ pos_group_in_newsrc(
 #endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
 	joinpath(filename, sizeof(filename), tmpdir, ".subrc");
-	len = snprintf(NULL, 0, "%s.%ld", filename, (long) process_id);
-	sub = my_malloc(++len);
-	snprintf(sub, len, "%s.%ld", filename, (long) process_id);
+	if ((n = snprintf(NULL, 0, "%s.%ld", filename, (long) process_id)) < 0)
+		goto rewrite_group_done;
+
+	len = (size_t) n + 1;
+	sub = my_malloc(len);
+	if (snprintf(sub, len, "%s.%ld", filename, (long) process_id) != n)
+		goto rewrite_group_done;
 
 	joinpath(filename, sizeof(filename), tmpdir, ".unsubrc");
-	len = snprintf(NULL, 0, "%s.%ld", filename, (long) process_id);
-	unsub = my_malloc(++len);
-	snprintf(unsub, len, "%s.%ld", filename, (long) process_id);
+	if ((n = snprintf(NULL, 0, "%s.%ld", filename, (long) process_id)) < 0)
+		goto rewrite_group_done;
+
+	len = (size_t) n + 1;
+	unsub = my_malloc(len);
+	if (snprintf(unsub, len, "%s.%ld", filename, (long) process_id) != n)
+		goto rewrite_group_done;
 
 	if ((fp_sub = fopen(sub, "w")) == NULL)
 		goto rewrite_group_done;

@@ -638,7 +638,7 @@ Raw(
 		cfmakeraw(&_raw_tty);
 		_raw_tty.c_lflag |= ISIG;		/* for ^Z */
 #		else
-		_raw_tty.c_lflag &= ~((tcflag_t)ICANON | ECHO);	/* noecho raw mode */
+		_raw_tty.c_lflag &= ~((tcflag_t) ICANON | ECHO);	/* noecho raw mode */
 		_raw_tty.c_cc[VMIN] = '\01';	/* minimum # of chars to queue */
 		_raw_tty.c_cc[VTIME] = '\0';	/* minimum time to wait for input */
 #		endif /* __FreeBSD__ */
