@@ -180,7 +180,7 @@ enum sasl_props {
 	SASL_NEED_PASSWORD			= 1 << 2,
 	SASL_NEED_SERVICE			= 1 << 3,
 	SASL_NEED_ANONYMOUS_TOKEN	= 1 << 4,
-	SASL_NEED_HOSTNAME			= 1 << 5,
+	SASL_NEED_HOSTNAME			= 1 << 5
 	/* ... */
 };
 

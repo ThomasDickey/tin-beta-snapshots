@@ -44,11 +44,7 @@
 
 #	if defined(USE_CURSES) || defined(NEED_CURSES_H)
 #		ifdef HAVE_XCURSES
-#			undef bool
-#			define bool XCursesBool
 #			include <xcurses.h>
-#			undef bool
-#			define getattrs(w) (w)->_attrs
 #		else
 #			if defined(HAVE_NCURSESW_NCURSES_H)
 #				ifndef _XOPEN_SOURCE_EXTENDED

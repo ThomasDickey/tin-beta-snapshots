@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-03-26
+dnl Updated   : 2024-04-01
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -102,6 +102,7 @@ AC_CHECK_DECL(exit)
 
 CF_XOPEN_SOURCE
 CF_SIGWINCH
+CF_PIC_HACK
 
 dnl These are standard among *NIX systems, but not when cross-compiling
 AC_CHECK_TOOL(RANLIB, ranlib, ':')
@@ -991,6 +992,7 @@ CF_CHECK_HEADERS(\
 	inttypes.h \
 	langinfo.h \
 	libc.h \
+	limits.h \
 	locale.h \
 	malloc.h \
 	netdb.h \
