@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-04-01
+dnl Updated   : 2024-04-09
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -411,7 +411,7 @@ fi
 AC_SUBST($1)dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl AM_WITH_NLS version: 35 updated: 2024/04/02 18:44:26
+dnl AM_WITH_NLS version: 39 updated: 2024/04/09 18:37:41
 dnl -----------
 dnl Inserted as requested by gettext 0.10.40
 dnl File from /usr/share/aclocal
@@ -453,10 +453,6 @@ AC_DEFUN([AM_WITH_NLS],
   dnl If we use NLS figure out what method
   if test "$USE_NLS" = "yes"; then
     dnl We need to process the po/ directory.
-    POSUB=po
-    AC_DEFINE(ENABLE_NLS, 1,
-      [Define to 1 if translation of program messages to the user's native language
- is requested.])
 
     dnl Search for GNU msgfmt in the PATH.
     AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
@@ -479,14 +475,19 @@ AC_DEFUN([AM_WITH_NLS],
 	cf_save_msgfmt_path="$MSGFMT"
 	cf_save_xgettext_path="$XGETTEXT"
 
-	cf_save_LIBS_1="$LIBS"
 	CF_ADD_LIBS($LIBICONV)
+	cf_save_LIBS_1="$LIBS"
 
 	cf_save_OPTS_1="$CPPFLAGS"
 	if test "x$cf_save_msgfmt_path" = "x$MSGFMT" && \
 	   test "x$cf_save_xgettext_path" = "x$XGETTEXT" ; then
 		CF_ADD_CFLAGS(-DIGNORE_MSGFMT_HACK)
 	fi
+
+	AC_ARG_WITH([libintl-prefix],
+		[  --with-libintl-prefix=DIR
+                          search for libintl in DIR/include and DIR/lib],
+		[CF_ADD_OPTIONAL_PATH($withval, libintl)])
 
 	CF_FIND_LINKAGE(CF__INTL_HEAD,
 	  CF__INTL_BODY($2),
@@ -497,9 +498,6 @@ AC_DEFUN([AM_WITH_NLS],
 	AC_MSG_CHECKING([for libintl.h and gettext()])
 	AC_MSG_RESULT($cf_cv_func_gettext)
 
-	LIBS="$cf_save_LIBS_1"
-	CPPFLAGS="$cf_save_OPTS_1"
-
 	if test "$cf_cv_func_gettext" = yes ; then
 	  AC_DEFINE(HAVE_LIBINTL_H,1,[Define to 1 if we have libintl.h])
 
@@ -509,27 +507,25 @@ AC_DEFUN([AM_WITH_NLS],
 	  CF_ADD_INCDIR($cf_cv_header_path_intl)
 
 	  if test -n "$cf_cv_library_file_intl" ; then
-		dnl If iconv() is in a separate libiconv library, then anyone
-		dnl linking with libintl{.a,.so} also needs to link with
-		dnl libiconv.
-		INTLLIBS="$cf_cv_library_file_intl $LIBICONV"
+		INTLLIBS="$cf_cv_library_file_intl"
 		CF_ADD_LIBDIR($cf_cv_library_path_intl,INTLLIBS)
 	  fi
 
 	  LIBS="$LIBS $INTLLIBS"
 	  AC_CHECK_FUNCS(dcgettext)
 	  CATOBJEXT=.gmo
+	  AC_DEFINE(ENABLE_NLS, 1,
+          [Define to 1 if translation of program messages is enabled.])
 	elif test -z "$MSGFMT" || test -z "$XGETTEXT" ; then
 	  AC_MSG_WARN(disabling NLS feature)
-	  sed -e /ENABLE_NLS/d confdefs.h >confdefs.tmp
-	  mv confdefs.tmp confdefs.h
 	  ALL_LINGUAS=
 	  CATOBJEXT=.ignored
 	  MSGFMT=":"
 	  GMSGFMT=":"
 	  XGETTEXT=":"
-	  POSUB=
 	  USE_NLS=no
+	  LIBS="$cf_save_LIBS_1"
+	  CPPFLAGS="$cf_save_OPTS_1"
     fi
 
     dnl Test whether we really found GNU msgfmt.
@@ -603,7 +599,6 @@ AC_DEFUN([AM_WITH_NLS],
   AC_SUBST(CATOBJEXT)
   AC_SUBST(GMOFILES)
   AC_SUBST(POFILES)
-  AC_SUBST(POSUB)
 
   dnl For backward compatibility. Some configure.ins may be using this.
   nls_cv_header_intl=
@@ -879,7 +874,7 @@ LIBS=`echo "$LIBS" | sed -e "s/[[ 	]][[ 	]]*/ /g" -e "s%$1 %$1 $2 %" -e 's%  % %
 CF_VERBOSE(...after  $LIBS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ADD_OPTIONAL_PATH version: 3 updated: 2015/05/10 19:52:14
+dnl CF_ADD_OPTIONAL_PATH version: 5 updated: 2024/04/09 18:37:41
 dnl --------------------
 dnl Add an optional search-path to the compile/link variables.
 dnl See CF_WITH_PATH
@@ -888,12 +883,11 @@ dnl $1 = shell variable containing the result of --with-XXX=[DIR]
 dnl $2 = module to look for.
 AC_DEFUN([CF_ADD_OPTIONAL_PATH],[
 case "$1" in
-no)
-	;;
-yes)
+no|yes)
 	;;
 *)
 	CF_ADD_SEARCHPATH([$1], [AC_MSG_ERROR(cannot find $2 under $1)])
+	CF_VERBOSE(setting path value for ifelse([$2],,variable,[$2]) to $1)
 	;;
 esac
 ])dnl
@@ -4442,7 +4436,7 @@ case ".$with_cflags" in
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_OUR_MESSAGES version: 8 updated: 2021/01/02 09:31:20
+dnl CF_OUR_MESSAGES version: 9 updated: 2024/04/08 18:39:25
 dnl ---------------
 dnl Check if we use the messages included with this program
 dnl
@@ -4461,7 +4455,7 @@ if test "$USE_NLS" = yes ; then
 if test -d "$srcdir/po" ; then
 AC_MSG_CHECKING(if we should use included message-library)
 	AC_ARG_ENABLE(included-msgs,
-	[  --disable-included-msgs use included messages, for i18n support],
+	[  --disable-included-msgs do not use included messages for i18n support],
 	[use_our_messages=$enableval],
 	[use_our_messages=yes])
 fi
@@ -4657,7 +4651,7 @@ else
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PIC_HACK version: 2 updated: 2024/03/12 19:53:10
+dnl CF_PIC_HACK version: 3 updated: 2024/04/08 18:39:25
 dnl -----------
 dnl First noticed in 2016, some systems have gcc configured with
 dnl --enable-default-pie, which breaks linking of applications which do not
@@ -4675,6 +4669,10 @@ dnl https://gcc.gnu.org/ml/gcc-patches/2014-07/msg02231.html
 dnl https://stackoverflow.com/questions/6093547/what-do-r-x86-64-32s-and-r-x86-64-64-relocation-mean
 dnl https://unix.stackexchange.com/questions/89211/how-to-test-whether-a-linux-binary-was-compiled-as-position-independent-code
 AC_DEFUN([CF_PIC_HACK],[
+CF_ACVERSION_CHECK(2.52,
+	[AC_PATH_TOOL(READELF, readelf, none)],
+	[AC_PATH_PROG(READELF, readelf, none)])
+
 AC_CACHE_CHECK(if -fPIC option is needed in CFLAGS,cf_cv_pic_hack,[
 cf_cv_pic_hack=unknown
 
@@ -4684,12 +4682,15 @@ case "${CFLAGS}${CC_SHARED_OPTS}" in
 	;;
 esac
 
-if test $cf_cv_pic_hack = no
+if test "$READELF" = none
+then
+	cf_cv_pic_hack=unknown
+elif test $cf_cv_pic_hack = no
 then
 	:
 elif test "$GCC" = yes
 then
-	if readelf --version >/dev/null 2>/dev/null
+	if $READELF --version >/dev/null 2>/dev/null
 	then
 		cat >conftest.$ac_ext <<EOF
 #line __oline__ "configure"
@@ -4698,7 +4699,7 @@ int main(void) { FILE *fp = fopen("hello", "w"); return (fp != 0); }
 EOF
 		if AC_TRY_EVAL(ac_compile) ; then
 			cf_cv_pic_hack=no
-			for cf_pie_relocs in `readelf --relocs conftest.$ac_cv_objext 2>/dev/null | awk '[$]3~/^R_/ && [$]5!~/^\.debug/{print [$]3}'`
+			for cf_pie_relocs in `$READELF --relocs conftest.$ac_cv_objext 2>/dev/null | awk '[$]3~/^R_/ && [$]5!~/^\.debug/{print [$]3}'`
 			do
 				case "x$cf_pie_relocs" in
 				xR_X86_64_32|xR_X86_64_32S)
@@ -6979,11 +6980,11 @@ AC_CACHE_CHECK(whether we are using the GNU C Library 2.1 or newer,
 	GLIBC21="$ac_cv_gnu_library_2_1"
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_ZLIB version: 4 updated: 2011/05/28 12:10:58
+dnl CF_WITH_ZLIB version: 5 updated: 2024/04/09 18:37:41
 dnl ------------
 dnl check for libz aka "zlib"
 AC_DEFUN([CF_WITH_ZLIB],[
-  CF_ADD_OPTIONAL_PATH($1)
+  CF_ADD_OPTIONAL_PATH($1, [zlib])
 
   CF_FIND_LINKAGE([
 #include <zlib.h>
