@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-15
+ *  Updated   : 2024-05-28
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -47,7 +47,7 @@
 
 #ifdef HAVE_CONFIG_H
 #	ifndef TIN_AUTOCONF_H
-#		include <autoconf.h>	/* FIXME: normally we use 'config.h' */
+#		include "autoconf.h"	/* FIXME: normally we use 'config.h' */
 #	endif /* !TIN_AUTOCONF_H */
 #else
 #	ifndef HAVE_CONFDEFS_H
@@ -188,7 +188,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 #ifdef HAVE_LIMITS_H
 #	include <limits.h>
-#endif /* HAVE_GETOPT_H */
+#endif /* HAVE_LIMITS_H */
 
 #if defined(ENABLE_LONG_ARTICLE_NUMBERS) && !defined(SMALL_MEMORY_MACHINE)
 /*
@@ -286,6 +286,14 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #if defined(sun) || defined(__sun) && (!defined(__SVR4) || !defined(__svr4__)) && defined(BSD) && BSD < 199306
 #	define IGNORE_SYSTEM_STATUS 1
 #endif /* sun|| __sun && (!__SVR4 || __svr4__) && BSD && BSD < 199306 */
+
+#if defined(__STDC__) || defined(__STDC_VERSION__) || defined(__cplusplus)
+#	define TIN_STDC 1
+#endif /* __STDC__ || __STDC_VERSION__ || __cplusplus */
+/* compiler specific fixup */
+#if !defined(TIN_STDC) && defined(__XCC)
+#	define TIN_STDC 1
+#endif /* !TIN_STDC && __XCC */
 
 #ifdef HAVE_FCNTL_H
 #	include <fcntl.h>
@@ -412,9 +420,21 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	define _PATH_TMP	"/tmp/"
 #endif /* _PATH_TMP */
 
+/* we just need INT_MAX be defined approximately fitting the system */
 #if !defined(INT_MAX)
-#	define INT_MAX 2147483647 /* 2^31-1 */
-#endif /* INT_MAX */
+#	ifdef INT_WIDTH
+#		if INT_WIDTH >= 32
+#			define INT_MAX 2147483647 /* 2^31-1 */
+#		else
+#			define INT_MAX 32767 /* 2^15-1 */
+#		endif /* INT_WIDTH >= 32 */
+#	else
+#		define INT_MAX 2147483647 /* 2^31-1 */
+#	endif /* INT_WIDTH */
+#endif /* !INT_MAX */
+#if !defined(INT_MIN)
+#	define INT_MIN (-INT_MAX - 1)
+#endif /* INT_MIN */
 
 /*
  * If OS misses the isascii() function
@@ -451,7 +471,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 /*
  * Setup support for reading from NNTP
  */
-#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
+#if defined(NNTP_ABLE) || defined(NNTP_ONLY) || defined(NNTPS_ABLE)
 #	ifndef NNTP_ABLE
 #		define NNTP_ABLE	1
 #	endif /* !NNTP_ABLE */
@@ -465,7 +485,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	ifdef BROKEN_LISTGROUP
 #		undef BROKEN_LISTGROUP
 #	endif /* BROKEN_LISTGROUP */
-#endif /* NNTP_ABLE || NNTP_ONLY */
+#endif /* NNTP_ABLE || NNTP_ONLY || NNTPS_ABLE */
 
 #define FAKE_NNTP_FP		(FILE *) 9999
 
@@ -753,6 +773,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define POSTPONED_FILE	"postponed.articles"
 #define SUBSCRIPTIONS_FILE	"subscriptions"
 #define NEWSGROUPS_FILE	"newsgroups"
+#define MOTD_FILE	"motd"
 #define KEYMAP_FILE	"keymap"
 
 #define SIGDASHES "-- \n"
@@ -2246,11 +2267,11 @@ typedef struct urllist {
  * Determine qsort compare type
  */
 #ifdef HAVE_COMPTYPE_VOID
-#	ifdef __STDC__
+#	ifdef TIN_STDC
 		typedef const void *t_comptype;
 #	else
 		typedef void *t_comptype;
-#	endif /* __STDC__ */
+#	endif /* TIN_STDC */
 #else
 #	ifdef HAVE_COMPTYPE_CHAR
 		typedef char *t_comptype;
@@ -2288,6 +2309,14 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 #	define KEY_PREFIX		0x8f: case 0x9b
 #endif /* HAVE_KEY_PREFIX */
 
+/* the next two are needed for fcc 1.0 on linux */
+#ifndef S_IFMT
+#	define S_IFMT	0xF000	/* type of file */
+#endif /* S_IFMT */
+#ifndef S_IFREG
+#	define S_IFREG	0x8000	/* regular */
+#endif /* S_IFREG */
+
 #if !defined(S_ISDIR)
 #	define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
 #endif /* !S_ISDIR */
@@ -2295,6 +2324,10 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 #if !defined(S_ISREG)
 #	define S_ISREG(m)	(((m) & S_IFMT) == S_IFREG)
 #endif /* !S_ISREG */
+
+#if !defined(S_ISLNK)
+#	define S_ISLNK(m)	(((m) & S_IFMT) == S_IFLNK)
+#endif /* !S_ISLNK */
 
 #ifndef S_IRWXU /* should be defined in <sys/stat.h> */
 #	define S_IRWXU	0000700	/* read, write, execute permission (owner) */
@@ -2313,13 +2346,6 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 #	define S_IXOTH	0000001	/* execute permission (other) */
 #endif /* !S_IRWXU */
 
-/* the next two are needed for fcc 1.0 on linux */
-#ifndef S_IFMT
-#	define S_IFMT	0xF000	/* type of file */
-#endif /* S_IFMT */
-#ifndef S_IFREG
-#	define S_IFREG	0x8000	/* regular */
-#endif /* S_IFREG */
 
 #ifndef S_IRWXUGO
 #	define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)	/* read, write, execute permission (all) */
@@ -2388,9 +2414,9 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
  */
 
 #ifndef SIG_ARGS
-#	if defined(__STDC__)
+#	if defined(TIN_STDC)
 #		define SIG_ARGS	int sig
-#	endif /* __STDC__ */
+#	endif /* TIN_STDC */
 #endif /* !SIG_ARGS */
 
 #ifndef __LCLINT__ /* lclint doesn't like it */
@@ -2418,11 +2444,11 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 #	define OUTC_ARGS	int c
 #endif /* !OUTC_ARGS */
 
-#if __STDC__ || defined(__cplusplus)
+#if TIN_STDC
 #	define OUTC_FUNCTION(func)	OUTC_RETTYPE func (OUTC_ARGS)
 #else
 #	define OUTC_FUNCTION(func)	OUTC_RETTYPE func (c) int c;
-#endif /* __STDC__ || __cplusplus */
+#endif /* TIN_STDC */
 
 typedef OUTC_RETTYPE (*OutcPtr) (OUTC_ARGS);
 typedef FILE TCP;
@@ -2652,10 +2678,24 @@ struct t_overview_fmt {
 	enum f_type type;
 };
 
+/* TODO:
+ *       switch to version = (rc_majorv << 16) + (rc_minorv << 8) + rc_subv
+ *       that is v2.6.4 == 0x020604
+ */
 struct t_version {
 	enum rc_state state;
 	int file_version;		/* rc_majorv * 10000 + rc_minorv * 100 + rc_subv */
 /*	int current_version;*/	/* c_majorv * 10000 + c_minorv * 100 + c_subv */
 };
+
+/* used in strunc(), wstrunc() and draw_page_header() */
+#define TRUNC_TAIL	"..."
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		/* U+2026 (HORIZONTAL ELLIPSIS) */
+#		define WTRUNC_TAIL	L"\x2026"
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+/* C90: isxdigit(3) */
+#define IS_XDIGIT(c) (((c) >= '0' && (c) <= '9') || ((c) >= 'a' && (c) <= 'f') || ((c) >= 'A' && (c) <= 'F'))
 
 #endif /* !TIN_H */

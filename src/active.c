@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2024-03-23
+ *  Updated   : 2024-05-10
  *  Notes     :
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -385,7 +385,7 @@ do_read_newsrc_active_file(
 			ptr = ngname;
 		}
 
-		if (read_news_via_nntp && !read_saved_news) {
+		if (read_news_via_nntp && !read_saved_news) { /* this should be limited to GROUP_TYPE_NEWS, but ... */
 #ifdef NNTP_ABLE
 			char buf[NNTP_STRLEN];
 			char line[NNTP_STRLEN];
@@ -551,21 +551,14 @@ read_newsrc_active_file(
 	 * return immediately if no .newsrc can be found or .newsrc is empty
 	 * when function asked to use .newsrc
 	 */
-	if ((fp = fopen(newsrc, "r")) == NULL)
+	if ((fp = tin_fopen(newsrc, "r")) == NULL)
 		return;
 
-	if (file_size(newsrc) <= 0L) {
-		fclose(fp);
-		return;
-	}
-
-#ifdef NNTP_ABLE
-	need_auth = do_read_newsrc_active_file(fp);
-#else
+#ifndef NNTP_ABLE
 	do_read_newsrc_active_file(fp);
-#endif /* NNTP_ABLE */
+#else
+	need_auth = do_read_newsrc_active_file(fp);
 
-#ifdef NNTP_ABLE
 	if (need_auth) { /* delayed auth */
 		if (!authenticate(nntp_server, userid, FALSE)) {
 			fclose(fp);
@@ -579,7 +572,7 @@ read_newsrc_active_file(
 			tin_done(EXIT_FAILURE, _(txt_auth_failed), ERR_ACCESS);
 		}
 	}
-#endif /* NNTP_ABLE */
+#endif /* !NNTP_ABLE */
 
 	fclose(fp);
 
@@ -808,16 +801,11 @@ read_news_active_file(
 	 * Ignore -n if no .newsrc can be found or .newsrc is empty
 	 */
 	if (newsrc_active) {
-		if ((fp = fopen(newsrc, "r")) == NULL) {
+		if ((fp = tin_fopen(newsrc, "r")) == NULL) {
 			list_active = TRUE;
 			newsrc_active = FALSE;
-		} else {
+		} else
 			fclose(fp);
-			if (file_size(newsrc) <= 0L) {
-				list_active = TRUE;
-				newsrc_active = FALSE;
-			}
-		}
 	}
 
 	/* Read an active file if it is allowed */
@@ -854,7 +842,7 @@ read_news_active_file(
 
 			*buff = '\0';
 			/* we can't use for_each_group(i) yet, so we have to parse the newsrc */
-			if ((fp = fopen(newsrc, "r")) != NULL) {
+			if ((fp = tin_fopen(newsrc, "r")) != NULL) {
 				while (tin_fgets(fp, FALSE) != NULL)
 					j++;
 				rewind(fp);
@@ -1178,6 +1166,7 @@ match_group_list(
 {
 	char *separator;
 	char pattern[HEADER_LEN];
+	char ngname[NNTP_GRPLEN + 1]; /* RFC 3977 3.1 limits group names to 497 octets */
 	size_t group_len, list_len;
 	t_bool negate, accept = FALSE;
 
@@ -1203,12 +1192,15 @@ match_group_list(
 		/*
 		 * copy out the entry and terminate it properly
 		 */
-		strncpy(pattern, group_list, group_len);
-		pattern[group_len] = '\0';
+		my_strncpy(pattern, group_list, group_len);
+		my_strncpy(ngname, group, sizeof(ngname) - 1);
+		str_lwr(pattern);
+		str_lwr(ngname);
+
 		/*
-		 * case-insensitive wildcard match
+		 * "case-insensitive" (str_lwr(); avoid malloc()/free() in) wildcard match
 		 */
-		if (GROUP_MATCH(group, pattern, TRUE))
+		if (GROUP_MATCH(group, pattern, FALSE))
 			accept = bool_not(negate);	/* matched! */
 
 		/*

@@ -3,7 +3,7 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2024-03-28
+ *  Updated   : 2024-04-01
  *  Notes     :
  *
  * Copyright (c) 2003-2024 Urs Janssen <urs@tin.org>
@@ -57,6 +57,10 @@
  *              RC_ERROR      3rd arg is not a dotted triple (usage error)
  *         ->file_version     version number in file as int
  *              (rc_majorv * 10000 + rc_minorv * 100 + rc_subv) or -1
+ *              TODO: switch to rc_majorv << 16 + rc_minorv << 8 + rc_subv
+ *                    (requires int_least32_t aka INT_WIDTH >= 32, but
+ *                     I guess a lot of the code silently assumes that
+ *                     anyway)
  *
  * usage:
  * if (upgrade == NULL && match_string(line, skip, NULL, 0)) {
@@ -85,34 +89,46 @@ check_upgrade(
 	p = line + strlen(skip);
 	if (!isdigit((unsigned char) *p))
 		return fversion;
-	rc_majorv = atoi(p);
+	rc_majorv = s2i(p, 0, 99);
+	if (errno)
+		return fversion;
 	while (isdigit((unsigned char) *p))
 		p++;
 	if (*p != '.' || !isdigit((unsigned char) *++p))
 		return fversion;
-	rc_minorv = atoi(p);
+	rc_minorv = s2i(p, 0, 99);
+	if (errno)
+		return fversion;
 	while (isdigit((unsigned char) *p))
 		p++;
 	if (*p != '.' || !isdigit((unsigned char) *++p))
 		return fversion;
-	rc_subv = atoi(p);
+	rc_subv = s2i(p, 0, 99);
+	if (errno)
+		return fversion;
 
 	fversion->file_version = rc_majorv * 10000 + rc_minorv * 100 + rc_subv;
 
 	p = version;
-	c_majorv = atoi(p);
+	c_majorv = s2i(p, 0, 99);
+	if (errno)
+		return fversion;
 	while (isdigit((unsigned char) *p))
 		p++;
 	if (*p != '.')
 		return fversion;
 
-	c_minorv = atoi(++p);
+	c_minorv = s2i(++p, 0, 99);
+	if (errno)
+		return fversion;
 	while (isdigit((unsigned char) *p))
 		p++;
 	if (*p != '.')
 		return fversion;
 
-	c_subv = atoi(++p);
+	c_subv = s2i(++p, 0, 99);
+	if (errno)
+		return fversion;
 	/* we don't care about trailing text */
 
 	current_version = c_majorv * 10000 + c_minorv * 100 + c_subv;

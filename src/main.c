@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-27
+ *  Updated   : 2024-04-26
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -47,6 +47,12 @@
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
+#if defined(INET6) && defined(HAVE_INET_PTON)
+#	ifndef TNNTP_H
+#		include "tnntp.h"
+#	endif /* !TNNTP_H */
+#endif /* INET6 && HAVE_INET_PTON */
+
 
 signed long int read_newsrc_lines = -1;
 
@@ -245,6 +251,7 @@ main(
 		nntp_server = getserverbyfile(NNTP_SERVER_FILE);
 
 	open_msglog(); /* depends on nntp_server */
+	read_server_config();
 
 	if (read_news_via_nntp && !read_saved_news) {
 		if (use_nntps && tintls_init()) {
@@ -262,8 +269,6 @@ main(
 			giveup();
 		}
 	}
-
-	read_server_config();
 
 	/*
 	 * exit early - unfortunately we can't do that in read_cmd_line_options()
@@ -505,7 +510,9 @@ read_cmd_line_options(
 {
 	char **argv_orig = argv;
 	int ch;
+#ifdef NNTP_ABLE
 	t_bool newsrc_set = FALSE;
+#endif /* NNTP_ABLE */
 
 	envargs(&argc, &argv, "TINRC");
 
@@ -518,9 +525,9 @@ read_cmd_line_options(
 				read_news_via_nntp = TRUE;
 #else
 #	ifdef NNTP_ABLE
-				error_message(2, _(txt_option_not_enabled), "-DENABLE_IPV6");
+				error_message(0, _(txt_option_not_enabled), "-DENABLE_IPV6");
 #	else
-				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
 #	endif /* NNTP_ABLE */
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
@@ -536,9 +543,9 @@ read_cmd_line_options(
 				read_news_via_nntp = TRUE;
 #	else
 #	ifdef NNTP_ABLE
-				error_message(2, _(txt_option_not_enabled), "-DENABLE_IPV6");
+				error_message(0, _(txt_option_not_enabled), "-DENABLE_IPV6");
 #	else
-				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
 #	endif /* NNTP_ABLE */
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
@@ -552,7 +559,7 @@ read_cmd_line_options(
 #ifdef HAVE_COLOR
 				cmdline.args |= CMDLINE_USE_COLOR;
 #else
-				error_message(2, _(txt_option_not_enabled), "-DHAVE_COLOR");
+				error_message(0, _(txt_option_not_enabled), "-DHAVE_COLOR");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -566,7 +573,7 @@ read_cmd_line_options(
 				force_auth_on_conn_open = TRUE;
 				read_news_via_nntp = TRUE;
 #else
-				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -585,7 +592,7 @@ read_cmd_line_options(
 #	ifdef USE_ZLIB
 				use_compress = TRUE;
 #	else
-				error_message(2, _(txt_option_not_enabled), "-DUSE_ZLIB");
+				error_message(0, _(txt_option_not_enabled), "-DUSE_ZLIB");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -593,7 +600,7 @@ read_cmd_line_options(
 				/* NOTREACHED */
 #	endif /* USE_ZLIB */
 #else
-				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -608,10 +615,23 @@ read_cmd_line_options(
 
 			case 'D':		/* debug mode */
 #ifdef DEBUG
-				debug = atoi(optarg) & 0xff;
-				debug_delete_files();
+				debug = s2i(optarg, 0, 2 * DEBUG_REMOVE - 1);
+				switch (errno) {
+					case EINVAL: /* TODO: extra error message */
+					case ERANGE:
+						error_message(0, _(txt_value_out_of_range), "-D ", (int) strtol(optarg, NULL, 10), 2 * DEBUG_REMOVE - 1);
+						debug = 0;
+						if (!batch_mode)
+							sleep(2);
+						break;
+
+					default:
+						break;
+				}
+				if (debug)
+					debug_delete_files();
 #else
-				error_message(2, _(txt_option_not_enabled), "-DDEBUG");
+				error_message(0, _(txt_option_not_enabled), "-DDEBUG");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -622,40 +642,137 @@ read_cmd_line_options(
 
 			case 'f':	/* newsrc file */
 				my_strncpy(newsrc, optarg, sizeof(newsrc) - 1);
+#ifdef NNTP_ABLE
 				newsrc_set = TRUE;
+#endif /* NNTP_ABLE */
 				break;
 
 			case 'G':
-				cmdline.getart_limit = atoi(optarg);
-				cmdline.args |= CMDLINE_GETART_LIMIT;
+				cmdline.getart_limit = s2i(optarg, INT_MIN, INT_MAX);
+				/* TODO: add EINVAL/ERANGE error messages here */
+				if (cmdline.getart_limit != 0)
+					cmdline.args |= CMDLINE_GETART_LIMIT;
 				break;
 
 			case 'g':	/* select alternative NNTP-server, implies -r */
 #ifdef NNTP_ABLE
 				my_strncpy(cmdline.nntpserver, optarg, sizeof(cmdline.nntpserver) - 1);
-				{ /* ":port" suffix - no IPv6-address support yet */
+				str_trim(cmdline.nntpserver);
+				{
 					char *p;
+					int i;
 
 					if ((p = strchr(cmdline.nntpserver, ':')) != NULL) {
-						if (strrchr(cmdline.nntpserver, ':') == p) {
-							unsigned short i;
-
+						if (*cmdline.nntpserver != '[' && strrchr(cmdline.nntpserver, ':') == p) { /* exact 1 x ':' must be name:port or ipv4:port */
 							*p++ = '\0';
-							if ((i = (unsigned short) atoi(p)) != 0)
-								nntp_tcp_port = i;
-#	ifdef DEBUG
-							else {
-								if (debug & DEBUG_MISC)
-									wait_message(3, _(txt_port_not_numeric), cmdline.nntpserver, p);
+							i = s2i(p, 0, 65535);
+							switch (errno) {
+								case EINVAL:
+									error_message(0, _(txt_port_not_numeric), cmdline.nntpserver, p);
+									FREE_ARGV_IF_NEEDED(argv_orig, argv);
+									free_all_arrays();
+									giveup();
+									/* keep lint quiet: */
+									/* FALLTHROUGH */
+									break;
+
+								case ERANGE:
+									error_message(0, _(txt_value_out_of_range), "-g ", (int) strtol(optarg, NULL, 10), 65535);
+									if (!batch_mode)
+										sleep(2);
+									break;
+
+								default:
+									nntp_tcp_port = (unsigned short) i;
+									break;
 							}
-#	endif /* DEBUG */
+						} else /* "[ipv6]"[:port] */
+#	ifndef INET6
+						{
+							error_message(0, _(txt_option_not_enabled), "-DENABLE_IPV6");
+							FREE_ARGV_IF_NEEDED(argv_orig, argv);
+							free_all_arrays();
+							giveup();
 						}
+#	else
+						{
+							char *q;
+							int j = 0;
+
+							if (*cmdline.nntpserver == '[' && (q = strrchr(cmdline.nntpserver, ']')) != NULL) {
+								if ((p = strchr(cmdline.nntpserver, ':')) != NULL) {
+									if (p > q) { /* not an IPv6 literal (e.g. [host.name]:port or [i.p.v.4]:port, must not be in []) */
+										error_message(0, _(txt_error_not_ipv6_literal), cmdline.nntpserver);
+										FREE_ARGV_IF_NEEDED(argv_orig, argv);
+										free_all_arrays();
+										giveup();
+									}
+								}
+								if ((p = strchr(q, ':')) != NULL) {
+									if (p == q + 1) {
+										i = s2i(++p, 0, 65535);
+										switch (errno) {
+											case EINVAL:
+												*++q = '\0'; /* remove tailing ':' */
+												error_message(0, _(txt_port_not_numeric), cmdline.nntpserver, p);
+												FREE_ARGV_IF_NEEDED(argv_orig, argv);
+												free_all_arrays();
+												giveup();
+												/* keep lint quiet: */
+												/* FALLTHROUGH */
+												break;
+
+											case ERANGE:
+												error_message(0, _(txt_value_out_of_range), "-g ", (int) strtol(optarg, NULL, 10), 65535);
+												if (!batch_mode)
+													sleep(2);
+												break;
+
+											default:
+												nntp_tcp_port = (unsigned short) i;
+												break;
+										}
+									}
+								}
+								*q = '\0'; /* remove tailing ']' */
+								for (i = 1; cmdline.nntpserver[i] != '\0'; i++) { /* remove leading '[' */
+									cmdline.nntpserver[i - 1] = cmdline.nntpserver[i];
+									/* minimal IPv6 syntax checking - just if we didn't find inet_pton() */
+									if (cmdline.nntpserver[i] == ':')
+										j++;
+									else {
+										if (!IS_XDIGIT(cmdline.nntpserver[i]))
+											j += 1000;
+									}
+								}
+								cmdline.nntpserver[i - 1] = '\0';
+								str_trim(cmdline.nntpserver);
+								{
+#		if defined(HAVE_INET_PTON) && defined(AF_INET6)
+									struct in_addr inaddr;
+
+									(void) j; /* silence unused-but-set */
+									if (inet_pton(AF_INET6, cmdline.nntpserver, &inaddr) != 1)
+#		else
+									if (j < 2 || j > 7)
+#		endif /* HAVE_INET_PTON && AF_INET6 */
+									{
+										error_message(0, _(txt_error_not_ipv6_literal), cmdline.nntpserver);
+										FREE_ARGV_IF_NEEDED(argv_orig, argv);
+										free_all_arrays();
+										giveup();
+									}
+								}
+							}
+						}
+#	endif /* !INET6 */
 					}
 				}
-				cmdline.args |= CMDLINE_NNTPSERVER;
+				if (*cmdline.nntpserver)
+					cmdline.args |= CMDLINE_NNTPSERVER;
 				read_news_via_nntp = TRUE;
 #else
-				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -681,7 +798,7 @@ read_cmd_line_options(
 				insecure_nntps = TRUE;
 				use_nntps = TRUE;
 #else
-				error_message(2, _(txt_option_not_enabled), "--with-nntps");
+				error_message(0, _(txt_option_not_enabled), "--with-nntps");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -697,10 +814,11 @@ read_cmd_line_options(
 			case 'L':
 #ifdef NNTP_ABLE
 				my_strncpy(cmdline.msgid, optarg, sizeof(cmdline.msgid) - 1);
+				str_trim(cmdline.msgid);
 				cmdline.args |= CMDLINE_MSGID;
 				break;
 #else
-				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -738,7 +856,7 @@ read_cmd_line_options(
 				post_postponed_and_exit = TRUE;
 				check_for_new_newsgroups = FALSE;
 #else
-				error_message(2, _(txt_option_not_enabled), "-UNO_POSTING");
+				error_message(0, _(txt_option_not_enabled), "-UNO_POSTING");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -750,20 +868,32 @@ read_cmd_line_options(
 			case 'p': /* implies -r */
 #ifdef NNTP_ABLE
 				{
-					unsigned short i;
+					int i = s2i(optarg, 0, 65535);
 
-					read_news_via_nntp = TRUE;
-					if ((i = (unsigned short) atoi(optarg)) != 0)
-						nntp_tcp_port = i;
-#	ifdef DEBUG
-					else {
-						if (debug & DEBUG_MISC) /* FIXME: output is ugly */
-							wait_message(3, _(txt_port_not_numeric), "", optarg);
+					switch (errno) {
+						case EINVAL:
+							error_message(0, _(txt_port_not_numeric), "", optarg);
+							FREE_ARGV_IF_NEEDED(argv_orig, argv);
+							free_all_arrays();
+							giveup();
+							/* keep lint quiet: */
+							/* FALLTHROUGH */
+							break;
+
+						case ERANGE:
+							error_message(0, _(txt_value_out_of_range), "-p ", (int) strtol(optarg, NULL, 10), 65535);
+							if (!batch_mode)
+								sleep(2);
+							break;
+
+						default:
+							nntp_tcp_port = (unsigned short) i;
+							break;
 					}
-#	endif /* DEBUG */
+					read_news_via_nntp = TRUE;
 				}
 #else
-				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -786,7 +916,7 @@ read_cmd_line_options(
 #ifdef NNTP_ABLE
 				read_news_via_nntp = TRUE;
 #else
-				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -815,12 +945,22 @@ read_cmd_line_options(
 
 			case 't':
 #if defined(NNTP_ABLE) && defined(HAVE_ALARM) && defined(SIGALRM)
-				cmdline.nntp_timeout = atoi(optarg);
-				if (cmdline.nntp_timeout < 0 || cmdline.nntp_timeout > TIN_NNTP_TIMEOUT_MAX)
-					cmdline.nntp_timeout = 0;
-				cmdline.args |= CMDLINE_NNTP_TIMEOUT;
+				cmdline.nntp_timeout = s2i(optarg, 0, TIN_NNTP_TIMEOUT_MAX);
+				switch (errno) {
+					case EINVAL: /* TODO: extra error message */
+					case ERANGE:
+						error_message(0, _(txt_value_out_of_range), "-t ", (int) strtol(optarg, NULL, 10), TIN_NNTP_TIMEOUT_MAX);
+						if (!batch_mode)
+							sleep(2);
+						break;
+
+					default:
+						break;
+				}
+				if (cmdline.nntp_timeout)
+					cmdline.args |= CMDLINE_NNTP_TIMEOUT;
 #else
-				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -833,7 +973,7 @@ read_cmd_line_options(
 #ifdef NNTPS_ABLE
 				use_nntps = TRUE;
 #else
-				error_message(2, _(txt_option_not_enabled), "--with-nntps");
+				error_message(0, _(txt_option_not_enabled), "--with-nntps");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -864,7 +1004,7 @@ read_cmd_line_options(
 				post_article_and_exit = TRUE;
 				check_for_new_newsgroups = FALSE;
 #else
-				error_message(2, _(txt_option_not_enabled), "-UNO_POSTING");
+				error_message(0, _(txt_option_not_enabled), "-UNO_POSTING");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				giveup();
@@ -919,24 +1059,26 @@ read_cmd_line_options(
 	/* cmdargs = argv; */
 	num_cmdargs = optind;
 	max_cmdargs = argc;
-	if (!newsrc_set) {
+#ifdef NNTP_ABLE
+	if (!newsrc_set) { /* this gives "-f" a higher priority (in contrast to -p) */
 		if (read_news_via_nntp) {
 			nntp_server = getserverbyfile(NNTP_SERVER_FILE);
 			get_newsrcname(newsrc, sizeof(newsrc), nntp_server);
 		} else {
-#if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
+#	if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
 			struct utsname uts;
 			(void) uname(&uts);
 			get_newsrcname(newsrc, sizeof(newsrc), uts.nodename);
-#else
+#	else
 			char nodenamebuf[256] = { '\0' }; /* SUSv2 limit; better use HOST_NAME_MAX */
-#	ifdef HAVE_GETHOSTNAME
+#		ifdef HAVE_GETHOSTNAME
 			(void) gethostname(nodenamebuf, sizeof(nodenamebuf));
-#	endif /* HAVE_GETHOSTNAME */
+#		endif /* HAVE_GETHOSTNAME */
 			get_newsrcname(newsrc, sizeof(newsrc), nodenamebuf);
-#endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
+#	endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 		}
 	}
+#endif /* NNTP_ABLE */
 
 	/*
 	 * Sort out option conflicts
@@ -964,7 +1106,14 @@ read_cmd_line_options(
 	 *       -oN, -oM (at this stage we no longer know if -N or -M was given)
 	 *       -wN, -wM (at this stage we no longer know if -N or -M was given)
 	 *       -NZ, -MZ (at this stage we no longer know if -N or -M was given)
+	 *       -LM, -LN (at this stage we no longer know if -N or -M was given)
+	 *       (extend t_cmdlineopts with a flag indicating which of -M/-N was given)
+	 *       -uo, -uw, -uX, ...
 	 */
+	if (post_postponed_and_exit && (cmdline.args & CMDLINE_MSGID)) {
+		wait_message(2, _(txt_useless_combination), "-o", "-L", "-L");
+		cmdline.args ^= CMDLINE_MSGID;
+	}
 	if (post_postponed_and_exit && force_no_post) {
 		wait_message(2, _(txt_useless_combination), "-o", "-x", "-x");
 		force_no_post = FALSE;
@@ -980,6 +1129,10 @@ read_cmd_line_options(
 	if (post_article_and_exit && force_no_post) {
 		wait_message(2, _(txt_useless_combination), "-w", "-x", "-x");
 		force_no_post = FALSE;
+	}
+	if (post_article_and_exit && (cmdline.args & CMDLINE_MSGID)) {
+		wait_message(2, _(txt_useless_combination), "-w", "-L", "-w");
+		post_article_and_exit = FALSE;
 	}
 	if (post_article_and_exit && start_any_unread) {
 		wait_message(2, _(txt_useless_combination), "-w", "-z", "-z");
@@ -997,28 +1150,57 @@ read_cmd_line_options(
 		wait_message(2, _(txt_useless_combination), "-c", "-Z", "-c");
 		catchup = FALSE;
 	}
+	if (catchup && (cmdline.args & CMDLINE_MSGID)) {
+		wait_message(2, _(txt_useless_combination), "-c", "-L", "-c");
+		catchup = FALSE;
+	}
+	if (update_index && (cmdline.args & CMDLINE_MSGID)) {
+		wait_message(2, _(txt_useless_combination), "-u", "-L", "-u");
+		update_index = FALSE;
+	}
 	if (newsrc_active && read_saved_news) {
 		wait_message(2, _(txt_useless_combination), "-n", "-R", "-n");
 		newsrc_active = read_news_via_nntp = FALSE;
 	}
+	if (read_saved_news && (cmdline.args & CMDLINE_MSGID)) {
+		wait_message(2, _(txt_useless_combination), "-R", "-L", "-R");
+		read_saved_news = FALSE;
+	}
+	if (save_news && (cmdline.args & CMDLINE_MSGID)) {
+		wait_message(2, _(txt_useless_combination), "-S", "-L", "-S");
+		save_news = FALSE;
+	}
 	if (start_any_unread && save_news) {
 		wait_message(2, _(txt_useless_combination), "-z", "-S", "-z");
+		start_any_unread = FALSE;
+	}
+	if (start_any_unread && (cmdline.args & CMDLINE_MSGID)) {
+		wait_message(2, _(txt_useless_combination), "-z", "-L", "-z");
 		start_any_unread = FALSE;
 	}
 	if (save_news && check_any_unread) {
 		wait_message(2, _(txt_useless_combination), "-S", "-Z", "-S");
 		save_news = FALSE;
 	}
-	if (start_any_unread && check_any_unread) {
+	if (check_any_unread && start_any_unread) {
 		wait_message(2, _(txt_useless_combination), "-Z", "-z", "-Z");
 		check_any_unread = FALSE;
 	}
-#	ifdef DEBUG
-	if ((debug & DEBUG_NNTP) && !read_news_via_nntp) {
-		wait_message(3, _(txt_useless_combination), _(txt_reading_from_spool), "-D nntp", "-D nntp");
-		debug &= ~((unsigned) DEBUG_NNTP);
+	if (check_any_unread && (cmdline.args & CMDLINE_MSGID)) {
+		wait_message(2, _(txt_useless_combination), "-Z", "-L", "-Z");
+		check_any_unread = FALSE;
 	}
-#	endif /* DEBUG */
+#ifdef DEBUG
+#	ifdef NNTP_ABLE
+	if ((debug & DEBUG_NNTP) && !read_news_via_nntp)
+#		else
+	if (debug & DEBUG_NNTP)
+#	endif /* NNTP_ABLE */
+	{
+		wait_message(3, _(txt_useless_combination), _(txt_reading_from_spool), "-D nntp", "-D nntp");
+		debug ^= DEBUG_NNTP;
+	}
+#endif /* DEBUG */
 
 #if defined(NNTP_ABLE) && defined(INET6)
 	if (force_ipv4 && force_ipv6) {
@@ -1069,102 +1251,102 @@ static void
 usage(
 	char *theProgname)
 {
-	error_message(2, _(txt_usage_tin), theProgname);
+	error_message(0, _(txt_usage_tin), theProgname);
 
 #if defined(NNTP_ABLE) && defined(INET6)
-	error_message(2, _(txt_usage_force_ipv4));
-	error_message(2, _(txt_usage_force_ipv6));
+	error_message(0, _(txt_usage_force_ipv4));
+	error_message(0, _(txt_usage_force_ipv6));
 #endif /* NNTP_ABLE && INET6 */
 
 #ifdef HAVE_COLOR
-	error_message(2, _(txt_usage_toggle_color));
+	error_message(0, _(txt_usage_toggle_color));
 #endif /* HAVE_COLOR */
 #ifdef NNTP_ABLE
-	error_message(2, _(txt_usage_force_authentication));
+	error_message(0, _(txt_usage_force_authentication));
 #endif /* NNTP_ABLE */
 
-	error_message(2, _(txt_usage_catchup));
+	error_message(0, _(txt_usage_catchup));
 #if defined(NNTP_ABLE) && defined(USE_ZLIB)
-	error_message(2, _(txt_usage_compress));
+	error_message(0, _(txt_usage_compress));
 #endif /* NNTP_ABLE && USE_ZLIB */
-	error_message(2, _(txt_usage_dont_show_descriptions));
+	error_message(0, _(txt_usage_dont_show_descriptions));
 
 #ifdef DEBUG
-	error_message(2, _(txt_usage_debug));
+	error_message(0, _(txt_usage_debug));
 #endif /* DEBUG */
 
-	error_message(2, _(txt_usage_newsrc_file), newsrc);
-	error_message(2, _(txt_usage_getart_limit));
+	error_message(0, _(txt_usage_newsrc_file), newsrc);
+	error_message(0, _(txt_usage_getart_limit));
 
 #ifdef NNTP_ABLE
 #	ifdef NNTP_DEFAULT_SERVER
-	error_message(2, _(txt_usage_newsserver), get_val("NNTPSERVER", NNTP_DEFAULT_SERVER));
+	error_message(0, _(txt_usage_newsserver), get_val("NNTPSERVER", NNTP_DEFAULT_SERVER));
 #	else
-	error_message(2, _(txt_usage_newsserver), get_val("NNTPSERVER", "news"));
+	error_message(0, _(txt_usage_newsserver), get_val("NNTPSERVER", "news"));
 #	endif /* NNTP_DEFAULT_SERVER */
 #endif /* NNTP_ABLE */
 
-	error_message(2, _(txt_usage_help_message));
-	error_message(2, _(txt_usage_help_information), theProgname);
-	error_message(2, _(txt_usage_index_newsdir), index_newsdir);
+	error_message(0, _(txt_usage_help_message));
+	error_message(0, _(txt_usage_help_information), theProgname);
+	error_message(0, _(txt_usage_index_newsdir), index_newsdir);
 
 #ifdef NNTP_ABLE
 #	ifdef NNTPS_ABLE
-	error_message(2, _(txt_usage_use_insecure_nntps));
+	error_message(0, _(txt_usage_use_insecure_nntps));
 #	endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 
-	error_message(2, _(txt_usage_read_only_active));
+	error_message(0, _(txt_usage_read_only_active));
 
 #ifdef NNTP_ABLE
-	error_message(2, _(txt_usage_lookup_id));
+	error_message(0, _(txt_usage_lookup_id));
 #endif /* NNTP_ABLE */
 
-	error_message(2, _(txt_usage_maildir), tinrc.maildir);
-	error_message(2, _(txt_usage_mail_new_news_to_user));
-	error_message(2, _(txt_usage_read_only_subscribed));
-	error_message(2, _(txt_usage_mail_new_news));
-	error_message(2, _(txt_usage_post_postponed_arts));
+	error_message(0, _(txt_usage_maildir), tinrc.maildir);
+	error_message(0, _(txt_usage_mail_new_news_to_user));
+	error_message(0, _(txt_usage_read_only_subscribed));
+	error_message(0, _(txt_usage_mail_new_news));
+	error_message(0, _(txt_usage_post_postponed_arts));
 
 #ifdef NNTP_ABLE
 #	ifdef NNTPS_ABLE
-	error_message(2, _(txt_usage_port), use_nntps ? nntps_tcp_default_port : nntp_tcp_default_port);
+	error_message(0, _(txt_usage_port), use_nntps ? nntps_tcp_default_port : nntp_tcp_default_port);
 #	else
-	error_message(2, _(txt_usage_port), nntp_tcp_default_port);
+	error_message(0, _(txt_usage_port), nntp_tcp_default_port);
 #	endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 
-	error_message(2, _(txt_usage_dont_check_new_newsgroups));
-	error_message(2, _(txt_usage_quickstart));
+	error_message(0, _(txt_usage_dont_check_new_newsgroups));
+	error_message(0, _(txt_usage_quickstart));
 
 #ifdef NNTP_ABLE
 	if (!read_news_via_nntp)
-		error_message(2, _(txt_usage_read_news_remotely));
+		error_message(0, _(txt_usage_read_news_remotely));
 #endif /* NNTP_ABLE */
 
-	error_message(2, _(txt_usage_read_saved_news));
-	error_message(2, _(txt_usage_savedir), tinrc.savedir);
-	error_message(2, _(txt_usage_save_new_news));
+	error_message(0, _(txt_usage_read_saved_news));
+	error_message(0, _(txt_usage_savedir), tinrc.savedir);
+	error_message(0, _(txt_usage_save_new_news));
 
 #ifdef NNTP_ABLE
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
-	error_message(2, _(txt_usage_nntp_timeout), TIN_NNTP_TIMEOUT);
+	error_message(0, _(txt_usage_nntp_timeout), TIN_NNTP_TIMEOUT);
 #	endif /* HAVE_ALARM && SIGALRM */
 #	ifdef NNTPS_ABLE
-	error_message(2, _(txt_usage_use_nntps));
+	error_message(0, _(txt_usage_use_nntps));
 #	endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 
-	error_message(2, _(txt_usage_update_index_files));
-	error_message(2, _(txt_usage_verbose));
-	error_message(2, _(txt_usage_version));
-	error_message(2, _(txt_usage_post_article));
-	error_message(2, _(txt_usage_no_posting));
-	error_message(2, _(txt_usage_dont_save_files_on_quit));
-	error_message(2, _(txt_usage_start_if_unread_news));
-	error_message(2, _(txt_usage_check_for_unread_news));
+	error_message(0, _(txt_usage_update_index_files));
+	error_message(0, _(txt_usage_verbose));
+	error_message(0, _(txt_usage_version));
+	error_message(0, _(txt_usage_post_article));
+	error_message(0, _(txt_usage_no_posting));
+	error_message(0, _(txt_usage_dont_save_files_on_quit));
+	error_message(0, _(txt_usage_start_if_unread_news));
+	error_message(0, _(txt_usage_check_for_unread_news));
 
-	error_message(2, _(txt_usage_mail_bugreport), bug_addr);
+	error_message(0, _(txt_usage_mail_bugreport), bug_addr);
 }
 
 

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-10
+ *  Updated   : 2024-05-28
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -131,26 +131,29 @@ get_tmpfilename(
 /*
  * append_file instead of rename_file
  * minimum error trapping
+ * return 0 on success, errno otherwise.
  */
-void
+int
 append_file(
 	char *old_filename,
 	char *new_filename)
 {
 	FILE *fp_old, *fp_new;
+	int rval = 0;
 
-	if ((fp_old = fopen(old_filename, "r")) == NULL) {
-		perror_message(_(txt_cannot_open), old_filename);
-		return;
-	}
+	if ((fp_old = tin_fopen(old_filename, "r")) == NULL)
+		return errno;
+
 	if ((fp_new = fopen(new_filename, "a")) == NULL) {
+		rval = errno;
 		perror_message(_(txt_cannot_open), new_filename);
 		fclose(fp_old);
-		return;
+		return rval;
 	}
-	copy_fp(fp_old, fp_new);
+	rval = copy_fp(fp_old, fp_new);
 	fclose(fp_old);
 	fclose(fp_new);
+	return rval;
 }
 
 
@@ -191,9 +194,10 @@ asfail(
 
 /*
  * Quick copying of files
- * Returns FALSE if copy failed. Caller may wish to check for errno == EPIPE.
+ *
+ * Returns 0 on success and errno otherwise (incl. EPIPE).
  */
-t_bool
+int
 copy_fp(
 	FILE *fp_ip,
 	FILE *fp_op)
@@ -209,11 +213,12 @@ copy_fp(
 			TRACE(("copy_fp wrote %d of %d:{%.*s}", sent, have, (int) sent, buf));
 			if (errno && errno != EPIPE) /* not a broken pipe => more serious error */
 				perror_message(_(txt_error_copy_fp));
-			return FALSE;
+
+			return errno;
 		}
 		TRACE(("copy_fp wrote %d:{%.*s}", sent, (int) sent, buf));
 	}
-	return TRUE;
+	return 0;
 }
 
 
@@ -240,7 +245,7 @@ backup_file(
 	struct stat statbuf;
 #endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
-	if ((fp_in = fopen(filename, "r")) == NULL)	/* a missing sourcefile is not a real bug */
+	if ((fp_in = tin_fopen(filename, "r")) == NULL)	/* a missing sourcefile is not a real bug */
 		return TRUE;
 
 	/* don't follow links when writing backup files - do we really want this? */
@@ -257,7 +262,8 @@ backup_file(
 	}
 #endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
-	ret = copy_fp(fp_in, fp_out);
+	if (copy_fp(fp_in, fp_out) == 0)
+		ret = TRUE;
 
 #if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
 	if ((fd = fileno(fp_out)) != -1) {
@@ -475,10 +481,8 @@ invoke_ispell(
 	snprintf(nam_head, sizeof(nam_head), "%s%s", nam, ".h");
 #	endif /* HAVE_LONG_FILE_NAMES */
 
-	if ((fp_all = fopen(nam, "r")) == NULL) {
-		perror_message(_(txt_cannot_open), nam);
+	if ((fp_all = tin_fopen(nam, "r")) == NULL)
 		return FALSE;
-	}
 
 	if ((fp_head = fopen(nam_head, "w")) == NULL) {
 		perror_message(_(txt_cannot_open), nam_head);
@@ -505,8 +509,12 @@ invoke_ispell(
 	if (fp_head)
 		fclose(fp_head);
 
-	while (fgets(buf, (int) sizeof(buf), fp_all) != NULL)
-		fputs(buf, fp_body);
+	while (!feof(fp_all) && !ferror(fp_all)) {
+		if (fgets(buf, (int) sizeof(buf), fp_all) != NULL)
+			fputs(buf, fp_body);
+		else
+			break;
+	}
 
 	fclose(fp_body);
 	fclose(fp_all);
@@ -514,9 +522,16 @@ invoke_ispell(
 	sh_format(buf, sizeof(buf), "%s %s", ispell, nam_body);
 	retcode = invoke_cmd(buf);
 
-	append_file(nam_body, nam_head);
+	if ((errno = append_file(nam_body, nam_head)) != 0) {
+		perror_message(_(txt_enter_append), nam_body, nam_head);
+		retcode = FALSE;
+	}
 	unlink(nam_body);
-	rename_file(nam_head, nam);
+	if ((errno = rename_file(nam_head, nam)) != 0) {
+		perror_message(_(txt_rename_error), nam_head, nam);
+		retcode = FALSE;
+		unlink(nam_head);
+	}
 	return retcode;
 }
 #endif /* HAVE_ISPELL */
@@ -643,12 +658,12 @@ tin_done(
 	 * chance to try again
 	 */
 	if (!no_write) {
-		i = 3; /* max retries */
-		while (i--) {
+		i = (read_newsrc_lines <= 0L ? 2 : 4); /* max retries */
+		while (--i) {
 			wrote_newsrc_lines = write_newsrc();
 			if ((wrote_newsrc_lines >= 0L) && (wrote_newsrc_lines >= read_newsrc_lines)) {
 				if (/* !batch_mode || */ verbose)
-					wait_message(0, _(txt_newsrc_saved));
+					wait_message(0, _(txt_newsrc_saved), newsrc);
 				break;
 			}
 
@@ -663,7 +678,7 @@ tin_done(
 				break;
 			}
 
-			if (!batch_mode) {
+			if (i && !batch_mode) {
 				if (prompt_yn(_(txt_newsrc_again), TRUE) <= 0)
 					break;
 			}
@@ -674,6 +689,17 @@ tin_done(
 #ifdef HAVE_MH_MAIL_HANDLING
 		write_mail_active_file();
 #endif /* HAVE_MH_MAIL_HANDLING */
+
+		if (unlink(local_motd_file) != 0) { /* ensure it will be recreated (even if started with -Q) */
+			switch (errno) {
+				case ENOENT: /* missing file is ok */
+					break;
+
+				default:
+					perror_message(_(txt_error_unlink), local_motd_file);
+					break;
+			}
+		}
 	}
 
 #ifdef XFACE_ABLE
@@ -773,12 +799,16 @@ my_mkdir(
 }
 
 
-void
+/*
+ * returns 0 on success and errno otherwise
+ */
+int
 rename_file(
 	const char *old_filename,
 	const char *new_filename)
 {
 	FILE *fp_old, *fp_new;
+	int rval = 0;
 #if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
 	int fd;
 	mode_t mode = (mode_t) (S_IRUSR|S_IWUSR);
@@ -787,8 +817,9 @@ rename_file(
 
 	if (unlink(new_filename) == -1) {
 		if (errno == EPERM) { /* TODO: != ENOENT ? */
+			rval = errno;
 			perror_message(_(txt_error_unlink), new_filename);
-			return;
+			return rval;
 		}
 	}
 
@@ -798,15 +829,19 @@ rename_file(
 	if (rename(old_filename, new_filename) < 0)
 #endif /* HAVE_LINK */
 	{
-		if (errno == EXDEV) {	/* create & copy file across filesystem */
-			if ((fp_old = fopen(old_filename, "r")) == NULL) {
-				perror_message(_(txt_cannot_open), old_filename);
-				return;
-			}
+		rval = errno;
+		if (errno != EXDEV) { /* ENOENT and co. */
+			perror_message(_(txt_rename_error), old_filename, new_filename);
+			return rval;
+		} else { /* create & copy file across filesystem */
+			if ((fp_old = tin_fopen(old_filename, "r")) == NULL)
+				return errno;
+
 			if ((fp_new = fopen(new_filename, "w")) == NULL) {
+				rval = errno;
 				perror_message(_(txt_cannot_open), new_filename);
 				fclose(fp_old);
-				return;
+				return rval;
 			}
 
 #if defined(HAVE_FCHMOD) || defined(HAVE_CHMOD)
@@ -833,17 +868,15 @@ rename_file(
 			fclose(fp_new);
 			fclose(fp_old);
 			errno = 0;
-		} else {
-			perror_message(_(txt_rename_error), old_filename, new_filename);
-			return;
 		}
 	}
 #ifdef HAVE_LINK
 	if (unlink(old_filename) == -1) {
+		rval = errno;
 		perror_message(_(txt_rename_error), old_filename, new_filename);
-		return;
 	}
 #endif /* HAVE_LINK */
+	return rval;
 }
 
 
@@ -1170,11 +1203,10 @@ create_index_lock_file(
 	int err;
 	time_t epoch;
 
-	if ((fp = fopen(the_lock_file, "r")) != NULL) {
+	if ((fp = tin_fopen(the_lock_file, "r")) != NULL) {
 		err = (fgets(buf, (int) sizeof(buf), fp) == NULL);
 		fclose(fp);
-		error_message(2, "%s: Already started pid=[%d] on %s", tin_progname, err ? 0 : atoi(buf), err ? "-" : buf + 9);
-
+		error_message(2, "%s: Already started pid=[%d] on %s", tin_progname, err ? 0 : s2i(buf, 0, INT_MAX), err ? "-" : buf + 9);
 #ifdef DEBUG
 		if (debug & DEBUG_MISC) {
 			if (!err)
@@ -2195,26 +2227,22 @@ random_organization(
 	if (*in_org != '/')
 		return in_org;
 
-	if ((orgfp = fopen(in_org, "r")) == NULL)
+	if ((orgfp = tin_fopen(in_org, "r")) == NULL)
 		return selorg;
 
-	/* count lines */
 	while (fgets(selorg, (int) sizeof(selorg), orgfp))
 		nool++;
 
-	if (!nool) {
-		fclose(orgfp);
-		return selorg;
+	if (nool) {
+		rewind(orgfp);
+
+		srndm();
+		sol = rndm() % nool + 1;
+		nool = 0;
+
+		while ((nool != sol) && (fgets(selorg, (int) sizeof(selorg), orgfp)))
+			nool++;
 	}
-
-	rewind(orgfp);
-
-	srndm();
-	sol = rndm() % nool + 1;
-	nool = 0;
-
-	while ((nool != sol) && (fgets(selorg, (int) sizeof(selorg), orgfp)))
-		nool++;
 
 	fclose(orgfp);
 	return selorg;
@@ -2230,12 +2258,11 @@ read_input_history_file(
 	char buf[HEADER_LEN];
 	int his_w = 0, his_e = 0, his_free = 0;
 
-	/* this is usually .tin/.inputhistory */
-	if ((fp = fopen(local_input_history_file, "r")) == NULL)
+	if ((fp = tin_fopen(local_input_history_file, "r")) == NULL)
 		return;
 
 	if (!batch_mode)
-		wait_message(0, _(txt_reading_input_history_file));
+		wait_message(0, _(txt_reading_input_history_file), local_input_history_file);
 
 	/* to be safe ;-) */
 	memset((void *) input_history, 0, sizeof(input_history));
@@ -2271,7 +2298,7 @@ read_input_history_file(
 	fclose(fp);
 
 	if (cmd_line)
-		printf("\r\n");
+		my_printf("\r\n");
 }
 
 
@@ -4006,9 +4033,9 @@ tin_version_info(
 #endif /* HAVE_LIB_PCRE2 */
 
 	fprintf(fp, _(txt_tin_version), PRODUCT, VERSION, RELEASEDATE, RELEASENAME);
-#if defined(__DATE__) && defined(__TIME__)
+#if defined(__DATE__) && defined(__TIME__) && !defined(REPRODUCIBLE_BUILD)
 	fprintf(fp, " %s %s", __DATE__, __TIME__);
-#endif /* __DATE__ && __TIME__ */
+#endif /* __DATE__ && __TIME__ && !REPRODUCIBLE_BUILD */
 	fprintf(fp, "\n");
 	wlines++;
 
@@ -4429,7 +4456,7 @@ make_connection_page(
 #		endif /* HAVE_LIB_LIBTLS */
 			} else
 #	else
-			{
+		{
 #	endif /* NNTPS_ABLE */
 			{
 				fprintf(fp, _(txt_conninfo_nntp), can_post ? _(txt_conninfo_rw) : _(txt_conninfo_ro));
@@ -4496,10 +4523,14 @@ void
 srndm(
 	void)
 {
- 	time_t t = time(NULL);
+	time_t t;
 
- 	if (t >= 1041379200) /* 2003-01-01 00:00:00 GMT */
- 		t -= 1041379200;
+	if ((t = time(NULL)) == (time_t) -1)
+		t = (time_t) getpid();
+	else {
+		if (t >= 1041379200) /* 2003-01-01 00:00:00 GMT */
+			t -= 1041379200;
+	}
 
 #ifdef HAVE_LRAND48
 	srand48(t);
@@ -4510,4 +4541,62 @@ srndm(
 	srand((unsigned int) t);
 #	endif /* HAVE_RANDOM */
 #endif /* HAVE_LRAND48 */
+}
+
+
+/*
+ * opens pathname with mode if it is S_IFREG or S_IFLNK
+ * if mode is "r" its size needs to be > 0L
+ * returns FILE* on success or NULL on failure
+ * if NULL is returned and errno is 0, either had a zero size
+ * or was neither S_IFDIR, S_IFLNK or S_IFREG.
+ */
+FILE *
+tin_fopen(
+	const char *pathname,
+	const char *mode)
+{
+	FILE *fp;
+	int serrno = 0;
+	struct stat st;
+
+	if ((fp = fopen(pathname, mode)) != NULL) {
+		if (fstat(fileno(fp), &st) != -1) {
+			if (st.st_mode & (S_IFREG | S_IFLNK)) {
+				if (mode[0] == 'r' && mode[1] == '\0' && st.st_size <= 0L) {
+#ifdef DEBUG
+					if (debug & DEBUG_MISC)
+						error_message(2, "Skipping empty file: %s", pathname);
+#endif /* DEBUG */
+				} else
+					return fp;
+			} else
+				serrno = errno;
+		} else
+			serrno = errno;
+		if (fclose(fp) != 0) {
+			if (!serrno)
+				serrno = errno;
+		}
+	} else
+		serrno = errno;
+
+
+	switch (serrno) {
+		case 0:
+			break;
+
+		case ENOENT: /* a missing file is usually ok */
+#ifdef DEBUG
+			if (debug & DEBUG_MISC)
+				perror_message(_(txt_cannot_open), pathname);
+#endif /* DEBUG */
+			break;
+
+		default:
+			perror_message(_(txt_cannot_open), pathname);
+			break;
+	}
+	errno = serrno;
+	return NULL;
 }

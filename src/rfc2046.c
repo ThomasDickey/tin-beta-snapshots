@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2024-01-16
+ *  Updated   : 2024-05-12
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -88,8 +88,6 @@ static const char xtbl[] = {
 };
 
 #define XVAL(c) (xtbl[(unsigned int) (c)])
-/* C90: isxdigit(3) */
-#define IS_XDIGIT(c) (((c) >= '0' && (c) <= '9') || ((c) >= 'a' && (c) <= 'f') || ((c) >= 'A' && (c) <= 'F'))
 #define PARAM_SEP	"; \n"
 /* default parameters for Content-Type */
 #define CT_DEFPARMS	"charset=US-ASCII"
@@ -480,7 +478,7 @@ parse_params(
 
 		/* RFC 2231 Parameter Value Continuations */
 		if ((contp = strchr(name, '*')) && *(contp + 1) >= '0' && *(contp + 1) <= '9') {
-			idx = atoi(contp + 1);
+			idx = s2i(contp + 1, 0, INT_MAX);
 			*contp = '\0';
 		}
 
@@ -1588,8 +1586,9 @@ open_art_fp(
 
 		snprintf(buf, sizeof(buf), "ARTICLE %"T_ARTNUM_PFMT, art);
 		art_fp = nntp_command(buf, OK_ARTICLE, NULL, 0);
-	} else {
+	} else
 #endif /* NNTP_ABLE */
+	{
 		char buf[PATH_LEN];
 		char pbuf[PATH_LEN];
 		char fbuf[NAME_LEN + 1];
@@ -1601,10 +1600,8 @@ open_art_fp(
 		snprintf(fbuf, sizeof(fbuf), "%"T_ARTNUM_PFMT, art);
 		joinpath(pbuf, sizeof(pbuf), buf, fbuf);
 
-		art_fp = fopen(pbuf, "r");
-#ifdef NNTP_ABLE
+		art_fp = tin_fopen(pbuf, "r");
 	}
-#endif /* NNTP_ABLE */
 
 	return art_fp;
 }

@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2023-11-24
+ *  Updated   : 2024-05-13
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -439,7 +439,7 @@ word_highlight_string(
 
 	/*
 	 * In a multibyte locale we get byte offsets instead of character offsets
-	 * calculate now the correct correct starting column
+	 * calculate now the correct starting column
 	 */
 	if (col > 0 && col < (LEN / 2)) {
 		MoveCursor(row, 0);
@@ -467,10 +467,10 @@ word_highlight_string(
 #		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	/* safegurad against bogus regexps */
-	if ((tmp[0] == '*' && tmp[size - 1] == '*') ||
+	if (size > 1 && ((tmp[0] == '*' && tmp[size - 1] == '*') ||
 		 (tmp[0] == '/' && tmp[size - 1] == '/') ||
 		 (tmp[0] == '_' && tmp[size - 1] == '_') ||
-		 (tmp[0] == '-' && tmp[size - 1] == '-')) {
+		 (tmp[0] == '-' && tmp[size - 1] == '-'))) {
 
 		switch (tinrc.word_h_display_marks) {
 			case 0:
@@ -864,10 +864,13 @@ my_innstr(
 	size_t len = 0;
 	wchar_t *buffer;
 
-	buffer = my_malloc(sizeof(wchar_t) * (n + 1));
+	if (n < 0)
+		return len;
+
+	buffer = my_malloc(sizeof(wchar_t) * (size_t) (n + 1));
 
 	if (innwstr(buffer, n) != ERR) {
-		if ((len = wcstombs(str, buffer, 2 * n)) == (size_t) (-1))
+		if ((len = wcstombs(str, buffer, (size_t) (2 * n))) == (size_t) (-1))
 			len = 0;
 		str[len] = '\0';
 	}

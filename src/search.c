@@ -456,12 +456,11 @@ author_search(
 	char *searchbuf)
 {
 	char *buf, *tmp;
+	int len;
 
 	if (arts[i].name == NULL)
 		tmp = my_strdup(arts[i].from);
 	else {
-		int len;
-
 		len = snprintf(NULL, 0, "%s <%s>", arts[i].name, arts[i].from);
 		tmp = my_malloc(++len);
 		snprintf(tmp, len, "%s <%s>", arts[i].name, arts[i].from);

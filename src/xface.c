@@ -3,7 +3,7 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2024-02-27
+ *  Updated   : 2024-05-20
  *  Notes     :
  *
  * Copyright (c) 2003-2024 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
@@ -145,11 +145,12 @@ slrnface_start(
 		}
 	}
 	free(fifo);
-	if ((n = snprintf(NULL, 0, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) getpid())) < 0)
+	pid = getpid();
+	if ((n = snprintf(NULL, 0, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) pid)) < 0)
 		return;
 	pathlen = (size_t) n + 1;
 	fifo = my_malloc(pathlen);
-	if (snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) getpid()) != n) {
+	if (snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) pid) != n) {
 		error_message(2, "%s", _(txt_xface_error_construct_fifo_name));
 		unlink(fifo);
 		free(fifo);
@@ -231,7 +232,7 @@ slrnface_start(
 						break;
 
 					default:
-						message = _(txt_xface_msg_unknown_error);
+						message = _(txt_unknown_error);
 				}
 				if (message)
 					error_message(2, _(txt_xface_error_finally_failed), message);

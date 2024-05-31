@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2024-03-21
+ *  Updated   : 2024-05-05
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -333,16 +333,11 @@ read_filter_file(
 	static t_bool first_read = TRUE;
 	struct t_version *upgrade = NULL;
 
-	if ((fp = fopen(file, "r")) == NULL) {
-#ifdef DEBUG
-		if (debug & DEBUG_FILTER)
-			perror_message(_(txt_cannot_open), file);
-#endif /* DEBUG */
+	if ((fp = tin_fopen(file, "r")) == NULL)
 		return FALSE;
-	}
 
 	if (!batch_mode || verbose)
-		wait_message(0, _(txt_reading_filter_file));
+		wait_message(0, _(txt_reading_filter_file), file);
 
 	(void) time(&current_secs);
 
@@ -433,13 +428,13 @@ read_filter_file(
 					if (ptr && !expired_time) {
 						if (gnksa[0] == '<') {
 							ptr[i].gnksa_cmp = FILTER_LINES_LT;
-							ptr[i].gnksa_num = atoi(&gnksa[1]);
+							ptr[i].gnksa_num = s2i(&gnksa[1], GNKSA_OK, GNKSA_MISSING_REALNAME);
 						} else if (gnksa[0] == '>') {
 							ptr[i].gnksa_cmp = FILTER_LINES_GT;
-							ptr[i].gnksa_num = atoi(&gnksa[1]);
+							ptr[i].gnksa_num = s2i(&gnksa[1], GNKSA_OK, GNKSA_MISSING_REALNAME);
 						} else {
 							ptr[i].gnksa_cmp = FILTER_LINES_EQ;
-							ptr[i].gnksa_num = atoi(gnksa);
+							ptr[i].gnksa_num = s2i(gnksa, GNKSA_OK, GNKSA_MISSING_REALNAME);
 						}
 					}
 				}
@@ -450,13 +445,13 @@ read_filter_file(
 					if (ptr && !expired_time) {
 						if (buffer[0] == '<') {
 							ptr[i].lines_cmp = FILTER_LINES_LT;
-							ptr[i].lines_num = atoi(&buffer[1]);
+							ptr[i].lines_num = s2i(&buffer[1], 0, INT_MAX);
 						} else if (buffer[0] == '>') {
 							ptr[i].lines_cmp = FILTER_LINES_GT;
-							ptr[i].lines_num = atoi(&buffer[1]);
+							ptr[i].lines_num = s2i(&buffer[1], 0, INT_MAX);
 						} else {
 							ptr[i].lines_cmp = FILTER_LINES_EQ;
-							ptr[i].lines_num = atoi(buffer);
+							ptr[i].lines_num = s2i(buffer, 0, INT_MAX);
 						}
 					}
 				}
@@ -567,26 +562,18 @@ read_filter_file(
 				 * read score for rule
 				 */
 				if (match_string(buf + 1, "core=", scbuf, PATH_LEN)) {
-					score = atoi(scbuf);
+					score = s2i(scbuf, -SCORE_MAX, SCORE_MAX);
 #ifdef DEBUG
 					if (debug & DEBUG_FILTER)
 						debug_print_file("FILTER", "score=[%d]", score);
 #endif /* DEBUG */
 					if (ptr && !expired_time) {
-						if (score > SCORE_MAX)
-							score = SCORE_MAX;
-						else {
-							if (score < -SCORE_MAX)
-								score = -SCORE_MAX;
+						if (!score) {
+							if (!strncasecmp(scbuf, "kill", 4))
+								score = tinrc.score_kill;
 							else {
-								if (!score) {
-									if (!strncasecmp(scbuf, "kill", 4))
-										score = tinrc.score_kill;
-									else {
-										if (!strncasecmp(scbuf, "hot", 3))
-											score = tinrc.score_select;
-									}
-								}
+								if (!strncasecmp(scbuf, "hot", 3))
+									score = tinrc.score_select;
 							}
 						}
 						ptr[i].score = score;
@@ -1348,7 +1335,7 @@ filter_menu(
 	}
 
 	if (*ptr)
-		rule.lines_num = abs(atoi(ptr));
+		rule.lines_num = s2i(ptr, 0, INT_MAX);
 
 	if (rule.lines_num && rule.lines_cmp == FILTER_LINES_NO)
 		rule.lines_cmp = FILTER_LINES_EQ;
@@ -1371,7 +1358,7 @@ filter_menu(
 	/* check if a score has been entered */
 	if (buf[0] != '\0')
 		/* use entered score */
-		rule.score = atoi(buf);
+		rule.score = s2i(buf, -SCORE_MAX, SCORE_MAX);
 	else {
 		/* use default score */
 		if (type == GLOBAL_MENU_FILTER_KILL)
@@ -2135,6 +2122,15 @@ filter_articles(
 								if (isspace((unsigned char) *s))
 									skip = FALSE;
 								s++;
+							}
+							if (e == k) {
+#ifdef DEBUG
+								if (debug & DEBUG_FILTER)
+									debug_print_file("FILTER", _(txt_filter_error_skipping_xref_filter));
+#endif /* DEBUG */
+								error = TRUE;
+								free(k);
+								break;
 							}
 							*--e = '\0';
 						} else {

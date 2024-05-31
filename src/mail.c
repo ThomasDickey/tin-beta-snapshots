@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2024-03-21
+ *  Updated   : 2024-05-09
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -100,7 +100,7 @@ read_mail_active_file(
 	struct t_group *ptr;
 
 	if (!batch_mode)
-		wait_message(0, _(txt_reading_mail_active_file));
+		wait_message(0, _(txt_reading_mail_active_file), mail_active_file);
 
 	/*
 	 * Open the mail active file
@@ -236,7 +236,7 @@ read_mailgroups_file(
 
 	if ((fp = open_mailgroups_fp()) != NULL) {
 		if (!batch_mode && verb)
-			wait_message(0, _(txt_reading_mailgroups_file));
+			wait_message(0, _(txt_reading_mailgroups_file), mailgroups_file);
 
 		read_groups_descriptions(fp, (FILE *) 0);
 
@@ -271,20 +271,15 @@ open_newsgroups_fp(
 
 	if (read_news_via_nntp && !read_saved_news) {
 		if (read_local_newsgroups_file) {
-			if ((result = fopen(local_newsgroups_file, "r")) != NULL) {
-				struct stat buf;
-
+			if ((result = tin_fopen(local_newsgroups_file, "r")) != NULL) {
 #	ifdef DEBUG
 				if ((debug & DEBUG_NNTP) && verbose > 1)
 					debug_print_file("NNTP", "open_newsgroups_fp Using local copy of newsgroups file");
 #	endif /* DEBUG */
-
-				if (!fstat(fileno(result), &buf)) {
-					if (buf.st_size > 0)
-						return result;
-				}
-				fclose(result);
-				unlink(local_newsgroups_file);
+				return result;
+			} else {
+				if (!errno) /* zero size file */
+					unlink(local_newsgroups_file);
 			}
 		}
 		/*

@@ -3,7 +3,7 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2023-11-15
+ *  Updated   : 2024-04-10
  *
  * Copyright (c) 1997-2024 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
@@ -209,21 +209,19 @@ tin_read(
 		return NULL;
 	}
 #	endif /* HAVE_SELECT */
+#endif /* NNTP_ABLE */
 
 	errno = 0;		/* To check errno after read, clear it here */
 
+#ifdef NNTP_ABLE
 	/*
 	 * Initially try and fit into supplied buffer
 	 */
 	if (fp == FAKE_NNTP_FP)
 		ptr = get_server(buffer, (int) len);
 	else
-		ptr = fgets(buffer, (int) len, fp);
-#else
-	errno = 0;		/* To check errno after read, clear it here */
-
-	ptr = fgets(buffer, len, fp);
 #endif /* NNTP_ABLE */
+		ptr = fgets(buffer, (int) len, fp);
 
 /* TODO: develop this next line? */
 #ifdef DEBUG

@@ -732,7 +732,7 @@ prompt_slk_response(
 		return default_func;
 	}
 
-	blen +=2;
+	blen += 2;
 	prompt_slk_message = my_malloc(blen);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	{

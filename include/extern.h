@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-26
+ *  Updated   : 2024-05-28
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>
@@ -51,6 +51,9 @@
 #ifndef KEYMAP_H
 #	include "keymap.h"
 #endif /* !KEYMAP_H */
+#ifndef TNNTPS_H
+#	include "tnntps.h"
+#endif /* !TNNTPS_H */
 
 /*
  * The prototypes bracketed by DECL_xxxx ifdef's are used to get moderately
@@ -401,6 +404,7 @@ extern char local_attributes_file[PATH_LEN];
 extern char local_config_file[PATH_LEN];
 extern char filter_file[PATH_LEN];
 extern char local_input_history_file[PATH_LEN];
+extern char local_motd_file[PATH_LEN];
 extern char local_newsgroups_file[PATH_LEN];
 extern char local_newsrctable_file[PATH_LEN];
 extern char lock_file[PATH_LEN];
@@ -824,15 +828,13 @@ extern constext txt_enter_next_unread_art[];
 extern constext txt_enter_next_unread_group[];
 extern constext txt_enter_option_num[];
 extern constext txt_enter_range[];
+extern constext txt_enter_append[];
 extern constext txt_error_approved[];
 #ifndef NDEBUG
 	extern constext txt_error_asfail[];
 #endif /* !NDEBUG */
-extern constext txt_error_bad_approved[];
-extern constext txt_error_bad_from[];
+extern constext txt_error_bad_address_in[];
 extern constext txt_error_bad_msgidfqdn[];
-extern constext txt_error_bad_replyto[];
-extern constext txt_error_bad_to[];
 #ifndef NO_LOCKING
 	extern constext txt_error_cant_unlock[];
 	extern constext txt_error_couldnt_dotlock[];
@@ -843,7 +845,9 @@ extern constext txt_error_bad_to[];
 #endif /* NNTP_ABLE && USE_ZLIB */
 extern constext txt_error_copy_fp[];
 extern constext txt_error_corrupted_file[];
-extern constext txt_error_couldnt_expand[];
+#ifdef NNTP_ABLE
+	extern constext txt_error_couldnt_expand[];
+#endif /* NNTP_ABLE */
 extern constext txt_error_fseek[];
 extern constext txt_error_followup_poster[];
 extern constext txt_error_format_string[];
@@ -885,6 +889,7 @@ extern constext txt_error_header_line_missing[];
 extern constext txt_error_header_line_not_7bit[];
 extern constext txt_error_header_line_space[];
 extern constext txt_error_header_no_name[];
+extern constext txt_error_mailgroup_no_recipient[];
 #ifndef FILE_MODE_BROKEN
 	extern constext txt_error_insecure_permissions[];
 #endif /* !FILE_MODE_BROKEN */
@@ -901,13 +906,18 @@ extern constext txt_error_header_no_name[];
 	extern constext txt_error_mime_start[];
 #endif /* DEBUG */
 extern constext txt_error_no_domain_name[];
-extern constext txt_error_no_enter_permission[];
 #ifdef NNTP_INEWS
 	extern constext txt_error_no_from[];
 #endif /* NNTP_INEWS */
-extern constext txt_error_no_read_permission[];
-extern constext txt_error_no_such_file[];
-extern constext txt_error_no_write_permission[];
+#ifdef NNTP_ABLE
+	extern constext txt_error_no_enter_permission[];
+	extern constext txt_error_no_read_permission[];
+	extern constext txt_error_no_such_file[];
+	extern constext txt_error_no_write_permission[];
+#	ifdef INET6
+		extern constext txt_error_not_ipv6_literal[];
+#	endif /* INET6 */
+#endif /* NNTP_ABLE */
 extern constext txt_error_newsgroups_poster[];
 extern constext txt_error_passwd_missing[];
 #ifdef HAVE_LIBUU
@@ -1352,9 +1362,11 @@ extern constext txt_no_viewer_found[];
 extern constext txt_none[];
 extern constext txt_not_exist[];
 extern constext txt_not_in_active_file[];
-extern constext txt_nrctbl_create[];
-extern constext txt_nrctbl_default[];
-extern constext txt_nrctbl_info[];
+#ifdef NNTP_ABLE
+	extern constext txt_nrctbl_create[];
+	extern constext txt_nrctbl_default[];
+	extern constext txt_nrctbl_info[];
+#endif /* NNTP_ABLE */
 extern constext txt_null[];
 extern constext txt_only[];
 extern constext txt_option_not_enabled[];
@@ -1367,8 +1379,8 @@ extern constext txt_pcre_error_num[];
 	extern constext txt_pcre_error_text[];
 #endif /* !HAVE_LIB_PCRE2 */
 #ifdef NNTP_ABLE
-#	ifdef DEBUG
 	extern constext txt_port_not_numeric[];
+#	ifdef DEBUG
 	extern constext txt_port_not_numeric_in[];
 #	endif /* DEBUG */
 #endif /* NNTP_ABLE */
@@ -1547,13 +1559,11 @@ extern constext txt_tinrc_info_in_last_line[];
 extern constext txt_tinrc_newnews[];
 #if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
 	extern constext txt_tls_handshake_done[];
-	extern constext txt_tls_handshake_failed[];
 #	ifdef HAVE_LIB_LIBTLS
 	extern constext txt_retr_cipher_failed[];
 	extern constext txt_retr_issuer_failed[];
 	extern constext txt_retr_subject_failed[];
 	extern constext txt_retr_version_failed[];
-	extern constext txt_tls_unknown_error[];
 #	endif /* HAVE_LIB_LIBTLS */
 #	ifdef HAVE_LIB_GNUTLS
 	extern constext txt_tls_handshake_failed_with_err_num[];
@@ -1564,6 +1574,9 @@ extern constext txt_tinrc_newnews[];
 #	if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL)
 	extern constext txt_tls_peer_verify_failed_continuing[];
 #	endif /* HAVE_LIB_GNUTLS || HAVE_LIB_OPENSSL */
+#	if defined(USE_LIBTLS) || defined(USE_OPENSSL)
+	extern constext txt_tls_handshake_failed[];
+#	endif /* USE_LIBTLS || USE_OPENSSL */
 #endif /* NNTP_ABLE && NNTPS_ABLE */
 extern constext txt_toggled_high[];
 extern constext txt_toggled_rot13[];
@@ -1580,6 +1593,9 @@ extern constext txt_type_h_for_help[];
 extern constext txt_unlimited_time[];
 extern constext txt_unchanged[];
 extern constext txt_unknown[];
+#if defined(XFACE_ABLE) || (defined(NNTPS_ABLE) && defined(HAVE_LIB_LIBTLS))
+	extern constext txt_unknown_error[];
+#endif /* XFACE_ABLE || (NNTPS_ABLE && HAVE_LIB_LIBTLS) */
 extern constext txt_unread[];
 extern constext txt_unsubscribe_pattern[];
 extern constext txt_unsubscribed_num_groups[];
@@ -1719,7 +1735,6 @@ extern constext txt_x_resp[];
 	extern constext txt_xface_msg_fork_failed[];
 	extern constext txt_xface_msg_no_controlling_terminal[];
 	extern constext txt_xface_msg_no_width_and_height_avail[];
-	extern constext txt_xface_msg_unknown_error[];
 	extern constext txt_xface_msg_windowid_not_found[];
 	extern constext txt_xface_readme[];
 #endif /* XFACE_ABLE */
@@ -1935,7 +1950,7 @@ enum {
 extern int hist_last[HIST_MAXNUM + 1];
 extern int hist_pos[HIST_MAXNUM + 1];
 extern char *input_history[HIST_MAXNUM + 1][HIST_SIZE + 1];
-
+extern long motd_hash;
 
 /* defines for GNKSA checking */
 /* success/undefined failure */

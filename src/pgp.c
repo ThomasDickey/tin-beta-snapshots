@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2023-12-05
+ *  Updated   : 2024-05-24
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2024 Steven J. Madsen <steve@erinet.com>
@@ -171,18 +171,19 @@ join_files(
 {
 	FILE *art, *header, *text;
 
-	if ((header = fopen(hdr, "r")) != NULL) {
-		if ((text = fopen(ct, "r")) != NULL) {
-			if ((art = fopen(file, "w")) != NULL) {
-				if (copy_fp(header, art))
-					copy_fp(text, art);
-				fclose(art);
-			}
-			fclose(text);
-		}
+	if ((header = tin_fopen(hdr, "r")) == NULL)
+		return;
+	if ((text = tin_fopen(ct, "r")) == NULL) {
 		fclose(header);
+		return;
 	}
-
+	if ((art = fopen(file, "w")) != NULL) {
+		if (copy_fp(header, art) == 0)
+			copy_fp(text, art);
+		fclose(art);
+	}
+	fclose(text);
+	fclose(header);
 	unlink(hdr);
 	unlink(pt);
 	unlink(ct);
@@ -209,7 +210,7 @@ split_file(
 	snprintf(tmp, sizeof(tmp), CIPHERTEXT, (long) process_id);
 	joinpath(ct, sizeof(ct), tmpdir, tmp);
 
-	if ((art = fopen(file, "r")) == NULL)
+	if ((art = tin_fopen(file, "r")) == NULL)
 		return;
 
 	mask = umask((mode_t) (S_IRWXO|S_IRWXG));
@@ -319,7 +320,7 @@ pgp_append_public_key(
 	sh_format(cmd, sizeof(cmd), APPEND_KEY);
 	if (invoke_cmd(cmd)) {
 		if ((fp = fopen(file, "a")) != NULL) {
-			if ((key = fopen(keyfile, "r")) != NULL) {
+			if ((key = tin_fopen(keyfile, "r")) != NULL) {
 				fputc('\n', fp);			/* Add a blank line */
 				copy_fp(key, fp);			/* and copy in the key */
 				fclose(key);
@@ -448,6 +449,7 @@ pgp_check_article(
 {
 	FILE *art;
 	char artfile[PATH_LEN], buf[LEN], *cmd;
+	int n;
 	size_t len;
 	t_bool pgp_signed = FALSE;
 	t_bool pgp_key = FALSE;
@@ -469,16 +471,15 @@ pgp_check_article(
 		return FALSE;
 	}
 
-	if (fgets(buf, LEN, artinfo->raw) != NULL) {		/* Copy the body whilst looking for SIG/KEY tags */
-		while (!feof(artinfo->raw)) {
+	while (!feof(artinfo->raw) && !ferror(artinfo->raw)) {
+		if (fgets(buf, LEN, artinfo->raw) != NULL) {
 			if (!pgp_signed && !strcmp(buf, PGP_SIG_TAG))
 				pgp_signed = TRUE;
 			if (!pgp_key && !strcmp(buf, PGP_KEY_TAG))
 				pgp_key = TRUE;
 			fputs(buf, art);
-			if (fgets(buf, LEN, artinfo->raw) == NULL)
-				break;
-		}
+		} else
+			break;
 	}
 	fclose(art);
 
@@ -493,12 +494,15 @@ pgp_check_article(
 		/*
 		 * We don't use sh_format here else the redirection gets misquoted
 		 */
-		len = snprintf(NULL, 0, CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT);
-		cmd = my_malloc(++len);
-		snprintf(cmd, len, CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT);
-		invoke_cmd(cmd);
-		free(cmd);
-		my_printf("\n");
+		if ((n = snprintf(NULL, 0, CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT)) > 0) {
+			len = (size_t) n + 1;
+			cmd = my_malloc(len);
+			if (snprintf(cmd, len, CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT) == n)
+				invoke_cmd(cmd);
+			/* TODO: useful error message */
+			free(cmd);
+			my_printf("\n");
+		}
 		Raw(TRUE);
 	}
 #	ifndef USE_CURSES
@@ -513,9 +517,9 @@ pgp_check_article(
 	if (pgp_key) {
 		if (prompt_yn(_(txt_pgp_add), FALSE) == 1) {
 			Raw(FALSE);
-			len = snprintf(NULL, 0, ADD_KEY, PGPNAME, pgpopts, artfile);
-			len <<= 1; /* double size for quoting */
-			cmd = my_malloc(++len);
+			n = snprintf(NULL, 0, ADD_KEY, PGPNAME, pgpopts, artfile);
+			len = (size_t) (2 * n) + 1;  /* double size for quoting */
+			cmd = my_malloc(len);
 			sh_format(cmd, len, ADD_KEY, PGPNAME, pgpopts, artfile);
 			invoke_cmd(cmd);
 			free(cmd);

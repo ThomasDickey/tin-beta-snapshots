@@ -4,7 +4,7 @@
  *  Module    : parsedate.y
  *  Author    : S. Bellovin, R. $alz, J. Berets, P. Eggert
  *  Created   : 1990-08-01
- *  Updated   : 2024-01-10
+ *  Updated   : 2024-05-15
  *  Notes     : This grammar has 6 shift/reduce conflicts.
  *              Originally written by Steven M. Bellovin <smb@research.att.com>
  *              while at the University of North Carolina at Chapel Hill.
@@ -854,8 +854,9 @@ parsedate(
 
     yyInput = p;
     if (now == NULL) {
-	now = &ti;
-	(void)GetTimeInfo(&ti);
+	  now = &ti;
+	  if (GetTimeInfo(&ti) != 0)
+	    return -1;
     }
 
     tm = localtime(&now->time);

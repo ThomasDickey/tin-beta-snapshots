@@ -3,7 +3,7 @@
  *  Module    : mimetypes.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-31
- *  Updated   : 2024-03-07
+ *  Updated   : 2024-05-05
  *  Notes     : mime.types handling
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -60,13 +60,13 @@ _lookup_mimetype(
 	const char *ext,
 	t_part *part)
 {
-	FILE *fp;
+	FILE *fp = NULL;
 	const char *exts;
 	char *ptr;
 	char buf[PATH_LEN];
 	int i;
 
-	if ((fp = fopen(file, "r")) == NULL)
+	if ((fp = tin_fopen(file, "r")) == NULL)
 		return FALSE;
 
 	while ((fgets(buf, sizeof(buf), fp)) != NULL) {
@@ -137,8 +137,9 @@ _lookup_extension(
 	char *p;
 	char buf[8192];
 
-	if ((fp = fopen(file, "r")) == NULL)
+	if ((fp = tin_fopen(file, "r")) == NULL)
 		return FALSE;
+
 	while ((fgets(buf, sizeof(buf), fp)) != NULL) {
 		if (buf[0] == '#' || buf[0] == '\n' || strncmp(buf, type, strlen(type)))
 			continue;

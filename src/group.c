@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-27
+ *  Updated   : 2024-04-01
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -599,7 +599,7 @@ group_page(
 					 * tinrc.getart_limit
 					 */
 					if (cmdline.args & CMDLINE_GETART_LIMIT)
-						cmdline.args &= ~((unsigned) CMDLINE_GETART_LIMIT);
+						cmdline.args ^= CMDLINE_GETART_LIMIT;
 					ret_code = GRP_NEXTUNREAD;
 				}
 				break;
@@ -610,9 +610,9 @@ group_page(
 
 			case GROUP_TAG_PARTS: /* tag all in order */
 				if (0 <= grpmenu.curr) {
-					int old_num = num_of_tagged_arts;
-
 					if (tag_multipart((int) base[grpmenu.curr]) != 0) {
+						int old_num = num_of_tagged_arts;
+
 						/*
 						 * on success, move the pointer to the next
 						 * untagged article just for ease of use's sake
@@ -1802,13 +1802,9 @@ group_catchup(
 
 				case 1:						/* We caught up - advance group */
 					return GRP_NEXT;
-					/* NOTREACHED */
-					break;
 
 				default:					/* Just leave the group */
 					return GRP_EXIT;
-					/* NOTREACHED */
-					break;
 			}
 			/* FALLTHROUGH */
 		default:							/* Should not be here */
@@ -1827,8 +1823,9 @@ prompt_getart_limit(
 
 	clear_message();
 	if ((p = tin_getline(_(txt_enter_getart_limit), 2, NULL, 0, FALSE, HIST_OTHER)) != NULL) {
-		tinrc.getart_limit = atoi(p);
-		ret = TRUE;
+		tinrc.getart_limit = s2i(p, INT_MIN, INT_MAX);
+		if (!errno)
+			ret = TRUE;
 	}
 	clear_message();
 	return ret;

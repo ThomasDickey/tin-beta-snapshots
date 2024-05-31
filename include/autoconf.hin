@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2024-04-01
+ *  Updated   : 2024-04-08
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2024 Thomas Dickey <dickey@invisible-island.net>
@@ -242,7 +242,6 @@
 #	undef HAVE_BCOPY
 #	undef HAVE_CHMOD
 #	undef HAVE_CLOCK_GETTIME
-#	undef HAVE_DIRFD
 #	undef HAVE_EXECLP
 #	undef HAVE_FCHMOD
 #	undef HAVE_FCNTL
@@ -265,6 +264,7 @@
 #	undef HAVE_INET_ADDR
 #	undef HAVE_INET_ATON
 #	undef HAVE_INET_NTOA
+#	undef HAVE_INET_PTON
 #	undef HAVE_ISASCII
 #	undef HAVE_IS_XTERM
 #	undef HAVE_LINK
@@ -785,6 +785,11 @@
  */
 #	undef STACK_DIRECTION
 
+/* libcanlock */
+#	undef HAVE_EXPLICIT_BZERO
+#	undef HAVE_EXPLICIT_MEMSET
+#	undef HAVE_MEMSET_S
+
 /* Define if the X Window System is missing or not being used. */
 #	undef X_DISPLAY_MISSING
 
@@ -803,7 +808,7 @@
 /*
  * define if snprintf() doesn't work correctly as on SCO Openserver 5.0.7 MP5
  */
-#   undef SNPRINTF_BROKEN
+#	undef SNPRINTF_BROKEN
 
 /*
  * define if tolower() doesn't work correctly as on NEWS-OS3.3

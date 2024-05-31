@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-03-28
+.\" Updated   : 2024-05-28
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -118,12 +118,14 @@ output may be given. See also the "SECURITY" section!
 .TP 
 \fB\-f\fP\fI file\fP
 Use the specified file of subscribed to newsgroups in place of
-\fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP.
+\fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP or a file specified via
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP.
 .TP 
 \fB\-g\fP\fI server[:port]\fP
 Use the server[:port] and newsrc specified in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP. Only available when reading via
-NNTP.
+NNTP.  If you want to give a port with a plain IPv6 address, the address
+must be enclosed in square brackets.
 .TP 
 \fB\-G\fP\fI article\-limit\fP
 Limit the number of articles/group to retrieve from the server.  If
@@ -297,7 +299,12 @@ NB: With the \*(rq\fB\-n\fP\*(rq flag, only unsubscribed groups in the
 .\"
 .\"
 Command\-line options have higher priority than attributes and tinrc
-options.  Thus, command\-line option takes precedence over configured values.
+options.  Thus, command\-line option takes precedence over configured values
+with the single exception that if a port is given for the newsserver in
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP it will override any port given
+on the command\-line. The order of command\-line options is not important. If
+they are mutual exclusive the one with the highest priority will be chosen
+and a warning may be given.
 .SH USAGE
 .IX Header USAGE
 .\"
@@ -1631,7 +1638,8 @@ See also "INDEX FILES". Default is OFF.
 \fBHash algorithm for cancel\-locks (cancel_lock_algo)\fP
 Use this hash algorithm for cancel\-locks. Only available when built with
 cancel\-lock support. none disables the generation of cancel\-locks. Valid
-values are none, sha1, sha256 and sha512.  Default is sha1.
+values are none, sha1, sha256 and sha512.  Default is sha1. See also
+\fI${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret\fP in \fB\%tin\fP(5).
 .TP 
 \fBCatchup read groups when quitting (catchup_read_groups)\fP
 .\"
@@ -3447,17 +3455,22 @@ For a detailed description see \fB\%tin\fP(5).
 .PP
 
 .nf
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/motd\fP
+.fi
+.PP
+
+.nf
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog\fP
+.fi
+.PP
+
+.nf
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups\fP
 .fi
 .PP
 
 .nf
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc\fP
-.fi
-.PP
-
-.nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog\fP
 .fi
 .PP
 

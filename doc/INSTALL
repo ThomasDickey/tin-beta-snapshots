@@ -28,7 +28,7 @@ The following configure options and defines are documented in detail:
   --enable-curses                         --with-domain-name
   --enable-debug                          --with-editor
   --enable-echo                           --with-gpg
-  --enable-etiquette                      --with-included-gettext
+  --enable-etiquette
   --enable-fascist-newsadmin              --with-inews-dir
   --enable-flock                          --with-slrnface
   --enable-heapsort                       --with-iso-to-ascii
@@ -66,7 +66,7 @@ The following configure options and defines are documented in detail:
   HAVE_BROKEN_SSCANF                      DISABLE_PIPELINING
   OPTIMIZE_JUST_STAR                      MATCH_TAR_PATTERN
   MIN_COLUMNS_ON_TERMINAL                 MIN_LINES_ON_TERMINAL
-  MAXARTNUM
+  MAXARTNUM                               REPRODUCIBLE_BUILD
 
 
 Not yet documented configure options and defines:
@@ -97,6 +97,7 @@ System related:
   --with-build-libs                       --build
   --host                                  --target
   --with-pkg-config                       --with-textdomain
+  --with-libintl-prefix
 
 News machine names
 ------------------
@@ -590,10 +591,6 @@ The --enable-nls option enables Native Language Support (NLS), which allows
 tin to run in languages other than American English. Native Language
 Support is enabled by default, the --disable-nls option disables NLS.
 
---with-included-gettext (default: off)
-If NLS is enabled, the --with-included-gettext option causes the build
-procedure to prefer its copy of GNU gettext.
-
 --disable-included-msgs (default: off)
 If NLS is enabled, the --disable-included-msgs option causes the build
 procedure to assume message libraries are already installed, and to
@@ -751,6 +748,9 @@ MAXARTNUM
 experimental MAXARTNUM NNTP extension. the syntax is currently under
 discussion and may change, so use with caution.
 
+REPRODUCIBLE_BUILD
+if set, do not use __DATE__ and __TIME__ macros. This is required for 
+reproducible builds
 
 License
 -------

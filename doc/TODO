@@ -32,6 +32,11 @@ o  batch mode has several bugs
      (build_references(), filter_articles(), make_threads())
    [Urs Janssen <urs@tin.org>]
 
+o  upgrade_keymap_file() doesn't update ConfigFirstPage, HelpFirstPage,
+   PageFirstPage to GLOBAL_FIRST_PAGE; ConfigLastPage, HelpLastPage,
+   PageLastPage to GLOBAL_LAST_PAGE; PostPost to GLOBAL_POST.
+   adjust doc/keymap.sample accordingly
+
 o  add version number to other config-files (e.g. tin.defaults)
    and do the same checks as for TINRC_VERSION/tinrc. for the
    tinrc, filter and attributes file store the charset the file is written
@@ -173,7 +178,8 @@ o  add DEFAULT_SIGDASHES_REGEX and related 'M'enu-entry for signature
 o  allow remapping of the 'z' abort-key (lynx style) in wait_for_input().
 
 o  add more user defined screen layout at different levels (e.g. posting
-   history screen)
+   history screen; add a page_header_format{1,2,3} to customize
+   draw_page_header(); ...)
    (mostly done for selection, group, thread, attachment and page level)
    [20041025 Urs Janssen <urs@tin.org>]
 
@@ -589,6 +595,10 @@ o  add trn like $HIDELINE tinrc-option to skip lines matching the given
 
 Internal Changes
 ----------------
+o  check remaining fopen(..., "r") calls if they should replaced by
+   tin_fopen() to get some default error-handling and if not put a
+   comment to them.
+
 o  in ENABLE_NLS case replace PLURAL() macro with proper use of
    ngettext(3) (if found by configure) to support languages with
    more than one plural form.
@@ -683,7 +693,7 @@ o  make configure look for strrstr() in libpub & publib.h
 
 o  reorder several structs to avoid padding e.g. t_capabilities (but that's
    just used once, no big win here), t_group, ... (see gcc -Wpadded
-   and/or pahole(1))
+   and/or pahole(1)); t_config is huge due to lots of fixed length strings
    [Urs Janssen <urs@tin.org>]
 
 o  what type is base[]? (long, see memory.c:init_alloc()~102)
@@ -694,7 +704,8 @@ o  what type is base[]? (long, see memory.c:init_alloc()~102)
 o  check where PRODUCT should be used instead of tin_progname and/or "tin"
    [Urs Janssen <urs@tin.org>]
 
-o  check where NEWSRC_FILE should be used in lang.c instead of "newsrc"
+o  check where the global-var newsrc should be used in lang.c instead of
+   string "newsrc"
 
 o  check where iKeyAbort should be used instead of ESC (etc.pp.)
    (AFAICS all fixed except prompt.c and read.c/'z')
@@ -702,7 +713,7 @@ o  check where iKeyAbort should be used instead of ESC (etc.pp.)
 
 o  close potential security holes:
    - remove fixed length buffers (find_nov_file(), print_from(),
-     quote_space_to_dash(), escape_shell_meta(), backup_article(),
+     quote_space_to_dash(), escape_shell_meta(),
      build_messageid(), get_secret(), get_host_name(), get_domain_name(),
      get_fqdn(), get_user_name(), get_full_name(), build_sender(), ...)
    - change all system()/popen() calls to fork() and exec() calls
@@ -714,6 +725,8 @@ o  close potential security holes:
                                opendir()/t_open()
    - check getenv() results before using it
    - check where my_strncpy() or STRCPY() should be used
+   - check where s2i() or strtol(...,10) with errno checking should be used
+     instead of ato[il]()
    [Urs Janssen <urs@tin.org>]
 
 o  split tin.h/proto.h for better dependencies in Makefile
@@ -758,6 +771,9 @@ o  too much code is compiled when configured NO_POSTING or without NNTP
 
 o  replace rewind(stream) with fseek(stream, 0L, SEEK_SET) to be able
    to handle errors
+
+o  as rename_file() and copy_fp() now return errno (or 0),
+   check where we can make use of it for a more fine grained error handling.
 
 Unicode
 -------
@@ -1017,20 +1033,11 @@ o  remove hard coded keys (eg. 'q') from txt_filter_global_rules,
 o  add PGP_INCLUDE_KEY to pgp_mail_keys?
    [20050426 Urs Janssen <urs@tin.org>]
 
-o  'article loss' reported in
-   <nntp://news.tin.org/20020915165856.GA1541@martinkl.dialup.fu-berlin.de>
-
 o  trn and perls Net::NNTP::Auth use ~/.nntpauth (format is
    "^server\s+user\s+password"), shall we also try ~/.nntpauth if we can't
    find a matching entry in ~/.newsauth? and should we look for
    ${TIN_HOMEDIR:-"$HOME"}/.tin/.newsauth if ~/.newsauth is not found?
    [20040128 Urs Janssen <urs@tin.org>]
-
-o  rework port in newsauth-, newsrctable-file and -g to allow
-   IPv6-addresses (in brackets?)
-   [implemented but without IPv6-address support. precedence is
-    [high] newsrctable, -p, -g, -T (563), $NNTPORT, 119 [low]]
-   [20140504 Urs Janssen <urs@tin.org>]
 
 o  what todo if in a CTE: x-uue the CD: filename differs from the one given
    in the begin line? IMHO we should use the one from the begin line for
@@ -1057,8 +1064,6 @@ o  commas in real-name might cause problems in mail-replies
    which is 'last@localhost,user@example.com' should we try to fix things and
    quote the realname part?
    [20021007 Urs Janssen <urs@tin.org>]
-
-o  update gettext stuff to > gettext-0.12.1 (or drop it?)
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file

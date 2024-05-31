@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2024-03-13
+ *  Updated   : 2024-05-13
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -84,103 +84,122 @@ read_newsauth_file(
 	char filename[PATH_LEN];
 	char line[PATH_LEN];
 	int found = 0;
+#	ifndef FILE_MODE_BROKEN
 	int fd;
 	struct stat statbuf;
+#	endif /* !FILE_MODE_BROKEN */
 
 	joinpath(filename, sizeof(filename), homedir, ".newsauth");
 
-	if ((fp = fopen(filename, "r"))) {
-		if ((fd = fileno(fp)) == -1) {
-			fclose(fp);
-			return FALSE;
-		}
-		if (fstat(fd, &statbuf) == -1) {
-			fclose(fp);
-			return FALSE;
-		}
+	if ((fp = tin_fopen(filename, "r")) == NULL)
+		return FALSE;
 
 #	ifndef FILE_MODE_BROKEN
-		if (S_ISREG(statbuf.st_mode) && (statbuf.st_mode|S_IRUSR|S_IWUSR) != (S_IRUSR|S_IWUSR|S_IFREG)) {
-			error_message(4, _(txt_error_insecure_permissions), filename, statbuf.st_mode);
-			/*
-			 * TODO: fix permissions?
-			 * #ifdef HAVE_FCHMOD
-			 *  fchmod(fd, S_IRUSR|S_IWUSR);
-			 * #else
-			 * #	ifdef HAVE_CHMOD
-			 *  chmod(filename, S_IRUSR|S_IWUSR);
-			 * #	endif
-			 * #endif
-			 */
-		}
+	if ((fd = fileno(fp)) == -1) {
+		fclose(fp);
+		return FALSE;
+	}
+
+	if (fstat(fd, &statbuf) == -1) {
+		fclose(fp);
+		return FALSE;
+	}
+
+	if (S_ISREG(statbuf.st_mode) && (statbuf.st_mode|S_IRUSR|S_IWUSR) != (S_IRUSR|S_IWUSR|S_IFREG)) {
+		error_message(4, _(txt_error_insecure_permissions), filename, statbuf.st_mode);
+		/*
+		 * TODO: fix permissions?
+		 * #ifdef HAVE_FCHMOD
+		 *  fchmod(fd, S_IRUSR|S_IWUSR);
+		 * #else
+		 * #	ifdef HAVE_CHMOD
+		 *  chmod(filename, S_IRUSR|S_IWUSR);
+		 * #	endif
+		 * #endif
+		 */
+	}
 #	endif /* !FILE_MODE_BROKEN */
 
-		/*
-		 * Search through authorization file for correct NNTP server
-		 * File has format: 'nntp-server' 'password' ['username']
-		 */
-		while (fgets(line, sizeof(line), fp) != NULL) {
-			/* strip trailing newline character */
-			if ((ptr = strchr(line, '\n')) != NULL)
-				*ptr = '\0';
+	/*
+	 * Search through authorization file for correct NNTP server
+	 * File has format: 'nntp-server' 'password' ['username']
+	 */
+	while (fgets(line, sizeof(line), fp) != NULL) {
+		/* strip trailing newline character */
+		if ((ptr = strchr(line, '\n')) != NULL)
+			*ptr = '\0';
 
-			/* Get server from 1st part of the line */
-			ptr = strpbrk(line, " \t");
+		/* Get server from 1st part of the line */
+		ptr = strpbrk(line, " \t");
 
-			if (ptr == NULL || *line == '#')		/* comment or no passwd, no auth, skip */
-				continue;
+		if (ptr == NULL || *line == '#')		/* comment or no passwd, no auth, skip */
+			continue;
 
-			*ptr++ = '\0';		/* cut off server part */
+		*ptr++ = '\0';		/* cut off server part */
 
-			/* allow ":port" suffix in .newsauth - no IPv6-address support yet */
-			{
-				char *p;
-				char hn[262]; /* [^\W_]{1,255}(:\d{,5})? */
+		/* allow ":port" suffix in .newsauth */
+		{
+			char *p;
+			char hn[262]; /* [^\W_]{1,255}(:\d{,5})? */
 
-				if ((p = strchr(line, ':')) != NULL) {
-					if (strrchr(line, ':') == p) {
-						snprintf(hn, 262, "%s:%u", server, nntp_tcp_port);
-						if ((strcasecmp(line, hn)))
-							continue;
-					}
-				} else {
-					if ((strcasecmp(line, server)))
+			if ((p = strchr(line, ':')) != NULL) {
+				if (*line != '[' && strrchr(line, ':') == p) { /* exact 1 x ':' must be [name|ipv4]:port */
+					snprintf(hn, sizeof(hn), "%s:%u", server, nntp_tcp_port);
+					if ((strcasecmp(line, hn)))
 						continue;
+				} else { /* "[ipv6]"[:port] */
+					char *q;
+
+					if (*line == '[' && (q = strrchr(line, ']')) != NULL) {
+						if ((p = strchr(line, ':')) != NULL) {
+							if (p > q) /* not an IPv6 */
+								continue;
+						}
+						if ((p = strchr(q, ':')) != NULL) {
+							if (p == q + 1) {
+								snprintf(hn, sizeof(hn), "[%s]:%u", server, nntp_tcp_port);
+								if ((strcasecmp(line, hn)))
+									continue;
+							}
+						}
+					}
 				}
+			} else {
+				if ((strcasecmp(line, server)))
+					continue;
 			}
-
-			/* Get password from 2nd part of the line */
-			while (*ptr == ' ' || *ptr == '\t')
-				ptr++;	/* skip any blanks */
-
-			_authpass = ptr;
-
-			if (*_authpass == '"') {	/* skip "embedded" password string */
-				ptr = strrchr(_authpass, '"');
-				if ((ptr != NULL) && (ptr > _authpass)) {
-					_authpass++;
-					*ptr++ = '\0';	/* cut off trailing " */
-				} else	/* no matching ", proceed as normal */
-					ptr = _authpass;
-			}
-
-			/* Get user from 3rd part of the line */
-			ptr = strpbrk(ptr, " \t");	/* find next separating blank */
-
-			if (ptr != NULL) {	/* a 3rd argument follows */
-				while (*ptr == ' ' || *ptr == '\t')	/* skip any blanks */
-					*ptr++ = '\0';
-				if (*ptr != '\0')	/* if it is not just empty */
-					strcpy(authuser, ptr);	/* so will replace default user */
-			}
-			strcpy(authpass, _authpass);
-			found++;
-			break;	/* if we end up here, everything seems OK */
 		}
-		fclose(fp);
-		return (found > 0);
+
+		/* Get password from 2nd part of the line */
+		while (*ptr == ' ' || *ptr == '\t')
+			ptr++;	/* skip any blanks */
+
+		_authpass = ptr;
+
+		if (*_authpass == '"') {	/* skip "embedded" password string */
+			ptr = strrchr(_authpass, '"');
+			if ((ptr != NULL) && (ptr > _authpass)) {
+				_authpass++;
+				*ptr++ = '\0';	/* cut off trailing " */
+			} else	/* no matching ", proceed as normal */
+				ptr = _authpass;
+		}
+
+		/* Get user from 3rd part of the line */
+		ptr = strpbrk(ptr, " \t");	/* find next separating blank */
+
+		if (ptr != NULL) {	/* a 3rd argument follows */
+			while (*ptr == ' ' || *ptr == '\t')	/* skip any blanks */
+				*ptr++ = '\0';
+			if (*ptr != '\0')	/* if it is not just empty */
+				strcpy(authuser, ptr);	/* so will replace default user */
+		}
+		strcpy(authpass, _authpass);
+		found++;
+		break;	/* if we end up here, everything seems OK */
 	}
-	return FALSE;
+	fclose(fp);
+	return (found > 0);
 }
 
 
@@ -603,14 +622,14 @@ sasl_auth(
 
 	/* set required props  ... see also callback() */
 #if 0
-	if (user && sasl_prop & SASL_NEED_AUTHZID) /* authorization identity, usually not used with NNTP, but GSSAPI? */
+	if (user && (sasl_prop & SASL_NEED_AUTHZID)) /* authorization identity, usually not used with NNTP, but GSSAPI? */
 		gsasl_property_set(session, GSASL_AUTHZID, user);
 #endif /* 0 */
 
-	if (user && sasl_prop & SASL_NEED_AUTHID)	/* authentication identity */
+	if (user && (sasl_prop & SASL_NEED_AUTHID))	/* authentication identity */
 		gsasl_property_set(session, GSASL_AUTHID, user);
 
-	if (pass && sasl_prop & SASL_NEED_PASSWORD)	/* password of the authentication identity */
+	if (pass && (sasl_prop & SASL_NEED_PASSWORD))	/* password of the authentication identity */
 		gsasl_property_set(session, GSASL_PASSWORD, pass);
 
 	if (sasl_prop & SASL_NEED_ANONYMOUS_TOKEN)
@@ -752,16 +771,16 @@ static char *
 prompt_for_authid(
 	char *authuser
 ) {
-	char *authid = my_malloc(128);
+	char *authid;
+	size_t maxlen = 255;
 #	ifdef USE_CURSES
 	int state = RawState();
-#	endif /* USE_CURSES */
 
-#	ifdef USE_CURSES
 	Raw(TRUE);
 #	endif /* USE_CURSES */
 
-	if (!prompt_default_string(_(txt_auth_user), authid, sizeof(authid) - 1, authuser, HIST_NONE)) {
+	authid = my_malloc(maxlen--);
+	if (!prompt_default_string(_(txt_auth_user), authid, maxlen, authuser, HIST_NONE)) {
 #	ifdef DEBUG
 		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "authorization failed: no username");
@@ -786,18 +805,20 @@ static char *
 prompt_for_password(
 	void
 ) {
-	char *pass = my_malloc(128);
+	char *pass;
+	size_t maxlen = 255;
 
 #	ifdef USE_CURSES
+	pass = my_malloc(maxlen--);
 	my_printf("%s", _(txt_auth_pass));
-	wgetnstr(stdscr, pass, sizeof(pass) - 1);
-	pass[sizeof(pass) - 1] = '\0';
+	wgetnstr(stdscr, pass, maxlen);
+	pass[maxlen] = '\0';
 #	else
 	/*
 	 * on some systems (i.e. Solaris) getpass(3) is limited
 	 * to 8 chars -> we use tin_getline()
 	 */
-	STRCPY(pass, tin_getline(_(txt_auth_pass), 0, NULL, sizeof(pass) - 1, TRUE, HIST_NONE));
+	pass = my_strdup(tin_getline(_(txt_auth_pass), 0, NULL, maxlen, TRUE, HIST_NONE));
 #	endif /* USE_CURSES */
 
 	return pass;

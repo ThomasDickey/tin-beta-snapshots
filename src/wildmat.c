@@ -116,7 +116,7 @@ DoMatch(
 #ifdef MATCH_TAR_PATTERN
 		if (*text == '/')
 			return 1;
-#endif /* MATCH_TAR_ATTERN */
+#endif /* MATCH_TAR_PATTERN */
 	return *text == '\0';
 }
 

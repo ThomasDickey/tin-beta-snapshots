@@ -79,6 +79,7 @@ FeedArt				a
 FeedHot				h
 FeedPat				p
 FeedRepost			r
+FeedRange			r
 FeedSupersede			s
 FeedThd				t
 

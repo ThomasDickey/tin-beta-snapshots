@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2024-03-07
+ *  Updated   : 2024-03-30
  *  Notes     : #defines and structs for options_menu.c
  *
  * Copyright (c) 1997-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -40,7 +40,7 @@
 /* replace tin.h {{ */
 
 #ifdef HAVE_CONFIG_H
-#include <autoconf.h>
+#include "autoconf.h"
 #endif /* HAVE_CONFIG_H */
 
 #ifdef HAVE_STDDEF_H

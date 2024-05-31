@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-04-01
+dnl Updated   : 2024-04-08
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -1349,7 +1349,6 @@ AC_CHECK_FUNCS(\
 	atoq \
 	bcopy \
 	chmod \
-	dirfd \
 	execlp \
 	explicit_bzero \
 	explicit_memset \
@@ -1363,6 +1362,7 @@ AC_CHECK_FUNCS(\
 	gettimeofday \
 	getwd \
 	inet_aton \
+	inet_pton \
 	is_xterm \
 	isascii \
 	lockf \

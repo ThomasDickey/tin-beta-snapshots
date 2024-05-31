@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2024-03-21
+ *  Updated   : 2024-05-10
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2024 Dirk Nimmich <nimmich@muenster.de>
@@ -480,22 +480,8 @@ read_keymap_file(
 
 	/* first non empty match wins */
 	for (j = 0; j < i && !fp; j++) {
-		if ((fp = fopen(fnames[j], "r")) != NULL) {
-			struct stat st;
-
-			if (fstat(fileno(fp), &st) != -1) { /* disallow symlinks? */
-				if (/*S_ISREG(st.st_mode) && */st.st_size > 0L)
-					break;
-#ifdef DEBUG
-				else {
-					if (debug & DEBUG_MISC)
-						error_message(2, "Skipping empty keymap-file: %s", fnames[j]);
-				}
-#endif /* DEBUG */
-			}
-			fclose(fp);
-			fp = NULL;
-		}
+		if ((fp = tin_fopen(fnames[j], "r")) != NULL)
+			break;
 	}
 
 	free(l);
@@ -527,7 +513,7 @@ read_keymap_file(
 					fclose(fp);
 					upgrade_keymap_file(map);
 					upgrade->state = RC_IGNORE;
-					if (!(fp = fopen(map, "r"))) { /* TODO: issue error message? */
+					if (!(fp = tin_fopen(map, "r"))) { /* TODO: issue error message? */
 						free(map);
 						FreeAndNull(upgrade);
 						return TRUE;
@@ -2106,10 +2092,8 @@ upgrade_keymap_file(
 	char *threadreadart[2] = { NULL, NULL };
 	char *up[2] = { NULL, NULL };
 
-	if ((oldfp = fopen(old, "r")) == NULL) {
-		perror_message(_(txt_cannot_open), old);
+	if ((oldfp = tin_fopen(old, "r")) == NULL)
 		return;
-	}
 
 	snprintf(newk, sizeof(newk), "%s.%ld", old, (long) process_id);
 	if ((newfp = fopen(newk, "w")) == NULL) {
@@ -2203,6 +2187,7 @@ upgrade_keymap_file(
 				FreeAndNull(postponed[0]);
 				FreeAndNull(postponed[1]);
 			}
+			/* TODO: this was merged with GLOBAL_POST "Post" */
 			if (postpost[0] || postpost[1] || postpost[2]) {
 				fprintf(newfp, "PostPost\t\t");
 				if (postpost[0])
@@ -2301,6 +2286,7 @@ upgrade_keymap_file(
 
 		switch (keyname[0]) {
 			case 'C':
+				/* TODO ConfigFirstPage/keyname was merged with GLOBAL_FIRST_PAGE/GLOBAL_LAST_PAGE */
 				if (STRCMPEQ(keyname, "ConfigFirstPage2"))
 					fprintf(newfp, "ConfigFirstPage\t\t\t%s\n", keydef);
 				else if (STRCMPEQ(keyname, "ConfigLastPage2"))
@@ -2352,6 +2338,7 @@ upgrade_keymap_file(
 				break;
 
 			case 'H':
+				/* TODO: HelpFirstPage/HelpLastPage was merged with GLOBAL_FIRST_PAGE/GLOBAL_LAST_PAGE */
 				if (STRCMPEQ(keyname, "HelpFirstPage2"))
 					fprintf(newfp, "HelpFirstPage\t\t\t%s\n", keydef);
 				else if (STRCMPEQ(keyname, "HelpLastPage2"))
@@ -2375,6 +2362,10 @@ upgrade_keymap_file(
 				break;
 
 			case 'P':
+				/*
+				 * TODO: - PageFirstPage/PageLastPage was merged with GLOBAL_FIRST_PAGE/GLOBAL_LAST_PAGE
+				 *       - PostPost with GLOBAL_POST "Post"
+				 */
 				if (STRCMPEQ(keyname, "PageAutoSel"))
 					menu_filter_select[1] = my_strdup(keydef);
 				else if (STRCMPEQ(keyname, "PageQuickAutoSel"))
@@ -2700,7 +2691,8 @@ upgrade_keymap_file(
 
 	fclose(oldfp);
 	fclose(newfp);
-	rename_file(newk, old);
+	if ((errno = rename_file(newk, old)) != 0)
+		perror_message(_(txt_rename_error), newk, old); /* TODO: unlink(newk)? */
 	wait_message(0, _(txt_keymap_upgraded), KEYMAP_VERSION);
 	prompt_continue();
 }
@@ -3267,3 +3259,301 @@ add_global_keys(
 	add_default_key(keys, "&", GLOBAL_TOGGLE_COLOR);
 #endif /* HAVE_COLOR */
 }
+
+
+#if 0
+/*
+ * add dump_all_keys() to end of read_keymap_file() or the like
+ * and pipe generated file through something like
+ * 	sort|uniq|\
+ * 	awk '/^[^#]/{a[$1]=a[$1]"\t"$2}END{for(x in a){print x"\t"a[x]}}'|sort
+ * inspection
+ */
+#ifdef DEBUG
+static void dump_keylist(const struct keylist keys);
+static void dump_all_keys(void);
+
+static void
+dump_keylist(
+	const struct keylist keys)
+{
+	char keybuf[MAXKEYLEN];
+	const char *key_funcnames[] = {
+	        "#Unassigned",
+	        "#DIGIT_0",
+	        "#DIGIT_1",
+	        "#DIGIT_2",
+	        "#DIGIT_3",
+	        "#DIGIT_4",
+	        "#DIGIT_5",
+	        "#DIGIT_6",
+	        "#DIGIT_7",
+	        "#DIGIT_8",
+	        "#DIGIT_9",
+	        "AttachPipe",
+	        "AttachSave",
+	        "AttachSelect",
+	        "AttachTag",
+	        "AttachTagPattern",
+	        "AttachToggleTagged",
+	        "AttachUntag",
+	        "#SPECIAL_CATCHUP_LEFT",
+	        "#SPECIAL_MOUSE_TOGGLE",
+	        "Catchup",
+	        "CatchupNextUnread",
+	        "ConfigResetAttrib",
+	        "ConfigScopeMenu",
+	        "ConfigSelect",
+	        "ConfigNoSave",
+	        "ConfigToggleAttrib",
+	        "FeedArt",
+	        "FeedThd",
+	        "FeedHot",
+	        "FeedPat",
+	        "FeedRange",
+	        "FeedTag",
+	        "FeedRepost",
+	        "FeedSupersede",
+	        "FilterEdit",
+	        "FilterSave",
+	        "#GLOBAL_ABORT",
+	        "BugReport",
+	        "ConnectionInfo",
+	        "DisplayPostHist",
+	        "EditFilter",
+	        "FirstPage",
+	        "Help",
+	        "LastPage",
+	        "LastViewed",
+	        "Down",
+	        "Up",
+	        "LookupMessage",
+	        "MenuFilterKill",
+	        "MenuFilterSelect",
+	        "OptionMenu",
+	        "PageDown",
+	        "PageUp",
+	        "Pipe",
+	        "Post",
+	        "Postponed",
+#	ifndef DISABLE_PRINTING
+	        "Print",
+#	endif /* !DISABLE_PRINTING */
+	        "QuickFilterKill",
+	        "QuickFilterSelect",
+	        "Quit",
+	        "QuitTin",
+	        "RedrawScr",
+	        "ScrollDown",
+	        "ScrollUp",
+	        "SearchBody",
+	        "SearchRepeat",
+	        "SearchAuthB",
+	        "SearchAuthF",
+	        "SearchSubjB",
+	        "SearchSubjF",
+	        "SetRange",
+#	ifndef NO_SHELL_ESCAPE
+	        "ShellEscape",
+#	endif /* !NO_SHELL_ESCAPE */
+#	ifdef HAVE_COLOR
+	        "ToggleColor",
+#	endif /* HAVE_COLOR */
+	        "ToggleHelpDisplay",
+	        "ToggleInfoLastLine",
+	        "ToggleInverseVideo",
+	        "Version",
+	        "GroupAutoSave",
+	        "GroupCancel",
+	        "GroupDoAutoSel",
+	        "GroupGoto",
+	        "GroupListThd",
+	        "GroupMail",
+	        "GroupMarkThdRead",
+	        "GroupMarkUnselArtRead",
+	        "GroupNextGroup",
+	        "GroupNextUnreadArt",
+	        "GroupNextUnreadArtOrGrp",
+	        "GroupPrevGroup",
+	        "GroupPrevUnreadArt",
+	        "GroupReadBasenote",
+	        "GroupRepost",
+	        "GroupReverseSel",
+	        "GroupSave",
+	        "GroupSelPattern",
+	        "GroupSelThd",
+	        "GroupSelThdIfUnreadSelected",
+	        "GroupTag",
+	        "GroupTagParts",
+	        "GroupToggleGetartLimit",
+	        "GroupToggleReadUnread",
+	        "GroupToggleSubjDisplay",
+	        "GroupToggleThdSel",
+	        "GroupToggleThreading",
+	        "GroupUndoSel",
+	        "GroupUntag",
+	        "MarkArticleUnread",
+	        "MarkThreadUnread",
+	        "MarkFeedRead",
+	        "MarkFeedUnread",
+	        "PageAutoSave",
+	        "PageBotThd",
+	        "PageCancel",
+	        "PageEditArticle",
+	        "PageFollowup",
+	        "PageFollowupQuote",
+	        "PageFollowupQuoteHeaders",
+	        "PageGotoParent",
+	        "PageGroupSel",
+	        "PageListThd",
+	        "PageMail",
+	        "PageKillThd",
+	        "PageNextArt",
+	        "PageNextThd",
+	        "PageNextUnread",
+	        "PageNextUnreadArt",
+#	ifdef HAVE_PGP_GPG
+	        "PagePGPCheckArticle",
+#	endif /* HAVE_PGP_GPG */
+	        "PagePrevArt",
+	        "PagePrevUnreadArt",
+	        "PageReveal",
+	        "PageReply",
+	        "PageReplyQuote",
+	        "PageReplyQuoteHeaders",
+	        "PageRepost",
+	        "PageSave",
+	        "PageSkipIncludedText",
+	        "PageTag",
+	        "PageToggleAllHeaders",
+	        "PageToggleHighlight",
+	        "PageToggleRaw",
+	        "PageToggleRot",
+	        "PageToggleTabs",
+	        "PageToggleTex2iso",
+	        "PageToggleUue",
+	        "PageTopThd",
+	        "PageViewAttach",
+	        "PageViewUrl",
+#	ifdef HAVE_PGP_GPG
+	        "PgpEncrypt",
+	        "PgpEncSign",
+	        "PgpIncludekey",
+	        "PgpSign",
+#	endif /* HAVE_PGP_GPG */
+	        "PostAbort",
+	        "PostCancel",
+	        "PostContinue",
+	        "PostEdit",
+	        "PostIgnore",
+#	ifdef HAVE_ISPELL
+	        "PostIspell",
+#	endif /* HAVE_ISPELL */
+	        "PostMail",
+#	ifdef HAVE_PGP_GPG
+	        "PostPGP",
+#	endif /* HAVE_PGP_GPG */
+	        "PostPostpone",
+	        "PostSend",
+	        "PostSupersede",
+	        "PostedArticlesSelect",
+	        "PostponeAll",
+	        "PostponeOverride",
+	        "PProcNo",
+	        "PProcShar",
+	        "PProcYes",
+	        "PromptNo",
+	        "PromptYes",
+	        "SaveAppendFile",
+	        "SaveOverwriteFile",
+	        "ScopeAdd",
+	        "ScopeDelete",
+	        "ScopeEditAttributesFile",
+	        "ScopeMove",
+	        "ScopeRename",
+	        "ScopeSelect",
+	        "SelectReadGrp",
+	        "SelectEnterNextUnreadGrp",
+	        "SelectGoto",
+	        "SelectMarkGrpUnread",
+	        "SelectMoveGrp",
+	        "SelectNextUnreadGrp",
+	        "SelectResetNewsrc",
+	        "SelectSortActive",
+	        "SelectSubscribe",
+	        "SelectSubscribePat",
+	        "SelectSyncWithActive",
+	        "SelectToggleDescriptions",
+	        "SelectToggleReadDisplay",
+	        "SelectUnsubscribe",
+	        "SelectUnsubscribePat",
+	        "SelectQuitNoWrite",
+	        "SelectYankActive",
+	        "ThreadAutoSave",
+	        "ThreadCancel",
+	        "ThreadFollowup",
+	        "ThreadFollowupQuote",
+	        "ThreadMail",
+	        "ThreadMarkArtRead",
+	        "ThreadReadNextArtOrThread",
+	        "ThreadReadArt",
+	        "ThreadReverseSel",
+	        "ThreadSave",
+	        "ThreadSelArt",
+	        "ThreadTag",
+	        "ThreadTagParts",
+	        "ThreadToggleArtSel",
+	        "ThreadToggleSubjDisplay",
+	        "ThreadUndoSel",
+	        "ThreadUntag",
+	        "UrlSelect",
+	        NULL
+	};
+	size_t i;
+
+	for (i = 0; i < keys.used; i++) {
+		if (keys.list[i].key && keys.list[i].function)
+			debug_print_file("KEYMAP", "%s\t%s", key_funcnames[keys.list[i].function], printascii(keybuf, keys.list[i].key));
+	}
+}
+
+static void
+dump_all_keys(
+	void
+)
+{
+	if (debug) { /* order? */
+		dump_keylist(attachment_keys);
+		dump_keylist(select_keys);
+		dump_keylist(group_keys);
+		dump_keylist(thread_keys);
+		dump_keylist(option_menu_keys);
+		dump_keylist(page_keys);
+		dump_keylist(info_keys);
+		dump_keylist(post_hist_keys);
+		dump_keylist(post_send_keys);
+		dump_keylist(post_edit_keys);
+		dump_keylist(post_edit_ext_keys);
+		dump_keylist(post_post_keys);
+		dump_keylist(post_postpone_keys);
+		dump_keylist(post_mail_fup_keys);
+		dump_keylist(post_ignore_fupto_keys);
+		dump_keylist(post_continue_keys);
+		dump_keylist(post_delete_keys);
+		dump_keylist(post_cancel_keys);
+		dump_keylist(filter_keys);
+#	ifdef HAVE_PGP_GPG
+		dump_keylist(pgp_mail_keys);
+		dump_keylist(pgp_news_keys);
+#	endif /* HAVE_PGP_GPG */
+		dump_keylist(save_append_overwrite_keys);
+		dump_keylist(scope_keys);
+		dump_keylist(feed_type_keys);
+		dump_keylist(feed_post_process_keys);
+		dump_keylist(feed_supersede_article_keys);
+		dump_keylist(prompt_keys);
+		dump_keylist(url_keys);
+	}
+}
+#endif /* DEBUG */
+#endif /* 0 */

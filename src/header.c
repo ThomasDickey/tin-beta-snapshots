@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2024-03-21
+ *  Updated   : 2024-05-06
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -52,7 +52,7 @@ const char *
 get_host_name(
 	void)
 {
-	char *ptr;
+	const char *ptr;
 	static char hostname[MAXHOSTNAMELEN + 1]; /* need space for '\0' */
 
 	hostname[0] = '\0';
@@ -65,14 +65,11 @@ get_host_name(
 		my_strncpy(hostname, system_info.nodename, sizeof(hostname) - 1);
 #endif /* HAVE_SYS_UTSNAME_H */
 	if (!*hostname) {
-		if ((ptr = getenv("HOST")) != NULL)
+		ptr = get_val("HOST", get_val("HOSTNAME", ""));
+		if (*ptr)
 			my_strncpy(hostname, ptr, sizeof(hostname) - 1);
-		else {
-			if ((ptr = getenv("HOSTNAME")) != NULL)
-				my_strncpy(hostname, ptr, sizeof(hostname) - 1);
-			else
-				hostname[0] = '\0';
-		}
+		else
+			hostname[0] = '\0';
 	}
 	hostname[MAXHOSTNAMELEN] = '\0';
 	return hostname;
@@ -100,7 +97,7 @@ get_domain_name(
 
 	if (domain[0] == '/' && domain[1]) {
 		/* read domainname from specified file */
-		if ((fp = fopen(domain, "r")) != NULL) {
+		if ((fp = tin_fopen(domain, "r")) != NULL) {
 			while (fgets(buff, (int) sizeof(buff), fp) != NULL) {
 				if (buff[0] == '#' || buff[0] == '\n')
 					continue;
@@ -153,6 +150,7 @@ get_fqdn(
 			return NULL;
 	}
 
+	/* FIXME: this does not do IPv6 only */
 #	ifdef HAVE_INET_ADDR
 	if (*name >= '0' && *name <= '9') {
 		in_addr_t addr = inet_addr(name);
@@ -181,12 +179,12 @@ get_fqdn(
 			? hp->h_name : inet_ntoa(in)
 		: "");
 
-	if (!*fqdn || (fqdn[strlen(fqdn) - 1] <= '9')) {
+	if (!*fqdn || (fqdn[strlen(fqdn) - 1] <= '9')) { /* see FIXME above about IPv6 */
 		FILE *inf;
 
 		*fqdn = '\0';
 
-		if ((inf = fopen("/etc/resolv.conf", "r")) != NULL) {
+		if ((inf = tin_fopen("/etc/resolv.conf", "r")) != NULL) {
 			char *eos;
 			int j;
 
@@ -211,7 +209,7 @@ get_fqdn(
 			fclose(inf);
 		}
 	}
-	return fqdn;
+	return *fqdn ? fqdn : get_val("HOST", get_val("HOSTNAME", ""));
 }
 #endif /* HAVE_GETHOSTBYNAME */
 
@@ -334,26 +332,30 @@ get_from_name(
  * build_sender()
  * returns *(Full_Name <user@fq.domainna.me>)
  */
-#ifndef FORGERY
+#if !defined(FORGERY) && defined(NNTP_ABLE)
 char *
 build_sender(
 	void)
 {
-	const char *ptr;
+	const char *ptr = NULL;
 	static char sender[8192];
 
 	sender[0] = '\0';
 
-	if ((ptr = get_full_name()))
+	if ((ptr = get_full_name())) /* TODO: rfc2047 encode */
 		snprintf(sender, sizeof(sender), ((strpbrk(ptr, "\".:;<>@[]()\\")) ? "\"%s\"" : "%s "), ptr);
 	if ((ptr = get_user_name())) {
 		snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "<%s@", ptr);
 
 #	ifdef HAVE_GETHOSTBYNAME
-		if ((ptr = get_fqdn(get_host_name())))
+		ptr = get_fqdn(get_host_name());
 #	else
-		if ((ptr = get_host_name()))
+		ptr = get_host_name();
 #	endif /* HAVE_GETHOSTBYNAME */
+
+		/* intentionally do not fall back to *domain_name */
+
+		if (*ptr)
 			snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "%s>", ptr);
 		else
 			return NULL;
@@ -362,4 +364,4 @@ build_sender(
 
 	return sender;
 }
-#endif /* !FORGERY */
+#endif /* !FORGERY && NNTP_ABLE */

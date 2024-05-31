@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-22
+ *  Updated   : 2024-05-06
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -89,7 +89,7 @@ static t_artnum find_first_unread(struct t_group *group);
 static t_artnum setup_hard_base(struct t_group *group);
 static t_bool parse_headers(FILE *fp, struct t_article *h);
 static t_compfunc eval_sort_arts_func(unsigned int sort_art_type);
-static time_t get_last_posting_date(long n);
+static time_t get_last_posting_date(int n);
 static void sort_base(unsigned int sort_threads_type);
 static void thread_by_multipart(void);
 static void thread_by_percentage(unsigned int percentage);
@@ -716,8 +716,11 @@ open_art_header(
 		}
 		return NULL;
 	}
-#else
 	/* silence compiler warning (unused parameter) */
+#	ifdef BROKEN_LISTGROUP
+	(void) groupname;
+#	endif /* BROKEN_LISTGROUP */
+#else
 	(void) groupname;
 	(void) next;
 #endif /* NNTP_ABLE */
@@ -1480,7 +1483,7 @@ parse_headers(
 			case 'L':	/* Lines:  optional */
 				if (!got_lines) {
 					if ((hdr = parse_header(ptr + 1, "ines", FALSE, FALSE, FALSE))) {
-						h->line_count = atoi(hdr);
+						h->line_count = s2i(hdr, 0, INT_MAX);
 						got_lines = TRUE;
 					}
 				}
@@ -2140,7 +2143,7 @@ read_overview(
 					if (!strcasecmp(ofmt[count].name, "Lines:")) {
 						if (*ptr) {
 							if (isdigit((unsigned char) *ptr))
-								art->line_count = atoi(ptr);
+								art->line_count = s2i(ptr, 0, INT_MAX);
 							else {
 								art->line_count = 0;
 #ifdef DEBUG
@@ -2236,7 +2239,7 @@ read_overview(
 					case 7:	/* :lines || Lines: */
 						if (*ptr) {
 							if (isdigit((unsigned char) *ptr))
-								art->line_count = atoi(ptr);
+								art->line_count = s2i(ptr, 0, INT_MAX);
 							else {
 								art->line_count = 0;
 #ifdef DEBUG
@@ -2461,7 +2464,7 @@ read_overview(
 		}
 #endif /* NNTP_ABLE */
 	} else
-		if (!path_found && filter_on_path(group)) {
+		if (!path_found && filter_on_path(group) && !batch_mode) {
 #ifdef NNTP_ABLE
 			if (!get_path_header(1, 1, group, min, *top))
 #endif /* NNTP_ABLE */
@@ -2843,7 +2846,7 @@ find_nov_file(
 		snprintf(buf, sizeof(buf), "%lu.%d", hash, i);
 		joinpath(nov_file, sizeof(nov_file), dir, buf);
 
-		if ((fp = fopen(nov_file, "r")) == NULL)
+		if ((fp = tin_fopen(nov_file, "r")) == NULL)
 			break;
 
 		/*
@@ -3164,15 +3167,15 @@ score_comp_base(
 	t_comptype p1,
 	t_comptype p2)
 {
-	int a = get_score_of_thread((int) *(const long *) p1);
-	int b = get_score_of_thread((int) *(const long *) p2);
+	int a = get_score_of_thread((int) *(const t_artnum *) p1);
+	int b = get_score_of_thread((int) *(const t_artnum *) p2);
 
 	/* If scores are equal, compare using the article sort order.
 	 * This determines the order in a group of equally scored threads.
 	 */
 	if (a == b) {
-		t_comptype s1 = &arts[*(const long *) p1];
-		t_comptype s2 = &arts[*(const long *) p2];
+		t_comptype s1 = &arts[*(const t_artnum *) p1];
+		t_comptype s2 = &arts[*(const t_artnum *) p2];
 		t_compfunc comp_func = eval_sort_arts_func(CURR_GROUP.attribute->sort_article_type);
 
 		if (comp_func)
@@ -3197,8 +3200,8 @@ last_date_comp_base_desc(
 	t_comptype p1,
 	t_comptype p2)
 {
-	time_t s1_last = get_last_posting_date(*(const long *) p1);
-	time_t s2_last = get_last_posting_date(*(const long *) p2);
+	time_t s1_last = get_last_posting_date(*(const t_artnum *) p1);
+	time_t s2_last = get_last_posting_date(*(const t_artnum *) p2);
 
 	if (s2_last < s1_last)
 		return -1;
@@ -3215,8 +3218,8 @@ last_date_comp_base_asc(
 	t_comptype p1,
 	t_comptype p2)
 {
-	time_t s1_last = get_last_posting_date(*(const long *) p1);
-	time_t s2_last = get_last_posting_date(*(const long *) p2);
+	time_t s1_last = get_last_posting_date(*(const t_artnum *) p1);
+	time_t s2_last = get_last_posting_date(*(const t_artnum *) p2);
 
 	if (s2_last > s1_last)
 		return -1;
@@ -3230,9 +3233,9 @@ last_date_comp_base_asc(
 
 static time_t
 get_last_posting_date(
-	long n)
+	int n)
 {
-	long i;
+	int i;
 	time_t last = (time_t) 0;
 
 	for (i = n; i >= 0; i = arts[i].thread) {

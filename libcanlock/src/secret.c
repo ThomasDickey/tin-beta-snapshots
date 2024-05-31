@@ -50,7 +50,7 @@
  * \param[in] buf_size  Size of buffer
  *
  * \attention
- * The default implementation uses \c memset() and is not crytographically
+ * The default implementation uses \c memset() and is not cryptographically
  * secure. A smart compiler may optimize this function away completely.
  * If no better function of the OS was available, this situation is indicated
  * with a return value of 1.

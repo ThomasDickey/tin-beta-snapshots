@@ -115,11 +115,9 @@ int
 line_is_tagged(
 	int n)
 {
-	int code = 0;
+	int i, code = 0;
 
 	if (curr_group->attribute->thread_articles) {
-		int i;
-
 		for (i = n; i >= 0; i = arts[i].thread) {
 			if (arts[i].tagged > code)
 				code = arts[i].tagged;

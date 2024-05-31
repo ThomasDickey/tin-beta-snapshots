@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-21
+ *  Updated   : 2024-05-10
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -100,17 +100,36 @@ read_newsrc(
 	 * make a .newsrc if none exist & auto subscribe to set groups
 	 */
 	if ((fp = fopen(newsrc_file, "r")) == NULL) {
-		if (!create_newsrc(newsrc_file))
-			return -1L; /* ouch */
+		if (errno != ENOENT) { /* ENOENT is "ok" here */
+			perror_message(_(txt_cannot_open), newsrc_file);
+			if (!batch_mode)
+				sleep(2);
+		}
+		switch (errno) {
+			case EACCES:
+				return -1L;
 
+			default:	/* e.g. ENOENT */
+				if (!create_newsrc(newsrc_file))
+					return -1L;
+				break;
+		}
 		auto_subscribe_groups(newsrc_file);
 	}
+	/* see if create_newsrc() created the file for us */
 	if (!fp) {
-		if ((fp = fopen(newsrc_file, "r")) == NULL)
+		if ((fp = fopen(newsrc_file, "r")) == NULL) {
+			perror_message(_(txt_cannot_open), newsrc_file);
+			if (!batch_mode)
+				sleep(2);
 			return -1L;
+		}
 	}
 
 	if (fstat(fileno(fp), &statbuf) == -1) {
+		perror_message(_(txt_cannot_open), newsrc_file);
+		if (!batch_mode)
+			sleep(2);
 		fclose(fp);
 		return -1L;
 	}
@@ -119,8 +138,17 @@ read_newsrc(
 		newsrc_mode = statbuf.st_mode;
 #endif /* HAVE_FCHMOD || HAVE_CHMOD */
 
+	if (S_ISDIR(statbuf.st_mode)) {	/* TODO: die hard? */
+		errno = EISDIR;
+		perror_message(_(txt_cannot_open), newsrc_file);
+		if (!batch_mode)
+			sleep(2);
+		fclose(fp);
+		return -1L;
+	}
+
 	if (!batch_mode || verbose)
-		wait_message(0, _(txt_reading_newsrc));
+		wait_message(0, _(txt_reading_newsrc), newsrc_file);
 
 	while ((grp = tin_fgets(fp, FALSE)) != NULL) {
 		strip_line(grp);
@@ -220,25 +248,18 @@ write_newsrc(
 	FILE *fp_op;
 	char *line;
 	signed long int tot = 0L;
-	struct stat note_stat_newsrc;
 	t_bool write_ok = FALSE;
 	int err;
 
 	if (no_write)
 		return 0L;
 
-	if ((fp_ip = fopen(newsrc, "r")) == NULL)
-		return -1L; /* can't open newsrc */
-
-	/* get size of original newsrc */
-	if (fstat(fileno(fp_ip), &note_stat_newsrc) != 0) {
-		fclose(fp_ip);
-		return -1L; /* can't access newsrc */
-	}
-
-	if (!note_stat_newsrc.st_size) {
-		fclose(fp_ip);
-		return 0L; /* newsrc is empty */
+	if ((fp_ip = tin_fopen(newsrc, "r")) == NULL) {
+		if (errno == ENOENT)
+			perror_message(_(txt_cannot_open), newsrc);
+		if (!batch_mode && errno)
+			sleep(2);
+		return (errno ? -1L : 0L);
 	}
 
 	if ((fp_op = fopen(newnewsrc, "w")) != NULL) {
@@ -261,7 +282,7 @@ write_newsrc(
 		 * Don't rename if either fclose() fails or ferror() is set
 		 */
 		if ((err = ferror(fp_op)) || fclose(fp_op)) {
-			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+			error_message(2, _(txt_filesystem_full), newsrc);
 			unlink(newnewsrc);
 			if (err) {
 				clearerr(fp_op);
@@ -269,12 +290,16 @@ write_newsrc(
 			}
 		} else
 			write_ok = TRUE;
+	} else {
+		perror_message(_(txt_cannot_open_for_saving), newnewsrc);
+		fclose(fp_ip);
+		return 0L; /* o we don't get prompted to try again */
 	}
 
 	fclose(fp_ip);
 
-	if (tot < 1) {
-		error_message(2, _(txt_newsrc_nogroups));
+	if (tot < 1L) {
+		error_message(2, _(txt_newsrc_nogroups), newsrc);
 		unlink(newnewsrc);
 		return 0L;		/* So we don't get prompted to try again */
 	}
@@ -297,13 +322,13 @@ create_newsrc(
 	int i;
 
 	if ((fp = fopen(newsrc_file, "w")) != NULL) {
-		wait_message(0, _(txt_creating_newsrc));
+		wait_message(0, _(txt_creating_newsrc), newsrc);
 
 		for_each_group(i)
 			fprintf(fp, "%s!\n", active[i].name);
 
 		if ((i = ferror(fp)) || fclose(fp)) {
-			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+			error_message(2, _(txt_filesystem_full), newsrc);
 			if (i) {
 				clearerr(fp);
 				fclose(fp);
@@ -312,6 +337,11 @@ create_newsrc(
 		}
 		return TRUE; /* newsrc created */
 	}
+
+	perror_message(_(txt_cannot_open), newsrc_file);
+	if (!batch_mode)
+		sleep(2);
+
 	return FALSE;
 }
 
@@ -391,7 +421,7 @@ auto_subscribe_groups(
 	/* We ignore user 'q'uits here. They will get them next time in any case */
 
 	if ((err = ferror(fp_newsrc)) || fclose(fp_newsrc)) {
-		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+		error_message(2, _(txt_filesystem_full), newsrc);
 		if (err) {
 			clearerr(fp_newsrc);
 			fclose(fp_newsrc);
@@ -431,7 +461,7 @@ backup_newsrc(
 	}
 
 	if (!backup_file(newsrc, filebuf))
-		error_message(2, _(txt_filesystem_full_backup), NEWSRC_FILE);
+		error_message(2, _(txt_filesystem_full_backup), newsrc);
 }
 
 
@@ -634,7 +664,7 @@ subscribe(
 	}
 
 	if ((sub = ferror(newfp)) || fclose(newfp)) {
-		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+		error_message(2, _(txt_filesystem_full), newsrc);
 		if (sub) {
 			clearerr(newfp);
 			fclose(newfp);
@@ -721,7 +751,7 @@ bulk_subscribe(
 	}
 
 	if ((sub = ferror(newfp)) || fclose(newfp)) {
-		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+		error_message(2, _(txt_filesystem_full), newsrc);
 		if (sub) {
 			clearerr(newfp);
 			fclose(newfp);
@@ -762,7 +792,7 @@ reset_newsrc(
 			fclose(fp);
 		}
 		if ((sub = ferror(newfp)) || fclose(newfp)) {
-			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+			error_message(2, _(txt_filesystem_full), newsrc);
 			if (sub) {
 				clearerr(newfp);
 				fclose(newfp);
@@ -817,7 +847,7 @@ delete_group(
 		}
 
 		if ((sub = ferror(newfp)) || fclose(newfp)) {
-			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+			error_message(2, _(txt_filesystem_full), newsrc);
 			if (sub) {
 				clearerr(newfp);
 				fclose(newfp);
@@ -1420,7 +1450,7 @@ pos_group_in_newsrc(
 	}
 
 	if ((err = ferror(fp_sub)) || fclose(fp_sub)) {
-		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+		error_message(2, _(txt_filesystem_full), newsrc);
 		if (err) {
 			clearerr(fp_sub);
 			fclose(fp_sub);
@@ -1429,7 +1459,7 @@ pos_group_in_newsrc(
 	}
 	if ((err = ferror(fp_unsub)) || fclose(fp_unsub)) {
 		if (!fs_error) /* avoid repeatd error message */
-			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+			error_message(2, _(txt_filesystem_full), newsrc);
 		if (err) {
 			clearerr(fp_unsub);
 			fclose(fp_unsub);
@@ -1491,7 +1521,7 @@ pos_group_in_newsrc(
 	 * Try and cleanly close out the newnewsrc file
 	 */
 	if ((err = ferror(fp_out)) || fclose(fp_out)) {
-		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+		error_message(2, _(txt_filesystem_full), newsrc);
 		if (err) {
 			clearerr(fp_out);
 			fclose(fp_out);

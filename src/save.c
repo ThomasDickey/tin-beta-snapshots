@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-28
+ *  Updated   : 2024-05-10
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -337,9 +337,12 @@ check_start_save_any_news(
 
 		if (art_count) {
 			unread_news = TRUE;
-			if (verbose)
-				wait_message(0, _(txt_saved_group), art_count, hot_count,
+			if (verbose) {
+				char *tmp_hot_count = my_strdup(tin_ltoa(hot_count, 4));
+				wait_message(0, _(txt_saved_group), tin_ltoa(art_count, 4), tmp_hot_count,
 					PLURAL(art_count, txt_article), group->name);
+				free(tmp_hot_count);
+			}
 		}
 	}
 
@@ -399,6 +402,7 @@ open_save_filename(
 {
 	FILE *fp;
 	char keyappend[MAXKEYLEN], keyoverwrite[MAXKEYLEN], keyquit[MAXKEYLEN];
+	int i;
 	struct stat st;
 	t_function func;
 
@@ -407,11 +411,12 @@ open_save_filename(
 		return NULL;
 	}
 
-	if (fstat(fileno(fp), &st) != -1) {
+	i = fileno(fp);
+	if (i == -1 || fstat(i, &st) != -1) {
 		/*
 		 * Admittedly a special case hack, but it saves failing later on
 		 */
-		if (S_ISDIR(st.st_mode)) {
+		if (i == -1 || S_ISDIR(st.st_mode)) {
 			wait_message(2, _(txt_cannot_write_to_directory), path);
 			fclose(fp);
 			return NULL;
@@ -430,8 +435,22 @@ open_save_filename(
 			switch (func) {
 				case SAVE_OVERWRITE_FILE:
 					tinrc.default_save_mode = 'o';
-					if (!ftruncate(fileno(fp), 0L))
-						(void) fseek(fp, 0L, SEEK_SET);
+#ifdef HAVE_FTRUNCATE
+					errno = 0;
+					if (i == -1 || ftruncate(i, 0L)) {
+#	ifdef DEBUG
+						if (debug & DEBUG_MISC)
+							perror_message("ftruncate(%d)", i);
+#	endif /* DEBUG */
+					}
+#endif /* HAVE_FTRUNCATE */
+					errno = 0;
+					if (i == -1 || fseek(fp, 0L, SEEK_SET) == -1) {
+						perror_message("fseek(%d)", i);
+						fclose(fp);
+						wait_message(1, _(txt_art_not_saved));
+						return NULL;
+					}
 					break;
 
 				case GLOBAL_ABORT:
@@ -532,7 +551,7 @@ save_and_process_art(
 	 *       then at least in the (is_mailbox && !post_process && !mmdf)
 	 *       case it should be done.
 	 */
-	if (copy_fp(artinfo->raw, fp)) /* Write tailing newline or MMDF-mailbox separator */
+	if (copy_fp(artinfo->raw, fp) == 0) /* Write tailing newline or MMDF-mailbox separator */
 		print_art_separator_line(fp, is_mailbox);
 	else {
 		fclose(fp);
@@ -803,7 +822,7 @@ post_process_uud(
 
 	UUSetOption(UUOPT_SAVEPATH, 0, file_out_dir);
 	for (i = 0; i < num_save; i++) {
-		if ((fp_in = fopen(save[i].path, "r")) != NULL) {
+		if ((fp_in = tin_fopen(save[i].path, "r")) != NULL) {
 			UULoadFile(save[i].path, NULL, 0);	/* Scans file for encoded data */
 			fclose(fp_in);
 		}
@@ -896,7 +915,7 @@ post_process_uud(
 	u[0] = '\0';
 
 	for (i = 0; i < num_save; i++) {
-		if ((fp_in = fopen(save[i].path, "r")) == NULL)
+		if ((fp_in = tin_fopen(save[i].path, "r")) == NULL)
 			continue;
 
 		while (fgets(s, (int) sizeof(s), fp_in) != NULL) {
@@ -1159,7 +1178,7 @@ post_process_sh(
 	snprintf(file_out, len, "%ssh%ld", file_out_dir, (long) process_id);
 
 	for (i = 0; i < num_save; i++) {
-		if ((fp_in = fopen(save[i].path, "r")) == NULL)
+		if ((fp_in = tin_fopen(save[i].path, "r")) == NULL)
 			continue;
 
 		wait_message(0, _(txt_extracting_shar), save[i].path);
@@ -2238,6 +2257,7 @@ process_parts(
 			process_part(part, art, fp, savepath, what);
 			break;
 	}
+
 	switch (what) {
 		case SAVE_TAGGED:
 			wait_message(2, _(txt_attachments_saved), saved_parts, num_of_tagged_parts);
@@ -2299,6 +2319,7 @@ process_part(
 		 */
 		perror_message("%s:%d process_part(fseek(infile)) failed", __FILE__, __LINE__);
 #endif /* DEBUG */
+		fclose(outfile);
 		return;
 	}
 
@@ -2405,8 +2426,7 @@ pipe_part(
 		return;
 	}
 	free(prompt);
-	if ((fp = fopen(savepath, "r")) == NULL)
-		/* TODO: error message? */
+	if ((fp = tin_fopen(savepath, "r")) == NULL) /* TODO: error message? */
 		return;
 	EndWin();
 	Raw(FALSE);

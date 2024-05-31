@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2024-03-03
+ *  Updated   : 2024-05-10
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -90,10 +90,8 @@ submit_inews(
 	t_bool can_lock_in_article = FALSE;
 #	endif /* USE_CANLOCK */
 
-	if ((fp = fopen(name, "r")) == NULL) {
-		perror_message(_(txt_cannot_open), name);
+	if ((fp = tin_fopen(name, "r")) == NULL)
 		return ret_code;
-	}
 
 	from_name[0] = '\0';
 	message_id[0] = '\0';

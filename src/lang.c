@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-15
+ *  Updated   : 2024-04-22
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -41,6 +41,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+#ifndef TNNTPS_H
+#	include "tnntps.h"
+#endif /* !TNNTPS_H */
 
 constext txt_1_resp[] = N_("1 Response");
 constext txt_7bit[] = "7bit";
@@ -351,7 +354,7 @@ constext txt_conninfo_saved_news[] = N_("Reading saved news.\n");
 constext txt_cook_article_failed_exiting[] = N_("Cook article failed, %s is exiting");
 constext txt_cr[] = N_("<CR>");
 constext txt_creating_active[] = N_("Creating active file for saved groups...\n");
-constext txt_creating_newsrc[] = N_("Creating newsrc file...\n");
+constext txt_creating_newsrc[] = N_("Creating %s file...\n");
 
 constext txt_default[] = N_("Default");
 constext txt_delete_processed_files[] = N_("Delete saved files that have been post processed?");
@@ -373,15 +376,13 @@ constext txt_enter_next_unread_art[] = N_(" and enter next unread article");
 constext txt_enter_next_unread_group[] = N_(" and enter next unread group");
 constext txt_enter_option_num[] = N_("Enter option number> ");
 constext txt_enter_range[] = N_("Enter range [%s]> ");
+constext txt_enter_append[] = N_("Error: Could not appended %s to %s");
 constext txt_error_approved[] = N_("\nWarning: Approved: header used.\n");
 #ifndef NDEBUG
 	constext txt_error_asfail[] = "%s: assertion failure: %s (%d): %s\n";
 #endif /* !NDEBUG */
-constext txt_error_bad_approved[] = N_("\nError: Bad address in Approved: header.\n");
-constext txt_error_bad_from[] = N_("\nError: Bad address in From: header.\n");
+constext txt_error_bad_address_in[] = N_("\nError: Bad address in \"%s\" header.\n");
 constext txt_error_bad_msgidfqdn[] = N_("\nError: Bad FQDN in Message-ID: header.\n");
-constext txt_error_bad_replyto[] = N_("\nError: Bad address in Reply-To: header.\n");
-constext txt_error_bad_to[] = N_("\nError: Bad address in To: header.\n");
 #ifndef NO_LOCKING
 	constext txt_error_cant_unlock[] = N_("Can't unlock %s");
 	constext txt_error_couldnt_dotlock[] = N_("Couldn't dotlock %s - article not appended!");
@@ -392,7 +393,9 @@ constext txt_error_bad_to[] = N_("\nError: Bad address in To: header.\n");
 #endif /* NNTP_ABLE && USE_ZLIB */
 constext txt_error_copy_fp[] = "copy_fp() failed";
 constext txt_error_corrupted_file[] = N_("Corrupted file %s");
-constext txt_error_couldnt_expand[] = N_("couldn't expand %s\n");
+#ifdef NNTP_ABLE
+	constext txt_error_couldnt_expand[] = N_("couldn't expand %s\n");
+#endif /* NNTP_ABLE */
 constext txt_error_fseek[] = "fseek() error on [%s]";
 constext txt_error_followup_poster[] = N_("\nError: Followup-To \"poster\" and a newsgroup is not allowed!\n");
 constext txt_error_format_string[] = N_("Error: Custom format exceeds screen width. Using default \"%s\".");
@@ -444,7 +447,8 @@ constext txt_error_header_line_not_7bit[] = N_("\nError: %s contains non 7bit ch
 constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not have a space after the colon:\n%s\n");
 constext txt_error_header_duplicate[] = N_("\nError: There are multiple (%d) \"%s:\" lines in the header.\n");
 constext txt_error_header_no_name[] = N_("\nError: Header on line %d has no name:\n%s\n");
-# ifndef FILE_MODE_BROKEN
+constext txt_error_mailgroup_no_recipient[] = N_("\nError: This is a mailgroup, but a recipient (\"To:\") is missing.\n");
+#ifndef FILE_MODE_BROKEN
 	constext txt_error_insecure_permissions[] = N_("Insecure permissions of %s (%o)");
 #endif /* !FILE_MODE_BROKEN */
 #ifdef MIME_BREAK_LONG_LINES
@@ -461,13 +465,18 @@ constext txt_error_header_no_name[] = N_("\nError: Header on line %d has no name
 #endif /* DEBUG */
 constext txt_error_newsgroups_poster[] = N_("\nError: \"poster\" is not allowed in Newsgroups!\n");
 constext txt_error_no_domain_name[] = N_("Can't get a (fully-qualified) domain-name!");
-constext txt_error_no_enter_permission[] = N_("No permissions to go into %s\n");
 #ifdef NNTP_INEWS
 	constext txt_error_no_from[] = N_("\nError: From: line missing.\n");
 #endif /* NNTP_INEWS */
-constext txt_error_no_read_permission[] = N_("No read permissions for %s\n");
-constext txt_error_no_such_file[] = N_("File %s does not exist\n");
-constext txt_error_no_write_permission[] = N_("No write permissions for %s\n");
+#ifdef NNTP_ABLE
+	constext txt_error_no_enter_permission[] = N_("No permissions to go into %s\n");
+	constext txt_error_no_read_permission[] = N_("No read permissions for %s\n");
+	constext txt_error_no_such_file[] = N_("File %s does not exist\n");
+	constext txt_error_no_write_permission[] = N_("No write permissions for %s\n");
+#	ifdef INET6
+		constext txt_error_not_ipv6_literal[] = N_("Not a literal IPv6 address: %s");
+#	endif /* INET6 */
+#endif /* NNTP_ABLE */
 constext txt_error_passwd_missing[] = N_("Can't get user information (/etc/passwd missing?)");
 #ifdef HAVE_LIBUU
 	constext txt_error_plural[] = N_("errors");
@@ -901,8 +910,8 @@ constext txt_newsgroup_plural[] = N_("newsgroups");
 constext txt_newsgroup_position[] = N_("Position %s in group list (1,2,..,$) [%d]> ");
 constext txt_newsgroup_singular[] = N_("newsgroup");
 constext txt_newsrc_again[] = N_("Try and save newsrc file again?");
-constext txt_newsrc_nogroups[] = N_("Warning: No newsgroups were written to your newsrc file. Save aborted.");
-constext txt_newsrc_saved[] = N_("newsrc file saved successfully.\n");
+constext txt_newsrc_nogroups[] = N_("Warning: No groups written to your %s file. Save aborted.");
+constext txt_newsrc_saved[] = N_("%s file saved successfully.\n");
 constext txt_next_resp[] = N_("-- Next response --");
 constext txt_no[] = N_("No  ");
 constext txt_no_arts[] = N_("*** No articles ***");
@@ -939,14 +948,16 @@ constext txt_no_viewer_found[] = N_("No viewer found for %s/%s\n");
 constext txt_none[] = N_("None");
 constext txt_not_exist[] = N_("Newsgroup does not exist on this server");
 constext txt_not_in_active_file[] = N_("Group %s not found in active file");
-constext txt_nrctbl_create[] = N_("c)reate it, use a)lternative name, use d)efault .newsrc, q)uit tin: ");
-constext txt_nrctbl_default[] = N_("use a)lternative name, use d)efault .newsrc, q)uit tin: ");
-constext txt_nrctbl_info[] = N_("# NNTP-server -> newsrc translation table and NNTP-server\n\
+#ifdef NNTP_ABLE
+	constext txt_nrctbl_create[] = N_("c)reate it, use a)lternative name, use d)efault .newsrc, q)uit tin: ");
+	constext txt_nrctbl_default[] = N_("use a)lternative name, use d)efault .newsrc, q)uit tin: ");
+	constext txt_nrctbl_info[] = N_("# NNTP-server -> newsrc translation table and NNTP-server\n\
 # shortname list for %s %s\n#\n# the format of this file is\n\
 #   <FQDN of NNTP-server> <newsrc file> <shortname> ...\n#\n\
 # if <newsrc file> is given without path, $HOME is assumed as its location\n\
 #\n# examples:\n#   news.tin.org      .newsrc-tin.org  tinorg\n\
 #   news.example.org  /tmp/nrc-ex      example    ex\n#\n");
+#endif /* NNTP_ABLE */
 constext txt_null[] = N_("NULL");
 
 constext txt_only[] = N_("Only");
@@ -1012,20 +1023,20 @@ constext txt_range_invalid[] = N_("Invalid range - valid are '0-9.$' e.g. 1-$");
 #endif /* HAVE_SELECT */
 constext txt_reading_article[] = N_("Reading ('q' to quit)...");
 constext txt_reading_arts[] = N_("Reading %s articles...");
-constext txt_reading_attributes_file[] = N_("Reading %sattributes file...\n");
-constext txt_reading_config_file[] = N_("Reading %sconfig file...\n");
-constext txt_reading_filter_file[] = N_("Reading filter file...\n");
+constext txt_reading_attributes_file[] = N_("Reading %sattributes file: %s\n");
+constext txt_reading_config_file[] = N_("Reading %sconfig file: %s\n");
+constext txt_reading_filter_file[] = N_("Reading filter file: %s\n");
 #ifdef DEBUG
 	constext txt_reading_from_spool[] = N_("reading from local spool");
 #endif /* DEBUG */
 constext txt_reading_group[] = N_("Reading %s\n");
 constext txt_reading_groups[] = N_("Reading %s groups...");
-constext txt_reading_input_history_file[] = N_("Reading input history file...\n");
+constext txt_reading_input_history_file[] = N_("Reading input history file: %s\n");
 constext txt_reading_keymap_file[] = N_("Reading keymap file: %s\n");
 constext txt_reading_news_active_file[] = N_("Reading groups from active file... ");
 constext txt_reading_news_newsrc_file[] = N_("Reading groups from newsrc file... ");
 constext txt_reading_newsgroups_file[] = N_("Reading newsgroups file... ");
-constext txt_reading_newsrc[] = N_("Reading newsrc file...");
+constext txt_reading_newsrc[] = N_("Reading newsrc file: %s");
 constext txt_refs_line_only[] = N_("References: line              ");
 #if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
 	constext txt_remaining[] = N_("(%d:%02d remaining)");
@@ -1068,7 +1079,7 @@ constext txt_save_attachment[] = N_("Save '%s' (%s/%s)?");
 constext txt_save_config[] = N_("Save configuration before continuing?");
 constext txt_save_filename[] = N_("Save filename> ");
 constext txt_saved[] = N_("Saved");
-constext txt_saved_group[] = N_("%4d unread (%4d hot) %s in %s\n");
+constext txt_saved_group[] = N_("%s unread (%s hot) %s in %s\n");
 constext txt_saved_groupname[] = N_("Saved %s...\n");
 constext txt_saved_nothing[] = N_("Nothing was saved");
 constext txt_saved_summary[] = N_("\n%s %d %s from %d %s\n");
@@ -1146,14 +1157,12 @@ constext txt_thread_x_of_n[] = N_("Thread %4s of %4s");
 constext txt_threading_arts[] = N_("Threading articles...");
 constext txt_threading_by_multipart[] = N_("Threading by multipart");
 #if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
-	constext txt_tls_handshake_failed[] = N_("TLS handshake failed: %s\n");
 #	ifdef HAVE_LIB_LIBTLS
 	constext txt_retr_cipher_failed[] = N_("<failed to retrieve cipher>");
 	constext txt_retr_issuer_failed[] = N_("<failed to retrieve issuer>");
 	constext txt_retr_subject_failed[] = N_("<failed to retrieve subject>");
 	constext txt_retr_version_failed[] = N_("<failed to retrieve version>");
 	constext txt_tls_handshake_done[] = N_("%s handshake done: %s\n");
-	constext txt_tls_unknown_error[] = N_("unknown error");
 #	endif /* HAVE_LIB_LIBTLS */
 #	ifdef HAVE_LIB_GNUTLS
 	constext txt_tls_handshake_failed_with_err_num[] = N_("TLS handshake failed: %s (%d)\n");
@@ -1168,6 +1177,9 @@ constext txt_threading_by_multipart[] = N_("Threading by multipart");
 #	if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL)
 	constext txt_tls_handshake_done[] = N_("TLS handshake done: %s\n");
 #	endif /* HAVE_LIB_GNUTLS || HAVE_LIB_OPENSSL */
+#	if defined(USE_LIBTLS) || defined(USE_OPENSSL)
+	constext txt_tls_handshake_failed[] = N_("TLS handshake failed: %s\n");
+#	endif /* USE_LIBTLS || USE_OPENSSL */
 #endif /* NNTP_ABLE && NNTPS_ABLE */
 constext txt_toggled_high[] = N_("Toggled word highlighting %s");
 constext txt_toggled_rot13[] = N_("Toggled rot13 encoding");
@@ -1186,6 +1198,9 @@ constext txt_uu_error_no_end[] = N_("No end.");
 constext txt_uu_success[] = N_("%s successfully decoded.");
 constext txt_unchanged[] = N_("unchanged");
 constext txt_unknown[] = N_("(unknown)");
+#if defined(XFACE_ABLE) || (defined(NNTPS_ABLE) && defined(HAVE_LIB_LIBTLS))
+	constext txt_unknown_error[] = N_("unknown error");
+#endif /* XFACE_ABLE || (NNTPS_ABLE && HAVE_LIB_LIBTLS) */
 constext txt_unread[] = N_("unread");
 constext txt_unsubscribed_num_groups[] = N_("unsubscribed from %d groups");
 constext txt_unsubscribed_to[] = N_("Unsubscribed from %s");
@@ -1316,7 +1331,6 @@ constext txt_x_resp[] = N_("%4d Responses");
 	constext txt_xface_msg_fork_failed[] = N_("fork() failed");
 	constext txt_xface_msg_no_controlling_terminal[] = N_("couldn't find controlling terminal");
 	constext txt_xface_msg_no_width_and_height_avail[] = N_("terminal doesn't export width and height");
-	constext txt_xface_msg_unknown_error[] = N_("unknown error");
 	constext txt_xface_msg_windowid_not_found[] = N_("WINDOWID not found in environment");
 	constext txt_xface_readme[] = N_("This directory is used to create named pipes for communication between\n\
 slrnface and its parent process. It should normally be empty because\n\
@@ -1414,8 +1428,8 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_LIBUU */
 
 #ifdef HAVE_MH_MAIL_HANDLING
-	constext txt_reading_mail_active_file[] = N_("Reading mail active file... ");
-	constext txt_reading_mailgroups_file[] = N_("Reading mailgroups file... ");
+	constext txt_reading_mail_active_file[] = N_("Reading mail active file: %s");
+	constext txt_reading_mailgroups_file[] = N_("Reading mailgroups file: %s");
 #endif /* HAVE_MH_MAIL_HANDLING */
 
 #ifdef HAVE_PGP_GPG
@@ -1458,8 +1472,8 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_failed_to_connect_to_server[] = N_("Failed to connect to NNTP server %s. Exiting...");
 	constext txt_nntp_ok_goodbye[] = N_("205  Closing connection");
 	constext txt_no_xover_support[] = N_("Your server does not support the NNTP XOVER or OVER command.\n");
+	constext txt_port_not_numeric[] = N_("Port isn't numeric: %s:%s\n");
 #	ifdef DEBUG
-		constext txt_port_not_numeric[] = N_("Port isn't numeric: %s:%s\n");
 		constext txt_port_not_numeric_in[] = N_("Port in %s isn't numeric: %s:%s\n");
 		constext txt_reconnect_limit_reached[] = N_("reconnect (%d) limit %d reached, giving up.");
 #	endif /* DEBUG */

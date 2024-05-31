@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2024-03-21
+ *  Updated   : 2024-05-12
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2024 Chris Blum <chris@resolution.de>
@@ -997,10 +997,12 @@ do_rfc15211522_encode(
 	rewind(g);
 	rewind(f);
 #ifdef HAVE_FTRUNCATE
-	if (ftruncate(fileno(f), 0) == -1) {
+	errno = 0;
+	i = fileno(f);
+	if (i == -1 || ftruncate(i, 0) == -1) {
 #	ifdef DEBUG
 		if (debug & DEBUG_MISC)
-			perror_message("ftruncate()");
+			perror_message("ftruncate(%d)", i);
 #	endif /* DEBUG */
 	}
 #endif /* HAVE_FTRUNCATE */
@@ -1083,7 +1085,7 @@ rfc15211522_encode(
 {
 	FILE *fp;
 
-	if ((fp = fopen(filename, "r+")) == NULL)
+	if ((fp = tin_fopen(filename, "r+")) == NULL)
 		return;
 
 	do_rfc15211522_encode(fp, mime_encoding, group, allow_8bit_header, ismail, TRUE);
@@ -1175,7 +1177,7 @@ split_mail(
 	FILE *fp;
 	char *line;
 
-	if ((fp = fopen(filename, "r")) == NULL)
+	if ((fp = tin_fopen(filename, "r")) == NULL)
 		return FALSE;
 
 	/* Header */

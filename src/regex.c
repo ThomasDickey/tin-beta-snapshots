@@ -133,7 +133,7 @@ match_regex_ex(
 
 	return error;
 #else
-	return pcre2_match_8(regex->re, (const PCRE2_UCHAR8*)string, length, offset, options, regex->match, NULL);
+	return pcre2_match_8(regex->re, (const PCRE2_UCHAR8 *) string, length, offset, options, regex->match, NULL);
 #endif /* !HAVE_LIB_PCRE2 */
 }
 
@@ -178,7 +178,7 @@ compile_regex(
 	if (regex_use_utf8())
 		options |= PCRE2_UTF;
 
-	cache->re = pcre2_compile_8((const PCRE2_UCHAR8*)regex, PCRE2_ZERO_TERMINATED, options,
+	cache->re = pcre2_compile_8((const PCRE2_UCHAR8 *) regex, PCRE2_ZERO_TERMINATED, options,
 			&regex_errcode, &regex_errpos, NULL);
 	if (cache->re == NULL) {
 		PCRE2_UCHAR8 regex_errmsg[256];

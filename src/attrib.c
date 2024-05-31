@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2024-02-13
+ *  Updated   : 2024-05-09
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
@@ -311,8 +311,6 @@ read_attributes_file(
 	static t_bool startup = TRUE;
 	t_bool flag, found = FALSE;
 
-	if (!batch_mode || verbose)
-		wait_message(0, _(txt_reading_attributes_file), (global_file ? _(txt_global) : ""));
 	/*
 	 * Initialize global attributes even if there is no global file
 	 * These setting are used as the default for all groups unless overridden
@@ -329,7 +327,10 @@ read_attributes_file(
 		file = local_attributes_file;
 	}
 
-	if ((fp = fopen(file, "r")) != NULL) {
+	if (!batch_mode || verbose)
+		wait_message(0, _(txt_reading_attributes_file), global_file ? _(txt_global) : "", file);
+
+	if ((fp = tin_fopen(file, "r")) != NULL) {
 		scope[0] = '\0';
 		/*
 		 * TODO: use tin_fgets() instead to handle long lines
@@ -600,13 +601,11 @@ read_attributes_file(
 						/*
 						 * previous versions has always passed groupname to external
 						 * commands, now we look for %G
-						 *
-						 * 8 == sizeof("sigfile=")
 						 */
-						if (match_string(line, "sigfile=", buf, sizeof(buf) - 8) && buf[0] == '!') {
+						if (match_string(line, "sigfile=", buf, sizeof(buf) - strlen("sigfile=")) && buf[0] == '!') {
 							/* just append %G if ATTRIBUTES_VERSION <= 1.0.8 */
 							if (upgrade && upgrade->file_version < 10009) {
-								char *newbuf = my_malloc(sizeof(buf) - 8 + 4);
+								char *newbuf = my_malloc(sizeof(buf) + 3); /* " %G" */
 
 								sprintf(newbuf, "%s %s", buf, "%G");
 								set_attrib(OPT_ATTRIB_SIGFILE, scope, line, newbuf);
@@ -1217,7 +1216,7 @@ write_attributes_file(
 		return;
 	}
 
-	wait_message(0, _(txt_writing_attributes_file));
+	wait_message(0, _(txt_writing_attributes_file)); /* incl. filename in message? which one: file or new_file? */
 
 #ifdef DEBUG
 	dump_scopes("SCOPES-W");

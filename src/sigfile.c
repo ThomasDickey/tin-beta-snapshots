@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2024-03-21
+ *  Updated   : 2024-05-06
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2024 Mike Gleason
@@ -138,7 +138,7 @@ msg_write_signature(
 		 * generate a random signature from sigs in sigdir. If
 		 * the file path/.sigfixed or ~/.sigfixed exists (fixed
 		 * part of random sig) then read it in first and append
-		 * the random sig part onto the end.
+		 * the random sig part to the end.
 		 */
 		if ((sigfp = open_random_sig(path)) != NULL) {
 #ifdef DEBUG
@@ -151,7 +151,7 @@ msg_write_signature(
 			if (debug & DEBUG_MISC)
 				error_message(2, "TRYING fixed sig=[%s]", pathfixed);
 #endif /* DEBUG */
-			if ((fixfp = fopen(pathfixed, "r")) != NULL) {
+			if ((fixfp = tin_fopen(pathfixed, "r")) != NULL) {
 				copy_fp(fixfp, fp);
 				fclose(fixfp);
 			} else {
@@ -160,7 +160,7 @@ msg_write_signature(
 				if (debug & DEBUG_MISC)
 					error_message(2, "TRYING fixed sig=[%s]", pathfixed);
 #endif /* DEBUG */
-				if ((fixfp = fopen(pathfixed, "r")) != NULL) {
+				if ((fixfp = tin_fopen(pathfixed, "r")) != NULL) {
 					copy_fp(fixfp, fp);
 					fclose(fixfp);
 				}
@@ -176,7 +176,7 @@ msg_write_signature(
 			return;
 		}
 
-		if ((sigfp = fopen(path, "r")) != NULL) {
+		if ((sigfp = tin_fopen(path, "r")) != NULL) {
 			fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "");
 			copy_fp(sigfp, fp);
 			fclose(sigfp);
@@ -187,7 +187,7 @@ msg_write_signature(
 		 * Use ~/.signature as a last resort, but only if mailing or
 		 * using internal inews (external inews appends it automagically).
 		 */
-		if ((sigfp = fopen(default_signature, "r")) != NULL) {
+		if ((sigfp = tin_fopen(default_signature, "r")) != NULL) {
 			if (include_dot_signature) {
 				fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "");
 				copy_fp(sigfp, fp);
@@ -285,20 +285,7 @@ thrashdir(
 			if (!strcmp(dp->d_name, CURRENTDIR) || (dp->d_name[0] == '.'))
 				dp = NULL;
 			else {	/* if we have a non-dot entry */
-#ifdef HAVE_DIRFD
-				int dfd = dirfd(dirp);
-
-				if (dfd < 0)
-					goto err_out;
-
-				if (fstat(dfd, &st) == -1)
-#else
-				if (stat(dp->d_name, &st) == -1)
-#endif /* HAVE_DIRFD */
-				{
-#ifdef HAVE_DIRFD
-err_out:
-#endif /* HAVE_DIRFD */
+				if (stat(dp->d_name, &st) == -1) {
 					CLOSEDIR(dirp);
 					free(cwd);
 					return 1;

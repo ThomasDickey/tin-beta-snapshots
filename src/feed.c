@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2023-12-27
+ *  Updated   : 2024-04-10
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -491,9 +491,10 @@ feed_article(
 #ifndef DONT_HAVE_PIPING
 		case FEED_PIPE:
 			rewind(openartptr->raw);
-			ok = copy_fp(openartptr->raw, pipe_fp);
-			if (errno == EPIPE)	/* broken pipe in copy_fp() */
+			if (copy_fp(openartptr->raw, pipe_fp) == EPIPE) {	/* broken pipe in copy_fp() */
 				got_epipe = TRUE;
+				ok = FALSE;
+			}
 			break;
 #endif /* !DONT_HAVE_PIPING */
 
@@ -1055,7 +1056,7 @@ print_file(
 {
 	FILE *fp;
 	const struct t_header *hdr = &artinfo->hdr;
-	t_bool ok;
+	t_bool ok = FALSE;
 #	ifdef DONT_HAVE_PIPING
 	char cmd[PATH_LEN], file[PATH_LEN];
 	int i;
@@ -1069,7 +1070,7 @@ print_file(
 #	endif /* DONT_HAVE_PIPING */
 	{
 		perror_message(_(txt_command_failed), command);
-		return FALSE;
+		return ok;
 	}
 
 	rewind(artinfo->raw);
@@ -1086,7 +1087,8 @@ print_file(
 			fprintf(fp, "Date: %s\n\n", hdr->date);
 	}
 
-	ok = copy_fp(artinfo->raw, fp);
+	if (copy_fp(artinfo->raw, fp) == 0)
+		ok = TRUE;
 
 #	ifdef DONT_HAVE_PIPING
 	fclose(fp);

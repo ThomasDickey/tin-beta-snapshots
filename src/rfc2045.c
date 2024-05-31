@@ -120,7 +120,7 @@ rfc1521_encode(
 		} else {
 			char *line_crlf = line;
 			size_t len = strlen(line);
-			char tmpbuf[2050]; /* FIXME: this is sizeof(buffer)+2 from rfc15211522_encode() */
+			char tmpbuf[2050]; /* FIXME: we don't do VLAs, so this is sizeof(buffer)+2 from rfc15211522_encode() */
 
 			/*
 			 * base64 requires CRLF line endings in text types

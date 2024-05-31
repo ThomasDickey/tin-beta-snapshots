@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2024-03-27
+ *  Updated   : 2024-05-01
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -251,9 +251,9 @@ extern void toggle_mini_help(int level);
 extern const char *get_domain_name(void);
 extern const char *get_fqdn(const char *host);
 extern const char *get_host_name(void);
-#ifndef FORGERY
+#if !defined(FORGERY) && defined(NNTP_ABLE)
 	extern char *build_sender(void);
-#endif /* !FORGERY */
+#endif /* !FORGERY && NNTP_ABLE */
 
 /* heapsort.c */
 #ifndef HAVE_HEAPSORT
@@ -349,6 +349,7 @@ extern void lookup_mimetype(const char *ext, t_part *part);
 extern t_bool lookup_extension(char *extension, size_t ext_len, const char *major, const char *minor);
 
 /* misc.c */
+extern FILE *tin_fopen(const char *pathname, const char *mode);
 extern char *buffer_to_ascii(char *c);
 extern char *escape_shell_meta(const char *source, int quote_area);
 extern char *get_tmpfilename(const char *filename);
@@ -375,11 +376,11 @@ extern int tin_gettime(struct t_tintime *tt);
 extern long file_mtime(const char *file);
 extern long file_size(const char *file);
 extern t_bool backup_file(const char *filename, const char *backupname);
-extern t_bool copy_fp(FILE *fp_ip, FILE *fp_op);
+extern int copy_fp(FILE *fp_ip, FILE *fp_op);
 extern t_bool invoke_cmd(const char *nam);
 extern t_bool invoke_editor(const char *filename, int lineno, struct t_group *group);
 extern t_bool mail_check(const char *mailbox_name);
-extern void append_file(char *old_filename, char *new_filename);
+extern int append_file(char *old_filename, char *new_filename);
 #ifndef NDEBUG
 	extern _Noreturn void asfail(const char *file, int line, const char *cond);
 #endif /* !NDEBUG */
@@ -396,7 +397,7 @@ extern void make_base_group_path(const char *base_dir, const char *group_name, c
 extern void make_group_path(const char *name, char *path);
 extern void process_charsets(char **line, size_t *max_line_len, const char *network_charset, const char *local_charset, t_bool conv_tex2iso);
 extern void read_input_history_file(void);
-extern void rename_file(const char *old_filename, const char *new_filename);
+extern int rename_file(const char *old_filename, const char *new_filename);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern void remove_soft_hyphens(char *line);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -690,13 +691,16 @@ extern size_t my_strftime(char *s, size_t maxsize, const char *format, struct tm
 /* string.c */
 extern char *eat_tab(char *s);
 extern char *fmt_string(const char *fmt, ...);
-extern char *my_strdup(const char *str);
+#if !defined(USE_DMALLOC) || (defined(USE_DMALLOC) && !defined(HAVE_STRDUP))
+	extern char *my_strdup(const char *str);
+#endif /* !USE_DMALLOC || (USE_DMALLOC && !HAVE_STRDUP) */
 extern char *str_trim(char *string);
 extern char *strunc(const char *message, size_t len);
 extern char *tin_ltoa(t_artnum value, int digits);
 extern char *tin_strtok(char *str, const char *delim);
 extern int sh_format(char *dst, size_t len, const char *fmt, ...);
 extern int strwidth(const char *str);
+extern signed int s2i(const char *s, signed int min, signed int max);
 extern size_t mystrcat(char **t, const char *s);
 extern void my_strncpy(char *p, const char *q, size_t n);
 extern void parse_format_string(const char *fmtstr, struct t_fmt *fmt);
@@ -743,6 +747,7 @@ extern int my_toupper(int);
 	extern char *wchar_t2char(const wchar_t *wstr);
 	extern wchar_t *abbr_wcsgroupname(const wchar_t *grpname, int len);
 	extern wchar_t *char2wchar_t(const char *str);
+	extern wchar_t *my_wcsdup(const wchar_t *wstr);
 	extern wchar_t *wcspart(const wchar_t *wstr, int columns, t_bool pad);
 	extern wchar_t *wexpand_tab(wchar_t *wstr, size_t tab_width);
 	extern wchar_t *wstrunc(const wchar_t *wmessage, size_t len);

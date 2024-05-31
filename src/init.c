@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-01
+ *  Updated   : 2024-05-28
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -86,6 +86,7 @@ char inewsdir[PATH_LEN];
 char local_attributes_file[PATH_LEN];
 char local_config_file[PATH_LEN];
 char local_input_history_file[PATH_LEN];
+char local_motd_file[PATH_LEN];	/* local copy of NNTP MOTD message */
 char local_newsgroups_file[PATH_LEN];	/* local copy of NNTP newsgroups file */
 char local_newsrctable_file[PATH_LEN];
 char lock_file[PATH_LEN];		/* contains name of index lock file */
@@ -127,6 +128,8 @@ int hist_pos[HIST_MAXNUM + 1];
 int iso2asc_supported;			/* Convert ISO-Latin1 to Ascii */
 int system_status;
 int xmouse, xrow, xcol;			/* xterm button pressing information */
+
+long motd_hash = 0L;
 
 pid_t process_id;			/* Useful to have around for .suffixes */
 
@@ -743,8 +746,8 @@ init_selfinfo(
 	dangerous_signal_exit = FALSE;
 	disable_gnksa_domain_check = TRUE;
 	disable_sender = FALSE;	/* we set force_no_post=TRUE later on if we don't have a valid FQDN */
-	iso2asc_supported = atoi(get_val("ISO2ASC", DEFAULT_ISO2ASC));
-	if (iso2asc_supported >= NUM_ISO_TABLES || iso2asc_supported < 0) /* TODO: issue a warning here? */
+	iso2asc_supported = s2i(get_val("ISO2ASC", DEFAULT_ISO2ASC), -1, NUM_ISO_TABLES - 1);
+	if (errno) /* TODO: issue a warning here? */
 		iso2asc_supported = -1;
 	list_active = FALSE;
 	newsrc_active = FALSE;
@@ -768,9 +771,9 @@ init_selfinfo(
 	index_savedir[0] = '\0';
 	newsrc[0] = '\0';
 
-	snprintf(page_header, sizeof(page_header), "%s %s release %s (\"%s\") %s",
+	snprintf(page_header, sizeof(page_header), "%s %s release %s (\"%s\")%s",
 		PRODUCT, VERSION, RELEASEDATE, RELEASENAME,
-		(iso2asc_supported >= 0 ? "[ISO2ASC]" : ""));
+		(iso2asc_supported >= 0 ? " [ISO2ASC]" : ""));
 	snprintf(cvers, sizeof(cvers), txt_copyright_notice, page_header);
 
 	default_organization[0] = '\0';
@@ -822,9 +825,12 @@ init_selfinfo(
 		force_no_post = TRUE;
 	}
 
+#ifndef NNTP_ONLY
 	/*
 	 * only set the following variables if they weren't set from within
 	 * read_site_config()
+	 *
+	 * what if !*libdir - should be use some fallback other than '/' ?
 	 *
 	 * TODO: do we really want that read_site_config() overwrites
 	 * values given in env-vars? ($MM_CHARSET, $TIN_ACTIVEFILE)
@@ -848,7 +854,7 @@ init_selfinfo(
 		joinpath(overviewfmt_file, sizeof(overviewfmt_file), libdir, OVERVIEW_FMT);
 	if (!*default_organization) {
 		joinpath(tmp, sizeof(tmp), libdir, "organization");
-		if ((fp = fopen(tmp, "r")) != NULL) {
+		if ((fp = tin_fopen(tmp, "r")) != NULL) {
 			char buf[LEN];
 
 			if (fgets(buf, (int) sizeof(buf), fp) != NULL) {
@@ -859,6 +865,7 @@ init_selfinfo(
 			my_strncpy(default_organization, buf, sizeof(default_organization) - 1);
 		}
 	}
+#endif /* NNTP_ONLY */
 
 	/*
 	 * Formerly get_mm_charset(), read_site_config() may set mm_charset
@@ -970,9 +977,13 @@ init_selfinfo(
 	joinpath(lock_file, sizeof(lock_file), tmpdir, tmp);
 
 #ifdef NNTP_ABLE
-	nntp_tcp_default_port = (unsigned short) atoi(get_val("NNTPPORT", NNTP_TCP_PORT));
+	nntp_tcp_default_port = (unsigned short) s2i(get_val("NNTPPORT", NNTP_TCP_PORT), 0, 65535);
+	if (errno)
+		nntp_tcp_default_port = IPPORT_NNTP;
 #ifdef NNTPS_ABLE
-	nntps_tcp_default_port = (unsigned short) atoi(get_val("NNTPSPORT", NNTPS_TCP_PORT));
+	nntps_tcp_default_port = (unsigned short) s2i(get_val("NNTPSPORT", NNTPS_TCP_PORT), 0, 65535);
+	if (errno)
+		nntps_tcp_default_port = IPPORT_NNTPS;
 #endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 
@@ -1024,7 +1035,7 @@ read_site_config(
 	 */
 	while (tin_defaults[i] != NULL) {
 		joinpath(filename, sizeof(filename), tin_defaults[i++], "tin.defaults");
-		if ((fp = fopen(filename, "r")) != NULL)
+		if ((fp = tin_fopen(filename, "r")) != NULL)
 			break;
 	}
 

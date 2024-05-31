@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-16
+ *  Updated   : 2024-05-09
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -127,8 +127,9 @@ selection_page(
 	Raw(TRUE);
 	ClearScreen();
 
+#ifdef NNTP_ABLE
 	if (cmdline.args & CMDLINE_MSGID) { /* -L cmd */
-		switch(show_article_by_msgid(messageid)) {
+		switch (show_article_by_msgid(messageid)) {
 			case LOOKUP_ART_UNAVAIL:
 				wait_message(2, _(txt_art_unavailable));
 				break;
@@ -136,7 +137,11 @@ selection_page(
 			default:
 				break;
 		}
+		cmdline.args ^= CMDLINE_MSGID; /* clear flag */
 	}
+#else
+	(void) messageid;
+#endif /* NNTP_ABLE */
 
 	/*
 	 * If user specified only 1 cmd line groupname (eg. tin -r alt.sources)
@@ -1154,7 +1159,7 @@ reposition_group(
 		return default_num;
 
 	if (*pos)
-		pos_num = ((pos[0] == '$') ? selmenu.max : atoi(pos));
+		pos_num = ((pos[0] == '$') ? selmenu.max : s2i(pos, 1, selmenu.max));
 	else {
 		if (tinrc.default_move_group)
 			pos_num = tinrc.default_move_group;
@@ -1387,7 +1392,7 @@ toggle_my_groups(
 	}
 #else
 	/* preserve group ordering based on newsrc */
-	if ((fp = fopen(newsrc, "r")) == NULL)
+	if ((fp = tin_fopen(newsrc, "r")) == NULL)
 		return;
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
@@ -1670,6 +1675,7 @@ show_article_by_msgid(
 	char id[NNTP_STRLEN];	/* still way too big; RFC 3977 3.6 & RFC 5536 3.1.3 limit Message-ID to max 250 octets */
 	char *idptr = NULL;
 	char *newsgroups = NULL;
+	char *ngcpy;
 	int i, ret = 0;
 	struct t_article *art;
 	struct t_group *group = NULL;
@@ -1701,11 +1707,17 @@ show_article_by_msgid(
 	if (!newsgroups)
 		return LOOKUP_ART_UNAVAIL;
 
+	ngcpy = my_strdup(newsgroups); /* take a copy as get_group_from_list() modifies newsgroups */
 	if ((group = get_group_from_list(newsgroups)) == NULL) {
-		info_message(strchr(newsgroups, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), newsgroups);
+		if (!(cmdline.args & CMDLINE_MSGID))
+			info_message(strchr(ngcpy, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), ngcpy);
+		else /* -L cmd. */
+			wait_message(2, strchr(ngcpy, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), ngcpy);
 		free(newsgroups);
+		free(ngcpy);
 		return LOOKUP_FAILED;
 	}
+	free(ngcpy);
 
 	if (curr_group)
 		tmp_group = curr_group;

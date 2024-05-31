@@ -452,8 +452,6 @@ AC_DEFUN([AM_WITH_NLS],
 
   dnl If we use NLS figure out what method
   if test "$USE_NLS" = "yes"; then
-    dnl We need to process the po/ directory.
-
     dnl Search for GNU msgfmt in the PATH.
     AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
         ["$ac_dir/$ac_word" --statistics /dev/null >/dev/null 2>&1], :)
@@ -486,8 +484,9 @@ AC_DEFUN([AM_WITH_NLS],
 
 	AC_ARG_WITH([libintl-prefix],
 		[  --with-libintl-prefix=DIR
-                          search for libintl in DIR/include and DIR/lib],
-		[CF_ADD_OPTIONAL_PATH($withval, libintl)])
+                          search for libiintl in DIR/include and DIR/lib], [
+	CF_ADD_OPTIONAL_PATH($withval, libintl)
+	])
 
 	CF_FIND_LINKAGE(CF__INTL_HEAD,
 	  CF__INTL_BODY($2),
@@ -499,6 +498,10 @@ AC_DEFUN([AM_WITH_NLS],
 	AC_MSG_RESULT($cf_cv_func_gettext)
 
 	if test "$cf_cv_func_gettext" = yes ; then
+	  AC_DEFINE(ENABLE_NLS, 1,
+		[Define to 1 if translation of program messages to the user's native language
+		is requested.])
+
 	  AC_DEFINE(HAVE_LIBINTL_H,1,[Define to 1 if we have libintl.h])
 
 	  AC_DEFINE(HAVE_GETTEXT, 1,
@@ -512,10 +515,11 @@ AC_DEFUN([AM_WITH_NLS],
 	  fi
 
 	  LIBS="$LIBS $INTLLIBS"
+
 	  AC_CHECK_FUNCS(dcgettext)
 	  CATOBJEXT=.gmo
 	  AC_DEFINE(ENABLE_NLS, 1,
-          [Define to 1 if translation of program messages is enabled.])
+	       [Define to 1 if translation of program messages is enabled.])
 	elif test -z "$MSGFMT" || test -z "$XGETTEXT" ; then
 	  AC_MSG_WARN(disabling NLS feature)
 	  ALL_LINGUAS=
@@ -4455,7 +4459,7 @@ if test "$USE_NLS" = yes ; then
 if test -d "$srcdir/po" ; then
 AC_MSG_CHECKING(if we should use included message-library)
 	AC_ARG_ENABLE(included-msgs,
-	[  --disable-included-msgs do not use included messages for i18n support],
+	[  --disable-included-msgs do not use included messages, for i18n support],
 	[use_our_messages=$enableval],
 	[use_our_messages=yes])
 fi

@@ -3,7 +3,7 @@
  *  Module    : nrctbl.c
  *  Author    : Sven Paulus <sven@tin.org>
  *  Created   : 1996-10-06
- *  Updated   : 2024-03-28
+ *  Updated   : 2024-05-13
  *  Notes     : This module does the NNTP server name lookup in
  *              ~/.tin/newsrctable and returns the real hostname
  *              and the name of the newsrc file for a given
@@ -50,8 +50,11 @@
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
+#ifndef TNNTP_H
+#	include "tnntp.h"
+#endif /* !TNNTP_H */
 
-
+#ifdef NNTP_ABLE
 /*
  * local prototypes
  */
@@ -104,7 +107,7 @@ get_nntpserver(
 	int line_entry_counter;
 	t_bool found = FALSE;
 
-	if ((fp = fopen(local_newsrctable_file, "r")) != NULL) {
+	if ((fp = tin_fopen(local_newsrctable_file, "r")) != NULL) {
 		while ((fgets(line, sizeof(line), fp) != NULL) && !found) {
 			line_entry_counter = 0;
 
@@ -144,20 +147,32 @@ get_newsrcname(
 {
 	FILE *fp;
 	char *line_entry;
-	char *x = NULL;
 	char line[LEN];
 	char name_found[PATH_LEN] = { '\0' };
 	int line_entry_counter;
 	int found = 0;
 	t_bool do_cpy = FALSE;
-	t_bool check_port = TRUE;
 
-	if ((fp = fopen(local_newsrctable_file, "r")) != NULL) {
-		if (strchr(nntpserver_name, ':')) /* FIXME: check we we have exact 1 x ':' */
-			check_port = FALSE;
-		else {
-			x = my_malloc(strlen(nntpserver_name) + strlen(NNTP_TCP_PORT) + 2);
-			sprintf(x, "%s:%d", nntpserver_name, nntp_tcp_port);
+	if ((fp = tin_fopen(local_newsrctable_file, "r")) != NULL) {
+		char *ns, *nsp, *p, *q;
+		size_t l = strlen(nntpserver_name) + 8; /* []:65535\0 */
+
+		/* add [] and/or port if required */
+		ns = my_strdup(nntpserver_name);
+		nsp = my_malloc(l);
+		sprintf(nsp, "%s:%u", nntpserver_name, nntp_tcp_port);
+
+		if ((p = strchr(nntpserver_name, ':')) != NULL) {
+			if ((q = strrchr(nntpserver_name, ':')) != NULL) {
+				if (p != q) {
+					free(ns);
+					free(nsp);
+					ns = my_malloc(l);
+					nsp = my_malloc(l);
+					sprintf(ns, "[%s]", nntpserver_name);
+					sprintf(nsp, "[%s]:%u", nntpserver_name, nntp_tcp_port);
+				}
+			}
 		}
 
 		while ((fgets(line, (int) sizeof(line), fp) != NULL) && (found != 1)) {
@@ -168,28 +183,14 @@ get_newsrcname(
 			while ((line_entry = strtok(line_entry_counter ? NULL : line, " \t\n")) != NULL) {
 				line_entry_counter++;
 
-				if (line_entry_counter == 1) {
-					if (check_port)	{
-						if (!found && !strcasecmp(line_entry, x)) {
-							found = 1;
-							do_cpy = TRUE;
-						}
-					}
-					if (!found && !strcasecmp(line_entry, nntpserver_name)) {
-						found = 1;
-						do_cpy = TRUE;
-					}
+				if ((line_entry_counter == 1) && ((!strcasecmp(line_entry,nsp)) || (!strcasecmp(line_entry, ns)))) {
+					found = 1;
+					do_cpy = TRUE;
+				}
 
-					if (!found && check_port) {
-						if (!strcasecmp(line_entry, nntp_tcp_port == 563 ? "default:"NNTPS_TCP_PORT : "default:"NNTP_TCP_PORT) || !strcasecmp(line_entry, nntp_tcp_port == 563 ? "*:"NNTPS_TCP_PORT : "*:"NNTP_TCP_PORT)) {
-							found = 2;
-							do_cpy = TRUE;
-						}
-					}
-					if (!found && (!strcasecmp(line_entry, "default") || !strcmp(line_entry, "*"))) {
-						found = 2;
-						do_cpy = TRUE;
-					}
+				if (!found && (!strcasecmp(line_entry, "default") || !strcmp(line_entry, "*"))) {
+					found = 2;
+					do_cpy = TRUE;
 				}
 
 				if (do_cpy && (line_entry_counter == 2)) {
@@ -198,7 +199,8 @@ get_newsrcname(
 				}
 			}
 		}
-		FreeIfNeeded(x);
+		free(ns);
+		free(nsp);
 		fclose(fp);
 		if (found) {
 			char dir[PATH_LEN] = { '\0' };
@@ -254,24 +256,24 @@ get_newsrcname(
 					/* very ugly code, but curses is not initialized yet */
 					if (error >= 2) {
 						default_ch = 'c';
-						printf("%s%c\b", _(txt_nrctbl_create), default_ch);
+						my_printf("%s%c\b", _(txt_nrctbl_create), default_ch);
 					} else
-						printf("%s%c\b", _(txt_nrctbl_default), default_ch);
+						my_printf("%s%c\b", _(txt_nrctbl_default), default_ch);
 
 					if ((ch = (char) ReadCh()) == '\r' || ch == '\n')
 						ch = default_ch;
 				} while (ch != ESC && ch != 'a' && ch != 'c' && ch != 'd' && ch != 'q');
-				printf("%c\n", ch);
+				my_printf("%c\n", ch);
 
 				/* NOTE: these keys can not be remapped */
 				switch (ch) {
 					case 'c':
 						if (*dir) {
 							errno = 0;
-							my_mkdir(dir, (mode_t) (S_IRWXU));
+							(void) my_mkdir(dir, (mode_t) (S_IRWXU));
 							if (!errno || errno == EEXIST)
 								return TRUE;
-							printf("mkdir(%s): Error: %s\n", dir, strerror(errno));
+							my_fprintf(stderr, "mkdir(%s): Error: %s\n", dir, strerror(errno));
 						}
 
 						no_write = TRUE;
@@ -316,3 +318,11 @@ get_newsrcname(
 
 	return FALSE;
 }
+#else
+static void no_newsrctable(void);	/* proto-type */
+static void
+no_newsrctable(	/* ANSI C requires non-empty source file */
+	void)
+{
+}
+#endif /* NNTP_ABLE */

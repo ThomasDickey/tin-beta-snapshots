@@ -62,7 +62,7 @@ use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.64";
+my $version = "1.1.65";
 
 my %config;
 
@@ -616,7 +616,7 @@ sub readarticle {
 				$currentheader = lc($1);
 				$$HeaderR{$currentheader} = "$1: $2";
 				$l = length($_);
-				print $1 . ":-header exceeds line length limit " . $l . " > " . $config{'max-header-length'} . " octets.\n" if (($config{'verbose'} || $config{'debug'}) && length($_) > $config{'max-header-length'});
+				print "" . $1 . ":-header exceeds line length limit " . $l . " > " . $config{'max-header-length'} . " octets.\n" if (($config{'verbose'} || $config{'debug'}) && length($_) > $config{'max-header-length'});
 			} elsif (m/^[ \t]/o) {
 				$$HeaderR{$currentheader} .= $_;
 				$l = length($_);
@@ -1011,7 +1011,7 @@ sub buildcancellock {
 }
 
 sub version {
-	print $pname." ".$version."\n";
+	print "".$pname." ".$version."\n";
 	return;
 }
 

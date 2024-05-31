@@ -213,7 +213,7 @@ my_tmpfile(
 {
 	char f[PATH_LEN];
 	int fd;
- 	int sverrno = errno;
+	int sverrno = errno;
 	size_t s = sizeof(f);
 	FILE *fp;
 

@@ -3,7 +3,7 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2021-12-14
+ *  Updated   : 2024-04-01
  *  Notes     : curses #include files, #defines & struct's
  *
  * Copyright (c) 1997-2024 Thomas Dickey <dickey@invisible-island.net>

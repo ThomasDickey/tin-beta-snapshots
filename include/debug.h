@@ -3,7 +3,7 @@
  *  Module    : debug.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2016-02-27
+ *  Updated   : 2024-04-19
  *  Notes     :
  *
  * Copyright (c) 2007-2024 Urs Janssen <urs@tin.org>
@@ -41,11 +41,7 @@
 #ifndef DEBUG_H
 #	define DEBUG_H 1
 
-#	ifdef NNTP_ABLE
-#		define DEBUG_NNTP	0x01	/* 1 */
-#	else
-#		define DEBUG_NNTP	0x00	/* disabled */
-#	endif /* NNTP_ABLE */
+#	define DEBUG_NNTP	0x01	/* 1 */
 #	define DEBUG_FILTER	0x02	/* 2 */
 #	define DEBUG_NEWSRC	0x04	/* 4 */
 #	define DEBUG_REFS	0x08	/* 8 */

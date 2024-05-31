@@ -54,9 +54,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc doc/keymap.sample doc/mailcap.sample doc/mime.types doc/tin.defaults
 %doc doc/pgp.txt doc/reading-mail.txt
 %doc doc/tools.txt doc/umlaute.txt doc/umlauts.txt
-%doc doc/wildmat.3 doc/plp_snprintf.3
+%doc doc/wildmat.3
 %doc doc/article.txt doc/art_handling.txt doc/internals.txt doc/rcvars.txt
-%doc doc/config-anomalies doc/nov_tests doc/DEBUG_REFS doc/ABOUT-NLS
+%doc doc/config-anomalies doc/nov_tests doc/DEBUG_REFS
 %doc doc/CREDITS
 %doc README
 

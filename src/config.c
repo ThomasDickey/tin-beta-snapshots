@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-21
+ *  Updated   : 2024-05-28
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -101,11 +101,11 @@ read_config_file(
 	t_bool is_7bit;
 #endif /* CHARSET_CONVERSION */
 
-	if ((fp = fopen(file, "r")) == NULL)
+	if ((fp = tin_fopen(file, "r")) == NULL)
 		return FALSE;
 
 	if (!batch_mode || verbose)
-		wait_message(0, _(txt_reading_config_file), (global_file) ? _(txt_global) : "");
+		wait_message(0, _(txt_reading_config_file), global_file ? _(txt_global) : "", file);
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 		if (buf[0] == '\n')
@@ -2130,10 +2130,11 @@ rc_post_update(
 	char buf[LEN];
 	int groupname_max_length = 0;
 
-	if (!fp)
+	if (fseek(fp, 0L, SEEK_SET) == -1) {
+		perror_message(txt_error_fseek, fp);
 		return FALSE;
+	}
 
-	rewind(fp);
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 		if (buf[0] == '#' || buf[0] == '\n')
 			continue;
@@ -2142,7 +2143,7 @@ rc_post_update(
 			case 'c':
 #ifdef USE_CANLOCK
 				{
-					t_bool cancel_locks = TRUE;
+					t_bool cancel_locks;
 
 					if (match_boolean(buf, "cancel_locks=", &cancel_locks)) {
 						if (!cancel_locks)
@@ -2232,8 +2233,9 @@ read_server_config(
 	joinpath(serverdir, sizeof(serverdir), rcdir, file);
 	joinpath(file, sizeof(file), serverdir, SERVERCONFIG_FILE);
 	joinpath(local_newsgroups_file, sizeof(local_newsgroups_file), serverdir, NEWSGROUPS_FILE);
+	joinpath(local_motd_file, sizeof(local_motd_file), serverdir, MOTD_FILE);
 
-	if ((fp = fopen(file, "r")) == NULL)
+	if ((fp = tin_fopen(file, "r")) == NULL)
 		return;
 
 	while ((line = tin_fgets(fp, FALSE)) != NULL) {
@@ -2252,6 +2254,9 @@ read_server_config(
 			}
 			continue;
 		}
+
+		if (match_long(line, "motd_hash=", &motd_hash))
+			continue;
 
 		if (match_string(line, "version=", NULL, 0)) {
 			if (upgrade != NULL) /* ignore duplicate version lines; first match counts */
@@ -2329,6 +2334,9 @@ write_server_config(
 
 	fprintf(fp, _(txt_serverconfig_header), PRODUCT, tin_progname, VERSION, RELEASEDATE, RELEASENAME, PRODUCT, PRODUCT);
 	fprintf(fp, "version=%s\n", SERVERCONFIG_VERSION);
+
+	if (motd_hash != 0)
+		fprintf(fp, "motd_hash=%lu\n", (unsigned long int) motd_hash);
 
 	if ((i = find_newnews_index(nntp_server)) >= 0) {
 		if (my_strftime(timestring, sizeof(timestring) - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time))))

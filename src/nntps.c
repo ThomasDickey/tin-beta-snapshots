@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2024-03-07
+ *  Updated   : 2024-05-10
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2024 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -100,9 +100,9 @@ tintls_init(
 	if (ca_cert_file[0] != '\0') {
 		result = tls_config_set_ca_file(libtls_config, ca_cert_file);
 		if (result != 0) {
+			error_message(2, "%s!\n", tls_config_error(libtls_config));
 			tls_config_free(libtls_config);
 			libtls_config = NULL;
-			error_message(2, "tls_config_set_ca_file: %d!\n", result);
 			return -EINVAL;
 		}
 	}
@@ -139,17 +139,17 @@ tintls_init(
 	if (ca_cert_file[0] == '\0') {
 		result = gnutls_certificate_set_x509_system_trust(tls_xcreds);
 		if (result < 0) {
+			error_message(2, "gnutls_certificate_set_x509_system_trust: %s (%d)!\n", gnutls_strerror(result), result);
 			gnutls_certificate_free_credentials(tls_xcreds);
 			tls_xcreds = NULL;
-			error_message(2, "gnutls_certificate_set_x509_system_trust: %d!\n", result);
 			return -EINVAL;
 		}
 	} else {
 		result = gnutls_certificate_set_x509_trust_file(tls_xcreds, ca_cert_file, GNUTLS_X509_FMT_PEM);
 		if (result < 0) {
+			error_message(2, "gnutls_certificate_set_x509_trust_file: %s (%d): \"%s\"!\n", gnutls_strerror(result), result, ca_cert_file);
 			gnutls_certificate_free_credentials(tls_xcreds);
 			tls_xcreds = NULL;
-			error_message(2, "gnutls_certificate_set_x509_trust_file: %d!\n", result);
 			return -EINVAL;
 		}
 	}
@@ -402,7 +402,7 @@ tintls_handshake(
 	if (result < 0) {
 		const char *err = tls_error(client);
 
-		error_message(2, _(txt_tls_handshake_failed), err ? err : _(txt_tls_unknown_error));
+		error_message(2, _(txt_tls_handshake_failed), err ? err : _(txt_unknown_error));
 		return -EPROTO;
 	}
 
@@ -499,11 +499,10 @@ tintls_handshake(
 			type = gnutls_certificate_type_get2(client, GNUTLS_CTYPE_SERVER);
 			result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
 
-			if (result == 0) {
+			if (result == 0)
 				wait_message(0, _(txt_tls_peer_verify_failed_continuing), msg.data);
-			} else {
+			else
 				wait_message(0, _(txt_tls_peer_verify_failed_continuing), _(txt_tls_unable_to_get_status));
-			}
 
 			gnutls_free(msg.data);
 
@@ -594,9 +593,9 @@ err_cert:
 	long_result = BIO_do_handshake(client);
 	if (long_result != 1) {
 		long_result = SSL_get_verify_result(ssl);
-		if (long_result != X509_V_OK) {
+		if (long_result != X509_V_OK)
 			error_message(2, _(txt_tls_handshake_failed), X509_verify_cert_error_string(long_result));
-		} else
+		else
 			show_errors(_(txt_tls_handshake_failed));
 
 		return -EPROTO;
@@ -819,17 +818,19 @@ tintls_conninfo(
 		char **cert_info;
 		const ASN1_TIME *asn1;
 		char *wchain, *cptr;
-		int i = 0;
+		int i;
 		size_t cl;
 		struct tm tm;
 
 		fprintf(fp, "%s", _(txt_conninfo_server_cert_info));
 
 		/* string copy of chain */
-		cl = snprintf(NULL, 0, "%.*s", (int) chain_size, chain);
-		wchain = my_malloc(++cl);
+		i = snprintf(NULL, 0, "%.*s", (int) chain_size, chain);
+		cl = (size_t) i + 1;
+		wchain = my_malloc(cl);
 		snprintf(wchain, cl, "%.*s", (int) chain_size, chain);
 		cptr = wchain;
+		i = 0;
 
 		while ((cptr = strstr(cptr, "-----BEGIN CERTIFICATE-----"))) {
 			chain_size = strlen(cptr);
@@ -913,10 +914,10 @@ tintls_conninfo(
 
 		result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
 
-		if (result == 0) {
+		if (result == 0)
 			fprintf(fp, _(txt_conninfo_verify_failed), msg.data,
 					insecure_nntps ? _(txt_conninfo_error_tolerated) : _(txt_conninfo_error_unexpected));
-		} else
+		else
 			fprintf(fp, "%s", _(txt_conninfo_verify_failed_no_reason));
 
 		gnutls_free(msg.data);
@@ -1102,7 +1103,7 @@ get_cert_info(
 			len = BIO_get_mem_data(io_buf, &tmp);
 			if (len > 0) {
 				subject = my_malloc((size_t) len + 1);
-				memcpy(subject, tmp, len);
+				memcpy(subject, tmp, (size_t) len);
 				subject[len] = '\0';
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				process_charsets(&subject, (size_t *) &len, "UTF-8", tinrc.mm_local_charset, FALSE);
@@ -1113,7 +1114,7 @@ get_cert_info(
 			len = BIO_get_mem_data(io_buf, &tmp);
 			if (len > 0) {
 				issuer = my_malloc((size_t) len + 1);
-				memcpy(issuer, tmp, len);
+				memcpy(issuer, tmp, (size_t) len);
 				issuer[len] = '\0';
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				process_charsets(&issuer, (size_t *) &len, "UTF-8", tinrc.mm_local_charset, FALSE);

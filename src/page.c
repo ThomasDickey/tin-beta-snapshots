@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-28
+ *  Updated   : 2024-05-10
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1389,6 +1389,11 @@ invoke_metamail(
 
 /*
  * PAGE_HEADER defines the size in lines of this header
+ *
+ * TODO: what about page_header_format{1,PAGE_HEADER-1}
+ *       to be able to customize the shown data and if all
+ *       are set to NULL use the full screen for ARTLINES?
+ *       (headers then could be seen via news_headers_to_display)
  */
 static void
 draw_page_header(
@@ -1400,7 +1405,7 @@ draw_page_header(
 	int len, right_len, center_pos, cur_pos;
 	size_t line_len;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t *fmt_resp = NULL, *fmt_thread, *wtmp, *wtmp2, *wbuf;
+	wchar_t *fmt_resp = NULL, *fmt_thread, *wtmp, *wtmp2, *wtmp3, *wbuf;
 #else
 	char *tmp2;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1652,22 +1657,52 @@ draw_page_header(
 		free(p);
 	}
 
+	/* precalculate min. organization length */
+	wtmp3 = my_calloc(1, sizeof(wchar_t));
+	if (note_h->org) {
+		char *tb;
+		char *tail = NULL;
+		int n;
+
+		if (tinrc.utf8_graphics)
+			tail = wchar_t2char(WTRUNC_TAIL);
+
+		if ((n = snprintf(NULL, 0, _(txt_at_s), tail ? tail : TRUNC_TAIL)) > 0) {
+			size_t olen = (size_t) n + 1;
+
+			tb = my_malloc(olen);
+			if (snprintf(tb, olen, _(txt_at_s), tail ? tail : TRUNC_TAIL) == n) {
+				if ((wtmp = char2wchar_t(tb)) != NULL) {
+					wbuf = wexpand_tab(wtmp, tabwidth);
+					free(wtmp3);
+					wtmp3 = my_wcsdup(wbuf);
+					free(wtmp);
+					free(wbuf);
+				}
+			}
+			free(tb);
+		}
+		FreeIfNeeded(tail);
+	}
+
+	/* from */
 	if ((wtmp = char2wchar_t(buf)) != NULL) {
-		wtmp2 = wstrunc(wtmp, cCOLS - 1);
+		wtmp2 = wstrunc(wtmp, cCOLS - 1 - wcslen(wtmp3));
 		my_fputws(wtmp2, stdout);
 		cur_pos += wcswidth(wtmp2, wcslen(wtmp2));
 		free(wtmp2);
 		free(wtmp);
 	}
+	free(wtmp3);
 
 	/*
 	 * Organization
 	 *
-	 * TODO: IDNA decoding, see also comment in
-	 *       cook.c:cook_article()
-	 *       add BiDi handling
+	 * TODO: - IDNA decoding, see also comment in
+	 *         cook.c:cook_article()
+	 *       - add BiDi handling
 	 */
-	if (note_h->org) {
+	if (note_h->org && cur_pos < cCOLS - 1) {
 		snprintf(buf, line_len, _(txt_at_s), note_h->org);
 
 		if ((wtmp = char2wchar_t(buf)) != NULL) {
@@ -2071,7 +2106,9 @@ process_search(
 			display_info_page(0);
 			break;
 
-		default:
+		default: /* unknown level, should not happen */
+			/* CONSTANTCONDITION */
+			assert(0 != 0);
 			break;
 	}
 	search_line = i;								/* draw_page() resets this to 0 */

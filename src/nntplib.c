@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2024-03-28
+ *  Updated   : 2024-05-28
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -41,9 +41,6 @@ char *nntp_server = NULL;
 	t_bool reconnected_in_last_get_server = FALSE;
 	/* Flag used in LIST ACVTIVE loop */
 	t_bool did_reconnect = FALSE;
-#endif /* NNTP_ABLE */
-
-#ifdef NNTP_ABLE
 	/* Copy of last NNTP command sent, so we can retry it if needed */
 	static char last_put[NNTP_STRLEN];
 	static constext *xover_cmds = "XOVER";
@@ -63,7 +60,7 @@ char *nntp_server = NULL;
 	static int reconnect(int retry);
 	static int server_init(char *machine, const char *cservice, unsigned short port, char *text, size_t mlen);
 	static void close_server(t_bool send_no_quit);
-	static void list_motd(FILE *stream);
+	static long int list_motd(FILE *stream);
 #	ifdef INET6
 		static int get_tcp6_socket(char *machine, unsigned short port);
 #	else
@@ -161,27 +158,50 @@ getserverbyfile(
 
 #ifdef NNTP_ABLE
 	if (cmdline.args & CMDLINE_NNTPSERVER) {
+		char *p, *q;
+		int i;
+
 		get_nntpserver(buf, sizeof(buf), cmdline.nntpserver);
 		/*
-		 * - given port in NEWSRCTABLE_FILE overrides -p, -T and $NNTPPORT
-		 * - no IPv6 address support yet (should be simple if address is
-		 *   in brackets)
+		 * - given port in NEWSRCTABLE_FILE overrides -p, -g, -[kT] and $NNTPPORT
 		 *
 		 * news.example.com[:123]    ~/.tin/${NNTPSERVER-localhost}/.newsrc  ex
+		 * [::1]:1119	~/.tin/NEWSRCS/${NNTPSERVER-localhost}	lh6
 		 */
-		if ((cp = strchr(buf, ':')) != NULL) { /* >= 1 x ':' in servername? */
-			if (strrchr(buf, ':') == cp) { /* == 1 x ':' in servername? otherwise (IPv6, syntaxerror) skip */
-				int i;
 
-				*cp++ = '\0'; /* cut off port from the name */
-				if ((i = atoi(cp)) != 0)
-					nntp_tcp_port = (unsigned short) i;
+		if (buf[0] == '[') { /* IPv6 address? */
+			if ((p = strrchr(buf, ':')) != NULL) {
+				if ((q = strrchr(buf, ']')) != NULL) {
+					for (i = 1; buf[i] != ']'; i++)
+						buf[i - 1] = buf[i];
+					buf[i - 1] = '\0';
+					if (p > q) { /* looks like [IP:v6]:port */
+						i = s2i(++p, 0, 65535);
+						if (i && !errno)
+							nntp_tcp_port = (unsigned short) i;
 #	ifdef DEBUG
-				else {
-					if (debug & DEBUG_MISC)
-						wait_message(3, _(txt_port_not_numeric_in), local_newsrctable_file, buf, cp);
-				}
+						else {
+							if (debug & DEBUG_MISC)
+								wait_message(3, _(txt_port_not_numeric_in), local_newsrctable_file, buf, p);
+						}
 #	endif /* DEBUG */
+					}
+				} /* else { not an IPv6 address } */
+			} /* else { not an IPv6 address } */
+		} else {
+			if ((cp = strchr(buf, ':')) != NULL) { /* >= 1 x ':' in servername? */
+				if (strrchr(buf, ':') == cp) { /* == 1 x ':' in servername? otherwise (IPv6, syntaxerror) skip */
+					*cp++ = '\0'; /* cut off port from the name */
+					i = s2i(cp, 1, 65535);
+					if (i && !errno)
+						nntp_tcp_port = (unsigned short) i;
+#	ifdef DEBUG
+					else {
+						if (debug & DEBUG_MISC)
+							wait_message(3, _(txt_port_not_numeric_in), local_newsrctable_file, buf, cp);
+					}
+#	endif /* DEBUG */
+				}
 			}
 		}
 #	ifdef HAVE_SETENV
@@ -220,7 +240,8 @@ getserverbyfile(
 				int i;
 
 				*cp++ = '\0'; /* cut off port from the name */
-				if ((i = atoi(cp)) != 0)
+				i = s2i(cp, 1, 65535);
+				if (i && !errno)
 					nntp_tcp_port = (unsigned short) i;
 #	ifdef DEBUG
 				else {
@@ -236,7 +257,7 @@ getserverbyfile(
 	if (file == NULL)
 		return NULL;
 
-	if ((fp = fopen(file, "r")) != NULL) {
+	if ((fp = tin_fopen(file, "r")) != NULL) {
 		while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 			if (*buf == '\n' || *buf == '#')
 				continue;
@@ -935,7 +956,8 @@ reconnect(
 			unlink(backup_article_name);
 			rename_file(article_name, dead_article);
 			if (tinrc.keep_dead_articles)
-				append_file(dead_article, dead_articles);
+				if ((errno = append_file(dead_article, dead_articles)) != 0)
+					perror_message(_(txt_enter_append), dead_article, dead_articles);
 		}
 		if (retry > NNTP_TRY_RECONNECT) {
 #	ifdef DEBUG
@@ -1155,8 +1177,8 @@ check_extensions(
 	char buf[NNTP_STRLEN];
 	int i;
 	int ret = 0;
-	static unsigned int cap_vers[] = { 2, /* 3,*/ 0 }; /* array of all capabilitie version we do support */
- 	static const char *tin_mechs[] = { /* SASL mechanisms our code can handle */
+	static unsigned int cap_vers[] = { 2, /* 3,*/ 0 }; /* array of all capability versions we do support */
+	static const char *tin_mechs[] = { /* SASL mechanisms our code can handle */
 		"PLAIN",			/* RFC 4616 */
 		"ANONYMOUS",		/* RFC 4505 */
 		"LOGIN",			/* just for testing, remove b4 release */
@@ -1247,7 +1269,7 @@ check_extensions(
 
 						if (strtok(ptr, WS) != NULL) { /* skip initial VERSION */
 							while ((d = strtok(NULL, WS)) != NULL) { /* find highest version we do support */
-								v = (unsigned int) atoi(d);
+								v = (unsigned int) s2i(d, 2, INT_MAX);
 								for (j = 0; cap_vers[j]; j++) {
 									if (v == cap_vers[j])
 										nntp_caps.version = MAX(nntp_caps.version, v);
@@ -1703,7 +1725,7 @@ nntp_open(
 			char *chr1, *chr2;
 			int j;
 
-			j = atoi(get_val("COLUMNS", "80"));
+			j = s2i(get_val("COLUMNS", "80"), MIN_COLUMNS_ON_TERMINAL, INT_MAX);
 			chr1 = my_strdup((sec ? bug_nntpserver2 : bug_nntpserver1));
 
 			if (j > MIN_COLUMNS_ON_TERMINAL && ((int) strlen(chr1)) >= j) {
@@ -1860,14 +1882,40 @@ nntp_open(
 	set_maxartnum(is_reconnect);
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 
-	if (!is_reconnect && !batch_mode && show_description && check_for_new_newsgroups) {
-		/*
-		 * TODO:
-		 * - add a tinrc var to turn LIST MOTD on/off?
-		 *   (currently done automatically for -d, -q and -Q)
-		 */
-		if (nntp_caps.list_motd)
-			list_motd(NULL);
+	/* no no_write logic here as that's always set on initial connect */
+	if (((nntp_caps.type == CAPABILITIES && nntp_caps.list_motd) || nntp_caps.type != CAPABILITIES) && !is_reconnect && !batch_mode && show_description && check_for_new_newsgroups) {
+		FILE *fp;
+
+		if ((fp = tin_fopen(local_motd_file, "w+")) != NULL) {
+			char *motd;
+			unsigned int n;
+			long m_hash;
+
+			m_hash = list_motd(fp);
+			if (m_hash != motd_hash) {
+				if (fseek(fp, 0L, SEEK_SET) != -1) {
+					n = 0;
+#	ifdef HAVE_COLOR
+					fcol(tinrc.col_message);
+#	endif /* HAVE_COLOR */
+					while ((motd = tin_fgets(fp, FALSE)) != NULL) {
+						my_printf("%s\n", motd);
+						n++;
+					}
+					my_fflush(stdout);
+#	ifdef HAVE_COLOR
+					fcol(tinrc.col_normal);
+#	endif /* HAVE_COLOR */
+					if (n)
+						sleep((n >> 1) | 0x01);
+					else
+						unlink(local_motd_file);
+
+					motd_hash = m_hash;
+				} /* else EBADF */
+			}
+			fclose(fp);
+		}
 	}
 
 	is_reconnect = TRUE;
@@ -1945,7 +1993,7 @@ get_only_respcode(
 		debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 	respcode = (int) strtol(ptr, &end, 10);
-	if (end == ptr) /* no leading numbers in response */
+	if (end == ptr || respcode < 100 || respcode > 599)
 		respcode = -1;
 	DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 
@@ -1984,7 +2032,7 @@ get_only_respcode(
 			debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 		respcode = (int) strtol(ptr, &end, 10);
-		if (end == ptr) /* no leading numbers in response */
+		if (end == ptr || respcode < 100 || respcode > 599)
 			respcode = -1;
 		DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 	}
@@ -2078,7 +2126,7 @@ get_respcode(
 			return -1;
 
 		respcode = (int) strtol(ptr, &end, 10);
-		if (end == ptr)	/* no leading numbers in response */
+		if (end == ptr || respcode < 100 || respcode > 599)
 			return -1;
 
 		if (message != NULL && mlen > 1) {				/* Pass out the rest of the text */
@@ -2167,60 +2215,50 @@ DEBUG_IO((stderr, "new_nntp_command(%s)\n", command));
 }
 
 
-static void
+static long int
 list_motd(
 	FILE *stream)
 {
-	char *ptr;
-	char *p;
+	char *ptr, *p, *m;
 	char buf[NNTP_STRLEN];
 	int i;
 	size_t len;
-	unsigned int l = 0;
+	long m_hash = 0L;
 
+	if (!stream)
+		return m_hash;
+
+	m = my_calloc(1, 1);
 	buf[0] = '\0';
 	i = new_nntp_command("LIST MOTD", OK_MOTD, buf, sizeof(buf));
 
 	switch (i) {
 		case OK_MOTD:
-#	ifdef HAVE_COLOR
-			if (!stream) /* just on startup */
-				fcol(tinrc.col_message);
-#	endif /* HAVE_COLOR */
-
 			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #	ifdef DEBUG
 				if (debug & DEBUG_NNTP)
 					debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
-				/*
-				 * RFC 6048 2.5.2 "The information MUST be in UTF-8"
-				 */
 				p = my_strdup(ptr);
 				len = strlen(p);
+
+				/* original MOTD for hashing as local charset may change */
+				m = my_realloc(m, strlen(m) + len + 1);
+				strcat(m, p);
+
+				/* RFC 6048 2.5.2 "The information MUST be in UTF-8" */
 				process_charsets(&p, &len, "UTF-8", tinrc.mm_local_charset, FALSE);
-				if (stream) {
-					if (!l)
-						fprintf(stream, "\n");
 					fprintf(stream, _(txt_motd), p);
-				} else
-					my_printf(_(txt_motd), p);
 				free(p);
-				l++;
 			}
-#	ifdef HAVE_COLOR
-			if (!stream)
-				fcol(tinrc.col_normal);
-#	endif /* HAVE_COLOR */
-			if (l && !stream) { /* no sleep in nntp_conninfo() */
-				my_flush();
-				sleep((l >> 1) | 0x01);
-			}
+			m_hash = (long int) hash_groupname(m);
 			break;
 
 		default:	/* common response codes are 500, 501, 503 */
 			break;
 	}
+	free(m);
+	return m_hash;
 }
 
 
@@ -2724,12 +2762,18 @@ nntp_conninfo(
 		}
 #	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
 		if (nntp_caps.maxartnum) {
-			size_t len = snprintf(NULL, 0, "%"T_ARTNUM_PFMT, nntp_caps.maxartnum) + 1;
-			char *buf = my_malloc(len);
+			int n;
+			size_t len;
+			char *buf;
 
-			snprintf(buf, len, "%"T_ARTNUM_PFMT, nntp_caps.maxartnum);
-			fprintf(stream, _(txt_conninfo_maxartnum), buf);
-			free(buf);
+			if ((n = snprintf(NULL, 0, "%"T_ARTNUM_PFMT, nntp_caps.maxartnum)) > 0) {
+				len = (size_t) n + 1;
+				buf = my_malloc(len);
+
+				if (snprintf(buf, len, "%"T_ARTNUM_PFMT, nntp_caps.maxartnum) == n)
+					fprintf(stream, _(txt_conninfo_maxartnum), buf);
+				free(buf);
+			}
 		}
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 	}
@@ -2746,8 +2790,20 @@ nntp_conninfo(
 #	endif /* USE_GSASL */
 
 #	ifdef NNTP_ABLE
-	list_motd(stream);
-#	endif /* NNTPS_ABLE */
+	{
+		char *motd;
+		FILE *fp_motd;
+
+		fprintf(stream, "\n");
+		if ((fp_motd = tin_fopen(local_motd_file, "r")) != NULL) { /* use local cache */
+			while ((motd = tin_fgets(fp_motd, FALSE)) != NULL)
+				fprintf(stream, "%s\n", motd);
+
+			fclose(fp_motd);
+		} else
+			(void) list_motd(stream);
+	}
+#	endif /* NNTP_ABLE */
 
 #	ifdef NNTPS_ABLE
 	if (nntp_buf.tls_ctx)

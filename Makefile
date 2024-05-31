@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2024-01-16
+# Updated: 2024-04-02
 #
 
 SHELL	= @SHELL@
@@ -11,7 +11,7 @@ LVER	= 2
 PVER	= 6
 SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20240328
+DVER	= 20240531
 EXE	= tin
 
 # directory structure
@@ -24,7 +24,6 @@ PCREDIR	= ./pcre
 CANDIR	= ./libcanlock
 TOLDIR	= ./tools
 PODIR	= ./po
-INTLDIR	= ./intl
 L10NDIR	= ./doc/l10n
 
 HFILES	= \
@@ -121,7 +120,6 @@ CFILES	= \
 	$(SRCDIR)/xref.c
 
 DOC	= \
-	$(DOCDIR)/ABOUT-NLS \
 	$(DOCDIR)/CHANGES \
 	$(DOCDIR)/CHANGES.old \
 	$(DOCDIR)/CREDITS \
@@ -290,39 +288,6 @@ MISC	= \
 	$(SRCDIR)/Makefile.in \
 	$(SRCDIR)/tincfg.tbl
 
-INTLFILES = \
-	$(INTLDIR)/bindtextdom.c \
-	$(INTLDIR)/ChangeLog \
-	$(INTLDIR)/config.charset \
-	$(INTLDIR)/dcgettext.c \
-	$(INTLDIR)/dcigettext.c \
-	$(INTLDIR)/dcngettext.c \
-	$(INTLDIR)/dgettext.c \
-	$(INTLDIR)/dngettext.c \
-	$(INTLDIR)/explodename.c \
-	$(INTLDIR)/finddomain.c \
-	$(INTLDIR)/gettext.c \
-	$(INTLDIR)/gettext.h \
-	$(INTLDIR)/gettextP.h \
-	$(INTLDIR)/hash-string.h \
-	$(INTLDIR)/intl-compat.c \
-	$(INTLDIR)/l10nflist.c \
-	$(INTLDIR)/libgettext.h \
-	$(INTLDIR)/libgnuintl.h \
-	$(INTLDIR)/loadinfo.h \
-	$(INTLDIR)/loadmsgcat.c \
-	$(INTLDIR)/localcharset.c \
-	$(INTLDIR)/locale.alias \
-	$(INTLDIR)/localealias.c \
-	$(INTLDIR)/Makefile.in \
-	$(INTLDIR)/ngettext.c \
-	$(INTLDIR)/plural.c \
-	$(INTLDIR)/plural.y \
-	$(INTLDIR)/ref-add.sin \
-	$(INTLDIR)/ref-del.sin \
-	$(INTLDIR)/textdomain.c \
-	$(INTLDIR)/VERSION
-
 POFILES = \
 	$(PODIR)/Makefile.inn \
 	$(PODIR)/POTFILES.in \
@@ -363,9 +328,9 @@ L10NFILES = \
 	$(L10NDIR)/es.po \
 	$(L10NDIR)/tin-man.pot
 
-ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES) $(L10NFILES)
+ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(PCRE) $(MISC) $(CAN) $(POFILES) $(L10NFILES)
 
-ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(CANDIR)/include $(CANDIR)/src $(CANDIR)/test $(CANDIR)/util/ $(INTLDIR) $(PODIR) $(L10NDIR) $(L10NDIR)/de $(L10NDIR)/en_GB
+ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(CANDIR)/include $(CANDIR)/src $(CANDIR)/test $(CANDIR)/util/ $(PODIR) $(L10NDIR) $(L10NDIR)/de $(L10NDIR)/en_GB
 
 # standard commands
 CD	= cd
@@ -423,7 +388,6 @@ clean:
 	$(SRCDIR)/*~ \
 	$(PCREDIR)/*~
 	@-if $(TEST) -r $(PCREDIR)/Makefile ; then $(CD) $(PCREDIR) && $(MAKE) clean ; fi
-	@-if $(TEST) -r $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) clean ; fi
 	@-if $(TEST) -r $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) clean ; fi
 	@-if $(TEST) -r $(SRCDIR)/Makefile ; then $(CD) $(SRCDIR) && $(MAKE) clean ; fi
 	@-if $(TEST) -r $(CANDIR)/Makefile ; then $(CD) $(CANDIR) && $(MAKE) clean ; fi
@@ -539,7 +503,6 @@ version:
 distclean:
 	@-$(MAKE) clean
 	@-if $(TEST) -r $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) distclean ; fi
-	@-if $(TEST) -r $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) distclean ; fi
 	@-if $(TEST) -r $(PCREDIR)/Makefile ; then $(CD) $(PCREDIR) && $(MAKE) distclean ; fi
 	@-if $(TEST) -r $(CANDIR)/Makefile ; then $(CD) $(CANDIR) && $(MAKE) distclean ; fi
 	@-$(RM) -f \
@@ -552,7 +515,6 @@ distclean:
 	$(SRCDIR)/Makefile \
 	$(PCREDIR)/Makefile \
 	$(CANDIR)/Makefile \
-	$(INTLDIR)/po2tbl.sed \
 	$(PROJECT)-$(VER).tar.gz \
 	$(PROJECT)-$(VER).tar.bz2 \
 	$(PROJECT)-$(VER).tar.xz \

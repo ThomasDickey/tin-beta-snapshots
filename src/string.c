@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2024-02-26
+ *  Updated   : 2024-05-30
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -60,13 +60,6 @@
 /*
  * this file needs some work
  */
-
-/*
- * local prototypes
- */
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	static wchar_t *my_wcsdup(const wchar_t *wstr);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
 /*
@@ -1069,7 +1062,6 @@ strwidth(
 }
 
 
-#define TRUNC_TAIL	"..."
 /*
  * shortens 'mesg' that it occupies at most 'len' screen positions.
  * If it was necessary to truncate 'mesg', " ..." is appended to the
@@ -1128,14 +1120,9 @@ wstrunc(
 		size_t len_tail;
 		wchar_t *wtmp2, *tail;
 
-		if (tinrc.utf8_graphics) {
-			/*
-			 * use U+2026 (HORIZONTAL ELLIPSIS) instead of "..."
-			 * we gain two additional screen positions
-			 */
-			tail = my_calloc(2, sizeof(wchar_t));
-			tail[0] = 0x2026;
-		} else
+		if (tinrc.utf8_graphics)
+			tail = my_wcsdup(WTRUNC_TAIL);
+		else
 			tail = char2wchar_t(TRUNC_TAIL);
 
 		len_tail = tail ? wcslen(tail) : 0;
@@ -1155,7 +1142,7 @@ wstrunc(
 /*
  * duplicates a wide-char string
  */
-static wchar_t *
+wchar_t *
 my_wcsdup(
 	const wchar_t *wstr)
 {
@@ -1773,7 +1760,7 @@ parse_format_string(
 		fmt->len_linenumber = 4;
 		switch (signal_context) {
 			case cGroup:
-				error_message(2, _(txt_error_format_string), DEFAULT_GROUP_FORMAT);
+				error_message(3, _(txt_error_format_string), DEFAULT_GROUP_FORMAT);
 				STRCPY(fmt->str, DEFAULT_GROUP_FORMAT);
 				flags = (LINE_NUMBER | ART_MARKS | RESP_COUNT | LINE_CNT | SUBJECT | FROM);
 				cnt = tinrc.draw_arrow ? 23 : 21;
@@ -1782,7 +1769,7 @@ parse_format_string(
 				break;
 
 			case cSelect:
-				error_message(2, _(txt_error_format_string), DEFAULT_SELECT_FORMAT);
+				error_message(3, _(txt_error_format_string), DEFAULT_SELECT_FORMAT);
 				STRCPY(fmt->str, DEFAULT_SELECT_FORMAT);
 				flags = (GRP_FLAGS | LINE_NUMBER | U_CNT | GRP_NAME | GRP_DESC);
 				cnt = tinrc.draw_arrow ? 18 : 16;
@@ -1795,7 +1782,7 @@ parse_format_string(
 				break;
 
 			case cThread:
-				error_message(2, _(txt_error_format_string), DEFAULT_THREAD_FORMAT);
+				error_message(3, _(txt_error_format_string), DEFAULT_THREAD_FORMAT);
 				STRCPY(fmt->str, DEFAULT_THREAD_FORMAT);
 				flags = (LINE_NUMBER | ART_MARKS | LINE_CNT | THREAD_TREE | FROM);
 				cnt = tinrc.draw_arrow ? 22 : 20;
@@ -1913,3 +1900,36 @@ render_bidi(
 	return tmp;
 }
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
+
+
+/*
+ * string to int conversion with lower/upper limits
+ * clears/sets errno
+ */
+signed int
+s2i(
+	const char *s,
+	signed int min,
+	signed int max)
+{
+	char *end;
+	signed long res;
+
+	errno = 0;
+	res = strtol(s, &end, 10);
+
+	if (res < min) {
+		res = min;
+		errno = ERANGE;
+	}
+
+	if (res > max) {
+		res = max;
+		errno = ERANGE;
+	}
+
+	if (s == end)
+		errno = EINVAL;
+
+	return ((signed int) res);
+}

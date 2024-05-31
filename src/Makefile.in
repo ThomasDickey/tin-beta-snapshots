@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2024-02-12
+# Updated: 2024-04-02
 #
 # Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -55,7 +55,7 @@ x		= @EXEEXT@
 o		= .@OBJEXT@
 
 DEBUG		= @ENABLE_DEBUG@ -DDEBUG # -DPROFILE
-FEATURES	= # -DALLOW_FWS_IN_NEWSGROUPLIST # -DEVIL_INSIDE
+FEATURES	= # -DREPRODUCIBLE_BUILD # -DALLOW_FWS_IN_NEWSGROUPLIST # -DEVIL_INSIDE -DMAXARTNUM
 INTL_CPPFLAGS	= -DLOCALEDIR=\"$(prefix)/@DATADIRNAME@/locale\"
 PCRE_CPPFLAGS	= @PCREDIR_CPPFLAGS@ @PCREDIR_MAKE@ -I$(top_builddir)/pcre -I$(top_srcdir)/pcre
 
@@ -558,12 +558,15 @@ $(OBJDIR)/joinpath$o :		$(SRCDIR)/joinpath.c $(TIN_DEP)
 $(OBJDIR)/keymap$o :		$(SRCDIR)/keymap.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h \
 				$(INCDIR)/version.h
-$(OBJDIR)/lang$o :		$(SRCDIR)/lang.c $(TIN_DEP)
+$(OBJDIR)/lang$o :		$(SRCDIR)/lang.c $(TIN_DEP) \
+				$(INCDIR)/tnntps.h
 $(OBJDIR)/langinfo$o :		$(SRCDIR)/langinfo.c $(TIN_DEP)
 $(OBJDIR)/list$o :		$(SRCDIR)/list.c $(TIN_DEP)
 $(OBJDIR)/lock$o :		$(SRCDIR)/lock.c $(TIN_DEP)
-$(OBJDIR)/mail$o :		$(SRCDIR)/mail.c $(TIN_DEP)
+$(OBJDIR)/mail$o :		$(SRCDIR)/mail.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
 $(OBJDIR)/main$o :		$(SRCDIR)/main.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/memory$o :		$(SRCDIR)/memory.c $(TIN_DEP) \
 				$(INCDIR)/rfc2046.h
@@ -582,6 +585,7 @@ $(OBJDIR)/nntps$o :		$(SRCDIR)/nntps.c $(TIN_DEP) \
 				$(INCDIR)/tnntps.h
 $(OBJDIR)/nrctbl$o :		$(SRCDIR)/nrctbl.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h \
+				$(INCDIR)/tnntp.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/options_menu$o :	$(SRCDIR)/options_menu.c $(TIN_DEP) \
 				tincfg.h \
@@ -614,7 +618,8 @@ $(OBJDIR)/rfc2047$o :		$(SRCDIR)/rfc2047.c $(TIN_DEP) \
 $(OBJDIR)/save$o :		$(SRCDIR)/save.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h \
 				$(INCDIR)/rfc2046.h
-$(OBJDIR)/screen$o :		$(SRCDIR)/screen.c $(TIN_DEP)
+$(OBJDIR)/screen$o :		$(SRCDIR)/screen.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
 $(OBJDIR)/search$o :		$(SRCDIR)/search.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h
 $(OBJDIR)/select$o :		$(SRCDIR)/select.c $(TIN_DEP) \

@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2024-02-26
+ *  Updated   : 2024-04-02
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2024 Michael Bienia <michael@vorlon.ping.de>
@@ -3078,17 +3078,16 @@ move_scope(
 	int new_pos;
 
 	clear_message();
-	if ((p = tin_getline(_(txt_scope_new_position), 1, NULL, 0, FALSE, HIST_OTHER)) != NULL)
-		new_pos = atoi(p);
-	else
+	if ((p = tin_getline(_(txt_scope_new_position), 1, NULL, 0, FALSE, HIST_OTHER)) != NULL) {
+		new_pos = s2i(p, 0, num_scope - 1);
+		if (errno == EINVAL)
+			new_pos = curr_pos;
+	} else
 		new_pos = curr_pos;
 	clear_message();
 
 	if (new_pos == curr_pos || new_pos == 0)
 		return 0;
-
-	if (new_pos >= num_scope)
-		new_pos = num_scope - 1;
 
 	if (scopes[new_pos].global) {
 		info_message(_(txt_scope_new_position_is_global));
