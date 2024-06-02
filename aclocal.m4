@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-04-09
+dnl Updated   : 2024-06-02
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -452,6 +452,8 @@ AC_DEFUN([AM_WITH_NLS],
 
   dnl If we use NLS figure out what method
   if test "$USE_NLS" = "yes"; then
+    dnl We need to process the po/ directory.
+
     dnl Search for GNU msgfmt in the PATH.
     AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
         ["$ac_dir/$ac_word" --statistics /dev/null >/dev/null 2>&1], :)
@@ -484,9 +486,8 @@ AC_DEFUN([AM_WITH_NLS],
 
 	AC_ARG_WITH([libintl-prefix],
 		[  --with-libintl-prefix=DIR
-                          search for libiintl in DIR/include and DIR/lib], [
-	CF_ADD_OPTIONAL_PATH($withval, libintl)
-	])
+                          search for libintl in DIR/include and DIR/lib],
+		[CF_ADD_OPTIONAL_PATH($withval, libintl)])
 
 	CF_FIND_LINKAGE(CF__INTL_HEAD,
 	  CF__INTL_BODY($2),
@@ -498,10 +499,6 @@ AC_DEFUN([AM_WITH_NLS],
 	AC_MSG_RESULT($cf_cv_func_gettext)
 
 	if test "$cf_cv_func_gettext" = yes ; then
-	  AC_DEFINE(ENABLE_NLS, 1,
-		[Define to 1 if translation of program messages to the user's native language
-		is requested.])
-
 	  AC_DEFINE(HAVE_LIBINTL_H,1,[Define to 1 if we have libintl.h])
 
 	  AC_DEFINE(HAVE_GETTEXT, 1,
@@ -515,11 +512,10 @@ AC_DEFUN([AM_WITH_NLS],
 	  fi
 
 	  LIBS="$LIBS $INTLLIBS"
-
 	  AC_CHECK_FUNCS(dcgettext)
 	  CATOBJEXT=.gmo
 	  AC_DEFINE(ENABLE_NLS, 1,
-	       [Define to 1 if translation of program messages is enabled.])
+          [Define to 1 if translation of program messages is enabled.])
 	elif test -z "$MSGFMT" || test -z "$XGETTEXT" ; then
 	  AC_MSG_WARN(disabling NLS feature)
 	  ALL_LINGUAS=
@@ -948,7 +944,7 @@ ifelse([$5],NONE,,[{ test -z "$5" || test "x$5" = xNONE || test "x$4" != "x$5"; 
 }
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ANSI_CC_CHECK version: 14 updated: 2024/01/07 06:34:16
+dnl CF_ANSI_CC_CHECK version: 15 updated: 2024/05/01 15:00:19
 dnl ----------------
 dnl This was originally adapted from the macros 'fp_PROG_CC_STDC' and
 dnl 'fp_C_PROTOTYPES' in the sharutils 4.2 distribution.
@@ -975,6 +971,8 @@ for cf_arg in "-DCC_HAS_PROTOS" \
 	"-Aa -D_HPUX_SOURCE" \
 	-Xc
 do
+	CFLAGS="$cf_save_CFLAGS"
+	CPPFLAGS="$cf_save_CPPFLAGS"
 	CF_ADD_CFLAGS($cf_arg)
 	AC_TRY_COMPILE(
 [
@@ -4459,7 +4457,7 @@ if test "$USE_NLS" = yes ; then
 if test -d "$srcdir/po" ; then
 AC_MSG_CHECKING(if we should use included message-library)
 	AC_ARG_ENABLE(included-msgs,
-	[  --disable-included-msgs do not use included messages, for i18n support],
+	[  --disable-included-msgs do not use included messages for i18n support],
 	[use_our_messages=$enableval],
 	[use_our_messages=yes])
 fi
@@ -5393,32 +5391,39 @@ AC_DEFUN([CF_SOCKS],[
   fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SOCKS5 version: 12 updated: 2012/11/08 20:57:52
+dnl CF_SOCKS5 version: 13 updated: 2024/06/02 16:00:53
 dnl ---------
-dnl Check for socks5 configuration
+dnl Check for socks5 configuration (allowing for socks4 and dante variants)
 dnl $1 = the [optional] directory in which the library may be found
 AC_DEFUN([CF_SOCKS5],[
   CF_ADD_OPTIONAL_PATH($1, [socks5 library])
 
-CF_ADD_LIBS(-lsocks5)
+AC_CHECK_LIB(socks5, SOCKSinit, cf_cv_socks_lib=socks5,[
+AC_CHECK_LIB(socksd, SOCKSinit, cf_cv_socks_lib=socksd,[
+AC_CHECK_LIB(socks, SOCKSinit, cf_cv_socks_lib=socks,[
+cf_cv_socks_lib=no])])])
+
+if test "$cf_cv_socks_lib" = no ; then
+	AC_MSG_ERROR(cannot find socks5 library)
+else
+	CF_ADD_LIBS(-l$cf_cv_socks_lib)
+fi
 
 AC_DEFINE(USE_SOCKS5,1,[Define to 1 if we are using socks5 library])
 AC_DEFINE(SOCKS,1,[Define to 1 if we are using socks library])
 
-AC_MSG_CHECKING(if the socks library uses socks4 prefix)
+AC_CACHE_CHECK([if the socks library uses socks4 prefix],cf_use_socks4,[
 cf_use_socks4=error
 AC_TRY_LINK([
 #include <socks.h>],[
 	Rinit((char *)0)],
-	[AC_DEFINE(USE_SOCKS4_PREFIX,1,[Define to 1 if socks library uses socks4 prefix])
-	 cf_use_socks4=yes],
+	[cf_use_socks4=yes],
 	[AC_TRY_LINK([#include <socks.h>],
 		[SOCKSinit((char *)0)],
-		[cf_use_socks4=no],
-		[AC_MSG_ERROR(Cannot link with socks5 library)])])
-AC_MSG_RESULT($cf_use_socks4)
+		[cf_use_socks4=no])])])
 
 if test "$cf_use_socks4" = "yes" ; then
+	AC_DEFINE(USE_SOCKS4_PREFIX,1,[Define to 1 if socks library uses socks4 prefix])
 	AC_DEFINE(accept,Raccept)
 	AC_DEFINE(bind,Rbind)
 	AC_DEFINE(connect,Rconnect)
@@ -5427,11 +5432,13 @@ if test "$cf_use_socks4" = "yes" ; then
 	AC_DEFINE(listen,Rlisten)
 	AC_DEFINE(recvfrom,Rrecvfrom)
 	AC_DEFINE(select,Rselect)
-else
+elif test "$cf_use_socks4" = "no" ; then
 	AC_DEFINE(accept,SOCKSaccept)
 	AC_DEFINE(getpeername,SOCKSgetpeername)
 	AC_DEFINE(getsockname,SOCKSgetsockname)
 	AC_DEFINE(recvfrom,SOCKSrecvfrom)
+else
+	AC_MSG_ERROR(Cannot link with socks5 library)
 fi
 
 AC_MSG_CHECKING(if socks5p.h is available)

@@ -352,6 +352,16 @@ AC_ARG_WITH(socks5,
 	[cf_cv_use_libsocks5=no])
 ])
 
+# socks5 is the newer version of the library.  If both options are selected,
+# give a warning and assume socks5 was intended.
+
+if test "x$cf_cv_use_libsocks5" != xno ; then
+if test "x$cf_cv_use_libsocks" != xno ; then
+	AC_MSG_WARN([assuming --with-socks5 is intended, ignoring --with-socks])
+	cf_cv_use_libsocks=no
+fi
+fi
+
 if test "x$cf_cv_use_libsocks" != xno ; then
 	CF_SOCKS($cf_cv_use_libsocks)
 else
@@ -482,10 +492,6 @@ AC_ARG_WITH(pcre2-config,
 	[pcre2_config=$withval],
 	[pcre2_config=no])
 AC_MSG_RESULT($pcre2_config)
-
-if test "$PCRE_HOME" != no && test "$pcre2_config" != no ; then
-	AC_MSG_ERROR([cannot use PCRE and PCRE2 at the same time])
-fi
 
 if test "$pcre2_config" != no ; then
 	if test "$pcre2_config" != yes ; then

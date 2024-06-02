@@ -48,6 +48,8 @@ else
 fi
 
 echo "Making with $CC $CFLAGS"
+exec 4>&1
+RC=`{ { \
 CFLAGS="$CFLAGS" \
 CC="$CC" \
 $SHELL ./configure --verbose \
@@ -58,4 +60,6 @@ $SHELL ./configure --verbose \
 	--with-pcre2-config \
 	--with-domain-name=/etc/NNTP_INEWS_DOMAIN \
 	--with-coffee \
-        $OPTS $* 2>&1 |tee -a $OUT
+        $OPTS "$@" 2>&1; \
+	echo $? 1>&3; } |tee -a $OUT 1>&4; } 3>&1`
+exit $RC
