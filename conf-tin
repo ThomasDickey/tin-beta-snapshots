@@ -16,7 +16,7 @@ cat >>$OUT <<EOF/
 ** user: `id`
 ** conf: $*
 EOF/
-OPTS="$*"
+OPTS=
 
 CC="${CC-cc}"
 
@@ -62,4 +62,4 @@ $SHELL ./configure --verbose \
 	--with-coffee \
         $OPTS "$@" 2>&1; \
 	echo $? 1>&3; } |tee -a $OUT 1>&4; } 3>&1`
-exit $RC
+exit "$RC"
