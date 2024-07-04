@@ -107,9 +107,10 @@ o  with -T and an expired cert we could try to give more info then just
    or "not yet valid ..."  with the corresponding dates (and the current
    date); with -k we could emphasise the fact on connect.
 
-o  with -T and hostname mismatch we could give more info than just
-   "TLS handshake failed: hostname mismatch" (show CN (vs. used hostname));
-   with -k we could mention the mismatch on the 'J' ConnectionInfo-page.
+o  with -T and hostname mismatch (OpenSSL: X509_V_ERR_HOSTNAME_MISMATCH)
+   we could give more info than just "TLS handshake failed: hostname mismatch"
+   (show CN (vs. used hostname)); with -k we could mention the mismatch on
+   the 'J' ConnectionInfo-page.
 
 o  add possibility to dump the current key mapping to a file
 
@@ -580,6 +581,8 @@ o  add MIME Multiple Language Content Type (RFC 8255) analysis
 
 o  add toggle attachment depth indentation 4 <-> 2 like ^T for tabs
 
+o  add toggle dont_break_words
+
 o  suppress hide_uue=2 checking unless first line in an article or following
    a blank line
 
@@ -814,10 +817,6 @@ o  add normalization
 
 o  rewrite ICU configure checks
    [20180710 Urs Janssen <urs@tin.org>]
-
-o  check for ICU ucsdet_detect() and if found add charset-detection
-   if undeclared_charset={guess,detect}
-   <https://unicode-org.github.io/icu/userguide/conversion/detection.html#charsetdetector>
 
 o  check for libutf8proc <https://github.com/JuliaStrings/utf8proc>
    and use it (as fallback)?

@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2024-05-09
+ *  Updated   : 2024-07-02
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -49,6 +49,7 @@
 #		include "tnntp.h"
 #	endif /* !TNNTP_H */
 #endif /* NNTP_ABLE */
+
 /*
  * local prototypes
  */
@@ -378,7 +379,7 @@ open_newsgroups_fp(
 				if (no_more_wildmat == ERR_NOAUTH || no_more_wildmat == NEED_AUTHINFO) {
 					if (!authenticate(nntp_server, userid, FALSE)) {
 						fclose(result);
-						tin_done(EXIT_FAILURE, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
+						tin_done(EXIT_FAILURE, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS); /* TODO: should we exit with NNTP_ERROR_EXIT? */
 					}
 				}
 #		endif /* !DISABLE_PIPELINING */
@@ -455,6 +456,22 @@ read_descriptions(
  * of all groups if reading groups of type GROUP_TYPE_NEWS.
  * Aborting this early won't have any adverse affects, just some missing
  * descriptions.
+ *
+ * TODO: instead of matching the description to the group right away
+ *       we could collect (or fetch?) them on a per hierarchy base first
+ *       to guess the charset of the descriptions for that hierarchy for
+ *       conversion (descriptions SHOULD be in UTF-8, but in the real
+ *       world ...)
+ *
+ * TODO: add a tinrc-var to be able to en/disabale charset guessing?
+ *
+ * TODO: (maybe as a wildmat-list? suitable for match_group_list()
+ *        guess_descption_charset=*,!*.test
+ *        or
+ *        guess_descption_charset=ukr.*,cn.*,han.*,esp.*,ee.*,\
+ *          finet.*,fr.*,france.*,is.*,it.*,no.*,se.*,tw.*
+ *       ) results should still be passed per "scope" to charset-guessing
+ *       to have more data.
  */
 static void
 read_groups_descriptions(
@@ -466,6 +483,9 @@ read_groups_descriptions(
 	int count = 0;
 	size_t space = 0;
 	struct t_group *group;
+#if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
+	char *guessed_charset = NULL;
+#endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 #if defined(DEBUG) && defined(NNTP_ABLE)
@@ -518,7 +538,17 @@ read_groups_descriptions(
 			/*
 			 * Protect against invalid character sequences.
 			 */
+#ifdef CHARSET_CONVERSION
+#	ifdef USE_ICU_UCSDET
+			guessed_charset = guess_charset(r, 10);
+			process_charsets(&r, &r_len, guessed_charset ? guessed_charset : "UTF-8", tinrc.mm_local_charset, FALSE);
+			FreeAndNull(guessed_charset);
+#	else
 			process_charsets(&r, &r_len, "UTF-8", tinrc.mm_local_charset, FALSE);
+#	endif /* USE_ICU_UCSDET */
+#else
+			process_charsets(&r, &r_len, "UTF-8", tinrc.mm_local_charset, FALSE);
+#endif /* CHARSET_CONVERSION */
 			group->description = convert_to_printable(r, FALSE);
 		}
 

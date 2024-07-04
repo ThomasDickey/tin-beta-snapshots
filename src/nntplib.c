@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2024-05-28
+ *  Updated   : 2024-06-26
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -102,7 +102,7 @@ char *nntp_server = NULL;
 	static struct nntpbuf nntp_buf = NNTPBUF_INITIALIZER;
 
 #	ifdef USE_ZLIB
-		static void enable_deflate(struct nntpbuf* buf);
+		static void enable_deflate(struct nntpbuf *nntpbuf);
 #	endif /* USE_ZLIB */
 	static int nntpbuf_refill(struct nntpbuf *buf);
 	static int nntpbuf_flush(struct nntpbuf* buf);
@@ -1009,7 +1009,7 @@ int
 fgetc_server(
 	FILE *stream)
 {
-	int c = EOF;
+	int c;
 
 	if (stream != FAKE_NNTP_FP) {
 		DEBUG_IO((stderr, "fgetc_server: BAD fp\n"));
@@ -2071,7 +2071,7 @@ get_respcode(
 	if ((respcode == ERR_NOAUTH) || (respcode == NEED_AUTHINFO)) {
 #	ifdef USE_ZLIB
 		if (deflate_active) /* Do not auth if compression is active */
-			tin_done(EXIT_FAILURE, _(txt_error_compression_auth), tin_progname);
+			tin_done(EXIT_FAILURE, _(txt_error_compression_auth), tin_progname); /* TODO: should we exit with NNTP_ERROR_EXIT? */
 #	endif /* USE_ZLIB */
 
 		/*
@@ -2084,7 +2084,7 @@ get_respcode(
 		STRCPY(savebuf, last_put);
 
 		if (!authenticate(nntp_server, userid, FALSE))
-			tin_done(EXIT_FAILURE, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
+			tin_done(EXIT_FAILURE, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS); /* TODO: should we exit with NNTP_ERROR_EXIT? */
 
 		if (nntp_caps.type == CAPABILITIES)
 			can_post = nntp_caps.post && !force_no_post;
@@ -2248,7 +2248,7 @@ list_motd(
 
 				/* RFC 6048 2.5.2 "The information MUST be in UTF-8" */
 				process_charsets(&p, &len, "UTF-8", tinrc.mm_local_charset, FALSE);
-					fprintf(stream, _(txt_motd), p);
+				fprintf(stream, _(txt_motd), p);
 				free(p);
 			}
 			m_hash = (long int) hash_groupname(m);
@@ -2414,8 +2414,7 @@ nntpbuf_deflate_write(
 	while (deflate_again) {
 		Bytef *out = buf->z_wr->next_out;
 
-		result = deflate(buf->z_wr, Z_PARTIAL_FLUSH);
-		if (result < 0)
+		if ((result = deflate(buf->z_wr, Z_PARTIAL_FLUSH)) < 0)
 			return EOF;
 
 		if (buf->z_wr->avail_in > 0 || buf->z_wr->avail_out == 0)
@@ -2424,8 +2423,7 @@ nntpbuf_deflate_write(
 			deflate_again = FALSE;
 
 		while (buf->z_wr->avail_out < DEFLATE_BUFSZ) {
-			bwritten = nntp_write(buf->fd, buf->tls_ctx, out, DEFLATE_BUFSZ - buf->z_wr->avail_out);
-			if (bwritten < 0)
+			if ((bwritten = nntp_write(buf->fd, buf->tls_ctx, out, DEFLATE_BUFSZ - buf->z_wr->avail_out)) < 0)
 				return EOF;
 
 			buf->z_wr->avail_out += bwritten;
@@ -2469,21 +2467,18 @@ nntpbuf_inflate_read(
 
 	/* call inflate unconditionally to make sure there is no pending output
 	   left, before calling the possibly blocking read below */
-	bytes_read = nntpbuf_inflate(buf);
-	if (bytes_read < 0)
+	if ((bytes_read = nntpbuf_inflate(buf)) < 0)
 		return bytes_read;
 
 	while (bytes_read == 0) {
 		if (buf->z_rd->avail_in < DEFLATE_BUFSZ) {
-			bread = nntp_read(buf->fd, buf->tls_ctx, buf->z_rd->next_in, DEFLATE_BUFSZ - buf->z_rd->avail_in);
-			if (bread <= 0)
+			if ((bread = nntp_read(buf->fd, buf->tls_ctx, buf->z_rd->next_in, DEFLATE_BUFSZ - buf->z_rd->avail_in)) <= 0)
 				return EOF;
 
 			buf->z_rd->avail_in += bread;
 		}
 
-		bread = nntpbuf_inflate(buf);
-		if (bread < 0)
+		if ((bread = nntpbuf_inflate(buf)) < 0)
 			return bread;
 
 		bytes_read += bread;
@@ -2545,9 +2540,7 @@ nntpbuf_puts(
 	len = strlen(data);
 	while (len) {
 		if (buf->wr.ub == SZ(buf->wr.buf)) {
-			retval = nntpbuf_flush(buf);
-
-			if (retval != 0)
+			if ((retval = nntpbuf_flush(buf)) != 0)
 				return retval;
 		}
 
@@ -2605,12 +2598,10 @@ static int
 nntpbuf_getc(
 	struct nntpbuf *buf)
 {
-	int c = EOF, retval;
+	int c, retval;
 
 	if (buf->rd.ub - buf->rd.lb == 0) {
-		retval = nntpbuf_refill(buf);
-
-		if (retval <= 0)
+		if ((retval = nntpbuf_refill(buf)) <= 0)
 			return retval;
 	}
 
@@ -2663,9 +2654,7 @@ nntpbuf_gets(
 
 	while (size) {
 		if (buf->rd.ub - buf->rd.lb == 0) {
-			retval = nntpbuf_refill(buf);
-
-			if (retval <= 0)
+			if ((retval = nntpbuf_refill(buf)) <= 0)
 				return NULL;
 		}
 
@@ -2696,7 +2685,7 @@ nntpbuf_close(
 		int result = tintls_close(buf->tls_ctx);
 
 		if (result != 0) {
-			/* warn? */
+			/* TODO: warn? */
 		}
 	}
 	buf->tls_ctx = NULL;

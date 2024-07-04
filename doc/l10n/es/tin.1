@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-05-28
+.\" Updated   : 2024-06-25
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -252,7 +252,7 @@ No\-posting mode. You cannot post articles if you use this option.
 \fB\-X\fP
 No overwrite mode. \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP and files in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin\fP will not be overwritten but may be created
-if they don't exist.
+if they don't exist. Should be used with \*(rq\fB\-x\fP\*(rq if possible.
 .TP 
 \fB\-z\fP
 Only start \fBtin\fP if there is any new/unread news. If there is news \fBtin\fP
@@ -1868,6 +1868,10 @@ Default for quick (1 key) auto\-selection filter header.
 .TP 
 \fB(default_subject_search)\fP
 .TP 
+\fBDon't break words when wrapping (dont_break_words)\fP
+Do not break long lines inside a word. This applies to the body except for
+verbatim blocks. See also \fBwrap_column\fP. Default is OFF.
+.TP 
 \fBDraw \-> instead of highlighted bar (draw_arrow)\fP
 Allows groups/articles to be selected by an arrow '\->' if set ON or by a
 highlighted bar if set OFF. Default is OFF.
@@ -2657,12 +2661,12 @@ are used. Default is ON.
 \fBPage line wrap column (wrap_column)\fP
 Sets the column at which a displayed article body should be wrapped.  If
 this value is equal to 0, it defaults to the current screen width.  If this
-value is greater than your current screen width the part off\-screen is not
-displayed. Thus setting this option to a large value can be used to disable
-wrapping. If this value is negative the wrap margin is the current screen
-width plus the given value (as long as the result is still positive,
-otherwise it will fall back to the current screen width). Default is 0,
-wrapping at the current screen width.
+value is greater than your current screen width and \fBdont_break_words\fP is
+unset the part off\-screen is not displayed.  Thus setting this option to a
+large value can be used to disable wrapping.  If this value is negative the
+wrap margin is the current screen width plus the given value (as long as the
+result is still positive, otherwise it will fall back to the current screen
+width). Default is 0, wrapping at the current screen width.
 .TP 
 \fBQuote line when crossposting (xpost_quote_format)\fP
 .\"
@@ -2699,7 +2703,7 @@ options menu the attributes menu provides the following command:
 .SS ÁMBITO
 The scopes menu (accessible from the options menu with \fBConfigScopeMenu\fP
 ('\fBS\fP')) shows all scopes read from the global and local attributes file.
-Scopes from the global attributes file are marked with '!' to the left of
+Scopes from the global attributes file are marked with '!\&' to the left of
 the scope number. Delete/rename/move are not possible with those scopes.
 .PP
 .\"
@@ -2874,7 +2878,7 @@ mailbox with the name of the current newsgroup (eg, alt.sources).  See
 To save in savedir/<news.group.name>/<filename> format enter
 \&'+<filename>'.  See \fBsavedir\fP. Like '+' %G is expanded to the
 current news.group.name but without \fBsavedir\fP prefixed. %P is expanded to
-the news.group.name with all '.' replaced by '/'.
+the news.group.name with all '.\&' replaced by '/'.
 .PP
 If saving multiple files at once the filename (if not referring to a
 mailbox)  will be extended by ".num" where "num" is at least 3 digit number
@@ -2925,10 +2929,10 @@ A range is simply a group of items marked using the \fBSetRange\fP (\fB'#'\fP)
 key. Certain \fBtin\fP commands will operate on a range if one exists rather
 than just the current item. A range is an expression of the form
 <min>\(en<max>, e.g. 10\(en15 will highlight items 10
-through 15 on the current screen. Other than absolute numeric positions, '.'
-can be used in place of the current cursor position and '$' can be used to
-mean the highest number available. Entering '0' at the prompt undoes the
-previously entered range selection. Currently the only commands that
+through 15 on the current screen. Other than absolute numeric positions,
+\&'.\&' can be used in place of the current cursor position and '$' can be
+used to mean the highest number available. Entering '0' at the prompt undoes
+the previously entered range selection. Currently the only commands that
 understand ranges are \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBMarkArtUnread\fP
 ('\fBz\fP') and \fBMarkThdUnread\fP ('\fBZ\fP').
 .SS "LISTADOS DE GRUPOS NOTICIARIOS Y COMODINES"
@@ -3176,11 +3180,11 @@ overview:
 .in -.3i
 .PP
 By default, the string is not truncated. If it exceeds the screen width, it
-is wrapped. If the % sign is followed by an exclamation mark ('!') for
+is wrapped. If the % sign is followed by an exclamation mark ('!\&') for
 uppercase letters, the element is omitted if there is not enough space. If
 the % sign is followed by an asterisk ('*') for a lowercase letter, the
 description is omitted if there is not enough space. If the % sign is
-followed by an exclamation mark ('!') for a lowercase letter, the
+followed by an exclamation mark ('!\&') for a lowercase letter, the
 description is omitted first and then the content. The shortening is always
 from right to left, first the description is omitted and when no more
 description is displayed, the content is omitted. If %T and %S follow each

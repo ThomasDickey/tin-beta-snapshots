@@ -656,6 +656,11 @@
  */
 #	undef USE_GSASL
 
+/*
+ * use libicui18n for encoding guessing
+ */
+#	undef USE_ICU_UCSDET
+
 #	undef HAVE_COFFEE
 
 /*

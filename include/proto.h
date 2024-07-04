@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2024-05-01
+ *  Updated   : 2024-07-02
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -93,12 +93,18 @@ extern void write_attributes_file(const char *file);
 
 /* charset.c */
 extern char *convert_to_printable(char *buf, t_bool keep_tab);
+#ifdef CHARSET_CONVERSION
+#	ifdef USE_ICU_UCSDET
+	extern char *guess_charset(const char *sample, int32_t confidence);
+#	endif /* USE_ICU_UCSDET */
+#endif /* CHARSET_CONVERSION */
 extern t_bool is_art_tex_encoded(FILE *fp);
 extern void convert_iso2asc(char *iso, char **asc_buffer, size_t *max_line_len, int t);
 extern void convert_tex2iso(char *from, char *to);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern wchar_t *wconvert_to_printable(wchar_t *wbuf, t_bool keep_tab);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+extern const char *validate_charset(const char *charset);
 
 /* color.c */
 extern void draw_pager_line(const char *str, int flags, t_bool raw_data);
@@ -360,7 +366,6 @@ extern char *strip_line(char *line);
 extern const char *eat_re(char *s, t_bool eat_was);
 extern const char *get_val(const char *env, const char *def);
 extern const char *gnksa_strerror(int errcode);
-extern const char *validate_charset(const char *charset);
 extern int gnksa_check_from(char *from);
 extern int gnksa_split_from(const char *from, char *address, char *realname, int *addrtype);
 extern int get_initials(struct t_article *art, char *s, int maxsize);
@@ -481,7 +486,7 @@ extern void tintls_exit(void);
 	extern int tintls_handshake(void *session_ctx);
 	extern ssize_t tintls_read(void *session_ctx, void *buf, size_t count);
 	extern ssize_t tintls_write(void *session_ctx, const void *buf, size_t count);
-	extern int tintls_conninfo(void *session_ctx, FILE *stream);
+	extern int tintls_conninfo(void *session_ctx, FILE *fp);
 #endif /* NNTP_ABLE && NNTPS_ABLE */
 
 /* nrctbl.c */
@@ -669,7 +674,7 @@ extern int choose_new_group(void);
 	extern int show_article_by_msgid(char *messageid);
 #endif /* NNTP_ABLE */
 extern int skip_newgroups(void);
-extern void selection_page(int start_groupnum, int num_cmd_line_groups, char *messgeid);
+extern void selection_page(int start_groupnum, int num_cmd_line_groups, char *messageid);
 extern void show_selection_page(void);
 extern void toggle_my_groups(const char *group);
 

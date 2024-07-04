@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-05-28
+ *  Updated   : 2024-07-01
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>
@@ -577,6 +577,9 @@ extern constext txt_attrib_file_mime_forward[];
 #ifdef CHARSET_CONVERSION
 	extern constext txt_attrib_file_mm_network_charset[];
 	extern constext txt_attrib_file_undeclared_charset[];
+#	ifdef USE_ICU_UCSDET
+	extern constext txt_attrib_file_undeclared_cs_guess[];
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 extern constext txt_attrib_file_hdr_to_disp[];
 extern constext txt_attrib_file_hdr_to_not_disp[];
@@ -661,6 +664,7 @@ extern constext txt_at_s[];
 	extern constext txt_auth_needed[];
 	extern constext txt_authorization_fail[];
 	extern constext txt_authorization_ok[];
+	extern constext txt_authorization_unavail[];
 #endif /* NNTP_ABLE */
 extern constext txt_author_search_backwards[];
 extern constext txt_author_search_forwards[];
@@ -878,6 +882,7 @@ extern constext txt_error_gnksa_rn_encsyn[];
 extern constext txt_error_gnksa_rn_paren[];
 extern constext txt_error_gnksa_rn_invalid[];
 extern constext txt_error_header_and_body_not_separate[];
+extern constext txt_error_header_distribution_all[];
 extern constext txt_error_header_duplicate[];
 extern constext txt_error_header_format[];
 extern constext txt_error_header_line_bad_charset[];
@@ -1692,6 +1697,7 @@ extern constext txt_warn_cancel[];
 #ifdef CHARSET_CONVERSION
 	extern constext txt_warn_charset_conversion[];
 #endif /* CHARSET_CONVERSION */
+extern constext txt_warn_distribution_world[];
 extern constext txt_warn_downgrade[];
 extern constext txt_warn_encoding_and_external_inews[];
 extern constext txt_warn_long_line_not_base[];
@@ -2111,6 +2117,7 @@ extern struct opttxt txt_catchup_read_groups;
 extern struct opttxt txt_confirm_choice;
 extern struct opttxt txt_date_format;
 extern struct opttxt txt_display_options;
+extern struct opttxt txt_dont_break_words;
 extern struct opttxt txt_draw_arrow;
 extern struct opttxt txt_editor_format;
 extern struct opttxt txt_expert_options;
@@ -2260,6 +2267,9 @@ extern struct opttxt txt_xpost_quote_format;
 #ifdef CHARSET_CONVERSION
 	extern struct opttxt txt_mm_network_charset;
 	extern struct opttxt txt_undeclared_charset;
+#	ifdef USE_ICU_UCSDET
+	extern struct opttxt txt_undeclared_cs_guess;
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 #ifdef HAVE_COLOR
 	extern struct opttxt txt_quote_regex;

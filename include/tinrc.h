@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2023-10-29
+ *  Updated   : 2024-07-01
  *  Notes     :
  *
  * Copyright (c) 1999-2024 Jason Faultless <jason@altarstone.com>
@@ -211,6 +211,7 @@ struct t_config {
 	t_bool word_highlight;				/* like word_highlight but stored in tinrc */
 	t_bool url_highlight;				/* highlight urls in text bodies */
 	int wrap_column;				/* screen column to wrap of text messages */
+	t_bool dont_break_words;			/* don't break words when wrapping long lines */
 #	ifdef HAVE_COLOR
 		t_bool use_color;					/* like use_color but stored in tinrc */
 #	endif /* HAVE_COLOR */
@@ -305,6 +306,9 @@ struct t_config {
 #	ifdef CHARSET_CONVERSION
 		int attrib_mm_network_charset;
 		char attrib_undeclared_charset[LEN];
+#		ifdef USE_ICU_UCSDET
+		t_bool attrib_undeclared_cs_guess;
+#		endif /* USE_ICU_UCSDET */
 #	endif /* !CHARSET_CONVERSION */
 	char attrib_editor_format[PATH_LEN];
 	char attrib_fcc[PATH_LEN];

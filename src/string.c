@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2024-05-30
+ *  Updated   : 2024-06-27
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -835,8 +835,10 @@ char2wchar_t(
 		return NULL;
 	}
 
-	wstr = my_calloc(1, sizeof(wchar_t) * (len + 1));
-	mbstowcs(wstr, test, len + 1);
+	/* if ((len = mbstowcs(NULL, test, 0) == (size_t) (-1)) { free(test); return NULL; } */
+	wstr = my_calloc(1, (len + 1) * sizeof(wchar_t));
+	pos = mbstowcs(wstr, test, len);
+	/* wstr[pos == (size_t) (-1) ? 0 : pos] = '\0'; */
 	free(test);
 
 	return wstr;
@@ -911,11 +913,9 @@ wcspart(
 
 	/* pad with spaces */
 	if (pad) {
-		int gap;
+		int gap = columns - used;
 
-		gap = columns - wcswidth(wbuf, wcslen(wbuf) + 1);
-		assert(gap >= 0);
-		wbuf = my_realloc(wbuf, sizeof(wchar_t) * (wcslen(wbuf) + (size_t) gap + 1));
+		wbuf = my_realloc(wbuf, sizeof(wchar_t) * (wcslen(wbuf) + (size_t) (gap + 1)));
 		ptr = wbuf + wcslen(wbuf); /* set ptr again to end of wbuf */
 
 		while (gap-- > 0)
@@ -942,7 +942,7 @@ abbr_wcsgroupname(
 
 	dest = new_grpname = my_wcsdup(grpname);
 
-	if (wcswidth(grpname, wcslen(grpname)) > len) {
+	if (len > 0 && wcswidth(grpname, wcslen(grpname)) > len) {
 		if ((src = wcschr(grpname, (wchar_t) '.')) != NULL) {
 			tmplen = wcwidth(*dest++);
 
@@ -1126,13 +1126,22 @@ wstrunc(
 			tail = char2wchar_t(TRUNC_TAIL);
 
 		len_tail = tail ? wcslen(tail) : 0;
+		if (len_tail > len) {
+			FreeAndNull(tail);
+			len_tail = 0;
+		}
 		wtmp2 = wcspart(wtmp, (int) (len - len_tail), FALSE);
 		free(wtmp);
-		wtmp = my_realloc(wtmp2, sizeof(wchar_t) * (wcslen(wtmp2) + len_tail + 1));	/* wtmp2 isn't valid anymore and doesn't have to be free()ed */
-		if (!tail)
-			tail = my_calloc(1, sizeof(wchar_t));
-		wcscat(wtmp, tail);
-		free(tail);
+
+		if (wtmp2)
+			wtmp = my_realloc(wtmp2, sizeof(wchar_t) * (wcslen(wtmp2) + len_tail + 1));	/* wtmp2 isn't valid anymore and doesn't have to be free()ed */
+		else
+			wtmp = my_calloc(1, sizeof(wchar_t) * (len_tail + 1));
+
+		if (tail && *tail)
+			wcscat(wtmp, tail);
+
+		FreeIfNeeded(tail);
 	}
 
 	return wtmp;

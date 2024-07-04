@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2023-10-29
+;   Updated   : 2024-07-01
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -93,6 +93,7 @@
 	use_keypad			OPT_ON_OFF
 #endif
 	wrap_column			OPT_NUM
+	dont_break_words	OPT_ON_OFF
 	trim_article_body		txt_trim_article_body_options
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	suppress_soft_hyphens	OPT_ON_OFF
@@ -227,7 +228,10 @@
 	attrib_mm_network_charset	txt_mime_charsets
 	attrib_undeclared_charset	OPT_STRING
 #endif
-	attrib_post_mime_encoding		txt_mime_encodings
+#if defined(USE_ICU_UCSDET) && defined(CHARSET_CONVERSION)
+	attrib_undeclared_cs_guess	OPT_ON_OFF
+#endif
+	attrib_post_mime_encoding	txt_mime_encodings
 	attrib_post_8bit_header		OPT_ON_OFF
 	attrib_mail_mime_encoding	txt_mime_encodings
 	attrib_mail_8bit_header		OPT_ON_OFF

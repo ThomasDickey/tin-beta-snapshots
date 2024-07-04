@@ -5,8 +5,8 @@
 numdays=28
 
 overviewbase=${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}
-if test -d $overviewbase ; then
-	( find $overviewbase/.news* -type f -name "[0-9]*.[0-9]" \
+if test -d "$overviewbase" ; then
+	( find "$overviewbase"/.news* -type f -name "[0-9]*.[0-9]" \
 		-atime +$numdays |\
 		xargs rm -f ) && exit 0
 fi

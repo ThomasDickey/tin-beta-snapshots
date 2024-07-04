@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-05-10
+ *  Updated   : 2024-06-27
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -161,6 +161,11 @@ scroll_page(
 
 			case -2:
 				i >>= 1;
+				break;
+
+			default: /* should not happen */
+				/* CONSTANTCONDITION */
+				assert(0 != 0);
 				break;
 		}
 	}
@@ -726,18 +731,22 @@ page_goto_next_unread:
 				break;
 
 			case GLOBAL_EDIT_FILTER:
-				XFACE_CLEAR();
-				if (invoke_editor(filter_file, filter_file_offset, NULL)) {
-					old_artnum = arts[this_resp].artnum;
-					unfilter_articles(group);
-					(void) read_filter_file(filter_file);
-					filter_articles(group);
-					make_threads(group, FALSE);
-					if ((n = find_artnum(old_artnum)) == -1 || which_thread(n) == -1) /* We have lost the thread */
-						return GRP_KILLED;
-					this_resp = n;
+				if (no_write)
+					info_message(_(txt_info_no_write));
+				else {
+					XFACE_CLEAR();
+					if (invoke_editor(filter_file, filter_file_offset, NULL)) {
+						old_artnum = arts[this_resp].artnum;
+						unfilter_articles(group);
+						(void) read_filter_file(filter_file);
+						filter_articles(group);
+						make_threads(group, FALSE);
+						if ((n = find_artnum(old_artnum)) == -1 || which_thread(n) == -1) /* We have lost the thread */
+							return GRP_KILLED;
+						this_resp = n;
+					}
+					draw_page(0);
 				}
-				draw_page(0);
 				break;
 
 			case GLOBAL_REDRAW_SCREEN:		/* redraw current page of article */
@@ -1399,11 +1408,11 @@ static void
 draw_page_header(
 	void)
 {
-	char *buf, *tmp;
-	int i;
+	char *buf, *tmp, *tmp2;
+	int i, n;
 	int whichresp, x_resp;
 	int len, right_len, center_pos, cur_pos;
-	size_t line_len;
+	size_t line_len, tlen;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *fmt_resp = NULL, *fmt_thread, *wtmp, *wtmp2, *wtmp3, *wbuf;
 #else
@@ -1456,7 +1465,8 @@ draw_page_header(
 	/* date */
 	if ((wtmp = char2wchar_t(buf)) != NULL) {
 		my_fputws(wtmp, stdout);
-		cur_pos += wcswidth(wtmp, wcslen(wtmp));
+		if ((n = wcswidth(wtmp, wcslen(wtmp))) > 0)
+			cur_pos += n;
 		free(wtmp);
 	}
 
@@ -1464,10 +1474,11 @@ draw_page_header(
 	 * determine max len for centered group name
 	 * allow one space before and after group name
 	 */
-	len = cCOLS - 2 * MAX(cur_pos, right_len) - 3;
+	if ((len = cCOLS - 2 * MAX(cur_pos, right_len) - 3) < 0)
+		len = 0;
 
 	/* group name */
-	if ((wtmp = char2wchar_t(curr_group->name)) != NULL) {
+	if ((wtmp = char2wchar_t(curr_group->name)) != NULL && len > 0) {
 		/* wconvert_to_printable(wtmp, FALSE); */
 		if (tinrc.abbreviate_groupname)
 			wtmp2 = abbr_wcsgroupname(wtmp, len);
@@ -1486,8 +1497,8 @@ draw_page_header(
 		my_fputws(wtmp2, stdout);
 		cur_pos += wcswidth(wtmp2, wcslen(wtmp2));
 		free(wtmp2);
-		free(wtmp);
 	}
+	FreeIfNeeded(wtmp);
 
 	/* pad out to right */
 	for (; cur_pos < cCOLS - right_len - 1; cur_pos++)
@@ -1495,13 +1506,32 @@ draw_page_header(
 
 	/* thread info */
 	/* can't eval tin_ltoa() more than once in a statement due to statics */
-	strcpy(buf, tin_ltoa(which_thread(this_resp) + 1, 4));
-	tmp = strunc(_(txt_thread_x_of_n), cCOLS / 3 - 1);
-	my_printf(tmp, buf, tin_ltoa(grpmenu.max, 4));
-	free(tmp);
+	{
+		char *buf2 = my_calloc(1, 5);
 
-	my_fputs(cCRLF, stdout);
+		strcpy(buf, tin_ltoa(which_thread(this_resp) + 1, 4));
+		strcpy(buf2, tin_ltoa(grpmenu.max, 4));
 
+		if ((n = snprintf(NULL, 0, _(txt_thread_x_of_n), buf, buf2)) < 0) {
+			free(buf2);
+			goto skip;
+		}
+
+		tlen = (size_t) n + 1;
+		tmp2 = my_malloc(tlen);
+		if (snprintf(tmp2, tlen, _(txt_thread_x_of_n), buf, buf2) != n) {
+			free(tmp2);
+			free(buf2);
+			goto skip;
+		}
+		tmp = strunc(tmp2, cCOLS / 3 - 1);
+		my_printf("%s", tmp);
+		free(tmp2);
+		free(buf2);
+		free(tmp);
+skip:
+		my_fputs(cCRLF, stdout);
+	}
 #	if 0
 	/* display a ruler for layout checking purposes */
 	my_fputs("....|....3....|....2....|....1....|....0....|....1....|....2....|....3....|....\n", stdout);
@@ -1610,8 +1640,18 @@ draw_page_header(
 		my_fputc(' ', stdout);
 
 	if (whichresp) {
-		tmp = strunc(_(txt_art_x_of_n), cCOLS / 3 - 1);
-		my_printf(tmp, whichresp + 1, x_resp + 1);
+		if ((n = snprintf(NULL, 0, _(txt_art_x_of_n), whichresp + 1, x_resp + 1)) < 0)
+			goto shrug;
+
+		tlen = (size_t) n + 1;
+		tmp2 = my_malloc(tlen);
+		if (snprintf(tmp2, tlen, _(txt_art_x_of_n), whichresp + 1, x_resp + 1) != n) {
+			free(tmp2);
+			goto shrug;
+		}
+		tmp = strunc(tmp2, cCOLS / 3 - 1);
+		my_printf("%s", tmp);
+		free(tmp2);
 		free(tmp);
 	} else {
 		/* TODO: ngettext */
@@ -1622,11 +1662,22 @@ draw_page_header(
 			tmp = strunc(_(txt_1_resp), cCOLS / 3 - 1);
 			my_printf("%s", tmp);
 		} else {
-			tmp = strunc(_(txt_x_resp), cCOLS / 3 - 1);
-			my_printf(tmp, x_resp);
+			if ((n = snprintf(NULL, 0, _(txt_x_resp), x_resp)) < 0)
+				goto shrug;
+
+			tlen = (size_t) n + 1;
+			tmp2 = my_malloc(tlen);
+			if (snprintf(tmp2, tlen, _(txt_x_resp), x_resp) != n) {
+				free(tmp2);
+				goto shrug;
+			}
+			tmp = strunc(tmp2, cCOLS / 3 - 1);
+			my_printf("%s", tmp);
+			free(tmp2);
 		}
 		free(tmp);
 	}
+shrug:
 	my_fputs(cCRLF, stdout);
 
 	/*
@@ -1662,7 +1713,6 @@ draw_page_header(
 	if (note_h->org) {
 		char *tb;
 		char *tail = NULL;
-		int n;
 
 		if (tinrc.utf8_graphics)
 			tail = wchar_t2char(WTRUNC_TAIL);

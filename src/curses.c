@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2024-02-12
+ *  Updated   : 2024-06-04
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -187,7 +187,7 @@ setup_screen(
 #		define TGETSTR(b,bufp)    tigetstr(b)
 #		define TGETNUM(b)         tigetnum(b) /* may be tigetint() */
 #		define TGETFLAG(b)        tigetflag(b)
-#		define NO_CAP(s)          (s == 0 || s == (char *) -1)
+#		define NO_CAP(s)          (s == NULL || s == (char *) -1)
 #		if !defined(HAVE_TIGETNUM) && defined(HAVE_TIGETINT)
 #			define tigetnum tigetint
 #		endif /* !HAVE_TIGETNUM && HAVE_TIGETINT */
@@ -199,7 +199,7 @@ setup_screen(
 #		define TGETSTR(a, bufp)   tgetstr(a, bufp)
 #		define TGETNUM(a)         tgetnum(a)
 #		define TGETFLAG(a)        tgetflag(a)
-#		define NO_CAP(s)          (s == 0)
+#		define NO_CAP(s)          (s == NULL)
 #	endif /* USE_TERMINFO */
 
 #	ifdef HAVE_TPARM

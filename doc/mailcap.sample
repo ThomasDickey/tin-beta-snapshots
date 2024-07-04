@@ -2,6 +2,12 @@
 application/pgp;\
 	pgp -m %s;\
 	needsterminal
+application/news-*;\
+	${PAGER:-"more"} '%s'\;
+	edit=${EDITOR:-"vi"} '%s';\
+	compose=${EDITOR:-"vi"} '%s';\
+	print=a2ps '%s';\
+	needsterminal
 image/jpeg;\
 	xv -8 -geometry +0 '%s';\
 	description=JPEG Image;\

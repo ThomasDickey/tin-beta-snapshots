@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-05-06
+ *  Updated   : 2024-06-25
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1418,6 +1418,13 @@ sort_base(
 
 		case SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND:
 			tin_sort(base, (size_t) grpmenu.max, sizeof(t_artnum), last_date_comp_base_asc);
+			break;
+
+		/* should not happen */
+		case SORT_THREADS_BY_NOTHING:
+		default:
+			/* CONSTANTCONDITION */
+			assert(0 != 0);
 			break;
 	}
 }

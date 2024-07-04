@@ -2,8 +2,8 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2024-05-28
-.\" Notes     : needs a some work
+.\" Updated   : 2024-07-02
+.\" Notes     : needs a some work, see TODOs
 .\"
 .\"
 .\"*******************************************************************
@@ -295,7 +295,7 @@ Zeilen.
 Der Name der Newsgruppe.
 .TP 
 \fBMarkierung\fP
-Markierung die angibt ob die Gruppe abonniert ist ':' oder nicht '!'.
+Markierung die angibt ob die Gruppe abonniert ist ':' oder nicht '!\&'.
 .TP 
 \fBArtikel\fP
 Bereich bereits gelesener Artikel aus dieser Gruppe; durch Kommas getrennte
@@ -380,7 +380,8 @@ Quadrupel) der E\-Mail\-Gruppen des Benutzers (erfordert, dass \fB\%tin\fP(1) mi
 mh\-Mail\-Handling\-Unterstützung gebaut wurde).
 .TP 
 \fBMailgroupname\fP
-Pfad der Mailbox relativ zu Feld #4, wobei '/' in '.' umgewandelt sein muss.
+Pfad der Mailbox relativ zu Feld #4, wobei '/' in '.\&' umgewandelt sein
+muss.
 .TP 
 \fBMaximalwert\fP
 Geben Sie hier einfach eine große Zahl ein, die höher ist als die der
@@ -647,7 +648,7 @@ string starts with a / or ~ then it is assumed to be the name of a file
 containing the text to insert. If the string starts with a ! then what
 follows is assumed to be the path to a program to be executed to generate
 the content. %G is expanded to the current news.group.name and %P is
-expanded to the news.group.name with all '.' replaced by '/'.
+expanded to the news.group.name with all '.\&' replaced by '/'.
 .TP 
 \fBx_comment_to\fP
 Fügt Header \*(rqX\-Comment\-To:\*(rq ein, dies ist nur in FIDO\-Gruppen nützlich.
@@ -659,7 +660,7 @@ is assumed to be the name of a file containing the header and its content to
 be inserted. If the string starts with a ! then what follows is assumed to
 be the path to a program to be executed to generate the header and its
 content. %G is expanded to the current news.group.name and %P is expanded to
-the news.group.name with all '.' replaced by '/'.
+the news.group.name with all '.\&' replaced by '/'.
 .TP 
 \fBquick_kill_scope\fP
 Eine durch Komma getrennte Liste von Newsgroup\-Mustern im Wildmat\-Stil, auf
@@ -704,13 +705,19 @@ Assume (broken) articles without MIME charset declaration have this charset
 \fB\%iconv\fP(3), others might have to compile \fB\%tin\fP(1)  with
 \-\-disable\-mime\-strict\-charset.
 .TP 
+\fBundeclared_cs_guess\fP
+Guess charset for (broken) articles without MIME charset declaration.  This
+attribute works only on systems with working \fB\%iconv\fP(3)  and
+\fB\%ucsdet_getName\fP(3)  from libicui18n. It has no effect if
+undeclared_charset is also set.
+.TP 
 Beispiel:
 .RS
 .nf
 # zusätzliche Header einfügen
 # ISO\-8859\-1 als Zeichensatz annehmen falls keiner
-# angegeben wurde
-scope=*
+# angegeben wurde; in allen Gruppen außer fido7.*
+scope=*,!fido7.*
 x_headers=~/.tin/headers
 undeclared_charset=ISO\-8859\-1
 
@@ -730,6 +737,10 @@ followup_to=poster
 scope=fido.*
 quote_chars=%I>_
 x_comment_to=ON
+
+# in fido7.* Gruppen den Zeichnsatz erraten
+scope=fido7.*
+undeclared_cs_guess=ON
 
 # Keine Signatur in *.test Newsgruppen anhängen
 # und Subject vorwählen
@@ -1159,7 +1170,8 @@ beginnt, wird als Kommentar behandelt. Nur verfügbar, wenn via NNTP gelesen
 wird.
 .TP 
 \fBNNTPServer\fP
-Vollständig qualifizierter Domänenname des Newsservers. Zusätzlich kann ein
+Vollständig qualifizierter Domänenname des Newsservers. Eine einfache
+IPv6\-Adresse muss in eckige Klammern gesetzt werden. Zusätzlich kann ein
 Port durch Anhängen von :portnumber angegeben werden. Wenn ein Port
 angegeben wird, überschreibt er jeden Port, der mit \*(rq\fB\-g\fP\*(rq oder \*(rq\fB\-p\fP\*(rq
 angegeben oder durch \*(rq\fB\-T\fP\*(rq oder \*(rq\fB\-k\fP\*(rq impliziert oder über
@@ -1354,7 +1366,7 @@ ist ' '.
 .TP 
 \fBart_marked_killed\fP
 Zeichen das anzeigt, dass ein Artikel gekillt wurde. Voreinstellung ist
-\&'K'). \fBkill_level\fP muss passend gesetzt sein.
+\&'K'. \fBkill_level\fP muss passend gesetzt sein.
 .TP 
 \fBart_marked_read_selected\fP
 Zeichen, das verwendet wird, um anzuzeigen, dass ein Artikel automatisch
@@ -1382,7 +1394,7 @@ anzeigen? Voreinstellung ist ON.
 Automatisch Verbindung zum Server wiederherstellen. Voreinstellung ist OFF.
 .TP 
 \fBbatch_save\fP
-Falls ON werden Artikel/Threads im Batchmode gespeichert wenn \*(rq\fB\-S\fP oder
+Falls ON werden Artikel/Threads im Batchmode gespeichert wenn \*(rq\fB\-S\fP\*(rq oder
 gemailt, wenn \*(rq\fB\-M\fP\*(rq bzw. \*(rq\fB\-N\fP\*(rq in der Kommandozeile angegeben
 wurde. Voreinstellung ist ON.
 .TP 
@@ -1616,6 +1628,10 @@ Default for quick (1 key) auto\-selection filter header.
 \fBdefault_shell_command\fP
 .TP 
 \fBdefault_subject_search\fP
+.TP 
+\fBdont_break_words\fP
+Do not break long lines inside a word. This applies to the body except for
+verbatim blocks. See also \fBwrap_column\fP. Default is OFF.
 .TP 
 \fBdraw_arrow\fP
 Allows groups/articles to be selected by an arrow '\->' if set ON or by a
@@ -1875,8 +1891,8 @@ Leerzeichen getrennte Werte angeben. Wenn Sie hier nichts definieren wird
 diese Option deaktiviert.
 .TP 
 \fBnews_headers_to_not_display\fP
-Genau das Gleiche wie 'news_headers_to_display', mit der Ausnahme, das es
-das Gegenteil bewirkt. Wenn Sie dachten, das die X\- Header eine tolle Sachen
+Genau das Gleiche wie \fBnews_headers_to_display\fP, mit der Ausnahme, das es
+das Gegenteil bewirkt. Wenn Sie dachten, das X\-Header eine tolle Sachen
 waren, nun aber festgestellt haben, das dort einiges überflüssiges steht,
 dann könnten Sie wie folgt vorgehen: \fBnews_headers_to_display=X\-\fP
 \fBnews_headers_to_not_display=X\-Alan X\-Pape\fP Wenn Sie hier nichts angeben,
@@ -2467,12 +2483,12 @@ are used. Default is ON.
 \fBwrap_column\fP
 Sets the column at which a displayed article body should be wrapped.  If
 this value is equal to 0, it defaults to the current screen width.  If this
-value is greater than your current screen width the part off\-screen is not
-displayed. Thus setting this option to a large value can be used to disable
-wrapping. If this value is negative the wrap margin is the current screen
-width plus the given value (as long as the result is still positive,
-otherwise it will fall back to the current screen width). Default is 0,
-wrapping at the current screen width.
+value is greater than your current screen width and \fBdont_break_words\fP is
+unset the part off\-screen is not displayed.  Thus setting this option to a
+large value can be used to disable wrapping.  If this value is negative the
+wrap margin is the current screen width plus the given value (as long as the
+result is still positive, otherwise it will fall back to the current screen
+width). Default is 0, wrapping at the current screen width.
 .TP 
 \fBwrap_on_next_unread\fP
 If enabled a search for the next unread article will wrap around all
@@ -2561,7 +2577,7 @@ Ihre Konfiguration unterscheidet.
 Vollständiger Pfadname der Aktive\-Datei Ihres Newssystems; normalerweise
 befindet sich die Datei in \fInewslibdir\fP und heißt \fIactive\fP, so dass Sie
 diese Einstellung nur ändern müssen wenn sich Ihre Konfiguration
-unterscheidet.
+unterscheidet. $\fBTIN_ACTIVEFILE\fP überschreibt einen angegebenen Wert.
 .TP 
 \fBactivetimesfile\fP
 Vollständiger Pfadname der active.times\-Datei Ihres Newssystems;
@@ -2603,7 +2619,7 @@ vorhält. Jede Newsgruppe sollte nur einmal aufgeführt werden. Jede Zeile
 beschreibt eine Gruppe; in jeder Newsgruppe haben die Artikel eindeutige
 Namen: monoton steigende Nummern.
 .sp
-.\" TODO: IIRC tin issues just a warning in that case?
+.\" TODO: tin issues just a warning in that case.
 Wenn ein Artikel in Newsgruppen gepostet wird die nicht in dieser Datei
 erwähnt sind, werden diese Newsgruppen ignoriert. Wenn keine gültigen
 Newsgruppen angegeben werden, wird der Artikel zurückgewiesen.
@@ -2743,9 +2759,9 @@ stattdessen den Befehl LIST SUBSCRIPTIONS (\fBRFC\%6048\fP).
 \fB\%shar\fP(1), \fB\%slrnface\fP(1), \fB\%tin\fP(1), \fB\%xterm\fP(1x),
 \fB\%heapsort\fP(3), \fB\%iconv\fP(3), \fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3),
 \fB\%pcre\fP(3), \fB\%pcre2\fP(3), \fB\%pcrepattern\fP(3), \fB\%pcre2pattern\fP(3),
-\fB\%qsort\fP(3), \fB\%strftime\fP(3), \fB\%system\fP(3), \fB\%active\fP(5),
-\fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5),
-\fB\%overview.fmt\fP(5), \fB\%innd\fP(8), \fBRFC\%1524\fP, \fBRFC\%2045\fP,
-\fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP,
-\fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP,
-\fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%8143\fP
+\fB\%qsort\fP(3), \fB\%strftime\fP(3), \fB\%system\fP(3), \fB\%ucsdet_getName\fP(3),
+\fB\%active\fP(5), \fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5),
+\fB\%newsoverview\fP(5), \fB\%overview.fmt\fP(5), \fB\%innd\fP(8), \fBRFC\%1524\fP,
+\fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP,
+\fBRFC\%2980\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP,
+\fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%8143\fP

@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-04-22
+ *  Updated   : 2024-07-01
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -148,6 +148,9 @@ constext txt_attrib_file_mime_forward[] = N_("#  mime_forward=ON/OFF\n");
 #ifdef CHARSET_CONVERSION
 	constext txt_attrib_file_mm_network_charset[] = N_("#  mm_network_charset=supported_charset");
 	constext txt_attrib_file_undeclared_charset[] = N_("#  undeclared_charset=STRING (default is US-ASCII)\n");
+#	ifdef USE_ICU_UCSDET
+	constext txt_attrib_file_undeclared_cs_guess[] = N_("#  undeclared_cs_guess=ON/OFF (default is OFF)\n");
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 constext txt_attrib_file_hdr_to_disp[] = N_("#  news_headers_to_display=STRING\n");
 constext txt_attrib_file_hdr_to_not_disp[] = N_("#  news_headers_to_not_display=STRING\n");
@@ -231,6 +234,7 @@ constext txt_attrib_no_scope[] = N_("attribute with no scope: %s");
 	constext txt_auth_user[] = N_("    Please enter username: ");
 	constext txt_authorization_ok[] = N_("Authorized for user: %s\n");
 	constext txt_authorization_fail[] = N_("Authorization failed for user: %s\n");
+	constext txt_authorization_unavail[] = N_("No supported authorization method available in current state!\n");
 #endif /* NNTP_ABLE */
 constext txt_author_search_backwards[] = N_("Author search backwards [%s]> ");
 constext txt_author_search_forwards[] = N_("Author search forwards [%s]> ");
@@ -426,6 +430,7 @@ constext txt_error_gnksa_rn_encsyn[] = N_("Bad syntax in encoded word used in re
 constext txt_error_gnksa_rn_paren[] = N_("Illegal character in realname.\nUnquoted words may not contain '()<>\\' in old-style addresses.\n");
 constext txt_error_gnksa_rn_invalid[] = N_("Illegal character in realname.\nControl characters and unencoded 8bit characters > 127 are not allowed.\n");
 constext txt_error_header_and_body_not_separate[] = N_("\nError: No blank line found after header.\n");
+constext txt_error_header_distribution_all[] = N_("\nError: Illegal Distribution \"all\" used.\n");
 constext txt_error_header_format[] = N_("\nError: Illegal formatted %s.\n");
 /* TODO: fixme, US-ASCII is not the only 7bit charset we know about */
 constext txt_error_header_line_bad_charset[] = N_("\n\
@@ -1275,6 +1280,7 @@ constext txt_warn_cancel[] = N_("Read carefully!\n\n\
   You are about to cancel an article seemingly written by you. This will wipe\n\
   the article from most  news servers  throughout the world,  but there is no\n\
   guarantee that it will work.\n\nThis is the article you are about to cancel:\n\n");
+constext txt_warn_distribution_world[] = N_("\nWarning: Undesired Distribution \"world\" used.\n");
 constext txt_warn_encoding_and_external_inews[] = N_("\n\
 Warning: You are using a non-plain transfer encoding (such as base64 or\n\
          quoted-printable) and an external inews program to submit your\n\
@@ -2847,6 +2853,12 @@ struct opttxt txt_wrap_column = {
 	N_("# Wrap article lines at column\n")
 };
 
+struct opttxt txt_dont_break_words = {
+    N_("If ON, don't break words when wrapping lines. <SPACE> toggles & <CR> sets."),
+    N_("Don't break words when wrapping"),
+    N_("# Don't break long lines inside a word but on <SPACE> or <TAB>\n")
+};
+
 struct opttxt txt_wrap_on_next_unread = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Wrap around threads on next unread"),
@@ -3522,6 +3534,13 @@ struct opttxt txt_undeclared_charset = {
 	N_("UNDECLARED_CHARSET"),
 	NULL
 };
+#	ifdef USE_ICU_UCSDET
+struct opttxt txt_undeclared_cs_guess = {
+	N_("Guess charset if no charset declaration is present, <CR> to set."),
+	N_("UNDECLARED_CS_GUESS"),
+	NULL
+};
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 
 struct opttxt txt_x_body = {

@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-05-28
+.\" Updated   : 2024-06-25
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -47,7 +47,7 @@ NNTP\-Befehl (\fBRFC\%2980\fP, \fBRFC\%3977\fP).
 Threadebene und Artikelebene. Mit dem \fBHelp\fP ('\fBh\fP') Befehl können die
 jeweils verfügbaren Befehle angezeigt werden.
 .PP
-Am Anfang zeigt \fBtin\fP eine Liste der Gruppen in
+Zu Beginn zeigt \fBtin\fP eine Liste der Gruppen in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP. Ein Pfeil '\->' oder ein inverser
 Balken zeigt auf die erste Newsgruppe. Um zu einer Gruppe zu navigieren
 können die Cursor\-Tasten (hängt vom verwendetem Terminal ab) oder \fBDown\fP
@@ -263,7 +263,8 @@ Sie können keine Artikel veröffentlichen, wenn Sie diese Option verwenden.
 \fB\-X\fP
 Schreibgeschützter Modus. \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP und Dateien
 unter \fI${TIN_HOMEDIR:\-"$HOME"}/.tin\fP werden nicht überschrieben aber
-angelegt falls sie nicht existieren.
+angelegt falls sie nicht existieren. Nach Möglichkeit mit \*(rq\fB\-x\fP\*(rq
+kombinieren.
 .TP 
 \fB\-z\fP
 \fBtin\fP nur starten wenn es neue/ungelesene Artikel gibt. Falls das der Fall
@@ -1659,7 +1660,7 @@ ist ' '.
 .TP 
 \fBZeichen für gekillte Artikel (art_marked_killed)\fP
 Zeichen das anzeigt, dass ein Artikel gekillt wurde. Voreinstellung ist
-\&'K'). \fBkill_level\fP muss passend gesetzt sein.
+\&'K'. \fBkill_level\fP muss passend gesetzt sein.
 .TP 
 \fBZeichen für gelesene wichtige Art. (art_marked_read_selected)\fP
 Zeichen, das verwendet wird, um anzuzeigen, dass ein Artikel automatisch
@@ -1688,7 +1689,7 @@ anzeigen? Voreinstellung ist ON.
 Voreinstellung ist OFF.
 .TP 
 \fBSpeicher Artikel im Batchmode (\-S) (batch_save)\fP
-Falls ON werden Artikel/Threads im Batchmode gespeichert wenn \*(rq\fB\-S\fP oder
+Falls ON werden Artikel/Threads im Batchmode gespeichert wenn \*(rq\fB\-S\fP\*(rq oder
 gemailt, wenn \*(rq\fB\-M\fP\*(rq bzw. \*(rq\fB\-N\fP\*(rq in der Kommandozeile angegeben
 wurde. Voreinstellung ist ON.
 .TP 
@@ -1938,6 +1939,10 @@ Default for quick (1 key) auto\-selection filter header.
 .TP 
 \fB(default_subject_search)\fP
 .TP 
+\fBDon't break words when wrapping (dont_break_words)\fP
+Do not break long lines inside a word. This applies to the body except for
+verbatim blocks. See also \fBwrap_column\fP. Default is OFF.
+.TP 
 \fBZeige \-> anstatt einer Markierung (draw_arrow)\fP
 Allows groups/articles to be selected by an arrow '\->' if set ON or by a
 highlighted bar if set OFF. Default is OFF.
@@ -2176,7 +2181,7 @@ terminal which attributes are usable. See also \fBword_h_display_marks\fP and
 These are internal timers used by \fBtin\fP to keep track of new newsgroups.
 Do not change them unless you understand what they are for.
 .TP 
-\fBor *) (news_headers_to_display\fP
+\fBZeige diese Header\-Felder (oder *) (news_headers_to_display)\fP
 Welche Header wollen Sie sehen. Wenn Sie _alle_ sehen wollen, setzen Sie ein
 \&'*' als Wert ein. Dies ist die einzige Möglichkeit, um Platzhalter
 (Wildcards) zu nutzen. Wenn Sie als Wert 'X\-' angeben, sehen Sie alle Header
@@ -2185,8 +2190,8 @@ Leerzeichen getrennte Werte angeben. Wenn Sie hier nichts definieren wird
 diese Option deaktiviert.
 .TP 
 \fBZeige folgende Header nicht an (news_headers_to_not_display)\fP
-Genau das Gleiche wie 'news_headers_to_display', mit der Ausnahme, das es
-das Gegenteil bewirkt. Wenn Sie dachten, das die X\- Header eine tolle Sachen
+Genau das Gleiche wie \fBnews_headers_to_display\fP, mit der Ausnahme, das es
+das Gegenteil bewirkt. Wenn Sie dachten, das X\-Header eine tolle Sachen
 waren, nun aber festgestellt haben, das dort einiges überflüssiges steht,
 dann könnten Sie wie folgt vorgehen: \fBnews_headers_to_display=X\-\fP
 \fBnews_headers_to_not_display=X\-Alan X\-Pape\fP Wenn Sie hier nichts angeben,
@@ -2302,8 +2307,8 @@ Falls ON speichere/drucke/pipe/maile nur ungelesene Artikel (markierte
 Artikel ausgenommen). Voreinstellung ist OFF.
 .TP 
 \fBLeeres Fup'2 im Editor anzeigen (prompt_followupto)\fP
-Falls ON zeige leere Followup\-To:\-Kopfzeile im Editor. Voreinstellung ist
-OFF.
+Falls ON zeige leere \*(rqFollowup\-To:\*(rq\-Kopfzeile im Editor. Voreinstellung
+ist OFF.
 .TP 
 \fBZitatzeichen (quote_chars)\fP
 The character used in quoting included text to article followups and mail
@@ -2750,12 +2755,12 @@ are used. Default is ON.
 \fBZeilen umbrechen nach (wrap_column)\fP
 Sets the column at which a displayed article body should be wrapped.  If
 this value is equal to 0, it defaults to the current screen width.  If this
-value is greater than your current screen width the part off\-screen is not
-displayed. Thus setting this option to a large value can be used to disable
-wrapping. If this value is negative the wrap margin is the current screen
-width plus the given value (as long as the result is still positive,
-otherwise it will fall back to the current screen width). Default is 0,
-wrapping at the current screen width.
+value is greater than your current screen width and \fBdont_break_words\fP is
+unset the part off\-screen is not displayed.  Thus setting this option to a
+large value can be used to disable wrapping.  If this value is negative the
+wrap margin is the current screen width plus the given value (as long as the
+result is still positive, otherwise it will fall back to the current screen
+width). Default is 0, wrapping at the current screen width.
 .TP 
 \fBEinleitungszeile beim Crossposten (xpost_quote_format)\fP
 .\"
@@ -2792,7 +2797,7 @@ options menu the attributes menu provides the following command:
 .SS GÜLTIGKEITSBEREICHS\-MENÜ
 The scopes menu (accessible from the options menu with \fBConfigScopeMenu\fP
 ('\fBS\fP')) shows all scopes read from the global and local attributes file.
-Scopes from the global attributes file are marked with '!' to the left of
+Scopes from the global attributes file are marked with '!\&' to the left of
 the scope number. Delete/rename/move are not possible with those scopes.
 .PP
 .\"
@@ -2968,7 +2973,7 @@ mailbox with the name of the current newsgroup (eg, alt.sources).  See
 To save in savedir/<news.group.name>/<filename> format enter
 \&'+<filename>'.  See \fBsavedir\fP. Like '+' %G is expanded to the
 current news.group.name but without \fBsavedir\fP prefixed. %P is expanded to
-the news.group.name with all '.' replaced by '/'.
+the news.group.name with all '.\&' replaced by '/'.
 .PP
 If saving multiple files at once the filename (if not referring to a
 mailbox)  will be extended by ".num" where "num" is at least 3 digit number
@@ -3019,10 +3024,10 @@ A range is simply a group of items marked using the \fBSetRange\fP (\fB'#'\fP)
 key. Certain \fBtin\fP commands will operate on a range if one exists rather
 than just the current item. A range is an expression of the form
 <min>\(en<max>, e.g. 10\(en15 will highlight items 10
-through 15 on the current screen. Other than absolute numeric positions, '.'
-can be used in place of the current cursor position and '$' can be used to
-mean the highest number available. Entering '0' at the prompt undoes the
-previously entered range selection. Currently the only commands that
+through 15 on the current screen. Other than absolute numeric positions,
+\&'.\&' can be used in place of the current cursor position and '$' can be
+used to mean the highest number available. Entering '0' at the prompt undoes
+the previously entered range selection. Currently the only commands that
 understand ranges are \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBMarkArtUnread\fP
 ('\fBz\fP') and \fBMarkThdUnread\fP ('\fBZ\fP').
 .SS "NEWSGROUP LISTEN & WILDCARDS"
@@ -3280,11 +3285,11 @@ overview:
 .in -.3i
 .PP
 By default, the string is not truncated. If it exceeds the screen width, it
-is wrapped. If the % sign is followed by an exclamation mark ('!') for
+is wrapped. If the % sign is followed by an exclamation mark ('!\&') for
 uppercase letters, the element is omitted if there is not enough space. If
 the % sign is followed by an asterisk ('*') for a lowercase letter, the
 description is omitted if there is not enough space. If the % sign is
-followed by an exclamation mark ('!') for a lowercase letter, the
+followed by an exclamation mark ('!\&') for a lowercase letter, the
 description is omitted first and then the content. The shortening is always
 from right to left, first the description is omitted and when no more
 description is displayed, the content is omitted. If %T and %S follow each
@@ -3727,7 +3732,7 @@ DomainOS machine the environment variable $\fBNEWSORG\fP has to be used instead
 of $\fBORGANIZATION\fP.
 .TP 
 \fBNEWSORG (DomainOS)\fP
-DomainOS spezifisch, wie $\fBORGANISATION\fP auf anderen Betriebssystemen
+DomainOS spezifisch, wie $\fBORGANIZATION\fP auf anderen Betriebssystemen
 (siehe oben).
 .TP 
 \fBREPLYTO\fP
@@ -3927,7 +3932,7 @@ Falls \fBtin\fP im Debug\-Modus (\*(rq\fB\-D n\fP\*(rq) gestartet wird, werden i
 NNTP\-Passwort des aktuellen Benutzers im Klartext enthalten können (falls
 Verbose angeschaltet ist). Auf Multiuser\-Systemen sollte daher $TMPDIR auf
 einen sicheren Speicherort gesetzt werden, bevor \fBtin\fP im (verbosen)
-Debug\-Modus gestartet wird (z. B. TMPDIR=$HOME tin \-vD 1).
+Debug\-Modus gestartet wird (z. B. \fBTMPDIR=$HOME tin \-vD 1\fP).
 .PP
 Die Verwendung der Option \*(rq\fB\-k\fP\*(rq zum Überspringen der
 Zertifikatsüberprüfung macht die Sitzung unsicher, da das Zertifikat des
@@ -3967,10 +3972,10 @@ umgehen. Falls Sie Probleme mit einem der genannten historischen Server
 haben, definieren Sie DISABLE_PIPELINING in include/autoconf.h und
 kompilieren Sie das Programm neu.
 .PP
-Die Verwendung des \*(rq\-C\*(rq (COMPRESS)\-Flags mit \fBINN\fP\-Versionen zwischen
+Die Verwendung des \*(rq\fB\-C\fP\*(rq (COMPRESS)\-Flags mit \fBINN\fP\-Versionen zwischen
 2.6.1 und 2.7.1 (beide einschl.) kann dazu führen, dass \fBtin\fP beim Posten
 hängt und sich mit einem Timeout beendet. Dies wurde in der \fBINN\fP\-Version
-2.7.2 behoben. Als Workaround verwenden Sie einfach kein \*(rq\-C\*(rq.
+2.7.2 behoben. Als Workaround verwenden Sie einfach kein \*(rq\fB\-C\fP\*(rq.
 .PP
 .\"
 .\"

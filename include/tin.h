@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-05-28
+ *  Updated   : 2024-07-01
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1181,7 +1181,7 @@ enum {
 
 
 /*
- * indicate given cmd-line options
+ * indicate given cmd-line options; adjust t_cmdlineopts accordingly
  */
 #define CMDLINE_GETART_LIMIT	(1 << 0)
 #define CMDLINE_MAILDIR			(1 << 1)
@@ -1190,6 +1190,7 @@ enum {
 #define CMDLINE_USE_COLOR		(1 << 4)
 #define CMDLINE_NNTP_TIMEOUT	(1 << 5)
 #define CMDLINE_MSGID			(1 << 6)
+#define CMDLINE_NO_DESCRIPTION	(1 << 7)
 
 
 /*
@@ -1593,7 +1594,7 @@ struct t_cmdlineopts {
 	char nntpserver[PATH_LEN];	/* nntpserver */
 	char savedir[PATH_LEN];		/* savedir */
 	char msgid[PATH_LEN];	/* messageid (TODO: reduce to 250 as of RFC 3977 3.6 & RFC 5536 3.1.3 if done everywhere in the code) */
-	unsigned int args:7;		/* given options */
+	unsigned int args:8;		/* given options */
 };
 
 /*
@@ -1752,6 +1753,9 @@ struct t_attribute {
 #endif /* HAVE_ISPELL */
 #ifdef CHARSET_CONVERSION
 	char *undeclared_charset;		/* charset of articles without MIME charset declaration */
+#	ifdef USE_ICU_UCSDET
+	BoolField(undeclared_cs_guess);
+#	endif /* USE_ICU_UCSDET */
 	IntField(mm_network_charset);		/* network charset */
 #endif /* CHARSET_CONVERSION */
 	struct t_newsheader *headers_to_display;	/* array of which headers to display */
@@ -1899,6 +1903,9 @@ struct t_attribute_state {
 	BoolField(trim_article_body);
 #ifdef CHARSET_CONVERSION
 	BoolField(undeclared_charset);
+#	ifdef USE_ICU_UCSDET
+	BoolField(undeclared_cs_guess);
+#	endif /* USE_ICU_UCSDET */
 	BoolField(mm_network_charset);
 #endif /* CHARSET_CONVERSION */
 	BoolField(verbatim_handling);

@@ -79,6 +79,15 @@ undeclared_charset=Big5
 scope=fj.*,jp.*,japan.*
 undeclared_charset=ISO-2022-JP
 
+If your system has libicui18n with ucsdet_getName() you may also use
+scope=whatever.*
+undeclared_cs_guess=ON
+in that case tin will try to guess the charset if the article does not
+specify its charset or has one assigned via undeclared_charset.
+This is limited to either articles not using MIME or to single-part
+MIME articles not using quoted-printable or base64 encoding (such
+articles should have a charset specified anyway).
+
 If all these settings don't help you it is likely that the system locales
 are broken or even not installed. If the latter is the case, you should
 install an appropriate library (or let your administration do it for you if

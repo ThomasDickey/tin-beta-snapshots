@@ -836,7 +836,7 @@ prompt_continue(
 		case KEY_PREFIX:
 #endif /* HAVE_KEY_PREFIX */
 			(void) get_arrow_key(ch);
-			/* FALLTHROUGH */
+			break;
 
 		default:
 			break;

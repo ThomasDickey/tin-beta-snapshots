@@ -326,11 +326,11 @@ used to activate NNTP compression as defined in RFC 8054.
 
 --with-socks (default: off)
 Check for socks proxy library (SOCKS Version 4) and link against it if
-available.
+available. Do not mix with --with-socks5.
 
 --with-socks5 (default: off)
 Check for socks5 proxy library (SOCKS Version 5; RFC 1928) and link against
-it if available.
+it if available. Do not mix with --with-socks.
 
 --disable-gsasl
 Disable check for GNU SASL library (needed for SASL authentication).
@@ -604,6 +604,11 @@ multipart binary articles (libuu is part of uudeview, which can be found at
 library paths, uudeview.h somewhere in the include paths when compiling. If
 they are found there by configure, these defines are set automatically.
 
+USE_ICU_UCSDET (default: set automatically)
+Is defined if system has ucsdet_getName() from ICU (libicui18n). This
+is required for charset guessing via undeclared_charset=guess in
+attributes.
+
 
 Debug/test options
 ------------------
@@ -749,8 +754,9 @@ experimental MAXARTNUM NNTP extension. the syntax is currently under
 discussion and may change, so use with caution.
 
 REPRODUCIBLE_BUILD
-if set, do not use __DATE__ and __TIME__ macros. This is required for 
-reproducible builds
+if set, do not use __DATE__ and __TIME__ macros nor record $CFLAGS,
+$CPPFLAGS and $LDFLAGS in the binary. This is required for
+reproducible builds.
 
 License
 -------

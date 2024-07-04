@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-28
+ *  Updated   : 2024-06-27
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -627,19 +627,23 @@ thread_page(
 				break;
 
 			case GLOBAL_EDIT_FILTER:
-				if (invoke_editor(filter_file, filter_file_offset, NULL)) {
-					old_artnum = arts[find_response(thread_basenote, thdmenu.curr)].artnum;
-					unfilter_articles(group);
-					(void) read_filter_file(filter_file);
-					filter_articles(group);
-					make_threads(group, FALSE);
-					if ((n = find_artnum(old_artnum)) == -1 || which_thread(n) == -1) { /* We have lost the thread */
-						ret_code = GRP_KILLED;
-						break;
+				if (no_write)
+					info_message(_(txt_info_no_write));
+				else {
+					if (invoke_editor(filter_file, filter_file_offset, NULL)) {
+						old_artnum = arts[find_response(thread_basenote, thdmenu.curr)].artnum;
+						unfilter_articles(group);
+						(void) read_filter_file(filter_file);
+						filter_articles(group);
+						make_threads(group, FALSE);
+						if ((n = find_artnum(old_artnum)) == -1 || which_thread(n) == -1) { /* We have lost the thread */
+							ret_code = GRP_KILLED;
+							break;
+						}
+						fixup_thread(n, TRUE);
 					}
-					fixup_thread(n, TRUE);
+					show_thread_page();
 				}
-				show_thread_page();
 				break;
 
 			case THREAD_READ_ARTICLE:	/* read current article within thread */
@@ -1382,9 +1386,7 @@ prev_response(
 	if (arts[n].prev >= 0)
 		return arts[n].prev;
 
-	i = which_thread(n) - 1;
-
-	if (i < 0)
+	if ((i = which_thread(n) - 1) < 0)
 		return -1;
 
 	return find_response(i, num_of_responses(i));
@@ -1618,7 +1620,8 @@ thread_catchup(
 				default:				/* Just leave the group */
 					return GRP_EXIT;
 			}
-			/* FALLTHROUGH */
+			break;
+
 		default:
 			break;
 	}

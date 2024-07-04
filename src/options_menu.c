@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2024-04-02
+ *  Updated   : 2024-07-03
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2024 Michael Bienia <michael@vorlon.ping.de>
@@ -361,6 +361,9 @@ option_is_visible(
 #ifdef CHARSET_CONVERSION
 		case OPT_ATTRIB_MM_NETWORK_CHARSET:
 		case OPT_ATTRIB_UNDECLARED_CHARSET:
+#	ifdef USE_ICU_UCSDET
+		case OPT_ATTRIB_UNDECLARED_CS_GUESS:
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 		case OPT_ATTRIB_VERBATIM_HANDLING:
 		case OPT_ATTRIB_WRAP_ON_NEXT_UNREAD:
@@ -1420,6 +1423,11 @@ config_page(
 								UPDATE_BOOL_ATTRIBUTES(group_catchup_on_exit);
 							break;
 
+						case OPT_DONT_BREAK_WORDS:
+							if (prompt_option_on_off(option))
+								changed |= DISPLAY_OPTS;
+							break;
+
 						case OPT_MARK_IGNORE_TAGS:
 							if (prompt_option_on_off(option))
 								UPDATE_BOOL_ATTRIBUTES(mark_ignore_tags);
@@ -1825,6 +1833,17 @@ config_page(
 							if (prompt_option_on_off(option))
 								SET_BOOL_ATTRIBUTE(thread_catchup_on_exit);
 							break;
+
+#if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
+						case OPT_ATTRIB_UNDECLARED_CS_GUESS:
+							if (!check_state(OPT_ATTRIB_UNDECLARED_CHARSET)) {
+								if (prompt_option_on_off(option))
+									SET_BOOL_ATTRIBUTE(undeclared_cs_guess);
+							} /* else
+								TODO: warn somehow, but info_message() will be overwritten right away
+							*/
+							break;
+#endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
 						case OPT_ATTRIB_VERBATIM_HANDLING:
 							if (prompt_option_on_off(option)) {
@@ -2552,9 +2571,16 @@ config_page(
 						case OPT_ATTRIB_UNDECLARED_CHARSET:
 							if (prompt_option_string(option))
 								SET_STRING_ATTRIBUTE(undeclared_charset);
+#	ifdef USE_ICU_UCSDET
+							if (check_state(OPT_ATTRIB_UNDECLARED_CHARSET) && check_state(OPT_ATTRIB_UNDECLARED_CS_GUESS)) {
+								reset_state(OPT_ATTRIB_UNDECLARED_CS_GUESS);
+								redraw_screen(OPT_ATTRIB_UNDECLARED_CS_GUESS);
+								redraw_screen(OPT_ATTRIB_UNDECLARED_CHARSET);
+							}
+#	endif /* USE_ICU_UCSDET */
 							break;
-
 #endif /* CHARSET_CONVERSION */
+
 						case OPT_ATTRIB_X_BODY:
 							if (prompt_option_string(option))
 								SET_STRING_ATTRIBUTE(x_body);
@@ -3313,6 +3339,10 @@ check_state(
 			return curr_scope->state->mm_network_charset;
 		case OPT_ATTRIB_UNDECLARED_CHARSET:
 			return curr_scope->state->undeclared_charset;
+#	ifdef USE_ICU_UCSDET
+		case OPT_ATTRIB_UNDECLARED_CS_GUESS:
+			return curr_scope->state->undeclared_cs_guess;
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 		case OPT_ATTRIB_VERBATIM_HANDLING:
 			return curr_scope->state->verbatim_handling;
@@ -3639,6 +3669,12 @@ reset_state(
 			curr_scope->state->undeclared_charset = FALSE;
 			snprintf(tinrc.attrib_undeclared_charset, sizeof(tinrc.attrib_undeclared_charset), "%s", BlankIfNull(default_scope->attribute->undeclared_charset));
 			break;
+#	ifdef USE_ICU_UCSDET
+		case OPT_ATTRIB_UNDECLARED_CS_GUESS:
+			curr_scope->state->undeclared_cs_guess = FALSE;
+			tinrc.attrib_undeclared_cs_guess = default_scope->attribute->undeclared_cs_guess;
+			break;
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 		case OPT_ATTRIB_VERBATIM_HANDLING:
 			curr_scope->state->verbatim_handling = FALSE;
@@ -3743,6 +3779,9 @@ initialize_attributes(
 	INITIALIZE_NUM_ATTRIBUTE(thread_perc);
 	INITIALIZE_NUM_ATTRIBUTE(trim_article_body);
 	INITIALIZE_NUM_ATTRIBUTE(tex2iso_conv);
+#if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
+	INITIALIZE_NUM_ATTRIBUTE(undeclared_cs_guess);
+#endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 	INITIALIZE_NUM_ATTRIBUTE(verbatim_handling);
 	INITIALIZE_NUM_ATTRIBUTE(wrap_on_next_unread);
 	INITIALIZE_NUM_ATTRIBUTE(sort_article_type);

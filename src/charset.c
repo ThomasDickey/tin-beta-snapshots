@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2021-02-23
+ *  Updated   : 2024-07-03
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2024 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -41,6 +41,13 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+
+#if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
+#	include <unicode/utypes.h>
+#	include <unicode/localpointer.h>
+#	include <unicode/uenum.h>
+#	include <unicode/ucsdet.h>
+#endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
 /*
  *  Table for the iso2asc conversion
@@ -447,3 +454,66 @@ wconvert_to_printable(
 	return wbuf;
 }
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+
+#if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
+char *
+guess_charset(
+		const char *sample,
+		int32_t confidence)
+{
+	char *guessed_charset = NULL;
+	UCharsetDetector *detector = NULL;
+	const UCharsetMatch *match;
+	UErrorCode status = 0;
+	const char *p_match = NULL;
+
+	detector = ucsdet_open(&status);
+	if (U_FAILURE(status))
+		goto failure;
+
+	ucsdet_setText(detector, sample, strlen(sample), &status);
+	if (U_FAILURE(status))
+		goto failure;
+
+	match = ucsdet_detect(detector, &status);
+	if (match == NULL || U_FAILURE(status))
+		goto failure;
+
+	p_match = ucsdet_getName(match, &status);
+	if (p_match == NULL || U_FAILURE(status))
+		goto failure;
+
+	/* badguess = 0 ... perfect = 100 */
+	if (ucsdet_getConfidence(match, &status) >= confidence)
+		guessed_charset = my_strdup(p_match);
+
+failure:
+	if (detector)
+		ucsdet_close(detector);
+
+	return guessed_charset;
+}
+#endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
+
+
+/*
+ * restrict it to [a-zA-Z0-9_-]+
+ */
+const char *
+validate_charset(
+	const char *charset)
+{
+	const char *c = charset;
+
+	if (!charset)
+		return NULL;
+
+	while (*c) {
+		if (*c < 45 || *c > 122 || *c == 46 || *c == 47 || (*c >= 58 && *c <= 64) || (*c >= 91 && *c <= 94) || *c == 96)
+			return NULL;
+
+		c++;
+	}
+	return charset;
+}

@@ -4,7 +4,7 @@
  *  Module    : parsedate.y
  *  Author    : S. Bellovin, R. $alz, J. Berets, P. Eggert
  *  Created   : 1990-08-01
- *  Updated   : 2024-05-15
+ *  Updated   : 2024-06-03
  *  Notes     : This grammar has 6 shift/reduce conflicts.
  *              Originally written by Steven M. Bellovin <smb@research.att.com>
  *              while at the University of North Carolina at Chapel Hill.
@@ -789,25 +789,36 @@ GetTimeInfo(
     static time_t	LastTime;
     static long		LastTzone;
     struct tm		*tm;
-#if defined(HAVE_GETTIMEOFDAY)
+#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_REALTIME)
+	static struct timespec cgt;
+#else
+#	if defined(HAVE_GETTIMEOFDAY)
     struct timeval	tv;
-#endif /* HAVE_GETTIMEOFDAY */
+#	endif /* HAVE_GETTIMEOFDAY */
+#endif /* HAVE_CLOCK_GETTIME && CLOCK_REALTIME */
 #if defined(DONT_HAVE_TM_GMTOFF)
     struct tm		local;
     struct tm		gmt;
 #endif /* !DONT_HAVE_TM_GMTOFF */
 
     /* Get the basic time. */
-#if defined(HAVE_GETTIMEOFDAY)
-    if (gettimeofday(&tv, (struct timezone *)NULL) == -1)
+#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_REALTIME)
+    if (clock_gettime(CLOCK_REALTIME, &cgt) == -1)
+	return -1;
+    Now->time = cgt.tv_sec;
+    Now->usec = cgt.tv_nsec / 1000;
+#else
+#	if defined(HAVE_GETTIMEOFDAY)
+    if (gettimeofday(&tv, (struct timezone *) NULL) == -1)
 	return -1;
     Now->time = tv.tv_sec;
     Now->usec = tv.tv_usec;
-#else
+#	else
     /* Can't check for -1 since that might be a time, I guess. */
     (void)time(&Now->time);
     Now->usec = 0;
-#endif /* HAVE_GETTIMEOFDAY */
+#	endif /* HAVE_GETTIMEOFDAY */
+#endif /* HAVE_CLOCK_GETTIME && CLOCK_REALTIME */
 
     /* Now get the timezone if it's been an hour since the last time. */
     if (Now->time - LastTime > 60 * 60) {

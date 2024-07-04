@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2024-05-10
+ *  Updated   : 2024-06-21
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2024 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -415,7 +415,7 @@ tintls_handshake(
 		char **cert_info;
 
 		if (chain_size > 0 && BIO_write(io_buf, chain, chain_size) > 0) {
-			cert = PEM_read_bio_X509(io_buf, NULL, 0, NULL);
+			cert = PEM_read_bio_X509(io_buf, NULL, NULL, NULL);
 			if (cert && ((cert_info = get_cert_info(cert)))) {
 				wait_message(0, _(txt_conninfo_subject), cert_info[0] ? cert_info[0] : _(txt_retr_subject_failed));
 				wait_message(0, _(txt_conninfo_issuer), cert_info[1] ? cert_info[1] : _(txt_retr_issuer_failed));
@@ -542,17 +542,18 @@ tintls_handshake(
 
 			if (!batch_mode || verbose) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				char *sub = my_strdup((char *) subject.data);
-				char *iss = my_strdup((char *) issuer.data);
-				size_t len_s = strlen(sub);
-				size_t len_i = strlen(iss);
+				char *dt = my_strdup((char *) subject.data);
+				size_t len_dt = strlen(dt);
 
-				process_charsets(&sub, &len_s, "UTF-8", tinrc.mm_local_charset, FALSE);
-				process_charsets(&iss, &len_i, "UTF-8", tinrc.mm_local_charset, FALSE);
-				wait_message(0, _(txt_conninfo_subject), sub);
-				wait_message(0, _(txt_conninfo_issuer), iss);
-				free(sub);
-				free(iss);
+				process_charsets(&dt, &len_dt, "UTF-8", tinrc.mm_local_charset, FALSE);
+				wait_message(0, _(txt_conninfo_subject), dt);
+				free(dt);
+
+				dt = my_strdup((char *) issuer.data);
+				len_dt = strlen(dt);
+				process_charsets(&dt, &len_dt, "UTF-8", tinrc.mm_local_charset, FALSE);
+				wait_message(0, _(txt_conninfo_issuer), dt);
+				free(dt);
 #else
 				wait_message(0, _(txt_conninfo_subject), subject.data);
 				wait_message(0, _(txt_conninfo_issuer), issuer.data);
@@ -835,7 +836,7 @@ tintls_conninfo(
 		while ((cptr = strstr(cptr, "-----BEGIN CERTIFICATE-----"))) {
 			chain_size = strlen(cptr);
 			if (chain_size > 0 && BIO_write(io_buf, cptr, chain_size) > 0) {
-				cert = PEM_read_bio_X509(io_buf, NULL, 0, NULL);
+				cert = PEM_read_bio_X509(io_buf, NULL, NULL, NULL);
 				if (cert && ((cert_info = get_cert_info(cert)))) {
 					if (i)
 						fputs("\n", fp);

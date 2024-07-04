@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2024-05-13
+ *  Updated   : 2024-06-21
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -444,11 +444,13 @@ authinfo_plain(
 			 */
 #	ifdef DEBUG
 			if ((debug & DEBUG_NNTP) && verbose > 1) {
-				debug_print_file("NNTP", "authorization not allowed in current state:");
+				debug_print_file("NNTP", "Authorization not allowed in current state");
 				debug_print_file("NNTP", "\tCAPABILITIES: %s", nntp_caps.type ? (nntp_caps.type < 2 ? "CAPABILITIES" : "BROKEN") : "NONE");
 				debug_print_file("NNTP", "\t%cREADER, %cMODE READER", nntp_caps.reader ? '+' : '-', nntp_caps.mode_reader ? '+' : '-');
 				debug_print_file("NNTP", "\t%cSTARTTLS", nntp_caps.starttls ? '+' : '-');
 				debug_print_file("NNTP", "\t%cAUTHINFO %s%s", nntp_caps.authinfo_state ? '-' : '+', nntp_caps.authinfo_user ? "USER " : "", nntp_caps.authinfo_sasl ? "SASL" : "");
+				if (nntp_caps.authinfo_sasl) /* should not happen as we unset authinfo_sasl if we didn't find any mech we support */
+					debug_print_file("NNTP", "\tSASL %s", BlankIfNull(nntp_caps.sasl_mechs));
 			}
 #	endif /* DEBUG */
 			/*
@@ -457,6 +459,9 @@ authinfo_plain(
 			 */
 			if (!already_failed)
 				ret = OK_AUTH;
+
+			if (ret != OK_AUTH) /* TODO: also issue a hint for "-T" or to leave out "-A"? */
+				wait_message(4, _(txt_authorization_unavail));
 		}
 	}
 

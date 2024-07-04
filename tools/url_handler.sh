@@ -10,52 +10,52 @@
 # TODO: check $BROWSER?
 
 if test $# -ne 1; then
-	echo "Usage: `basename $0` URL" >&2
+	echo "Usage: `basename "$0"` URL" >&2
 	exit 1
 fi
 
-url=$1
-method=`echo $url | sed 's,^\([^:]*\):.*,\1,' | tr 'A-Z' 'a-z'`
+url="$1"
+method=`echo "$url" | sed 's,^\([^:]*\):.*,\1,' | tr 'A-Z' 'a-z'`
 
-case $method in
+case "$method" in
 	http|https|gopher)
-		if test x$DISPLAY = x; then
-			lynx $url || exit 1
+		if test x"$DISPLAY" = x; then
+			lynx "$url" || exit 1
 		else
-			( netscape -remote openURL\($url\) || netscape $url ) || exit 1
+			( netscape -remote openURL\("$url"\) || netscape "$url" ) || exit 1
 		fi
 		;;
 
 	ftp)
-		if test x$DISPLAY = x; then
-			target=`echo $url | sed 's;^.*://\([^/]*\)/*\(.*\);\1:/\2;'`
-			( ncftp $target || ncftp $target"/" ) || exit 1
+		if test x"$DISPLAY" = x; then
+			target=`echo "$url" | sed 's;^.*://\([^/]*\)/*\(.*\);\1:/\2;'`
+			( ncftp "$target" || ncftp "$target""/" ) || exit 1
 		else
-			( netscape -remote openURL\($url\) || netscape $url ) || exit 1
+			( netscape -remote openURL\("$url"\) || netscape "$url" ) || exit 1
 		fi
 		;;
 
 	mailto)
-		( mutt `echo $url` ) || exit 1
-		# ( pine -url `echo $url` ) || exit 1
+		( mutt "$url" ) || exit 1
+		# ( pine -url "$url" ) || exit 1
 #		# old mutts can't handle mailto:-URLs with embedet subject
-#		if test `echo $url | grep -c '\?'` -eq 0 ; then
-#			( mutt `echo $url | sed 's;^[^:]*:\(.*\);\1;'` ) || exit 1
+#		if test `echo "$url" | grep -c '\?'` -eq 0 ; then
+#			( mutt `echo "$url" | sed 's;^[^:]*:\(.*\);\1;'` ) || exit 1
 #		else
-#			if test x$DISPLAY = x; then
-#				lynx $url || exit 1
+#			if test x"$DISPLAY" = x; then
+#				lynx "$url" || exit 1
 #			else
-#				( netscape -remote openURL\($url\) || netscape $url ) || exit 1
+#				( netscape -remote openURL\("$url"\) || netscape "$url" ) || exit 1
 #			fi
 #		fi
 		;;
 
 	news|snews)
 		# usually meant for reading news on the local server
-		if test x$DISPLAY = x; then
-			lynx $url || exit 1
+		if test x"$DISPLAY" = x; then
+			lynx "$url" || exit 1
 		else
-			( netscape -remote openURL\($url\) || netscape $url ) || exit 1
+			( netscape -remote openURL\("$url"\) || netscape "$url" ) || exit 1
 		fi
 		;;
 
@@ -63,7 +63,7 @@ case $method in
 		# usually meant for reading news via NNTP
 		# needs a special case as netscape can't handle nntp-URLs
 		# *sigh*
-		lynx $url || exit 1
+		lynx "$url" || exit 1
 		;;
 
 esac

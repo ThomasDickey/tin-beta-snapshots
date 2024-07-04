@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-05-28
+ *  Updated   : 2024-06-25
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -416,6 +416,9 @@ read_config_file(
 			if (match_string(buf, "default_shell_command=", tinrc.default_shell_command, sizeof(tinrc.default_shell_command)))
 				break;
 
+			if (match_boolean(buf, "dont_break_words=", &tinrc.dont_break_words))
+				break;
+
 			if (match_boolean(buf, "draw_arrow=", &tinrc.draw_arrow))
 				break;
 
@@ -696,7 +699,7 @@ read_config_file(
 				break;
 
 			if (match_boolean(buf, "show_description=", &tinrc.show_description)) {
-				if (show_description)
+				if (!(cmdline.args & CMDLINE_NO_DESCRIPTION))
 					show_description = tinrc.show_description;
 				break;
 			}
@@ -1417,6 +1420,9 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_wrap_column.tinrc));
 	fprintf(fp, "wrap_column=%d\n\n", tinrc.wrap_column);
+
+	fprintf(fp, "%s", _(txt_dont_break_words.tinrc));
+	fprintf(fp, "dont_break_words=%s\n\n", print_boolean(tinrc.dont_break_words));
 
 	fprintf(fp, "%s", _(txt_trim_article_body.tinrc));
 	fprintf(fp, "trim_article_body=%d\n\n", tinrc.trim_article_body);

@@ -2,8 +2,8 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2024-05-28
-.\" Notes     : needs a some work
+.\" Updated   : 2024-07-02
+.\" Notes     : needs a some work, see TODOs
 .\"
 .\"
 .TH tin 5 "December 24th, 2023" "2.6.4" "Usenet newsreader"
@@ -293,7 +293,7 @@ lines.
 the name of the newsgroup.
 .TP
 .B flag
-a flag indicating if the group is subscribed ':' or not '!'.
+a flag indicating if the group is subscribed ':' or not '!\&'.
 .TP
 .B article
 range of already read articles from that group; numbers separated by commas
@@ -378,7 +378,7 @@ to be built with mh-mail-handling support).
 .TP
 .B mailgroupname
 must be the pathname of the mailbox relative to field #4 with '/' changed
-to '.'
+to '.\&'
 .TP
 .B maxnum
 just put a large number here, something higher than the highest message in
@@ -649,7 +649,7 @@ string starts with a / or ~ then it is assumed to be the name of a file
 containing the text to insert. If the string starts with a ! then what
 follows is assumed to be the path to a program to be executed to generate
 the content. %G is expanded to the current news.group.name and %P is
-expanded to the news.group.name with all '.' replaced by '/'.
+expanded to the news.group.name with all '.\&' replaced by '/'.
 .TP
 .B x_comment_to
 Insert ''X\-Comment\-To:'' header, this is only useful in FIDO groups.
@@ -661,7 +661,7 @@ then it is assumed to be the name of a file containing the header and its
 content to be inserted. If the string starts with a ! then what follows
 is assumed to be the path to a program to be executed to generate the
 header and its content. %G is expanded to the current news.group.name
-and %P is expanded to the news.group.name with all '.' replaced by '/'.
+and %P is expanded to the news.group.name with all '.\&' replaced by '/'.
 .TP
 .B quick_kill_scope
 A comma-separated list of newsgroup patterns (wildmat-style) to which
@@ -710,12 +710,21 @@ others might have to compile
 .BR \%tin (1)
 with \-\-disable\-mime\-strict\-charset.
 .TP
+.B undeclared_cs_guess
+Guess charset for (broken) articles without MIME charset declaration.
+This attribute works only on systems with working
+.BR \%iconv (3)
+and 
+.BR \%ucsdet_getName (3)
+from libicui18n. It has no effect if undeclared_charset is also set.
+.TP
 Example:
 .RS
 .nf
 # include extra headers
 # assume ISO\-8859\-1 as charset if no charset is declared
-scope=*
+# in all but fido7.* groups
+scope=*,!fido7.*
 x_headers=~/.tin/headers
 undeclared_charset=ISO\-8859\-1
 
@@ -735,6 +744,10 @@ followup_to=poster
 scope=fido.*
 quote_chars=%I>_
 x_comment_to=ON
+
+# in fido7.* newsgroups guess charset
+scope=fido7.*
+undeclared_cs_guess=ON
 
 # in *.test newsgroups, don't append signature
 # and preset Subject
@@ -1637,6 +1650,10 @@ Default for quick (1 key) auto-selection filter header.
 .B default_shell_command
 .TP
 .B default_subject_search
+.TP
+.B dont_break_words
+Do not break long lines inside a word. This applies to the body
+except for verbatim blocks. See also \fBwrap_column\fP. Default is OFF.
 .TP
 .B draw_arrow
 Allows groups/articles to be selected by an arrow '\->' if set ON or
@@ -2571,13 +2588,13 @@ attributes specified in \fBmono_markdash\fP, \fBmono_markslash\fP,
 .B wrap_column
 Sets the column at which a displayed article body should be wrapped.
 If this value is equal to 0, it defaults to the current screen width.
-If this value is greater than your current screen width the part
-off-screen is not displayed. Thus setting this option to a large
-value can be used to disable wrapping. If this value is negative the
-wrap margin is the current screen width plus the given value (as long
-as the result is still positive, otherwise it will fall back to the
-current screen width). Default is 0, wrapping at the current screen
-width.
+If this value is greater than your current screen width and
+\fBdont_break_words\fP is unset the part off-screen is not displayed.
+Thus setting this option to a large value can be used to disable wrapping.
+If this value is negative the wrap margin is the current screen width plus
+the given value (as long as the result is still positive, otherwise it will
+fall back to the current screen width). Default is 0, wrapping at the
+current screen width.
 .TP
 .B wrap_on_next_unread
 If enabled a search for the next unread article will wrap around all
@@ -2711,7 +2728,7 @@ increasing numbers.
 .sp
 If an article is posted to newsgroups not mentioned in this file, those
 newsgroups are ignored.
-.\" TODO: IIRC tin issues just a warning in that case?
+.\" TODO: tin issues just a warning in that case.
 If no valid newsgroups are specified, the article is rejected.
 .sp
 Each line consists of four space-separated fields "\fIname\fR \fIhighmark\fR
@@ -2879,6 +2896,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR \%qsort (3),
 .BR \%strftime (3),
 .BR \%system (3),
+.BR \%ucsdet_getName (3),
 .BR \%active (5),
 .BR \%mailcap (5),
 .BR \%mbox (5),

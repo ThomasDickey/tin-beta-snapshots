@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-28
+ *  Updated   : 2024-06-26
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -552,10 +552,9 @@ search_group(
 			continue;
 
 		ret = search_func(i, searchbuff);
-		if (tinrc.wildcard && (ret == 1 || ret == -1)) {
-			/* we will exit soon, clean up */
+		if (tinrc.wildcard && (ret == 1 || ret == -1)) /* we will exit soon, clean up */
 			regex_cache_destroy(&search_regex);
-		}
+
 		switch (ret) {
 			case 1:								/* Found */
 				clear_message();
@@ -564,6 +563,7 @@ search_group(
 			case -1:							/* User abort */
 				return -1;
 		}
+
 #ifdef HAVE_SELECT
 		if (wait_for_input())	/* allow abort */
 			return -1;
@@ -591,7 +591,7 @@ search(
 	t_bool repeat)
 {
 	char *buf;
-	int (*search_func) (int i, char *searchbuff) = author_search;
+	int (*search_func) (int i, char *searchbuff);
 	t_bool forward;
 
 	if (func == GLOBAL_SEARCH_SUBJECT_FORWARD || func == GLOBAL_SEARCH_AUTHOR_FORWARD)

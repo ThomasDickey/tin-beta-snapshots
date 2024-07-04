@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-05-28
+ *  Updated   : 2024-07-01
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -356,6 +356,7 @@ struct t_config tinrc = {
 	TRUE,		/* word_highlight */
 	TRUE,		/* url_highlight */
 	0,		/* wrap_column */
+	FALSE,		/* dont_break_words */
 #ifdef HAVE_COLOR
 	FALSE,		/* use_color */
 #endif /* HAVE_COLOR */
@@ -458,6 +459,9 @@ struct t_config tinrc = {
 #ifdef CHARSET_CONVERSION
 	-1,		/* attrib_mm_network_charset, defaults to $MM_CHARSET */
 	"",		/* attrib_undeclared_charset */
+#	ifdef USE_ICU_UCSDET
+	FALSE,
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 	"",		/* attrib_editor_format */
 	"",		/* attrib_fcc */

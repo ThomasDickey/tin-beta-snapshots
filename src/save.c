@@ -2349,7 +2349,7 @@ process_part(
 					memset(buf2, '\0', sizeof(buf2));
 					if ((count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2)) > 0) {
 #ifdef CHARSET_CONVERSION
-						if (what != SAVE && what != SAVE_TAGGED && !strncmp(content_types[part->type], "text", 4)) {
+						if (what != SAVE && what != SAVE_TAGGED && part->type == TYPE_TEXT) {
 							network_charset = validate_charset(get_param(part->params, "charset"));
 							line_len = (size_t) count;
 							conv_buf = my_strdup(buf2);
@@ -2377,7 +2377,7 @@ process_part(
 
 				default:
 #ifdef CHARSET_CONVERSION
-						if (what != SAVE && what != SAVE_TAGGED && !strncmp(content_types[part->type], "text", 4)) {
+						if (what != SAVE && what != SAVE_TAGGED && part->type == TYPE_TEXT) {
 							conv_buf = my_strdup(buf);
 							line_len = strlen(conv_buf);
 							network_charset = validate_charset(get_param(part->params, "charset"));

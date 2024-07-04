@@ -1457,15 +1457,15 @@ filter_menu(
 			unfilter_articles(group);
 			(void) read_filter_file(filter_file);
 			return TRUE;
-			/* keep lint quiet: */
-			/* FALLTHROUGH */
+			/* NOTREACHED */
+			break;
 
 		case GLOBAL_QUIT:
 		case GLOBAL_ABORT:
 			free_filter_comment(rule.comment);
 			return FALSE;
-			/* keep lint quiet: */
-			/* FALLTHROUGH */
+			/* NOTREACHED */
+			break;
 
 		case FILTER_SAVE:
 			/*
@@ -1474,8 +1474,8 @@ filter_menu(
 			ret = add_filter_rule(group, art, &rule, FALSE);
 			free_filter_comment(rule.comment);
 			return ret;
-			/* keep lint quiet: */
-			/* FALLTHROUGH */
+			/* NOTREACHED */
+			break;
 
 		default:
 			break;
@@ -1797,7 +1797,7 @@ add_filter_rule(
 	if (filtered) {
 #ifdef DEBUG
 		if (debug & DEBUG_FILTER)
-			wait_message(2, "inscope=[%s] scope=[%s] case=[%c] subj=[%s] from=[%s] msgid=[%s] fullref=[%u] line=[%d %d] time=[%lu]", bool_unparse(ptr[i].inscope), BlankIfNull(rule->scope), ptr[i].icase ? "I" : "C", BlankIfNull(ptr[i].subj), BlankIfNull(ptr[i].from), BlankIfNull(ptr[i].msgid), ptr[i].fullref, ptr[i].lines_cmp, ptr[i].lines_num, (unsigned long int) ptr[i].time);
+			wait_message(2, "inscope=[%s] scope=[%s] case=[%c] subj=[%s] from=[%s] msgid=[%s] fullref=[%u] line=[%d %d] time=[%lu]", bool_unparse(ptr[i].inscope), rule->scope, ptr[i].icase ? "I" : "C", BlankIfNull(ptr[i].subj), BlankIfNull(ptr[i].from), BlankIfNull(ptr[i].msgid), ptr[i].fullref, ptr[i].lines_cmp, ptr[i].lines_num, (unsigned long int) ptr[i].time);
 #endif /* DEBUG */
 		write_filter_file(filter_file);
 	}

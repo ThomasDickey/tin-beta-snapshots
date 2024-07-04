@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-04-26
+ *  Updated   : 2024-06-25
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -509,7 +509,7 @@ read_cmd_line_options(
 	char *argv[])
 {
 	char **argv_orig = argv;
-	int ch;
+	int ch, i;
 #ifdef NNTP_ABLE
 	t_bool newsrc_set = FALSE;
 #endif /* NNTP_ABLE */
@@ -610,12 +610,13 @@ read_cmd_line_options(
 				break;
 
 			case 'd':
+				cmdline.args |= CMDLINE_NO_DESCRIPTION;
 				show_description = FALSE;
 				break;
 
 			case 'D':		/* debug mode */
 #ifdef DEBUG
-				debug = s2i(optarg, 0, 2 * DEBUG_REMOVE - 1);
+				i = s2i(optarg, 0, 2 * DEBUG_REMOVE - 1);
 				switch (errno) {
 					case EINVAL: /* TODO: extra error message */
 					case ERANGE:
@@ -628,7 +629,7 @@ read_cmd_line_options(
 					default:
 						break;
 				}
-				if (debug)
+				if ((debug = (unsigned short) i))
 					debug_delete_files();
 #else
 				error_message(0, _(txt_option_not_enabled), "-DDEBUG");
@@ -660,7 +661,6 @@ read_cmd_line_options(
 				str_trim(cmdline.nntpserver);
 				{
 					char *p;
-					int i;
 
 					if ((p = strchr(cmdline.nntpserver, ':')) != NULL) {
 						if (*cmdline.nntpserver != '[' && strrchr(cmdline.nntpserver, ':') == p) { /* exact 1 x ':' must be name:port or ipv4:port */
@@ -867,31 +867,29 @@ read_cmd_line_options(
 
 			case 'p': /* implies -r */
 #ifdef NNTP_ABLE
-				{
-					int i = s2i(optarg, 0, 65535);
+				i = s2i(optarg, 0, 65535);
 
-					switch (errno) {
-						case EINVAL:
-							error_message(0, _(txt_port_not_numeric), "", optarg);
-							FREE_ARGV_IF_NEEDED(argv_orig, argv);
-							free_all_arrays();
-							giveup();
-							/* keep lint quiet: */
-							/* FALLTHROUGH */
-							break;
+				switch (errno) {
+					case EINVAL:
+						error_message(0, _(txt_port_not_numeric), "", optarg);
+						FREE_ARGV_IF_NEEDED(argv_orig, argv);
+						free_all_arrays();
+						giveup();
+						/* keep lint quiet: */
+						/* FALLTHROUGH */
+						break;
 
-						case ERANGE:
-							error_message(0, _(txt_value_out_of_range), "-p ", (int) strtol(optarg, NULL, 10), 65535);
-							if (!batch_mode)
-								sleep(2);
-							break;
+					case ERANGE:
+						error_message(0, _(txt_value_out_of_range), "-p ", (int) strtol(optarg, NULL, 10), 65535);
+						if (!batch_mode)
+							sleep(2);
+						break;
 
-						default:
-							nntp_tcp_port = (unsigned short) i;
-							break;
-					}
-					read_news_via_nntp = TRUE;
+					default:
+						nntp_tcp_port = (unsigned short) i;
+						break;
 				}
+				read_news_via_nntp = TRUE;
 #else
 				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
@@ -910,6 +908,7 @@ read_cmd_line_options(
 				newsrc_active = TRUE;
 				check_for_new_newsgroups = FALSE;
 				show_description = FALSE;
+				cmdline.args |= CMDLINE_NO_DESCRIPTION;
 				break;
 
 			case 'r':	/* read news remotely from default NNTP server */

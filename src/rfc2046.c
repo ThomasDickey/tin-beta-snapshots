@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2024-05-12
+ *  Updated   : 2024-07-03
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -701,15 +701,11 @@ parse_content_type(
 	 */
 	if ((params = strtok(NULL, "\n")) != NULL) {
 		const char *format;
-#ifndef CHARSET_CONVERSION
 		char defparms[] = CT_DEFPARMS;	/* must be writable */
-#endif /* !CHARSET_CONVERSION */
 
 		parse_params(params, content);
 		if (!get_param(content->params, "charset")) {	/* add default charset if needed */
-#ifndef CHARSET_CONVERSION
-			parse_params(defparms, content);
-#else
+#ifdef CHARSET_CONVERSION
 			if (curr_group->attribute->undeclared_charset) {
 				char *charsetheader;
 
@@ -717,12 +713,11 @@ parse_content_type(
 				sprintf(charsetheader, "charset=%s", curr_group->attribute->undeclared_charset);
 				parse_params(charsetheader, content);
 				free(charsetheader);
-			} else {
-				char defparms[] = CT_DEFPARMS;	/* must be writable */
-
+			} else
+#endif /* CHARSET_CONVERSION */
+			{
 				parse_params(defparms, content);
 			}
-#endif /* !CHARSET_CONVERSION */
 		}
 		if ((format = get_param(content->params, "format"))) {
 			if (!strcasecmp(format, "flowed"))
@@ -794,9 +789,7 @@ new_part(
 {
 	t_part *p;
 	t_part *ptr = my_malloc(sizeof(t_part));
-#ifndef CHARSET_CONVERSION
 	char defparms[] = CT_DEFPARMS;	/* must be writable */
-#endif /* !CHARSET_CONVERSION */
 
 	ptr->type = TYPE_TEXT;					/* Defaults per RFC */
 	ptr->subtype = my_strdup("plain");
@@ -806,9 +799,7 @@ new_part(
 	ptr->format = FORMAT_FIXED;
 	ptr->params = NULL;
 
-#ifndef CHARSET_CONVERSION
-	parse_params(defparms, ptr);
-#else
+#ifdef CHARSET_CONVERSION
 	if (curr_group && curr_group->attribute->undeclared_charset) {
 		char *charsetheader;
 
@@ -816,12 +807,11 @@ new_part(
 		sprintf(charsetheader, "charset=%s", curr_group->attribute->undeclared_charset);
 		parse_params(charsetheader, ptr);
 		free(charsetheader);
-	} else {
-		char defparms[] = CT_DEFPARMS;	/* must be writable */
-
+	} else
+#endif /* CHARSET_CONVERSION */
+	{
 		parse_params(defparms, ptr);
 	}
-#endif /* !CHARSET_CONVERSION */
 
 	ptr->offset = 0;
 	ptr->line_count = 0;
@@ -1394,6 +1384,11 @@ parse_multipart_article(
 						break;
 				}
 				break;
+
+			default: /* should not happen */
+				/* CONSTANTCONDITION */
+				assert(0 != 0);
+				break;
 		} /* switch (state) */
 	} /* while() */
 
@@ -1415,6 +1410,11 @@ parse_normal_article(
 	t_bool show_progress_meter)
 {
 	char *line;
+#if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
+	char *buffer = NULL;
+	char *guessed_charset = NULL;
+	size_t b_len = 1;
+#endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
 	while ((line = tin_fgets(in, FALSE)) != NULL) {
 		if (read_news_via_nntp) {
@@ -1425,11 +1425,39 @@ parse_normal_article(
 #endif /* DEBUG && NNTP_ABLE */
 		}
 
+#if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
+/*		if (IS_PLAINTEXT(artinfo->hdr.ext) && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess) { */
+		if (artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess) {
+			b_len += strlen(line);
+			if (!buffer)
+				buffer = my_strdup(line);
+			else {
+				buffer = my_realloc(buffer, b_len);
+				strcat(buffer, line);
+			}
+		}
+#endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
+
 		++artinfo->hdr.ext->line_count;
 
 		if (show_progress_meter)
 			progress(artinfo->hdr.ext->line_count);
 	}
+#if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
+/*	if (IS_PLAINTEXT(artinfo->hdr.ext) && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && buffer) */
+	if (artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && buffer) {
+		guessed_charset = guess_charset(buffer, 10); /* is 10 suitable? */
+		FreeIfNeeded(buffer);
+		if (guessed_charset) {
+			char *guessed_cs_hdr = my_malloc(strlen(guessed_charset) + 17); /* 17=len('guessed_charset=\0') */
+
+			sprintf(guessed_cs_hdr, "guessed_charset=%s", guessed_charset);
+			parse_params(guessed_cs_hdr, artinfo->hdr.ext);
+			free(guessed_cs_hdr);
+			free(guessed_charset);
+		}
+	}
+#endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 	return tin_errno;
 }
 

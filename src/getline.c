@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2024-01-10
+ *  Updated   : 2024-06-04
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -72,12 +72,12 @@ static void hist_next(int w);
 static void hist_prev(int w);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	static int (*gl_in_hook) (wchar_t *) = 0;
-	static int (*gl_out_hook) (wchar_t *) = 0;
+	static int (*gl_in_hook) (wchar_t *) = NULL;
+	static int (*gl_out_hook) (wchar_t *) = NULL;
 	static int (*gl_tab_hook) (wchar_t *, int, int *) = gl_tab;
 #else
-	static int (*gl_in_hook) (char *) = 0;
-	static int (*gl_out_hook) (char *) = 0;
+	static int (*gl_in_hook) (char *) = NULL;
+	static int (*gl_out_hook) (char *) = NULL;
 	static int (*gl_tab_hook) (char *, int, int *) = gl_tab;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 

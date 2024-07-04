@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-05-28
+ *  Updated   : 2024-06-24
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1025,29 +1025,27 @@ eat_re(
 	char *s,
 	t_bool eat_was)
 {
-	int match;
 
 	if (!s || !*s)
 		return "";
-
-	do {
+	else {
+		int match;
 		REGEX_SIZE *offsets;
 
-		match = match_regex_ex(s, (REGEX_SIZE) strlen(s), 0, 0, &strip_re_regex);
-		offsets = regex_get_ovector_pointer(&strip_re_regex);
-		if (match >= 0 && offsets[0] == 0)
-			s += offsets[1];
-	} while (match >= 0);
+		do {
+			match = match_regex_ex(s, (REGEX_SIZE) strlen(s), 0, 0, &strip_re_regex);
+			offsets = regex_get_ovector_pointer(&strip_re_regex);
+			if (match >= 0 && offsets[0] == 0)
+				s += offsets[1];
+		} while (match >= 0);
 
-	if (eat_was) do {
-		REGEX_SIZE *offsets;
-
-		match = match_regex_ex(s, (REGEX_SIZE) strlen(s), 0, 0, &strip_was_regex);
-		offsets = regex_get_ovector_pointer(&strip_was_regex);
-		if (match >= 0 && offsets[0] > 0)
-			s[offsets[0]] = '\0';
-	} while (match >= 0);
-
+		if (eat_was) do {
+			match = match_regex_ex(s, (REGEX_SIZE) strlen(s), 0, 0, &strip_was_regex);
+			offsets = regex_get_ovector_pointer(&strip_was_regex);
+			if (match >= 0 && offsets[0] > 0)
+				s[offsets[0]] = '\0';
+		} while (match >= 0);
+	}
 	return s;
 }
 
@@ -1732,7 +1730,8 @@ _strfpath(
 					break;
 				}
 				*str++ = *format;
-				/* FALLTHROUGH */
+				break;
+
 			default:
 				break;
 		}
@@ -4049,28 +4048,28 @@ tin_version_info(
 	fprintf(fp, "Compiler:\n");
 	fprintf(fp, "\tCC       = \"%s\"\n", TIN_CC);
 	wlines += 2;
-#	ifdef TIN_CFLAGS
+#	if defined(TIN_CFLAGS) && !defined(REPRODUCIBLE_BUILD)
 		fprintf(fp, "\tCFLAGS   = \"%s\"\n", TIN_CFLAGS);
 		wlines++;
-#	endif /* TIN_CFLAGS */
+#	endif /* TIN_CFLAGS && !REPRODUCIBLE_BUILD */
 #	ifdef TIN_CPP
 		fprintf(fp, "\tCPP      = \"%s\"\n", TIN_CPP);
 		wlines++;
 #	endif /* TIN_CPP */
-#	ifdef TIN_CPPFLAGS
+#	if defined(TIN_CFLAGS) && !defined(REPRODUCIBLE_BUILD)
 		fprintf(fp, "\tCPPFLAGS = \"%s\"\n", TIN_CPPFLAGS);
 		wlines++;
-#	endif /* TIN_CPPFLAGS */
+#	endif /* TIN_CPPFLAGS && !REPRODUCIBLE_BUILD */
 #endif /* TIN_CC */
 
 #ifdef TIN_LD
 	fprintf(fp, "Linker and Libraries:\n");
 	fprintf(fp, "\tLD       = \"%s\"\n", TIN_LD);
 	wlines += 2;
-#	ifdef TIN_LDFLAGS
+#	if defined(TIN_LDFLAGS) && !defined(REPRODUCIBLE_BUILD)
 		fprintf(fp, "\tLDFLAGS  = \"%s\"\n", TIN_LDFLAGS);
 		wlines++;
-#	endif /* TIN_LDFLAGS */
+#	endif /* TIN_LDFLAGS && !REPRODUCIBLE_BUILD */
 #	ifdef TIN_LIBS
 		fprintf(fp, "\tLIBS     = \"%s\"\n", TIN_LIBS);
 		wlines++;
@@ -4167,6 +4166,13 @@ tin_version_info(
 #else
 			"-HAVE_COREFILE"
 #endif /* HAVE_COREFILE */
+#ifdef SOCKS
+#	ifdef USE_SOCKS5
+		" +USE_SOCKS5"
+#	else
+		" +SOCKS"
+#	endif /* USE_SOCKS5 */
+#endif /* SOCKS */
 			"\n\t"
 #ifdef NO_SHELL_ESCAPE
 			"+NO_SHELL_ESCAPE "
@@ -4268,6 +4274,11 @@ tin_version_info(
 #else
 			"-NO_LOCALE "
 #endif /* NO_LOCALE */
+#ifdef USE_ICU_UCSDET
+			"+USE_ICU_UCSDET "
+#else
+			"-USE_ICU_UCSDET "
+#endif /* USE_ICU_UCSDET */
 #ifdef USE_LONG_ARTICLE_NUMBERS
 			"+USE_LONG_ARTICLE_NUMBERS"
 #else
@@ -4479,25 +4490,6 @@ make_connection_page(
 		fprintf(fp, txt_conninfo_subscriptions_file, subscriptions_file);
 	}
 #endif /* !NNTP_ONLY */
-}
-
-
-/*
- * restrict it to [a-zA-Z0-9_-]+
- */
-const char *
-validate_charset(
-	const char *charset)
-{
-	const char *c = charset;
-
-	while (*c) {
-		if (*c < 45 || *c > 122 || *c == 46 || *c == 47 || (*c >= 58 && *c <= 64) || (*c >= 91 && *c <= 94) || *c == 96)
-			return NULL;
-
-		c++;
-	}
-	return charset;
 }
 
 

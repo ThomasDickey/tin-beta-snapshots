@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-05-09
+ *  Updated   : 2024-06-30
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -284,9 +284,13 @@ selection_page(
 				break;
 
 			case GLOBAL_EDIT_FILTER:
-				if (invoke_editor(filter_file, filter_file_offset, NULL))
-					(void) read_filter_file(filter_file);
-				show_selection_page();
+				if (no_write)
+					info_message(_(txt_info_no_write));
+				else {
+					if (invoke_editor(filter_file, filter_file_offset, NULL))
+						(void) read_filter_file(filter_file);
+					show_selection_page();
+				}
 				break;
 
 			case SELECT_TOGGLE_DESCRIPTIONS:	/* toggle newsgroup descriptions */
@@ -300,18 +304,16 @@ selection_page(
 				break;
 
 			case SELECT_GOTO:			/* prompt for a new group name */
-				{
-					int oldmax = selmenu.max;
+				i = selmenu.max;
 
-					if ((n = choose_new_group()) >= 0) {
-						/*
-						 * If a new group was added and it is on the actual screen
-						 * draw it. If it is off screen the redraw will handle it.
-						 */
-						if (oldmax != selmenu.max && n >= selmenu.first && n < selmenu.first + NOTESLINES)
-							build_gline(n);
-						move_to_item(n);
-					}
+				if ((n = choose_new_group()) >= 0) {
+					/*
+					 * If a new group was added and it is on the actual screen
+					 * draw it. If it is off screen the redraw will handle it.
+					 */
+					if (i != selmenu.max && n >= selmenu.first && n < selmenu.first + NOTESLINES)
+						build_gline(n);
+					move_to_item(n);
 				}
 				break;
 
@@ -394,12 +396,7 @@ selection_page(
 				if (selmenu.curr < selmenu.first || selmenu.curr >= selmenu.first + NOTESLINES - 1 || selmenu.curr != n)
 					show_selection_page();
 				else {
-					i = selmenu.curr;
-					selmenu.curr = n;
-					erase_arrow();
-					selmenu.curr = i;
-					clear_message();
-					draw_group_arrow();
+					HpGlitch(draw_group_arrow());
 				}
 				break;
 
@@ -736,7 +733,7 @@ build_gline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	char *name_buf = NULL;
 	char *desc_buf = NULL;
-	wchar_t *active_name, *active_name2, *active_desc, *active_desc2;
+	wchar_t *active_name, *active_name2 = NULL, *active_desc, *active_desc2;
 #else
 	char *active_name, *active_name2;
 	size_t fill, len_start;
@@ -779,13 +776,12 @@ build_gline(
 			case 'd':
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if (show_description && active[n].description) {
-					active_desc = char2wchar_t(active[n].description);
-					if (active_desc) {
+					if ((active_desc = char2wchar_t(active[n].description)) != NULL) {
 						if ((active_desc2 = wcspart(active_desc, (int) sel_fmt.len_grpdesc, TRUE)) != NULL) {
 							desc_buf = wchar_t2char(active_desc2);
-							free(active_desc);
 							free(active_desc2);
 						}
+						free(active_desc);
 					}
 					if (desc_buf) {
 						strcat(sptr, desc_buf);
@@ -841,14 +837,17 @@ build_gline(
 				if (active_name && tinrc.abbreviate_groupname) {
 					active_name2 = abbr_wcsgroupname(active_name, groupname_len);
 					free(active_name);
-				} else
+				} else {
+					FreeIfNeeded(active_name2);
 					active_name2 = active_name;
+				}
 
 				if (active_name2 && (active_name = wcspart(active_name2, groupname_len, TRUE)) != NULL) {
-					free(active_name2);
 					name_buf = wchar_t2char(active_name);
 					free(active_name);
 				}
+				FreeAndNull(active_name2);
+
 				if (name_buf) {
 					strcat(sptr, name_buf);
 					FreeAndNull(name_buf);
@@ -1158,9 +1157,10 @@ reposition_group(
 	if (!prompt_string(buf, pos, HIST_MOVE_GROUP))
 		return default_num;
 
-	if (*pos)
-		pos_num = ((pos[0] == '$') ? selmenu.max : s2i(pos, 1, selmenu.max));
-	else {
+	if (*pos) {
+		if ((pos_num = ((pos[0] == '$') ? selmenu.max : s2i(pos, 1, selmenu.max))) == default_num)
+			return default_num;
+	} else {
 		if (tinrc.default_move_group)
 			pos_num = tinrc.default_move_group;
 		else

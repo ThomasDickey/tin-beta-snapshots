@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2024-05-10
+ *  Updated   : 2024-06-21
  *  Notes     :
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -357,10 +357,17 @@ do_read_newsrc_active_file(
 	t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
 	static char ngname[NNTP_GRPLEN + 1]; /* RFC 3977 3.1 limits group names to 497 octets */
 	struct t_group *grpptr;
+	t_bool changed;
 #ifdef NNTP_ABLE
 	t_bool need_auth = FALSE;
 	char *ngnames[NUM_SIMULTANEOUS_GROUP_COMMAND] = { NULL };
 	int index_i = 0, index_o = 0;
+	int respcode, i, j;
+	char fmt[25];
+	char buf[NNTP_STRLEN];
+	char line[NNTP_STRLEN];
+
+	snprintf(fmt, sizeof(fmt), "%%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%%ds", NNTP_GRPLEN);
 #endif /* NNTP_ABLE */
 
 	rewind(fp);
@@ -387,9 +394,6 @@ do_read_newsrc_active_file(
 
 		if (read_news_via_nntp && !read_saved_news) { /* this should be limited to GROUP_TYPE_NEWS, but ... */
 #ifdef NNTP_ABLE
-			char buf[NNTP_STRLEN];
-			char line[NNTP_STRLEN];
-
 			if (window < NUM_SIMULTANEOUS_GROUP_COMMAND && ptr && (!list_active || (newsrc_active && list_active && group_find(ptr, FALSE)))) {
 				ngnames[index_i] = my_strdup(ptr);
 				snprintf(buf, sizeof(buf), "GROUP %s", ngnames[index_i]);
@@ -402,7 +406,7 @@ do_read_newsrc_active_file(
 				window++;
 			}
 			if (window == NUM_SIMULTANEOUS_GROUP_COMMAND || ptr == NULL) {
-				int respcode = get_only_respcode(line, sizeof(line));
+				respcode = get_only_respcode(line, sizeof(line));
 
 				if (reconnected_in_last_get_server) {
 					/*
@@ -411,8 +415,7 @@ do_read_newsrc_active_file(
 					 * We resend all buffered command except for last window_i.
 					 * And rotate buffer to use data received.
 					 */
-					int i;
-					int j = index_o;
+					j = index_o;
 
 					for (i = 0; i < window - 1; i++) {
 						snprintf(buf, sizeof(buf), "GROUP %s", ngnames[j]);
@@ -432,12 +435,8 @@ do_read_newsrc_active_file(
 				}
 
 				switch (respcode) {
-
 					case OK_GROUP:
 						{
-							char fmt[25];
-
-							snprintf(fmt, sizeof(fmt), "%%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%%ds", NNTP_GRPLEN);
 							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4) {
 #	ifdef DEBUG
 								if ((debug & DEBUG_NNTP) && verbose > 1) {
@@ -503,7 +502,7 @@ do_read_newsrc_active_file(
 		 * This call may implicitly ++num_active
 		 */
 		if ((grpptr = group_add(ptr)) == NULL) {
-			t_bool changed = FALSE;
+			changed = FALSE;
 
 			if ((grpptr = group_find(ptr, FALSE)) == NULL)
 				continue;

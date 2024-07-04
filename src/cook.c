@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2024-03-13
+ *  Updated   : 2024-07-02
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -44,7 +44,6 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 
-
 /*
  * We malloc() this many t_lineinfo's at a time
  */
@@ -64,7 +63,7 @@ static t_bool charset_unsupported(const char *charset);
 static t_bool header_wanted(const char *line);
 static t_bool shorten_attach_line(struct t_attach_item *item);
 static t_part *new_uue(t_part **part, char *name);
-static void process_text_body_part(t_bool wrap_lines, FILE *in, t_part *part, int hide_uue);
+static void process_text_body_part(t_bool wrap_lines, FILE *in, const char *charset, t_part *part, int hide_uue);
 static void put_attach(t_bool wrap_lines, t_part *part, int depth, int is_uue, const char *name, const char *charset);
 static void put_cooked(size_t buf_len, t_bool wrap_lines, int flags, const char *fmt, ...);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -214,7 +213,7 @@ put_cooked(
 	const char *fmt,
 	...)
 {
-	char *p, *bufp, *buf;
+	char *p, *bufp, *buf, *last_space;
 	int wrap_column;
 	int space;
 	static int saved_flags = 0;
@@ -231,13 +230,12 @@ put_cooked(
 
 	if (tinrc.wrap_column < 0)
 		wrap_column = ((tinrc.wrap_column > -cCOLS) ? cCOLS + tinrc.wrap_column : cCOLS);
-	else
-#if 1
-		wrap_column = ((tinrc.wrap_column > 0) ? tinrc.wrap_column : cCOLS);
-#else	/* never cut off long lines */
-		wrap_column = (((tinrc.wrap_column > 0) && (tinrc.wrap_column < cCOLS)) ? tinrc.wrap_column : cCOLS);
-#endif /* 1 */
-
+	else {
+		if (tinrc.dont_break_words)
+			wrap_column = (((tinrc.wrap_column > 0) && (tinrc.wrap_column < cCOLS)) ? tinrc.wrap_column : cCOLS);
+		else
+			wrap_column = ((tinrc.wrap_column > 0) ? tinrc.wrap_column : cCOLS);
+	}
 	p = bufp = buf;
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -247,7 +245,10 @@ put_cooked(
 	while (*p) {
 		if (wrap_lines) {
 			space = wrap_column;
+			last_space = NULL;
 			while (space > 0 && *p && *p != '\n') {
+				if (tinrc.dont_break_words && !(flags & (C_VERBATIM | C_HEADER)) && (*p == ' ' || *p == '\t'))
+					last_space = p;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if ((bytes = mbtowc((wchar_t *) wp, p, MB_CUR_MAX)) > 0) {
 					if ((space -= wcwidth((wchar_t) *wp)) < 0)
@@ -260,6 +261,8 @@ put_cooked(
 				space--;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			}
+			if (tinrc.dont_break_words && !(flags & (C_VERBATIM | C_HEADER)) && space <= 0 && last_space && p > last_space)
+				p = last_space + 1;
 		} else {
 			while (*p && *p != '\n')
 				p++;
@@ -865,12 +868,12 @@ static void
 process_text_body_part(
 	t_bool wrap_lines,
 	FILE *in,
+	const char *charset,
 	t_part *part,
 	int hide_uue)
 {
 	char *rest = NULL;
 	char *line = NULL, *buf, *tmpline;
-	const char *ncharset;
 	size_t max_line_len = 0, len, len_blank;
 	int flags, lines_left;
 	unsigned int lines_skipped = 0;
@@ -947,20 +950,13 @@ process_text_body_part(
 			break;	/* premature end of file, file error etc. */
 		}
 
-		/* convert network to local charset, tex2iso, iso2asc etc. */
-		ncharset = validate_charset(get_param(part->params, "charset"));
-		/* TODO: ok to fall back to undeclared_charset if charset is illegal or should we always hard fail to US-ASCII? */
-		process_charsets(&line, &max_line_len, ncharset ? ncharset :
-#ifdef CHARSET_CONVERSION
-			curr_group->attribute->undeclared_charset ? curr_group->attribute->undeclared_charset :
-#endif /* CHARSET_CONVERSION */
-			 "US-ASCII", tinrc.mm_local_charset, curr_group->attribute->tex2iso_conv && art->tex2iso);
+		process_charsets(&line, &max_line_len, charset, tinrc.mm_local_charset, curr_group->attribute->tex2iso_conv && art->tex2iso);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (IS_LOCAL_CHARSET("UTF-8")) {
 			utf8_valid(line);
 
-			if (!in_verbatim && curr_group->attribute->suppress_soft_hyphens && ncharset && !strcasecmp(ncharset, "UTF-8"))
+			if (!in_verbatim && curr_group->attribute->suppress_soft_hyphens && !strcasecmp(charset, "UTF-8"))
 				remove_soft_hyphens(line);
 		}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1339,7 +1335,7 @@ cook_article(
 	int hide_uue,
 	t_bool show_all_headers)
 {
-	const char *charset;
+	const char *charset = NULL;
 	const char *name;
 	char *line;
 	struct t_header *hdr = &artinfo->hdr;
@@ -1450,10 +1446,11 @@ cook_article(
 				continue;
 
 			name = get_filename(ptr->params);
-			if (!strcmp(content_types[ptr->type], "text"))
+			if (ptr->type == TYPE_TEXT)
 				charset = get_param(ptr->params, "charset");
 			else
 				charset = NULL;
+
 			put_attach(wrap_lines, ptr, (ptr->depth - 1) * 4, 0, name, charset);
 
 			/* Try to view anything of type text, may need to review this */
@@ -1463,14 +1460,27 @@ cook_article(
 					if (ptr->next)
 						put_cooked(1, wrap_lines, C_ATTACH, "\n");
 				} else
-					process_text_body_part(wrap_lines, artinfo->raw, ptr, hide_uue);
+					process_text_body_part(wrap_lines, artinfo->raw, charset ? charset : "US-ASCII", ptr, hide_uue);
 			}
 		}
 	} else {
-		if (!strcmp(content_types[hdr->ext->type], "text"))
-			charset = get_param(hdr->ext->params, "charset");
+		if (hdr->mime && hdr->ext->type == TYPE_TEXT)
+			charset = validate_charset(get_param(hdr->ext->params, "charset"));
 		else
 			charset = NULL;
+
+#ifdef CHARSET_CONVERSION
+		if (!charset) {
+			if (!curr_group->attribute->undeclared_charset) {
+#	ifdef USE_ICU_UCSDET
+				if (curr_group->attribute->undeclared_cs_guess)
+					charset = get_param(hdr->ext->params, "guessed_charset");
+#	endif /* USE_ICU_UCSDET */
+			} else
+				charset = validate_charset(curr_group->attribute->undeclared_charset);
+		}
+#endif /* CHARSET_CONVERSION */
+
 		/*
 		 * A regular single-body article
 		 */
@@ -1478,7 +1488,7 @@ cook_article(
 			if (charset_unsupported(charset))
 				put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_mime_unsup_charset), 0, "", charset);
 			else
-				process_text_body_part(wrap_lines, artinfo->raw, hdr->ext, hide_uue);
+				process_text_body_part(wrap_lines, artinfo->raw, charset ? charset : "US-ASCII", hdr->ext, hide_uue);
 		} else {
 			/*
 			 * Non-textual main body

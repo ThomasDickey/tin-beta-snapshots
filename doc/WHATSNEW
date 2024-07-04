@@ -23,16 +23,20 @@ New features
 - configurable display format of attachments
   (page_mime_format, page_uue_format, attachment_format)
 - new option show_art_score (with col_score_neg, col_score_pos)
+- new option dont_break_words
 - ranges can be undone
+- REPRODUCIBLE_BUILD define to prevent recoding of __DATE__, __TIME__,
+  $CFLAGS, $CPPFLAGS and $LDFLAGS in the binary
+- undeclared_cs_guess if system has ucsdet_detect() from libicui18n
+  the charset of an article can be guess upon reading
 
 
 Changes
 -------
 - switch from stdio to own buffer implementation
-- changed the evaluation odrer of LC_CTYPE and LC_MESSAGES when looking for a
+- changed the evaluation order of LC_CTYPE and LC_MESSAGES when looking for a
   keymap file, LC_MESSAGES is now noted first
 - servers MOTD is only shown at startup if it changed since last connect
-
 
 Retired Features
 ----------------

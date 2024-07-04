@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2024-05-09
+ *  Updated   : 2024-07-01
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
@@ -167,6 +167,9 @@ set_default_attributes(
 #ifdef CHARSET_CONVERSION
 	CopyBits(mm_network_charset, tinrc.mm_network_charset);
 	attributes->undeclared_charset = NULL;
+#	ifdef USE_ICU_UCSDET
+		attributes->undeclared_cs_guess = FALSE;
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 }
 
@@ -247,6 +250,9 @@ set_default_state(
 	state->trim_article_body = FALSE;
 #ifdef CHARSET_CONVERSION
 	state->undeclared_charset = FALSE;
+#	ifdef USE_ICU_UCSDET
+		state->undeclared_cs_guess = FALSE;
+#	endif /* USE_ICU_UCSDET */
 	state->mm_network_charset = FALSE;
 #endif /* CHARSET_CONVERSION */
 	state->verbatim_handling = FALSE;
@@ -285,13 +291,13 @@ set_default_state(
 		found = TRUE; \
 		break; \
 	}
-#if !defined(CHARSET_CONVERSION) || !defined(HAVE_ISPELL) || defined(DISABLE_PRINTING)
+#if !defined(CHARSET_CONVERSION) || !defined(HAVE_ISPELL) || defined(DISABLE_PRINTING) || !defined(USE_ICU_UCSDET)
 #	define SKIP_ITEM(pattern) \
 		if (!strncmp(line, pattern, strlen(pattern))) { \
 			found = TRUE; \
 			break; \
 		}
-#endif /* !CHARSET_CONVERSION || !HAVE_ISPELL || DISABLE_PRINTING */
+#endif /* !CHARSET_CONVERSION || !HAVE_ISPELL || DISABLE_PRINTING || !USE_ICU_UCSDET */
 
 
 /*
@@ -502,6 +508,11 @@ read_attributes_file(
 				case 'u':
 #ifdef CHARSET_CONVERSION
 					MATCH_STRING("undeclared_charset=", OPT_ATTRIB_UNDECLARED_CHARSET);
+#	ifdef USE_ICU_UCSDET
+					MATCH_BOOLEAN("undeclared_cs_guess=", OPT_ATTRIB_UNDECLARED_CS_GUESS);
+#	else
+					SKIP_ITEM("undeclared_cs_guess=");
+#	endif /* USE_ICU_UCSDET */
 #else
 					SKIP_ITEM("undeclared_charset=");
 #endif /* CHARSET_CONVERSION */
@@ -919,6 +930,10 @@ set_attrib(
 
 			case OPT_ATTRIB_UNDECLARED_CHARSET:
 				SET_STRING(undeclared_charset);
+#	ifdef USE_ICU_UCSDET
+			case OPT_ATTRIB_UNDECLARED_CS_GUESS:
+				SET_BOOLEAN(undeclared_cs_guess);
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 
 			case OPT_ATTRIB_X_HEADERS:
@@ -1050,6 +1065,9 @@ assign_attributes_to_groups(
 #ifdef CHARSET_CONVERSION
 				SET_ATTRIB(mm_network_charset);
 				SET_ATTRIB(undeclared_charset);
+#	ifdef USE_ICU_UCSDET
+				SET_ATTRIB(undeclared_cs_guess);
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 				SET_ATTRIB(quick_kill_scope);
 				SET_ATTRIB(quick_kill_header);
@@ -1271,6 +1289,9 @@ write_attributes_file(
 	}
 	fprintf(fp, "\n");
 	fprintf(fp, "%s", _(txt_attrib_file_undeclared_charset));
+#	ifdef USE_ICU_UCSDET
+	fprintf(fp, "%s", _(txt_attrib_file_undeclared_cs_guess));
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 	fprintf(fp, "%s", _(txt_attrib_file_hdr_to_disp));
 	fprintf(fp, "%s", _(txt_attrib_file_hdr_to_not_disp));
@@ -1489,6 +1510,10 @@ write_attributes_file(
 					fprintf(fp, "mm_network_charset=%s\n", txt_mime_charsets[scope->attribute->mm_network_charset]);
 				if (scope->state->undeclared_charset && scope->attribute->undeclared_charset)
 					fprintf(fp, "undeclared_charset=%s\n", scope->attribute->undeclared_charset);
+#	ifdef USE_ICU_UCSDET
+				if (scope->state->undeclared_cs_guess)
+					fprintf(fp, "undeclared_cs_guess=%s\n", print_boolean(scope->attribute->undeclared_cs_guess));
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 				if (scope->state->news_headers_to_display && scope->attribute->news_headers_to_display)
 					fprintf(fp, "news_headers_to_display=%s\n", scope->attribute->news_headers_to_display);
@@ -1649,6 +1674,9 @@ skip_scope(
 #ifdef CHARSET_CONVERSION
 		|| scope->state->mm_network_charset
 		|| (scope->state->undeclared_charset && scope->attribute->undeclared_charset)
+#	ifdef USE_ICU_UCSDET
+		|| scope->state->undeclared_cs_guess
+#	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 		|| (scope->state->news_headers_to_display && scope->attribute->news_headers_to_display)
 		|| (scope->state->news_headers_to_not_display && scope->attribute->news_headers_to_not_display)
@@ -1837,6 +1865,9 @@ dump_attributes(
 #	ifdef CHARSET_CONVERSION
 			debug_print_file("ATTRIBUTES", "\tmm_network_charset=%s", txt_mime_charsets[group->attribute->mm_network_charset]);
 			debug_print_file("ATTRIBUTES", "\tundeclared_charset=%s", BlankIfNull(group->attribute->undeclared_charset));
+#		ifdef USE_ICU_UCSDET
+			debug_print_file("ATTRIBUTES", "\tundeclared_cs_guess=%s", print_boolean(group->attribute->undeclared_cs_guess));
+#		endif /* USE_ICU_UCSDET */
 #	endif /* CHARSET_CONVERSION */
 			debug_print_file("ATTRIBUTES", "");
 		}
@@ -1955,6 +1986,9 @@ dump_scopes(
 #	ifdef CHARSET_CONVERSION
 			debug_print_file(fname, "\t%smm_network_charset=%s", DEBUG_PRINT_STATE(mm_network_charset), txt_mime_charsets[scope->attribute->mm_network_charset]);
 			debug_print_file(fname, "\t%sundeclared_charset=%s", DEBUG_PRINT_STATE(undeclared_charset), DEBUG_PRINT_STRING(undeclared_charset));
+#		ifdef USE_ICU_UCSDET
+			debug_print_file(fname, "\t%sundeclared_cs_guess=%s", DEBUG_PRINT_STATE(undeclared_cs_guess), print_boolean(scope->attribute->undeclared_cs_guess));
+#		endif /* USE_ICU_UCSDET */
 #	endif /* CHARSET_CONVERSION */
 			debug_print_file(fname, "");
 		}

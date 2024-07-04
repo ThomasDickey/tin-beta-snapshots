@@ -1,9 +1,11 @@
--- 2.6.4 release 20240531 "" --
+-- 2.6.4 release 20240703 "" --
 
  023) Thomas E. Dickey <dickey@invisible-island.net>
       REM. bundled-intl stuff
+      ADD. disallow giving both --with-socks and --with-socks5
+      ADD. try also libsocks5 and libsocksd if using --with-socks5
       FIX. intl/*, aclocal.m4, configure[.in], autoconf.hin, nntplib.h
-           tcurses.h, Makefile[.in]
+           tcurses.h, Makefile[.in], conf-tin
 
  022) Enrik Berkhan <enrik@tin.org>
       ADD. avoid implicit conversion
@@ -18,17 +20,20 @@
       ADD. avoid implicit conversion
       ADD. formatted output for -vZ and large article counts
       ADD. avoid malloc()/free() overhead in match_group_list()
+      ADD. dont_break_words tinrc option, if set don't break long
+           lines inside words, just on SPACE or TAB if possible.
+      ADD. charset guessing via undeclared_cs_guess in attributes
       BUG. txt_help_config_search_opt_forwards,
            txt_help_config_search_opt_forwards and
            txt_help_attrib_search_opt_backwards,
            txt_help_attrib_search_opt_forwards were mixed up
       BUG. memleak when using bsd-sockets without getservbyname()
       BUG. possible memleak on quit in version.c:upgrade_prompt_quit()
-      FIX. active.c, art.c, config.c, cook.c, filter.c, getline.c, group.c
-           header.c, keymap.c, lang.c, main.c, makecfg.c, misc.c, nntplib.c
-           page.c, post.c, regex.c, rfc2046.c, rfc2047.c, save.c, search.c
-           select.c, string.c, tags.c, version.c, xref.c, parsdate.y, newsrc.h
-           proto.h, tin.h
+      FIX. active.c, art.c, charset.c, config.c, cook.c, filter.c, getline.c
+           group.c, header.c, keymap.c, lang.c, main.c, mail.c, makecfg.c
+           misc.c, nntplib.c, page.c, post.c, regex.c, rfc2046.c, rfc2047.c
+           save.c, search.c, select.c, string.c, tags.c, version.c, xref.c
+           parsdate.y, newsrc.h, proto.h, tin.h
 
  019) Urs Janssen <urs@tin.org>
       ADD. silence some unused parameter warnings
@@ -45,6 +50,7 @@
       ADD. configure check for lrand48(3) and random(3), prefer over rand(3)
       ADD. configure check for tcflag_t
       ADD. configure check for PRIdLEAST64 and SCNdLEAST64
+      ADD. configure check for ucsdet_detect() from libicui18n
       ADD. simplify _Noreturn check, just note the C11 standard
       ADD. removed fixed buffer from copy_body()
       ADD. SASL info to connection-info ('J')
@@ -56,6 +62,10 @@
       ADD. only display MOTD on startup if it did change since the last
            connect (use 'J' to see it anyway).
       ADD. cache MOTD during session
+      ADD. REPRODUCIBLE_BUILD define to prevent recoding of __DATE__, __TIME__,
+           $CFLAGS, $CPPFLAGS and $LDFLAGS in the binary if set
+      ADD. disallow Distribution: all, warn about Distribution: world
+      ADD. charset guessing via undeclared_cs_guess in attributes
       REM. tmpfile.c
       BUG. AUTHINFO SASL * didn't check possible 283 return code
            (as we do not support anything but SASL PLAIN yet, not an issue)
@@ -70,15 +80,19 @@
       BUG. art_mark_xref_read() didn't allow '\t' between locations
       BUG. a From longer than > cCOLS wasn't properly truncated
            before appending organitazion in the pager
-      FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, debug.c, feed.c
-           filter.c, group.c, header.c, help.c, inews.c, init.c, keymap.c
-           lang.c, lock.c, mail.c, main.c, misc.c, my_tmpfile.c, newsrc.c
-           nntplib.c, nntps.c, nrctbl.c, options_menu.c, page.c, pgp.c, post.c
-           prompt.c, read.c, rfc1524.c, rfc2046.c, rfc2047.c, save.c, search.c
-           select.c, sigfile.c, snprintf.c, string.c, tcurses.c, thread.c
-           version.c, xface.c, xref.c, parsdate.y, debug.h, extern.h, nntplib.h
-           proto.h, snprintf.h, tin.h, tnntp.h, autoconf.h[in], configure[.in]
-           Makefile[.in], config.guess, config.sub, tin.1, tin.5
+      BUG. may truncate format string instead of result in draw_page_header
+      BUG. -X did not disallow EditFilter
+      FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, curses.c
+           debug.c, feed.c, filter.c, getline.c, group.c, header.c, help.c
+           inews.c, init.c, keymap.c, lang.c, lock.c, mail.c, main.c
+           makecfg.c, misc.c, my_tmpfile.c, newsrc.c, nntplib.c, nntps.c
+           nrctbl.c, options_menu.c, page.c, pgp.c, post.c, prompt.c, read.c
+           rfc1524.c, rfc2046.c, rfc2047.c, save.c, search.c, select.c
+           sigfile.c, snprintf.c, string.c, tcurses.c, thread.c, version.c
+           xface.c, xref.c, parsdate.y, debug.h, extern.h, nntplib.h, proto.h
+           snprintf.h, tin.h, tinrc.h, tnntp.h, tincfg.tbl, autoconf.h[in]
+           configure[.in], Makefile[.in], config.guess, config.sub, tin.1
+           tin.5
 
 -- 2.6.3 release 20231224 "Banff" --
 

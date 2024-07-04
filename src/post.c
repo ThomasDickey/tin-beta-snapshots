@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-05-31
+ *  Updated   : 2024-06-26
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -1182,7 +1182,6 @@ append_mail(
  * - check for special newsgroups: to, ctl, all, control, junk
  *   [RFC 5536 3.1.4]
  * - check for Supersedes in Control messages [RFC 5536 3.2.3]
- * - check for 'illegal' distribution: all [RFC 5536 3.2.4]
  *
  * Check the article file for correct header syntax and if there
  * is a blank between the header information and the text.
@@ -1235,6 +1234,7 @@ append_mail(
 #	define CA_ERROR_SPACE_IN_FOLLOWUP_TO   0x1000000
 #	define CA_ERROR_NEWLINE_IN_FOLLOWUP_TO 0x2000000
 #endif /* !ALLOW_FWS_IN_NEWSGROUPLIST */
+#define CA_ERROR_DISTRIBUTION_ALL         0x4000000
 #define CA_WARNING_SPACES_ONLY_SUBJECT      0x000001
 #define CA_WARNING_RE_WITHOUT_REFERENCES    0x000002
 #define CA_WARNING_REFERENCES_WITHOUT_RE    0x000004
@@ -1253,6 +1253,7 @@ append_mail(
 #	define CA_WARNING_SPACE_IN_FOLLOWUP_TO   0x001000
 #	define CA_WARNING_NEWLINE_IN_FOLLOWUP_TO 0x002000
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
+#define CA_WARNING_DISTRIBUTION_WORLD       0x004000
 
 /*
  * TODO: cleanup!
@@ -1667,12 +1668,58 @@ check_article_to_be_posted(
 		}
 
 		if (cp - line == 12 && !strncasecmp(line, "Distribution", 12)) {
+			char *dist;
+
 			for (hp = line + 13; *hp; hp++) {
 				if (!isascii((unsigned char) *hp)) {
 					errors_catbp |= CA_ERROR_DISTRIBUTIOIN_NOT_7BIT;
 					break;
 				}
 			}
+
+			cp2 = dist = my_strdup(line + 14);
+
+#if 0 /* TODO */
+			/*
+			 * RFC 5536 3.2.4.
+			 * - check for undesired 1 char distributions
+			 * - check for illgegal chars
+			 * - warn about FWS
+			 */
+			if (strchr(dist, '\n'))
+				warnings_catbp |= CA_WARNING_DISTRIBUTION_FOLDED;
+#endif /* 0 */
+
+			if ((hp = strtok(dist, ", \t\n")) != NULL) {
+				do {
+					if (!strcasecmp(hp, "all"))
+						errors_catbp |= CA_ERROR_DISTRIBUTION_ALL;
+					if (!strcasecmp(hp, "world"))
+						warnings_catbp |= CA_WARNING_DISTRIBUTION_WORLD;
+
+#if 0 /* TODO */
+					if (strlen(hp) < 2)
+						warnings_catbp |= CA_WARNING_DISTRIBUTION_SHORT;
+					if (strlen(hp) == 2) {
+						if (!isalpha(*hp) || !isalpha(*hp + 1))
+							/* simplified check for two-letter country codes ISO-3166-1 */
+							warnings_catbp |= CA_WARNING_DISTRIBUTION_2LCC;
+					}
+
+					/*
+					 * we should remember what exactly is wrong
+					 * warn or error?
+					 * do in !isacii() check above?
+					 */
+					while (isalnum(*hp) || *hp == '+' || *hp == '_' || *hp == '-')
+						hp++;
+					if (*hp != '\0')
+						warnings_catbp |= CA_WARNING_DISTRIBUTION_CHAR;
+#endif /* 0 */
+
+				} while ((hp = strtok(NULL, ", \t\n")) != NULL);
+			}
+			free(cp2);
 			continue;
 		}
 
@@ -2051,6 +2098,9 @@ check_article_to_be_posted(
 		if (errors_catbp & CA_ERROR_FOLLOWUP_TO_POSTER)
 			my_fprintf(stderr, "%s", _(txt_error_followup_poster));
 
+		if (errors_catbp & CA_ERROR_DISTRIBUTION_ALL)
+			my_fprintf(stderr, "%s", _(txt_error_header_distribution_all));
+
 		/* encoding/charset trouble */
 		if (errors_catbp & CA_ERROR_BAD_CHARSET)
 			my_fprintf(stderr, "%s", _(txt_error_header_line_bad_charset));
@@ -2101,6 +2151,9 @@ check_article_to_be_posted(
 		if (warnings_catbp & CA_WARNING_NEWLINE_IN_FOLLOWUP_TO)
 			my_fprintf(stderr, _(txt_warn_header_line_groups_contd), "Followup-To");
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
+
+		if (warnings_catbp & CA_WARNING_DISTRIBUTION_WORLD)
+			my_fprintf(stderr, "%s", _(txt_warn_distribution_world));
 
 		if (warnings_catbp & CA_WARNING_MULTIPLE_SIGDASHES)
 			my_fprintf(stderr, _(txt_warn_multiple_sigs), saw_sig_dashes);
@@ -3468,7 +3521,6 @@ post_response(
 {
 	FILE *fp;
 	char *ptr;
-	char bigbuf[HEADER_LEN];
 	char buf[HEADER_LEN];
 	char from_name[HEADER_LEN];
 	char initials[64];
@@ -3477,10 +3529,10 @@ post_response(
 	struct t_group *group;
 	struct t_header note_h = pgart.hdr;
 	t_bool use_followup_to = TRUE;
+	t_function func;
 #ifdef FORGERY
 	char line[HEADER_LEN];
 #endif /* FORGERY */
-	t_function func;
 
 	msg_init_headers();
 	wait_message(0, _(txt_post_a_followup));
@@ -3572,10 +3624,22 @@ post_response(
 #endif /* FORGERY */
 	msg_add_header("From", from_name);
 
-	ptr = my_strdup(note_h.subj);
-	snprintf(bigbuf, sizeof(bigbuf), "Re: %s", eat_re(ptr, TRUE));
-	msg_add_header("Subject", bigbuf);
-	free(ptr);
+	{
+		char *dbuf;
+		const char *tbuf;
+		int n;
+		size_t len;
+
+		ptr = my_strdup(note_h.subj);
+		tbuf = eat_re(ptr, TRUE);
+		n = snprintf(NULL, 0, "Re: %s", tbuf);
+		len = (size_t) n + 1;
+		dbuf = my_malloc(len);
+		snprintf(dbuf, len, "Re: %s", tbuf);
+		free(ptr);
+		msg_add_header("Subject", dbuf);
+		free(dbuf);
+	}
 
 	if (group && group->attribute->x_comment_to && note_h.from)
 		msg_add_header("X-Comment-To", note_h.from);
@@ -3606,8 +3670,8 @@ post_response(
 	 * guard against missing messageid which may show up in mailgroups
 	 */
 	if (note_h.references) {
-		join_references(bigbuf, note_h.references, BlankIfNull(note_h.messageid));
-		msg_add_header("References", bigbuf);
+		join_references(buf, note_h.references, BlankIfNull(note_h.messageid));
+		msg_add_header("References", buf);
 	} else
 		msg_add_header("References", BlankIfNull(note_h.messageid));
 
@@ -5261,15 +5325,14 @@ insert_from_header(
 				p = rfc1522_encode(from_buff, tinrc.mm_charset, TRUE);
 #	endif /* CHARSET_CONVERSION */
 				r = gnksa_check_from(p);
+				free(p);
 				if (r > GNKSA_OK && r < GNKSA_MISSING_REALNAME) { /* error in address */
 					error_message(2, _(txt_invalid_from), from_buff);
-					free(p);
 					unlink(outfile);
 					fclose(fp_out);
 					fclose(fp_in);
 					return FALSE;
 				}
-				free(p);
 			}
 			if (*line == '\0' && in_header) {
 				if (!from_found) {
@@ -5280,15 +5343,14 @@ insert_from_header(
 					p = rfc1522_encode(from_name, tinrc.mm_charset, FALSE);
 #	endif /* CHARSET_CONVERSION */
 					r = gnksa_check_from(p + 6);
+					free(p);
 					if (r > GNKSA_OK && r < GNKSA_MISSING_REALNAME) { /* error in address */
 						error_message(2, _(txt_invalid_from), from_name + 6);
-						free(p);
 						unlink(outfile);
 						fclose(fp_out);
 						fclose(fp_in);
 						return FALSE;
 					}
-					free(p);
 					fprintf(fp_out, "%s\n", from_name);
 				}
 				in_header = FALSE;
