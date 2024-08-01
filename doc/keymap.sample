@@ -139,6 +139,7 @@ PageToggleRot			%
 PageToggleUue			(
 PageReveal			)
 PageToggleAllHeaders		*
+PageArticleInfo			'
 PageSkipIncludedText		:
 PageTopThd			<
 PageBotThd			>

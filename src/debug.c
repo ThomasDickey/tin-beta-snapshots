@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-02-21
+ *  Updated   : 2024-07-28
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -148,8 +148,8 @@ debug_print_header(
 			bool_unparse(s->killed),
 			bool_unparse(s->selected));
 		fprintf(fp, "subj=[%-38s]\n", s->subject);
-		fprintf(fp, "date=[%ld]  from=[%s]  name=[%s]\n", (long) s->date, s->from,
-			BlankIfNull(s->name));
+		fprintf(fp, "date=[%ld]  from=[%s]  name=[%s]\n", (long) s->date, s->mailbox.from,
+			BlankIfNull(s->mailbox.name));
 
 #if 0	/* msgid and refs are only retained until the reference tree is built */
 		if (s->msgid || s->refs)
@@ -157,7 +157,7 @@ debug_print_header(
 #endif /* 0 */
 
 		if (s->score != 0)
-			fprintf(fp, "score=[%d] gnksa=[%d] lines=[%d]\n", s->score, s->gnksa_code, s->line_count);
+			fprintf(fp, "score=[%d] gnksa=[%d] lines=[%d]\n", s->score, s->mailbox.gnksa_code, s->line_count);
 
 		fprintf(fp, "thread=[%d]  prev=[%d]  status=[%u]\n\n", s->thread, s->prev, (unsigned) s->status);
 		fflush(fp);

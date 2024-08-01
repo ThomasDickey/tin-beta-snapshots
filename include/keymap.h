@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2023-10-17
+ *  Updated   : 2024-07-06
  *  Notes     :
  *
  * Copyright (c) 1999-2024 Jason Faultless <jason@altarstone.com>
@@ -263,6 +263,7 @@ enum defined_functions {
 	MARK_THREAD_UNREAD,
 	MARK_FEED_READ,
 	MARK_FEED_UNREAD,
+	PAGE_ARTICLE_INFO,
 	PAGE_AUTOSAVE,
 	PAGE_BOTTOM_THREAD,
 	PAGE_CANCEL,

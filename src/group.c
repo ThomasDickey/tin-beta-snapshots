@@ -1157,7 +1157,6 @@ mark_screen(
 	const char *value)
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 {
-
 	if (tinrc.draw_arrow) {
 		MoveCursor(INDEX2LNUM(screen_row), screen_col);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)

@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2024-06-21
+ *  Updated   : 2024-07-18
  *  Notes     :
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -635,11 +635,10 @@ read_active_file(
 			tin_done(EXIT_FAILURE, _(txt_cannot_open_active_file), news_active_file, tin_progname);
 		}
 #	endif /* !NNTP_ONLY */
+#else
+		perror_message("%s", news_active_file);
+		tin_done(EXIT_FAILURE, _(txt_cannot_open), news_active_file);
 #endif /* NNTP_ABLE */
-		{
-			perror_message("%s", news_active_file);
-			tin_done(EXIT_FAILURE, _(txt_cannot_open), news_active_file);
-		}
 	}
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
@@ -1400,7 +1399,8 @@ append_group_line(
 	if (art_max == 0 && art_min == 1)
 		return;
 
-	file_tmp = get_tmpfilename(active_file);
+	if ((file_tmp = get_tmpfilename(active_file)) == NULL)
+		return;
 
 	if (!backup_file(active_file, file_tmp)) {
 		free(file_tmp);

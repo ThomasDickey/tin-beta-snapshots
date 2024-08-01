@@ -829,6 +829,7 @@ prompt_for_password(
 	return pass;
 }
 
+
 #else
 static void no_authenticate(void);			/* proto-type */
 static void

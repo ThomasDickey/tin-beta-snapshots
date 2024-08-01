@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2024-07-02
+.\" Updated   : 2024-07-29
 .\" Notes     : needs a some work, see TODOs
 .\"
 .\"
@@ -1042,6 +1042,7 @@ is bound to NULL it is unassigned.
 \fBPageFollowupQuoteHeaders\fP	^W
 \fBPageToggleTex2iso\fP	"
 \fBPageToggleAllHeaders\fP	*
+\fBPageArticleInfo\fP	'
 \fBPageToggleRot\fP	%
 \fBPageToggleUue\fP	(
 \fBPageReveal\fP	)
@@ -1803,7 +1804,8 @@ quoted\-printable, 7bit). Default is quoted\-printable.
 .B mail_quote_format
 Format of quote line when replying (via mail) to an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
-%C=Firstname, %I=Initials). Default is "In article %M you wrote:"
+%C=Firstname, %I=Initials). If the article has multiple addresses only
+the first is evaluated. Default is "In article %M you wrote:"
 .TP
 .B mailbox_format
 Select one of the following mailbox-formats: MBOXO (default, except on SCO),
@@ -1832,7 +1834,6 @@ different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-mutt \-s "%S" \-\- "%T" < %F
 mutt \-H %F
 claws-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
@@ -1952,7 +1953,8 @@ Not defining anything turns off this option.
 .B news_quote_format
 Format of quote line when posting/following up an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
-%C=Firstname, %I=Initials). Default is "%F wrote:".
+%C=Firstname, %I=Initials). If the article has multiple addresses only
+the first is evaluated. Default is "%F wrote:".
 .TP
 .B nntp_read_timeout_secs
 Time in seconds to wait for a response from the server. Default is 120.
@@ -2068,7 +2070,8 @@ Default is OFF.
 .B quote_chars
 The character used in quoting included text to article followups and mail
 replies. The '_' character represents a blank character and is replaced
-with ' ' when read, %I is replaced by author's initials. Default is '>_'.
+with ' ' when read, %I is replaced by author's initials. If the article has
+multiple addresses only the first is evaluated. Default is '>_'.
 .TP
 .B quote_style
 This bit coded integer value controls how articles are to be quoted when
@@ -2908,7 +2911,6 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR RFC\%2045 ,
 .BR RFC\%2046 ,
 .BR RFC\%2047 ,
-.BR RFC\%2048 ,
 .BR RFC\%2231 ,
 .BR RFC\%2980 ,
 .BR RFC\%3977 ,
@@ -2918,4 +2920,5 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR RFC\%5536 ,
 .BR RFC\%5537 ,
 .BR RFC\%6048 ,
+.BR RFC\%6838 ,
 .BR RFC\%8143

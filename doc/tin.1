@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-06-25
+.\" Updated   : 2024-07-29
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -1198,6 +1198,9 @@ taken from the \fBtex2iso_conv\fP variable in the tinrc file.
 .B PageToggleAllHeaders '*'
 Toggles the display of all headers vs. headers in \fBnews_headers_to_display\fP.
 .TP
+.B PageArticleInfo '''
+Detailed MIME information of the article.
+.TP
 .B PageToggleRot '%'
 Toggle ROT-13 decoding for this article.
 .TP
@@ -2056,7 +2059,8 @@ quoted\-printable, 7bit). Default is quoted\-printable.
 .B Quote line when mailing (mail_quote_format)
 Format of quote line when replying (via mail) to an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
-%C=Firstname, %I=Initials). Default is "In article %M you wrote:"
+%C=Firstname, %I=Initials). If the article has multiple addresses only
+the first is evaluated. Default is "In article %M you wrote:"
 .TP
 .B Format of the mailbox (mailbox_format)
 Select one of the following mailbox-formats: MBOXO (default, except on
@@ -2085,7 +2089,6 @@ different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-mutt \-s "%S" \-\- "%T" < %F
 mutt \-H %F
 claws-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
@@ -2203,7 +2206,8 @@ Not defining anything turns off this option.
 .B Quote line when following up (news_quote_format)
 Format of quote line when posting/following up an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
-%C=Firstname, %I=Initials). Default is "%F wrote:".
+%C=Firstname, %I=Initials). If the article has multiple addresses only
+the first is evaluated. Default is "%F wrote:".
 .TP
 .B NNTP read timeout in seconds (nntp_read_timeout_secs)
 Time in seconds to wait for a response from the server. Default is 120.
@@ -2320,7 +2324,8 @@ is OFF.
 .B Characters used as quote-marks (quote_chars)
 The character used in quoting included text to article followups and mail
 replies. The '_' character represents a blank character and is replaced
-with ' ' when read, %I is replaced by author's initials. Default is '>_'.
+with ' ' when read, %I is replaced by author's initials. If the article has
+multiple addresses only the first is evaluated. Default is '>_'.
 .TP
 .B Quoting behavior (quote_style)
 How articles should be quoted when following up or replying to them. There
@@ -2927,8 +2932,9 @@ again via \fBPostEdit\fP ('\fBe\fP') or send the article to the author via
 When posting a followup to an article or replying direct to the author of an
 article via email the text of the article can be quoted. The beginning of
 the quoted text can contain information about the quoted article (e.g., Name
-and the Message\-ID of the article). To allow for different situations
-certain information from the article can be used in the quoted string. The
+and the Message\-ID of the article). If the article has multiple addresses
+only the first is evaluated. To allow for different situations certain
+information from the article can be used in the quoted string. The
 following variables are expanded if found in the tinrc variables
 \fBmail_quote_format\fP, \fBnews_quote_format\fP or \fBxpost_quote_format\fP:
 .RS
@@ -3128,7 +3134,8 @@ random sig is read from the file \fI$HOME/.sigfixed\fR.
 The look of the Selection, Group and Thread level can be customized via
 format strings. These format strings define the content and the position
 of each element on the screen. Variables are used within the format strings
-as placeholders. The following variables are available:
+as placeholders. If the article has multiple addresses only the first is
+evaluated. The following variables are available:
 .PP
 .in +.3i
 .nf
@@ -3512,6 +3519,7 @@ find ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \\
 .\"       $TMPDIR/SCOPES-R   (-D 32)
 .\"       $TMPDIR/SCOPES-W   (-D 32)
 .\"       $TMPDIR/ACTIVE     (-D 64)
+.\"       $TMPDIR/GNKSA      (-D 64)
 For a detailed description see
 .BR \%tin (5).
 .PP
@@ -4187,7 +4195,6 @@ Urs Janssen <urs@tin.org>
 .BR RFC\%2045 ,
 .BR RFC\%2046 ,
 .BR RFC\%2047 ,
-.BR RFC\%2048 ,
 .BR RFC\%2231 ,
 .BR RFC\%2980 ,
 .BR RFC\%3156 ,
@@ -4199,5 +4206,6 @@ Urs Janssen <urs@tin.org>
 .BR RFC\%5536 ,
 .BR RFC\%5537 ,
 .BR RFC\%6048 ,
+.BR RFC\%6838 ,
 .BR RFC\%8054 ,
 .BR RFC\%8143

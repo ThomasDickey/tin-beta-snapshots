@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-06-30
+dnl Updated   : 2024-07-13
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -164,10 +164,6 @@ CF_WITH_PROGRAM(ispell,
 
 CF_WITH_PROGRAM(metamail,
 [  --with-metamail         (default: from system path)])
-
-CF_WITH_PROGRAM(sum,
-[  --with-sum              (default: from system path)])
-CF_PROG_SUM_R
 
 CF_PATH_EDITOR
 CF_PATH_MAILER
@@ -1714,13 +1710,10 @@ esac
 CF_BUNDLED_INTL
 LIBS="$LIBS $LIBICONV"
 
-### check for alloca (required for bison and/or intl/*)
+### check for alloca (required for bison)
 case "$YACC" in
 bison*)
 	use_alloca=yes
-	;;
-*)
-	use_alloca=$USE_INCLUDED_LIBINTL
 	;;
 esac
 

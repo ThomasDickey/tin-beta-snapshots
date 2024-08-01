@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2024-07-03
+ *  Updated   : 2024-07-30
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -64,6 +64,7 @@ static void parse_content_disposition(char *disp, t_part *part);
 static void parse_params(char *params, t_part *content);
 static void progress(int line_count);
 static void remove_cwsp(char *source);
+static t_bool subtype_syntactically_valid(char *subtype);
 #ifdef DEBUG_ART
 	static void dump_art(t_openartinfo *art);
 #endif /* DEBUG_ART */
@@ -89,7 +90,7 @@ static const char xtbl[] = {
 
 #define XVAL(c) (xtbl[(unsigned int) (c)])
 #define PARAM_SEP	"; \n"
-/* default parameters for Content-Type */
+/* default parameters for Content-Type; at least before RFC 6657 */
 #define CT_DEFPARMS	"charset=US-ASCII"
 
 /*
@@ -440,7 +441,8 @@ skip_equal_sign(
 /*
  * Parse a Content-* parameter list into a linked list
  * Ensure the ->params element is correctly initialised before calling
- * TODO: may still not catch everything permitted in the RFC
+ * TODO: may still not catch everything permitted in the RFC, see
+ * RFC 6266 4.3 (prefer "filename*" over "filename")
  */
 static void
 parse_params(
@@ -655,6 +657,76 @@ get_param(
 }
 
 
+#define IS_RESTRICTED_NAME_FIRST(c) (isalpha(c) || isdigit(c))
+#define IS_RESTRICTED_NAME_CHARS_SUFFIX(c) (IS_RESTRICTED_NAME_FIRST(c) || c == '!' || c == '#' || c == '$' || c == '&' || c == '-' || c == '^' || c == '_')
+#define IS_RESTRICTED_NAME_CHARS(c) (IS_RESTRICTED_NAME_CHARS_SUFFIX(c) || c == '.' || c == '+')
+/*
+ * RFC 6836
+ *
+ * [facet.]type[+suffix]
+ *  -----  ----  ------
+ *    |      |     |
+ *    |      |     +- after last plus: restricted-name-chars
+ *    |      |        without '.' (and '+' obviously)
+ *    |      +- restricted-name-chars
+ *    +- before first dot: restricted-name-first
+ *
+ * The syntax allows names of up to 127 characters, implementation
+ * limits may make such long names problematic.  For this reason,
+ * the length SHOULD be limited to 64 characters.
+ */
+static t_bool
+	subtype_syntactically_valid(
+		char *subtype)
+{
+	char *ptr, *facet, *suffix, *type, *type_end;
+	size_t len;
+	t_bool facet_ok, suffix_ok, type_ok;
+
+	if ((len = strlen(subtype)) == 0 || len > 64)
+		return FALSE;
+
+	/* subtype must start with ALPHA or DIGIT and cannot end with '+' */
+	if (!IS_RESTRICTED_NAME_FIRST(*subtype) || *(subtype + len - 1) == '+')
+		return FALSE;
+
+	facet = suffix = NULL;
+	type = subtype;
+	facet_ok = suffix_ok = type_ok = TRUE;
+
+	type_end = type + len;
+
+	for (ptr = subtype; ptr < type_end && *ptr && *ptr != '.'; ptr++)
+		;
+	if (*ptr == '.') {
+		facet = type;
+		type = ptr + 1;
+	}
+
+	for (ptr = type + strlen(type); ptr > type && *ptr != '+'; ptr--)
+		;
+	if (*ptr == '+') {
+		suffix = ptr + 1;
+		type_end = ptr;
+	}
+
+	if (facet) {
+		for (ptr = facet; *ptr && *ptr != '.' && facet_ok; ptr++)
+			facet_ok = IS_RESTRICTED_NAME_FIRST(*ptr);
+	}
+
+	if (suffix) {
+		for (ptr = suffix; *ptr && suffix_ok; ptr++)
+			suffix_ok = IS_RESTRICTED_NAME_CHARS_SUFFIX(*ptr);
+	}
+
+	for (ptr = type, len = type_end - type; len > 0 && *ptr && type_ok; len--, ptr++)
+		type_ok = IS_RESTRICTED_NAME_CHARS(*ptr);
+
+	return facet_ok && type_ok && suffix_ok;
+}
+
+
 /*
  * Split a Content-Type header into a t_part structure
  */
@@ -680,44 +752,102 @@ parse_content_type(
 	/*
 	 * Unrecognised type, treat according to RFC
 	 */
-	if ((i = content_type(type)) == -1) {
+	if ((i = content_type(type)) < 0) {
 		content->type = TYPE_APPLICATION;
 		free(content->subtype);
 		content->subtype = my_strdup("octet-stream");
+		content->mime_hints.flags |= MIME_TYPE_UNKNOWN;
 		return;
-	} else
+	} else {
 		content->type = (unsigned int) i;
+		free(content->mime_hints.type);
+		content->mime_hints.type = my_strdup(content_types[content->type]);
+		content->mime_hints.flags &= ~MIME_TYPE_UNKNOWN;
+	}
 
 	subtype = strtok(NULL, PARAM_SEP);
+	/* TODO: syntax check subtype; RFC2045 5.1; RFC 6838 4.2 */
 	/* save new subtype, or use pre-initialised value "plain" */
 	if (subtype != NULL) {				/* check for broken Content-Type: is header without a subtype */
-		free(content->subtype);				/* Pre-initialised to plain */
-		content->subtype = my_strdup(subtype);
-		str_lwr(content->subtype);
+		if (!strcasecmp("example", subtype) || !subtype_syntactically_valid(subtype)) {
+			content->mime_hints.flags &= ~MIME_SUBTYPE_MISSING;
+			free(content->mime_hints.subtype);
+			content->mime_hints.subtype = my_strdup(subtype);
+
+			switch (content->type) {
+				case TYPE_MULTIPART: /* RFC 2046 5.1.7 */
+					free(content->subtype);
+					content->subtype = my_strdup("mixed");
+					content->mime_hints.flags |= MIME_SUBTYPE_UNKNOWN;
+					break;
+
+				case TYPE_TEXT:	/* RFC 2046 4.1.4 */
+					/* as we don't know the charset yet ... */
+				case TYPE_IMAGE: /* RFC 2046 4.2 */
+				case TYPE_AUDIO: /* RFC 2046 4.3 */
+				case TYPE_VIDEO: /* RFC 2046 4.4 */
+				case TYPE_APPLICATION: /* RFC 2046 4.5.3 */
+				case TYPE_MESSAGE: /* RFC 2046 5.2.4 */
+				default:
+					content->type = TYPE_APPLICATION;
+					free(content->subtype);
+					content->subtype = my_strdup("octet-stream");
+					content->mime_hints.flags |= MIME_SUBTYPE_UNKNOWN;
+					break;
+			}
+		} else {
+			free(content->subtype);				/* Pre-initialised to plain */
+			content->subtype = my_strdup(subtype);
+			str_lwr(content->subtype);
+			free(content->mime_hints.subtype);
+			content->mime_hints.subtype = my_strdup(content->subtype);
+			content->mime_hints.flags &= ~MIME_SUBTYPE_MISSING;
+		}
 	}
 
 	/*
 	 * Parse any parameters into a list
 	 */
 	if ((params = strtok(NULL, "\n")) != NULL) {
+		const char *charset;
 		const char *format;
 		char defparms[] = CT_DEFPARMS;	/* must be writable */
 
 		parse_params(params, content);
-		if (!get_param(content->params, "charset")) {	/* add default charset if needed */
+		charset = validate_charset(get_param(content->params, "charset"));
+
+		if (charset && *charset && content->type == TYPE_TEXT && charset_unsupported(charset)) {
+			content->mime_hints.flags &= ~MIME_CHARSET_MISSING;
+			content->mime_hints.flags |= MIME_CHARSET_UNSUPPORTED;
+			content->mime_hints.charset = my_strdup(charset);
+			parse_params(defparms, content);
+			charset = get_param(content->params, "charset");
+		}
+
+		if (!charset || !*charset) {	/* add default charset if needed */
 #ifdef CHARSET_CONVERSION
-			if (curr_group->attribute->undeclared_charset) {
+			if (curr_group->attribute->undeclared_charset && validate_charset(curr_group->attribute->undeclared_charset)) {
 				char *charsetheader;
 
 				charsetheader = my_malloc(strlen(curr_group->attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
 				sprintf(charsetheader, "charset=%s", curr_group->attribute->undeclared_charset);
 				parse_params(charsetheader, content);
 				free(charsetheader);
+				content->mime_hints.flags |= MIME_CHARSET_UNDECLARED;
 			} else
 #endif /* CHARSET_CONVERSION */
 			{
 				parse_params(defparms, content);
 			}
+		}
+#ifdef CHARSET_CONVERSION
+		else if (!(content->mime_hints.flags & MIME_CHARSET_UNSUPPORTED) && *charset)
+#else
+		else if (*charset)
+#endif /* CHARSET_CONVERSION */
+		{
+			content->mime_hints.flags &= ~MIME_CHARSET_MISSING;
+			content->mime_hints.charset = my_strdup(charset);
 		}
 		if ((format = get_param(content->params, "format"))) {
 			if (!strcasecmp(format, "flowed"))
@@ -771,7 +901,14 @@ parse_content_disposition(
 	/* Remove comments and white space */
 	remove_cwsp(disp);
 
-	strtok(disp, PARAM_SEP);
+	if ((ptr = strtok(disp, PARAM_SEP)) == NULL)
+		return;
+
+	if (strcasecmp(content_disposition[DISP_INLINE], ptr)) /* RFC 6266 4.2 */
+		part->disposition = DISP_ATTACHMENT;
+	else
+		part->disposition = DISP_INLINE;
+
 	if ((ptr = strtok(NULL, "\n")) == NULL)
 		return;
 
@@ -797,6 +934,7 @@ new_part(
 	ptr->language = NULL;
 	ptr->encoding = ENCODING_7BIT;
 	ptr->format = FORMAT_FIXED;
+	ptr->disposition = DISP_NONE;
 	ptr->params = NULL;
 
 #ifdef CHARSET_CONVERSION
@@ -817,6 +955,11 @@ new_part(
 	ptr->line_count = 0;
 	ptr->bytes = 0;
 	ptr->depth = 0;							/* Not an embedded object (yet) */
+	ptr->mime_hints.flags = MIME_INIT;
+	ptr->mime_hints.type = my_strdup("None");
+	ptr->mime_hints.subtype = my_strdup("None");
+	ptr->mime_hints.charset = NULL;
+	ptr->mime_hints.encoding = NULL;
 	ptr->uue = NULL;
 	ptr->next = NULL;
 
@@ -846,6 +989,10 @@ free_parts(
 	free(ptr->subtype);
 	FreeAndNull(ptr->description);
 	FreeAndNull(ptr->language);
+	FreeAndNull(ptr->mime_hints.type);
+	FreeAndNull(ptr->mime_hints.subtype);
+	FreeAndNull(ptr->mime_hints.charset);
+	FreeAndNull(ptr->mime_hints.encoding);
 	if (ptr->params)
 		free_list(ptr->params);
 	if (ptr->uue)
@@ -952,6 +1099,74 @@ parse_header(
 }
 
 
+char *
+parse_mb_list_header(
+	char *buf,
+	const char *pat)
+{
+	char addr[HEADER_LEN];
+	char name[HEADER_LEN];
+	char *tmp, *ret, *curr_from, *next_from;
+	int type, c_needed = 0;
+	size_t plen = strlen(pat);
+	char *ptr = buf + plen;
+
+	/*
+	 * Does ': ' follow the header text?
+	 */
+	if (!(*ptr && *(ptr + 1) && *ptr == ':' && *(ptr + 1) == ' '))
+		return NULL;
+
+	/*
+	 * If the header matches, skip past the ': ' and any leading whitespace
+	 */
+	if (strncasecmp(buf, pat, plen) != 0)
+		return NULL;
+
+	ptr += 2;
+
+	str_trim(ptr);
+	if (!*ptr)
+		return NULL;
+
+	tmp = curr_from = my_strdup(ptr);
+	ret = ptr;
+	*ptr = '\0';
+
+	do {
+		next_from = split_mailbox_list(curr_from);
+		if (gnksa_split_from(curr_from, addr, name, &type) == GNKSA_OK) {
+			buffer_to_ascii(addr);
+
+			if (*name) {
+				if (c_needed++) {
+					strcat(ptr, ", ");
+					ptr += 2;
+				}
+				if (type == GNKSA_ADDRTYPE_OLDSTYLE)
+					sprintf(ptr, "%s (%s)", addr, convert_to_printable(rfc1522_decode(name), FALSE));
+				else
+					sprintf(ptr, "%s <%s>", convert_to_printable(rfc1522_decode(name), FALSE), addr);
+			} else
+				strcpy(ptr, addr);
+		} else {
+			convert_to_printable(curr_from, FALSE);
+			if (c_needed++)
+				strcat(ptr, ", ");
+			strcat(ptr, curr_from);
+		}
+
+		while (*ptr)
+			++ptr;
+
+		curr_from = next_from;
+	} while (curr_from);
+
+	free(tmp);
+	return ret;
+}
+
+
 /*
  * Read main article headers into a blank header structure.
  * Pass the data 'from' -> 'to' when reading via NNTP
@@ -991,6 +1206,7 @@ parse_rfc822_headers(
 				hdr->subj = my_strdup("");
 
 			if (hdr->ext->encoding == ENCODING_UNKNOWN) { /* RFC 2046 6.4 */
+				hdr->ext->mime_hints.flags |= MIME_TRANSFER_ENCODING_UNKNOWN;
 				hdr->ext->encoding = ENCODING_BINARY;
 				hdr->ext->type = TYPE_APPLICATION;
 				FreeIfNeeded(hdr->ext->subtype);
@@ -1005,22 +1221,22 @@ parse_rfc822_headers(
 		 *        loss (multiple Cc: lines are allowed, for example)
 		 */
 		unfold_header(line);
-		if ((ptr = parse_header(line, "From", TRUE, TRUE, FALSE))) {
+		if ((ptr = parse_mb_list_header(line, "From"))) {
 			FreeIfNeeded(hdr->from);
 			hdr->from = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "To", TRUE, TRUE, FALSE))) {
+		if ((ptr = parse_mb_list_header(line, "To"))) {
 			FreeIfNeeded(hdr->to);
 			hdr->to = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Cc", TRUE, TRUE, FALSE))) {
+		if ((ptr = parse_mb_list_header(line, "Cc"))) {
 			FreeIfNeeded(hdr->cc);
 			hdr->cc = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Bcc", TRUE, TRUE, FALSE))) {
+		if ((ptr = parse_mb_list_header(line, "Bcc"))) {
 			FreeIfNeeded(hdr->bcc);
 			hdr->bcc = my_strdup(ptr);
 			continue;
@@ -1040,7 +1256,7 @@ parse_rfc822_headers(
 			hdr->org = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Reply-To", TRUE, TRUE, FALSE))) {
+		if ((ptr = parse_mb_list_header(line, "Reply-To"))) {
 			FreeIfNeeded(hdr->replyto);
 			hdr->replyto = my_strdup(ptr);
 			continue;
@@ -1092,17 +1308,23 @@ parse_rfc822_headers(
 			continue;
 		}
 #endif /* XFACE_ABLE */
-		/* TODO: check version */
-		if (parse_header(line, "MIME-Version", FALSE, FALSE, FALSE)) {
-			hdr->mime = TRUE;
+		if ((ptr = parse_header(line, "MIME-Version", FALSE, FALSE, FALSE))) {
+			remove_cwsp(ptr);
+			hdr->ext->mime_hints.flags &= ~MIME_VERSION_MISSING;
+			if (STRCMPEQ(ptr, MIME_SUPPORTED_VERSION)) /* TODO: record articles mime-version in t_hints? */
+				hdr->ext->mime_hints.flags &= ~MIME_VERSION_UNSUPPORTED;
+			hdr->mime = TRUE; /* set unconditionally for now as long as the header is there */
 			continue;
 		}
 		if ((ptr = parse_header(line, "Content-Type", FALSE, FALSE, FALSE))) {
+			hdr->ext->mime_hints.flags &= ~MIME_TYPE_MISSING;
 			parse_content_type(ptr, hdr->ext);
 			continue;
 		}
 		if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE, FALSE, FALSE))) {
+			hdr->ext->mime_hints.flags &= ~MIME_TRANSFER_ENCODING_MISSING;
 			hdr->ext->encoding = parse_content_encoding(ptr);
+			hdr->ext->mime_hints.encoding = my_strdup(ptr);
 			continue;
 		}
 		if ((ptr = parse_header(line, "Content-Description", TRUE, FALSE, FALSE))) {
@@ -1172,6 +1394,7 @@ unfold_header(
 #define M_BODY		3	/* In MIME body */
 
 #define TIN_EOF		0xf00	/* Used internally for error recovery */
+#define TIN_EOM		0xf000	/* Unexpected end of mime indicator */
 
 /*
  * Handles multipart/ article types, write data to a raw stream when reading via NNTP
@@ -1180,6 +1403,8 @@ unfold_header(
  * depth is the number of levels by which the current part is embedded
  * Returns a tin_errno value which is '&'ed with TIN_EOF if the end of the
  * article is reached (to prevent broken articles from hanging the NNTP socket)
+ * and with TIN_EOM if the end of the article is reached but no end boundary
+ * was seen
  */
 static int
 parse_multipart_article(
@@ -1286,10 +1511,7 @@ parse_multipart_article(
 			case M_HDR:
 				switch (bnd) {
 					case BOUND_START:
-#ifdef DEBUG
-						if (debug & DEBUG_MISC)
-							error_message(2, _(txt_error_mime_start));
-#endif /* DEBUG */
+						fprintf(artinfo->log, "%s", _(txt_error_mime_start));
 						continue;
 
 					case BOUND_NONE:
@@ -1332,11 +1554,14 @@ parse_multipart_article(
 /* fprintf(stderr, "HDR:%s\n", line); */
 				unfold_header(line);
 				if ((ptr = parse_header(line, "Content-Type", FALSE, FALSE, FALSE))) {
+					curr_part->mime_hints.flags &= ~MIME_TYPE_MISSING;
 					parse_content_type(ptr, curr_part);
 					break;
 				}
 				if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE, FALSE, FALSE))) {
+					curr_part->mime_hints.flags &= ~MIME_TRANSFER_ENCODING_MISSING;
 					curr_part->encoding = parse_content_encoding(ptr);
+					curr_part->mime_hints.encoding = my_strdup(ptr);
 					break;
 				}
 				if ((ptr = parse_header(line, "Content-Disposition", FALSE, FALSE, FALSE))) {
@@ -1373,6 +1598,7 @@ parse_multipart_article(
 							is_rfc822 = FALSE;
 						}
 						if (curr_part && curr_part->encoding == ENCODING_UNKNOWN) { /* RFC 2046 6.4 */
+							curr_part->mime_hints.flags |= MIME_TRANSFER_ENCODING_UNKNOWN;
 							curr_part->encoding = ENCODING_BINARY;
 							curr_part->type = TYPE_APPLICATION;
 							FreeIfNeeded(curr_part->subtype);
@@ -1396,7 +1622,7 @@ parse_multipart_article(
 	 * We only reach this point when we (unexpectedly) reach the end of the
 	 * article
 	 */
-	return tin_errno | TIN_EOF;		/* Flag EOF */
+	return tin_errno | TIN_EOF | TIN_EOM;		/* Flag EOF & EOM */
 }
 
 
@@ -1426,8 +1652,7 @@ parse_normal_article(
 		}
 
 #if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
-/*		if (IS_PLAINTEXT(artinfo->hdr.ext) && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess) { */
-		if (artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess) {
+		if ((artinfo->hdr.ext->mime_hints.flags & MIME_CHARSET_MISSING) && artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && !curr_group->attribute->undeclared_charset) {
 			b_len += strlen(line);
 			if (!buffer)
 				buffer = my_strdup(line);
@@ -1444,9 +1669,18 @@ parse_normal_article(
 			progress(artinfo->hdr.ext->line_count);
 	}
 #if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
-/*	if (IS_PLAINTEXT(artinfo->hdr.ext) && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && buffer) */
-	if (artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && buffer) {
-		guessed_charset = guess_charset(buffer, 10); /* is 10 suitable? */
+	if ((artinfo->hdr.ext->mime_hints.flags & MIME_CHARSET_MISSING) && artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && buffer && !curr_group->attribute->undeclared_charset) {
+		unsigned char *cp;
+		t_bool need_guess = FALSE;
+
+		for (cp = (unsigned char *) buffer; *cp && !need_guess; cp++) {
+			if (is_EIGHT_BIT(cp)) {
+				need_guess = TRUE;
+				break;
+			}
+		}
+		if (need_guess)
+			guessed_charset = guess_charset(buffer, 10); /* is 10 suitable? */
 		FreeIfNeeded(buffer);
 		if (guessed_charset) {
 			char *guessed_cs_hdr = my_malloc(strlen(guessed_charset) + 17); /* 17=len('guessed_charset=\0') */
@@ -1455,6 +1689,9 @@ parse_normal_article(
 			parse_params(guessed_cs_hdr, artinfo->hdr.ext);
 			free(guessed_cs_hdr);
 			free(guessed_charset);
+			artinfo->hdr.ext->mime_hints.flags |= MIME_CHARSET_GUESSED;
+			if ((artinfo->hdr.ext->mime_hints.flags & MIME_TRANSFER_ENCODING_MISSING) || (artinfo->hdr.ext->mime_hints.flags & MIME_TRANSFER_ENCODING_UNKNOWN))
+				artinfo->hdr.ext->encoding = ENCODING_8BIT;
 		}
 	}
 #endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
@@ -1567,10 +1804,10 @@ parse_rfc2045_article(
 			/* Strip off EOF condition if present */
 			if (ret & TIN_EOF) {
 				ret ^= TIN_EOF;
-#ifdef DEBUG
-				if (debug & DEBUG_MISC)
-					error_message(2, _(txt_error_mime_end), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
-#endif /* DEBUG */
+				if (ret & TIN_EOM) {
+					fprintf(artinfo->log, _(txt_error_mime_end), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
+					ret ^= TIN_EOM;
+				}
 				if (ret != 0)
 					goto error;
 			} else
@@ -1667,6 +1904,11 @@ art_open(
 	fprintf(stderr, "art_open(%p)\n", (void *) artinfo);
 #endif /* DEBUG_ART */
 
+	if (!(artinfo->log = my_tmpfile())) {
+		TIN_FCLOSE(fp);
+		return ART_ABORT;
+	}
+
 	progress_mesg = pmesg;
 	if (parse_rfc2045_article(fp, art->line_count, artinfo, show_progress_meter) != 0) {
 		progress_mesg = NULL;
@@ -1676,7 +1918,9 @@ art_open(
 
 	/*
 	 * TODO: compare art->msgid and artinfo->hdr.messageid and issue a
-	 *       warning (once) about broken overviews if they differ
+	 *       warning (once) about broken overviews if they differ.
+	 *       unfortunately we currently clear art->msgid in
+	 *       build_references().
 	 */
 
 	if ((artinfo->tex2iso = ((group->attribute->tex2iso_conv) ? is_art_tex_encoded(artinfo->raw) : FALSE)))
@@ -1685,6 +1929,8 @@ art_open(
 	/* Maybe fix it so if this fails, we default to raw? */
 	if (!cook_article(wrap_lines, artinfo, tinrc.hide_uue, FALSE))
 		return ART_ABORT;
+
+	log_article_info(artinfo);
 
 #ifdef DEBUG_ART
 	dump_art(artinfo);
@@ -1727,6 +1973,11 @@ art_close(
 	if (artinfo->cooked) {
 		fclose(artinfo->cooked);
 		artinfo->cooked = NULL;
+	}
+
+	if (artinfo->log) {
+		fclose(artinfo->log);
+		artinfo->log = NULL;
 	}
 
 	FreeAndNull(artinfo->rawl);

@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-06-25
+ *  Updated   : 2024-07-09
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -985,7 +985,8 @@ write_config_file(
 		return;
 
 	/* generate tmp-filename */
-	file_tmp = get_tmpfilename(file);
+	if ((file_tmp = get_tmpfilename(file)) == NULL)
+		return;
 
 	if ((fp = fopen(file_tmp, "w")) == NULL) {
 		error_message(2, _(txt_filesystem_full_backup), CONFIG_FILE);
@@ -2330,7 +2331,8 @@ write_server_config(
 		CLOSEDIR(dirp);
 
 	/* generate tmp-filename */
-	file_tmp = get_tmpfilename(file);
+	if ((file_tmp = get_tmpfilename(file)) == NULL)
+		return;
 
 	if ((fp = fopen(file_tmp, "w")) == NULL) {
 		error_message(2, _(txt_filesystem_full_backup), SERVERCONFIG_FILE); /* TODO: better error handling/message */

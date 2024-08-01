@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2024-04-10
+ *  Updated   : 2024-07-28
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -469,6 +469,7 @@ feed_article(
 					break;
 
 				case POSTED_OK:
+				default:
 					break;
 			}
 			confirm = bool_not(ok);		/* Only confirm the next one after a failure */
@@ -717,7 +718,7 @@ feed_articles(
 
 				get_from_name(from_name, (struct t_group *) 0);
 
-				if (strstr(from_name, arts[respnum].from)) {
+				if (strstr(from_name, arts[respnum].mailbox.from)) {
 #endif /* !FORGERY */
 					char *smsg;
 					char buf[LEN];
@@ -1077,10 +1078,10 @@ print_file(
 	if (!curr_group->attribute->print_header && !(fseek(artinfo->raw, hdr->ext->offset, SEEK_SET))) {	/* -> start of body */
 		if (hdr->newsgroups)
 			fprintf(fp, "Newsgroups: %s\n", hdr->newsgroups);
-		if (arts[respnum].from == arts[respnum].name || arts[respnum].name == NULL)
-			fprintf(fp, "From: %s\n", arts[respnum].from);
+		if (arts[respnum].mailbox.from == arts[respnum].mailbox.name || arts[respnum].mailbox.name == NULL)
+			fprintf(fp, "From: %s\n", arts[respnum].mailbox.from);
 		else
-			fprintf(fp, "From: %s <%s>\n", arts[respnum].name, arts[respnum].from);
+			fprintf(fp, "From: %s <%s>\n", arts[respnum].mailbox.name, arts[respnum].mailbox.from);
 		if (hdr->subj)
 			fprintf(fp, "Subject: %s\n", hdr->subj);
 		if (hdr->date)

@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-01
+ *  Updated   : 2024-07-28
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -143,8 +143,10 @@ expand_art(
 		 * memset(&arts[i].artnum, 0, (max_art - i - 1) * sizeof(*arts));
 		 * seems to be not faster at all
 		 */
-	for (; i < max_art; i++)
-		arts[i].subject = arts[i].from = arts[i].xref = arts[i].path = arts[i].refs = arts[i].msgid = NULL;
+	for (; i < max_art; i++) {
+		arts[i].subject = arts[i].xref = arts[i].path = arts[i].refs = arts[i].msgid = arts[i].mailbox.from = arts[i].mailbox.name = NULL;
+		arts[i].mailbox.next = NULL;
+	}
 }
 
 
@@ -323,6 +325,7 @@ free_art_array(
 		arts[i].date = (time_t) 0;
 		FreeAndNull(arts[i].xref);
 		FreeAndNull(arts[i].path);
+		free_mailbox_list(arts[i].mailbox.next);
 
 		/*
 		 * .refs & .msgid are usually free()d in build_references()

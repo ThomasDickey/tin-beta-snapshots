@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-01
+ *  Updated   : 2024-08-01
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -46,8 +46,6 @@
 #endif /* !TNNTPS_H */
 
 constext txt_1_resp[] = N_("1 Response");
-constext txt_7bit[] = "7bit";
-constext txt_8bit[] = "8bit";
 
 constext txt_active_file_is_empty[] = N_("\n%s contains no newsgroups. Exiting.");
 #if defined(NNTP_ABLE) && defined(HAVE_SELECT)
@@ -76,6 +74,7 @@ constext txt_art_unavailable[] = N_("Article unavailable");
 constext txt_art_undeleted[] = N_("Article undeleted.");
 constext txt_art_x_of_n[] = N_("Article %4d of %4d");
 constext txt_article_cancelled[] = "Article cancelled by author.\n";
+constext txt_article_info_page[] = N_("Article Info Page");
 constext txt_article_plural[] = N_("articles");
 constext txt_article_reposted[] = N_("This is a repost of the following article:");
 constext txt_article_singular[] = N_("article");
@@ -90,7 +89,7 @@ constext txt_mime_content_type[] = N_("content type %s");
 constext txt_mime_unsup_charset[] = N_("%*s[-- charset %s not supported --]\n");
 constext txt_mime_description[] = N_("%*s[-- Description: %s --]\n");
 constext txt_mime_encoding[] = N_("encoding %s");
-constext txt_mime_hdr_c_disposition_inline[] = "Content-Disposition: inline\n";
+constext txt_mime_hdr_c_disposition[] = "Content-Disposition: %s\n";
 constext txt_mime_hdr_c_transfer_encoding[] = "Content-Transfer-Encoding: %s\n";
 constext txt_mime_hdr_c_type_msg_rfc822[] = "Content-Type: message/rfc822\n";
 constext txt_mime_hdr_c_type_multipart_mixed[] = "Content-Type: multipart/mixed; boundary=\"%s\"\n";
@@ -245,15 +244,11 @@ constext txt_autoselecting_articles[] = N_("Autoselecting articles (use '%s' to 
 constext txt_bad_article[] = N_("Article to be posted resulted in errors/warnings. %s=quit, %s=Menu, %s=edit: ");
 constext txt_bad_attrib[] = N_("Unrecognized attribute: %s");
 constext txt_bad_command[] = N_("Bad command. Type '%s' for help.");
-constext txt_base64[] = "base64";
 constext txt_base_article[] = N_("Base article");
 constext txt_base_article_range[] = N_("Base article range");
 constext txt_batch_update_unavail[] = N_("%s: Updating of index files not supported: cache_overview_files=%s");
 constext txt_begin_of_art[] = N_("*** Beginning of article ***");
 constext txt_begin_of_page[] = N_("*** Beginning of page ***");
-#if !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
-	constext txt_bytes[] = N_("bytes");
-#endif /* !HAVE_LIBUU && HAVE_SUM && !DONT_HAVE_PIPING */
 
 constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) article [%%s]? (%s/%s/%s): ");
 constext txt_cancelling_art[] = N_("Cancelling article...");
@@ -464,10 +459,8 @@ constext txt_error_mailgroup_no_recipient[] = N_("\nError: This is a mailgroup, 
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	constext txt_error_locale[] = "Can't set the specified locale!";
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
-#ifdef DEBUG
-	constext txt_error_mime_end[] = N_("MIME parse error: Unexpected end of %s/%s article");
-	constext txt_error_mime_start[] = N_("MIME parse error: Start boundary whilst reading headers");
-#endif /* DEBUG */
+constext txt_error_mime_end[] = N_("MIME parse error: Unexpected end of %s/%s article\n");
+constext txt_error_mime_start[] = N_("MIME parse error: Start boundary whilst reading headers\n");
 constext txt_error_newsgroups_poster[] = N_("\nError: \"poster\" is not allowed in Newsgroups!\n");
 constext txt_error_no_domain_name[] = N_("Can't get a (fully-qualified) domain-name!");
 #ifdef NNTP_INEWS
@@ -1019,7 +1012,6 @@ constext txt_quit_edit_postpone[] = N_("%s=quit, %s=edit, %s=postpone: ");
 constext txt_quit_edit_save_kill[] = N_("%s=quit, %s=edit, %s=save kill description: ");
 constext txt_quit_edit_save_select[] = N_("%s=quit, %s=edit, %s=save select description: ");
 constext txt_quit_no_write[] = N_("Do you really want to quit without saving your configuration?");
-constext txt_quoted_printable[] = "quoted-printable";
 
 constext txt_range_invalid[] = N_("Invalid range - valid are '0-9.$' e.g. 1-$");
 #ifdef HAVE_SELECT
@@ -1308,6 +1300,8 @@ constext txt_warn_newsrc[] = N_("Warning: tin wrote fewer groups to your\n\t%s\n
 than it read at startup. If you didn't unsubscribe from %ld %s during\n\
 this session this indicates an error and you should backup your %s\n\
 before you start tin once again!\n");
+constext txt_warn_multiple_addresses[] = N_("\nWarning: The article has multiple addresses \"%s\".\n\
+         This is at least uncommon.\n");
 constext txt_warn_multiple_sigs[] = N_("\nWarning: Found %d '-- \\n' lines, this may confuse some people.\n");
 constext txt_warn_not_all_arts_saved[] = N_("Warning: Only %d out of %d articles were saved");
 constext txt_warn_sig_too_long[] = N_("\n\
@@ -1427,10 +1421,6 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_libuu_error_no_begin[] = N_("No beginning.");
 	constext txt_libuu_error_no_data[] = N_("No data.");
 	constext txt_libuu_error_unknown[] = N_("Unknown error.");
-#else
-#	if defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
-		constext txt_checksum_of_file[] = N_("\tChecksum of %s (%ld %s)");
-#	endif /* HAVE_SUM && !DONT_HAVE_PIPING */
 #endif /* HAVE_LIBUU */
 
 #ifdef HAVE_MH_MAIL_HANDLING
@@ -1465,7 +1455,6 @@ Warning: Posting is in %s and contains characters which are not\n\
 		constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=menu, %s=post, %s=postpone [%%s]: ");
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_PGP_GPG */
-
 
 #ifdef NNTP_ABLE
 	constext txt_caching_off[] = N_("Try cache_overview_files to speed up things.\n");
@@ -1827,12 +1816,18 @@ constext *txt_show_help_mail_sign_options[] = {
 	NULL
 };
 
+
+constext *content_disposition[] = {
+	"inline", "attachment",
+	NULL
+};
+
 /*
  * MIME-Content-Transfer-Encodings.
  */
 /* TODO: can any of this go away? */
 constext *txt_mime_encodings[] = {
-	txt_8bit, txt_base64, txt_quoted_printable, txt_7bit,
+	"8bit", "base64", "quoted-printable", "7bit",
 	NULL
 };
 
@@ -1841,8 +1836,9 @@ constext *content_encodings[] = {
 	NULL
 };
 
+/* t_part->type */
 constext *content_types[] = {
-	"text", "multipart", "application", "message", "image", "audio", "video",
+	"text", "multipart", "application", "message", "image", "audio", "video", "font", "haptics", "model",
 	NULL
 };
 
@@ -3156,9 +3152,8 @@ struct opttxt txt_mailer_format = {
 	N_("Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."),
 	N_("Invocation of your mail command"),
 	N_("# Format of mailer line including parameters\n\
-# %M Mailer  %S Subject  %T To  %F Filename\n\
-# e.g. to use mutt as your mailer:    mutt -s \"%S\" -- \"%T\" < %F\n\
-# e.g. mutt interactive          :    mutt -H %F\n")
+# %M Mailer  %S Subject  %T To  %F Filename  %U Username\n\
+# e.g. mutt interactive:  mutt -H %F\n")
 };
 
 struct opttxt txt_interactive_mailer = {

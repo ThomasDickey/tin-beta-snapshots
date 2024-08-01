@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2024-05-06
+ *  Updated   : 2024-07-11
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -258,6 +258,7 @@ static const char *
 get_full_name(
 	void)
 {
+	const char *q;
 	char *p;
 	static char fullname[128];
 #ifndef DONT_HAVE_PW_GECOS
@@ -268,12 +269,13 @@ get_full_name(
 
 	fullname[0] = '\0';
 
-	if ((p = getenv("NAME")) != NULL) {
-		my_strncpy(fullname, p, sizeof(fullname) - 1);
-		return fullname;
-	}
-	if ((p = getenv("REALNAME")) != NULL) {
-		my_strncpy(fullname, p, sizeof(fullname) - 1);
+	/*
+	 * ignore set but empty env-var.
+	 * give mail_address in tinrc without a name instead if you
+	 * want this behaviour.
+	 */
+	if ((q = get_val("NAME", get_val("REALNAME", NULL))) != NULL) {
+		my_strncpy(fullname, q, sizeof(fullname) - 1);
 		return fullname;
 	}
 

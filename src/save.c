@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-05-10
+ *  Updated   : 2024-08-01
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -105,10 +105,6 @@ static void untag_all_parts(void);
 static void untag_part(int n);
 static void uudecode_line(const char *buf, FILE *fp);
 static void view_file(const char *path, const char *file);
-#ifndef HAVE_LIBUU
-	static void sum_file(const char *path, const char *file);
-#endif /* !HAVE_LIBUU */
-
 static int num_of_tagged_parts, info_len;
 static t_menu attmenu = { 0, 0, 0, show_attachment_page, draw_attachment_arrow, build_attachment_line };
 static t_partl *part_list;
@@ -288,7 +284,7 @@ check_start_save_any_news(
 						continue;
 					}
 
-					if ((function == MAIL_ANY_NEWS) && ((INTERACTIVE_NONE == tinrc.interactive_mailer) || (INTERACTIVE_WITH_HEADERS == tinrc.interactive_mailer))) {
+					if ((function == MAIL_ANY_NEWS) && (tinrc.interactive_mailer == INTERACTIVE_NONE || tinrc.interactive_mailer == INTERACTIVE_WITH_HEADERS)) {
 						fprintf(savefp, "To: %s\n", mail_news_user);
 						fprintf(savefp, "Subject: %s\n", arts[j].subject);
 						/*
@@ -586,7 +582,7 @@ save_and_process_art(
 		scrollok(stdscr, FALSE);
 #	endif /* USE_CURSES */
 	}
-#else	/* silence compiler warning (unused parameter) */
+#else /* silence compiler warning (unused parameter) */
 	(void) post_process;
 #endif /* !HAVE_LIBUU */
 
@@ -883,8 +879,8 @@ post_process_uud(
 	my_printf(cCRLF);
 	UUCleanUp();
 }
-
 #else
+
 
 /*
  * Open and read all the files in save[]
@@ -1011,7 +1007,6 @@ post_process_uud(
 
 				my_printf(_(txt_uu_success), filename);
 				my_printf(cCRLF);
-				sum_file(path, filename);
 				if (curr_group->attribute->post_process_view)
 					view_file(path, filename);
 				state = INITIAL;
@@ -1035,50 +1030,6 @@ post_process_uud(
 		my_printf(_(txt_uu_error_decode), filename, _(txt_uu_error_no_end));
 		my_printf(cCRLF);
 	}
-}
-
-
-/*
- * Sum file - why do we bother to do this?
- * nuke code or add DONT_HAVE_PIPING -tree
- */
-static void
-sum_file(
-	const char *path,
-	const char *file)
-{
-#	if defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
-	FILE *fp_in;
-	char *ext;
-	char buf[LEN];
-
-	sh_format(buf, sizeof(buf), "%s \"%s\"", DEFAULT_SUM, path);
-	if ((fp_in = popen(buf, "r")) != NULL) {
-		buf[0] = '\0';
-
-		/*
-		 * You can't do this with (fgets != NULL)
-		 */
-		while (!feof(fp_in)) {
-			fgets(buf, (int) sizeof(buf), fp_in);
-			if ((ext = strchr(buf, '\n')) != NULL)
-				*ext = '\0';
-		}
-		fflush(fp_in);
-		pclose(fp_in);
-
-		my_printf(_(txt_checksum_of_file), file, file_size(path), _(txt_bytes));
-		my_printf(cCRLF);
-		my_printf("\t%s%s", buf, cCRLF);
-	} else {
-		my_printf(_(txt_command_failed), buf);
-		my_printf(cCRLF);
-	}
-	my_flush();
-#	else
-	(void) path;
-	(void) file;
-#	endif /* HAVE_SUM && !DONT_HAVE_PIPING */
 }
 #endif /* HAVE_LIBUU */
 
@@ -2249,6 +2200,8 @@ process_parts(
 			else {
 				savepath = get_tmpfilename(tmppath);
 				free(tmppath);
+				if (!savepath)
+					return;
 			}
 			if ((fp = open_save_filename(savepath, FALSE)) == NULL) {
 				free(savepath);

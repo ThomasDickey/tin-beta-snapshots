@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2024-07-02
+ *  Updated   : 2024-07-09
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -189,7 +189,8 @@ write_mail_active_file(
 		return;
 
 	/* generate tmp-filename */
-	file_tmp = get_tmpfilename(mail_active_file);
+	if ((file_tmp = get_tmpfilename(mail_active_file)) == NULL)
+		return;
 
 	if (!backup_file(mail_active_file, file_tmp)) {
 		error_message(2, _(txt_filesystem_full_backup), mail_active_file);
@@ -540,6 +541,7 @@ read_groups_descriptions(
 			 */
 #ifdef CHARSET_CONVERSION
 #	ifdef USE_ICU_UCSDET
+			/* TODO skip guessing/conversion if all chars in r are in 0x20-0x7f range (!is_EIGHT_BIT())? */
 			guessed_charset = guess_charset(r, 10);
 			process_charsets(&r, &r_len, guessed_charset ? guessed_charset : "UTF-8", tinrc.mm_local_charset, FALSE);
 			FreeAndNull(guessed_charset);
@@ -556,7 +558,7 @@ read_groups_descriptions(
 			spin_cursor();
 	}
 #	if defined(DEBUG) && defined(NNTP_ABLE)
-	if ((debug & DEBUG_NNTP) && !verbose)
+	if ((debug & DEBUG_NNTP) && fp == FAKE_NNTP_FP && !verbose)
 		debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
 #	endif /* DEBUG && NNTP_ABLE */
 	FreeIfNeeded(groupname);

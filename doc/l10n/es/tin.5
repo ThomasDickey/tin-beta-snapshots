@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2024-07-02
+.\" Updated   : 2024-07-29
 .\" Notes     : needs a some work, see TODOs
 .\"
 .\"
@@ -259,10 +259,10 @@ the user as it contains the user's unencrypted password for reading news!
 full qualified domain name of the news server. Additionally, a port can be
 specified by appending :portnumber.
 .TP 
-\fBpassword\fP
+\fBcontraseña\fP
 user's unencrypted password for reading news.
 .TP 
-\fBuser\fP
+\fBusuario\fP
 username on the news server if it differs from the local login. This field
 is optional.
 .TP 
@@ -1019,6 +1019,7 @@ is unassigned.
 \fBPageFollowupQuoteHeaders\fP	^W
 \fBPageToggleTex2iso\fP	"
 \fBPageToggleAllHeaders\fP	*
+\fBPageArticleInfo\fP	'
 \fBPageToggleRot\fP	%
 \fBPageToggleUue\fP	(
 \fBPageReveal\fP	)
@@ -1733,7 +1734,8 @@ quoted\-printable, 7bit). Default is quoted\-printable.
 \fBmail_quote_format\fP
 Format of quote line when replying (via mail) to an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
-%C=Firstname, %I=Initials). Default is "In article %M you wrote:"
+%C=Firstname, %I=Initials). If the article has multiple addresses only the
+first is evaluated. Default is "In article %M you wrote:"
 .TP 
 \fBmailbox_format\fP
 Select one of the following mailbox\-formats: MBOXO (default, except on SCO),
@@ -1754,7 +1756,6 @@ mailers with different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-mutt \-s "%S" \-\- "%T" < %F
 mutt \-H %F
 claws\-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
@@ -1861,7 +1862,8 @@ this option.
 \fBnews_quote_format\fP
 Format of quote line when posting/following up an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
-%C=Firstname, %I=Initials). Default is "%F wrote:".
+%C=Firstname, %I=Initials). If the article has multiple addresses only the
+first is evaluated. Default is "%F wrote:".
 .TP 
 \fBnntp_read_timeout_secs\fP
 Time in seconds to wait for a response from the server. Default is 120.
@@ -1963,7 +1965,8 @@ is OFF.
 \fBquote_chars\fP
 The character used in quoting included text to article followups and mail
 replies. The '_' character represents a blank character and is replaced with
-\&' ' when read, %I is replaced by author's initials. Default is '>_'.
+\&' ' when read, %I is replaced by author's initials. If the article has
+multiple addresses only the first is evaluated. Default is '>_'.
 .TP 
 \fBquote_style\fP
 This bit coded integer value controls how articles are to be quoted when
@@ -2558,7 +2561,7 @@ is rejected.
 Each line consists of four space\-separated fields "\fIname\fP \fIhighmark\fP
 \fIlowmark\fP \fIflags\fP".
 .TP 
-\fBname\fP
+\fBnombre\fP
 is the name of the newsgroup
 .TP 
 \fBhighmark\fP
@@ -2609,7 +2612,7 @@ is normally updated by the local news server (e.g.  \fB\%innd\fP(8))  whenever
 a new group is created. Each line consist of three space\-separated fields
 "\fIname\fP \fItime\fP \fIcreator\fP".
 .TP 
-\fBname\fP
+\fBnombre\fP
 is the name of the newsgroup
 .TP 
 \fBtime\fP
@@ -2689,6 +2692,6 @@ command instead.
 \fB\%qsort\fP(3), \fB\%strftime\fP(3), \fB\%system\fP(3), \fB\%ucsdet_getName\fP(3),
 \fB\%active\fP(5), \fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5),
 \fB\%newsoverview\fP(5), \fB\%overview.fmt\fP(5), \fB\%innd\fP(8), \fBRFC\%1524\fP,
-\fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP, \fBRFC\%2231\fP,
-\fBRFC\%2980\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP,
-\fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%8143\fP
+\fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP,
+\fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP,
+\fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%6838\fP, \fBRFC\%8143\fP

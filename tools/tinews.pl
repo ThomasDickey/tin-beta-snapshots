@@ -62,7 +62,7 @@ use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.65";
+my $version = "1.1.66";
 
 my %config;
 
@@ -373,7 +373,7 @@ foreach ('DISTRIBUTION', 'ORGANIZATION') {
 
 # overwrite headers if specified via cmd-line
 foreach ('Approved', 'Control', 'Distribution', 'Expires',
-	'From', 'Followup-To', 'Message-ID', 'Newsgroups',' Reply-To',
+	'From', 'Followup-To', 'Message-ID', 'Newsgroups', 'Reply-To',
 	'Subject', 'References', 'Organization') {
 	next if (!defined($config{lc($_)}));
 	chomp($Header{lc($_)} = $_ . ": " . $config{lc($_)});
@@ -553,7 +553,7 @@ if (! $config{'no-sign'}) {
 
 # exit with error if neither $Newsgroups nor any of $To, $Cc or $Bcc are set
 my $required = 0;
-foreach ('Newsgroups', 'To,', 'Cc', 'Bcc') {
+foreach ('Newsgroups', 'To', 'Cc', 'Bcc') {
 	$required++ if (defined($Header{lc($_)}));
 	last if $required;
 }
@@ -644,7 +644,7 @@ sub getdate {
 	my $mm = ($time[1]<10) ? "0".$time[1] : $time[1];
 	my $hh = ($time[2]<10) ? "0".$time[2] : $time[2];
 	my $day = $time[3];
-	my $month = ($time[4]+1 < 10) ? "0".($time[4]+1) : $time[4]+1;
+#	my $month = ($time[4]+1 < 10) ? "0".($time[4]+1) : $time[4]+1; # 01...12; unused
 	my $monthN = ("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")[$time[4]];
 	my $wday = ("Sun","Mon","Tue","Wed","Thu","Fri","Sat")[$time[6]];
 	my $year = $time[5] + 1900;
@@ -860,11 +860,11 @@ sub savearticle {
 # 	- $MessageRef: A reference to an array containing the whole message.
 sub signarticle {
 	my ($HeaderR, $BodyR) = @_;
-	my (@pgphead, @pgpbody, $pgphead, $pgpbody, $signheaders, @signheaders);
+	my (@pgp_head, @pgp_body, @sign_headers, $pgphead, $pgpbody, $signheaders);
 
 	foreach (@{$config{'pgp-sign-headers'}}) {
 		if (defined($$HeaderR{lc($_)}) && $$HeaderR{lc($_)} =~ m/^[^\s:]+: .+/o) {
-			push @signheaders, $_;
+			push @sign_headers, $_;
 		}
 	}
 
@@ -873,16 +873,16 @@ sub signarticle {
 	# Delete and create the temporary pgp-Files
 	unlink $config{'pgptmpf'}.".txt";
 	unlink $config{'pgptmpf'}.".txt.asc";
-	$signheaders = join(",", @signheaders);
+	$signheaders = join(",", @sign_headers);
 
 	$pgphead = "X-Signed-Headers: $signheaders\n";
-	foreach my $header (@signheaders) {
+	foreach my $header (@sign_headers) {
 		if ($$HeaderR{lc($header)} =~ m/^[^\s:]+: (.+?)\n?$/so) {
 			$pgphead .= $header.": ".$1."\n";
 		}
 	}
 
-	unless (substr($pgpbody,-1,1)=~ /\n/ ) {$pgpbody.="\n"};
+	unless (substr($pgpbody, -1, 1) =~ /\n/) {$pgpbody .= "\n"};
 	open(my $FH, '>', $config{'pgptmpf'} . ".txt") or die("$0: can't open ".$config{'pgptmpf'}.": $!\n");
 	print $FH $pgphead, "\n", $pgpbody;
 	print $FH "\n" if ($config{'pgp-version'} =~ m/GPG/io); # workaround a pgp/gpg incompatibility - should IMHO be fixed in pgpverify
@@ -937,27 +937,27 @@ sub signarticle {
 	my $tmppgpheader = $config{'pgpheader'} . ": " . $$HeaderR{$config{'pgpheader'}};
 	delete $$HeaderR{$config{'pgpheader'}};
 
-	@pgphead = ();
+	@pgp_head = ();
 	foreach my $header (@{$config{'pgp-order-headers'}}) {
 		if ($$HeaderR{$header} && $$HeaderR{$header} ne "\n") {
-			push(@pgphead, "$$HeaderR{$header}");
+			push(@pgp_head, "$$HeaderR{$header}");
 			delete $$HeaderR{$header};
 		}
 	}
 
 	foreach my $header (keys %$HeaderR) {
 		if ($$HeaderR{$header} && $$HeaderR{$header} ne "\n") {
-			push(@pgphead, "$$HeaderR{$header}");
+			push(@pgp_head, "$$HeaderR{$header}");
 			delete $$HeaderR{$header};
 		}
 	}
 
-	push @pgphead, ("X-PGP-Hash: " . $config{'digest-algo'} . "\n") if (defined($config{'digest-algo'}));
-	push @pgphead, ("X-PGP-Key: " . $config{'pgp-signer'} . "\n"), $tmppgpheader;
+	push @pgp_head, ("X-PGP-Hash: " . $config{'digest-algo'} . "\n") if (defined($config{'digest-algo'}));
+	push @pgp_head, ("X-PGP-Key: " . $config{'pgp-signer'} . "\n"), $tmppgpheader;
 	undef $tmppgpheader;
 
-	@pgpbody = split(/$/m, $pgpbody);
-	my @pgpmessage = (@pgphead, "\n", @pgpbody);
+	@pgp_body = split(/$/m, $pgpbody);
+	my @pgpmessage = (@pgp_head, "\n", @pgp_body);
 	return \@pgpmessage;
 }
 
@@ -994,10 +994,10 @@ sub buildcancelkey {
 # Returns:
 # 	- $cancel_lock: The calculated cancel-lock.
 sub buildcancellock {
-	my ($cancel_key, $sha_mod) = @_;
+	my ($cancel_key, $sha_module) = @_;
 	my $cancel_lock;
 	if ($config{'canlock-algorithm'} eq 'sha1') {
-		if ($sha_mod =~ m/SHA1/) {
+		if ($sha_module =~ m/SHA1/) {
 			$cancel_lock = MIME::Base64::encode(Digest::SHA1::sha1($cancel_key, ''), '');
 		} else {
 			$cancel_lock = MIME::Base64::encode(Digest::SHA::sha1($cancel_key, ''), '');
@@ -1050,7 +1050,7 @@ sub usage {
 	print " --ssl       use NNTPS (via port 563) if available\n";
 	print " --transform convert <CR><LF> to <LF>\n";
 	print " --version   show version\n";
-	printf ("\nAvailable tinewsrc-vars: %s\n", join(", ",sort keys %config)) if ($config{'verbose'} || $config{'debug'});
+	printf ("\nAvailable tinewsrc-vars: %s\n", join(", ", sort keys %config)) if ($config{'verbose'} || $config{'debug'});
 	exit 0;
 }
 

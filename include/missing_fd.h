@@ -46,7 +46,7 @@
 	/* luna - 09-MAR-2019 */
 #	if defined(sun) || defined(__sun) /* && (!defined(__SVR4) || !defined(__svr4__)) && defined(BSD) && BSD < 199306 */
 typedef	long	fd_mask;
-#		ifndef	FD_SETSIZE
+#		ifndef FD_SETSIZE
 #			ifdef SUNDBE /* Sun DataBase Excelerator */
 #				define FD_SETSIZE      2048
 #			else
@@ -56,9 +56,9 @@ typedef	long	fd_mask;
 #		ifndef NBBY
 #			define NBBY 8	/* bits per byte */
 #		endif /* !NBBY */
-#		define	NFDBITS	(sizeof(fd_mask) * NBBY)	/* bits per mask */
+#		define NFDBITS	(sizeof(fd_mask) * NBBY)	/* bits per mask */
 #		ifndef howmany
-#			define	howmany(x, y)	(((x) + ((y) - 1)) / (y))
+#			define howmany(x, y)	(((x) + ((y) - 1)) / (y))
 #		endif /* !howmany */
 
 typedef	struct fd_set {
@@ -66,10 +66,10 @@ typedef	struct fd_set {
 } fd_set;
 
 
-#		define	FD_SET(n, p)	((p)->fds_bits[(n)/NFDBITS] |= (1 << ((n) % NFDBITS)))
-#		define	FD_CLR(n, p)	((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
-#		define	FD_ISSET(n, p)	((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
-#		define	FD_ZERO(p)		memset((void *)(p), 0, sizeof (*(p)))
+#		define FD_SET(n, p)	((p)->fds_bits[(n)/NFDBITS] |= (1 << ((n) % NFDBITS)))
+#		define FD_CLR(n, p)	((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
+#		define FD_ISSET(n, p)	((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
+#		define FD_ZERO(p)		memset((void *)(p), 0, sizeof (*(p)))
 
 #		endif /* sun || __sun */
 #	endif /* !HAVE_TYPE_FD_SET */

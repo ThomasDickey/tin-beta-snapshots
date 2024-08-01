@@ -4959,32 +4959,6 @@ AC_SUBST(PROG_EXT)
 test -n "$PROG_EXT" && AC_DEFINE_UNQUOTED(PROG_EXT,"$PROG_EXT",[Define to the program extension (normally blank)])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PROG_SUM_R version: 3 updated: 2019/12/31 20:39:42
-dnl -------------
-dnl See if sum can take -r
-AC_DEFUN([CF_PROG_SUM_R],
-[
-if test $ac_cv_path_PATH_SUM
-then
-AC_MSG_CHECKING([if $ac_cv_path_PATH_SUM takes -r])
-AC_CACHE_VAL(ac_cv_prog_sum_r,[
-if AC_TRY_COMMAND($ac_cv_path_PATH_SUM -r config.log 1>&AC_FD_CC)
-then
-	ac_cv_prog_sum_r=yes
-else
-	ac_cv_prog_sum_r=no
-fi
-])
-if test $ac_cv_prog_sum_r = yes; then
-	AC_DEFINE(SUM_TAKES_DASH_R,1,[Define this if the sum command support -r option])
-	AC_DEFINE_UNQUOTED(PATH_SUM_R, "$ac_cv_path_PATH_SUM -r", [Define this to the sum command, with -r option if supported])
-else
-	AC_DEFINE_UNQUOTED(PATH_SUM_R, "$ac_cv_path_PATH_SUM")
-fi
-AC_MSG_RESULT($ac_cv_prog_sum_r)
-fi
-])dnl
-dnl ---------------------------------------------------------------------------
 dnl CF_PROG_YACC version: 3 updated: 2022/12/21 19:22:20
 dnl ------------
 dnl A better version of AC_PROC_YACC, verifies that we'll only choose bison if

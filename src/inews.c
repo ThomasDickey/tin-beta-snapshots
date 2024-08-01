@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2024-05-10
+ *  Updated   : 2024-08-01
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -78,12 +78,15 @@ submit_inews(
 	char response[NNTP_STRLEN];
 	int auth_error = 0;
 	int respcode;
+	int charset;
 	t_bool leave_loop;
 	t_bool id_in_article = FALSE;
 	t_bool ret_code = FALSE;
 #	ifndef FORGERY
 	char sender_hdr[HEADER_LEN];
 	int sender = 0;
+	int err = 0;
+	int n = 0;
 	t_bool ismail = FALSE;
 #	endif /* !FORGERY */
 #	ifdef USE_CANLOCK
@@ -95,6 +98,9 @@ submit_inews(
 
 	from_name[0] = '\0';
 	message_id[0] = '\0';
+#   ifndef FORGERY
+    sender_hdr[0] = '\0';
+#   endif /* !FORGERY */
 
 	while ((line = tin_fgets(fp, TRUE)) != NULL) {
 		if (line[0] == '\0') /* end of headers */
@@ -122,6 +128,11 @@ submit_inews(
 		fclose(fp);
 		return ret_code;
 	}
+#	ifdef CHARSET_CONVERSION
+	charset = group ? group->attribute->mm_network_charset : tinrc.mm_network_charset;
+#	else
+	charset = 0;
+#	endif /* CHARSET_CONVERSION */
 
 #	ifndef FORGERY
 	/*
@@ -134,9 +145,11 @@ submit_inews(
 	 *
 	 * check for valid From: line
 	 */
-	respcode = gnksa_check_from(from_name + 6);
-	if (!(group ? group->attribute->post_8bit_header : tinrc.post_8bit_header) && respcode > GNKSA_OK && respcode < GNKSA_MISSING_REALNAME) { /* error in address */
-		error_message(2, "inews158%s", _(txt_invalid_from), from_name + 6);
+	if ((n = check_mailbox_list(from_name, "From:", charset, &err)) > 1)
+		sender = 1;
+
+	if (err) {
+		error_message(2, _(txt_invalid_from), from_name + 6);
 		fclose(fp);
 		return ret_code;
 	}
@@ -148,12 +161,13 @@ submit_inews(
 #	ifndef FORGERY
 		if (!disable_sender && (ptr = build_sender())) {
 #		ifdef CHARSET_CONVERSION
-			const char *charset = group ? txt_mime_charsets[group->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset];
+			const char *ccharset = group ? txt_mime_charsets[group->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset];
 #		else
-			const char *charset = tinrc.mm_charset;
+			const char *ccharset = tinrc.mm_charset;
 #		endif /* CHARSET_CONVERSION */
 
-			sender = sender_needed(from_name + 6, ptr, charset);
+			if (!sender)
+				sender = sender_needed(from_name + 6, ptr, ccharset);
 			switch (sender) {
 				case -2: /* can't build Sender: */
 					error_message(2, _(txt_invalid_sender), ptr);
@@ -172,10 +186,10 @@ submit_inews(
 				case 1:	/* insert Sender */
 					snprintf(sender_hdr, sizeof(sender_hdr), "Sender: %s", ptr);
 #		ifdef CHARSET_CONVERSION
-					buffer_to_network(sender_hdr, group ? group->attribute->mm_network_charset : tinrc.mm_network_charset);
+					buffer_to_network(sender_hdr, charset);
 #		endif /* CHARSET_CONVERSION */
 					if (!(group ? group->attribute->post_8bit_header : tinrc.post_8bit_header)) {
-						char *p = rfc1522_encode(sender_hdr, charset, ismail);
+						char *p = rfc1522_encode(sender_hdr, ccharset, ismail);
 
 						STRCPY(sender_hdr, p);
 						free(p);
@@ -226,7 +240,7 @@ submit_inews(
 		u_put_server(buf);
 		u_put_server("\r\n");
 
-		if (sender == 1) {
+		if (sender == 1 && *sender_hdr) {
 			u_put_server(sender_hdr);
 			u_put_server("\r\n");
 		}
@@ -383,8 +397,8 @@ submit_news_file(
 
 	a_message_id[0] = '\0';
 
-	fcc = checknadd_headers(name, group);
-	FreeIfNeeded(fcc); /* we don't use it at the moment */
+	if ((fcc = checknadd_headers(name, group)) != NULL)
+		free(fcc); /* we don't use it at the moment */
 
 	rfc15211522_encode(name, txt_mime_encodings[(group ? group->attribute->post_mime_encoding : tinrc.post_mime_encoding)], group, (group ? group->attribute->post_8bit_header : tinrc.post_8bit_header), ismail);
 
@@ -393,33 +407,33 @@ submit_news_file(
 		ret_code = submit_inews(name, group, a_message_id);
 	else
 #endif /* NNTP_INEWS */
-		{
-			/* use tinrc.inews_prog or 'inewsdir/inews -h' 'inews -h' */
-			if (strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
-				STRCPY(buf, tinrc.inews_prog);
-			else {
-				if (*inewsdir)
-					joinpath(buf, sizeof(buf), inewsdir, "inews -h");
-				else
-					strcpy(buf, "inews -h");
-			}
-			cp += strlen(cp);
-			sh_format(cp, sizeof(buf) - (size_t) (cp - buf), " < %s", name);
+	{
+		/* use tinrc.inews_prog or 'inewsdir/inews -h' 'inews -h' */
+		if (strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
+			STRCPY(buf, tinrc.inews_prog);
+		else {
+			if (*inewsdir)
+				joinpath(buf, sizeof(buf), inewsdir, "inews -h");
+			else
+				strcpy(buf, "inews -h");
+		}
+		cp += strlen(cp);
+		sh_format(cp, sizeof(buf) - (size_t) (cp - buf), " < %s", name);
 
-			ret_code = invoke_cmd(buf);
+		ret_code = invoke_cmd(buf);
 
 #ifdef NNTP_INEWS
-			if (!ret_code && read_news_via_nntp && !read_saved_news && strcasecmp(tinrc.inews_prog, INTERNAL_CMD)) {
-				if (prompt_yn(_(txt_post_via_builtin_inews), TRUE)) {
-					ret_code = submit_inews(name, group, a_message_id);
-					if (ret_code) {
-						if (prompt_yn(_(txt_post_via_builtin_inews_only), TRUE) == 1)
-							strcpy(tinrc.inews_prog, INTERNAL_CMD);
-					}
+		if (!ret_code && read_news_via_nntp && !read_saved_news && strcasecmp(tinrc.inews_prog, INTERNAL_CMD)) {
+			if (prompt_yn(_(txt_post_via_builtin_inews), TRUE)) {
+				ret_code = submit_inews(name, group, a_message_id);
+				if (ret_code) {
+					if (prompt_yn(_(txt_post_via_builtin_inews_only), TRUE) == 1)
+						strcpy(tinrc.inews_prog, INTERNAL_CMD);
 				}
 			}
-#endif /* NNTP_INEWS */
 		}
+#endif /* NNTP_INEWS */
+	}
 	return ret_code;
 }
 

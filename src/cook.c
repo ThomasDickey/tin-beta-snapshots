@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2024-07-02
+ *  Updated   : 2024-07-29
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -59,7 +59,6 @@
 
 static char *ltobi(unsigned long i);
 static struct t_attach_item *add_attach_line_item(struct t_attach_item **item);
-static t_bool charset_unsupported(const char *charset);
 static t_bool header_wanted(const char *line);
 static t_bool shorten_attach_line(struct t_attach_item *item);
 static t_part *new_uue(t_part **part, char *name);
@@ -1268,42 +1267,6 @@ dump_cooked(
 
 
 /*
- * Check for charsets which may contain NULL bytes and thus break string
- * functions. Possibly incomplete.
- *
- * TODO: fix the other code to handle those charsets properly.
- */
-static t_bool
-charset_unsupported(
-	const char *charset)
-{
-	static const char *charsets[] = {
-		"csUnicode",	/* alias for ISO-10646-UCS-2 */
-		"csUCS4",		/* alias for ISO-10646-UCS-4 */
-		"ISO-10646-UCS-2",
-		"ISO-10646-UCS-4",
-		"UTF-16",		/* covers also BE/LE */
-		"UTF-32",		/* covers also BE/LE */
-		NULL };
-	const char **charsetptr = charsets;
-	t_bool ret = FALSE;
-
-	if (!charset)
-		return ret;
-
-	do {
-		if (!strncasecmp(charset, *charsetptr, strlen(*charsetptr)))
-			ret = TRUE;
-	} while (!ret && *(++charsetptr) != NULL);
-
-	if (!validate_charset(charset))
-		return FALSE;
-
-	return ret;
-}
-
-
-/*
  * 'cooks' an article, ie, prepare what will actually appear on the screen
  * It is not easy to do this in the same pass as the initial read since
  * boundary conditions for multipart articles make it harder to do on the
@@ -1328,6 +1291,10 @@ charset_unsupported(
  * TODO:
  *      give an error-message on at least disk-full
  */
+/* set INLINE_DEBUG_MIME to 1 to inline report some errors/warnings,
+ * use PAGE_ARTICLE_INFO ('\'') for a more detailed info.
+ * strings -> lang.c?
+ */
 t_bool
 cook_article(
 	t_bool wrap_lines,
@@ -1339,11 +1306,15 @@ cook_article(
 	const char *name;
 	char *line;
 	struct t_header *hdr = &artinfo->hdr;
-	t_bool header_put = FALSE;
 	static const char *struct_header[] = {
-		"Approved: ", "From: ", "Originator: ",
-		"Reply-To: ", "Sender: ", "X-Cancelled-By: ", "X-Comment-To: ",
-		"X-Submissions-To: ", "To: ", "Cc: ", "Bcc: ", "X-Originator: ", NULL };
+		"Approved: ", "From: ", "Originator: ", "Reply-To: ",
+		"Sender: ", "To: ", "Cc: ", "Bcc: ", "X-Cancelled-By: ",
+		"X-Comment-To: ", "X-Submissions-To: ",  "X-Originator: ",
+		NULL };
+	t_bool header_put = FALSE;
+#ifdef INLINE_DEBUG_MIME
+	t_bool stripped = FALSE;
+#endif /* INLINE_DEBUG_MIME */
 
 	art = artinfo;				/* Global saves lots of passing artinfo around */
 
@@ -1360,13 +1331,21 @@ cook_article(
 	while ((line = tin_fgets(artinfo->raw, TRUE)) != NULL) {
 		if (line[0] == '\0') {				/* End of headers? */
 			if (STRIP_ALTERNATIVE(artinfo)) {
+#ifdef INLINE_DEBUG_MIME
+				stripped = TRUE;
+#endif /* INLINE_DEBUG_MIME */
 				if (header_wanted(_(txt_info_x_conversion_note))) {
 					header_put = TRUE;
 					put_cooked(LEN, wrap_lines, C_HEADER, _(txt_info_x_conversion_note));
 				}
 			}
-			if (header_put)
+			if (header_put) {
 				put_cooked(1, TRUE, 0, "\n");		/* put a newline after headers */
+#ifdef INLINE_DEBUG_MIME
+				if (stripped)
+					put_cooked(LEN, wrap_lines, C_ATTACH, "[-- non text/plain parts from multipart/alternative stripped --]\n");
+#endif /* INLINE_DEBUG_MIME */
+			}
 			break;
 		}
 
@@ -1383,7 +1362,7 @@ cook_article(
 					if ((ptr = strchr(foo, ':'))) {
 						*ptr = '\0';
 						unfold_header(line);
-						if ((ptr = parse_header(line, foo, TRUE, TRUE, FALSE))) {
+						if ((ptr = parse_mb_list_header(line, foo))) {
 #if 0
 							/*
 							 * TODO:
@@ -1438,6 +1417,15 @@ cook_article(
 	if (hdr->mime && hdr->ext->type == TYPE_MULTIPART) {
 		t_part *ptr;
 
+#ifdef INLINE_DEBUG_MIME
+		if (hdr->ext->mime_hints.flags & MIME_VERSION_MISSING)
+			put_cooked(LEN, wrap_lines, C_ATTACH, "[-- \"MIME-Version:\"-header missing --]\n");
+		else {
+			if (hdr->ext->mime_hints.flags & MIME_VERSION_UNSUPPORTED)
+				put_cooked(LEN, wrap_lines, C_ATTACH, "[-- Unsupported \"MIME-Version:\" --]\n");
+		}
+#endif /* INLINE_DEBUG_MIME */
+
 		for (ptr = hdr->ext->next; ptr != NULL; ptr = ptr->next) {
 			/*
 			 * Ignore non text/plain sections with alternative handling
@@ -1455,38 +1443,57 @@ cook_article(
 
 			/* Try to view anything of type text, may need to review this */
 			if (IS_PLAINTEXT(ptr)) {
-				if (charset_unsupported(charset)) {
-					put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_mime_unsup_charset), (ptr->depth - 1) * 4, "", charset);
+				if (hdr->ext->mime_hints.flags & MIME_CHARSET_UNSUPPORTED) {
+					put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_mime_unsup_charset), (ptr->depth - 1) * 4, "", hdr->ext->mime_hints.charset);
 					if (ptr->next)
 						put_cooked(1, wrap_lines, C_ATTACH, "\n");
-				} else
+				} else {
+					charset = validate_charset(charset);
 					process_text_body_part(wrap_lines, artinfo->raw, charset ? charset : "US-ASCII", ptr, hide_uue);
+				}
 			}
 		}
 	} else {
-		if (hdr->mime && hdr->ext->type == TYPE_TEXT)
-			charset = validate_charset(get_param(hdr->ext->params, "charset"));
-		else
-			charset = NULL;
+		charset = get_param(hdr->ext->params, "charset");
+
+#ifdef INLINE_DEBUG_MIME
+		if (hdr->ext->type != TYPE_TEXT || (hdr->ext->type == TYPE_TEXT && hdr->ext->encoding != ENCODING_7BIT)) { /* don't warn on pure ascii non mime */
+			if (hdr->ext->mime_hints.flags & MIME_VERSION_MISSING)
+				put_cooked(LEN, wrap_lines, C_ATTACH, "[-- \"MIME-Version:\"-header missing --]\n");
+			else {
+				if (hdr->ext->mime_hints.flags & MIME_VERSION_UNSUPPORTED)
+					put_cooked(LEN, wrap_lines, C_ATTACH, "[-- Unsupported \"MIME-Version:\" --]\n");
+			}
+		}
+#endif /* INLINE_DEBUG_MIME */
 
 #ifdef CHARSET_CONVERSION
-		if (!charset) {
-			if (!curr_group->attribute->undeclared_charset) {
 #	ifdef USE_ICU_UCSDET
-				if (curr_group->attribute->undeclared_cs_guess)
-					charset = get_param(hdr->ext->params, "guessed_charset");
-#	endif /* USE_ICU_UCSDET */
-			} else
-				charset = validate_charset(curr_group->attribute->undeclared_charset);
+		if (hdr->ext->type == TYPE_APPLICATION && hdr->ext->encoding == ENCODING_BINARY && artinfo->hdr.ext->mime_hints.flags & MIME_TRANSFER_ENCODING_UNKNOWN) {
+			put_cooked(LEN, wrap_lines, C_ATTACH, "[-- \"Content-Type: application/octet-stream\" forced --]\n");
+			put_cooked(LEN, wrap_lines, C_ATTACH, "[-- \"Content-Type-Encodig: %s\" forced --]\n", content_encodings[hdr->ext->encoding]);
 		}
+		if (hdr->ext->mime_hints.flags & MIME_CHARSET_GUESSED) {
+			charset = get_param(hdr->ext->params, "guessed_charset");
+#		ifdef INLINE_DEBUG_MIME
+			put_cooked(LEN, wrap_lines, C_ATTACH, "[-- \"charset=%s\" guessed --]\n", charset);
+			if (hdr->ext->type == TYPE_TEXT && hdr->ext->encoding != ENCODING_7BIT && ((hdr->ext->mime_hints.flags & MIME_TRANSFER_ENCODING_MISSING) || (artinfo->hdr.ext->mime_hints.flags & MIME_TRANSFER_ENCODING_UNKNOWN)))
+				put_cooked(LEN, wrap_lines, C_ATTACH, "[-- \"Content-Type-Encodig: %s\" forced --]\n", content_encodings[hdr->ext->encoding]);
+#		endif /* INLINE_DEBUG_MIME */
+		}
+#	endif /* USE_ICU_UCSDET */
+#	ifdef INLINE_DEBUG_MIME
+		if (hdr->ext->mime_hints.flags & MIME_CHARSET_UNSUPPORTED)
+			put_cooked(LEN, wrap_lines, C_ATTACH, "[-- \"charset=%s\" unsupported --]\n", hdr->ext->mime_hints.charset);
+#	endif /* INLINE_DEBUG_MIME */
 #endif /* CHARSET_CONVERSION */
 
 		/*
 		 * A regular single-body article
 		 */
-		if (IS_PLAINTEXT(hdr->ext)) {
-			if (charset_unsupported(charset))
-				put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_mime_unsup_charset), 0, "", charset);
+		if (!hdr->mime || IS_PLAINTEXT(hdr->ext)) {
+			if (hdr->ext->mime_hints.flags & MIME_CHARSET_UNSUPPORTED)
+				put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_mime_unsup_charset), 0, "", hdr->ext->mime_hints.charset);
 			else
 				process_text_body_part(wrap_lines, artinfo->raw, charset ? charset : "US-ASCII", hdr->ext, hide_uue);
 		} else {
@@ -1494,7 +1501,7 @@ cook_article(
 			 * Non-textual main body
 			 */
 			name = get_filename(hdr->ext->params);
-			put_attach(wrap_lines, hdr->ext, 0, 0, name, charset);
+			put_attach(wrap_lines, hdr->ext, 0, 0, name, BlankIfNull(charset));
 		}
 	}
 

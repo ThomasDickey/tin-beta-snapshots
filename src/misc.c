@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-06-24
+ *  Updated   : 2024-07-29
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -80,6 +80,11 @@
 #	endif /* HAVE_LIB_LIBTLS */
 #endif /* NNTPS_ABLE */
 
+/* ICU */
+#if defined(HAVE_LIBICUUC) || defined(USE_ICU_UCSDET)
+#	include <unicode/uversion.h>
+#	include <unicode/uclean.h>
+#endif /* HAVE_LIBICUUC || USE_ICU_UCSDET */
 
 /*
  * defines to control GNKSA-checks behavior:
@@ -118,12 +123,28 @@ get_tmpfilename(
 	const char *filename)
 {
 	char *file_tmp;
+	int n;
+	size_t len;
 
-	/* alloc memory for tmp-filename */
-	file_tmp = my_malloc(strlen(filename) + 5);
+#ifdef APPEND_PID
+	if ((n = snprintf(NULL, 0, "%s.tmp.%ld", filename, (long) process_id)) < 0)
+#else
+	if ((n = snprintf(NULL, 0, "%s.tmp", filename)) < 0)
+#endif /* APPEND_PID */
+		return NULL;
 
-	/* generate tmp-filename */
-	sprintf(file_tmp, "%s.tmp", filename);
+	len = (size_t) n + 1;
+	file_tmp = my_malloc(len);
+#ifdef APPEND_PID
+	if ((n = snprintf(file_tmp, len, "%s.tmp.%ld", filename, (long) process_id)) < 0)
+#else
+	if ((n = snprintf(file_tmp, len, "%s.tmp", filename)) < 0)
+#endif /* APPEND_PID */
+	{
+		free(file_tmp);
+		return NULL;
+	}
+
 	return file_tmp;
 }
 
@@ -713,6 +734,10 @@ tin_done(
 
 	free_all_arrays();
 
+#if defined(HAVE_LIBICUUC) || defined(USE_ICU_UCSDET)
+	u_cleanup();
+#endif /* HAVE_LIBICUUC || USE_ICU_UCSDET */
+
 	/*
 	 * TODO:
 	 * why do we make this exception "Terminate gracefully but do
@@ -1025,7 +1050,6 @@ eat_re(
 	char *s,
 	t_bool eat_was)
 {
-
 	if (!s || !*s)
 		return "";
 	else {
@@ -1091,8 +1115,10 @@ get_author(
 	char *str,
 	size_t len)
 {
-	char *p = idna_decode(art->from);
+	char *p;
 	int author;
+
+	p = idna_decode(art->mailbox.from);
 
 	author = ((thread && !show_subject && curr_group->attribute->show_author == SHOW_FROM_NONE) ? SHOW_FROM_BOTH : curr_group->attribute->show_author);
 
@@ -1102,12 +1128,12 @@ get_author(
 			break;
 
 		case SHOW_FROM_NAME:
-			strncpy(str, (art->name ? art->name : p), len);
+			strncpy(str, (art->mailbox.name ? art->mailbox.name : p), len);
 			break;
 
 		case SHOW_FROM_BOTH:
-			if (art->name)
-				snprintf(str, len, "%s <%s>", art->name, p);
+			if (art->mailbox.name)
+				snprintf(str, len, "%s <%s>", art->mailbox.name, p);
 			else
 				strncpy(str, p, len);
 			break;
@@ -1265,7 +1291,7 @@ strfquote(
 	if (s == NULL || format == NULL || maxsize == 0)
 		return 0;
 
-	if (strchr(format, '%') == NULL && strlen(format) + 1 >= maxsize)
+	if (strchr(format, '%') == NULL || strlen(format) + 1 >= maxsize)
 		return 0;
 
 	endp = s + maxsize;
@@ -1322,16 +1348,16 @@ strfquote(
 					continue;
 
 				case 'A':	/* Articles Email address */
-					STRCPY(tbuf, arts[respnum].from);
+					STRCPY(tbuf, arts[respnum].mailbox.from);
 					break;
 
 				case 'C':	/* First Name of author */
-					if (arts[respnum].name != NULL) {
-						STRCPY(tbuf, arts[respnum].name);
+					if (arts[respnum].mailbox.name != NULL) {
+						STRCPY(tbuf, arts[respnum].mailbox.name);
 						if (strchr(tbuf, ' '))
 							*(strchr(tbuf, ' ')) = '\0';
 					} else {
-						STRCPY(tbuf, arts[respnum].from);
+						STRCPY(tbuf, arts[respnum].mailbox.from);
 					}
 					break;
 
@@ -1342,10 +1368,10 @@ strfquote(
 					break;
 
 				case 'F':	/* Articles Address+Name */
-					if (arts[respnum].name)
-						snprintf(tbuf, sizeof(tbuf), "%s <%s>", arts[respnum].name, arts[respnum].from);
+					if (arts[respnum].mailbox.name)
+						snprintf(tbuf, sizeof(tbuf), "%s <%s>", arts[respnum].mailbox.name, arts[respnum].mailbox.from);
 					else {
-						STRCPY(tbuf, arts[respnum].from);
+						STRCPY(tbuf, arts[respnum].mailbox.from);
 					}
 					break;
 
@@ -1354,7 +1380,7 @@ strfquote(
 					break;
 
 				case 'I':	/* Initials of author */
-					STRCPY(tbuf, ((arts[respnum].name != NULL) ? arts[respnum].name : arts[respnum].from));
+					STRCPY(tbuf, ((arts[respnum].mailbox.name != NULL) ? arts[respnum].mailbox.name : arts[respnum].mailbox.from));
 					j = 0;
 					iflag = TRUE;
 					for (i = 0; tbuf[i]; i++) {
@@ -1373,7 +1399,7 @@ strfquote(
 					break;
 
 				case 'N':	/* Articles Name of author */
-					STRCPY(tbuf, ((arts[respnum].name != NULL) ? arts[respnum].name : arts[respnum].from));
+					STRCPY(tbuf, ((arts[respnum].mailbox.name != NULL) ? arts[respnum].mailbox.name : arts[respnum].mailbox.from));
 					break;
 
 				default:
@@ -1424,7 +1450,7 @@ strfeditor(
 	if (s == NULL || format == NULL || maxsize == 0)
 		return 0;
 
-	if (strchr(format, '%') == NULL && strlen(format) + 1 >= maxsize)
+	if (strchr(format, '%') == NULL || strlen(format) + 1 >= maxsize)
 		return 0;
 
 	endp = s + maxsize;
@@ -1870,14 +1896,7 @@ strfmailer(
 	if (dest == NULL || format == NULL || maxsize == 0)
 		return 0;
 
-	/*
-	 * TODO: shouldn't we better check for no % OR format > maxsize?
-	 *       as no replacement doesn't make sense (hard coded To, Subject
-	 *       and filename) and the resulting string usually is longer after
-	 *       replacements were done (nobody uses enough %% to make the
-	 *       result shorter than the input).
-	 */
-	if (strchr(format, '%') == NULL && strlen(format) + 1 >= maxsize)
+	if (strchr(format, '%') == NULL || strlen(format) + 1 >= maxsize)
 		return 0;
 
 	/*
@@ -2065,7 +2084,7 @@ get_initials(
 		return 0;
 
 	s[0] = '\0';
-	STRCPY(tbuf, ((art->name != NULL) ? art->name : art->from));
+	STRCPY(tbuf, ((art->mailbox.name != NULL) ? art->mailbox.name : art->mailbox.from));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((wtmp = char2wchar_t(tbuf)) != NULL) {
 		wbuf = my_malloc(sizeof(wchar_t) * (size_t) (maxsize + 1));
@@ -2317,7 +2336,8 @@ write_input_history_file(
 	mask = umask((mode_t) (S_IRWXO|S_IRWXG));
 
 	/* generate tmp-filename */
-	file_tmp = get_tmpfilename(local_input_history_file);
+	if ((file_tmp = get_tmpfilename(local_input_history_file)) == NULL)
+		return;
 
 	if ((fp = fopen(file_tmp, "w")) == NULL) {
 		error_message(2, _(txt_filesystem_full_backup), local_input_history_file);
@@ -3651,7 +3671,7 @@ gnksa_do_check_from(
 		strcpy(realname, decoded);
 
 #ifdef DEBUG
-	if (debug & DEBUG_MISC) { /* TODO: dump to a file instead of wait_message() */
+	if (debug & DEBUG_MISC) {
 		if (code != GNKSA_OK)
 			debug_print_file("GNKSA", "From:=[%s], GNKSA=[%d]", from, code);
 		else
@@ -4021,6 +4041,70 @@ idna_decode(
 }
 
 
+/*
+ * Terminates "from" at first comma that separates mailboxes
+ *
+ * Mailbox list:
+ *   From: alice@example.com (Alice A), bob@example.com (Bob B)
+ *     ->: Alice A <alice@example.com>
+ *   From: Alice A <alice@example.com>, Bob B <bob@example.com>
+ *     ->: Alice A <alice@example.com>
+ *   From: "a(,)lice"@example.com (Alice A), bob@example.com (Bob B)
+ *     ->: Alice A <"a(,)lice"@example.com>
+ * No mailbox list:
+ *   From: "Alice A., alice" <alice@example.com>
+ *   From: "Alice \" <>, alice" <"ali \" , -ce"@example.com>
+ * Broken, no mailbox list:
+ *   From: "Alice \" <>, alice" <"ali " , ce@example.com>
+ */
+char *
+split_mailbox_list(
+	char *from)
+{
+	char *ptr = from;
+	t_bool at_seen, in_quoted_str, in_quoted_pair, in_addr, in_comment;
+
+	at_seen = in_quoted_str = in_quoted_pair = in_addr = in_comment = FALSE;
+
+	while (*ptr) {
+		switch (*ptr) {
+			case '"':
+				in_quoted_str = !in_quoted_str || in_quoted_pair;
+				in_quoted_pair = FALSE;
+				break;
+			case '\\':
+				in_quoted_pair = !in_quoted_pair;
+				break;
+			case '<':
+				in_addr = !in_quoted_str;
+				break;
+			case '>':
+				in_addr = !in_addr || in_quoted_str;
+				break;
+			case '(':
+				in_comment = !in_quoted_str;
+				break;
+			case ')':
+				in_comment = in_comment && in_quoted_str;
+				break;
+			case '@':
+				at_seen = !in_quoted_str && !in_comment;
+				break;
+			case ',':
+				if (at_seen && !in_quoted_str && !in_addr && !in_comment) {
+					*ptr = '\0';
+					return *++ptr ? ptr : NULL;
+				}
+				break;
+			default:
+				break;
+		}
+		++ptr;
+	}
+	return NULL;
+}
+
+
 int
 tin_version_info(
 	FILE *fp)
@@ -4095,7 +4179,7 @@ tin_version_info(
 		pcre2_version = my_malloc(pcre2_version_length);
 		(void) pcre2_config_8(PCRE2_CONFIG_VERSION, pcre2_version);
 	}
-	fprintf(fp, "\tPCRE     = \"%s\"\n", pcre2_version ? pcre2_version : "unknown");
+	fprintf(fp, "\tPCRE2    = \"%s\"\n", pcre2_version ? pcre2_version : "unknown");
 	FreeIfNeeded(pcre2_version);
 #else
 	fprintf(fp, "\tPCRE     = \"%s\"\n", pcre_version());
@@ -4105,6 +4189,20 @@ tin_version_info(
 	fprintf(fp, "\tGNU SASL = \"%s\"\n", gsasl_check_version(NULL));
 	wlines++;
 #	endif /* USE_GSASL */
+#if defined(HAVE_LIBICUUC) || defined(USE_ICU_UCSDET)
+	{
+		UVersionInfo version;
+		char buf[U_MAX_VERSION_STRING_LENGTH + 1];
+
+		u_getVersion(version);
+		u_versionToString(version, buf);
+		fprintf(fp, "\tICU      = \"%s", buf);
+		u_getUnicodeVersion(version);
+		u_versionToString(version, buf);
+		fprintf(fp, " (Unicode %s)\"\n", buf);
+		wlines++;
+	}
+#endif /* HAVE_LIBICUUC || USE_ICU_UCSDET */
 
 	fprintf(fp, "Characteristics:\n\t"
 /* TODO: complete list and do some useful grouping; show only in -vV case? */
@@ -4206,10 +4304,15 @@ tin_version_info(
 			"-APPEND_PID "
 #endif /* APPEND_PID */
 #ifdef HAVE_MH_MAIL_HANDLING
-			"+HAVE_MH_MAIL_HANDLING"
+			"+HAVE_MH_MAIL_HANDLING "
 #else
-			"-HAVE_MH_MAIL_HANDLING"
+			"-HAVE_MH_MAIL_HANDLING "
 #endif /* HAVE_MH_MAIL_HANDLING */
+#ifdef HAVE_COLOR
+			"+HAVE_COLOR"
+#else
+			"-HAVE_COLOR"
+#endif /* HAVE_COLOR */
 			"\n\t"
 #ifdef HAVE_ISPELL
 			"+HAVE_ISPELL "
@@ -4221,17 +4324,6 @@ tin_version_info(
 #else
 			"-HAVE_METAMAIL "
 #endif /* HAVE_METAMAIL */
-#ifdef HAVE_SUM
-			"+HAVE_SUM"
-#else
-			"-HAVE_SUM"
-#endif /* HAVE_SUM */
-			"\n\t"
-#ifdef HAVE_COLOR
-			"+HAVE_COLOR "
-#else
-			"-HAVE_COLOR "
-#endif /* HAVE_COLOR */
 #ifdef HAVE_PGP
 			"+HAVE_PGP "
 #else

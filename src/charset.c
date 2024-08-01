@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2024-07-03
+ *  Updated   : 2024-07-08
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2024 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -195,8 +195,8 @@ convert_iso2asc(
 	first = TRUE;
 	i = a = 0;
 	while (*iso != '\0') {
-		if (*EIGHT_BIT(iso) >= ISO_EXTRA) {
-			p = tab[*EIGHT_BIT(iso) - ISO_EXTRA];
+		if (*(unsigned char *) (iso) >= ISO_EXTRA) {
+			p = tab[*(unsigned char *) (iso) - ISO_EXTRA];
 			iso++;
 			i++;
 			first = TRUE;
@@ -293,7 +293,14 @@ convert_tex2iso(
 	 * code position as ISO-8859-1
 	 * DEC-MCS, Windows-1252
 	 */
-	if (IS_LOCAL_CHARSET("ISO-8859-1") ||
+	if (
+		!strcasecmp( /* ensure not to also match ISO-8859-{11,12} */
+#ifdef CHARSET_CONVERSION
+			tinrc.mm_local_charset
+#else
+			tinrc.mm_charset
+#endif /* CHARSET_CONVERSION */
+			, "ISO-8859-1") ||
 		IS_LOCAL_CHARSET("ISO-8859-2") ||
 		IS_LOCAL_CHARSET("ISO-8859-3") ||
 		IS_LOCAL_CHARSET("ISO-8859-4") ||
@@ -454,6 +461,51 @@ wconvert_to_printable(
 	return wbuf;
 }
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+
+/*
+ * Check for charsets which may contain NULL bytes and thus break string
+ * functions. Possibly incomplete.
+ *
+ * TODO: fix the other code to handle those charsets properly.
+ */
+t_bool
+charset_unsupported(
+	const char *charset)
+{
+	static const char *charsets[] = {
+		"csUnicode",	/* alias for ISO-10646-UCS-2 */
+		"csUCS4",		/* alias for ISO-10646-UCS-4 */
+		"ISO-10646-UCS-2", /* can't be shortened due to ISO-10646-UCS-Basic */
+		"ISO-10646-UCS-4",
+		"UTF-16",		/* covers also BE/LE */
+		"UTF-32",		/* covers also BE/LE */
+		NULL };
+	const char **charsetptr = charsets;
+	t_bool ret = FALSE;
+#ifdef CHARSET_CONVERSION
+	iconv_t cd;
+#endif /* CHARSET_CONVERSION */
+
+	if (!charset)
+		return ret;
+
+	do {
+		if (!strncasecmp(charset, *charsetptr, strlen(*charsetptr)))
+			ret = TRUE;
+	} while (!ret && *(++charsetptr) != NULL);
+
+#ifdef CHARSET_CONVERSION
+	if (!ret) {
+		if ((cd = iconv_open("UCS-4", charset)) == (iconv_t) (-1))
+			ret = TRUE;
+		else
+			iconv_close(cd);
+	}
+#endif /* CHARSET_CONVERSION */
+
+	return ret;
+}
 
 
 #if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)

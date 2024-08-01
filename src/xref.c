@@ -427,7 +427,7 @@ NSETRNG1(
 {
 	t_artnum i;
 
-    assert(((void) "NSETRNG1() failed. bitmap == NULL", bitmap != NULL));
+	assert(((void) "NSETRNG1() failed. bitmap == NULL", bitmap != NULL));
 
 	if (high >= low) {
 		if (NOFFSET(high) == NOFFSET(low)) {

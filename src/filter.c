@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2024-05-05
+ *  Updated   : 2024-07-28
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -682,7 +682,8 @@ write_filter_file(
 		return;
 
 	/* generate tmp-filename */
-	file_tmp = get_tmpfilename(filename);
+	if ((file_tmp = get_tmpfilename(filename)) == NULL)
+		return;
 
 	if (!backup_file(filename, file_tmp)) {
 		error_message(2, _(txt_filesystem_full_backup), filename);
@@ -1144,7 +1145,7 @@ filter_menu(
 	snprintf(text_time, sizeof(text_time), _(txt_time_default_days), tinrc.filter_days);
 	fmt_filter_menu_prompt(text_subj, sizeof(text_subj), ptr_filter_subj, len, art->subject);
 	snprintf(text_score, sizeof(text_score), _(txt_filter_score), (type == GLOBAL_MENU_FILTER_KILL ? tinrc.score_kill : tinrc.score_select));
-	fmt_filter_menu_prompt(text_from, sizeof(text_from), ptr_filter_from, len, art->from);
+	fmt_filter_menu_prompt(text_from, sizeof(text_from), ptr_filter_from, len, art->mailbox.from);
 	fmt_filter_menu_prompt(text_msgid, sizeof(text_msgid), ptr_filter_msgid, len - 4, MSGID(art));
 
 	print_filter_menu();
@@ -1749,7 +1750,7 @@ add_filter_rule(
 			ptr[i].subj = my_strdup(acbuf);
 		}
 		if (rule->from_ok) {
-			STRCPY(sbuf, art->from);
+			STRCPY(sbuf, art->mailbox.from);
 			snprintf(acbuf, sizeof(acbuf), REGEX_FMT, quote_wild(sbuf));
 			ptr[i].from = my_strdup(acbuf);
 		}
@@ -1935,10 +1936,10 @@ filter_articles(
 				 *       as that is what we use elsewhere?
 				 */
 				if (ptr[j].from != NULL) {
-					if (arts[i].name != NULL)
-						snprintf(buf, sizeof(buf), "%s (%s)", arts[i].from, arts[i].name);
+					if (arts[i].mailbox.name != NULL)
+						snprintf(buf, sizeof(buf), "%s (%s)", arts[i].mailbox.from, arts[i].mailbox.name);
 					else
-						STRCPY(buf, arts[i].from);
+						STRCPY(buf, arts[i].mailbox.from);
 
 					switch (test_match(buf, ptr[j].from, ptr[j].icase, use_regex, &regex_cache_from[j])) {
 						case 1:
@@ -2057,22 +2058,22 @@ filter_articles(
 				/*
 				 * Filter on GNKSA code
 				 */
-				if ((ptr[j].gnksa_cmp != FILTER_LINES_NO) && (arts[i].gnksa_code >= 0)) {
+				if ((ptr[j].gnksa_cmp != FILTER_LINES_NO) && (arts[i].mailbox.gnksa_code >= 0)) {
 					switch (ptr[j].gnksa_cmp) {
 						case FILTER_LINES_EQ:
-							if (arts[i].gnksa_code == ptr[j].gnksa_num) {
+							if (arts[i].mailbox.gnksa_code == ptr[j].gnksa_num) {
 								SET_FILTER(group, i, j);
 							}
 							break;
 
 						case FILTER_LINES_LT:
-							if (arts[i].gnksa_code < ptr[j].gnksa_num) {
+							if (arts[i].mailbox.gnksa_code < ptr[j].gnksa_num) {
 								SET_FILTER(group, i, j);
 							}
 							break;
 
 						case FILTER_LINES_GT:
-							if (arts[i].gnksa_code > ptr[j].gnksa_num) {
+							if (arts[i].mailbox.gnksa_code > ptr[j].gnksa_num) {
 								SET_FILTER(group, i, j);
 							}
 							break;

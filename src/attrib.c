@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2024-07-01
+ *  Updated   : 2024-07-09
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
@@ -1226,7 +1226,8 @@ write_attributes_file(
 	if ((batch_mode || no_write || num_scope < 1) && file_size(file) != -1L)
 		return;
 
-	new_file = get_tmpfilename(file);
+	if ((new_file = get_tmpfilename(file)) == NULL)
+		return;
 
 	if ((fp = fopen(new_file, "w+")) == NULL) {
 		error_message(2, _(txt_filesystem_full_backup), ATTRIBUTES_FILE);

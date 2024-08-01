@@ -1720,8 +1720,7 @@ expand_bitmap(
 			debug_print_comment("expand_bitmap: group->newsrc.bitlen != (group->max-group->min)+1 and need full copy");
 #endif /* DEBUG */
 	} else if (max != group->newsrc.xmax || first != group->newsrc.xmin) {
-		t_bitmap *newbitmap;
-		newbitmap = my_malloc(BITS_TO_BYTES(bitlen));
+		t_bitmap *newbitmap = my_malloc(BITS_TO_BYTES(bitlen));
 
 		/* Copy over old bitmap */
 

@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2024-06-26
+ *  Updated   : 2024-07-31
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -233,7 +233,7 @@ getserverbyfile(
 		return buf;
 	}
 
-	if ((cp = getenv("NNTPSERVER")) != NULL) {
+	if ((cp = getenv("NNTPSERVER")) != NULL && *cp) {
 		get_nntpserver(buf, sizeof(buf), cp);
 		if ((cp = strchr(buf, ':')) != NULL) {
 			if (strrchr(buf, ':') == cp) { /* "count" ':'s to be sure it's not an IPv6 address */
@@ -722,7 +722,7 @@ get_tcp6_socket(
 #		endif /* PF_UNSPEC */
 #	endif /* AF_UNSPEC */
 #	ifndef AF_INET6 /* i.e. sco3.2v5.0.7 */
-#		define  AF_INET6 AF_INET
+#		define AF_INET6 AF_INET
 #	endif /* !AF_INET6 */
 	memset(&hints, 0, sizeof(hints));
 /*	hints.ai_flags = AI_CANONNAME; */
@@ -2224,6 +2224,9 @@ list_motd(
 	int i;
 	size_t len;
 	long m_hash = 0L;
+#	if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
+	char *guessed_charset = NULL;
+#	endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
 	if (!stream)
 		return m_hash;
@@ -2246,8 +2249,21 @@ list_motd(
 				m = my_realloc(m, strlen(m) + len + 1);
 				strcat(m, p);
 
-				/* RFC 6048 2.5.2 "The information MUST be in UTF-8" */
-				process_charsets(&p, &len, "UTF-8", tinrc.mm_local_charset, FALSE);
+				/*
+				 * RFC 6048 2.5.2 "The information MUST be in UTF-8"
+				 * but the cmd. was widely available before that RFC and
+				 * even before RFC 3977(which doesn't mention it *sigh*),
+				 * so checking nntp_caps.type doesn't help and we guess if
+				 * we can. Some day we may check for nntp_caps.version > 2 ...
+				 */
+#	if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
+				if ((guessed_charset = guess_charset(p, 10)) != NULL) {
+					process_charsets(&p, &len, guessed_charset, tinrc.mm_local_charset, FALSE);
+					free(guessed_charset);
+				} else
+#	endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
+					process_charsets(&p, &len, "UTF-8", tinrc.mm_local_charset, FALSE);
+
 				fprintf(stream, _(txt_motd), p);
 				free(p);
 			}
@@ -2404,7 +2420,6 @@ static ssize_t
 nntpbuf_deflate_write(
 	struct nntpbuf* buf)
 {
-	int result;
 	ssize_t bytes_written = 0, bwritten;
 	t_bool deflate_again = TRUE;
 
@@ -2414,7 +2429,7 @@ nntpbuf_deflate_write(
 	while (deflate_again) {
 		Bytef *out = buf->z_wr->next_out;
 
-		if ((result = deflate(buf->z_wr, Z_PARTIAL_FLUSH)) < 0)
+		if (deflate(buf->z_wr, Z_PARTIAL_FLUSH) < 0)
 			return EOF;
 
 		if (buf->z_wr->avail_in > 0 || buf->z_wr->avail_out == 0)
@@ -2645,7 +2660,7 @@ nntpbuf_gets(
 	int size,
 	struct nntpbuf *buf)
 {
-	int write_at = 0, retval;
+	int write_at = 0;
 
 	if (s == NULL || size == 0)
 		return s;
@@ -2654,7 +2669,7 @@ nntpbuf_gets(
 
 	while (size) {
 		if (buf->rd.ub - buf->rd.lb == 0) {
-			if ((retval = nntpbuf_refill(buf)) <= 0)
+			if (nntpbuf_refill(buf) <= 0)
 				return NULL;
 		}
 
@@ -2723,7 +2738,6 @@ nntpbuf_is_open(
 {
 	return buf->fd != -1;
 }
-
 #undef SZ
 
 

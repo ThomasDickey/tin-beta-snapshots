@@ -192,11 +192,6 @@ o  add more AUTHINFO SASL (RFC 4643, RFC 5802) support (DIGEST-MD5,
 o  make 'GNKSA'-parser RFC5322/USEFOR compliant (e.g.
    misc.c:gnksa_dequote_plainphrase()) and fix bugs
 
-o  multiple names/addresses in From like in:
-   From: ole-fg@gmx.de (Olaf Schneider), adrian.suter@schweiz.org (Adrian Suter)
-   are parsed incorrectly (ie. %F in group_format ends up in
-   "Olaf Schneider), adrian.suter@schweiz.org (Adrian Suter <ole-fg@gmx.de>"
-
 o  add XZVER (and XZHDR) support (zlib compressed yyencoded overview data)
    <http://helpdesk.astraweb.com/index.php?_m=news&_a=viewnews&newsid=9>
 
@@ -680,7 +675,8 @@ o  use new_nntp_command() instead of nntp_command() in the rest of the
    [20050211 Urs Janssen <urs@tin.org>]
 
 o  replace various occurrence of "US-ASCII" by DEFAULT(_MIME)_CHARSET
-   and define that to "US-ASCII" (to make 'updates' easier).
+   and define that to "US-ASCII" (to make 'updates' easier). See also
+   RFC 6657 and e.g. RFC 7111 (text/cvs now defaults to UTF-8).
    [20040929 Urs Janssen <urs@tin.org>]
 
 o  get rid of CURR_GROUP, use t_group instead
@@ -883,6 +879,13 @@ o  the limited pgp support (inline pgp as of RFC 4880, just signature
 
 Not yet classified
 ------------------
+o  add tinrc option to disable charset guessing for group-descriptions
+   and MOTD.
+
+o  with USE_ICU_UCSDET add guess_charset() and automatic conversion
+   to files added to the article, i.e. msg_add_x_body(),
+   msg_add_x_headers(), msg_write_signature(), pgp_append_public_key(), ...?
+
 o  when reconnection fails or is unwanted during "POST", also/only
    postpone_article(article_name) besides/instead of
    rename_file(article_name, dead_article) and

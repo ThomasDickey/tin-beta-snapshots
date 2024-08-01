@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2023-11-20
+ *  Updated   : 2024-07-28
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -651,7 +651,7 @@ dump_thread(
 	i = cCOLS - len - 20;
 
 	if (msgid->article >= 0)
-		sprintf(ptr + len, "%-*.*s   %-17.17s", i, i, arts[msgid->article].subject, (arts[msgid->article].name) ? arts[msgid->article].name : arts[msgid->article].from);
+		sprintf(ptr + len, "%-*.*s   %-17.17s", i, i, arts[msgid->article].subject, (arts[msgid->article].mailbox->name) ? arts[msgid->article].mailbox->name : arts[msgid->article].mailbox->from);
 	else
 		sprintf(ptr + len, "%-*.*s", i, i, _("[- Unavailable -]"));
 

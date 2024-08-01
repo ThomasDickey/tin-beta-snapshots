@@ -12,6 +12,7 @@ New features
 - option remove SOFT HYPHENs (U+00AD) from non verbatim blocks:
   suppress_soft_hyphens
 - ConnectionInfo page ('J') incl. TLS connection info and MOTD
+- ArticleInfo page ('\'') for MIME-debugging
 - ${TIN_HOMEDIR:-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
 - -t timeout cmd.-line option
 - -L <message-id> cmd.-line option
@@ -29,7 +30,7 @@ New features
   $CFLAGS, $CPPFLAGS and $LDFLAGS in the binary
 - undeclared_cs_guess if system has ucsdet_detect() from libicui18n
   the charset of an article can be guess upon reading
-
+- handle multiple addresses in From, Reply-To, Approved
 
 Changes
 -------
@@ -37,7 +38,12 @@ Changes
 - changed the evaluation order of LC_CTYPE and LC_MESSAGES when looking for a
   keymap file, LC_MESSAGES is now noted first
 - servers MOTD is only shown at startup if it changed since last connect
+- disallow set but empty $NAME or $REALNAME to prevent reading the users
+  name from /etc/passwd
+- addresses in %T are now separated by comma instead of space
 
 Retired Features
 ----------------
 - no longer ships with a fallback intl-library
+- --with-sum specifying the sum of uue-file got more and more uncommon at
+  the end of last century and uue mostly vanished laster on ...

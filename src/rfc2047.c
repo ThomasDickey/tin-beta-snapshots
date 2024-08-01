@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2024-05-12
+ *  Updated   : 2024-07-22
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2024 Chris Blum <chris@resolution.de>
@@ -187,7 +187,7 @@ mmdecode(
 			if (hi == 255 || lo == 255)
 				return -1;
 			x = (int) ((hi << 4) + lo);
-			*EIGHT_BIT(t)++ = (unsigned char) x;
+			*(unsigned char *) (t)++ = (unsigned char) x;
 		}
 		return (int) (t - where);
 	} else if (encoding == 'b') {		/* base64 */
@@ -270,7 +270,17 @@ rfc1522_decode(
 #ifndef CHARSET_CONVERSION
 	process_charsets(&c, &max_len, "US-ASCII", tinrc.mm_local_charset, FALSE);
 #else
-	process_charsets(&c, &max_len, (CURR_GROUP.attribute->undeclared_charset) ? (CURR_GROUP.attribute->undeclared_charset) : "US-ASCII", tinrc.mm_local_charset, FALSE);
+#	ifdef USE_ICU_UCSDET
+	if (CURR_GROUP.attribute->undeclared_cs_guess && !CURR_GROUP.attribute->undeclared_charset) {
+		char *guessed_charset = NULL;
+
+		if ((guessed_charset = guess_charset(c, 10)) != NULL) {
+			process_charsets(&c, &max_len, guessed_charset, tinrc.mm_local_charset, FALSE);
+			free(guessed_charset);
+		}
+	} else
+#	endif /* USE_ICU_UCSDET */
+		process_charsets(&c, &max_len, (CURR_GROUP.attribute->undeclared_charset) ? (CURR_GROUP.attribute->undeclared_charset) : "US-ASCII", tinrc.mm_local_charset, FALSE);
 #endif /* !CHARSET_CONVERSION */
 	sc = c;
 
@@ -657,7 +667,7 @@ rfc1522_do_encode(
 					if (is_EIGHT_BIT(what) || !isalnum((unsigned char) *what))
 #endif /* 0 */
 					{
-						snprintf(buf2, sizeof(buf2), "=%2.2X", *EIGHT_BIT(what));
+						snprintf(buf2, sizeof(buf2), "=%2.2X", *(unsigned char *) (what));
 						if ((size_t) (t - buffer + 3) >= bufferlen) {
 							/* buffer too small, double its size */
 							offset = (int) (t - buffer);
@@ -734,7 +744,7 @@ rfc1522_do_encode(
 							*t++ = '_';
 							ewsize++;
 						} else {
-							snprintf(buf2, sizeof(buf2), "=%2.2X", *EIGHT_BIT(what));
+							snprintf(buf2, sizeof(buf2), "=%2.2X", *(unsigned char *) (what));
 							*t++ = buf2[0];
 							*t++ = buf2[1];
 							*t++ = buf2[2];
@@ -1046,11 +1056,11 @@ do_rfc15211522_encode(
 	fputc('\n', f);
 
 	if (!allow_8bit_header) {
-		if (!strcasecmp(mime_encoding, txt_base64))
+		if (!strcasecmp(mime_encoding, content_encodings[ENCODING_BASE64]))
 			encoding = 'b';
-		else if (!strcasecmp(mime_encoding, txt_quoted_printable))
+		else if (!strcasecmp(mime_encoding, content_encodings[ENCODING_QP]))
 			encoding = 'q';
-		else if (!strcasecmp(mime_encoding, txt_7bit))
+		else if (!strcasecmp(mime_encoding, content_encodings[ENCODING_7BIT]))
 			encoding = '7';
 		else
 			encoding = '8';
@@ -1312,8 +1322,8 @@ compose_message_rfc822(
 
 	/* Header: CT, CD, CTE */
 	fprintf(fp, "%s", txt_mime_hdr_c_type_msg_rfc822);
-	fprintf(fp, "%s", txt_mime_hdr_c_disposition_inline);
-	fprintf(fp, txt_mime_hdr_c_transfer_encoding, *is_8bit ? txt_8bit : txt_7bit);
+	fprintf(fp, txt_mime_hdr_c_disposition, content_disposition[DISP_INLINE]);
+	fprintf(fp, txt_mime_hdr_c_transfer_encoding, *is_8bit ? content_encodings[ENCODING_8BIT] : content_encodings[ENCODING_7BIT]);
 	fputc('\n', fp);
 
 	/* Body: articlefp */
@@ -1355,7 +1365,7 @@ compose_multipart_mixed(
 	 */
 	generate_mime_boundary(boundary, textfp, articlefp);
 	fprintf(fp, txt_mime_hdr_c_type_multipart_mixed, boundary);
-	fprintf(fp, txt_mime_hdr_c_transfer_encoding, requires_8bit ? txt_8bit : txt_7bit);
+	fprintf(fp, txt_mime_hdr_c_transfer_encoding, requires_8bit ? content_encodings[ENCODING_8BIT] : content_encodings[ENCODING_7BIT]);
 	fputc('\n', fp);
 
 	/*

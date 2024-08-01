@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-06-25
+.\" Updated   : 2024-07-29
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -1159,6 +1159,9 @@ taken from the \fBtex2iso_conv\fP variable in the tinrc file.
 Toggles the display of all headers vs. headers in
 \fBnews_headers_to_display\fP.
 .TP 
+\fBPageArticleInfo \*(rq'\fP
+Detailed MIME information of the article.
+.TP 
 \fBPageToggleRot '%'\fP
 Toggle ROT\-13 decoding for this article.
 .TP 
@@ -1996,7 +1999,8 @@ quoted\-printable, 7bit). Default is quoted\-printable.
 \fBQuote line when mailing (mail_quote_format)\fP
 Format of quote line when replying (via mail) to an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
-%C=Firstname, %I=Initials). Default is "In article %M you wrote:"
+%C=Firstname, %I=Initials). If the article has multiple addresses only the
+first is evaluated. Default is "In article %M you wrote:"
 .TP 
 \fBFormat of the mailbox (mailbox_format)\fP
 Select one of the following mailbox\-formats: MBOXO (default, except on SCO),
@@ -2017,7 +2021,6 @@ mailers with different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-mutt \-s "%S" \-\- "%T" < %F
 mutt \-H %F
 claws\-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
@@ -2124,7 +2127,8 @@ this option.
 \fBQuote line when following up (news_quote_format)\fP
 Format of quote line when posting/following up an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message\-ID, %N=Fullname,
-%C=Firstname, %I=Initials). Default is "%F wrote:".
+%C=Firstname, %I=Initials). If the article has multiple addresses only the
+first is evaluated. Default is "%F wrote:".
 .TP 
 \fBNNTP read timeout in seconds (nntp_read_timeout_secs)\fP
 Time in seconds to wait for a response from the server. Default is 120.
@@ -2232,7 +2236,8 @@ OFF.
 \fBCharacters used as quote\-marks (quote_chars)\fP
 The character used in quoting included text to article followups and mail
 replies. The '_' character represents a blank character and is replaced with
-\&' ' when read, %I is replaced by author's initials. Default is '>_'.
+\&' ' when read, %I is replaced by author's initials. If the article has
+multiple addresses only the first is evaluated. Default is '>_'.
 .TP 
 \fBQuoting behavior (quote_style)\fP
 How articles should be quoted when following up or replying to them. There
@@ -2801,10 +2806,11 @@ or send the article to the author via \fBPostSend\fP ('\fBs\fP').
 When posting a followup to an article or replying direct to the author of an
 article via email the text of the article can be quoted. The beginning of
 the quoted text can contain information about the quoted article (e.g., Name
-and the Message\-ID of the article). To allow for different situations
-certain information from the article can be used in the quoted string. The
-following variables are expanded if found in the tinrc variables
-\fBmail_quote_format\fP, \fBnews_quote_format\fP or \fBxpost_quote_format\fP:
+and the Message\-ID of the article). If the article has multiple addresses
+only the first is evaluated. To allow for different situations certain
+information from the article can be used in the quoted string. The following
+variables are expanded if found in the tinrc variables \fBmail_quote_format\fP,
+\fBnews_quote_format\fP or \fBxpost_quote_format\fP:
 .RS
 .nf
 .ta \w'%A  'u +\w'Address'u
@@ -2988,7 +2994,8 @@ sig is read from the file \fI$HOME/.sigfixed\fP.
 The look of the Selection, Group and Thread level can be customized via
 format strings. These format strings define the content and the position of
 each element on the screen. Variables are used within the format strings as
-placeholders. The following variables are available:
+placeholders. If the article has multiple addresses only the first is
+evaluated. The following variables are available:
 .PP
 .in +.3i
 .nf
@@ -3360,6 +3367,7 @@ cached data for groups you are not reading anymore with something like:
 .\"       $TMPDIR/SCOPES-R   (-D 32)
 .\"       $TMPDIR/SCOPES-W   (-D 32)
 .\"       $TMPDIR/ACTIVE     (-D 64)
+.\"       $TMPDIR/GNKSA      (-D 64)
 For a detailed description see \fB\%tin\fP(5).
 .PP
 \fI$MAILCAPS\fP
@@ -3931,7 +3939,7 @@ Urs Janssen <urs@tin.org>
 \fB\%snprintf\fP(3), \fB\%strftime\fP(3), \fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3),
 \fB\%environ\fP(5), \fB\%locale\fP(5), \fB\%mailcap\fP(5), \fB\%mbox\fP(5),
 \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5), \fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP,
-\fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP,
-\fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
-\fBRFC\%4643\fP, \fBRFC\%4880\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP,
-\fBRFC\%6048\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP
+\fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2231\fP,
+\fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP,
+\fBRFC\%4880\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP,
+\fBRFC\%6838\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP

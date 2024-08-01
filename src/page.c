@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-06-27
+ *  Updated   : 2024-07-30
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -62,9 +62,9 @@ static t_url *url_list;
 
 t_openartinfo pgart =	/* Global context of article open in the pager */
 	{
-		{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE, NULL},
+		{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE, NULL },
 		FALSE, 0,
-		NULL, NULL, NULL, NULL,
+		NULL, NULL, NULL, NULL, NULL,
 	};
 
 int last_resp;			/* previous & current article # in arts[] for '-' command */
@@ -83,6 +83,7 @@ static int reveal_ctrl_l_lines;	/* number of lines (from top) with de-activated 
 static int rotate;				/* 0=normal, 13=rot13 decode */
 static int scroll_region_top;	/* first screen line for displayed message */
 static int search_line;			/* Line to commence next search from */
+static void show_article_info_page(void);
 static t_lineinfo *infoline = (t_lineinfo *) 0;
 
 static t_bool show_all_headers;	/* all headers <-> headers in news_headers_to[_not]_display */
@@ -92,6 +93,7 @@ static t_bool reveal_ctrl_l;	/* set when ^L hiding is off */
 /*
  * Local prototypes
  */
+static char *build_from_line(void);
 static int build_url_list(void);
 static int load_article(int new_respnum, struct t_group *group);
 static int prompt_response(int ch, int curr_respnum);
@@ -257,11 +259,12 @@ deactivate_next_ctrl_l(
 		return FALSE;
 	if (end > artlines)
 		end = artlines;
-	for (i = reveal_ctrl_l_lines + 1; i < end; i++)
+	for (i = reveal_ctrl_l_lines + 1; i < end; i++) {
 		if (artline[i].flags & C_CTRLL) {
 			reveal_ctrl_l_lines = i;
 			return TRUE;
 		}
+	}
 	reveal_ctrl_l_lines = end - 1;
 	return FALSE;
 }
@@ -283,11 +286,12 @@ activate_last_ctrl_l(
 
 	if (reveal_ctrl_l)
 		return FALSE;
-	for (i = reveal_ctrl_l_lines; i >= curr_line; i--)
+	for (i = reveal_ctrl_l_lines; i >= curr_line; i--) {
 		if (artline[i].flags & C_CTRLL) {
 			reveal_ctrl_l_lines = i - 1;
 			return TRUE;
 		}
+	}
 	reveal_ctrl_l_lines = curr_line - 1;
 	return FALSE;
 }
@@ -1034,6 +1038,12 @@ return_to_index:
 				}
 				break;
 
+			case PAGE_ARTICLE_INFO:
+				XFACE_CLEAR();
+				show_article_info_page();
+				draw_page(0);
+				break;
+
 			default:
 				info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, page_keys));
 		}
@@ -1372,8 +1382,11 @@ invoke_metamail(
 			invoke_cmd(pbuf);
 			free(pbuf);
 #endif /* DONT_HAVE_PIPING */
-		} else
+		}
+#ifdef DEBUG
+		else
 			perror_message(_(txt_command_failed), ptr);
+#endif /* DEBUG */
 
 #ifdef DONT_HAVE_PIPING
 		fclose(mime_fp);
@@ -1396,6 +1409,45 @@ invoke_metamail(
 }
 
 
+static char *
+build_from_line(
+	void)
+{
+	char *tmp_from, *curr_from, *next_from, *p;
+	char addr[HEADER_LEN];
+	char name[HEADER_LEN];
+	char single_from[HEADER_LEN + 3]; /*" <>"*/
+	char *from = NULL;
+	int type, c_needed = 0;
+
+	curr_from = tmp_from = my_strdup(note_h->from);
+
+	do {
+		next_from = split_mailbox_list(curr_from);
+		if (gnksa_split_from(curr_from, addr, name, &type) == GNKSA_OK) {
+			buffer_to_ascii(addr);
+			p = idna_decode(addr);
+
+			if (*name)
+				snprintf(single_from, sizeof(single_from), "%s <%s>", name, p);
+			else {
+				STRCPY(single_from, p);
+			}
+			free(p);
+		} else {
+			STRCPY(single_from, str_trim(curr_from));
+		}
+		if (c_needed++)
+			from = append_to_string(from, ", ");
+		from = append_to_string(from, single_from);
+		curr_from = next_from;
+	} while (curr_from);
+
+	free(tmp_from);
+	return from;
+}
+
+
 /*
  * PAGE_HEADER defines the size in lines of this header
  *
@@ -1408,15 +1460,15 @@ static void
 draw_page_header(
 	void)
 {
-	char *buf, *tmp, *tmp2;
-	int i, n;
+	char *buf, *from, *tmp, *tmp2;
+	int i;
 	int whichresp, x_resp;
 	int len, right_len, center_pos, cur_pos;
-	size_t line_len, tlen;
+	size_t line_len;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	int n;
+	size_t tlen;
 	wchar_t *fmt_resp = NULL, *fmt_thread, *wtmp, *wtmp2, *wtmp3, *wbuf;
-#else
-	char *tmp2;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	whichresp = which_response(this_resp);
@@ -1689,24 +1741,9 @@ shrug:
 	fcol(tinrc.col_from);
 #	endif /* HAVE_COLOR */
 	/* from */
-	/*
-	 * TODO: don't use arts[this_resp].name/arts[this_resp].from
-	 *       split up note_h->from and use that instead as it might
-	 *       be different _if_ the overviews are broken
-	 *
-	 *       add BiDi handling
-	 */
-	{
-		char *p = idna_decode(arts[this_resp].from);
-
-		if (arts[this_resp].name)
-			snprintf(buf, line_len, "%s <%s>", arts[this_resp].name, p);
-		else {
-			strncpy(buf, p, line_len);
-			buf[line_len - 1] = '\0';
-		}
-		free(p);
-	}
+	from = build_from_line();
+	snprintf(buf, line_len, "%s", from);
+	free(from);
 
 	/* precalculate min. organization length */
 	wtmp3 = my_calloc(1, sizeof(wchar_t));
@@ -1923,17 +1960,9 @@ shrug:
 	fcol(tinrc.col_from);
 #	endif /* HAVE_COLOR */
 	/* from */
-	/*
-	 * TODO: don't use arts[this_resp].name/arts[this_resp].from
-	 *       split up note_h->from and use that instead as it might
-	 *       be different _if_ the overviews are broken
-	 */
-	if (arts[this_resp].name)
-		snprintf(buf, line_len, "%s <%s>", arts[this_resp].name, arts[this_resp].from);
-	else {
-		strncpy(buf, arts[this_resp].from, line_len);
-		buf[line_len - 1] = '\0';
-	}
+	from = build_from_line();
+	snprintf(buf, line_len, "%s", from);
+	free(from);
 
 	tmp = strunc(buf, cCOLS - 1);
 	my_fputs(tmp, stdout);
@@ -2908,12 +2937,126 @@ free_url_list(
 
 
 static void
+show_article_info_page(
+	void)
+{
+	if (!(pgart.log))
+		return;
+
+	info_pager(pgart.log, _(txt_article_info_page), FALSE); /* all other pagers do wrap */
+	info_pager(NULL, NULL, TRUE); /* free mem */
+}
+
+
+#define MIME_FLAG(what) (ptr->mime_hints.flags & what)
+/* TODO: strings to lang.c and _() ? */
+void
+log_article_info(
+	t_openartinfo *artinfo)
+{
+	const char *charset;
+	int i = 1;
+	FILE *fp;
+	t_part *ptr;
+#ifdef DEBUG
+	const char *name;
+#endif /* DEBUG */
+
+	if (!(fp = artinfo->log))
+		return;
+
+	fprintf(fp, "Message-ID: %s\n", BlankIfNull(artinfo->hdr.messageid));
+
+	for (ptr = artinfo->hdr.ext; ptr; ptr = ptr->next, i++) {
+		fprintf(fp, "\nPart %d:\n", i);
+
+		if (i == 1) {
+			fprintf(fp, "\tMIME Version:\n");
+			fprintf(fp, "\t\tArticle:\t%s", MIME_FLAG(MIME_VERSION_MISSING) ? "Missing" : MIME_FLAG(MIME_VERSION_UNSUPPORTED) ? "Unsupported" : MIME_SUPPORTED_VERSION);
+			fprintf(fp, "\n\t\tUsed:\t\t%s\n", MIME_SUPPORTED_VERSION);
+		}
+
+		fprintf(fp, "\tContent Type:\n");
+		fprintf(fp, "\t\tArticle:\t");
+		if (MIME_FLAG(MIME_TYPE_MISSING))
+			fprintf(fp, "%s", "Missing");
+		else if (MIME_FLAG(MIME_TYPE_UNKNOWN))
+			fprintf(fp, "%s: %s", "Unsupported", ptr->mime_hints.type);
+		else
+			fprintf(fp, "%s", ptr->mime_hints.type);
+		if (MIME_FLAG(MIME_SUBTYPE_MISSING))
+			fprintf(fp, " / %s", "Missing");
+		else if (MIME_FLAG(MIME_SUBTYPE_UNKNOWN))
+			fprintf(fp, " / %s: %s", "Unsupported", ptr->mime_hints.subtype);
+		else
+			fprintf(fp, " / %s", ptr->mime_hints.subtype);
+		fprintf(fp, "\n\t\tUsed:\t\t%s / %s", content_types[ptr->type], ptr->subtype);
+
+		charset = get_param(ptr->params, "charset");
+		if (!charset || !*charset)
+			charset = "US-ASCII";
+		fprintf(fp, "\n\tCharset:\n");
+		fprintf(fp, "\t\tArticle:\t");
+		if (MIME_FLAG(MIME_CHARSET_MISSING)) {
+			fprintf(fp, "%s", "Missing");
+			if (MIME_FLAG(MIME_CHARSET_UNDECLARED))
+				fprintf(fp, ", %s: %s", "undeclared_charset", charset);
+#if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
+			else if (MIME_FLAG(MIME_CHARSET_GUESSED)) {
+				charset = get_param(ptr->params, "guessed_charset");
+				fprintf(fp, ", %s: %s", "charset guessed", charset);
+			}
+#endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
+		} else if (MIME_FLAG(MIME_CHARSET_UNSUPPORTED)) {
+			fprintf(fp, "%s: %s", "Unsupported", ptr->mime_hints.charset);
+			charset = "None";
+		} else
+			fprintf(fp, "%s", charset);
+		if (MIME_FLAG(MIME_TRANSFER_ENCODING_UNKNOWN))
+			charset = "None";
+		fprintf(fp, "\n\t\tUsed:\t\t%s", charset);
+
+		fprintf(fp, "\n\tContent Transfer Encoding:\n");
+		fprintf(fp, "\t\tArticle:\t");
+		if (MIME_FLAG(MIME_TRANSFER_ENCODING_MISSING))
+			fprintf(fp, "%s", "Missing");
+		else if (MIME_FLAG(MIME_TRANSFER_ENCODING_UNKNOWN))
+			fprintf(fp, "%s: %s", "Unsupported", ptr->mime_hints.encoding);
+		else
+			fprintf(fp, "%s", content_encodings[ptr->encoding]);
+		fprintf(fp, "\n\t\tUsed:\t\t%s", content_encodings[ptr->encoding]);
+
+#ifdef DEBUG
+		if ((name = get_param(ptr->params, "name")) != NULL) {
+			fprintf(fp, "\n\tName:\n");
+			fprintf(fp, "\t\t%s", name);
+		}
+		if (ptr->description != NULL) {
+			fprintf(fp, "\n\tContent Description:\n");
+			fprintf(fp, "\t\t%s", ptr->description);
+		}
+		if (ptr->language != NULL) {
+			fprintf(fp, "\n\tContent Language:\n");
+			fprintf(fp, "\t\t%s", ptr->language);
+		}
+		if (ptr->disposition != DISP_NONE) {
+			fprintf(fp, "\n\tContent Disposition:\n");
+			fprintf(fp, "\t\t%s", ptr->disposition == DISP_INLINE ? content_disposition[DISP_INLINE] : content_disposition[DISP_ATTACHMENT]);
+		}
+#endif /* DEBUG */
+		fprintf(fp, "\n");
+	}
+}
+
+
+static void
 draw_percent_mark(
 	long cur_num,
 	long max_num)
 {
-	char buf[32]; /* FIXME: may get truncated with long localized _(txt_more) ... */
+	char *buf;
 	int len;
+	size_t sz;
 
 	if (NOTESLINES <= 0)
 		return;
@@ -2921,9 +3064,18 @@ draw_percent_mark(
 	if (cur_num <= 0 && max_num <= 0)
 		return;
 
-	clear_message();
-	snprintf(buf, sizeof(buf), "%s(%d%%) [%ld/%ld]", _(txt_more), (int) (cur_num * 100 / max_num), cur_num, max_num);
+	if ((len = snprintf(NULL, 0, "%s(%d%%) [%ld/%ld]", _(txt_more), (int) (cur_num * 100 / max_num), cur_num, max_num)) < 0)
+		return;
+
+	sz = (size_t) len + 1;
+	buf = my_malloc(sz);
+	if (snprintf(buf, sz, "%s(%d%%) [%ld/%ld]", _(txt_more), (int) (cur_num * 100 / max_num), cur_num, max_num) != len) {
+		free(buf);
+		return;
+	}
+
 	len = strwidth(buf);
+	clear_message();
 	MoveCursor(cLINES, cCOLS - len - (1 + BLANK_PAGE_COLS));
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
@@ -2932,4 +3084,5 @@ draw_percent_mark(
 	my_fputs(buf, stdout);
 	EndInverse();
 	my_flush();
+	free(buf);
 }

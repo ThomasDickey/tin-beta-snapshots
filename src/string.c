@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2024-06-27
+ *  Updated   : 2024-07-30
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -623,9 +623,7 @@ wexpand_tab(
 
 	return wbuf;
 }
-
-
-#else /* !MULTIBYTE_ABLE || NO_LOCALE */
+#endif /* !MULTIBYTE_ABLE || NO_LOCALE */
 
 
 char *
@@ -633,8 +631,24 @@ expand_tab(
 	char *str,
 	size_t tab_width)
 {
+	char *buf = my_calloc(1, LEN);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wmessage, *wbuf;
+
+	if ((wmessage = char2wchar_t(str)) != NULL) {
+		if ((wbuf = wexpand_tab(wmessage, tab_width))) {
+			free(buf);
+			if ((buf = wchar_t2char(wbuf)) != NULL) {
+				free(wbuf);
+				free(wmessage);
+				return buf;
+			}
+			free(wbuf);
+		}
+		free(wmessage);
+	}
+#else
 	size_t cur_len = LEN, i = 0, tw;
-	char *buf = my_malloc(cur_len);
 	char *c = str;
 
 	while (*c) {
@@ -651,10 +665,10 @@ expand_tab(
 		c++;
 	}
 	buf[i] = '\0';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	return buf;
 }
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
 /*
@@ -979,8 +993,8 @@ abbr_wcsgroupname(
 
 	return new_grpname;
 }
-
 #else /* !MULTIBYTE_ABLE || NO_LOCALE */
+
 
 /*
  * Abbreviate a groupname like this:
@@ -1941,4 +1955,24 @@ s2i(
 		errno = EINVAL;
 
 	return ((signed int) res);
+}
+
+
+char *
+append_to_string(
+	char *dst,
+	const char *src)
+{
+	if (!src || !*src)
+		return dst;
+
+	if (!dst) {
+		dst = my_strdup(src);
+		return dst;
+	}
+
+	dst = my_realloc(dst, strlen(dst) + strlen(src) + 1);
+	strcat(dst, src);
+
+	return dst;
 }

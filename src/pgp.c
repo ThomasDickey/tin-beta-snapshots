@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2024-05-24
+ *  Updated   : 2024-07-11
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2024 Steven J. Madsen <steve@erinet.com>
@@ -143,17 +143,17 @@ void
 init_pgp(
 	void)
 {
-	char *ptr;
+	const char *ptr;
 
 	pgpopts = get_val("PGPOPTS", "");
 
 #	ifdef HAVE_GPG
-	if ((ptr = getenv("GNUPGHOME")) != NULL)
+	if ((ptr = get_val("GNUPGHOME", NULL)) != NULL)
 		my_strncpy(pgp_data, ptr, sizeof(pgp_data) - 1);
 	else
 #	endif /* HAVE_GPG */
 	{
-		if ((ptr = getenv("PGPPATH")) != NULL)
+		if ((ptr = get_val("PGPPATH", NULL)) != NULL)
 			my_strncpy(pgp_data, ptr, sizeof(pgp_data) - 1);
 		else
 			joinpath(pgp_data, sizeof(pgp_data), homedir, PGPDIR);
@@ -518,7 +518,7 @@ pgp_check_article(
 		if (prompt_yn(_(txt_pgp_add), FALSE) == 1) {
 			Raw(FALSE);
 			n = snprintf(NULL, 0, ADD_KEY, PGPNAME, pgpopts, artfile);
-			len = (size_t) (2 * n) + 1;  /* double size for quoting */
+			len = (size_t) (n << 1) + 1; /* double size for quoting */
 			cmd = my_malloc(len);
 			sh_format(cmd, len, ADD_KEY, PGPNAME, pgpopts, artfile);
 			invoke_cmd(cmd);

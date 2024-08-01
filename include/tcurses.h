@@ -130,7 +130,7 @@ extern void my_retouch(void);
 #		endif /* HAVE_COLOR */
 extern void write_line(int row, char *buffer);
 
-#	else	/* !USE_CURSES */
+#	else /* !USE_CURSES */
 
 #		ifdef NEED_TERM_H
 #			include <curses.h>

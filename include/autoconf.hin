@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2024-04-08
+ *  Updated   : 2024-07-13
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2024 Thomas Dickey <dickey@invisible-island.net>
@@ -118,7 +118,6 @@
 #	undef HAVE_PGPK
 /* gpg */
 #	undef HAVE_GPG
-#	undef HAVE_SUM
 
 /* slrnface */
 #	undef HAVE_SLRNFACE
@@ -492,18 +491,10 @@
 #	undef DEFAULT_MAILER
 #	undef PATH_ISPELL
 #	undef PATH_METAMAIL
-#	undef PATH_SUM
 #	undef PATH_PGP
 /* FIXME: this is _not_ the path to the pgp-5 binarie we usually need */
 #	undef PATH_PGPK
 #	undef PATH_GPG
-
-/*
- * Configure also checks whether sum takes -r
- * And defines PATH_SUM_R appropriately
- */
-#	undef SUM_TAKES_DASH_R
-#	undef PATH_SUM_R
 
 /*
  * Define this if the host system has long (>14 character) filenames

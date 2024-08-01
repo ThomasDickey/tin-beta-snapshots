@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-01
+ *  Updated   : 2024-07-18
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -687,13 +687,11 @@ init_selfinfo(
 {
 	FILE *fp;
 	char *ptr;
+	const char *p;
 	char tmp[PATH_LEN];
 	size_t space;
 	struct passwd *myentry;
 	struct stat sb;
-#if defined(DOMAIN_NAME) || defined(HAVE_GETHOSTBYNAME)
-	const char *cptr;
-#endif /* DOMAIN_NAME || HAVE_GETHOSTBYNAME */
 
 	process_id = getpid();
 
@@ -723,24 +721,21 @@ init_selfinfo(
 #endif /* HAVE_SYS_UTSNAME_H */
 
 #ifdef DOMAIN_NAME
-	if ((cptr = get_domain_name()) != NULL)
-		my_strncpy(domain_name, cptr, MAXHOSTNAMELEN);
+	if ((p = get_domain_name()) != NULL)
+		my_strncpy(domain_name, p, MAXHOSTNAMELEN);
 #endif /* DOMAIN_NAME */
 
 #ifdef HAVE_GETHOSTBYNAME
 	if (domain_name[0] == '\0') {
-		cptr = get_fqdn(get_host_name());
-		if (cptr != NULL)
-			my_strncpy(domain_name, cptr, MAXHOSTNAMELEN);
+		if ((p = get_fqdn(get_host_name())) != NULL)
+			my_strncpy(domain_name, p, MAXHOSTNAMELEN);
 	}
 #endif /* HAVE_GETHOSTBYNAME */
 
 	tmpdir = get_val("TMPDIR", _PATH_TMP);
 
-	if (((ptr = getenv("TIN_HOMEDIR")) != NULL) && strlen(ptr)) {
-		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
-	} else if (((ptr = getenv("HOME")) != NULL) && strlen(ptr)) {
-		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
+	if ((p = get_val("TIN_HOMEDIR", get_val("HOME", NULL))) != NULL) {
+		my_strncpy(homedir, p, sizeof(homedir) - 1);
 	} else if (strlen(myentry->pw_dir)) {
 		strncpy(homedir, myentry->pw_dir, sizeof(homedir) - 1);
 	} else
@@ -840,8 +835,6 @@ init_selfinfo(
 	 * values given in env-vars? ($MM_CHARSET, $TIN_ACTIVEFILE)
 	 */
 	if (!*news_active_file) {
-		const char *p;
-
 		p = get_val("TIN_ACTIVEFILE", ACTIVE_FILE);
 		if (*p != '/')
 			joinpath(news_active_file, sizeof(news_active_file), libdir, p);
@@ -960,11 +953,10 @@ init_selfinfo(
 #ifdef HAVE_MH_MAIL_HANDLING
 	joinpath(mail_active_file, sizeof(mail_active_file), rcdir, ACTIVE_MAIL_FILE);
 #endif /* HAVE_MH_MAIL_HANDLING */
-	ptr = getenv("MAIL");
-	if (ptr == NULL || (*ptr == '\0'))
-		joinpath(mailbox, sizeof(mailbox), DEFAULT_MAILBOX, userid);
-	else
+	if ((ptr = getenv("MAIL")) != NULL && *ptr) {
 		STRCPY(mailbox, ptr);
+	} else
+		joinpath(mailbox, sizeof(mailbox), DEFAULT_MAILBOX, userid);
 #ifdef HAVE_MH_MAIL_HANDLING
 	joinpath(mailgroups_file, sizeof(mailgroups_file), rcdir, MAILGROUPS_FILE);
 #endif /* HAVE_MH_MAIL_HANDLING */
@@ -977,6 +969,12 @@ init_selfinfo(
 	joinpath(postponed_articles_file, sizeof(postponed_articles_file), rcdir, POSTPONED_FILE);
 	joinpath(save_active_file, sizeof(save_active_file), rcdir, ACTIVE_SAVE_FILE);
 
+	/*
+	 * TODO: why a lockfile in /tmp and not ${TIN_HOMEDIR:-"$HOME"}/[.tin].
+	 * if ${TIN_HOMEDIR:-"$HOME"} is on NFS the cache likely also is on NFS;
+	 * running multiple instanced of tin -u on different systems which do
+	 * share the cache will not be caught ...
+	 */
 	snprintf(tmp, sizeof(tmp), INDEX_LOCK, userid);
 	joinpath(lock_file, sizeof(lock_file), tmpdir, tmp);
 

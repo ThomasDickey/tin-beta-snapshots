@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-01
+ *  Updated   : 2024-07-29
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>
@@ -441,6 +441,7 @@ extern const char base64_alphabet[64];
 #ifdef USE_CANLOCK
 	extern constext *txt_cancel_lock_algos[];
 #endif /* USE_CANLOCK */
+extern constext *content_disposition[];
 extern constext *content_encodings[];
 extern constext *content_types[];
 extern constext *txt_attrs[];
@@ -478,8 +479,6 @@ extern constext *txt_thread_score_type[];
 extern constext *txt_trim_article_body_options[];
 extern constext *txt_wildcard_type[];
 extern constext txt_1_resp[];
-extern constext txt_7bit[];
-extern constext txt_8bit[];
 #if defined(NNTP_ABLE) && defined(HAVE_SELECT)
 	extern constext txt_abort_reading[];
 #endif /* NNTP_ABLE && HAVE_SELECT */
@@ -503,6 +502,7 @@ extern constext txt_art_thread_regex_tag[];
 extern constext txt_art_unavailable[];
 extern constext txt_art_x_of_n[];
 extern constext txt_article_cancelled[];
+extern constext txt_article_info_page[];
 extern constext txt_article_plural[];
 extern constext txt_article_reposted[];
 extern constext txt_article_singular[];
@@ -521,7 +521,7 @@ extern constext txt_mime_content_subtype[];
 extern constext txt_mime_content_type[];
 extern constext txt_mime_description[];
 extern constext txt_mime_encoding[];
-extern constext txt_mime_hdr_c_disposition_inline[];
+extern constext txt_mime_hdr_c_disposition[];
 extern constext txt_mime_hdr_c_transfer_encoding[];
 extern constext txt_mime_hdr_c_type_msg_rfc822[];
 extern constext txt_mime_hdr_c_type_multipart_mixed[];
@@ -674,15 +674,11 @@ extern constext txt_autosubscribing_groups[];
 extern constext txt_bad_article[];
 extern constext txt_bad_attrib[];
 extern constext txt_bad_command[];
-extern constext txt_base64[];
 extern constext txt_base_article[];
 extern constext txt_base_article_range[];
 extern constext txt_batch_update_unavail[];
 extern constext txt_begin_of_art[];
 extern constext txt_begin_of_page[];
-#if !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
-	extern constext txt_bytes[];
-#endif /* !HAVE_LIBUU && HAVE_SUM && !DONT_HAVE_PIPING */
 #ifdef NNTP_ABLE
 	extern constext txt_caching_off[];
 	extern constext txt_caching_on[];
@@ -722,9 +718,6 @@ extern constext txt_caughtup[];
 extern constext txt_check_article[];
 extern constext txt_checking_for_news[];
 extern constext txt_checking_new_groups[];
-#if !defined(HAVE_LIBUU) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
-	extern constext txt_checksum_of_file[];
-#endif /* !HAVE_LIBUU && && HAVE_SUM && !DONT_HAVE_PIPING */
 extern constext txt_choose_post_process_type[];
 #ifdef HAVE_COLOR
 	extern constext txt_color_off[];
@@ -906,10 +899,8 @@ extern constext txt_error_mailgroup_no_recipient[];
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	extern constext txt_error_locale[];
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
-#ifdef DEBUG
-	extern constext txt_error_mime_end[];
-	extern constext txt_error_mime_start[];
-#endif /* DEBUG */
+extern constext txt_error_mime_end[];
+extern constext txt_error_mime_start[];
 extern constext txt_error_no_domain_name[];
 #ifdef NNTP_INEWS
 	extern constext txt_error_no_from[];
@@ -1432,7 +1423,6 @@ extern constext txt_quit_edit_save_select[];
 extern constext txt_quit_edit_send[];
 extern constext txt_quit_edit_xpost[];
 extern constext txt_quit_no_write[];
-extern constext txt_quoted_printable[];
 extern constext txt_range_invalid[];
 #ifdef HAVE_SELECT
 	extern constext txt_read_abort[];
@@ -1710,6 +1700,7 @@ extern constext txt_warn_long_line_not_break[];
 	extern constext txt_warn_header_line_groups_contd[];
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 extern constext txt_warn_example_hierarchy[];
+extern constext txt_warn_multiple_addresses[];
 extern constext txt_warn_multiple_sigs[];
 extern constext txt_warn_newsrc[];
 extern constext txt_warn_not_all_arts_saved[];

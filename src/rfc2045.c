@@ -60,7 +60,7 @@ bin2hex(
 }
 
 
-#define HI4BITS(c) ((unsigned char) (*EIGHT_BIT(c) >> 4))
+#define HI4BITS(c) ((unsigned char) (*(unsigned char *) (c) >> 4))
 #define LO4BITS(c) ((unsigned char) (*c & 0xf))
 
 /*
@@ -137,7 +137,7 @@ rfc1521_encode(
 
 			while (*line_crlf) {
 				pattern <<= 8;
-				pattern |= *EIGHT_BIT(line_crlf)++;
+				pattern |= *(unsigned char *) (line_crlf)++;
 				bits += 8;
 				if (bits >= 24) {
 					if (xpos >= 73) {

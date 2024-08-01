@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-06-25
+.\" Updated   : 2024-07-29
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -1208,6 +1208,9 @@ entnommen.
 Schaltet die Anzeige aller Header vs. Header in \fBnews_headers_to_display\fP
 um.
 .TP 
+\fBPageArticleInfo \*(rq'\fP
+Detailed MIME information of the article.
+.TP 
 \fBPageToggleRot '%'\fP
 ROT\-13 Entschlüsseln ein\-/ausschalten.
 .TP 
@@ -1939,7 +1942,7 @@ Default for quick (1 key) auto\-selection filter header.
 .TP 
 \fB(default_subject_search)\fP
 .TP 
-\fBDon't break words when wrapping (dont_break_words)\fP
+\fBKeine Worttrennungen beim Umbrechen (dont_break_words)\fP
 Do not break long lines inside a word. This applies to the body except for
 verbatim blocks. See also \fBwrap_column\fP. Default is OFF.
 .TP 
@@ -2069,8 +2072,9 @@ MIME\-Kodierung des Textkörpers in E\-Mail\-Nachrichten falls erforderlich
 \fBEinleitungszeile bei Mailantwort (mail_quote_format)\fP
 Format der Einleitungszeile für Mailantworten (%A=Mailadresse, %D=Datum,
 %F=Name und Adresse, %G=Name der Gruppe, %M=Message\-ID, %N=Name des Autors,
-%C=Vorname des Autors, %I=Initialen des Autor). Voreinstellung ist "In
-article %M you wrote:".
+%C=Vorname des Autors, %I=Initialen des Autor). Falls der Artikel mehrere
+Adressen hat, wird nur die erste ausgewertet. Voreinstellung ist "In article
+%M you wrote:".
 .TP 
 \fBMailbox\-Format (mailbox_format)\fP
 Select one of the following mailbox\-formats: MBOXO (default, except on SCO),
@@ -2091,7 +2095,6 @@ mailers with different command line parameters to be used such as
 .in +.3i
 .nf
 sendmail \-oem \-t < %F
-mutt \-s "%S" \-\- "%T" < %F
 mutt \-H %F
 claws\-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
@@ -2200,7 +2203,8 @@ wird diese Option deaktiviert.
 \fBEinleitungszeile beim Antworten (news_quote_format)\fP
 Format der Einleitungszeile für Newsartikel (%A=Mailadresse, %D=Datum,
 %F=Name und Adresse, %G=Name der Gruppe, %M=Message\-ID, %N=Name des Autors,
-%C=Vorname des Autors, %I=Initialen des Autor). Voreinstellung ist "%F
+%C=Vorname des Autors, %I=Initialen des Autor). Falls der Artikel mehrere
+Adressen hat, wird nur die erste ausgewertet. Voreinstellung ist "%F
 wrote:".
 .TP 
 \fBNNTP\-lese Zeitlimit in Sekunden (nntp_read_timeout_secs)\fP
@@ -2313,7 +2317,8 @@ ist OFF.
 \fBZitatzeichen (quote_chars)\fP
 The character used in quoting included text to article followups and mail
 replies. The '_' character represents a blank character and is replaced with
-\&' ' when read, %I is replaced by author's initials. Default is '>_'.
+\&' ' when read, %I is replaced by author's initials. If the article has
+multiple addresses only the first is evaluated. Default is '>_'.
 .TP 
 \fBZitierverhalten (quote_style)\fP
 How articles should be quoted when following up or replying to them. There
@@ -2896,10 +2901,11 @@ or send the article to the author via \fBPostSend\fP ('\fBs\fP').
 When posting a followup to an article or replying direct to the author of an
 article via email the text of the article can be quoted. The beginning of
 the quoted text can contain information about the quoted article (e.g., Name
-and the Message\-ID of the article). To allow for different situations
-certain information from the article can be used in the quoted string. The
-following variables are expanded if found in the tinrc variables
-\fBmail_quote_format\fP, \fBnews_quote_format\fP or \fBxpost_quote_format\fP:
+and the Message\-ID of the article). If the article has multiple addresses
+only the first is evaluated. To allow for different situations certain
+information from the article can be used in the quoted string. The following
+variables are expanded if found in the tinrc variables \fBmail_quote_format\fP,
+\fBnews_quote_format\fP or \fBxpost_quote_format\fP:
 .RS
 .nf
 .ta \w'%A  'u +\w'Mailadresse'u
@@ -3085,7 +3091,8 @@ Bedürfnissen angepasst werden. Hierzu dienen Formatanweisungen, welche den
 Inhalt und die Position der einzelnen Elemente einer Bildschirmzeile
 definieren. Innerhalb der Formatanweisungen werden Platzhalter eingesetzt,
 die später beim Bildschirmaufbau durch den eigentlichen Inhalt ersetzt
-werden. Folgende Platzhalter stehen zur Verfügung:
+werden. Falls der Artikel mehrere Adressen hat, wird nur die erste
+ausgewertet. Folgende Platzhalter stehen zur Verfügung:
 .PP
 .in +.3i
 .nf
@@ -3471,6 +3478,7 @@ lesen, manuell zu bereinigen:
 .\"       $TMPDIR/SCOPES-R   (-D 32)
 .\"       $TMPDIR/SCOPES-W   (-D 32)
 .\"       $TMPDIR/ACTIVE     (-D 64)
+.\"       $TMPDIR/GNKSA      (-D 64)
 Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .PP
 \fI$MAILCAPS\fP
@@ -4053,7 +4061,7 @@ an <translation@tin.org>.
 \fB\%snprintf\fP(3), \fB\%strftime\fP(3), \fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3),
 \fB\%environ\fP(5), \fB\%locale\fP(5), \fB\%mailcap\fP(5), \fB\%mbox\fP(5),
 \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5), \fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP,
-\fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2048\fP,
-\fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
-\fBRFC\%4643\fP, \fBRFC\%4880\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP,
-\fBRFC\%6048\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP
+\fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2231\fP,
+\fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP,
+\fBRFC\%4880\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP,
+\fBRFC\%6838\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP

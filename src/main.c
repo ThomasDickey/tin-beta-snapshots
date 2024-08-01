@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-06-25
+ *  Updated   : 2024-07-26
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -274,11 +274,14 @@ main(
 	 * exit early - unfortunately we can't do that in read_cmd_line_options()
 	 * as nntp_caps.over_cmd is set in nntp_open()
 	 *
-	 * TODO: does the logic make sense? what
-	 * if (update_index && !nntp_caps.over_cmd && !tinrc.cache_overview_files)
-	 * no error message? why?
+	 * without nntp_caps.over_cmd we used HEAD to fetch the data
+	 * which is MUCH slower, inform the user about this (but he can't
+	 * do much about it anyway)?
+	 *
+	 * why evaluate tinrc.cache_overview_files in error_message, we know
+	 * it is false -> txt_batch_update_unavail could hold a fixed string.
 	 */
-	if (update_index && nntp_caps.over_cmd && !tinrc.cache_overview_files) {
+	if (update_index && !tinrc.cache_overview_files) {
 		error_message(2, _(txt_batch_update_unavail), tin_progname, print_boolean(tinrc.cache_overview_files));
 		FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 		free_all_arrays();
@@ -1501,4 +1504,4 @@ giveup(
 	close_msglog();
 
 	exit(EXIT_FAILURE);
-  }
+}

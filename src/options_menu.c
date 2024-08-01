@@ -1337,7 +1337,7 @@ config_page(
 					show_color_status();
 					redraw_screen(option);
 				}
-			break;
+				break;
 #endif /* HAVE_COLOR */
 
 			default:

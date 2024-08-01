@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2024-05-10
+ *  Updated   : 2024-07-11
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000-2024 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
@@ -78,7 +78,7 @@ get_mailcap_entry(
 	t_mailcap *foo = (t_mailcap *) 0;
 
 	/* build list of mailcap files */
-	if ((ptr = getenv("MAILCAPS")) != NULL && strlen(ptr)) {
+	if ((ptr = getenv("MAILCAPS")) != NULL && *ptr) {
 		mailcaps = my_malloc(strlen(ptr) + strlen(DEFAULT_MAILCAPS) + 2);
 		sprintf(mailcaps, "%s:%s", ptr, DEFAULT_MAILCAPS);
 	} else

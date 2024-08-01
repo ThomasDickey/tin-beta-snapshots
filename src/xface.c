@@ -3,7 +3,7 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2024-05-20
+ *  Updated   : 2024-07-11
  *  Notes     :
  *
  * Copyright (c) 2003-2024 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
@@ -100,13 +100,13 @@ slrnface_start(
 	}
 
 	uname(&u);
-	ptr = get_val("XDG_RUNTIME_DIR", get_val("HOME", ""));
+	ptr = get_val("XDG_RUNTIME_DIR", get_val("HOME", NULL));
 	/*
 	 * TODO:
 	 * - check if $XDG_RUNTIME_DIR is on a local filesystem and has secure permissions
 	 * <http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html>
 	 */
-	if (!strlen(ptr)) { /* TODO: mention XDG_RUNTIME_DIR in error message? */
+	if (!ptr) { /* TODO: mention XDG_RUNTIME_DIR in error message? */
 #	ifdef DEBUG
 		if (debug & DEBUG_MISC)
 			error_message(2, _(txt_xface_error_missing_env_var), "HOME");
@@ -305,6 +305,7 @@ slrnface_show_xface(
 
 	WRITE_FACE_FD("show\n");
 }
+
 
 #else
 static void no_xface(void);	/* proto-type */

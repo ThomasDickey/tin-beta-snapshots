@@ -200,7 +200,7 @@ wildmatpos(
 	/* remove the leading '*' */
 	px = my_strdup(p + 1);
 
-	for (t = txt + prev_offset; *t; t++)
+	for (t = txt + prev_offset; *t; t++) {
 		if ((ret = (DoMatch(t, px) == 1))) {
 			/* remove the trailing '*' */
 			px[strlen(px) - 1] = '\0';
@@ -216,6 +216,7 @@ wildmatpos(
 			}
 			break;
 		}
+	}
 	free(px);
 	free(txt);
 

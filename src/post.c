@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-06-26
+ *  Updated   : 2024-08-01
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -292,14 +292,14 @@ init_postinfo(
 	 * check environment for REPLYTO
 	 */
 	reply_to[0] = '\0';
-	if ((ptr = getenv("REPLYTO")) != NULL)
+	if ((ptr = getenv("REPLYTO")) != NULL && *ptr)
 		my_strncpy(reply_to, ptr, sizeof(reply_to) - 1);
 
 	/*
 	 * check environment for DISTRIBUTION
 	 */
 	my_distribution[0] = '\0';
-	if ((ptr = getenv("DISTRIBUTION")) != NULL)
+	if ((ptr = getenv("DISTRIBUTION")) != NULL && *ptr)
 		my_strncpy(my_distribution, ptr, sizeof(my_distribution) - 1);
 }
 
@@ -1030,7 +1030,9 @@ update_posted_info_file(
 	if (no_write)
 		return;
 
-	file_tmp = get_tmpfilename(posted_info_file);
+	if ((file_tmp = get_tmpfilename(posted_info_file)) == NULL)
+		return;
+
 	if (!backup_file(posted_info_file, file_tmp)) {
 		error_message(2, _(txt_filesystem_full_backup), posted_info_file);
 		free(file_tmp);
@@ -1254,6 +1256,9 @@ append_mail(
 #	define CA_WARNING_NEWLINE_IN_FOLLOWUP_TO 0x002000
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 #define CA_WARNING_DISTRIBUTION_WORLD       0x004000
+#define CA_WARNING_MULTI_ADDRESSES_REPLYTO  0x008000
+#define CA_WARNING_MULTI_ADDRESSES_FROM     0x010000
+#define CA_WARNING_MULTI_ADDRESSES_TO       0x020000
 
 /*
  * TODO: cleanup!
@@ -1308,8 +1313,8 @@ check_article_to_be_posted(
 	t_bool contains_8bit = FALSE;
 #ifdef CHARSET_CONVERSION
 	t_bool charset_conversion_fails = FALSE;
-	int mmnwcharset;
 #endif /* CHARSET_CONVERSION */
+	int mmnwcharset;
 	static const char *c_article;
 	static int c_art_type;
 	static struct t_group **c_group;
@@ -1328,7 +1333,10 @@ check_article_to_be_posted(
 
 #ifdef CHARSET_CONVERSION
 	mmnwcharset = *c_group ? (*c_group)->attribute->mm_network_charset : tinrc.mm_network_charset;
+#else
+	mmnwcharset = 0;
 #endif /* CHARSET_CONVERSION */
+
 	enc = *c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding;
 
 	if ((fp = tin_fopen(c_article, "r")) == NULL)
@@ -1425,6 +1433,10 @@ check_article_to_be_posted(
 /*
  * only allow hand supplied Sender in FORGERY case or
  * with external inews and not HAVE_FASCIST_NEWSADMIN
+ *
+ * TODO: also allow Sender (with a single address!) if article has multiple
+ *       addresses in From
+ *       sender_needed() likely needs to be updated too
  */
 #ifndef FORGERY
 #	ifdef HAVE_FASCIST_NEWSADMIN
@@ -1454,93 +1466,28 @@ check_article_to_be_posted(
 				warnings++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 			}
-#ifdef CHARSET_CONVERSION
-			cp2 = rfc1522_encode(line, txt_mime_charsets[mmnwcharset], FALSE);
-#else
-			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
-#endif /* CHARSET_CONVERSION */
-			i = gnksa_check_from(cp2 + (cp - line) + 1);
-			if (i > GNKSA_OK && i < GNKSA_MISSING_REALNAME) {
-				StartInverse();
-				my_fprintf(stderr, _(txt_error_bad_address_in), "Approved:");
-				my_fprintf(stderr, "%s\n", cp2);
-				my_fprintf(stderr, gnksa_strerror(i), i);
-				EndInverse();
-				my_fflush(stderr);
-#ifndef FORGERY
-				errors++;
-#endif /* !FORGERY */
-			}
-			free(cp2);
+			(void) check_mailbox_list(line, "Approved:", mmnwcharset, &errors);
 			continue;
 		}
 
 		if (cp - line == 4 && !strncasecmp(line, "From", 4)) {
 			found_from_lines++;
-#ifdef CHARSET_CONVERSION
-			cp2 = rfc1522_encode(line, txt_mime_charsets[mmnwcharset], FALSE);
-#else
-			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
-#endif /* CHARSET_CONVERSION */
-			i = gnksa_check_from(cp2 + (cp - line) + 1);
-			if (i > GNKSA_OK && i < GNKSA_MISSING_REALNAME) {
-				StartInverse();
-				my_fprintf(stderr, _(txt_error_bad_address_in), "From:");
-				my_fprintf(stderr, "%s\n", cp2);
-				my_fprintf(stderr, gnksa_strerror(i), i);
-				EndInverse();
-				my_fflush(stderr);
-#ifndef FORGERY
-				errors++;
-#endif /* !FORGERY */
-			}
-			free(cp2);
+			if (check_mailbox_list(line, "From:", mmnwcharset, &errors) > 1)
+				warnings_catbp |= CA_WARNING_MULTI_ADDRESSES_FROM;
 			continue;
 		}
 
 		if (cp - line == 8 && !strncasecmp(line, "Reply-To", 8)) {
-#ifdef CHARSET_CONVERSION
-			cp2 = rfc1522_encode(line, txt_mime_charsets[mmnwcharset], FALSE);
-#else
-			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
-#endif /* CHARSET_CONVERSION */
-			i = gnksa_check_from(cp2 + (cp - line) + 1);
-			if (i > GNKSA_OK && i < GNKSA_MISSING_REALNAME) {
-				StartInverse();
-				my_fprintf(stderr, _(txt_error_bad_address_in), "Reply-To:");
-				my_fprintf(stderr, "%s\n", cp2);
-				my_fprintf(stderr, gnksa_strerror(i), i);
-				EndInverse();
-				my_fflush(stderr);
-#ifndef FORGERY
-				errors++;
-#endif /* !FORGERY */
-			}
-			free(cp2);
+			if (check_mailbox_list(line, "Reply-To:", mmnwcharset, &errors) > 1)
+				warnings_catbp |= CA_WARNING_MULTI_ADDRESSES_REPLYTO;
 			continue;
 		}
 
 		if (cp - line == 2 && !strncasecmp(line, "To", 2)) {
 			FreeIfNeeded(to);
-#ifdef CHARSET_CONVERSION
-			cp2 = rfc1522_encode(line, txt_mime_charsets[mmnwcharset], FALSE);
-#else
-			cp2 = rfc1522_encode(line, tinrc.mm_charset, FALSE);
-#endif /* CHARSET_CONVERSION */
-			i = gnksa_check_from(cp2 + (cp - line) + 1);
-			if (i > GNKSA_OK && i < GNKSA_MISSING_REALNAME) {
-				StartInverse();
-				my_fprintf(stderr, _(txt_error_bad_address_in), "To:");
-				my_fprintf(stderr, "%s\n", cp2);
-				my_fprintf(stderr, gnksa_strerror(i), i);
-				EndInverse();
-				my_fflush(stderr);
-#ifndef FORGERY
-				errors++;
-#endif /* !FORGERY */
-			}
-			to = my_strdup(cp2 + (cp - line) + 1);
-			free(cp2);
+			to = my_strdup(cp + 2);
+			if (check_mailbox_list(line, "To:", mmnwcharset, &errors) > 1)
+				warnings_catbp |= CA_WARNING_MULTI_ADDRESSES_TO;
 			continue;
 		}
 
@@ -1959,14 +1906,14 @@ check_article_to_be_posted(
 #ifdef MIME_BREAK_LONG_LINES
 		if (contains_8bit) {
 			if (enc != MIME_ENCODING_QP)
-				my_fprintf(stderr, _(txt_warn_long_line_not_qp), must_break_line, IMF_LINE_LEN, txt_quoted_printable, txt_base64);
+				my_fprintf(stderr, _(txt_warn_long_line_not_qp), must_break_line, IMF_LINE_LEN, content_encodings[ENCODING_QP], content_encodings[ENCODING_BASE64]);
 		} else
 #endif /* MIME_BREAK_LONG_LINES */
 		{
 			if (enc == MIME_ENCODING_QP)
-				my_fprintf(stderr, _(txt_warn_long_line_not_break), must_break_line, IMF_LINE_LEN, txt_quoted_printable);
+				my_fprintf(stderr, _(txt_warn_long_line_not_break), must_break_line, IMF_LINE_LEN, content_encodings[ENCODING_QP]);
 			else
-				my_fprintf(stderr, _(txt_warn_long_line_not_base), must_break_line, IMF_LINE_LEN, txt_base64);
+				my_fprintf(stderr, _(txt_warn_long_line_not_base), must_break_line, IMF_LINE_LEN, content_encodings[ENCODING_BASE64]);
 		}
 		my_fflush(stderr);
 		warnings++;
@@ -2152,6 +2099,13 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_warn_header_line_groups_contd), "Followup-To");
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 
+		if (warnings_catbp & CA_WARNING_MULTI_ADDRESSES_FROM)
+			my_fprintf(stderr, _(txt_warn_multiple_addresses), "From");
+		if (warnings_catbp & CA_WARNING_MULTI_ADDRESSES_REPLYTO)
+			my_fprintf(stderr, _(txt_warn_multiple_addresses), "Reply-To");
+		if (warnings_catbp & CA_WARNING_MULTI_ADDRESSES_TO)
+			my_fprintf(stderr, _(txt_warn_multiple_addresses), "To");
+
 		if (warnings_catbp & CA_WARNING_DISTRIBUTION_WORLD)
 			my_fprintf(stderr, "%s", _(txt_warn_distribution_world));
 
@@ -2305,6 +2259,55 @@ check_article_to_be_posted(
 	FreeIfNeeded(to);
 
 	return (errors ? 1 : (warnings ? 2 : 0));
+}
+
+
+int
+check_mailbox_list(
+	char *line,
+	const char *header,
+	int charset,
+	int *errors)
+{
+	char *cp, *curr_from, *next_from;
+	int i, err = 0, n = 0;
+
+#ifdef CHARSET_CONVERSION
+	cp = rfc1522_encode(line, txt_mime_charsets[charset], FALSE);
+#else
+	cp = rfc1522_encode(line, tinrc.mm_charset, FALSE);
+	(void) charset;
+#endif /* CHARSET_CONVERSION */
+
+	/* set curr_from to space after Header: */
+	curr_from = cp + strlen(header) + 1;
+	unfold_header(curr_from);
+
+	do {
+		n++;
+		next_from = split_mailbox_list(curr_from);
+		i = gnksa_check_from(curr_from);
+		if (i > GNKSA_OK && i < GNKSA_MISSING_REALNAME) {
+			StartInverse();
+			my_fprintf(stderr, _(txt_error_bad_address_in), header);
+			my_fprintf(stderr, "%s\n", curr_from);
+			my_fprintf(stderr, gnksa_strerror(i), i);
+			++err;
+		}
+		curr_from = next_from;
+	} while (curr_from);
+
+	if (err) {
+		EndInverse();
+		my_fflush(stderr);
+	}
+#ifndef FORGERY
+	*errors += err;
+#else
+	(void) errors
+#endif /* !FORGERY */
+	free(cp);
+	return n;
 }
 
 
@@ -3828,7 +3831,7 @@ create_mail_headers(
 #	endif /* HAVE_CHMOD */
 #endif /* HAVE_FCHMOD */
 
-	if ((INTERACTIVE_NONE == tinrc.interactive_mailer) || (INTERACTIVE_WITH_HEADERS == tinrc.interactive_mailer)) {	/* tin should include headers for editing */
+	if (tinrc.interactive_mailer == INTERACTIVE_NONE || tinrc.interactive_mailer == INTERACTIVE_WITH_HEADERS) {	/* tin should include headers for editing */
 		char from_buf[HEADER_LEN];
 		char *from_address;
 
@@ -3899,6 +3902,8 @@ create_mail_headers(
  * Handle editing/spellcheck/PGP etc., operations on a mail article
  * Submit/abort the article as required and return POSTED_{NONE,REDRAW,OK}
  * Replaces core of mail_to_someone(), mail_bug_report(), mail_to_author()
+ *
+ * TODO: do something like check_article_to_be_posted() here.
  */
 static int
 mail_loop(
@@ -3918,6 +3923,9 @@ mail_loop(
 #ifdef HAVE_PGP_GPG
 	char mail_to[HEADER_LEN];
 #endif /* HAVE_PGP_GPG */
+#ifdef CHARSET_CONVERSION
+	char *curr_ucs = NULL;
+#endif /* CHARSET_CONVERSION */
 
 	if (groupname)
 		group = group_find(groupname, FALSE);
@@ -3943,8 +3951,29 @@ mail_loop(
 					clear_message();
 					return ret;
 				}
+
+#ifdef CHARSET_CONVERSION
+				/*
+				 * data in file is unencoded in tinrc.mm_local_charset
+				 * temporary set undeclared_charset accordingly
+				 */
+				if (curr_group->attribute->undeclared_charset) {
+					curr_ucs = my_strdup(curr_group->attribute->undeclared_charset);
+					free(curr_group->attribute->undeclared_charset);
+ 				}
+				curr_group->attribute->undeclared_charset = my_strdup(tinrc.mm_local_charset);
+#endif /* CHARSET_CONVERSION */
+
 				parse_rfc822_headers(&hdr, fp, NULL);
 				fclose(fp);
+
+#ifdef CHARSET_CONVERSION
+				/* and restore original value */
+				FreeAndNull(curr_group->attribute->undeclared_charset);
+				if (curr_ucs)
+					curr_group->attribute->undeclared_charset = my_strdup(curr_ucs);
+#endif /* CHARSET_CONVERSION */
+
 				if (hdr.subj) {
 					strncpy(subject, hdr.subj, HEADER_LEN - 1);
 					subject[HEADER_LEN - 1] = '\0';
@@ -4249,43 +4278,52 @@ mail_to_author(
 	t_bool raw_data)
 {
 	FILE *fp;
-	char *p;
-	char from_addr[HEADER_LEN];
+	char *p, *curr_from, *next_from;
 	char nam[PATH_LEN];
 	char subject[HEADER_LEN];
 	char initials[64];
+	char mail_to[HEADER_LEN];
 	int ret_code = POSTED_NONE;
 	int i;
 	struct t_header note_h = pgart.hdr;
 
 	wait_message(0, _(txt_reply_to_author));
-	find_reply_to_addr(from_addr, FALSE, &pgart.hdr);
+	find_reply_to_addr(mail_to, FALSE, &pgart.hdr);
 
-	i = gnksa_check_from(from_addr);
+	p = curr_from = my_strdup(mail_to);
 
-	/* TODO: make gnksa error level configurable */
-	if (check_for_spamtrap(from_addr) || (i > GNKSA_OK && i < GNKSA_ILLEGAL_UNQUOTED_CHAR)) {
-		char keyabort[MAXKEYLEN], keycont[MAXKEYLEN];
-		t_function func;
+	do {
+		next_from = split_mailbox_list(curr_from);
+		i = gnksa_check_from(curr_from);
 
-		func = prompt_slk_response(POST_CONTINUE, post_continue_keys,
-				_(txt_warn_suspicious_mail),
-				PrintFuncKey(keycont, POST_CONTINUE, post_continue_keys),
-				PrintFuncKey(keyabort, POST_ABORT, post_continue_keys));
-		switch (func) {
-			case POST_ABORT:
-			case GLOBAL_ABORT:
-				clear_message();
-				return ret_code;
+		/* TODO: make gnksa error level configurable */
+		if (check_for_spamtrap(curr_from) || (i > GNKSA_OK && i < GNKSA_ILLEGAL_UNQUOTED_CHAR)) {
+			char keyabort[MAXKEYLEN], keycont[MAXKEYLEN];
+			t_function func;
 
-			case POST_CONTINUE:
-				break;
+			func = prompt_slk_response(POST_CONTINUE, post_continue_keys,
+					_(txt_warn_suspicious_mail),
+					PrintFuncKey(keycont, POST_CONTINUE, post_continue_keys),
+					PrintFuncKey(keyabort, POST_ABORT, post_continue_keys));
+			switch (func) {
+				case POST_ABORT:
+				case GLOBAL_ABORT:
+					clear_message();
+					free(p);
+					return ret_code;
 
-			/* the user wants to continue anyway, so we do nothing special here */
-			default:
-				break;
+				case POST_CONTINUE:
+					break;
+
+				/* the user wants to continue anyway, so we do nothing special here */
+				default:
+					break;
+			}
 		}
-	}
+		curr_from = next_from;
+	} while (curr_from);
+
+	free(p);
 
 	p = my_strdup(note_h.subj);
 	snprintf(subject, sizeof(subject), "Re: %s\n", eat_re(p, TRUE));
@@ -4295,7 +4333,7 @@ mail_to_author(
 	 * add extra headers in the mail_to_author() case as we don't include the
 	 * full original headers in the body of the mail
 	 */
-	if ((fp = create_mail_headers(nam, sizeof(nam), TIN_LETTER_NAME, from_addr, subject, &note_h)) == NULL)
+	if ((fp = create_mail_headers(nam, sizeof(nam), TIN_LETTER_NAME, mail_to, subject, &note_h)) == NULL)
 		return ret_code;
 
 	if (copy_text) {
@@ -4368,35 +4406,33 @@ mail_to_author(
 		msg_write_signature(fp, TRUE, &CURR_GROUP);
 mout:
 	fclose(fp);
+	/*
+	 * TODO: add something like check_article_to_be_posted() (or in
+	 * mail_loop() and don't care about tinrc.interactive_mailer
+	 * != INTERACTIVE_NONE)
+	 */
+	if (tinrc.interactive_mailer != INTERACTIVE_NONE) {	/* user wants to use his own mailreader for reply */
+		char buf[HEADER_LEN];
 
-	{
-		char mail_to[HEADER_LEN];
+		subject[strlen(subject) - 1] = '\0'; /* cut trailing '\n' */
+		strfmailer(mailer, subject, mail_to, nam, buf, sizeof(buf), tinrc.mailer_format);
+		if (invoke_cmd(buf))
+			ret_code = POSTED_OK;
+	} else
+		ret_code = mail_loop(nam, POST_EDIT, subject, group, NULL, NULL);
 
-		find_reply_to_addr(mail_to, TRUE, &pgart.hdr);
-
-		if (tinrc.interactive_mailer != INTERACTIVE_NONE) {	/* user wants to use his own mailreader for reply */
-			char buf[HEADER_LEN];
-
-			subject[strlen(subject) - 1] = '\0'; /* cut trailing '\n' */
-			strfmailer(mailer, subject, mail_to, nam, buf, sizeof(buf), tinrc.mailer_format);
-			if (invoke_cmd(buf))
-				ret_code = POSTED_OK;
-		} else
-			ret_code = mail_loop(nam, POST_EDIT, subject, group, NULL, NULL);
-
-		/*
-		 * If interactive_mailer!=NONE and the user changed the subject in his
-		 * mailreader, the entry generated here is wrong, strictly speaking.
-		 * But since we don't have a chance to get the final subject back from
-		 * the mailer I think this is the best solution. -dn, 2000-03-16
-		 */
-		/*
-		 * same with mail_to, if user changes To: in the editor tin
-		 * doesn't notice it and logs the original value.
-		 */
-		if (ret_code == POSTED_OK)
-			update_posted_info_file(mail_to, 'r', subject, ""); /* TODO: update_posted_info_file elsewhere? */
-	}
+	/*
+	 * If interactive_mailer!=NONE and the user changed the subject in his
+	 * mailreader, the entry generated here is wrong, strictly speaking.
+	 * But since we don't have a chance to get the final subject back from
+	 * the mailer I think this is the best solution. -dn, 2000-03-16
+	 */
+	/*
+	 * same with mail_to, if user changes To: in the editor tin
+	 * doesn't notice it and logs the original value.
+	 */
+	if (ret_code == POSTED_OK)
+		update_posted_info_file(mail_to, 'r', subject, ""); /* TODO: update_posted_info_file elsewhere? */
 
 	if (tinrc.unlink_article)
 		unlink(nam);
@@ -4515,10 +4551,10 @@ cancel_article(
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		error_message(2, "From=[%s]  Cancel=[%s]", art->from, from_name);
+		error_message(2, "From=[%s]  Cancel=[%s]", art->mailbox.from, from_name);
 #endif /* DEBUG */
 
-	if (!strcasestr(from_name, art->from)) { /* TODO: the local-part IS case sensitive! */
+	if (!strcasestr(from_name, art->mailbox.from)) { /* TODO: the local-part IS case sensitive! */
 #ifdef FORGERY
 		author = FALSE;
 #else
@@ -4591,10 +4627,10 @@ cancel_article(
 		msg_add_header("X-Orig-Subject", note_h.subj);
 	} else {
 		msg_add_header("Path", line);
-		if (art->name)
-			snprintf(line, sizeof(line), "%s <%s>", art->name, art->from);
+		if (art->mailbox.name)
+			snprintf(line, sizeof(line), "%s <%s>", art->mailbox.name, art->mailbox.from);
 		else
-			snprintf(line, sizeof(line), "<%s>", art->from);
+			snprintf(line, sizeof(line), "<%s>", art->mailbox.from);
 		msg_add_header("From", line);
 		ADD_MSG_ID_HEADER();
 		ADD_CAN_KEY(note_h.messageid);
@@ -4734,8 +4770,9 @@ cancel_article(
 	return redraw_screen;
 }
 
+
 /* TODO: the local-part IS case sensitive! we also compare the realname part if existent, desired? */
-#define FromSameUser	(strcasestr(from_name, arts[respnum].from))
+#define FromSameUser	(strcasestr(from_name, arts[respnum].mailbox.from))
 #ifndef FORGERY
 #	define NotSuperseding	(!supersede || (!FromSameUser) || art_type != GROUP_TYPE_NEWS)
 #	define Superseding	(supersede && FromSameUser && art_type == GROUP_TYPE_NEWS)
@@ -5521,13 +5558,36 @@ submit_mail_file(
 	char mail_to[HEADER_LEN];
 	struct t_header hdr;
 	t_bool mailed = FALSE;
+#ifdef CHARSET_CONVERSION
+	char *curr_ucs = NULL;
+#endif /* CHARSET_CONVERSION */
 
 	fcc = checknadd_headers(file, group);
 
 	if (insert_from_header(file)) {
 		if ((fp = tin_fopen(file, "r"))) {
+#ifdef CHARSET_CONVERSION
+			/*
+			 * data in file is unencoded in tinrc.mm_local_charset
+			 * temporary set undeclared_charset accordingly
+			 */
+			 if (group->attribute->undeclared_charset) {
+			 	curr_ucs = my_strdup(group->attribute->undeclared_charset);
+			 	free(group->attribute->undeclared_charset);
+			}
+			group->attribute->undeclared_charset = my_strdup(tinrc.mm_local_charset);
+#endif /* CHARSET_CONVERSION */
+
 			parse_rfc822_headers(&hdr, fp, NULL);
 			fclose(fp);
+
+#ifdef CHARSET_CONVERSION
+			/* and restore original value */
+			FreeAndNull(group->attribute->undeclared_charset);
+			if (curr_ucs)
+				group->attribute->undeclared_charset = my_strdup(curr_ucs);
+#endif /* CHARSET_CONVERSION */
+
 			if (get_recipients(&hdr, mail_to, sizeof(mail_to) - 1)) {
 				wait_message(0, _(txt_mailing_to), mail_to);
 
@@ -5544,9 +5604,11 @@ submit_mail_file(
 					mailed = TRUE;
 			} else
 				error_message(2, _(txt_error_header_line_missing), "To");
+
 			free_and_init_header(&hdr);
 		}
 	}
+
 	if (fcc != NULL) {
 		if (mailed && strlen(fcc)) {
 			char a_mailbox[PATH_LEN];
@@ -5558,6 +5620,7 @@ submit_mail_file(
 		}
 		FreeIfNeeded(fcc);
 	}
+
 	return mailed;
 }
 
@@ -5683,8 +5746,10 @@ split_address_list(
 								/* nothing special, just step over it */
 								break;
 						}
-						curr++;
-						len--;
+						if (parens && len > 0) {
+							curr++;
+							len--;
+						}
 					}
 					break;
 
@@ -5821,7 +5886,7 @@ get_recipients(
 				FreeAndNull(all_addresses[j]);
 		}
 	}
-	/* build list of space separated e-mail addresses */
+	/* build list of comma separated e-mail addresses */
 	dest = buf;
 	for (i = 0; i < num_all; i++) {
 		if (all_addresses[i]) {
@@ -5830,7 +5895,7 @@ get_recipients(
 				buflen--;
 			}
 			if (buflen > 0) {
-				*dest++ = ' ';
+				*dest++ = ',';
 				buflen--;
 			}
 		}

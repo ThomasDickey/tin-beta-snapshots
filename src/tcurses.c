@@ -997,6 +997,7 @@ get_arrow_key(
 	return code;
 }
 
+
 #else
 void my_tcurses(void); /* proto-type */
 void my_tcurses(void) { }	/* ANSI C requires non-empty file */

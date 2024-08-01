@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2023-12-06
+ *  Updated   : 2024-07-25
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -142,6 +142,7 @@ wait_message(
 	...)
 {
 	char *buf, *msg;
+	size_t len = cCOLS - 1;
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -154,17 +155,21 @@ wait_message(
 	buf = fmt_message(fmt, ap);
 	/* test for multiline messages */
 	if (strrchr(buf, '\n')) {
-		char *from, *to;
+		char *from, *to, *tmp;
 
 		for (from = buf; *from && (to = strchr(from, '\n')); from = ++to) {
 			*to = '\0';
-			msg = strunc(from, cCOLS - 1);
+			/* expand tabs in multiline msg, as we wrap anyway */
+			tmp = expand_tab(from, tabwidth);
+			/* and strunc would replace them */
+			msg = strunc(tmp, len);
+			free(tmp);
 			my_fputs(msg, stdout);
 			my_fputc('\n', stdout);
 			free(msg);
 		}
 	} else {
-		msg = strunc(buf, cCOLS - 1);
+		msg = strunc(buf, len);
 		my_fputs(msg, stdout);
 		free(msg);
 	}
@@ -790,8 +795,9 @@ log_formatted_msg(
 	const char *tag,
 	const char *msg)
 {
+	size_t len;
 
-	if (msglog == NULL || msg == NULL || strlen(msg) == 0)
+	if (msglog == NULL || msg == NULL || (len = strlen(msg)) == 0)
 		return;
 
 	if (tag)
@@ -799,7 +805,7 @@ log_formatted_msg(
 	else
 		fprintf(msglog, "%s", msg);
 
-	if (msg[strlen(msg) - 1] != '\n')
+	if (msg[len - 1] != '\n')
 		fputc('\n', msglog);
 
 	fflush(msglog);

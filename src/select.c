@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-06-30
+ *  Updated   : 2024-07-12
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1675,7 +1675,7 @@ show_article_by_msgid(
 	char id[NNTP_STRLEN];	/* still way too big; RFC 3977 3.6 & RFC 5536 3.1.3 limit Message-ID to max 250 octets */
 	char *idptr = NULL;
 	char *newsgroups = NULL;
-	char *ngcpy;
+	char *ngcpy, *cg, *ng;
 	int i, ret = 0;
 	struct t_article *art;
 	struct t_group *group = NULL;
@@ -1707,12 +1707,19 @@ show_article_by_msgid(
 	if (!newsgroups)
 		return LOOKUP_ART_UNAVAIL;
 
-	ngcpy = my_strdup(newsgroups); /* take a copy as get_group_from_list() modifies newsgroups */
-	if ((group = get_group_from_list(newsgroups)) == NULL) {
+	/* set selmenu.curr */
+	ng = ngcpy = my_strdup(newsgroups); /* take a copy for strtok */
+	while ((cg = strtok(ng, ",")) != NULL) {
+		if ((selmenu.curr = my_group_add(cg, FALSE)) != -1)
+			break;
+		ng = NULL;
+	}
+
+	if (selmenu.curr == -1 || !cg || (group = get_group_from_list(cg)) == NULL) {
 		if (!(cmdline.args & CMDLINE_MSGID))
-			info_message(strchr(ngcpy, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), ngcpy);
+			info_message(strchr(newsgroups, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), newsgroups);
 		else /* -L cmd. */
-			wait_message(2, strchr(ngcpy, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), ngcpy);
+			wait_message(2, strchr(newsgroups, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), newsgroups);
 		free(newsgroups);
 		free(ngcpy);
 		return LOOKUP_FAILED;
@@ -1724,8 +1731,7 @@ show_article_by_msgid(
 	curr_group = group;
 	num_of_tagged_arts = 0;
 	range_active = FALSE;
-	last_resp = -1;
-	this_resp = -1;
+	this_resp = last_resp = -1;
 	tmp_cache_overview_files = tinrc.cache_overview_files;
 	tinrc.cache_overview_files = FALSE;
 	tmp_show_only_unread_arts = curr_group->attribute->show_only_unread_arts;

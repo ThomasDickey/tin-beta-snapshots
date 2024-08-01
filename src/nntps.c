@@ -779,6 +779,7 @@ tintls_close(
 	return 0;
 }
 
+
 /* TODO: make date-format configurable? */
 #define PRINT_VALID_AFTER(ts, what) do { \
 		if (my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", ts)) \
@@ -1185,9 +1186,9 @@ log_func(
 	debug_print_file("NNTP", "TLS%s%.*s [%d]", logtime(), msglen, msg, level);
 }
 
+
 #	else
 #		ifdef USE_OPENSSL
-
 static void
 info_callback(
 	const SSL *s,
@@ -1227,11 +1228,10 @@ info_callback(
 }
 #		endif /* USE_OPENSSL */
 #	endif /* USE_GNUTLS */
-
 #endif /* DEBUG */
 
-#else
 
+#else
 int
 tintls_init(
 	void)

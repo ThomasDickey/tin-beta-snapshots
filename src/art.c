@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-06-25
+ *  Updated   : 2024-07-28
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -90,6 +90,7 @@ static t_artnum setup_hard_base(struct t_group *group);
 static t_bool parse_headers(FILE *fp, struct t_article *h);
 static t_compfunc eval_sort_arts_func(unsigned int sort_art_type);
 static time_t get_last_posting_date(int n);
+static void build_mailbox_list(struct t_article *art, char *hdr);
 static void sort_base(unsigned int sort_threads_type);
 static void thread_by_multipart(void);
 static void thread_by_percentage(unsigned int percentage);
@@ -99,6 +100,7 @@ static void write_overview(struct t_group *group);
 	static struct t_article_range *build_range_list(t_artnum min, t_artnum max, int *range_cnt);
 	static t_bool get_path_header(int cur, int cnt, struct t_group *group, t_artnum min, t_artnum max);
 #endif /* NNTP_ABLE */
+static struct t_mailbox *add_mailbox(struct t_article *article);
 
 
 /*
@@ -829,6 +831,7 @@ read_art_headers(
 			FreeAndNull(arts[top_art].path);
 			FreeAndNull(arts[top_art].refs);
 			FreeAndNull(arts[top_art].msgid);
+			free_mailbox_list(arts[top_art].mailbox.next);
 			arts[top_art].tagged = 0;
 			arts[top_art].thread = ART_EXPIRED;
 			arts[top_art].prev = ART_NORMAL;
@@ -1297,7 +1300,7 @@ make_threads(
 					my_fprintf(stderr, "\nError  : art->refptr is NULL\n");
 					my_fprintf(stderr, "Artnum : %"T_ARTNUM_PFMT"\n", arts[i].artnum);
 					my_fprintf(stderr, "Subject: %s\n", arts[i].subject);
-					my_fprintf(stderr, "From   : %s\n", arts[i].from);
+					my_fprintf(stderr, "From   : %s\n", arts[i].mailbox.from);
 					assert(arts[i].refptr != NULL);
 				} else
 #endif /* DEBUG */
@@ -1439,8 +1442,6 @@ parse_headers(
 	FILE *fp,
 	struct t_article *h)
 {
-	char art_from_addr[HEADER_LEN];
-	char art_full_name[HEADER_LEN];
 	char *s, *hdr, *ptr;
 	t_bool got_from, got_lines;
 
@@ -1478,10 +1479,7 @@ parse_headers(
 			case 'F':	/* From:  mandatory */
 				if (!got_from) {
 					if ((hdr = parse_header(ptr + 1, "rom", FALSE, FALSE, FALSE))) {
-						h->gnksa_code = parse_from(hdr, art_from_addr, art_full_name);
-						h->from = hash_str(buffer_to_ascii(art_from_addr));
-						if (*art_full_name)
-							h->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name), FALSE)));
+						build_mailbox_list(h, hdr);
 						got_from = TRUE;
 					}
 				}
@@ -1496,7 +1494,7 @@ parse_headers(
 				}
 				break;
 
-			case 'M':	/* Message-ID:  mandatory */
+			case 'M':	/* Message-ID:  mandatory; be aware that build_references() later on clears it! */
 				if (!h->msgid) {
 					if ((hdr = parse_header(ptr + 1, "essage-ID", FALSE, FALSE, FALSE)))
 						h->msgid = my_strdup(hdr);
@@ -1575,6 +1573,7 @@ parse_headers(
 
 	return FALSE;
 }
+
 
 #ifdef NNTP_ABLE
 /*
@@ -1849,6 +1848,79 @@ get_path_header(
 #endif /* NNTP_ABLE */
 
 
+static struct t_mailbox *
+add_mailbox(
+	struct t_article *art)
+{
+	struct t_mailbox *mb;
+
+	if (!art)
+		return NULL;
+
+	if (!art->mailbox.from)
+		return &art->mailbox;
+
+	if (!(mb = art->mailbox.next)) {
+		art->mailbox.next = my_malloc(sizeof(struct t_mailbox));
+		mb = art->mailbox.next;
+	} else {
+		while (mb->next)
+			mb = mb->next;
+		mb->next = my_malloc(sizeof(struct t_mailbox));
+		mb = mb->next;
+	}
+
+	mb->from = NULL;
+	mb->name = NULL;
+	mb->next = NULL;
+
+	return mb;
+}
+
+
+static void
+build_mailbox_list(
+	struct t_article *art,
+	char *hdr)
+{
+	char art_from_addr[HEADER_LEN];
+	char art_full_name[HEADER_LEN];
+	char *tmp_from, *curr_from, *next_from;
+	struct t_mailbox *mb;
+
+	tmp_from = my_strdup(hdr);
+	curr_from = tmp_from;
+
+	do {
+		next_from = split_mailbox_list(curr_from);
+		mb = add_mailbox(art);
+		mb->gnksa_code = parse_from(curr_from, art_from_addr, art_full_name);
+		mb->from = hash_str(buffer_to_ascii(art_from_addr));
+		if (*art_full_name)
+			mb->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name), FALSE)));
+		curr_from = next_from;
+	} while (curr_from);
+
+	free(tmp_from);
+}
+
+
+void
+free_mailbox_list(
+	struct t_mailbox *mb)
+{
+	if (!mb)
+		return;
+
+	while (mb->next != NULL) {
+		free_mailbox_list(mb->next);
+		mb->next = NULL;
+	}
+
+	free(mb);
+}
+
+
 /*
  * Read in an overview index file. Fields are separated by TAB.
  * return the number of expired articles encountered or -1 if the user aborted
@@ -1882,8 +1954,6 @@ read_overview(
 	char *q;
 	char *buf;
 	char *group_msg;
-	char art_full_name[HEADER_LEN];
-	char art_from_addr[HEADER_LEN];
 	unsigned int count;
 	int expired = 0;
 	t_artnum artnum;
@@ -2063,13 +2133,13 @@ read_overview(
 					}
 
 					if (!strcasecmp(ofmt[count].name, "From:")) {
-						if (*ptr) {
-							art->gnksa_code = parse_from(ptr, art_from_addr, art_full_name);
-							art->from = hash_str(buffer_to_ascii(art_from_addr));
-							if (*art_full_name)
-								art->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name), FALSE)));
-						} else {
-							art->from = hash_str("");
+
+						if (*ptr)
+							build_mailbox_list(art, ptr);
+						else {
+							struct t_mailbox *mb = add_mailbox(art);
+
+							mb->from = hash_str("");
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
@@ -2186,13 +2256,12 @@ read_overview(
 						break;
 
 					case 2:	/* From: */
-						if (*ptr) {
-							art->gnksa_code = parse_from(ptr, art_from_addr, art_full_name);
-							art->from = hash_str(buffer_to_ascii(art_from_addr));
-							if (*art_full_name)
-								art->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name), FALSE)));
-						} else {
-							art->from = hash_str("");
+						if (*ptr)
+							build_mailbox_list(art, ptr);
+						else {
+							struct t_mailbox *mb = add_mailbox(art);
+
+							mb->from = hash_str("");
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
@@ -3008,7 +3077,7 @@ from_comp_asc(
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
 
-	if ((retval = strcasecmp(s1->from, s2->from))) /* != 0 */
+	if ((retval = strcasecmp(s1->mailbox.from, s2->mailbox.from))) /* != 0 */
 		return retval;
 
 	return s1->date - s2->date > 0 ? 1 : -1;
@@ -3024,7 +3093,7 @@ from_comp_desc(
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
 
-	if ((retval = strcasecmp(s2->from, s1->from))) /* != 0 */
+	if ((retval = strcasecmp(s2->mailbox.from, s1->mailbox.from))) /* != 0 */
 		return retval;
 
 	return s1->date - s2->date > 0 ? 1 : -1;
@@ -3259,13 +3328,14 @@ set_article(
 	struct t_article *art)
 {
 	art->subject = NULL;
-	art->from = NULL;
-	art->name = NULL;
 	art->date = (time_t) 0;
 	art->xref = NULL;
 	art->msgid = NULL;
 	art->refs = NULL;
 	art->refptr = NULL;
+	art->mailbox.from = NULL;
+	art->mailbox.name = NULL;
+	art->mailbox.next = NULL;
 	art->line_count = -1;
 	art->tagged = 0;
 	art->thread = ART_EXPIRED;
@@ -3347,28 +3417,41 @@ print_from(
 {
 	char *p, *q;
 	static char from[PATH_LEN];
+	char single_from[PATH_LEN];
+	struct t_mailbox *mb = &article->mailbox;
+	int c_needed = 0;
 
-	*from = '\0';
+	*from = *single_from = '\0';
 
-	if (article->name != NULL) {
-		q = my_strdup(article->name);
+	do {
+		if (mb->name != NULL) {
+			q = my_strdup(mb->name);
 #ifdef CHARSET_CONVERSION
-		if (charset != -1)
-			buffer_to_network(q, charset);
+			if (charset != -1)
+				buffer_to_network(q, charset);
 #else
-		(void) charset;
+			(void) charset;
 #endif /* CHARSET_CONVERSION */
-		p = rfc1522_encode(article->name, tinrc.mm_local_charset, FALSE);
-		unfold_header(p);
-		if (strpbrk(article->name, "\".:;<>@[]()\\") != NULL && article->name[0] != '"' && article->name[strlen(article->name)] != '"')
-			snprintf(from, sizeof(from), "\"%s\" <%s>", group->attribute->post_8bit_header ? q : p, article->from);
-		else
-			snprintf(from, sizeof(from), "%s <%s>", group->attribute->post_8bit_header ? q : p, article->from);
+			p = rfc1522_encode(mb->name, tinrc.mm_local_charset, FALSE);
+			unfold_header(p);
+			if (strpbrk(mb->name, "\".:;<>@[]()\\") != NULL && mb->name[0] != '"' && mb->name[strlen(mb->name)] != '"')
+				snprintf(single_from, sizeof(single_from), "\"%s\" <%s>", group->attribute->post_8bit_header ? q : p, mb->from);
+			else
+				snprintf(single_from, sizeof(single_from), "%s <%s>", group->attribute->post_8bit_header ? q : p, mb->from);
 
-		free(p);
-		free(q);
-	} else
-		snprintf(from, sizeof(from), "<%s>", article->from);
+			free(p);
+			free(q);
+		} else
+			snprintf(single_from, sizeof(single_from), "<%s>", mb->from);
+
+		if (strlen(from) + strlen(single_from) + /* strlen(", ") */ 2 < PATH_LEN) {
+			if (c_needed++)
+				strcat(from, ", ");
+			strcat(from, single_from);
+		}
+
+		mb = mb->next;
+	} while (mb);
 
 	return from;
 }

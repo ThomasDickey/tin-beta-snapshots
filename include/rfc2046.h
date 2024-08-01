@@ -3,7 +3,7 @@
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2023-10-25
+ *  Updated   : 2024-07-24
  *  Notes     : RFC 2046 MIME article definitions
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -43,14 +43,18 @@
 /* The version of MIME we conform to */
 #	define MIME_SUPPORTED_VERSION	"1.0"
 
-/* These must track the array definitions in lang.c */
-#	define TYPE_TEXT			0
-#	define TYPE_MULTIPART		1
-#	define TYPE_APPLICATION		2
-#	define TYPE_MESSAGE			3
-#	define TYPE_IMAGE			4
-#	define TYPE_AUDIO			5
-#	define TYPE_VIDEO			6
+/* These must track the array definitions in lang.c; t_part->type */
+#	define TYPE_TEXT			0	/* RFC 2046 */
+#	define TYPE_MULTIPART		1	/* RFC 2046 */
+#	define TYPE_APPLICATION		2	/* RFC 2046 */
+#	define TYPE_MESSAGE			3	/* RFC 2046 */
+#	define TYPE_IMAGE			4	/* RFC 2046 */
+#	define TYPE_AUDIO			5	/* RFC 2046 */
+#	define TYPE_VIDEO			6	/* RFC 2046 */
+#	define TYPE_FONT			7	/* RFC 8081 */
+#	define TYPE_HAPTICS			8	/* draft-ietf-mediaman-haptics-05 */
+#	define TYPE_MODEL			9	/* RFC 2077 */
+	/* TYPE_EXAMPLE RFC 4735 */
 
 #	define ENCODING_7BIT		0
 #	define ENCODING_QP			1
@@ -60,8 +64,10 @@
 #	define ENCODING_UUE			5
 #	define ENCODING_UNKNOWN		6
 
+/* Content-Disposition types (RFC 2183) */
 #	define DISP_INLINE			0
-#	define DISP_ATTACH			1
+#	define DISP_ATTACHMENT		1
+#	define DISP_NONE			2
 
 #	define BOUND_NONE		0
 #	define BOUND_START		1
@@ -69,6 +75,47 @@
 
 #	define FORMAT_FIXED		0
 #	define FORMAT_FLOWED	1
+
+#	define MIME_OK							(1 << 0)
+#	define MIME_VERSION_MISSING				(1 << 1)
+#	define MIME_VERSION_UNSUPPORTED			(1 << 2)
+#	define MIME_TYPE_MISSING				(1 << 3)
+#	define MIME_TYPE_UNKNOWN				(1 << 4)
+#	define MIME_SUBTYPE_MISSING				(1 << 5)
+#	define MIME_SUBTYPE_UNKNOWN				(1 << 6)
+#	define MIME_CHARSET_MISSING				(1 << 7)
+#	define MIME_CHARSET_UNDECLARED			(1 << 8)
+#	define MIME_CHARSET_GUESSED				(1 << 9)
+#	define MIME_CHARSET_UNSUPPORTED			(1 << 10)
+#	define MIME_TRANSFER_ENCODING_MISSING	(1 << 11)
+#	define MIME_TRANSFER_ENCODING_UNKNOWN	(1 << 12)
+#	define MIME_INIT						(MIME_VERSION_MISSING \
+											| MIME_VERSION_UNSUPPORTED \
+											| MIME_TYPE_MISSING \
+											| MIME_SUBTYPE_MISSING \
+											| MIME_CHARSET_MISSING \
+											| MIME_TRANSFER_ENCODING_MISSING)
+
+typedef struct hints
+{
+	unsigned flags:13;	/* Result of mime parsing
+						define MIME_OK							no hints, to check if (mime_hints) {}
+						define MIME_VERSION_MISSING				mime version missing
+						define MIME_VERSION_UNSUPPORTED			mime version != 1.0
+						define MIME_TYPE_MISSING				content type missing
+						define MIME_TYPE_UNKNOWN				content type unknown
+						define MIME_CHARSET_MISSING				charset missing
+						define MIME_CHARSET_UNDECLARED			charset missing, undeclared_charset used
+						define MIME_CHARSET_GUESSED				charset missing, guessed charset used
+						define MIME_CHARSET_UNSUPPORTED			iconv() can't cope with charset
+						define MIME_TRANSFER_ENCODING_MISSING	transfer encoding missing
+						define MIME_TRANSFER_ENCODING_UNKNOWN	transfer encoding unknown */
+	char *type;
+	char *subtype;
+	char *charset;
+	char *encoding;
+} t_hints;
+
 
 /*
  * Linked list of parameter/value pairs
@@ -92,12 +139,10 @@ typedef struct param
  */
 typedef struct part
 {
-	unsigned type:3;		/* Content major type */
+	unsigned type:4;		/* Content major type */
 	unsigned encoding:3;	/* Transfer encoding */
 	unsigned format:1;		/* Format=Fixed/Flowed */
-#	if 0
-	unsigned disposition:1;
-#	endif /* 0 */
+	unsigned disposition:2; /* Content-Disposition=inline/attachment */
 	char *subtype;			/* Content subtype */
 	char *description;		/* Content-Description */
 	char *language;			/* Content-Language RFC 3282 */
@@ -106,6 +151,7 @@ typedef struct part
 	unsigned long bytes;	/* part size in bytes */
 	int line_count;			/* # lines in this part */
 	int depth;				/* For multipart within multipart */
+	t_hints mime_hints;
 	struct part *uue;		/* UUencoded section information */
 	struct part *next;		/* next part */
 } t_part;
@@ -190,6 +236,7 @@ typedef struct openartinfo
 	int cooked_lines;		/* # lines in cooked t_lineinfo */
 	FILE *raw;				/* the actual data streams */
 	FILE *cooked;
+	FILE *log;
 	t_lineinfo *rawl;		/* info about the data streams */
 	t_lineinfo *cookl;
 } t_openartinfo;

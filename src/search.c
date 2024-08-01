@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-06-26
+ *  Updated   : 2024-07-28
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -383,6 +383,9 @@ body_search(
 			art_close(&artinfo);
 			info_message(_(txt_no_match));
 			return 0;
+
+		default:
+			break;
 	}
 
 	/*
@@ -458,12 +461,12 @@ author_search(
 	char *buf, *tmp;
 	int len;
 
-	if (arts[i].name == NULL)
-		tmp = my_strdup(arts[i].from);
+	if (arts[i].mailbox.name == NULL)
+		tmp = my_strdup(arts[i].mailbox.from);
 	else {
-		len = snprintf(NULL, 0, "%s <%s>", arts[i].name, arts[i].from);
+		len = snprintf(NULL, 0, "%s <%s>", arts[i].mailbox.name, arts[i].mailbox.from);
 		tmp = my_malloc(++len);
-		snprintf(tmp, len, "%s <%s>", arts[i].name, arts[i].from);
+		snprintf(tmp, len, "%s <%s>", arts[i].mailbox.name, arts[i].mailbox.from);
 	}
 
 #ifdef HAVE_UNICODE_NORMALIZATION

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-01
+ *  Updated   : 2024-07-28
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -534,10 +534,8 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	endif /* !HAVE_STRRCHR */
 #	if defined(__386BSD__) || defined(__bsdi__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #		define DEFAULT_PRINTER	"/usr/bin/lpr"
-#		define DEFAULT_SUM	"/usr/bin/cksum -o 1 <" /* use tailing <, otherwise get filename output too */
 #	else
 #		define DEFAULT_PRINTER	"/usr/ucb/lpr"
-#		define DEFAULT_SUM	"sum"
 #	endif /* __386BSD__ || __bsdi__ || __NetBSD__ || __FreeBSD__ || __OpenBSD__ */
 #	ifdef DGUX
 #		define USE_INVERSE_HACK
@@ -571,9 +569,6 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	ifndef DEFAULT_PRINTER
 #		define DEFAULT_PRINTER	"/usr/bin/lp"
 #	endif /* !DEFAULT_PRINTER */
-#	ifndef PATH_SUM
-#		define DEFAULT_SUM	"sum -r"
-#	endif /* !PATH_SUM */
 #endif /* BSD */
 
 /*
@@ -604,20 +599,6 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define METAMAIL_CMD		PATH_METAMAIL" -e -p -m \"tin\""
 
 #define INTERNAL_CMD	"--internal"
-
-/*
- * Fix up the 'sum' path and parameter for './configure'd systems
- */
-#ifdef PATH_SUM
-#	ifdef DEFAULT_SUM
-#		undef DEFAULT_SUM
-#	endif /* DEFAULT_SUM */
-#	ifdef SUM_TAKES_DASH_R
-#		define DEFAULT_SUM PATH_SUM_R
-#	else
-#		define DEFAULT_SUM PATH_SUM
-#	endif /* SUM_TAKES_DASH_R */
-#endif /* PATH_SUM */
 
 #ifdef HAVE_LONG_FILE_NAMES
 #	define INDEX_LOCK	"tin.%.256s.LCK"
@@ -1582,7 +1563,7 @@ typedef unsigned char	t_bitmap;
 #else
 #	define HASHNODE_TABLE_SIZE 222199
 #	define MSGID_HASH_SIZE	222199
-#endif /* MSGID_HASH_SIZE */
+#endif /* SMALL_MEMORY_MACHINE */
 
 /*
  * cmd-line options
@@ -1609,6 +1590,13 @@ struct t_msgid {
 	char txt[1];			/* The actual msgid */
 };
 
+struct t_mailbox {
+	char *from;			/* From: line from mail header (address) */
+	char *name;			/* From: line from mail header (full name) */
+	int gnksa_code;
+	struct t_mailbox *next;
+};
+
 /*
  * struct t_article - article header
  *
@@ -1627,17 +1615,15 @@ struct t_msgid {
 struct t_article {
 	t_artnum artnum;		/* Article number in spool directory for group */
 	char *subject;			/* Subject: line from mail header */
-	char *from;			/* From: line from mail header (address) */
-	char *name;			/* From: line from mail header (full name) */
 	char *xref;			/* Xref: cross posted article reference line */
 	char *path;			/* Path: line */
 	/* NB: The msgid and refs are only retained until the reference tree is built */
 	char *msgid;			/* Message-ID: unique message identifier */
 	char *refs;			/* References: article reference id's */
 	struct t_msgid *refptr;		/* Pointer to us in the reference tree */
+	struct t_mailbox mailbox;
 	time_t date;			/* Date: line from header in seconds */
 	int line_count;			/* Lines: number of lines in article */
-	int gnksa_code;			/* From: line from mail header (GNKSA error code) */
 	int tagged;			/* 0 = not tagged, >0 = tagged */
 	int thread;
 	int prev;
@@ -2413,8 +2399,7 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
  * Cast for the (few!) places where we need to examine 8-bit characters w/o
  * sign-extension, and a corresponding test-macro.
  */
-#define EIGHT_BIT(ptr)	(unsigned char *)ptr
-#define is_EIGHT_BIT(p)	((*EIGHT_BIT(p) < 32 && !isspace((unsigned char) *p)) || *EIGHT_BIT(p) > 127)
+#define is_EIGHT_BIT(p)	((*(unsigned char *) (p) < 32 && !isspace((unsigned char) *p)) || *(unsigned char *) (p) > 127)
 
 /*
  * function prototypes & extern definitions

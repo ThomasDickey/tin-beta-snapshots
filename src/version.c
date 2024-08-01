@@ -82,9 +82,10 @@ check_upgrade(
 	fversion->state = RC_ERROR;
 	fversion->file_version = -1;
 
-	/* we pre-checked that the beginning of line matches skip via
-	   match_string() before calling check_upgrade(), no need to
-	   strncmp() again.
+	/*
+	 * we pre-checked that the beginning of line matches skip via
+	 * match_string() before calling check_upgrade(), no need to
+	 * strncmp() again.
 	 */
 	p = line + strlen(skip);
 	if (!isdigit((unsigned char) *p))

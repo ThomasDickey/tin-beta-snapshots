@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2024-06-04
+ *  Updated   : 2024-07-28
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -40,7 +40,7 @@
 void my_dummy(void) { }	/* ANSI C requires non-empty file */
 t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
 
-#else	/* !USE_CURSES */
+#else /* !USE_CURSES */
 
 #	ifndef ns32000
 #	undef	sinix
@@ -521,7 +521,7 @@ ScrollScreen(
 				tputs(_scrollback, 1, outchar);
 			}
 		}
-	} else
+	} else {
 		if (_scrollfwd) {
 			i = lines_to_scroll;
 			while (i--) {
@@ -529,6 +529,7 @@ ScrollScreen(
 				tputs(_scrollfwd, 1, outchar);
 			}
 		}
+	}
 	my_flush();
 }
 
@@ -973,7 +974,7 @@ get_arrow_key(
 			usleep((unsigned long) (SECOND_CHARACTER_DELAY * 1000));
 			i++;
 		}
-#else	/* !HAVE_USLEEP */
+#else /* !HAVE_USLEEP */
 #	ifdef HAVE_SELECT
 		struct timeval tvptr;
 

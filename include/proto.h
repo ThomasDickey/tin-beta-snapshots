@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2024-07-02
+ *  Updated   : 2024-08-01
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -74,6 +74,7 @@ extern t_bool global_look_for_multipart(int aindex, char start, char stop);
 extern t_bool index_group(struct t_group *group);
 extern void do_update(t_bool catchup);
 extern void find_base(struct t_group *group);
+extern void free_mailbox_list(struct t_mailbox *mb);
 extern void make_threads(struct t_group *group, t_bool rethread);
 extern void set_article(struct t_article *art);
 extern void show_art_msg(const char *group);
@@ -98,6 +99,7 @@ extern char *convert_to_printable(char *buf, t_bool keep_tab);
 	extern char *guess_charset(const char *sample, int32_t confidence);
 #	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
+extern t_bool charset_unsupported(const char *charset);
 extern t_bool is_art_tex_encoded(FILE *fp);
 extern void convert_iso2asc(char *iso, char **asc_buffer, size_t *max_line_len, int t);
 extern void convert_tex2iso(char *from, char *to);
@@ -363,6 +365,7 @@ extern char *idna_decode(char *in);
 extern char *quote_wild(char *str);
 extern char *quote_wild_whitespace(char *str);
 extern char *strip_line(char *line);
+extern char *split_mailbox_list(char *from);
 extern const char *eat_re(char *s, t_bool eat_was);
 extern const char *get_val(const char *env, const char *def);
 extern const char *gnksa_strerror(int errcode);
@@ -509,6 +512,7 @@ extern int show_page(struct t_group *group, int start_respnum, int *threadnum);
 extern void display_info_page(int part);
 extern void draw_page(int part);
 extern void info_pager(FILE *info_fh, const char *title, t_bool wrap_at_ends);
+extern void log_article_info(t_openartinfo *artinfo);
 extern void resize_article(t_bool wrap_lines, t_openartinfo *artinfo);
 extern void update_hide_uue(void);
 extern void toggle_raw(void);
@@ -526,6 +530,7 @@ extern time_t parsedate(char *p, TIMEINFO *now);
 
 /* post.c */
 extern char *checknadd_headers(const char *infile, struct t_group *group);
+extern int check_mailbox_list(char *line, const char *header, int charset, int *errors);
 extern int count_postponed_articles(void);
 extern int mail_to_author(const char *group, int respnum, t_bool copy_text, t_bool with_headers, t_bool raw_data);
 extern int mail_to_someone(const char *address, t_bool confirm_to_mail, t_openartinfo *artinfo, const struct t_group *group);
@@ -609,6 +614,7 @@ extern void rfc1521_encode(char *line, FILE *f, int e);
 extern FILE *open_art_fp(struct t_group *group, t_artnum art);
 extern const char *get_param(t_param *list, const char *name);
 extern char *parse_header(char *buf, const char *pat, t_bool decode, t_bool structured, t_bool keep_tab);
+extern char *parse_mb_list_header(char *buf, const char *pat);
 extern int art_open(t_bool wrap_lines, struct t_article *art, struct t_group *group, t_openartinfo *artinfo, t_bool show_progress_meter, const char *pmesg);
 extern int content_type(char *type);
 extern int parse_rfc822_headers(struct t_header *hdr, FILE *from, FILE *to);
@@ -694,6 +700,7 @@ extern void set_signal_handlers(void);
 extern size_t my_strftime(char *s, size_t maxsize, const char *format, struct tm *timeptr);
 
 /* string.c */
+extern char *append_to_string(char *dst, const char *src);
 extern char *eat_tab(char *s);
 extern char *fmt_string(const char *fmt, ...);
 #if !defined(USE_DMALLOC) || (defined(USE_DMALLOC) && !defined(HAVE_STRDUP))
@@ -758,8 +765,8 @@ extern int my_toupper(int);
 	extern wchar_t *wstrunc(const wchar_t *wmessage, size_t len);
 #else
 	extern char *abbr_groupname(const char *grpname, size_t len);
-	extern char *expand_tab(char *str, size_t tab_width);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+extern char *expand_tab(char *str, size_t tab_width);
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 	extern char *render_bidi(const char *str, t_bool *is_rtl);
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
