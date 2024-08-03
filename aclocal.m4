@@ -411,7 +411,7 @@ fi
 AC_SUBST($1)dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl AM_WITH_NLS version: 39 updated: 2024/04/09 18:37:41
+dnl AM_WITH_NLS version: 40 updated: 2024/06/12 19:04:11
 dnl -----------
 dnl Inserted as requested by gettext 0.10.40
 dnl File from /usr/share/aclocal
@@ -477,12 +477,7 @@ AC_DEFUN([AM_WITH_NLS],
 
 	CF_ADD_LIBS($LIBICONV)
 	cf_save_LIBS_1="$LIBS"
-
 	cf_save_OPTS_1="$CPPFLAGS"
-	if test "x$cf_save_msgfmt_path" = "x$MSGFMT" && \
-	   test "x$cf_save_xgettext_path" = "x$XGETTEXT" ; then
-		CF_ADD_CFLAGS(-DIGNORE_MSGFMT_HACK)
-	fi
 
 	AC_ARG_WITH([libintl-prefix],
 		[  --with-libintl-prefix=DIR
@@ -510,6 +505,16 @@ AC_DEFUN([AM_WITH_NLS],
 		INTLLIBS="$cf_cv_library_file_intl"
 		CF_ADD_LIBDIR($cf_cv_library_path_intl,INTLLIBS)
 	  fi
+
+	  AC_MSG_CHECKING(if this is GNU gettext)
+	  AC_TRY_LINK(
+#define USE_MSGFMT_HACK
+CF__INTL_HEAD,
+		  CF__INTL_BODY,
+		  cf_cv_gnu_gettext=yes,
+		  cf_cv_gnu_gettext=no)
+	  AC_MSG_RESULT($cf_cv_gnu_gettext)
+	  test "$" = yes && AC_DEFINE(HAVE__NL_MSG_CAT_CNTR,1,[define to 1 if _nl_msg_cat_cntr is found with gettext/intl])
 
 	  LIBS="$LIBS $INTLLIBS"
 	  AC_CHECK_FUNCS(dcgettext)
@@ -1179,7 +1184,7 @@ fi
 AC_SUBST(ARFLAGS)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_BUILD_CC version: 12 updated: 2024/03/17 09:17:26
+dnl CF_BUILD_CC version: 13 updated: 2024/06/22 13:42:22
 dnl -----------
 dnl If we're cross-compiling, allow the user to override the tools and their
 dnl options.  The configure script is oriented toward identifying the host
@@ -1279,9 +1284,9 @@ else
 	: ${BUILD_CC:='${CC}'}
 	: ${BUILD_CPP:='${CPP}'}
 	: ${BUILD_CFLAGS:='${CFLAGS}'}
-	: ${BUILD_CPPFLAGS:='ifelse([$1],,'${CPPFLAGS}',[$1])'}
+	: ${BUILD_CPPFLAGS:='${CPPFLAGS}'}
 	: ${BUILD_LDFLAGS:='${LDFLAGS}'}
-	: ${BUILD_LIBS:='ifelse([$2],,'${LIBS}',[$2])'}
+	: ${BUILD_LIBS:='${LIBS}'}
 	: ${BUILD_EXEEXT:='$x'}
 	: ${BUILD_OBJEXT:='o'}
 fi
@@ -2117,15 +2122,22 @@ CF_CURSES_HEADER
 CF_TERM_HEADER
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_FUNCS version: 20 updated: 2020/12/31 20:19:42
+dnl CF_CURSES_FUNCS version: 21 updated: 2024/06/11 20:24:35
 dnl ---------------
 dnl Curses-functions are a little complicated, since a lot of them are macros.
+dnl
+dnl $1 is a list of functions to test
 AC_DEFUN([CF_CURSES_FUNCS],
 [
 AC_REQUIRE([CF_CURSES_CPPFLAGS])dnl
 AC_REQUIRE([CF_XOPEN_CURSES])
 AC_REQUIRE([CF_CURSES_TERM_H])
 AC_REQUIRE([CF_CURSES_UNCTRL_H])
+
+AC_FOREACH([AC_Func], [$1],
+  [AH_TEMPLATE(AS_TR_CPP(HAVE_[]AC_Func),
+               [Define if you have the `]AC_Func[' function.])])dnl
+
 for cf_func in $1
 do
 	CF_UPPER(cf_tr_func,$cf_func)
@@ -4304,7 +4316,7 @@ EOF
 test "$cf_cv_ncurses_version" = no || AC_DEFINE(NCURSES,1,[Define to 1 if we are using ncurses headers/libraries])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NETLIBS version: 12 updated: 2021/01/02 09:31:20
+dnl CF_NETLIBS version: 13 updated: 2024/06/04 20:31:17
 dnl ----------
 dnl After checking for functions in the default $LIBS, make a further check
 dnl for the functions that are netlib-related (these aren't always in the
@@ -4366,7 +4378,7 @@ mingw*)
 		CF_RECHECK_FUNC(gethostname,nsl,cf_cv_netlibs,[
 			CF_RECHECK_FUNC(gethostname,socket,cf_cv_netlibs)])])
 
-	AC_CHECK_LIB(inet, main, cf_cv_netlibs="-linet $cf_cv_netlibs")
+	AC_CHECK_LIB(inet, inet_ntoa, cf_cv_netlibs="-linet $cf_cv_netlibs")
 
 	if test "$ac_cv_func_lsocket" != no ; then
 	AC_CHECK_FUNCS(socket,,[
@@ -6897,7 +6909,7 @@ define([CF__ICONV_HEAD],[
 #include <iconv.h>]
 )dnl
 dnl ---------------------------------------------------------------------------
-dnl CF__INTL_BODY version: 4 updated: 2021/05/19 19:35:25
+dnl CF__INTL_BODY version: 5 updated: 2024/06/12 19:04:11
 dnl -------------
 dnl Test-code needed for libintl compile-checks
 dnl $1 = parameter 2 from AM_WITH_NLS
@@ -6905,7 +6917,7 @@ define([CF__INTL_BODY],[
 	bindtextdomain ("", "");
 	return (gettext ("") != 0)
 			ifelse([$1], need-ngettext, [ + (ngettext ("", "", 0) != 0)], [])
-#ifndef IGNORE_MSGFMT_HACK
+#ifdef USE_MSGFMT_HACK
 			[ + _nl_msg_cat_cntr]
 #endif
 ])
