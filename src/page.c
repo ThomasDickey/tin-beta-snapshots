@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-30
+ *  Updated   : 2024-09-10
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -327,7 +327,7 @@ show_page(
 	t_bool repeat_search;
 	t_function func;
 
-	if (group->attribute->mailing_list != NULL)
+	if (group->attribute->mailing_list && *group->attribute->mailing_list)
 		art_type = GROUP_TYPE_MAIL;
 
 	/*
@@ -1480,7 +1480,7 @@ draw_page_header(
 	line_len = LEN + 1;
 	buf = my_malloc(line_len);
 
-	if (!my_strftime(buf, line_len, curr_group->attribute->date_format, localtime(&arts[this_resp].date))) {
+	if (!my_strftime(buf, line_len, curr_group->attribute->date_format ? BlankIfNull(*curr_group->attribute->date_format) : "", localtime(&arts[this_resp].date))) {
 		strncpy(buf, BlankIfNull(note_h->date), line_len);
 		buf[line_len - 1] = '\0';
 	}
@@ -2107,7 +2107,7 @@ load_article(
 	if (!note_h->mime || IS_PLAINTEXT(note_h->ext))		/* Text only article */
 		return 0;
 
-	if (*tinrc.metamail_prog == '\0' || getenv("NOMETAMAIL") != NULL)	/* Viewer turned off */
+	if (!tinrc.metamail_prog || !*tinrc.metamail_prog || getenv("NOMETAMAIL") != NULL)	/* Viewer turned off */
 		return 0;
 
 	if (group->attribute->ask_for_metamail) {
@@ -2813,7 +2813,7 @@ build_url_line(
 	 * Allocate line buffer
 	 * make it the same size like in !USE_CURSES case to simplify some code
 	 */
-	sptr = my_malloc(cCOLS + 2);
+	sptr = my_malloc((size_t) cCOLS + 2);
 #else
 	sptr = screen[INDEX2SNUM(i)].col;
 #endif /* USE_CURSES */

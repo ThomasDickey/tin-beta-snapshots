@@ -14,7 +14,6 @@ default_config_search	tinrc.default_search_config
 default_group_search	tinrc.default_search_group
 default_subject_search	tinrc.default_search_subject
 default_art_search	tinrc.default_search_art
-default_repost_group	tinrc.default_repost_group
 
 integrate txt_tinrc_colors in txt_col_normal.tinrc
 

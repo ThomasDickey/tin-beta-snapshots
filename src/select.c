@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-12
+ *  Updated   : 2024-09-10
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -104,11 +104,10 @@ select_right(
 }
 
 
-void
+_Noreturn void
 selection_page(
 	int start_groupnum,
-	int num_cmd_line_groups,
-	char *messageid)
+	int num_cmd_line_groups)
 {
 	char buf[LEN];
 	char key[MAXKEYLEN];
@@ -128,8 +127,8 @@ selection_page(
 	ClearScreen();
 
 #ifdef NNTP_ABLE
-	if (cmdline.args & CMDLINE_MSGID) { /* -L cmd */
-		switch (show_article_by_msgid(messageid)) {
+	if (cmdline.msgid) { /* -L cmd */
+		switch (show_article_by_msgid(cmdline.msgid)) {
 			case LOOKUP_ART_UNAVAIL:
 				wait_message(2, _(txt_art_unavailable));
 				break;
@@ -137,10 +136,8 @@ selection_page(
 			default:
 				break;
 		}
-		cmdline.args ^= CMDLINE_MSGID; /* clear flag */
+		FreeAndNull(cmdline.msgid);
 	}
-#else
-	(void) messageid;
 #endif /* NNTP_ABLE */
 
 	/*
@@ -524,13 +521,13 @@ selection_page(
 						break;
 					}
 					snprintf(buf, sizeof(buf), _(txt_post_newsgroups), tinrc.default_post_newsgroups);
-					if (!prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
+					if (!prompt_string_ptr_default(buf, &tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
 						break;
 					if (group_find(tinrc.default_post_newsgroups, FALSE) == NULL) {
 						error_message(2, _(txt_not_in_active_file), tinrc.default_post_newsgroups);
 						break;
 					} else {
-						strcpy(buf, tinrc.default_post_newsgroups);
+						STRCPY(buf, tinrc.default_post_newsgroups);
 #if 1 /* TODO: fix the rest of the code so we don't need this anymore */
 						/*
 						 * this is a gross hack to avoid a crash in the
@@ -548,7 +545,7 @@ selection_page(
 					}
 				} else
 					STRCPY(buf, CURR_GROUP.name);
-				if (!can_post && !CURR_GROUP.bogus && !CURR_GROUP.attribute->mailing_list) {
+				if (!can_post && !CURR_GROUP.bogus && !(CURR_GROUP.attribute->mailing_list && *CURR_GROUP.attribute->mailing_list)) {
 					info_message(_(txt_cannot_post));
 					break;
 				}
@@ -745,9 +742,9 @@ build_gline(
 	 * make it the same size like in !USE_CURSES case to simplify the code
 	 */
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		sptr = my_malloc(cCOLS * MB_CUR_MAX + 2);
+		sptr = my_malloc((size_t) cCOLS * MB_CUR_MAX + 2);
 #	else
-		sptr = my_malloc(cCOLS + 2);
+		sptr = my_malloc((size_t) cCOLS + 2);
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #else
 	sptr = screen[INDEX2SNUM(i)].col;
@@ -777,7 +774,7 @@ build_gline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if (show_description && active[n].description) {
 					if ((active_desc = char2wchar_t(active[n].description)) != NULL) {
-						if ((active_desc2 = wcspart(active_desc, (int) sel_fmt.len_grpdesc, TRUE)) != NULL) {
+						if ((active_desc2 = wcspart(active_desc, sel_fmt.len_grpdesc, TRUE)) != NULL) {
 							desc_buf = wchar_t2char(active_desc2);
 							free(active_desc2);
 						}
@@ -1068,7 +1065,7 @@ choose_new_group(
 
 	prompt = fmt_string(_(txt_newsgroup), tinrc.default_goto_group);
 
-	if (!(prompt_string_default(prompt, tinrc.default_goto_group, "", HIST_GOTO_GROUP))) {
+	if (!(prompt_string_ptr_default(prompt, &tinrc.default_goto_group, "", HIST_GOTO_GROUP))) {
 		free(prompt);
 		return -1;
 	}
@@ -1716,7 +1713,7 @@ show_article_by_msgid(
 	}
 
 	if (selmenu.curr == -1 || !cg || (group = get_group_from_list(cg)) == NULL) {
-		if (!(cmdline.args & CMDLINE_MSGID))
+		if (!cmdline.msgid)
 			info_message(strchr(newsgroups, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), newsgroups);
 		else /* -L cmd. */
 			wait_message(2, strchr(newsgroups, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), newsgroups);

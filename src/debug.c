@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-28
+ *  Updated   : 2024-09-10
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -236,19 +236,19 @@ debug_print_attributes(
 		(unsigned) attr->post_process_type);
 	fprintf(fp, "select_header=[%u] select_global=[%s] select_expire=[%s]\n",
 		(unsigned) attr->quick_select_header,
-		BlankIfNull(attr->quick_select_scope),
+		attr->quick_select_scope ? attr->quick_select_scope ? BlankIfNull(*attr->quick_select_scope) : "" : "",
 		bool_unparse(attr->quick_select_expire));
 	fprintf(fp, "kill_header  =[%u] kill_global  =[%s] kill_expire  =[%s]\n",
 		(unsigned) attr->quick_kill_header,
-		BlankIfNull(attr->quick_kill_scope),
+		attr->quick_kill_scope ? attr->quick_kill_scope ? BlankIfNull(*attr->quick_kill_scope) : "" : "",
 		bool_unparse(attr->quick_kill_expire));
 	fprintf(fp, "maildir=[%s] savedir=[%s] savefile=[%s]\n",
-		BlankIfNull(attr->maildir),
-		BlankIfNull(attr->savedir),
-		BlankIfNull(attr->savefile));
+		attr->maildir ? BlankIfNull(*attr->maildir) : "",
+		attr->savedir ? BlankIfNull(*attr->savedir) : "",
+		attr->savefile ? BlankIfNull(*attr->savefile) : "");
 	fprintf(fp, "sigfile=[%s] followup_to=[%s]\n\n",
-		BlankIfNull(attr->sigfile),
-		BlankIfNull(attr->followup_to));
+		attr->sigfile ? BlankIfNull(*attr->sigfile) : "",
+		attr->followup_to ? BlankIfNull(*attr->followup_to) : "");
 	fflush(fp);
 }
 

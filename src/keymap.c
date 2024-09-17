@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2024-07-06
+ *  Updated   : 2024-08-08
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2024 Dirk Nimmich <nimmich@muenster.de>
@@ -503,6 +503,7 @@ read_keymap_file(
 	if (!fp)
 		return TRUE; /* no keymap file is not an error */
 
+	STRCPY(keymap_file, map); /* remember name for connection-page */
 	/* check if keymap file is up-to-date */
 	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
 		if (line[0] == '#') {

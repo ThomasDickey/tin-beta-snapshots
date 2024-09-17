@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2024-02-28
+ *  Updated   : 2024-08-27
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -187,11 +187,9 @@ compile_regex(
 		error_message(2, _(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
 	} else {
 		cache->match = pcre2_match_data_create_from_pattern_8(cache->re, NULL);
-		if (cache->match == NULL) {
-			/* out of memory ... */
+		if (cache->match == NULL) /* out of memory ... */
 			regex_cache_destroy(cache);
-			regex_cache_init(cache);
-		} else
+		else
 			return TRUE;
 	}
 
@@ -211,7 +209,6 @@ compile_regex(
 		if (regex_errmsg != NULL) {
 			/* we failed, clean up */
 			regex_cache_destroy(cache);
-			regex_cache_init(cache);
 			error_message(2, _(txt_pcre_error_text), regex_errmsg);
 		} else {
 			int n;

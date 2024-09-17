@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-25
+ *  Updated   : 2024-08-15
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -474,7 +474,7 @@ show_title(
 	char keyhelp[MAXKEYLEN];
 	char *helps;
 	const char *sign;
-	int col;
+	size_t col;
 
 	if (tinrc.show_help_mail_sign != SHOW_SIGN_NONE) {
 		col = MAXKEYLEN + strlen(_(txt_type_h_for_help)) + 1;
@@ -514,9 +514,9 @@ show_title(
 		}
 
 		if (sign) {
-			col = cCOLS - strwidth(sign);
-			if (col > 0) {
-				MoveCursor(0, col);
+			if (cCOLS > strwidth(sign)) {
+				col = cCOLS - strwidth(sign);
+				MoveCursor(0, (int) col);
 #ifdef HAVE_COLOR
 				fcol(tinrc.col_title);
 #endif /* HAVE_COLOR */

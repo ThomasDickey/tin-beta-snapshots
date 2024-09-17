@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-07-29
+.\" Updated   : 2024-08-11
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -209,7 +209,7 @@ Tages nicht laden.
 .TP 
 \fB\-Q\fP
 Schnellstart. \fBtin\fP so schnell wie möglich starten, zur Zeit entspricht
-diese Option \*(rq\fB\-dnq\fP\*(rq. Siehe auch die Befehlszeilenoptionen '\fB\-C\fP\*(rq und
+diese Option \*(rq\fB\-dnq\fP\*(rq. Siehe auch die Kommandozeilenoptionen '\fB\-C\fP\*(rq und
 \&\*(rq\fB\-G\fP\*(rq.
 .TP 
 \fB\-r\fP
@@ -247,8 +247,8 @@ abgestellt ist.
 .TP 
 \fB\-v\fP
 Ausführliche Ausgabe für \*(rq\fB\-c\fP\*(rq, \*(rq\fB\-D\fP\*(rq, \*(rq\fB\-M\fP\*(rq, \*(rq\fB\-N\fP\*(rq,
-\&\*(rq\fB\-S\fP\*(rq, \*(rq\fB\-u\fP\*(rq und \*(rq\fB\-Z\fP\*(rq\-Optionen. Kann mehrfach verwendet
-werden, um die Ausführlichkeit zu erhöhen.
+\&\*(rq\fB\-S\fP\*(rq, \*(rq\fB\-u\fP\*(rq, \*(rq\fB\-V\fP\*(rq und \*(rq\fB\-Z\fP\*(rq\-Optionen. Kann mehrfach
+verwendet werden, um die Ausführlichkeit zu erhöhen.
 .TP 
 \fB\-V\fP
 Versionsinformationen und Kompilieroptionen ausgeben.
@@ -285,11 +285,11 @@ Skripten.
 finden Sie im Abschnitt "MENÜ DER GLOBALE OPTIONEN UND KONFIGURIERBAREN
 TINRC\-VARIABLEN" und \fB\%tin\fP(5).
 .PP
-Eine Liste von Gruppen kann nach den anderen Befehlszeilenoptionen angegeben
-werden. Dies kann nützlich sein, falls Sie eine handverlesene Untermenge der
-aktiven Newsgruppen einblenden oder abonnieren möchten. Siehe den Abschnitt
-"NEWSGROUP LISTEN & WILDCARDS" für die Arten von Muster, die \fBtin\fP
-versteht.
+Eine Liste von Gruppen kann nach den anderen Kommandozeilenoptionen
+angegeben werden. Dies kann nützlich sein, falls Sie eine handverlesene
+Untermenge der aktiven Newsgruppen einblenden oder abonnieren möchten. Siehe
+den Abschnitt "NEWSGROUP LISTEN & WILDCARDS" für die Arten von Muster, die
+\fBtin\fP versteht.
 .PP
 Wenn Sie einen einzelnen Gruppennamen oder eine Wildcard, die nur auf eine
 einzelne Gruppe passt angeben, dann wird automatisch in diese Gruppe
@@ -327,9 +327,9 @@ and a warning may be given.
 .\"
 .\"
 .SS "NEWS ADMINISTRATION"
-Maintaining Netnews on large networks of machines can be a pretty time
-consuming job as I discovered when I was given the job of maintaining our
-news system and news users.
+Die Pflege von Netnews in großen Rechnernetzen kann sehr zeitaufwendig sein,
+wie ich feststellen musste, als ich mit der Pflege unseres Newssystems und
+der Benutzerbetreuung beauftragt wurde.
 .PP
 .\"
 .\"
@@ -553,9 +553,10 @@ sequence instead: reload it with \fBPostponed\fP, enter editor with
 ('\fB^O\fP\*(rq\fBy\fP\*(rq\fBq\fP'). See also \*(rq\fB\-o\fP\*(rq command\-line switch.
 .TP 
 \fBHelp 'h'\fP
-Help screen of commands available on the current menu. You can use
-\fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') and \fBSearchRepeat\fP
-('\fB\(rs\fP') to search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
+Hilfebildschirm mit den im aktuellen Menü verfügbaren Befehlen. Sie können
+\fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') und \fBSearchRepeat\fP
+('\fB\(rs\fP') verwenden, um darin zu suchen. \fBQuit\fP ('\fBq\fP') kehrt zum Menü
+zurück.
 .TP 
 \fBToggleHelpDisplay 'H'\fP
 Mini\-Hilfe am unterem Bildschirmrand und Posting Etikette nach dem Verfassen
@@ -645,10 +646,10 @@ Befehl nur beim Lesen mittels NNTP und der Server muss [X]HDR (\fBRFC\%2980\fP,
 \fBRFC\%3977\fP) oder XPAT (\fBRFC\%2980\fP) unterstützen.
 .TP 
 \fBSelectMoveGrp 'm'\fP
-Move the current group within the group selection list. By entering '1' the
-group will become the first displayed group in the list, by entering '8' the
-eighth group in the list etc. By entering '$' the group will be the last
-group displayed.
+Verschieben Sie die aktuelle Gruppe innerhalb der Gruppenauswahlliste. Durch
+Eingabe von '1' wird die Gruppe zur ersten angezeigten Gruppe in der Liste,
+durch Eingabe von '8' zur achten Gruppe in der Liste usw. Durch Eingabe von
+\&'$' wird die Gruppe zur letzten angezeigten Gruppe.
 .TP 
 \fBOptionMenu 'M'\fP
 Menü für benutzerkonfigurierbare Optionen (weitere Informationen finden sich
@@ -665,9 +666,9 @@ nachgefragt.
 Beendet \fBtin\fP sofort, ohne Bestätigungsnachfrage.
 .TP 
 \fBSelectToggleReadDisplay 'r'\fP
-Toggle display of all subscribed to groups and just those groups containing
-unread articles. Command has no effect if groups were specified on the
-command\-line when \fBtin\fP was started.
+Anzeige aller abonnierten Gruppen und nur der Gruppen mit ungelesenen
+Artikeln umschalten. Der Befehl hat keine Auswirkung, wenn beim Start von
+\fBtin\fP Gruppen in der Befehlszeile angegeben wurden.
 .TP 
 \fBBugReport 'R'\fP
 Einen Fehlerbericht oder Kommentar an <tin\-bugs@tin.org>
@@ -678,19 +679,19 @@ bekommen bzw. nach neuen Funktionen zu fragen.
 Ausgewählte Gruppe abonnieren.
 .TP 
 \fBSelectSubscribePat 'S'\fP
-Subscribe to groups matching user specified pattern. See the section
-"NEWSGROUP LISTS & WILDCARDS" for the types of pattern that \fBtin\fP
-understands.
+Abonnieren Sie Gruppen, die dem vom Benutzer angegebenen Muster
+entsprechen. Siehe den Abschnitt "NEWSGROUP LISTEN & WILDCARDS" für die
+Mustertypen, die \fBtin\fP versteht.
 .TP 
 \fBSelectUnsubscribe 'u'\fP
-Unsubscribe to current group. This can be used to remove bogus groups.  See
-\fBstrip_bogus\fP in the "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
-section.
+Aktuelle Gruppe abbestellen. Dies kann zum Entfernen ungültiger Gruppen
+verwendet werden. Siehe \fBstrip_bogus\fP im Abschnitt "MENÜ DER GLOBALE
+OPTIONEN UND KONFIGURIERBAREN TINRC\-VARIABLEN".
 .TP 
 \fBSelectUnsubscribePat 'U'\fP
-Unsubscribe to groups matching user specified pattern. See the section
-"NEWSGROUP LISTS & WILDCARDS" for the types of pattern that \fBtin\fP
-understands.
+Abmelden von Gruppen, die dem vom Benutzer angegebenen Muster
+entsprechen. Siehe den Abschnitt "NEWSGROUP LISTEN & WILDCARDS" für die
+Mustertypen, die tin versteht.
 .TP 
 \fBPost 'w'\fP
 Post an article to current group. If posting fails for some reason, you'll
@@ -733,14 +734,14 @@ Artikel mit Hilfe eines Menüs ausblenden. Lesen Sie für weitere
 Informationen den Abschnitt "FILTERN VON ARTIKELN".
 .TP 
 \fBMarkFeedRead '^X'\fP
-Mark current article, thread, range, auto\-selected (hot) articles, articles
-matching pattern or tagged articles as read. A prompt asks which type should
-be marked.
+Markiert den aktuellen Artikel, Thread, Bereich, automatisch ausgewählte
+(heiße) Artikel, Artikel mit Musterübereinstimmung oder getaggte Artikel als
+gelesen. Eine Eingabeaufforderung fragt, welcher Typ markiert werden soll.
 .TP 
 \fBMarkFeedUnread '^W'\fP
-Mark current article, thread, range, auto\-selected (hot) articles, articles
-matching pattern or tagged articles as unread. A prompt asks which type
-should be marked.
+Markiert den aktuellen Artikel, Thread, Bereich, automatisch ausgewählte
+(heiße) Artikel, Artikel mit Musterübereinstimmung oder getaggte Artikel als
+ungelesen. Eine Eingabeaufforderung fragt, welcher Typ markiert werden soll.
 .TP 
 \fBSetRange '#'\fP
 Wählen Sie eine Reihe von Artikeln auf die der nächste Befehl angewendet
@@ -766,20 +767,21 @@ Wählt alle Threads in der aktuellen Gruppe aus. Es ist eine Abkürzung für
 \fBGroupSelPattern\fP mit einem Muster von \*(rq*\*(rq.
 .TP 
 \fBGroupToggleThdSel '.'\fP
-Toggle selection of current thread. If at least one unread article, (but not
-every unread article) in the current thread is selected, then all unread
-articles become selected.
+Auswahl des aktuellen Threads umschalten. Wenn mindestens ein ungelesener
+Artikel (aber nicht jeder ungelesene Artikel) im aktuellen Thread ausgewählt
+ist, werden alle ungelesenen Artikel ausgewählt.
 .TP 
 \fBGroupSelThdIfUnreadSelected ';'\fP
-For each thread in current group, if it at least one unread article is
-selected, all unread articles become selected. This is useful for
-auto\-selection on author where reader wants to see entire thread.
+Wenn für jeden Thread in der aktuellen Gruppe mindestens ein ungelesener
+Artikel ausgewählt ist, werden alle ungelesenen Artikel ausgewählt. Dies ist
+nützlich für die automatische Auswahl anhand des Autors, wenn der Leser den
+gesamten Thread sehen möchte.
 .TP 
 \fBGroupSelPattern '='\fP
-Prompts for a pattern with which to match on. All threads whose subjects
-match the pattern will be marked selected. A pattern of \*(rq*\*(rq will match all
-subjects. Entering just '\fB<CR>\fP' will reuse the last pattern that
-was entered.
+Fordert zur Eingabe eines Musters auf, mit dem verglichen werden soll. Alle
+Threads, deren Subject mit dem Muster übereinstimmen, werden als ausgewählt
+markiert. Wenn nur '\fB<CR>\fP' eingeben, wird das zuletzt eingegebene
+Muster wiederverwendet.
 .TP 
 \fBGroupReverseSel '@'\fP
 Markierung für alle Artikel umkehren.
@@ -870,17 +872,18 @@ anzeigen.
 Informationen zur aktuellen Verbindung anzeigen.
 .TP 
 \fBGroupMarkThdRead 'K'\fP
-Mark article/thread as read and move onto the next unread article/thread. If
-a range of articles/threads is set, the range will be marked as read instead
-of the current article/thread. When tagged articles/threads are present, a
-prompt asks how to proceed.
+Markieren den Artikel/Thread als gelesen und fährt mit dem nächsten
+ungelesenen Artikel/Thread fort. Wenn ein Bereich von Artikeln/Threads
+festgelegt ist, wird der Bereich als gelesen markiert und nicht der aktuelle
+Artikel/Thread. Falls getaggte Artikel/Threads vorhanden sind, wird gefragt,
+wie fortgefahren werden soll.
 .TP 
 \fBGroupListThd 'l'\fP
 Öffnet den Thread unter der aktuellen Cursorposition.
 .TP 
 \fBLookupMessage 'L'\fP
-Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
-current group are searched.
+Artikel nach \*(rqMessage\-ID:\*(rq suchen. In dieser Ebene werden nur die IDs in
+der aktuellen Gruppe durchsucht.
 .TP 
 \fBGroupMail 'm'\fP
 Mailt den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
@@ -978,9 +981,10 @@ Aktuellen Artikel als ungelesen markieren.
 \fBMarkThdUnread 'Z'\fP
 .\" -------------------------------------------------------------------
 .\"
-Mark current thread as unread. If a range of threads is set, the range will
-be marked as unread instead of the current thread. When tagged threads are
-present, a prompt asks how to proceed.
+Aktuellen Thread als ungelesen markieren. Wenn ein Thread\-Bereich festgelegt
+ist, wird der Bereich anstelle des aktuellen Threads als ungelesen
+markiert. Falls getaggte Threads vorhanden sind, wird gefragt, wie
+fortgefahren werden soll.
 .SS "BEFEHLE ZUM AUFLISTEN VON THREADS"
 .\" this sections should be complete
 .TP  10
@@ -996,14 +1000,14 @@ Artikel mit Hilfe eines Menüs ausblenden. Lesen Sie für weitere
 Informationen den Abschnitt "FILTERN VON ARTIKELN".
 .TP 
 \fBMarkFeedRead '^X'\fP
-Mark current article, thread, range, auto\-selected (hot) articles, articles
-matching pattern or tagged articles as read. A prompt asks which type should
-be marked.
+Markiert den aktuellen Artikel, Thread, Bereich, automatisch ausgewählte
+(heiße) Artikel, Artikel mit Musterübereinstimmung oder getaggte Artikel als
+gelesen. Eine Eingabeaufforderung fragt, welcher Typ markiert werden soll.
 .TP 
 \fBMarkFeedUnread '^W'\fP
-Mark current article, thread, range, auto\-selected (hot) articles, articles
-matching pattern or tagged articles as unread. A prompt asks which type
-should be marked.
+Markiert den aktuellen Artikel, Thread, Bereich, automatisch ausgewählte
+(heiße) Artikel, Artikel mit Musterübereinstimmung oder getaggte Artikel als
+ungelesen. Eine Eingabeaufforderung fragt, welcher Typ markiert werden soll.
 .TP 
 \fBSetRange '#'\fP
 Wählen Sie eine Reihe von Artikeln auf die der nächste Befehl angewendet
@@ -1100,8 +1104,8 @@ articles is set, the range will be marked as read instead of the current
 article. When tagged articles are present, a prompt asks how to proceed.
 .TP 
 \fBLookupMessage 'L'\fP
-Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
-current group are searched.
+Artikel nach \*(rqMessage\-ID:\*(rq suchen. In dieser Ebene werden nur die IDs in
+der aktuellen Gruppe durchsucht.
 .TP 
 \fBThreadMail 'm'\fP
 Mailt den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
@@ -1209,7 +1213,7 @@ Schaltet die Anzeige aller Header vs. Header in \fBnews_headers_to_display\fP
 um.
 .TP 
 \fBPageArticleInfo \*(rq'\fP
-Detailed MIME information of the article.
+Detaillierte MIME\-Informationen des Artikels.
 .TP 
 \fBPageToggleRot '%'\fP
 ROT\-13 Entschlüsseln ein\-/ausschalten.
@@ -1344,8 +1348,8 @@ ungelesenen Thread.
 Zeigt das Thread\-Menü an, zu dem der aktuelle Artikel gehört.
 .TP 
 \fBLookupMessage 'L'\fP
-Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
-current group are searched.
+Artikel nach \*(rqMessage\-ID:\*(rq suchen. In dieser Ebene werden nur die IDs in
+der aktuellen Gruppe durchsucht.
 .TP 
 \fBPageMail 'm'\fP
 Mailt den aktuellen Artikel / Thread / automatisch ausgewählte (heiße)
@@ -1671,9 +1675,9 @@ ausgewählt (heiß) war, bevor er gelesen wurde. Standard ist
 \&':'. \fBkill_level\fP muss entsprechend eingestellt werden.
 .TP 
 \fBStart des MIME\-Viewers bestätigen (ask_for_metamail)\fP
-If ON \fBtin\fP will ask before using a MIME viewer (\fBmetamail_prog\fP) to
-display MIME messages. This only occurs if a MIME viewer is set. Default is
-OFF.
+Falls ON, fragt \fBtin\fP, bevor ein MIME\-Viewer (\fBmetamail_prog\fP) zum
+Anzeigen von MIME\-Nachrichten verwendet wird. Dies geschieht nur, wenn ein
+MIME\-Viewer festgelegt ist. Voreinstellung ist OFF.
 .TP 
 \fBFormatanweisung für die Anhangsebene (attachment_format)\fP
 Diese Formatanweisung wird von \fBtin\fP zur Darstellung der Anhangsebene
@@ -1816,11 +1820,12 @@ Vorsichtshalber um Bestätigung bitten.
 (e.g., \fBCatchup\fP ('\fBc\fP')). Commands that this affects are marked in this
 manual with '[after confirmation]'. Default is commands & quit.
 .IP \(bu
-\fBquit\fP You'll be asked to confirm that you wish to exit \fBtin\fP when you use
-the \fBQuit\fP ('\fBq\fP') command.
+\fBquit\fP Sie werden aufgefordert, zu bestätigen, dass Sie \fBtin\fP beenden
+möchten, wenn Sie den Befehl \fBQuit\fP ('\fBq\fP') verwenden.
 .IP \(bu
-\fBselect\fP Ask for confirmation before marking all not selected (with
-\fBGroupMarkUnselArtRead\fP ('\fBX\fP') command) articles as read.
+\fBselect\fP Bitten Sie um Bestätigung, bevor Sie alle nicht ausgewählten
+Artikel (mit dem Befehl \fBGroupMarkUnselArtRead\fP ('\fBX\fP')) als gelesen
+markieren.
 .RE
 .TP 
 \fBDatums Format\-Zeichenkette (date_format)\fP
@@ -3634,10 +3639,10 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .\"         ${HOST:-"$HOSTNAME"} fallback)
 .TP 
 \fBTINRC\fP
-Setzen Sie diese Variable wenn Sie Befehlszeilenoptionen angeben möchten mit
-denen \fBtin\fP gestartet werden soll um die Eingabe, jedes Mal wenn \fBtin\fP
+Setzen Sie diese Variable wenn Sie Kommandozeilenoptionen angeben möchten
+mit denen \fBtin\fP gestartet werden soll um die Eingabe, jedes Mal wenn \fBtin\fP
 ausgeführt wird, zu sparen. Der Inhalt der Umgebungsvariablen wird den
-angegebenen Befehlszeilenoptionen vorangestellt \(em bevor diese auf
+angegebenen Kommandozeilenoptionen vorangestellt \(em bevor diese auf
 Gültigkeit überprüft werden \(em um Sie manuell übersteuern zu können.
 .TP 
 \fBTIN_HOMEDIR\fP

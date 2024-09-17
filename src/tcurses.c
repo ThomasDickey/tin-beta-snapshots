@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2024-05-13
+ *  Updated   : 2024-08-15
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -400,8 +400,8 @@ highlight_string(
 		col = 0;
 
 	MoveCursor(row, col);
-	my_innstr(tmp, MIN(size, (LEN / 2) - 1));
-	tmp[MIN(size, LEN - 1)] = '\0';
+	my_innstr(tmp, MIN((size > 0 ? size : 0), (LEN / 2) - 1));
+	tmp[MIN((size > 0 ? size : 0), LEN - 1)] = '\0';
 	StartInverse();
 	my_fputs(tmp, stdout);
 	EndInverse();
@@ -456,10 +456,10 @@ word_highlight_string(
 	if (col < 0)
 		col = 0;
 	MoveCursor(row, col);
-	my_innstr(tmp, MIN(size, (LEN / 2) - 1));
+	my_innstr(tmp, MIN((size > 0 ? size: 0), (LEN / 2) - 1));
 
 #		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	tmp[MIN(size, LEN - 1)] = '\0';
+	tmp[MIN((size > 0 ? size : 0), LEN - 1)] = '\0';
 	if ((wtmp = char2wchar_t(tmp)) != NULL) {
 		wsize = wcswidth(wtmp, wcslen(wtmp) + 1);
 		free(wtmp);

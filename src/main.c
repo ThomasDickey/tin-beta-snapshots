@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-26
+ *  Updated   : 2024-09-01
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -81,7 +81,7 @@ static void usage(char *theProgname);
 #define FREE_ARGV_IF_NEEDED(orig, new) do { \
 		if (orig != new) { \
 			free(*(new + 1)); \
-			free(new); \
+			FreeAndNull(new); \
 		} \
 	} while (0)
 
@@ -122,14 +122,18 @@ main(
 		const char *p;
 
 		if ((p = tin_nl_langinfo(CODESET)) != NULL) {
-			if (strcasecmp(p, "ANSI_X3.4-1968")) /* !US-ASCII */
-				STRCPY(tinrc.mm_local_charset, p);
+			if (strcasecmp(p, "ANSI_X3.4-1968")) { /* !US-ASCII */
+				FreeIfNeeded(tinrc.mm_local_charset);
+				tinrc.mm_local_charset = my_strdup(p);
+			}
 		}
 	}
 #endif /* !NO_LOCALE */
 	/* always set a default value */
-	if (!*tinrc.mm_local_charset)
-		STRCPY(tinrc.mm_local_charset, "US-ASCII");
+	if (!tinrc.mm_local_charset || !*tinrc.mm_local_charset) {
+		FreeIfNeeded(tinrc.mm_local_charset);
+		tinrc.mm_local_charset = my_strdup("US-ASCII");
+	}
 
 	set_signal_handlers();
 
@@ -192,7 +196,8 @@ main(
 	 *
 	 * must be called before setup_screen()
 	 */
-	read_config_file(global_config_file, TRUE);
+	if (!read_config_file(global_config_file, TRUE))
+		global_config_file[0] = '\0';
 	read_config_file(local_config_file, FALSE);
 
 	tmp_no_write = no_write; /* keep no_write */
@@ -307,6 +312,7 @@ main(
 		/*
 		 * Read user specific keybindings and input history
 		 */
+		keymap_file[0] = '\0';
 		read_keymap_file();
 		read_input_history_file();
 
@@ -337,7 +343,8 @@ main(
 	 * $AUTOSUBSCRIBE groups
 	 */
 	no_write = tmp_no_write;
-	read_attributes_file(TRUE);
+	if (!read_attributes_file(TRUE))
+		global_attributes_file[0] = '\0';
 	read_attributes_file(FALSE);
 	start_groupnum = read_news_active_file();
 #ifdef DEBUG
@@ -363,12 +370,6 @@ main(
 	 */
 	if (!post_postponed_and_exit)
 		num_cmd_line_groups = read_cmd_line_groups();
-
-	/*
-	 * If TINRC environment variable exist, envarg.c:envargs() allocates
-	 * memory for a new argv. Free it now as it is no longer needed.
-	 */
-	FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 
 	/*
 	 * Quick post an article and exit if -w or -o specified
@@ -487,7 +488,7 @@ main(
 	/*
 	 * Work loop
 	 */
-	selection_page(start_groupnum, num_cmd_line_groups, (cmdline.args & CMDLINE_MSGID) ? cmdline.msgid : NULL);
+	selection_page(start_groupnum, num_cmd_line_groups);
 	/* NOTREACHED */
 	return 0;
 }
@@ -512,7 +513,10 @@ read_cmd_line_options(
 	char *argv[])
 {
 	char **argv_orig = argv;
-	int ch, i;
+	int ch;
+#if defined(NNTP_ABLE) || defined(DEBUG)
+	int i;
+#endif /* NNTP_ABLE || DEBUG */
 #ifdef NNTP_ABLE
 	t_bool newsrc_set = FALSE;
 #endif /* NNTP_ABLE */
@@ -521,7 +525,6 @@ read_cmd_line_options(
 
 	while ((ch = getopt(argc, argv, OPTIONS)) != -1) {
 		switch (ch) {
-
 			case '4':
 #if defined(NNTP_ABLE) && defined(INET6)
 				force_ipv4 = TRUE;
@@ -660,7 +663,7 @@ read_cmd_line_options(
 
 			case 'g':	/* select alternative NNTP-server, implies -r */
 #ifdef NNTP_ABLE
-				my_strncpy(cmdline.nntpserver, optarg, sizeof(cmdline.nntpserver) - 1);
+				cmdline.nntpserver= my_strdup(optarg);
 				str_trim(cmdline.nntpserver);
 				{
 					char *p;
@@ -771,8 +774,8 @@ read_cmd_line_options(
 #	endif /* !INET6 */
 					}
 				}
-				if (*cmdline.nntpserver)
-					cmdline.args |= CMDLINE_NNTPSERVER;
+				if (!*cmdline.nntpserver)
+					FreeAndNull(cmdline.nntpserver);
 				read_news_via_nntp = TRUE;
 #else
 				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
@@ -790,7 +793,8 @@ read_cmd_line_options(
 				free_all_arrays();
 				exit(EXIT_SUCCESS);
 				/* keep lint quiet: */
-				/* FALLTHROUGH */
+				/* NOTREACHED */
+				break;
 
 			case 'I':
 				joinpath(index_newsdir, sizeof(index_newsdir), optarg, INDEX_NEWSDIR);
@@ -816,10 +820,8 @@ read_cmd_line_options(
 
 			case 'L':
 #ifdef NNTP_ABLE
-				my_strncpy(cmdline.msgid, optarg, sizeof(cmdline.msgid) - 1);
+				cmdline.msgid = my_strdup(optarg);
 				str_trim(cmdline.msgid);
-				cmdline.args |= CMDLINE_MSGID;
-				break;
 #else
 				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
@@ -828,10 +830,10 @@ read_cmd_line_options(
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTP_ABLE */
+				break;
 
 			case 'm':
-				my_strncpy(cmdline.maildir, optarg, sizeof(cmdline.maildir) - 1);
-				cmdline.args |= CMDLINE_MAILDIR;
+				cmdline.maildir = my_strdup(optarg);
 				break;
 
 			case 'M':	/* mail new news to specified user */
@@ -936,8 +938,7 @@ read_cmd_line_options(
 				break;
 
 			case 's':
-				my_strncpy(cmdline.savedir, optarg, sizeof(cmdline.savedir) - 1);
-				cmdline.args |= CMDLINE_SAVEDIR;
+				cmdline.savedir = my_strdup(optarg);
 				break;
 
 			case 'S':	/* save new news to dir structure */
@@ -994,12 +995,13 @@ read_cmd_line_options(
 				break;
 
 			case 'V':
-				tin_version_info(stderr);
+				tin_version_info(stderr, verbose);
 				FREE_ARGV_IF_NEEDED(argv_orig, argv);
 				free_all_arrays();
 				exit(EXIT_SUCCESS);
 				/* keep lint quiet: */
-				/* FALLTHROUGH */
+				/* NOTREACHED */
+				break;
 
 			case 'w':	/* post article & exit */
 #ifndef NO_POSTING
@@ -1061,23 +1063,16 @@ read_cmd_line_options(
 	/* cmdargs = argv; */
 	num_cmdargs = optind;
 	max_cmdargs = argc;
+
 #ifdef NNTP_ABLE
 	if (!newsrc_set) { /* this gives "-f" a higher priority (in contrast to -p) */
 		if (read_news_via_nntp) {
 			nntp_server = getserverbyfile(NNTP_SERVER_FILE);
 			get_newsrcname(newsrc, sizeof(newsrc), nntp_server);
 		} else {
-#	if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
-			struct utsname uts;
-			(void) uname(&uts);
-			get_newsrcname(newsrc, sizeof(newsrc), uts.nodename);
-#	else
-			char nodenamebuf[256] = { '\0' }; /* SUSv2 limit; better use HOST_NAME_MAX */
-#		ifdef HAVE_GETHOSTNAME
-			(void) gethostname(nodenamebuf, sizeof(nodenamebuf));
-#		endif /* HAVE_GETHOSTNAME */
+			const char *nodenamebuf = get_host_name();
+
 			get_newsrcname(newsrc, sizeof(newsrc), nodenamebuf);
-#	endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 		}
 	}
 #endif /* NNTP_ABLE */
@@ -1112,9 +1107,9 @@ read_cmd_line_options(
 	 *       (extend t_cmdlineopts with a flag indicating which of -M/-N was given)
 	 *       -uo, -uw, -uX, ...
 	 */
-	if (post_postponed_and_exit && (cmdline.args & CMDLINE_MSGID)) {
+	if (post_postponed_and_exit && cmdline.msgid) {
 		wait_message(2, _(txt_useless_combination), "-o", "-L", "-L");
-		cmdline.args ^= CMDLINE_MSGID;
+		FreeAndNull(cmdline.msgid);
 	}
 	if (post_postponed_and_exit && force_no_post) {
 		wait_message(2, _(txt_useless_combination), "-o", "-x", "-x");
@@ -1132,7 +1127,7 @@ read_cmd_line_options(
 		wait_message(2, _(txt_useless_combination), "-w", "-x", "-x");
 		force_no_post = FALSE;
 	}
-	if (post_article_and_exit && (cmdline.args & CMDLINE_MSGID)) {
+	if (post_article_and_exit && cmdline.msgid) {
 		wait_message(2, _(txt_useless_combination), "-w", "-L", "-w");
 		post_article_and_exit = FALSE;
 	}
@@ -1152,11 +1147,11 @@ read_cmd_line_options(
 		wait_message(2, _(txt_useless_combination), "-c", "-Z", "-c");
 		catchup = FALSE;
 	}
-	if (catchup && (cmdline.args & CMDLINE_MSGID)) {
+	if (catchup && cmdline.msgid) {
 		wait_message(2, _(txt_useless_combination), "-c", "-L", "-c");
 		catchup = FALSE;
 	}
-	if (update_index && (cmdline.args & CMDLINE_MSGID)) {
+	if (update_index && cmdline.msgid) {
 		wait_message(2, _(txt_useless_combination), "-u", "-L", "-u");
 		update_index = FALSE;
 	}
@@ -1164,11 +1159,11 @@ read_cmd_line_options(
 		wait_message(2, _(txt_useless_combination), "-n", "-R", "-n");
 		newsrc_active = read_news_via_nntp = FALSE;
 	}
-	if (read_saved_news && (cmdline.args & CMDLINE_MSGID)) {
+	if (read_saved_news && cmdline.msgid) {
 		wait_message(2, _(txt_useless_combination), "-R", "-L", "-R");
 		read_saved_news = FALSE;
 	}
-	if (save_news && (cmdline.args & CMDLINE_MSGID)) {
+	if (save_news && cmdline.msgid) {
 		wait_message(2, _(txt_useless_combination), "-S", "-L", "-S");
 		save_news = FALSE;
 	}
@@ -1176,7 +1171,7 @@ read_cmd_line_options(
 		wait_message(2, _(txt_useless_combination), "-z", "-S", "-z");
 		start_any_unread = FALSE;
 	}
-	if (start_any_unread && (cmdline.args & CMDLINE_MSGID)) {
+	if (start_any_unread && cmdline.msgid) {
 		wait_message(2, _(txt_useless_combination), "-z", "-L", "-z");
 		start_any_unread = FALSE;
 	}
@@ -1188,7 +1183,7 @@ read_cmd_line_options(
 		wait_message(2, _(txt_useless_combination), "-Z", "-z", "-Z");
 		check_any_unread = FALSE;
 	}
-	if (check_any_unread && (cmdline.args & CMDLINE_MSGID)) {
+	if (check_any_unread && cmdline.msgid) {
 		wait_message(2, _(txt_useless_combination), "-Z", "-L", "-Z");
 		check_any_unread = FALSE;
 	}
@@ -1421,7 +1416,8 @@ read_cmd_line_groups(
 					if (my_group_add(active[i].name, TRUE) != -1) {
 						matched++;
 						if (post_article_and_exit) {
-							my_strncpy(tinrc.default_post_newsgroups, active[i].name, sizeof(tinrc.default_post_newsgroups) - 1);
+							FreeIfNeeded(tinrc.default_post_newsgroups);
+							tinrc.default_post_newsgroups = my_strdup(active[i].name);
 							break;
 						}
 						active[i].read_during_session = TRUE; /* misuse for "-[zZMN] grp" */
@@ -1474,8 +1470,11 @@ handle_cmdargs(
 	if (init)
 		argv_modified = TRUE;
 	else if (argv_modified) {
-		free(*(cmdargs + 1));
-		free(cmdargs);
+		if (cmdargs) {
+			free(*(cmdargs + 1));
+			free(cmdargs);
+			cmdargs = NULL;
+		}
 	}
 }
 

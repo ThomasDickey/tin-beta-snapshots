@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-08-01
+ *  Updated   : 2024-09-11
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -226,7 +226,7 @@ check_start_save_any_news(
 				char *group_path = my_malloc(strlen(group->name) + 2); /* trailing "/\0" */
 
 				make_group_path(group->name, group_path);
-				if (!strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : tinrc.savedir, tmp, sizeof(tmp), group, FALSE))
+				if (!strfpath(cmdline.savedir ? cmdline.savedir : tinrc.savedir, tmp, sizeof(tmp), group, FALSE))
 					joinpath(tmp, sizeof(tmp), homedir, DEFAULT_SAVEDIR);
 
 				joinpath(path, sizeof(path), tmp, group_path);
@@ -717,7 +717,7 @@ expand_save_filename(
 	base_name(buf_path, base_filename);
 
 	/* Build default path to save to */
-	if (!(ret = strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : curr_group->attribute->savedir, buf, sizeof(buf), curr_group, FALSE)))
+	if (!(ret = strfpath(cmdline.savedir ? cmdline.savedir : (curr_group->attribute->savedir && *curr_group->attribute->savedir) ? *curr_group->attribute->savedir : NULL, buf, sizeof(buf), curr_group, FALSE)))
 		joinpath(buf, sizeof(buf), homedir, DEFAULT_SAVEDIR);
 
 	/* Join path and filename */
@@ -1243,7 +1243,7 @@ decode_save_one(
 	/*
 	 * Decode this message part if appropriate
 	 */
-	if (!(check_save_mime_type(part, curr_group->attribute->mime_types_to_save))) {
+	if (curr_group->attribute->mime_types_to_save && *curr_group->attribute->mime_types_to_save && !(check_save_mime_type(part, BlankIfNull(*curr_group->attribute->mime_types_to_save)))) {
 		/* TODO: skip message if saving multiple files (e.g. save 't'agged) */
 		wait_message(1, "Skipped %s/%s", content_types[part->type], part->subtype);	/* TODO: better msg */
 		return TRUE;
@@ -1288,8 +1288,8 @@ decode_save_one(
 		switch (part->encoding) {
 			case ENCODING_QP:
 			case ENCODING_BASE64:
-				count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2);
-				fwrite(buf2, (size_t) count, 1, fp);
+				if ((count = mmdecode(buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2)) > 0)
+					fwrite(buf2, (size_t) count, 1, fp);
 				break;
 
 			case ENCODING_UUE:
@@ -1809,9 +1809,9 @@ build_attachment_line(
 	 * make it the same size like in !USE_CURSES case to simplify some code
 	 */
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		sptr = my_malloc(cCOLS * MB_CUR_MAX + 2);
+		sptr = my_malloc((size_t) cCOLS * MB_CUR_MAX + 2);
 #	else
-		sptr = my_malloc(cCOLS + 2);
+		sptr = my_malloc((size_t) cCOLS + 2);
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #else
 	sptr = screen[INDEX2SNUM(i)].col;
@@ -1990,7 +1990,7 @@ tag_pattern(
 #endif /* 0 */
 
 	prompt = fmt_string(_(txt_select_pattern), tinrc.default_select_pattern);
-	if (!(prompt_string_default(prompt, tinrc.default_select_pattern, _(txt_info_no_previous_expression), HIST_SELECT_PATTERN))) {
+	if (!(prompt_string_ptr_default(prompt, &tinrc.default_select_pattern, _(txt_info_no_previous_expression), HIST_SELECT_PATTERN))) {
 		free(prompt);
 		return;
 	}
@@ -2374,7 +2374,7 @@ pipe_part(
 	char *prompt;
 
 	prompt = fmt_string(_(txt_pipe_to_command), (size_t) cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
-	if (!(prompt_string_default(prompt, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND))) {
+	if (!(prompt_string_ptr_default(prompt, &tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND))) {
 		free(prompt);
 		return;
 	}

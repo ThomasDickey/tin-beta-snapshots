@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-09
+ *  Updated   : 2024-09-12
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -91,10 +91,11 @@ static void write_server_config(void);
 t_bool
 read_config_file(
 	char *file,
-	t_bool global_file) /* return value is always ignored */
+	t_bool global_file)
 {
 	FILE *fp;
-	char buf[LEN], tmp[LEN];
+	char *buf;
+	char tmp[LEN];
 	struct t_version *upgrade = NULL;
 #ifdef CHARSET_CONVERSION
 	int i;
@@ -107,8 +108,8 @@ read_config_file(
 	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_config_file), global_file ? _(txt_global) : "", file);
 
-	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
-		if (buf[0] == '\n')
+	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
+		if (buf[0] == '\0')
 			continue;
 		if (buf[0] == '#') {
 			if (upgrade == NULL && !global_file && match_string(buf, "# tin configuration file V", NULL, 0)) {
@@ -183,7 +184,7 @@ read_config_file(
 			if (match_boolean(buf, "ask_for_metamail=", &tinrc.ask_for_metamail))
 				break;
 
-			if (match_string(buf, "attachment_format=", tinrc.attachment_format, sizeof(tinrc.attachment_format)))
+			if (match_string_ptr(buf, "attachment_format=", &tinrc.attachment_format))
 				break;
 
 			if (match_integer(buf, "auto_cc_bcc=", &tinrc.auto_cc_bcc, AUTO_CC_BCC))
@@ -319,7 +320,7 @@ read_config_file(
 			break;
 
 		case 'd':
-			if (match_string(buf, "date_format=", tinrc.date_format, sizeof(tinrc.date_format)))
+			if (match_string_ptr(buf, "date_format=", &tinrc.date_format))
 				break;
 
 			if (match_integer(buf, "default_filter_days=", &tinrc.filter_days, 0)) {
@@ -357,63 +358,63 @@ read_config_file(
 				break;
 			}
 
-			if (match_string(buf, "default_author_search=", tinrc.default_search_author, sizeof(tinrc.default_search_author)))
+			if (match_string_ptr(buf, "default_author_search=", &tinrc.default_search_author))
 				break;
 
-			if (match_string(buf, "default_goto_group=", tinrc.default_goto_group, sizeof(tinrc.default_goto_group)))
+			if (match_string_ptr(buf, "default_goto_group=", &tinrc.default_goto_group))
 				break;
 
-			if (match_string(buf, "default_config_search=", tinrc.default_search_config, sizeof(tinrc.default_search_config)))
+			if (match_string_ptr(buf, "default_config_search=", &tinrc.default_search_config))
 				break;
 
-			if (match_string(buf, "default_group_search=", tinrc.default_search_group, sizeof(tinrc.default_search_group)))
+			if (match_string_ptr(buf, "default_group_search=", &tinrc.default_search_group))
 				break;
 
-			if (match_string(buf, "default_subject_search=", tinrc.default_search_subject, sizeof(tinrc.default_search_subject)))
+			if (match_string_ptr(buf, "default_subject_search=", &tinrc.default_search_subject))
 				break;
 
-			if (match_string(buf, "default_art_search=", tinrc.default_search_art, sizeof(tinrc.default_search_art)))
+			if (match_string_ptr(buf, "default_art_search=", &tinrc.default_search_art))
 				break;
 
-			if (match_string(buf, "default_repost_group=", tinrc.default_repost_group, sizeof(tinrc.default_repost_group)))
+			if (match_string_ptr(buf, "default_repost_group=", &tinrc.default_repost_group))
 				break;
 
-			if (match_string(buf, "default_mail_address=", tinrc.default_mail_address, sizeof(tinrc.default_mail_address)))
+			if (match_string_ptr(buf, "default_mail_address=", &tinrc.default_mail_address))
 				break;
 
 			if (match_integer(buf, "default_move_group=", &tinrc.default_move_group, 0))
 				break;
 
 #ifndef DONT_HAVE_PIPING
-			if (match_string(buf, "default_pipe_command=", tinrc.default_pipe_command, sizeof(tinrc.default_pipe_command)))
+			if (match_string_ptr(buf, "default_pipe_command=", &tinrc.default_pipe_command))
 				break;
 #endif /* !DONT_HAVE_PIPING */
 
-			if (match_string(buf, "default_post_newsgroups=", tinrc.default_post_newsgroups, sizeof(tinrc.default_post_newsgroups)))
+			if (match_string_ptr(buf, "default_post_newsgroups=", &tinrc.default_post_newsgroups))
 				break;
 
-			if (match_string(buf, "default_post_subject=", tinrc.default_post_subject, sizeof(tinrc.default_post_subject)))
+			if (match_string_ptr(buf, "default_post_subject=", &tinrc.default_post_subject))
 				break;
 
-			if (match_string(buf, "default_pattern=", tinrc.default_pattern, sizeof(tinrc.default_pattern)))
+			if (match_string_ptr(buf, "default_pattern=", &tinrc.default_pattern))
 				break;
 
-			if (match_string(buf, "default_range_group=", tinrc.default_range_group, sizeof(tinrc.default_range_group)))
+			if (match_string_ptr(buf, "default_range_group=", &tinrc.default_range_group))
 				break;
 
-			if (match_string(buf, "default_range_select=", tinrc.default_range_select, sizeof(tinrc.default_range_select)))
+			if (match_string_ptr(buf, "default_range_select=", &tinrc.default_range_select))
 				break;
 
-			if (match_string(buf, "default_range_thread=", tinrc.default_range_thread, sizeof(tinrc.default_range_thread)))
+			if (match_string_ptr(buf, "default_range_thread=", &tinrc.default_range_thread))
 				break;
 
-			if (match_string(buf, "default_save_file=", tinrc.default_save_file, sizeof(tinrc.default_save_file)))
+			if (match_string_ptr(buf, "default_save_file=", &tinrc.default_save_file))
 				break;
 
-			if (match_string(buf, "default_select_pattern=", tinrc.default_select_pattern, sizeof(tinrc.default_select_pattern)))
+			if (match_string_ptr(buf, "default_select_pattern=", &tinrc.default_select_pattern))
 				break;
 
-			if (match_string(buf, "default_shell_command=", tinrc.default_shell_command, sizeof(tinrc.default_shell_command)))
+			if (match_string_ptr(buf, "default_shell_command=", &tinrc.default_shell_command))
 				break;
 
 			if (match_boolean(buf, "dont_break_words=", &tinrc.dont_break_words))
@@ -425,14 +426,14 @@ read_config_file(
 			break;
 
 		case 'e':
-			if (match_string(buf, "editor_format=", tinrc.editor_format, sizeof(tinrc.editor_format)))
+			if (match_string_ptr(buf, "editor_format=", &tinrc.editor_format))
 				break;
 
 #ifdef HAVE_COLOR
 			if (match_boolean(buf, "extquote_handling=", &tinrc.extquote_handling))
 				break;
 
-			if (match_string(buf, "extquote_regex=", tinrc.extquote_regex, sizeof(tinrc.extquote_regex)))
+			if (match_string_ptr(buf, "extquote_regex=", &tinrc.extquote_regex))
 				break;
 #endif /* HAVE_COLOR */
 
@@ -451,7 +452,7 @@ read_config_file(
 			if (match_integer(buf, "goto_next_unread=", &tinrc.goto_next_unread, NUM_GOTO_NEXT_UNREAD))
 				break;
 
-			if (match_string(buf, "group_format=", tinrc.group_format, sizeof(tinrc.group_format)))
+			if (match_string_ptr(buf, "group_format=", &tinrc.group_format))
 				break;
 
 			if (match_boolean(buf, "group_catchup_on_exit=", &tinrc.group_catchup_on_exit))
@@ -472,7 +473,7 @@ read_config_file(
 			if (match_boolean(buf, "inverse_okay=", &tinrc.inverse_okay))
 				break;
 
-			if (match_string(buf, "inews_prog=", tinrc.inews_prog, sizeof(tinrc.inews_prog)))
+			if (match_string_ptr(buf, "inews_prog=", &tinrc.inews_prog))
 				break;
 
 			if (match_integer(buf, "interactive_mailer=", &tinrc.interactive_mailer, (int) INTERACTIVE_NONE))
@@ -490,10 +491,10 @@ read_config_file(
 			break;
 
 		case 'm':
-			if (match_string(buf, "maildir=", tinrc.maildir, sizeof(tinrc.maildir)))
+			if (match_string_ptr(buf, "maildir=", &tinrc.maildir))
 				break;
 
-			if (match_string(buf, "mailer_format=", tinrc.mailer_format, sizeof(tinrc.mailer_format)))
+			if (match_string_ptr(buf, "mailer_format=", &tinrc.mailer_format))
 				break;
 
 			if (match_list(buf, "mail_mime_encoding=", txt_mime_encodings, &tinrc.mail_mime_encoding))
@@ -503,7 +504,7 @@ read_config_file(
 				break;
 
 #ifndef CHARSET_CONVERSION
-			if (match_string(buf, "mm_charset=", tinrc.mm_charset, sizeof(tinrc.mm_charset)))
+			if (match_string_ptr(buf, "mm_charset=", &tinrc.mm_charset))
 				break;
 #else
 			if (match_list(buf, "mm_charset=", txt_mime_charsets, &tinrc.mm_network_charset))
@@ -511,7 +512,7 @@ read_config_file(
 			if (match_list(buf, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset))
 				break;
 #	ifdef NO_LOCALE
-			if (match_string(buf, "mm_local_charset=", tinrc.mm_local_charset, sizeof(tinrc.mm_local_charset)))
+			if (match_string_ptr(buf, "mm_local_charset=", &tinrc.mm_local_charset))
 				break;
 #	endif /* NO_LOCALE */
 #endif /* !CHARSET_CONVERSION */
@@ -522,16 +523,16 @@ read_config_file(
 			if (match_boolean(buf, "mark_saved_read=", &tinrc.mark_saved_read))
 				break;
 
-			if (match_string(buf, "mail_address=", tinrc.mail_address, sizeof(tinrc.mail_address)))
+			if (match_string_ptr(buf, "mail_address=", &tinrc.mail_address))
 				break;
 
-			if (match_string(buf, "mail_quote_format=", tinrc.mail_quote_format, sizeof(tinrc.mail_quote_format)))
+			if (match_string_ptr(buf, "mail_quote_format=", &tinrc.mail_quote_format))
 				break;
 
 			if (match_list(buf, "mailbox_format=", txt_mailbox_formats, &tinrc.mailbox_format))
 				break;
 
-			if (match_string(buf, "metamail_prog=", tinrc.metamail_prog, sizeof(tinrc.metamail_prog)))
+			if (match_string_ptr(buf, "metamail_prog=", &tinrc.metamail_prog))
 				break;
 
 			if (match_integer(buf, "mono_markdash=", &tinrc.mono_markdash, MAX_ATTR))
@@ -555,14 +556,14 @@ read_config_file(
 			}
 
 			/* pick which news headers to display */
-			if (match_string(buf, "news_headers_to_display=", tinrc.news_headers_to_display, sizeof(tinrc.news_headers_to_display)))
+			if (match_string_ptr(buf, "news_headers_to_display=", &tinrc.news_headers_to_display))
 				break;
 
 			/* pick which news headers to NOT display */
-			if (match_string(buf, "news_headers_to_not_display=", tinrc.news_headers_to_not_display, sizeof(tinrc.news_headers_to_not_display)))
+			if (match_string_ptr(buf, "news_headers_to_not_display=", &tinrc.news_headers_to_not_display))
 				break;
 
-			if (match_string(buf, "news_quote_format=", tinrc.news_quote_format, sizeof(tinrc.news_quote_format)))
+			if (match_string_ptr(buf, "news_quote_format=", &tinrc.news_quote_format))
 				break;
 
 #if defined(HAVE_ALARM) && defined(SIGALRM)
@@ -579,10 +580,10 @@ read_config_file(
 			break;
 
 		case 'p':
-			if (match_string(buf, "page_mime_format=", tinrc.page_mime_format, sizeof(tinrc.page_mime_format)))
+			if (match_string_ptr(buf, "page_mime_format=", &tinrc.page_mime_format))
 				break;
 
-			if (match_string(buf, "page_uue_format=", tinrc.page_uue_format, sizeof(tinrc.page_uue_format)))
+			if (match_string_ptr(buf, "page_uue_format=", &tinrc.page_uue_format))
 				break;
 
 			if (match_list(buf, "post_mime_encoding=", txt_mime_encodings, &tinrc.post_mime_encoding))
@@ -592,7 +593,7 @@ read_config_file(
 				break;
 
 #ifndef DISABLE_PRINTING
-			if (match_string(buf, "printer=", tinrc.printer, sizeof(tinrc.printer)))
+			if (match_string_ptr(buf, "printer=", &tinrc.printer))
 				break;
 
 			if (match_boolean(buf, "print_header=", &tinrc.print_header))
@@ -608,7 +609,7 @@ read_config_file(
 			if (match_boolean(buf, "post_process_view=", &tinrc.post_process_view))
 				break;
 
-			if (match_string(buf, "posted_articles_file=", tinrc.posted_articles_file, sizeof(tinrc.posted_articles_file)))
+			if (match_string_ptr(buf, "posted_articles_file=", &tinrc.posted_articles_file))
 				break;
 
 			if (match_boolean(buf, "process_only_unread=", &tinrc.process_only_unread))
@@ -620,7 +621,7 @@ read_config_file(
 			break;
 
 		case 'q':
-			if (match_string(buf, "quote_chars=", tinrc.quote_chars, sizeof(tinrc.quote_chars))) {
+			if (match_string_ptr(buf, "quote_chars=", &tinrc.quote_chars)) {
 				if (upgrade && upgrade->file_version < 10317) { /* %s/%S changed to %I */
 					char *q = tinrc.quote_chars;
 
@@ -639,13 +640,13 @@ read_config_file(
 				break;
 
 #ifdef HAVE_COLOR
-			if (match_string(buf, "quote_regex=", tinrc.quote_regex, sizeof(tinrc.quote_regex)))
+			if (match_string_ptr(buf, "quote_regex=", &tinrc.quote_regex))
 				break;
 
-			if (match_string(buf, "quote_regex2=", tinrc.quote_regex2, sizeof(tinrc.quote_regex2)))
+			if (match_string_ptr(buf, "quote_regex2=", &tinrc.quote_regex2))
 				break;
 
-			if (match_string(buf, "quote_regex3=", tinrc.quote_regex3, sizeof(tinrc.quote_regex3)))
+			if (match_string_ptr(buf, "quote_regex3=", &tinrc.quote_regex3))
 				break;
 #endif /* HAVE_COLOR */
 
@@ -666,12 +667,13 @@ read_config_file(
 			break;
 
 		case 's':
-			if (match_string(buf, "savedir=", tinrc.savedir, sizeof(tinrc.savedir))) {
-				if (tinrc.savedir[0] == '.' && strlen(tinrc.savedir) == 1) {
+			if (match_string_ptr(buf, "savedir=", &tinrc.savedir)) {
+				if (*tinrc.savedir == '.' && strlen(tinrc.savedir) == 1) {
 					char buff[PATH_LEN];
 
 					get_cwd(buff);
-					my_strncpy(tinrc.savedir, buff, sizeof(tinrc.savedir) - 1);
+					free(tinrc.savedir);
+					tinrc.savedir = my_strdup(buff);
 				}
 				break;
 			}
@@ -692,7 +694,7 @@ read_config_file(
 				break;
 			}
 
-			if (match_string(buf, "select_format=", tinrc.select_format, sizeof(tinrc.select_format)))
+			if (match_string_ptr(buf, "select_format=", &tinrc.select_format))
 				break;
 
 			if (match_integer(buf, "show_author=", &tinrc.show_author, SHOW_FROM_BOTH))
@@ -716,13 +718,13 @@ read_config_file(
 			if (match_boolean(buf, "sigdashes=", &tinrc.sigdashes))
 				break;
 
-			if (match_string(buf, "sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile)))
+			if (match_string_ptr(buf, "sigfile=", &tinrc.sigfile))
 				break;
 
 			if (match_boolean(buf, "signature_repost=", &tinrc.signature_repost))
 				break;
 
-			if (match_string(buf, "spamtrap_warning_addresses=", tinrc.spamtrap_warning_addresses, sizeof(tinrc.spamtrap_warning_addresses)))
+			if (match_string_ptr(buf, "spamtrap_warning_addresses=", &tinrc.spamtrap_warning_addresses))
 				break;
 
 			if (match_integer(buf, "sort_article_type=", &tinrc.sort_article_type, SORT_ARTICLES_BY_LINES_ASCEND))
@@ -745,13 +747,13 @@ read_config_file(
 			if (match_boolean(buf, "show_art_score=", &tinrc.show_art_score))
 				break;
 
-			if (match_string(buf, "slashes_regex=", tinrc.slashes_regex, sizeof(tinrc.slashes_regex)))
+			if (match_string_ptr(buf, "slashes_regex=", &tinrc.slashes_regex))
 				break;
 
-			if (match_string(buf, "stars_regex=", tinrc.stars_regex, sizeof(tinrc.stars_regex)))
+			if (match_string_ptr(buf, "stars_regex=", &tinrc.stars_regex))
 				break;
 
-			if (match_string(buf, "strokes_regex=", tinrc.strokes_regex, sizeof(tinrc.strokes_regex)))
+			if (match_string_ptr(buf, "strokes_regex=", &tinrc.strokes_regex))
 				break;
 
 #ifndef USE_CURSES
@@ -766,10 +768,10 @@ read_config_file(
 				break;
 
 			/* Regexp used to strip "Re: "s and similar */
-			if (match_string(buf, "strip_re_regex=", tinrc.strip_re_regex, sizeof(tinrc.strip_re_regex)))
+			if (match_string_ptr(buf, "strip_re_regex=", &tinrc.strip_re_regex))
 				break;
 
-			if (match_string(buf, "strip_was_regex=", tinrc.strip_was_regex, sizeof(tinrc.strip_was_regex)))
+			if (match_string_ptr(buf, "strip_was_regex=", &tinrc.strip_was_regex))
 				break;
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -786,7 +788,7 @@ read_config_file(
 			if (match_integer(buf, "thread_perc=", &tinrc.thread_perc, 100))
 				break;
 
-			if (match_string(buf, "thread_format=", tinrc.thread_format, sizeof(tinrc.thread_format)))
+			if (match_string_ptr(buf, "thread_format=", &tinrc.thread_format))
 				break;
 
 			if (match_integer(buf, "thread_score=", &tinrc.thread_score, THREAD_SCORE_WEIGHT))
@@ -799,7 +801,7 @@ read_config_file(
 				break;
 
 #ifdef NNTPS_ABLE
-			if (match_string(buf, "tls_ca_cert_file=", tinrc.tls_ca_cert_file, sizeof(tinrc.tls_ca_cert_file)))
+			if (match_string_ptr(buf, "tls_ca_cert_file=", &tinrc.tls_ca_cert_file))
 				break;
 #endif /* NNTPS_ABLE */
 
@@ -814,13 +816,13 @@ read_config_file(
 			break;
 
 		case 'u':
-			if (match_string(buf, "underscores_regex=", tinrc.underscores_regex, sizeof(tinrc.underscores_regex)))
+			if (match_string_ptr(buf, "underscores_regex=", &tinrc.underscores_regex))
 				break;
 
 			if (match_boolean(buf, "unlink_article=", &tinrc.unlink_article))
 				break;
 
-			if (match_string(buf, "url_handler=", tinrc.url_handler, sizeof(tinrc.url_handler)))
+			if (match_string_ptr(buf, "url_handler=", &tinrc.url_handler))
 				break;
 
 			if (match_boolean(buf, "url_highlight=", &tinrc.url_highlight))
@@ -857,10 +859,10 @@ read_config_file(
 			break;
 
 		case 'v':
-			if (match_string(buf, "verbatim_begin_regex=", tinrc.verbatim_begin_regex, sizeof(tinrc.verbatim_begin_regex)))
+			if (match_string_ptr(buf, "verbatim_begin_regex=", &tinrc.verbatim_begin_regex))
 				break;
 
-			if (match_string(buf, "verbatim_end_regex=", tinrc.verbatim_end_regex, sizeof(tinrc.verbatim_end_regex)))
+			if (match_string_ptr(buf, "verbatim_end_regex=", &tinrc.verbatim_end_regex))
 				break;
 
 			if (match_boolean(buf, "verbatim_handling=", &tinrc.verbatim_handling))
@@ -889,7 +891,7 @@ read_config_file(
 			break;
 
 		case 'x':
-			if (match_string(buf, "xpost_quote_format=", tinrc.xpost_quote_format, sizeof(tinrc.xpost_quote_format)))
+			if (match_string_ptr(buf, "xpost_quote_format=", &tinrc.xpost_quote_format))
 				break;
 
 			break;
@@ -941,30 +943,51 @@ read_config_file(
 		tinrc.post_8bit_header = FALSE;
 
 	/* set defaults if blank */
-	if (!*tinrc.attachment_format)
-		STRCPY(tinrc.attachment_format, DEFAULT_ATTACHMENT_FORMAT);
-	if (!*tinrc.editor_format)
-		STRCPY(tinrc.editor_format, TIN_EDITOR_FMT);
-	if (!*tinrc.select_format)
-		STRCPY(tinrc.select_format, DEFAULT_SELECT_FORMAT);
-	if (!*tinrc.group_format)
-		STRCPY(tinrc.group_format, DEFAULT_GROUP_FORMAT);
-	if (!*tinrc.thread_format)
-		STRCPY(tinrc.thread_format, DEFAULT_THREAD_FORMAT);
-	if (!*tinrc.date_format)
-		STRCPY(tinrc.date_format, DEFAULT_DATE_FORMAT);
-	if (!*tinrc.inews_prog)
-		STRCPY(tinrc.inews_prog, INTERNAL_CMD);
+	if (!tinrc.attachment_format || !*tinrc.attachment_format) {
+		FreeIfNeeded(tinrc.attachment_format);
+		tinrc.attachment_format = my_strdup(DEFAULT_ATTACHMENT_FORMAT);
+	}
+	if (!tinrc.editor_format || !*tinrc.editor_format) {
+		FreeIfNeeded(tinrc.editor_format);
+		tinrc.editor_format = my_strdup(TIN_EDITOR_FMT);
+	}
+	if (!tinrc.select_format || !*tinrc.select_format) {
+		FreeIfNeeded(tinrc.select_format);
+		tinrc.select_format = my_strdup(DEFAULT_SELECT_FORMAT);
+	}
+	if (!tinrc.group_format || !*tinrc.group_format) {
+		FreeIfNeeded(tinrc.group_format);
+		tinrc.group_format = my_strdup(DEFAULT_GROUP_FORMAT);
+	}
+	if (!tinrc.thread_format || !*tinrc.thread_format) {
+		FreeIfNeeded(tinrc.thread_format);
+		tinrc.thread_format = my_strdup(DEFAULT_THREAD_FORMAT);
+	}
+	if (!tinrc.date_format || !*tinrc.date_format) {
+		FreeIfNeeded(tinrc.date_format);
+		tinrc.date_format = my_strdup(DEFAULT_DATE_FORMAT);
+	}
+	if (!tinrc.inews_prog || !*tinrc.inews_prog) {
+		FreeIfNeeded(tinrc.inews_prog);
+		tinrc.inews_prog = my_strdup(INTERNAL_CMD);
+	}
 	/* determine local charset */
 #ifndef CHARSET_CONVERSION
-	if (!*tinrc.mm_charset)
-		STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
-	strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
+	if (!tinrc.mm_charset || !*tinrc.mm_charset) {
+		FreeIfNeeded(tinrc.mm_charset);
+		tinrc.mm_charset = my_strdup(get_val("MM_CHARSET", MM_CHARSET));
+	}
+	FreeIfNeeded(tinrc.mm_local_charset);
+	tinrc.mm_local_charset = my_strdup(tinrc.mm_charset);
 #endif /* !CHARSET_CONVERSION */
-	if (!*tinrc.page_mime_format)
-		STRCPY(tinrc.page_mime_format, DEFAULT_PAGE_MIME_FORMAT);
-	if (!*tinrc.page_uue_format)
-		STRCPY(tinrc.page_uue_format, DEFAULT_PAGE_UUE_FORMAT);
+	if (!tinrc.page_mime_format || !*tinrc.page_mime_format) {
+		FreeIfNeeded(tinrc.page_mime_format);
+		tinrc.page_mime_format = my_strdup(DEFAULT_PAGE_MIME_FORMAT);
+	}
+	if (!tinrc.page_uue_format || !*tinrc.page_uue_format) {
+		FreeIfNeeded(tinrc.page_uue_format);
+		tinrc.page_uue_format = my_strdup(DEFAULT_PAGE_UUE_FORMAT);
+	}
 
 	return TRUE;
 }
@@ -1537,27 +1560,27 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_tinrc_defaults));
 	fprintf(fp, "default_save_mode=%c\n", tinrc.default_save_mode);
-	fprintf(fp, "default_author_search=%s\n", tinrc.default_search_author);
-	fprintf(fp, "default_goto_group=%s\n", tinrc.default_goto_group);
-	fprintf(fp, "default_config_search=%s\n", tinrc.default_search_config);
-	fprintf(fp, "default_group_search=%s\n", tinrc.default_search_group);
-	fprintf(fp, "default_subject_search=%s\n", tinrc.default_search_subject);
-	fprintf(fp, "default_art_search=%s\n", tinrc.default_search_art);
-	fprintf(fp, "default_repost_group=%s\n", tinrc.default_repost_group);
-	fprintf(fp, "default_mail_address=%s\n", tinrc.default_mail_address);
+	fprintf(fp, "default_author_search=%s\n", BlankIfNull(tinrc.default_search_author));
+	fprintf(fp, "default_goto_group=%s\n", BlankIfNull(tinrc.default_goto_group));
+	fprintf(fp, "default_config_search=%s\n", BlankIfNull(tinrc.default_search_config));
+	fprintf(fp, "default_group_search=%s\n", BlankIfNull(tinrc.default_search_group));
+	fprintf(fp, "default_subject_search=%s\n", BlankIfNull(tinrc.default_search_subject));
+	fprintf(fp, "default_art_search=%s\n", BlankIfNull(tinrc.default_search_art));
+	fprintf(fp, "default_repost_group=%s\n", BlankIfNull(tinrc.default_repost_group));
+	fprintf(fp, "default_mail_address=%s\n", BlankIfNull(tinrc.default_mail_address));
 	fprintf(fp, "default_move_group=%d\n", tinrc.default_move_group);
 #ifndef DONT_HAVE_PIPING
-	fprintf(fp, "default_pipe_command=%s\n", tinrc.default_pipe_command);
+	fprintf(fp, "default_pipe_command=%s\n", BlankIfNull(tinrc.default_pipe_command));
 #endif /* !DONT_HAVE_PIPING */
-	fprintf(fp, "default_post_newsgroups=%s\n", tinrc.default_post_newsgroups);
-	fprintf(fp, "default_post_subject=%s\n", tinrc.default_post_subject);
-	fprintf(fp, "default_range_group=%s\n", tinrc.default_range_group);
-	fprintf(fp, "default_range_select=%s\n", tinrc.default_range_select);
-	fprintf(fp, "default_range_thread=%s\n", tinrc.default_range_thread);
-	fprintf(fp, "default_pattern=%s\n", tinrc.default_pattern);
-	fprintf(fp, "default_save_file=%s\n", tinrc.default_save_file);
-	fprintf(fp, "default_select_pattern=%s\n", tinrc.default_select_pattern);
-	fprintf(fp, "default_shell_command=%s\n\n", tinrc.default_shell_command);
+	fprintf(fp, "default_post_newsgroups=%s\n", BlankIfNull(tinrc.default_post_newsgroups));
+	fprintf(fp, "default_post_subject=%s\n", BlankIfNull(tinrc.default_post_subject));
+	fprintf(fp, "default_range_group=%s\n", BlankIfNull(tinrc.default_range_group));
+	fprintf(fp, "default_range_select=%s\n", BlankIfNull(tinrc.default_range_select));
+	fprintf(fp, "default_range_thread=%s\n", BlankIfNull(tinrc.default_range_thread));
+	fprintf(fp, "default_pattern=%s\n", BlankIfNull(tinrc.default_pattern));
+	fprintf(fp, "default_save_file=%s\n", BlankIfNull(tinrc.default_save_file));
+	fprintf(fp, "default_select_pattern=%s\n", BlankIfNull(tinrc.default_select_pattern));
+	fprintf(fp, "default_shell_command=%s\n\n", BlankIfNull(tinrc.default_shell_command));
 
 	fprintf(fp, "%s", _(txt_tinrc_newnews));
 	{
@@ -1647,6 +1670,9 @@ match_color(
 			else if ((*dst < -1) || (*dst > max)) {
 				my_fprintf(stderr, _(txt_value_out_of_range), pat, *dst, max);
 				*dst = 0;
+				my_fflush(stderr);
+				if (!batch_mode)
+					sleep(2);
 			}
 		} else
 			*dst = -1;
@@ -1678,6 +1704,9 @@ match_integer(
 			if ((*dst < 0) || (*dst > maxval)) {
 				my_fprintf(stderr, _(txt_value_out_of_range), pat, *dst, maxval);
 				*dst = 0;
+				my_fflush(stderr);
+				if (!batch_mode)
+					sleep(2);
 			}
 		}
 		return TRUE;
@@ -1741,10 +1770,32 @@ match_string(
 {
 	size_t patlen = strlen(pat);
 
-	if (STRNCMPEQ(line, pat, patlen) && (strlen(line) > patlen)) {
+	if (STRNCMPEQ(line, pat, patlen) && (strlen(line) >= patlen)) {
 		if (dst != NULL && dstlen >= 1)
 			my_strncpy(dst, &line[patlen], dstlen - 1);
 		return TRUE;
+	}
+	return FALSE;
+}
+
+
+t_bool
+match_string_ptr(
+	char *line,
+	const char *pat,
+	char **dst)
+{
+	size_t patlen = strlen(pat);
+
+	if (STRNCMPEQ(line, pat, patlen) && (strlen(line) >= patlen)) {
+		FreeAndNull(*dst);
+		/*
+		 * options >= 1023 might be truncated later, so they are discarded here
+		 */
+		if (strlen(line) - patlen < BUF_SIZE - 1) {
+			*dst = my_strdup(&line[patlen]);
+			return TRUE;
+		}
 	}
 	return FALSE;
 }
@@ -1837,11 +1888,12 @@ quote_space_to_dash(
  */
 char **
 ulBuildArgv(
-	char *cmd,
+	const char *cmd,
 	int *new_argc)
 {
 	char **new_argv = NULL;
 	char *buf, *tmp;
+	const char *tmp_cmd;
 	int i = 0;
 
 	if (!cmd || !*cmd) {
@@ -1849,10 +1901,10 @@ ulBuildArgv(
 		return NULL;
 	}
 
-	for (tmp = cmd; isspace((unsigned char) *tmp); tmp++)
+	for (tmp_cmd = cmd; isspace((unsigned char) *tmp_cmd); tmp_cmd++)
 		;
 
-	buf = my_strdup(tmp);
+	buf = my_strdup(tmp_cmd);
 	tmp = buf;
 
 	new_argv = my_calloc(1, sizeof(char *));
@@ -1885,7 +1937,7 @@ static t_bool
 rc_update(
 	FILE *fp)
 {
-	char buf[LEN];
+	char *buf;
 	int show_info = 1;
 	t_bool auto_bcc = FALSE;
 	t_bool auto_cc = FALSE;
@@ -1914,7 +1966,7 @@ rc_update(
 		return FALSE;
 
 	/* rewind(fp); */
-	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
+	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
 		if (buf[0] == '#' || buf[0] == '\n')
 			continue;
 
@@ -1938,29 +1990,30 @@ rc_update(
 
 			case 'd':
 				/* simple rename */
-				if (match_string(buf, "default_editor_format=", tinrc.editor_format, sizeof(tinrc.editor_format)))
+				if (match_string_ptr(buf, "default_editor_format=", &tinrc.editor_format))
 					break;
 				/* simple rename */
-				if (match_string(buf, "default_maildir=", tinrc.maildir, sizeof(tinrc.maildir)))
+				if (match_string_ptr(buf, "default_maildir=", &tinrc.maildir))
 					break;
 				/* simple rename */
-				if (match_string(buf, "default_mailer_format=", tinrc.mailer_format, sizeof(tinrc.mailer_format)))
+				if (match_string_ptr(buf, "default_mailer_format=", &tinrc.mailer_format))
 					break;
 				/* simple rename */
 #ifndef DISABLE_PRINTING
-				if (match_string(buf, "default_printer=", tinrc.printer, sizeof(tinrc.printer)))
+				if (match_string_ptr(buf, "default_printer=", &tinrc.printer))
 					break;
 #endif /* !DISABLE_PRINTING */
 				/* simple rename */
-				if (match_string(buf, "default_regex_pattern=", tinrc.default_pattern, sizeof(tinrc.default_pattern)))
+				if (match_string_ptr(buf, "default_regex_pattern=", &tinrc.default_pattern))
 					break;
 				/* simple rename */
-				if (match_string(buf, "default_savedir=", tinrc.savedir, sizeof(tinrc.savedir))) {
-					if (tinrc.savedir[0] == '.' && strlen(tinrc.savedir) == 1) {
+				if (match_string_ptr(buf, "default_savedir=", &tinrc.savedir)) {
+					if (*tinrc.savedir == '.' && strlen(tinrc.savedir) == 1) {
 						char buff[PATH_LEN];
 
 						get_cwd(buff);
-						my_strncpy(tinrc.savedir, buff, sizeof(tinrc.savedir) - 1);
+						free(tinrc.savedir);
+						tinrc.savedir = my_strdup(buff);
 					}
 					break;
 				}
@@ -1969,14 +2022,15 @@ rc_update(
 				 * 2. previous versions has always passed groupname to external
 				 *    commands, now we look for %G
 				 */
-				if (match_string(buf, "default_sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile))) {
+				if (match_string_ptr(buf, "default_sigfile=", &tinrc.sigfile)) {
 					size_t l = strlen(tinrc.sigfile);
 
-					if (tinrc.sigfile[0] == '!' && (tinrc.sigfile[l - 2] != '%' || tinrc.sigfile[l - 1] != 'G')) {
+					if (*tinrc.sigfile == '!' && (tinrc.sigfile[l - 2] != '%' || tinrc.sigfile[l - 1] != 'G')) {
 						char *newbuf = my_malloc(sizeof(tinrc.sigfile) + 4);
 
 						sprintf(newbuf, "%s %s", tinrc.sigfile, "%G");
-						my_strncpy(tinrc.sigfile, newbuf, sizeof(tinrc.sigfile) - 1);
+						free(tinrc.sigfile);
+						tinrc.sigfile = my_strdup(newbuf);
 						free(newbuf);
 					}
 					break;
@@ -2072,8 +2126,10 @@ rc_update(
 	if (hide_uue)
 		tinrc.hide_uue = 1;
 
-	if (keep_posted_articles)
-		STRCPY(tinrc.posted_articles_file, POSTED_FILE);
+	if (keep_posted_articles) {
+		FreeIfNeeded(tinrc.posted_articles_file);
+		tinrc.posted_articles_file = my_strdup(POSTED_FILE);
+	}
 
 	tinrc.quote_style = (compress_quotes ? QUOTE_COMPRESS : 0) + (quote_empty_lines ? QUOTE_EMPTY : 0) + (quote_signatures ? QUOTE_SIGS : 0);
 
@@ -2084,18 +2140,24 @@ rc_update(
 
 	switch (show_info) {
 		case 0:
-			STRCPY(tinrc.group_format, "%n %m %R  %s  %F");
-			STRCPY(tinrc.thread_format, "%n %m  %T  %F");
+			FreeIfNeeded(tinrc.group_format);
+			tinrc.group_format = my_strdup("%n %m %R  %s  %F");
+			FreeIfNeeded(tinrc.thread_format);
+			tinrc.thread_format = my_strdup("%n %m  %T  %F");
 			break;
 
 		case 2:
-			STRCPY(tinrc.group_format, "%n %m %R %S  %s  %F");
-			STRCPY(tinrc.thread_format, "%n %m  [%S]  %T  %F");
+			FreeIfNeeded(tinrc.group_format);
+			tinrc.group_format = my_strdup("%n %m %R %S  %s  %F");
+			FreeIfNeeded(tinrc.thread_format);
+			tinrc.thread_format = my_strdup("%n %m  [%S]  %T  %F");
 			break;
 
 		case 3:
-			STRCPY(tinrc.group_format, "%n %m %R %L %S  %s  %F");
-			STRCPY(tinrc.thread_format, "%n %m  [%L,%S]  %T  %F");
+			FreeIfNeeded(tinrc.group_format);
+			tinrc.group_format = my_strdup("%n %m %R %L %S  %s  %F");
+			FreeIfNeeded(tinrc.thread_format);
+			tinrc.thread_format = my_strdup("%n %m  [%L,%S]  %T  %F");
 			break;
 
 		default:
@@ -2105,16 +2167,18 @@ rc_update(
 	if (show_last_line_prev_page)
 		tinrc.scroll_lines = -1;
 
-	if (use_builtin_inews)
-		STRCPY(tinrc.inews_prog, INTERNAL_CMD);
+	if (use_builtin_inews) {
+		FreeIfNeeded(tinrc.inews_prog);
+		tinrc.inews_prog = my_strdup(INTERNAL_CMD);
+	}
 
 	if (use_mailreader_i)
 		tinrc.interactive_mailer = INTERACTIVE_WITHOUT_HEADERS;
 
 	if (!use_metamail || getenv("NOMETAMAIL") != NULL)
-		STRCPY(tinrc.metamail_prog, INTERNAL_CMD);
+		tinrc.metamail_prog = my_strdup(INTERNAL_CMD);
 	else
-		my_strncpy(tinrc.metamail_prog, METAMAIL_CMD, sizeof(tinrc.metamail_prog) - 1);
+		tinrc.metamail_prog = my_strdup(METAMAIL_CMD);
 
 	rewind(fp);
 	return TRUE;
@@ -2134,7 +2198,7 @@ rc_post_update(
 	FILE *fp
 	/* , struct t_version *upgrade */)
 {
-	char buf[LEN];
+	char *buf;
 	int groupname_max_length = 0;
 
 	if (fseek(fp, 0L, SEEK_SET) == -1) {
@@ -2142,7 +2206,7 @@ rc_post_update(
 		return FALSE;
 	}
 
-	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
+	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
 		if (buf[0] == '#' || buf[0] == '\n')
 			continue;
 
@@ -2172,7 +2236,7 @@ rc_post_update(
 				 * previous versions has always passed groupname to external
 				 * commands, now we look for %G
 				 */
-				if (match_string(buf, "sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile))) {
+				if (match_string_ptr(buf, "sigfile=", &tinrc.sigfile)) {
 					size_t l = strlen(tinrc.sigfile);
 
 					if (tinrc.sigfile[0] == '!' && (tinrc.sigfile[l - 2] != '%' || tinrc.sigfile[l - 1] != 'G')) {
@@ -2210,7 +2274,8 @@ rc_post_update(
 			*d++ = *f++;
 		}
 		*d = '\0';
-		STRCPY(tinrc.select_format, dest);
+		FreeIfNeeded(tinrc.select_format);
+		tinrc.select_format = my_strdup(dest);
 		free(dest);
 	}
 

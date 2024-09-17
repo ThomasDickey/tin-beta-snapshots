@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-07-13
+dnl Updated   : 2024-08-07
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -642,7 +642,7 @@ AC_CHECK_HEADER(gsasl.h,
 if test "$gsasl" = "yes"; then
 	CF_ARG_DISABLE(gsasl,
 		[  --disable-gsasl         don't use GNU SASL],
-		USE_GSASL=no,
+		,
 		[USE_GSASL=yes
 		AC_DEFINE(USE_GSASL, 1, [Define to 1 if you want GNU SASL.])
 		LIBS="$LIBS -lgsasl"])
@@ -1226,6 +1226,7 @@ AC_CHECK_HEADER(unicode/unorm2.h, [
 
 # without icuuc try GNU libunistring for normalization
 if test $cf_try_icuuc = no ; then
+	AC_CHECK_HEADERS(unistring/version.h)
 	AC_CHECK_HEADER(unitypes.h,[
 		AC_CHECK_HEADER(uninorm.h,[
 			AC_DEFINE(HAVE_UNITYPES_H,1,[Define this to 1 if we have header unitypes.h])
@@ -1277,6 +1278,7 @@ fi
 
 # libidnkit - Internationalized Domain Names / IDN 2008
 AC_CHECK_LIB(idnkit, idn_decodename, [
+	AC_CHECK_HEADERS(idn/version.h)
 	AC_CHECK_HEADER(idn/api.h, [
 		AC_MSG_CHECKING(for IDN_DECODE_LOOKUP)
 		cf_save_LIBS="$LIBS"

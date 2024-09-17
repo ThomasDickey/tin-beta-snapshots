@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-18
+ *  Updated   : 2024-09-10
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -73,16 +73,22 @@ char *backup_article_name;			/* ~/TIN_ARTICLE_NAME[.pid].b[ak] file */
 char cvers[LEN];
 char dead_article[PATH_LEN];		/* ~/dead.article file */
 char dead_articles[PATH_LEN];		/* ~/dead.articles file */
-char default_organization[PATH_LEN];	/* Organization: */
+char *default_filter_kill_global;
+char *default_filter_select_global;
+char *default_organization;			/* Organization: */
+char *default_mime_types_to_save;
 char default_signature[PATH_LEN];
 char domain_name[MAXHOSTNAMELEN + 1];
 char global_attributes_file[PATH_LEN];
 char global_config_file[PATH_LEN];
+char global_defaults_file[PATH_LEN];
 char homedir[PATH_LEN];
 char index_maildir[PATH_LEN];
 char index_newsdir[PATH_LEN];	/* directory for private overview data */
 char index_savedir[PATH_LEN];
 char inewsdir[PATH_LEN];
+char filter_file[PATH_LEN];
+char keymap_file[PATH_LEN];
 char local_attributes_file[PATH_LEN];
 char local_config_file[PATH_LEN];
 char local_input_history_file[PATH_LEN];
@@ -90,7 +96,6 @@ char local_motd_file[PATH_LEN];	/* local copy of NNTP MOTD message */
 char local_newsgroups_file[PATH_LEN];	/* local copy of NNTP newsgroups file */
 char local_newsrctable_file[PATH_LEN];
 char lock_file[PATH_LEN];		/* contains name of index lock file */
-char filter_file[PATH_LEN];
 char mail_news_user[LEN];		/* mail new news to this user address */
 char mailbox[PATH_LEN];			/* system mailbox for each user */
 char mailer[PATH_LEN];			/* mail program */
@@ -202,7 +207,7 @@ struct regex_cache
 #endif /* HAVE_COLOR */
 	= REGEX_CACHE_INITIALIZER;
 
-struct t_cmdlineopts cmdline;
+struct t_cmdlineopts cmdline = { 0, 0, NULL, NULL, NULL, NULL, 0 };
 
 struct t_config tinrc = {
 	ART_MARK_DELETED,		/* art_marked_deleted */
@@ -214,79 +219,75 @@ struct t_config tinrc = {
 	ART_MARK_READ,			/* art_marked_read */
 	ART_MARK_KILLED,		/* art_marked_killed */
 	ART_MARK_READ_SELECTED,		/* art_marked_read_selected */
-	"",		/* editor_format */
-	"",		/* default_goto_group */
-	"",		/* default_mail_address */
-	"",		/* mailer_format */
+	NULL,	/* editor_format */
+	NULL,	/* default_goto_group */
+	NULL,	/* default_mail_address */
+	NULL,	/* mailer_format */
 #ifndef DONT_HAVE_PIPING
-	"",		/* default_pipe_command */
+	NULL,	/* default_pipe_command */
 #endif /* !DONT_HAVE_PIPING */
-	"",		/* default_post_newsgroups */
-	"",		/* default_post_subject */
+	NULL,	/* default_post_newsgroups */
+	NULL,	/* default_post_subject */
 #ifndef DISABLE_PRINTING
-	"",		/* printer */
+	NULL,	/* printer */
 #endif /* !DISABLE_PRINTING */
-	"1-.",	/* default_range_group */
-	"1-.",	/* default_range_select */
-	"1-.",	/* default_range_thread */
-	"",		/* default_pattern */
-	"",		/* default_repost_group */
-	"savefile.tin",		/* default_save_file */
-	"",		/* default_search_art */
-	"",		/* default_search_author */
-	"",		/* default_search_config */
-	"",		/* default_search_group */
-	"",		/* default_search_subject */
-	"",		/* default_select_pattern */
-	"",		/* default_shell_command */
-	"In article %M you wrote:",		/* mail_quote_format */
-	"",		/* maildir */
+	NULL,	/* default_range_group */
+	NULL,	/* default_range_select */
+	NULL,	/* default_range_thread */
+	NULL,	/* default_pattern */
+	NULL,	/* default_repost_group */
+	NULL,	/* default_save_file */
+	NULL,	/* default_search_art */
+	NULL,	/* default_search_author */
+	NULL,	/* default_search_config */
+	NULL,	/* default_search_group */
+	NULL,	/* default_search_subject */
+	NULL,	/* default_select_pattern */
+	NULL,	/* default_shell_command */
+	NULL,	/* mail_quote_format */
+	NULL,	/* maildir */
 #ifdef SCO_UNIX
 	2,			/* mailbox_format = MMDF */
 #else
 	0,			/* mailbox_format = MBOXO */
 #endif /* SCO_UNIX */
-	"",		/* mail_address */
-#ifdef HAVE_METAMAIL
-	METAMAIL_CMD,		/* metamail_prog */
-#else
-	INTERNAL_CMD,		/* metamail_prog */
-#endif /* HAVE_METAMAIL */
+	NULL,	/* mail_address */
+	NULL,	/* metamail_prog */
 #ifndef CHARSET_CONVERSION
-	"",		/* mm_charset, defaults to $MM_CHARSET */
+	NULL,	/* mm_charset, defaults to $MM_CHARSET */
 #else
 	-1,		/* mm_network_charset, defaults to $MM_CHARSET */
 #endif /* !CHARSET_CONVERSION */
-	"US-ASCII",		/* mm_local_charset, display charset */
+	NULL,	/* mm_local_charset, display charset */
 #if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 	FALSE,	/* translit */
 #endif /* HAVE_ICONV_OPEN_TRANSLIT && CHARSET_CONVERSION */
-	"Newsgroups Followup-To Summary Keywords X-Comment-To",		/* news_headers_to_display */
-	"",		/* news_headers_to_not_display */
-	"%F wrote:",		/* news_quote_format */
-	DEFAULT_COMMENT,	/* quote_chars */
+	NULL,	/* news_headers_to_display */
+	NULL,	/* news_headers_to_not_display */
+	NULL,	/* news_quote_format */
+	NULL,	/* quote_chars */
 #ifdef HAVE_COLOR
-	"",		/* quote_regex */
-	"",		/* quote_regex 2nd level */
-	"",		/* quote_regex >= 3rd level */
-	"",		/* extquote_regex */
+	NULL,	/* quote_regex */
+	NULL,	/* quote_regex 2nd level */
+	NULL,	/* quote_regex >= 3rd level */
+	NULL,	/* extquote_regex */
 #endif /* HAVE_COLOR */
-	"",		/* slashes_regex */
-	"",		/* stars_regex */
-	"",		/* underscores_regex */
-	"",		/* strokes_regex */
-	"",		/* sigfile */
-	"",		/* strip_re_regex */
-	"",		/* strip_was_regex */
-	"",		/* verbatim_begin_regex */
-	"",		/* verbatim_end_regex */
-	"",		/* savedir */
-	"",		/* spamtrap_warning_addresses */
+	NULL,	/* slashes_regex */
+	NULL,	/* stars_regex */
+	NULL,	/* underscores_regex */
+	NULL,	/* strokes_regex */
+	NULL,	/* sigfile */
+	NULL,	/* strip_re_regex */
+	NULL,	/* strip_was_regex */
+	NULL,	/* verbatim_begin_regex */
+	NULL,	/* verbatim_end_regex */
+	NULL,	/* savedir */
+	NULL,	/* spamtrap_warning_addresses */
 #ifdef NNTPS_ABLE
-	"",		/* tls_ca_cert_file */
+	NULL,	/* tls_ca_cert_file */
 #endif /* NNTPS_ABLE */
-	DEFAULT_URL_HANDLER,	/* url_handler */
-	"In %G %F wrote:",			/* xpost_quote_format */
+	NULL,	/* url_handler */
+	NULL,	/* xpost_quote_format */
 	DEFAULT_FILTER_DAYS,			/* filter_days */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* default_filter_kill_header */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* default_filter_select_header */
@@ -386,7 +387,7 @@ struct t_config tinrc = {
 	TRUE,		/* inverse_okay */
 #endif /* USE_INVERSE_HACK */
 	TRUE,		/* keep_dead_articles */
-	POSTED_FILE,	/* posted_articles_file */
+	NULL,		/* posted_articles_file */
 	FALSE,		/* mail_8bit_header */
 	FALSE,		/* mark_ignore_tags */
 	TRUE,		/* mark_saved_read */
@@ -423,7 +424,7 @@ struct t_config tinrc = {
 #ifdef HAVE_COLOR
 	FALSE,		/* extquote_handling */
 #endif /* HAVE_COLOR */
-	"",		/* inews_prog */
+	NULL,		/* inews_prog */
 #ifdef USE_CANLOCK
 	1,			/* cancel_lock_algo, sha1 */
 #endif /* USE_CANLOCK */
@@ -443,13 +444,13 @@ struct t_config tinrc = {
 	FALSE,		/* use_slrnface */
 #endif /* XFACE_ABLE */
 	TRUE,		/* default_filter_select_global */
-	DEFAULT_SELECT_FORMAT,		/* select_format */
-	DEFAULT_GROUP_FORMAT,		/* group_format */
-	DEFAULT_THREAD_FORMAT,		/* thread_format */
-	DEFAULT_ATTACHMENT_FORMAT,	/* attachment_format */
-	DEFAULT_PAGE_MIME_FORMAT,	/* page_mime_format */
-	DEFAULT_PAGE_UUE_FORMAT,	/* page_uue_format */
-	DEFAULT_DATE_FORMAT,		/* date_format */
+	NULL,		/* select_format */
+	NULL,		/* group_format */
+	NULL,		/* thread_format */
+	NULL,		/* attachment_format */
+	NULL,		/* page_mime_format */
+	NULL,		/* page_uue_format */
+	NULL,		/* date_format */
 #ifdef HAVE_UNICODE_NORMALIZATION
 	DEFAULT_NORMALIZE,		/* normalization form */
 #endif /* HAVE_UNICODE_NORMALIZATION */
@@ -458,36 +459,36 @@ struct t_config tinrc = {
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
 #ifdef CHARSET_CONVERSION
 	-1,		/* attrib_mm_network_charset, defaults to $MM_CHARSET */
-	"",		/* attrib_undeclared_charset */
+	NULL,	/* attrib_undeclared_charset */
 #	ifdef USE_ICU_UCSDET
 	FALSE,
 #	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
-	"",		/* attrib_editor_format */
-	"",		/* attrib_fcc */
-	"",		/* attrib_maildir */
-	"",		/* attrib_from */
-	"",		/* attrib_mailing_list */
-	"",		/* attrib_organization */
-	"",		/* attrib_followup_to */
-	"",		/* attrib_mime_types_to_save */
-	"",		/* attrib_news_headers_to_display */
-	"",		/* attrib_news_headers_to_not_display */
-	"",		/* attrib_news_quote_format */
-	"",		/* attrib_quote_chars */
-	"",		/* attrib_sigfile */
-	"",		/* attrib_savedir */
-	"",		/* attrib_savefile */
-	"",		/* attrib_x_body */
-	"",		/* attrib_x_headers */
+	NULL,	/* attrib_editor_format */
+	NULL,	/* attrib_fcc */
+	NULL,	/* attrib_maildir */
+	NULL,	/* attrib_from */
+	NULL,	/* attrib_mailing_list */
+	NULL,	/* attrib_organization */
+	NULL,	/* attrib_followup_to */
+	NULL,	/* attrib_mime_types_to_save */
+	NULL,	/* attrib_news_headers_to_display */
+	NULL,	/* attrib_news_headers_to_not_display */
+	NULL,	/* attrib_news_quote_format */
+	NULL,	/* attrib_quote_chars */
+	NULL,	/* attrib_sigfile */
+	NULL,	/* attrib_savedir */
+	NULL,	/* attrib_savefile */
+	NULL,	/* attrib_x_body */
+	NULL,	/* attrib_x_headers */
 #ifdef HAVE_ISPELL
-	"",		/* attrib_ispell */
+	NULL,	/* attrib_ispell */
 #endif /* HAVE_ISPELL */
-	"",		/* attrib_quick_kill_scope */
-	"",		/* attrib_quick_select_scope */
-	"",		/* attrib_group_format */
-	"",		/* attrib_thread_format */
-	"",		/* attrib_date_format */
+	NULL,	/* attrib_quick_kill_scope */
+	NULL,	/* attrib_quick_select_scope */
+	NULL,	/* attrib_group_format */
+	NULL,	/* attrib_thread_format */
+	NULL,	/* attrib_date_format */
 	0,		/* attrib_trim_article_body */
 	0,		/* attrib_auto_cc_bcc */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* attrib_quick_kill_header */
@@ -775,7 +776,7 @@ init_selfinfo(
 		(iso2asc_supported >= 0 ? " [ISO2ASC]" : ""));
 	snprintf(cvers, sizeof(cvers), txt_copyright_notice, page_header);
 
-	default_organization[0] = '\0';
+	default_mime_types_to_save = my_strdup(DEFAULT_MIME_TYPES_TO_SAVE);
 
 	strncpy(bug_addr, BUG_REPORT_ADDRESS, sizeof(bug_addr) - 1);
 
@@ -790,11 +791,15 @@ init_selfinfo(
 	inewsdir[0] = '\0';
 #endif /* INEWSDIR */
 
+	default_organization = NULL;
 #ifdef apollo
-	my_strncpy(default_organization, get_val("NEWSORG", ""), sizeof(default_organization) - 1);
+	default_organization = my_strdup(get_val("NEWSORG", ""));
 #else
-	my_strncpy(default_organization, get_val("ORGANIZATION", ""), sizeof(default_organization) - 1);
+	default_organization = my_strdup(get_val("ORGANIZATION", ""));
 #endif /* apollo */
+
+	default_filter_kill_global = my_strdup(DEFAULT_FILTER);
+	default_filter_select_global = my_strdup(DEFAULT_FILTER);
 
 #ifndef NNTP_ONLY
 	my_strncpy(libdir, get_val("TIN_LIBDIR", NEWSLIBDIR), sizeof(libdir) - 1);
@@ -849,7 +854,7 @@ init_selfinfo(
 		joinpath(subscriptions_file, sizeof(subscriptions_file), libdir, SUBSCRIPTIONS_FILE);
 	if (!*overviewfmt_file)
 		joinpath(overviewfmt_file, sizeof(overviewfmt_file), libdir, OVERVIEW_FMT);
-	if (!*default_organization) {
+	if (!default_organization || !*default_organization) {
 		joinpath(tmp, sizeof(tmp), libdir, "organization");
 		if ((fp = tin_fopen(tmp, "r")) != NULL) {
 			char buf[LEN];
@@ -860,16 +865,21 @@ init_selfinfo(
 			}
 			fclose(fp);
 			my_strncpy(default_organization, buf, sizeof(default_organization) - 1);
+			FreeIfNeeded(default_organization);
+			default_organization = my_strdup(buf);
 		}
 	}
 #endif /* NNTP_ONLY */
 
 	/*
 	 * Formerly get_mm_charset(), read_site_config() may set mm_charset
+	 * No need to set tinrc.mm_local_charset here, main.c:main() always sets a default value
 	 */
 #ifndef CHARSET_CONVERSION
-	if (!*tinrc.mm_charset)
-		STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
+	if (!tinrc.mm_charset || !*tinrc.mm_charset) {
+		FreeIfNeeded(tinrc.mm_charset);
+		tinrc.mm_charset = my_strdup(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
+	}
 #else
 	if (tinrc.mm_network_charset < 0) {
 		space = 255;
@@ -877,8 +887,11 @@ init_selfinfo(
 		ptr = my_malloc(space + 1);
 
 		snprintf(ptr, space, "mm_network_charset=%s\n", get_val("MM_CHARSET", MM_CHARSET));
-		if (!match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset)) /* $MM_CHARSET may be set invalid, fallback */
+		if (!match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset)) {
+			/* $MM_CHARSET may be set invalid, fallback */
 			snprintf(ptr, space, "mm_network_charset=%s\n", MM_CHARSET);
+			match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset);
+		}
 
 		free(ptr);
 	}
@@ -902,13 +915,37 @@ init_selfinfo(
 		} else
 			created_rcdir = TRUE;
 	}
-	strcpy(tinrc.mailer_format, MAILER_FORMAT);
+	tinrc.mailer_format = my_strdup(MAILER_FORMAT);
 	my_strncpy(mailer, get_val(ENV_VAR_MAILER, DEFAULT_MAILER), sizeof(mailer) - 1);
-	STRCPY(tinrc.editor_format, TIN_EDITOR_FMT);
+	tinrc.editor_format = my_strdup(TIN_EDITOR_FMT);
+	tinrc.attrib_editor_format = NULL;
 #ifndef DISABLE_PRINTING
-	strcpy(tinrc.printer, DEFAULT_PRINTER);
+	tinrc.printer = my_strdup(DEFAULT_PRINTER);
 #endif /* !DISABLE_PRINTING */
-	strcpy(tinrc.inews_prog, PATH_INEWS);
+	tinrc.default_range_group = my_strdup(DEFAULT_RANGE);
+	tinrc.default_range_select = my_strdup(DEFAULT_RANGE);
+	tinrc.default_range_thread = my_strdup(DEFAULT_RANGE);
+	tinrc.default_save_file = my_strdup(DEFAULT_SAVE_FILE);
+	tinrc.mail_quote_format = my_strdup(MAIL_QUOTE_FORMAT);
+#ifdef HAVE_METAMAIL
+	tinrc.metamail_prog = my_strdup(METAMAIL_CMD);
+#else
+	tinrc.metamail_prog = my_strdup(INTERNAL_CMD);
+#endif /* HAVE_METAMAIL */
+	tinrc.news_headers_to_display = my_strdup(DEFAULT_NEWS_HEADERS_TO_DISPLAY);
+	tinrc.news_quote_format = my_strdup(DEFAULT_NEWS_QUOTE_FORMAT);
+	tinrc.quote_chars = my_strdup(DEFAULT_COMMENT);
+	tinrc.url_handler = my_strdup(DEFAULT_URL_HANDLER);
+	tinrc.posted_articles_file = my_strdup(POSTED_FILE);
+	tinrc.xpost_quote_format = my_strdup(DEFAULT_XPOST_QUOTE_FORMAT);
+	tinrc.inews_prog = my_strdup(PATH_INEWS);
+	tinrc.select_format = my_strdup(DEFAULT_SELECT_FORMAT);
+	tinrc.group_format = my_strdup(DEFAULT_GROUP_FORMAT);
+	tinrc.thread_format = my_strdup(DEFAULT_THREAD_FORMAT);
+	tinrc.attachment_format = my_strdup(DEFAULT_ATTACHMENT_FORMAT);
+	tinrc.page_mime_format = my_strdup(DEFAULT_PAGE_MIME_FORMAT);
+	tinrc.page_uue_format = my_strdup(DEFAULT_PAGE_UUE_FORMAT);
+	tinrc.date_format = my_strdup(DEFAULT_DATE_FORMAT);
 	joinpath(article_name, sizeof(article_name), homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID
 	snprintf(article_name + strlen(article_name), sizeof(article_name) - strlen(article_name), ".%ld", (long) process_id);
@@ -928,9 +965,12 @@ init_selfinfo(
 
 	joinpath(dead_article, sizeof(dead_article), homedir, "dead.article");
 	joinpath(dead_articles, sizeof(dead_articles), homedir, "dead.articles");
-	joinpath(tinrc.maildir, sizeof(tinrc.maildir), homedir, DEFAULT_MAILDIR);
-	joinpath(tinrc.savedir, sizeof(tinrc.savedir), homedir, DEFAULT_SAVEDIR);
-	joinpath(tinrc.sigfile, sizeof(tinrc.sigfile), homedir, ".Sig");
+	joinpath(tmp, sizeof(tmp), homedir, DEFAULT_MAILDIR);
+	tinrc.maildir = my_strdup(tmp);
+	joinpath(tmp, sizeof(tmp), homedir, DEFAULT_SAVEDIR);
+	tinrc.savedir = my_strdup(tmp);
+	joinpath(tmp, sizeof(tmp), homedir, DEFAULT_SIGFILE);
+	tinrc.sigfile = my_strdup(tmp);
 	joinpath(default_signature, sizeof(default_signature), homedir, ".signature");
 
 	if (!index_newsdir[0])
@@ -1035,10 +1075,13 @@ read_site_config(
 	/*
 	 * try to find tin.defaults in some different locations
 	 */
+	*global_defaults_file = '\0';
 	while (tin_defaults[i] != NULL) {
 		joinpath(filename, sizeof(filename), tin_defaults[i++], "tin.defaults");
-		if ((fp = tin_fopen(filename, "r")) != NULL)
+		if ((fp = tin_fopen(filename, "r")) != NULL) {
+			STRCPY(global_defaults_file, filename);
 			break;
+		}
 	}
 
 	if (!fp)
@@ -1074,10 +1117,10 @@ read_site_config(
 			continue;
 		if (match_string(buf, "bugaddress=", bug_addr, sizeof(bug_addr)))
 			continue;
-		if (match_string(buf, "organization=", default_organization, sizeof(default_organization)))
+		if (match_string_ptr(buf, "organization=", &default_organization))
 			continue;
 #ifndef CHARSET_CONVERSION
-		if (match_string(buf, "mm_charset=", tinrc.mm_charset, sizeof(tinrc.mm_charset)))
+		if (match_string_ptr(buf, "mm_charset=", tinrc.mm_charset, sizeof(tinrc.mm_charset)))
 			continue;
 #else
 		if (match_list(buf, "mm_charset=", txt_mime_charsets, &tinrc.mm_network_charset))
@@ -1105,11 +1148,13 @@ void
 postinit_regexp(
 	void)
 {
-	if (!*tinrc.strip_re_regex)
-		STRCPY(tinrc.strip_re_regex, DEFAULT_STRIP_RE_REGEX);
+	if (!tinrc.strip_re_regex || !*tinrc.strip_re_regex) {
+		FreeIfNeeded(tinrc.strip_re_regex);
+		tinrc.strip_re_regex = my_strdup(DEFAULT_STRIP_RE_REGEX);
+	}
 	compile_regex(tinrc.strip_re_regex, &strip_re_regex, REGEX_ANCHORED);
 
-	if (*tinrc.strip_was_regex) {
+	if (tinrc.strip_was_regex && *tinrc.strip_was_regex) {
 		/*
 		 * try to be clever, if we still use the initial default value
 		 * convert it to our needs
@@ -1117,53 +1162,80 @@ postinit_regexp(
 		 * TODO: a global solution
 		 */
 		if (regex_use_utf8()) {
-			if (!strcmp(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX))
-				STRCPY(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX);
+			if (!strcmp(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX)) {
+				free(tinrc.strip_was_regex);
+				tinrc.strip_was_regex = my_strdup(DEFAULT_U8_STRIP_WAS_REGEX);
+			}
 		} else {
-			if (!strcmp(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX))
-				STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
+			if (!strcmp(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX)) {
+				free(tinrc.strip_was_regex);
+				tinrc.strip_was_regex = my_strdup(DEFAULT_STRIP_WAS_REGEX);
+			}
 		}
 	} else {
-		if (regex_use_utf8())
-			STRCPY(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX);
-		else
-			STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
+		if (regex_use_utf8()) {
+			FreeIfNeeded(tinrc.strip_was_regex);
+			tinrc.strip_was_regex = my_strdup(DEFAULT_U8_STRIP_WAS_REGEX);
+		} else {
+			FreeIfNeeded(tinrc.strip_was_regex);
+			tinrc.strip_was_regex = my_strdup(DEFAULT_STRIP_WAS_REGEX);
+		}
 	}
 	compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);
 
 #ifdef HAVE_COLOR
-	if (!*tinrc.extquote_regex)
-		STRCPY(tinrc.extquote_regex, DEFAULT_EXTQUOTE_REGEX);
+	if (!tinrc.extquote_regex || !*tinrc.extquote_regex) {
+		FreeIfNeeded(tinrc.extquote_regex);
+		tinrc.extquote_regex = my_strdup(DEFAULT_EXTQUOTE_REGEX);
+	}
 	compile_regex(tinrc.extquote_regex, &extquote_regex, REGEX_CASELESS);
-	if (!*tinrc.quote_regex)
-		STRCPY(tinrc.quote_regex, DEFAULT_QUOTE_REGEX);
+	if (!tinrc.quote_regex || !*tinrc.quote_regex) {
+		FreeIfNeeded(tinrc.quote_regex);
+		tinrc.quote_regex = my_strdup(DEFAULT_QUOTE_REGEX);
+	}
 	compile_regex(tinrc.quote_regex, &quote_regex, REGEX_CASELESS);
-	if (!*tinrc.quote_regex2)
-		STRCPY(tinrc.quote_regex2, DEFAULT_QUOTE_REGEX2);
+	if (!tinrc.quote_regex2 || !*tinrc.quote_regex2) {
+		FreeIfNeeded(tinrc.quote_regex2);
+		tinrc.quote_regex2 = my_strdup(DEFAULT_QUOTE_REGEX2);
+	}
 	compile_regex(tinrc.quote_regex2, &quote_regex2, REGEX_CASELESS);
-	if (!*tinrc.quote_regex3)
-		STRCPY(tinrc.quote_regex3, DEFAULT_QUOTE_REGEX3);
+	if (!tinrc.quote_regex3 || !*tinrc.quote_regex3) {
+		FreeIfNeeded(tinrc.quote_regex3);
+		tinrc.quote_regex3 = my_strdup(DEFAULT_QUOTE_REGEX3);
+	}
 	compile_regex(tinrc.quote_regex3, &quote_regex3, REGEX_CASELESS);
 #endif /* HAVE_COLOR */
 
-	if (!*tinrc.slashes_regex)
-		STRCPY(tinrc.slashes_regex, DEFAULT_SLASHES_REGEX);
+	if (!tinrc.slashes_regex || !*tinrc.slashes_regex) {
+		FreeIfNeeded(tinrc.slashes_regex);
+		tinrc.slashes_regex = my_strdup(DEFAULT_SLASHES_REGEX);
+	}
 	compile_regex(tinrc.slashes_regex, &slashes_regex, REGEX_CASELESS);
-	if (!*tinrc.stars_regex)
-		STRCPY(tinrc.stars_regex, DEFAULT_STARS_REGEX);
+	if (!tinrc.stars_regex || !*tinrc.stars_regex) {
+		FreeIfNeeded(tinrc.stars_regex);
+		tinrc.stars_regex = my_strdup(DEFAULT_STARS_REGEX);
+	}
 	compile_regex(tinrc.stars_regex, &stars_regex, REGEX_CASELESS);
-	if (!*tinrc.strokes_regex)
-		STRCPY(tinrc.strokes_regex, DEFAULT_STROKES_REGEX);
+	if (!tinrc.strokes_regex || !*tinrc.strokes_regex) {
+		FreeIfNeeded(tinrc.strokes_regex);
+		tinrc.strokes_regex = my_strdup(DEFAULT_STROKES_REGEX);
+	}
 	compile_regex(tinrc.strokes_regex, &strokes_regex, REGEX_CASELESS);
-	if (!*tinrc.underscores_regex)
-		STRCPY(tinrc.underscores_regex, DEFAULT_UNDERSCORES_REGEX);
+	if (!tinrc.underscores_regex || !*tinrc.underscores_regex) {
+		FreeIfNeeded(tinrc.underscores_regex);
+		tinrc.underscores_regex = my_strdup(DEFAULT_UNDERSCORES_REGEX);
+	}
 	compile_regex(tinrc.underscores_regex, &underscores_regex, REGEX_CASELESS);
 
-	if (!*tinrc.verbatim_begin_regex)
-		STRCPY(tinrc.verbatim_begin_regex, DEFAULT_VERBATIM_BEGIN_REGEX);
+	if (!tinrc.verbatim_begin_regex || !*tinrc.verbatim_begin_regex) {
+		FreeIfNeeded(tinrc.verbatim_begin_regex);
+		tinrc.verbatim_begin_regex = my_strdup(DEFAULT_VERBATIM_BEGIN_REGEX);
+	}
 	compile_regex(tinrc.verbatim_begin_regex, &verbatim_begin_regex, REGEX_ANCHORED);
-	if (!*tinrc.verbatim_end_regex)
-		STRCPY(tinrc.verbatim_end_regex, DEFAULT_VERBATIM_END_REGEX);
+	if (!tinrc.verbatim_end_regex || !*tinrc.verbatim_end_regex) {
+		FreeIfNeeded(tinrc.verbatim_end_regex);
+		tinrc.verbatim_end_regex = my_strdup(DEFAULT_VERBATIM_END_REGEX);
+	}
 	compile_regex(tinrc.verbatim_end_regex, &verbatim_end_regex, REGEX_ANCHORED);
 
 	compile_regex(UUBEGIN_REGEX, &uubegin_regex, REGEX_ANCHORED);

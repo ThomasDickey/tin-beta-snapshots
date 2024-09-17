@@ -4,12 +4,6 @@ file is not read only ,-). See also grep -E 'FIXME|TODO' src/*.c include/*.h
 
 Bugs
 ----
-o  replying via email to an article with
-   From: =?us-ascii?q?<a@example.com>,?= <b@example.org>
-   will result in
-   To: <a@example.com>, <b@example.org>
-   [20141230 Urs Janssen <urs@tin.org>]
-
 o  get_respcode() doesn't handle the 401 response code. as we have to
    evaluate the response text as well we have to fix every
    nntp_command(..., NULL, 0) call.
@@ -112,6 +106,9 @@ o  with -T and hostname mismatch (OpenSSL: X509_V_ERR_HOSTNAME_MISMATCH)
    (show CN (vs. used hostname)); with -k we could mention the mismatch on
    the 'J' ConnectionInfo-page.
 
+o  add configure check and code for libdeflate
+   <https://github.com/ebiggers/libdeflate> (if zlib can't be found).
+
 o  add possibility to dump the current key mapping to a file
 
 o  make the group status flag (moderated, new, bogus, ...) configurable
@@ -123,7 +120,7 @@ o  add configure check for cl_clear_secret() in libcanlock and CL_API_MAJOR,
    libcanlock (--with-canlock).
    [20190212 Urs Janssen <urs@tin.org>]
 
-o  update included libcanlock to >= 3.3.0
+o  update included libcanlock to >= 3.3.1
    [20211024 Urs Janssen <urs@tin.org>]
 
 o  allow per server cache_overview_files setting via serverrc.
@@ -427,6 +424,8 @@ o  Add to the attachment menu ('V'):
      'J'  (GLOBAL_CONNECTION_INFO)
      '&'  (GLOBAL_TOGGLE_COLOR)
      'I'  (GLOBAL_TOGGLE_INVERSE_VIDEO)
+     '\'' (PAGE_ARTICLE_INFO) (the key would then be miss-named, but 'V'
+          is only reachable from page-level so not a big issue).
 
 o  Add to the posting history screen ('W'):
      'M'  (GLOBAL_OPTION_MENU)
@@ -439,8 +438,8 @@ o  Add to the URL Menu ('U'):
 o  integrate multi-part tagging with regular tagging, eg.
    "This article appears to have multi-parts, try and find them (y/n)?"
 
-o  Add a command-line switch (-V) that prints out all values of cpp-symbols
-   etc. [partly done, but should be cleaned up]
+o  Add a command-line switch (-[v]V) that prints out all values of
+   cpp-symbols etc. [partly done, but should be cleaned up]
 
 o  Reorganize tinrc into related sections for easier editing
    e.g., Display, Posting etc.
@@ -451,7 +450,7 @@ o  A system-wide tinrc configuration file (to hold some defaults).
    inews & mailer) (tin.defaults [--with-defaults-dir] is a start)
 
 o  when From: only contains "First-name Last-name" tin strips the
-   Last-name in group/thread/page-level
+   Last-name in group/thread-level
    [20020319 Urs Janssen <urs@tin.org>]
 
 o  Bounce duplicate Message-ID's when the headers are read. This will
@@ -613,9 +612,6 @@ o  curses.c:input_pending() and curses.c:get_arrow_key() have
    least have adjusted messages in txt_reading_article and txt_group)
    [20110506 Urs Janssen <urs@tin.org>]
 
-o  ditch MAX_MSG_HEADERS (post.c)
-   [20110212 Urs Janssen <urs@tin.org>]
-
 o  always display (also) the servers error response string to the user,
    currently tin sometimes gives generic messages (e.g. when authentication
    fails), but the servers response may include additional info (like
@@ -692,7 +688,7 @@ o  make configure look for strrstr() in libpub & publib.h
 
 o  reorder several structs to avoid padding e.g. t_capabilities (but that's
    just used once, no big win here), t_group, ... (see gcc -Wpadded
-   and/or pahole(1)); t_config is huge due to lots of fixed length strings
+   and/or pahole(1))
    [Urs Janssen <urs@tin.org>]
 
 o  what type is base[]? (long, see memory.c:init_alloc()~102)
@@ -822,6 +818,9 @@ o  check for wcsftime() and if found use it instead of strftime() (at
    [20130129 Urs Janssen <urs@tin.org>]
 
 o  BiDi handling to select-, group-, thread-level
+
+o  check for rpmatch(3) and if found use in yes/no questions,
+   prompt.c:prompt_yn()?
 
 Docs/online help
 ----------------
@@ -1060,13 +1059,6 @@ o  what about -a cmd-line flag? is this really needed? IMHO this can be
    dropped, '&' can be used for runtime color toggling.
    [20021106 Urs Janssen <urs@tin.org>]
 
-o  commas in real-name might cause problems in mail-replies
-   'From: Last, First <user@example.com>' (which was illegal in RFC 1036 but
-   is no longer with RFC 5536) leads to 'To: Last, First<user@example.com>'
-   which is 'last@localhost,user@example.com' should we try to fix things and
-   quote the realname part?
-   [20021007 Urs Janssen <urs@tin.org>]
-
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file
 
@@ -1114,3 +1106,13 @@ o  option to {display,warn,hide} article if it has an Expires:-header in the
    past? or do something via filter?
 
 o  also check for $NEWS_ORGANIZATION (see lynx(1))?
+
+o  if iconv(3) can't be found, check for librecode
+   <https://github.com/rrthomas/recode> and use it instead?
+
+o  why a lockfile (-u) in /tmp and not ${TIN_HOMEDIR:-"$HOME"}/[.tin]?
+   if ${TIN_HOMEDIR:-"$HOME"} is on NFS the cache likely also is on NFS;
+   running multiple instanced of tin -u on different systems which do
+   share the cache will not be caught ... (when -u was used for system
+   wide overviews shared between users the location was ok, but that was
+   ~30 years ago).

@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2024-07-11
+ *  Updated   : 2024-08-28
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2024 Steven J. Madsen <steve@erinet.com>
@@ -221,7 +221,7 @@ split_file(
 	if ((plaintext = fopen(pt, "w")) == NULL)
 		goto err_hdr;
 
-	if (fgets(buf, LEN, art) != NULL) {			/* Copy the hdr up to and including the \n */
+	if (fgets(buf, sizeof(buf), art) != NULL) {			/* Copy the hdr up to and including the \n */
 		t_bool success = TRUE;
 
 		while (strcmp(buf, "\n")) {
@@ -264,8 +264,8 @@ do_pgp(
 	/*
 	 * <mailfrom> is valid only when signing and a local address exists
 	 */
-	if ((CURR_GROUP.attribute->from) != NULL)
-		strip_name(CURR_GROUP.attribute->from, mailfrom);
+	if (CURR_GROUP.attribute->from != NULL && *CURR_GROUP.attribute->from)
+		strip_name(*CURR_GROUP.attribute->from, mailfrom);
 
 	switch (what) {
 		case PGP_KEY_SIGN:
@@ -305,8 +305,8 @@ pgp_append_public_key(
 	char cmd[LEN], buf[LEN];
 	char keyfile[PATH_LEN], tmp[PATH_LEN];
 
-	if ((CURR_GROUP.attribute->from) != NULL && strlen(CURR_GROUP.attribute->from))
-		strip_name(CURR_GROUP.attribute->from, buf);
+	if (CURR_GROUP.attribute->from != NULL && *CURR_GROUP.attribute->from && **CURR_GROUP.attribute->from)
+		strip_name(*CURR_GROUP.attribute->from, buf);
 	else /* FIXME: avoid hardcoded length */
 		snprintf(buf, sizeof(buf), "%.255s@%.765s", userid, BlankIfNull(get_host_name()));
 
@@ -472,7 +472,7 @@ pgp_check_article(
 	}
 
 	while (!feof(artinfo->raw) && !ferror(artinfo->raw)) {
-		if (fgets(buf, LEN, artinfo->raw) != NULL) {
+		if (fgets(buf, sizeof(buf), artinfo->raw) != NULL) {
 			if (!pgp_signed && !strcmp(buf, PGP_SIG_TAG))
 				pgp_signed = TRUE;
 			if (!pgp_key && !strcmp(buf, PGP_KEY_TAG))

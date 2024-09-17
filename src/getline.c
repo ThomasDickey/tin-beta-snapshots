@@ -22,7 +22,6 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 
-#define BUF_SIZE	1024
 #define TAB_SIZE		4
 
 #define CTRL_A	'\001'

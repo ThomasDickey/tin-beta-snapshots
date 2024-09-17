@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2024-08-01
+ *  Updated   : 2024-08-21
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -82,9 +82,9 @@ extern void sort_arts(unsigned /* int */ sort_art_type);
 
 /* attrib.c */
 extern int add_scope(const char *scope);
+extern t_bool read_attributes_file(t_bool global_file);
 extern void assign_attributes_to_groups(void);
 extern void build_news_headers_array(struct t_attribute *scope, t_bool header_to_display);
-extern void read_attributes_file(t_bool global_file);
 extern void write_attributes_file(const char *file);
 
 /* auth.c */
@@ -119,7 +119,7 @@ extern void draw_pager_line(const char *str, int flags, t_bool raw_data);
 #endif /* HAVE_COLOR */
 
 /* config.c */
-extern char **ulBuildArgv(char *cmd, int *new_argc);
+extern char **ulBuildArgv(const char *cmd, int *new_argc);
 extern char *quote_space_to_dash(const char *str);
 extern const char *print_boolean(t_bool value);
 extern t_bool match_boolean(char *line, const char *pat, t_bool *dst);
@@ -127,6 +127,7 @@ extern t_bool match_integer(char *line, const char *pat, int *dst, int maxval);
 extern t_bool match_list(char *line, constext *pat, constext *const *table, int *dst);
 extern t_bool match_long(char *line, const char *pat, long *dst);
 extern t_bool match_string(char *line, const char *pat, char *dst, size_t dstlen);
+extern t_bool match_string_ptr(char *line, const char *pat, char **dst);
 extern t_bool read_config_file(char *file, t_bool global_file);
 extern void quote_dash_to_space(char *str);
 extern void read_server_config(void);
@@ -379,7 +380,7 @@ extern int rndm(void);
 extern int strfmailer(const char *mail_prog, char *subject, char *to, const char *filename, char *dest, size_t maxsize, const char *format);
 extern int strfpath(const char *format, char *str, size_t maxsize, struct t_group *group, t_bool expand_all);
 extern int strfquote(const char *group, int respnum, char *s, size_t maxsize, char *format);
-extern int tin_version_info(FILE *fp);
+extern int tin_version_info(FILE *fp, int verb);
 extern int tin_gettime(struct t_tintime *tt);
 extern long file_mtime(const char *file);
 extern long file_size(const char *file);
@@ -502,6 +503,7 @@ extern t_bool get_newsrcname(char *newsrc_name, size_t newsrc_name_len, const ch
 extern char *fmt_option_prompt(char *dst, size_t len, t_bool editing, enum option_enum option);
 extern void config_page(const char *grpname, enum context level);
 extern int option_row(enum option_enum option);
+extern t_bool option_is_default(enum option_enum option);
 extern t_bool option_is_visible(enum option_enum option);
 extern void check_score_defaults(void);
 extern void refresh_config_page(enum option_enum act_option);
@@ -555,18 +557,20 @@ extern void quick_post_article(t_bool postponed_only, int num_cmd_line_groups);
 
 /* prompt.c */
 extern char *prompt_string_default(const char *prompt, char *def, const char *failtext, int history);
+extern char *prompt_string_ptr_default(const char *prompt, char **def, const char *failtext, int history);
 extern char *sized_message(char **result, const char *format, const char *subject);
 extern int prompt_num(int ch, const char *prompt);
 extern int prompt_yn(const char *prompt, t_bool default_answer);
 extern int prompt_msgid(void);
 extern t_bool prompt_default_string(const char *prompt, char *buf, int buf_len, char *default_prompt, int which_hist);
-extern t_bool prompt_menu_string(int line, const char *prompt, char *var);
+extern t_bool prompt_menu_string(int line, const char *prompt, char **var);
 extern t_bool prompt_option_char(enum option_enum option);
 extern t_bool prompt_option_list(enum option_enum option);
 extern t_bool prompt_option_num(enum option_enum option);
 extern t_bool prompt_option_on_off(enum option_enum option);
 extern t_bool prompt_option_string(enum option_enum option);
 extern t_bool prompt_string(const char *prompt, char *buf, int which_hist);
+extern t_bool prompt_string_ptr(const char *prompt, char **buf, int which_hist);
 extern void prompt_continue(void);
 extern void prompt_slk_redraw(void);
 extern void prompt_yn_redraw(void);
@@ -680,7 +684,7 @@ extern int choose_new_group(void);
 	extern int show_article_by_msgid(char *messageid);
 #endif /* NNTP_ABLE */
 extern int skip_newgroups(void);
-extern void selection_page(int start_groupnum, int num_cmd_line_groups, char *messageid);
+extern _Noreturn void selection_page(int start_groupnum, int num_cmd_line_groups);
 extern void show_selection_page(void);
 extern void toggle_my_groups(const char *group);
 
@@ -755,12 +759,12 @@ extern int my_toupper(int);
 #	define strrstr(s,p)	my_strrstr(s,p)
 #endif /* !HAVE_STRRSTR */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	extern char *spart(const char *str, int columns, t_bool pad);
+	extern char *spart(const char *str, size_t columns, t_bool pad);
 	extern char *wchar_t2char(const wchar_t *wstr);
 	extern wchar_t *abbr_wcsgroupname(const wchar_t *grpname, int len);
 	extern wchar_t *char2wchar_t(const char *str);
 	extern wchar_t *my_wcsdup(const wchar_t *wstr);
-	extern wchar_t *wcspart(const wchar_t *wstr, int columns, t_bool pad);
+	extern wchar_t *wcspart(const wchar_t *wstr, size_t columns, t_bool pad);
 	extern wchar_t *wexpand_tab(wchar_t *wstr, size_t tab_width);
 	extern wchar_t *wstrunc(const wchar_t *wmessage, size_t len);
 #else

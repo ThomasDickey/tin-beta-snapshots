@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-08-01
+ *  Updated   : 2024-08-26
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -287,6 +287,7 @@ constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 constext txt_connection_info[] = N_("Connection Info");
 constext txt_conninfo_local_spool[] = N_("Reading from local spool.\n");
 constext txt_conninfo_saved_news[] = N_("Reading saved news.\n");
+constext txt_conninfo_conf_files[] = N_("\nConfiguration files:\n--------------------\n");
 #ifndef NNTP_ONLY
 	constext txt_conninfo_active_file[] = "ACTIVE_FILE       : %s\n";
 	constext txt_conninfo_active_times_file[] = "ACTIVE_TIMES_FILE : %s\n";
@@ -377,6 +378,9 @@ constext txt_enter_option_num[] = N_("Enter option number> ");
 constext txt_enter_range[] = N_("Enter range [%s]> ");
 constext txt_enter_append[] = N_("Error: Could not appended %s to %s");
 constext txt_error_approved[] = N_("\nWarning: Approved: header used.\n");
+constext txt_error_attrib_too_long[] = N_("  Line %d: \"%s\": given string too long.\n");
+constext txt_error_attrib_malformed[] = N_("  Line %d: \"%s\": unrecognized attribute.\n");
+constext txt_error_attrib_unknown[] = N_("  Line %d: \"%s\": malformed line, '=' missing.\n");
 #ifndef NDEBUG
 	constext txt_error_asfail[] = "%s: assertion failure: %s (%d): %s\n";
 #endif /* !NDEBUG */
@@ -403,6 +407,7 @@ constext txt_error_gnksa_langle[] = N_("Left angle bracket missing in route addr
 constext txt_error_gnksa_lparen[] = N_("Left parenthesis missing in old-style address.\n");
 constext txt_error_gnksa_rparen[] = N_("Right parenthesis missing in old-style address.\n");
 constext txt_error_gnksa_atsign[] = N_("At-sign missing in mail address.\n");
+constext txt_error_gnksa_rangle[] = N_("Right angle bracket missing in route address.\n");
 constext txt_error_gnksa_sgl_domain[] = N_("Single component FQDN is not allowed. Add your domain.\n");
 constext txt_error_gnksa_inv_domain[] = N_("Invalid domain. Send bug report if your top level domain really exists.\nUse .invalid as top level domain for munged addresses.\n");
 constext txt_error_gnksa_ill_domain[] = N_("Illegal domain. Send bug report if your top level domain really exists.\nUse .invalid as top level domain for munged addresses.\n");
@@ -424,6 +429,7 @@ constext txt_error_gnksa_rn_enc[] = N_("Illegal character in realname.\nEncoded 
 constext txt_error_gnksa_rn_encsyn[] = N_("Bad syntax in encoded word used in realname.\n");
 constext txt_error_gnksa_rn_paren[] = N_("Illegal character in realname.\nUnquoted words may not contain '()<>\\' in old-style addresses.\n");
 constext txt_error_gnksa_rn_invalid[] = N_("Illegal character in realname.\nControl characters and unencoded 8bit characters > 127 are not allowed.\n");
+constext txt_error_gnksa_rn_missing[] = N_("Missing realname.\n");
 constext txt_error_header_and_body_not_separate[] = N_("\nError: No blank line found after header.\n");
 constext txt_error_header_distribution_all[] = N_("\nError: Illegal Distribution \"all\" used.\n");
 constext txt_error_header_format[] = N_("\nError: Illegal formatted %s.\n");
@@ -1257,7 +1263,7 @@ constext txt_uue_incomplete[] = N_("incomplete uuencoded file");
 	constext txt_valid_not_after[] = N_("Valid not after : %s\n");
 	constext txt_valid_not_before[] = N_("Valid not before: %s\n");
 #endif /* NNTP_ABLE && NNTPS_ABLE */
-constext txt_value_out_of_range[] = N_("\n%s%d out of range (0 - %d). Reset to 0");
+constext txt_value_out_of_range[] = N_("%s%d out of range (0 - %d). Reset to 0");
 constext txt_view_attachment[] = N_("View '%s' (%s/%s)?");
 
 constext txt_warn_art_line_too_long[] = N_("\nWarning: posting exceeds %d columns. Line %d is the first long one:\n%-100s\n");
@@ -1300,8 +1306,14 @@ constext txt_warn_newsrc[] = N_("Warning: tin wrote fewer groups to your\n\t%s\n
 than it read at startup. If you didn't unsubscribe from %ld %s during\n\
 this session this indicates an error and you should backup your %s\n\
 before you start tin once again!\n");
-constext txt_warn_multiple_addresses[] = N_("\nWarning: The article has multiple addresses \"%s\".\n\
+constext txt_warn_multiple_addresses[] = N_("\nWarning: The article has multiple addresses in \"%s\".\n\
          This is at least uncommon.\n");
+#ifndef FORGERY
+constext txt_warn_sender_required_but_disabled[] = N_("\nWarning: With multiple addresses in \"From\", a \"Sender\"-header is\n\
+         required, but its generation is deactivated by the global\n\
+         configuration \"disable_sender=ON\" in\n\
+         \"%s\".\n");
+#endif /* !FORGERY */
 constext txt_warn_multiple_sigs[] = N_("\nWarning: Found %d '-- \\n' lines, this may confuse some people.\n");
 constext txt_warn_not_all_arts_saved[] = N_("Warning: Only %d out of %d articles were saved");
 constext txt_warn_sig_too_long[] = N_("\n\

@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2024-07-11
+ *  Updated   : 2024-08-28
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -316,8 +316,8 @@ get_from_name(
 {
 	char *fromhost = domain_name;
 
-	if (thisgrp && *thisgrp->attribute->from != '\0') {
-		strcpy(from_name, thisgrp->attribute->from);
+	if (thisgrp && thisgrp->attribute->from && *thisgrp->attribute->from) {
+		strcpy(from_name, *thisgrp->attribute->from);
 		return;
 	}
 

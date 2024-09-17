@@ -1,4 +1,4 @@
--- 2.6.4 release 20240801 "" --
+-- 2.6.4 release 20240917 "" --
 
  023) Thomas E. Dickey <dickey@invisible-island.net>
       REM. bundled-intl stuff
@@ -27,6 +27,12 @@
       ADD. syntax check for content subtype
       ADD. handle multiple addresses in From, Reply-To, Approved
       ADD. addresses in %T are now separated by comma instead of space
+      ADD. no longer use fixed length buffers in t_cmdlineopts
+      ADD. limit tinrc/attributes value strings to 1022 chars
+           (they were "randomly" cut off before around 1k)
+      ADD. avoid fixed length buffers in t_config and 
+           t_filter_rule
+      REM. MAX_MSG_HEADERS limitation
       BUG. txt_help_config_search_opt_forwards,
            txt_help_config_search_opt_forwards and
            txt_help_attrib_search_opt_backwards,
@@ -35,12 +41,14 @@
       BUG. possible memleak on quit in version.c:upgrade_prompt_quit()
       BUG. multiple addresses in From, Reply-To, Approved (allowed since
            RFC 5536) we're not handled correct.
-      FIX. active.c, art.c, charset.c, config.c, cook.c, debug.c, feed.c
-           filter.c, getline.c, group.c, header.c, keymap.c, lang.c, main.c
-           mail.c, makecfg.c, memory.c, misc.c, nntplib.c, page.c, post.c
+      FIX. active.c, art.c, attrib.c, charset.c, config.c, cook.c, debug.c
+           feed.c, filter.c, getline.c, group.c, header.c, inews.c, init.c
+           keymap.c, lang.c, main.c, mail.c, makecfg.c, memory.c, misc.c
+           nntplib.c, nntps.c, options_menu.c, page.c, pgp.c, post.c, prompt.c
            refs.c, regex.c, rfc2046.c, rfc2047.c, save.c, search.c, select.c
-           string.c, tags.c, version.c, xref.c, parsdate.y, keymap.h, newsrc.h
-           proto.h, rfc2046.h, tin.h
+           sigfile.c, string.c, tags.c, thread.c, version.c, xref.c, parsdate.y
+           extern.h, keymap.h, newsrc.h, proto.h, rfc2046.h, tin.h, tinrc.h
+           tincfg.tbl
 
  019) Urs Janssen <urs@tin.org>
       ADD. silence some unused parameter warnings
@@ -98,12 +106,12 @@
       FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, curses.c
            debug.c, feed.c, filter.c, getline.c, group.c, header.c, help.c
            inews.c, init.c, keymap.c, lang.c, lock.c, mail.c, main.c
-           makecfg.c, misc.c, my_tmpfile.c, newsrc.c, nntplib.c, nntps.c
-           nrctbl.c, options_menu.c, page.c, pgp.c, post.c, prompt.c, read.c
-           rfc1524.c, rfc2046.c, rfc2047.c, save.c, screen.c, search.c
-           select.c, sigfile.c, snprintf.c, string.c, tcurses.c, thread.c
-           version.c, xface.c, xref.c, parsdate.y, debug.h, extern.h, nntplib.h
-           proto.h, snprintf.h, tin.h, tinrc.h, tnntp.h, tincfg.tbl
+           makecfg.c, memory.c, misc.c, my_tmpfile.c, newsrc.c, nntplib.c
+           nntps.c, nrctbl.c, options_menu.c, page.c, pgp.c, post.c, prompt.c
+           read.c, regex.c, rfc1524.c, rfc2046.c, rfc2047.c, save.c, screen.c
+           search.c, select.c, sigfile.c, snprintf.c, string.c, tcurses.c
+           thread.c, version.c, xface.c, xref.c, parsdate.y, debug.h, extern.h
+           nntplib.h, proto.h, snprintf.h, tin.h, tinrc.h, tnntp.h, tincfg.tbl
            autoconf.h[in], configure[.in], Makefile[.in], config.guess
            config.sub, tin.1, tin.5
 

@@ -1328,7 +1328,8 @@ At startup,
 reads in the configuration file. This contains a list of
 "\fIvariable\fR=\fIvalue\fR" pairs that can be used to configure the way
 .BR \%tin (1)
-works. If it exists, the global configuration file,
+works. \fIvalue\fR strings are limited to 1022 chars and will be discarded
+if exceeding this limit. If it exists, the global configuration file,
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fR is read first. After that, the
 user's own configuration file \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fR is
 read. The global file is useful for distributing system-wide defaults to new

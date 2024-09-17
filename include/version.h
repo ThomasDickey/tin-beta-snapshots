@@ -45,7 +45,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"2.6.4"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20240801"
+#	define RELEASEDATE	"20240917"
 #	define RELEASENAME	"Banff"
 /* config-file versions - must be dotted triples in the range 0 to 99 each */
 #	define TINRC_VERSION	"1.3.18"

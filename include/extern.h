@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-29
+ *  Updated   : 2024-08-26
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>
@@ -376,7 +376,7 @@
 #else
 	extern char *OPT_CHAR_list[];
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-extern char *OPT_STRING_list[];
+extern char **OPT_STRING_list[];
 extern char *nntp_server;
 extern char *tin_progname;
 extern const char *tmpdir;
@@ -391,18 +391,23 @@ extern char bug_addr[LEN];
 extern char cvers[LEN];
 extern char dead_article[PATH_LEN];
 extern char dead_articles[PATH_LEN];
-extern char default_organization[PATH_LEN];
+extern char *default_filter_kill_global;
+extern char *default_filter_select_global;
+extern char *default_mime_types_to_save;
+extern char *default_organization;
 extern char default_signature[PATH_LEN];
 extern char global_attributes_file[PATH_LEN];
 extern char global_config_file[PATH_LEN];
+extern char global_defaults_file[PATH_LEN];
 extern char homedir[PATH_LEN];
 extern char index_maildir[PATH_LEN];
 extern char index_newsdir[PATH_LEN];
 extern char index_savedir[PATH_LEN];
 extern char inewsdir[PATH_LEN];
+extern char filter_file[PATH_LEN];
+extern char keymap_file[PATH_LEN];
 extern char local_attributes_file[PATH_LEN];
 extern char local_config_file[PATH_LEN];
-extern char filter_file[PATH_LEN];
 extern char local_input_history_file[PATH_LEN];
 extern char local_motd_file[PATH_LEN];
 extern char local_newsgroups_file[PATH_LEN];
@@ -734,6 +739,7 @@ extern constext txt_confirm_select_on_exit[];
 	extern constext txt_connection_to[];
 #endif /* NNTP_ABLE && !INET6 */
 extern constext txt_connection_info[];
+extern constext txt_conninfo_conf_files[];
 extern constext txt_conninfo_local_spool[];
 extern constext txt_conninfo_saved_news[];
 #ifndef NNTP_ONLY
@@ -827,6 +833,9 @@ extern constext txt_enter_option_num[];
 extern constext txt_enter_range[];
 extern constext txt_enter_append[];
 extern constext txt_error_approved[];
+extern constext txt_error_attrib_too_long[];
+extern constext txt_error_attrib_malformed[];
+extern constext txt_error_attrib_unknown[];
 #ifndef NDEBUG
 	extern constext txt_error_asfail[];
 #endif /* !NDEBUG */
@@ -853,6 +862,7 @@ extern constext txt_error_gnksa_langle[];
 extern constext txt_error_gnksa_lparen[];
 extern constext txt_error_gnksa_rparen[];
 extern constext txt_error_gnksa_atsign[];
+extern constext txt_error_gnksa_rangle[];
 extern constext txt_error_gnksa_sgl_domain[];
 extern constext txt_error_gnksa_inv_domain[];
 extern constext txt_error_gnksa_ill_domain[];
@@ -874,6 +884,7 @@ extern constext txt_error_gnksa_rn_enc[];
 extern constext txt_error_gnksa_rn_encsyn[];
 extern constext txt_error_gnksa_rn_paren[];
 extern constext txt_error_gnksa_rn_invalid[];
+extern constext txt_error_gnksa_rn_missing[];
 extern constext txt_error_header_and_body_not_separate[];
 extern constext txt_error_header_distribution_all[];
 extern constext txt_error_header_duplicate[];
@@ -1706,6 +1717,9 @@ extern constext txt_warn_newsrc[];
 extern constext txt_warn_not_all_arts_saved[];
 extern constext txt_warn_re_but_no_references[];
 extern constext txt_warn_references_but_no_re[];
+#ifndef FORGERY
+	extern constext txt_warn_sender_required_but_disabled[];
+#endif /* !FORGERY */
 extern constext txt_warn_sig_too_long[];
 extern constext txt_warn_suspicious_mail[];
 extern constext txt_warn_update[];

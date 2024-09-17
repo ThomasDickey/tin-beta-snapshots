@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2024-07-22
+ *  Updated   : 2024-09-10
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2024 Chris Blum <chris@resolution.de>
@@ -271,7 +271,7 @@ rfc1522_decode(
 	process_charsets(&c, &max_len, "US-ASCII", tinrc.mm_local_charset, FALSE);
 #else
 #	ifdef USE_ICU_UCSDET
-	if (CURR_GROUP.attribute->undeclared_cs_guess && !CURR_GROUP.attribute->undeclared_charset) {
+	if (CURR_GROUP.attribute->undeclared_cs_guess && !(CURR_GROUP.attribute->undeclared_charset && *CURR_GROUP.attribute->undeclared_charset)) {
 		char *guessed_charset = NULL;
 
 		if ((guessed_charset = guess_charset(c, 10)) != NULL) {
@@ -280,7 +280,7 @@ rfc1522_decode(
 		}
 	} else
 #	endif /* USE_ICU_UCSDET */
-		process_charsets(&c, &max_len, (CURR_GROUP.attribute->undeclared_charset) ? (CURR_GROUP.attribute->undeclared_charset) : "US-ASCII", tinrc.mm_local_charset, FALSE);
+		process_charsets(&c, &max_len, (CURR_GROUP.attribute->undeclared_charset && *CURR_GROUP.attribute->undeclared_charset) ? (*CURR_GROUP.attribute->undeclared_charset) : "US-ASCII", tinrc.mm_local_charset, FALSE);
 #endif /* !CHARSET_CONVERSION */
 	sc = c;
 
@@ -988,7 +988,7 @@ do_rfc15211522_encode(
 
 	fputc('\n', g);
 
-	while (fgets(buffer, 2048, f)) {
+	while (fgets(buffer, sizeof(buffer), f)) {
 #ifdef CHARSET_CONVERSION
 		buffer_to_network(buffer, mmnwcharset);
 #endif /* CHARSET_CONVERSION */
@@ -1018,7 +1018,7 @@ do_rfc15211522_encode(
 #endif /* HAVE_FTRUNCATE */
 
 	/* copy header */
-	while (fgets(buffer, 2048, g) && !isreturn(buffer[0]))
+	while (fgets(buffer, sizeof(buffer), g) && !isreturn(buffer[0]))
 		fputs(buffer, f);
 
 	if (!allow_8bit_header) {
@@ -1071,13 +1071,13 @@ do_rfc15211522_encode(
 
 		body_encode = rfc1521_encode;
 
-		while (fgets(buffer, 2048, g))
+		while (fgets(buffer, sizeof(buffer), g))
 			body_encode(buffer, f, encoding);
 
 		if (encoding == 'b' || encoding == 'q' || encoding == '7')
 			body_encode(NULL, f, encoding);	/* flush */
 	} else {
-		while (fgets(buffer, 2048, g))
+		while (fgets(buffer, sizeof(buffer), g))
 			fputs(buffer, f);
 	}
 
@@ -1268,21 +1268,18 @@ compose_mail_mime_forwarded(
 		rewind(textfp);
 		do_rfc15211522_encode(textfp, encoding, group, allow_8bit_header, TRUE, FALSE);
 		entityfp = compose_multipart_mixed(textfp, articlefp);	/* Compose top-level MIME entity */
+		fclose(textfp);
 	} else
 		entityfp = compose_message_rfc822(articlefp, &_8bit);
 
 	if (entityfp == NULL) {
 		fclose(headerfp);
-		if (textfp)
-			fclose(textfp);
 		return;
 	}
 
 	if ((fp = fopen(filename, "w")) == NULL) {
 		fclose(headerfp);
 		fclose(entityfp);
-		if (textfp)
-			fclose(textfp);
 		return;
 	}
 
@@ -1292,16 +1289,14 @@ compose_mail_mime_forwarded(
 		if (*line != '\0')
 			fprintf(fp, "%s\n", line);
 	}
+	fclose(headerfp);
 	fprintf(fp, txt_mime_version, MIME_SUPPORTED_VERSION);
 	rewind(entityfp);
 	copy_fp(entityfp, fp);
 
 	/* Clean up */
 	fclose(fp);
-	fclose(headerfp);
 	fclose(entityfp);
-	if (textfp)
-		fclose(textfp);
 }
 
 

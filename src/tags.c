@@ -216,7 +216,7 @@ set_range(
 	int max,
 	int curr)
 {
-	char *range;
+	char **range;
 	char *prompt;
 	int artnum;
 	int i;
@@ -226,15 +226,15 @@ set_range(
 
 	switch (level) {
 		case SELECT_LEVEL:
-			range = tinrc.default_range_select;
+			range = &tinrc.default_range_select;
 			break;
 
 		case GROUP_LEVEL:
-			range = tinrc.default_range_group;
+			range = &tinrc.default_range_group;
 			break;
 
 		case THREAD_LEVEL:
-			range = tinrc.default_range_thread;
+			range = &tinrc.default_range_thread;
 			break;
 
 		default:	/* should no happen */
@@ -242,11 +242,11 @@ set_range(
 	}
 
 #if 0
-	error_message(2, "Min=[%d] Max=[%d] Cur=[%d] DefRng=[%s]", min, max, curr, range);
+	error_message(2, "Min=[%d] Max=[%d] Cur=[%d] DefRng=[%s]", min, max, curr, *range);
 #endif /* 0 */
-	prompt = fmt_string(_(txt_enter_range), range);
+	prompt = fmt_string(_(txt_enter_range), *range);
 
-	if (!(prompt_string_default(prompt, range, _(txt_range_invalid), HIST_OTHER))) {
+	if (!(prompt_string_ptr_default(prompt, range, _(txt_range_invalid), HIST_OTHER))) {
 		free(prompt);
 		return FALSE;
 	}
@@ -255,7 +255,7 @@ set_range(
 	/*
 	 * Parse range string
 	 */
-	if (!parse_range(range, min, max, curr, &range_min, &range_max)) {
+	if (!parse_range(*range, min, max, curr, &range_min, &range_max)) {
 		if (range_min == 0 && range_max == -1)
 			only_clear = TRUE;
 		else {

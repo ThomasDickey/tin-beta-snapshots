@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin-man 2.6.3\n"
 "Report-Msgid-Bugs-To: translation@tin.org\n"
-"POT-Creation-Date: 2024-08-01 11:36+0200\n"
-"PO-Revision-Date: 2024-08-01 11:38+0200\n"
+"POT-Creation-Date: 2024-08-24 11:34+0200\n"
+"PO-Revision-Date: 2024-08-24 11:35+0200\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: en_GB\n"
@@ -20,7 +20,7 @@ msgstr ""
 #.  Module    : tin.1
 #.  Author    : I. Lea, U. Janssen
 #.  Created   : 1991-08-23
-#.  Updated   : 2024-07-29
+#.  Updated   : 2024-08-11
 #.  Notes     : use American English; still needs some work, e.g.:
 #.              - document authorization (.newsauth)
 #.              - document random organization feature
@@ -35,7 +35,7 @@ msgstr "Title"
 #.  Module    : tin.1
 #.  Author    : I. Lea, U. Janssen
 #.  Created   : 1991-08-23
-#.  Updated   : 2024-07-29
+#.  Updated   : 2024-08-11
 #.  Notes     : use American English; still needs some work, e.g.:
 #.              - document authorization (.newsauth)
 #.              - document random organization feature
@@ -761,12 +761,12 @@ msgstr "B<-v>"
 #: doc/tin.1:262
 msgid ""
 "Verbose mode for ''B<-c>'', ''B<-D>'', ''B<-M>'', ''B<-N>'', \\&''B<-S>'', "
-"''B<-u>'' and ''B<-Z>'' options. Can be used multiple times to increase "
-"verbosity."
+"''B<-u>'', ''B<-V>'' and ''B<-Z>'' options. Can be used multiple times to "
+"increase verbosity."
 msgstr ""
 "Verbose mode for ''B<-c>'', ''B<-D>'', ''B<-M>'', ''B<-N>'', \\&''B<-S>'', "
-"''B<-u>'' and ''B<-Z>'' options. Can be used multiple times to increase "
-"verbosity."
+"''B<-u>'', ''B<-V>'' and ''B<-Z>'' options. Can be used multiple times to "
+"increase verbosity."
 
 #. type: TP
 #: doc/tin.1:262
@@ -4020,7 +4020,7 @@ msgid "B<Abbreviate long newsgroup names (abbreviate_groupname)>"
 msgstr "B<Abbreviate long newsgroup names (abbreviate_groupname)>"
 
 #. type: Plain text
-#: doc/tin.1:1606 doc/tin.5:1342
+#: doc/tin.1:1606 doc/tin.5:1343
 msgid ""
 "If ON abbreviate long newsgroup names at group selection level and article "
 "level (if necessary) like this: news.software.readers -E<gt> n.software."
@@ -4037,7 +4037,7 @@ msgid "B<Add posted articles to filter (add_posted_to_filter)>"
 msgstr "B<Add posted articles to filter (add_posted_to_filter)>"
 
 #. type: Plain text
-#: doc/tin.1:1610 doc/tin.5:1346
+#: doc/tin.1:1610 doc/tin.5:1347
 msgid ""
 "If ON add posted articles which start a new thread to filter for "
 "highlighting follow-ups. Default is ON."
@@ -4052,7 +4052,7 @@ msgid "B<Insert 'User-Agent:'-header (advertising)>"
 msgstr "B<Insert 'User-Agent:'-header (advertising)>"
 
 #. type: Plain text
-#: doc/tin.1:1613 doc/tin.5:1349
+#: doc/tin.1:1613 doc/tin.5:1350
 msgid "Turn ON advertising in header (''User-Agent:''). Default is ON."
 msgstr "Turn ON advertising in header (''User-Agent:''). Default is ON."
 
@@ -4063,7 +4063,7 @@ msgid "B<Skip multipart/alternative parts (alternative_handling)>"
 msgstr "B<Skip multipart/alternative parts (alternative_handling)>"
 
 #. type: Plain text
-#: doc/tin.1:1616 doc/tin.5:1352
+#: doc/tin.1:1616 doc/tin.5:1353
 msgid ""
 "If ON strip multipart/alternative messages automatically. Default is ON."
 msgstr ""
@@ -4076,7 +4076,7 @@ msgid "B<Character to show deleted articles (art_marked_deleted)>"
 msgstr "B<Character to show deleted articles (art_marked_deleted)>"
 
 #. type: Plain text
-#: doc/tin.1:1619 doc/tin.5:1355
+#: doc/tin.1:1619 doc/tin.5:1356
 msgid "The character used to show that an article was deleted. Default is 'D'."
 msgstr ""
 "The character used to show that an article was deleted. Default is 'D'."
@@ -4088,7 +4088,7 @@ msgid "B<Character to show inrange articles (art_marked_inrange)>"
 msgstr "B<Character to show inrange articles (art_marked_inrange)>"
 
 #. type: Plain text
-#: doc/tin.1:1622 doc/tin.5:1358
+#: doc/tin.1:1622 doc/tin.5:1359
 msgid ""
 "The character used to show that an article is in a range. Default is '#'."
 msgstr ""
@@ -4101,7 +4101,7 @@ msgid "B<Character to show returning arts (art_marked_return)>"
 msgstr "B<Character to show returning arts (art_marked_return)>"
 
 #. type: Plain text
-#: doc/tin.1:1626 doc/tin.5:1362
+#: doc/tin.1:1626 doc/tin.5:1363
 msgid ""
 "The character used to show that an article will return as an unread article "
 "when the group is next entered. Default is '-'."
@@ -4116,7 +4116,7 @@ msgid "B<Character to show selected articles (art_marked_selected)>"
 msgstr "B<Character to show selected articles (art_marked_selected)>"
 
 #. type: Plain text
-#: doc/tin.1:1630 doc/tin.5:1366
+#: doc/tin.1:1630 doc/tin.5:1367
 msgid ""
 "The character used to show that an article/thread is auto-selected (hot).  "
 "Default is '*'."
@@ -4131,7 +4131,7 @@ msgid "B<Character to show recent articles (art_marked_recent)>"
 msgstr "B<Character to show recent articles (art_marked_recent)>"
 
 #. type: Plain text
-#: doc/tin.1:1634 doc/tin.5:1370
+#: doc/tin.1:1634 doc/tin.5:1371
 msgid ""
 "The character used to show that an article/thread is recent (not older than "
 "X days). See also B<recent_time>. Default is 'o'."
@@ -4146,7 +4146,7 @@ msgid "B<Character to show unread articles (art_marked_unread)>"
 msgstr "B<Character to show unread articles (art_marked_unread)>"
 
 #. type: Plain text
-#: doc/tin.1:1638 doc/tin.5:1374
+#: doc/tin.1:1638 doc/tin.5:1375
 msgid ""
 "The character used to show that an article has not been read.  Default is "
 "'+'."
@@ -4161,7 +4161,7 @@ msgid "B<Character to show read articles (art_marked_read)>"
 msgstr "B<Character to show read articles (art_marked_read)>"
 
 #. type: Plain text
-#: doc/tin.1:1641 doc/tin.5:1377
+#: doc/tin.1:1641 doc/tin.5:1378
 msgid "The character used to show that an article was read. Default is ' '."
 msgstr "The character used to show that an article was read. Default is ' '."
 
@@ -4172,7 +4172,7 @@ msgid "B<Character to show killed articles (art_marked_killed)>"
 msgstr "B<Character to show killed articles (art_marked_killed)>"
 
 #. type: Plain text
-#: doc/tin.1:1645 doc/tin.5:1381
+#: doc/tin.1:1645 doc/tin.5:1382
 msgid ""
 "The character used to show that an article was killed. Default is 'K'.  "
 "B<kill_level> must be set accordingly."
@@ -4187,7 +4187,7 @@ msgid "B<Character to show read selected arts (art_marked_read_selected)>"
 msgstr "B<Character to show read selected arts (art_marked_read_selected)>"
 
 #. type: Plain text
-#: doc/tin.1:1649 doc/tin.5:1385
+#: doc/tin.1:1649 doc/tin.5:1386
 msgid ""
 "The character used to show that an article was hot before it was read.  "
 "Default is ':'. B<kill_level> must be set accordingly."
@@ -4196,7 +4196,7 @@ msgstr ""
 "Default is ':'. B<kill_level> must be set accordingly."
 
 #. type: TP
-#: doc/tin.1:1649 doc/tin.5:1385
+#: doc/tin.1:1649 doc/tin.5:1386
 #, no-wrap
 msgid "B<Ask before using MIME viewer (ask_for_metamail)>"
 msgstr "B<Ask before using MIME viewer (ask_for_metamail)>"
@@ -4234,7 +4234,7 @@ msgid "B<Send you a cc and/or bcc automatically (auto_cc_bcc)>"
 msgstr "B<Send you a cc and/or bcc automatically (auto_cc_bcc)>"
 
 #. type: Plain text
-#: doc/tin.1:1663 doc/tin.5:1402
+#: doc/tin.1:1663 doc/tin.5:1403
 msgid ""
 "Automatically put your name in the ''Cc:'' and/or ''Bcc:'' field when "
 "mailing an article. Default is No."
@@ -4249,7 +4249,7 @@ msgid "B<List thread using right arrow key (auto_list_thread)>"
 msgstr "B<List thread using right arrow key (auto_list_thread)>"
 
 #. type: Plain text
-#: doc/tin.1:1667 doc/tin.5:1406
+#: doc/tin.1:1667 doc/tin.5:1407
 msgid ""
 "If ON automatically list thread when entering it using right arrow key.  "
 "Default is ON."
@@ -4275,7 +4275,7 @@ msgid "B<Save articles in batch mode (batch_save)>"
 msgstr "B<Save articles in batch mode (batch_save)>"
 
 #. type: Plain text
-#: doc/tin.1:1675 doc/tin.5:1414
+#: doc/tin.1:1675 doc/tin.5:1415
 msgid ""
 "If set ON articles/threads will be saved in batch mode when save \\&''B<-"
 "S>'' or mail ''B<-M>, B<-N>'' is specified on the command line. Default is "
@@ -4292,7 +4292,7 @@ msgid "B<Show mini menu & posting etiquette (beginner_level)>"
 msgstr "B<Show mini menu & posting etiquette (beginner_level)>"
 
 #. type: Plain text
-#: doc/tin.1:1680 doc/tin.5:1419
+#: doc/tin.1:1680 doc/tin.5:1420
 msgid ""
 "If set ON a mini menu of the most useful commands will be displayed at the "
 "bottom of the screen for each level. Also a short posting etiquette will be "
@@ -4345,7 +4345,7 @@ msgid "B<Catchup read groups when quitting (catchup_read_groups)>"
 msgstr "B<Catchup read groups when quitting (catchup_read_groups)>"
 
 #. type: Plain text
-#: doc/tin.1:1698 doc/tin.5:1434
+#: doc/tin.1:1698 doc/tin.5:1435
 msgid ""
 "If set ON the user is asked when quitting if all groups read during the "
 "current session should be marked read. Default is OFF."
@@ -4360,7 +4360,7 @@ msgid "B<Standard background color (col_back)>"
 msgstr "B<Standard background colour (col_back)>"
 
 #. type: Plain text
-#: doc/tin.1:1701 doc/tin.5:1437
+#: doc/tin.1:1701 doc/tin.5:1438
 msgid "Standard background color"
 msgstr "Standard background colour"
 
@@ -4371,7 +4371,7 @@ msgid "B<Color of quoted text from external sources (col_extquote)>"
 msgstr "B<Colour of quoted text from external sources (col_extquote)>"
 
 #. type: Plain text
-#: doc/tin.1:1704 doc/tin.5:1440
+#: doc/tin.1:1704 doc/tin.5:1441
 msgid "Color of quoted text from external sources"
 msgstr "Colour of quoted text from external sources"
 
@@ -4382,7 +4382,7 @@ msgid "B<Color of sender (From:) (col_from)>"
 msgstr "B<Colour of sender (From:) (col_from)>"
 
 #. type: Plain text
-#: doc/tin.1:1707 doc/tin.5:1443
+#: doc/tin.1:1707 doc/tin.5:1444
 msgid "Color of sender (From:)"
 msgstr "Colour of sender (From:)"
 
@@ -4393,7 +4393,7 @@ msgid "B<Color of article header lines (col_head)>"
 msgstr "B<Colour of article header lines (col_head)>"
 
 #. type: Plain text
-#: doc/tin.1:1710 doc/tin.5:1446
+#: doc/tin.1:1710 doc/tin.5:1447
 msgid "Color of header-lines"
 msgstr "Colour of header-lines"
 
@@ -4404,7 +4404,7 @@ msgid "B<Color of help text (col_help)>"
 msgstr "B<Colour of help text (col_help)>"
 
 #. type: Plain text
-#: doc/tin.1:1713 doc/tin.5:1449
+#: doc/tin.1:1713 doc/tin.5:1450
 msgid "Color of help pages"
 msgstr "Colour of help pages"
 
@@ -4415,7 +4415,7 @@ msgid "B<Color for inverse text (background) (col_invers_bg)>"
 msgstr "B<Colour for inverse text (background) (col_invers_bg)>"
 
 #. type: Plain text
-#: doc/tin.1:1716 doc/tin.5:1452
+#: doc/tin.1:1716 doc/tin.5:1453
 msgid "Color of background for inverse text"
 msgstr "Colour of background for inverse text"
 
@@ -4426,7 +4426,7 @@ msgid "B<Color for inverse text (foreground) (col_invers_fg)>"
 msgstr "B<Colour for inverse text (foreground) (col_invers_fg)>"
 
 #. type: Plain text
-#: doc/tin.1:1719 doc/tin.5:1455
+#: doc/tin.1:1719 doc/tin.5:1456
 msgid "Color of foreground for inverse text"
 msgstr "Colour of foreground for inverse text"
 
@@ -4437,7 +4437,7 @@ msgid "B<Color of status messages (col_message)>"
 msgstr "B<Colour of status messages (col_message)>"
 
 #. type: Plain text
-#: doc/tin.1:1722 doc/tin.5:1474
+#: doc/tin.1:1722 doc/tin.5:1475
 msgid "Color of status messages in last line"
 msgstr "Colour of status messages in last line"
 
@@ -4448,7 +4448,7 @@ msgid "B<Color of highlighting with _dash_ (col_markdash)>"
 msgstr "B<Colour of highlighting with _dash_ (col_markdash)>"
 
 #. type: Plain text
-#: doc/tin.1:1726 doc/tin.5:1459
+#: doc/tin.1:1726 doc/tin.5:1460
 msgid ""
 "Color of words emphasized like _this_. See also B<word_h_display_marks> and "
 "B<word_highlight>."
@@ -4463,7 +4463,7 @@ msgid "B<Color of highlighting with /slash/ (col_markslash)>"
 msgstr "B<Colour of highlighting with /slash/ (col_markslash)>"
 
 #. type: Plain text
-#: doc/tin.1:1730 doc/tin.5:1463
+#: doc/tin.1:1730 doc/tin.5:1464
 msgid ""
 "Color of words emphasized like /this/. See also B<word_h_display_marks> and "
 "B<word_highlight>."
@@ -4478,7 +4478,7 @@ msgid "B<Color of highlighting with *stars* (col_markstar)>"
 msgstr "B<Colour of highlighting with *stars* (col_markstar)>"
 
 #. type: Plain text
-#: doc/tin.1:1734 doc/tin.5:1467
+#: doc/tin.1:1734 doc/tin.5:1468
 msgid ""
 "Color of words emphasized like *this*. See also B<word_h_display_marks> and "
 "B<word_highlight>."
@@ -4493,7 +4493,7 @@ msgid "B<Color of highlighting with -stroke- (col_markstroke)>"
 msgstr "B<Colour of highlighting with -stroke- (col_markstroke)>"
 
 #. type: Plain text
-#: doc/tin.1:1738 doc/tin.5:1471
+#: doc/tin.1:1738 doc/tin.5:1472
 msgid ""
 "Color of words emphasized like -this-. See also B<word_h_display_marks> and "
 "B<word_highlight>."
@@ -4508,7 +4508,7 @@ msgid "B<Color of mini help menu (col_minihelp)>"
 msgstr "B<Colour of mini help menu (col_minihelp)>"
 
 #. type: Plain text
-#: doc/tin.1:1741 doc/tin.5:1477
+#: doc/tin.1:1741 doc/tin.5:1478
 msgid "Color of mini help menu"
 msgstr "Colour of mini help menu"
 
@@ -4519,7 +4519,7 @@ msgid "B<Color of actual news header fields (col_newsheaders)>"
 msgstr "B<Colour of actual news header fields (col_newsheaders)>"
 
 #. type: Plain text
-#: doc/tin.1:1744 doc/tin.5:1480
+#: doc/tin.1:1744 doc/tin.5:1481
 msgid "Color of actual news header fields"
 msgstr "Colour of actual news header fields"
 
@@ -4530,7 +4530,7 @@ msgid "B<Standard foreground color (col_normal)>"
 msgstr "B<Standard foreground colour (col_normal)>"
 
 #. type: Plain text
-#: doc/tin.1:1747 doc/tin.5:1483
+#: doc/tin.1:1747 doc/tin.5:1484
 msgid "Standard foreground color"
 msgstr "Standard foreground colour"
 
@@ -4541,7 +4541,7 @@ msgid "B<Color of quoted lines (col_quote)>"
 msgstr "B<Colour of quoted lines (col_quote)>"
 
 #. type: Plain text
-#: doc/tin.1:1750 doc/tin.5:1486
+#: doc/tin.1:1750 doc/tin.5:1487
 msgid "Color of quoted lines"
 msgstr "Colour of quoted lines"
 
@@ -4552,7 +4552,7 @@ msgid "B<Color of twice quoted line (col_quote2)>"
 msgstr "B<Colour of twice quoted line (col_quote2)>"
 
 #. type: Plain text
-#: doc/tin.1:1753 doc/tin.5:1489
+#: doc/tin.1:1753 doc/tin.5:1490
 msgid "Color of twice quoted lines"
 msgstr "Colour of twice quoted lines"
 
@@ -4563,7 +4563,7 @@ msgid "B<Color of =E<gt>3 times quoted line (col_quote3)>"
 msgstr "B<Colour of =E<gt>3 times quoted line (col_quote3)>"
 
 #. type: Plain text
-#: doc/tin.1:1756 doc/tin.5:1492
+#: doc/tin.1:1756 doc/tin.5:1493
 msgid "Color of E<gt>=3 times quoted lines"
 msgstr "Colour of E<gt>=3 times quoted lines"
 
@@ -4574,7 +4574,7 @@ msgid "B<Color of response counter (col_response)>"
 msgstr "B<Colour of response counter (col_response)>"
 
 #. type: Plain text
-#: doc/tin.1:1760 doc/tin.5:1496
+#: doc/tin.1:1760 doc/tin.5:1497
 msgid ""
 "Color of response counter. This is the text that says \"Response x of y\" in "
 "the article viewer."
@@ -4589,7 +4589,7 @@ msgid "B<Color of signatures (col_signature)>"
 msgstr "B<Colour of signatures (col_signature)>"
 
 #. type: Plain text
-#: doc/tin.1:1763 doc/tin.5:1499
+#: doc/tin.1:1763 doc/tin.5:1500
 msgid "Color of signatures"
 msgstr "Colour of signatures"
 
@@ -4600,7 +4600,7 @@ msgid "B<Color of negative score (col_score_neg)>"
 msgstr "B<Colour of negative score (col_score_neg)>"
 
 #. type: Plain text
-#: doc/tin.1:1766 doc/tin.5:1502
+#: doc/tin.1:1766 doc/tin.5:1503
 msgid "Color of negative score"
 msgstr "Colour of negative score"
 
@@ -4611,7 +4611,7 @@ msgid "B<Color of positive score (col_score_pos)>"
 msgstr "B<Colour of positive score (col_score_pos)>"
 
 #. type: Plain text
-#: doc/tin.1:1769 doc/tin.5:1505
+#: doc/tin.1:1769 doc/tin.5:1506
 msgid "Color of positive score"
 msgstr "Colour of positive score"
 
@@ -4622,7 +4622,7 @@ msgid "B<Color of urls highlight (col_urls)>"
 msgstr "B<Colour of urls highlight (col_urls)>"
 
 #. type: Plain text
-#: doc/tin.1:1772 doc/tin.5:1508
+#: doc/tin.1:1772 doc/tin.5:1509
 msgid "Color of urls highlight"
 msgstr "Colour of urls highlight"
 
@@ -4633,7 +4633,7 @@ msgid "B<Color of verbatim blocks (col_verbatim)>"
 msgstr "B<Colour of verbatim blocks (col_verbatim)>"
 
 #. type: Plain text
-#: doc/tin.1:1775 doc/tin.5:1511
+#: doc/tin.1:1775 doc/tin.5:1512
 msgid "Color of verbatim blocks"
 msgstr "Colour of verbatim blocks"
 
@@ -4644,7 +4644,7 @@ msgid "B<Color of article subject lines (col_subject)>"
 msgstr "B<Colour of article subject lines (col_subject)>"
 
 #. type: Plain text
-#: doc/tin.1:1778 doc/tin.5:1514
+#: doc/tin.1:1778 doc/tin.5:1515
 msgid "Color of article subject"
 msgstr "Colour of article subject"
 
@@ -4655,7 +4655,7 @@ msgid "B<Color of text lines (col_text)>"
 msgstr "B<Colour of text lines (col_text)>"
 
 #. type: Plain text
-#: doc/tin.1:1781 doc/tin.5:1517
+#: doc/tin.1:1781 doc/tin.5:1518
 msgid "Color of text-lines"
 msgstr "Colour of text-lines"
 
@@ -4666,7 +4666,7 @@ msgid "B<Color of help/mail sign (col_title)>"
 msgstr "B<Colour of help/mail sign (col_title)>"
 
 #. type: Plain text
-#: doc/tin.1:1784 doc/tin.5:1520
+#: doc/tin.1:1784 doc/tin.5:1521
 msgid "Color of help/mail sign"
 msgstr "Colour of help/mail sign"
 
@@ -4757,7 +4757,7 @@ msgid "B<(default_config_search)>"
 msgstr "B<(default_config_search)>"
 
 #. type: Plain text
-#: doc/tin.1:1822 doc/tin.5:1559
+#: doc/tin.1:1822 doc/tin.5:1560
 msgid "The last article/author/config option that was searched for."
 msgstr "The last article/author/config option that was searched for."
 
@@ -4768,7 +4768,7 @@ msgid "B<(default_filter_days)>"
 msgstr "B<(default_filter_days)>"
 
 #. type: Plain text
-#: doc/tin.1:1825 doc/tin.5:1562
+#: doc/tin.1:1825 doc/tin.5:1563
 msgid "Default is 28."
 msgstr "Default is 28."
 
@@ -4779,7 +4779,7 @@ msgid "B<(default_filter_kill_case)>"
 msgstr "B<(default_filter_kill_case)>"
 
 #. type: Plain text
-#: doc/tin.1:1829 doc/tin.5:1566
+#: doc/tin.1:1829 doc/tin.5:1567
 msgid ""
 "Default for quick (1 key) kill filter case.  ON = filter case sensitive, OFF "
 "= ignore case. Default is OFF."
@@ -4794,7 +4794,7 @@ msgid "B<(default_filter_kill_expire)>"
 msgstr "B<(default_filter_kill_expire)>"
 
 #. type: Plain text
-#: doc/tin.1:1834 doc/tin.5:1571
+#: doc/tin.1:1834 doc/tin.5:1572
 msgid ""
 "Default for quick (1 key) kill filter expire.  ON = limit to "
 "B<default_filter_days>, OFF = don't ever expire. Default is OFF."
@@ -4809,7 +4809,7 @@ msgid "B<(default_filter_kill_global)>"
 msgstr "B<(default_filter_kill_global)>"
 
 #. type: Plain text
-#: doc/tin.1:1838 doc/tin.5:1575
+#: doc/tin.1:1838 doc/tin.5:1576
 msgid ""
 "Default for quick (1 key) kill filter global.  ON=apply to all groups, "
 "OFF=apply to current group. Default is ON."
@@ -4824,17 +4824,17 @@ msgid "B<(default_filter_kill_header)>"
 msgstr "B<(default_filter_kill_header)>"
 
 #. type: Plain text
-#: doc/tin.1:1841 doc/tin.5:1578
+#: doc/tin.1:1841 doc/tin.5:1579
 msgid "Default for quick (1 key) kill filter header."
 msgstr "Default for quick (1 key) kill filter header."
 
 #. type: IP
 #: doc/tin.1:1842 doc/tin.1:1876 doc/tin.1:2023 doc/tin.1:2225 doc/tin.1:2285
 #: doc/tin.1:2405 doc/tin.1:2430 doc/tin.1:2446 doc/tin.1:2498 doc/tin.1:2528
-#: doc/tin.1:2606 doc/tin.1:2638 doc/tin.1:2663 doc/tin.1:2769 doc/tin.5:1770
-#: doc/tin.5:1966 doc/tin.5:2030 doc/tin.5:2082 doc/tin.5:2183 doc/tin.5:2198
-#: doc/tin.5:2231 doc/tin.5:2284 doc/tin.5:2313 doc/tin.5:2384 doc/tin.5:2433
-#: doc/tin.5:2460 doc/tin.5:2575
+#: doc/tin.1:2606 doc/tin.1:2638 doc/tin.1:2663 doc/tin.1:2769 doc/tin.5:1771
+#: doc/tin.5:1967 doc/tin.5:2031 doc/tin.5:2083 doc/tin.5:2184 doc/tin.5:2199
+#: doc/tin.5:2232 doc/tin.5:2285 doc/tin.5:2314 doc/tin.5:2385 doc/tin.5:2434
+#: doc/tin.5:2461 doc/tin.5:2576
 #, no-wrap
 msgid "0"
 msgstr "0"
@@ -4847,10 +4847,10 @@ msgstr "\\%''Subject:'' (case-sensitive)"
 #. type: IP
 #: doc/tin.1:1844 doc/tin.1:1878 doc/tin.1:2029 doc/tin.1:2227 doc/tin.1:2287
 #: doc/tin.1:2407 doc/tin.1:2434 doc/tin.1:2448 doc/tin.1:2500 doc/tin.1:2530
-#: doc/tin.1:2608 doc/tin.1:2640 doc/tin.1:2665 doc/tin.1:2771 doc/tin.5:1777
-#: doc/tin.5:1968 doc/tin.5:2032 doc/tin.5:2084 doc/tin.5:2187 doc/tin.5:2200
-#: doc/tin.5:2233 doc/tin.5:2286 doc/tin.5:2315 doc/tin.5:2386 doc/tin.5:2435
-#: doc/tin.5:2462 doc/tin.5:2577
+#: doc/tin.1:2608 doc/tin.1:2640 doc/tin.1:2665 doc/tin.1:2771 doc/tin.5:1778
+#: doc/tin.5:1969 doc/tin.5:2033 doc/tin.5:2085 doc/tin.5:2188 doc/tin.5:2201
+#: doc/tin.5:2234 doc/tin.5:2287 doc/tin.5:2316 doc/tin.5:2387 doc/tin.5:2436
+#: doc/tin.5:2463 doc/tin.5:2578
 #, no-wrap
 msgid "1"
 msgstr "1"
@@ -4863,9 +4863,9 @@ msgstr "\\%''Subject:'' (ignore case)"
 #. type: IP
 #: doc/tin.1:1846 doc/tin.1:1880 doc/tin.1:2034 doc/tin.1:2229 doc/tin.1:2291
 #: doc/tin.1:2410 doc/tin.1:2450 doc/tin.1:2502 doc/tin.1:2533 doc/tin.1:2610
-#: doc/tin.1:2642 doc/tin.1:2667 doc/tin.1:2773 doc/tin.5:1782 doc/tin.5:1970
-#: doc/tin.5:2036 doc/tin.5:2088 doc/tin.5:2203 doc/tin.5:2235 doc/tin.5:2288
-#: doc/tin.5:2318 doc/tin.5:2388 doc/tin.5:2437 doc/tin.5:2464 doc/tin.5:2579
+#: doc/tin.1:2642 doc/tin.1:2667 doc/tin.1:2773 doc/tin.5:1783 doc/tin.5:1971
+#: doc/tin.5:2037 doc/tin.5:2089 doc/tin.5:2204 doc/tin.5:2236 doc/tin.5:2289
+#: doc/tin.5:2319 doc/tin.5:2389 doc/tin.5:2438 doc/tin.5:2465 doc/tin.5:2580
 #, no-wrap
 msgid "2"
 msgstr "2"
@@ -4877,9 +4877,9 @@ msgstr "\\%''From:'' (case-sensitive)"
 
 #. type: IP
 #: doc/tin.1:1848 doc/tin.1:1882 doc/tin.1:2231 doc/tin.1:2413 doc/tin.1:2453
-#: doc/tin.1:2504 doc/tin.1:2535 doc/tin.1:2612 doc/tin.1:2669 doc/tin.5:1972
-#: doc/tin.5:2206 doc/tin.5:2238 doc/tin.5:2290 doc/tin.5:2320 doc/tin.5:2390
-#: doc/tin.5:2466
+#: doc/tin.1:2504 doc/tin.1:2535 doc/tin.1:2612 doc/tin.1:2669 doc/tin.5:1973
+#: doc/tin.5:2207 doc/tin.5:2239 doc/tin.5:2291 doc/tin.5:2321 doc/tin.5:2391
+#: doc/tin.5:2467
 #, no-wrap
 msgid "3"
 msgstr "3"
@@ -4891,8 +4891,8 @@ msgstr "\\%''From:'' (ignore case)"
 
 #. type: IP
 #: doc/tin.1:1850 doc/tin.1:1884 doc/tin.1:2233 doc/tin.1:2506 doc/tin.1:2537
-#: doc/tin.1:2615 doc/tin.1:2671 doc/tin.5:1974 doc/tin.5:2094 doc/tin.5:2292
-#: doc/tin.5:2322 doc/tin.5:2392 doc/tin.5:2468
+#: doc/tin.1:2615 doc/tin.1:2671 doc/tin.5:1975 doc/tin.5:2095 doc/tin.5:2293
+#: doc/tin.5:2323 doc/tin.5:2393 doc/tin.5:2469
 #, no-wrap
 msgid "4"
 msgstr "4"
@@ -4904,7 +4904,7 @@ msgstr "\\%''Message-ID:'' & full ''References:'' line"
 
 #. type: IP
 #: doc/tin.1:1852 doc/tin.1:1886 doc/tin.1:2235 doc/tin.1:2508 doc/tin.1:2617
-#: doc/tin.1:2674 doc/tin.5:1976 doc/tin.5:2294 doc/tin.5:2394 doc/tin.5:2471
+#: doc/tin.1:2674 doc/tin.5:1977 doc/tin.5:2295 doc/tin.5:2395 doc/tin.5:2472
 #, no-wrap
 msgid "5"
 msgstr "5"
@@ -4915,8 +4915,8 @@ msgid "\\%''Message-ID:'' & last ''References:'' entry only"
 msgstr "\\%''Message-ID:'' & last ''References:'' entry only"
 
 #. type: IP
-#: doc/tin.1:1854 doc/tin.1:1888 doc/tin.1:2510 doc/tin.1:2676 doc/tin.5:2296
-#: doc/tin.5:2473
+#: doc/tin.1:1854 doc/tin.1:1888 doc/tin.1:2510 doc/tin.1:2676 doc/tin.5:2297
+#: doc/tin.5:2474
 #, no-wrap
 msgid "6"
 msgstr "6"
@@ -4927,8 +4927,8 @@ msgid "\\%''Message-ID:'' entry only"
 msgstr "\\%''Message-ID:'' entry only"
 
 #. type: IP
-#: doc/tin.1:1856 doc/tin.1:1890 doc/tin.1:2513 doc/tin.1:2678 doc/tin.5:2299
-#: doc/tin.5:2475
+#: doc/tin.1:1856 doc/tin.1:1890 doc/tin.1:2513 doc/tin.1:2678 doc/tin.5:2300
+#: doc/tin.5:2476
 #, no-wrap
 msgid "7"
 msgstr "7"
@@ -4945,7 +4945,7 @@ msgid "B<(default_filter_select_case)>"
 msgstr "B<(default_filter_select_case)>"
 
 #. type: Plain text
-#: doc/tin.1:1863 doc/tin.5:1595
+#: doc/tin.1:1863 doc/tin.5:1596
 msgid ""
 "Default for quick (1 key) auto-selection filter case. ON=filter case "
 "sensitive, OFF=ignore case. Default is OFF."
@@ -4960,7 +4960,7 @@ msgid "B<(default_filter_select_expire)>"
 msgstr "B<(default_filter_select_expire)>"
 
 #. type: Plain text
-#: doc/tin.1:1868 doc/tin.5:1600
+#: doc/tin.1:1868 doc/tin.5:1601
 msgid ""
 "Default for quick (1 key) auto-selection filter expire.  ON = limit to "
 "B<default_filter_days>, OFF = don't ever expire.  Default is OFF."
@@ -4975,7 +4975,7 @@ msgid "B<(default_filter_select_global)>"
 msgstr "B<(default_filter_select_global)>"
 
 #. type: Plain text
-#: doc/tin.1:1872 doc/tin.5:1604
+#: doc/tin.1:1872 doc/tin.5:1605
 msgid ""
 "Default for quick (1 key) auto-selection filter global.  ON=apply to all "
 "groups, OFF=apply to current group. Default is ON."
@@ -4990,7 +4990,7 @@ msgid "B<(default_filter_select_header)>"
 msgstr "B<(default_filter_select_header)>"
 
 #. type: Plain text
-#: doc/tin.1:1875 doc/tin.5:1607
+#: doc/tin.1:1875 doc/tin.5:1608
 msgid "Default for quick (1 key) auto-selection filter header."
 msgstr "Default for quick (1 key) auto-selection filter header."
 
@@ -5103,7 +5103,7 @@ msgid "B<Don't break words when wrapping (dont_break_words)>"
 msgstr "B<Don't break words when wrapping (dont_break_words)>"
 
 #. type: Plain text
-#: doc/tin.1:1931 doc/tin.5:1658
+#: doc/tin.1:1931 doc/tin.5:1659
 msgid ""
 "Do not break long lines inside a word. This applies to the body except for "
 "verbatim blocks. See also B<wrap_column>. Default is OFF."
@@ -5118,7 +5118,7 @@ msgid "B<Draw -E<gt> instead of highlighted bar (draw_arrow)>"
 msgstr "B<Draw -E<gt> instead of highlighted bar (draw_arrow)>"
 
 #. type: Plain text
-#: doc/tin.1:1935 doc/tin.5:1662
+#: doc/tin.1:1935 doc/tin.5:1663
 msgid ""
 "Allows groups/articles to be selected by an arrow '-E<gt>' if set ON or by a "
 "highlighted bar if set OFF. Default is OFF."
@@ -5152,7 +5152,7 @@ msgid "B<Detection of external quotes (extquote_handling)>"
 msgstr "B<Detection of external quotes (extquote_handling)>"
 
 #. type: Plain text
-#: doc/tin.1:1944 doc/tin.5:1672
+#: doc/tin.1:1944 doc/tin.5:1673
 msgid "If ON quotes from external sources will be detected. Default is OFF."
 msgstr "If ON quotes from external sources will be detected. Default is OFF."
 
@@ -5180,7 +5180,7 @@ msgid "B<Force redraw after certain commands (force_screen_redraw)>"
 msgstr "B<Force redraw after certain commands (force_screen_redraw)>"
 
 #. type: Plain text
-#: doc/tin.1:1953 doc/tin.5:1683
+#: doc/tin.1:1953 doc/tin.5:1684
 msgid ""
 "Specifies whether a screen redraw should always be done after certain "
 "external commands. Default is OFF."
@@ -5214,7 +5214,7 @@ msgid "B<Catchup group using left key (group_catchup_on_exit)>"
 msgstr "B<Catchup group using left key (group_catchup_on_exit)>"
 
 #. type: Plain text
-#: doc/tin.1:1963 doc/tin.5:1707
+#: doc/tin.1:1963 doc/tin.5:1708
 msgid ""
 "If ON catchup group when leaving with the left arrow key. Default is ON."
 msgstr ""
@@ -5267,7 +5267,7 @@ msgid "B<Display uue data as an attachment (hide_uue)>"
 msgstr "B<Display uue data as an attachment (hide_uue)>"
 
 #. type: Plain text
-#: doc/tin.1:1985 doc/tin.5:1737
+#: doc/tin.1:1985 doc/tin.5:1738
 msgid ""
 "If set to 'No' then raw uuencoded data is displayed. If set to 'Yes' then "
 "sections of uuencoded data will be shown with a single tag line showing the "
@@ -5292,7 +5292,7 @@ msgid "B<External inews (inews_prog)>"
 msgstr "B<External inews (inews_prog)>"
 
 #. type: Plain text
-#: doc/tin.1:1992 doc/tin.5:1744
+#: doc/tin.1:1992 doc/tin.5:1745
 msgid ""
 "Path, name and options of external B<\\%inews>(1).  If you are reading via "
 "NNTP the default value is \"--internal\" (use built-in NNTP inews), else it "
@@ -5311,7 +5311,7 @@ msgid "B<(info_in_last_line)>"
 msgstr "B<(info_in_last_line)>"
 
 #. type: Plain text
-#: doc/tin.1:1999 doc/tin.5:1750
+#: doc/tin.1:1999 doc/tin.5:1751
 msgid ""
 "If ON, show current group description or article subject in the last line "
 "(not in the pager and global menu) \\(em B<ToggleInfoLastLine> ('B<i>')  "
@@ -5354,7 +5354,7 @@ msgid "B<Use inverse video for page headers (inverse_okay)>"
 msgstr "B<Use inverse video for page headers (inverse_okay)>"
 
 #. type: Plain text
-#: doc/tin.1:2013 doc/tin.5:1760
+#: doc/tin.1:2013 doc/tin.5:1761
 msgid ""
 "If ON use inverse video for page headers and URL highlighting.  Default is "
 "ON."
@@ -5369,7 +5369,7 @@ msgid "B<Keep failed arts in ~/dead.articles (keep_dead_articles)>"
 msgstr "B<Keep failed arts in ~/dead.articles (keep_dead_articles)>"
 
 #. type: Plain text
-#: doc/tin.1:2018 doc/tin.5:1765
+#: doc/tin.1:2018 doc/tin.5:1766
 msgid ""
 "If ON keep all failed postings in I<${TIN_HOMEDIR:-\"$HOME\"}/dead.articles> "
 "besides keeping the last failed posting in I<${TIN_HOMEDIR:-\"$HOME\"}/dead."
@@ -5410,7 +5410,7 @@ msgstr ""
 "group the mark will be gone."
 
 #. type: Plain text
-#: doc/tin.1:2034 doc/tin.5:1782
+#: doc/tin.1:2034 doc/tin.5:1783
 msgid ""
 "B<Kill all arts & show with K> will process all articles in the group and "
 "therefore there is a processing overhead when using this option. Killed "
@@ -5423,7 +5423,7 @@ msgstr ""
 "B<art_marked_killed>."
 
 #. type: Plain text
-#: doc/tin.1:2038 doc/tin.5:1786
+#: doc/tin.1:2038 doc/tin.5:1787
 msgid ""
 "B<Kill all arts and never show> will process all articles in the group and "
 "therefore there is a processing overhead when using this option. Killed "
@@ -5445,7 +5445,7 @@ msgid "B<Use 8bit characters in mail headers (mail_8bit_header)>"
 msgstr "B<Use 8bit characters in mail headers (mail_8bit_header)>"
 
 #. type: Plain text
-#: doc/tin.1:2046 doc/tin.5:1793
+#: doc/tin.1:2046 doc/tin.5:1794
 msgid ""
 "Allows 8bit characters unencoded in the header of mail message. Default is "
 "OFF. Turning it ON is effective only if B<mail_mime_encoding> is also set to "
@@ -5481,7 +5481,7 @@ msgid "B<MIME encoding in mail messages (mail_mime_encoding)>"
 msgstr "B<MIME encoding in mail messages (mail_mime_encoding)>"
 
 #. type: Plain text
-#: doc/tin.1:2058 doc/tin.5:1803
+#: doc/tin.1:2058 doc/tin.5:1804
 msgid ""
 "MIME encoding of the body in mail message, if necessary (8bit, base64, "
 "quoted-printable, 7bit). Default is quoted-printable."
@@ -5496,7 +5496,7 @@ msgid "B<Quote line when mailing (mail_quote_format)>"
 msgstr "B<Quote line when mailing (mail_quote_format)>"
 
 #. type: Plain text
-#: doc/tin.1:2064 doc/tin.5:1809
+#: doc/tin.1:2064 doc/tin.5:1810
 msgid ""
 "Format of quote line when replying (via mail) to an article (%A=Address, "
 "%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-ID, %N=Fullname, "
@@ -5515,7 +5515,7 @@ msgid "B<Format of the mailbox (mailbox_format)>"
 msgstr "B<Format of the mailbox (mailbox_format)>"
 
 #. type: Plain text
-#: doc/tin.1:2074 doc/tin.5:1819
+#: doc/tin.1:2074 doc/tin.5:1820
 msgid ""
 "Select one of the following mailbox-formats: MBOXO (default, except on SCO), "
 "MBOXRD or MMDF (default on SCO). See B<\\%mbox>(5)  and B<RFC\\%4155> for "
@@ -5534,7 +5534,7 @@ msgid "B<Mail directory (maildir)>"
 msgstr "B<Mail directory (maildir)>"
 
 #. type: Plain text
-#: doc/tin.1:2083 doc/tin.5:1828
+#: doc/tin.1:2083 doc/tin.5:1829
 msgid ""
 "The directory where articles/threads are to be saved in B<\\%mbox>(5)  "
 "format. This feature is mainly for use with the B<\\%mutt>(1)  mail program. "
@@ -5553,7 +5553,7 @@ msgid "B<Invocation of your mail command (mailer_format)>"
 msgstr "B<Invocation of your mail command (mailer_format)>"
 
 #. type: Plain text
-#: doc/tin.1:2089 doc/tin.5:1834
+#: doc/tin.1:2089 doc/tin.5:1835
 msgid ""
 "The format string used to create the mailer command with parameters that is "
 "used for mailing articles to other people. Default is '%M \"%T\" E<lt> "
@@ -5566,7 +5566,8 @@ msgstr ""
 "other mailers with different command line parameters to be used such as"
 
 #. type: Plain text
-#: doc/tin.1:2094 doc/tin.5:1839
+#: doc/tin.1:2094 doc/tin.5:1840
+#, no-wrap
 msgid ""
 "sendmail -oem -t E<lt> %F\n"
 "mutt -H %F\n"
@@ -5577,7 +5578,7 @@ msgstr ""
 "claws-mail --compose \"mailto:%T?subject=%S&insert=%F\"\n"
 
 #. type: Plain text
-#: doc/tin.1:2098 doc/tin.5:1843
+#: doc/tin.1:2098 doc/tin.5:1844
 msgid ""
 "B<interactive_mailer> must be set adequate. The following substitutions are "
 "supported:"
@@ -5586,13 +5587,13 @@ msgstr ""
 "supported:"
 
 #. type: ta
-#: doc/tin.1:2100 doc/tin.5:1845
+#: doc/tin.1:2100 doc/tin.5:1846
 #, no-wrap
 msgid "\\w'%S'u +\\w'default_mailer'u"
 msgstr "\\w'%S'u +\\w'default_mailer'u"
 
 #. type: Plain text
-#: doc/tin.1:2107 doc/tin.5:1852
+#: doc/tin.1:2107 doc/tin.5:1853
 #, no-wrap
 msgid ""
 "%F\tfilename\n"
@@ -5616,7 +5617,7 @@ msgid "B<'Mark as (un)read' ignores tags (mark_ignore_tags)>"
 msgstr "B<'Mark as (un)read' ignores tags (mark_ignore_tags)>"
 
 #. type: Plain text
-#: doc/tin.1:2117 doc/tin.5:1865
+#: doc/tin.1:2117 doc/tin.5:1866
 msgid ""
 "When this is ON, the B<GroupMarkThdRead> ('B<K>'), B<ThreadMarkArtRead> "
 "('B<K>'), B<MarkThdUnread> ('B<Z>') at Group level and B<MarkArtUnread> "
@@ -5639,7 +5640,7 @@ msgid "B<Mark saved articles/threads as read (mark_saved_read)>"
 msgstr "B<Mark saved articles/threads as read (mark_saved_read)>"
 
 #. type: Plain text
-#: doc/tin.1:2120 doc/tin.5:1857
+#: doc/tin.1:2120 doc/tin.5:1858
 msgid "If ON mark articles that are saved as read. Default is ON."
 msgstr "If ON mark articles that are saved as read. Default is ON."
 
@@ -5650,7 +5651,7 @@ msgid "B<Viewer program for MIME articles (metamail_prog)>"
 msgstr "B<Viewer program for MIME articles (metamail_prog)>"
 
 #. type: Plain text
-#: doc/tin.1:2132 doc/tin.5:1877
+#: doc/tin.1:2132 doc/tin.5:1878
 msgid ""
 "Path, name and options of external B<\\%metamail>(1)  program used to view "
 "non-textual parts of articles.  To use the built-in viewer, set to --"
@@ -5673,7 +5674,7 @@ msgid "B<MM_CHARSET (mm_charset)>"
 msgstr "B<MM_CHARSET (mm_charset)>"
 
 #. type: Plain text
-#: doc/tin.1:2145 doc/tin.5:1890
+#: doc/tin.1:2145 doc/tin.5:1891
 msgid ""
 "Charset supported locally, which is also used for MIME header (charset "
 "parameter and charset name in header encoding) in mail and news postings. If "
@@ -5702,7 +5703,7 @@ msgid "B<MM_NETWORK_CHARSET (mm_network_charset)>"
 msgstr "B<MM_NETWORK_CHARSET (mm_network_charset)>"
 
 #. type: Plain text
-#: doc/tin.1:2156 doc/tin.5:1901
+#: doc/tin.1:2156 doc/tin.5:1902
 msgid ""
 "Charset used for posting and MIME headers; replaces B<mm_charset>.  "
 "Conversion between B<mm_network_charset> and local charset (determined via B<"
@@ -5719,7 +5720,7 @@ msgstr ""
 "following charsets:"
 
 #. type: Plain text
-#: doc/tin.1:2159 doc/tin.5:1904
+#: doc/tin.1:2159 doc/tin.5:1905
 msgid ""
 "US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU} EUC-{CN,JP,"
 "KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2}, Big5, UTF-8"
@@ -5728,7 +5729,7 @@ msgstr ""
 "KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2}, Big5, UTF-8"
 
 #. type: Plain text
-#: doc/tin.1:2165 doc/tin.5:1910
+#: doc/tin.1:2165 doc/tin.5:1911
 msgid ""
 "Not all values might work on your system, see B<\\%iconv_open>(3)  for more "
 "details. If it's not set, the value of the environment variable "
@@ -5747,7 +5748,7 @@ msgid "B<Attribute of highlighting with _dash_ (mono_markdash)>"
 msgstr "B<Attribute of highlighting with _dash_ (mono_markdash)>"
 
 #. type: Plain text
-#: doc/tin.1:2170 doc/tin.5:1915
+#: doc/tin.1:2170 doc/tin.5:1916
 msgid ""
 "Character attribute of words emphasized like _this_. It depends on your "
 "terminal which attributes are usable. See also B<word_h_display_marks> and "
@@ -5764,7 +5765,7 @@ msgid "B<Attribute of highlighting with /slash/ (mono_markslash)>"
 msgstr "B<Attribute of highlighting with /slash/ (mono_markslash)>"
 
 #. type: Plain text
-#: doc/tin.1:2175 doc/tin.5:1920
+#: doc/tin.1:2175 doc/tin.5:1921
 msgid ""
 "Character attribute of words emphasized like /this/. It depends on your "
 "terminal which attributes are usable. See also B<word_h_display_marks> and "
@@ -5781,7 +5782,7 @@ msgid "B<Attribute of highlighting with *stars* (mono_markstar)>"
 msgstr "B<Attribute of highlighting with *stars* (mono_markstar)>"
 
 #. type: Plain text
-#: doc/tin.1:2180 doc/tin.5:1925
+#: doc/tin.1:2180 doc/tin.5:1926
 msgid ""
 "Character attribute of words emphasized like *this*. It depends on your "
 "terminal which attributes are usable. See also B<word_h_display_marks> and "
@@ -5798,7 +5799,7 @@ msgid "B<Attribute of highlighting with -stroke- (mono_markstroke)>"
 msgstr "B<Attribute of highlighting with -stroke- (mono_markstroke)>"
 
 #. type: Plain text
-#: doc/tin.1:2185 doc/tin.5:1930
+#: doc/tin.1:2185 doc/tin.5:1931
 msgid ""
 "Character attribute of words emphasized like -this-. It depends on your "
 "terminal which attributes are usable. See also B<word_h_display_marks> and "
@@ -5830,7 +5831,7 @@ msgid "B<Display these header fields (or *) (news_headers_to_display)>"
 msgstr "B<Display these header fields (or *) (news_headers_to_display)>"
 
 #. type: Plain text
-#: doc/tin.1:2196 doc/tin.5:1943
+#: doc/tin.1:2196 doc/tin.5:1944
 msgid ""
 "Which news headers you wish to see. If you want to see _all_ the headers, "
 "place an '*' as this value. This is the only way a wildcard can be used.  If "
@@ -5851,7 +5852,7 @@ msgid "B<Do not display these header fields (news_headers_to_not_display)>"
 msgstr "B<Do not display these header fields (news_headers_to_not_display)>"
 
 #. type: Plain text
-#: doc/tin.1:2205 doc/tin.5:1952
+#: doc/tin.1:2205 doc/tin.5:1953
 msgid ""
 "Same as B<news_headers_to_display> except it denotes the opposite. An "
 "example of using both options might be if you thought 'X-' headers were A "
@@ -5874,7 +5875,7 @@ msgid "B<Quote line when following up (news_quote_format)>"
 msgstr "B<Quote line when following up (news_quote_format)>"
 
 #. type: Plain text
-#: doc/tin.1:2211 doc/tin.5:1958
+#: doc/tin.1:2211 doc/tin.5:1959
 msgid ""
 "Format of quote line when posting/following up an article (%A=Address, "
 "%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-ID, %N=Fullname, "
@@ -5927,33 +5928,33 @@ msgstr ""
 "possible values are:"
 
 #. type: Plain text
-#: doc/tin.1:2227 doc/tin.5:1968
+#: doc/tin.1:2227 doc/tin.5:1969
 msgid "B<None>: no normalization"
 msgstr "B<None>: no normalisation"
 
 #. type: Plain text
-#: doc/tin.1:2229 doc/tin.5:1970
+#: doc/tin.1:2229 doc/tin.5:1971
 msgid "B<NFKC>: Compatibility Decomposition, followed by Canonical Composition"
 msgstr ""
 "B<NFKC>: Compatibility Decomposition, followed by Canonical Composition"
 
 #. type: Plain text
-#: doc/tin.1:2231 doc/tin.5:1972
+#: doc/tin.1:2231 doc/tin.5:1973
 msgid "B<NFKD>: Compatibility Decomposition"
 msgstr "B<NFKD>: Compatibility Decomposition"
 
 #. type: Plain text
-#: doc/tin.1:2233 doc/tin.5:1974
+#: doc/tin.1:2233 doc/tin.5:1975
 msgid "B<NFC>: Canonical Decomposition, followed by Canonical Composition"
 msgstr "B<NFC>: Canonical Decomposition, followed by Canonical Composition"
 
 #. type: Plain text
-#: doc/tin.1:2235 doc/tin.5:1976
+#: doc/tin.1:2235 doc/tin.5:1977
 msgid "B<NFD>: Canonical Decomposition"
 msgstr "B<NFD>: Canonical Decomposition"
 
 #. type: Plain text
-#: doc/tin.1:2237 doc/tin.5:1978
+#: doc/tin.1:2237 doc/tin.5:1979
 msgid ""
 "B<NFKC_CF>: Compatibility Decomposition, followed by Canonical Composition "
 "and Case Folding"
@@ -6009,7 +6010,7 @@ msgid "B<Go to first unread article in group (pos_first_unread)>"
 msgstr "B<Go to first unread article in group (pos_first_unread)>"
 
 #. type: Plain text
-#: doc/tin.1:2255 doc/tin.5:1999
+#: doc/tin.1:2255 doc/tin.5:2000
 msgid ""
 "If ON put cursor at first unread article in group otherwise at last article. "
 "Default is ON."
@@ -6024,7 +6025,7 @@ msgid "B<Use 8bit characters in news headers (post_8bit_header)>"
 msgstr "B<Use 8bit characters in news headers (post_8bit_header)>"
 
 #. type: Plain text
-#: doc/tin.1:2266 doc/tin.5:2010
+#: doc/tin.1:2266 doc/tin.5:2011
 msgid ""
 "Allows 8bit characters unencoded in the header of a news article, if set "
 "this also disables the generation of MIME-headers when they are usually "
@@ -6051,7 +6052,7 @@ msgid "B<MIME encoding in news messages (post_mime_encoding)>"
 msgstr "B<MIME encoding in news messages (post_mime_encoding)>"
 
 #. type: Plain text
-#: doc/tin.1:2271 doc/tin.5:2015
+#: doc/tin.1:2271 doc/tin.5:2016
 msgid ""
 "MIME encoding of the body in news message, if necessary. (8bit, base64, "
 "quoted-printable, 7bit). Default is 8bit, which leads to no encoding.  "
@@ -6085,7 +6086,7 @@ msgid "B<Post process saved articles (post_process_type)>"
 msgstr "B<Post process saved articles (post_process_type)>"
 
 #. type: Plain text
-#: doc/tin.1:2284 doc/tin.5:2029
+#: doc/tin.1:2284 doc/tin.5:2030
 msgid ""
 "This specifies whether to perform post processing on saved articles.  "
 "Because the shell archive may contain commands you may not want to be "
@@ -6098,17 +6099,17 @@ msgstr ""
 "are allowed:"
 
 #. type: Plain text
-#: doc/tin.1:2287 doc/tin.5:2032
+#: doc/tin.1:2287 doc/tin.5:2033
 msgid "B<No> (default), no post processing is done."
 msgstr "B<No> (default), no post processing is done."
 
 #. type: Plain text
-#: doc/tin.1:2291 doc/tin.5:2036
+#: doc/tin.1:2291 doc/tin.5:2037
 msgid "B<Shell archives>, unpacking of multi-part B<\\%shar>(1)  files only."
 msgstr "B<Shell archives>, unpacking of multi-part B<\\%shar>(1)  files only."
 
 #. type: Plain text
-#: doc/tin.1:2293 doc/tin.5:2038
+#: doc/tin.1:2293 doc/tin.5:2039
 msgid "B<Yes>, binary attachments and data will be decoded and saved."
 msgstr "B<Yes>, binary attachments and data will be decoded and saved."
 
@@ -6119,7 +6120,7 @@ msgid "B<Filename to be used for storing posted articles (posted_articles_file)>
 msgstr "B<Filename to be used for storing posted articles (posted_articles_file)>"
 
 #. type: Plain text
-#: doc/tin.1:2302 doc/tin.5:2047
+#: doc/tin.1:2302 doc/tin.5:2048
 msgid ""
 "Keep posted articles in given file. If the given filename does not contain "
 "any expandable strings it will be prefixed with I<${TIN_HOMEDIR:-\"$HOME\"}/"
@@ -6140,7 +6141,7 @@ msgid "B<Print all headers when printing (print_header)>"
 msgstr "B<Print all headers when printing (print_header)>"
 
 #. type: Plain text
-#: doc/tin.1:2306 doc/tin.5:2051
+#: doc/tin.1:2306 doc/tin.5:2052
 msgid ""
 "If ON, then the full article header is sent to the printer. Otherwise only "
 "the ''Subject:'' and ''From:'' fields are output. Default is OFF."
@@ -6174,7 +6175,7 @@ msgid "B<Process only unread articles (process_only_unread)>"
 msgstr "B<Process only unread articles (process_only_unread)>"
 
 #. type: Plain text
-#: doc/tin.1:2319 doc/tin.5:2065
+#: doc/tin.1:2319 doc/tin.5:2066
 msgid ""
 "If ON only save/print/pipe/mail unread articles (tagged articles excepted).  "
 "Default is OFF."
@@ -6204,7 +6205,7 @@ msgid "B<Characters used as quote-marks (quote_chars)>"
 msgstr "B<Characters used as quote-marks (quote_chars)>"
 
 #. type: Plain text
-#: doc/tin.1:2329 doc/tin.5:2075
+#: doc/tin.1:2329 doc/tin.5:2076
 msgid ""
 "The character used in quoting included text to article followups and mail "
 "replies. The '_' character represents a blank character and is replaced with "
@@ -6308,7 +6309,7 @@ msgid "B<Article recentness time limit (recent_time)>"
 msgstr "B<Article recentness time limit (recent_time)>"
 
 #. type: Plain text
-#: doc/tin.1:2359 doc/tin.5:2122
+#: doc/tin.1:2359 doc/tin.5:2123
 msgid ""
 "If set to 0, this feature is deactivated, otherwise it means the number of "
 "days. Default is 2."
@@ -6338,7 +6339,7 @@ msgid "B<Interval in seconds to reread active (reread_active_file_secs)>"
 msgstr "B<Interval in seconds to reread active (reread_active_file_secs)>"
 
 #. type: Plain text
-#: doc/tin.1:2368 doc/tin.5:2134
+#: doc/tin.1:2368 doc/tin.5:2135
 msgid ""
 "The news I<${TIN_LIBDIR:-NEWSLIBDIR}\"/\"${TIN_ACTIVEFILE:-active}> file is "
 "reread at regular intervals to show if any new news has arrived. Default is "
@@ -6355,7 +6356,7 @@ msgid "B<Directory to save arts/threads in (savedir)>"
 msgstr "B<Directory to save arts/threads in (savedir)>"
 
 #. type: Plain text
-#: doc/tin.1:2372 doc/tin.5:2138
+#: doc/tin.1:2372 doc/tin.5:2139
 msgid ""
 "Directory where articles/threads are saved. Default is I<${TIN_HOMEDIR:-"
 "\"$HOME\"}/News>."
@@ -6370,7 +6371,7 @@ msgid "B<Score limit (kill) (score_limit_kill)>"
 msgstr "B<Score limit (kill) (score_limit_kill)>"
 
 #. type: Plain text
-#: doc/tin.1:2376 doc/tin.5:2142
+#: doc/tin.1:2376 doc/tin.5:2143
 msgid ""
 "If the score of an article is below or equal this value the article gets "
 "marked as killed."
@@ -6385,7 +6386,7 @@ msgid "B<Score limit (select) (score_limit_select)>"
 msgstr "B<Score limit (select) (score_limit_select)>"
 
 #. type: Plain text
-#: doc/tin.1:2380 doc/tin.5:2146
+#: doc/tin.1:2380 doc/tin.5:2147
 msgid ""
 "If the score of an article is above or equal this value the article gets "
 "marked as hot."
@@ -6400,7 +6401,7 @@ msgid "B<Default score to kill articles (score_kill)>"
 msgstr "B<Default score to kill articles (score_kill)>"
 
 #. type: Plain text
-#: doc/tin.1:2384 doc/tin.5:2150
+#: doc/tin.1:2384 doc/tin.5:2151
 msgid ""
 "Score of an article which should be killed, this must be E<lt>= "
 "B<score_limit_kill>."
@@ -6415,7 +6416,7 @@ msgid "B<Default score to select articles (score_select)>"
 msgstr "B<Default score to select articles (score_select)>"
 
 #. type: Plain text
-#: doc/tin.1:2388 doc/tin.5:2154
+#: doc/tin.1:2388 doc/tin.5:2155
 msgid ""
 "Score of an article which should be marked hot, this must be E<gt>= "
 "B<score_limit_select>."
@@ -6470,7 +6471,7 @@ msgid "B<In group and thread level, show author by (show_author)>"
 msgstr "B<In group and thread level, show author by (show_author)>"
 
 #. type: Plain text
-#: doc/tin.1:2404 doc/tin.5:2197
+#: doc/tin.1:2404 doc/tin.5:2198
 msgid ""
 "Which information about the author should be shown. Default is 2, authors "
 "full name."
@@ -6479,12 +6480,12 @@ msgstr ""
 "full name."
 
 #. type: Plain text
-#: doc/tin.1:2407 doc/tin.5:2200
+#: doc/tin.1:2407 doc/tin.5:2201
 msgid "B<None>, only the ''Subject:'' line will be displayed."
 msgstr "B<None>, only the ''Subject:'' line will be displayed."
 
 #. type: Plain text
-#: doc/tin.1:2410 doc/tin.5:2203
+#: doc/tin.1:2410 doc/tin.5:2204
 msgid ""
 "B<Address>, ''Subject:'' line & the address part of the ''From:'' line are "
 "displayed."
@@ -6493,7 +6494,7 @@ msgstr ""
 "displayed."
 
 #. type: Plain text
-#: doc/tin.1:2413 doc/tin.5:2206
+#: doc/tin.1:2413 doc/tin.5:2207
 msgid ""
 "B<Full Name>, ''Subject:'' line & the authors full name part of the "
 "\\&''From:'' line are displayed (default)."
@@ -6502,7 +6503,7 @@ msgstr ""
 "\\&''From:'' line are displayed (default)."
 
 #. type: Plain text
-#: doc/tin.1:2416 doc/tin.5:2209
+#: doc/tin.1:2416 doc/tin.5:2210
 msgid ""
 "B<Address and Name>, ''Subject:'' line & all of the ''From:'' line are "
 "displayed."
@@ -6540,17 +6541,17 @@ msgid "B<Function for sorting articles (sort_function)>"
 msgstr "B<Function for sorting articles (sort_function)>"
 
 #. type: Plain text
-#: doc/tin.1:2429 doc/tin.5:2182
+#: doc/tin.1:2429 doc/tin.5:2183
 msgid "Function used for sorting articles. Default is 0."
 msgstr "Function used for sorting articles. Default is 0."
 
 #. type: Plain text
-#: doc/tin.1:2434 doc/tin.5:2187
+#: doc/tin.1:2434 doc/tin.5:2188
 msgid "Use B<\\%qsort>(3)  for sorting."
 msgstr "Use B<\\%qsort>(3)  for sorting."
 
 #. type: Plain text
-#: doc/tin.1:2439 doc/tin.5:2192
+#: doc/tin.1:2439 doc/tin.5:2193
 msgid ""
 "Use B<\\%heapsort>(3)  for sorting. This might be faster in large groups "
 "with long threads (somewhat presorted data)."
@@ -6574,17 +6575,17 @@ msgstr ""
 "indication, both, or neither in the various level titles.  Default is 3."
 
 #. type: Plain text
-#: doc/tin.1:2448 doc/tin.5:2233
+#: doc/tin.1:2448 doc/tin.5:2234
 msgid "B<Don't show help or mail sign>."
 msgstr "B<Don't show help or mail sign>."
 
 #. type: Plain text
-#: doc/tin.1:2450 doc/tin.5:2235
+#: doc/tin.1:2450 doc/tin.5:2236
 msgid "B<Show only help sign>."
 msgstr "B<Show only help sign>."
 
 #. type: Plain text
-#: doc/tin.1:2453 doc/tin.5:2238
+#: doc/tin.1:2453 doc/tin.5:2239
 msgid ""
 "B<Show only mail sign if new mail>, show only the mail sign, and only if new "
 "mail has arrived."
@@ -6593,7 +6594,7 @@ msgstr ""
 "mail has arrived."
 
 #. type: Plain text
-#: doc/tin.1:2456 doc/tin.5:2241
+#: doc/tin.1:2456 doc/tin.5:2242
 msgid ""
 "B<Show mail if new mail else help s.>, show mail sign if new mail has "
 "arrived otherwise show help sign."
@@ -6608,7 +6609,7 @@ msgid "B<Show only unread articles (show_only_unread_arts)>"
 msgstr "B<Show only unread articles (show_only_unread_arts)>"
 
 #. type: Plain text
-#: doc/tin.1:2461 doc/tin.5:2246
+#: doc/tin.1:2461 doc/tin.5:2247
 msgid ""
 "If ON show only new/unread articles otherwise show all articles.  Default is "
 "ON."
@@ -6623,7 +6624,7 @@ msgid "B<Show only groups with unread arts (show_only_unread_groups)>"
 msgstr "B<Show only groups with unread arts (show_only_unread_groups)>"
 
 #. type: Plain text
-#: doc/tin.1:2465 doc/tin.5:2250
+#: doc/tin.1:2465 doc/tin.5:2251
 msgid ""
 "If ON show only subscribed groups that contain unread articles. Default is "
 "OFF."
@@ -6638,7 +6639,7 @@ msgid "B<Display signatures (show_signatures)>"
 msgstr "B<Display signatures (show_signatures)>"
 
 #. type: Plain text
-#: doc/tin.1:2468 doc/tin.5:2253
+#: doc/tin.1:2468 doc/tin.5:2254
 msgid "If OFF don't show signatures when displaying articles. Default is ON."
 msgstr "If OFF don't show signatures when displaying articles. Default is ON."
 
@@ -6649,7 +6650,7 @@ msgid "B<Display score (show_art_score)>"
 msgstr "B<Display score (show_art_score)>"
 
 #. type: Plain text
-#: doc/tin.1:2472 doc/tin.5:2214
+#: doc/tin.1:2472 doc/tin.5:2215
 msgid ""
 "If ON show article score in the lower left corner when displaying articles.  "
 "Default is OFF. See also B<col_score_neg> and B<col_score_pos>."
@@ -6664,7 +6665,7 @@ msgid "B<Prepend signature with '\\en-- \\en' (sigdashes)>"
 msgstr "B<Prepend signature with '\\en-- \\en' (sigdashes)>"
 
 #. type: Plain text
-#: doc/tin.1:2475 doc/tin.5:2256
+#: doc/tin.1:2475 doc/tin.5:2257
 msgid "If ON prepend the signature with sigdashes. Default is ON."
 msgstr "If ON prefix the signature with sigdashes. Default is ON."
 
@@ -6702,7 +6703,7 @@ msgid "B<Add signature when reposting (signature_repost)>"
 msgstr "B<Add signature when reposting (signature_repost)>"
 
 #. type: Plain text
-#: doc/tin.1:2488 doc/tin.5:2272
+#: doc/tin.1:2488 doc/tin.5:2273
 msgid "If ON add signature to reposted articles. Default is ON."
 msgstr "If ON add signature to reposted articles. Default is ON."
 
@@ -6730,7 +6731,7 @@ msgid "B<Sort articles by (sort_article_type)>"
 msgstr "B<Sort articles by (sort_article_type)>"
 
 #. type: Plain text
-#: doc/tin.1:2497 doc/tin.5:2283
+#: doc/tin.1:2497 doc/tin.5:2284
 msgid ""
 "This specifies how articles should be sorted. Sort by ascending Date (6) is "
 "the default. The following sort types are allowed:"
@@ -6739,80 +6740,80 @@ msgstr ""
 "the default. The following sort types are allowed:"
 
 #. type: Plain text
-#: doc/tin.1:2500 doc/tin.5:2286
+#: doc/tin.1:2500 doc/tin.5:2287
 msgid "B<Nothing>, don't sort articles."
 msgstr "B<Nothing>, don't sort articles."
 
 #. type: Plain text
-#: doc/tin.1:2502 doc/tin.5:2288
+#: doc/tin.1:2502 doc/tin.5:2289
 msgid ""
 "B<Subject: (descending)>, sort articles by ''Subject:'' field descending."
 msgstr ""
 "B<Subject: (descending)>, sort articles by ''Subject:'' field descending."
 
 #. type: Plain text
-#: doc/tin.1:2504 doc/tin.5:2290
+#: doc/tin.1:2504 doc/tin.5:2291
 msgid "B<Subject: (ascending)>, sort articles by ''Subject:'' field ascending."
 msgstr ""
 "B<Subject: (ascending)>, sort articles by ''Subject:'' field ascending."
 
 #. type: Plain text
-#: doc/tin.1:2506 doc/tin.5:2292
+#: doc/tin.1:2506 doc/tin.5:2293
 msgid "B<From: (descending)>, sort articles by ''From:'' field descending."
 msgstr "B<From: (descending)>, sort articles by ''From:'' field descending."
 
 #. type: Plain text
-#: doc/tin.1:2508 doc/tin.5:2294
+#: doc/tin.1:2508 doc/tin.5:2295
 msgid "B<From: (ascending)>, sort articles by ''From:'' field ascending."
 msgstr "B<From: (ascending)>, sort articles by ''From:'' field ascending."
 
 #. type: Plain text
-#: doc/tin.1:2510 doc/tin.5:2296
+#: doc/tin.1:2510 doc/tin.5:2297
 msgid "B<Date: (descending)>, sort articles by ''Date:'' field descending."
 msgstr "B<Date: (descending)>, sort articles by ''Date:'' field descending."
 
 #. type: Plain text
-#: doc/tin.1:2513 doc/tin.5:2299
+#: doc/tin.1:2513 doc/tin.5:2300
 msgid ""
 "B<Date: (ascending)>, sort articles by ''Date:'' field ascending (default)."
 msgstr ""
 "B<Date: (ascending)>, sort articles by ''Date:'' field ascending (default)."
 
 #. type: Plain text
-#: doc/tin.1:2515 doc/tin.5:2301
+#: doc/tin.1:2515 doc/tin.5:2302
 msgid "B<Score (descending)>, sort articles by filtering score descending."
 msgstr "B<Score (descending)>, sort articles by filtering score descending."
 
 #. type: IP
-#: doc/tin.1:2515 doc/tin.5:2301
+#: doc/tin.1:2515 doc/tin.5:2302
 #, no-wrap
 msgid "8"
 msgstr "8"
 
 #. type: Plain text
-#: doc/tin.1:2517 doc/tin.5:2303
+#: doc/tin.1:2517 doc/tin.5:2304
 msgid "B<Score (ascending)>, sort articles by filtering score ascending."
 msgstr "B<Score (ascending)>, sort articles by filtering score ascending."
 
 #. type: IP
-#: doc/tin.1:2517 doc/tin.5:2303
+#: doc/tin.1:2517 doc/tin.5:2304
 #, no-wrap
 msgid "9"
 msgstr "9"
 
 #. type: Plain text
-#: doc/tin.1:2519 doc/tin.5:2305
+#: doc/tin.1:2519 doc/tin.5:2306
 msgid "B<Lines: (descending)>, sort articles by ''Lines:'' field descending."
 msgstr "B<Lines: (descending)>, sort articles by ''Lines:'' field descending."
 
 #. type: IP
-#: doc/tin.1:2519 doc/tin.5:2305
+#: doc/tin.1:2519 doc/tin.5:2306
 #, no-wrap
 msgid "10"
 msgstr "10"
 
 #. type: Plain text
-#: doc/tin.1:2521 doc/tin.5:2307
+#: doc/tin.1:2521 doc/tin.5:2308
 msgid "B<Lines: (ascending)>, sort articles by ''Lines:'' field ascending."
 msgstr "B<Lines: (ascending)>, sort articles by ''Lines:'' field ascending."
 
@@ -6823,7 +6824,7 @@ msgid "B<Sort threads by (sort_threads_type)>"
 msgstr "B<Sort threads by (sort_threads_type)>"
 
 #. type: Plain text
-#: doc/tin.1:2527 doc/tin.5:2312
+#: doc/tin.1:2527 doc/tin.5:2313
 msgid ""
 "This specifies how threads will be sorted. Sort by descending Score (1) is "
 "the default. The following sort types are allowed:"
@@ -6832,24 +6833,24 @@ msgstr ""
 "the default. The following sort types are allowed:"
 
 #. type: Plain text
-#: doc/tin.1:2530 doc/tin.5:2315
+#: doc/tin.1:2530 doc/tin.5:2316
 msgid "B<Nothing>, don't sort threads."
 msgstr "B<Nothing>, don't sort threads."
 
 #. type: Plain text
-#: doc/tin.1:2533 doc/tin.5:2318
+#: doc/tin.1:2533 doc/tin.5:2319
 msgid ""
 "B<Score (descending)>, sort threads by filtering score descending (default)."
 msgstr ""
 "B<Score (descending)>, sort threads by filtering score descending (default)."
 
 #. type: Plain text
-#: doc/tin.1:2535 doc/tin.5:2320
+#: doc/tin.1:2535 doc/tin.5:2321
 msgid "B<Score (ascending)>, sort threads by filtering score ascending."
 msgstr "B<Score (ascending)>, sort threads by filtering score ascending."
 
 #. type: Plain text
-#: doc/tin.1:2537 doc/tin.5:2322
+#: doc/tin.1:2537 doc/tin.5:2323
 msgid ""
 "B<Last posting date (descending)>, sort threads by date of last posting "
 "descending."
@@ -6858,7 +6859,7 @@ msgstr ""
 "descending."
 
 #. type: Plain text
-#: doc/tin.1:2539 doc/tin.5:2324
+#: doc/tin.1:2539 doc/tin.5:2325
 msgid ""
 "B<Last posting date (ascending)>, sort threads by date of last posting "
 "ascending."
@@ -6873,7 +6874,7 @@ msgid "B<Spamtrap warning address parts (spamtrap_warning_addresses)>"
 msgstr "B<Spamtrap warning address parts (spamtrap_warning_addresses)>"
 
 #. type: Plain text
-#: doc/tin.1:2545 doc/tin.5:2330
+#: doc/tin.1:2545 doc/tin.5:2331
 msgid ""
 "Set this option to a list of comma-separated strings to be warned if you are "
 "replying to an article by mail where the e-mail address contains one of "
@@ -6884,7 +6885,7 @@ msgstr ""
 "these strings. The matching is case-insensitive. Example:"
 
 #. type: Plain text
-#: doc/tin.1:2547 doc/tin.5:2332
+#: doc/tin.1:2547 doc/tin.5:2333
 msgid "I<spam,delete,remove>"
 msgstr "I<spam,delete,remove>"
 
@@ -6912,7 +6913,7 @@ msgid "B<Strip blanks of end of lines (strip_blanks)>"
 msgstr "B<Strip blanks of end of lines (strip_blanks)>"
 
 #. type: Plain text
-#: doc/tin.1:2558 doc/tin.5:2343
+#: doc/tin.1:2558 doc/tin.5:2344
 msgid ""
 "Strips the blanks from the end of each line therefore speeding up the "
 "display when reading on a slow terminal or via modem. Default is ON."
@@ -6927,7 +6928,7 @@ msgid "B<Remove bogus groups from newsrc (strip_bogus)>"
 msgstr "B<Remove bogus groups from newsrc (strip_bogus)>"
 
 #. type: Plain text
-#: doc/tin.1:2567 doc/tin.5:2352
+#: doc/tin.1:2567 doc/tin.5:2353
 msgid ""
 "Bogus groups are groups that are present in your I<${TIN_HOMEDIR:-\"$HOME"
 "\"}/.newsrc> file that no longer exist on the news server. There are 3 "
@@ -6950,7 +6951,7 @@ msgid "B<No unsubscribed groups in newsrc (strip_newsrc)>"
 msgstr "B<No unsubscribed groups in newsrc (strip_newsrc)>"
 
 #. type: Plain text
-#: doc/tin.1:2571 doc/tin.5:2356
+#: doc/tin.1:2571 doc/tin.5:2357
 msgid ""
 "If ON, then unsubscribed groups will be permanently removed from your I<"
 "${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> file. Default is OFF."
@@ -6980,7 +6981,7 @@ msgid "B<Regex with Subject suffixes (strip_was_regex)>"
 msgstr "B<Regex with Subject suffixes (strip_was_regex)>"
 
 #. type: Plain text
-#: doc/tin.1:2583 doc/tin.5:2368
+#: doc/tin.1:2583 doc/tin.5:2369
 msgid ""
 "A regular expression to find Subject suffixes like \"(was:\" to remove.  If "
 "B<strip_was_regex> is blank, then B<\\%tin>(1)  uses a built-in default."
@@ -7012,7 +7013,7 @@ msgid "B<Wrap around threads on next unread (wrap_on_next_unread)>"
 msgstr "B<Wrap around threads on next unread (wrap_on_next_unread)>"
 
 #. type: Plain text
-#: doc/tin.1:2593 doc/tin.5:2606
+#: doc/tin.1:2593 doc/tin.5:2607
 msgid ""
 "If enabled a search for the next unread article will wrap around all "
 "articles to find also previous unread articles. If disabled the search stops "
@@ -7103,7 +7104,7 @@ msgid "B<Catchup thread by using left key (thread_catchup_on_exit)>"
 msgstr "B<Catchup thread by using left key (thread_catchup_on_exit)>"
 
 #. type: Plain text
-#: doc/tin.1:2625 doc/tin.5:2428
+#: doc/tin.1:2625 doc/tin.5:2429
 msgid ""
 "If ON catchup group/thread when leaving with the left arrow key. Default is "
 "ON."
@@ -7150,7 +7151,7 @@ msgid "B<Score of a thread (thread_score)>"
 msgstr "B<Score of a thread (thread_score)>"
 
 #. type: Plain text
-#: doc/tin.1:2637 doc/tin.5:2432
+#: doc/tin.1:2637 doc/tin.5:2433
 msgid ""
 "How the total score of a thread is computed. Default is 0, the maximum score "
 "in this thread."
@@ -7159,17 +7160,17 @@ msgstr ""
 "in this thread."
 
 #. type: Plain text
-#: doc/tin.1:2640 doc/tin.5:2435
+#: doc/tin.1:2640 doc/tin.5:2436
 msgid "B<Max>, the maximum score in this thread."
 msgstr "B<Max>, the maximum score in this thread."
 
 #. type: Plain text
-#: doc/tin.1:2642 doc/tin.5:2437
+#: doc/tin.1:2642 doc/tin.5:2438
 msgid "B<Sum>, the sum of all scores in this thread."
 msgstr "B<Sum>, the sum of all scores in this thread."
 
 #. type: Plain text
-#: doc/tin.1:2644 doc/tin.5:2439
+#: doc/tin.1:2644 doc/tin.5:2440
 msgid "B<Average>, the average score in this thread."
 msgstr "B<Average>, the average score in this thread."
 
@@ -7195,7 +7196,7 @@ msgid "B<Transliteration (translit)>"
 msgstr "B<Transliteration (translit)>"
 
 #. type: Plain text
-#: doc/tin.1:2658 doc/tin.5:2453
+#: doc/tin.1:2658 doc/tin.5:2454
 msgid ""
 "If ON append //TRANSLIT to the first argument of B<\\%iconv_open>(3)  to "
 "enable transliteration. This means that when a character cannot be "
@@ -7225,29 +7226,29 @@ msgstr ""
 "Default is 0. This option does not affect lines within verbatim blocks."
 
 #. type: Plain text
-#: doc/tin.1:2665 doc/tin.5:2462
+#: doc/tin.1:2665 doc/tin.5:2463
 msgid "B<Don't trim article body>, do nothing."
 msgstr "B<Don't trim article body>, do nothing."
 
 #. type: Plain text
-#: doc/tin.1:2667 doc/tin.5:2464
+#: doc/tin.1:2667 doc/tin.5:2465
 msgid "B<Skip leading blank lines>."
 msgstr "B<Skip leading blank lines>."
 
 #. type: Plain text
-#: doc/tin.1:2669 doc/tin.5:2466
+#: doc/tin.1:2669 doc/tin.5:2467
 msgid "B<Skip trailing blank lines>."
 msgstr "B<Skip trailing blank lines>."
 
 #. type: Plain text
-#: doc/tin.1:2671 doc/tin.5:2468
+#: doc/tin.1:2671 doc/tin.5:2469
 msgid ""
 "B<Skip leading and trailing blank l.>, skip leading and trailing blank lines."
 msgstr ""
 "B<Skip leading and trailing blank l.>, skip leading and trailing blank lines."
 
 #. type: Plain text
-#: doc/tin.1:2674 doc/tin.5:2471
+#: doc/tin.1:2674 doc/tin.5:2472
 msgid ""
 "B<Compact multiple between text>, replace multiple blank lines between text "
 "blocks with one blank line."
@@ -7256,17 +7257,17 @@ msgstr ""
 "blocks with one blank line."
 
 #. type: Plain text
-#: doc/tin.1:2676 doc/tin.5:2473
+#: doc/tin.1:2676 doc/tin.5:2474
 msgid "B<Compact multiple and skip leading>, 4 + 1"
 msgstr "B<Compact multiple and skip leading>, 4 + 1"
 
 #. type: Plain text
-#: doc/tin.1:2678 doc/tin.5:2475
+#: doc/tin.1:2678 doc/tin.5:2476
 msgid "B<Compact multiple and skip trailing>, 4 + 2"
 msgstr "B<Compact multiple and skip trailing>, 4 + 2"
 
 #. type: Plain text
-#: doc/tin.1:2680 doc/tin.5:2477
+#: doc/tin.1:2680 doc/tin.5:2478
 msgid "B<Compact mltpl., skip lead. & trai.>, 4 + 3"
 msgstr "B<Compact mltpl., skip lead. & trai.>, 4 + 3"
 
@@ -7328,7 +7329,7 @@ msgid "B<Program that opens URLs (url_handler)>"
 msgstr "B<Program that opens URLs (url_handler)>"
 
 #. type: Plain text
-#: doc/tin.1:2702 doc/tin.5:2498
+#: doc/tin.1:2702 doc/tin.5:2499
 msgid ""
 "The program that will be run when launching URLs in the article viewer using "
 "B<PageViewUrl> ('B<U>'). The actual URL will be appended.  Default is "
@@ -7345,7 +7346,7 @@ msgid "B<URL highlighting in message body (url_highlight)>"
 msgstr "B<URL highlighting in message body (url_highlight)>"
 
 #. type: Plain text
-#: doc/tin.1:2705 doc/tin.5:2501
+#: doc/tin.1:2705 doc/tin.5:2502
 msgid "Enable highlighting URLs in message body. Default is ON."
 msgstr "Enable highlighting URLs in message body. Default is ON."
 
@@ -7373,7 +7374,7 @@ msgid "B<Use mouse in xterm (use_mouse)>"
 msgstr "B<Use mouse in xterm (use_mouse)>"
 
 #. type: Plain text
-#: doc/tin.1:2717 doc/tin.5:2515
+#: doc/tin.1:2717 doc/tin.5:2516
 msgid ""
 "Allows the mouse button support in an B<\\%xterm>(1x)  to be enabled/"
 "disabled.  Default is OFF."
@@ -7405,7 +7406,7 @@ msgid "B<Use UTF-8 graphics (utf8_graphics)>"
 msgstr "B<Use UTF-8 graphics (utf8_graphics)>"
 
 #. type: Plain text
-#: doc/tin.1:2731 doc/tin.5:2531
+#: doc/tin.1:2731 doc/tin.5:2532
 msgid ""
 "If ON use UTF-8 characters for indicator ('-E<gt>'), thread/attachment tree "
 "and ellipsis ('...'). Default is OFF."
@@ -7450,7 +7451,7 @@ msgid "B<Detection of verbatim blocks (verbatim_handling)>"
 msgstr "B<Detection of verbatim blocks (verbatim_handling)>"
 
 #. type: Plain text
-#: doc/tin.1:2742 doc/tin.5:2546
+#: doc/tin.1:2742 doc/tin.5:2547
 msgid "If ON verbatim blocks will be detected. Default is ON."
 msgstr "If ON verbatim blocks will be detected. Default is ON."
 
@@ -7486,7 +7487,7 @@ msgid "B<What to display instead of mark (word_h_display_marks)>"
 msgstr "B<What to display instead of mark (word_h_display_marks)>"
 
 #. type: Plain text
-#: doc/tin.1:2768 doc/tin.5:2574
+#: doc/tin.1:2768 doc/tin.5:2575
 msgid ""
 "Should the leading and ending stars, slashes, strokes and dashes also be "
 "displayed, even when they are highlighting marks?"
@@ -7495,17 +7496,17 @@ msgstr ""
 "displayed, even when they are highlighting marks?"
 
 #. type: Plain text
-#: doc/tin.1:2771 doc/tin.5:2577
+#: doc/tin.1:2771 doc/tin.5:2578
 msgid "B<no>"
 msgstr "B<no>"
 
 #. type: Plain text
-#: doc/tin.1:2773 doc/tin.5:2579
+#: doc/tin.1:2773 doc/tin.5:2580
 msgid "yes, B<display mark>"
 msgstr "yes, B<display mark>"
 
 #. type: Plain text
-#: doc/tin.1:2775 doc/tin.5:2581
+#: doc/tin.1:2775 doc/tin.5:2582
 msgid "print a B<space> instead"
 msgstr "print a B<space> instead"
 
@@ -7516,7 +7517,7 @@ msgid "B<Word highlighting in message body (word_highlight)>"
 msgstr "B<Word highlighting in message body (word_highlight)>"
 
 #. type: Plain text
-#: doc/tin.1:2784 doc/tin.5:2590
+#: doc/tin.1:2784 doc/tin.5:2591
 msgid ""
 "Enable word highlighting. See B<word_h_display_marks> for the options "
 "available. If B<use_color> is enabled the colors specified in "
@@ -7539,7 +7540,7 @@ msgid "B<Page line wrap column (wrap_column)>"
 msgstr "B<Page line wrap column (wrap_column)>"
 
 #. type: Plain text
-#: doc/tin.1:2795 doc/tin.5:2601
+#: doc/tin.1:2795 doc/tin.5:2602
 msgid ""
 "Sets the column at which a displayed article body should be wrapped.  If "
 "this value is equal to 0, it defaults to the current screen width.  If this "
@@ -7566,7 +7567,7 @@ msgid "B<Quote line when crossposting (xpost_quote_format)>"
 msgstr "B<Quote line when crossposting (xpost_quote_format)>"
 
 #. type: Plain text
-#: doc/tin.1:2802 doc/tin.5:2611
+#: doc/tin.1:2802 doc/tin.5:2612
 msgid ""
 "Format is the same as for B<news_quote_format>, this is used when answering "
 "to a crossposting to several groups with no ''Followup-To:'' set."
@@ -9470,7 +9471,7 @@ msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/tinrc>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/tinrc>"
 
 #. type: Plain text
-#: doc/tin.1:3649 doc/tin.5:2615
+#: doc/tin.1:3649 doc/tin.5:2616
 msgid "I</etc/tin/tin.defaults>"
 msgstr "I</etc/tin/tin.defaults>"
 
@@ -9484,34 +9485,34 @@ msgstr "I</usr/local/share/locale/${LC_MESSAGES}/LC_MESSAGES/tin.mo>"
 #.  we should think about checking for the new Paths
 #.  (described shown below).
 #. type: Plain text
-#: doc/tin.1:3655 doc/tin.5:2725
+#: doc/tin.1:3655 doc/tin.5:2726
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}\"/\"${TIN_ACTIVEFILE:-active}>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}\"/\"${TIN_ACTIVEFILE:-active}>"
 
 #. type: Plain text
-#: doc/tin.1:3658 doc/tin.5:2786
+#: doc/tin.1:3658 doc/tin.5:2787
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}/active.times>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}/active.times>"
 
 #. type: Plain text
-#: doc/tin.1:3661 doc/tin.5:2813
+#: doc/tin.1:3661 doc/tin.5:2814
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}/newsgroups>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}/newsgroups>"
 
 #. type: Plain text
-#: doc/tin.1:3664 doc/tin.5:2836
+#: doc/tin.1:3664 doc/tin.5:2837
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}/organization>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}/organization>"
 
 #.  is the Path correct? or is it /news/etc/overview.fmt
 #. type: Plain text
-#: doc/tin.1:3667 doc/tin.5:2846
+#: doc/tin.1:3667 doc/tin.5:2847
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}/overview.fmt>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}/overview.fmt>"
 
 #.  is the Path correct? or is it /news/etc/subscriptions
 #. type: Plain text
-#: doc/tin.1:3672 doc/tin.5:2864
+#: doc/tin.1:3672 doc/tin.5:2865
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}/subscriptions>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}/subscriptions>"
 
@@ -10783,7 +10784,7 @@ msgid "Urs Janssen E<lt>urs@tin.orgE<gt>"
 msgstr "Urs Janssen E<lt>urs@tin.orgE<gt>"
 
 #. type: SH
-#: doc/tin.1:4148 doc/tin.1:4149 doc/tin.5:2876
+#: doc/tin.1:4148 doc/tin.1:4149 doc/tin.5:2877
 #, no-wrap
 msgid "SEE ALSO"
 msgstr "SEE ALSO"
@@ -11600,7 +11601,7 @@ msgstr ""
 "the types of pattern that can be used here."
 
 #. type: TP
-#: doc/tin.5:438 doc/tin.5:1342
+#: doc/tin.5:438 doc/tin.5:1343
 #, no-wrap
 msgid "B<add_posted_to_filter>"
 msgstr "B<add_posted_to_filter>"
@@ -11620,13 +11621,13 @@ msgid "Identical to the tinrc variable of the same name"
 msgstr "Identical to the tinrc variable of the same name"
 
 #. type: TP
-#: doc/tin.5:441 doc/tin.5:1346
+#: doc/tin.5:441 doc/tin.5:1347
 #, no-wrap
 msgid "B<advertising>"
 msgstr "B<advertising>"
 
 #. type: TP
-#: doc/tin.5:444 doc/tin.5:1349
+#: doc/tin.5:444 doc/tin.5:1350
 #, no-wrap
 msgid "B<alternative_handling>"
 msgstr "B<alternative_handling>"
@@ -11638,13 +11639,13 @@ msgid "B<ask_for_metamail>"
 msgstr "B<ask_for_metamail>"
 
 #. type: TP
-#: doc/tin.5:450 doc/tin.5:1398
+#: doc/tin.5:450 doc/tin.5:1399
 #, no-wrap
 msgid "B<auto_cc_bcc>"
 msgstr "B<auto_cc_bcc>"
 
 #. type: TP
-#: doc/tin.5:453 doc/tin.5:1402
+#: doc/tin.5:453 doc/tin.5:1403
 #, no-wrap
 msgid "B<auto_list_thread>"
 msgstr "B<auto_list_thread>"
@@ -11665,7 +11666,7 @@ msgstr ""
 "entering the group."
 
 #. type: TP
-#: doc/tin.5:460 doc/tin.5:1409
+#: doc/tin.5:460 doc/tin.5:1410
 #, no-wrap
 msgid "B<batch_save>"
 msgstr "B<batch_save>"
@@ -11682,7 +11683,7 @@ msgstr ""
 "\\%tin>(1)."
 
 #. type: TP
-#: doc/tin.5:466 doc/tin.5:1541
+#: doc/tin.5:466 doc/tin.5:1542
 #, no-wrap
 msgid "B<date_format>"
 msgstr "B<date_format>"
@@ -11707,13 +11708,13 @@ msgstr ""
 "using B<GroupAutoSave> ('B<S>') will suppress prompting."
 
 #. type: TP
-#: doc/tin.5:476 doc/tin.5:1662
+#: doc/tin.5:476 doc/tin.5:1663
 #, no-wrap
 msgid "B<editor_format>"
 msgstr "B<editor_format>"
 
 #. type: TP
-#: doc/tin.5:479 doc/tin.5:1669
+#: doc/tin.5:479 doc/tin.5:1670
 #, no-wrap
 msgid "B<extquote_handling>"
 msgstr "B<extquote_handling>"
@@ -11756,31 +11757,31 @@ msgid "Identical to the tinrc variable B<mail_address>"
 msgstr "Identical to the tinrc variable B<mail_address>"
 
 #. type: TP
-#: doc/tin.5:492 doc/tin.5:1704
+#: doc/tin.5:492 doc/tin.5:1705
 #, no-wrap
 msgid "B<group_catchup_on_exit>"
 msgstr "B<group_catchup_on_exit>"
 
 #. type: TP
-#: doc/tin.5:495 doc/tin.5:1707
+#: doc/tin.5:495 doc/tin.5:1708
 #, no-wrap
 msgid "B<group_format>"
 msgstr "B<group_format>"
 
 #. type: TP
-#: doc/tin.5:498 doc/tin.5:1787
+#: doc/tin.5:498 doc/tin.5:1788
 #, no-wrap
 msgid "B<mail_8bit_header>"
 msgstr "B<mail_8bit_header>"
 
 #. type: TP
-#: doc/tin.5:501 doc/tin.5:1799 doc/tin.5:2652
+#: doc/tin.5:501 doc/tin.5:1800 doc/tin.5:2653
 #, no-wrap
 msgid "B<mail_mime_encoding>"
 msgstr "B<mail_mime_encoding>"
 
 #. type: TP
-#: doc/tin.5:504 doc/tin.5:1819
+#: doc/tin.5:504 doc/tin.5:1820
 #, no-wrap
 msgid "B<maildir>"
 msgstr "B<maildir>"
@@ -11801,13 +11802,13 @@ msgstr ""
 "directed to this email address instead"
 
 #. type: TP
-#: doc/tin.5:511 doc/tin.5:1857
+#: doc/tin.5:511 doc/tin.5:1858
 #, no-wrap
 msgid "B<mark_ignore_tags>"
 msgstr "B<mark_ignore_tags>"
 
 #. type: TP
-#: doc/tin.5:514 doc/tin.5:1854
+#: doc/tin.5:514 doc/tin.5:1855
 #, no-wrap
 msgid "B<mark_saved_read>"
 msgstr "B<mark_saved_read>"
@@ -11871,25 +11872,25 @@ msgstr ""
 "entry will negate it, eg: image/*,!image/bmp,!text/html. Default is */*"
 
 #. type: TP
-#: doc/tin.5:541 doc/tin.5:1936
+#: doc/tin.5:541 doc/tin.5:1937
 #, no-wrap
 msgid "B<news_headers_to_display>"
 msgstr "B<news_headers_to_display>"
 
 #. type: TP
-#: doc/tin.5:544 doc/tin.5:1943
+#: doc/tin.5:544 doc/tin.5:1944
 #, no-wrap
 msgid "B<news_headers_to_not_display>"
 msgstr "B<news_headers_to_not_display>"
 
 #. type: TP
-#: doc/tin.5:547 doc/tin.5:1952
+#: doc/tin.5:547 doc/tin.5:1953
 #, no-wrap
 msgid "B<news_quote_format>"
 msgstr "B<news_quote_format>"
 
 #. type: TP
-#: doc/tin.5:550 doc/tin.5:2625
+#: doc/tin.5:550 doc/tin.5:2626
 #, no-wrap
 msgid "B<organization>"
 msgstr "B<organization>"
@@ -11910,61 +11911,61 @@ msgstr ""
 "servers might still overwrite the \\&''Organization:'' header."
 
 #. type: TP
-#: doc/tin.5:558 doc/tin.5:1995
+#: doc/tin.5:558 doc/tin.5:1996
 #, no-wrap
 msgid "B<pos_first_unread>"
 msgstr "B<pos_first_unread>"
 
 #. type: TP
-#: doc/tin.5:561 doc/tin.5:1999
+#: doc/tin.5:561 doc/tin.5:2000
 #, no-wrap
 msgid "B<post_8bit_header>"
 msgstr "B<post_8bit_header>"
 
 #. type: TP
-#: doc/tin.5:564 doc/tin.5:2010 doc/tin.5:2649
+#: doc/tin.5:564 doc/tin.5:2011 doc/tin.5:2650
 #, no-wrap
 msgid "B<post_mime_encoding>"
 msgstr "B<post_mime_encoding>"
 
 #. type: TP
-#: doc/tin.5:567 doc/tin.5:2023
+#: doc/tin.5:567 doc/tin.5:2024
 #, no-wrap
 msgid "B<post_process_type>"
 msgstr "B<post_process_type>"
 
 #. type: TP
-#: doc/tin.5:570 doc/tin.5:2015
+#: doc/tin.5:570 doc/tin.5:2016
 #, no-wrap
 msgid "B<post_process_view>"
 msgstr "B<post_process_view>"
 
 #. type: TP
-#: doc/tin.5:573 doc/tin.5:2047
+#: doc/tin.5:573 doc/tin.5:2048
 #, no-wrap
 msgid "B<print_header>"
 msgstr "B<print_header>"
 
 #. type: TP
-#: doc/tin.5:576 doc/tin.5:2061
+#: doc/tin.5:576 doc/tin.5:2062
 #, no-wrap
 msgid "B<process_only_unread>"
 msgstr "B<process_only_unread>"
 
 #. type: TP
-#: doc/tin.5:579 doc/tin.5:2065
+#: doc/tin.5:579 doc/tin.5:2066
 #, no-wrap
 msgid "B<prompt_followupto>"
 msgstr "B<prompt_followupto>"
 
 #. type: TP
-#: doc/tin.5:582 doc/tin.5:2069
+#: doc/tin.5:582 doc/tin.5:2070
 #, no-wrap
 msgid "B<quote_chars>"
 msgstr "B<quote_chars>"
 
 #. type: TP
-#: doc/tin.5:585 doc/tin.5:2134
+#: doc/tin.5:585 doc/tin.5:2135
 #, no-wrap
 msgid "B<savedir>"
 msgstr "B<savedir>"
@@ -11977,49 +11978,49 @@ msgid "B<savefile>"
 msgstr "B<savefile>"
 
 #. type: TP
-#: doc/tin.5:591 doc/tin.5:2210
+#: doc/tin.5:591 doc/tin.5:2211
 #, no-wrap
 msgid "B<show_art_score>"
 msgstr "B<show_art_score>"
 
 #. type: TP
-#: doc/tin.5:594 doc/tin.5:2193
+#: doc/tin.5:594 doc/tin.5:2194
 #, no-wrap
 msgid "B<show_author>"
 msgstr "B<show_author>"
 
 #. type: TP
-#: doc/tin.5:597 doc/tin.5:2242
+#: doc/tin.5:597 doc/tin.5:2243
 #, no-wrap
 msgid "B<show_only_unread_arts>"
 msgstr "B<show_only_unread_arts>"
 
 #. type: TP
-#: doc/tin.5:600 doc/tin.5:2250
+#: doc/tin.5:600 doc/tin.5:2251
 #, no-wrap
 msgid "B<show_signatures>"
 msgstr "B<show_signatures>"
 
 #. type: TP
-#: doc/tin.5:603 doc/tin.5:2253
+#: doc/tin.5:603 doc/tin.5:2254
 #, no-wrap
 msgid "B<sigdashes>"
 msgstr "B<sigdashes>"
 
 #. type: TP
-#: doc/tin.5:606 doc/tin.5:2256
+#: doc/tin.5:606 doc/tin.5:2257
 #, no-wrap
 msgid "B<sigfile>"
 msgstr "B<sigfile>"
 
 #. type: TP
-#: doc/tin.5:609 doc/tin.5:2269
+#: doc/tin.5:609 doc/tin.5:2270
 #, no-wrap
 msgid "B<signature_repost>"
 msgstr "B<signature_repost>"
 
 #. type: TP
-#: doc/tin.5:612 doc/tin.5:2279
+#: doc/tin.5:612 doc/tin.5:2280
 #, no-wrap
 msgid "B<sort_article_type>"
 msgstr "B<sort_article_type>"
@@ -12030,61 +12031,61 @@ msgid "Identical to the tinrc variable B<sort_article_type>"
 msgstr "Identical to the tinrc variable B<sort_article_type>"
 
 #. type: TP
-#: doc/tin.5:615 doc/tin.5:2308
+#: doc/tin.5:615 doc/tin.5:2309
 #, no-wrap
 msgid "B<sort_threads_type>"
 msgstr "B<sort_threads_type>"
 
 #. type: TP
-#: doc/tin.5:618 doc/tin.5:2375
+#: doc/tin.5:618 doc/tin.5:2376
 #, no-wrap
 msgid "B<tex2iso_conv>"
 msgstr "B<tex2iso_conv>"
 
 #. type: TP
-#: doc/tin.5:621 doc/tin.5:2380
+#: doc/tin.5:621 doc/tin.5:2381
 #, no-wrap
 msgid "B<thread_articles>"
 msgstr "B<thread_articles>"
 
 #. type: TP
-#: doc/tin.5:624 doc/tin.5:2424
+#: doc/tin.5:624 doc/tin.5:2425
 #, no-wrap
 msgid "B<thread_catchup_on_exit>"
 msgstr "B<thread_catchup_on_exit>"
 
 #. type: TP
-#: doc/tin.5:627 doc/tin.5:2400
+#: doc/tin.5:627 doc/tin.5:2401
 #, no-wrap
 msgid "B<thread_format>"
 msgstr "B<thread_format>"
 
 #. type: TP
-#: doc/tin.5:630 doc/tin.5:2419
+#: doc/tin.5:630 doc/tin.5:2420
 #, no-wrap
 msgid "B<thread_perc>"
 msgstr "B<thread_perc>"
 
 #. type: TP
-#: doc/tin.5:633 doc/tin.5:2453
+#: doc/tin.5:633 doc/tin.5:2454
 #, no-wrap
 msgid "B<trim_article_body>"
 msgstr "B<trim_article_body>"
 
 #. type: TP
-#: doc/tin.5:636 doc/tin.5:2478
+#: doc/tin.5:636 doc/tin.5:2479
 #, no-wrap
 msgid "B<suppress_soft_hyphens>"
 msgstr "B<suppress_soft_hyphens>"
 
 #. type: TP
-#: doc/tin.5:639 doc/tin.5:2543
+#: doc/tin.5:639 doc/tin.5:2544
 #, no-wrap
 msgid "B<verbatim_handling>"
 msgstr "B<verbatim_handling>"
 
 #. type: TP
-#: doc/tin.5:642 doc/tin.5:2601
+#: doc/tin.5:642 doc/tin.5:2602
 #, no-wrap
 msgid "B<wrap_on_next_unread>"
 msgstr "B<wrap_on_next_unread>"
@@ -12264,7 +12265,7 @@ msgstr ""
 "mode=email --dont-backup check\""
 
 #. type: TP
-#: doc/tin.5:700 doc/tin.5:1890
+#: doc/tin.5:700 doc/tin.5:1891
 #, no-wrap
 msgid "B<mm_network_charset>"
 msgstr "B<mm_network_charset>"
@@ -12730,7 +12731,7 @@ msgstr ""
 "variable B<wildcard>."
 
 #. type: TP
-#: doc/tin.5:882 doc/tin.5:2796
+#: doc/tin.5:882 doc/tin.5:2797
 #, no-wrap
 msgid "B<time>"
 msgstr "B<time>"
@@ -13343,12 +13344,12 @@ msgstr ""
 "two tab-separated fields \"I<mailgroupname> I<one-line description>\"."
 
 #. type: Plain text
-#: doc/tin.5:1168 doc/tin.5:1287 doc/tin.5:2742 doc/tin.5:2796 doc/tin.5:2823
+#: doc/tin.5:1168 doc/tin.5:1287 doc/tin.5:2743 doc/tin.5:2797 doc/tin.5:2824
 msgid "is the name of the newsgroup"
 msgstr "is the name of the newsgroup"
 
 #. type: Plain text
-#: doc/tin.5:1171 doc/tin.5:1290 doc/tin.5:2826
+#: doc/tin.5:1171 doc/tin.5:1290 doc/tin.5:2827
 msgid "is a short single-line description of the group"
 msgstr "is a short single-line description of the group"
 
@@ -13519,13 +13520,13 @@ msgstr ""
 "\tI<one-line description>\"."
 
 #. type: TP
-#: doc/tin.5:1284 doc/tin.5:2820
+#: doc/tin.5:1284 doc/tin.5:2821
 #, no-wrap
 msgid "B<group.name>"
 msgstr "B<group.name>"
 
 #. type: TP
-#: doc/tin.5:1287 doc/tin.5:2823
+#: doc/tin.5:1287 doc/tin.5:2824
 #, no-wrap
 msgid "B<one-line description>"
 msgstr "B<one-line description>"
@@ -13583,86 +13584,88 @@ msgstr ""
 "the server."
 
 #. type: Plain text
-#: doc/tin.5:1336
+#: doc/tin.5:1337
 msgid ""
 "At startup, B<\\%tin>(1)  reads in the configuration file. This contains a "
 "list of \"I<variable>=I<value>\" pairs that can be used to configure the way "
-"B<\\%tin>(1)  works. If it exists, the global configuration file, I<"
-"${TIN_LIBDIR:-NEWSLIBDIR}/tinrc> is read first. After that, the user's own "
-"configuration file I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/tinrc> is read. The "
-"global file is useful for distributing system-wide defaults to new users who "
-"have no private tinrc yet (see also B</etc/tin/tin.defaults>)."
+"B<\\%tin>(1)  works. I<value> strings are limited to 1022 chars and will be "
+"discarded if exceeding this limit. If it exists, the global configuration "
+"file, I<${TIN_LIBDIR:-NEWSLIBDIR}/tinrc> is read first. After that, the "
+"user's own configuration file I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/tinrc> is "
+"read. The global file is useful for distributing system-wide defaults to new "
+"users who have no private tinrc yet (see also B</etc/tin/tin.defaults>)."
 msgstr ""
 "At startup, B<\\%tin>(1)  reads in the configuration file. This contains a "
 "list of \"I<variable>=I<value>\" pairs that can be used to configure the way "
-"B<\\%tin>(1)  works. If it exists, the global configuration file, I<"
-"${TIN_LIBDIR:-NEWSLIBDIR}/tinrc> is read first. After that, the user's own "
-"configuration file I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/tinrc> is read. The "
-"global file is useful for distributing system-wide defaults to new users who "
-"have no private tinrc yet (see also B</etc/tin/tin.defaults>)."
+"B<\\%tin>(1)  works. I<value> strings are limited to 1022 chars and will be "
+"discarded if exceeding this limit. If it exists, the global configuration "
+"file, I<${TIN_LIBDIR:-NEWSLIBDIR}/tinrc> is read first. After that, the "
+"user's own configuration file I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/tinrc> is "
+"read. The global file is useful for distributing system-wide defaults to new "
+"users who have no private tinrc yet (see also B</etc/tin/tin.defaults>)."
 
 #. type: TP
-#: doc/tin.5:1336
+#: doc/tin.5:1337
 #, no-wrap
 msgid "B<abbreviate_groupname>"
 msgstr "B<abbreviate_groupname>"
 
 #. type: TP
-#: doc/tin.5:1352
+#: doc/tin.5:1353
 #, no-wrap
 msgid "B<art_marked_deleted>"
 msgstr "B<art_marked_deleted>"
 
 #. type: TP
-#: doc/tin.5:1355
+#: doc/tin.5:1356
 #, no-wrap
 msgid "B<art_marked_inrange>"
 msgstr "B<art_marked_inrange>"
 
 #. type: TP
-#: doc/tin.5:1358
+#: doc/tin.5:1359
 #, no-wrap
 msgid "B<art_marked_return>"
 msgstr "B<art_marked_return>"
 
 #. type: TP
-#: doc/tin.5:1362
+#: doc/tin.5:1363
 #, no-wrap
 msgid "B<art_marked_selected>"
 msgstr "B<art_marked_selected>"
 
 #. type: TP
-#: doc/tin.5:1366
+#: doc/tin.5:1367
 #, no-wrap
 msgid "B<art_marked_recent>"
 msgstr "B<art_marked_recent>"
 
 #. type: TP
-#: doc/tin.5:1370
+#: doc/tin.5:1371
 #, no-wrap
 msgid "B<art_marked_unread>"
 msgstr "B<art_marked_unread>"
 
 #. type: TP
-#: doc/tin.5:1374
+#: doc/tin.5:1375
 #, no-wrap
 msgid "B<art_marked_read>"
 msgstr "B<art_marked_read>"
 
 #. type: TP
-#: doc/tin.5:1377
+#: doc/tin.5:1378
 #, no-wrap
 msgid "B<art_marked_killed>"
 msgstr "B<art_marked_killed>"
 
 #. type: TP
-#: doc/tin.5:1381
+#: doc/tin.5:1382
 #, no-wrap
 msgid "B<art_marked_read_selected>"
 msgstr "B<art_marked_read_selected>"
 
 #. type: Plain text
-#: doc/tin.5:1392
+#: doc/tin.5:1393
 msgid ""
 "If ON B<\\%tin>(1)  will ask before using a MIME viewer (B<metamail_prog>) "
 "to display MIME messages. This only occurs if a MIME viewer is set. Default "
@@ -13673,13 +13676,13 @@ msgstr ""
 "is OFF."
 
 #. type: TP
-#: doc/tin.5:1392
+#: doc/tin.5:1393
 #, no-wrap
 msgid "B<attachment_format>"
 msgstr "B<attachment_format>"
 
 #. type: Plain text
-#: doc/tin.5:1398
+#: doc/tin.5:1399
 msgid ""
 "Format string B<\\%tin>(1)  uses for Attachment level representation.  "
 "Default is \"%t%s%e%c%d\"."
@@ -13688,30 +13691,30 @@ msgstr ""
 "is \"%t%s%e%c%d\"."
 
 #. type: TP
-#: doc/tin.5:1406
+#: doc/tin.5:1407
 #, no-wrap
 msgid "B<auto_reconnect>"
 msgstr "B<auto_reconnect>"
 
 #. type: Plain text
-#: doc/tin.5:1409
+#: doc/tin.5:1410
 msgid "Reconnect to server automatically. Default is OFF."
 msgstr "Reconnect to server automatically. Default is OFF."
 
 #. type: TP
-#: doc/tin.5:1414
+#: doc/tin.5:1415
 #, no-wrap
 msgid "B<beginner_level>"
 msgstr "B<beginner_level>"
 
 #. type: TP
-#: doc/tin.5:1419
+#: doc/tin.5:1420
 #, no-wrap
 msgid "B<cache_overview_files>"
 msgstr "B<cache_overview_files>"
 
 #. type: Plain text
-#: doc/tin.5:1424
+#: doc/tin.5:1425
 msgid ""
 "If ON, create local copies of NNTP overview files. This can be used to "
 "considerably speed up accessing large groups when using a slow connection.  "
@@ -13722,13 +13725,13 @@ msgstr ""
 "Default is OFF."
 
 #. type: TP
-#: doc/tin.5:1424
+#: doc/tin.5:1425
 #, no-wrap
 msgid "B<cancel_lock_algo>"
 msgstr "B<cancel_lock_algo>"
 
 #. type: Plain text
-#: doc/tin.5:1430
+#: doc/tin.5:1431
 msgid ""
 "Use this hash algorithm for cancel-locks. Only available when built with "
 "cancel-lock support. none disables the generation of cancel-locks. Valid "
@@ -13739,181 +13742,181 @@ msgstr ""
 "values are none, sha1, sha256 and sha512.  Default is sha1."
 
 #. type: TP
-#: doc/tin.5:1430
+#: doc/tin.5:1431
 #, no-wrap
 msgid "B<catchup_read_groups>"
 msgstr "B<catchup_read_groups>"
 
 #. type: TP
-#: doc/tin.5:1434
+#: doc/tin.5:1435
 #, no-wrap
 msgid "B<col_back>"
 msgstr "B<col_back>"
 
 #. type: TP
-#: doc/tin.5:1437
+#: doc/tin.5:1438
 #, no-wrap
 msgid "B<col_extquote>"
 msgstr "B<col_extquote>"
 
 #. type: TP
-#: doc/tin.5:1440
+#: doc/tin.5:1441
 #, no-wrap
 msgid "B<col_from>"
 msgstr "B<col_from>"
 
 #. type: TP
-#: doc/tin.5:1443
+#: doc/tin.5:1444
 #, no-wrap
 msgid "B<col_head>"
 msgstr "B<col_head>"
 
 #. type: TP
-#: doc/tin.5:1446
+#: doc/tin.5:1447
 #, no-wrap
 msgid "B<col_help>"
 msgstr "B<col_help>"
 
 #. type: TP
-#: doc/tin.5:1449
+#: doc/tin.5:1450
 #, no-wrap
 msgid "B<col_invers_bg>"
 msgstr "B<col_invers_bg>"
 
 #. type: TP
-#: doc/tin.5:1452
+#: doc/tin.5:1453
 #, no-wrap
 msgid "B<col_invers_fg>"
 msgstr "B<col_invers_fg>"
 
 #. type: TP
-#: doc/tin.5:1455
+#: doc/tin.5:1456
 #, no-wrap
 msgid "B<col_markdash>"
 msgstr "B<col_markdash>"
 
 #. type: TP
-#: doc/tin.5:1459
+#: doc/tin.5:1460
 #, no-wrap
 msgid "B<col_markslash>"
 msgstr "B<col_markslash>"
 
 #. type: TP
-#: doc/tin.5:1463
+#: doc/tin.5:1464
 #, no-wrap
 msgid "B<col_markstar>"
 msgstr "B<col_markstar>"
 
 #. type: TP
-#: doc/tin.5:1467
+#: doc/tin.5:1468
 #, no-wrap
 msgid "B<col_markstroke>"
 msgstr "B<col_markstroke>"
 
 #. type: TP
-#: doc/tin.5:1471
+#: doc/tin.5:1472
 #, no-wrap
 msgid "B<col_message>"
 msgstr "B<col_message>"
 
 #. type: TP
-#: doc/tin.5:1474
+#: doc/tin.5:1475
 #, no-wrap
 msgid "B<col_minihelp>"
 msgstr "B<col_minihelp>"
 
 #. type: TP
-#: doc/tin.5:1477
+#: doc/tin.5:1478
 #, no-wrap
 msgid "B<col_newsheaders>"
 msgstr "B<col_newsheaders>"
 
 #. type: TP
-#: doc/tin.5:1480
+#: doc/tin.5:1481
 #, no-wrap
 msgid "B<col_normal>"
 msgstr "B<col_normal>"
 
 #. type: TP
-#: doc/tin.5:1483
+#: doc/tin.5:1484
 #, no-wrap
 msgid "B<col_quote>"
 msgstr "B<col_quote>"
 
 #. type: TP
-#: doc/tin.5:1486
+#: doc/tin.5:1487
 #, no-wrap
 msgid "B<col_quote2>"
 msgstr "B<col_quote2>"
 
 #. type: TP
-#: doc/tin.5:1489
+#: doc/tin.5:1490
 #, no-wrap
 msgid "B<col_quote3>"
 msgstr "B<col_quote3>"
 
 #. type: TP
-#: doc/tin.5:1492
+#: doc/tin.5:1493
 #, no-wrap
 msgid "B<col_response>"
 msgstr "B<col_response>"
 
 #. type: TP
-#: doc/tin.5:1496
+#: doc/tin.5:1497
 #, no-wrap
 msgid "B<col_signature>"
 msgstr "B<col_signature>"
 
 #. type: TP
-#: doc/tin.5:1499
+#: doc/tin.5:1500
 #, no-wrap
 msgid "B<col_score_neg>"
 msgstr "B<col_score_neg>"
 
 #. type: TP
-#: doc/tin.5:1502
+#: doc/tin.5:1503
 #, no-wrap
 msgid "B<col_score_pos>"
 msgstr "B<col_score_pos>"
 
 #. type: TP
-#: doc/tin.5:1505
+#: doc/tin.5:1506
 #, no-wrap
 msgid "B<col_urls>"
 msgstr "B<col_urls>"
 
 #. type: TP
-#: doc/tin.5:1508
+#: doc/tin.5:1509
 #, no-wrap
 msgid "B<col_verbatim>"
 msgstr "B<col_verbatim>"
 
 #. type: TP
-#: doc/tin.5:1511
+#: doc/tin.5:1512
 #, no-wrap
 msgid "B<col_subject>"
 msgstr "B<col_subject>"
 
 #. type: TP
-#: doc/tin.5:1514
+#: doc/tin.5:1515
 #, no-wrap
 msgid "B<col_text>"
 msgstr "B<col_text>"
 
 #. type: TP
-#: doc/tin.5:1517
+#: doc/tin.5:1518
 #, no-wrap
 msgid "B<col_title>"
 msgstr "B<col_title>"
 
 #. type: TP
-#: doc/tin.5:1520
+#: doc/tin.5:1521
 #, no-wrap
 msgid "B<confirm_choice>"
 msgstr "B<confirm_choice>"
 
 #. type: Plain text
-#: doc/tin.5:1524
+#: doc/tin.5:1525
 msgid ""
 "B<\\%tin>(1)  can ask for manual confirmation to protect the user. Available "
 "choices:"
@@ -13923,7 +13926,7 @@ msgstr ""
 
 #.  TODO: check if all affected commands are marked [after confirmation]
 #. type: Plain text
-#: doc/tin.5:1530
+#: doc/tin.5:1531
 msgid ""
 "B<commands>: Ask for confirmation before executing certain dangerous "
 "commands (e.g., B<Catchup> ('B<c>')). Commands that this affects are marked "
@@ -13934,7 +13937,7 @@ msgstr ""
 "in this manual with '[after confirmation]'."
 
 #. type: Plain text
-#: doc/tin.5:1535
+#: doc/tin.5:1536
 msgid ""
 "B<quit>: You'll be asked to confirm that you wish to exit B<\\%tin>(1)  when "
 "you use the B<Quit> ('B<q>') command."
@@ -13943,7 +13946,7 @@ msgstr ""
 "you use the B<Quit> ('B<q>') command."
 
 #. type: Plain text
-#: doc/tin.5:1539
+#: doc/tin.5:1540
 msgid ""
 "B<select>: Ask for confirmation before marking all not selected (with "
 "B<GroupMarkUnselArtRead> ('B<X>') command) articles as read."
@@ -13952,12 +13955,12 @@ msgstr ""
 "B<GroupMarkUnselArtRead> ('B<X>') command) articles as read."
 
 #. type: Plain text
-#: doc/tin.5:1541
+#: doc/tin.5:1542
 msgid "Default is commands & quit."
 msgstr "Default is commands & quit."
 
 #. type: Plain text
-#: doc/tin.5:1552
+#: doc/tin.5:1553
 msgid ""
 "Format string used for date representation. A description of the different "
 "format options can be found at B<\\%strftime>(3).  B<\\%tin>(1)  uses B<\\"
@@ -13970,61 +13973,61 @@ msgstr ""
 "fallback code.  Default is \"%a, %d %b %Y %H:%M:%S\"."
 
 #. type: TP
-#: doc/tin.5:1552
+#: doc/tin.5:1553
 #, no-wrap
 msgid "B<default_art_search>"
 msgstr "B<default_art_search>"
 
 #. type: TP
-#: doc/tin.5:1554
+#: doc/tin.5:1555
 #, no-wrap
 msgid "B<default_author_search>"
 msgstr "B<default_author_search>"
 
 #. type: TP
-#: doc/tin.5:1556
+#: doc/tin.5:1557
 #, no-wrap
 msgid "B<default_config_search>"
 msgstr "B<default_config_search>"
 
 #. type: TP
-#: doc/tin.5:1559
+#: doc/tin.5:1560
 #, no-wrap
 msgid "B<default_filter_days>"
 msgstr "B<default_filter_days>"
 
 #. type: TP
-#: doc/tin.5:1562
+#: doc/tin.5:1563
 #, no-wrap
 msgid "B<default_filter_kill_case>"
 msgstr "B<default_filter_kill_case>"
 
 #. type: TP
-#: doc/tin.5:1566
+#: doc/tin.5:1567
 #, no-wrap
 msgid "B<default_filter_kill_expire>"
 msgstr "B<default_filter_kill_expire>"
 
 #. type: TP
-#: doc/tin.5:1571
+#: doc/tin.5:1572
 #, no-wrap
 msgid "B<default_filter_kill_global>"
 msgstr "B<default_filter_kill_global>"
 
 #. type: TP
-#: doc/tin.5:1575
+#: doc/tin.5:1576
 #, no-wrap
 msgid "B<default_filter_kill_header>"
 msgstr "B<default_filter_kill_header>"
 
 #. type: ta
-#: doc/tin.5:1580 doc/tin.5:1609
+#: doc/tin.5:1581 doc/tin.5:1610
 #, no-wrap
 msgid "\\w'0,1   'u +\\w'\\'\\'Message-ID:\\'\\' & last \\'\\'References:\\'\\' entry only'u"
 msgstr "\\w'0,1   'u +\\w'\\'\\'Message-ID:\\'\\' & last \\'\\'References:\\'\\' entry only'u"
 
 #. type: Plain text
-#: doc/tin.5:1589 doc/tin.5:1618
+#: doc/tin.5:1590 doc/tin.5:1619
 #, no-wrap
 msgid ""
 "0\t''Subject:'' (case sensitive)\n"
@@ -14046,145 +14049,145 @@ msgstr ""
 "7\t''Lines:''\n"
 
 #. type: TP
-#: doc/tin.5:1591
+#: doc/tin.5:1592
 #, no-wrap
 msgid "B<default_filter_select_case>"
 msgstr "B<default_filter_select_case>"
 
 #. type: TP
-#: doc/tin.5:1595
+#: doc/tin.5:1596
 #, no-wrap
 msgid "B<default_filter_select_expire>"
 msgstr "B<default_filter_select_expire>"
 
 #. type: TP
-#: doc/tin.5:1600
+#: doc/tin.5:1601
 #, no-wrap
 msgid "B<default_filter_select_global>"
 msgstr "B<default_filter_select_global>"
 
 #. type: TP
-#: doc/tin.5:1604
+#: doc/tin.5:1605
 #, no-wrap
 msgid "B<default_filter_select_header>"
 msgstr "B<default_filter_select_header>"
 
 #. type: TP
-#: doc/tin.5:1620
+#: doc/tin.5:1621
 #, no-wrap
 msgid "B<default_goto_group>"
 msgstr "B<default_goto_group>"
 
 #. type: TP
-#: doc/tin.5:1622
+#: doc/tin.5:1623
 #, no-wrap
 msgid "B<default_group_search>"
 msgstr "B<default_group_search>"
 
 #. type: TP
-#: doc/tin.5:1624
+#: doc/tin.5:1625
 #, no-wrap
 msgid "B<default_mail_address>"
 msgstr "B<default_mail_address>"
 
 #. type: TP
-#: doc/tin.5:1626
+#: doc/tin.5:1627
 #, no-wrap
 msgid "B<default_move_group>"
 msgstr "B<default_move_group>"
 
 #. type: TP
-#: doc/tin.5:1628
+#: doc/tin.5:1629
 #, no-wrap
 msgid "B<default_pattern>"
 msgstr "B<default_pattern>"
 
 #. type: TP
-#: doc/tin.5:1630
+#: doc/tin.5:1631
 #, no-wrap
 msgid "B<default_pipe_command>"
 msgstr "B<default_pipe_command>"
 
 #. type: TP
-#: doc/tin.5:1632
+#: doc/tin.5:1633
 #, no-wrap
 msgid "B<default_post_newsgroups>"
 msgstr "B<default_post_newsgroups>"
 
 #. type: TP
-#: doc/tin.5:1634
+#: doc/tin.5:1635
 #, no-wrap
 msgid "B<default_post_subject>"
 msgstr "B<default_post_subject>"
 
 #. type: TP
-#: doc/tin.5:1636
+#: doc/tin.5:1637
 #, no-wrap
 msgid "B<default_range_group>"
 msgstr "B<default_range_group>"
 
 #. type: TP
-#: doc/tin.5:1638
+#: doc/tin.5:1639
 #, no-wrap
 msgid "B<default_range_select>"
 msgstr "B<default_range_select>"
 
 #. type: TP
-#: doc/tin.5:1640
+#: doc/tin.5:1641
 #, no-wrap
 msgid "B<default_range_thread>"
 msgstr "B<default_range_thread>"
 
 #. type: TP
-#: doc/tin.5:1642
+#: doc/tin.5:1643
 #, no-wrap
 msgid "B<default_repost_group>"
 msgstr "B<default_repost_group>"
 
 #. type: TP
-#: doc/tin.5:1644
+#: doc/tin.5:1645
 #, no-wrap
 msgid "B<default_save_file>"
 msgstr "B<default_save_file>"
 
 #. type: TP
-#: doc/tin.5:1646
+#: doc/tin.5:1647
 #, no-wrap
 msgid "B<default_save_mode>"
 msgstr "B<default_save_mode>"
 
 #. type: TP
-#: doc/tin.5:1648
+#: doc/tin.5:1649
 #, no-wrap
 msgid "B<default_select_pattern>"
 msgstr "B<default_select_pattern>"
 
 #. type: TP
-#: doc/tin.5:1650
+#: doc/tin.5:1651
 #, no-wrap
 msgid "B<default_shell_command>"
 msgstr "B<default_shell_command>"
 
 #. type: TP
-#: doc/tin.5:1652
+#: doc/tin.5:1653
 #, no-wrap
 msgid "B<default_subject_search>"
 msgstr "B<default_subject_search>"
 
 #. type: TP
-#: doc/tin.5:1654
+#: doc/tin.5:1655
 #, no-wrap
 msgid "B<dont_break_words>"
 msgstr "B<dont_break_words>"
 
 #. type: TP
-#: doc/tin.5:1658
+#: doc/tin.5:1659
 #, no-wrap
 msgid "B<draw_arrow>"
 msgstr "B<draw_arrow>"
 
 #. type: Plain text
-#: doc/tin.5:1669
+#: doc/tin.5:1670
 msgid ""
 "The format string used to create the editor start command with parameters.  "
 "Default is '%E +%N %F' with %E=Editor, %N=Linenumber and %F=Filename (e.g., /"
@@ -14197,13 +14200,13 @@ msgstr ""
 "\" in B<\\%tin>(1)"
 
 #. type: TP
-#: doc/tin.5:1672
+#: doc/tin.5:1673
 #, no-wrap
 msgid "B<extquote_regex>"
 msgstr "B<extquote_regex>"
 
 #. type: Plain text
-#: doc/tin.5:1679
+#: doc/tin.5:1680
 msgid ""
 "A regular expression that will be applied when reading articles. All "
 "matching lines are shown in B<col_extquote>. If B<extquote_regex> is blank, "
@@ -14214,19 +14217,19 @@ msgstr ""
 "then B<\\%tin>(1) uses a built-in default."
 
 #. type: TP
-#: doc/tin.5:1679
+#: doc/tin.5:1680
 #, no-wrap
 msgid "B<force_screen_redraw>"
 msgstr "B<force_screen_redraw>"
 
 #. type: TP
-#: doc/tin.5:1683
+#: doc/tin.5:1684
 #, no-wrap
 msgid "B<getart_limit>"
 msgstr "B<getart_limit>"
 
 #. type: Plain text
-#: doc/tin.5:1690
+#: doc/tin.5:1691
 msgid ""
 "If B<getart_limit> is E<gt> 0 not more than the last B<getart_limit> "
 "articles/group are fetched from the server. If B<getart_limit> is E<lt> 0 B<"
@@ -14239,13 +14242,13 @@ msgstr ""
 "absolute value of B<getart_limit>. Default is 0, which means no limit."
 
 #. type: TP
-#: doc/tin.5:1690
+#: doc/tin.5:1691
 #, no-wrap
 msgid "B<goto_next_unread>"
 msgstr "B<goto_next_unread>"
 
 #. type: Plain text
-#: doc/tin.5:1704
+#: doc/tin.5:1705
 msgid ""
 "Which keys B<\\%tin>(1)  should accept to jump to the next unread article.  "
 "Possible is any combination of B<PageDown> and B<PageNextUnread>.  When "
@@ -14262,7 +14265,7 @@ msgstr ""
 "Default is B<PageNextUnread>."
 
 #. type: Plain text
-#: doc/tin.5:1711
+#: doc/tin.5:1712
 msgid ""
 "The format string used for the Group level. Default is \"%n\\ %m\\ %R\\ %L\\ "
 "\\ %s\\ \\ %F\". The following substitutions are supported:"
@@ -14271,13 +14274,13 @@ msgstr ""
 "\\ %s\\ \\ %F\". The following substitutions are supported:"
 
 #. type: ta
-#: doc/tin.5:1713
+#: doc/tin.5:1714
 #, no-wrap
 msgid "\\w'%G    'u +\\w'number of responses in thread'u"
 msgstr "\\w'%G    'u +\\w'number of responses in thread'u"
 
 #. type: Plain text
-#: doc/tin.5:1725
+#: doc/tin.5:1726
 #, no-wrap
 msgid ""
 "%D\tdate\n"
@@ -14305,31 +14308,31 @@ msgstr ""
 "%%\t%\n"
 
 #. type: TP
-#: doc/tin.5:1727
+#: doc/tin.5:1728
 #, no-wrap
 msgid "B<hide_uue>"
 msgstr "B<hide_uue>"
 
 #. type: TP
-#: doc/tin.5:1737
+#: doc/tin.5:1738
 #, no-wrap
 msgid "B<inews_prog>"
 msgstr "B<inews_prog>"
 
 #. type: TP
-#: doc/tin.5:1744
+#: doc/tin.5:1745
 #, no-wrap
 msgid "B<info_in_last_line>"
 msgstr "B<info_in_last_line>"
 
 #. type: TP
-#: doc/tin.5:1750
+#: doc/tin.5:1751
 #, no-wrap
 msgid "B<interactive_mailer>"
 msgstr "B<interactive_mailer>"
 
 #. type: Plain text
-#: doc/tin.5:1756
+#: doc/tin.5:1757
 msgid ""
 "If greater than 0 your mailreader will be invoked earlier for reply so you "
 "can use more of its features (e.g. MIME, pgp, ...). 1 means include headers, "
@@ -14342,25 +14345,25 @@ msgstr ""
 "usage. This option has to suit B<mailer_format>. Default is 0."
 
 #. type: TP
-#: doc/tin.5:1756
+#: doc/tin.5:1757
 #, no-wrap
 msgid "B<inverse_okay>"
 msgstr "B<inverse_okay>"
 
 #. type: TP
-#: doc/tin.5:1760
+#: doc/tin.5:1761
 #, no-wrap
 msgid "B<keep_dead_articles>"
 msgstr "B<keep_dead_articles>"
 
 #. type: TP
-#: doc/tin.5:1765
+#: doc/tin.5:1766
 #, no-wrap
 msgid "B<kill_level>"
 msgstr "B<kill_level>"
 
 #. type: Plain text
-#: doc/tin.5:1769
+#: doc/tin.5:1770
 msgid ""
 "This option controls the processing and display of articles that are killed. "
 "There are 3 options, default is 0 (B<Kill only unread arts>)."
@@ -14369,7 +14372,7 @@ msgstr ""
 "There are 3 options, default is 0 (B<Kill only unread arts>)."
 
 #. type: Plain text
-#: doc/tin.5:1777
+#: doc/tin.5:1778
 msgid ""
 "B<Kill only unread arts> is the 'traditional' behavior of B<\\%tin>(1).  "
 "Only unread articles are killed once only by marking them read. As filtering "
@@ -14384,13 +14387,13 @@ msgstr ""
 "When you reenter the group the mark will be gone."
 
 #. type: TP
-#: doc/tin.5:1793
+#: doc/tin.5:1794
 #, no-wrap
 msgid "B<mail_address>"
 msgstr "B<mail_address>"
 
 #. type: Plain text
-#: doc/tin.5:1799
+#: doc/tin.5:1800
 msgid ""
 "User's mail address (and full name), if not username@host. This is used when "
 "creating articles, sending mail and when B<\\%pgp>(1)  signing."
@@ -14399,67 +14402,67 @@ msgstr ""
 "creating articles, sending mail and when B<\\%pgp>(1)  signing."
 
 #. type: TP
-#: doc/tin.5:1803
+#: doc/tin.5:1804
 #, no-wrap
 msgid "B<mail_quote_format>"
 msgstr "B<mail_quote_format>"
 
 #. type: TP
-#: doc/tin.5:1809
+#: doc/tin.5:1810
 #, no-wrap
 msgid "B<mailbox_format>"
 msgstr "B<mailbox_format>"
 
 #. type: TP
-#: doc/tin.5:1828
+#: doc/tin.5:1829
 #, no-wrap
 msgid "B<mailer_format>"
 msgstr "B<mailer_format>"
 
 #. type: TP
-#: doc/tin.5:1865
+#: doc/tin.5:1866
 #, no-wrap
 msgid "B<metamail_prog>"
 msgstr "B<metamail_prog>"
 
 #. type: TP
-#: doc/tin.5:1877 doc/tin.5:2645
+#: doc/tin.5:1878 doc/tin.5:2646
 #, no-wrap
 msgid "B<mm_charset>"
 msgstr "B<mm_charset>"
 
 #. type: TP
-#: doc/tin.5:1910
+#: doc/tin.5:1911
 #, no-wrap
 msgid "B<mono_markdash>"
 msgstr "B<mono_markdash>"
 
 #. type: TP
-#: doc/tin.5:1915
+#: doc/tin.5:1916
 #, no-wrap
 msgid "B<mono_markslash>"
 msgstr "B<mono_markslash>"
 
 #. type: TP
-#: doc/tin.5:1920
+#: doc/tin.5:1921
 #, no-wrap
 msgid "B<mono_markstar>"
 msgstr "B<mono_markstar>"
 
 #. type: TP
-#: doc/tin.5:1925
+#: doc/tin.5:1926
 #, no-wrap
 msgid "B<mono_markstroke>"
 msgstr "B<mono_markstroke>"
 
 #. type: TP
-#: doc/tin.5:1930
+#: doc/tin.5:1931
 #, no-wrap
 msgid "B<newnews>"
 msgstr "B<newnews>"
 
 #. type: Plain text
-#: doc/tin.5:1936
+#: doc/tin.5:1937
 msgid ""
 "These are internal timers used by B<\\%tin>(1)  to keep track of new "
 "newsgroups. Do not change them unless you understand what they are for."
@@ -14468,25 +14471,25 @@ msgstr ""
 "newsgroups. Do not change them unless you understand what they are for."
 
 #. type: TP
-#: doc/tin.5:1958
+#: doc/tin.5:1959
 #, no-wrap
 msgid "B<nntp_read_timeout_secs>"
 msgstr "B<nntp_read_timeout_secs>"
 
 #. type: Plain text
-#: doc/tin.5:1961
+#: doc/tin.5:1962
 msgid "Time in seconds to wait for a response from the server. Default is 120."
 msgstr ""
 "Time in seconds to wait for a response from the server. Default is 120."
 
 #. type: TP
-#: doc/tin.5:1961
+#: doc/tin.5:1962
 #, no-wrap
 msgid "B<normalization_form>"
 msgstr "B<normalization_form>"
 
 #. type: Plain text
-#: doc/tin.5:1965
+#: doc/tin.5:1966
 msgid ""
 "The normalization form which should be used to normalize unicode input.  The "
 "possible values are:"
@@ -14495,7 +14498,7 @@ msgstr ""
 "possible values are:"
 
 #. type: Plain text
-#: doc/tin.5:1983
+#: doc/tin.5:1984
 msgid ""
 "Some normalization modes are only available if they are supported by the "
 "library B<\\%tin>(1)  uses to do the normalization. NFC should be used if "
@@ -14506,13 +14509,13 @@ msgstr ""
 "possible."
 
 #. type: TP
-#: doc/tin.5:1983
+#: doc/tin.5:1984
 #, no-wrap
 msgid "B<page_mime_format>"
 msgstr "B<page_mime_format>"
 
 #. type: Plain text
-#: doc/tin.5:1989
+#: doc/tin.5:1990
 msgid ""
 "Format string B<\\%tin>(1)  uses for mime header at Page level.  Default is "
 "\"[-- %T%S%*n%z%*l%!c%!d%*e --]\"."
@@ -14521,13 +14524,13 @@ msgstr ""
 "\"[-- %T%S%*n%z%*l%!c%!d%*e --]\"."
 
 #. type: TP
-#: doc/tin.5:1989
+#: doc/tin.5:1990
 #, no-wrap
 msgid "B<page_uue_format>"
 msgstr "B<page_uue_format>"
 
 #. type: Plain text
-#: doc/tin.5:1995
+#: doc/tin.5:1996
 msgid ""
 "Format string B<\\%tin>(1)  uses for uue header at Page level.  Default is "
 "\"[-- %T%S%*n%I%!d%*e --]\"."
@@ -14536,7 +14539,7 @@ msgstr ""
 "\"[-- %T%S%*n%I%!d%*e --]\"."
 
 #. type: Plain text
-#: doc/tin.5:2023
+#: doc/tin.5:2024
 msgid ""
 "If ON, then B<\\%tin>(1)  will start an appropriate viewer program to "
 "display any files that were post processed and uudecoded. The program is "
@@ -14547,19 +14550,19 @@ msgstr ""
 "determined using the B<\\%mailcap>(5)  file. Default is ON."
 
 #. type: TP
-#: doc/tin.5:2039
+#: doc/tin.5:2040
 #, no-wrap
 msgid "B<posted_articles_file>"
 msgstr "B<posted_articles_file>"
 
 #. type: TP
-#: doc/tin.5:2051
+#: doc/tin.5:2052
 #, no-wrap
 msgid "B<printer>"
 msgstr "B<printer>"
 
 #. type: Plain text
-#: doc/tin.5:2061
+#: doc/tin.5:2062
 msgid ""
 "The printer program with options that is to be used to print articles. The "
 "default is B<\\%lpr>(1)  for BSD machines and B<\\%lp>(1)  for SysV "
@@ -14572,7 +14575,7 @@ msgstr ""
 "Administrator."
 
 #. type: Plain text
-#: doc/tin.5:2069
+#: doc/tin.5:2070
 msgid ""
 "If ON show empty ''Followup-To:'' header when editing an article.  Default "
 "is OFF."
@@ -14581,13 +14584,13 @@ msgstr ""
 "is OFF."
 
 #. type: TP
-#: doc/tin.5:2075
+#: doc/tin.5:2076
 #, no-wrap
 msgid "B<quote_style>"
 msgstr "B<quote_style>"
 
 #. type: Plain text
-#: doc/tin.5:2081
+#: doc/tin.5:2082
 msgid ""
 "This bit coded integer value controls how articles are to be quoted when "
 "following up or replying to them. Any of the following options can be "
@@ -14600,12 +14603,12 @@ msgstr ""
 "characters are compressed and empty lines are quoted."
 
 #. type: Plain text
-#: doc/tin.5:2084
+#: doc/tin.5:2085
 msgid "B<Nothing special> Non empty lines are quoted."
 msgstr "B<Nothing special> Non empty lines are quoted."
 
 #. type: Plain text
-#: doc/tin.5:2088
+#: doc/tin.5:2089
 msgid ""
 "B<Compress quotes> Compress quote characters together when quoting multiple "
 "times (for example, 'E<gt> E<gt> E<gt>' will be turned into "
@@ -14616,7 +14619,7 @@ msgstr ""
 "'E<gt>E<gt>E<gt>'). This option is on by default."
 
 #. type: Plain text
-#: doc/tin.5:2094
+#: doc/tin.5:2095
 msgid ""
 "B<Quote Signatures> This option is off by default. Signatures are always "
 "quoted regardless of this option when you are viewing an article in raw mode "
@@ -14629,18 +14632,18 @@ msgstr ""
 "quoted regardless of this option when B<show_signatures> is off."
 
 #. type: Plain text
-#: doc/tin.5:2096
+#: doc/tin.5:2097
 msgid "B<Quote empty lines> This option is on by default."
 msgstr "B<Quote empty lines> This option is on by default."
 
 #. type: TP
-#: doc/tin.5:2097
+#: doc/tin.5:2098
 #, no-wrap
 msgid "B<quote_regex>"
 msgstr "B<quote_regex>"
 
 #. type: Plain text
-#: doc/tin.5:2104
+#: doc/tin.5:2105
 msgid ""
 "A regular expression that will be applied when reading articles. All "
 "matching lines are shown in B<col_quote>. If B<quote_regex> is blank, then B<"
@@ -14651,13 +14654,13 @@ msgstr ""
 "\\%tin>(1)  uses a built-in default."
 
 #. type: TP
-#: doc/tin.5:2104
+#: doc/tin.5:2105
 #, no-wrap
 msgid "B<quote_regex2>"
 msgstr "B<quote_regex2>"
 
 #. type: Plain text
-#: doc/tin.5:2111
+#: doc/tin.5:2112
 msgid ""
 "A regular expression that will be applied when reading articles. All "
 "matching lines are shown in B<col_quote2>. If B<quote_regex2> is blank, then "
@@ -14668,13 +14671,13 @@ msgstr ""
 "B<\\%tin>(1)  uses a built-in default."
 
 #. type: TP
-#: doc/tin.5:2111
+#: doc/tin.5:2112
 #, no-wrap
 msgid "B<quote_regex3>"
 msgstr "B<quote_regex3>"
 
 #. type: Plain text
-#: doc/tin.5:2118
+#: doc/tin.5:2119
 msgid ""
 "A regular expression that will be applied when reading articles. All "
 "matching lines are shown in B<col_quote3>. If B<quote_regex3> is blank, then "
@@ -14685,19 +14688,19 @@ msgstr ""
 "B<\\%tin>(1)  uses a built-in default."
 
 #. type: TP
-#: doc/tin.5:2118
+#: doc/tin.5:2119
 #, no-wrap
 msgid "B<recent_time>"
 msgstr "B<recent_time>"
 
 #. type: TP
-#: doc/tin.5:2122
+#: doc/tin.5:2123
 #, no-wrap
 msgid "B<render_bidi>"
 msgstr "B<render_bidi>"
 
 #. type: Plain text
-#: doc/tin.5:2129
+#: doc/tin.5:2130
 msgid ""
 "If ON B<\\%tin>(1)  does the rendering of bi-directional text. If OFF B<\\"
 "%tin>(1)  leaves the rendering of bi-directional text to the terminal. "
@@ -14708,43 +14711,43 @@ msgstr ""
 "Default is OFF."
 
 #. type: TP
-#: doc/tin.5:2129
+#: doc/tin.5:2130
 #, no-wrap
 msgid "B<reread_active_file_secs>"
 msgstr "B<reread_active_file_secs>"
 
 #. type: TP
-#: doc/tin.5:2138
+#: doc/tin.5:2139
 #, no-wrap
 msgid "B<score_limit_kill>"
 msgstr "B<score_limit_kill>"
 
 #. type: TP
-#: doc/tin.5:2142
+#: doc/tin.5:2143
 #, no-wrap
 msgid "B<score_limit_select>"
 msgstr "B<score_limit_select>"
 
 #. type: TP
-#: doc/tin.5:2146
+#: doc/tin.5:2147
 #, no-wrap
 msgid "B<score_kill>"
 msgstr "B<score_kill>"
 
 #. type: TP
-#: doc/tin.5:2150
+#: doc/tin.5:2151
 #, no-wrap
 msgid "B<score_select>"
 msgstr "B<score_select>"
 
 #. type: TP
-#: doc/tin.5:2154
+#: doc/tin.5:2155
 #, no-wrap
 msgid "B<scroll_lines>"
 msgstr "B<scroll_lines>"
 
 #. type: Plain text
-#: doc/tin.5:2164
+#: doc/tin.5:2165
 msgid ""
 "The number of lines that will be scrolled up/down in the article pager when "
 "using cursor-up/down. The default is 1 (line-by-line). Set to 0 to get "
@@ -14761,13 +14764,13 @@ msgstr ""
 "half-page scrolling. This setting supersedes B<full_page_scroll>=OFF."
 
 #. type: TP
-#: doc/tin.5:2164
+#: doc/tin.5:2165
 #, no-wrap
 msgid "B<select_format>"
 msgstr "B<select_format>"
 
 #. type: Plain text
-#: doc/tin.5:2168
+#: doc/tin.5:2169
 msgid ""
 "The format string used for the Selection level. Default is \"%f\\ %n\\ %U\\ "
 "\\ %G\\ \\ %d\". The following substitutions are supported:"
@@ -14776,13 +14779,13 @@ msgstr ""
 "\\ %G\\ \\ %d\". The following substitutions are supported:"
 
 #. type: ta
-#: doc/tin.5:2170
+#: doc/tin.5:2171
 #, no-wrap
 msgid "\\w'%G    'u +\\w'current group number'u"
 msgstr "\\w'%G    'u +\\w'current group number'u"
 
 #. type: Plain text
-#: doc/tin.5:2177
+#: doc/tin.5:2178
 #, no-wrap
 msgid ""
 "%G\tgroup name\n"
@@ -14800,19 +14803,19 @@ msgstr ""
 "%%\t%\n"
 
 #. type: TP
-#: doc/tin.5:2179
+#: doc/tin.5:2180
 #, no-wrap
 msgid "B<sort_function>"
 msgstr "B<sort_function>"
 
 #. type: TP
-#: doc/tin.5:2214
+#: doc/tin.5:2215
 #, no-wrap
 msgid "B<show_description>"
 msgstr "B<show_description>"
 
 #. type: Plain text
-#: doc/tin.5:2223
+#: doc/tin.5:2224
 msgid ""
 "If ON show a short group description text after newsgroup name at the group "
 "selection level. The ''B<-d>'' command-line flag will override the setting "
@@ -14829,13 +14832,13 @@ msgstr ""
 "mailgroups> for mailgroups. Default is ON."
 
 #. type: TP
-#: doc/tin.5:2223
+#: doc/tin.5:2224
 #, no-wrap
 msgid "B<show_help_mail_sign>"
 msgstr "B<show_help_mail_sign>"
 
 #. type: Plain text
-#: doc/tin.5:2230
+#: doc/tin.5:2231
 msgid ""
 "Allows you to select whether B<\\%tin>(1)  shows a help indication, a new "
 "mail indication, both, or neither in the various level titles.  Default is 3."
@@ -14844,13 +14847,13 @@ msgstr ""
 "mail indication, both, or neither in the various level titles.  Default is 3."
 
 #. type: TP
-#: doc/tin.5:2246
+#: doc/tin.5:2247
 #, no-wrap
 msgid "B<show_only_unread_groups>"
 msgstr "B<show_only_unread_groups>"
 
 #. type: Plain text
-#: doc/tin.5:2269
+#: doc/tin.5:2270
 msgid ""
 "The path that specifies the signature file to use when posting, following up "
 "to or replying to an article. If the path is a directory then the signature "
@@ -14877,13 +14880,13 @@ msgstr ""
 "\"$HOME\"}/.sigfixed>."
 
 #. type: TP
-#: doc/tin.5:2272
+#: doc/tin.5:2273
 #, no-wrap
 msgid "B<slashes_regex>"
 msgstr "B<slashes_regex>"
 
 #. type: Plain text
-#: doc/tin.5:2279
+#: doc/tin.5:2280
 msgid ""
 "A regular expression that will be applied when reading articles. All "
 "matching words are shown in B<col_markslash> or B<mono_markslash>. If "
@@ -14894,19 +14897,19 @@ msgstr ""
 "B<slashes_regex> is blank, then B<\\%tin>(1)  uses a built-in default."
 
 #. type: TP
-#: doc/tin.5:2325
+#: doc/tin.5:2326
 #, no-wrap
 msgid "B<spamtrap_warning_addresses>"
 msgstr "B<spamtrap_warning_addresses>"
 
 #. type: TP
-#: doc/tin.5:2332
+#: doc/tin.5:2333
 #, no-wrap
 msgid "B<stars_regex>"
 msgstr "B<stars_regex>"
 
 #. type: Plain text
-#: doc/tin.5:2339
+#: doc/tin.5:2340
 msgid ""
 "A regular expression that will be applied when reading articles. All "
 "matching words are shown in B<col_markstar> or B<mono_markstar>. If "
@@ -14917,31 +14920,31 @@ msgstr ""
 "B<stars_regex> is blank, then B<\\%tin>(1)  uses a built-in default."
 
 #. type: TP
-#: doc/tin.5:2339
+#: doc/tin.5:2340
 #, no-wrap
 msgid "B<strip_blanks>"
 msgstr "B<strip_blanks>"
 
 #. type: TP
-#: doc/tin.5:2343
+#: doc/tin.5:2344
 #, no-wrap
 msgid "B<strip_bogus>"
 msgstr "B<strip_bogus>"
 
 #. type: TP
-#: doc/tin.5:2352
+#: doc/tin.5:2353
 #, no-wrap
 msgid "B<strip_newsrc>"
 msgstr "B<strip_newsrc>"
 
 #. type: TP
-#: doc/tin.5:2356
+#: doc/tin.5:2357
 #, no-wrap
 msgid "B<strip_re_regex>"
 msgstr "B<strip_re_regex>"
 
 #. type: Plain text
-#: doc/tin.5:2362
+#: doc/tin.5:2363
 msgid ""
 "A regular expression to find Subject prefixes like \"Re:\" to remove If "
 "B<strip_re_regex> is blank, then B<\\%tin>(1)  uses a built-in default."
@@ -14950,19 +14953,19 @@ msgstr ""
 "B<strip_re_regex> is blank, then B<\\%tin>(1)  uses a built-in default."
 
 #. type: TP
-#: doc/tin.5:2362
+#: doc/tin.5:2363
 #, no-wrap
 msgid "B<strip_was_regex>"
 msgstr "B<strip_was_regex>"
 
 #. type: TP
-#: doc/tin.5:2368
+#: doc/tin.5:2369
 #, no-wrap
 msgid "B<strokes_regex>"
 msgstr "B<strokes_regex>"
 
 #. type: Plain text
-#: doc/tin.5:2375
+#: doc/tin.5:2376
 msgid ""
 "A regular expression that will be applied when reading articles. All "
 "matching words are shown in B<col_markstroke> or B<mono_markstroke>.  If "
@@ -14973,7 +14976,7 @@ msgstr ""
 "B<strokes_regex> is blank, then B<\\%tin>(1)  uses a built-in default."
 
 #. type: Plain text
-#: doc/tin.5:2380
+#: doc/tin.5:2381
 msgid ""
 "Decode German style TeX umlaut codes to ISO If ON, show \"a as Umlaut-a, "
 "etc. Default is OFF. This behavior can also be toggled in the article viewer "
@@ -14984,42 +14987,42 @@ msgstr ""
 "viewer via B<PageToggleTex2iso> ('B<\">')."
 
 #. type: Plain text
-#: doc/tin.5:2383
+#: doc/tin.5:2384
 msgid "Defines which threading method to use. The choices are:"
 msgstr "Defines which threading method to use. The choices are:"
 
 #. type: Plain text
-#: doc/tin.5:2386
+#: doc/tin.5:2387
 msgid "Don't thread"
 msgstr "Don't thread"
 
 #. type: Plain text
-#: doc/tin.5:2388
+#: doc/tin.5:2389
 msgid "Thread on Subject only"
 msgstr "Thread on Subject only"
 
 #. type: Plain text
-#: doc/tin.5:2390
+#: doc/tin.5:2391
 msgid "Thread on References only"
 msgstr "Thread on References only"
 
 #. type: Plain text
-#: doc/tin.5:2392
+#: doc/tin.5:2393
 msgid "Thread on References then Subject (default)"
 msgstr "Thread on References then Subject (default)"
 
 #. type: Plain text
-#: doc/tin.5:2394
+#: doc/tin.5:2395
 msgid "Thread multipart articles on Subject"
 msgstr "Thread multipart articles on Subject"
 
 #. type: Plain text
-#: doc/tin.5:2396
+#: doc/tin.5:2397
 msgid "Thread on Percentage Match of the Subjects"
 msgstr "Thread on Percentage Match of the Subjects"
 
 #. type: Plain text
-#: doc/tin.5:2400
+#: doc/tin.5:2401
 msgid ""
 "It's also possible to set the threading type on a per group basis by setting "
 "the group attribute variable B<thread_articles> to 0 \\(en 5 in the file I<"
@@ -15030,7 +15033,7 @@ msgstr ""
 "${TIN_HOMEDIR:-\"$HOME\"}/.tin/attributes>."
 
 #. type: Plain text
-#: doc/tin.5:2404
+#: doc/tin.5:2405
 msgid ""
 "The format string used for the Thread level. Default is \"%n\\ %m\\ \\ "
 "[%L]\\ \\ %T\\ \\ %F\". The following substitutions are supported:"
@@ -15039,13 +15042,13 @@ msgstr ""
 "[%L]\\ \\ %T\\ \\ %F\". The following substitutions are supported:"
 
 #. type: ta
-#: doc/tin.5:2406
+#: doc/tin.5:2407
 #, no-wrap
 msgid "\\w'%G    'u +\\w'from, name and/or address'u"
 msgstr "\\w'%G    'u +\\w'from, name and/or address'u"
 
 #. type: Plain text
-#: doc/tin.5:2417
+#: doc/tin.5:2418
 #, no-wrap
 msgid ""
 "%D\tdate\n"
@@ -15071,7 +15074,7 @@ msgstr ""
 "%%\t%\n"
 
 #. type: Plain text
-#: doc/tin.5:2424
+#: doc/tin.5:2425
 msgid ""
 "Defines how close the subjects must match while threading by Percentage "
 "Match for threads to be considered part of a single thread. This value is in "
@@ -15082,19 +15085,19 @@ msgstr ""
 "the range 0 to 100. The default is 75."
 
 #. type: TP
-#: doc/tin.5:2428
+#: doc/tin.5:2429
 #, no-wrap
 msgid "B<thread_score>"
 msgstr "B<thread_score>"
 
 #. type: TP
-#: doc/tin.5:2440
+#: doc/tin.5:2441
 #, no-wrap
 msgid "B<tls_ca_cert_file>"
 msgstr "B<tls_ca_cert_file>"
 
 #. type: Plain text
-#: doc/tin.5:2445
+#: doc/tin.5:2446
 msgid ""
 "The name of file containing all trusted CA certificates used for NNTPS (B<RFC"
 "\\%8143>) connections. If left empty the system default will be used."
@@ -15103,13 +15106,13 @@ msgstr ""
 "\\%8143>) connections. If left empty the system default will be used."
 
 #. type: TP
-#: doc/tin.5:2445
+#: doc/tin.5:2446
 #, no-wrap
 msgid "B<translit>"
 msgstr "B<translit>"
 
 #. type: Plain text
-#: doc/tin.5:2459
+#: doc/tin.5:2460
 msgid ""
 "Allows you to select how B<\\%tin>(1)  treats blank lines in article "
 "bodies.  Default is 0. This option does not affect lines within verbatim "
@@ -15119,7 +15122,7 @@ msgstr ""
 "Default is 0. This option does not affect lines within verbatim blocks."
 
 #. type: Plain text
-#: doc/tin.5:2482
+#: doc/tin.5:2483
 msgid ""
 "If ON remove soft hyphens (U+00AD) from non verbatim blocks when displaying "
 "articles. Default is OFF."
@@ -15128,13 +15131,13 @@ msgstr ""
 "articles. Default is OFF."
 
 #. type: TP
-#: doc/tin.5:2482
+#: doc/tin.5:2483
 #, no-wrap
 msgid "B<underscores_regex>"
 msgstr "B<underscores_regex>"
 
 #. type: Plain text
-#: doc/tin.5:2489
+#: doc/tin.5:2490
 msgid ""
 "A regular expression that will be applied when reading articles. All "
 "matching words are shown in B<col_markdash> or B<mono_markdash>. If "
@@ -15145,13 +15148,13 @@ msgstr ""
 "B<underscores_regex> is blank, then B<\\%tin>(1)  uses a built-in default."
 
 #. type: TP
-#: doc/tin.5:2489
+#: doc/tin.5:2490
 #, no-wrap
 msgid "B<unlink_article>"
 msgstr "B<unlink_article>"
 
 #. type: Plain text
-#: doc/tin.5:2493
+#: doc/tin.5:2494
 msgid ""
 "If ON remove I<${TIN_HOMEDIR:-\"$HOME\"}/.article> after posting. Default is "
 "ON."
@@ -15160,53 +15163,53 @@ msgstr ""
 "ON."
 
 #. type: TP
-#: doc/tin.5:2493
+#: doc/tin.5:2494
 #, no-wrap
 msgid "B<url_handler>"
 msgstr "B<url_handler>"
 
 #. type: TP
-#: doc/tin.5:2498
+#: doc/tin.5:2499
 #, no-wrap
 msgid "B<url_highlight>"
 msgstr "B<url_highlight>"
 
 #. type: TP
-#: doc/tin.5:2501
+#: doc/tin.5:2502
 #, no-wrap
 msgid "B<use_color>"
 msgstr "B<use_color>"
 
 #. type: Plain text
-#: doc/tin.5:2506
+#: doc/tin.5:2507
 msgid "If enabled B<\\%tin>(1)  uses ANSI-colors. Default is OFF."
 msgstr "If enabled B<\\%tin>(1)  uses ANSI-colours. Default is OFF."
 
 #. type: TP
-#: doc/tin.5:2506
+#: doc/tin.5:2507
 #, no-wrap
 msgid "B<use_keypad>"
 msgstr "B<use_keypad>"
 
 #. type: Plain text
-#: doc/tin.5:2509
+#: doc/tin.5:2510
 msgid "Use scroll keys on keypad. Default is OFF."
 msgstr "Use scroll keys on keypad. Default is OFF."
 
 #. type: TP
-#: doc/tin.5:2509
+#: doc/tin.5:2510
 #, no-wrap
 msgid "B<use_mouse>"
 msgstr "B<use_mouse>"
 
 #. type: TP
-#: doc/tin.5:2515
+#: doc/tin.5:2516
 #, no-wrap
 msgid "B<use_slrnface>"
 msgstr "B<use_slrnface>"
 
 #. type: Plain text
-#: doc/tin.5:2527
+#: doc/tin.5:2528
 msgid ""
 "If enabled B<\\%slrnface>(1)  will be used to interpret the ''X-Face:'' "
 "header. For this option to have any effect, B<\\%tin>(1)  must be running in "
@@ -15219,19 +15222,19 @@ msgstr ""
 "is OFF."
 
 #. type: TP
-#: doc/tin.5:2527
+#: doc/tin.5:2528
 #, no-wrap
 msgid "B<utf8_graphics>"
 msgstr "B<utf8_graphics>"
 
 #. type: TP
-#: doc/tin.5:2531
+#: doc/tin.5:2532
 #, no-wrap
 msgid "B<verbatim_begin_regex>"
 msgstr "B<verbatim_begin_regex>"
 
 #. type: Plain text
-#: doc/tin.5:2537
+#: doc/tin.5:2538
 msgid ""
 "A regular expression that B<\\%tin>(1)  will use to find the begin of a "
 "verbatim block. Default is #v+"
@@ -15240,13 +15243,13 @@ msgstr ""
 "verbatim block. Default is #v+"
 
 #. type: TP
-#: doc/tin.5:2537
+#: doc/tin.5:2538
 #, no-wrap
 msgid "B<verbatim_end_regex>"
 msgstr "B<verbatim_end_regex>"
 
 #. type: Plain text
-#: doc/tin.5:2543
+#: doc/tin.5:2544
 msgid ""
 "A regular expression that B<\\%tin>(1)  will use to find the end of a "
 "verbatim block. Default is #v-"
@@ -15255,13 +15258,13 @@ msgstr ""
 "verbatim block. Default is #v-"
 
 #. type: TP
-#: doc/tin.5:2546
+#: doc/tin.5:2547
 #, no-wrap
 msgid "B<wildcard>"
 msgstr "B<wildcard>"
 
 #. type: Plain text
-#: doc/tin.5:2570
+#: doc/tin.5:2571
 msgid ""
 "Allows you to select how B<\\%tin>(1)  matches strings. The default is 0 and "
 "uses the B<\\%wildmat>(3)  notation, which is how this has traditionally "
@@ -15280,31 +15283,31 @@ msgstr ""
 "Newsgroup names will always be matched using the B<\\%wildmat>(3)  notation."
 
 #. type: TP
-#: doc/tin.5:2570
+#: doc/tin.5:2571
 #, no-wrap
 msgid "B<word_h_display_marks>"
 msgstr "B<word_h_display_marks>"
 
 #. type: TP
-#: doc/tin.5:2582
+#: doc/tin.5:2583
 #, no-wrap
 msgid "B<word_highlight>"
 msgstr "B<word_highlight>"
 
 #. type: TP
-#: doc/tin.5:2590
+#: doc/tin.5:2591
 #, no-wrap
 msgid "B<wrap_column>"
 msgstr "B<wrap_column>"
 
 #. type: TP
-#: doc/tin.5:2606
+#: doc/tin.5:2607
 #, no-wrap
 msgid "B<xpost_quote_format>"
 msgstr "B<xpost_quote_format>"
 
 #. type: Plain text
-#: doc/tin.5:2622
+#: doc/tin.5:2623
 msgid ""
 "Yet another global configuration file with \"I<variable>=I<value>\" pairs. "
 "This one is for the more general options which usually can't be controlled "
@@ -15319,18 +15322,18 @@ msgstr ""
 "I<newslibdir>."
 
 #. type: TP
-#: doc/tin.5:2622
+#: doc/tin.5:2623
 #, no-wrap
 msgid "B<domainname>"
 msgstr "B<domainname>"
 
 #. type: Plain text
-#: doc/tin.5:2625
+#: doc/tin.5:2626
 msgid "Sets a global domain name used in From lines"
 msgstr "Sets a global domain name used in From lines"
 
 #. type: Plain text
-#: doc/tin.5:2629
+#: doc/tin.5:2630
 msgid ""
 "Defines the name of your organization. $B<ORGANIZATION> overrides any "
 "specified value."
@@ -15339,13 +15342,13 @@ msgstr ""
 "specified value."
 
 #. type: TP
-#: doc/tin.5:2629
+#: doc/tin.5:2630
 #, no-wrap
 msgid "B<newslibdir>"
 msgstr "B<newslibdir>"
 
 #. type: Plain text
-#: doc/tin.5:2634
+#: doc/tin.5:2635
 msgid ""
 "Defines the default place for some configuration files, common values are I</"
 "usr/lib/news>, I</var/lib/news>, I</usr/local/lib/news> or I</news/db>. "
@@ -15356,13 +15359,13 @@ msgstr ""
 "$B<TIN_LIBDIR> overrides any specified value."
 
 #. type: TP
-#: doc/tin.5:2634
+#: doc/tin.5:2635
 #, no-wrap
 msgid "B<bugaddress>"
 msgstr "B<bugaddress>"
 
 #. type: Plain text
-#: doc/tin.5:2640
+#: doc/tin.5:2641
 msgid ""
 "Defines the email address to which users can send bug reports using a built-"
 "in function. The default points to a developers mailing list located at tin."
@@ -15375,18 +15378,18 @@ msgstr ""
 "administration if you want to deal with your lusers problems on your own."
 
 #. type: TP
-#: doc/tin.5:2640
+#: doc/tin.5:2641
 #, no-wrap
 msgid "B<inewsdir>"
 msgstr "B<inewsdir>"
 
 #. type: Plain text
-#: doc/tin.5:2645
+#: doc/tin.5:2646
 msgid "Defines the directory containing the B<\\%inews>(1)  executable."
 msgstr "Defines the directory containing the B<\\%inews>(1)  executable."
 
 #. type: Plain text
-#: doc/tin.5:2649
+#: doc/tin.5:2650
 msgid ""
 "Default charset to be used in MIME's ''Content-Type:'' header.  "
 "$B<MM_CHARSET> overrides any specified value."
@@ -15395,14 +15398,14 @@ msgstr ""
 "$B<MM_CHARSET> overrides any specified value."
 
 #. type: Plain text
-#: doc/tin.5:2652
+#: doc/tin.5:2653
 msgid ""
 "Default encoding scheme used in MIME articles. 8bit might be the best value."
 msgstr ""
 "Default encoding scheme used in MIME articles. 8bit might be the best value."
 
 #. type: Plain text
-#: doc/tin.5:2656
+#: doc/tin.5:2657
 msgid ""
 "Default encoding scheme used in MIME letters. quoted-printable is a good "
 "choice here."
@@ -15411,13 +15414,13 @@ msgstr ""
 "choice here."
 
 #. type: TP
-#: doc/tin.5:2656
+#: doc/tin.5:2657
 #, no-wrap
 msgid "B<disable_gnksa_domain_check>"
 msgstr "B<disable_gnksa_domain_check>"
 
 #. type: Plain text
-#: doc/tin.5:2662
+#: doc/tin.5:2663
 msgid ""
 "Allow unregistered top level domains. As the list of valid TLDs is no longer "
 "actively maintained the default was changed to ON starting with B<\\"
@@ -15428,13 +15431,13 @@ msgstr ""
 "%tin>(1)  version 2.1.5"
 
 #. type: TP
-#: doc/tin.5:2662
+#: doc/tin.5:2663
 #, no-wrap
 msgid "B<disable_sender>"
 msgstr "B<disable_sender>"
 
 #. type: Plain text
-#: doc/tin.5:2666
+#: doc/tin.5:2667
 msgid ""
 "Don't generate a ''Sender:'' header. This has an effect only if "
 "B<inews_prog> is set to --internal."
@@ -15443,13 +15446,13 @@ msgstr ""
 "B<inews_prog> is set to --internal."
 
 #. type: TP
-#: doc/tin.5:2666
+#: doc/tin.5:2667
 #, no-wrap
 msgid "B<spooldir>"
 msgstr "B<spooldir>"
 
 #. type: Plain text
-#: doc/tin.5:2671
+#: doc/tin.5:2672
 msgid ""
 "Base of your newsspool (Bnews, Cnews and INN traditional spool style), "
 "common values are I</var/spool/news>, I</usr/spool/news>, I</news/spool>.  "
@@ -15460,13 +15463,13 @@ msgstr ""
 "$B<TIN_SPOOLDIR> overrides any specified value."
 
 #. type: TP
-#: doc/tin.5:2671
+#: doc/tin.5:2672
 #, no-wrap
 msgid "B<overviewdir>"
 msgstr "B<overviewdir>"
 
 #. type: Plain text
-#: doc/tin.5:2679
+#: doc/tin.5:2680
 msgid ""
 "Base of your NOV database B<\\%newsoverview>(5)  (tradspool style; might be "
 "the same dir as I<spooldir>), common values are I</var/spool/overview>, I</"
@@ -15479,13 +15482,13 @@ msgstr ""
 "specified value."
 
 #. type: TP
-#: doc/tin.5:2679
+#: doc/tin.5:2680
 #, no-wrap
 msgid "B<overviewfile>"
 msgstr "B<overviewfile>"
 
 #. type: Plain text
-#: doc/tin.5:2683
+#: doc/tin.5:2684
 msgid ""
 "Name of a single overview file, common values are I<.overview> or I<over."
 "view>. $B<TIN_NOVFILENAME> overrides any specified value."
@@ -15494,13 +15497,13 @@ msgstr ""
 "view>. $B<TIN_NOVFILENAME> overrides any specified value."
 
 #. type: TP
-#: doc/tin.5:2683
+#: doc/tin.5:2684
 #, no-wrap
 msgid "B<overviewfmtfile>"
 msgstr "B<overviewfmtfile>"
 
 #. type: Plain text
-#: doc/tin.5:2688
+#: doc/tin.5:2689
 msgid ""
 "Full pathname of your newssystem's overview.fmt file; usually the file "
 "resides in I<newslibdir> and is named I<overview.fmt>, so you only have to "
@@ -15511,13 +15514,13 @@ msgstr ""
 "change this setting if your configuration differs."
 
 #. type: TP
-#: doc/tin.5:2688
+#: doc/tin.5:2689
 #, no-wrap
 msgid "B<activefile>"
 msgstr "B<activefile>"
 
 #. type: Plain text
-#: doc/tin.5:2694
+#: doc/tin.5:2695
 msgid ""
 "Full pathname of your newssystem's active file; usually the file resides in "
 "I<newslibdir> and is named I<active>, so you only have to change this "
@@ -15530,13 +15533,13 @@ msgstr ""
 "specified value."
 
 #. type: TP
-#: doc/tin.5:2694
+#: doc/tin.5:2695
 #, no-wrap
 msgid "B<activetimesfile>"
 msgstr "B<activetimesfile>"
 
 #. type: Plain text
-#: doc/tin.5:2699
+#: doc/tin.5:2700
 msgid ""
 "Full pathname of your newssystem's active.times file; usually the file "
 "resides in I<newslibdir> and is named I<active.times>, so you only have to "
@@ -15547,13 +15550,13 @@ msgstr ""
 "change this setting if your configuration differs."
 
 #. type: TP
-#: doc/tin.5:2699
+#: doc/tin.5:2700
 #, no-wrap
 msgid "B<newsgroupsfile>"
 msgstr "B<newsgroupsfile>"
 
 #. type: Plain text
-#: doc/tin.5:2704
+#: doc/tin.5:2705
 msgid ""
 "Full pathname of your newssystem's newsgroups file; usually the file resides "
 "in I<newslibdir> and is named I<newsgroups>, so you only have to change this "
@@ -15564,13 +15567,13 @@ msgstr ""
 "setting if your configuration differs."
 
 #. type: TP
-#: doc/tin.5:2704
+#: doc/tin.5:2705
 #, no-wrap
 msgid "B<subscriptionsfile>"
 msgstr "B<subscriptionsfile>"
 
 #. type: Plain text
-#: doc/tin.5:2709
+#: doc/tin.5:2710
 msgid ""
 "Full pathname of your newssystem's subscriptions file; usually the file "
 "resides in I<newslibdir> and is named I<subscriptions>, so you only have to "
@@ -15581,12 +15584,12 @@ msgstr ""
 "change this setting if your configuration differs."
 
 #. type: Plain text
-#: doc/tin.5:2713
+#: doc/tin.5:2714
 msgid "I</usr/local/share/locale/$LC_MESSAGES/LC_MESSAGES/tin.mo>"
 msgstr "I</usr/local/share/locale/$LC_MESSAGES/LC_MESSAGES/tin.mo>"
 
 #. type: Plain text
-#: doc/tin.5:2717
+#: doc/tin.5:2718
 msgid ""
 "translation into language specified in $B<LC_ALL>, $B<LC_MESSAGES> or "
 "$B<LANG>"
@@ -15595,7 +15598,7 @@ msgstr ""
 "$B<LANG>"
 
 #. type: Plain text
-#: doc/tin.5:2731
+#: doc/tin.5:2732
 msgid ""
 "This file lists the newsgroups that the local site receives. Each newsgroup "
 "should be listed only once. Each line specifies one group; within each "
@@ -15609,7 +15612,7 @@ msgstr ""
 
 #.  TODO: tin issues just a warning in that case.
 #. type: Plain text
-#: doc/tin.5:2736
+#: doc/tin.5:2737
 msgid ""
 "If an article is posted to newsgroups not mentioned in this file, those "
 "newsgroups are ignored.  If no valid newsgroups are specified, the article "
@@ -15620,7 +15623,7 @@ msgstr ""
 "is rejected."
 
 #. type: Plain text
-#: doc/tin.5:2739
+#: doc/tin.5:2740
 msgid ""
 "Each line consists of four space-separated fields \"I<name> I<highmark> "
 "I<lowmark> I<flags>\"."
@@ -15629,30 +15632,30 @@ msgstr ""
 "I<lowmark> I<flags>\"."
 
 #. type: TP
-#: doc/tin.5:2739 doc/tin.5:2793
+#: doc/tin.5:2740 doc/tin.5:2794
 #, no-wrap
 msgid "B<name>"
 msgstr "B<name>"
 
 #. type: TP
-#: doc/tin.5:2742
+#: doc/tin.5:2743
 #, no-wrap
 msgid "B<highmark>"
 msgstr "B<highmark>"
 
 #. type: Plain text
-#: doc/tin.5:2745
+#: doc/tin.5:2746
 msgid "is the highest article number that has been used in that newsgroup"
 msgstr "is the highest article number that has been used in that newsgroup"
 
 #. type: TP
-#: doc/tin.5:2745
+#: doc/tin.5:2746
 #, no-wrap
 msgid "B<lowmark>"
 msgstr "B<lowmark>"
 
 #. type: Plain text
-#: doc/tin.5:2752
+#: doc/tin.5:2753
 msgid ""
 "is the lowest article number in the group; this number is not guaranteed to "
 "be accurate, and should only be taken to be a hint. Note that because of "
@@ -15667,90 +15670,90 @@ msgstr ""
 "are no articles in the newsgroup."
 
 #. type: TP
-#: doc/tin.5:2752
+#: doc/tin.5:2753
 #, no-wrap
 msgid "B<flags>"
 msgstr "B<flags>"
 
 #. type: Plain text
-#: doc/tin.5:2755
+#: doc/tin.5:2756
 msgid "can be one of those"
 msgstr "can be one of those"
 
 #. type: TP
-#: doc/tin.5:2756
+#: doc/tin.5:2757
 #, no-wrap
 msgid "B<y>"
 msgstr "B<y>"
 
 #. type: Plain text
-#: doc/tin.5:2759
+#: doc/tin.5:2760
 msgid "local postings are allowed"
 msgstr "local postings are allowed"
 
 #. type: TP
-#: doc/tin.5:2759
+#: doc/tin.5:2760
 #, no-wrap
 msgid "B<n>"
 msgstr "B<n>"
 
 #. type: Plain text
-#: doc/tin.5:2762
+#: doc/tin.5:2763
 msgid "no local postings are allowed, only remote ones"
 msgstr "no local postings are allowed, only remote ones"
 
 #. type: TP
-#: doc/tin.5:2762
+#: doc/tin.5:2763
 #, no-wrap
 msgid "B<m>"
 msgstr "B<m>"
 
 #. type: Plain text
-#: doc/tin.5:2765
+#: doc/tin.5:2766
 msgid "the group is moderated and all postings must be approved"
 msgstr "the group is moderated and all postings must be approved"
 
 #. type: TP
-#: doc/tin.5:2765
+#: doc/tin.5:2766
 #, no-wrap
 msgid "B<j>"
 msgstr "B<j>"
 
 #. type: Plain text
-#: doc/tin.5:2768
+#: doc/tin.5:2769
 msgid "articles in this group are not kept, but only passed on"
 msgstr "articles in this group are not kept, but only passed on"
 
 #. type: TP
-#: doc/tin.5:2768
+#: doc/tin.5:2769
 #, no-wrap
 msgid "B<x>"
 msgstr "B<x>"
 
 #. type: Plain text
-#: doc/tin.5:2771
+#: doc/tin.5:2772
 msgid "articles cannot be posted to this newsgroup"
 msgstr "articles cannot be posted to this newsgroup"
 
 #. type: TP
-#: doc/tin.5:2771
+#: doc/tin.5:2772
 #, no-wrap
 msgid "B<=foo.bar>"
 msgstr "B<=foo.bar>"
 
 #. type: Plain text
-#: doc/tin.5:2774
+#: doc/tin.5:2775
 msgid "articles are locally filed into the ''foo.bar'' group"
 msgstr "articles are locally filed into the ''foo.bar'' group"
 
 #. type: TP
-#: doc/tin.5:2775 doc/tin.5:2803 doc/tin.5:2826
+#: doc/tin.5:2776 doc/tin.5:2804 doc/tin.5:2827
 #, no-wrap
 msgid "B<\\%tin>(1)"
 msgstr "B<\\%tin>(1)"
 
 #. type: Plain text
-#: doc/tin.5:2782
+#: doc/tin.5:2783
 msgid ""
 "only tries to read the file if you read directly from the local spool, if "
 "you read news via NNTP, B<\\%tin>(1)  uses the LIST (B<RFC\\%3977>) or LIST "
@@ -15761,7 +15764,7 @@ msgstr ""
 "COUNTS (B<RFC\\%6048>) command instead."
 
 #. type: Plain text
-#: doc/tin.5:2793
+#: doc/tin.5:2794
 msgid ""
 "This file provides a chronological record of when newsgroups are created. It "
 "is normally updated by the local news server (e.g.  B<\\%innd>(8))  whenever "
@@ -15774,7 +15777,7 @@ msgstr ""
 "\"I<name> I<time> I<creator>\"."
 
 #. type: Plain text
-#: doc/tin.5:2800
+#: doc/tin.5:2801
 msgid ""
 "is the time when the group was created, expressed as the number of seconds "
 "since the Epoch."
@@ -15783,18 +15786,18 @@ msgstr ""
 "since the Epoch."
 
 #. type: TP
-#: doc/tin.5:2800
+#: doc/tin.5:2801
 #, no-wrap
 msgid "B<creator>"
 msgstr "B<creator>"
 
 #. type: Plain text
-#: doc/tin.5:2803
+#: doc/tin.5:2804
 msgid "is the electronic mail address of the person who created the group."
 msgstr "is the electronic mail address of the person who created the group."
 
 #. type: Plain text
-#: doc/tin.5:2809
+#: doc/tin.5:2810
 msgid ""
 "only tries to read the file if you read directly from the local spool, if "
 "you read news via NNTP, B<\\%tin>(1)  uses the NEWGROUPS (B<RFC\\%3977>) "
@@ -15805,7 +15808,7 @@ msgstr ""
 "command instead."
 
 #. type: Plain text
-#: doc/tin.5:2820
+#: doc/tin.5:2821
 msgid ""
 "This file provides short descriptions of each newsgroup. It is normally "
 "updated by the local news server (e.g.  B<\\%innd>(8))  whenever a new group "
@@ -15818,7 +15821,7 @@ msgstr ""
 "\tI<one-line description>\"."
 
 #. type: Plain text
-#: doc/tin.5:2832
+#: doc/tin.5:2833
 msgid ""
 "only tries to read the file if you read directly from the local spool, if "
 "you read news via NNTP, B<\\%tin>(1)  uses the LIST NEWSGROUPS (B<RFC\\"
@@ -15829,7 +15832,7 @@ msgstr ""
 "%3977>) command instead."
 
 #. type: Plain text
-#: doc/tin.5:2841
+#: doc/tin.5:2842
 msgid ""
 "This file might hold a default organization to be used in the "
 "''Organization:'' header. $B<ORGANIZATION> has a higher priority if set."
@@ -15838,7 +15841,7 @@ msgstr ""
 "''Organization:'' header. $B<ORGANIZATION> has a higher priority if set."
 
 #. type: Plain text
-#: doc/tin.5:2859
+#: doc/tin.5:2860
 msgid ""
 "This file specifies the organization of the news overview database (see also "
 "B<\\%newsoverview>(5)).  The order of lines in this file is important; it "
@@ -15855,7 +15858,7 @@ msgstr ""
 "%tin>(1)  uses the LIST OVERVIEW.FMT (B<RFC\\%3977>) command instead."
 
 #. type: Plain text
-#: doc/tin.5:2874
+#: doc/tin.5:2875
 msgid ""
 "This file contains a list of newsgroups \\(em one per line \\(em which the "
 "client should subscribe to when the user has no ${TIN_HOMEDIR:-\"$HOME\"}/."
@@ -15870,7 +15873,7 @@ msgstr ""
 "%tin>(1)  uses the LIST SUBSCRIPTIONS (B<RFC\\%6048>) command instead."
 
 #. type: Plain text
-#: doc/tin.5:2924
+#: doc/tin.5:2925
 msgid ""
 "B<\\%inews>(1), B<\\%ispell>(1), B<\\%lp>(1), B<\\%lpr>(1), B<\\"
 "%metamail>(1), B<\\%mutt>(1), B<\\%perl>(1), B<\\%perlre>(1), B<\\%pgp>(1), "

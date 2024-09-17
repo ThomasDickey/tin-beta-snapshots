@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-06-27
+ *  Updated   : 2024-09-10
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -129,8 +129,8 @@ build_tline(
 	int l,
 	struct t_article *art)
 {
-	int gap, fill, i;
-	size_t len, len_start, len_end;
+	int w;
+	size_t gap, fill, i, len, len_start, len_end;
 	struct t_msgid *ptr;
 	char *buffer, *buf;
 	char *fmt = thrd_fmt.str;
@@ -149,9 +149,9 @@ build_tline(
 	 * make it the same size like in !USE_CURSES case to simplify some code
 	 */
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		buffer = my_malloc(cCOLS * MB_CUR_MAX + 2);
+		buffer = my_malloc(cCOLS > 0 ? (size_t) cCOLS * MB_CUR_MAX + 2 : 0);
 #	else
-		buffer = my_malloc(cCOLS + 2);
+		buffer = my_malloc(cCOLS > 0 ? (size_t) cCOLS + 2: 0);
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #else
 	buffer = screen[INDEX2SNUM(l)].col;
@@ -180,7 +180,7 @@ build_tline(
 				if (my_strftime(buf, LEN - 1, thrd_fmt.date_str, localtime(&art->date))) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					if ((wtmp = char2wchar_t(buf)) != NULL) {
-						wtmp2 = wcspart(wtmp, (int) thrd_fmt.len_date_max, TRUE);
+						wtmp2 = wcspart(wtmp, thrd_fmt.len_date_max, TRUE);
 						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 							strcat(buffer, tmp);
 
@@ -199,7 +199,7 @@ build_tline(
 				get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
 				if ((wtmp = char2wchar_t(tmp)) != NULL) {
-					wtmp2 = wcspart(wtmp, (int) thrd_fmt.len_from, TRUE);
+					wtmp2 = wcspart(wtmp, thrd_fmt.len_from, TRUE);
 					if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 						strcat(buffer, tmp);
 
@@ -223,9 +223,10 @@ build_tline(
 				len = MIN(thrd_fmt.len_initials, sizeof(tmp) - 1);
 				get_initials(art, tmp, (int) len);
 				strcat(buffer, tmp);
-				if ((i = (int) (len - (size_t) strwidth(tmp))) > 0) {
+				w = strwidth(tmp);
+				if (w > 0 && len > (size_t) w) {
 					buf = buffer + strlen(buffer);
-					for (; i > 0; --i)
+					for (i = len - (size_t) w; i > 0; --i)
 						*buf++ = ' ';
 					*buf = '\0';
 				}
@@ -236,7 +237,7 @@ build_tline(
 					strcat(buffer, tin_ltoa(art->line_count, (int) thrd_fmt.len_linecnt));
 				else {
 					buf = buffer + strlen(buffer);
-					for (i = (int) thrd_fmt.len_linecnt; i > 1; --i)
+					for (i = thrd_fmt.len_linecnt; i > 1; --i)
 						*buf++ = ' ';
 					*buf++ = '?';
 					*buf = '\0';
@@ -274,9 +275,10 @@ build_tline(
 				strncpy(tmp, art->refptr ? art->refptr->txt : "", len);
 				tmp[len] = '\0';
 				strcat(buffer, tmp);
-				if ((i = (int) (len - (size_t) strwidth(tmp))) > 0) {
+				w = strwidth(tmp);
+				if (w > 0 && len > (size_t) w) {
 					buf = buffer + strlen(buffer);
-					for (; i > 0; --i)
+					for (i = len - (size_t) w; i > 0; --i)
 						*buf++ = ' ';
 					*buf = '\0';
 				}
@@ -374,7 +376,7 @@ build_tline(
 
 				/* pad out */
 				fill = (len - ((size_t) strwidth(buffer) - len_start));
-				gap = (int) strlen(buffer);
+				gap = strlen(buffer);
 				for (i = 0; i < fill; i++)
 					buffer[gap + i] = ' ';
 				buffer[gap + fill] = '\0';
@@ -660,7 +662,7 @@ thread_page(
 */
 			case THREAD_FOLLOWUP_QUOTE:
 			case THREAD_FOLLOWUP:
-				if (can_post || group->attribute->mailing_list != NULL) {
+				if (can_post || (group->attribute->mailing_list && *group->attribute->mailing_list)) {
 					int ret;
 
 					n = find_response(thread_basenote, thdmenu.curr);
@@ -678,7 +680,7 @@ thread_page(
 				break;
 
 			case THREAD_CANCEL:		/* cancel current article */
-				if (can_post || group->attribute->mailing_list != NULL) {
+				if (can_post || (group->attribute->mailing_list && *group->attribute->mailing_list)) {
 					int ret;
 
 					n = find_response(thread_basenote, thdmenu.curr);
@@ -968,7 +970,7 @@ show_thread_page(
 	ClearScreen();
 	set_first_screen_item();
 
-	parse_format_string(curr_group->attribute->thread_format, &thrd_fmt);
+	parse_format_string(curr_group->attribute->thread_format ? BlankIfNull(*curr_group->attribute->thread_format) : "", &thrd_fmt);
 	mark_offset = 0;
 
 	if (show_subject)

@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2024-07-18
+ *  Updated   : 2024-08-12
  *  Notes     :
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -1326,7 +1326,7 @@ create_save_active_file(
 	if (no_write && file_size(local_save_active_file) != -1L)
 		return;
 
-	if (strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : tinrc.savedir, group_path, sizeof(group_path), NULL, FALSE)) {
+	if (strfpath(cmdline.savedir ? cmdline.savedir : tinrc.savedir, group_path, sizeof(group_path), NULL, FALSE)) {
 		wait_message(0, _(txt_creating_active));
 		print_active_head(local_save_active_file);
 
@@ -1334,7 +1334,7 @@ create_save_active_file(
 			group_path[strlen(group_path) - 1] = '\0';
 
 		fb = my_strdup(group_path);
-		make_group_list(local_save_active_file, (cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : tinrc.savedir, fb, group_path);
+		make_group_list(local_save_active_file, cmdline.savedir ? cmdline.savedir : tinrc.savedir, fb, group_path);
 		free(fb);
 	}
 }

@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2024-06-21
+ *  Updated   : 2024-09-07
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2024 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -71,7 +71,7 @@ tintls_init(
 	int result = 0;
 	char *ca_cert_file = ca_cert_file_expanded;
 
-	if (tinrc.tls_ca_cert_file[0] != '\0') {
+	if (tinrc.tls_ca_cert_file && *tinrc.tls_ca_cert_file) {
 		result = strfpath(tinrc.tls_ca_cert_file, ca_cert_file_expanded, sizeof(ca_cert_file_expanded), NULL, FALSE);
 		if (result == 0)
 			return -EINVAL;
@@ -827,10 +827,10 @@ tintls_conninfo(
 		fprintf(fp, "%s", _(txt_conninfo_server_cert_info));
 
 		/* string copy of chain */
-		i = snprintf(NULL, 0, "%.*s", (int) chain_size, chain);
+		i = snprintf(NULL, 0, "%.*s", (int) chain_size, (const char*) chain);
 		cl = (size_t) i + 1;
 		wchain = my_malloc(cl);
-		snprintf(wchain, cl, "%.*s", (int) chain_size, chain);
+		snprintf(wchain, cl, "%.*s", (int) chain_size, (const char*) chain);
 		cptr = wchain;
 		i = 0;
 

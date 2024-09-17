@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2024-05-06
+ *  Updated   : 2024-09-07
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2024 Mike Gleason
@@ -70,7 +70,7 @@ msg_write_signature(
 #endif /* NNTP_INEWS */
 
 	if (thisgroup && !thisgroup->bogus) {
-		if (!strcmp(thisgroup->attribute->sigfile, "--none"))
+		if (!strcmp(*thisgroup->attribute->sigfile, "--none"))
 			return;
 
 		/*
@@ -78,13 +78,13 @@ msg_write_signature(
 		 *       use strfpath()?
 		 */
 #ifndef DONT_HAVE_PIPING
-		if (thisgroup->attribute->sigfile[0] == '!') {
+		if (*thisgroup->attribute->sigfile[0] == '!') {
 			FILE *pipe_fp;
 			char *sigcmd, *sigattr, *ptr;
 			char cmd[PATH_LEN];
 
 			fprintf(fp, "\n%s", thisgroup->attribute->sigdashes ? SIGDASHES : "");
-			sigattr = thisgroup->attribute->sigfile + 1;
+			sigattr = *thisgroup->attribute->sigfile + 1;
 
 			if ((ptr = strstr(sigattr, "%G"))) {
 				char *to, *grpname;
@@ -117,7 +117,7 @@ msg_write_signature(
 			}
 
 			if ((pipe_fp = popen(sigcmd, "r")) != NULL) {
-				while (fgets(cmd, PATH_LEN, pipe_fp))
+				while (fgets(cmd, sizeof(cmd), pipe_fp))
 					fputs(cmd, fp);
 				pclose(pipe_fp);
 			} /* else issue an error-message? */
@@ -128,7 +128,7 @@ msg_write_signature(
 #endif /* !DONT_HAVE_PIPING */
 		get_cwd(cwd);
 
-		if (!strfpath(thisgroup->attribute->sigfile, path, sizeof(path), thisgroup, FALSE)) {
+		if (!strfpath(*thisgroup->attribute->sigfile, path, sizeof(path), thisgroup, FALSE)) {
 			if (!strfpath(tinrc.sigfile, path, sizeof(path), thisgroup, FALSE))
 				joinpath(path, sizeof(path), homedir, ".Sig");
 		}

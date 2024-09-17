@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2024-08-01
+ *  Updated   : 2024-09-10
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -86,7 +86,6 @@ submit_inews(
 	char sender_hdr[HEADER_LEN];
 	int sender = 0;
 	int err = 0;
-	int n = 0;
 	t_bool ismail = FALSE;
 #	endif /* !FORGERY */
 #	ifdef USE_CANLOCK
@@ -98,9 +97,9 @@ submit_inews(
 
 	from_name[0] = '\0';
 	message_id[0] = '\0';
-#   ifndef FORGERY
-    sender_hdr[0] = '\0';
-#   endif /* !FORGERY */
+#	ifndef FORGERY
+	sender_hdr[0] = '\0';
+#	endif /* !FORGERY */
 
 	while ((line = tin_fgets(fp, TRUE)) != NULL) {
 		if (line[0] == '\0') /* end of headers */
@@ -145,7 +144,7 @@ submit_inews(
 	 *
 	 * check for valid From: line
 	 */
-	if ((n = check_mailbox_list(from_name, "From:", charset, &err)) > 1)
+	if (check_mailbox_list(from_name, "From:", charset, &err) > 1)
 		sender = 1;
 
 	if (err) {
@@ -233,13 +232,12 @@ submit_inews(
 		}
 
 #	ifndef FORGERY
-		/*
-		 * Send Path: (and Sender: if needed) headers
-		 */
+		/* Send Path: header */
 		snprintf(buf, sizeof(buf), "Path: %s", PATHMASTER);
 		u_put_server(buf);
 		u_put_server("\r\n");
 
+		/* and Sender: (if needed) */
 		if (sender == 1 && *sender_hdr) {
 			u_put_server(sender_hdr);
 			u_put_server("\r\n");
@@ -286,7 +284,7 @@ submit_inews(
 
 #	ifdef USE_CANLOCK
 			/* skip any bogus Cancel-Locks */
-			if (!strlen(line))
+			if (!*line)
 				can_lock_in_article = FALSE;	/* don't touch the body */
 
 			if (can_lock_in_article && !id_in_article) {
@@ -427,8 +425,10 @@ submit_news_file(
 			if (prompt_yn(_(txt_post_via_builtin_inews), TRUE)) {
 				ret_code = submit_inews(name, group, a_message_id);
 				if (ret_code) {
-					if (prompt_yn(_(txt_post_via_builtin_inews_only), TRUE) == 1)
-						strcpy(tinrc.inews_prog, INTERNAL_CMD);
+					if (prompt_yn(_(txt_post_via_builtin_inews_only), TRUE) == 1) {
+						FreeIfNeeded(tinrc.inews_prog);
+						tinrc.inews_prog = my_strdup(INTERNAL_CMD);
+					}
 				}
 			}
 		}

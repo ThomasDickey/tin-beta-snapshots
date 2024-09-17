@@ -1309,7 +1309,7 @@ cook_article(
 	static const char *struct_header[] = {
 		"Approved: ", "From: ", "Originator: ", "Reply-To: ",
 		"Sender: ", "To: ", "Cc: ", "Bcc: ", "X-Cancelled-By: ",
-		"X-Comment-To: ", "X-Submissions-To: ",  "X-Originator: ",
+		"X-Comment-To: ", "X-Submissions-To: ", "X-Originator: ",
 		NULL };
 	t_bool header_put = FALSE;
 #ifdef INLINE_DEBUG_MIME

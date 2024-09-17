@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-28
+ *  Updated   : 2024-09-11
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -74,9 +74,11 @@ struct t_save *save;			/* sorts articles before saving them */
  */
 static void free_active_arrays(void);
 static void free_attributes(struct t_attribute *attributes);
+static void free_cmdline_args(void);
 static void free_scopes_arrays(void);
+static void free_tinrc_strings(void);
 static void free_newnews_array(void);
-static void free_if_not_default(char **attrib, const char *deflt);
+static void free_if_not_default(char ***attrib, char **deflt);
 static void free_input_history(void);
 
 
@@ -219,9 +221,9 @@ init_screen_array(
 
 		for (i = 0; i < cLINES; i++) {
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			screen[i].col = my_malloc((size_t) ((size_t) cCOLS * MB_CUR_MAX + 2));
+			screen[i].col = my_malloc((size_t) cCOLS * MB_CUR_MAX + 2);
 #	else
-			screen[i].col = my_malloc((size_t) ((size_t) cCOLS + 2));
+			screen[i].col = my_malloc((size_t) cCOLS + 2);
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
 	} else {
@@ -253,6 +255,7 @@ free_all_arrays(
 	free_filter_array(&glob_filter);
 	free_active_arrays();
 	free_scopes_arrays();
+	free_tinrc_strings();
 
 #ifdef HAVE_COLOR
 	regex_cache_destroy(&quote_regex);
@@ -310,6 +313,7 @@ free_all_arrays(
 	rfc1522_decode(NULL);
 
 	free(backup_article_name);
+	free_cmdline_args();
 	free(tin_progname);
 }
 
@@ -346,16 +350,18 @@ free_art_array(
 
 
 /*
- * Use this only for attributes that have a fixed default of a static string
- * in tinrc
+ * Use this for attributes that have a default in tinrc
+ * otherwise use (char **) 0 as deflt
  */
 static void
 free_if_not_default(
-	char **attrib,
-	const char *deflt)
+	char ***attrib,
+	char **deflt)
 {
-	if (*attrib != deflt)
+	if (*attrib && *attrib != deflt) {
+		FreeAndNull(**attrib);
 		FreeAndNull(*attrib);
+	}
 }
 
 
@@ -366,48 +372,127 @@ static void
 free_attributes(
 	struct t_attribute *attributes)
 {
-	free_if_not_default(&attributes->group_format, tinrc.group_format);
-	free_if_not_default(&attributes->thread_format, tinrc.thread_format);
-	free_if_not_default(&attributes->date_format, tinrc.date_format);
-	free_if_not_default(&attributes->editor_format, tinrc.editor_format);
-	FreeAndNull(attributes->fcc);
-	free_if_not_default(&attributes->from, tinrc.mail_address);
-	FreeAndNull(attributes->followup_to);
+	free_if_not_default(&attributes->group_format, &tinrc.group_format);
+	free_if_not_default(&attributes->thread_format, &tinrc.thread_format);
+	free_if_not_default(&attributes->date_format, &tinrc.date_format);
+	free_if_not_default(&attributes->editor_format, &tinrc.editor_format);
+	free_if_not_default(&attributes->fcc, (char **) 0);
+	free_if_not_default(&attributes->from, &tinrc.mail_address);
+	free_if_not_default(&attributes->followup_to, (char **) 0);
 #ifdef HAVE_ISPELL
-	FreeAndNull(attributes->ispell);
+	free_if_not_default(&attributes->ispell, (char **) 0);
 #endif /* HAVE_ISPELL */
-	free_if_not_default(&attributes->maildir, tinrc.maildir);
-	FreeAndNull(attributes->mailing_list);
-	FreeAndNull(attributes->mime_types_to_save);
-	free_if_not_default(&attributes->news_headers_to_display, tinrc.news_headers_to_display);
-	free_if_not_default(&attributes->news_headers_to_not_display, tinrc.news_headers_to_not_display);
+	free_if_not_default(&attributes->maildir, &tinrc.maildir);
+	free_if_not_default(&attributes->mailing_list, (char **) 0);
+	free_if_not_default(&attributes->mime_types_to_save, &default_mime_types_to_save);
+	free_if_not_default(&attributes->news_headers_to_display, &tinrc.news_headers_to_display);
+	free_if_not_default(&attributes->news_headers_to_not_display, &tinrc.news_headers_to_not_display);
 	if (attributes->headers_to_display) {
 		if (attributes->headers_to_display->header)
 			FreeIfNeeded(*attributes->headers_to_display->header);
 		FreeAndNull(attributes->headers_to_display->header);
 		free(attributes->headers_to_display);
-		attributes->headers_to_display = (struct t_newsheader *) 0;
+		attributes->headers_to_display = NULL;
 	}
 	if (attributes->headers_to_not_display) {
 		if (attributes->headers_to_not_display->header)
 			FreeIfNeeded(*attributes->headers_to_not_display->header);
 		FreeAndNull(attributes->headers_to_not_display->header);
 		free(attributes->headers_to_not_display);
-		attributes->headers_to_not_display = (struct t_newsheader *) 0;
+		attributes->headers_to_not_display = NULL;
 	}
-	free_if_not_default(&attributes->news_quote_format, tinrc.news_quote_format);
-	free_if_not_default(&attributes->organization, default_organization);
-	FreeAndNull(attributes->quick_kill_scope);
-	FreeAndNull(attributes->quick_select_scope);
-	free_if_not_default(&attributes->quote_chars, tinrc.quote_chars);
-	free_if_not_default(&attributes->savedir, tinrc.savedir);
-	FreeAndNull(attributes->savefile);
-	free_if_not_default(&attributes->sigfile, tinrc.sigfile);
+	free_if_not_default(&attributes->news_quote_format, &tinrc.news_quote_format);
+	free_if_not_default(&attributes->organization, &default_organization);
+	free_if_not_default(&attributes->quick_kill_scope, &default_filter_kill_global);
+	free_if_not_default(&attributes->quick_select_scope, &default_filter_select_global);
+	free_if_not_default(&attributes->quote_chars, &tinrc.quote_chars);
+	free_if_not_default(&attributes->savedir, &tinrc.savedir);
+	free_if_not_default(&attributes->savefile, (char **) 0);
+	free_if_not_default(&attributes->sigfile, &tinrc.sigfile);
 #ifdef CHARSET_CONVERSION
-	FreeAndNull(attributes->undeclared_charset);
+	free_if_not_default(&attributes->undeclared_charset, (char **) 0);
 #endif /* CHARSET_CONVERSION */
-	FreeAndNull(attributes->x_headers);
-	FreeAndNull(attributes->x_body);
+	free_if_not_default(&attributes->x_headers, (char **) 0);
+	free_if_not_default(&attributes->x_body, (char **) 0);
+}
+
+static void
+free_tinrc_strings(
+		void)
+{
+	FreeAndNull(tinrc.editor_format);
+	FreeAndNull(tinrc.mailer_format);
+	FreeAndNull(tinrc.default_goto_group);
+	FreeAndNull(tinrc.default_mail_address);
+	FreeAndNull(tinrc.default_pipe_command);
+	FreeAndNull(tinrc.default_post_newsgroups);
+	FreeAndNull(tinrc.default_post_subject);
+	FreeAndNull(tinrc.printer);
+	FreeAndNull(tinrc.default_range_group);
+	FreeAndNull(tinrc.default_range_select);
+	FreeAndNull(tinrc.default_range_thread);
+	FreeAndNull(tinrc.default_pattern);
+	FreeAndNull(tinrc.default_repost_group);
+	FreeAndNull(tinrc.default_save_file);
+	FreeAndNull(tinrc.default_search_art);
+	FreeAndNull(tinrc.default_search_author);
+	FreeAndNull(tinrc.default_search_config);
+	FreeAndNull(tinrc.default_search_group);
+	FreeAndNull(tinrc.default_search_subject);
+	FreeAndNull(tinrc.default_select_pattern);
+	FreeAndNull(tinrc.default_shell_command);
+	FreeAndNull(tinrc.maildir);
+	FreeAndNull(tinrc.mail_address);
+	FreeAndNull(tinrc.mail_quote_format);
+	FreeAndNull(tinrc.metamail_prog);
+#ifndef CHARSET_CONVERSION
+	FreeAndNull(tinrc.mm_charset);
+#endif /* !CHARSET_CONVERSION */
+	FreeAndNull(tinrc.mm_local_charset);
+	FreeAndNull(tinrc.news_headers_to_display);
+	FreeAndNull(tinrc.news_headers_to_not_display);
+	FreeAndNull(tinrc.news_quote_format);
+	FreeAndNull(tinrc.quote_chars);
+	FreeAndNull(tinrc.quote_regex);
+	FreeAndNull(tinrc.quote_regex2);
+	FreeAndNull(tinrc.quote_regex3);
+	FreeAndNull(tinrc.extquote_regex);
+	FreeAndNull(tinrc.slashes_regex);
+	FreeAndNull(tinrc.stars_regex);
+	FreeAndNull(tinrc.underscores_regex);
+	FreeAndNull(tinrc.strokes_regex);
+	FreeAndNull(tinrc.strip_re_regex);
+	FreeAndNull(tinrc.strip_was_regex);
+	FreeAndNull(tinrc.verbatim_begin_regex);
+	FreeAndNull(tinrc.verbatim_end_regex);
+	FreeAndNull(tinrc.savedir);
+	FreeAndNull(tinrc.sigfile);
+	FreeAndNull(tinrc.spamtrap_warning_addresses);
+	FreeAndNull(tinrc.url_handler);
+	FreeAndNull(tinrc.posted_articles_file);
+	FreeAndNull(tinrc.inews_prog);
+	FreeAndNull(tinrc.select_format);
+	FreeAndNull(tinrc.group_format);
+	FreeAndNull(tinrc.thread_format);
+	FreeAndNull(tinrc.attachment_format);
+	FreeAndNull(tinrc.page_mime_format);
+	FreeAndNull(tinrc.page_uue_format);
+	FreeAndNull(tinrc.date_format);
+	FreeAndNull(tinrc.xpost_quote_format);
+#	ifdef NNTPS_ABLE
+		FreeAndNull(tinrc.tls_ca_cert_file);
+#	endif /* NNTPS_ABLE */
+}
+
+
+static void
+free_cmdline_args(
+	void)
+{
+	FreeAndNull(cmdline.maildir);
+	FreeAndNull(cmdline.nntpserver);
+	FreeAndNull(cmdline.savedir);
+	FreeAndNull(cmdline.msgid);
 }
 
 
@@ -435,6 +520,10 @@ free_scopes_arrays(
 		free_scope(--num_scope);
 	FreeAndNull(scopes);
 	num_scope = -1;
+	FreeAndNull(default_filter_kill_global);
+	FreeAndNull(default_filter_select_global);
+	FreeAndNull(default_organization);
+	FreeAndNull(default_mime_types_to_save);
 }
 
 

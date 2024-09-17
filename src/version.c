@@ -183,7 +183,6 @@ upgrade_prompt_quit(
 			free(upgrade);
 			if (fp)
 				fclose(fp);
-			handle_cmdargs(FALSE);
 			no_write = TRUE;
 			tin_done(EXIT_FAILURE, _(txt_exiting));
 			/* NOTREACHED */

@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2024-07-13
+ *  Updated   : 2024-08-07
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2024 Thomas Dickey <dickey@invisible-island.net>
@@ -664,6 +664,7 @@
  * libidnkit - used for Internationalized Domain Names (IDNA 2008)
  */
 #	undef HAVE_IDN_API_H
+#	undef HAVE_IDN_VERSION_H
 #	undef HAVE_IDN_DECODENAME
 #	undef HAVE_LIBIDNKIT
 
@@ -696,6 +697,7 @@
  */
 #	undef HAVE_UNITYPES_H
 #	undef HAVE_UNINORM_H
+#	undef HAVE_UNISTRING_VERSION_H
 #	undef HAVE_LIBUNISTRING
 
 /*

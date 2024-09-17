@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-03-16
+ *  Updated   : 2024-09-16
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -54,7 +54,7 @@ static char *prompt_yn_choice;
  * Local prototypes
  */
 static int prompt_list(int row, int col, int var, constext *help_text, constext *prompt_text, constext *list[], int size);
-
+static t_bool prompt_default_string_ptr(const char *prompt, char **buf, int buf_len, char *default_prompt, int which_hist);
 
 /*
  *  prompt_num
@@ -95,7 +95,17 @@ prompt_string(
 	char *buf,
 	int which_hist)
 {
-	return prompt_default_string(prompt, buf, 0, (char *) NULL, which_hist);
+	return prompt_default_string(prompt, buf, 0, NULL, which_hist);
+}
+
+
+t_bool
+prompt_string_ptr(
+	const char *prompt,
+	char **buf,
+	int which_hist)
+{
+	return prompt_default_string_ptr(prompt, buf, 0, NULL, which_hist);
 }
 
 
@@ -126,6 +136,29 @@ prompt_default_string(
 }
 
 
+static t_bool
+prompt_default_string_ptr(
+	const char *prompt,
+	char **buf,
+	int buf_len,
+	char *default_prompt,
+	int which_hist)
+{
+	char *p;
+
+	clear_message();
+	if ((p = tin_getline(prompt, 0, default_prompt, buf_len, FALSE, which_hist)) == NULL) {
+		FreeAndNull(*buf);
+		clear_message();
+		return FALSE;
+	}
+	FreeIfNeeded(*buf);
+	*buf = my_strdup(p);
+	clear_message();
+	return TRUE;
+}
+
+
 /*
  *  prompt_menu_string
  *  get a string from the user
@@ -135,7 +168,7 @@ t_bool
 prompt_menu_string(
 	int line,
 	const char *prompt,
-	char *var)
+	char **var)
 {
 	char *p;
 
@@ -146,10 +179,11 @@ prompt_menu_string(
 	 */
 	/* fflush(stdin); */
 	MoveCursor(line, 0);
-	if ((p = tin_getline(prompt, 0, var, 0, FALSE, HIST_OTHER)) == NULL)
+	if ((p = tin_getline(prompt, 0, *var, 0, FALSE, HIST_OTHER)) == NULL)
 		return FALSE;
 
-	strcpy(var, p);
+	FreeIfNeeded(*var);
+	*var = my_strdup(p);
 	return TRUE;
 }
 
@@ -466,19 +500,33 @@ prompt_option_list(
  */
 t_bool
 prompt_option_string(
-	enum option_enum option) /* return value is always ignored */
+	enum option_enum option)
 {
-	char *variable = OPT_STRING_list[option_table[option].var_index];
+	char *variable;
+	char *old_value;
 	char prompt[LEN];
-	char old_value[LEN];
+	t_bool is_same;
 
-	STRCPY(old_value, variable);
+	if (*OPT_STRING_list[option_table[option].var_index])
+		variable = my_strdup(*OPT_STRING_list[option_table[option].var_index]);
+	else
+		variable = my_strdup("");
+	old_value = my_strdup(variable);
 	show_menu_help(option_table[option].txt->help);
 	fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
-	if (prompt_menu_string(option_row(option), prompt, variable))
-		return strcmp(old_value, variable) ? TRUE : FALSE;
-	else
+	if (prompt_menu_string(option_row(option), prompt, &variable)) {
+		if (!option_is_default(option))
+			FreeIfNeeded(*OPT_STRING_list[option_table[option].var_index]);
+		*OPT_STRING_list[option_table[option].var_index] = my_strdup(variable);
+		is_same = strcmp(old_value, variable) ? TRUE : FALSE;
+		free(old_value);
+		free(variable);
+		return is_same;
+	} else {
+		free(old_value);
+		free(variable);
 		return FALSE;
+	}
 }
 
 
@@ -609,6 +657,36 @@ prompt_string_default(
 	}
 
 	return def;					/* use the default */
+}
+
+
+char *
+prompt_string_ptr_default(
+	const char *prompt,
+	char **def,
+	const char *failtext,
+	int history)
+{
+	char pattern[LEN];
+
+	clear_message();
+
+	if (!prompt_string(prompt, pattern, history)) {
+		clear_message();
+		return NULL;
+	}
+
+	if (pattern[0] != '\0')	{		/* got a string - make it the default */
+		FreeIfNeeded(*def);
+		*def = my_strdup(pattern);
+	} else {
+		if (!*def || **def == '\0') {		/* no default - give up */
+			error_message(2, "%s", failtext);
+			return NULL;
+		}
+	}
+
+	return *def;					/* use the default */
 }
 
 

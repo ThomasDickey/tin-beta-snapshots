@@ -3,7 +3,7 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2024-07-11
+ *  Updated   : 2024-08-06
  *  Notes     :
  *
  * Copyright (c) 2003-2024 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
@@ -62,7 +62,7 @@ slrnface_start(
 	int n;
 	pid_t pid, pidst;
 	size_t pathlen;
-	struct utsname u;
+	const char *hn;
 
 	if (tinrc.use_slrnface == FALSE)
 		return;
@@ -99,7 +99,6 @@ slrnface_start(
 		return;
 	}
 
-	uname(&u);
 	ptr = get_val("XDG_RUNTIME_DIR", get_val("HOME", NULL));
 	/*
 	 * TODO:
@@ -146,11 +145,12 @@ slrnface_start(
 	}
 	free(fifo);
 	pid = getpid();
-	if ((n = snprintf(NULL, 0, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) pid)) < 0)
+	hn = get_host_name();
+	if ((n = snprintf(NULL, 0, "%s/.slrnfaces/%s.%ld", ptr, hn, (long) pid)) < 0)
 		return;
 	pathlen = (size_t) n + 1;
 	fifo = my_malloc(pathlen);
-	if (snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) pid) != n) {
+	if (snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, hn, (long) pid) != n) {
 		error_message(2, "%s", _(txt_xface_error_construct_fifo_name));
 		unlink(fifo);
 		free(fifo);

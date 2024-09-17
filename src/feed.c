@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2024-07-28
+ *  Updated   : 2024-09-10
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -102,7 +102,7 @@ get_save_filename(
 	/*
 	 * Group attribute savefile overrides tinrc default savefile
 	 */
-	my_strncpy(default_savefile, (group->attribute->savefile ? group->attribute->savefile : tinrc.default_save_file), sizeof(default_savefile) - 1);
+	my_strncpy(default_savefile, (group->attribute->savefile && *group->attribute->savefile ? *group->attribute->savefile : BlankIfNull(tinrc.default_save_file)), sizeof(default_savefile) - 1);
 
 	/*
 	 * We don't ask when auto'S'aving
@@ -118,9 +118,10 @@ get_save_filename(
 	/*
 	 * Update tinrc.default_save_file if changed
 	 */
-	if (*filename)
-		my_strncpy(tinrc.default_save_file, filename, sizeof(tinrc.default_save_file) - 1);
-	else {
+	if (*filename) {
+		FreeIfNeeded(tinrc.default_save_file);
+		tinrc.default_save_file = my_strdup(filename);
+	} else {
 		/*
 		 * None chosen (or AUTOSAVING), use tinrc default
 		 */
@@ -164,7 +165,7 @@ expand_feed_filename(
 	if ((ret == 0) || !(strrchr(outpath, '/'))) {
 		char buf[PATH_LEN];
 
-		if (!strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : curr_group->attribute->savedir, buf, sizeof(buf), curr_group, FALSE))
+		if (!strfpath(cmdline.savedir ? cmdline.savedir : *curr_group->attribute->savedir, buf, sizeof(buf), curr_group, FALSE))
 			joinpath(buf, sizeof(buf), homedir, DEFAULT_SAVEDIR);
 		joinpath(outpath, outpath_len, buf, path);
 		return FALSE;
@@ -313,7 +314,7 @@ get_feed_key(
 			{
 				char *tmp = fmt_string(_(txt_feed_pattern), tinrc.default_pattern);
 
-				if (!(prompt_string_default(tmp, tinrc.default_pattern, _(txt_no_match), HIST_REGEX_PATTERN))) {
+				if (!(prompt_string_ptr_default(tmp, &tinrc.default_pattern, _(txt_no_match), HIST_REGEX_PATTERN))) {
 					free(tmp);
 					return GLOBAL_ABORT;
 				}
@@ -625,7 +626,7 @@ feed_articles(
 		/* Setup mail - get address to mail to */
 		case FEED_MAIL:
 			prompt = fmt_string(_(txt_mail_art_to), cCOLS - (strwidth(_(txt_mail_art_to)) > cCOLS - 30 ? cCOLS - 30 : strwidth(_(txt_mail_art_to)) + 30), tinrc.default_mail_address);
-			if (!(prompt_string_default(prompt, tinrc.default_mail_address, _(txt_no_mail_address), HIST_MAIL_ADDRESS))) {
+			if (!(prompt_string_ptr_default(prompt, &tinrc.default_mail_address, _(txt_no_mail_address), HIST_MAIL_ADDRESS))) {
 				free(prompt);
 				return -1;
 			}
@@ -636,7 +637,7 @@ feed_articles(
 		/* Setup pipe - get pipe-to command and open the pipe */
 		case FEED_PIPE:
 			prompt = fmt_string(_(txt_pipe_to_command), cCOLS - (strwidth(_(txt_pipe_to_command)) > cCOLS - 30 ? cCOLS - 30 : strwidth(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
-			if (!(prompt_string_default(prompt, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND))) {
+			if (!(prompt_string_ptr_default(prompt, &tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND))) {
 				free(prompt);
 				return -1;
 			}

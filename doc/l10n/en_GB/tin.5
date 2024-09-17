@@ -1292,11 +1292,12 @@ the server.
 .RS
 At startup, \fB\%tin\fP(1)  reads in the configuration file. This contains a
 list of "\fIvariable\fP=\fIvalue\fP" pairs that can be used to configure the way
-\fB\%tin\fP(1)  works. If it exists, the global configuration file,
-\fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fP is read first. After that, the user's own
-configuration file \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP is read. The global
-file is useful for distributing system\-wide defaults to new users who have
-no private tinrc yet (see also \fB/etc/tin/tin.defaults\fP).
+\fB\%tin\fP(1)  works. \fIvalue\fP strings are limited to 1022 chars and will be
+discarded if exceeding this limit. If it exists, the global configuration
+file, \fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fP is read first. After that, the
+user's own configuration file \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP is
+read. The global file is useful for distributing system\-wide defaults to new
+users who have no private tinrc yet (see also \fB/etc/tin/tin.defaults\fP).
 .TP 
 \fBabbreviate_groupname\fP
 If ON abbreviate long newsgroup names at group selection level and article

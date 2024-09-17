@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-08-01
+ *  Updated   : 2024-09-10
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -106,8 +106,6 @@
 #	define ADD_MSG_ID_HEADER()
 #endif /* EVIL_INSIDE */
 
-#define MAX_MSG_HEADERS	20	/* shouldn't this be dynamic? */
-
 /* Different posting types for post_loop() */
 #define POST_QUICK		0
 #define POST_POSTPONED	1
@@ -128,7 +126,8 @@ static char reply_to[LEN];		/* Reply-To: address */
 static struct msg_header {
 	char *name;
 	char *text;
-} msg_headers[MAX_MSG_HEADERS];
+	struct msg_header *next;
+} *msg_headers = NULL;
 
 static t_posted *post_hist_list;
 
@@ -143,7 +142,7 @@ static int append_mail(const char *the_article, const char *addr, const char *th
 static int build_post_hist_list(void);
 static int check_article_to_be_posted(const char *the_article, int *art_type, struct t_group **group, t_bool art_unchanged, t_bool use_cache);
 static int mail_loop(const char *filename, t_function func, char *subject, const char *groupname, const char *prompt, FILE *articlefp);
-static int msg_add_x_body(FILE *fp_out, const char *body);
+static int msg_add_x_body(FILE *fp_out, char * const *body);
 static int msg_write_headers(FILE *fp);
 static int post_loop(int type, struct t_group *group, t_function func, const char *posting_msg, int art_type, int offset);
 static int process_post_hist(int n);
@@ -174,9 +173,8 @@ static void find_reply_to_addr(char *from_addr, t_bool parse, struct t_header *h
 static void free_post_hist_list(void);
 static void join_references(char *buffer, const char *oldrefs, const char *newref);
 static void msg_add_header(const char *name, const char *text);
-static void msg_add_x_headers(const char *headers);
+static void msg_add_x_headers(char * const *headers);
 static void msg_free_headers(void);
-static void msg_init_headers(void);
 static void post_postponed_article(int ask, const char *subject, const char *newsgroups);
 static void postpone_article(const char *the_article);
 static void setup_check_article_screen(int *init);
@@ -342,28 +340,18 @@ backup_article(
 
 
 static void
-msg_init_headers(
-	void)
-{
-	int i;
-
-	for (i = 0; i < MAX_MSG_HEADERS; i++) {
-		msg_headers[i].name = NULL;
-		msg_headers[i].text = NULL;
-	}
-}
-
-
-static void
 msg_free_headers(
 	void)
 {
-	int i;
+	struct msg_header *curr, *next;
 
-	for (i = 0; i < MAX_MSG_HEADERS; i++) {
-		FreeAndNull(msg_headers[i].name);
-		FreeAndNull(msg_headers[i].text);
+	for (curr = msg_headers; curr != NULL; curr = next) {
+		next = curr->next;
+		free(curr->name);
+		FreeIfNeeded(curr->text);
+		free(curr);
 	}
+	msg_headers = NULL;
 }
 
 
@@ -376,7 +364,7 @@ msg_add_header(
 	char *ptr;
 	char *new_name;
 	char *new_text;
-	int i;
+	struct msg_header *hdr;
 	t_bool done = FALSE;
 
 	if (name) {
@@ -390,9 +378,10 @@ msg_add_header(
 		/*
 		 * Check if header already exists and if update text
 		 */
-		for (i = 0; i < MAX_MSG_HEADERS && msg_headers[i].name; i++) {
-			if (STRCMPEQ(msg_headers[i].name, new_name)) {
-				FreeAndNull(msg_headers[i].text);
+		hdr = msg_headers;
+		while (hdr && hdr->name) {
+			if (STRCMPEQ(hdr->name, new_name)) {
+				FreeAndNull(hdr->text);
 				if (text) {
 					for (p = text; *p && (*p == ' ' || *p == '\t'); p++)
 						;
@@ -400,18 +389,28 @@ msg_add_header(
 					if ((ptr = strrchr(new_text, '\n')) != NULL)
 						*ptr = '\0';
 
-					msg_headers[i].text = my_strdup(new_text);
+					hdr->text = my_strdup(new_text);
 					free(new_text);
 				}
 				done = TRUE;
 			}
+			hdr = hdr->next;
 		}
 
 		/*
 		 * if header does not exist then add it
 		 */
-		if (i < MAX_MSG_HEADERS && !(done || msg_headers[i].name)) {
-			msg_headers[i].name = my_strdup(new_name);
+		if (!done) {
+			if ((hdr = msg_headers) == NULL)
+				hdr = msg_headers = my_calloc(1, sizeof(struct msg_header));
+			else {
+				while (hdr->next)
+					hdr = hdr->next;
+
+				hdr->next = my_calloc(1, sizeof(struct msg_header));
+				hdr = hdr->next;
+			}
+			hdr->name = my_strdup(new_name);
 			if (text) {
 				for (p = text; *p && (*p == ' ' || *p == '\t'); p++)
 					;
@@ -419,7 +418,7 @@ msg_add_header(
 				if ((ptr = strrchr(new_text, '\n')) != NULL)
 					*ptr = '\0';
 
-				msg_headers[i].text = my_strdup(new_text);
+				hdr->text = my_strdup(new_text);
 				free(new_text);
 			}
 		}
@@ -432,21 +431,20 @@ static int
 msg_write_headers(
 	FILE *fp)
 {
-	int i;
 	int wrote = 1;
 	char *p;
+	struct msg_header *hdr = msg_headers;
 
-	for (i = 0; i < MAX_MSG_HEADERS; i++) {
-		if (msg_headers[i].name) {
-			fprintf(fp, "%s: %s\n", msg_headers[i].name, BlankIfNull(msg_headers[i].text));
-			wrote++;
-			if ((p = msg_headers[i].text)) {
-				while ((p = strchr(p, '\n'))) {
-					p++;
-					wrote++;
-				}
+	while (hdr) {
+		fprintf(fp, "%s: %s\n", hdr->name, BlankIfNull(hdr->text));
+		wrote++;
+		if ((p = hdr->text)) {
+			while ((p = strchr(p, '\n'))) {
+				p++;
+				wrote++;
 			}
 		}
+		hdr = hdr->next;
 	}
 	fputc('\n', fp);
 
@@ -2099,8 +2097,14 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_warn_header_line_groups_contd), "Followup-To");
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 
-		if (warnings_catbp & CA_WARNING_MULTI_ADDRESSES_FROM)
+		if (warnings_catbp & CA_WARNING_MULTI_ADDRESSES_FROM) {
 			my_fprintf(stderr, _(txt_warn_multiple_addresses), "From");
+#ifndef FORGERY
+			if (*global_defaults_file && disable_sender)
+				my_fprintf(stderr, _(txt_warn_sender_required_but_disabled), global_defaults_file);
+#endif /* !FORGERY */
+		}
+
 		if (warnings_catbp & CA_WARNING_MULTI_ADDRESSES_REPLYTO)
 			my_fprintf(stderr, _(txt_warn_multiple_addresses), "Reply-To");
 		if (warnings_catbp & CA_WARNING_MULTI_ADDRESSES_TO)
@@ -2154,7 +2158,7 @@ check_article_to_be_posted(
 						my_fprintf(stderr, _(txt_warn_grp_renamed), newsgroups[i], psGrp->aliasedto);
 						warnings++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
-					} else
+					} else /* TODO: strunc(description)? */
 						my_fprintf(stderr, "  %s\t %s\n", newsgroups[i], BlankIfNull(psGrp->description));
 				} else {
 #ifdef HAVE_FASCIST_NEWSADMIN
@@ -2212,7 +2216,7 @@ check_article_to_be_posted(
 								my_fprintf(stderr, _(txt_warn_grp_renamed), followupto[i], psGrp->aliasedto);
 								warnings++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
-							} else
+							} else /* TODO: strunc(description)? */
 								my_fprintf(stderr, "  %s\t %s\n", followupto[i], BlankIfNull(psGrp->description));
 						} else {
 							if (STRCMPEQ("poster", followupto[i]))
@@ -2286,7 +2290,10 @@ check_mailbox_list(
 	do {
 		n++;
 		next_from = split_mailbox_list(curr_from);
-		i = gnksa_check_from(curr_from);
+		i = gnksa_check_from(str_trim(curr_from));
+#if 0
+my_fprintf(stderr, "\"%s\" %d %s\n", curr_from, i, gnksa_strerror(i));
+#endif /* 0 */
 		if (i > GNKSA_OK && i < GNKSA_MISSING_REALNAME) {
 			StartInverse();
 			my_fprintf(stderr, _(txt_error_bad_address_in), header);
@@ -2686,10 +2693,11 @@ post_article_done:
 					break;
 			}
 
-			my_strncpy(tinrc.default_post_subject, header.subj, sizeof(tinrc.default_post_subject) - 1);
+			FreeIfNeeded(tinrc.default_post_subject);
+			tinrc.default_post_subject = my_strdup(header.subj);
 		}
 
-		if (*tinrc.posted_articles_file && type != POST_REPOST) { /* TODO: either document the !POST_REPOST logic or remove it */
+		if (tinrc.posted_articles_file && *tinrc.posted_articles_file && type != POST_REPOST) { /* TODO: either document the !POST_REPOST logic or remove it */
 			char a_mailbox[PATH_LEN];
 			char posted_msgs_file[PATH_LEN];
 
@@ -2697,7 +2705,7 @@ post_article_done:
 				STRCPY(posted_msgs_file, tinrc.posted_articles_file);
 			else {
 				if (!strcmp(tinrc.posted_articles_file, posted_msgs_file)) /* only prefix tinrc.posted_articles_file if it was a plain file without path */
-					joinpath(posted_msgs_file, sizeof(posted_msgs_file), (cmdline.args & CMDLINE_MAILDIR) ? cmdline.maildir : (group ? group->attribute->maildir : tinrc.maildir), tinrc.posted_articles_file);
+					joinpath(posted_msgs_file, sizeof(posted_msgs_file), cmdline.maildir ? cmdline.maildir : (group && group->attribute->maildir && *group->attribute->maildir) ? *group->attribute->maildir : tinrc.maildir, tinrc.posted_articles_file);
 			}
 
 			/* re-strfpath as maildir may also need expansion */
@@ -2771,7 +2779,7 @@ check_moderated(
 			return NULL;
 		}
 
-		if (group->attribute->mailing_list != NULL)
+		if (group->attribute->mailing_list && *group->attribute->mailing_list)
 			*art_type = GROUP_TYPE_MAIL;
 
 		if (!can_post && *art_type == GROUP_TYPE_NEWS) {
@@ -2826,14 +2834,13 @@ create_normal_article_headers(
 	tmp2 = strunc(tinrc.default_post_subject, DISPLAY_SUBJECT_LEN);
 
 	prompt = fmt_string(_(txt_post_subject), tmp2);
+	free(tmp2);
 
-	if (!(prompt_string_default(prompt, tinrc.default_post_subject, _(txt_no_subject), HIST_POST_SUBJECT))) {
+	if (!(prompt_string_ptr_default(prompt, &tinrc.default_post_subject, _(txt_no_subject), HIST_POST_SUBJECT))) {
 		free(prompt);
-		free(tmp2);
 		return FALSE;
 	}
 	free(prompt);
-	free(tmp2);
 
 	if ((fp = fopen(article_name, "w")) == NULL) {
 		perror_message(_(txt_cannot_open), article_name);
@@ -2857,15 +2864,15 @@ create_normal_article_headers(
 	msg_add_header("Subject", tinrc.default_post_subject);
 
 	if (art_type == GROUP_TYPE_MAIL)
-		msg_add_header("To", group->attribute->mailing_list);
+		msg_add_header("To", group->attribute->mailing_list ? BlankIfNull(*group->attribute->mailing_list) : "");
 	else {
 		msg_add_header("Newsgroups", newsgroups);
 		ADD_MSG_ID_HEADER();
 	}
 
 	if (art_type == GROUP_TYPE_NEWS) {
-		if (group->attribute->followup_to != NULL)
-			msg_add_header("Followup-To", group->attribute->followup_to);
+		if (group->attribute->followup_to && *group->attribute->followup_to)
+			msg_add_header("Followup-To", *group->attribute->followup_to);
 		else {
 			if (group->attribute->prompt_followupto)
 				msg_add_header("Followup-To", "");
@@ -2875,8 +2882,8 @@ create_normal_article_headers(
 	if (*reply_to)
 		msg_add_header("Reply-To", reply_to);
 
-	if (group->attribute->organization != NULL)
-		msg_add_header("Organization", random_organization(group->attribute->organization));
+	if (group->attribute->organization && *group->attribute->organization)
+		msg_add_header("Organization", random_organization(*group->attribute->organization));
 
 	if (*my_distribution && art_type == GROUP_TYPE_NEWS)
 		msg_add_header("Distribution", my_distribution);
@@ -2910,7 +2917,6 @@ quick_post_article(
 	int art_type = GROUP_TYPE_NEWS;
 	struct t_group *group;
 
-	msg_init_headers();
 	ClearScreen();
 
 	/*
@@ -3215,8 +3221,6 @@ post_article(
 	int art_type = GROUP_TYPE_NEWS;
 	struct t_group *group;
 	t_bool redraw_screen = FALSE;
-
-	msg_init_headers();
 
 	/*
 	 * Check that we can post to all the groups we want to
@@ -3537,7 +3541,6 @@ post_response(
 	char line[HEADER_LEN];
 #endif /* FORGERY */
 
-	msg_init_headers();
 	wait_message(0, _(txt_post_a_followup));
 
 	/*
@@ -3651,15 +3654,15 @@ post_response(
 		if (group && group->attribute->prompt_followupto)
 			msg_add_header("Followup-To", (strchr(note_h.followup, ',') != NULL) ? note_h.followup : "");
 	} else {
-		if (group && group->attribute->mailing_list) {
-			msg_add_header("To", group->attribute->mailing_list);
+		if (group && group->attribute->mailing_list && *group->attribute->mailing_list) {
+			msg_add_header("To", *group->attribute->mailing_list);
 			art_type = GROUP_TYPE_MAIL;
 		} else {
 			msg_add_header("Newsgroups", note_h.newsgroups);
 			if (group && group->attribute->prompt_followupto)
 				msg_add_header("Followup-To", (strchr(note_h.newsgroups, ',') != NULL) ? note_h.newsgroups : "");
-			if (group && group->attribute->followup_to != NULL)
-				msg_add_header("Followup-To", group->attribute->followup_to);
+			if (group && group->attribute->followup_to && *group->attribute->followup_to)
+				msg_add_header("Followup-To", *group->attribute->followup_to);
 			else {
 				if (strchr(note_h.newsgroups, ','))
 					msg_add_header("Followup-To", note_h.newsgroups);
@@ -3678,8 +3681,8 @@ post_response(
 	} else
 		msg_add_header("References", BlankIfNull(note_h.messageid));
 
-	if (group && group->attribute->organization != NULL)
-		msg_add_header("Organization", random_organization(group->attribute->organization));
+	if (group && group->attribute->organization && *group->attribute->organization)
+		msg_add_header("Organization", random_organization(*group->attribute->organization));
 
 	if (*reply_to)
 		msg_add_header("Reply-To", reply_to);
@@ -3692,19 +3695,19 @@ post_response(
 			msg_add_header("Distribution", my_distribution);
 	}
 
-	if (group && group->attribute->x_headers)
+	if (group)
 		msg_add_x_headers(group->attribute->x_headers);
 
 	start_line_offset = msg_write_headers(fp) + 1;
 	msg_free_headers();
-	if (group && group->attribute->x_body)
+	if (group)
 		start_line_offset += msg_add_x_body(fp, group->attribute->x_body);
 
 	if (copy_text) {
 		if (arts[respnum].xref && is_crosspost(arts[respnum].xref)) {
 			if (strfquote(group ? group->name : groupname, respnum, buf, sizeof(buf), tinrc.xpost_quote_format))
 				fprintf(fp, "%s\n", buf);
-		} else if (strfquote(groupname, respnum, buf, sizeof(buf), (group && group->attribute->news_quote_format != NULL) ? group->attribute->news_quote_format : tinrc.news_quote_format))
+		} else if (strfquote(groupname, respnum, buf, sizeof(buf), group && group->attribute->news_quote_format ? *group->attribute->news_quote_format : tinrc.news_quote_format))
 			fprintf(fp, "%s\n", buf);
 		start_line_offset++;
 
@@ -3726,7 +3729,7 @@ post_response(
 			}
 		}
 		if (with_headers && raw_data)
-			copy_body(pgart.raw, fp, (group ? group->attribute->quote_chars : tinrc.quote_chars), initials, TRUE);
+			copy_body(pgart.raw, fp, group && group->attribute->quote_chars ? *group->attribute->quote_chars : tinrc.quote_chars, initials, TRUE);
 		else {
 			if (raw_data) {
 				long offset = 0L;
@@ -3739,7 +3742,7 @@ post_response(
 						break;
 				}
 				if (fseek(pgart.raw, offset, SEEK_SET) != -1)
-					copy_body(pgart.raw, fp, (group ? group->attribute->quote_chars : tinrc.quote_chars), initials, TRUE);
+					copy_body(pgart.raw, fp, group && group->attribute->quote_chars ? *group->attribute->quote_chars : tinrc.quote_chars, initials, TRUE);
 				else {
 #ifdef DEBUG
 					/*
@@ -3776,7 +3779,7 @@ post_response(
 						goto pout;
 					}
 				}
-				copy_body(pgart.cooked, fp, (group ? group->attribute->quote_chars : tinrc.quote_chars), initials, FALSE);
+				copy_body(pgart.cooked, fp, group && group->attribute->quote_chars ? *group->attribute->quote_chars : tinrc.quote_chars, initials, FALSE);
 			}
 		}
 	} else /* !copy_text */
@@ -3811,7 +3814,6 @@ create_mail_headers(
 {
 	FILE *fp;
 
-	msg_init_headers();
 	joinpath(filename, filename_len, homedir, suffix);
 
 #ifdef APPEND_PID
@@ -3835,12 +3837,12 @@ create_mail_headers(
 		char from_buf[HEADER_LEN];
 		char *from_address;
 
-		if (curr_group && curr_group->attribute && curr_group->attribute->from && strlen(curr_group->attribute->from))
-			from_address = curr_group->attribute->from;
+		if (curr_group && curr_group->attribute && curr_group->attribute->from && *curr_group->attribute->from)
+			from_address = *curr_group->attribute->from;
 		else /* i.e. called from select.c without any groups */
 			from_address = tinrc.mail_address;
 
-		if ((from_address == NULL) || !strlen(from_address)) {
+		if (from_address == NULL || !*from_address) {
 			get_from_name(from_buf, (struct t_group *) 0);
 			from_address = &from_buf[0];
 		} /* from_address is now always a valid pointer to a string */
@@ -3869,10 +3871,10 @@ create_mail_headers(
 				msg_add_header("Bcc", strlen(from_address) ? from_address : userid);
 		}
 
-		if (curr_group && curr_group->attribute && curr_group->attribute->fcc && strlen(curr_group->attribute->fcc))
-			msg_add_header("Fcc", curr_group->attribute->fcc);
+		if (curr_group && curr_group->attribute && curr_group->attribute->fcc && strlen(*curr_group->attribute->fcc))
+			msg_add_header("Fcc", *curr_group->attribute->fcc);
 
-		if (*default_organization)
+		if (default_organization && *default_organization)
 			msg_add_header("Organization", random_organization(default_organization));
 
 		if (extra_hdrs) {
@@ -3888,7 +3890,7 @@ create_mail_headers(
 			msg_add_header("X-Newsgroups", extra_hdrs->newsgroups);
 		}
 
-		if (curr_group && curr_group->attribute && curr_group->attribute->x_headers && strlen(curr_group->attribute->x_headers))
+		if (curr_group && curr_group->attribute)
 			msg_add_x_headers(curr_group->attribute->x_headers);
 	}
 	start_line_offset = msg_write_headers(fp) + 1;
@@ -3953,25 +3955,33 @@ mail_loop(
 				}
 
 #ifdef CHARSET_CONVERSION
-				/*
-				 * data in file is unencoded in tinrc.mm_local_charset
-				 * temporary set undeclared_charset accordingly
-				 */
-				if (curr_group->attribute->undeclared_charset) {
-					curr_ucs = my_strdup(curr_group->attribute->undeclared_charset);
-					free(curr_group->attribute->undeclared_charset);
- 				}
-				curr_group->attribute->undeclared_charset = my_strdup(tinrc.mm_local_charset);
+				if (group != NULL) {
+					/*
+					 * data in file is unencoded in tinrc.mm_local_charset
+					 * temporary set undeclared_charset accordingly
+					 */
+					if (group->attribute->undeclared_charset && *group->attribute->undeclared_charset) {
+						curr_ucs = my_strdup(*group->attribute->undeclared_charset);
+						free(*group->attribute->undeclared_charset);
+					}
+					if (!group->attribute->undeclared_charset)
+						group->attribute->undeclared_charset = my_malloc(sizeof(char *));
+					*group->attribute->undeclared_charset = my_strdup(tinrc.mm_local_charset);
+				}
 #endif /* CHARSET_CONVERSION */
 
 				parse_rfc822_headers(&hdr, fp, NULL);
 				fclose(fp);
 
 #ifdef CHARSET_CONVERSION
-				/* and restore original value */
-				FreeAndNull(curr_group->attribute->undeclared_charset);
-				if (curr_ucs)
-					curr_group->attribute->undeclared_charset = my_strdup(curr_ucs);
+				if (group != NULL) {
+					/* and restore original value */
+					FreeAndNull(*group->attribute->undeclared_charset);
+					if (curr_ucs)
+						*group->attribute->undeclared_charset = my_strdup(curr_ucs);
+					else
+						FreeAndNull(group->attribute->undeclared_charset);
+				}
 #endif /* CHARSET_CONVERSION */
 
 				if (hdr.subj) {
@@ -4192,7 +4202,7 @@ mail_bug_report(
 	if ((fp = create_mail_headers(nam, sizeof(nam), TIN_BUGREPORT_NAME, bug_addr, subject, NULL)) == NULL)
 		return FALSE;
 
-	start_line_offset += tin_version_info(fp);
+	start_line_offset += tin_version_info(fp, 1);
 #if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
 #	ifdef _AIX
 	fprintf(fp, "BOX1 : %s %s.%s", system_info.sysname, system_info.version, system_info.release);
@@ -4286,6 +4296,7 @@ mail_to_author(
 	int ret_code = POSTED_NONE;
 	int i;
 	struct t_header note_h = pgart.hdr;
+	t_bool spam;
 
 	wait_message(0, _(txt_reply_to_author));
 	find_reply_to_addr(mail_to, FALSE, &pgart.hdr);
@@ -4294,10 +4305,30 @@ mail_to_author(
 
 	do {
 		next_from = split_mailbox_list(curr_from);
-		i = gnksa_check_from(curr_from);
+		if (!tinrc.mail_8bit_header) { /* TODO: group->attribute->... */
+			char *enc, *q = my_strdup("To: "); /* so rfc1522_encode() knows it's structured */
+#	ifdef CHARSET_CONVERSION
+			const char *nwcs = txt_mime_charsets[tinrc.mm_network_charset]; /* TODO: group->attribute->... */
+#	else
+			const char *nwcs = tinrc.mm_charset;
+#	endif /* CHARSET_CONVERSION */
 
-		/* TODO: make gnksa error level configurable */
-		if (check_for_spamtrap(curr_from) || (i > GNKSA_OK && i < GNKSA_ILLEGAL_UNQUOTED_CHAR)) {
+			q = append_to_string(q, str_trim(curr_from));
+			enc = rfc1522_encode(q, nwcs, TRUE);
+			free(q);
+			unfold_header(enc);
+			i = gnksa_check_from(enc + 4); /* strlen("To: ") */
+			/* TODO: gnksa_split_from() and just check addr? */
+			spam = check_for_spamtrap(enc + 4);
+			/* wait_message(2, "\"%s\" %d %s", enc + 4, i, bool_unparse(spam)); */
+			FreeIfNeeded(enc);
+		} else {
+			i = gnksa_check_from(str_trim(curr_from));
+			spam = check_for_spamtrap(curr_from);
+			/* wait_message(2, "\"%s\" %d %s", curr_from, i, bool_unparse(spam)); */
+		}
+
+		if (spam || (i > GNKSA_OK && i < GNKSA_ILLEGAL_UNQUOTED_CHAR)) {
 			char keyabort[MAXKEYLEN], keycont[MAXKEYLEN];
 			t_function func;
 
@@ -4458,7 +4489,7 @@ check_for_spamtrap(
 	char *ptr;
 	char *tmp;
 
-	if (!strlen(tinrc.spamtrap_warning_addresses) || !addr || !*addr)
+	if (!tinrc.spamtrap_warning_addresses || !*tinrc.spamtrap_warning_addresses || !addr || !*addr)
 		return FALSE;
 
 	tmp = env = my_strdup(tinrc.spamtrap_warning_addresses);
@@ -4534,8 +4565,6 @@ cancel_article(
 	t_bool redraw_screen = FALSE;
 	t_function func;
 	t_function default_func = POST_CANCEL;
-
-	msg_init_headers();
 
 	/*
 	 * Check if news / mail / save group
@@ -4657,8 +4686,8 @@ cancel_article(
 	if (group->moderated == 'm')
 		msg_add_header("Approved", from_name);
 
-	if (group->attribute->organization != NULL)
-		msg_add_header("Organization", random_organization(group->attribute->organization));
+	if (group->attribute->organization && *group->attribute->organization)
+		msg_add_header("Organization", random_organization(*group->attribute->organization));
 
 	if (note_h.distrib)
 		msg_add_header("Distribution", note_h.distrib);
@@ -4807,8 +4836,6 @@ repost_article(
 #endif /* FORGERY */
 	t_function func, default_func = GLOBAL_POST;
 
-	msg_init_headers();
-
 	/*
 	 * remove duplicates from Newsgroups header
 	 */
@@ -4823,7 +4850,7 @@ repost_article(
 	/*
 	 * check for GROUP_TYPE_MAIL
 	 */
-	if (group->attribute->mailing_list)
+	if (group->attribute->mailing_list && *group->attribute->mailing_list)
 		art_type = GROUP_TYPE_MAIL;
 
 	if (art_type == GROUP_TYPE_MAIL && supersede) {
@@ -4894,8 +4921,8 @@ repost_article(
 	}
 	msg_add_header("Subject", note_h.subj);
 
-	if (group->attribute->mailing_list)
-		msg_add_header("To", group->attribute->mailing_list);
+	if (group->attribute->mailing_list && *group->attribute->mailing_list)
+		msg_add_header("To", *group->attribute->mailing_list);
 	else {
 		msg_add_header("Newsgroups", groupname);
 		ADD_MSG_ID_HEADER();
@@ -4906,9 +4933,9 @@ repost_article(
 		msg_add_header("References", buf);
 	}
 	if (NotSuperseding) {
-		if (group->attribute->organization != NULL)
-			msg_add_header("Organization", random_organization(group->attribute->organization));
-		else if (*default_organization)
+		if (group->attribute->organization && *group->attribute->organization)
+			msg_add_header("Organization", random_organization(*group->attribute->organization));
+		else if (default_organization && *default_organization)
 			msg_add_header("Organization", random_organization(default_organization));
 
 		if (*reply_to)
@@ -4921,9 +4948,9 @@ repost_article(
 		if (note_h.org)
 			msg_add_header("Organization", note_h.org);
 		else {
-			if (group->attribute->organization != NULL)
-				msg_add_header("Organization", random_organization(group->attribute->organization));
-			else if (*default_organization)
+			if (group->attribute->organization && *group->attribute->organization)
+				msg_add_header("Organization", random_organization(*group->attribute->organization));
+			else if (default_organization && *default_organization)
 				msg_add_header("Organization", random_organization(default_organization));
 		}
 	}
@@ -5057,7 +5084,7 @@ repost_article(
 
 static void
 msg_add_x_headers(
-	const char *headers)
+	char * const *headers)
 {
 	FILE *fp = NULL;
 	char *ptr;
@@ -5070,11 +5097,11 @@ msg_add_x_headers(
 	t_bool is_pipe = FALSE;
 #endif /* !DONT_HAVE_PIPING */
 
-	if (!headers)
+	if (!headers || !*headers || !**headers)
 		return;
 
-	if (headers[0] != '/' && headers[0] != '~' && headers[0] != '!') {
-		STRCPY(line, headers);
+	if (*headers[0] != '/' && *headers[0] != '~' && *headers[0] != '!') {
+		STRCPY(line, *headers);
 		if ((ptr = strchr(line, ':')) != NULL) {
 			*ptr++ = '\0';
 			if (*ptr == ' ' || *ptr == '\t') {
@@ -5087,8 +5114,8 @@ msg_add_x_headers(
 		 * without this else a "x_headers=name" without a ':' would be
 		 * treated as a filename in the current dir - IMHO not very useful
 		 */
-		if (!strfpath(headers, file, sizeof(file), &CURR_GROUP, FALSE))
-			STRCPY(file, headers);
+		if (!strfpath(*headers, file, sizeof(file), &CURR_GROUP, FALSE))
+			STRCPY(file, *headers);
 
 #ifndef DONT_HAVE_PIPING
 		if (file[0] == '!') {
@@ -5147,7 +5174,7 @@ msg_add_x_headers(
 static int
 msg_add_x_body(
 	FILE *fp_out,
-	const char *body)
+	char * const *body)
 {
 	FILE *fp = NULL;
 	char *ptr;
@@ -5158,23 +5185,23 @@ msg_add_x_body(
 	t_bool is_pipe = FALSE;
 #endif /* !DONT_HAVE_PIPING */
 
-	if (!body || !fp_out)
+	if (!body || !*body || !**body || !fp_out)
 		return 0;
 
-	if (body[0] != '/' && body[0] != '~' && body[0] != '!') {
+	if (*body[0] != '/' && *body[0] != '~' && *body[0] != '!') {
 		/*
 		 * copy string as is, no \-format expansion
 		 * if \n is needed the text must come from a file or command
 		 */
-		STRCPY(line, body);
+		STRCPY(line, *body);
 		if ((ptr = strrchr(line, '\n')) != NULL)
 			*ptr = '\0';
 
 		fprintf(fp_out, "%s\n", line);
 		wrote++;
 	} else {
-		if (!strfpath(body, file, sizeof(file), &CURR_GROUP, FALSE))
-			STRCPY(file, body);
+		if (!strfpath(*body, file, sizeof(file), &CURR_GROUP, FALSE))
+			STRCPY(file, *body);
 
 #ifndef DONT_HAVE_PIPING
 		if (file[0] == '!') {
@@ -5332,9 +5359,9 @@ insert_from_header(
 	snprintf(outfile, sizeof(outfile), "%s.%ld", infile, (long) process_id);
 	if ((fp_out = fopen(outfile, "w")) != NULL) {
 		strcpy(from_name, "From: ");
-		if (*tinrc.mail_address) /* FIXME: avoid hardcoded length */
+		if (tinrc.mail_address && *tinrc.mail_address) { /* FIXME: avoid hardcoded length */
 			snprintf(from_name + 6, sizeof(from_name) - 7, "%.1016s", tinrc.mail_address);
-		else
+		} else
 			get_from_name(from_name + 6, (struct t_group *) 0);
 
 #	ifdef DEBUG
@@ -5567,25 +5594,33 @@ submit_mail_file(
 	if (insert_from_header(file)) {
 		if ((fp = tin_fopen(file, "r"))) {
 #ifdef CHARSET_CONVERSION
-			/*
-			 * data in file is unencoded in tinrc.mm_local_charset
-			 * temporary set undeclared_charset accordingly
-			 */
-			 if (group->attribute->undeclared_charset) {
-			 	curr_ucs = my_strdup(group->attribute->undeclared_charset);
-			 	free(group->attribute->undeclared_charset);
+			if (group != NULL) {
+				/*
+				 * data in file is unencoded in tinrc.mm_local_charset
+				 * temporary set undeclared_charset accordingly
+				 */
+				if (group->attribute->undeclared_charset && *group->attribute->undeclared_charset) {
+					curr_ucs = my_strdup(*group->attribute->undeclared_charset);
+					free(*group->attribute->undeclared_charset);
+				}
+				if (!group->attribute->undeclared_charset)
+					group->attribute->undeclared_charset = my_malloc(sizeof(char *));
+				*group->attribute->undeclared_charset = my_strdup(tinrc.mm_local_charset);
 			}
-			group->attribute->undeclared_charset = my_strdup(tinrc.mm_local_charset);
 #endif /* CHARSET_CONVERSION */
 
 			parse_rfc822_headers(&hdr, fp, NULL);
 			fclose(fp);
 
 #ifdef CHARSET_CONVERSION
-			/* and restore original value */
-			FreeAndNull(group->attribute->undeclared_charset);
-			if (curr_ucs)
-				group->attribute->undeclared_charset = my_strdup(curr_ucs);
+			if (group != NULL) {
+				/* and restore original value */
+				FreeAndNull(*group->attribute->undeclared_charset);
+				if (curr_ucs)
+					*group->attribute->undeclared_charset = my_strdup(curr_ucs);
+				else
+					FreeAndNull(group->attribute->undeclared_charset);
+			}
 #endif /* CHARSET_CONVERSION */
 
 			if (get_recipients(&hdr, mail_to, sizeof(mail_to) - 1)) {
@@ -5610,7 +5645,7 @@ submit_mail_file(
 	}
 
 	if (fcc != NULL) {
-		if (mailed && strlen(fcc)) {
+		if (mailed && *fcc) {
 			char a_mailbox[PATH_LEN];
 
 			if (!strfpath(fcc, a_mailbox, sizeof(a_mailbox), group, TRUE))
@@ -5618,7 +5653,7 @@ submit_mail_file(
 			if ((errno = append_mail(file, userid, a_mailbox)))
 				perror_message(_(txt_cannot_open_for_saving), a_mailbox);
 		}
-		FreeIfNeeded(fcc);
+		free(fcc);
 	}
 
 	return mailed;
@@ -5689,14 +5724,14 @@ split_address_list(
 		start = curr;
 		while (len && (*curr != ',')) {
 			switch (*curr) {
-				case '\"':
+				case '"':
 					/* quoted-string area */
 					curr++;
 					len--;
 					dquotes++;
 					while (len && dquotes) {
 						switch (*curr) {
-							case '\"':
+							case '"':
 								/* end of quoted-string */
 								dquotes--;
 								break;
@@ -5713,8 +5748,10 @@ split_address_list(
 								/* nothing special, just step over it */
 								break;
 						}
-						curr++;
-						len--;
+						if (dquotes && len > 0) {
+							curr++;
+							len--;
+						}
 					}
 					break;
 

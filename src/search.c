@@ -46,7 +46,7 @@
 /*
  * local prototypes
  */
-static char *get_search_pattern(t_bool *forward, t_bool repeat, const char *fwd_msg, const char *bwd_msg, char *def, int which_hist);
+static char *get_search_pattern(t_bool *forward, t_bool repeat, const char *fwd_msg, const char *bwd_msg, char **def, int which_hist);
 static int author_search(int i, char *searchbuf);
 static int body_search(int i, char *searchbuf);
 static int subject_search(int i, char *searchbuf);
@@ -99,7 +99,7 @@ get_search_pattern(
 	t_bool repeat,
 	const char *fwd_msg,
 	const char *bwd_msg,
-	char *def,
+	char **def,
 	int which_hist)
 {
 	static char tmpbuf[LEN];	/* Hold the last pattern used */
@@ -108,15 +108,16 @@ get_search_pattern(
 
 	if (repeat) {
 		*forward = last_forward;
-		my_strncpy(def, last_pattern, LEN);
+		FreeIfNeeded(*def);
+		*def = my_strdup(last_pattern);
 	} else {
-		snprintf(tmpbuf, sizeof(tmpbuf), (*forward ? fwd_msg : bwd_msg), def);
+		snprintf(tmpbuf, sizeof(tmpbuf), (*forward ? fwd_msg : bwd_msg), BlankIfNull(*def));
 
-		if (!prompt_string_default(tmpbuf, def, _(txt_no_search_string), which_hist))
+		if (!prompt_string_ptr_default(tmpbuf, def, _(txt_no_search_string), which_hist))
 			return NULL;
 
 		last_forward = *forward;
-		my_strncpy(last_pattern, def, LEN);
+		my_strncpy(last_pattern, *def, LEN);
 
 		/* HIST_BODY_SEARCH doesn't exist, hence last_search is set directly in search_body() */
 		if (which_hist == HIST_AUTHOR_SEARCH)
@@ -134,22 +135,27 @@ get_search_pattern(
 	if (IS_LOCAL_CHARSET("UTF-8")) {
 		char *tmp;
 
-		tmp = normalize(def);
-		my_strncpy(def, tmp, LEN);
+		tmp = normalize(*def);
+		FreeIfNeeded(*def);
+		*def = my_strdup(tmp);
 		free(tmp);
 	}
 #endif /* HAVE_UNICODE_NORMALIZATION */
 
 	if (tinrc.wildcard) {			/* ie, not wildmat() */
-		strcpy(def, quote_wild_whitespace(def));
-		return def;
+		char tmp[LEN];
+
+		STRCPY(tmp, *def);
+		FreeIfNeeded(*def);
+		*def = my_strdup(quote_wild_whitespace(tmp));
+		return *def;
 	}
 
 	/*
 	 * A gross hack to simulate substrings with wildmat()
 	 */
 /* TODO: somehow use REGEX_FMT here? */
-	snprintf(tmpbuf, sizeof(tmpbuf), "*%s*", def);
+	snprintf(tmpbuf, sizeof(tmpbuf), "*%s*", *def);
 	return tmpbuf;
 }
 
@@ -168,7 +174,7 @@ search_config(
 	enum option_enum n = current;
 	enum option_enum result = current;
 
-	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
+	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), &tinrc.default_search_config, HIST_CONFIG_SEARCH)))
 		return result;
 
 	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, REGEX_CASELESS)))
@@ -234,7 +240,7 @@ generic_search(
 	t_url *urlptr;
 	t_posted *phptr;
 
-	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
+	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), &tinrc.default_search_config, HIST_CONFIG_SEARCH)))
 		return result;
 
 	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, REGEX_CASELESS)))
@@ -316,7 +322,7 @@ search_active(
 		return -1;
 	}
 
-	if (!(buf = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_group, HIST_GROUP_SEARCH)))
+	if (!(buf = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), &tinrc.default_search_group, HIST_GROUP_SEARCH)))
 		return -1;
 
 	if (tinrc.wildcard && !(compile_regex(buf, &search_regex, REGEX_CASELESS)))
@@ -605,7 +611,7 @@ search(
 	switch (func) {
 		case GLOBAL_SEARCH_SUBJECT_FORWARD:
 		case GLOBAL_SEARCH_SUBJECT_BACKWARD:
-			if (!(buf = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_subject, HIST_SUBJECT_SEARCH)))
+			if (!(buf = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), &tinrc.default_search_subject, HIST_SUBJECT_SEARCH)))
 				return -1;
 			search_func = subject_search;
 			break;
@@ -613,7 +619,7 @@ search(
 		case GLOBAL_SEARCH_AUTHOR_FORWARD:
 		case GLOBAL_SEARCH_AUTHOR_BACKWARD:
 		default:
-			if (!(buf = get_search_pattern(&forward, repeat, _(txt_author_search_forwards), _(txt_author_search_backwards), tinrc.default_search_author, HIST_AUTHOR_SEARCH)))
+			if (!(buf = get_search_pattern(&forward, repeat, _(txt_author_search_forwards), _(txt_author_search_backwards), &tinrc.default_search_author, HIST_AUTHOR_SEARCH)))
 				return -1;
 			search_func = author_search;
 			break;
@@ -643,7 +649,7 @@ search_article(
 	t_bool wrap = FALSE;
 	t_bool match = FALSE;
 
-	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_art, HIST_ART_SEARCH)))
+	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), &tinrc.default_search_art, HIST_ART_SEARCH)))
 		return 0;
 
 	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, REGEX_CASELESS)))
@@ -763,7 +769,7 @@ search_body(
 			repeat,
 			_(txt_search_body),
 			_(txt_search_body),
-			tinrc.default_search_art,
+			&tinrc.default_search_art,
 			HIST_ART_SEARCH
 	))) return -1;
 

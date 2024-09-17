@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2024-07-30
+ *  Updated   : 2024-09-10
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -49,6 +49,7 @@
 static char *get_charset(char *value);
 static char *get_quoted_string(char *source, char **dest);
 static char *get_token(const char *source);
+static char *quote_display_name(char *name);
 static char *strip_charset(char **value);
 static char *skip_equal_sign(char *source);
 static char *skip_space(char *source);
@@ -657,7 +658,7 @@ get_param(
 }
 
 
-#define IS_RESTRICTED_NAME_FIRST(c) (isalpha(c) || isdigit(c))
+#define IS_RESTRICTED_NAME_FIRST(c) (isalpha((unsigned char) c) || isdigit((unsigned char) c))
 #define IS_RESTRICTED_NAME_CHARS_SUFFIX(c) (IS_RESTRICTED_NAME_FIRST(c) || c == '!' || c == '#' || c == '$' || c == '&' || c == '-' || c == '^' || c == '_')
 #define IS_RESTRICTED_NAME_CHARS(c) (IS_RESTRICTED_NAME_CHARS_SUFFIX(c) || c == '.' || c == '+')
 /*
@@ -672,7 +673,7 @@ get_param(
  *    +- before first dot: restricted-name-first
  *
  * The syntax allows names of up to 127 characters, implementation
- * limits may make such long names problematic.  For this reason,
+ * limits may make such long names problematic. For this reason,
  * the length SHOULD be limited to 64 characters.
  */
 static t_bool
@@ -826,29 +827,28 @@ parse_content_type(
 
 		if (!charset || !*charset) {	/* add default charset if needed */
 #ifdef CHARSET_CONVERSION
-			if (curr_group->attribute->undeclared_charset && validate_charset(curr_group->attribute->undeclared_charset)) {
+			if (curr_group->attribute->undeclared_charset && *curr_group->attribute->undeclared_charset && validate_charset(*curr_group->attribute->undeclared_charset)) {
 				char *charsetheader;
 
-				charsetheader = my_malloc(strlen(curr_group->attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
-				sprintf(charsetheader, "charset=%s", curr_group->attribute->undeclared_charset);
+				charsetheader = my_malloc(strlen(*curr_group->attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
+				sprintf(charsetheader, "charset=%s", *curr_group->attribute->undeclared_charset);
 				parse_params(charsetheader, content);
 				free(charsetheader);
 				content->mime_hints.flags |= MIME_CHARSET_UNDECLARED;
 			} else
 #endif /* CHARSET_CONVERSION */
-			{
 				parse_params(defparms, content);
+
+		} else {
+#ifdef CHARSET_CONVERSION
+			if (!(content->mime_hints.flags & MIME_CHARSET_UNSUPPORTED) && *charset)
+#endif /* CHARSET_CONVERSION */
+			{
+				content->mime_hints.flags &= ~MIME_CHARSET_MISSING;
+				content->mime_hints.charset = my_strdup(charset);
 			}
 		}
-#ifdef CHARSET_CONVERSION
-		else if (!(content->mime_hints.flags & MIME_CHARSET_UNSUPPORTED) && *charset)
-#else
-		else if (*charset)
-#endif /* CHARSET_CONVERSION */
-		{
-			content->mime_hints.flags &= ~MIME_CHARSET_MISSING;
-			content->mime_hints.charset = my_strdup(charset);
-		}
+
 		if ((format = get_param(content->params, "format"))) {
 			if (!strcasecmp(format, "flowed"))
 				content->format = FORMAT_FLOWED;
@@ -938,11 +938,11 @@ new_part(
 	ptr->params = NULL;
 
 #ifdef CHARSET_CONVERSION
-	if (curr_group && curr_group->attribute->undeclared_charset) {
+	if (curr_group && curr_group->attribute->undeclared_charset && *curr_group->attribute->undeclared_charset) {
 		char *charsetheader;
 
-		charsetheader = my_malloc(strlen(curr_group->attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
-		sprintf(charsetheader, "charset=%s", curr_group->attribute->undeclared_charset);
+		charsetheader = my_malloc(strlen(*curr_group->attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
+		sprintf(charsetheader, "charset=%s", *curr_group->attribute->undeclared_charset);
 		parse_params(charsetheader, ptr);
 		free(charsetheader);
 	} else
@@ -1099,6 +1099,89 @@ parse_header(
 }
 
 
+/*
+ * If display-name is not a quoted string, check whether
+ * specials are present. If so, make it a quoted string
+ * to avoid potentially dangerous strings.
+ * Example:
+ *     From: =?us-ascii?q?=3Ca=40example=2Ecom=3E=2C?= <b@example.org>
+ *  -> From: <a@example.com>, <b@example.org>
+ */
+static char *
+quote_display_name(
+	char *name)
+{
+	char *ptr, *to, *disp_name = NULL;
+	int quote_cnt = 2;
+	size_t len;
+	t_bool need_dquotes = FALSE;
+
+	if (!*name)
+		return NULL;
+
+	len = strlen(name);
+
+	/* check if name is already a quoted string */
+	if (len > 1 && *name == '"' && *(name + len - 1) == '"')
+		return NULL;
+
+	ptr = name;
+
+	while (*ptr) {
+		switch (*ptr) {
+			case '(':
+			case ')':
+			case '<':
+			case '>':
+			case '[':
+			case ']':
+			case ':':
+			case ';':
+			case '@':
+			case ',':
+			case '.':
+				need_dquotes = TRUE;
+				++ptr;
+				break;
+
+			case '\\':
+			case '"':
+				need_dquotes = TRUE;
+				++quote_cnt;
+				++ptr;
+				break;
+
+			default:
+				++ptr;
+				break;
+		}
+	}
+
+	if (need_dquotes) {
+		ptr = name;
+		to = disp_name = my_malloc(len + quote_cnt + 1);
+		*to++ = '"';
+		while (*ptr) {
+			switch (*ptr) {
+				case '\\':
+				case '"':
+					*to++ = '\\';
+					*to++ = *ptr++;
+					break;
+
+				default:
+					*to++ = *ptr++;
+					break;
+			}
+		}
+		*to++ = '"';
+		*to = '\0';
+	}
+
+	return disp_name;
+}
+
+
 char *
 parse_mb_list_header(
 	char *buf,
@@ -1106,7 +1189,7 @@ parse_mb_list_header(
 {
 	char addr[HEADER_LEN];
 	char name[HEADER_LEN];
-	char *tmp, *ret, *curr_from, *next_from;
+	char *tmp, *new_name, *disp_name, *ret, *curr_from, *next_from;
 	int type, c_needed = 0;
 	size_t plen = strlen(pat);
 	char *ptr = buf + plen;
@@ -1135,25 +1218,34 @@ parse_mb_list_header(
 
 	do {
 		next_from = split_mailbox_list(curr_from);
+
+		if (c_needed++) {
+			strcat(ptr, ", ");
+			ptr += 2;
+		}
+
 		if (gnksa_split_from(curr_from, addr, name, &type) == GNKSA_OK) {
 			buffer_to_ascii(addr);
 
 			if (*name) {
-				if (c_needed++) {
-					strcat(ptr, ", ");
-					ptr += 2;
-				}
+				disp_name = convert_to_printable(rfc1522_decode(name), FALSE);
+
 				if (type == GNKSA_ADDRTYPE_OLDSTYLE)
-					sprintf(ptr, "%s (%s)", addr, convert_to_printable(rfc1522_decode(name), FALSE));
-				else
-					sprintf(ptr, "%s <%s>", convert_to_printable(rfc1522_decode(name), FALSE), addr);
+					sprintf(ptr, "%s (%s)", addr, disp_name);
+				else {
+					/* check for problematic strings */
+					if ((new_name = quote_display_name(disp_name))) {
+						STRCPY(name, new_name);
+						free(new_name);
+						disp_name = name;
+					}
+					sprintf(ptr, "%s <%s>", disp_name, addr);
+				}
 			} else
 				strcpy(ptr, addr);
 		} else {
 			convert_to_printable(curr_from, FALSE);
-			if (c_needed++)
-				strcat(ptr, ", ");
-			strcat(ptr, curr_from);
+			strcat(ptr, str_trim(curr_from));
 		}
 
 		while (*ptr)
@@ -1652,7 +1744,7 @@ parse_normal_article(
 		}
 
 #if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
-		if ((artinfo->hdr.ext->mime_hints.flags & MIME_CHARSET_MISSING) && artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && !curr_group->attribute->undeclared_charset) {
+		if ((artinfo->hdr.ext->mime_hints.flags & MIME_CHARSET_MISSING) && artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && !(curr_group->attribute->undeclared_charset && *curr_group->attribute->undeclared_charset)) {
 			b_len += strlen(line);
 			if (!buffer)
 				buffer = my_strdup(line);
@@ -1669,7 +1761,7 @@ parse_normal_article(
 			progress(artinfo->hdr.ext->line_count);
 	}
 #if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
-	if ((artinfo->hdr.ext->mime_hints.flags & MIME_CHARSET_MISSING) && artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && buffer && !curr_group->attribute->undeclared_charset) {
+	if ((artinfo->hdr.ext->mime_hints.flags & MIME_CHARSET_MISSING) && artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && buffer && !(curr_group->attribute->undeclared_charset && *curr_group->attribute->undeclared_charset)) {
 		unsigned char *cp;
 		t_bool need_guess = FALSE;
 

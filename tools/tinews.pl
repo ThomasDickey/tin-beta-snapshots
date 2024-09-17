@@ -57,12 +57,20 @@
 #    -C accepted for historic reasons and errors out
 # inews (inn)
 #    -P don't add Sender
+# inews (Eric S. Raymond; 1989)
+#    -C create grp
+#    -d Distribution:
+#    -p [file] ; run rnews mode
+#    -M moderator option
+#    -v print returned ID
+
+require 5.004;
 
 use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.66";
+my $version = "1.1.69";
 
 my %config;
 
@@ -107,16 +115,16 @@ $config{'canlock-algorithm'}	= 'sha1'; 	# Digest algorithm used for cancel-lock 
 
 # $config{'ignore-headers'} = '';		# headers to be ignored during signing
 
-$config{'pgp-sign-headers'} = ['From', 'Newsgroups', 'Subject', 'Control',
-	'Supersedes', 'Followup-To', 'Date', 'Injection-Date', 'Sender', 'Approved',
-	'Message-ID', 'Reply-To', 'Cancel-Key', 'Also-Control',
-	'Distribution'];
-$config{'pgp-order-headers'} = ['from', 'newsgroups', 'subject', 'control',
-	'supersedes', 'followup-To', 'date', 'injection-date', 'organization',
-	'lines', 'sender', 'approved', 'distribution', 'message-id',
-	'references', 'reply-to', 'mime-version', 'content-type',
-	'content-transfer-encoding', 'summary', 'keywords', 'cancel-lock',
-	'cancel-key', 'also-control', 'x-pgp', 'user-agent'];
+$config{'pgp-sign-headers'} = [
+	'From', 'Newsgroups', 'Subject', 'Control', 'Supersedes', 'Followup-To',
+	'Date', 'Injection-Date', 'Sender', 'Approved', 'Message-ID', 'Reply-To',
+	'Cancel-Key', 'Also-Control', 'Distribution' ];
+$config{'pgp-order-headers'} = [
+	'from', 'newsgroups', 'subject', 'control', 'supersedes', 'followup-To',
+	'date', 'injection-date', 'organization', 'lines', 'sender', 'approved',
+	'distribution', 'message-id', 'references', 'reply-to', 'mime-version',
+	'content-type', 'content-transfer-encoding', 'summary', 'keywords',
+	'cancel-lock', 'cancel-key', 'also-control', 'x-pgp', 'user-agent' ];
 
 ################################################################################
 
@@ -180,10 +188,9 @@ $config{'nntp-server'} = $ENV{'NEWSHOST'} if ($ENV{'NEWSHOST'});
 $config{'nntp-server'} = $ENV{'NNTPSERVER'} if ($ENV{'NNTPSERVER'});
 $config{'nntp-port'} = $ENV{'NNTPPORT'} if ($ENV{'NNTPPORT'});
 
-# Get options:
-$Getopt::Long::ignorecase=0;
-$Getopt::Long::bundling=1;
-GetOptions('A|V|W|h|headers' => [], # do nothing
+# Get options
+Getopt::Long::Configure ("bundling", "no_ignore_case");
+my $oret = GetOptions('A|V|W|h|headers' => [], # do nothing
 	'debug|D|N'	=> \$config{'debug'},
 	'port|p=i'	=> \$config{'nntp-port'},
 	'no-sign|X'	=> \$config{'no-sign'},
@@ -218,10 +225,7 @@ GetOptions('A|V|W|h|headers' => [], # do nothing
 	'man'	=>	\$config{'man'}
 );
 
-foreach (@ARGV) {
-	print STDERR "Unknown argument $_.\n";
-	usage();
-}
+usage() unless $oret;
 
 if ($config{'version'}) {
 	version();
@@ -232,13 +236,13 @@ usage() if ($config{'help'});
 
 # not listed in usage() or man-page as it may not work
 if ($config{'man'}) {
-	eval "use Pod::Usage";
-	if ($@) {
+	if (eval { require Pod::Usage;1; } != 1) {
 		$config{'man'} = 0;
 		print STDERR "Unknown option: man.\n";
 		usage();
 	} else {
-		pod2usage(-verbose => 2, -exit => 0);
+		use Pod::Usage;
+		pod2usage(-verbose => 3, -exit => 0);
 	}
 }
 
@@ -279,7 +283,7 @@ if ($config{'canlock-secret'} && !$config{'no-canlock'}) {
 			eval "use $_";
 			if ($@ || !defined($sha_mod)) {
 				$config{'no-canlock'} = 1;
-				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if ($config{'debug'} || $config{'verbose'});
+				warn "Cancel-Locks disabled: Can't locate ".$_." (".__FILE__.":".__LINE__.")\n" if ($config{'debug'} || $config{'verbose'});
 				last;
 			}
 		}
@@ -288,7 +292,7 @@ if ($config{'canlock-secret'} && !$config{'no-canlock'}) {
 			eval "use $_";
 			if ($@) {
 	 			$config{'no-canlock'} = 1;
-				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if ($config{'debug'} || $config{'verbose'});
+				warn "Cancel-Locks disabled: Can't locate ".$_." (".__FILE__.":".__LINE__.")\n" if ($config{'debug'} || $config{'verbose'});
 				last;
 			}
 		}
@@ -297,7 +301,7 @@ if ($config{'canlock-secret'} && !$config{'no-canlock'}) {
 			eval "use $_";
 			if ($@) {
 	 			$config{'no-canlock'} = 1;
-				warn "Cancel-Locks disabled: Can't locate ".$_."\n" if ($config{'debug'} || $config{'verbose'});
+				warn "Cancel-Locks disabled: Can't locate ".$_." (".__FILE__.":".__LINE__.")\n" if ($config{'debug'} || $config{'verbose'});
 				last;
 			}
 		}
@@ -431,9 +435,32 @@ if (!$config{'nntp-pass'}) {
 	if (-r (glob("~/.newsauth"))[0]) {
 		open (my $NEWSAUTH, '<', (glob("~/.newsauth"))[0]) or die("Can't open ~/.newsauth: $!");
 		while ($l = <$NEWSAUTH>) {
+			next if ($l =~ m/^([#\s]|$)/);
 			chomp $l;
-			next if ($l =~ m/(^[#\s]|)/);
-			($server, $pass, $user) = split(/\s+\b/, $l);
+			$user = $pass = $server = undef;
+			if ($l =~ m/^
+				(\S+)\s+				# server
+				("(?:[^"]+)"|(?:\S+))	# password
+				\s+("(?:[^"]+)"|(?:\S+))	# user
+			/x) {
+				$server = $1;
+				$pass = $2;
+				$user = $3;
+				if ($pass =~ m/^"([^"]+)"/) { # strip enclising "
+					$pass = $1;
+				}
+				if ($user =~ m/^"([^"]+)"/) { # likewise
+					$user = $1;
+				}
+			} else { # server passwrd
+				if ($l =~ m/^(\S+)\s+("(?:[^"]+)"|(?:\S+))/) {
+					$server = $1;
+					$pass = $2;
+					if ($pass =~ m/^"([^"]+)"/) { # likewise
+						$pass = $1;
+					}
+				}
+			}
 			last if ($server =~ m/\Q$config{'nntp-server'}\E/);
 		}
 		close($NEWSAUTH);
@@ -477,10 +504,10 @@ if (!($config{'no-sign'} && $config{'no-canlock'})) {
 
 	if (!defined($Header{'message-id'})) {
 		my $hname;
-		eval "use Sys::Hostname";
-		if ($@) {
+		if (eval { require Sys::Hostname;1; } != 1) {
 			chomp($hname = `hostname`);
 		} else {
+			use Sys::Hostname;
 			$hname = hostname();
 		}
 		my ($hostname,) = gethostbyname($hname);

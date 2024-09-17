@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2024-07-30
+ *  Updated   : 2024-09-10
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -851,7 +851,7 @@ char2wchar_t(
 
 	/* if ((len = mbstowcs(NULL, test, 0) == (size_t) (-1)) { free(test); return NULL; } */
 	wstr = my_calloc(1, (len + 1) * sizeof(wchar_t));
-	pos = mbstowcs(wstr, test, len);
+	/* pos = */ mbstowcs(wstr, test, len);
 	/* wstr[pos == (size_t) (-1) ? 0 : pos] = '\0'; */
 	free(test);
 
@@ -886,7 +886,7 @@ wchar_t2char(
 char *
 spart(
 	const char *str,
-	int columns,
+	size_t columns,
 	t_bool pad)
 {
 	char *buf = NULL;
@@ -910,10 +910,10 @@ spart(
 wchar_t *
 wcspart(
 	const wchar_t *wstr,
-	int columns,
+	size_t columns,
 	t_bool pad)
 {
-	int used = 0;
+	size_t used = 0;
 	wchar_t *ptr, *wbuf;
 
 	wbuf = my_wcsdup(wstr);
@@ -927,7 +927,7 @@ wcspart(
 
 	/* pad with spaces */
 	if (pad) {
-		int gap = columns - used;
+		size_t gap = columns - used;
 
 		wbuf = my_realloc(wbuf, sizeof(wchar_t) * (wcslen(wbuf) + (size_t) (gap + 1)));
 		ptr = wbuf + wcslen(wbuf); /* set ptr again to end of wbuf */
@@ -1144,7 +1144,7 @@ wstrunc(
 			FreeAndNull(tail);
 			len_tail = 0;
 		}
-		wtmp2 = wcspart(wtmp, (int) (len - len_tail), FALSE);
+		wtmp2 = wcspart(wtmp, len - len_tail, FALSE);
 		free(wtmp);
 
 		if (wtmp2)
@@ -1594,7 +1594,7 @@ parse_format_string(
 					if (*tmp_date_str)
 						strcpy(fmt->date_str, tmp_date_str);
 					else
-						STRCPY(fmt->date_str, curr_group->attribute->date_format);
+						STRCPY(fmt->date_str, curr_group->attribute->date_format ? BlankIfNull(*curr_group->attribute->date_format) : "");
 					buf = my_malloc(LEN);
 					(void) time(&tmptime);
 					if (my_strftime(buf, LEN - 1, fmt->date_str, localtime(&tmptime))) {

@@ -420,7 +420,7 @@ static char credits[] = "\n\
 @(#)snprintf.c, v2.2: Mark Martinec, <mark.martinec@ijs.si>\n\
 @(#)snprintf.c, v2.2: Copyright 1999, Mark Martinec. Frontier Artistic License applies.\n\
 @(#)snprintf.c, v2.2: http://www.ijs.si/software/snprintf/\n";
-#endif /* !HAVE_SNPRINTF || SNPRINTF_BROKEN  */
+#endif /* !HAVE_SNPRINTF || SNPRINTF_BROKEN */
 
 #if defined(NEED_ASPRINTF)
 int asprintf(char **ptr, const char *fmt, /*args*/ ...) {

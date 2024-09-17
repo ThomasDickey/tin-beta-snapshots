@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2024-07-03
+ *  Updated   : 2024-09-11
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2024 Michael Bienia <michael@vorlon.ping.de>
@@ -76,13 +76,16 @@
 	} while (0)
 
 #define SET_STRING_ATTRIBUTE(opt) do { \
-		if (!strlen(CAO(tinrc.attrib_, opt))) { \
+		if (!*CAO(tinrc.attrib_, opt)) { \
 			reset_state(option); \
 			redraw_screen(option); \
 		} else { \
-			FreeIfNeeded(curr_scope->attribute->opt); \
+			if (!curr_scope->state->opt) \
+				curr_scope->attribute->opt = my_malloc(sizeof(char *)); \
+			else \
+				FreeIfNeeded(*curr_scope->attribute->opt); \
+			*curr_scope->attribute->opt = my_strdup(CAO(tinrc.attrib_, opt)); \
 			curr_scope->state->opt = TRUE; \
-			curr_scope->attribute->opt = my_strdup(CAO(tinrc.attrib_, opt)); \
 		} \
 		changed |= MISC_OPTS; \
 	} while (0)
@@ -118,6 +121,7 @@ static void do_delete_scope(int curr_pos);
 static void do_move_scope(int from, int to);
 static void draw_scope_arrow(void);
 static void free_scopes_and_attributes(void);
+static void free_tinrc_attributes(void);
 static void highlight_option(enum option_enum option);
 static void initialize_attributes(void);
 static void print_any_option(enum option_enum option);
@@ -193,6 +197,48 @@ set_option_num(
 		num--;
 	}
 	return result;
+}
+
+
+/*
+ * returns TRUE if an option is set to default
+ */
+t_bool
+option_is_default(
+	enum option_enum option)
+{
+	switch (option) {
+		case OPT_ATTRIB_DATE_FORMAT:
+		case OPT_ATTRIB_EDITOR_FORMAT:
+		case OPT_ATTRIB_FCC:
+		case OPT_ATTRIB_FOLLOWUP_TO:
+		case OPT_ATTRIB_FROM:
+		case OPT_ATTRIB_GROUP_FORMAT:
+#ifdef HAVE_ISPELL
+		case OPT_ATTRIB_ISPELL:
+#endif /* HAVE_ISPELL */
+		case OPT_ATTRIB_MAILDIR:
+		case OPT_ATTRIB_MAILING_LIST:
+		case OPT_ATTRIB_MIME_TYPES_TO_SAVE:
+		case OPT_ATTRIB_NEWS_HEADERS_TO_DISPLAY:
+		case OPT_ATTRIB_NEWS_HEADERS_TO_NOT_DISPLAY:
+		case OPT_ATTRIB_NEWS_QUOTE_FORMAT:
+		case OPT_ATTRIB_ORGANIZATION:
+		case OPT_ATTRIB_QUICK_KILL_SCOPE:
+		case OPT_ATTRIB_QUICK_SELECT_SCOPE:
+		case OPT_ATTRIB_QUOTE_CHARS:
+		case OPT_ATTRIB_SAVEDIR:
+		case OPT_ATTRIB_SAVEFILE:
+		case OPT_ATTRIB_SIGFILE:
+		case OPT_ATTRIB_THREAD_FORMAT:
+#ifdef CHARSET_CONVERSION
+		case OPT_ATTRIB_UNDECLARED_CHARSET:
+#endif /* CHARSET_CONVERSION */
+			return !check_state(option);
+
+		default:
+			return FALSE;
+	}
 }
 
 
@@ -430,10 +476,10 @@ fmt_option_prompt(
 		flag = (curr_scope && check_state(option)) ? '+' : ' ';
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (wbuf != NULL) {
-			wbuf2 = wstrunc(wbuf, (int) option_width);
+			wbuf2 = wstrunc(wbuf, option_width);
 			if ((buf = wchar_t2char(wbuf2)) == NULL) {
 				/* conversion failed, truncate original string */
-				buf = strunc(_(option_table[option].txt->opt), (int) option_width);
+				buf = strunc(_(option_table[option].txt->opt), option_width);
 				snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num, (int) option_width, (int) option_width, buf);
 			} else
 				snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num,
@@ -444,19 +490,21 @@ fmt_option_prompt(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		{
 			/* truncate original string */
-			buf = strunc(_(option_table[option].txt->opt), (int) option_width);
+			buf = strunc(_(option_table[option].txt->opt), option_width);
 			snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num, (int) option_width, (int) option_width, buf);
 		}
 	} else {
+		size_t w = (size_t) (cCOLS > 3 ? cCOLS - 3 : 0);
+
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (wbuf != NULL) {
-			wbuf2 = wstrunc(wbuf, cCOLS - 3);
+			wbuf2 = wstrunc(wbuf, w);
 			if ((buf = wchar_t2char(wbuf2)) == NULL)	/* conversion failed, truncate original string */
-				buf = strunc(_(option_table[option].txt->opt), cCOLS - 3);
+				buf = strunc(_(option_table[option].txt->opt), w);
 			free(wbuf2);
 		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			buf = strunc(_(option_table[option].txt->opt), cCOLS - 3);	/* truncate original string */
+			buf = strunc(_(option_table[option].txt->opt), w);	/* truncate original string */
 		snprintf(dst, len, "  %s", buf);
 	}
 
@@ -500,7 +548,7 @@ print_any_option(
 			break;
 
 		case OPT_STRING:
-			strncpy(ptr, OPT_STRING_list[option_table[option].var_index], len);
+			strncpy(ptr, BlankIfNull(*OPT_STRING_list[option_table[option].var_index]), len);
 			break;
 
 		case OPT_NUM:
@@ -516,12 +564,12 @@ print_any_option(
 	}
 #ifdef USE_CURSES
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if ((buf = spart(temp, cCOLS - 1, FALSE)) != NULL) {
+	if ((buf = spart(temp, (size_t) (cCOLS > 1 ? cCOLS - 1 : 0), FALSE)) != NULL) {
 		my_printf("%s", buf);
 		free(buf);
 	} else
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		my_printf("%.*s", cCOLS - 1, temp);
+		my_printf("%.*s", cCOLS > 1 ? cCOLS - 1 : 0, temp);
 	{
 #	if 1 /* portable enough? */
 		int x = getcurx(stdscr);
@@ -1023,6 +1071,8 @@ config_page(
 						do_delete_scope(scope_idx);
 					curr_scope = NULL;
 				}
+				if (curr_scope)
+					free_tinrc_attributes();
 				assign_attributes_to_groups();
 				if (grpname && curr_group) {
 					/*
@@ -2191,91 +2241,86 @@ config_page(
 
 				case OPT_STRING:
 					switch (option) {
-						case OPT_MAILDIR:
-						case OPT_MAILER_FORMAT:
-						case OPT_MAIL_ADDRESS:
-						case OPT_MAIL_QUOTE_FORMAT:
-						case OPT_METAMAIL_PROG:
-						case OPT_NEWS_QUOTE_FORMAT:
-						case OPT_SAVEDIR:
-						case OPT_SIGFILE:
-#ifndef DISABLE_PRINTING
-						case OPT_PRINTER:
-#endif /* !DISABLE_PRINTING */
-						case OPT_QUOTE_CHARS:
-						case OPT_SPAMTRAP_WARNING_ADDRESSES:
-						case OPT_URL_HANDLER:
-						case OPT_XPOST_QUOTE_FORMAT:
-#ifdef NNTPS_ABLE
-						case OPT_TLS_CA_CERT_FILE:
-#endif /* NNTPS_ABLE */
-							if (prompt_option_string(option))
-								changed |= MISC_OPTS;
-							break;
-
-						case OPT_ATTACHMENT_FORMAT:
-							if (prompt_option_string(option)) {
-								if (!strlen(tinrc.attachment_format))
-									STRCPY(tinrc.attachment_format, DEFAULT_ATTACHMENT_FORMAT);
-								changed |= MISC_OPTS;
-							}
-							break;
-
 						case OPT_EDITOR_FORMAT:
 							if (prompt_option_string(option)) {
-								if (!strlen(tinrc.editor_format))
-									STRCPY(tinrc.editor_format, TIN_EDITOR_FMT);
-								changed |= MISC_OPTS;
-							}
-							break;
-
-						case OPT_GROUP_FORMAT:
-							if (prompt_option_string(option)) {
-								if (!strlen(tinrc.group_format))
-									STRCPY(tinrc.group_format, DEFAULT_GROUP_FORMAT);
+								if (!*tinrc.editor_format) {
+									free(tinrc.editor_format);
+									tinrc.editor_format = my_strdup(TIN_EDITOR_FMT);
+								}
 								changed |= MISC_OPTS;
 							}
 							break;
 
 						case OPT_INEWS_PROG:
 							if (prompt_option_string(option)) {
-								if (!strlen(tinrc.inews_prog))
-									STRCPY(tinrc.inews_prog, INTERNAL_CMD);
+								if (!*tinrc.inews_prog) {
+									free(tinrc.inews_prog);
+									tinrc.inews_prog = my_strdup(INTERNAL_CMD);
+								}
 								changed |= MISC_OPTS;
 							}
 							break;
 
-						case OPT_ATTRIB_GROUP_FORMAT:
+						case OPT_ATTRIB_EDITOR_FORMAT:
 							if (prompt_option_string(option))
-								SET_STRING_ATTRIBUTE(group_format);
+								SET_STRING_ATTRIBUTE(editor_format);
 							break;
 
-						case OPT_PAGE_MIME_FORMAT:
+						case OPT_ATTRIB_FCC:
+							if (prompt_option_string(option))
+								SET_STRING_ATTRIBUTE(fcc);
+							break;
+
+						case OPT_ATTRIB_FROM:
+							if (prompt_option_string(option))
+								SET_STRING_ATTRIBUTE(from);
+							break;
+
+						case OPT_MAILER_FORMAT:
 							if (prompt_option_string(option)) {
-								if (!strlen(tinrc.page_mime_format))
-									STRCPY(tinrc.page_mime_format, DEFAULT_PAGE_MIME_FORMAT);
-								changed |= DISPLAY_OPTS;
+								if (!*tinrc.mailer_format) {
+									free(tinrc.mailer_format);
+									tinrc.mailer_format = my_strdup(MAILER_FORMAT);
+								}
+								changed |= MISC_OPTS;
 							}
 							break;
 
-						case OPT_PAGE_UUE_FORMAT:
-							if (prompt_option_string(option)) {
-								if (!strlen(tinrc.page_uue_format))
-									STRCPY(tinrc.page_uue_format, DEFAULT_PAGE_UUE_FORMAT);
-								changed |= DISPLAY_OPTS;
-							}
+						case OPT_MAILDIR:
+						case OPT_MAIL_ADDRESS:
+						case OPT_MAIL_QUOTE_FORMAT:
+						case OPT_METAMAIL_PROG:
+						case OPT_NEWS_QUOTE_FORMAT:
+#ifndef DISABLE_PRINTING
+						case OPT_PRINTER:
+#endif /* !DISABLE_PRINTING */
+						case OPT_QUOTE_CHARS:
+						case OPT_SAVEDIR:
+						case OPT_SIGFILE:
+						case OPT_SPAMTRAP_WARNING_ADDRESSES:
+#ifdef NNTPS_ABLE
+						case OPT_TLS_CA_CERT_FILE:
+#endif /* NNTPS_ABLE */
+						case OPT_URL_HANDLER:
+						case OPT_POSTED_ARTICLES_FILE:
+						case OPT_XPOST_QUOTE_FORMAT:
+							if (prompt_option_string(option))
+								changed |= MISC_OPTS;
 							break;
 
 #ifndef CHARSET_CONVERSION
 						case OPT_MM_CHARSET:
 							if (prompt_option_string(option)) {
-								if (!strlen(tinrc.mm_charset))
-									STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
+								if (!*tinrc.mm_charset) {
+									free(tinrc.mm_charset);
+									tinrc.mm_charset = my_strdup(get_val("MM_CHARSET", MM_CHARSET));
+								}
 								/*
 								 * No charset conversion available, assume local charset
 								 * to be network charset.
 								 */
-								STRCPY(tinrc.mm_local_charset, tinrc.mm_charset);
+								FreeIfNeeded(tinrc.mm_local_charset);
+								tinrc.mm_local_charset = my_strdup(tinrc.mm_charset);
 								changed |= MISC_OPTS;
 							}
 							break;
@@ -2304,17 +2349,14 @@ config_page(
 							}
 							break;
 
-						case OPT_POSTED_ARTICLES_FILE:
-							if (prompt_option_string(option)) /* no expansion here, will be done in post_loop() */
-								changed |= MISC_OPTS;
-							break;
-
 #ifdef HAVE_COLOR
 						case OPT_QUOTE_REGEX:
 							if (prompt_option_string(option)) {
 								regex_cache_destroy(&quote_regex);
-								if (!strlen(tinrc.quote_regex))
-									STRCPY(tinrc.quote_regex, DEFAULT_QUOTE_REGEX);
+								if (!*tinrc.quote_regex) {
+									free(tinrc.quote_regex);
+									tinrc.quote_regex = my_strdup(DEFAULT_QUOTE_REGEX);
+								}
 								compile_regex(tinrc.quote_regex, &quote_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
@@ -2323,8 +2365,10 @@ config_page(
 						case OPT_QUOTE_REGEX2:
 							if (prompt_option_string(option)) {
 								regex_cache_destroy(&quote_regex2);
-								if (!strlen(tinrc.quote_regex2))
-									STRCPY(tinrc.quote_regex2, DEFAULT_QUOTE_REGEX2);
+								if (!*tinrc.quote_regex2) {
+									free(tinrc.quote_regex2);
+									tinrc.quote_regex2 = my_strdup(DEFAULT_QUOTE_REGEX2);
+								}
 								compile_regex(tinrc.quote_regex2, &quote_regex2, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
@@ -2333,8 +2377,10 @@ config_page(
 						case OPT_QUOTE_REGEX3:
 							if (prompt_option_string(option)) {
 								regex_cache_destroy(&quote_regex3);
-								if (!strlen(tinrc.quote_regex3))
-									STRCPY(tinrc.quote_regex3, DEFAULT_QUOTE_REGEX3);
+								if (!*tinrc.quote_regex3) {
+									free(tinrc.quote_regex3);
+									tinrc.quote_regex3 = my_strdup(DEFAULT_QUOTE_REGEX3);
+								}
 								compile_regex(tinrc.quote_regex3, &quote_regex3, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
@@ -2343,27 +2389,23 @@ config_page(
 						case OPT_EXTQUOTE_REGEX:
 							if (prompt_option_string(option)) {
 								regex_cache_destroy(&extquote_regex);
-								if (!strlen(tinrc.extquote_regex))
-									STRCPY(tinrc.extquote_regex, DEFAULT_EXTQUOTE_REGEX);
+								if (!*tinrc.extquote_regex) {
+									free(tinrc.extquote_regex);
+									tinrc.extquote_regex = my_strdup(DEFAULT_EXTQUOTE_REGEX);
+								}
 								compile_regex(tinrc.extquote_regex, &extquote_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
 #endif /* HAVE_COLOR */
 
-						case OPT_SELECT_FORMAT:
-							if (prompt_option_string(option)) {
-								if (!strlen(tinrc.select_format))
-									STRCPY(tinrc.select_format, DEFAULT_SELECT_FORMAT);
-								changed |= MISC_OPTS;
-							}
-							break;
-
 						case OPT_SLASHES_REGEX:
 							if (prompt_option_string(option)) {
 								regex_cache_destroy(&slashes_regex);
-								if (!strlen(tinrc.slashes_regex))
-									STRCPY(tinrc.slashes_regex, DEFAULT_SLASHES_REGEX);
+								if (!*tinrc.slashes_regex) {
+									free(tinrc.slashes_regex);
+									tinrc.slashes_regex = my_strdup(DEFAULT_SLASHES_REGEX);
+								}
 								compile_regex(tinrc.slashes_regex, &slashes_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
@@ -2372,8 +2414,10 @@ config_page(
 						case OPT_STARS_REGEX:
 							if (prompt_option_string(option)) {
 								regex_cache_destroy(&stars_regex);
-								if (!strlen(tinrc.stars_regex))
-									STRCPY(tinrc.stars_regex, DEFAULT_STARS_REGEX);
+								if (!*tinrc.stars_regex) {
+									free(tinrc.stars_regex);
+									tinrc.stars_regex = my_strdup(DEFAULT_STARS_REGEX);
+								}
 								compile_regex(tinrc.stars_regex, &stars_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
@@ -2382,8 +2426,10 @@ config_page(
 						case OPT_STROKES_REGEX:
 							if (prompt_option_string(option)) {
 								regex_cache_destroy(&strokes_regex);
-								if (!strlen(tinrc.strokes_regex))
-									STRCPY(tinrc.strokes_regex, DEFAULT_STROKES_REGEX);
+								if (!*tinrc.strokes_regex) {
+									free(tinrc.strokes_regex);
+									tinrc.strokes_regex = my_strdup(DEFAULT_STROKES_REGEX);
+								}
 								compile_regex(tinrc.strokes_regex, &strokes_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
@@ -2392,8 +2438,10 @@ config_page(
 						case OPT_UNDERSCORES_REGEX:
 							if (prompt_option_string(option)) {
 								regex_cache_destroy(&underscores_regex);
-								if (!strlen(tinrc.underscores_regex))
-									STRCPY(tinrc.underscores_regex, DEFAULT_UNDERSCORES_REGEX);
+								if (!*tinrc.underscores_regex) {
+									free(tinrc.underscores_regex);
+									tinrc.underscores_regex = my_strdup(DEFAULT_UNDERSCORES_REGEX);
+								}
 								compile_regex(tinrc.underscores_regex, &underscores_regex, REGEX_CASELESS);
 								changed |= DISPLAY_OPTS;
 							}
@@ -2402,8 +2450,10 @@ config_page(
 						case OPT_STRIP_RE_REGEX:
 							if (prompt_option_string(option)) {
 								regex_cache_destroy(&strip_re_regex);
-								if (!strlen(tinrc.strip_re_regex))
-									STRCPY(tinrc.strip_re_regex, DEFAULT_STRIP_RE_REGEX);
+								if (!*tinrc.strip_re_regex) {
+									free(tinrc.strip_re_regex);
+									tinrc.strip_re_regex = my_strdup(DEFAULT_STRIP_RE_REGEX);
+								}
 								compile_regex(tinrc.strip_re_regex, &strip_re_regex, REGEX_ANCHORED);
 								changed |= MISC_OPTS;
 							}
@@ -2412,21 +2462,105 @@ config_page(
 						case OPT_STRIP_WAS_REGEX:
 							if (prompt_option_string(option)) {
 								regex_cache_destroy(&strip_was_regex);
-								if (!strlen(tinrc.strip_was_regex)) {
-									if (regex_use_utf8())
-										STRCPY(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX);
-									else
-										STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
+								if (!*tinrc.strip_was_regex) {
+									if (regex_use_utf8()) {
+										free(tinrc.strip_was_regex);
+										tinrc.strip_was_regex  = my_strdup(DEFAULT_U8_STRIP_WAS_REGEX);
+									} else {
+										free(tinrc.strip_was_regex);
+										tinrc.strip_was_regex  = my_strdup(DEFAULT_STRIP_WAS_REGEX);
+									}
 								}
 								compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);
 								changed |= MISC_OPTS;
 							}
 							break;
 
+						case OPT_VERBATIM_BEGIN_REGEX:
+							if (prompt_option_string(option)) {
+								regex_cache_destroy(&verbatim_begin_regex);
+								if (!*tinrc.verbatim_begin_regex) {
+									free(tinrc.verbatim_begin_regex);
+									tinrc.verbatim_begin_regex = my_strdup(DEFAULT_VERBATIM_BEGIN_REGEX);
+								}
+								compile_regex(tinrc.verbatim_begin_regex, &verbatim_begin_regex, REGEX_ANCHORED);
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
+						case OPT_VERBATIM_END_REGEX:
+							if (prompt_option_string(option)) {
+								regex_cache_destroy(&verbatim_end_regex);
+								if (!*tinrc.verbatim_end_regex) {
+									free(tinrc.verbatim_end_regex);
+									tinrc.verbatim_end_regex = my_strdup(DEFAULT_VERBATIM_END_REGEX);
+								}
+								compile_regex(tinrc.verbatim_end_regex, &verbatim_end_regex, REGEX_ANCHORED);
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
+						case OPT_ATTACHMENT_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!*tinrc.attachment_format) {
+									free(tinrc.attachment_format);
+									tinrc.attachment_format = my_strdup(DEFAULT_ATTACHMENT_FORMAT);
+								}
+								changed |= MISC_OPTS;
+							}
+							break;
+
+						case OPT_GROUP_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!*tinrc.group_format) {
+									free(tinrc.group_format);
+									tinrc.group_format = my_strdup(DEFAULT_GROUP_FORMAT);
+								}
+								changed |= MISC_OPTS;
+							}
+							break;
+
+						case OPT_ATTRIB_GROUP_FORMAT:
+							if (prompt_option_string(option))
+								SET_STRING_ATTRIBUTE(group_format);
+							break;
+
+						case OPT_PAGE_MIME_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!*tinrc.page_mime_format) {
+									free(tinrc.page_mime_format);
+									tinrc.page_mime_format = my_strdup(DEFAULT_PAGE_MIME_FORMAT);
+								}
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
+						case OPT_PAGE_UUE_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!*tinrc.page_uue_format) {
+									free(tinrc.page_uue_format);
+									tinrc.page_uue_format = my_strdup(DEFAULT_PAGE_UUE_FORMAT);
+								}
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
+						case OPT_SELECT_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!*tinrc.select_format) {
+									free(tinrc.select_format);
+									tinrc.select_format = my_strdup(DEFAULT_SELECT_FORMAT);
+								}
+								changed |= MISC_OPTS;
+							}
+							break;
+
 						case OPT_THREAD_FORMAT:
 							if (prompt_option_string(option)) {
-								if (!strlen(tinrc.thread_format))
-									STRCPY(tinrc.thread_format, DEFAULT_THREAD_FORMAT);
+								if (!*tinrc.thread_format) {
+									free(tinrc.thread_format);
+									tinrc.thread_format = my_strdup(DEFAULT_THREAD_FORMAT);
+								}
 								changed |= MISC_OPTS;
 							}
 							break;
@@ -2436,30 +2570,12 @@ config_page(
 								SET_STRING_ATTRIBUTE(thread_format);
 							break;
 
-						case OPT_VERBATIM_BEGIN_REGEX:
-							if (prompt_option_string(option)) {
-								regex_cache_destroy(&verbatim_begin_regex);
-								if (!strlen(tinrc.verbatim_begin_regex))
-									STRCPY(tinrc.verbatim_begin_regex, DEFAULT_VERBATIM_BEGIN_REGEX);
-								compile_regex(tinrc.verbatim_begin_regex, &verbatim_begin_regex, REGEX_ANCHORED);
-								changed |= DISPLAY_OPTS;
-							}
-							break;
-
-						case OPT_VERBATIM_END_REGEX:
-							if (prompt_option_string(option)) {
-								regex_cache_destroy(&verbatim_end_regex);
-								if (!strlen(tinrc.verbatim_end_regex))
-									STRCPY(tinrc.verbatim_end_regex, DEFAULT_VERBATIM_END_REGEX);
-								compile_regex(tinrc.verbatim_end_regex, &verbatim_end_regex, REGEX_ANCHORED);
-								changed |= DISPLAY_OPTS;
-							}
-							break;
-
 						case OPT_DATE_FORMAT:
 							if (prompt_option_string(option)) {
-								if (!strlen(tinrc.date_format))
-									STRCPY(tinrc.date_format, DEFAULT_DATE_FORMAT);
+								if (!*tinrc.date_format) {
+									free(tinrc.date_format);
+									tinrc.date_format = my_strdup(DEFAULT_DATE_FORMAT);
+								}
 								changed |= MISC_OPTS;
 							}
 							break;
@@ -2469,24 +2585,9 @@ config_page(
 								SET_STRING_ATTRIBUTE(date_format);
 							break;
 
-						case OPT_ATTRIB_EDITOR_FORMAT:
-							if (prompt_option_string(option))
-								SET_STRING_ATTRIBUTE(editor_format);
-							break;
-
-						case OPT_ATTRIB_FCC:
-							if (prompt_option_string(option))
-								SET_STRING_ATTRIBUTE(fcc);
-							break;
-
 						case OPT_ATTRIB_FOLLOWUP_TO:
 							if (prompt_option_string(option))
 								SET_STRING_ATTRIBUTE(followup_to);
-							break;
-
-						case OPT_ATTRIB_FROM:
-							if (prompt_option_string(option))
-								SET_STRING_ATTRIBUTE(from);
 							break;
 
 #ifdef HAVE_ISPELL
@@ -2504,11 +2605,6 @@ config_page(
 						case OPT_ATTRIB_MAILING_LIST:
 							if (prompt_option_string(option))
 								SET_STRING_ATTRIBUTE(mailing_list);
-							break;
-
-						case OPT_ATTRIB_MIME_TYPES_TO_SAVE:
-							if (prompt_option_string(option))
-								SET_STRING_ATTRIBUTE(mime_types_to_save);
 							break;
 
 						case OPT_ATTRIB_NEWS_HEADERS_TO_DISPLAY:
@@ -2535,6 +2631,11 @@ config_page(
 						case OPT_ATTRIB_ORGANIZATION:
 							if (prompt_option_string(option))
 								SET_STRING_ATTRIBUTE(organization);
+							break;
+
+						case OPT_ATTRIB_MIME_TYPES_TO_SAVE:
+							if (prompt_option_string(option))
+								SET_STRING_ATTRIBUTE(mime_types_to_save);
 							break;
 
 						case OPT_ATTRIB_QUICK_KILL_SCOPE:
@@ -2988,7 +3089,7 @@ build_scope_line(
 	 * Allocate line buffer
 	 * make it the same size like in !USE_CURSES case to simplify some code
 	 */
-	sptr = my_malloc(cCOLS + 2);
+	sptr = my_malloc((size_t) cCOLS + 2);
 #else
 	sptr = screen[INDEX2SNUM(i)].col;
 #endif /* USE_CURSES */
@@ -3364,7 +3465,17 @@ check_state(
 	}
 }
 
-
+#define ATTRIBUTE_IS_SET(attrib) (curr_scope->state->attrib && curr_scope->attribute->attrib)
+#define RESET_ATTRIBUTE(attrib)  do { \
+		if (ATTRIBUTE_IS_SET(attrib)) { \
+			FreeAndNull(*curr_scope->attribute->attrib); \
+			FreeAndNull(curr_scope->attribute->attrib); \
+			FreeAndNull(CAO(tinrc.attrib_, attrib)); \
+		} \
+		if (default_scope->attribute->attrib) \
+			CAO(tinrc.attrib_, attrib) = *default_scope->attribute->attrib; \
+		curr_scope->state->attrib = FALSE; \
+	} while (0)
 /*
  * set the state of the given attribute to FALSE and the corresponding
  * tinrc.attrib_* to a default value
@@ -3409,18 +3520,14 @@ reset_state(
 			tinrc.attrib_batch_save = default_scope->attribute->batch_save;
 			break;
 		case OPT_ATTRIB_DATE_FORMAT:
-			FreeAndNull(curr_scope->attribute->date_format);
-			curr_scope->state->date_format = FALSE;
-			snprintf(tinrc.attrib_date_format, sizeof(tinrc.attrib_date_format), "%s", BlankIfNull(default_scope->attribute->date_format));
+			RESET_ATTRIBUTE(date_format);
 			break;
 		case OPT_ATTRIB_DELETE_TMP_FILES:
 			curr_scope->state->delete_tmp_files = FALSE;
 			tinrc.attrib_delete_tmp_files = default_scope->attribute->delete_tmp_files;
 			break;
 		case OPT_ATTRIB_EDITOR_FORMAT:
-			FreeAndNull(curr_scope->attribute->editor_format);
-			curr_scope->state->editor_format = FALSE;
-			snprintf(tinrc.attrib_editor_format, sizeof(tinrc.attrib_editor_format), "%s", BlankIfNull(default_scope->attribute->editor_format));
+			RESET_ATTRIBUTE(editor_format);
 			break;
 #ifdef HAVE_COLOR
 		case OPT_ATTRIB_EXTQUOTE_HANDLING:
@@ -3429,40 +3536,28 @@ reset_state(
 			break;
 #endif /* HAVE_COLOR */
 		case OPT_ATTRIB_FCC:
-			FreeAndNull(curr_scope->attribute->fcc);
-			curr_scope->state->fcc = FALSE;
-			snprintf(tinrc.attrib_fcc, sizeof(tinrc.attrib_fcc), "%s", BlankIfNull(default_scope->attribute->fcc));
+			RESET_ATTRIBUTE(fcc);
 			break;
 		case OPT_ATTRIB_FOLLOWUP_TO:
-			FreeAndNull(curr_scope->attribute->followup_to);
-			curr_scope->state->followup_to = FALSE;
-			snprintf(tinrc.attrib_followup_to, sizeof(tinrc.attrib_followup_to), "%s", BlankIfNull(default_scope->attribute->followup_to));
+			RESET_ATTRIBUTE(followup_to);
 			break;
 		case OPT_ATTRIB_FROM:
-			FreeAndNull(curr_scope->attribute->from);
-			curr_scope->state->from = FALSE;
-			snprintf(tinrc.attrib_from, sizeof(tinrc.attrib_from), "%s", BlankIfNull(default_scope->attribute->from));
+			RESET_ATTRIBUTE(from);
 			break;
 		case OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT:
 			curr_scope->state->group_catchup_on_exit = FALSE;
 			tinrc.attrib_group_catchup_on_exit = default_scope->attribute->group_catchup_on_exit;
 			break;
 		case OPT_ATTRIB_GROUP_FORMAT:
-			FreeAndNull(curr_scope->attribute->group_format);
-			curr_scope->state->group_format = FALSE;
-			snprintf(tinrc.attrib_group_format, sizeof(tinrc.attrib_group_format), "%s", BlankIfNull(default_scope->attribute->group_format));
+			RESET_ATTRIBUTE(group_format);
 			break;
 #ifdef HAVE_ISPELL
 		case OPT_ATTRIB_ISPELL:
-			FreeAndNull(curr_scope->attribute->ispell);
-			curr_scope->state->ispell = FALSE;
-			snprintf(tinrc.attrib_ispell, sizeof(tinrc.attrib_ispell), "%s", BlankIfNull(default_scope->attribute->ispell));
+			RESET_ATTRIBUTE(ispell);
 			break;
 #endif /* HAVE_ISPELL */
 		case OPT_ATTRIB_MAILDIR:
-			FreeAndNull(curr_scope->attribute->maildir);
-			curr_scope->state->maildir = FALSE;
-			snprintf(tinrc.attrib_maildir, sizeof(tinrc.attrib_maildir), "%s", BlankIfNull(default_scope->attribute->maildir));
+			RESET_ATTRIBUTE(maildir);
 			break;
 		case OPT_ATTRIB_MAIL_8BIT_HEADER:
 			curr_scope->state->mail_8bit_header = FALSE;
@@ -3473,9 +3568,7 @@ reset_state(
 			tinrc.attrib_mail_mime_encoding = default_scope->attribute->mail_mime_encoding;
 			break;
 		case OPT_ATTRIB_MAILING_LIST:
-			FreeAndNull(curr_scope->attribute->mailing_list);
-			curr_scope->state->mailing_list = FALSE;
-			snprintf(tinrc.attrib_mailing_list, sizeof(tinrc.attrib_mailing_list), "%s", BlankIfNull(default_scope->attribute->mailing_list));
+			RESET_ATTRIBUTE(mailing_list);
 			break;
 		case OPT_ATTRIB_MARK_IGNORE_TAGS:
 			curr_scope->state->mark_ignore_tags = FALSE;
@@ -3490,26 +3583,18 @@ reset_state(
 			tinrc.attrib_mime_forward = default_scope->attribute->mime_forward;
 			break;
 		case OPT_ATTRIB_MIME_TYPES_TO_SAVE:
-			FreeAndNull(curr_scope->attribute->mime_types_to_save);
-			curr_scope->state->mime_types_to_save = FALSE;
-			snprintf(tinrc.attrib_mime_types_to_save, sizeof(tinrc.attrib_mime_types_to_save), "%s", BlankIfNull(default_scope->attribute->mime_types_to_save));
+			RESET_ATTRIBUTE(mime_types_to_save);
 			break;
 		case OPT_ATTRIB_NEWS_HEADERS_TO_DISPLAY:
-			FreeAndNull(curr_scope->attribute->news_headers_to_display);
+			RESET_ATTRIBUTE(news_headers_to_display);
 			build_news_headers_array(curr_scope->attribute, TRUE);
-			curr_scope->state->news_headers_to_display = FALSE;
-			snprintf(tinrc.attrib_news_headers_to_display, sizeof(tinrc.attrib_news_headers_to_display), "%s", BlankIfNull(default_scope->attribute->news_headers_to_display));
 			break;
 		case OPT_ATTRIB_NEWS_HEADERS_TO_NOT_DISPLAY:
-			FreeAndNull(curr_scope->attribute->news_headers_to_not_display);
+			RESET_ATTRIBUTE(news_headers_to_not_display);
 			build_news_headers_array(curr_scope->attribute, FALSE);
-			curr_scope->state->news_headers_to_not_display = FALSE;
-			snprintf(tinrc.attrib_news_headers_to_not_display, sizeof(tinrc.attrib_news_headers_to_not_display), "%s", BlankIfNull(default_scope->attribute->news_headers_to_not_display));
 			break;
 		case OPT_ATTRIB_QUICK_KILL_SCOPE:
-			FreeAndNull(curr_scope->attribute->quick_kill_scope);
-			curr_scope->state->quick_kill_scope = FALSE;
-			snprintf(tinrc.attrib_quick_kill_scope, sizeof(tinrc.attrib_quick_kill_scope), "%s", BlankIfNull(default_scope->attribute->quick_kill_scope));
+			RESET_ATTRIBUTE(quick_kill_scope);
 			break;
 		case OPT_ATTRIB_QUICK_KILL_HEADER:
 			curr_scope->state->quick_kill_header = FALSE;
@@ -3524,9 +3609,7 @@ reset_state(
 			tinrc.attrib_quick_kill_expire = default_scope->attribute->quick_kill_expire;
 			break;
 		case OPT_ATTRIB_QUICK_SELECT_SCOPE:
-			FreeAndNull(curr_scope->attribute->quick_select_scope);
-			curr_scope->state->quick_select_scope = FALSE;
-			snprintf(tinrc.attrib_quick_select_scope, sizeof(tinrc.attrib_quick_select_scope), "%s", BlankIfNull(default_scope->attribute->quick_select_scope));
+			RESET_ATTRIBUTE(quick_select_scope);
 			break;
 		case OPT_ATTRIB_QUICK_SELECT_HEADER:
 			curr_scope->state->quick_select_header = FALSE;
@@ -3541,14 +3624,10 @@ reset_state(
 			tinrc.attrib_quick_select_expire = default_scope->attribute->quick_select_expire;
 			break;
 		case OPT_ATTRIB_NEWS_QUOTE_FORMAT:
-			FreeAndNull(curr_scope->attribute->news_quote_format);
-			curr_scope->state->news_quote_format = FALSE;
-			snprintf(tinrc.attrib_news_quote_format, sizeof(tinrc.attrib_news_quote_format), "%s", BlankIfNull(default_scope->attribute->news_quote_format));
+			RESET_ATTRIBUTE(news_quote_format);
 			break;
 		case OPT_ATTRIB_ORGANIZATION:
-			FreeAndNull(curr_scope->attribute->organization);
-			curr_scope->state->organization = FALSE;
-			snprintf(tinrc.attrib_organization, sizeof(tinrc.attrib_organization), "%s", BlankIfNull(default_scope->attribute->organization));
+			RESET_ATTRIBUTE(organization);
 			break;
 		case OPT_ATTRIB_POST_8BIT_HEADER:
 			curr_scope->state->post_8bit_header = FALSE;
@@ -3581,19 +3660,13 @@ reset_state(
 			tinrc.attrib_prompt_followupto = default_scope->attribute->prompt_followupto;
 			break;
 		case OPT_ATTRIB_QUOTE_CHARS:
-			FreeAndNull(curr_scope->attribute->quote_chars);
-			curr_scope->state->quote_chars = FALSE;
-			snprintf(tinrc.attrib_quote_chars, sizeof(tinrc.attrib_quote_chars), "%s", BlankIfNull(default_scope->attribute->quote_chars));
+			RESET_ATTRIBUTE(quote_chars);
 			break;
 		case OPT_ATTRIB_SAVEDIR:
-			FreeAndNull(curr_scope->attribute->savedir);
-			curr_scope->state->savedir = FALSE;
-			snprintf(tinrc.attrib_savedir, sizeof(tinrc.attrib_savedir), "%s", BlankIfNull(default_scope->attribute->savedir));
+			RESET_ATTRIBUTE(savedir);
 			break;
 		case OPT_ATTRIB_SAVEFILE:
-			FreeAndNull(curr_scope->attribute->savefile);
-			curr_scope->state->savefile = FALSE;
-			snprintf(tinrc.attrib_savefile, sizeof(tinrc.attrib_savefile), "%s", BlankIfNull(default_scope->attribute->savefile));
+			RESET_ATTRIBUTE(savefile);
 			break;
 		case OPT_ATTRIB_SHOW_AUTHOR:
 			curr_scope->state->show_author = FALSE;
@@ -3616,9 +3689,7 @@ reset_state(
 			tinrc.attrib_sigdashes = default_scope->attribute->sigdashes;
 			break;
 		case OPT_ATTRIB_SIGFILE:
-			FreeAndNull(curr_scope->attribute->sigfile);
-			curr_scope->state->sigfile = FALSE;
-			snprintf(tinrc.attrib_sigfile, sizeof(tinrc.attrib_sigfile), "%s", BlankIfNull(default_scope->attribute->sigfile));
+			RESET_ATTRIBUTE(sigfile);
 			break;
 		case OPT_ATTRIB_SIGNATURE_REPOST:
 			curr_scope->state->signature_repost = FALSE;
@@ -3639,9 +3710,7 @@ reset_state(
 			tinrc.attrib_thread_catchup_on_exit = default_scope->attribute->thread_catchup_on_exit;
 			break;
 		case OPT_ATTRIB_THREAD_FORMAT:
-			FreeAndNull(curr_scope->attribute->thread_format);
-			curr_scope->state->thread_format = FALSE;
-			snprintf(tinrc.attrib_thread_format, sizeof(tinrc.attrib_thread_format), "%s", BlankIfNull(default_scope->attribute->thread_format));
+			RESET_ATTRIBUTE(thread_format);
 			break;
 		case OPT_ATTRIB_THREAD_PERC:
 			curr_scope->state->thread_perc = FALSE;
@@ -3665,9 +3734,7 @@ reset_state(
 			tinrc.attrib_mm_network_charset = default_scope->attribute->mm_network_charset;
 			break;
 		case OPT_ATTRIB_UNDECLARED_CHARSET:
-			FreeAndNull(curr_scope->attribute->undeclared_charset);
-			curr_scope->state->undeclared_charset = FALSE;
-			snprintf(tinrc.attrib_undeclared_charset, sizeof(tinrc.attrib_undeclared_charset), "%s", BlankIfNull(default_scope->attribute->undeclared_charset));
+			RESET_ATTRIBUTE(undeclared_charset);
 			break;
 #	ifdef USE_ICU_UCSDET
 		case OPT_ATTRIB_UNDECLARED_CS_GUESS:
@@ -3693,18 +3760,14 @@ reset_state(
 			tinrc.attrib_post_process_type = default_scope->attribute->post_process_type;
 			break;
 		case OPT_ATTRIB_X_BODY:
-			FreeAndNull(curr_scope->attribute->x_body);
-			curr_scope->state->x_body = FALSE;
-			snprintf(tinrc.attrib_x_body, sizeof(tinrc.attrib_x_body), "%s", BlankIfNull(default_scope->attribute->x_body));
+			RESET_ATTRIBUTE(x_body);
 			break;
 		case OPT_ATTRIB_X_COMMENT_TO:
 			curr_scope->state->x_comment_to = FALSE;
 			tinrc.attrib_x_comment_to = default_scope->attribute->x_comment_to;
 			break;
 		case OPT_ATTRIB_X_HEADERS:
-			FreeAndNull(curr_scope->attribute->x_headers);
-			curr_scope->state->x_headers = FALSE;
-			snprintf(tinrc.attrib_x_headers, sizeof(tinrc.attrib_x_headers), "%s", BlankIfNull(default_scope->attribute->x_headers));
+			RESET_ATTRIBUTE(x_headers);
 			break;
 
 		default:
@@ -3715,9 +3778,9 @@ reset_state(
 
 #define INITIALIZE_STRING_ATTRIBUTE(option) do { \
 		if (curr_scope->state->option) \
-			snprintf(CAO(tinrc.attrib_, option), sizeof(CAO(tinrc.attrib_, option)), "%s", curr_scope->attribute->option); \
-		else \
-			snprintf(CAO(tinrc.attrib_, option), sizeof(CAO(tinrc.attrib_, option)), "%s", BlankIfNull(default_scope->attribute->option)); \
+			CAO(tinrc.attrib_, option) = my_strdup(*curr_scope->attribute->option); \
+		else if (default_scope->attribute->option && *default_scope->attribute->option) \
+			CAO(tinrc.attrib_, option) = *default_scope->attribute->option; \
 	} while (0)
 #define INITIALIZE_NUM_ATTRIBUTE(option) do { \
 		if (curr_scope->state->option) \
@@ -3817,4 +3880,44 @@ initialize_attributes(
 #endif /* CHARSET_CONVERSION */
 	INITIALIZE_STRING_ATTRIBUTE(x_body);
 	INITIALIZE_STRING_ATTRIBUTE(x_headers);
+}
+
+
+#define FREE_TINRC_ATTRIBUTE(attrib) do { \
+		if (curr_scope->state->attrib && CAO(tinrc.attrib_, attrib)) \
+			FreeAndNull(CAO(tinrc.attrib_, attrib)); \
+	} while (0)
+
+static void
+free_tinrc_attributes(
+		void)
+{
+	FREE_TINRC_ATTRIBUTE(date_format);
+	FREE_TINRC_ATTRIBUTE(editor_format);
+	FREE_TINRC_ATTRIBUTE(fcc);
+	FREE_TINRC_ATTRIBUTE(followup_to);
+	FREE_TINRC_ATTRIBUTE(from);
+	FREE_TINRC_ATTRIBUTE(group_format);
+#ifdef HAVE_ISPELL
+	FREE_TINRC_ATTRIBUTE(ispell);
+#endif /* HAVE_ISPELL */
+	FREE_TINRC_ATTRIBUTE(maildir);
+	FREE_TINRC_ATTRIBUTE(mailing_list);
+	FREE_TINRC_ATTRIBUTE(mime_types_to_save);
+	FREE_TINRC_ATTRIBUTE(news_headers_to_display);
+	FREE_TINRC_ATTRIBUTE(news_headers_to_not_display);
+	FREE_TINRC_ATTRIBUTE(news_quote_format);
+	FREE_TINRC_ATTRIBUTE(organization);
+	FREE_TINRC_ATTRIBUTE(quick_kill_scope);
+	FREE_TINRC_ATTRIBUTE(quick_select_scope);
+	FREE_TINRC_ATTRIBUTE(quote_chars);
+	FREE_TINRC_ATTRIBUTE(savedir);
+	FREE_TINRC_ATTRIBUTE(savefile);
+	FREE_TINRC_ATTRIBUTE(sigfile);
+	FREE_TINRC_ATTRIBUTE(thread_format);
+#ifdef CHARSET_CONVERSION
+	FREE_TINRC_ATTRIBUTE(undeclared_charset);
+#endif /* CHARSET_CONVERSION */
+	FREE_TINRC_ATTRIBUTE(x_body);
+	FREE_TINRC_ATTRIBUTE(x_headers);
 }

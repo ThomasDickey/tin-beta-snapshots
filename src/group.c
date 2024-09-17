@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-04-01
+ *  Updated   : 2024-09-10
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -337,7 +337,7 @@ group_page(
 
 			case GROUP_CANCEL:	/* cancel current basenote */
 				if (grpmenu.curr >= 0) {
-					if (can_post || group->attribute->mailing_list != NULL) {
+					if (can_post || (group->attribute->mailing_list && *group->attribute->mailing_list)) {
 						n = (int) base[grpmenu.curr];
 						ii = art_open(TRUE, &arts[n], group, &pgart, TRUE, _(txt_reading_article));
 						if (ii != ART_UNAVAILABLE && ii != ART_ABORT && cancel_article(group, &arts[n], n))
@@ -969,7 +969,7 @@ show_group_page(
 
 	ClearScreen();
 	set_first_screen_item();
-	parse_format_string(curr_group->attribute->group_format, &grp_fmt);
+	parse_format_string(curr_group->attribute->group_format ? BlankIfNull(*curr_group->attribute->group_format) : "", &grp_fmt);
 	mark_offset = 0;
 	show_group_title(FALSE);
 
@@ -1267,9 +1267,9 @@ build_sline(
 	 * make it the same size like in !USE_CURSES case to simplify the code
 	 */
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		buffer = my_malloc(cCOLS * MB_CUR_MAX + 2);
+		buffer = my_malloc((size_t) cCOLS * MB_CUR_MAX + 2);
 #	else
-		buffer = my_malloc(cCOLS + 2);
+		buffer = my_malloc((size_t) cCOLS + 2);
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #else
 	buffer = screen[INDEX2SNUM(i)].col;
@@ -1309,7 +1309,7 @@ build_sline(
 				if (my_strftime(buf, LEN - 1, grp_fmt.date_str, localtime((const time_t *) &arts[j].date))) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					if ((wtmp = char2wchar_t(buf)) != NULL) {
-						wtmp2 = wcspart(wtmp, (int) grp_fmt.len_date_max, TRUE);
+						wtmp2 = wcspart(wtmp, grp_fmt.len_date_max, TRUE);
 						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 							strcat(buffer, tmp);
 
@@ -1329,7 +1329,7 @@ build_sline(
 					get_author(FALSE, &arts[j], tmp, sizeof(tmp) - 1);
 
 					if ((wtmp = char2wchar_t(tmp)) != NULL) {
-						wtmp2 = wcspart(wtmp, (int) grp_fmt.len_from, TRUE);
+						wtmp2 = wcspart(wtmp, grp_fmt.len_from, TRUE);
 						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 							strcat(buffer, tmp);
 
@@ -1434,7 +1434,7 @@ build_sline(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if ((wtmp = char2wchar_t(arts_sub)) != NULL) {
-					wtmp2 = wcspart(wtmp, (int) len, TRUE);
+					wtmp2 = wcspart(wtmp, len, TRUE);
 					if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 						strcat(buffer, tmp);
 

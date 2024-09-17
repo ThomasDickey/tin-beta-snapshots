@@ -718,7 +718,7 @@ make_help_page(
 			 */
 			buf = my_realloc(buf, LEN);
 
-			if (!strlen(helppage->helptext))	/* avoid translation of empty strings */
+			if (!*helppage->helptext)	/* avoid translation of empty strings */
 				strcpy(buf, "\n");
 			else
 				strncpy(buf, _(helppage->helptext), LEN);

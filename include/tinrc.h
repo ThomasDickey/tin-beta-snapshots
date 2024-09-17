@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2024-07-01
+ *  Updated   : 2024-08-28
  *  Notes     :
  *
  * Copyright (c) 1999-2024 Jason Faultless <jason@altarstone.com>
@@ -77,71 +77,71 @@ struct t_config {
 		char art_marked_killed;
 		char art_marked_read_selected;
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	char editor_format[PATH_LEN];		/* editor + parameters  %E +%N %F */
-	char default_goto_group[HEADER_LEN];		/* default for the 'g' command */
-	char default_mail_address[HEADER_LEN];
-	char mailer_format[PATH_LEN];		/* mailer + parameters  %M %S %T %F */
+	char *editor_format;				/* editor + parameters  %E +%N %F */
+	char *default_goto_group;			/* default for the 'g' command */
+	char *default_mail_address;
+	char *mailer_format;				/* mailer + parameters  %M %S %T %F */
 #	ifndef DONT_HAVE_PIPING
-		char default_pipe_command[LEN];
+		char *default_pipe_command;
 #	endif /* DONT_HAVE_PIPING */
-	char default_post_newsgroups[HEADER_LEN];	/* default newsgroups to post to */
-	char default_post_subject[LEN];	/* default subject when posting */
+	char *default_post_newsgroups;		/* default newsgroups to post to */
+	char *default_post_subject;			/* default subject when posting */
 #	ifndef DISABLE_PRINTING
-		char printer[LEN];					/* printer program specified from tinrc */
+		char *printer;					/* printer program specified from tinrc */
 #	endif /* !DISABLE_PRINTING */
-	char default_range_group[LEN];
-	char default_range_select[LEN];
-	char default_range_thread[LEN];
-	char default_pattern[LEN];
-	char default_repost_group[LEN];		/* default group to repost to */
-	char default_save_file[PATH_LEN];
-	char default_search_art[LEN];		/* default when searching in article */
-	char default_search_author[HEADER_LEN];	/* default when searching for author */
-	char default_search_config[LEN];	/* default when searching config menu */
-	char default_search_group[HEADER_LEN];		/* default when searching select screen */
-	char default_search_subject[LEN];	/* default when searching by subject */
-	char default_select_pattern[LEN];
-	char default_shell_command[LEN];
-	char mail_quote_format[LEN];
-	char maildir[PATH_LEN];				/* mailbox dir where = saves are stored */
+	char *default_range_group;
+	char *default_range_select;
+	char *default_range_thread;
+	char *default_pattern;
+	char *default_repost_group;			/* default group to repost to */
+	char *default_save_file;
+	char *default_search_art;			/* default when searching in article */
+	char *default_search_author;		/* default when searching for author */
+	char *default_search_config;		/* default when searching config menu */
+	char *default_search_group;			/* default when searching select screen */
+	char *default_search_subject;		/* default when searching by subject */
+	char *default_select_pattern;
+	char *default_shell_command;
+	char *mail_quote_format;
+	char *maildir;						/* mailbox dir where = saves are stored */
 	int mailbox_format;					/* format of the mailbox (mboxo, mboxrd, mmdf, ...) */
-	char mail_address[HEADER_LEN];				/* user's mail address */
-	char metamail_prog[PATH_LEN];				/* name of MIME message viewer */
+	char *mail_address;					/* user's mail address */
+	char *metamail_prog;				/* name of MIME message viewer */
 #	ifndef CHARSET_CONVERSION
-		char mm_charset[LEN];				/* MIME charset */
+		char *mm_charset;				/* MIME charset */
 #	else
 		int mm_network_charset;				/* MIME charset */
 #	endif /* !CHARSET_CONVERSION */
-	char mm_local_charset[LEN];		/* display charset, not a rc/Menu-option anymore -> should be moved elsewhere */
+	char *mm_local_charset;				/* display charset, not a rc/Menu-option anymore -> should be moved elsewhere */
 #	if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 		t_bool translit;						/* use //TRANSLIT */
 #	endif /* HAVE_ICONV_OPEN_TRANSLIT && CHARSET_CONVERSION */
-	char news_headers_to_display[LEN];	/* which headers to display */
-	char news_headers_to_not_display[LEN];	/* which headers to not display */
-	char news_quote_format[LEN];
-	char quote_chars[LEN];			/* quote chars for posting/mails ": " (size matches prefixbuf in copy_body() */
+	char *news_headers_to_display;		/* which headers to display */
+	char *news_headers_to_not_display;	/* which headers to not display */
+	char *news_quote_format;
+	char *quote_chars;					/* quote chars for posting/mails ": " (size matches prefixbuf in copy_body() */
 #	ifdef HAVE_COLOR
-		char quote_regex[LEN];				/* regex used to determine quoted lines */
-		char quote_regex2[LEN];				/* regex used to determine twice quoted lines */
-		char quote_regex3[LEN];				/* regex used to determine >=3 times quoted lines */
-		char extquote_regex[LEN];			/* regex used to determine quoted lines from external sources */
+		char *quote_regex;				/* regex used to determine quoted lines */
+		char *quote_regex2;				/* regex used to determine twice quoted lines */
+		char *quote_regex3;				/* regex used to determine >=3 times quoted lines */
+		char *extquote_regex;			/* regex used to determine quoted lines from external sources */
 #	endif /* HAVE_COLOR */
-	char slashes_regex[LEN];			/* regex used to highlight /slashes/ */
-	char stars_regex[LEN];				/* regex used to highlight *stars* */
-	char underscores_regex[LEN];			/* regex used to highlight _underscores_ */
-	char strokes_regex[LEN];			/* regex used to highlight -strokes- */
-	char sigfile[PATH_LEN];
-	char strip_re_regex[LEN];			/* regex used to find and remove 'Re:'-like strings */
-	char strip_was_regex[LEN];			/* regex used to find and remove '(was:.*'-like strings */
-	char verbatim_begin_regex[LEN];			/* regex used to find the begin of a verbatim block */
-	char verbatim_end_regex[LEN];			/* regex used to find the end of a verbatim block */
-	char savedir[PATH_LEN];				/* directory to save articles to */
-	char spamtrap_warning_addresses[LEN];
+	char *slashes_regex;				/* regex used to highlight /slashes/ */
+	char *stars_regex;					/* regex used to highlight *stars* */
+	char *underscores_regex;			/* regex used to highlight _underscores_ */
+	char *strokes_regex;				/* regex used to highlight -strokes- */
+	char *sigfile;
+	char *strip_re_regex;				/* regex used to find and remove 'Re:'-like strings */
+	char *strip_was_regex;				/* regex used to find and remove '(was:.*'-like strings */
+	char *verbatim_begin_regex;			/* regex used to find the begin of a verbatim block */
+	char *verbatim_end_regex;			/* regex used to find the end of a verbatim block */
+	char *savedir;						/* directory to save articles to */
+	char *spamtrap_warning_addresses;
 #	ifdef NNTPS_ABLE
-		char tls_ca_cert_file[PATH_LEN];	/* file containing trusted CA certificates */
+		char *tls_ca_cert_file;			/* file containing trusted CA certificates */
 #	endif /* NNTPS_ABLE */
-	char url_handler[LEN];				/* Helper app for opening URL's */
-	char xpost_quote_format[LEN];
+	char *url_handler;					/* Helper app for opening URL's */
+	char *xpost_quote_format;
 	int filter_days;					/* num of days an article filter can be active */
 	int default_filter_kill_header;
 	int default_filter_select_header;
@@ -233,7 +233,7 @@ struct t_config {
 	t_bool info_in_last_line;
 	t_bool inverse_okay;
 	t_bool keep_dead_articles;			/* keep all dead articles in dead.articles */
-	char posted_articles_file[PATH_LEN];		/* if set, file in which to keep posted articles */
+	char *posted_articles_file;			/* if set, file in which to keep posted articles */
 	t_bool mail_8bit_header;			/* allow 8bit chars. in header of mail message */
 	t_bool mark_ignore_tags;			/* Ignore tags for GROUP_MARK_THREAD_READ/THREAD_MARK_ARTICLE_READ */
 	t_bool mark_saved_read;				/* mark saved article/thread as read */
@@ -270,7 +270,7 @@ struct t_config {
 #	ifdef HAVE_COLOR
 		t_bool extquote_handling;		/* Detection of quoted text from external sources */
 #	endif /* HAVE_COLOR */
-	char inews_prog[PATH_LEN];
+	char *inews_prog;
 #	ifdef USE_CANLOCK
 		int cancel_lock_algo;			/* algorithm used for Cancel-Lock/Cancel-Key */
 #	endif /* USE_CANLOCK */
@@ -290,13 +290,13 @@ struct t_config {
 		t_bool use_slrnface;			/* Use the slrnface program to display 'X-Face:'s */
 #	endif /* XFACE_ABLE */
 	t_bool default_filter_select_global;
-	char select_format[LEN];		/* format string for the selection level */
-	char group_format[LEN];			/* format string for the group level */
-	char thread_format[LEN];		/* format string for the thread level */
-	char attachment_format[LEN];	/* format string for the attachment level */
-	char page_mime_format[LEN];		/* format string for the mime header in page level */
-	char page_uue_format[LEN];		/* format string for the uue header in page level */
-	char date_format[LEN];			/* format string for the date display in the page header */
+	char *select_format;			/* format string for the selection level */
+	char *group_format;				/* format string for the group level */
+	char *thread_format;			/* format string for the thread level */
+	char *attachment_format;		/* format string for the attachment level */
+	char *page_mime_format;			/* format string for the mime header in page level */
+	char *page_uue_format;			/* format string for the uue header in page level */
+	char *date_format;				/* format string for the date display in the page header */
 #	ifdef HAVE_UNICODE_NORMALIZATION
 		int normalization_form;
 #	endif /* HAVE_UNICODE_NORMALIZATION */
@@ -305,36 +305,36 @@ struct t_config {
 #	endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
 #	ifdef CHARSET_CONVERSION
 		int attrib_mm_network_charset;
-		char attrib_undeclared_charset[LEN];
+		char *attrib_undeclared_charset;
 #		ifdef USE_ICU_UCSDET
 		t_bool attrib_undeclared_cs_guess;
 #		endif /* USE_ICU_UCSDET */
 #	endif /* !CHARSET_CONVERSION */
-	char attrib_editor_format[PATH_LEN];
-	char attrib_fcc[PATH_LEN];
-	char attrib_maildir[PATH_LEN];
-	char attrib_from[HEADER_LEN];
-	char attrib_mailing_list[HEADER_LEN];
-	char attrib_organization[LEN];
-	char attrib_followup_to[LEN];
-	char attrib_mime_types_to_save[LEN];
-	char attrib_news_headers_to_display[LEN];
-	char attrib_news_headers_to_not_display[LEN];
-	char attrib_news_quote_format[LEN];
-	char attrib_quote_chars[LEN];
-	char attrib_sigfile[PATH_LEN];
-	char attrib_savedir[PATH_LEN];
-	char attrib_savefile[PATH_LEN];
-	char attrib_x_body[LEN];
-	char attrib_x_headers[HEADER_LEN];
+	char *attrib_editor_format;
+	char *attrib_fcc;
+	char *attrib_maildir;
+	char *attrib_from;
+	char *attrib_mailing_list;
+	char *attrib_organization;
+	char *attrib_followup_to;
+	char *attrib_mime_types_to_save;
+	char *attrib_news_headers_to_display;
+	char *attrib_news_headers_to_not_display;
+	char *attrib_news_quote_format;
+	char *attrib_quote_chars;
+	char *attrib_sigfile;
+	char *attrib_savedir;
+	char *attrib_savefile;
+	char *attrib_x_body;
+	char *attrib_x_headers;
 #	ifdef HAVE_ISPELL
-		char attrib_ispell[PATH_LEN];
+		char *attrib_ispell;
 #	endif /* HAVE_ISPELL */
-	char attrib_quick_kill_scope[LEN];
-	char attrib_quick_select_scope[LEN];
-	char attrib_group_format[LEN];
-	char attrib_thread_format[LEN];
-	char attrib_date_format[LEN];
+	char *attrib_quick_kill_scope;
+	char *attrib_quick_select_scope;
+	char *attrib_group_format;
+	char *attrib_thread_format;
+	char *attrib_date_format;
 	int attrib_trim_article_body;
 	int attrib_auto_cc_bcc;
 	int attrib_quick_kill_header;

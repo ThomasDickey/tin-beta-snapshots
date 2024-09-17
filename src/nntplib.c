@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2024-07-31
+ *  Updated   : 2024-08-15
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -157,7 +157,7 @@ getserverbyfile(
 	}
 
 #ifdef NNTP_ABLE
-	if (cmdline.args & CMDLINE_NNTPSERVER) {
+	if (cmdline.nntpserver) {
 		char *p, *q;
 		int i;
 
@@ -1145,10 +1145,10 @@ close_server(
 	t_bool send_no_quit)
 {
 	if (!send_no_quit && nntpbuf_is_open(&nntp_buf)) {
-		if (!batch_mode || verbose) {
+		if ((!batch_mode || verbose) && cCOLS > 1) {
 			char *msg;
 
-			msg = strunc(_(txt_disconnecting), cCOLS - 1);
+			msg = strunc(_(txt_disconnecting), (size_t) (cCOLS - 1));
 			my_fputs(msg, stdout);
 			my_fputc('\n', stdout);
 			free(msg);
@@ -1381,7 +1381,7 @@ check_extensions(
 								}
 							}
 							str_trim(nntp_caps.sasl_mechs);
-							if (strlen(nntp_caps.sasl_mechs))
+							if (*nntp_caps.sasl_mechs)
 								nntp_caps.authinfo_sasl = TRUE;
 						}
 					} else if (!strncasecmp(ptr, "COMPRESS", 8)) { /* RFC 8054 */

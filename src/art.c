@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-28
+ *  Updated   : 2024-09-10
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -2616,9 +2616,9 @@ write_overview(
 
 #ifdef CHARSET_CONVERSION
 	/* get undeclared_charset number if required */
-	if (group->attribute->undeclared_charset) {
+	if (group->attribute->undeclared_charset && *group->attribute->undeclared_charset) {
 		for (i = 0; txt_mime_charsets[i] != NULL; i++) {
-			if (!strcasecmp(group->attribute->undeclared_charset, txt_mime_charsets[i])) {
+			if (!strcasecmp(*group->attribute->undeclared_charset, txt_mime_charsets[i])) {
 				c = i;
 				break;
 			}
@@ -2654,7 +2654,7 @@ write_overview(
 			} else { /* raw data */
 				p = my_strdup(article->subject);
 #ifdef CHARSET_CONVERSION
-				if (group->attribute->undeclared_charset && c != -1) /* use undeclared_charset if set (otherwise local charset is used) */
+				if (group->attribute->undeclared_charset && *group->attribute->undeclared_charset && c != -1) /* use undeclared_charset if set (otherwise local charset is used) */
 					buffer_to_network(p, c);
 #endif /* CHARSET_CONVERSION */
 			}
@@ -2819,6 +2819,12 @@ find_nov_file(
 				make_base_group_path(novrootdir, group->name, buf, sizeof(buf));
 				joinpath(nov_file, sizeof(nov_file), buf, novfilename);
 #	if 0	/* TODO: FIXME - ugly hack for inn >= 2.3.0 with ovmethod tradindexed */
+				/*
+				 * TODO: try to access inn >= 2.3.0 overviews (once)
+				 *       and if that fails (!opendir("....DAT/"))
+				 *       try the usual path: if ok don't try
+				 *       inn >= 2.3.0 overviews again in the session.
+				 */
 				{
 					char *gn = my_strdup(group->name);
 					size_t t, j;

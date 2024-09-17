@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2024-07-09
+ *  Updated   : 2024-09-11
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
@@ -84,31 +84,31 @@ set_default_attributes(
 	t_bool global)
 {
 	attributes->global = (global ? TRUE : FALSE);	/* global/group specific */
-	attributes->maildir = (scope ? scope->maildir : (global ? tinrc.maildir : NULL));
-	attributes->savedir = (scope ? scope->savedir : (global ? tinrc.savedir : NULL));
+	attributes->maildir = (scope ? scope->maildir : (global ? &tinrc.maildir : NULL));
+	attributes->savedir = (scope ? scope->savedir : (global ? &tinrc.savedir : NULL));
 	attributes->savefile = NULL;
-	attributes->sigfile = (scope ? scope->sigfile : (global ? tinrc.sigfile : NULL));
-	attributes->group_format = (scope ? scope->group_format : (global ? tinrc.group_format : NULL));
-	attributes->thread_format = (scope ? scope->thread_format : (global ? tinrc.thread_format : NULL));
-	attributes->date_format = (scope ? scope->date_format : (global ? tinrc.date_format : NULL));
-	attributes->editor_format = (scope ? scope->editor_format : (global ? tinrc.editor_format : NULL));
-	attributes->organization = (scope ? scope->organization : (global ? (*default_organization ? default_organization : NULL) : NULL));
+	attributes->sigfile = (scope ? scope->sigfile : (global ? &tinrc.sigfile : NULL));
+	attributes->group_format = (scope ? scope->group_format : (global ? &tinrc.group_format : NULL));
+	attributes->thread_format = (scope ? scope->thread_format : (global ? &tinrc.thread_format : NULL));
+	attributes->date_format = (scope ? scope->date_format : (global ? &tinrc.date_format : NULL));
+	attributes->editor_format = (scope ? scope->editor_format : (global ? &tinrc.editor_format : NULL));
+	attributes->organization = (scope ? scope->organization : (global ? (*default_organization ? &default_organization : NULL) : NULL));
 	attributes->followup_to = NULL;
 	attributes->mailing_list = NULL;
 	attributes->x_headers = NULL;
 	attributes->x_body = NULL;
-	attributes->from = (scope ? scope->from : (global ? tinrc.mail_address : NULL));
-	attributes->news_quote_format = (scope ? scope->news_quote_format : (global ? tinrc.news_quote_format : NULL));
-	attributes->quote_chars = (scope ? scope->quote_chars : (global ? tinrc.quote_chars : NULL));
-	attributes->mime_types_to_save = (scope ? scope->mime_types_to_save : (global ? my_strdup("*/*") : NULL));
+	attributes->from = (scope ? scope->from : (global ? &tinrc.mail_address : NULL));
+	attributes->news_quote_format = (scope ? scope->news_quote_format : (global ? &tinrc.news_quote_format : NULL));
+	attributes->quote_chars = (scope ? scope->quote_chars : (global ? &tinrc.quote_chars : NULL));
+	attributes->mime_types_to_save = (scope ? scope->mime_types_to_save : (global ? &default_mime_types_to_save : NULL));
 #ifdef HAVE_ISPELL
 	attributes->ispell = NULL;
 #endif /* HAVE_ISPELL */
-	attributes->quick_kill_scope = (scope ? scope->quick_kill_scope : (global ? (tinrc.default_filter_kill_global ? my_strdup("*") : NULL) : NULL));
+	attributes->quick_kill_scope = (scope ? scope->quick_kill_scope : (global ? (tinrc.default_filter_kill_global ? &default_filter_kill_global : NULL) : NULL));
 	CopyBits(quick_kill_header, tinrc.default_filter_kill_header);
 	CopyBool(quick_kill_case, tinrc.default_filter_kill_case);
 	CopyBool(quick_kill_expire, tinrc.default_filter_kill_expire);
-	attributes->quick_select_scope = (scope ? scope->quick_select_scope : (global ? (tinrc.default_filter_select_global ? my_strdup("*") : NULL) : NULL));
+	attributes->quick_select_scope = (scope ? scope->quick_select_scope : (global ? (tinrc.default_filter_select_global ? &default_filter_select_global : NULL) : NULL));
 	CopyBits(quick_select_header, tinrc.default_filter_select_header);
 	CopyBool(quick_select_case, tinrc.default_filter_select_case);
 	CopyBool(quick_select_expire, tinrc.default_filter_select_expire);
@@ -144,9 +144,9 @@ set_default_attributes(
 	CopyBits(mail_mime_encoding, tinrc.mail_mime_encoding);
 	CopyBool(mark_ignore_tags, tinrc.mark_ignore_tags);
 	CopyBool(mark_saved_read, tinrc.mark_saved_read);
-	attributes->news_headers_to_display = (global ? tinrc.news_headers_to_display : NULL);
+	attributes->news_headers_to_display = (global ? &tinrc.news_headers_to_display : NULL);
 	attributes->headers_to_display = (scope ? (scope->headers_to_display ? scope->headers_to_display : NULL) : NULL);
-	attributes->news_headers_to_not_display = (global ? tinrc.news_headers_to_not_display : NULL);
+	attributes->news_headers_to_not_display = (global ? &tinrc.news_headers_to_not_display : NULL);
 	attributes->headers_to_not_display = (scope ? (scope->headers_to_not_display ? scope->headers_to_not_display : NULL) : NULL);
 	CopyBool(pos_first_unread, tinrc.pos_first_unread);
 	CopyBool(post_8bit_header, tinrc.post_8bit_header);
@@ -280,8 +280,9 @@ set_default_state(
 		break; \
 	}
 #define MATCH_STRING(pattern, type) \
-	if (match_string(line, pattern, buf, sizeof(buf) - strlen(pattern))) { \
-		set_attrib(type, scope, line, buf); \
+	if (strlen(line) - strlen(pattern) < BUF_SIZE - 1 && match_string_ptr(line, pattern, &tmp)) { \
+		set_attrib(type, scope, line, tmp); \
+		FreeAndNull(tmp); \
 		found = TRUE; \
 		break; \
 	}
@@ -303,14 +304,13 @@ set_default_state(
 /*
  * read global/local attributes file
  */
-void
+t_bool
 read_attributes_file(
 	t_bool global_file)
 {
 	FILE *fp;
-	char *file;
+	char *file, *line, *tmp = NULL;
 	char buf[LEN];
-	char line[LEN];
 	char scope[LEN];
 	int i, num;
 	struct t_version *upgrade = NULL;
@@ -337,13 +337,11 @@ read_attributes_file(
 		wait_message(0, _(txt_reading_attributes_file), global_file ? _(txt_global) : "", file);
 
 	if ((fp = tin_fopen(file, "r")) != NULL) {
+		unsigned int errors = 0, ln = 0;
 		scope[0] = '\0';
-		/*
-		 * TODO: use tin_fgets() instead to handle long lines
-		 * (e.g. buggy translation)
-		 */
-		while (fgets(line, (int) sizeof(line), fp) != NULL) {
-			if (line[0] == '\n')
+		while ((line = tin_fgets(fp, FALSE)) != NULL) {
+			ln++;
+			if (line[0] == '\0')
 				continue;
 			if (line[0] == '#') {
 				if (!global_file) {
@@ -455,7 +453,7 @@ read_attributes_file(
 					MATCH_BOOLEAN("quick_select_expire=", OPT_ATTRIB_QUICK_SELECT_EXPIRE);
 					MATCH_INTEGER("quick_select_header=", OPT_ATTRIB_QUICK_SELECT_HEADER, FILTER_LINES);
 					MATCH_STRING("quick_select_scope=", OPT_ATTRIB_QUICK_SELECT_SCOPE);
-					if (match_string(line, "quote_chars=", buf, sizeof(buf))) {
+					if (strlen(line) - strlen("quote_chars=") < BUF_SIZE - 1 && match_string(line, "quote_chars=", buf, sizeof(buf))) {
 						if (upgrade && upgrade->file_version < 10010) { /* %s/%S changed to %I */
 							char *q = buf;
 
@@ -639,14 +637,31 @@ read_attributes_file(
 
 			if (found)
 				found = FALSE;
-			else {
-				/* TODO: even without DEBUG? */
-				error_message(1, _(txt_bad_attrib), line);
+			else { /* TODO: even without DEBUG? */
+				char *p;
+				const char *msg;
+
+				errors++;
+				if ((p = strchr(line, '='))) {
+					*p = '\0';
+					if (strlen(p + 1) >= BUF_SIZE - 1) {
+						msg = _(txt_error_attrib_too_long);
+					} else
+						msg = _(txt_error_attrib_unknown);
+				} else
+					msg = _(txt_error_attrib_malformed);
+
+				my_fprintf(stderr, msg, ln, line); /* TODO: add log_formatted_msg("ERR", ...)? */
 #ifdef DEBUG
 				if (debug & (DEBUG_ATTRIB))
 					debug_print_file("ATTRIBUTES", txt_bad_attrib, line);
 #endif /* DEBUG */
 			}
+		}
+		if (errors) {
+			my_fflush(stderr);
+			if (!batch_mode)
+				sleep(errors > 15 ? 7 : (errors >> 1) | 0x01);
 		}
 		fclose(fp);
 
@@ -658,28 +673,33 @@ read_attributes_file(
 
 		FreeAndNull(upgrade);
 
-	} else if (!global_file && startup) {
-		/* no local attributes file, add some useful defaults and write file */
+	} else {
+		if (global_file)
+			return FALSE;
 
-		add_scope("*");
-		snprintf(buf, sizeof(buf), "%s", "~/.tin/headers");
-		set_attrib(OPT_ATTRIB_X_HEADERS, "*", "", buf);
+		if (startup) {
+			/* no local attributes file, add some useful defaults and write file */
 
-		add_scope("*sources*");
-		num = POST_PROC_SHAR;
-		set_attrib(OPT_ATTRIB_POST_PROCESS_TYPE, "*sources*", "", &num);
+			add_scope("*");
+			snprintf(buf, sizeof(buf), "%s", "~/.tin/headers");
+			set_attrib(OPT_ATTRIB_X_HEADERS, "*", "", buf);
 
-		add_scope("*binaries*");
-		num = POST_PROC_YES;
-		set_attrib(OPT_ATTRIB_POST_PROCESS_TYPE, "*binaries*", "", &num);
-		num = FALSE;
-		set_attrib(OPT_ATTRIB_TEX2ISO_CONV, "*binaries*", "", &num);
-		num = TRUE;
-		set_attrib(OPT_ATTRIB_DELETE_TMP_FILES, "*binaries*", "", &num);
-		snprintf(buf, sizeof(buf), "%s", "poster");
-		set_attrib(OPT_ATTRIB_FOLLOWUP_TO, "*binaries*", "", buf);
+			add_scope("*sources*");
+			num = POST_PROC_SHAR;
+			set_attrib(OPT_ATTRIB_POST_PROCESS_TYPE, "*sources*", "", &num);
 
-		write_attributes_file(file);
+			add_scope("*binaries*");
+			num = POST_PROC_YES;
+			set_attrib(OPT_ATTRIB_POST_PROCESS_TYPE, "*binaries*", "", &num);
+			num = FALSE;
+			set_attrib(OPT_ATTRIB_TEX2ISO_CONV, "*binaries*", "", &num);
+			num = TRUE;
+			set_attrib(OPT_ATTRIB_DELETE_TMP_FILES, "*binaries*", "", &num);
+			snprintf(buf, sizeof(buf), "%s", "poster");
+			set_attrib(OPT_ATTRIB_FOLLOWUP_TO, "*binaries*", "", buf);
+
+			write_attributes_file(file);
+		}
 	}
 	if (!global_file && startup)
 		startup = FALSE;
@@ -687,12 +707,16 @@ read_attributes_file(
 	if (!global_file)
 		dump_scopes("SCOPES-R");
 #endif /* DEBUG */
+	return TRUE;
 }
 
 
 #define SET_STRING(string) \
-	FreeIfNeeded(curr_scope->attribute->string); \
-	curr_scope->attribute->string = my_strdup((char *) data); \
+	if (!curr_scope->attribute->string) { \
+		curr_scope->attribute->string = my_malloc(sizeof(char *)); \
+	} else \
+		FreeIfNeeded(*curr_scope->attribute->string); \
+	*curr_scope->attribute->string = my_strdup((char *) data); \
 	curr_scope->state->string = TRUE; \
 	break
 
@@ -803,15 +827,21 @@ set_attrib(
 				SET_BOOLEAN(mark_saved_read);
 
 			case OPT_ATTRIB_NEWS_HEADERS_TO_DISPLAY:
-				FreeIfNeeded(curr_scope->attribute->news_headers_to_display);
-				curr_scope->attribute->news_headers_to_display = my_strdup((char *) data);
+				if (!curr_scope->attribute->news_headers_to_display) {
+					curr_scope->attribute->news_headers_to_display = my_malloc(sizeof(char *));
+				} else
+					FreeIfNeeded(*curr_scope->attribute->news_headers_to_display);
+				*curr_scope->attribute->news_headers_to_display = my_strdup((char *) data);
 				build_news_headers_array(curr_scope->attribute, TRUE);
 				curr_scope->state->news_headers_to_display = TRUE;
 				break;
 
 			case OPT_ATTRIB_NEWS_HEADERS_TO_NOT_DISPLAY:
-				FreeIfNeeded(curr_scope->attribute->news_headers_to_not_display);
-				curr_scope->attribute->news_headers_to_not_display = my_strdup((char *) data);
+				if (!curr_scope->attribute->news_headers_to_not_display) {
+					curr_scope->attribute->news_headers_to_not_display = my_malloc(sizeof(char *));
+				} else
+					FreeIfNeeded(*curr_scope->attribute->news_headers_to_not_display);
+				*curr_scope->attribute->news_headers_to_not_display = my_strdup((char *) data);
 				build_news_headers_array(curr_scope->attribute, FALSE);
 				curr_scope->state->news_headers_to_not_display = TRUE;
 				break;
@@ -1109,10 +1139,14 @@ assign_attributes_to_groups(
 				SET_ATTRIB(mail_mime_encoding);
 				SET_ATTRIB(mark_ignore_tags);
 				SET_ATTRIB(mark_saved_read);
-				if (curr_scope->state->news_headers_to_display)
+				if (curr_scope->state->news_headers_to_display) {
+					SET_ATTRIB(news_headers_to_display);
 					group->attribute->headers_to_display = curr_scope->attribute->headers_to_display;
-				if (curr_scope->state->news_headers_to_not_display)
+				}
+				if (curr_scope->state->news_headers_to_not_display) {
+					SET_ATTRIB(news_headers_to_not_display);
 					group->attribute->headers_to_not_display = curr_scope->attribute->headers_to_not_display;
+				}
 				SET_ATTRIB(pos_first_unread);
 				SET_ATTRIB(post_8bit_header);
 				SET_ATTRIB(post_mime_encoding);
@@ -1197,7 +1231,7 @@ build_news_headers_array(
 				FreeIfNeeded(*scope->headers_to_display->header);
 			FreeIfNeeded(scope->headers_to_display->header);
 		}
-		scope->headers_to_display->header = ulBuildArgv(scope->news_headers_to_display, &scope->headers_to_display->num);
+		scope->headers_to_display->header = ulBuildArgv(scope->news_headers_to_display ? BlankIfNull(*scope->news_headers_to_display) : "", &scope->headers_to_display->num);
 	} else {
 		if (scope->headers_to_not_display == NULL)
 			scope->headers_to_not_display = my_malloc(sizeof(struct t_newsheader));
@@ -1206,10 +1240,12 @@ build_news_headers_array(
 				FreeIfNeeded(*scope->headers_to_not_display->header);
 			FreeIfNeeded(scope->headers_to_not_display->header);
 		}
-		scope->headers_to_not_display->header = ulBuildArgv(scope->news_headers_to_not_display, &scope->headers_to_not_display->num);
+		scope->headers_to_not_display->header = ulBuildArgv(scope->news_headers_to_not_display ? BlankIfNull(*scope->news_headers_to_not_display) : "", &scope->headers_to_not_display->num);
 	}
 }
 
+
+#define ATTRIB_IS_SET(attrib) (scope->state->attrib && scope->attribute->attrib && *scope->attribute->attrib)
 
 /*
  * Save the scope attributes from scopes[] to ~/.tin/attributes
@@ -1466,64 +1502,64 @@ write_attributes_file(
 					fprintf(fp, "auto_select=%s\n", print_boolean(scope->attribute->auto_select));
 				if (scope->state->batch_save)
 					fprintf(fp, "batch_save=%s\n", print_boolean(scope->attribute->batch_save));
-				if (scope->state->date_format && scope->attribute->date_format)
-					fprintf(fp, "date_format=%s\n", scope->attribute->date_format);
+				if (ATTRIB_IS_SET(date_format))
+					fprintf(fp, "date_format=%s\n", *scope->attribute->date_format);
 				if (scope->state->delete_tmp_files)
 					fprintf(fp, "delete_tmp_files=%s\n", print_boolean(scope->attribute->delete_tmp_files));
-				if (scope->state->editor_format && scope->attribute->editor_format)
-					fprintf(fp, "editor_format=%s\n", scope->attribute->editor_format);
+				if (ATTRIB_IS_SET(editor_format))
+					fprintf(fp, "editor_format=%s\n", *scope->attribute->editor_format);
 #ifdef HAVE_COLOR
 				if (scope->state->extquote_handling)
 					fprintf(fp, "extquote_handling=%s\n", print_boolean(scope->attribute->extquote_handling));
 #endif /* HAVE_COLOR */
-				if (scope->state->fcc && scope->attribute->fcc)
-					fprintf(fp, "fcc=%s\n", scope->attribute->fcc);
-				if (scope->state->followup_to && scope->attribute->followup_to)
-					fprintf(fp, "followup_to=%s\n", scope->attribute->followup_to);
-				if (scope->state->from && scope->attribute->from)
-					fprintf(fp, "from=%s\n", scope->attribute->from);
+				if (ATTRIB_IS_SET(fcc))
+					fprintf(fp, "fcc=%s\n", *scope->attribute->fcc);
+				if (ATTRIB_IS_SET(followup_to))
+					fprintf(fp, "followup_to=%s\n", *scope->attribute->followup_to);
+				if (ATTRIB_IS_SET(from))
+					fprintf(fp, "from=%s\n", *scope->attribute->from);
 				if (scope->state->group_catchup_on_exit)
 					fprintf(fp, "group_catchup_on_exit=%s\n", print_boolean(scope->attribute->group_catchup_on_exit));
-				if (scope->state->group_format && scope->attribute->group_format)
-					fprintf(fp, "group_format=%s\n", scope->attribute->group_format);
+				if (ATTRIB_IS_SET(group_format))
+					fprintf(fp, "group_format=%s\n", *scope->attribute->group_format);
 				if (scope->state->mail_8bit_header)
 					fprintf(fp, "mail_8bit_header=%s\n", print_boolean(scope->attribute->mail_8bit_header));
 				if (scope->state->mail_mime_encoding)
 					fprintf(fp, "mail_mime_encoding=%s\n", txt_mime_encodings[scope->attribute->mail_mime_encoding]);
 #ifdef HAVE_ISPELL
-				if (scope->state->ispell && scope->attribute->ispell)
-					fprintf(fp, "ispell=%s\n", scope->attribute->ispell);
+				if (ATTRIB_IS_SET(ispell))
+					fprintf(fp, "ispell=%s\n", *scope->attribute->ispell);
 #endif /* HAVE_ISPELL */
-				if (scope->state->maildir && scope->attribute->maildir)
-					fprintf(fp, "maildir=%s\n", scope->attribute->maildir);
-				if (scope->state->mailing_list && scope->attribute->mailing_list)
-					fprintf(fp, "mailing_list=%s\n", scope->attribute->mailing_list);
+				if (ATTRIB_IS_SET(maildir))
+					fprintf(fp, "maildir=%s\n", *scope->attribute->maildir);
+				if (ATTRIB_IS_SET(mailing_list))
+					fprintf(fp, "mailing_list=%s\n", *scope->attribute->mailing_list);
 				if (scope->state->mark_ignore_tags)
 					fprintf(fp, "mark_ignore_tags=%s\n", print_boolean(scope->attribute->mark_ignore_tags));
 				if (scope->state->mark_saved_read)
 					fprintf(fp, "mark_saved_read=%s\n", print_boolean(scope->attribute->mark_saved_read));
 				if (scope->state->mime_forward)
 					fprintf(fp, "mime_forward=%s\n", print_boolean(scope->attribute->mime_forward));
-				if (scope->state->mime_types_to_save && scope->attribute->mime_types_to_save)
-					fprintf(fp, "mime_types_to_save=%s\n", scope->attribute->mime_types_to_save);
+				if (ATTRIB_IS_SET(mime_types_to_save))
+					fprintf(fp, "mime_types_to_save=%s\n", *scope->attribute->mime_types_to_save);
 #ifdef CHARSET_CONVERSION
 				if (scope->state->mm_network_charset)
 					fprintf(fp, "mm_network_charset=%s\n", txt_mime_charsets[scope->attribute->mm_network_charset]);
-				if (scope->state->undeclared_charset && scope->attribute->undeclared_charset)
-					fprintf(fp, "undeclared_charset=%s\n", scope->attribute->undeclared_charset);
+				if (ATTRIB_IS_SET(undeclared_charset))
+					fprintf(fp, "undeclared_charset=%s\n", *scope->attribute->undeclared_charset);
 #	ifdef USE_ICU_UCSDET
 				if (scope->state->undeclared_cs_guess)
 					fprintf(fp, "undeclared_cs_guess=%s\n", print_boolean(scope->attribute->undeclared_cs_guess));
 #	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
-				if (scope->state->news_headers_to_display && scope->attribute->news_headers_to_display)
-					fprintf(fp, "news_headers_to_display=%s\n", scope->attribute->news_headers_to_display);
-				if (scope->state->news_headers_to_not_display && scope->attribute->news_headers_to_not_display)
-					fprintf(fp, "news_headers_to_not_display=%s\n", scope->attribute->news_headers_to_not_display);
-				if (scope->state->news_quote_format && scope->attribute->news_quote_format)
-					fprintf(fp, "news_quote_format=%s\n", scope->attribute->news_quote_format);
-				if (scope->state->organization && scope->attribute->organization)
-					fprintf(fp, "organization=%s\n", scope->attribute->organization);
+				if (ATTRIB_IS_SET(news_headers_to_display))
+					fprintf(fp, "news_headers_to_display=%s\n", *scope->attribute->news_headers_to_display);
+				if (ATTRIB_IS_SET(news_headers_to_not_display))
+					fprintf(fp, "news_headers_to_not_display=%s\n", *scope->attribute->news_headers_to_not_display);
+				if (ATTRIB_IS_SET(news_quote_format))
+					fprintf(fp, "news_quote_format=%s\n", *scope->attribute->news_quote_format);
+				if (ATTRIB_IS_SET(organization))
+					fprintf(fp, "organization=%s\n", *scope->attribute->organization);
 				if (scope->state->pos_first_unread)
 					fprintf(fp, "pos_first_unread=%s\n", print_boolean(scope->attribute->pos_first_unread));
 				if (scope->state->post_8bit_header)
@@ -1542,28 +1578,28 @@ write_attributes_file(
 					fprintf(fp, "process_only_unread=%s\n", print_boolean(scope->attribute->process_only_unread));
 				if (scope->state->prompt_followupto)
 					fprintf(fp, "prompt_followupto=%s\n", print_boolean(scope->attribute->prompt_followupto));
-				if (scope->state->quick_kill_scope && scope->attribute->quick_kill_scope)
-					fprintf(fp, "quick_kill_scope=%s\n", scope->attribute->quick_kill_scope);
+				if (ATTRIB_IS_SET(quick_kill_scope))
+					fprintf(fp, "quick_kill_scope=%s\n", *scope->attribute->quick_kill_scope);
 				if (scope->state->quick_kill_case)
 					fprintf(fp, "quick_kill_case=%s\n", print_boolean(scope->attribute->quick_kill_case));
 				if (scope->state->quick_kill_expire)
 					fprintf(fp, "quick_kill_expire=%s\n", print_boolean(scope->attribute->quick_kill_expire));
 				if (scope->state->quick_kill_header)
 					fprintf(fp, "quick_kill_header=%u\n", (unsigned) scope->attribute->quick_kill_header);
-				if (scope->state->quick_select_scope && scope->attribute->quick_select_scope)
-					fprintf(fp, "quick_select_scope=%s\n", scope->attribute->quick_select_scope);
+				if (ATTRIB_IS_SET(quick_select_scope))
+					fprintf(fp, "quick_select_scope=%s\n", *scope->attribute->quick_select_scope);
 				if (scope->state->quick_select_case)
 					fprintf(fp, "quick_select_case=%s\n", print_boolean(scope->attribute->quick_select_case));
 				if (scope->state->quick_select_expire)
 					fprintf(fp, "quick_select_expire=%s\n", print_boolean(scope->attribute->quick_select_expire));
 				if (scope->state->quick_select_header)
 					fprintf(fp, "quick_select_header=%u\n", (unsigned) scope->attribute->quick_select_header);
-				if (scope->state->quote_chars && scope->attribute->quote_chars)
-					fprintf(fp, "quote_chars=%s\n", quote_space_to_dash(scope->attribute->quote_chars));
-				if (scope->state->savedir && scope->attribute->savedir)
-					fprintf(fp, "savedir=%s\n", scope->attribute->savedir);
-				if (scope->state->savefile && scope->attribute->savefile)
-					fprintf(fp, "savefile=%s\n", scope->attribute->savefile);
+				if (ATTRIB_IS_SET(quote_chars))
+					fprintf(fp, "quote_chars=%s\n", quote_space_to_dash(*scope->attribute->quote_chars));
+				if (ATTRIB_IS_SET(savedir))
+					fprintf(fp, "savedir=%s\n", *scope->attribute->savedir);
+				if (ATTRIB_IS_SET(savefile))
+					fprintf(fp, "savefile=%s\n", *scope->attribute->savefile);
 				if (scope->state->show_author)
 					fprintf(fp, "show_author=%u\n", (unsigned) scope->attribute->show_author);
 				if (scope->state->show_only_unread_arts)
@@ -1574,8 +1610,8 @@ write_attributes_file(
 					fprintf(fp, "show_art_score=%s\n", print_boolean(scope->attribute->show_art_score));
 				if (scope->state->sigdashes)
 					fprintf(fp, "sigdashes=%s\n", print_boolean(scope->attribute->sigdashes));
-				if (scope->state->sigfile && scope->attribute->sigfile)
-					fprintf(fp, "sigfile=%s\n", scope->attribute->sigfile);
+				if (ATTRIB_IS_SET(sigfile))
+					fprintf(fp, "sigfile=%s\n", *scope->attribute->sigfile);
 				if (scope->state->signature_repost)
 					fprintf(fp, "signature_repost=%s\n", print_boolean(scope->attribute->signature_repost));
 				if (scope->state->sort_article_type)
@@ -1592,8 +1628,8 @@ write_attributes_file(
 					fprintf(fp, "thread_articles=%u\n", (unsigned) scope->attribute->thread_articles);
 				if (scope->state->thread_catchup_on_exit)
 					fprintf(fp, "thread_catchup_on_exit=%s\n", print_boolean(scope->attribute->thread_catchup_on_exit));
-				if (scope->state->thread_format && scope->attribute->thread_format)
-					fprintf(fp, "thread_format=%s\n", scope->attribute->thread_format);
+				if (ATTRIB_IS_SET(thread_format))
+					fprintf(fp, "thread_format=%s\n", *scope->attribute->thread_format);
 				if (scope->state->thread_perc)
 					fprintf(fp, "thread_perc=%u\n", (unsigned) scope->attribute->thread_perc);
 				if (scope->state->trim_article_body)
@@ -1602,10 +1638,10 @@ write_attributes_file(
 					fprintf(fp, "verbatim_handling=%s\n", print_boolean(scope->attribute->verbatim_handling));
 				if (scope->state->wrap_on_next_unread)
 					fprintf(fp, "wrap_on_next_unread=%s\n", print_boolean(scope->attribute->wrap_on_next_unread));
-				if (scope->state->x_headers && scope->attribute->x_headers)
-					fprintf(fp, "x_headers=%s\n", scope->attribute->x_headers);
-				if (scope->state->x_body && scope->attribute->x_body)
-					fprintf(fp, "x_body=%s\n", scope->attribute->x_body);
+				if (ATTRIB_IS_SET(x_headers))
+					fprintf(fp, "x_headers=%s\n", *scope->attribute->x_headers);
+				if (ATTRIB_IS_SET(x_body))
+					fprintf(fp, "x_body=%s\n", *scope->attribute->x_body);
 				if (scope->state->x_comment_to)
 					fprintf(fp, "x_comment_to=%s\n", print_boolean(scope->attribute->x_comment_to));
 			}
@@ -1650,39 +1686,39 @@ skip_scope(
 		|| scope->state->auto_list_thread
 		|| scope->state->auto_select
 		|| scope->state->batch_save
-		|| (scope->state->date_format && scope->attribute->date_format)
+		|| ATTRIB_IS_SET(date_format)
 		|| scope->state->delete_tmp_files
-		|| (scope->state->editor_format && scope->attribute->editor_format)
+		|| ATTRIB_IS_SET(editor_format)
 #ifdef HAVE_COLOR
 		|| scope->state->extquote_handling
 #endif /* HAVE_COLOR */
-		|| (scope->state->fcc && scope->attribute->fcc)
-		|| (scope->state->followup_to && scope->attribute->followup_to)
-		|| (scope->state->from && scope->attribute->from)
+		|| ATTRIB_IS_SET(fcc)
+		|| ATTRIB_IS_SET(followup_to)
+		|| ATTRIB_IS_SET(from)
 		|| scope->state->group_catchup_on_exit
-		|| (scope->state->group_format && scope->attribute->group_format)
+		|| ATTRIB_IS_SET(group_format)
 		|| scope->state->mail_8bit_header
 		|| scope->state->mail_mime_encoding
 #ifdef HAVE_ISPELL
-		|| (scope->state->ispell && scope->attribute->ispell)
+		|| ATTRIB_IS_SET(ispell)
 #endif /* HAVE_ISPELL */
-		|| (scope->state->maildir && scope->attribute->maildir)
-		|| (scope->state->mailing_list && scope->attribute->mailing_list)
+		|| ATTRIB_IS_SET(maildir)
+		|| ATTRIB_IS_SET(mailing_list)
 		|| scope->state->mark_ignore_tags
 		|| scope->state->mark_saved_read
 		|| scope->state->mime_forward
-		|| (scope->state->mime_types_to_save && scope->attribute->mime_types_to_save)
+		|| ATTRIB_IS_SET(mime_types_to_save)
 #ifdef CHARSET_CONVERSION
 		|| scope->state->mm_network_charset
-		|| (scope->state->undeclared_charset && scope->attribute->undeclared_charset)
+		|| ATTRIB_IS_SET(undeclared_charset)
 #	ifdef USE_ICU_UCSDET
 		|| scope->state->undeclared_cs_guess
 #	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
-		|| (scope->state->news_headers_to_display && scope->attribute->news_headers_to_display)
-		|| (scope->state->news_headers_to_not_display && scope->attribute->news_headers_to_not_display)
-		|| (scope->state->news_quote_format && scope->attribute->news_quote_format)
-		|| (scope->state->organization && scope->attribute->organization)
+		|| ATTRIB_IS_SET(news_headers_to_display)
+		|| ATTRIB_IS_SET(news_headers_to_not_display)
+		|| ATTRIB_IS_SET(news_quote_format)
+		|| ATTRIB_IS_SET(organization)
 		|| scope->state->pos_first_unread
 		|| scope->state->post_8bit_header
 		|| scope->state->post_mime_encoding
@@ -1693,23 +1729,23 @@ skip_scope(
 #endif /* !DISABLE_PRINTING */
 		|| scope->state->process_only_unread
 		|| scope->state->prompt_followupto
-		|| (scope->state->quick_kill_scope && scope->attribute->quick_kill_scope)
+		|| ATTRIB_IS_SET(quick_kill_scope)
 		|| scope->state->quick_kill_case
 		|| scope->state->quick_kill_expire
 		|| scope->state->quick_kill_header
-		|| (scope->state->quick_select_scope && scope->attribute->quick_select_scope)
+		|| ATTRIB_IS_SET(quick_select_scope)
 		|| scope->state->quick_select_case
 		|| scope->state->quick_select_expire
 		|| scope->state->quick_select_header
-		|| (scope->state->quote_chars && scope->attribute->quote_chars)
-		|| (scope->state->savedir && scope->attribute->savedir)
-		|| (scope->state->savefile && scope->attribute->savefile)
+		|| ATTRIB_IS_SET(quote_chars)
+		|| ATTRIB_IS_SET(savedir)
+		|| ATTRIB_IS_SET(savefile)
 		|| scope->state->show_author
 		|| scope->state->show_only_unread_arts
 		|| scope->state->show_signatures
 		|| scope->state->show_art_score
 		|| scope->state->sigdashes
-		|| (scope->state->sigfile && scope->attribute->sigfile)
+		|| ATTRIB_IS_SET(sigfile)
 		|| scope->state->signature_repost
 		|| scope->state->sort_article_type
 		|| scope->state->sort_threads_type
@@ -1719,18 +1755,21 @@ skip_scope(
 		|| scope->state->tex2iso_conv
 		|| scope->state->thread_articles
 		|| scope->state->thread_catchup_on_exit
-		|| (scope->state->thread_format && scope->attribute->thread_format)
+		|| ATTRIB_IS_SET(thread_format)
 		|| scope->state->thread_perc
 		|| scope->state->trim_article_body
 		|| scope->state->verbatim_handling
 		|| scope->state->wrap_on_next_unread
-		|| (scope->state->x_headers && scope->attribute->x_headers)
-		|| (scope->state->x_body && scope->attribute->x_body)
+		|| ATTRIB_IS_SET(x_headers)
+		|| ATTRIB_IS_SET(x_body)
 		|| scope->state->x_comment_to);
 }
 
 
 #ifdef DEBUG
+
+#define DEBUG_PRINT_BLANK_IF_NULL(attrib) (group->attribute->attrib ? BlankIfNull(*group->attribute->attrib) : "")
+
 #	if 0
 static void
 debug_print_filter_attributes(
@@ -1746,12 +1785,12 @@ debug_print_filter_attributes(
 			group = &active[i];
 			my_printf("Grp=[%s] KILL   header=[%d] scope=[%s] case=[%s] expire=[%s]\n",
 				group->name, group->attribute->quick_kill_header,
-				BlankIfNull(group->attribute->quick_kill_scope),
+				group->attribute->quick_kill_scope ? DEBUG_PRINT_BLANK_IF_NULL(*group->attribute->quick_kill_scope : ""),
 				txt_onoff[group->attribute->quick_kill_case != FALSE ? 1 : 0],
 				txt_onoff[group->attribute->quick_kill_expire != FALSE ? 1 : 0]);
 			my_printf("Grp=[%s] SELECT header=[%d] scope=[%s] case=[%s] expire=[%s]\n",
 				group->name, group->attribute->quick_select_header,
-				BlankIfNull(group->attribute->quick_select_scope),
+				group->attribute->quick_select_scope ? DEBUG_PRINT_BLANK_IF_NULL(*group->attribute->quick_select_scope : ""),
 				txt_onoff[group->attribute->quick_select_case != FALSE ? 1 : 0],
 				txt_onoff[group->attribute->quick_select_expire != FALSE ? 1 : 0]);
 		}
@@ -1759,7 +1798,6 @@ debug_print_filter_attributes(
 	}
 }
 #	endif /* 0 */
-
 
 static void
 dump_attributes(
@@ -1775,21 +1813,21 @@ dump_attributes(
 				continue;
 			debug_print_file("ATTRIBUTES", "group=%s", BlankIfNull(group->name));
 			debug_print_file("ATTRIBUTES", "\tGlobal=%d", group->attribute->global);
-			debug_print_file("ATTRIBUTES", "\tmaildir=%s", BlankIfNull(group->attribute->maildir));
-			debug_print_file("ATTRIBUTES", "\tsavedir=%s", BlankIfNull(group->attribute->savedir));
-			debug_print_file("ATTRIBUTES", "\tsavefile=%s", BlankIfNull(group->attribute->savefile));
-			debug_print_file("ATTRIBUTES", "\tsigfile=%s", BlankIfNull(group->attribute->sigfile));
-			debug_print_file("ATTRIBUTES", "\torganization=%s", BlankIfNull(group->attribute->organization));
-			debug_print_file("ATTRIBUTES", "\tfollowup_to=%s", BlankIfNull(group->attribute->followup_to));
-			debug_print_file("ATTRIBUTES", "\tmailing_list=%s", BlankIfNull(group->attribute->mailing_list));
-			debug_print_file("ATTRIBUTES", "\tx_headers=%s", BlankIfNull(group->attribute->x_headers));
-			debug_print_file("ATTRIBUTES", "\tx_body=%s", BlankIfNull(group->attribute->x_body));
-			debug_print_file("ATTRIBUTES", "\tfrom=%s", BlankIfNull(group->attribute->from));
-			debug_print_file("ATTRIBUTES", "\tnews_quote_format=%s", BlankIfNull(group->attribute->news_quote_format));
-			debug_print_file("ATTRIBUTES", "\tquote_chars=%s", quote_space_to_dash(BlankIfNull(group->attribute->quote_chars)));
-			debug_print_file("ATTRIBUTES", "\tmime_types_to_save=%s", BlankIfNull(group->attribute->mime_types_to_save));
+			debug_print_file("ATTRIBUTES", "\tmaildir=%s", DEBUG_PRINT_BLANK_IF_NULL(maildir));
+			debug_print_file("ATTRIBUTES", "\tsavedir=%s", DEBUG_PRINT_BLANK_IF_NULL(savedir));
+			debug_print_file("ATTRIBUTES", "\tsavefile=%s", DEBUG_PRINT_BLANK_IF_NULL(savefile));
+			debug_print_file("ATTRIBUTES", "\tsigfile=%s", DEBUG_PRINT_BLANK_IF_NULL(sigfile));
+			debug_print_file("ATTRIBUTES", "\torganization=%s", DEBUG_PRINT_BLANK_IF_NULL(organization));
+			debug_print_file("ATTRIBUTES", "\tfollowup_to=%s", DEBUG_PRINT_BLANK_IF_NULL(followup_to));
+			debug_print_file("ATTRIBUTES", "\tmailing_list=%s", DEBUG_PRINT_BLANK_IF_NULL(mailing_list));
+			debug_print_file("ATTRIBUTES", "\tx_headers=%s", DEBUG_PRINT_BLANK_IF_NULL(x_headers));
+			debug_print_file("ATTRIBUTES", "\tx_body=%s", DEBUG_PRINT_BLANK_IF_NULL(x_body));
+			debug_print_file("ATTRIBUTES", "\tfrom=%s", DEBUG_PRINT_BLANK_IF_NULL(from));
+			debug_print_file("ATTRIBUTES", "\tnews_quote_format=%s", DEBUG_PRINT_BLANK_IF_NULL(news_quote_format));
+			debug_print_file("ATTRIBUTES", "\tquote_chars=%s", quote_space_to_dash(DEBUG_PRINT_BLANK_IF_NULL(quote_chars)));
+			debug_print_file("ATTRIBUTES", "\tmime_types_to_save=%s", DEBUG_PRINT_BLANK_IF_NULL(mime_types_to_save));
 #	ifdef HAVE_ISPELL
-			debug_print_file("ATTRIBUTES", "\tispell=%s", BlankIfNull(group->attribute->ispell));
+			debug_print_file("ATTRIBUTES", "\tispell=%s", DEBUG_PRINT_BLANK_IF_NULL(ispell));
 #	endif /* HAVE_ISPELL */
 			debug_print_file("ATTRIBUTES", "\tshow_only_unread_arts=%s", print_boolean(group->attribute->show_only_unread_arts));
 			debug_print_file("ATTRIBUTES", "\tthread_articles=%d", group->attribute->thread_articles);
@@ -1802,25 +1840,25 @@ dump_attributes(
 			debug_print_file("ATTRIBUTES", "\tauto_list_thread=%s", print_boolean(group->attribute->auto_list_thread));
 			debug_print_file("ATTRIBUTES", "\tauto_select=%s", print_boolean(group->attribute->auto_select));
 			debug_print_file("ATTRIBUTES", "\tbatch_save=%s", print_boolean(group->attribute->batch_save));
-			debug_print_file("ATTRIBUTES", "\tdate_format=%s", BlankIfNull(group->attribute->date_format));
+			debug_print_file("ATTRIBUTES", "\tdate_format=%s", DEBUG_PRINT_BLANK_IF_NULL(date_format));
 			debug_print_file("ATTRIBUTES", "\tdelete_tmp_files=%s", print_boolean(group->attribute->delete_tmp_files));
-			debug_print_file("ATTRIBUTES", "\teditor_format=%s", BlankIfNull(group->attribute->editor_format));
+			debug_print_file("ATTRIBUTES", "\teditor_format=%s", DEBUG_PRINT_BLANK_IF_NULL(editor_format));
 #	ifdef HAVE_COLOR
 			debug_print_file("ATTRIBUTES", "\textquote_handling=%s", print_boolean(group->attribute->extquote_handling));
 #	endif /* HAVE_COLOR */
 			debug_print_file("ATTRIBUTES", "\tgroup_catchup_on_exit=%s", print_boolean(group->attribute->group_catchup_on_exit));
-			debug_print_file("ATTRIBUTES", "\tgroup_format=%s", BlankIfNull(group->attribute->group_format));
+			debug_print_file("ATTRIBUTES", "\tgroup_format=%s", DEBUG_PRINT_BLANK_IF_NULL(group_format));
 			debug_print_file("ATTRIBUTES", "\tmail_8bit_header=%s", print_boolean(group->attribute->mail_8bit_header));
 			debug_print_file("ATTRIBUTES", "\tmail_mime_encoding=%s", txt_mime_encodings[group->attribute->mail_mime_encoding]);
 			debug_print_file("ATTRIBUTES", "\tmark_ignore_tags=%s", print_boolean(group->attribute->mark_ignore_tags));
 			debug_print_file("ATTRIBUTES", "\tmark_saved_read=%s", print_boolean(group->attribute->mark_saved_read));
-			debug_print_file("ATTRIBUTES", "\tnews_headers_to_display=%s", BlankIfNull(group->attribute->news_headers_to_display));
+			debug_print_file("ATTRIBUTES", "\tnews_headers_to_display=%s", DEBUG_PRINT_BLANK_IF_NULL(news_headers_to_display));
 			if (group->attribute->headers_to_display) {
 				debug_print_file("ATTRIBUTES", "\theaders_to_display->num=%d", group->attribute->headers_to_display->num);
 				for (j = 0; j < group->attribute->headers_to_display->num; j++)
 					debug_print_file("ATTRIBUTES", "\theaders_to_display->header[%d]=%s", j, group->attribute->headers_to_display->header[j]);
 			}
-			debug_print_file("ATTRIBUTES", "\tnews_headers_to_not_display=%s", BlankIfNull(group->attribute->news_headers_to_not_display));
+			debug_print_file("ATTRIBUTES", "\tnews_headers_to_not_display=%s", DEBUG_PRINT_BLANK_IF_NULL(news_headers_to_not_display));
 			if (group->attribute->headers_to_not_display) {
 				debug_print_file("ATTRIBUTES", "\theaders_to_not_display->num=%d", group->attribute->headers_to_not_display->num);
 				for (j = 0; j < group->attribute->headers_to_not_display->num; j++)
@@ -1846,26 +1884,26 @@ dump_attributes(
 			debug_print_file("ATTRIBUTES", "\tsuppress_soft_hyphens=%s", print_boolean(group->attribute->suppress_soft_hyphens));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			debug_print_file("ATTRIBUTES", "\tthread_catchup_on_exit=%s", print_boolean(group->attribute->thread_catchup_on_exit));
-			debug_print_file("ATTRIBUTES", "\tthread_format=%s", BlankIfNull(group->attribute->thread_format));
+			debug_print_file("ATTRIBUTES", "\tthread_format=%s", DEBUG_PRINT_BLANK_IF_NULL(thread_format));
 			debug_print_file("ATTRIBUTES", "\ttrim_article_body=%d", group->attribute->trim_article_body);
 			debug_print_file("ATTRIBUTES", "\tverbatim_handling=%s", print_boolean(group->attribute->verbatim_handling));
 			debug_print_file("ATTRIBUTES", "\twrap_on_next_unread=%s", print_boolean(group->attribute->wrap_on_next_unread));
 			debug_print_file("ATTRIBUTES", "\tpost_process_type=%d", group->attribute->post_process_type);
-			debug_print_file("ATTRIBUTES", "\tquick_kill_scope=%s", BlankIfNull(group->attribute->quick_kill_scope));
+			debug_print_file("ATTRIBUTES", "\tquick_kill_scope=%s",  DEBUG_PRINT_BLANK_IF_NULL(quick_kill_scope));
 			debug_print_file("ATTRIBUTES", "\tquick_kill_case=%s", print_boolean(group->attribute->quick_kill_case));
 			debug_print_file("ATTRIBUTES", "\tquick_kill_expire=%s", print_boolean(group->attribute->quick_kill_expire));
 			debug_print_file("ATTRIBUTES", "\tquick_kill_header=%d", group->attribute->quick_kill_header);
-			debug_print_file("ATTRIBUTES", "\tquick_select_scope=%s", BlankIfNull(group->attribute->quick_select_scope));
+			debug_print_file("ATTRIBUTES", "\tquick_select_scope=%s", DEBUG_PRINT_BLANK_IF_NULL(quick_select_scope));
 			debug_print_file("ATTRIBUTES", "\tquick_select_case=%s", print_boolean(group->attribute->quick_select_case));
 			debug_print_file("ATTRIBUTES", "\tquick_select_expire=%s", print_boolean(group->attribute->quick_select_expire));
 			debug_print_file("ATTRIBUTES", "\tquick_select_header=%d", group->attribute->quick_select_header);
 			debug_print_file("ATTRIBUTES", "\tx_comment_to=%s", print_boolean(group->attribute->x_comment_to));
-			debug_print_file("ATTRIBUTES", "\tfcc=%s", BlankIfNull(group->attribute->fcc));
+			debug_print_file("ATTRIBUTES", "\tfcc=%s", DEBUG_PRINT_BLANK_IF_NULL(fcc));
 			debug_print_file("ATTRIBUTES", "\ttex2iso_conv=%s", print_boolean(group->attribute->tex2iso_conv));
 			debug_print_file("ATTRIBUTES", "\tmime_forward=%s", print_boolean(group->attribute->mime_forward));
 #	ifdef CHARSET_CONVERSION
 			debug_print_file("ATTRIBUTES", "\tmm_network_charset=%s", txt_mime_charsets[group->attribute->mm_network_charset]);
-			debug_print_file("ATTRIBUTES", "\tundeclared_charset=%s", BlankIfNull(group->attribute->undeclared_charset));
+			debug_print_file("ATTRIBUTES", "\tundeclared_charset=%s", DEBUG_PRINT_BLANK_IF_NULL(undeclared_charset));
 #		ifdef USE_ICU_UCSDET
 			debug_print_file("ATTRIBUTES", "\tundeclared_cs_guess=%s", print_boolean(group->attribute->undeclared_cs_guess));
 #		endif /* USE_ICU_UCSDET */
@@ -1877,7 +1915,7 @@ dump_attributes(
 
 
 #define DEBUG_PRINT_STATE(attrib) (scope->state->attrib ? "+ " : "  ")
-#define DEBUG_PRINT_STRING(attrib) (scope->attribute->attrib ? scope->attribute->attrib : "NULL")
+#define DEBUG_PRINT_STRING(attrib) (scope->attribute->attrib ? *scope->attribute->attrib ? *scope->attribute->attrib : "NULL" : "NULL")
 
 
 static void

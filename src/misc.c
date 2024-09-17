@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-29
+ *  Updated   : 2024-09-10
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -63,7 +63,14 @@
 
 #if defined(HAVE_IDN_API_H) && !defined(IDN_API_H)
 #	include <idn/api.h>
+#	if defined(HAVE_IDN_VERSION_H) && !defined(REPRODUCIBLE_BUILD)
+#		include <idn/version.h>
+#	endif /* HAVE_IDN_VERSION_H && !REPRODUCIBLE_BUILD */
 #endif /* HAVE_IDN_API_H && !IDN_API_H */
+
+#if defined(HAVE_LIBUNISTRING) && defined(HAVE_UNISTRING_VERSION_H) && !defined(REPRODUCIBLE_BUILD)
+#	include <unistring/version.h>
+#endif /* HAVE_LIBUNISTRING && HAVE_UNISTRING_VERSION_H && !REPRODUCIBLE_BUILD */
 
 #ifdef NNTPS_ABLE
 #	ifdef HAVE_LIB_LIBTLS
@@ -85,6 +92,10 @@
 #	include <unicode/uversion.h>
 #	include <unicode/uclean.h>
 #endif /* HAVE_LIBICUUC || USE_ICU_UCSDET */
+
+#if defined(USE_ZLIB) && !defined(REPRODUCIBLE_BUILD)
+#	include <zlib.h>
+#endif /* USE_ZLIB && !REPRODUCIBLE_BUILD */
 
 /*
  * defines to control GNKSA-checks behavior:
@@ -136,9 +147,9 @@ get_tmpfilename(
 	len = (size_t) n + 1;
 	file_tmp = my_malloc(len);
 #ifdef APPEND_PID
-	if ((n = snprintf(file_tmp, len, "%s.tmp.%ld", filename, (long) process_id)) < 0)
+	if (snprintf(file_tmp, len, "%s.tmp.%ld", filename, (long) process_id) < 0)
 #else
-	if ((n = snprintf(file_tmp, len, "%s.tmp", filename)) < 0)
+	if (snprintf(file_tmp, len, "%s.tmp", filename) < 0)
 #endif /* APPEND_PID */
 	{
 		free(file_tmp);
@@ -452,9 +463,9 @@ invoke_editor(
 	}
 
 	if (group != NULL)
-		my_strncpy(editor_format, (*group->attribute->editor_format ? group->attribute->editor_format : TIN_EDITOR_FMT), sizeof(editor_format) - 1);
+		my_strncpy(editor_format, (group->attribute->editor_format ? *group->attribute->editor_format : TIN_EDITOR_FMT), sizeof(editor_format) - 1);
 	else
-		my_strncpy(editor_format, (*tinrc.editor_format ? tinrc.editor_format : TIN_EDITOR_FMT), sizeof(editor_format) - 1);
+		my_strncpy(editor_format, (tinrc.editor_format ? tinrc.editor_format : TIN_EDITOR_FMT), sizeof(editor_format) - 1);
 
 	if (!strfeditor(editor, lineno, filename, buf, sizeof(buf), editor_format))
 		sh_format(buf, sizeof(buf), "%s %s", editor, filename);
@@ -485,8 +496,8 @@ invoke_ispell(
 	char ispell[PATH_LEN];
 	t_bool retcode;
 
-	if (group && group->attribute->ispell != NULL)
-		STRCPY(ispell, group->attribute->ispell);
+	if (group && group->attribute->ispell && *group->attribute->ispell)
+		STRCPY(ispell, *group->attribute->ispell);
 	else
 		STRCPY(ispell, get_val("ISPELL", PATH_ISPELL));
 
@@ -566,7 +577,7 @@ shell_escape(
 	char *p, *tmp;
 	char shell[LEN];
 
-	tmp = fmt_string(_(txt_shell_escape), tinrc.default_shell_command);
+	tmp = fmt_string(_(txt_shell_escape), BlankIfNull(tinrc.default_shell_command));
 
 	if (!prompt_string(tmp, shell, HIST_SHELL_COMMAND)) {
 		free(tmp);
@@ -577,10 +588,11 @@ shell_escape(
 	for (p = shell; *p && isspace((unsigned char) *p); p++)
 		continue;
 
-	if (*p)
-		my_strncpy(tinrc.default_shell_command, p, sizeof(tinrc.default_shell_command) - 1);
-	else {
-		my_strncpy(shell, (*tinrc.default_shell_command ? tinrc.default_shell_command : (get_val(ENV_VAR_SHELL, DEFAULT_SHELL))), sizeof(shell) - 1);
+	if (*p) {
+		FreeIfNeeded(tinrc.default_shell_command);
+		tinrc.default_shell_command = my_strdup(p);
+	} else {
+		my_strncpy(shell, (tinrc.default_shell_command ? tinrc.default_shell_command : (get_val(ENV_VAR_SHELL, DEFAULT_SHELL))), sizeof(shell) - 1);
 		p = shell;
 	}
 
@@ -734,9 +746,11 @@ tin_done(
 
 	free_all_arrays();
 
-#if defined(HAVE_LIBICUUC) || defined(USE_ICU_UCSDET)
+	handle_cmdargs(FALSE);
+
+#if defined(HAVE_LIBICUUC)
 	u_cleanup();
-#endif /* HAVE_LIBICUUC || USE_ICU_UCSDET */
+#endif /* HAVE_LIBICUUC */
 
 	/*
 	 * TODO:
@@ -1362,7 +1376,7 @@ strfquote(
 					break;
 
 				case 'D':	/* Articles Date (reformatted as specified in attributes->date_format) */
-					if (!my_strftime(tbuf, LEN - 1, curr_group->attribute->date_format, localtime(&arts[respnum].date))) {
+					if (!my_strftime(tbuf, LEN - 1, curr_group->attribute->date_format ? BlankIfNull(*curr_group->attribute->date_format) : "", localtime(&arts[respnum].date))) {
 						STRCPY(tbuf, BlankIfNull(pgart.hdr.date));
 					}
 					break;
@@ -1671,7 +1685,7 @@ _strfpath(
 					char buf[PATH_LEN];
 
 					is_mailbox = TRUE;
-					if (strfpath((cmdline.args & CMDLINE_MAILDIR) ? cmdline.maildir : group->attribute->maildir, buf, sizeof(buf), group, FALSE)) {
+					if (strfpath(cmdline.maildir ? cmdline.maildir : (group->attribute->maildir && *group->attribute->maildir) ? *group->attribute->maildir : NULL, buf, sizeof(buf), group, FALSE)) {
 						if (*(format + 1) == '\0')				/* Just an = */
 							joinpath(tbuf, sizeof(tbuf), buf, group->name);
 						else
@@ -1699,7 +1713,7 @@ _strfpath(
 					/*
 					 * Start with the savedir name
 					 */
-					if (strfpath((cmdline.args & CMDLINE_SAVEDIR) ? cmdline.savedir : group->attribute->savedir, buf, sizeof(buf), group, FALSE)) {
+					if (strfpath(cmdline.savedir ? cmdline.savedir : (group->attribute->savedir && *group->attribute->savedir) ? *group->attribute->savedir : NULL, buf, sizeof(buf), group, FALSE)) {
 						char tmp[PATH_LEN];
 #ifdef HAVE_LONG_FILE_NAMES
 						my_strncpy(tmp, group->name, sizeof(tmp) - 1);
@@ -1791,7 +1805,7 @@ strfpath(
 	 * Expand any leading env vars first in case they themselves contain
 	 * formatting chars
 	 */
-	if (format[0] == '$') {
+	if (format && format[0] == '$') {
 		char buf[PATH_LEN];
 
 		if (_strfpath(format, buf, sizeof(buf), group, expand_all))
@@ -2915,7 +2929,7 @@ gnksa_strerror(
 			break;
 
 		case GNKSA_LANGLE_MISSING:
-			message = txt_error_gnksa_langle;
+			message = _(txt_error_gnksa_langle);
 			break;
 
 		case GNKSA_LPAREN_MISSING:
@@ -2928,6 +2942,10 @@ gnksa_strerror(
 
 		case GNKSA_ATSIGN_MISSING:
 			message = _(txt_error_gnksa_atsign);
+			break;
+
+		case GNKSA_RANGLE_MISSING:
+			message = _(txt_error_gnksa_rangle);
 			break;
 
 		case GNKSA_SINGLE_DOMAIN:
@@ -3014,6 +3032,10 @@ gnksa_strerror(
 			message = _(txt_error_gnksa_rn_invalid);
 			break;
 
+		case GNKSA_MISSING_REALNAME:
+			message = _(txt_error_gnksa_rn_missing);
+			break;
+
 		case GNKSA_OK:
 		default:
 			/* shouldn't happen */
@@ -3040,9 +3062,6 @@ gnksa_dequote_plainphrase(
 	char *wpos;	/* write position */
 	int initialstate;	/* initial state */
 	int state;	/* current state */
-
-	if (!*realname)
-		return GNKSA_MISSING_REALNAME;
 
 	/* initialize state machine */
 	switch (addrtype) {
@@ -3262,6 +3281,10 @@ gnksa_dequote_plainphrase(
 				return GNKSA_INTERNAL_ERROR;
 		}
 	}
+
+	/* non fatal error is checked last */
+	if (!*realname)
+		return GNKSA_MISSING_REALNAME;
 
 	/* successful */
 	*wpos = '\0';
@@ -3507,6 +3530,17 @@ gnksa_split_from(
 		if (addr_begin == work)
 			return GNKSA_MISSING_REALNAME;
 
+		/*
+		 * if we allow <> as From: we must disallow <> as Message-ID,
+		 * see code in post.c:check_article_to_be_posted()
+		 */
+#if 0
+		if (!strchr(address, '@') && *address) /* check for From: without an @ but allow <> */
+#else
+		if (!strchr(address, '@')) /* check for From: without an @ */
+#endif /* 0 */
+			return GNKSA_ATSIGN_MISSING;
+
 		/* get realname part */
 		addr_end = addr_begin - 1;
 		addr_begin = work;
@@ -3518,7 +3552,7 @@ gnksa_split_from(
 
 #if 0	/* whitespace only realname */
 		strip_line(addr_begin);
-		if (!strlen(addr_begin))
+		if (!*addr_begin)
 			return GNKSA_WHITESPACE_REALNAME;
 		else
 #endif /* 0 */
@@ -3555,13 +3589,24 @@ gnksa_split_from(
 		/* copy route address */
 		strcpy(address, addr_begin);
 
+		/*
+		 * if we allow <> as From: we must disallow <> as Message-ID,
+		 * see code in post.c:check_article_to_be_posted()
+		 */
+#if 0
+		if (!strchr(address, '@') && *address) /* check for From: without an @ but allow <> */
+#else
+		if (!strchr(address, '@')) /* check for From: without an @ */
+#endif /* 0 */
+			return GNKSA_ATSIGN_MISSING;
+
 		/* get realname part */
 		addr_begin = addr_end + 1;
 		addr_end = addr_begin + strlen(addr_begin) - 1;
 
 		/* strip surrounding whitespace */
 		strip_line(addr_end);
-		while ((*addr_begin == ' ') || (*addr_begin == '\t'))
+		while (*addr_begin == ' ' || *addr_begin == '\t')
 			addr_begin++;
 
 		/* any realname at all? */
@@ -3579,22 +3624,11 @@ gnksa_split_from(
 		}
 	}
 
-	/*
-	 * if we allow <> as From: we must disallow <> as Message-ID,
-	 * see code in post.c:check_article_to_be_posted()
-	 */
-#if 0
-	if (!strchr(address, '@') && *address) /* check for From: without an @ but allow <> */
-#else
-	if (!strchr(address, '@')) /* check for From: without an @ */
-#endif /* 0 */
-		return GNKSA_ATSIGN_MISSING;
-
 	/* split successful */
 	return GNKSA_OK;
 }
 
-
+#define GNKSA_REALNAME_ISSUES(a) ((a == GNKSA_MISSING_REALNAME || a == GNKSA_LPAREN_MISSING || a == GNKSA_RPAREN_MISSING))
 /*
  * restrictive check for valid address conforming to RFC 1036, son of RFC 1036
  * and draft-usefor-article-xx.txt
@@ -3647,16 +3681,17 @@ gnksa_do_check_from(
 #endif /* DEBUG */
 
 		if ((result = gnksa_check_domain(addr_begin)) != GNKSA_OK
-		    && (code == GNKSA_OK)) /* error detected */
+		    && (code == GNKSA_OK || GNKSA_REALNAME_ISSUES(code))) /* error detected */
 			code = result;
 
 		if ((result = gnksa_check_localpart(address)) != GNKSA_OK
-		    && (code == GNKSA_OK)) /* error detected */
+		    && (code == GNKSA_OK || GNKSA_REALNAME_ISSUES(code))) /* error detected */
 			code = result;
 
 		/* restore separator character */
 		*--addr_begin = '@';
-	}
+	} else
+		code = GNKSA_ATSIGN_MISSING;
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
@@ -4107,13 +4142,22 @@ split_mailbox_list(
 
 int
 tin_version_info(
-	FILE *fp)
+	FILE *fp,
+	int verb)
 {
 	int wlines = 0;	/* written lines */
-#ifdef HAVE_LIB_PCRE2
+#ifndef REPRODUCIBLE_BUILD
+#	ifdef HAVE_LIB_PCRE2
 	char *pcre2_version = NULL;
 	int pcre2_version_length;
-#endif /* HAVE_LIB_PCRE2 */
+#	endif /* HAVE_LIB_PCRE2 */
+#	ifdef HAVE_LIBICUUC
+	UVersionInfo version;
+	char buf[U_MAX_VERSION_STRING_LENGTH + 1];
+#	endif /* HAVE_LIBICUUC */
+#else
+	(void) verb;
+#endif /* REPRODUCIBLE_BUILD */
 
 	fprintf(fp, _(txt_tin_version), PRODUCT, VERSION, RELEASEDATE, RELEASENAME);
 #if defined(__DATE__) && defined(__TIME__) && !defined(REPRODUCIBLE_BUILD)
@@ -4133,16 +4177,20 @@ tin_version_info(
 	fprintf(fp, "\tCC       = \"%s\"\n", TIN_CC);
 	wlines += 2;
 #	if defined(TIN_CFLAGS) && !defined(REPRODUCIBLE_BUILD)
+	if (verb) {
 		fprintf(fp, "\tCFLAGS   = \"%s\"\n", TIN_CFLAGS);
 		wlines++;
+	}
 #	endif /* TIN_CFLAGS && !REPRODUCIBLE_BUILD */
 #	ifdef TIN_CPP
 		fprintf(fp, "\tCPP      = \"%s\"\n", TIN_CPP);
 		wlines++;
 #	endif /* TIN_CPP */
 #	if defined(TIN_CFLAGS) && !defined(REPRODUCIBLE_BUILD)
+	if (verb) {
 		fprintf(fp, "\tCPPFLAGS = \"%s\"\n", TIN_CPPFLAGS);
 		wlines++;
+	}
 #	endif /* TIN_CPPFLAGS && !REPRODUCIBLE_BUILD */
 #endif /* TIN_CC */
 
@@ -4151,58 +4199,91 @@ tin_version_info(
 	fprintf(fp, "\tLD       = \"%s\"\n", TIN_LD);
 	wlines += 2;
 #	if defined(TIN_LDFLAGS) && !defined(REPRODUCIBLE_BUILD)
+	if (verb) {
 		fprintf(fp, "\tLDFLAGS  = \"%s\"\n", TIN_LDFLAGS);
 		wlines++;
+	}
 #	endif /* TIN_LDFLAGS && !REPRODUCIBLE_BUILD */
 #	ifdef TIN_LIBS
 		fprintf(fp, "\tLIBS     = \"%s\"\n", TIN_LIBS);
 		wlines++;
 #	endif /* TIN_LIBS */
 #endif /* TIN_LD */
-#ifdef NNTPS_ABLE
-#	ifdef HAVE_LIB_LIBTLS
-				fprintf(fp, "\tTLS      = \"LibreSSL %d\"\n", TLS_API);
-#	else
-#		ifdef HAVE_LIB_OPENSSL
-				fprintf(fp, "\tTLS      = \"%s\"\n", OpenSSL_version(OPENSSL_VERSION));
-#		else
-#			ifdef HAVE_LIB_GNUTLS
-				fprintf(fp, "\tTLS      = \"GnuTLS %s\"\n", gnutls_check_version(NULL));
-#			endif /* HAVE_LIB_GNUTLS */
-#		endif /* HAVE_LIB_OPENSSL */
-#	endif /* HAVE_LIB_LIBTLS */
-	wlines++;
-#endif /* NNTPS_ABLE */
-#ifdef HAVE_LIB_PCRE2
-	pcre2_version_length = pcre2_config_8(PCRE2_CONFIG_VERSION, NULL);
-	if (pcre2_version_length > 0) {
-		pcre2_version = my_malloc(pcre2_version_length);
-		(void) pcre2_config_8(PCRE2_CONFIG_VERSION, pcre2_version);
-	}
-	fprintf(fp, "\tPCRE2    = \"%s\"\n", pcre2_version ? pcre2_version : "unknown");
-	FreeIfNeeded(pcre2_version);
-#else
-	fprintf(fp, "\tPCRE     = \"%s\"\n", pcre_version());
-#endif /* HAVE_LIB_PCRE2 */
-	wlines++;
-#	ifdef USE_GSASL
-	fprintf(fp, "\tGNU SASL = \"%s\"\n", gsasl_check_version(NULL));
-	wlines++;
-#	endif /* USE_GSASL */
-#if defined(HAVE_LIBICUUC) || defined(USE_ICU_UCSDET)
-	{
-		UVersionInfo version;
-		char buf[U_MAX_VERSION_STRING_LENGTH + 1];
 
+#ifndef REPRODUCIBLE_BUILD
+	if (verb) {
+#	ifdef NNTPS_ABLE
+#		ifdef HAVE_LIB_LIBTLS
+		fprintf(fp, "\tTLS      = \"LibreSSL %d\"\n", TLS_API);
+#		else
+#			ifdef HAVE_LIB_OPENSSL
+		fprintf(fp, "\tTLS      = \"%s\"\n", OpenSSL_version(OPENSSL_VERSION));
+#			else
+#				ifdef HAVE_LIB_GNUTLS
+		fprintf(fp, "\tTLS      = \"GnuTLS %s\"\n", gnutls_check_version(NULL));
+#				endif /* HAVE_LIB_GNUTLS */
+#			endif /* HAVE_LIB_OPENSSL */
+#		endif /* HAVE_LIB_LIBTLS */
+		wlines++;
+#	endif /* NNTPS_ABLE */
+
+#	ifdef HAVE_LIB_PCRE2
+		pcre2_version_length = pcre2_config_8(PCRE2_CONFIG_VERSION, NULL);
+		if (pcre2_version_length > 0) {
+			pcre2_version = my_malloc(pcre2_version_length);
+			(void) pcre2_config_8(PCRE2_CONFIG_VERSION, pcre2_version);
+		}
+		fprintf(fp, "\tPCRE2    = \"%s\"\n", pcre2_version ? pcre2_version : "unknown");
+		FreeIfNeeded(pcre2_version);
+#	else
+		fprintf(fp, "\tPCRE     = \"%s\"\n", pcre_version());
+#	endif /* HAVE_LIB_PCRE2 */
+		wlines++;
+
+#	ifdef USE_CURSES
+		fprintf(fp, "\tCURSES   = \"%s\"\n", curses_version());
+		wlines++;
+#	endif /* USE_CURSES */
+
+#	ifdef USE_GSASL
+		fprintf(fp, "\tGNU SASL = \"%s\"\n", gsasl_check_version(NULL));
+		wlines++;
+#	endif /* USE_GSASL */
+
+#	ifdef HAVE_LIBICUUC
 		u_getVersion(version);
 		u_versionToString(version, buf);
 		fprintf(fp, "\tICU      = \"%s", buf);
+#		ifdef USE_ICU_UCSDET
 		u_getUnicodeVersion(version);
 		u_versionToString(version, buf);
-		fprintf(fp, " (Unicode %s)\"\n", buf);
+		fprintf(fp, " (Unicode %s)", buf);
+#		endif /* USE_ICU_UCSDET */
+		fprintf(fp, "\"\n");
 		wlines++;
+#	endif /* HAVE_LIBICUUC */
+
+#	if defined(HAVE_LIBUNISTRING) && defined(HAVE_UNISTRING_VERSION_H) && (_LIBUNISTRING_VERSION > 0x000009)
+		fprintf(fp, "\tUNISTRING= \"%d.%d.%d\"\n", (_LIBUNISTRING_VERSION & 0xff0000) >> 16, (_LIBUNISTRING_VERSION & 0x00ff00) >> 8, _LIBUNISTRING_VERSION & 0x0000ff);
+		wlines++;
+#	endif  /* HAVE_LIBUNISTRING && HAVE_UNISTRING_VERSION_H && _LIBUNISTRING_VERSION > 0x000009 */
+
+#	if defined(HAVE_LIBIDNKIT) && defined (HAVE_IDN_VERSION_H)
+		fprintf(fp, "\tIDNKIT   = \"%s\"\n", idn_version_libidn());
+		wlines++;
+#	endif /* HAVE_LIBIDNKIT && HAVE_IDN_VERSION_H */
+
+#	ifdef USE_ZLIB
+		fprintf(fp, "\tZLIB     = \"%s\"\n", ZLIB_VERSION);
+		wlines++;
+#	endif /*USE_ZLIB*/
+
+#	if defined(USE_CANLOCK) && defined(CL_API_MAJOR) && defined(CL_API_MINOR)
+		fprintf(fp, "\tCANLOCK  = \"%d.%d\"\n", CL_API_MAJOR, CL_API_MINOR);
+		wlines++;
+#	endif /* USE_CANLOCK && CL_API_MAJOR && CL_API_MINOR */
 	}
-#endif /* HAVE_LIBICUUC || USE_ICU_UCSDET */
+#endif /* REPRODUCIBLE_BUILD */
 
 	fprintf(fp, "Characteristics:\n\t"
 /* TODO: complete list and do some useful grouping; show only in -vV case? */
@@ -4558,17 +4639,18 @@ make_connection_page(
 #			endif /* HAVE_LIB_OPENSSL */
 #		endif /* HAVE_LIB_LIBTLS */
 			} else
-#	else
-		{
 #	endif /* NNTPS_ABLE */
 			{
 				fprintf(fp, _(txt_conninfo_nntp), can_post ? _(txt_conninfo_rw) : _(txt_conninfo_ro));
 			}
 
 			(void) nntp_conninfo(fp);
+#	if defined(NNTPS_ABLE)
 		}
+#	endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 	}
+
 #ifndef NNTP_ONLY
 	if (!read_news_via_nntp && !read_saved_news) {
 		fprintf(fp, "%s", txt_conninfo_spool_config);
@@ -4582,6 +4664,25 @@ make_connection_page(
 		fprintf(fp, txt_conninfo_subscriptions_file, subscriptions_file);
 	}
 #endif /* !NNTP_ONLY */
+
+	fprintf(fp, "%s", _(txt_conninfo_conf_files));
+	fprintf(fp, "tin.defaults       : %s\n", global_defaults_file);
+	fprintf(fp, "attributes (local) : %s\n", local_attributes_file);
+	if (*global_attributes_file)
+		fprintf(fp, "attributes (global): %s\n", global_attributes_file);
+	fprintf(fp, "tinrc (local)      : %s\n", local_config_file);
+	if (*global_config_file)
+		fprintf(fp, "tinrc (global)     : %s\n", global_config_file);
+
+	fprintf(fp, "filter             : %s\n", filter_file);
+	if (*keymap_file)
+		fprintf(fp, "keymap             : %s\n", keymap_file);
+
+	/* non conf files/dirs */
+	fprintf(fp, "\n");
+	fprintf(fp, ".newsrc            : %s\n", newsrc);
+	if (tinrc.cache_overview_files)
+		fprintf(fp, "local overviews    : %s\n", index_newsdir);
 }
 
 

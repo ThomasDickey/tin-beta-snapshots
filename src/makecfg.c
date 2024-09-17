@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2024-03-30
+ *  Updated   : 2024-09-11
  *  Notes     : #defines and structs for options_menu.c
  *
  * Copyright (c) 1997-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -246,7 +246,7 @@ typename_of(
 	MYDATA *p)
 {
 	if (!strcmp(p->type, "OPT_STRING"))
-		return "char *";
+		return "char **";
 	if (!strcmp(p->type, "OPT_CHAR")) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		return "wchar_t *";
@@ -374,12 +374,6 @@ generate_ptr(
 {
 	MYDATA *p, *q;
 	int after;
-#ifdef __KEFIRCC__ /* && KEFIR_VERSION_MAJOR == 0 && KEFIR_VERSION_MINOR < 4 && *//* workaround a bug in kefir (0.3.1) */
-	const char *addr = "&";
-	const char *sqrbr = !strcmp(opt_type, "OPT_STRING") ? "[0]" : "";
-#else
-	const char *addr = !strcmp(opt_type, "OPT_STRING") ? "" : "&";
-#endif /* __KEFIRCC__ */
 
 	switch (mode) {
 	case 0:
@@ -413,24 +407,12 @@ generate_ptr(
 			}
 			switch (mode) {
 			case 0:
-#ifdef __KEFIRCC__ /* see above */
-				fprintf(ofp, "\t%stinrc.%s%s,%*s/* %2d: %s__ */\n",
-					addr,
+				fprintf(ofp, "\t&tinrc.%s,%*s/* %2d: %s__ */\n",
 					p->name,
-					sqrbr,
-					MAXNAME - (int) (strlen(addr) - strlen(sqrbr) + strlen(p->name)),
+					MAXNAME - (int) (1 + strlen(p->name)),
 					" ",
 					index_of(p),
 					p->name);
-#else
-				fprintf(ofp, "\t%stinrc.%s,%*s/* %2d: %s__ */\n",
-					addr,
-					p->name,
-					MAXNAME - (int) (strlen(addr) + strlen(p->name)),
-					" ",
-					index_of(p),
-					p->name);
-#endif /* __KEFIRCC__ */
 				break;
 			case 1:
 				fprintf(ofp, "\tOVAL(oinx_%.*s, %s__)\n",

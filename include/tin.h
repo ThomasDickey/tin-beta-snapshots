@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-28
+ *  Updated   : 2024-08-28
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -911,6 +911,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	define NAME_LEN	14
 #endif /* HAVE_LONG_FILE_NAMES */
 #define LEN	1024
+#define BUF_SIZE	1024
 
 #define NEWSRC_LINE	8192
 #define HEADER_LEN	1024
@@ -1162,16 +1163,13 @@ enum {
 
 
 /*
- * indicate given cmd-line options; adjust t_cmdlineopts accordingly
+ * indicate cmd-line options that are not strings
+ * adjust t_cmdlineopts accordingly
  */
 #define CMDLINE_GETART_LIMIT	(1 << 0)
-#define CMDLINE_MAILDIR			(1 << 1)
-#define CMDLINE_NNTPSERVER		(1 << 2)
-#define CMDLINE_SAVEDIR			(1 << 3)
-#define CMDLINE_USE_COLOR		(1 << 4)
-#define CMDLINE_NNTP_TIMEOUT	(1 << 5)
-#define CMDLINE_MSGID			(1 << 6)
-#define CMDLINE_NO_DESCRIPTION	(1 << 7)
+#define CMDLINE_USE_COLOR		(1 << 1)
+#define CMDLINE_NNTP_TIMEOUT	(1 << 2)
+#define CMDLINE_NO_DESCRIPTION	(1 << 3)
 
 
 /*
@@ -1569,13 +1567,13 @@ typedef unsigned char	t_bitmap;
  * cmd-line options
  */
 struct t_cmdlineopts {
-	int getart_limit;			/* getart_limit */
-	int nntp_timeout;			/* nntp_read_timeout_secs */
-	char maildir[PATH_LEN];		/* maildir */
-	char nntpserver[PATH_LEN];	/* nntpserver */
-	char savedir[PATH_LEN];		/* savedir */
-	char msgid[PATH_LEN];	/* messageid (TODO: reduce to 250 as of RFC 3977 3.6 & RFC 5536 3.1.3 if done everywhere in the code) */
-	unsigned int args:8;		/* given options */
+	int getart_limit;		/* getart_limit */
+	int nntp_timeout;		/* nntp_read_timeout_secs */
+	char *maildir;			/* maildir */
+	char *nntpserver;		/* nntpserver */
+	char *savedir;			/* savedir */
+	char *msgid;			/* messageid (TODO: reduce to 250 as of RFC 3977 3.6 & RFC 5536 3.1.3 if done everywhere in the code) */
+	unsigned int args:4;	/* given options */
 };
 
 /*
@@ -1712,33 +1710,33 @@ struct t_attach_item {
  * struct t_attribute - configurable attributes on a per group basis
  */
 struct t_attribute {
-	char *maildir;				/* mail dir if other than ~/Mail */
-	char *savedir;				/* save dir if other than ~/News */
-	char *savefile;				/* save articles to specified file */
-	char *sigfile;				/* sig file if other than ~/.Sig */
-	char *group_format;			/* format string for group level */
-	char *thread_format;		/* format string for thread level */
-	char *date_format;			/* format string for the date display */
-	char *editor_format;		/* editor + parameters  %E +%N %F */
-	char *organization;			/* organization name */
-	char *fcc;					/* Fcc folder for mail */
-	char *followup_to;			/* where posts should be redirected */
-	char *quick_kill_scope;		/* quick filter kill scope */
-	char *quick_select_scope;	/* quick filter select scope */
-	char *mailing_list;			/* mail list email address */
-	char *news_headers_to_display;	/* which headers to display */
-	char *news_headers_to_not_display;	/* which headers to not display */
-	char *x_headers;			/* extra headers for message header */
-	char *x_body;				/* boilerplate text for message body */
-	char *from;					/* from line */
-	char *news_quote_format;	/* another way to begin a posting format */
-	char *quote_chars;			/* string to precede quoted text on each line */
-	char *mime_types_to_save;	/* MIME content major/minors we want to save */
+	char **maildir;				/* mail dir if other than ~/Mail */
+	char **savedir;				/* save dir if other than ~/News */
+	char **savefile;			/* save articles to specified file */
+	char **sigfile;				/* sig file if other than ~/.Sig */
+	char **group_format;		/* format string for group level */
+	char **thread_format;		/* format string for thread level */
+	char **date_format;			/* format string for the date display */
+	char **editor_format;		/* editor + parameters  %E +%N %F */
+	char **organization;		/* organization name */
+	char **fcc;					/* Fcc folder for mail */
+	char **followup_to;			/* where posts should be redirected */
+	char **quick_kill_scope;	/* quick filter kill scope */
+	char **quick_select_scope;	/* quick filter select scope */
+	char **mailing_list;		/* mail list email address */
+	char **news_headers_to_display;	/* which headers to display */
+	char **news_headers_to_not_display;	/* which headers to not display */
+	char **x_headers;			/* extra headers for message header */
+	char **x_body;				/* boilerplate text for message body */
+	char **from;				/* from line */
+	char **news_quote_format;	/* another way to begin a posting format */
+	char **quote_chars;			/* string to precede quoted text on each line */
+	char **mime_types_to_save;	/* MIME content major/minors we want to save */
 #ifdef HAVE_ISPELL
-	char *ispell;				/* path to ispell and options */
+	char **ispell;				/* path to ispell and options */
 #endif /* HAVE_ISPELL */
 #ifdef CHARSET_CONVERSION
-	char *undeclared_charset;		/* charset of articles without MIME charset declaration */
+	char **undeclared_charset;	/* charset of articles without MIME charset declaration */
 #	ifdef USE_ICU_UCSDET
 	BoolField(undeclared_cs_guess);
 #	endif /* USE_ICU_UCSDET */
@@ -2053,8 +2051,8 @@ struct t_filter {
  */
 struct t_filter_rule {
 	struct t_filter_comment *comment;
-	char text[PATH_LEN];
-	char scope[PATH_LEN];
+	char *text;
+	char *scope;
 	int counter;
 	int icase;
 	int fullref;
@@ -2298,6 +2296,15 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 #define ENV_VAR_SHELL		"SHELL"
 #define TIN_EDITOR_FMT		"%E +%N %F"
 #define MAILER_FORMAT		"%M -oi -t < %F"
+#define DEFAULT_RANGE		"1-."
+#define DEFAULT_SAVE_FILE	"savefile.tin"
+#define MAIL_QUOTE_FORMAT	"In article %M you wrote:"
+#define DEFAULT_MIME_TYPES_TO_SAVE		"*/*"
+#define DEFAULT_NEWS_HEADERS_TO_DISPLAY	"Newsgroups Followup-To Summary Keywords X-Comment-To"
+#define DEFAULT_NEWS_QUOTE_FORMAT	"%F wrote:"
+#define DEFAULT_SIGFILE		".Sig"
+#define DEFAULT_XPOST_QUOTE_FORMAT	"In %G %F wrote:"
+#define DEFAULT_FILTER		"*"
 #ifdef HAVE_KEY_PREFIX
 #	define KEY_PREFIX		0x8f: case 0x9b
 #endif /* HAVE_KEY_PREFIX */

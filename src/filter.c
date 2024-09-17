@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2024-07-28
+ *  Updated   : 2024-09-16
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -96,7 +96,7 @@ int filter_file_offset;
 /*
  * Local prototypes
  */
-static int get_choice(int x, const char *help, const char *prompt, char *list[], int list_size);
+static int get_choice(int x, const char *help, const char *prompt, const char *list[], int list_size);
 static int set_filter_scope(struct t_group *group);
 static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr, char *text);
 static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
@@ -891,7 +891,7 @@ get_choice(
 	int x,
 	const char *help,
 	const char *prompt,
-	char *list[],
+	const char *list[],
 	int list_size)
 {
 	int ch, y, i = 0;
@@ -1062,9 +1062,9 @@ filter_menu(
 	const char *ptr_filter_subj;
 	const char *ptr_filter_help_scope;
 	const char *ptr_filter_quit_edit_save;
+	const char **list;
 	char *ptr;
-	char **list;
-	char comment_line[LEN];
+	char *prompt_buf = NULL;
 	char buf[LEN];
 	char keyedit[MAXKEYLEN], keyquit[MAXKEYLEN], keysave[MAXKEYLEN];
 	char text_time[PATH_LEN];
@@ -1079,8 +1079,8 @@ filter_menu(
 	signal_context = cFilter;
 
 	rule.comment = (struct t_filter_comment *) 0;
-	rule.text[0] = '\0';
-	rule.scope[0] = '\0';
+	rule.text = NULL;
+	rule.scope = NULL;
 	rule.counter = 0;
 	rule.lines_cmp = FILTER_LINES_NO;
 	rule.lines_num = 0;
@@ -1093,8 +1093,6 @@ filter_menu(
 	rule.score = 0;
 	rule.expire_time = FALSE;
 	rule.check_string = FALSE;
-
-	comment_line[0] = '\0';
 
 	/*
 	 * setup correct text for user selected menu
@@ -1156,10 +1154,13 @@ filter_menu(
 	 * The empty line is ignored.
 	 */
 	show_menu_help(_(txt_help_filter_comment));
-	while ((proceed = prompt_menu_string(INDEX_TOP, ptr_filter_comment, comment_line)) && comment_line[0] != '\0') {
-		rule.comment = add_filter_comment(rule.comment, comment_line);
-		comment_line[0] = '\0';
+	while ((proceed = prompt_menu_string(INDEX_TOP, ptr_filter_comment, &prompt_buf)) && prompt_buf && *prompt_buf) {
+		rule.comment = add_filter_comment(rule.comment, prompt_buf);
+		FreeAndNull(prompt_buf);
 	}
+
+	FreeAndNull(prompt_buf);
+
 	if (!proceed) {
 		free_filter_comment(rule.comment);
 		return FALSE;
@@ -1169,26 +1170,27 @@ filter_menu(
 	 * Text which might be used to filter on subj, from or msgid
 	 */
 	show_menu_help(_(txt_help_filter_text));
-	if (!prompt_menu_string(INDEX_TOP + 2, ptr_filter_text, rule.text)) {
+	if (!prompt_menu_string(INDEX_TOP + 2, ptr_filter_text, &rule.text)) {
 		free_filter_comment(rule.comment);
 		return FALSE;
 	}
 
-	if (*rule.text) {
+	if (rule.text && *rule.text) {
 		list = my_malloc(sizeof(char *) * 8);
-		list[0] = (char *) _(txt_subj_line_only_case);
-		list[1] = (char *) _(txt_subj_line_only);
-		list[2] = (char *) _(txt_from_line_only_case);
-		list[3] = (char *) _(txt_from_line_only);
-		list[4] = (char *) _(txt_msgid_refs_line);
-		list[5] = (char *) _(txt_msgid_line_last);
-		list[6] = (char *) _(txt_msgid_line_only);
-		list[7] = (char *) _(txt_refs_line_only);
+		list[0] = _(txt_subj_line_only_case);
+		list[1] = _(txt_subj_line_only);
+		list[2] = _(txt_from_line_only_case);
+		list[3] = _(txt_from_line_only);
+		list[4] = _(txt_msgid_refs_line);
+		list[5] = _(txt_msgid_line_last);
+		list[6] = _(txt_msgid_line_only);
+		list[7] = _(txt_refs_line_only);
 
 		i = get_choice(INDEX_TOP + 3, _(txt_help_filter_text_type), _(txt_filter_text_type), list, 8);
 		free(list);
 
 		if (i == -1) {
+			free(rule.text);
 			free_filter_comment(rule.comment);
 			return FALSE;
 		}
@@ -1215,18 +1217,19 @@ filter_menu(
 		}
 	}
 
-	if (!*rule.text) {
+	if (!rule.text || !*rule.text) {
 		rule.check_string = TRUE;
 		/*
 		 * Subject:
 		 */
 		list = my_malloc(sizeof(char *) * 2);
-		list[0] = (char *) _(txt_yes);
-		list[1] = (char *) _(txt_no);
+		list[0] = _(txt_yes);
+		list[1] = _(txt_no);
 		i = get_choice(INDEX_TOP + 5, _(txt_help_filter_subj), text_subj, list, 2);
 		free(list);
 
 		if (i == -1) {
+			FreeIfNeeded(rule.text);
 			free_filter_comment(rule.comment);
 			return FALSE;
 		} else
@@ -1237,16 +1240,17 @@ filter_menu(
 		 */
 		list = my_malloc(sizeof(char *) * 2);
 		if (rule.subj_ok) {
-			list[0] = (char *) _(txt_no);
-			list[1] = (char *) _(txt_yes);
+			list[0] = _(txt_no);
+			list[1] = _(txt_yes);
 		} else {
-			list[0] = (char *) _(txt_yes);
-			list[1] = (char *) _(txt_no);
+			list[0] = _(txt_yes);
+			list[1] = _(txt_no);
 		}
 		i = get_choice(INDEX_TOP + 6, _(txt_help_filter_from), text_from, list, 2);
 		free(list);
 
 		if (i == -1) {
+			FreeIfNeeded(rule.text);
 			free_filter_comment(rule.comment);
 			return FALSE;
 		} else
@@ -1257,20 +1261,21 @@ filter_menu(
 		 */
 		list = my_malloc(sizeof(char *) * 4);
 		if (rule.subj_ok || rule.from_ok) {
-			list[0] = (char *) _(txt_no);
-			list[1] = (char *) _(txt_full);
-			list[2] = (char *) _(txt_last);
-			list[3] = (char *) _(txt_only);
+			list[0] = _(txt_no);
+			list[1] = _(txt_full);
+			list[2] = _(txt_last);
+			list[3] = _(txt_only);
 		} else {
-			list[0] = (char *) _(txt_full);
-			list[1] = (char *) _(txt_last);
-			list[2] = (char *) _(txt_only);
-			list[3] = (char *) _(txt_no);
+			list[0] = _(txt_full);
+			list[1] = _(txt_last);
+			list[2] = _(txt_only);
+			list[3] = _(txt_no);
 		}
 		i = get_choice(INDEX_TOP + 7, _(txt_help_filter_msgid), text_msgid, list, 4);
 		free(list);
 
 		if (i == -1) {
+			FreeIfNeeded(rule.text);
 			free_filter_comment(rule.comment);
 			return FALSE;
 		} else {
@@ -1310,9 +1315,8 @@ filter_menu(
 	 */
 	show_menu_help(_(txt_help_filter_lines));
 
-	buf[0] = '\0';
-
-	if (!prompt_menu_string(INDEX_TOP + 9, ptr_filter_lines, buf)) {
+	if (!prompt_menu_string(INDEX_TOP + 9, ptr_filter_lines, &prompt_buf)) {
+		FreeIfNeeded(rule.text);
 		free_filter_comment(rule.comment);
 		return FALSE;
 	}
@@ -1320,7 +1324,7 @@ filter_menu(
 	/*
 	 * Get the < > sign if any for the lines rule
 	 */
-	ptr = buf;
+	ptr = prompt_buf;
 	while (*ptr == ' ')
 		ptr++;
 
@@ -1338,6 +1342,8 @@ filter_menu(
 	if (*ptr)
 		rule.lines_num = s2i(ptr, 0, INT_MAX);
 
+	FreeAndNull(prompt_buf);
+
 	if (rule.lines_num && rule.lines_cmp == FILTER_LINES_NO)
 		rule.lines_cmp = FILTER_LINES_EQ;
 
@@ -1350,16 +1356,16 @@ filter_menu(
 	snprintf(buf, sizeof(buf), _(txt_filter_score_help), SCORE_MAX);
 	show_menu_help(buf);
 
-	buf[0] = '\0';
-	if (!prompt_menu_string(INDEX_TOP + 10, text_score, buf)) {
+	if (!prompt_menu_string(INDEX_TOP + 10, text_score, &prompt_buf)) {
+		FreeIfNeeded(rule.text);
 		free_filter_comment(rule.comment);
 		return FALSE;
 	}
 
 	/* check if a score has been entered */
-	if (buf[0] != '\0')
+	if (*prompt_buf)
 		/* use entered score */
-		rule.score = s2i(buf, -SCORE_MAX, SCORE_MAX);
+		rule.score = s2i(prompt_buf, -SCORE_MAX, SCORE_MAX);
 	else {
 		/* use default score */
 		if (type == GLOBAL_MENU_FILTER_KILL)
@@ -1368,7 +1374,10 @@ filter_menu(
 			rule.score = tinrc.score_select;
 	}
 
+	FreeAndNull(prompt_buf);
+
 	if (!rule.score) { /* ignore 0 scores */
+		FreeIfNeeded(rule.text);
 		free_filter_comment(rule.comment);
 		return FALSE;
 	}
@@ -1393,7 +1402,7 @@ filter_menu(
 	sprintf(double_time, "2x %s", text_time);
 	sprintf(quat_time, "4x %s", text_time);
 	list = my_malloc(sizeof(char *) * 4);
-	list[0] = (char *) _(txt_unlimited_time);
+	list[0] = _(txt_unlimited_time);
 	list[1] = text_time;
 	list[2] = double_time;
 	list[3] = quat_time;
@@ -1403,6 +1412,7 @@ filter_menu(
 	free(quat_time);
 
 	if (i == -1) {
+		FreeIfNeeded(rule.text);
 		free_filter_comment(rule.comment);
 		return FALSE;
 	}
@@ -1412,35 +1422,43 @@ filter_menu(
 	/*
 	 * Scope
 	 */
-	if (*rule.text || rule.subj_ok || rule.from_ok || rule.msgid_ok || rule.lines_ok) {
+	if ((rule.text && *rule.text) || rule.subj_ok || rule.from_ok || rule.msgid_ok || rule.lines_ok) {
+		char *grp_name = my_strdup(group->name);
+		char **tmp_list;
 		int j = 0;
 
 		list = my_malloc(sizeof(char *) * 2); /* at least 2 scopes */
-		list[j++] = my_strdup(group->name);
-		list[j] = my_strdup(list[j - 1]);
-		while ((ptr = strrchr(list[j], '.')) != NULL) {
+		tmp_list = my_malloc(sizeof(char *) * 2);
+		list[j] = tmp_list[j] = my_strdup(grp_name);
+		++j;
+		while ((ptr = strrchr(grp_name, '.')) != NULL) {
 			*(++ptr) = '*';
 			*(++ptr) = '\0';
-			j++;
-			list = my_realloc(list, sizeof(char *) * (size_t) (j + 1)); /* one element more */
-			list[j] = my_strdup(list[j - 1]);
-			list[j][strlen(list[j]) - 2] = '\0';
+			list[j] = tmp_list[j] = my_strdup(grp_name);
+			list = my_realloc(list, sizeof(char *) * (size_t) (j + 2)); /* one element more */
+			tmp_list = my_realloc(tmp_list, sizeof(char *) * (size_t) (j + 2));
+			++j;
+			grp_name[strlen(grp_name) - 2] = '\0';
 		}
-		free(list[j]); /* this copy isn't needed anymore */
-		list[j] = (char *) _(txt_all_groups);
+		free(grp_name);
+		list[j] = tmp_list[j] = my_strdup(_(txt_all_groups));
 
 		if ((i = get_choice(INDEX_TOP + 13, ptr_filter_help_scope, ptr_filter_scope, list, j + 1)) > 0)
-			my_strncpy(rule.scope, i == j ? "*" : list[i], sizeof(rule.scope) - 1);
+			rule.scope = my_strdup(i == j ? "*" : list[i]);
 
-		for (j--; j >= 0; j--)
-			free(list[j]);
+		while (j >= 0)
+			free(tmp_list[j--]);
+		free(tmp_list);
 		free(list);
 
 		if (i == -1) {
+			FreeIfNeeded(rule.text);
+			FreeIfNeeded(rule.scope);
 			free_filter_comment(rule.comment);
 			return FALSE;
 		}
 	} else {
+		FreeIfNeeded(rule.text);
 		free_filter_comment(rule.comment);
 		return FALSE;
 	}
@@ -1452,6 +1470,8 @@ filter_menu(
 
 		case FILTER_EDIT:
 			add_filter_rule(group, art, &rule, FALSE); /* save the rule */
+			FreeIfNeeded(rule.text);
+			FreeIfNeeded(rule.scope);
 			rule.comment = free_filter_comment(rule.comment);
 			if (!invoke_editor(filter_file, filter_file_offset, NULL))
 				return FALSE;
@@ -1463,6 +1483,8 @@ filter_menu(
 
 		case GLOBAL_QUIT:
 		case GLOBAL_ABORT:
+			FreeIfNeeded(rule.text);
+			FreeIfNeeded(rule.scope);
 			free_filter_comment(rule.comment);
 			return FALSE;
 			/* NOTREACHED */
@@ -1473,6 +1495,8 @@ filter_menu(
 			 * Add the filter rule and save it to the filter file
 			 */
 			ret = add_filter_rule(group, art, &rule, FALSE);
+			FreeIfNeeded(rule.text);
+			FreeIfNeeded(rule.scope);
 			free_filter_comment(rule.comment);
 			return ret;
 			/* NOTREACHED */
@@ -1496,7 +1520,7 @@ quick_filter(
 	struct t_group *group,
 	struct t_article *art)
 {
-	char *scope;
+	const char *scope;
 	char txt[LEN];
 	int header, expire;
 	struct t_filter_rule rule;
@@ -1507,26 +1531,24 @@ quick_filter(
 		expire = group->attribute->quick_kill_expire;
 		/* ON=case sensitive, OFF=ignore case -> invert */
 		icase = bool_not(group->attribute->quick_kill_case);
-		scope = group->attribute->quick_kill_scope;
+		scope = group->attribute->quick_kill_scope ? group->attribute->quick_kill_scope ? BlankIfNull(*group->attribute->quick_kill_scope) : "" : "";
 	} else {	/* type == GLOBAL_QUICK_FILTER_SELECT */
 		header = group->attribute->quick_select_header;
 		expire = group->attribute->quick_select_expire;
 		/* ON=case sensitive, OFF=ignore case -> invert */
 		icase = bool_not(group->attribute->quick_select_case);
-		scope = group->attribute->quick_select_scope;
+		scope = group->attribute->quick_select_scope ? group->attribute->quick_select_scope ? BlankIfNull(*group->attribute->quick_select_scope) : "" : "";
 	}
 
 #ifdef DEBUG
 	if (debug & DEBUG_FILTER)
-		error_message(2, "%s header=[%d] scope=[%s] expire=[%s] case=[%c]", (type == GLOBAL_QUICK_FILTER_KILL) ? "KILL" : "SELECT", header, BlankIfNull(scope), txt_onoff[expire != FALSE ? 1 : 0], icase ? "I" : "C");
+		error_message(2, "%s header=[%d] scope=[%s] expire=[%s] case=[%c]", (type == GLOBAL_QUICK_FILTER_KILL) ? "KILL" : "SELECT", header, scope, txt_onoff[expire != FALSE ? 1 : 0], icase ? "I" : "C");
 #endif /* DEBUG */
 
 	/*
 	 * Setup rules
 	 */
-	if (strlen(BlankIfNull(scope)) > (sizeof(rule.scope) - 1))
-		return FALSE;
-	my_strncpy(rule.scope, BlankIfNull(scope), sizeof(rule.scope) - 1);
+	rule.scope = my_strdup(scope);
 	rule.counter = 0;
 	rule.lines_cmp = FILTER_LINES_NO;
 	rule.lines_num = 0;
@@ -1543,13 +1565,14 @@ quick_filter(
 		snprintf(txt, sizeof(txt), "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", '[', "' (", _(txt_help_article_quick_select), ").");
 	rule.comment = add_filter_comment(NULL, txt);
 
-	rule.text[0] = '\0';
+	rule.text = NULL;
 	rule.icase = icase ? 1 : 0;
 	rule.expire_time = expire;
 	rule.check_string = TRUE;
 	rule.score = (type == GLOBAL_QUICK_FILTER_KILL) ? tinrc.score_kill : tinrc.score_select;
 
 	ret = add_filter_rule(group, art, &rule, TRUE);
+	free(rule.scope);
 	free_filter_comment(rule.comment);
 	return ret;
 }
@@ -1573,13 +1596,6 @@ quick_filter_select_posted_art(
 		struct t_article art;
 		struct t_filter_rule rule;
 
-#ifdef __cplusplus /* keep C++ quiet */
-		rule.scope[0] = '\0';
-#endif /* __cplusplus */
-
-		if (strlen(group->name) > (sizeof(rule.scope) - 1)) /* groupname to long? */
-			return FALSE;
-
 		/*
 		 * Setup rules
 		 */
@@ -1591,13 +1607,14 @@ quick_filter_select_posted_art(
 		rule.msgid_ok = FALSE;
 		rule.fullref = FILTER_MSGID;
 		rule.subj_ok = TRUE;
-		rule.text[0] = '\0';
+		rule.text = NULL;
+		rule.scope = NULL;
 		rule.icase = FALSE;
 		rule.expire_time = TRUE;
 		rule.check_string = TRUE;
 		rule.score = tinrc.score_select;
 
-		strcpy(rule.scope, group->name);
+		rule.scope = my_strdup(group->name);
 
 		/* create an auto-comment. */
 		snprintf(txt, sizeof(txt), "%s%s", _(txt_filter_rule_created), "add_posted_to_filter=ON.");
@@ -1636,6 +1653,7 @@ quick_filter_select_posted_art(
 			filtered = add_filter_rule(group, &art, &rule, FALSE);
 			FreeIfNeeded(art.subject);
 		}
+		free(rule.scope);
 		rule.comment = free_filter_comment(rule.comment);
 	}
 	return filtered;
@@ -1683,7 +1701,7 @@ add_filter_rule(
 	if (rule->comment != NULL)
 		ptr[i].comment = copy_filter_comment(rule->comment, ptr[i].comment);
 
-	if (rule->scope[0] == '\0') /* replace empty scope with current group name */
+	if (!rule->scope || !*rule->scope) /* replace empty scope with current group name */
 		ptr[i].scope = my_strdup(group->name);
 	else {
 		if ((rule->scope[0] != '*') && (rule->scope[1] != '\0')) /* copy non-global scope */
@@ -1710,7 +1728,7 @@ add_filter_rule(
 	}
 
 	ptr[i].icase = rule->icase;
-	if (*rule->text) {
+	if (rule->text && *rule->text) {
 		snprintf(acbuf, sizeof(acbuf), REGEX_FMT, quote_wild_whitespace(rule->text));
 
 		switch (rule->counter) {
@@ -1798,7 +1816,7 @@ add_filter_rule(
 	if (filtered) {
 #ifdef DEBUG
 		if (debug & DEBUG_FILTER)
-			wait_message(2, "inscope=[%s] scope=[%s] case=[%c] subj=[%s] from=[%s] msgid=[%s] fullref=[%u] line=[%d %d] time=[%lu]", bool_unparse(ptr[i].inscope), rule->scope, ptr[i].icase ? "I" : "C", BlankIfNull(ptr[i].subj), BlankIfNull(ptr[i].from), BlankIfNull(ptr[i].msgid), ptr[i].fullref, ptr[i].lines_cmp, ptr[i].lines_num, (unsigned long int) ptr[i].time);
+			wait_message(2, "inscope=[%s] scope=[%s] case=[%c] subj=[%s] from=[%s] msgid=[%s] fullref=[%u] line=[%d %d] time=[%lu]", bool_unparse(ptr[i].inscope), BlankIfNull(rule->scope), ptr[i].icase ? "I" : "C", BlankIfNull(ptr[i].subj), BlankIfNull(ptr[i].from), BlankIfNull(ptr[i].msgid), ptr[i].fullref, ptr[i].lines_cmp, ptr[i].lines_num, (unsigned long int) ptr[i].time);
 #endif /* DEBUG */
 		write_filter_file(filter_file);
 	}

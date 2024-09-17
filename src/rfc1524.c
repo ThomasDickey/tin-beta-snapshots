@@ -123,7 +123,7 @@ get_mailcap_entry(
 								}
 							} else {
 								if ((*(ptr2 + 1) == '*') || (*(ptr2 + 1) == ';')) { /* wildmat match */
-									if (!strlen(wildcap)) { /* we don't already have a wildmat match */
+									if (!*wildcap) { /* we don't already have a wildmat match */
 										STRCPY(wildcap, buf);
 										FreeIfNeeded(foo);
 										foo = parse_mailcap_line(wildcap, part, path);
