@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2024-08-08
+ *  Updated   : 2024-10-16
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2024 Dirk Nimmich <nimmich@muenster.de>
@@ -52,7 +52,7 @@ static void add_global_keys(struct keylist *keys);
 static void free_keylist(struct keylist *keys);
 static void upgrade_keymap_file(char *old);
 static t_bool process_keys(t_function func, const char *keys, struct keylist *kl);
-static t_bool process_mapping(char *keyname, char *keys);
+static t_bool process_mapping(const char *keyname, char *keys);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	static t_bool add_key(struct keylist *keys, const wchar_t key, t_function func, t_bool override);
 #else
@@ -684,7 +684,7 @@ process_keys(
  */
 static t_bool
 process_mapping(
-	char *keyname,				/* Keyname we're searching for */
+	const char *keyname,				/* Keyname we're searching for */
 	char *keys)				/* Key to assign to keyname if found */
 {
 	switch (keyname[0]) {

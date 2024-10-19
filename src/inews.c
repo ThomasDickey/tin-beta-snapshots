@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-19
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -50,10 +50,10 @@
  * local prototypes
  */
 #ifdef NNTP_INEWS
-	static t_bool submit_inews(char *name, struct t_group *group, char *a_message_id);
+	static t_bool submit_inews(const char *name, struct t_group *group, char *a_message_id);
 #endif /* NNTP_INEWS */
 #if defined(NNTP_INEWS) && !defined(FORGERY)
-	static int sender_needed(char *from, char *sender, const char *charset);
+	static int sender_needed(const char *from, const char *sender, const char *charset);
 #endif /* NNTP_INEWS && !FORGERY */
 
 
@@ -65,7 +65,7 @@
 #ifdef NNTP_INEWS
 static t_bool
 submit_inews(
-	char *name,
+	const char *name,
 	struct t_group *group,
 	char *a_message_id)
 {
@@ -102,7 +102,7 @@ submit_inews(
 #	endif /* !FORGERY */
 
 	while ((line = tin_fgets(fp, TRUE)) != NULL) {
-		if (line[0] == '\0') /* end of headers */
+		if (!*line) /* end of headers */
 			break;
 
 		if ((ptr = strchr(line, ':'))) {
@@ -217,7 +217,7 @@ submit_inews(
 		 * if not scan response line if it contains a Message-ID
 		 * if it's present: use it.
 		 */
-		if (message_id[0] == '\0') {
+		if (!*message_id) {
 			/* simple syntax check - locate last '<' */
 			if ((ptr = strrchr(response, '<')) != NULL) {
 				/* search next '>' */
@@ -423,8 +423,7 @@ submit_news_file(
 #ifdef NNTP_INEWS
 		if (!ret_code && read_news_via_nntp && !read_saved_news && strcasecmp(tinrc.inews_prog, INTERNAL_CMD)) {
 			if (prompt_yn(_(txt_post_via_builtin_inews), TRUE)) {
-				ret_code = submit_inews(name, group, a_message_id);
-				if (ret_code) {
+				if ((ret_code = submit_inews(name, group, a_message_id)) == TRUE) {
 					if (prompt_yn(_(txt_post_via_builtin_inews_only), TRUE) == 1) {
 						FreeIfNeeded(tinrc.inews_prog);
 						tinrc.inews_prog = my_strdup(INTERNAL_CMD);
@@ -447,13 +446,13 @@ submit_news_file(
 #if defined(NNTP_INEWS) && !defined(FORGERY)
 static int
 sender_needed(
-	char *from,
-	char *sender,
+	const char *from,
+	const char *sender,
 	const char *charset)
 {
-	char *from_at_pos;
-	char *sender_at_pos;
-	char *sender_dot_pos;
+	const char *from_at_pos;
+	const char *sender_at_pos;
+	const char *sender_dot_pos;
 	char *p;
 	char from_addr[HEADER_LEN];
 	char sender_addr[HEADER_LEN];

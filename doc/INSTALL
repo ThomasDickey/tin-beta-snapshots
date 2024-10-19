@@ -75,8 +75,8 @@ Networking related
   TLI     - use Transport Layer Interface (SVR3, SVR4)
             or X/Open Transport Interface instead of
             BSD/POSIX sockets)
-  DECNET
-  EXCELAN
+  DECNET  - e.g. VMS, Ultrix, ...
+  EXCELAN - e.g. VxWorks
 
 TIN related:
   BACKUP_FILE_EXT (see misc.c:invoke_editor())

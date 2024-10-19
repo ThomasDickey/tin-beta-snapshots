@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-12
+ *  Updated   : 2024-10-12
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -109,7 +109,7 @@ read_config_file(
 		wait_message(0, _(txt_reading_config_file), global_file ? _(txt_global) : "", file);
 
 	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
-		if (buf[0] == '\0')
+		if (!*buf)
 			continue;
 		if (buf[0] == '#') {
 			if (upgrade == NULL && !global_file && match_string(buf, "# tin configuration file V", NULL, 0)) {
@@ -1811,14 +1811,13 @@ match_item(
 {
 	char *ptr;
 	char *nline = my_strdup(line);
-	size_t patlen = strlen(pat);
 
 	if ((ptr = strchr(nline, '\n')) != NULL) /* terminate on \n */
 		*ptr = '\0';
 
 	if (!strcasecmp(nline, pat)) {
 		if (dst != NULL) {
-			strncpy(dst, &nline[patlen], dstlen);
+			strncpy(dst, &nline[strlen(pat)], dstlen);
 			dst[dstlen ? (dstlen - 1) : 0] = '\0';
 		}
 		free(nline);

@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-08-26
+ *  Updated   : 2024-10-19
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -242,7 +242,9 @@ constext txt_autosubscribing_groups[] = N_("Autosubscribing groups...\n");
 constext txt_autoselecting_articles[] = N_("Autoselecting articles (use '%s' to see all unread) ...");
 
 constext txt_bad_article[] = N_("Article to be posted resulted in errors/warnings. %s=quit, %s=Menu, %s=edit: ");
-constext txt_bad_attrib[] = N_("Unrecognized attribute: %s");
+#ifdef DEBUG
+	constext txt_bad_attrib[] = N_("Unrecognized attribute: %s");
+#endif /* DEBUG */
 constext txt_bad_command[] = N_("Bad command. Type '%s' for help.");
 constext txt_base_article[] = N_("Base article");
 constext txt_base_article_range[] = N_("Base article range");
@@ -322,6 +324,7 @@ constext txt_conninfo_conf_files[] = N_("\nConfiguration files:\n---------------
 	constext txt_conninfo_ro[] = N_("read only");
 	constext txt_conninfo_rw[] = N_("read/write");
 	constext txt_conninfo_server[] = N_("NNTPSERVER    : %s\n");
+	constext txt_conninfo_type[] = N_("CONNECTIONTYPE: %s\n");
 #	ifdef NNTPS_ABLE
 	constext txt_conninfo_nntps[] = N_("Reading %s via NNTPS (%s; ");
 	constext txt_conninfo_cert[] = N_("Certificate #%d\n");
@@ -399,6 +402,7 @@ constext txt_error_corrupted_file[] = N_("Corrupted file %s");
 #ifdef NNTP_ABLE
 	constext txt_error_couldnt_expand[] = N_("couldn't expand %s\n");
 #endif /* NNTP_ABLE */
+constext txt_error_empty_format_string[] = N_("Error: Custom format empty. Using default \"%s\".");
 constext txt_error_fseek[] = "fseek() error on [%s]";
 constext txt_error_followup_poster[] = N_("\nError: Followup-To \"poster\" and a newsgroup is not allowed!\n");
 constext txt_error_format_string[] = N_("Error: Custom format exceeds screen width. Using default \"%s\".");
@@ -586,6 +590,7 @@ constext txt_help_article_by_num[] = N_("0 - 9\t  display article by number in c
 constext txt_help_article_edit[] = N_("edit article (mail-groups only)");
 constext txt_help_article_first_in_thread[] = N_("display first article in current thread");
 constext txt_help_article_first_page[] = N_("display first page of article");
+constext txt_help_article_info[] = N_("show MIME details of this article");
 constext txt_help_article_last_in_thread[] = N_("display last article in current thread");
 constext txt_help_article_last_page[] = N_("display last page of article");
 constext txt_help_article_mark_thread_read[] = N_("mark rest of thread as read and advance to next unread");
@@ -1199,7 +1204,9 @@ constext txt_unsubscribe_pattern[] = N_("Enter wildcard unsubscribe pattern> ");
 constext txt_uu_error_decode[] = N_("Error decoding %s : %s");
 constext txt_uu_error_no_end[] = N_("No end.");
 constext txt_uu_success[] = N_("%s successfully decoded.");
-constext txt_unchanged[] = N_("unchanged");
+#ifdef DEBUG
+	constext txt_unchanged[] = N_("unchanged");
+#endif /* DEBUG */
 constext txt_unknown[] = N_("(unknown)");
 #if defined(XFACE_ABLE) || (defined(NNTPS_ABLE) && defined(HAVE_LIB_LIBTLS))
 	constext txt_unknown_error[] = N_("unknown error");
@@ -1255,7 +1262,8 @@ constext txt_use_mime[] = N_("Use MIME display program for this message?");
 constext txt_useful_without_batch_mode[] = N_("%s only useful without batch mode operations\n");
 constext txt_useful_with_batch_mode[] = N_("%s only useful for batch mode operations\n");
 constext txt_useful_with_batch_or_debug_mode[] = N_("%s only useful for batch or debug mode operations\n");
-constext txt_useless_combination[] = N_("Useless combination %s and %s. Ignoring %s.\n");
+constext txt_useless_combination[] = N_("Useless combination %s and %s. Ignoring %s.%s");
+constext txt_useless_comb_tinrcval[] = N_(" Also check your $TINRC setting.\n");
 constext txt_uue_complete[] = N_("uuencoded file");
 constext txt_uue_incomplete[] = N_("incomplete uuencoded file");
 
@@ -1333,10 +1341,12 @@ constext txt_x_resp[] = N_("%4d Responses");
 	constext txt_xface_error_create_failed[] = N_("Can't run slrnface: failed to create %s");
 	constext txt_xface_error_exited_abnormal[] = N_("Slrnface abnormally exited, code %d.");
 	constext txt_xface_error_finally_failed[] = N_("Slrnface failed: %s.");
-	constext txt_xface_error_missing_env_var[] = N_("Can't run slrnface: Environment variable %s not found.");
-#	if defined(DEBUG) && defined(HAVE_IS_XTERM)
-	constext txt_xface_error_no_xterm[] = N_("Can't run slrnface: Not running in an xterm.");
-#	endif /* DEBUG && HAVE_IS_XTERM */
+#	ifdef DEBUG
+		constext txt_xface_error_missing_env_var[] = N_("Can't run slrnface: Environment variable %s not found.");
+#		ifdef HAVE_IS_XTERM
+			constext txt_xface_error_no_xterm[] = N_("Can't run slrnface: Not running in an xterm.");
+#		endif /* HAVE_IS_XTERM */
+#	endif /* DEBUG */
 	constext txt_xface_msg_cannot_connect_display[] = N_("couldn't connect to display");
 	constext txt_xface_msg_cannot_open_fifo[] = N_("can't open FIFO");
 	constext txt_xface_msg_executable_not_found[] = N_("executable not found");
@@ -2303,7 +2313,7 @@ struct opttxt txt_show_signatures = {
 
 struct opttxt txt_show_art_score = {
 	N_("Display article score. <SPACE> toggles & <CR> sets."),
-	N_("Display article score"),
+	N_("Display article score in pager"),
 	N_("# If ON show article score when displaying articles\n")
 };
 

@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2024-09-07
+ *  Updated   : 2024-10-19
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2024 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -72,20 +72,17 @@ tintls_init(
 	char *ca_cert_file = ca_cert_file_expanded;
 
 	if (tinrc.tls_ca_cert_file && *tinrc.tls_ca_cert_file) {
-		result = strfpath(tinrc.tls_ca_cert_file, ca_cert_file_expanded, sizeof(ca_cert_file_expanded), NULL, FALSE);
-		if (result == 0)
+		if ((result = strfpath(tinrc.tls_ca_cert_file, ca_cert_file_expanded, sizeof(ca_cert_file_expanded), NULL, FALSE)) == 0)
 			return -EINVAL;
 	} else
 		ca_cert_file_expanded[0] = '\0';
 
 #ifdef USE_LIBTLS
-
 	/*
 	 * libtls does not support compression, no actions needed to disable.
 	 */
 
-	libtls_config = tls_config_new();
-	if (!libtls_config) {
+	if ((libtls_config = tls_config_new()) == NULL) {
 		error_message(2, "tls_config_new: out of memory!\n");
 		return -ENOMEM;
 	}
@@ -97,9 +94,8 @@ tintls_init(
 	 * can be triggered.
 	 * (see https://git.causal.agency/libretls/about/#Compatibility)
 	 */
-	if (ca_cert_file[0] != '\0') {
-		result = tls_config_set_ca_file(libtls_config, ca_cert_file);
-		if (result != 0) {
+	if (*ca_cert_file) {
+		if ((result = tls_config_set_ca_file(libtls_config, ca_cert_file)) != 0) {
 			error_message(2, "%s!\n", tls_config_error(libtls_config));
 			tls_config_free(libtls_config);
 			libtls_config = NULL;
@@ -136,7 +132,7 @@ tintls_init(
 		return -ENOMEM;
 	}
 
-	if (ca_cert_file[0] == '\0') {
+	if (!*ca_cert_file) {
 		result = gnutls_certificate_set_x509_system_trust(tls_xcreds);
 		if (result < 0) {
 			error_message(2, "gnutls_certificate_set_x509_system_trust: %s (%d)!\n", gnutls_strerror(result), result);
@@ -178,7 +174,7 @@ tintls_init(
 	 */
 	SSL_CTX_set_options(openssl_ctx, SSL_OP_NO_COMPRESSION);
 
-	if (ca_cert_file[0] == '\0') {
+	if (!*ca_cert_file) {
 		result = SSL_CTX_set_default_verify_paths(openssl_ctx);
 		if (result != 1) {
 			SSL_CTX_free(openssl_ctx);
@@ -257,18 +253,15 @@ tintls_open(
 
 	*session_ctx = NULL;
 
-	client = tls_client();
-	if (!client)
+	if ((client = tls_client()) == NULL)
 		return -ENOMEM;
 
-	result = tls_configure(client, libtls_config);
-	if (result == -1) {
+	if ((result = tls_configure(client, libtls_config)) == -1) {
 		tls_free(client);
 		return -ENOMEM;
 	}
 
-	result = tls_connect_socket(client, fd, servername);
-	if (result == -1) {
+	if ((result = tls_connect_socket(client, fd, servername)) == -1) {
 		tls_free(client);
 		tintls_exit();
 		return -ENOMEM;
@@ -286,24 +279,20 @@ tintls_open(
 
 	*session_ctx = NULL;
 
-	result = gnutls_init(&client, GNUTLS_CLIENT | GNUTLS_AUTO_REAUTH | GNUTLS_POST_HANDSHAKE_AUTH);
-	if (result < 0)
+	if ((result = gnutls_init(&client, GNUTLS_CLIENT | GNUTLS_AUTO_REAUTH | GNUTLS_POST_HANDSHAKE_AUTH)) < 0)
 		return -ENOMEM;
 
-	result = gnutls_server_name_set(client, GNUTLS_NAME_DNS, servername, strlen(servername));
-	if (result < 0) {
+	if ((result = gnutls_server_name_set(client, GNUTLS_NAME_DNS, servername, strlen(servername))) < 0) {
 		gnutls_deinit(client);
 		return -ENOMEM;
 	}
 
-	result = gnutls_set_default_priority(client);
-	if (result < 0) {
+	if ((result = gnutls_set_default_priority(client)) < 0) {
 		gnutls_deinit(client);
 		return -EINVAL;
 	}
 
-	result = gnutls_credentials_set(client, GNUTLS_CRD_CERTIFICATE, tls_xcreds);
-	if (result < 0) {
+	if ((result = gnutls_credentials_set(client, GNUTLS_CRD_CERTIFICATE, tls_xcreds)) < 0) {
 		gnutls_deinit(client);
 		return -EINVAL;
 	}
@@ -411,11 +400,10 @@ tintls_handshake(
 		io_buf = BIO_new(BIO_s_mem());
 
 	if (chain && io_buf) {
-		X509 *cert;
-		char **cert_info;
-
 		if (chain_size > 0 && BIO_write(io_buf, chain, chain_size) > 0) {
-			cert = PEM_read_bio_X509(io_buf, NULL, NULL, NULL);
+			char **cert_info;
+			X509 *cert = PEM_read_bio_X509(io_buf, NULL, NULL, NULL);
+
 			if (cert && ((cert_info = get_cert_info(cert)))) {
 				wait_message(0, _(txt_conninfo_subject), cert_info[0] ? cert_info[0] : _(txt_retr_subject_failed));
 				wait_message(0, _(txt_conninfo_issuer), cert_info[1] ? cert_info[1] : _(txt_retr_issuer_failed));

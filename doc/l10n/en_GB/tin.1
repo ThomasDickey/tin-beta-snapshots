@@ -2827,15 +2827,13 @@ variables are expanded if found in the tinrc variables \fBmail_quote_format\fP,
 e.g.,
 .RS
 .nf
-\f(CWmail_quote_format=On %D in %G you wrote:
-news_quote_format=In %M, %F wrote:\fP
+\f(CWmail_quote_format=On %D in %G you wrote: news_quote_format=In %M, %F wrote:\fP
 .fi
 .RE
 would expand to:
 .RS
 .nf
-\f(CWOn 21 Sep 1993 09:45:51 \-0400 in alt.sources you wrote:
-In <abcINN123@example.org>, Joe Bar <joe@example.org> wrote:\fP
+\f(CWOn 21 Sep 1993 09:45:51 \-0400 in alt.sources you wrote: In <abcINN123@example.org>, Joe Bar <joe@example.org> wrote:\fP
 .fi
 .RE
 .\"
@@ -2974,8 +2972,7 @@ editor for both posting and mailing commands.
 The following is an example of a \fI.Sig\fP file:
 .RS
 .nf
-\f(CWNAMES  Joe Bar <joe@example.org>
-SNAIL  Musterweg 12, 99999 Notreal, Germany\fP
+\f(CWNAMES  Joe Bar <joe@example.org> SNAIL  Musterweg 12, 99999 Notreal, Germany\fP
 .fi
 .RE
 .PP
@@ -3065,8 +3062,7 @@ The information displayed with '\fB%F\fP' depends on the value of
 ('\fBd\fP') switches through all available options.
 .PP
 For date representation '\fB%D\fP' uses \fBdate_format\fP. It is possible to
-specify a different date format in round brackets (e.g. '\fB%(%d %b %y
-%H:%M)D\fP'). See \fBdate_format\fP for more details.
+specify a different date format in round brackets (e.g. '\fB%(%d %b %y %H:%M)D\fP'). See \fBdate_format\fP for more details.
 .PP
 The length of each item (except '\fB%%\fP') can be defined with a positive
 number after the '\fB%\fP'. The following example displays the score in the
@@ -3116,19 +3112,29 @@ When the format string contains the specifier '\fB%F\fP' and '\fB%s\fP'
 resp. '\fB%T\fP' and no length are given, '\fB%F\fP' will use one third and
 \&'\fB%s\fP' resp. '\fB%T\fP' will use two third of the available space.
 .PP
-In addition, a minimum screen width can be defined for each item (except
-\&'\fB%%\fP'). In this case, the item will only be displayed when the screen is
-wider than specified. This comes in handy to not overload a small screen but
-have maximum information on a large screen. The minimum screen width has to
-be specified by a positive number preceded by an '\fB>\fP'. In the
-following example \fBtin\fP will display the score only if the screen is wider
-than 100 characters: '\fB%>100S\fP'.
+In addition, a minimum or a maximum screen width can be defined for each
+item (except '\fB%%\fP').  In this case, the item will only be displayed when
+the screen is wider resp.  smaller than specified.  This comes in handy to
+not overload a small screen but have maximum information on a large screen.
+The minimum screen width has to be specified by a positive number preceded
+by an '\fB>\fP', the maximum screenwidth has to be specified by a positive
+number preceded by an '\fB<\fP'.  In the following example \fBtin\fP will
+display the score only if the screen is wider than 100 characters:
+\&'\fB%>100S\fP'.
 .PP
-If both the length and the minimum screen width should be specified for an
-item, the length must be the first parameter and the minimum screen width
-must be the second one. The following example displays the score with a
-length of 10 characters only if the screen is wider than 100 characters:
-\&'\fB%10>100S\fP'.
+If both the length and the minimum or maximum screen width should be
+specified for an item, the length must be the first parameter and the
+minimum or maximum screen width must be the second one.  The following
+example displays the score with a length of 10 characters only if the screen
+is wider than 100 characters: '\fB%10>100S\fP'.  A second length can be
+specified for '\fB%F\fP' and '\fB%s\fP' resp.  '\fB%T\fP', separated by a colon,
+which is used if the minimum or maximum screen width is not reached.  If no
+length is specified after the colon, the item is displayed even if the
+minimum screen width is not reached and the length is calculated as if no
+minimum (or maximum) screen width had been specified.  In the following
+example \fBtin\fP will display the subject with a length of 60 characters if
+the screen is wider than 100 characters, otherwise a length of 40 characters
+is used: '\fB%60>100:40s\fP'.
 .PP
 The look of the Attachment level and the mime and uue header at Page level
 can be customised too via format strings.  The following variables are
@@ -3344,8 +3350,7 @@ cached data for groups you are not reading anymore with something like:
 .PP
 .RS
 .nf
-\f(CWfind ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \e
-\-type f \-name "[0\-9]*.[0\-9]" \-atime +28 | xargs rm \-f\fP
+\f(CWfind ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \e \-type f \-name "[0\-9]*.[0\-9]" \-atime +28 | xargs rm \-f\fP
 .fi
 .RE
 .\"

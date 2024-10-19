@@ -197,7 +197,7 @@ untag_all_articles(
  * RANGE CODE
  */
 /*
- * Allows user to specify an group/article range that a followup
+ * Allows user to specify a group or article range that a followup
  * command will operate on (eg. catchup articles 1-56) # 1-56 K
  * min/max/curr are the lowest/highest and current positions on the
  * menu from which this was called; used as defaults if needed

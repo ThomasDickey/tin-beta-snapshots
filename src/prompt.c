@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-16
+ *  Updated   : 2024-10-17
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -54,7 +54,6 @@ static char *prompt_yn_choice;
  * Local prototypes
  */
 static int prompt_list(int row, int col, int var, constext *help_text, constext *prompt_text, constext *list[], int size);
-static t_bool prompt_default_string_ptr(const char *prompt, char **buf, int buf_len, char *default_prompt, int which_hist);
 
 /*
  *  prompt_num
@@ -99,16 +98,6 @@ prompt_string(
 }
 
 
-t_bool
-prompt_string_ptr(
-	const char *prompt,
-	char **buf,
-	int which_hist)
-{
-	return prompt_default_string_ptr(prompt, buf, 0, NULL, which_hist);
-}
-
-
 /*
  * prompt_default_string
  * get a string from the user, display default value
@@ -119,7 +108,7 @@ prompt_default_string(
 	const char *prompt,
 	char *buf,
 	int buf_len,
-	char *default_prompt,
+	const char *default_prompt,
 	int which_hist)
 {
 	char *p;
@@ -131,29 +120,6 @@ prompt_default_string(
 		return FALSE;
 	}
 	strcpy(buf, p);
-	clear_message();
-	return TRUE;
-}
-
-
-static t_bool
-prompt_default_string_ptr(
-	const char *prompt,
-	char **buf,
-	int buf_len,
-	char *default_prompt,
-	int which_hist)
-{
-	char *p;
-
-	clear_message();
-	if ((p = tin_getline(prompt, 0, default_prompt, buf_len, FALSE, which_hist)) == NULL) {
-		FreeAndNull(*buf);
-		clear_message();
-		return FALSE;
-	}
-	FreeIfNeeded(*buf);
-	*buf = my_strdup(p);
 	clear_message();
 	return TRUE;
 }
@@ -647,10 +613,10 @@ prompt_string_default(
 		return NULL;
 	}
 
-	if (pattern[0] != '\0')			/* got a string - make it the default */
+	if (*pattern)			/* got a string - make it the default */
 		my_strncpy(def, pattern, LEN);
 	else {
-		if (def[0] == '\0') {		/* no default - give up */
+		if (!*def) {		/* no default - give up */
 			error_message(2, "%s", failtext);
 			return NULL;
 		}
@@ -676,7 +642,7 @@ prompt_string_ptr_default(
 		return NULL;
 	}
 
-	if (pattern[0] != '\0')	{		/* got a string - make it the default */
+	if (*pattern)	{		/* got a string - make it the default */
 		FreeIfNeeded(*def);
 		*def = my_strdup(pattern);
 	} else {
@@ -756,9 +722,7 @@ sized_message(
 	const char *subject)
 {
 	char *buf;
-	int max_len;
-
-	max_len = cCOLS - strwidth(format) + 2 - 1;	/* The formatting info (%s) wastes 2 chars, but our prompt needs 1 char */
+	int max_len = cCOLS - strwidth(format) + 2 - 1;	/* The formatting info (%s) wastes 2 chars, but our prompt needs 1 char */
 
 	buf = strunc(subject, max_len);
 

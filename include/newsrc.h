@@ -3,7 +3,7 @@
  *  Module    : newsrc.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-01-14
+ *  Updated   : 2024-09-27
  *  Notes     : newsrc bit handling
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -117,12 +117,14 @@
 #define NOFFSET(b)	((b) >> NBITPOS)
 #define NBITIDX(b)	((b) & NMAXBIT)
 
-#define NBITMASK(beg,end)	(unsigned char) ~(((1 << (((NMAXBIT - beg) - (NMAXBIT - end)) + 1)) - 1) << (NMAXBIT - end))
-
 #define NTEST(n,b)	(n[NOFFSET(b)] & (1 << NBITIDX(b)))
+
+#if 0 /* unused */
+#define NBITMASK(beg,end)	(unsigned char) ~(((1 << (((NMAXBIT - beg) - (NMAXBIT - end)) + 1)) - 1) << (NMAXBIT - end))
 
 #define NSETBLK1(n,i)	(memset(n, NBITSON, (size_t) NOFFSET(i) + 1))
 #define NSETBLK0(n,i)	(memset(n, 0, (size_t) NOFFSET(i) + 1))
+#endif /* 0 */
 
 /* dbmalloc checks memset() parameters, so we'll use it to check the assignments */
 #ifdef USE_DBMALLOC

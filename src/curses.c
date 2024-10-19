@@ -1181,7 +1181,7 @@ ReadWch(
 	void)
 {
 	char *mbs = my_malloc(MB_CUR_MAX + 1);
-	int result, to_read;
+	int result;
 	wchar_t wch;
 
 	fflush(stdout);
@@ -1235,7 +1235,7 @@ ReadWch(
 	 * UTF-8
 	 */
 	if (IS_LOCAL_CHARSET("UTF-8")) {
-		int ch = mbs[0] & 0xFF;
+		int to_read, ch = mbs[0] & 0xFF;
 
 		/* determine the count of bytes we have still have to read */
 		if (ch <= 0x7F) {

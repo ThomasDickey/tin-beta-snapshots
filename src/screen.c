@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-08-15
+ *  Updated   : 2024-10-17
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -316,9 +316,7 @@ center_line(
 {
 	char *ln;
 	int pos;
-	int len;
-
-	len = strwidth(str);
+	int len = strwidth(str);
 
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 	if (tinrc.render_bidi && IS_LOCAL_CHARSET("UTF-8") && len > 1) {
@@ -343,14 +341,15 @@ center_line(
 		}
 	}
 
-	if (len >= cCOLS) {
-		char *buffer;
+    if (len >= cCOLS) {
+		char *buffer = strunc(ln, cCOLS - 2);
 
-		buffer = strunc(ln, cCOLS - 2);
-		my_fputs(buffer, stdout);
-		free(buffer);
-	} else
-		my_fputs(ln, stdout);
+		if (buffer != ln)
+			free(ln);
+
+		ln = buffer;
+	}
+	my_fputs(ln, stdout);
 
 	if (cmd_line)
 		my_flush();
@@ -381,12 +380,19 @@ draw_arrow_mark(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			my_fputs("->", stdout);
 	} else {
+		char *buffer, *s;
+
 #ifdef USE_CURSES
-		char buffer[BUFSIZ];
-		char *s = screen_contents(line, 0, buffer);
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		buffer = my_malloc(MB_CUR_MAX * (size_t) (cCOLS + 1));
+#	else
+		buffer = my_malloc(cCOLS + 1);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		s = screen_contents(line, 0, buffer);
 #else
-		char *s = screen[line - INDEX_TOP].col;
+		s = screen[line - INDEX_TOP].col;
 #endif /* USE_CURSES */
+
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if ((wtmp = char2wchar_t(s)) != NULL) {
 			StartInverse();
@@ -409,6 +415,9 @@ draw_arrow_mark(
 			my_fputc(s[mark_offset], stdout);
 		}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#ifdef USE_CURSES
+		free(buffer);
+#endif /* USE_CURSES */
 	}
 	stow_cursor();
 }
@@ -432,10 +441,15 @@ erase_arrow(
 		my_fputs("  ", stdout);
 	else {
 #ifdef USE_CURSES
-		char buffer[BUFSIZ];
-		char *s = screen_contents(line, 0, buffer);
+		char *buffer, *s;
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		buffer = my_malloc(MB_CUR_MAX * (size_t) (cCOLS + 1));
+#	else
+		buffer = my_malloc(cCOLS + 1);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		s = screen_contents(line, 0, buffer);
 #else
-		char *s;
+		s = screen[line - INDEX_TOP].col;
 
 		if (line - INDEX_TOP < 0) /* avoid underruns */
 			line = INDEX_TOP;
@@ -463,6 +477,9 @@ erase_arrow(
 			EndInverse();
 		}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#ifdef USE_CURSES
+		free(buffer);
+#endif /* USE_CURSES */
 	}
 }
 

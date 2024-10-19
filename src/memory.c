@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-11
+ *  Updated   : 2024-09-25
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -453,10 +453,12 @@ free_tinrc_strings(
 	FreeAndNull(tinrc.news_headers_to_not_display);
 	FreeAndNull(tinrc.news_quote_format);
 	FreeAndNull(tinrc.quote_chars);
+#ifdef HAVE_COLOR
 	FreeAndNull(tinrc.quote_regex);
 	FreeAndNull(tinrc.quote_regex2);
 	FreeAndNull(tinrc.quote_regex3);
 	FreeAndNull(tinrc.extquote_regex);
+#endif /* HAVE_COLOR */
 	FreeAndNull(tinrc.slashes_regex);
 	FreeAndNull(tinrc.stars_regex);
 	FreeAndNull(tinrc.underscores_regex);
@@ -697,7 +699,7 @@ my_memmove(
 		d += n;
 		c += n;
 		while (n--)
-			*--d= *--c;
+			*--d = *--c;
 	} else {
 		while (n--)
 			*d++ = *c++;

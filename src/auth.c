@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2024-06-21
+ *  Updated   : 2024-10-19
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -54,10 +54,10 @@
 /*
  * local prototypes
  */
-static int do_authinfo_user(char *server, char *authuser, char *authpass);
-static t_bool read_newsauth_file(char *server, char *authuser, char *authpass);
+static int do_authinfo_user(char *server, char *authuser, const char *authpass);
+static t_bool read_newsauth_file(const char *server, char *authuser, char *authpass);
 static t_bool authinfo_plain(char *server, char *authuser, t_bool startup);
-static char *prompt_for_authid(char *authuser);
+static char *prompt_for_authid(const char *authuser);
 static char *prompt_for_password(void);
 #	ifdef USE_GSASL
 	static int sasl_auth(char *user, char *pass);
@@ -74,7 +74,7 @@ static char *prompt_for_password(void);
  */
 static t_bool
 read_newsauth_file(
-	char *server,
+	const char *server,
 	char *authuser,
 	char *authpass)
 {
@@ -217,7 +217,7 @@ static int
 do_authinfo_user(
 	char *server,
 	char *authuser,
-	char *authpass)
+	const char *authpass)
 {
 	char line[NNTP_STRLEN];
 	int ret;
@@ -316,7 +316,7 @@ authinfo_plain(
 		return (ret == OK_AUTH || ret == OK_AUTH_SASL);
 	}
 
-	authpassword[0] = '\0';
+	*authpassword = '\0';
 	STRCPY(authusername, authuser);
 	authuser = authusername;
 	authpass = authpassword;
@@ -395,12 +395,12 @@ authinfo_plain(
 			if (p && *p)  /* authpass points to authpassword */
 				STRCPY(authpassword, p);
 			else
-				authpassword[0] = '\0';
+				*authpassword = '\0';
 
 			if (u && *u) /* authuser points to authusername */
 				STRCPY(authusername, u);
 			else
-				authusername[0] = '\0';
+				*authusername = '\0';
 
 			free(p);
 			free(u);
@@ -488,9 +488,7 @@ authenticate(
 	t_bool startup)
 {
 	char line[NNTP_STRLEN];
-	t_bool ret;
-
-	ret = authinfo_plain(server, user, startup);
+	t_bool ret = authinfo_plain(server, user, startup);
 
 	if (ret && nntp_caps.type == CAPABILITIES) {
 		/* resend CAPABILITIES, but "manually" to avoid AUTH loop */
@@ -517,20 +515,20 @@ do_authinfo_sasl(
 	char *utf8user = NULL;
 	char *utf8pass = NULL;
 	int ret;
-#		ifdef CHARSET_CONVERSION
-	char *cp;
-	int i, c = 0;
-	t_bool contains_8bit = FALSE;
-#		endif /* CHARSET_CONVERSION */
 
 	if (authuser && *authuser)
 		utf8user = my_strdup(authuser);
 
 	if (authpass && *authpass)
 		utf8pass = my_strdup(authpass);
+
 #		ifdef CHARSET_CONVERSION
 	/* RFC 4616 */
 	if (!IS_LOCAL_CHARSET("UTF-8")) {
+		char *cp;
+		int i, c = 0;
+		t_bool contains_8bit = FALSE;
+
 		if (utf8user) {
 			for (cp = utf8user; *cp && !contains_8bit; cp++) {
 				if (!isascii((unsigned char) *cp)) {
@@ -671,7 +669,7 @@ sasl_done:
 		gsasl_done(ctx);
 
 	if (ret != OK_AUTH_SASL && ret != OK_AUTH)
-		FreeAndNull(nntp_caps.sasl_mech_used)
+		FreeAndNull(nntp_caps.sasl_mech_used);
 
 	return ret;
 }
@@ -774,7 +772,7 @@ callback(
  */
 static char *
 prompt_for_authid(
-	char *authuser
+	const char *authuser
 ) {
 	char *authid;
 	size_t maxlen = 255;
@@ -791,7 +789,7 @@ prompt_for_authid(
 			debug_print_file("NNTP", "authorization failed: no username");
 #	endif /* DEBUG */
 
-		authid[0] = '\0';
+		*authid = '\0';
 	}
 #	ifdef USE_CURSES
 	Raw(state);

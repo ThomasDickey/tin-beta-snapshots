@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2024-09-16
+ *  Updated   : 2024-10-17
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -353,7 +353,7 @@ read_filter_file(
 		if (*buf == '\n')
 			continue;
 		if (*buf == '#') {
-			if (scope[0] == '\0')
+			if (!*scope)
 				filter_file_offset++;
 			if (upgrade == NULL && first_read && match_string(buf, "# Filter file V", NULL, 0)) {
 				first_read = FALSE;
@@ -1896,9 +1896,8 @@ filter_articles(
 	 * (only for regexp matching)
 	 */
 	if (use_regex) {
-		size_t msiz;
+		size_t msiz = sizeof(struct regex_cache) * (size_t) num;
 
-		msiz = sizeof(struct regex_cache) * (size_t) num;
 		regex_cache_subj = my_malloc(msiz);
 		regex_cache_from = my_malloc(msiz);
 		regex_cache_msgid = my_malloc(msiz);

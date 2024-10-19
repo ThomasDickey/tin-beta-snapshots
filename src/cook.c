@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2024-07-29
+ *  Updated   : 2024-10-13
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -101,13 +101,13 @@ expand_ctrl_chars(
 	 * it should help us find problems with wide-char strings
 	 * in the development branch
 	 */
-	assert(wline != NULL);
+	assert(((void) "wline must not be NULL", wline != NULL));
 	wlen = wcslen(wline) + 1; /* add one to make coverity happy */
 	ctrl_L = wexpand_ctrl_chars(&wline, &wlen, lcook_width);
 	free(*line);
 	*line = wchar_t2char(wline);
 	free(wline);
-	assert(line != NULL);
+	assert(((void) "line must not be NULL", line != NULL));
 	*length = strlen(*line);
 #else
 	int curr_len = LEN;
@@ -405,9 +405,9 @@ get_filename(
 #define BUILD_ATTACH_ITEM() do { \
 		if (curr->flags & (ATTACH_SHOW_CONTENT | ATTACH_SHOW_BOTH)) { \
 			if (curr->flags & ATTACH_SHOW_BOTH) \
-				snprintf(buf, sizeof(buf), curr->description, curr->content); \
+				snprintf(buf, blen, curr->description, curr->content); \
 			else \
-				snprintf(buf, sizeof(buf), curr->fmt, curr->content); \
+				snprintf(buf, blen, curr->fmt, curr->content); \
 			if ((space_left -= strlen(buf) > 0)) \
 				strcat(attach_line, buf); \
 		} \
@@ -484,9 +484,10 @@ build_attach_line(
 	char *al_ptr;
 	char *fmt_ptr;
 	char *line_cnt_str = NULL;
-	char buf[BUFSIZ];
+	char *buf;
 	char *fmt;
 	int i, line_cnt_str_len;
+	size_t blen;
 	ssize_t space_left;
 	struct t_attach_item *curr = NULL;
 	struct t_attach_item *items = NULL;
@@ -495,6 +496,13 @@ build_attach_line(
 	t_bool excl_seen = FALSE;
 	t_bool star_seen = FALSE;
 
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	buf = my_malloc(MB_CUR_MAX * (size_t) (cCOLS + 1));
+	blen = MB_CUR_MAX * (size_t) cCOLS;
+#	else
+	buf = my_malloc(cCOLS + 1);
+	blen = (size_t) cCOLS;
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	if (is_uue)
 		fmt = tinrc.page_uue_format;
 	else if (signal_context == cAttachment)
@@ -694,7 +702,7 @@ build_attach_line(
 	star_seen = excl_seen = FALSE;
 	attach_line = my_malloc(LEN);
 	space_left = LEN - 2;
-	attach_line[0] = '\0';
+	*attach_line = '\0';
 
 	while (space_left > 0 && (init || ((strwidth(attach_line) > max_len && shorten_attach_line(last))))) {
 		init = FALSE;
@@ -826,6 +834,7 @@ build_attach_line(
 		}
 	}
 
+	free(buf);
 	return (attach_line);
 }
 
@@ -1329,7 +1338,7 @@ cook_article(
 	 * Put down just the headers we want
 	 */
 	while ((line = tin_fgets(artinfo->raw, TRUE)) != NULL) {
-		if (line[0] == '\0') {				/* End of headers? */
+		if (!*line) {				/* End of headers? */
 			if (STRIP_ALTERNATIVE(artinfo)) {
 #ifdef INLINE_DEBUG_MIME
 				stripped = TRUE;
@@ -1519,14 +1528,14 @@ cook_article(
 
 /*
  * tin_ltoa() like function; IEC binary notation (base 1024)
- * with one decimal point. positive numbers only
+ * with one decimal point. positive numbers only.
  */
 #define BI_BASE 1024
 static char *
 ltobi(
 	unsigned long i)
 {
-	static const char power[] = { ' ', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'R', 'Q', '\0' };
+	static const char power[] = { 'e', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'R', 'Q', '\0' };
 	static char buffer[9];
 	unsigned d = 0, e = 0;
 
@@ -1536,9 +1545,12 @@ ltobi(
 		e++;
 	}
 
-	if (e)
-		sprintf(buffer, "%u.%u%c", (unsigned) i, d, power[e]);
-	else
+	if (e) {
+		if (e >= sizeof(power) - 1) /* any 128bit systems around? ,-) */
+			sprintf(buffer, "%u.%u%c", (unsigned) i, d, power[0]); /* omit value and use a better error string? */
+		else
+			sprintf(buffer, "%u.%u%c", (unsigned) i, d, power[e]);
+	} else
 		sprintf(buffer, "0.%u%c", (unsigned) (i * 10 / BI_BASE), power[1]);
 
 	return buffer;

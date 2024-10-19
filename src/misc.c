@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-19
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -112,10 +112,10 @@
 static char *strfpath_cp(char *str, char *tbuf, const char *endp);
 static int _strfpath(const char *format, char *str, size_t maxsize, struct t_group *group, t_bool expand_all);
 static int gnksa_check_domain(char *domain);
-static int gnksa_check_domain_literal(char *domain);
+static int gnksa_check_domain_literal(const char *domain);
 static int gnksa_check_localpart(const char *localpart);
 static int gnksa_dequote_plainphrase(char *realname, char *decoded, int addrtype);
-static int strfeditor(char *editor, int linenum, const char *filename, char *s, size_t maxsize, char *format);
+static int strfeditor(const char *editor, int linenum, const char *filename, char *s, size_t maxsize, char *format);
 static void make_connection_page(FILE *fp);
 static void write_input_history_file(void);
 #ifdef CHARSET_CONVERSION
@@ -167,11 +167,14 @@ get_tmpfilename(
  */
 int
 append_file(
-	char *old_filename,
-	char *new_filename)
+	const char *old_filename,
+	const char *new_filename)
 {
 	FILE *fp_old, *fp_new;
 	int rval = 0;
+
+	if (!*old_filename || !*new_filename)
+		return ENOENT;
 
 	if ((fp_old = tin_fopen(old_filename, "r")) == NULL)
 		return errno;
@@ -327,7 +330,7 @@ copy_body(
 	FILE *fp_ip,
 	FILE *fp_op,
 	char *prefix,
-	char *initl,
+	const char *initl,
 	t_bool raw_data)
 {
 	char *buf;
@@ -574,10 +577,8 @@ void
 shell_escape(
 	void)
 {
-	char *p, *tmp;
+	char *p, *tmp = fmt_string(_(txt_shell_escape), BlankIfNull(tinrc.default_shell_command));
 	char shell[LEN];
-
-	tmp = fmt_string(_(txt_shell_escape), BlankIfNull(tinrc.default_shell_command));
 
 	if (!prompt_string(tmp, shell, HIST_SHELL_COMMAND)) {
 		free(tmp);
@@ -742,7 +743,8 @@ tin_done(
 	/* Do this sometime after we save the newsrc in case this hangs up for any reason */
 	nntp_close((ret == NNTP_ERROR_EXIT));			/* disconnect from NNTP server */
 
-	tintls_exit();
+	if (use_nntps)
+		tintls_exit();
 
 	free_all_arrays();
 
@@ -815,7 +817,7 @@ tin_done(
 
 int
 my_mkdir(
-	char *path,
+	const char *path,
 	mode_t mode)
 {
 #ifndef HAVE_MKDIR
@@ -1020,7 +1022,7 @@ mail_check(
 	struct stat buf;
 
 	if (mailbox_name != NULL && stat(mailbox_name, &buf) >= 0) {
-		if ((int) (buf.st_mode & S_IFMT) == (int) S_IFDIR) { /* maildir setup */
+		if (S_ISDIR(buf.st_mode)) { /* maildir setup */
 			char *maildir_box;
 			size_t maildir_box_len = strlen(mailbox_name) + strlen(MAILDIR_NEW) + 2;
 			DIR *dirp;
@@ -1129,37 +1131,52 @@ get_author(
 	char *str,
 	size_t len)
 {
-	char *p;
+	char *p, *ptr = str;
 	int author;
+	size_t curr_len = 0, rem_len = len - 1;
+	struct t_mailbox *mb = &art->mailbox;
 
-	p = idna_decode(art->mailbox.from);
+	*ptr = '\0';
 
-	author = ((thread && !show_subject && curr_group->attribute->show_author == SHOW_FROM_NONE) ? SHOW_FROM_BOTH : curr_group->attribute->show_author);
+	do {
+		p = idna_decode(mb->from);
 
-	switch (author) {
-		case SHOW_FROM_ADDR:
-			strncpy(str, p, len);
-			break;
+		author = ((thread && !show_subject && curr_group->attribute->show_author == SHOW_FROM_NONE) ? SHOW_FROM_BOTH : curr_group->attribute->show_author);
 
-		case SHOW_FROM_NAME:
-			strncpy(str, (art->mailbox.name ? art->mailbox.name : p), len);
-			break;
+		switch (author) {
+			case SHOW_FROM_ADDR:
+				strncpy(ptr, p, rem_len);
+				break;
 
-		case SHOW_FROM_BOTH:
-			if (art->mailbox.name)
-				snprintf(str, len, "%s <%s>", art->mailbox.name, p);
-			else
-				strncpy(str, p, len);
-			break;
+			case SHOW_FROM_NAME:
+				strncpy(ptr, (mb->name ? mb->name : p), rem_len);
+				break;
 
-		case SHOW_FROM_NONE:
-		default:
-			len = 0;
-			break;
-	}
+			case SHOW_FROM_BOTH:
+				if (mb->name)
+					snprintf(ptr, rem_len, "%s <%s>", mb->name, p);
+				else
+					strncpy(ptr, p, rem_len);
+				break;
 
-	free(p);
-	*(str + len) = '\0';				/* NULL terminate */
+			case SHOW_FROM_NONE:
+			default:
+				rem_len = 0;
+				break;
+		}
+
+		free(p);
+
+		/* we stop if there is no room for at least one character after ”, ” */
+		if (rem_len < 5)
+			mb = NULL;
+		else if ((mb = mb->next)) {
+			strcat(ptr, ", ");
+			curr_len = strlen(ptr);
+			rem_len -= curr_len;
+			ptr += curr_len;
+		}
+	} while (mb);
 }
 
 
@@ -1200,9 +1217,8 @@ toggle_color(
 	if (use_color)
 		reset_color();
 #	endif /* USE_CURSES */
-	use_color = bool_not(use_color);
 
-	if (use_color) {
+	if ((use_color = bool_not(use_color))) {
 #	ifdef USE_CURSES
 		fcol(tinrc.col_normal);
 #	endif /* USE_CURSES */
@@ -1339,8 +1355,8 @@ strfquote(
 					tbuf[2] = '\0';
 					break;
 			}
-			i = (int) strlen(tbuf);
-			if (i) {
+
+			if ((i = (int) strlen(tbuf))) {
 				if (s + i < endp - 1) {
 					strcpy(s, tbuf);
 					s += i;
@@ -1422,8 +1438,8 @@ strfquote(
 					tbuf[2] = '\0';
 					break;
 			}
-			i = (int) strlen(tbuf);
-			if (i) {
+
+			if ((i = (int) strlen(tbuf))) {
 				if (s + i < endp - 1) {
 					strcpy(s, tbuf);
 					s += i;
@@ -1449,7 +1465,7 @@ out:
  */
 static int
 strfeditor(
-	char *editor,
+	const char *editor,
 	int linenum,
 	const char *filename,
 	char *s,
@@ -2087,9 +2103,11 @@ get_initials(
 	char *s,
 	int maxsize) /* return value is always 0 and ignored */
 {
+	char *ptr = s;
 	char tbuf[PATH_LEN];
-	int i, j = 0;
-	t_bool iflag = FALSE;
+	int i, j, curr_len, rem_len = maxsize;
+	struct t_mailbox *mb = &art->mailbox;
+	t_bool iflag;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wtmp, *wbuf;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -2097,39 +2115,51 @@ get_initials(
 	if (s == NULL || maxsize <= 0)
 		return 0;
 
-	s[0] = '\0';
-	STRCPY(tbuf, ((art->mailbox.name != NULL) ? art->mailbox.name : art->mailbox.from));
+	*ptr = '\0';
+	do {
+		STRCPY(tbuf, ((mb->name != NULL) ? mb->name : mb->from));
+		j = 0;
+		iflag = FALSE;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if ((wtmp = char2wchar_t(tbuf)) != NULL) {
-		wbuf = my_malloc(sizeof(wchar_t) * (size_t) (maxsize + 1));
-		for (i = 0; wtmp[i] && j < maxsize; i++) {
-			if (iswalpha((wint_t) wtmp[i])) {
+		if ((wtmp = char2wchar_t(tbuf)) != NULL) {
+			wbuf = my_malloc(sizeof(wchar_t) * (size_t) (rem_len + 1));
+			for (i = 0; wtmp[i] && j < rem_len; i++) {
+				if (iswalpha((wint_t) wtmp[i])) {
+					if (!iflag) {
+						wbuf[j++] = wtmp[i];
+						iflag = TRUE;
+					}
+				} else
+					iflag = FALSE;
+			}
+			wbuf[j] = (wchar_t) '\0';
+			if (wcstombs(tbuf, wbuf, sizeof(tbuf) - 1) != (size_t) -1)
+				strcat(ptr, tbuf);
+			free(wtmp);
+			free(wbuf);
+		}
+#else
+		for (i = 0; tbuf[i] && j < rem_len; i++) {
+			if (isalpha((unsigned char) tbuf[i])) {
 				if (!iflag) {
-					wbuf[j++] = wtmp[i];
+					ptr[j++] = tbuf[i];
 					iflag = TRUE;
 				}
 			} else
 				iflag = FALSE;
 		}
-		wbuf[j] = (wchar_t) '\0';
-		s[0] = '\0';
-		if (wcstombs(tbuf, wbuf, sizeof(tbuf) - 1) != (size_t) -1)
-			strcat(s, tbuf);
-		free(wtmp);
-		free(wbuf);
-	}
-#else
-	for (i = 0; tbuf[i] && j < maxsize; i++) {
-		if (isalpha((unsigned char) tbuf[i])) {
-			if (!iflag) {
-				s[j++] = tbuf[i];
-				iflag = TRUE;
-			}
-		} else
-			iflag = FALSE;
-	}
-	s[j] = '\0';
+		ptr[j] = '\0';
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		/* we stop if there is no room for at least one character after ”, ” */
+		if (rem_len < 5)
+			mb = NULL;
+		else if ((mb = mb->next)) {
+			strcat(ptr, ", ");
+			curr_len = strwidth(ptr);
+			rem_len -= curr_len;
+			ptr += curr_len;
+		}
+	} while (mb);
 	return 0;
 }
 
@@ -2254,10 +2284,10 @@ random_organization(
 	int nool = 0, sol;
 	static char selorg[512];
 
-	*selorg = '\0';
-
 	if (*in_org != '/')
 		return in_org;
+
+	*selorg = '\0';
 
 	if ((orgfp = tin_fopen(in_org, "r")) == NULL)
 		return selorg;
@@ -2496,11 +2526,10 @@ buffer_to_local(
 			char *clocal_charset;
 			iconv_t cd0, cd1, cd2;
 
-			clocal_charset = my_malloc(strlen(local_charset) + strlen("//TRANSLIT") + 1);
-			strcpy(clocal_charset, local_charset);
+			clocal_charset = my_strdup((local_charset));
 #	ifdef HAVE_ICONV_OPEN_TRANSLIT
 			if (tinrc.translit)
-				strcat(clocal_charset, "//TRANSLIT");
+				clocal_charset = append_to_string(clocal_charset, "//TRANSLIT");
 #	endif /* HAVE_ICONV_OPEN_TRANSLIT */
 
 			/* iconv() might crash on broken multibyte sequences so check them */
@@ -2541,8 +2570,8 @@ buffer_to_local(
 				inbytesleft = strlen(*line);
 				tmpbytesleft = inbytesleft * 4 + 4;	/* should be enough */
 				tsize = tmpbytesleft;
-				tbuf = my_malloc(tsize);
-				tmpbuf = (char *) tbuf;
+				tbuf = (char *) my_malloc(tsize);
+				tmpbuf = tbuf;
 
 				do {
 					errno = 0;
@@ -2575,8 +2604,8 @@ buffer_to_local(
 				inbytesleft = tsize - tmpbytesleft;
 				outbytesleft = inbytesleft;
 				osize = outbytesleft;
-				obuf = my_malloc(osize + 1);
-				outbuf = (char *) obuf;
+				obuf = (char *) my_malloc(osize + 1);
+				outbuf = obuf;
 
 				do {
 					/*
@@ -2671,8 +2700,8 @@ buffer_to_network(
 			inbuf = (char *) line;
 			outbytesleft = 1 + inbytesleft * 4;
 			osize = outbytesleft;
-			obuf = my_malloc(osize + 1);
-			outbuf = (char *) obuf;
+			obuf = (char *) my_malloc(osize + 1);
+			outbuf = obuf;
 
 			do {
 				errno = 0;
@@ -3297,7 +3326,7 @@ gnksa_dequote_plainphrase(
  */
 static int
 gnksa_check_domain_literal(
-	char *domain)
+	const char *domain)
 {
 	char term;
 	int n;
@@ -3468,10 +3497,7 @@ gnksa_check_localpart(
 	for (aux = localpart; *aux; aux++) {
 		if ((*aux == '.') && (*(aux + 1) == '.'))
 			return GNKSA_ZERO_LENGTH_LOCAL_WORD;
-	}
-
-	/* check for illegal characters in FQDN */
-	for (aux = localpart; *aux; aux++) {
+		/* check for illegal characters in FQDN */
 		if (!gnksa_legal_localpart_chars[(unsigned char) *aux])
 			return GNKSA_INVALID_LOCALPART;
 	}
@@ -3723,7 +3749,7 @@ gnksa_do_check_from(
  */
 int
 gnksa_check_from(
-	char *from)
+	const char *from)
 {
 	char address[HEADER_LEN];	/* will be initialised in gnksa_split_from() */
 	char realname[HEADER_LEN];	/* which is called by gnksa_do_check_from() */
@@ -4099,6 +4125,9 @@ split_mailbox_list(
 	char *ptr = from;
 	t_bool at_seen, in_quoted_str, in_quoted_pair, in_addr, in_comment;
 
+	if (!ptr)
+		return NULL;
+
 	at_seen = in_quoted_str = in_quoted_pair = in_addr = in_comment = FALSE;
 
 	while (*ptr) {
@@ -4107,30 +4136,38 @@ split_mailbox_list(
 				in_quoted_str = !in_quoted_str || in_quoted_pair;
 				in_quoted_pair = FALSE;
 				break;
+
 			case '\\':
 				in_quoted_pair = !in_quoted_pair;
 				break;
+
 			case '<':
 				in_addr = !in_quoted_str;
 				break;
+
 			case '>':
 				in_addr = !in_addr || in_quoted_str;
 				break;
+
 			case '(':
 				in_comment = !in_quoted_str;
 				break;
+
 			case ')':
 				in_comment = in_comment && in_quoted_str;
 				break;
+
 			case '@':
 				at_seen = !in_quoted_str && !in_comment;
 				break;
+
 			case ',':
 				if (at_seen && !in_quoted_str && !in_addr && !in_comment) {
 					*ptr = '\0';
 					return *++ptr ? ptr : NULL;
 				}
 				break;
+
 			default:
 				break;
 		}
@@ -4266,7 +4303,7 @@ tin_version_info(
 #	if defined(HAVE_LIBUNISTRING) && defined(HAVE_UNISTRING_VERSION_H) && (_LIBUNISTRING_VERSION > 0x000009)
 		fprintf(fp, "\tUNISTRING= \"%d.%d.%d\"\n", (_LIBUNISTRING_VERSION & 0xff0000) >> 16, (_LIBUNISTRING_VERSION & 0x00ff00) >> 8, _LIBUNISTRING_VERSION & 0x0000ff);
 		wlines++;
-#	endif  /* HAVE_LIBUNISTRING && HAVE_UNISTRING_VERSION_H && _LIBUNISTRING_VERSION > 0x000009 */
+#	endif /* HAVE_LIBUNISTRING && HAVE_UNISTRING_VERSION_H && _LIBUNISTRING_VERSION > 0x000009 */
 
 #	if defined(HAVE_LIBIDNKIT) && defined (HAVE_IDN_VERSION_H)
 		fprintf(fp, "\tIDNKIT   = \"%s\"\n", idn_version_libidn());
@@ -4642,6 +4679,8 @@ make_connection_page(
 #	endif /* NNTPS_ABLE */
 			{
 				fprintf(fp, _(txt_conninfo_nntp), can_post ? _(txt_conninfo_rw) : _(txt_conninfo_ro));
+				if (!can_post && !*domain_name)
+					fprintf(fp, "%s\n", _(txt_error_no_domain_name));
 			}
 
 			(void) nntp_conninfo(fp);
@@ -4765,7 +4804,6 @@ tin_fopen(
 		}
 	} else
 		serrno = errno;
-
 
 	switch (serrno) {
 		case 0:

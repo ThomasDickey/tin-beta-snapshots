@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-08
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -469,6 +469,7 @@ group_page(
 
 			case GLOBAL_TOGGLE_INVERSE_VIDEO:		/* toggle inverse video */
 				toggle_inverse_video();
+				need_parse_fmt |= GROUP_LEVEL;
 				show_group_page();
 				show_inverse_video_status();
 				break;
@@ -952,6 +953,9 @@ group_page(
 
 	art_close(&pgart);				/* Close any open art */
 
+	FreeAndNull(grp_fmt.str);
+	FreeAndNull(grp_fmt.date_str);
+
 	curr_group = NULL;
 
 	return ret_code;
@@ -967,10 +971,14 @@ show_group_page(
 	signal_context = cGroup;
 	currmenu = &grpmenu;
 
+	if (!grp_fmt.str || (need_parse_fmt & GROUP_LEVEL)) {
+		parse_format_string(curr_group->attribute->group_format ? BlankIfNull(*curr_group->attribute->group_format) : "", &grp_fmt);
+		need_parse_fmt &= ~GROUP_LEVEL;
+		mark_offset = 0;
+	}
+
 	ClearScreen();
 	set_first_screen_item();
-	parse_format_string(curr_group->attribute->group_format ? BlankIfNull(*curr_group->attribute->group_format) : "", &grp_fmt);
-	mark_offset = 0;
 	show_group_title(FALSE);
 
 	for (i = grpmenu.first; i < grpmenu.first + NOTESLINES && i < grpmenu.max; ++i)
@@ -1362,7 +1370,7 @@ build_sline(
 
 			case 'L':	/* lines */
 				if (arts[j].line_count != -1)
-					strcat(buffer, tin_ltoa(arts[j].line_count, (int) grp_fmt.len_linecnt));
+					strcat(buffer, tin_ltoa(arts[j].line_count, grp_fmt.len_linecnt));
 				else {
 					buf = buffer + strlen(buffer);
 					for (k = (int) grp_fmt.len_linecnt; k > 1; --k)
@@ -1405,13 +1413,13 @@ build_sline(
 				break;
 
 			case 'n':
-				strcat(buffer, tin_ltoa(i + 1, (int) grp_fmt.len_linenumber));
+				strcat(buffer, tin_ltoa(i + 1, grp_fmt.len_linenumber));
 				break;
 
 			case 'R':
 				n = ((curr_group->attribute->show_only_unread_arts) ? (sbuf.unread + sbuf.seen) : sbuf.total);
 				if (n > 1)
-					strcat(buffer, tin_ltoa(n, (int) grp_fmt.len_respcnt));
+					strcat(buffer, tin_ltoa(n, grp_fmt.len_respcnt));
 				else {
 					buf = buffer + strlen(buffer);
 					for (k = (int) grp_fmt.len_respcnt; k > 0; --k)
@@ -1421,7 +1429,7 @@ build_sline(
 				break;
 
 			case 'S':	/* score */
-				strcat(buffer, tin_ltoa(sbuf.score, (int) grp_fmt.len_score));
+				strcat(buffer, tin_ltoa(sbuf.score, grp_fmt.len_score));
 				break;
 
 			case 's':	/* thread/subject */

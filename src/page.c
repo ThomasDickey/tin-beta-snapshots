@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-17
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1374,10 +1374,9 @@ invoke_metamail(
 		if (!seek_error) {
 #ifdef DONT_HAVE_PIPING
 			char *pbuf;
-			size_t len;
+			size_t len = snprintf(NULL, 0, "%s %s", tinrc.metamail_prog, mimefile);
 
-			len = snprintf(NULL, 0, "%s %s", tinrc.metamail_prog, mimefile);
-			pbuf= my_malloc(++len);
+			pbuf = my_malloc(++len);
 			snprintf(pbuf, len, "%s %s", tinrc.metamail_prog, mimefile);
 			invoke_cmd(pbuf);
 			free(pbuf);
@@ -1419,6 +1418,12 @@ build_from_line(
 	char single_from[HEADER_LEN + 3]; /*" <>"*/
 	char *from = NULL;
 	int type, c_needed = 0;
+
+	if (!note_h->from) {
+		from = my_malloc(3);
+		strcpy(from, "<>");
+		return from;
+	}
 
 	curr_from = tmp_from = my_strdup(note_h->from);
 
@@ -1624,20 +1629,17 @@ skip:
 	else
 		snprintf(buf, line_len, "%-4d", arts[this_resp].line_count);
 
-	{
+	if ((wtmp = char2wchar_t(_(txt_lines))) != NULL) {
 		wchar_t *fmt;
+		int tex_space = pgart.tex2iso ? 5 : 0;
 
-		if ((wtmp = char2wchar_t(_(txt_lines))) != NULL) {
-			int tex_space = pgart.tex2iso ? 5 : 0;
-
-			fmt = wstrunc(wtmp, cCOLS / 3 - 1 - tex_space);
-			wtmp = my_realloc(wtmp, sizeof(wchar_t) * line_len);
-			swprintf(wtmp, line_len, fmt, buf);
-			my_fputws(wtmp, stdout);
-			cur_pos += wcswidth(wtmp, wcslen(wtmp));
-			free(fmt);
-			free(wtmp);
-		}
+		fmt = wstrunc(wtmp, cCOLS / 3 - 1 - tex_space);
+		wtmp = my_realloc(wtmp, sizeof(wchar_t) * line_len);
+		swprintf(wtmp, line_len, fmt, buf);
+		my_fputws(wtmp, stdout);
+		cur_pos += wcswidth(wtmp, wcslen(wtmp));
+		free(fmt);
+		free(wtmp);
 	}
 
 #	ifdef HAVE_COLOR

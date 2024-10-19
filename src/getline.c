@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2024-06-04
+ *  Updated   : 2024-09-20
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -655,16 +655,15 @@ gl_tab(
 {
 	int i, count, len;
 
+	count = TAB_SIZE - (offset + *loc) % TAB_SIZE;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	len = (int) wcslen(wbuf);
-	count = TAB_SIZE - (offset + *loc) % TAB_SIZE;
 	for (i = len; i >= *loc; i--)
 		wbuf[i + count] = wbuf[i];
 	for (i = 0; i < count; i++)
 		wbuf[*loc + i] = (wchar_t) ' ';
 #else
 	len = (int) strlen(buf);
-	count = TAB_SIZE - (offset + *loc) % TAB_SIZE;
 	for (i = len; i >= *loc; i--)
 		buf[i + count] = buf[i];
 	for (i = 0; i < count; i++)

@@ -3,7 +3,7 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2024-04-01
+ *  Updated   : 2024-10-18
  *  Notes     :
  *
  * Copyright (c) 2003-2024 Urs Janssen <urs@tin.org>
@@ -70,7 +70,7 @@
  */
 struct t_version *
 check_upgrade(
-	char *line,
+	const char *line,
 	const char *skip,
 	const char *version)
 {

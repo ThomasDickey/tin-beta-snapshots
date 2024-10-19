@@ -3,7 +3,7 @@
  *  Module    : global.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-12
- *  Updated   : 2021-02-23
+ *  Updated   : 2024-10-17
  *  Notes     : Generic navigation and key handling routines
  *
  * Copyright (c) 1999-2024 Jason Faultless <jason@altarstone.com>
@@ -130,13 +130,12 @@ void
 page_up(
 	void)
 {
-	int scroll_lines;
-
 	if (!currmenu->max)
 		return;
 
 	if (currmenu->curr == currmenu->first) {
-		scroll_lines = (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
+		int scroll_lines = (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
+
 		if (currmenu->first == 0) {
 			/* wrap around */
 			currmenu->first = MAX(0, currmenu->max - scroll_lines);
@@ -155,8 +154,6 @@ void
 page_down(
 	void)
 {
-	int scroll_lines;
-
 	if (!currmenu->max)
 		return;
 
@@ -166,7 +163,8 @@ page_down(
 		currmenu->curr = 0;
 		currmenu->redraw();
 	} else {
-		scroll_lines = (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
+		int scroll_lines = (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
+
 		if (currmenu->first + scroll_lines >= currmenu->max)
 			move_to_item(currmenu->max - 1);
 		else {

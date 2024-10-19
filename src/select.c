@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-19
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -70,7 +70,7 @@ static void subscribe_pattern(const char *prompt, const char *message, const cha
 static void sync_active_file(void);
 static void yank_active_file(void);
 #ifdef NNTP_ABLE
-	static char *lookup_msgid(char *msgid);
+	static char *lookup_msgid(const char *msgid);
 	static struct t_group *get_group_from_list(char *newsgroups);
 #endif /* NNTP_ABLE */
 
@@ -292,9 +292,9 @@ selection_page(
 
 			case SELECT_TOGGLE_DESCRIPTIONS:	/* toggle newsgroup descriptions */
 				if (sel_fmt.show_grpdesc) {
-					show_description = bool_not(show_description);
-					if (show_description)
+					if ((show_description = bool_not(show_description)))
 						read_descriptions(TRUE);
+					need_parse_fmt |= SELECT_LEVEL;
 					show_selection_page();
 				} else
 					info_message(_(txt_grpdesc_disabled));
@@ -352,6 +352,7 @@ selection_page(
 
 			case GLOBAL_TOGGLE_INVERSE_VIDEO:
 				toggle_inverse_video();
+				need_parse_fmt |= SELECT_LEVEL;
 				show_selection_page();
 				show_inverse_video_status();
 				break;
@@ -415,8 +416,10 @@ selection_page(
 				break;
 
 			case SELECT_QUIT_NO_WRITE:		/* quit, but don't save configuration */
-				if (prompt_yn(_(txt_quit_no_write), TRUE) == 1)
+				if (prompt_yn(_(txt_quit_no_write), TRUE) == 1) {
+					FreeAndNull(sel_fmt.str);
 					tin_done(EXIT_SUCCESS, NULL);
+				}
 				show_selection_page();
 				break;
 
@@ -523,6 +526,9 @@ selection_page(
 					snprintf(buf, sizeof(buf), _(txt_post_newsgroups), tinrc.default_post_newsgroups);
 					if (!prompt_string_ptr_default(buf, &tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
 						break;
+					str_trim(tinrc.default_post_newsgroups);
+					if (!*tinrc.default_post_newsgroups)
+						break;
 					if (group_find(tinrc.default_post_newsgroups, FALSE) == NULL) {
 						error_message(2, _(txt_not_in_active_file), tinrc.default_post_newsgroups);
 						break;
@@ -583,7 +589,7 @@ selection_page(
 				}
 				grp_mark_unread(&CURR_GROUP);
 				if (CURR_GROUP.newsrc.num_unread)
-					STRCPY(buf, tin_ltoa(CURR_GROUP.newsrc.num_unread, (int) sel_fmt.len_ucnt));
+					STRCPY(buf, tin_ltoa(CURR_GROUP.newsrc.num_unread, sel_fmt.len_ucnt));
 				else {
 					size_t j = 0;
 
@@ -617,14 +623,19 @@ show_selection_page(
 	int i, keyhelplen;
 	size_t len;
 	const char *secflag = "";
+	t_bool recalc = !sel_fmt.str || (need_parse_fmt & SELECT_LEVEL);
 
 	signal_context = cSelect;
 	currmenu = &selmenu;
-	parse_format_string(tinrc.select_format, &sel_fmt);
-	groupname_len = 0;
-	flags_offset = 0;
-	mark_offset = 0;
-	ucnt_offset = 0;
+
+	if (recalc) {
+		parse_format_string(tinrc.select_format, &sel_fmt);
+		need_parse_fmt &= ~SELECT_LEVEL;
+		groupname_len = 0;
+		flags_offset = 0;
+		mark_offset = 0;
+		ucnt_offset = 0;
+	}
 
 	if (use_nntps) {
 		if (insecure_nntps)
@@ -665,41 +676,43 @@ show_selection_page(
 	show_title(title);
 	free(title);
 
-	if (sel_fmt.len_grpname_max && !sel_fmt.len_grpname) {
-		/*
-		 * calculate max length of groupname field
-		 * if yanked in (yanked_out == FALSE) check all groups in active file
-		 * otherwise just subscribed to groups
-		 */
-		if (yanked_out) {
-			for (i = 0; i < selmenu.max; i++) {
-				if ((len = (size_t) strwidth(active[my_group[i]].name)) > sel_fmt.len_grpname)
-					sel_fmt.len_grpname = len;
-			}
-		} else {
-			for_each_group(i) {
-				if ((len = (size_t) strwidth(active[i].name)) > sel_fmt.len_grpname)
-					sel_fmt.len_grpname = len;
+	if (recalc) {
+		if (sel_fmt.len_grpname_max && !sel_fmt.len_grpname) {
+			/*
+			* calculate max length of groupname field
+			* if yanked in (yanked_out == FALSE) check all groups in active file
+			* otherwise just subscribed to groups
+			*/
+			if (yanked_out) {
+				for (i = 0; i < selmenu.max; i++) {
+					if ((len = (size_t) strwidth(active[my_group[i]].name)) > sel_fmt.len_grpname)
+						sel_fmt.len_grpname = len;
+				}
+			} else {
+				for_each_group(i) {
+					if ((len = (size_t) strwidth(active[i].name)) > sel_fmt.len_grpname)
+						sel_fmt.len_grpname = len;
+				}
 			}
 		}
-	}
 
-	groupname_len = (sel_fmt.show_grpdesc && show_description) ? (int) sel_fmt.len_grpname_dsc : (int) sel_fmt.len_grpname;
+		groupname_len = (sel_fmt.show_grpdesc && show_description) ? (int) sel_fmt.len_grpname_dsc : (int) sel_fmt.len_grpname;
 
-	if (groupname_len > (int) sel_fmt.len_grpname_max)
-		groupname_len = (int) sel_fmt.len_grpname_max;
-	if (groupname_len < 0)
-		groupname_len = 0;
+		if (groupname_len > (int) sel_fmt.len_grpname_max)
+			groupname_len = (int) sel_fmt.len_grpname_max;
+		if (groupname_len < 0)
+			groupname_len = 0;
 
-	if (!sel_fmt.len_grpdesc)
-		sel_fmt.len_grpdesc = (sel_fmt.len_grpname_max - (size_t) groupname_len);
-	else {
-		if (sel_fmt.len_grpdesc > (sel_fmt.len_grpname_max - (size_t) groupname_len))
+		if (!sel_fmt.len_grpdesc)
 			sel_fmt.len_grpdesc = (sel_fmt.len_grpname_max - (size_t) groupname_len);
-	}
+		else {
+			if (sel_fmt.len_grpdesc > (sel_fmt.len_grpname_max - (size_t) groupname_len))
+				sel_fmt.len_grpdesc = (sel_fmt.len_grpname_max - (size_t) groupname_len);
+		}
 
-	flags_offset = (int) (sel_fmt.flags_offset + (size_t) (sel_fmt.g_before_f ? groupname_len : 0) + (sel_fmt.d_before_f ? sel_fmt.len_grpdesc : 0));
-	ucnt_offset = (int) (sel_fmt.ucnt_offset + (size_t) (sel_fmt.g_before_u ? groupname_len : 0) + (sel_fmt.d_before_u ? sel_fmt.len_grpdesc : 0));
+		flags_offset = (int) (sel_fmt.flags_offset + (size_t) (sel_fmt.g_before_f ? groupname_len : 0) + (sel_fmt.d_before_f ? sel_fmt.len_grpdesc : 0));
+		ucnt_offset = (int) (sel_fmt.ucnt_offset + (size_t) (sel_fmt.g_before_u ? groupname_len : 0) + (sel_fmt.d_before_u ? sel_fmt.len_grpdesc : 0));
+	}
 
 	for (i = selmenu.first; i < selmenu.first + NOTESLINES && i < selmenu.max; i++)
 		build_gline(i);
@@ -750,7 +763,7 @@ build_gline(
 	sptr = screen[INDEX2SNUM(i)].col;
 #endif /* USE_CURSES */
 
-	sptr[0] = '\0';
+	*sptr = '\0';
 	fmt = sel_fmt.str;
 	n = my_group[i];
 
@@ -864,7 +877,7 @@ build_gline(
 				break;
 
 			case 'n':
-				strcat(sptr, tin_ltoa(i + 1, (int) sel_fmt.len_linenumber));
+				strcat(sptr, tin_ltoa(i + 1, sel_fmt.len_linenumber));
 				break;
 
 			case 'U':
@@ -893,7 +906,7 @@ build_gline(
 					num_unread = active[my_group[i]].newsrc.num_unread;
 					if (getart_limit > 0 && getart_limit < num_unread)
 						num_unread = getart_limit;
-					strcat(sptr, tin_ltoa(num_unread, (int) sel_fmt.len_ucnt));
+					strcat(sptr, tin_ltoa(num_unread, sel_fmt.len_ucnt));
 				} else {
 					buf = sptr + strlen(sptr);
 					for (j = 0; j < sel_fmt.len_ucnt; ++j)
@@ -956,6 +969,8 @@ yank_active_file(
 		return;
 	}
 
+	need_parse_fmt |= SELECT_LEVEL;
+
 	if (yanked_out) {						/* Yank in */
 		int i;
 		int prevmax = selmenu.max;
@@ -1015,8 +1030,7 @@ save_restore_curr_group(
 	 * Take a copy of the current groupname, if present
 	 */
 	if (saving) {
-		oldmax = selmenu.max;
-		if (oldmax)
+		if ((oldmax = selmenu.max))
 			oldgroup = my_strdup(CURR_GROUP.name);
 		return 0;
 	}
@@ -1063,7 +1077,7 @@ choose_new_group(
 	char *prompt;
 	int idx;
 
-	prompt = fmt_string(_(txt_newsgroup), tinrc.default_goto_group);
+	prompt = fmt_string(_(txt_newsgroup), BlankIfNull(tinrc.default_goto_group));
 
 	if (!(prompt_string_ptr_default(prompt, &tinrc.default_goto_group, "", HIST_GOTO_GROUP))) {
 		free(prompt);
@@ -1073,7 +1087,7 @@ choose_new_group(
 
 	str_trim(tinrc.default_goto_group);
 
-	if (tinrc.default_goto_group[0] == '\0')
+	if (!*tinrc.default_goto_group)
 		return -1;
 
 	clear_message();
@@ -1481,6 +1495,7 @@ select_quit(
 {
 	write_config_file(local_config_file);
 	ClearScreen();
+	FreeAndNull(sel_fmt.str);
 	tin_done(EXIT_SUCCESS, NULL);	/* Tin END */
 }
 
@@ -1503,7 +1518,7 @@ static void
 select_read_group(
 	void)
 {
-	static struct t_group *currgrp;
+	static const struct t_group *currgrp;
 
 	if (!selmenu.max || selmenu.curr == -1) {
 		info_message(_(txt_no_groups));
@@ -1530,7 +1545,7 @@ select_read_group(
  */
 static char *
 lookup_msgid(
-	char *msgid)
+	const char *msgid)
 {
 	if (read_news_via_nntp && !read_saved_news) {
 		if (!nntp_caps.hdr_cmd && !nntp_caps.xpat) {
@@ -1667,7 +1682,7 @@ lookup_msgid(
  */
 int
 show_article_by_msgid(
-	char *messageid)
+	const char *messageid)
 {
 	char id[NNTP_STRLEN];	/* still way too big; RFC 3977 3.6 & RFC 5536 3.1.3 limit Message-ID to max 250 octets */
 	char *idptr = NULL;

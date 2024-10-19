@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2024-09-11
+ *  Updated   : 2024-10-13
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
@@ -338,14 +338,15 @@ read_attributes_file(
 
 	if ((fp = tin_fopen(file, "r")) != NULL) {
 		unsigned int errors = 0, ln = 0;
-		scope[0] = '\0';
+
+		*scope = '\0';
 		while ((line = tin_fgets(fp, FALSE)) != NULL) {
 			ln++;
-			if (line[0] == '\0')
+			if (!*line)
 				continue;
 			if (line[0] == '#') {
 				if (!global_file) {
-					if (scope[0] == '\0')
+					if (!*scope)
 						attrib_file_offset++;
 					if (startup && upgrade == NULL && match_string(line, "# Group attributes file V", NULL, 0)) {
 						upgrade = check_upgrade(line, "# Group attributes file V", ATTRIBUTES_VERSION);

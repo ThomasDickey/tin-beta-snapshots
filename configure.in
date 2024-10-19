@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-08-07
+dnl Updated   : 2024-09-26
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -1038,7 +1038,6 @@ CF_CHECK_HEADERS(\
 	termio.h \
 	time.h \
 	unistd.h \
-	varargs.h \
 	wchar.h \
 	wctype.h \
 )
@@ -1303,6 +1302,7 @@ AC_CHECK_LIB(idnkit, idn_decodename, [
 ])
 
 # ICU >= 3.6 ucsdet_detect() and co.
+# rewrite, CF_TRY_PKG_CONFIG([icu-i18n], ...)
 AC_CHECK_HEADERS(unicode/ucsdet.h, [
 	AC_MSG_CHECKING(for ucsdet_detect in libicui18n)
 	cf_save_LIBS="$LIBS"
@@ -1415,7 +1415,6 @@ AC_CHECK_FUNCS(\
 	setvbuf \
 	sigaction \
 	snprintf \
-	stpcpy \
 	strchr \
 	strcasecmp \
 	strcasestr \
@@ -1513,6 +1512,7 @@ AC_CHECK_FUNCS(\
 	getaddrinfo \
 	gethostname \
 	gethostbyname \
+	getpeername \
 	getservbyname \
 	inet_addr \
 	inet_ntoa \

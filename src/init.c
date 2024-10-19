@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-13
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -41,6 +41,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+#ifndef TCURSES_H
+#	include "tcurses.h"
+#endif /* !TCURSES_H */
 #ifndef TNNTP_H
 #	include "tnntp.h"
 #endif /* !TNNTP_H */
@@ -700,14 +703,14 @@ init_selfinfo(
 	(void) umask(real_umask);
 
 	if ((myentry = getpwuid(getuid())) == NULL) {
-		error_message(2, _(txt_error_passwd_missing));
+		my_fprintf(stderr, "%s\n", _(txt_error_passwd_missing));
 		free(tin_progname);
 		giveup();
 	}
 
 	my_strncpy(userid, myentry->pw_name, sizeof(userid) - 1);
 
-	domain_name[0] = '\0';
+	*domain_name = '\0';
 
 #ifdef HAVE_SYS_UTSNAME_H
 #	ifdef HAVE_UNAME
@@ -727,7 +730,7 @@ init_selfinfo(
 #endif /* DOMAIN_NAME */
 
 #ifdef HAVE_GETHOSTBYNAME
-	if (domain_name[0] == '\0') {
+	if (!*domain_name) {
 		if ((p = get_fqdn(get_host_name())) != NULL)
 			my_strncpy(domain_name, p, MAXHOSTNAMELEN);
 	}
@@ -824,9 +827,11 @@ init_selfinfo(
 	 * the site_config-file was the last chance to set the domainname
 	 * if it's still unset fall into no posting mode.
 	 */
-	if (domain_name[0] == '\0') {
-		error_message(4, _(txt_error_no_domain_name));
+	if (!*domain_name) {
 		force_no_post = TRUE;
+		my_fprintf(stderr, "%s\n%s\n", _(txt_error_no_domain_name), _(txt_cannot_post));
+		if (!batch_mode)
+			sleep(4);
 	}
 
 #ifndef NNTP_ONLY
@@ -878,21 +883,18 @@ init_selfinfo(
 #ifndef CHARSET_CONVERSION
 	if (!tinrc.mm_charset || !*tinrc.mm_charset) {
 		FreeIfNeeded(tinrc.mm_charset);
-		tinrc.mm_charset = my_strdup(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
+		tinrc.mm_charset = my_strdup(get_val("MM_CHARSET", MM_CHARSET));
 	}
 #else
 	if (tinrc.mm_network_charset < 0) {
 		space = 255;
-
 		ptr = my_malloc(space + 1);
-
 		snprintf(ptr, space, "mm_network_charset=%s\n", get_val("MM_CHARSET", MM_CHARSET));
 		if (!match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset)) {
 			/* $MM_CHARSET may be set invalid, fallback */
 			snprintf(ptr, space, "mm_network_charset=%s\n", MM_CHARSET);
 			match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset);
 		}
-
 		free(ptr);
 	}
 #endif /* !CHARSET_CONVERSION */
@@ -909,7 +911,8 @@ init_selfinfo(
 	joinpath(rcdir, sizeof(rcdir), homedir, RCDIR);
 	if (stat(rcdir, &sb) == -1) {
 		if (my_mkdir(rcdir, (mode_t) (S_IRWXU)) == -1) {
-			error_message(0, _(txt_cannot_create), rcdir);
+			my_fprintf(stderr, _(txt_cannot_create), rcdir);
+			my_fprintf(stderr, "\n");
 			free_all_arrays();
 			giveup();
 		} else
@@ -977,13 +980,21 @@ init_selfinfo(
 		joinpath(index_newsdir, sizeof(index_newsdir), get_val("TIN_INDEX_NEWSDIR", rcdir), INDEX_NEWSDIR);
 	joinpath(index_maildir, sizeof(index_maildir), get_val("TIN_INDEX_MAILDIR", rcdir), INDEX_MAILDIR);
 	if (stat(index_maildir, &sb) == -1) {
-		if (my_mkdir(index_maildir, (mode_t) S_IRWXU) == -1)
-			error_message(2, _(txt_cannot_create), index_maildir);
+		if (my_mkdir(index_maildir, (mode_t) S_IRWXU) == -1) {
+			my_fprintf(stderr, _(txt_cannot_create), index_maildir);
+			my_fprintf(stderr, "\n");
+			if (!batch_mode)
+				sleep(2);
+		}
 	}
 	joinpath(index_savedir, sizeof(index_savedir), get_val("TIN_INDEX_SAVEDIR", rcdir), INDEX_SAVEDIR);
 	if (stat(index_savedir, &sb) == -1) {
-		if (my_mkdir(index_savedir, (mode_t) S_IRWXU) == -1)
-			error_message(2, _(txt_cannot_create), index_savedir);
+		if (my_mkdir(index_savedir, (mode_t) S_IRWXU) == -1) {
+			my_fprintf(stderr, _(txt_cannot_create), index_savedir);
+			my_fprintf(stderr, "\n");
+			if (!batch_mode)
+				sleep(2);
+		}
 	}
 	joinpath(local_attributes_file, sizeof(local_attributes_file), rcdir, ATTRIBUTES_FILE);
 	joinpath(local_config_file, sizeof(local_config_file), rcdir, CONFIG_FILE);
@@ -1022,11 +1033,11 @@ init_selfinfo(
 	nntp_tcp_default_port = (unsigned short) s2i(get_val("NNTPPORT", NNTP_TCP_PORT), 0, 65535);
 	if (errno)
 		nntp_tcp_default_port = IPPORT_NNTP;
-#ifdef NNTPS_ABLE
+#	ifdef NNTPS_ABLE
 	nntps_tcp_default_port = (unsigned short) s2i(get_val("NNTPSPORT", NNTPS_TCP_PORT), 0, 65535);
 	if (errno)
 		nntps_tcp_default_port = IPPORT_NNTPS;
-#endif /* NNTPS_ABLE */
+#	endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
 
 	if ((fp = fopen(posted_info_file, "a")) != NULL) {
@@ -1120,7 +1131,7 @@ read_site_config(
 		if (match_string_ptr(buf, "organization=", &default_organization))
 			continue;
 #ifndef CHARSET_CONVERSION
-		if (match_string_ptr(buf, "mm_charset=", tinrc.mm_charset, sizeof(tinrc.mm_charset)))
+		if (match_string_ptr(buf, "mm_charset=", &tinrc.mm_charset))
 			continue;
 #else
 		if (match_list(buf, "mm_charset=", txt_mime_charsets, &tinrc.mm_network_charset))

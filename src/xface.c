@@ -3,7 +3,7 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2024-08-06
+ *  Updated   : 2024-10-15
  *  Notes     :
  *
  * Copyright (c) 2003-2024 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
@@ -257,7 +257,7 @@ slrnface_stop(
 
 void
 slrnface_display_xface(
-	char *face)
+	const char *face)
 {
 	if (slrnface_fd < 0)
 		return;

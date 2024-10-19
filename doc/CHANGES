@@ -1,4 +1,4 @@
--- 2.6.4 release 20240917 "" --
+-- 2.6.4 release 20241019 "" --
 
  023) Thomas E. Dickey <dickey@invisible-island.net>
       REM. bundled-intl stuff
@@ -30,8 +30,11 @@
       ADD. no longer use fixed length buffers in t_cmdlineopts
       ADD. limit tinrc/attributes value strings to 1022 chars
            (they were "randomly" cut off before around 1k)
-      ADD. avoid fixed length buffers in t_config and 
-           t_filter_rule
+      ADD. avoid fixed length buffers in t_config, t_filter_rule and
+           t_fmt
+      ADD. "ternary"-operator to format-strings %F, %s, %T
+      ADD. max screenwidth ('<') condition to format-strings
+      ADD. avoid fixed length buffer for lines on terminal when using curses
       REM. MAX_MSG_HEADERS limitation
       BUG. txt_help_config_search_opt_forwards,
            txt_help_config_search_opt_forwards and
@@ -42,13 +45,13 @@
       BUG. multiple addresses in From, Reply-To, Approved (allowed since
            RFC 5536) we're not handled correct.
       FIX. active.c, art.c, attrib.c, charset.c, config.c, cook.c, debug.c
-           feed.c, filter.c, getline.c, group.c, header.c, inews.c, init.c
-           keymap.c, lang.c, main.c, mail.c, makecfg.c, memory.c, misc.c
-           nntplib.c, nntps.c, options_menu.c, page.c, pgp.c, post.c, prompt.c
-           refs.c, regex.c, rfc2046.c, rfc2047.c, save.c, search.c, select.c
-           sigfile.c, string.c, tags.c, thread.c, version.c, xref.c, parsdate.y
-           extern.h, keymap.h, newsrc.h, proto.h, rfc2046.h, tin.h, tinrc.h
-           tincfg.tbl
+           feed.c, filter.c, getline.c, group.c, header.c, help.c, inews.c
+           init.c, keymap.c, lang.c, main.c, mail.c, makecfg.c, memory.c
+           misc.c, nntplib.c, nntps.c, options_menu.c, page.c, pgp.c, post.c
+           prompt.c, refs.c, regex.c, rfc2046.c, rfc2047.c, save.c, screen.c
+           search.c, select.c, sigfile.c, signal.c, string.c, tags.c, thread.c
+           version.c, xref.c, parsdate.y, extern.h, keymap.h, newsrc.h, proto.h
+           rfc2046.h, tin.h, tinrc.h, tincfg.tbl
 
  019) Urs Janssen <urs@tin.org>
       ADD. silence some unused parameter warnings
@@ -66,7 +69,9 @@
       ADD. configure check for tcflag_t
       ADD. configure check for PRIdLEAST64 and SCNdLEAST64
       ADD. configure check for ucsdet_detect() from libicui18n
+      ADD. configure check for getpeername()
       ADD. simplify _Noreturn check, just note the C11 standard
+      REM. configure check for varargs.h
       ADD. removed fixed buffer from copy_body()
       ADD. SASL info to connection-info ('J')
       ADD. -L cmd.line switch
@@ -84,6 +89,10 @@
       ADD. disallow set but empty $NAME or $REALNAME to prevent reading
            the users name from /etc/passwd
       ADD. expand tabs in multiline wait_messages
+      ADD. calculate offset to article body for postponed articles
+      ADD. UNICODE-1-1, SCSU, csSCSU to unsupported charsets
+      ADD. use gmtime() and 4 digigt year for NEWGROUP on RFC 3977 servers
+           instead of localtime and 2 digigt year
       REM. tmpfile.c
       REM. --with-sum specifying the sum of uue-file got more and more
            uncommon at the end of last century and uue mostly vanished
@@ -104,8 +113,8 @@
       BUG. may truncate format string instead of result in draw_page_header
       BUG. -X did not disallow EditFilter
       FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, curses.c
-           debug.c, feed.c, filter.c, getline.c, group.c, header.c, help.c
-           inews.c, init.c, keymap.c, lang.c, lock.c, mail.c, main.c
+           debug.c, feed.c, filter.c, getline.c, global.c, group.c, header.c
+           help.c, inews.c, init.c, keymap.c, lang.c, lock.c, mail.c, main.c
            makecfg.c, memory.c, misc.c, my_tmpfile.c, newsrc.c, nntplib.c
            nntps.c, nrctbl.c, options_menu.c, page.c, pgp.c, post.c, prompt.c
            read.c, regex.c, rfc1524.c, rfc2046.c, rfc2047.c, save.c, screen.c

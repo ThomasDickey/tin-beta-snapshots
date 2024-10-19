@@ -482,13 +482,12 @@ o  rewrite/cleanup all the debugging code, the output in /tmp is messy; the
    the verbosity.
    [Urs Janssen <urs@tin.org>]
 
-o  replace gettimeofday() with clock_gettime() if available in parsdate.y
-   as POSIX.1-2008 marks gettimeofday() as obsolete.
-   [20110910 Urs Janssen <urs@tin.org>]
-
 o  Add 'M'enu option to define chars for utf8_graphics.
 
 o  allow user defined mouse button bindings (like keymap).
+
+o  add support for plan9's nntpfs with -9 /path/to/spool or the like
+   <https://9p.io/magic/man2html/4/nntpfs>
 
 Posting enhancements
 --------------------
@@ -810,6 +809,9 @@ o  add normalization
 o  rewrite ICU configure checks
    [20180710 Urs Janssen <urs@tin.org>]
 
+o  check for ICU conversion (ucnv_open() ...) and use if iconv()
+   wasn't found (or can't handle a charset).
+
 o  check for libutf8proc <https://github.com/JuliaStrings/utf8proc>
    and use it (as fallback)?
 
@@ -1058,9 +1060,6 @@ o  move tinrc.defaults for certain comannds to a pre-filled .inputhistory?
 o  what about -a cmd-line flag? is this really needed? IMHO this can be
    dropped, '&' can be used for runtime color toggling.
    [20021106 Urs Janssen <urs@tin.org>]
-
-o  shows up cross-postings multiple times even if read once before getting
-   a resync/reread active/newsrc-file
 
 o  think about group numbering in "only unread" display mode
    (using different numbers in show all/show only unread leads to some

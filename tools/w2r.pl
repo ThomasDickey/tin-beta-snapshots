@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl
 #
 # reads a tin filter file with wildmat filters on STDIN, converts it to
 # regexp filters and returns it on STDOUT
@@ -16,6 +16,9 @@
 # perl 5 is needed for lookahead assertions and perl < 5.004 is know
 # to be buggy
 require 5.004;
+
+use strict;
+use warnings;
 
 # version Number
 # $VERSION = "0.2.8";

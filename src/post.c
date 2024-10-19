@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-19
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -765,8 +765,7 @@ build_post_hist_line(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((wtmp = char2wchar_t(sptr)) != NULL) {
-		wtmp2 = wcspart(wtmp, cCOLS - 1, FALSE);
-		if (wtmp2) {
+		if ((wtmp2 = wcspart(wtmp, cCOLS - 1, FALSE))) {
 			free(wtmp);
 			FreeIfNeeded(tmp);
 			if ((tmp = wchar_t2char(wtmp2)) != NULL) {
@@ -1723,7 +1722,7 @@ check_article_to_be_posted(
 		}
 	} /* end of headers */
 
-	if (subject[0] == '\0')
+	if (!*subject)
 		errors_catbp |= CA_ERROR_EMPTY_SUBJECT;
 	else {
 		cp2 = my_strdup(subject);
@@ -1827,7 +1826,7 @@ check_article_to_be_posted(
 			int num_bytes, wc_width;
 			wchar_t wc;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			int seen = 0; /* already reported a unprintable char in that line? */
+			int seen = 0; /* already reported an unprintable char in that line? */
 
 			/*
 			 * TODO for txt_warn_unprintable_char:
@@ -2651,7 +2650,7 @@ post_article_done:
 			 */
 			if (group) { /* we might be (x-)posting to an unavailable group */
 				if (art_type == GROUP_TYPE_NEWS && group->attribute->add_posted_to_filter && (type == POST_QUICK || type == POST_POSTPONED || type == POST_NORMAL)) {
-					if ((group = group_find(header.newsgroups, FALSE)) && (type != POST_POSTPONED || (type == POST_POSTPONED && !strchr(header.newsgroups, ',')))) {
+					if ((group = group_find(header.newsgroups, FALSE)) && (type != POST_POSTPONED || !strchr(header.newsgroups, ','))) {
 						quick_filter_select_posted_art(group, header.subj, a_message_id);
 						if (type == POST_QUICK || (type == POST_POSTPONED && post_postponed_and_exit))
 							write_filter_file(filter_file);
@@ -2894,6 +2893,7 @@ create_normal_article_headers(
 	msg_add_x_headers(group->attribute->x_headers);
 
 	start_line_offset = msg_write_headers(fp) + 1;
+	fprintf(fp, "\n");			/* add a newline to keep vi from bitching */
 	msg_free_headers();
 
 	start_line_offset += msg_add_x_body(fp, group->attribute->x_body);
@@ -2964,22 +2964,36 @@ post_postponed_article(
 	const char *subject,
 	const char *newsgroups)
 {
+	FILE *fp;
 	char *ng;
 	char *p;
 	char buf[LEN];
+	unsigned int offset = 1;
 
 	if (!can_post) {
 		info_message(_(txt_cannot_post));
 		return;
 	}
 
-	ng = my_strdup(newsgroups);
-	if ((p = strchr(ng, ',')) != NULL)
-		*p = '\0';
+	if ((fp = tin_fopen(article_name, "r")) != NULL) {
+		char *line;
 
-	snprintf(buf, sizeof(buf), _(txt_postpone_post), cCOLS - 14, subject); /* TODO: use strunc() */
-	post_loop(POST_POSTPONED, group_find(ng, FALSE), (ask ? POST_EDIT : GLOBAL_POST), buf, GROUP_TYPE_NEWS, 0);
-	free(ng);
+		ng = my_strdup(newsgroups);
+		if ((p = strchr(ng, ',')) != NULL)
+			*p = '\0';
+
+		snprintf(buf, sizeof(buf), _(txt_postpone_post), cCOLS - 14, subject); /* TODO: use strunc() */
+
+		/* calculate offset to body */
+		while ((line = tin_fgets(fp, TRUE)) != NULL) {
+			offset++;
+			if (!*line) /* end of headers */
+				break;
+		}
+		fclose(fp);
+		post_loop(POST_POSTPONED, group_find(ng, FALSE), (ask ? POST_EDIT : GLOBAL_POST), buf, GROUP_TYPE_NEWS, offset);
+		free(ng);
+	}
 }
 
 
@@ -5264,7 +5278,7 @@ checknadd_headers(
 	}
 
 	while ((l = tin_fgets(fp_in, TRUE)) != NULL) {
-		if (l[0] == '\0') /* end of headers */
+		if (!*l) /* end of headers */
 			break;
 
 		if ((ptr = parse_header(l, "Newsgroups", FALSE, FALSE, FALSE))) {
@@ -5437,8 +5451,8 @@ insert_from_header(
 /*
  * Copy the appropriate reply-to address
  * from Reply-To (or From as a fallback) into 'from_addr'
- * If 'parse' is set, full syntax validation is performed and
- * the address portion is split off.
+ * If 'parse' is set (currently _never_), full syntax validation is
+ * performed and the address portion is split off.
  *
  * FIXME: pass size of from_addr to find_reply_to_addr instead of
  *        hardcoding
@@ -5449,7 +5463,6 @@ find_reply_to_addr(
 	t_bool parse,
 	struct t_header *hdr)
 {
-	char fname[HEADER_LEN];
 	const char *ptr;
 
 	/*
@@ -5462,6 +5475,7 @@ find_reply_to_addr(
 	 * We do this to save a redundant strcpy when we don't want to parse
 	 */
 	if (parse) {
+		char fname[HEADER_LEN];
 #if 1
 		/* TODO: Return code ignored? */
 		parse_from(ptr, from_addr, fname);

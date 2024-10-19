@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2023-11-12
+ *  Updated   : 2024-10-17
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -106,6 +106,7 @@ static void _CDECL signal_handler(SIG_ARGS);
 
 int signal_context = cMain;
 int input_context = cNone;
+int need_parse_fmt;
 int need_resize = cNo;
 /*
  * # lines of non-static data available for display
@@ -275,6 +276,10 @@ handle_resize(
 #		endif /* HAVE_RESIZETERM */
 #	endif /* USE_CURSES */
 
+	need_parse_fmt |= SELECT_LEVEL;
+	need_parse_fmt |= GROUP_LEVEL;
+	need_parse_fmt |= THREAD_LEVEL;
+
 	switch (signal_context) {
 		case cArt:
 			ClearScreen();
@@ -429,12 +434,12 @@ signal_handler(
 #if defined(HAVE_ALARM) && defined(SIGALRM)
 		case SIGALRM:
 #	ifdef NNTP_ABLE
-#	ifdef DEBUG
+#		ifdef DEBUG
 			if ((debug & DEBUG_NNTP) && verbose > 1)
 				debug_print_file("NNTP", "get_server() %d sec elapsed without response", TIN_NNTP_TIMEOUT);
-#	endif /* DEBUG */
+#		endif /* DEBUG */
 
-#	ifdef USE_ZLIB
+#		ifdef USE_ZLIB
 			/*
 			 * response compression from the server may take a while
 			 * when running interactively and not being in connection
@@ -442,23 +447,22 @@ signal_handler(
 			 */
 			{
 				char *prompt;
-				size_t len;
+				size_t len = strlen(_(txt_read_timeout_quit)) + snprintf(NULL, 0, "%d", tinrc.nntp_read_timeout_secs) - 1;
 
-				len = strlen(_(txt_read_timeout_quit)) + snprintf(NULL, 0, "%d", tinrc.nntp_read_timeout_secs) - 1;
 				prompt = my_malloc(len);
 				snprintf(prompt, len, _(txt_read_timeout_quit), tinrc.nntp_read_timeout_secs);
 				if (signal_context == cReconnect || batch_mode || !use_compress || !nntp_caps.compress || prompt_yn(prompt, FALSE) == 1) {
 					free(prompt);
-#	endif /* USE_ZLIB */
+#		endif /* USE_ZLIB */
 					tin_done(NNTP_ERROR_EXIT, _(txt_connection_error));
-#	ifdef USE_ZLIB
+#		ifdef USE_ZLIB
 				} else {
 					free(prompt);
 					RESTORE_HANDLER(sig, signal_handler);
 					wait_message(0, _(txt_continuing));
 				}
 			}
-#	endif /* USE_ZLIB */
+#		endif /* USE_ZLIB */
 #	endif /* NNTP_ABLE */
 			return;
 #endif /* HAVE_ALARM && SIGALRM */

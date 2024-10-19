@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2024-08-28
+ *  Updated   : 2024-10-11
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -281,12 +281,12 @@ get_full_name(
 
 #ifndef DONT_HAVE_PW_GECOS
 	if ((pw = getpwuid(getuid())) != NULL) {
-		int ret;
-
 		STRCPY(buf, pw->pw_gecos);
 		if ((p = strchr(buf, ',')))
 			*p = '\0';
 		if ((p = strchr(buf, '&'))) {
+			int ret;
+
 			*p++ = '\0';
 			STRCPY(tmp, pw->pw_name);
 			if (*tmp && isalpha((unsigned char) *tmp) && islower((unsigned char) *tmp))
@@ -314,7 +314,7 @@ get_from_name(
 	char *from_name,
 	struct t_group *thisgrp)
 {
-	char *fromhost = domain_name;
+	const char *fromhost = domain_name;
 
 	if (thisgrp && thisgrp->attribute->from && *thisgrp->attribute->from) {
 		strcpy(from_name, *thisgrp->attribute->from);

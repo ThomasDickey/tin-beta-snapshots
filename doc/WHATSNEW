@@ -41,6 +41,7 @@ Changes
 - disallow set but empty $NAME or $REALNAME to prevent reading the users
   name from /etc/passwd
 - addresses in %T are now separated by comma instead of space
+- tinrc/attributes value strings are limited to 1022 chars
 
 Retired Features
 ----------------

@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2024-08-28
+ *  Updated   : 2024-10-15
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2024 Steven J. Madsen <steve@erinet.com>
@@ -131,7 +131,7 @@ PGPNAME, pgpopts, pt, mailto, mailfrom, pt
 static t_bool pgp_available(void);
 static void do_pgp(t_function what, const char *file, const char *mail_to);
 static void join_files(const char *file);
-static void pgp_append_public_key(char *file);
+static void pgp_append_public_key(const char *file);
 static void split_file(const char *file);
 
 static char pgp_data[PATH_LEN];
@@ -299,7 +299,7 @@ do_pgp(
 
 static void
 pgp_append_public_key(
-	char *file)
+	const char *file)
 {
 	FILE *fp, *key;
 	char cmd[LEN], buf[LEN];
@@ -356,7 +356,7 @@ pgp_available(
 void
 invoke_pgp_mail(
 	const char *nam,
-	char *mail_to)
+	const char *mail_to)
 {
 	char keyboth[MAXKEYLEN], keyencrypt[MAXKEYLEN], keyquit[MAXKEYLEN];
 	char keysign[MAXKEYLEN];
@@ -401,7 +401,7 @@ invoke_pgp_mail(
 
 void
 invoke_pgp_news(
-	char *artfile)
+	const char *artfile)
 {
 	char keyinclude[MAXKEYLEN], keyquit[MAXKEYLEN], keysign[MAXKEYLEN];
 	t_function func, default_func = PGP_KEY_SIGN;

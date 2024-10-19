@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2024-08-12
+ *  Updated   : 2024-10-19
  *  Notes     :
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -73,11 +73,11 @@ static FILE *open_newgroups_fp(int idx);
 static FILE *open_news_active_fp(void);
 static int check_for_any_new_groups(void);
 static void active_add(struct t_group *ptr, t_artnum count, t_artnum max, t_artnum min, const char *moderated);
-static void append_group_line(char *active_file, char *group_path, t_artnum art_max, t_artnum art_min, char *base_dir);
+static void append_group_line(const char *active_file, const char *group_path, t_artnum art_max, t_artnum art_min, char *base_dir);
 static void make_group_list(char *active_file, char *base_dir, char *fixed_base, char *group_path);
 static void read_active_file(void);
 static void read_newsrc_active_file(void);
-static void subscribe_new_group(char *group, char *autosubscribe, char *autounsubscribe);
+static void subscribe_new_group(char *group, const char *autosubscribe, const char *autounsubscribe);
 #ifdef NNTP_ABLE
 	static t_bool do_read_newsrc_active_file(FILE *fp);
 	static t_bool parse_count_line(char *line, t_artnum *max, t_artnum *min, t_artnum *count, char *moderated);
@@ -193,7 +193,7 @@ active_add(
  */
 t_bool
 process_bogus(
-	char *name) /* return value is always ignored */
+	const char *name) /* return value is always ignored */
 {
 	struct t_group *ptr;
 
@@ -235,7 +235,7 @@ parse_active_line(
 #endif /* DEBUG */
 	t_bool lineok = FALSE;
 
-	if (line[0] == '#' || line[0] == '\0')
+	if (!*line || *line == '#')
 		return lineok;
 
 #ifdef DEBUG
@@ -299,7 +299,7 @@ parse_count_line(
 	char *p = NULL, *q = NULL, *r = NULL, *s = NULL;
 	t_bool lineok = FALSE;
 
-	if (line[0] == '#' || line[0] == '\0')
+	if (!*line || *line == '#')
 		return FALSE;
 
 	if (strtok(line, ACTIVE_SEP)) {		/* skip group name */
@@ -556,9 +556,7 @@ read_newsrc_active_file(
 #ifndef NNTP_ABLE
 	do_read_newsrc_active_file(fp);
 #else
-	need_auth = do_read_newsrc_active_file(fp);
-
-	if (need_auth) { /* delayed auth */
+	if ((need_auth = do_read_newsrc_active_file(fp)) == TRUE) {  /* delayed auth */
 		if (!authenticate(nntp_server, userid, FALSE)) {
 			fclose(fp);
 			tin_done(EXIT_FAILURE, _(txt_auth_failed), ERR_ACCESS);
@@ -917,11 +915,11 @@ read_news_active_file(
 								}
 								active_add(grpptr, count, max, min, moderated);
 							}
-#	ifdef DEBUG
+#		ifdef DEBUG
 							/* log end of multiline response to get timing data */
 							if ((debug & DEBUG_NNTP) && !verbose)
 								debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
-#	endif /* DEBUG */
+#		endif /* DEBUG */
 						}
 					}
 					if (need_auth) { /* retry after auth is overkill here, so just auth */
@@ -961,32 +959,49 @@ read_news_active_file(
 
 /*
  * Open the active.times file locally or send the NEWGROUPS command
- * "NEWGROUPS yymmdd hhmmss"
+ * "NEWGROUPS yymmdd hhmmss" (or "NEWGROUPS yyymmdd hhmmss GMT" if
+ * server knows CAPABILITIES (=RFC 3977)).
  */
 static FILE *
 open_newgroups_fp(
 	int idx)
 {
 #ifdef NNTP_ABLE
-	char line[NNTP_STRLEN];
-	struct tm *ngtm;
-
 	if (read_news_via_nntp && !read_saved_news) {
-		/*
-		 * not checking for caps_type == CAPABILITIES && reader as some
-		 * servers do not support it even if advertising READER so we must
-		 * handle errors anyway and just issue the cmd.
-		 */
-		if (idx == -1 || ((ngtm = localtime(&newnews[idx].time)) == NULL))
-			return (FILE *) 0;
+		char line[NNTP_STRLEN];
+		struct tm *ngtm;
 
-		/*
-		 * RFC 3977 states that we SHOULD use 4 digit year but some servers
-		 * still do not support it.
-		 */
-		snprintf(line, sizeof(line), "NEWGROUPS %02d%02d%02d %02d%02d%02d",
-			ngtm->tm_year % 100, ngtm->tm_mon + 1, ngtm->tm_mday,
-			ngtm->tm_hour, ngtm->tm_min, ngtm->tm_sec);
+		if (idx >= 0) {
+			if (nntp_caps.type == CAPABILITIES)
+				ngtm = gmtime(&newnews[idx].time);
+			else
+				ngtm = localtime(&newnews[idx].time);
+
+			if (ngtm == NULL)
+				return (FILE *) 0;
+
+			if (nntp_caps.type == CAPABILITIES) {
+			/*
+			 * not checking for caps_type == CAPABILITIES && reader as some
+			 * servers do not support it even if advertising READER so we must
+			 * handle errors anyway and just issue the cmd. but we use
+			 * GMT and 4 didigit year on RFC 3977 servers. 4 digit year
+			 * was introduced before Y2K ...
+			 */
+				snprintf(line, sizeof(line), "NEWGROUPS %04d%02d%02d %02d%02d%02d GMT",
+				ngtm->tm_year + 1900, ngtm->tm_mon + 1, ngtm->tm_mday,
+				ngtm->tm_hour, ngtm->tm_min, ngtm->tm_sec);
+			} else {
+				/*
+				 * RFC 3977 states that we SHOULD use 4 digit year but some servers
+				 * still do not support it.
+				 */
+				snprintf(line, sizeof(line), "NEWGROUPS %02d%02d%02d %02d%02d%02d",
+				ngtm->tm_year % 100, ngtm->tm_mon + 1, ngtm->tm_mday,
+				ngtm->tm_hour, ngtm->tm_min, ngtm->tm_sec);
+			}
+		} else
+			return (FILE *) 0;
 
 		return (nntp_command(line, OK_NEWGROUPS, NULL, 0));
 	}
@@ -994,6 +1009,7 @@ open_newgroups_fp(
 	/* silence compiler warning (unused parameter) */
 	(void) idx;
 #endif /* NNTP_ABLE */
+
 	return (fopen(active_times_file, "r"));
 }
 
@@ -1012,7 +1028,7 @@ check_for_any_new_groups(
 	void)
 {
 	FILE *fp;
-	char *autosubscribe, *autounsubscribe;
+	const char *autosubscribe, *autounsubscribe;
 	char *ptr, *line, buf[NNTP_STRLEN];
 	char old_newnews_host[PATH_LEN];
 	int newnews_index;
@@ -1100,8 +1116,8 @@ check_for_any_new_groups(
 static void
 subscribe_new_group(
 	char *group,
-	char *autosubscribe,
-	char *autounsubscribe)
+	const char *autosubscribe,
+	const char *autounsubscribe)
 {
 	int idx;
 	struct t_group *ptr;
@@ -1218,9 +1234,6 @@ match_group_list(
  * Add or update an entry to the in-memory newnews[] array (The times newgroups
  * were last checked for a particular news server)
  * If this is first time we've been called, zero out the array.
- *
- * Side effects:
- *   'info' is modified. Caller should not depend on it.
  */
 void
 load_newnews_info(
@@ -1387,8 +1400,8 @@ make_group_list(
 
 static void
 append_group_line(
-	char *active_file,
-	char *group_path,
+	const char *active_file,
+	const char *group_path,
 	t_artnum art_max,
 	t_artnum art_min,
 	char *base_dir)

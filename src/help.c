@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-01-16
+ *  Updated   : 2024-09-18
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -599,6 +599,7 @@ static t_help_page page_help_page[] = {
 #endif /* HAVE_PGP_GPG */
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
+	{ txt_help_article_info, PAGE_ARTICLE_INFO },
 	{ txt_help_global_version, GLOBAL_VERSION },
 	{ NULL, NOT_ASSIGNED }
 };

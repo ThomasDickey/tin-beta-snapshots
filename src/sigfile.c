@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2024-09-07
+ *  Updated   : 2024-09-24
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2024 Mike Gleason
@@ -87,7 +87,8 @@ msg_write_signature(
 			sigattr = *thisgroup->attribute->sigfile + 1;
 
 			if ((ptr = strstr(sigattr, "%G"))) {
-				char *to, *grpname;
+				const char *grpname;
+				char *to;
 				size_t cnt = 1;
 
 				/* check if %G occurs more than once */

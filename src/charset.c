@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2024-07-08
+ *  Updated   : 2024-10-16
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2024 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -480,6 +480,9 @@ charset_unsupported(
 		"ISO-10646-UCS-4",
 		"UTF-16",		/* covers also BE/LE */
 		"UTF-32",		/* covers also BE/LE */
+		"UNICODE-1-1",
+		"SCSU",
+		"csSCSU",
 		NULL };
 	const char **charsetptr = charsets;
 	t_bool ret = FALSE;
@@ -515,18 +518,24 @@ guess_charset(
 		int32_t confidence)
 {
 	char *guessed_charset = NULL;
+	const char *p_match = NULL;
 	UCharsetDetector *detector = NULL;
 	const UCharsetMatch *match;
 	UErrorCode status = 0;
-	const char *p_match = NULL;
 
 	detector = ucsdet_open(&status);
 	if (U_FAILURE(status))
 		goto failure;
 
-	ucsdet_setText(detector, sample, strlen(sample), &status);
+	ucsdet_setText(detector, sample, -1, &status);
 	if (U_FAILURE(status))
 		goto failure;
+
+	/*
+	 * TODO: use ucsdet_detectAll() and loop over the results?
+	 * currently we just look at the best match and that might
+	 * be a charset we can't handle (e.g. UTF-16) ...
+	 */
 
 	match = ucsdet_detect(detector, &status);
 	if (match == NULL || U_FAILURE(status))
@@ -534,6 +543,9 @@ guess_charset(
 
 	p_match = ucsdet_getName(match, &status);
 	if (p_match == NULL || U_FAILURE(status))
+		goto failure;
+
+	if (charset_unsupported(p_match))
 		goto failure;
 
 	/* badguess = 0 ... perfect = 100 */

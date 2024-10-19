@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-17
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -72,35 +72,36 @@
 char *
 tin_ltoa(
 	t_artnum value,
-	int digits)
+	size_t digits)
 {
 	static char buffer[64];
-	static const char power[] = { ' ', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'R', 'Q', '\0' };
-	int len;
+	static const char power[] = { 'e', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'R', 'Q', '\0' };
+	size_t len;
 	size_t i = 0;
 
-	if (digits <= 0) {
-		buffer[0] = 'e';
-		return buffer;
-	}
+	if (digits >= sizeof(buffer))
+		digits = sizeof(buffer) - 1;
+
+	if (!digits)
+		digits++;
 
 	snprintf(buffer, sizeof(buffer), "%"T_ARTNUM_PFMT, value);
-	len = (int) strlen(buffer);
+	len = strlen(buffer);
 
 	/*
 	 * only shorten if necessary,
 	 * then ensure that the metric prefix fits into the buffer
 	 */
-	if (len > digits) {
+	if (len > digits && digits >= 3) {
 		while (len >= digits) {
 			len -= 3;
 			i++;
 		}
 	}
 
-	if (i >= strlen(power)) {	/* buffer is to small */
-		buffer[(digits & 0x7f) - 1] = 'e';
-		buffer[(digits & 0x7f)] = '\0';
+	if (i >= strlen(power) || len > digits) {	/* buffer is to small */
+		buffer[digits - 1] = power[0];
+		buffer[digits] = '\0';
 		return buffer;
 	}
 
@@ -111,11 +112,11 @@ tin_ltoa(
 		if (digits > len)
 			buffer[digits - 1] = power[i];
 		else /* overflow */
-			buffer[digits - 1] = 'e';
+			buffer[digits - 1] = power[0];
 
 		buffer[digits] = '\0';
 	} else
-		snprintf(buffer, sizeof(buffer), "%*"T_ARTNUM_PFMT, digits, value);
+		snprintf(buffer, sizeof(buffer), "%*"T_ARTNUM_PFMT, (int) digits, value);
 
 	return buffer;
 }
@@ -132,15 +133,20 @@ char *
 my_strdup(
 	const char *str)
 {
-	size_t len = strlen(str) + 1;
-	void *ptr = my_malloc(len);
+	size_t len = 1;
+	void *ptr;
+
+	if (str)
+		len += strlen(str);
+
+	ptr = my_malloc(len);
 
 #	if 0 /* as my_malloc exits on error, ptr can't be NULL */
 	if (ptr == NULL)
 		return NULL;
 #	endif /* 0 */
 
-	memcpy(ptr, str, len);
+	memcpy(ptr, BlankIfNull(str), len);
 	return (char *) ptr;
 }
 #endif /* !USE_DMALLOC || (USE_DMALLOC && !HAVE_STRDUP) */
@@ -705,9 +711,7 @@ sh_format(
 	va_start(ap, fmt);
 
 	while (*fmt != 0) {
-		int ch;
-
-		ch = *fmt++;
+		int ch = *fmt++;
 
 		if (ch == '\\') {
 			SH_FORMAT(ch);
@@ -867,9 +871,8 @@ wchar_t2char(
 	const wchar_t *wstr)
 {
 	char *str;
-	size_t len;
+	size_t len = wcstombs(NULL, wstr, 0);
 
-	len = wcstombs(NULL, wstr, 0);
 	if (len == (size_t) (-1))
 		return NULL;
 
@@ -1091,7 +1094,7 @@ strunc(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wmessage, *wbuf;
 
-	if ((wmessage = char2wchar_t(message)) != NULL) {
+	if ((wmessage = char2wchar_t(BlankIfNull(message))) != NULL) {
 		wbuf = wstrunc(wmessage, len);
 		free(wmessage);
 
@@ -1105,8 +1108,8 @@ strunc(
 	/* something went wrong using wide-chars, default back to normal chars */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-	if (strlen(message) <= len)
-		tmp = my_strdup(message);
+	if (strlen(BlankIfNull(message)) <= len)
+		tmp = my_strdup(BlankIfNull(message));
 	else {
 		tmp = my_malloc(len + 1);
 		snprintf(tmp, len + 1, "%-.*s%s", (int) (len - 3), message, TRUNC_TAIL);
@@ -1169,10 +1172,15 @@ wchar_t *
 my_wcsdup(
 	const wchar_t *wstr)
 {
-	size_t len = wcslen(wstr) + 1;
-	void *ptr = my_malloc(sizeof(wchar_t) * len);
+	size_t len = 1;
+	void *ptr;
 
-	memcpy(ptr, wstr, sizeof(wchar_t) * len);
+	if (wstr)
+		len += wcslen(wstr);
+
+	ptr = (wchar_t *) my_calloc(len, sizeof(wchar_t));
+	if (wstr && *wstr && len > 1)
+		memcpy(ptr, wstr, sizeof(wchar_t) * len);
 	return (wchar_t *) ptr;
 }
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1453,9 +1461,10 @@ parse_format_string(
 	struct t_fmt *fmt)
 {
 	char tmp_date_str[LEN];
+	char tmp_str[LEN];
 	char *out, *d_fmt, *buf;
 	const char *in;
-	int min_cols;
+	int min_cols, max_cols, cond_len;
 	size_t cnt = 0;
 	size_t len, len2, tmplen;
 	time_t tmptime;
@@ -1475,7 +1484,8 @@ parse_format_string(
 		SCORE			= 1 << 11,
 		SUBJECT			= 1 << 12,
 		THREAD_TREE		= 1 << 13,
-		U_CNT			= 1 << 14
+		U_CNT			= 1 << 14,
+		FROM_FIRST		= 1 << 15
 	};
 	int flags = NO_FLAGS;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -1506,10 +1516,12 @@ parse_format_string(
 	fmt->g_before_f = FALSE;
 	fmt->d_before_u = FALSE;
 	fmt->g_before_u = FALSE;
-	fmt->date_str[0] = '\0';
+	FreeAndNull(fmt->str);
+	FreeAndNull(fmt->date_str);
 	tmp_date_str[0] = '\0';
+	tmp_str[0] = '\0';
 	in = fmtstr;
-	out = fmt->str;
+	out = tmp_str;
 
 	if (tinrc.draw_arrow)
 		cnt += 2;
@@ -1523,6 +1535,8 @@ parse_format_string(
 		*out++ = *in++;
 		len = 0;
 		len2 = 0;
+		cond_len = 0;
+		max_cols = cCOLS + 1;
 		min_cols = 0;
 		tmp_date_str[0] = '\0';
 		d_fmt = tmp_date_str;
@@ -1544,6 +1558,21 @@ parse_format_string(
 				for (; *in >= '0' && *in <= '9'; in++)
 					;
 			}
+		}
+		if (*in == '<') {
+			if (*++in > '0' && *in <= '9') {
+				max_cols = atoi(in);
+				for (; *in >= '0' && *in <= '9'; in++)
+					;
+			}
+		}
+		if (*in == ':') {
+			if (*++in > '0' && *in <= '9') {
+				cond_len = atoi(in);
+				for (; *in >= '0' && *in <= '9'; in++)
+					;
+			} else
+				cond_len = -1;
 		}
 		if (*in == '(') {
 			char *tmpp;
@@ -1578,7 +1607,7 @@ parse_format_string(
 
 			case 'd':
 				/* Newsgroup description */
-				if (cCOLS > min_cols && !(flags & GRP_DESC) && signal_context == cSelect) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & GRP_DESC) && signal_context == cSelect) {
 					flags |= GRP_DESC;
 					fmt->show_grpdesc = TRUE;
 					if (len)
@@ -1589,12 +1618,12 @@ parse_format_string(
 
 			case 'D':
 				/* Date */
-				if (cCOLS > min_cols && (!(flags & DATE) && (signal_context == cGroup || signal_context == cThread))) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & DATE) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= DATE;
 					if (*tmp_date_str)
-						strcpy(fmt->date_str, tmp_date_str);
+						fmt->date_str = my_strdup(tmp_date_str);
 					else
-						STRCPY(fmt->date_str, curr_group->attribute->date_format ? BlankIfNull(*curr_group->attribute->date_format) : "");
+						fmt->date_str = my_strdup(curr_group->attribute->date_format ? BlankIfNull(*curr_group->attribute->date_format) : "");
 					buf = my_malloc(LEN);
 					(void) time(&tmptime);
 					if (my_strftime(buf, LEN - 1, fmt->date_str, localtime(&tmptime))) {
@@ -1619,7 +1648,7 @@ parse_format_string(
 
 			case 'f':
 				/* Newsgroup flags */
-				if (cCOLS > min_cols && !(flags & GRP_FLAGS) && signal_context == cSelect) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & GRP_FLAGS) && signal_context == cSelect) {
 					flags |= GRP_FLAGS;
 					fmt->flags_offset = cnt;
 					if (flags & GRP_NAME)
@@ -1633,18 +1662,19 @@ parse_format_string(
 
 			case 'F':
 				/* From */
-				if (!(flags & FROM) && (signal_context == cGroup || signal_context == cThread)) {
+				if (((cCOLS > min_cols && cCOLS < max_cols) || cond_len) && !(flags & FROM) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= FROM;
-					if (len)
-						fmt->len_from = len;
+					if (!(flags & (SUBJECT | THREAD_TREE)))
+						flags |= FROM_FIRST;
 
+					fmt->len_from = (cCOLS > min_cols && cCOLS < max_cols) ? len : cond_len > 0 ? cond_len : 0;
 				} else
 					out -= 2;
 				break;
 
 			case 'G':
 				/* Newsgroup name */
-				if (cCOLS > min_cols && !(flags & GRP_NAME) && signal_context == cSelect) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & GRP_NAME) && signal_context == cSelect) {
 					flags |= GRP_NAME;
 					if (len)
 						fmt->len_grpname = len;
@@ -1656,7 +1686,7 @@ parse_format_string(
 
 			case 'I':
 				/* Initials */
-				if (cCOLS > min_cols && !(flags & INITIALS) && (signal_context == cGroup || signal_context == cThread)) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & INITIALS) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= INITIALS;
 					fmt->len_initials = (len ? len : 3);
 					cnt += fmt->len_initials;
@@ -1666,7 +1696,7 @@ parse_format_string(
 
 			case 'L':
 				/* Lines */
-				if (cCOLS > min_cols && !(flags & LINE_CNT) && (signal_context == cGroup || signal_context == cThread)) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & LINE_CNT) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= LINE_CNT;
 					fmt->len_linecnt = (len ? len : 4);
 					cnt += fmt->len_linecnt;
@@ -1676,7 +1706,7 @@ parse_format_string(
 
 			case 'm':
 				/* Article marks */
-				if (cCOLS > min_cols && !(flags & ART_MARKS) && (signal_context == cGroup || signal_context == cThread)) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & ART_MARKS) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= ART_MARKS;
 					cnt += 3;
 				} else
@@ -1685,7 +1715,7 @@ parse_format_string(
 
 			case 'M':
 				/* Message-ID */
-				if (cCOLS > min_cols && !(flags & MSGID) && (signal_context == cGroup || signal_context == cThread)) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & MSGID) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= MSGID;
 					fmt->len_msgid = (len ? len : 10);
 					cnt += fmt->len_msgid;
@@ -1695,7 +1725,7 @@ parse_format_string(
 
 			case 'n':
 				/* Number in the menu */
-				if (cCOLS > min_cols && !(flags & LINE_NUMBER)) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & LINE_NUMBER)) {
 					flags |= LINE_NUMBER;
 					fmt->len_linenumber = (len ? len : 4);
 					cnt += fmt->len_linenumber;
@@ -1705,7 +1735,7 @@ parse_format_string(
 
 			case 'R':
 				/* Number of responses in the thread */
-				if (cCOLS > min_cols && !(flags & RESP_COUNT) && signal_context == cGroup) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & RESP_COUNT) && signal_context == cGroup) {
 					flags |= RESP_COUNT;
 					fmt->len_respcnt = (len ? len : 3);
 					cnt += fmt->len_respcnt;
@@ -1715,17 +1745,16 @@ parse_format_string(
 
 			case 's':
 				/* Subject */
-				if (cCOLS > min_cols && !(flags & SUBJECT) && signal_context == cGroup) {
+				if (((cCOLS > min_cols && cCOLS < max_cols) || cond_len) && !(flags & SUBJECT) && signal_context == cGroup) {
 					flags |= SUBJECT;
-					if (len)
-						fmt->len_subj = len;
+					fmt->len_subj = (cCOLS > min_cols && cCOLS < max_cols) ? len : cond_len > 0 ? cond_len : 0;
 				} else
 					out -= 2;
 				break;
 
 			case 'S':
 				/* Score */
-				if (cCOLS > min_cols && !(flags & SCORE) && (signal_context == cGroup || signal_context == cThread)) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & SCORE) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= SCORE;
 					fmt->len_score = (len ? len : 6);
 					cnt += fmt->len_score;
@@ -1735,18 +1764,17 @@ parse_format_string(
 
 			case 'T':
 				/* Thread tree */
-				if (cCOLS > min_cols && !(flags & THREAD_TREE) && signal_context == cThread) {
+				if (((cCOLS > min_cols && cCOLS < max_cols) || cond_len) && !(flags & THREAD_TREE) && signal_context == cThread) {
 					flags |= THREAD_TREE;
 					show_subject = TRUE;
-					if (len)
-						fmt->len_subj = len;
+					fmt->len_subj = (cCOLS > min_cols && cCOLS < max_cols) ? len : cond_len > 0 ? cond_len : 0;
 				} else
 					out -= 2;
 				break;
 
 			case 'U':
 				/* Unread count */
-				if (cCOLS > min_cols && !(flags & U_CNT) && signal_context == cSelect) {
+				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & U_CNT) && signal_context == cSelect) {
 					flags |= U_CNT;
 					fmt->len_ucnt = (len ? len : 5);
 					fmt->ucnt_offset = cnt;
@@ -1768,6 +1796,7 @@ parse_format_string(
 	}
 
 	*out = '\0';
+	fmt->str = my_strdup(tmp_str);
 
 	/*
 	 * check the given values against the screen width, fallback
@@ -1778,13 +1807,17 @@ parse_format_string(
 	 * if we draw no thread tree %F can use the entire space - otherwise
 	 * %F will use one third of the space
 	 */
-	if (cnt > (size_t) cCOLS - 1) {
+	if (!*fmt->str || cnt > (size_t) cCOLS - 1) {
 		flags = NO_FLAGS;
 		fmt->len_linenumber = 4;
 		switch (signal_context) {
 			case cGroup:
-				error_message(3, _(txt_error_format_string), DEFAULT_GROUP_FORMAT);
-				STRCPY(fmt->str, DEFAULT_GROUP_FORMAT);
+				if (!*fmt->str)
+					error_message(3, _(txt_error_empty_format_string), DEFAULT_GROUP_FORMAT);
+				else
+					error_message(3, _(txt_error_format_string), DEFAULT_GROUP_FORMAT);
+				free(fmt->str);
+				fmt->str = my_strdup(DEFAULT_GROUP_FORMAT);
 				flags = (LINE_NUMBER | ART_MARKS | RESP_COUNT | LINE_CNT | SUBJECT | FROM);
 				cnt = tinrc.draw_arrow ? 23 : 21;
 				fmt->len_linecnt = 4;
@@ -1793,7 +1826,8 @@ parse_format_string(
 
 			case cSelect:
 				error_message(3, _(txt_error_format_string), DEFAULT_SELECT_FORMAT);
-				STRCPY(fmt->str, DEFAULT_SELECT_FORMAT);
+				free(fmt->str);
+				fmt->str = my_strdup(DEFAULT_SELECT_FORMAT);
 				flags = (GRP_FLAGS | LINE_NUMBER | U_CNT | GRP_NAME | GRP_DESC);
 				cnt = tinrc.draw_arrow ? 18 : 16;
 				fmt->show_grpdesc = TRUE;
@@ -1805,8 +1839,12 @@ parse_format_string(
 				break;
 
 			case cThread:
-				error_message(3, _(txt_error_format_string), DEFAULT_THREAD_FORMAT);
-				STRCPY(fmt->str, DEFAULT_THREAD_FORMAT);
+				if (!*fmt->str)
+					error_message(3, _(txt_error_empty_format_string), DEFAULT_THREAD_FORMAT);
+				else
+					error_message(3, _(txt_error_format_string), DEFAULT_THREAD_FORMAT);
+				free(fmt->str);
+				fmt->str = my_strdup(DEFAULT_THREAD_FORMAT);
 				flags = (LINE_NUMBER | ART_MARKS | LINE_CNT | THREAD_TREE | FROM);
 				cnt = tinrc.draw_arrow ? 22 : 20;
 				fmt->len_linecnt = 4;
@@ -1816,37 +1854,88 @@ parse_format_string(
 				break;
 		}
 
-		if (flags & SUBJECT)
+		if (flags & (SUBJECT | THREAD_TREE))
 			fmt->len_from = ((size_t) cCOLS - cnt - 1) / 3;
 		else
 			fmt->len_from = ((size_t) cCOLS - cnt - 1);
 
 		fmt->len_subj = (size_t) cCOLS - fmt->len_from - cnt - 1;
 	} else {
+		int len_cnt, len_tmp;
+		size_t *len_first, *len_last;
+		t_bool flags_first, flags_last;
+
+		len_cnt = (cCOLS - (int) cnt - 1) < 0 ? 0 : cCOLS - cnt - 1;
+
 		if (flags & (GRP_NAME | GRP_DESC))
-			fmt->len_grpname_max = (size_t) cCOLS - cnt - 1;
+			fmt->len_grpname_max = (size_t) len_cnt;
 
 		if (!show_description && !(flags & GRP_NAME))
 			fmt->len_grpname_max = 0;
 
-		if ((flags & DATE) && fmt->len_date > ((size_t) cCOLS - cnt - 1))
-			fmt->len_date = ((size_t) cCOLS - cnt - 1);
+		if ((flags & DATE) && fmt->len_date > (size_t) len_cnt)
+			fmt->len_date = (size_t) len_cnt;
 
-		if ((flags & DATE) && (!fmt->len_date_max || fmt->len_date_max > ((size_t) cCOLS - cnt - 1)))
+		if ((flags & DATE) && (!fmt->len_date_max || fmt->len_date_max > (size_t) len_cnt))
 			fmt->len_date_max = fmt->len_date;
 
-		if ((flags & FROM) && (!fmt->len_from || fmt->len_from > ((size_t) cCOLS - fmt->len_date_max - cnt - 1))) {
-			if (flags & (SUBJECT | THREAD_TREE)) {
-				if (fmt->len_subj)
-					fmt->len_from = (size_t) cCOLS - fmt->len_date_max - fmt->len_subj - cnt - 1;
-				else
-					fmt->len_from = ((size_t) cCOLS - fmt->len_date_max - cnt - 1) / 3;
-			} else
-				fmt->len_from = ((size_t) cCOLS - fmt->len_date_max - cnt - 1);
+		/*
+		 * For %s and %F, the item that comes last is normally truncated
+		 * according to the available space first. If no length is specified
+		 * for the item that comes first, but a length is specified for the
+		 * item that comes last, the logic is reversed. In this case, the item
+		 * that comes first is truncated according to the available space
+		 * first.
+		 */
+		if ((flags & FROM_FIRST)) {
+			if (!fmt->len_from && fmt->len_subj)
+				flags &= ~FROM_FIRST;
+		} else {
+			if (fmt->len_from && !fmt->len_subj)
+				flags |= FROM_FIRST;
 		}
 
-		if ((flags & (SUBJECT | THREAD_TREE)) && (!fmt->len_subj || fmt->len_subj > ((size_t) cCOLS - fmt->len_from - fmt->len_date_max - cnt - 1)))
-			fmt->len_subj = ((size_t) cCOLS - fmt->len_from - fmt->len_date_max - cnt - 1);
+		if ((flags & FROM_FIRST)) {
+			flags_first = (flags & (SUBJECT | THREAD_TREE));
+			flags_last = (flags & FROM);
+			len_first = &fmt->len_from;
+			len_last = &fmt->len_subj;
+		} else {
+			flags_first = (flags & FROM);
+			flags_last = (flags & (SUBJECT | THREAD_TREE));
+			len_first = &fmt->len_subj;
+			len_last = &fmt->len_from;
+		}
+
+		len_tmp = len_cnt - (int) fmt->len_date_max < 0 ? 0 : len_cnt - fmt->len_date_max;
+		if (flags_first) {
+			if (!*len_last || *len_last > (size_t) len_tmp) {
+				if (flags_last) {
+					if (*len_first) {
+						len_tmp = len_cnt - fmt->len_date_max - *len_first;
+						*len_last = len_tmp < 0 ? 0 : (size_t) len_tmp;
+					} else {
+						len_tmp = len_cnt - fmt->len_date_max;
+						*len_last = len_tmp < 0 ? 0 : (size_t) len_tmp / 3;
+					}
+					len_tmp = len_cnt - fmt->len_date_max - *len_last;
+					*len_first = len_tmp < 0 ? 0 : (size_t) len_tmp;
+				} else {
+					len_tmp = len_cnt - fmt->len_date_max;
+					*len_last = len_tmp < 0 ? 0 : (size_t) len_tmp;
+				}
+			} else {
+				if (flags_last) {
+					if (*len_first) {
+						len_tmp = len_cnt - fmt->len_date_max - *len_first;
+						*len_last = len_tmp < 0 ? 0 : MIN(*len_last, (size_t) len_tmp);
+					}
+					len_tmp = len_cnt - fmt->len_date_max - *len_last;
+					*len_first = len_tmp < 0 ? 0 : MIN(*len_first, (size_t) len_tmp);
+				}
+			}
+		} else if (flags_last && (!*len_first || *len_first > (size_t) len_tmp))
+				*len_first = (size_t) len_tmp;
 	}
 }
 

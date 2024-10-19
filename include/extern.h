@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-08-26
+ *  Updated   : 2024-10-18
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>
@@ -350,27 +350,6 @@
 /*
  * Local variables
  */
-
-/* This fixes ambiguities on platforms that don't distinguish extern case */
-#ifdef CASE_PROBLEM
-#	define txt_help_B	txt_help_BIGB
-#	define txt_help_D	txt_help_BIGD
-#	define txt_help_I	txt_help_BIGI
-#	define txt_help_K	txt_help_BIGK
-#	define txt_help_L	txt_help_BIGL
-#	define txt_help_M	txt_help_BIGM
-#	define txt_help_Q	txt_help_BIGQ
-#	define txt_help_S	txt_help_BIGS
-#	define txt_help_T	txt_help_BIGT
-#	define txt_help_U	txt_help_BIGU
-#	define txt_help_W	txt_help_BIGW
-#	define txt_help_X	txt_help_BIGX
-#	define txt_help_p_S	txt_help_p_BIGS
-#	define txt_help_t_K	txt_help_t_BIGK
-#	define txt_help_p_U	txt_help_p_BIGU
-#	define txt_help_thd_C	txt_help_thd_BIGC
-#endif /* CASE_PROBLEM */
-
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern wchar_t *OPT_CHAR_list[];
 #else
@@ -677,7 +656,9 @@ extern constext txt_autoselecting_articles[];
 extern constext txt_autosubscribed[];
 extern constext txt_autosubscribing_groups[];
 extern constext txt_bad_article[];
-extern constext txt_bad_attrib[];
+#ifdef DEBUG
+	extern constext txt_bad_attrib[];
+#endif /* DEBUG */
 extern constext txt_bad_command[];
 extern constext txt_base_article[];
 extern constext txt_base_article_range[];
@@ -776,6 +757,7 @@ extern constext txt_conninfo_saved_news[];
 	extern constext txt_conninfo_ro[];
 	extern constext txt_conninfo_rw[];
 	extern constext txt_conninfo_server[];
+	extern constext txt_conninfo_type[];
 #	ifdef NNTPS_ABLE
 	extern constext txt_conninfo_nntps[];
 	extern constext txt_conninfo_trusted[];
@@ -854,6 +836,7 @@ extern constext txt_error_corrupted_file[];
 #ifdef NNTP_ABLE
 	extern constext txt_error_couldnt_expand[];
 #endif /* NNTP_ABLE */
+extern constext txt_error_empty_format_string[];
 extern constext txt_error_fseek[];
 extern constext txt_error_followup_poster[];
 extern constext txt_error_format_string[];
@@ -1008,6 +991,7 @@ extern constext txt_help_article_by_num[];
 extern constext txt_help_article_edit[];
 extern constext txt_help_article_first_in_thread[];
 extern constext txt_help_article_first_page[];
+extern constext txt_help_article_info[];
 extern constext txt_help_article_last_in_thread[];
 extern constext txt_help_article_last_page[];
 extern constext txt_help_article_mark_thread_read[];
@@ -1597,7 +1581,9 @@ extern constext txt_toggled_tabwidth[];
 #endif /* NO_LOCKING */
 extern constext txt_type_h_for_help[];
 extern constext txt_unlimited_time[];
-extern constext txt_unchanged[];
+#ifdef DEBUG
+	extern constext txt_unchanged[];
+#endif /* DEBUG */
 extern constext txt_unknown[];
 #if defined(XFACE_ABLE) || (defined(NNTPS_ABLE) && defined(HAVE_LIB_LIBTLS))
 	extern constext txt_unknown_error[];
@@ -1682,6 +1668,7 @@ extern constext txt_useful_without_batch_mode[];
 extern constext txt_useful_with_batch_mode[];
 extern constext txt_useful_with_batch_or_debug_mode[];
 extern constext txt_useless_combination[];
+extern constext txt_useless_comb_tinrcval[];
 extern constext txt_use_mime[];
 extern constext txt_uue_complete[];
 extern constext txt_uue_incomplete[];
@@ -1736,10 +1723,12 @@ extern constext txt_x_resp[];
 	extern constext txt_xface_error_create_failed[];
 	extern constext txt_xface_error_exited_abnormal[];
 	extern constext txt_xface_error_finally_failed[];
-	extern constext txt_xface_error_missing_env_var[];
-#	if defined(DEBUG) && defined(HAVE_IS_XTERM)
-	extern constext txt_xface_error_no_xterm[];
-#	endif /* DEBUG && HAVE_IS_XTERM */
+#	ifdef DEBUG
+		extern constext txt_xface_error_missing_env_var[];
+#		ifdef HAVE_IS_XTERM
+			extern constext txt_xface_error_no_xterm[];
+#		endif /*  HAVE_IS_XTERM */
+#	endif /* DEBUG */
 	extern constext txt_xface_msg_cannot_connect_display[];
 	extern constext txt_xface_msg_cannot_open_fifo[];
 	extern constext txt_xface_msg_executable_not_found[];
@@ -1815,6 +1804,7 @@ extern int max_base;
 extern int max_newnews;
 extern int max_save;
 extern int max_scope;
+extern int need_parse_fmt;
 extern int need_resize;
 extern int num_active;
 extern int num_newnews;

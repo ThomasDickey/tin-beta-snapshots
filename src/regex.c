@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2024-08-27
+ *  Updated   : 2024-10-17
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -116,9 +116,8 @@ match_regex_ex(
 	struct regex_cache *regex)
 {
 #ifndef HAVE_LIB_PCRE2
-	int error;
+	int error = pcre_exec(regex->re, regex->extra, string, length, offset, options, regex->ovector, regex->ovecalloc);
 
-	error = pcre_exec(regex->re, regex->extra, string, length, offset, options, regex->ovector, regex->ovecalloc);
 	if (error >= 0) {
 		/* error == 0 means 'matched, but not enough space in ovector' */
 		regex->oveccount = error;
@@ -212,9 +211,8 @@ compile_regex(
 			error_message(2, _(txt_pcre_error_text), regex_errmsg);
 		} else {
 			int n;
-			int error;
+			int error = pcre_fullinfo(cache->re, cache->extra, PCRE_INFO_CAPTURECOUNT, &n);
 
-			error = pcre_fullinfo(cache->re, cache->extra, PCRE_INFO_CAPTURECOUNT, &n);
 			if (error != 0)
 				error_message(2, _(txt_pcre_error_num), error);
 			else {
@@ -246,14 +244,15 @@ highlight_regexes(
 	int color)
 {
 	char *ptr;
-#ifdef USE_CURSES
-	char buf[LEN];
-#else
 	char *buf;
-#endif /* USE_CURSES */
 
 	/* Get contents of line from the screen */
 #ifdef USE_CURSES
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	buf = my_malloc(MB_CUR_MAX * (size_t) (cCOLS + 1));
+#	else
+	buf = my_malloc(cCOLS + 1);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	screen_contents(row, 0, buf);
 #else
 	buf = screen[row].col;
@@ -278,6 +277,9 @@ highlight_regexes(
 		} else
 			ptr += offsets[1];
 	}
+#ifdef USE_CURSES
+	free(buf);
+#endif /* USE_CURSES */
 }
 
 

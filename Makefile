@@ -11,7 +11,7 @@ LVER	= 2
 PVER	= 6
 SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20240917
+DVER	= 20241019
 EXE	= tin
 
 # directory structure
@@ -159,6 +159,7 @@ DOC	= \
 
 TOL	= \
 	$(TOLDIR)/expiretover \
+	$(TOLDIR)/flnews2tin.pl \
 	$(TOLDIR)/metamutt \
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \
@@ -422,6 +423,7 @@ chmod:
 	$(TOPDIR)/configure \
 	$(TOPDIR)/install-sh \
 	$(TOLDIR)/expiretover \
+	$(TOLDIR)/flnews2tin.pl \
 	$(TOLDIR)/metamutt \
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \

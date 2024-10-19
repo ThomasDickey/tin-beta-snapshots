@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2024-08-21
+ *  Updated   : 2024-10-18
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -48,19 +48,13 @@
 #	include "options_menu.h"
 #endif /* !OPTIONS_MENU_H */
 
-/* This fixes ambiguities on platforms that don't distinguish extern case */
-#ifdef CASE_PROBLEM
-#	define Raw tin_raw
-#	define EndWin tin_EndWin
-#endif /* CASE_PROBLEM */
-
 /* active.c */
 extern char group_flag(char ch);
 extern int find_newnews_index(const char *cur_newnews_host);
 extern int read_news_active_file(void);
 extern t_bool match_group_list(const char *group, const char *group_list);
 extern t_bool parse_active_line(char *line, t_artnum *max, t_artnum *min, char *moderated);
-extern t_bool process_bogus(char *name);
+extern t_bool process_bogus(const char *name);
 extern t_bool need_reread_active_file(void);
 extern t_bool resync_active_file(void);
 extern void create_save_active_file(void);
@@ -370,11 +364,11 @@ extern char *split_mailbox_list(char *from);
 extern const char *eat_re(char *s, t_bool eat_was);
 extern const char *get_val(const char *env, const char *def);
 extern const char *gnksa_strerror(int errcode);
-extern int gnksa_check_from(char *from);
+extern int gnksa_check_from(const char *from);
 extern int gnksa_split_from(const char *from, char *address, char *realname, int *addrtype);
 extern int get_initials(struct t_article *art, char *s, int maxsize);
 extern int gnksa_do_check_from(const char *from, char *address, char *realname);
-extern int my_mkdir(char *path, mode_t mode);
+extern int my_mkdir(const char *path, mode_t mode);
 extern int parse_from(const char *from, char *address, char *realname);
 extern int rndm(void);
 extern int strfmailer(const char *mail_prog, char *subject, char *to, const char *filename, char *dest, size_t maxsize, const char *format);
@@ -389,13 +383,13 @@ extern int copy_fp(FILE *fp_ip, FILE *fp_op);
 extern t_bool invoke_cmd(const char *nam);
 extern t_bool invoke_editor(const char *filename, int lineno, struct t_group *group);
 extern t_bool mail_check(const char *mailbox_name);
-extern int append_file(char *old_filename, char *new_filename);
+extern int append_file(const char *old_filename, const char *new_filename);
 #ifndef NDEBUG
 	extern _Noreturn void asfail(const char *file, int line, const char *cond);
 #endif /* !NDEBUG */
 extern void base_name(const char *fullpath, char *file);
 extern void cleanup_tmp_files(void);
-extern void copy_body(FILE *fp_ip, FILE *fp_op, char *prefix, char *initl, t_bool raw_data);
+extern void copy_body(FILE *fp_ip, FILE *fp_op, char *prefix, const char *initl, t_bool raw_data);
 extern void create_index_lock_file(char *the_lock_file);
 extern void dir_name(const char *fullpath, char *dir);
 extern void draw_mark_selected(int i);
@@ -441,7 +435,7 @@ extern int my_mktmp(char *filename, size_t name_size, const char *base_dir);
 extern FILE *my_tmpfile(void);
 
 /* newsrc.c */
-extern int group_get_art_info(char *tin_spooldir, char *groupname, int grouptype, t_artnum *art_count, t_artnum *art_max, t_artnum *art_min);
+extern int group_get_art_info(const char *tin_spooldir, const char *groupname, int grouptype, t_artnum *art_count, t_artnum *art_max, t_artnum *art_min);
 extern signed long int read_newsrc(char *newsrc_file, t_bool allgroups);
 extern signed long int write_newsrc(void);
 extern t_bool pos_group_in_newsrc(struct t_group *group, int pos);
@@ -526,8 +520,8 @@ extern time_t parsedate(char *p, TIMEINFO *now);
 #ifdef HAVE_PGP_GPG
 	extern t_bool pgp_check_article(t_openartinfo *artinfo);
 	extern void init_pgp(void);
-	extern void invoke_pgp_mail(const char *nam, char *mail_to);
-	extern void invoke_pgp_news(char *artfile);
+	extern void invoke_pgp_mail(const char *nam, const char *mail_to);
+	extern void invoke_pgp_news(const char *artfile);
 #endif /* HAVE_PGP_GPG */
 
 /* post.c */
@@ -562,7 +556,7 @@ extern char *sized_message(char **result, const char *format, const char *subjec
 extern int prompt_num(int ch, const char *prompt);
 extern int prompt_yn(const char *prompt, t_bool default_answer);
 extern int prompt_msgid(void);
-extern t_bool prompt_default_string(const char *prompt, char *buf, int buf_len, char *default_prompt, int which_hist);
+extern t_bool prompt_default_string(const char *prompt, char *buf, int buf_len, const char *default_prompt, int which_hist);
 extern t_bool prompt_menu_string(int line, const char *prompt, char **var);
 extern t_bool prompt_option_char(enum option_enum option);
 extern t_bool prompt_option_list(enum option_enum option);
@@ -570,7 +564,6 @@ extern t_bool prompt_option_num(enum option_enum option);
 extern t_bool prompt_option_on_off(enum option_enum option);
 extern t_bool prompt_option_string(enum option_enum option);
 extern t_bool prompt_string(const char *prompt, char *buf, int which_hist);
-extern t_bool prompt_string_ptr(const char *prompt, char **buf, int which_hist);
 extern void prompt_continue(void);
 extern void prompt_slk_redraw(void);
 extern void prompt_yn_redraw(void);
@@ -620,7 +613,7 @@ extern const char *get_param(t_param *list, const char *name);
 extern char *parse_header(char *buf, const char *pat, t_bool decode, t_bool structured, t_bool keep_tab);
 extern char *parse_mb_list_header(char *buf, const char *pat);
 extern int art_open(t_bool wrap_lines, struct t_article *art, struct t_group *group, t_openartinfo *artinfo, t_bool show_progress_meter, const char *pmesg);
-extern int content_type(char *type);
+extern int content_type(const char *type);
 extern int parse_rfc822_headers(struct t_header *hdr, FILE *from, FILE *to);
 extern t_param *new_params(void);
 extern t_part *new_part(t_part *part);
@@ -681,7 +674,7 @@ extern void reset_srch_offsets(void);
 extern int add_my_group(const char *group, t_bool add, t_bool ignore_case);
 extern int choose_new_group(void);
 #ifdef NNTP_ABLE
-	extern int show_article_by_msgid(char *messageid);
+	extern int show_article_by_msgid(const char *messageid);
 #endif /* NNTP_ABLE */
 extern int skip_newgroups(void);
 extern _Noreturn void selection_page(int start_groupnum, int num_cmd_line_groups);
@@ -712,7 +705,7 @@ extern char *fmt_string(const char *fmt, ...);
 #endif /* !USE_DMALLOC || (USE_DMALLOC && !HAVE_STRDUP) */
 extern char *str_trim(char *string);
 extern char *strunc(const char *message, size_t len);
-extern char *tin_ltoa(t_artnum value, int digits);
+extern char *tin_ltoa(t_artnum value, size_t digits);
 extern char *tin_strtok(char *str, const char *delim);
 extern int sh_format(char *dst, size_t len, const char *fmt, ...);
 extern int strwidth(const char *str);
@@ -812,7 +805,7 @@ extern t_bool thread_mark_postprocess(int function, t_function feed_type, int re
 extern void fixup_thread(int respnum, t_bool redraw);
 
 /* version.c */
-extern struct t_version *check_upgrade(char *line, const char *skip, const char *version);
+extern struct t_version *check_upgrade(const char *line, const char *skip, const char *version);
 extern void upgrade_prompt_quit(struct t_version *upgrade, const char *file, FILE *fp);
 
 /* wildmat.c */
@@ -823,7 +816,7 @@ extern t_bool wildmatpos(const char *text, char *p, t_bool icase, REGEX_SIZE *sr
 #ifdef XFACE_ABLE
 	extern void slrnface_stop(void);
 	extern void slrnface_start(void);
-	extern void slrnface_display_xface(char *face);
+	extern void slrnface_display_xface(const char *face);
 	extern void slrnface_clear_xface(void);
 	extern void slrnface_suppress_xface(void);
 	extern void slrnface_show_xface(void);

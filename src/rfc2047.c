@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-17
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2024 Chris Blum <chris@resolution.de>
@@ -327,9 +327,8 @@ rfc1522_decode(
 				if (*c == '?') {
 					c++;
 					if ((e = strchr(c, '?'))) {
-						int i;
+						int i = mmdecode(c, encoding, '?', t);
 
-						i = mmdecode(c, encoding, '?', t);
 						if (i > 0) {
 							char *tmpbuf;
 							int chars_to_copy;

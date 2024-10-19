@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-08-28
+ *  Updated   : 2024-09-27
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1175,17 +1175,17 @@ enum {
 /*
  * used by feed_articles() & show_mini_help() & quick_filter & add_filter_rule
  */
-#define SELECT_LEVEL	1
-#define GROUP_LEVEL	2
-#define THREAD_LEVEL	3
-#define PAGE_LEVEL	4
-#define INFO_PAGER	5
-#define SCOPE_LEVEL	6
-#define CONFIG_LEVEL	7
-#define ATTRIB_LEVEL	8
-#define ATTACHMENT_LEVEL	9
-#define URL_LEVEL	10
-#define POSTED_LEVEL	11
+#define SELECT_LEVEL		(1 << 0)
+#define GROUP_LEVEL			(1 << 1)
+#define THREAD_LEVEL		(1 << 2)
+#define PAGE_LEVEL			(1 << 3)
+#define INFO_PAGER			(1 << 4)
+#define SCOPE_LEVEL			(1 << 5)
+#define CONFIG_LEVEL		(1 << 6)
+#define ATTRIB_LEVEL		(1 << 7)
+#define ATTACHMENT_LEVEL	(1 << 8)
+#define URL_LEVEL			(1 << 9)
+#define POSTED_LEVEL		(1 << 10)
 
 #define MINI_HELP_LINES		5
 
@@ -1965,8 +1965,8 @@ struct t_hashnode {
  * precalculated length
  */
 struct t_fmt {
-	char str[LEN];
-	char date_str[LEN];
+	char *str;
+	char *date_str;
 	size_t len_date;		/* %D Date */
 	size_t len_date_max;
 	size_t len_grpdesc;		/* %d newsgroup description */
@@ -2271,7 +2271,7 @@ typedef struct urllist {
 
 /* Define a matching function pointer type */
 typedef int (*t_compfunc)(t_comptype, t_comptype);
-typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
+/* typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc); */
 
 #define _CDECL
 
@@ -2450,7 +2450,6 @@ typedef void (*t_sortfunc)(void *, size_t, size_t, t_compfunc);
 #endif /* TIN_STDC */
 
 typedef OUTC_RETTYPE (*OutcPtr) (OUTC_ARGS);
-typedef FILE TCP;
 
 #ifndef EXTERN_H
 #	include "extern.h"

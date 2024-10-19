@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2024-08-15
+ *  Updated   : 2024-10-19
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -81,6 +81,11 @@ char *nntp_server = NULL;
 		struct simplebuf rd;
 		struct simplebuf wr;
 		int fd;
+#	ifdef HAVE_GETPEERNAME
+		sa_family_t family;
+#	else
+		int family;
+#	endif /* HAVE_GETPEERNAME */
 #	ifdef USE_ZLIB
 		z_streamp z_wr;
 		z_streamp z_rd;
@@ -94,9 +99,9 @@ char *nntp_server = NULL;
 /* because compression can make the buffer increase, choose a larger size than
  * for the uncompressed data */
 #		define DEFLATE_BUFSZ (5000U)
-#		define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, NULL, NULL, NULL, NULL, NULL }
+#		define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, -1, NULL, NULL, NULL, NULL, NULL }
 #	else /* USE_ZLIB */
-#		define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, NULL }
+#		define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, -1, NULL }
 #	endif /* USE_ZLIB */
 
 	static struct nntpbuf nntp_buf = NNTPBUF_INITIALIZER;
@@ -358,9 +363,8 @@ server_init(
 
 #	ifdef NNTPS_ABLE
 	if (use_nntps) {
-		int result;
+		int result = tintls_open(machine, sock_fd, &nntp_buf.tls_ctx);
 
-		result = tintls_open(machine, sock_fd, &nntp_buf.tls_ctx);
 		if (result < 0) {
 			close(sock_fd);
 			return result;
@@ -375,6 +379,23 @@ server_init(
 #	endif /* NNTPS_ABLE */
 
 	nntp_buf.fd = sock_fd;
+
+#	if defined(HAVE_GETPEERNAME) || defined(TLI)
+	{
+		struct sockaddr sa;
+		socklen_t sa_len = sizeof(sa);
+
+#	ifdef HAVE_GETPEERNAME
+		if (getpeername(nntp_buf.fd, &sa, &sa_len) == 0)
+#	else
+#		ifdef TLI
+		if (t_getpeername(nntp_buf.fd, &sa, &sa_len) == 0)
+		/* if (getpeerinaddr(nntp_buf.fd, (struct sockaddr_in *)&sa, &sa_len) == 0) */
+#		endif TLI
+#	endif /* HAVE_GETPEERNAME */
+			nntp_buf.family = sa.sa_family;
+	}
+#endif /* HAVE_GETPEERNAME || TLI */
 
 	last_put[0] = '\0';		/* no retries in get_respcode */
 	/*
@@ -570,7 +591,7 @@ get_tcp_socket(
 #		endif /* !EXCELAN */
 
 	/*
-	 * The following is kinda gross. The name server under 4.3
+	 * The following is kind of gross. The name server under 4.3
 	 * returns a list of addresses, each of which should be tried
 	 * in turn if the previous one fails. However, 4.2 hostent
 	 * structure doesn't have this list of addresses.
@@ -1265,9 +1286,9 @@ check_extensions(
 				/* look for version number(s) */
 				if (!nntp_caps.version && nntp_caps.type == CAPABILITIES) {
 					if (!strncasecmp(ptr, "VERSION", 7)) {
-						unsigned int v, j;
-
 						if (strtok(ptr, WS) != NULL) { /* skip initial VERSION */
+							unsigned int v, j;
+
 							while ((d = strtok(NULL, WS)) != NULL) { /* find highest version we do support */
 								v = (unsigned int) s2i(d, 2, INT_MAX);
 								for (j = 0; cap_vers[j]; j++) {
@@ -1361,14 +1382,14 @@ check_extensions(
 							}
 						}
 					} else if (!strncasecmp(ptr, "SASL", 4)) {
-						int m;
-
 						nntp_caps.authinfo_sasl = FALSE;
 						FreeAndNull(nntp_caps.sasl_mechs);
 						nntp_caps.sasl_mechs = my_malloc(strlen(ptr) + 1); /* more than enough */
 						nntp_caps.sasl_mechs[0] = '\0';
 
 						if (strtok(ptr, WS) != NULL) { /* skip initial "SASL" */
+							int m;
+
 							while ((d = strtok(NULL, WS)) != NULL) {
 								m = 0;
 								while (tin_mechs[m]) { /* remember servers mechs we like */
@@ -1722,11 +1743,8 @@ nntp_open(
 		 * longer than two lines ...
 		 */
 		if (!batch_mode || verbose) {
-			char *chr1, *chr2;
-			int j;
-
-			j = s2i(get_val("COLUMNS", "80"), MIN_COLUMNS_ON_TERMINAL, INT_MAX);
-			chr1 = my_strdup((sec ? bug_nntpserver2 : bug_nntpserver1));
+			char *chr2, *chr1 = my_strdup((sec ? bug_nntpserver2 : bug_nntpserver1));
+			int j = s2i(get_val("COLUMNS", "80"), MIN_COLUMNS_ON_TERMINAL, INT_MAX);
 
 			if (j > MIN_COLUMNS_ON_TERMINAL && ((int) strlen(chr1)) >= j) {
 				chr2 = chr1 + strlen(chr1) - 1;
@@ -2003,7 +2021,7 @@ get_only_respcode(
 	 *
 	 * what about other LIST cmds? (ACTIVE|COUNTS|OVERVIEW.FMT|...)
 	 */
-	if (last_put[0] != '\0' && ((respcode == ERR_FAULT && (!strncmp(last_put, "ARTICLE", 7) || !strcmp(last_put, "POST") || !strcmp(last_put, "LIST"))) || respcode == ERR_GOODBYE || respcode == OK_GOODBYE) && strcmp(last_put, "QUIT")) {
+	if (*last_put && ((respcode == ERR_FAULT && (!strncmp(last_put, "ARTICLE", 7) || !strcmp(last_put, "POST") || !strcmp(last_put, "LIST"))) || respcode == ERR_GOODBYE || respcode == OK_GOODBYE) && strcmp(last_put, "QUIT")) {
 		if (respcode == ERR_GOODBYE && !strncmp(last_put, "HEAD ", 5)) {
 			/* usenetfarm may send ERR_GOODBYE in response to HEAD, we don't want to retry that */
 			return respcode;
@@ -2456,9 +2474,8 @@ static ssize_t
 nntpbuf_inflate(
 	struct nntpbuf* buf)
 {
-	int result;
+	int result = inflate(buf->z_rd, Z_NO_FLUSH);
 
-	result = inflate(buf->z_rd, Z_NO_FLUSH);
 	if (result < 0 && result != Z_BUF_ERROR)
 		return EOF;
 
@@ -2586,8 +2603,7 @@ nntpbuf_refill(
 	if (buf->rd.ub == buf->rd.lb)
 		buf->rd.ub = buf->rd.lb = 0;
 
-	free_b = SZ(buf->rd.buf) - buf->rd.ub;
-	if (free_b) {
+	if ((free_b = SZ(buf->rd.buf) - buf->rd.ub)) {
 		ssize_t bytes_read;
 
 #	ifdef USE_ZLIB
@@ -2741,6 +2757,15 @@ nntpbuf_is_open(
 #undef SZ
 
 
+/*
+ * TODO: - add servers (and clients) "DATE" ((both) in GMT)?
+ *         NOTE: - we may still use localtime() in NEWGROUPS (and two
+ *                 didgit year) if not using a RFC 3977 server.
+ *               - instead of displaying the clients "current" time (in GMT)
+ *                 it might be more helpful to display the time of the last
+ *                 connection to that server (as used in NEWGROUP)
+ *       - mention used IP
+ */
 int
 nntp_conninfo(
 	FILE *stream)
@@ -2750,7 +2775,34 @@ nntp_conninfo(
 	fprintf(stream, "%s", _(txt_conninfo_conn_details));
 	fprintf(stream, _(txt_conninfo_server), nntp_server);
 	fprintf(stream, _(txt_conninfo_port), nntp_tcp_port);
+
+#	if defined(HAVE_GETPEERNAME) || defined(TLI)
+	switch (nntp_buf.family) {
+		case AF_INET:
+			fprintf(stream, _(txt_conninfo_type), "IPv4");
+			break;
+
+#		ifdef INET6
+		case AF_INET6:
+			fprintf(stream, _(txt_conninfo_type), "IPv6");
+			break;
+#		endif /* INET6 */
+
+#		ifdef DECNET
+		case AF_DECnet:
+			fprintf(stream, _(txt_conninfo_type), "DECnet");
+#		endif /* DECNET */
+
+		default: /* should not happen */
+#		ifdef DEBUG
+			fprintf(stream, "CONNECTIONTYPE: unknown type %d\n", nntp_buf.family);
+#		endif /* DEBUG */
+			break;
+	}
+#	endif /* HAVE_GETPEERNAME || TLI */
+
 	if (nntp_caps.type == CAPABILITIES) {
+		fprintf(stream, "\n");
 		if (nntp_caps.implementation)
 			fprintf(stream, _(txt_conninfo_implementation), nntp_caps.implementation);
 		if (nntp_caps.compress) {
@@ -2792,7 +2844,6 @@ nntp_conninfo(
 	}
 #	endif /* USE_GSASL */
 
-#	ifdef NNTP_ABLE
 	{
 		char *motd;
 		FILE *fp_motd;
@@ -2806,7 +2857,6 @@ nntp_conninfo(
 		} else
 			(void) list_motd(stream);
 	}
-#	endif /* NNTP_ABLE */
 
 #	ifdef NNTPS_ABLE
 	if (nntp_buf.tls_ctx)

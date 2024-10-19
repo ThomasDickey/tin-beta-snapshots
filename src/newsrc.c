@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-05-10
+ *  Updated   : 2024-10-16
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -65,7 +65,7 @@ static char *parse_subseq(struct t_group *group, char *seq, t_artnum *low, t_art
 static char *parse_get_seq(char *seq, t_artnum *low, t_artnum *high);
 static int write_newsrc_line(FILE *fp, char *line);
 static t_bool create_newsrc(char *newsrc_file);
-static void auto_subscribe_groups(char *newsrc_file);
+static void auto_subscribe_groups(const char *newsrc_file);
 static void get_subscribe_info(struct t_group *grp);
 static void parse_bitmap_seq(struct t_group *group, char *seq);
 static void print_bitmap_seq(FILE *fp, struct t_group *group);
@@ -376,7 +376,7 @@ open_subscription_fp(
  */
 static void
 auto_subscribe_groups(
-	char *newsrc_file)
+	const char *newsrc_file)
 {
 	FILE *fp_newsrc;
 	FILE *fp_subs;
@@ -472,8 +472,8 @@ backup_newsrc(
  */
 int
 group_get_art_info(
-	char *tin_spooldir,
-	char *groupname,
+	const char *tin_spooldir,
+	const char *groupname,
 	int grouptype,
 	t_artnum *art_count,
 	t_artnum *art_max,

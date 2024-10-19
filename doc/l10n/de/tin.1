@@ -315,13 +315,14 @@ NB: With the \*(rq\fB\-n\fP\*(rq flag, only unsubscribed groups in the
 .PP
 .\"
 .\"
-Command\-line options have higher priority than attributes and tinrc
-options.  Thus, command\-line option takes precedence over configured values
-with the single exception that if a port is given for the newsserver in
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP it will override any port given
-on the command\-line. The order of command\-line options is not important. If
-they are mutual exclusive the one with the highest priority will be chosen
-and a warning may be given.
+Die Befehlszeilenoptionen haben eine höhere Priorität als Attribute und
+tinrc Optionen. Daher hat die Befehlszeilenoption Vorrang vor dem
+konfigurierten Wert, mit der einzigen Ausnahme, dass, wenn ein Port für den
+Newsserver in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP angegeben wird,
+dieser den Port überschreibt, der in der Befehlszeile angegeben ist. Die
+Reihenfolge der Befehlszeilenoptionen ist nicht wichtig. Wenn sie
+gegenseitig ausschließend sind, wird die mit der höchsten Priorität
+ausgewählt und eventuell eine Warnung ausgegeben.
 .SH GEBRAUCH
 .IX Header GEBRAUCH
 .\"
@@ -2664,16 +2665,13 @@ Default is 0. This option does not affect lines within verbatim blocks.
 \fBMehrere zwischen Textblöcken zusammenfassen\fP, Leerzeilen zwischen
 Textblöcken zusammenfassen.
 .IP 5
-\fBMehrere zwischen Textbl. zusammenfassen + führende Leerzeilen
-überspringen\fP, 4 + 1; Leerzeilen zwischen Textblöcken zusammenfassen und
+\fBMehrere zwischen Textbl. zusammenfassen + führende Leerzeilen überspringen\fP, 4 + 1; Leerzeilen zwischen Textblöcken zusammenfassen und
 führende Leerzeilen überspringen.
 .IP 6
-\fBMehrere zwischen Textbl. zusammenfassen + abschließende
-Leerz. überspringen\fP, 4 + 2; Leerzeilen zwischen Textblöcken zusammenfassen
+\fBMehrere zwischen Textbl. zusammenfassen + abschließende Leerz. überspringen\fP, 4 + 2; Leerzeilen zwischen Textblöcken zusammenfassen
 und abschließende Leerzeilen überspringen.
 .IP 7
-\fBMehrere zwischen Textbl. zusammenf. + führende/abschließende
-Leerz. überspr.\fP, 4 + 3; Leerzeilen zwischen Textblöcken zusammenfassen und
+\fBMehrere zwischen Textbl. zusammenf. + führende/abschließende Leerz. überspr.\fP, 4 + 3; Leerzeilen zwischen Textblöcken zusammenfassen und
 führende sowie abschließende Leerzeilen überspringen
 .RE
 .TP 
@@ -2927,15 +2925,13 @@ variables are expanded if found in the tinrc variables \fBmail_quote_format\fP,
 z. B.
 .RS
 .nf
-\f(CWmail_quote_format=Am %D in %G schrieben Sie:
-news_quote_format=In %M schreib %F:\fP
+\f(CWmail_quote_format=Am %D in %G schrieben Sie: news_quote_format=In %M schreib %F:\fP
 .fi
 .RE
 ergäbe folgendes:
 .RS
 .nf
-\f(CWAm 21. Sept 1993 9:45:51 \-0400 in alt.sources schrieben Sie:
-In <abcINN123@example.org> schreib Joe Bar <joe@example.org>:\fP
+\f(CWAm 21. Sept 1993 9:45:51 \-0400 in alt.sources schrieben Sie: In <abcINN123@example.org> schreib Joe Bar <joe@example.org>:\fP
 .fi
 .RE
 .\"
@@ -3074,8 +3070,7 @@ auch für Mail\-Befehle in den Editor geladen.
 Nachstehend eine Beispiel \fI.Sig\fP Datei:
 .RS
 .nf
-\f(CWNAMES  Erika Mustermann <erika@example.org>
-SNAIL  Heidestraße 17, 99999 Notreal, Germany\fP
+\f(CWNAMES  Erika Mustermann <erika@example.org> SNAIL  Heidestraße 17, 99999 Notreal, Germany\fP
 .fi
 .RE
 .PP
@@ -3224,25 +3219,33 @@ Sind in der Formatanweisung '\fB%F\fP' und '\fB%s\fP' bzw. '\fB%T\fP' enthalten 
 jeweils keine Längen angegeben, dann nimmt '\fB%F\fP' ein Drittel und '\fB%s\fP'
 bzw. '\fB%T\fP' zwei Drittel des für beide zusammen verfügbaren Platzes ein.
 .PP
-Weiterhin kann eine Mindestbildschirmbreite pro Element (außer '\fB%%\fP')
-definiert werden. Das entsprechende Element wird dann erst dargestellt, wenn
-auf dem Bildschirm mehr Zeichen als angegeben dargestellt werden können. Das
-ist hilfreich, um die Anzeige bei kleineren Bildschirmen oder
-Terminalfenstern nicht zu überfrachten. Hier erfolgt die Angabe vor dem den
-Platzhalter charakterisierenden Buchstaben durch eine positive Zahl, welcher
-ein '\fB>\fP' vorangestellt wird. Soll z. B. der Bewertung erst ab einer
-Bildschirmbreite größer 100 Zeichen angezeigt werden, lautet die
-Formatanweisung '\fB%>100S\fP'.
+Weiterhin kann eine Mindest\- oder Maximalbildschirmbreite pro Element (außer
+\&'\fB%%\fP') definiert werden. Das entsprechende Element wird dann erst
+dargestellt, wenn auf dem Bildschirm mehr bzw. weniger Zeichen als angegeben
+dargestellt werden können. Das ist hilfreich, um die Anzeige bei kleineren
+Bildschirmen oder Terminalfenstern nicht zu überfrachten. Hier erfolgt die
+Angabe vor dem den Platzhalter charakterisierenden Buchstaben durch eine
+positive Zahl, welcher ein '\fB>\fP' bzw. '\fB<\fP' vorangestellt
+wird. Soll z. B. der Bewertung erst ab einer Bildschirmbreite größer 100
+Zeichen angezeigt werden, lautet die Formatanweisung '\fB%>100S\fP'.
 .PP
-Wenn eine Längenangabe und eine Mindestbildschirmbreite angegeben werden
-soll, muss zuerst die Länge und danach die Mindestbreite in der
-Formatanweisung stehen. Um die Bewertung 10 Zeichen breit und erst ab einer
-Bildschirmbreite über 100 Zeichen darzustellen, lautet die Anweisung
-\&'\fB%10>100S\fP'.
+Wenn eine Längenangabe und eine Mindest\- oder Maximalbildschirmbreite
+angegeben werden soll, muss zuerst die Länge und danach die Mindestbreite
+oder Maximalbreite in der Formatanweisung stehen. Um die Bewertung 10
+Zeichen breit und erst ab einer Bildschirmbreite über 100 Zeichen
+darzustellen, lautet die Anweisung '\fB%10>100S\fP'. Für '\fB%F\fP' und
+\&'\fB%s\fP' bzw. '\fB%T\fP' kann, getrennt durch einen Doppelpunkt, eine zweite
+Länge angegeben werden, die verwendet wird, wenn die Mindestbildschirmbreite
+nicht erreicht wird. Wird nach dem Doppelpunkt keine Länge angegeben, wird
+der Eintrag auch bei Unterschreitung der Mindestbildschirmbreite angezeigt
+und die Länge so berechnet, als wäre keine Mindestbildschirmbreite angegeben
+worden. Im folgenden Beispiel zeigt \fBtin\fP den Betreff mit einer Länge von
+60 Zeichen an, wenn der Bildschirm breiter als 100 Zeichen ist, ansonsten
+wird eine Länge von 40 Zeichen verwendet: '\fB%60>100:40s\fP'.
 .PP
-The look of the Attachment level and the mime and uue header at Page level
-can be customized too via format strings.  The following variables are
-available:
+Das Aussehen der Anhangsebene sowie der MIME\- und UUEncode\-Header auf
+Artikelebene kann ebenfalls über Formatzeichenfolgen angepasst werden. Die
+folgenden Variablen sind verfügbar:
 .PP
 .in +.3i
 .nf
@@ -3268,8 +3271,8 @@ available:
 .fi
 .in -.3i
 .PP
-Not all items can be used in each variable. The following table provides an
-overview:
+Nicht alle Elemente können in jeder Variablen verwendet werden. Die folgende
+Tabelle bietet einen Überblick:
 .PP
 .in +.3i
 .nf
@@ -3296,17 +3299,18 @@ overview:
 .fi
 .in -.3i
 .PP
-By default, the string is not truncated. If it exceeds the screen width, it
-is wrapped. If the % sign is followed by an exclamation mark ('!\&') for
-uppercase letters, the element is omitted if there is not enough space. If
-the % sign is followed by an asterisk ('*') for a lowercase letter, the
-description is omitted if there is not enough space. If the % sign is
-followed by an exclamation mark ('!\&') for a lowercase letter, the
-description is omitted first and then the content. The shortening is always
-from right to left, first the description is omitted and when no more
-description is displayed, the content is omitted. If %T and %S follow each
-other directly a '/' will be inserted in between. %Z will always have one
-decimal point and may have a one letter bi\-suffix.
+Standardmäßig wird der String nicht abgeschnitten. Wenn er die
+Bildschirmbreite überschreitet, wird er umgebrochen. Wenn dem % Zeichen ein
+Ausrufezeichen ('!\&') vor Großbuchstaben folgt, wird das Element
+weggelassen, wenn nicht genügend Platz vorhanden ist. Wenn dem % Zeichen ein
+Sternchen ('*') vor Kleinbuchstaben folgt, wird die Beschreibung
+weggelassen, wenn nicht genügend Platz vorhanden ist. Wenn dem % Zeichen vor
+einem Kleinbuchstaben ein Ausrufezeichen ('!\&') folgt, wird zuerst die
+Beschreibung und dann der Inhalt weggelassen. Das Kürzen erfolgt immer von
+rechts nach links, zuerst wird die Beschreibung weggelassen, und wenn keine
+Beschreibung mehr angezeigt wird, wird der Inhalt weggelassen. Wenn %T und
+%S direkt aufeinander folgen, wird ein '/' dazwischen eingefügt. %Z hat
+immer einen Dezimalpunkt und kann einen einbuchstabigen bi\-Suffix haben.
 .PP
 Voreingestellt sind folgende Formatanweisungen:
 .PP
@@ -3460,8 +3464,7 @@ lesen, manuell zu bereinigen:
 .PP
 .RS
 .nf
-\f(CWfind ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \e
-\-type f \-name "[0\-9]*.[0\-9]" \-atime +28 | xargs rm \-f\fP
+\f(CWfind ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \e \-type f \-name "[0\-9]*.[0\-9]" \-atime +28 | xargs rm \-f\fP
 .fi
 .RE
 .\"

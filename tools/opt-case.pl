@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl
 #
 # reads a tin filter file with regexp filters on STDIN and turns all case
 # insensitive regexp into case sensitive ones whenever possible, as case
@@ -20,6 +20,9 @@
 # perl 5 is needed for lookahead assertions and perl < 5.004 is known to be
 # buggy
 require 5.004;
+
+use strict;
+use warnings;
 
 $mod=""; 	# (?i) modifier
 

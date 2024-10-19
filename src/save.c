@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-11
+ *  Updated   : 2024-10-17
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -803,8 +803,9 @@ post_process_uud(
 {
 	FILE *fp_in;
 	char file_out_dir[PATH_LEN];
+	char path[PATH_LEN];
 	const char *eptr;
-	int i;
+	int i, r;
 	int count;
 	int errors = 0;
 	uulist *item;
@@ -841,8 +842,7 @@ post_process_uud(
 	my_printf(cCRLF);
 
 	while (item != NULL) {
-		if (UUDecodeFile(item, NULL) == UURET_OK) {
-			char path[PATH_LEN];
+		if ((r = UUDecodeFile(item, NULL)) == UURET_OK) {
 
 /* TODO: test for multiple things per article decoded okay? */
 			count++;
@@ -864,7 +864,7 @@ post_process_uud(
 				eptr = _(txt_uu_error_no_end);
 			else if (item->state & UUFILE_NODATA)
 				eptr = _(txt_libuu_error_no_data);
-			else
+			else /* add UUstrerror(r) here?*/
 				eptr = _(txt_libuu_error_unknown);
 
 			my_printf(_(txt_uu_error_decode), (item->filename) ? item->filename : item->subfname, eptr);
@@ -1077,9 +1077,7 @@ uudecode_line(
 {
 	const char *p = buf;
 	char ch;
-	int n;
-
-	n = DEC(*p);
+	int n = DEC(*p);
 
 	for (++p; n > 0; p += 4, n -= 3) {
 		if (n >= 3) {
@@ -1282,7 +1280,7 @@ decode_save_one(
 			break;
 
 		/* This should catch cases where people illegally append text etc */
-		if (buf[0] == '\0')
+		if (!*buf)
 			break;
 
 		switch (part->encoding) {
@@ -1510,9 +1508,10 @@ show_attachment_page(
 	void)
 {
 	char *attach_line;
-	char buf[BUFSIZ];
+	char *buf;
 	const char *charset;
 	int i, tmp_len, max_depth;
+	size_t blen;
 	t_part *part;
 
 	signal_context = cAttachment;
@@ -1523,11 +1522,20 @@ show_attachment_page(
 		attmenu.curr = 0;
 
 	info_len = max_depth = 0;
+
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	buf = my_malloc(MB_CUR_MAX * (size_t) (cCOLS + 1));
+	blen = MB_CUR_MAX * (size_t) cCOLS;
+#	else
+	buf = my_malloc(cCOLS + 1);
+	blen = (size_t) cCOLS;
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	for (i = 0; i < attmenu.max; ++i) {
 		part = get_part(i);
 		charset = get_param(part->params, "charset");
 		attach_line = build_attach_line(part, 0, cCOLS - 2, 0, NULL, charset);
-		snprintf(buf, sizeof(buf), "  %s", attach_line);
+		snprintf(buf, blen, "  %s", attach_line);
 		FreeIfNeeded(attach_line);
 		tmp_len = strwidth(buf);
 		if (tmp_len > info_len)
@@ -1537,6 +1545,7 @@ show_attachment_page(
 		if (tmp_len > max_depth)
 			max_depth = tmp_len;
 	}
+	free(buf);
 	tmp_len = cCOLS - 13 - MIN((cCOLS - 13) / 2 + 10, max_depth * 2 + 1 + strwidth(_(txt_attachment_no_name)));
 	if (info_len > tmp_len)
 		info_len = tmp_len;
@@ -1683,9 +1692,8 @@ attachment_page(
 
 			case ATTACHMENT_TAG:
 				if (attmenu.max) {
-					t_bool tagged;
+					t_bool tagged = tag_part(attmenu.curr);
 
-					tagged = tag_part(attmenu.curr);
 					show_attachment_page();
 					if (attmenu.curr + 1 < attmenu.max)
 						move_down();
@@ -2283,7 +2291,7 @@ process_part(
 			break;
 
 		/* This should catch cases where people illegally append text etc */
-		if (buf[0] == '\0')
+		if (!*buf)
 			break;
 
 		/*

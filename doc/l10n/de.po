@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin-man 2.6.3\n"
 "Report-Msgid-Bugs-To: translation@tin.org\n"
-"POT-Creation-Date: 2024-08-24 11:34+0200\n"
-"PO-Revision-Date: 2024-08-27 13:53+0200\n"
+"POT-Creation-Date: 2024-09-28 13:42+0200\n"
+"PO-Revision-Date: 2024-10-06 17:06+0200\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -89,8 +89,8 @@ msgstr "ÜBERSICHT"
 
 #. type: IX
 #: doc/tin.1:21 doc/tin.1:55 doc/tin.1:84 doc/tin.1:101 doc/tin.1:333
-#: doc/tin.1:3506 doc/tin.1:3673 doc/tin.1:3996 doc/tin.1:4021 doc/tin.1:4039
-#: doc/tin.1:4048 doc/tin.1:4060 doc/tin.1:4085 doc/tin.1:4149
+#: doc/tin.1:3516 doc/tin.1:3683 doc/tin.1:4006 doc/tin.1:4031 doc/tin.1:4049
+#: doc/tin.1:4058 doc/tin.1:4070 doc/tin.1:4095 doc/tin.1:4159
 #, no-wrap
 msgid "Header"
 msgstr "Header"
@@ -100,21 +100,23 @@ msgstr "Header"
 msgid ""
 "B<tin> [\\|[\\|B<-h>\\||\\|B<-H>\\||\\|B<-V>\\|]\\ \\|| [\\|[\\|B<-a>\\|] "
 "[\\|B<-dlnq>\\||\\|B<-Q>\\|] [\\|B<-ACkrTzxX>\\|]\\|] [\\|[\\|B<-R>\\||\\|B<-"
-"S>\\|] \\|\\|B<-s> I<News_dir>\\|] [\\|B<-cuvZ>\\|] [\\|B<-4>\\||\\|B<-6>"
-"\\|] [\\|B<-o>\\||\\|B<-w>\\||\\|B<-N>\\||\\|B<-M> I<address>\\|] [\\|B<-D> "
-"I<debug_level>\\|] [\\|B<-G> I<article_limit>\\|] [\\|B<-f> I<newsrc_file>"
-"\\|] [\\|B<-g> I<server>\\|[\\|:I<port>\\|]\\|] [\\|B<-L> I<Message-ID>\\|] "
-"[\\|B<-m> I<Mail_dir>\\|] [\\|B<-p> I<port>\\|] [\\|B<-t> I<timeout>\\|] [\\|"
-"B<-I> I<index_dir>\\|]\\ \\|[I<newsgroup>\\|[\\|,.\\|.\\|.\\|]\\|]\\|]"
+"S>\\|] \\|\\|B<-s> I<News_dir>\\|] [\\|B<-cuvZ>\\|] [\\|B<-4>\\||\\|"
+"B<-6>\\|] [\\|B<-o>\\||\\|B<-w>\\||\\|B<-N>\\||\\|B<-M> I<address>\\|] [\\|"
+"B<-D> I<debug_level>\\|] [\\|B<-G> I<article_limit>\\|] [\\|B<-f> "
+"I<newsrc_file>\\|] [\\|B<-g> I<server>\\|[\\|:I<port>\\|]\\|] [\\|B<-L> "
+"I<Message-ID>\\|] [\\|B<-m> I<Mail_dir>\\|] [\\|B<-p> I<port>\\|] [\\|B<-t> "
+"I<timeout>\\|] [\\|B<-I> I<index_dir>\\|]\\ \\|[I<newsgroup>\\|[\\|,.\\|.\\|."
+"\\|]\\|]\\|]"
 msgstr ""
 "B<tin> [\\|[\\|B<-h>\\||\\|B<-H>\\||\\|B<-V>\\|]\\ \\|| [\\|[\\|B<-a>\\|] "
 "[\\|B<-dlnq>\\||\\|B<-Q>\\|] [\\|B<-ACkrTzxX>\\|]\\|] [\\|[\\|B<-R>\\||\\|B<-"
-"S>\\|] \\|\\|B<-s> I<News-Verz.>\\|] [\\|B<-cuvZ>\\|] [\\|B<-4>\\||\\|B<-6>"
-"\\|] [\\|B<-o>\\||\\|B<-w>\\||\\|B<-N>\\||\\|B<-M> I<Adresse>\\|] [\\|B<-D> "
-"I<Debuggrad>\\|] [\\|B<-G> I<Artikellimit>\\|] [\\|B<-f> I<newsrc-Datei>\\|] "
-"[\\|B<-g> I<Server>\\|[\\|:I<Port>\\|]\\|] [\\|B<-L> I<Message-ID>\\|] [\\|"
-"B<-m> I<Mail-Verz.>\\|] [\\|B<-p> I<Port>\\|] [\\|B<-t> I<Timeout>\\|] [\\|"
-"B<-I> I<index-Verz.>\\|]\\ \\|[I<Newsgruppe>\\|[\\|,.\\|.\\|.\\|]\\|]\\|]"
+"S>\\|] \\|\\|B<-s> I<News-Verz.>\\|] [\\|B<-cuvZ>\\|] [\\|B<-4>\\||\\|"
+"B<-6>\\|] [\\|B<-o>\\||\\|B<-w>\\||\\|B<-N>\\||\\|B<-M> I<Adresse>\\|] [\\|"
+"B<-D> I<Debuggrad>\\|] [\\|B<-G> I<Artikellimit>\\|] [\\|B<-f> I<newsrc-"
+"Datei>\\|] [\\|B<-g> I<Server>\\|[\\|:I<Port>\\|]\\|] [\\|B<-L> I<Message-"
+"ID>\\|] [\\|B<-m> I<Mail-Verz.>\\|] [\\|B<-p> I<Port>\\|] [\\|B<-t> "
+"I<Timeout>\\|] [\\|B<-I> I<index-Verz.>\\|]\\ \\|[I<Newsgruppe>\\|[\\|,.\\|."
+"\\|.\\|]\\|]\\|]"
 
 #. type: SH
 #: doc/tin.1:54 doc/tin.1:55 doc/tin.5:14
@@ -127,10 +129,10 @@ msgstr "BESCHREIBUNG"
 msgid ""
 "B<tin> is a full-screen easy to use Usenet newsreader. It can read news "
 "locally (e.g., I</var/spool/news>) or remotely (B<rtin> or B<tin -r> option) "
-"via an NNTP (Network News Transport Protocol, B<RFC\\%3977>) or NNTPS (B<RFC"
-"\\%8143>) server. It will automatically utilize NOV B<\\%newsoverview>(5)  "
-"style index files if available locally or via the NNTP [X]OVER command (B<RFC"
-"\\%2980>, B<RFC\\%3977>)."
+"via an NNTP (Network News Transport Protocol, B<RFC\\%3977>) or NNTPS "
+"(B<RFC\\%8143>) server. It will automatically utilize NOV B<\\"
+"%newsoverview>(5)  style index files if available locally or via the NNTP "
+"[X]OVER command (B<RFC\\%2980>, B<RFC\\%3977>)."
 msgstr ""
 "B<tin> ist ein einfach zu bedienender Newsreader für das Usenet. Er kann "
 "Artikel von einem lokalen (z. B. aus I</var/spool/news>) oder entfernten "
@@ -153,22 +155,22 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.1:78
 msgid ""
-"On startup B<tin> will show a list of the newsgroups found in I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.newsrc>. An arrow '-E<gt>' or highlighted bar "
+"On startup B<tin> will show a list of the newsgroups found in "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc>. An arrow '-E<gt>' or highlighted bar "
 "will point to the first newsgroup. Move to a group by using the terminal "
 "arrow keys (terminal dependent) or B<Down> ('B<j>')  and B<Up> ('B<k>'). Use "
 "PgUp/PgDn (terminal dependent) or B<PageUp> ('B<^U>') (CTRL-U) and "
 "B<PageDown> ('B<^D>')  (CTRL-D) to page up/down. Enter a newsgroup by "
 "pressing 'B<E<lt>CRE<gt>>'."
 msgstr ""
-"Zu Beginn zeigt B<tin> eine Liste der Gruppen in I<${TIN_HOMEDIR:-\"$HOME"
-"\"}/.newsrc>. Ein Pfeil '-E<gt>' oder ein inverser Balken zeigt auf die "
-"erste Newsgruppe. Um zu einer Gruppe zu navigieren können die Cursor-Tasten "
-"(hängt vom verwendetem Terminal ab) oder B<Down> ('B<j>') und B<Up> ('B<k>') "
-"benutzt werden. Mit Bildrauf/Bildrunter (hängt vom verwendetem Terminal ab) "
-"oder B<PageUp> ('B<^U>') (CTRL-U) und B<PageDown> ('B<^D>') (CTRL-D) kann "
-"Seitenweise navigiert werden. Die ausgewählte Gruppe wird durch Drücken von "
-"'B<E<lt>CRE<gt>>' betreten."
+"Zu Beginn zeigt B<tin> eine Liste der Gruppen in I<${TIN_HOMEDIR:-"
+"\"$HOME\"}/.newsrc>. Ein Pfeil '-E<gt>' oder ein inverser Balken zeigt auf "
+"die erste Newsgruppe. Um zu einer Gruppe zu navigieren können die Cursor-"
+"Tasten (hängt vom verwendetem Terminal ab) oder B<Down> ('B<j>') und B<Up> "
+"('B<k>') benutzt werden. Mit Bildrauf/Bildrunter (hängt vom verwendetem "
+"Terminal ab) oder B<PageUp> ('B<^U>') (CTRL-U) und B<PageDown> ('B<^D>') "
+"(CTRL-D) kann Seitenweise navigiert werden. Die ausgewählte Gruppe wird "
+"durch Drücken von 'B<E<lt>CRE<gt>>' betreten."
 
 #. type: Plain text
 #: doc/tin.1:83
@@ -186,7 +188,7 @@ msgid "EXIT STATUS"
 msgstr "RÜCKGABEWERT"
 
 #. type: TP
-#: doc/tin.1:86 doc/tin.1:1157 doc/tin.1:3759
+#: doc/tin.1:86 doc/tin.1:1157 doc/tin.1:3769
 #, no-wrap
 msgid "B<0>"
 msgstr "B<0>"
@@ -199,7 +201,7 @@ msgstr ""
 "vorhanden."
 
 #. type: TP
-#: doc/tin.1:89 doc/tin.1:3762
+#: doc/tin.1:89 doc/tin.1:3772
 #, no-wrap
 msgid "B<1>"
 msgstr "B<1>"
@@ -210,7 +212,7 @@ msgid "Usage, syntax, configuration file or network error."
 msgstr "Bedien-, Syntax-, Konfigurations- oder Netzwerk-Fehler."
 
 #. type: TP
-#: doc/tin.1:92 doc/tin.1:3765
+#: doc/tin.1:92 doc/tin.1:3775
 #, no-wrap
 msgid "B<2>"
 msgstr "B<2>"
@@ -221,7 +223,7 @@ msgid "Unread news available (batch mode (''B<-Z>'') only)."
 msgstr "Ungelesene Nachrichten vorhanden (nur im Batch-Modus (''B<-Z>''))."
 
 #. type: TP
-#: doc/tin.1:95 doc/tin.1:3768
+#: doc/tin.1:95 doc/tin.1:3778
 #, no-wrap
 msgid "B<3>"
 msgstr "B<3>"
@@ -306,8 +308,8 @@ msgid ""
 "newsrc> or file specified by the ''B<-f>'' option and mark all articles as "
 "read."
 msgstr ""
-"Erstelle bzw. aktualisiere Index-Dateien für alle Gruppen in I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> bzw. der mittels ''B<-f>'' angegebenen "
+"Erstelle bzw. aktualisiere Index-Dateien für alle Gruppen in "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> bzw. der mittels ''B<-f>'' angegebenen "
 "Datei und markiere alle Artikel als gelesen."
 
 #. type: TP
@@ -374,12 +376,12 @@ msgstr "B<-f>I< Datei>"
 #. type: Plain text
 #: doc/tin.1:144
 msgid ""
-"Use the specified file of subscribed to newsgroups in place of I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> or a file specified via I<${TIN_HOMEDIR:-"
-"\"$HOME\"}/.tin/newsrctable>."
+"Use the specified file of subscribed to newsgroups in place of "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> or a file specified via "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/newsrctable>."
 msgstr ""
-"Benutze die angegebene newsrc-Datei anstelle von I<${TIN_HOMEDIR:-\"$HOME"
-"\"}/.newsrc> oder der Datei aus I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/"
+"Benutze die angegebene newsrc-Datei anstelle von I<${TIN_HOMEDIR:-"
+"\"$HOME\"}/.newsrc> oder der Datei aus I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/"
 "newsrctable>."
 
 #. type: TP
@@ -396,10 +398,10 @@ msgid ""
 "a port with a plain IPv6 address, the address must be enclosed in square "
 "brackets."
 msgstr ""
-"Zugehörigen Newsserver[:Port] und newsrc-Datei aus I<${TIN_HOMEDIR:-\"$HOME"
-"\"}/.tin/newsrctable> benutzen. Nur verfügbar, wenn via NNTP gelesen wird."
-"Wenn Sie einen Port mit einer direkten IPv6-Adresse angeben möchten, muss "
-"die Adresse in eckige Klammern gesetzt werden."
+"Zugehörigen Newsserver[:Port] und newsrc-Datei aus I<${TIN_HOMEDIR:-"
+"\"$HOME\"}/.tin/newsrctable> benutzen. Nur verfügbar, wenn via NNTP gelesen "
+"wird.Wenn Sie einen Port mit einer direkten IPv6-Adresse angeben möchten, "
+"muss die Adresse in eckige Klammern gesetzt werden."
 
 #. type: TP
 #: doc/tin.1:150
@@ -456,8 +458,8 @@ msgstr "B<-I>I< Verzeichnis>"
 #. type: Plain text
 #: doc/tin.1:171
 msgid ""
-"Directory in which to store newsgroup index files. Default is I<"
-"${TIN_INDEX_NEWSDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.news>.  This "
+"Directory in which to store newsgroup index files. Default is "
+"I<${TIN_INDEX_NEWSDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.news>.  This "
 "option has no effect if B<tin> retrieves its index files via NNTP and "
 "B<cache_overview_files> is turned off."
 msgstr ""
@@ -566,10 +568,10 @@ msgstr "B<-n>"
 #: doc/tin.1:206
 msgid ""
 "Only load groups from the I<${TIN_LIBDIR:-NEWSLIBDIR}\"/\"${TIN_ACTIVEFILE:-"
-"active}> file that are subscribed to in the user's I<${TIN_HOMEDIR:-\"$HOME"
-"\"}/.newsrc>. This allows a noticeable speedup when connecting via a slow "
-"line, but B<tin> may not be able detect which groups are moderated. See also "
-"''B<-l>''."
+"active}> file that are subscribed to in the user's I<${TIN_HOMEDIR:-"
+"\"$HOME\"}/.newsrc>. This allows a noticeable speedup when connecting via a "
+"slow line, but B<tin> may not be able detect which groups are moderated. See "
+"also ''B<-l>''."
 msgstr ""
 "Nur die Gruppen aus der Datei I<${TIN_LIBDIR:-NEWSLIBDIR}\"/"
 "\"${TIN_ACTIVEFILE:-active}> laden, die im I<${TIN_HOMEDIR:-\"$HOME\"}/."
@@ -831,8 +833,8 @@ msgstr "B<-X>"
 #. type: Plain text
 #: doc/tin.1:279
 msgid ""
-"No overwrite mode. I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> and files in I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.tin> will not be overwritten but may be created "
+"No overwrite mode. I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> and files in "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.tin> will not be overwritten but may be created "
 "if they don't exist. Should be used with ''B<-x>'' if possible."
 msgstr ""
 "Schreibgeschützter Modus. I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> und Dateien "
@@ -899,11 +901,11 @@ msgid ""
 "the active newsgroups. See the section \"NEWSGROUP LISTS & WILDCARDS\" for "
 "the types of pattern that B<tin> understands."
 msgstr ""
-"Eine Liste von Gruppen kann nach den anderen Kommandozeilenoptionen angegeben "
-"werden. Dies kann nützlich sein, falls Sie eine handverlesene Untermenge der "
-"aktiven Newsgruppen einblenden oder abonnieren möchten. Siehe den Abschnitt "
-"\"NEWSGROUP LISTEN & WILDCARDS\" für die Arten von Muster, die B<tin> "
-"versteht."
+"Eine Liste von Gruppen kann nach den anderen Kommandozeilenoptionen "
+"angegeben werden. Dies kann nützlich sein, falls Sie eine handverlesene "
+"Untermenge der aktiven Newsgruppen einblenden oder abonnieren möchten. Siehe "
+"den Abschnitt \"NEWSGROUP LISTEN & WILDCARDS\" für die Arten von Muster, die "
+"B<tin> versteht."
 
 #. type: Plain text
 #: doc/tin.1:306
@@ -948,8 +950,8 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.1:322
 msgid ""
-"NB: With the ''B<-n>'' flag, only unsubscribed groups in the I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> file (or the newsrc-file given by the "
+"NB: With the ''B<-n>'' flag, only unsubscribed groups in the "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> file (or the newsrc-file given by the "
 "\\&''B<-f>'' command-line switch or via I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/"
 "newsrctable>) can be matched."
 msgstr ""
@@ -959,12 +961,20 @@ msgstr ""
 msgid ""
 "Command-line options have higher priority than attributes and tinrc "
 "options.  Thus, command-line option takes precedence over configured values "
-"with the single exception that if a port is given for the newsserver in I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.tin/newsrctable> it will override any port given "
-"on the command-line. The order of command-line options is not important. If "
-"they are mutual exclusive the one with the highest priority will be chosen "
-"and a warning may be given."
+"with the single exception that if a port is given for the newsserver in "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/newsrctable> it will override any port "
+"given on the command-line. The order of command-line options is not "
+"important. If they are mutual exclusive the one with the highest priority "
+"will be chosen and a warning may be given."
 msgstr ""
+"Die Befehlszeilenoptionen haben eine höhere Priorität als Attribute und "
+"tinrc Optionen. Daher hat die Befehlszeilenoption Vorrang vor dem "
+"konfigurierten Wert, mit der einzigen Ausnahme, dass, wenn ein Port für "
+"den Newsserver in I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/newsrctable> angegeben "
+"wird, dieser den Port überschreibt, der in der Befehlszeile angegeben ist. "
+"Die Reihenfolge der Befehlszeilenoptionen ist nicht wichtig. Wenn sie "
+"gegenseitig ausschließend sind, wird die mit der höchsten Priorität "
+"ausgewählt und eventuell eine Warnung ausgegeben."
 
 #. type: IX
 #: doc/tin.1:332 doc/tin.1:333
@@ -985,17 +995,17 @@ msgid ""
 "consuming job as I discovered when I was given the job of maintaining our "
 "news system and news users."
 msgstr ""
-"Die Pflege von Netnews in großen Rechnernetzen kann sehr zeitaufwendig "
-"sein, wie ich feststellen musste, als ich mit der Pflege unseres "
-"Newssystems und der Benutzerbetreuung beauftragt wurde."
+"Die Pflege von Netnews in großen Rechnernetzen kann sehr zeitaufwendig sein, "
+"wie ich feststellen musste, als ich mit der Pflege unseres Newssystems und "
+"der Benutzerbetreuung beauftragt wurde."
 
 #. type: Plain text
 #: doc/tin.1:350
 msgid ""
 "A user starting B<tin> for the first time can be automatically subscribed to "
 "a list of newsgroups that are deemed appropriate by the news administrator. "
-"The subscriptions file should be created in your news lib directory (i.e., I<"
-"${TIN_LIBDIR:-NEWSLIBDIR}/subscriptions>) and should be world readable. If "
+"The subscriptions file should be created in your news lib directory (i.e., "
+"I<${TIN_LIBDIR:-NEWSLIBDIR}/subscriptions>) and should be world readable. If "
 "you read news via NNTP, then your news server must support the LIST "
 "SUBSCRIPTIONS command. It is part of the NNTP List Extensions (B<RFC\\"
 "%6048>) and all modern servers should understand it."
@@ -1555,12 +1565,12 @@ msgstr "B<Help 'h'>"
 #: doc/tin.1:570
 msgid ""
 "Help screen of commands available on the current menu. You can use "
-"B<SearchSubjF> ('B</>'), B<SearchSubjB> ('B<?>') and B<SearchRepeat> ('B<"
-"\\(rs>') to search on this screen. B<Quit> ('B<q>') returns to the menu."
+"B<SearchSubjF> ('B</>'), B<SearchSubjB> ('B<?>') and B<SearchRepeat> "
+"('B<\\(rs>') to search on this screen. B<Quit> ('B<q>') returns to the menu."
 msgstr ""
 "Hilfebildschirm mit den im aktuellen Menü verfügbaren Befehlen. Sie können "
-"B<SearchSubjF> ('B</>'), B<SearchSubjB> ('B<?>') und B<SearchRepeat> ('B<"
-"\\(rs>') verwenden, um darin zu suchen. B<Quit> ('B<q>') kehrt zum Menü "
+"B<SearchSubjF> ('B</>'), B<SearchSubjB> ('B<?>') und B<SearchRepeat> "
+"('B<\\(rs>') verwenden, um darin zu suchen. B<Quit> ('B<q>') kehrt zum Menü "
 "zurück."
 
 #. type: TP
@@ -1613,7 +1623,7 @@ msgid "NEWSGROUP SELECTION COMMANDS"
 msgstr "BEFEHLE ZUR GRUPPENAUSWAHL"
 
 #. type: TP
-#: doc/tin.1:585 doc/tin.1:726 doc/tin.1:982 doc/tin.1:1160 doc/tin.1:3772
+#: doc/tin.1:585 doc/tin.1:726 doc/tin.1:982 doc/tin.1:1160 doc/tin.1:3782
 #, no-wrap
 msgid "B<4>"
 msgstr "B<4>"
@@ -2007,12 +2017,12 @@ msgstr "B<SelectUnsubscribe 'u'>"
 #: doc/tin.1:694
 msgid ""
 "Unsubscribe to current group. This can be used to remove bogus groups.  See "
-"B<strip_bogus> in the \"GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
-"\" section."
+"B<strip_bogus> in the \"GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE "
+"VARIABLES\" section."
 msgstr ""
 "Aktuelle Gruppe abbestellen. Dies kann zum Entfernen ungültiger Gruppen "
-"verwendet werden. Siehe B<strip_bogus> im Abschnitt "
-"\"MENÜ DER GLOBALE OPTIONEN UND KONFIGURIERBAREN TINRC-VARIABLEN\"."
+"verwendet werden. Siehe B<strip_bogus> im Abschnitt \"MENÜ DER GLOBALE "
+"OPTIONEN UND KONFIGURIERBAREN TINRC-VARIABLEN\"."
 
 #. type: TP
 #: doc/tin.1:694
@@ -2166,9 +2176,8 @@ msgid ""
 "be marked."
 msgstr ""
 "Markiert den aktuellen Artikel, Thread, Bereich, automatisch ausgewählte "
-"(heiße) Artikel, Artikel mit Musterübereinstimmung oder getaggte Artikel "
-"als gelesen. Eine Eingabeaufforderung fragt, welcher Typ markiert werden "
-"soll."
+"(heiße) Artikel, Artikel mit Musterübereinstimmung oder getaggte Artikel als "
+"gelesen. Eine Eingabeaufforderung fragt, welcher Typ markiert werden soll."
 
 #. type: TP
 #: doc/tin.1:742 doc/tin.1:998
@@ -2184,9 +2193,8 @@ msgid ""
 "should be marked."
 msgstr ""
 "Markiert den aktuellen Artikel, Thread, Bereich, automatisch ausgewählte "
-"(heiße) Artikel, Artikel mit Musterübereinstimmung oder getaggte Artikel "
-"als ungelesen. Eine Eingabeaufforderung fragt, welcher Typ markiert werden "
-"soll."
+"(heiße) Artikel, Artikel mit Musterübereinstimmung oder getaggte Artikel als "
+"ungelesen. Eine Eingabeaufforderung fragt, welcher Typ markiert werden soll."
 
 #. type: TP
 #: doc/tin.1:751 doc/tin.1:1007 doc/tin.1:1217
@@ -2249,8 +2257,8 @@ msgid ""
 "articles become selected."
 msgstr ""
 "Auswahl des aktuellen Threads umschalten. Wenn mindestens ein ungelesener "
-"Artikel (aber nicht jeder ungelesene Artikel) im aktuellen Thread "
-"ausgewählt ist, werden alle ungelesenen Artikel ausgewählt."
+"Artikel (aber nicht jeder ungelesene Artikel) im aktuellen Thread ausgewählt "
+"ist, werden alle ungelesenen Artikel ausgewählt."
 
 #. type: TP
 #: doc/tin.1:775
@@ -2266,9 +2274,9 @@ msgid ""
 "selection on author where reader wants to see entire thread."
 msgstr ""
 "Wenn für jeden Thread in der aktuellen Gruppe mindestens ein ungelesener "
-"Artikel ausgewählt ist, werden alle ungelesenen Artikel ausgewählt. "
-"Dies ist nützlich für die automatische Auswahl anhand des Autors, wenn "
-"der Leser den gesamten Thread sehen möchte."
+"Artikel ausgewählt ist, werden alle ungelesenen Artikel ausgewählt. Dies ist "
+"nützlich für die automatische Auswahl anhand des Autors, wenn der Leser den "
+"gesamten Thread sehen möchte."
 
 #. type: TP
 #: doc/tin.1:780
@@ -2284,10 +2292,10 @@ msgid ""
 "subjects. Entering just 'B<E<lt>CRE<gt>>' will reuse the last pattern that "
 "was entered."
 msgstr ""
-"Fordert zur Eingabe eines Musters auf, mit dem verglichen werden soll. "
-"Alle Threads, deren Subject mit dem Muster übereinstimmen, werden als "
-"ausgewählt markiert. Wenn nur 'B<E<lt>CRE<gt>>' eingeben, wird das zuletzt "
-"eingegebene Muster wiederverwendet."
+"Fordert zur Eingabe eines Musters auf, mit dem verglichen werden soll. Alle "
+"Threads, deren Subject mit dem Muster übereinstimmen, werden als ausgewählt "
+"markiert. Wenn nur 'B<E<lt>CRE<gt>>' eingeben, wird das zuletzt eingegebene "
+"Muster wiederverwendet."
 
 #. type: TP
 #: doc/tin.1:786
@@ -2525,9 +2533,9 @@ msgid ""
 msgstr ""
 "Markieren den Artikel/Thread als gelesen und fährt mit dem nächsten "
 "ungelesenen Artikel/Thread fort. Wenn ein Bereich von Artikeln/Threads "
-"festgelegt ist, wird der Bereich als gelesen markiert und nicht der "
-"aktuelle Artikel/Thread. Falls getaggte Artikel/Threads vorhanden sind, "
-"wird gefragt, wie fortgefahren werden soll."
+"festgelegt ist, wird der Bereich als gelesen markiert und nicht der aktuelle "
+"Artikel/Thread. Falls getaggte Artikel/Threads vorhanden sind, wird gefragt, "
+"wie fortgefahren werden soll."
 
 #. type: TP
 #: doc/tin.1:878
@@ -2800,10 +2808,10 @@ msgid ""
 "be marked as unread instead of the current thread. When tagged threads are "
 "present, a prompt asks how to proceed."
 msgstr ""
-"Aktuellen Thread als ungelesen markieren. Wenn ein Thread-Bereich "
-"festgelegt ist, wird der Bereich anstelle des aktuellen Threads als "
-"ungelesen markiert. Falls getaggte Threads vorhanden sind, wird gefragt, "
-"wie fortgefahren werden soll."
+"Aktuellen Thread als ungelesen markieren. Wenn ein Thread-Bereich festgelegt "
+"ist, wird der Bereich anstelle des aktuellen Threads als ungelesen markiert. "
+"Falls getaggte Threads vorhanden sind, wird gefragt, wie fortgefahren werden "
+"soll."
 
 #. type: SS
 #: doc/tin.1:980
@@ -3539,8 +3547,8 @@ msgstr "B<PageViewUrl 'U'>"
 #. type: Plain text
 #: doc/tin.1:1397
 msgid ""
-"Display a list of URLs in the current article. See the section \"URL LISTING"
-"\" for more information."
+"Display a list of URLs in the current article. See the section \"URL "
+"LISTING\" for more information."
 msgstr ""
 "Eine Liste der URLs im aktuellen Artikel anzeigen. Weitere Informationen "
 "finden Sie im Abschnitt \"URL LISTE\"."
@@ -4082,8 +4090,8 @@ msgid ""
 "OFF."
 msgstr ""
 "Falls ON, fragt B<tin>, bevor ein MIME-Viewer (B<metamail_prog>) zum "
-"Anzeigen von MIME-Nachrichten verwendet wird. Dies geschieht nur, wenn "
-"ein MIME-Viewer festgelegt ist. Voreinstellung ist OFF."
+"Anzeigen von MIME-Nachrichten verwendet wird. Dies geschieht nur, wenn ein "
+"MIME-Viewer festgelegt ist. Voreinstellung ist OFF."
 
 #. type: TP
 #: doc/tin.1:1654
@@ -4098,8 +4106,8 @@ msgid ""
 "section \"CUSTOMIZING THE SCREEN FORMAT\".  Default is \"%t%s%e%c%d\"."
 msgstr ""
 "Diese Formatanweisung wird von B<tin> zur Darstellung der Anhangsebene "
-"benutzt. Für weitere Informationen sei auf den Abschnitt \"ANSICHTEN ANPASSEN"
-"\" verwiesen. Voreingestellt ist \"%t%s%e%c%d\"."
+"benutzt. Für weitere Informationen sei auf den Abschnitt \"ANSICHTEN "
+"ANPASSEN\" verwiesen. Voreingestellt ist \"%t%s%e%c%d\"."
 
 #. type: TP
 #: doc/tin.1:1659
@@ -4202,8 +4210,8 @@ msgstr "B<Hash-Algorithmus für Cancel-Lock/Cancel-Key (cancel_lock_algo)>"
 msgid ""
 "Use this hash algorithm for cancel-locks. Only available when built with "
 "cancel-lock support. none disables the generation of cancel-locks. Valid "
-"values are none, sha1, sha256 and sha512.  Default is sha1. See also I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.cancelsecret> in B<\\%tin>(5)."
+"values are none, sha1, sha256 and sha512.  Default is sha1. See also "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.cancelsecret> in B<\\%tin>(5)."
 msgstr ""
 "Diesen Hash-Algorithmus für Cancel-Locks verwenden. Nur vorhanden falls "
 "B<tin> mit Cancel-Lock-Unterstützung gebaut wurde. Keiner deaktiviert die "
@@ -4991,8 +4999,8 @@ msgstr "B<Aufruf Ihres Editors (editor_format)>"
 msgid ""
 "The format string used to create the editor start command with parameters.  "
 "Default is '%E +%N %F' with %E=Editor, %N=Linenumber and %F=Filename (e.g., /"
-"bin/vi +7 .article). See also $B<VISUAL> and $B<EDITOR> under \"ENVIRONMENT"
-"\"."
+"bin/vi +7 .article). See also $B<VISUAL> and $B<EDITOR> under "
+"\"ENVIRONMENT\"."
 msgstr ""
 
 #. type: TP
@@ -5079,8 +5087,9 @@ msgid ""
 "\\ %F\"."
 msgstr ""
 "Diese Formatanweisung wird von B<tin> zur Darstellung der Gruppenebene "
-"benutzt. Für weitere Informationen sei auf den Abschnitt \"ANSICHTEN ANPASSEN"
-"\" verwiesen. Voreingestellt ist \"%n\\ %m\\ %R\\ %L\\ \\ %s\\ \\ %F\"."
+"benutzt. Für weitere Informationen sei auf den Abschnitt \"ANSICHTEN "
+"ANPASSEN\" verwiesen. Voreingestellt ist \"%n\\ %m\\ %R\\ %L\\ \\ %s\\ \\ "
+"%F\"."
 
 #. type: TP
 #: doc/tin.1:1967
@@ -5471,8 +5480,8 @@ msgstr "B<MM_NETWORK_CHARSET (mm_network_charset)>"
 #: doc/tin.1:2156 doc/tin.5:1902
 msgid ""
 "Charset used for posting and MIME headers; replaces B<mm_charset>.  "
-"Conversion between B<mm_network_charset> and local charset (determined via B<"
-"\\%nl_langinfo>(3))  is done via B<\\%iconv>(3), if this function is not "
+"Conversion between B<mm_network_charset> and local charset (determined via "
+"B<\\%nl_langinfo>(3))  is done via B<\\%iconv>(3), if this function is not "
 "available on your system this option is disabled and you have to use "
 "B<mm_charset> instead. B<mm_network_charset> is limited to one of the "
 "following charsets:"
@@ -5723,8 +5732,8 @@ msgid ""
 msgstr ""
 "Diese Formatanweisung wird von B<tin> zur Darstellung von Mime-Headern auf "
 "Artikelebene benutzt. Fr weitere Informationen sei auf den Abschnitt "
-"\"ANSICHTEN ANPASSEN\" verwiesen. Voreingestellt ist \"[-- %T%S%*n%z%*l%!c%!d"
-"%*e--]\"."
+"\"ANSICHTEN ANPASSEN\" verwiesen. Voreingestellt ist \"[-- %T%S%*n%z%*l%!c%!"
+"d%*e--]\"."
 
 #. type: TP
 #: doc/tin.1:2246
@@ -6046,8 +6055,8 @@ msgid ""
 "Directory where articles/threads are saved. Default is I<${TIN_HOMEDIR:-"
 "\"$HOME\"}/News>."
 msgstr ""
-"Verzeichnis, in dem Artikel/Threads gespeichert werden. Voreinstellung ist I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/News>."
+"Verzeichnis, in dem Artikel/Threads gespeichert werden. Voreinstellung ist "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/News>."
 
 #. type: TP
 #: doc/tin.1:2372
@@ -6128,12 +6137,12 @@ msgstr "B<Formatanweisung für die Auswahlebene (select_format)>"
 #: doc/tin.1:2400
 msgid ""
 "Format string B<tin> uses for Selection level representation. See the "
-"section \"CUSTOMIZING THE SCREEN FORMAT\". Default is \"%f\\ %n\\ %U\\ \\ %G"
-"\\ \\ %d\"."
+"section \"CUSTOMIZING THE SCREEN FORMAT\". Default is \"%f\\ %n\\ %U\\ \\ "
+"%G\\ \\ %d\"."
 msgstr ""
 "Diese Formatanweisung wird von B<tin> zur Darstellung der Auswahlebene "
-"benutzt. Für weitere Informationen sei auf den Abschnitt \"ANSICHTEN ANPASSEN"
-"\" verwiesen. Voreingestellt ist \"%f\\ %n\\ %U\\ \\ %G\\ \\ %d\"."
+"benutzt. Für weitere Informationen sei auf den Abschnitt \"ANSICHTEN "
+"ANPASSEN\" verwiesen. Voreingestellt ist \"%f\\ %n\\ %U\\ \\ %G\\ \\ %d\"."
 
 #. type: TP
 #: doc/tin.1:2400
@@ -6564,9 +6573,9 @@ msgstr "B<Lösche nicht vorhan. G. aus newsrc (strip_bogus)>"
 #. type: Plain text
 #: doc/tin.1:2567 doc/tin.5:2353
 msgid ""
-"Bogus groups are groups that are present in your I<${TIN_HOMEDIR:-\"$HOME"
-"\"}/.newsrc> file that no longer exist on the news server. There are 3 "
-"options. 0 means do nothing & always keep bogus groups.  1 means bogus "
+"Bogus groups are groups that are present in your I<${TIN_HOMEDIR:-"
+"\"$HOME\"}/.newsrc> file that no longer exist on the news server. There are "
+"3 options. 0 means do nothing & always keep bogus groups.  1 means bogus "
 "groups will be permanently removed. 2 means that bogus groups will appear on "
 "the Group Selection Menu, prefixed with a 'D'. This allows you to "
 "unsubscribe from them as and when you wish. Default is 0 (Always Keep)."
@@ -6581,8 +6590,8 @@ msgstr "B<Nur abonnierte Gruppen in newsrc (strip_newsrc)>"
 #. type: Plain text
 #: doc/tin.1:2571 doc/tin.5:2357
 msgid ""
-"If ON, then unsubscribed groups will be permanently removed from your I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> file. Default is OFF."
+"If ON, then unsubscribed groups will be permanently removed from your "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc> file. Default is OFF."
 msgstr ""
 
 #. type: TP
@@ -6736,8 +6745,9 @@ msgid ""
 "\\ %F\"."
 msgstr ""
 "Diese Formatanweisung wird von B<tin> zur Darstellung der Threadebene "
-"benutzt. Für weitere Informationen sei auf den Abschnitt \"ANSICHTEN ANPASSEN"
-"\" verwiesen. Voreingestellt ist \"%n\\ %m\\ \\ [%L]\\ \\ %T\\ \\ %F\"."
+"benutzt. Für weitere Informationen sei auf den Abschnitt \"ANSICHTEN "
+"ANPASSEN\" verwiesen. Voreingestellt ist \"%n\\ %m\\ \\ [%L]\\ \\ %T\\ \\ "
+"%F\"."
 
 #. type: TP
 #: doc/tin.1:2629
@@ -7153,9 +7163,9 @@ msgstr "ATTRIBUTE UND GRUPPENATTRIBUTE MENÜ"
 msgid ""
 "B<tin> allows certain attributes to be set on a per group basis. If it "
 "exists, the global attributes file, I<${TIN_LIBDIR:-NEWSLIBDIR}/attributes> "
-"is read. After that, the user's own attributes file I<${TIN_HOMEDIR:-\"$HOME"
-"\"}/.tin/attributes> is read.  The global attributes file is useful for "
-"distributing system-wide defaults to new users who have no private "
+"is read. After that, the user's own attributes file I<${TIN_HOMEDIR:-"
+"\"$HOME\"}/.tin/attributes> is read.  The global attributes file is useful "
+"for distributing system-wide defaults to new users who have no private "
 "attributes file yet."
 msgstr ""
 
@@ -7654,8 +7664,8 @@ msgid ""
 "also use the same syntax. B<tin> interprets this variable similarly to B<\\"
 "%rn>(1).  It contains a list of patterns, separated by commas and possibly "
 "prefixed with exclamation points. An exclamation point negates the meaning "
-"of a match on this pattern, and can be used to cancel certain matches. See B<"
-"\\%wildmat>(3)  for details about the understood patterns. Some examples:"
+"of a match on this pattern, and can be used to cancel certain matches. See "
+"B<\\%wildmat>(3)  for details about the understood patterns. Some examples:"
 msgstr ""
 
 #. type: Plain text
@@ -7687,9 +7697,9 @@ msgstr "SIGNATUREN"
 #: doc/tin.1:3108
 msgid ""
 "B<tin> will recognize a signature in either I<${TIN_HOMEDIR:-\"$HOME\"}/."
-"signature> or I<${TIN_HOMEDIR:-\"$HOME\"}/.Sig>.  If I<${TIN_HOMEDIR:-\"$HOME"
-"\"}/.signature> exists, then the signature will be pulled into the editor "
-"for mail commands only. A signature in I<${TIN_HOMEDIR:-\"$HOME\"}/."
+"signature> or I<${TIN_HOMEDIR:-\"$HOME\"}/.Sig>.  If I<${TIN_HOMEDIR:-"
+"\"$HOME\"}/.signature> exists, then the signature will be pulled into the "
+"editor for mail commands only. A signature in I<${TIN_HOMEDIR:-\"$HOME\"}/."
 "signature> will not be pulled into the editor for posting commands since B<\\"
 "%inews>(1)  will append the signature itself."
 msgstr ""
@@ -7856,7 +7866,7 @@ msgstr ""
 "B<%%>\tX\tX\tX\n"
 
 #. type: Plain text
-#: doc/tin.1:3189 doc/tin.1:3343
+#: doc/tin.1:3189 doc/tin.1:3353
 msgid "Defaults for the format strings:"
 msgstr "Voreingestellt sind folgende Formatanweisungen:"
 
@@ -8022,66 +8032,89 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.1:3259
 msgid ""
-"When the format string contains the specifier 'B<%F>' and 'B<%s>' resp. 'B<"
-"%T>' and no length are given, 'B<%F>' will use one third and 'B<%s>' resp. "
-"'B<%T>' will use two third of the available space."
+"When the format string contains the specifier 'B<%F>' and 'B<%s>' resp. "
+"'B<%T>' and no length are given, 'B<%F>' will use one third and 'B<%s>' "
+"resp. 'B<%T>' will use two third of the available space."
 msgstr ""
 "Sind in der Formatanweisung 'B<%F>' und 'B<%s>' bzw. 'B<%T>' enthalten und "
 "jeweils keine Längen angegeben, dann nimmt 'B<%F>' ein Drittel und 'B<%s>' "
 "bzw. 'B<%T>' zwei Drittel des für beide zusammen verfügbaren Platzes ein."
 
 #. type: Plain text
-#: doc/tin.1:3267
+#: doc/tin.1:3269
 msgid ""
-"In addition, a minimum screen width can be defined for each item (except 'B<%"
-"%>'). In this case, the item will only be displayed when the screen is wider "
-"than specified. This comes in handy to not overload a small screen but have "
-"maximum information on a large screen. The minimum screen width has to be "
-"specified by a positive number preceded by an 'B<E<gt>>'. In the following "
-"example B<tin> will display the score only if the screen is wider than 100 "
-"characters: 'B<%E<gt>100S>'."
+"In addition, a minimum or a maximum screen width can be defined for each "
+"item (except 'B<%%>').  In this case, the item will only be displayed when "
+"the screen is wider resp.  smaller than specified.  This comes in handy to "
+"not overload a small screen but have maximum information on a large screen.  "
+"The minimum screen width has to be specified by a positive number preceded "
+"by an 'B<E<gt>>', the maximum screenwidth has to be specified by a positive "
+"number preceded by an 'B<E<lt>>'.  In the following example B<tin> will "
+"display the score only if the screen is wider than 100 characters: "
+"'B<%E<gt>100S>'."
 msgstr ""
-"Weiterhin kann eine Mindestbildschirmbreite pro Element (außer 'B<%%>') "
-"definiert werden. Das entsprechende Element wird dann erst dargestellt, wenn "
-"auf dem Bildschirm mehr Zeichen als angegeben dargestellt werden können. Das "
-"ist hilfreich, um die Anzeige bei kleineren Bildschirmen oder "
-"Terminalfenstern nicht zu überfrachten. Hier erfolgt die Angabe vor dem den "
-"Platzhalter charakterisierenden Buchstaben durch eine positive Zahl, welcher "
-"ein 'B<E<gt>>' vorangestellt wird. Soll z. B. der Bewertung erst ab einer "
-"Bildschirmbreite größer 100 Zeichen angezeigt werden, lautet die "
-"Formatanweisung 'B<%E<gt>100S>'."
+"Weiterhin kann eine Mindest- oder Maximalbildschirmbreite pro Element ("
+"außer 'B<%%>') definiert werden. Das entsprechende Element wird dann erst "
+"dargestellt, wenn auf dem Bildschirm mehr bzw. weniger Zeichen als "
+"angegeben dargestellt werden können. Das ist hilfreich, um die Anzeige bei "
+"kleineren Bildschirmen oder Terminalfenstern nicht zu überfrachten. Hier "
+"erfolgt die Angabe vor dem den Platzhalter charakterisierenden Buchstaben "
+"durch eine positive Zahl, welcher ein 'B<E<gt>>' bzw. 'B<E<lt>>' "
+"vorangestellt wird. Soll z. B. der Bewertung erst ab einer Bildschirmbreite "
+"größer 100 Zeichen angezeigt werden, lautet die Formatanweisung "
+"'B<%E<gt>100S>'."
 
 #. type: Plain text
-#: doc/tin.1:3273
+#: doc/tin.1:3283
 msgid ""
-"If both the length and the minimum screen width should be specified for an "
-"item, the length must be the first parameter and the minimum screen width "
-"must be the second one. The following example displays the score with a "
-"length of 10 characters only if the screen is wider than 100 characters: 'B<"
-"%10E<gt>100S>'."
+"If both the length and the minimum or maximum screen width should be "
+"specified for an item, the length must be the first parameter and the "
+"minimum or maximum screen width must be the second one.  The following "
+"example displays the score with a length of 10 characters only if the screen "
+"is wider than 100 characters: 'B<%10E<gt>100S>'.  A second length can be "
+"specified for 'B<%F>' and 'B<%s>' resp.  'B<%T>', separated by a colon, "
+"which is used if the minimum or maximum screen width is not reached.  If no "
+"length is specified after the colon, the item is displayed even if the "
+"minimum screen width is not reached and the length is calculated as if no "
+"minimum (or maximum) screen width had been specified.  In the following "
+"example B<tin> will display the subject with a length of 60 characters if "
+"the screen is wider than 100 characters, otherwise a length of 40 characters "
+"is used: 'B<%60E<gt>100:40s>'."
 msgstr ""
-"Wenn eine Längenangabe und eine Mindestbildschirmbreite angegeben werden "
-"soll, muss zuerst die Länge und danach die Mindestbreite in der "
-"Formatanweisung stehen. Um die Bewertung 10 Zeichen breit und erst ab einer "
-"Bildschirmbreite über 100 Zeichen darzustellen, lautet die Anweisung 'B<"
-"%10E<gt>100S>'."
+"Wenn eine Längenangabe und eine Mindest- oder Maximalbildschirmbreite "
+"angegeben werden soll, muss zuerst die Länge und danach die Mindestbreite "
+"oder Maximalbreite in der Formatanweisung stehen. Um die Bewertung 10 "
+"Zeichen breit und erst ab einer Bildschirmbreite über 100 Zeichen "
+"darzustellen, lautet die Anweisung 'B<%10E<gt>100S>'. Für 'B<%F>' und "
+"'B<%s>' bzw. 'B<%T>' kann, getrennt durch einen Doppelpunkt, eine zweite "
+"Länge angegeben werden, die verwendet wird, wenn die "
+"Mindestbildschirmbreite nicht erreicht wird. Wird nach dem Doppelpunkt "
+"keine Länge angegeben, wird der Eintrag auch bei Unterschreitung der "
+"Mindestbildschirmbreite angezeigt und die Länge so berechnet, als wäre "
+"keine Mindestbildschirmbreite angegeben worden. Im folgenden Beispiel zeigt "
+"B<tin> den Betreff mit einer Länge von 60 Zeichen an, wenn der Bildschirm "
+"breiter als 100 Zeichen ist, ansonsten wird eine Länge von 40 Zeichen "
+"verwendet: 'B<%60E<gt>100:40s>'."
 
 #. type: Plain text
-#: doc/tin.1:3277
+#: doc/tin.1:3287
 msgid ""
 "The look of the Attachment level and the mime and uue header at Page level "
 "can be customized too via format strings.  The following variables are "
 "available:"
 msgstr ""
+"Das Aussehen der Anhangsebene sowie der MIME- und UUEncode-Header auf "
+"Artikelebene kann ebenfalls über Formatzeichenfolgen angepasst werden. "
+"Die folgenden Variablen sind verfügbar:"
 
 #. type: ta
-#: doc/tin.1:3280
+#: doc/tin.1:3290
 #, no-wrap
 msgid "\\w'%G    'u +\\w'Complete/incomplete UUE part indicator'u"
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3299
+#: doc/tin.1:3309
 #, no-wrap
 msgid ""
 "B<%C>\tCharset\n"
@@ -8123,20 +8156,22 @@ msgstr ""
 "B<%%>\t%\n"
 
 #. type: Plain text
-#: doc/tin.1:3304
+#: doc/tin.1:3314
 msgid ""
 "Not all items can be used in each variable. The following table provides an "
 "overview:"
 msgstr ""
+"Nicht alle Elemente können in jeder Variablen verwendet werden. Die "
+"folgende Tabelle bietet einen Überblick:"
 
 #. type: ta
-#: doc/tin.1:3307
+#: doc/tin.1:3317
 #, no-wrap
 msgid "\\w'%G   'uC +\\w'B<attachment_format> 'uC +\\w'B<page_mime_format> 'uC +\\w'B<page_uue_format>'uC"
 msgstr "\\w'%G   'uC +\\w'B<attachment_format> 'uC +\\w'B<page_mime_format> 'uC +\\w'B<page_uue_format>'uC"
 
 #. type: Plain text
-#: doc/tin.1:3327
+#: doc/tin.1:3337
 #, no-wrap
 msgid ""
 "\tB<attachment_format>\tB<page_mime_format>\tB<page_uue_format>\n"
@@ -8180,7 +8215,7 @@ msgstr ""
 "B<%%>\tX\tX\tX\n"
 
 #. type: Plain text
-#: doc/tin.1:3341
+#: doc/tin.1:3351
 msgid ""
 "By default, the string is not truncated. If it exceeds the screen width, it "
 "is wrapped. If the % sign is followed by an exclamation mark ('!\\&') for "
@@ -8194,15 +8229,27 @@ msgid ""
 "other directly a '/' will be inserted in between. %Z will always have one "
 "decimal point and may have a one letter bi-suffix."
 msgstr ""
+"Standardmäßig wird der String nicht abgeschnitten. Wenn er die "
+"Bildschirmbreite überschreitet, wird er umgebrochen. Wenn dem % Zeichen ein "
+"Ausrufezeichen ('!\\&') vor Großbuchstaben folgt, wird das Element "
+"weggelassen, wenn nicht genügend Platz vorhanden ist. Wenn dem % Zeichen "
+"ein Sternchen ('*') vor Kleinbuchstaben folgt, wird die Beschreibung "
+"weggelassen, wenn nicht genügend Platz vorhanden ist. Wenn dem % Zeichen "
+"vor einem Kleinbuchstaben ein Ausrufezeichen ('!\\&') folgt, wird zuerst die "
+"Beschreibung und dann der Inhalt weggelassen. Das Kürzen erfolgt immer von "
+"rechts nach links, zuerst wird die Beschreibung weggelassen, und wenn keine "
+"Beschreibung mehr angezeigt wird, wird der Inhalt weggelassen. Wenn "
+"%T und %S direkt aufeinander folgen, wird ein '/' dazwischen eingefügt. %Z "
+"hat immer einen Dezimalpunkt und kann einen einbuchstabigen bi-Suffix haben."
 
 #. type: ta
-#: doc/tin.1:3346
+#: doc/tin.1:3356
 #, no-wrap
 msgid "\\w'attachment_format'u +\\w'\"B<%T%S%E%C%d>\"'u"
 msgstr "\\w'attachment_format'u +\\w'\"B<%T%S%E%C%d>\"'u"
 
 #. type: Plain text
-#: doc/tin.1:3350
+#: doc/tin.1:3360
 #, no-wrap
 msgid ""
 "B<attachment_format>:\t\"B<%T%S%E%C%d>\"\n"
@@ -8214,13 +8261,13 @@ msgstr ""
 "B<page_uue_format>:\t\t\"B<[-- %T%S%*n%I%!d%*e --]>\"\n"
 
 #. type: SS
-#: doc/tin.1:3353
+#: doc/tin.1:3363
 #, no-wrap
 msgid "TIPS AND TRICKS"
 msgstr "TIPPS UND TRICKS"
 
 #. type: Plain text
-#: doc/tin.1:3357
+#: doc/tin.1:3367
 msgid ""
 "B<tin> can be pretty much be navigated by using the four cursor keys.  The "
 "left arrow key goes up a level, the right arrow key goes down a level, the "
@@ -8232,7 +8279,7 @@ msgstr ""
 "Pfeiltaste eine Zeile nach unten."
 
 #. type: Plain text
-#: doc/tin.1:3359
+#: doc/tin.1:3369
 msgid ""
 "The following newsgroups provide useful information concerning news software:"
 msgstr ""
@@ -8240,7 +8287,7 @@ msgstr ""
 "Newssoftware:"
 
 #. type: Plain text
-#: doc/tin.1:3362
+#: doc/tin.1:3372
 msgid ""
 "\\(emnews.software.readers (info. about news user agents tin, rn, nn, slrn "
 "etc.)"
@@ -8249,19 +8296,19 @@ msgstr ""
 "slrn, ...)"
 
 #. type: Plain text
-#: doc/tin.1:3364
+#: doc/tin.1:3374
 msgid "\\(emnews.software.nntp (info. about NNTP)"
 msgstr "\\(emnews.software.nntp (Informationen über NNTP)"
 
 #. type: Plain text
-#: doc/tin.1:3366
+#: doc/tin.1:3376
 msgid ""
 "\\(emnews.answers (Frequently Asked Questions (FAQ) about many different "
 "themes)"
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3370
+#: doc/tin.1:3380
 msgid ""
 "Many prompts within B<tin> offer a default choice that the cursor is "
 "positioned on. By pressing 'B<E<lt>CRE<gt>>' the default value is taken.  "
@@ -8269,14 +8316,14 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3377
+#: doc/tin.1:3387
 msgid ""
 "When B<tin> is run in an B<\\%xterm>(1x)  it will resize itself each time "
 "the B<\\%xterm>(1x)  is resized."
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3381
+#: doc/tin.1:3391
 msgid ""
 "B<tin> will reread the I<${TIN_LIBDIR:-NEWSLIBDIR}\"/\"${TIN_ACTIVEFILE:-"
 "active}> file at set intervals (B<reread_active_file_secs>) to show any "
@@ -8284,7 +8331,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3386
+#: doc/tin.1:3396
 msgid ""
 "If you find large number of new newsgroups cluttering up your screen, "
 "pressing B<SelectToggleReadDisplay> ('B<r>') will make them go away."
@@ -8294,13 +8341,13 @@ msgstr ""
 "('B<r>') ausgeblendet werden."
 
 #. type: SS
-#: doc/tin.1:3386
+#: doc/tin.1:3396
 #, no-wrap
 msgid "XTERM BUTTONS"
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3392
+#: doc/tin.1:3402
 msgid ""
 "If the environment variable B<$TERM> is set to B<\\%xterm>(1x), then button "
 "pressing can be used to select groups and articles. In this discussion, the "
@@ -8313,18 +8360,18 @@ msgstr ""
 "die linke Maustaste)."
 
 #. type: Plain text
-#: doc/tin.1:3394
+#: doc/tin.1:3404
 msgid "In general (i.e., for the group, thread and article menus),"
 msgstr "Im Allgemein (d. h. für die Gruppen-, Thread- und Artikelmenüs),"
 
 #. type: TP
-#: doc/tin.1:3394
+#: doc/tin.1:3404
 #, no-wrap
 msgid "Button1 (left)"
 msgstr "Maustaste1 (Links)"
 
 #. type: Plain text
-#: doc/tin.1:3397
+#: doc/tin.1:3407
 msgid ""
 "enters next (lower) level if you click on an article, otherwise pages down."
 msgstr ""
@@ -8332,13 +8379,13 @@ msgstr ""
 "sonst nach unten blättern."
 
 #. type: TP
-#: doc/tin.1:3397
+#: doc/tin.1:3407
 #, no-wrap
 msgid "Button2 (center)"
 msgstr "Maustaste2 (Mitte)"
 
 #. type: Plain text
-#: doc/tin.1:3401
+#: doc/tin.1:3411
 msgid ""
 "returns to the previous (upper) level if you click on an article, otherwise "
 "pages up."
@@ -8347,74 +8394,74 @@ msgstr ""
 "klicken, andernfalls wird eine Seite nach oben geblättert."
 
 #. type: TP
-#: doc/tin.1:3401
+#: doc/tin.1:3411
 #, no-wrap
 msgid "Button3 (right)"
 msgstr "Maustaste3 (Rechts)"
 
 #. type: Plain text
-#: doc/tin.1:3405
+#: doc/tin.1:3415
 msgid ""
 "positions on the article line under mouse cursor, or pages down if you've "
 "clicked outside the list of articles."
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3407
+#: doc/tin.1:3417
 msgid "In the group selection menu, if the mouse is pointing at a group then:"
 msgstr "Im Gruppenauswahlmenü, wenn die Maus auf eine Gruppe zeigt, dann:"
 
 #. type: TP
-#: doc/tin.1:3407 doc/tin.1:3419 doc/tin.1:3433
+#: doc/tin.1:3417 doc/tin.1:3429 doc/tin.1:3443
 #, no-wrap
 msgid "left button"
 msgstr "Linke Maustaste"
 
 #. type: Plain text
-#: doc/tin.1:3411
+#: doc/tin.1:3421
 msgid ""
 "moves to and selects the group pointed at, just like B<SelectReadGrp> "
 "('B<E<lt>CRE<gt>>')."
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3411 doc/tin.1:3423 doc/tin.1:3436
+#: doc/tin.1:3421 doc/tin.1:3433 doc/tin.1:3446
 #, no-wrap
 msgid "center button"
 msgstr "Mittlere Maustaste"
 
 #. type: Plain text
-#: doc/tin.1:3414
+#: doc/tin.1:3424
 msgid "quits the program, just like B<Quit> ('B<q>')."
 msgstr "Beendet das Programm, genau wie B<Quit> ('B<q>')."
 
 #. type: TP
-#: doc/tin.1:3414 doc/tin.1:3428 doc/tin.1:3441
+#: doc/tin.1:3424 doc/tin.1:3438 doc/tin.1:3451
 #, no-wrap
 msgid "right button"
 msgstr "Rechte Maustaste"
 
 #. type: Plain text
-#: doc/tin.1:3417
+#: doc/tin.1:3427
 msgid "moves to the group pointed at."
 msgstr "springt zu der Gruppe, auf die gezeigt wird."
 
 #. type: Plain text
-#: doc/tin.1:3419
+#: doc/tin.1:3429
 msgid ""
 "In the article menu, if the mouse is pointing at an article (or thread) then:"
 msgstr ""
 "Wenn die Maus im Artikelmenü auf einen Artikel (oder Thread) zeigt, dann:"
 
 #. type: Plain text
-#: doc/tin.1:3423
+#: doc/tin.1:3433
 msgid ""
 "reads the article pointed at, just like B<GroupReadBasenote> "
 "('B<E<lt>CRE<gt>>'), or the thread, just like B<GroupListThd> ('B<l>')."
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3428
+#: doc/tin.1:3438
 msgid ""
 "exits the menu, catching up on the group if you have "
 "B<group_catchup_on_exit> set in your configuration, just like B<Quit> "
@@ -8422,17 +8469,17 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3431
+#: doc/tin.1:3441
 msgid "moves to the article (or thread) pointed at."
 msgstr "springt zu dem Artikel (oder Thread), auf den gezeigt wird."
 
 #. type: Plain text
-#: doc/tin.1:3433
+#: doc/tin.1:3443
 msgid "In the thread menu, if the mouse is pointing at an article then:"
 msgstr "Im Thread-Menü, wenn die Maus auf einen Artikel zeigt, dann:"
 
 #. type: Plain text
-#: doc/tin.1:3436
+#: doc/tin.1:3446
 msgid ""
 "reads article pointed at, just like B<ThreadReadArt> ('B<E<lt>CRE<gt>>')."
 msgstr ""
@@ -8440,7 +8487,7 @@ msgstr ""
 "('B<E<lt>CRE<gt>>')."
 
 #. type: Plain text
-#: doc/tin.1:3441
+#: doc/tin.1:3451
 msgid ""
 "exits the menu, catching up on the thread if you have "
 "B<thread_catchup_on_exit> set in your configuration, just like B<Quit> "
@@ -8448,25 +8495,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3444
+#: doc/tin.1:3454
 msgid "moves to the article pointed at."
 msgstr "springt zu dem Artikel, auf den gezeigt wird."
 
 #. type: Plain text
-#: doc/tin.1:3451
+#: doc/tin.1:3461
 msgid ""
 "In other menus and areas button pressing reverts back to usual cut and paste "
 "of B<\\%xterm>(1x), but after one click of any button."
 msgstr ""
 
 #. type: SS
-#: doc/tin.1:3451
+#: doc/tin.1:3461
 #, no-wrap
 msgid "INDEX FILES"
 msgstr "INDEX DATEIEN"
 
 #. type: Plain text
-#: doc/tin.1:3456
+#: doc/tin.1:3466
 msgid ""
 "If your news server supports NOV index files (see B<\\%newsoverview>(5), "
 "most modern installations will) and you have a fast connection to your news "
@@ -8478,7 +8525,7 @@ msgstr ""
 "Abschnitt ignorieren."
 
 #. type: Plain text
-#: doc/tin.1:3462
+#: doc/tin.1:3472
 msgid ""
 "If your news server doesn't support NOV index files or you have a very slow "
 "connection to your news server then B<tin> can cache the index for each "
@@ -8494,11 +8541,11 @@ msgstr ""
 "Datenverkehr lesen."
 
 #. type: Plain text
-#: doc/tin.1:3471
+#: doc/tin.1:3481
 msgid ""
-"Each user creates/updates his/her own index files that are stored in I<"
-"${TIN_INDEX_NEWSDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.news/>. If you are "
-"reading via NNTP then the news server name will be appended to keep the "
+"Each user creates/updates his/her own index files that are stored in "
+"I<${TIN_INDEX_NEWSDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.news/>. If you "
+"are reading via NNTP then the news server name will be appended to keep the "
 "indexes for different servers separate. If you are reading off the local "
 "spool and local overview files already exist then turning on caching will "
 "have no effect. Likewise unless you see significant delays entering a group "
@@ -8506,7 +8553,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3478
+#: doc/tin.1:3488
 msgid ""
 "Entering a group the first time tends to be slow because the index file must "
 "be built from scratch. To alleviate the slowness start B<tin> to create all "
@@ -8517,20 +8564,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3483
+#: doc/tin.1:3493
 msgid ""
 "As indexing might take some time you may want to run B<tin> from the system "
 "batcher B<\\%cron>(8)  with the ''B<-u>'' option:"
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3488
+#: doc/tin.1:3498
 #, no-wrap
 msgid "CW<30 6 * * * /usr/local/bin/tin -u>\n"
 msgstr "CW<30 6 * * * /usr/local/bin/tin -u>\n"
 
 #. type: Plain text
-#: doc/tin.1:3494
+#: doc/tin.1:3504
 msgid ""
 "If you are low on local disk space you should consider to manually purge "
 "cached data for groups you are not reading anymore with something like:"
@@ -8540,7 +8587,7 @@ msgstr ""
 "lesen, manuell zu bereinigen:"
 
 #. type: Plain text
-#: doc/tin.1:3500
+#: doc/tin.1:3510
 #, no-wrap
 msgid ""
 "CW<find ${TIN_INDEX_NEWSDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.news* \\e\n"
@@ -8550,7 +8597,7 @@ msgstr ""
 "-type f -name \"[0-9]*.[0-9]\" -atime +28 | xargs rm -f>\n"
 
 #. type: SH
-#: doc/tin.1:3505 doc/tin.1:3506 doc/tin.5:21
+#: doc/tin.1:3515 doc/tin.1:3516 doc/tin.5:21
 #, no-wrap
 msgid "FILES"
 msgstr "DATEIEN"
@@ -8572,7 +8619,7 @@ msgstr "DATEIEN"
 #.        $TMPDIR/ACTIVE     (-D 64)
 #.        $TMPDIR/GNKSA      (-D 64)
 #. type: Plain text
-#: doc/tin.1:3525
+#: doc/tin.1:3535
 msgid "For a detailed description see B<\\%tin>(5)."
 msgstr "Für eine ausführlich Beschreibung siehe B<\\%tin>(5)."
 
@@ -8596,119 +8643,119 @@ msgstr "Für eine ausführlich Beschreibung siehe B<\\%tin>(5)."
 #.  $TMPDIR/SCOPES-W   (-D 32)
 #.  $TMPDIR/ACTIVE     (-D 64)
 #. type: Plain text
-#: doc/tin.1:3527 doc/tin.5:42
+#: doc/tin.1:3537 doc/tin.5:42
 msgid "I<$MAILCAPS>"
 msgstr "I<$MAILCAPS>"
 
 #. type: Plain text
-#: doc/tin.1:3529 doc/tin.5:44
+#: doc/tin.1:3539 doc/tin.5:44
 msgid "I<~/.mailcap>"
 msgstr "I<~/.mailcap>"
 
 #. type: Plain text
-#: doc/tin.1:3531 doc/tin.5:46
+#: doc/tin.1:3541 doc/tin.5:46
 msgid "I</etc/mailcap>"
 msgstr "I</etc/mailcap>"
 
 #. type: Plain text
-#: doc/tin.1:3533 doc/tin.5:48
+#: doc/tin.1:3543 doc/tin.5:48
 msgid "I</usr/etc/mailcap>"
 msgstr "I</usr/etc/mailcap>"
 
 #. type: Plain text
-#: doc/tin.1:3535 doc/tin.5:50
+#: doc/tin.1:3545 doc/tin.5:50
 msgid "I</usr/local/etc/mailcap>"
 msgstr "I</usr/local/etc/mailcap>"
 
 #. type: Plain text
-#: doc/tin.1:3537 doc/tin.5:52
+#: doc/tin.1:3547 doc/tin.5:52
 msgid "I</etc/mail/mailcap>"
 msgstr "I</etc/mail/mailcap>"
 
 #. type: Plain text
-#: doc/tin.1:3540 doc/tin.5:221
+#: doc/tin.1:3550 doc/tin.5:221
 msgid "I</etc/nntpserver>"
 msgstr "I</etc/nntpserver>"
 
 #. type: Plain text
-#: doc/tin.1:3543 doc/tin.5:231
+#: doc/tin.1:3553 doc/tin.5:231
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.cancelsecret>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.cancelsecret>"
 
 #. type: Plain text
-#: doc/tin.1:3546 doc/tin.5:241
+#: doc/tin.1:3556 doc/tin.5:241
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.mime.types>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.mime.types>"
 
 #. type: Plain text
-#: doc/tin.1:3548 doc/tin.5:243
+#: doc/tin.1:3558 doc/tin.5:243
 msgid "I</etc/mime.types>"
 msgstr "I</etc/mime.types>"
 
 #. type: Plain text
-#: doc/tin.1:3550 doc/tin.5:245
+#: doc/tin.1:3560 doc/tin.5:245
 msgid "I</etc/tin/mime.types>"
 msgstr "I</etc/tin/mime.types>"
 
 #. type: Plain text
-#: doc/tin.1:3553 doc/tin.5:252
+#: doc/tin.1:3563 doc/tin.5:252
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.newsauth>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.newsauth>"
 
 #. type: Plain text
-#: doc/tin.1:3556 doc/tin.5:287
+#: doc/tin.1:3566 doc/tin.5:287
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc>"
 
 #. type: Plain text
-#: doc/tin.1:3560 doc/tin.5:318
+#: doc/tin.1:3570 doc/tin.5:318
 #, no-wrap
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER${NNTPPORT:+\":$NNTPPORT\"}/.oldnewsrc>\n"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER${NNTPPORT:+\":$NNTPPORT\"}/.oldnewsrc>\n"
 
 #. type: Plain text
-#: doc/tin.1:3564 doc/tin.5:326
+#: doc/tin.1:3574 doc/tin.5:326
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.signature>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.signature>"
 
 #. type: Plain text
-#: doc/tin.1:3566 doc/tin.5:328
+#: doc/tin.1:3576 doc/tin.5:328
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.Sig>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.Sig>"
 
 #. type: Plain text
-#: doc/tin.1:3569 doc/tin.5:335
+#: doc/tin.1:3579 doc/tin.5:335
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.sigfixed>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.sigfixed>"
 
 #. type: Plain text
-#: doc/tin.1:3572 doc/tin.5:342
+#: doc/tin.1:3582 doc/tin.5:342
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/.inputhistory>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/.inputhistory>"
 
 #. type: Plain text
-#: doc/tin.1:3575 doc/tin.5:349
+#: doc/tin.1:3585 doc/tin.5:349
 msgid "I<${TIN_INDEX_MAILDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.mail/>"
 msgstr "I<${TIN_INDEX_MAILDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.mail/>"
 
 #. type: Plain text
-#: doc/tin.1:3579 doc/tin.5:357
+#: doc/tin.1:3589 doc/tin.5:357
 #, no-wrap
 msgid "I<${TIN_INDEX_NEWSDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.news${NNTPSERVER:+\"-$NNTPSERVER\"}/>\n"
 msgstr "I<${TIN_INDEX_NEWSDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.news${NNTPSERVER:+\"-$NNTPSERVER\"}/>\n"
 
 #. type: Plain text
-#: doc/tin.1:3583 doc/tin.5:365
+#: doc/tin.1:3593 doc/tin.5:365
 msgid "I<${TIN_INDEX_SAVEDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.save/>"
 msgstr "I<${TIN_INDEX_SAVEDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.save/>"
 
 #. type: Plain text
-#: doc/tin.1:3586 doc/tin.5:372
+#: doc/tin.1:3596 doc/tin.5:372
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/active.mail>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/active.mail>"
 
 #. type: Plain text
-#: doc/tin.1:3589 doc/tin.5:407
+#: doc/tin.1:3599 doc/tin.5:407
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/active.save>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/active.save>"
 
@@ -8717,78 +8764,78 @@ msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/active.save>"
 #.  we should think about checking for the new Paths (/news/etc/)
 #.  ${TIN_LIBDIR\-/news/etc"}/attributes
 #. type: Plain text
-#: doc/tin.1:3593 doc/tin.5:418
+#: doc/tin.1:3603 doc/tin.5:418
 msgid "I</etc/tin/attributes>"
 msgstr "I</etc/tin/attributes>"
 
 #. type: Plain text
-#: doc/tin.1:3595 doc/tin.5:420
+#: doc/tin.1:3605 doc/tin.5:420
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/attributes>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/attributes>"
 
 #.  TODO: add missing descriptions and explain things in detail.
 #. type: Plain text
-#: doc/tin.1:3598 doc/tin.5:768
+#: doc/tin.1:3608 doc/tin.5:768
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/filter>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/filter>"
 
 #. type: Plain text
-#: doc/tin.1:3602 doc/tin.5:911
+#: doc/tin.1:3612 doc/tin.5:911
 #, no-wrap
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/keymap${${LC_ALL:-\"${LC_MESSAGES:-\"${LC_CTYPE:-\"$LANG\"}\"}\"}:+\".${LC_ALL:-\"${LC_MESSAGES:-\"${LC_CTYPE:-\"$LANG\"}\"}\"}\"}>\n"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/keymap${${LC_ALL:-\"${LC_MESSAGES:-\"${LC_CTYPE:-\"$LANG\"}\"}\"}:+\".${LC_ALL:-\"${LC_MESSAGES:-\"${LC_CTYPE:-\"$LANG\"}\"}\"}\"}>\n"
 
 #. type: Plain text
-#: doc/tin.1:3604 doc/tin.5:913
+#: doc/tin.1:3614 doc/tin.5:913
 #, no-wrap
 msgid "I</etc/tin/keymap${${LC_ALL:-\"${LC_MESSAGES:-\"${LC_CTYPE:-\"$LANG\"}\"}\"}:+\".${LC_ALL:-\"${LC_MESSAGES:-\"${LC_CTYPE:-\"$LANG\"}\"}\"}\"}>\n"
 msgstr "I</etc/tin/keymap${${LC_ALL:-\"${LC_MESSAGES:-\"${LC_CTYPE:-\"$LANG\"}\"}\"}:+\".${LC_ALL:-\"${LC_MESSAGES:-\"${LC_CTYPE:-\"$LANG\"}\"}\"}\"}>\n"
 
 #. type: Plain text
-#: doc/tin.1:3608 doc/tin.5:1159
+#: doc/tin.1:3618 doc/tin.5:1159
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/mailgroups>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/mailgroups>"
 
 #. type: Plain text
-#: doc/tin.1:3611 doc/tin.5:1175
+#: doc/tin.1:3621 doc/tin.5:1175
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/newsrctable>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/newsrctable>"
 
 #. type: Plain text
-#: doc/tin.1:3614 doc/tin.5:1220
+#: doc/tin.1:3624 doc/tin.5:1220
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/posted>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/posted>"
 
 #. type: Plain text
-#: doc/tin.1:3617 doc/tin.5:1235
+#: doc/tin.1:3627 doc/tin.5:1235
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/Mail/posted>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/Mail/posted>"
 
 #. type: Plain text
-#: doc/tin.1:3620 doc/tin.5:1245
+#: doc/tin.1:3630 doc/tin.5:1245
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/postponed.articles>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/postponed.articles>"
 
 #. type: Plain text
-#: doc/tin.1:3624 doc/tin.5:1255
+#: doc/tin.1:3634 doc/tin.5:1255
 #, no-wrap
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER${NNTPPORT:+\":$NNTPPORT\"}/motd>\n"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER${NNTPPORT:+\":$NNTPPORT\"}/motd>\n"
 
 #. type: Plain text
-#: doc/tin.1:3629 doc/tin.5:1266
+#: doc/tin.1:3639 doc/tin.5:1266
 #, no-wrap
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER${NNTPPORT:+\":$NNTPPORT\"}/msglog>\n"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER${NNTPPORT:+\":$NNTPPORT\"}/msglog>\n"
 
 #. type: Plain text
-#: doc/tin.1:3634 doc/tin.5:1276
+#: doc/tin.1:3644 doc/tin.5:1276
 #, no-wrap
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER${NNTPPORT:+\":$NNTPPORT\"}/newsgroups>\n"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER${NNTPPORT:+\":$NNTPPORT\"}/newsgroups>\n"
 
 #. type: Plain text
-#: doc/tin.1:3639 doc/tin.5:1295
+#: doc/tin.1:3649 doc/tin.5:1295
 #, no-wrap
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER${NNTPPORT:+\":$NNTPPORT\"}/serverrc>\n"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER${NNTPPORT:+\":$NNTPPORT\"}/serverrc>\n"
@@ -8798,22 +8845,22 @@ msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER${NNTPPORT:+\":$NNTPPORT\"}/
 #.  we should think about checking for the new Paths (/news/etc/)
 #.  .IR ${TIN_LIBDIR\-"/news/etc"}/tinrc
 #. type: Plain text
-#: doc/tin.1:3644 doc/tin.5:1322
+#: doc/tin.1:3654 doc/tin.5:1322
 msgid "I</etc/tin/tinrc>"
 msgstr "I</etc/tin/tinrc>"
 
 #. type: Plain text
-#: doc/tin.1:3646 doc/tin.5:1324
+#: doc/tin.1:3656 doc/tin.5:1324
 msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/tinrc>"
 msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/tinrc>"
 
 #. type: Plain text
-#: doc/tin.1:3649 doc/tin.5:2616
+#: doc/tin.1:3659 doc/tin.5:2616
 msgid "I</etc/tin/tin.defaults>"
 msgstr "I</etc/tin/tin.defaults>"
 
 #. type: Plain text
-#: doc/tin.1:3652
+#: doc/tin.1:3662
 msgid "I</usr/local/share/locale/${LC_MESSAGES}/LC_MESSAGES/tin.mo>"
 msgstr "I</usr/local/share/locale/${LC_MESSAGES}/LC_MESSAGES/tin.mo>"
 
@@ -8822,51 +8869,51 @@ msgstr "I</usr/local/share/locale/${LC_MESSAGES}/LC_MESSAGES/tin.mo>"
 #.  we should think about checking for the new Paths
 #.  (described shown below).
 #. type: Plain text
-#: doc/tin.1:3655 doc/tin.5:2726
+#: doc/tin.1:3665 doc/tin.5:2726
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}\"/\"${TIN_ACTIVEFILE:-active}>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}\"/\"${TIN_ACTIVEFILE:-active}>"
 
 #. type: Plain text
-#: doc/tin.1:3658 doc/tin.5:2787
+#: doc/tin.1:3668 doc/tin.5:2787
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}/active.times>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}/active.times>"
 
 #. type: Plain text
-#: doc/tin.1:3661 doc/tin.5:2814
+#: doc/tin.1:3671 doc/tin.5:2814
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}/newsgroups>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}/newsgroups>"
 
 #. type: Plain text
-#: doc/tin.1:3664 doc/tin.5:2837
+#: doc/tin.1:3674 doc/tin.5:2837
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}/organization>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}/organization>"
 
 #.  is the Path correct? or is it /news/etc/overview.fmt
 #. type: Plain text
-#: doc/tin.1:3667 doc/tin.5:2847
+#: doc/tin.1:3677 doc/tin.5:2847
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}/overview.fmt>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}/overview.fmt>"
 
 #.  is the Path correct? or is it /news/etc/subscriptions
 #. type: Plain text
-#: doc/tin.1:3672 doc/tin.5:2865
+#: doc/tin.1:3682 doc/tin.5:2865
 msgid "I<${TIN_LIBDIR:-NEWSLIBDIR}/subscriptions>"
 msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}/subscriptions>"
 
 #. type: IX
-#: doc/tin.1:3672 doc/tin.1:3673
+#: doc/tin.1:3682 doc/tin.1:3683
 #, no-wrap
 msgid "ENVIRONMENT"
 msgstr "UMGEBUNGSVARIABLEN"
 
 #. type: TP
-#: doc/tin.1:3677
+#: doc/tin.1:3687
 #, no-wrap
 msgid "B<TINRC>"
 msgstr "B<TINRC>"
 
 #. type: Plain text
-#: doc/tin.1:3685
+#: doc/tin.1:3695
 msgid ""
 "Define this variable if you want to specify command-line options that B<tin> "
 "should be started with to save typing them each time it is started. The "
@@ -8874,20 +8921,20 @@ msgid ""
 "line options before it is parsed therefore allowing an option specified on "
 "the command-line to override the same option specified in the environment."
 msgstr ""
-"Setzen Sie diese Variable wenn Sie Kommandozeilenoptionen angeben möchten mit "
-"denen B<tin> gestartet werden soll um die Eingabe, jedes Mal wenn B<tin> "
+"Setzen Sie diese Variable wenn Sie Kommandozeilenoptionen angeben möchten "
+"mit denen B<tin> gestartet werden soll um die Eingabe, jedes Mal wenn B<tin> "
 "ausgeführt wird, zu sparen. Der Inhalt der Umgebungsvariablen wird den "
 "angegebenen Kommandozeilenoptionen vorangestellt \\(em bevor diese auf "
 "Gültigkeit überprüft werden \\(em um Sie manuell übersteuern zu können."
 
 #. type: TP
-#: doc/tin.1:3685
+#: doc/tin.1:3695
 #, no-wrap
 msgid "B<TIN_HOMEDIR>"
 msgstr "B<TIN_HOMEDIR>"
 
 #. type: Plain text
-#: doc/tin.1:3690
+#: doc/tin.1:3700
 msgid ""
 "Define this variable if you do not want the I<.tin> directory in I<$HOME/>. "
 "E.g., if you want all B<tin>'s private files in I</tmp/.tin> you would set "
@@ -8898,55 +8945,55 @@ msgstr ""
 "tin> haben möchten, setzen Sie $B<TIN_HOMEDIR> auf I</tmp>."
 
 #. type: TP
-#: doc/tin.1:3690
+#: doc/tin.1:3700
 #, no-wrap
 msgid "B<TIN_INDEX_NEWSDIR>"
 msgstr "B<TIN_INDEX_NEWSDIR>"
 
 #. type: Plain text
-#: doc/tin.1:3696
+#: doc/tin.1:3706
 msgid ""
-"Define this variable if you do not want the I<.news> directory in I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.tin/>. E.g., if you want all B<tin>'s news index "
-"files in I</tmp/.news> you would set $B<TIN_INDEX_NEWSDIR> to I</tmp>."
+"Define this variable if you do not want the I<.news> directory in "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/>. E.g., if you want all B<tin>'s news "
+"index files in I</tmp/.news> you would set $B<TIN_INDEX_NEWSDIR> to I</tmp>."
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3696
+#: doc/tin.1:3706
 #, no-wrap
 msgid "B<TIN_INDEX_MAILDIR>"
 msgstr "B<TIN_INDEX_MAILDIR>"
 
 #. type: Plain text
-#: doc/tin.1:3702
+#: doc/tin.1:3712
 msgid ""
-"Define this variable if you do not want the I<.mail> directory in I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.tin/>. E.g., if you want all B<tin>'s mail index "
-"files in I</tmp/.mail> you would set $B<TIN_INDEX_MAILDIR> to I</tmp>."
+"Define this variable if you do not want the I<.mail> directory in "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/>. E.g., if you want all B<tin>'s mail "
+"index files in I</tmp/.mail> you would set $B<TIN_INDEX_MAILDIR> to I</tmp>."
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3702
+#: doc/tin.1:3712
 #, no-wrap
 msgid "B<TIN_INDEX_SAVEDIR>"
 msgstr "B<TIN_INDEX_SAVEDIR>"
 
 #. type: Plain text
-#: doc/tin.1:3708
+#: doc/tin.1:3718
 msgid ""
-"Define this variable if you do not want the I<.save> directory in I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.tin/>. E.g., if you want all B<tin>'s save index "
-"files in I</tmp/.save> you would set $B<TIN_INDEX_SAVEDIR> to I</tmp>."
+"Define this variable if you do not want the I<.save> directory in "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/>. E.g., if you want all B<tin>'s save "
+"index files in I</tmp/.save> you would set $B<TIN_INDEX_SAVEDIR> to I</tmp>."
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3708
+#: doc/tin.1:3718
 #, no-wrap
 msgid "B<TIN_LIBDIR>"
 msgstr "B<TIN_LIBDIR>"
 
 #. type: Plain text
-#: doc/tin.1:3713
+#: doc/tin.1:3723
 msgid ""
 "Define this variable if you want to override the B<NEWSLIBDIR> path that was "
 "compiled into the B<tin> binary, default is I</usr/lib/news>.  If B<tin> is "
@@ -8954,13 +9001,13 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3713
+#: doc/tin.1:3723
 #, no-wrap
 msgid "B<TIN_SPOOLDIR>"
 msgstr "B<TIN_SPOOLDIR>"
 
 #. type: Plain text
-#: doc/tin.1:3718
+#: doc/tin.1:3728
 msgid ""
 "Define this variable if you want to override the B<SPOOLDIR> path that was "
 "compiled into the B<tin> binary, default is I</var/spool/news>.  If B<tin> "
@@ -8968,13 +9015,13 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3718
+#: doc/tin.1:3728
 #, no-wrap
 msgid "B<TIN_NOVROOTDIR>"
 msgstr "B<TIN_NOVROOTDIR>"
 
 #. type: Plain text
-#: doc/tin.1:3724
+#: doc/tin.1:3734
 msgid ""
 "Define this variable if you want to override the B<NOVROOTDIR> path that was "
 "compiled into the B<tin> binary, default is B<SPOOLDIR> (see above). If "
@@ -8982,13 +9029,13 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3724
+#: doc/tin.1:3734
 #, no-wrap
 msgid "B<TIN_NOVFILENAME>"
 msgstr "B<TIN_NOVFILENAME>"
 
 #. type: Plain text
-#: doc/tin.1:3730
+#: doc/tin.1:3740
 msgid ""
 "Define this variable if you want to override the B<OVERVIEW_FILE> filename "
 "that was compiled into the B<tin> binary, default is I<.overview>. If B<tin> "
@@ -8996,13 +9043,13 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3730
+#: doc/tin.1:3740
 #, no-wrap
 msgid "B<TIN_ACTIVEFILE>"
 msgstr "B<TIN_ACTIVEFILE>"
 
 #. type: Plain text
-#: doc/tin.1:3736
+#: doc/tin.1:3746
 msgid ""
 "Define this variable if you want to override the B<NEWSLIBDIR/active> path "
 "that was compiled into the B<tin> binary. If B<tin> is running in NNTP mode "
@@ -9015,13 +9062,13 @@ msgstr ""
 "$B<TIN_LIBDIR> gesetzt sein wird es $B<TIN_ACTIVEFILE> vorangestellt."
 
 #. type: TP
-#: doc/tin.1:3736
+#: doc/tin.1:3746
 #, no-wrap
 msgid "B<NNTPSERVER>"
 msgstr "B<NNTPSERVER>"
 
 #. type: Plain text
-#: doc/tin.1:3742
+#: doc/tin.1:3752
 msgid ""
 "The default NNTP server to remotely read news from. This variable only needs "
 "to be set if the ''B<-r>'' command-line option is specified and the file I</"
@@ -9030,13 +9077,13 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3742
+#: doc/tin.1:3752
 #, no-wrap
 msgid "B<NNTPPORT>"
 msgstr "B<NNTPPORT>"
 
 #. type: Plain text
-#: doc/tin.1:3747
+#: doc/tin.1:3757
 msgid ""
 "The NNTP TCP-port to read news from. This variable only needs to be set if "
 "the TCP-port is not 119 (the default). The ''B<-p>'' and ''B<-T>'' command-"
@@ -9044,13 +9091,13 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3747
+#: doc/tin.1:3757
 #, no-wrap
 msgid "B<DISTRIBUTION>"
 msgstr "B<DISTRIBUTION>"
 
 #. type: Plain text
-#: doc/tin.1:3751
+#: doc/tin.1:3761
 msgid ""
 "Set the article header field ''Distribution:'' to the contents of the "
 "variable instead of the system default."
@@ -9059,13 +9106,13 @@ msgstr ""
 "statt auf den Systemstandard."
 
 #. type: TP
-#: doc/tin.1:3751
+#: doc/tin.1:3761
 #, no-wrap
 msgid "B<ISO2ASC>"
 msgstr "B<ISO2ASC>"
 
 #. type: Plain text
-#: doc/tin.1:3755
+#: doc/tin.1:3765
 msgid ""
 "Set the ISO to ASCII charset decoding table character to use in decoding an "
 "article text. Values can range from -1 to 6."
@@ -9074,34 +9121,34 @@ msgstr ""
 "Dekodierung des Artikeltextes. Die Werte können von -1 bis 6 reichen."
 
 #. type: TP
-#: doc/tin.1:3756
+#: doc/tin.1:3766
 #, no-wrap
 msgid "B<-1>"
 msgstr "B<-1>"
 
 #. type: Plain text
-#: doc/tin.1:3759
+#: doc/tin.1:3769
 msgid "no conversion"
 msgstr "Keine Umformung"
 
 #. type: Plain text
-#: doc/tin.1:3762
+#: doc/tin.1:3772
 msgid "universal table for many languages"
 msgstr "Universal-Tabelle für viele Sprachen"
 
 #. type: Plain text
-#: doc/tin.1:3765
+#: doc/tin.1:3775
 msgid "single-spacing universal table"
 msgstr "Universal-Tabelle mit einfachem Abstand"
 
 #. type: Plain text
-#: doc/tin.1:3768
+#: doc/tin.1:3778
 msgid "table for Danish, Dutch, German, Norwegian and Swedish"
 msgstr ""
 "Tabelle für Dänisch, Niederländisch, Deutsch, Norwegisch und Schwedisch"
 
 #. type: Plain text
-#: doc/tin.1:3772
+#: doc/tin.1:3782
 msgid ""
 "table for Danish, Finnish, Norwegian and Swedish using the appropriate ISO "
 "646 variant"
@@ -9110,40 +9157,40 @@ msgstr ""
 "entsprechenden ISO 646-Variante"
 
 #. type: Plain text
-#: doc/tin.1:3775
+#: doc/tin.1:3785
 msgid "table with B<RFC\\%1345> codes in brackets"
 msgstr "Tabelle mit B<RFC\\%1345>-Codes in Klammern"
 
 #. type: TP
-#: doc/tin.1:3775
+#: doc/tin.1:3785
 #, no-wrap
 msgid "B<5>"
 msgstr "B<5>"
 
 #. type: Plain text
-#: doc/tin.1:3778
+#: doc/tin.1:3788
 msgid "table for printers that allow overstriking with backspace"
 msgstr "Tabelle für Drucker, die es erlauben, mit Backspace zu überschreiben"
 
 #. type: TP
-#: doc/tin.1:3778
+#: doc/tin.1:3788
 #, no-wrap
 msgid "B<6>"
 msgstr "B<6>"
 
 #. type: Plain text
-#: doc/tin.1:3781
+#: doc/tin.1:3791
 msgid "table for IBM PC character set (code page 437)"
 msgstr "Tabelle für IBM PC-Zeichensatz (Codepage 437)"
 
 #. type: TP
-#: doc/tin.1:3782
+#: doc/tin.1:3792
 #, no-wrap
 msgid "B<ORGANIZATION>"
 msgstr "B<ORGANIZATION>"
 
 #. type: Plain text
-#: doc/tin.1:3789
+#: doc/tin.1:3799
 msgid ""
 "Set the article header field ''Organization:'' to the contents of the "
 "variable instead of the system default. If it points to a readable file a "
@@ -9153,26 +9200,26 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3789
+#: doc/tin.1:3799
 #, no-wrap
 msgid "B<NEWSORG (DomainOS)>"
 msgstr "B<NEWSORG (DomainOS)>"
 
 #. type: Plain text
-#: doc/tin.1:3792
+#: doc/tin.1:3802
 msgid "DomainOS specific, same as $B<ORGANIZATION> on other OSs (see above)."
 msgstr ""
 "DomainOS spezifisch, wie $B<ORGANIZATION> auf anderen Betriebssystemen "
 "(siehe oben)."
 
 #. type: TP
-#: doc/tin.1:3792
+#: doc/tin.1:3802
 #, no-wrap
 msgid "B<REPLYTO>"
 msgstr "B<REPLYTO>"
 
 #. type: Plain text
-#: doc/tin.1:3797
+#: doc/tin.1:3807
 msgid ""
 "Set the article header field ''Reply-To:'' to the return address specified "
 "by the variable. This is useful if you wish to receive replies at a "
@@ -9183,13 +9230,13 @@ msgstr ""
 "Adresse erhalten möchten."
 
 #. type: TP
-#: doc/tin.1:3797
+#: doc/tin.1:3807
 #, no-wrap
 msgid "B<NAME>"
 msgstr "B<NAME>"
 
 #. type: Plain text
-#: doc/tin.1:3801
+#: doc/tin.1:3811
 msgid ""
 "Overrides the full name given in the gecos-field in I</etc/passwd>, see also "
 "B<mail_address>."
@@ -9198,38 +9245,38 @@ msgstr ""
 "angegeben ist, siehe auch B<mail_address>."
 
 #. type: TP
-#: doc/tin.1:3801
+#: doc/tin.1:3811
 #, no-wrap
 msgid "B<REALNAME>"
 msgstr "B<REALNAME>"
 
 #. type: Plain text
-#: doc/tin.1:3804
+#: doc/tin.1:3814
 msgid "Same as $B<NAME>."
 msgstr "Bewirkt das Gleiche wie $B<NAME>."
 
 #. type: TP
-#: doc/tin.1:3804
+#: doc/tin.1:3814
 #, no-wrap
 msgid "B<HOME>"
 msgstr "B<HOME>"
 
 #. type: Plain text
-#: doc/tin.1:3809
+#: doc/tin.1:3819
 msgid ""
 "Pathname of the user's home directory. See B<\\%environ>(5)  for more info."
 msgstr ""
-"Das Anmeldeverzeichnis des Benutzers. Weitere Informationen finden sich in B<"
-"\\%environ>(5)."
+"Das Anmeldeverzeichnis des Benutzers. Weitere Informationen finden sich in "
+"B<\\%environ>(5)."
 
 #. type: TP
-#: doc/tin.1:3809
+#: doc/tin.1:3819
 #, no-wrap
 msgid "B<MAILER>"
 msgstr "B<MAILER>"
 
 #. type: Plain text
-#: doc/tin.1:3813
+#: doc/tin.1:3823
 msgid ""
 "This variable has precedence over the default mailer that is used in all "
 "mailing operations within B<tin>."
@@ -9238,24 +9285,24 @@ msgstr ""
 "Versandoperationen innerhalb von B<tin> verwendet wird."
 
 #. type: TP
-#: doc/tin.1:3813
+#: doc/tin.1:3823
 #, no-wrap
 msgid "B<MAIL>"
 msgstr "B<MAIL>"
 
 #. type: Plain text
-#: doc/tin.1:3816
+#: doc/tin.1:3826
 msgid "Full path to the user's mailbox."
 msgstr "Voller Pfad zum Postfach des Benutzers."
 
 #. type: TP
-#: doc/tin.1:3816
+#: doc/tin.1:3826
 #, no-wrap
 msgid "B<VISUAL>"
 msgstr "B<VISUAL>"
 
 #. type: Plain text
-#: doc/tin.1:3825
+#: doc/tin.1:3835
 msgid ""
 "This variable has precedence over the default editor (i.e., B<\\%vi>(1))  "
 "that is used in all editing operations within B<tin> (e.g., posting, "
@@ -9264,13 +9311,13 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3825
+#: doc/tin.1:3835
 #, no-wrap
 msgid "B<EDITOR>"
 msgstr "B<EDITOR>"
 
 #. type: Plain text
-#: doc/tin.1:3834
+#: doc/tin.1:3844
 msgid ""
 "If $B<VISUAL> is unset, then this variable is looked up for a default "
 "editor. If $B<EDITOR> and $B<VISUAL> are both unset, B<tin> uses the systems "
@@ -9283,13 +9330,13 @@ msgstr ""
 "Systemen). Weitere Informationen finden sich in B<\\%environ>(5)."
 
 #. type: TP
-#: doc/tin.1:3834
+#: doc/tin.1:3844
 #, no-wrap
 msgid "B<AUTOSUBSCRIBE>"
 msgstr "B<AUTOSUBSCRIBE>"
 
 #. type: Plain text
-#: doc/tin.1:3840
+#: doc/tin.1:3850
 msgid ""
 "A new group is checked against the list of patterns; if it matches, B<tin> "
 "subscribes the user to the group without further query.  See the section "
@@ -9298,12 +9345,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3842
+#: doc/tin.1:3852
 msgid "I<AUTOSUBSCRIBE=comp.os.unix.*,talk.*,!talk.politics.*>"
 msgstr "I<AUTOSUBSCRIBE=comp.os.unix.*,talk.*,!talk.politics.*>"
 
 #. type: Plain text
-#: doc/tin.1:3847
+#: doc/tin.1:3857
 msgid ""
 "will automatically subscribe the user to all new groups in the comp.os.unix "
 "hierarchy, and all talk groups other than talk.politics groups (which will "
@@ -9312,25 +9359,25 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3847
+#: doc/tin.1:3857
 #, no-wrap
 msgid "B<AUTOUNSUBSCRIBE>"
 msgstr "B<AUTOUNSUBSCRIBE>"
 
 #. type: Plain text
-#: doc/tin.1:3851
+#: doc/tin.1:3861
 msgid ""
 "Is handled like the $B<AUTOSUBSCRIBE> variable, but groups matching the list "
 "are unsubscribed from without further query. For example, setting"
 msgstr ""
 
 #. type: Plain text
-#: doc/tin.1:3853
+#: doc/tin.1:3863
 msgid "I<AUTOUNSUBSCRIBE=alt.flame.*,u*,!uk.*>"
 msgstr "I<AUTOUNSUBSCRIBE=alt.flame.*,u*,!uk.*>"
 
 #. type: Plain text
-#: doc/tin.1:3857
+#: doc/tin.1:3867
 msgid ""
 "will automatically unsubscribe the user from all new alt.flame groups and "
 "all groups starting with u (university groups) other than UK groups (which "
@@ -9341,13 +9388,13 @@ msgstr ""
 "Gruppen (die wie gewohnt abgefragt werden), abmelden."
 
 #. type: TP
-#: doc/tin.1:3857
+#: doc/tin.1:3867
 #, no-wrap
 msgid "B<TMPDIR>"
 msgstr "B<TMPDIR>"
 
 #. type: Plain text
-#: doc/tin.1:3861
+#: doc/tin.1:3871
 msgid ""
 "A pathname of a directory made available for B<tin> to create temporary "
 "files."
@@ -9356,13 +9403,13 @@ msgstr ""
 "Dateien zur Verfügung gestellt wird."
 
 #. type: TP
-#: doc/tin.1:3861
+#: doc/tin.1:3871
 #, no-wrap
 msgid "B<MAILCAPS>"
 msgstr "B<MAILCAPS>"
 
 #. type: Plain text
-#: doc/tin.1:3867
+#: doc/tin.1:3877
 msgid ""
 "This variable can be used to override the default path search for B<\\"
 "%mailcap>(5)  files. See also B<\\%tin>(5)."
@@ -9371,13 +9418,13 @@ msgstr ""
 "%mailcap>(5)-Dateien zu überschreiben. Siehe auch B<\\%tin>(5)."
 
 #. type: TP
-#: doc/tin.1:3867
+#: doc/tin.1:3877
 #, no-wrap
 msgid "B<NOMETAMAIL>"
 msgstr "B<NOMETAMAIL>"
 
 #. type: Plain text
-#: doc/tin.1:3872
+#: doc/tin.1:3882
 msgid ""
 "Set this variable to disable the use of B<\\%metamail>(1)  or a replacement "
 "(e.g. metamutt)."
@@ -9386,13 +9433,13 @@ msgstr ""
 "einen Ersatz (z. B. metamutt) zu unterdrücken."
 
 #. type: TP
-#: doc/tin.1:3872
+#: doc/tin.1:3882
 #, no-wrap
 msgid "B<MM_CHARSET>"
 msgstr "B<MM_CHARSET>"
 
 #. type: Plain text
-#: doc/tin.1:3876
+#: doc/tin.1:3886
 msgid ""
 "MIME character set used if not configured via the tinrc variable "
 "B<mm_charset>."
@@ -9401,26 +9448,26 @@ msgstr ""
 "B<mm_charset> konfiguriert."
 
 #. type: TP
-#: doc/tin.1:3876
+#: doc/tin.1:3886
 #, no-wrap
 msgid "B<ISPELL>"
 msgstr "B<ISPELL>"
 
 #. type: Plain text
-#: doc/tin.1:3881
+#: doc/tin.1:3891
 msgid ""
 "Set this variable to point to B<\\%ispell>(1)  or a replacement and its cmd-"
 "line options."
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3881
+#: doc/tin.1:3891
 #, no-wrap
 msgid "B<PGPOPTS>"
 msgstr "B<PGPOPTS>"
 
 #. type: Plain text
-#: doc/tin.1:3888
+#: doc/tin.1:3898
 msgid ""
 "Define any additional options that you wish to pass to your B<\\%pgp>(1)  or "
 "B<\\%gpg>(1)  program."
@@ -9429,13 +9476,13 @@ msgstr ""
 "Programm übergeben möchten."
 
 #. type: TP
-#: doc/tin.1:3888
+#: doc/tin.1:3898
 #, no-wrap
 msgid "B<PGPPATH>"
 msgstr "B<PGPPATH>"
 
 #. type: Plain text
-#: doc/tin.1:3893
+#: doc/tin.1:3903
 msgid ""
 "Override the name of the B<\\%pgp>(1)  directory in B<$HOME> that holds your "
 "keys etc.."
@@ -9444,13 +9491,13 @@ msgstr ""
 "deine Schlüssel usw. enthält."
 
 #. type: TP
-#: doc/tin.1:3893
+#: doc/tin.1:3903
 #, no-wrap
 msgid "B<GNUPGHOME>"
 msgstr "B<GNUPGHOME>"
 
 #. type: Plain text
-#: doc/tin.1:3898
+#: doc/tin.1:3908
 msgid ""
 "Override the name of the B<\\%gpg>(1)  directory in B<$HOME> that holds your "
 "keys etc.."
@@ -9459,13 +9506,13 @@ msgstr ""
 "deine Schlüssel usw. enthält."
 
 #. type: TP
-#: doc/tin.1:3898
+#: doc/tin.1:3908
 #, no-wrap
 msgid "B<LC_CTYPE>"
 msgstr "B<LC_CTYPE>"
 
 #. type: Plain text
-#: doc/tin.1:3910
+#: doc/tin.1:3920
 msgid ""
 "This variable determines the B<\\%locale>(5)  category for character "
 "handling functions. Usually it determines the character classes for pattern "
@@ -9477,13 +9524,13 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3910
+#: doc/tin.1:3920
 #, no-wrap
 msgid "B<LC_MESSAGES>"
 msgstr "B<LC_MESSAGES>"
 
 #. type: Plain text
-#: doc/tin.1:3919
+#: doc/tin.1:3929
 msgid ""
 "Formats of informative and diagnostic messages and interactive responses.  "
 "Its value should be of the form I<language>[I<_territory>][I<.codeset>]"
@@ -9495,13 +9542,13 @@ msgstr ""
 "%locale>(5) und B<\\%environ>(5)."
 
 #. type: TP
-#: doc/tin.1:3919
+#: doc/tin.1:3929
 #, no-wrap
 msgid "B<LC_TIME>"
 msgstr "B<LC_TIME>"
 
 #. type: Plain text
-#: doc/tin.1:3927
+#: doc/tin.1:3937
 msgid ""
 "Date and time formats. Its value should be of the form "
 "I<language>[I<_territory>][I<.codeset>][I<@modifier>]. See B<\\%locale>(5)  "
@@ -9512,16 +9559,16 @@ msgstr ""
 "%locale>(5) und B<\\%environ>(5)."
 
 #. type: TP
-#: doc/tin.1:3927
+#: doc/tin.1:3937
 #, no-wrap
 msgid "B<LC_ALL>"
 msgstr "B<LC_ALL>"
 
 #. type: Plain text
-#: doc/tin.1:3936
+#: doc/tin.1:3946
 msgid ""
-"This variable overrides the value of the B<$LANG> variable and any other B<"
-"$LC_> variable. Its value should be of the form I<language>[I<_territory>]"
+"This variable overrides the value of the B<$LANG> variable and any other "
+"B<$LC_> variable. Its value should be of the form I<language>[I<_territory>]"
 "[I<.codeset>]. See B<\\%locale>(5)  and B<\\%environ>(5)  for more "
 "information."
 msgstr ""
@@ -9530,13 +9577,13 @@ msgstr ""
 "%locale>(5) und B<\\%environ>(5)."
 
 #. type: TP
-#: doc/tin.1:3936
+#: doc/tin.1:3946
 #, no-wrap
 msgid "B<LANG>"
 msgstr "B<LANG>"
 
 #. type: Plain text
-#: doc/tin.1:3945
+#: doc/tin.1:3955
 msgid ""
 "This variable determines the B<\\%locale>(5)  category for any category not "
 "specifically selected with a variable starting with B<$LC_>. Its value "
@@ -9548,29 +9595,29 @@ msgstr ""
 "%locale>(5) und B<\\%environ>(5)."
 
 #. type: TP
-#: doc/tin.1:3945
+#: doc/tin.1:3955
 #, no-wrap
 msgid "B<LANGUAGE>"
 msgstr "B<LANGUAGE>"
 
 #. type: Plain text
-#: doc/tin.1:3953
+#: doc/tin.1:3963
 msgid ""
 "This variable defines a priority list for translations. Whenever a "
-"translation is not available in the language selected via B<$LC_ALL> or B<"
-"$LANG> the next language from the list is tried. Its value should be of the "
-"form I<language:language[:language]>. See B<\\%environ>(5)  for more "
+"translation is not available in the language selected via B<$LC_ALL> or "
+"B<$LANG> the next language from the list is tried. Its value should be of "
+"the form I<language:language[:language]>. See B<\\%environ>(5)  for more "
 "information."
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3953
+#: doc/tin.1:3963
 #, no-wrap
 msgid "B<COLUMNS>"
 msgstr "B<COLUMNS>"
 
 #. type: Plain text
-#: doc/tin.1:3963
+#: doc/tin.1:3973
 msgid ""
 "A decimal integer E<gt> 0 used to indicate the user's preferred width in "
 "column positions for the terminal screen or window. If this variable is "
@@ -9583,13 +9630,13 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3963
+#: doc/tin.1:3973
 #, no-wrap
 msgid "B<LINES>"
 msgstr "B<LINES>"
 
 #. type: Plain text
-#: doc/tin.1:3973
+#: doc/tin.1:3983
 msgid ""
 "A decimal integer E<gt> 0 used to indicate the user's preferred number of "
 "lines on a page or the vertical screen or window size in lines. A line in "
@@ -9602,7 +9649,7 @@ msgid ""
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:3973
+#: doc/tin.1:3983
 #, no-wrap
 msgid "B<TERM>"
 msgstr "B<TERM>"
@@ -9610,7 +9657,7 @@ msgstr "B<TERM>"
 #
 #
 #. type: Plain text
-#: doc/tin.1:3979
+#: doc/tin.1:3989
 msgid ""
 "The type of terminal in use. This is used when looking up termcap "
 "sequences.  See B<\\%environ>(5)  for more information."
@@ -9619,24 +9666,24 @@ msgstr ""
 "%environ>(5)."
 
 #. type: TP
-#: doc/tin.1:3979
+#: doc/tin.1:3989
 #, no-wrap
 msgid "B<DISPLAY>"
 msgstr "B<DISPLAY>"
 
 #. type: Plain text
-#: doc/tin.1:3982
+#: doc/tin.1:3992
 msgid "Display name, pointing to the X server; required for xface."
 msgstr "Anzeigename der auf den X-Server zeigt; erforderlich für xface."
 
 #. type: TP
-#: doc/tin.1:3982
+#: doc/tin.1:3992
 #, no-wrap
 msgid "B<WINDOWID>"
 msgstr "B<WINDOWID>"
 
 #. type: Plain text
-#: doc/tin.1:3986
+#: doc/tin.1:3996
 msgid ""
 "Used for determining terminal's X window id; required for xface. Should be "
 "set by the terminal emulator."
@@ -9645,13 +9692,13 @@ msgstr ""
 "für xface. Sollte vom Terminalemulator gesetzt werden."
 
 #. type: TP
-#: doc/tin.1:3986
+#: doc/tin.1:3996
 #, no-wrap
 msgid "B<SHELL>"
 msgstr "B<SHELL>"
 
 #. type: Plain text
-#: doc/tin.1:3990
+#: doc/tin.1:4000
 msgid ""
 "The pathname of the user's login shell. Used to set B<default_shell_command>."
 msgstr ""
@@ -9659,13 +9706,13 @@ msgstr ""
 "B<default_shell_command>."
 
 #. type: TP
-#: doc/tin.1:3990
+#: doc/tin.1:4000
 #, no-wrap
 msgid "B<XDG_RUNTIME_DIR>"
 msgstr "B<XDG_RUNTIME_DIR>"
 
 #. type: Plain text
-#: doc/tin.1:3995
+#: doc/tin.1:4005
 msgid ""
 "The pathname of the user's dir to put non-essential run time files into."
 msgstr ""
@@ -9673,47 +9720,47 @@ msgstr ""
 "abgelegt werden sollen."
 
 #. type: IX
-#: doc/tin.1:3995 doc/tin.1:3996
+#: doc/tin.1:4005 doc/tin.1:4006
 #, no-wrap
 msgid "SIGNALS"
 msgstr "SIGNALE"
 
 #.  TODO: add missing, sort useful, document in detail
 #. type: Plain text
-#: doc/tin.1:4000
+#: doc/tin.1:4010
 msgid "B<tin> handles a couple of signals:"
 msgstr "B<tin> verarbeitet folgende Signale:"
 
 #. type: TP
-#: doc/tin.1:4000
+#: doc/tin.1:4010
 #, no-wrap
 msgid "B<SIGHUP>"
 msgstr "B<SIGHUP>"
 
 #. type: Plain text
-#: doc/tin.1:4003 doc/tin.1:4006
+#: doc/tin.1:4013 doc/tin.1:4016
 msgid "Terminate gracefully."
 msgstr "Sauber beenden."
 
 #. type: TP
-#: doc/tin.1:4003
+#: doc/tin.1:4013
 #, no-wrap
 msgid "B<SIGTERM>"
 msgstr "B<SIGTERM>"
 
 #. type: TP
-#: doc/tin.1:4006
+#: doc/tin.1:4016
 #, no-wrap
 msgid "B<SIGUSR1>"
 msgstr "B<SIGUSR1>"
 
 #. type: Plain text
-#: doc/tin.1:4009
+#: doc/tin.1:4019
 msgid "Terminate gracefully but do not restore terminal (tty)."
 msgstr "Beenden ohne das Terminal (tty) wiederherzustellen."
 
 #. type: TP
-#: doc/tin.1:4009
+#: doc/tin.1:4019
 #, no-wrap
 msgid "B<SIGUSR2>"
 msgstr "B<SIGUSR2>"
@@ -9724,34 +9771,34 @@ msgstr "B<SIGUSR2>"
 #.  give an overview of the most common error messages and how to cope with
 #.  them.
 #. type: Plain text
-#: doc/tin.1:4020
+#: doc/tin.1:4030
 msgid "Write out I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc>-file."
 msgstr "Speichern der I<${TIN_HOMEDIR:-\"$HOME\"}/.newsrc>-Datei."
 
 #. type: IX
-#: doc/tin.1:4020 doc/tin.1:4021
+#: doc/tin.1:4030 doc/tin.1:4031
 #, no-wrap
 msgid "SECURITY"
 msgstr "SICHERHEIT"
 
 #. type: Plain text
-#: doc/tin.1:4027
+#: doc/tin.1:4037
 msgid ""
 "If B<tin> is started in debug mode (''B<-D n>'') it will create world "
 "readable files in B<$TMPDIR> which may contain sensitive data like the users "
-"NNTP password in cleartext (if running verbose). On multiuser-systems B<"
-"$TMPDIR> should be set to a safe location before starting B<tin> in "
+"NNTP password in cleartext (if running verbose). On multiuser-systems "
+"B<$TMPDIR> should be set to a safe location before starting B<tin> in "
 "(verbose) debug mode (e.g. B<TMPDIR=$HOME tin -vD 1>)."
 msgstr ""
-"Falls B<tin> im Debug-Modus (''B<-D n>'') gestartet wird, werden in B<"
-"$TMPDIR> für alle Benutzer lesbare Dateien erzeugt, welche das NNTP-Passwort "
-"des aktuellen Benutzers im Klartext enthalten können (falls Verbose "
+"Falls B<tin> im Debug-Modus (''B<-D n>'') gestartet wird, werden in "
+"B<$TMPDIR> für alle Benutzer lesbare Dateien erzeugt, welche das NNTP-"
+"Passwort des aktuellen Benutzers im Klartext enthalten können (falls Verbose "
 "angeschaltet ist). Auf Multiuser-Systemen sollte daher $TMPDIR auf einen "
 "sicheren Speicherort gesetzt werden, bevor B<tin> im (verbosen) Debug-Modus "
 "gestartet wird (z. B. B<TMPDIR=$HOME tin -vD 1>)."
 
 #. type: Plain text
-#: doc/tin.1:4031
+#: doc/tin.1:4041
 msgid ""
 "Using the ''B<-k>'' option to skip certificate verification makes the "
 "session insecure as the server's certificate is not checked; avoid this "
@@ -9762,7 +9809,7 @@ msgstr ""
 "Servers nicht überprüft wird; Vermeiden Sie diese Option nach Möglichkeit."
 
 #. type: Plain text
-#: doc/tin.1:4038
+#: doc/tin.1:4048
 msgid ""
 "If the server does not initially require authentication but supports "
 "compression and compression is requested, B<tin> will exit when "
@@ -9776,7 +9823,7 @@ msgstr ""
 "Verhalten umgangen werden."
 
 #. type: IX
-#: doc/tin.1:4038 doc/tin.1:4039
+#: doc/tin.1:4048 doc/tin.1:4049
 #, no-wrap
 msgid "CONFORMING TO"
 msgstr "KONFORM ZU"
@@ -9784,7 +9831,7 @@ msgstr "KONFORM ZU"
 #.  - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
 #.    RFC\%4643, RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
 #. type: Plain text
-#: doc/tin.1:4047
+#: doc/tin.1:4057
 msgid ""
 "B<tin> does conform to the Base Definitions volume of IEEE Std 1003.1-2008, "
 "Section 12, Utility Conventions (Utility Argument Syntax, Utility Syntax "
@@ -9795,13 +9842,13 @@ msgstr ""
 "Guidelines)."
 
 #. type: IX
-#: doc/tin.1:4047 doc/tin.1:4048
+#: doc/tin.1:4057 doc/tin.1:4058
 #, no-wrap
 msgid "NOTES"
 msgstr "ANMERKUNGEN"
 
 #. type: Plain text
-#: doc/tin.1:4055
+#: doc/tin.1:4065
 msgid ""
 "Regular expression support is provided by the PCRE library package B<\\"
 "%pcre>(3)  or B<\\%pcre2>(3)  which is open source software, written by "
@@ -9813,18 +9860,18 @@ msgstr ""
 "University of Cambridge, England."
 
 #. type: Plain text
-#: doc/tin.1:4059
+#: doc/tin.1:4069
 msgid "E<lt>https://www.pcre.org/E<gt>"
 msgstr "E<lt>https://www.pcre.org/E<gt>"
 
 #. type: IX
-#: doc/tin.1:4059 doc/tin.1:4060
+#: doc/tin.1:4069 doc/tin.1:4070
 #, no-wrap
 msgid "BUGS"
 msgstr "FEHLER"
 
 #. type: Plain text
-#: doc/tin.1:4068
+#: doc/tin.1:4078
 msgid ""
 "B<CNews>\\0NNTPd, B<\\%noffle>(1)  (E<lt>= V1.0-pre5) and B<NewsCache> "
 "(E<lt>= V1.1.91) can't handle pipelined GROUP commands (B<RFC\\%3977>).  If "
@@ -9838,7 +9885,7 @@ msgstr ""
 "kompilieren Sie das Programm neu."
 
 #. type: Plain text
-#: doc/tin.1:4075
+#: doc/tin.1:4085
 msgid ""
 "Using the ''B<-C>'' (COMPRESS) flag with B<INN>\\0nnrpd versions between "
 "2.6.1 and 2.7.1 (both incl.) may cause B<tin> to hang and later timeout when "
@@ -9851,7 +9898,7 @@ msgstr ""
 "2.7.2 behoben. Als Workaround verwenden Sie einfach kein ''B<-C>''."
 
 #. type: Plain text
-#: doc/tin.1:4084
+#: doc/tin.1:4094
 msgid ""
 "Before mailing a bug-report to E<lt>tin-bugs@tin.orgE<gt> please check if "
 "you are using the latest (stable) release, and if not, please upgrade first! "
@@ -9869,13 +9916,13 @@ msgstr ""
 "außer wir haben diese angefordert."
 
 #. type: IX
-#: doc/tin.1:4084 doc/tin.1:4085
+#: doc/tin.1:4094 doc/tin.1:4095
 #, no-wrap
 msgid "HISTORY"
 msgstr "GESCHICHTE"
 
 #. type: Plain text
-#: doc/tin.1:4094
+#: doc/tin.1:4104
 msgid ""
 "B<tin> is based on the B<\\%tass>(1)  newsreader that was developed by Rich "
 "Skrenta and posted to alt.sources in March 1991; its first version was "
@@ -9893,127 +9940,127 @@ msgstr ""
 "Versionen findet sich unter"
 
 #. type: Plain text
-#: doc/tin.1:4098
+#: doc/tin.1:4108
 msgid "E<lt>http://www.tin.org/history.htmlE<gt>."
 msgstr "E<lt>http://www.tin.org/history.htmlE<gt>."
 
 #. type: SH
-#: doc/tin.1:4098
+#: doc/tin.1:4108
 #, no-wrap
 msgid "CREDITS"
 msgstr "DANKSAGUNGEN"
 
 #. type: IP
-#: doc/tin.1:4099
+#: doc/tin.1:4109
 #, no-wrap
 msgid "Rich Skrenta"
 msgstr "Rich Skrenta"
 
 #. type: Plain text
-#: doc/tin.1:4103
+#: doc/tin.1:4113
 msgid "author of B<\\%tass>(1)  v3.2 which this newsreader used as its base."
 msgstr "Autor von B<\\%tass>(1) v3.2, der Basis für diesen Newsreader."
 
 #. type: IP
-#: doc/tin.1:4103
+#: doc/tin.1:4113
 #, no-wrap
 msgid "Bill Davidsen"
 msgstr "Bill Davidsen"
 
 #. type: Plain text
-#: doc/tin.1:4105
+#: doc/tin.1:4115
 msgid "author of envarg.c environment variable reading routine."
 msgstr "Autor von envarg.c, Umgebungsvariablenleseroutine."
 
 #. type: IP
-#: doc/tin.1:4105
+#: doc/tin.1:4115
 #, no-wrap
 msgid "Mike Gleason"
 msgstr "Mike Gleason"
 
 #. type: Plain text
-#: doc/tin.1:4107
+#: doc/tin.1:4117
 msgid "author of sigfile.c random signature generation routines."
 msgstr "Autor von sigfile.c, Zufallssignaturengenerierungsroutine."
 
 #. type: IP
-#: doc/tin.1:4107
+#: doc/tin.1:4117
 #, no-wrap
 msgid "Markus Kuhn E<lt>Markus.Kuhn@cl.cam.ac.ukE<gt>"
 msgstr "Markus Kuhn E<lt>Markus.Kuhn@cl.cam.ac.ukE<gt>"
 
 #. type: Plain text
-#: doc/tin.1:4109
+#: doc/tin.1:4119
 msgid ""
 "author of langinfo.c, charset.c and iso2asc.txt ISO-8859-1 documentation."
 msgstr ""
 "Autor von langinfo.c, charset.c und der iso2asc.txt ISO-8859-1 Dokumentation."
 
 #. type: IP
-#: doc/tin.1:4109
+#: doc/tin.1:4119
 #, no-wrap
 msgid "Arnold Robbins"
 msgstr "Arnold Robbins"
 
 #. type: Plain text
-#: doc/tin.1:4111
+#: doc/tin.1:4121
 msgid "author of strftime.c date formatting routine."
 msgstr "Autor von strftime.c, Datumsfromatierungsroutine."
 
 #. type: IP
-#: doc/tin.1:4111
+#: doc/tin.1:4121
 #, no-wrap
 msgid "Rich Salz"
 msgstr "Rich Salz"
 
 #. type: Plain text
-#: doc/tin.1:4113
+#: doc/tin.1:4123
 msgid ""
 "author of wildmat.c pattern matching and parsdate.y date parsing routines."
 msgstr ""
 "Autor von wildmat.c Mustervergleichs- und parsdate.y Datumsanalyseroutinen."
 
 #. type: IP
-#: doc/tin.1:4113
+#: doc/tin.1:4123
 #, no-wrap
 msgid "Dave Taylor"
 msgstr "Dave Taylor"
 
 #. type: Plain text
-#: doc/tin.1:4117
+#: doc/tin.1:4127
 msgid "author of curses.c from the B<\\%elm>(1)  mailreader."
 msgstr "Autor von curses.c aus dem Mailreader B<\\%elm>(1)."
 
 #. type: IP
-#: doc/tin.1:4117
+#: doc/tin.1:4127
 #, no-wrap
 msgid "Chris Thewalt"
 msgstr "Chris Thewalt"
 
 #. type: Plain text
-#: doc/tin.1:4121
+#: doc/tin.1:4131
 msgid "author of getline.c B<\\%emacs>(1)  style editing routine."
 msgstr "Autor von getline.c, B<\\%emacs>(1)-artige Eingaberoutine."
 
 #. type: IP
-#: doc/tin.1:4121
+#: doc/tin.1:4131
 #, no-wrap
 msgid "Steven Madsen"
 msgstr "Steven Madsen"
 
 #. type: Plain text
-#: doc/tin.1:4125
+#: doc/tin.1:4135
 msgid "for adding B<\\%pgp>(1)  (Pretty Good Privacy) support."
 msgstr "für B<\\%pgp>(1) (Pretty Good Privacy) Unterstützung."
 
 #. type: IP
-#: doc/tin.1:4125
+#: doc/tin.1:4135
 #, no-wrap
 msgid "Philip Hazel E<lt>ph10@cam.ac.ukE<gt>"
 msgstr "Philip Hazel E<lt>ph10@cam.ac.ukE<gt>"
 
 #. type: Plain text
-#: doc/tin.1:4130
+#: doc/tin.1:4140
 msgid ""
 "for B<\\%pcre>(3), B<\\%pcre2>(3)  (Perl-compatible regular expression "
 "library)."
@@ -10022,78 +10069,78 @@ msgstr ""
 "Ausdrücke)."
 
 #. type: IP
-#: doc/tin.1:4130
+#: doc/tin.1:4140
 #, no-wrap
 msgid "Mark Martinec E<lt>mark.martinec@ijs.siE<gt>"
 msgstr "Mark Martinec E<lt>mark.martinec@ijs.siE<gt>"
 
 #. type: Plain text
-#: doc/tin.1:4138
+#: doc/tin.1:4148
 msgid "for B<\\%snprintf>(3)  and B<\\%vsnprintf>(3)  fallbacks."
 msgstr "für B<\\%snprintf>(3) und B<\\%vsnprintf>(3) Fallbacks."
 
 #. type: SH
-#: doc/tin.1:4138
+#: doc/tin.1:4148
 #, no-wrap
 msgid "AUTHOR"
 msgstr "AUTOR"
 
 #. type: TP
-#: doc/tin.1:4139
+#: doc/tin.1:4149
 #, no-wrap
 msgid "Iain Lea E<lt>iain@bricbrac.deE<gt>"
 msgstr "Iain Lea E<lt>iain@bricbrac.deE<gt>"
 
 #. type: SH
-#: doc/tin.1:4143
+#: doc/tin.1:4153
 #, no-wrap
 msgid "MAINTAINER"
 msgstr ""
 
 #. type: TP
-#: doc/tin.1:4144
+#: doc/tin.1:4154
 #, no-wrap
 msgid "Urs Janssen E<lt>urs@tin.orgE<gt>"
 msgstr "Urs Janßen E<lt>urs@tin.orgE<gt>"
 
 #. type: SH
-#: doc/tin.1:4148 doc/tin.1:4149 doc/tin.5:2877
+#: doc/tin.1:4158 doc/tin.1:4159 doc/tin.5:2877
 #, no-wrap
 msgid "SEE ALSO"
 msgstr "SIEHE AUCH"
 
 #. type: Plain text
-#: doc/tin.1:4211
+#: doc/tin.1:4221
 msgid ""
 "B<\\%elm>(1), B<\\%emacs>(1), B<\\%gpg>(1), B<\\%inews>(1), B<\\%ispell>(1), "
 "B<\\%lp>(1), B<\\%lpr>(1), B<\\%metamail>(1), B<\\%mutt>(1), B<\\"
 "%noffle>(1), B<\\%perl>(1), B<\\%perlre>(1), B<\\%pgp>(1), B<\\%rn>(1), B<\\"
 "%sendmail>(1), B<\\%shar>(1), B<\\%slrnface>(1), B<\\%tass>(1), B<\\"
 "%unshar>(1), B<\\%uudecode>(1), B<\\%vi>(1), B<\\%xterm>(1x), B<\\"
-"%heapsort>(3), B<\\%iconv>(3), B<\\%iconv_open>(3), B<\\%nl_langinfo>(3), B<"
-"\\%pcre>(3), B<\\%pcre2>(3), B<\\%pcrepattern>(3), B<\\%pcre2pattern>(3), B<"
-"\\%qsort>(3), B<\\%snprintf>(3), B<\\%strftime>(3), B<\\%vsnprintf>(3), B<\\"
-"%wildmat>(3), B<\\%environ>(5), B<\\%locale>(5), B<\\%mailcap>(5), B<\\"
+"%heapsort>(3), B<\\%iconv>(3), B<\\%iconv_open>(3), B<\\%nl_langinfo>(3), "
+"B<\\%pcre>(3), B<\\%pcre2>(3), B<\\%pcrepattern>(3), B<\\%pcre2pattern>(3), "
+"B<\\%qsort>(3), B<\\%snprintf>(3), B<\\%strftime>(3), B<\\%vsnprintf>(3), "
+"B<\\%wildmat>(3), B<\\%environ>(5), B<\\%locale>(5), B<\\%mailcap>(5), B<\\"
 "%mbox>(5), B<\\%mmdf>(5), B<\\%newsoverview>(5), B<\\%tin>(5), B<\\"
-"%cron>(8), B<RFC\\%1345>, B<RFC\\%1524>, B<RFC\\%2045>, B<RFC\\%2046>, B<RFC"
-"\\%2047>, B<RFC\\%2231>, B<RFC\\%2980>, B<RFC\\%3156>, B<RFC\\%3977>, B<RFC\\"
-"%4155>, B<RFC\\%4643>, B<RFC\\%4880>, B<RFC\\%5322>, B<RFC\\%5536>, B<RFC\\"
-"%5537>, B<RFC\\%6048>, B<RFC\\%6838>, B<RFC\\%8054>, B<RFC\\%8143>"
+"%cron>(8), B<RFC\\%1345>, B<RFC\\%1524>, B<RFC\\%2045>, B<RFC\\%2046>, "
+"B<RFC\\%2047>, B<RFC\\%2231>, B<RFC\\%2980>, B<RFC\\%3156>, B<RFC\\%3977>, "
+"B<RFC\\%4155>, B<RFC\\%4643>, B<RFC\\%4880>, B<RFC\\%5322>, B<RFC\\%5536>, "
+"B<RFC\\%5537>, B<RFC\\%6048>, B<RFC\\%6838>, B<RFC\\%8054>, B<RFC\\%8143>"
 msgstr ""
 "B<\\%elm>(1), B<\\%emacs>(1), B<\\%gpg>(1), B<\\%inews>(1), B<\\%ispell>(1), "
 "B<\\%lp>(1), B<\\%lpr>(1), B<\\%metamail>(1), B<\\%mutt>(1), B<\\"
 "%noffle>(1), B<\\%perl>(1), B<\\%perlre>(1), B<\\%pgp>(1), B<\\%rn>(1), B<\\"
 "%sendmail>(1), B<\\%shar>(1), B<\\%slrnface>(1), B<\\%tass>(1), B<\\"
 "%unshar>(1), B<\\%uudecode>(1), B<\\%vi>(1), B<\\%xterm>(1x), B<\\"
-"%heapsort>(3), B<\\%iconv>(3), B<\\%iconv_open>(3), B<\\%nl_langinfo>(3), B<"
-"\\%pcre>(3), B<\\%pcre2>(3), B<\\%pcrepattern>(3), B<\\%pcre2pattern>(3), B<"
-"\\%qsort>(3), B<\\%snprintf>(3), B<\\%strftime>(3), B<\\%vsnprintf>(3), B<\\"
-"%wildmat>(3), B<\\%environ>(5), B<\\%locale>(5), B<\\%mailcap>(5), B<\\"
+"%heapsort>(3), B<\\%iconv>(3), B<\\%iconv_open>(3), B<\\%nl_langinfo>(3), "
+"B<\\%pcre>(3), B<\\%pcre2>(3), B<\\%pcrepattern>(3), B<\\%pcre2pattern>(3), "
+"B<\\%qsort>(3), B<\\%snprintf>(3), B<\\%strftime>(3), B<\\%vsnprintf>(3), "
+"B<\\%wildmat>(3), B<\\%environ>(5), B<\\%locale>(5), B<\\%mailcap>(5), B<\\"
 "%mbox>(5), B<\\%mmdf>(5), B<\\%newsoverview>(5), B<\\%tin>(5), B<\\"
-"%cron>(8), B<RFC\\%1345>, B<RFC\\%1524>, B<RFC\\%2045>, B<RFC\\%2046>, B<RFC"
-"\\%2047>, B<RFC\\%2231>, B<RFC\\%2980>, B<RFC\\%3156>, B<RFC\\%3977>, B<RFC\\"
-"%4155>, B<RFC\\%4643>, B<RFC\\%4880>, B<RFC\\%5322>, B<RFC\\%5536>, B<RFC\\"
-"%5537>, B<RFC\\%6048>, B<RFC\\%6838>, B<RFC\\%8054>, B<RFC\\%8143>"
+"%cron>(8), B<RFC\\%1345>, B<RFC\\%1524>, B<RFC\\%2045>, B<RFC\\%2046>, "
+"B<RFC\\%2047>, B<RFC\\%2231>, B<RFC\\%2980>, B<RFC\\%3156>, B<RFC\\%3977>, "
+"B<RFC\\%4155>, B<RFC\\%4643>, B<RFC\\%4880>, B<RFC\\%5322>, B<RFC\\%5536>, "
+"B<RFC\\%5537>, B<RFC\\%6048>, B<RFC\\%6838>, B<RFC\\%8054>, B<RFC\\%8143>"
 
 #. type: Plain text
 #: doc/tin.5:13
@@ -10136,8 +10183,8 @@ msgid ""
 "command to execute, and (possibly) a set of optional \"flag\" values."
 msgstr ""
 "Jeder einzelne Mailcap-Eintrag besteht aus einer Content-Typ-Spezifikation, "
-"einem Befehl zum Ausführen und (möglicherweise) einem Satz optionaler \"Flag"
-"\"-Werte."
+"einem Befehl zum Ausführen und (möglicherweise) einem Satz optionaler "
+"\"Flag\"-Werte."
 
 #. type: Plain text
 #: doc/tin.5:69
@@ -10500,9 +10547,10 @@ msgid ""
 "\"I<nntpserver[:port]> I<password> [I<user>]\" pairs for NNTP servers that "
 "require authorization. If the password contains a space or a tab it must be "
 "enclosed in double quotes (\"). Usernames must not be enclosed in double "
-"quotes and thus can't contain spaces or tabs. Any line that starts with \"#"
-"\" is a comment. Blank lines are ignored. This file should be readable only "
-"for the user as it contains the user's unencrypted password for reading news!"
+"quotes and thus can't contain spaces or tabs. Any line that starts with "
+"\"#\" is a comment. Blank lines are ignored. This file should be readable "
+"only for the user as it contains the user's unencrypted password for reading "
+"news!"
 msgstr ""
 
 #. type: TP
@@ -10679,9 +10727,9 @@ msgid ""
 "quadruples) of user's mailgroups (requires B<\\%tin>(1)  to be built with mh-"
 "mail-handling support)."
 msgstr ""
-"Active Datei (\"I<Mailgroupname> I<Maximalwert> I<Minimalwert> I<Mailspool>"
-"\" Quadrupel) der E-Mail-Gruppen des Benutzers (erfordert, dass B<\\%tin>(1) "
-"mit mh-Mail-Handling-Unterstützung gebaut wurde)."
+"Active Datei (\"I<Mailgroupname> I<Maximalwert> I<Minimalwert> "
+"I<Mailspool>\" Quadrupel) der E-Mail-Gruppen des Benutzers (erfordert, dass "
+"B<\\%tin>(1) mit mh-Mail-Handling-Unterstützung gebaut wurde)."
 
 #. type: TP
 #: doc/tin.5:378 doc/tin.5:1165
@@ -10755,9 +10803,9 @@ msgid ""
 "This allows access to the 'inbox' and 'outbox' folders of user foo.  They "
 "are accessed via /home/foo/Mail/inbox and /home/foo/Mail/outbox"
 msgstr ""
-"Dies ermöglicht den Zugriff auf die Ordner \"Posteingang\"und \"Postausgang"
-"\" des Benutzers foo. Der Zugriff erfolgt über /home/foo/Mail/inbox und /"
-"home/foo/Mail/outbox"
+"Dies ermöglicht den Zugriff auf die Ordner \"Posteingang\"und "
+"\"Postausgang\" des Benutzers foo. Der Zugriff erfolgt über /home/foo/Mail/"
+"inbox und /home/foo/Mail/outbox"
 
 #. type: Plain text
 #: doc/tin.5:410
@@ -10870,8 +10918,8 @@ msgstr "B<batch_save>"
 #: doc/tin.5:466
 msgid ""
 "Can be used to override the global setting in tinrc on a per group basis. "
-"For more information read section AUTOMATIC MAILING AND SAVING NEW NEWS in B<"
-"\\%tin>(1)."
+"For more information read section AUTOMATIC MAILING AND SAVING NEW NEWS in "
+"B<\\%tin>(1)."
 msgstr ""
 "Sende ungelesene Artikel an den angegebenen Benutzer um sie später lesen zu "
 "können. Für weitere Informationen siehe den Abschnitt \"AUTOMATISCHES MAILEN "
@@ -11617,8 +11665,8 @@ msgstr "B<score>"
 #. type: Plain text
 #: doc/tin.5:794
 msgid ""
-"Score value of the rule; can also be one of the magic words \"kill\" or \"hot"
-"\"."
+"Score value of the rule; can also be one of the magic words \"kill\" or "
+"\"hot\"."
 msgstr ""
 "Wert der Regel; kann auch eines der Zauberwörter \"kill\" oder \"hot\" sein."
 
@@ -12611,8 +12659,8 @@ msgid ""
 "This file is a copy of the servers newsgroups file which provides short "
 "descriptions of each newsgroup. It is automatically updated on startup "
 "except when using the ''B<-X>''or ''B<-q>'' command-line option and an old "
-"copy exists. Each line consist of two tab-separated fields \"I<group.name>"
-"\tI<one-line description>\"."
+"copy exists. Each line consist of two tab-separated fields \"I<group."
+"name>\tI<one-line description>\"."
 msgstr ""
 "Eine Kopie der Newsgroups-Datei des Servers, die kurze Beschreibungen jeder "
 "Newsgruppe enthält. Sie wird beim Start automatisch aktualisiert, außer wenn "
@@ -13264,8 +13312,8 @@ msgstr "B<draw_arrow>"
 msgid ""
 "The format string used to create the editor start command with parameters.  "
 "Default is '%E +%N %F' with %E=Editor, %N=Linenumber and %F=Filename (e.g., /"
-"bin/vi +7 .article). See also $B<VISUAL> and $B<EDITOR> under \"ENVIRONMENT"
-"\" in B<\\%tin>(1)"
+"bin/vi +7 .article). See also $B<VISUAL> and $B<EDITOR> under "
+"\"ENVIRONMENT\" in B<\\%tin>(1)"
 msgstr ""
 
 #. type: TP
@@ -13298,8 +13346,8 @@ msgstr "B<getart_limit>"
 #: doc/tin.5:1691
 msgid ""
 "If B<getart_limit> is E<gt> 0 not more than the last B<getart_limit> "
-"articles/group are fetched from the server. If B<getart_limit> is E<lt> 0 B<"
-"\\%tin>(1)  will start fetching articles from your first unread minus "
+"articles/group are fetched from the server. If B<getart_limit> is E<lt> 0 "
+"B<\\%tin>(1)  will start fetching articles from your first unread minus "
 "absolute value of B<getart_limit>. Default is 0, which means no limit."
 msgstr ""
 
@@ -13570,8 +13618,8 @@ msgid ""
 "\"[-- %T%S%*n%z%*l%!c%!d%*e --]\"."
 msgstr ""
 "Diese Formatanweisung wird von tin B<\\%tin>(1) zur Darstellung von Mime-"
-"Headern auf Artikelebene benutzt. Voreingestellt ist \"[-- %T%S%*n%z%*l%!c%!d"
-"%*e --]\"."
+"Headern auf Artikelebene benutzt. Voreingestellt ist \"[-- %T%S%*n%z%*l%!c%!"
+"d%*e --]\"."
 
 #. type: TP
 #: doc/tin.5:1990
@@ -13679,8 +13727,8 @@ msgstr "B<quote_regex>"
 #: doc/tin.5:2105
 msgid ""
 "A regular expression that will be applied when reading articles. All "
-"matching lines are shown in B<col_quote>. If B<quote_regex> is blank, then B<"
-"\\%tin>(1)  uses a built-in default."
+"matching lines are shown in B<col_quote>. If B<quote_regex> is blank, then "
+"B<\\%tin>(1)  uses a built-in default."
 msgstr ""
 
 #. type: TP
@@ -14017,8 +14065,8 @@ msgstr "Anhand der prozentualen Übereinstimmung der Subjects gruppieren"
 #: doc/tin.5:2401
 msgid ""
 "It's also possible to set the threading type on a per group basis by setting "
-"the group attribute variable B<thread_articles> to 0 \\(en 5 in the file I<"
-"${TIN_HOMEDIR:-\"$HOME\"}/.tin/attributes>."
+"the group attribute variable B<thread_articles> to 0 \\(en 5 in the file "
+"I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/attributes>."
 msgstr ""
 
 #. type: Plain text
@@ -14086,8 +14134,8 @@ msgstr "B<tls_ca_cert_file>"
 #. type: Plain text
 #: doc/tin.5:2446
 msgid ""
-"The name of file containing all trusted CA certificates used for NNTPS (B<RFC"
-"\\%8143>) connections. If left empty the system default will be used."
+"The name of file containing all trusted CA certificates used for NNTPS "
+"(B<RFC\\%8143>) connections. If left empty the system default will be used."
 msgstr ""
 "Name der Datei, die alle vertrauenswürdigen CA-Zertifikate enthält, die für "
 "NNTPS-Verbindungen (B<RFC\\%8143>) verwendet werden. Falls es leer bleibt, "
@@ -14799,8 +14847,8 @@ msgstr ""
 msgid ""
 "This file provides short descriptions of each newsgroup. It is normally "
 "updated by the local news server (e.g.  B<\\%innd>(8))  whenever a new group "
-"is created. Each line consist of two tab-separated fields \"I<group.name>"
-"\tI<one-line description>\"."
+"is created. Each line consist of two tab-separated fields \"I<group."
+"name>\tI<one-line description>\"."
 msgstr ""
 "Diese Datei enthält kurze Beschreibungen der einzelnen Newsgruppen. Es wird "
 "normalerweise durch die lokalen Newsserver aktualisiert (zB. B<\\%innd>(8)) "
@@ -14856,11 +14904,11 @@ msgid ""
 "%tin>(1)  uses the LIST SUBSCRIPTIONS (B<RFC\\%6048>) command instead."
 msgstr ""
 "Diese Datei enthält eine Liste von Newsgroups \\(em eine pro Zeile \\(em die "
-"der Client abonnieren sollte, wenn der Benutzer keine ${TIN_HOMEDIR:-\"$HOME"
-"\"}/.newsrc für den Newsserver hat. B<\\%tin>(1) versucht die Datei nur dann "
-"zu lesen, wenn Sie direkt aus dem lokalen Spool lesen. Falls Sie Nachrichten "
-"mittels NNTP lesen, verwendet B<\\%tin>(1) stattdessen den Befehl LIST "
-"SUBSCRIPTIONS (B<RFC\\%6048>)."
+"der Client abonnieren sollte, wenn der Benutzer keine ${TIN_HOMEDIR:-"
+"\"$HOME\"}/.newsrc für den Newsserver hat. B<\\%tin>(1) versucht die Datei "
+"nur dann zu lesen, wenn Sie direkt aus dem lokalen Spool lesen. Falls Sie "
+"Nachrichten mittels NNTP lesen, verwendet B<\\%tin>(1) stattdessen den "
+"Befehl LIST SUBSCRIPTIONS (B<RFC\\%6048>)."
 
 #. type: Plain text
 #: doc/tin.5:2925
@@ -14872,10 +14920,10 @@ msgid ""
 "%nl_langinfo>(3), B<\\%pcre>(3), B<\\%pcre2>(3), B<\\%pcrepattern>(3), B<\\"
 "%pcre2pattern>(3), B<\\%qsort>(3), B<\\%strftime>(3), B<\\%system>(3), B<\\"
 "%ucsdet_getName>(3), B<\\%active>(5), B<\\%mailcap>(5), B<\\%mbox>(5), B<\\"
-"%mmdf>(5), B<\\%newsoverview>(5), B<\\%overview.fmt>(5), B<\\%innd>(8), B<RFC"
-"\\%1524>, B<RFC\\%2045>, B<RFC\\%2046>, B<RFC\\%2047>, B<RFC\\%2231>, B<RFC\\"
-"%2980>, B<RFC\\%3977>, B<RFC\\%4155>, B<RFC\\%4643>, B<RFC\\%5322>, B<RFC\\"
-"%5536>, B<RFC\\%5537>, B<RFC\\%6048>, B<RFC\\%6838>, B<RFC\\%8143>"
+"%mmdf>(5), B<\\%newsoverview>(5), B<\\%overview.fmt>(5), B<\\%innd>(8), "
+"B<RFC\\%1524>, B<RFC\\%2045>, B<RFC\\%2046>, B<RFC\\%2047>, B<RFC\\%2231>, "
+"B<RFC\\%2980>, B<RFC\\%3977>, B<RFC\\%4155>, B<RFC\\%4643>, B<RFC\\%5322>, "
+"B<RFC\\%5536>, B<RFC\\%5537>, B<RFC\\%6048>, B<RFC\\%6838>, B<RFC\\%8143>"
 msgstr ""
 "B<\\%inews>(1), B<\\%ispell>(1), B<\\%lp>(1), B<\\%lpr>(1), B<\\"
 "%metamail>(1), B<\\%mutt>(1), B<\\%perl>(1), B<\\%perlre>(1), B<\\%pgp>(1), "
@@ -14884,7 +14932,7 @@ msgstr ""
 "%nl_langinfo>(3), B<\\%pcre>(3), B<\\%pcre2>(3), B<\\%pcrepattern>(3), B<\\"
 "%pcre2pattern>(3), B<\\%qsort>(3), B<\\%strftime>(3), B<\\%system>(3), B<\\"
 "%ucsdet_getName>(3), B<\\%active>(5), B<\\%mailcap>(5), B<\\%mbox>(5), B<\\"
-"%mmdf>(5), B<\\%newsoverview>(5), B<\\%overview.fmt>(5), B<\\%innd>(8), B<RFC"
-"\\%1524>, B<RFC\\%2045>, B<RFC\\%2046>, B<RFC\\%2047>, B<RFC\\%2231>, B<RFC\\"
-"%2980>, B<RFC\\%3977>, B<RFC\\%4155>, B<RFC\\%4643>, B<RFC\\%5322>, B<RFC\\"
-"%5536>, B<RFC\\%5537>, B<RFC\\%6048>, B<RFC\\%6838>, B<RFC\\%8143>"
+"%mmdf>(5), B<\\%newsoverview>(5), B<\\%overview.fmt>(5), B<\\%innd>(8), "
+"B<RFC\\%1524>, B<RFC\\%2045>, B<RFC\\%2046>, B<RFC\\%2047>, B<RFC\\%2231>, "
+"B<RFC\\%2980>, B<RFC\\%3977>, B<RFC\\%4155>, B<RFC\\%4643>, B<RFC\\%5322>, "
+"B<RFC\\%5536>, B<RFC\\%5537>, B<RFC\\%6048>, B<RFC\\%6838>, B<RFC\\%8143>"

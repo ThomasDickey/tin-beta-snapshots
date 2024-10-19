@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2024-09-11
+ *  Updated   : 2024-10-19
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2024 Michael Bienia <michael@vorlon.ping.de>
@@ -88,6 +88,37 @@
 			curr_scope->state->opt = TRUE; \
 		} \
 		changed |= MISC_OPTS; \
+	} while (0)
+
+#define SET_NEED_PARSE_FORMAT_GT() do { \
+		switch (prev_signal_context) { \
+			case cPage: \
+			case cThread: \
+				need_parse_fmt |= THREAD_LEVEL; \
+				/* FALLTHROUGH */ \
+			case cGroup: \
+				need_parse_fmt |= GROUP_LEVEL; \
+				break; \
+			default: \
+				break; \
+		} \
+	} while (0)
+
+#define SET_NEED_PARSE_FORMAT_SGT() do { \
+		switch (prev_signal_context) { \
+			case cPage: \
+			case cThread: \
+				need_parse_fmt |= THREAD_LEVEL; \
+				/* FALLTHROUGH */ \
+			case cGroup: \
+				need_parse_fmt |= GROUP_LEVEL; \
+				/* FALLTHROUGH */ \
+			case cSelect: \
+				need_parse_fmt |= SELECT_LEVEL; \
+				break; \
+			default: \
+				break; \
+		} \
 	} while (0)
 
 static enum option_enum first_option_on_screen, last_option_on_screen, last_opt;
@@ -1012,6 +1043,7 @@ config_page(
 		TEX2ISO_CONV		= 1 << 8
 	} changed = NOT_CHANGED;
 	int i, scope_idx = 0;
+	int prev_signal_context = signal_context;
 	t_bool change_option = FALSE;
 	t_function func;
 #ifdef CHARSET_CONVERSION
@@ -1613,6 +1645,7 @@ config_page(
 									center_line(0, TRUE, _(txt_options_menu));
 								}
 								changed |= MISC_OPTS;
+								SET_NEED_PARSE_FORMAT_SGT();
 							}
 							break;
 
@@ -1627,6 +1660,7 @@ config_page(
 								}
 								center_line(0, TRUE, _(txt_options_menu));
 								changed |= MISC_OPTS;
+								SET_NEED_PARSE_FORMAT_SGT();
 							}
 							break;
 
@@ -1654,8 +1688,7 @@ config_page(
 						/* show newsgroup description text next to newsgroups */
 						case OPT_SHOW_DESCRIPTION:
 							if (prompt_option_on_off(option)) {
-								show_description = tinrc.show_description;
-								if (show_description)			/* force reread of newgroups file */
+								if ((show_description = tinrc.show_description)) /* force reread of newgroups file */
 									read_descriptions(FALSE);
 								changed |= MISC_OPTS;
 							}
@@ -2517,12 +2550,15 @@ config_page(
 									tinrc.group_format = my_strdup(DEFAULT_GROUP_FORMAT);
 								}
 								changed |= MISC_OPTS;
+								SET_NEED_PARSE_FORMAT_SGT();
 							}
 							break;
 
 						case OPT_ATTRIB_GROUP_FORMAT:
-							if (prompt_option_string(option))
+							if (prompt_option_string(option)) {
 								SET_STRING_ATTRIBUTE(group_format);
+								SET_NEED_PARSE_FORMAT_SGT();
+							}
 							break;
 
 						case OPT_PAGE_MIME_FORMAT:
@@ -2552,6 +2588,7 @@ config_page(
 									tinrc.select_format = my_strdup(DEFAULT_SELECT_FORMAT);
 								}
 								changed |= MISC_OPTS;
+								SET_NEED_PARSE_FORMAT_SGT();
 							}
 							break;
 
@@ -2562,12 +2599,15 @@ config_page(
 									tinrc.thread_format = my_strdup(DEFAULT_THREAD_FORMAT);
 								}
 								changed |= MISC_OPTS;
+								SET_NEED_PARSE_FORMAT_SGT();
 							}
 							break;
 
 						case OPT_ATTRIB_THREAD_FORMAT:
-							if (prompt_option_string(option))
+							if (prompt_option_string(option)) {
 								SET_STRING_ATTRIBUTE(thread_format);
+								SET_NEED_PARSE_FORMAT_SGT();
+							}
 							break;
 
 						case OPT_DATE_FORMAT:
@@ -2577,12 +2617,15 @@ config_page(
 									tinrc.date_format = my_strdup(DEFAULT_DATE_FORMAT);
 								}
 								changed |= MISC_OPTS;
+								SET_NEED_PARSE_FORMAT_GT();
 							}
 							break;
 
 						case OPT_ATTRIB_DATE_FORMAT:
-							if (prompt_option_string(option))
+							if (prompt_option_string(option)) {
 								SET_STRING_ATTRIBUTE(date_format);
+								SET_NEED_PARSE_FORMAT_GT();
+							}
 							break;
 
 						case OPT_ATTRIB_FOLLOWUP_TO:
@@ -3161,7 +3204,7 @@ rename_scope(
 	char buf[LEN];
 
 	if (prompt_default_string(_(txt_scope_rename), buf, sizeof(buf), scope->scope, HIST_OTHER)) {
-		if (buf[0] == '\0')
+		if (!*buf)
 			return FALSE;
 		FreeIfNeeded(scope->scope);
 		scope->scope = my_strdup(buf);

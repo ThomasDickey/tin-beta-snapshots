@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-17
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -234,7 +234,7 @@ build_tline(
 
 			case 'L':	/* lines */
 				if (art->line_count != -1)
-					strcat(buffer, tin_ltoa(art->line_count, (int) thrd_fmt.len_linecnt));
+					strcat(buffer, tin_ltoa(art->line_count, thrd_fmt.len_linecnt));
 				else {
 					buf = buffer + strlen(buffer);
 					for (i = thrd_fmt.len_linecnt; i > 1; --i)
@@ -285,11 +285,11 @@ build_tline(
 				break;
 
 			case 'n':
-				strcat(buffer, tin_ltoa(l + 1, (int) thrd_fmt.len_linenumber));
+				strcat(buffer, tin_ltoa(l + 1, thrd_fmt.len_linenumber));
 				break;
 
 			case 'S':	/* score */
-				strcat(buffer, tin_ltoa(art->score, (int) thrd_fmt.len_score));
+				strcat(buffer, tin_ltoa(art->score, thrd_fmt.len_score));
 				break;
 
 			case 'T':	/* thread/subject */
@@ -808,6 +808,7 @@ thread_page(
 
 			case GLOBAL_TOGGLE_INVERSE_VIDEO:	/* toggle inverse video */
 				toggle_inverse_video();
+				need_parse_fmt |= THREAD_LEVEL;
 				show_thread_page();
 				show_inverse_video_status();
 				break;
@@ -934,8 +935,11 @@ thread_page(
 				break;
 
 			case GLOBAL_DISPLAY_POST_HISTORY:	/* display messages posted by user */
-				if (post_hist_page())
+				if (post_hist_page()) {
+					FreeAndNull(thrd_fmt.str);
+					FreeAndNull(thrd_fmt.date_str);
 					return GRP_EXIT;
+				}
 				break;
 
 			case GLOBAL_TOGGLE_INFO_LAST_LINE:		/* display subject in last line */
@@ -951,6 +955,9 @@ thread_page(
 	set_xclick_off();
 	clear_note_area();
 
+	FreeAndNull(thrd_fmt.str);
+	FreeAndNull(thrd_fmt.date_str);
+
 	return ret_code;
 }
 
@@ -965,13 +972,16 @@ show_thread_page(
 
 	signal_context = cThread;
 	currmenu = &thdmenu;
-	show_subject = FALSE;
+
+	if (!thrd_fmt.str || (need_parse_fmt & THREAD_LEVEL)) {
+		show_subject = FALSE;
+		parse_format_string(curr_group->attribute->thread_format ? BlankIfNull(*curr_group->attribute->thread_format) : "", &thrd_fmt);
+		need_parse_fmt &= ~THREAD_LEVEL;
+		mark_offset = 0;
+	}
 
 	ClearScreen();
 	set_first_screen_item();
-
-	parse_format_string(curr_group->attribute->thread_format ? BlankIfNull(*curr_group->attribute->thread_format) : "", &thrd_fmt);
-	mark_offset = 0;
 
 	if (show_subject)
 		title = fmt_string(_(txt_stp_list_thread), grpmenu.curr + 1, grpmenu.max);
@@ -1364,9 +1374,8 @@ int
 next_thread(
 	int n)
 {
-	int i;
+	int i = which_thread(n) + 1;
 
-	i = which_thread(n) + 1;
 	if (i >= grpmenu.max)
 		return -1;
 
@@ -1388,8 +1397,16 @@ prev_response(
 	if (arts[n].prev >= 0)
 		return arts[n].prev;
 
+#if 0
 	if ((i = which_thread(n) - 1) < 0)
 		return -1;
+#else /* __COVERITY__ CID 1549087 */
+	i = which_thread(n);
+	if (i <= 0)
+		return -1;
+
+	i--;
+#endif /* 0 */
 
 	return find_response(i, num_of_responses(i));
 }
@@ -1403,9 +1420,7 @@ find_response(
 	int i,
 	int n)
 {
-	int j;
-
-	j = (int) base[i];
+	int j = (int) base[i];
 
 	while (n-- > 0 && arts[j].thread >= 0)
 		j = arts[j].thread;
@@ -1512,7 +1527,8 @@ make_prefix(
 	for (ptr = art->parent; ptr; ptr = ptr->parent)
 		depth += (!IS_EXPIRED(ptr) ? 1 : 0);
 
-	if ((depth == 0) || (maxlen < 1)) {
+	/* the code below expects a maxlen of at least 3 */
+	if ((depth == 0) || (maxlen < 3)) {
 		prefix[0] = '\0';
 		return;
 	}

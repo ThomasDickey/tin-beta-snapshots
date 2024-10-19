@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-17
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -62,7 +62,7 @@ int top_art = 0;				/* # of articles in arts[] */
 /*
  * Local prototypes
  */
-static FILE *open_art_header(char *groupname, t_artnum art, t_artnum *next);
+static FILE *open_art_header(const char *groupname, t_artnum art, t_artnum *next);
 static FILE *open_xover_fp(struct t_group *group, const char *mode, t_artnum min, t_artnum max, t_bool local);
 static char *find_nov_file(struct t_group *group, int mode);
 static char *print_from(struct t_group *group, struct t_article *article, int charset);
@@ -89,8 +89,8 @@ static t_artnum find_first_unread(struct t_group *group);
 static t_artnum setup_hard_base(struct t_group *group);
 static t_bool parse_headers(FILE *fp, struct t_article *h);
 static t_compfunc eval_sort_arts_func(unsigned int sort_art_type);
-static time_t get_last_posting_date(int n);
-static void build_mailbox_list(struct t_article *art, char *hdr);
+static time_t get_last_posting_date(t_artnum n);
+static void build_mailbox_list(struct t_article *art, const char *hdr);
 static void sort_base(unsigned int sort_threads_type);
 static void thread_by_multipart(void);
 static void thread_by_percentage(unsigned int percentage);
@@ -100,7 +100,7 @@ static void write_overview(struct t_group *group);
 	static struct t_article_range *build_range_list(t_artnum min, t_artnum max, int *range_cnt);
 	static t_bool get_path_header(int cur, int cnt, struct t_group *group, t_artnum min, t_artnum max);
 #endif /* NNTP_ABLE */
-static struct t_mailbox *add_mailbox(struct t_article *article);
+static struct t_mailbox *add_mailbox(struct t_article *art);
 
 
 /*
@@ -627,7 +627,7 @@ find_first_unread(
  */
 static FILE *
 open_art_header(
-	char *groupname,
+	const char *groupname,
 	t_artnum art,
 	t_artnum *next)
 {
@@ -1456,7 +1456,7 @@ parse_headers(
 		/*
 		 * End of headers ?
 		 */
-		if (ptr[0] == '\0')
+		if (!*ptr)
 			break;
 
 		unfold_header(ptr);
@@ -1593,9 +1593,8 @@ build_range_list(
 {
 	int i, gap_cnt = 0;
 	struct t_article_range *res = NULL, *gap_list, *curr, *from;
-	t_artnum new_end;
+	t_artnum new_end = T_ARTNUM_CONST(0);
 
-	new_end = T_ARTNUM_CONST(0);
 	gap_list = my_malloc(sizeof(struct t_article_range));
 	curr = gap_list;
 	curr->start = min;
@@ -1881,7 +1880,7 @@ add_mailbox(
 static void
 build_mailbox_list(
 	struct t_article *art,
-	char *hdr)
+	const char *hdr)
 {
 	char art_from_addr[HEADER_LEN];
 	char art_full_name[HEADER_LEN];
@@ -1893,7 +1892,9 @@ build_mailbox_list(
 
 	do {
 		next_from = split_mailbox_list(curr_from);
-		mb = add_mailbox(art);
+		if ((mb = add_mailbox(art)) == NULL)
+			break;
+
 		mb->gnksa_code = parse_from(curr_from, art_from_addr, art_full_name);
 		mb->from = hash_str(buffer_to_ascii(art_from_addr));
 		if (*art_full_name)
@@ -2137,9 +2138,10 @@ read_overview(
 						if (*ptr)
 							build_mailbox_list(art, ptr);
 						else {
-							struct t_mailbox *mb = add_mailbox(art);
+							struct t_mailbox *mb;
 
-							mb->from = hash_str("");
+							if ((mb = add_mailbox(art)) != NULL)
+								mb->from = hash_str("");
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
@@ -2259,9 +2261,10 @@ read_overview(
 						if (*ptr)
 							build_mailbox_list(art, ptr);
 						else {
-							struct t_mailbox *mb = add_mailbox(art);
+							struct t_mailbox *mb;
 
-							mb->from = hash_str("");
+							if ((mb = add_mailbox(art)) != NULL)
+								mb->from = hash_str("");
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
@@ -3315,9 +3318,9 @@ last_date_comp_base_asc(
 
 static time_t
 get_last_posting_date(
-	int n)
+	t_artnum n)
 {
-	int i;
+	t_artnum i;
 	time_t last = (time_t) 0;
 
 	for (i = n; i >= 0; i = arts[i].thread) {
@@ -3428,6 +3431,9 @@ print_from(
 	int c_needed = 0;
 
 	*from = *single_from = '\0';
+
+	if (!mb)
+		return from;
 
 	do {
 		if (mb->name != NULL) {

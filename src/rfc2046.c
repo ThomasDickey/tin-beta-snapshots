@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-17
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
@@ -46,7 +46,7 @@
 /*
  * local prototypes
  */
-static char *get_charset(char *value);
+static char *get_charset(const char *value);
 static char *get_quoted_string(char *source, char **dest);
 static char *get_token(const char *source);
 static char *quote_display_name(char *name);
@@ -113,7 +113,7 @@ progress(
  */
 int
 content_type(
-	char *type)
+	const char *type)
 {
 	int i;
 
@@ -345,7 +345,7 @@ get_quoted_string(
  */
 static char *
 get_charset(
-	char *value)
+	const char *value)
 {
 	char *charset, *ptr;
 
@@ -841,7 +841,7 @@ parse_content_type(
 
 		} else {
 #ifdef CHARSET_CONVERSION
-			if (!(content->mime_hints.flags & MIME_CHARSET_UNSUPPORTED) && *charset)
+			if (!(content->mime_hints.flags & MIME_CHARSET_UNSUPPORTED))
 #endif /* CHARSET_CONVERSION */
 			{
 				content->mime_hints.flags &= ~MIME_CHARSET_MISSING;
@@ -1114,7 +1114,7 @@ quote_display_name(
 	char *ptr, *to, *disp_name = NULL;
 	int quote_cnt = 2;
 	size_t len;
-	t_bool need_dquotes = FALSE;
+	t_bool need_dquotes = FALSE, bslash_seen = FALSE;
 
 	if (!*name)
 		return NULL;
@@ -1162,14 +1162,41 @@ quote_display_name(
 		to = disp_name = my_malloc(len + quote_cnt + 1);
 		*to++ = '"';
 		while (*ptr) {
+			/*
+			 * RFC 5322 §3.2.1
+			 * quoted-pair = ("\" (VCHAR / WSP))
+			 *
+			 * RFC 5234
+			 * WSP         = %x09, %x20 (HTAB, SP)
+			 * VCHAR       = %x21-7E
+			 *
+			 * '\' and '"' are only quoted if they are not already quoted
+			 * '\' as part of a quoted-pair is never quoted
+			 */
 			switch (*ptr) {
 				case '\\':
+					if (bslash_seen)
+						bslash_seen = FALSE;
+					else
+						bslash_seen = TRUE;
+					*to++ = *ptr++;
+					break;
+
 				case '"':
-					*to++ = '\\';
+					if (bslash_seen)
+						bslash_seen = FALSE;
+					else
+						*to++ = '\\';
 					*to++ = *ptr++;
 					break;
 
 				default:
+					if (bslash_seen && (*ptr == 0x09 || (*ptr >= 0x20 && *ptr <= 0x7E && *ptr != 0x21 && *ptr != 0x5C)))
+						bslash_seen = FALSE;
+					if (bslash_seen) {
+						*to++ = '\\';
+						bslash_seen = FALSE;
+					}
 					*to++ = *ptr++;
 					break;
 			}
@@ -1289,7 +1316,7 @@ parse_rfc822_headers(
 		/*
 		 * End of headers ?
 		 */
-		if (line[0] == '\0') {
+		if (!*line) {
 			if (to)
 				hdr->ext->offset = ftell(to);	/* Offset of main body */
 
@@ -1731,7 +1758,6 @@ parse_normal_article(
 #if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
 	char *buffer = NULL;
 	char *guessed_charset = NULL;
-	size_t b_len = 1;
 #endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
 	while ((line = tin_fgets(in, FALSE)) != NULL) {
@@ -1744,15 +1770,8 @@ parse_normal_article(
 		}
 
 #if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
-		if ((artinfo->hdr.ext->mime_hints.flags & MIME_CHARSET_MISSING) && artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && !(curr_group->attribute->undeclared_charset && *curr_group->attribute->undeclared_charset)) {
-			b_len += strlen(line);
-			if (!buffer)
-				buffer = my_strdup(line);
-			else {
-				buffer = my_realloc(buffer, b_len);
-				strcat(buffer, line);
-			}
-		}
+		if ((artinfo->hdr.ext->mime_hints.flags & MIME_CHARSET_MISSING) && artinfo->hdr.ext->type == TYPE_TEXT && artinfo->hdr.ext->encoding != ENCODING_QP && artinfo->hdr.ext->encoding != ENCODING_BASE64 && curr_group->attribute->undeclared_cs_guess && !(curr_group->attribute->undeclared_charset && *curr_group->attribute->undeclared_charset))
+			buffer = append_to_string(buffer, line);
 #endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
 		++artinfo->hdr.ext->line_count;

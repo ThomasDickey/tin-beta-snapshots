@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl
 # example of how to call an appropriate viewer
 #
 # URLs must start with a scheme and shell metas should be already quoted

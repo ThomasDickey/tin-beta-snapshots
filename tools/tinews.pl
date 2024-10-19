@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl
 #
 # reads an article on STDIN, mails any copies if required,
 # signs the article and posts it.
@@ -50,6 +50,7 @@
 #         for gpg?
 #       - option to break long header lines?
 #       - option to trim References
+#       - option to foce connection via AF_INET6 (-6)
 #       ...
 #
 # cmd-line options used in other inews:
@@ -70,7 +71,7 @@ use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.69";
+my $version = "1.1.70";
 
 my %config;
 
@@ -130,6 +131,7 @@ $config{'pgp-order-headers'} = [
 
 use Getopt::Long qw(GetOptions);
 use Net::NNTP;
+use IO::Socket qw(AF_INET PF_INET);
 use Time::Local;
 use Term::ReadLine;
 
@@ -190,7 +192,8 @@ $config{'nntp-port'} = $ENV{'NNTPPORT'} if ($ENV{'NNTPPORT'});
 
 # Get options
 Getopt::Long::Configure ("bundling", "no_ignore_case");
-my $oret = GetOptions('A|V|W|h|headers' => [], # do nothing
+my $oret = GetOptions(
+	'A|V|W|h|headers'	=> [], # do nothing
 	'debug|D|N'	=> \$config{'debug'},
 	'port|p=i'	=> \$config{'nntp-port'},
 	'no-sign|X'	=> \$config{'no-sign'},
@@ -218,6 +221,8 @@ my $oret = GetOptions('A|V|W|h|headers' => [], # do nothing
 	'references|F=s'	=> \$config{'references'},
 	'organization|o=s'	=> \$config{'organization'},
 	'path|x=s'	=> \$config{'path'},
+	'timeout|T=i'	=> \$config{'timeout'},
+	'ipv4|4'	=> \$config{'ipv4'},
 	'help|H'	=> \$config{'help'},
 	'transform'	=> \$config{'transform'},
 	'verbose|v'	=> \$config{'verbose'},
@@ -254,6 +259,7 @@ if ($config{'ssl'}) {
 		$config{'ssl'} = 0;
 	}
 }
+
 # and now adjust default port depending on SSL requested and
 # available or not
 if ($config{'ssl'}) {
@@ -262,8 +268,8 @@ if ($config{'ssl'}) {
 	$config{'nntp-port'} = 119 if ($config{'nntp-port'} == 563);
 }
 
-my $sha_mod = undef;
 # Cancel-Locks require some more modules
+my $sha_mod = undef;
 if ($config{'canlock-secret'} && !$config{'no-canlock'}) {
 	$config{'canlock-algorithm'} = lc($config{'canlock-algorithm'});
 	# we support sha1, sha256 and sha512, fallback to sha1 if something else is given
@@ -334,6 +340,7 @@ if (${config{'ignore-headers'}}) {
 		@{$config{'pgp-sign-headers'}} = map {lc($_) eq lc($hdr) ? () : $_} @{$config{'pgp-sign-headers'}};
 	}
 }
+
 # Read the message and split the header
 readarticle(\%Header, \@Body);
 
@@ -683,7 +690,7 @@ sub getdate {
 	}
 	my $offseth = int($offset/3600);
 	my $offsetm = int(($offset - $offseth*3600)/60);
-	my $tz = sprintf ("%s%0.2d%0.2d", $sign, $offseth, $offsetm);
+	my $tz = sprintf("%s%0.2d%0.2d", $sign, $offseth, $offsetm);
 	return "$wday, $day $monthN $year $hh:$mm:$ss $tz";
 }
 
@@ -701,11 +708,16 @@ sub AuthonNNTP {
 		Reader 	=> 1,
 		Debug 	=> $config{'debug'},
 		Port 	=> $config{'nntp-port'},
+		Timeout => $config{'timeout'},
+		Domain  => ($config{'ipv4'} ? AF_INET : undef),
 		SSL 	=> $config{'ssl'},
 		SSL_verify_mode => 0
 	) or die("$0: Can't connect to ".$config{'nntp-server'}.":".$config{'nntp-port'}."!\n");
-	if ($config{'ssl'} && $config{'debug'}) {
-		printf("SSL_fingerprint: %s %s\n", split(/\$/, $Server->get_fingerprint));
+	if ($config{'debug'}) {
+		printf("Connected to   : ".$Server->peerhost.":".$Server->peerport." [%s]\n", ($Server->sockdomain == PF_INET) ? "IPv4" : "IPv6");
+		if ($config{'ssl'}) {
+		    printf("SSL_fingerprint: %s %s\n", split(/\$/, $Server->get_fingerprint));
+		}
 	}
 	my $ServerMsg = $Server->message();
 	my $ServerCod = $Server->code();
@@ -1045,6 +1057,7 @@ sub version {
 sub usage {
 	version();
 	print "Usage: ".$pname." [OPTS] < article\n";
+	print "  -4         force connecting via IPv4\n";
 	print "  -a string  set Approved:-header to string\n";
 	print "  -c string  set Control:-header to string\n";
 	print "  -d string  set Distribution:-header to string\n";
@@ -1070,6 +1083,7 @@ sub usage {
 	print "  -O         do not add Organization:-header\n";
 	print "  -R         disallow control messages\n";
 	print "  -S         do not append " . $config{'sig-path'} . "\n";
+	print "  -T seconds set connection timeout to seconds\n";
 	print "  -X         do not sign article\n";
 	print "  -Y         force authentication on connect\n";
 	print " --canlock-algorithm string\n";
@@ -1077,7 +1091,7 @@ sub usage {
 	print " --ssl       use NNTPS (via port 563) if available\n";
 	print " --transform convert <CR><LF> to <LF>\n";
 	print " --version   show version\n";
-	printf ("\nAvailable tinewsrc-vars: %s\n", join(", ", sort keys %config)) if ($config{'verbose'} || $config{'debug'});
+	printf("\nAvailable tinewsrc-vars: %s\n", join(", ", sort keys %config)) if ($config{'verbose'} || $config{'debug'});
 	exit 0;
 }
 
@@ -1114,6 +1128,11 @@ to convert from <CR><LF> to just <LF>.
 X<tinews, command-line options>
 
 =over 4
+
+=item -B<4> | --B<ipv4>
+X<-4> X<--iv4>
+
+Force connecting via IPv4 to the remote NNTP server.
 
 =item -B<a> C<Approved> | --B<approved> C<Approved>
 X<-a> X<--approved>
@@ -1251,6 +1270,11 @@ Restricted mode, disallow control-messages.
 X<-s> X<--no-signature>
 
 Do not append F<$HOME/.signature>.
+
+=item -B<T> C<seconds> | --B<timeout> C<seconds>
+X<-T> X<--timeout>
+
+Override the connection timeout setting. Default is 120 seconds.
 
 =item -B<X> | --B<no-sign>
 X<-X> X<--no-sign>

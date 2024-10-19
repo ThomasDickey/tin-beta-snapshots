@@ -23,6 +23,13 @@ opt-case.pl
 	w2r.pl and opt-case.pl might be used together, i.e:
 	w2r.pl < wildmat-filter-file | opt-case.pl > regexp-filter-file-case
 
+flnews2tin.pl
+    is a small perl script that tries to convert a flnews scorefile
+    to a tin regexp filter file (don't forget to set wildmat= in tinrc
+    accordingly).
+    usage:
+    flnews2tin.pl < flnews-scorefile > tin-regexp-filter-file
+
 tinlock
 	is a small shell script that creates a lockfile before starting
 	tin to avoid multiple copies of tin running, when tin exits cleanly
