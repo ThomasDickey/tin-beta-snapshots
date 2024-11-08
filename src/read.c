@@ -152,7 +152,6 @@ wait_for_input(
 					if (prompt_yn(_(txt_read_exit), FALSE) == 1)
 						tin_done(EXIT_SUCCESS, NULL);
 				}
-
 			}
 
 #	if 0
@@ -163,7 +162,6 @@ wait_for_input(
 				return TRUE;
 #	endif /* 0 */
 		}
-
 	}
 }
 #endif /* HAVE_SELECT */
@@ -239,7 +237,6 @@ tin_read(
 	 */
 	i = (int) strlen(buffer);
 	if (i >= 1 && buffer[i - 1] == '\n') {
-
 		if (i >= 2 && buffer[i - 2] == '\r') {
 			buffer[i - 2] = '\0';
 			offset = i -= 2;

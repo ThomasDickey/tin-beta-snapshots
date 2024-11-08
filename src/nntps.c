@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-10-20
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2024 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -68,11 +68,13 @@ int
 tintls_init(
 	void)
 {
-	int result = 0;
 	char *ca_cert_file = ca_cert_file_expanded;
+#ifdef USE_GNUTLS
+	int result = 0;
+#endif /* USE_GNUTLS */
 
 	if (tinrc.tls_ca_cert_file && *tinrc.tls_ca_cert_file) {
-		if ((result = strfpath(tinrc.tls_ca_cert_file, ca_cert_file_expanded, sizeof(ca_cert_file_expanded), NULL, FALSE)) == 0)
+		if (strfpath(tinrc.tls_ca_cert_file, ca_cert_file_expanded, sizeof(ca_cert_file_expanded), NULL, FALSE) == 0)
 			return -EINVAL;
 	} else
 		ca_cert_file_expanded[0] = '\0';
@@ -95,7 +97,7 @@ tintls_init(
 	 * (see https://git.causal.agency/libretls/about/#Compatibility)
 	 */
 	if (*ca_cert_file) {
-		if ((result = tls_config_set_ca_file(libtls_config, ca_cert_file)) != 0) {
+		if (tls_config_set_ca_file(libtls_config, ca_cert_file) != 0) {
 			error_message(2, "%s!\n", tls_config_error(libtls_config));
 			tls_config_free(libtls_config);
 			libtls_config = NULL;
@@ -126,23 +128,20 @@ tintls_init(
 	}
 #		endif /* DEBUG */
 
-	result = gnutls_certificate_allocate_credentials(&tls_xcreds);
-	if (result < 0) {
+	if (gnutls_certificate_allocate_credentials(&tls_xcreds) < 0) {
 		error_message(2, "gnutls_certificate_allocate_credentials: out of memory!\n");
 		return -ENOMEM;
 	}
 
 	if (!*ca_cert_file) {
-		result = gnutls_certificate_set_x509_system_trust(tls_xcreds);
-		if (result < 0) {
+		if ((result = gnutls_certificate_set_x509_system_trust(tls_xcreds)) < 0) {
 			error_message(2, "gnutls_certificate_set_x509_system_trust: %s (%d)!\n", gnutls_strerror(result), result);
 			gnutls_certificate_free_credentials(tls_xcreds);
 			tls_xcreds = NULL;
 			return -EINVAL;
 		}
 	} else {
-		result = gnutls_certificate_set_x509_trust_file(tls_xcreds, ca_cert_file, GNUTLS_X509_FMT_PEM);
-		if (result < 0) {
+		if ((result = gnutls_certificate_set_x509_trust_file(tls_xcreds, ca_cert_file, GNUTLS_X509_FMT_PEM)) < 0) {
 			error_message(2, "gnutls_certificate_set_x509_trust_file: %s (%d): \"%s\"!\n", gnutls_strerror(result), result, ca_cert_file);
 			gnutls_certificate_free_credentials(tls_xcreds);
 			tls_xcreds = NULL;
@@ -154,14 +153,12 @@ tintls_init(
 #		ifdef USE_OPENSSL
 	ERR_clear_error();
 
-	result = RAND_status();
-	if (result != 1) {
+	if (RAND_status() != 1) {
 		show_errors("RAND_status: %s!\n");
 		return -EINVAL;
 	}
 
-	openssl_ctx = SSL_CTX_new(TLS_method());
-	if (!openssl_ctx) {
+	if ((openssl_ctx = SSL_CTX_new(TLS_method())) == NULL) {
 		show_errors("SSL_CTX_new: %s!\n");
 		return -ENOMEM;
 	}
@@ -175,16 +172,14 @@ tintls_init(
 	SSL_CTX_set_options(openssl_ctx, SSL_OP_NO_COMPRESSION);
 
 	if (!*ca_cert_file) {
-		result = SSL_CTX_set_default_verify_paths(openssl_ctx);
-		if (result != 1) {
+		if (SSL_CTX_set_default_verify_paths(openssl_ctx) != 1) {
 			SSL_CTX_free(openssl_ctx);
 			openssl_ctx = NULL;
 			show_errors("SSL_CTX_set_default_verify_paths: %s!\n");
 			return -EINVAL;
 		}
 	} else {
-		result = SSL_CTX_load_verify_locations(openssl_ctx, ca_cert_file, NULL);
-		if (result != 1) {
+		if (SSL_CTX_load_verify_locations(openssl_ctx, ca_cert_file, NULL) != 1) {
 			SSL_CTX_free(openssl_ctx);
 			openssl_ctx = NULL;
 			show_errors("SSL_CTX_load_verify_locations: %s!\n");
@@ -244,7 +239,6 @@ tintls_open(
 	int fd,
 	void **session_ctx)
 {
-	int result;
 #ifdef USE_LIBTLS
 	struct tls *client;
 
@@ -256,12 +250,12 @@ tintls_open(
 	if ((client = tls_client()) == NULL)
 		return -ENOMEM;
 
-	if ((result = tls_configure(client, libtls_config)) == -1) {
+	if (tls_configure(client, libtls_config) == -1) {
 		tls_free(client);
 		return -ENOMEM;
 	}
 
-	if ((result = tls_connect_socket(client, fd, servername)) == -1) {
+	if (tls_connect_socket(client, fd, servername) == -1) {
 		tls_free(client);
 		tintls_exit();
 		return -ENOMEM;
@@ -279,20 +273,20 @@ tintls_open(
 
 	*session_ctx = NULL;
 
-	if ((result = gnutls_init(&client, GNUTLS_CLIENT | GNUTLS_AUTO_REAUTH | GNUTLS_POST_HANDSHAKE_AUTH)) < 0)
+	if (gnutls_init(&client, GNUTLS_CLIENT | GNUTLS_AUTO_REAUTH | GNUTLS_POST_HANDSHAKE_AUTH) < 0)
 		return -ENOMEM;
 
-	if ((result = gnutls_server_name_set(client, GNUTLS_NAME_DNS, servername, strlen(servername))) < 0) {
+	if (gnutls_server_name_set(client, GNUTLS_NAME_DNS, servername, strlen(servername)) < 0) {
 		gnutls_deinit(client);
 		return -ENOMEM;
 	}
 
-	if ((result = gnutls_set_default_priority(client)) < 0) {
+	if (gnutls_set_default_priority(client) < 0) {
 		gnutls_deinit(client);
 		return -EINVAL;
 	}
 
-	if ((result = gnutls_credentials_set(client, GNUTLS_CRD_CERTIFICATE, tls_xcreds)) < 0) {
+	if (gnutls_credentials_set(client, GNUTLS_CRD_CERTIFICATE, tls_xcreds) < 0) {
 		gnutls_deinit(client);
 		return -EINVAL;
 	}
@@ -309,7 +303,6 @@ tintls_open(
 
 #	else
 #		ifdef USE_OPENSSL
-	int long_result;
 	SSL *ssl;
 	BIO *sock;
 	BIO *client;
@@ -334,24 +327,21 @@ tintls_open(
 		return -ENOMEM;
 	}
 
-	long_result = BIO_get_ssl(client, &ssl);
-	if (long_result != 1) {
+	if (BIO_get_ssl(client, &ssl) != 1) {
 		BIO_free(client);
 		BIO_free(sock);
 		show_errors("BIO_get_ssl: %s!\n");
 		return -EINVAL;
 	}
 
-	result = SSL_set_tlsext_host_name(ssl, servername);
-	if (result != 1) {
+	if (SSL_set_tlsext_host_name(ssl, servername) != 1) {
 		BIO_free(client);
 		BIO_free(sock);
 		show_errors("SSL_set_tlsext_host_name: %s!\n");
 		return -EINVAL;
 	}
 
-	result = SSL_set1_host(ssl, servername);
-	if (result != 1) {
+	if (SSL_set1_host(ssl, servername) != 1) {
 		BIO_free(client);
 		BIO_free(sock);
 		show_errors("SSL_set1_host: %s!\n");

@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.6.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-19 10:09+0200\n"
-"PO-Revision-Date: 2024-10-19 10:12+0200\n"
+"POT-Creation-Date: 2024-10-30 09:02+0100\n"
+"PO-Revision-Date: 2024-10-30 09:04+0100\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -5549,9 +5549,8 @@ msgid "Continuing..."
 msgstr "Weiter..."
 
 #: src/lang.c:1501
-#, c-format
-msgid "Read timeout from server (%d seconds) - quit tin?"
-msgstr "Zeitüberschreitung beim Lesen vom Server (%d Sekunden), tin beenden?"
+msgid "Read timeout from server - quit tin?"
+msgstr "Zeitüberschreitung beim Lesen vom Server - tin beenden?"
 
 #: src/lang.c:1502
 msgid "  -C       try COMPRESS NNTP extension"
@@ -9322,11 +9321,11 @@ msgstr ""
 "\n"
 "Server reagierte nicht, Wiederholung Nummer # %d\n"
 
-#: src/nntplib.c:1004 src/nntplib.c:2115
+#: src/nntplib.c:1004 src/nntplib.c:2114
 msgid "Rejoin current group\n"
 msgstr "Betrete aktuelle Gruppe neu\n"
 
-#: src/nntplib.c:1013 src/nntplib.c:2124
+#: src/nntplib.c:1013 src/nntplib.c:2123
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Lese (%s)\n"
@@ -9336,15 +9335,15 @@ msgstr "Lese (%s)\n"
 msgid "Resend last command (%s)\n"
 msgstr "Sende letztes Kommando (%s) neu\n"
 
-#: src/read.c:361
+#: src/read.c:358
 msgid "Aborted read\n"
 msgstr "Lesen abgebrochen\n"
 
-#: src/read.c:416
+#: src/read.c:413
 msgid "Draining\n"
 msgstr "Ablassen\n"
 
-#: src/refs.c:656
+#: src/refs.c:654
 msgid "[- Unavailable -]"
 msgstr "[- Nicht Verfügbar -]"
 

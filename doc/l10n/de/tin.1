@@ -3,13 +3,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-08-11
+.\" Updated   : 2024-10-30
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
-.\"
-.IX Titel "tin 1"
 .\"*******************************************************************
 .\"
 .\" This file was generated with po4a. Translate the source file.
@@ -23,7 +21,6 @@
 .\"
 tin, rtin \- Usenet Newsreader
 .SH ÜBERSICHT
-.IX Header ÜBERSICHT
 .\"
 .\"
 \fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|\fB\-a\fP\|]
@@ -35,7 +32,6 @@ tin, rtin \- Usenet Newsreader
 \fIMail\-Verz.\fP\|] [\|\fB\-p\fP \fIPort\fP\|] [\|\fB\-t\fP \fITimeout\fP\|] [\|\fB\-I\fP
 \fIindex\-Verz.\fP\|]\ \|[\fINewsgruppe\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH BESCHREIBUNG
-.IX Header BESCHREIBUNG
 \fBtin\fP ist ein einfach zu bedienender Newsreader für das Usenet. Er kann
 Artikel von einem lokalen (z. B. aus \fI/var/spool/news\fP) oder entfernten
 Server (\fBrtin\fP oder \fBtin \-r\fP Option) mittels NNTP (Network News Transport
@@ -61,7 +57,6 @@ ausgewählte Gruppe wird durch Drücken von '\fB<CR>\fP' betreten.
 Durch Drücken der \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') Taste wird
 die nächste Newsgruppe mit ungelesenen Artikeln betreten.
 .SH RÜCKGABEWERT
-.IX Header RÜCKGABEWERT
 .\" TODO: also exits with signalnr caught as exit status
 .TP  12
 \fB0\fP
@@ -79,7 +74,6 @@ Ungelesene Nachrichten vorhanden (nur im Batch\-Modus (\*(rq\fB\-Z\fP\*(rq)).
 .\"
 NNTP Fehler.
 .SH OPTIONEN
-.IX Header OPTIONEN
 .TP  12
 \fB\-4\fP
 Verbindung via IPv4 zum NNTP Server erzwingen. Nur verfügbar, wenn \fBtin\fP
@@ -324,7 +318,6 @@ Reihenfolge der Befehlszeilenoptionen ist nicht wichtig. Wenn sie
 gegenseitig ausschließend sind, wird die mit der höchsten Priorität
 ausgewählt und eventuell eine Warnung ausgegeben.
 .SH GEBRAUCH
-.IX Header GEBRAUCH
 .\"
 .\"
 .SS "NEWS ADMINISTRATION"
@@ -938,9 +931,9 @@ NACHSENDEN UND SPEICHERN VON ARTIKELN".
 Markierte Artikel automatisch ohne weiteres Nachfragen speichern.
 .TP 
 \fBGroupTag 't'\fP
-Toggle tag\-status of current article / thread for \fBGroupMail\fP ('\fBm\fP')  /
+Tag\-Status des aktuellen Artikels/Threads für \fBGroupMail\fP ('\fBm\fP') /
 \fBPipe\fP ('\fB|\fP') / \fBPrint\fP ('\fBo\fP') / \fBGroupSave\fP ('\fBs\fP') /
-\fBGroupRepost\fP ('\fBx\fP').
+\fBGroupRepost\fP ('\fBx\fP') umschalten.
 .TP 
 \fBGroupTagParts 'T'\fP
 Alle Teile der aktuellen mehrteiligen Nachricht automatisch in der
@@ -963,10 +956,11 @@ auch \*(rq\fB\-o\fP\*(rq Kommandozeilenschalter) oder ihn über \fBQuit\fP ('\fB
 verwerfen.
 .TP 
 \fBGroupRepost 'x'\fP
-Repost an already posted article / thread / auto\-selected (hot) articles /
-articles matching pattern / tagged articles to another newsgroup(s). Useful
-for reposting from global to local newsgroups. Do not use this to crosspost
-your own articles.
+Erneutes Posten eines bereits geposteten Artikels / Threads / automatisch
+ausgewählter (heißer) Artikel / Artikel, die einem Muster entsprechen / mit
+Tags versehenen Artikel in eine andere Newsgroup. Nützlich zum
+Wiederveröffentlichen von globalen zu lokalen Newsgroups. Nicht verwenden um
+eigenen Artikel mehrfach zu posten.
 .TP 
 \fBGroupMarkUnselArtRead 'X'\fP
 Mark all unread articles that have not been selected as read, redraw screen
@@ -1186,8 +1180,8 @@ Dem Autor des aktuellen Artikels per E\-Mail mit einer Kopie des Artikels
 einschließlich aller Header anworten.
 .TP 
 \fBPagePGPCheckArticle '^G'\fP
-Perform \fB\%pgp\fP(1)  / \fB\%gpg\fP(1)  operations on article. This expects
-inline pgp (\fBRFC\%4880\fP) and not MIME pgp (\fBRFC\%3156\fP).
+\fB\%pgp\fP(1) / \fB\%gpg\fP(1)\-Operationen für den Artikel ausführen. Es muß
+Inline\-PGP (\fBRFC\%4880\fP) und nicht MIME\-PGP (\fBRFC\%3156\fP) vorliegen.
 .TP 
 \fBPageToggleRaw '^H'\fP
 Schaltet den Anzeigemodus um (Roh einschließlich aller Header zu
@@ -1244,9 +1238,9 @@ Vorwärts innerhalb dieses Artikels suchen.
 Rückwärts innerhalb dieses Artikels suchen.
 .TP 
 \fBPageSkipIncludedText ':'\fP
-Skip to the end of the next quoted text\-block in this article. Quoted text
-is everything which matches \fBquote_regex\fP, \fBquote_regex2\fP or
-\fBquote_regex3\fP.
+Zum Ende des nächsten zitierten Textblocks in diesem Artikel
+springen. Zitierter Text ist alles, was mit \fBquote_regex\fP, \fBquote_regex2\fP
+oder \fBquote_regex3\fP übereinstimmt.
 .TP 
 \fBPageTopThd '<'\fP
 Gehe zum ersten Artikel im aktuellen Thread.
@@ -1430,10 +1424,11 @@ auch \*(rq\fB\-o\fP\*(rq Kommandozeilenschalter) oder ihn über \fBQuit\fP ('\fB
 verwerfen.
 .TP 
 \fBPageRepost 'x'\fP
-Repost an already posted article / thread / auto\-selected (hot) articles /
-articles matching pattern / tagged articles to another newsgroup(s). Useful
-for reposting from global to local newsgroups. Do not use this to crosspost
-your own articles.
+Erneutes Posten eines bereits geposteten Artikels / Threads / automatisch
+ausgewählter (heißer) Artikel / Artikel, die einem Muster entsprechen / mit
+Tags versehenen Artikel in eine andere Newsgroup. Nützlich zum
+Wiederveröffentlichen von globalen zu lokalen Newsgroups. Nicht verwenden um
+eigenen Artikel mehrfach zu posten.
 .TP 
 \fBMarkArtUnread 'z'\fP
 Alle Artikel als ungelesen markieren.
@@ -1849,16 +1844,16 @@ Der letzte Artikel/Autor/Konfigurationsoption, nach dem gesucht wurde.
 Voreinstellung ist 28.
 .TP 
 \fB(default_filter_kill_case)\fP
-Default for quick (1 key) kill filter case.  ON = filter case sensitive, OFF
-= ignore case. Default is OFF.
+Standard für schnellen (1 Taste) Kill\-Filter. ON = Groß\-/Kleinschreibung
+berücksichtigen, OFF = Groß\-/Kleinschreibung ignorieren.
 .TP 
 \fB(default_filter_kill_expire)\fP
-Default for quick (1 key) kill filter expire.  ON = limit to
-\fBdefault_filter_days\fP, OFF = don't ever expire. Default is OFF.
+Standard für schnellen (1\-Taste) Kill\-Filter\-Ablauf. ON = auf
+\fBdefault_filter_days\fP begrenzen, OFF = niemals ablaufen. Standard ist OFF.
 .TP 
 \fB(default_filter_kill_global)\fP
-Default for quick (1 key) kill filter global.  ON=apply to all groups,
-OFF=apply to current group. Default is ON.
+Standard für schnellen (1\-Taste) Kill\-Filter global. ON = auf alle Gruppen
+anwenden, OFF = auf die aktuelle Gruppe anwenden. Standard ist ON.
 .TP 
 \fB(default_filter_kill_header)\fP
 Voreinstellung für Schnell (1 Tasten) Killfilter Header.
@@ -1882,19 +1877,20 @@ Voreinstellung für Schnell (1 Tasten) Killfilter Header.
 .RE
 .TP 
 \fB(default_filter_select_case)\fP
-Default for quick (1 key) auto\-selection filter case. ON=filter case
-sensitive, OFF=ignore case. Default is OFF.
+Standard für den schnellen (1 Taste) automatischen Auswahlfilter. EIN =
+Groß\-/Kleinschreibung berücksichtigen, AUS = Groß\-/Kleinschreibung
+ignorieren.
 .TP 
 \fB(default_filter_select_expire)\fP
-Default for quick (1 key) auto\-selection filter expire.  ON = limit to
-\fBdefault_filter_days\fP, OFF = don't ever expire.  Default is OFF.
+Standard für schnellen (1\-Taste) Auto\-Auswahlfilter\-Ablauf. ON = auf
+\fBdefault_filter_days\fP begrenzen, OFF = niemals ablaufen. Standard ist OFF.
 .TP 
 \fB(default_filter_select_global)\fP
-Default for quick (1 key) auto\-selection filter global.  ON=apply to all
-groups, OFF=apply to current group. Default is ON.
+Standard für schnellen (1\-Taste) Auto\-Auswahlfilter global. ON = auf alle
+Gruppen anwenden, OFF = auf die aktuelle Gruppe anwenden. Standard ist ON.
 .TP 
 \fB(default_filter_select_header)\fP
-Default for quick (1 key) auto\-selection filter header.
+Standardheader für den Filter mit schneller automatischer Auswahl (1 Taste).
 .RS +.5i
 .IP 0 3
 \%\*(rqSubject:\*(rq (Groß/Kleinschreibung beachten)
@@ -1949,12 +1945,14 @@ Default for quick (1 key) auto\-selection filter header.
 \fB(default_subject_search)\fP
 .TP 
 \fBKeine Worttrennungen beim Umbrechen (dont_break_words)\fP
-Do not break long lines inside a word. This applies to the body except for
-verbatim blocks. See also \fBwrap_column\fP. Default is OFF.
+Lange Zeilen nicht innerhalb eines Wortes Umrechen. Dies gilt für den
+Artikelkörper mit Ausnahme von wortgetreuen Blöcken. Siehe auch
+\fBwrap_column\fP. Die Voreinstellung ist OFF.
 .TP 
 \fBZeige \-> anstatt einer Markierung (draw_arrow)\fP
-Allows groups/articles to be selected by an arrow '\->' if set ON or by a
-highlighted bar if set OFF. Default is OFF.
+Ermöglicht die Auswahl von Gruppen/Artikeln mit einem Pfeil '\->', wenn
+aktiviert, oder durch eine hervorgehobene Leiste, wenn deaktiviert. Der
+Standardwert ist OFF.
 .TP 
 \fBAufruf Ihres Editors (editor_format)\fP
 The format string used to create the editor start command with parameters.
@@ -1998,26 +1996,29 @@ next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')  is
 pressed. Default is \fBPageNextUnread\fP.
 .TP 
 \fBZeige uue\-Teile als Anhang (hide_uue)\fP
-If set to 'No' then raw uuencoded data is displayed. If set to 'Yes' then
-sections of uuencoded data will be shown with a single tag line showing the
-size and filename (much the same as a MIME attachment).  If set to 'Hide
-all' then any line that looks like uuencoded data will be folded into a tag
-line. This is useful when uuencoded data is split across more than one
-article but can also lead to false positives. This setting can also be
-toggled in the article viewer.  Default is 'No'.
+Falls auf 'Nein' gesetzt, werden die Rohdaten im uuencoded Format
+angezeigt. Wenn auf 'Ja' gesetzt, werden Abschnitte von uuencoded Daten mit
+einer einzigen Tag\-Zeile angezeigt, die die Größe und den Dateinamen zeigt
+(ähnlich wie ein MIME\-Anhang). Falls auf 'Alle ausblenden' gesetzt, wird
+jede Zeile, die wie uuencoded Daten aussieht, in eine Tag\-Zeile
+umgewandelt. Dies ist nützlich, wenn uuencoded Daten über mehr als einen
+Artikel verteilt sind, kann aber auch zu falschen Positiven führen. Diese
+Einstellung kann auch im Artikelbetrachter umgeschaltet werden. Der
+Standardwert ist 'Nein'.
 .TP 
 \fBExternes inews\-Programm (inews_prog)\fP
-Path, name and options of external \fB\%inews\fP(1).  If you are reading via
-NNTP the default value is "\-\-internal" (use built\-in NNTP inews), else it is
-"inews \-h". The article is passed to \fBinews_prog\fP on STDIN via '<
-article'.
+Pfad, Name und Optionen des externen \fB\%inews\fP(1). Wenn Sie über NNTP
+lesen, ist der Standardwert "\-\-internal" (verwende eingebautes NNTP inews),
+ansonsten ist es "inews \-h". Der Artikel wird mittels '< Artikel' an
+\fBinews_prog\fP via STDIN übergeben.
 .TP 
 \fB(info_in_last_line)\fP
 .\" this is missing from the Menu
-If ON, show current group description or article subject in the last line
-(not in the pager and global menu) \(em \fBToggleInfoLastLine\fP ('\fBi\fP')
-toggles setting. This facility is useful as the full width of the screen is
-available to display long subjects. Default is OFF.
+Wenn ON, zeigen Sie die aktuelle Gruppenbeschreibung oder den Artikelbereich
+in der letzten Zeile an (nicht im Pager und im globalen Menü) \(em
+\fBToggleInfoLastLine\fP ('\fBi\fP') wechselt die Einstellung. Diese Funktion ist
+nützlich, da die volle Breite des Bildschirms zur Verfügung steht, um lange
+Betreffzeilen anzuzeigen. Voreinstellung ist OFF.
 .TP 
 \fBBenutze interaktives Mailprogramm (interactive_mailer)\fP
 Interactive mailreader: if greater than 0 your mailreader will be invoked
@@ -2034,9 +2035,10 @@ Falls ON: inverse Darstellung für Header und das Hervorheben von URLs
 benutzen. Voreinstellung ist ON.
 .TP 
 \fBHalte Fehlschl. in ~/dead.articles (keep_dead_articles)\fP
-If ON keep all failed postings in \fI${TIN_HOMEDIR:\-"$HOME"}/dead.articles\fP
-besides keeping the last failed posting in
-\fI${TIN_HOMEDIR:\-"$HOME"}/dead.article\fP. Default is ON.
+Wenn ON, alle fehlgeschlagenen Beiträge in
+\fI${TIN_HOMEDIR:\-"$HOME"}/dead.articles\fP behalten, zusätzlich zum Speichern
+des letzten fehlgeschlagenen Beitrags in
+\fI${TIN_HOMEDIR:\-"$HOME"}/dead.article\fP. Die Voreinstellung ist ON.
 .TP 
 \fBFilter (kill) anwenden auf (kill_level)\fP
 This option controls the processing and display of articles that are
@@ -2049,27 +2051,30 @@ happens on unread articles with \fBkill_level\fP set to 0, \fBart_marked_killed\
 and \fBart_marked_read_selected\fP are only shown once. When you reenter the
 group the mark will be gone.
 .IP 1
-\fBKill all arts & show with K\fP will process all articles in the group and
-therefore there is a processing overhead when using this option. Killed
-articles are threaded as normal but they will be marked with
-\fBart_marked_killed\fP.
+\fBKillt alle Artikel, markiert mit K\fP wird auf alle Artikel in der Gruppe
+angewendet und verursacht daher einen erhöhten Bearbeitungsaufwand, falls
+diese Option verwendet wird. Gelöschte Artikel werden wie gewohnt in Threads
+angezeigt, sind jedoch mit \fBart_marked_killed\fP markiert.
 .IP 2
-\fBKill all arts and never show\fP will process all articles in the group and
-therefore there is a processing overhead when using this option. Killed
-articles simply does not get displayed at all.
+\fBKillt alle Artikel, zeigt sie nie\fP wird alle Artikel in der Gruppe
+angewendet und verursacht daher einen erhöhten Bearbeitungsaufwand, falls
+diese Option verwendet wird. Gelöschte Artikel werden überhaupt nicht
+angezeigt.
 .RE
 Voreinstellung ist 0 (\fBKillt nur ungelesene Artikel\fP).
 .TP 
 \fBBenutze 8bit Zeichen im Mail Header (mail_8bit_header)\fP
-Allows 8bit characters unencoded in the header of mail message. Default is
-OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set to
-8bit. Leaving it OFF is safe for most users and compliant to Internet Mail
-Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP). Default is OFF.
+Erlaubt unkodierte 8\-Bit\-Zeichen im Header von E\-Mail\-Nachrichten. Der
+Standardwert ist OFF. Das Aktivieren hat nur Wirkung, wenn
+\fBmail_mime_encoding\fP auch auf 8bit gesetzt ist. Das Beibehalten auf OFF ist
+für die meisten Benutzer sicher und entspricht dem Internet Mail Standard
+(\fBRFC\%5322\fP und \fBRFC\%2047\fP). Die Voreinstellung ist OFF.
 .TP 
 \fBMailadresse (und Name) (mail_address)\fP
-User's mail address (and full name), if not username@host. This is used when
-creating articles, sending mail and when \fB\%pgp\fP(1)  / \fB\%gpg\fP(1)  signing
-(\fBRFC\%4880\fP).
+E\-Mail\-Adresse des Benutzers (und vollständiger Name), falls nicht
+benutzername@host. Wird beim Erstellen von Artikeln, beim Versenden von
+E\-Mails und beim Signieren mit \fB\%pgp\fP(1) / \fB\%gpg\fP(1) (\fBRFC\%4880\fP)
+verwendet.
 .TP 
 \fBMIME\-Kodierung für E\-Mails (mail_mime_encoding)\fP
 MIME\-Kodierung des Textkörpers in E\-Mail\-Nachrichten falls erforderlich
@@ -3470,7 +3475,6 @@ lesen, manuell zu bereinigen:
 .\"
 .\"
 .SH DATEIEN
-.IX Header DATEIEN
 .\" TODO: mention dead.article, dead.articles
 .\"               .article[.$$], .cancel[.$$], .letter[.$$]?
 .\"       ${XDG_RUNTIME_DIR:\-"$HOME"}/.slrnfaces
@@ -3636,7 +3640,6 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 .\"
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions\fP
 .SH UMGEBUNGSVARIABLEN
-.IX Header UMGEBUNGSVARIABLEN
 .\" TODO: - sort in a useful order
 .\"       - add undocumented env-vars (e.g. $DEV_TCP (SCO),
 .\"         ${HOST:-"$HOSTNAME"} fallback)
@@ -3773,6 +3776,11 @@ Versandoperationen innerhalb von \fBtin\fP verwendet wird.
 .TP 
 \fBMAIL\fP
 Voller Pfad zum Postfach des Benutzers.
+.TP 
+.\" we don't support the %message || ?message notation
+\fBMAILPATH\fP
+Eine durch Doppelpunkte getrennte Liste von Dateinamen, die auf neue E\-Mails
+überprüft werden. Übersteuert die Variable $\fBMAIL\fP.
 .TP 
 \fBVISUAL\fP
 This variable has precedence over the default editor (i.e., \fB\%vi\fP(1))
@@ -3918,7 +3926,6 @@ Der Pfadname der Login\-Shell des Benutzers. Dient zum Setzen von
 Pfadname des Verzeichnisses, in dem nicht zwingend benötigte Laufzeitdateien
 abgelegt werden sollen.
 .SH SIGNALE
-.IX Header SIGNALE
 .\" TODO: add missing, sort useful, document in detail
 \fBtin\fP verarbeitet folgende Signale:
 .TP 
@@ -3942,7 +3949,6 @@ Beenden ohne das Terminal (tty) wiederherzustellen.
 .\"
 Speichern der \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-Datei.
 .SH SICHERHEIT
-.IX Header SICHERHEIT
 Falls \fBtin\fP im Debug\-Modus (\*(rq\fB\-D n\fP\*(rq) gestartet wird, werden in
 \fB$TMPDIR\fP für alle Benutzer lesbare Dateien erzeugt, welche das
 NNTP\-Passwort des aktuellen Benutzers im Klartext enthalten können (falls
@@ -3962,7 +3968,6 @@ Komprimierung unterstützt und Komprimierung angefordert wird, beendet sich
 der Befehlszeilenoption \*(rq\fB\-A\fP\*(rq in Verbindung mit \*(rq\fB\-C\fP\*(rq kann dieses
 Verhalten umgangen werden.
 .SH "KONFORM ZU"
-.IX Header "KONFORM ZU"
 .\" - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
 .\"   RFC\%4643, RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
 .\"
@@ -3971,7 +3976,6 @@ Verhalten umgangen werden.
 Abschnitt 12, Utility\-Konventionen (Utility Argument Syntax, Utility Syntax
 Guidelines).
 .SH ANMERKUNGEN
-.IX Header ANMERKUNGEN
 Unterstützung für reguläre Ausdrücke wird durch die PCRE\-Bibliothek
 \fB\%pcre\fP(3) oder \fB\%pcre2\fP(3) bereitgestellt welche Open\-Source\-Software
 ist. Autor ist Philip Hazel und das Urheberrecht \(co liegt bei der
@@ -3981,7 +3985,6 @@ University of Cambridge, England.
 .\"
 <https://www.pcre.org/>
 .SH FEHLER
-.IX Header FEHLER
 \fBCNews\fP\0NNTPd, \fB\%noffle\fP(1) (<= V1.0\-pre5) und \fBNewsCache\fP (<=
 V1.1.91) können nicht mit gepipelinten GROUP\-Befehlen (\fBRFC\%3977\fP)
 umgehen. Falls Sie Probleme mit einem der genannten historischen Server
@@ -4003,7 +4006,6 @@ haben benutzen Sie bitte die Funktion \fBBugReport\fP ('\fBR\fP') und schreiben
 auf Englisch. Bitte fügen Sie Ihrem Bug\-Report KEINE Core\-Datei bei \(em
 außer wir haben diese angefordert.
 .SH GESCHICHTE
-.IX Header GESCHICHTE
 \fBtin\fP basiert auf \fB\%tass\fP(1), einem Newsreader der von Rich Skrenta
 entwickelt und dessen Code im März 1991 von ihm in alt.sources
 veröffentlicht wurde. Die erste Version von \fBtin\fP wurde am 23. August 1991
@@ -4058,7 +4060,6 @@ Wenn Sie Fehler in der Übersetzung finden, schicken Sie bitte eine E-Mail
 an <translation@tin.org>.
 .\"
 .SH "SIEHE AUCH"
-.IX Header "SIEHE AUCH"
 \fB\%elm\fP(1), \fB\%emacs\fP(1), \fB\%gpg\fP(1), \fB\%inews\fP(1), \fB\%ispell\fP(1),
 \fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%mutt\fP(1), \fB\%noffle\fP(1),
 \fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1),

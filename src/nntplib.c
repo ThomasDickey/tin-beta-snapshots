@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-11-04
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -99,9 +99,9 @@ char *nntp_server = NULL;
 /* because compression can make the buffer increase, choose a larger size than
  * for the uncompressed data */
 #		define DEFLATE_BUFSZ (5000U)
-#		define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, -1, NULL, NULL, NULL, NULL, NULL }
+#		define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, 0, NULL, NULL, NULL, NULL, NULL }
 #	else /* USE_ZLIB */
-#		define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, -1, NULL }
+#		define NNTPBUF_INITIALIZER { { {0}, 0, 0 }, { {0}, 0, 0 }, -1, 0, NULL }
 #	endif /* USE_ZLIB */
 
 	static struct nntpbuf nntp_buf = NNTPBUF_INITIALIZER;
@@ -187,7 +187,7 @@ getserverbyfile(
 #	ifdef DEBUG
 						else {
 							if (debug & DEBUG_MISC)
-								wait_message(3, _(txt_port_not_numeric_in), local_newsrctable_file, buf, p);
+								wait_message(3, _(txt_port_not_numeric_in), newsrctable_file, buf, p);
 						}
 #	endif /* DEBUG */
 					}
@@ -203,7 +203,7 @@ getserverbyfile(
 #	ifdef DEBUG
 					else {
 						if (debug & DEBUG_MISC)
-							wait_message(3, _(txt_port_not_numeric_in), local_newsrctable_file, buf, cp);
+							wait_message(3, _(txt_port_not_numeric_in), newsrctable_file, buf, cp);
 					}
 #	endif /* DEBUG */
 				}
@@ -391,7 +391,7 @@ server_init(
 #		ifdef TLI
 		if (t_getpeername(nntp_buf.fd, &sa, &sa_len) == 0)
 		/* if (getpeerinaddr(nntp_buf.fd, (struct sockaddr_in *)&sa, &sa_len) == 0) */
-#		endif TLI
+#		endif /* TLI */
 #	endif /* HAVE_GETPEERNAME */
 			nntp_buf.family = sa.sa_family;
 	}
@@ -426,7 +426,7 @@ server_init(
 static int
 get_tcp_socket(
 	char *machine,		/* remote host */
-	char *service,		/* nttp/smtp etc. */
+	char *service,		/* nntp/smtp etc. */
 	unsigned short port)	/* tcp port number */
 {
 	int s = -1;
@@ -902,7 +902,7 @@ put_server(
 	const char *string,
 	t_bool hide_from_log)
 {
-	if (*string && strlen(string)) {
+	if (*string) {
 		DEBUG_IO((stderr, "put_server(%s)\n", string));
 		nntpbuf_puts(string, &nntp_buf);
 		nntpbuf_puts("\r\n", &nntp_buf);
@@ -1167,9 +1167,8 @@ close_server(
 {
 	if (!send_no_quit && nntpbuf_is_open(&nntp_buf)) {
 		if ((!batch_mode || verbose) && cCOLS > 1) {
-			char *msg;
+			char *msg = strunc(_(txt_disconnecting), (size_t) (cCOLS - 1));
 
-			msg = strunc(_(txt_disconnecting), (size_t) (cCOLS - 1));
 			my_fputs(msg, stdout);
 			my_fputc('\n', stdout);
 			free(msg);
@@ -1993,8 +1992,8 @@ get_only_respcode(
 	char *message,
 	size_t mlen)
 {
-	int respcode;
 	char *end, *ptr;
+	int respcode;
 
 	ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
 
@@ -2081,9 +2080,9 @@ get_respcode(
 	char *message,
 	size_t mlen)
 {
-	int respcode;
-	char savebuf[NNTP_STRLEN];
 	char *ptr, *end;
+	char savebuf[NNTP_STRLEN];
+	int respcode;
 
 	respcode = get_only_respcode(message, mlen);
 	if ((respcode == ERR_NOAUTH) || (respcode == NEED_AUTHINFO)) {
@@ -2791,6 +2790,7 @@ nntp_conninfo(
 #		ifdef DECNET
 		case AF_DECnet:
 			fprintf(stream, _(txt_conninfo_type), "DECnet");
+			break;
 #		endif /* DECNET */
 
 		default: /* should not happen */
@@ -2817,9 +2817,9 @@ nntp_conninfo(
 		}
 #	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
 		if (nntp_caps.maxartnum) {
+			char *buf;
 			int n;
 			size_t len;
-			char *buf;
 
 			if ((n = snprintf(NULL, 0, "%"T_ARTNUM_PFMT, nntp_caps.maxartnum)) > 0) {
 				len = (size_t) n + 1;

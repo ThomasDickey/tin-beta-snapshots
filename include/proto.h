@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2024-10-18
+ *  Updated   : 2024-11-03
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -51,7 +51,7 @@
 /* active.c */
 extern char group_flag(char ch);
 extern int find_newnews_index(const char *cur_newnews_host);
-extern int read_news_active_file(void);
+extern int read_news_active_file(t_bool check_any_unread);
 extern t_bool match_group_list(const char *group, const char *group_list);
 extern t_bool parse_active_line(char *line, t_artnum *max, t_artnum *min, char *moderated);
 extern t_bool process_bogus(const char *name);
@@ -398,7 +398,7 @@ extern void get_cwd(char *buf);
 extern void show_connection_page(void);
 extern void make_base_group_path(const char *base_dir, const char *group_name, char *group_path, size_t group_path_len);
 extern void make_group_path(const char *name, char *path);
-extern void process_charsets(char **line, size_t *max_line_len, const char *network_charset, const char *local_charset, t_bool conv_tex2iso);
+extern void process_charsets(char **line, size_t *max_line_len, const char *from_charset, const char *to_charset, t_bool conv_tex2iso);
 extern void read_input_history_file(void);
 extern int rename_file(const char *old_filename, const char *new_filename);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -416,7 +416,7 @@ extern void toggle_inverse_video(void);
 	extern int my_isprint(int c);
 #endif /* NO_LOCALE || !MULTIBYTE_ABLE */
 #ifdef CHARSET_CONVERSION
-	extern t_bool buffer_to_network(char *line, int mmnwcharset);
+	extern t_bool buffer_to_network(char **line, int mmnwcharset);
 #endif /* CHARSET_CONVERSION */
 #ifdef HAVE_COLOR
 	extern t_bool toggle_color(void);

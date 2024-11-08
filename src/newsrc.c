@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-16
+ *  Updated   : 2024-10-31
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -690,7 +690,7 @@ bulk_subscribe(
 	char *line;
 	char *seq;
 	int i, sub;
-	t_bool found = FALSE;
+	t_bool found;
 
 	if (no_write || (newfp = fopen(newnewsrc, "w")) == NULL)
 		return;
@@ -1326,7 +1326,6 @@ print_bitmap_seq(
 
 					if (group->newsrc.xmin > 2)
 						fprintf(fp, "-%"T_ARTNUM_PFMT, group->newsrc.xmin - 1);
-
 				}
 			}
 			if (group->newsrc.xmax == i)
@@ -1791,7 +1790,7 @@ art_mark(
 					if (group->newsrc.num_unread)
 						group->newsrc.num_unread--;
 
-					if (group->attribute->show_only_unread_arts)
+					if (group->attribute && group->attribute->show_only_unread_arts)
 						art->keep_in_base = TRUE;
 				}
 
@@ -1805,7 +1804,7 @@ art_mark(
 				if (group != NULL) {
 					group->newsrc.num_unread++;
 
-					if (group->attribute->show_only_unread_arts)
+					if (group->attribute && group->attribute->show_only_unread_arts)
 						art->keep_in_base = FALSE;
 				}
 

@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2024-10-15
+ *  Updated   : 2024-11-08
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2024 Steven J. Madsen <steve@erinet.com>
@@ -308,7 +308,7 @@ pgp_append_public_key(
 	if (CURR_GROUP.attribute->from != NULL && *CURR_GROUP.attribute->from && **CURR_GROUP.attribute->from)
 		strip_name(*CURR_GROUP.attribute->from, buf);
 	else /* FIXME: avoid hardcoded length */
-		snprintf(buf, sizeof(buf), "%.255s@%.765s", userid, BlankIfNull(get_host_name()));
+		snprintf(buf, sizeof(buf), "%.*s@%.765s", LOGIN_NAME_MAX - 1, userid, BlankIfNull(get_host_name()));
 
 	snprintf(tmp, sizeof(tmp), KEYFILE, (long) process_id);
 	joinpath(keyfile, sizeof(keyfile), tmpdir, tmp);

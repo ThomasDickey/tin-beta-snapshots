@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.6.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-19 10:09+0200\n"
-"PO-Revision-Date: 2024-10-19 10:10+0200\n"
+"POT-Creation-Date: 2024-10-30 09:02+0100\n"
+"PO-Revision-Date: 2024-11-07 13:59+0100\n"
 "Last-Translator: Urs Janssen <urs@tin.org>\n"
 "Language-Team: \n"
 "Language: en_GB\n"
@@ -1196,7 +1196,7 @@ msgstr "  Line %d: \"%s\": given string too long.\n"
 #: src/lang.c:385
 #, c-format
 msgid "  Line %d: \"%s\": unrecognized attribute.\n"
-msgstr "  Line %d: \"%s\": unrecognized attribute.\n"
+msgstr "  Line %d: \"%s\": unrecognised attribute.\n"
 
 #: src/lang.c:386
 #, c-format
@@ -5059,7 +5059,7 @@ msgid ""
 "#  15 = light white\n"
 "\n"
 msgstr ""
-"# Changing colors of several screen parts\n"
+"# Changing colours of several screen parts\n"
 "# Possible values are:\n"
 "#  -1 = default (white for foreground and black for background)\n"
 "#   0 = black\n"
@@ -5359,9 +5359,8 @@ msgid "Continuing..."
 msgstr "Continuing..."
 
 #: src/lang.c:1501
-#, c-format
-msgid "Read timeout from server (%d seconds) - quit tin?"
-msgstr "Read timeout from server (%d seconds) - quit tin?"
+msgid "Read timeout from server - quit tin?"
+msgstr "Read timeout from server - quit tin?"
 
 #: src/lang.c:1502
 msgid "  -C       try COMPRESS NNTP extension"
@@ -8822,7 +8821,7 @@ msgstr "# Format string for date representation\n"
 
 #: src/lang.c:3397
 msgid "Unicode normalization form"
-msgstr "Unicode normalization form"
+msgstr "Unicode normalisation form"
 
 #: src/lang.c:3398
 msgid ""
@@ -8835,7 +8834,7 @@ msgid ""
 "#   4 = NFD\n"
 "#   5 = NFKC_CF\n"
 msgstr ""
-"# Unicode normalization form\n"
+"# Unicode normalisation form\n"
 "# Possible values are:\n"
 "#   0 = None\n"
 "#   1 = NFKC\n"
@@ -9002,7 +9001,7 @@ msgstr "UNDECLARED_CHARSET"
 
 #: src/lang.c:3556
 msgid "Guess charset if no charset declaration is present, <CR> to set."
-msgstr "uess charset if no charset declaration is present, <CR> to set."
+msgstr "Guess charset if no charset declaration is present, <CR> to set."
 
 #: src/lang.c:3557
 msgid "UNDECLARED_CS_GUESS"
@@ -9061,11 +9060,11 @@ msgstr ""
 "\n"
 "Server timed out, trying reconnect # %d\n"
 
-#: src/nntplib.c:1004 src/nntplib.c:2115
+#: src/nntplib.c:1004 src/nntplib.c:2114
 msgid "Rejoin current group\n"
 msgstr "Rejoin current group\n"
 
-#: src/nntplib.c:1013 src/nntplib.c:2124
+#: src/nntplib.c:1013 src/nntplib.c:2123
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Read (%s)\n"
@@ -9075,15 +9074,15 @@ msgstr "Read (%s)\n"
 msgid "Resend last command (%s)\n"
 msgstr "Resend last command (%s)\n"
 
-#: src/read.c:361
+#: src/read.c:358
 msgid "Aborted read\n"
 msgstr "Aborted read\n"
 
-#: src/read.c:416
+#: src/read.c:413
 msgid "Draining\n"
 msgstr "Draining\n"
 
-#: src/refs.c:656
+#: src/refs.c:654
 msgid "[- Unavailable -]"
 msgstr "[- Unavailable -]"
 

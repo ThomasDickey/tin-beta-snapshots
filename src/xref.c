@@ -439,7 +439,7 @@ NSETRNG1(
 			if (NOFFSET(high) > NOFFSET(low) + 1)
 				memset(&bitmap[NOFFSET(low) + 1], NBITSON, (size_t) (NOFFSET(high) - NOFFSET(low) - 1));
 
-			BIT_OR(bitmap, high, ~ (NBITNEG1 << NBITIDX(high)));
+			BIT_OR(bitmap, high, ~(NBITNEG1 << NBITIDX(high)));
 		}
 	}
 }

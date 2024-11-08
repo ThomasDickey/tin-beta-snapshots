@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-11-08
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -184,7 +184,7 @@ static void strip_double_ngs(char *ngs_list);
 static void update_active_after_posting(char *newsgroups);
 static void update_posted_info_file(const char *group, int action, const char *subj, const char *a_message_id);
 #ifdef FORGERY
-	static void make_path_header(char *line);
+	static char *make_path_header(void);
 	static void show_cancel_info(t_bool author, t_bool use_cache);
 #else
 	static void show_cancel_info(void);
@@ -678,10 +678,9 @@ draw_post_hist_arrow(
 {
 	draw_arrow_mark(INDEX_TOP + phmenu.curr - phmenu.first);
 	if (tinrc.info_in_last_line) {
-		t_posted *lptr;
+		t_posted *lptr = find_post_hist(phmenu.curr);
 
-		lptr = find_post_hist(phmenu.curr);
-		if (lptr->mid[0])
+		if (*lptr->mid)
 			info_message("%s", lptr->mid);
 	} else if (phmenu.curr == phmenu.max - 1)
 		info_message(_(txt_end_of_posted));
@@ -692,9 +691,8 @@ t_posted *
 find_post_hist(
 	int n)
 {
-	t_posted *lptr;
+	t_posted *lptr = post_hist_list;
 
-	lptr = post_hist_list;
 	while (n-- > 0 && lptr->next)
 		lptr = lptr->next;
 
@@ -707,9 +705,9 @@ build_post_hist_line(
 	int i)
 {
 	char *sptr;
+	char *tmp = NULL;
 	int group_len = cCOLS / 5;
 	t_posted *lptr;
-	char *tmp = NULL;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	size_t len = cCOLS * MB_CUR_MAX;
 	wchar_t *wtmp, *wtmp2;
@@ -796,10 +794,8 @@ static int
 process_post_hist(
 	int n)
 {
-	t_posted *lptr;
 	int ret;
-
-	lptr = find_post_hist(n);
+	t_posted *lptr = find_post_hist(n);
 
 	if (strchr(lptr->group, '@'))
 		ret = LOOKUP_REPLY;
@@ -1383,7 +1379,7 @@ check_article_to_be_posted(
 		if (!charset_conversion_fails && strcasecmp(tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset])) { /* local_charset != network_charset */
 			cp = my_malloc(strlen(line) * 4 + 1);
 			strcpy(cp, line);
-			charset_conversion_fails = !buffer_to_network(cp, mmnwcharset);
+			charset_conversion_fails = bool_not(buffer_to_network(&cp, mmnwcharset));
 			free(cp);
 		}
 #endif /* CHARSET_CONVERSION */
@@ -1816,7 +1812,7 @@ check_article_to_be_posted(
 		if (!charset_conversion_fails && strcasecmp(tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset])) { /* local_charset != network_charset */
 			cp = my_malloc(strlen(line) * 4 + 1);
 			strcpy(cp, line);
-			charset_conversion_fails = !buffer_to_network(cp, mmnwcharset);
+			charset_conversion_fails = bool_not(buffer_to_network(&cp, mmnwcharset));
 			free(cp);
 		}
 #endif /* CHARSET_CONVERSION */
@@ -2310,7 +2306,7 @@ my_fprintf(stderr, "\"%s\" %d %s\n", curr_from, i, gnksa_strerror(i));
 #ifndef FORGERY
 	*errors += err;
 #else
-	(void) errors
+	(void) errors;
 #endif /* !FORGERY */
 	free(cp);
 	return n;
@@ -2824,9 +2820,6 @@ create_normal_article_headers(
 {
 	FILE *fp;
 	char from_name[HEADER_LEN];
-#ifdef FORGERY
-	char tmp[HEADER_LEN];
-#endif /* FORGERY */
 	char *prompt, *tmp2;
 
 	/* Get subject for posting article - Limit the display if needed */
@@ -2856,8 +2849,10 @@ create_normal_article_headers(
 
 	get_from_name(from_name, group);
 #ifdef FORGERY
-	make_path_header(tmp);
-	msg_add_header("Path", tmp);
+	if ((tmp2 = make_path_header())) {
+		msg_add_header("Path", tmp2);
+		free(tmp2);
+	}
 #endif /* FORGERY */
 	msg_add_header("From", from_name);
 	msg_add_header("Subject", tinrc.default_post_subject);
@@ -3552,7 +3547,7 @@ post_response(
 	t_bool use_followup_to = TRUE;
 	t_function func;
 #ifdef FORGERY
-	char line[HEADER_LEN];
+	char *p;
 #endif /* FORGERY */
 
 	wait_message(0, _(txt_post_a_followup));
@@ -3639,8 +3634,10 @@ post_response(
 	group = group_find(groupname, FALSE);
 	get_from_name(from_name, group);
 #ifdef FORGERY
-	make_path_header(line);
-	msg_add_header("Path", line);
+	if ((p = make_path_header())) {
+		msg_add_header("Path", p);
+		free(p);
+	}
 #endif /* FORGERY */
 	msg_add_header("From", from_name);
 
@@ -4571,6 +4568,7 @@ cancel_article(
 	char a_message_id[HEADER_LEN];
 #ifdef FORGERY
 	char line[HEADER_LEN];
+	char *p;
 	t_bool author = TRUE;
 #endif /* FORGERY */
 	int init = 1;
@@ -4588,9 +4586,6 @@ cancel_article(
 		return FALSE;
 	}
 	get_from_name(from_name, group); /* TODO: strip_name() for both? */
-#ifdef FORGERY
-	make_path_header(line);
-#endif /* FORGERY */
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
@@ -4653,11 +4648,10 @@ cancel_article(
 #endif /* HAVE_FCHMOD */
 
 #ifdef FORGERY
+	p = make_path_header();
 	if (!author) {
-		char line2[HEADER_LEN];
-
-		snprintf(line2, sizeof(line2), "cyberspam!%s", line);
-		msg_add_header("Path", line2);
+		snprintf(line, sizeof(line), "cyberspam!%s", p);
+		msg_add_header("Path", line);
 		msg_add_header("From", from_name);
 		msg_add_header("Sender", note_h.from);
 		snprintf(line, sizeof(line), "<cancel.%s", note_h.messageid + 1);
@@ -4669,7 +4663,7 @@ cancel_article(
 		 */
 		msg_add_header("X-Orig-Subject", note_h.subj);
 	} else {
-		msg_add_header("Path", line);
+		msg_add_header("Path", p);
 		if (art->mailbox.name)
 			snprintf(line, sizeof(line), "%s <%s>", art->mailbox.name, art->mailbox.from);
 		else
@@ -4678,6 +4672,7 @@ cancel_article(
 		ADD_MSG_ID_HEADER();
 		ADD_CAN_KEY(note_h.messageid);
 	}
+	free(p);
 #else
 	msg_add_header("From", from_name);
 	ADD_MSG_ID_HEADER();
@@ -4723,7 +4718,7 @@ cancel_article(
 		copy_fp(pgart.raw, fp);
 	}
 	fclose(fp);
-	invoke_editor(cancel, start_line_offset, group);
+	invoke_editor(cancel, start_line_offset, group); /* TODO: handle invocation error? */
 #else
 	fprintf(fp, "%s", txt_article_cancelled);
 	start_line_offset++;
@@ -4771,7 +4766,7 @@ cancel_article(
 		switch (func) {
 			case POST_EDIT:
 				free_and_init_header(&hdr);
-				invoke_editor(cancel, start_line_offset, group);
+				invoke_editor(cancel, start_line_offset, group); /* TODO: handle invocation error? */
 				if (!(fp = tin_fopen(cancel, "r"))) {
 					/* Oops */
 					unlink(cancel);
@@ -4838,7 +4833,7 @@ repost_article(
 	char buf[HEADER_LEN];
 	char from_name[HEADER_LEN];
 	char full_name[128];
-	char user_name[128];
+	char user_name[LOGIN_NAME_MAX];
 	int art_type = GROUP_TYPE_NEWS;
 	int ret_code = POSTED_NONE;
 	struct t_group *group;
@@ -4847,6 +4842,7 @@ repost_article(
 	t_bool add_sig;
 #ifdef FORGERY
 	char line[HEADER_LEN];
+	char *p;
 #endif /* FORGERY */
 	t_function func, default_func = GLOBAL_POST;
 
@@ -4889,8 +4885,10 @@ repost_article(
 
 	if (Superseding) {
 #ifdef FORGERY
-		make_path_header(line);
-		msg_add_header("Path", line);
+		if ((p = make_path_header())) {
+			msg_add_header("Path", p);
+			free(p);
+		}
 
 		msg_add_header("From", (note_h.from ? note_h.from : from_name));
 
@@ -5675,15 +5673,23 @@ submit_mail_file(
 
 
 #ifdef FORGERY
-static void
+static char *
 make_path_header(
-	char *line)
+	void)
 {
-	char full_name[128];
-	char user_name[128];
+	char *buf;
+	int n;
+	size_t len;
 
-	get_user_info(user_name, full_name);
-	sprintf(line, "%s!%s", domain_name, user_name);
+	if ((n = snprintf(NULL, 0, "%s!%s", domain_name, userid)) < 0)
+		return NULL;
+	len = (size_t) n + 1;
+	buf = my_malloc(len);
+	if (snprintf(buf, len, "%s!%s", domain_name, userid) != n) {
+		free(buf);
+		return NULL;
+	}
+	return buf;
 }
 #endif /* FORGERY */
 
@@ -6007,6 +6013,9 @@ build_messageid(
 		static char buf2[HEADER_LEN];
 
 		strip_name(build_sender(), buf2);
+		if (strlen(buf) + strlen(buf2) + strlen(radix32(getuid())) + 2 > sizeof(buf) - 1)
+			return NULL;
+
 		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "N%s%%%s>", radix32(getuid()), buf2);
 	}
 #	else

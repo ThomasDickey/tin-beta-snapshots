@@ -74,7 +74,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-19 10:09+0200\n"
+"POT-Creation-Date: 2024-10-30 09:02+0100\n"
 "PO-Revision-Date: 2020-12-27 11:41+0100\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -5492,8 +5492,7 @@ msgid "Continuing..."
 msgstr "Udskriver ..."
 
 #: src/lang.c:1501
-#, c-format
-msgid "Read timeout from server (%d seconds) - quit tin?"
+msgid "Read timeout from server - quit tin?"
 msgstr ""
 
 #: src/lang.c:1502
@@ -9214,11 +9213,11 @@ msgstr ""
 "\n"
 "Server fik tidsudløb, prøver at forbinde igen # %d\n"
 
-#: src/nntplib.c:1004 src/nntplib.c:2115
+#: src/nntplib.c:1004 src/nntplib.c:2114
 msgid "Rejoin current group\n"
 msgstr "Tilslut igen til nuværende gruppe\n"
 
-#: src/nntplib.c:1013 src/nntplib.c:2124
+#: src/nntplib.c:1013 src/nntplib.c:2123
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Læst (%s)\n"
@@ -9228,15 +9227,15 @@ msgstr "Læst (%s)\n"
 msgid "Resend last command (%s)\n"
 msgstr "Send sidste kommando igen (%s)\n"
 
-#: src/read.c:361
+#: src/read.c:358
 msgid "Aborted read\n"
 msgstr "Afbrød læsning\n"
 
-#: src/read.c:416
+#: src/read.c:413
 msgid "Draining\n"
 msgstr ""
 
-#: src/refs.c:656
+#: src/refs.c:654
 msgid "[- Unavailable -]"
 msgstr "[- Utilgængelig -]"
 

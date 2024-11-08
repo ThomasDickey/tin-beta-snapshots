@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-13
+ *  Updated   : 2024-11-08
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -97,7 +97,7 @@ char local_config_file[PATH_LEN];
 char local_input_history_file[PATH_LEN];
 char local_motd_file[PATH_LEN];	/* local copy of NNTP MOTD message */
 char local_newsgroups_file[PATH_LEN];	/* local copy of NNTP newsgroups file */
-char local_newsrctable_file[PATH_LEN];
+char newsrctable_file[PATH_LEN];
 char lock_file[PATH_LEN];		/* contains name of index lock file */
 char mail_news_user[LEN];		/* mail new news to this user address */
 char mailbox[PATH_LEN];			/* system mailbox for each user */
@@ -117,7 +117,7 @@ char subscriptions_file[PATH_LEN];	/* full path to subscriptions */
 char *tin_progname;		/* program name */
 const char *tmpdir;
 char txt_help_bug_report[LEN];		/* address to send bug reports to */
-char userid[PATH_LEN];
+char userid[LOGIN_NAME_MAX];
 #ifdef HAVE_MH_MAIL_HANDLING
 	char mail_active_file[PATH_LEN];
 	char mailgroups_file[PATH_LEN];
@@ -213,27 +213,13 @@ struct regex_cache
 struct t_cmdlineopts cmdline = { 0, 0, NULL, NULL, NULL, NULL, 0 };
 
 struct t_config tinrc = {
-	ART_MARK_DELETED,		/* art_marked_deleted */
-	MARK_INRANGE,			/* art_marked_inrange */
-	ART_MARK_RETURN,		/* art_marked_return */
-	ART_MARK_SELECTED,		/* art_marked_selected */
-	ART_MARK_RECENT,		/* art_marked_recent */
-	ART_MARK_UNREAD,		/* art_marked_unread */
-	ART_MARK_READ,			/* art_marked_read */
-	ART_MARK_KILLED,		/* art_marked_killed */
-	ART_MARK_READ_SELECTED,		/* art_marked_read_selected */
-	NULL,	/* editor_format */
 	NULL,	/* default_goto_group */
 	NULL,	/* default_mail_address */
-	NULL,	/* mailer_format */
 #ifndef DONT_HAVE_PIPING
 	NULL,	/* default_pipe_command */
 #endif /* !DONT_HAVE_PIPING */
 	NULL,	/* default_post_newsgroups */
 	NULL,	/* default_post_subject */
-#ifndef DISABLE_PRINTING
-	NULL,	/* printer */
-#endif /* !DISABLE_PRINTING */
 	NULL,	/* default_range_group */
 	NULL,	/* default_range_select */
 	NULL,	/* default_range_thread */
@@ -247,82 +233,65 @@ struct t_config tinrc = {
 	NULL,	/* default_search_subject */
 	NULL,	/* default_select_pattern */
 	NULL,	/* default_shell_command */
+	NULL,	/* editor_format */
+	NULL,	/* select_format */
+	NULL,	/* group_format */
+	NULL,	/* thread_format */
+	NULL,	/* attachment_format */
+	NULL,	/* page_mime_format */
+	NULL,	/* page_uue_format */
+	NULL,	/* date_format */
 	NULL,	/* mail_quote_format */
-	NULL,	/* maildir */
-#ifdef SCO_UNIX
-	2,			/* mailbox_format = MMDF */
-#else
-	0,			/* mailbox_format = MBOXO */
-#endif /* SCO_UNIX */
+	NULL,	/* mailer_format */
+	NULL,	/* news_quote_format */
+	NULL,	/* xpost_quote_format */
+	NULL,	/* quote_chars */
+	NULL,	/* inews_prog */
 	NULL,	/* mail_address */
+	NULL,	/* maildir */
 	NULL,	/* metamail_prog */
-#ifndef CHARSET_CONVERSION
-	NULL,	/* mm_charset, defaults to $MM_CHARSET */
-#else
-	-1,		/* mm_network_charset, defaults to $MM_CHARSET */
-#endif /* !CHARSET_CONVERSION */
 	NULL,	/* mm_local_charset, display charset */
-#if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
-	FALSE,	/* translit */
-#endif /* HAVE_ICONV_OPEN_TRANSLIT && CHARSET_CONVERSION */
 	NULL,	/* news_headers_to_display */
 	NULL,	/* news_headers_to_not_display */
-	NULL,	/* news_quote_format */
-	NULL,	/* quote_chars */
+	NULL,	/* posted_articles_file */
+#ifndef DISABLE_PRINTING
+	NULL,	/* printer */
+#endif /* !DISABLE_PRINTING */
+	NULL,	/* slashes_regex */
+	NULL,	/* stars_regex */
+	NULL,	/* strokes_regex */
+	NULL,	/* strip_re_regex */
+	NULL,	/* strip_was_regex */
 #ifdef HAVE_COLOR
 	NULL,	/* quote_regex */
 	NULL,	/* quote_regex 2nd level */
 	NULL,	/* quote_regex >= 3rd level */
 	NULL,	/* extquote_regex */
 #endif /* HAVE_COLOR */
-	NULL,	/* slashes_regex */
-	NULL,	/* stars_regex */
 	NULL,	/* underscores_regex */
-	NULL,	/* strokes_regex */
-	NULL,	/* sigfile */
-	NULL,	/* strip_re_regex */
-	NULL,	/* strip_was_regex */
 	NULL,	/* verbatim_begin_regex */
 	NULL,	/* verbatim_end_regex */
 	NULL,	/* savedir */
+	NULL,	/* sigfile */
 	NULL,	/* spamtrap_warning_addresses */
 #ifdef NNTPS_ABLE
 	NULL,	/* tls_ca_cert_file */
 #endif /* NNTPS_ABLE */
 	NULL,	/* url_handler */
-	NULL,	/* xpost_quote_format */
-	DEFAULT_FILTER_DAYS,			/* filter_days */
-	FILTER_SUBJ_CASE_SENSITIVE,		/* default_filter_kill_header */
-	FILTER_SUBJ_CASE_SENSITIVE,		/* default_filter_select_header */
-	0,		/* default_move_group */
-	'a',		/* default_save_mode */
-	0,		/* getart_limit */
-	2,		/* recent_time */
-	GOTO_NEXT_UNREAD_TAB,		/* goto_next_unread */
-	UUE_NO,	/* hide_uue */
-	KILL_UNREAD,		/* kill_level */
-	MIME_ENCODING_QP,		/* mail_mime_encoding */
-	MIME_ENCODING_8BIT,		/* post_mime_encoding */
-	POST_PROC_NO,			/* post_process_type */
-	REREAD_ACTIVE_FILE_SECS,	/* reread_active_file_secs */
-	1,		/* scroll_lines */
-	SHOW_FROM_NAME,				/* show_author */
-	SORT_ARTICLES_BY_DATE_ASCEND,		/* sort_article_type */
-	SORT_THREADS_BY_SCORE_DESCEND,		/* sort_threads_type */
-#ifdef USE_HEAPSORT
-	0,				/* sort_function default qsort */
-#endif /* USE_HEAPSORT */
-	BOGUS_SHOW,		/* strip_bogus */
-	THREAD_BOTH,		/* thread_articles */
-	THREAD_PERC_DEFAULT,	/* thread_perc */
-	THREAD_SCORE_MAX,	/* thread_score */
-	0,		/* Default to wildmat, not regex */
-	-50,		/* score_limit_kill */
-	50,		/* score_limit_select */
-	-100,		/* score_kill */
-	100,		/* score_select */
-	0,		/* trim_article_body */
-	SHOW_SIGN_BOTH,	/* show help/mail sign in level title */
+#ifndef CHARSET_CONVERSION
+	NULL,	/* mm_charset, defaults to $MM_CHARSET */
+#else
+	-1,		/* mm_network_charset, defaults to $MM_CHARSET */
+#endif /* !CHARSET_CONVERSION */
+#ifdef SCO_UNIX
+	2,		/* mailbox_format = MMDF */
+#else
+	0,		/* mailbox_format = MBOXO */
+#endif /* SCO_UNIX */
+	0,		/* auto_cc_bcc */
+#ifdef USE_CANLOCK
+	1,		/* cancel_lock_algo, sha1 */
+#endif /* USE_CANLOCK */
 #ifdef HAVE_COLOR
 	0,		/* col_back (initialised later) */
 	0,		/* col_from (initialised later) */
@@ -352,121 +321,148 @@ struct t_config tinrc = {
 	0,		/* col_text (initialised later) */
 	0,		/* col_title (initialised later) */
 #endif /* HAVE_COLOR */
-	2,		/* word_h_display_marks */
+	4,		/* confirm_choice */
+	FILTER_SUBJ_CASE_SENSITIVE,	/* default_filter_kill_header */
+	FILTER_SUBJ_CASE_SENSITIVE,	/* default_filter_select_header */
+	DEFAULT_FILTER_DAYS,		/* filter_days */
+	0,		/* default_move_group */
+	'a',	/* default_save_mode */
+	0,		/* getart_limit */
+	GOTO_NEXT_UNREAD_TAB,		/* goto_next_unread */
+	UUE_NO,	/* hide_uue */
+	INTERACTIVE_NONE,			/* interactive_mailer */
+	KILL_UNREAD,				/* kill_level */
 	2,		/* mono_markdash */
 	6,		/* mono_markstar */
 	5,		/* mono_markslash */
 	3,		/* mono_markstroke */
-	TRUE,		/* word_highlight */
-	TRUE,		/* url_highlight */
+#if defined(HAVE_ALARM) && defined(SIGALRM)
+	120,	/* nntp_read_timeout_secs */
+#endif /* HAVE_ALARM && SIGALRM */
+#ifdef HAVE_UNICODE_NORMALIZATION
+	DEFAULT_NORMALIZE,	/* normalization_form */
+#endif /* HAVE_UNICODE_NORMALIZATION */
+	MIME_ENCODING_QP,			/* mail_mime_encoding */
+	MIME_ENCODING_8BIT,			/* post_mime_encoding */
+	POST_PROC_NO,				/* post_process_type */
+	QUOTE_COMPRESS|QUOTE_EMPTY,	/* quote_style */
+	2,		/* recent_time */
+	REREAD_ACTIVE_FILE_SECS,	/* reread_active_file_secs */
+	-50,	/* score_limit_kill */
+	50,		/* score_limit_select */
+	-100,	/* score_kill */
+	100,	/* score_select */
+	1,		/* scroll_lines */
+	SHOW_FROM_NAME,	/* show_author */
+	SHOW_SIGN_BOTH,	/* show help/mail sign in level title */
+	SORT_ARTICLES_BY_DATE_ASCEND,	/* sort_article_type */
+	SORT_THREADS_BY_SCORE_DESCEND,	/* sort_threads_type */
+#ifdef USE_HEAPSORT
+	0,		/* sort_function default qsort */
+#endif /* USE_HEAPSORT */
+	BOGUS_SHOW,				/* strip_bogus */
+	THREAD_BOTH,			/* thread_articles */
+	THREAD_PERC_DEFAULT,	/* thread_perc */
+	THREAD_SCORE_MAX,		/* thread_score */
+	0,		/* trim_article_body */
+	0,		/* Default to wildmat, not regex */
+	2,		/* word_h_display_marks */
 	0,		/* wrap_column */
-	FALSE,		/* dont_break_words */
 #ifdef HAVE_COLOR
-	FALSE,		/* use_color */
+	FALSE,	/* use_color */
 #endif /* HAVE_COLOR */
-	FALSE,		/* abbreviate_groupname */
-	TRUE,		/* add_posted_to_filter */
-	TRUE,		/* advertising */
-	TRUE,		/* alternative_handling */
-	0,			/* auto_cc_bcc */
-	TRUE,		/* auto_list_thread */
-	FALSE,		/* auto_reconnect */
-	TRUE,		/* batch_save */
-	TRUE,		/* beginner_level */
-	FALSE,		/* cache_overview_files */
-	FALSE,		/* catchup_read_groups */
-	4,		/* confirm_choice */
+	FALSE,	/* abbreviate_groupname */
+	TRUE,	/* add_posted_to_filter */
+	TRUE,	/* advertising */
+	TRUE,	/* alternative_handling */
+	FALSE,	/* ask_for_metamail */
+	TRUE,	/* auto_list_thread */
+	FALSE,	/* auto_reconnect */
+	TRUE,	/* batch_save */
+	TRUE,	/* beginner_level */
+	FALSE,	/* cache_overview_files */
+	FALSE,	/* catchup_read_groups */
 #ifdef USE_INVERSE_HACK
-	TRUE,		/* draw_arrow */
+	TRUE,	/* draw_arrow */
 #else
-	FALSE,		/* draw_arrow */
+	FALSE,	/* draw_arrow */
 #endif /* USE_INVERSE_HACK */
-	FALSE,		/* force_screen_redraw */
-	TRUE,		/* group_catchup_on_exit */
-	FALSE,		/* info_in_last_line */
+	FALSE,	/* dont_break_words */
+	FALSE,	/* force_screen_redraw */
+	TRUE,	/* group_catchup_on_exit */
+	FALSE,	/* info_in_last_line */
 #ifdef USE_INVERSE_HACK
-	FALSE,		/* inverse_okay */
+	FALSE,	/* inverse_okay */
 #else
-	TRUE,		/* inverse_okay */
+	TRUE,	/* inverse_okay */
 #endif /* USE_INVERSE_HACK */
-	TRUE,		/* keep_dead_articles */
-	NULL,		/* posted_articles_file */
-	FALSE,		/* mail_8bit_header */
-	FALSE,		/* mark_ignore_tags */
-	TRUE,		/* mark_saved_read */
-	TRUE,		/* pos_first_unread */
-	FALSE,		/* post_8bit_header */
-	TRUE,		/* post_process_view */
+	TRUE,	/* keep_dead_articles */
+	FALSE,	/* mail_8bit_header */
+	FALSE,	/* mark_ignore_tags */
+	TRUE,	/* mark_saved_read */
+	TRUE,	/* pos_first_unread */
+	FALSE,	/* post_8bit_header */
+	TRUE,	/* post_process_view */
 #ifndef DISABLE_PRINTING
 	FALSE,		/* print_header */
 #endif /* !DISABLE_PRINTING */
-	FALSE,		/* process_only_unread */
-	FALSE,		/* prompt_followupto */
-	QUOTE_COMPRESS|QUOTE_EMPTY,	/* quote_style */
-	TRUE,		/* show_description */
-	TRUE,		/* show_only_unread_arts */
-	FALSE,		/* show_only_unread_groups */
-	TRUE,		/* show_signatures */
-	FALSE,		/* show_art_score */
-	TRUE,		/* sigdashes */
-	TRUE,		/* signature_repost */
+	FALSE,	/* process_only_unread */
+	FALSE,	/* prompt_followupto */
+	TRUE,	/* show_description */
+	TRUE,	/* show_only_unread_arts */
+	FALSE,	/* show_only_unread_groups */
+	TRUE,	/* show_signatures */
+	FALSE,	/* show_art_score */
+	TRUE,	/* sigdashes */
+	TRUE,	/* signature_repost */
 #ifndef USE_CURSES
-	TRUE,		/* strip_blanks */
+	TRUE,	/* strip_blanks */
 #endif /* !USE_CURSES */
-	FALSE,		/* strip_newsrc */
+	FALSE,	/* strip_newsrc */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	FALSE,		/* suppress_soft_hyphens */
+	FALSE,	/* suppress_soft_hyphens */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	FALSE,		/* tex2iso_conv */
-	TRUE,		/* thread_catchup_on_exit */
-	TRUE,		/* unlink_article */
+	FALSE,	/* tex2iso_conv */
+	TRUE,	/* thread_catchup_on_exit */
+#if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
+	FALSE,	/* translit */
+#endif /* HAVE_ICONV_OPEN_TRANSLIT && CHARSET_CONVERSION */
+	TRUE,	/* unlink_article */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	FALSE,		/* utf8_graphics */
+	FALSE,	/* utf8_graphics */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	TRUE,		/* verbatim_handling */
+	TRUE,	/* verbatim_handling */
 #ifdef HAVE_COLOR
-	FALSE,		/* extquote_handling */
+	FALSE,	/* extquote_handling */
 #endif /* HAVE_COLOR */
-	NULL,		/* inews_prog */
-#ifdef USE_CANLOCK
-	1,			/* cancel_lock_algo, sha1 */
-#endif /* USE_CANLOCK */
-	INTERACTIVE_NONE,		/* interactive_mailer */
-	FALSE,		/* use_mouse */
+	FALSE,	/* use_mouse */
 #ifdef HAVE_KEYPAD
-	FALSE,		/* use_keypad */
+	FALSE,	/* use_keypad */
 #endif /* HAVE_KEYPAD */
-	TRUE,		/* wrap_on_next_unread */
-	FALSE,		/* ask_for_metamail */
-	FALSE,		/* default_filter_kill_case */
-	FALSE,		/* default_filter_kill_expire */
-	TRUE,		/* default_filter_kill_global */
-	FALSE,		/* default_filter_select_case */
-	FALSE,		/* default_filter_select_expire */
+	FALSE,	/* default_filter_kill_case */
+	FALSE,	/* default_filter_kill_expire */
+	TRUE,	/* default_filter_kill_global */
+	FALSE,	/* default_filter_select_case */
+	FALSE,	/* default_filter_select_expire */
+	TRUE,	/* default_filter_select_global */
 #ifdef XFACE_ABLE
-	FALSE,		/* use_slrnface */
+	FALSE,	/* use_slrnface */
 #endif /* XFACE_ABLE */
-	TRUE,		/* default_filter_select_global */
-	NULL,		/* select_format */
-	NULL,		/* group_format */
-	NULL,		/* thread_format */
-	NULL,		/* attachment_format */
-	NULL,		/* page_mime_format */
-	NULL,		/* page_uue_format */
-	NULL,		/* date_format */
-#ifdef HAVE_UNICODE_NORMALIZATION
-	DEFAULT_NORMALIZE,		/* normalization form */
-#endif /* HAVE_UNICODE_NORMALIZATION */
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
-	FALSE,		/* render_bidi */
+	FALSE,	/* render_bidi */
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
-#ifdef CHARSET_CONVERSION
-	-1,		/* attrib_mm_network_charset, defaults to $MM_CHARSET */
-	NULL,	/* attrib_undeclared_charset */
-#	ifdef USE_ICU_UCSDET
-	FALSE,
-#	endif /* USE_ICU_UCSDET */
-#endif /* CHARSET_CONVERSION */
+	TRUE,	/* url_highlight */
+	TRUE,	/* word_highlight */
+	TRUE,	/* wrap_on_next_unread */
+	ART_MARK_DELETED,		/* art_marked_deleted */
+	MARK_INRANGE,			/* art_marked_inrange */
+	ART_MARK_RETURN,		/* art_marked_return */
+	ART_MARK_SELECTED,		/* art_marked_selected */
+	ART_MARK_RECENT,		/* art_marked_recent */
+	ART_MARK_UNREAD,		/* art_marked_unread */
+	ART_MARK_READ,			/* art_marked_read */
+	ART_MARK_KILLED,		/* art_marked_killed */
+	ART_MARK_READ_SELECTED,	/* art_marked_read_selected */
 	NULL,	/* attrib_editor_format */
 	NULL,	/* attrib_fcc */
 	NULL,	/* attrib_maildir */
@@ -492,62 +488,66 @@ struct t_config tinrc = {
 	NULL,	/* attrib_group_format */
 	NULL,	/* attrib_thread_format */
 	NULL,	/* attrib_date_format */
+#ifdef CHARSET_CONVERSION
+	NULL,	/* attrib_undeclared_charset */
+	-1,		/* attrib_mm_network_charset, defaults to $MM_CHARSET */
+#	ifdef USE_ICU_UCSDET
+	FALSE,
+#	endif /* USE_ICU_UCSDET */
+#endif /* CHARSET_CONVERSION */
 	0,		/* attrib_trim_article_body */
 	0,		/* attrib_auto_cc_bcc */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* attrib_quick_kill_header */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* attrib_quick_select_header */
 	MIME_ENCODING_QP,		/* attrib_mail_mime_encoding */
-#if defined(HAVE_ALARM) && defined(SIGALRM)
-	120,	/* nntp_read_timeout_secs */
-#endif /* HAVE_ALARM && SIGALRM */
 	MIME_ENCODING_8BIT,		/* attrib_post_mime_encoding */
 	POST_PROC_NO,			/* attrib_post_process_type */
 	SHOW_FROM_NAME,			/* attrib_show_author */
-	SORT_ARTICLES_BY_DATE_ASCEND,		/* attrib_sort_article_type */
-	SORT_THREADS_BY_SCORE_DESCEND,		/* attrib_sort_threads_type */
-	THREAD_BOTH,		/* attrib_thread_articles */
+	SORT_ARTICLES_BY_DATE_ASCEND,	/* attrib_sort_article_type */
+	SORT_THREADS_BY_SCORE_DESCEND,	/* attrib_sort_threads_type */
+	THREAD_BOTH,			/* attrib_thread_articles */
 	THREAD_PERC_DEFAULT,	/* attrib_thread_perc */
-	TRUE,		/* attrib_add_posted_to_filter */
-	TRUE,		/* attrib_advertising */
-	TRUE,		/* attrib_alternative_handling */
-	TRUE,		/* attrib_auto_list_thread */
-	FALSE,		/* attrib_auto_select */
-	TRUE,		/* attrib_batch_save */
-	TRUE,		/* attrib_delete_tmp_files */
-	TRUE,		/* attrib_group_catchup_on_exit */
-	FALSE,		/* attrib_mail_8bit_header */
-	FALSE,		/* attrib_mime_forward */
-	FALSE,		/* attrib_mark_ignore_tags */
-	TRUE,		/* attrib_mark_saved_read */
-	TRUE,		/* attrib_pos_first_unread */
-	FALSE,		/* attrib_post_8bit_header */
-	TRUE,		/* attrib_post_process_view */
+	TRUE,	/* attrib_add_posted_to_filter */
+	TRUE,	/* attrib_advertising */
+	TRUE,	/* attrib_alternative_handling */
+	TRUE,	/* attrib_auto_list_thread */
+	FALSE,	/* attrib_auto_select */
+	TRUE,	/* attrib_batch_save */
+	TRUE,	/* attrib_delete_tmp_files */
+	TRUE,	/* attrib_group_catchup_on_exit */
+	FALSE,	/* attrib_mail_8bit_header */
+	FALSE,	/* attrib_mime_forward */
+	FALSE,	/* attrib_mark_ignore_tags */
+	TRUE,	/* attrib_mark_saved_read */
+	TRUE,	/* attrib_pos_first_unread */
+	FALSE,	/* attrib_post_8bit_header */
+	TRUE,	/* attrib_post_process_view */
 #ifndef DISABLE_PRINTING
-	FALSE,		/* attrib_print_header */
+	FALSE,	/* attrib_print_header */
 #endif /* !DISABLE_PRINTING */
-	FALSE,		/* attrib_process_only_unread */
-	FALSE,		/* attrib_prompt_followupto */
-	TRUE,		/* attrib_show_only_unread_arts */
-	TRUE,		/* attrib_show_signatures */
-	FALSE,		/* attrib_show_art_score */
-	TRUE,		/* attrib_sigdashes */
-	TRUE,		/* attrib_signature_repost */
+	FALSE,	/* attrib_process_only_unread */
+	FALSE,	/* attrib_prompt_followupto */
+	TRUE,	/* attrib_show_only_unread_arts */
+	TRUE,	/* attrib_show_signatures */
+	FALSE,	/* attrib_show_art_score */
+	TRUE,	/* attrib_sigdashes */
+	TRUE,	/* attrib_signature_repost */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	FALSE,		/* suppress_soft_hyphens */
+	FALSE,	/* suppress_soft_hyphens */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	FALSE,		/* attrib_tex2iso_conv */
-	TRUE,		/* attrib_thread_catchup_on_exit */
-	TRUE,		/* attrib_verbatim_handling */
+	FALSE,	/* attrib_tex2iso_conv */
+	TRUE,	/* attrib_thread_catchup_on_exit */
+	TRUE,	/* attrib_verbatim_handling */
 #ifdef HAVE_COLOR
-	FALSE,		/* attrib_extquote_handling */
+	FALSE,	/* attrib_extquote_handling */
 #endif /* HAVE_COLOR */
-	FALSE,		/* attrib_x_comment_to */
-	TRUE,		/* attrib_wrap_on_next_unread */
-	FALSE,		/* attrib_ask_for_metamail */
-	FALSE,		/* attrib_quick_kill_case */
-	FALSE,		/* attrib_quick_kill_expire */
-	FALSE,		/* attrib_quick_select_case */
-	FALSE		/* attrib_quick_select_expire */
+	FALSE,	/* attrib_x_comment_to */
+	TRUE,	/* attrib_wrap_on_next_unread */
+	FALSE,	/* attrib_ask_for_metamail */
+	FALSE,	/* attrib_quick_kill_case */
+	FALSE,	/* attrib_quick_kill_expire */
+	FALSE,	/* attrib_quick_select_case */
+	FALSE	/* attrib_quick_select_expire */
 };
 
 struct t_capabilities nntp_caps = {
@@ -887,13 +887,24 @@ init_selfinfo(
 	}
 #else
 	if (tinrc.mm_network_charset < 0) {
-		space = 255;
+		space = 127;
 		ptr = my_malloc(space + 1);
-		snprintf(ptr, space, "mm_network_charset=%s\n", get_val("MM_CHARSET", MM_CHARSET));
-		if (!match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset)) {
-			/* $MM_CHARSET may be set invalid, fallback */
-			snprintf(ptr, space, "mm_network_charset=%s\n", MM_CHARSET);
-			match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset);
+		/* check $MM_CHARSET */
+		if ((p = validate_charset(get_val("MM_CHARSET", NULL)))) {
+			snprintf(ptr, space, "mm_network_charset=%s\n", p);
+			if (!match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset)) {
+				/* fallback to MM_CHARSET */
+				snprintf(ptr, space, "mm_network_charset=%s\n", MM_CHARSET);
+				if (!match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset))
+					/* fallback to US-ASCII */
+					tinrc.mm_network_charset = 0;
+			}
+		} else {
+				/* fallback to MM_CHARSET */
+				snprintf(ptr, space, "mm_network_charset=%s\n", MM_CHARSET);
+				if (!match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset))
+					/* fallback to US-ASCII */
+					tinrc.mm_network_charset = 0;
 		}
 		free(ptr);
 	}
@@ -1000,12 +1011,12 @@ init_selfinfo(
 	joinpath(local_config_file, sizeof(local_config_file), rcdir, CONFIG_FILE);
 	joinpath(filter_file, sizeof(filter_file), rcdir, FILTER_FILE);
 	joinpath(local_input_history_file, sizeof(local_input_history_file), rcdir, INPUT_HISTORY_FILE);
-	joinpath(local_newsrctable_file, sizeof(local_newsrctable_file), rcdir, NEWSRCTABLE_FILE);
+	joinpath(newsrctable_file, sizeof(newsrctable_file), rcdir, NEWSRCTABLE_FILE);
 #ifdef HAVE_MH_MAIL_HANDLING
 	joinpath(mail_active_file, sizeof(mail_active_file), rcdir, ACTIVE_MAIL_FILE);
 #endif /* HAVE_MH_MAIL_HANDLING */
-	if ((ptr = getenv("MAIL")) != NULL && *ptr) {
-		STRCPY(mailbox, ptr);
+	if ((p = get_val("MAILPATH", get_val("MAIL", NULL))) != NULL) {
+		STRCPY(mailbox, p);
 	} else
 		joinpath(mailbox, sizeof(mailbox), DEFAULT_MAILBOX, userid);
 #ifdef HAVE_MH_MAIL_HANDLING
@@ -1079,7 +1090,7 @@ read_site_config(
 	void)
 {
 	FILE *fp = (FILE *) 0;
-	char buf[LEN], filename[PATH_LEN];
+	char *buf, filename[PATH_LEN];
 	static const char *tin_defaults[] = { TIN_DEFAULTS };
 	int i = 0;
 
@@ -1098,7 +1109,7 @@ read_site_config(
 	if (!fp)
 		return -1;
 
-	while (fgets(buf, (int) sizeof(buf), fp)) {
+	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
 		/* ignore comments */
 		if (*buf == '#' || *buf == ';' || *buf == ' ')
 			continue;

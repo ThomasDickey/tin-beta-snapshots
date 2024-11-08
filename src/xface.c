@@ -3,7 +3,7 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2024-10-15
+ *  Updated   : 2024-10-29
  *  Notes     :
  *
  * Copyright (c) 2003-2024 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
@@ -59,10 +59,10 @@ slrnface_start(
 {
 	char *fifo;
 	const char *ptr;
+	const char *m;
 	int n;
 	pid_t pid, pidst;
 	size_t pathlen;
-	const char *hn;
 
 	if (tinrc.use_slrnface == FALSE)
 		return;
@@ -145,12 +145,12 @@ slrnface_start(
 	}
 	free(fifo);
 	pid = getpid();
-	hn = get_host_name();
-	if ((n = snprintf(NULL, 0, "%s/.slrnfaces/%s.%ld", ptr, hn, (long) pid)) < 0)
+	m = get_host_name();
+	if ((n = snprintf(NULL, 0, "%s/.slrnfaces/%s.%ld", ptr, m, (long) pid)) < 0)
 		return;
 	pathlen = (size_t) n + 1;
 	fifo = my_malloc(pathlen);
-	if (snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, hn, (long) pid) != n) {
+	if (snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, m, (long) pid) != n) {
 		error_message(2, "%s", _(txt_xface_error_construct_fifo_name));
 		unlink(fifo);
 		free(fifo);
@@ -192,50 +192,48 @@ slrnface_start(
 			if (!WIFEXITED(n))
 				error_message(2, _(txt_xface_error_exited_abnormal), n);
 			else {
-				const char *message;
-
 				switch (WEXITSTATUS(n)) {
 					case 0:	/* All fine, open the pipe */
 						if ((slrnface_fd = open(fifo, O_WRONLY, (S_IRUSR|S_IWUSR))) != -1) {
 							WRITE_FACE_FD("start\n");
-							message = NULL;
+							m = NULL;
 						} else
-							message = _(txt_xface_msg_cannot_open_fifo);
+							m = _(txt_xface_msg_cannot_open_fifo);
 						break;
 
 					case 1:
-						message = _(txt_xface_msg_cannot_connect_display);
+						m = _(txt_xface_msg_cannot_connect_display);
 						break;
 
 					case 2:
-						message = _(txt_xface_msg_windowid_not_found);
+						m = _(txt_xface_msg_windowid_not_found);
 						break;
 
 					case 3:
-						message = _(txt_xface_msg_no_controlling_terminal);
+						m = _(txt_xface_msg_no_controlling_terminal);
 						break;
 
 					case 4:
-						message = _(txt_xface_msg_no_width_and_height_avail);
+						m = _(txt_xface_msg_no_width_and_height_avail);
 						break;
 
 					case 5:
-						message = _(txt_xface_msg_cannot_open_fifo);
+						m = _(txt_xface_msg_cannot_open_fifo);
 						break;
 
 					case 6:
-						message = _(txt_xface_msg_fork_failed);
+						m = _(txt_xface_msg_fork_failed);
 						break;
 
 					case 10:
-						message = _(txt_xface_msg_executable_not_found);
+						m = _(txt_xface_msg_executable_not_found);
 						break;
 
 					default:
-						message = _(txt_unknown_error);
+						m = _(txt_unknown_error);
 				}
-				if (message)
-					error_message(2, _(txt_xface_error_finally_failed), message);
+				if (m)
+					error_message(2, _(txt_xface_error_finally_failed), m);
 			}
 	}
 	unlink(fifo);

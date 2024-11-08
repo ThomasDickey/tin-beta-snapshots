@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2024-09-24
+ *  Updated   : 2024-10-20
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2024 Mike Gleason
@@ -233,7 +233,7 @@ thrashdir(
 	DIR_BUF *dp;
 	char *cwd;
 	int safeguard, recurse;
-	int c = 0, numentries = 0, pick;
+	int c, numentries = 0, pick;
 	struct stat st;
 
 	sigfile[0] = '\0';

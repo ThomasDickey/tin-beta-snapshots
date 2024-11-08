@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-08
+ *  Updated   : 2024-11-04
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -61,7 +61,7 @@ static struct t_fmt grp_fmt;
 static int do_search(t_function func, t_bool repeat);
 static int enter_pager(int art, t_bool ignore_unavail);
 static int enter_thread(int depth, t_pagerinfo *page);
-static int find_new_pos(long old_artnum, int cur_pos);
+static int find_new_pos(t_artnum old_artnum, int cur_pos);
 static int group_catchup(t_function func);
 static int tab_pressed(void);
 static t_bool prompt_getart_limit(void);
@@ -710,7 +710,6 @@ group_page(
 						draw_subject_arrow();
 
 					info_message(tagged ? _(txt_prefix_untagged) : _(txt_prefix_tagged), txt_thread_singular);
-
 				}
 				break;
 
@@ -1122,7 +1121,7 @@ toggle_read_unread(
  */
 static int
 find_new_pos(
-	long old_artnum,
+	t_artnum old_artnum,
 	int cur_pos)
 {
 	int i, pos;

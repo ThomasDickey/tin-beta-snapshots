@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-11-06
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -119,7 +119,10 @@ static int strfeditor(const char *editor, int linenum, const char *filename, cha
 static void make_connection_page(FILE *fp);
 static void write_input_history_file(void);
 #ifdef CHARSET_CONVERSION
-	static t_bool buffer_to_local(char **line, size_t *max_line_len, const char *network_charset, const char *local_charset);
+	static t_bool buffer_to_local(char **line, size_t *max_line_len, const char *from_charset, const char *to_charset);
+#	ifdef CHARSET_CONVERSION_UCNV
+	static t_bool tin_ucnv_buffer_to_local(char **line, size_t *max_line_len, const char *from_charset, const char *to_charset);
+#	endif /* CHARSET_CONVERSION_UCNV */
 #endif /* CHARSET_CONVERSION */
 #if 0 /* currently unused */
 	static t_bool stat_article(t_artnum art, const char *group_path);
@@ -1019,35 +1022,85 @@ t_bool
 mail_check(
 	const char *mailbox_name)
 {
+	char *from, *to, p, *cmb, *mb, ecmb[PATH_LEN];
+	t_bool in_message = FALSE;
 	struct stat buf;
 
-	if (mailbox_name != NULL && stat(mailbox_name, &buf) >= 0) {
-		if (S_ISDIR(buf.st_mode)) { /* maildir setup */
-			char *maildir_box;
-			size_t maildir_box_len = strlen(mailbox_name) + strlen(MAILDIR_NEW) + 2;
-			DIR *dirp;
-			DIR_BUF *dp;
+	if (!mailbox_name || !*mailbox_name)
+		return FALSE;
+	mb = my_strdup(mailbox_name); /* take a copy due to strtok() */
 
-			maildir_box = my_malloc(maildir_box_len);
-			joinpath(maildir_box, maildir_box_len, mailbox_name, MAILDIR_NEW);
+	/*
+	 * remove custom messages for now; rughly based on
+	 * <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/sh.html>
+	 *
+	 * TODO: if '\'-quoting is limited to '%' outside the message, there
+	 *       is no way to get a ':' into the message (except it would come
+	 *       from a variable expansion).
+	 */
+	from = to = mb;
+	while ((p = *from) != '\0') {
+		++from;
+		if (!in_message) {
+			if (p == '\\' && *from == '%') /* really just %? */
+				continue;
 
-			if (!(dirp = opendir(maildir_box))) {
-				free(maildir_box);
-				return FALSE;
+			if (p == '%' || p == '?') {
+				in_message = TRUE;
+				continue;
 			}
-			free(maildir_box);
-			while ((dp = readdir(dirp)) != NULL) {
-				if ((strcmp(dp->d_name, ".")) && (strcmp(dp->d_name, ".."))) {
-					CLOSEDIR(dirp);
+
+			*to++ = p;
+		}
+		if (p == ':')
+			in_message = FALSE;
+	}
+	*to = p;
+
+	/* split into elements */
+	cmb = strtok(mb, ":");
+	while (cmb != NULL) {
+		/* expand relative path */
+		if (!strfpath(cmb, ecmb, sizeof(ecmb), NULL, FALSE)) {
+			free(mb);
+			return FALSE;
+		} else
+			cmb = ecmb;
+
+		if (stat(cmb, &buf) == 0) {
+			if (S_ISDIR(buf.st_mode)) { /* maildir setup */
+				char *maildir_box;
+				size_t maildir_box_len = strlen(cmb) + strlen(MAILDIR_NEW) + 2;
+				DIR *dirp;
+				DIR_BUF *dp;
+
+				maildir_box = my_malloc(maildir_box_len);
+				joinpath(maildir_box, maildir_box_len, cmb, MAILDIR_NEW);
+
+				if (!(dirp = opendir(maildir_box))) {
+					free(maildir_box);
+					free(mb);
+					return FALSE;
+				}
+				free(maildir_box);
+				while ((dp = readdir(dirp)) != NULL) {
+					if ((strcmp(dp->d_name, ".")) && (strcmp(dp->d_name, ".."))) {
+						CLOSEDIR(dirp);
+						free(mb);
+						return TRUE;
+					}
+				}
+				CLOSEDIR(dirp);
+			} else {
+				if (buf.st_atime < buf.st_mtime && buf.st_size > 0) {
+					free(mb);
 					return TRUE;
 				}
 			}
-			CLOSEDIR(dirp);
-		} else {
-			if (buf.st_atime < buf.st_mtime && buf.st_size > 0)
-				return TRUE;
 		}
+		cmb = strtok(NULL, ":");
 	}
+	free(mb);
 	return FALSE;
 }
 
@@ -2513,27 +2566,35 @@ strip_name(
 
 
 #ifdef CHARSET_CONVERSION
+/*
+ * converts **input of max-length *input_size *from charset *to charset
+ * via iconv() or ucnv*(), may reallocate **input and update *input_size
+ * accordingly. returns FALSE on error and TRUE otherwise.
+ */
 static t_bool
-buffer_to_local(
+buffer_to_local( /* TODO: rename to something more useful/descriptive */
 	char **line,
 	size_t *max_line_len,
-	const char *network_charset,
-	const char *local_charset)
+	const char *from_charset,
+	const char *to_charset)
 {
+	t_bool rval = TRUE;
+
 	/* FIXME: this should default in RFC2046.c to US-ASCII */
-	if ((network_charset && *network_charset)) {	/* Content-Type: had a charset parameter */
-		if (strcasecmp(network_charset, local_charset)) { /* different charsets */
+	if ((from_charset && *from_charset)) {	/* Content-Type: had a charset parameter */
+		if (strcasecmp(from_charset, to_charset)) { /* different charsets */
+#	ifdef CHARSET_CONVERSION_ICONV
 			char *clocal_charset;
 			iconv_t cd0, cd1, cd2;
 
-			clocal_charset = my_strdup((local_charset));
-#	ifdef HAVE_ICONV_OPEN_TRANSLIT
+			clocal_charset = my_strdup((to_charset));
+#		ifdef HAVE_ICONV_OPEN_TRANSLIT
 			if (tinrc.translit)
 				clocal_charset = append_to_string(clocal_charset, "//TRANSLIT");
-#	endif /* HAVE_ICONV_OPEN_TRANSLIT */
+#		endif /* HAVE_ICONV_OPEN_TRANSLIT */
 
 			/* iconv() might crash on broken multibyte sequences so check them */
-			if (!strcasecmp(network_charset, "UTF-8") || !strcasecmp(network_charset, "utf8"))
+			if (!strcasecmp(from_charset, "UTF-8") || !strcasecmp(from_charset, "utf8"))
 				(void) utf8_valid(*line);
 
 			/*
@@ -2541,7 +2602,7 @@ buffer_to_local(
 			 *       instead of converting it?
 			 */
 			cd0 = iconv_open("UCS-4", "US-ASCII");
-			cd1 = iconv_open("UCS-4", network_charset);
+			cd1 = iconv_open("UCS-4", from_charset);
 			cd2 = iconv_open(clocal_charset, "UCS-4");
 			if (cd0 != (iconv_t) (-1) && cd1 != (iconv_t) (-1) && cd2 != (iconv_t) (-1)) {
 				char unknown = '?';
@@ -2627,6 +2688,7 @@ buffer_to_local(
 								outbytesleft--;
 								inbuf += 4;
 								inbytesleft -= 4;
+								rval = FALSE;
 								break;
 
 							case E2BIG:
@@ -2671,72 +2733,47 @@ buffer_to_local(
 				if (cd0 != (iconv_t) (-1))
 					iconv_close(cd0);
 				free(clocal_charset);
+#		ifdef CHARSET_CONVERSION_UCNV
+				return (tin_ucnv_buffer_to_local(line, max_line_len, from_charset, to_charset));
+#		else
 				return FALSE;
+#		endif /* CHARSET_CONVERSION_UCNV */
 			}
 			free(clocal_charset);
+#	else
+#		ifdef CHARSET_CONVERSION_UCNV
+			return (tin_ucnv_buffer_to_local(line, max_line_len, from_charset, to_charset));
+#		else
+			return FALSE;
+#		endif /* CHARSET_CONVERSION_UCNV */
+#	endif /* CHARSET_CONVERSION_ICONV */
 		}
 	}
-	return TRUE;
+	return rval;
 }
 
 
-/* convert from local_charset to txt_mime_charsets[mmnwcharset] */
+/*
+ * converts **line from local_charset to txt_mime_charsets[mmnwcharset]
+ * via iconv() or ucnv*(). may reallocate **line if needed. returns
+ * TRUE on success and FALSE on error.
+ */
 t_bool
 buffer_to_network(
-	char *line,
+	char **line,
 	int mmnwcharset)
 {
-	char *obuf;
-	char *outbuf;
-	ICONV_CONST char *inbuf;
-	iconv_t cd;
-	size_t result, osize;
-	size_t inbytesleft, outbytesleft;
 	t_bool conv_success = TRUE;
-
 	if (strcasecmp(txt_mime_charsets[mmnwcharset], tinrc.mm_local_charset)) {
-		if ((cd = iconv_open(txt_mime_charsets[mmnwcharset], tinrc.mm_local_charset)) != (iconv_t) (-1)) {
-			inbytesleft = strlen(line);
-			inbuf = (char *) line;
-			outbytesleft = 1 + inbytesleft * 4;
-			osize = outbytesleft;
-			obuf = (char *) my_malloc(osize + 1);
-			outbuf = obuf;
+		size_t l = strlen(*line);
 
-			do {
-				errno = 0;
-				result = iconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
-				if (result == (size_t) (-1)) {
-					switch (errno) {
-						case EILSEQ:
-							/* TODO: only one '?' for each multibyte sequence ? */
-							**&outbuf = '?';
-							outbuf++;
-							inbuf++;
-							inbytesleft--;
-							conv_success = FALSE;
-							break;
-
-						case E2BIG:
-							obuf = my_realloc(obuf, osize * 2);
-							outbuf = (char *) (obuf + osize - outbytesleft);
-							outbytesleft += osize;
-							osize <<= 1; /* double size */
-							break;
-
-						default:	/* EINVAL */
-							inbytesleft = 0;
-							conv_success = FALSE;
-					}
-				}
-			} while (inbytesleft > 0);
-
-			**&outbuf = '\0';
-			strcpy(line, obuf); /* FIXME: here we assume that line is big enough to hold obuf */
-			free(obuf);
-			iconv_close(cd);
-		} else
-			conv_success = FALSE;
+#	ifdef CHARSET_CONVERSION_ICONV
+		conv_success = buffer_to_local(line, &l, tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset]);
+#	else
+#		ifdef CHARSET_CONVERSION_UCNV
+		conv_success = tin_ucnv_buffer_to_local(line, &l, tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset]);
+#		endif /* CHARSET_CONVERSION_UCNV */
+#	endif /* CHARSET_CONVERSION_ICONV */
 	}
 	return conv_success;
 }
@@ -2765,36 +2802,38 @@ buffer_to_ascii(
  * this is called for headers, overview data, and article bodies
  * to set non-ASCII characters to '?'
  * (only with MIME_STRICT_CHARSET and !NO_LOCALE or CHARSET_CONVERSION
- * and network_charset=="US-ASCII")
+ * and from_charset=="US-ASCII")
+ *
+ * **line may get reallocated and *max_line_len updated accordingly.
  */
 void
 process_charsets(
 	char **line,
 	size_t *max_line_len,
-	const char *network_charset,
-	const char *local_charset,
+	const char *from_charset,
+	const char *to_charset,
 	t_bool conv_tex2iso)
 {
 	char *p;
 
 #ifdef CHARSET_CONVERSION
-	if (strcasecmp(network_charset, "US-ASCII")) {	/* network_charset is NOT US-ASCII */
+	if (strcasecmp(from_charset, "US-ASCII")) {	/* from_charset is NOT US-ASCII */
 		if (iso2asc_supported >= 0)
 			p = my_strdup("ISO-8859-1");
 		else
-			p = my_strdup(local_charset);
-		if (!buffer_to_local(line, max_line_len, network_charset, p))
+			p = my_strdup(to_charset);
+		if (!buffer_to_local(line, max_line_len, from_charset, p))
 			buffer_to_ascii(*line);
 		free(p);
 	} else /* set non-ASCII characters to '?' */
 		buffer_to_ascii(*line);
 #else
 #	if defined(MIME_STRICT_CHARSET) && !defined(NO_LOCALE)
-	if ((local_charset && strcasecmp(network_charset, local_charset)) || !strcasecmp(network_charset, "US-ASCII"))
+	if ((to_charset && strcasecmp(from_charset, to_charset)) || !strcasecmp(from_charset, "US-ASCII"))
 		/* different charsets || network charset is US-ASCII (see below) */
 		buffer_to_ascii(*line);
 #	else
-	(void) local_charset;
+	(void) to_charset;
 #	endif /* MIME_STRICT_CHARSET && !NO_LOCALE */
 	/* charset conversion (codepage version) */
 #endif /* CHARSET_CONVERSION */
@@ -2813,7 +2852,7 @@ process_charsets(
 #ifdef CHARSET_CONVERSION
 	if (iso2asc_supported >= 0)
 #else
-	if (iso2asc_supported >= 0 && !strcasecmp(network_charset, "ISO-8859-1"))
+	if (iso2asc_supported >= 0 && !strcasecmp(from_charset, "ISO-8859-1"))
 #endif /* CHARSET_CONVERSION */
 	{
 		p = my_strdup(*line);
@@ -3322,7 +3361,7 @@ gnksa_dequote_plainphrase(
 
 
 /*
- * check domain literal
+ * check domain literal (IPv4)
  */
 static int
 gnksa_check_domain_literal(
@@ -4022,6 +4061,8 @@ idna_decode(
 #		ifdef DEBUG
 		if (debug & DEBUG_MISC)
 			wait_message(2, "idn_decodename(%s): %s", r, idn_result_tostring(res));
+#		else
+		(void) res;
 #		endif /* DEBUG */
 	}
 #	endif /* HAVE_LIBIDNKIT && HAVE_IDN_DECODENAME */
@@ -4133,24 +4174,24 @@ split_mailbox_list(
 	while (*ptr) {
 		switch (*ptr) {
 			case '"':
-				in_quoted_str = !in_quoted_str || in_quoted_pair;
+				in_quoted_str = bool_not(in_quoted_str) || in_quoted_pair;
 				in_quoted_pair = FALSE;
 				break;
 
 			case '\\':
-				in_quoted_pair = !in_quoted_pair;
+				in_quoted_pair = bool_not(in_quoted_pair);
 				break;
 
 			case '<':
-				in_addr = !in_quoted_str;
+				in_addr = bool_not(in_quoted_str);
 				break;
 
 			case '>':
-				in_addr = !in_addr || in_quoted_str;
+				in_addr = bool_not(in_addr) || in_quoted_str;
 				break;
 
 			case '(':
-				in_comment = !in_quoted_str;
+				in_comment = bool_not(in_quoted_str);
 				break;
 
 			case ')':
@@ -4158,7 +4199,7 @@ split_mailbox_list(
 				break;
 
 			case '@':
-				at_seen = !in_quoted_str && !in_comment;
+				at_seen = bool_not(in_quoted_str) && bool_not(in_comment);
 				break;
 
 			case ',':
@@ -4325,211 +4366,222 @@ tin_version_info(
 	fprintf(fp, "Characteristics:\n\t"
 /* TODO: complete list and do some useful grouping; show only in -vV case? */
 #ifdef DEBUG
-			"+DEBUG "
+			"+DEBUG"
 #else
-			"-DEBUG "
+			"-DEBUG"
 #endif /* DEBUG */
 #ifdef NNTP_ONLY
 #	ifdef NNTPS_ABLE
-			"+NNTP(S)_ONLY "
+			" +NNTP(S)_ONLY"
 #	else
-			"+NNTP_ONLY "
+			" +NNTP_ONLY"
 #	endif /* NNTPS_ABLE */
 #else
 #	ifdef NNTP_ABLE
 #		ifdef NNTPS_ABLE
-			"+NNTP(S)_ABLE "
+			" +NNTP(S)_ABLE"
 #		else
-			"+NNTP_ABLE -NNTPS_ABLE "
+			" +NNTP_ABLE -NNTPS_ABLE"
 #		endif /* NNTPS_ABLE */
 #	else
-			"-NNTP_ABLE "
+			" -NNTP_ABLE"
 #	endif /* NNTP_ABLE */
 #endif /* NNTP_ONLY */
 #ifdef USE_ZLIB
-			"+USE_ZLIB "
+			" +USE_ZLIB"
 #else
-			"-USE_ZLIB "
+			" -USE_ZLIB"
 #endif /* USE_ZLIB */
 #ifdef NO_POSTING
-			"+NO_POSTING "
+			" +NO_POSTING"
 #else
-			"-NO_POSTING "
+			" -NO_POSTING"
 #endif /* NO_POSTING */
 #ifdef BROKEN_LISTGROUP
-			"+BROKEN_LISTGROUP "
+			" +BROKEN_LISTGROUP"
 #else
-			"-BROKEN_LISTGROUP "
+			" -BROKEN_LISTGROUP"
 #endif /* BROKEN_LISTGROUP */
+			"\n\t"
 #ifdef XHDR_XREF
 			"+XHDR_XREF"
 #else
 			"-XHDR_XREF"
 #endif /* XHDR_XREF */
-			"\n\t"
 #ifdef HAVE_FASCIST_NEWSADMIN
-			"+HAVE_FASCIST_NEWSADMIN "
+			" +HAVE_FASCIST_NEWSADMIN"
 #else
-			"-HAVE_FASCIST_NEWSADMIN "
+			" -HAVE_FASCIST_NEWSADMIN"
 #endif /* HAVE_FASCIST_NEWSADMIN */
 #ifdef ENABLE_IPV6
-			"+ENABLE_IPV6 "
+			" +ENABLE_IPV6"
 #else
-			"-ENABLE_IPV6 "
+			" -ENABLE_IPV6"
 #endif /* ENABLE_IPV6 */
 #ifdef HAVE_COREFILE
-			"+HAVE_COREFILE"
+			" +HAVE_COREFILE"
 #else
-			"-HAVE_COREFILE"
+			" -HAVE_COREFILE"
 #endif /* HAVE_COREFILE */
 #ifdef SOCKS
 #	ifdef USE_SOCKS5
-		" +USE_SOCKS5"
+		"  +USE_SOCKS5"
 #	else
-		" +SOCKS"
+		"  +SOCKS"
 #	endif /* USE_SOCKS5 */
 #endif /* SOCKS */
 			"\n\t"
 #ifdef NO_SHELL_ESCAPE
-			"+NO_SHELL_ESCAPE "
+			"+NO_SHELL_ESCAPE"
 #else
-			"-NO_SHELL_ESCAPE "
+			"-NO_SHELL_ESCAPE"
 #endif /* NO_SHELL_ESCAPE */
 #ifdef DISABLE_PRINTING
-			"+DISABLE_PRINTING "
+			" +DISABLE_PRINTING"
 #else
-			"-DISABLE_PRINTING "
+			" -DISABLE_PRINTING"
 #endif /* DISABLE_PRINTING */
 #ifdef DONT_HAVE_PIPING
-			"+DONT_HAVE_PIPING "
+			" +DONT_HAVE_PIPING"
 #else
-			"-DONT_HAVE_PIPING "
+			" -DONT_HAVE_PIPING"
 #endif /* DONT_HAVE_PIPING */
 #ifdef NO_ETIQUETTE
-			"+NO_ETIQUETTE"
+			" +NO_ETIQUETTE"
 #else
-			"-NO_ETIQUETTE"
+			" -NO_ETIQUETTE"
 #endif /* NO_ETIQUETTE */
 			"\n\t"
 #ifdef HAVE_LONG_FILE_NAMES
-			"+HAVE_LONG_FILE_NAMES "
+			"+HAVE_LONG_FILE_NAMES"
 #else
-			"-HAVE_LONG_FILE_NAMES "
+			"-HAVE_LONG_FILE_NAMES"
 #endif /* HAVE_LONG_FILE_NAMES */
 #ifdef APPEND_PID
-			"+APPEND_PID "
+			" +APPEND_PID"
 #else
-			"-APPEND_PID "
+			" -APPEND_PID"
 #endif /* APPEND_PID */
 #ifdef HAVE_MH_MAIL_HANDLING
-			"+HAVE_MH_MAIL_HANDLING "
+			" +HAVE_MH_MAIL_HANDLING"
 #else
-			"-HAVE_MH_MAIL_HANDLING "
+			" -HAVE_MH_MAIL_HANDLING"
 #endif /* HAVE_MH_MAIL_HANDLING */
 #ifdef HAVE_COLOR
-			"+HAVE_COLOR"
+			" +HAVE_COLOR"
 #else
-			"-HAVE_COLOR"
+			" -HAVE_COLOR"
 #endif /* HAVE_COLOR */
 			"\n\t"
 #ifdef HAVE_ISPELL
-			"+HAVE_ISPELL "
+			"+HAVE_ISPELL"
 #else
-			"-HAVE_ISPELL "
+			"-HAVE_ISPELL"
 #endif /* HAVE_ISPELL */
 #ifdef HAVE_METAMAIL
-			"+HAVE_METAMAIL "
+			" +HAVE_METAMAIL"
 #else
-			"-HAVE_METAMAIL "
+			" -HAVE_METAMAIL"
 #endif /* HAVE_METAMAIL */
 #ifdef HAVE_PGP
-			"+HAVE_PGP "
+			" +HAVE_PGP"
 #else
-			"-HAVE_PGP "
+			" -HAVE_PGP"
 #endif /* HAVE_PGP */
 #ifdef HAVE_PGPK
-			"+HAVE_PGPK "
+			" +HAVE_PGPK"
 #else
-			"-HAVE_PGPK "
+			" -HAVE_PGPK"
 #endif /* HAVE_PGPK */
 #ifdef HAVE_GPG
-			"+HAVE_GPG"
+			" +HAVE_GPG"
 #else
-			"-HAVE_GPG"
+			" -HAVE_GPG"
 #endif /* HAVE_GPG */
 			"\n\t"
 #ifdef MIME_BREAK_LONG_LINES
-			"+MIME_BREAK_LONG_LINES "
+			"+MIME_BREAK_LONG_LINES"
 #else
-			"-MIME_BREAK_LONG_LINES "
+			"-MIME_BREAK_LONG_LINES"
 #endif /* MIME_BREAK_LONG_LINES */
 #ifdef MIME_STRICT_CHARSET
-			"+MIME_STRICT_CHARSET "
+			" +MIME_STRICT_CHARSET"
 #else
-			"-MIME_STRICT_CHARSET "
+			" -MIME_STRICT_CHARSET"
 #endif /* MIME_STRICT_CHARSET */
+			"\n\t"
 #ifdef CHARSET_CONVERSION
-			"+CHARSET_CONVERSION"
+			"+CHARSET_CONVERSION_{"
+#	ifdef CHARSET_CONVERSION_ICONV
+			"ICONV"
+#		ifdef CHARSET_CONVERSION_UCNV
+			","
+#		endif /* CHARSET_CONVERSION_UCNV */
+#	endif /* CHARSET_CONVERSION_ICONV */
+#	ifdef CHARSET_CONVERSION_UCNV
+			"UCNV"
+#	endif /* CHARSET_CONVERSION_UCNV */
+			"}"
 #else
 			"-CHARSET_CONVERSION"
 #endif /* CHARSET_CONVERSION */
-			"\n\t"
 #ifdef MULTIBYTE_ABLE
-			"+MULTIBYTE_ABLE "
+			" +MULTIBYTE_ABLE"
 #else
-			"-MULTIBYTE_ABLE "
+			" -MULTIBYTE_ABLE"
 #endif /* MULTIBYTE_ABLE */
 #ifdef NO_LOCALE
-			"+NO_LOCALE "
+			" +NO_LOCALE"
 #else
-			"-NO_LOCALE "
+			" -NO_LOCALE"
 #endif /* NO_LOCALE */
+			"\n\t"
 #ifdef USE_ICU_UCSDET
-			"+USE_ICU_UCSDET "
+			"+USE_ICU_UCSDET"
 #else
-			"-USE_ICU_UCSDET "
+			"-USE_ICU_UCSDET"
 #endif /* USE_ICU_UCSDET */
 #ifdef USE_LONG_ARTICLE_NUMBERS
-			"+USE_LONG_ARTICLE_NUMBERS"
+			" +USE_LONG_ARTICLE_NUMBERS"
 #else
-			"-USE_LONG_ARTICLE_NUMBERS"
+			" -USE_LONG_ARTICLE_NUMBERS"
 #endif /* USE_LONG_ARTICLE_NUMBERS */
 			"\n\t"
 #ifdef USE_CANLOCK
-			"+USE_CANLOCK "
+			"+USE_CANLOCK"
 #else
-			"-USE_CANLOCK "
+			"-USE_CANLOCK"
 #endif /* USE_CANLOCK */
 #ifdef EVIL_INSIDE
-			"+EVIL_INSIDE "
+			" +EVIL_INSIDE"
 #else
-			"-EVIL_INSIDE "
+			" -EVIL_INSIDE"
 #endif /* EVIL_INSIDE */
 #ifdef FORGERY
-			"+FORGERY "
+			" +FORGERY"
 #else
-			"-FORGERY "
+			" -FORGERY"
 #endif /* FORGERY */
 #ifdef TINC_DNS
-			"+TINC_DNS "
+			" +TINC_DNS"
 #else
-			"-TINC_DNS "
+			" -TINC_DNS"
 #endif /* TINC_DNS */
 #ifdef ENFORCE_RFC1034
-			"+ENFORCE_RFC1034"
+			" +ENFORCE_RFC1034"
 #else
-			"-ENFORCE_RFC1034"
+			" -ENFORCE_RFC1034"
 #endif /* ENFORCE_RFC1034 */
 			"\n\t"
 #ifdef REQUIRE_BRACKETS_IN_DOMAIN_LITERAL
-			"+REQUIRE_BRACKETS_IN_DOMAIN_LITERAL "
+			"+REQUIRE_BRACKETS_IN_DOMAIN_LITERAL"
 #else
-			"-REQUIRE_BRACKETS_IN_DOMAIN_LITERAL "
+			"-REQUIRE_BRACKETS_IN_DOMAIN_LITERAL"
 #endif /* REQUIRE_BRACKETS_IN_DOMAIN_LITERAL */
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
-			"+ALLOW_FWS_IN_NEWSGROUPLIST"
+			" +ALLOW_FWS_IN_NEWSGROUPLIST"
 #else
-			"-ALLOW_FWS_IN_NEWSGROUPLIST"
+			" -ALLOW_FWS_IN_NEWSGROUPLIST"
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 			"\n");
 	wlines += 11;
@@ -4644,11 +4696,6 @@ show_connection_page(
 }
 
 
-/*
- * TODO:
- * - detected NNTP features
- * - connection type (IPv4 vs IPv6), remote IP, ...
- */
 static void
 make_connection_page(
 	FILE *fp)
@@ -4725,20 +4772,28 @@ make_connection_page(
 }
 
 
-/* pseudo random number; extend with arc4random() or the like if needed */
+/*
+ * pseudo random number generator
+ * range 0 to INT_MAX (=RAND_MAX)
+ * seed with srndm(void)
+ */
 int
 rndm(
 	void)
 {
-#ifdef HAVE_LRAND48
-	return (int) (lrand48() & INT_MAX);
+#ifdef HAVE_ARC4RANDOM_UNIFORM
+	return (int) (arc4random_uniform(INT_MAX));
 #else
-#	ifdef HAVE_RANDOM
-	return (int) (random() & INT_MAX);
+#	ifdef HAVE_LRAND48
+	return (int) (lrand48() & INT_MAX);
 #	else
+#		ifdef HAVE_RANDOM
+	return (int) (random() & INT_MAX);
+#		else
 	return rand();
-#	endif /* HAVE_RANDOM */
-#endif /* HAVE_LRAND48 */
+#		endif /* HAVE_RANDOM */
+#	endif /* HAVE_LRAND48 */
+#endif /* HAVE_ARC4RANDOM_UNIFORM */
 }
 
 
@@ -4749,6 +4804,9 @@ srndm(
 {
 	time_t t;
 
+#ifdef HAVE_ARC4RANDOM_UNIFORM
+	(void) t;
+#else
 	if ((t = time(NULL)) == (time_t) -1)
 		t = (time_t) getpid();
 	else {
@@ -4756,15 +4814,16 @@ srndm(
 			t -= 1041379200;
 	}
 
-#ifdef HAVE_LRAND48
+#	ifdef HAVE_LRAND48
 	srand48(t);
-#else
-#	ifdef HAVE_RANDOM
-	srandom((unsigned int) t);
 #	else
+#		ifdef HAVE_RANDOM
+	srandom((unsigned int) t);
+#		else
 	srand((unsigned int) t);
-#	endif /* HAVE_RANDOM */
-#endif /* HAVE_LRAND48 */
+#		endif /* HAVE_RANDOM */
+#	endif /* HAVE_LRAND48 */
+#endif /* !HAVE_ARC4RANDOM_UNIFORM */
 }
 
 
@@ -4783,6 +4842,11 @@ tin_fopen(
 	FILE *fp;
 	int serrno = 0;
 	struct stat st;
+
+	if (!*pathname || !*mode) {
+		serrno = EINVAL;
+		goto out;
+	}
 
 	if ((fp = fopen(pathname, mode)) != NULL) {
 		if (fstat(fileno(fp), &st) != -1) {
@@ -4805,6 +4869,7 @@ tin_fopen(
 	} else
 		serrno = errno;
 
+out:
 	switch (serrno) {
 		case 0:
 			break;
@@ -4817,9 +4882,131 @@ tin_fopen(
 			break;
 
 		default:
-			perror_message(_(txt_cannot_open), pathname);
+			perror_message(_(txt_cannot_open), BlankIfNull(pathname));
 			break;
 	}
 	errno = serrno;
 	return NULL;
 }
+
+#ifdef CHARSET_CONVERSION
+#	ifdef CHARSET_CONVERSION_UCNV
+#		if defined(DEBUG) && defined(DEBUG_UCNV)
+#			include <unicode/errorcode.h>
+#		endif /* DEBUG && DEBUG_UCNV */
+/*
+ * converts **input of max-length *input_size *from charset *to charset
+ * may reallocate **input and updateinput_size accordingly
+ * returns FALSE on error and TRUE otherwise
+ */
+static t_bool
+tin_ucnv_buffer_to_local(
+	char **line,
+	size_t *max_line_len,
+	const char *from_charset,
+	const char *to_charset)
+{
+	UErrorCode err = U_ZERO_ERROR;
+	UConverter *to_conv, *from_conv;
+	UChar *unicode_buffer;
+	char *output_buffer;
+	char *p;
+	const char subc[] = { 0x3f }; /* hardcoded '?' replacement char */
+	int quest = 0; /* input/output number of '?' to detect substitutions */
+	size_t unicode_length, output_length, ilen;
+
+	from_conv = ucnv_open(from_charset, &err);
+	if (U_FAILURE(err)) {
+#if defined(DEBUG) && defined(DEBUG_UCNV)
+		wait_message(2, "UCNV: %s (%s:%d) %s [-> %s]", u_errorName(err), __FILE__, __LINE__, from_charset, to_charset);
+#endif /* DEBUG && DEBUG_UCNV */
+		return FALSE;
+	}
+
+	to_conv = ucnv_open(to_charset, &err);
+	if (U_FAILURE(err)) {
+#if defined(DEBUG) && defined(DEBUG_UCNV)
+		wait_message(2, "UCNV: %s (%s:%d) [%s ->] %s", u_errorName(err), __FILE__, __LINE__, from_charset, to_charset);
+#endif /* DEBUG && DEBUG_UCNV */
+		ucnv_close(from_conv);
+		return FALSE;
+	}
+
+	ucnv_setSubstChars(from_conv, subc, 1, &err); /* switch to ucnv_setSubstString()? */
+
+	ilen = *max_line_len;
+	unicode_buffer = my_calloc(ilen, sizeof(UChar));
+
+	p = *line;
+	while ((p = strchr(p, '?')) != NULL) { /* count input questionmarks */
+		--quest;
+		++p;
+	}
+
+	do {
+		ucnv_reset(from_conv);
+		err = U_ZERO_ERROR;
+		unicode_length = ucnv_toUChars(from_conv, unicode_buffer, ilen, *line, strlen(*line), &err);
+		if (err == U_BUFFER_OVERFLOW_ERROR) {
+			ilen = unicode_length + 1;
+			free(unicode_buffer);
+			unicode_buffer = my_calloc(ilen, sizeof(UChar));
+		}
+	} while (err == U_BUFFER_OVERFLOW_ERROR);
+
+	if (U_FAILURE(err)) {
+#if defined(DEBUG) && defined(DEBUG_UCNV)
+		wait_message(2, "UCNV: %s (%s:%d) %s [-> UChar]", u_errorName(err), __FILE__, __LINE__, from_charset);
+#endif /* DEBUG && DEBUG_UCNV */
+		ucnv_close(from_conv);
+		ucnv_close(to_conv);
+		free(unicode_buffer);
+		return FALSE;
+	}
+
+	ucnv_setSubstChars(to_conv, subc, 1, &err); /* switch to ucnv_setSubstString()? */
+
+	ilen = *max_line_len;
+	output_buffer = my_calloc(ilen, sizeof(UChar));
+	do {
+		ucnv_reset(to_conv);
+		err = U_ZERO_ERROR;
+		output_length = ucnv_fromUChars(to_conv, output_buffer, ilen, unicode_buffer, unicode_length, &err);
+		if (err == U_BUFFER_OVERFLOW_ERROR) {
+			ilen = output_length + 1;
+			free(output_buffer);
+			output_buffer = my_calloc(ilen, sizeof(UChar));
+		}
+	} while (err == U_BUFFER_OVERFLOW_ERROR);
+
+	p = output_buffer;
+	while ((p = strchr(p, '?')) != NULL) { /* count output questionmarks */
+		++quest;
+		++p;
+	}
+
+	if (U_FAILURE(err)) {
+#if defined(DEBUG) && defined(DEBUG_UCNV)
+		wait_message(2, "UCNV: %s (%s:%d) [UChar ->] %s", u_errorName(err), __FILE__, __LINE__, to_charset);
+#endif /* DEBUG && DEBUG_UCNV */
+		ucnv_close(from_conv);
+		ucnv_close(to_conv);
+		free(unicode_buffer);
+		free(output_buffer);
+		return FALSE;
+	}
+
+	/* copy result */
+	free(*line);
+	*line = strdup(output_buffer);
+	*max_line_len = strlen(output_buffer);
+
+	/* cleanup */
+	ucnv_close(from_conv);
+	ucnv_close(to_conv);
+	free(unicode_buffer);
+	free(output_buffer);
+	return (quest == 0); /* was there a substitution? */
+}
+#	endif /* CHARSET_CONVERSION_UCNV */
+#endif /* CHARSET_CONVERSION */

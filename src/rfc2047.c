@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2024-10-17
+ *  Updated   : 2024-10-31
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2024 Chris Blum <chris@resolution.de>
@@ -270,6 +270,7 @@ rfc1522_decode(
 #ifndef CHARSET_CONVERSION
 	process_charsets(&c, &max_len, "US-ASCII", tinrc.mm_local_charset, FALSE);
 #else
+	if (CURR_GROUP.attribute != NULL) {
 #	ifdef USE_ICU_UCSDET
 	if (CURR_GROUP.attribute->undeclared_cs_guess && !(CURR_GROUP.attribute->undeclared_charset && *CURR_GROUP.attribute->undeclared_charset)) {
 		char *guessed_charset = NULL;
@@ -281,6 +282,8 @@ rfc1522_decode(
 	} else
 #	endif /* USE_ICU_UCSDET */
 		process_charsets(&c, &max_len, (CURR_GROUP.attribute->undeclared_charset && *CURR_GROUP.attribute->undeclared_charset) ? (*CURR_GROUP.attribute->undeclared_charset) : "US-ASCII", tinrc.mm_local_charset, FALSE);
+	} else
+		process_charsets(&c, &max_len, "US-ASCII", tinrc.mm_local_charset, FALSE);
 #endif /* !CHARSET_CONVERSION */
 	sc = c;
 
@@ -937,7 +940,7 @@ do_rfc15211522_encode(
 {
 	FILE *g;
 	char *c;
-	char *header;
+	char *tmp, *buf = NULL, *header = NULL;
 	char encoding;
 	char buffer[2048];
 	t_bool mime_headers_needed = FALSE;
@@ -957,12 +960,15 @@ do_rfc15211522_encode(
 	if ((g = my_tmpfile()) == NULL)
 		return;
 
-	while (contains_headers && (header = tin_fgets(f, TRUE))) {
+	while (contains_headers && (header = ((tmp = tin_fgets(f, TRUE)) ? my_strdup(tmp) : NULL))) {
 #ifdef CHARSET_CONVERSION
-		buffer_to_network(header, mmnwcharset);
+		if (*header)
+			buffer_to_network(&header, mmnwcharset);
 #endif /* CHARSET_CONVERSION */
-		if (*header == '\0')
+		if (*header == '\0') {
+			free(header);
 			break;
+		}
 
 		/*
 		 * TODO: - what about 8bit chars in the mentioned headers
@@ -983,24 +989,31 @@ do_rfc15211522_encode(
 			free(p);
 		}
 		fputc('\n', g);
+		free(header);
+		header = NULL;
 	}
 
 	fputc('\n', g);
 
-	while (fgets(buffer, sizeof(buffer), f)) {
+	while ((buf = ((tmp = tin_fgets(f, TRUE)) ? my_strdup(tmp) : NULL))) {
 #ifdef CHARSET_CONVERSION
-		buffer_to_network(buffer, mmnwcharset);
+		if (*buf)
+			buffer_to_network(&buf, mmnwcharset);
 #endif /* CHARSET_CONVERSION */
-		fputs(buffer, g);
+		if (*buf)
+			fputs(buf, g);
 		if (!allow_8bit_header) {
 			/* see if there are any 8bit chars in the body... */
-			for (c = buffer; *c && !isreturn(*c); c++) {
+			for (c = buf; *c && !isreturn(*c); c++) {
 				if (is_EIGHT_BIT(c)) {
 					mime_headers_needed = TRUE;
 					break;
 				}
 			}
 		}
+		fputc('\n', g);
+		free(buf);
+		buf = NULL;
 	}
 
 	rewind(g);

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-19 10:09+0200\n"
+"POT-Creation-Date: 2024-10-30 09:02+0100\n"
 "PO-Revision-Date: 2017-05-29 18:40+0000\n"
 "Last-Translator: Mesutcan Kurt <mesutcank@gmail.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -5521,8 +5521,7 @@ msgid "Continuing..."
 msgstr "Yazdırılıyor..."
 
 #: src/lang.c:1501
-#, c-format
-msgid "Read timeout from server (%d seconds) - quit tin?"
+msgid "Read timeout from server - quit tin?"
 msgstr ""
 
 #: src/lang.c:1502
@@ -5560,7 +5559,7 @@ msgstr "  -Q       hızlı başlat. -dnq ile aynı"
 
 #: src/lang.c:1512
 msgid "  -r       read news remotely from default NNTP server"
-msgstr "  -r       varsayılan NTTP sunucusundan haberleri uzaktan oku"
+msgstr "  -r       varsayılan NNTP sunucusundan haberleri uzaktan oku"
 
 #: src/lang.c:1513
 msgid "  -l       use only LIST instead of GROUP (-n) command"
@@ -9404,11 +9403,11 @@ msgstr ""
 "\n"
 "Sunucu zaman aşımına uğradı, tekrar bağlanmaya çalışıyor # %d\n"
 
-#: src/nntplib.c:1004 src/nntplib.c:2115
+#: src/nntplib.c:1004 src/nntplib.c:2114
 msgid "Rejoin current group\n"
 msgstr "Şu anki gruba tekrar katıl\n"
 
-#: src/nntplib.c:1013 src/nntplib.c:2124
+#: src/nntplib.c:1013 src/nntplib.c:2123
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Oku (%s)\n"
@@ -9418,15 +9417,15 @@ msgstr "Oku (%s)\n"
 msgid "Resend last command (%s)\n"
 msgstr "Son komutu tekrar yolla (%s)\n"
 
-#: src/read.c:361
+#: src/read.c:358
 msgid "Aborted read\n"
 msgstr "Okuma durduruldu\n"
 
-#: src/read.c:416
+#: src/read.c:413
 msgid "Draining\n"
 msgstr "Süzdürülüyor\n"
 
-#: src/refs.c:656
+#: src/refs.c:654
 msgid "[- Unavailable -]"
 msgstr "[- Kullanılamıyor -]"
 

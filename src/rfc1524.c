@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2024-07-11
+ *  Updated   : 2024-10-29
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000-2024 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
@@ -70,10 +70,10 @@ get_mailcap_entry(
 {
 	FILE *fp;
 	char *ptr, *ptr2, *nptr;
+	char *mailcaps;		/* possible mailcap files */
 	char buf[LEN];
 	char filename[LEN];	/* name of current mailcap file */
 	char mailcap[LEN];	/* full match */
-	char *mailcaps;		/* possible mailcap files */
 	char wildcap[LEN];	/* basetype match */
 	t_mailcap *foo = (t_mailcap *) 0;
 
@@ -93,7 +93,7 @@ get_mailcap_entry(
 	nptr = strtok(mailcaps, ":");
 	while (nptr != NULL) {
 		/* expand ~ and/or $HOME etc. */
-		if (strfpath(nptr, filename, sizeof(filename) - 1, &CURR_GROUP, FALSE)) {
+		if (strfpath(nptr, filename, sizeof(filename) - 1, NULL, FALSE)) {
 			if ((fp = tin_fopen(filename, "r")) != NULL) {
 				while ((fgets(ptr, (int) (sizeof(buf) - strlen(buf)), fp)) != NULL) {
 					if (*ptr == '#' || *ptr == '\n')		/* skip comments & blank lines */

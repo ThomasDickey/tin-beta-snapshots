@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2024-07-28
+ *  Updated   : 2024-10-31
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -617,10 +617,8 @@ free_msgids(
 		*msgptr++ = NULL;			/* declare list empty */
 
 		while (ptr != NULL) {	/* for each node in the list */
-
 			next = ptr->next;		/* grab ptr before we free node */
 			free(ptr);			/* release node */
-
 			ptr = next;			/* hop down the chain */
 		}
 	}
@@ -681,7 +679,6 @@ dump_msgids(
 				my_fprintf(stderr, " -> %s", ptr->txt);
 
 			my_fprintf(stderr, "\n");
-
 		}
 	}
 }
@@ -816,7 +813,6 @@ find_next(
 	 * got something in arts[]
 	 */
 	while (ptr != NULL) {
-
 		/*
 		 * Children first, unless bottom is set
 		 */
@@ -1034,7 +1030,7 @@ build_references(
 	/*
 	 * The articles are currently unsorted, and are as they were put by setup_hard_base()
 	 */
-	if (group->attribute->sort_article_type != SORT_ARTICLES_BY_NOTHING)
+	if (group->attribute && group->attribute->sort_article_type != SORT_ARTICLES_BY_NOTHING)
 		sort_arts(group->attribute->sort_article_type);
 
 #ifdef DEBUG

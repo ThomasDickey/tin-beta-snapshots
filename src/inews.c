@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-11-08
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -78,12 +78,12 @@ submit_inews(
 	char response[NNTP_STRLEN];
 	int auth_error = 0;
 	int respcode;
-	int charset;
 	t_bool leave_loop;
 	t_bool id_in_article = FALSE;
 	t_bool ret_code = FALSE;
 #	ifndef FORGERY
-	char sender_hdr[HEADER_LEN];
+	char *sender_hdr = my_malloc(HEADER_LEN + 1);
+	int charset;
 	int sender = 0;
 	int err = 0;
 	t_bool ismail = FALSE;
@@ -93,7 +93,7 @@ submit_inews(
 #	endif /* USE_CANLOCK */
 
 	if ((fp = tin_fopen(name, "r")) == NULL)
-		return ret_code;
+		goto out;
 
 	from_name[0] = '\0';
 	message_id[0] = '\0';
@@ -125,15 +125,15 @@ submit_inews(
 		/* we could silently add a From: line here if we want to... */
 		error_message(2, _(txt_error_no_from));
 		fclose(fp);
-		return ret_code;
+		goto out;
 	}
-#	ifdef CHARSET_CONVERSION
-	charset = group ? group->attribute->mm_network_charset : tinrc.mm_network_charset;
-#	else
-	charset = 0;
-#	endif /* CHARSET_CONVERSION */
 
 #	ifndef FORGERY
+#		ifdef CHARSET_CONVERSION
+	charset = group ? group->attribute->mm_network_charset : tinrc.mm_network_charset;
+#		else
+	charset = 0;
+#		endif /* CHARSET_CONVERSION */
 	/*
 	 * we should only skip the gnksa_check_from() test if we are going to
 	 * post a forged cancel, but inews.c doesn't know anything about the
@@ -150,7 +150,7 @@ submit_inews(
 	if (err) {
 		error_message(2, _(txt_invalid_from), from_name + 6);
 		fclose(fp);
-		return ret_code;
+		goto out;
 	}
 #	endif /* !FORGERY */
 
@@ -171,26 +171,26 @@ submit_inews(
 				case -2: /* can't build Sender: */
 					error_message(2, _(txt_invalid_sender), ptr);
 					fclose(fp);
-					return ret_code;
+					goto out;
 					/* NOTREACHED */
 					break;
 
 				case -1: /* illegal From: (can't happen as check is done above already) */
 					error_message(2, _(txt_invalid_from), from_name + 6);
 					fclose(fp);
-					return ret_code;
+					goto out;
 					/* NOTREACHED */
 					break;
 
 				case 1:	/* insert Sender */
-					snprintf(sender_hdr, sizeof(sender_hdr), "Sender: %s", ptr);
+					snprintf(sender_hdr, HEADER_LEN + 1, "Sender: %s", ptr);
 #		ifdef CHARSET_CONVERSION
-					buffer_to_network(sender_hdr, charset);
+					buffer_to_network(&sender_hdr, charset);
 #		endif /* CHARSET_CONVERSION */
 					if (!(group ? group->attribute->post_8bit_header : tinrc.post_8bit_header)) {
 						char *p = rfc1522_encode(sender_hdr, ccharset, ismail);
 
-						STRCPY(sender_hdr, p);
+						strcpy(sender_hdr, p);
 						free(p);
 					}
 					break;
@@ -209,7 +209,7 @@ submit_inews(
 		if (nntp_command("POST", CONT_POST, response, sizeof(response)) == NULL) {
 			error_message(2, "%s", response);
 			fclose(fp);
-			return ret_code;
+			goto out;
 		}
 
 		/*
@@ -251,7 +251,7 @@ submit_inews(
 		 */
 		if (*message_id && strlen(message_id) <= NNTP_STRLEN) {
 			if (!id_in_article) {
-				snprintf(buf, sizeof(buf), "Message-ID: %.512s", message_id);
+				snprintf(buf, sizeof(buf), "Message-ID: %.*s", NNTP_STRLEN, message_id);
 				u_put_server(buf);
 				u_put_server("\r\n");
 			}
@@ -336,7 +336,7 @@ submit_inews(
 	 */
 	if (respcode != OK_POSTED) {
 		error_message(2, _(txt_posting_failed), str_trim(response));
-		return ret_code;
+		goto out;
 	}
 
 	/*
@@ -372,6 +372,12 @@ submit_inews(
 
 	ret_code = TRUE;
 
+out:
+#	ifndef FORGERY
+	FreeIfNeeded(sender_hdr);
+#	else
+	(void) group;
+#	endif /* !FORGERY */
 	return ret_code;
 }
 #endif /* NNTP_INEWS */

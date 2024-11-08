@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-11-08
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -523,7 +523,7 @@ selection_page(
 						info_message(_(txt_cannot_post));
 						break;
 					}
-					snprintf(buf, sizeof(buf), _(txt_post_newsgroups), tinrc.default_post_newsgroups);
+					snprintf(buf, sizeof(buf), _(txt_post_newsgroups), BlankIfNull(tinrc.default_post_newsgroups));
 					if (!prompt_string_ptr_default(buf, &tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
 						break;
 					str_trim(tinrc.default_post_newsgroups);
@@ -623,7 +623,7 @@ show_selection_page(
 	int i, keyhelplen;
 	size_t len;
 	const char *secflag = "";
-	t_bool recalc = !sel_fmt.str || (need_parse_fmt & SELECT_LEVEL);
+	t_bool recalc = !sel_fmt.str || !groupname_len || (need_parse_fmt & SELECT_LEVEL);
 
 	signal_context = cSelect;
 	currmenu = &selmenu;

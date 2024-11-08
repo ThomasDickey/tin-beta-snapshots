@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-09-26
+dnl Updated   : 2024-11-08
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -573,9 +573,9 @@ CF_ARG_WITH(nntp-default-server,
 	[  --with-nntp-default-server
                           (sets NNTP_DEFAULT_SERVER)
                          ],
-	[NNTP_DEFAULT_SERVER], news.$DOMAIN_NAME)
+                          [NNTP_DEFAULT_SERVER], news.$DOMAIN_NAME)
 
-    if test "$NNTP_DEFAULT_SERVER" = "" ; then
+	if test "$NNTP_DEFAULT_SERVER" = "" ; then
 	if test "$DOMAIN_NAME" != "" ; then
 		test -z "$NNTP_DEFAULT_SERVER" && \
 		case "$DOMAIN_NAME" in #(((
@@ -771,7 +771,7 @@ CF_WITH_PATH(defaults-dir,
 	[  --with-defaults-dir=PATH
                           directory containing tin.defaults file
                          ],
-	TIN_DEFAULTS_DIR,/etc/tin)
+                          TIN_DEFAULTS_DIR,/etc/tin)
 AC_MSG_RESULT($TIN_DEFAULTS_DIR)
 AC_DEFINE_UNQUOTED(TIN_DEFAULTS_DIR,"$TIN_DEFAULTS_DIR",[Define this to the directory containing tin.defaults file])
 
@@ -790,9 +790,10 @@ AC_REPLACE_FUNCS(getaddrinfo getnameinfo)
 ### should we use 64 bit article numbers if possible?
 AC_MSG_CHECKING([whether to enable long article numbers])
 CF_ARG_ENABLE(long-article-numbers,
-        [  --enable-long-article-numbers
+	[  --enable-long-article-numbers
                           enable long article numbers (default: disabled)],
-[AC_DEFINE(ENABLE_LONG_ARTICLE_NUMBERS,1,[Define this to 1 to enable long article numbers])])
+	[AC_DEFINE(ENABLE_LONG_ARTICLE_NUMBERS,1,[Define this to 1 to enable long article numbers])]
+)
 AC_MSG_RESULT($enableval)
 
 ### TLS support
@@ -1115,11 +1116,11 @@ $ac_includes_default
 #include <inttypes.h>
 #endif /* HAVE_INTTYPES_H */
 ],[printf("%"PRIdLEAST64, (long int) 0);],
-    ac_cv_pridleast64=yes, ac_cv_pridleast64=no)
-    AC_MSG_RESULT($ac_cv_pridleast64)
-    if test $ac_cv_pridleast64 = yes; then
-        AC_DEFINE(HAVE_PRIDLEAST64,1,[Define this to 1 if we have PRIdLEAST64])
-    fi
+	ac_cv_pridleast64=yes, ac_cv_pridleast64=no)
+	AC_MSG_RESULT($ac_cv_pridleast64)
+	if test $ac_cv_pridleast64 = yes; then
+		AC_DEFINE(HAVE_PRIDLEAST64,1,[Define this to 1 if we have PRIdLEAST64])
+	fi
 	AC_MSG_CHECKING(for SCNdLEAST64)
 	AC_TRY_COMPILE([
 $ac_includes_default
@@ -1127,11 +1128,11 @@ $ac_includes_default
 #include <inttypes.h>
 #endif /* HAVE_INTTYPES_H */
 ],[printf("%"SCNdLEAST64, (long int) 0);],
-    ac_cv_scndleast64=yes, ac_cv_scndleast64=no)
-    AC_MSG_RESULT($ac_cv_scndleast64)
-    if test $ac_cv_scndleast64 = yes; then
-        AC_DEFINE(HAVE_SCNDLEAST64,1,[Define this to 1 if we have SCNdLEAST64])
-    fi
+	ac_cv_scndleast64=yes, ac_cv_scndleast64=no)
+	AC_MSG_RESULT($ac_cv_scndleast64)
+	if test $ac_cv_scndleast64 = yes; then
+		AC_DEFINE(HAVE_SCNDLEAST64,1,[Define this to 1 if we have SCNdLEAST64])
+	fi
 fi
 
 dnl test to see if nl_item is defined
@@ -1149,7 +1150,7 @@ $ac_includes_default
 ac_cv_nl_item=yes, ac_cv_nl_item=no)
 AC_MSG_RESULT($ac_cv_nl_item)
 if test $ac_cv_nl_item = yes; then
-        AC_DEFINE(HAVE_NL_ITEM,1,[Define this to 1 if we have header nl_types.h])
+	AC_DEFINE(HAVE_NL_ITEM,1,[Define this to 1 if we have header nl_types.h])
 fi
 
 ###	Checks for libraries.
@@ -1218,10 +1219,24 @@ AC_CHECK_HEADER(unicode/unorm.h,[
 		])
 	])
 ])
-# IDNA2008
-AC_CHECK_HEADER(unicode/unorm2.h, [
-	AC_DEFINE(HAVE_UNICODE_UNORM2_H,1,[Define this to 1 if we have header unicode/unorm2.h])
-])
+
+AC_CHECK_HEADERS(unicode/unorm.h unicode/unorm2.h unicode/ustring.h unicode/ucnv.h unicode/ubidi.h)
+
+# this doesn't work, why?
+#AC_CHECK_LIB(icuuc, ucnv_open,
+#	[AC_DEFINE(HAVE_UCNV_OPEN, 1, [Define to 1 if you want have ucnv_open])]
+#)
+#AC_CHECK_LIB(icuuc, ubidi_open,
+#	[AC_DEFINE(HAVE_UBIDI_OPEN, 1, [Define to 1 if you have ubidi_open])]
+#)
+# ok, we go with
+if test x"$ac_cv_header_unicode_ucnv_h" = "xyes" ; then
+	AC_DEFINE(HAVE_UCNV_OPEN, 1)
+fi
+if test x"$ac_cv_header_unicode_ubidi_h" = "xyes" ; then
+	AC_DEFINE(HAVE_UBIDI_OPEN, 1)
+fi
+
 
 # without icuuc try GNU libunistring for normalization
 if test $cf_try_icuuc = no ; then
@@ -1370,6 +1385,7 @@ CF_STRERROR
 ###	Checks for library functions.
 AC_CHECK_FUNCS(\
 	alarm \
+	arc4random_uniform \
 	atoi \
 	atol \
 	atoll \
@@ -1481,8 +1497,7 @@ $ac_includes_default
 #include <sys/time.h>
 #endif],
 [static struct timeval tv;
-static struct timezone tz;
-gettimeofday(&tv, &tz);],
+gettimeofday(&tv, NULL);],
 ac_cv_func_gettimeofday_2args=yes, ac_cv_func_gettimeofday_2args=no)
 AC_MSG_RESULT($ac_cv_func_gettimeofday_2args)
 if test $ac_cv_func_gettimeofday_2args = yes; then
@@ -1790,21 +1805,21 @@ int main(void) {
 	unsigned char str;
 
 	for (str = 1; str < 127; str++) {
-	        if ((char) tolower(str) != ((str >= 'A' && str <= 'Z') ? ((unsigned char) (str - 'A' + 'a')) : str))
+		if ((char) tolower(str) != ((str >= 'A' && str <= 'Z') ? ((unsigned char) (str - 'A' + 'a')) : str))
 			return 1;
 	}
 	return 0;
 }],
-        [
-                AC_MSG_RESULT(yes)
-        ],
-        [
+	[
+		AC_MSG_RESULT(yes)
+	],
+	[
 		AC_DEFINE(TOLOWER_BROKEN,1,[Define this to 1 if function tolower is broken])
-                AC_MSG_RESULT(no)
-        ],
-        [
-                AC_MSG_RESULT(unknown)
-        ]
+		AC_MSG_RESULT(no)
+	],
+	[
+		AC_MSG_RESULT(unknown)
+	]
 )
 
 
@@ -1869,7 +1884,7 @@ AC_TRY_COMPILE([
 #endif /* HAVE_STDDEF_H */
 #ifdef HAVE_SIGNAL_H
 #	include <signal.h>
-#endif HAVE_SIGNAL_H
+#endif /* HAVE_SIGNAL_H */
 ],[
 sigset_t set;
 
@@ -1889,7 +1904,7 @@ AC_MSG_CHECKING([for BSD signal support])
 AC_TRY_COMPILE([
 #ifdef HAVE_SIGNAL_H
 #	include <signal.h>
-#endif HAVE_SIGNAL_H
+#endif /* HAVE_SIGNAL_H */
 ],[
 sigblock(0);
 ],[
@@ -1907,7 +1922,7 @@ AC_MSG_CHECKING([for SYSV signal support])
 AC_TRY_COMPILE([
 #ifdef HAVE_SIGNAL_H
 #	include <signal.h>
-#endif HAVE_SIGNAL_H
+#endif /* HAVE_SIGNAL_H */
 ],[
 sigignore(0);
 ],[

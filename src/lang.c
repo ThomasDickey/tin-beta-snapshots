@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-10-30
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -1498,7 +1498,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_server_name_in_file_env_var[] = N_("Put the server name in the file %s,\nor set the environment variable NNTPSERVER");
 #ifdef USE_ZLIB
 		constext txt_continuing[] = N_("Continuing...");
-		constext txt_read_timeout_quit[] = N_("Read timeout from server (%d seconds) - quit tin?");
+		constext txt_read_timeout_quit[] = N_("Read timeout from server - quit tin?");
 		constext txt_usage_compress[] = N_("  -C       try COMPRESS NNTP extension");
 #endif /* USE_ZLIB */
 	constext txt_usage_force_authentication[] = N_("  -A       force authentication on connect");

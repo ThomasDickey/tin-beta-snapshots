@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin-2.6.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-19 10:09+0200\n"
+"POT-Creation-Date: 2024-10-30 09:02+0100\n"
 "PO-Revision-Date: 2024-01-14 14:50+0100\n"
 "Last-Translator: Matt Anton <tin@lv223.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -5434,9 +5434,9 @@ msgid "Continuing..."
 msgstr "Poursuite..."
 
 #: src/lang.c:1501
-#, c-format
-msgid "Read timeout from server (%d seconds) - quit tin?"
-msgstr "Lecture depuis le serveur expirée (%d secondes) - quitter tin ?"
+#, fuzzy
+msgid "Read timeout from server - quit tin?"
+msgstr "Lecture depuis le serveur expirée - quitter tin ?"
 
 #: src/lang.c:1502
 msgid "  -C       try COMPRESS NNTP extension"
@@ -9278,11 +9278,11 @@ msgstr ""
 "\n"
 "Connexion au serveur expirée, reconnexion # %d\n"
 
-#: src/nntplib.c:1004 src/nntplib.c:2115
+#: src/nntplib.c:1004 src/nntplib.c:2114
 msgid "Rejoin current group\n"
 msgstr "Rejoindre le groupe actuel\n"
 
-#: src/nntplib.c:1013 src/nntplib.c:2124
+#: src/nntplib.c:1013 src/nntplib.c:2123
 #, c-format
 msgid "Read (%s)\n"
 msgstr "Lecture (%s)\n"
@@ -9292,15 +9292,15 @@ msgstr "Lecture (%s)\n"
 msgid "Resend last command (%s)\n"
 msgstr "Réenvoyer la dernière commande (%s)\n"
 
-#: src/read.c:361
+#: src/read.c:358
 msgid "Aborted read\n"
 msgstr "Lecture annulée\n"
 
-#: src/read.c:416
+#: src/read.c:413
 msgid "Draining\n"
 msgstr "Purge\n"
 
-#: src/refs.c:656
+#: src/refs.c:654
 msgid "[- Unavailable -]"
 msgstr "[- Indisponible -]"
 

@@ -4,6 +4,11 @@ file is not read only ,-). See also grep -E 'FIXME|TODO' src/*.c include/*.h
 
 Bugs
 ----
+o  PostponeOverride "Y" conflicts with PromptYes "yY" so PostponeOverride
+   is unusable right now. Remap somehow to e.g. "oO" (that would also
+   require a key rename)? Restrict PromptYes in that single prompt
+   to anything but PostponeOverride (if it has multiple keys assigned)?
+
 o  get_respcode() doesn't handle the 401 response code. as we have to
    evaluate the response text as well we have to fix every
    nntp_command(..., NULL, 0) call.
@@ -22,8 +27,6 @@ o  unexpected multiline responses confuse tin, e.g.:
 o  batch mode has several bugs
    - -vc could be more verbose (like -vcZ is)
    - -o currently is not a 'batch_mode' option
-   - -u could be faster if not building threads etc. pp.
-     (build_references(), filter_articles(), make_threads())
    [Urs Janssen <urs@tin.org>]
 
 o  upgrade_keymap_file() doesn't update ConfigFirstPage, HelpFirstPage,
@@ -489,6 +492,9 @@ o  allow user defined mouse button bindings (like keymap).
 o  add support for plan9's nntpfs with -9 /path/to/spool or the like
    <https://9p.io/magic/man2html/4/nntpfs>
 
+o  do real $MAILPATH parsing (misc.c:mail_check()) to show custom-message
+   if given instead of our generic one.
+
 Posting enhancements
 --------------------
 o  sort Followup-To:/Newsgroups: after stripping doubled newsgroups and
@@ -562,8 +568,8 @@ o  allow ranges in gnksa-filters "gnksa=200-399" or "gnksa=101,103,201"
    [20200709 Urs Janssen <urs@tin.org>]
 
 o  add a cmd.-line switch to skip reading the filter file ('-F'?) as
-   filtering may be very time consuming with huge groups. what if a user
-   likes to add a filter entry during such a session?
+   filtering may be very time consuming with huge groups. if a user
+   likes to add a filter entry during such a that should be blocked.
 
 Pager enhancements
 ------------------
@@ -685,9 +691,8 @@ o  clean up $AUTOSUBSCRIBE code (the NNTP code path is a mess)
 o  make configure look for strrstr() in libpub & publib.h
    [Urs Janssen <urs@tin.org>]
 
-o  reorder several structs to avoid padding e.g. t_capabilities (but that's
-   just used once, no big win here), t_group, ... (see gcc -Wpadded
-   and/or pahole(1))
+o  reorder several structs to avoid padding e.g. t_capabilities, t_group, ...
+   (see gcc -Wpadded and/or pahole(1))
    [Urs Janssen <urs@tin.org>]
 
 o  what type is base[]? (long, see memory.c:init_alloc()~102)
@@ -721,6 +726,7 @@ o  close potential security holes:
    - check where my_strncpy() or STRCPY() should be used
    - check where s2i() or strtol(...,10) with errno checking should be used
      instead of ato[il]()
+   - check where fgets() can be replaced by tin_fgets()
    [Urs Janssen <urs@tin.org>]
 
 o  split tin.h/proto.h for better dependencies in Makefile
@@ -809,9 +815,6 @@ o  add normalization
 o  rewrite ICU configure checks
    [20180710 Urs Janssen <urs@tin.org>]
 
-o  check for ICU conversion (ucnv_open() ...) and use if iconv()
-   wasn't found (or can't handle a charset).
-
 o  check for libutf8proc <https://github.com/JuliaStrings/utf8proc>
    and use it (as fallback)?
 
@@ -868,7 +871,7 @@ o  submit short invocation examples to tldr
 o  replace "\\" by "\e" in man pages (portable?)
 
 o  integrate doc/auth.txt into tin.1 man page, mention RFCs for
-   avail auth methods (AUTHINFO SASL: RFC 4643, SASL PLAIN: RFC 4616,
+   available auth methods (AUTHINFO SASL: RFC 4643, SASL PLAIN: RFC 4616,
    SASL ANONYMOUS: RFC 4505, ...)
 
 o  document ${HOST:-"$HOSTNAME"} fallback if gethostname(2) and uname(2)
@@ -880,6 +883,17 @@ o  the limited pgp support (inline pgp as of RFC 4880, just signature
 
 Not yet classified
 ------------------
+o  configure check for volatile sig_atomic_t and if found use in
+   signal_handler to flag actions to be done; check the flag outside
+   the signal_handler (where? handle_keypad()?) and do the outstanding
+   actions there, like:
+   	enum sactions {nothing, write_newsrc, tin_done, ...}
+   	volatile sig_atomic_t pending_saction = nothing;
+   	/* ... */
+   		case SIGUSR2:
+   			pending_saction = write_newsrc;
+   (could fix our SIGUSR2 and SIGTERM issue).
+
 o  add tinrc option to disable charset guessing for group-descriptions
    and MOTD.
 
@@ -984,7 +998,8 @@ o  support $XDG_CONFIG_HOME[S] / $XDG_DATA_HOME[S] / $XDG_RUNTIME_DIR /
    <http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html>
    [20081010 Urs Janssen <urs@tin.org>]
 
-o  add //IGNORE iconv-option like //TRANSLIT?
+o  add //IGNORE iconv-option like //TRANSLIT? (and UCNV_*_U_CALLBACK_SKIP in
+   the ucnv-case)
    [20080824 Urs Janssen <urs@tin.org>]
 
 o  what about REDIRECT_OUTPUT? shouldn't we better add this to DEFAULT_PRINTER
@@ -1115,3 +1130,5 @@ o  why a lockfile (-u) in /tmp and not ${TIN_HOMEDIR:-"$HOME"}/[.tin]?
    share the cache will not be caught ... (when -u was used for system
    wide overviews shared between users the location was ok, but that was
    ~30 years ago).
+
+o  add $MAILCHECK alarm-timer?

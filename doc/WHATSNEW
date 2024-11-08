@@ -30,7 +30,10 @@ New features
   $CFLAGS, $CPPFLAGS and $LDFLAGS in the binary
 - undeclared_cs_guess if system has ucsdet_detect() from libicui18n
   the charset of an article can be guess upon reading
+- try charset conversion with ucnv_*() from libicuuc if iconv() fails
+  or is not available
 - handle multiple addresses in From, Reply-To, Approved
+- basic (no custom-messages) $MAILPATH support
 
 Changes
 -------
@@ -48,3 +51,4 @@ Retired Features
 - no longer ships with a fallback intl-library
 - --with-sum specifying the sum of uue-file got more and more uncommon at
   the end of last century and uue mostly vanished later on ...
+- no longer expands %G and/or %P in $MAILCAPS

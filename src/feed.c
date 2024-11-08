@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-10-21
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -571,7 +571,7 @@ feed_articles(
 	int respnum)
 {
 	char *prompt;
-	char outpath[PATH_LEN];
+	char outpath[PATH_LEN]; /* FIXME: don't used fixed length */
 	int art;
 	int i;
 	int saved_curr_line = -1;
@@ -662,7 +662,14 @@ feed_articles(
 		/* Setup printing - get print command line */
 		/* FIXME: don't use fixed length buffer */
 		case FEED_PRINT:
-			snprintf(outpath, sizeof(outpath), "%.1000s %s", tinrc.printer, REDIRECT_OUTPUT);
+			{
+				int l = sizeof(outpath) - strlen(tinrc.printer) - strlen(REDIRECT_OUTPUT) - 2;
+
+				if (l > 0)
+					snprintf(outpath, sizeof(outpath), "%.*s %s", l, tinrc.printer, REDIRECT_OUTPUT);
+				else
+					*outpath = '\0';
+			}
 			break;
 #endif /* !DISABLE_PRINTING */
 
@@ -1068,10 +1075,10 @@ print_file(
 	snprintf(file, sizeof(file), TIN_PRINTFILE, respnum);
 	if ((fp = fopen(file, "w")) == NULL) /* TODO: issue a more correct error message here */
 #	else
-	if ((fp = popen(command, "w")) == NULL)
+	if (!*command || (fp = popen(command, "w")) == NULL)
 #	endif /* DONT_HAVE_PIPING */
 	{
-		perror_message(_(txt_command_failed), command);
+		perror_message(_(txt_command_failed), BlankIfNull(command));
 		return ok;
 	}
 

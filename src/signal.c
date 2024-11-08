@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-17
+ *  Updated   : 2024-10-30
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
@@ -385,7 +385,7 @@ handle_suspend(
 		Raw(FALSE);
 	}
 
-	wait_message(0, _(txt_suspended_message), tin_progname);
+	my_fprintf(stdout, _(txt_suspended_message), tin_progname); /* stderr? */
 
 	kill(0, SIGSTOP);				/* Put ourselves to sleep */
 
@@ -411,6 +411,7 @@ static void _CDECL
 signal_handler(
 	int sig)
 {
+	int serrno = errno;
 #ifdef SIGCHLD
 #	ifdef HAVE_TYPE_UNIONWAIT
 	union wait wait_status;
@@ -424,6 +425,7 @@ signal_handler(
 #ifdef SIGINT
 		case SIGINT:
 			RESTORE_HANDLER(sig, signal_handler);
+			errno = serrno;
 			return;
 #endif /* SIGINT */
 
@@ -434,36 +436,23 @@ signal_handler(
 #if defined(HAVE_ALARM) && defined(SIGALRM)
 		case SIGALRM:
 #	ifdef NNTP_ABLE
-#		ifdef DEBUG
-			if ((debug & DEBUG_NNTP) && verbose > 1)
-				debug_print_file("NNTP", "get_server() %d sec elapsed without response", TIN_NNTP_TIMEOUT);
-#		endif /* DEBUG */
-
 #		ifdef USE_ZLIB
 			/*
 			 * response compression from the server may take a while
 			 * when running interactively and not being in connection
 			 * phase give the user a chance to go on instead of exiting
 			 */
-			{
-				char *prompt;
-				size_t len = strlen(_(txt_read_timeout_quit)) + snprintf(NULL, 0, "%d", tinrc.nntp_read_timeout_secs) - 1;
-
-				prompt = my_malloc(len);
-				snprintf(prompt, len, _(txt_read_timeout_quit), tinrc.nntp_read_timeout_secs);
-				if (signal_context == cReconnect || batch_mode || !use_compress || !nntp_caps.compress || prompt_yn(prompt, FALSE) == 1) {
-					free(prompt);
-#		endif /* USE_ZLIB */
-					tin_done(NNTP_ERROR_EXIT, _(txt_connection_error));
-#		ifdef USE_ZLIB
-				} else {
-					free(prompt);
-					RESTORE_HANDLER(sig, signal_handler);
-					wait_message(0, _(txt_continuing));
-				}
+			if (signal_context == cReconnect || batch_mode || !use_compress || !nntp_caps.compress || prompt_yn(_(txt_read_timeout_quit), FALSE) == 1)
+				tin_done(NNTP_ERROR_EXIT, _(txt_connection_error));
+			else {
+				RESTORE_HANDLER(sig, signal_handler);
+				my_fprintf(stdout, "%s", _(txt_continuing));
 			}
+#		else
+			tin_done(NNTP_ERROR_EXIT, _(txt_connection_error));
 #		endif /* USE_ZLIB */
 #	endif /* NNTP_ABLE */
+			errno = serrno;
 			return;
 #endif /* HAVE_ALARM && SIGALRM */
 
@@ -472,12 +461,14 @@ signal_handler(
 			wait(&wait_status);
 			RESTORE_HANDLER(sig, signal_handler);	/* death of a child */
 			system_status = WIFEXITED(wait_status) ? WEXITSTATUS(wait_status) : 0;
+			errno = serrno;
 			return;
 #endif /* SIGCHLD */
 
 #ifdef SIGTSTP
 		case SIGTSTP:
 			handle_suspend();
+			errno = serrno;
 			return;
 #endif /* SIGTSTP */
 
@@ -485,14 +476,16 @@ signal_handler(
 		case SIGWINCH:
 			need_resize = cYes;
 			RESTORE_HANDLER(sig, signal_handler);
+			errno = serrno;
 			return;
 #endif /* SIGWINCH */
 
 #ifdef SIGUSR2
 		case SIGUSR2:
 			if (!no_write) /* TODO: add more config-files to be saved */
-				write_newsrc();
+				write_newsrc(); /* TODO: uses signal-unsafe calls */
 			RESTORE_HANDLER(sig, signal_handler);
+			errno = serrno;
 			return;
 #endif /* SIGUSR2 */
 
@@ -500,7 +493,7 @@ signal_handler(
 			break;
 	}
 
-	fprintf(stderr, "\n%s: signal handler caught %s signal (%d).\n", tin_progname, signal_name(sig), sig);
+	my_fprintf(stderr, "\n%s: signal handler caught %s signal (%d).\n", tin_progname, signal_name(sig), sig);
 
 	switch (sig) {
 #ifdef SIGHUP
@@ -514,7 +507,7 @@ signal_handler(
 #endif /* SIGTERM */
 #if defined(SIGHUP) || defined(SIGUSR1) || defined(SIGTERM)
 			dangerous_signal_exit = TRUE;
-			tin_done(-sig, NULL);
+			tin_done(-sig, NULL); /* NOTE: a lot of signal-unsafe calls in tin_done() */
 			/* NOTREACHED */
 			break;
 #endif /* SIGHUP || SIGUSR1 || SIGTERM */
@@ -529,7 +522,6 @@ signal_handler(
 		case SIGBUS:
 #	endif /* SIGBUS */
 #endif /* SIGSEGV */
-
 #if defined(SIGBUS) || defined(SIGSEGV)
 			my_fprintf(stderr, _(txt_send_bugreport), tin_progname, VERSION, RELEASEDATE, RELEASENAME, bug_addr);
 			my_fflush(stderr);

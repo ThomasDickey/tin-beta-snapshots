@@ -1,4 +1,4 @@
--- 2.6.4 release 20241019 "" --
+-- 2.6.4 release 20241109 "" --
 
  023) Thomas E. Dickey <dickey@invisible-island.net>
       REM. bundled-intl stuff
@@ -35,6 +35,7 @@
       ADD. "ternary"-operator to format-strings %F, %s, %T
       ADD. max screenwidth ('<') condition to format-strings
       ADD. avoid fixed length buffer for lines on terminal when using curses
+      ADD. reorder t_config to avoid padding
       REM. MAX_MSG_HEADERS limitation
       BUG. txt_help_config_search_opt_forwards,
            txt_help_config_search_opt_forwards and
@@ -65,11 +66,13 @@
       ADD. avoid tmpfile(3) usage
       ADD. configure check for blockable signal-type (POSIX, BSD, SYSV, NONE)
       ADD. configure check for tiuser.h (TLI; SVR3, SVR4)
-      ADD. configure check for lrand48(3) and random(3), prefer over rand(3)
+      ADD. configure check for arc4random_uniform(3), lrand48(3) and random(3)
+           prefer over rand(3)
       ADD. configure check for tcflag_t
       ADD. configure check for PRIdLEAST64 and SCNdLEAST64
       ADD. configure check for ucsdet_detect() from libicui18n
       ADD. configure check for getpeername()
+      ADD. configure check for uconv_open() and unicode/ucnv.h
       ADD. simplify _Noreturn check, just note the C11 standard
       REM. configure check for varargs.h
       ADD. removed fixed buffer from copy_body()
@@ -91,12 +94,19 @@
       ADD. expand tabs in multiline wait_messages
       ADD. calculate offset to article body for postponed articles
       ADD. UNICODE-1-1, SCSU, csSCSU to unsupported charsets
+      ADD. try charset conversion with ICU ucnv_* if iconv() fails or is
+           not available.
       ADD. use gmtime() and 4 digigt year for NEWGROUP on RFC 3977 servers
            instead of localtime and 2 digigt year
+      ADD. basic (no custom-messages) $MAILPATH support
+      ADD. skip reading attributes with -Z
+      ADD. skip reading filter-file with -u
+      ADD. warn about -u[oXzZ] and -oZ (Useless combination)
       REM. tmpfile.c
       REM. --with-sum specifying the sum of uue-file got more and more
            uncommon at the end of last century and uue mostly vanished
            laster on ...
+      REM. %G, %P expansion in $MAILCAPS
       BUG. AUTHINFO SASL * didn't check possible 283 return code
            (as we do not support anything but SASL PLAIN yet, not an issue)
       BUG. -t not mentioned in -h
@@ -115,14 +125,15 @@
       FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, curses.c
            debug.c, feed.c, filter.c, getline.c, global.c, group.c, header.c
            help.c, inews.c, init.c, keymap.c, lang.c, lock.c, mail.c, main.c
-           makecfg.c, memory.c, misc.c, my_tmpfile.c, newsrc.c, nntplib.c
-           nntps.c, nrctbl.c, options_menu.c, page.c, pgp.c, post.c, prompt.c
-           read.c, regex.c, rfc1524.c, rfc2046.c, rfc2047.c, save.c, screen.c
-           search.c, select.c, sigfile.c, snprintf.c, string.c, tcurses.c
-           thread.c, version.c, xface.c, xref.c, parsdate.y, debug.h, extern.h
-           nntplib.h, proto.h, snprintf.h, tin.h, tinrc.h, tnntp.h, tincfg.tbl
-           autoconf.h[in], configure[.in], Makefile[.in], config.guess
-           config.sub, tin.1, tin.5
+           makecfg.c, memory.c, mimetypes.c, misc.c, my_tmpfile.c, newsrc.c
+           nntplib.c, nntps.c, nrctbl.c, options_menu.c, page.c, pgp.c, post.c
+           prompt.c, read.c, refs.c, regex.c, rfc1524.c, rfc2046.c, rfc2047.c
+           save.c, screen.c, search.c, select.c, sigfile.c, signal.c
+           snprintf.c, string.c, tcurses.c, thread.c, version.c, xface.c
+           xref.c, parsdate.y, debug.h, extern.h, nntplib.h, proto.h
+           snprintf.h, tin.h, tinrc.h, tnntp.h, tincfg.tbl, autoconf.h[in]
+           configure[.in], Makefile[.in], config.guess, config.sub, tin.1
+           tin.5
 
 -- 2.6.3 release 20231224 "Banff" --
 

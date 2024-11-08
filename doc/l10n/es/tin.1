@@ -3,13 +3,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-08-11
+.\" Updated   : 2024-10-30
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
-.\"
-.IX Title "tin 1"
 .\"*******************************************************************
 .\"
 .\" This file was generated with po4a. Translate the source file.
@@ -23,7 +21,6 @@
 .\"
 tin, rtin \- Usenet newsreader
 .SH SINOPSIS
-.IX Header SINOPSIS
 .\"
 .\"
 \fBtin\fP [\|[\|\fB\-h\fP\||\|\fB\-H\fP\||\|\fB\-V\fP\|]\ \|| [\|[\|\fB\-a\fP\|]
@@ -35,7 +32,6 @@ tin, rtin \- Usenet newsreader
 \fIMail_dir\fP\|] [\|\fB\-p\fP \fIport\fP\|] [\|\fB\-t\fP \fItimeout\fP\|] [\|\fB\-I\fP
 \fIindex_dir\fP\|]\ \|[\fInewsgroup\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH DESCRIPCIÓN
-.IX Header DESCRIPCIÓN
 \fBtin\fP is a full\-screen easy to use Usenet newsreader. It can read news
 locally (e.g., \fI/var/spool/news\fP) or remotely (\fBrtin\fP or \fBtin \-r\fP option)
 via an NNTP (Network News Transport Protocol, \fBRFC\%3977\fP) or NNTPS
@@ -60,7 +56,6 @@ pressing '\fB<CR>\fP'.
 The \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') key enters the next
 newsgroup with unread articles.
 .SH "ESTADO SALIENTE"
-.IX Header "ESTADO SALIENTE"
 .\" TODO: also exits with signalnr caught as exit status
 .TP  12
 \fB0\fP
@@ -77,7 +72,6 @@ Unread news available (batch mode (\*(rq\fB\-Z\fP\*(rq) only).
 .\"
 Error NNTP
 .SH OPCIONES
-.IX Header OPCIONES
 .TP  12
 \fB\-4\fP
 Force connecting via IPv4 to the remote NNTP server. Only available when
@@ -306,7 +300,6 @@ on the command\-line. The order of command\-line options is not important. If
 they are mutual exclusive the one with the highest priority will be chosen
 and a warning may be given.
 .SH UTILIZACIÓN
-.IX Header UTILIZACIÓN
 .\"
 .\"
 .SS "ADMINISTRACIÓN DE NOTICIARIOS"
@@ -3356,7 +3349,6 @@ cached data for groups you are not reading anymore with something like:
 .\"
 .\"
 .SH FICHEROS
-.IX Header FICHEROS
 .\" TODO: mention dead.article, dead.articles
 .\"               .article[.$$], .cancel[.$$], .letter[.$$]?
 .\"       ${XDG_RUNTIME_DIR:\-"$HOME"}/.slrnfaces
@@ -3522,7 +3514,6 @@ For a detailed description see \fB\%tin\fP(5).
 .\"
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions\fP
 .SH ENTORNO
-.IX Header ENTORNO
 .\" TODO: - sort in a useful order
 .\"       - add undocumented env-vars (e.g. $DEV_TCP (SCO),
 .\"         ${HOST:-"$HOSTNAME"} fallback)
@@ -3658,6 +3649,11 @@ mailing operations within \fBtin\fP.
 .TP 
 \fBMAIL\fP
 Full path to the user's mailbox.
+.TP 
+.\" we don't support the %message || ?message notation
+\fBMAILPATH\fP
+A colon\-separated list of filenames which are checked for new mail. This
+overrides the $\fBMAIL\fP variable.
 .TP 
 \fBVISUAL\fP
 This variable has precedence over the default editor (i.e., \fB\%vi\fP(1))
@@ -3805,7 +3801,6 @@ The pathname of the user's login shell. Used to set
 .\"
 The pathname of the user's dir to put non\-essential run time files into.
 .SH SEÑALES
-.IX Header SEÑALES
 .\" TODO: add missing, sort useful, document in detail
 \fBtin\fP handles a couple of signals:
 .TP 
@@ -3829,7 +3824,6 @@ Terminate gracefully but do not restore terminal (tty).
 .\"
 Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-file.
 .SH GARANTÍA
-.IX Header GARANTÍA
 If \fBtin\fP is started in debug mode (\*(rq\fB\-D n\fP\*(rq) it will create world
 readable files in \fB$TMPDIR\fP which may contain sensitive data like the users
 NNTP password in cleartext (if running verbose). On multiuser\-systems
@@ -3847,7 +3841,6 @@ compression and compression is requested, \fBtin\fP will exit when
 authentication is required later on. Using the \*(rq\fB\-A\fP\*(rq command line option
 in conjunction with \*(rq\fB\-C\fP\*(rq circumvents this behavior.
 .SH "CONFORME A"
-.IX Header "CONFORME A"
 .\" - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
 .\"   RFC\%4643, RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
 .\"
@@ -3856,7 +3849,6 @@ in conjunction with \*(rq\fB\-C\fP\*(rq circumvents this behavior.
 Section 12, Utility Conventions (Utility Argument Syntax, Utility Syntax
 Guidelines).
 .SH ANOTACIONES
-.IX Header ANOTACIONES
 Regular expression support is provided by the PCRE library package
 \fB\%pcre\fP(3)  or \fB\%pcre2\fP(3)  which is open source software, written by
 Philip Hazel, and copyright \(co by the University of Cambridge, England.
@@ -3865,7 +3857,6 @@ Philip Hazel, and copyright \(co by the University of Cambridge, England.
 .\"
 <https://www.pcre.org/>
 .SH DEFECTOS
-.IX Header DEFECTOS
 \fBCNews\fP\0NNTPd, \fB\%noffle\fP(1)  (<= V1.0\-pre5) and \fBNewsCache\fP (<=
 V1.1.91) can't handle pipelined GROUP commands (\fBRFC\%3977\fP).  If you run
 into trouble with any of the mentioned historical servers define
@@ -3885,7 +3876,6 @@ found a bug, please use the \fBBugReport\fP ('\fBR\fP')  function and write in
 English. Please do NOT enclose a core\-file in your bug\-report until we
 request it.
 .SH HISTORIAL
-.IX Header HISTORIAL
 \fBtin\fP is based on the \fB\%tass\fP(1)  newsreader that was developed by Rich
 Skrenta and posted to alt.sources in March 1991; its first version was
 released on August 23rd 1991.  \fB\%tass\fP(1)  itself was heavily influenced
@@ -3933,7 +3923,6 @@ Urs Janssen <urs@tin.org>
 .\"
 .\"
 .SH "VEA ADEMÁS"
-.IX Header "VEA ADEMÁS"
 \fB\%elm\fP(1), \fB\%emacs\fP(1), \fB\%gpg\fP(1), \fB\%inews\fP(1), \fB\%ispell\fP(1),
 \fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%mutt\fP(1), \fB\%noffle\fP(1),
 \fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1),

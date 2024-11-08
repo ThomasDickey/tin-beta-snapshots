@@ -81,7 +81,7 @@ Networking related
 TIN related:
   BACKUP_FILE_EXT (see misc.c:invoke_editor())
   FILE_MODE_BROKEN                        NO_LOCKING
-  DEBUG_ART                               
+  DEBUG_ART                               DEBUG_UCNV
 
 System related:
   --datadir                               --localstatedir

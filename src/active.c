@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-10-31
  *  Notes     :
  *
  * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
@@ -117,7 +117,7 @@ resync_active_file(
 		old_group = my_strdup(CURR_GROUP.name);
 
 	write_newsrc();
-	read_news_active_file();
+	read_news_active_file(FALSE);
 
 #ifdef HAVE_MH_MAIL_HANDLING
 	read_mail_active_file();
@@ -361,11 +361,11 @@ do_read_newsrc_active_file(
 #ifdef NNTP_ABLE
 	t_bool need_auth = FALSE;
 	char *ngnames[NUM_SIMULTANEOUS_GROUP_COMMAND] = { NULL };
-	int index_i = 0, index_o = 0;
-	int respcode, i, j;
 	char fmt[25];
 	char buf[NNTP_STRLEN];
 	char line[NNTP_STRLEN];
+	int index_i = 0, index_o = 0;
+	int respcode, i, j;
 
 	snprintf(fmt, sizeof(fmt), "%%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%"T_ARTNUM_SFMT" %%%ds", NNTP_GRPLEN);
 #endif /* NNTP_ABLE */
@@ -542,9 +542,6 @@ read_newsrc_active_file(
 	void)
 {
 	FILE *fp;
-#ifdef NNTP_ABLE
-	t_bool need_auth;
-#endif /* NNTP_ABLE */
 
 	/*
 	 * return immediately if no .newsrc can be found or .newsrc is empty
@@ -556,7 +553,7 @@ read_newsrc_active_file(
 #ifndef NNTP_ABLE
 	do_read_newsrc_active_file(fp);
 #else
-	if ((need_auth = do_read_newsrc_active_file(fp)) == TRUE) {  /* delayed auth */
+	if (do_read_newsrc_active_file(fp)) {	/* delayed auth */
 		if (!authenticate(nntp_server, userid, FALSE)) {
 			fclose(fp);
 			tin_done(EXIT_FAILURE, _(txt_auth_failed), ERR_ACCESS);
@@ -784,7 +781,7 @@ read_active_counts(
  */
 int
 read_news_active_file(
-	void)
+	t_bool check_any_unread)
 {
 	FILE *fp;
 	int newgrps = 0;
@@ -948,10 +945,13 @@ read_news_active_file(
 
 	/*
 	 * finally we have a list of all groups and can set the attributes
+	 * if required
 	 */
+	if (!check_any_unread) {
 	BegStopWatch();
 	assign_attributes_to_groups();
 	EndStopWatch("assign_attributes_to_groups()");
+	}
 
 	return newgrps;
 }

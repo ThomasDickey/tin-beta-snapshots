@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-18
+ *  Updated   : 2024-11-08
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>
@@ -390,7 +390,7 @@ extern char local_config_file[PATH_LEN];
 extern char local_input_history_file[PATH_LEN];
 extern char local_motd_file[PATH_LEN];
 extern char local_newsgroups_file[PATH_LEN];
-extern char local_newsrctable_file[PATH_LEN];
+extern char newsrctable_file[PATH_LEN];
 extern char lock_file[PATH_LEN];
 extern char mail_news_user[LEN];
 extern char mailbox[PATH_LEN];
@@ -416,7 +416,7 @@ extern char spooldir[PATH_LEN];
 extern char subscriptions_file[PATH_LEN];
 extern char overviewfmt_file[PATH_LEN];
 extern char txt_help_bug_report[LEN];
-extern char userid[PATH_LEN];
+extern char userid[LOGIN_NAME_MAX];
 
 extern char domain_name[];
 

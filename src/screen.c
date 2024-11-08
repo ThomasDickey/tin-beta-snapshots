@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-17
+ *  Updated   : 2024-10-19
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -380,9 +380,10 @@ draw_arrow_mark(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			my_fputs("->", stdout);
 	} else {
-		char *buffer, *s;
-
+		char *s;
 #ifdef USE_CURSES
+		char *buffer;
+
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		buffer = my_malloc(MB_CUR_MAX * (size_t) (cCOLS + 1));
 #	else
@@ -440,8 +441,10 @@ erase_arrow(
 	if (tinrc.draw_arrow)
 		my_fputs("  ", stdout);
 	else {
+		char *s;
 #ifdef USE_CURSES
-		char *buffer, *s;
+		char *buffer;
+
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		buffer = my_malloc(MB_CUR_MAX * (size_t) (cCOLS + 1));
 #	else

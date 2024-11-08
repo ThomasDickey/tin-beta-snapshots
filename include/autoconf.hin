@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2024-10-18
+ *  Updated   : 2024-11-05
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2024 Thomas Dickey <dickey@invisible-island.net>
@@ -687,8 +687,11 @@
 #	undef HAVE_UNICODE_USTRING_H
 #	undef HAVE_UNICODE_UBIDI_H
 #	undef HAVE_UNICODE_UIDNA_H
+#	undef HAVE_UNICODE_UCNV_H
 #	undef HAVE_LIBICUUC
 #	undef HAVE_LIBICUUC_46_API
+#	undef HAVE_UCNV_OPEN
+#	undef HAVE_UBIDI_OPEN
 
 /*
  * GNU libunistring
@@ -883,9 +886,11 @@
 #	undef HAVE_SYS_TIUSER_H
 
 /*
+ * use arc4random_uniform() if found, otherwiese
  * use lanrand48/srand() if found, otherwiese
  * use random()/srandom() if found, otherwise use rand()/srand()
  */
+#	undef HAVE_ARC4RANDOM_UNIFORM
 #	undef HAVE_LRAND48
 #	undef HAVE_RANDOM
 #endif /* !TIN_AUTOCONF_H */

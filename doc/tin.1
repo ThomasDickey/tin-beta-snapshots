@@ -3,13 +3,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-08-11
+.\" Updated   : 2024-10-30
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
-.\"
-.IX Title "tin 1"
 .TH tin 1 "December 24th, 2023" "2.6.4" "Usenet newsreader"
 .\"
 .\"
@@ -18,7 +16,6 @@ tin, rtin \- Usenet newsreader
 .\"
 .\"
 .SH SYNOPSIS
-.IX Header SYNOPSIS
 .B tin
 .RB [\|[\| \-h \||\| \-H \||\| \-V \|]\ \||
 .RB [\|[\| \-a \|]
@@ -52,7 +49,6 @@ tin, rtin \- Usenet newsreader
 .\"
 .\"
 .SH DESCRIPTION
-.IX Header DESCRIPTION
 .B tin
 is a full-screen easy to use Usenet newsreader. It can read news locally
 (e.g., \fI/var/spool/news\fR) or remotely (\fBrtin\fP or \fBtin \-r\fP
@@ -81,7 +77,6 @@ newsgroup with unread articles.
 .\"
 .\"
 .SH "EXIT STATUS"
-.IX Header "EXIT STATUS"
 .\" TODO: also exits with signalnr caught as exit status
 .TP 12
 .B 0
@@ -98,7 +93,6 @@ NNTP error.
 .\"
 .\"
 .SH OPTIONS
-.IX Header OPTIONS
 .TP 12
 .B \-4
 Force connecting via IPv4 to the remote NNTP server. Only available when
@@ -330,7 +324,6 @@ will be chosen and a warning may be given.
 .\"
 .\"
 .SH USAGE
-.IX Header USAGE
 .\"
 .\"
 .SS "NEWS ADMINISTRATION"
@@ -3513,7 +3506,6 @@ find ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \\
 .\"
 .\"
 .SH FILES
-.IX Header FILES
 .\" TODO: mention dead.article, dead.articles
 .\"               .article[.$$], .cancel[.$$], .letter[.$$]?
 .\"       ${XDG_RUNTIME_DIR:\-"$HOME"}/.slrnfaces
@@ -3680,7 +3672,6 @@ For a detailed description see
 .\"
 .\"
 .SH ENVIRONMENT
-.IX Header ENVIRONMENT
 .\" TODO: - sort in a useful order
 .\"       - add undocumented env-vars (e.g. $DEV_TCP (SCO),
 .\"         ${HOST:-"$HOSTNAME"} fallback)
@@ -3734,9 +3725,9 @@ effect.
 .TP
 .B TIN_NOVFILENAME
 Define this variable if you want to override the \fBOVERVIEW_FILE\fP
-filename that was compiled into the \fBtin\fP binary, default is
-\fI.overview\fP. If \fBtin\fP is running in NNTP mode setting this variable
-has no effect.
+filename that was compiled into the \fBtin\fP binary, default
+is \fI.overview\fP. If \fBtin\fP is running in NNTP mode setting this
+variable has no effect.
 .TP
 .B TIN_ACTIVEFILE
 Define this variable if you want to override the \fBNEWSLIBDIR/active\fP
@@ -3823,6 +3814,11 @@ mailing operations within \fBtin\fP.
 .TP
 .B MAIL
 Full path to the user's mailbox.
+.TP
+.\" we don't support the %message || ?message notation
+.B MAILPATH
+A colon-separated list of filenames which are checked for new mail. This
+overrides the $\fBMAIL\fP variable.
 .TP
 .B VISUAL
 This variable has precedence over the default editor (i.e.,
@@ -4003,7 +3999,6 @@ The pathname of the user's dir to put non-essential run time files into.
 .\"
 .\"
 .SH SIGNALS
-.IX Header SIGNALS
 .\" TODO: add missing, sort useful, document in detail
 .B tin
 handles a couple of signals:
@@ -4028,7 +4023,6 @@ Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR-file.
 .\"
 .\"
 .SH SECURITY
-.IX Header SECURITY
 If \fBtin\fP is started in debug mode (''\fB\-D n\fP'') it will create
 world readable files in \fB$TMPDIR\fP which may contain sensitive data
 like the users NNTP password in cleartext (if running verbose). On
@@ -4046,7 +4040,6 @@ option in conjunction with ''\fB\-C\fP'' circumvents this behavior.
 .\"
 .\"
 .SH "CONFORMING TO"
-.IX Header "CONFORMING TO"
 .B tin
 does conform to the Base Definitions volume of IEEE Std 1003.1-2008, Section
 12, Utility Conventions (Utility Argument Syntax, Utility Syntax Guidelines).
@@ -4055,7 +4048,6 @@ does conform to the Base Definitions volume of IEEE Std 1003.1-2008, Section
 .\"
 .\"
 .SH NOTES
-.IX Header NOTES
 Regular expression support is provided by the PCRE library package
 .BR \%pcre (3)
 or
@@ -4067,7 +4059,6 @@ by the University of Cambridge, England.
 .\"
 .\"
 .SH BUGS
-.IX Header BUGS
 .BR CNews \0NNTPd,
 .BR \%noffle (1)
 (<= V1.0-pre5) and
@@ -4092,7 +4083,6 @@ your bug-report until we request it.
 .\"
 .\"
 .SH HISTORY
-.IX Header HISTORY
 \fBtin\fP is based on the
 .BR \%tass (1)
 newsreader that was developed by Rich Skrenta and posted to alt.sources in
@@ -4156,7 +4146,6 @@ Urs Janssen <urs@tin.org>
 .\"
 .\"
 .SH "SEE ALSO"
-.IX Header "SEE ALSO"
 .BR \%elm (1),
 .BR \%emacs (1),
 .BR \%gpg (1),

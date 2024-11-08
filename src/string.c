@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2024-10-17
+ *  Updated   : 2024-10-28
  *  Notes     :
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
@@ -287,6 +287,9 @@ my_toupper(
 }
 
 
+/*
+ * TODO: add a wide char variant "wchar *wstr_lwr(wchar *wc)"
+ */
 void
 str_lwr(
 	char *str)
@@ -854,7 +857,7 @@ char2wchar_t(
 	}
 
 	/* if ((len = mbstowcs(NULL, test, 0) == (size_t) (-1)) { free(test); return NULL; } */
-	wstr = my_calloc(1, (len + 1) * sizeof(wchar_t));
+	wstr = my_calloc(len + 1, sizeof(wchar_t));
 	/* pos = */ mbstowcs(wstr, test, len);
 	/* wstr[pos == (size_t) (-1) ? 0 : pos] = '\0'; */
 	free(test);
@@ -1153,7 +1156,7 @@ wstrunc(
 		if (wtmp2)
 			wtmp = my_realloc(wtmp2, sizeof(wchar_t) * (wcslen(wtmp2) + len_tail + 1));	/* wtmp2 isn't valid anymore and doesn't have to be free()ed */
 		else
-			wtmp = my_calloc(1, sizeof(wchar_t) * (len_tail + 1));
+			wtmp = my_calloc(len_tail + 1, sizeof(wchar_t));
 
 		if (tail && *tail)
 			wcscat(wtmp, tail);

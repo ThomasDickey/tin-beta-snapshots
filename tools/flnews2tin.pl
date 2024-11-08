@@ -15,7 +15,7 @@ use strict;
 use warnings;
 
 # version Number
-# my $version = "0.0.7";
+# my $version = "0.0.8";
 
 my ($line, $target, $type, $score, $string, $prefix, $suffix, @comments);
 
@@ -29,7 +29,7 @@ while (defined($line = <>)) {
     next if ($line =~ m/^(?:\s|$)/);
 
     # save comments
-    if ($line =~ s/^#\s*//) {
+    if ($line =~ s/^\#\s*(\S.*)$/$1/) {
         push @comments, $line;
         next;
     }

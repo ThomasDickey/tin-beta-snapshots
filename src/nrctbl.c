@@ -71,7 +71,7 @@ write_newsrctable_file(
 {
 	FILE *fp;
 
-	if ((fp = fopen(local_newsrctable_file, "w")) == NULL)
+	if ((fp = fopen(newsrctable_file, "w")) == NULL)
 		return;
 
 	fprintf(fp, _(txt_nrctbl_info), PRODUCT, VERSION);
@@ -79,7 +79,7 @@ write_newsrctable_file(
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
 #else
 #	ifdef HAVE_CHMOD
-	chmod(local_newsrctable_file, (mode_t) (S_IRUSR|S_IWUSR));
+	chmod(newsrctable_file, (mode_t) (S_IRUSR|S_IWUSR));
 #	endif /* HAVE_CHMOD */
 #endif /* HAVE_FCHMOD */
 	fclose(fp);
@@ -106,7 +106,7 @@ get_nntpserver(
 	int line_entry_counter;
 	t_bool found = FALSE;
 
-	if ((fp = tin_fopen(local_newsrctable_file, "r")) != NULL) {
+	if ((fp = tin_fopen(newsrctable_file, "r")) != NULL) {
 		while ((fgets(line, sizeof(line), fp) != NULL) && !found) {
 			line_entry_counter = 0;
 
@@ -151,7 +151,7 @@ get_newsrcname(
 	int found = 0;
 	t_bool do_cpy = FALSE;
 
-	if ((fp = tin_fopen(local_newsrctable_file, "r")) != NULL) {
+	if ((fp = tin_fopen(newsrctable_file, "r")) != NULL) {
 		char *ns, *nsp, *p, *q;
 		size_t l = strlen(nntpserver_name) + 8; /* []:65535\0 */
 

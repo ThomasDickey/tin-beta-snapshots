@@ -820,7 +820,7 @@ prompt_slk_response(
 				case KEYMAP_PAGE_UP:
 				case KEYMAP_HOME:
 				case KEYMAP_END:
-					ch = '\0';
+					ch = '\0'; /* <- do not remove this! */
 					func = NOT_ASSIGNED;
 					break;
 

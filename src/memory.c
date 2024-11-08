@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-25
+ *  Updated   : 2024-10-28
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -101,7 +101,7 @@ init_alloc(
 
 	active = my_malloc(sizeof(*active) * (size_t) max_active);
 	newnews = my_malloc(sizeof(*newnews) * (size_t) max_newnews);
-	my_group = my_calloc(1, sizeof(int) * (size_t) max_active);
+	my_group = my_calloc((size_t) max_active, sizeof(int));
 
 	/*
 	 * article headers array
@@ -109,10 +109,10 @@ init_alloc(
 	max_art = DEFAULT_ARTICLE_NUM;
 	max_base = DEFAULT_ARTICLE_NUM;
 
-	arts = my_calloc(1, sizeof(*arts) * (size_t) max_art);
+	arts = my_calloc((size_t) max_art, sizeof(*arts));
 	base = my_malloc(sizeof(t_artnum) * (size_t) max_base);
 
-	ofmt = my_calloc(1, sizeof(*ofmt) * 9);	/* initial number of overview fields */
+	ofmt = my_calloc(9, sizeof(*ofmt));	/* initial number of overview fields */
 
 	/*
 	 * save file array
@@ -159,7 +159,7 @@ expand_active(
 	max_active += max_active >> 1;		/* increase by 50% */
 	if (active == NULL) {
 		active = my_malloc(sizeof(*active) * (size_t) max_active);
-		my_group = my_calloc(1, sizeof(int) * (size_t) max_active);
+		my_group = my_calloc((size_t) max_active, sizeof(int));
 	} else {
 		active = my_realloc(active, sizeof(*active) * (size_t) max_active);
 		my_group = my_realloc(my_group, sizeof(int) * (size_t) max_active);
@@ -646,6 +646,13 @@ my_calloc1(
 }
 
 
+/*
+ * TODO: add fallback code with
+ *        q = malloc(nmemb * size); memmove(q, p, size); free(p)?
+ *
+ * for size = 0 and p != NULL, we do what glibc does and
+ * ignore ISO C 23 § 7.24.3.7 ("undefined behavior").
+ */
 void *
 my_realloc1(
 	const char *file,

@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2024-10-16
+ *  Updated   : 2024-11-06
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2024 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -42,12 +42,13 @@
 #	include "tin.h"
 #endif /* !TIN_H */
 
-#if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
-#	include <unicode/utypes.h>
-#	include <unicode/localpointer.h>
-#	include <unicode/uenum.h>
-#	include <unicode/ucsdet.h>
-#endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
+#ifdef CHARSET_CONVERSION
+#	ifdef USE_ICU_UCSDET
+#		include <unicode/utypes.h>
+#		include <unicode/uenum.h>
+#		include <unicode/ucsdet.h>
+#	endif /* USE_ICU_UCSDET */
+#endif /* CHARSET_CONVERSION */
 
 /*
  *  Table for the iso2asc conversion
@@ -183,11 +184,10 @@ convert_iso2asc(
 	constext *p;
 	constext *const *tab;
 	char *asc;
-	t_bool first;	/* flag for first SPACE/TAB after other characters */
 	int i, a;	/* column counters in iso and asc */
+	t_bool first;	/* flag for first SPACE/TAB after other characters */
 
 	asc = *asc_buffer;
-
 	if (iso == NULL || asc == NULL)
 		return;
 
@@ -333,7 +333,6 @@ convert_tex2iso(
 
 	*to = '\0';
 	len = strlen(from);
-
 	while (col < len) {
 		i = 0;
 		ex = FALSE;
@@ -353,7 +352,6 @@ convert_tex2iso(
 			strncat(to, SPACES, spaces);
 			spaces = 0;
 		}
-
 		col++;
 	}
 }
@@ -366,25 +364,24 @@ t_bool
 is_art_tex_encoded(
 	FILE *fp)
 {
-	char line[LEN];
+	char *line;
 	int i, len;
 	t_bool body = FALSE;
 
 	rewind(fp);
+	while ((line = tin_fgets(fp, FALSE)) != NULL) {
+		if (!body) {
+			if (!*line)
+				body = TRUE;
 
-	while (fgets(line, (int) sizeof(line), fp) != NULL) {
-		if (line[0] == '\n' && !body)
-			body = TRUE;
-		else if (!body)
 			continue;
+		}
 
 		i = 0;
-
 		while (line[i++] == ' ')
 			;	/* search for first non blank */
 
 		i--;
-
 		if (!isalnum((unsigned char) line[i]) && line[i] != '\"')
 			continue;	/* quoting char */
 
@@ -396,7 +393,6 @@ is_art_tex_encoded(
 				return TRUE;
 		}
 	}
-
 	return FALSE;
 }
 
@@ -419,11 +415,9 @@ convert_to_printable(
 
 	if ((wbuffer = char2wchar_t(buf)) != NULL) {
 		wconvert_to_printable(wbuffer, keep_tab);
-
 		if ((buffer = wchar_t2char(wbuffer)) != NULL) {
 			strncpy(buf, buffer, len);
 			buf[len - 1] = '\0';
-
 			free(buffer);
 		}
 		free(wbuffer);
@@ -457,7 +451,6 @@ wconvert_to_printable(
 		if (!iswprint((wint_t) *wc) && !(keep_tab && *wc == (wchar_t) '\t'))
 			*wc = (wchar_t) '?';
 	}
-
 	return wbuf;
 }
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -486,25 +479,41 @@ charset_unsupported(
 		NULL };
 	const char **charsetptr = charsets;
 	t_bool ret = FALSE;
-#ifdef CHARSET_CONVERSION
-	iconv_t cd;
-#endif /* CHARSET_CONVERSION */
 
 	if (!charset)
 		return ret;
 
 	do {
 		if (!strncasecmp(charset, *charsetptr, strlen(*charsetptr)))
-			ret = TRUE;
-	} while (!ret && *(++charsetptr) != NULL);
+			return TRUE;
+	} while (*(++charsetptr) != NULL);
 
 #ifdef CHARSET_CONVERSION
-	if (!ret) {
-		if ((cd = iconv_open("UCS-4", charset)) == (iconv_t) (-1))
-			ret = TRUE;
-		else
+#	ifdef CHARSET_CONVERSION_ICONV
+	{
+		iconv_t cd;
+
+		if ((cd = iconv_open("UCS-4", charset)) != (iconv_t) (-1)) {
 			iconv_close(cd);
+			return ret;
+		}
 	}
+#	endif /* CHARSET_CONVERSION_ICONV */
+#	ifdef CHARSET_CONVERSION_UCNV
+	/* check if icu can handle it */
+	{
+		UErrorCode err = U_ZERO_ERROR;
+		UConverter *test = ucnv_open(charset, &err);
+
+		if (U_FAILURE(err)) {
+#if defined(DEBUG) && defined(DEBUG_UCNV)
+			wait_message(2, "UCNV: %s (%s:%d) %s", u_errorName(err), __FILE__, __LINE__, charset);
+#endif /* DEBUG && DEBUG_UCNV */
+			ret = TRUE;
+		} else
+			ucnv_close(test);
+	}
+#	endif /* CHARSET_CONVERSION_UCNV */
 #endif /* CHARSET_CONVERSION */
 
 	return ret;
@@ -519,7 +528,7 @@ guess_charset(
 {
 	char *guessed_charset = NULL;
 	const char *p_match = NULL;
-	UCharsetDetector *detector = NULL;
+	UCharsetDetector *detector;
 	const UCharsetMatch *match;
 	UErrorCode status = 0;
 
@@ -570,7 +579,7 @@ validate_charset(
 {
 	const char *c = charset;
 
-	if (!charset)
+	if (!charset || strlen(charset) > 40) /* RFC 2978 2.3 */
 		return NULL;
 
 	while (*c) {

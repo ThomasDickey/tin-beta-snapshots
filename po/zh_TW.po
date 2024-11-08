@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-19 10:09+0200\n"
+"POT-Creation-Date: 2024-10-30 09:02+0100\n"
 "PO-Revision-Date: 2015-10-08 12:13+0800\n"
 "Last-Translator: Wei-Lun Chao <bluebat@member.fsf.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -5334,8 +5334,7 @@ msgid "Continuing..."
 msgstr "列印中…"
 
 #: src/lang.c:1501
-#, c-format
-msgid "Read timeout from server (%d seconds) - quit tin?"
+msgid "Read timeout from server - quit tin?"
 msgstr ""
 
 #: src/lang.c:1502
@@ -8986,11 +8985,11 @@ msgstr ""
 "\n"
 "伺服器已逾時，嘗試重新連線 # %d\n"
 
-#: src/nntplib.c:1004 src/nntplib.c:2115
+#: src/nntplib.c:1004 src/nntplib.c:2114
 msgid "Rejoin current group\n"
 msgstr "重新連結目前的群組\n"
 
-#: src/nntplib.c:1013 src/nntplib.c:2124
+#: src/nntplib.c:1013 src/nntplib.c:2123
 #, c-format
 msgid "Read (%s)\n"
 msgstr "已讀 (%s)\n"
@@ -9000,15 +8999,15 @@ msgstr "已讀 (%s)\n"
 msgid "Resend last command (%s)\n"
 msgstr "重新發送最近的命令 (%s)\n"
 
-#: src/read.c:361
+#: src/read.c:358
 msgid "Aborted read\n"
 msgstr "已放棄讀取\n"
 
-#: src/read.c:416
+#: src/read.c:413
 msgid "Draining\n"
 msgstr "排放\n"
 
-#: src/refs.c:656
+#: src/refs.c:654
 msgid "[- Unavailable -]"
 msgstr "[- 無法使用 -]"
 

@@ -54,7 +54,7 @@
 #include <stdlib.h>
 #else
 extern void exit(int);
-extern void free(void*);
+extern void free(void *);
 #endif /* HAVE_STDLIB_H */
 
 #ifndef EXIT_SUCCESS
@@ -76,10 +76,10 @@ extern void *malloc(size_t);
 #ifdef HAVE_STRING_H
 #include <string.h>
 #else
-extern char* strcpy(char*, const char *);
-extern int strcmp(const char*, const char *);
-extern int strncmp(const char*, const char *, size_t);
-extern size_t strlen(const char*);
+extern char *strcpy(char *, const char *);
+extern int strcmp(const char *, const char *);
+extern int strncmp(const char *, const char *, size_t);
+extern size_t strlen(const char *);
 #endif /* HAVE_STRING_H */
 
 #include <stdio.h>
@@ -147,7 +147,7 @@ store_data(
 	MYDATA *p, *q;
 
 	if ((p = (MYDATA *) malloc(sizeof(MYDATA))) == NULL)
-		failed("malloc() failed");
+		failed("malloc() failed ");
 
 	p->link = NULL;
 	p->name = string_dup(name);

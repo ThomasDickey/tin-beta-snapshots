@@ -91,6 +91,7 @@ hash_groupname(
 		hash_value = (hash_value << 1) ^ *ptr++;
 		if (++len & 7)
 			continue;
+
 		hash_value %= TABLE_SIZE;
 	}
 	hash_value %= TABLE_SIZE;
@@ -139,6 +140,7 @@ find_group_index(
 		while (i >= 0) {
 			if (!strcasecmp(group, active[i].name))
 				return i;
+
 			i = active[i].next;
 		}
 	}

@@ -2498,10 +2498,10 @@ config_page(
 								if (!*tinrc.strip_was_regex) {
 									if (regex_use_utf8()) {
 										free(tinrc.strip_was_regex);
-										tinrc.strip_was_regex  = my_strdup(DEFAULT_U8_STRIP_WAS_REGEX);
+										tinrc.strip_was_regex = my_strdup(DEFAULT_U8_STRIP_WAS_REGEX);
 									} else {
 										free(tinrc.strip_was_regex);
-										tinrc.strip_was_regex  = my_strdup(DEFAULT_STRIP_WAS_REGEX);
+										tinrc.strip_was_regex = my_strdup(DEFAULT_STRIP_WAS_REGEX);
 									}
 								}
 								compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);

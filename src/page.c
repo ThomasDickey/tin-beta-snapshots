@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-17
+ *  Updated   : 2024-11-01
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -609,7 +609,8 @@ page_goto_next_unread:
 
 			case PAGE_TOP_THREAD:	/* first article in current thread */
 				if (arts[this_resp].prev >= 0) {
-					if ((n = which_thread(this_resp)) >= 0 && base[n] != this_resp) {
+					n = which_thread(this_resp);
+					if (n >= 0 && base[n] != this_resp) {
 						assert(n < grpmenu.max);
 						if ((i = load_article((int) base[n], group)) < 0) {
 							XFACE_CLEAR();
@@ -623,7 +624,7 @@ page_goto_next_unread:
 				for (i = this_resp; i >= 0; i = arts[i].thread)
 					n = i;
 
-				if (n != this_resp) {
+				if (n != this_resp && n >= 0) {
 					if ((i = load_article(n, group)) < 0) {
 						XFACE_CLEAR();
 						return i;
@@ -662,7 +663,7 @@ page_goto_next_unread:
 				break;
 
 			case PAGE_TOGGLE_TEX2ISO:		/* toggle German TeX to ISO latin1 style conversion */
-				if (((group->attribute->tex2iso_conv) = !(group->attribute->tex2iso_conv)))
+				if ((group->attribute->tex2iso_conv = bool_not(group->attribute->tex2iso_conv)))
 					pgart.tex2iso = is_art_tex_encoded(pgart.raw);
 				else
 					pgart.tex2iso = FALSE;

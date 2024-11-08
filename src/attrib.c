@@ -1890,7 +1890,7 @@ dump_attributes(
 			debug_print_file("ATTRIBUTES", "\tverbatim_handling=%s", print_boolean(group->attribute->verbatim_handling));
 			debug_print_file("ATTRIBUTES", "\twrap_on_next_unread=%s", print_boolean(group->attribute->wrap_on_next_unread));
 			debug_print_file("ATTRIBUTES", "\tpost_process_type=%d", group->attribute->post_process_type);
-			debug_print_file("ATTRIBUTES", "\tquick_kill_scope=%s",  DEBUG_PRINT_BLANK_IF_NULL(quick_kill_scope));
+			debug_print_file("ATTRIBUTES", "\tquick_kill_scope=%s", DEBUG_PRINT_BLANK_IF_NULL(quick_kill_scope));
 			debug_print_file("ATTRIBUTES", "\tquick_kill_case=%s", print_boolean(group->attribute->quick_kill_case));
 			debug_print_file("ATTRIBUTES", "\tquick_kill_expire=%s", print_boolean(group->attribute->quick_kill_expire));
 			debug_print_file("ATTRIBUTES", "\tquick_kill_header=%d", group->attribute->quick_kill_header);

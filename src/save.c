@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-17
+ *  Updated   : 2024-10-20
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -805,7 +805,7 @@ post_process_uud(
 	char file_out_dir[PATH_LEN];
 	char path[PATH_LEN];
 	const char *eptr;
-	int i, r;
+	int i;
 	int count;
 	int errors = 0;
 	uulist *item;
@@ -842,7 +842,7 @@ post_process_uud(
 	my_printf(cCRLF);
 
 	while (item != NULL) {
-		if ((r = UUDecodeFile(item, NULL)) == UURET_OK) {
+		if (UUDecodeFile(item, NULL) == UURET_OK) {
 
 /* TODO: test for multiple things per article decoded okay? */
 			count++;
@@ -864,7 +864,7 @@ post_process_uud(
 				eptr = _(txt_uu_error_no_end);
 			else if (item->state & UUFILE_NODATA)
 				eptr = _(txt_libuu_error_no_data);
-			else /* add UUstrerror(r) here?*/
+			else
 				eptr = _(txt_libuu_error_unknown);
 
 			my_printf(_(txt_uu_error_decode), (item->filename) ? item->filename : item->subfname, eptr);

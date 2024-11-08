@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-17
+ *  Updated   : 2024-11-07
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -145,7 +145,7 @@ find_base(
 		if (grpmenu.max >= max_base)
 			expand_base();
 
-		if (group->attribute->show_only_unread_arts) {
+		if (group->attribute && group->attribute->show_only_unread_arts) {
 			if (arts[i].status != ART_READ || arts[i].keep_in_base)
 				base[grpmenu.max++] = i;
 			else {
@@ -161,7 +161,7 @@ find_base(
 			base[grpmenu.max++] = i;
 	}
 	/* sort base[] */
-	if (group->attribute->sort_threads_type > SORT_THREADS_BY_NOTHING)
+	if (group->attribute && group->attribute->sort_threads_type > SORT_THREADS_BY_NOTHING)
 		sort_base(group->attribute->sort_threads_type);
 }
 
@@ -208,7 +208,7 @@ static t_artnum
 setup_hard_base(
 	struct t_group *group)
 {
-	t_artnum total = 0;
+	t_artnum total = T_ARTNUM_CONST(0);
 
 	grpmenu.max = 0;
 
@@ -221,7 +221,7 @@ setup_hard_base(
 		char line[NNTP_STRLEN];
 		int getart_limit = (cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit;
 		FILE *fp;
-		t_artnum last, start, count = 0, j = 0;
+		t_artnum last, start, count = T_ARTNUM_CONST(0), j = T_ARTNUM_CONST(0);
 		static t_bool skip_listgroup = FALSE;
 
 		/*
@@ -556,7 +556,7 @@ index_group(
 				debug_print_comment("art.c: index_group() purging...");
 #endif /* DEBUG */
 			art_mark(group, &arts[i], ART_READ);
-			if (group->attribute->show_only_unread_arts)
+			if (group->attribute && group->attribute->show_only_unread_arts)
 				arts[i].keep_in_base = FALSE;
 		}
 		if (!path_in_nov && arts[i].path && *arts[i].path != '\0')
@@ -756,7 +756,7 @@ read_art_headers(
 	int i;
 	int modified = 0;
 	t_artnum art;
-	t_artnum head_next = -1; /* Reset the next article number index (for when HEAD fails) */
+	t_artnum head_next = T_ARTNUM_CONST(-1); /* Reset the next article number index (for when HEAD fails) */
 	t_bool res;
 
 	/*
@@ -1077,9 +1077,8 @@ global_look_for_multipart(
 	char start,
 	char stop)
 {
-	char *pch;
+	char *pch = strrchr(arts[aindex].subject, start);
 
-	pch = strrchr(arts[aindex].subject, start);
 	if (!pch || !isdigit((unsigned char) pch[1]))
 		return FALSE;
 
@@ -1273,7 +1272,7 @@ make_threads(
 	 * on arts[] and so the base messages under all threading systems
 	 * will be sorted in this way.
 	 */
-	sort_arts(group->attribute->sort_article_type);
+	sort_arts(group->attribute ? group->attribute->sort_article_type : SORT_ARTICLES_BY_NOTHING);
 
 	/*
 	 * Reset all the ptrs to articles following the above sort
@@ -1284,7 +1283,7 @@ make_threads(
 	 * The threading pointers need to be reset if re-threading
 	 * If using ref threading, revector the links back to the articles
 	 */
-	if (rethread || group->attribute->thread_articles) {
+	if (rethread || (group->attribute && group->attribute->thread_articles)) {
 		int i;
 
 		for_each_art(i) {
@@ -1313,7 +1312,7 @@ make_threads(
 	/*
 	 * Do the right thing according to the threading strategy
 	 */
-	switch (group->attribute->thread_articles) {
+	switch (group->attribute ? group->attribute->thread_articles : THREAD_NONE) {
 		case THREAD_NONE:
 			break;
 
@@ -1443,9 +1442,7 @@ parse_headers(
 	struct t_article *h)
 {
 	char *s, *hdr, *ptr;
-	t_bool got_from, got_lines;
-
-	got_from = got_lines = FALSE;
+	t_bool got_from = FALSE, got_lines = FALSE;
 
 	while ((ptr = tin_fgets(fp, TRUE)) != NULL) {
 		/*
@@ -1542,7 +1539,6 @@ parse_headers(
 			default:
 				break;
 		} /* switch */
-
 	} /* while */
 
 #ifdef NNTP_ABLE
@@ -1799,7 +1795,7 @@ get_path_header(
 	}
 
 	if (fp) {
-		t_artnum j = 0;
+		t_artnum j = T_ARTNUM_CONST(0);
 
 		prep_msg = fmt_string(_(txt_prep_for_filter_on_path), cur, cnt);
 		while ((buf = tin_fgets(fp, FALSE)) != NULL && buf[0] != '.') {
@@ -2134,7 +2130,6 @@ read_overview(
 					}
 
 					if (!strcasecmp(ofmt[count].name, "From:")) {
-
 						if (*ptr)
 							build_mailbox_list(art, ptr);
 						else {
@@ -2374,7 +2369,6 @@ read_overview(
 							if ((debug & DEBUG_NNTP) && verbose > 1 && strcasecmp(ofmt[count].name, "Path:"))
 								debug_print_file("NNTP", "\tUsing as \"Path:\" not \"%s\"", ofmt[count].name);
 #endif /* DEBUG */
-
 						}
 						continue;
 					}
@@ -2399,7 +2393,7 @@ read_overview(
 	}
 #	if defined(DEBUG) && defined(NNTP_ABLE)
 	/* log end of multiline response to get timing data */
-	if ((debug & DEBUG_NNTP) && !verbose)
+	if ((debug & DEBUG_NNTP) && fp == FAKE_NNTP_FP && !verbose)
 		debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
 #	endif /* DEBUG && NNTP_ABLE */
 
@@ -2609,7 +2603,7 @@ write_overview(
 	if ((fp = open_xover_fp(group, "w", T_ARTNUM_CONST(0), T_ARTNUM_CONST(0), FALSE)) == NULL)
 		return;
 
-	if (group->attribute->sort_article_type != SORT_ARTICLES_BY_NOTHING)
+	if (group->attribute && group->attribute->sort_article_type != SORT_ARTICLES_BY_NOTHING)
 		SortBy(artnum_comp);
 
 	/*
@@ -2619,7 +2613,7 @@ write_overview(
 
 #ifdef CHARSET_CONVERSION
 	/* get undeclared_charset number if required */
-	if (group->attribute->undeclared_charset && *group->attribute->undeclared_charset) {
+	if (group->attribute && group->attribute->undeclared_charset && *group->attribute->undeclared_charset) {
 		for (i = 0; txt_mime_charsets[i] != NULL; i++) {
 			if (!strcasecmp(*group->attribute->undeclared_charset, txt_mime_charsets[i])) {
 				c = i;
@@ -2640,12 +2634,12 @@ write_overview(
 		if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
 			ref = NULL;
 
-			if (!group->attribute->post_8bit_header) { /* write encoded data */
+			if (group->attribute && !group->attribute->post_8bit_header) { /* write encoded data */
 				/*
 				 * TODO: instead of tinrc.mm_local_charset we'd better use UTF-8
 				 *       here and in print_from() in the CHARSET_CONVERSION case.
 				 *       note that this requires something like
-				 *          buffer_to_network(article->subject, "UTF-8");
+				 *          buffer_to_network(&article->subject, "UTF-8");
 				 *       right before the rfc1522_encode() call.
 				 *
 				 *       if we would cache the original undecoded data, we could
@@ -2657,8 +2651,8 @@ write_overview(
 			} else { /* raw data */
 				p = my_strdup(article->subject);
 #ifdef CHARSET_CONVERSION
-				if (group->attribute->undeclared_charset && *group->attribute->undeclared_charset && c != -1) /* use undeclared_charset if set (otherwise local charset is used) */
-					buffer_to_network(p, c);
+				if (group->attribute && group->attribute->undeclared_charset && *group->attribute->undeclared_charset && c != -1) /* use undeclared_charset if set (otherwise local charset is used) */
+					buffer_to_network(&p, c);
 #endif /* CHARSET_CONVERSION */
 			}
 
@@ -3440,16 +3434,23 @@ print_from(
 			q = my_strdup(mb->name);
 #ifdef CHARSET_CONVERSION
 			if (charset != -1)
-				buffer_to_network(q, charset);
+				buffer_to_network(&q, charset);
 #else
 			(void) charset;
 #endif /* CHARSET_CONVERSION */
 			p = rfc1522_encode(mb->name, tinrc.mm_local_charset, FALSE);
 			unfold_header(p);
-			if (strpbrk(mb->name, "\".:;<>@[]()\\") != NULL && mb->name[0] != '"' && mb->name[strlen(mb->name)] != '"')
-				snprintf(single_from, sizeof(single_from), "\"%s\" <%s>", group->attribute->post_8bit_header ? q : p, mb->from);
-			else
-				snprintf(single_from, sizeof(single_from), "%s <%s>", group->attribute->post_8bit_header ? q : p, mb->from);
+			if (strpbrk(mb->name, "\".:;<>@[]()\\") != NULL && mb->name[0] != '"' && mb->name[strlen(mb->name)] != '"') {
+				if (group->attribute)
+					snprintf(single_from, sizeof(single_from), "\"%s\" <%s>", group->attribute->post_8bit_header ? q : p, mb->from);
+				else
+					snprintf(single_from, sizeof(single_from), "\"%s\" <%s>", tinrc.post_8bit_header ? q : p, mb->from);
+			} else {
+				if (group->attribute)
+					snprintf(single_from, sizeof(single_from), "%s <%s>", group->attribute->post_8bit_header ? q : p, mb->from);
+				else
+					snprintf(single_from, sizeof(single_from), "%s <%s>", tinrc.post_8bit_header ? q : p, mb->from);
+			}
 
 			free(p);
 			free(q);

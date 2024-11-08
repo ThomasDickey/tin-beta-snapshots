@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-11-06
  *  Notes     :
  *
  * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -271,6 +271,22 @@ main(
 	read_server_config();
 
 	if (read_news_via_nntp && !read_saved_news) {
+		if (use_nntps && !insecure_nntps) { /* RFC 8143 "3.3 Server Name Indication" */
+			unsigned is_ip = 0;
+
+			if (strchr(nntp_server, ':')) /* IPv6 */
+				is_ip = 6;
+			else
+				is_ip = (sscanf(nntp_server, "%*u.%*u.%*u.%*u") == 4) ? 4 : 0;
+
+        	if (is_ip) {
+	                error_message(2, "Can't use literal IPv%d-address %s with TLS (-T)", is_ip, nntp_server); /*TODO: mention -k? _() and -> lang.c? */
+	                FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
+	                free_all_arrays();
+	                giveup();
+	        }
+        }
+
 		if (use_nntps && tintls_init()) {
 			tintls_exit();
 			FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
@@ -356,10 +372,13 @@ main(
 	 * $AUTOSUBSCRIBE groups
 	 */
 	no_write = tmp_no_write;
-	if (!read_attributes_file(TRUE))
-		global_attributes_file[0] = '\0';
-	read_attributes_file(FALSE);
-	start_groupnum = read_news_active_file();
+	if (!check_any_unread) {
+		if (!read_attributes_file(TRUE))
+			global_attributes_file[0] = '\0';
+
+		read_attributes_file(FALSE);
+	}
+	start_groupnum = read_news_active_file(check_any_unread);
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
 		debug_print_active();
@@ -369,7 +388,8 @@ main(
 	 * Read in users filter preferences file. This has to be done before
 	 * quick post because the filters might be updated.
 	 */
-	read_filter_file(filter_file);
+	if (!update_index)
+		read_filter_file(filter_file);
 
 	no_write = TRUE;
 #ifdef DEBUG
@@ -517,6 +537,9 @@ main(
  *   U update index files in background
  * reused with different function:
  *   C was count articles, now is activate COMPRESS DEFLATE
+ *   p was set printer-cmd., now is nntp-port
+ *
+ * unused: [bBeEFijJKOPU01235789]
  */
 #define OPTIONS "46aAcCdD:f:g:G:hHI:klL:m:M:nNop:qQrRs:St:TuvVwxXzZ"
 #define TRCVAL	(envtinrc && *envtinrc ? _(txt_useless_comb_tinrcval) : "\n")
@@ -769,7 +792,7 @@ read_cmd_line_options(
 								str_trim(cmdline.nntpserver);
 								{
 #		if defined(HAVE_INET_PTON) && defined(AF_INET6)
-									struct in_addr inaddr;
+									struct in6_addr inaddr;
 
 									(void) j; /* silence unused-but-set */
 									if (inet_pton(AF_INET6, cmdline.nntpserver, &inaddr) != 1)
@@ -1171,6 +1194,22 @@ read_cmd_line_options(
 		wait_message(2, _(txt_useless_combination), "-u", "-L", "-u", TRCVAL);
 		update_index = FALSE;
 	}
+	if (update_index && post_postponed_and_exit) {
+		wait_message(2, _(txt_useless_combination), "-u", "-o", "-u", TRCVAL);
+		update_index = FALSE;
+	}
+	if (update_index && no_write) {
+		wait_message(2, _(txt_useless_combination), "-u", "-X", "-u", TRCVAL);
+		update_index = FALSE;
+	}
+	if (update_index && check_any_unread) {
+		wait_message(2, _(txt_useless_combination), "-u", "-Z", "-u", TRCVAL);
+		update_index = FALSE;
+	}
+	if (start_any_unread && update_index) {
+		wait_message(2, _(txt_useless_combination), "-u", "-z", "-u", TRCVAL);
+		update_index = FALSE;
+	}
 	if (newsrc_active && read_saved_news) {
 		wait_message(2, _(txt_useless_combination), "-n", "-R", "-n", TRCVAL);
 		newsrc_active = read_news_via_nntp = FALSE;
@@ -1201,6 +1240,10 @@ read_cmd_line_options(
 	}
 	if (check_any_unread && cmdline.msgid) {
 		wait_message(2, _(txt_useless_combination), "-Z", "-L", "-Z", TRCVAL);
+		check_any_unread = FALSE;
+	}
+	if (check_any_unread && post_postponed_and_exit) {
+		wait_message(2, _(txt_useless_combination), "-Z", "-o", "-Z", TRCVAL);
 		check_any_unread = FALSE;
 	}
 #ifdef DEBUG

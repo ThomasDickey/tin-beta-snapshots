@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2024-10-11
+ *  Updated   : 2024-11-08
  *
  * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -44,7 +44,6 @@
 #endif /* !TNNTP_H */
 
 static const char *get_full_name(void);
-static const char *get_user_name(void);
 
 
 /* find hostname */
@@ -224,33 +223,12 @@ get_user_info(
 {
 	const char *ptr;
 
-	user_name[0] = '\0';
 	full_name[0] = '\0';
 
 	if ((ptr = get_full_name()))
 		strcpy(full_name, ptr);
-	if ((ptr = get_user_name()))
-		strcpy(user_name, ptr);
-}
 
-
-static const char *
-get_user_name(
-	void)
-{
-	static char username[128];
-	struct passwd *pw;
-
-	username[0] = '\0';
-
-	if ((pw = getpwuid(getuid())) != NULL)
-		STRCPY(username, pw->pw_name);
-	else {
-		if (!*username)
-			tin_done(EXIT_FAILURE, _(txt_error_passwd_missing));
-	}
-
-	return username;
+	strcpy(user_name, userid);
 }
 
 
@@ -321,11 +299,11 @@ get_from_name(
 		return;
 	}
 
-	sprintf(from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), BlankIfNull(get_full_name()), BlankIfNull(get_user_name()), BlankIfNull(fromhost));
+	sprintf(from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), BlankIfNull(get_full_name()), userid, BlankIfNull(fromhost));
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		error_message(2, "FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, BlankIfNull(get_user_name()), domain_name, BlankIfNull(get_full_name()));
+		error_message(2, "FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, userid, domain_name, BlankIfNull(get_full_name()));
 #endif /* DEBUG */
 }
 
@@ -340,28 +318,26 @@ build_sender(
 	void)
 {
 	const char *ptr = NULL;
-	static char sender[8192];
+	static char sender[HEADER_LEN];
 
 	sender[0] = '\0';
 
 	if ((ptr = get_full_name())) /* TODO: rfc2047 encode */
 		snprintf(sender, sizeof(sender), ((strpbrk(ptr, "\".:;<>@[]()\\")) ? "\"%s\"" : "%s "), ptr);
-	if ((ptr = get_user_name())) {
-		snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "<%s@", ptr);
+
+	snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "<%*s@", LOGIN_NAME_MAX, userid);
 
 #	ifdef HAVE_GETHOSTBYNAME
-		ptr = get_fqdn(get_host_name());
+	ptr = get_fqdn(get_host_name());
 #	else
-		ptr = get_host_name();
+	ptr = get_host_name();
 #	endif /* HAVE_GETHOSTBYNAME */
 
 		/* intentionally do not fall back to *domain_name */
 
-		if (*ptr)
-			snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "%s>", ptr);
-		else
-			return NULL;
-	} else
+	if (*ptr)
+		snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "%s>", ptr);
+	else
 		return NULL;
 
 	return sender;

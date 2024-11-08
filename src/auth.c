@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-11-08
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -222,7 +222,7 @@ do_authinfo_user(
 	char line[NNTP_STRLEN];
 	int ret;
 
-	snprintf(line, sizeof(line), "AUTHINFO USER %.497s", authuser); /* RFC 3977 3.1 */
+	snprintf(line, sizeof(line), "AUTHINFO USER %.*s", NNTP_GRPLEN, authuser); /* RFC 3977 3.1 */
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "authorization %s", line);
@@ -240,7 +240,7 @@ do_authinfo_user(
 		return ERR_AUTHBAD;
 	}
 
-	snprintf(line, sizeof(line), "AUTHINFO PASS %.497s", authpass); /* RFC 3977 3.1 */
+	snprintf(line, sizeof(line), "AUTHINFO PASS %.*s", NNTP_GRPLEN, authpass); /* RFC 3977 3.1 */
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "authorization %s", line);
@@ -392,7 +392,7 @@ authinfo_plain(
 			u = prompt_for_authid(authuser);
 			p = prompt_for_password();
 
-			if (p && *p)  /* authpass points to authpassword */
+			if (p && *p) /* authpass points to authpassword */
 				STRCPY(authpassword, p);
 			else
 				*authpassword = '\0';
@@ -529,7 +529,7 @@ do_authinfo_sasl(
 		int i, c = 0;
 		t_bool contains_8bit = FALSE;
 
-		if (utf8user) {
+		if (utf8user && *utf8user) {
 			for (cp = utf8user; *cp && !contains_8bit; cp++) {
 				if (!isascii((unsigned char) *cp)) {
 					contains_8bit = TRUE;
@@ -537,7 +537,7 @@ do_authinfo_sasl(
 				}
 			}
 		}
-		if (utf8pass) {
+		if (utf8pass && *utf8pass) {
 			for (cp = utf8pass; *cp && !contains_8bit; cp++) {
 				if (!isascii((unsigned char) *cp)) {
 					contains_8bit = TRUE;
@@ -553,11 +553,11 @@ do_authinfo_sasl(
 				}
 			}
 			if (c == i) { /* should never fail */
-				if (utf8user && !buffer_to_network(utf8user, c)) {
+				if (utf8user && !buffer_to_network(&utf8user, c)) {
 					free(utf8user);
 					utf8user = my_strdup(authuser);
 				}
-				if (utf8pass && !buffer_to_network(utf8pass, c)) {
+				if (utf8pass && !buffer_to_network(&utf8pass, c)) {
 					free(utf8pass);
 					utf8pass = my_strdup(authpass);
 				}
@@ -702,7 +702,7 @@ callback(
 				if (c == i) { /* convert to utf-8 */
 					char *u8 = my_strdup(u);
 
-					if (buffer_to_network(u8, c))
+					if (buffer_to_network(&u8, c))
 						gsasl_property_set(sctx, prop, u8);
 					else /* conversion failed, try plain string */
 						gsasl_property_set(sctx, prop, u);
@@ -721,7 +721,7 @@ callback(
 				if (c == i) { /* convert to utf-8 */
 					char *p8 = my_strdup(p);
 
-					if (buffer_to_network(p8, c))
+					if (buffer_to_network(&p8, c))
 						gsasl_property_set(sctx, prop, p8);
 					else /* conversion failed, try plain string */
 						gsasl_property_set(sctx, prop, p);

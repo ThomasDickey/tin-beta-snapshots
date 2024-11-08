@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-27
+ *  Updated   : 2024-11-08
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -795,12 +795,21 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 #endif /* HAVE_LIB_PCRE2 */
 
-#ifdef HAVE_ICONV
+#if defined(HAVE_ICONV) || defined(HAVE_UCNV_OPEN)
 #	define CHARSET_CONVERSION 1
-#	ifdef HAVE_ICONV_H
-#		include <iconv.h>
-#	endif /* HAVE_ICONV_H */
-#endif /* HAVE_ICONV */
+#	ifdef HAVE_ICONV
+#		ifdef HAVE_ICONV_H
+#			include <iconv.h>
+#		endif /* HAVE_ICONV_H */
+#		define CHARSET_CONVERSION_ICONV 1
+#	endif /* HAVE_ICONV */
+#	ifdef HAVE_UCNV_OPEN
+#		ifdef HAVE_UNICODE_UCNV_H
+#			include <unicode/ucnv.h>
+#		endif /* HAVE_UNICODE_UCNV_H */
+#		define CHARSET_CONVERSION_UCNV 1
+#	endif /* HAVE_UCNV_OPEN */
+#endif /* HAVE_ICONV || HAVE_UCNV_OPEN */
 
 #ifdef HAVE_LANGINFO_H
 #	include <langinfo.h>
@@ -882,6 +891,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  * LEN         =
  * HEADER_LEN  = max. size of a news/mail header-line
  * NEWSRC_LINE =
+ * LOGIN_NAME_MAX = max. username length (incl. terminating '\0')
  */
 
 #ifdef PATH_MAX
@@ -910,6 +920,9 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #else
 #	define NAME_LEN	14
 #endif /* HAVE_LONG_FILE_NAMES */
+#ifndef LOGIN_NAME_MAX
+#	define LOGIN_NAME_MAX 256
+#endif  /* !LOGIN_NAME_MAX */
 #define LEN	1024
 #define BUF_SIZE	1024
 
@@ -2107,10 +2120,15 @@ struct t_screen {
 };
 #endif /* !USE_CURSES */
 
+/*
+ * NOTE: the fixed length (which should be removed) is used during display
+ * only (TODO: add user-defined dispaly-format ("%D %80G %K %120s %256M")),
+ * the file on disk may have longer lines/members.
+ */
 typedef struct posted {
-	char date[10];
+	char date[10];	/* dd-mm-yy */
+	char action;	/* [ dfrwx] */
 	char group[80];
-	char action;
 	char subj[120];
 	char mid[256];
 	struct posted *next;
