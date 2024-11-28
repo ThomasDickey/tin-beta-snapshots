@@ -3,10 +3,10 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2024-10-18
+ *  Updated   : 2024-11-12
  *  Notes     :
  *
- * Copyright (c) 2003-2024 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2003-2025 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,7 +74,7 @@ check_upgrade(
 	const char *skip,
 	const char *version)
 {
-	const char *p;
+	const char *p = line + strlen(skip);
 	int rc_majorv, rc_minorv, rc_subv; /* version numbers in the file */
 	int current_version, c_majorv, c_minorv, c_subv;	/* version numbers we require */
 	struct t_version *fversion = my_malloc(sizeof(struct t_version));
@@ -87,21 +87,20 @@ check_upgrade(
 	 * match_string() before calling check_upgrade(), no need to
 	 * strncmp() again.
 	 */
-	p = line + strlen(skip);
 	if (!isdigit((unsigned char) *p))
 		return fversion;
 	rc_majorv = s2i(p, 0, 99);
 	if (errno)
 		return fversion;
 	while (isdigit((unsigned char) *p))
-		p++;
+		++p;
 	if (*p != '.' || !isdigit((unsigned char) *++p))
 		return fversion;
 	rc_minorv = s2i(p, 0, 99);
 	if (errno)
 		return fversion;
 	while (isdigit((unsigned char) *p))
-		p++;
+		++p;
 	if (*p != '.' || !isdigit((unsigned char) *++p))
 		return fversion;
 	rc_subv = s2i(p, 0, 99);
@@ -115,7 +114,7 @@ check_upgrade(
 	if (errno)
 		return fversion;
 	while (isdigit((unsigned char) *p))
-		p++;
+		++p;
 	if (*p != '.')
 		return fversion;
 
@@ -123,7 +122,7 @@ check_upgrade(
 	if (errno)
 		return fversion;
 	while (isdigit((unsigned char) *p))
-		p++;
+		++p;
 	if (*p != '.')
 		return fversion;
 

@@ -3,10 +3,10 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2024-10-16
+ *  Updated   : 2024-11-25
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2024 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2025 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -371,7 +371,7 @@ read_keymap_file(
 	l = my_strdup(get_val("LC_ALL", get_val("LC_MESSAGES", get_val("LC_CTYPE", get_val("LANG", "")))));
 
 	if ((locale = strrchr(l, '/'))) /* skip path */
-		locale++;
+		++locale;
 	else
 		locale = l;
 
@@ -655,7 +655,7 @@ process_keys(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			if (iswdigit((wint_t) (key = wkeydef[0])))
 #else
-			if (isdigit((int) (key = keydef[0])))
+			if (isdigit((unsigned char) (key = keydef[0])))
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			{
 				error_message(0, _(txt_keymap_invalid_key), keydef);

@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-06
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -123,7 +123,11 @@ main(
 		const char *p;
 
 		if ((p = tin_nl_langinfo(CODESET)) != NULL) {
-			if (strcasecmp(p, "ANSI_X3.4-1968")) { /* !US-ASCII */
+			/*
+			 * TODO: also "exclude" the other US-ASCII aliases
+			 *       csASCII, cp367, IBM367, ISO646-US, ...
+			 */
+			if (strncasecmp(p, "ANSI_X3.4-19", 12)) { /* !US-ASCII (ANSI_X3.4-1968, ANSI_X3.4-1986) */
 				FreeIfNeeded(tinrc.mm_local_charset);
 				tinrc.mm_local_charset = my_strdup(p);
 			}
@@ -136,9 +140,22 @@ main(
 		tinrc.mm_local_charset = my_strdup("US-ASCII");
 	}
 
+	/*
+	 * Set cCOLS temporarily to trim (localized) messages.
+	 * It does not matter if this value is greater than the actual
+	 * terminal size.
+	 *
+	 * cCOLS / cLINES will be set later to the real terminal width,
+	 * but as they are checked the SIGWINCH handler which is setup
+	 * early...
+	 */
+	cCOLS = 80;
+	cLINES = 24;
+
 	set_signal_handlers();
 
-	debug = 0;	/* can't use if (debug) before read_cmd_line_options() */
+	/* can't use if (debug) before read_cmd_line_options() */
+	debug = 0;
 
 	tin_progname = my_malloc(strlen(argv[0]) + 1);
 	base_name(argv[0], tin_progname);
@@ -153,11 +170,7 @@ main(
 #	ifdef NNTP_ABLE
 		read_news_via_nntp = TRUE;
 #	else
-		my_fprintf(stderr, _(txt_option_not_enabled), "-DNNTP_ABLE");
-		my_fprintf(stderr, "\n");
-		if (!batch_mode)
-			sleep(2);
-
+		my_fprintf(stderr, _(txt_option_not_enabled), "-DNNTP_ABLE", "\n");
 		free(tin_progname);
 		giveup();
 #	endif /* NNTP_ABLE */
@@ -177,15 +190,6 @@ main(
 	hash_init();
 	init_selfinfo();
 	init_group_hash();
-
-	/*
-	 * Set cCOLS temporarily to trim (localized) messages
-	 * It does not matter if this value is greater than the actual
-	 * terminal size
-	 *
-	 * cCOLS will be set later to the real terminal width
-	 */
-	cCOLS = 80;
 
 	/*
 	 * Process envargs & command line options
@@ -272,20 +276,20 @@ main(
 
 	if (read_news_via_nntp && !read_saved_news) {
 		if (use_nntps && !insecure_nntps) { /* RFC 8143 "3.3 Server Name Indication" */
-			unsigned is_ip = 0;
+			unsigned is_ip;
 
 			if (strchr(nntp_server, ':')) /* IPv6 */
 				is_ip = 6;
 			else
 				is_ip = (sscanf(nntp_server, "%*u.%*u.%*u.%*u") == 4) ? 4 : 0;
 
-        	if (is_ip) {
-	                error_message(2, "Can't use literal IPv%d-address %s with TLS (-T)", is_ip, nntp_server); /*TODO: mention -k? _() and -> lang.c? */
-	                FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
-	                free_all_arrays();
-	                giveup();
-	        }
-        }
+			if (is_ip) {
+				error_message(2, "Can't use literal IPv%d-address %s with TLS (-T)", is_ip, nntp_server); /*TODO: mention -k? _() and -> lang.c? */
+				FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
+				free_all_arrays();
+				giveup();
+			}
+		}
 
 		if (use_nntps && tintls_init()) {
 			tintls_exit();
@@ -337,14 +341,16 @@ main(
 	 */
 	postinit_regexp();
 
-	if (!(batch_mode || post_postponed_and_exit)) {
+	if (!(batch_mode /*|| post_postponed_and_exit*/)) { /* post_postponed_and_exit currently may ask questions (e.g. group not found) */
 		/*
 		 * Read user specific keybindings and input history
 		 */
 		keymap_file[0] = '\0';
 		read_keymap_file();
 		read_input_history_file();
+	}
 
+	if (!(batch_mode || post_postponed_and_exit)) {
 		/*
 		 * Load the mail & news active files into active[]
 		 *
@@ -539,18 +545,33 @@ main(
  *   C was count articles, now is activate COMPRESS DEFLATE
  *   p was set printer-cmd., now is nntp-port
  *
- * unused: [bBeEFijJKOPU01235789]
+ * unused: [bBeEijJKOPU01235789]
  */
-#define OPTIONS "46aAcCdD:f:g:G:hHI:klL:m:M:nNop:qQrRs:St:TuvVwxXzZ"
-#define TRCVAL	(envtinrc && *envtinrc ? _(txt_useless_comb_tinrcval) : "\n")
+#define DO_FREE() do { \
+		FreeIfNeeded(trcv); \
+		FREE_ARGV_IF_NEEDED(argv_orig, argv); \
+		free_all_arrays(); \
+	} while (0)
+#define OPTION_EXIT(opt) do { \
+		error_message(0, _(txt_option_not_enabled), opt, BlankIfNull(trcv)); \
+		FreeIfNeeded(trcv); \
+		FREE_ARGV_IF_NEEDED(argv_orig, argv); \
+		free_all_arrays(); \
+		giveup(); \
+	} while (0)
+#define USELESS_COMB(keep,ignore) do { \
+		wait_message(2, _(txt_useless_combination), keep, ignore, ignore, BlankIfNull(trcv)); \
+	} while (0)
+#define OPTIONS "46aAcCdD:f:F:g:G:hHI:klL:m:M:nNop:qQrRs:St:TuvVwxXzZ"
 static char **
 read_cmd_line_options(
 	int argc,
 	char *argv[])
 {
-	const char *envtinrc = getenv("TINRC");
+	const char *envtinrc = get_val("TINRC", NULL);
 	char **argv_orig = argv;
-	int ch;
+	char *trcv;
+	int n, ch;
 #if defined(NNTP_ABLE) || defined(DEBUG)
 	int i;
 #endif /* NNTP_ABLE || DEBUG */
@@ -560,21 +581,30 @@ read_cmd_line_options(
 
 	envargs(&argc, &argv, "TINRC");
 
+	if (envtinrc && *envtinrc) {
+		size_t len;
+
+		if ((n = snprintf(NULL, 0, txt_option_check_tinrc, envtinrc)) > 0) {
+			len = (size_t) n + 1;
+			trcv = my_malloc(len);
+			if (snprintf(trcv, len, txt_option_check_tinrc, envtinrc) != n) {
+				FreeAndNull(trcv);
+			}
+		} else
+			trcv = NULL;
+	} else
+		trcv = NULL;
+
 	while ((ch = getopt(argc, argv, OPTIONS)) != -1) {
 		switch (ch) {
 			case '4':
-#if defined(NNTP_ABLE) && defined(INET6)
-				force_ipv4 = TRUE;
+#ifdef NNTP_ABLE
 				read_news_via_nntp = TRUE;
+#	ifdef INET6
+				force_ipv4 = TRUE;
+#	endif /* INET6*/
 #else
-#	ifdef NNTP_ABLE
-				error_message(0, _(txt_option_not_enabled), "-DENABLE_IPV6");
-#	else
-				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
-#	endif /* NNTP_ABLE */
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-DNNTP_ABLE");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTP_ABLE && INET6 */
@@ -586,13 +616,10 @@ read_cmd_line_options(
 				read_news_via_nntp = TRUE;
 #	else
 #	ifdef NNTP_ABLE
-				error_message(0, _(txt_option_not_enabled), "-DENABLE_IPV6");
+				OPTION_EXIT("-DENABLE_IPV6");
 #	else
-				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
+				OPTION_EXIT("-DNNTP_ABLE");
 #	endif /* NNTP_ABLE */
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTP_ABLE && INET6 */
@@ -602,10 +629,7 @@ read_cmd_line_options(
 #ifdef HAVE_COLOR
 				cmdline.args |= CMDLINE_USE_COLOR;
 #else
-				error_message(0, _(txt_option_not_enabled), "-DHAVE_COLOR");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-DHAVE_COLOR");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* HAVE_COLOR */
@@ -616,10 +640,7 @@ read_cmd_line_options(
 				force_auth_on_conn_open = TRUE;
 				read_news_via_nntp = TRUE;
 #else
-				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-DNNTP_ABLE");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTP_ABLE */
@@ -635,18 +656,12 @@ read_cmd_line_options(
 #	ifdef USE_ZLIB
 				use_compress = TRUE;
 #	else
-				error_message(0, _(txt_option_not_enabled), "-DUSE_ZLIB");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-DUSE_ZLIB");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #	endif /* USE_ZLIB */
 #else
-				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-DNNTP_ABLE");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTP_ABLE */
@@ -659,26 +674,84 @@ read_cmd_line_options(
 
 			case 'D':		/* debug mode */
 #ifdef DEBUG
-				i = s2i(optarg, 0, 2 * DEBUG_REMOVE - 1);
-				switch (errno) {
-					case EINVAL: /* TODO: extra error message */
-					case ERANGE:
-						error_message(0, _(txt_value_out_of_range), "-D ", (int) strtol(optarg, NULL, 10), 2 * DEBUG_REMOVE - 1);
-						debug = 0;
-						if (!batch_mode)
-							sleep(2);
-						break;
+				{
+					char *d;
+					char *dbg = my_strdup(optarg);
+					const char *option_names[3][9] = { {
+						"NNTP", "FILTER", "NEWSRC", "THREADING", "MEMORY",
+						"ATTRIBUTES", "MISC", "REMOVE",
+						NULL }, {
+						"NNTPS", "ARTS", "BITMAP", "REFS", "MALLOC",
+						"ATTRIBUTES" /* no 2nd alt. */, "GNKSA", "DELETE",
+						NULL }, {
+						NULL } };
+					int num_o;
+					t_bool m = FALSE;
 
-					default:
+					if ((d = strtok(dbg, ",")) == NULL) {
+						free(dbg);
 						break;
+					}
+
+					do {
+						errno = 0;
+						if ((i = s2i(d, 0, 2 * DEBUG_REMOVE - 1))) { /* numeric arg; TODO: lower limit could be 1, but then the hardcoded low linit in txt_val_out_of_range_ignored is wrong */
+							switch (errno) {
+								case EINVAL: /* TODO: extra error message */
+								case ERANGE:
+									error_message(0, _(txt_val_out_of_range_ignored), "-D ", (int) strtol(d, NULL, 10), 2 * DEBUG_REMOVE - 1);
+									if (!batch_mode)
+										sleep(2);
+									break;
+
+								default:
+									debug |= i;
+									break;
+							}
+							continue;
+						} else {
+							while (*d == ' ' || *d == '\t') /* skip leading blanks -D "foo, 0" */
+								++d;
+							for (n = 0; option_names[n][0] != NULL; n++) {
+								for (num_o = 0; option_names[n][num_o] != NULL; num_o++) {
+									m = FALSE; /* match flag */
+									if (!strcasecmp(d, option_names[n][num_o])) {
+										debug |= 1 << num_o;
+										m = TRUE;
+										break;
+									}
+								}
+								if (m) /* match, break loop to fetch next arg */
+									break;
+							}
+							if (m) /* match, fetch next arg */
+								continue;
+
+							/* more alternatives or combinations */
+							if (!strcasecmp(d, "ACTIVE")) {
+								debug |= DEBUG_MISC;
+								continue;
+							}
+							if (!strcasecmp(d, "ALL") || !strcasecmp(d, "EVERYTHING")) {
+								debug |= DEBUG_ALL;
+								continue;
+							}
+
+							if (*d == '0' && *(d + 1) == '\0') /* silence the noop -D 0 */
+								continue;
+
+							error_message(0, "Unknown option \"-D %s\"", d);
+							if (!batch_mode)
+								sleep(2);
+						}
+					} while ((d = strtok(NULL, ",")) != NULL);
+
+					free(dbg);
+					if (debug)
+						debug_delete_files();
 				}
-				if ((debug = (unsigned short) i))
-					debug_delete_files();
 #else
-				error_message(0, _(txt_option_not_enabled), "-DDEBUG");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-DDEBUG");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* DEBUG */
@@ -689,6 +762,10 @@ read_cmd_line_options(
 #ifdef NNTP_ABLE
 				newsrc_set = TRUE;
 #endif /* NNTP_ABLE */
+				break;
+
+			case 'F':	/* filter file */
+				my_strncpy(filter_file, optarg, sizeof(filter_file) - 1);
 				break;
 
 			case 'G':
@@ -712,15 +789,14 @@ read_cmd_line_options(
 							switch (errno) {
 								case EINVAL:
 									error_message(0, _(txt_port_not_numeric), cmdline.nntpserver, p);
-									FREE_ARGV_IF_NEEDED(argv_orig, argv);
-									free_all_arrays();
+									DO_FREE();
 									giveup();
 									/* keep lint quiet: */
 									/* FALLTHROUGH */
 									break;
 
 								case ERANGE:
-									error_message(0, _(txt_value_out_of_range), "-g ", (int) strtol(optarg, NULL, 10), 65535);
+									error_message(0, _(txt_val_out_of_range_reset), "-g ", (int) strtol(optarg, NULL, 10), 65535);
 									if (!batch_mode)
 										sleep(2);
 									break;
@@ -732,10 +808,7 @@ read_cmd_line_options(
 						} else /* "[ipv6]"[:port] */
 #	ifndef INET6
 						{
-							error_message(0, _(txt_option_not_enabled), "-DENABLE_IPV6");
-							FREE_ARGV_IF_NEEDED(argv_orig, argv);
-							free_all_arrays();
-							giveup();
+							OPTION_EXIT("-DENABLE_IPV6");
 						}
 #	else
 						{
@@ -746,8 +819,7 @@ read_cmd_line_options(
 								if ((p = strchr(cmdline.nntpserver, ':')) != NULL) {
 									if (p > q) { /* not an IPv6 literal (e.g. [host.name]:port or [i.p.v.4]:port, must not be in []) */
 										error_message(0, _(txt_error_not_ipv6_literal), cmdline.nntpserver);
-										FREE_ARGV_IF_NEEDED(argv_orig, argv);
-										free_all_arrays();
+										DO_FREE();
 										giveup();
 									}
 								}
@@ -758,15 +830,14 @@ read_cmd_line_options(
 											case EINVAL:
 												*++q = '\0'; /* remove tailing ':' */
 												error_message(0, _(txt_port_not_numeric), cmdline.nntpserver, p);
-												FREE_ARGV_IF_NEEDED(argv_orig, argv);
-												free_all_arrays();
+												DO_FREE();
 												giveup();
 												/* keep lint quiet: */
 												/* FALLTHROUGH */
 												break;
 
 											case ERANGE:
-												error_message(0, _(txt_value_out_of_range), "-g ", (int) strtol(optarg, NULL, 10), 65535);
+												error_message(0, _(txt_val_out_of_range_reset), "-g ", (int) strtol(optarg, NULL, 10), 65535);
 												if (!batch_mode)
 													sleep(2);
 												break;
@@ -782,7 +853,7 @@ read_cmd_line_options(
 									cmdline.nntpserver[i - 1] = cmdline.nntpserver[i];
 									/* minimal IPv6 syntax checking - just if we didn't find inet_pton() */
 									if (cmdline.nntpserver[i] == ':')
-										j++;
+										++j;
 									else {
 										if (!IS_XDIGIT(cmdline.nntpserver[i]))
 											j += 1000;
@@ -801,8 +872,7 @@ read_cmd_line_options(
 #		endif /* HAVE_INET_PTON && AF_INET6 */
 									{
 										error_message(0, _(txt_error_not_ipv6_literal), cmdline.nntpserver);
-										FREE_ARGV_IF_NEEDED(argv_orig, argv);
-										free_all_arrays();
+										DO_FREE();
 										giveup();
 									}
 								}
@@ -811,14 +881,11 @@ read_cmd_line_options(
 #	endif /* !INET6 */
 					}
 				}
-				if (!*cmdline.nntpserver)
+				if (cmdline.nntpserver && !*cmdline.nntpserver)
 					FreeAndNull(cmdline.nntpserver);
 				read_news_via_nntp = TRUE;
 #else
-				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-DNNTP_ABLE");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTP_ABLE */
@@ -826,8 +893,7 @@ read_cmd_line_options(
 
 			case 'H':
 				show_intro_page();
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
+				DO_FREE();
 				exit(EXIT_SUCCESS);
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -842,10 +908,7 @@ read_cmd_line_options(
 				insecure_nntps = TRUE;
 				use_nntps = TRUE;
 #else
-				error_message(0, _(txt_option_not_enabled), "--with-nntps");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("--with-nntps");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTPS_ABLE */
@@ -860,10 +923,7 @@ read_cmd_line_options(
 				cmdline.msgid = my_strdup(optarg);
 				str_trim(cmdline.msgid);
 #else
-				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-DNNTP_ABLE");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTP_ABLE */
@@ -898,10 +958,7 @@ read_cmd_line_options(
 				post_postponed_and_exit = TRUE;
 				check_for_new_newsgroups = FALSE;
 #else
-				error_message(0, _(txt_option_not_enabled), "-UNO_POSTING");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-UNO_POSTING");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* !NO_POSTING */
@@ -914,15 +971,14 @@ read_cmd_line_options(
 				switch (errno) {
 					case EINVAL:
 						error_message(0, _(txt_port_not_numeric), "", optarg);
-						FREE_ARGV_IF_NEEDED(argv_orig, argv);
-						free_all_arrays();
+						DO_FREE();
 						giveup();
 						/* keep lint quiet: */
 						/* FALLTHROUGH */
 						break;
 
 					case ERANGE:
-						error_message(0, _(txt_value_out_of_range), "-p ", (int) strtol(optarg, NULL, 10), 65535);
+						error_message(0, _(txt_val_out_of_range_reset), "-p ", (int) strtol(optarg, NULL, 10), 65535);
 						if (!batch_mode)
 							sleep(2);
 						break;
@@ -933,10 +989,7 @@ read_cmd_line_options(
 				}
 				read_news_via_nntp = TRUE;
 #else
-				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-DNNTP_ABLE");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTP_ABLE */
@@ -957,10 +1010,7 @@ read_cmd_line_options(
 #ifdef NNTP_ABLE
 				read_news_via_nntp = TRUE;
 #else
-				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-DNNTP_ABLE");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTP_ABLE */
@@ -969,7 +1019,7 @@ read_cmd_line_options(
 			case 'R':	/* read news saved by -S option */
 				read_saved_news = TRUE;
 				list_active = TRUE;
-				newsrc_active = FALSE;
+				read_news_via_nntp = newsrc_active = FALSE;
 				check_for_new_newsgroups = FALSE;
 				my_strncpy(news_active_file, save_active_file, sizeof(news_active_file) - 1);
 				break;
@@ -989,7 +1039,7 @@ read_cmd_line_options(
 				switch (errno) {
 					case EINVAL: /* TODO: extra error message */
 					case ERANGE:
-						error_message(0, _(txt_value_out_of_range), "-t ", (int) strtol(optarg, NULL, 10), TIN_NNTP_TIMEOUT_MAX);
+						error_message(0, _(txt_val_out_of_range_reset), "-t ", (int) strtol(optarg, NULL, 10), TIN_NNTP_TIMEOUT_MAX);
 						if (!batch_mode)
 							sleep(2);
 						break;
@@ -1000,10 +1050,7 @@ read_cmd_line_options(
 				if (cmdline.nntp_timeout)
 					cmdline.args |= CMDLINE_NNTP_TIMEOUT;
 #else
-				error_message(0, _(txt_option_not_enabled), "-DNNTP_ABLE");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-DNNTP_ABLE");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTP_ABLE && HAVE_ALARM && SIGALRM */
@@ -1013,10 +1060,7 @@ read_cmd_line_options(
 #ifdef NNTPS_ABLE
 				use_nntps = TRUE;
 #else
-				error_message(0, _(txt_option_not_enabled), "--with-nntps");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("--with-nntps");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTPS_ABLE */
@@ -1028,13 +1072,12 @@ read_cmd_line_options(
 				break;
 
 			case 'v':	/* verbose mode, can be used multiple times */
-				verbose++;
+				++verbose;
 				break;
 
 			case 'V':
 				tin_version_info(stderr, verbose);
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
+				DO_FREE();
 				exit(EXIT_SUCCESS);
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -1045,10 +1088,7 @@ read_cmd_line_options(
 				post_article_and_exit = TRUE;
 				check_for_new_newsgroups = FALSE;
 #else
-				error_message(0, _(txt_option_not_enabled), "-UNO_POSTING");
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
-				giveup();
+				OPTION_EXIT("-UNO_POSTING");
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* !NO_POSTING */
@@ -1080,8 +1120,7 @@ read_cmd_line_options(
 			case '?':
 			default:
 				usage(tin_progname);
-				FREE_ARGV_IF_NEEDED(argv_orig, argv);
-				free_all_arrays();
+				DO_FREE();
 				exit(EXIT_SUCCESS);
 		}
 	}
@@ -1119,22 +1158,20 @@ read_cmd_line_options(
 	 */
 	if (!batch_mode) {
 		if (catchup) {
-			wait_message(2, _(txt_useful_with_batch_mode), "-c");
+			wait_message(2, _(txt_useful_with_batch_mode), "-c", BlankIfNull(trcv));
 			catchup = FALSE;
-		}
-	} else {
-		if (read_saved_news) {
-			wait_message(2, _(txt_useful_without_batch_mode), "-R");
-			read_saved_news = FALSE;
 		}
 	}
 	if (!(batch_mode || debug)) {
 		if (verbose) {
-			wait_message(2, _(txt_useful_with_batch_or_debug_mode), "-v");
+			wait_message(2, _(txt_useful_with_batch_or_debug_mode), "-v", BlankIfNull(trcv));
 			verbose = FALSE;
 		}
 	}
 	/*
+	 * NOTE: order IS important (in case where multiple conflicting settings
+	 *       are given e.g. ("-oSL")
+	 *
 	 * TODO: also disallow
 	 *       -NM
 	 *       -oN, -oM (at this stage we no longer know if -N or -M was given)
@@ -1142,109 +1179,187 @@ read_cmd_line_options(
 	 *       -NZ, -MZ (at this stage we no longer know if -N or -M was given)
 	 *       -LM, -LN (at this stage we no longer know if -N or -M was given)
 	 *       (extend t_cmdlineopts with a flag indicating which of -M/-N was given)
-	 *       -uo, -uw, -uX, ...
-	 *
-	 *      if combination comes from $TINRC (+ cmd.-line), mention $TINRC value.
+	 *       -uo, -uX, ... (if we disallow -uX, we should also disallow -SX)
+	 *       ...
 	 */
 	if (post_postponed_and_exit && cmdline.msgid) {
-		wait_message(2, _(txt_useless_combination), "-o", "-L", "-L", TRCVAL);
+		USELESS_COMB("-o", "-L");
 		FreeAndNull(cmdline.msgid);
 	}
+	if (post_postponed_and_exit && save_news) {
+		USELESS_COMB("-o", "-S");
+		save_news = FALSE;
+	}
+	if (post_postponed_and_exit && update_index) {
+		USELESS_COMB("-o", "-u");
+		update_index = FALSE;
+	}
+	if (post_postponed_and_exit && post_article_and_exit) {
+		USELESS_COMB("-o", "-w");
+		post_article_and_exit = FALSE;
+	}
 	if (post_postponed_and_exit && force_no_post) {
-		wait_message(2, _(txt_useless_combination), "-o", "-x", "-x", TRCVAL);
+		USELESS_COMB("-o", "-x");
 		force_no_post = FALSE;
 	}
 	if (post_postponed_and_exit && start_any_unread) {
-		wait_message(2, _(txt_useless_combination), "-o", "-z", "-z", TRCVAL);
+		USELESS_COMB("-o", "-z");
 		start_any_unread = FALSE;
 	}
-	if (post_postponed_and_exit && post_article_and_exit) {
-		wait_message(2, _(txt_useless_combination), "-o", "-w", "-w", TRCVAL);
-		post_article_and_exit = FALSE;
+	if (post_postponed_and_exit && check_any_unread) {
+		USELESS_COMB("-o", "-Z");
+		check_any_unread = FALSE;
 	}
-	if (post_article_and_exit && force_no_post) {
-		wait_message(2, _(txt_useless_combination), "-w", "-x", "-x", TRCVAL);
-		force_no_post = FALSE;
-	}
-	if (post_article_and_exit && cmdline.msgid) {
-		wait_message(2, _(txt_useless_combination), "-w", "-L", "-w", TRCVAL);
-		post_article_and_exit = FALSE;
-	}
-	if (post_article_and_exit && start_any_unread) {
-		wait_message(2, _(txt_useless_combination), "-w", "-z", "-z", TRCVAL);
-		start_any_unread = FALSE;
-	}
-	if (catchup && start_any_unread) {
-		wait_message(2, _(txt_useless_combination), "-c", "-z", "-c", TRCVAL);
+	if (cmdline.msgid && catchup) {
+		USELESS_COMB("-L", "-c");
 		catchup = FALSE;
 	}
-	if (catchup && no_write) {
-		wait_message(2, _(txt_useless_combination), "-c", "-X", "-c", TRCVAL);
-		catchup = FALSE;
-	}
-	if (catchup && check_any_unread) {
-		wait_message(2, _(txt_useless_combination), "-c", "-Z", "-c", TRCVAL);
-		catchup = FALSE;
-	}
-	if (catchup && cmdline.msgid) {
-		wait_message(2, _(txt_useless_combination), "-c", "-L", "-c", TRCVAL);
-		catchup = FALSE;
-	}
-	if (update_index && cmdline.msgid) {
-		wait_message(2, _(txt_useless_combination), "-u", "-L", "-u", TRCVAL);
-		update_index = FALSE;
-	}
-	if (update_index && post_postponed_and_exit) {
-		wait_message(2, _(txt_useless_combination), "-u", "-o", "-u", TRCVAL);
-		update_index = FALSE;
-	}
-	if (update_index && no_write) {
-		wait_message(2, _(txt_useless_combination), "-u", "-X", "-u", TRCVAL);
-		update_index = FALSE;
-	}
-	if (update_index && check_any_unread) {
-		wait_message(2, _(txt_useless_combination), "-u", "-Z", "-u", TRCVAL);
-		update_index = FALSE;
-	}
-	if (start_any_unread && update_index) {
-		wait_message(2, _(txt_useless_combination), "-u", "-z", "-u", TRCVAL);
-		update_index = FALSE;
-	}
-	if (newsrc_active && read_saved_news) {
-		wait_message(2, _(txt_useless_combination), "-n", "-R", "-n", TRCVAL);
-		newsrc_active = read_news_via_nntp = FALSE;
-	}
-	if (read_saved_news && cmdline.msgid) {
-		wait_message(2, _(txt_useless_combination), "-R", "-L", "-R", TRCVAL);
+	if (cmdline.msgid && read_saved_news) {
+		USELESS_COMB("-L", "-R");
 		read_saved_news = FALSE;
 	}
-	if (save_news && cmdline.msgid) {
-		wait_message(2, _(txt_useless_combination), "-S", "-L", "-S", TRCVAL);
+	if (cmdline.msgid && save_news) {
+		USELESS_COMB("-L", "-S");
 		save_news = FALSE;
 	}
-	if (start_any_unread && save_news) {
-		wait_message(2, _(txt_useless_combination), "-z", "-S", "-z", TRCVAL);
+	if (cmdline.msgid && update_index) {
+		USELESS_COMB("-L", "-u");
+		update_index = FALSE;
+	}
+	if (cmdline.msgid && post_article_and_exit) {
+		USELESS_COMB("-L", "-w");
+		post_article_and_exit = FALSE;
+	}
+	if (cmdline.msgid && start_any_unread) {
+		USELESS_COMB("-L", "-z");
 		start_any_unread = FALSE;
 	}
-	if (start_any_unread && cmdline.msgid) {
-		wait_message(2, _(txt_useless_combination), "-z", "-L", "-z", TRCVAL);
+	if (cmdline.msgid && check_any_unread) {
+		USELESS_COMB("-L", "-Z");
+		check_any_unread = FALSE;
+	}
+	if (post_article_and_exit && update_index) {
+		USELESS_COMB("-w", "-u");
+		update_index = FALSE;
+	}
+	if (post_article_and_exit && force_no_post) {
+		USELESS_COMB("-w", "-x");
+		force_no_post = FALSE;
+	}
+	if (post_article_and_exit && start_any_unread) {
+		USELESS_COMB("-w", "-z");
 		start_any_unread = FALSE;
 	}
-	if (save_news && check_any_unread) {
-		wait_message(2, _(txt_useless_combination), "-S", "-Z", "-S", TRCVAL);
+	if (start_any_unread && catchup) {
+		USELESS_COMB("-z", "-c");
+		catchup = FALSE;
+	}
+	if (start_any_unread && update_index) {
+		USELESS_COMB("-z", "-u");
+		update_index = FALSE;
+	}
+	if (start_any_unread && check_any_unread) {
+		USELESS_COMB("-z", "-Z");
+		check_any_unread = FALSE;
+	}
+	if (no_write && catchup) {
+		USELESS_COMB("-X", "-c");
+		catchup = FALSE;
+	}
+	if (no_write && update_index) {
+		USELESS_COMB("-X", "-u");
+		update_index = FALSE;
+	}
+	if (check_any_unread && catchup) {
+		USELESS_COMB("-Z", "-c");
+		catchup = FALSE;
+	}
+	if (check_any_unread && save_news) {
+		USELESS_COMB("-Z", "-S");
 		save_news = FALSE;
 	}
-	if (check_any_unread && start_any_unread) {
-		wait_message(2, _(txt_useless_combination), "-Z", "-z", "-Z", TRCVAL);
+	if (check_any_unread && update_index) {
+		USELESS_COMB("-Z", "-u");
+		update_index = FALSE;
+	}
+#ifdef NNTP_ABLE
+#	ifdef INET6
+	if (read_saved_news && force_ipv4) {
+		/* USELESS_COMB("-R", "-4"); */ /* we ignore this silently */
+		force_ipv4 = read_news_via_nntp = FALSE;
+	}
+	if (read_saved_news && force_ipv6) {
+		/* USELESS_COMB("-R", "-6"); */ /* we ignore this silently */
+		force_ipv6 = read_news_via_nntp = FALSE;
+	}
+#	endif /* INET6 */
+	if (read_saved_news && force_auth_on_conn_open) {
+		USELESS_COMB("-R", "-A");
+		force_auth_on_conn_open = read_news_via_nntp = FALSE;
+	}
+#	ifdef USE_ZLIB
+	if (read_saved_news && use_compress) { /* as long as we don't (read)/write cached overview ... */
+		USELESS_COMB("-R", "-C");
+		use_compress = FALSE;
+	}
+#	endif /* USE_ZLIB */
+	if (read_saved_news && cmdline.nntpserver) {
+		USELESS_COMB("-R", "-g");
+		read_news_via_nntp = FALSE;
+		FreeAndNull(cmdline.nntpserver);
+	}
+	if (read_saved_news && insecure_nntps) {
+		USELESS_COMB("-R", "-k");
+		use_nntps = insecure_nntps = read_news_via_nntp = FALSE;
+	}
+	if (read_saved_news && cmdline.msgid) {
+		USELESS_COMB("-R", "-L");
+		FreeAndNull(cmdline.msgid);
+	}
+	if (read_saved_news && newsrc_active) {
+		/* USELESS_COMB("-R", "-n"); */ /* we ignore this silently */
+		newsrc_active = FALSE;
+	}
+	if (read_saved_news && read_news_via_nntp) {
+		/* USELESS_COMB("-R", "-r"); */ /* we ignore this silently, also catches 'p' */
+		read_news_via_nntp = FALSE;
+	}
+	if (read_saved_news && save_news) {
+		USELESS_COMB("-R", "-S");
+		save_news = FALSE;
+	}
+	if (read_saved_news && use_nntps) {
+		USELESS_COMB("-R", "-T");
+		use_nntps = read_news_via_nntp = FALSE;
+	}
+	if (read_saved_news && cmdline.nntp_timeout) {
+		/* USELESS_COMB("-R", "-t"); */ /* we ignore this silently */
+		read_news_via_nntp = FALSE;
+		cmdline.nntp_timeout = 0;
+		cmdline.args |= CMDLINE_NNTP_TIMEOUT;
+	}
+	if (read_saved_news && check_any_unread) {
+		USELESS_COMB("-R", "-Z");
 		check_any_unread = FALSE;
 	}
-	if (check_any_unread && cmdline.msgid) {
-		wait_message(2, _(txt_useless_combination), "-Z", "-L", "-Z", TRCVAL);
-		check_any_unread = FALSE;
+#endif /* NNTP_ABLE */
+	if (read_saved_news && catchup) {
+		USELESS_COMB("-R", "-c");
+		catchup = FALSE;
 	}
-	if (check_any_unread && post_postponed_and_exit) {
-		wait_message(2, _(txt_useless_combination), "-Z", "-o", "-Z", TRCVAL);
-		check_any_unread = FALSE;
+	if (save_news && start_any_unread) {
+		USELESS_COMB("-S", "-z");
+		start_any_unread = FALSE;
+	}
+	/*
+	 * When updating index files set getart_limit to 0 in order to get overview
+	 * information for all article; this overwrites '-G limit' and disables
+	 * tinrc.getart_limit temporary
+	 */
+	if (update_index && cmdline.getart_limit ) {
+		/* USELESS_COMB("-u", "-G"); */  /* we ignore this silently */
+		cmdline.getart_limit = 0;
+		cmdline.args |= CMDLINE_GETART_LIMIT;
 	}
 #ifdef DEBUG
 #	ifdef NNTP_ABLE
@@ -1253,17 +1368,22 @@ read_cmd_line_options(
 	if (debug & DEBUG_NNTP)
 #	endif /* NNTP_ABLE */
 	{ /* TODO: fix translation unfriendly construct */
-		wait_message(3, _(txt_useless_combination), _(txt_reading_from_spool), "-D nntp", "-D nntp", TRCVAL);
+		USELESS_COMB(_(txt_reading_from_spool), "-D nntp");
 		debug ^= DEBUG_NNTP;
 	}
 #endif /* DEBUG */
 
 #if defined(NNTP_ABLE) && defined(INET6)
 	if (force_ipv4 && force_ipv6) {
-		wait_message(2, _(txt_useless_combination), "-4", "-6", "-6", TRCVAL); /* TODO: -> lang.c */
+		USELESS_COMB("-4", "-6");
 		force_ipv6 = FALSE;
 	}
 #endif /* NNTP_ABLE && INET6 */
+
+	if (batch_mode && read_saved_news) {
+		wait_message(2, _(txt_useful_without_batch_mode), "-R", BlankIfNull(trcv));
+		read_saved_news = FALSE;
+	}
 
 	if (mail_news || save_news || update_index || check_any_unread || catchup)
 		batch_mode = TRUE;
@@ -1272,15 +1392,6 @@ read_cmd_line_options(
 	if (batch_mode && (post_article_and_exit || post_postponed_and_exit))
 		batch_mode = FALSE;
 
-	/*
-	 * When updating index files set getart_limit to 0 in order to get overview
-	 * information for all article; this overwrites '-G limit' and disables
-	 * tinrc.getart_limit temporary
-	 */
-	if (update_index) {
-		cmdline.getart_limit = 0;
-		cmdline.args |= CMDLINE_GETART_LIMIT;
-	}
 #ifdef NNTP_ABLE
 	/*
 	 * If we're reading from an NNTP server and we've been asked not to look
@@ -1296,9 +1407,16 @@ read_cmd_line_options(
 	if (!list_active && !newsrc_active)
 		list_active = newsrc_active = TRUE;
 
+	FreeIfNeeded(trcv);
 	return argv;
+
+#if defined(OPTION_EXIT)
+	/* silence unused-macros warning" */
+#endif /* OPTION_EXIT */
 }
-#undef TRCVAL
+#undef OPTION_EXIT
+#undef USELESS_COMB
+#undef DO_FREE
 
 
 /*
@@ -1474,7 +1592,7 @@ read_cmd_line_groups(
 			for_each_group(i) {
 				if (match_group_list(active[i].name, cmdargs[num])) {
 					if (my_group_add(active[i].name, TRUE) != -1) {
-						matched++;
+						++matched;
 						if (post_article_and_exit) {
 							FreeIfNeeded(tinrc.default_post_newsgroups);
 							tinrc.default_post_newsgroups = my_strdup(active[i].name);

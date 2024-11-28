@@ -16,6 +16,7 @@ New features
 - ${TIN_HOMEDIR:-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
 - -t timeout cmd.-line option
 - -L <message-id> cmd.-line option
+- -F filter-file cmd.-line option
 - :port suffix in newsauth, newsrctable and -g
 - -[zZMN] now note unsubscribed cmd-line groups
 - cmd. execution via ! for x_body
@@ -34,6 +35,14 @@ New features
   or is not available
 - handle multiple addresses in From, Reply-To, Approved
 - basic (no custom-messages) $MAILPATH support
+- if reading from local spool, try to read inn >= 2.3 nov-files in case
+  reading traditional nov-files failed
+- allow -D > DEBUG_REMOVE to remove debug-files on exit
+- allow argument names for -D (case insensitive, comma separated
+  list, can be mix with numeric values)
+- URI syntax-check and normalization it with uriNormalizeSyntaxA() if
+  liburiparser was found
+- $LC_NUMERIC for RADIXCHAR (used when showing attachment sizes)
 
 Changes
 -------
@@ -45,6 +54,10 @@ Changes
   name from /etc/passwd
 - addresses in %T are now separated by comma instead of space
 - tinrc/attributes value strings are limited to 1022 chars
+- INDEX_LOCK (used by 'u') is now created in ${TIN_HOMEDIR:-"$HOME"}/.tin
+  instead of $TMPDIR
+- valid IPv6-addresses in brackets are now allowed in gnksa-filters
+- allow ccTLD .ss, disallow ccTLD .an and .tp
 
 Retired Features
 ----------------

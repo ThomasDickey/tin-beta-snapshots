@@ -3,10 +3,10 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2024-10-29
+ *  Updated   : 2024-11-25
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
- * Copyright (c) 2000-2024 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2025 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -324,7 +324,7 @@ get_mailcap_field(
 				backquote = FALSE;
 				break;
 		}
-		ptr++;
+		++ptr;
 	}
 	return mailcap;
 }
@@ -382,15 +382,15 @@ expand_mailcap_meta(
 		}
 
 		if (*ptr == '\\') {
-			ptr++;
+			++ptr;
 			if ((*ptr == '\\') || (*ptr == '%')) {
 				*lptr++ = *ptr++;
-				space--;
+				--space;
 			}
 			continue;
 		}
 		if (*ptr == '%') {
-			ptr++;
+			++ptr;
 			if (*ptr == '{') {	/* Content-Type parameter */
 				char *end;
 
@@ -412,7 +412,7 @@ expand_mailcap_meta(
 						free(parameter);
 					}
 					ptr = end;	/* skip past closing } */
-					ptr++;
+					++ptr;
 				} else {
 					/* sequence broken, output literally */
 					*lptr++ = '%';
@@ -432,7 +432,7 @@ expand_mailcap_meta(
 				strcat(line, nptr);
 				lptr = line + strlen(line);
 				space -= strlen(line);
-				ptr++;
+				++ptr;
 				continue;
 			} else if (*ptr == 't') {	/* Content-Type */
 				const char *nptr = escape_shell_meta_chars ? escape_shell_meta(part->subtype, quote) : part->subtype;
@@ -443,11 +443,11 @@ expand_mailcap_meta(
 				strcat(line, nptr);
 				lptr = line + strlen(line);
 				space -= strlen(line);
-				ptr++;
+				++ptr;
 				continue;
 			} else {	/* unknown % sequence */
 				*lptr++ = '%';
-				space--;
+				--space;
 				continue;
 			}
 		}
@@ -461,7 +461,7 @@ expand_mailcap_meta(
 
 		/* any other char */
 		*lptr++ = *ptr++;
-		space--;
+		--space;
 	}
 	return line;
 }

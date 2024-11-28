@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-08
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -484,7 +484,7 @@ selection_page(
 				}
 				if (CURR_GROUP.subscribed) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-					mark_screen(selmenu.curr, flags_offset, CURR_GROUP.newgroup ? L"N" : L"u");
+					mark_screen(selmenu.curr, flags_offset, CURR_GROUP.newgroup ? (const wchar_t *) L"N" : (const wchar_t *) L"u");
 #else
 					mark_screen(selmenu.curr, flags_offset, CURR_GROUP.newgroup ? "N" : "u");
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1111,7 +1111,7 @@ skip_newgroups(
 
 	if (selmenu.max) {
 		while (i < selmenu.max && active[my_group[i]].newgroup)
-			i++;
+			++i;
 	}
 
 	return i;
@@ -1468,7 +1468,7 @@ subscribe_pattern(
 					my_group_add(active[i].name, FALSE);
 					grp_mark_unread(&active[i]);
 				}
-				subscribe_num++;
+				++subscribe_num;
 			}
 		}
 	}
@@ -1578,9 +1578,9 @@ lookup_msgid(
 								} else { /* DNEWS ("%d %s", num, grp) */
 									r = ptr;
 									while (*r && *r != ' ' && *r != '\t')
-										r++;
+										++r;
 									while (*r && (*r == ' ' || *r == '\t'))
-										r++;
+										++r;
 								}
 							}
 
@@ -1820,7 +1820,7 @@ get_group_from_list(
 {
 	char *ptr, *tr;
 	t_bool found = FALSE;
-	struct t_group *group = NULL;
+	struct t_group *group;
 
 	if (!newsgroups || (ptr = strtok(newsgroups, ",")) == NULL)
 		return NULL;

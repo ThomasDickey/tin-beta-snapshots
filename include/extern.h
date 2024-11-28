@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-08
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@
  */
 
 #ifndef RFC2046_H
-#	include <rfc2046.h>
+#	include "rfc2046.h"
 #endif /* !RFC2046_H */
 #ifndef KEYMAP_H
 #	include "keymap.h"
@@ -836,6 +836,7 @@ extern constext txt_error_corrupted_file[];
 #ifdef NNTP_ABLE
 	extern constext txt_error_couldnt_expand[];
 #endif /* NNTP_ABLE */
+extern constext txt_error_empty_art[];
 extern constext txt_error_empty_format_string[];
 extern constext txt_error_fseek[];
 extern constext txt_error_followup_poster[];
@@ -1360,9 +1361,10 @@ extern constext txt_not_in_active_file[];
 #endif /* NNTP_ABLE */
 extern constext txt_null[];
 extern constext txt_only[];
-extern constext txt_option_not_enabled[];
+extern constext txt_option_check_tinrc[];
 extern constext txt_options_menu[];
 extern constext txt_options_menu_com[];
+extern constext txt_option_not_enabled[];
 extern constext txt_out_of_memory[];
 extern constext txt_pcre_error_at[];
 extern constext txt_pcre_error_num[];
@@ -1668,7 +1670,6 @@ extern constext txt_useful_without_batch_mode[];
 extern constext txt_useful_with_batch_mode[];
 extern constext txt_useful_with_batch_or_debug_mode[];
 extern constext txt_useless_combination[];
-extern constext txt_useless_comb_tinrcval[];
 extern constext txt_use_mime[];
 extern constext txt_uue_complete[];
 extern constext txt_uue_incomplete[];
@@ -1676,7 +1677,10 @@ extern constext txt_uue_incomplete[];
 	extern constext txt_valid_not_after[];
 	extern constext txt_valid_not_before[];
 #endif /* NNTP_ABLE && NNTPS_ABLE */
-extern constext txt_value_out_of_range[];
+#ifdef DEBUG
+	extern constext txt_val_out_of_range_ignored[];
+#endif /* DEBUG */
+extern constext txt_val_out_of_range_reset[];
 extern constext txt_view_attachment[];
 extern constext txt_warn_art_line_too_long[];
 extern constext txt_warn_article_unchanged[];
@@ -1703,6 +1707,7 @@ extern constext txt_warn_multiple_sigs[];
 extern constext txt_warn_newsrc[];
 extern constext txt_warn_not_all_arts_saved[];
 extern constext txt_warn_re_but_no_references[];
+extern constext txt_warn_re_only_subject[];
 extern constext txt_warn_references_but_no_re[];
 #ifndef FORGERY
 	extern constext txt_warn_sender_required_but_disabled[];

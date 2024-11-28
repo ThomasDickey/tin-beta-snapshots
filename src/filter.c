@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2024-10-31
+ *  Updated   : 2024-11-21
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -352,9 +352,21 @@ read_filter_file(
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 		if (*buf == '\n')
 			continue;
+		/* sanity check for mixed up -F/-f */
+		if (!i && first_read && no_version_line) {
+			/*
+			 * we know that a filter-file line is either a comment (#) or
+			 * has at least an equal signe ('=') whereas a newsrc-file line
+			 * has either a ':' or a '!'
+			 */
+			if (*buf != '#' && !strchr(buf, '=') && (strchr(buf, ':') || strchr(buf, '!'))) {
+				fclose(fp);
+	            tin_done(EXIT_FAILURE, "Mixed up '-f'/'-F'? -F %s", file); /* -> lang.c */
+			}
+		}
 		if (*buf == '#') {
 			if (!*scope)
-				filter_file_offset++;
+				++filter_file_offset;
 			if (upgrade == NULL && first_read && match_string(buf, "# Filter file V", NULL, 0)) {
 				first_read = FALSE;
 				no_version_line = FALSE;
@@ -716,7 +728,7 @@ write_filter_file(
 		filter_file_offset = 1;
 		while ((i = fgetc(fp)) != EOF) {
 			if (i == '\n')
-				filter_file_offset++;
+				++filter_file_offset;
 		}
 		if (fseek(fp, fpos, SEEK_SET)) {
 			clearerr(fp);
@@ -912,7 +924,7 @@ get_choice(
 		ch = ReadCh();
 		switch (ch) {
 			case ' ':
-				i++;
+				++i;
 				i %= list_size;
 				break;
 
@@ -922,14 +934,14 @@ get_choice(
 #endif /* HAVE_KEY_PREFIX */
 				switch (get_arrow_key(ch)) {
 					case KEYMAP_UP:
-						i--;
+						--i;
 						if (i < 0)
 							i = list_size - 1;
 						ch = ' ';	/* don't exit the while loop yet */
 						break;
 
 					case KEYMAP_DOWN:
-						i++;
+						++i;
 						i %= list_size;
 						ch = ' ';	/* don't exit the while loop yet */
 						break;
@@ -1325,17 +1337,17 @@ filter_menu(
 	 */
 	ptr = prompt_buf;
 	while (*ptr == ' ')
-		ptr++;
+		++ptr;
 
 	if (*ptr == '>') {
 		rule.lines_cmp = FILTER_LINES_GT;
-		ptr++;
+		++ptr;
 	} else if (*ptr == '<') {
 		rule.lines_cmp = FILTER_LINES_LT;
-		ptr++;
+		++ptr;
 	} else if (*ptr == '=') {
 		rule.lines_cmp = FILTER_LINES_EQ;
-		ptr++;
+		++ptr;
 	}
 
 	if (*ptr)
@@ -1979,8 +1991,8 @@ filter_articles(
 				 */
 				if (ptr[j].msgid != NULL) {
 					char *refs = NULL;
-					const char *myrefs = NULL;
-					const char *mymsgid = NULL;
+					const char *myrefs;
+					const char *mymsgid;
 					int x;
 					struct t_article *art = &arts[i];
 					/*
@@ -2114,9 +2126,9 @@ filter_articles(
 						s = arts[i].xref;
 						if (strchr(s, ' ') || strchr(s, '\t')) {
 							while (*s && !isspace((unsigned char) *s))	/* skip server name */
-								s++;
+								++s;
 							while (*s && isspace((unsigned char) *s))
-								s++;
+								++s;
 						}
 #ifdef DEBUG
 						else { /* server name missing in overview, i.e. colobus 2.1 */
@@ -2138,7 +2150,7 @@ filter_articles(
 									*e++ = *s;
 								if (isspace((unsigned char) *s))
 									skip = FALSE;
-								s++;
+								++s;
 							}
 							if (e == k) {
 #ifdef DEBUG
@@ -2291,7 +2303,7 @@ set_filter_scope(
 		if (ptr[i].scope != NULL) {
 			if (!match_group_list(group->name, ptr[i].scope)) {
 				ptr[i].inscope = FALSE;
-				inscope--;
+				--inscope;
 			}
 		}
 	}

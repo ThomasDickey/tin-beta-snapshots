@@ -6,7 +6,7 @@
  *  Updated   : 2024-09-11
  *  Notes     : #defines and structs for options_menu.c
  *
- * Copyright (c) 1997-2024 Thomas E. Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2025 Thomas E. Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,6 +89,17 @@ extern size_t strlen(const char *);
 #define FALSE 0
 #define FreeIfNeeded(p)	if (p != NULL) free((void *) p)
 
+#ifdef STDC_NORETURN
+#ifdef HAVE_STDNORETURN_H
+#include <stdnoreturn.h>
+#endif /* HAVE_STDNORETURN_H */
+#else
+#if defined(_Noreturn)
+#undef _Noreturn
+#endif /* _Noreturn */
+#define _Noreturn /**/
+#endif /* STDC_NORETURN */
+
 /* }} replace tin.h */
 
 #define L_CURL '{'
@@ -107,7 +118,7 @@ MYDATA {
 static MYDATA *all_data;
 static int line_no;
 
-static void
+static _Noreturn void
 failed(
 	const char *message)
 {

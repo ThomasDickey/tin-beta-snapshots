@@ -3,10 +3,10 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2024-07-09
+ *  Updated   : 2024-11-25
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -295,8 +295,8 @@ open_newsgroups_fp(
 			char line[NNTP_STRLEN];
 			char file[PATH_LEN];
 			char serverdir[PATH_LEN];
-			struct t_group *group;
 			int resp, i, j = 0;
+			struct t_group *group;
 
 			if (nntp_tcp_port != IPPORT_NNTP)
 				snprintf(file, sizeof(file), "%s:%u", nntp_server, nntp_tcp_port);
@@ -318,7 +318,7 @@ open_newsgroups_fp(
 									} else {
 										put_server(buff, FALSE);
 										*buff = '\0';
-										j++;
+										++j;
 									}
 								}
 								if (!*buff) {
@@ -348,14 +348,14 @@ open_newsgroups_fp(
 #		else
 							put_server(buff, FALSE);
 							*buff = '\0';
-							j++;
+							++j;
 #		endif /* DISABLE_PIPELINING */
 						}
 					}
 				}
 				if (*buff) {
 					put_server(buff, FALSE);
-					j++;
+					++j;
 				}
 #		ifndef DISABLE_PIPELINING
 				while (j--) {
@@ -484,9 +484,6 @@ read_groups_descriptions(
 	int count = 0;
 	size_t space = 0;
 	struct t_group *group;
-#if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
-	char *guessed_charset = NULL;
-#endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 #if defined(DEBUG) && defined(NNTP_ABLE)
@@ -522,35 +519,46 @@ read_groups_descriptions(
 		*q = '\0';
 
 		while (*p == '\t' || *p == ' ')
-			p++;
+			++p;
 
 		group = group_find(groupname, FALSE);
 
 		if (group != NULL && group->description == NULL) {
 			char *r;
 			size_t r_len;
+			t_bool conv_needed = FALSE;
 
 			q = p;
-			while ((q = strchr(q, '\t')) != NULL)
-				*q = ' ';
+			while (*q) {
+				if (*q == '\t') /* what about '\r', '\f', '\v', '\b', '\a'? */
+					*q = ' ';
+				else {
+					if (!conv_needed && (*q < 0x20 || (unsigned char) *q > 0x7f))
+						conv_needed = TRUE;
+				}
+				++q;
+			}
 
 			r = my_strdup(p);
 			r_len = strlen(r);
+
 			/*
 			 * Protect against invalid character sequences.
 			 */
+			if (conv_needed) {
 #ifdef CHARSET_CONVERSION
 #	ifdef USE_ICU_UCSDET
-			/* TODO skip guessing/conversion if all chars in r are in 0x20-0x7f range (!is_EIGHT_BIT())? */
-			guessed_charset = guess_charset(r, 10);
-			process_charsets(&r, &r_len, guessed_charset ? guessed_charset : "UTF-8", tinrc.mm_local_charset, FALSE);
-			FreeAndNull(guessed_charset);
+				char *guessed_charset = guess_charset(r, 10);
+
+				process_charsets(&r, &r_len, guessed_charset ? guessed_charset : "UTF-8", tinrc.mm_local_charset, FALSE);
+				FreeAndNull(guessed_charset);
 #	else
-			process_charsets(&r, &r_len, "UTF-8", tinrc.mm_local_charset, FALSE);
+				process_charsets(&r, &r_len, "UTF-8", tinrc.mm_local_charset, FALSE);
 #	endif /* USE_ICU_UCSDET */
 #else
-			process_charsets(&r, &r_len, "UTF-8", tinrc.mm_local_charset, FALSE);
+				process_charsets(&r, &r_len, "UTF-8", tinrc.mm_local_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
+			}
 			group->description = convert_to_printable(r, FALSE);
 		}
 

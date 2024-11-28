@@ -3,10 +3,10 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2024-10-13
+ *  Updated   : 2024-11-25
  *  Notes     : Group attribute routines
  *
- * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -280,9 +280,9 @@ set_default_state(
 		break; \
 	}
 #define MATCH_STRING(pattern, type) \
-	if (strlen(line) - strlen(pattern) < BUF_SIZE - 1 && match_string_ptr(line, pattern, &tmp)) { \
-		set_attrib(type, scope, line, tmp); \
-		FreeAndNull(tmp); \
+	if (strlen(line) - strlen(pattern) < BUF_SIZE - 1 && match_string_ptr(line, pattern, tmp)) { \
+		set_attrib(type, scope, line, *tmp); \
+		*tmp = NULL; \
 		found = TRUE; \
 		break; \
 	}
@@ -309,7 +309,7 @@ read_attributes_file(
 	t_bool global_file)
 {
 	FILE *fp;
-	char *file, *line, *tmp = NULL;
+	char *file, *line, **tmp;
 	char buf[LEN];
 	char scope[LEN];
 	int i, num;
@@ -336,18 +336,21 @@ read_attributes_file(
 	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_attributes_file), global_file ? _(txt_global) : "", file);
 
+	tmp = my_malloc(sizeof(char *));
+	*tmp = NULL;
+
 	if ((fp = tin_fopen(file, "r")) != NULL) {
 		unsigned int errors = 0, ln = 0;
 
 		*scope = '\0';
 		while ((line = tin_fgets(fp, FALSE)) != NULL) {
-			ln++;
+			++ln;
 			if (!*line)
 				continue;
 			if (line[0] == '#') {
 				if (!global_file) {
 					if (!*scope)
-						attrib_file_offset++;
+						++attrib_file_offset;
 					if (startup && upgrade == NULL && match_string(line, "# Group attributes file V", NULL, 0)) {
 						upgrade = check_upgrade(line, "# Group attributes file V", ATTRIBUTES_VERSION);
 						if (upgrade->state != RC_IGNORE)
@@ -462,11 +465,12 @@ read_attributes_file(
 								if (*q == '%' && (*(q + 1) == 's' || *(q + 1) == 'S'))
 									*(++q) = 'I';
 
-								q++;
+								++q;
 							}
 						}
 						quote_dash_to_space(buf);
-						set_attrib(OPT_ATTRIB_QUOTE_CHARS, scope, line, buf);
+						*tmp = my_strdup(buf);
+						set_attrib(OPT_ATTRIB_QUOTE_CHARS, scope, line, *tmp);
 						found = TRUE;
 						break;
 					}
@@ -538,8 +542,8 @@ read_attributes_file(
 			if (!global_file && upgrade && upgrade->state == RC_UPGRADE) {
 				int auto_cc_bcc;
 				int show_info;
-				t_bool auto_bcc = FALSE;
-				t_bool auto_cc = FALSE;
+				t_bool auto_bcc;
+				t_bool auto_cc;
 
 				switch (my_tolower((unsigned char) line[0])) {
 					case 'a':
@@ -603,8 +607,6 @@ read_attributes_file(
 							}
 							set_attrib(OPT_ATTRIB_GROUP_FORMAT, scope, line, gbuf);
 							set_attrib(OPT_ATTRIB_THREAD_FORMAT, scope, line, tbuf);
-							free(gbuf);
-							free(tbuf);
 							found = TRUE;
 							break;
 						}
@@ -619,7 +621,6 @@ read_attributes_file(
 
 								sprintf(newbuf, "%s %s", buf, "%G");
 								set_attrib(OPT_ATTRIB_SIGFILE, scope, line, newbuf);
-								free(newbuf);
 							}
 							break;
 						}
@@ -642,12 +643,12 @@ read_attributes_file(
 				char *p;
 				const char *msg;
 
-				errors++;
+				++errors;
 				if ((p = strchr(line, '='))) {
 					*p = '\0';
-					if (strlen(p + 1) >= BUF_SIZE - 1) {
+					if (strlen(p + 1) >= BUF_SIZE - 1)
 						msg = _(txt_error_attrib_too_long);
-					} else
+					else
 						msg = _(txt_error_attrib_unknown);
 				} else
 					msg = _(txt_error_attrib_malformed);
@@ -673,17 +674,20 @@ read_attributes_file(
 			write_attributes_file(file);
 
 		FreeAndNull(upgrade);
+		FreeAndNull(tmp);
 
 	} else {
-		if (global_file)
+		if (global_file) {
+			FreeIfNeeded(tmp);
 			return FALSE;
+		}
 
 		if (startup) {
 			/* no local attributes file, add some useful defaults and write file */
 
 			add_scope("*");
-			snprintf(buf, sizeof(buf), "%s", "~/.tin/headers");
-			set_attrib(OPT_ATTRIB_X_HEADERS, "*", "", buf);
+			*tmp = my_strdup("~/.tin/headers");
+			set_attrib(OPT_ATTRIB_X_HEADERS, "*", "", *tmp);
 
 			add_scope("*sources*");
 			num = POST_PROC_SHAR;
@@ -696,28 +700,33 @@ read_attributes_file(
 			set_attrib(OPT_ATTRIB_TEX2ISO_CONV, "*binaries*", "", &num);
 			num = TRUE;
 			set_attrib(OPT_ATTRIB_DELETE_TMP_FILES, "*binaries*", "", &num);
-			snprintf(buf, sizeof(buf), "%s", "poster");
-			set_attrib(OPT_ATTRIB_FOLLOWUP_TO, "*binaries*", "", buf);
+			*tmp = my_strdup("poster");
+			set_attrib(OPT_ATTRIB_FOLLOWUP_TO, "*binaries*", "", *tmp);
 
 			write_attributes_file(file);
+			FreeAndNull(tmp);
 		}
 	}
+
+	FreeIfNeeded(tmp);
 	if (!global_file && startup)
 		startup = FALSE;
+
 #ifdef DEBUG
 	if (!global_file)
 		dump_scopes("SCOPES-R");
 #endif /* DEBUG */
+
 	return TRUE;
 }
 
 
 #define SET_STRING(string) \
-	if (!curr_scope->attribute->string) { \
+	if (!curr_scope->attribute->string) \
 		curr_scope->attribute->string = my_malloc(sizeof(char *)); \
-	} else \
+	else \
 		FreeIfNeeded(*curr_scope->attribute->string); \
-	*curr_scope->attribute->string = my_strdup((char *) data); \
+	*curr_scope->attribute->string = (char *) data; \
 	curr_scope->state->string = TRUE; \
 	break
 
@@ -828,9 +837,9 @@ set_attrib(
 				SET_BOOLEAN(mark_saved_read);
 
 			case OPT_ATTRIB_NEWS_HEADERS_TO_DISPLAY:
-				if (!curr_scope->attribute->news_headers_to_display) {
+				if (!curr_scope->attribute->news_headers_to_display)
 					curr_scope->attribute->news_headers_to_display = my_malloc(sizeof(char *));
-				} else
+				else
 					FreeIfNeeded(*curr_scope->attribute->news_headers_to_display);
 				*curr_scope->attribute->news_headers_to_display = my_strdup((char *) data);
 				build_news_headers_array(curr_scope->attribute, TRUE);
@@ -838,9 +847,9 @@ set_attrib(
 				break;
 
 			case OPT_ATTRIB_NEWS_HEADERS_TO_NOT_DISPLAY:
-				if (!curr_scope->attribute->news_headers_to_not_display) {
+				if (!curr_scope->attribute->news_headers_to_not_display)
 					curr_scope->attribute->news_headers_to_not_display = my_malloc(sizeof(char *));
-				} else
+				else
 					FreeIfNeeded(*curr_scope->attribute->news_headers_to_not_display);
 				*curr_scope->attribute->news_headers_to_not_display = my_strdup((char *) data);
 				build_news_headers_array(curr_scope->attribute, FALSE);
@@ -1181,9 +1190,9 @@ assign_attributes_to_groups(
 					break;
 				}
 			}
-			if (is_7bit) {
+			if (is_7bit)
 				group->attribute->mail_mime_encoding = group->attribute->post_mime_encoding = MIME_ENCODING_7BIT;
-			} else {
+			else {
 				if (group->attribute->mail_mime_encoding == MIME_ENCODING_7BIT)
 					group->attribute->mail_mime_encoding = MIME_ENCODING_QP;
 				if (group->attribute->post_mime_encoding == MIME_ENCODING_7BIT)
@@ -1467,7 +1476,7 @@ write_attributes_file(
 	attrib_file_offset = 1;
 	while ((i = fgetc(fp)) != EOF) {
 		if (i == '\n')
-			attrib_file_offset++;
+			++attrib_file_offset;
 	}
 	if (fseek(fp, fpos, SEEK_SET)) {
 		clearerr(fp);

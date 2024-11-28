@@ -7,26 +7,32 @@
 use strict;
 use warnings;
 
-(my $pname = $0) =~ s#^.*/##;
+(my $pname = $0) =~ s#^.*/##x;
 die "Usage: $pname URL" if $#ARGV != 0;
 
 # version Number
-my $version = "0.1.3";
+my $version = "0.1.4";
 
 my ($method, $url, $match, @try);
-$method = $url = $ARGV[0];
-$method =~ s#^([^:]+):.*#$1#io;
+if (eval { require URI;1; } == 1) {
+        $url = URI->new($ARGV[0])->canonical;
+} else {
+        $url = $ARGV[0];
+}
+$method = $url;
+$method =~ s|^([^:/?#]+):.*|$1|iox;
+exit 0 if ($method eq $url);
 
 # shell escape
-$url =~ s#([\&\;\`\'\\\"\|\*\?\~\<\>\^\(\)\[\]\{\}\$\010\013\020\011])#\\$1#g;
+$url =~ s#([\&\;\`\'\\\"\|\*\?\~\<\>\^\(\)\[\]\{\}\$\010\013\020\011])#\\$1#gx;
 
 if ($ENV{"BROWSER_".uc($method)}) {
-	push(@try, split(/:/, $ENV{"BROWSER_".uc($method)}));
+	push(@try, split(/:/x, $ENV{"BROWSER_".uc($method)}));
 } else {
 	if ($ENV{BROWSER}) {
-		push(@try, split(/:/, $ENV{BROWSER}));
+		push(@try, split(/:/x, $ENV{BROWSER}));
 	} else { # set some defaults
-		push(@try, 'firefox -a firefox -remote openURL\(%s\)');
+		push(@try, 'firefox -a firefox -remote');
 		push(@try, 'mozilla -remote openURL\(%s\)');
 		push(@try, 'opera -remote openURL\(%s\)');
 		push(@try, qw(chromium 'galeon -n' 'epiphany -n' konqueror));
@@ -39,13 +45,13 @@ if ($ENV{"BROWSER_".uc($method)}) {
 
 for my $browser (@try) {
 	# ignore empty parts
-	next if ($browser =~ m/^$/o);
+	next if ($browser =~ m/^$/ox);
 	# expand %s if not preceded by odd number of %
-	$match = $browser =~ s/(?<!%)((?:%%)*)%s/$1$url/og;
+	$match = $browser =~ s/(?<!%)((?:%%)*)%s/$1$url/ogx;
 	# expand %c if not preceded by odd number of %
-	$browser =~ s/(?<!%)((?:%%)*)%c/$1:/og;
+	$browser =~ s/(?<!%)((?:%%)*)%c/$1:/ogx;
 	# reduce dubble %
-	$browser =~ s/%%/%/og;
+	$browser =~ s/%%/%/ogx;
 	# append URL if no %s expansion took place
 	$browser .= " ".$url if (!$match);
 	# leave loop if $browser was started successful
@@ -117,7 +123,7 @@ Examples:
 
 =over 2
 
-=item $BROWSER="firefox -a firefox -remote openURL\(%s\):opera:konqueror:links2 -g:lynx:w3m"
+=item $BROWSER="firefox -a firefox -remote:opera:konqueror:links2 -g:lynx:w3m"
 
 =back
 

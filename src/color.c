@@ -11,7 +11,7 @@
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
- * Copyright (c) 1995-2024 Roland Rosenfeld <roland@spinnaker.rhein.de>
+ * Copyright (c) 1995-2025 Roland Rosenfeld <roland@spinnaker.rhein.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -333,7 +333,7 @@ draw_pager_line(
 #else
 			if (my_isprint((unsigned char) *c)) {
 				my_fputc((int) *c, stdout);
-				c++;
+				++c;
 			}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			else if (IS_LOCAL_CHARSET("Big5") && (unsigned char) *c >= 0xa1 && (unsigned char) *c <= 0xfe && *(c + 1)) {
@@ -343,9 +343,9 @@ draw_pager_line(
 				 * TODO: should we also check if the second byte is also valid?
 				 */
 				my_fputc((int) *c, stdout);
-				c++;
+				++c;
 				my_fputc((int) *c, stdout);
-				c++;
+				++c;
 			} else {
 				/*
 				 * non-printable char
@@ -353,7 +353,7 @@ draw_pager_line(
 				 */
 				snprintf(octal, sizeof(octal), "\\%03o", (unsigned int) (*c & 0xff));
 				my_fputs(octal, stdout);
-				c++;
+				++c;
 			}
 		}
 	}

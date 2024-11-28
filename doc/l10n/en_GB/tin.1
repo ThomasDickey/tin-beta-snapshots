@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-10-30
+.\" Updated   : 2024-11-21
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -27,10 +27,10 @@ tin, rtin \- Usenet newsreader
 [\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-ACkrTzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
 \|\|\fB\-s\fP \fINews_dir\fP\|] [\|\fB\-cuvZ\fP\|] [\|\fB\-4\fP\||\|\fB\-6\fP\|]
 [\|\fB\-o\fP\||\|\fB\-w\fP\||\|\fB\-N\fP\||\|\fB\-M\fP \fIaddress\fP\|] [\|\fB\-D\fP
-\fIdebug_level\fP\|] [\|\fB\-G\fP \fIarticle_limit\fP\|] [\|\fB\-f\fP \fInewsrc_file\fP\|]
-[\|\fB\-g\fP \fIserver\fP\|[\|:\fIport\fP\|]\|] [\|\fB\-L\fP \fIMessage\-ID\fP\|] [\|\fB\-m\fP
-\fIMail_dir\fP\|] [\|\fB\-p\fP \fIport\fP\|] [\|\fB\-t\fP \fItimeout\fP\|] [\|\fB\-I\fP
-\fIindex_dir\fP\|]\ \|[\fInewsgroup\fP\|[\|,.\|.\|.\|]\|]\|]
+\fIdebug_level\fP\|] [\|\fB\-F\fP \fIfilter_file\fP\|] [\|\fB\-G\fP \fIarticle_limit\fP\|]
+[\|\fB\-f\fP \fInewsrc_file\fP\|] [\|\fB\-g\fP \fIserver\fP\|[\|:\fIport\fP\|]\|] [\|\fB\-L\fP
+\fIMessage\-ID\fP\|] [\|\fB\-m\fP \fIMail_dir\fP\|] [\|\fB\-p\fP \fIport\fP\|] [\|\fB\-t\fP
+\fItimeout\fP\|] [\|\fB\-I\fP \fIindex_dir\fP\|]\ \|[\fInewsgroup\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH DESCRIPTION
 \fBtin\fP is a full\-screen easy to use Usenet newsreader. It can read news
 locally (e.g., \fI/var/spool/news\fP) or remotely (\fBrtin\fP or \fBtin \-r\fP option)
@@ -104,16 +104,37 @@ Don't load newsgroup descriptions and servers message of the day
 (interactive mode).
 .TP 
 \fB\-D\fP\fI debug\-level\fP
-Enter debug\-level (1 = NNTP, 2 = filter, 4 = newsrc, 8 = threading, 16 =
-memory, 32 = attributes, 64 = misc, 128 = remove existing debug files).  For
-NNTP\-level \*(rq\fB\-v\fP\*(rq controls the verbosity of the output.  Depending on the
-debug\-level various files may be written to \fI$TMPDIR\fP and/or on screen
+Enter debug\-level, the levels can specified via number (should be avoided as
+it will be removed in the future) or name (case insensitive) as listed
+below. Use comma to give multiple levels, any combinations are allowed
+(e.g. \*(rq\fB\-D\fP \fIGNKSA,2,NNTP\fP\*(rq). If removal is requested it will be
+performed at startup and on normal termination (that is the files are only
+available while tin is running).
+.in +.3i
+.nf
+.ta \w'%128 'u +\w'ATTRIBUTES 'u +\w'ATTRIBUTES 'u +\w'ATTRIBUTES'u
+  \fI1	NNTP	NNTPS\fP
+  \fI2	FILTER	ARTS\fP
+  \fI4	NEWSRC	BITMAP\fP
+  \fI8	THREADING	REFS\fP
+ \fI16	MEMORY	MALLOC\fP
+ \fI32	ATTRIBUTES\fP
+ \fI64	MISC	GNKSA	ACTIVE\fP
+\fI127	ALL	EVERYTHING\fP
+\fI128	REMOVE	DELETE\fP
+.fi
+.in -.3i
+For NNTP\-level \*(rq\fB\-v\fP\*(rq controls the verbosity of the output.  Depending on
+the debug\-level various files may be written to \fI$TMPDIR\fP and/or on screen
 output may be given. See also the "SECURITY" section!
 .TP 
 \fB\-f\fP\fI file\fP
 Use the specified file of subscribed to newsgroups in place of
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP or a file specified via
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP.
+.TP 
+\fB\-F\fP\fI file\fP
+Use the specified filter file instead of \fI${TIN_HOMEDIR:\-"$HOME"}/.filter\fP.
 .TP 
 \fB\-g\fP\fI server[:port]\fP
 Use the server[:port] and newsrc specified in
@@ -2059,16 +2080,17 @@ than the value of this parameter is considered not displayable and
 represented as '?'. Otherwise, all character sets are regarded as compatible
 with the display. If it's not set, the value of the environment variable
 $\fBMM_CHARSET\fP is used. US\-ASCII or compile\-time default is used in case
-neither of them is defined. If your system supports \fB\%iconv\fP(3), this
-option is disabled and you should use \fBmm_network_charset\fP instead.
+neither of them is defined. If your system supports \fB\%iconv\fP(3), or
+\fB\%ucnv_*\fP(), this option is disabled and you should use
+\fBmm_network_charset\fP instead.
 .TP 
 \fBMM_NETWORK_CHARSET (mm_network_charset)\fP
 Charset used for posting and MIME headers; replaces \fBmm_charset\fP.
 Conversion between \fBmm_network_charset\fP and local charset (determined via
-\fB\%nl_langinfo\fP(3))  is done via \fB\%iconv\fP(3), if this function is not
-available on your system this option is disabled and you have to use
-\fBmm_charset\fP instead. \fBmm_network_charset\fP is limited to one of the
-following charsets:
+\fB\%nl_langinfo\fP(3))  is done via \fB\%iconv\fP(3), or \fB\%ucnv_*\fP(), if none
+of these functions are available on your system this option is disabled and
+you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP is limited to
+one of the following charsets:
 .in +.3i
 US\-ASCII, ISO\-8859\-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8\-{R,U,RU}
 EUC\-{CN,JP,KR,TW}, ISO\-2022\-{CN,CN\-EXT,JP,JP\-1,JP\-2}, Big5, UTF\-8
@@ -2151,7 +2173,8 @@ possible values are:
 and Case Folding
 .RE
 Some normalisation modes are only available if they are supported by the
-library \fBtin\fP uses to do the normalisation. NFC should be used if possible.
+library \fBtin\fP uses to do the normalisation. NFC should be used if possible
+(\fBRFC\%5198\fP).
 .TP 
 \fBFormat string for the display of mime header at Article level (page_mime_format)\fP
 Format string \fBtin\fP uses for mime header at Page level. See the section
@@ -2724,9 +2747,9 @@ specify. This can be anything from the name of the author to the number of
 lines in an article.
 .PP
 When \fBtin\fP starts up the user's kill\-file
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fP (see also \fB\%tin\fP(5))  is read. Each
-time a newsgroup is entered the rules are applied and articles killed or
-selected when they meet certain criteria.
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fP or the file specified via \*(rq\fB\-F\fP\*(rq
+is read (see also \fB\%tin\fP(5)  ). Each time a newsgroup is entered the rules
+are applied and articles killed or selected when they meet certain criteria.
 .PP
 The degree to which rules are applied depend on the \fBkill_level\fP tinrc
 setting. By default killed articles will only be marked read. Adjust
@@ -2743,7 +2766,7 @@ previous versions to include scoring and better pattern matching. It is
 recommended that you read the file \fIfiltering\fP in the \fBtin\fP documentation
 directory. This file can also be read online at
 .br
-<http://www.tin.org/filtering.txt>.
+<http://bzr.tin.org/doc/filtering>.
 .PP
 .\" FIXME - Next paragraph is out of date
 .\"
@@ -3737,6 +3760,11 @@ Its value should be of the form
 \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fB\%locale\fP(5)
 and \fB\%environ\fP(5)  for more information.
 .TP 
+\fBLC_NUMERIC\fP
+Numeric value formats. Its value should be of the form
+\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fB\%locale\fP(5)
+and \fB\%environ\fP(5)  for more information.
+.TP 
 \fBLC_TIME\fP
 Date and time formats. Its value should be of the form
 \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]. See \fB\%locale\fP(5)
@@ -3756,10 +3784,9 @@ should be of the form \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP]. See
 .TP 
 \fBLANGUAGE\fP
 This variable defines a priority list for translations. Whenever a
-translation is not available in the language selected via \fB$LC_ALL\fP or
-\fB$LANG\fP the next language from the list is tried. Its value should be of
-the form \fIlanguage:language[:language]\fP. See \fB\%environ\fP(5)  for more
-information.
+translation is not available the next language from the list is tried.  Its
+value should be of the form \fIlanguage:language[:language]\fP.  Requires
+\fB$LC_ALL\fP or \fB$LANG\fP to be set. See \fB\%environ\fP(5)  for more information.
 .TP 
 \fBCOLUMNS\fP
 A decimal integer > 0 used to indicate the user's preferred width in
@@ -3935,5 +3962,5 @@ Urs Janssen <urs@tin.org>
 \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5), \fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP,
 \fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2231\fP,
 \fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP,
-\fBRFC\%4880\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP,
-\fBRFC\%6838\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP
+\fBRFC\%4880\fP, \fBRFC\%5198\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP,
+\fBRFC\%6048\fP, \fBRFC\%6838\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP

@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-30
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -284,7 +284,7 @@ constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=sha
 	constext txt_color_on[] = N_("ANSI color enabled");
 #endif /* HAVE_COLOR */
 constext txt_command_failed[] = N_("Command failed: %s");
-constext txt_copyright_notice[] = "%s (c) Copyright 1991-2024 Iain Lea.";
+constext txt_copyright_notice[] = "%s (c) Copyright 1991-2025 Iain Lea.";
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 constext txt_connection_info[] = N_("Connection Info");
 constext txt_conninfo_local_spool[] = N_("Reading from local spool.\n");
@@ -403,6 +403,7 @@ constext txt_error_corrupted_file[] = N_("Corrupted file %s");
 	constext txt_error_couldnt_expand[] = N_("couldn't expand %s\n");
 #endif /* NNTP_ABLE */
 constext txt_error_empty_format_string[] = N_("Error: Custom format empty. Using default \"%s\".");
+constext txt_error_empty_art[] = N_("\nError: Article is empty.\n");
 constext txt_error_fseek[] = "fseek() error on [%s]";
 constext txt_error_followup_poster[] = N_("\nError: Followup-To \"poster\" and a newsgroup is not allowed!\n");
 constext txt_error_format_string[] = N_("Error: Custom format exceeds screen width. Using default \"%s\".");
@@ -822,12 +823,12 @@ mail to an  existing news article author.  The 'M' command allows the operation\
 of %s to be configured via a menu.\n\n\
 For more information read the manual page, README, INSTALL, TODO and FTP files.\n\
 Please send bug-reports/comments to %s with the 'R' command.\n");
-constext txt_invalid_from[] = N_("Invalid  From: %s  line. Read the INSTALL file again.");
+constext txt_invalid_from[] = N_("Invalid From:-header \"%s\". Check your mail_address setting.");
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	constext txt_invalid_multibyte_sequence[] = N_("Invalid multibyte sequence found\n");
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #if defined(NNTP_INEWS) && !defined(FORGERY)
-	constext txt_invalid_sender[] = N_("Invalid  Sender:-header %s");
+	constext txt_invalid_sender[] = N_("Invalid Sender:-header \"%s\"");
 #endif /* NNTP_INEWS && !FORGERY */
 constext txt_inverse_off[] = N_("Inverse video disabled");
 constext txt_inverse_on[] = N_("Inverse video enabled");
@@ -970,9 +971,10 @@ constext txt_not_in_active_file[] = N_("Group %s not found in active file");
 constext txt_null[] = N_("NULL");
 
 constext txt_only[] = N_("Only");
-constext txt_option_not_enabled[] = N_("Option not enabled. Recompile with %s.");
+constext txt_option_check_tinrc[] = " ($TINRC: \"%s\")";
 constext txt_options_menu[] = N_("Options Menu");
 constext txt_options_menu_com[] = N_("Options Menu Commands");
+constext txt_option_not_enabled[] = N_("Option not enabled. Recompile with %s.%s\n");
 constext txt_out_of_memory[] = "%s: memory exhausted trying to allocate %lu bytes in file %s line %d";
 
 constext txt_pcre_error_at[] = N_("Error in regex: %s at pos. %d '%s'");
@@ -1259,11 +1261,10 @@ constext txt_usage_tin[] = N_("A Usenet reader.\n\nUsage: %s [options] [newsgrou
 constext txt_usage_verbose[] = N_("  -v       verbose output for batch mode options");
 constext txt_usage_version[] = N_("  -V       print version & date information");
 constext txt_use_mime[] = N_("Use MIME display program for this message?");
-constext txt_useful_without_batch_mode[] = N_("%s only useful without batch mode operations\n");
-constext txt_useful_with_batch_mode[] = N_("%s only useful for batch mode operations\n");
-constext txt_useful_with_batch_or_debug_mode[] = N_("%s only useful for batch or debug mode operations\n");
-constext txt_useless_combination[] = N_("Useless combination %s and %s. Ignoring %s.%s");
-constext txt_useless_comb_tinrcval[] = N_(" Also check your $TINRC setting.\n");
+constext txt_useful_without_batch_mode[] = N_("%s only useful without batch mode operations.%s\n");
+constext txt_useful_with_batch_mode[] = N_("%s only useful for batch mode operations.%s\n");
+constext txt_useful_with_batch_or_debug_mode[] = N_("%s only useful for batch or debug mode operations.%s\n");
+constext txt_useless_combination[] = N_("Useless combination %s and %s. Ignoring %s.%s\n");
 constext txt_uue_complete[] = N_("uuencoded file");
 constext txt_uue_incomplete[] = N_("incomplete uuencoded file");
 
@@ -1271,7 +1272,10 @@ constext txt_uue_incomplete[] = N_("incomplete uuencoded file");
 	constext txt_valid_not_after[] = N_("Valid not after : %s\n");
 	constext txt_valid_not_before[] = N_("Valid not before: %s\n");
 #endif /* NNTP_ABLE && NNTPS_ABLE */
-constext txt_value_out_of_range[] = N_("%s%d out of range (0 - %d). Reset to 0");
+#ifdef DEBUG
+	constext txt_val_out_of_range_ignored[] = N_("%s%d out of range (0 - %d). Ignored.");
+#endif /* DEBUG */
+constext txt_val_out_of_range_reset[] = N_("%s%d out of range (0 - %d). Reset to 0.");
 constext txt_view_attachment[] = N_("View '%s' (%s/%s)?");
 
 constext txt_warn_art_line_too_long[] = N_("\nWarning: posting exceeds %d columns. Line %d is the first long one:\n%-100s\n");
@@ -1282,6 +1286,7 @@ Warning: \"Subject:\" begins with \"Re: \" but there are no \"References:\".\n")
 constext txt_warn_references_but_no_re[] = N_("\n\
 Warning: Article has \"References:\" but \"Subject:\" does not begin\n\
          with \"Re: \" and does not contain \"(was:\".\n");
+constext txt_warn_re_only_subject[] = N_("\nWarning: \"Subject:\" contains only \"Re:\".\n");
 constext txt_warn_cancel[] = N_("Read carefully!\n\n\
   You are about to cancel an article seemingly written by you. This will wipe\n\
   the article from most  news servers  throughout the world,  but there is no\n\

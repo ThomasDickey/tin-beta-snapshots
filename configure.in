@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-11-08
+dnl Updated   : 2024-11-27
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -737,6 +737,7 @@ CF_ARG_DISABLE(printing,
 	[AC_DEFINE(DISABLE_PRINTING,1,[Define this to 1 to enable printer support])])
 AC_MSG_RESULT($enableval)
 
+### TODO: skip and disable if $ac_cv_sys_long_file_names != yes
 AC_MSG_CHECKING(whether to unique tmp-files by appending .pid)
 CF_ARG_DISABLE(append-pid,
 	[  --disable-append-pid    disable appending .pid to tmp-files],,
@@ -953,8 +954,26 @@ BIO_free(NULL);
 		])
 	])
 ])
-
 fi
+
+
+# <https://github.com/uriparser/uriparser>
+AC_MSG_CHECKING(for liburiparser)
+CF_TRY_PKG_CONFIG(
+	[liburiparser],
+	[AC_DEFINE(HAVE_LIBURIPARSER)],
+	[AC_TRY_COMPILE([
+#include <uriparser/Uri.h>
+	],[
+#if URI_VER_MAJOR = 0 && URI_VER_MINOR <= 9 && URI_VER_RELEASE <= 7
+#error "Please use liburiparser >= 0.9.8"
+#endif /* URI_VER_MAJOR */
+	],
+	[have_liburiparser=yes],
+	[have_liburiparser=no
+	AC_MSG_RESULT($have_liburiparser)]
+	)]
+)
 
 ### checks for operator characteristics (should be the last option)
 AC_MSG_CHECKING(whether to make a coffee while compiling)
@@ -1263,8 +1282,7 @@ if test $cf_try_icuuc = no ; then
 fi
 
 # without icuuc try libidn for Internationalized Domain Names / IDN 2003
-# TODO: check for libidn2
-#       get $CFLAGS/$LDFLAGS from pkg-config libidn[2] if possible
+# TODO: get $CFLAGS/$LDFLAGS from pkg-config libidn if possible
 if test $cf_try_icuuc = no ; then
 	AC_CHECK_LIB(idn, stringprep_check_version,
 		[AC_CHECK_HEADER(stringprep.h,[
@@ -1290,7 +1308,29 @@ if test $cf_try_icuuc = no ; then
 	)
 fi
 
+# GNU linidn2 // CF_TRY_PKG_CONFIG has no version checking yet
+AC_MSG_CHECKING(for libidn2)
+CF_TRY_PKG_CONFIG(
+	[libidn2],
+	[AC_DEFINE(HAVE_LIBIDN2)
+	AC_DEFINE(HAVE_IDN2_H)
+	have_libidn2=yes],
+	[AC_TRY_COMPILE([
+#include <idn2.h>
+	],[
+#if IDN2_VERSION_MAJOR < 2 || (IDN2_VERSION_MAJOR == 2 && IDN2_VERSION_MINOR < 3)
+#error "Please use libidn2 >= 2.3.0"
+#endif /* IDN2_VERSION_MAJOR < 2 || (IDN2_VERSION_MAJOR == 2 && IDN2_VERSION_MINOR < 3) */
+	],
+	[have_libidn2=yes
+	AC_DEFINE(HAVE_IDN2_H)],
+	[have_libidn2=no
+	AC_MSG_RESULT($have_libidn2)]
+	)]
+)
+
 # libidnkit - Internationalized Domain Names / IDN 2008
+if test "x$have_libidn2" != "xyes"; then
 AC_CHECK_LIB(idnkit, idn_decodename, [
 	AC_CHECK_HEADERS(idn/version.h)
 	AC_CHECK_HEADER(idn/api.h, [
@@ -1309,12 +1349,15 @@ AC_CHECK_LIB(idnkit, idn_decodename, [
 			AC_DEFINE(HAVE_LIBIDNKIT,1,[Define this to 1 if we can link with idnkit library])
 			AC_DEFINE(HAVE_IDN_API_H,1,[Define this to 1 if we have header idn/api.h])
 			AC_DEFINE(HAVE_IDN_DECODENAME,1,[Define this to 1 if we have function idn_decodename])
-			AC_MSG_RESULT(yes)], [
+			AC_MSG_RESULT(yes)
+			cf_have_libidnkit="yes"], [
 			LIBS=$cf_save_LIBS
 			AC_MSG_RESULT(no)
 		])
 	])
 ])
+fi
+
 
 # ICU >= 3.6 ucsdet_detect() and co.
 # rewrite, CF_TRY_PKG_CONFIG([icu-i18n], ...)

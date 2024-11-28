@@ -3,10 +3,10 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-17
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -181,10 +181,10 @@ build_tline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					if ((wtmp = char2wchar_t(buf)) != NULL) {
 						wtmp2 = wcspart(wtmp, thrd_fmt.len_date_max, TRUE);
+						free(wtmp);
 						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 							strcat(buffer, tmp);
 
-						free(wtmp);
 						free(wtmp2);
 					}
 #else
@@ -200,12 +200,13 @@ build_tline(
 
 				if ((wtmp = char2wchar_t(tmp)) != NULL) {
 					wtmp2 = wcspart(wtmp, thrd_fmt.len_from, TRUE);
-					if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
-						strcat(buffer, tmp);
-
 					free(wtmp);
-					free(wtmp2);
-				}
+				} else
+					wtmp2 = wcspart(L"", thrd_fmt.len_from, TRUE);
+				if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+					strcat(buffer, tmp);
+
+				free(wtmp2);
 #else
 				if (curr_group->attribute->show_author != SHOW_FROM_NONE) {
 					len_start = strwidth(buffer);
@@ -326,10 +327,10 @@ build_tline(
 								{
 									if ((wtmp = char2wchar_t(art->subject)) != NULL) {
 										wtmp2 = wcspart(wtmp, gap, TRUE);
+										free(wtmp);
 										if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 											strcat(buffer, tmp);
 
-										free(wtmp);
 										free(wtmp2);
 									}
 								}
@@ -354,10 +355,10 @@ build_tline(
 							{
 								if ((wtmp = char2wchar_t(art->subject)) != NULL) {
 									wtmp2 = wcspart(wtmp, gap, TRUE);
+									free(wtmp);
 									if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 										strcat(buffer, tmp);
 
-									free(wtmp);
 									free(wtmp2);
 								}
 							}
@@ -1054,7 +1055,7 @@ update_thread_page(
 		} else {
 			mark[0] = get_art_mark(&arts[the_index]);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			mark_screen(i, mark_offset - (3 - art_mark_width), L"   ");	/* clear space used by tag numbering */
+			mark_screen(i, mark_offset - (3 - art_mark_width), (const wchar_t *) L"   ");	/* clear space used by tag numbering */
 			mark_screen(i, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
 #else
 			mark_screen(i, mark_offset - 2, "  ");	/* clear space used by tag numbering */
@@ -1122,7 +1123,7 @@ new_responses(
 
 	for_each_art_in_thread(i, thread) {
 		if (arts[i].status != ART_READ)
-			sum++;
+			++sum;
 	}
 
 	return sum;
@@ -1181,7 +1182,7 @@ which_response(
 		if (j == n)
 			break;
 		else
-			num++;
+			++num;
 	}
 
 	return num;
@@ -1210,7 +1211,7 @@ num_of_responses(
 		assert(i != oldi);
 		oldi = i;
 #endif /* !NDEBUG */
-		sum++;
+		++sum;
 	}
 
 	return sum - 1;
@@ -1246,7 +1247,7 @@ get_score_of_thread(
 			} else { /* tinrc.thread_score >= THREAD_SCORE_SUM */
 				/* sum scores of unread arts and count num. arts */
 				score += arts[i].score;
-				j++;
+				++j;
 			}
 		}
 	}
@@ -1405,7 +1406,7 @@ prev_response(
 	if (i <= 0)
 		return -1;
 
-	i--;
+	--i;
 #endif /* 0 */
 
 	return find_response(i, num_of_responses(i));
@@ -1542,7 +1543,7 @@ make_prefix(
 
 		while (prefix_ptr > maxlen - 2 - odd) {
 			if (depth_level < maxlen / 5)
-				depth_level++;
+				++depth_level;
 			prefix_ptr -= maxlen - depth_level - 2 - odd;
 			odd = (odd ? 0 : 1);
 		}
@@ -1771,7 +1772,7 @@ thread_mark_postprocess(
 			if (feed_type == FEED_ARTICLE) {
 				mark[0] = get_art_mark(&arts[respnum]);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				mark_screen(thdmenu.curr, mark_offset - (3 - art_mark_width), L"   ");
+				mark_screen(thdmenu.curr, mark_offset - (3 - art_mark_width), (const wchar_t *) L"   ");
 				mark_screen(thdmenu.curr, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
 #else
 				mark_screen(thdmenu.curr, mark_offset, mark);
@@ -1789,7 +1790,7 @@ thread_mark_postprocess(
 			if (feed_type == FEED_ARTICLE) {
 				mark[0] = get_art_mark(&arts[respnum]);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				mark_screen(thdmenu.curr, mark_offset - (3 - art_mark_width), L"   ");
+				mark_screen(thdmenu.curr, mark_offset - (3 - art_mark_width), (const wchar_t *) L"   ");
 				mark_screen(thdmenu.curr, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
 #else
 				mark_screen(thdmenu.curr, mark_offset, mark);

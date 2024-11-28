@@ -3,10 +3,10 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-30
+ *  Updated   : 2024-11-21
  *  Notes     : signal handlers for different modes and window resizing
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -231,7 +231,7 @@ signal_name(
 	int code)
 {
 	size_t n;
-	const char *name = "unknown";
+	const char *name = txt_unknown;
 
 	for (n = 0; n < ARRAY_SIZE(signal_list); n++) {
 		if (signal_list[n].code == code) {
@@ -270,10 +270,8 @@ handle_resize(
 #	ifdef USE_CURSES
 #		ifdef HAVE_RESIZETERM
 	resizeterm(cLINES + 1, cCOLS);
-	my_retouch();					/* seems necessary if win size unchanged */
-#		else
-	my_retouch();
 #		endif /* HAVE_RESIZETERM */
+	my_retouch();
 #	endif /* USE_CURSES */
 
 	need_parse_fmt |= SELECT_LEVEL;
@@ -339,6 +337,7 @@ handle_resize(
 		case cMain:
 			break;
 	}
+
 	switch (input_context) {
 		case cGetline:
 			gl_redraw();
@@ -360,6 +359,7 @@ handle_resize(
 		default:
 			break;
 	}
+
 	my_fflush(stdout);
 	redraw_after_suspend = FALSE;
 #endif /* SIGWINCH || SIGTSTP */

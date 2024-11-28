@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2024-04-02
+# Updated: 2024-11-22
 #
 # Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -446,7 +446,7 @@ lint :	$(CFILES) $(SRCDIR)/heapsort.c $(SRCDIR)/xface.c $(OBJDIR)/parsdate.c tin
 clean :
 	@$(ECHO) "Cleaning ..."
 	@-$(RM) -f $(OFILES)
-	@-$(RM) -f $(OBJDIR)/parsdate.c
+	@-$(RM) -f $(OBJDIR)/parsdate.c $(OBJDIR)/y.tab.[chi]
 	@-$(RM) -f LINT *.ln *.out trace
 	@-$(RM) -f makecfg$X makecfg$o tincfg.h options_menu.h
 	@-$(RM) -rf makecfg.dSYM

@@ -3,10 +3,10 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2024-10-20
+ *  Updated   : 2024-11-25
  *  Notes     : Generate random signature for posting/mailing etc.
  *
- * Copyright (c) 1992-2024 Mike Gleason
+ * Copyright (c) 1992-2025 Mike Gleason
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -242,7 +242,7 @@ thrashdir(
 		return 1;
 
 	while (readdir(dirp) != NULL)
-		numentries++;
+		++numentries;
 
 	/*
 	 * consider "." and ".." non-entries

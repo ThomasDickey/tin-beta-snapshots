@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2024-11-03
+ *  Updated   : 2024-11-17
  *  Notes     :
  *
- * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -266,7 +266,6 @@ extern const char *get_host_name(void);
 /* inews.c */
 extern t_bool submit_news_file(char *name, struct t_group *group, char *a_message_id);
 extern void get_from_name(char *from_name, struct t_group *thisgrp);
-extern void get_user_info(char *user_name, char *full_name);
 
 /* init.c */
 extern void init_selfinfo(void);
@@ -621,6 +620,7 @@ extern void art_close(t_openartinfo *artinfo);
 extern void free_and_init_header(struct t_header *hdr);
 extern void free_list(t_param *list);
 extern void free_parts(t_part *ptr);
+extern void remove_comments(char *source);
 extern void unfold_header(char *line);
 
 /* rfc2047.c */
@@ -702,6 +702,7 @@ extern char *eat_tab(char *s);
 extern char *fmt_string(const char *fmt, ...);
 #if !defined(USE_DMALLOC) || (defined(USE_DMALLOC) && !defined(HAVE_STRDUP))
 	extern char *my_strdup(const char *str);
+	extern char *my_strndup(const char *str, size_t n);
 #endif /* !USE_DMALLOC || (USE_DMALLOC && !HAVE_STRDUP) */
 extern char *str_trim(char *string);
 extern char *strunc(const char *message, size_t len);

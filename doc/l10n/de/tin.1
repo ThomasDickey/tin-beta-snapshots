@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-10-30
+.\" Updated   : 2024-11-21
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -27,10 +27,10 @@ tin, rtin \- Usenet Newsreader
 [\|\fB\-dlnq\fP\||\|\fB\-Q\fP\|] [\|\fB\-ACkrTzxX\fP\|]\|] [\|[\|\fB\-R\fP\||\|\fB\-S\fP\|]
 \|\|\fB\-s\fP \fINews\-Verz.\fP\|] [\|\fB\-cuvZ\fP\|] [\|\fB\-4\fP\||\|\fB\-6\fP\|]
 [\|\fB\-o\fP\||\|\fB\-w\fP\||\|\fB\-N\fP\||\|\fB\-M\fP \fIAdresse\fP\|] [\|\fB\-D\fP
-\fIDebuggrad\fP\|] [\|\fB\-G\fP \fIArtikellimit\fP\|] [\|\fB\-f\fP \fInewsrc\-Datei\fP\|]
-[\|\fB\-g\fP \fIServer\fP\|[\|:\fIPort\fP\|]\|] [\|\fB\-L\fP \fIMessage\-ID\fP\|] [\|\fB\-m\fP
-\fIMail\-Verz.\fP\|] [\|\fB\-p\fP \fIPort\fP\|] [\|\fB\-t\fP \fITimeout\fP\|] [\|\fB\-I\fP
-\fIindex\-Verz.\fP\|]\ \|[\fINewsgruppe\fP\|[\|,.\|.\|.\|]\|]\|]
+\fIDebuggrad\fP\|] [\|\fB\-F\fP \fIFilter\-Datei\fP\|] [\|\fB\-G\fP \fIArtikellimit\fP\|]
+[\|\fB\-f\fP \fInewsrc\-Datei\fP\|] [\|\fB\-g\fP \fIServer\fP\|[\|:\fIPort\fP\|]\|] [\|\fB\-L\fP
+\fIMessage\-ID\fP\|] [\|\fB\-m\fP \fIMail\-Verz.\fP\|] [\|\fB\-p\fP \fIPort\fP\|] [\|\fB\-t\fP
+\fITimeout\fP\|] [\|\fB\-I\fP \fIindex\-Verz.\fP\|]\ \|[\fINewsgruppe\fP\|[\|,.\|.\|.\|]\|]\|]
 .SH BESCHREIBUNG
 \fBtin\fP ist ein einfach zu bedienender Newsreader für das Usenet. Er kann
 Artikel von einem lokalen (z. B. aus \fI/var/spool/news\fP) oder entfernten
@@ -107,17 +107,39 @@ Keine Gruppenbeschreibungen und die Server Meldung des Tages laden
 (Interaktiver\-Modus).
 .TP 
 \fB\-D\fP\fI Debuggrad\fP
-Debuggrad angeben (1 = NNTP, 2 = Filter, 4 = newsrc, 8 = Threading, 16 =
-Speicher, 32 = attributes, 64 = Diverses, 128 = vorhandene Debugdateien
-löschen). Im NNTP\-Level steuert \*(rq\fB\-v\fP\*(rq die Ausführlichkeit der
-Ausgabe. Je nach Debuggrad könnten verschiedene Dateien nach \fI$TMPDIR\fP
-geschrieben werden und/oder eine Bildschirmausgabe erfolgen. Auch den
-Abschnitt "SICHERHEIT" beachten!
+Enter debug\-level, the levels can specified via number (should be avoided as
+it will be removed in the future) or name (case insensitive) as listed
+below. Use comma to give multiple levels, any combinations are allowed
+(e.g. \*(rq\fB\-D\fP \fIGNKSA,2,NNTP\fP\*(rq). If removal is requested it will be
+performed at startup and on normal termination (that is the files are only
+available while tin is running).
+.in +.3i
+.nf
+.ta \w'%128 'u +\w'ATTRIBUTES 'u +\w'ATTRIBUTES 'u +\w'ATTRIBUTES'u
+  \fI1	NNTP	NNTPS\fP
+  \fI2	FILTER	ARTS\fP
+  \fI4	NEWSRC	BITMAP\fP
+  \fI8	THREADING	REFS\fP
+ \fI16	MEMORY	MALLOC\fP
+ \fI32	ATTRIBUTES\fP
+ \fI64	MISC	GNKSA	ACTIVE\fP
+\fI127	ALL	EVERYTHING\fP
+\fI128	REMOVE	DELETE\fP
+.fi
+.in -.3i
+Im NNTP\-Level steuert \*(rq\fB\-v\fP\*(rq die Ausführlichkeit der Ausgabe. Je nach
+Debuggrad könnten verschiedene Dateien nach \fI$TMPDIR\fP geschrieben werden
+und/oder eine Bildschirmausgabe erfolgen. Auch den Abschnitt "SICHERHEIT"
+beachten!
 .TP 
 \fB\-f\fP\fI Datei\fP
 Benutze die angegebene newsrc\-Datei anstelle von
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP oder der Datei aus
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP.
+.TP 
+\fB\-F\fP\fI Datei\fP
+Angegebene Filter\-Datei anstelle von \fI${TIN_HOMEDIR:\-"$HOME"}/.filter\fP
+verwenden.
 .TP 
 \fB\-g\fP\fI Server[:Port]\fP
 Zugehörigen Newsserver[:Port] und newsrc\-Datei aus
@@ -2152,16 +2174,17 @@ than the value of this parameter is considered not displayable and
 represented as '?'. Otherwise, all character sets are regarded as compatible
 with the display. If it's not set, the value of the environment variable
 $\fBMM_CHARSET\fP is used. US\-ASCII or compile\-time default is used in case
-neither of them is defined. If your system supports \fB\%iconv\fP(3), this
-option is disabled and you should use \fBmm_network_charset\fP instead.
+neither of them is defined. If your system supports \fB\%iconv\fP(3), or
+\fB\%ucnv_*\fP(), this option is disabled and you should use
+\fBmm_network_charset\fP instead.
 .TP 
 \fBMM_NETWORK_CHARSET (mm_network_charset)\fP
 Charset used for posting and MIME headers; replaces \fBmm_charset\fP.
 Conversion between \fBmm_network_charset\fP and local charset (determined via
-\fB\%nl_langinfo\fP(3))  is done via \fB\%iconv\fP(3), if this function is not
-available on your system this option is disabled and you have to use
-\fBmm_charset\fP instead. \fBmm_network_charset\fP is limited to one of the
-following charsets:
+\fB\%nl_langinfo\fP(3))  is done via \fB\%iconv\fP(3), or \fB\%ucnv_*\fP(), if none
+of these functions are available on your system this option is disabled and
+you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP is limited to
+one of the following charsets:
 .in +.3i
 US\-ASCII, ISO\-8859\-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8\-{R,U,RU}
 EUC\-{CN,JP,KR,TW}, ISO\-2022\-{CN,CN\-EXT,JP,JP\-1,JP\-2}, Big5, UTF\-8
@@ -2247,7 +2270,7 @@ Zusammensetzung und Faltung
 .RE
 Einige Normalisierungsarten sind nur verfügbar, wenn sie von der Bibliothek
 unterstützt werden, die \fBtin\fP verwendet, um die Normalisierung
-durchzuführen. Nach Möglichkeit sollte NFC verwendet werden.
+durchzuführen. Nach Möglichkeit sollte NFC verwendet werden (\fBRFC\%5198\fP).
 .TP 
 \fBFormatanweisung für Mime\-Header auf Artikelebene (page_mime_format)\fP
 Diese Formatanweisung wird von \fBtin\fP zur Darstellung von Mime\-Headern auf
@@ -2833,9 +2856,9 @@ specify. This can be anything from the name of the author to the number of
 lines in an article.
 .PP
 When \fBtin\fP starts up the user's kill\-file
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fP (see also \fB\%tin\fP(5))  is read. Each
-time a newsgroup is entered the rules are applied and articles killed or
-selected when they meet certain criteria.
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fP or the file specified via \*(rq\fB\-F\fP\*(rq
+is read (see also \fB\%tin\fP(5)  ). Each time a newsgroup is entered the rules
+are applied and articles killed or selected when they meet certain criteria.
 .PP
 The degree to which rules are applied depend on the \fBkill_level\fP tinrc
 setting. By default killed articles will only be marked read. Adjust
@@ -2852,7 +2875,7 @@ previous versions to include scoring and better pattern matching. It is
 recommended that you read the file \fIfiltering\fP in the \fBtin\fP documentation
 directory. This file can also be read online at
 .br
-<http://www.tin.org/filtering.txt>.
+<http://bzr.tin.org/doc/filtering>.
 .PP
 .\" FIXME - Next paragraph is out of date
 .\"
@@ -3859,31 +3882,35 @@ to avoid confusion).  Its value should be of the form
 for more information.
 .TP 
 \fBLC_MESSAGES\fP
-Datums\- und Zeitformate. Sein Wert sollte der Form
+Datums\- und Zeitformate. Ihr Wert sollte der Form
+\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP] entsprechen. Für
+weitere Informationen siehe \fB\%locale\fP(5) und \fB\%environ\fP(5).
+.TP 
+\fBLC_NUMERIC\fP
+Formate für numerische Werte. Ihr Wert sollte der Form
 \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP] entsprechen. Für
 weitere Informationen siehe \fB\%locale\fP(5) und \fB\%environ\fP(5).
 .TP 
 \fBLC_TIME\fP
-Datums\- und Zeitformate. Sein Wert sollte der Form
+Datums\- und Zeitformate. Ihr Wert sollte der Form
 \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP] entsprechen. Für
 weitere Informationen siehe \fB\%locale\fP(5) und \fB\%environ\fP(5).
 .TP 
 \fBLC_ALL\fP
-Datums\- und Zeitformate. Sein Wert sollte der Form
+Datums\- und Zeitformate. Ihr Wert sollte der Form
 \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP] entsprechen. Für
 weitere Informationen siehe \fB\%locale\fP(5) und \fB\%environ\fP(5).
 .TP 
 \fBLANG\fP
-Datums\- und Zeitformate. Sein Wert sollte der Form
+Datums\- und Zeitformate. Ihr Wert sollte der Form
 \fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP] entsprechen. Für
 weitere Informationen siehe \fB\%locale\fP(5) und \fB\%environ\fP(5).
 .TP 
 \fBLANGUAGE\fP
-This variable defines a priority list for translations. Whenever a
-translation is not available in the language selected via \fB$LC_ALL\fP or
-\fB$LANG\fP the next language from the list is tried. Its value should be of
-the form \fIlanguage:language[:language]\fP. See \fB\%environ\fP(5)  for more
-information.
+Datums\- und Zeitformate. Ihr Wert sollte der Form
+\fIlanguage\fP[\fI_territory\fP][\fI.codeset\fP][\fI@modifier\fP]
+entsprechen. \fB$LC_ALL\fP der \fB$LANG\fP muss ebenfalls gesetzt sein. Für
+weitere Informationen siehe \fB\%locale\fP(5) und \fB\%environ\fP(5).
 .TP 
 \fBCOLUMNS\fP
 A decimal integer > 0 used to indicate the user's preferred width in
@@ -4072,5 +4099,5 @@ an <translation@tin.org>.
 \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5), \fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP,
 \fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2231\fP,
 \fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP,
-\fBRFC\%4880\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP,
-\fBRFC\%6838\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP
+\fBRFC\%4880\fP, \fBRFC\%5198\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP,
+\fBRFC\%6048\fP, \fBRFC\%6838\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP

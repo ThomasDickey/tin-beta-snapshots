@@ -3,10 +3,10 @@
  *  Module    : list.c
  *  Author    : I. Lea
  *  Created   : 1993-12-18
- *  Updated   : 2019-01-18
+ *  Updated   : 2024-11-25
  *  Notes     : Low level functions handling the active[] list and its group_hash index
  *
- * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -298,13 +298,13 @@ debug_print_active_hash(
 
 		if (group_hash[i] == -1) {
 			/* my_printf("EMPTY\n"); */
-			empty++;
+			++empty;
 		} else {
 			int j;
 			int number = 0;
 
 			for (j = group_hash[i]; active[j].next >= 0; j = active[j].next)
-				number++;
+				++number;
 
 			if (number > 31)
 				fprintf(stderr, "MEGA HASH COLLISION > 31 HASH[%d]=[%d]!!!\n", i, number);

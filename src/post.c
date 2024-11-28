@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-08
+ *  Updated   : 2024-11-25
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -437,11 +437,11 @@ msg_write_headers(
 
 	while (hdr) {
 		fprintf(fp, "%s: %s\n", hdr->name, BlankIfNull(hdr->text));
-		wrote++;
+		++wrote;
 		if ((p = hdr->text)) {
 			while ((p = strchr(p, '\n'))) {
-				p++;
-				wrote++;
+				++p;
+				++wrote;
 			}
 		}
 		hdr = hdr->next;
@@ -925,7 +925,7 @@ build_post_hist_list(
 		}
 		if (buf[j] == ',') {
 			while (buf[j] != '|' && buf[j] != '\n')
-				j++;
+				++j;
 
 			if (k > sizeof(posted->group) - 5)
 				k = sizeof(posted->group) - 5;
@@ -937,7 +937,7 @@ build_post_hist_list(
 		}
 		posted->group[k] = '\0';
 
-		j++;
+		++j;
 
 		p = buf;
 		while ((q = strstr(p, "|<")) != NULL)
@@ -971,7 +971,7 @@ build_post_hist_list(
 		if (p == buf || p == buf + j) /* subject looks like id and no id logged or no id given, clear id */
 			posted->mid[0] = '\0';
 		my_strncpy(posted->subj, buf + j, sizeof(posted->subj) - 1);
-		count++;
+		++count;
 	}
 
 	if (err) {
@@ -1106,7 +1106,7 @@ append_mail(
 			fclose(fp_in);
 			return rval;
 		}
-		retrys++;
+		++retrys;
 
 		while (--retrys && !dot_lock(the_mailbox))
 			wait_message(1, _(txt_trying_dotlock), retrys, the_mailbox);
@@ -1138,7 +1138,7 @@ append_mail(
 					/* mboxrd: quote quoted and plain From_ lines in the body */
 					bufp = buf;
 					while (*bufp == '>')
-						bufp++;
+						++bufp;
 					if (STRNCMPEQ(bufp, "From ", 5))
 						fputc('>', fp_out);
 				} else { /* MBOXO (MBOXCL) */
@@ -1201,57 +1201,60 @@ append_mail(
  *     headers are unique
  * 13. Display an 'are you sure' message before posting article
  */
-#define CA_ERROR_HEADER_LINE_BLANK        0x0000001
-#define CA_ERROR_MISSING_BODY_SEPARATOR   0x0000002
-#define CA_ERROR_MISSING_FROM             0x0000004
-#define CA_ERROR_DUPLICATED_FROM          0x0000008
-#define CA_ERROR_MISSING_SUBJECT          0x0000010
-#define CA_ERROR_DUPLICATED_SUBJECT       0x0000020
-#define CA_ERROR_EMPTY_SUBJECT            0x0000040
-#define CA_ERROR_MISSING_NEWSGROUPS       0x0000080
-#define CA_ERROR_DUPLICATED_NEWSGROUPS    0x0000100
-#define CA_ERROR_EMPTY_NEWSGROUPS         0x0000200
-#define CA_ERROR_DUPLICATED_FOLLOWUP_TO   0x0000400
-#define CA_ERROR_BAD_CHARSET              0x0000800
-#define CA_ERROR_BAD_ENCODING             0x0001000
-#define CA_ERROR_BAD_MESSAGE_ID           0x0002000
-#define CA_ERROR_BAD_DATE                 0x0004000
-#define CA_ERROR_BAD_EXPIRES              0x0008000
-#define CA_ERROR_NEWSGROUPS_NOT_7BIT      0x0010000
-#define CA_ERROR_FOLLOWUP_TO_NOT_7BIT     0x0020000
-#define CA_ERROR_DISTRIBUTIOIN_NOT_7BIT   0x0040000
-#define CA_ERROR_NEWSGROUPS_POSTER        0x0080000
-#define CA_ERROR_FOLLOWUP_TO_POSTER       0x0100000
-#define CA_ERROR_NO_RECIPIENT             0x0200000
+#define CA_ERROR_HEADER_LINE_BLANK         (1 << 0)
+#define CA_ERROR_MISSING_BODY_SEPARATOR    (1 << 1)
+#define CA_ERROR_MISSING_FROM              (1 << 2)
+#define CA_ERROR_DUPLICATED_FROM           (1 << 3)
+#define CA_ERROR_MISSING_SUBJECT           (1 << 4)
+#define CA_ERROR_DUPLICATED_SUBJECT        (1 << 5)
+#define CA_ERROR_EMPTY_SUBJECT             (1 << 6)
+#define CA_ERROR_MISSING_NEWSGROUPS        (1 << 7)
+#define CA_ERROR_DUPLICATED_NEWSGROUPS     (1 << 8)
+#define CA_ERROR_EMPTY_NEWSGROUPS          (1 << 9)
+#define CA_ERROR_DUPLICATED_FOLLOWUP_TO    (1 << 10)
+#define CA_ERROR_BAD_CHARSET               (1 << 11)
+#define CA_ERROR_BAD_ENCODING              (1 << 12)
+#define CA_ERROR_BAD_MESSAGE_ID            (1 << 13)
+#define CA_ERROR_BAD_DATE                  (1 << 14)
+#define CA_ERROR_BAD_EXPIRES               (1 << 15)
+#define CA_ERROR_NEWSGROUPS_NOT_7BIT       (1 << 16)
+#define CA_ERROR_FOLLOWUP_TO_NOT_7BIT      (1 << 17)
+#define CA_ERROR_DISTRIBUTIOIN_NOT_7BIT    (1 << 18)
+#define CA_ERROR_NEWSGROUPS_POSTER         (1 << 19)
+#define CA_ERROR_FOLLOWUP_TO_POSTER        (1 << 20)
+#define CA_ERROR_NO_RECIPIENT              (1 << 21)
+#define CA_ERROR_EMPTY_BODY                (1 << 22)
+#define CA_ERROR_DISTRIBUTION_ALL          (1 << 23)
 #ifndef ALLOW_FWS_IN_NEWSGROUPLIST
-#	define CA_ERROR_SPACE_IN_NEWSGROUPS    0x0400000
-#	define CA_ERROR_NEWLINE_IN_NEWSGROUPS  0x0800000
-#	define CA_ERROR_SPACE_IN_FOLLOWUP_TO   0x1000000
-#	define CA_ERROR_NEWLINE_IN_FOLLOWUP_TO 0x2000000
+#	define CA_ERROR_SPACE_IN_NEWSGROUPS    (1 << 24)
+#	define CA_ERROR_NEWLINE_IN_NEWSGROUPS  (1 << 25)
+#	define CA_ERROR_SPACE_IN_FOLLOWUP_TO   (1 << 26)
+#	define CA_ERROR_NEWLINE_IN_FOLLOWUP_TO (1 << 27)
 #endif /* !ALLOW_FWS_IN_NEWSGROUPLIST */
-#define CA_ERROR_DISTRIBUTION_ALL         0x4000000
-#define CA_WARNING_SPACES_ONLY_SUBJECT      0x000001
-#define CA_WARNING_RE_WITHOUT_REFERENCES    0x000002
-#define CA_WARNING_REFERENCES_WITHOUT_RE    0x000004
-#define CA_WARNING_MULTIPLE_SIGDASHES       0x000008
-#define CA_WARNING_WRONG_SIGDASHES          0x000010
-#define CA_WARNING_LONG_SIGNATURE           0x000020
-#define CA_WARNING_ENCODING_EXTERNAL_INEWS  0x000040
-#define CA_WARNING_NEWSGROUPS_EXAMPLE       0x000080
-#define CA_WARNING_FOLLOWUP_TO_EXAMPLE      0x000100
+
+#define CA_WARNING_SPACES_ONLY_SUBJECT      (1 << 0)
+#define CA_WARNING_RE_WITHOUT_REFERENCES    (1 << 1)
+#define CA_WARNING_REFERENCES_WITHOUT_RE    (1 << 2)
+#define CA_WARNING_MULTIPLE_SIGDASHES       (1 << 3)
+#define CA_WARNING_WRONG_SIGDASHES          (1 << 4)
+#define CA_WARNING_LONG_SIGNATURE           (1 << 5)
+#define CA_WARNING_ENCODING_EXTERNAL_INEWS  (1 << 6)
+#define CA_WARNING_NEWSGROUPS_EXAMPLE       (1 << 7)
+#define CA_WARNING_FOLLOWUP_TO_EXAMPLE      (1 << 8)
+#define CA_WARNING_DISTRIBUTION_WORLD       (1 << 9)
+#define CA_WARNING_MULTI_ADDRESSES_REPLYTO  (1 << 10)
+#define CA_WARNING_MULTI_ADDRESSES_FROM     (1 << 11)
+#define CA_WARNING_MULTI_ADDRESSES_TO       (1 << 12)
+#define CA_WARNING_RE_ONLY_SUBJECT          (1 << 13)
 #ifdef CHARSET_CONVERSION
-#	define CA_WARNING_CHARSET_CONVERSION    0x000200
+#	define CA_WARNING_CHARSET_CONVERSION    (1 << 14)
 #endif /* CHARSET_CONVERSION */
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
-#	define CA_WARNING_SPACE_IN_NEWSGROUPS    0x000400
-#	define CA_WARNING_NEWLINE_IN_NEWSGROUPS  0x000800
-#	define CA_WARNING_SPACE_IN_FOLLOWUP_TO   0x001000
-#	define CA_WARNING_NEWLINE_IN_FOLLOWUP_TO 0x002000
+#	define CA_WARNING_SPACE_IN_NEWSGROUPS    (1 << 15)
+#	define CA_WARNING_NEWLINE_IN_NEWSGROUPS  (1 << 16)
+#	define CA_WARNING_SPACE_IN_FOLLOWUP_TO   (1 << 17)
+#	define CA_WARNING_NEWLINE_IN_FOLLOWUP_TO (1 << 18)
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
-#define CA_WARNING_DISTRIBUTION_WORLD       0x004000
-#define CA_WARNING_MULTI_ADDRESSES_REPLYTO  0x008000
-#define CA_WARNING_MULTI_ADDRESSES_FROM     0x010000
-#define CA_WARNING_MULTI_ADDRESSES_TO       0x020000
 
 /*
  * TODO: cleanup!
@@ -1280,6 +1283,7 @@ check_article_to_be_posted(
 	char references[HEADER_LEN];
 	char subject[HEADER_LEN];
 	int cnt = 0;
+	int body_count = 0;
 	int col, i;
 	int errors = 0;
 	int warnings = 0;
@@ -1296,6 +1300,7 @@ check_article_to_be_posted(
 	int warnings_catbp = 0; /* sum of warning-codes */
 	int must_break_line = 0;
 	int enc; /* mime encoding */
+	int mmnwcharset;
 	struct t_group *psGrp;
 	t_bool end_of_header = FALSE;
 	t_bool got_long_line = FALSE;
@@ -1307,7 +1312,6 @@ check_article_to_be_posted(
 #ifdef CHARSET_CONVERSION
 	t_bool charset_conversion_fails = FALSE;
 #endif /* CHARSET_CONVERSION */
-	int mmnwcharset;
 	static const char *c_article;
 	static int c_art_type;
 	static struct t_group **c_group;
@@ -1324,6 +1328,9 @@ check_article_to_be_posted(
 		c_art_unchanged = art_unchanged;
 	}
 
+	if ((fp = tin_fopen(c_article, "r")) == NULL)
+		return 0;
+
 #ifdef CHARSET_CONVERSION
 	mmnwcharset = *c_group ? (*c_group)->attribute->mm_network_charset : tinrc.mm_network_charset;
 #else
@@ -1332,9 +1339,6 @@ check_article_to_be_posted(
 
 	enc = *c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding;
 
-	if ((fp = tin_fopen(c_article, "r")) == NULL)
-		return 0;
-
 	oldraw = RawState();	/* save state */
 	subject[0] = '\0';
 
@@ -1342,7 +1346,7 @@ check_article_to_be_posted(
 	setup_check_article_screen(&init);
 
 	while ((line = tin_fgets(fp, TRUE)) != NULL) {
-		cnt++;
+		++cnt;
 		contains_8bit = FALSE; /* in header we need to check line wise */
 		if (!end_of_header && !strlen(line)) { /* end of header reached */
 			if (cnt == 1)
@@ -1351,7 +1355,7 @@ check_article_to_be_posted(
 			break;
 		}
 
-		for (cp = line; *cp && !contains_8bit; cp++) {
+		for (cp = line; *cp; cp++) {
 			if (!isascii((unsigned char) *cp)) {
 				contains_8bit = TRUE;
 				break;
@@ -1370,7 +1374,7 @@ check_article_to_be_posted(
 				my_fprintf(stderr, _(txt_error_should_be_shortened), cnt, IMF_LINE_LEN);
 #endif /* MIME_BREAK_LONG_LINES */
 				my_fflush(stderr);
-				warnings++;
+				++warnings;
 			}
 		}
 
@@ -1389,7 +1393,7 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_error_header_line_colon), cnt, line);
 			EndInverse();
 			my_fflush(stderr);
-			errors++;
+			++errors;
 			continue; /* code below (till end of while) relies on set cp != NULL, don't modify cp */
 		}
 		if (cp - line == 0) { /* RFC 5322 3.6.8 */
@@ -1397,7 +1401,7 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_error_header_no_name), cnt, line);
 			EndInverse();
 			my_fflush(stderr);
-			errors++;
+			++errors;
 			continue;
 		}
 		/*
@@ -1413,12 +1417,12 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_error_header_line_space), cnt, line);
 			EndInverse();
 			my_fflush(stderr);
-			errors++;
+			++errors;
 			continue;
 		}
 
 		if (cp - line == 7 && !strncasecmp(line, "Subject", 7)) {
-			found_subject_lines++;
+			++found_subject_lines;
 			strncpy(subject, cp + 2, (size_t) (cCOLS - 6));
 			subject[cCOLS - 6] = '\0';
 		}
@@ -1442,7 +1446,7 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_error_sender_in_header_not_allowed), cnt);
 			EndInverse();
 			my_fflush(stderr);
-			errors++;
+			++errors;
 			continue;
 		}
 #endif /* !FORGERY */
@@ -1454,9 +1458,9 @@ check_article_to_be_posted(
 				/* EndInverse(); */
 				my_fflush(stderr);
 #ifdef HAVE_FASCIST_NEWSADMIN
-				errors++;
+				++errors;
 #else
-				warnings++;
+				++warnings;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 			}
 			(void) check_mailbox_list(line, "Approved:", mmnwcharset, &errors);
@@ -1464,7 +1468,7 @@ check_article_to_be_posted(
 		}
 
 		if (cp - line == 4 && !strncasecmp(line, "From", 4)) {
-			found_from_lines++;
+			++found_from_lines;
 			if (check_mailbox_list(line, "From:", mmnwcharset, &errors) > 1)
 				warnings_catbp |= CA_WARNING_MULTI_ADDRESSES_FROM;
 			continue;
@@ -1505,7 +1509,7 @@ check_article_to_be_posted(
 				EndInverse();
 				my_fflush(stderr);
 #ifndef FORGERY
-				errors++;
+				++errors;
 #endif /* !FORGERY */
 			}
 			cp2 = my_strdup(hp);
@@ -1551,9 +1555,10 @@ check_article_to_be_posted(
 		 */
 		if (cp - line == 10 && !strncasecmp(line, "Newsgroups", 10)) {
 			FreeIfNeeded(newsgroups);
-			found_newsgroups_lines++;
+			++found_newsgroups_lines;
 			for (hp = line + 11; *hp == ' '; hp++)
 				;
+
 			if (strchr(hp, ' ') || strchr(hp, '\t')) {
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 				warnings_catbp |= CA_WARNING_SPACE_IN_NEWSGROUPS;
@@ -1561,6 +1566,7 @@ check_article_to_be_posted(
 				errors_catbp |= CA_ERROR_SPACE_IN_NEWSGROUPS;
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 			}
+
 			if (strchr(hp, '\n')) {
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 				warnings_catbp |= CA_WARNING_NEWLINE_IN_NEWSGROUPS;
@@ -1584,7 +1590,7 @@ check_article_to_be_posted(
 					}
 				}
 			}
-			{ /* check for poster, example, example.* */
+			if (ngcnt) { /* check for poster, example, example.* */
 				char *groups;
 
 				for (hp = line + 11; *hp == ' '; hp++)
@@ -1592,14 +1598,25 @@ check_article_to_be_posted(
 				cp2 = groups = my_strdup(hp);
 
 				if ((hp = strtok(groups, ",")) != NULL) {
-					do {
+					do { /* RFC 5536 3.1.4 */
 						if (!strcmp(hp, "poster"))
 							errors_catbp |= CA_ERROR_NEWSGROUPS_POSTER;
-						if (!strcmp(hp, "example"))
+						if (!strcmp(hp, "example") || !strncmp(hp, "example.", 8))
 							warnings_catbp |= CA_WARNING_NEWSGROUPS_EXAMPLE;
-						if (!strncmp(hp, "example.", 8))
-							warnings_catbp |= CA_WARNING_NEWSGROUPS_EXAMPLE;
-						/* TODO: also check for to, ctl, all, control, junk */
+						/*
+						 * TODO: also check for
+						 *   newsgoups
+						 *       "junk"
+						 *       "to", "to.",
+						 *       "control", "control."
+						 *   components
+						 *       "ctl",
+						 *       "all",
+						 *       '_', '+', '-' at component start
+						 *   and maybe
+						 *       uppercase letters
+						 *       all digit component
+						 */
 					} while ((hp = strtok(NULL, ",")) != NULL);
 				}
 				free(cp2);
@@ -1642,7 +1659,10 @@ check_article_to_be_posted(
 						warnings_catbp |= CA_WARNING_DISTRIBUTION_SHORT;
 					if (strlen(hp) == 2) {
 						if (!isalpha(*hp) || !isalpha(*hp + 1))
-							/* simplified check for two-letter country codes ISO-3166-1 */
+							/*
+							 * simplified check for two-letter country codes
+							 * ISO-3166-1, what about gnksa_country_codes[]?
+							 */
 							warnings_catbp |= CA_WARNING_DISTRIBUTION_2LCC;
 					}
 
@@ -1652,7 +1672,7 @@ check_article_to_be_posted(
 					 * do in !isacii() check above?
 					 */
 					while (isalnum(*hp) || *hp == '+' || *hp == '_' || *hp == '-')
-						hp++;
+						++hp;
 					if (*hp != '\0')
 						warnings_catbp |= CA_WARNING_DISTRIBUTION_CHAR;
 #endif /* 0 */
@@ -1668,7 +1688,7 @@ check_article_to_be_posted(
 			for (hp = line + 12; *hp == ' '; hp++)
 				;
 			if (*hp) /* Followup-To not empty */
-				found_followup_to_lines++;
+				++found_followup_to_lines;
 			if (strchr(hp, ' ') || strchr(hp, '\t')) {
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 				warnings_catbp |= CA_WARNING_SPACE_IN_FOLLOWUP_TO;
@@ -1709,7 +1729,21 @@ check_article_to_be_posted(
 							warnings_catbp |= CA_WARNING_FOLLOWUP_TO_EXAMPLE;
 						if (!strncmp(hp, "example.", 8))
 							warnings_catbp |= CA_WARNING_FOLLOWUP_TO_EXAMPLE;
-						/* TODO: also check for to, ctl, all, control, junk */
+						/*
+						 * TODO: also check for
+						 *   newsgoups
+						 *       "junk"
+						 *       "to", "to.",
+						 *       "control", "control."
+						 *   components
+						 *       "ctl",
+						 *       "all",
+						 *       '_', '+', '-' at component start
+						 *   and maybe
+						 *       uppercase letters
+						 *       all digit component
+						 */
+
 					} while ((hp = strtok(NULL, ",")) != NULL);
 				}
 				free(cp2);
@@ -1718,28 +1752,35 @@ check_article_to_be_posted(
 		}
 	} /* end of headers */
 
-	if (!*subject)
-		errors_catbp |= CA_ERROR_EMPTY_SUBJECT;
-	else {
+	if (!*subject) {
+		if (!found_subject_lines)
+			errors_catbp |= CA_ERROR_MISSING_SUBJECT;
+		else
+			errors_catbp |= CA_ERROR_EMPTY_SUBJECT;
+	} else {
 		cp2 = my_strdup(subject);
-		if (!strtok(cp2, " \t")) {	/* only blanks in Subject? */
+		if (!strtok(cp2, " \t"))
 			warnings_catbp |= CA_WARNING_SPACES_ONLY_SUBJECT;
-			free(cp2);
-		} else {
-			free(cp2);
+		else {
+			if (!strcmp(subject, "Re:") || !strcmp(subject, "Re: "))
+				warnings_catbp |= CA_WARNING_RE_ONLY_SUBJECT;
 			/* Warn if Subject: begins with "Re: " but there are no References: */
 			if (!saw_references && !strncmp(subject, "Re: ", 4))
 				warnings_catbp |= CA_WARNING_RE_WITHOUT_REFERENCES;
-			/*
-			 * Warn if there are References: but no "Re: " at the beginning of
-			 * and no "(was:" in the Subject.
-			 */
-			if (saw_references && strncmp(subject, "Re: ", 4)) {
-				t_bool was_found = FALSE;
+		}
+		free(cp2);
 
-				cp2 = subject;
-				while (!was_found && (cp2 = strchr(cp2, '(')))
-					was_found = (STRNCMPEQ(++cp2, "was:", 4));
+		if (!(warnings_catbp & CA_WARNING_RE_WITHOUT_REFERENCES)) {
+			/*
+			 * Warn if there are References: but no "Re: " at the beginning
+			 * of and no "(was:" in the Subject.
+			 */
+			 if (saw_references && strncmp(subject, "Re: ", 4)) {
+			 	t_bool was_found = FALSE;
+
+			 	cp2 = subject;
+			 	while (!was_found && (cp2 = strchr(cp2, '(')))
+				was_found = (STRNCMPEQ(++cp2, "was:", 4));
 
 				if (!was_found)
 					warnings_catbp |= CA_WARNING_REFERENCES_WITHOUT_RE;
@@ -1760,12 +1801,8 @@ check_article_to_be_posted(
 	if (found_newsgroups_lines > 1)
 		errors_catbp |= CA_ERROR_DUPLICATED_NEWSGROUPS;
 
-	if (!found_subject_lines)
-		errors_catbp |= CA_ERROR_MISSING_SUBJECT;
-	else {
-		if (found_subject_lines > 1)
-			errors_catbp |= CA_ERROR_DUPLICATED_SUBJECT;
-	}
+	if (found_subject_lines > 1)
+		errors_catbp |= CA_ERROR_DUPLICATED_SUBJECT;
 
 	if (found_followup_to_lines > 1)
 		errors_catbp |= CA_ERROR_DUPLICATED_FOLLOWUP_TO;
@@ -1789,15 +1826,16 @@ check_article_to_be_posted(
 	 * check if sig is shorter then MAX_SIG_LINES lines
 	 */
 	while ((line = tin_fgets(fp, FALSE))) {
-		cnt++;
+		++cnt;
+		++body_count; /* Ice T. */
 
 		if (saw_sig_dashes || saw_wrong_sig_dashes)
-			sig_lines++;
+			++sig_lines;
 
 		/* SIGDASHES excluding the terminating \n as tin_fgets strips it */
 		if (strlen(line) == 3 && !strncmp(line, SIGDASHES, 3)) {
 			saw_wrong_sig_dashes = FALSE;
-			saw_sig_dashes++;
+			++saw_sig_dashes;
 			sig_lines = 0;
 		}
 
@@ -1837,7 +1875,7 @@ check_article_to_be_posted(
 			for (cp = line; *cp; ) {
 				if (*cp == '\t') {
 					col += 8 - (col % 8);
-					cp++;
+					++cp;
 				} else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					if ((num_bytes = mbtowc(&wc, cp, MB_CUR_MAX)) != -1) {
@@ -1849,19 +1887,19 @@ check_article_to_be_posted(
 							if (seen != cnt) { /* warn just once per line */
 								seen = cnt;
 								my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, strunc(cp, cCOLS - 1));
-								warnings++;
+								++warnings;
 							}
-							col++;
+							++col;
 						}
 						cp += num_bytes;
 					} else {
 						if (seen != cnt) { /* warn just once per line */
 							seen = cnt;
 							my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, strunc(cp, cCOLS - 1));
-							warnings++;
+							++warnings;
 						}
-						cp++;
-						col++;
+						++cp;
+						++col;
 					}
 #else
 					if (!contains_8bit && !isascii((unsigned char) *cp))
@@ -1869,10 +1907,10 @@ check_article_to_be_posted(
 					if (!my_isprint((unsigned char) *cp) && seen != cnt) { /* warn just once per line */
 						seen = cnt;
 						my_fprintf(stderr, _(txt_warn_unprintable_char), cnt, strunc(cp, cCOLS - 1));
-						warnings++;
+						++warnings;
 					}
-					cp++;
-					col++;
+					++cp;
+					++col;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				}
 			}
@@ -1886,12 +1924,14 @@ check_article_to_be_posted(
 			my_fflush(stderr);
 			free(m);
 			got_long_line = TRUE;
-			warnings++;
+			++warnings;
 		}
 		if (!must_break_line && strlen(line) > IMF_LINE_LEN)
 			must_break_line = cnt;
 	}
 
+	if (!body_count)
+		errors_catbp |= CA_ERROR_EMPTY_BODY;
 /*
  * TODO: cleanup, test me, move to the right location, ...
  */
@@ -1909,7 +1949,7 @@ check_article_to_be_posted(
 				my_fprintf(stderr, _(txt_warn_long_line_not_base), must_break_line, IMF_LINE_LEN, content_encodings[ENCODING_BASE64]);
 		}
 		my_fflush(stderr);
-		warnings++;
+		++warnings;
 	}
 
 	if (saw_sig_dashes > 1)
@@ -1921,7 +1961,7 @@ check_article_to_be_posted(
 	if (sig_lines > MAX_SIG_LINES) {
 		warnings_catbp |= CA_WARNING_LONG_SIGNATURE;
 #ifdef HAVE_FASCIST_NEWSADMIN
-		errors++;
+		++errors;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 	}
 
@@ -1990,32 +2030,42 @@ check_article_to_be_posted(
 	if (errors_catbp) {
 		StartInverse();
 
-		/* missing headers */
+		/* missing || duplicated headers */
 		if (errors_catbp & CA_ERROR_HEADER_LINE_BLANK)
 			my_fprintf(stderr, "%s", _(txt_error_header_line_blank));
 		if (errors_catbp & CA_ERROR_MISSING_BODY_SEPARATOR)
 			my_fprintf(stderr, "%s", _(txt_error_header_and_body_not_separate));
+		else {
+			if (errors_catbp & CA_ERROR_EMPTY_BODY)
+				my_fprintf(stderr, "%s", _(txt_error_empty_art));
+		}
 		if (errors_catbp & CA_ERROR_MISSING_FROM)
 			my_fprintf(stderr, _(txt_error_header_line_missing), "From");
+		else {
+			if (errors_catbp & CA_ERROR_DUPLICATED_FROM)
+				my_fprintf(stderr, _(txt_error_header_duplicate), found_from_lines, "From");
+		}
 		if (errors_catbp & CA_ERROR_MISSING_SUBJECT)
 			my_fprintf(stderr, _(txt_error_header_line_missing), "Subject");
+		else {
+			if (errors_catbp & CA_ERROR_DUPLICATED_SUBJECT)
+				my_fprintf(stderr, _(txt_error_header_duplicate), found_subject_lines, "Subject");
+		}
 		if (errors_catbp & CA_ERROR_MISSING_NEWSGROUPS)
 			my_fprintf(stderr, _(txt_error_header_line_missing), "Newsgroups");
+		else {
+			if (errors_catbp & CA_ERROR_DUPLICATED_NEWSGROUPS)
+				my_fprintf(stderr, _(txt_error_header_duplicate), found_newsgroups_lines, "Newsgroups");
+		}
 
 		/* duplicated headers */
-		if (errors_catbp & CA_ERROR_DUPLICATED_FROM)
-			my_fprintf(stderr, _(txt_error_header_duplicate), found_from_lines, "From");
-		if (errors_catbp & CA_ERROR_DUPLICATED_SUBJECT)
-			my_fprintf(stderr, _(txt_error_header_duplicate), found_subject_lines, "Subject");
-		if (errors_catbp & CA_ERROR_DUPLICATED_NEWSGROUPS)
-			my_fprintf(stderr, _(txt_error_header_duplicate), found_newsgroups_lines, "Newsgroups");
 		if (errors_catbp & CA_ERROR_DUPLICATED_FOLLOWUP_TO)
 			my_fprintf(stderr, _(txt_error_header_duplicate), found_followup_to_lines, "Followup-To");
 
 		/* empty headers */
 		if (errors_catbp & CA_ERROR_EMPTY_SUBJECT)
 			my_fprintf(stderr, _(txt_error_header_line_empty), "Subject");
-		if (errors_catbp & CA_ERROR_EMPTY_NEWSGROUPS)
+		if (errors_catbp & CA_ERROR_EMPTY_NEWSGROUPS && !(errors_catbp & CA_ERROR_MISSING_NEWSGROUPS))
 			my_fprintf(stderr, _(txt_error_header_line_empty), "Newsgroups");
 
 #ifndef ALLOW_FWS_IN_NEWSGROUPLIST
@@ -2073,6 +2123,8 @@ check_article_to_be_posted(
 	if (warnings_catbp) {
 		if (warnings_catbp & CA_WARNING_SPACES_ONLY_SUBJECT)
 			my_fprintf(stderr, "%s", _(txt_warn_blank_subject));
+		if (warnings_catbp & CA_WARNING_RE_ONLY_SUBJECT)
+			my_fprintf(stderr, "%s", _(txt_warn_re_only_subject));
 		if (warnings_catbp & CA_WARNING_RE_WITHOUT_REFERENCES)
 			my_fprintf(stderr, "%s", _(txt_warn_re_but_no_references));
 		if (warnings_catbp & CA_WARNING_REFERENCES_WITHOUT_RE)
@@ -2145,26 +2197,26 @@ check_article_to_be_posted(
 					if (psGrp->aliasedto) {
 #ifdef HAVE_FASCIST_NEWSADMIN
 						StartInverse();
-						errors++;
+						++errors;
 						my_fprintf(stderr, _(txt_error_grp_renamed), newsgroups[i], psGrp->aliasedto);
 						EndInverse();
 						my_fflush(stderr);
 #else
 						my_fprintf(stderr, _(txt_warn_grp_renamed), newsgroups[i], psGrp->aliasedto);
-						warnings++;
+						++warnings;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 					} else /* TODO: strunc(description)? */
 						my_fprintf(stderr, "  %s\t %s\n", newsgroups[i], BlankIfNull(psGrp->description));
 				} else {
 #ifdef HAVE_FASCIST_NEWSADMIN
 					StartInverse();
-					errors++;
+					++errors;
 					my_fprintf(stderr, _(txt_error_not_valid_newsgroup), newsgroups[i]);
 					EndInverse();
 					my_fflush(stderr);
 #else
 					my_fprintf(stderr, (!list_active ? /* did we read the whole active file? */ _(txt_warn_not_in_newsrc) : _(txt_warn_not_valid_newsgroup)), newsgroups[i]);
-					warnings++;
+					++warnings;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 				}
 			}
@@ -2174,10 +2226,10 @@ check_article_to_be_posted(
 				my_fprintf(stderr, _(txt_error_missing_followup_to), ngcnt);
 				EndInverse();
 				my_fflush(stderr);
-				errors++;
+				++errors;
 #else
 				my_fprintf(stderr, _(txt_warn_missing_followup_to), ngcnt);
-				warnings++;
+				++warnings;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 			}
 
@@ -2188,10 +2240,10 @@ check_article_to_be_posted(
 					my_fprintf(stderr, "%s", _(txt_error_followup_to_several_groups));
 					EndInverse();
 					my_fflush(stderr);
-					errors++;
+					++errors;
 #else
 					my_fprintf(stderr, "%s", _(txt_warn_followup_to_several_groups));
-					warnings++;
+					++warnings;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 				}
 #ifdef HAVE_FASCIST_NEWSADMIN
@@ -2203,13 +2255,13 @@ check_article_to_be_posted(
 							if (psGrp->aliasedto) {
 #ifdef HAVE_FASCIST_NEWSADMIN
 								StartInverse();
-								errors++;
+								++errors;
 								my_fprintf(stderr, _(txt_error_grp_renamed), followupto[i], psGrp->aliasedto);
 								EndInverse();
 								my_fflush(stderr);
 #else
 								my_fprintf(stderr, _(txt_warn_grp_renamed), followupto[i], psGrp->aliasedto);
-								warnings++;
+								++warnings;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 							} else /* TODO: strunc(description)? */
 								my_fprintf(stderr, "  %s\t %s\n", followupto[i], BlankIfNull(psGrp->description));
@@ -2222,10 +2274,10 @@ check_article_to_be_posted(
 								my_fprintf(stderr, _(txt_error_not_valid_newsgroup), followupto[i]);
 								EndInverse();
 								my_fflush(stderr);
-								errors++;
+								++errors;
 #else
 								my_fprintf(stderr, (!list_active ? /* did we read the whole active file? */ _(txt_warn_not_in_newsrc) : _(txt_warn_not_valid_newsgroup)), followupto[i]);
-								warnings++;
+								++warnings;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 							}
 						}
@@ -2283,7 +2335,7 @@ check_mailbox_list(
 	unfold_header(curr_from);
 
 	do {
-		n++;
+		++n;
 		next_from = split_mailbox_list(curr_from);
 		i = gnksa_check_from(str_trim(curr_from));
 #if 0
@@ -2755,10 +2807,10 @@ check_moderated(
 		return NULL;
 
 	do {
-		vnum++; /* number of newsgroups */
+		++vnum; /* number of newsgroups */
 
 		if (!(group = group_find(groupname, FALSE))) {
-			bnum++;	/* number of bogus groups */
+			++bnum;	/* number of bogus groups */
 			continue;
 		}
 
@@ -2981,7 +3033,7 @@ post_postponed_article(
 
 		/* calculate offset to body */
 		while ((line = tin_fgets(fp, TRUE)) != NULL) {
-			offset++;
+			++offset;
 			if (!*line) /* end of headers */
 				break;
 		}
@@ -3009,7 +3061,7 @@ count_postponed_articles(
 
 	while (fgets(line, (int) sizeof(line), fp)) {
 		if (STRNCMPEQ(line, "From ", 5))
-			count++;
+			++count;
 	}
 	fclose(fp);
 	return count;
@@ -3099,7 +3151,7 @@ fetch_postponed_article(
 			if (tinrc.mailbox_format == 1) {
 				bufp = line;
 				while (*bufp == '>')
-					bufp++;
+					++bufp;
 				if (STRNCMPEQ(bufp, "From ", 5))
 					fputs(line + 1, out);
 				else
@@ -3280,7 +3332,7 @@ must_include(
 	const char *id)
 {
 	while (*id && *id != '<')
-		id++;
+		++id;
 	while (*id && *id != '>') {
 		if (*++id != '_')
 			continue;
@@ -3302,11 +3354,11 @@ skip_id(
 	size_t skipped = 0;
 
 	while (id[skipped] != '\0' && isspace((unsigned char) id[skipped]))
-		skipped++;
+		++skipped;
 
 	if (id[skipped] != '\0') {
 		while (id[skipped] != '\0' && !isspace((unsigned char) id[skipped]))
-			skipped++;
+			++skipped;
 	}
 	return skipped;
 }
@@ -3321,13 +3373,13 @@ damaged_id(
 	const char *id)
 {
 	while (*id && isspace((unsigned char) *id))
-		id++;
+		++id;
 
 	if (*id != '<')
 		return TRUE;
 
 	while (isascii((unsigned char) *id) && isgraph((unsigned char) *id) && !iscntrl((unsigned char) *id) && *id != '>')
-		id++;
+		++id;
 
 	if (*id != '>')
 		return TRUE;
@@ -3348,7 +3400,7 @@ is_crosspost(
 
 	for (; *xref; xref++)
 		if (*xref == ':')
-			count++;
+			++count;
 
 	return (count >= 2) ? TRUE : FALSE;
 }
@@ -3408,19 +3460,19 @@ join_references(
 	while (*e) {
 		if (*e == ' ') {
 			/* keep existing spaces */
-			space++;
+			++space;
 			*c++ = ' ';
-			e++;
+			++e;
 			continue;
 		} else if (*e != '<') {		/* strip everything besides spaces and */
-			e++;	/* message-ids */
+			++e;	/* message-ids */
 			continue;
 		}
 		if (damaged_id(e)) {	/* remove damaged message ids and mark
 					   the gap if that's not already done */
 			e += skip_id(e);
 			while (space < 3) {
-				space++;
+				++space;
 				*c++ = ' ';
 			}
 			continue;
@@ -3432,8 +3484,8 @@ join_references(
 		appendid(&c, &e);
 	}
 	while (space) {
-		c--;
-		space--;	/* remove superfluous space at the end */
+		--c;
+		--space;	/* remove superfluous space at the end */
 	}
 	*c++ = ' ';
 	appendid(&c, &newref);
@@ -3451,7 +3503,7 @@ join_references(
 		*d++ = ' ';
 		*d++ = ' ';	/* and mark this appropriately */
 		while (*c == ' ')
-			c++;
+			++c;
 
 		my_memmove(d, c, strlen(c) + 1);
 	}
@@ -3517,7 +3569,7 @@ show_followup_info(
 			my_fputs(cCRLF, stdout);
 			my_fputs("    ", stdout);
 		}
-		ptr++;
+		++ptr;
 	}
 	my_flush();
 }
@@ -3720,7 +3772,7 @@ post_response(
 				fprintf(fp, "%s\n", buf);
 		} else if (strfquote(groupname, respnum, buf, sizeof(buf), group && group->attribute->news_quote_format ? *group->attribute->news_quote_format : tinrc.news_quote_format))
 			fprintf(fp, "%s\n", buf);
-		start_line_offset++;
+		++start_line_offset;
 
 		/*
 		 * check if tinrc.xpost_quote_format or tinrc.news_quote_format
@@ -3780,10 +3832,10 @@ post_response(
 					int i = 0;
 
 					while (pgart.cookl[i].flags & C_HEADER) /* skip headers in cooked art if any */
-						i++;
+						++i;
 
 					if (i) /* cooked art contained any headers, so skip also the header/body separator */
-						i++;
+						++i;
 
 					if (fseek(pgart.cooked, pgart.cookl[i].offset, SEEK_SET) == -1) { /* skip headers and header/body separator */
 						perror_message(txt_error_fseek, pgart.cooked);
@@ -4078,7 +4130,7 @@ add_mail_quote(
 
 	if (strfquote(CURR_GROUP.name, respnum, buf, sizeof(buf), tinrc.mail_quote_format)) {
 		fprintf(fp, "%s\n", buf);
-		line_count++;
+		++line_count;
 
 		for (s = buf; *s; s++) {
 			if (*s == '\n')
@@ -4254,15 +4306,15 @@ mail_bug_report(
 	if (read_news_via_nntp) {
 		if (*bug_nntpserver1) {
 			fprintf(fp, "NNTP1: %s\n", bug_nntpserver1);
-			start_line_offset++;
+			++start_line_offset;
 		}
 		if (*bug_nntpserver2) {
 			fprintf(fp, "NNTP2: %s\n", bug_nntpserver2);
-			start_line_offset++;
+			++start_line_offset;
 		}
 		if (nntp_caps.implementation) {
 			fprintf(fp, "IMPLE: %s\n", nntp_caps.implementation);
-			start_line_offset++;
+			++start_line_offset;
 		}
 	}
 #endif /* NNTP_ABLE */
@@ -4428,10 +4480,10 @@ mail_to_author(
 				} else { /* without headers */
 					i = 0;
 					while (pgart.cookl[i].flags & C_HEADER) /* skip headers in cooked art if any */
-						i++;
+						++i;
 
 					if (i) /* cooked art contained any headers, so skip also the header/body separator */
-						i++;
+						++i;
 
 					if (fseek(pgart.cooked, pgart.cookl[i].offset, SEEK_SET) == -1) {
 						perror_message(txt_error_fseek, pgart.cooked);
@@ -4514,7 +4566,7 @@ check_for_spamtrap(
 		}
 		tmp += strlen(tmp);
 		if (ptr != NULL)
-			tmp++;
+			++tmp;
 	}
 	free(env);
 	return FALSE;
@@ -4712,7 +4764,7 @@ cancel_article(
 #ifdef FORGERY
 	if (author) {
 		fprintf(fp, "%s", txt_article_cancelled);
-		start_line_offset++;
+		++start_line_offset;
 	} else {
 		rewind(pgart.raw);
 		copy_fp(pgart.raw, fp);
@@ -4721,7 +4773,7 @@ cancel_article(
 	invoke_editor(cancel, start_line_offset, group); /* TODO: handle invocation error? */
 #else
 	fprintf(fp, "%s", txt_article_cancelled);
-	start_line_offset++;
+	++start_line_offset;
 	fclose(fp);
 #endif /* FORGERY */
 
@@ -4832,8 +4884,6 @@ repost_article(
 	FILE *fp;
 	char buf[HEADER_LEN];
 	char from_name[HEADER_LEN];
-	char full_name[128];
-	char user_name[LOGIN_NAME_MAX];
 	int art_type = GROUP_TYPE_NEWS;
 	int ret_code = POSTED_NONE;
 	struct t_group *group;
@@ -4881,7 +4931,6 @@ repost_article(
 #endif /* HAVE_FCHMOD */
 
 	get_from_name(from_name, group);
-	get_user_info(user_name, full_name);
 
 	if (Superseding) {
 #ifdef FORGERY
@@ -4998,9 +5047,9 @@ repost_article(
 		int i = 0;
 
 		while (artinfo->cookl[i].flags & C_HEADER) /* skip headers in cooked art if any */
-			i++;
+			++i;
 		if (i) /* cooked art contained any headers, so skip also the header/body separator */
-			i++;
+			++i;
 		if (fseek(artinfo->cooked, artinfo->cookl[i].offset, SEEK_SET) != -1)
 			copy_fp(artinfo->cooked, fp);
 		else {
@@ -5210,7 +5259,7 @@ msg_add_x_body(
 			*ptr = '\0';
 
 		fprintf(fp_out, "%s\n", line);
-		wrote++;
+		++wrote;
 	} else {
 		if (!strfpath(*body, file, sizeof(file), &CURR_GROUP, FALSE))
 			STRCPY(file, *body);
@@ -5230,7 +5279,7 @@ msg_add_x_body(
 
 		while (fgets(line, (int) sizeof(line), fp) != NULL) {
 			fputs(line, fp_out);
-			wrote++;
+			++wrote;
 		}
 #ifndef DONT_HAVE_PIPING
 		if (is_pipe)
@@ -5312,32 +5361,44 @@ checknadd_headers(
 	} /* end of headers */
 
 	if ((group && group->attribute->advertising) || (!group && tinrc.advertising)) {	/* Add after other headers */
-		char suffix[HEADER_LEN];
+		char *suffix = NULL;
+		size_t len;
 
-		suffix[0] = '\0';
 #if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
 		if (*system_info.release) {
 #	ifdef _AIX
-		snprintf(suffix, sizeof(suffix), "(%s/%s.%s)",
-			system_info.sysname, system_info.version, system_info.release);
+			len = 5 + sizeof(system_info.sysname) + sizeof(system_info.version) + sizeof(system_info.release);
+			suffix = my_malloc(len);
+			snprintf(suffix, len, "(%s/%s.%s)",
+				system_info.sysname, system_info.version, system_info.release);
 #	else
 #		if defined(SEIUX) || defined(__riscos)
-			snprintf(suffix, sizeof(suffix), "(%s/%s)",
+			len = 4 + sizeof(system_info.version) + sizeof(system_info.release);
+			suffix = my_malloc(len);
+			snprintf(suffix, len, "(%s/%s)",
 				system_info.version, system_info.release);
 #		else
-			snprintf(suffix, sizeof(suffix), "(%s/%s (%s))",
+			len = 7 + sizeof(system_info.sysname) + sizeof(system_info.release) + sizeof(system_info.machine);
+			suffix = my_malloc(len);
+			snprintf(suffix, len, "(%s/%s (%s))",
 				system_info.sysname, system_info.release, system_info.machine);
 #		endif /* SEIUX || __riscos */
 #	endif /* _AIX */
 		}
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 #ifdef SYSTEM_NAME
-		if (!*suffix && strlen(SYSTEM_NAME) > 0)
-				snprintf(suffix, sizeof(suffix), "(%s)", SYSTEM_NAME);
+		if (!suffix && (len = strlen(SYSTEM_NAME)) > 0) {
+			len += 3;
+			suffix = my_malloc(len);
+			snprintf(suffix, len, "(%s)", SYSTEM_NAME);
+		}
+#else
+		(void) len;
 #endif /* SYSTEM_NAME */
 
 		fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") %s\n",
-			PRODUCT, VERSION, RELEASEDATE, RELEASENAME, suffix);
+			PRODUCT, VERSION, RELEASEDATE, RELEASENAME, BlankIfNull(suffix));
+		FreeIfNeeded(suffix);
 	}
 
 	fputs("\n", fp_out); /* header/body separator */
@@ -5569,7 +5630,7 @@ update_active_after_posting(
 		if (*src != ' ')
 			*dst = *src;
 
-		src++;
+		++src;
 		if (*dst == ',' || *dst == '\0') {
 			*dst = '\0';
 			group = group_find(groupname, FALSE);
@@ -5579,7 +5640,7 @@ update_active_after_posting(
 			}
 			dst = groupname;
 		} else
-			dst++;
+			++dst;
 	}
 }
 
@@ -5725,8 +5786,8 @@ split_address_list(
 	while (len > 0) {
 		/* skip white space at beginning */
 		while (len && isspace((unsigned char) *curr)) {
-			curr++;
-			len--;
+			++curr;
+			--len;
 		}
 		if (len == 0)
 			break;
@@ -5746,21 +5807,21 @@ split_address_list(
 			switch (*curr) {
 				case '"':
 					/* quoted-string area */
-					curr++;
-					len--;
-					dquotes++;
+					++curr;
+					--len;
+					++dquotes;
 					while (len && dquotes) {
 						switch (*curr) {
 							case '"':
 								/* end of quoted-string */
-								dquotes--;
+								--dquotes;
 								break;
 
 							case '\\':
 								/* quoted-pair: ignore next char */
 								if (len > 1) {
-									curr++;
-									len--;
+									++curr;
+									--len;
 								}
 								break;
 
@@ -5769,33 +5830,33 @@ split_address_list(
 								break;
 						}
 						if (dquotes && len > 0) {
-							curr++;
-							len--;
+							++curr;
+							--len;
 						}
 					}
 					break;
 
 				case '(':
 					/* comment area */
-					curr++;
-					len--;
-					parens++;
+					++curr;
+					--len;
+					++parens;
 					while (len && parens) {
 						switch (*curr) {
 							case '(':
 								/* comments may be nested */
-								parens++;
+								++parens;
 								break;
 
 							case ')':
-								parens--;
+								--parens;
 								break;
 
 							case '\\':
 								/* quoted-pair: ignore next char */
 								if (len > 1) {
-									curr++;
-									len--;
+									++curr;
+									--len;
 								}
 								break;
 
@@ -5804,8 +5865,8 @@ split_address_list(
 								break;
 						}
 						if (parens && len > 0) {
-							curr++;
-							len--;
+							++curr;
+							--len;
 						}
 					}
 					break;
@@ -5816,31 +5877,29 @@ split_address_list(
 			}
 			if (len > 0) {
 				/* avoid going after end of addresses (may occur in broken address lists) */
-				curr++;
-				len--;
+				++curr;
+				--len;
 			}
 		}
 		/* end of address */
 		end = curr;
 		if (end > start) {
-			end--;
+			--end;
 			while ((end > start) && isspace((unsigned char) *end))
-				end--;	/* skip trailing white space */
+				--end;	/* skip trailing white space */
 			if (!isspace((unsigned char) *end))
-				end++;
+				++end;
 			addr_len = (size_t) (end - start);
 			if (addr_len > 0) {
-				addr = my_malloc(addr_len + 1);
-				strncpy(addr, start, addr_len);
-				addr[addr_len] = '\0';
-				argc++;
+				addr = my_strndup(start, addr_len);
+				++argc;
 				argv = my_realloc(argv, argc * sizeof(char *));
 				argv[argc - 1] = addr;
 			}
 		}
 		if (len > 0) {
-			curr++;
-			len--;
+			++curr;
+			--len;
 		}
 	}
 	/* end of buffer, end of addresses. now return array of strings */
@@ -5949,11 +6008,11 @@ get_recipients(
 		if (all_addresses[i]) {
 			for (src = all_addresses[i]; (*src && buflen); src++, dest++) {
 				*dest = *src;
-				buflen--;
+				--buflen;
 			}
 			if (buflen > 0) {
 				*dest++ = ',';
-				buflen--;
+				--buflen;
 			}
 		}
 	}
@@ -6264,7 +6323,7 @@ add_headers(
 				t_bool emptyhdr = TRUE;
 
 				if ((cp = strchr(line, ':')) != NULL) {
-					cp++; /* skip past : */
+					++cp; /* skip past : */
 
 					/*
 					 * check_article_to_be_posted takes care that we have at
@@ -6274,7 +6333,7 @@ add_headers(
 					while (emptyhdr && *cp) {
 						if (!isspace((unsigned char) *cp))
 							emptyhdr = FALSE;
-						cp++;
+						++cp;
 					}
 				}
 				if (emptyhdr)
@@ -6383,7 +6442,7 @@ stripped_double_ngs(
 				changed = TRUE;
 				(*ngcnt)--;
 			} else
-				j++;
+				++j;
 		}
 	}
 	return changed;

@@ -3,9 +3,9 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2024-10-20
+ *  Updated   : 2024-11-18
  *  Notes     : simple abstraction for various TLS implementations
- *  Copyright : (c) Copyright 2022-2024 Enrik Berkhan <Enrik.Berkhan@inka.de>
+ *  Copyright : (c) Copyright 2022-2025 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
  *              or otherwise use this software  as long as: there is no
  *              monetary  profit  gained  specifically  from the use or
@@ -266,7 +266,6 @@ tintls_open(
 #else
 #	ifdef USE_GNUTLS
 	gnutls_session_t client;
-	size_t servername_len;
 
 	if (!session_ctx)
 		return -EINVAL;
@@ -291,9 +290,7 @@ tintls_open(
 		return -EINVAL;
 	}
 
-	servername_len = strlen(servername) + 1;
-	gnutls_servername = my_malloc(servername_len);
-	strncpy(gnutls_servername, servername, servername_len);
+	gnutls_servername = my_strdup(servername);
 	gnutls_session_set_verify_function(client, &verification_func);
 
 	gnutls_transport_set_int(client, fd);
@@ -923,16 +920,13 @@ tintls_conninfo(
 			fputs("\n", fp);
 		fprintf(fp, _(txt_conninfo_cert), i);
 
-		result = gnutls_x509_crt_init(&servercert);
-		if (result < 0)
+		if ((result = gnutls_x509_crt_init(&servercert)) < 0)
 			goto err_cert;
 
-		result = gnutls_x509_crt_import(servercert, &raw_servercert_chain[i], GNUTLS_X509_FMT_DER);
-		if (result < 0)
+		if ((result = gnutls_x509_crt_import(servercert, &raw_servercert_chain[i], GNUTLS_X509_FMT_DER)) < 0)
 			goto err_cert;
 
-		result = gnutls_x509_crt_get_dn3(servercert, &subject, 0);
-		if (result < 0)
+		if ((result = gnutls_x509_crt_get_dn3(servercert, &subject, 0)) < 0)
 			goto err_cert;
 		else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -945,8 +939,7 @@ tintls_conninfo(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
 
-		result = gnutls_x509_crt_get_issuer_dn3(servercert, &issuer, 0);
-		if (result < 0)
+		if ((result = gnutls_x509_crt_get_issuer_dn3(servercert, &issuer, 0)) < 0)
 			goto err_cert;
 		else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -959,15 +952,13 @@ tintls_conninfo(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
 
-		t = gnutls_x509_crt_get_activation_time(servercert);
-		if (t == -1)
+		if ((t = gnutls_x509_crt_get_activation_time(servercert)) == -1)
 			goto err_cert;
 
 		tm = localtime(&t);
 		PRINT_VALID_BEFORE(tm, fmt_time);
 
-		t = gnutls_x509_crt_get_expiration_time(servercert);
-		if (t == -1)
+		if ((t = gnutls_x509_crt_get_expiration_time(servercert)) == -1)
 			goto err_cert;
 
 		tm = localtime(&t);
@@ -988,14 +979,12 @@ err_cert:
 #	else
 
 #		ifdef USE_OPENSSL
-	long long_result;
 	long verification_result;
 	BIO *client = session_ctx;
 	SSL *ssl;
 	STACK_OF(X509) *chain;
 
-	long_result = BIO_get_ssl(client, &ssl);
-	if (long_result != 1)
+	if (BIO_get_ssl(client, &ssl) != 1L)
 		return -1;
 
 	fprintf(fp, "%s", _(txt_conninfo_tls_info));
@@ -1054,6 +1043,7 @@ err_cert:
 #		endif /* USE_OPENSSL */
 #	endif /* USE_GNUTLS */
 #endif /* USE_LIBTLS */
+
 	return 0;
 }
 
@@ -1080,8 +1070,7 @@ get_cert_info(
 	if (cert && (io_buf = BIO_new(BIO_s_mem()))) {
 		res = my_malloc(sizeof(char *) * 2);
 		if (X509_NAME_print_ex(io_buf, X509_get_subject_name(cert), 0, flags) != -1) {
-			len = BIO_get_mem_data(io_buf, &tmp);
-			if (len > 0) {
+			if ((len = BIO_get_mem_data(io_buf, &tmp)) > 0) {
 				subject = my_malloc((size_t) len + 1);
 				memcpy(subject, tmp, (size_t) len);
 				subject[len] = '\0';
@@ -1091,8 +1080,7 @@ get_cert_info(
 			}
 		}
 		if (BIO_reset(io_buf) != -1 && X509_NAME_print_ex(io_buf, X509_get_issuer_name(cert), 0, flags) != -1) {
-			len = BIO_get_mem_data(io_buf, &tmp);
-			if (len > 0) {
+			if ((len = BIO_get_mem_data(io_buf, &tmp)) > 0) {
 				issuer = my_malloc((size_t) len + 1);
 				memcpy(issuer, tmp, (size_t) len);
 				issuer[len] = '\0';

@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2024-10-28
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,7 +83,7 @@ tin_ltoa(
 		digits = sizeof(buffer) - 1;
 
 	if (!digits)
-		digits++;
+		++digits;
 
 	snprintf(buffer, sizeof(buffer), "%"T_ARTNUM_PFMT, value);
 	len = strlen(buffer);
@@ -95,7 +95,7 @@ tin_ltoa(
 	if (len > digits && digits >= 3) {
 		while (len >= digits) {
 			len -= 3;
-			i++;
+			++i;
 		}
 	}
 
@@ -136,20 +136,39 @@ my_strdup(
 	size_t len = 1;
 	void *ptr;
 
-	if (str)
+	if (str && *str)
 		len += strlen(str);
 
 	ptr = my_malloc(len);
 
-#	if 0 /* as my_malloc exits on error, ptr can't be NULL */
-	if (ptr == NULL)
-		return NULL;
-#	endif /* 0 */
-
 	memcpy(ptr, BlankIfNull(str), len);
 	return (char *) ptr;
 }
+
+
+char *
+my_strndup(
+	const char *str,
+	size_t n)
+{
+	char *ptr;
+	size_t slen;
+
+	if (str && *str) {
+		if ((slen = strlen(str)) < n)
+			n = slen;
+	} else
+		n = 0;
+
+	ptr = (char *) my_malloc(n + 1);
+	if (n)
+		memcpy(ptr, str, n);
+	*(ptr + n) = '\0';
+
+	return ptr;
+}
 #endif /* !USE_DMALLOC || (USE_DMALLOC && !HAVE_STRDUP) */
+
 
 /*
  * strtok that understands empty tokens
@@ -222,8 +241,8 @@ strcasestr(
 	n = needle;
 	while (*haystack) {
 		if (my_tolower((unsigned char) *h) == my_tolower((unsigned char) *n)) {
-			h++;
-			n++;
+			++h;
+			++n;
 			if (!*n)
 				return (char *) haystack;
 		} else {
@@ -246,7 +265,7 @@ mystrcat(
 
 	while (*s) {
 		*((*t)++) = *s++;
-		len++;
+		++len;
 	}
 	**t = '\0';
 	return len;
@@ -329,6 +348,7 @@ strpbrk(
 }
 #endif /* !HAVE_STRPBRK */
 
+
 #ifndef HAVE_STRSTR
 /*
  * ANSI C strstr() - Uses Boyer-Moore algorithm.
@@ -370,7 +390,7 @@ strstr(
 	 * pattern, and i counts the amount of text remaining, not
 	 * including the part to be tested.
 	 */
-	p1--;
+	--p1;
 	p = (unsigned char *) pattern + p1;
 	t = (unsigned char *) text + p1;
 	i = textlen - patlen;
@@ -387,7 +407,8 @@ strstr(
 }
 #endif /* !HAVE_STRSTR */
 
-#ifndef HAVE_ATOL
+
+#ifndef HAVE_ATOL /* unused except in atoartnum-marco */
 /*
  * handrolled atol
  */
@@ -399,22 +420,24 @@ atol(
 
 	/* skip leading whitespace(s) */
 	while (*s && isspace((unsigned char) *s))
-		s++;
+		++s;
 
 	while (*s) {
 		if (isdigit((unsigned char) *s))
 			ret = ret * 10 + (*s - '0');
 		else
 			return -1;
-		s++;
+		++s;
 	}
 	return ret;
 }
 #endif /* !HAVE_ATOL */
 
+
 #ifndef HAVE_STRTOL
 #	define DIGIT(x) (isdigit((unsigned char) x) ? ((x) - '0') : (10 + my_tolower((unsigned char) x) - 'a'))
 #	define MBASE 36
+/* doesn't do ERANGE */
 long
 strtol(
 	const char *str,
@@ -471,6 +494,7 @@ OUT:
 #	undef MBASE
 #endif /* !HAVE_STRTOL */
 
+
 #if !defined(HAVE_STRCASECMP) || !defined(HAVE_STRNCASECMP)
 #	define FOLD_TO_UPPER(a)	(my_toupper((unsigned char) (a)))
 #endif /* !HAVE_STRCASECMP || !HAVE_STRNCASECMP */
@@ -494,6 +518,7 @@ strcasecmp(
 }
 #endif /* !HAVE_STRCASECMP */
 
+
 #ifndef HAVE_STRNCASECMP
 int
 strncasecmp(
@@ -509,6 +534,7 @@ strncasecmp(
 	return n ? r : 0;
 }
 #endif /* !HAVE_STRNCASECMP */
+
 
 #ifndef HAVE_STRSEP
 /*
@@ -556,10 +582,10 @@ str_trim(
 	if (!(s = strlen(string)))
 		return string;
 
-	/* remove training spaces */
+	/* remove trailing spaces */
 	ep = string + s - 1;
 	while (ep >= string && isspace((unsigned char) *ep))
-		ep--;
+		--ep;
 	*(ep + 1) = '\0';
 
 	/* skip leading space */
@@ -590,12 +616,12 @@ eat_tab(
 
 	while (*p1) {
 		if (*p1 == '\t' || *p1 == '\r' || *p1 == '\n') {
-			p1++;
+			++p1;
 		} else if (p1 != p2) {
 			*p2++ = *p1++;
 		} else {
-			p1++;
-			p2++;
+			++p1;
+			++p2;
 		}
 	}
 	if (p1 != p2)
@@ -626,7 +652,7 @@ wexpand_tab(
 				wbuf[i++] = (wchar_t) ' ';
 		} else
 			wbuf[i++] = *wc;
-		wc++;
+		++wc;
 	}
 	wbuf[i] = '\0';
 
@@ -671,7 +697,7 @@ expand_tab(
 				buf[i++] = ' ';
 		} else
 			buf[i++] = *c;
-		c++;
+		++c;
 	}
 	buf[i] = '\0';
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1022,7 +1048,7 @@ abbr_groupname(
 
 	if (strlen(grpname) > len) {
 		if ((src = strchr(grpname, '.')) != NULL) {
-			dest++;
+			++dest;
 			tmplen = 1;
 
 			do {
@@ -1141,7 +1167,7 @@ wstrunc(
 		wchar_t *wtmp2, *tail;
 
 		if (tinrc.utf8_graphics)
-			tail = my_wcsdup(WTRUNC_TAIL);
+			tail = my_wcsdup((const wchar_t *) WTRUNC_TAIL);
 		else
 			tail = char2wchar_t(TRUNC_TAIL);
 
@@ -1532,7 +1558,7 @@ parse_format_string(
 	for (; *in; in++) {
 		if (*in != '%') {
 			*out++ = *in;
-			cnt++;
+			++cnt;
 			continue;
 		}
 		*out++ = *in++;
@@ -1592,9 +1618,9 @@ parse_format_string(
 					*d_fmt++ = *in;
 
 				*d_fmt = '\0';
-				in++;
+				++in;
 			} else {
-				out--;
+				--out;
 				*out++ = *in;
 				continue;
 			}
@@ -1605,7 +1631,7 @@ parse_format_string(
 				break;
 
 			case '%':
-				cnt++;
+				++cnt;
 				break;
 
 			case 'd':
@@ -1793,7 +1819,7 @@ parse_format_string(
 			default:
 				out -= 2;
 				*out++ = *in;
-				cnt++;
+				++cnt;
 				break;
 		}
 	}

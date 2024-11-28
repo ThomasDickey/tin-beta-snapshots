@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2024-07-29
+.\" Updated   : 2024-11-21
 .\" Notes     : needs a some work, see TODOs
 .\"
 .\"
@@ -705,7 +705,9 @@ Identical to the tinrc variable of the same name
 Assume (broken) articles without MIME charset declaration have this
 charset \(em default is US-ASCII. This attribute works only on systems
 with working
-.BR \%iconv (3),
+.BR \%iconv (3)
+or
+.BR \%ucnv_* (),
 others might have to compile
 .BR \%tin (1)
 with \-\-disable\-mime\-strict\-charset.
@@ -714,8 +716,10 @@ with \-\-disable\-mime\-strict\-charset.
 Guess charset for (broken) articles without MIME charset declaration.
 This attribute works only on systems with working
 .BR \%iconv (3)
-and 
-.BR \%ucsdet_getName (3)
+or
+.BR \%ucnv_* ()
+and
+.BR \%ucsdet_getName()
 from libicui18n. It has no effect if undeclared_charset is also set.
 .TP
 Example:
@@ -1886,7 +1890,9 @@ character sets are regarded as compatible with the display. If it's
 not set, the value of the environment variable $\fBMM_CHARSET\fP is
 used. US-ASCII or compile-time default is used in case neither of
 them is defined. If your system supports
-.BR \%iconv (3),
+.BR \%iconv (3)
+or
+.BR \%ucnv_* (),
 this option is disabled and you should use \fBmm_network_charset\fP instead.
 .TP
 .B mm_network_charset
@@ -1895,10 +1901,12 @@ Conversion between \fBmm_network_charset\fP and local charset (determined
 via
 .BR \%nl_langinfo (3))
 is done via
-.BR \%iconv (3),
-if this function is not available on your system this option is disabled and
-you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP is
-limited to one of the following charsets:
+.BR \%iconv (3)
+or
+.BR \%ucnv_* (),
+if none of these functions are available on your system this option is
+disabled and you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP
+is limited to one of the following charsets:
 .in +.3i
 US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU}
 EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2}, Big5, UTF-8
@@ -1980,7 +1988,7 @@ The possible values are:
 Some normalization modes are only available if they are supported by the
 library
 .BR \%tin (1)
-uses to do the normalization. NFC should be used if possible.
+uses to do the normalization. NFC should be used if possible (\fBRFC\%5198\fP).
 .TP
 .B page_mime_format
 Format string
@@ -2900,7 +2908,6 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR \%qsort (3),
 .BR \%strftime (3),
 .BR \%system (3),
-.BR \%ucsdet_getName (3),
 .BR \%active (5),
 .BR \%mailcap (5),
 .BR \%mbox (5),
@@ -2917,6 +2924,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR RFC\%3977 ,
 .BR RFC\%4155 ,
 .BR RFC\%4643 ,
+.BR RFC\%5198 ,
 .BR RFC\%5322 ,
 .BR RFC\%5536 ,
 .BR RFC\%5537 ,

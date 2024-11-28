@@ -3,10 +3,10 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2024-07-06
+ *  Updated   : 2024-11-17
  *  Notes     :
  *
- * Copyright (c) 1999-2024 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -135,7 +135,6 @@
  */
 #define MAXKEYLEN 17
 
-/* TODO: permanently move here from tin.h */
 #define ctrl(c)	((c) & 0x1F)
 #define ESC		27
 

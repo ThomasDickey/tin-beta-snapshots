@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-20
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,9 +46,15 @@
 #endif /* !TCURSES_H */
 
 #ifdef HAVE_UUDEVIEW_H
+#	ifndef PROTOTYPES /* make -std=c23 work with that old code */
+#		define PROTOTYPES 666
+#	endif /* PROTOTYPES */
 #	ifndef __UUDEVIEW_H__
 #		include <uudeview.h>
 #	endif /* !__UUDEVIEW_H__ */
+#	if PROTOTYPES == 666
+#		undef PROTOTYPES
+#	endif /* PROTOTYPES */
 #endif /* HAVE_UUDEVIEW_H */
 
 #ifndef HAVE_LIBUU
@@ -203,7 +209,7 @@ check_start_save_any_news(
 			continue;
 
 		if (k && group->read_during_session) {
-			k--; /* just to make the test above faster once we've done the cmd-line grpups */
+			--k; /* just to make the test above faster once we've done the cmd-line grpups */
 			group->read_during_session = FALSE; /* reset in case we do NOT enter the group later */
 		}
 
@@ -215,7 +221,7 @@ check_start_save_any_news(
 				continue;
 			}
 
-			group_count++;
+			++group_count;
 			snprintf(buf, sizeof(buf), _(txt_saved_groupname), group->name);
 			fprintf(fp_log, "%s", buf);
 			if (verbose)
@@ -255,9 +261,9 @@ check_start_save_any_news(
 				case CHECK_ANY_NEWS:
 					if (!verbose && !catchup) /* we don't need details */
 						return NEWS_AVAIL_EXIT;
-					art_count++;
+					++art_count;
 					if (arts[j].score >= tinrc.score_select)
-						hot_count++;
+						++hot_count;
 					if (catchup)
 						art_mark(group, &arts[j], ART_READ);
 					break;
@@ -315,7 +321,7 @@ check_start_save_any_news(
 
 					TIN_FCLOSE(artfp);
 					fclose(savefp);
-					saved_arts++;
+					++saved_arts;
 
 					if (function == MAIL_ANY_NEWS) {
 						strfmailer(mailer, arts[j].subject, mail_news_user, savefile, buf, sizeof(buf), tinrc.mailer_format);
@@ -566,7 +572,7 @@ save_and_process_art(
 	save[num_save].file = strrchr(save[num_save].path, '/') + 1;	/* ptr to filename portion */
 	save[num_save].mailbox = CAST_BOOL(is_mailbox);
 /* fprintf(stderr, "SAPA (%s) (%s) mbox=%s\n", save[num_save].path, save[num_save].file, bool_unparse(save[num_save].mailbox)); */
-	num_save++;			/* NB: num_save is bumped here only */
+	++num_save;			/* NB: num_save is bumped here only */
 
 	/*
 	 * Extract/view parts from multipart articles if required
@@ -608,7 +614,7 @@ create_path(
 		return ENOTDIR;
 
 	p = buf = my_strdup(path);
-	p++;
+	++p;
 
 	while ((p = strchr(p, '/')) != NULL) {
 		*p = '\0';
@@ -655,7 +661,6 @@ static char *
 generate_savepath(
 	t_part *part)
 {
-	char buf[2048];
 	char *savepath;
 	const char *name;
 	t_bool mbox;
@@ -665,6 +670,7 @@ generate_savepath(
 	 * Get the filename to save to in 'savepath'
 	 */
 	if ((name = get_filename(part->params)) == NULL) {
+		char buf[2048];
 		char extension[NAME_LEN + 1];
 
 		lookup_extension(extension, sizeof(extension), content_types[part->type], part->subtype);
@@ -845,7 +851,7 @@ post_process_uud(
 		if (UUDecodeFile(item, NULL) == UURET_OK) {
 
 /* TODO: test for multiple things per article decoded okay? */
-			count++;
+			++count;
 			my_printf(_(txt_uu_success), item->filename);
 			my_printf(cCRLF);
 
@@ -855,7 +861,7 @@ post_process_uud(
 				view_file(path, strrchr(path, '/') + 1);
 			}
 		} else {
-			errors++;
+			++errors;
 			if (item->state & UUFILE_MISPART)
 				eptr = _(txt_libuu_error_missing);
 			else if (item->state & UUFILE_NOBEGIN)
@@ -870,7 +876,7 @@ post_process_uud(
 			my_printf(_(txt_uu_error_decode), (item->filename) ? item->filename : item->subfname, eptr);
 			my_printf(cCRLF);
 		}
-		i++;
+		++i;
 		item = UUGetFileListItem(i);
 		my_flush();
 	}
@@ -1896,7 +1902,7 @@ build_tree(
 		prefix_ptr -= maxlen - ++depth_level - 2 - odd;
 		while (prefix_ptr > maxlen - 2 - odd) {
 			if (depth_level < maxlen / 5)
-				depth_level++;
+				++depth_level;
 
 			prefix_ptr -= maxlen - depth_level - 2 - odd;
 			odd = (odd ? 0 : 1);

@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-01
+ *  Updated   : 2024-11-26
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,9 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
+#ifdef HAVE_LIBURIPARSER
+#	include <uriparser/Uri.h>
+#endif /* HAVE_LIBURIPARSER */
 
 
 /*
@@ -158,7 +161,7 @@ scroll_page(
 				break;
 
 			case -1:
-				i--;
+				--i;
 				break;
 
 			case -2:
@@ -429,7 +432,7 @@ show_page(
 						curr_line += ((tinrc.scroll_lines == -2) ? ARTLINES / 2 : ARTLINES);
 
 						if (tinrc.scroll_lines == -1)		/* formerly show_last_line_prev_page */
-							curr_line--;
+							--curr_line;
 						draw_page(0);
 					}
 				}
@@ -1416,7 +1419,7 @@ build_from_line(
 	char *tmp_from, *curr_from, *next_from, *p;
 	char addr[HEADER_LEN];
 	char name[HEADER_LEN];
-	char single_from[HEADER_LEN + 3]; /*" <>"*/
+	char single_from[HEADER_LEN + 5]; /*"\"\" <>"*/
 	char *from = NULL;
 	int type, c_needed = 0;
 
@@ -1434,14 +1437,19 @@ build_from_line(
 			buffer_to_ascii(addr);
 			p = idna_decode(addr);
 
-			if (*name)
-				snprintf(single_from, sizeof(single_from), "%s <%s>", name, p);
-			else {
+			if (*name) {
+				if (CHECK_RFC5322_SPECIALS(name))
+					snprintf(single_from, sizeof(single_from), "\"%s\" <%s>", name, p);
+				else
+					snprintf(single_from, sizeof(single_from), "%s <%s>", name, p);
+			} else {
 				STRCPY(single_from, p);
 			}
 			free(p);
 		} else {
-			STRCPY(single_from, str_trim(curr_from));
+			p = idna_decode(str_trim(curr_from));
+			STRCPY(single_from, p);
+			free(p);
 		}
 		if (c_needed++)
 			from = append_to_string(from, ", ");
@@ -1755,7 +1763,7 @@ shrug:
 		char *tail = NULL;
 
 		if (tinrc.utf8_graphics)
-			tail = wchar_t2char(WTRUNC_TAIL);
+			tail = wchar_t2char((const wchar_t *) WTRUNC_TAIL);
 
 		if ((n = snprintf(NULL, 0, _(txt_at_s), tail ? tail : TRUNC_TAIL)) > 0) {
 			size_t olen = (size_t) n + 1;
@@ -2239,7 +2247,7 @@ toggle_raw(
 
 				pgart.rawl[j].offset = offset;
 				pgart.rawl[j].flags = 0;
-				j++;
+				++j;
 				if (j >= chunk) {
 					chunk += 50;
 					pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * (size_t) chunk);
@@ -2260,9 +2268,9 @@ toggle_raw(
 						}
 #else
 						if (my_isprint((unsigned char) *p)) {
-							space--;
-							p++;
-							offset++;
+							--space;
+							++p;
+							++offset;
 						}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 						else if (IS_LOCAL_CHARSET("Big5") && (unsigned char) *p >= 0xa1 && (unsigned char) *p <= 0xfe && *(p + 1)) {
@@ -2274,7 +2282,7 @@ toggle_raw(
 							 */
 							p += 2;
 							offset += 2;
-							space--;
+							--space;
 						} else {
 							/*
 							 * the current character can't be displayed print it as
@@ -2283,8 +2291,8 @@ toggle_raw(
 							 */
 							if ((space -= 4) < 0)
 								break;
-							offset++;
-							p++;
+							++offset;
+							++p;
 						}
 					}
 					/*
@@ -2569,14 +2577,14 @@ preprocess_info_message(
 	do {
 		infoline[num_info_lines].offset = ftell(info_fh);
 		infoline[num_info_lines].flags = 0;
-		num_info_lines++;
+		++num_info_lines;
 		if (num_info_lines >= chunk) {
 			chunk += 50;
 			infoline = my_realloc(infoline, sizeof(t_lineinfo) * (size_t) chunk);
 		}
 	} while (tin_fgets(info_fh, FALSE) != NULL);
 
-	num_info_lines--;
+	--num_info_lines;
 	infoline = my_realloc(infoline, sizeof(t_lineinfo) * (size_t) num_info_lines);
 }
 
@@ -2839,6 +2847,12 @@ process_url(
 	int l;
 	size_t len;
 	t_url *lptr;
+#ifdef HAVE_LIBURIPARSER
+	UriParserStateA state;
+	UriUriA uri;
+	int ulen = -1;
+	char *uri_norm;
+#endif /* HAVE_LIBURIPARSER */
 
 	lptr = find_url(n);
 	len = strlen(lptr->url) << 1; /* double size; room for editing URL */
@@ -2848,12 +2862,46 @@ process_url(
 			free(url);
 			return FALSE;
 		}
+
+#ifdef HAVE_LIBURIPARSER
+		/*
+		 * Syntax-Based Normalization RFC 3986 6.2.2
+		 *
+		 * We could keep the error code, but that would be likely
+		 * always URI_ERROR_SYNTAX, so no big win.
+		 * With -DDEBUG MISC|URI we would write some details
+		 * (uri.scheme, uri.hostText, ...) to a log.
+		 * And/or make use of uri(Une|E)scape* ...
+		 */
+		state.uri = &uri;
+		if (uriParseUriA(&state, url) == URI_SUCCESS) {
+			if (uriNormalizeSyntaxA(&uri) == URI_SUCCESS) {
+				if (uriToStringCharsRequiredA(&uri, &ulen) == URI_SUCCESS) {
+					uri_norm = my_malloc(++ulen);
+					if (uriToStringA(uri_norm, &uri, ulen, NULL) == URI_SUCCESS) {
+						free(url);
+						url = uri_norm;
+					} else {
+						free(uri_norm);
+						ulen = -1;
+					}
+				}
+			}
+			uriFreeUriMembersA(&uri);
+		}
+		if (ulen < 0) {
+			error_message(2, "URI Normalization failed: %s", url); /* TODO: -> lang.c; _()? */
+			free(url);
+			return FALSE;
+		}
+#endif /* HAVE_LIBURIPARSER */
+
 		url_esc = escape_shell_meta(url, no_quote);
 		if ((l = snprintf(NULL, 0, "%s %s", tinrc.url_handler, url_esc)) < 0) {
 			free(url);
 			return FALSE;
 		}
-		wait_message(2, _(txt_url_open), url);
+		wait_message(2, _(txt_url_open), url); /* use url_esc in message? */
 		len = (size_t) l + 1;
 		url = my_realloc(url, len);
 		if (snprintf(url, len, "%s %s", tinrc.url_handler, url_esc) != l) {

@@ -6,7 +6,7 @@
  *  Updated   : 2002-11-10
  *  Notes     : Interface of trace.c
  *
- * Copyright (c) 1997-2024 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2025 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

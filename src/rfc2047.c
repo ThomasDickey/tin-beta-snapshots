@@ -3,10 +3,10 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2024-10-31
+ *  Updated   : 2024-11-25
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2024 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2025 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -167,11 +167,11 @@ mmdecode(
 					*t++ = *what++;
 				else {
 					*t++ = ' ';
-					what++;
+					++what;
 				}
 				continue;
 			}
-			what++;
+			++what;
 			if (*what == delimiter)		/* failed */
 				return -1;
 
@@ -183,7 +183,7 @@ mmdecode(
 
 			hi = hex2bin(x);
 			lo = hex2bin(*what);
-			what++;
+			++what;
 			if (hi == 255 || lo == 255)
 				return -1;
 			x = (int) ((hi << 4) + lo);
@@ -255,8 +255,8 @@ rfc1522_decode(
 		buffer_len = (int) max_len;
 		buffer = my_malloc((size_t) buffer_len);
 	} else if (max_len > (size_t) buffer_len) {
-			buffer_len = (int) max_len;
-			buffer = my_realloc(buffer, (size_t) buffer_len);
+		buffer_len = (int) max_len;
+		buffer = my_realloc(buffer, (size_t) buffer_len);
 	}
 
 	t = buffer;
@@ -273,7 +273,7 @@ rfc1522_decode(
 	if (CURR_GROUP.attribute != NULL) {
 #	ifdef USE_ICU_UCSDET
 	if (CURR_GROUP.attribute->undeclared_cs_guess && !(CURR_GROUP.attribute->undeclared_charset && *CURR_GROUP.attribute->undeclared_charset)) {
-		char *guessed_charset = NULL;
+		char *guessed_charset;
 
 		if ((guessed_charset = guess_charset(c, 10)) != NULL) {
 			process_charsets(&c, &max_len, guessed_charset, tinrc.mm_local_charset, FALSE);
@@ -294,9 +294,9 @@ rfc1522_decode(
 
 				dd = c + 1;
 				while (isspace((unsigned char) *dd))
-					dd++;
+					++dd;
 				if (*dd == '=') {		/* brute hack, makes mistakes under certain circumstances comp. 6.2 */
-					c++;
+					++c;
 					continue;
 				}
 			}
@@ -309,7 +309,7 @@ rfc1522_decode(
 			char *e;
 
 			e = charset;
-			c++;
+			++c;
 			while (*c && *c != '?') {
 				/* skip over optional language tags (RFC 2231, RFC 5646) */
 				if (*c == '*') {
@@ -321,14 +321,14 @@ rfc1522_decode(
 			}
 			*e = '\0';
 			if (*c == '?') {
-				c++;
+				++c;
 				encoding = (char) my_tolower((unsigned char) *c);
 				if (encoding == 'b')
 					(void) mmdecode(NULL, 'b', 0, NULL);	/* flush */
 				if (*c)
-					c++;
+					++c;
 				if (*c == '?') {
-					c++;
+					++c;
 					if ((e = strchr(c, '?'))) {
 						int i = mmdecode(c, encoding, '?', t);
 
@@ -336,10 +336,9 @@ rfc1522_decode(
 							char *tmpbuf;
 							int chars_to_copy;
 
-							max_len = (size_t) (i + 1);
-							tmpbuf = my_malloc(max_len);
-							strncpy(tmpbuf, t, (size_t) i);
-							*(tmpbuf + i) = '\0';
+							t[i] = '\0';
+							max_len = (size_t) (i);
+							tmpbuf = my_strndup(t, max_len);
 							process_charsets(&tmpbuf, &max_len, charset, tinrc.mm_local_charset, FALSE);
 							chars_to_copy = (int) strlen(tmpbuf);
 							if (chars_to_copy > buffer_len - (t - buffer) - 1)
@@ -347,9 +346,9 @@ rfc1522_decode(
 							strncpy(t, tmpbuf, (size_t) chars_to_copy);
 							free(tmpbuf);
 							t += chars_to_copy;
-							e++;
+							++e;
 							if (*e == '=')
-								e++;
+								++e;
 							d = c = e;
 							adjacentflag = TRUE;
 						}
@@ -383,7 +382,7 @@ str2b64(
 		for (i = count = 0, tmp = 0; i < 3; i++)
 			if (*from) {
 				tmp = (tmp << 8) | (unsigned long) (*from++ & 0x0ff);
-				count++;
+				++count;
 			} else
 				tmp = (tmp << 8) | (unsigned long) 0;
 
@@ -436,7 +435,7 @@ do_b_encode(
 	}
 
 	if ((len8 % 2) && !isbetween(*w, isstruct_head) && (*w))
-		t--;
+		--t;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	*t = '\0';
@@ -470,16 +469,16 @@ which_encoding(
 #endif /* MIME_BREAK_LONG_LINES */
 
 	while (*w && isspace((unsigned char) *w))
-		w++;
+		++w;
 	while (*w) {
 		if (is_EIGHT_BIT(w))
-			nonprint++;
+			++nonprint;
 		if (!nonprint && *w == '=' && *(w + 1) == '?')
 			nonprint = 1;
 		if (*w == '=' || *w == '?' || *w == '_')
-			schars++;
-		chars++;
-		w++;
+			++schars;
+		++chars;
+		++w;
 	}
 	if (nonprint) {
 		if (chars + 2 * (nonprint + schars) /* QP size */ >
@@ -505,7 +504,7 @@ contains_nonprintables(
 
 	/* first skip all leading whitespaces */
 	while (*w && isspace((unsigned char) *w))
-		w++;
+		++w;
 
 	/* then check the next word */
 	while (!nonprint && *w && !isbetween(*w, isstruct_head)) {
@@ -521,7 +520,7 @@ contains_nonprintables(
 			if (strstr(w, "?=") != NULL)
 				nonprint = TRUE;
 		}
-		w++;
+		++w;
 	}
 	return nonprint;
 }
@@ -529,7 +528,7 @@ contains_nonprintables(
 
 /*
  * implement mandatory break-up of long lines in mail messages in accordance
- * with rfc 2047 (rfc 1522)
+ * with RFC 2047 (RFC 1522)
  */
 static int
 sizeofnextword(
@@ -539,9 +538,9 @@ sizeofnextword(
 
 	x = w;
 	while (*x && isspace((unsigned char) *x))
-		x++;
+		++x;
 	while (*x && !isspace((unsigned char) *x))
-		x++;
+		++x;
 	return (int) (x - w);
 }
 
@@ -598,7 +597,7 @@ rfc1522_do_encode(
 #endif /* MIME_BREAK_LONG_LINES */
 /*
  * the list of structured header fields where '(' and ')' are
- * treated specially in rfc 1522 encoding
+ * treated specially in RFC 1522 encoding
  */
 	static const char *struct_header[] = {
 		"Approved: ", "From: ", "Originator: ",
@@ -624,7 +623,7 @@ rfc1522_do_encode(
 	ew_taken_len = strlen(charset) + 7 /* =?c?E?d?= */;
 	while (*what) {
 		if (break_long_line)
-			word_cnt++;
+			++word_cnt;
 		/*
 		 * if a word with 8bit chars is broken in the middle, whatever
 		 * follows after the point where it's split should be encoded (i.e.
@@ -690,9 +689,9 @@ rfc1522_do_encode(
 							t = buffer + offset;
 						}
 						*t++ = *what;
-						ewsize++;
+						++ewsize;
 					}
-					what++;
+					++what;
 					/*
 					 * Be sure to encode at least one char, even if
 					 * that overflows the line limit, otherwise, we
@@ -729,7 +728,7 @@ rfc1522_do_encode(
 							t = buffer + offset;
 						}
 						*t++ = ' ';
-						ewsize++;
+						++ewsize;
 					}
 					quoting = FALSE;
 				} else {
@@ -744,7 +743,7 @@ rfc1522_do_encode(
 						}
 						if (*what == 32 /* not ' ', compare chapter 4! */ ) {
 							*t++ = '_';
-							ewsize++;
+							++ewsize;
 						} else {
 							snprintf(buf2, sizeof(buf2), "=%2.2X", *(unsigned char *) (what));
 							*t++ = buf2[0];
@@ -752,7 +751,7 @@ rfc1522_do_encode(
 							*t++ = buf2[2];
 							ewsize += 3;
 						}
-						what++;
+						++what;
 					}					/* end of while */
 				}						/* end of else */
 			} else {					/* end of Q encoding and beg. of B encoding */
@@ -790,12 +789,12 @@ rfc1522_do_encode(
 					*t++ = ' ';
 					ewsize += 3;
 					if (break_long_line)
-						word_cnt++;
+						++word_cnt;
 					rightafter_ew = FALSE;
 					any_quoting_done = TRUE;
 				}
 				rightafter_ew = TRUE;
-				word_cnt--;		/* compensate double counting */
+				--word_cnt;		/* compensate double counting */
 				/*
 				 * if encoded word is followed by 7bit-only fragment, we need to
 				 * eliminate ' ' inserted in while-block above
@@ -806,8 +805,8 @@ rfc1522_do_encode(
 				if (!contains_nonprintables(what, isstruct_head))
 #endif /* MIME_BREAK_LONG_LINES */
 				{
-					t--;
-					ewsize--;
+					--t;
+					--ewsize;
 				}
 			}		/* end of B encoding */
 		} else {
@@ -872,13 +871,13 @@ every "word" were a space ... */
 					column = 0;
 				}
 				if (c > buffer && !isspace((unsigned char) *(c - 1)))
-					word_cnt++;
+					++word_cnt;
 				*t++ = *c++;
-				column++;
+				++column;
 			} else
 				while (*c && !isspace((unsigned char) *c)) {
 					*t++ = *c++;
-					column++;
+					++column;
 				}
 		}
 		FreeIfNeeded(buffer);

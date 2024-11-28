@@ -3,10 +3,10 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-08
+ *  Updated   : 2024-11-14
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -596,15 +596,9 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #ifndef PATH_METAMAIL	/* only unset if !HAVE_METAMAIL */
 #	define PATH_METAMAIL	"metamail"
 #endif /* !PATH_METAMAIL */
-#define METAMAIL_CMD		PATH_METAMAIL" -e -p -m \"tin\""
+#define METAMAIL_CMD	PATH_METAMAIL" -e -p -m \"tin\""
 
 #define INTERNAL_CMD	"--internal"
-
-#ifdef HAVE_LONG_FILE_NAMES
-#	define INDEX_LOCK	"tin.%.256s.LCK"
-#else
-#	define INDEX_LOCK	"%.10s.LCK"
-#endif /* HAVE_LONG_FILE_NAMES */
 
 /* inews.c:submit_inews() and save.c:save_and_process_art() */
 #define PATHMASTER 	"not-for-mail"
@@ -935,8 +929,6 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define MODULO_COUNT_NUM	50
 
 #define DAY	(60*60*24)		/* Seconds in a day */
-
-#define ctrl(c)	((c) & 0x1F)
 
 #ifndef DEFAULT_ISO2ASC
 #	define DEFAULT_ISO2ASC	"-1 "	/* ISO -> ASCII charset conversion */
@@ -1401,8 +1393,6 @@ enum {
 #		define assert(p)	if(!(p)) asfail(__FILE__, __LINE__, "p"); else (void) 0;
 #	endif /* CPP_DOES_EXPAND */
 #endif /* NDEBUG */
-
-#define ESC	27
 
 /*
  * filter entries expire after DEFAULT_FILTER_DAYS
@@ -2713,5 +2703,8 @@ struct t_version {
 
 /* C90: isxdigit(3) */
 #define IS_XDIGIT(c) (((c) >= '0' && (c) <= '9') || ((c) >= 'a' && (c) <= 'f') || ((c) >= 'A' && (c) <= 'F'))
+
+#define RFC5322_SPECIALS	"()<>[]:;@\\,.\""
+#define CHECK_RFC5322_SPECIALS(name)	((strpbrk(name, RFC5322_SPECIALS) != NULL) && name[0] != '"' && name[strlen(name)] != '"')
 
 #endif /* !TIN_H */

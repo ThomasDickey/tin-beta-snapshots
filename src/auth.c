@@ -3,11 +3,11 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2024-11-08
+ *  Updated   : 2024-11-25
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2024 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 1997-2025 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -170,33 +170,35 @@ read_newsauth_file(
 			}
 		}
 
-		/* Get password from 2nd part of the line */
-		while (*ptr == ' ' || *ptr == '\t')
-			ptr++;	/* skip any blanks */
+		if (!(strcasecmp(line, server))) {
+			/* Get password from 2nd part of the line */
+			while (*ptr == ' ' || *ptr == '\t')
+				++ptr;	/* skip any blanks */
 
-		_authpass = ptr;
+			_authpass = ptr;
 
-		if (*_authpass == '"') {	/* skip "embedded" password string */
-			ptr = strrchr(_authpass, '"');
-			if ((ptr != NULL) && (ptr > _authpass)) {
-				_authpass++;
-				*ptr++ = '\0';	/* cut off trailing " */
-			} else	/* no matching ", proceed as normal */
-				ptr = _authpass;
+			if (*_authpass == '"') {	/* skip "embedded" password string */
+				ptr = strrchr(_authpass, '"');
+				if ((ptr != NULL) && (ptr > _authpass)) {
+					_authpass++;
+					*ptr++ = '\0';	/* cut off trailing " */
+				} else	/* no matching ", proceed as normal */
+					ptr = _authpass;
+			}
+
+			/* Get user from 3rd part of the line */
+			ptr = strpbrk(ptr, " \t");	/* find next separating blank */
+
+			if (ptr != NULL) {	/* a 3rd argument follows */
+				while (*ptr == ' ' || *ptr == '\t')	/* skip any blanks */
+					*ptr++ = '\0';
+				if (*ptr != '\0')	/* if it is not just empty */
+					strcpy(authuser, ptr);	/* so will replace default user */
+			}
+			strcpy(authpass, _authpass);
+			++found;
+			break;	/* if we end up here, everything seems OK */
 		}
-
-		/* Get user from 3rd part of the line */
-		ptr = strpbrk(ptr, " \t");	/* find next separating blank */
-
-		if (ptr != NULL) {	/* a 3rd argument follows */
-			while (*ptr == ' ' || *ptr == '\t')	/* skip any blanks */
-				*ptr++ = '\0';
-			if (*ptr != '\0')	/* if it is not just empty */
-				strcpy(authuser, ptr);	/* so will replace default user */
-		}
-		strcpy(authpass, _authpass);
-		found++;
-		break;	/* if we end up here, everything seems OK */
 	}
 	fclose(fp);
 	return (found > 0);
@@ -529,16 +531,21 @@ do_authinfo_sasl(
 		int i, c = 0;
 		t_bool contains_8bit = FALSE;
 
+		/*
+		 * if authuser or authpass contains non ASCII-chars
+		 * convert both to UTF-8 even if this is a noop for
+		 * one of them
+		 */
 		if (utf8user && *utf8user) {
-			for (cp = utf8user; *cp && !contains_8bit; cp++) {
+			for (cp = utf8user; *cp; cp++) {
 				if (!isascii((unsigned char) *cp)) {
 					contains_8bit = TRUE;
 					break;
 				}
 			}
 		}
-		if (utf8pass && *utf8pass) {
-			for (cp = utf8pass; *cp && !contains_8bit; cp++) {
+		if (!contains_8bit && utf8pass && *utf8pass) {
+			for (cp = utf8pass; *cp; cp++) {
 				if (!isascii((unsigned char) *cp)) {
 					contains_8bit = TRUE;
 					break;

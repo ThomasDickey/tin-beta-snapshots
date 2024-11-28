@@ -26,7 +26,7 @@ o  unexpected multiline responses confuse tin, e.g.:
 
 o  batch mode has several bugs
    - -vc could be more verbose (like -vcZ is)
-   - -o currently is not a 'batch_mode' option
+   - -o currently is not a 'batch_mode' option (it may ask questions)
    [Urs Janssen <urs@tin.org>]
 
 o  upgrade_keymap_file() doesn't update ConfigFirstPage, HelpFirstPage,
@@ -188,9 +188,6 @@ o  add more AUTHINFO SASL (RFC 4643, RFC 5802) support (DIGEST-MD5,
    EXTERNAL, ...) and a fallback if no libgsasl is found (e.g cyrus-sasl
    or a handrolled version for at least PLAIN)
    [20080316 Urs Janssen <urs@tin.org>]
-
-o  make 'GNKSA'-parser RFC5322/USEFOR compliant (e.g.
-   misc.c:gnksa_dequote_plainphrase()) and fix bugs
 
 o  add XZVER (and XZHDR) support (zlib compressed yyencoded overview data)
    <http://helpdesk.astraweb.com/index.php?_m=news&_a=viewnews&newsid=9>
@@ -452,8 +449,8 @@ o  A system-wide tinrc configuration file (to hold some defaults).
    Maybe a second file which could be used to force settings (eg.
    inews & mailer) (tin.defaults [--with-defaults-dir] is a start)
 
-o  when From: only contains "First-name Last-name" tin strips the
-   Last-name in group/thread-level
+o  when From: only contains "First-name Last-name" (invalid) tin strips
+   the Last-name in group/thread-level
    [20020319 Urs Janssen <urs@tin.org>]
 
 o  Bounce duplicate Message-ID's when the headers are read. This will
@@ -477,11 +474,11 @@ o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo, lzlib, liblz4,
 
 o  rewrite/cleanup all the debugging code, the output in /tmp is messy; the
    on screen output either slows down things dramatically or is unreadable;
-   split DEBUG_MISC?
+   split DEBUG_MISC (drop numeric levels when doing so)!
    always log the terminating "." in multiline responses, so we
    have a timestamp even if not running with -vD 1 (make verbose and
    non verbose more consistent).
-   document the different debug levels/files and the effects of increasing
+   document the different debug-files and the effects of increasing
    the verbosity.
    [Urs Janssen <urs@tin.org>]
 
@@ -566,10 +563,6 @@ o  allow editing of the strings presented in the kill-Menu for
 
 o  allow ranges in gnksa-filters "gnksa=200-399" or "gnksa=101,103,201"
    [20200709 Urs Janssen <urs@tin.org>]
-
-o  add a cmd.-line switch to skip reading the filter file ('-F'?) as
-   filtering may be very time consuming with huge groups. if a user
-   likes to add a filter entry during such a that should be blocked.
 
 Pager enhancements
 ------------------
@@ -725,7 +718,7 @@ o  close potential security holes:
    - check getenv() results before using it
    - check where my_strncpy() or STRCPY() should be used
    - check where s2i() or strtol(...,10) with errno checking should be used
-     instead of ato[il]()
+     instead of atoi()
    - check where fgets() can be replaced by tin_fgets()
    [Urs Janssen <urs@tin.org>]
 
@@ -775,6 +768,9 @@ o  replace rewind(stream) with fseek(stream, 0L, SEEK_SET) to be able
 o  as rename_file() and copy_fp() now return errno (or 0),
    check where we can make use of it for a more fine grained error handling.
 
+o  without %G and %P expansion, we could read mailcaps only once and keep
+   the config in memory
+
 Unicode
 -------
 o  make mm_network_charset an "option_list" to avoid junk input or
@@ -801,7 +797,7 @@ o  add IDNA 2003 (RFC 3490ff.) and IDNA 2008 (RFC 5890ff.) support,
     <http://site.icu-project.org/> IDNA (uidna_IDNToUnicode()
      and/or with ICU >=4.6 uidna_nameToUnicode(uidna_openUTS46)),
     <http://www.gnu.org/s/libidn/#libidn2> IDNA 2008)
-   (added minimalistic IDNA decoding support if a recent libidn is found, urs)
+   (added minimalistic IDNA decoding support if a recent lib was found, urs)
    [20030917 Urs Janssen <urs@tin.org>]
 
 o  add normalization
@@ -1120,15 +1116,5 @@ o  option to {display,warn,hide} article if it has an Expires:-header in the
    past? or do something via filter?
 
 o  also check for $NEWS_ORGANIZATION (see lynx(1))?
-
-o  if iconv(3) can't be found, check for librecode
-   <https://github.com/rrthomas/recode> and use it instead?
-
-o  why a lockfile (-u) in /tmp and not ${TIN_HOMEDIR:-"$HOME"}/[.tin]?
-   if ${TIN_HOMEDIR:-"$HOME"} is on NFS the cache likely also is on NFS;
-   running multiple instanced of tin -u on different systems which do
-   share the cache will not be caught ... (when -u was used for system
-   wide overviews shared between users the location was ok, but that was
-   ~30 years ago).
 
 o  add $MAILCHECK alarm-timer?

@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-28
+ *  Updated   : 2024-11-25
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -629,7 +629,7 @@ read_config_file(
 						if (*q == '%' && (*(q + 1) == 's' || *(q + 1) == 'S'))
 							*(++q) = 'I';
 
-						q++;
+						++q;
 					}
 				}
 				quote_dash_to_space(tinrc.quote_chars);
@@ -1668,7 +1668,7 @@ match_color(
 			if (max == MAX_BACKCOLOR && *dst > max && *dst <= MAX_COLOR)
 				*dst %= MAX_BACKCOLOR + 1;
 			else if ((*dst < -1) || (*dst > max)) {
-				my_fprintf(stderr, _(txt_value_out_of_range), pat, *dst, max);
+				my_fprintf(stderr, _(txt_val_out_of_range_reset), pat, *dst, max);
 				*dst = 0;
 				my_fflush(stderr);
 				if (!batch_mode)
@@ -1702,7 +1702,7 @@ match_integer(
 
 		if (maxval) {
 			if ((*dst < 0) || (*dst > maxval)) {
-				my_fprintf(stderr, _(txt_value_out_of_range), pat, *dst, maxval);
+				my_fprintf(stderr, _(txt_val_out_of_range_reset), pat, *dst, maxval);
 				*dst = 0;
 				my_fflush(stderr);
 				if (!batch_mode)
@@ -1724,8 +1724,10 @@ match_long(
 	size_t patlen = strlen(pat);
 
 	if (STRNCMPEQ(line, pat, patlen)) {
-		*dst = atol(&line[patlen]);
-		return TRUE;
+		errno = 0;
+		*dst = strtol(&line[patlen], NULL, 10);
+		if (!errno)
+			return TRUE;
 	}
 	return FALSE;
 }
@@ -1869,7 +1871,7 @@ quote_space_to_dash(
 			*dst = '_';
 		else
 			*dst = *ptr;
-		dst++;
+		++dst;
 	}
 	*dst = '\0';
 
@@ -1915,13 +1917,13 @@ ulBuildArgv(
 				;
 			if (*tmp) {
 				*tmp = '\0';
-				tmp++;
+				++tmp;
 			}
-			i++;
+			++i;
 			new_argv = my_realloc(new_argv, ((size_t) (i + 1) * sizeof(char *)));
 			new_argv[i] = NULL;
 		} else
-			tmp++;
+			++tmp;
 	}
 	*new_argc = i;
 	return new_argv;
@@ -2319,7 +2321,7 @@ read_server_config(
 
 			if ((tmp_len = snprintf(NULL, 0, "%s %s", nntp_server, newnews_info)) > 0) {
 				tmp_info = my_malloc(++tmp_len);
-				if (snprintf(tmp_info, (size_t) tmp_len, "%s %s", nntp_server, newnews_info) == tmp_len -1)
+				if (snprintf(tmp_info, (size_t) tmp_len, "%s %s", nntp_server, newnews_info) == tmp_len - 1)
 					load_newnews_info(tmp_info);
 				free(tmp_info);
 			}

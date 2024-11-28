@@ -3,10 +3,10 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2024-11-06
+ *  Updated   : 2024-11-25
  *  Notes     : ISO to ascii charset conversion routines
  *
- * Copyright (c) 1993-2024 Markus Kuhn <mgk25@cl.cam.ac.uk>
+ * Copyright (c) 1993-2025 Markus Kuhn <mgk25@cl.cam.ac.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -197,8 +197,8 @@ convert_iso2asc(
 	while (*iso != '\0') {
 		if (*(unsigned char *) (iso) >= ISO_EXTRA) {
 			p = tab[*(unsigned char *) (iso) - ISO_EXTRA];
-			iso++;
-			i++;
+			++iso;
+			++i;
 			first = TRUE;
 			while (*p) {
 				*(asc++) = *(p++);
@@ -208,7 +208,7 @@ convert_iso2asc(
 					*asc_buffer = my_realloc(*asc_buffer, *max_line_len);
 					asc = *asc_buffer + offset;
 				}
-				a++;
+				++a;
 			}
 		} else {
 			if (a > i && ((*iso == ' ') || (*iso == '\t'))) {
@@ -221,10 +221,10 @@ convert_iso2asc(
 					 */
 					if (first) {
 						*(asc++) = ' ';
-						a++;
+						++a;
 						first = FALSE;
 					}
-					i++;
+					++i;
 				} else {	/* here: *iso == '\t' */
 					if (a >= TABSTOP(i)) {
 						/*
@@ -232,7 +232,7 @@ convert_iso2asc(
 						 */
 						if (first) {
 							*(asc++) = ' ';
-							a++;
+							++a;
 							first = FALSE;
 						}
 					} else {
@@ -244,7 +244,7 @@ convert_iso2asc(
 					}
 					i = TABSTOP(i);
 				}
-				iso++;
+				++iso;
 			} else {
 				/*
 				 * just copy the characters and advance the column counters
@@ -252,11 +252,11 @@ convert_iso2asc(
 				if (*iso == '\t') {
 					a = i = TABSTOP(i);	/* = TABSTOP(a), because here a = i */
 				} else if (*iso == '\b') {
-					a--;
-					i--;
+					--a;
+					--i;
 				} else {
-					a++;
-					i++;
+					++a;
+					++i;
 				}
 				*(asc++) = *(iso++);
 				first = TRUE;
@@ -344,7 +344,7 @@ convert_tex2iso(
 				col += subst_len - 1;
 				ex = TRUE;
 			}
-			i++;
+			++i;
 		}
 		if (!ex)
 			strncat(to, from + col, 1);
@@ -352,7 +352,7 @@ convert_tex2iso(
 			strncat(to, SPACES, spaces);
 			spaces = 0;
 		}
-		col++;
+		++col;
 	}
 }
 
@@ -381,7 +381,7 @@ is_art_tex_encoded(
 		while (line[i++] == ' ')
 			;	/* search for first non blank */
 
-		i--;
+		--i;
 		if (!isalnum((unsigned char) line[i]) && line[i] != '\"')
 			continue;	/* quoting char */
 
@@ -527,7 +527,7 @@ guess_charset(
 		int32_t confidence)
 {
 	char *guessed_charset = NULL;
-	const char *p_match = NULL;
+	const char *p_match;
 	UCharsetDetector *detector;
 	const UCharsetMatch *match;
 	UErrorCode status = 0;
@@ -586,7 +586,7 @@ validate_charset(
 		if (*c < 45 || *c > 122 || *c == 46 || *c == 47 || (*c >= 58 && *c <= 64) || (*c >= 91 && *c <= 94) || *c == 96)
 			return NULL;
 
-		c++;
+		++c;
 	}
 	return charset;
 }

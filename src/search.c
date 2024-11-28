@@ -3,10 +3,10 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-07-28
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -185,10 +185,10 @@ search_config(
 			if (n == last)
 				n = 0;
 			else
-				n++;
+				++n;
 		} else {
 			if (n > 0)
-				n--;
+				--n;
 			else
 				n = last;
 		}
@@ -251,10 +251,10 @@ generic_search(
 			if (n == last)
 				n = 0;
 			else
-				n++;
+				++n;
 		} else {
 			if (n > 0)
-				n--;
+				--n;
 			else
 				n = last;
 		}
@@ -440,7 +440,7 @@ body_search(
 				return 1;
 			}
 		}
-		i++;
+		++i;
 		free(line);
 	}
 
@@ -725,13 +725,13 @@ search_article(
 				i = 0;
 				wrap = TRUE;
 			} else
-				i++;
+				++i;
 		} else {
 			if (i <= 0) {
 				i = lines - 1;
 				wrap = TRUE;
 			} else
-				i--;
+				--i;
 		}
 
 		/* search at the beginning of the line */
@@ -785,7 +785,7 @@ search_body(
 	} else {
 		for_each_art(i) {
 			if (!IGNORE_ART(i))
-				total_cnt++;
+				++total_cnt;
 		}
 	}
 

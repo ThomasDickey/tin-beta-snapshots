@@ -3,10 +3,10 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2024-10-13
+ *  Updated   : 2024-11-25
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2025 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,28 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-
+#ifdef HAVE_LIBURIPARSER
+#	include <uriparser/Uri.h>
+#	define CHECK_URI(r,f)	do { \
+		if (MATCH_REGEX(r, line, len)) { \
+			offsets = regex_get_ovector_pointer(&r); \
+			if ((l = offsets[1] - offsets[0])) { \
+				u = my_strndup(line + offsets[0], l); \
+				if (*(u + l - 1) == '\n') \
+					*(u + l -1) = '\0'; \
+				if (*u) { \
+					state.uri = &uri; \
+					if (uriParseUriA(&state, u) == URI_SUCCESS) { \
+						if (uriNormalizeSyntaxA(&uri) == URI_SUCCESS) \
+							flags |= f; \
+						uriFreeUriMembersA(&uri); \
+					} \
+				} \
+				FreeAndNull(u); \
+			} \
+		} \
+	} while (0)
+#endif /* HAVE_LIBURIPARSER */
 /*
  * We malloc() this many t_lineinfo's at a time
  */
@@ -138,7 +159,7 @@ expand_ctrl_chars(
 			else
 				buf[i++] = *c;
 		}
-		c++;
+		++c;
 	}
 	buf[i] = '\0';
 	*length = i + 1;
@@ -185,7 +206,7 @@ wexpand_ctrl_chars(
 			else
 				wbuf[i++] = *wc;
 		}
-		wc++;
+		++wc;
 	}
 	wbuf[i] = '\0';
 	*length = i + 1;
@@ -254,22 +275,22 @@ put_cooked(
 						break;
 					p += bytes;
 				} else
-					p++;
+					++p;
 #else
-				p++;
-				space--;
+				++p;
+				--space;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			}
 			if (tinrc.dont_break_words && !(flags & (C_VERBATIM | C_HEADER)) && space <= 0 && last_space && p > last_space)
 				p = last_space + 1;
 		} else {
 			while (*p && *p != '\n')
-				p++;
+				++p;
 		}
 		fwrite(bufp, 1, (size_t) (p - bufp), art->cooked);
 		fputs("\n", art->cooked);
 		if (*p == '\n')
-			p++;
+			++p;
 		bufp = p;
 
 		if (art->cooked_lines == 0) {
@@ -894,6 +915,13 @@ process_text_body_part(
 	t_bool first_line_blank = TRUE;	/* Unset when first non-blank line is reached */
 	t_bool put_blank_lines = FALSE;	/* Set when previously skipped lines needs to put */
 	t_part *curruue = NULL;
+#ifdef HAVE_LIBURIPARSER
+	REGEX_SIZE *offsets;
+	char *u = NULL;
+	size_t l;
+	UriUriA uri;
+	UriParserStateA state;
+#endif /* HAVE_LIBURIPARSER */
 
 	if (part->uue) {				/* These are redone each time we recook/resize etc.. */
 		free_parts(part->uue);
@@ -950,7 +978,7 @@ process_text_body_part(
 				 */
 				strcat(line, "\n");
 
-				lines_left--;
+				--lines_left;
 				break;
 		}
 		if (!(line && strlen(line))) {
@@ -983,8 +1011,8 @@ process_text_body_part(
 			tmpline = line;
 			/* check if line contains only whitespace */
 			while ((*tmpline == ' ') || (*tmpline == '\t')) {
-				len_blank++;
-				tmpline++;
+				++len_blank;
+				++tmpline;
 			}
 			if (len_blank == len) {		/* line is blank */
 				if (lines_left == 0 && (curr_group->attribute->trim_article_body & SKIP_TRAILING)) {
@@ -996,7 +1024,7 @@ process_text_body_part(
 					if (curr_group->attribute->trim_article_body & SKIP_LEADING)
 						continue;
 				} else if ((curr_group->attribute->trim_article_body & (COMPACT_MULTIPLE | SKIP_TRAILING)) && (!in_sig || curr_group->attribute->show_signatures)) {
-					lines_skipped++;
+					++lines_skipped;
 					if (lines_left == 0 && !(curr_group->attribute->trim_article_body & SKIP_TRAILING)) {
 						for (; lines_skipped > 0; lines_skipped--)
 							put_cooked(1, TRUE, in_sig ? C_SIG : C_BODY, "\n");
@@ -1186,12 +1214,19 @@ process_text_body_part(
 		}
 #endif /* HAVE_COLOR */
 
+#ifdef HAVE_LIBURIPARSER
+		/* find and validate URIs */
+		CHECK_URI(url_regex, C_URL);
+		CHECK_URI(mail_regex, C_MAIL);
+		CHECK_URI(news_regex, C_NEWS);
+#else
 		if (MATCH_REGEX(url_regex, line, len))
 			flags |= C_URL;
 		if (MATCH_REGEX(mail_regex, line, len))
 			flags |= C_MAIL;
 		if (MATCH_REGEX(news_regex, line, len))
 			flags |= C_NEWS;
+#endif /* HAVE_LIBURIPARSER */
 
 		if (expand_ctrl_chars(&line, &max_line_len, tabwidth))
 			flags |= C_CTRLL;				/* Line contains form-feed */
@@ -1311,7 +1346,7 @@ cook_article(
 	int hide_uue,
 	t_bool show_all_headers)
 {
-	const char *charset = NULL;
+	const char *charset;
 	const char *name;
 	char *line;
 	struct t_header *hdr = &artinfo->hdr;
@@ -1537,21 +1572,27 @@ ltobi(
 {
 	static const char power[] = { 'e', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'R', 'Q', '\0' };
 	static char buffer[9];
+	char r;
 	unsigned d = 0, e = 0;
+
+#if !defined(NO_LOCALE) && defined(HAVE_LANGINFO_CODESET)
+	if (!(r = nl_langinfo(RADIXCHAR)[0]))
+#endif /* !NO_LOCALE && HAVE_LANGINFO_CODESET */
+		r = '.';
 
 	while (i >= BI_BASE) {
 		d = (unsigned) (i % BI_BASE * 10 / BI_BASE);
 		i /= BI_BASE;
-		e++;
+		++e;
 	}
 
 	if (e) {
 		if (e >= sizeof(power) - 1) /* any 128bit systems around? ,-) */
-			sprintf(buffer, "%u.%u%c", (unsigned) i, d, power[0]); /* omit value and use a better error string? */
+			sprintf(buffer, "%u%c%u%c", (unsigned) i, r, d, power[0]); /* omit value and use a better error string? */
 		else
-			sprintf(buffer, "%u.%u%c", (unsigned) i, d, power[e]);
+			sprintf(buffer, "%u%c%u%c", (unsigned) i, r, d, power[e]);
 	} else
-		sprintf(buffer, "0.%u%c", (unsigned) (i * 10 / BI_BASE), power[1]);
+		sprintf(buffer, "0%c%u%c", r, (unsigned) (i * 10 / BI_BASE), power[1]);
 
 	return buffer;
 }

@@ -3,10 +3,10 @@
  *  Module    : my_tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
- *  Updated   : 2024-03-21
+ *  Updated   : 2024-11-23
  *  Notes     :
  *
- * Copyright (c) 2001-2024 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2001-2025 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -212,29 +212,25 @@ my_tmpfile(
 	void)
 {
 	char f[PATH_LEN];
-	int fd;
-	int sverrno = errno;
+	int fd, sverrno;
 	size_t s = sizeof(f);
 	FILE *fp;
 
 	if ((fd = my_mktmp(f, s, NULL)) != -1) {
 		if ((fp = fdopen(fd, "w+")) != NULL) {
-			sverrno = errno;
 			unlink(f);
-			errno = sverrno;
 			return(fp);
 		}
-#ifdef DEBUG
 		sverrno = errno;
+#ifdef DEBUG
 		perror_message("fdopen(%d, \"w+\")", fd);
 #endif /* DEBUG */
 		unlink(f);
 		close(fd);
+		errno = sverrno;
 	}
 #ifdef DEBUG
 	perror_message("my_mktmp(f, %lu, NULL)==%d", s, fd);
 #endif /* DEBUG */
-
-	errno = sverrno;
 	return NULL;
 }

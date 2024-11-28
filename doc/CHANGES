@@ -1,4 +1,4 @@
--- 2.6.4 release 20241109 "" --
+-- 2.6.4 release 20241128 "" --
 
  023) Thomas E. Dickey <dickey@invisible-island.net>
       REM. bundled-intl stuff
@@ -73,6 +73,8 @@
       ADD. configure check for ucsdet_detect() from libicui18n
       ADD. configure check for getpeername()
       ADD. configure check for uconv_open() and unicode/ucnv.h
+      ADD. configure check for liburiparser
+      ADD. configure check for libidn2
       ADD. simplify _Noreturn check, just note the C11 standard
       REM. configure check for varargs.h
       ADD. removed fixed buffer from copy_body()
@@ -101,7 +103,24 @@
       ADD. basic (no custom-messages) $MAILPATH support
       ADD. skip reading attributes with -Z
       ADD. skip reading filter-file with -u
-      ADD. warn about -u[oXzZ] and -oZ (Useless combination)
+      ADD. warn about -u[owXzZ] and -o[SZ] -R[ACcgkLSTZ] (useless combination)
+      ADD. mention $TINRC value in useless combination message
+      ADD. create INDEX_LOCK (used by 'u') in ${TIN_HOMEDIR:-"$HOME"}/.tin
+           instead of $TMPDIR
+      ADD. if reading from local spool, try to read inn >= 2.3 nov-files
+           in case reading traditional nov-files failed
+      ADD. allow argument names for -D (case insensitive, comma separated
+           list).
+      ADD. URI syntax-check and normalization it with uriNormalizeSyntaxA() if
+           liburiparser was found
+      ADD. $LC_NUMERIC for RADIXCHAR (used when showing attachment sizes)
+      ADD. allow valid IPv6-addresses in brackets in gnksa-filters
+           (requires that the system has inet_pton() and knows AF_INET6)
+      ADD. allow ccTLD .ss, disallow ccTLD .an and .tp
+      ADD. updated the gTLD list (needs disable_gnksa_domain_check=ON in
+           tin.defaults)
+      ADD. -F filter-file cmd.-line option
+      ADD. warn on "Re:"/"Re: " only Subject
       REM. tmpfile.c
       REM. --with-sum specifying the sum of uue-file got more and more
            uncommon at the end of last century and uue mostly vanished
@@ -122,18 +141,20 @@
            before appending organitazion in the pager
       BUG. may truncate format string instead of result in draw_page_header
       BUG. -X did not disallow EditFilter
-      FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, curses.c
-           debug.c, feed.c, filter.c, getline.c, global.c, group.c, header.c
-           help.c, inews.c, init.c, keymap.c, lang.c, lock.c, mail.c, main.c
-           makecfg.c, memory.c, mimetypes.c, misc.c, my_tmpfile.c, newsrc.c
-           nntplib.c, nntps.c, nrctbl.c, options_menu.c, page.c, pgp.c, post.c
-           prompt.c, read.c, refs.c, regex.c, rfc1524.c, rfc2046.c, rfc2047.c
-           save.c, screen.c, search.c, select.c, sigfile.c, signal.c
-           snprintf.c, string.c, tcurses.c, thread.c, version.c, xface.c
-           xref.c, parsdate.y, debug.h, extern.h, nntplib.h, proto.h
-           snprintf.h, tin.h, tinrc.h, tnntp.h, tincfg.tbl, autoconf.h[in]
-           configure[.in], Makefile[.in], config.guess, config.sub, tin.1
-           tin.5
+      BUG. -o did not read keymap-file but it may ask questions so it should.
+      BUG. -vD NTTP didn't log full LISTGROUP responses
+      FIX. active.c, art.c, attrib.c, auth.c, charset.c, config.c, cook.c
+           curses.c, debug.c, feed.c, filter.c, getline.c, global.c, group.c
+           header.c, help.c, inews.c, init.c, keymap.c, lang.c, list.c, lock.c
+           mail.c, main.c, makecfg.c, memory.c, mimetypes.c, misc.c
+           my_tmpfile.c, newsrc.c, nntplib.c, nntps.c, nrctbl.c, options_menu.c
+           page.c, pgp.c, post.c, prompt.c, read.c, refs.c, regex.c, rfc1524.c
+           rfc2046.c, rfc2047.c, save.c, screen.c, search.c, select.c
+           sigfile.c, signal.c, snprintf.c, string.c, tags.c, tcurses.c
+           thread.c, version.c, xface.c, xref.c, parsdate.y, debug.h, extern.h
+           nntplib.h, policy.h, proto.h, snprintf.h, tin.h, tinrc.h, tnntp.h
+           tincfg.tbl, autoconf.h[in], configure[.in], Makefile[.in]
+           config.guess, config.sub, tin.1, tin.5
 
 -- 2.6.3 release 20231224 "Banff" --
 

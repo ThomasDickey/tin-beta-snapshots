@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-06
+ *  Updated   : 2024-11-26
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,11 @@
 #	include "policy.h"
 #endif /* !TIN_POLICY_H */
 
+#ifndef TNNTP_H
+#	include "tnntp.h"
+#endif /* !TNNTP_H */
+
+/* GNU libidn */
 #if defined(HAVE_IDNA_H) && !defined(_IDNA_H)
 #	include <idna.h>
 #endif /* HAVE_IDNA_H && !_IDNA_H */
@@ -61,6 +66,12 @@
 #	include <stringprep.h>
 #endif /* HAVE_STRINGPREP_H && !_STRINGPREP_H */
 
+/* GNU libidn2 */
+#if defined(HAVE_LIBIDN2) && defined(HAVE_IDN2_H) && !defined(IDN2_H)
+#	include <idn2.h>
+#endif /* HAVE_LIBIDN2 && HAVE_IDN2_H && !IDN2_H */
+
+/* JPRS libidnkit */
 #if defined(HAVE_IDN_API_H) && !defined(IDN_API_H)
 #	include <idn/api.h>
 #	if defined(HAVE_IDN_VERSION_H) && !defined(REPRODUCIBLE_BUILD)
@@ -68,6 +79,7 @@
 #	endif /* HAVE_IDN_VERSION_H && !REPRODUCIBLE_BUILD */
 #endif /* HAVE_IDN_API_H && !IDN_API_H */
 
+/* GNU libunistring */
 #if defined(HAVE_LIBUNISTRING) && defined(HAVE_UNISTRING_VERSION_H) && !defined(REPRODUCIBLE_BUILD)
 #	include <unistring/version.h>
 #endif /* HAVE_LIBUNISTRING && HAVE_UNISTRING_VERSION_H && !REPRODUCIBLE_BUILD */
@@ -96,6 +108,10 @@
 #if defined(USE_ZLIB) && !defined(REPRODUCIBLE_BUILD)
 #	include <zlib.h>
 #endif /* USE_ZLIB && !REPRODUCIBLE_BUILD */
+
+#ifdef HAVE_LIBURIPARSER
+#	include <uriparser/Uri.h>
+#endif /* HAVE_LIBURIPARSER */
 
 /*
  * defines to control GNKSA-checks behavior:
@@ -174,7 +190,7 @@ append_file(
 	const char *new_filename)
 {
 	FILE *fp_old, *fp_new;
-	int rval = 0;
+	int rval;
 
 	if (!*old_filename || !*new_filename)
 		return ENOENT;
@@ -367,7 +383,7 @@ copy_body(
 			initials = TRUE;
 		} else {
 			*p++ = *q++;
-			maxlen--;
+			--maxlen;
 		}
 	}
 	*p = '\0';
@@ -727,7 +743,7 @@ tin_done(
 		write_mail_active_file();
 #endif /* HAVE_MH_MAIL_HANDLING */
 
-		if (unlink(local_motd_file) != 0) { /* ensure it will be recreated (even if started with -Q) */
+		if (unlink(local_motd_file) == -1) { /* ensure it will be recreated (even if started with -Q) */
 			switch (errno) {
 				case ENOENT: /* missing file is ok */
 					break;
@@ -792,6 +808,11 @@ tin_done(
 #endif /* HAVE_COLOR */
 	cleanup_tmp_files();
 
+#ifdef DEBUG
+	if (debug > DEBUG_REMOVE) /* special case to remove debug files on exit */
+		debug_delete_files();
+#endif /* DEBUG */
+
 	if (buf && *buf) {
 		my_fputs(buf, stderr);
 		my_fputs(cCRLF, stderr);
@@ -833,6 +854,7 @@ my_mkdir(
 #	ifdef HAVE_CHMOD
 		return chmod(path, mode);
 #	else
+		(void) mode;
 		return 0; /* chmod via system() like for mkdir? */
 #	endif /* HAVE_CHMOD */
 	} else
@@ -1186,7 +1208,7 @@ get_author(
 {
 	char *p, *ptr = str;
 	int author;
-	size_t curr_len = 0, rem_len = len - 1;
+	size_t curr_len, rem_len = len - 1;
 	struct t_mailbox *mb = &art->mailbox;
 
 	*ptr = '\0';
@@ -1206,8 +1228,12 @@ get_author(
 				break;
 
 			case SHOW_FROM_BOTH:
-				if (mb->name)
-					snprintf(ptr, rem_len, "%s <%s>", mb->name, p);
+				if (mb->name) {
+					if (CHECK_RFC5322_SPECIALS(mb->name))
+						snprintf(ptr, rem_len, "\"%s\" <%s>", mb->name, p);
+					else
+						snprintf(ptr, rem_len, "%s <%s>", mb->name, p);
+				}
 				else
 					strncpy(ptr, p, rem_len);
 				break;
@@ -1333,7 +1359,7 @@ create_index_lock_file(
 #	endif /* HAVE_CHMOD */
 #endif /* HAVE_FCHMOD */
 		(void) time(&epoch);
-		fprintf(fp, "%6d  %s\n", (int) process_id, ctime(&epoch));
+		fprintf(fp, "%6d  %s\n", (int) process_id, str_trim(ctime(&epoch)));
 		if ((err = ferror(fp)) || fclose(fp)) {
 			error_message(2, _(txt_filesystem_full), the_lock_file);
 			if (err) {
@@ -1705,16 +1731,16 @@ _strfpath(
 
 			case '$':	/* Read the envvar and use its value */
 				i = 0;
-				format++;
+				++format;
 				if (*format == '{') {
-					format++;
+					++format;
 					while (*format && !(strchr("}-", *format)))
 						tbuf[i++] = *format++;
 
 					tbuf[i] = '\0';
 					i = 0;
 					if (*format == '-') {
-						format++;
+						++format;
 						while (*format && *format != '}')
 							defbuf[i++] = *format++;
 					}
@@ -1724,7 +1750,7 @@ _strfpath(
 						tbuf[i++] = *format++;
 
 					tbuf[i] = '\0';
-					format--;
+					--format;
 					defbuf[0] = '\0';
 				}
 				/*
@@ -1802,7 +1828,7 @@ _strfpath(
 				break;
 
 			case '%':	/* Different forms of parsing cmds */
-				format++;
+				++format;
 				if (group != NULL && *format == 'G') {
 					memset(tbuf, 0, sizeof(tbuf));
 					STRCPY(tbuf, group->name);
@@ -1906,10 +1932,10 @@ escape_shell_meta(
 					*source == '>' || *source == ';' || *source == '(' ||
 					*source == ')') {
 					*dest++ = '\\';
-					space--;
+					--space;
 				}
 				*dest++ = *source++;
-				space--;
+				--space;
 			}
 			break;
 
@@ -1918,10 +1944,10 @@ escape_shell_meta(
 				if (*source == '\\' || *source == '"' || *source == '$' ||
 					*source == '`') {
 					*dest++ = '\\';
-					space--;
+					--space;
 				}
 				*dest++ = *source++;
-				space--;
+				--space;
 			}
 			break;
 
@@ -1934,7 +1960,7 @@ escape_shell_meta(
 					space -= 3;
 				}
 				*dest++ = *source++;
-				space--;
+				--space;
 			}
 			break;
 
@@ -2106,17 +2132,16 @@ strfmailer(
 				case 'U':	/* User */
 					/* don't MIME encode User if using external mail client */
 					if (tinrc.interactive_mailer != INTERACTIVE_NONE)
-						strncpy(tbuf, userid, sizeof(tbuf) - 1);
+						STRCPY(tbuf, userid);
 					else {
 #ifdef CHARSET_CONVERSION
 						p = rfc1522_encode(userid, txt_mime_charsets[tinrc.mm_network_charset], ismail);
 #else
 						p = rfc1522_encode(userid, tinrc.mm_charset, ismail);
 #endif /* CHARSET_CONVERSION */
-						strncpy(tbuf, p, sizeof(tbuf) - 1);
+						STRCPY(tbuf, p);
 						free(p);
 					}
-					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					break;
 
 				default:
@@ -2254,7 +2279,7 @@ make_group_path(
 {
 	while (*name) {
 		*path++ = ((*name == '.') ? '/' : *name);
-		name++;
+		++name;
 	}
 	*path++ = '/';
 	*path = '\0';
@@ -2346,7 +2371,7 @@ random_organization(
 		return selorg;
 
 	while (fgets(selorg, (int) sizeof(selorg), orgfp))
-		nool++;
+		++nool;
 
 	if (nool) {
 		rewind(orgfp);
@@ -2356,7 +2381,7 @@ random_organization(
 		nool = 0;
 
 		while ((nool != sol) && (fgets(selorg, (int) sizeof(selorg), orgfp)))
-			nool++;
+			++nool;
 	}
 
 	fclose(orgfp);
@@ -2399,12 +2424,12 @@ read_input_history_file(
 				his_free = his_e;
 		}
 
-		his_e++;
+		++his_e;
 		/* check if next type is reached */
 		if (his_e >= HIST_SIZE) {
 			hist_pos[his_w] = hist_last[his_w] = his_free;
 			his_free = his_e = 0;
-			his_w++;
+			++his_w;
 		}
 		/* check if end is reached */
 		if (his_w > HIST_MAXNUM)
@@ -2643,8 +2668,8 @@ buffer_to_local( /* TODO: rename to something more useful/descriptive */
 								memcpy(tmpbuf, unknown_ucs4, 4);
 								tmpbuf += 4;
 								tmpbytesleft -= 4;
-								inbuf++;
-								inbytesleft--;
+								++inbuf;
+								--inbytesleft;
 								break;
 
 							case E2BIG:
@@ -2684,8 +2709,8 @@ buffer_to_local( /* TODO: rename to something more useful/descriptive */
 						switch (errno) {
 							case EILSEQ:
 								**&outbuf = '?';
-								outbuf++;
-								outbytesleft--;
+								++outbuf;
+								--outbytesleft;
 								inbuf += 4;
 								inbytesleft -= 4;
 								rval = FALSE;
@@ -2790,7 +2815,7 @@ buffer_to_ascii(
 		/* reduce to US-ASCII, other non-prints are filtered later */
 		if ((unsigned char) *c >= 128)
 			*c = '?';
-		c++;
+		++c;
 	}
 	return a;
 }
@@ -3162,10 +3187,9 @@ gnksa_dequote_plainphrase(
 				switch (*rpos) {
 					case '"':
 						state = 1;
-						rpos++;
+						++rpos;
 						break;
 
-					case '!':
 					case '(':
 					case ')':
 					case '<':
@@ -3203,15 +3227,9 @@ gnksa_dequote_plainphrase(
 				switch (*rpos) {
 					case '"':
 						state = 0;
-						rpos++;
+						++rpos;
 						break;
 
-#if 0 /* RFC 5322 3.2.4. does not prohibit these anymore as RFC 1036 did */
-					case '(':
-					case ')':
-					case '<':
-					case '>':
-#endif /* 0 */
 					/*
 					 * FIXME: \ is allowed in dquotes as of 5322,
 					 * but we need to ensure that \" doesn't end
@@ -3321,8 +3339,6 @@ gnksa_dequote_plainphrase(
 				switch (*rpos) {
 					case '(':
 					case ')':
-					case '<':
-					case '>':
 					case '\\':
 						return GNKSA_ILLEGAL_PAREN_CHAR;
 						/* NOTREACHED */
@@ -3361,23 +3377,61 @@ gnksa_dequote_plainphrase(
 
 
 /*
- * check domain literal (IPv4)
+ * check domain literal (IPv4, IPv6)
  */
 static int
 gnksa_check_domain_literal(
 	const char *domain)
 {
-	char term;
-	int n;
+	char term = '\0';
 	unsigned int x1, x2, x3, x4;
 
-	/* parse domain literal into ip number */
 	x1 = x2 = x3 = x4 = 666;
-	term = '\0';
 
 	if (*domain == '[') { /* literal bracketed */
-		n = sscanf(domain, "[%u.%u.%u.%u%c", &x1, &x2, &x3, &x4, &term);
-		if (n != 5)
+#if defined(HAVE_INET_PTON) && defined(AF_INET6)
+		/*
+		 * academic: what about systenms without AF_INET6?
+		 * they would reject IPv6 address (so no change there),
+		 * do we need a handrolled parser for those?
+		 */
+		if (strchr(domain + 1, ':')) {
+			char *p;
+			int n;
+			size_t l = strlen(domain);
+			struct in6_addr inaddr;
+
+			if (l < 4 || l > 41) /* "[::]" ... "[acab:cafe:deef:dead:beef:babe:face:feed]" */
+				return GNKSA_BAD_DOMAIN_LITERAL;
+
+			if (domain[l - 1] != ']')
+				return GNKSA_RBRACKET_MISSING;
+			else
+				p = my_strndup(domain + 1, l - 2);
+
+			if (inet_pton(AF_INET6, p, &inaddr) != 1)
+				n = GNKSA_BAD_DOMAIN_LITERAL;
+			else {
+#	if 0	/* TODO: filter out link-lokal ... see IPv4 code blow */
+				wait_message(2, "IPv6 uncompressed: [%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x]",
+					inaddr.s6_addr[0],  inaddr.s6_addr[1],
+					inaddr.s6_addr[2],  inaddr.s6_addr[3],
+					inaddr.s6_addr[4],  inaddr.s6_addr[5],
+					inaddr.s6_addr[6],  inaddr.s6_addr[7],
+					inaddr.s6_addr[8],  inaddr.s6_addr[9],
+					inaddr.s6_addr[10], inaddr.s6_addr[11],
+					inaddr.s6_addr[12], inaddr.s6_addr[13],
+					inaddr.s6_addr[14], inaddr.s6_addr[15]);
+#	endif /* 0*/
+				n = GNKSA_OK;
+			}
+
+			free(p);
+            return n;
+		}
+#endif /* HAVE_INET_PTON && AF_INET6 */
+
+		if (sscanf(domain, "[%u.%u.%u.%u%c", &x1, &x2, &x3, &x4, &term) != 5)
 			return GNKSA_BAD_DOMAIN_LITERAL;
 
 		if (term != ']')
@@ -3387,9 +3441,7 @@ gnksa_check_domain_literal(
 #ifdef REQUIRE_BRACKETS_IN_DOMAIN_LITERAL
 		return GNKSA_RBRACKET_MISSING;
 #else
-		n = sscanf(domain, "%u.%u.%u.%u%c", &x1, &x2, &x3, &x4, &term);
-		/* there should be no terminating character present */
-		if (n != 4)
+		if (sscanf(domain, "%u.%u.%u.%u%c", &x1, &x2, &x3, &x4, &term) != 4)	/* there should be no terminating character present */
 			return GNKSA_BAD_DOMAIN_LITERAL;
 #endif /* REQUIRE_BRACKETS_IN_DOMAIN_LITERAL */
 	}
@@ -3399,15 +3451,21 @@ gnksa_check_domain_literal(
 		return GNKSA_BAD_DOMAIN_LITERAL;
 
 	/* check for private ip or localhost - see RFC 5735, RFC 5737 */
+	/*
+	 * TODO: as we 'abuse' disable_gnksa_domain_check to skip TLD
+	 *       checking since 20131126 as there are gazillions of new
+	 *       TLD showing up, we may reconsider NOT to skip checking
+	 *       IPs here.
+	 */
 	if ((!disable_gnksa_domain_check)
 	    && ((x1 == 0)				/* local network */
 		|| (x1 == 10)				/* private class A */
+		|| (x1 == 127)				/* loopback */
 		|| ((x1 == 172) && ((x2 & 0xf0) == 16))	/* private /12 */
 		|| ((x1 == 192) && (x2 == 168))		/* private class B */
 		|| ((x1 == 192) && (x2 == 0) && (x3 == 2)) /* TEST NET-1 */
 		|| ((x1 == 198) && (x2 == 51) && (x3 == 100)) /* TEST NET-2 */
-		|| ((x1 == 203) && (x2 == 0) && (x3 == 113)) /* TEST NET-3 */
-		|| (x1 == 127)))			/* loopback */
+		|| ((x1 == 203) && (x2 == 0) && (x3 == 113)))) /* TEST NET-3 */
 		return GNKSA_LOCAL_DOMAIN_LITERAL;
 
 	return GNKSA_OK;
@@ -3435,7 +3493,7 @@ gnksa_check_domain(
 	if ((aux = strrchr(domain, '.')) == NULL)
 		return GNKSA_SINGLE_DOMAIN;
 
-	aux++;
+	++aux;
 
 	/* check existence of toplevel domain */
 	switch ((int) strlen(aux)) {
@@ -3473,15 +3531,17 @@ gnksa_check_domain(
 			/* FALLTHROUGH */
 		default:
 			/* check for valid domains */
-			result = GNKSA_INVALID_DOMAIN;
-			for (i = 0; *gnksa_domain_list[i]; i++) {
-				if (!strcmp(aux, gnksa_domain_list[i]))
-					result = GNKSA_OK;
+			if (!disable_gnksa_domain_check) {
+				result = GNKSA_INVALID_DOMAIN;
+				for (i = 0; *gnksa_domain_list[i]; i++) {
+					if (!strcmp(aux, gnksa_domain_list[i])) {
+						result = GNKSA_OK;
+						break;
+					}
+				}
+				if (result != GNKSA_OK)
+					return result;
 			}
-			if (disable_gnksa_domain_check)
-				result = GNKSA_OK;
-			if (result != GNKSA_OK)
-				return result;
 			break;
 	}
 
@@ -3555,8 +3615,7 @@ gnksa_split_from(
 	char *realname,
 	int *addrtype)
 {
-	char *addr_begin;
-	char *addr_end;
+	char *addr_begin, *addr_end, *ptr;
 	char work[HEADER_LEN];
 
 	/* init return variables */
@@ -3572,9 +3631,24 @@ gnksa_split_from(
 		return GNKSA_ATSIGN_MISSING; /* GNKSA_LPAREN_MISSING */
 	}
 
-	/* skip trailing whitespace */
-	addr_end = work + strlen(work) - 1;
+	/*
+	 * RFC5322 allows CFWS after "<" addr-spec ">"
+	 * if '>' is present, everything after it (possible comments)
+	 * is removed
+	 */
+	if ((addr_end = strrchr(work, '>'))) {
+		ptr = strrchr(work, ')');
+		if (!ptr || addr_end > ptr)
+			*(addr_end + 1) = '\0';
 
+		ptr = strrchr(work, '(');
+		if (!ptr || addr_end < ptr)
+			*(addr_end + 1) = '\0';
+
+		str_trim(work);
+	}
+
+	addr_end = work + strlen(work) - 1;
 	if (*addr_end == '>') {
 		/* route-address used */
 		*addrtype = GNKSA_ADDRTYPE_ROUTE;
@@ -3582,7 +3656,7 @@ gnksa_split_from(
 		/* get address part */
 		addr_begin = addr_end;
 		while (('<' != *addr_begin) && (addr_begin > work))
-			addr_begin--;
+			--addr_begin;
 
 		if (*addr_begin != '<') /* syntax error in mail address */
 			return GNKSA_LANGLE_MISSING;
@@ -3590,10 +3664,6 @@ gnksa_split_from(
 		*addr_end = *addr_begin = '\0';
 		/* copy route address */
 		strcpy(address, addr_begin + 1);
-
-		/* missing realname */
-		if (addr_begin == work)
-			return GNKSA_MISSING_REALNAME;
 
 		/*
 		 * if we allow <> as From: we must disallow <> as Message-ID,
@@ -3606,6 +3676,10 @@ gnksa_split_from(
 #endif /* 0 */
 			return GNKSA_ATSIGN_MISSING;
 
+		/* missing realname */
+		if (addr_begin == work)
+			return GNKSA_MISSING_REALNAME;
+
 		/* get realname part */
 		addr_end = addr_begin - 1;
 		addr_begin = work;
@@ -3613,7 +3687,7 @@ gnksa_split_from(
 		/* strip surrounding whitespace */
 		strip_line(addr_end);
 		while ((*addr_begin == ' ') || (*addr_begin == '\t'))
-			addr_begin++;
+			++addr_begin;
 
 #if 0	/* whitespace only realname */
 		strip_line(addr_begin);
@@ -3623,8 +3697,11 @@ gnksa_split_from(
 #endif /* 0 */
 		/* copy realname */
 		strcpy(realname, addr_begin);
+		remove_comments(realname);
+		strip_line(realname);
 	} else {
 		size_t l;
+
 		/* old-style address used */
 		*addrtype = GNKSA_ADDRTYPE_OLDSTYLE;
 
@@ -3632,7 +3709,7 @@ gnksa_split_from(
 		/* skip leading whitespace */
 		addr_begin = work;
 		while ((*addr_begin == ' ') || (*addr_begin == '\t'))
-			addr_begin++;
+			++addr_begin;
 
 		if (*addr_begin == '<') {
 			*addrtype = GNKSA_ADDRTYPE_ROUTE;
@@ -3643,13 +3720,10 @@ gnksa_split_from(
 		l = strlen(addr_begin);
 		addr_end = addr_begin;
 
-		while ((*addr_end != ' ') && (*addr_end != '\t') && (*addr_end))
-			addr_end++;
+		while (*addr_end && (*addr_end != ' ') && (*addr_end != '\t'))
+			++addr_end;
 
 		*addr_end = '\0';
-
-		if (l == strlen(addr_begin))
-			return GNKSA_MISSING_REALNAME;
 
 		/* copy route address */
 		strcpy(address, addr_begin);
@@ -3665,6 +3739,9 @@ gnksa_split_from(
 #endif /* 0 */
 			return GNKSA_ATSIGN_MISSING;
 
+		if (l == strlen(addr_begin))
+			return GNKSA_MISSING_REALNAME;
+
 		/* get realname part */
 		addr_begin = addr_end + 1;
 		addr_end = addr_begin + strlen(addr_begin) - 1;
@@ -3672,7 +3749,7 @@ gnksa_split_from(
 		/* strip surrounding whitespace */
 		strip_line(addr_end);
 		while (*addr_begin == ' ' || *addr_begin == '\t')
-			addr_begin++;
+			++addr_begin;
 
 		/* any realname at all? */
 		if (*addr_begin) {
@@ -3681,6 +3758,9 @@ gnksa_split_from(
 				return GNKSA_LPAREN_MISSING;
 
 			if (*addr_end != ')')
+				return GNKSA_RPAREN_MISSING;
+
+			if ((addr_end > addr_begin + 2) && *(addr_end - 1) == '\\' && *(addr_end - 2) != '\\')
 				return GNKSA_RPAREN_MISSING;
 
 			/* copy realname */
@@ -3773,9 +3853,9 @@ gnksa_do_check_from(
 #ifdef DEBUG
 	if (debug & DEBUG_MISC) {
 		if (code != GNKSA_OK)
-			debug_print_file("GNKSA", "From:=[%s], GNKSA=[%d]", from, code);
+			debug_print_file("GNKSA", "From:=[%s], GNKSA=[%d]\n", from, code);
 		else
-			debug_print_file("GNKSA", "GNKSA=[%d]", code);
+			debug_print_file("GNKSA", "GNKSA=[%d]\n", code);
 	}
 #endif /* DEBUG */
 
@@ -3825,7 +3905,7 @@ strip_line(
 
 	ptr = line + strlen(line);
 	do {
-		ptr--;
+		--ptr;
 		if (*ptr == ' ' || *ptr == '\t' || *ptr == '\r' || *ptr == '\n')
 			*ptr = '\0';
 		else
@@ -3865,7 +3945,7 @@ utf8_valid(
 
 	while (*c != '\0') {
 		if (!(*c & 0x80)) { /* plain US-ASCII? */
-			c++;
+			++c;
 			continue;
 		}
 
@@ -3874,7 +3954,7 @@ utf8_valid(
 		bits = (*c & 0x7c);	/* remove bits 7,1,0 */
 
 		do {
-			numc++;
+			++numc;
 		} while ((bits <<= 1) & 0x80);	/* get sequence length */
 
 		if (c + numc > line + strlen(line)) { /* sequence runs past end of string */
@@ -3960,7 +4040,7 @@ utf8_valid(
 
 		for (d = 1; d < numc && !illegal; d++) {
 			e = (unsigned char) *(c + d);
-			if (e < 0x80 || e > 0xbf || e == '\0' || e == '\n')
+			if (e < 0x80 || e > 0xbf)
 				illegal = TRUE;
 		}
 
@@ -3972,7 +4052,7 @@ utf8_valid(
 					break;
 				if (*c & 0x80)	/* replace 'dangerous' bytes */
 					*c = '?';
-				c++;
+				++c;
 			}
 		}
 	}
@@ -4023,6 +4103,9 @@ remove_soft_hyphens(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
+/*
+ * returns freshly allocated mem
+ */
 char *
 idna_decode(
 	char *in)
@@ -4035,15 +4118,49 @@ idna_decode(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	/* IDNA 2008 */
+#	if defined(HAVE_LIBIDN2)
+	{
+		char *t, *s = NULL;
+		int rs = IDN2_ICONV_FAIL;
+		int len;
+
+		if ((t = strrchr(out, '@')))
+			++t;
+		else
+			t = out;
+
+		len = (t - out);
+
+		if (len > 0 && (rs = idn2_to_unicode_lzlz(t, &s, IDN2_USE_STD3_ASCII_RULES)) == IDN2_OK) {
+			char *q = my_strndup(out, len); /* local-part@ */
+
+			free(out);
+			q = append_to_string(q, s); /* domain-part */
+			FreeIfNeeded(s);
+			return q;
+		}
+#		ifdef DEBUG
+		else {
+			if (debug & DEBUG_MISC)
+				wait_message(2, "idn2_to_unicode_lzlz(%s): %s", t, idn2_strerror(rs));
+		}
+#		endif /* DEBUG */
+		/* IDNA 2008 failed, try again with IDNA 2003 if available */
+		FreeIfNeeded(s);
+		free(out);
+		out = my_strdup(in);
+	}
+#	endif /* HAVE_LIBIDN2 */
+
 #	if defined(HAVE_LIBIDNKIT) && defined(HAVE_IDN_DECODENAME)
 	{
 		idn_result_t res;
 		char *q, *r;
 
 		if ((q = strrchr(out, '@'))) {
-			q++;
+			++q;
 			if ((r = strrchr(in, '@')))
-				r++;
+				++r;
 			else { /* just to make static analyzer happy */
 				r = in;
 				q = out;
@@ -4080,7 +4197,7 @@ idna_decode(
 #		endif /* HAVE_LIBICUUC_46_API */
 
 		if ((s = strrchr(out, '@')))
-			s++;
+			++s;
 		else
 			s = out;
 
@@ -4113,7 +4230,7 @@ idna_decode(
 		int rs;
 
 		if ((t = strrchr(out, '@')))
-			t++;
+			++t;
 		else
 			t = out;
 
@@ -4173,43 +4290,61 @@ split_mailbox_list(
 
 	while (*ptr) {
 		switch (*ptr) {
-			case '"':
-				in_quoted_str = bool_not(in_quoted_str) || in_quoted_pair;
-				in_quoted_pair = FALSE;
-				break;
-
 			case '\\':
 				in_quoted_pair = bool_not(in_quoted_pair);
 				break;
 
+			case '"':
+				if (!in_comment && !in_quoted_pair)
+					in_quoted_str = bool_not(in_quoted_str);
+				else
+					in_quoted_pair = FALSE;
+				break;
+
 			case '<':
-				in_addr = bool_not(in_quoted_str);
+				if (!in_quoted_pair && !in_comment && !in_quoted_str)
+					in_addr = TRUE;
+				else
+					in_quoted_pair = FALSE;
 				break;
 
 			case '>':
-				in_addr = bool_not(in_addr) || in_quoted_str;
+				if (!in_quoted_pair && !in_comment && !in_quoted_str)
+					in_addr = FALSE;
+				else
+					in_quoted_pair = FALSE;
 				break;
 
 			case '(':
-				in_comment = bool_not(in_quoted_str);
+				if (!in_addr && !in_quoted_pair && !in_quoted_str)
+					in_comment = TRUE;
+				else
+					in_quoted_pair = FALSE;
 				break;
 
 			case ')':
-				in_comment = in_comment && in_quoted_str;
+				if (!in_addr && !in_quoted_pair && !in_quoted_str)
+					in_comment = FALSE;
+				else
+					in_quoted_pair = FALSE;
 				break;
 
 			case '@':
-				at_seen = bool_not(in_quoted_str) && bool_not(in_comment);
+				if (!in_quoted_pair && !in_comment && !in_quoted_str)
+					at_seen = TRUE;
+				else
+					in_quoted_pair = FALSE;
 				break;
 
 			case ',':
-				if (at_seen && !in_quoted_str && !in_addr && !in_comment) {
+				if (at_seen && !(in_quoted_pair || in_quoted_str || in_addr || in_comment)) {
 					*ptr = '\0';
 					return *++ptr ? ptr : NULL;
 				}
 				break;
 
 			default:
+				in_quoted_pair = FALSE;
 				break;
 		}
 		++ptr;
@@ -4242,7 +4377,7 @@ tin_version_info(
 	fprintf(fp, " %s %s", __DATE__, __TIME__);
 #endif /* __DATE__ && __TIME__ && !REPRODUCIBLE_BUILD */
 	fprintf(fp, "\n");
-	wlines++;
+	++wlines;
 
 #ifdef SYSTEM_NAME
 	fprintf(fp, "Platform:\n");
@@ -4257,17 +4392,17 @@ tin_version_info(
 #	if defined(TIN_CFLAGS) && !defined(REPRODUCIBLE_BUILD)
 	if (verb) {
 		fprintf(fp, "\tCFLAGS   = \"%s\"\n", TIN_CFLAGS);
-		wlines++;
+		++wlines;
 	}
 #	endif /* TIN_CFLAGS && !REPRODUCIBLE_BUILD */
 #	ifdef TIN_CPP
 		fprintf(fp, "\tCPP      = \"%s\"\n", TIN_CPP);
-		wlines++;
+		++wlines;
 #	endif /* TIN_CPP */
 #	if defined(TIN_CFLAGS) && !defined(REPRODUCIBLE_BUILD)
 	if (verb) {
 		fprintf(fp, "\tCPPFLAGS = \"%s\"\n", TIN_CPPFLAGS);
-		wlines++;
+		++wlines;
 	}
 #	endif /* TIN_CPPFLAGS && !REPRODUCIBLE_BUILD */
 #endif /* TIN_CC */
@@ -4279,12 +4414,12 @@ tin_version_info(
 #	if defined(TIN_LDFLAGS) && !defined(REPRODUCIBLE_BUILD)
 	if (verb) {
 		fprintf(fp, "\tLDFLAGS  = \"%s\"\n", TIN_LDFLAGS);
-		wlines++;
+		++wlines;
 	}
 #	endif /* TIN_LDFLAGS && !REPRODUCIBLE_BUILD */
 #	ifdef TIN_LIBS
 		fprintf(fp, "\tLIBS     = \"%s\"\n", TIN_LIBS);
-		wlines++;
+		++wlines;
 #	endif /* TIN_LIBS */
 #endif /* TIN_LD */
 
@@ -4302,7 +4437,7 @@ tin_version_info(
 #				endif /* HAVE_LIB_GNUTLS */
 #			endif /* HAVE_LIB_OPENSSL */
 #		endif /* HAVE_LIB_LIBTLS */
-		wlines++;
+		++wlines;
 #	endif /* NNTPS_ABLE */
 
 #	ifdef HAVE_LIB_PCRE2
@@ -4311,21 +4446,21 @@ tin_version_info(
 			pcre2_version = my_malloc(pcre2_version_length);
 			(void) pcre2_config_8(PCRE2_CONFIG_VERSION, pcre2_version);
 		}
-		fprintf(fp, "\tPCRE2    = \"%s\"\n", pcre2_version ? pcre2_version : "unknown");
+		fprintf(fp, "\tPCRE2    = \"%s\"\n", pcre2_version ? pcre2_version : txt_unknown);
 		FreeIfNeeded(pcre2_version);
 #	else
 		fprintf(fp, "\tPCRE     = \"%s\"\n", pcre_version());
 #	endif /* HAVE_LIB_PCRE2 */
-		wlines++;
+		++wlines;
 
 #	ifdef USE_CURSES
 		fprintf(fp, "\tCURSES   = \"%s\"\n", curses_version());
-		wlines++;
+		++wlines;
 #	endif /* USE_CURSES */
 
 #	ifdef USE_GSASL
 		fprintf(fp, "\tGNU SASL = \"%s\"\n", gsasl_check_version(NULL));
-		wlines++;
+		++wlines;
 #	endif /* USE_GSASL */
 
 #	ifdef HAVE_LIBICUUC
@@ -4338,27 +4473,40 @@ tin_version_info(
 		fprintf(fp, " (Unicode %s)", buf);
 #		endif /* USE_ICU_UCSDET */
 		fprintf(fp, "\"\n");
-		wlines++;
+		++wlines;
 #	endif /* HAVE_LIBICUUC */
 
 #	if defined(HAVE_LIBUNISTRING) && defined(HAVE_UNISTRING_VERSION_H) && (_LIBUNISTRING_VERSION > 0x000009)
 		fprintf(fp, "\tUNISTRING= \"%d.%d.%d\"\n", (_LIBUNISTRING_VERSION & 0xff0000) >> 16, (_LIBUNISTRING_VERSION & 0x00ff00) >> 8, _LIBUNISTRING_VERSION & 0x0000ff);
-		wlines++;
+		++wlines;
 #	endif /* HAVE_LIBUNISTRING && HAVE_UNISTRING_VERSION_H && _LIBUNISTRING_VERSION > 0x000009 */
 
 #	if defined(HAVE_LIBIDNKIT) && defined (HAVE_IDN_VERSION_H)
 		fprintf(fp, "\tIDNKIT   = \"%s\"\n", idn_version_libidn());
-		wlines++;
+		++wlines;
 #	endif /* HAVE_LIBIDNKIT && HAVE_IDN_VERSION_H */
+
+#	if defined(HAVE_LIBIDN2) && defined(IDN2_VERSION)
+		fprintf(fp, "\tIDN2     = \"%s\"\n", IDN2_VERSION);
+		++wlines;
+#	endif /* HAVE_LIBIDN2 && IDN2_VERSION */
+
+#	if defined(HAVE_LIBIDN) && defined(HAVE_STRINGPREP_H)
+		fprintf(fp, "\tIDN      = \"%s\"\n", stringprep_check_version("0.3.0"));
+		++wlines;
+#	endif /* HAVE_LIBIDN && HAVE_STRINGPREP_H */
 
 #	ifdef USE_ZLIB
 		fprintf(fp, "\tZLIB     = \"%s\"\n", ZLIB_VERSION);
-		wlines++;
-#	endif /*USE_ZLIB*/
-
+		++wlines;
+#	endif /* USE_ZLIB */
+#	ifdef HAVE_LIBURIPARSER
+		fprintf(fp, "\tURIPARSER= \"%s\"\n", URI_VER_ANSI);
+		++wlines;
+#	endif /* HAVE_LIBURIPARSER */
 #	if defined(USE_CANLOCK) && defined(CL_API_MAJOR) && defined(CL_API_MINOR)
 		fprintf(fp, "\tCANLOCK  = \"%d.%d\"\n", CL_API_MAJOR, CL_API_MINOR);
-		wlines++;
+		++wlines;
 #	endif /* USE_CANLOCK && CL_API_MAJOR && CL_API_MINOR */
 	}
 #endif /* REPRODUCIBLE_BUILD */
@@ -4742,7 +4890,7 @@ make_connection_page(
 		fprintf(fp, "%s", txt_conninfo_spool_config);
 		fprintf(fp, txt_conninfo_spooldir, spooldir);
 		fprintf(fp, txt_conninfo_novrootdir, novrootdir);
-		fprintf(fp, txt_conninfo_overview_file, novfilename);
+		fprintf(fp, txt_conninfo_overview_file, novfilename); /* TODO: shows wrong name if using inn >= 2.3.0 nov-style */
 		fprintf(fp, txt_conninfo_overview_fmt, overviewfmt_file);
 		fprintf(fp, txt_conninfo_newsgroups_file, newsgroups_file);
 		fprintf(fp, txt_conninfo_active_file, news_active_file);
@@ -4753,20 +4901,24 @@ make_connection_page(
 
 	fprintf(fp, "%s", _(txt_conninfo_conf_files));
 	fprintf(fp, "tin.defaults       : %s\n", global_defaults_file);
+
 	fprintf(fp, "attributes (local) : %s\n", local_attributes_file);
 	if (*global_attributes_file)
 		fprintf(fp, "attributes (global): %s\n", global_attributes_file);
+
 	fprintf(fp, "tinrc (local)      : %s\n", local_config_file);
 	if (*global_config_file)
 		fprintf(fp, "tinrc (global)     : %s\n", global_config_file);
 
 	fprintf(fp, "filter             : %s\n", filter_file);
+
 	if (*keymap_file)
 		fprintf(fp, "keymap             : %s\n", keymap_file);
 
 	/* non conf files/dirs */
 	fprintf(fp, "\n");
 	fprintf(fp, ".newsrc            : %s\n", newsrc);
+
 	if (tinrc.cache_overview_files)
 		fprintf(fp, "local overviews    : %s\n", index_newsdir);
 }
@@ -4802,18 +4954,17 @@ void
 srndm(
 	void)
 {
+#ifdef HAVE_ARC4RANDOM_UNIFORM
+	(void) 0;
+#else
 	time_t t;
 
-#ifdef HAVE_ARC4RANDOM_UNIFORM
-	(void) t;
-#else
 	if ((t = time(NULL)) == (time_t) -1)
 		t = (time_t) getpid();
 	else {
 		if (t >= 1041379200) /* 2003-01-01 00:00:00 GMT */
 			t -= 1041379200;
 	}
-
 #	ifdef HAVE_LRAND48
 	srand48(t);
 #	else
@@ -4823,7 +4974,7 @@ srndm(
 	srand((unsigned int) t);
 #		endif /* HAVE_RANDOM */
 #	endif /* HAVE_LRAND48 */
-#endif /* !HAVE_ARC4RANDOM_UNIFORM */
+#endif /* HAVE_ARC4RANDOM_UNIFORM */
 }
 
 
@@ -4833,6 +4984,8 @@ srndm(
  * returns FILE* on success or NULL on failure
  * if NULL is returned and errno is 0, either had a zero size
  * or was neither S_IFDIR, S_IFLNK or S_IFREG.
+ *
+ * TODO: do something on EISDIR
  */
 FILE *
 tin_fopen(
@@ -4850,18 +5003,23 @@ tin_fopen(
 
 	if ((fp = fopen(pathname, mode)) != NULL) {
 		if (fstat(fileno(fp), &st) != -1) {
-			if (st.st_mode & (S_IFREG | S_IFLNK)) {
-				if (mode[0] == 'r' && mode[1] == '\0' && st.st_size <= 0L) {
+			if (S_ISDIR(st.st_mode))
+				serrno = errno = EISDIR;
+			else {
+				if (st.st_mode & (S_IFREG | S_IFLNK)) {
+					if (mode[0] == 'r' && mode[1] == '\0' && st.st_size <= 0L) {
 #ifdef DEBUG
-					if (debug & DEBUG_MISC)
-						error_message(2, "Skipping empty file: %s", pathname);
+						if (debug & DEBUG_MISC)
+							error_message(2, "Skipping empty file: %s", pathname);
 #endif /* DEBUG */
+					} else
+						return fp;
 				} else
-					return fp;
-			} else
-				serrno = errno;
+					serrno = errno;
+			}
 		} else
 			serrno = errno;
+
 		if (fclose(fp) != 0) {
 			if (!serrno)
 				serrno = errno;
@@ -4870,7 +5028,8 @@ tin_fopen(
 		serrno = errno;
 
 out:
-	switch (serrno) {
+	errno = serrno;
+	switch (errno) {
 		case 0:
 			break;
 
@@ -4881,13 +5040,29 @@ out:
 #endif /* DEBUG */
 			break;
 
+		case EISDIR:
+			/*
+			 * TODO: issue an error message here
+			 *       this requires some rework elsewhere in the
+			 *       code, i.e. "-f /tmp/isdir" would
+			 *       lead to multiple messages, most of them
+			 *       may confuse the user. at least
+			 *       put the  _(txt_reading_* message
+			 *       before the tin_fopen call.
+			 */
+#ifdef DEBUG
+			if (debug & DEBUG_MISC)
+				perror_message("Error: tin_fopen(%s)", pathname);
+#endif /* DEBUG */
+			break;
+
 		default:
 			perror_message(_(txt_cannot_open), BlankIfNull(pathname));
 			break;
 	}
-	errno = serrno;
 	return NULL;
 }
+
 
 #ifdef CHARSET_CONVERSION
 #	ifdef CHARSET_CONVERSION_UCNV

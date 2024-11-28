@@ -3,12 +3,12 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2024-10-31
+ *  Updated   : 2024-11-25
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
  *
- * Copyright (c) 1996-2024 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1996-2025 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -193,14 +193,14 @@ valid_msgid(
 				if (bracket != 0 || !at_present || *(msgid - 1) != '@')
 					return FALSE;
 				else
-					bracket++;
+					++bracket;
 				break;
 
 			case ']':
 				if (bracket != 1 || !at_present || *(msgid + 1) != '>')
 					return FALSE;
 				else
-					bracket--;
+					--bracket;
 				break;
 
 			case '@':
@@ -233,7 +233,7 @@ valid_msgid(
 			default:
 				break;
 		}
-		msgid++;
+		++msgid;
 	}
 
 	if (bracket != 0 || !at_present)

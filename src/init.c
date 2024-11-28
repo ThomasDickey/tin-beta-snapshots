@@ -3,10 +3,10 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-08
+ *  Updated   : 2024-11-26
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -690,12 +690,14 @@ init_selfinfo(
 	void)
 {
 	FILE *fp;
-	char *ptr;
 	const char *p;
 	char tmp[PATH_LEN];
 	size_t space;
 	struct passwd *myentry;
 	struct stat sb;
+#if !defined(NNTP_ONLY) || defined(CHARSET_CONVERSION)
+	char *ptr;
+#endif /* !NNTP_ONLY || CHARSET_CONVERSION */
 
 	process_id = getpid();
 
@@ -706,9 +708,8 @@ init_selfinfo(
 		my_fprintf(stderr, "%s\n", _(txt_error_passwd_missing));
 		free(tin_progname);
 		giveup();
-	}
-
-	my_strncpy(userid, myentry->pw_name, sizeof(userid) - 1);
+	} else
+		my_strncpy(userid, myentry->pw_name, sizeof(userid) - 1);
 
 	*domain_name = '\0';
 
@@ -717,7 +718,7 @@ init_selfinfo(
 	if (uname(&system_info) == -1)
 #	endif /* HAVE_UNAME */
 	{
-		strcpy(system_info.sysname, "unknown");
+		strcpy(system_info.sysname, txt_unknown);
 		*system_info.machine = '\0';
 		*system_info.release = '\0';
 		*system_info.nodename = '\0';
@@ -1031,14 +1032,18 @@ init_selfinfo(
 	joinpath(postponed_articles_file, sizeof(postponed_articles_file), rcdir, POSTPONED_FILE);
 	joinpath(save_active_file, sizeof(save_active_file), rcdir, ACTIVE_SAVE_FILE);
 
+#ifdef HAVE_LONG_FILE_NAMES
+	snprintf(tmp, sizeof(tmp), "tin.%.*s.LCK", LOGIN_NAME_MAX - 1, userid);
+#else
+	snprintf(tmp, sizeof(tmp), "%.10s.LCK", userid);
+#endif /* HAVE_LONG_FILE_NAMES */
 	/*
-	 * TODO: why a lockfile in /tmp and not ${TIN_HOMEDIR:-"$HOME"}/[.tin].
-	 * if ${TIN_HOMEDIR:-"$HOME"} is on NFS the cache likely also is on NFS;
-	 * running multiple instanced of tin -u on different systems which do
-	 * share the cache will not be caught ...
+	 * TODO: rcdir is better than tmpdir, but serverdir (or
+	 *       index_newsdir"-"servername) would make most sense as that
+	 *       would allow simultaneous updates from different servers,
+	 *       unfortunately we don't know the servername yet
 	 */
-	snprintf(tmp, sizeof(tmp), INDEX_LOCK, userid);
-	joinpath(lock_file, sizeof(lock_file), tmpdir, tmp);
+	joinpath(lock_file, sizeof(lock_file), rcdir, tmp);
 
 #ifdef NNTP_ABLE
 	nntp_tcp_default_port = (unsigned short) s2i(get_val("NNTPPORT", NNTP_TCP_PORT), 0, 65535);

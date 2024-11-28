@@ -3,10 +3,10 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2024-11-08
+ *  Updated   : 2024-11-23
  *  Notes     : PGP support
  *
- * Copyright (c) 1995-2024 Steven J. Madsen <steve@erinet.com>
+ * Copyright (c) 1995-2025 Steven J. Madsen <steve@erinet.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -224,7 +224,7 @@ split_file(
 	if (fgets(buf, sizeof(buf), art) != NULL) {			/* Copy the hdr up to and including the \n */
 		t_bool success = TRUE;
 
-		while (strcmp(buf, "\n")) {
+		while (*buf != '\n') {
 			fputs(buf, header);
 			if (fgets(buf, LEN, art) == NULL) {
 				success = FALSE;

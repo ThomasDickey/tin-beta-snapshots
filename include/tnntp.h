@@ -6,7 +6,7 @@
  *  Updated   : 2024-01-19
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2024 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2025 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

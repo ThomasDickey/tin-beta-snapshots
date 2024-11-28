@@ -3,13 +3,13 @@
  *  Module    : nrctbl.c
  *  Author    : Sven Paulus <sven@tin.org>
  *  Created   : 1996-10-06
- *  Updated   : 2024-10-18
+ *  Updated   : 2024-11-25
  *  Notes     : This module does the NNTP server name lookup in
  *              ~/.tin/newsrctable and returns the real hostname
  *              and the name of the newsrc file for a given
  *              alias of the server.
  *
- * Copyright (c) 1996-2024 Sven Paulus <sven@tin.org>
+ * Copyright (c) 1996-2025 Sven Paulus <sven@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,7 +112,7 @@ get_nntpserver(
 
 			if (!strchr("# ;", line[0])) {
 				while ((line_entry = strtok(line_entry_counter ? NULL : line, " \t\n")) != NULL) {
-					line_entry_counter++;
+					++line_entry_counter;
 
 					if (line_entry_counter == 1)
 						STRCPY(name_found, line_entry);
@@ -179,14 +179,14 @@ get_newsrcname(
 
 			line_entry_counter = 0;
 			while ((line_entry = strtok(line_entry_counter ? NULL : line, " \t\n")) != NULL) {
-				line_entry_counter++;
+				++line_entry_counter;
 
 				if ((line_entry_counter == 1) && ((!strcasecmp(line_entry,nsp)) || (!strcasecmp(line_entry, ns)))) {
 					found = 1;
 					do_cpy = TRUE;
 				}
 
-				if (!found && (!strcasecmp(line_entry, "default") || !strcmp(line_entry, "*"))) {
+				if (!found && (!strcasecmp(line_entry, "default") || (*line_entry == '*' && *(line_entry + 1) == '\0'))) {
 					found = 2;
 					do_cpy = TRUE;
 				}

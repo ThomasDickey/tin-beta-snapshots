@@ -3,10 +3,10 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -341,7 +341,7 @@ center_line(
 		}
 	}
 
-    if (len >= cCOLS) {
+	if (len >= cCOLS) {
 		char *buffer = strunc(ln, cCOLS - 2);
 
 		if (buffer != ln)
@@ -669,7 +669,7 @@ show_progress(
 		count_diff = (count - last_count);
 
 		if (!count_diff) /* avoid div by zero */
-			count_diff++;
+			++count_diff;
 
 		/*
 		 * Calculate a running average based on the last 20 samples. For the

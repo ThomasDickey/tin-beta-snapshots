@@ -3,9 +3,9 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2024-11-08
+ *  Updated   : 2024-11-26
  *
- * Copyright (c) 1997-2024 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -161,9 +161,17 @@ get_fqdn(
 			in.s_addr = (*hp->h_addr);
 #		endif /* HAVE_HOSTENT_H_ADDR_LIST */
 		}
-		return (hp && strchr(hp->h_name, '.') ? hp->h_name : inet_ntoa(in));
+		return (
+			hp && strchr(hp->h_name, '.') ? hp->h_name :
+#		ifdef HAVE_INET_NTOA
+			inet_ntoa(in)
+#		else
+			""
+#		endif /* HAVE_INET_NTOA */
+			);
 	}
 #	endif /* HAVE_INET_ADDR */
+
 	if ((hp = gethostbyname(name)) && !strchr(hp->h_name, '.')) {
 #	ifdef HAVE_HOSTENT_H_ADDR_LIST
 		if ((hp = gethostbyaddr(hp->h_addr_list[0], hp->h_length, hp->h_addrtype)))
@@ -175,7 +183,12 @@ get_fqdn(
 	}
 	snprintf(fqdn, sizeof(fqdn), "%s", hp
 		? strchr(hp->h_name, '.')
-			? hp->h_name : inet_ntoa(in)
+			? hp->h_name :
+#	ifdef HAVE_INET_NTOA
+			inet_ntoa(in)
+#	else
+			""
+#	endif /* HAVE_INET_NTOA */
 		: "");
 
 	if (!*fqdn || (fqdn[strlen(fqdn) - 1] <= '9')) { /* see FIXME above about IPv6 */
@@ -211,25 +224,6 @@ get_fqdn(
 	return *fqdn ? fqdn : get_val("HOST", get_val("HOSTNAME", ""));
 }
 #endif /* HAVE_GETHOSTBYNAME */
-
-
-/*
- * Find username & fullname
- */
-void
-get_user_info(
-	char *user_name,
-	char *full_name)
-{
-	const char *ptr;
-
-	full_name[0] = '\0';
-
-	if ((ptr = get_full_name()))
-		strcpy(full_name, ptr);
-
-	strcpy(user_name, userid);
-}
 
 
 static const char *
@@ -271,7 +265,7 @@ get_full_name(
 				*tmp = (char) my_toupper((unsigned char) *tmp);
 			ret = snprintf(fullname, sizeof(fullname), "%s%s%s", buf, tmp, p);
 			if (ret == -1 || ret > (int) sizeof(fullname))
-				error_message(2, "Fullname truncated");
+				error_message(2, "Fullname truncated"); /* -> lang.c */
 		} else
 			STRCPY(fullname, buf);
 	}
@@ -317,7 +311,7 @@ char *
 build_sender(
 	void)
 {
-	const char *ptr = NULL;
+	const char *ptr;
 	static char sender[HEADER_LEN];
 
 	sender[0] = '\0';
@@ -325,7 +319,7 @@ build_sender(
 	if ((ptr = get_full_name())) /* TODO: rfc2047 encode */
 		snprintf(sender, sizeof(sender), ((strpbrk(ptr, "\".:;<>@[]()\\")) ? "\"%s\"" : "%s "), ptr);
 
-	snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "<%*s@", LOGIN_NAME_MAX, userid);
+	snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "<%.*s@", LOGIN_NAME_MAX, userid);
 
 #	ifdef HAVE_GETHOSTBYNAME
 	ptr = get_fqdn(get_host_name());

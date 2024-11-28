@@ -3,10 +3,10 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2024-11-05
+ *  Updated   : 2024-11-25
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1995-2024 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1995-2025 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -668,6 +668,12 @@
 #	undef HAVE_LIBIDNKIT
 
 /*
+ * GNU libidn2 (IDNA 2008)
+ */
+#	undef HAVE_IDN2_H
+#	undef HAVE_LIBIDN2
+
+/*
  * libidn - used for unicode normalization and
  *          Internationalized Domain Names (IDNA 2003)
  */
@@ -893,4 +899,11 @@
 #	undef HAVE_ARC4RANDOM_UNIFORM
 #	undef HAVE_LRAND48
 #	undef HAVE_RANDOM
+
+/*
+ * use uriparser to validate URIs
+ * <https://github.com/uriparser/uriparser>
+ */
+#	undef HAVE_LIBURIPARSER
+
 #endif /* !TIN_AUTOCONF_H */

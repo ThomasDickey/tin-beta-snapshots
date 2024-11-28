@@ -3,10 +3,10 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2024-10-19
+ *  Updated   : 2024-11-25
  *  Notes     : Split from config.c
  *
- * Copyright (c) 2004-2024 Michael Bienia <michael@vorlon.ping.de>
+ * Copyright (c) 2004-2025 Michael Bienia <michael@vorlon.ping.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -189,8 +189,8 @@ option_row(
 
 	while (j < option) {
 		if (option_is_visible(j))
-			i++;
-		j++;
+			++i;
+		++j;
 	}
 
 	return INDEX_TOP + i;
@@ -208,7 +208,7 @@ get_option_num(
 	int result = 0;
 
 	for (i = 0; i < option && result < (int) last_opt; i = next_option(i, FALSE))
-		result++;
+		++result;
 
 	return result;
 }
@@ -225,7 +225,7 @@ set_option_num(
 
 	while (num > 0 && result < last_opt) {
 		result = next_option(result, FALSE);
-		num--;
+		--num;
 	}
 	return result;
 }
@@ -783,7 +783,7 @@ next_option(
 	t_bool incl_titles)
 {
 	do {
-		option++;
+		++option;
 		if (option > last_opt)
 			option = 0;
 	} while (!(option_is_visible(option) && (incl_titles || !option_is_title(option))));
@@ -805,7 +805,7 @@ prev_option(
 		if (option == 0)
 			option = last_opt;
 		else
-			option--;
+			--option;
 	} while (!(option_is_visible(option) && (incl_titles || !option_is_title(option))));
 
 	return option;
@@ -944,7 +944,7 @@ show_config_page(
 
 	for (i = first_option_on_screen; i <= last_option_on_screen; i++) {
 		while (!option_is_visible(i))
-			i++;
+			++i;
 		if (i > last_opt)
 			break;
 		print_any_option(i);

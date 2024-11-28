@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2024-10-17
+ *  Updated   : 2024-11-25
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2025 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,7 @@ static void parse_content_disposition(char *disp, t_part *part);
 static void parse_params(char *params, t_part *content);
 static void progress(int line_count);
 static void remove_cwsp(char *source);
+static void do_remove_cwsp(char *source, t_bool remove_wsp);
 static t_bool subtype_syntactically_valid(char *subtype);
 #ifdef DEBUG_ART
 	static void dump_art(t_openartinfo *art);
@@ -230,7 +231,7 @@ skip_space(
 	char *source)
 {
 	while ((*source) && ((*source == ' ') || (*source == '\t')))
-		source++;
+		++source;
 	return *source ? source : NULL;
 }
 
@@ -239,8 +240,9 @@ skip_space(
  * Removes comments and white space
  */
 static void
-remove_cwsp(
-	char *source)
+do_remove_cwsp(
+	char *source,
+	t_bool remove_wsp)
 {
 	char *from, *to, src;
 	int c_cnt = 0;
@@ -272,7 +274,7 @@ remove_cwsp(
 				--c_cnt;
 				continue;
 			}
-			if (c_cnt > 0 || src == ' ' || src == '\t')
+			if (c_cnt > 0 || (remove_wsp && (src == ' ' || src == '\t')))
 				continue;
 		}
 
@@ -294,6 +296,28 @@ remove_cwsp(
 }
 
 
+/*
+ * Removes comments
+ */
+void
+remove_comments(
+	char *source)
+{
+	do_remove_cwsp(source, FALSE);
+}
+
+
+/*
+ * Removes comments and white space
+ */
+static void
+remove_cwsp(
+	char *source)
+{
+	do_remove_cwsp(source, TRUE);
+}
+
+
 static char *
 get_token(
 	const char *source)
@@ -302,7 +326,7 @@ get_token(
 	char *ptr = dest;
 
 	while (isascii((unsigned char) *ptr) && isprint((unsigned char) *ptr) && *ptr != ' ' && !strchr(ATTRIBUTE_DELIMS, *ptr))
-		ptr++;
+		++ptr;
 	*ptr = '\0';
 
 	return my_realloc(dest, strlen(dest) + 1);
@@ -319,7 +343,7 @@ get_quoted_string(
 
 	*dest = my_malloc(strlen(source) + 1);
 	ptr = *dest;
-	source++; /* skip over double quote */
+	++source; /* skip over double quote */
 	while (*source) {
 		if (*source == '\\') {
 			quote = TRUE;	/* next char as-is */
@@ -380,7 +404,7 @@ decode_value(
 	size_t max_line_len = strlen(part->value);
 
 	/*
-	 * we prefer part->charset if present, even if rfc 2231
+	 * we prefer part->charset if present, even if RFC 2231
 	 * forbids different charsets for each part
 	 */
 	cset = part->charset ? part->charset : charset;
@@ -514,9 +538,9 @@ parse_params(
 
 		/* advance pointer to next parameter */
 		while ((*param) && (*param != ';'))
-			param++;
+			++param;
 		if (*param == ';')
-			param++;
+			++param;
 	}
 }
 
@@ -1058,7 +1082,7 @@ parse_header(
 	/*
 	 * Does ': ' follow the header text?
 	 */
-	if (!(*ptr && *(ptr + 1) && *ptr == ':' && *(ptr + 1) == ' '))
+	if (*ptr != ':' || *(ptr + 1) != ' ')
 		return NULL;
 
 	/*
@@ -1224,7 +1248,7 @@ parse_mb_list_header(
 	/*
 	 * Does ': ' follow the header text?
 	 */
-	if (!(*ptr && *(ptr + 1) && *ptr == ':' && *(ptr + 1) == ' '))
+	if (*ptr != ':' || *(ptr + 1) != ' ')
 		return NULL;
 
 	/*
@@ -1482,7 +1506,7 @@ count_lines(
 
 	while ((c = *src++))
 		if (c == '\n')
-			lines++;
+			++lines;
 	return lines;
 }
 
@@ -1784,7 +1808,7 @@ parse_normal_article(
 		unsigned char *cp;
 		t_bool need_guess = FALSE;
 
-		for (cp = (unsigned char *) buffer; *cp && !need_guess; cp++) {
+		for (cp = (unsigned char *) buffer; *cp; cp++) {
 			if (is_EIGHT_BIT(cp)) {
 				need_guess = TRUE;
 				break;

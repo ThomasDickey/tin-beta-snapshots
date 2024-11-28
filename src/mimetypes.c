@@ -6,7 +6,7 @@
  *  Updated   : 2024-05-05
  *  Notes     : mime.types handling
  *
- * Copyright (c) 2000-2024 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2025 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,7 @@ _lookup_mimetype(
 	const char *ext,
 	t_part *part)
 {
-	FILE *fp = NULL;
+	FILE *fp;
 	const char *exts;
 	char *ptr;
 	char buf[PATH_LEN];

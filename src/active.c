@@ -3,10 +3,10 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2024-10-31
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1992-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -403,7 +403,7 @@ do_read_newsrc_active_file(
 #	endif /* DEBUG */
 				put_server(buf, FALSE);
 				index_i = (index_i + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
-				window++;
+				++window;
 			}
 			if (window == NUM_SIMULTANEOUS_GROUP_COMMAND || ptr == NULL) {
 				respcode = get_only_respcode(line, sizeof(line));
@@ -449,7 +449,7 @@ do_read_newsrc_active_file(
 							ptr = ngname;
 							free(ngnames[index_o]);
 							index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
-							window--;
+							--window;
 							break;
 						}
 
@@ -462,7 +462,7 @@ do_read_newsrc_active_file(
 					case ERR_NOGROUP:
 						free(ngnames[index_o]);
 						index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
-						window--;
+						--window;
 						continue;
 
 					case ERR_ACCESS:
@@ -480,7 +480,7 @@ do_read_newsrc_active_file(
 #	endif /* DEBUG */
 						free(ngnames[index_o]);
 						index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
-						window--;
+						--window;
 						continue;
 				}
 			} else
@@ -837,7 +837,7 @@ read_news_active_file(
 			/* we can't use for_each_group(i) yet, so we have to parse the newsrc */
 			if ((fp = tin_fopen(newsrc, "r")) != NULL) {
 				while (tin_fgets(fp, FALSE) != NULL)
-					j++;
+					++j;
 				rewind(fp);
 				if (j < PIPELINE_LIMIT) {
 					while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
@@ -851,7 +851,7 @@ read_news_active_file(
 							} else {
 								if (*buff) {
 									put_server(buff, FALSE);
-									r++;
+									++r;
 								}
 								snprintf(buff, sizeof(buff), "LIST %s %s", nntp_caps.list_counts ? "COUNTS" : "ACTIVE", ptr);
 							}
@@ -859,12 +859,12 @@ read_news_active_file(
 						} else
 							snprintf(buff, sizeof(buff), "LIST ACTIVE %s", ptr);
 						put_server(buff, FALSE);
-						r++;
+						++r;
 						*buff = '\0';
 					}
 					if (*buff) {
 						put_server(buff, FALSE);
-						r++;
+						++r;
 					}
 				} else
 					do_group_cmds = TRUE;
@@ -948,9 +948,9 @@ read_news_active_file(
 	 * if required
 	 */
 	if (!check_any_unread) {
-	BegStopWatch();
-	assign_attributes_to_groups();
-	EndStopWatch("assign_attributes_to_groups()");
+		BegStopWatch();
+		assign_attributes_to_groups();
+		EndStopWatch("assign_attributes_to_groups()");
 	}
 
 	return newgrps;
@@ -1071,13 +1071,13 @@ check_for_any_new_groups(
 			 * we must check the creation date manually
 			 */
 			if ((ptr = strchr(line, ' ')) != NULL) {
-				if (!read_news_via_nntp && ((time_t) atol(ptr) < old_newnews_time || old_newnews_time == (time_t) 0))
+				if (!read_news_via_nntp && ((time_t) strtol(ptr, NULL, 10) < old_newnews_time || old_newnews_time == (time_t) 0))
 					continue;
 
 				*ptr = '\0';
 			}
 			subscribe_new_group(line, autosubscribe, autounsubscribe);
-			newgrps++;
+			++newgrps;
 		}
 		TIN_FCLOSE(fp);
 
@@ -1199,9 +1199,9 @@ match_group_list(
 			/*
 			 * a '!' before the pattern inverts sense of match
 			 */
-			group_list++;
-			group_len--;
-			list_len--;
+			++group_list;
+			--group_len;
+			--list_len;
 		}
 		/*
 		 * copy out the entry and terminate it properly
@@ -1221,7 +1221,7 @@ match_group_list(
 		 * now examine next entry if any
 		 */
 		if (group_list[group_len] != '\0')
-			group_len++;	/* skip the separator */
+			++group_len;	/* skip the separator */
 
 		group_list += group_len;
 		list_len -= group_len;
@@ -1260,7 +1260,10 @@ load_newnews_info(
 		return;
 
 	*ptr++ = '\0';
-	new_time = (time_t) atol(ptr);
+	errno = 0;
+	new_time = (time_t) strtol(ptr, NULL, 10);
+	if (errno == ERANGE)
+		new_time = (time_t) 0;
 
 	/*
 	 * If this is a new host entry, set it up
@@ -1426,7 +1429,7 @@ append_group_line(
 		int err;
 
 		ptr = group_name = my_strdup(group_path);
-		ptr++;
+		++ptr;
 		while ((ptr = strchr(ptr, '/')) != NULL)
 			*ptr = '.';
 

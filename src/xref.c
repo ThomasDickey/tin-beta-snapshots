@@ -3,10 +3,10 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2024-01-31
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1993-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -102,7 +102,7 @@ overview_xref_support(
 				debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #endif /* DEBUG && NNTP_ABLE */
 
-			fields++;
+			++fields;
 
 			/* expand overview fmt array */
 			if (fields >= res_fields) {
@@ -263,7 +263,7 @@ overview_xref_support(
 		TIN_FCLOSE(fp);
 	}
 
-	fields++;
+	++fields;
 	/* resize */
 	ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (fields + 1));
 
@@ -348,18 +348,18 @@ art_mark_xref_read(
 
 	/* skip sitename */
 	while (*xref_ptr != ' ' && *xref_ptr != '\t' && *xref_ptr)
-		xref_ptr++;
+		++xref_ptr;
 
 	/*
 	 * tokenize each pair and update that newsgroup if it is in my_group[].
 	 */
 	forever {
 		while (*xref_ptr == ' ' || *xref_ptr == '\t')
-			xref_ptr++;
+			++xref_ptr;
 
 		groupname = xref_ptr;
 		while (*xref_ptr != ':' && *xref_ptr != ' ' && *xref_ptr != '\t' && *xref_ptr)
-			xref_ptr++;
+			++xref_ptr;
 
 		if (*xref_ptr != ':')
 			break;
@@ -368,7 +368,7 @@ art_mark_xref_read(
 		if ((artnum = atoartnum(xref_ptr)) <= 0)
 			break;
 		while (isdigit((unsigned char) *xref_ptr))
-			xref_ptr++;
+			++xref_ptr;
 
 		if (&ptr[1] == xref_ptr)
 			break;

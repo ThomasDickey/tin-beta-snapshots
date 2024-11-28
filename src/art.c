@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-07
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -288,10 +288,14 @@ setup_hard_base(
 #	endif /* DEBUG */
 
 				while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+#	ifdef DEBUG
+				if ((debug & DEBUG_NNTP) && verbose)
+					debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+#	endif /* DEBUG */
 					if (grpmenu.max >= max_base)
 						expand_base();
 					base[grpmenu.max++] = atoartnum(ptr);
-					total++;
+					++total;
 				}
 #	ifdef DEBUG
 				/* log end of multiline response to get timing data */
@@ -361,7 +365,7 @@ setup_hard_base(
 			while ((e = readdir(d)) != NULL) {
 				art = atoartnum(e->d_name);
 				if (art >= 1) {
-					total++;
+					++total;
 					if (grpmenu.max >= max_base)
 						expand_base();
 					base[grpmenu.max++] = art;
@@ -511,7 +515,7 @@ index_group(
 		}
 		if (base[i] <= last_read_article)		/* It is vital this test be done last */
 			continue;
-		total++;
+		++total;
 	}
 
 	/*
@@ -550,7 +554,7 @@ index_group(
 	 */
 	for_each_art(i) {
 		if (arts[i].thread == ART_EXPIRED) {
-			changed++;
+			++changed;
 #ifdef DEBUG
 			if (debug & DEBUG_NEWSRC)
 				debug_print_comment("art.c: index_group() purging...");
@@ -842,7 +846,7 @@ read_art_headers(
 		}
 
 		top = arts[top_art].artnum;	/* used if arts are killed */
-		top_art++;
+		++top_art;
 
 		if (++modified % (MODULO_COUNT_NUM * 20) == 0)
 			show_progress(group_msg, modified, total);
@@ -954,7 +958,7 @@ thread_by_percentage(
 		unmatched = 0;
 		for (j = 0; arts[base[root_num]].subject[j] != '\0' && arts[i].subject[k] != '\0'; j++, k++) {
 			if (arts[base[root_num]].subject[j] != arts[i].subject[k])
-				unmatched++;
+				++unmatched;
 		}
 
 		/*
@@ -966,7 +970,7 @@ thread_by_percentage(
 		 * them matching.
 		 */
 		if (!(slen = strlen(arts[base[root_num]].subject)))
-			slen++;
+			++slen;
 		unmatched += (unsigned) (slen - strlen(arts[i].subject));
 		if (unmatched * 100 / slen > percentage) {
 			/*
@@ -1735,10 +1739,8 @@ get_path_header(
 	t_artnum max)
 {
 	FILE *fp = NULL;
-	char *prep_msg;
 	char *buf, *ptr;
 	char cmd[NNTP_STRLEN];
-	t_artnum artnum, i;
 	t_bool found = FALSE;
 	static t_bool supported = TRUE; /* assume HDR || XPAT works */
 
@@ -1795,9 +1797,9 @@ get_path_header(
 	}
 
 	if (fp) {
-		t_artnum j = T_ARTNUM_CONST(0);
+		t_artnum artnum, i, j = T_ARTNUM_CONST(0);
+		char *prep_msg = fmt_string(_(txt_prep_for_filter_on_path), cur, cnt);
 
-		prep_msg = fmt_string(_(txt_prep_for_filter_on_path), cur, cnt);
 		while ((buf = tin_fgets(fp, FALSE)) != NULL && buf[0] != '.') {
 #	ifdef DEBUG
 			if ((debug & DEBUG_NNTP) && verbose)
@@ -1887,10 +1889,13 @@ build_mailbox_list(
 	curr_from = tmp_from;
 
 	do {
-		next_from = split_mailbox_list(curr_from);
 		if ((mb = add_mailbox(art)) == NULL)
 			break;
 
+		while (*curr_from == ' ')
+			++curr_from;
+
+		next_from = split_mailbox_list(curr_from);
 		mb->gnksa_code = parse_from(curr_from, art_from_addr, art_full_name);
 		mb->from = hash_str(buffer_to_ascii(art_from_addr));
 		if (*art_full_name)
@@ -1963,6 +1968,8 @@ read_overview(
 	 */
 	if ((fp = open_xover_fp(group, "r", min, max, local)) == NULL)
 		return expired;
+
+	BegStopWatch();
 
 	if (group->xmax > max)
 		group->xmax = max;
@@ -2039,7 +2046,7 @@ read_overview(
 		 * Check to make sure article in nov file has not expired in group
 		 */
 		if (artnum < group->xmin) {
-			expired++;
+			++expired;
 			continue;
 		}
 
@@ -2079,7 +2086,7 @@ read_overview(
 						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "%s: found unexpected Xref: on semi std. position", nntp_caps.over_cmd);
 #endif /* DEBUG */
-						over_fields++;
+						++over_fields;
 						ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (over_fields + 2)); /* + 2 = artnum and end-marker */
 						ofmt[over_fields].type = OVER_T_FSTRING;
 						ofmt[over_fields].name = my_strdup("Xref:");
@@ -2091,7 +2098,7 @@ read_overview(
 						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "%s: found Path:", nntp_caps.over_cmd);
 #endif /* DEBUG */
-						over_fields++;
+						++over_fields;
 						ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (over_fields + 2)); /* + 2 = artnum and end-marker */
 						ofmt[over_fields].type = OVER_T_FSTRING;
 						ofmt[over_fields].name = my_strdup("Path:");
@@ -2389,7 +2396,7 @@ read_overview(
 		if (artnum % (MODULO_COUNT_NUM * 20) == 0)
 			show_progress(group_msg, artnum - min, max - min);
 
-		top_art++;				/* Basically this statement commits the article */
+		++top_art;				/* Basically this statement commits the article */
 	}
 #	if defined(DEBUG) && defined(NNTP_ABLE)
 	/* log end of multiline response to get timing data */
@@ -2474,7 +2481,7 @@ read_overview(
 							continue;
 						ptr = q;
 						while (*ptr && isspace((unsigned char) *ptr))
-							ptr++;
+							++ptr;
 						if ((q = strchr(ptr, '\n')) != NULL)
 							*q = '\0';
 						art->xref = my_strdup(ptr);
@@ -2483,7 +2490,7 @@ read_overview(
 					if (artnum % (MODULO_COUNT_NUM * 20) == 0)
 						show_progress(group_msg, artnum - min, max - min);
 
-					top_art++;
+					++top_art;
 				}
 #	ifdef DEBUG
 				/* log end of multiline response to get timing data */
@@ -2547,6 +2554,9 @@ read_overview(
 	/* silence compiler warning (unused parameter) */
 	(void) rebuild_cache;
 #endif /* !NNTP_ABLE */
+
+	EndStopWatch("read_overview()");
+
 	return expired;
 }
 
@@ -2671,7 +2681,7 @@ write_overview(
 				while (*q) {
 					if (*q == '\t')
 						*q = ' ';
-					q++;
+					++q;
 				}
 			}
 
@@ -2771,9 +2781,9 @@ find_nov_file(
 	FILE *fp;
 	const char *dir;
 	char buf[PATH_LEN];
-	int i;
-	struct stat sb;
+	unsigned int i;
 	unsigned long hash;
+	struct stat sb;
 	static char nov_file[PATH_LEN];
 	static t_bool once_only = FALSE;	/* Trap things that are done only 1 time */
 
@@ -2807,51 +2817,48 @@ find_nov_file(
 			 *
 			 * See if local overview file $SPOOLDIR/<groupname>/.overview exists
 			 *
-			 * INN >= 2.3.0 seems to use a new naming schemme with tradindexed
-			 * see untested gross hack below; buffindexed and ovdb are not
-			 * covered by the code at all.
+			 * INN >= 2.3.0 uses a new naming schemme with tradindexed;
+			 * buffindexed and ovdb are not covered by the code at all.
 			 */
 #ifndef NNTP_ONLY
 			if (!read_news_via_nntp) {
 				make_base_group_path(novrootdir, group->name, buf, sizeof(buf));
 				joinpath(nov_file, sizeof(nov_file), buf, novfilename);
-#	if 0	/* TODO: FIXME - ugly hack for inn >= 2.3.0 with ovmethod tradindexed */
-				/*
-				 * TODO: try to access inn >= 2.3.0 overviews (once)
-				 *       and if that fails (!opendir("....DAT/"))
-				 *       try the usual path: if ok don't try
-				 *       inn >= 2.3.0 overviews again in the session.
-				 */
-				{
+				if (access(nov_file, R_OK) == 0) {
+					if (mode == R_OK)
+						return nov_file; /* system wide "classic" overviews */
+					else
+						return NULL;	/* Don't write to system wide overviews */
+				} else { /* ugly hack for inn >= 2.3.0 with ovmethod tradindexed */
 					char *gn = my_strdup(group->name);
-					size_t t, j;
+					size_t t;
 					t_bool w = FALSE;
 
-					for (t = 1, j = 1; t < strlen(group->name); t++) {
+					for (t = 1, i = 1; t < strlen(group->name); t++) {
 						if (!w) {
 							if (group->name[t] == '.') {
-								gn[j++] = '/';
+								gn[i++] = '/';
 								w = TRUE;
 							}
-						} else {
+						} else { /* TODO: check against inns code */
 							if (group->name[t] != '.') { /* illegal .. in name? */
-								gn[j++] = group->name[t];
+								gn[i++] = group->name[t];
 								w = FALSE;
 							}
 						}
 					}
-					gn[j] = '\0';
+					gn[i] = '\0';
 
 					joinpath(nov_file, sizeof(nov_file), novrootdir, gn);
 					free(gn);
 					snprintf(nov_file + strlen(nov_file), sizeof(nov_file) - strlen(nov_file), "/%s.DAT", group->name);
 				}
-#	endif /* 0 */
 				if (access(nov_file, R_OK) == 0) {
-					if (mode == R_OK)
+					if (mode == R_OK) {
+						/* STRCPY(novfilename, ".DAT"); */ /* would be just to fix the name in make_connection_page() */
 						return nov_file;		/* Use system wide overviews */
-					else
-						return NULL;			/* Don't write cache in this case */
+					} else
+						return NULL;			/* Don't write to system wide overviews */
 				}
 			}
 #endif /* !NNTP_ONLY */
@@ -2869,12 +2876,12 @@ find_nov_file(
 			if (!once_only && nntp_server) {
 				size_t sp = sizeof(index_newsdir), ln = strlen(index_newsdir);
 
-				if (--sp - ln >= 2) {
+				if (sp > ln + 3) {
 					char *srv = my_strdup(nntp_server);
 
 					str_lwr(srv);
 					strcat(index_newsdir, "-");
-					my_strncpy(index_newsdir + ln + 1, srv, sp);
+					my_strncpy(index_newsdir + ln + 1, srv, --sp);
 					free(srv);
 				}
 				once_only = TRUE;
@@ -2919,29 +2926,24 @@ find_nov_file(
 	 */
 	hash = hash_groupname(group->name);
 
-	for (i = 1; ; i++) {
+	for (i = 1; i < INT_MAX; i++) {
 		char *ptr;
 
-		snprintf(buf, sizeof(buf), "%lu.%d", hash, i);
+		snprintf(buf, sizeof(buf), "%lu.%u", hash, i);
 		joinpath(nov_file, sizeof(nov_file), dir, buf);
 
-		if ((fp = tin_fopen(nov_file, "r")) == NULL)
+		if ((fp = tin_fopen(nov_file, "r")) == NULL) /* file not found or empty -> name can be used, leave loop */
 			break;
 
-		/*
-		 * No group name header, so not a valid index file => overwrite it
-		 */
-		if (fgets(buf, (int) sizeof(buf), fp) == NULL) {
-			fclose(fp);
-			break;
+		if ((ptr = tin_fgets(fp, FALSE)) != NULL) { /* grab 1st line */
+			if (strcmp(ptr, group->name)) {/* name mismatch try next */
+				fclose(fp);
+				continue;
+			}
 		}
+		/* match, leave loop */
 		fclose(fp);
-
-		if ((ptr = strrchr(buf, '\n')) != NULL)
-			*ptr = '\0';
-
-		if (STRCMPEQ(buf, group->name))
-			break;
+		break;
 	}
 
 	return nov_file;
@@ -2988,7 +2990,7 @@ do_update(
 			continue;
 		}
 
-		k++;
+		++k;
 
 		if (verbose) {
 			my_printf("%s %s\n", (catchup ? _(txt_catchup) : _(txt_updating)), group->name);
@@ -3421,13 +3423,13 @@ print_from(
 	char *p, *q;
 	static char from[PATH_LEN];
 	char single_from[PATH_LEN];
-	struct t_mailbox *mb = &article->mailbox;
 	int c_needed = 0;
+	struct t_mailbox *mb = &article->mailbox;
+
+/*	if (!mb)
+		return from; */
 
 	*from = *single_from = '\0';
-
-	if (!mb)
-		return from;
 
 	do {
 		if (mb->name != NULL) {
@@ -3440,7 +3442,7 @@ print_from(
 #endif /* CHARSET_CONVERSION */
 			p = rfc1522_encode(mb->name, tinrc.mm_local_charset, FALSE);
 			unfold_header(p);
-			if (strpbrk(mb->name, "\".:;<>@[]()\\") != NULL && mb->name[0] != '"' && mb->name[strlen(mb->name)] != '"') {
+			if (CHECK_RFC5322_SPECIALS(mb->name)) {
 				if (group->attribute)
 					snprintf(single_from, sizeof(single_from), "\"%s\" <%s>", group->attribute->post_8bit_header ? q : p, mb->from);
 				else

@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-10-30
+.\" Updated   : 2024-11-21
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -30,6 +30,8 @@ tin, rtin \- Usenet newsreader
 .IR address \|]
 .RB [\| \-D
 .IR debug_level \|]
+.RB [\| \-F
+.IR filter_file \|]
 .RB [\| \-G
 .IR article_limit \|]
 .RB [\| \-f
@@ -125,8 +127,26 @@ Don't load newsgroup descriptions and servers message of the day
 .\" FIXME: explain debug levels
 .TP
 .BI \-D " debug-level"
-Enter debug-level (1 = NNTP, 2 = filter, 4 = newsrc, 8 = threading, 16 =
-memory, 32 = attributes, 64 = misc, 128 = remove existing debug files).
+Enter debug-level, the levels can specified via number (should be avoided
+as it will be removed in the future) or name (case insensitive) as listed
+below. Use comma to give multiple levels, any combinations are allowed
+(e.g. ''\fB\-D\fP \fIGNKSA,2,NNTP\fP''). If removal is requested it will
+be performed at startup and on normal termination (that is the files are
+only available while tin is running).
+.in +.3i
+.nf
+.ta \w'%128 'u +\w'ATTRIBUTES 'u +\w'ATTRIBUTES 'u +\w'ATTRIBUTES'u
+\fI  1	NNTP	NNTPS\fP
+\fI  2	FILTER	ARTS\fP
+\fI  4	NEWSRC	BITMAP\fP
+\fI  8	THREADING	REFS\fP
+\fI 16	MEMORY	MALLOC\fP
+\fI 32	ATTRIBUTES\fP
+\fI 64	MISC	GNKSA	ACTIVE\fP
+\fI127	ALL	EVERYTHING\fP
+\fI128	REMOVE	DELETE\fP
+.fi
+.in -.3i
 For NNTP-level ''\fB\-v\fP'' controls the verbosity of the output.
 Depending on the debug-level various files may be written to \fI$TMPDIR\fR
 and/or on screen output may be given. See also the "SECURITY" section!
@@ -135,6 +155,9 @@ and/or on screen output may be given. See also the "SECURITY" section!
 Use the specified file of subscribed to newsgroups in place of
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR or a file specified via
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fR.
+.TP
+.BI \-F " file"
+Use the specified filter file instead of \fI${TIN_HOMEDIR:\-"$HOME"}/.filter\fR.
 .TP
 .BI \-g " server[:port]"
 Use the server[:port] and newsrc specified in
@@ -2134,6 +2157,8 @@ not set, the value of the environment variable $\fBMM_CHARSET\fP is
 used. US-ASCII or compile-time default is used in case neither of
 them is defined. If your system supports
 .BR \%iconv (3),
+or
+.BR \%ucnv_* (),
 this option is disabled and you should use \fBmm_network_charset\fP instead.
 .TP
 .B MM_NETWORK_CHARSET (mm_network_charset)
@@ -2143,9 +2168,11 @@ via
 .BR \%nl_langinfo (3))
 is done via
 .BR \%iconv (3),
-if this function is not available on your system this option is disabled and
-you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP is
-limited to one of the following charsets:
+or
+.BR \%ucnv_* (),
+if none of these functions are available on your system this option is
+disabled and you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP
+is limited to one of the following charsets:
 .in +.3i
 US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU}
 EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2}, Big5, UTF-8
@@ -2230,7 +2257,7 @@ The possible values are:
 .RE
 Some normalization modes are only available if they are supported by the
 library \fBtin\fP uses to do the normalization. NFC should be used if
-possible.
+possible (\fBRFC\%5198\fP).
 .TP
 .B Format string for the display of mime header at Article level (page_mime_format)
 Format string \fBtin\fP uses for mime header at Page level. See the
@@ -2847,9 +2874,10 @@ you specify. This can be anything from the name of the author to the number
 of lines in an article.
 .PP
 When \fBtin\fP starts up the user's kill-file
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fR (see also
-.BR \%tin (5))
-is read. Each time a newsgroup is entered the rules are applied and articles
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fR or the file specified
+via ''\fB\-F\fP'' is read (see also
+.BR \%tin (5)
+). Each time a newsgroup is entered the rules are applied and articles
 killed or selected when they meet certain criteria.
 .PP
 The degree to which rules are applied depend on the \fBkill_level\fP tinrc
@@ -2867,7 +2895,7 @@ over previous versions to include scoring and better pattern matching. It is
 recommended that you read the file \fIfiltering\fR in the \fBtin\fP
 documentation directory. This file can also be read online at
 .br
-<http://www.tin.org/filtering.txt>.
+<http://bzr.tin.org/doc/filtering>.
 .PP
 .\" FIXME - Next paragraph is out of date
 The on-screen filtering menu is accessed by pressing
@@ -3266,7 +3294,7 @@ minimum or maximum screen width must be the second one.  The following
 example displays the score with a length of 10 characters only if the screen
 is wider than 100 characters: '\fB%10>100S\fP'.  A second length can be
 specified for '\fB%F\fP' and '\fB%s\fP' resp.  '\fB%T\fP', separated by a
-colon, which is used if the minimum or maximum screen width is not reached. 
+colon, which is used if the minimum or maximum screen width is not reached.
 If no length is specified after the colon, the item is displayed even if the
 minimum screen width is not reached and the length is calculated as if no
 minimum (or maximum) screen width had been specified.  In the following
@@ -3923,6 +3951,14 @@ and
 .BR \%environ (5)
 for more information.
 .TP
+.B LC_NUMERIC
+Numeric value formats. Its value should be of the form
+\fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
+.BR \%locale (5)
+and
+.BR \%environ (5)
+for more information.
+.TP
 .B LC_TIME
 Date and time formats. Its value should be of the form
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
@@ -3951,9 +3987,9 @@ for more information.
 .TP
 .B LANGUAGE
 This variable defines a priority list for translations. Whenever a
-translation is not available in the language selected via \fB$LC_ALL\fP
-or \fB$LANG\fP the next language from the list is tried. Its value should
-be of the form \fIlanguage:language[:language]\fR. See
+translation is not available the next language from the list is tried.
+Its value should be of the form \fIlanguage:language[:language]\fR.
+Requires \fB$LC_ALL\fP or \fB$LANG\fP to be set. See
 .BR \%environ (5)
 for more information.
 .TP
@@ -4201,6 +4237,7 @@ Urs Janssen <urs@tin.org>
 .BR RFC\%4155 ,
 .BR RFC\%4643 ,
 .BR RFC\%4880 ,
+.BR RFC\%5198 ,
 .BR RFC\%5322 ,
 .BR RFC\%5536 ,
 .BR RFC\%5537 ,

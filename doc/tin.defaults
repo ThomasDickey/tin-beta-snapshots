@@ -76,7 +76,7 @@
 
 # disable_gnksa_domain_check - allow unregistered top level domains
 #
-# THE BUILD IN LIST OF VALID TLDS IS OUTDATED, SO THE DEFAULT
+# THE BUILD IN LIST OF VALID TLDS MAY BE OUTDATED, SO THE DEFAULT
 # FOR THIS FEATURE CHANGED TO ON AS OF 2013-11-19
 #
 # you should activate this only if you are using in an intranet environment

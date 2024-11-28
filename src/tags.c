@@ -3,10 +3,10 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2024-01-10
+ *  Updated   : 2024-11-25
  *  Notes     : Split out from other modules
  *
- * Copyright (c) 1999-2024 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -306,7 +306,7 @@ set_range(
 						break;
 					if (i >= range_min)
 						arts[artnum].inrange = TRUE;
-					i++;
+					++i;
 				}
 			}
 			break;
@@ -349,7 +349,7 @@ parse_range(
 			} else
 				*range_start = atoi(ptr);
 			while (isdigit((unsigned char) *ptr))
-				ptr++;
+				++ptr;
 		} else {
 			switch (*ptr) {
 				case '-':
@@ -374,7 +374,7 @@ parse_range(
 				default:
 					break;
 			}
-			ptr++;
+			++ptr;
 		}
 	}
 

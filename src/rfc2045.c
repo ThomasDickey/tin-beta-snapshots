@@ -3,10 +3,10 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2023-11-10
+ *  Updated   : 2023-11-25
  *  Notes     : RFC 2045/2047 encoding
  *
- * Copyright (c) 1995-2024 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2025 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -106,7 +106,7 @@ rfc1521_encode(
 						bits -= 6;
 					} else
 						*b++ = '=';
-					xpos++;
+					++xpos;
 				}
 				pattern = 0;
 				bits = 0;
@@ -149,7 +149,7 @@ rfc1521_encode(
 					}
 					for (i = 0; i < 4; i++) {
 						*b++ = base64_alphabet[(pattern >> (bits - 6)) & 0x3f];
-						xpos++;
+						++xpos;
 						bits -= 6;
 					}
 					pattern = 0;
@@ -175,22 +175,22 @@ rfc1521_encode(
 				while (*l) {
 					if (!isspace((unsigned char) *l)) {		/* it's not trailing whitespace, no encoding needed */
 						*b++ = *line++;
-						xpos++;
+						++xpos;
 						break;
 					}
-					l++;
+					++l;
 				}
 				if (!*l) {		/* trailing whitespace must be encoded */
 					*b++ = '=';
 					*b++ = (char) bin2hex(HI4BITS(line));
 					*b++ = (char) bin2hex(LO4BITS(line));
 					xpos += 3;
-					line++;
+					++line;
 				}
 			} else if ((!is_EIGHT_BIT(line) && *line != '=')
 						  || (*line == '\n')) {
 				*b++ = *line++;
-				xpos++;
+				++xpos;
 				if (*(line - 1) == '\n')
 					break;
 			} else {
@@ -198,7 +198,7 @@ rfc1521_encode(
 				*b++ = (char) bin2hex(HI4BITS(line));
 				*b++ = (char) bin2hex(LO4BITS(line));
 				xpos += 3;
-				line++;
+				++line;
 			}
 			if (xpos > 72 && *line != '\n') {	/* 72 +3 [worst case] + equal sign = 76 :-) */
 				*b++ = '=';		/* break long lines with a 'soft line break' */
@@ -393,7 +393,7 @@ read_decoded_base64_line(
 			(*line)[put_chars] = '\0';
 			return max_lines_to_read;
 		}
-		lines_read++;
+		++lines_read;
 		buf2 = my_malloc(strlen(buf) + 1); /* decoded string is always shorter than encoded string, so this is safe */
 		count = mmdecode(buf, 'b', '\0', buf2);
 		buf2[count] = '\0';
@@ -459,7 +459,7 @@ read_decoded_qp_line(
 			lines_read = max_lines_to_read;
 			break;
 		}
-		lines_read++;
+		++lines_read;
 		if ((chars_to_add = strlen(buf2)) == 0) /* Empty line, leave loop. */
 			break;
 

@@ -3,10 +3,10 @@
  *  Module    : debug.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2024-04-19
+ *  Updated   : 2024-11-14
  *  Notes     :
  *
- * Copyright (c) 2007-2024 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2007-2025 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,15 +41,15 @@
 #ifndef DEBUG_H
 #	define DEBUG_H 1
 
-#	define DEBUG_NNTP	0x01	/* 1 */
-#	define DEBUG_FILTER	0x02	/* 2 */
-#	define DEBUG_NEWSRC	0x04	/* 4 */
-#	define DEBUG_REFS	0x08	/* 8 */
-#	define DEBUG_MEM	0x10	/* 16 */
-#	define DEBUG_ATTRIB	0x20	/* 32 */
-#	define DEBUG_MISC	0x40	/* 64 */
-#	define DEBUG_ALL	0x7f	/* 127 */
-#	define DEBUG_REMOVE	0x80	/* 128 */
+#	define DEBUG_NNTP	0x01	/*   1, "NNTP", "NNTPS" */
+#	define DEBUG_FILTER	0x02	/*   2, "FILTER", "ARTS"  */
+#	define DEBUG_NEWSRC	0x04	/*   4, "NEWSRC", "BITMAP" */
+#	define DEBUG_REFS	0x08	/*   8, "THREADING", "REFS" */
+#	define DEBUG_MEM	0x10	/*  16, "MEMORY", "MALLOC" */
+#	define DEBUG_ATTRIB	0x20	/*  32, "ATTRIBUTES" */
+#	define DEBUG_MISC	0x40	/*  64, "MISC", "GNKSA", "ACTIVE" */
+#	define DEBUG_ALL	0x7f	/* 127, "ALL", "EVERYTHING" */
+#	define DEBUG_REMOVE	0x80	/* 128, "REMOVE", "DELETE" */
 
 
 #	if 0 /* this is very noisy */

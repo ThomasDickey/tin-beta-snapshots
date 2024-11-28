@@ -3,10 +3,10 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-31
+ *  Updated   : 2024-11-25
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -152,10 +152,16 @@ read_newsrc(
 
 	while ((grp = tin_fgets(fp, FALSE)) != NULL) {
 		strip_line(grp);
+
+		/* mixed up -f / -F ? */
+		if (*grp && !line_count && !strncmp(grp, txt_filter_file_version, 15)) { /* version number starts after pos. 15 */
+			fclose(fp);
+			tin_done(EXIT_FAILURE, "Mixed up '-f'/'-F'? -f %s", newsrc_file); /* -> lang.c */
+		}
 		if (*grp == '#' || *grp == '\0')	/* skip comments and empty lines */
 			continue;
 
-		line_count++;	/* but count all other lines (incl. bogus ones) */
+		++line_count;	/* but count all other lines (incl. bogus ones) */
 		seq = parse_newsrc_line(grp, &sub);
 
 		if (sub == SUBSCRIBED) {
@@ -984,7 +990,7 @@ parse_bitmap_seq(
 	 */
 	ptr = seq;
 	while (ptr && *ptr && (*ptr < '0' || *ptr > '9'))
-		ptr++;
+		++ptr;
 
 #ifdef DEBUG
 	if (debug & DEBUG_NEWSRC) {
@@ -1174,13 +1180,13 @@ parse_get_seq(
 	*low = strtoartnum(seq, &seq, 10);
 
 	if (*seq == '-') {	/* Range of articles */
-		seq++;
+		++seq;
 		*high = strtoartnum(seq, &seq, 10);
 	} else	/* Single article */
 		*high = *low;
 
 	while (*seq && (*seq < '0' || *seq > '9'))
-		seq++;
+		++seq;
 
 	return seq;
 }
@@ -1231,7 +1237,7 @@ parse_unread_arts(
 		}
 		while (j < min) {
 			NSET1(newbitmap, j - bitmin);
-			j++;
+			++j;
 		}
 	}
 
@@ -1259,7 +1265,7 @@ parse_unread_arts(
 			if (arts[i].artnum <= group->xmax)
 #endif /* 0 */
 				NSET1(newbitmap, arts[i].artnum - bitmin);
-			unread++;
+			++unread;
 		}
 	}
 
@@ -1314,7 +1320,7 @@ print_bitmap_seq(
 					fprintf(fp, "1");
 				}
 				while (i < group->newsrc.xmax && NTEST(group->newsrc.xbitmap, (i + 1) - group->newsrc.xmin) == ART_READ)
-					i++;
+					++i;
 
 				if (artnum != i)
 					fprintf(fp, "-%"T_ARTNUM_PFMT, i);
@@ -1331,7 +1337,7 @@ print_bitmap_seq(
 			if (group->newsrc.xmax == i)
 				break;
 
-			i++;
+			++i;
 		}
 	}
 
@@ -1501,7 +1507,7 @@ pos_group_in_newsrc(
 
 		fprintf(fp_out, "%s\n", line);
 
-		subscribed_pos++;
+		++subscribed_pos;
 	}
 
 	if (!repositioned)

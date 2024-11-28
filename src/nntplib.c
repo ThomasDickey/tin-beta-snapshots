@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2024-11-04
+ *  Updated   : 2024-11-26
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -536,7 +536,7 @@ get_tcp_socket(
 	char **cp;
 #			endif /* h_addr */
 #			ifdef HAVE_HOSTENT_H_ADDR_LIST
-	static char *alist[2] = { 0, 0 };
+	static char *alist[2] = { NULL, NULL };
 #			endif /* HAVE_HOSTENT_H_ADDR_LIST */
 	static struct hostent def;
 	static struct in_addr defaddr;
@@ -547,6 +547,8 @@ get_tcp_socket(
 		my_fprintf(stderr, _(txt_error_unknown_service), service);
 		return -EHOSTUNREACH;
 	}
+#			else
+			(void) service;
 #			endif /* HAVE_GETSERVBYNAME */
 
 	/* If not a raw ip address, try nameserver */
@@ -573,7 +575,7 @@ get_tcp_socket(
 #			endif /* HAVE_HOSTENT_H_ADDR_LIST */
 		def.h_length = sizeof(struct in_addr);
 		def.h_addrtype = AF_INET;
-		def.h_aliases = 0;
+		def.h_aliases = NULL;
 		hp = &def;
 	}
 
@@ -663,7 +665,7 @@ get_tcp_socket(
 	/* set up addr for the connect */
 	memset((char *) &sock_in, '\0', sizeof(sock_in));
 	sock_in.sin_family = AF_INET;
-	sock_in.sin_port = htons(IPPORT_NNTP);
+	sock_in.sin_port = htons(port);
 
 	if ((sock_in.sin_addr.s_addr = rhost(&machine)) == -1) {
 		my_fprintf(stderr, _(txt_gethostbyname), "\n", machine);
@@ -754,6 +756,7 @@ get_tcp6_socket(
 		my_fprintf(stderr, "\ngetaddrinfo: %s\n", gai_strerror(err));
 		return -1;
 	}
+
 	err = -1;
 	for (res = res0; res; res = res->ai_next) {
 		if ((s = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0) {
@@ -770,6 +773,7 @@ get_tcp6_socket(
 	}
 	if (res0 != NULL)
 		freeaddrinfo(res0);
+
 	if (err < 0) {
 		my_fprintf(stderr, "%s", _(txt_error_socket_or_connect_problem));
 		if (es)
@@ -779,6 +783,7 @@ get_tcp6_socket(
 		sleep(3);
 		return -1;
 	}
+
 	return s;
 }
 #endif /* NNTP_ABLE && INET6 */
@@ -852,8 +857,11 @@ get_dnet_socket(
 		return -1;
 	}
 
+	(void) service;
 	return s;
 #	else
+    (void) machine;
+    (void) service;
 	return -1;
 #	endif /* NNTP_ABLE */
 }
@@ -1397,7 +1405,7 @@ check_extensions(
 										strcat(nntp_caps.sasl_mechs, " ");
 										break;
 									}
-									m++;
+									++m;
 								}
 							}
 							str_trim(nntp_caps.sasl_mechs);
@@ -1627,7 +1635,7 @@ nntp_open(
 		/* remove leading whitespace and save server's initial response */
 		linep = line;
 		while (isspace((unsigned char) *linep))
-			linep++;
+			++linep;
 
 		STRCPY(bug_nntpserver1, linep);
 	}
@@ -1730,7 +1738,7 @@ nntp_open(
 		/* Remove leading white space and save server's second response */
 		linep = line;
 		while (isspace((unsigned char) *linep))
-			linep++;
+			++linep;
 
 		STRCPY(bug_nntpserver2, linep);
 
@@ -1748,9 +1756,9 @@ nntp_open(
 			if (j > MIN_COLUMNS_ON_TERMINAL && ((int) strlen(chr1)) >= j) {
 				chr2 = chr1 + strlen(chr1) - 1;
 				while (chr2 - chr1 >= j)
-					chr2--;
+					--chr2;
 				while (chr2 > chr1 && *chr2 != ' ')
-					chr2--;
+					--chr2;
 				if (chr2 != chr1)
 					*chr2 = '\n';
 			}
@@ -1917,7 +1925,7 @@ nntp_open(
 #	endif /* HAVE_COLOR */
 					while ((motd = tin_fgets(fp, FALSE)) != NULL) {
 						my_printf("%s\n", motd);
-						n++;
+						++n;
 					}
 					my_fflush(stdout);
 #	ifdef HAVE_COLOR
@@ -2242,7 +2250,7 @@ list_motd(
 	size_t len;
 	long m_hash = 0L;
 #	if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
-	char *guessed_charset = NULL;
+	char *guessed_charset;
 #	endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
 	if (!stream)
@@ -2690,7 +2698,7 @@ nntpbuf_gets(
 
 		while (size && (buf->rd.ub - buf->rd.lb) > 0) {
 			((unsigned char *) s)[write_at++] = buf->rd.buf[buf->rd.lb++];
-			size--;
+			--size;
 
 			if (s[write_at - 1] == '\n' && size) {
 				s[write_at] = '\0';
@@ -2882,7 +2890,7 @@ set_maxartnum(
 	if (nntp_caps.maxartnum < T_ARTNUM_CONST(2147483647) || (!reconnect && cnt))
 		return;
 	else
-		cnt++;
+		++cnt;
 
 	snprintf(cmd, sizeof(cmd), "MAXARTNUM %"T_ARTNUM_PFMT, nntp_caps.maxartnum);
 

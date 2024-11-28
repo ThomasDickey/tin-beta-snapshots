@@ -3,10 +3,10 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2024-10-21
+ *  Updated   : 2024-11-18
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1075,7 +1075,7 @@ print_file(
 	snprintf(file, sizeof(file), TIN_PRINTFILE, respnum);
 	if ((fp = fopen(file, "w")) == NULL) /* TODO: issue a more correct error message here */
 #	else
-	if (!*command || (fp = popen(command, "w")) == NULL)
+	if (!command || !*command || (fp = popen(command, "w")) == NULL)
 #	endif /* DONT_HAVE_PIPING */
 	{
 		perror_message(_(txt_command_failed), BlankIfNull(command));

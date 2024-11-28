@@ -3,10 +3,10 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-04
+ *  Updated   : 2024-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2024 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -621,7 +621,7 @@ group_page(
 						n = grpmenu.curr;
 						update_group_page();
 						do {
-							n++;
+							++n;
 							n %= grpmenu.max;
 							if (arts[base[n]].tagged == 0) {
 								move_to_item(n);
@@ -694,7 +694,7 @@ group_page(
 						stat_thread(grpmenu.curr, &sbuf);
 						mark[0] = sbuf.art_mark;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-						mark_screen(grpmenu.curr, mark_offset - (3 - art_mark_width), L"   "); /* clear space used by tag numbering */
+						mark_screen(grpmenu.curr, mark_offset - (3 - art_mark_width), (const wchar_t *) L"   "); /* clear space used by tag numbering */
 						mark_screen(grpmenu.curr, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
 #else
 						mark_screen(grpmenu.curr, mark_offset - 2, "  "); /* clear space used by tag numbering */
@@ -1021,7 +1021,7 @@ update_group_page(
 			stat_thread(i, &sbuf);
 			mark[0] = sbuf.art_mark;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			mark_screen(i, mark_offset - (3 - art_mark_width), L"   ");	/* clear space used by tag numbering */
+			mark_screen(i, mark_offset - (3 - art_mark_width), (const wchar_t *) L"   ");	/* clear space used by tag numbering */
 			mark_screen(i, mark_offset + (art_mark_width - wcwidth(mark[0])), mark);
 #else
 			mark_screen(i, mark_offset - 2, "  ");	/* clear space used by tag numbering */
@@ -1317,10 +1317,10 @@ build_sline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					if ((wtmp = char2wchar_t(buf)) != NULL) {
 						wtmp2 = wcspart(wtmp, grp_fmt.len_date_max, TRUE);
+						free(wtmp);
 						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 							strcat(buffer, tmp);
 
-						free(wtmp);
 						free(wtmp2);
 					}
 #else
@@ -1337,12 +1337,13 @@ build_sline(
 
 					if ((wtmp = char2wchar_t(tmp)) != NULL) {
 						wtmp2 = wcspart(wtmp, grp_fmt.len_from, TRUE);
-						if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
-							strcat(buffer, tmp);
-
 						free(wtmp);
-						free(wtmp2);
-					}
+					} else
+						wtmp2 = wcspart(L"", grp_fmt.len_from, TRUE);
+					if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+						strcat(buffer, tmp);
+
+					free(wtmp2);
 #else
 					len_start = strwidth(buffer);
 					get_author(FALSE, &arts[j], buffer + strlen(buffer), grp_fmt.len_from);
@@ -1442,12 +1443,14 @@ build_sline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if ((wtmp = char2wchar_t(arts_sub)) != NULL) {
 					wtmp2 = wcspart(wtmp, len, TRUE);
-					if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
-						strcat(buffer, tmp);
-
 					free(wtmp);
-					free(wtmp2);
-				}
+				} else
+					wtmp2 = wcspart(L"", len, TRUE);
+
+				if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+					strcat(buffer, tmp);
+
+				free(wtmp2);
 #else
 				len_start = strwidth(buffer);
 				strncat(buffer, arts_sub, len);
@@ -1498,25 +1501,25 @@ show_group_title(
 
 		if (curr_group->attribute->show_only_unread_arts) {
 			if (arts[i].status != ART_READ) {
-				art_cnt++;
+				++art_cnt;
 				if (tinrc.recent_time && ((time((time_t *) 0) - arts[i].date) < (tinrc.recent_time * DAY)))
-					recent_art_cnt++;
+					++recent_art_cnt;
 			}
 			if (arts[i].killed == ART_KILLED_UNREAD)
-				killed_art_cnt++;
+				++killed_art_cnt;
 		} else {
-			art_cnt++;
+			++art_cnt;
 			if (tinrc.recent_time && ((time((time_t *) 0) - arts[i].date) < (tinrc.recent_time * DAY)))
-				recent_art_cnt++;
+				++recent_art_cnt;
 
 			if (arts[i].killed)
-				killed_art_cnt++;
+				++killed_art_cnt;
 		}
 		if (arts[i].selected) {
 			if (arts[i].status != ART_READ)
-				selected_art_cnt++;
+				++selected_art_cnt;
 			else
-				read_selected_art_cnt++;
+				++read_selected_art_cnt;
 		}
 	}
 
@@ -1598,8 +1601,8 @@ show_group_title(
 			wtmp2 = abbr_wcsgroupname(wtmp, len);
 		else
 			wtmp2 = wstrunc(wtmp, len);
-		grpname = wchar_t2char(wtmp2);
 		free(wtmp);
+		grpname = wchar_t2char(wtmp2);
 		free(wtmp2);
 		if (grpname) {
 			STRCPY(tmp, grpname);
