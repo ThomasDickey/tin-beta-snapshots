@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-11-08
+dnl Updated   : 2024-12-02
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -109,7 +109,7 @@ AC_DEFUN([AM_GNU_GETTEXT],
    fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl AM_ICONV version: 12 updated: 2007/07/30 19:12:03
+dnl AM_ICONV version: 13 updated: 2024/10/16 03:56:13
 dnl --------
 dnl Inserted as requested by gettext 0.10.40
 dnl File from /usr/share/aclocal
@@ -879,7 +879,7 @@ LIBS=`echo "$LIBS" | sed -e "s/[[ 	]][[ 	]]*/ /g" -e "s%$1 %$1 $2 %" -e 's%  % %
 CF_VERBOSE(...after  $LIBS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ADD_OPTIONAL_PATH version: 5 updated: 2024/04/09 18:37:41
+dnl CF_ADD_OPTIONAL_PATH version: 6 updated: 2024/09/10 19:19:44
 dnl --------------------
 dnl Add an optional search-path to the compile/link variables.
 dnl See CF_WITH_PATH
@@ -887,8 +887,8 @@ dnl
 dnl $1 = shell variable containing the result of --with-XXX=[DIR]
 dnl $2 = module to look for.
 AC_DEFUN([CF_ADD_OPTIONAL_PATH],[
-case "$1" in
-no|yes)
+case "x$1" in
+xno|xyes|x)
 	;;
 *)
 	CF_ADD_SEARCHPATH([$1], [AC_MSG_ERROR(cannot find $2 under $1)])
@@ -1713,7 +1713,7 @@ AC_DEFUN([CF_CHECK_FD_SET],
 AC_REQUIRE([CF_TYPE_FD_SET])
 AC_CACHE_CHECK([for fd_set macros],cf_cv_macros_fd_set,[
 AC_TRY_COMPILE([
-#include <sys/types.h>
+$ac_includes_default
 #if USE_SYS_SELECT_H
 # include <sys/select.h>
 #else
@@ -1907,9 +1907,7 @@ AC_DEFUN([CF_COMPTYPE],
 AC_MSG_CHECKING([for ANSI qsort])
 AC_CACHE_VAL(cf_cv_comptype,[
 	AC_TRY_COMPILE([
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+$ac_includes_default
 	extern int compare(const void *, const void *);
 	],
 	[static char foo[] = "string";
@@ -1952,7 +1950,7 @@ CF_SAVE_XTRA_FLAGS([CF_CONST_X_STRING])
 
 AC_TRY_COMPILE(
 [
-#include <stdlib.h>
+$ac_includes_default
 #include <X11/Intrinsic.h>
 ],
 [String foo = malloc(1); free((void*)foo)],[
@@ -1963,7 +1961,7 @@ AC_CACHE_CHECK(for X11/Xt const-feature,cf_cv_const_x_string,[
 #undef  _CONST_X_STRING
 #define _CONST_X_STRING	/* X11R7.8 (perhaps) */
 #undef  XTSTRINGDEFINES	/* X11R5 and later */
-#include <stdlib.h>
+$ac_includes_default
 #include <X11/Intrinsic.h>
 		],[String foo = malloc(1); *foo = 0],[
 			cf_cv_const_x_string=no
@@ -3597,6 +3595,26 @@ if test x$cf_cv_gnu_library = xyes; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_GLOB_FULLPATH version: 2 updated: 2024/08/03 12:34:02
+dnl ----------------
+dnl Use this in case-statements to check for pathname syntax, i.e., absolute
+dnl pathnames.  The "x" is assumed since we provide an alternate form for DOS.
+AC_DEFUN([CF_GLOB_FULLPATH],[
+AC_REQUIRE([CF_WITH_SYSTYPE])dnl
+case "$cf_cv_system_name" in
+cygwin*|msys*|mingw32*|mingw64|os2*)
+	GLOB_FULLPATH_POSIX='/*'
+	GLOB_FULLPATH_OTHER='[[a-zA-Z]]:[[\\/]]*'
+	;;
+*)
+	GLOB_FULLPATH_POSIX='/*'
+	GLOB_FULLPATH_OTHER=$GLOB_FULLPATH_POSIX
+	;;
+esac
+AC_SUBST(GLOB_FULLPATH_POSIX)
+AC_SUBST(GLOB_FULLPATH_OTHER)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_HEADER_PATH version: 15 updated: 2021/01/01 13:31:04
 dnl --------------
 dnl Construct a search-list of directories for a nonstandard header-file
@@ -3755,10 +3773,7 @@ if eval 'test ${ac_cv_func_'$cf_lock'+set} = set'; then
 	case $cf_lock in #(vi
 	fcntl) #(vi
 		AC_TRY_COMPILE([
-#include <stdio.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+$ac_includes_default
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
@@ -3780,10 +3795,7 @@ if eval 'test ${ac_cv_func_'$cf_lock'+set} = set'; then
 		;;
 	lockf) #(vi
 		AC_TRY_COMPILE([
-#include <stdio.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+$ac_includes_default
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
@@ -3798,10 +3810,7 @@ if eval 'test ${ac_cv_func_'$cf_lock'+set} = set'; then
 		;;
 	flock)
 		AC_TRY_COMPILE([
-#include <stdio.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#ac_includes_default
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
@@ -4583,35 +4592,35 @@ fi
 AC_MSG_RESULT($DEFAULT_MAILER)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PATH_SYNTAX version: 18 updated: 2020/12/31 18:40:20
+dnl CF_PATH_SYNTAX version: 19 updated: 2024/08/03 13:08:58
 dnl --------------
 dnl Check the argument to see that it looks like a pathname.  Rewrite it if it
 dnl begins with one of the prefix/exec_prefix variables, and then again if the
 dnl result begins with 'NONE'.  This is necessary to work around autoconf's
 dnl delayed evaluation of those symbols.
 AC_DEFUN([CF_PATH_SYNTAX],[
+AC_REQUIRE([CF_GLOB_FULLPATH])dnl
+
 if test "x$prefix" != xNONE; then
 	cf_path_syntax="$prefix"
 else
 	cf_path_syntax="$ac_default_prefix"
 fi
 
-case ".[$]$1" in
-.\[$]\(*\)*|.\'*\'*)
+case "x[$]$1" in
+x\[$]\(*\)*|x\'*\'*)
 	;;
-..|./*|.\\*)
+x.|x$GLOB_FULLPATH_POSIX|x$GLOB_FULLPATH_OTHER)
 	;;
-.[[a-zA-Z]]:[[\\/]]*) # OS/2 EMX
-	;;
-.\[$]\{*prefix\}*|.\[$]\{*dir\}*)
+x\[$]\{*prefix\}*|x\[$]\{*dir\}*)
 	eval $1="[$]$1"
-	case ".[$]$1" in
-	.NONE/*)
+	case "x[$]$1" in
+	xNONE/*)
 		$1=`echo "[$]$1" | sed -e s%NONE%$cf_path_syntax%`
 		;;
 	esac
 	;;
-.no|.NONE/*)
+xno|xNONE/*)
 	$1=`echo "[$]$1" | sed -e s%NONE%$cf_path_syntax%`
 	;;
 *)
@@ -6302,6 +6311,26 @@ AC_ARG_WITH($1,[$2],ifelse($3,,
 ])dnl
 undefine([cf_path_name])undefine([cf_have_name])])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_WITH_SYSTYPE version: 1 updated: 2013/01/26 16:26:12
+dnl ---------------
+dnl For testing, override the derived host system-type which is used to decide
+dnl things such as the linker commands used to build shared libraries.  This is
+dnl normally chosen automatically based on the type of system which you are
+dnl building on.  We use it for testing the configure script.
+dnl
+dnl This is different from the --host option: it is used only for testing parts
+dnl of the configure script which would not be reachable with --host since that
+dnl relies on the build environment being real, rather than mocked up.
+AC_DEFUN([CF_WITH_SYSTYPE],[
+CF_CHECK_CACHE([AC_CANONICAL_SYSTEM])
+AC_ARG_WITH(system-type,
+	[  --with-system-type=XXX  test: override derived host system-type],
+[AC_MSG_WARN(overriding system type to $withval)
+	cf_cv_system_name=$withval
+	host_os=$withval
+])
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_WITH_VALUE version: 4 updated: 2019/12/31 20:39:42
 dnl -------------
 dnl Wrapper for AC_ARG_WITH to ensure that if the user supplies a value, it is
@@ -6382,7 +6411,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 67 updated: 2023/09/06 18:55:27
+dnl CF_XOPEN_SOURCE version: 68 updated: 2024/11/09 18:07:29
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality,
@@ -6442,11 +6471,11 @@ irix[[56]].*)
 	cf_xopen_source="-D_SGI_SOURCE"
 	cf_XOPEN_SOURCE=
 	;;
-linux*musl)
-	cf_xopen_source="-D_BSD_SOURCE"
-	;;
 linux*gnu|linux*gnuabi64|linux*gnuabin32|linux*gnueabi|linux*gnueabihf|linux*gnux32|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc)
 	CF_GNU_SOURCE($cf_XOPEN_SOURCE)
+	;;
+linux*musl)
+	cf_xopen_source="-D_BSD_SOURCE"
 	;;
 minix*)
 	cf_xopen_source="-D_NETBSD_SOURCE" # POSIX.1-2001 features are ifdef'd with this...
@@ -6980,11 +7009,13 @@ AC_CACHE_CHECK(whether we are using the GNU C Library 2.1 or newer,
 	GLIBC21="$ac_cv_gnu_library_2_1"
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_ZLIB version: 5 updated: 2024/04/09 18:37:41
+dnl CF_WITH_ZLIB version: 6 updated: 2024/09/10 19:19:44
 dnl ------------
 dnl check for libz aka "zlib"
+dnl
+dnl $1 if present is yes/no, e.g., from a --with-zlib option.
 AC_DEFUN([CF_WITH_ZLIB],[
-  CF_ADD_OPTIONAL_PATH($1, [zlib])
+  ifelse([$1],,,[CF_ADD_OPTIONAL_PATH($1, [zlib])])
 
   CF_FIND_LINKAGE([
 #include <zlib.h>
