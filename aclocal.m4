@@ -1705,7 +1705,7 @@ fi
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CHECK_FD_SET version: 5 updated: 2012/10/06 11:17:15
+dnl CF_CHECK_FD_SET version: 6 updated: 2024/12/04 03:41:57
 dnl ---------------
 dnl Check if the fd_set type and corresponding macros are defined.
 AC_DEFUN([CF_CHECK_FD_SET],
@@ -1898,7 +1898,7 @@ if test "$cf_cv_color_curses" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_COMPTYPE version: 4 updated: 2023/12/17 10:59:59
+dnl CF_COMPTYPE version: 5 updated: 2024/12/04 03:41:57
 dnl -----------
 dnl Check if the compiler uses 'void *' for qsort's compare function parameters
 dnl (i.e., it's an ANSI prototype).
@@ -1923,7 +1923,7 @@ else
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CONST_X_STRING version: 8 updated: 2023/12/01 17:22:50
+dnl CF_CONST_X_STRING version: 9 updated: 2024/12/04 03:49:57
 dnl -----------------
 dnl The X11R4-X11R6 Xt specification uses an ambiguous String type for most
 dnl character-strings.
@@ -3752,7 +3752,7 @@ ifelse($1,,,[$1=$LIB_PREFIX])
 	AC_SUBST(LIB_PREFIX)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LOCKFILE version: 3 updated: 2023/12/17 10:59:59
+dnl CF_LOCKFILE version: 4 updated: 2024/12/04 03:42:43
 dnl -----------
 dnl Check for functions that we can use for file-locking.  Simply checking for
 dnl existence is not sufficient, since fcntl, for example, uses definitions
@@ -3810,7 +3810,7 @@ $ac_includes_default
 		;;
 	flock)
 		AC_TRY_COMPILE([
-#ac_includes_default
+$ac_includes_default
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif

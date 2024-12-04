@@ -13261,7 +13261,7 @@ rm -f "conftest.$ac_objext" "conftest.$ac_ext"
 #line 13261 "configure"
 #include "confdefs.h"
 
-#ac_includes_default
+$ac_includes_default
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
