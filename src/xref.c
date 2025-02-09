@@ -3,7 +3,7 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-02-06
  *  Notes     :
  *
  * Copyright (c) 1993-2025 Iain Lea <iain@bricbrac.de>
@@ -71,7 +71,12 @@ open_overview_fmt_fp(
 		return (FILE *) 0;
 	}
 #endif /* NNTP_ABLE */
+
+#ifndef NNTP_ONLY
 	return (fopen(overviewfmt_file, "r"));
+#else
+	return (FILE *) 0;
+#endif /* !NNTP_ONLY */
 }
 
 
@@ -425,12 +430,11 @@ NSETRNG1(
 	t_artnum low,
 	t_artnum high)
 {
-	t_artnum i;
-
 	assert(((void) "NSETRNG1() failed. bitmap == NULL", bitmap != NULL));
 
 	if (high >= low) {
 		if (NOFFSET(high) == NOFFSET(low)) {
+			t_artnum i;
 			for (i = low; i <= high; i++) {
 				NSET1(bitmap, i);
 			}
@@ -454,12 +458,11 @@ NSETRNG0(
 	t_artnum low,
 	t_artnum high)
 {
-	t_artnum i;
-
 	assert(((void) "NSETRNG0() failed. bitmap == NULL", bitmap != NULL));
 
 	if (high >= low) {
 		if (NOFFSET(high) == NOFFSET(low)) {
+			t_artnum i;
 			for (i = low; i <= high; i++) {
 				NSET0(bitmap, i);
 			}

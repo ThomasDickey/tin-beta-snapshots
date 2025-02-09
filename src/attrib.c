@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-02-01
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2025 Iain Lea <iain@bricbrac.de>
@@ -471,6 +471,7 @@ read_attributes_file(
 						quote_dash_to_space(buf);
 						*tmp = my_strdup(buf);
 						set_attrib(OPT_ATTRIB_QUOTE_CHARS, scope, line, *tmp);
+						*tmp = NULL;
 						found = TRUE;
 						break;
 					}
@@ -510,7 +511,22 @@ read_attributes_file(
 
 				case 'u':
 #ifdef CHARSET_CONVERSION
-					MATCH_STRING("undeclared_charset=", OPT_ATTRIB_UNDECLARED_CHARSET);
+					if (strlen(line) - strlen("undeclared_charset=") < BUF_SIZE - 1 &&
+						match_string(line, "undeclared_charset=", buf, sizeof(buf))) {
+						if (validate_charset(buf) != NULL) {
+							*tmp = my_strdup(buf);
+							set_attrib(OPT_ATTRIB_UNDECLARED_CHARSET, scope, line, *tmp);
+							*tmp = NULL;
+						}
+#	ifdef DEBUG
+						else {
+							if (debug & DEBUG_ATTRIB)
+								debug_print_file("ATTRIBUTES", "# Line %d, %s: %s\n", ln, txt_invalid_char_in_charset, line); /* TODO -> lang.c? */
+						}
+#	endif /* DEBUG */
+						found = TRUE;
+						break;
+					}
 #	ifdef USE_ICU_UCSDET
 					MATCH_BOOLEAN("undeclared_cs_guess=", OPT_ATTRIB_UNDECLARED_CS_GUESS);
 #	else
@@ -837,23 +853,33 @@ set_attrib(
 				SET_BOOLEAN(mark_saved_read);
 
 			case OPT_ATTRIB_NEWS_HEADERS_TO_DISPLAY:
-				if (!curr_scope->attribute->news_headers_to_display)
-					curr_scope->attribute->news_headers_to_display = my_malloc(sizeof(char *));
-				else
-					FreeIfNeeded(*curr_scope->attribute->news_headers_to_display);
-				*curr_scope->attribute->news_headers_to_display = my_strdup((char *) data);
-				build_news_headers_array(curr_scope->attribute, TRUE);
-				curr_scope->state->news_headers_to_display = TRUE;
+				{
+					char *tmp = (char *) data;
+
+					if (!curr_scope->attribute->news_headers_to_display)
+						curr_scope->attribute->news_headers_to_display = my_malloc(sizeof(char *));
+					else
+						FreeIfNeeded(*curr_scope->attribute->news_headers_to_display);
+					*curr_scope->attribute->news_headers_to_display = my_strdup(tmp);
+					FreeAndNull(tmp);
+					build_news_headers_array(curr_scope->attribute, TRUE);
+					curr_scope->state->news_headers_to_display = TRUE;
+				}
 				break;
 
 			case OPT_ATTRIB_NEWS_HEADERS_TO_NOT_DISPLAY:
-				if (!curr_scope->attribute->news_headers_to_not_display)
-					curr_scope->attribute->news_headers_to_not_display = my_malloc(sizeof(char *));
-				else
-					FreeIfNeeded(*curr_scope->attribute->news_headers_to_not_display);
-				*curr_scope->attribute->news_headers_to_not_display = my_strdup((char *) data);
-				build_news_headers_array(curr_scope->attribute, FALSE);
-				curr_scope->state->news_headers_to_not_display = TRUE;
+				{
+					char *tmp = (char *) data;
+
+					if (!curr_scope->attribute->news_headers_to_not_display)
+						curr_scope->attribute->news_headers_to_not_display = my_malloc(sizeof(char *));
+					else
+						FreeIfNeeded(*curr_scope->attribute->news_headers_to_not_display);
+					*curr_scope->attribute->news_headers_to_not_display = my_strdup(tmp);
+					FreeAndNull(tmp);
+					build_news_headers_array(curr_scope->attribute, FALSE);
+					curr_scope->state->news_headers_to_not_display = TRUE;
+				}
 				break;
 
 			case OPT_ATTRIB_POS_FIRST_UNREAD:

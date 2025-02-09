@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2024-10-21
+ *  Updated   : 2025-02-06
  *  Notes     :
  *
  * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
@@ -222,6 +222,9 @@ struct t_config {
 	t_bool beginner_level;				/* beginner level (shows mini help a la elm) */
 	t_bool cache_overview_files;		/* create local index files for NNTP overview files */
 	t_bool catchup_read_groups;			/* ask if read groups are to be marked read */
+#ifdef USE_ZLIB
+	t_bool compress_overview_files;		/* compress local index files (overview) with gz */
+#endif /* USE_ZLIB */
 	t_bool draw_arrow;					/* draw -> or highlighted bar */
 	t_bool dont_break_words;			/* don't break words when wrapping long lines */
 	t_bool force_screen_redraw;			/* force screen redraw after external (shell) commands */

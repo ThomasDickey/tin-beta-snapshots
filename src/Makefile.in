@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2024-11-22
+# Updated: 2025-01-17
 #
 # Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -83,6 +83,9 @@ LINK_LIBS	= $(PCRE_LIBS) $(CANLIB) @LIBS@
 DESTDIR		= @DESTDIR@
 INS_BINARY_DIR	= @bindir@
 INS_MANUAL_DIR	= @mandir@/man
+MANUAL_DIR		= @mandir@
+DEST_MAN		= $(DESTDIR)$(MANUAL_DIR)
+UTF8SUFF		= .UTF-8
 INS_SYSDEF_DIR	= @TIN_DEFAULTS_DIR@
 INS_MANUAL_EXT	= 1
 INS_OLD_SUFFIX	= old
@@ -99,6 +102,7 @@ VER	= @VERSION@
 
 # directory structure
 DOCDIR	= $(top_srcdir)/doc
+POMANDIR= $(top_srcdir)/po-man
 INCDIR	= $(top_srcdir)/include
 BINDIR	= .
 OBJDIR	= .
@@ -323,8 +327,8 @@ help :
 	@$(ECHO) "    make [un]install           [ [Un]install the binaries & manual pages ]"
 	@$(ECHO) "      make [un]install_helpers [ [Un]install helper applications ]"
 	@$(ECHO) "      make [un]install_manpage [ [Un]install the manual pages ]"
-	@$(ECHO) "      make [un]install_nls     [ [Un]install native language files ]"
-	@$(ECHO) "      make [un]install_nls_man [ [Un]install native language manual pages ]"
+	@MSG_DIR_MAKE@@$(ECHO) "      make [un]install_nls     [ [Un]install native language files ]"
+	@MSG_DIR_MAKE@@$(ECHO) "      make [un]install_nls_man [ [Un]install native language manual pages ]"
 	@$(ECHO) "    make [un]install_sysdefs   [ [Un]install the system-wide defaults file ]"
 	@$(ECHO) "    make clean                 [ Delete all object files ]"
 	@$(ECHO) "    make help                  [ Show this text ]"
@@ -355,21 +359,42 @@ uninstall_manpage :
 #	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5
 #	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/mmdf.5
 
-install_nls_man :
-	@-for manext in $(INS_MANUAL_EXT) 5 ; do \
-		for lang in $(MAN_LINGUAS) ; do \
-			if test -e $(DOCDIR)/l10n/$${lang}/$(PROJECT).$${manext} ; then \
-				$(INSTALL) -D -m 444 $(DOCDIR)/l10n/$${lang}/$(PROJECT).$${manext} $(DESTDIR)@mandir@/$${lang}/man$${manext}/$(PROJECT).$${manext}; \
-			fi; \
-		done; \
-	done
+# TODO: move [un]install_nls_man to a po-man/Makefile[.in]
+@MSG_DIR_MAKE@install_nls_man :
+	@MSG_DIR_MAKE@ @$(ECHO) "Installing localized manual pages to"
+	@MSG_DIR_MAKE@ @for manext in $(INS_MANUAL_EXT) 5 ; do \
+	@MSG_DIR_MAKE@ 	for lang in $(MAN_LINGUAS) ; do \
+	@MSG_DIR_MAKE@ 		if test -e $(POMANDIR)/$${lang}/$(PROJECT).$${manext} ; then \
+	@MSG_DIR_MAKE@ 			$(ECHO) "\t$(DEST_MAN)/$${lang}/man$${manext}/$(PROJECT).$${manext}" ;\
+	@MSG_DIR_MAKE@ 			$(ECHO) "\t$(DEST_MAN)/$${lang}$(UTF8SUFF)/man$${manext}/$(PROJECT).$${manext}" ;\
+	@MSG_DIR_MAKE@ 			mkdir -p $(DEST_MAN)/$${lang}/man$${manext} ; \
+	@MSG_DIR_MAKE@ 			$(INSTALL) -m 444 $(POMANDIR)/$${lang}/$(PROJECT).$${manext} \
+	@MSG_DIR_MAKE@ 				$(DEST_MAN)/$${lang}/man$${manext}/$(PROJECT).$${manext} && \
+	@MSG_DIR_MAKE@ 			$(RM) -f $(DEST_MAN)/$${lang}/man$${manext}/r$(PROJECT).$${manext} && \
+	@MSG_DIR_MAKE@ 			$(LN) $(DEST_MAN)/$${lang}/man$${manext}/$(PROJECT).$${manext} \
+	@MSG_DIR_MAKE@ 				$(DEST_MAN)/$${lang}/man$${manext}/r$(PROJECT).$${manext} ;\
+	@MSG_DIR_MAKE@ 			mkdir -p $(DEST_MAN)/$${lang}$(UTF8SUFF)/man$${manext} ; \
+	@MSG_DIR_MAKE@ 			$(INSTALL) -m 444 $(POMANDIR)/$${lang}/$(PROJECT).$${manext} \
+	@MSG_DIR_MAKE@ 				$(DEST_MAN)/$${lang}$(UTF8SUFF)/man$${manext}/$(PROJECT).$${manext} && \
+	@MSG_DIR_MAKE@ 			$(RM) -f $(DEST_MAN)/$${lang}$(UTF8SUFF)/man$${manext}/r$(PROJECT).$${manext} && \
+	@MSG_DIR_MAKE@ 			$(LN) $(DEST_MAN)/$${lang}$(UTF8SUFF)/man$${manext}/$(PROJECT).$${manext} \
+	@MSG_DIR_MAKE@ 				$(DEST_MAN)/$${lang}$(UTF8SUFF)/man$${manext}/r$(PROJECT).$${manext} ;\
+	@MSG_DIR_MAKE@ 		fi; \
+	@MSG_DIR_MAKE@ 	done; \
+	@MSG_DIR_MAKE@ done
 
-uninstall_nls_man :
-	@-for manext in $(INS_MANUAL_EXT) 5 ; do \
-		for lang in $(MAN_LINGUAS) ; do \
-			$(RM) -f $(DESTDIR)@mandir@/$${lang}/man$${manext}/$(PROJECT).$${manext}; \
-		done; \
-	done
+@MSG_DIR_MAKE@uninstall_nls_man :
+	@MSG_DIR_MAKE@ @$(ECHO) "Removing localized manual pages from"
+	@MSG_DIR_MAKE@ @for manext in $(INS_MANUAL_EXT) 5 ; do \
+	@MSG_DIR_MAKE@ 	for lang in $(MAN_LINGUAS) ; do \
+	@MSG_DIR_MAKE@ 		$(ECHO) "\t$(DEST_MAN)/$${lang}/man$${manext}/$(PROJECT).$${manext}" ;\
+	@MSG_DIR_MAKE@ 		$(ECHO) "\t$(DEST_MAN)/$${lang}$(UTF8SUFF)/man$${manext}/$(PROJECT).$${manext}" ;\
+	@MSG_DIR_MAKE@ 		$(RM) -f $(DEST_MAN)/$${lang}/man$${manext}/$(PROJECT).$${manext} \
+	@MSG_DIR_MAKE@ 		$(DEST_MAN)/$${lang}$(UTF8SUFF)/man$${manext}/$(PROJECT).$${manext} \
+	@MSG_DIR_MAKE@ 		$(DEST_MAN)/$${lang}/man$${manext}/r$(PROJECT).$${manext} \
+	@MSG_DIR_MAKE@ 		$(DEST_MAN)/$${lang}$(UTF8SUFF)/man$${manext}/r$(PROJECT).$${manext}; \
+	@MSG_DIR_MAKE@ 	done; \
+	@MSG_DIR_MAKE@ done
 
 install_sysdefs : $(DESTDIR)$(INS_SYSDEF_DIR)
 	@$(ECHO) "Installing system-wide defaults to $(DESTDIR)$(INS_SYSDEF_DIR) ..."

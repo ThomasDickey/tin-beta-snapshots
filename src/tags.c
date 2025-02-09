@@ -3,7 +3,7 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-02-05
  *  Notes     : Split out from other modules
  *
  * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
@@ -42,7 +42,7 @@
 #endif /* !TIN_H */
 
 /* Local prototypes */
-static t_bool parse_range(char *range, int min, int max, int curr, int *range_start, int *range_end);
+static t_bool parse_range(const char *range, int min, int max, int curr, int *range_start, int *range_end);
 
 int num_of_tagged_arts = 0;
 
@@ -139,11 +139,11 @@ tag_article(
 {
 	if (arts[art].tagged != 0) {
 		untag_article(art);
-		info_message(_(txt_prefix_untagged), txt_article_singular);
+		info_message(_(txt_prefix_untagged), txt_article_sp[0]);
 		return FALSE;
 	} else {
 		arts[art].tagged = ++num_of_tagged_arts;
-		info_message(_(txt_prefix_tagged), txt_article_singular);
+		info_message(_(txt_prefix_tagged), txt_article_sp[0]);
 		return TRUE;
 	}
 }
@@ -326,14 +326,14 @@ set_range(
  */
 static t_bool
 parse_range(
-	char *range,
+	const char *range,
 	int min,
 	int max,
 	int curr,
 	int *range_start,
 	int *range_end)
 {
-	char *ptr = range;
+	const char *ptr = range;
 	enum states { FINDMIN, FINDMAX, DONE };
 	int state = FINDMIN;
 	t_bool ret = FALSE;

@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2024-04-02
+# Updated: 2025-01-09
 #
 
 SHELL	= @SHELL@
@@ -9,9 +9,9 @@ SHELL	= @SHELL@
 PROJECT	= tin
 LVER	= 2
 PVER	= 6
-SVER	= 4
+SVER	= 5
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20241128
+DVER	= 20250209
 EXE	= tin
 
 # directory structure
@@ -24,7 +24,7 @@ PCREDIR	= ./pcre
 CANDIR	= ./libcanlock
 TOLDIR	= ./tools
 PODIR	= ./po
-L10NDIR	= ./doc/l10n
+POMANDIR	= ./po-man
 
 HFILES	= \
 	$(INCDIR)/bool.h \
@@ -317,21 +317,21 @@ POFILES = \
 	$(PODIR)/zh_TW.gmo
 
 L10NFILES = \
-	$(L10NDIR)/de/tin.1 \
-	$(L10NDIR)/de/tin.5 \
-	$(L10NDIR)/de.add \
-	$(L10NDIR)/de.po \
-	$(L10NDIR)/en_GB/tin.1 \
-	$(L10NDIR)/en_GB/tin.5 \
-	$(L10NDIR)/en_GB.po \
-	$(L10NDIR)/es/tin.1 \
-	$(L10NDIR)/es/tin.5 \
-	$(L10NDIR)/es.po \
-	$(L10NDIR)/tin-man.pot
+	$(POMANDIR)/de/tin.1 \
+	$(POMANDIR)/de/tin.5 \
+	$(POMANDIR)/de.add \
+	$(POMANDIR)/de.po \
+	$(POMANDIR)/en_GB/tin.1 \
+	$(POMANDIR)/en_GB/tin.5 \
+	$(POMANDIR)/en_GB.po \
+	$(POMANDIR)/es/tin.1 \
+	$(POMANDIR)/es/tin.5 \
+	$(POMANDIR)/es.po \
+	$(POMANDIR)/tin-man.pot
 
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(PCRE) $(MISC) $(CAN) $(POFILES) $(L10NFILES)
 
-ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(CANDIR)/include $(CANDIR)/src $(CANDIR)/test $(CANDIR)/util/ $(PODIR) $(L10NDIR) $(L10NDIR)/de $(L10NDIR)/en_GB
+ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(CANDIR)/include $(CANDIR)/src $(CANDIR)/test $(CANDIR)/util/ $(PODIR) $(POMANDIR) $(POMANDIR)/de $(POMANDIR)/en_GB
 
 # standard commands
 CD	= cd

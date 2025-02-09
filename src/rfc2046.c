@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2024-11-25
+ *  Updated   : 2024-12-25
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2025 Jason Faultless <jason@altarstone.com>
@@ -526,6 +526,15 @@ parse_params(
 		ptr = new_params();
 		ptr->name = name;
 		if (encoded) {
+			/*
+			 * RFC 6266 defines 'filename' and 'filename*' which may
+			 * occur simultaneously. Restore 'filename*' if '*' was
+			 * present.
+			 */
+			if (!strcmp(ptr->name, "filename")) {
+				free(ptr->name);
+				ptr->name = my_strdup("filename*");
+			}
 			ptr->encoded = TRUE;
 			ptr->charset = get_charset(value);
 			ptr->value = strip_charset(&value);
@@ -622,7 +631,8 @@ get_param(
 					FreeIfNeeded(charset);
 					charset = my_strdup(p_list->charset);
 				}
-				for (j = 0, c_list = list; c_list != NULL; c_list = c_list->next) {
+				j = 0;
+				for (c_list = list; c_list != NULL; c_list = c_list->next) {
 					if (strcasecmp(name, c_list->name) == 0) {
 						if (c_list->part < 0)
 							continue;
@@ -744,8 +754,8 @@ static t_bool
 		for (ptr = suffix; *ptr && suffix_ok; ptr++)
 			suffix_ok = IS_RESTRICTED_NAME_CHARS_SUFFIX(*ptr);
 	}
-
-	for (ptr = type, len = type_end - type; len > 0 && *ptr && type_ok; len--, ptr++)
+	ptr = type;
+	for (len = type_end - type; len > 0 && *ptr && type_ok; len--, ptr++)
 		type_ok = IS_RESTRICTED_NAME_CHARS(*ptr);
 
 	return facet_ok && type_ok && suffix_ok;
@@ -1187,7 +1197,7 @@ quote_display_name(
 		*to++ = '"';
 		while (*ptr) {
 			/*
-			 * RFC 5322 §3.2.1
+			 * RFC 5322 3.2.1
 			 * quoted-pair = ("\" (VCHAR / WSP))
 			 *
 			 * RFC 5234
@@ -1975,7 +1985,7 @@ error:
  */
 FILE *
 open_art_fp(
-	struct t_group *group,
+	const struct t_group *group,
 	t_artnum art)
 {
 	FILE *art_fp;
@@ -2022,8 +2032,8 @@ open_art_fp(
 int
 art_open(
 	t_bool wrap_lines,
-	struct t_article *art,
-	struct t_group *group,
+	const struct t_article *art,
+	const struct t_group *group,
 	t_openartinfo *artinfo,
 	t_bool show_progress_meter,
 	const char *pmesg)

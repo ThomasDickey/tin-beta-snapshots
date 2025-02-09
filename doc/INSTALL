@@ -51,10 +51,10 @@ The following configure options and defines are documented in detail:
   --enable-shell-escape                   --with-screen
   --enable-warnings                       --with-shell
   --enable-xhdr-xref                      --with-spooldir
-  --exec-prefix                           
-  --mandir                                --with-socks
-                                          --with-socks5
+  --exec-prefix                           --with-socks
+  --mandir                                --with-socks5
                                           --with-trace
+                                          --with-url-normalization
                                           --with-zlib
 
   ENFORCE_RFC1034                         HAVE_UUDEVIEW_H
@@ -97,7 +97,7 @@ System related:
   --with-build-libs                       --build
   --host                                  --target
   --with-pkg-config                       --with-textdomain
-  --with-libintl-prefix
+  --with-libintl-prefix                   --with-system-type
 
 News machine names
 ------------------
@@ -571,6 +571,11 @@ library. If you specify a PATH, it should be the root of a directory
 containing the include- and lib-directories where canlock is installed.
 If you do not specify a PATH, the makefile will use the standard
 locations for this library.
+
+--with-url-normalization[=[uriparser,curl] (default: yes)
+Apply Syntax-Based Normalization (RFC 3986 6.2.2) to detected URLs
+before passing them to url_handler. Requires --with-pkg-config and
+either liburiparser or libcurl.
 
 --enable-heapsort (default: on)
 Enable heapsort(3) as alternative to qsort(3). In large groups with a long

@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-26
+ *  Updated   : 2025-02-06
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -65,8 +65,12 @@ static int read_site_config(void);
 	static void preinit_colors(void);
 #endif /* HAVE_COLOR */
 
-
+#ifndef NNTP_ONLY
 char active_times_file[PATH_LEN];
+char overviewfmt_file[PATH_LEN];	/* full path to overview.fmt */
+char subscriptions_file[PATH_LEN];	/* full path to subscriptions */
+#endif /* !NNTP_ONLY */
+
 char article_name[PATH_LEN];			/* ~/TIN_ARTICLE_NAME file */
 char *backup_article_name;			/* ~/TIN_ARTICLE_NAME[.pid].b[ak] file */
 #ifdef NNTP_ABLE
@@ -112,8 +116,6 @@ char postponed_articles_file[PATH_LEN];	/* ~/.tin/postponed.articles file */
 char rcdir[PATH_LEN];
 char save_active_file[PATH_LEN];
 char spooldir[PATH_LEN];		/* directory where news is */
-char overviewfmt_file[PATH_LEN];	/* full path to overview.fmt */
-char subscriptions_file[PATH_LEN];	/* full path to subscriptions */
 char *tin_progname;		/* program name */
 const char *tmpdir;
 char txt_help_bug_report[LEN];		/* address to send bug reports to */
@@ -382,6 +384,9 @@ struct t_config tinrc = {
 	TRUE,	/* beginner_level */
 	FALSE,	/* cache_overview_files */
 	FALSE,	/* catchup_read_groups */
+#ifdef USE_ZLIB
+	FALSE,	/* compress_overview_files */
+#endif /* USE_ZLIB */
 #ifdef USE_INVERSE_HACK
 	TRUE,	/* draw_arrow */
 #else
@@ -693,7 +698,7 @@ init_selfinfo(
 	const char *p;
 	char tmp[PATH_LEN];
 	size_t space;
-	struct passwd *myentry;
+	const struct passwd *myentry;
 	struct stat sb;
 #if !defined(NNTP_ONLY) || defined(CHARSET_CONVERSION)
 	char *ptr;
@@ -810,13 +815,13 @@ init_selfinfo(
 	my_strncpy(novrootdir, get_val("TIN_NOVROOTDIR", NOVROOTDIR), sizeof(novrootdir) - 1);
 	my_strncpy(novfilename, get_val("TIN_NOVFILENAME", OVERVIEW_FILE), sizeof(novfilename) - 1);
 	my_strncpy(spooldir, get_val("TIN_SPOOLDIR", SPOOLDIR), sizeof(spooldir) - 1);
-#endif /* !NNTP_ONLY */
-	/* clear news_active_file, active_time_file, newsgroups_file */
-	news_active_file[0] = '\0';
 	active_times_file[0] = '\0';
-	newsgroups_file[0] = '\0';
 	overviewfmt_file[0] = '\0';
 	subscriptions_file[0] = '\0';
+#endif /* !NNTP_ONLY */
+	/* clear news_active_file, newsgroups_file */
+	news_active_file[0] = '\0';
+	newsgroups_file[0] = '\0';
 
 	/*
 	 * read the global site config file to override some default
@@ -852,14 +857,16 @@ init_selfinfo(
 		else
 			my_strncpy(news_active_file, p, sizeof(news_active_file) - 1);
 	}
+#ifndef NNTP_ONLY
 	if (!*active_times_file)
 		joinpath(active_times_file, sizeof(active_times_file), libdir, ACTIVE_TIMES_FILE);
-	if (!*newsgroups_file)
-		joinpath(newsgroups_file, sizeof(newsgroups_file), libdir, NEWSGROUPS_FILE);
-	if (!*subscriptions_file)
-		joinpath(subscriptions_file, sizeof(subscriptions_file), libdir, SUBSCRIPTIONS_FILE);
 	if (!*overviewfmt_file)
 		joinpath(overviewfmt_file, sizeof(overviewfmt_file), libdir, OVERVIEW_FMT);
+	if (!*subscriptions_file)
+		joinpath(subscriptions_file, sizeof(subscriptions_file), libdir, SUBSCRIPTIONS_FILE);
+#endif /* !NNTP_ONLY */
+	if (!*newsgroups_file)
+		joinpath(newsgroups_file, sizeof(newsgroups_file), libdir, NEWSGROUPS_FILE);
 	if (!default_organization || !*default_organization) {
 		joinpath(tmp, sizeof(tmp), libdir, "organization");
 		if ((fp = tin_fopen(tmp, "r")) != NULL) {
@@ -1033,7 +1040,7 @@ init_selfinfo(
 	joinpath(save_active_file, sizeof(save_active_file), rcdir, ACTIVE_SAVE_FILE);
 
 #ifdef HAVE_LONG_FILE_NAMES
-	snprintf(tmp, sizeof(tmp), "tin.%.*s.LCK", LOGIN_NAME_MAX - 1, userid);
+	snprintf(tmp, sizeof(tmp), "tin.%.*s.LCK", MIN((int) (sizeof(tmp) - 9), LOGIN_NAME_MAX - 1), userid);
 #else
 	snprintf(tmp, sizeof(tmp), "%.10s.LCK", userid);
 #endif /* HAVE_LONG_FILE_NAMES */
@@ -1114,6 +1121,12 @@ read_site_config(
 	if (!fp)
 		return -1;
 
+	/*
+	 * no (_(txt_reading_config_file), _(txt_global), global_defaults_file)
+	 * here as read_site_config() is called (from init_selfinfo()) before
+	 * read_cmd_line_options() so we don't know if we're in (verbose)
+	 * batch mode or not ...
+	 */
 	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
 		/* ignore comments */
 		if (*buf == '#' || *buf == ';' || *buf == ' ')
@@ -1125,18 +1138,18 @@ read_site_config(
 			continue;
 		if (match_string(buf, "overviewfile=", novfilename, sizeof(novfilename)))
 			continue;
+		if (match_string(buf, "activetimesfile=", active_times_file, sizeof(active_times_file)))
+			continue;
+		if (match_string(buf, "overviewfmtfile=", overviewfmt_file, sizeof(overviewfmt_file)))
+			continue;
+		if (match_string(buf, "subscriptionsfile=", subscriptions_file, sizeof(subscriptions_file)))
+			continue;
 #endif /* !NNTP_ONLY */
 		if (match_string(buf, "activefile=", news_active_file, sizeof(news_active_file)))
-			continue;
-		if (match_string(buf, "activetimesfile=", active_times_file, sizeof(active_times_file)))
 			continue;
 		if (match_string(buf, "newsgroupsfile=", newsgroups_file, sizeof(newsgroups_file)))
 			continue;
 		if (match_string(buf, "newslibdir=", libdir, sizeof(libdir)))
-			continue;
-		if (match_string(buf, "subscriptionsfile=", subscriptions_file, sizeof(subscriptions_file)))
-			continue;
-		if (match_string(buf, "overviewfmtfile=", overviewfmt_file, sizeof(overviewfmt_file)))
 			continue;
 		if (match_string(buf, "domainname=", domain_name, sizeof(domain_name)))
 			continue;

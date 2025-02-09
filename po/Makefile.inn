@@ -93,7 +93,8 @@ all-no:
 
 $(srcdir)/$(PACKAGE).pot: $(POTFILES) $(srcdir)/POTFILES.in
 	$(XGETTEXT) --default-domain=$(NLS_TEXTDOMAIN) --directory=$(top_srcdir) \
-	  --add-comments --keyword=_ --keyword=N_ \
+	  --add-comments \
+	  --keyword=_ --keyword=N_ --keyword=P_:1,2 --keyword=PN_:1,2 \
 	  --files-from=$(srcdir)/POTFILES.in \
 	&& test ! -f $(PACKAGE).po \
 	   || ( rm -f $(srcdir)/$(PACKAGE).pot \

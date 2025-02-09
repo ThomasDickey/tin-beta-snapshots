@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-23
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -501,8 +501,43 @@ group_page(
 				break;
 
 			case GLOBAL_LOOKUP_MESSAGEID:
-				if ((i = prompt_msgid()) != ART_UNAVAILABLE)
-					ret_code = enter_pager(i, FALSE);
+				{
+					t_bool only_unread = group->attribute->show_only_unread_arts;
+
+					if (only_unread)
+						toggle_read_unread(FALSE);
+					if ((i = prompt_msgid()) != ART_UNAVAILABLE)
+						ret_code = enter_pager(i, FALSE);
+#ifdef NNTP_ABLE
+					else {
+						const char *eyde = input_history[HIST_MESSAGE_ID][(hist_pos[HIST_MESSAGE_ID] - 1 + HIST_SIZE) % HIST_SIZE];
+						int sc = selmenu.curr;
+
+						if (*eyde) {
+							switch (show_article_by_msgid(eyde)) {
+								case LOOKUP_OK:
+									selmenu.curr = sc;
+									if (!index_group(curr_group))
+										ret_code = GRP_RETSELECT; /* TODO: return GRP_RETSELECT; ? */
+									break;
+
+								case LOOKUP_UNAVAIL: /* check for !reading_saved_news? */
+									wait_message(2, _(txt_lookup_func_not_available));
+									break;
+
+								default:
+									wait_message(2, _(txt_art_unavailable));
+									break;
+							}
+						}
+					}
+#endif /* NNTP_ABLE */
+					if (ret_code == 0) {
+						if (only_unread)
+							toggle_read_unread(FALSE);
+						show_group_page();
+					}
+				}
 				break;
 
 			case GLOBAL_OPTION_MENU:			/* option menu */
@@ -709,7 +744,7 @@ group_page(
 					else
 						draw_subject_arrow();
 
-					info_message(tagged ? _(txt_prefix_untagged) : _(txt_prefix_tagged), txt_thread_singular);
+					info_message(tagged ? _(txt_prefix_untagged) : _(txt_prefix_tagged), txt_thread_sp[0]);
 				}
 				break;
 
@@ -864,13 +899,16 @@ group_page(
 				if (grpmenu.curr >= 0) {
 					char pat[LEN];
 					char *prompt;
+					char *spat;
 					struct regex_cache cache = REGEX_CACHE_INITIALIZER;
 
-					prompt = fmt_string(_(txt_select_pattern), tinrc.default_select_pattern);
-					if (!(prompt_string_default(prompt, tinrc.default_select_pattern, _(txt_info_no_previous_expression), HIST_SELECT_PATTERN))) {
+					prompt = fmt_string(_(txt_select_pattern), BlankIfNull(tinrc.default_select_pattern));
+					if (!(spat = prompt_string_default(prompt, tinrc.default_select_pattern, _(txt_info_no_previous_expression), HIST_SELECT_PATTERN))) {
+						FreeIfNeeded(spat);
 						free(prompt);
 						break;
 					}
+					tinrc.default_select_pattern = spat;
 					free(prompt);
 
 					if (STRCMPEQ(tinrc.default_select_pattern, "*")) {	/* all */
@@ -1090,7 +1128,7 @@ toggle_read_unread(
 	if (force)
 		curr_group->attribute->show_only_unread_arts = TRUE;	/* Yes - really, we change it in a bit */
 
-	wait_message(0, _(txt_reading_arts),
+	wait_message(0, _(txt_reading_arts), /* TODO: plural-forms? ("unread" fr:("non lu", "non lus")) */
 		(curr_group->attribute->show_only_unread_arts) ? _(txt_all) : _(txt_unread));
 
 	if (grpmenu.curr >= 0) {
@@ -1594,6 +1632,8 @@ show_group_title(
 	} else
 		len = cCOLS - strwidth(buf) - 2;
 
+	if (len < 0)
+		len = 0;
 	/* group name */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((wtmp = char2wchar_t(curr_group->name)) != NULL) {
@@ -1827,7 +1867,7 @@ static t_bool
 prompt_getart_limit(
 	void)
 {
-	char *p;
+	const char *p;
 	t_bool ret = FALSE;
 
 	clear_message();

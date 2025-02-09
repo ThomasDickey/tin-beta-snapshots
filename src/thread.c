@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2024-12-23
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -62,7 +62,7 @@ t_bool show_subject;
 	static char get_art_mark(struct t_article *art);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 static int enter_pager(int art, t_bool ignore_unavail, int level);
-static int thread_catchup(t_function func, struct t_group *group);
+static int thread_catchup(t_function func, const struct t_group *group);
 static int thread_tab_pressed(void);
 static t_bool find_unexpired(struct t_msgid *ptr);
 static t_bool has_sibling(struct t_msgid *ptr);
@@ -453,7 +453,7 @@ thread_page(
 	struct t_group *group,
 	int respnum,				/* base[] article of thread to view */
 	int thread_depth,			/* initial depth in thread */
-	t_pagerinfo *page)			/* !NULL if we must go direct to the pager */
+	const t_pagerinfo *page)			/* !NULL if we must go direct to the pager */
 {
 	char key[MAXKEYLEN];
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -489,7 +489,8 @@ thread_page(
 	else {
 		if (group->attribute->pos_first_unread) {
 			if (new_responses(thread_basenote)) {
-				for (n = 0, i = (int) base[thread_basenote]; i >= 0; i = arts[i].thread, n++) {
+				n = 0;
+				for (i = (int) base[thread_basenote]; i >= 0; i = arts[i].thread, n++) {
 					if (arts[i].status == ART_UNREAD || arts[i].status == ART_WILL_RETURN) {
 						if (arts[i].thread == ART_EXPIRED)
 							art_mark(group, &arts[i], ART_READ);
@@ -781,6 +782,30 @@ thread_page(
 			case GLOBAL_LOOKUP_MESSAGEID:
 				if ((n = prompt_msgid()) != ART_UNAVAILABLE)
 					ret_code = enter_pager(n, FALSE, THREAD_LEVEL);
+#ifdef NNTP_ABLE
+				else {
+					const char *eyde = input_history[HIST_MESSAGE_ID][(hist_pos[HIST_MESSAGE_ID] - 1 + HIST_SIZE) % HIST_SIZE];
+
+					if (*eyde) {
+						switch (show_article_by_msgid(eyde)) {
+							case LOOKUP_OK:
+								if (!index_group(curr_group))
+									ret_code = GRP_RETSELECT;
+								else
+									show_thread_page();
+								break;
+
+							case LOOKUP_UNAVAIL:
+								wait_message(2, _(txt_lookup_func_not_available));
+								break;
+
+							default:
+								wait_message(2, _(txt_art_unavailable));
+								break;
+						}
+					}
+				}
+#endif /* NNTP_ABLE */
 				break;
 
 			case GLOBAL_SEARCH_REPEAT:
@@ -874,7 +899,7 @@ thread_page(
 					else
 						draw_thread_arrow();
 
-					info_message(tagged ? _(txt_prefix_tagged) : _(txt_prefix_untagged), txt_article_singular);
+					info_message(tagged ? _(txt_prefix_tagged) : _(txt_prefix_untagged), txt_article_sp[0]);
 				}
 				break;
 
@@ -1009,6 +1034,8 @@ show_thread_page(
 		} else
 			len = cCOLS - (strwidth(_(txt_stp_thread)) - 3);
 
+		if (len < 0)
+			len = 0;
 		title = fmt_string(_(txt_stp_thread), len, arts[thread_respnum].subject);
 	}
 
@@ -1595,7 +1622,7 @@ make_prefix(
 static int
 thread_catchup(
 	t_function func,
-	struct t_group *group)
+	const struct t_group *group)
 {
 	char buf[LEN];
 	int i, n;

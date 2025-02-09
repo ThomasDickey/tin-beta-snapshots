@@ -865,7 +865,7 @@ my_innstr(
 	wchar_t *buffer;
 
 	if (n < 0)
-		return len;
+		return 0;
 
 	buffer = my_malloc(sizeof(wchar_t) * (size_t) (n + 1));
 

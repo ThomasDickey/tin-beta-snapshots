@@ -3,7 +3,7 @@
  *  Module    : global.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-12
- *  Updated   : 2024-10-17
+ *  Updated   : 2025-01-30
  *  Notes     : Generic navigation and key handling routines
  *
  * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
@@ -414,7 +414,13 @@ handle_keypad(
 			break;
 
 		default:
-			func = key_to_func((wchar_t) ch, keys);
+			if (ch < FUNC_MAX) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				func = key_to_func((wchar_t) ch, keys);
+#else
+				func = key_to_func((char) ch, keys);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			}
 			break;
 	}
 	return func;

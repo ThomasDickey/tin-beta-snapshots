@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-25
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2025 Jason Faultless <jason@altarstone.com>
@@ -64,6 +64,32 @@
 			} \
 		} \
 	} while (0)
+#else
+#ifdef HAVE_LIBCURL
+#	include <curl/curl.h>
+#	define CHECK_URI(r,f)	do { \
+		if (MATCH_REGEX(r, line, len)) { \
+			offsets = regex_get_ovector_pointer(&r); \
+			if ((l = offsets[1] - offsets[0])) { \
+				u = my_strndup(line + offsets[0], l); \
+				if (*(u + l - 1) == '\n') \
+					*(u + l -1) = '\0'; \
+				if (*u) { \
+					if ((curl = curl_url())) { \
+						if (curl_url_set(curl, CURLUPART_URL, u, CURLU_URLENCODE) == CURLUE_OK) { \
+							if (curl_url_get(curl, CURLUPART_URL, &nu, 0) == CURLUE_OK) { \
+								curl_free(nu); \
+								flags |= f; \
+							} \
+						} \
+						curl_url_cleanup(curl); \
+					} \
+				} \
+				FreeAndNull(u); \
+			} \
+		} \
+	} while (0)
+#	endif /* HAVE_LIBCURL */
 #endif /* HAVE_LIBURIPARSER */
 /*
  * We malloc() this many t_lineinfo's at a time
@@ -373,8 +399,12 @@ new_uue(
 
 /*
  * Get the suggested filename for an attachment. RFC says Content-Disposition
- * 'filename' supersedes Content-Type 'name'. We must also remove path
- * information.
+ * 'filename' supersedes Content-Type 'name'.
+ * In addition to 'filename', RFC 6266 also defines 'filename*'. Both can
+ * occur simultaneously. If both are present, 'filename*' should be used.
+ * We must also remove path information.
+ * If 'filename*' ends with '/' we fall back to 'filename', if that also ends
+ * with '/', we fall back to 'name' and if 'name ends with '/' we return NULL.
  */
 const char *
 get_filename(
@@ -383,13 +413,20 @@ get_filename(
 	const char *name;
 	char *p;
 
-	if (!(name = get_param(ptr, "filename"))) {
-		if (!(name = get_param(ptr, "name")))
-			return NULL;
+	if ((name = get_param(ptr, "filename*"))) {
+		if ((p = strrchr(name, '/')))
+			name = *++p ? p : NULL;
 	}
 
-	if ((p = strrchr(name, '/')))
-		return p + 1;
+	if (!name && (name = get_param(ptr, "filename"))) {
+		if ((p = strrchr(name, '/')))
+			name = *++p ? p : NULL;
+	}
+
+	if (!name && (name = get_param(ptr, "name"))) {
+		if ((p = strrchr(name, '/')))
+			name = *++p ? p : NULL;
+	}
 
 	return name;
 }
@@ -494,7 +531,7 @@ shorten_attach_line(
 
 char *
 build_attach_line(
-	t_part *part,
+	const t_part *part,
 	int depth,
 	int max_len,
 	int is_uue,
@@ -569,7 +606,7 @@ build_attach_line(
 					snprintf(line_cnt_str, line_cnt_str_len + 1, "%d", part->line_count);
 				}
 				curr->content = line_cnt_str;
-				curr->description = _(txt_mime_lines);
+				curr->description = P_(txt_mime_line_sp[0], txt_mime_line_sp[1], part->line_count);
 				SMALL_LETTER_CONDITIONALS();
 				excl_seen = star_seen = FALSE;
 				break;
@@ -646,7 +683,7 @@ build_attach_line(
 					snprintf(line_cnt_str, line_cnt_str_len + 1, "%d", part->line_count);
 				}
 				curr->content = line_cnt_str;
-				curr->description = _(txt_mime_lines);
+				curr->description = P_(txt_mime_line_sp[0], txt_mime_line_sp[1], part->line_count);
 				CAPITAL_LETTER_CONDITIONALS();
 				excl_seen = star_seen = FALSE;
 				break;
@@ -902,7 +939,8 @@ process_text_body_part(
 	int hide_uue)
 {
 	char *rest = NULL;
-	char *line = NULL, *buf, *tmpline;
+	char *line = NULL, *buf;
+	const char *cp;
 	size_t max_line_len = 0, len, len_blank;
 	int flags, lines_left;
 	unsigned int lines_skipped = 0;
@@ -915,12 +953,19 @@ process_text_body_part(
 	t_bool first_line_blank = TRUE;	/* Unset when first non-blank line is reached */
 	t_bool put_blank_lines = FALSE;	/* Set when previously skipped lines needs to put */
 	t_part *curruue = NULL;
-#ifdef HAVE_LIBURIPARSER
+#if defined(HAVE_LIBURIPARSER) || defined(HAVE_LIBCURL)
 	REGEX_SIZE *offsets;
 	char *u = NULL;
 	size_t l;
+#endif /* HAVE_LIBURIPARSER || HAVE_LIBCURL */
+#ifdef HAVE_LIBURIPARSER
 	UriUriA uri;
 	UriParserStateA state;
+#else
+#	ifdef HAVE_LIBCURL
+	CURLU *curl;
+	char *nu;
+#	endif /* HAVE_LIBCURL */
 #endif /* HAVE_LIBURIPARSER */
 
 	if (part->uue) {				/* These are redone each time we recook/resize etc.. */
@@ -1008,11 +1053,11 @@ process_text_body_part(
 		 */
 		if (curr_group->attribute->trim_article_body && !in_uue && !in_verbatim && !verbatim_begin) {
 			len_blank = 1;
-			tmpline = line;
+			cp = line;
 			/* check if line contains only whitespace */
-			while ((*tmpline == ' ') || (*tmpline == '\t')) {
+			while ((*cp == ' ') || (*cp == '\t')) {
 				++len_blank;
-				++tmpline;
+				++cp;
 			}
 			if (len_blank == len) {		/* line is blank */
 				if (lines_left == 0 && (curr_group->attribute->trim_article_body & SKIP_TRAILING)) {
@@ -1220,12 +1265,19 @@ process_text_body_part(
 		CHECK_URI(mail_regex, C_MAIL);
 		CHECK_URI(news_regex, C_NEWS);
 #else
+#	ifdef HAVE_LIBCURL
+		/* find and validate URIs */
+		CHECK_URI(url_regex, C_URL);
+		CHECK_URI(mail_regex, C_MAIL);
+		CHECK_URI(news_regex, C_NEWS);
+	#else
 		if (MATCH_REGEX(url_regex, line, len))
 			flags |= C_URL;
 		if (MATCH_REGEX(mail_regex, line, len))
 			flags |= C_MAIL;
 		if (MATCH_REGEX(news_regex, line, len))
 			flags |= C_NEWS;
+#	endif /* HAVE_LIBCURL */
 #endif /* HAVE_LIBURIPARSER */
 
 		if (expand_ctrl_chars(&line, &max_line_len, tabwidth))
@@ -1513,7 +1565,7 @@ cook_article(
 
 #ifdef CHARSET_CONVERSION
 #	ifdef USE_ICU_UCSDET
-		if (hdr->ext->type == TYPE_APPLICATION && hdr->ext->encoding == ENCODING_BINARY && artinfo->hdr.ext->mime_hints.flags & MIME_TRANSFER_ENCODING_UNKNOWN) {
+		if (hdr->ext->type == TYPE_APPLICATION && hdr->ext->encoding == ENCODING_BINARY && (artinfo->hdr.ext->mime_hints.flags & MIME_TRANSFER_ENCODING_UNKNOWN)) {
 			put_cooked(LEN, wrap_lines, C_ATTACH, "[-- \"Content-Type: application/octet-stream\" forced --]\n");
 			put_cooked(LEN, wrap_lines, C_ATTACH, "[-- \"Content-Type-Encodig: %s\" forced --]\n", content_encodings[hdr->ext->encoding]);
 		}

@@ -3,7 +3,7 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2024-04-10
+ *  Updated   : 2025-02-05
  *
  * Copyright (c) 1997-2025 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
@@ -101,7 +101,12 @@ wait_for_input(
 		if ((nfds = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &tv)) == -1)
 #	endif /* HAVE_SELECT_INTP */
 		{
-			if (errno != EINTR) {
+#	ifdef EINTR
+			if (errno != EINTR)
+#	else
+			if (errno != 0)
+#	endif /* EINTR */
+			{
 				perror_message("select() failed");
 				free(tin_progname);
 				giveup();

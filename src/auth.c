@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-02-07
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -80,9 +80,10 @@ read_newsauth_file(
 {
 	FILE *fp;
 	char *_authpass;
-	char *ptr;
+	char *ptr, *p, *q;
 	char filename[PATH_LEN];
 	char line[PATH_LEN];
+	char hn[262]; /* [^\W_]{1,255}(:\d{,5})? */
 	int found = 0;
 #	ifndef FILE_MODE_BROKEN
 	int fd;
@@ -138,36 +139,29 @@ read_newsauth_file(
 		*ptr++ = '\0';		/* cut off server part */
 
 		/* allow ":port" suffix in .newsauth */
-		{
-			char *p;
-			char hn[262]; /* [^\W_]{1,255}(:\d{,5})? */
-
-			if ((p = strchr(line, ':')) != NULL) {
-				if (*line != '[' && strrchr(line, ':') == p) { /* exact 1 x ':' must be [name|ipv4]:port */
-					snprintf(hn, sizeof(hn), "%s:%u", server, nntp_tcp_port);
-					if ((strcasecmp(line, hn)))
-						continue;
-				} else { /* "[ipv6]"[:port] */
-					char *q;
-
-					if (*line == '[' && (q = strrchr(line, ']')) != NULL) {
-						if ((p = strchr(line, ':')) != NULL) {
-							if (p > q) /* not an IPv6 */
+		if ((p = strchr(line, ':')) != NULL) {
+			if (*line != '[' && strrchr(line, ':') == p) { /* exact 1 x ':' must be [name|ipv4]:port */
+				snprintf(hn, sizeof(hn), "%s:%u", server, nntp_tcp_port);
+				if ((strcasecmp(line, hn)))
+					continue;
+			} else { /* "[ipv6]"[:port] */
+				if (*line == '[' && (q = strrchr(line, ']')) != NULL) {
+					if ((p = strchr(line, ':')) != NULL) {
+						if (p > q) /* not an IPv6 */
+							continue;
+					}
+					if ((p = strchr(q, ':')) != NULL) {
+						if (p == q + 1) {
+							snprintf(hn, sizeof(hn), "[%s]:%u", server, nntp_tcp_port);
+							if ((strcasecmp(line, hn)))
 								continue;
-						}
-						if ((p = strchr(q, ':')) != NULL) {
-							if (p == q + 1) {
-								snprintf(hn, sizeof(hn), "[%s]:%u", server, nntp_tcp_port);
-								if ((strcasecmp(line, hn)))
-									continue;
-							}
 						}
 					}
 				}
-			} else {
-				if ((strcasecmp(line, server)))
-					continue;
 			}
+		} else {
+			if ((strcasecmp(line, server)))
+				continue;
 		}
 
 		if (!(strcasecmp(line, server))) {
@@ -249,8 +243,12 @@ do_authinfo_user(
 #	endif /* DEBUG */
 	put_server(line, TRUE);
 	ret = get_only_respcode(line, sizeof(line));
-	if (!batch_mode || verbose || ret != OK_AUTH)
-		wait_message(2, (ret == OK_AUTH ? _(txt_authorization_ok) : _(txt_authorization_fail)), authuser);
+	if (ret != OK_AUTH)
+		wait_message(2, _(txt_authorization_fail), authuser);
+	else {
+		if (!batch_mode || verbose)
+			wait_message(0, _(txt_authorization_ok) , authuser);
+	}
 	return ret;
 }
 
@@ -516,7 +514,7 @@ do_authinfo_sasl(
 {
 	char *utf8user = NULL;
 	char *utf8pass = NULL;
-	int ret;
+	int r = -1, i;
 
 	if (authuser && *authuser)
 		utf8user = my_strdup(authuser);
@@ -527,47 +525,37 @@ do_authinfo_sasl(
 #		ifdef CHARSET_CONVERSION
 	/* RFC 4616 */
 	if (!IS_LOCAL_CHARSET("UTF-8")) {
-		char *cp;
-		int i, c = 0;
-		t_bool contains_8bit = FALSE;
-
 		/*
 		 * if authuser or authpass contains non ASCII-chars
 		 * convert both to UTF-8 even if this is a noop for
 		 * one of them
 		 */
 		if (utf8user && *utf8user) {
-			for (cp = utf8user; *cp; cp++) {
-				if (!isascii((unsigned char) *cp)) {
-					contains_8bit = TRUE;
+			for (i = 0; utf8user[i]; i++) {
+				if (!isascii((unsigned char) utf8user[i])) {
+					r = charset_name_to_num("UTF-8");
 					break;
 				}
 			}
 		}
-		if (!contains_8bit && utf8pass && *utf8pass) {
-			for (cp = utf8pass; *cp; cp++) {
-				if (!isascii((unsigned char) *cp)) {
-					contains_8bit = TRUE;
+
+		if (r == -1 && utf8pass && *utf8pass) {
+			for (i = 0; utf8pass[i]; i++) {
+				if (!isascii((unsigned char) utf8pass[i])) {
+					r = charset_name_to_num("UTF-8");
 					break;
 				}
 			}
 		}
-		if (contains_8bit) {
-			for (i = 0; txt_mime_charsets[i] != NULL; i++) {
-				if (!strcasecmp("UTF-8", txt_mime_charsets[i])) {
-					c = i;
-					break;
-				}
+
+		if (r != -1) {
+			if (utf8user && !buffer_to_network(&utf8user, r)) {
+				free(utf8user);
+				utf8user = my_strdup(authuser);
 			}
-			if (c == i) { /* should never fail */
-				if (utf8user && !buffer_to_network(&utf8user, c)) {
-					free(utf8user);
-					utf8user = my_strdup(authuser);
-				}
-				if (utf8pass && !buffer_to_network(&utf8pass, c)) {
-					free(utf8pass);
-					utf8pass = my_strdup(authpass);
-				}
+			if (utf8pass && !buffer_to_network(&utf8pass, r)) {
+				free(utf8pass);
+				utf8pass = my_strdup(authpass);
 			}
 		}
 	}
@@ -578,13 +566,17 @@ do_authinfo_sasl(
 		debug_print_file("NNTP", "do_authinfo_sasl(\"%s\", \"%s\")", BlankIfNull(authuser), BlankIfNull(authpass));
 #		endif /* DEBUG */
 
-	ret = sasl_auth(utf8user, utf8pass);
+	r = sasl_auth(utf8user, utf8pass);
 	FreeIfNeeded(utf8user);
 	FreeIfNeeded(utf8pass);
 
-	if (!batch_mode || verbose || (ret != OK_AUTH_SASL && ret != OK_AUTH))
-		wait_message(2, ((ret == OK_AUTH_SASL || ret == OK_AUTH) ? _(txt_authorization_ok) : _(txt_authorization_fail)), BlankIfNull(authuser));
-	return ret;
+	if (r != OK_AUTH_SASL && r != OK_AUTH)
+		wait_message(2, _(txt_authorization_fail), authuser);
+	else {
+		if (!batch_mode || verbose)
+			wait_message(0, _(txt_authorization_ok) , authuser);
+    }
+	return r;
 }
 
 
@@ -691,22 +683,16 @@ callback(
 ) {
 	char *u, *p;
 	int rc = GSASL_NO_CALLBACK;
-	int c = 0, i = -1;
+	int c = -1;
 
 	(void) ctx;
-	if (!IS_LOCAL_CHARSET("UTF-8")) { /* charset conversion likely (we don't check for 7bit only) needed? */
-		for (i = 0; txt_mime_charsets[i] != NULL; i++) {
-			if (!strcasecmp("UTF-8", txt_mime_charsets[i])) {
-				c = i;
-				break;
-			}
-		}
-	}
+	if (!IS_LOCAL_CHARSET("UTF-8")) /* charset conversion likely (we don't check for 7bit only) needed? */
+		c = charset_name_to_num("UTF-8");
 
 	switch (prop) {
 		case GSASL_AUTHID:
 			if ((u = prompt_for_authid(NULL)) != NULL) {
-				if (c == i) { /* convert to utf-8 */
+				if (c != -1) { /* convert to utf-8 */
 					char *u8 = my_strdup(u);
 
 					if (buffer_to_network(&u8, c))
@@ -725,7 +711,7 @@ callback(
 
 		case GSASL_PASSWORD:
 			if ((p = prompt_for_password()) != NULL) {
-				if (c == i) { /* convert to utf-8 */
+				if (c != -1) { /* convert to utf-8 */
 					char *p8 = my_strdup(p);
 
 					if (buffer_to_network(&p8, c))

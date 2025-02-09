@@ -2775,7 +2775,7 @@ U089) Urs Janssen <urs@tin.org>
       ADD. prefer inews_prog over INEWSDIR/inews -h
       REM. --enable-mmdf-mailer, HAVE_MBOXRD, save_to_mmdf_mailbox
       REM. check for OK_NOIHAVE, OK_NOPOSTIHAVE responses to MODE READER,
-           they are no loner mentioned in the draft
+           they are no longer mentioned in the draft
       BUG. p'^O'st postponed articles didn't respect attributes
       BUG. $EDITOR had higher priority as $VISUAL (introduced in 006;
            never trust your local guru!)

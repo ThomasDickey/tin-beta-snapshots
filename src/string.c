@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-20
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
@@ -216,6 +216,14 @@ my_strncpy(
 	const char *q,
 	size_t n)
 {
+#ifdef DEBUG
+	assert(((void) "p (dst) must not be NULL", p != NULL));
+	assert(((void) "n (len) must not be < 1", n > 0));
+#else
+	if (!p || n < 1)
+		return;
+#endif /* DEBUG */
+
 	while (n--) {
 		if (!*q || *q == '\n')
 			break;
@@ -408,7 +416,8 @@ strstr(
 #endif /* !HAVE_STRSTR */
 
 
-#ifndef HAVE_ATOL /* unused except in atoartnum-marco */
+#if !defined(USE_LONG_ARTICLE_NUMBERS) && !defined(HAVE_ATOL)
+/* unused except in atoartnum-marco */
 /*
  * handrolled atol
  */
@@ -431,7 +440,7 @@ atol(
 	}
 	return ret;
 }
-#endif /* !HAVE_ATOL */
+#endif /* !USE_LONG_ARTICLE_NUMBERS && !HAVE_ATOL */
 
 
 #ifndef HAVE_STRTOL
@@ -634,12 +643,12 @@ eat_tab(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 wchar_t *
 wexpand_tab(
-	wchar_t *wstr,
+	const wchar_t *wstr,
 	size_t tab_width)
 {
 	size_t cur_len = LEN, i = 0, tw;
 	wchar_t *wbuf = my_malloc(cur_len * sizeof(wchar_t));
-	wchar_t *wc = wstr;
+	const wchar_t *wc = wstr;
 
 	while (*wc) {
 		if (i > cur_len - (tab_width + 1)) {
@@ -663,7 +672,7 @@ wexpand_tab(
 
 char *
 expand_tab(
-	char *str,
+	const char *str,
 	size_t tab_width)
 {
 	char *buf = my_calloc(1, LEN);
@@ -839,12 +848,10 @@ strrstr(
 	const char *str,
 	const char *pat)
 {
-	const char *ptr;
-	size_t slen, plen;
-
 	if ((str != NULL) && (pat != NULL)) {
-		slen = strlen(str);
-		plen = strlen(pat);
+		const char *ptr;
+		size_t slen = strlen(str);
+		size_t plen = strlen(pat);
 
 		if ((plen != 0) && (plen <= slen)) {
 			for (ptr = str + (slen - plen); ptr > str; --ptr) {
@@ -1737,7 +1744,7 @@ parse_format_string(
 				/* Article marks */
 				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & ART_MARKS) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= ART_MARKS;
-					cnt += 3;
+					cnt += (art_mark_width + 2);
 				} else
 					out -= 2;
 				break;
@@ -1894,7 +1901,7 @@ parse_format_string(
 		size_t *len_first, *len_last;
 		t_bool flags_first, flags_last;
 
-		len_cnt = (cCOLS - (int) cnt - 1) < 0 ? 0 : cCOLS - cnt - 1;
+		len_cnt = (int) (cCOLS - (int) cnt - 1 < 0 ? 0 : cCOLS - cnt - 1);
 
 		if (flags & (GRP_NAME | GRP_DESC))
 			fmt->len_grpname_max = (size_t) len_cnt;
@@ -1936,31 +1943,31 @@ parse_format_string(
 			len_last = &fmt->len_from;
 		}
 
-		len_tmp = len_cnt - (int) fmt->len_date_max < 0 ? 0 : len_cnt - fmt->len_date_max;
+		len_tmp = len_cnt - (int) fmt->len_date_max < 0 ? 0 : len_cnt - (int) fmt->len_date_max;
 		if (flags_first) {
 			if (!*len_last || *len_last > (size_t) len_tmp) {
 				if (flags_last) {
 					if (*len_first) {
-						len_tmp = len_cnt - fmt->len_date_max - *len_first;
-						*len_last = len_tmp < 0 ? 0 : (size_t) len_tmp;
+						len_tmp = len_cnt - (int) fmt->len_date_max - (int) *len_first;
+						*len_last = (size_t) (len_tmp < 0 ? 0 : len_tmp);
 					} else {
-						len_tmp = len_cnt - fmt->len_date_max;
-						*len_last = len_tmp < 0 ? 0 : (size_t) len_tmp / 3;
+						len_tmp = len_cnt - (int) fmt->len_date_max;
+						*len_last = (size_t) (len_tmp < 0 ? 0 : len_tmp / 3);
 					}
-					len_tmp = len_cnt - fmt->len_date_max - *len_last;
-					*len_first = len_tmp < 0 ? 0 : (size_t) len_tmp;
+					len_tmp = len_cnt - (int) fmt->len_date_max - (int) *len_last;
+					*len_first = (size_t) (len_tmp < 0 ? 0 : len_tmp);
 				} else {
-					len_tmp = len_cnt - fmt->len_date_max;
-					*len_last = len_tmp < 0 ? 0 : (size_t) len_tmp;
+					len_tmp = len_cnt - (int) fmt->len_date_max;
+					*len_last = (size_t) (len_tmp < 0 ? 0 : len_tmp);
 				}
 			} else {
 				if (flags_last) {
 					if (*len_first) {
-						len_tmp = len_cnt - fmt->len_date_max - *len_first;
-						*len_last = len_tmp < 0 ? 0 : MIN(*len_last, (size_t) len_tmp);
+						len_tmp = len_cnt - (int) fmt->len_date_max - (int) *len_first;
+						*len_last = (size_t) (len_tmp < 0 ? 0 : MIN(*len_last, (size_t) len_tmp));
 					}
-					len_tmp = len_cnt - fmt->len_date_max - *len_last;
-					*len_first = len_tmp < 0 ? 0 : MIN(*len_first, (size_t) len_tmp);
+					len_tmp = len_cnt - (int) fmt->len_date_max - (int) *len_last;
+					*len_first = (size_t) (len_tmp < 0 ? 0 : MIN(*len_first, (size_t) len_tmp));
 				}
 			}
 		} else if (flags_last && (!*len_first || *len_first > (size_t) len_tmp))
@@ -2053,11 +2060,16 @@ s2i(
 	signed int min,
 	signed int max)
 {
+	const char *hex;
 	char *end;
 	signed long res;
 
 	errno = 0;
-	res = strtol(s, &end, 10);
+
+	if ((hex = strpbrk(s, "xX")) != NULL && hex > s && *(hex - 1) == '0')
+		res = strtol(s, &end, 16);
+	else
+		res = strtol(s, &end, 10);
 
 	if (res < min) {
 		res = min;
@@ -2069,8 +2081,10 @@ s2i(
 		errno = ERANGE;
 	}
 
-	if (s == end)
+	if (s == end) {
+		res = 0;
 		errno = EINVAL;
+	}
 
 	return ((signed int) res);
 }

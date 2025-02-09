@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2024-11-26
+ *  Updated   : 2025-01-06
  *
  * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -181,15 +181,11 @@ get_fqdn(
 			in.s_addr = (*hp->h_addr);
 #	endif /* HAVE_HOSTENT_H_ADDR_LIST */
 	}
-	snprintf(fqdn, sizeof(fqdn), "%s", hp
-		? strchr(hp->h_name, '.')
-			? hp->h_name :
 #	ifdef HAVE_INET_NTOA
-			inet_ntoa(in)
+	snprintf(fqdn, sizeof(fqdn), "%s", hp ? strchr(hp->h_name, '.') ? hp->h_name : inet_ntoa(in) : "");
 #	else
-			""
+	snprintf(fqdn, sizeof(fqdn), "%s", hp ? strchr(hp->h_name, '.') ? hp->h_name : "" : "");
 #	endif /* HAVE_INET_NTOA */
-		: "");
 
 	if (!*fqdn || (fqdn[strlen(fqdn) - 1] <= '9')) { /* see FIXME above about IPv6 */
 		FILE *inf;
@@ -235,8 +231,7 @@ get_full_name(
 	static char fullname[128];
 #ifndef DONT_HAVE_PW_GECOS
 	char buf[128];
-	char tmp[128];
-	struct passwd *pw;
+	const struct passwd *pw;
 #endif /* !DONT_HAVE_PW_GECOS */
 
 	fullname[0] = '\0';
@@ -254,9 +249,10 @@ get_full_name(
 #ifndef DONT_HAVE_PW_GECOS
 	if ((pw = getpwuid(getuid())) != NULL) {
 		STRCPY(buf, pw->pw_gecos);
-		if ((p = strchr(buf, ',')))
+		if ((p = strchr(buf, ','))) /* cut off office, wphone, hphone */
 			*p = '\0';
 		if ((p = strchr(buf, '&'))) {
+			char tmp[128];
 			int ret;
 
 			*p++ = '\0';
@@ -284,20 +280,18 @@ get_full_name(
 void
 get_from_name(
 	char *from_name,
-	struct t_group *thisgrp)
+	const struct t_group *thisgrp)
 {
 	const char *fromhost = domain_name;
 
-	if (thisgrp && thisgrp->attribute->from && *thisgrp->attribute->from) {
+	if (thisgrp && thisgrp->attribute->from && *thisgrp->attribute->from && strchr(*thisgrp->attribute->from, '@'))
 		strcpy(from_name, *thisgrp->attribute->from);
-		return;
-	}
-
-	sprintf(from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), BlankIfNull(get_full_name()), userid, BlankIfNull(fromhost));
+	else
+		sprintf(from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), BlankIfNull(get_full_name()), userid, BlankIfNull(fromhost));
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		error_message(2, "FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, userid, domain_name, BlankIfNull(get_full_name()));
+		error_message(2, "FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, userid, BlankIfNull(fromhost), BlankIfNull(get_full_name()));
 #endif /* DEBUG */
 }
 

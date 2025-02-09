@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2024-10-17
+ *  Updated   : 2024-12-03
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -264,10 +264,10 @@ highlight_regexes(
 		REGEX_SIZE *offsets = regex_get_ovector_pointer(regex);
 		/* we have a match */
 		if (color >= 0) /* color the matching text */
-			word_highlight_string(row, (int) ((ptr - buf) + offsets[0]), offsets[1] - offsets[0], color);
+			word_highlight_string(row, (int) ((ptr - buf) + offsets[0]), (int) (offsets[1] - offsets[0]), color);
 		else
 			/* inverse the matching text */
-			highlight_string(row, (int) ((ptr - buf) + offsets[0]), offsets[1] - offsets[0]);
+			highlight_string(row, (int) ((ptr - buf) + offsets[0]), (int) (offsets[1] - offsets[0]));
 
 		if (!tinrc.word_h_display_marks) {
 #ifdef USE_CURSES

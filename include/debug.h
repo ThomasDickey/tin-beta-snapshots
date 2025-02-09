@@ -42,7 +42,7 @@
 #	define DEBUG_H 1
 
 #	define DEBUG_NNTP	0x01	/*   1, "NNTP", "NNTPS" */
-#	define DEBUG_FILTER	0x02	/*   2, "FILTER", "ARTS"  */
+#	define DEBUG_FILTER	0x02	/*   2, "FILTER", "ARTS" */
 #	define DEBUG_NEWSRC	0x04	/*   4, "NEWSRC", "BITMAP" */
 #	define DEBUG_REFS	0x08	/*   8, "THREADING", "REFS" */
 #	define DEBUG_MEM	0x10	/*  16, "MEMORY", "MALLOC" */

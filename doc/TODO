@@ -41,13 +41,7 @@ o  add version number to other config-files (e.g. tin.defaults)
    used (wildmat or regexp (or TRE))
    [Urs Janssen <urs@tin.org>]
 
-o  overview file caching code is over-complex
-   - cache the original overview info instead of rebuilding it from
-     the processed (decoded etc.) data, no matter if it's broken (e.g.
-     contains raw 8 bit data) as we have to deal with that anyway. if there
-     are no original overviews, cache the original data from the postings
-     headers (after unfolding and tab removal).
-   - Add docs to explain how to create system-wide overviews
+o  Add docs to explain how to create system-wide overviews
 
 o  iso2asc conversion is missing for 'internal' strings (e.g. 'M'enu)
    [20020319 Urs Janssen <urs@tin.org>]
@@ -70,6 +64,9 @@ o  the key ToggleHelpDisplay / GLOBAL_TOGGLE_HELP_DISPLAY is misnamed
    updated) wrong as it toggles tinrc.beginner_level which also controls
    displaying the posting etiquette
    [20210106 Urs Janssen <urs@tin.org>]
+
+o  the literal IPv6 with embedded IPv4 addresses part in URL_REGEX is buggy
+   and does not catch all valid combinations
 
 Pager Problems
 --------------
@@ -126,7 +123,8 @@ o  add configure check for cl_clear_secret() in libcanlock and CL_API_MAJOR,
 o  update included libcanlock to >= 3.3.1
    [20211024 Urs Janssen <urs@tin.org>]
 
-o  allow per server cache_overview_files setting via serverrc.
+o  allow per server cache_overview_files, compress_overview_files setting via
+   serverrc.
    [20180215 Urs Janssen <urs@tin.org>]
 
 o  if we extend serverrc it should also get some 'M'enu.
@@ -167,6 +165,11 @@ o  add nntp_default_server to tin.defaults to override compile time setting.
    file, if it starts with $ it is read from the referenced variable.
    [20101118 Urs Janssen <urs@tin.org>]
 
+o  tin.defaults allows to preset mm_charset which will preset
+   mm_charset without charset conversion but mm_network_charset
+   if charset conversion is available. This is useful (and matches
+   $MM_CHARSET) but not emphasised in tin(5).
+
 o  the old space_goto_next_article=ON && space_goto_next_unread=OFF is not
    possible with the new goto_next_unread rc-var, we need something like
    an additional goto_next_read rc-var
@@ -191,11 +194,6 @@ o  add more AUTHINFO SASL (RFC 4643, RFC 5802) support (DIGEST-MD5,
 
 o  add XZVER (and XZHDR) support (zlib compressed yyencoded overview data)
    <http://helpdesk.astraweb.com/index.php?_m=news&_a=viewnews&newsid=9>
-
-o  the TLD checking in the 'GNKSA'-parser needs some rework, keeping the
-   list of valid TLDs up to date is more or less impossible with the ~1400
-   pending new TLDs
-   [20131024 Urs Janssen <urs@tin.org>]
 
 o  add In-Reply-To threading for mailgroups
    [20030518 Urs Janssen <urs@tin.org>]
@@ -453,6 +451,9 @@ o  when From: only contains "First-name Last-name" (invalid) tin strips
    the Last-name in group/thread-level
    [20020319 Urs Janssen <urs@tin.org>]
 
+o  for config_page(OPT_MAIL_ADDRESS) verify the the given address
+   and reject it if invalid.
+
 o  Bounce duplicate Message-ID's when the headers are read. This will
    make the threading code happier too.
    [Jason Faultless <jason@altarstone.com>]
@@ -469,7 +470,7 @@ o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo, lzlib, liblz4,
     <http://freecode.com/projects/long-range-zip>,
     <https://github.com/facebook/zstd>,
     <https://github.com/lzfse/lzfse>) and add an option to write/read
-    *zipped local overviews.
+    compressed local overviews (done for zlib).
    the libs might also be used for post-processing articles.
 
 o  rewrite/cleanup all the debugging code, the output in /tmp is messy; the
@@ -483,6 +484,7 @@ o  rewrite/cleanup all the debugging code, the output in /tmp is messy; the
    [Urs Janssen <urs@tin.org>]
 
 o  Add 'M'enu option to define chars for utf8_graphics.
+   (and rename option to unicode_graphics or the like)
 
 o  allow user defined mouse button bindings (like keymap).
 
@@ -535,8 +537,6 @@ o  add config option for (external) viewer to show postings stored in
 
 Filtering enhancements
 ----------------------
-o  add Xref + Path filter to the filter-menu
-
 o  add used filter-type to filter file or filter rule or use different
    filter files for wildmat/regexp
 
@@ -548,6 +548,7 @@ o  fix kill/hot mechanism so that it is possible to match articles on
    [done for Path, Dennis]
 
 o  don't strip "Re: " out of the subject before applying the filter on it
+   (note: we now have the raw subject in subject_raw)
 
 o  allow any given amount of days in default_filter_days not only
    {1, 2, 4} * 28 days
@@ -575,6 +576,9 @@ o  add toggle attachment depth indentation 4 <-> 2 like ^T for tabs
 
 o  add toggle dont_break_words
 
+o  add an option to hide the verbatim marker lines and/or the entire verbatim
+   block
+
 o  suppress hide_uue=2 checking unless first line in an article or following
    a blank line
 
@@ -594,9 +598,9 @@ o  check remaining fopen(..., "r") calls if they should replaced by
    tin_fopen() to get some default error-handling and if not put a
    comment to them.
 
-o  in ENABLE_NLS case replace PLURAL() macro with proper use of
-   ngettext(3) (if found by configure) to support languages with
-   more than one plural form.
+o  add configure check for (missing) ngettext(3) (see P_()/NP_() in tin.h).
+   fix the "untranslatable" strings and use full sentences instead.
+   (grep for "plural-forms")
    [20150113 Urs Janssen <urs@tin.org>]
 
 o  rename disable_gnksa_domain_check to enable_gnksa_domain_check and
@@ -661,6 +665,8 @@ o  read_overview() calls eat_re() which strips the "Re: " out of the
    which might not be what ppl. expect and eat_re() is the only function
    which needs the 'regex' overhead in batch_mode... (see also the note
    about "Re: "-stripping at "Filtering enhancements").
+   note: we now have article->subject_raw (no restripping, but also no
+   mime-decoding!), which we may use instead (after mime-decoding).
    [20050225 Urs Janssen <urs@tin.org>]
 
 o  use new_nntp_command() instead of nntp_command() in the rest of the
@@ -879,6 +885,9 @@ o  the limited pgp support (inline pgp as of RFC 4880, just signature
 
 Not yet classified
 ------------------
+o  tinrc.info_in_last_line has no 'M'enu entry (but a toggle-key at most
+   levels: GLOBAL_TOGGLE_INFO_LAST_LINE)
+
 o  configure check for volatile sig_atomic_t and if found use in
    signal_handler to flag actions to be done; check the flag outside
    the signal_handler (where? handle_keypad()?) and do the outstanding
@@ -918,7 +927,8 @@ o  verbatim regions can't be nested, should they?
 o  allow per group cancel_lock_algo setting via attributes?
    [20170810 Urs Janssen <urs@tin.org>]
 
-o  allow per group cache_overview_files setting via attributes?
+o  allow per group cache_overview_files, compress_overview_files setting
+   via attributes?
    [20180215 Urs Janssen <urs@tin.org>]
 
 o  exit HEAD/NEXT loop on 5xx responses to HEAD? (see
@@ -1092,6 +1102,9 @@ o  missing newsrc file and connecting to a server without groups leads to the
 o  configure checks for fdopen(3) and defines HAVE_FDOPEN if found, but we
    don't have any code guarded with that macro nor any fallback code if not
    found.
+
+o  add check for libmagic <https://www.darwinsys.com/file/> and if
+   found use it to verify given mime-types in attachments
 
 o  add check for libarchive <http://www.libarchive.org/>
    and use for post-processing?

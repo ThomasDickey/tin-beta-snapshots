@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-26
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -82,12 +82,12 @@ enum action {
  */
 static FILE *open_save_filename(const char *path, t_bool mbox);
 static char *build_tree(int depth, int maxlen, int i);
-static char *generate_savepath(t_part *part);
+static char *generate_savepath(const t_part *part);
 static int build_part_list(t_openartinfo *art);
 static int get_tagged(int n);
-static int match_content_type(t_part *part, char *type);
-static t_bool check_save_mime_type(t_part *part, const char *mime_types);
-static t_bool decode_save_one(t_part *part, FILE *rawfp, t_bool postproc);
+static int match_content_type(const t_part *part, const char *type);
+static t_bool check_save_mime_type(const t_part *part, const char *mime_types);
+static t_bool decode_save_one(const t_part *part, FILE *rawfp, t_bool postproc);
 static t_bool expand_save_filename(char *outpath, size_t outpath_len, const char *path);
 static t_bool tag_part(int n);
 static t_function attachment_left(void);
@@ -105,7 +105,7 @@ static void post_process_sh(void);
 static void process_part(t_part *part, t_openartinfo *art, FILE *outfile, const char *savepath, enum action what);
 static void process_parts(t_part *part, t_openartinfo *art, enum action what);
 static void show_attachment_page(void);
-static void start_viewer(t_part *part, const char *path);
+static void start_viewer(const t_part *part, const char *path);
 static void tag_pattern(void);
 static void untag_all_parts(void);
 static void untag_part(int n);
@@ -170,15 +170,15 @@ check_start_save_any_news(
 		case SAVE_ANY_NEWS:
 			joinpath(logfile, sizeof(logfile), rcdir, "log");
 
-			if (no_write || (fp_log = fopen(logfile, "w")) == NULL) {
+			if ((fp_log = fopen(logfile, "w")) == NULL) {
 				perror_message(_(txt_cannot_open), logfile);
 				fp_log = stdout;
 				verbose = FALSE;
 			}
 			fprintf(fp_log, "To: %s\n", userid);
 			(void) time(&epoch);
-			snprintf(subject, sizeof(subject), "Subject: NEWS LOG %s", ctime(&epoch));
-			fprintf(fp_log, "%s\n", subject);	/* ctime() includes a \n too */
+			snprintf(subject, sizeof(subject), "Subject: NEWS LOG %s", BlankIfNull(str_trim(ctime(&epoch))));
+			fprintf(fp_log, "%s\n\n", subject);
 			break;
 
 		default:
@@ -341,8 +341,10 @@ check_start_save_any_news(
 			unread_news = TRUE;
 			if (verbose) {
 				char *tmp_hot_count = my_strdup(tin_ltoa(hot_count, 4));
+
+				/* FIXME: translatable/plural-forms */
 				wait_message(0, _(txt_saved_group), tin_ltoa(art_count, 4), tmp_hot_count,
-					PLURAL(art_count, txt_article), group->name);
+					P_(txt_article_sp[0], txt_article_sp[1], art_count), group->name);
 				free(tmp_hot_count);
 			}
 		}
@@ -368,10 +370,10 @@ check_start_save_any_news(
 			/* NOTREACHED */
 
 		case MAIL_ANY_NEWS:
-		case SAVE_ANY_NEWS:
+		case SAVE_ANY_NEWS: /* FIXME: translatable/plural-forms */
 			snprintf(buf, sizeof(buf), _(txt_saved_summary), (function == MAIL_ANY_NEWS ? _(txt_mailed) : _(txt_saved)),
-					saved_arts, PLURAL(saved_arts, txt_article),
-					group_count, PLURAL(group_count, txt_group));
+					saved_arts, P_(txt_article_sp[0], txt_article_sp[1], saved_arts),
+					group_count, P_(txt_group_sp[0], txt_group_sp[1], group_count));
 			fprintf(fp_log, "%s", buf);
 			if (verbose)
 				wait_message(0, "%s", buf);
@@ -510,7 +512,7 @@ save_and_process_art(
 	t_bool mmdf = (is_mailbox && !strcasecmp(txt_mailbox_formats[tinrc.mailbox_format], "MMDF"));
 
 	if (fseek(artinfo->raw, 0L, SEEK_SET) == -1) {
-		perror_message(txt_error_fseek, artinfo->hdr.subj);
+		perror_message(txt_error_fseek);
 		return FALSE;
 	}
 
@@ -540,7 +542,7 @@ save_and_process_art(
 			snprintf(from, sizeof(from), "%s@%s", PATHMASTER, get_host_name());
 
 		(void) time(&epoch);
-		fprintf(fp, "From %s %s", from, ctime(&epoch));
+		fprintf(fp, "From %s %s\n", from, BlankIfNull(str_trim(ctime(&epoch))));
 		/*
 		 * TODO: add Content-Length: header when using MBOXO
 		 *       so tin actually write MBOXCL instead of MBOXO?
@@ -659,7 +661,7 @@ generate_filename(
  */
 static char *
 generate_savepath(
-	t_part *part)
+	const t_part *part)
 {
 	char *savepath;
 	const char *name;
@@ -881,7 +883,8 @@ post_process_uud(
 		my_flush();
 	}
 
-	my_printf(_(txt_libuu_saved), count, num_save, errors, PLURAL(errors, txt_error));
+	/* FIXME: translatable/plural-forms */
+	my_printf(_(txt_libuu_saved), count, num_save, errors, P_(txt_error_sp[0], txt_error_sp[1], errors));
 	my_printf(cCRLF);
 	UUCleanUp();
 }
@@ -1189,7 +1192,7 @@ print_art_separator_line(
  */
 static void
 start_viewer(
-	t_part *part,
+	const t_part *part,
 	const char *path)
 {
 	t_mailcap *foo;
@@ -1234,7 +1237,7 @@ start_viewer(
  */
 static t_bool
 decode_save_one(
-	t_part *part,
+	const t_part *part,
 	FILE *rawfp,
 	t_bool postproc)
 {
@@ -1365,8 +1368,8 @@ enum match {
  */
 static int
 match_content_type(
-	t_part *part,
-	char *type)
+	const t_part *part,
+	const char *type)
 {
 	char *subtype;
 	int typeindex;
@@ -1426,7 +1429,7 @@ match_content_type(
  */
 static t_bool
 check_save_mime_type(
-	t_part *part,
+	const t_part *part,
 	const char *mime_types)
 {
 	char *ptr, *pair;
@@ -1718,7 +1721,7 @@ attachment_page(
 				if (attmenu.max) {
 					tag_pattern();
 					show_attachment_page();
-					info_message(_(txt_attachments_tagged), num_of_tagged_parts);
+					info_message(P_(txt_attachment_tagged_sp[0], txt_attachment_tagged_sp[1], num_of_tagged_parts), num_of_tagged_parts);
 				}
 				break;
 
@@ -1729,7 +1732,7 @@ attachment_page(
 					for (i = attmenu.first; i < attmenu.max; ++i)
 						tag_part(i);
 					show_attachment_page();
-					info_message(_(txt_attachments_tagged), num_of_tagged_parts);
+					info_message(P_(txt_attachment_tagged_sp[0], txt_attachment_tagged_sp[1], num_of_tagged_parts), num_of_tagged_parts);
 				}
 				break;
 
@@ -2227,7 +2230,7 @@ process_parts(
 
 	switch (what) {
 		case SAVE_TAGGED:
-			wait_message(2, _(txt_attachments_saved), saved_parts, num_of_tagged_parts);
+			wait_message(2, P_(txt_attachment_saved_sp[0], txt_attachment_saved_sp[1], num_of_tagged_parts), saved_parts, num_of_tagged_parts);
 			break;
 
 		case SAVE:

@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-02-07
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2025 Mike Gleason
@@ -263,7 +263,8 @@ thrashdir(
 	 * to recurse, or else we might use a custom sig intended
 	 * for a specific newsgroup (and not this one).
 	 */
-	for (safeguard = 0, dp = NULL; safeguard < MAXLOOPS && dp == NULL; safeguard++) {
+	dp = NULL;
+	for (safeguard = 0; safeguard < MAXLOOPS && dp == NULL; safeguard++) {
 #ifdef DEBUG
 		if (debug & DEBUG_MISC)
 			error_message(2, "sig loop=[%d] recurse=[%d]", safeguard, recurse);
@@ -283,14 +284,29 @@ thrashdir(
 				break;
 		}
 		if (dp != NULL) {	/* if we could open the dir entry */
-			if (!strcmp(dp->d_name, CURRENTDIR) || (dp->d_name[0] == '.'))
+			if (!strcmp(dp->d_name, CURRENTDIR) || !strncmp(dp->d_name, ".", 1) /*|| !strcmp(dp->d_name, "..")*/) /* we ignore dot-files - desired? */
 				dp = NULL;
 			else {	/* if we have a non-dot entry */
-				if (stat(dp->d_name, &st) == -1) {
+				FILE *fp;
+				int fd;
+
+				if (((fp = fopen(dp->d_name, "r")) == NULL) || ((fd = fileno(fp)) == -1)) {
+					if (fp != NULL)
+						fclose(fp);
+
 					CLOSEDIR(dirp);
 					free(cwd);
 					return 1;
 				}
+
+				if (fstat(fd, &st) == -1) {
+					fclose(fp);
+					CLOSEDIR(dirp);
+					free(cwd);
+					return 1;
+				}
+				fclose(fp);
+
 				if (S_ISDIR(st.st_mode)) {
 					if (recurse) {
 						/*

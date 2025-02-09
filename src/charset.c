@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-31
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2025 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -530,7 +530,7 @@ guess_charset(
 	const char *p_match;
 	UCharsetDetector *detector;
 	const UCharsetMatch *match;
-	UErrorCode status = 0;
+	UErrorCode status = U_ZERO_ERROR;
 
 	detector = ucsdet_open(&status);
 	if (U_FAILURE(status))
@@ -589,4 +589,25 @@ validate_charset(
 		++c;
 	}
 	return charset;
+}
+
+
+/*
+ * return pos. of charset in txt_mime_charsets or -1 if not found
+ */
+int
+charset_name_to_num(
+	const char *charset)
+{
+	int i;
+
+	if (!charset || !*charset)
+		return -1;
+
+	for (i = 0; txt_mime_charsets[i] != NULL; i++) {
+		if (!strcasecmp(charset, txt_mime_charsets[i]))
+			return i;
+	}
+
+	return -1;
 }

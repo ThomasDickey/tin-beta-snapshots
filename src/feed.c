@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2024-11-18
+ *  Updated   : 2025-01-14
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -66,9 +66,9 @@ struct t_counters {
 /*
  * Local prototypes
  */
-static char *get_save_filename(struct t_group *group, int function, char *filename, int filelen);
+static char *get_save_filename(const struct t_group *group, int function, char *filename, int filelen);
 static t_bool expand_feed_filename(char *outpath, size_t outpath_len, const char *path);
-static t_bool feed_article(int art, int function, struct t_counters *counter, t_bool use_current, const char *data, struct t_group *group);
+static t_bool feed_article(int art, int function, struct t_counters *counter, t_bool use_current, const char *data, const struct t_group *group);
 static t_function get_feed_key(int function, int level, struct t_art_stat *thread);
 static t_function get_post_proc_type(void);
 static void print_save_summary(t_function type, int fed);
@@ -90,7 +90,7 @@ static void print_save_summary(t_function type, int fed);
  */
 static char *
 get_save_filename(
-	struct t_group *group,
+	const struct t_group *group,
 	int function,
 	char *filename,
 	int filelen)
@@ -360,15 +360,15 @@ print_save_summary(
 	char what[LEN];
 
 	if (fed != num_save)
-		wait_message(2, _(txt_warn_not_all_arts_saved), fed, num_save);
+		wait_message(2, P_(txt_warn_not_all_arts_saved_sp[0], txt_warn_not_all_arts_saved_sp[1], num_save), fed, num_save);
 
 	switch (type) {
-		case FEED_HOT:
-			snprintf(what, sizeof(what), _(txt_prefix_hot), PLURAL(fed, txt_article));
+		case FEED_HOT: /* FIXME: translatable/plural-forms */
+			snprintf(what, sizeof(what), _(txt_prefix_hot), P_(txt_article_sp[0], txt_article_sp[1], fed));
 			break;
 
-		case FEED_TAGGED:
-			snprintf(what, sizeof(what), _(txt_prefix_tagged), PLURAL(fed, txt_article));
+		case FEED_TAGGED: /* FIXME: translatable/plural-forms */
+			snprintf(what, sizeof(what), _(txt_prefix_tagged), P_(txt_article_sp[0], txt_article_sp[1], fed));
 			break;
 
 		case FEED_THREAD:
@@ -377,8 +377,8 @@ print_save_summary(
 
 		case FEED_ARTICLE:
 		case FEED_PATTERN:
-		default:
-			snprintf(what, sizeof(what), "%s", PLURAL(fed, txt_article));
+		default: /* FIXME: translatable/plural-forms */
+			snprintf(what, sizeof(what), "%s", P_(txt_article_sp[0], txt_article_sp[1], fed));
 			break;
 	}
 
@@ -413,7 +413,7 @@ feed_article(
 	struct t_counters *counter,	/* Accounting */
 	t_bool use_current,		/* Use already open pager article */
 	const char *data,		/* Extra data if needed, print command or save filename */
-	struct t_group *group)
+	const struct t_group *group)
 {
 	char *progress_mesg = NULL;
 	t_bool ok = TRUE;		/* Assume success */
@@ -624,7 +624,7 @@ feed_articles(
 	 */
 	switch (function) {
 		/* Setup mail - get address to mail to */
-		case FEED_MAIL:
+		case FEED_MAIL: /* FIXME: translatable/plural-forms */
 			prompt = fmt_string(_(txt_mail_art_to), cCOLS - (strwidth(_(txt_mail_art_to)) > cCOLS - 30 ? cCOLS - 30 : strwidth(_(txt_mail_art_to)) + 30), tinrc.default_mail_address);
 			if (!(prompt_string_ptr_default(prompt, &tinrc.default_mail_address, _(txt_no_mail_address), HIST_MAIL_ADDRESS))) {
 				free(prompt);
@@ -663,7 +663,7 @@ feed_articles(
 		/* FIXME: don't use fixed length buffer */
 		case FEED_PRINT:
 			{
-				int l = sizeof(outpath) - strlen(tinrc.printer) - strlen(REDIRECT_OUTPUT) - 2;
+				int l = (int) (sizeof(outpath) - strlen(tinrc.printer) - strlen(REDIRECT_OUTPUT) - 2);
 
 				if (l > 0)
 					snprintf(outpath, sizeof(outpath), "%.*s %s", l, tinrc.printer, REDIRECT_OUTPUT);
@@ -721,6 +721,7 @@ feed_articles(
 		case FEED_REPOST:
 			{
 				char *tmp;
+				char *smsg;
 #ifndef FORGERY
 				char from_name[PATH_LEN];
 
@@ -728,7 +729,6 @@ feed_articles(
 
 				if (strstr(from_name, arts[respnum].mailbox.from)) {
 #endif /* !FORGERY */
-					char *smsg;
 					char buf[LEN];
 					char keyrepost[MAXKEYLEN], keysupersede[MAXKEYLEN];
 					char keyquit[MAXKEYLEN];
@@ -745,13 +745,13 @@ feed_articles(
 					free(smsg);
 
 					switch (func) {
-						case FEED_SUPERSEDE:
-							tmp = fmt_string(_(txt_supersede_group), tinrc.default_repost_group);
+						case FEED_SUPERSEDE: /* TODO: plural-forms? strip_double_ngs()? */
+							tmp = fmt_string(_(txt_supersede_group), BlankIfNull(tinrc.default_repost_group));
 							supersede = TRUE;
 							break;
 
-						case FEED_KEY_REPOST:
-							tmp = fmt_string(_(txt_repost_group), tinrc.default_repost_group);
+						case FEED_KEY_REPOST: /* TODO: plural-forms? strip_double_ngs()? */
+							tmp = fmt_string(_(txt_repost_group), BlankIfNull(tinrc.default_repost_group));
 							supersede = FALSE;
 							break;
 
@@ -760,15 +760,17 @@ feed_articles(
 							return -1;
 					}
 #ifndef FORGERY
-				} else {
-					tmp = fmt_string(_(txt_repost_group), tinrc.default_repost_group);
+				} else { /* TODO: plural-forms? strip_double_ngs()? */
+					tmp = fmt_string(_(txt_repost_group), BlankIfNull(tinrc.default_repost_group));
 					supersede = FALSE;
 				}
 #endif /* !FORGERY */
-				if (!(prompt_string_default(tmp, tinrc.default_repost_group, _(txt_no_group), HIST_REPOST_GROUP))) {
+				if (!(smsg = prompt_string_default(tmp, tinrc.default_repost_group, _(txt_no_group), HIST_REPOST_GROUP))) {
+					FreeIfNeeded(smsg);
 					free(tmp);
 					return -1;
 				}
+				tinrc.default_repost_group = smsg;
 				free(tmp);
 			}
 			break;
@@ -1011,7 +1013,7 @@ got_epipe_while_piping:
 			if (tinrc.interactive_mailer != INTERACTIVE_NONE)
 				info_message(_(txt_external_mail_done));
 			else
-				info_message(_(txt_articles_mailed), counter.success, PLURAL(counter.success, txt_article));
+				info_message(P_(txt_article_mailed_sp[0], txt_article_mailed_sp[1], counter.success), counter.success);
 			break;
 
 		case FEED_MARK_READ:
@@ -1029,7 +1031,7 @@ got_epipe_while_piping:
 						info_message(ptr, _(txt_article_upper));
 					} else {
 						ptr = function == FEED_MARK_READ ? _(txt_marked_arts_as_read) : _(txt_marked_arts_as_unread);
-						info_message(ptr, counter.success, counter.max, PLURAL(counter.max, txt_article));
+						info_message(ptr, counter.success, counter.max, P_(txt_article_sp[0], txt_article_sp[1], counter.max));
 					}
 				}
 			}
@@ -1037,13 +1039,13 @@ got_epipe_while_piping:
 
 #ifndef DONT_HAVE_PIPING
 		case FEED_PIPE:
-			info_message(_(txt_articles_piped), counter.success, PLURAL(counter.success, txt_article), tinrc.default_pipe_command);
+			info_message(P_(txt_article_piped_sp[0], txt_article_piped_sp[1], counter.success), counter.success, tinrc.default_pipe_command);
 			break;
 #endif /* !DONT_HAVE_PIPING */
 
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
-			info_message(_(txt_articles_printed), counter.success, PLURAL(counter.success, txt_article));
+			info_message(P_(txt_article_printed_sp[0], txt_article_printed_sp[1], counter.success), counter.success);
 			break;
 #endif /* !DISABLE_PRINTING */
 

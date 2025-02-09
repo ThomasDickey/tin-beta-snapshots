@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-30
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -275,7 +275,8 @@ main(
 	read_server_config();
 
 	if (read_news_via_nntp && !read_saved_news) {
-		if (use_nntps && !insecure_nntps) { /* RFC 8143 "3.3 Server Name Indication" */
+#	ifdef NNTPS_ABLE
+		if (use_nntps && !insecure_nntps) { /* RFC 8143 3.3 Server Name Indication */
 			unsigned is_ip;
 
 			if (strchr(nntp_server, ':')) /* IPv6 */
@@ -284,7 +285,7 @@ main(
 				is_ip = (sscanf(nntp_server, "%*u.%*u.%*u.%*u") == 4) ? 4 : 0;
 
 			if (is_ip) {
-				error_message(2, "Can't use literal IPv%d-address %s with TLS (-T)", is_ip, nntp_server); /*TODO: mention -k? _() and -> lang.c? */
+				error_message(2, _(txt_error_cant_use_litteral), is_ip, nntp_server); /* TODO: mention "-k"? */
 				FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 				free_all_arrays();
 				giveup();
@@ -297,6 +298,7 @@ main(
 			free_all_arrays();
 			giveup();
 		}
+#	endif /* NNTPS_ABLE */
 
 		if (nntp_open()) {
 			nntp_close(FALSE);
@@ -421,9 +423,9 @@ main(
 		tin_done(EXIT_SUCCESS, NULL);
 	}
 
-	/* TODO: replace hard coded key-name in txt_info_postponed */
+	/* TODO: replace hard coded key-name in txt_info_postponed_sp[]* */
 	if ((count = count_postponed_articles()))
-		wait_message(3, _(txt_info_postponed), count, PLURAL(count, txt_article));
+		wait_message(3, P_(txt_info_postponed_sp[0], txt_info_postponed_sp[1], count), count);
 
 	/*
 	 * Read text descriptions for mail and/or news groups
@@ -527,6 +529,8 @@ main(
 	/*
 	 * Work loop
 	 */
+	if (cmdline.msgid && num_cmd_line_groups) /* with -L don't go to the 1st. cmd-line group */
+		(num_cmd_line_groups = 0);
 	selection_page(start_groupnum, num_cmd_line_groups);
 	/* NOTREACHED */
 	return 0;
@@ -602,7 +606,7 @@ read_cmd_line_options(
 				read_news_via_nntp = TRUE;
 #	ifdef INET6
 				force_ipv4 = TRUE;
-#	endif /* INET6*/
+#	endif /* INET6 */
 #else
 				OPTION_EXIT("-DNNTP_ABLE");
 				/* keep lint quiet: */
@@ -695,11 +699,10 @@ read_cmd_line_options(
 
 					do {
 						errno = 0;
-						if ((i = s2i(d, 0, 2 * DEBUG_REMOVE - 1))) { /* numeric arg; TODO: lower limit could be 1, but then the hardcoded low linit in txt_val_out_of_range_ignored is wrong */
+						if ((i = s2i(d, 1, 2 * DEBUG_REMOVE - 1))) {
 							switch (errno) {
-								case EINVAL: /* TODO: extra error message */
 								case ERANGE:
-									error_message(0, _(txt_val_out_of_range_ignored), "-D ", (int) strtol(d, NULL, 10), 2 * DEBUG_REMOVE - 1);
+									error_message(0, _(txt_val_out_of_range_ignored), "-D", d, 1, 2 * DEBUG_REMOVE - 1);
 									if (!batch_mode)
 										sleep(2);
 									break;
@@ -709,7 +712,7 @@ read_cmd_line_options(
 									break;
 							}
 							continue;
-						} else {
+						} else { /* EINVAL */
 							while (*d == ' ' || *d == '\t') /* skip leading blanks -D "foo, 0" */
 								++d;
 							for (n = 0; option_names[n][0] != NULL; n++) {
@@ -770,13 +773,32 @@ read_cmd_line_options(
 
 			case 'G':
 				cmdline.getart_limit = s2i(optarg, INT_MIN, INT_MAX);
-				/* TODO: add EINVAL/ERANGE error messages here */
+				switch (errno) {
+					case EINVAL: /* arg not numeric */
+						error_message(0, _(txt_arg_not_numeric), "-G", optarg);
+						DO_FREE();
+						giveup();
+						/* keep lint quiet: */
+						/* FALLTHROUGH */
+						break;
+
+					case ERANGE:
+						error_message(0, _(txt_val_out_of_range_ignored), "-G", optarg, INT_MIN, INT_MAX);
+						cmdline.getart_limit = 0;
+						if (!batch_mode)
+							sleep(2);
+						break;
+
+					default:
+						break;
+				}
 				if (cmdline.getart_limit != 0)
 					cmdline.args |= CMDLINE_GETART_LIMIT;
 				break;
 
 			case 'g':	/* select alternative NNTP-server, implies -r */
 #ifdef NNTP_ABLE
+				FreeIfNeeded(cmdline.nntpserver);
 				cmdline.nntpserver = my_strdup(optarg);
 				str_trim(cmdline.nntpserver);
 				{
@@ -796,7 +818,7 @@ read_cmd_line_options(
 									break;
 
 								case ERANGE:
-									error_message(0, _(txt_val_out_of_range_reset), "-g ", (int) strtol(optarg, NULL, 10), 65535);
+									error_message(0, _(txt_val_out_of_range_reset), "-g", (int) strtol(optarg, NULL, 10), 65535);
 									if (!batch_mode)
 										sleep(2);
 									break;
@@ -837,7 +859,7 @@ read_cmd_line_options(
 												break;
 
 											case ERANGE:
-												error_message(0, _(txt_val_out_of_range_reset), "-g ", (int) strtol(optarg, NULL, 10), 65535);
+												error_message(0, _(txt_val_out_of_range_reset), "-g", (int) strtol(optarg, NULL, 10), 65535);
 												if (!batch_mode)
 													sleep(2);
 												break;
@@ -920,6 +942,7 @@ read_cmd_line_options(
 
 			case 'L':
 #ifdef NNTP_ABLE
+				FreeIfNeeded(cmdline.msgid);
 				cmdline.msgid = my_strdup(optarg);
 				str_trim(cmdline.msgid);
 #else
@@ -930,6 +953,7 @@ read_cmd_line_options(
 				break;
 
 			case 'm':
+				FreeIfNeeded(cmdline.maildir);
 				cmdline.maildir = my_strdup(optarg);
 				break;
 
@@ -970,7 +994,7 @@ read_cmd_line_options(
 
 				switch (errno) {
 					case EINVAL:
-						error_message(0, _(txt_port_not_numeric), "", optarg);
+						error_message(0, _(txt_arg_not_numeric), "-p", optarg);
 						DO_FREE();
 						giveup();
 						/* keep lint quiet: */
@@ -978,7 +1002,7 @@ read_cmd_line_options(
 						break;
 
 					case ERANGE:
-						error_message(0, _(txt_val_out_of_range_reset), "-p ", (int) strtol(optarg, NULL, 10), 65535);
+						error_message(0, _(txt_val_out_of_range_ignored), "-p", optarg, 0, 65535);
 						if (!batch_mode)
 							sleep(2);
 						break;
@@ -1025,6 +1049,7 @@ read_cmd_line_options(
 				break;
 
 			case 's':
+				FreeIfNeeded(cmdline.savedir);
 				cmdline.savedir = my_strdup(optarg);
 				break;
 
@@ -1039,7 +1064,7 @@ read_cmd_line_options(
 				switch (errno) {
 					case EINVAL: /* TODO: extra error message */
 					case ERANGE:
-						error_message(0, _(txt_val_out_of_range_reset), "-t ", (int) strtol(optarg, NULL, 10), TIN_NNTP_TIMEOUT_MAX);
+						error_message(0, _(txt_val_out_of_range_reset), "-t", (int) strtol(optarg, NULL, 10), TIN_NNTP_TIMEOUT_MAX);
 						if (!batch_mode)
 							sleep(2);
 						break;
@@ -1179,7 +1204,7 @@ read_cmd_line_options(
 	 *       -NZ, -MZ (at this stage we no longer know if -N or -M was given)
 	 *       -LM, -LN (at this stage we no longer know if -N or -M was given)
 	 *       (extend t_cmdlineopts with a flag indicating which of -M/-N was given)
-	 *       -uo, -uX, ... (if we disallow -uX, we should also disallow -SX)
+	 *       -uo
 	 *       ...
 	 */
 	if (post_postponed_and_exit && cmdline.msgid) {
@@ -1269,6 +1294,10 @@ read_cmd_line_options(
 	if (no_write && update_index) {
 		USELESS_COMB("-X", "-u");
 		update_index = FALSE;
+	}
+	if (no_write && save_news) {
+		USELESS_COMB("-X", "-S");
+		save_news = FALSE;
 	}
 	if (check_any_unread && catchup) {
 		USELESS_COMB("-Z", "-c");

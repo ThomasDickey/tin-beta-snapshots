@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-02-07
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>
@@ -78,7 +78,7 @@
 #	endif /* DECL_ATOLL */
 #else
 #	if defined(HAVE_ATOQ) && defined(DECL_ATOQ)
-		 extern long long atoq(const char *);
+		extern long long atoq(const char *);
 #	endif /* HAVE_ATOQ && DECL_ATOQ */
 #endif /* HAVE_ATOLL */
 #ifndef HAVE_MEMCPY
@@ -359,7 +359,9 @@ extern char **OPT_STRING_list[];
 extern char *nntp_server;
 extern char *tin_progname;
 extern const char *tmpdir;
-extern char active_times_file[PATH_LEN];
+#ifndef NNTP_ONLY
+	extern char active_times_file[PATH_LEN];
+#endif /* !NNTP_ONLY */
 extern char article_name[PATH_LEN];
 extern char *backup_article_name;
 extern char bug_addr[LEN];
@@ -413,8 +415,10 @@ extern char postponed_articles_file[PATH_LEN];
 extern char rcdir[PATH_LEN];
 extern char save_active_file[PATH_LEN];
 extern char spooldir[PATH_LEN];
-extern char subscriptions_file[PATH_LEN];
-extern char overviewfmt_file[PATH_LEN];
+#ifndef NNTP_ONLY
+	extern char overviewfmt_file[PATH_LEN];
+	extern char subscriptions_file[PATH_LEN];
+#endif /* !NNTP_ONLY */
 extern char txt_help_bug_report[LEN];
 extern char userid[LOGIN_NAME_MAX];
 
@@ -462,7 +466,6 @@ extern constext *txt_threading[];
 extern constext *txt_thread_score_type[];
 extern constext *txt_trim_article_body_options[];
 extern constext *txt_wildcard_type[];
-extern constext txt_1_resp[];
 #if defined(NNTP_ABLE) && defined(HAVE_SELECT)
 	extern constext txt_abort_reading[];
 #endif /* NNTP_ABLE && HAVE_SELECT */
@@ -472,7 +475,7 @@ extern constext txt_all_groups[];
 extern constext txt_append_overwrite_quit[];
 extern constext txt_art_cancel[];
 extern constext txt_art_mailgroups[];
-extern constext txt_art_newsgroups[];
+extern constext *txt_art_newsgroup_sp[];
 extern constext txt_art_not_posted[];
 extern constext txt_art_not_saved[];
 extern constext txt_art_pager_com[];
@@ -487,16 +490,15 @@ extern constext txt_art_unavailable[];
 extern constext txt_art_x_of_n[];
 extern constext txt_article_cancelled[];
 extern constext txt_article_info_page[];
-extern constext txt_article_plural[];
 extern constext txt_article_reposted[];
-extern constext txt_article_singular[];
+extern constext *txt_article_sp[];
 extern constext txt_article_upper[];
-extern constext txt_articles_mailed[];
+extern constext *txt_article_mailed_sp[];
 #ifndef DISABLE_PRINTING
-	extern constext txt_articles_printed[];
+	extern constext *txt_article_printed_sp[];
 #endif /* !DISABLE_PRINTING */
 #ifndef DONT_HAVE_PIPING
-	extern constext txt_articles_piped[];
+	extern constext *txt_article_piped_sp[];
 #endif /* !DONT_HAVE_PIPING */
 extern constext txt_mime_boundary[];
 extern constext txt_mime_boundary_end[];
@@ -511,7 +513,7 @@ extern constext txt_mime_hdr_c_type_msg_rfc822[];
 extern constext txt_mime_hdr_c_type_multipart_mixed[];
 extern constext txt_mime_hdr_c_type_text_plain_charset[];
 extern constext txt_mime_lang[];
-extern constext txt_mime_lines[];
+extern constext *txt_mime_line_sp[];
 extern constext txt_mime_name[];
 extern constext txt_mime_sep[];
 extern constext txt_mime_size[];
@@ -522,10 +524,10 @@ extern constext txt_attachment_menu[];
 extern constext txt_attachment_menu_com[];
 extern constext txt_attachment_no_name[];
 extern constext txt_attachment_saved[];
-extern constext txt_attachments_saved[];
+extern constext *txt_attachment_saved_sp[];
 extern constext txt_attachment_select[];
 extern constext txt_attachment_tagged[];
-extern constext txt_attachments_tagged[];
+extern constext *txt_attachment_tagged_sp[];
 extern constext txt_attachment_untagged[];
 extern constext txt_attrib_file_version[];
 extern constext txt_attrib_file_header[];
@@ -746,7 +748,7 @@ extern constext txt_conninfo_saved_news[];
 #	endif /* USE_ZLIB */
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
 	extern constext txt_conninfo_disabled[];
-	extern constext txt_conninfo_timeout[];
+	extern constext *txt_conninfo_timeout_sp[];
 #	endif /* HAVE_ALARM && SIGALRM */
 	extern constext txt_conninfo_implementation[];
 #	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
@@ -759,7 +761,6 @@ extern constext txt_conninfo_saved_news[];
 	extern constext txt_conninfo_server[];
 	extern constext txt_conninfo_type[];
 #	ifdef NNTPS_ABLE
-	extern constext txt_conninfo_nntps[];
 	extern constext txt_conninfo_trusted[];
 	extern constext txt_conninfo_untrusted[];
 	extern constext txt_conninfo_cert[];
@@ -828,6 +829,9 @@ extern constext txt_error_bad_msgidfqdn[];
 	extern constext txt_error_couldnt_dotlock[];
 	extern constext txt_error_couldnt_lock[];
 #endif /* NO_LOCKING */
+#	ifdef NNTPS_ABLE
+	extern constext txt_error_cant_use_litteral[];
+#endif /* NNTPS_ABLE */
 #if defined(NNTP_ABLE) && defined(USE_ZLIB)
 	extern constext txt_error_compression_auth[];
 #endif /* NNTP_ABLE && USE_ZLIB */
@@ -871,7 +875,7 @@ extern constext txt_error_gnksa_rn_invalid[];
 extern constext txt_error_gnksa_rn_missing[];
 extern constext txt_error_header_and_body_not_separate[];
 extern constext txt_error_header_distribution_all[];
-extern constext txt_error_header_duplicate[];
+extern constext *txt_error_header_duplicate_sp[];
 extern constext txt_error_header_format[];
 extern constext txt_error_header_line_bad_charset[];
 extern constext txt_error_header_line_bad_encoding[];
@@ -883,13 +887,14 @@ extern constext txt_error_header_line_not_7bit[];
 extern constext txt_error_header_line_space[];
 extern constext txt_error_header_no_name[];
 extern constext txt_error_mailgroup_no_recipient[];
+extern constext txt_error_mixed_up_opt[];
 #ifndef FILE_MODE_BROKEN
 	extern constext txt_error_insecure_permissions[];
 #endif /* !FILE_MODE_BROKEN */
 #ifdef MIME_BREAK_LONG_LINES
-	extern constext txt_error_should_be_folded[];
+	extern constext *txt_error_should_be_folded_sp[];
 #else
-	extern constext txt_error_should_be_shortened[];
+	extern constext *txt_error_should_be_shortened_sp[];
 #endif /* MIME_BREAK_LONG_LINES */
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	extern constext txt_error_locale[];
@@ -912,8 +917,7 @@ extern constext txt_error_no_domain_name[];
 extern constext txt_error_newsgroups_poster[];
 extern constext txt_error_passwd_missing[];
 #ifdef HAVE_LIBUU
-	extern constext txt_error_plural[];
-	extern constext txt_error_singular[];
+	extern constext *txt_error_sp[];
 #endif /* HAVE_LIBUU */
 extern constext txt_error_server_has_no_listed_groups[];
 #if defined(NNTP_ABLE) && defined(INET6)
@@ -954,7 +958,7 @@ extern constext txt_filter_rule_created[];
 extern constext txt_filter_score[];
 extern constext txt_filter_score_help[];
 extern constext txt_filter_text_type[];
-extern constext txt_followup_newsgroups[];
+extern constext *txt_followup_newsgroup_sp[];
 extern constext txt_followup_poster[];
 extern constext txt_forwarded[];
 extern constext txt_forwarded_end[];
@@ -972,11 +976,10 @@ extern constext txt_group[];
 extern constext txt_group_aliased[];
 extern constext txt_group_bogus[];
 extern constext txt_group_is_moderated[];
-extern constext txt_group_plural[];
 extern constext txt_group_rereading[];
 extern constext txt_group_select_com[];
 extern constext txt_group_selection[];
-extern constext txt_group_singular[];
+extern constext *txt_group_sp[];
 extern constext txt_grpdesc_disabled[];
 extern constext txt_help_article_autokill[];
 extern constext txt_help_article_autoselect[];
@@ -1022,6 +1025,7 @@ extern constext txt_help_article_toggle_rot13[];
 extern constext txt_help_article_toggle_tabwidth[];
 extern constext txt_help_article_toggle_tex2iso[];
 extern constext txt_help_article_toggle_uue[];
+extern constext txt_help_article_toggle_verbatim[];
 extern constext txt_help_article_view_attachments[];
 extern constext txt_help_attachment_first[];
 extern constext txt_help_attachment_goto[];
@@ -1225,9 +1229,12 @@ extern constext txt_info_not_multipart_message[];
 extern constext txt_info_not_subscribed[];
 extern constext txt_info_no_write[];
 extern constext txt_info_no_previous_expression[];
-extern constext txt_info_postponed[];
+extern constext *txt_info_postponed_sp[];
 extern constext txt_info_x_conversion_note[];
 extern constext txt_invalid_from[];
+#ifdef CHARSET_CONVERSION
+	extern constext txt_invalid_char_in_charset[];
+#endif /* CHARSET_CONVERSION */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern constext txt_invalid_multibyte_sequence[];
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1256,8 +1263,7 @@ extern constext txt_lines[];
 extern constext txt_lookup_func_not_available[];
 extern constext txt_lookup_func_not_nntp[];
 #ifdef NNTP_ABLE
-	extern constext txt_lookup_show_group[];
-	extern constext txt_lookup_show_groups[];
+	extern constext *txt_lookup_show_group_sp[];
 #endif /* NNTP_ABLE */
 extern constext txt_mail[];
 extern constext txt_mailbox[];
@@ -1309,9 +1315,7 @@ extern constext txt_msgid_line_last[];
 extern constext txt_msgid_line_only[];
 extern constext txt_msgid_refs_line[];
 extern constext txt_newsgroup[];
-extern constext txt_newsgroup_plural[];
 extern constext txt_newsgroup_position[];
-extern constext txt_newsgroup_singular[];
 extern constext txt_newsrc_again[];
 extern constext txt_newsrc_nogroups[];
 extern constext txt_newsrc_saved[];
@@ -1366,6 +1370,8 @@ extern constext txt_options_menu[];
 extern constext txt_options_menu_com[];
 extern constext txt_option_not_enabled[];
 extern constext txt_out_of_memory[];
+extern constext txt_path_line_nocasse[];
+extern constext txt_xref_line_nocasse[];
 extern constext txt_pcre_error_at[];
 extern constext txt_pcre_error_num[];
 #ifndef HAVE_LIB_PCRE2
@@ -1377,6 +1383,7 @@ extern constext txt_pcre_error_num[];
 	extern constext txt_port_not_numeric_in[];
 #	endif /* DEBUG */
 #endif /* NNTP_ABLE */
+extern constext txt_arg_not_numeric[];
 extern constext txt_post_a_followup[];
 extern constext txt_post_error_ask_postpone[];
 extern constext txt_post_history_menu[];
@@ -1407,7 +1414,7 @@ extern constext txt_prefix_untagged[];
 #endif /* NNTP_ABLE */
 extern constext txt_prompt_fup_ignore[];
 extern constext txt_prompt_unchanged_mail[];
-extern constext txt_prompt_see_postponed[];
+extern constext *txt_prompt_see_postponed_sp[];
 extern constext txt_quick_filter_kill[];
 extern constext txt_quick_filter_select[];
 extern constext txt_quit[];
@@ -1524,7 +1531,7 @@ extern constext txt_stp_thread[];
 extern constext txt_subj_line_only[];
 extern constext txt_subj_line_only_case[];
 extern constext txt_subscribe_pattern[];
-extern constext txt_subscribed_num_groups[];
+extern constext *txt_subscribed_num_group_sp[];
 extern constext txt_subscribed_to[];
 extern constext txt_subscribing[];
 extern constext txt_supersede_article[];
@@ -1538,11 +1545,11 @@ extern constext txt_thread_upper[];
 extern constext txt_thread_com[];
 extern constext txt_thread_marked_as_deselected[];
 extern constext txt_thread_marked_as_selected[];
-extern constext txt_thread_singular[];
+extern constext *txt_thread_sp[];
 extern constext txt_thread_x_of_n[];
 extern constext txt_threading_arts[];
 extern constext txt_threading_by_multipart[];
-extern constext txt_time_default_days[];
+extern constext *txt_time_default_day_sp[];
 extern constext txt_tin_version[];
 extern constext txt_tinrc_defaults[];
 extern constext txt_tinrc_filter[];
@@ -1574,6 +1581,7 @@ extern constext txt_toggled_high[];
 extern constext txt_toggled_rot13[];
 extern constext txt_toggled_tex2iso[];
 extern constext txt_toggled_tabwidth[];
+extern constext txt_toggled_verbatim[];
 #if defined(NNTP_ABLE) && defined(HAVE_INET_NTOA) && !defined(INET6)
 	extern constext txt_trying[];
 #endif /* NNTP_ABLE && HAVE_INET_NTOA && !INET6 */
@@ -1592,7 +1600,7 @@ extern constext txt_unknown[];
 #endif /* XFACE_ABLE || (NNTPS_ABLE && HAVE_LIB_LIBTLS) */
 extern constext txt_unread[];
 extern constext txt_unsubscribe_pattern[];
-extern constext txt_unsubscribed_num_groups[];
+extern constext *txt_unsubscribed_num_group_sp[];
 extern constext txt_unsubscribed_to[];
 extern constext txt_unsubscribing[];
 extern constext txt_unthreading_arts[];
@@ -1677,12 +1685,10 @@ extern constext txt_uue_incomplete[];
 	extern constext txt_valid_not_after[];
 	extern constext txt_valid_not_before[];
 #endif /* NNTP_ABLE && NNTPS_ABLE */
-#ifdef DEBUG
-	extern constext txt_val_out_of_range_ignored[];
-#endif /* DEBUG */
+extern constext txt_val_out_of_range_ignored[];
 extern constext txt_val_out_of_range_reset[];
 extern constext txt_view_attachment[];
-extern constext txt_warn_art_line_too_long[];
+extern constext *txt_warn_art_line_too_long_sp[];
 extern constext txt_warn_article_unchanged[];
 extern constext txt_warn_blank_subject[];
 extern constext txt_warn_cancel[];
@@ -1692,10 +1698,10 @@ extern constext txt_warn_cancel[];
 extern constext txt_warn_distribution_world[];
 extern constext txt_warn_downgrade[];
 extern constext txt_warn_encoding_and_external_inews[];
-extern constext txt_warn_long_line_not_base[];
-extern constext txt_warn_long_line_not_break[];
+extern constext *txt_warn_long_line_not_base_sp[];
+extern constext *txt_warn_long_line_not_break_sp[];
 #ifdef MIME_BREAK_LONG_LINES
-	extern constext txt_warn_long_line_not_qp[];
+	extern constext *txt_warn_long_line_not_qp_sp[];
 #endif /* MIME_BREAK_LONG_LINES */
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
 	extern constext txt_warn_header_line_comma[];
@@ -1703,16 +1709,16 @@ extern constext txt_warn_long_line_not_break[];
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 extern constext txt_warn_example_hierarchy[];
 extern constext txt_warn_multiple_addresses[];
-extern constext txt_warn_multiple_sigs[];
+extern constext *txt_warn_multiple_sigs_sp[];
 extern constext txt_warn_newsrc[];
-extern constext txt_warn_not_all_arts_saved[];
+extern constext *txt_warn_not_all_arts_saved_sp[];
 extern constext txt_warn_re_but_no_references[];
 extern constext txt_warn_re_only_subject[];
 extern constext txt_warn_references_but_no_re[];
 #ifndef FORGERY
 	extern constext txt_warn_sender_required_but_disabled[];
 #endif /* !FORGERY */
-extern constext txt_warn_sig_too_long[];
+extern constext *txt_warn_sig_too_long_sp[];
 extern constext txt_warn_suspicious_mail[];
 extern constext txt_warn_update[];
 extern constext txt_warn_unprintable_char[];
@@ -1722,7 +1728,7 @@ extern constext txt_warn_xref_not_supported[];
 extern constext txt_writing_attributes_file[];
 extern constext txt_writing_group[];
 extern constext txt_writing_overview[];
-extern constext txt_x_resp[];
+extern constext *txt_x_resp_sp[];
 #ifdef XFACE_ABLE
 	extern constext txt_xface_error_construct_fifo_name[];
 	extern constext txt_xface_error_create_failed[];
@@ -1746,7 +1752,7 @@ extern constext txt_x_resp[];
 #if defined(NNTP_ABLE) && defined(XHDR_XREF)
 	extern constext txt_xref_loop[];
 #endif /* NNTP_ABLE && XHDR_XREF */
-extern constext txt_yanked_groups[];
+extern constext *txt_yanked_group_sp[];
 extern constext txt_yanked_none[];
 extern constext txt_yanked_sub_groups[];
 extern constext txt_show_unread[];
@@ -1765,7 +1771,7 @@ extern constext txt_you_have_mail[];
 #ifndef HAVE_FASCIST_NEWSADMIN
 	extern constext txt_warn_followup_to_several_groups[];
 	extern constext txt_warn_grp_renamed[];
-	extern constext txt_warn_missing_followup_to[];
+	extern constext *txt_warn_missing_followup_to_sp[];
 	extern constext txt_warn_not_in_newsrc[];
 	extern constext txt_warn_not_valid_newsgroup[];
 #endif /* !HAVE_FASCIST_NEWSADMIN */
@@ -2030,7 +2036,7 @@ extern t_bool word_highlight;
 #ifdef HAVE_FASCIST_NEWSADMIN
 	extern constext txt_error_followup_to_several_groups[];
 	extern constext txt_error_grp_renamed[];
-	extern constext txt_error_missing_followup_to[];
+	extern constext *txt_error_missing_followup_to_sp[];
 	extern constext txt_error_not_valid_newsgroup[];
 #endif /* HAVE_FASCIST_NEWSADMIN */
 
@@ -2041,7 +2047,7 @@ extern t_bool word_highlight;
 #endif /* !ALLOW_FWS_IN_NEWSGROUPLIST */
 
 #ifdef HAVE_PGP_GPG
-	extern constext txt_pgp_add[];
+	extern constext *txt_pgp_add_sp[];
 	extern constext txt_pgp_mail[];
 	extern constext txt_pgp_news[];
 	extern constext txt_pgp_not_avail[];
@@ -2114,6 +2120,9 @@ extern struct opttxt txt_catchup_read_groups;
 #else
 	extern struct opttxt txt_highlight_options;
 #endif /* HAVE_COLOR */
+#ifdef USE_ZLIB
+	extern struct opttxt txt_compress_overview_files;
+#endif /* USE_ZLIB */
 extern struct opttxt txt_confirm_choice;
 extern struct opttxt txt_date_format;
 extern struct opttxt txt_display_options;

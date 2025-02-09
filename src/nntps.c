@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2024-11-18
+ *  Updated   : 2025-02-07
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2025 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -70,7 +70,7 @@ tintls_init(
 {
 	char *ca_cert_file = ca_cert_file_expanded;
 #ifdef USE_GNUTLS
-	int result = 0;
+	int result;
 #endif /* USE_GNUTLS */
 
 	if (tinrc.tls_ca_cert_file && *tinrc.tls_ca_cert_file) {
@@ -439,14 +439,12 @@ tintls_handshake(
 
 	if (result < 0) {
 		if (gnutls_verification_status != 0) {
-			int status_result;
 			int type;
 			gnutls_datum_t msg;
 
 			type = gnutls_certificate_type_get2(client, GNUTLS_CTYPE_SERVER);
-			status_result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
 
-			if (status_result == 0)
+			if (gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0) == 0)
 				wait_message(0, _(txt_tls_peer_verify_failed), msg.data);
 			else
 				wait_message(0, _(txt_tls_peer_verify_failed), _(txt_tls_unable_to_get_status));
@@ -870,7 +868,6 @@ tintls_conninfo(
 	char *desc;
 	char fmt_time[22]; /* %Y-%m-%dT%H:%M%z */
 	int retval = -1;
-	int result;
 	gnutls_session_t client = session_ctx;
 	gnutls_datum_t msg;
 	const gnutls_datum_t *raw_servercert_chain;
@@ -889,9 +886,7 @@ tintls_conninfo(
 	if (gnutls_verification_status != 0) {
 		int type = gnutls_certificate_type_get2(client, GNUTLS_CTYPE_SERVER);
 
-		result = gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0);
-
-		if (result == 0)
+		if (!gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0))
 			fprintf(fp, _(txt_conninfo_verify_failed), msg.data,
 					insecure_nntps ? _(txt_conninfo_error_tolerated) : _(txt_conninfo_error_unexpected));
 		else
@@ -920,13 +915,13 @@ tintls_conninfo(
 			fputs("\n", fp);
 		fprintf(fp, _(txt_conninfo_cert), i);
 
-		if ((result = gnutls_x509_crt_init(&servercert)) < 0)
+		if (gnutls_x509_crt_init(&servercert) < 0)
 			goto err_cert;
 
-		if ((result = gnutls_x509_crt_import(servercert, &raw_servercert_chain[i], GNUTLS_X509_FMT_DER)) < 0)
+		if (gnutls_x509_crt_import(servercert, &raw_servercert_chain[i], GNUTLS_X509_FMT_DER) < 0)
 			goto err_cert;
 
-		if ((result = gnutls_x509_crt_get_dn3(servercert, &subject, 0)) < 0)
+		if (gnutls_x509_crt_get_dn3(servercert, &subject, 0) < 0)
 			goto err_cert;
 		else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -939,7 +934,7 @@ tintls_conninfo(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
 
-		if ((result = gnutls_x509_crt_get_issuer_dn3(servercert, &issuer, 0)) < 0)
+		if (gnutls_x509_crt_get_issuer_dn3(servercert, &issuer, 0) < 0)
 			goto err_cert;
 		else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -976,6 +971,7 @@ err_cert:
 	}
 
 	return retval;
+	/* NOTREACHED */
 #	else
 
 #		ifdef USE_OPENSSL
@@ -1105,9 +1101,8 @@ show_errors(
 {
 	unsigned long next_error;
 
-	while ((next_error = ERR_get_error())) {
+	while ((next_error = ERR_get_error()))
 		error_message(0, msg_fmt, ERR_error_string(next_error, NULL));
-	}
 }
 #endif /* USE_OPENSSL */
 

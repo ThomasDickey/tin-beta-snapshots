@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2024-11-27
+dnl Updated   : 2025-01-27
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=2.6.4
+VERSION=2.6.5
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Define this to the package name])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define this to the package version])
 AC_SUBST(PACKAGE)
@@ -222,7 +222,9 @@ CF_ARG_ENABLE(nntp-only,
 	 USE_SPOOLDIR=no],
 	[AC_DEFINE(NNTP_ABLE,1,[Define this to 1 to be NNTP-capable])])
 AC_MSG_RESULT($enableval)
+fi
 
+# can be also used for cached local overviews, so do not depend on USE_NNTP
 AC_MSG_CHECKING(if you want to use zlib for COMPRESS DEFLATE support)
 AC_ARG_WITH(zlib,
 	[  --with-zlib             use zlib for COMPRESS DEFLATE],
@@ -233,8 +235,6 @@ AC_MSG_RESULT($use_zlib)
 if test ".$use_zlib" != ".no" ; then
 	CF_WITH_ZLIB($use_zlib)
 	test "x$cf_cv_find_linkage_z" = "xyes" && AC_DEFINE(USE_ZLIB,1,[Define to 1 if you want to use zlib for COMPRESS DEFLATE])
-fi
-
 fi
 
 ###	use option --enable-debug to compile-in test/development code
@@ -632,13 +632,16 @@ else
 fi
 AC_SUBST(CANDIR_MAKE)
 
+
 ## gsasl - used for AUTH SASL PLAIN
 ## we currently check for gsasl_free() (avail since 0.2.19)
 ## update if we ever use calls from a newer API
 gsasl=no
+if test "$USE_NNTP" = "yes" ; then
 AC_CHECK_HEADER(gsasl.h,
 	[AC_CHECK_LIB(gsasl, gsasl_free, gsasl=yes)]
 )
+fi
 if test "$gsasl" = "yes"; then
 	CF_ARG_DISABLE(gsasl,
 		[  --disable-gsasl         don't use GNU SASL],
@@ -822,7 +825,12 @@ AC_TRY_COMPILE([
 #if TLS_API < 20200120
 #error "Please use LibreSSL TLS_API >= 20200120"
 #endif /* TLS_API < 20200120 */
-],[have_libtls=yes],[
+],[
+have_libtls=yes
+if test x"$verbose" != "xyes" ; then
+AC_MSG_RESULT($have_libtls)
+fi
+],[
 have_libtls=no
 AC_MSG_RESULT([\tLibreSSL TLS_API too old (< 20200120)])
 ])],[
@@ -837,6 +845,9 @@ AC_TRY_COMPILE([
 ],[
 LIBS="$LIBS -ltls"
 have_libtls=yes
+if test x"$verbose" != "xyes" ; then
+AC_MSG_RESULT($have_libtls)
+fi
 ],[have_libtls=no
 AC_MSG_RESULT([\tLibreSSL TLS_API too old (< 20200120)])
 ])
@@ -860,7 +871,12 @@ AC_TRY_COMPILE([
 #if defined(LIBRESSL_VERSION_NUMBER)
 #error "Please use real OpenSSL >= 1.1.1"
 #endif /* LIBRESSL pretending to be OPENSSL */
-],[have_openssl=yes],[
+],[
+have_openssl=yes
+if test x"$verbose" != "xyes" ; then
+AC_MSG_RESULT($have_openssl)
+fi
+],[
 have_openssl=no
 AC_MSG_RESULT([\tOpenSSL too old (< 1.1.1)])
 ])],[
@@ -878,7 +894,12 @@ AC_TRY_COMPILE([
 #if GNUTLS_VERSION_NUMBER < 0x030700
 #error "Please use GnuTLS >= 3.7.0"
 #endif /* GNUTLS_VERSION_NUMBER < 0x030700 */
-],[have_gnutls=yes],[
+],[
+have_gnutls=yes
+if test x"$verbose" != "xyes" ; then
+AC_MSG_RESULT($have_gnutls)
+fi
+],[
 AC_MSG_RESULT([\tGnuTLS too old (< 3.7.0)])
 ])],[
 AC_CHECK_LIB(gnutls,gnutls_certificate_allocate_credentials,[
@@ -893,12 +914,15 @@ AC_TRY_COMPILE([
 ],[
 LIBS="$LIBS -lgnutls"
 have_gnutls=yes
+if test x"$verbose" != "xyes" ; then
+AC_MSG_RESULT($have_gnutls)
+fi
 ],[have_gnutls=no
 AC_MSG_RESULT([\tGnuTLS too old (< 3.7.0)])
 ])
 ],[have_gnutls=no])
 ],[
-have_gnutls=no=no
+have_gnutls=no
 AC_MSG_RESULT($have_gnutls)
 ])])])
 
@@ -914,7 +938,6 @@ AC_MSG_RESULT($have_gnutls)
 ### as the above is already complicated enough, the following will be dealt
 ### with separately
 AS_IF([test "$have_libtls" = "yes"],[
-	AC_MSG_CHECKING(for libcrypto)
 	CF_TRY_PKG_CONFIG([crypto],[
 		AC_TRY_COMPILE([
 #include <openssl/ssl.h>
@@ -922,12 +945,10 @@ AS_IF([test "$have_libtls" = "yes"],[
 BIO_free(NULL);
 ],
 			[
-			have_libcrypto=yes
 			AC_DEFINE(HAVE_LIB_CRYPTO,1,[Define to 1 if we can/should compile with the OpenSSL crypto library])
 			],
  			[
 			have_libcrypto=no
-			AC_MSG_RESULT($have_libcrypto)
 			]
 		)
 	],[
@@ -956,24 +977,77 @@ BIO_free(NULL);
 ])
 fi
 
+AC_MSG_CHECKING([whether to enable URL normalization])
+AC_ARG_WITH(
+ url_normalization,
+ [  --with-url-normalization=lib
+                          do URL normalization, needs liburiparser or libcurl
+                          possible values: uriparser, curl],
+ [enable_url_normalization=$withval],
+ [enable_url_normalization="yes"])
+AC_MSG_RESULT($enable_url_normalization)
 
+AS_IF([test "$enable_url_normalization" != "no"],
+ [AS_IF([test "$enable_url_normalization" = "yes" || test "$enable_url_normalization" = "uriparser"],[
 # <https://github.com/uriparser/uriparser>
 AC_MSG_CHECKING(for liburiparser)
+cf_save_LIBS="$LIBS"
+cf_save_CPPFLAGS="$CPPFLAGS"
 CF_TRY_PKG_CONFIG(
 	[liburiparser],
-	[AC_DEFINE(HAVE_LIBURIPARSER)],
 	[AC_TRY_COMPILE([
 #include <uriparser/Uri.h>
 	],[
-#if URI_VER_MAJOR = 0 && URI_VER_MINOR <= 9 && URI_VER_RELEASE <= 7
+#if URI_VER_MAJOR <= 0 && URI_VER_MINOR <= 9 && URI_VER_RELEASE <= 7
 #error "Please use liburiparser >= 0.9.8"
 #endif /* URI_VER_MAJOR */
 	],
-	[have_liburiparser=yes],
-	[have_liburiparser=no
-	AC_MSG_RESULT($have_liburiparser)]
-	)]
-)
+	[have_liburiparser="yes"
+    if test x"$verbose" != "xyes" ; then
+     AC_MSG_RESULT($have_liburiparser)
+    fi
+	AC_DEFINE(HAVE_LIBURIPARSER)],
+	[have_liburiparser="no"
+	LIBS=$cf_save_LIBS
+	CPPFLAGS=$cf_save_CPPFLAGS
+	AC_MSG_RESULT([\tliburiparser too old (< 0.9.8)])]
+	)],[
+	have_liburiparser="no"
+	AC_MSG_RESULT($have_liburiparser)
+	]
+)])
+
+# libcurl
+AS_IF([test "$enable_url_normalization" = "yes" && test "$have_liburiparser" = "no" || test "$enable_url_normalization" = "curl"],
+[AC_MSG_CHECKING(for libcurl)
+	cf_save_LIBS="$LIBS"
+	cf_save_CPPFLAGS="$CPPFLAGS"
+    CF_TRY_PKG_CONFIG(
+        [libcurl],
+        [AC_TRY_COMPILE([
+#include <curl/curl.h>
+       ],[
+#if !CURL_AT_LEAST_VERSION(7, 78, 0)
+#error "Please use libcurl >= 7.78.0"
+#endif
+       ],[
+       have_libcurl="yes"
+       if test x"$verbose" != "xyes" ; then
+        AC_MSG_RESULT($have_libcurl)
+       fi
+       AC_DEFINE(HAVE_LIBCURL)
+       ],[
+	have_libcurl="no"
+	LIBS=$cf_save_LIBS
+	CPPFLAGS=$cf_save_CPPFLAGS
+	AC_MSG_RESULT([\tlibcurl too old (< 7.78.0])
+	])],[
+	have_libcurl="no"
+	AC_MSG_RESULT($have_libcurl)
+	])]
+)])
+
+CF_FUNC_CURSES_VERSION
 
 ### checks for operator characteristics (should be the last option)
 AC_MSG_CHECKING(whether to make a coffee while compiling)
@@ -1314,7 +1388,11 @@ CF_TRY_PKG_CONFIG(
 	[libidn2],
 	[AC_DEFINE(HAVE_LIBIDN2)
 	AC_DEFINE(HAVE_IDN2_H)
-	have_libidn2=yes],
+	have_libidn2=yes
+if test x"$verbose" != "xyes" ; then
+AC_MSG_RESULT($have_libidn2)
+fi
+],
 	[AC_TRY_COMPILE([
 #include <idn2.h>
 	],[
@@ -1323,10 +1401,14 @@ CF_TRY_PKG_CONFIG(
 #endif /* IDN2_VERSION_MAJOR < 2 || (IDN2_VERSION_MAJOR == 2 && IDN2_VERSION_MINOR < 3) */
 	],
 	[have_libidn2=yes
-	AC_DEFINE(HAVE_IDN2_H)],
+	AC_DEFINE(HAVE_IDN2_H)
+AC_MSG_RESULT($have_libidn2)
+],
 	[have_libidn2=no
 	AC_MSG_RESULT($have_libidn2)]
-	)]
+	)],
+    [have_libidn2=no
+    AC_MSG_RESULT($have_libidn2)]
 )
 
 # libidnkit - Internationalized Domain Names / IDN 2008
@@ -1814,7 +1896,6 @@ AC_TRY_RUN([
 #include <stdlib.h>
 
 int main(void) {
-	char *format;
 	char skip[5], fmt[9];
 	int len;
 

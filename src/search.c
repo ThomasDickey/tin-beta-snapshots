@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2024-12-04
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -639,7 +639,7 @@ search_article(
 	t_bool repeat,
 	int start_line,
 	int lines,
-	t_lineinfo *line,
+	const t_lineinfo *line,
 	int reveal_ctrl_l_lines,
 	FILE *fp)
 {
@@ -756,7 +756,7 @@ search_article(
  */
 int
 search_body(
-	struct t_group *group,
+	const struct t_group *group,
 	int current_art,
 	t_bool repeat)
 {

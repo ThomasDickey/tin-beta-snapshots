@@ -3,7 +3,7 @@
  *  Module    : my_tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
- *  Updated   : 2024-11-23
+ *  Updated   : 2024-12-03
  *  Notes     :
  *
  * Copyright (c) 2001-2025 Urs Janssen <urs@tin.org>
@@ -155,7 +155,7 @@ wait_message(5, "snprintf(%s, %d, \"tin_XXXXXX\")=%d", BlankIfNull(buf), len, n)
 		fd = mkstemp(filename);
 		sverrno = errno;
 #	ifdef DEBUG
-		if (fd == -1 || sverrno)
+		if (fd == -1)
 			perror_message("HAVE_MKSTEMP mkstemp(%s)==%d", filename, fd);
 #	endif /* DEBUG */
 #else
@@ -166,7 +166,7 @@ wait_message(5, "snprintf(%s, %d, \"tin_XXXXXX\")=%d", BlankIfNull(buf), len, n)
 			if ((fd = open(buf, (O_RDWR|O_CREAT|O_EXCL), (mode_t) (S_IRUSR|S_IWUSR))) == -1) {
 				sverrno = errno;
 #		ifdef DEBUG
-				if (fd == -1 || sverrno)
+				if (fd == -1)
 					perror_message("HAVE_MKTEMP open(%s)==%d", filename, fd);
 #		endif /* DEBUG */
 			}

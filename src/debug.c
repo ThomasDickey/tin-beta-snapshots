@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-09-10
+ *  Updated   : 2024-12-21
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -236,11 +236,11 @@ debug_print_attributes(
 		(unsigned) attr->post_process_type);
 	fprintf(fp, "select_header=[%u] select_global=[%s] select_expire=[%s]\n",
 		(unsigned) attr->quick_select_header,
-		attr->quick_select_scope ? attr->quick_select_scope ? BlankIfNull(*attr->quick_select_scope) : "" : "",
+		attr->quick_select_scope ? BlankIfNull(*attr->quick_select_scope) : "",
 		bool_unparse(attr->quick_select_expire));
 	fprintf(fp, "kill_header  =[%u] kill_global  =[%s] kill_expire  =[%s]\n",
 		(unsigned) attr->quick_kill_header,
-		attr->quick_kill_scope ? attr->quick_kill_scope ? BlankIfNull(*attr->quick_kill_scope) : "" : "",
+		attr->quick_kill_scope ? BlankIfNull(*attr->quick_kill_scope) : "",
 		bool_unparse(attr->quick_kill_expire));
 	fprintf(fp, "maildir=[%s] savedir=[%s] savefile=[%s]\n",
 		attr->maildir ? BlankIfNull(*attr->maildir) : "",
@@ -448,7 +448,7 @@ debug_print_newsrc(
 	struct t_newsrc *lnewsrc,
 	FILE *fp)
 {
-	int j;
+	int j = 0;
 	t_artnum i;
 
 	fprintf(fp, "Newsrc: min=[%"T_ARTNUM_PFMT"] max=[%"T_ARTNUM_PFMT"] bitlen=[%"T_ARTNUM_PFMT"] num_unread=[%"T_ARTNUM_PFMT"] present=[%d]\n",
@@ -457,7 +457,7 @@ debug_print_newsrc(
 
 	fprintf(fp, "bitmap=[");
 	if (lnewsrc->xbitlen && lnewsrc->xbitmap) {
-		for (j = 0, i = lnewsrc->xmin; i <= lnewsrc->xmax; i++) {
+		for (i = lnewsrc->xmin; i <= lnewsrc->xmax; i++) {
 			fprintf(fp, "%d",
 				(NTEST(lnewsrc->xbitmap, i - lnewsrc->xmin) == ART_READ ?
 				ART_READ : ART_UNREAD));

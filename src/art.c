@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-02-06
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -51,6 +51,23 @@
 #	include "stpwatch.h"
 #endif /* !STPWATCH_H */
 
+#ifdef USE_ZLIB
+#	include <zlib.h>
+/*#	if defined(ZLIB_VERNUM) && (ZLIB_VERNUM <= 0xdeef) */ /* once fixed upstream */
+	/*
+	 * redefine Z_NULL to avoid -Wzero-as-null-pointer-constant
+	 * -Wnon-pointer-null warnings
+	 */
+#	undef Z_NULL
+#	define Z_NULL NULL
+/*#	endif *//* ZLIB_VERNUM && ZLIB_VERNUM < 0xdeef */
+#	if defined(ZLIB_VERNUM) && (ZLIB_VERNUM >= 0x1235)
+#	else /* new in 1.2.3.5 */
+#		define gzclose_r gzclose
+#		define gzclose_w gzclose
+#	endif /* ZLIB_VERNUM && ZLIB_VERNUM >= 0x1235 */
+#endif /* USE_ZLIB */
+
 
 /*
  * TODO: fixup to remove CURR_GROUP dependency in all sort funcs
@@ -63,9 +80,8 @@ int top_art = 0;				/* # of articles in arts[] */
  * Local prototypes
  */
 static FILE *open_art_header(const char *groupname, t_artnum art, t_artnum *next);
-static FILE *open_xover_fp(struct t_group *group, const char *mode, t_artnum min, t_artnum max, t_bool local);
-static char *find_nov_file(struct t_group *group, int mode);
-static char *print_from(struct t_group *group, struct t_article *article, int charset);
+static FILE *open_xover_fp(const struct t_group *group, const char *mode, t_artnum min, t_artnum max, t_bool local);
+static char *find_nov_file(const struct t_group *group, int mode);
 static int artnum_comp(t_comptype p1, t_comptype p2);
 static int base_comp(t_comptype p1, t_comptype p2);
 static int date_comp_asc(t_comptype p1, t_comptype p2);
@@ -77,7 +93,7 @@ static int last_date_comp_base_asc(t_comptype p1, t_comptype p2);
 static int last_date_comp_base_desc(t_comptype p1, t_comptype p2);
 static int lines_comp_asc(t_comptype p1, t_comptype p2);
 static int lines_comp_desc(t_comptype p1, t_comptype p2);
-static int read_art_headers(struct t_group *group, int total, t_artnum top);
+static int read_art_headers(const struct t_group *group, int total, t_artnum top);
 static int read_overview(struct t_group *group, t_artnum min, t_artnum max, t_artnum *top, t_bool local, t_bool *rebuild_cache);
 static int score_comp_asc(t_comptype p1, t_comptype p2);
 static int score_comp_desc(t_comptype p1, t_comptype p2);
@@ -95,10 +111,9 @@ static void sort_base(unsigned int sort_threads_type);
 static void thread_by_multipart(void);
 static void thread_by_percentage(unsigned int percentage);
 static void thread_by_subject(void);
-static void write_overview(struct t_group *group);
 #ifdef NNTP_ABLE
 	static struct t_article_range *build_range_list(t_artnum min, t_artnum max, int *range_cnt);
-	static t_bool get_path_header(int cur, int cnt, struct t_group *group, t_artnum min, t_artnum max);
+	static t_bool get_path_header(int cur, int cnt, const struct t_group *group, t_artnum min, t_artnum max);
 #endif /* NNTP_ABLE */
 static struct t_mailbox *add_mailbox(struct t_article *art);
 
@@ -122,7 +137,7 @@ show_art_msg(
  */
 void
 find_base(
-	struct t_group *group)
+	const struct t_group *group)
 {
 	int i, j;
 
@@ -224,6 +239,9 @@ setup_hard_base(
 		t_artnum last, start, count = T_ARTNUM_CONST(0), j = T_ARTNUM_CONST(0);
 		static t_bool skip_listgroup = FALSE;
 
+		if (newsrc_active && !list_active)
+			skip_listgroup = TRUE;
+
 		/*
 		 * Some nntp servers are broken and need an extra GROUP command
 		 * (reported by reorx@irc.pl). This affects (old?) versions of
@@ -289,8 +307,8 @@ setup_hard_base(
 
 				while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 #	ifdef DEBUG
-				if ((debug & DEBUG_NNTP) && verbose)
-					debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+					if ((debug & DEBUG_NNTP) && verbose)
+						debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 					if (grpmenu.max >= max_base)
 						expand_base();
@@ -415,7 +433,6 @@ index_group(
 	t_artnum min, new_min, max;
 	t_bool caching_xover;
 	t_bool filtered;
-	t_bool path_in_nov = FALSE;
 	t_bool rebuild_cache = FALSE;
 
 	if (group == NULL)
@@ -508,7 +525,7 @@ index_group(
 	 * Mark as UNTHREADED all articles that have been verified as valid
 	 * Get num of new arts to index so the user will have an idea of index time
 	 */
-	for (i = 0, total = 0; i < grpmenu.max; i++) {
+	for (i = total = 0; i < grpmenu.max; i++) {
 		if ((respnum = valid_artnum(base[i])) >= 0) {
 			arts[respnum].thread = ART_UNTHREADED;
 			continue;
@@ -563,8 +580,6 @@ index_group(
 			if (group->attribute && group->attribute->show_only_unread_arts)
 				arts[i].keep_in_base = FALSE;
 		}
-		if (!path_in_nov && arts[i].path && *arts[i].path != '\0')
-			path_in_nov = TRUE;
 	}
 
 	/*
@@ -636,11 +651,10 @@ open_art_header(
 	t_artnum *next)
 {
 	char buf[NNTP_STRLEN];
-#ifdef NNTP_ABLE
-	FILE *fp;
-	int i;
 
+#ifdef NNTP_ABLE
 	if (read_news_via_nntp && CURR_GROUP.type == GROUP_TYPE_NEWS) {
+		FILE *fp;
 		static t_bool no_next = FALSE; /* TODO: move to t_capabilities ? */
 		/*
 		 * Don't bother requesting if we have not got there yet.
@@ -669,8 +683,7 @@ open_art_header(
 			 * HEAD failed, try to find NEXT
 			 * Should return "223 artno message-id more text...."
 			 */
-			i = new_nntp_command("NEXT", OK_NOTEXT, buf, sizeof(buf));
-			switch (i) {
+			switch (new_nntp_command("NEXT", OK_NOTEXT, buf, sizeof(buf))) {
 				case OK_NOTEXT:
 					*next = atoartnum(buf);		/* Set next art number */
 					break;
@@ -750,7 +763,7 @@ open_art_header(
  */
 static int
 read_art_headers(
-	struct t_group *group,
+	const struct t_group *group,
 	int total,
 	t_artnum top)
 {
@@ -832,7 +845,6 @@ read_art_headers(
 			arts[top_art].artnum = T_ARTNUM_CONST(0);
 			arts[top_art].date = (time_t) 0;
 			FreeAndNull(arts[top_art].xref);
-			FreeAndNull(arts[top_art].path);
 			FreeAndNull(arts[top_art].refs);
 			FreeAndNull(arts[top_art].msgid);
 			free_mailbox_list(arts[top_art].mailbox.next);
@@ -950,6 +962,11 @@ thread_by_percentage(
 	base[0] = 0;
 	arts[0].prev = ART_NORMAL;
 	for_each_art(i) {
+		if (arts[i].refptr == NULL) /* should not happen */
+			continue;
+
+		/* Correct the back references, as art[] has been re-sorted. */
+		arts[i].refptr->article = i;
 		if (i == 0)
 			continue;
 
@@ -1008,7 +1025,8 @@ global_get_multipart_info(
 	MultiPartInfo *setme)
 {
 	int i, j, offi, offj;
-	MultiPartInfo setmei, setmej;
+	MultiPartInfo setmei = { NULL, 0, 0, 0, 0 }; /* init to silence __infer__ */
+	MultiPartInfo setmej = { NULL, 0, 0, 0, 0 }; /* init to silence __infer__ */
 
 	i = global_look_for_multipart_info(aindex, &setmei, '[', ']', &offi);
 	j = global_look_for_multipart_info(aindex, &setmej, '(', ')', &offj);
@@ -1028,7 +1046,7 @@ global_get_multipart_info(
 static int
 global_look_for_multipart_info(
 	int aindex,
-	MultiPartInfo* setme,
+	MultiPartInfo *setme,
 	char start,
 	char stop,
 	int *offset)
@@ -1259,6 +1277,8 @@ make_threads(
 	struct t_group *group,
 	t_bool rethread)
 {
+	int i;
+
 	if (!cmd_line && !batch_mode) {
 		info_message((group->attribute->thread_articles == THREAD_NONE ? _(txt_unthreading_arts) : _(txt_threading_arts)));
 		my_flush();
@@ -1283,34 +1303,30 @@ make_threads(
 	 */
 	clear_art_ptrs();
 
-	/*
-	 * The threading pointers need to be reset if re-threading
-	 * If using ref threading, revector the links back to the articles
-	 */
-	if (rethread || (group->attribute && group->attribute->thread_articles)) {
-		int i;
 
-		for_each_art(i) {
+	for_each_art(i) {
+		/* The threading pointers need to be reset if re-threading */
+		if (rethread || (group->attribute && group->attribute->thread_articles)) {
 			if (arts[i].thread >= 0)
 				arts[i].thread = ART_UNTHREADED;
 
 			arts[i].prev = ART_NORMAL;
-
-			/* Should never happen if tree is built properly */
-			if (arts[i].refptr == NULL) {
-#ifdef DEBUG
-				if (debug & DEBUG_REFS) {
-					my_fprintf(stderr, "\nError  : art->refptr is NULL\n");
-					my_fprintf(stderr, "Artnum : %"T_ARTNUM_PFMT"\n", arts[i].artnum);
-					my_fprintf(stderr, "Subject: %s\n", arts[i].subject);
-					my_fprintf(stderr, "From   : %s\n", arts[i].mailbox.from);
-					assert(arts[i].refptr != NULL);
-				} else
-#endif /* DEBUG */
-					continue;
-			}
-			arts[i].refptr->article = i;
 		}
+
+		/* Should never happen if tree is built properly */
+		if (arts[i].refptr == NULL) {
+#ifdef DEBUG
+			if (debug & DEBUG_REFS) {
+				my_fprintf(stderr, "\nError  : art->refptr is NULL\n");
+				my_fprintf(stderr, "Artnum : %"T_ARTNUM_PFMT"\n", arts[i].artnum);
+				my_fprintf(stderr, "Subject: %s\n", arts[i].subject);
+				my_fprintf(stderr, "From   : %s\n", arts[i].mailbox.from);
+				assert(arts[i].refptr != NULL);
+			} else
+#endif /* DEBUG */
+				continue;
+		}
+		arts[i].refptr->article = i;
 	}
 
 	/*
@@ -1480,6 +1496,8 @@ parse_headers(
 			case 'F':	/* From:  mandatory */
 				if (!got_from) {
 					if ((hdr = parse_header(ptr + 1, "rom", FALSE, FALSE, FALSE))) {
+						if (tinrc.cache_overview_files)
+							h->from_raw = hash_str(hdr);
 						build_mailbox_list(h, hdr);
 						got_from = TRUE;
 					}
@@ -1506,7 +1524,7 @@ parse_headers(
 			case 'P':	/* Path: */
 				if (!h->path) {
 					if ((hdr = parse_header(ptr + 1, "ath", FALSE, FALSE, FALSE)))
-						h->path = my_strdup(hdr);
+						h->path = hash_str(hdr);
 				}
 				break;
 
@@ -1520,6 +1538,8 @@ parse_headers(
 			case 'S':	/* Subject:  mandatory */
 				if (!h->subject) {
 					if ((hdr = parse_header(ptr + 1, "ubject", FALSE, FALSE, FALSE))) {
+						if (tinrc.cache_overview_files && !h->subject_raw)
+							h->subject_raw = hash_str(hdr);
 #ifdef HAVE_UNICODE_NORMALIZATION
 						if (IS_LOCAL_CHARSET("UTF-8"))
 							s = normalize(eat_re(convert_to_printable(rfc1522_decode(hdr), FALSE), FALSE));
@@ -1563,7 +1583,12 @@ parse_headers(
 	if (got_from && h->date && h->msgid) {
 		if (!h->subject)
 			h->subject = hash_str("");
-
+		if (tinrc.cache_overview_files) {
+			if (!h->subject_raw)
+				h->subject_raw = hash_str("");
+			if (!h->from_raw)
+				h->from_raw= hash_str("");
+		}
 #ifdef DEBUG
 		if (debug & DEBUG_FILTER)
 			debug_print_header(h);
@@ -1734,7 +1759,7 @@ static t_bool
 get_path_header(
 	int cur,
 	int cnt,
-	struct t_group *group,
+	const struct t_group *group,
 	t_artnum min,
 	t_artnum max)
 {
@@ -1753,8 +1778,7 @@ get_path_header(
 #	endif /* DEBUG */
 
 	if (nntp_caps.type == CAPABILITIES && nntp_caps.list_headers && !*nntp_caps.headers_range && nntp_caps.hdr_cmd[0] != 'X') {
-		int j = new_nntp_command("LIST HEADERS RANGE", 215, cmd, sizeof(cmd));
-		switch (j) {
+		switch (new_nntp_command("LIST HEADERS RANGE", 215, cmd, sizeof(cmd))) {
 			case 215:
 				while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #	ifdef DEBUG
@@ -1812,8 +1836,7 @@ get_path_header(
 				continue;
 			for (i = j; i < top_art; i++) {
 				if (arts[i].artnum == artnum) {
-					FreeIfNeeded(arts[i].path);
-					arts[i].path = my_strdup(ptr);
+					arts[i].path = hash_str(ptr);
 					j = i;
 					break;
 				}
@@ -1885,8 +1908,7 @@ build_mailbox_list(
 	char *tmp_from, *curr_from, *next_from;
 	struct t_mailbox *mb;
 
-	tmp_from = my_strdup(hdr);
-	curr_from = tmp_from;
+	curr_from = tmp_from = my_strdup(hdr);
 
 	do {
 		if ((mb = add_mailbox(art)) == NULL)
@@ -1954,20 +1976,53 @@ read_overview(
 	FILE *fp;
 	char *ptr;
 	char *q;
-	char *buf;
 	char *group_msg;
+	char *buf = NULL;
 	unsigned int count;
 	int expired = 0;
 	t_artnum artnum;
 	t_bool path_found = FALSE, path_in_ofmt = FALSE;
 	struct t_article *art;
 	size_t over_fields = 1;
+#ifdef USE_ZLIB
+	int fd, dup_fd = -1;
+	gzFile gzfp = Z_NULL;
+#endif /* USE_ZLIB */
 
 	/*
 	 * open the overview file (whether it be local or via nntp)
 	 */
 	if ((fp = open_xover_fp(group, "r", min, max, local)) == NULL)
 		return expired;
+
+#ifdef USE_ZLIB
+	if (fp != FAKE_NNTP_FP /* && tinrc.compress_overview_files */ ) { /* we may need to read compressed data even if not writing it */
+		if ((fd = fileno(fp)) == -1) { /* paranoid */
+			fclose(fp);
+			return expired;
+		}
+		if ((dup_fd = dup(fd)) != -1) {
+			if ((gzfp = gzdopen(dup_fd, "r")) == Z_NULL)
+				close(dup_fd);
+			else {
+#	if 0
+				/*
+				 * a benchmark with 5493440 uncompressed overview records
+				 * (~2GB data) didn't show any noticeable time difference,
+				 * so stay with the gzgets() code even for plain data.
+				 */
+				if (gzdirect(gzfp)) { /* not gzipped, use normal read-code to avoid zlib overhead */
+					if (gzclose_r(gzfp) == Z_STREAM_ERROR)
+						close(dup_fd);
+					gzfp = Z_NULL;
+					fseek(fp, 0L, SEEK_SET); /* rewind gzdirect() */
+				} else
+#	endif /* 0 */
+					buf = my_malloc(32768 + 1);  /* FIXME make dynamic; I've seen up to 8K overview lines in the wild, so 32k should be "safe" */
+			}
+		}
+	}
+#endif /* USE_ZLIB */
 
 	BegStopWatch();
 
@@ -2007,7 +2062,16 @@ read_overview(
 		over_fields = 7;
 	}
 
-	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
+#ifdef USE_ZLIB
+	while (
+		gzfp ? gzgets(gzfp, buf, 32768) != Z_NULL /* FIXME: don't use fixed size */
+			: (buf = tin_fgets(fp, FALSE)) != NULL
+	)
+#else
+	while ((buf = tin_fgets(fp, FALSE)) != NULL)
+#endif /* USE_ZLIB */
+	{
+
 #if defined(DEBUG) && defined(NNTP_ABLE)
 		if ((debug & DEBUG_NNTP) && fp == FAKE_NNTP_FP && verbose)
 			debug_print_file("NNTP", "<<<%s%s", logtime(), buf);
@@ -2104,7 +2168,7 @@ read_overview(
 						ofmt[over_fields].name = my_strdup("Path:");
 						ofmt[over_fields + 1].type = OVER_T_ERROR;
 						ofmt[over_fields + 1].name = NULL;
-						xref_supported = TRUE;
+						/* path_in_ofmt = TRUE; */
 					} else
 						continue;
 				} else
@@ -2117,6 +2181,9 @@ read_overview(
 				if (ofmt[count].type == OVER_T_STRING) {
 					if (!strcasecmp(ofmt[count].name, "Subject:")) {
 						if (*ptr) {
+							if (tinrc.cache_overview_files)
+								art->subject_raw = hash_str(ptr);
+
 #ifdef HAVE_UNICODE_NORMALIZATION
 							if (IS_LOCAL_CHARSET("UTF-8"))
 								q = normalize(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr), FALSE)), FALSE));
@@ -2128,6 +2195,8 @@ read_overview(
 							free(q);
 						} else {
 							art->subject = hash_str("");
+							if (tinrc.cache_overview_files)
+								art->subject_raw = hash_str("");
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
@@ -2137,11 +2206,15 @@ read_overview(
 					}
 
 					if (!strcasecmp(ofmt[count].name, "From:")) {
-						if (*ptr)
+						if (*ptr) {
+							if (tinrc.cache_overview_files)
+								art->from_raw = hash_str(ptr);
 							build_mailbox_list(art, ptr);
-						else {
+						} else {
 							struct t_mailbox *mb;
 
+							if (tinrc.cache_overview_files)
+								art->from_raw = hash_str("");
 							if ((mb = add_mailbox(art)) != NULL)
 								mb->from = hash_str("");
 #ifdef DEBUG
@@ -2201,11 +2274,8 @@ read_overview(
 					if (!strcasecmp(ofmt[count].name, "Path:")) {
 						if (!path_found)
 							path_found = TRUE;
-						if (*ptr) {
-							FreeIfNeeded(art->path); /* if field is listed more than once in overview.fmt */
-							art->path = my_strdup(ptr);
-						} else
-							art->path = NULL;
+						if (*ptr)
+							art->path = hash_str(ptr);
 						continue;
 					}
 				}
@@ -2241,6 +2311,8 @@ read_overview(
 				switch (count) {
 					case 1: /* Subject: */
 						if (*ptr) {
+							if (tinrc.cache_overview_files)
+								art->subject_raw = hash_str(ptr);
 #ifdef HAVE_UNICODE_NORMALIZATION
 							if (IS_LOCAL_CHARSET("UTF-8"))
 								q = normalize(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr), FALSE)), FALSE));
@@ -2252,6 +2324,8 @@ read_overview(
 							free(q);
 						} else {
 							art->subject = hash_str("");
+							if (tinrc.cache_overview_files)
+								art->subject_raw = hash_str("");
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
@@ -2260,11 +2334,15 @@ read_overview(
 						break;
 
 					case 2:	/* From: */
-						if (*ptr)
+						if (*ptr) {
+							if (tinrc.cache_overview_files)
+								art->from_raw = hash_str(ptr);
 							build_mailbox_list(art, ptr);
-						else {
+						} else {
 							struct t_mailbox *mb;
 
+							if (tinrc.cache_overview_files)
+								art->from_raw = hash_str("");
 							if ((mb = add_mailbox(art)) != NULL)
 								mb->from = hash_str("");
 #ifdef DEBUG
@@ -2344,13 +2422,13 @@ read_overview(
 						if ((q = parse_header(ptr, "Xref", FALSE, FALSE, FALSE)) != NULL) {
 							FreeIfNeeded(art->xref); /* if field is listed more than once in overview.fmt */
 							art->xref = my_strdup(q);
-						}
+						} else {
+							FreeAndNull(art->xref);
 #ifdef DEBUG
-						else {
 							if ((debug & DEBUG_NNTP) && verbose > 1)
 								debug_print_file("NNTP", "%s(%"T_ARTNUM_PFMT") bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
-						}
 #endif /* DEBUG */
+						}
 						continue;
 					}
 					/*
@@ -2370,8 +2448,7 @@ read_overview(
 						if ((q = parse_header(ptr, "Path", FALSE, FALSE, FALSE)) != NULL) {
 							if (!path_found)
 								path_found = TRUE;
-							FreeIfNeeded(art->path);
-							art->path = my_strdup(q);
+							art->path = hash_str(q);
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && verbose > 1 && strcasecmp(ofmt[count].name, "Path:"))
 								debug_print_file("NNTP", "\tUsing as \"Path:\" not \"%s\"", ofmt[count].name);
@@ -2405,6 +2482,13 @@ read_overview(
 #	endif /* DEBUG && NNTP_ABLE */
 
 	free(group_msg);
+#ifdef USE_ZLIB
+	if (gzfp) {
+		free(buf);
+		if (gzclose_r(gzfp) == Z_STREAM_ERROR)
+			close(dup_fd);
+	}
+#endif /* USE_ZLIB */
 	TIN_FCLOSE(fp);
 
 	if (tin_errno)
@@ -2413,7 +2497,6 @@ read_overview(
 #if defined(NNTP_ABLE) && defined(XHDR_XREF)
 	if (read_news_via_nntp && !read_saved_news && !xref_supported && nntp_caps.hdr_cmd) {
 		char cbuf[HEADER_LEN];
-		int i;
 		static t_bool found;
 		static t_bool first = TRUE;
 
@@ -2424,10 +2507,8 @@ read_overview(
 			 */
 			if (nntp_caps.type == CAPABILITIES && nntp_caps.list_headers) {
 				if (!*nntp_caps.headers_range) {
-					i = new_nntp_command("LIST HEADERS RANGE", 215, cbuf, sizeof(cbuf));
-
 					found = FALSE;
-					switch (i) {
+					switch (new_nntp_command("LIST HEADERS RANGE", 215, cbuf, sizeof(cbuf))) {
 						case 215:
 							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #	ifdef DEBUG
@@ -2528,6 +2609,7 @@ read_overview(
 					 * Path: is in the servers overview so let the next
 					 * read_overview() fetch them
 					 */
+					hash_reclaim();
 					free_art_array();
 					free_msgids();
 					top_art = 0;
@@ -2574,35 +2656,26 @@ read_overview(
  *	7. Byte count     (Skipped - not used)     [mandatory]
  *	8. Line count     (ie. 23)                 [mandatory]
  *	9. Xref: line     (ie. alt.test:389)       [optional]
- *
- * TODO: as we don't use the original data, we currently can't store
- *       the data (from/subject) in the original charset (we don't store
- *       that info). this has the advantage that we can avoid raw 8bit data
- *       in our overviews, but the disadvantage that we might store the data
- *       with a wrong charset and thus lose information. a similar problem
- *       exists with the data for the from:-line, we don't store it in the
- *       original format, whenever our from-parser (partially) fails we'll
- *       lose information in our overviews (but those couldn't be handled
- *       by tin anyway, so this is not a real problem).
- *       long-term solution: store the original data in the overview
- *       (tin has to handle raw 8bit data and other ugly stuff in the
- *       overviews anyway and thus we preserver as much info as possible)
- *       this would require some changes in read_overview() and
- *       parse_headers(): don't do the decoding/unfolding there, but in a
- *       second pass right after write_overview(), or two additional fields
- *       which hold the raw data for from/subject. the latter has the
- *       disadvantage that it costs (much) more memory.
  */
-static void
+void
 write_overview(
 	struct t_group *group)
 {
 	FILE *fp;
+	char *q, *ref;
+	char date[30];
 	int i;
 	struct t_article *article;
-#ifdef CHARSET_CONVERSION
-	int c = -1;
-#endif /* CHARSET_CONVERSION */
+#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
+	char *lc_all;
+#endif /* HAVE_SETLOCALE && defined(NO_LOCALE) */
+#if defined(HAVE_FCHMOD) || defined(USE_ZLIB)
+	int fd;
+#endif /* HAVE_FCHMOD || USE_ZLIB */
+#ifdef USE_ZLIB
+	int dup_fd;
+	gzFile gzfp;
+#endif /* USE_ZLIB */
 
 	/*
 	 * Can't write or caching is off or getart_limit is set
@@ -2613,58 +2686,62 @@ write_overview(
 	if ((fp = open_xover_fp(group, "w", T_ARTNUM_CONST(0), T_ARTNUM_CONST(0), FALSE)) == NULL)
 		return;
 
+	BegStopWatch();
+
+#if defined(HAVE_FCHMOD) || defined(USE_ZLIB)
+	fd = fileno(fp);
+#endif /* HAVE_FCHMOD || USE_ZLIB*/
+#ifdef USE_ZLIB
+	if (fd == -1) { /* paranoid */
+		fclose(fp);
+		return;
+	}
+	if ((dup_fd = dup(fd)) != -1) {
+		if ((gzfp = gzdopen(dup_fd, tinrc.compress_overview_files ? "w3" : "wT")) == Z_NULL)
+			close(dup_fd);
+#	if 0 /* the 8k default is ok for us */
+		else
+			gzbuffer(gzfp, (tinrc.compress_overview_files ? 4 : 1) * 32768);
+#	endif /* 0 */
+	} else
+		gzfp = Z_NULL;
+#endif /* USE_ZLIB */
+
 	if (group->attribute && group->attribute->sort_article_type != SORT_ARTICLES_BY_NOTHING)
 		SortBy(artnum_comp);
 
 	/*
 	 * Needed to preserve uniqueness in hashed private overview files
 	 */
-	fprintf(fp, "%s\n", group->name);
-
-#ifdef CHARSET_CONVERSION
-	/* get undeclared_charset number if required */
-	if (group->attribute && group->attribute->undeclared_charset && *group->attribute->undeclared_charset) {
-		for (i = 0; txt_mime_charsets[i] != NULL; i++) {
-			if (!strcasecmp(*group->attribute->undeclared_charset, txt_mime_charsets[i])) {
-				c = i;
-				break;
-			}
-		}
-	}
-#endif /* CHARSET_CONVERSION */
+#ifdef USE_ZLIB
+	if (gzfp)
+		gzprintf(gzfp, "%s\n", group->name);
+	else
+#endif /* USE_ZLIB */
+		fprintf(fp, "%s\n", group->name);
 
 	if (batch_mode && verbose > 1)
 		wait_message(0, _(txt_writing_group), group->name);
 
-	for_each_art(i) {
-		char *p, *q, *ref;
+#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
+	/*
+	 * Unlocalized date-header, as LC_ALL affects isprint() and co.
+	 * but we don't want to always switch it in the loop we have to
+	 * temporary set LC_CTYPE instead
+	 */
+	if (getenv("LC_ALL") != NULL) {
+		lc_all = setlocale(LC_ALL, NULL);
+		setlocale(LC_CTYPE, lc_all);
+		setlocale(LC_ALL, "POSIX");
+	} else
+		setlocale(LC_TIME, "POSIX");
+#endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
+	for_each_art(i) {
 		article = &arts[i];
 
 		if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
 			ref = NULL;
-
-			if (group->attribute && !group->attribute->post_8bit_header) { /* write encoded data */
-				/*
-				 * TODO: instead of tinrc.mm_local_charset we'd better use UTF-8
-				 *       here and in print_from() in the CHARSET_CONVERSION case.
-				 *       note that this requires something like
-				 *          buffer_to_network(&article->subject, "UTF-8");
-				 *       right before the rfc1522_encode() call.
-				 *
-				 *       if we would cache the original undecoded data, we could
-				 *       ignore stuff like this.
-				 */
-				p = rfc1522_encode(article->subject, tinrc.mm_local_charset, FALSE);
-				/* as the subject might now be folded we have to unfold it */
-				unfold_header(p);
-			} else { /* raw data */
-				p = my_strdup(article->subject);
-#ifdef CHARSET_CONVERSION
-				if (group->attribute && group->attribute->undeclared_charset && *group->attribute->undeclared_charset && c != -1) /* use undeclared_charset if set (otherwise local charset is used) */
-					buffer_to_network(&p, c);
-#endif /* CHARSET_CONVERSION */
-			}
 
 			/*
 			 * replace any '\t's with ' ' in the references-data
@@ -2685,58 +2762,53 @@ write_overview(
 				}
 			}
 
-			{
-				char date[30];
-#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
-				char *old_lc_all = NULL, *old_lc_time = NULL;
+			if (!my_strftime(date, sizeof(date) - 1, "%d %b %Y %H:%M:%S GMT", gmtime(&article->date)))
+				snprintf(date, sizeof(date) - 1, "01 Jan 1970 00:00:00 UTC");
 
-				/* Unlocalized date-header */
-				if (getenv("LC_ALL") != NULL) {
-					old_lc_all = my_strdup(setlocale(LC_ALL, NULL));
-					setlocale(LC_ALL, "POSIX");
-				} else {
-					old_lc_time = my_strdup(setlocale(LC_TIME, NULL));
-					setlocale(LC_TIME, "POSIX");
-				}
-#endif /* HAVE_SETLOCALE && !NO_LOCALE */
-
-				if (!my_strftime(date, sizeof(date) - 1, "%d %b %Y %H:%M:%S GMT", gmtime(&article->date)))
-					snprintf(date, sizeof(date) - 1, "01 Jan 1970 00:00:00 UTC");
-
+#ifdef USE_ZLIB
+			if (gzfp)
+				gzprintf(gzfp, "%"T_ARTNUM_PFMT"\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
+					article->artnum,
+					article->subject_raw,
+					article->from_raw,
+					date,
+					BlankIfNull(article->msgid), BlankIfNull(ref),
+					0 /* bytes */, article->line_count);
+			else
+#endif /* USE_ZLIB */
 				fprintf(fp, "%"T_ARTNUM_PFMT"\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
 					article->artnum,
-					p,
-#ifdef CHARSET_CONVERSION
-					print_from(group, article, c),
-#else
-					print_from(group, article, -1),
-#endif /* CHARSET_CONVERSION */
+					article->subject_raw,
+					article->from_raw,
 					date,
-					BlankIfNull(article->msgid),
-					BlankIfNull(ref),
-					0,	/* bytes */
-					article->line_count);
-#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
-				/* change back LC_* */
-				if (old_lc_all != NULL) {
-					setlocale(LC_ALL, old_lc_all);
-					free(old_lc_all);
-				} else if (old_lc_time != NULL) {
-					setlocale(LC_TIME, old_lc_time);
-					free(old_lc_time);
-				}
-#endif /* HAVE_SETLOCALE && !NO_LOCALE */
+					BlankIfNull(article->msgid), BlankIfNull(ref),
+					0 /* bytes */,  article->line_count);
+
+			if (article->xref) {
+#ifdef USE_ZLIB
+				if (gzfp)
+					gzprintf(gzfp, "\tXref: %s", article->xref);
+				else
+#endif /* USE_ZLIB */
+					fprintf(fp, "\tXref: %s", article->xref);
 			}
 
-			if (article->xref)
-				fprintf(fp, "\tXref: %s", article->xref);
+			if (article->path) {
+#ifdef USE_ZLIB
+				if (gzfp)
+					gzprintf(gzfp, "\tPath: %s", article->path);
+				else
+#endif /* USE_ZLIB */
+					fprintf(fp, "\tPath: %s", article->path);
+			}
 
-			if (article->path)
-				fprintf(fp, "\tPath: %s", article->path);
+#ifdef USE_ZLIB
+			if (gzfp)
+				gzprintf(gzfp, "\n");
+			else
+#endif /* USE_ZLIB */
+				fprintf(fp, "\n");
 
-			fprintf(fp, "\n");
-
-			free(p);
 			if (article->refs) {
 				FreeIfNeeded(ref);
 			}
@@ -2744,14 +2816,29 @@ write_overview(
 		if (i % (MODULO_COUNT_NUM * 20) == 0)
 			show_progress(_(txt_writing_overview), i, top_art);
 	}
+
+#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
+	/* change back LC_* */
+	setlocale(LC_TIME, "");
+	setlocale(LC_CTYPE, "");
+	setlocale(LC_ALL, "");
+#endif /* HAVE_SETLOCALE && !NO_LOCALE */
+
 #ifdef HAVE_FCHMOD
-	fchmod(fileno(fp), (mode_t) (S_IWUSR|S_IRUGO));
+	fchmod(fd, (mode_t) (S_IWUSR|S_IRUGO));
 #else
 #	ifdef HAVE_CHMOD
 		chmod(find_nov_file(group, R_OK), (mode_t) (S_IWUSR|S_IRUGO));
 #	endif /* HAVE_CHMOD */
 #endif /* HAVE_FCHMOD */
+#ifdef USE_ZLIB
+	if (gzfp) {
+		if (gzclose_w(gzfp) == Z_STREAM_ERROR)
+			close(dup_fd);
+	}
+#endif /* USE_ZLIB */
 	fclose(fp);
+	EndStopWatch("write_overview()");
 }
 
 
@@ -2775,17 +2862,22 @@ write_overview(
  */
 static char *
 find_nov_file(
-	struct t_group *group,
+	const struct t_group *group,
 	int mode)
 {
-	FILE *fp;
+	FILE *fp = NULL;
 	const char *dir;
+	char *ptr;
 	char buf[PATH_LEN];
 	unsigned int i;
 	unsigned long hash;
 	struct stat sb;
 	static char nov_file[PATH_LEN];
 	static t_bool once_only = FALSE;	/* Trap things that are done only 1 time */
+#ifdef USE_ZLIB
+	int fd, dup_fd;
+	gzFile gzfp;
+#endif /* USE_ZLIB */
 
 	if (group == NULL || (mode != R_OK && mode != W_OK))
 		return NULL;
@@ -2927,24 +3019,66 @@ find_nov_file(
 	hash = hash_groupname(group->name);
 
 	for (i = 1; i < INT_MAX; i++) {
-		char *ptr;
-
 		snprintf(buf, sizeof(buf), "%lu.%u", hash, i);
 		joinpath(nov_file, sizeof(nov_file), dir, buf);
 
 		if ((fp = tin_fopen(nov_file, "r")) == NULL) /* file not found or empty -> name can be used, leave loop */
 			break;
 
-		if ((ptr = tin_fgets(fp, FALSE)) != NULL) { /* grab 1st line */
-			if (strcmp(ptr, group->name)) {/* name mismatch try next */
+#ifdef USE_ZLIB /* TODO: avoid fixed length buffer */
+		if ((fd = fileno(fp)) == -1) { /* paranoid */
+			fclose(fp);
+			continue; /* try next */
+		}
+		gzfp = Z_NULL;
+		if ((dup_fd = dup(fd)) != -1) {
+			if ((gzfp = gzdopen(dup_fd, "r")) == Z_NULL) {
+				close(dup_fd);
 				fclose(fp);
-				continue;
+				continue; /* try next */
+			} else {
+				/* as we just read the 1st line, no gzdirect() check */
+				ptr = my_calloc(1, 4096 + 1); /* group name is no longer than 497 */
+				if (gzgets(gzfp, ptr, 4096) == Z_NULL) {
+					free(ptr);
+					if (gzclose_r(gzfp) == Z_STREAM_ERROR)
+						close(dup_fd);
+					fclose(fp);
+					continue; /* try next */
+				}
+				str_trim(ptr);
+				if (gzclose_r(gzfp) == Z_STREAM_ERROR)
+					close(dup_fd);
+				fclose(fp);
+				fp = NULL;
+				if (strcmp(ptr, group->name)) {
+					free(ptr);
+					continue; /* try next */
+				} else { /* we have a match !*/
+					free(ptr);
+					break;
+				}
+			}
+		}
+		if (!gzfp)
+#endif /* USE_ZLIB */
+		{
+			if ((ptr = tin_fgets(fp, FALSE)) != NULL) { /* grab 1st line */
+				if (strcmp(ptr, group->name)) {/* name mismatch try next file */
+					fclose(fp);
+					fp = NULL;
+					continue;
+				}
 			}
 		}
 		/* match, leave loop */
-		fclose(fp);
 		break;
 	}
+
+#ifndef USE_ZLIB
+	if (fp)
+		fclose(fp);
+#endif /* !USE_ZLIB */
 
 	return nov_file;
 }
@@ -3003,10 +3137,10 @@ do_update(
 		}
 	}
 
-	if (verbose) {
+	if (verbose) { /* FIXME: translatable/plural-forms */
 		wait_message(0, _(txt_catchup_update_info),
 			(catchup ? _(txt_caughtup) : _(txt_updated)), k,
-			PLURAL(selmenu.max, txt_group), (unsigned long int) (time(NULL) - beg_epoch));
+			P_(txt_group_sp[0], txt_group_sp[1], selmenu.max), (unsigned long int) (time(NULL) - beg_epoch));
 	}
 }
 
@@ -3333,11 +3467,14 @@ set_article(
 	struct t_article *art)
 {
 	art->subject = NULL;
+	art->subject_raw = NULL;
 	art->date = (time_t) 0;
 	art->xref = NULL;
+	art->path = NULL;
 	art->msgid = NULL;
 	art->refs = NULL;
 	art->refptr = NULL;
+	art->from_raw = NULL;
 	art->mailbox.from = NULL;
 	art->mailbox.name = NULL;
 	art->mailbox.next = NULL;
@@ -3414,71 +3551,13 @@ find_artnum(
 }
 
 
-static char *
-print_from(
-	struct t_group *group,
-	struct t_article *article,
-	int charset)
-{
-	char *p, *q;
-	static char from[PATH_LEN];
-	char single_from[PATH_LEN];
-	int c_needed = 0;
-	struct t_mailbox *mb = &article->mailbox;
-
-/*	if (!mb)
-		return from; */
-
-	*from = *single_from = '\0';
-
-	do {
-		if (mb->name != NULL) {
-			q = my_strdup(mb->name);
-#ifdef CHARSET_CONVERSION
-			if (charset != -1)
-				buffer_to_network(&q, charset);
-#else
-			(void) charset;
-#endif /* CHARSET_CONVERSION */
-			p = rfc1522_encode(mb->name, tinrc.mm_local_charset, FALSE);
-			unfold_header(p);
-			if (CHECK_RFC5322_SPECIALS(mb->name)) {
-				if (group->attribute)
-					snprintf(single_from, sizeof(single_from), "\"%s\" <%s>", group->attribute->post_8bit_header ? q : p, mb->from);
-				else
-					snprintf(single_from, sizeof(single_from), "\"%s\" <%s>", tinrc.post_8bit_header ? q : p, mb->from);
-			} else {
-				if (group->attribute)
-					snprintf(single_from, sizeof(single_from), "%s <%s>", group->attribute->post_8bit_header ? q : p, mb->from);
-				else
-					snprintf(single_from, sizeof(single_from), "%s <%s>", tinrc.post_8bit_header ? q : p, mb->from);
-			}
-
-			free(p);
-			free(q);
-		} else
-			snprintf(single_from, sizeof(single_from), "<%s>", mb->from);
-
-		if (strlen(from) + strlen(single_from) + /* strlen(", ") */ 2 < PATH_LEN) {
-			if (c_needed++)
-				strcat(from, ", ");
-			strcat(from, single_from);
-		}
-
-		mb = mb->next;
-	} while (mb);
-
-	return from;
-}
-
-
 /*
  * Open a group news overview file
  * Use NNTP XOVER where possible unless 'local' is set
  */
 static FILE *
 open_xover_fp(
-	struct t_group *group,
+	const struct t_group *group,
 	const char *mode,
 	t_artnum min,
 	t_artnum max,

@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-02-06
  *  Notes     :
  *
  * Copyright (c) 1992-2025 Iain Lea <iain@bricbrac.de>
@@ -394,7 +394,7 @@ do_read_newsrc_active_file(
 
 		if (read_news_via_nntp && !read_saved_news) { /* this should be limited to GROUP_TYPE_NEWS, but ... */
 #ifdef NNTP_ABLE
-			if (window < NUM_SIMULTANEOUS_GROUP_COMMAND && ptr && (!list_active || (newsrc_active && list_active && group_find(ptr, FALSE)))) {
+			if (window < NUM_SIMULTANEOUS_GROUP_COMMAND && ptr && (!list_active || (newsrc_active && group_find(ptr, FALSE)))) {
 				ngnames[index_i] = my_strdup(ptr);
 				snprintf(buf, sizeof(buf), "GROUP %s", ngnames[index_i]);
 #	ifdef DEBUG
@@ -824,18 +824,18 @@ read_news_active_file(
 		 * PIPELINE_LIMIT groups in newsrc
 		 */
 		if (read_news_via_nntp && (list_active || nntp_caps.list_counts) && !did_list_cmd) {
-			char buff[NNTP_STRLEN];
-			char *ptr, *q;
-			char moderated[PATH_LEN];
-			int r = 0, j = 0;
-			int i;
-			struct t_group *grpptr;
-			t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
-			t_bool need_auth = FALSE;
-
-			*buff = '\0';
 			/* we can't use for_each_group(i) yet, so we have to parse the newsrc */
 			if ((fp = tin_fopen(newsrc, "r")) != NULL) {
+				char buff[NNTP_STRLEN];
+				char moderated[PATH_LEN];
+				char *ptr, *q;
+				int r = 0, j = 0;
+				int i;
+				t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
+				struct t_group *grpptr;
+				t_bool need_auth = FALSE;
+
+				*buff = '\0';
 				while (tin_fgets(fp, FALSE) != NULL)
 					++j;
 				rewind(fp);
@@ -969,7 +969,7 @@ open_newgroups_fp(
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news) {
 		char line[NNTP_STRLEN];
-		struct tm *ngtm;
+		const struct tm *ngtm;
 
 		if (idx >= 0) {
 			if (nntp_caps.type == CAPABILITIES)
@@ -1010,7 +1010,11 @@ open_newgroups_fp(
 	(void) idx;
 #endif /* NNTP_ABLE */
 
+#ifndef NNTP_ONLY
 	return (fopen(active_times_file, "r"));
+#else
+	return (FILE *) 0;
+#endif /* !NNTP_ONLY */
 }
 
 
@@ -1181,10 +1185,9 @@ match_group_list(
 	char *separator;
 	char pattern[HEADER_LEN];
 	char ngname[NNTP_GRPLEN + 1]; /* RFC 3977 3.1 limits group names to 497 octets */
-	size_t group_len, list_len;
+	size_t group_len, list_len = strlen(group_list);
 	t_bool negate, accept = FALSE;
 
-	list_len = strlen(group_list);
 	/*
 	 * walk through comma-separated entries in list
 	 */
@@ -1371,10 +1374,9 @@ make_group_list(
 	t_artnum art_max;
 	t_artnum art_min;
 	struct stat stat_info;
-	t_bool is_dir;
+	t_bool is_dir = FALSE;
 
 	if ((dir = opendir(group_path)) != NULL) {
-		is_dir = FALSE;
 		while ((direntry = readdir(dir)) != NULL) {
 			STRCPY(filename, direntry->d_name);
 			joinpath(path, sizeof(path), group_path, filename);

@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2024-11-25
+ *  Updated   : 2024-12-21
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2025 Iain Lea <iain@bricbrac.de>
@@ -268,10 +268,10 @@ open_newsgroups_fp(
 	void)
 {
 #ifdef NNTP_ABLE
-	FILE *result;
-	static int no_more_wildmat = 0;
-
 	if (read_news_via_nntp && !read_saved_news) {
+		FILE *result;
+		static int no_more_wildmat = 0;
+
 		if (read_local_newsgroups_file) {
 			if ((result = tin_fopen(local_newsgroups_file, "r")) != NULL) {
 #	ifdef DEBUG
@@ -513,7 +513,8 @@ read_groups_descriptions(
 			}
 		}
 
-		for (p = ptr, q = groupname; *p && *p != ' ' && *p != '\t'; p++, q++)
+		p = ptr;
+		for (q = groupname; *p && *p != ' ' && *p != '\t'; p++, q++)
 			*q = *p;
 
 		*q = '\0';
@@ -648,15 +649,14 @@ grp_del_mail_art(
 
 void
 grp_del_mail_arts(
-	struct t_group *group)
+	const struct t_group *group)
 {
-	char article_filename[PATH_LEN];
-	char group_path[PATH_LEN];
-	char artnum[LEN];
-	int i;
-	struct t_article *article;
-
 	if (group->type == GROUP_TYPE_MAIL || group->type == GROUP_TYPE_SAVE) {
+		char article_filename[PATH_LEN];
+		char group_path[PATH_LEN];
+		char artnum[LEN];
+		int i;
+		struct t_article *article;
 		/*
 		 * at least for GROUP_TYPE_SAVE a wait is annoying - nuke the message?
 		 */
@@ -684,8 +684,8 @@ grp_del_mail_arts(
 
 t_bool
 art_edit(
-	struct t_group *group,
-	struct t_article *article)
+	const struct t_group *group,
+	const struct t_article *article)
 {
 	char article_filename[PATH_LEN];
 	char temp_filename[PATH_LEN];

@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-26
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2025 Dirk Nimmich <nimmich@muenster.de>
@@ -52,7 +52,7 @@ static void add_global_keys(struct keylist *keys);
 static void free_keylist(struct keylist *keys);
 static void upgrade_keymap_file(char *old);
 static t_bool process_keys(t_function func, const char *keys, struct keylist *kl);
-static t_bool process_mapping(const char *keyname, char *keys);
+static t_bool process_mapping(const char *keyname, const char *keys);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	static t_bool add_key(struct keylist *keys, const wchar_t key, t_function func, t_bool override);
 #else
@@ -337,7 +337,7 @@ read_keymap_file(
 	char *territory = NULL;
 	char *codeset = NULL, *normcodeset = NULL;
 	char *modifier = NULL;
-	char *fnames[2 * 6] = { NULL }; /* 2 dirs x 6 variants */
+	char *fnames[2 * 10] = { NULL }; /* 2 dirs x 10 variants */
 	char dirs[3][PATH_LEN]; /* 2 dirs + endmark */
 	char buf[LEN];
 	int k = 0, j, i = 0, n;
@@ -347,19 +347,14 @@ read_keymap_file(
 
 	/*
 	 * checks ${TIN_HOMEDIR:-"$HOME"}, TIN_DEFAULTS_DIR
-	 * for KEYMAP_FILE."locale" or KEYMAP_FILE
+	 * for KEYMAP_FILE[."locale"] where
 	 *
 	 * locale is first match from LC_ALL, LC_MESSAGES, LC_CTYPE, LANG
 	 *
-	 * language[_territory[.codeset]][@modifier]
+	 * language[_territory][.codeset][@modifier]
 	 * Beside the first part, all of them are allowed to be missing. If the
 	 * full specified locale is not found, less specific ones are looked
-	 * for. The various parts will be stripped off, in the following
-	 * order:
-	 * - codeset
-	 * - normalized codeset (like _nl_normalize_codeset() in glibc)
-	 * - territory
-	 * - modifier
+	 * for.
 	 */
 
 	sprintf(dirs[k++], "%s", rcdir);
@@ -442,6 +437,38 @@ read_keymap_file(
 					s = (size_t) n + 1;
 					fnames[i] = my_malloc(s);
 					if (snprintf(fnames[i], s, "%s/%s.%s%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), BlankIfNull(territory), normcodeset, BlankIfNull(modifier)) == n)
+						++i;
+				}
+			}
+			if (codeset && territory) { /* explicitly leave out set territory */
+				if ((n = snprintf(NULL, 0, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), codeset, BlankIfNull(modifier))) > 0) {
+					s = (size_t) n + 1;
+					fnames[i] = my_malloc(s);
+					if (snprintf(fnames[i], s, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), codeset, BlankIfNull(modifier)) == n)
+						++i;
+				}
+			}
+			if (normcodeset && territory) { /* explicitly leave out set territory */
+				if ((n = snprintf(NULL, 0, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), normcodeset, BlankIfNull(modifier))) > 0) {
+					s = (size_t) n + 1;
+					fnames[i] = my_malloc(s);
+					if (snprintf(fnames[i], s, "%s/%s.%s%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), normcodeset, BlankIfNull(modifier)) == n)
+						++i;
+				}
+			}
+			if (codeset && territory && modifier) { /* explicitly leave out set territory and modifier */
+				if ((n = snprintf(NULL, 0, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), codeset)) > 0) {
+					s = (size_t) n + 1;
+					fnames[i] = my_malloc(s);
+					if (snprintf(fnames[i], s, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), codeset) == n)
+						++i;
+				}
+			}
+			if (normcodeset && territory && modifier) { /* explicitly leave out set territory and modifier */
+				if ((n = snprintf(NULL, 0, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), normcodeset)) > 0) {
+					s = (size_t) n + 1;
+					fnames[i] = my_malloc(s);
+					if (snprintf(fnames[i], s, "%s/%s.%s%s", dirs[k], KEYMAP_FILE, BlankIfNull(language), normcodeset) == n)
 						++i;
 				}
 			}
@@ -541,7 +568,7 @@ read_keymap_file(
 			/*
 			 * Warn about basic syntax errors
 			 */
-			if (keydef == NULL || !strlen(keydef)) {
+			if (keydef == NULL || !*keydef) {
 				error_message(0, _(txt_keymap_missing_key), kname);
 				ret = FALSE;
 				continue;
@@ -685,7 +712,7 @@ process_keys(
 static t_bool
 process_mapping(
 	const char *keyname,				/* Keyname we're searching for */
-	char *keys)				/* Key to assign to keyname if found */
+	const char *keys)				/* Key to assign to keyname if found */
 {
 	switch (keyname[0]) {
 		case 'A':
@@ -1371,6 +1398,11 @@ process_mapping(
 			}
 			if (STRCMPEQ(keyname, "PageToggleUue")) {
 				process_keys(PAGE_TOGGLE_UUE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (STRCMPEQ(keyname, "PageToggleVerbatim")) {
+				process_keys(PAGE_TOGGLE_VERBATIM, keys, &page_keys);
 
 				return TRUE;
 			}
@@ -2970,6 +3002,7 @@ setup_default_keys(
 	add_default_key(&page_keys, "*", PAGE_TOGGLE_HEADERS);
 	add_default_key(&page_keys, ":", PAGE_SKIP_INCLUDED_TEXT);
 	add_default_key(&page_keys, "_", PAGE_TOGGLE_HIGHLIGHTING);
+	add_default_key(&page_keys, ",", PAGE_TOGGLE_VERBATIM);
 	add_default_key(&page_keys, "'", PAGE_ARTICLE_INFO);
 
 	/* info pager */
@@ -3440,6 +3473,7 @@ dump_keylist(
 		"PageToggleTabs",
 		"PageToggleTex2iso",
 		"PageToggleUue",
+		"PageToggleVerbatim",
 		"PageTopThd",
 		"PageViewAttach",
 		"PageViewUrl",

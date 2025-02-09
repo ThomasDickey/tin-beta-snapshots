@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-28
+ *  Updated   : 2025-02-03
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -328,7 +328,6 @@ free_art_array(
 		arts[i].artnum = T_ARTNUM_CONST(0);
 		arts[i].date = (time_t) 0;
 		FreeAndNull(arts[i].xref);
-		FreeAndNull(arts[i].path);
 		free_mailbox_list(arts[i].mailbox.next);
 
 		/*
@@ -651,7 +650,7 @@ my_calloc1(
  *        q = malloc(nmemb * size); memmove(q, p, size); free(p)?
  *
  * for size = 0 and p != NULL, we do what glibc does and
- * ignore ISO C 23 § 7.24.3.7 ("undefined behavior").
+ * ignore ISO C 23  7.24.3.7 ("undefined behavior").
  */
 void *
 my_realloc1(

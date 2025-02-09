@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-02-05
  *  Notes     : Caching of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -315,7 +315,7 @@ add_msgid(
 		if (newparent == i->parent) {
 #ifdef DEBUG
 			if (debug & DEBUG_REFS)
-				DEBUG_PRINT((dbgfd, "dup: %s -> %s (no change)\n", i->txt, i->parent ? i->parent->txt : "NULL"));
+				DEBUG_PRINT((dbgfd, "dup: %s -> %s (no change)\n", i->txt, i->parent->txt));
 #endif /* DEBUG */
 			return i;
 		}
@@ -1019,10 +1019,10 @@ collate_subjects(
  */
 void
 build_references(
-	struct t_group *group)
+	const struct t_group *group)
 {
 	static char msg[LEN];
-	char *s;
+	char *s, *ptr;
 	int i;
 	struct t_article *art;
 	struct t_msgid *refs;
@@ -1067,8 +1067,6 @@ build_references(
 			 * TODO: do this in a single pass
 			 */
 			if ((s = strrchr(art->refs, '<')) != NULL) {
-				char *ptr;
-
 				/*
 				 * A comment can occur after another REF_SEP, remove it
 				 *

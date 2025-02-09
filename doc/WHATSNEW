@@ -7,6 +7,7 @@ New features
 - NNTPS support based on libressl/gnuttls/OpenSSL (RFC 8143)
   (configure --with-nntps[=[libtls|openssl|gnutls]])
 - "COMPRESS DEFLATE" support (RFC 8054)
+- compress_overview_files option
 - allow to cancel wait_message() via key press
 - option to hide help/mail-info in title: show_help_mail_sign
 - option remove SOFT HYPHENs (U+00AD) from non verbatim blocks:
@@ -43,6 +44,8 @@ New features
 - URI syntax-check and normalization it with uriNormalizeSyntaxA() if
   liburiparser was found
 - $LC_NUMERIC for RADIXCHAR (used when showing attachment sizes)
+- allow hex-numbers for cmd.-line switches which take numeric args
+
 
 Changes
 -------

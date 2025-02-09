@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2024-11-08
+ *  Updated   : 2024-12-05
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -395,14 +395,13 @@ submit_news_file(
 {
 	char buf[PATH_LEN];
 	char *cp = buf;
-	char *fcc;
+	char *fcc = checknadd_headers(name, group);
 	t_bool ret_code;
 	t_bool ismail = FALSE;
 
-	a_message_id[0] = '\0';
+	FreeIfNeeded(fcc); /* we don't use it at the moment */
 
-	if ((fcc = checknadd_headers(name, group)) != NULL)
-		free(fcc); /* we don't use it at the moment */
+	a_message_id[0] = '\0';
 
 	rfc15211522_encode(name, txt_mime_encodings[(group ? group->attribute->post_mime_encoding : tinrc.post_mime_encoding)], group, (group ? group->attribute->post_8bit_header : tinrc.post_8bit_header), ismail);
 

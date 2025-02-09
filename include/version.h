@@ -43,10 +43,10 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"2.6.4"
+#		define VERSION		"2.6.5"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20241128"
-#	define RELEASENAME	"Banff"
+#	define RELEASEDATE	"20250209"
+#	define RELEASENAME	"Helmsdale"
 /* config-file versions - must be dotted triples in the range 0 to 99 each */
 #	define TINRC_VERSION	"1.3.18"
 #	define ATTRIBUTES_VERSION	"1.0.11"

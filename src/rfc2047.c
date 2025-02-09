@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2024-12-21
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2025 Chris Blum <chris@resolution.de>
@@ -103,7 +103,7 @@ static t_bool rfc1522_do_encode(char *what, char **where, const char *charset, t
 static t_bool split_mail(const char *filename, FILE **headerfp, FILE **textfp);
 static unsigned hex2bin(int x);
 static void build_base64_rank_table(void);
-static void do_rfc15211522_encode(FILE *f, constext * mime_encoding, struct t_group *group, t_bool allow_8bit_header, t_bool ismail, t_bool contains_headers);
+static void do_rfc15211522_encode(FILE *f, constext *mime_encoding, struct t_group *group, t_bool allow_8bit_header, t_bool ismail, t_bool contains_headers);
 static void generate_mime_boundary(char *boundary, FILE *f, FILE *g);
 static void generate_random_mime_boundary(char *boundary, size_t len);
 static void str2b64(const char *from, char *to);
@@ -379,12 +379,13 @@ str2b64(
 	unsigned long tmp;
 
 	while (*from) {
-		for (i = count = 0, tmp = 0; i < 3; i++)
+		for (i = count = tmp = 0; i < 3; i++) {
 			if (*from) {
 				tmp = (tmp << 8) | (unsigned long) (*from++ & 0x0ff);
 				++count;
 			} else
 				tmp = (tmp << 8) | (unsigned long) 0;
+		}
 
 		*to++ = base64_alphabet[(0x0fc0000 & tmp) >> 18];
 		*to++ = base64_alphabet[(0x003f000 & tmp) >> 12];
@@ -931,7 +932,7 @@ rfc1522_encode(
 static void
 do_rfc15211522_encode(
 	FILE *f,
-	constext * mime_encoding,
+	constext *mime_encoding,
 	struct t_group *group,
 	t_bool allow_8bit_header,
 	t_bool ismail,
@@ -939,7 +940,7 @@ do_rfc15211522_encode(
 {
 	FILE *g;
 	char *c;
-	char *tmp, *buf = NULL, *header = NULL;
+	char *tmp, *buf, *header;
 	char encoding;
 	char buffer[2048];
 	t_bool mime_headers_needed = FALSE;
@@ -960,14 +961,14 @@ do_rfc15211522_encode(
 		return;
 
 	while (contains_headers && (header = ((tmp = tin_fgets(f, TRUE)) ? my_strdup(tmp) : NULL))) {
-#ifdef CHARSET_CONVERSION
-		if (*header)
-			buffer_to_network(&header, mmnwcharset);
-#endif /* CHARSET_CONVERSION */
 		if (*header == '\0') {
 			free(header);
 			break;
 		}
+
+#ifdef CHARSET_CONVERSION
+		buffer_to_network(&header, mmnwcharset);
+#endif /* CHARSET_CONVERSION */
 
 		/*
 		 * TODO: - what about 8bit chars in the mentioned headers
@@ -976,31 +977,28 @@ do_rfc15211522_encode(
 		if (allow_8bit_header || (!strncasecmp(header, "References: ", 12) || !strncasecmp(header, "Message-ID: ", 12) || !strncasecmp(header, "Date: ", 6) || !strncasecmp(header, "Newsgroups: ", 12) || !strncasecmp(header, "Distribution: ", 14) || !strncasecmp(header, "Followup-To: ", 13) || !strncasecmp(header, "X-Face: ", 8) || !strncasecmp(header, "Cancel-Lock: ", 13) || !strncasecmp(header, "Cancel-Key: ", 12) || !strncasecmp(header, "Path: ", 6)))
 			fputs(header, g);
 		else {
-			char *p;
-
 #ifdef CHARSET_CONVERSION
-			p = rfc1522_encode(header, txt_mime_charsets[mmnwcharset], ismail);
+			buf = rfc1522_encode(header, txt_mime_charsets[mmnwcharset], ismail);
 #else
-			p = rfc1522_encode(header, tinrc.mm_charset, ismail);
+			buf = rfc1522_encode(header, tinrc.mm_charset, ismail);
 #endif /* CHARSET_CONVERSION */
 
-			fputs(p, g);
-			free(p);
+			fputs(buf, g);
+			free(buf);
 		}
 		fputc('\n', g);
 		free(header);
-		header = NULL;
 	}
 
 	fputc('\n', g);
 
 	while ((buf = ((tmp = tin_fgets(f, TRUE)) ? my_strdup(tmp) : NULL))) {
+		if (*buf) {
 #ifdef CHARSET_CONVERSION
-		if (*buf)
 			buffer_to_network(&buf, mmnwcharset);
 #endif /* CHARSET_CONVERSION */
-		if (*buf)
 			fputs(buf, g);
+		}
 		if (!allow_8bit_header) {
 			/* see if there are any 8bit chars in the body... */
 			for (c = buf; *c && !isreturn(*c); c++) {
@@ -1012,7 +1010,6 @@ do_rfc15211522_encode(
 		}
 		fputc('\n', g);
 		free(buf);
-		buf = NULL;
 	}
 
 	rewind(g);
@@ -1099,7 +1096,7 @@ do_rfc15211522_encode(
 void
 rfc15211522_encode(
 	const char *filename,
-	constext * mime_encoding,
+	constext *mime_encoding,
 	struct t_group *group,
 	t_bool allow_8bit_header,
 	t_bool ismail)
@@ -1263,7 +1260,7 @@ compose_mail_mime_forwarded(
 	FILE *textfp = NULL;
 	FILE *entityfp;
 	char *line;
-	constext* encoding = txt_mime_encodings[(group ? group->attribute->mail_mime_encoding : tinrc.mail_mime_encoding)];
+	constext *encoding = txt_mime_encodings[(group ? group->attribute->mail_mime_encoding : tinrc.mail_mime_encoding)];
 	t_bool allow_8bit_header = (group ? group->attribute->mail_8bit_header : tinrc.mail_8bit_header);
 	t_bool _8bit;
 

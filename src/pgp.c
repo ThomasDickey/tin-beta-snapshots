@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2024-11-23
+ *  Updated   : 2025-01-16
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2025 Steven J. Madsen <steve@erinet.com>
@@ -264,7 +264,7 @@ do_pgp(
 	/*
 	 * <mailfrom> is valid only when signing and a local address exists
 	 */
-	if (CURR_GROUP.attribute->from != NULL && *CURR_GROUP.attribute->from)
+	if (CURR_GROUP.attribute->from != NULL && *CURR_GROUP.attribute->from && strchr(*CURR_GROUP.attribute->from, '@'))
 		strip_name(*CURR_GROUP.attribute->from, mailfrom);
 
 	switch (what) {
@@ -305,7 +305,7 @@ pgp_append_public_key(
 	char cmd[LEN], buf[LEN];
 	char keyfile[PATH_LEN], tmp[PATH_LEN];
 
-	if (CURR_GROUP.attribute->from != NULL && *CURR_GROUP.attribute->from && **CURR_GROUP.attribute->from)
+	if (CURR_GROUP.attribute->from != NULL && *CURR_GROUP.attribute->from && strchr(*CURR_GROUP.attribute->from, '@'))
 		strip_name(*CURR_GROUP.attribute->from, buf);
 	else /* FIXME: avoid hardcoded length */
 		snprintf(buf, sizeof(buf), "%.*s@%.765s", LOGIN_NAME_MAX - 1, userid, BlankIfNull(get_host_name()));
@@ -452,7 +452,7 @@ pgp_check_article(
 	int n;
 	size_t len;
 	t_bool pgp_signed = FALSE;
-	t_bool pgp_key = FALSE;
+	int pgp_key = 0;
 
 	if (!pgp_available())
 		return FALSE;
@@ -475,8 +475,8 @@ pgp_check_article(
 		if (fgets(buf, sizeof(buf), artinfo->raw) != NULL) {
 			if (!pgp_signed && !strcmp(buf, PGP_SIG_TAG))
 				pgp_signed = TRUE;
-			if (!pgp_key && !strcmp(buf, PGP_KEY_TAG))
-				pgp_key = TRUE;
+			if (!strcmp(buf, PGP_KEY_TAG))
+				++pgp_key;
 			fputs(buf, art);
 		} else
 			break;
@@ -515,7 +515,7 @@ pgp_check_article(
 	InitWin();
 #	endif /* !USE_CURSES */
 	if (pgp_key) {
-		if (prompt_yn(_(txt_pgp_add), FALSE) == 1) {
+		if (prompt_yn(P_(txt_pgp_add_sp[0], txt_pgp_add_sp[1], pgp_key), FALSE) == 1) {
 			Raw(FALSE);
 			n = snprintf(NULL, 0, ADD_KEY, PGPNAME, pgpopts, artfile);
 			len = (size_t) (n << 1) + 1; /* double size for quoting */

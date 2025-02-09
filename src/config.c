@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-10
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -54,12 +54,12 @@
 /*
  * local prototypes
  */
-static t_bool match_item(char *line, const char *pat, char *dst, size_t dstlen);
+static t_bool match_item(const char *line, const char *pat, char *dst, size_t dstlen);
 static t_bool rc_update(FILE *fp);
 static t_bool rc_post_update(FILE *fp/* , struct t_version *upgrade */);
 static void write_server_config(void);
 #ifdef HAVE_COLOR
-	static t_bool match_color(char *line, const char *pat, int *dst, int max);
+	static t_bool match_color(const char *line, const char *pat, int *dst, int max);
 #endif /* HAVE_COLOR */
 
 
@@ -316,6 +316,11 @@ read_config_file(
 				if (match_integer(buf, "confirm_choice=", &tinrc.confirm_choice, TINRC_CONFIRM_MAX))
 					break;
 			}
+
+#ifdef USE_ZLIB
+			if (match_boolean(buf, "compress_overview_files=", &tinrc.compress_overview_files))
+				break;
+#endif /* USE_ZLIB */
 
 			break;
 
@@ -998,7 +1003,7 @@ read_config_file(
  */
 void
 write_config_file(
-	char *file)
+	const char *file)
 {
 	FILE *fp;
 	char *file_tmp;
@@ -1017,7 +1022,7 @@ write_config_file(
 		return;
 	}
 
-	wait_message(0, _(txt_saving));
+	wait_message(0, _(txt_saving)); /* TODO: add the filename or remove the message */
 
 	fprintf(fp, txt_tinrc_header, PRODUCT, TINRC_VERSION, tin_progname, VERSION, RELEASEDATE, RELEASENAME);
 
@@ -1310,6 +1315,11 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_cache_overview_files.tinrc));
 	fprintf(fp, "cache_overview_files=%s\n\n", print_boolean(tinrc.cache_overview_files));
+
+#ifdef USE_ZLIB
+	fprintf(fp, "%s", _(txt_compress_overview_files.tinrc));
+	fprintf(fp, "compress_overview_files=%s\n\n", print_boolean(tinrc.compress_overview_files));
+#endif /* USE_ZLIB */
 
 	fprintf(fp, "%s", _(txt_getart_limit.tinrc));
 	fprintf(fp, "getart_limit=%d\n\n", tinrc.getart_limit);
@@ -1643,7 +1653,7 @@ match_boolean(
 #ifdef HAVE_COLOR
 static t_bool
 match_color(
-	char *line,
+	const char *line,
 	const char *pat,
 	int *dst,
 	int max)
@@ -1690,7 +1700,7 @@ match_color(
  */
 t_bool
 match_integer(
-	char *line,
+	const char *line,
 	const char *pat,
 	int *dst,
 	int maxval)
@@ -1717,7 +1727,7 @@ match_integer(
 
 t_bool
 match_long(
-	char *line,
+	const char *line,
 	const char *pat,
 	long *dst)
 {
@@ -1806,7 +1816,7 @@ match_string_ptr(
 /* like mach_string() but looks for 100% exact matches */
 static t_bool
 match_item(
-	char *line,
+	const char *line,
 	const char *pat,
 	char *dst,
 	size_t dstlen)
@@ -1819,7 +1829,8 @@ match_item(
 
 	if (!strcasecmp(nline, pat)) {
 		if (dst != NULL) {
-			strncpy(dst, &nline[strlen(pat)], dstlen);
+			if (dstlen)
+				strncpy(dst, &nline[strlen(pat)], dstlen - 1);
 			dst[dstlen ? (dstlen - 1) : 0] = '\0';
 		}
 		free(nline);
@@ -2203,7 +2214,7 @@ rc_post_update(
 	int groupname_max_length = 0;
 
 	if (fseek(fp, 0L, SEEK_SET) == -1) {
-		perror_message(txt_error_fseek, fp);
+		perror_message(txt_error_fseek);
 		return FALSE;
 	}
 

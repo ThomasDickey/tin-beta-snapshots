@@ -7027,3 +7027,29 @@ AC_CHECK_FUNCS( \
 	zError \
 )
 ])dnl
+
+dnl ---------------------------------------------------------------------------
+dnl CF_FUNC_CURSES_VERSION version: 9 updated: 2023/01/05 18:06:10
+dnl ----------------------
+dnl Solaris has a data item 'curses_version', which confuses AC_CHECK_FUNCS.
+dnl It's a character string "SVR4", not documented.
+AC_DEFUN([CF_FUNC_CURSES_VERSION],
+[
+AC_CACHE_CHECK(for function curses_version, cf_cv_func_curses_version,[
+AC_TRY_RUN([
+$ac_includes_default
+
+#include <${cf_cv_ncurses_header:-curses.h}>
+
+int main(void)
+{
+        char temp[1024];
+        sprintf(temp, "%.999s\\n", curses_version());
+        ${cf_cv_main_return:-return}(0);
+}]
+,[cf_cv_func_curses_version=yes]
+,[cf_cv_func_curses_version=no]
+,[cf_cv_func_curses_version=unknown])
+rm -f core])
+test "$cf_cv_func_curses_version" = yes && AC_DEFINE(HAVE_CURSES_VERSION,1,[Define to 1 if we have curses_version function])
+])dnl

@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-02-05
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -56,7 +56,7 @@ static FILE* msglog = NULL;
 	struct t_screen *screen;
 #endif /* !USE_CURSES */
 
-static void log_formatted_msg(const char* tag, const char *msg);
+static void log_formatted_msg(const char *tag, const char *msg);
 
 /*
  * Move the cursor to the lower-left of the screen, where it won't be annoying
@@ -203,7 +203,12 @@ wait_message(
 #	endif /* HAVE_SELECT_INTP */
 			if (nfds == -1) {
 
-				if (errno != EINTR) {
+#	ifdef EINTR
+				if (errno != EINTR)
+#	else
+				if (errno != 0)
+#	endif /* EINTR */
+				{
 					perror_message("wait_message(select()) failed");
 					free(tin_progname);
 					giveup();
@@ -452,8 +457,6 @@ erase_arrow(
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		s = screen_contents(line, 0, buffer);
 #else
-		s = screen[line - INDEX_TOP].col;
-
 		if (line - INDEX_TOP < 0) /* avoid underruns */
 			line = INDEX_TOP;
 

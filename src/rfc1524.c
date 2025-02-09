@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-30
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000-2025 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
@@ -51,9 +51,9 @@
 #define MAILCAPFIELDS 13
 
 /* local prototypes */
-static char *expand_mailcap_meta(const char *mailcap, t_part *part, t_bool escape_shell_meta_chars, const char *path);
+static char *expand_mailcap_meta(const char *mailcap, const t_part *part, t_bool escape_shell_meta_chars, const char *path);
 static char *get_mailcap_field(char *mailcap);
-static t_mailcap *parse_mailcap_line(const char *mailcap, t_part *part, const char *path);
+static t_mailcap *parse_mailcap_line(const char *mailcap, const t_part *part, const char *path);
 
 
 /*
@@ -65,7 +65,7 @@ static t_mailcap *parse_mailcap_line(const char *mailcap, t_part *part, const ch
  */
 t_mailcap *
 get_mailcap_entry(
-	t_part *part,
+	const t_part *part,
 	const char *path)
 {
 	FILE *fp;
@@ -157,7 +157,7 @@ get_mailcap_entry(
 static t_mailcap*
 parse_mailcap_line(
 	const char *mailcap,
-	t_part *part,
+	const t_part *part,
 	const char *path)
 {
 	char *ptr, *optr, *buf;
@@ -213,6 +213,7 @@ parse_mailcap_line(
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "nametemplate=", 13)) {
+			FreeIfNeeded(tmailcap->nametemplate);
 			tmailcap->nametemplate = expand_mailcap_meta(ptr + 13, part, FALSE, path);
 			ptr += strlen(ptr) + 1;
 		}
@@ -349,13 +350,13 @@ get_mailcap_field(
 static char *
 expand_mailcap_meta(
 	const char *mailcap,
-	t_part *part,
+	const t_part *part,
 	t_bool escape_shell_meta_chars,
 	const char *path)
 {
 	const char *ptr;
 	char *line, *lptr;
-	int quote = no_quote;
+	enum quote_enum quote = no_quote;
 	size_t linelen, space, olen;
 
 	if (!(strchr(mailcap, '%'))) /* nothing to expand */

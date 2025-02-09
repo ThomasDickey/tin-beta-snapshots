@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2024-09-11
+ *  Updated   : 2024-12-21
  *  Notes     : #defines and structs for options_menu.c
  *
  * Copyright (c) 1997-2025 Thomas E. Dickey <dickey@invisible-island.net>
@@ -399,7 +399,8 @@ generate_ptr(
 	}
 	after = FALSE;
 
-	for (p = all_data, q = NULL; p != NULL; p = p->link) {
+	q = NULL;
+	for (p = all_data; p != NULL; p = p->link) {
 		if (p->name[0] == '#') {
 			if (!strcmp(p->name, "#endif")) {
 				if (after) {

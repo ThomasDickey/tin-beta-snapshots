@@ -3,7 +3,7 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2024-10-29
+ *  Updated   : 2025-02-05
  *  Notes     :
  *
  * Copyright (c) 2003-2025 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
@@ -71,7 +71,7 @@ slrnface_start(
 	if (!is_xterm()) {
 #		ifdef DEBUG
 		if (debug & DEBUG_MISC)
-			error_message(2, "%s", _(txt_xface_error_no_xterm));
+			error_message(2, _(txt_xface_error_no_xterm));
 #		endif /* DEBUG */
 		return;
 	}
@@ -151,7 +151,7 @@ slrnface_start(
 	pathlen = (size_t) n + 1;
 	fifo = my_malloc(pathlen);
 	if (snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, m, (long) pid) != n) {
-		error_message(2, "%s", _(txt_xface_error_construct_fifo_name));
+		error_message(2, _(txt_xface_error_construct_fifo_name));
 		unlink(fifo);
 		free(fifo);
 		return;
@@ -186,9 +186,13 @@ slrnface_start(
 			break;
 
 		default:
+#ifdef EINTR
 			do {
 				pidst = waitpid(pid, &n, 0);
 			} while (pidst == -1 && errno == EINTR);
+#else
+			pidst = waitpid(pid, &n, 0);
+#endif /* EINTR */
 			if (!WIFEXITED(n))
 				error_message(2, _(txt_xface_error_exited_abnormal), n);
 			else {

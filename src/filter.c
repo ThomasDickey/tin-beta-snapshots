@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2024-11-21
+ *  Updated   : 2025-02-05
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -101,7 +101,7 @@ static int set_filter_scope(struct t_group *group);
 static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr, char *text);
 static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
 static struct t_filter_comment *copy_filter_comment(struct t_filter_comment *from, struct t_filter_comment *to);
-static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule, t_bool quick_filter_rule);
+static t_bool add_filter_rule(const struct t_group *group, struct t_article *art, struct t_filter_rule *rule, t_bool quick_filter_rule);
 static int test_match(const char *string, char *regex, t_bool nocase, t_bool use_regex, struct regex_cache *cache);
 static void expand_filter_array(struct t_filters *ptr);
 static void fmt_filter_menu_prompt(char *dest, size_t dest_len, const char *fmt_str, int len, const char *text);
@@ -322,7 +322,7 @@ read_filter_file(
 	char scbuf[PATH_LEN];
 	int i = 0;
 	int icase = 0;
-	int score = 0;
+	int score;
 	long secs = 0L;
 	struct t_filter_comment *comment = NULL;
 	struct t_filter *ptr = NULL;
@@ -361,7 +361,7 @@ read_filter_file(
 			 */
 			if (*buf != '#' && !strchr(buf, '=') && (strchr(buf, ':') || strchr(buf, '!'))) {
 				fclose(fp);
-	            tin_done(EXIT_FAILURE, "Mixed up '-f'/'-F'? -F %s", file); /* -> lang.c */
+				tin_done(EXIT_FAILURE, _(txt_error_mixed_up_opt), "-F", file);
 			}
 		}
 		if (*buf == '#') {
@@ -1086,6 +1086,7 @@ filter_menu(
 	struct t_filter_rule rule;
 	t_bool proceed;
 	t_bool ret;
+	t_bool has_path_filter = filter_on_path(group);
 	t_function func, default_func = FILTER_SAVE;
 
 	signal_context = cFilter;
@@ -1152,7 +1153,7 @@ filter_menu(
 
 	len = cCOLS - flen - clen - 1 + 4;
 
-	snprintf(text_time, sizeof(text_time), _(txt_time_default_days), tinrc.filter_days);
+	snprintf(text_time, sizeof(text_time), P_(txt_time_default_day_sp[0], txt_time_default_day_sp[1], tinrc.filter_days), tinrc.filter_days);
 	fmt_filter_menu_prompt(text_subj, sizeof(text_subj), ptr_filter_subj, len, art->subject);
 	snprintf(text_score, sizeof(text_score), _(txt_filter_score), (type == GLOBAL_MENU_FILTER_KILL ? tinrc.score_kill : tinrc.score_select));
 	fmt_filter_menu_prompt(text_from, sizeof(text_from), ptr_filter_from, len, art->mailbox.from);
@@ -1188,17 +1189,19 @@ filter_menu(
 	}
 
 	if (rule.text && *rule.text) {
-		list = my_malloc(sizeof(char *) * 8);
-		list[0] = _(txt_subj_line_only_case);
-		list[1] = _(txt_subj_line_only);
-		list[2] = _(txt_from_line_only_case);
-		list[3] = _(txt_from_line_only);
-		list[4] = _(txt_msgid_refs_line);
-		list[5] = _(txt_msgid_line_last);
-		list[6] = _(txt_msgid_line_only);
-		list[7] = _(txt_refs_line_only);
+		list = my_malloc(sizeof(char *) * FILTER_LIST_MAX);
+		list[FILTER_SUBJ_CASE_SENSITIVE] = _(txt_subj_line_only_case);
+		list[FILTER_SUBJ_CASE_IGNORE] = _(txt_subj_line_only);
+		list[FILTER_FROM_CASE_SENSITIVE] = _(txt_from_line_only_case);
+		list[FILTER_FROM_CASE_IGNORE] = _(txt_from_line_only);
+		list[FILTER_MSGID] = _(txt_msgid_refs_line);
+		list[FILTER_MSGID_LAST] = _(txt_msgid_line_last);
+		list[FILTER_MSGID_ONLY] = _(txt_msgid_line_only);
+		list[FILTER_REFS_ONLY] = _(txt_refs_line_only);
+		list[FILTER_XREF_CASE_IGNORE] = _(txt_xref_line_nocasse); /* RFC 5536 3.1.4 "... SHOULD NOT contain uppercase letters." */
+		list[FILTER_PATH_CASE_IGNORE] = _(txt_path_line_nocasse); /* RFC 5537 3.2 "... SHOULD compare identities case-insensitively." */
 
-		i = get_choice(INDEX_TOP + 3, _(txt_help_filter_text_type), _(txt_filter_text_type), list, 8);
+		i = get_choice(INDEX_TOP + 3, _(txt_help_filter_text_type), _(txt_filter_text_type), list, FILTER_LIST_MAX);
 		free(list);
 
 		if (i == -1) {
@@ -1211,6 +1214,8 @@ filter_menu(
 		switch (i) {
 			case FILTER_SUBJ_CASE_IGNORE:
 			case FILTER_FROM_CASE_IGNORE:
+			case FILTER_PATH_CASE_IGNORE:
+			case FILTER_XREF_CASE_IGNORE:
 				rule.icase = TRUE;
 				break;
 
@@ -1506,6 +1511,11 @@ filter_menu(
 			 * Add the filter rule and save it to the filter file
 			 */
 			ret = add_filter_rule(group, art, &rule, FALSE);
+			if (!art->path && !has_path_filter && filter_on_path(group)) { /* we don't have Path-data yet */
+				index_group(group); /* fetch Path:-data */
+				if (tinrc.cache_overview_files) /* update cache */
+					write_overview(group);
+			}
 			FreeIfNeeded(rule.text);
 			FreeIfNeeded(rule.scope);
 			free_filter_comment(rule.comment);
@@ -1542,13 +1552,13 @@ quick_filter(
 		expire = group->attribute->quick_kill_expire;
 		/* ON=case sensitive, OFF=ignore case -> invert */
 		icase = bool_not(group->attribute->quick_kill_case);
-		scope = group->attribute->quick_kill_scope ? group->attribute->quick_kill_scope ? BlankIfNull(*group->attribute->quick_kill_scope) : "" : "";
+		scope = group->attribute->quick_kill_scope ? *group->attribute->quick_kill_scope : "";
 	} else {	/* type == GLOBAL_QUICK_FILTER_SELECT */
 		header = group->attribute->quick_select_header;
 		expire = group->attribute->quick_select_expire;
 		/* ON=case sensitive, OFF=ignore case -> invert */
 		icase = bool_not(group->attribute->quick_select_case);
-		scope = group->attribute->quick_select_scope ? group->attribute->quick_select_scope ? BlankIfNull(*group->attribute->quick_select_scope) : "" : "";
+		scope = group->attribute->quick_select_scope ? *group->attribute->quick_select_scope : "";
 	}
 
 #ifdef DEBUG
@@ -1596,7 +1606,7 @@ quick_filter(
  */
 t_bool
 quick_filter_select_posted_art(
-	struct t_group *group,
+	const struct t_group *group,
 	const char *subj,
 	const char *a_message_id)	/* return value is always ignored */
 {
@@ -1676,7 +1686,7 @@ quick_filter_select_posted_art(
  */
 static t_bool
 add_filter_rule(
-	struct t_group *group,
+	const struct t_group *group,
 	struct t_article *art,
 	struct t_filter_rule *rule,
 	t_bool quick_filter_rule)
@@ -1759,6 +1769,16 @@ add_filter_rule(
 			case FILTER_REFS_ONLY:
 				ptr[i].msgid = my_strdup(acbuf);
 				ptr[i].fullref = rule->counter;
+				break;
+
+			case FILTER_XREF_CASE_IGNORE:
+				ptr[i].xref = my_strdup(acbuf);
+				str_lwr(ptr[i].xref);
+				break;
+
+			case FILTER_PATH_CASE_IGNORE:
+				ptr[i].path = my_strdup(acbuf);
+				str_lwr(ptr[i].path);
 				break;
 
 			default: /* should not happen */
@@ -1897,7 +1917,7 @@ filter_articles(
 	 * ie. group=comp.os.linux.help  scope=comp.os.linux.*
 	 */
 	inscope = set_filter_scope(group);
-	if (!cmd_line && !batch_mode)
+	if (!cmd_line && !batch_mode) /* FIXME: txt_filter_global_rules always uses plural-form "rules" */
 		wait_message(0, _(txt_filter_global_rules), inscope, group->glob_filter->num);
 	num = group->glob_filter->num;
 	ptr = group->glob_filter->filter;
@@ -2120,10 +2140,10 @@ filter_articles(
 				 */
 				if (arts[i].xref && *arts[i].xref) {
 					if (ptr[j].score && ptr[j].xref != NULL) {
-						char *s, *e, *k;
+						char *e, *k;
+						const char *s = arts[i].xref;
 						t_bool skip = FALSE;
 
-						s = arts[i].xref;
 						if (strchr(s, ' ') || strchr(s, '\t')) {
 							while (*s && !isspace((unsigned char) *s))	/* skip server name */
 								++s;
@@ -2190,7 +2210,7 @@ filter_articles(
 				/*
 				 * Filter on Path: lines
 				 */
-				if (arts[i].path && *arts[i].path) {
+				if (arts[i].path) {
 					if (ptr[j].path != NULL) {
 						switch (test_match(arts[i].path, ptr[j].path, ptr[j].icase, use_regex, &regex_cache_path[j])) {
 							case 1:

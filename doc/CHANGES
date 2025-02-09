@@ -1,4 +1,62 @@
--- 2.6.4 release 20241128 "" --
+-- 2.6.4 release 20250209 "" --
+
+ 028) Bjarni Ingi Gislason <bjarniig@simnet.is>
+      ADD. manpage fixes (debian bug #1093395)
+      FIX. tin.1
+
+ 027) Dennis Preiser <dennis@d--p.de>
+      ADD. avoid macro in snprintf() as that might be a macro too
+      ADD. fallback code for the !CPP_DOES_CONCAT case
+      ADD. plural forms
+      ADD. prefer MIME filename*-parameter over filename-parameter
+      ADD. if a MIME filename parameter is empty after path removal fallback
+           to the next filename parameter if available.
+      ADD. PageToggleVerbatim (,)
+      ADD. validate undeclared_charset in 'M'enu
+      BUG. -L/'L' did depend on sort_article_type/sort_threads_type
+           and failed for some combinations
+      BUG. possible memleaks
+      FIX. art.c, cook.c, feed.c, filter.c, global.c, group.c, header.c, help.c
+           keymap.c, lang.c, main.c, nntplib.c, options_menu.c, page.c, post.c
+           prompt.c, rfc2046.c, select.c, extern.h, keymap.h, tin.h, tin.[15]
+
+ 026) Urs Janssen <urs@tin.org>
+      ADD. avoid bison warning
+      ADD. use ngettext(3) for plural-forms
+      ADD. avoid "install -D"
+      ADD. --with-url-normalization[=[uriparser,curl] (default: yes)
+           check for liburiparser or libcurl for URL normalization
+      ADD. if reading via NNTP Message-ID 'L'ookup in group-, thread- and
+           page level now try to find the ID via NNTP if the ID is not
+           in the current group
+      ADD. adjust IPv6 part of URL_REGEX
+      ADD. do not check for libgsasl but zlib if not using NNTP
+      ADD. move setlocale in write_overview() out of the loop
+      ADD. reject invalid undeclared_charset in attributes
+      ADD. if cache_overview_files is set, keep raw Subject and From
+           data so the cache is build with the original data instead
+           of trying recompile it from our preprocessed data.
+      ADD. hash Path in overview-data
+      ADD. Xref- and Path-filter to filter-menu
+      BUG. mixed up error-messages
+      BUG. missing checks for empty string in From
+      BUG. possible memleaks
+      FIX. active.c, art.c, charset.c, config.c, cook.c, feed.c, filter.c
+           group.c, header.c, init.c, keymap.c, lang.c, main.c, memory.c
+           misc.c, newsrc.c, nntplib.c, nntps.c, options_menu.c, page.c, pgp.c
+           post.c, rfc1524.c, rfc2045.c, save.c, select.c, search.c, string.c
+           thread.c, xref.c, extern.h, proto.h, tin.h, tinrc.h, parsdate.y
+           autoconf.h[in], tincfg.tbl, Makefile[.in], configure[.in]
+
+ 025) Toomas Soome <tsoome@me.com>
+      ADD. updated Estonian translation
+      FIX. et.po
+
+-- 2.6.4 release 20241224 "Helmsdale" --
+
+ 024) Bjarni Ingi Gislason <bjarniig@simnet.is>
+      ADD. manpage fixes (debian bug #1089489)
+      FIX. tin.1
 
  023) Thomas E. Dickey <dickey@invisible-island.net>
       REM. bundled-intl stuff
@@ -52,7 +110,7 @@
            prompt.c, refs.c, regex.c, rfc2046.c, rfc2047.c, save.c, screen.c
            search.c, select.c, sigfile.c, signal.c, string.c, tags.c, thread.c
            version.c, xref.c, parsdate.y, extern.h, keymap.h, newsrc.h, proto.h
-           rfc2046.h, tin.h, tinrc.h, tincfg.tbl
+           rfc2046.h, tin.h, tinrc.h, tincfg.tbl, tin.1, tin.5
 
  019) Urs Janssen <urs@tin.org>
       ADD. silence some unused parameter warnings
@@ -103,7 +161,8 @@
       ADD. basic (no custom-messages) $MAILPATH support
       ADD. skip reading attributes with -Z
       ADD. skip reading filter-file with -u
-      ADD. warn about -u[owXzZ] and -o[SZ] -R[ACcgkLSTZ] (useless combination)
+      ADD. warn about -u[owXzZ] and -o[SZ] -R[ACcgkLSTZ] -XS (useless
+           combinations)
       ADD. mention $TINRC value in useless combination message
       ADD. create INDEX_LOCK (used by 'u') in ${TIN_HOMEDIR:-"$HOME"}/.tin
            instead of $TMPDIR
@@ -121,6 +180,9 @@
            tin.defaults)
       ADD. -F filter-file cmd.-line option
       ADD. warn on "Re:"/"Re: " only Subject
+      ADD. allow hex-numbers for cmd.-line switches which take numeric args
+      ADD. %C, %F, %P, %k, %l, %s, %u to strftime(3)-fallback
+      ADD. compress_overview_files tinrc-option
       REM. tmpfile.c
       REM. --with-sum specifying the sum of uue-file got more and more
            uncommon at the end of last century and uue mostly vanished
@@ -140,7 +202,7 @@
       BUG. a From longer than > cCOLS wasn't properly truncated
            before appending organitazion in the pager
       BUG. may truncate format string instead of result in draw_page_header
-      BUG. -X did not disallow EditFilter
+      BUG. -X did not disallow EditFilter and -S
       BUG. -o did not read keymap-file but it may ask questions so it should.
       BUG. -vD NTTP didn't log full LISTGROUP responses
       FIX. active.c, art.c, attrib.c, auth.c, charset.c, config.c, cook.c

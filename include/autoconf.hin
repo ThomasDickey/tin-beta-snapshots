@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-16
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2025 Thomas Dickey <dickey@invisible-island.net>
@@ -906,4 +906,13 @@
  */
 #	undef HAVE_LIBURIPARSER
 
+/*
+ * otherwise use libcurl to validate URIs
+ */
+#	undef HAVE_LIBCURL
+
+/*
+ * do we have curses_version()?
+ */
+#	undef HAVE_CURSES_VERSION
 #endif /* !TIN_AUTOCONF_H */

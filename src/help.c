@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-26
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -535,6 +535,7 @@ static t_help_page page_help_page[] = {
 	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
 	{ txt_help_article_toggle_highlight, PAGE_TOGGLE_HIGHLIGHTING },
+	{ txt_help_article_toggle_verbatim, PAGE_TOGGLE_VERBATIM },
 	{ txt_help_article_toggle_tex2iso, PAGE_TOGGLE_TEX2ISO },
 	{ txt_help_article_toggle_tabwidth, PAGE_TOGGLE_TABS },
 	{ txt_help_article_toggle_uue, PAGE_TOGGLE_UUE },

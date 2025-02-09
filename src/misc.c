@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-26
+ *  Updated   : 2025-02-07
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -111,6 +111,10 @@
 
 #ifdef HAVE_LIBURIPARSER
 #	include <uriparser/Uri.h>
+#else
+#	ifdef HAVE_LIBCURL
+#		include <curl/curl.h>
+#	endif /* HAVE_LIBCURL */
 #endif /* HAVE_LIBURIPARSER */
 
 /*
@@ -125,7 +129,7 @@
 /*
  * Local prototypes
  */
-static char *strfpath_cp(char *str, char *tbuf, const char *endp);
+static char *strfpath_cp(char *str, const char *tbuf, const char *endp);
 static int _strfpath(const char *format, char *str, size_t maxsize, struct t_group *group, t_bool expand_all);
 static int gnksa_check_domain(char *domain);
 static int gnksa_check_domain_literal(const char *domain);
@@ -468,7 +472,7 @@ t_bool
 invoke_editor(
 	const char *filename,
 	int lineno,
-	struct t_group *group) /* return value is always ignored */
+	const struct t_group *group) /* return value is always ignored */
 {
 	char buf[PATH_LEN];
 	char editor_format[PATH_LEN];
@@ -511,7 +515,7 @@ invoke_editor(
 t_bool
 invoke_ispell(
 	const char *nam,
-	struct t_group *group) /* return value is always ignored */
+	const struct t_group *group) /* return value is always ignored */
 {
 	FILE *fp_all, *fp_body, *fp_head;
 	char buf[PATH_LEN], nam_body[PATH_LEN], nam_head[PATH_LEN];
@@ -722,9 +726,10 @@ tin_done(
 
 			if (wrote_newsrc_lines < read_newsrc_lines) {
 				/* FIXME: prompt for retry? (i.e. remove break) */
+				/* FIXME: translatable/plural-forms */
 				wait_message(0, _(txt_warn_newsrc), newsrc,
 					(read_newsrc_lines - wrote_newsrc_lines),
-					PLURAL(read_newsrc_lines - wrote_newsrc_lines, txt_group),
+					P_(txt_group_sp[0], txt_group_sp[1], read_newsrc_lines - wrote_newsrc_lines),
 					OLDNEWSRC_FILE);
 				if (!batch_mode)
 					prompt_continue();
@@ -1002,16 +1007,12 @@ base_name(
 	const char *fullpath,		/* /foo/bar/baz */
 	char *file)				/* baz */
 {
-	size_t i;
+	char *p = strrchr(fullpath, '/');
 
-	strcpy(file, fullpath);
-
-	for (i = strlen(fullpath) - 1; i; i--) {
-		if (fullpath[i] == '/') {
-			strcpy(file, fullpath + i + 1);
-			break;
-		}
-	}
+	if (p && *(p + 1))
+		strcpy(file, p + 1);
+	else
+		strcpy(file, fullpath);
 }
 
 
@@ -1246,7 +1247,7 @@ get_author(
 
 		free(p);
 
-		/* we stop if there is no room for at least one character after ”, ” */
+		/* we stop if there is no room for at least one character after ", " */
 		if (rem_len < 5)
 			mb = NULL;
 		else if ((mb = mb->next)) {
@@ -1324,8 +1325,6 @@ show_color_status(
 /*
  * Check for lock file to stop multiple copies of tin -u running and if it
  * does not exist create it so this is the only copy running
- *
- * FIXME: get rid of hard coded pid-length as pid_t might be long
  */
 void
 create_index_lock_file(
@@ -1333,13 +1332,22 @@ create_index_lock_file(
 {
 	FILE *fp;
 	char buf[64];
+	char *cp;
 	int err;
 	time_t epoch;
 
 	if ((fp = tin_fopen(the_lock_file, "r")) != NULL) {
 		err = (fgets(buf, (int) sizeof(buf), fp) == NULL);
 		fclose(fp);
-		error_message(2, "%s: Already started pid=[%d] on %s", tin_progname, err ? 0 : s2i(buf, 0, INT_MAX), err ? "-" : buf + 9);
+		if (!err) {
+			for (cp = buf; *cp; cp++) {
+				if (!isdigit((unsigned char) *cp) && !isspace((unsigned char) *cp))
+					break;
+			}
+			/* TODO:check errno after s2i()? (EINVAL == malformed lock) */
+			error_message(2, "%s: Already started pid=[%d] on %s", tin_progname, s2i(buf, 0, INT_MAX), BlankIfNull(cp));
+		} else
+			error_message(2, "%s: Already started", tin_progname);
 #ifdef DEBUG
 		if (debug & DEBUG_MISC) {
 			if (!err)
@@ -1359,7 +1367,7 @@ create_index_lock_file(
 #	endif /* HAVE_CHMOD */
 #endif /* HAVE_FCHMOD */
 		(void) time(&epoch);
-		fprintf(fp, "%6d  %s\n", (int) process_id, str_trim(ctime(&epoch)));
+		fprintf(fp, "%ld  %s\n", (long) process_id, BlankIfNull(str_trim(ctime(&epoch))));
 		if ((err = ferror(fp)) || fclose(fp)) {
 			error_message(2, _(txt_filesystem_full), the_lock_file);
 			if (err) {
@@ -1626,7 +1634,7 @@ out:
 static char *
 strfpath_cp(
 	char *str,
-	char *tbuf,
+	const char *tbuf,
 	const char *endp)
 {
 	size_t i;
@@ -1682,7 +1690,7 @@ _strfpath(
 	char tbuf[PATH_LEN];
 	const char *startp = format;
 	int i;
-	struct passwd *pwd;
+	const struct passwd *pwd;
 	t_bool is_mailbox = FALSE;
 
 	if (str == NULL || format == NULL || maxsize == 0)
@@ -1917,7 +1925,7 @@ strfpath(
 char *
 escape_shell_meta(
 	const char *source,
-	int quote_area)
+	enum quote_enum quote_area)
 {
 	static char buf[PATH_LEN];
 	char *dest = buf;
@@ -1963,9 +1971,6 @@ escape_shell_meta(
 				--space;
 			}
 			break;
-
-		default:
-			break;
 	}
 
 	*dest = '\0';
@@ -1995,7 +2000,7 @@ strfmailer(
 	const char *endp;
 	const char *start = dest;
 	char tbuf[PATH_LEN];
-	int quote_area = no_quote;
+	enum quote_enum quote_area = no_quote;
 
 	/*
 	 * safe guards: no destination to write to, no format, no space to
@@ -2228,7 +2233,7 @@ get_initials(
 		}
 		ptr[j] = '\0';
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		/* we stop if there is no room for at least one character after ”, ” */
+		/* we stop if there is no room for at least one character after ", " */
 		if (rem_len < 5)
 			mb = NULL;
 		else if ((mb = mb->next)) {
@@ -3151,7 +3156,7 @@ gnksa_dequote_plainphrase(
 	char *decoded,
 	int addrtype)
 {
-	char *rpos;	/* read position */
+	const char *rpos;	/* read position */
 	char *wpos;	/* write position */
 	int initialstate;	/* initial state */
 	int state;	/* current state */
@@ -3427,7 +3432,7 @@ gnksa_check_domain_literal(
 			}
 
 			free(p);
-            return n;
+			return n;
 		}
 #endif /* HAVE_INET_PTON && AF_INET6 */
 
@@ -3739,7 +3744,7 @@ gnksa_split_from(
 #endif /* 0 */
 			return GNKSA_ATSIGN_MISSING;
 
-		if (l == strlen(addr_begin))
+		if (l == strlen(address))
 			return GNKSA_MISSING_REALNAME;
 
 		/* get realname part */
@@ -4122,16 +4127,16 @@ idna_decode(
 	{
 		char *t, *s = NULL;
 		int rs = IDN2_ICONV_FAIL;
-		int len;
+		size_t len;
 
 		if ((t = strrchr(out, '@')))
 			++t;
 		else
 			t = out;
 
-		len = (t - out);
+		len = (size_t) (t - out);
 
-		if (len > 0 && (rs = idn2_to_unicode_lzlz(t, &s, IDN2_USE_STD3_ASCII_RULES)) == IDN2_OK) {
+		if (len && (rs = idn2_to_unicode_lzlz(t, &s, IDN2_USE_STD3_ASCII_RULES)) == IDN2_OK) {
 			char *q = my_strndup(out, len); /* local-part@ */
 
 			free(out);
@@ -4454,8 +4459,19 @@ tin_version_info(
 		++wlines;
 
 #	ifdef USE_CURSES
+#		ifdef HAVE_CURSES_VERSION
 		fprintf(fp, "\tCURSES   = \"%s\"\n", curses_version());
 		++wlines;
+#		else
+#			if defined(NCURSES_VERSION_MAJOR) && NCURSES_VERSION_MAJOR < 5
+		fprintf(fp, "\tCURSES   = \"ncurses %s\"\n", NCURSES_VERSION);
+		++wlines;
+#			endif /* NCURSES_VERSION_MAJOR && NCURSES_VERSION_MAJOR < 5*/
+#			if defined(PDCURSES) && defined(PDC_VERDOT)
+		fprintf(fp, "\tCURSES   = \"PDCurses %s\"\n", PDC_VERDOT);
+		++wlines;
+#			endif /* PDCURSES && PDC_VERDOT */
+#		endif /* HAVE_CURSES_VERSION */
 #	endif /* USE_CURSES */
 
 #	ifdef USE_GSASL
@@ -4503,6 +4519,11 @@ tin_version_info(
 #	ifdef HAVE_LIBURIPARSER
 		fprintf(fp, "\tURIPARSER= \"%s\"\n", URI_VER_ANSI);
 		++wlines;
+#	else
+#		ifdef HAVE_LIBCURL
+		fprintf(fp, "\tCURL     = \"%s\"\n", LIBCURL_VERSION);
+		++wlines;
+#		endif /* HAVE_LIBCURL */
 #	endif /* HAVE_LIBURIPARSER */
 #	if defined(USE_CANLOCK) && defined(CL_API_MAJOR) && defined(CL_API_MINOR)
 		fprintf(fp, "\tCANLOCK  = \"%d.%d\"\n", CL_API_MAJOR, CL_API_MINOR);
@@ -4857,8 +4878,7 @@ make_connection_page(
 #	if defined(NNTPS_ABLE)
 		else {
 			if (use_nntps) {
-				fprintf(fp, _(txt_conninfo_nntps), insecure_nntps ? _(txt_conninfo_untrusted) : _(txt_conninfo_trusted), can_post ? _(txt_conninfo_rw) : _(txt_conninfo_ro));
-
+				fprintf(fp, insecure_nntps ? _(txt_conninfo_untrusted) : _(txt_conninfo_trusted), can_post ? _(txt_conninfo_rw) : _(txt_conninfo_ro));
 #		ifdef HAVE_LIB_LIBTLS
 				fprintf(fp, txt_conninfo_libressl, TLS_API);
 #		else
@@ -4900,6 +4920,7 @@ make_connection_page(
 #endif /* !NNTP_ONLY */
 
 	fprintf(fp, "%s", _(txt_conninfo_conf_files));
+	/* TODO: hide if empty? */
 	fprintf(fp, "tin.defaults       : %s\n", global_defaults_file);
 
 	fprintf(fp, "attributes (local) : %s\n", local_attributes_file);
@@ -4919,6 +4940,7 @@ make_connection_page(
 	fprintf(fp, "\n");
 	fprintf(fp, ".newsrc            : %s\n", newsrc);
 
+	/* TODO: mention "gzip" if compress_overview_files? */
 	if (tinrc.cache_overview_files)
 		fprintf(fp, "local overviews    : %s\n", index_newsdir);
 }
@@ -4960,7 +4982,7 @@ srndm(
 	time_t t;
 
 	if ((t = time(NULL)) == (time_t) -1)
-		t = (time_t) getpid();
+		t = (time_t) process_id;
 	else {
 		if (t >= 1041379200) /* 2003-01-01 00:00:00 GMT */
 			t -= 1041379200;
@@ -4980,9 +5002,9 @@ srndm(
 
 /*
  * opens pathname with mode if it is S_IFREG or S_IFLNK
- * if mode is "r" its size needs to be > 0L
+ * if mode is "r[b]" (read only) its size needs to be > 0L
  * returns FILE* on success or NULL on failure
- * if NULL is returned and errno is 0, either had a zero size
+ * if NULL is returned and errno is 0, it either had a zero size
  * or was neither S_IFDIR, S_IFLNK or S_IFREG.
  *
  * TODO: do something on EISDIR
@@ -5007,7 +5029,7 @@ tin_fopen(
 				serrno = errno = EISDIR;
 			else {
 				if (st.st_mode & (S_IFREG | S_IFLNK)) {
-					if (mode[0] == 'r' && mode[1] == '\0' && st.st_size <= 0L) {
+					if (mode[0] == 'r' && (mode[1] == '\0' || (mode[1] == 'b' && mode[2] == '\0')) && st.st_size <= 0L) {
 #ifdef DEBUG
 						if (debug & DEBUG_MISC)
 							error_message(2, "Skipping empty file: %s", pathname);
@@ -5173,7 +5195,7 @@ tin_ucnv_buffer_to_local(
 
 	/* copy result */
 	free(*line);
-	*line = strdup(output_buffer);
+	*line = my_strdup(output_buffer);
 	*max_line_len = strlen(output_buffer);
 
 	/* cleanup */
@@ -5185,3 +5207,45 @@ tin_ucnv_buffer_to_local(
 }
 #	endif /* CHARSET_CONVERSION_UCNV */
 #endif /* CHARSET_CONVERSION */
+
+
+int
+sync_close(
+	int fd)
+{
+	int rc;
+
+#ifdef HAVE_FSYNC
+#	ifdef EINTR
+fsync_again:
+#	endif /*EINTR */
+	if ((rc = fsync(fd)) < 0) {
+		int serrno;
+
+#	ifdef EINTR
+		if (errno == EINTR)
+			goto fsync_again;
+#	endif /* !EINTR */
+
+		serrno = errno;
+		close(fd);
+		errno = serrno;
+		return -1;
+	}
+#endif /* HAVE_FSYNC */
+
+#ifdef EINTR
+close_again:
+#endif /* EINTR */
+	rc = close(fd);
+#ifdef EINTR
+	if (rc < 0 && errno == EINTR) {
+		struct stat st;
+
+		if (fstat(fd, &st) == 0) /* fd still open? */
+			goto close_again;
+	}
+#endif /* EINTR */
+
+	return rc;
+}

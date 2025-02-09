@@ -2,11 +2,11 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2024-11-21
+.\" Updated   : 2025-01-19
 .\" Notes     : needs a some work, see TODOs
 .\"
 .\"
-.TH tin 5 "December 24th, 2023" "2.6.4" "Usenet newsreader"
+.TH tin 5 "December 24th, 2024" "2.6.4" "Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -38,17 +38,17 @@ endings.
 .\" $TMPDIR/SCOPES-R   (-D 32)
 .\" $TMPDIR/SCOPES-W   (-D 32)
 .\" $TMPDIR/ACTIVE     (-D 64)
-.IR $MAILCAPS
+.I $MAILCAPS
 .br
-.IR ~/.mailcap
+.I ~/.mailcap
 .br
-.IR /etc/mailcap
+.I /etc/mailcap
 .br
-.IR /usr/etc/mailcap
+.I /usr/etc/mailcap
 .br
-.IR /usr/local/etc/mailcap
+.I /usr/local/etc/mailcap
 .br
-.IR /etc/mail/mailcap
+.I /etc/mail/mailcap
 .sp
 .RS
 .BR \%mailcap (5)
@@ -189,7 +189,7 @@ Example:
 .br
 image/*;\\
 .br
-.in +.3i
+.in +0.3i
 xv \-8 \-geometry +0 '%s';\\
 .br
 description=%{name} %t\-Image;\\
@@ -197,11 +197,11 @@ description=%{name} %t\-Image;\\
 test=test "$DISPLAY" != "";\\
 .br
 nametemplate=%s.IMAGE
-.in -.3i
+.in -0.3i
 .sp
 message/rfc822;\\
 .br
-.in +.3i
+.in +0.3i
 ${PAGER:\-"more"} '%s';\\
 .br
 edit=${EDITOR:\-"vi"} '%s';\\
@@ -211,13 +211,13 @@ compose=${EDITOR:\-"vi"} '%s';\\
 print=a2ps '%s';\\
 .br
 needsterminal
-.in -.3i
+.in -0.3i
 .fi
 .RE
 .RE
 .PP
 
-.IR /etc/nntpserver
+.I /etc/nntpserver
 .sp
 .RS
 default NNTP-server to read news from if not reading from the local spool.
@@ -227,7 +227,7 @@ priority.
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret
+.I ${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret
 .sp
 .RS
 secret to be used for cancel-locks if
@@ -237,18 +237,18 @@ creation in that case. This file should be readable only by the user.
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.mime.types
+.I ${TIN_HOMEDIR:\-"$HOME"}/.mime.types
 .br
-.IR /etc/mime.types
+.I /etc/mime.types
 .br
-.IR /etc/tin/mime.types
+.I /etc/tin/mime.types
 .sp
 .RS
 mime type / filename extension pairs
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.newsauth
+.I ${TIN_HOMEDIR:\-"$HOME"}/.newsauth
 .sp
 .RS
 "\fInntpserver[:port]\fR \fIpassword\fR [\fIuser\fR]" pairs for NNTP servers
@@ -283,7 +283,7 @@ news.example.com  "top secret"  james.bond@example.com
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.newsrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.newsrc
 .sp
 .RS
 "\fInewsgroup\fR\fIflag\fR [\fIarticle\fR[,\fIarticle\fR | \-\fIarticle\fR]...]"
@@ -314,7 +314,7 @@ news.software.readers: 1\-19567,19571\-19597
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/.oldnewsrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/.oldnewsrc
 .fi
 .sp
 .RS
@@ -322,30 +322,30 @@ backup of \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.signature
+.I ${TIN_HOMEDIR:\-"$HOME"}/.signature
 .br
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.Sig
+.I ${TIN_HOMEDIR:\-"$HOME"}/.Sig
 .sp
 .RS
 signature
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.sigfixed
+.I ${TIN_HOMEDIR:\-"$HOME"}/.sigfixed
 .sp
 .RS
 fixed part of a randomly generated signature, this will be added first
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/.inputhistory
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/.inputhistory
 .sp
 .RS
 history of last used strings
 .RE
 .PP
 
-.IR ${TIN_INDEX_MAILDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.mail/
+.I ${TIN_INDEX_MAILDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.mail/
 .sp
 .RS
 mailgroups index files
@@ -353,7 +353,7 @@ mailgroups index files
 .PP
 
 .nf
-.IR ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news${NNTPSERVER:+"\-$NNTPSERVER"}/
+.I ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news${NNTPSERVER:+"\-$NNTPSERVER"}/
 .fi
 .sp
 .RS
@@ -361,14 +361,14 @@ newsgroups index files
 .RE
 .PP
 
-.IR ${TIN_INDEX_SAVEDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.save/
+.I ${TIN_INDEX_SAVEDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.save/
 .sp
 .RS
 saved newsgroups index files
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail
 .sp
 .RS
 active file ("\fImailgroupname\fR \fImaxnum\fR \fIminnum\fR
@@ -403,7 +403,7 @@ They are accessed via /home/foo/Mail/inbox and /home/foo/Mail/outbox
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.save
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.save
 .sp
 .RS
 active file of user's saved newsgroups, used by \fBtin \-R\fP.
@@ -414,9 +414,9 @@ active file of user's saved newsgroups, used by \fBtin \-R\fP.
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths (/news/etc/)
 .\" ${TIN_LIBDIR\-/news/etc"}/attributes
-.IR /etc/tin/attributes
+.I /etc/tin/attributes
 .br
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes
 .sp
 .RS
 The group attributes files may be used to override some global settings from
@@ -696,7 +696,7 @@ Identical to the tinrc variable \fBdefault_filter_select_header\fP
 .B ispell
 Path and options for
 .BR \%ispell (1)-like
-spell-checker, e.g. "aspell \-\-mode=email \-\-dont\-backup check"
+spell-checker, e.g., "aspell \-\-mode=email \-\-dont\-backup check"
 .TP
 .B mm_network_charset
 Identical to the tinrc variable of the same name
@@ -768,7 +768,7 @@ undeclared_charset=ISO\-2022\-JP\-2
 .PP
 
 .\" TODO: add missing descriptions and explain things in detail.
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/filter
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/filter
 .sp
 .RS
 The filter file is used to assign scores to certain articles. Based on the
@@ -804,7 +804,7 @@ on the setting of the tinrc variable \fBwildcard\fP.
 Match against ''From:''.
 .BR \%tin (1)
 converts the contents of the ''From:'' header to an old style e-mail
-address, e.g. ''some@body.example (John Doe)'' instead
+address, e.g., ''some@body.example (John Doe)'' instead
 of ''John Doe <some@body.example>'', before trying to match the patterns in
 the filter rule. The matching type used (wildmat or regex) depends on the
 setting of the tinrc variable \fBwildcard\fP.
@@ -836,7 +836,7 @@ Match against ''From:'' address parser return codes. <num matches less than,
 or GNKSA_INVALID_DOMAIN are only returned if \fBdisable_gnksa_domain_check\fP
 is set to false. As the built in domain list is outdated this should be
 considered carefully.
-.in +.3i
+.in +0.3i
 .nf
 .ta \w'%406	'u +\w'GNKSA_ZERO_LENGTH_LOCAL_WORD'u
 \fB  0\fP	GNKSA_OK
@@ -869,12 +869,12 @@ considered carefully.
 \fB405\fP	GNKSA_INVALID_REALNAME
 \fB406\fP	GNKSA_MISSING_REALNAME
 .fi
-.in -.3i
+.in -0.3i
 .TP
 .B xref
 Match against ''Xref:'' line. Before any matching is done the line is
 turned into the same format ''Newsgroups:'' has that is it is turned
-into a comma separated newsgroup list with all other information (i.e.
+into a comma separated newsgroup list with all other information (i.e.,
 the article counter) removed. The matching type used (wildmat or regex)
 depends on the setting of the tinrc variable \fBwildcard\fP.
 .TP
@@ -911,9 +911,9 @@ msgid_only=@googlegroups\\.com>
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
 .br
-.IR /etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
+.I /etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
 .fi
 .sp
 .RS
@@ -1065,6 +1065,7 @@ is bound to NULL it is unassigned.
 \fBPageViewUrl\fP	U
 \fBPageViewAttach\fP	V
 \fBPageToggleHighlight\fP	_
+\fBPageToggleVerbatim\fP	,
 \fBPageEditArticle\fP	e
 \fBPageFollowupQuote\fP	f
 \fBPageFirstPage\fP	g
@@ -1159,7 +1160,7 @@ is bound to NULL it is unassigned.
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups
 .sp
 .RS
 This file provides short descriptions of each mailgroup. (requires
@@ -1175,7 +1176,7 @@ is a short single-line description of the group
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable
 .sp
 .RS
 "\fInntpserver[:port]\fR \fInewsrc\fR [\fIshortname\fR [\fI...\fR]]"
@@ -1207,20 +1208,20 @@ news.tin.org .newsrc\-tin.org tinorg
 .br
 news.example.org /tmp/nrc\-ex example ex
 .br
-[::1]:1119 /tmp/localhost6-1119 lh6
+[::1]:1119 /tmp/localhost6\-1119 lh6
 .br
 # catch all rules should go last
 .br
 # with the more specific one on top
 .br
-*:563 ~/.tin/newsrcs/${NNTPSERVER-localhost}:563/newsrc
+*:563 ~/.tin/newsrcs/${NNTPSERVER\-localhost}:563/newsrc
 .br
-* ~/.tin/newsrcs/${NNTPSERVER-localhost}/newsrc
+* ~/.tin/newsrcs/${NNTPSERVER\-localhost}/newsrc
 .RE
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/posted
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/posted
 .sp
 .RS
 Posting history. The file is written by
@@ -1235,7 +1236,7 @@ messages ''Message\-ID'' if known.
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/Mail/posted
+.I ${TIN_HOMEDIR:\-"$HOME"}/Mail/posted
 .sp
 .RS
 Copy of all posted articles in
@@ -1245,7 +1246,7 @@ format. The filename can be changed by setting
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/postponed.articles
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/postponed.articles
 .sp
 .RS
 Pool of postponed articles. This file is in
@@ -1255,7 +1256,7 @@ format.
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/motd
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/motd
 .fi
 .sp
 .RS
@@ -1266,7 +1267,7 @@ command-line option and is unlinked on exit.
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
 .fi
 .sp
 .RS
@@ -1276,7 +1277,7 @@ error-messages. The file is overwritten on startup and meant for debugging.
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups
 .fi
 .sp
 .RS
@@ -1295,7 +1296,7 @@ is a short single-line description of the group
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc
 .fi
 .sp
 .RS
@@ -1322,9 +1323,9 @@ to keep track of new newsgroups on the server.
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths (/news/etc/)
 .\" .IR ${TIN_LIBDIR\-"/news/etc"}/tinrc
-.IR /etc/tin/tinrc
+.I /etc/tin/tinrc
 .br
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc
 .sp
 .RS
 At startup,
@@ -1427,6 +1428,11 @@ If ON, create local copies of NNTP overview files. This can be used to
 considerably speed up accessing large groups when using a slow connection.
 Default is OFF.
 .TP
+.B compress_overview_files
+If ON, locally cached NNTP overview files (\fBcache_overview_files\fP) are
+saved in compressed form (\fBRFC\%1952\fP). Useful to reduce local disk
+space used. Default is OFF.
+.TP
 .B cancel_lock_algo
 Use this hash algorithm for cancel-locks. Only available when built with
 cancel-lock support. none disables the generation of cancel-locks. Valid
@@ -1526,7 +1532,7 @@ Color of help/mail sign
 .B confirm_choice
 .BR \%tin (1)
 can ask for manual confirmation to protect the user. Available choices:
-.in +.5i
+.in +0.5i
 .BR commands :
 Ask for confirmation before executing certain dangerous commands (e.g.,
 \fBCatchup\fP ('\fBc\fP')). Commands that this affects are marked in
@@ -1541,7 +1547,7 @@ when you use the \fBQuit\fP ('\fBq\fP') command.
 .BR select :
 Ask for confirmation before marking all not selected (with
 \fBGroupMarkUnselArtRead\fP ('\fBX\fP') command) articles as read.
-.in -.5i
+.in -0.5i
 Default is commands & quit.
 .TP
 .B date_format
@@ -1580,9 +1586,9 @@ ON=apply to all groups, OFF=apply to current group. Default is ON.
 .TP
 .B default_filter_kill_header
 Default for quick (1 key) kill filter header.
-.in +.3i
-.nf
-.ta \w'0,1   'u +\w'\'\'Message\-ID:\'\' & last \'\'References:\'\' entry only'u
+.in +0.3i
+.TS
+r L.
 0	''Subject:'' (case sensitive)
 1	''Subject:'' (ignore case)
 2	''From:'' (case sensitive)
@@ -1591,8 +1597,8 @@ Default for quick (1 key) kill filter header.
 5	''Message\-ID:'' & last ''References:'' entry only
 6	''Message\-ID:'' entry only
 7	''Lines:''
-.fi
-.in -.3i
+.TE
+.in -0.3i
 .TP
 .B default_filter_select_case
 Default for quick (1 key) auto-selection filter case. ON=filter case
@@ -1609,9 +1615,9 @@ ON=apply to all groups, OFF=apply to current group. Default is ON.
 .TP
 .B default_filter_select_header
 Default for quick (1 key) auto-selection filter header.
-.in +.3i
-.nf
-.ta \w'0,1   'u +\w'\'\'Message\-ID:\'\' & last \'\'References:\'\' entry only'u
+.in +0.3i
+.TS
+r L.
 0	''Subject:'' (case sensitive)
 1	''Subject:'' (ignore case)
 2	''From:'' (case sensitive)
@@ -1620,8 +1626,8 @@ Default for quick (1 key) auto-selection filter header.
 5	''Message\-ID:'' & last ''References:'' entry only
 6	''Message\-ID:'' entry only
 7	''Lines:''
-.fi
-.in -.3i
+.TE
+.in -0.3i
 .TP
 .B default_goto_group
 .TP
@@ -1713,14 +1719,14 @@ If ON catchup group when leaving with the left arrow key. Default is ON.
 .B group_format
 The format string used for the Group level. Default is
 "%n\ %m\ %R\ %L\ \ %s\ \ %F". The following substitutions are supported:
-.in +.3i
+.in +0.3i
 .nf
 .ta \w'%G    'u +\w'number of responses in thread'u
 %D	date
 %F	from, name and/or address
 %I	initials
 %L	line count
-%M	message-id
+%M	message\-id
 %R	number of responses in thread
 %S	score
 %m	article marks
@@ -1728,7 +1734,7 @@ The format string used for the Group level. Default is
 %s	subject
 %%	%
 .fi
-.in -.3i
+.in -0.3i
 .TP
 .B hide_uue
 If set to 'No' then raw uuencoded data is displayed. If set to 'Yes'
@@ -1755,7 +1761,7 @@ available to display long subjects. Default is OFF.
 .TP
 .B interactive_mailer
 If greater than 0 your mailreader will be invoked earlier for reply so you
-can use more of its features (e.g. MIME, pgp, ...). 1 means include headers,
+can use more of its features (e.g., MIME, pgp, ...). 1 means include headers,
 2 means don't include headers (old use_mailreader_i=ON option). 0 turns off
 usage. This option has to suit \fBmailer_format\fP. Default is 0.
 .TP
@@ -1817,7 +1823,7 @@ Select one of the following mailbox-formats: MBOXO (default, except on SCO),
 MBOXRD or MMDF (default on SCO). See
 .BR \%mbox (5)
 and
-.BR RFC\%4155
+.B RFC\%4155
 for more details on MBOXO and MBOXRD and
 .BR \%mmdf (5)
 for more details about MMDF.
@@ -1836,16 +1842,16 @@ The format string used to create the mailer command with parameters that is
 used for mailing articles to other people. Default is '%M "%T" < %F' (e.g.,
 /bin/mail "iain" < ~/.article). The flexible format allows other mailers with
 different command line parameters to be used such as
-.in +.3i
+.in +0.3i
 .nf
 sendmail \-oem \-t < %F
 mutt \-H %F
 claws-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
-.in -.3i
+.in -0.3i
 \fBinteractive_mailer\fP must be set adequate. The following substitutions
 are supported:
-.in +.3i
+.in +0.3i
 .nf
 .ta \w'%S'u +\w'default_mailer'u
 %F	filename
@@ -1855,7 +1861,7 @@ are supported:
 %U	username
 %%	%
 .fi
-.in -.3i
+.in -0.3i
 .TP
 .B mark_saved_read
 If ON mark articles that are saved as read. Default is ON.
@@ -1907,10 +1913,10 @@ or
 if none of these functions are available on your system this option is
 disabled and you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP
 is limited to one of the following charsets:
-.in +.3i
+.in +0.3i
 US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU}
 EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2}, Big5, UTF-8
-.in -.3i
+.in -0.3i
 Not all values might work on your system, see
 .BR \%iconv_open (3)
 for more details. If it's not set, the value of the environment variable
@@ -1994,13 +2000,13 @@ uses to do the normalization. NFC should be used if possible (\fBRFC\%5198\fP).
 Format string
 .BR \%tin (1)
 uses for mime header at Page level.
-Default is "[-- %T%S%*n%z%*l%!c%!d%*e --]".
+Default is "[\-\- %T%S%*n%z%*l%!c%!d%*e \-\-]".
 .TP
 .B page_uue_format
 Format string
 .BR \%tin (1)
 uses for uue header at Page level.
-Default is "[-- %T%S%*n%I%!d%*e --]".
+Default is "[\-\- %T%S%*n%I%!d%*e \-\-]".
 .TP
 .B pos_first_unread
 If ON put cursor at first unread article in group otherwise at last
@@ -2168,13 +2174,13 @@ traditional
 .BR \%tin (1)
 page-by-page scrolling. Set to \-1 to get page-by-page
 scrolling where the top/bottom line is carried over onto the next page.
-This setting supersedes show_last_line_prev_page=ON. Set to \-2 to get
+This setting supersedes \fBshow_last_line_prev_page\fP=ON. Set to \-2 to get
 half-page scrolling. This setting supersedes \fBfull_page_scroll\fP=OFF.
 .TP
 .B select_format
 The format string used for the Selection level. Default is
 "%f\ %n\ %U\ \ %G\ \ %d". The following substitutions are supported:
-.in +.3i
+.in +0.3i
 .nf
 .ta \w'%G    'u +\w'current group number'u
 %G	group name
@@ -2184,7 +2190,7 @@ The format string used for the Selection level. Default is
 %n	current group number
 %%	%
 .fi
-.in -.3i
+.in -0.3i
 .TP
 .B sort_function
 Function used for sorting articles. Default is 0.
@@ -2410,7 +2416,7 @@ the group attribute variable \fBthread_articles\fP to 0 \(en 5 in the file
 .B thread_format
 The format string used for the Thread level. Default is
 "%n\ %m\ \ [%L]\ \ %T\ \ %F". The following substitutions are supported:
-.in +.3i
+.in +0.3i
 .nf
 .ta \w'%G    'u +\w'from, name and/or address'u
 %D	date
@@ -2424,7 +2430,7 @@ The format string used for the Thread level. Default is
 %n	current article number
 %%	%
 .fi
-.in -.3i
+.in -0.3i
 .TP
 .B thread_perc
 Defines how close the subjects must match while threading by Percentage
@@ -2620,7 +2626,7 @@ set.
 .RE
 .PP
 
-.IR /etc/tin/tin.defaults
+.I /etc/tin/tin.defaults
 .sp
 .RS
 Yet another global configuration file with "\fIvariable\fR=\fIvalue\fR"
@@ -2653,6 +2659,8 @@ Defines the directory containing the
 executable.
 .TP
 .B mm_charset
+.\" TODO: mention that it sets mm_network_charset if
+.\" charset-conversion is available.
 Default charset to be used in MIME's ''Content\-Type:'' header.
 $\fBMM_CHARSET\fP overrides any specified value.
 .TP
@@ -2718,7 +2726,7 @@ so you only have to change this setting if your configuration differs.
 .RE
 .PP
 
-.IR /usr/local/share/locale/$LC_MESSAGES/LC_MESSAGES/tin.mo
+.I /usr/local/share/locale/$LC_MESSAGES/LC_MESSAGES/tin.mo
 .sp
 .RS
 translation into language specified in $\fBLC_ALL\fP, $\fBLC_MESSAGES\fP or
@@ -2730,7 +2738,7 @@ $\fBLANG\fP
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths
 .\" (described shown below).
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}
 .sp
 .RS
 This file lists the newsgroups that the local site receives. Each newsgroup
@@ -2791,11 +2799,11 @@ instead.
 .RE
 .PP
 
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}/active.times
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}/active.times
 .sp
 .RS
 This file provides a chronological record of when newsgroups are created. It
-is normally updated by the local news server (e.g.
+is normally updated by the local news server (e.g.,
 .BR \%innd (8))
 whenever a new group is created. Each line consist of three space-separated
 fields "\fIname\fR \fItime\fR \fIcreator\fR".
@@ -2818,11 +2826,11 @@ uses the NEWGROUPS (\fBRFC\%3977\fP) command instead.
 .RE
 .PP
 
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups
 .sp
 .RS
 This file provides short descriptions of each newsgroup. It is normally
-updated by the local news server (e.g.
+updated by the local news server (e.g.,
 .BR \%innd (8))
 whenever a new group is created. Each line consist of two tab-separated
 fields "\fIgroup.name\fR	\fIone-line description\fR".
@@ -2841,7 +2849,7 @@ uses the LIST NEWSGROUPS (\fBRFC\%3977\fP) command instead.
 .RE
 .PP
 
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}/organization
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}/organization
 .sp
 .RS
 This file might hold a default organization to be used in
@@ -2850,7 +2858,7 @@ if set.
 .RE
 .PP
 
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}/overview.fmt
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}/overview.fmt
 .\" is the Path correct? or is it /news/etc/overview.fmt
 .sp
 .RS
@@ -2868,7 +2876,7 @@ uses the LIST OVERVIEW.FMT (\fBRFC\%3977\fP) command instead.
 .RE
 .PP
 
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions
 .\" is the Path correct? or is it /news/etc/subscriptions
 .sp
 .RS
@@ -2916,6 +2924,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR \%overview.fmt (5),
 .BR \%innd (8),
 .BR RFC\%1524 ,
+.BR RFC\%1952 ,
 .BR RFC\%2045 ,
 .BR RFC\%2046 ,
 .BR RFC\%2047 ,
@@ -2930,4 +2939,4 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR RFC\%5537 ,
 .BR RFC\%6048 ,
 .BR RFC\%6838 ,
-.BR RFC\%8143
+.B RFC\%8143

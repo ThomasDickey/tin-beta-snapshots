@@ -1,14 +1,13 @@
-.\"
 .\" Project   : tin - a Usenet newsreader
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-11-21
+.\" Updated   : 2025-01-23
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
-.TH tin 1 "December 24th, 2023" "2.6.4" "Usenet newsreader"
+.TH tin 1 "December 24th, 2024" "2.6.4" "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -67,7 +66,7 @@ command to view a list of the commands available at a particular
 level.
 .PP
 On startup \fBtin\fP will show a list of the newsgroups found in
-\fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR. An arrow '\->' or highlighted
+\fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR. An arrow '\(->' or highlighted
 bar will point to the first newsgroup. Move to a group by using the
 terminal arrow keys (terminal dependent) or \fBDown\fP ('\fBj\fP')
 and \fBUp\fP ('\fBk\fP'). Use PgUp/PgDn (terminal dependent) or
@@ -130,23 +129,23 @@ Don't load newsgroup descriptions and servers message of the day
 Enter debug-level, the levels can specified via number (should be avoided
 as it will be removed in the future) or name (case insensitive) as listed
 below. Use comma to give multiple levels, any combinations are allowed
-(e.g. ''\fB\-D\fP \fIGNKSA,2,NNTP\fP''). If removal is requested it will
+(e.g., ''\fB\-D\fP \fIGNKSA,2,NNTP\fP''). If removal is requested it will
 be performed at startup and on normal termination (that is the files are
 only available while tin is running).
 .in +.3i
-.nf
-.ta \w'%128 'u +\w'ATTRIBUTES 'u +\w'ATTRIBUTES 'u +\w'ATTRIBUTES'u
-\fI  1	NNTP	NNTPS\fP
-\fI  2	FILTER	ARTS\fP
-\fI  4	NEWSRC	BITMAP\fP
-\fI  8	THREADING	REFS\fP
-\fI 16	MEMORY	MALLOC\fP
-\fI 32	ATTRIBUTES\fP
-\fI 64	MISC	GNKSA	ACTIVE\fP
-\fI127	ALL	EVERYTHING\fP
-\fI128	REMOVE	DELETE\fP
-.fi
-.in -.3i
+.TS
+rI LI LI LI.
+1	NNTP	NNTPS
+2	FILTER	ARTS
+4	NEWSRC	BITMAP
+8	THREADING	REFS
+16	MEMORY	MALLOC
+32	ATTRIBUTES
+64	MISC	GNKSA	ACTIVE
+127	ALL	EVERYTHING
+128	REMOVE	DELETE
+.TE
+.in -0.3i
 For NNTP-level ''\fB\-v\fP'' controls the verbosity of the output.
 Depending on the debug-level various files may be written to \fI$TMPDIR\fR
 and/or on screen output may be given. See also the "SECURITY" section!
@@ -159,7 +158,7 @@ Use the specified file of subscribed to newsgroups in place of
 .BI \-F " file"
 Use the specified filter file instead of \fI${TIN_HOMEDIR:\-"$HOME"}/.filter\fR.
 .TP
-.BI \-g " server[:port]"
+.BI \-g " server\fR[\fB:\fIport\fR]"
 Use the server[:port] and newsrc specified in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fR. Only available when
 reading via NNTP. If you want to give a port with a plain IPv6 address,
@@ -186,12 +185,12 @@ Directory in which to store newsgroup index files. Default is
 This option has no effect if \fBtin\fP retrieves its index files via
 NNTP and \fBcache_overview_files\fP is turned off.
 .TP
-.BI \-k
+.B \-k
 Skip the certificate verification step for NNTPS connections and proceed
 without checking. This option implies ''\fB\-T\fP''. See also the "SECURITY"
 section.
 .TP
-.BI \-l
+.B \-l
 Get number of articles per group from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fR file. If
 reading via NNTP this is done with the LIST command (\fBRFC\%3977\fP). This
@@ -203,7 +202,7 @@ NNTP GROUP command (\fBRFC\%3977\fP) ''\fB\-ln\fP''. If reading via
 NNTP and LIST COUNTS (\fBRFC\%6048\fP) is available that is used instead
 as it gives more accurate article counts.
 .TP
-.BI \-L
+.B \-L
 Show the message with the given Message-ID if available. Only available
 when reading via NNTP.
 .TP
@@ -231,8 +230,9 @@ quick, it should be used with ''\fB\-n\fP'' if possible.
 .TP
 .BI \-p " port"
 Port to use if reading via NNTP (default is 119 or 563 if NNTPS is enabled,
-see ''\fB\-T\fP''). This also overrides the environment variable $\fBNNTPPORT\fP
-if set. Only available when reading via NNTP.
+see ''\fB\-T\fP'').  This also overrides the environment variables
+$\fBNNTPPORT\fP and $\fBNNTPSPORT\fP if set.  Only available when reading
+via NNTP.
 .TP
 .B \-q
 Don't check for new newsgroups and skip loading the servers message of the day.
@@ -264,7 +264,7 @@ allowed maximum is 16383.
 .TP
 .B \-T
 Enable NNTPS (NNTP over TLS). This also overrides the environment
-variable $\fBNNTPPORT\fP if set. Only available when reading via NNTP.
+variable $\fBNNTPSPORT\fP if set. Only available when reading via NNTP.
 .TP
 .B \-u
 Create/update index files for every group in
@@ -321,7 +321,7 @@ group, then you will automatically enter that group. Otherwise the normal
 group selection screen will appear, but with all the matching groups present
 too, as though you had yanked just those groups in.
 .PP
-With the ''\fB-w\fP'' flag a given group-name is used as default group to post
+With the ''\fB\-w\fP'' flag a given group-name is used as default group to post
 to. If more than one group or a wildcard is specified only the first group
 respectively the first group that matches is used.
 .PP
@@ -376,7 +376,7 @@ via \fBselect_format\fP.
 .PP
 .nf
 .ft CR
-\->M    1     2  comp.security.announce  Announcements from the CERT abou
+\(->M    1     2  comp.security.announce  Announcements from the CERT abou
   M    2     1  news.admin.announce     Announcements for news adminstra
        3    22  news.software.misc      News-related software other than
        4  1475  news.software.nntp      The Network News Transfer Protoc
@@ -453,7 +453,7 @@ thread. The display can be customized via \fBgroup_format\fP.
 .ft CR
                 de.admin.net-abuse.announce (11B 13+ 1* 1o 0K) M
 
-\->   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg <l
+\(->   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg <l
      2   +       69 EMP/ECP gecancelt. xynx. BI= 10  Henning Weede <hwee
      3   o       93 EMP gecancelt. SouthBeach/Palms  Henning Weede <hwee
      4   *      368 <1997-11-12> Fremdcancel-FAQ     Thomas Roessler <ro
@@ -465,11 +465,10 @@ used) looks like this, but can be customized via \fBthread_format\fP:
 .PP
 .nf
 .ft CR
-\->   1      [   7]  What is this funny tree in the thr  Robert F. Simmig
-     2      [  12]  +\->                                 Sephan Wagner <s
-     3      [ 230]  | `\->Tin thread-level (was: What is Bob Johnson <bob
-     4      [  22]  `\->tin threading menu               Brian Richardson
-
+\(->   1      [   7]  What is this funny tree in the thr  Robert F. Simmig
+     2      [  12]  +\(->                                 Sephan Wagner <s
+     3      [ 230]  | `\(->Tin thread-level (was: What is Bob Johnson <bob
+     4      [  22]  `\(->tin threading menu               Brian Richardson
 .fi
 .PP
 At the Article level the page header has the following format:
@@ -661,8 +660,8 @@ Show details about current connection.
 .TP
 .B LookupMessage 'L'
 Look up article by ''Message\-ID:''. If none of the groups listed in
-the ''Newsgroups:''-header of the referenced article is available, just the
-contents of the ''Newsgroups:''-header will be displayed in the last line.
+the ''Newsgroups:''\-header of the referenced article is available, just the
+contents of the ''Newsgroups:''\-header will be displayed in the last line.
 At this level this command only works if reading via NNTP and the server
 supports [X]HDR (\fBRFC\%2980\fP, \fBRFC\%3977\fP) or XPAT (\fBRFC\%2980\fP).
 .TP
@@ -896,8 +895,9 @@ prompt asks how to proceed.
 Open the thread under the current cursor position.
 .TP
 .B LookupMessage 'L'
-Look up article by ''Message\-ID:''. In this level only the IDs in the
-current group are searched.
+Look up article by ''Message\-ID:''. If not reading via NNTP or the
+server neither supports [X]HDR (\fBRFC\%2980\fP, \fBRFC\%3977\fP) nor
+XPAT (\fBRFC\%2980\fP), only the IDs in the current group are searched.
 .TP
 .B GroupMail 'm'
 Mail current article / thread / auto-selected (hot) articles / articles
@@ -1110,8 +1110,9 @@ current article. When tagged articles are present, a prompt asks how
 to proceed.
 .TP
 .B LookupMessage 'L'
-Look up article by ''Message\-ID:''. In this level only the IDs in the
-current group are searched.
+Look up article by ''Message\-ID:''. If not reading via NNTP or the
+server neither supports [X]HDR (\fBRFC\%2980\fP, \fBRFC\%3977\fP) nor
+XPAT (\fBRFC\%2980\fP), only the IDs in the current group are searched.
 .TP
 .B ThreadMail 'm'
 Mail current article / thread / auto-selected (hot) articles / articles
@@ -1257,6 +1258,9 @@ Go to the last article in the current thread.
 .B PageToggleHighlight '_'
 Toggle word highlighting on/off.
 .TP
+.B PageToggleVerbatim ','
+Toggle detection of verbatim blocks on/off.
+.TP
 .B Pipe '|'
 Pipe current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles into command. See the section "MAILING
@@ -1346,8 +1350,9 @@ Mark rest of thread as read and move onto the next unread thread.
 Show the thread menu that the current article is a part of.
 .TP
 .B LookupMessage 'L'
-Look up article by ''Message\-ID:''. In this level only the IDs in the
-current group are searched.
+Look up article by ''Message\-ID:''. If not reading via NNTP or the
+server neither supports [X]HDR (\fBRFC\%2980\fP, \fBRFC\%3977\fP) nor
+XPAT (\fBRFC\%2980\fP), only the IDs in the current group are searched.
 .TP
 .B PageMail 'm'
 Mail current article / thread / auto-selected (hot) articles / articles
@@ -1525,7 +1530,7 @@ posting etiquette after composing an article (\fBbeginner_level\fP).
 .\"
 .SS "POSTING HISTORY LISTING"
 \fBDisplayPostHist\fP ('\fBW\fP') displays a list of all previous posted
-articles stored in \fI${TIN_HOMEDIR:-"$HOME"}/.tin/posted\fR. The following
+articles stored in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fR. The following
 information is shown: a time stamp in "dd-mm-yy"-format, a single letter
 indicating the action which initiated the message, the group names (eventually
 shortened, see also \fBabbreviate_groupname\fR) or a mail address the message
@@ -1536,7 +1541,7 @@ the following commands are available:
 .B PostedArticlesSelect '^J' '<CR>'
 The article with the current ''Message\-ID:'' will be opened if available.
 Note that this requires that the ''Message\-ID:'' of the article was recorded
-in \fI${TIN_HOMEDIR:-"$HOME"}/.tin/posted\fR which may not always be the case.
+in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fR which may not always be the case.
 If using NNTP and the internal inews (\fBinews_prog\fP set to "\-\-internal")
 and either the server proposes a ''Message\-ID:'' during the POST
 (\fBRFC\%3977\fP) command or
@@ -1617,14 +1622,14 @@ the name of the corresponding setting in
 .B Abbreviate long newsgroup names (abbreviate_groupname)
 If ON abbreviate long newsgroup names at group selection level and article
 level (if necessary) like this:
-news.software.readers \-> n.software.readers \-> n.s.readers \-> n.s.r.
+news.software.readers \(-> n.software.readers \(-> n.s.readers \(-> n.s.r.
 Default is OFF.
 .TP
 .B Add posted articles to filter (add_posted_to_filter)
 If ON add posted articles which start a new thread to filter for
 highlighting follow-ups. Default is ON.
 .TP
-.B Insert 'User\-Agent:'-header (advertising)
+.B Insert 'User\-Agent:'\-header (advertising)
 Turn ON advertising in header (''User\-Agent:''). Default is ON.
 .TP
 .B Skip multipart/alternative parts (alternative_handling)
@@ -1699,11 +1704,16 @@ If ON, create local copies of NNTP overview files. This can be used to
 considerably speed up accessing large groups when using a slow connection.
 See also "INDEX FILES". Default is OFF.
 .TP
+.B Compress locally cached NNTP overview files (compress_overview_files)
+If ON, locally cached NNTP overview files (\fBcache_overview_files\fP) are
+saved in compressed form (\fBRFC\%1952\fP). Useful to reduce local disk
+space used. Default is OFF.
+.TP
 .B Hash algorithm for cancel-locks (cancel_lock_algo)
 Use this hash algorithm for cancel-locks. Only available when built with
 cancel-lock support. none disables the generation of cancel-locks. Valid
 values are none, sha1, sha256 and sha512.
-Default is sha1. See also \fI${TIN_HOMEDIR:-"$HOME"}/.cancelsecret\fR in
+Default is sha1. See also \fI${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret\fR in
 .BR \%tin (5).
 .TP
 .B Catchup read groups when quitting (catchup_read_groups)
@@ -1945,8 +1955,8 @@ Default for quick (1 key) auto-selection filter header.
 Do not break long lines inside a word. This applies to the body except for
 verbatim blocks. See also \fBwrap_column\fP. Default is OFF.
 .TP
-.B Draw \-> instead of highlighted bar (draw_arrow)
-Allows groups/articles to be selected by an arrow '\->' if set ON or
+.B Draw \(-> instead of highlighted bar (draw_arrow)
+Allows groups/articles to be selected by an arrow '\(->' if set ON or
 by a highlighted bar if set OFF. Default is OFF.
 .TP
 .B Invocation of your editor (editor_format)
@@ -2015,7 +2025,7 @@ available to display long subjects. Default is OFF.
 .TP
 .B Use interactive mail reader (interactive_mailer)
 Interactive mailreader: if greater than 0 your mailreader will be invoked
-earlier for reply so you can use more of its features (e.g. MIME,
+earlier for reply so you can use more of its features (e.g., MIME,
 pgp, ...). 1 means include headers, 2 means don't include headers
 (old use_mailreader_i=ON option). 0 turns off usage. This option has to
 suit \fBmailer_format\fP. Default is 0.
@@ -2083,7 +2093,7 @@ Select one of the following mailbox-formats: MBOXO (default, except on
 SCO), MBOXRD or MMDF (default on SCO). See
 .BR \%mbox (5)
 and
-.BR RFC\%4155
+.B RFC\%4155
 for more details on MBOXO and MBOXRD and
 .BR \%mmdf (5)
 for more details about MMDF.
@@ -2108,7 +2118,7 @@ sendmail \-oem \-t < %F
 mutt \-H %F
 claws-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
-.in -.3i
+.in -0.3i
 \fBinteractive_mailer\fP must be set adequate. The following substitutions
 are supported:
 .in +.3i
@@ -2121,7 +2131,7 @@ are supported:
 %U	username
 %%	%
 .fi
-.in -.3i
+.in -0.3i
 .TP
 .B 'Mark as (un)read' ignores tags (mark_ignore_tags)
 When this is ON, the \fBGroupMarkThdRead\fP ('\fBK\fP'),
@@ -2176,7 +2186,7 @@ is limited to one of the following charsets:
 .in +.3i
 US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU}
 EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2}, Big5, UTF-8
-.in -.3i
+.in -0.3i
 Not all values might work on your system, see
 .BR \%iconv_open (3)
 for more details. If it's not set, the value of the environment variable
@@ -2262,12 +2272,12 @@ possible (\fBRFC\%5198\fP).
 .B Format string for the display of mime header at Article level (page_mime_format)
 Format string \fBtin\fP uses for mime header at Page level. See the
 section "CUSTOMIZING THE SCREEN FORMAT".
-Default is "[-- %T%S%*n%z%*l%!c%!d%*e --]".
+Default is "[\-\- %T%S%*n%z%*l%!c%!d%*e \-\-]".
 .TP
 .B Format string for the display of uue header at Article level (page_uue_format)
 Format string \fBtin\fP uses for uue header at Page level. See the
 section "CUSTOMIZING THE SCREEN FORMAT".
-Default is "[-- %T%S%*n%I%!d%*e --]".
+Default is "[\-\- %T%S%*n%I%!d%*e \-\-]".
 .TP
 .B Go to first unread article in group (pos_first_unread)
 If ON put cursor at first unread article in group otherwise at last
@@ -2746,7 +2756,7 @@ and
 must be in your $\fBPATH\fP. Default is OFF.
 .TP
 .B Use UTF-8 graphics (utf8_graphics)
-If ON use UTF-8 characters for indicator ('\->'), thread/attachment tree and
+If ON use UTF-8 characters for indicator ('\(->'), thread/attachment tree and
 ellipsis ('...'). Default is OFF.
 .TP
 .B Regex for begin of a verbatim block (verbatim_begin_regex)
@@ -2973,7 +2983,7 @@ following variables are expanded if found in the tinrc variables
 .RE
 e.g.,
 .RS
-.ft CW
+.ft CR
 .nf
 mail_quote_format=On %D in %G you wrote:
 news_quote_format=In %M, %F wrote:
@@ -2982,7 +2992,7 @@ news_quote_format=In %M, %F wrote:
 .RE
 would expand to:
 .RS
-.ft CW
+.ft CR
 .nf
 On 21 Sep 1993 09:45:51 \-0400 in alt.sources you wrote:
 In <abcINN123@example.org>, Joe Bar <joe@example.org> wrote:
@@ -3088,7 +3098,7 @@ mark them as read)
 A range is simply a group of items marked using the \fBSetRange\fP
 (\fB'#'\fP) key. Certain \fBtin\fP commands will operate on a range
 if one exists rather than just the current item. A range is an
-expression of the form <min>\(en<max>, e.g. 10\(en15 will highlight items
+expression of the form <min>\(en<max>, e.g., 10\(en15 will highlight items
 10 through 15 on the current screen. Other than absolute numeric
 positions, '.\&' can be used in place of the current cursor position
 and '$' can be used to mean the highest number available. Entering '0'
@@ -3132,7 +3142,7 @@ editor for both posting and mailing commands.
 .PP
 The following is an example of a \fI.Sig\fR file:
 .RS
-.ft CW
+.ft CR
 .nf
 NAMES  Joe Bar <joe@example.org>
 SNAIL  Musterweg 12, 99999 Notreal, Germany
@@ -3178,7 +3188,7 @@ evaluated. The following variables are available:
 \fB%s\fP	subject
 \fB%%\fP	%
 .fi
-.in -.3i
+.in -0.3i
 .PP
 Not all variables can be used in each level. The following table provides
 an overview:
@@ -3204,7 +3214,7 @@ an overview:
 \fB%s\fP		X
 \fB%%\fP	X	X	X
 .fi
-.in -.3i
+.in -0.3i
 .PP
 Defaults for the format strings:
 .PP
@@ -3215,7 +3225,7 @@ Defaults for the format strings:
 \fBgroup_format\fP:	"\fB%n %m %R %L  %s  %F\fP"
 \fBthread_format\fP:	"\fB%n %m  [%L]  %T  %F\fP"
 .fi
-.in -.3i
+.in -0.3i
 .PP
 \fBshow_description\fP controls whether the newsgroup description is shown
 or not. The description can also be toggled with \fBSelectToggleDescriptions\fP
@@ -3228,7 +3238,7 @@ options.
 .PP
 For date representation '\fB%D\fP' uses \fBdate_format\fP. It is possible
 to specify a different date format in round brackets
-(e.g. '\fB%(%d %b %y %H:%M)D\fP'). See \fBdate_format\fP for more details.
+(e.g., '\fB%(%d %b %y %H:%M)D\fP'). See \fBdate_format\fP for more details.
 .PP
 The length of each item (except '\fB%%\fP') can be defined with a positive
 number after the '\fB%\fP'. The following example displays the score in the
@@ -3236,8 +3246,8 @@ thread level 10 characters wide: '\fB%10S\fP'.
 .PP
 If the newsgroup name is displayed together with the newsgroup description,
 the width of the newsgroup name can be controlled via an optional comma
-separated second value (e.g. '\fB%60,20G\fP'). It is valid to omit the first
-value (e.g. ('\fB%,20G\fP')). If no second value is given, \fBtin\fP uses a
+separated second value (e.g., '\fB%60,20G\fP'). It is valid to omit the first
+value (e.g., ('\fB%,20G\fP')). If no second value is given, \fBtin\fP uses a
 default value of 32.
 .PP
 Some variables do have a default width which may lead to truncation.
@@ -3245,7 +3255,7 @@ Truncation for variables which contain only numbers happens by dividing the
 value with a sufficient power of ten and adding a SI suffix to the result,
 that is the variable holds a value of 54321 and the width for the variable
 is 4 the result will be "54 k". If that's undesired you have to specify a
-larger width manually, e.g. '\fB%6n\fP'. Here is an overview of the defaults:
+larger width manually, e.g., '\fB%6n\fP'. Here is an overview of the defaults:
 .PP
 .in +.3i
 .nf
@@ -3259,7 +3269,7 @@ Variable	width
 \fB%U\fP	 5
 \fB%n\fP	 4
 .fi
-.in -.3i
+.in -0.3i
 .PP
 If no length is given for '\fB%D\fP', the length is determined by the format
 string for the date and the date of the current day. If the date format string
@@ -3279,25 +3289,25 @@ resp. '\fB%T\fP' and no length are given, '\fB%F\fP' will use one third
 and '\fB%s\fP' resp. '\fB%T\fP' will use two third of the available space.
 .PP
 In addition, a minimum or a maximum screen width can be defined for each
-item (except '\fB%%\fP').  In this case, the item will only be displayed
-when the screen is wider resp.  smaller than specified.  This comes in handy
+item (except '\fB%%\fP'). In this case, the item will only be displayed
+when the screen is wider resp. smaller than specified. This comes in handy
 to not overload a small screen but have maximum information on a large
-screen.  The minimum screen width has to be specified by a positive number
+screen. The minimum screen width has to be specified by a positive number
 preceded by an '\fB>\fP', the maximum screenwidth has to be specified by a
-positive number preceded by an '\fB<\fP'.  In the following example
+positive number preceded by an '\fB<\fP'. In the following example
 \fBtin\fP will display the score only if the screen is wider than 100
 characters: '\fB%>100S\fP'.
 .PP
 If both the length and the minimum or maximum screen width should be
 specified for an item, the length must be the first parameter and the
-minimum or maximum screen width must be the second one.  The following
+minimum or maximum screen width must be the second one. The following
 example displays the score with a length of 10 characters only if the screen
-is wider than 100 characters: '\fB%10>100S\fP'.  A second length can be
-specified for '\fB%F\fP' and '\fB%s\fP' resp.  '\fB%T\fP', separated by a
+is wider than 100 characters: '\fB%10>100S\fP'. A second length can be
+specified for '\fB%F\fP' and '\fB%s\fP' resp. '\fB%T\fP', separated by a
 colon, which is used if the minimum or maximum screen width is not reached.
 If no length is specified after the colon, the item is displayed even if the
 minimum screen width is not reached and the length is calculated as if no
-minimum (or maximum) screen width had been specified.  In the following
+minimum (or maximum) screen width had been specified. In the following
 example \fBtin\fP will display the subject with a length of 60 characters if
 the screen is wider than 100 characters, otherwise a length of 40 characters
 is used: '\fB%60>100:40s\fP'.
@@ -3328,7 +3338,7 @@ The following variables are available:
 \fB%z\fP	Like %Z but with description
 \fB%%\fP	%
 .fi
-.in -.3i
+.in -0.3i
 .PP
 Not all items can be used in each variable. The following table provides
 an overview:
@@ -3356,7 +3366,7 @@ an overview:
 \fB%z\fP	X	X	X
 \fB%%\fP	X	X	X
 .fi
-.in -.3i
+.in -0.3i
 .PP
 By default, the string is not truncated. If it exceeds the screen width, it
 is wrapped. If the % sign is followed by an exclamation mark ('!\&') for
@@ -3376,8 +3386,8 @@ Defaults for the format strings:
 .nf
 .ta \w'attachment_format'u +\w'"\fB%T%S%E%C%d\fP"'u
 \fBattachment_format\fP:	"\fB%T%S%E%C%d\fP"
-\fBpage_mime_format\fP:	"\fB[-- %T%S%*n%z%*l%!c%!d%*e --]\fP"
-\fBpage_uue_format\fP:		"\fB[-- %T%S%*n%I%!d%*e --]\fP"
+\fBpage_mime_format\fP:	"\fB[\-\- %T%S%*n%z%*l%!c%!d%*e \-\-]\fP"
+\fBpage_uue_format\fP:		"\fB[\-\- %T%S%*n%I%!d%*e \-\-]\fP"
 .fi
 .\"
 .\"
@@ -3489,7 +3499,8 @@ If your news server doesn't support NOV index files or you have a
 very slow connection to your news server then \fBtin\fP can cache the
 index for each newsgroup if \fBcache_overview_files\fP is set to ON.
 Note that this cache can use up large amounts of disk space if you
-read a lot of groups and/or high traffic groups.
+read a lot of groups and/or high traffic groups. To reduce the amount
+of disk space used, \fBcompress_overview_files\fP can be set to ON.
 .PP
 Each user creates/updates his/her own index files that are stored in
 \fI${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news/\fR. If
@@ -3513,7 +3524,7 @@ the system batcher
 with the ''\fB\-u\fP'' option:
 .PP
 .RS
-.ft CW
+.ft CR
 .nf
 30 6 * * * /usr/local/bin/tin \-u
 .ft R
@@ -3524,9 +3535,9 @@ If you are low on local disk space you should consider to manually purge
 cached data for groups you are not reading anymore with something like:
 .PP
 .RS
-.ft CW
+.ft CR
 .nf
-find ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \\
+find ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \e
 \-type f \-name "[0\-9]*.[0\-9]" \-atime +28 | xargs rm \-f
 .ft R
 .fi
@@ -3553,150 +3564,150 @@ find ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \\
 For a detailed description see
 .BR \%tin (5).
 .PP
-.IR $MAILCAPS
+.I $MAILCAPS
 .br
-.IR ~/.mailcap
+.I ~/.mailcap
 .br
-.IR /etc/mailcap
+.I /etc/mailcap
 .br
-.IR /usr/etc/mailcap
+.I /usr/etc/mailcap
 .br
-.IR /usr/local/etc/mailcap
+.I /usr/local/etc/mailcap
 .br
-.IR /etc/mail/mailcap
+.I /etc/mail/mailcap
 .PP
 
-.IR /etc/nntpserver
+.I /etc/nntpserver
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret
+.I ${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.mime.types
+.I ${TIN_HOMEDIR:\-"$HOME"}/.mime.types
 .br
-.IR /etc/mime.types
+.I /etc/mime.types
 .br
-.IR /etc/tin/mime.types
+.I /etc/tin/mime.types
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.newsauth
+.I ${TIN_HOMEDIR:\-"$HOME"}/.newsauth
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.newsrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.newsrc
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/.oldnewsrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/.oldnewsrc
 .fi
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.signature
+.I ${TIN_HOMEDIR:\-"$HOME"}/.signature
 .br
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.Sig
+.I ${TIN_HOMEDIR:\-"$HOME"}/.Sig
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.sigfixed
+.I ${TIN_HOMEDIR:\-"$HOME"}/.sigfixed
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/.inputhistory
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/.inputhistory
 .PP
 
-.IR ${TIN_INDEX_MAILDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.mail/
+.I ${TIN_INDEX_MAILDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.mail/
 .PP
 
 .nf
-.IR ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news${NNTPSERVER:+"\-$NNTPSERVER"}/
+.I ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news${NNTPSERVER:+"\-$NNTPSERVER"}/
 .fi
 .PP
 
-.IR ${TIN_INDEX_SAVEDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.save/
+.I ${TIN_INDEX_SAVEDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.save/
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.save
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.save
 .PP
 
-.\" .IR ${TIN_LIBDIR:\-NEWSLIBDIR}/attributes
-.IR /etc/tin/attributes
+.\" .I ${TIN_LIBDIR:\-NEWSLIBDIR}/attributes
+.I /etc/tin/attributes
 .br
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/filter
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/filter
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
 .br
-.IR /etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
+.I /etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
 .fi
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/posted
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/posted
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/Mail/posted
+.I ${TIN_HOMEDIR:\-"$HOME"}/Mail/posted
 .PP
 
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/postponed.articles
-.PP
-
-.nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/motd
-.fi
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/postponed.articles
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/motd
 .fi
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
 .fi
 .PP
 
 .nf
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups
 .fi
 .PP
 
-.\" .IR ${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc
-.IR /etc/tin/tinrc
+.nf
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc
+.fi
+.PP
+
+.\" .I ${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc
+.I /etc/tin/tinrc
 .br
-.IR ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc
 .PP
 
-.IR /etc/tin/tin.defaults
+.I /etc/tin/tin.defaults
 .PP
 
-.IR /usr/local/share/locale/${LC_MESSAGES}/LC_MESSAGES/tin.mo
+.I /usr/local/share/locale/${LC_MESSAGES}/LC_MESSAGES/tin.mo
 .PP
 
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}
 .PP
 
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}/active.times
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}/active.times
 .PP
 
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups
 .PP
 
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}/organization
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}/organization
 .PP
 
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}/overview.fmt
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}/overview.fmt
 .PP
 
-.IR ${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions
+.I ${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions
 .\"
 .\"
 .SH ENVIRONMENT
@@ -3771,8 +3782,13 @@ line option overrides $\fBNNTPSERVER\fP.
 .TP
 .B NNTPPORT
 The NNTP TCP-port to read news from. This variable only needs to be set if
-the TCP-port is not 119 (the default). The ''\fB\-p\fP'' and ''\fB\-T\fP''
-command-line options do override $\fBNNTPPORT\fP.
+the TCP-port is not 119 (the default). The ''\fB\-p\fP'' command-line
+option does override $\fBNNTPPORT\fP.
+.TP
+.B NNTPSPORT
+The NNTPS TCP-port to read news from. This variable only needs to be set if
+the TCP-port is not 563 (the default). The ''\fB\-p\fP'' and ''\fB\-T\fP''
+command-line options do override $\fBNNTPSPORT\fP.
 .TP
 .B DISTRIBUTION
 Set the article header field ''Distribution:'' to the contents of the
@@ -3860,7 +3876,7 @@ for more info.
 .B EDITOR
 If $\fBVISUAL\fP is unset, then this variable is looked up for a default
 editor. If $\fBEDITOR\fP and $\fBVISUAL\fP are both unset, \fBtin\fP uses
-the systems default editor (i.e.
+the systems default editor (i.e.,
 .BR \%vi (1)
 on UNIX-systems). See
 .BR \%environ (5)
@@ -3902,7 +3918,7 @@ files. See also
 .B NOMETAMAIL
 Set this variable to disable the use of
 .BR \%metamail (1)
-or a replacement (e.g. metamutt).
+or a replacement (e.g., metamutt).
 .TP
 .B MM_CHARSET
 MIME character set used if not configured via the tinrc variable
@@ -4059,11 +4075,11 @@ Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR-file.
 .\"
 .\"
 .SH SECURITY
-If \fBtin\fP is started in debug mode (''\fB\-D n\fP'') it will create
-world readable files in \fB$TMPDIR\fP which may contain sensitive data
-like the users NNTP password in cleartext (if running verbose). On
-multiuser-systems \fB$TMPDIR\fP should be set to a safe location before
-starting \fBtin\fP in (verbose) debug mode (e.g. \fBTMPDIR=$HOME tin \-vD 1\fP).
+If \fBtin\fP is started in debug mode (''\fB\-D n\fP'') it will create world
+readable files in \fB$TMPDIR\fP which may contain sensitive data like the
+users NNTP password in cleartext (if running verbose).  On multiuser-systems
+\fB$TMPDIR\fP should be set to a safe location before starting \fBtin\fP in
+(verbose) debug mode (e.g., \fBTMPDIR=$HOME tin \-vD NNTP\fP).
 .PP
 Using the ''\fB\-k\fP'' option to skip certificate verification makes the
 session insecure as the server's certificate is not checked; avoid this
@@ -4098,17 +4114,17 @@ by the University of Cambridge, England.
 .BR CNews \0NNTPd,
 .BR \%noffle (1)
 (<= V1.0-pre5) and
-.BR NewsCache
+.B NewsCache
 (<= V1.1.91) can't handle pipelined GROUP commands (\fBRFC\%3977\fP).
 If you run into trouble with any of the mentioned historical servers define
 DISABLE_PIPELINING in include/autoconf.h and recompile.
 .PP
-Using the ''\fB-C\fP'' (COMPRESS) flag with
+Using the ''\fB\-C\fP'' (COMPRESS) flag with
 .BR INN \0nnrpd
 versions between 2.6.1 and 2.7.1 (both incl.) may cause \fBtin\fP to hang
 and later timeout when posting. This has been fixed in
 .BR INN \0nnrpd
-version 2.7.2. As a workaround simply don't use ''\fB-C\fP''.
+version 2.7.2. As a workaround simply don't use ''\fB\-C\fP''.
 .PP
 Before mailing a bug-report to <tin\-bugs@tin.org> please check if you
 are using the latest (stable) release, and if not, please upgrade
@@ -4142,7 +4158,7 @@ author of envarg.c environment variable reading routine.
 author of sigfile.c random signature generation routines.
 .IP "Markus Kuhn <Markus.Kuhn@cl.cam.ac.uk>"
 author of langinfo.c, charset.c and iso2asc.txt ISO-8859-1 documentation.
-.IP "Arnold Robbins"
+.IP "Arnold D. Robbins"
 author of strftime.c date formatting routine.
 .IP "Rich Salz"
 author of wildmat.c pattern matching and parsdate.y date parsing routines.
@@ -4227,6 +4243,7 @@ Urs Janssen <urs@tin.org>
 .BR \%cron (8),
 .BR RFC\%1345 ,
 .BR RFC\%1524 ,
+.BR RFC\%1952 ,
 .BR RFC\%2045 ,
 .BR RFC\%2046 ,
 .BR RFC\%2047 ,
@@ -4244,4 +4261,4 @@ Urs Janssen <urs@tin.org>
 .BR RFC\%6048 ,
 .BR RFC\%6838 ,
 .BR RFC\%8054 ,
-.BR RFC\%8143
+.B RFC\%8143

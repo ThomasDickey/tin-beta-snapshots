@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-01-22
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -66,7 +66,7 @@ static void select_done(void);
 _Noreturn static void select_quit(void);
 static void select_read_group(void);
 static void sort_active_file(void);
-static void subscribe_pattern(const char *prompt, const char *message, const char *result, t_bool state);
+static void subscribe_pattern(t_bool state);
 static void sync_active_file(void);
 static void yank_active_file(void);
 #ifdef NNTP_ABLE
@@ -434,6 +434,7 @@ selection_page(
 				 * as we effectively do a yank out on each change, set yanked_out accordingly
 				 */
 				yanked_out = TRUE;
+				/* TODO: plural-forms? ("unread" fr:("non lu", "non lus")) */
 				wait_message(0, _(txt_reading_groups), (tinrc.show_only_unread_groups) ? _(txt_unread) : _(txt_all));
 
 				toggle_my_groups(NULL);
@@ -470,7 +471,7 @@ selection_page(
 					info_message(_(txt_info_no_write));
 					break;
 				}
-				subscribe_pattern(_(txt_subscribe_pattern), _(txt_subscribing), _(txt_subscribed_num_groups), TRUE);
+				subscribe_pattern(TRUE);
 				break;
 
 			case SELECT_UNSUBSCRIBE:		/* unsubscribe to current group */
@@ -509,8 +510,7 @@ selection_page(
 					info_message(_(txt_info_no_write));
 					break;
 				}
-				subscribe_pattern(_(txt_unsubscribe_pattern),
-								_(txt_unsubscribing), _(txt_unsubscribed_num_groups), FALSE);
+				subscribe_pattern(FALSE);
 				break;
 
 			case GLOBAL_VERSION:			/* show tin version */
@@ -523,6 +523,7 @@ selection_page(
 						info_message(_(txt_cannot_post));
 						break;
 					}
+					/* TODO: plural-forms? */
 					snprintf(buf, sizeof(buf), _(txt_post_newsgroups), BlankIfNull(tinrc.default_post_newsgroups));
 					if (!prompt_string_ptr_default(buf, &tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
 						break;
@@ -987,7 +988,7 @@ yank_active_file(
 		selmenu.curr = save_restore_curr_group(FALSE);	/* Restore previous group position */
 		yanked_out = bool_not(yanked_out);
 		show_selection_page();
-		info_message(_(txt_yanked_groups), selmenu.max - prevmax, PLURAL(selmenu.max - prevmax, txt_group));
+		info_message(P_(txt_yanked_group_sp[0], txt_yanked_group_sp[1], selmenu.max - prevmax), selmenu.max - prevmax);
 	} else {							/* Yank out */
 		toggle_my_groups(NULL);
 		HpGlitch(erase_arrow());
@@ -1432,12 +1433,11 @@ toggle_my_groups(
  */
 static void
 subscribe_pattern(
-	const char *prompt,
-	const char *message,
-	const char *result,
 	t_bool state)
 {
 	char buf[LEN];
+	const char *prompt;
+	const char *message;
 	int i, subscribe_num = 0;
 	size_t groups_size = 100;
 	struct t_group **groups;
@@ -1445,6 +1445,13 @@ subscribe_pattern(
 	if (!num_active || no_write)
 		return;
 
+	if (state) {
+		prompt = _(txt_subscribe_pattern);
+		message =  _(txt_subscribing);
+	} else {
+		prompt = _(txt_unsubscribe_pattern);
+		message = _(txt_unsubscribing);
+	}
 	if (!prompt_string(prompt, buf, HIST_OTHER) || !*buf) {
 		clear_message();
 		return;
@@ -1452,7 +1459,7 @@ subscribe_pattern(
 
 	groups = my_malloc(groups_size * sizeof(struct t_group *));
 
-	wait_message(0, "%s", message);
+	wait_message(0, message);
 
 	for_each_group(i) {
 		if (match_group_list(active[i].name, buf)) {
@@ -1480,7 +1487,10 @@ subscribe_pattern(
 	if (subscribe_num) {
 		toggle_my_groups(NULL);
 		show_selection_page();
-		info_message(result, subscribe_num);
+		info_message(state ?
+			P_(txt_subscribed_num_group_sp[0], txt_subscribed_num_group_sp[1], subscribe_num) :
+			P_(txt_unsubscribed_num_group_sp[0], txt_unsubscribed_num_group_sp[1], subscribe_num),
+			subscribe_num);
 	} else
 		info_message(_(txt_no_match));
 }
@@ -1624,9 +1634,9 @@ lookup_msgid(
 			}
 
 			if (nntp_caps.xpat) {
+				x = NULL;
 				snprintf(buf, sizeof(buf), "XPAT Newsgroups %s *", msgid);
 				ret = new_nntp_command(buf, OK_HEAD, NULL, 0);
-				x = NULL;
 				switch (ret) {
 					case OK_HEAD:
 						while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
@@ -1690,8 +1700,7 @@ show_article_by_msgid(
 	char *ngcpy, *cg, *ng;
 	int i, ret = 0;
 	struct t_article *art;
-	struct t_group *group = NULL;
-	struct t_group *tmp_group = NULL;
+	struct t_group *saved_curr_group = NULL;
 	struct t_msgid *msgid = NULL;
 	t_bool tmp_cache_overview_files;
 	t_bool tmp_show_only_unread_arts;
@@ -1727,20 +1736,25 @@ show_article_by_msgid(
 		ng = NULL;
 	}
 
-	if (selmenu.curr == -1 || !cg || (group = get_group_from_list(cg)) == NULL) {
+	if (curr_group)
+		saved_curr_group = curr_group;
+	if (selmenu.curr == -1 || !cg || (curr_group = get_group_from_list(cg)) == NULL) {
+		for (ng = newsgroups, i = 1; *ng; ng++) {
+			if (*ng == ',')
+				++i;
+		}
 		if (!cmdline.msgid)
-			info_message(strchr(newsgroups, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), newsgroups);
+			info_message(P_(txt_lookup_show_group_sp[0], txt_lookup_show_group_sp[1], i), newsgroups);
 		else /* -L cmd. */
-			wait_message(2, strchr(newsgroups, ',') ? _(txt_lookup_show_groups) : _(txt_lookup_show_group), newsgroups);
+			wait_message(2, P_(txt_lookup_show_group_sp[0], txt_lookup_show_group_sp[1], i), newsgroups);
 		free(newsgroups);
 		free(ngcpy);
+		if (saved_curr_group)
+			curr_group = saved_curr_group;
 		return LOOKUP_FAILED;
 	}
 	free(ngcpy);
 
-	if (curr_group)
-		tmp_group = curr_group;
-	curr_group = group;
 	num_of_tagged_arts = 0;
 	range_active = FALSE;
 	this_resp = last_resp = -1;
@@ -1749,7 +1763,7 @@ show_article_by_msgid(
 	tmp_show_only_unread_arts = curr_group->attribute->show_only_unread_arts;
 	curr_group->attribute->show_only_unread_arts = FALSE;
 
-	if (!index_group(group)) {
+	if (!index_group(curr_group)) {
 		for_each_art(i) {
 			art = &arts[i];
 			FreeAndNull(art->refs);
@@ -1775,35 +1789,16 @@ show_article_by_msgid(
 			ret = LOOKUP_NO_LAST;
 	}
 
-	if (!ret) {
-		switch (show_page(group, msgid->article, NULL)) {
-			case GRP_QUIT:
-				ret = LOOKUP_QUIT;
-				break;
-
-			default:
-				break;
-		}
-	}
+	if (!ret && show_page(curr_group, msgid->article, NULL) == GRP_QUIT)
+		ret = LOOKUP_QUIT;
 
 	free(newsgroups);
 	art_close(&pgart);
 	tinrc.cache_overview_files = tmp_cache_overview_files;
 	curr_group->attribute->show_only_unread_arts = CAST_BOOL(tmp_show_only_unread_arts);
-	if (tmp_group) {
-		curr_group = tmp_group;
-		if (!index_group(curr_group)) {
-			for_each_art(i) {
-				art = &arts[i];
-				FreeAndNull(art->refs);
-				FreeAndNull(art->msgid);
-			}
-			curr_group = NULL;
-			tin_errno = 0;
-			ret = LOOKUP_FAILED;
-		}
-	} else
-		curr_group = NULL;
+
+	if (saved_curr_group != curr_group)
+		curr_group = saved_curr_group;
 
 	this_resp = last_resp = -1;
 

@@ -136,6 +136,7 @@ PageToggleTabs			^T
 PageFollowupQuoteHeaders	^W
 PageToggleTex2iso		"
 PageToggleRot			%
+PageToggleVerbatim		,
 PageToggleUue			(
 PageReveal			)
 PageToggleAllHeaders		*

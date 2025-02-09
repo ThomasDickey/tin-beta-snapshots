@@ -4,7 +4,7 @@
  *  Module    : parsedate.y
  *  Author    : S. Bellovin, R. $alz, J. Berets, P. Eggert
  *  Created   : 1990-08-01
- *  Updated   : 2024-06-03
+ *  Updated   : 2024-12-31
  *  Notes     : This grammar has 6 shift/reduce conflicts.
  *              Originally written by Steven M. Bellovin <smb@research.att.com>
  *              while at the University of North Carolina at Chapel Hill.
@@ -121,12 +121,11 @@ date_error(const char UNUSED(*s))
     enum _MERIDIAN	Meridian;
 }
 
-%token	tDAY tDAYZONE tMERIDIAN tMONTH tMONTH_UNIT tSEC_UNIT tSNUMBER
-%token	tUNUMBER tZONE tDST
+%token	<Number>	tDAY tDAYZONE tMERIDIAN tMONTH tMONTH_UNIT tSEC_UNIT tSNUMBER
+%token	<Number>	tUNUMBER tZONE tDST
 
-%type	<Number>	tDAYZONE tMONTH tMONTH_UNIT tSEC_UNIT
-%type	<Number>	tSNUMBER tUNUMBER tZONE numzone zone
-%type	<Meridian>	tMERIDIAN o_merid
+%type	<Number>	numzone zone
+%type	<Meridian>	o_merid
 
 %%
 
@@ -489,13 +488,12 @@ ToSeconds(
     time_t	Seconds,
     MERIDIAN	Meridian)
 {
-    if (Minutes < 0 || Minutes > 59 || Seconds < 0 || Seconds > 61)
-    	return -1;
-    if (Meridian == MER24) {
-	if (Hours < 0 || Hours > 23)
-	    return -1;
-    }
-    else {
+	if (Minutes < 0 || Minutes > 59 || Seconds < 0 || Seconds > 61)
+		return -1;
+	if (Meridian == MER24) {
+		if (Hours < 0 || Hours > 23)
+			return -1;
+	} else {
 	if (Hours < 1 || Hours > 12)
 		return -1;
 	if (Hours == 12)
@@ -544,7 +542,9 @@ Convert(
 	Year += 1900;
     if (Year < EPOCH)
 	Year += 100;
-    for (mp = DaysNormal, yp = LeapYears; yp < ENDOF(LeapYears); yp++)
+
+    mp = DaysNormal;
+    for (yp = LeapYears; yp < ENDOF(LeapYears); yp++)
 	if (Year == *yp) {
 	    mp = DaysLeap;
 	    break;
@@ -593,7 +593,7 @@ RelativeMonth(
     time_t	Start,
     time_t	RelMonth)
 {
-    struct tm	*tm;
+    const struct tm	*tm;
     time_t	Month;
     time_t	Year;
 
@@ -679,7 +679,8 @@ LookupWord(
     length++;
 
     /* Drop out any periods. */
-    for (p = buff, q = (STRING)buff; *q; q++) {
+    p = buff;
+    for (q = (STRING)buff; *q; q++) {
 	if (*q != '.')
 	    *p++ = *q;
     }
@@ -700,7 +701,8 @@ LookupWord(
     /* If we saw any periods, try the timezones again. */
     if (p - buff != length) {
 	c = buff[0];
-	for (p = buff, tp = TimezoneTable; tp < ENDOF(TimezoneTable); tp++) {
+	p = buff;
+	for (tp = TimezoneTable; tp < ENDOF(TimezoneTable); tp++) {
 	    if (c == tp->name[0] && p[1] == tp->name[1]
 	    && strcmp(p, tp->name) == 0) {
 		yylval.Number = tp->value;
@@ -788,7 +790,7 @@ GetTimeInfo(
 {
     static time_t	LastTime;
     static long		LastTzone;
-    struct tm		*tm;
+    static struct tm		*tm;
 #if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_REALTIME)
 	static struct timespec cgt;
 #else
@@ -859,7 +861,7 @@ parsedate(
     char		*p,
     TIMEINFO		*now)
 {
-    struct tm		*tm;
+    static struct tm		*tm;
     TIMEINFO		ti;
     time_t		Start;
 

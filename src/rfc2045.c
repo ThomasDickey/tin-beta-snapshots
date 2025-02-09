@@ -3,7 +3,7 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2023-11-25
+ *  Updated   : 2025-01-07
  *  Notes     : RFC 2045/2047 encoding
  *
  * Copyright (c) 1995-2025 Chris Blum <chris@resolution.de>
@@ -130,9 +130,12 @@ rfc1521_encode(
 					((len == 1) || (line[len - 2] != '\r'))) {
 				STRCPY(tmpbuf, line);
 				line_crlf = tmpbuf;
-				line_crlf[len - 1] = '\r';
-				line_crlf[len] = '\n';
-				line_crlf[len + 1] = '\0';
+				if (len < sizeof(tmpbuf) - 2) {
+					line_crlf[len - 1] = '\r';
+					line_crlf[len] = '\n';
+					line_crlf[len + 1] = '\0';
+				} else
+					assert(((void) "strlen(line) >= sizeof(tmpbuf) - 2", 0 != 0));
 			}
 
 			while (*line_crlf) {
@@ -157,6 +160,7 @@ rfc1521_encode(
 			}
 		}
 	} else if (e == 'q') {
+		char *l;
 		if (!line) {
 			/*
 			 * we don't really flush anything in qp mode, just set
@@ -170,7 +174,7 @@ rfc1521_encode(
 		b = buffer;
 		while (*line) {
 			if (isspace((unsigned char) *line) && *line != '\n') {
-				char *l = line + 1;
+				l = line + 1;
 
 				while (*l) {
 					if (!isspace((unsigned char) *l)) {		/* it's not trailing whitespace, no encoding needed */
@@ -230,7 +234,7 @@ set_rest(
 {
 	char *old_rest = *rest;
 
-	if (ptr == NULL || strlen(ptr) == 0) {
+	if (ptr == NULL || !*ptr) {
 		FreeAndNull(*rest);
 		return;
 	}

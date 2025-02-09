@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-10-17
+ *  Updated   : 2025-01-29
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -244,7 +244,11 @@ prompt_yn(
 			default:
 				break;
 		}
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		func = key_to_func((wchar_t) ch, prompt_keys);
+#else
+		func = key_to_func(ch, prompt_keys);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	} while (func == NOT_ASSIGNED);
 
 	input_context = cNone;
@@ -613,10 +617,11 @@ prompt_string_default(
 		return NULL;
 	}
 
-	if (*pattern)			/* got a string - make it the default */
-		my_strncpy(def, pattern, LEN);
-	else {
-		if (!*def) {		/* no default - give up */
+	if (*pattern) {			/* got a string - make it the default */
+		FreeIfNeeded(def);
+		def = my_strdup(pattern);
+	} else {
+		if (!def || !*def) {		/* no default - give up */
 			error_message(2, "%s", failtext);
 			return NULL;
 		}
@@ -697,7 +702,17 @@ prompt_msgid(
 		 * If the article is no longer part of a thread, then there is
 		 * no way to display it
 		 */
-		if (which_thread(msgid->article) == -1) {
+		/*
+		 * TODO: Find a better solution, as we end up in the select
+		 *       level after leaving the thread or page level with
+		 *       show_only_unread_arts = TRUE.
+		 *
+		 *       Without !curr_group->attribute->show_only_unread_arts
+		 *       read articles are not found if
+		 *       show_only_unread_arts = TRUE.
+		 */
+		/* if (which_thread(msgid->article) == -1) { */
+		if (!curr_group->attribute->show_only_unread_arts && curr_group->attribute->thread_articles && which_thread(msgid->article) == -1) {
 			info_message(_(txt_no_last_message));
 			return ART_UNAVAILABLE;
 		}

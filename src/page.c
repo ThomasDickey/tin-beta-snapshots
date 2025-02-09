@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-26
+ *  Updated   : 2025-01-26
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -46,6 +46,10 @@
 #endif /* !TCURSES_H */
 #ifdef HAVE_LIBURIPARSER
 #	include <uriparser/Uri.h>
+#else
+#	ifdef HAVE_LIBCURL
+#		include <curl/curl.h>
+#	endif /* HAVE_LIBCURL */
 #endif /* HAVE_LIBURIPARSER */
 
 
@@ -511,11 +515,43 @@ page_goto_next_unread:
 						return i;
 					}
 				}
+#ifdef NNTP_ABLE
+				else {
+					const char *eyde = input_history[HIST_MESSAGE_ID][(hist_pos[HIST_MESSAGE_ID] - 1 + HIST_SIZE) % HIST_SIZE];
+					int tr = this_resp;
+
+					if (*eyde) {
+						switch (show_article_by_msgid(eyde)) {
+							case LOOKUP_OK:
+								art_close(&pgart);
+								this_resp = tr;
+								if (!index_group(curr_group))
+									return GRP_RETSELECT;
+								if (!art_open(TRUE, &arts[this_resp], group, &pgart, TRUE, _(txt_reading_article))) {
+									if ((i = load_article(this_resp, group)) < 0)
+										return i;
+								} else {
+									XFACE_CLEAR(); /* TODO: needed? */
+									return ART_UNAVAILABLE;
+								}
+								break;
+
+							case LOOKUP_UNAVAIL: /* TODO: check for !reading_saved_news for better error-message? */
+								wait_message(2, _(txt_lookup_func_not_available));
+								break;
+
+							default:
+								wait_message(2, _(txt_art_unavailable));
+								break;
+						}
+					}
+				}
+#endif /* NNTP_ABLE */
 				break;
 
 			case PAGE_GOTO_PARENT:		/* Goto parent of this article */
 			{
-				struct t_msgid *parent = arts[this_resp].refptr->parent;
+				const struct t_msgid *parent = arts[this_resp].refptr->parent;
 
 				if (parent == NULL) {
 					info_message(_(txt_art_parent_none));
@@ -693,8 +729,14 @@ page_goto_next_unread:
 				if (hide_uue && curr_line + ARTLINES > artlines)
 					curr_line = artlines - ARTLINES;
 				draw_page(0);
-				/* TODO: use translateable sentences */
 				info_message("%s: %s", _(txt_hide_uue.opt), _(txt_hide_uue_type[hide_uue]));
+				break;
+
+			case PAGE_TOGGLE_VERBATIM:			/* toggle verbatim handling on/off */
+				group->attribute->verbatim_handling = bool_not(group->attribute->verbatim_handling);
+				resize_article(TRUE, &pgart);	/* Also recooks it.. */
+				draw_page(0);
+				info_message(_(txt_toggled_verbatim), txt_onoff[group->attribute->verbatim_handling != FALSE ? 1 : 0]);
 				break;
 
 			case PAGE_REVEAL:			/* toggle hiding after ^L */
@@ -1619,9 +1661,9 @@ skip:
 	if (whichresp && (fmt_resp = char2wchar_t(_(txt_art_x_of_n)))) {
 		right_len = wcswidth(fmt_resp, wcslen(fmt_resp)) - 6 + 8;
 	} else {
-		if ((!x_resp && (fmt_resp = char2wchar_t(_(txt_no_responses)))) || (x_resp == 1 && (fmt_resp = char2wchar_t(_(txt_1_resp)))))
+		if (!x_resp && (fmt_resp = char2wchar_t(_(txt_no_responses))))
 			right_len = wcswidth(fmt_resp, wcslen(fmt_resp));
-		else if ((fmt_resp = char2wchar_t(_(txt_x_resp))))
+		else if ((fmt_resp = char2wchar_t(P_(txt_x_resp_sp[0], txt_x_resp_sp[1], x_resp))))
 			right_len = wcswidth(fmt_resp, wcslen(fmt_resp)) - 3 + 4;
 	}
 	FreeIfNeeded(fmt_resp);
@@ -1721,16 +1763,13 @@ skip:
 		if (!x_resp) {
 			tmp = strunc(_(txt_no_responses), cCOLS / 3 - 1);
 			my_printf("%s", tmp);
-		} else if (x_resp == 1) {
-			tmp = strunc(_(txt_1_resp), cCOLS / 3 - 1);
-			my_printf("%s", tmp);
 		} else {
-			if ((n = snprintf(NULL, 0, _(txt_x_resp), x_resp)) < 0)
+			if ((n = snprintf(NULL, 0, P_(txt_x_resp_sp[0], txt_x_resp_sp[1], x_resp), x_resp)) < 0)
 				goto shrug;
 
 			tlen = (size_t) n + 1;
 			tmp2 = my_malloc(tlen);
-			if (snprintf(tmp2, tlen, _(txt_x_resp), x_resp) != n) {
+			if (snprintf(tmp2, tlen, P_(txt_x_resp_sp[0], txt_x_resp_sp[1], x_resp), x_resp) != n) {
 				free(tmp2);
 				goto shrug;
 			}
@@ -1887,10 +1926,8 @@ shrug:
 	} else {
 		if (!x_resp)
 			right_len = strlen(_(txt_no_responses));
-		else if (x_resp == 1)
-			right_len = strlen(_(txt_1_resp));
 		else
-			right_len = strlen(_(txt_x_resp)) - 3 + 4;
+			right_len = strlen(P_(txt_x_resp_sp[0], txt_x_resp_sp[1], x_resp)) - 3 + 4;
 	}
 
 	/* line count */
@@ -1952,13 +1989,10 @@ shrug:
 	if (whichresp)
 		my_printf(_(txt_art_x_of_n), whichresp + 1, x_resp + 1);
 	else {
-		/* TODO: ngettext */
 		if (!x_resp)
 			my_printf("%s", _(txt_no_responses));
-		else if (x_resp == 1)
-			my_printf("%s", _(txt_1_resp));
 		else
-			my_printf(_(txt_x_resp), x_resp);
+			my_printf(P_(txt_x_resp_sp[0], txt_x_resp_sp[1], x_resp), x_resp);
 	}
 	my_fputs(cCRLF, stdout);
 
@@ -2026,12 +2060,8 @@ load_article(
 #endif /* DEBUG */
 
 	if (new_respnum != this_resp || art_closed) {
-		int ret;
-
 		art_close(&pgart);			/* close previously opened art in pager */
-		ret = art_open(TRUE, &arts[new_respnum], group, &pgart, TRUE, _(txt_reading_article));
-
-		switch (ret) {
+		switch (art_open(TRUE, &arts[new_respnum], group, &pgart, TRUE, _(txt_reading_article))) {
 			case ART_UNAVAILABLE:
 				art_mark(group, &arts[new_respnum], ART_READ);
 				/* prevent retagging as unread in unfilter_articles() */
@@ -2206,7 +2236,7 @@ process_search(
 	/*
 	 * Highlight found string
 	 */
-	highlight_string(i - *lcurr_line + scroll_region_top, start, end - start);
+	highlight_string(i - *lcurr_line + scroll_region_top, (int) start, (int) (end - start));
 }
 
 
@@ -2847,11 +2877,17 @@ process_url(
 	int l;
 	size_t len;
 	t_url *lptr;
+#if defined(HAVE_LIBURIPARSER) || defined(HAVE_LIBCURL)
+	char *uri_norm;
+	int ulen = -1;
+#endif /* HAVE_LIBURIPARSER || HAVE_LIBCURL */
 #ifdef HAVE_LIBURIPARSER
 	UriParserStateA state;
 	UriUriA uri;
-	int ulen = -1;
-	char *uri_norm;
+#else
+#	ifdef HAVE_LIBCURL
+	CURLU *curl;
+#	endif /* HAVE_LIBCURL */
 #endif /* HAVE_LIBURIPARSER */
 
 	lptr = find_url(n);
@@ -2889,13 +2925,28 @@ process_url(
 			}
 			uriFreeUriMembersA(&uri);
 		}
-		if (ulen < 0) {
+#else
+#	ifdef HAVE_LIBCURL
+		/* same as above but with libcurl, again no detailed error logging yet */
+		if ((curl = curl_url())) {
+			if (curl_url_set(curl, CURLUPART_URL, url, CURLU_URLENCODE) == CURLUE_OK) {
+				if (curl_url_get(curl, CURLUPART_URL, &uri_norm, 0) == CURLUE_OK) {
+					free(url);
+					url = uri_norm;
+					ulen = strlen(url);
+				}
+			}
+			curl_url_cleanup(curl);
+		}
+#	endif /* HAVE_LIBCURL */
+#endif /* HAVE_LIBURIPARSER */
+#if defined(HAVE_LIBURIPARSER) || defined(HAVE_LIBCURL)
+		if (ulen < 0) { /* should only happen if the URL was modified in the prompt above */
 			error_message(2, "URI Normalization failed: %s", url); /* TODO: -> lang.c; _()? */
 			free(url);
 			return FALSE;
 		}
-#endif /* HAVE_LIBURIPARSER */
-
+#endif /* HAVE_LIBURIPARSER || HAVE_LIBCURL */
 		url_esc = escape_shell_meta(url, no_quote);
 		if ((l = snprintf(NULL, 0, "%s %s", tinrc.url_handler, url_esc)) < 0) {
 			free(url);
@@ -3010,6 +3061,8 @@ log_article_info(
 	FILE *fp;
 	t_part *ptr;
 #ifdef DEBUG
+	const char *filename_star;
+	const char *filename;
 	const char *name;
 #endif /* DEBUG */
 
@@ -3078,6 +3131,14 @@ log_article_info(
 		fprintf(fp, "\n\t\tUsed:\t\t%s", content_encodings[ptr->encoding]);
 
 #ifdef DEBUG
+		if ((filename_star = get_param(ptr->params, "filename*")) != NULL) {
+			fprintf(fp, "\n\tFilename*:\n");
+			fprintf(fp, "\t\t%s", filename_star);
+		}
+		if ((filename = get_param(ptr->params, "filename")) != NULL) {
+			fprintf(fp, "\n\tFilename:\n");
+			fprintf(fp, "\t\t%s", filename);
+		}
 		if ((name = get_param(ptr->params, "name")) != NULL) {
 			fprintf(fp, "\n\tName:\n");
 			fprintf(fp, "\t\t%s", name);
@@ -3093,6 +3154,16 @@ log_article_info(
 		if (ptr->disposition != DISP_NONE) {
 			fprintf(fp, "\n\tContent Disposition:\n");
 			fprintf(fp, "\t\t%s", ptr->disposition == DISP_INLINE ? content_disposition[DISP_INLINE] : content_disposition[DISP_ATTACHMENT]);
+		}
+		fprintf(fp, "\n");
+		if (filename_star && *filename_star && filename && *filename && strcmp(filename_star, filename)) {
+			fprintf(fp, "\n!!\tFilename*: %s != Filename: %s", filename_star, filename);
+		}
+		if (filename_star && *filename_star && name && *name && strcmp(filename_star, name)) {
+			fprintf(fp, "\n!!\tFilename*: %s != Name: %s", filename_star, name);
+		}
+		if (filename && *filename && name && *name && strcmp(filename, name)) {
+			fprintf(fp, "\n!!\tFilename: %s != Name: %s", filename, name);
 		}
 #endif /* DEBUG */
 		fprintf(fp, "\n");

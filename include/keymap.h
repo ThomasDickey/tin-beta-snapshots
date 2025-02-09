@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2024-11-17
+ *  Updated   : 2025-01-30
  *  Notes     :
  *
  * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
@@ -299,6 +299,7 @@ enum defined_functions {
 	PAGE_TOGGLE_TABS,
 	PAGE_TOGGLE_TEX2ISO,
 	PAGE_TOGGLE_UUE,
+	PAGE_TOGGLE_VERBATIM,
 	PAGE_TOP_THREAD,
 	PAGE_VIEW_ATTACHMENTS,
 	PAGE_VIEW_URL,
@@ -373,7 +374,8 @@ enum defined_functions {
 	THREAD_TOGGLE_SUBJECT_DISPLAY,
 	THREAD_UNDO_SELECTIONS,
 	THREAD_UNTAG,
-	URL_SELECT
+	URL_SELECT,
+	FUNC_MAX
 };
 typedef enum defined_functions t_function;
 
@@ -443,8 +445,8 @@ extern t_function prompt_slk_response(t_function default_func, const struct keyl
 #define PrintFuncKey(buf, func, keys) printascii(buf, (wint_t) func_to_key(func, keys))
 #else
 	extern char *printascii(char *buf, int ch);
-	extern char func_to_key (t_function func, const struct keylist keys);
-	extern t_function key_to_func (const char key, const struct keylist keys);
+	extern char func_to_key(t_function func, const struct keylist keys);
+	extern t_function key_to_func(const char key, const struct keylist keys);
 #define PrintFuncKey(buf, func, keys) printascii(buf, (int) func_to_key(func, keys))
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #endif /* !KEYMAP_H */

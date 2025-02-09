@@ -3,11 +3,13 @@
  *  Module    : strftime.c
  *  Author    : A. Robbins & I. Lea
  *  Created   : 1991-02-01
- *  Updated   : 2018-04-04
+ *  Updated   : 2024-12-17
  *  Notes     : Relatively quick-and-dirty implementation of ANSI library
  *              routine for System V Unix systems.
  *              If target system already has strftime() call the #define
  *              HAVE_STRFTIME can be set to use it.
+ *              TODO: "sync" against
+ *              <https://github.com/arnoldrobbins/strftime/tree/master>
  *  Example   : time(&secs);
  *              tm = localtime(&secs);
  *              num = strftime(buf, sizeof(buf), "%a %d-%m-%y %H:%M:%S", tm);
@@ -48,10 +50,6 @@
 #	include "tin.h"
 #endif /* !TIN_H */
 
-#ifdef SYSV
-extern int daylight;
-#endif /* SYSV */
-
 #ifndef HAVE_STRFTIME
 #	define SYSV_EXT	1	/* stuff in System V ascftime routine */
 #endif /* !HAVE_STRFTIME */
@@ -65,7 +63,7 @@ my_strftime(
 	char *s,
 	size_t maxsize,
 	const char *format,
-	struct tm *timeptr)
+	const struct tm *timeptr)
 {
 #ifdef HAVE_STRFTIME
 	return strftime(s, maxsize, format, timeptr);
@@ -186,7 +184,7 @@ my_strftime(
 			snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_min);
 			break;
 
-		case 'p':	/* am or pm based on 12-hour clock */
+		case 'p':	/* AM or PM based on 12-hour clock */
 			strcpy(tbuf, ampm[((timeptr->tm_hour < 12) ? 0 : 1)]);
 			break;
 
@@ -253,6 +251,40 @@ my_strftime(
 			my_strftime(tbuf, sizeof(tbuf), "%H:%M:%S", timeptr);
 			break;
 #	endif /* SYSV_EXT */
+
+		case 'C': /* century number (SU) */
+			sprintf(tbuf, "%02d", (timeptr->tm_year + 1900) / 100);
+			break;
+
+		case 'F': /* ISO 8601 date format (C99) */
+			my_strftime(tbuf, sizeof(tbuf), "%Y-%m-%d", timeptr);
+			break;
+
+		case 'k':	/* 24-hour clock, blank padded */
+			snprintf(tbuf, sizeof(tbuf), "%2d", timeptr->tm_hour);
+			break;
+
+		case 'l':	/* 12-hour clock, blank padded */
+			i = timeptr->tm_hour;
+			if (i == 0)
+				i = 12;
+			else if (i > 12)
+				i -=12;
+			snprintf(tbuf, sizeof(tbuf), "%2d", i);
+			break;
+
+		case 'P':	/* am or pm based on 12-hour clock (GNU) */
+			strcpy(tbuf, ampm[((timeptr->tm_hour < 12) ? 0 : 1)]);
+			str_lwr(tbuf);
+			break;
+
+		case 's': /* seconds since the Epoch */
+			sprintf(tbuf, "%ld", time((time_t *) 0));
+			break;
+
+		case 'u': /* day of the week, range 1 to 7 */
+			sprintf(tbuf, "%d", timeptr->tm_wday == 0 ? 7 : timeptr->tm_wday);
+			break;
 
 		default:
 			tbuf[0] = '%';

@@ -1,9 +1,8 @@
-.\"
 .\" Project   : tin - a Usenet newsreader
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2024-11-21
+.\" Updated   : 2025-01-23
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -13,7 +12,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "24 diciembre 2023" 2.6.4 "Usenet newsreader"
+.TH tin 1 "December 24th, 2024" 2.6.4 "Usenet newsreader"
 .\"
 .\"
 .SH NOMBRE
@@ -44,7 +43,7 @@ Thread level and Article level. Use the \fBHelp\fP ('\fBh\fP')  command to view 
 list of the commands available at a particular level.
 .PP
 On startup \fBtin\fP will show a list of the newsgroups found in
-\fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP. An arrow '\->' or highlighted bar
+\fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP. An arrow '\(->' or highlighted bar
 will point to the first newsgroup. Move to a group by using the terminal
 arrow keys (terminal dependent) or \fBDown\fP ('\fBj\fP')  and \fBUp\fP ('\fBk\fP'). Use
 PgUp/PgDn (terminal dependent) or \fBPageUp\fP ('\fB^U\fP') (CTRL\-U) and
@@ -107,23 +106,23 @@ Don't load newsgroup descriptions and servers message of the day
 Enter debug\-level, the levels can specified via number (should be avoided as
 it will be removed in the future) or name (case insensitive) as listed
 below. Use comma to give multiple levels, any combinations are allowed
-(e.g. \*(rq\fB\-D\fP \fIGNKSA,2,NNTP\fP\*(rq). If removal is requested it will be
+(e.g., \*(rq\fB\-D\fP \fIGNKSA,2,NNTP\fP\*(rq). If removal is requested it will be
 performed at startup and on normal termination (that is the files are only
 available while tin is running).
 .in +.3i
-.nf
-.ta \w'%128 'u +\w'ATTRIBUTES 'u +\w'ATTRIBUTES 'u +\w'ATTRIBUTES'u
-  \fI1	NNTP	NNTPS\fP
-  \fI2	FILTER	ARTS\fP
-  \fI4	NEWSRC	BITMAP\fP
-  \fI8	THREADING	REFS\fP
- \fI16	MEMORY	MALLOC\fP
- \fI32	ATTRIBUTES\fP
- \fI64	MISC	GNKSA	ACTIVE\fP
-\fI127	ALL	EVERYTHING\fP
-\fI128	REMOVE	DELETE\fP
-.fi
-.in -.3i
+.TS
+rI LI LI LI.
+1	NNTP	NNTPS
+2	FILTER	ARTS
+4	NEWSRC	BITMAP
+8	THREADING	REFS
+16	MEMORY	MALLOC
+32	ATTRIBUTES
+64	MISC	GNKSA	ACTIVE
+127	ALL	EVERYTHING
+128	REMOVE	DELETE
+.TE
+.in -0.3i
 For NNTP\-level \*(rq\fB\-v\fP\*(rq controls the verbosity of the output.  Depending on
 the debug\-level various files may be written to \fI$TMPDIR\fP and/or on screen
 output may be given. See also the "SECURITY" section!
@@ -136,7 +135,7 @@ Use the specified file of subscribed to newsgroups in place of
 \fB\-F\fP\fI file\fP
 Use the specified filter file instead of \fI${TIN_HOMEDIR:\-"$HOME"}/.filter\fP.
 .TP 
-\fB\-g\fP\fI server[:port]\fP
+\fB\-g\fP\fI server\fP[\fB:\fP\fIport\fP]
 Use the server[:port] and newsrc specified in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP. Only available when reading via
 NNTP. If you want to give a port with a plain IPv6 address, the address must
@@ -207,8 +206,8 @@ quick, it should be used with \*(rq\fB\-n\fP\*(rq if possible.
 .TP 
 \fB\-p\fP\fI port\fP
 Port to use if reading via NNTP (default is 119 or 563 if NNTPS is enabled,
-see \*(rq\fB\-T\fP\*(rq). This also overrides the environment variable $\fBNNTPPORT\fP if
-set. Only available when reading via NNTP.
+see \*(rq\fB\-T\fP\*(rq).  This also overrides the environment variables $\fBNNTPPORT\fP
+and $\fBNNTPSPORT\fP if set.  Only available when reading via NNTP.
 .TP 
 \fB\-q\fP
 Don't check for new newsgroups and skip loading the servers message of the
@@ -240,7 +239,7 @@ allowed maximum is 16383.
 .TP 
 \fB\-T\fP
 Enable NNTPS (NNTP over TLS). This also overrides the environment variable
-$\fBNNTPPORT\fP if set. Only available when reading via NNTP.
+$\fBNNTPSPORT\fP if set. Only available when reading via NNTP.
 .TP 
 \fB\-u\fP
 Create/update index files for every group in
@@ -349,7 +348,7 @@ articles displayed on the same line in front, but it can be customized via
 \fBselect_format\fP.
 .PP
 .nf
-\f(CR\->M    1     2  comp.security.announce  Announcements from the CERT abou
+\f(CR\(->M    1     2  comp.security.announce  Announcements from the CERT abou
   M    2     1  news.admin.announce     Announcements for news adminstra
        3    22  news.software.misc      News\-related software other than
        4  1475  news.software.nntp      The Network News Transfer Protoc
@@ -424,7 +423,7 @@ customized via \fBgroup_format\fP.
 .nf
 \f(CR                de.admin.net\-abuse.announce (11B 13+ 1* 1o 0K) M\fR
 
-\f(CR\->   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg <l
+\f(CR\(->   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg <l
      2   +       69 EMP/ECP gecancelt. xynx. BI= 10  Henning Weede <hwee
      3   o       93 EMP gecancelt. SouthBeach/Palms  Henning Weede <hwee
      4   *      368 <1997\-11\-12> Fremdcancel\-FAQ     Thomas Roessler <ro\fR
@@ -435,11 +434,10 @@ At the Thread level the screen usually (depends on the threading method
 used) looks like this, but can be customized via \fBthread_format\fP:
 .PP
 .nf
-\f(CR\->   1      [   7]  What is this funny tree in the thr  Robert F. Simmig
-     2      [  12]  +\->                                 Sephan Wagner <s
-     3      [ 230]  | `\->Tin thread\-level (was: What is Bob Johnson <bob
-     4      [  22]  `\->tin threading menu               Brian Richardson\fR
-
+\f(CR\(->   1      [   7]  What is this funny tree in the thr  Robert F. Simmig
+     2      [  12]  +\(->                                 Sephan Wagner <s
+     3      [ 230]  | `\(->Tin thread\-level (was: What is Bob Johnson <bob
+     4      [  22]  `\(->tin threading menu               Brian Richardson\fR
 .fi
 .PP
 .\" FIXME - add description of fields
@@ -860,8 +858,9 @@ prompt asks how to proceed.
 Open the thread under the current cursor position.
 .TP 
 \fBLookupMessage 'L'\fP
-Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
-current group are searched.
+Look up article by \*(rqMessage\-ID:\*(rq. If not reading via NNTP or the server
+neither supports [X]HDR (\fBRFC\%2980\fP, \fBRFC\%3977\fP) nor XPAT
+(\fBRFC\%2980\fP), only the IDs in the current group are searched.
 .TP 
 \fBGroupMail 'm'\fP
 Mail current article / thread / auto\-selected (hot) articles / articles
@@ -1073,8 +1072,9 @@ articles is set, the range will be marked as read instead of the current
 article. When tagged articles are present, a prompt asks how to proceed.
 .TP 
 \fBLookupMessage 'L'\fP
-Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
-current group are searched.
+Look up article by \*(rqMessage\-ID:\*(rq. If not reading via NNTP or the server
+neither supports [X]HDR (\fBRFC\%2980\fP, \fBRFC\%3977\fP) nor XPAT
+(\fBRFC\%2980\fP), only the IDs in the current group are searched.
 .TP 
 \fBThreadMail 'm'\fP
 Mail current article / thread / auto\-selected (hot) articles / articles
@@ -1216,6 +1216,9 @@ Go to the last article in the current thread.
 \fBPageToggleHighlight '_'\fP
 Toggle word highlighting on/off.
 .TP 
+\fBPageToggleVerbatim ','\fP
+Toggle detection of verbatim blocks on/off.
+.TP 
 \fBPipe '|'\fP
 Pipe current article / thread / auto\-selected (hot) articles / articles
 matching pattern / tagged articles into command. See the section "MAILING
@@ -1304,8 +1307,9 @@ Mark rest of thread as read and move onto the next unread thread.
 Show the thread menu that the current article is a part of.
 .TP 
 \fBLookupMessage 'L'\fP
-Look up article by \*(rqMessage\-ID:\*(rq. In this level only the IDs in the
-current group are searched.
+Look up article by \*(rqMessage\-ID:\*(rq. If not reading via NNTP or the server
+neither supports [X]HDR (\fBRFC\%2980\fP, \fBRFC\%3977\fP) nor XPAT
+(\fBRFC\%2980\fP), only the IDs in the current group are searched.
 .TP 
 \fBPageMail 'm'\fP
 Mail current article / thread / auto\-selected (hot) articles / articles
@@ -1572,8 +1576,8 @@ the name of the corresponding setting in
 .TP  4
 \fBAbbreviate long newsgroup names (abbreviate_groupname)\fP
 If ON abbreviate long newsgroup names at group selection level and article
-level (if necessary) like this: news.software.readers \->
-n.software.readers \-> n.s.readers \-> n.s.r.  Default is OFF.
+level (if necessary) like this: news.software.readers \(->
+n.software.readers \(-> n.s.readers \(-> n.s.r.  Default is OFF.
 .TP 
 \fBAdd posted articles to filter (add_posted_to_filter)\fP
 If ON add posted articles which start a new thread to filter for
@@ -1651,6 +1655,11 @@ displayed after composing an article. Default is ON.
 If ON, create local copies of NNTP overview files. This can be used to
 considerably speed up accessing large groups when using a slow connection.
 See also "INDEX FILES". Default is OFF.
+.TP 
+\fBCompress locally cached NNTP overview files (compress_overview_files)\fP
+If ON, locally cached NNTP overview files (\fBcache_overview_files\fP) are
+saved in compressed form (\fBRFC\%1952\fP). Useful to reduce local disk space
+used. Default is OFF.
 .TP 
 \fBHash algorithm for cancel\-locks (cancel_lock_algo)\fP
 Use this hash algorithm for cancel\-locks. Only available when built with
@@ -1889,9 +1898,9 @@ Default for quick (1 key) auto\-selection filter header.
 Do not break long lines inside a word. This applies to the body except for
 verbatim blocks. See also \fBwrap_column\fP. Default is OFF.
 .TP 
-\fBDraw \-> instead of highlighted bar (draw_arrow)\fP
-Allows groups/articles to be selected by an arrow '\->' if set ON or by a
-highlighted bar if set OFF. Default is OFF.
+\fBDraw \(-> instead of highlighted bar (draw_arrow)\fP
+Allows groups/articles to be selected by an arrow '\(->' if set ON or by
+a highlighted bar if set OFF. Default is OFF.
 .TP 
 \fBInvocation of your editor (editor_format)\fP
 The format string used to create the editor start command with parameters.
@@ -1956,7 +1965,7 @@ available to display long subjects. Default is OFF.
 .TP 
 \fBUse interactive mail reader (interactive_mailer)\fP
 Interactive mailreader: if greater than 0 your mailreader will be invoked
-earlier for reply so you can use more of its features (e.g. MIME, pgp,
+earlier for reply so you can use more of its features (e.g., MIME, pgp,
 \&...). 1 means include headers, 2 means don't include headers (old
 use_mailreader_i=ON option). 0 turns off usage. This option has to suit
 \fBmailer_format\fP. Default is 0.
@@ -2038,7 +2047,7 @@ sendmail \-oem \-t < %F
 mutt \-H %F
 claws\-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
-.in -.3i
+.in -0.3i
 \fBinteractive_mailer\fP must be set adequate. The following substitutions are
 supported:
 .in +.3i
@@ -2051,7 +2060,7 @@ supported:
 %U	username
 %%	%
 .fi
-.in -.3i
+.in -0.3i
 .TP 
 \&\fB'Mark as (un)read' ignores tags (mark_ignore_tags)\fP
 When this is ON, the \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBThreadMarkArtRead\fP
@@ -2094,7 +2103,7 @@ one of the following charsets:
 .in +.3i
 US\-ASCII, ISO\-8859\-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8\-{R,U,RU}
 EUC\-{CN,JP,KR,TW}, ISO\-2022\-{CN,CN\-EXT,JP,JP\-1,JP\-2}, Big5, UTF\-8
-.in -.3i
+.in -0.3i
 Not all values might work on your system, see \fB\%iconv_open\fP(3)  for more
 details. If it's not set, the value of the environment variable
 $\fBMM_CHARSET\fP is used. US\-ASCII or compile\-time default is used in case
@@ -2636,8 +2645,8 @@ header. For this option to have any effect, \fBtin\fP must be running in an
 OFF.
 .TP 
 \fBUse UTF\-8 graphics (utf8_graphics)\fP
-If ON use UTF\-8 characters for indicator ('\->'), thread/attachment tree
-and ellipsis ('...'). Default is OFF.
+If ON use UTF\-8 characters for indicator ('\(->'), thread/attachment
+tree and ellipsis ('...'). Default is OFF.
 .TP 
 \fBRegex for begin of a verbatim block (verbatim_begin_regex)\fP
 A regular expression that \fBtin\fP will use to find the begin of a verbatim
@@ -2843,13 +2852,15 @@ variables are expanded if found in the tinrc variables \fBmail_quote_format\fP,
 p.e.,
 .RS
 .nf
-\f(CWmail_quote_format=On %D in %G you wrote: news_quote_format=In %M, %F wrote:\fP
+\f(CRmail_quote_format=On %D in %G you wrote:
+news_quote_format=In %M, %F wrote:\fR
 .fi
 .RE
 would expand to:
 .RS
 .nf
-\f(CWOn 21 Sep 1993 09:45:51 \-0400 in alt.sources you wrote: In <abcINN123@example.org>, Joe Bar <joe@example.org> wrote:\fP
+\f(CROn 21 Sep 1993 09:45:51 \-0400 in alt.sources you wrote:
+In <abcINN123@example.org>, Joe Bar <joe@example.org> wrote:\fR
 .fi
 .RE
 .\"
@@ -2948,7 +2959,7 @@ mark them as read)
 A range is simply a group of items marked using the \fBSetRange\fP (\fB'#'\fP)
 key. Certain \fBtin\fP commands will operate on a range if one exists rather
 than just the current item. A range is an expression of the form
-<min>\(en<max>, e.g. 10\(en15 will highlight items 10
+<min>\(en<max>, e.g., 10\(en15 will highlight items 10
 through 15 on the current screen. Other than absolute numeric positions,
 \&'.\&' can be used in place of the current cursor position and '$' can be
 used to mean the highest number available. Entering '0' at the prompt undoes
@@ -2988,7 +2999,8 @@ editor for both posting and mailing commands.
 The following is an example of a \fI.Sig\fP file:
 .RS
 .nf
-\f(CWNAMES  Joe Bar <joe@example.org> SNAIL  Musterweg 12, 99999 Notreal, Germany\fP
+\f(CRNAMES  Joe Bar <joe@example.org>
+SNAIL  Musterweg 12, 99999 Notreal, Germany\fR
 .fi
 .RE
 .PP
@@ -3030,7 +3042,7 @@ evaluated. The following variables are available:
 \fB%s\fP	subject
 \fB%%\fP	%
 .fi
-.in -.3i
+.in -0.3i
 .PP
 Not all variables can be used in each level. The following table provides an
 overview:
@@ -3056,7 +3068,7 @@ overview:
 \fB%s\fP		X
 \fB%%\fP	X	X	X
 .fi
-.in -.3i
+.in -0.3i
 .PP
 Defaults for the format strings:
 .PP
@@ -3067,7 +3079,7 @@ Defaults for the format strings:
 \fBgroup_format\fP:	"\fB%n %m %R %L  %s  %F\fP"
 \fBthread_format\fP:	"\fB%n %m  [%L]  %T  %F\fP"
 .fi
-.in -.3i
+.in -0.3i
 .PP
 \fBshow_description\fP controls whether the newsgroup description is shown or
 not. The description can also be toggled with \fBSelectToggleDescriptions\fP
@@ -3078,7 +3090,7 @@ The information displayed with '\fB%F\fP' depends on the value of
 ('\fBd\fP') switches through all available options.
 .PP
 For date representation '\fB%D\fP' uses \fBdate_format\fP. It is possible to
-specify a different date format in round brackets (e.g. '\fB%(%d %b %y %H:%M)D\fP'). See \fBdate_format\fP for more details.
+specify a different date format in round brackets (e.g., '\fB%(%d %b %y %H:%M)D\fP'). See \fBdate_format\fP for more details.
 .PP
 The length of each item (except '\fB%%\fP') can be defined with a positive
 number after the '\fB%\fP'. The following example displays the score in the
@@ -3086,8 +3098,8 @@ thread level 10 characters wide: '\fB%10S\fP'.
 .PP
 If the newsgroup name is displayed together with the newsgroup description,
 the width of the newsgroup name can be controlled via an optional comma
-separated second value (e.g. '\fB%60,20G\fP'). It is valid to omit the first
-value (e.g. ('\fB%,20G\fP')). If no second value is given, \fBtin\fP uses a
+separated second value (e.g., '\fB%60,20G\fP'). It is valid to omit the first
+value (e.g., ('\fB%,20G\fP')). If no second value is given, \fBtin\fP uses a
 default value of 32.
 .PP
 Some variables do have a default width which may lead to truncation.
@@ -3095,7 +3107,7 @@ Truncation for variables which contain only numbers happens by dividing the
 value with a sufficient power of ten and adding a SI suffix to the result,
 that is the variable holds a value of 54321 and the width for the variable
 is 4 the result will be "54 k". If that's undesired you have to specify a
-larger width manually, e.g. '\fB%6n\fP'. Here is an overview of the defaults:
+larger width manually, e.g., '\fB%6n\fP'. Here is an overview of the defaults:
 .PP
 .in +.3i
 .nf
@@ -3109,7 +3121,7 @@ Variable	width
 \fB%U\fP	 5
 \fB%n\fP	 4
 .fi
-.in -.3i
+.in -0.3i
 .PP
 If no length is given for '\fB%D\fP', the length is determined by the format
 string for the date and the date of the current day. If the date format
@@ -3129,28 +3141,27 @@ resp. '\fB%T\fP' and no length are given, '\fB%F\fP' will use one third and
 \&'\fB%s\fP' resp. '\fB%T\fP' will use two third of the available space.
 .PP
 In addition, a minimum or a maximum screen width can be defined for each
-item (except '\fB%%\fP').  In this case, the item will only be displayed when
-the screen is wider resp.  smaller than specified.  This comes in handy to
-not overload a small screen but have maximum information on a large screen.
-The minimum screen width has to be specified by a positive number preceded
-by an '\fB>\fP', the maximum screenwidth has to be specified by a positive
-number preceded by an '\fB<\fP'.  In the following example \fBtin\fP will
-display the score only if the screen is wider than 100 characters:
-\&'\fB%>100S\fP'.
+item (except '\fB%%\fP'). In this case, the item will only be displayed when
+the screen is wider resp. smaller than specified. This comes in handy to not
+overload a small screen but have maximum information on a large screen. The
+minimum screen width has to be specified by a positive number preceded by an
+\&'\fB>\fP', the maximum screenwidth has to be specified by a positive number
+preceded by an '\fB<\fP'. In the following example \fBtin\fP will display the
+score only if the screen is wider than 100 characters: '\fB%>100S\fP'.
 .PP
 If both the length and the minimum or maximum screen width should be
 specified for an item, the length must be the first parameter and the
-minimum or maximum screen width must be the second one.  The following
+minimum or maximum screen width must be the second one. The following
 example displays the score with a length of 10 characters only if the screen
-is wider than 100 characters: '\fB%10>100S\fP'.  A second length can be
-specified for '\fB%F\fP' and '\fB%s\fP' resp.  '\fB%T\fP', separated by a colon,
-which is used if the minimum or maximum screen width is not reached.  If no
-length is specified after the colon, the item is displayed even if the
-minimum screen width is not reached and the length is calculated as if no
-minimum (or maximum) screen width had been specified.  In the following
-example \fBtin\fP will display the subject with a length of 60 characters if
-the screen is wider than 100 characters, otherwise a length of 40 characters
-is used: '\fB%60>100:40s\fP'.
+is wider than 100 characters: '\fB%10>100S\fP'. A second length can be
+specified for '\fB%F\fP' and '\fB%s\fP' resp. '\fB%T\fP', separated by a colon, which
+is used if the minimum or maximum screen width is not reached.  If no length
+is specified after the colon, the item is displayed even if the minimum
+screen width is not reached and the length is calculated as if no minimum
+(or maximum) screen width had been specified. In the following example
+\fBtin\fP will display the subject with a length of 60 characters if the screen
+is wider than 100 characters, otherwise a length of 40 characters is used:
+\&'\fB%60>100:40s\fP'.
 .PP
 The look of the Attachment level and the mime and uue header at Page level
 can be customized too via format strings.  The following variables are
@@ -3178,7 +3189,7 @@ available:
 \fB%z\fP	Like %Z but with description
 \fB%%\fP	%
 .fi
-.in -.3i
+.in -0.3i
 .PP
 Not all items can be used in each variable. The following table provides an
 overview:
@@ -3206,7 +3217,7 @@ overview:
 \fB%z\fP	X	X	X
 \fB%%\fP	X	X	X
 .fi
-.in -.3i
+.in -0.3i
 .PP
 By default, the string is not truncated. If it exceeds the screen width, it
 is wrapped. If the % sign is followed by an exclamation mark ('!\&') for
@@ -3335,7 +3346,8 @@ If your news server doesn't support NOV index files or you have a very slow
 connection to your news server then \fBtin\fP can cache the index for each
 newsgroup if \fBcache_overview_files\fP is set to ON.  Note that this cache can
 use up large amounts of disk space if you read a lot of groups and/or high
-traffic groups.
+traffic groups. To reduce the amount of disk space used,
+\fBcompress_overview_files\fP can be set to ON.
 .PP
 Each user creates/updates his/her own index files that are stored in
 \fI${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news/\fP. If you are
@@ -3357,7 +3369,7 @@ batcher \fB\%cron\fP(8)  with the \*(rq\fB\-u\fP\*(rq option:
 .PP
 .RS
 .nf
-\f(CW30 6 * * * /usr/local/bin/tin \-u\fP
+\f(CR30 6 * * * /usr/local/bin/tin \-u\fR
 .fi
 .RE
 .PP
@@ -3366,7 +3378,8 @@ cached data for groups you are not reading anymore with something like:
 .PP
 .RS
 .nf
-\f(CWfind ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \e \-type f \-name "[0\-9]*.[0\-9]" \-atime +28 | xargs rm \-f\fP
+\f(CRfind ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \e
+\-type f \-name "[0\-9]*.[0\-9]" \-atime +28 | xargs rm \-f\fR
 .fi
 .RE
 .\"
@@ -3455,7 +3468,7 @@ For a detailed description see \fB\%tin\fP(5).
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/active.save\fP
 .PP
 
-.\" .IR ${TIN_LIBDIR:\-NEWSLIBDIR}/attributes
+.\" .I ${TIN_LIBDIR:\-NEWSLIBDIR}/attributes
 \fI/etc/tin/attributes\fP
 .br
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fP
@@ -3506,7 +3519,7 @@ For a detailed description see \fB\%tin\fP(5).
 .fi
 .PP
 
-.\" .IR ${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc
+.\" .I ${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc
 \fI/etc/tin/tinrc\fP
 .br
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP
@@ -3603,8 +3616,13 @@ overrides $\fBNNTPSERVER\fP.
 .TP 
 \fBNNTPPORT\fP
 The NNTP TCP\-port to read news from. This variable only needs to be set if
-the TCP\-port is not 119 (the default). The \*(rq\fB\-p\fP\*(rq and \*(rq\fB\-T\fP\*(rq
-command\-line options do override $\fBNNTPPORT\fP.
+the TCP\-port is not 119 (the default). The \*(rq\fB\-p\fP\*(rq command\-line option
+does override $\fBNNTPPORT\fP.
+.TP 
+\fBNNTPSPORT\fP
+The NNTPS TCP\-port to read news from. This variable only needs to be set if
+the TCP\-port is not 563 (the default). The \*(rq\fB\-p\fP\*(rq and \*(rq\fB\-T\fP\*(rq
+command\-line options do override $\fBNNTPSPORT\fP.
 .TP 
 \fBDISTRIBUTION\fP
 Set the article header field \*(rqDistribution:\*(rq to the contents of the
@@ -3687,7 +3705,7 @@ replying, follow\-ups, ...). Evaluation order is
 \fBEDITOR\fP
 If $\fBVISUAL\fP is unset, then this variable is looked up for a default
 editor. If $\fBEDITOR\fP and $\fBVISUAL\fP are both unset, \fBtin\fP uses the systems
-default editor (i.e.  \fB\%vi\fP(1)  on UNIX\-systems). See \fB\%environ\fP(5)  for
+default editor (i.e., \fB\%vi\fP(1)  on UNIX\-systems). See \fB\%environ\fP(5)  for
 more info.
 .TP 
 \fBAUTOSUBSCRIBE\fP
@@ -3723,7 +3741,7 @@ This variable can be used to override the default path search for
 .TP 
 \fBNOMETAMAIL\fP
 Set this variable to disable the use of \fB\%metamail\fP(1)  or a replacement
-(e.g. metamutt).
+(e.g., metamutt).
 .TP 
 \fBMM_CHARSET\fP
 MIME character set used if not configured via the tinrc variable
@@ -3853,9 +3871,9 @@ Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-file.
 .SH GARANTÍA
 If \fBtin\fP is started in debug mode (\*(rq\fB\-D n\fP\*(rq) it will create world
 readable files in \fB$TMPDIR\fP which may contain sensitive data like the users
-NNTP password in cleartext (if running verbose). On multiuser\-systems
+NNTP password in cleartext (if running verbose).  On multiuser\-systems
 \fB$TMPDIR\fP should be set to a safe location before starting \fBtin\fP in
-(verbose) debug mode (e.g. \fBTMPDIR=$HOME tin \-vD 1\fP).
+(verbose) debug mode (e.g., \fBTMPDIR=$HOME tin \-vD NNTP\fP).
 .PP
 Using the \*(rq\fB\-k\fP\*(rq option to skip certificate verification makes the
 session insecure as the server's certificate is not checked; avoid this
@@ -3922,7 +3940,7 @@ author of envarg.c environment variable reading routine.
 author of sigfile.c random signature generation routines.
 .IP "Markus Kuhn <Markus.Kuhn@cl.cam.ac.uk>"
 author of langinfo.c, charset.c and iso2asc.txt ISO\-8859\-1 documentation.
-.IP "Arnold Robbins"
+.IP "Arnold D. Robbins"
 author of strftime.c date formatting routine.
 .IP "Rich Salz"
 author of wildmat.c pattern matching and parsdate.y date parsing routines.
@@ -3960,7 +3978,7 @@ Urs Janssen <urs@tin.org>
 \fB\%snprintf\fP(3), \fB\%strftime\fP(3), \fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3),
 \fB\%environ\fP(5), \fB\%locale\fP(5), \fB\%mailcap\fP(5), \fB\%mbox\fP(5),
 \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5), \fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP,
-\fBRFC\%1524\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2231\fP,
-\fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP,
-\fBRFC\%4880\fP, \fBRFC\%5198\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP, \fBRFC\%5537\fP,
-\fBRFC\%6048\fP, \fBRFC\%6838\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP
+\fBRFC\%1524\fP, \fBRFC\%1952\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP,
+\fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
+\fBRFC\%4643\fP, \fBRFC\%4880\fP, \fBRFC\%5198\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP,
+\fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%6838\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP

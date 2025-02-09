@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2024-11-26
+ *  Updated   : 2025-02-05
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -62,12 +62,12 @@ char *nntp_server = NULL;
 	static void close_server(t_bool send_no_quit);
 	static long int list_motd(FILE *stream);
 #	ifdef INET6
-		static int get_tcp6_socket(char *machine, unsigned short port);
+		static int get_tcp6_socket(const char *machine, unsigned short port);
 #	else
 		static int get_tcp_socket(char *machine, char *service, unsigned short port);
 #	endif /* INET6 */
 #	ifdef DECNET
-		static int get_dnet_socket(char *machine, char *service);
+		static int get_dnet_socket(const char *machine);
 #	endif /* DECNET */
 	static ssize_t nntp_read(int fd, void *tls, void *buf, size_t n);
 
@@ -168,7 +168,7 @@ getserverbyfile(
 
 		get_nntpserver(buf, sizeof(buf), cmdline.nntpserver);
 		/*
-		 * - given port in NEWSRCTABLE_FILE overrides -p, -g, -[kT] and $NNTPPORT
+		 * - given port in NEWSRCTABLE_FILE overrides -p, -g, -[kT] and $NNTP[S]PORT
 		 *
 		 * news.example.com[:123]    ~/.tin/${NNTPSERVER-localhost}/.newsrc  ex
 		 * [::1]:1119	~/.tin/NEWSRCS/${NNTPSERVER-localhost}	lh6
@@ -327,13 +327,11 @@ server_init(
 	char *service = strncpy(temp, cservice, sizeof(temp) - 1); /* ...calls non-const funcs; temp will be terminated few lines below */
 #	endif /* !INET6 */
 #	ifdef DECNET
-	char *cp;
-
-	cp = strchr(machine, ':');
+	char *cp = strchr(machine, ':');
 
 	if (cp && cp[1] == ':') {
 		*cp = '\0';
-		sock_fd = get_dnet_socket(machine, service);
+		sock_fd = get_dnet_socket(machine);
 	} else
 		sock_fd = get_tcp_socket(machine, service, port);
 #	else
@@ -723,7 +721,7 @@ get_tcp_socket(
  */
 static int
 get_tcp6_socket(
-	char *machine,
+	const char *machine,
 	unsigned short port)
 {
 	char mymachine[MAXHOSTNAMELEN + 1];
@@ -794,7 +792,6 @@ get_tcp6_socket(
  * get_dnet_socket -- get us a socket connected to the server.
  *
  *	Parameters:	"machine" is the machine the server is running on.
- *			"service" is the name of the service to connect to.
  *
  *	Returns:	Socket connected to the news server if
  *			all is ok, else -1 on error.
@@ -805,8 +802,7 @@ get_tcp6_socket(
  */
 static int
 get_dnet_socket(
-	char *machine,
-	char *service)
+	const char *machine)
 {
 #	ifdef NNTP_ABLE
 	int s, area, node;
@@ -857,11 +853,9 @@ get_dnet_socket(
 		return -1;
 	}
 
-	(void) service;
 	return s;
 #	else
     (void) machine;
-    (void) service;
 	return -1;
 #	endif /* NNTP_ABLE */
 }
@@ -1103,13 +1097,16 @@ get_server(
 	alarm((unsigned) TIN_NNTP_TIMEOUT);
 #	endif /* HAVE_ALARM && SIGALRM */
 	while (!nntpbuf_is_open(&nntp_buf) || nntpbuf_gets(string, size, &nntp_buf) == NULL) {
+#	ifdef EINTR
 		if (errno == EINTR) {
 			errno = 0;
-#	if defined(HAVE_ALARM) && defined(SIGALRM)
+#		if defined(HAVE_ALARM) && defined(SIGALRM)
 			alarm((unsigned) TIN_NNTP_TIMEOUT);		/* Restart the timer */
-#	endif /* HAVE_ALARM && SIGALRM */
+#		endif /* HAVE_ALARM && SIGALRM */
 			continue;
 		}
+#	endif /* EINTR */
+
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
 		alarm(0);
 #	endif /* HAVE_ALARM && SIGALRM */
@@ -1117,7 +1114,11 @@ get_server(
 			tin_done(NNTP_ERROR_EXIT, NULL);		/* And don't try to disconnect again! */
 
 #	ifdef DEBUG
+#		ifdef EINTR
 		if (errno != 0 && errno != EINTR)	/* Will only confuse end users */
+#		else
+		if (errno != 0)
+#		endif /* EINTR */
 			perror_message("get_server()");
 #	endif /* DEBUG */
 
@@ -1375,7 +1376,9 @@ check_extensions(
 					else if (!strncasecmp(ptr, &xhdr_cmds[1], strlen(&xhdr_cmds[1]))) {
 						nntp_caps.hdr_cmd = &xhdr_cmds[1];
 						nntp_caps.list_headers = nntp_caps.hdr = TRUE;
+						FreeIfNeeded(nntp_caps.headers_range);
 						nntp_caps.headers_range = my_strdup("");
+						FreeIfNeeded(nntp_caps.headers_id);
 						nntp_caps.headers_id = my_strdup("");
 					} else if (!strncasecmp(ptr, "AUTHINFO", 8)) {
 						if (strtok(ptr, WS) == NULL) /* AUTHINFO without args */
@@ -1800,7 +1803,7 @@ nntp_open(
 					break;
 			}
 		}
-		for (i = 0, j = 0; i < 2 && j >= 0; i++) {
+		for (i = j = 0; i < 2 && j >= 0; i++) {
 			j = new_nntp_command(&xhdr_cmds[i], ERR_CMDSYN, line, sizeof(line));
 			switch (j) {
 				case ERR_COMMAND:
@@ -1859,7 +1862,12 @@ nntp_open(
 					break;
 			}
 		}
-		if (!nntp_caps.hdr_cmd) {
+		if (!nntp_caps.hdr_cmd /* && strncmp(nntp_caps.implementation, "FEEDBASE", 8) */) {
+			/* NOTE:
+			 * FEEDBASE 0.3 (feedbase-nntpd.pl 0.3; feedbase.org; nntps on port 563)
+			 * an Atom/RSS-feed to nntp gateway doesn't like this, but
+			 * also has other issues ...
+			 */
 			/*
 			 * CAPABILITIES didn't mention HDR or XHDR, try XHDR
 			 */
@@ -1914,9 +1922,8 @@ nntp_open(
 		if ((fp = tin_fopen(local_motd_file, "w+")) != NULL) {
 			char *motd;
 			unsigned int n;
-			long m_hash;
+			long m_hash = list_motd(fp);
 
-			m_hash = list_motd(fp);
 			if (m_hash != motd_hash) {
 				if (fseek(fp, 0L, SEEK_SET) != -1) {
 					n = 0;
@@ -1931,9 +1938,10 @@ nntp_open(
 #	ifdef HAVE_COLOR
 					fcol(tinrc.col_normal);
 #	endif /* HAVE_COLOR */
-					if (n)
-						sleep((n >> 1) | 0x01);
-					else
+					if (n) {
+						if (!batch_mode || verbose)
+							sleep((n >> 1) | 0x01);
+					} else
 						unlink(local_motd_file);
 
 					motd_hash = m_hash;
@@ -2090,9 +2098,8 @@ get_respcode(
 {
 	char *ptr, *end;
 	char savebuf[NNTP_STRLEN];
-	int respcode;
+	int respcode = get_only_respcode(message, mlen);
 
-	respcode = get_only_respcode(message, mlen);
 	if ((respcode == ERR_NOAUTH) || (respcode == NEED_AUTHINFO)) {
 #	ifdef USE_ZLIB
 		if (deflate_active) /* Do not auth if compression is active */
@@ -2246,7 +2253,6 @@ list_motd(
 {
 	char *ptr, *p, *m;
 	char buf[NNTP_STRLEN];
-	int i;
 	size_t len;
 	long m_hash = 0L;
 #	if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
@@ -2258,9 +2264,8 @@ list_motd(
 
 	m = my_calloc(1, 1);
 	buf[0] = '\0';
-	i = new_nntp_command("LIST MOTD", OK_MOTD, buf, sizeof(buf));
 
-	switch (i) {
+	switch (new_nntp_command("LIST MOTD", OK_MOTD, buf, sizeof(buf))) {
 		case OK_MOTD:
 			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #	ifdef DEBUG
@@ -2271,8 +2276,7 @@ list_motd(
 				len = strlen(p);
 
 				/* original MOTD for hashing as local charset may change */
-				m = my_realloc(m, strlen(m) + len + 1);
-				strcat(m, p);
+				m = append_to_string(m, p);
 
 				/*
 				 * RFC 6048 2.5.2 "The information MUST be in UTF-8"
@@ -2388,8 +2392,13 @@ z_stream_init(
 	else
 		result = inflateInit2(strm, -15);
 
-	if (result != Z_OK)
+	if (result != Z_OK) {
+		if (is_deflate)
+			deflateEnd(strm);
+		else
+			inflateEnd(strm);
 		FreeAndNull(strm);
+	}
 
 	return strm;
 }
@@ -2400,7 +2409,6 @@ enable_deflate(
 	struct nntpbuf* nntpbuf)
 {
 	char buf[NNTP_STRLEN];
-	int result;
 
 	if (nntpbuf->z_rd || nntpbuf->z_wr)
 		return;
@@ -2420,9 +2428,7 @@ enable_deflate(
 	nntpbuf->z_wr->avail_out = DEFLATE_BUFSZ;
 
 	buf[0] = '\0';
-	result = new_nntp_command("COMPRESS DEFLATE", OK_COMPRESS, buf, sizeof(buf));
-
-	switch (result) {
+	switch (new_nntp_command("COMPRESS DEFLATE", OK_COMPRESS, buf, sizeof(buf))) {
 		case OK_COMPRESS:
 			deflate_active = TRUE;
 			return;
@@ -2730,7 +2736,7 @@ nntpbuf_close(
 #	endif /* NNTPS_ABLE */
 
 	if (buf->fd >= 0)
-		close(buf->fd);
+		sync_close(buf->fd);
 
 	buf->fd = -1;
 
@@ -2809,10 +2815,11 @@ nntp_conninfo(
 	}
 #	endif /* HAVE_GETPEERNAME || TLI */
 
+#	if defined(HAVE_ALARM) && defined(SIGALRM)
+	fprintf(stream, P_(txt_conninfo_timeout_sp[0], txt_conninfo_timeout_sp[1], TIN_NNTP_TIMEOUT), TIN_NNTP_TIMEOUT, TIN_NNTP_TIMEOUT ? "" : _(txt_conninfo_disabled));
+#	endif /* HAVE_ALARM && SIGALRM */
+
 	if (nntp_caps.type == CAPABILITIES) {
-		fprintf(stream, "\n");
-		if (nntp_caps.implementation)
-			fprintf(stream, _(txt_conninfo_implementation), nntp_caps.implementation);
 		if (nntp_caps.compress) {
 			fprintf(stream, "%s", _(txt_conninfo_compress));
 			if ((nntp_caps.compress_algorithm & COMPRESS_DEFLATE) == COMPRESS_DEFLATE) {
@@ -2822,7 +2829,6 @@ nntp_conninfo(
 				fprintf(stream, "%s", _(txt_conninfo_deflate_unsupported));
 #	endif /* USE_ZLIB */
 			}
-		}
 #	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
 		if (nntp_caps.maxartnum) {
 			char *buf;
@@ -2839,18 +2845,16 @@ nntp_conninfo(
 			}
 		}
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
-	}
-
-#	if defined(HAVE_ALARM) && defined(SIGALRM)
-	fprintf(stream, _(txt_conninfo_timeout), TIN_NNTP_TIMEOUT, TIN_NNTP_TIMEOUT ? "" : _(txt_conninfo_disabled));
-#	endif /* HAVE_ALARM && SIGALRM */
-
 #	ifdef USE_GSASL
-	if (nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_sasl) {
-		fprintf(stream, _(txt_usable_sasl_mechs), nntp_caps.sasl_mechs ? nntp_caps.sasl_mechs : _(txt_none));
-		fprintf(stream, _(txt_used_sasl_mech), nntp_caps.sasl_mech_used ? nntp_caps.sasl_mech_used : _(txt_none));
-	}
+		if (nntp_caps.authinfo_sasl) {
+			fprintf(stream, _(txt_usable_sasl_mechs), nntp_caps.sasl_mechs ? nntp_caps.sasl_mechs : _(txt_none));
+			fprintf(stream, _(txt_used_sasl_mech), nntp_caps.sasl_mech_used ? nntp_caps.sasl_mech_used : _(txt_none));
+		}
 #	endif /* USE_GSASL */
+		if (nntp_caps.implementation && *nntp_caps.implementation)
+			fprintf(stream, _(txt_conninfo_implementation), nntp_caps.implementation);
+		}
+	}
 
 	{
 		char *motd;

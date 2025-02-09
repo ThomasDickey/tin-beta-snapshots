@@ -1130,7 +1130,7 @@ X<tinews, command-line options>
 =over 4
 
 =item -B<4> | --B<ipv4>
-X<-4> X<--iv4>
+X<-4> X<--ipv4>
 
 Force connecting via IPv4 to the remote NNTP server.
 

@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-25
+ *  Updated   : 2025-02-06
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -156,7 +156,7 @@ read_newsrc(
 		/* mixed up -f / -F ? */
 		if (*grp && !line_count && !strncmp(grp, txt_filter_file_version, 15)) { /* version number starts after pos. 15 */
 			fclose(fp);
-			tin_done(EXIT_FAILURE, "Mixed up '-f'/'-F'? -f %s", newsrc_file); /* -> lang.c */
+			tin_done(EXIT_FAILURE, _(txt_error_mixed_up_opt), "-f", newsrc_file);
 		}
 		if (*grp == '#' || *grp == '\0')	/* skip comments and empty lines */
 			continue;
@@ -359,19 +359,24 @@ static FILE *
 open_subscription_fp(
 	void)
 {
-	if (!read_saved_news) {
+	if (read_saved_news)
+		return (FILE *) 0;
+	else {
 #ifdef NNTP_ABLE
 		if (read_news_via_nntp) {
 			/* RFC 6048 2.6 */
 			if (nntp_caps.type == CAPABILITIES && !nntp_caps.list_subscriptions)
-				return NULL;
+				return (FILE *) 0;
 			else
 				return (nntp_command("LIST SUBSCRIPTIONS", OK_GROUPS, NULL, 0));
-		} else
+		}
 #endif /* NNTP_ABLE */
-			return (fopen(subscriptions_file, "r"));
-	} else
-		return NULL;
+#ifndef NNTP_ONLY
+		return (fopen(subscriptions_file, "r"));
+#else
+		return (FILE *) 0;
+#endif /* !NNTP_ONLY */
+	}
 }
 
 
@@ -818,7 +823,7 @@ reset_newsrc(
  */
 void
 delete_group(
-	char *group)
+	const char *group)
 {
 	FILE *fp;
 	FILE *newfp;
@@ -1363,7 +1368,7 @@ print_bitmap_seq(
  */
 t_bool
 pos_group_in_newsrc(
-	struct t_group *group,
+	const struct t_group *group,
 	int pos)
 {
 	FILE *fp_in = NULL, *fp_out = NULL;

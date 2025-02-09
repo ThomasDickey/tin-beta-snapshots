@@ -3,7 +3,7 @@
  *  Module    : nrctbl.c
  *  Author    : Sven Paulus <sven@tin.org>
  *  Created   : 1996-10-06
- *  Updated   : 2024-11-25
+ *  Updated   : 2024-12-05
  *  Notes     : This module does the NNTP server name lookup in
  *              ~/.tin/newsrctable and returns the real hostname
  *              and the name of the newsrc file for a given
@@ -144,33 +144,33 @@ get_newsrcname(
 	const char *nntpserver_name) /* return value is always ignored */
 {
 	FILE *fp;
-	char *line_entry;
-	char line[LEN];
-	char name_found[PATH_LEN] = { '\0' };
-	int line_entry_counter;
-	int found = 0;
-	t_bool do_cpy = FALSE;
 
 	if ((fp = tin_fopen(newsrctable_file, "r")) != NULL) {
-		char *ns, *nsp, *p, *q;
+		char line[LEN];
+		char name_found[PATH_LEN] = { '\0' };
+		char *ns = NULL, *nsp = NULL, *p, *q;
+		char *line_entry;
+		int found = 0;
+		int line_entry_counter;
 		size_t l = strlen(nntpserver_name) + 8; /* []:65535\0 */
-
-		/* add [] and/or port if required */
-		ns = my_strdup(nntpserver_name);
-		nsp = my_malloc(l);
-		sprintf(nsp, "%s:%u", nntpserver_name, nntp_tcp_port);
+		t_bool do_cpy = FALSE;
 
 		if ((p = strchr(nntpserver_name, ':')) != NULL) {
 			if ((q = strrchr(nntpserver_name, ':')) != NULL) {
 				if (p != q) {
-					free(ns);
-					free(nsp);
 					ns = my_malloc(l);
 					nsp = my_malloc(l);
 					sprintf(ns, "[%s]", nntpserver_name);
 					sprintf(nsp, "[%s]:%u", nntpserver_name, nntp_tcp_port);
 				}
 			}
+		}
+		if (!ns)
+			ns = my_strdup(nntpserver_name);
+		if (!nsp) {
+			/* add [] and/or port if required */
+			nsp = my_malloc(l);
+			sprintf(nsp, "%s:%u", nntpserver_name, nntp_tcp_port);
 		}
 
 		while ((fgets(line, (int) sizeof(line), fp) != NULL) && (found != 1)) {

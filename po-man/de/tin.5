@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2024-11-21
+.\" Updated   : 2025-01-19
 .\" Notes     : needs a some work, see TODOs
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "24 Dezember 2023" 2.6.4 "Usenet Newsreader"
+.TH tin 5 "24 Dezember 2024" 2.6.4 "Usenet Newsreader"
 
 .SH NAME
 tin, rtin \- zugehörige Dateien
@@ -64,9 +64,9 @@ beendet.
 .sp
 Jeder einzelne Mailcap\-Eintrag besteht aus einer Content\-Typ\-Spezifikation,
 einem Befehl zum Ausführen und (möglicherweise) einem Satz optionaler
-"Flag"\-Werte.
+»Flag«\-Werte.
 .sp
-Das Feld "Typ" ist ein beliebiger Name für einen legalen Inhaltstyp. Es ist
+Das Feld »Typ« ist ein beliebiger Name für einen legalen Inhaltstyp. Es ist
 die Zeichenkette, die mit der \*(rqContent\-Type:\*(rq\-Kopfzeile verglichen wird,
 um zu entscheiden, ob dies der Mailcap\-Eintrag ist, der der aktuellen
 Nachricht entspricht. Zusätzlich kann das Feld Typ einen Subtyp oder einen
@@ -93,7 +93,7 @@ will be replaced by the value of the named parameter, if any, from the
 \&\*(rqContent\-Type:\*(rq header. Finally, if the field contains "\(rs%", those
 two characters will be replaced by a single "%" character.
 .sp
-Neben dem Typ und dem Befehlsfeld sind folgende "Flags" definiert:
+Neben dem Typ und dem Befehlsfeld sind folgende »Flags« definiert:
 .TP 
 \fBcompose\fP
 The "compose" field may be used to specify a program that can be used to
@@ -192,7 +192,7 @@ Beispiel:
 .br
 image/*;\e
 .br
-.in +.3i
+.in +0.3i
 xv \-8 \-geometry +0 '%s';\e
 .br
 description=%{name} %t\-Image;\e
@@ -200,11 +200,11 @@ description=%{name} %t\-Image;\e
 test=test "$DISPLAY" != "";\e
 .br
 nametemplate=%s.IMAGE
-.in -.3i
+.in -0.3i
 .sp
 message/rfc822;\e
 .br
-.in +.3i
+.in +0.3i
 ${PAGER:\-"more"} '%s';\e
 .br
 edit=${EDITOR:\-"vi"} '%s';\e
@@ -214,7 +214,7 @@ compose=${EDITOR:\-"vi"} '%s';\e
 print=a2ps '%s';\e
 .br
 needsterminal
-.in -.3i
+.in -0.3i
 .fi
 .RE
 .RE
@@ -401,8 +401,8 @@ Mail.inbox 12345 00000 /home/foo
 Mail.outbox 23456 00000 /home/foo
 .RE
 .sp
-Dies ermöglicht den Zugriff auf die Ordner "Posteingang"und "Postausgang"
-des Benutzers foo. Der Zugriff erfolgt über /home/foo/Mail/inbox und
+Dies ermöglicht den Zugriff auf die Ordner »Posteingang« und »Postausgang«
+des Benutzers »foo«. Der Zugriff erfolgt über /home/foo/Mail/inbox und
 /home/foo/Mail/outbox
 .RE
 .PP
@@ -692,8 +692,8 @@ Identisch mit der tinrc\-Variable \fBdefault_filter_select_case\fP
 Identisch mit der tinrc\-Variable \fBdefault_filter_select_header\fP
 .TP 
 \fBispell\fP
-Path and options for \fB\%ispell\fP(1)\-like spell\-checker, e.g. "aspell
-\-\-mode=email \-\-dont\-backup check"
+Pfad und Optionen des \fB\%ispell\fP(1) ähnlichen Rechtschreibprüfungsprogramm,
+z.B. "aspell \-\-mode=email \-\-dont\-backup check"
 .TP 
 \fBmm_network_charset\fP
 Identisch mit der tinrc\-Variable gleichen Namens
@@ -724,8 +724,8 @@ undeclared_charset=ISO\-8859\-1
 scope=*sources*
 post_process_type=1
 
-# in *binaries* turn on full post processing,
-# remove tmp files and set Followup\-To: poster
+# In *binaries* volle Nachbearbeitung (Anhänge decodieren) verwenden,
+# temporäre Dateien löschen und Followup\-To: poster setzten.
 scope=*binaries*
 post_process_type=2
 delete_tmp_files=ON
@@ -737,7 +737,7 @@ scope=fido.*
 quote_chars=%I>_
 x_comment_to=ON
 
-# in fido7.* Gruppen den Zeichnsatz erraten
+# in fido7.* Gruppen den Zeichensatz erraten
 scope=fido7.*
 undeclared_cs_guess=ON
 
@@ -782,7 +782,7 @@ erforderlich!
 0=Groß/Kleinschreibung beachten, 1=Groß/Kleinschreibung ignorieren
 .TP 
 \fBscore\fP
-Wert der Regel; kann auch eines der Zauberwörter "kill" oder "hot" sein.
+Wert der Regel; kann auch eines der magischen Wörter "kill" oder "hot" sein.
 .TP 
 \fBsubj\fP
 Vergleiche mit \*(rqSubject:\*(rq. Der verwendete Vergleichstyp (Wildmat oder
@@ -790,7 +790,7 @@ Regex) hängt von der Einstellung der tinrc\-Variable \fBwildcard\fP ab.
 .TP 
 \fBfrom\fP
 Match against \*(rqFrom:\*(rq.  \fB\%tin\fP(1)  converts the contents of the
-\&\*(rqFrom:\*(rq header to an old style e\-mail address, e.g. \*(rqsome@body.example
+\&\*(rqFrom:\*(rq header to an old style e\-mail address, e.g., \*(rqsome@body.example
 (John Doe)\*(rq instead of \*(rqJohn Doe <some@body.example>\*(rq, before
 trying to match the patterns in the filter rule. The matching type used
 (wildmat or regex) depends on the setting of the tinrc variable \fBwildcard\fP.
@@ -814,7 +814,7 @@ Vergleiche mit \*(rqReferences:\*(rq. Der verwendete Vergleichstyp (Wildmat oder
 Regex) hängt von der Einstellung der tinrc\-Variable \fBwildcard\fP ab.
 .TP 
 \fBlines\fP
-Übereinstimmung mit \*(rqLines:\*(rq, <Zahl entspricht weniger als, >Zahl
+Vergleiche mit \*(rqLines:\*(rq, <Zahl entspricht weniger als, >Zahl
 entspricht mehr als.
 .TP 
 \fBgnksa\fP
@@ -823,7 +823,7 @@ than, >num matches more than the returned numeric
 value. GNKSA_LOCAL_DOMAIN_LITERAL or GNKSA_INVALID_DOMAIN are only returned
 if \fBdisable_gnksa_domain_check\fP is set to false. As the built in domain
 list is outdated this should be considered carefully.
-.in +.3i
+.in +0.3i
 .nf
 .ta \w'%406	'u +\w'GNKSA_ZERO_LENGTH_LOCAL_WORD'u
   \fB0\fP	GNKSA_OK
@@ -856,20 +856,20 @@ list is outdated this should be considered carefully.
 \fB405\fP	GNKSA_INVALID_REALNAME
 \fB406\fP	GNKSA_MISSING_REALNAME
 .fi
-.in -.3i
+.in -0.3i
 .TP 
 \fBxref\fP
 Match against \*(rqXref:\*(rq line. Before any matching is done the line is turned
 into the same format \*(rqNewsgroups:\*(rq has that is it is turned into a comma
-separated newsgroup list with all other information (i.e.  the article
+separated newsgroup list with all other information (i.e., the article
 counter) removed. The matching type used (wildmat or regex)  depends on the
 setting of the tinrc variable \fBwildcard\fP.
 .TP 
 .\" TODO: document option in detail
 \fBpath\fP
-Match against \*(rqPath:\*(rq line. This may not work on some servers. The
-matching type used (wildmat or regex) depends on the setting of the tinrc
-variable \fBwildcard\fP.
+Vergleiche mit der Zeile \*(rqPfad:\*(rq. Dies funktioniert evtl. auf einigen
+Servern nicht. Die Art der Übereinstimmung (Wildmat oder Regex) hängt von
+der Einstellung der tinrc\-Variablen \fBwildcard\fP ab.
 .TP 
 \fBtime\fP
 time_t Wert wann die Regel abläuft
@@ -1050,6 +1050,7 @@ is unassigned.
 \fBPageViewUrl\fP	U
 \fBPageViewAttach\fP	V
 \fBPageToggleHighlight\fP	_
+\fBPageToggleVerbatim\fP	,
 \fBPageEditArticle\fP	e
 \fBPageFollowupQuote\fP	f
 \fBPageFirstPage\fP	g
@@ -1184,8 +1185,8 @@ Zugehöriges newsrc. Eine mit \*(rq\fB\-f\fP\*(rq angegebene Datei hat eine höh
 Priorität.
 .TP 
 \fBKurzname\fP
-nickname(s) for the nntpserver. Nicknames must not contain ":" and must be
-unique.
+Kurzname(n) für die NNTPServer. Kurznamen dürfen kein ":" enthalten und
+müssen eindeutig sein.
 .TP 
 Beispiel:
 .RS
@@ -1215,11 +1216,11 @@ Verlaufsliste der geposteten Artikel. Die Datei wird von \fB\%tin\fP(1)
 geschrieben und vom Befehl \fBDisplayPostHist\fP ('\fBW\fP') verwendet. Sie sollte
 nicht manuell verändert werden. Jede Zeile, die mit "#" beginnt, ist ein
 Kommentar. Leerzeilen werden ignoriert. Alle anderen Zeilen müssen aus
-mindestens vier durch Pipes getrennten Feldern bestehen, beginnend mit einem
-Zeitstempel "dd\-mm\-yy", einem einzelnen Buchstaben, der die Aktion angibt,
-die die Nachricht ausgelöst hat, einem Gruppennamen oder einer Mailadresse,
-an die die Nachricht gesendet wurde, dem Subject der Nachricht und optional
-der \*(rqMessage\-ID\*(rq der Nachricht, falls bekannt.
+mindestens vier durch Pipes ('|') getrennten Feldern bestehen, beginnend mit
+einem Zeitstempel "dd\-mm\-yy", einem einzelnen Buchstaben, der die Aktion
+angibt, die die Nachricht ausgelöst hat, einem Gruppennamen oder einer
+Mailadresse, an die die Nachricht gesendet wurde, dem Subject der Nachricht
+und optional der \*(rqMessage\-ID\*(rq der Nachricht, falls bekannt.
 .RE
 .PP
 
@@ -1244,9 +1245,10 @@ Vorrat an zurückgestellten Artikeln. Diese Datei benutzt das
 .fi
 .sp
 .RS
-This file is a copy of the servers message of the day (MOTD) message.  It is
-automatically created on startup except when using the \*(rq\fB\-Q\fP\*(rq
-command\-line option and is unlinked on exit.
+Die Datei ist eine Kopie der MOTD\-Nachricht (Message of the Day) des
+Servers. Sie wird beim Start automatisch erstellt, außer die Verbindung
+wurde mit der Befehlszeilenoption \*(rq\fB\-Q\fP\*(rq hergestellt. Beim Beenden wird
+diese Datei gelöscht.
 .RE
 .PP
 
@@ -1407,9 +1409,15 @@ angezeigt. Außerdem wird nach dem Verfassen eines Artikels ein kurzer
 Posting\-Knigge angezeigt. Standard ist ON.
 .TP 
 \fBcache_overview_files\fP
-If ON, create local copies of NNTP overview files. This can be used to
-considerably speed up accessing large groups when using a slow connection.
-Default is OFF.
+Falls ON erzeuge lokale Kopien der NNTP Overview Dateien. Dies kann
+verwendet werden, um das lesen von großen Gruppen bei einer langsamen
+Verbindung erheblich zu beschleunigen. Voreinstellung ist OFF.
+.TP 
+\fBcompress_overview_files\fP
+Falls ON, werden lokal zwischengespeicherte NNTP Overview Daten
+(\fBcache_overview_files\fP) in komprimierter Form (\fBRFC\%1952\fP)
+gespeichert. Nützlich, um den verwendeten lokalen Speicherplatz zu
+reduzieren.
 .TP 
 \fBcancel_lock_algo\fP
 Diesen Hash\-Algorithmus für Cancel\-Locks verwenden. Nur vorhanden falls
@@ -1509,20 +1517,21 @@ Farbe der Textzeilen
 Farbe des Hilfe/Mail\-Zeichens
 .TP 
 \fBconfirm_choice\fP
-\fB\%tin\fP(1)  can ask for manual confirmation to protect the user. Available
-choices:
-.in +.5i
+\fB\%tin\fP(1) kann eine manuelle Bestätigung anfordern, um den Benutzer zu
+schützen. Verfügbare Optionen:
+.in +0.5i
 .\" TODO: check if all affected commands are marked [after confirmation]
 \fBcommands\fP: Ask for confirmation before executing certain dangerous
 commands (e.g., \fBCatchup\fP ('\fBc\fP')). Commands that this affects are marked
 in this manual with '[after confirmation]'.
 .sp
-\fBquit\fP: You'll be asked to confirm that you wish to exit \fB\%tin\fP(1)  when
-you use the \fBQuit\fP ('\fBq\fP') command.
+\fBquit\fP: Sie werden bei \fBQuit\fP ('\fBq\fP') aufgefordert zu bestätigen, dass
+Sie \fB\%tin\fP(1) beenden möchten.
 .sp
-\fBselect\fP: Ask for confirmation before marking all not selected (with
-\fBGroupMarkUnselArtRead\fP ('\fBX\fP') command) articles as read.
-.in -.5i
+\fBselect\fP: Fragt nach Bestätigung, bevor alle nicht (mit dem Befehl
+\fBGroupMarkUnselArtRead\fP ('\fBX\fP')) ausgewählten Artikel als gelesen markiert
+werden.
+.in -0.5i
 Voreinstellung ist Kommandos & Ende.
 .TP 
 \fBdate_format\fP
@@ -1555,9 +1564,9 @@ anwenden, OFF = auf die aktuelle Gruppe anwenden. Standard ist ON.
 .TP 
 \fBdefault_filter_kill_header\fP
 Voreinstellung für Schnell (1 Tasten) Killfilter Header.
-.in +.3i
-.nf
-.ta \w'0,1   'u +\w'\'\'Message\-ID:\'\' & letzter \'\'References:\'\' Eintrag'u
+.in +0.3i
+.TS
+r L.
 0	\*(rqSubject:\*(rq (Groß/Kleinschreibung beachten)
 1	\*(rqSubject:\*(rq (Groß/Kleinschreibung ignorieren)
 2	\*(rqFrom:\*(rq (Groß/Kleinschreibung beachten)
@@ -1566,8 +1575,8 @@ Voreinstellung für Schnell (1 Tasten) Killfilter Header.
 5	\*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
 6	\*(rqMessage\-ID:\*(rq allein
 7	\*(rqLines:\*(rq
-.fi
-.in -.3i
+.TE
+.in -0.3i
 .TP 
 \fBdefault_filter_select_case\fP
 Standard für den schnellen (1 Taste) automatischen Auswahlfilter. EIN =
@@ -1584,9 +1593,9 @@ Gruppen anwenden, OFF = auf die aktuelle Gruppe anwenden. Standard ist ON.
 .TP 
 \fBdefault_filter_select_header\fP
 Standardheader für den Filter mit schneller automatischer Auswahl (1 Taste).
-.in +.3i
-.nf
-.ta \w'0,1   'u +\w'\'\'Message\-ID:\'\' & letzter \'\'References:\'\' Eintrag'u
+.in +0.3i
+.TS
+r L.
 0	\*(rqSubject:\*(rq (Groß/Kleinschreibung beachten)
 1	\*(rqSubject:\*(rq (Groß/Kleinschreibung ignorieren)
 2	\*(rqFrom:\*(rq (Groß/Kleinschreibung beachten)
@@ -1595,8 +1604,8 @@ Standardheader für den Filter mit schneller automatischer Auswahl (1 Taste).
 5	\*(rqMessage\-ID:\*(rq & letzter \*(rqReferences:\*(rq Eintrag
 6	\*(rqMessage\-ID:\*(rq allein
 7	\*(rqLines:\*(rq
-.fi
-.in -.3i
+.TE
+.in -0.3i
 .TP 
 \fBdefault_goto_group\fP
 .TP 
@@ -1633,7 +1642,7 @@ Standardheader für den Filter mit schneller automatischer Auswahl (1 Taste).
 \fBdefault_subject_search\fP
 .TP 
 \fBdont_break_words\fP
-Lange Zeilen nicht innerhalb eines Wortes Umrechen. Dies gilt für den
+Lange Zeilen nicht innerhalb eines Wortes Umbrechen. Dies gilt für den
 Artikelkörper mit Ausnahme von wortgetreuen Blöcken. Siehe auch
 \fBwrap_column\fP. Die Voreinstellung ist OFF.
 .TP 
@@ -1682,7 +1691,7 @@ linken Cursortaste. Voreinstellung ist ON.
 Diese Formatanweisung wird von \fBtin\fP zur Darstellung der Gruppenebene
 benutzt. Voreingestellt ist "%n\ %m\ %R\ %L\ \ %s\ \ %F". Folgende
 Ersetzungen werden unterstützt:
-.in +.3i
+.in +0.3i
 .nf
 .ta \w'%G    'u +\w'Absender, Name und/oder E\-Mail Adresse'u
 %D	Datum
@@ -1697,23 +1706,23 @@ Ersetzungen werden unterstützt:
 %s	Subject
 %%	%
 .fi
-.in -.3i
+.in -0.3i
 .TP 
 \fBhide_uue\fP
-Falls auf 'Nein' gesetzt, werden die Rohdaten im uuencoded Format
-angezeigt. Wenn auf 'Ja' gesetzt, werden Abschnitte von uuencoded Daten mit
+Falls auf »Nein« gesetzt, werden die Rohdaten im uuencoded Format
+angezeigt. Wenn auf »Ja« gesetzt, werden Abschnitte von uuencoded Daten mit
 einer einzigen Tag\-Zeile angezeigt, die die Größe und den Dateinamen zeigt
 (ähnlich wie ein MIME\-Anhang). Falls auf 'Alle ausblenden' gesetzt, wird
 jede Zeile, die wie uuencoded Daten aussieht, in eine Tag\-Zeile
 umgewandelt. Dies ist nützlich, wenn uuencoded Daten über mehr als einen
 Artikel verteilt sind, kann aber auch zu falschen Positiven führen. Diese
 Einstellung kann auch im Artikelbetrachter umgeschaltet werden. Der
-Standardwert ist 'Nein'.
+Standardwert ist »Nein«.
 .TP 
 \fBinews_prog\fP
 Pfad, Name und Optionen des externen \fB\%inews\fP(1). Wenn Sie über NNTP
-lesen, ist der Standardwert "\-\-internal" (verwende eingebautes NNTP inews),
-ansonsten ist es "inews \-h". Der Artikel wird mittels '< Artikel' an
+lesen, ist der Standardwert »\-\-internal« (verwende eingebautes NNTP inews),
+ansonsten ist es »inews \-h«. Der Artikel wird mittels '< Artikel' an
 \fBinews_prog\fP via STDIN übergeben.
 .TP 
 \fBinfo_in_last_line\fP
@@ -1725,9 +1734,9 @@ Betreffzeilen anzuzeigen. Voreinstellung ist OFF.
 .TP 
 \fBinteractive_mailer\fP
 If greater than 0 your mailreader will be invoked earlier for reply so you
-can use more of its features (e.g. MIME, pgp, ...). 1 means include headers,
-2 means don't include headers (old use_mailreader_i=ON option). 0 turns off
-usage. This option has to suit \fBmailer_format\fP. Default is 0.
+can use more of its features (e.g., MIME, pgp, ...). 1 means include
+headers, 2 means don't include headers (old use_mailreader_i=ON option). 0
+turns off usage. This option has to suit \fBmailer_format\fP. Default is 0.
 .TP 
 \fBinverse_okay\fP
 Falls ON: inverse Darstellung für Header und das Hervorheben von URLs
@@ -1740,8 +1749,8 @@ des letzten fehlgeschlagenen Beitrags in
 \fI${TIN_HOMEDIR:\-"$HOME"}/dead.article\fP. Die Voreinstellung ist ON.
 .TP 
 \fBkill_level\fP
-This option controls the processing and display of articles that are
-killed. There are 3 options, default is 0 (\fBKill only unread arts\fP).
+Diese Option steuert die Verarbeitung und Anzeige von Artikeln, die gekillt
+wurden. Es gibt 3 Optionen, der Standardwert ist 0 (\fBKillt nur ungelesene Artikel\fP).
 .RS +1i
 .IP 0 3
 \fBKill only unread arts\fP is the 'traditional' behavior of \fB\%tin\fP(1).  Only
@@ -1800,16 +1809,16 @@ The format string used to create the mailer command with parameters that is
 used for mailing articles to other people. Default is '%M "%T" < %F'
 (e.g., /bin/mail "iain" < ~/.article). The flexible format allows other
 mailers with different command line parameters to be used such as
-.in +.3i
+.in +0.3i
 .nf
 sendmail \-oem \-t < %F
 mutt \-H %F
 claws\-mail \-\-compose "mailto:%T?subject=%S&insert=%F"
 .fi
-.in -.3i
+.in -0.3i
 \fBinteractive_mailer\fP muss passend dazu gesetzt sein. Folgende Ersetzungen
 werden unterstützt:
-.in +.3i
+.in +0.3i
 .nf
 .ta \w'%S'u +\w'default_mailer'u
 %F	Dateiname
@@ -1819,7 +1828,7 @@ werden unterstützt:
 %U	Benutzername
 %%	%
 .fi
-.in -.3i
+.in -0.3i
 .TP 
 \fBmark_saved_read\fP
 Falls ON werden gespeicherte Artikel als gelesen markiert. Voreinstellung
@@ -1860,34 +1869,34 @@ Conversion between \fBmm_network_charset\fP and local charset (determined via
 of these functions are available on your system this option is disabled and
 you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP is limited to
 one of the following charsets:
-.in +.3i
+.in +0.3i
 US\-ASCII, ISO\-8859\-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8\-{R,U,RU}
 EUC\-{CN,JP,KR,TW}, ISO\-2022\-{CN,CN\-EXT,JP,JP\-1,JP\-2}, Big5, UTF\-8
-.in -.3i
+.in -0.3i
 Not all values might work on your system, see \fB\%iconv_open\fP(3)  for more
 details. If it's not set, the value of the environment variable
 $\fBMM_CHARSET\fP is used. US\-ASCII or compile\-time default is used in case
 neither of them is defined.
 .TP 
 \fBmono_markdash\fP
-Character attribute of words emphasized like _this_. It depends on your
-terminal which attributes are usable. See also \fBword_h_display_marks\fP and
-\fBword_highlight\fP.
+Attribut von Wörtern, die wie _dieses_ hervorgehoben sind. Es hängt von
+Ihrem Terminal ab, welche Attribute verwendbar sind. Siehe auch
+\fBword_h_display_marks\fP und \fBword_highlight\fP.
 .TP 
 \fBmono_markslash\fP
-Character attribute of words emphasized like /this/. It depends on your
-terminal which attributes are usable. See also \fBword_h_display_marks\fP and
-\fBword_highlight\fP.
+Attribut von Wörtern, die wie /dieses/ hervorgehoben sind. Es hängt von
+Ihrem Terminal ab, welche Attribute verwendbar sind. Siehe auch
+\fBword_h_display_marks\fP und \fBword_highlight\fP.
 .TP 
 \fBmono_markstar\fP
-Character attribute of words emphasized like *this*. It depends on your
-terminal which attributes are usable. See also \fBword_h_display_marks\fP and
-\fBword_highlight\fP.
+Attribut von Wörtern, die wie *dieses* hervorgehoben sind. Es hängt von
+Ihrem Terminal ab, welche Attribute verwendbar sind. Siehe auch
+\fBword_h_display_marks\fP und \fBword_highlight\fP.
 .TP 
 \fBmono_markstroke\fP
-Character attribute of words emphasized like \-this\-. It depends on your
-terminal which attributes are usable. See also \fBword_h_display_marks\fP and
-\fBword_highlight\fP.
+Attribut von Wörtern, die wie \-dieses\- hervorgehoben sind. Es hängt von
+Ihrem Terminal ab, welche Attribute verwendbar sind. Siehe auch
+\fBword_h_display_marks\fP und \fBword_highlight\fP.
 .TP 
 \fBnewnews\fP
 Interne Timer, die von \fB\%tin\fP(1) verwendet werden, um den Überblick über
@@ -1897,8 +1906,8 @@ wozu sie dienen.
 \fBnews_headers_to_display\fP
 Welche Header wollen Sie sehen. Wenn Sie _alle_ sehen wollen, setzen Sie ein
 \&'*' als Wert ein. Dies ist die einzige Möglichkeit, um Platzhalter
-(Wildcards) zu nutzen. Wenn Sie als Wert 'X\-' angeben, sehen Sie alle Header
-die mit 'X\-' beginnen (wie X\-Alan oder X\-Pape). Sie können mehrere durch
+(Wildcards) zu nutzen. Wenn Sie als Wert »X\-« angeben, sehen Sie alle Header
+die mit »X\-« beginnen (wie »X\-Alan« oder »X\-Pape«). Sie können mehrere durch
 Leerzeichen getrennte Werte angeben. Wenn Sie hier nichts definieren wird
 diese Option deaktiviert.
 .TP 
@@ -2000,8 +2009,9 @@ ARTICLES" for more information about the various expansion
 characters. Default is 'posted'.
 .TP 
 \fBprint_header\fP
-If ON, then the full article header is sent to the printer. Otherwise only
-the \*(rqSubject:\*(rq and \*(rqFrom:\*(rq fields are output. Default is OFF.
+Falls ON wird der vollständige Artikelheader wird an den Drucker
+gesendet. Ansonsten werden nur die \*(rqSubject:\*(rq\- und \*(rqFrom:\*(rq\-Zeile
+ausgegeben. Voreinstellung ist OFF.
 .TP 
 \fBprinter\fP
 The printer program with options that is to be used to print articles. The
@@ -2098,14 +2108,15 @@ The number of lines that will be scrolled up/down in the article pager when
 using cursor\-up/down. The default is 1 (line\-by\-line). Set to 0 to get
 traditional \fB\%tin\fP(1)  page\-by\-page scrolling. Set to \-1 to get
 page\-by\-page scrolling where the top/bottom line is carried over onto the
-next page.  This setting supersedes show_last_line_prev_page=ON. Set to \-2
-to get half\-page scrolling. This setting supersedes \fBfull_page_scroll\fP=OFF.
+next page.  This setting supersedes \fBshow_last_line_prev_page\fP=ON. Set to
+\-2 to get half\-page scrolling. This setting supersedes
+\fBfull_page_scroll\fP=OFF.
 .TP 
 \fBselect_format\fP
 Diese Formatanweisung wird von \fBtin\fP zur Darstellung der Auswahlebene
 benutzt. Voreingestellt ist "%f\ %n\ %U\ \ %G\ \ %d". Folgende Ersetzungen
 werden unterstützt:
-.in +.3i
+.in +0.3i
 .nf
 .ta \w'%G    'u +\w'Anzahl ungelesener Artikel'u
 %G	Name der Gruppe
@@ -2115,7 +2126,7 @@ werden unterstützt:
 %n	aktuelle Gruppennummer
 %%	%
 .fi
-.in -.3i
+.in -0.3i
 .TP 
 \fBsort_function\fP
 Sortierfunktion für Artikel. Voreinstellung ist 0.
@@ -2158,9 +2169,9 @@ and turn descriptions off. The text used is taken from the
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups\fP for mailgroups. Default is ON.
 .TP 
 \fBshow_help_mail_sign\fP
-Allows you to select whether \fB\%tin\fP(1)  shows a help indication, a new
-mail indication, both, or neither in the various level titles.  Default is
-3.
+Auswahl ob \fB\%tin\fP(1) in den verschiedenen Ebenentiteln eine Hilfeanzeige,
+eine neue E\-Mail\-Anzeige, beides oder keines von beiden anzeigt. Die
+Voreinstellung ist 3.
 .RS +1i
 .IP 0 3
 \fBKein Hilfe\- oder Mailanzeige\fP.
@@ -2250,8 +2261,8 @@ the default. The following sort types are allowed:
 .IP 2
 \fBBewertung (aufsteigend)\fP, Threads aufsteigend nach Bewertung sortieren.
 .IP 3
-\fBLast posting date (descending)\fP, sort threads by date of last posting
-descending.
+\fBDatum des letzten Artikels (Absteigend)\fP, Threads absteigend nach Datum
+des letzten Artikels sortieren.
 .IP 4
 \fBLast posting date (ascending)\fP, sort threads by date of last posting
 ascending.
@@ -2301,9 +2312,9 @@ matching words are shown in \fBcol_markstroke\fP or \fBmono_markstroke\fP.  If
 \fBstrokes_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
 .TP 
 \fBtex2iso_conv\fP
-Decode German style TeX umlaut codes to ISO If ON, show "a as Umlaut\-a,
-etc. Default is OFF. This behavior can also be toggled in the article viewer
-via \fBPageToggleTex2iso\fP ('\fB"\fP').
+Falls ON dekodiere laut german.sty (TeX) kodierte Umlaute und stelle "a als
+ä, usw. dar. Voreinstellung ist OFF. Diese Einstellung kann auch im
+Artikelbetrachter mittels \fBPageToggleTex2iso\fP ('\fB"\fP') umgeschaltet werden.
 .TP 
 \fBthread_articles\fP
 Definiert wie der Diskussionsfaden gebaut werden soll. Zur Auswahl stehen:
@@ -2330,7 +2341,7 @@ the group attribute variable \fBthread_articles\fP to 0 \(en 5 in the file
 Diese Formatanweisung wird von \fBtin\fP zur Darstellung der Threadebene
 benutzt. Voreingestellt ist "%n\ %m\ \ [%L]\ \ %T\ \ %F". Folgende
 Ersetzungen werden unterstützt:
-.in +.3i
+.in +0.3i
 .nf
 .ta \w'%G    'u +\w'Subject und/oder Baumdarstellung des Thread'u
 %D	Datum
@@ -2344,12 +2355,13 @@ Ersetzungen werden unterstützt:
 %n	aktuelle Artikelnummer
 %%	%
 .fi
-.in -.3i
+.in -0.3i
 .TP 
 \fBthread_perc\fP
-Defines how close the subjects must match while threading by Percentage
-Match for threads to be considered part of a single thread. This value is in
-the range 0 to 100. The default is 75.
+Definiert den Grad der Genauigkeit, mit der Subjects übereinstimmen müssen,
+so das sie bei als Teil eines einzigen Threads gelten. Der Wert liegt im
+Bereich von 0 (keine Übereinstimmung) bis 100 (Subjects müssen genau gleich
+sein). Der Standardwert ist 75.
 .TP 
 \fBthread_catchup_on_exit\fP
 Falls ON: Catchup (als gelesen markieren) der Gruppe/des Threads beim
@@ -2447,8 +2459,8 @@ an \fB\%xterm\fP(1x)  and \fB\%slrnface\fP(1)  must be in your $\fBPATH\fP. Defa
 is OFF.
 .TP 
 \fButf8_graphics\fP
-If ON use UTF\-8 characters for indicator ('\->'), thread/attachment tree
-and ellipsis ('...'). Default is OFF.
+Falls ON werden UTF\-8\-Zeichen für den Indikator ('\->'), den
+Thread\-/Anhangsbaum und die Auslassungspunkte ('...') verwendet.
 .TP 
 \fBverbatim_begin_regex\fP
 Ein regulärer Ausdruck, der den Beginn eines wortgetreu wiederzugebenden
@@ -2507,8 +2519,9 @@ articles to find also previous unread articles. If disabled the search stops
 at the end of the thread list. Default is ON.
 .TP 
 \fBxpost_quote_format\fP
-Format is the same as for \fBnews_quote_format\fP, this is used when answering
-to a crossposting to several groups with no \*(rqFollowup\-To:\*(rq set.
+Format ist das gleiche wie für \fBnews_quote_format\fP, dies wird verwendet,
+wenn auf ein Crossposting in mehrere Gruppen geantwortet wird, ohne dass ein
+\&\*(rqFollowup\-To:\*(rq angegeben ist.
 .RE
 .PP
 
@@ -2543,6 +2556,8 @@ Entwickler\-Mailingliste auf tin.org. Sie können diese Adresse in eine lokale
 Definiert das Verzeichnis, welches das ausführbare \fB\%inews\fP(1) enthält.
 .TP 
 \fBmm_charset\fP
+.\" TODO: mention that it sets mm_network_charset if
+.\" charset-conversion is available.
 Standardzeichensatz, der im \*(rqContent\-Type:\*(rq MIME\-Header verwendet werden
 soll. $\fBMM_CHARSET\fP überschreibt den angegebenen Wert.
 .TP 
@@ -2560,8 +2575,8 @@ nicht mehr aktiv gepflegt wird wurde ab \fB\%tin\fP(1) Version 2.1.5 die
 Voreinstellung auf ON geändert.
 .TP 
 \fBdisable_sender\fP
-Keinen \*(rqSender:\*(rq Header erzeugen. Falls \fBinews_prog\fP nicht auf \-\-internal
-steht wird die Einstellung ignoriert.
+Keinen \*(rqSender:\*(rq Header erzeugen. Falls \fBinews_prog\fP nicht auf
+»\-\-internal« steht wird die Einstellung ignoriert.
 .TP 
 \fBspooldir\fP
 Basisverzeichnis Ihres News\-Spools (Bnews, Cnews und INN traditioneller
@@ -2772,7 +2787,7 @@ stattdessen den Befehl LIST SUBSCRIPTIONS (\fBRFC\%6048\fP).
 \fB\%pcre\fP(3), \fB\%pcre2\fP(3), \fB\%pcrepattern\fP(3), \fB\%pcre2pattern\fP(3),
 \fB\%qsort\fP(3), \fB\%strftime\fP(3), \fB\%system\fP(3), \fB\%active\fP(5),
 \fB\%mailcap\fP(5), \fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5),
-\fB\%overview.fmt\fP(5), \fB\%innd\fP(8), \fBRFC\%1524\fP, \fBRFC\%2045\fP,
-\fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3977\fP,
-\fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5198\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP,
-\fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%6838\fP, \fBRFC\%8143\fP
+\fB\%overview.fmt\fP(5), \fB\%innd\fP(8), \fBRFC\%1524\fP, \fBRFC\%1952\fP,
+\fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP,
+\fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5198\fP, \fBRFC\%5322\fP,
+\fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%6838\fP, \fBRFC\%8143\fP

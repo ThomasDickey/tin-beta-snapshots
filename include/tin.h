@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-14
+ *  Updated   : 2025-02-03
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -79,19 +79,27 @@
 #	endif /* !HAVE_SETLOCALE */
 #endif /* !NO_LOCALE */
 
+/* noops */
 #define N_(Str) Str
-
+#define PN_(Singular, Plural) {Singular, Plural}
 #if defined(ENABLE_NLS) && !defined(__BUILD__)
 #	ifdef HAVE_LIBINTL_H
 #		include <libintl.h>
 #	endif /* HAVE_LIBINTL_H */
 #	define _(Text)	gettext(Text)
+/*
+#	ifndef HAVE_NGETTEXT
+#		define P_(Singular, Plural, n) ((n) == 1 ? ((void) (Plural), gettext(Singular)) : ((void) (Singular), gettext(Plural)))
+#	else
+*/
+#	define P_(Singular, Plural, n) ngettext(Singular, Plural, n)
 #else
 #	undef bindtextdomain
 #	define bindtextdomain(Domain, Directory) /* empty */
 #	undef textdomain
 #	define textdomain(Domain) /* empty */
 #	define _(Text) Text
+#	define P_(Singular, Plural, n) ((n) == 1 ? ((void) (Plural), (Singular)) : ((void) (Singular), (Plural)))
 #endif /* ENABLE_NLS && !__BUILD__ */
 
 #ifndef LOCALEDIR
@@ -194,8 +202,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 /*
  * defines and typedefs for 64 bit article numbers
  *
- * TODO: what if !CPP_DOES_CONCAT
- *       add configure check for INT64_MAX, LLONG_MAX, LONG_MAX
+ * TODO: add configure check for INT64_MAX, LLONG_MAX, LONG_MAX
  */
 #	if defined(HAVE_INT_LEAST64_T) && !defined(HAVE_INTTYPES_H)
 #		undef HAVE_INT_LEAST64_T
@@ -223,7 +230,11 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 		typedef long long t_artnum;
 #		define T_ARTNUM_PFMT "lld"
 #		define T_ARTNUM_SFMT "lld"
-#		define T_ARTNUM_CONST(v) v ## LL
+#		ifdef CPP_DOES_CONCAT
+#			define T_ARTNUM_CONST(v) v ## LL
+#		else
+#			define T_ARTNUM_CONST(v) (long long)v
+#		endif /* CPP_DOES_CONCAT */
 #		define ARTNUM_MAX LLONG_MAX
 #	endif /* HAVE_INT_LEAST64_T && HAVE_PRIDLEAST64 && HAVE_SCNDLEAST64 && HAVE_INT64_C */
 #	ifdef HAVE_ATOLL
@@ -236,7 +247,11 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 	typedef long t_artnum;
 #	define T_ARTNUM_PFMT "ld"
 #	define T_ARTNUM_SFMT "ld"
-#	define T_ARTNUM_CONST(v) v ## L
+#	ifdef CPP_DOES_CONCAT
+#		define T_ARTNUM_CONST(v) v ## L
+#	else
+#		define T_ARTNUM_CONST(v) (long)v
+#	endif /* CPP_DOES_CONCAT */
 #	define ARTNUM_MAX LONG_MAX
 #	define atoartnum atol
 #	define strtoartnum strtol
@@ -710,7 +725,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  *       - test IDNA (RFC 3490) case
  *       - adjust to follow RFC 3986 (section 2.3)
  */
-#define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-|[^\\W_]){0,61}(?<!---)[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,18}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=\\$,]*)"
+#define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-|[^\\W_]){0,61}(?<!---)[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,18}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:(?:[0-9A-F]{0,4}:){1,7}(?:[0-9A-F]{1,4}|:)|(?:::(?:[0-9A-F]{0,4}:){0,6}[0-9A-F]{1,4})|::)|(?:(?:[0-9A-F]{0,4}:){1,5}(?:[0-9A-F]{1,4}|:)|(?:::(?:[0-9A-F]{0,4}:){0,4}[0-9A-F]{1,4})|::)(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=\\$,]*)"
 /*
  * case insensitive
  * TOFO: check against RFC 6068
@@ -759,34 +774,30 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 /* Philip Hazel's Perl regular expressions library */
 #ifdef HAVE_LIB_PCRE2
+#	define PCRE2_CODE_UNIT_WIDTH 0
+#	include <pcre2.h>
 
-#define PCRE2_CODE_UNIT_WIDTH 0
-#include <pcre2.h>
+#	define REGEX_CASELESS PCRE2_CASELESS
+#	define REGEX_ANCHORED PCRE2_ANCHORED
+#	define REGEX_NOTEMPTY PCRE2_NOTEMPTY
 
-#define REGEX_CASELESS PCRE2_CASELESS
-#define REGEX_ANCHORED PCRE2_ANCHORED
-#define REGEX_NOTEMPTY PCRE2_NOTEMPTY
+#	define REGEX_ERROR_NOMATCH PCRE2_ERROR_NOMATCH
 
-#define REGEX_ERROR_NOMATCH PCRE2_ERROR_NOMATCH
-
-#define REGEX_OPTIONS uint32_t
-#define REGEX_NOFFSET uint32_t
-#define REGEX_SIZE size_t
-
+#	define REGEX_OPTIONS uint32_t
+#	define REGEX_NOFFSET uint32_t
+#	define REGEX_SIZE size_t
 #else /* HAVE_LIB_PCRE2 */
+#	include <pcre.h>
 
-#include <pcre.h>
+#	define REGEX_CASELESS PCRE_CASELESS
+#	define REGEX_ANCHORED PCRE_ANCHORED
+#	define REGEX_NOTEMPTY PCRE_NOTEMPTY
 
-#define REGEX_CASELESS PCRE_CASELESS
-#define REGEX_ANCHORED PCRE_ANCHORED
-#define REGEX_NOTEMPTY PCRE_NOTEMPTY
+#	define REGEX_ERROR_NOMATCH PCRE_ERROR_NOMATCH
 
-#define REGEX_ERROR_NOMATCH PCRE_ERROR_NOMATCH
-
-#define REGEX_OPTIONS int
-#define REGEX_NOFFSET int
-#define REGEX_SIZE int
-
+#	define REGEX_OPTIONS int
+#	define REGEX_NOFFSET int
+#	define REGEX_SIZE int
 #endif /* HAVE_LIB_PCRE2 */
 
 #if defined(HAVE_ICONV) || defined(HAVE_UCNV_OPEN)
@@ -980,8 +991,8 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 	 * For CURSOR_ARROW and CURSOR_HORIZ tinrc.utf8_graphics ? :
 	 * is handled inside screen.c:draw_arrow_mark().
 	 */
-#	define CURSOR_ARROW		(wint_t) 0x25B6
-#	define CURSOR_HORIZ		(wint_t) 0x2500
+#	define CURSOR_ARROW		(wint_t) 0x25B6 /* 0x27A4 */
+#	define CURSOR_HORIZ		(wint_t) 0x2500 /* 0x2015 */
 #	define TREE_ARROW		(wchar_t) (tinrc.utf8_graphics ? 0x25B6 : '>')
 #	define TREE_ARROW_WRAP	(wchar_t) (tinrc.utf8_graphics ? 0x25B7 : '>')
 #	define TREE_BLANK		(wchar_t) ' '
@@ -1130,11 +1141,6 @@ enum {
 #define UNREAD_GROUP(i)		(!active[my_group[i]].bogus && active[my_group[i]].newsrc.num_unread > 0)
 
 /*
- * Expands to singular/plural version of string
- */
-#define PLURAL(x,y)			((x == 1) ? _(y##_singular) : _(y##_plural))
-
-/*
  * News/Mail group types
  */
 #define GROUP_TYPE_MAIL	0
@@ -1144,18 +1150,18 @@ enum {
 /*
  * used by get_arrow_key()
  */
-#	define KEYMAP_UNKNOWN		0
-#	define KEYMAP_UP		1
-#	define KEYMAP_DOWN		2
-#	define KEYMAP_LEFT		3
-#	define KEYMAP_RIGHT		4
-#	define KEYMAP_PAGE_UP		5
-#	define KEYMAP_PAGE_DOWN	6
-#	define KEYMAP_HOME		7
-#	define KEYMAP_END		8
-#	define KEYMAP_DEL		9
-#	define KEYMAP_INS		10
-#	define KEYMAP_MOUSE		11
+#define KEYMAP_UNKNOWN		0
+#define KEYMAP_UP			1
+#define KEYMAP_DOWN			2
+#define KEYMAP_LEFT			3
+#define KEYMAP_RIGHT		4
+#define KEYMAP_PAGE_UP		5
+#define KEYMAP_PAGE_DOWN	6
+#define KEYMAP_HOME			7
+#define KEYMAP_END			8
+#define KEYMAP_DEL			9
+#define KEYMAP_INS			10
+#define KEYMAP_MOUSE		11
 
 
 /*
@@ -1446,15 +1452,20 @@ enum {
  */
 #define SCORE_MAX		10000
 
-#define FILTER_SUBJ_CASE_SENSITIVE		0
-#define FILTER_SUBJ_CASE_IGNORE		1
-#define FILTER_FROM_CASE_SENSITIVE		2
-#define FILTER_FROM_CASE_IGNORE		3
-#define FILTER_MSGID		4
-#define FILTER_MSGID_LAST	5
-#define FILTER_MSGID_ONLY	6
-#define FILTER_REFS_ONLY	7
-#define FILTER_LINES		8
+enum {
+	FILTER_SUBJ_CASE_SENSITIVE = 0,
+	FILTER_SUBJ_CASE_IGNORE,
+	FILTER_FROM_CASE_SENSITIVE,
+	FILTER_FROM_CASE_IGNORE,
+	FILTER_MSGID,
+	FILTER_MSGID_LAST,
+	FILTER_MSGID_ONLY,
+	FILTER_REFS_ONLY,
+	FILTER_XREF_CASE_IGNORE,
+	FILTER_PATH_CASE_IGNORE,
+	FILTER_LIST_MAX,
+	FILTER_LINES = FILTER_LIST_MAX
+};
 
 #define FILTER_LINES_NO		0
 #define FILTER_LINES_EQ		1
@@ -1616,6 +1627,8 @@ struct t_mailbox {
 struct t_article {
 	t_artnum artnum;		/* Article number in spool directory for group */
 	char *subject;			/* Subject: line from mail header */
+	char *subject_raw;		/* plain undecoded subject */
+	char *from_raw;			/* plain undecoded from */
 	char *xref;			/* Xref: cross posted article reference line */
 	char *path;			/* Path: line */
 	/* NB: The msgid and refs are only retained until the reference tree is built */
@@ -1668,24 +1681,43 @@ struct t_newsheader {
 #define CAST_MASK(value,bits)	(((1U << (bits)) - 1) & (unsigned) (value))
 #define CAST_BOOL(value)	CAST_MASK(value, 1)
 #define CAST_BITS(value,bits)	CAST_MASK(value, BITS_OF(bits))
-#define BITS_OF(bits)		BITS_OF_ ## bits
 
 #define BoolField(value)	unsigned value:1
 #define IntField(value)	unsigned value:BITS_OF(value)
 
-#define BITS_OF_auto_cc_bcc		2
-#define BITS_OF_mail_mime_encoding	2
-#define BITS_OF_mm_network_charset	6
-#define BITS_OF_post_mime_encoding	2
-#define BITS_OF_post_process_type	2
-#define BITS_OF_quick_kill_header	3
-#define BITS_OF_quick_select_header	3
-#define BITS_OF_show_author		2
-#define BITS_OF_sort_article_type	4
-#define BITS_OF_sort_threads_type	3
-#define BITS_OF_thread_articles	3
-#define BITS_OF_thread_perc		7
-#define BITS_OF_trim_article_body	3
+#ifdef CPP_DOES_CONCAT
+#	define BITS_OF(bits)				BITS_OF_ ## bits
+#	define BITS_OF_auto_cc_bcc			2
+#	define BITS_OF_mail_mime_encoding	2
+#	define BITS_OF_mm_network_charset	6
+#	define BITS_OF_post_mime_encoding	2
+#	define BITS_OF_post_process_type	2
+#	define BITS_OF_quick_kill_header	3
+#	define BITS_OF_quick_select_header	3
+#	define BITS_OF_show_author			2
+#	define BITS_OF_sort_article_type	4
+#	define BITS_OF_sort_threads_type	3
+#	define BITS_OF_thread_articles		3
+#	define BITS_OF_thread_perc			7
+#	define BITS_OF_trim_article_body	3
+#else
+#	define BITS_OF(bits)	bits
+	enum bits_of {
+		auto_cc_bcc	        = 2,
+		mail_mime_encoding  = 2,
+		mm_network_charset  = 6,
+		post_mime_encoding  = 2,
+		post_process_type   = 2,
+		quick_kill_header   = 3,
+		quick_select_header = 3,
+		show_author         = 2,
+		sort_article_type   = 4,
+		sort_threads_type   = 3,
+		thread_articles     = 3,
+		thread_perc         = 7,
+		trim_article_body   = 3
+	};
+#endif /* CPP_DOES_CONCAT */
 
 /*
  * used as flags for t_attach_item
