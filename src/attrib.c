@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2025-02-01
+ *  Updated   : 2025-02-18
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2025 Iain Lea <iain@bricbrac.de>
@@ -125,7 +125,7 @@ set_default_attributes(
 	CopyBool(suppress_soft_hyphens, tinrc.suppress_soft_hyphens);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	CopyBits(trim_article_body, tinrc.trim_article_body);
-	CopyBool(verbatim_handling, tinrc.verbatim_handling);
+	CopyBits(verbatim_handling, tinrc.verbatim_handling);
 #ifdef HAVE_COLOR
 	CopyBool(extquote_handling, tinrc.extquote_handling);
 #endif /* HAVE_COLOR */
@@ -340,7 +340,7 @@ read_attributes_file(
 	*tmp = NULL;
 
 	if ((fp = tin_fopen(file, "r")) != NULL) {
-		unsigned int errors = 0, ln = 0;
+		unsigned int hide_global_errors = 0, errors = 0, ln = 0;
 
 		*scope = '\0';
 		while ((line = tin_fgets(fp, FALSE)) != NULL) {
@@ -538,7 +538,10 @@ read_attributes_file(
 					break;
 
 				case 'v':
-					MATCH_BOOLEAN("verbatim_handling=", OPT_ATTRIB_VERBATIM_HANDLING);
+					/* verbatim_handling has changed from bool to int in ATTRIBUTES_VERSION == 1.0.12 */
+					if (upgrade && upgrade->file_version >= 10012) {
+						MATCH_INTEGER("verbatim_handling=", OPT_ATTRIB_VERBATIM_HANDLING, 3);
+					}
 					break;
 
 				case 'w':
@@ -560,6 +563,7 @@ read_attributes_file(
 				int show_info;
 				t_bool auto_bcc;
 				t_bool auto_cc;
+				t_bool verbatim_handling;
 
 				switch (my_tolower((unsigned char) line[0])) {
 					case 'a':
@@ -648,6 +652,15 @@ read_attributes_file(
 						MATCH_INTEGER("thread_arts=", OPT_ATTRIB_THREAD_ARTICLES, THREAD_MAX);
 						break;
 
+					case 'v':
+						/* verbatim_handling has changed from bool to int in ATTRIBUTES_VERSION == 1.0.12 */
+						if (upgrade && upgrade->file_version < 10012 && match_boolean(line, "verbatim_handling=", &verbatim_handling)) {
+							num = verbatim_handling ? VERBATIM_SHOW_ALL : VERBATIM_NONE;
+							set_attrib(OPT_ATTRIB_VERBATIM_HANDLING, scope, line, &num);
+							found = TRUE;
+						}
+						break;
+
 					default:
 						break;
 				}
@@ -657,29 +670,40 @@ read_attributes_file(
 				found = FALSE;
 			else { /* TODO: even without DEBUG? */
 				char *p;
-				const char *msg;
+				const char *msg = NULL;
 
 				++errors;
 				if ((p = strchr(line, '='))) {
-					*p = '\0';
-					if (strlen(p + 1) >= BUF_SIZE - 1)
+					if (strlen(p + 1) >= BUF_SIZE - 1) {
 						msg = _(txt_error_attrib_too_long);
-					else
-						msg = _(txt_error_attrib_unknown);
+						*p = '\0';
+					} else {
+						/*
+						 * on option upgrades like bool -> int hide
+						 * error message in the glocal-file from user
+						 * as they usually do not have the permissions
+						 * to fix it
+						 */
+						if (global_file)
+							++hide_global_errors;
+						else
+							msg = _(txt_error_attrib_unknown);
+					}
 				} else
 					msg = _(txt_error_attrib_malformed);
 
-				my_fprintf(stderr, msg, ln, line); /* TODO: add log_formatted_msg("ERR", ...)? */
+				if (msg)
+					my_fprintf(stderr, msg, ln, line); /* TODO: add log_formatted_msg("ERR", ...)? */
 #ifdef DEBUG
 				if (debug & (DEBUG_ATTRIB))
-					debug_print_file("ATTRIBUTES", txt_bad_attrib, line);
+					debug_print_file("ATTRIBUTES", txt_bad_attrib, global_file ? txt_global : "", line);
 #endif /* DEBUG */
 			}
 		}
-		if (errors) {
+		if (errors != hide_global_errors) {
 			my_fflush(stderr);
 			if (!batch_mode)
-				sleep(errors > 15 ? 7 : (errors >> 1) | 0x01);
+				sleep((errors - hide_global_errors) > 15 ? 7 : ((errors - hide_global_errors) >> 1) | 0x01);
 		}
 		fclose(fp);
 
@@ -949,7 +973,7 @@ set_attrib(
 				SET_INTEGER(trim_article_body);
 
 			case OPT_ATTRIB_VERBATIM_HANDLING:
-				SET_BOOLEAN(verbatim_handling);
+				SET_INTEGER(verbatim_handling);
 
 			case OPT_ATTRIB_WRAP_ON_NEXT_UNREAD:
 				SET_BOOLEAN(wrap_on_next_unread);
@@ -1474,6 +1498,10 @@ write_attributes_file(
 	fprintf(fp, "%s", _(txt_attrib_file_trim_art_body_6));
 	fprintf(fp, "%s", _(txt_attrib_file_trim_art_body_7));
 	fprintf(fp, "%s", _(txt_attrib_file_verbatim_handling));
+	fprintf(fp, "%s", _(txt_attrib_file_verbatim_handling_0));
+	fprintf(fp, "%s", _(txt_attrib_file_verbatim_handling_1));
+	fprintf(fp, "%s", _(txt_attrib_file_verbatim_handling_2));
+	fprintf(fp, "%s", _(txt_attrib_file_verbatim_handling_3));
 #ifdef HAVE_COLOR
 	fprintf(fp, "%s", _(txt_attrib_file_extquote_handling));
 #endif /* HAVE_COLOR */
@@ -1671,7 +1699,7 @@ write_attributes_file(
 				if (scope->state->trim_article_body)
 					fprintf(fp, "trim_article_body=%u\n", (unsigned) scope->attribute->trim_article_body);
 				if (scope->state->verbatim_handling)
-					fprintf(fp, "verbatim_handling=%s\n", print_boolean(scope->attribute->verbatim_handling));
+					fprintf(fp, "verbatim_handling=%u\n", (unsigned) scope->attribute->verbatim_handling);
 				if (scope->state->wrap_on_next_unread)
 					fprintf(fp, "wrap_on_next_unread=%s\n", print_boolean(scope->attribute->wrap_on_next_unread));
 				if (ATTRIB_IS_SET(x_headers))
@@ -1922,7 +1950,7 @@ dump_attributes(
 			debug_print_file("ATTRIBUTES", "\tthread_catchup_on_exit=%s", print_boolean(group->attribute->thread_catchup_on_exit));
 			debug_print_file("ATTRIBUTES", "\tthread_format=%s", DEBUG_PRINT_BLANK_IF_NULL(thread_format));
 			debug_print_file("ATTRIBUTES", "\ttrim_article_body=%d", group->attribute->trim_article_body);
-			debug_print_file("ATTRIBUTES", "\tverbatim_handling=%s", print_boolean(group->attribute->verbatim_handling));
+			debug_print_file("ATTRIBUTES", "\tverbatim_handling=%d", group->attribute->verbatim_handling);
 			debug_print_file("ATTRIBUTES", "\twrap_on_next_unread=%s", print_boolean(group->attribute->wrap_on_next_unread));
 			debug_print_file("ATTRIBUTES", "\tpost_process_type=%d", group->attribute->post_process_type);
 			debug_print_file("ATTRIBUTES", "\tquick_kill_scope=%s", DEBUG_PRINT_BLANK_IF_NULL(quick_kill_scope));
@@ -2043,7 +2071,7 @@ dump_scopes(
 			debug_print_file(fname, "\t%sthread_catchup_on_exit=%s", DEBUG_PRINT_STATE(thread_catchup_on_exit), print_boolean(scope->attribute->thread_catchup_on_exit));
 			debug_print_file(fname, "\t%sthread_format=%s", DEBUG_PRINT_STATE(thread_format), DEBUG_PRINT_STRING(thread_format));
 			debug_print_file(fname, "\t%strim_article_body=%d", DEBUG_PRINT_STATE(trim_article_body), scope->attribute->trim_article_body);
-			debug_print_file(fname, "\t%sverbatim_handling=%s", DEBUG_PRINT_STATE(verbatim_handling), print_boolean(scope->attribute->verbatim_handling));
+			debug_print_file(fname, "\t%sverbatim_handling=%d", DEBUG_PRINT_STATE(verbatim_handling), scope->attribute->verbatim_handling);
 			debug_print_file(fname, "\t%swrap_on_next_unread=%s", DEBUG_PRINT_STATE(wrap_on_next_unread), print_boolean(scope->attribute->wrap_on_next_unread));
 			debug_print_file(fname, "\t%spost_process_type=%d", DEBUG_PRINT_STATE(post_process_type), scope->attribute->post_process_type);
 			debug_print_file(fname, "\t%squick_kill_scope=%s", DEBUG_PRINT_STATE(quick_kill_scope), DEBUG_PRINT_STRING(quick_kill_scope));

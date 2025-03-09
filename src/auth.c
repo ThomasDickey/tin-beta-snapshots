@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2025-02-07
+ *  Updated   : 2025-02-26
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -514,7 +514,7 @@ do_authinfo_sasl(
 {
 	char *utf8user = NULL;
 	char *utf8pass = NULL;
-	int r = -1, i;
+	int r = -1;
 
 	if (authuser && *authuser)
 		utf8user = my_strdup(authuser);
@@ -525,6 +525,7 @@ do_authinfo_sasl(
 #		ifdef CHARSET_CONVERSION
 	/* RFC 4616 */
 	if (!IS_LOCAL_CHARSET("UTF-8")) {
+		int i;
 		/*
 		 * if authuser or authpass contains non ASCII-chars
 		 * convert both to UTF-8 even if this is a noop for
@@ -575,7 +576,7 @@ do_authinfo_sasl(
 	else {
 		if (!batch_mode || verbose)
 			wait_message(0, _(txt_authorization_ok) , authuser);
-    }
+	}
 	return r;
 }
 
@@ -622,20 +623,28 @@ sasl_auth(
 	if (!strcasecmp(mech, "ANONYMOUS"))
 		sasl_prop = SASL_NEED_ANONYMOUS_TOKEN;
 
-	/* set required props  ... see also callback() */
+	/* set required props; see also callback() */
 #if 0
-	if (user && (sasl_prop & SASL_NEED_AUTHZID)) /* authorization identity, usually not used with NNTP, but GSSAPI? */
-		gsasl_property_set(session, GSASL_AUTHZID, user);
+	if (user && (sasl_prop & SASL_NEED_AUTHZID)) { /* authorization identity, usually not used with NNTP, but GSSAPI? */
+		if (gsasl_property_set(session, GSASL_AUTHZID, user) != GSASL_OK)
+			goto sasl_done;
+	}
 #endif /* 0 */
 
-	if (user && (sasl_prop & SASL_NEED_AUTHID))	/* authentication identity */
-		gsasl_property_set(session, GSASL_AUTHID, user);
+	if (user && (sasl_prop & SASL_NEED_AUTHID)) {	/* authentication identity */
+		if (gsasl_property_set(session, GSASL_AUTHID, user) != GSASL_OK)
+			goto sasl_done;
+	}
 
-	if (pass && (sasl_prop & SASL_NEED_PASSWORD))	/* password of the authentication identity */
-		gsasl_property_set(session, GSASL_PASSWORD, pass);
+	if (pass && (sasl_prop & SASL_NEED_PASSWORD)) {	/* password of the authentication identity */
+		if (gsasl_property_set(session, GSASL_PASSWORD, pass) != GSASL_OK)
+			goto sasl_done;
+	}
 
-	if (sasl_prop & SASL_NEED_ANONYMOUS_TOKEN)
-		gsasl_property_set(session, GSASL_ANONYMOUS_TOKEN, "dummy"); /* use a base64(randstr(len=whatever))?? */
+	if (sasl_prop & SASL_NEED_ANONYMOUS_TOKEN) {
+		if (gsasl_property_set(session, GSASL_ANONYMOUS_TOKEN, "dummy") != GSASL_OK) /* use a base64(randstr(len=whatever))?? */
+			goto sasl_done;
+	}
 
 	/* authenticate */
 	snprintf(line, sizeof(line), "AUTHINFO SASL %s", mech);
@@ -674,7 +683,7 @@ sasl_done:
 }
 
 
-#if 0 /* prototype */
+#if 0 /* prototype; TODO check return val of gsasl_property_set */
 static int
 callback(
 	Gsasl *ctx,
@@ -687,7 +696,7 @@ callback(
 
 	(void) ctx;
 	if (!IS_LOCAL_CHARSET("UTF-8")) /* charset conversion likely (we don't check for 7bit only) needed? */
-		c = charset_name_to_num("UTF-8");
+		c = charset_name_to_num("UTF-8"); /* TODO: wrap into #ifdef CHARSET_CONVERSION ... */
 
 	switch (prop) {
 		case GSASL_AUTHID:

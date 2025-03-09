@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2025-01-16
+ *  Updated   : 2025-02-27
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2025 Steven J. Madsen <steve@erinet.com>
@@ -85,6 +85,7 @@
 #		define PGPNAME		PATH_GPG
 #		define PGPDIR		".gnupg"
 #		define PGP_PUBRING	"pubring.gpg"
+#		define PGP_PUBRING_KBX	"pubring.kbx"	/* since GnuPG 2.1 */
 #		if 0 /* gpg 1.4.11 doesn't like this */
 #			define CHECK_SIGN	"%s %s --no-batch --decrypt <%s %s"
 #		else
@@ -342,6 +343,15 @@ pgp_available(
 	FILE *fp;
 	char keyring[PATH_LEN];
 
+#ifdef HAVE_GPG
+	/* GnuPG >= 2.1 may use PGP_PUBRING_KBX */
+	joinpath(keyring, sizeof(keyring), pgp_data, PGP_PUBRING_KBX);
+	if ((fp = fopen(keyring, "r")) != NULL) {
+		fclose(fp);
+		return TRUE;
+	}
+	fclose(fp);
+#endif /* HAVE_GPG */
 	joinpath(keyring, sizeof(keyring), pgp_data, PGP_PUBRING);
 	if ((fp = fopen(keyring, "r")) == NULL) {
 		wait_message(2, _(txt_pgp_not_avail), keyring);

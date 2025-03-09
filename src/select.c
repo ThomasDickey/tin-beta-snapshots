@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-01-22
+ *  Updated   : 2025-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -368,7 +368,8 @@ selection_page(
 
 			case GLOBAL_TOGGLE_INFO_LAST_LINE:	/* display group description */
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
-				show_selection_page();
+				clear_message();
+				draw_group_arrow();
 				break;
 
 			case SELECT_MOVE_GROUP:			/* reposition group within group list */
@@ -1447,7 +1448,7 @@ subscribe_pattern(
 
 	if (state) {
 		prompt = _(txt_subscribe_pattern);
-		message =  _(txt_subscribing);
+		message = _(txt_subscribing);
 	} else {
 		prompt = _(txt_unsubscribe_pattern);
 		message = _(txt_unsubscribing);

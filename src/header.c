@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2025-01-06
+ *  Updated   : 2025-02-13
  *
  * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -161,14 +161,11 @@ get_fqdn(
 			in.s_addr = (*hp->h_addr);
 #		endif /* HAVE_HOSTENT_H_ADDR_LIST */
 		}
-		return (
-			hp && strchr(hp->h_name, '.') ? hp->h_name :
 #		ifdef HAVE_INET_NTOA
-			inet_ntoa(in)
+		return (hp && strchr(hp->h_name, '.') ? hp->h_name : inet_ntoa(in));
 #		else
-			""
+		return (hp && strchr(hp->h_name, '.') ? hp->h_name : "");
 #		endif /* HAVE_INET_NTOA */
-			);
 	}
 #	endif /* HAVE_INET_ADDR */
 

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-07
+ *  Updated   : 2025-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -275,8 +275,10 @@ copy_fp(
 			return errno;
 		}
 		TRACE(("copy_fp wrote %d:{%.*s}", sent, (int) sent, buf));
+		if (feof(fp_ip) || ferror(fp_ip))
+			break;
 	}
-	return 0;
+	return (ferror(fp_ip) ? -1 : 0);
 }
 
 
@@ -2745,9 +2747,9 @@ buffer_to_local( /* TODO: rename to something more useful/descriptive */
 				} while (inbytesleft > 0);
 
 				**&outbuf = '\0';
-				if (*max_line_len < strlen(obuf) + 1) {
-					*max_line_len = strlen(obuf) + 1;
-					*line = my_realloc(*line, *max_line_len);
+				if (*max_line_len < strlen(obuf)) {
+					*max_line_len = strlen(obuf);
+					*line = my_realloc(*line, *max_line_len + 1);
 				}
 				strcpy(*line, obuf);
 				iconv_close(cd2);
@@ -2848,13 +2850,8 @@ process_charsets(
 
 #ifdef CHARSET_CONVERSION
 	if (strcasecmp(from_charset, "US-ASCII")) {	/* from_charset is NOT US-ASCII */
-		if (iso2asc_supported >= 0)
-			p = my_strdup("ISO-8859-1");
-		else
-			p = my_strdup(to_charset);
-		if (!buffer_to_local(line, max_line_len, from_charset, p))
+		if (!buffer_to_local(line, max_line_len, from_charset, iso2asc_supported >= 0 ? "ISO-8859-1" : to_charset))
 			buffer_to_ascii(*line);
-		free(p);
 	} else /* set non-ASCII characters to '?' */
 		buffer_to_ascii(*line);
 #else
@@ -2888,6 +2885,7 @@ process_charsets(
 		p = my_strdup(*line);
 		convert_iso2asc(p, line, max_line_len, iso2asc_supported);
 		free(p);
+		/* we now have (decorated) US-ASCII */
 	}
 }
 
@@ -4376,6 +4374,231 @@ tin_version_info(
 #else
 	(void) verb;
 #endif /* REPRODUCIBLE_BUILD */
+	/*
+	 * TODO: complete list and do some useful grouping;
+	 *       split into < 500byte strings;
+	 *       show (some info) only in -vV case?
+	 */
+	static const char *tin_character =
+#ifdef DEBUG
+			"+DEBUG"
+#else
+			"-DEBUG"
+#endif /* DEBUG */
+#ifdef NNTP_ONLY
+#	ifdef NNTPS_ABLE
+			" +NNTP(S)_ONLY"
+#	else
+			" +NNTP_ONLY"
+#	endif /* NNTPS_ABLE */
+#else
+#	ifdef NNTP_ABLE
+#		ifdef NNTPS_ABLE
+			" +NNTP(S)_ABLE"
+#		else
+			" +NNTP_ABLE -NNTPS_ABLE"
+#		endif /* NNTPS_ABLE */
+#	else
+			" -NNTP_ABLE"
+#	endif /* NNTP_ABLE */
+#endif /* NNTP_ONLY */
+#ifdef NO_POSTING
+			" +NO_POSTING"
+#else
+			" -NO_POSTING"
+#endif /* NO_POSTING */
+#ifdef BROKEN_LISTGROUP
+			" +BROKEN_LISTGROUP"
+#else
+			" -BROKEN_LISTGROUP"
+#endif /* BROKEN_LISTGROUP */
+#ifdef XHDR_XREF
+			" +XHDR_XREF"
+#else
+			" -XHDR_XREF"
+#endif /* XHDR_XREF */
+			"\n\t"
+#ifdef USE_ZLIB
+			"+USE_ZLIB"
+#else
+			"-USE_ZLIB"
+#endif /* USE_ZLIB */
+#ifdef ENABLE_IPV6
+			" +ENABLE_IPV6"
+#else
+			" -ENABLE_IPV6"
+#endif /* ENABLE_IPV6 */
+#ifdef HAVE_COREFILE
+			" +HAVE_COREFILE"
+#else
+			" -HAVE_COREFILE"
+#endif /* HAVE_COREFILE */
+#ifdef SOCKS
+#	ifdef USE_SOCKS5
+		"  +USE_SOCKS5"
+#	else
+		"  +SOCKS"
+#	endif /* USE_SOCKS5 */
+#endif /* SOCKS */
+#ifdef HAVE_FASCIST_NEWSADMIN
+			" +HAVE_FASCIST_NEWSADMIN"
+#else
+			" -HAVE_FASCIST_NEWSADMIN"
+#endif /* HAVE_FASCIST_NEWSADMIN */
+			"\n\t"
+#ifdef NO_SHELL_ESCAPE
+			"+NO_SHELL_ESCAPE"
+#else
+			"-NO_SHELL_ESCAPE"
+#endif /* NO_SHELL_ESCAPE */
+#ifdef DISABLE_PRINTING
+			" +DISABLE_PRINTING"
+#else
+			" -DISABLE_PRINTING"
+#endif /* DISABLE_PRINTING */
+#ifdef DONT_HAVE_PIPING
+			" +DONT_HAVE_PIPING"
+#else
+			" -DONT_HAVE_PIPING"
+#endif /* DONT_HAVE_PIPING */
+#ifdef NO_ETIQUETTE
+			" +NO_ETIQUETTE"
+#else
+			" -NO_ETIQUETTE"
+#endif /* NO_ETIQUETTE */
+			"\n\t"
+#ifdef HAVE_LONG_FILE_NAMES
+			"+HAVE_LONG_FILE_NAMES"
+#else
+			"-HAVE_LONG_FILE_NAMES"
+#endif /* HAVE_LONG_FILE_NAMES */
+#ifdef APPEND_PID
+			" +APPEND_PID"
+#else
+			" -APPEND_PID"
+#endif /* APPEND_PID */
+#ifdef HAVE_MH_MAIL_HANDLING
+			" +HAVE_MH_MAIL_HANDLING"
+#else
+			" -HAVE_MH_MAIL_HANDLING"
+#endif /* HAVE_MH_MAIL_HANDLING */
+#ifdef HAVE_COLOR
+			" +HAVE_COLOR"
+#else
+			" -HAVE_COLOR"
+#endif /* HAVE_COLOR */
+			"\n\t"
+#ifdef HAVE_ISPELL
+			"+HAVE_ISPELL"
+#else
+			"-HAVE_ISPELL"
+#endif /* HAVE_ISPELL */
+#ifdef HAVE_METAMAIL
+			" +HAVE_METAMAIL"
+#else
+			" -HAVE_METAMAIL"
+#endif /* HAVE_METAMAIL */
+#ifdef HAVE_PGP
+			" +HAVE_PGP"
+#else
+			" -HAVE_PGP"
+#endif /* HAVE_PGP */
+#ifdef HAVE_PGPK
+			" +HAVE_PGPK"
+#else
+			" -HAVE_PGPK"
+#endif /* HAVE_PGPK */
+#ifdef HAVE_GPG
+			" +HAVE_GPG"
+#else
+			" -HAVE_GPG"
+#endif /* HAVE_GPG */
+			"\n\t"
+#ifdef MIME_BREAK_LONG_LINES
+			"+MIME_BREAK_LONG_LINES"
+#else
+			"-MIME_BREAK_LONG_LINES"
+#endif /* MIME_BREAK_LONG_LINES */
+#ifdef MIME_STRICT_CHARSET
+			" +MIME_STRICT_CHARSET"
+#else
+			" -MIME_STRICT_CHARSET"
+#endif /* MIME_STRICT_CHARSET */
+			"\n\t"
+#ifdef CHARSET_CONVERSION
+			"+CHARSET_CONVERSION_{"
+#	ifdef CHARSET_CONVERSION_ICONV
+			"ICONV"
+#		ifdef CHARSET_CONVERSION_UCNV
+			","
+#		endif /* CHARSET_CONVERSION_UCNV */
+#	endif /* CHARSET_CONVERSION_ICONV */
+#	ifdef CHARSET_CONVERSION_UCNV
+			"UCNV"
+#	endif /* CHARSET_CONVERSION_UCNV */
+			"}"
+#else
+			"-CHARSET_CONVERSION"
+#endif /* CHARSET_CONVERSION */
+#ifdef MULTIBYTE_ABLE
+			" +MULTIBYTE_ABLE"
+#else
+			" -MULTIBYTE_ABLE"
+#endif /* MULTIBYTE_ABLE */
+#ifdef NO_LOCALE
+			" +NO_LOCALE"
+#else
+			" -NO_LOCALE"
+#endif /* NO_LOCALE */
+			"\n\t"
+#ifdef USE_ICU_UCSDET
+			"+USE_ICU_UCSDET"
+#else
+			"-USE_ICU_UCSDET"
+#endif /* USE_ICU_UCSDET */
+#ifdef USE_LONG_ARTICLE_NUMBERS
+			" +USE_LONG_ARTICLE_NUMBERS"
+#else
+			" -USE_LONG_ARTICLE_NUMBERS"
+#endif /* USE_LONG_ARTICLE_NUMBERS */
+			"\n\t"
+#ifdef USE_CANLOCK
+			"+USE_CANLOCK"
+#else
+			"-USE_CANLOCK"
+#endif /* USE_CANLOCK */
+#ifdef EVIL_INSIDE
+			" +EVIL_INSIDE"
+#else
+			" -EVIL_INSIDE"
+#endif /* EVIL_INSIDE */
+#ifdef FORGERY
+			" +FORGERY"
+#else
+			" -FORGERY"
+#endif /* FORGERY */
+#ifdef TINC_DNS
+			" +TINC_DNS"
+#else
+			" -TINC_DNS"
+#endif /* TINC_DNS */
+#ifdef ENFORCE_RFC1034
+			" +ENFORCE_RFC1034"
+#else
+			" -ENFORCE_RFC1034"
+#endif /* ENFORCE_RFC1034 */
+			"\n\t"
+#ifdef REQUIRE_BRACKETS_IN_DOMAIN_LITERAL
+			"+REQUIRE_BRACKETS_IN_DOMAIN_LITERAL"
+#else
+			"-REQUIRE_BRACKETS_IN_DOMAIN_LITERAL"
+#endif /* REQUIRE_BRACKETS_IN_DOMAIN_LITERAL */
+#ifdef ALLOW_FWS_IN_NEWSGROUPLIST
+			" +ALLOW_FWS_IN_NEWSGROUPLIST"
+#else
+			" -ALLOW_FWS_IN_NEWSGROUPLIST"
+#endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
+	;
 
 	fprintf(fp, _(txt_tin_version), PRODUCT, VERSION, RELEASEDATE, RELEASENAME);
 #if defined(__DATE__) && defined(__TIME__) && !defined(REPRODUCIBLE_BUILD)
@@ -4532,227 +4755,7 @@ tin_version_info(
 	}
 #endif /* REPRODUCIBLE_BUILD */
 
-	fprintf(fp, "Characteristics:\n\t"
-/* TODO: complete list and do some useful grouping; show only in -vV case? */
-#ifdef DEBUG
-			"+DEBUG"
-#else
-			"-DEBUG"
-#endif /* DEBUG */
-#ifdef NNTP_ONLY
-#	ifdef NNTPS_ABLE
-			" +NNTP(S)_ONLY"
-#	else
-			" +NNTP_ONLY"
-#	endif /* NNTPS_ABLE */
-#else
-#	ifdef NNTP_ABLE
-#		ifdef NNTPS_ABLE
-			" +NNTP(S)_ABLE"
-#		else
-			" +NNTP_ABLE -NNTPS_ABLE"
-#		endif /* NNTPS_ABLE */
-#	else
-			" -NNTP_ABLE"
-#	endif /* NNTP_ABLE */
-#endif /* NNTP_ONLY */
-#ifdef USE_ZLIB
-			" +USE_ZLIB"
-#else
-			" -USE_ZLIB"
-#endif /* USE_ZLIB */
-#ifdef NO_POSTING
-			" +NO_POSTING"
-#else
-			" -NO_POSTING"
-#endif /* NO_POSTING */
-#ifdef BROKEN_LISTGROUP
-			" +BROKEN_LISTGROUP"
-#else
-			" -BROKEN_LISTGROUP"
-#endif /* BROKEN_LISTGROUP */
-			"\n\t"
-#ifdef XHDR_XREF
-			"+XHDR_XREF"
-#else
-			"-XHDR_XREF"
-#endif /* XHDR_XREF */
-#ifdef HAVE_FASCIST_NEWSADMIN
-			" +HAVE_FASCIST_NEWSADMIN"
-#else
-			" -HAVE_FASCIST_NEWSADMIN"
-#endif /* HAVE_FASCIST_NEWSADMIN */
-#ifdef ENABLE_IPV6
-			" +ENABLE_IPV6"
-#else
-			" -ENABLE_IPV6"
-#endif /* ENABLE_IPV6 */
-#ifdef HAVE_COREFILE
-			" +HAVE_COREFILE"
-#else
-			" -HAVE_COREFILE"
-#endif /* HAVE_COREFILE */
-#ifdef SOCKS
-#	ifdef USE_SOCKS5
-		"  +USE_SOCKS5"
-#	else
-		"  +SOCKS"
-#	endif /* USE_SOCKS5 */
-#endif /* SOCKS */
-			"\n\t"
-#ifdef NO_SHELL_ESCAPE
-			"+NO_SHELL_ESCAPE"
-#else
-			"-NO_SHELL_ESCAPE"
-#endif /* NO_SHELL_ESCAPE */
-#ifdef DISABLE_PRINTING
-			" +DISABLE_PRINTING"
-#else
-			" -DISABLE_PRINTING"
-#endif /* DISABLE_PRINTING */
-#ifdef DONT_HAVE_PIPING
-			" +DONT_HAVE_PIPING"
-#else
-			" -DONT_HAVE_PIPING"
-#endif /* DONT_HAVE_PIPING */
-#ifdef NO_ETIQUETTE
-			" +NO_ETIQUETTE"
-#else
-			" -NO_ETIQUETTE"
-#endif /* NO_ETIQUETTE */
-			"\n\t"
-#ifdef HAVE_LONG_FILE_NAMES
-			"+HAVE_LONG_FILE_NAMES"
-#else
-			"-HAVE_LONG_FILE_NAMES"
-#endif /* HAVE_LONG_FILE_NAMES */
-#ifdef APPEND_PID
-			" +APPEND_PID"
-#else
-			" -APPEND_PID"
-#endif /* APPEND_PID */
-#ifdef HAVE_MH_MAIL_HANDLING
-			" +HAVE_MH_MAIL_HANDLING"
-#else
-			" -HAVE_MH_MAIL_HANDLING"
-#endif /* HAVE_MH_MAIL_HANDLING */
-#ifdef HAVE_COLOR
-			" +HAVE_COLOR"
-#else
-			" -HAVE_COLOR"
-#endif /* HAVE_COLOR */
-			"\n\t"
-#ifdef HAVE_ISPELL
-			"+HAVE_ISPELL"
-#else
-			"-HAVE_ISPELL"
-#endif /* HAVE_ISPELL */
-#ifdef HAVE_METAMAIL
-			" +HAVE_METAMAIL"
-#else
-			" -HAVE_METAMAIL"
-#endif /* HAVE_METAMAIL */
-#ifdef HAVE_PGP
-			" +HAVE_PGP"
-#else
-			" -HAVE_PGP"
-#endif /* HAVE_PGP */
-#ifdef HAVE_PGPK
-			" +HAVE_PGPK"
-#else
-			" -HAVE_PGPK"
-#endif /* HAVE_PGPK */
-#ifdef HAVE_GPG
-			" +HAVE_GPG"
-#else
-			" -HAVE_GPG"
-#endif /* HAVE_GPG */
-			"\n\t"
-#ifdef MIME_BREAK_LONG_LINES
-			"+MIME_BREAK_LONG_LINES"
-#else
-			"-MIME_BREAK_LONG_LINES"
-#endif /* MIME_BREAK_LONG_LINES */
-#ifdef MIME_STRICT_CHARSET
-			" +MIME_STRICT_CHARSET"
-#else
-			" -MIME_STRICT_CHARSET"
-#endif /* MIME_STRICT_CHARSET */
-			"\n\t"
-#ifdef CHARSET_CONVERSION
-			"+CHARSET_CONVERSION_{"
-#	ifdef CHARSET_CONVERSION_ICONV
-			"ICONV"
-#		ifdef CHARSET_CONVERSION_UCNV
-			","
-#		endif /* CHARSET_CONVERSION_UCNV */
-#	endif /* CHARSET_CONVERSION_ICONV */
-#	ifdef CHARSET_CONVERSION_UCNV
-			"UCNV"
-#	endif /* CHARSET_CONVERSION_UCNV */
-			"}"
-#else
-			"-CHARSET_CONVERSION"
-#endif /* CHARSET_CONVERSION */
-#ifdef MULTIBYTE_ABLE
-			" +MULTIBYTE_ABLE"
-#else
-			" -MULTIBYTE_ABLE"
-#endif /* MULTIBYTE_ABLE */
-#ifdef NO_LOCALE
-			" +NO_LOCALE"
-#else
-			" -NO_LOCALE"
-#endif /* NO_LOCALE */
-			"\n\t"
-#ifdef USE_ICU_UCSDET
-			"+USE_ICU_UCSDET"
-#else
-			"-USE_ICU_UCSDET"
-#endif /* USE_ICU_UCSDET */
-#ifdef USE_LONG_ARTICLE_NUMBERS
-			" +USE_LONG_ARTICLE_NUMBERS"
-#else
-			" -USE_LONG_ARTICLE_NUMBERS"
-#endif /* USE_LONG_ARTICLE_NUMBERS */
-			"\n\t"
-#ifdef USE_CANLOCK
-			"+USE_CANLOCK"
-#else
-			"-USE_CANLOCK"
-#endif /* USE_CANLOCK */
-#ifdef EVIL_INSIDE
-			" +EVIL_INSIDE"
-#else
-			" -EVIL_INSIDE"
-#endif /* EVIL_INSIDE */
-#ifdef FORGERY
-			" +FORGERY"
-#else
-			" -FORGERY"
-#endif /* FORGERY */
-#ifdef TINC_DNS
-			" +TINC_DNS"
-#else
-			" -TINC_DNS"
-#endif /* TINC_DNS */
-#ifdef ENFORCE_RFC1034
-			" +ENFORCE_RFC1034"
-#else
-			" -ENFORCE_RFC1034"
-#endif /* ENFORCE_RFC1034 */
-			"\n\t"
-#ifdef REQUIRE_BRACKETS_IN_DOMAIN_LITERAL
-			"+REQUIRE_BRACKETS_IN_DOMAIN_LITERAL"
-#else
-			"-REQUIRE_BRACKETS_IN_DOMAIN_LITERAL"
-#endif /* REQUIRE_BRACKETS_IN_DOMAIN_LITERAL */
-#ifdef ALLOW_FWS_IN_NEWSGROUPLIST
-			" +ALLOW_FWS_IN_NEWSGROUPLIST"
-#else
-			" -ALLOW_FWS_IN_NEWSGROUPLIST"
-#endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
-			"\n");
+	fprintf(fp, "Characteristics:\n\t%s\n", tin_character);
 	wlines += 11;
 	fflush(fp);
 	return wlines;
@@ -5065,12 +5068,12 @@ out:
 		case EISDIR:
 			/*
 			 * TODO: issue an error message here
-			 *       this requires some rework elsewhere in the
-			 *       code, i.e. "-f /tmp/isdir" would
+			 *       this requires some rework elsewhere in
+			 *       the code, i.e. "-f /tmp/isdir" would
 			 *       lead to multiple messages, most of them
-			 *       may confuse the user. at least
-			 *       put the  _(txt_reading_* message
-			 *       before the tin_fopen call.
+			 *       may confuse the user. at least put the
+			 *       _(txt_reading_*) message before the
+			 *       tin_fopen() call.
 			 */
 #ifdef DEBUG
 			if (debug & DEBUG_MISC)
@@ -5230,7 +5233,7 @@ fsync_again:
 		serrno = errno;
 		close(fd);
 		errno = serrno;
-		return -1;
+		return rc;
 	}
 #endif /* HAVE_FSYNC */
 
@@ -5248,4 +5251,25 @@ close_again:
 #endif /* EINTR */
 
 	return rc;
+}
+
+
+const char *
+logtime(
+	void)
+{
+#if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
+	static struct t_tintime log_time;
+	static char out[40];
+
+	if (tin_gettime(&log_time) == 0) {
+		if (my_strftime(out, 39, " [%H:%M:%S.", gmtime(&(log_time.tv_sec)))) {
+			snprintf(out + 11, sizeof(out) - 11, "%09ld", log_time.tv_nsec); /* strlen(" [hh:mm:ss.") */
+			out[17] = '\0'; /* strlen(" [hh:mm:ss.uuuuuu") */
+			strcat(out, "] ");
+			return out;
+		}
+	}
+#endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
+	return " ";
 }

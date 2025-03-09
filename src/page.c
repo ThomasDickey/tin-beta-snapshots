@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-01-26
+ *  Updated   : 2025-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -732,11 +732,12 @@ page_goto_next_unread:
 				info_message("%s: %s", _(txt_hide_uue.opt), _(txt_hide_uue_type[hide_uue]));
 				break;
 
-			case PAGE_TOGGLE_VERBATIM:			/* toggle verbatim handling on/off */
-				group->attribute->verbatim_handling = bool_not(group->attribute->verbatim_handling);
+			case PAGE_TOGGLE_VERBATIM:			/* toggle verbatim options */
+				if (++group->attribute->verbatim_handling > VERBATIM_HIDE_ALL)
+					group->attribute->verbatim_handling = VERBATIM_NONE;
 				resize_article(TRUE, &pgart);	/* Also recooks it.. */
 				draw_page(0);
-				info_message(_(txt_toggled_verbatim), txt_onoff[group->attribute->verbatim_handling != FALSE ? 1 : 0]);
+				info_message(_(txt_toggled_verbatim), txt_verbatim_handling_options[group->attribute->verbatim_handling]);
 				break;
 
 			case PAGE_REVEAL:			/* toggle hiding after ^L */
@@ -788,8 +789,8 @@ page_goto_next_unread:
 					if (invoke_editor(filter_file, filter_file_offset, NULL)) {
 						old_artnum = arts[this_resp].artnum;
 						unfilter_articles(group);
-						(void) read_filter_file(filter_file);
-						filter_articles(group);
+						if (read_filter_file(filter_file))
+							filter_articles(group);
 						make_threads(group, FALSE);
 						if ((n = find_artnum(old_artnum)) == -1 || which_thread(n) == -1) /* We have lost the thread */
 							return GRP_KILLED;
@@ -2642,7 +2643,7 @@ static void
 show_url_page(
 	void)
 {
-	int i;
+	int i, prev_mark_offset = mark_offset;
 
 	signal_context = cURL;
 	currmenu = &urlmenu;
@@ -2661,6 +2662,7 @@ show_url_page(
 	show_mini_help(URL_LEVEL);
 
 	draw_url_arrow();
+	mark_offset = prev_mark_offset;
 }
 
 
@@ -2768,7 +2770,8 @@ url_page(
 
 			case GLOBAL_TOGGLE_INFO_LAST_LINE:
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
-				show_url_page();
+				clear_message();
+				draw_url_arrow();
 				break;
 
 			case GLOBAL_TOGGLE_INVERSE_VIDEO:

@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2025-02-05
+ *  Updated   : 2025-03-08
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -24,6 +24,47 @@
 #ifndef TNNTP_H
 #	include "tnntp.h"
 #endif /* !TNNTP_H */
+
+#ifdef HAVE_NETINET_TCP_H
+#	include <netinet/tcp.h>
+#endif /* HAVE_NETINET_TCP_H */
+#if defined(HAVE_GETSOCKOPT) && defined(HAVE_SETSOCKOPT)
+	/* avoid SO_RCVTIMEO due to delayed responses when COMPRESS is used */
+#	ifdef TCP_USER_TIMEOUT /* Linux >= 2.6.37 */
+#		define TIMEOUT_TYPE	unsigned int
+#		define TIMEOUT_DIV 1
+#		define TIMEOUT_MUL 1000
+#		define TIMEOUT_INI_NAME TCP_USER_TIMEOUT
+#		define TIMEOUT_RXT_NAME TCP_USER_TIMEOUT
+#	else
+#		ifdef TCP_RXT_CONNDROPTIME /* Mac OS X > 10.6 */
+#			define TIMEOUT_TYPE int
+#			define TIMEOUT_DIV 1000
+#			define TIMEOUT_MUL 1
+#			define TIMEOUT_INI_NAME TCP_CONNECTIONTIMEOUT
+#			define TIMEOUT_RXT_NAME TCP_RXT_CONNDROPTIME
+/*
+ * no well tested, so disabled for now and stick with alarm()
+ * - openbsd-7.6 : not available
+ * - freebsd-15.0: looks ok
+ * - netbsd-10   : times out too early
+ * - solaris     : not tested
+ * - aix         : not tested
+ * - ...
+ */
+/*
+#		else
+#			ifdef TCP_KEEPINIT
+#				define TIMEOUT_TYPE int
+#				define TIMEOUT_INI_NAME TCP_KEEPINIT
+#				define TIMEOUT_MUL 1
+#				undef TIMEOUT_RXT_NAME
+#				undef TIMEOUT_DIV
+#			endif
+*/
+#		endif /* TCP_RXT_CONNDROPTIME */
+#	endif /* TCP_USER_TIMEOUT */
+#endif /* HAVE_GETSOCKOPT && HAVE_SETSOCKOPT */
 
 #ifdef USE_ZLIB
 #	include <zlib.h>
@@ -60,6 +101,8 @@ char *nntp_server = NULL;
 	static int reconnect(int retry);
 	static int server_init(char *machine, const char *cservice, unsigned short port, char *text, size_t mlen);
 	static void close_server(t_bool send_no_quit);
+	static long set_tcp_user_ini_timeout(int sockfd);
+	static long set_tcp_user_rxt_timeout(int sockfd);
 	static long int list_motd(FILE *stream);
 #	ifdef INET6
 		static int get_tcp6_socket(const char *machine, unsigned short port);
@@ -81,11 +124,11 @@ char *nntp_server = NULL;
 		struct simplebuf rd;
 		struct simplebuf wr;
 		int fd;
-#	ifdef HAVE_GETPEERNAME
+#	if defined(HAVE_GETSOCKOPT) || defined(HAVE_GETPEERNAME)
 		sa_family_t family;
 #	else
 		int family;
-#	endif /* HAVE_GETPEERNAME */
+#	endif /* HAVE_GETSOCKOPT || HAVE_GETPEERNAME */
 #	ifdef USE_ZLIB
 		z_streamp z_wr;
 		z_streamp z_rd;
@@ -377,23 +420,41 @@ server_init(
 #	endif /* NNTPS_ABLE */
 
 	nntp_buf.fd = sock_fd;
+#	ifdef AF_UNSPEC
+	nntp_buf.family = AF_UNSPEC;
+#	endif /* AF_UNSPEC */
 
-#	if defined(HAVE_GETPEERNAME) || defined(TLI)
+	/* set user timeout (if any) after connect()! */
+	set_tcp_user_rxt_timeout(sock_fd);
+
 	{
 		struct sockaddr sa;
 		socklen_t sa_len = sizeof(sa);
 
-#	ifdef HAVE_GETPEERNAME
-		if (getpeername(nntp_buf.fd, &sa, &sa_len) == 0)
-#	else
-#		ifdef TLI
-		if (t_getpeername(nntp_buf.fd, &sa, &sa_len) == 0)
-		/* if (getpeerinaddr(nntp_buf.fd, (struct sockaddr_in *)&sa, &sa_len) == 0) */
-#		endif /* TLI */
-#	endif /* HAVE_GETPEERNAME */
+#	if defined(HAVE_GETSOCKOPT) && defined(SO_DOMAIN)
+		if (getsockopt(sock_fd, SOL_SOCKET, SO_DOMAIN, &sa, &sa_len) == 0)
 			nntp_buf.family = sa.sa_family;
+#	endif /* HAVE_GETSOCKOPT && SO_DOMAIN */
+
+#	if defined(HAVE_GETPEERNAME) || defined(TLI)
+#		ifdef AF_UNSPEC
+		if (nntp_buf.family == AF_UNSPEC)
+#		else
+		if (!nntp_buf.family)
+#		endif /* AF_UNSPEC */
+		{
+#		ifdef HAVE_GETPEERNAME
+			if (getpeername(nntp_buf.fd, &sa, &sa_len) == 0)
+#		else
+#			ifdef TLI
+			/* if (t_getpeername(nntp_buf.fd, &sa, &sa_len) == 0) */ /* does t_getpeername() exist? */
+			if (getpeerinaddr(nntp_buf.fd, (struct sockaddr_in *) &sa, &sa_len) == 0) /* DYNIX/ptx */
+#			endif /* TLI */
+#		endif /* HAVE_GETPEERNAME */
+				nntp_buf.family = sa.sa_family;
+		}
+#	endif /* HAVE_GETPEERNAME || TLI */
 	}
-#endif /* HAVE_GETPEERNAME || TLI */
 
 	last_put[0] = '\0';		/* no retries in get_respcode */
 	/*
@@ -623,6 +684,7 @@ get_tcp_socket(
 
 #			if defined(__hpux) && defined(SVR4)	/* recommended by raj@cup.hp.com */
 #				define HPSOCKSIZE 0x8000
+#				if defined(HAVE_GETSOCKOPT) && defined(HAVE_SETSOCKOPT)
 		getsockopt(s, SOL_SOCKET, SO_SNDBUF, /* (caddr_t) */ &socksize, /* (caddr_t) */ &socksizelen);
 		if (socksize < HPSOCKSIZE) {
 			socksize = HPSOCKSIZE;
@@ -635,7 +697,10 @@ get_tcp_socket(
 			socksize = HPSOCKSIZE;
 			setsockopt(s, SOL_SOCKET, SO_RCVBUF, /* (caddr_t) */ &socksize, sizeof(socksize));
 		}
+#				endif /* HAVE_GETSOCKOPT && HAVE_SETSOCKOPT */
 #			endif /* __hpux && SVR4 */
+
+		set_tcp_user_ini_timeout(s);
 
 		if ((x = connect(s, (struct sockaddr *) &sock_in, sizeof(sock_in))) == 0)
 			break;
@@ -670,6 +735,8 @@ get_tcp_socket(
 		return -1;
 	}
 
+	set_tcp_user_ini_timeout(s);
+
 	/* And connect */
 	if (connect(s, (struct sockaddr *) &sock_in) < 0) {
 		save_errno = errno;
@@ -690,6 +757,9 @@ get_tcp_socket(
 #				else
 	memcpy((char *) &sock_in.sin_addr, hp->h_addr, hp->h_length);
 #				endif /* HAVE_HOSTENT_H_ADDR_LIST */
+
+	set_tcp_user_ini_timeout(s);
+
 	if (connect(s, (struct sockaddr *) &sock_in, sizeof(sock_in)) < 0) {
 		save_errno = errno;
 		perror("connect");
@@ -700,6 +770,7 @@ get_tcp_socket(
 #			endif /* EXCELAN */
 #		endif /* h_addr */
 #	endif /* TLI */
+
 	return s;
 }
 #endif /* NNTP_ABLE && !INET6 */
@@ -761,6 +832,9 @@ get_tcp6_socket(
 			es = errno;
 			continue;
 		}
+
+		set_tcp_user_ini_timeout(s);
+
 		if (connect(s, res->ai_addr, res->ai_addrlen) != 0) {
 			ec = errno;
 			close(s);
@@ -855,7 +929,7 @@ get_dnet_socket(
 
 	return s;
 #	else
-    (void) machine;
+	(void) machine;
 	return -1;
 #	endif /* NNTP_ABLE */
 }
@@ -905,7 +979,7 @@ put_server(
 	t_bool hide_from_log)
 {
 	if (*string) {
-		DEBUG_IO((stderr, "put_server(%s)\n", string));
+		DEBUG_IO((stderr, "%sput_server(\"%s\")\n", logtime(), string));
 		nntpbuf_puts(string, &nntp_buf);
 		nntpbuf_puts("\r\n", &nntp_buf);
 
@@ -960,7 +1034,7 @@ reconnect(
 	if (!tinrc.auto_reconnect)
 		ring_bell();
 
-	DEBUG_IO((stderr, _("\nServer timed out, trying reconnect # %d\n"), retry));
+	DEBUG_IO((stderr, "\n%sServer timed out, trying %s reconnect: #%d/%d\n", logtime(), tinrc.auto_reconnect ? "auto" : "ask", retry, NNTP_TRY_RECONNECT));
 
 	/*
 	 * set signal_context temporary to cReconnect to avoid trouble when receiving
@@ -1003,7 +1077,7 @@ reconnect(
 	if (!nntp_open()) {
 		/* Re-establish our current group and resend last command */
 		if (curr_group != NULL) {
-			DEBUG_IO((stderr, _("Rejoin current group\n")));
+			DEBUG_IO((stderr, "%sRejoin current group\n", logtime()));
 			snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
 			put_server(last_put, FALSE);
 			if (nntpbuf_gets(last_put, NNTP_STRLEN, &nntp_buf) == NULL)
@@ -1012,9 +1086,9 @@ reconnect(
 			if (debug & DEBUG_NNTP)
 				debug_print_file("NNTP", "<<<%s%s", logtime(), last_put);
 #	endif /* DEBUG */
-			DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
+			DEBUG_IO((stderr, "%sreconnect() Read (%s)\n", logtime(), last_put));
 		}
-		DEBUG_IO((stderr, _("Resend last command (%s)\n"), buf));
+		DEBUG_IO((stderr, "%sreconnect() Resend last command (%s)\n", logtime(), buf));
 		put_server(buf, FALSE);
 		did_reconnect = TRUE;
 		retry = NNTP_TRY_RECONNECT;
@@ -1035,12 +1109,12 @@ fgetc_server(
 	int c;
 
 	if (stream != FAKE_NNTP_FP) {
-		DEBUG_IO((stderr, "fgetc_server: BAD fp\n"));
+		DEBUG_IO((stderr, "%sfgetc_server: BAD fp\n", logtime()));
 		return EOF;
 	}
 
 	c = nntpbuf_getc(&nntp_buf);
-	DEBUG_IO((stderr, "fgetc_server: %c / %d\n", c, c));
+	DEBUG_IO((stderr, "%sfgetc_server: %c / %d\n", logtime(), c, c));
 
 	return c;
 }
@@ -1052,11 +1126,11 @@ ungetc_server(
 	FILE *stream)
 {
 	if (stream != FAKE_NNTP_FP) {
-		DEBUG_IO((stderr, "fgetc_server: BAD fp\n"));
+		DEBUG_IO((stderr, "%sfgetc_server: BAD fp\n", logtime()));
 		return EOF;
 	}
 
-	DEBUG_IO((stderr, "ungetc_server: %c / %d\n", c, c));
+	DEBUG_IO((stderr, "%sungetc_server: %c / %d\n", logtime(), c, c));
 
 	return nntpbuf_ungetc(c, &nntp_buf);
 }
@@ -1494,7 +1568,7 @@ mode_reader(
 		if ((debug & DEBUG_NNTP) && verbose > 1)
 			debug_print_file("NNTP", "mode_reader(MODE READER)");
 #	endif /* DEBUG */
-		DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
+		DEBUG_IO((stderr, "%snntp_command(MODE READER)\n", logtime()));
 		put_server("MODE READER", FALSE);
 
 		/*
@@ -1589,8 +1663,12 @@ nntp_open(
 		debug_print_file("NNTP", "nntp_open() %s:%u", nntp_server, nntp_tcp_port);
 #	endif /* DEBUG */
 
+#if defined(HAVE_ALARM) && defined(SIGALRM)
+	alarm((unsigned) TIN_NNTP_TIMEOUT);
+#endif /* HAVE_ALARM && SIGALRM */
+
 	ret = server_init(nntp_server, NNTP_TCP_NAME, nntp_tcp_port, line, sizeof(line));
-	DEBUG_IO((stderr, "server_init returns %d,%s\n", ret, line));
+	DEBUG_IO((stderr, "%sserver_init returns %d,%s\n", logtime(), ret, line));
 
 	if ((!batch_mode || verbose) && ret >= 0 && !use_nntps)
 		my_fputc('\n', stdout);
@@ -1965,7 +2043,7 @@ nntp_open(
 #	endif /* USE_ZLIB */
 #endif /* NNTP_ABLE */
 
-	DEBUG_IO((stderr, "nntp_open okay\n"));
+	DEBUG_IO((stderr, "%snntp_open okay\n", logtime()));
 	return 0;
 }
 
@@ -2028,7 +2106,7 @@ get_only_respcode(
 	respcode = (int) strtol(ptr, &end, 10);
 	if (end == ptr || respcode < 100 || respcode > 599)
 		respcode = -1;
-	DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
+	DEBUG_IO((stderr, "%sget_only_respcode(%d)\n", logtime(), respcode));
 
 	/*
 	 * we also reconnect on ERR_FAULT if last_put was ARTICLE or LIST or POST
@@ -2067,7 +2145,7 @@ get_only_respcode(
 		respcode = (int) strtol(ptr, &end, 10);
 		if (end == ptr || respcode < 100 || respcode > 599)
 			respcode = -1;
-		DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
+		DEBUG_IO((stderr, "%sget_only_respcode(%d)\n", logtime(), respcode));
 	}
 	if (message != NULL && mlen > 1 && *end != '\0')		/* Pass out the rest of the text */
 		my_strncpy(message, ++end, mlen - 1);
@@ -2126,7 +2204,7 @@ get_respcode(
 				can_post = TRUE && !force_no_post;
 		}
 		if (curr_group != NULL) {
-			DEBUG_IO((stderr, _("Rejoin current group\n")));
+			DEBUG_IO((stderr, "%sRejoin current group\n", logtime()));
 			snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
 			put_server(last_put, FALSE);
 			if (nntpbuf_gets(last_put, NNTP_STRLEN, &nntp_buf) == NULL)
@@ -2135,7 +2213,7 @@ get_respcode(
 			if (debug & DEBUG_NNTP)
 				debug_print_file("NNTP", "<<<%s%s", logtime(), *last_put ? last_put : "NULL");
 #	endif /* DEBUG */
-			DEBUG_IO((stderr, _("Read (%s)\n"), *last_put ? last_put : txt_null));
+			DEBUG_IO((stderr, "%sget_respcode() Read (%s)\n", logtime(), *last_put ? last_put : txt_null));
 		}
 		STRCPY(last_put, savebuf);
 
@@ -2184,7 +2262,7 @@ nntp_command(
 	char *message,
 	size_t mlen)
 {
-DEBUG_IO((stderr, "nntp_command(%s)\n", command));
+DEBUG_IO((stderr, "%snntp_command(%s)\n", logtime(), command));
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "nntp_command(%s)", command);
@@ -2223,7 +2301,7 @@ new_nntp_command(
 {
 	int respcode = 0;
 
-DEBUG_IO((stderr, "new_nntp_command(%s)\n", command));
+DEBUG_IO((stderr, "%snew_nntp_command(%s)\n", logtime(), command));
 #	ifdef DEBUG
 	if ((debug & DEBUG_NNTP) && verbose > 1)
 		debug_print_file("NNTP", "new_nntp_command(%s)", command);
@@ -2789,7 +2867,7 @@ nntp_conninfo(
 	fprintf(stream, _(txt_conninfo_server), nntp_server);
 	fprintf(stream, _(txt_conninfo_port), nntp_tcp_port);
 
-#	if defined(HAVE_GETPEERNAME) || defined(TLI)
+#	if defined(HAVE_GETSOCKOPT) || defined(HAVE_GETPEERNAME) || defined(TLI)
 	switch (nntp_buf.family) {
 		case AF_INET:
 			fprintf(stream, _(txt_conninfo_type), "IPv4");
@@ -2813,11 +2891,36 @@ nntp_conninfo(
 #		endif /* DEBUG */
 			break;
 	}
-#	endif /* HAVE_GETPEERNAME || TLI */
+#	endif /* HAVE_GETSOCKOPT || HAVE_GETPEERNAME || TLI */
 
 #	if defined(HAVE_ALARM) && defined(SIGALRM)
 	fprintf(stream, P_(txt_conninfo_timeout_sp[0], txt_conninfo_timeout_sp[1], TIN_NNTP_TIMEOUT), TIN_NNTP_TIMEOUT, TIN_NNTP_TIMEOUT ? "" : _(txt_conninfo_disabled));
 #	endif /* HAVE_ALARM && SIGALRM */
+
+#	if defined(TIMEOUT_TYPE) && defined(DEBUG)
+	/* as this is for debugging only, intentionally no _() here */
+	{
+		TIMEOUT_TYPE ival;
+		socklen_t vlen = sizeof(TIMEOUT_TYPE);
+		int l = strlen(_(txt_conninfo_type)) - 5; /* 5 == ": %s\n" */
+
+#		ifdef TIMEOUT_INI_NAME
+		if (getsockopt(nntp_buf.fd, IPPROTO_TCP, TIMEOUT_INI_NAME, &ival, &vlen) == 0) {
+#			ifdef TCP_USER_TIMEOUT
+			/* thiis actually is TIMEOUT_RXT_NAME */
+			fprintf(stream, "%-*.*s: %s %.3f seconds\n", l, l, "TCP TIMEOUTS", "TCP_USER_TIMEOUT", (float) ival / TIMEOUT_MUL);
+#			else
+#				if defined(TCP_CONNECTIONTIMEOUT) && defined(TCP_RXT_CONNDROPTIME)
+			fprintf(stream, "%-*.*s: %s %-5d seconds\n", l, l, "TCP TIMEOUTS", "TCP_CONNECTIONTIMEOUT", ival); /* 5 == snprintf(NULL, 0, "%d", TIN_NNTP_TIMEOUT_MAX) */
+			if (getsockopt(nntp_buf.fd, IPPROTO_TCP, TIMEOUT_RXT_NAME, &ival, &vlen) == 0)
+				fprintf(stream, "%-*.*s %s %-5d seconds", l + 1, l + 1, "", "TCP_RXT_CONNDROPTIME ", ival);
+			fprintf(stream, "\n");
+#				endif /* TCP_CONNECTIONTIMEOUT && TCP_RXT_CONNDROPTIME */
+#			endif /* TCP_USER_TIMEOUT */
+		}
+#		endif /* TIMEOUT_INI_NAME */
+	}
+#	endif /* TIMEOUT_TYPE && DEBUG */
 
 	if (nntp_caps.type == CAPABILITIES) {
 		if (nntp_caps.compress) {
@@ -2912,4 +3015,85 @@ set_maxartnum(
 	}
 }
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
+
+
+/*
+ * timeout for new, non established TCP connections
+ * return set timeout in ms if any or -1 on error
+ */
+static long
+set_tcp_user_ini_timeout(
+	int sockfd)
+{
+#	if defined(TIMEOUT_INI_NAME)
+	if (TIN_NNTP_TIMEOUT) {
+		TIMEOUT_TYPE optval = (TIN_NNTP_TIMEOUT + 1) * TIMEOUT_MUL;
+		TIMEOUT_TYPE ival;
+		socklen_t vlen = sizeof(TIMEOUT_TYPE);
+
+		if (setsockopt(sockfd, IPPROTO_TCP, TIMEOUT_INI_NAME, &optval, sizeof(TIMEOUT_TYPE)) != 0) {
+			DEBUG_IO((stderr, "%ssetsockopt(,TCP_INI_TIMEOUT,%u,) %s\n", logtime(), optval, strerror(errno)));
+			return -1L;
+		} else {
+			if (getsockopt(sockfd, IPPROTO_TCP, TIMEOUT_INI_NAME, &ival, &vlen) != 0) {
+				DEBUG_IO((stderr, "%sgetsockopt(,TCP_INI_TIMEOUT,): %s\n", logtime(), strerror(errno)));
+				return -1L;
+			} else {
+				DEBUG_IO((stderr, "%sgetsockopt(,TCP_INI_TIMEOUT,): %d\n", logtime(), ival));
+				return (long) ival * 1000 / TIMEOUT_MUL;
+			}
+		}
+	}
+#	else
+	DEBUG_IO((stderr, "%s!TIMEOUT_INI_NAME\n",logtime()));
+	(void) sockfd;
+#	endif /* TIMEOUT_INI_NAME */
+	return 0L;
+}
+
+
+/*
+ * tcp retransmissions timeout
+ * return set timeout in ms if any or -1 on error
+ */
+static long
+set_tcp_user_rxt_timeout(
+	int sockfd)
+{
+#	if defined(TIMEOUT_RXT_NAME)
+	if (TIN_NNTP_TIMEOUT) {
+		TIMEOUT_TYPE optval = (250 + (TIN_NNTP_TIMEOUT < 12 ? TIN_NNTP_TIMEOUT * 500 : 6000));
+		TIMEOUT_TYPE ival;
+		socklen_t vlen = sizeof(TIMEOUT_TYPE);
+
+#	if defined(TIMEOUT_DIV) && TIMEOUT_DIV > 1
+		optval /= TIMEOUT_DIV;
+		if (!optval)
+			++optval;
+#	endif /* TIMEOUT_DIV && TIMEOUT_DIV > 1 */
+
+		if (setsockopt(sockfd, IPPROTO_TCP, TIMEOUT_RXT_NAME, &optval, sizeof(TIMEOUT_TYPE)) != 0) {
+			DEBUG_IO((stderr, "%ssetsockopt(,TCP_RXT_TIMEOUT,%u,) %s\n", logtime(), optval, strerror(errno)));
+			return -1L;
+		} else {
+			if (getsockopt(sockfd, IPPROTO_TCP, TIMEOUT_RXT_NAME, &ival, &vlen) != 0) {
+				DEBUG_IO((stderr, "%sgetsockopt(,TCP_RXT_TIMEOUT,): %s\n", logtime(), strerror(errno)));
+				return -1L;
+			} else {
+				DEBUG_IO((stderr, "%sgetsockopt(,TCP_RXT_TIMEOUT,): %d\n", logtime(), ival));
+#   if defined(TIMEOUT_DIV) && TIMEOUT_DIV > 1
+				return (long) ival * TIMEOUT_DIV;
+#	else
+				return (long) ival;
+#   endif /* TIMEOUT_DIV && TIMEOUT_DIV > 1 */
+			}
+		}
+	}
+#	else
+	DEBUG_IO((stderr, "%s!TIMEOUT_RXT_NAME\n",logtime()));
+	(void) sockfd;
+#	endif /* TIMEOUT_RXT_NAME */
+	return 0L;
+}
+
 #endif /* NNTP_ABLE */

@@ -94,7 +94,7 @@ Examples:
 
 =item $BROWSER_FTP="wget:ncftp"
 
-=item $BROWSER_GOPHER="lynx:links"
+=item $BROWSER_GOPHER="gopher:lynx:links"
 
 =item $BROWSER_MAILTO="mutt:pine -url"
 

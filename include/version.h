@@ -48,8 +48,8 @@
 #	define RELEASEDATE	"20250209"
 #	define RELEASENAME	"Helmsdale"
 /* config-file versions - must be dotted triples in the range 0 to 99 each */
-#	define TINRC_VERSION	"1.3.18"
-#	define ATTRIBUTES_VERSION	"1.0.11"
+#	define TINRC_VERSION	"1.3.19"
+#	define ATTRIBUTES_VERSION	"1.0.12"
 #	define FILTER_VERSION	"1.0.2"
 #	define KEYMAP_VERSION	"1.0.11"
 #	define SERVERCONFIG_VERSION	"1.0.0"

@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-07
+ *  Updated   : 2025-02-20
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -78,28 +78,6 @@ constext *txt_article_sp[] = PN_("article", "articles");
 constext txt_article_upper[] = N_("Article");
 constext *txt_article_mailed_sp[] = PN_("-- %d article mailed --", "-- %d articles mailed --");
 constext txt_at_s[] = N_(" at %s");
-constext txt_mime_boundary[] = "--%s\n";
-constext txt_mime_boundary_end[] = "--%s--\n";
-constext txt_mime_charset[] = N_("charset %s");
-constext txt_mime_content_subtype[] = N_("content subtype %s");
-constext txt_mime_content_type[] = N_("content type %s");
-constext txt_mime_unsup_charset[] = N_("%*s[-- charset %s not supported --]\n");
-constext txt_mime_description[] = N_("%*s[-- Description: %s --]\n");
-constext txt_mime_encoding[] = N_("encoding %s");
-constext txt_mime_hdr_c_disposition[] = "Content-Disposition: %s\n";
-constext txt_mime_hdr_c_transfer_encoding[] = "Content-Transfer-Encoding: %s\n";
-constext txt_mime_hdr_c_type_msg_rfc822[] = "Content-Type: message/rfc822\n";
-constext txt_mime_hdr_c_type_multipart_mixed[] = "Content-Type: multipart/mixed; boundary=\"%s\"\n";
-constext txt_mime_hdr_c_type_text_plain_charset[] = "Content-Type: text/plain; charset=%s\n";
-constext txt_mime_lang[] = N_("lang %s");
-constext *txt_mime_line_sp[] = PN_("%s line", "%s lines");
-constext txt_mime_name[] = N_("name %s");
-constext txt_mime_sep[] = N_(", ");
-constext txt_mime_size[] = N_("size %s");
-constext txt_mime_preamble_multipart_mixed[] = N_("This message has been composed in the 'multipart/mixed' MIME-format. If you\n\
-are reading this prefix, your mail reader probably has not yet been modified\n\
-to understand the new format, and some of what follows may look strange.\n\n");
-constext txt_mime_version[] = "MIME-Version: %s\n";
 constext txt_attachment_menu[] = N_("Attachment Menu");
 constext txt_attachment_menu_com[] = N_("Attachment Menu Commands");
 constext txt_attachment_no_name[] = N_("<no name>");
@@ -220,7 +198,11 @@ constext txt_attrib_file_trim_art_body_4[] = N_("#    4 = Compact multiple blank
 constext txt_attrib_file_trim_art_body_5[] = N_("#    5 = Compact multiple blank lines between text blocks and skip\n#        leading blank lines\n");
 constext txt_attrib_file_trim_art_body_6[] = N_("#    6 = Compact multiple blank lines between text blocks and skip\n#        trailing blank lines\n");
 constext txt_attrib_file_trim_art_body_7[] = N_("#    7 = Compact multiple blank lines between text blocks and skip\n#        leading and trailing blank lines\n");
-constext txt_attrib_file_verbatim_handling[] = N_("#  verbatim_handling=ON/OFF\n");
+constext txt_attrib_file_verbatim_handling[] = N_("#  verbatim_handling=NUM\n");
+constext txt_attrib_file_verbatim_handling_0[] = N_("#    0 = Don't detect verbatim blocks\n");
+constext txt_attrib_file_verbatim_handling_1[] = N_("#    1 = Detect and show verbatim blocks\n");
+constext txt_attrib_file_verbatim_handling_2[] = N_("#    2 = Detect and show verbatim blocks, hide begin and end marks\n");
+constext txt_attrib_file_verbatim_handling_3[] = N_("#    3 = Detect verbatim blocks and hide them\n");
 #ifdef HAVE_COLOR
 	constext txt_attrib_file_extquote_handling[] = N_("#  extquote_handling=ON/OFF\n");
 #endif /* HAVE_COLOR */
@@ -251,7 +233,7 @@ constext txt_autoselecting_articles[] = N_("Autoselecting articles (use '%s' to 
 
 constext txt_bad_article[] = N_("Article to be posted resulted in errors/warnings. %s=quit, %s=Menu, %s=edit: ");
 #ifdef DEBUG
-	constext txt_bad_attrib[] = N_("Unrecognized attribute: %s");
+	constext txt_bad_attrib[] = N_("Unrecognized %sattribute: %s");
 #endif /* DEBUG */
 constext txt_bad_command[] = N_("Bad command. Type '%s' for help.");
 constext txt_base_article[] = N_("Base article");
@@ -444,12 +426,12 @@ constext txt_error_gnksa_rn_qtd[] = N_("Illegal character in realname.\nQuoted w
 constext txt_error_gnksa_rn_enc[] = N_("Illegal character in realname.\nEncoded words may not contain '!()<>@,;:\"\\.[]/=' in parameter.\n");
 constext txt_error_gnksa_rn_encsyn[] = N_("Bad syntax in encoded word used in realname.\n");
 constext txt_error_gnksa_rn_paren[] = N_("Illegal character in realname.\nUnquoted words may not contain '()<>\\' in old-style addresses.\n");
-constext txt_error_gnksa_rn_invalid[] = N_("Illegal character in realname.\nControl characters and unencoded 8bit characters > 127 are not allowed.\n");
+constext txt_error_gnksa_rn_invalid[] = N_("Illegal character in realname.\nControl characters and unencoded 8-bit characters > 127 are not allowed.\n");
 constext txt_error_gnksa_rn_missing[] = N_("Missing realname.\n");
 constext txt_error_header_and_body_not_separate[] = N_("\nError: No blank line found after header.\n");
 constext txt_error_header_distribution_all[] = N_("\nError: Illegal Distribution \"all\" used.\n");
 constext txt_error_header_format[] = N_("\nError: Illegal formatted %s.\n");
-/* TODO: fixme, US-ASCII is not the only 7bit charset we know about */
+/* TODO: fixme, US-ASCII is not the only 7-bit charset we know about */
 constext txt_error_header_line_bad_charset[] = N_("\n\
 Error: Posting contains non-ASCII characters but MM_CHARSET is set to\n\
        US-ASCII  - please change this setting to a suitable value for\n\
@@ -465,7 +447,7 @@ constext txt_error_header_line_blank[] = N_("\nError: Article starts with blank 
 constext txt_error_header_line_colon[] = N_("\nError: Header on line %d does not have a colon after the header name:\n%s\n");
 constext txt_error_header_line_empty[] = N_("\nError: The \"%s:\" line is empty.\n");
 constext txt_error_header_line_missing[] = N_("\nError: The \"%s:\" line is missing from the article header.\n");
-constext txt_error_header_line_not_7bit[] = N_("\nError: %s contains non 7bit chars.\n");
+constext txt_error_header_line_not_7bit[] = N_("\nError: %s contains non 7-bit chars.\n");
 constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not have a space after the colon:\n%s\n");
 /* TRANSLATORS: for nplurals>=3 */
 constext *txt_error_header_duplicate_sp[] = PN_("\nError: There are multiple (%d) \"%s:\" line in the header.\n", "\nError: There are multiple (%d) \"%s:\" lines in the header.\n");
@@ -639,7 +621,7 @@ constext txt_help_article_toggle_rot13[] = N_("toggle ROT-13 (basic decode) for 
 constext txt_help_article_toggle_tabwidth[] = N_("toggle tabwidth 4 <-> 8");
 constext txt_help_article_toggle_tex2iso[] = N_("toggle German TeX style decoding for current article");
 constext txt_help_article_toggle_uue[] = N_("toggle display of uuencoded sections");
-constext txt_help_article_toggle_verbatim[] = N_("toggle detection of verbatim blocks on/off");
+constext txt_help_article_toggle_verbatim[] = N_("cycle through the options for detecting and displaying verbatim blocks");
 constext txt_help_article_view_attachments[] = N_("View/pipe/save multimedia attachments");
 constext txt_help_attachment_first[] = N_("choose first attachment in list");
 constext txt_help_attachment_goto[] = N_("0 - 9\t  choose attachment by number");
@@ -877,11 +859,9 @@ constext txt_kill_time[] = N_("Kill time in days   : ");
 constext txt_last[] = N_("Last");
 constext txt_last_resp[] = N_("-- Last response --");
 constext txt_lines[] = N_("Lines %s  ");
-
 #if defined(NNTP_ABLE) && defined(DEBUG)
 	constext txt_log_data_hidden[] = ". [full data hidden, rerun with -v]";
 #endif /* NNTP_ABLE && DEBUG */
-
 constext txt_lookup_func_not_available[] = N_("Function not available.");
 constext txt_lookup_func_not_nntp[] = N_("Not reading via NNTP.");
 #ifdef NNTP_ABLE
@@ -909,6 +889,28 @@ constext txt_mark_art_read[] = N_("Mark article as read%s?");
 constext txt_mark_group_read[] = N_("Mark group %s as read?");
 constext txt_mark_thread_read[] = N_("Mark thread as read%s?");
 constext txt_matching_cmd_line_groups[] = N_("Matching %s groups...");
+constext txt_mime_boundary[] = "--%s\n";
+constext txt_mime_boundary_end[] = "--%s--\n";
+constext txt_mime_charset[] = N_("charset %s");
+constext txt_mime_content_subtype[] = N_("content subtype %s");
+constext txt_mime_content_type[] = N_("content type %s");
+constext txt_mime_unsup_charset[] = N_("%*s[-- charset %s not supported --]\n");
+constext txt_mime_description[] = N_("%*s[-- Description: %s --]\n");
+constext txt_mime_encoding[] = N_("encoding %s");
+constext txt_mime_hdr_c_disposition[] = "Content-Disposition: %s\n";
+constext txt_mime_hdr_c_transfer_encoding[] = "Content-Transfer-Encoding: %s\n";
+constext txt_mime_hdr_c_type_msg_rfc822[] = "Content-Type: message/rfc822\n";
+constext txt_mime_hdr_c_type_multipart_mixed[] = "Content-Type: multipart/mixed; boundary=\"%s\"\n";
+constext txt_mime_hdr_c_type_text_plain_charset[] = "Content-Type: text/plain; charset=%s\n";
+constext txt_mime_lang[] = N_("lang %s");
+constext *txt_mime_line_sp[] = PN_("%s line", "%s lines");
+constext txt_mime_name[] = N_("name %s");
+constext txt_mime_sep[] = N_(", ");
+constext txt_mime_size[] = N_("size %s");
+constext txt_mime_preamble_multipart_mixed[] = N_("This message has been composed in the 'multipart/mixed' MIME-format. If you\n\
+are reading this prefix, your mail reader probably has not yet been modified\n\
+to understand the new format, and some of what follows may look strange.\n\n");
+constext txt_mime_version[] = "MIME-Version: %s\n";
 constext txt_mini_attachment_1[] = N_("<n>=set current to n; %s=line down; %s=line up; %s=help; %s=quit");
 #ifndef DONT_HAVE_PIPING
 constext txt_mini_attachment_2[] = N_("%s=view; %s=pipe; %s=pipe raw; %s=save; %s=tag; %s=tag pattern; %s=untag all");
@@ -1007,8 +1009,6 @@ constext txt_out_of_memory[] = "%s: memory exhausted trying to allocate %lu byte
 
 /* TRANSLATORS: do not translate header names like 'Path:' */
 constext txt_path_line_nocasse[] = N_("Path: line (case insensitive)");
-/* TRANSLATORS: do not translate header names like 'Xref:' */
-constext txt_xref_line_nocasse[] = N_("Xref: line (case insensitive)");
 constext txt_pcre_error_at[] = N_("Error in regex: %s at pos. %d '%s'");
 constext txt_pcre_error_num[] = N_("Error in regex: pcre internal error %d");
 #ifndef HAVE_LIB_PCRE2
@@ -1236,7 +1236,7 @@ constext txt_toggled_high[] = N_("Toggled word highlighting %s");
 constext txt_toggled_rot13[] = N_("Toggled rot13 encoding");
 constext txt_toggled_tex2iso[] = N_("Toggled German TeX encoding %s");
 constext txt_toggled_tabwidth[] = N_("Toggled tab-width to %d");
-constext txt_toggled_verbatim[] = N_("Toggled detection of verbatim blocks %s");
+constext txt_toggled_verbatim[] = N_("Verbatim handling: %s");
 #ifndef NO_LOCKING
 	constext txt_trying_dotlock[] = N_("%d Trying to dotlock %s");
 	constext txt_trying_lock[] = N_("%d Trying to lock %s");
@@ -1317,6 +1317,7 @@ constext txt_uue_incomplete[] = N_("incomplete uuencoded file");
 #endif /* NNTP_ABLE && NNTPS_ABLE */
 constext txt_val_out_of_range_ignored[] = N_("%s %s out of range (%d - %d). Ignored.");
 constext txt_val_out_of_range_reset[] = N_("%s %d out of range (0 - %d). Reset to 0.");
+constext txt_verbatim_block_hidden[] = N_("[-- Verbatim block hidden --]");
 constext txt_view_attachment[] = N_("View '%s' (%s/%s)?");
 
 /* TRANSLATORS: for nplurals>=3 */
@@ -1356,11 +1357,11 @@ is neither set to %s nor to %s.\n");
 constext *txt_warn_long_line_not_break_sp[] = PN_("\n\
 Line %d is longer than %d octet and should be folded, but encoding\n\
 is set to %s without enabling MIME_BREAK_LONG_LINES or\n\
-posting doesn't contain any 8bit chars and thus folding won't happen.\n",
+posting doesn't contain any 8-bit chars and thus folding won't happen.\n",
 "\n\
 Line %d is longer than %d octets and should be folded, but encoding\n\
 is set to %s without enabling MIME_BREAK_LONG_LINES or\n\
-posting doesn't contain any 8bit chars and thus folding won't happen.\n");
+posting doesn't contain any 8-bit chars and thus folding won't happen.\n");
 /* TRANSLATORS: for nplurals>=3 */
 constext *txt_warn_long_line_not_base_sp[] = PN_("\n\
 Line %d is longer than %d octet and should be folded, but encoding\n\
@@ -1437,6 +1438,8 @@ Do not try to remove them.\n");
 #if defined(NNTP_ABLE) && defined(XHDR_XREF)
 	constext txt_xref_loop[] = "%s XREF loop";
 #endif /* NNTP_ABLE && XHDR_XREF */
+/* TRANSLATORS: do not translate header names like 'Xref:' */
+constext txt_xref_line_nocasse[] = N_("Xref: line (case insensitive)");
 
 constext *txt_yanked_group_sp[] = PN_("Added %d group", "Added %d groups");
 constext txt_yanked_none[] = N_("No unsubscribed groups to show");
@@ -1551,7 +1554,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_PGP_GPG */
 
-constext txt_arg_not_numeric[] = N_("%s argument is not numeric: %s\n");
+constext txt_arg_not_numeric[] = N_("%s argument is not numeric: %s");
 
 #ifdef NNTP_ABLE
 	constext txt_caching_off[] = N_("Try cache_overview_files to speed up things.\n");
@@ -1905,6 +1908,15 @@ constext *txt_trim_article_body_options[] = {
 	NULL
 };
 
+/* different options for verbatim_handling */
+constext *txt_verbatim_handling_options[] = {
+	N_("Don't detect verbatim blocks"),
+	N_("Detect and show verbatim blocks"),
+	N_("Detect, hide begin and end marks"),
+	N_("Don't show verbatim blocks"),
+	NULL
+};
+
 /* different options for show_help_mail_sign */
 constext *txt_show_help_mail_sign_options[] = {
 	N_("Don't show help or mail sign"),
@@ -2030,7 +2042,7 @@ constext *txt_mime_charsets[] = {
 };
 #endif /* CHARSET_CONVERSION */
 
-/* 7bit charsets, US-ASCII must be the first entry */
+/* 7-bit charsets, US-ASCII must be the first entry */
 constext *txt_mime_7bit_charsets[] = {
 	"US-ASCII",
 	"ISO-2022-CN", "ISO-2022-CN-EXT", "ISO-2022-JP", "ISO-2022-JP-1",
@@ -2450,9 +2462,14 @@ struct opttxt txt_alternative_handling = {
 };
 
 struct opttxt txt_verbatim_handling = {
-	N_("Enable detection of verbatim blocks? <SPACE> toggles & <CR> sets."),
-	N_("Detection of verbatim blocks"),
-	N_("# If ON detect verbatim blocks in articles\n")
+	N_("<SPACE> toggles & <CR> sets."),
+	N_("How to treat verbatim blocks"),
+	N_("# How to treat verbatim blocks in articles\n\
+# Possible values are (the default is marked with *):\n\
+#   0 = Don't detect verbatim blocks\n\
+# * 1 = Detect and show verbatim blocks including begin and end marks\n\
+#   2 = Detect and show verbatim blocks, hide begin and end marks\n\
+#   3 = Detect verbatim blocks and hide them completely\n")
 };
 
 #ifdef HAVE_COLOR
@@ -2764,7 +2781,7 @@ struct opttxt txt_col_quote2 = {
 
 struct opttxt txt_col_quote3 = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Color of =>3 times quoted line"),
+	N_("Color of >=3 times quoted line"),
 	N_("# Color of >=3 times quoted lines\n\
 # Default: 4 (blue)\n")
 };
@@ -3038,7 +3055,7 @@ struct opttxt txt_mail_quote_format = {
 
 struct opttxt txt_advertising = {
 	N_("If ON, include User-Agent: header. <SPACE> toggles & <CR> sets."),
-	N_("Insert 'User-Agent:' header"),
+	N_("Insert ''User-Agent:'' header"),
 	N_("# If ON include advertising User-Agent: header\n")
 };
 
@@ -3080,16 +3097,16 @@ struct opttxt txt_post_mime_encoding = {
 	N_("# MIME encoding (8bit, base64, quoted-printable, 7bit) of the body\n\
 # for mails and posts, if necessary. QP is efficient for most European\n\
 # character sets (ISO-8859-X) with small fraction of non-US-ASCII chars,\n\
-# while Base64 is more efficient for most 8bit East Asian, Greek, and\n\
-# Russian charsets with a lot of 8bit characters.\n")
+# while Base64 is more efficient for most 8-bit East Asian, Greek, and\n\
+# Russian charsets with a lot of 8-bit characters.\n")
 };
 
 struct opttxt txt_post_8bit_header = {
 	N_("Don't change unless you know what you are doing. <ESC> cancels."),
-	N_("Use 8bit characters in news headers"),
-	N_("# If ON, 8bit characters in news headers are NOT encoded.\n\
-# default is OFF. Thus 8bit characters are encoded by default.\n\
-# 8bit chars in header are encoded regardless of the value of this\n\
+	N_("Use 8-bit characters in news headers"),
+	N_("# If ON, 8-bit characters in news headers are NOT encoded.\n\
+# default is OFF. Thus 8-bit characters are encoded by default.\n\
+# 8-bit chars in header are encoded regardless of the value of this\n\
 # parameter unless post_mime_encoding is 8bit as well.\n")
 };
 
@@ -3107,12 +3124,12 @@ struct opttxt txt_mail_mime_encoding = {
 
 struct opttxt txt_mail_8bit_header = {
 	N_("Don't change unless you know what you are doing. <ESC> cancels."),
-	N_("Use 8bit characters in mail headers"),
-	N_("# If ON, 8bit characters in mail headers are NOT encoded.\n\
-# default is OFF. Thus 8bit characters are encoded by default.\n\
-# 8bit chars in headers are encoded regardless of the value of this parameter\n\
+	N_("Use 8-bit characters in mail headers"),
+	N_("# If ON, 8-bit characters in mail headers are NOT encoded.\n\
+# default is OFF. Thus 8-bit characters are encoded by default.\n\
+# 8-bit chars in headers are encoded regardless of the value of this parameter\n\
 # unless mail_mime_encoding is 8bit as well. Note that RFC 2822\n\
-# prohibits 8bit characters in mail headers so that you are advised NOT to\n\
+# prohibits 8-bit characters in mail headers so that you are advised NOT to\n\
 # turn it ON unless you have some compelling reason.\n")
 };
 

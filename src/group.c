@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-01-23
+ *  Updated   : 2025-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -378,8 +378,8 @@ group_page(
 				if (invoke_editor(filter_file, filter_file_offset, NULL)) {
 					old_artnum = grpmenu.max > 0 ? arts[(int) base[grpmenu.curr]].artnum : T_ARTNUM_CONST(-1);
 					unfilter_articles(group);
-					(void) read_filter_file(filter_file);
-					filter_articles(group);
+					if (read_filter_file(filter_file))
+						filter_articles(group);
 					make_threads(group, FALSE);
 					grpmenu.curr = old_artnum >= T_ARTNUM_CONST(0) ? find_new_pos(old_artnum, grpmenu.curr) : grpmenu.max - 1;
 				}
@@ -974,7 +974,8 @@ group_page(
 
 			case GLOBAL_TOGGLE_INFO_LAST_LINE:
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
-				show_group_page();
+				clear_message();
+				draw_subject_arrow();
 				break;
 
 			default:

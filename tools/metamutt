@@ -5,7 +5,7 @@
 # This should become a replacement of metamail, using the mail reader
 # mutt. The options of metamail are not yet implemented, but it should
 # work as a filter without any problems.
-# 
+#
 # This script was written to use it in combination with the tin news
 # reader, where you have to set the environment variable
 # METAMAIL=metamutt, but it should work with other programs, too.
@@ -21,7 +21,7 @@
 #     (Feature added by Martin Ramsch <m.ramsch@computer.org>)
 #
 # This script tries to find a working muttrc (which is sourced first)
-# at the following places (descending priority): 
+# at the following places (descending priority):
 # 1) ~/.mutt/metamuttrc
 # 2) ~/.mutt/muttrc
 # 3) ~/.muttrc
@@ -29,7 +29,7 @@
 # Most recent version can be found at http://www.spinnaker.de/mutt/metamutt
 #
 # Many thanks for reporting bugs and introducing new features to
-# Moritz Barsnick, Ulli Horlacher, Urs Janﬂen, and Martin Ramsch.
+# Moritz Barsnick, Ulli Horlacher, Urs Janssen, and Martin Ramsch.
 #
 ##########################################################################
 #
@@ -64,9 +64,9 @@ fmopt=''
 digest='no'
 
 # handle options (ignore most of them at the moment):
-for parameter 
+for parameter
 do
-    case $1 in 
+    case $1 in
         -- ) shift; break;;
         -e|-p ) shift;;
         -m ) shift 2;;

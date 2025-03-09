@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2025-02-05
+ *  Updated   : 2025-02-14
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -333,22 +333,19 @@ read_filter_file(
 	static t_bool first_read = TRUE;
 	struct t_version *upgrade = NULL;
 
+	/* Reset all filter arrays */
+	free_filter_array(&glob_filter);
+
 	if ((fp = tin_fopen(file, "r")) == NULL)
 		return FALSE;
 
 	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_filter_file), file);
 
-	(void) time(&current_secs);
-
-	/*
-	 * Reset all filter arrays if doing a reread of the active file
-	 */
-	if (!first_read)
-		free_filter_array(&glob_filter);
-
 	filter_file_offset = 1;
 	scope[0] = '\0';
+	(void) time(&current_secs);
+
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 		if (*buf == '\n')
 			continue;

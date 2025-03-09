@@ -2,12 +2,12 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2025-01-23
+.\" Updated   : 2025-02-18
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
-.TH tin 1 "December 24th, 2024" "2.6.4" "Usenet newsreader"
+.TH TIN 1 2025-02-17 2.6.5 "Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -116,7 +116,7 @@ option and mark all articles as read.
 .TP
 .B \-C
 Use COMPRESS NNTP extension (\fBRFC\%8054\fP) if available. See also
-\fBnntp_read_timeout_secs\fP, '\fB\-t\fP'' and the "SECURITY" and "BUGS"
+\fBnntp_read_timeout_secs\fP, ''\fB\-t\fP'' and the "SECURITY" and "BUGS"
 section.
 .TP
 .B \-d
@@ -407,7 +407,8 @@ groups to find them in a later session.
 .B D
 This group no longer exists. If you no longer wish to see this group then
 unsubscribe from it in the normal way. This flag will only appear if
-you have set \fBstrip_bogus\fP to "ask" in the Options Menu.
+you have set \fBstrip_bogus\fP to "Mark with D on selection screen" in
+the Options Menu.
 .TP
 .B X
 You may no longer make posts to this group. Often a group will be superseded
@@ -641,7 +642,7 @@ Toggle display to show just the group name or the group name and the group
 descriptions.
 .TP
 .B EditFilter 'E'
-Edit the filter file and reload it afterwards.
+Edit the filter file and reload it afterward.
 .TP
 .B SelectGoto 'g'
 Choose a new group by name. This command can be used to access any group,
@@ -774,7 +775,7 @@ Repeat the previous search.
 Search forward for specified subject.
 .TP
 .B SearchSubjB '?'
-Search backwards for specified subject.
+Search backward for specified subject.
 .TP
 .B GroupSelThd '*'
 Select current thread for later processing.
@@ -866,7 +867,7 @@ have been posted by the same user. The cancel message can be seen in
 the newsgroup 'control' or 'control.cancel'.
 .TP
 .B EditFilter 'E'
-Edit the filter file and reload it afterwards.
+Edit the filter file and reload it afterward.
 .TP
 .B GroupGoto 'g'
 Choose a new group by name. This command can be used to access any group, even
@@ -1031,7 +1032,7 @@ Repeat the previous search.
 Search forward for specified subject.
 .TP
 .B SearchSubjB '?'
-Search backwards for specified subject.
+Search backward for specified subject.
 .TP
 .B ThreadSelArt '*'
 Select current thread for later processing.
@@ -1086,7 +1087,7 @@ have been posted by the same user. The cancel message can be seen in
 the newsgroup 'control' or 'control.cancel'.
 .TP
 .B EditFilter 'E'
-Edit the filter file and reload it afterwards.
+Edit the filter file and reload it afterward.
 .TP
 .B ThreadFollowupQuote 'f'
 Post a followup to the current article with a copy of the article included.
@@ -1228,7 +1229,7 @@ taken from the \fBhide_uue\fP variable in the tinrc file.
 .B PageReveal ')'
 The form feed character (^L) is often used to hide 'spoilers' that the
 reader may not initially wish to see when viewing an article. Any text
-after a formfeed is not displayed. This key-press acts like a reveal key
+after a form feed is not displayed. This key-press acts like a reveal key
 and turns the hidden text back on. Scrolling down will also reveal the text,
 scrolling up will hide it again.
 .TP
@@ -1259,7 +1260,7 @@ Go to the last article in the current thread.
 Toggle word highlighting on/off.
 .TP
 .B PageToggleVerbatim ','
-Toggle detection of verbatim blocks on/off.
+Cycle through the various options of verbatim_handling.
 .TP
 .B Pipe '|'
 Pipe current article / thread / auto-selected (hot) articles / articles
@@ -1319,7 +1320,7 @@ the newsgroup 'control' or 'control.cancel'.
 Edit the current article. This is restricted to mailgroups and saved news.
 .TP
 .B EditFilter 'E'
-Edit the filter file and reload it afterwards.
+Edit the filter file and reload it afterward.
 .TP
 .B PageFollowupQuote 'f'
 Post a followup to the current article with a copy of the article included.
@@ -1629,7 +1630,7 @@ Default is OFF.
 If ON add posted articles which start a new thread to filter for
 highlighting follow-ups. Default is ON.
 .TP
-.B Insert 'User\-Agent:'\-header (advertising)
+.B Insert ''User\-Agent:''\-header (advertising)
 Turn ON advertising in header (''User\-Agent:''). Default is ON.
 .TP
 .B Skip multipart/alternative parts (alternative_handling)
@@ -1777,7 +1778,7 @@ Color of quoted lines
 .B Color of twice quoted line (col_quote2)
 Color of twice quoted lines
 .TP
-.B Color of =>3 times quoted line (col_quote3)
+.B Color of >=3 times quoted line (col_quote3)
 Color of >=3 times quoted lines
 .TP
 .B Color of response counter (col_response)
@@ -2064,8 +2065,8 @@ articles simply does not get displayed at all.
 .RE
 Default is 0 (\fBKill only unread arts\fP).
 .TP
-.B Use 8bit characters in mail headers (mail_8bit_header)
-Allows 8bit characters unencoded in the header of mail message. Default is
+.B Use 8-bit characters in mail headers (mail_8bit_header)
+Allows 8-bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set
 to 8bit. Leaving it OFF is safe for most users and compliant to Internet
 Mail Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP). Default is OFF.
@@ -2283,13 +2284,13 @@ Default is "[\-\- %T%S%*n%I%!d%*e \-\-]".
 If ON put cursor at first unread article in group otherwise at last
 article. Default is ON.
 .TP
-.B Use 8bit characters in news headers (post_8bit_header)
-Allows 8bit characters unencoded in the header of a news article, if
+.B Use 8-bit characters in news headers (post_8bit_header)
+Allows 8-bit characters unencoded in the header of a news article, if
 set this also disables the generation of MIME-headers when they are
 usually required. Default is OFF. Only enacted if
 \fBpost_mime_encoding\fP is also set to 8bit. In a number of local
-hierarchies where 8bit characters are used, using unencoded (raw)
-8bit characters in header is acceptable and sometimes even
+hierarchies where 8-bit characters are used, using unencoded (raw)
+8-bit characters in header is acceptable and sometimes even
 recommended so that you need to check the convention adopted in the
 local hierarchy of your interest to determine what to do with this
 and \fBpost_mime_encoding\fP.
@@ -2710,7 +2711,7 @@ text blocks with one blank line.
 .RE
 .TP
 .B Suppress soft hyphens (suppress_soft_hyphens)
-If ON remove soft hyphens in non verbatim blocks of articles in UTF-8 when
+If ON remove soft hyphens in non verbatim blocks of articles when
 they are displayed in a UTF-8 locale. The character SOFT HYPHEN (U+00AD) is
 an invisible format character that merely indicates a preferred intraword
 line break position. However, some terminal emulators display a space or a
@@ -2767,8 +2768,19 @@ block.
 A regular expression that \fBtin\fP will use to find the end of a verbatim
 block.
 .TP
-.B Detection of verbatim blocks (verbatim_handling)
-If ON verbatim blocks will be detected. Default is ON.
+.B Detection and display of verbatim blocks (verbatim_handling)
+Allows you to select how \fBtin\fP treats verbatim blocks in article bodies.
+Default is 1.
+.RS +.5i
+.IP 0 3
+\fBDon't detect verbatim blocks\fP. Do nothing.
+.IP 1
+\fBDetect and show verbatim blocks\fP. Detect and show verbatim blocks, including begin and end marks.
+.IP 2
+\fBDetect, hide begin and end marks\fP. Detect and show verbatim blocks, hide begin and end marks.
+.IP 3
+\fBDon't show verbatim blocks\fP. Detect verbatim blocks and hide them completely.
+.RE
 .TP
 .B Wildcard matching (wildcard)
 Allows you to select how \fBtin\fP matches strings. The default is 0 and
@@ -3293,7 +3305,7 @@ item (except '\fB%%\fP'). In this case, the item will only be displayed
 when the screen is wider resp. smaller than specified. This comes in handy
 to not overload a small screen but have maximum information on a large
 screen. The minimum screen width has to be specified by a positive number
-preceded by an '\fB>\fP', the maximum screenwidth has to be specified by a
+preceded by an '\fB>\fP', the maximum screen width has to be specified by a
 positive number preceded by an '\fB<\fP'. In the following example
 \fBtin\fP will display the score only if the screen is wider than 100
 characters: '\fB%>100S\fP'.
@@ -3576,137 +3588,102 @@ For a detailed description see
 .br
 .I /etc/mail/mailcap
 .PP
-
 .I /etc/nntpserver
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.mime.types
 .br
 .I /etc/mime.types
 .br
 .I /etc/tin/mime.types
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.newsauth
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.newsrc
 .PP
-
 .nf
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/.oldnewsrc
 .fi
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.signature
 .br
 .I ${TIN_HOMEDIR:\-"$HOME"}/.Sig
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.sigfixed
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/.inputhistory
 .PP
-
 .I ${TIN_INDEX_MAILDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.mail/
 .PP
-
 .nf
 .I ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news${NNTPSERVER:+"\-$NNTPSERVER"}/
 .fi
 .PP
-
 .I ${TIN_INDEX_SAVEDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.save/
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.save
 .PP
-
 .\" .I ${TIN_LIBDIR:\-NEWSLIBDIR}/attributes
 .I /etc/tin/attributes
 .br
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/filter
 .PP
-
 .nf
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
 .br
 .I /etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}
 .fi
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/posted
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/Mail/posted
 .PP
-
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/postponed.articles
 .PP
-
 .nf
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/motd
 .fi
 .PP
-
 .nf
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
 .fi
 .PP
-
 .nf
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups
 .fi
 .PP
-
 .nf
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc
 .fi
 .PP
-
 .\" .I ${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc
 .I /etc/tin/tinrc
 .br
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc
 .PP
-
 .I /etc/tin/tin.defaults
 .PP
-
 .I /usr/local/share/locale/${LC_MESSAGES}/LC_MESSAGES/tin.mo
 .PP
-
 .I ${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}
 .PP
-
 .I ${TIN_LIBDIR:\-NEWSLIBDIR}/active.times
 .PP
-
 .I ${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups
 .PP
-
 .I ${TIN_LIBDIR:\-NEWSLIBDIR}/organization
 .PP
-
 .I ${TIN_LIBDIR:\-NEWSLIBDIR}/overview.fmt
 .PP
-
 .I ${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions
 .\"
 .\"
@@ -3796,7 +3773,7 @@ variable instead of the system default.
 .TP
 .B ISO2ASC
 Set the ISO to ASCII charset decoding table character to use in decoding
-an article text. Values can range from \-1 to 6.
+an article text. Values can range from \-1 to 5.
 .RS +.5i
 .TP
 .B \-1
@@ -3820,9 +3797,6 @@ table with \fBRFC\%1345\fP codes in brackets
 .TP
 .B 5
 table for printers that allow overstriking with backspace
-.TP
-.B 6
-table for IBM PC character set (code page 437)
 .RE
 .TP
 .B ORGANIZATION
@@ -4077,7 +4051,7 @@ Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR-file.
 .SH SECURITY
 If \fBtin\fP is started in debug mode (''\fB\-D n\fP'') it will create world
 readable files in \fB$TMPDIR\fP which may contain sensitive data like the
-users NNTP password in cleartext (if running verbose).  On multiuser-systems
+users NNTP password in clear text (if running verbose).  On multiuser-systems
 \fB$TMPDIR\fP should be set to a safe location before starting \fBtin\fP in
 (verbose) debug mode (e.g., \fBTMPDIR=$HOME tin \-vD NNTP\fP).
 .PP
@@ -4110,6 +4084,14 @@ by the University of Cambridge, England.
 <https://www.pcre.org/>
 .\"
 .\"
+.SH CAVEATS
+Any existing global configuration files in
+.I /etc/tin/
+are not updated automatically, as an ordinary user normally has no write
+permission at that location.
+.\"
+.\"
+
 .SH BUGS
 .BR CNews \0NNTPd,
 .BR \%noffle (1)

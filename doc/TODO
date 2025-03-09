@@ -15,7 +15,7 @@ o  get_respcode() doesn't handle the 401 response code. as we have to
    [20100429 Urs Janssen <urs@tin.org>]
 
 o  col_response is a misnomer as the counter doesn't count responses
-   anymore (except on the very first article). The man-page is outdated too.
+   anymore (except on the very first article). The man page is outdated too.
    [20080826 Urs Janssen <urs@tin.org>]
 
 o  unexpected multiline responses confuse tin, e.g.:
@@ -44,6 +44,8 @@ o  add version number to other config-files (e.g. tin.defaults)
 o  Add docs to explain how to create system-wide overviews
 
 o  iso2asc conversion is missing for 'internal' strings (e.g. 'M'enu)
+   (eg. via _()/P_() beening a wrapper abround *gettext() with additional
+    if (iso2asc_supported >= 0) process_charsets(..., FALSE))
    [20020319 Urs Janssen <urs@tin.org>]
 
 o  comments in attributes get lost (we need to do something like we do for
@@ -433,6 +435,10 @@ o  Add to the URL Menu ('U'):
      'M'  (GLOBAL_OPTION_MENU)
      'J'  (GLOBAL_CONNECTION_INFO)
 
+o  Add to the Options Menu ('M'):
+     'I'  (GLOBAL_TOGGLE_INVERSE_VIDEO)
+     'J'  (GLOBAL_CONNECTION_INFO)
+
 o  integrate multi-part tagging with regular tagging, eg.
    "This article appears to have multi-parts, try and find them (y/n)?"
 
@@ -576,9 +582,6 @@ o  add toggle attachment depth indentation 4 <-> 2 like ^T for tabs
 
 o  add toggle dont_break_words
 
-o  add an option to hide the verbatim marker lines and/or the entire verbatim
-   block
-
 o  suppress hide_uue=2 checking unless first line in an article or following
    a blank line
 
@@ -665,7 +668,7 @@ o  read_overview() calls eat_re() which strips the "Re: " out of the
    which might not be what ppl. expect and eat_re() is the only function
    which needs the 'regex' overhead in batch_mode... (see also the note
    about "Re: "-stripping at "Filtering enhancements").
-   note: we now have article->subject_raw (no restripping, but also no
+   note: we now have article->subject_raw (no re-stripping, but also no
    mime-decoding!), which we may use instead (after mime-decoding).
    [20050225 Urs Janssen <urs@tin.org>]
 
@@ -939,7 +942,8 @@ o  motd is only shown/checked for if using nntp, subscriptions is also
    evaluated if reading from local spool - look for motd[.nnrpd|.innd] in
    the same dir if not using nntp?
 
-o  follow $LC_COLLATE (e.g. add strxfrm() to subj_comp_*/from_comp_*)?
+o  follow $LC_COLLATE (e.g. add strxfrm()/wcsxfrm()/strcoll()/wcscoll() to
+   subj_comp_*/from_comp_*)?
    [20160421 Urs Janssen <urs@tin.org>]
 
 o  IDNA decode news_headers_to_display?

@@ -3,7 +3,7 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2025-01-07
+ *  Updated   : 2025-02-17
  *  Notes     : RFC 2045/2047 encoding
  *
  * Copyright (c) 1995-2025 Chris Blum <chris@resolution.de>
@@ -120,22 +120,19 @@ rfc1521_encode(
 		} else {
 			char *line_crlf = line;
 			size_t len = strlen(line);
-			char tmpbuf[2050]; /* FIXME: we don't do VLAs, so this is sizeof(buffer)+2 from rfc15211522_encode() */
+			char *tmpbuf = NULL;
 
 			/*
 			 * base64 requires CRLF line endings in text types
 			 * convert LF to CRLF if not CRLF already (Windows?)
 			 */
-			if ((len > 0) && (line[len - 1] == '\n') &&
-					((len == 1) || (line[len - 2] != '\r'))) {
-				STRCPY(tmpbuf, line);
-				line_crlf = tmpbuf;
-				if (len < sizeof(tmpbuf) - 2) {
-					line_crlf[len - 1] = '\r';
-					line_crlf[len] = '\n';
-					line_crlf[len + 1] = '\0';
-				} else
-					assert(((void) "strlen(line) >= sizeof(tmpbuf) - 2", 0 != 0));
+			if (len < 2 || line[len - 2] != '\r' || line[len - 1] != '\n') {
+				tmpbuf = my_strdup(line);
+				if (len && line[len - 1] == '\n')
+					tmpbuf[--len] = '\0';
+				if (len && line[len - 1] == '\r')
+					tmpbuf[--len] = '\0';
+				line_crlf = tmpbuf = append_to_string(tmpbuf, "\r\n");
 			}
 
 			while (*line_crlf) {
@@ -158,6 +155,7 @@ rfc1521_encode(
 					pattern = 0;
 				}
 			}
+			FreeIfNeeded(tmpbuf);
 		}
 	} else if (e == 'q') {
 		char *l;
@@ -284,7 +282,7 @@ put_rest(
 				*max_line_len = LEN;
 			else
 				*max_line_len <<= 1;
-			*line = my_realloc(*line, *max_line_len);
+			*line = my_realloc(*line, *max_line_len + 1);
 		}
 		(*line)[put_chars++] = c;
 	}
@@ -357,7 +355,7 @@ read_decoded_base64_line(
 	 */
 	if (*max_line_len == 0) {
 		*max_line_len = LEN;
-		*line = my_malloc(*max_line_len);
+		*line = my_malloc(*max_line_len + 1);
 	}
 
 	/*
@@ -391,7 +389,7 @@ read_decoded_base64_line(
 			 */
 			if (put_chars > (int) *max_line_len - 2) {
 				*max_line_len <<= 1;
-				*line = my_realloc(*line, *max_line_len);
+				*line = my_realloc(*line, *max_line_len + 1);
 			}
 			(*line)[put_chars++] = '\n';
 			(*line)[put_chars] = '\0';
@@ -415,7 +413,7 @@ read_decoded_base64_line(
 	 */
 	if (put_chars > (int) *max_line_len - 2) {
 		*max_line_len <<= 1;
-		*line = my_realloc(*line, *max_line_len);
+		*line = my_realloc(*line, *max_line_len + 1);
 	}
 	if ((put_chars == 0) || ((*line)[put_chars - 1] != '\n'))
 			(*line)[put_chars++] = '\n';
@@ -522,12 +520,12 @@ read_decoded_qp_line(
 	} else	/* error in encoding: copy raw line */
 		ptr = buf;
 
-	if (*max_line_len < strlen(ptr) + 1) {
-		*max_line_len = strlen(ptr) + 1;
-		*line = my_realloc(*line, *max_line_len);
+	if (*max_line_len < strlen(ptr)) {
+		*max_line_len = strlen(ptr);
+		*line = my_realloc(*line, *max_line_len + 1);
 	}
 	strncpy(*line, ptr, *max_line_len);
-	(*line)[*max_line_len - 1] = '\0'; /* be sure to terminate string */
+	(*line)[*max_line_len] = '\0'; /* be sure to terminate string */
 	free(buf);
 	free(buf2);
 	return lines_read;

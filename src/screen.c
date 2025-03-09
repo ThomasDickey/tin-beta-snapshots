@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-05
+ *  Updated   : 2025-02-13
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -564,13 +564,12 @@ ring_bell(
 #ifdef USE_CURSES
 	if (!cmd_line)
 		beep();
-	else {
+	else
 #endif /* USE_CURSES */
-	my_fputc('\007', stdout);
-	my_flush();
-#ifdef USE_CURSES
+	{
+		my_fputc('\007', stdout);
+		my_flush();
 	}
-#endif /* USE_CURSES */
 }
 
 

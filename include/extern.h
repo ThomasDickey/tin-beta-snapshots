@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-07
+ *  Updated   : 2025-02-17
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>
@@ -465,6 +465,7 @@ extern constext *txt_strip_bogus_type[];
 extern constext *txt_threading[];
 extern constext *txt_thread_score_type[];
 extern constext *txt_trim_article_body_options[];
+extern constext *txt_verbatim_handling_options[];
 extern constext *txt_wildcard_type[];
 #if defined(NNTP_ABLE) && defined(HAVE_SELECT)
 	extern constext txt_abort_reading[];
@@ -629,6 +630,10 @@ extern constext txt_attrib_file_trim_art_body_5[];
 extern constext txt_attrib_file_trim_art_body_6[];
 extern constext txt_attrib_file_trim_art_body_7[];
 extern constext txt_attrib_file_verbatim_handling[];
+extern constext txt_attrib_file_verbatim_handling_0[];
+extern constext txt_attrib_file_verbatim_handling_1[];
+extern constext txt_attrib_file_verbatim_handling_2[];
+extern constext txt_attrib_file_verbatim_handling_3[];
 #ifdef HAVE_COLOR
 	extern constext txt_attrib_file_extquote_handling[];
 #endif /* HAVE_COLOR */
@@ -1687,6 +1692,7 @@ extern constext txt_uue_incomplete[];
 #endif /* NNTP_ABLE && NNTPS_ABLE */
 extern constext txt_val_out_of_range_ignored[];
 extern constext txt_val_out_of_range_reset[];
+extern constext txt_verbatim_block_hidden[];
 extern constext txt_view_attachment[];
 extern constext *txt_warn_art_line_too_long_sp[];
 extern constext txt_warn_article_unchanged[];

@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2025-01-20
+ *  Updated   : 2025-02-27
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
@@ -672,7 +672,7 @@ wexpand_tab(
 
 char *
 expand_tab(
-	const char *str,
+	char *str,
 	size_t tab_width)
 {
 	char *buf = my_calloc(1, LEN);
@@ -883,13 +883,11 @@ char2wchar_t(
 		if ((len = mbstowcs(NULL, test, 0)) == (size_t) (-1))
 			test[--pos] = '?';
 	}
-	/* shouldn't happen anymore */
-	if (len == (size_t) (-1)) {
+
+	if ((len = mbstowcs(NULL, test, 0)) == (size_t) (-1)) {
 		free(test);
 		return NULL;
 	}
-
-	/* if ((len = mbstowcs(NULL, test, 0) == (size_t) (-1)) { free(test); return NULL; } */
 	wstr = my_calloc(len + 1, sizeof(wchar_t));
 	/* pos = */ mbstowcs(wstr, test, len);
 	/* wstr[pos == (size_t) (-1) ? 0 : pos] = '\0'; */
@@ -1744,7 +1742,11 @@ parse_format_string(
 				/* Article marks */
 				if ((cCOLS > min_cols && cCOLS < max_cols) && !(flags & ART_MARKS) && (signal_context == cGroup || signal_context == cThread)) {
 					flags |= ART_MARKS;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					cnt += (art_mark_width + 2);
+#else
+					cnt += 3;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				} else
 					out -= 2;
 				break;
@@ -2066,6 +2068,7 @@ s2i(
 
 	errno = 0;
 
+	/* allow 0[xX]n for hex, leading 0 is required */
 	if ((hex = strpbrk(s, "xX")) != NULL && hex > s && *(hex - 1) == '0')
 		res = strtol(s, &end, 16);
 	else
@@ -2081,7 +2084,7 @@ s2i(
 		errno = ERANGE;
 	}
 
-	if (s == end) {
+	if (s == end || min > max) {
 		res = 0;
 		errno = EINVAL;
 	}

@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-01-26
+ *  Updated   : 2025-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -162,6 +162,12 @@ static t_help_page config_help_page[] = {
 	{ txt_help_config_select, CONFIG_SELECT },
 	{ txt_help_config_toggle_attrib, CONFIG_TOGGLE_ATTRIB },
 	{ txt_help_config_scope_menu, CONFIG_SCOPE_MENU },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_disp, NOT_ASSIGNED },
+#ifdef HAVE_COLOR
+	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
+#endif /* HAVE_COLOR */
+	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_select_quit, GLOBAL_QUIT },

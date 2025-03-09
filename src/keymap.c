@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2025-01-26
+ *  Updated   : 2025-02-25
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2025 Dirk Nimmich <nimmich@muenster.de>
@@ -639,10 +639,10 @@ process_keys(
 		 * SPACE -> ' '
 		 */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (wcslen(wkeydef) > 1) {
+		if (wcslen(wkeydef) > 1)
 			switch (wkeydef[0])	/* Only test 1st char - crude but effective */
 #else
-		if (strlen(keydef) > 1) {
+		if (strlen(keydef) > 1)
 			switch (keydef[0])	/* Only test 1st char - crude but effective */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			{
@@ -678,7 +678,7 @@ process_keys(
 					error = TRUE;
 					break;
 			}
-		} else {
+		else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			if (iswdigit((wint_t) (key = wkeydef[0])))
 #else
@@ -2032,6 +2032,7 @@ process_mapping(
 			if (STRCMPEQ(keyname, "ToggleInfoLastLine")) {
 				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &attachment_keys);
 				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &group_keys);
+				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &option_menu_keys);
 				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &page_keys);
 				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &select_keys);
 				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &thread_keys);

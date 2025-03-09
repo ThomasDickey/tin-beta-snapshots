@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2025-02-05
+ *  Updated   : 2025-02-26
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
@@ -91,11 +91,11 @@ extern void write_attributes_file(const char *file);
 extern char *convert_to_printable(char *buf, t_bool keep_tab);
 #ifdef CHARSET_CONVERSION
 #	ifdef USE_ICU_UCSDET
-	extern char *guess_charset(const char *sample, int32_t confidence);
+		extern char *guess_charset(const char *sample, int32_t confidence);
 #	endif /* USE_ICU_UCSDET */
+	extern int charset_name_to_num(const char *charset);
 #endif /* CHARSET_CONVERSION */
 extern t_bool charset_unsupported(const char *charset);
-extern int charset_name_to_num(const char *charset);
 extern t_bool is_art_tex_encoded(FILE *fp);
 extern void convert_iso2asc(char *iso, char **asc_buffer, size_t *max_line_len, int t);
 extern void convert_tex2iso(char *from, char *to);
@@ -187,9 +187,6 @@ extern void word_highlight_string(int row, int col, int size, int color);
 	extern void debug_print_filters(void);
 	extern void debug_print_header(struct t_article *s);
 	extern void debug_print_malloc(t_bool is_malloc, const char *xfile, int line, size_t size);
-#	ifdef NNTP_ABLE
-	extern const char *logtime(void);
-#	endif /* NNTP_ABLE */
 #endif /* DEBUG */
 
 /* envarg.c */
@@ -365,6 +362,7 @@ extern char *split_mailbox_list(char *from);
 extern const char *eat_re(char *s, t_bool eat_was);
 extern const char *get_val(const char *env, const char *def);
 extern const char *gnksa_strerror(int errcode);
+extern const char *logtime(void);
 extern int gnksa_check_from(const char *from);
 extern int gnksa_split_from(const char *from, char *address, char *realname, int *addrtype);
 extern int get_initials(struct t_article *art, char *s, int maxsize);
@@ -767,7 +765,7 @@ extern int my_toupper(int);
 #else
 	extern char *abbr_groupname(const char *grpname, size_t len);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-extern char *expand_tab(const char *str, size_t tab_width);
+extern char *expand_tab(char *str, size_t tab_width);
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 	extern char *render_bidi(const char *str, t_bool *is_rtl);
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */

@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2025-02-06
+ *  Updated   : 2025-02-25
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2025 Michael Bienia <michael@vorlon.ping.de>
@@ -315,7 +315,7 @@ option_is_visible(
 			return curr_scope ? FALSE : (tinrc.word_highlight && tinrc.use_color);
 
 		case OPT_COL_VERBATIM:
-			return curr_scope ? FALSE : (tinrc.verbatim_handling && tinrc.use_color);
+			return curr_scope ? FALSE : (tinrc.verbatim_handling > 0 && tinrc.use_color);
 
 		case OPT_EXTQUOTE_REGEX:
 			return curr_scope ? FALSE : (tinrc.extquote_handling && tinrc.use_color);
@@ -350,7 +350,7 @@ option_is_visible(
 
 		case OPT_VERBATIM_BEGIN_REGEX:
 		case OPT_VERBATIM_END_REGEX:
-			return curr_scope ? FALSE : tinrc.verbatim_handling;
+			return curr_scope ? FALSE : tinrc.verbatim_handling > 0;
 
 #ifndef USE_CURSES
 		case OPT_STRIP_BLANKS:
@@ -862,7 +862,8 @@ highlight_option(
 {
 	refresh_config_page(option); /* to keep refresh_config_page():last_option up-to-date */
 	draw_arrow_mark(option_row(option));
-	info_message("%s", _(option_table[option].txt->opt));
+	if (tinrc.info_in_last_line)
+		info_message("%s", _(option_table[option].txt->opt));
 }
 
 
@@ -938,6 +939,7 @@ show_config_page(
 	void)
 {
 	enum option_enum i;
+	int prev_mark_offset = mark_offset;
 
 	signal_context = curr_scope ? cAttrib : cConfig;
 	mark_offset = 0;
@@ -956,6 +958,7 @@ show_config_page(
 	show_menu_help(txt_select_config_file_option);
 	my_flush();
 	stow_cursor();
+	mark_offset = prev_mark_offset;
 }
 
 
@@ -1157,8 +1160,8 @@ config_page(
 
 						if (changed & SCORE_OPTS) {
 							unfilter_articles(curr_group);
-							read_filter_file(filter_file);
-							filtered = filter_articles(curr_group);
+							if (read_filter_file(filter_file))
+								filtered = filter_articles(curr_group);
 						}
 						/*
 						 * If the sorting/threading strategy of threads or filter options have
@@ -1427,6 +1430,12 @@ config_page(
 				break;
 #endif /* HAVE_COLOR */
 
+			case GLOBAL_TOGGLE_INFO_LAST_LINE:
+				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
+				clear_message();
+				highlight_option(option);
+				break;
+
 			default:
 				info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, option_menu_keys));
 				break;
@@ -1631,19 +1640,6 @@ config_page(
 								UPDATE_BOOL_ATTRIBUTES(wrap_on_next_unread);
 							break;
 
-						case OPT_VERBATIM_HANDLING:
-							/*
-							 * option toggles visibility of other
-							 * options -> needs redraw_screen()
-							 */
-							if (prompt_option_on_off(option)) {
-								UPDATE_BOOL_ATTRIBUTES(verbatim_handling);
-								set_last_option_on_screen(first_option_on_screen);
-								redraw_screen(option);
-								changed |= DISPLAY_OPTS;
-							}
-							break;
-
 						/* show mini help menu */
 						case OPT_BEGINNER_LEVEL:
 							if (prompt_option_on_off(option)) {
@@ -1715,6 +1711,7 @@ config_page(
 							if (prompt_option_on_off(option)) {
 								if ((show_description = tinrc.show_description)) /* force reread of newgroups file */
 									read_descriptions(FALSE);
+								need_parse_fmt |= SELECT_LEVEL;
 								changed |= MISC_OPTS;
 							}
 							break;
@@ -1953,13 +1950,6 @@ config_page(
 							break;
 #endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
-						case OPT_ATTRIB_VERBATIM_HANDLING:
-							if (prompt_option_on_off(option)) {
-								SET_BOOL_ATTRIBUTE(verbatim_handling, tinrc.attrib_verbatim_handling);
-								changed |= DISPLAY_OPTS;
-							}
-							break;
-
 						case OPT_ATTRIB_WRAP_ON_NEXT_UNREAD:
 							if (prompt_option_on_off(option))
 								SET_BOOL_ATTRIBUTE(wrap_on_next_unread, tinrc.attrib_wrap_on_next_unread);
@@ -2086,6 +2076,19 @@ config_page(
 							}
 							break;
 
+						case OPT_VERBATIM_HANDLING:
+							/*
+							 * option toggles visibility of other
+							 * options -> needs redraw_screen()
+							 */
+							if (prompt_option_list(option)) {
+								UPDATE_INT_ATTRIBUTES(verbatim_handling);
+								set_last_option_on_screen(first_option_on_screen);
+								redraw_screen(option);
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
 						case OPT_POST_PROCESS_TYPE:
 							if (prompt_option_list(option))
 								UPDATE_INT_ATTRIBUTES(post_process_type);
@@ -2125,7 +2128,8 @@ config_page(
 								}
 #endif /* CHARSET_CONVERSION */
 								UPDATE_INT_ATTRIBUTES(mail_mime_encoding);
-								/* do not use 8 bit headers if mime encoding is not 8bit */
+								/* do not use 8 bit headers in email if mime encoding is not 8bit */
+								/* coverity[copy_paste_error:SUPPRESS] */
 								if (tinrc.mail_mime_encoding != MIME_ENCODING_8BIT) {
 									tinrc.mail_8bit_header = FALSE;
 									repaint_option(OPT_MAIL_8BIT_HEADER);
@@ -2161,7 +2165,7 @@ config_page(
 								}
 #endif /* CHARSET_CONVERSION */
 								UPDATE_INT_ATTRIBUTES(post_mime_encoding);
-								/* do not use 8 bit headers if mime encoding is not 8bit */
+								/* do not use 8 bit headers in articles if mime encoding is not 8bit */
 								if (tinrc.post_mime_encoding != MIME_ENCODING_8BIT) {
 									tinrc.post_8bit_header = FALSE;
 									repaint_option(OPT_POST_8BIT_HEADER);
@@ -2288,6 +2292,13 @@ config_page(
 						case OPT_ATTRIB_TRIM_ARTICLE_BODY:
 							if (prompt_option_list(option)) {
 								SET_NUM_ATTRIBUTE(trim_article_body, tinrc.attrib_trim_article_body);
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
+						case OPT_ATTRIB_VERBATIM_HANDLING:
+							if (prompt_option_list(option)) {
+								SET_NUM_ATTRIBUTE(verbatim_handling, tinrc.attrib_verbatim_handling);
 								changed |= DISPLAY_OPTS;
 							}
 							break;
@@ -2521,13 +2532,11 @@ config_page(
 							if (prompt_option_string(option)) {
 								regex_cache_destroy(&strip_was_regex);
 								if (!*tinrc.strip_was_regex) {
-									if (regex_use_utf8()) {
-										free(tinrc.strip_was_regex);
+									free(tinrc.strip_was_regex);
+									if (regex_use_utf8())
 										tinrc.strip_was_regex = my_strdup(DEFAULT_U8_STRIP_WAS_REGEX);
-									} else {
-										free(tinrc.strip_was_regex);
+									else
 										tinrc.strip_was_regex = my_strdup(DEFAULT_STRIP_WAS_REGEX);
-									}
 								}
 								compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);
 								changed |= MISC_OPTS;
@@ -2962,7 +2971,7 @@ static void
 show_scope_page(
 	void)
 {
-	int i;
+	int i, prev_mark_offset = mark_offset;
 
 	signal_context = cScope;
 	currmenu = &scopemenu;
@@ -2988,6 +2997,7 @@ show_scope_page(
 	}
 
 	draw_scope_arrow();
+	mark_offset = prev_mark_offset;
 }
 
 

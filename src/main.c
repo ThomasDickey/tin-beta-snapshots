@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-01-30
+ *  Updated   : 2025-03-08
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -120,9 +120,9 @@ main(
 	 */
 #ifndef NO_LOCALE
 	{
-		const char *p;
+		const char *p = tin_nl_langinfo(CODESET);
 
-		if ((p = tin_nl_langinfo(CODESET)) != NULL) {
+		if (*p != '\0') {
 			/*
 			 * TODO: also "exclude" the other US-ASCII aliases
 			 *       csASCII, cp367, IBM367, ISO646-US, ...
@@ -1065,6 +1065,7 @@ read_cmd_line_options(
 					case EINVAL: /* TODO: extra error message */
 					case ERANGE:
 						error_message(0, _(txt_val_out_of_range_reset), "-t", (int) strtol(optarg, NULL, 10), TIN_NNTP_TIMEOUT_MAX);
+						cmdline.nntp_timeout = 0;
 						if (!batch_mode)
 							sleep(2);
 						break;

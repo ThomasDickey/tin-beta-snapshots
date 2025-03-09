@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2025-01-19
+.\" Updated   : 2025-02-18
 .\" Notes     : needs a some work, see TODOs
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "December 24th, 2024" 2.6.4 "Usenet newsreader"
+.TH TIN 5 2025\-02\-17 2.6.5 "Usenet newsreader"
 
 .SH NOMBRE
 tin, rtin \- related files
@@ -64,7 +64,7 @@ character, "\(rs".
 Each individual mailcap entry consists of a content\-type specification, a
 command to execute, and (possibly) a set of optional "flag" values.
 .sp
-The "type" field is simply any legal content type name. It is the string
+The "type" field is simply any valid content type name. It is the string
 that will be matched against the \*(rqContent\-Type:\*(rq header to decide if this
 is the mailcap entry that matches the current message. Additionally, the
 type field may specify a subtype or a wildcard to match all subtypes.
@@ -140,7 +140,7 @@ exclusively to the view\-command because in some circumstances it may not be
 possible for such programs to tell whether or not they are on interactive
 terminals.) The needsterminal command should be assumed to apply to the
 compose and edit commands, too, if they exist. Note that this is NOT a test
-\- it is a requirement for the environment in which the program will be
+\(en it is a requirement for the environment in which the program will be
 executed, and should typically cause the creation of a terminal window when
 not executed on either a real terminal or a terminal window.
 .TP 
@@ -157,7 +157,7 @@ quoted, that describes the type of data, to be used optionally by mail
 readers that wish to describe the data before offering to display it.
 .TP 
 \fBtextualnewlines\fP
-The "textualnewlines" field, if set to any non\-zero value, indicates that
+The "textualnewlines" field, if set to any nonzero value, indicates that
 this type of data is line\-oriented and that, if encoded in base64, all
 newlines should be converted to canonical form (CRLF) before encoding, and
 will be in that form after decoding. In general, this field is needed only
@@ -215,7 +215,6 @@ needsterminal
 .RE
 .RE
 .PP
-
 \fI/etc/nntpserver\fP
 .sp
 .RS
@@ -224,7 +223,6 @@ default NNTP\-server to read news from if not reading from the local spool.
 the default server given at compile time has lower priority.
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret\fP
 .sp
 .RS
@@ -233,7 +231,6 @@ it. An empty secret file disables the cancel\-lock creation in that
 case. This file should be readable only by the user.
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.mime.types\fP
 .br
 \fI/etc/mime.types\fP
@@ -244,7 +241,6 @@ case. This file should be readable only by the user.
 mime type / filename extension pairs
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsauth\fP
 .sp
 .RS
@@ -278,17 +274,16 @@ news.example.com "top secret" james.bond@example.com
 .RE
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP
 .sp
 .RS
-"\fInewsgroup\fP\fIflag\fP [\fIarticle\fP[,\fIarticle\fP | \-\fIarticle\fP]...]" lines.
+"\fInewsgroupflag\fP [\fIarticle\fP[,\fIarticle\fP | \-\fIarticle\fP]...]" lines.
 .TP 
 \fBnewsgroup\fP
 the name of the newsgroup.
 .TP 
 \fBflag\fP
-a flag indicating if the group is subscribed ':' or not '!\&'.
+a flag indicating if the group is subscribed ':' or not '!'.
 .TP 
 \fBarticle\fP
 range of already read articles from that group; numbers separated by commas
@@ -299,15 +294,14 @@ Example:
 .RS
 # sample .newsrc file
 .br
-news.software.b! 1\-666,669
+news.software.b! 1\(en666,669
 .br
-news.software.nntp: 1\-13245,13247,13249
+news.software.nntp: 1\(en13245,13247,13249
 .br
-news.software.readers: 1\-19567,19571\-19597
+news.software.readers: 1\(en19567,19571\(en19597
 .RE
 .RE
 .PP
-
 .nf
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/.oldnewsrc\fP
 .fi
@@ -316,7 +310,6 @@ news.software.readers: 1\-19567,19571\-19597
 backup of \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.signature\fP
 .br
 \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP
@@ -325,44 +318,38 @@ backup of \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP
 signature
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.sigfixed\fP
 .sp
 .RS
 fixed part of a randomly generated signature, this will be added first
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/.inputhistory\fP
 .sp
 .RS
 history of last used strings
 .RE
 .PP
-
 \fI${TIN_INDEX_MAILDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.mail/\fP
 .sp
 .RS
 mailgroups index files
 .RE
 .PP
-
 .nf
-\fI${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news${NNTPSERVER:+"\-$NNTPSERVER"}/\fP
+\fI${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/\:.tin"}/\:.news${NNTPSERVER:+"\-$NNTPSERVER"}/\fP
 .fi
 .sp
 .RS
 newsgroups index files
 .RE
 .PP
-
 \fI${TIN_INDEX_SAVEDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.save/\fP
 .sp
 .RS
 saved newsgroups index files
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail\fP
 .sp
 .RS
@@ -396,14 +383,12 @@ This allows access to the 'inbox' and 'outbox' folders of user foo.  They
 are accessed via /home/foo/Mail/inbox and /home/foo/Mail/outbox
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/active.save\fP
 .sp
 .RS
 active file of user's saved newsgroups, used by \fBtin \-R\fP.
 .RE
 .PP
-
 .\" tin uses inns old (pre 2.x) Path convention.
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths (/news/etc/)
@@ -696,7 +681,7 @@ with \-\-disable\-mime\-strict\-charset.
 \fBundeclared_cs_guess\fP
 Guess charset for (broken) articles without MIME charset declaration.  This
 attribute works only on systems with working \fB\%iconv\fP(3)  or \fB\%ucnv_*\fP()
-and \fB\%ucsdet_getName()\fP from libicui18n. It has no effect if
+and \fB\%ucsdet_getName\fP()  from libicui18n. It has no effect if
 undeclared_charset is also set.
 .TP 
 Example:
@@ -743,7 +728,6 @@ undeclared_charset=ISO\-2022\-JP\-2
 .RE
 .RE
 .PP
-
 .\" TODO: add missing descriptions and explain things in detail.
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fP
 .sp
@@ -870,7 +854,7 @@ comment=tind, ktin or cdtin as hot
 group=*
 case=1
 score=hot
-subj=\eb(cd|[rk]?)?tin(d|pre)?[\-.0\-9]*\eb
+subj=\eb(cd|[rk]?)?tin(d|pre)?[\-.0\(en9]*\eb
 
 comment=downscore postings in nsr from google based on
 comment=message\-id or path, if both hit they end up with
@@ -878,18 +862,18 @@ comment=a score of \-66 which is enough to mark them killed
 group=news.software.readers
 case=1
 score=\-33
-path=\e.googlegroups\e.com!not\-for\-mail$
-msgid_only=@googlegroups\e.com>
+path=.googlegroups.com!not\-for\-mail$
+msgid_only=@googlegroups.com>
 .fi
 .RE
 .RE
 .PP
-
-.nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}\fP
-.br
-\fI/etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:+".${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}"}\fP
-.fi
+.\".nf
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\:\-"${LC_CTYPE:\:\-"$LANG"}"}"}:\:+".${LC_ALL:\:\-"${LC_MESSAGES:\:\-"${LC_CTYPE:\:\-"$LANG"}"}"}"}\fP
+.sp 1v
+.\".fi
+\fI/etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:\:\\fR
++".${LC_ALL:\:\-"${LC_MESSAGES:\:\-"${LC_CTYPE:\:\-"$LANG"}"}"}"}
 .sp
 .RS
 Keymap\-file, containing "\fIkeyname\fP \fIvalue\fP \fI[value]\fP" pairs separated by
@@ -1132,7 +1116,6 @@ is unassigned.
 .fi
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups\fP
 .sp
 .RS
@@ -1147,7 +1130,6 @@ is the name of the newsgroup
 is a short single\-line description of the group
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP
 .sp
 .RS
@@ -1179,7 +1161,7 @@ news.tin.org .newsrc\-tin.org tinorg
 .br
 news.example.org /tmp/nrc\-ex example ex
 .br
-[::1]:1119 /tmp/localhost6\-1119 lh6
+[::1]:1119 /tmp/localhost6\(en1119 lh6
 .br
 # catch all rules should go last
 .br
@@ -1191,7 +1173,6 @@ news.example.org /tmp/nrc\-ex example ex
 .RE
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/posted\fP
 .sp
 .RS
@@ -1204,7 +1185,6 @@ the message, a group name or a mail address the message was sent to, the
 subject of the message and optionally the messages \*(rqMessage\-ID\*(rq if known.
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/Mail/posted\fP
 .sp
 .RS
@@ -1212,14 +1192,12 @@ Copy of all posted articles in \fB\%mbox\fP(5)  format. The filename can be
 changed by setting \fBposted_articles_file\fP.
 .RE
 .PP
-
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/postponed.articles\fP
 .sp
 .RS
 Pool of postponed articles. This file is in \fB\%mbox\fP(5)  format.
 .RE
 .PP
-
 .nf
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/motd\fP
 .fi
@@ -1230,7 +1208,6 @@ automatically created on startup except when using the \*(rq\fB\-Q\fP\*(rq
 command\-line option and is unlinked on exit.
 .RE
 .PP
-
 .nf
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog\fP
 .fi
@@ -1240,7 +1217,6 @@ File to store $\fBNNTPSERVER\fP and $\fBNNTPPORT\fP related info\- and
 error\-messages. The file is overwritten on startup and meant for debugging.
 .RE
 .PP
-
 .nf
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups\fP
 .fi
@@ -1259,7 +1235,6 @@ is the name of the newsgroup
 is a short single\-line description of the group
 .RE
 .PP
-
 .nf
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc\fP
 .fi
@@ -1281,7 +1256,6 @@ Internal timestamp used by \fB\%tin\fP(1)  to keep track of new newsgroups on
 the server.
 .RE
 .PP
-
 .\" tin uses inns old (pre 2.x) Path convention.
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths (/news/etc/)
@@ -1302,8 +1276,8 @@ users who have no private tinrc yet (see also \fB/etc/tin/tin.defaults\fP).
 .TP 
 \fBabbreviate_groupname\fP
 If ON abbreviate long newsgroup names at group selection level and article
-level (if necessary) like this: news.software.readers \->
-n.software.readers \-> n.s.readers \-> n.s.r.  Default is OFF.
+level (if necessary) like this: news.software.readers \(->
+n.software.readers \(-> n.s.readers \(-> n.s.r.  Default is OFF.
 .TP 
 \fBadd_posted_to_filter\fP
 If ON add posted articles which start a new thread to filter for
@@ -1610,8 +1584,8 @@ Do not break long lines inside a word. This applies to the body except for
 verbatim blocks. See also \fBwrap_column\fP. Default is OFF.
 .TP 
 \fBdraw_arrow\fP
-Allows groups/articles to be selected by an arrow '\->' if set ON or by a
-highlighted bar if set OFF. Default is OFF.
+Allows groups/articles to be selected by an arrow '\(->' if set ON or by
+a highlighted bar if set OFF. Default is OFF.
 .TP 
 \fBeditor_format\fP
 The format string used to create the editor start command with parameters.
@@ -1725,7 +1699,7 @@ articles simply does not get displayed at all.
 .RE
 .TP 
 \fBmail_8bit_header\fP
-Allows 8bit characters unencoded in the header of mail message. Default is
+Allows 8\-bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set to
 8bit. Leaving it OFF is safe for most users and compliant to Internet Mail
 Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP). Default is OFF.
@@ -1911,14 +1885,14 @@ If ON put cursor at first unread article in group otherwise at last
 article. Default is ON.
 .TP 
 \fBpost_8bit_header\fP
-Allows 8bit characters unencoded in the header of a news article, if set
+Allows 8\-bit characters unencoded in the header of a news article, if set
 this also disables the generation of MIME\-headers when they are usually
 required. Default is OFF. Only enacted if \fBpost_mime_encoding\fP is also set
-to 8bit. In a number of local hierarchies where 8bit characters are used,
-using unencoded (raw)  8bit characters in header is acceptable and sometimes
-even recommended so that you need to check the convention adopted in the
-local hierarchy of your interest to determine what to do with this and
-\fBpost_mime_encoding\fP.
+to 8bit. In a number of local hierarchies where 8\-bit characters are used,
+using unencoded (raw)  8\-bit characters in header is acceptable and
+sometimes even recommended so that you need to check the convention adopted
+in the local hierarchy of your interest to determine what to do with this
+and \fBpost_mime_encoding\fP.
 .TP 
 \fBpost_mime_encoding\fP
 MIME encoding of the body in news message, if necessary. (8bit, base64,
@@ -2385,8 +2359,8 @@ an \fB\%xterm\fP(1x)  and \fB\%slrnface\fP(1)  must be in your $\fBPATH\fP. Defa
 is OFF.
 .TP 
 \fButf8_graphics\fP
-If ON use UTF\-8 characters for indicator ('\->'), thread/attachment tree
-and ellipsis ('...'). Default is OFF.
+If ON use UTF\-8 characters for indicator ('\(->'), thread/attachment
+tree and ellipsis ('...'). Default is OFF.
 .TP 
 \fBverbatim_begin_regex\fP
 A regular expression that \fB\%tin\fP(1)  will use to find the begin of a
@@ -2397,7 +2371,21 @@ A regular expression that \fB\%tin\fP(1)  will use to find the end of a
 verbatim block. Default is #v\-
 .TP 
 \fBverbatim_handling\fP
-If ON verbatim blocks will be detected. Default is ON.
+Allows you to select how \fB\%tin\fP(1)  treats verbatim blocks in article
+bodies.  Default is 1.
+.RS +1i
+.IP 0 3
+\fBDon't detect verbatim blocks\fP. Do nothing.
+.IP 1
+\fBDetect and show verbatim blocks\fP. Detect and show verbatim blocks,
+including begin and end marks.
+.IP 2
+\fBDetect, hide begin and end marks\fP. Detect and show verbatim blocks, hide
+begin and end marks.
+.IP 3
+\fBDon't show verbatim blocks\fP. Detect verbatim blocks and hide them
+completely.
+.RE
 .TP 
 \fBwildcard\fP
 Allows you to select how \fB\%tin\fP(1)  matches strings. The default is 0 and
@@ -2448,7 +2436,6 @@ Format is the same as for \fBnews_quote_format\fP, this is used when answering
 to a crossposting to several groups with no \*(rqFollowup\-To:\*(rq set.
 .RE
 .PP
-
 \fI/etc/tin/tin.defaults\fP
 .sp
 .RS
@@ -2543,7 +2530,6 @@ resides in \fInewslibdir\fP and is named \fIsubscriptions\fP, so you only have t
 change this setting if your configuration differs.
 .RE
 .PP
-
 \fI/usr/local/share/locale/$LC_MESSAGES/LC_MESSAGES/tin.mo\fP
 .sp
 .RS
@@ -2551,7 +2537,6 @@ traducido en idiomas especificados dentro de $\fBLC_ALL\fP, $\fBLC_MESSAGES\fP o
 $\fBLANG\fP
 .RE
 .PP
-
 .\" tin uses inns old (pre 2.x) Path convention.
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths
@@ -2614,7 +2599,6 @@ you read news via NNTP, \fB\%tin\fP(1)  uses the LIST (\fBRFC\%3977\fP) or LIST
 COUNTS (\fBRFC\%6048\fP) command instead.
 .RE
 .PP
-
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/active.times\fP
 .sp
 .RS
@@ -2639,7 +2623,6 @@ you read news via NNTP, \fB\%tin\fP(1)  uses the NEWGROUPS (\fBRFC\%3977\fP)
 command instead.
 .RE
 .PP
-
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups\fP
 .sp
 .RS
@@ -2660,7 +2643,6 @@ you read news via NNTP, \fB\%tin\fP(1)  uses the LIST NEWSGROUPS (\fBRFC\%3977\f
 command instead.
 .RE
 .PP
-
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/organization\fP
 .sp
 .RS
@@ -2668,7 +2650,6 @@ This file might hold a default organization to be used in the
 \&\*(rqOrganization:\*(rq header. $\fBORGANIZATION\fP has a higher priority if set.
 .RE
 .PP
-
 .\" is the Path correct? or is it /news/etc/overview.fmt
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/overview.fmt\fP
 .sp
@@ -2681,7 +2662,6 @@ read directly from the local spool, if you read news via NNTP, \fB\%tin\fP(1)
 uses the LIST OVERVIEW.FMT (\fBRFC\%3977\fP) command instead.
 .RE
 .PP
-
 .\" is the Path correct? or is it /news/etc/subscriptions
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}/subscriptions\fP
 .sp

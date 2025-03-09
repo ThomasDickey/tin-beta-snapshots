@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-12-23
+ *  Updated   : 2025-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -637,8 +637,8 @@ thread_page(
 					if (invoke_editor(filter_file, filter_file_offset, NULL)) {
 						old_artnum = arts[find_response(thread_basenote, thdmenu.curr)].artnum;
 						unfilter_articles(group);
-						(void) read_filter_file(filter_file);
-						filter_articles(group);
+						if (read_filter_file(filter_file))
+							filter_articles(group);
 						make_threads(group, FALSE);
 						if ((n = find_artnum(old_artnum)) == -1 || which_thread(n) == -1) { /* We have lost the thread */
 							ret_code = GRP_KILLED;
@@ -970,7 +970,8 @@ thread_page(
 
 			case GLOBAL_TOGGLE_INFO_LAST_LINE:		/* display subject in last line */
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
-				show_thread_page();
+				clear_message();
+				draw_thread_arrow();
 				break;
 
 			default:

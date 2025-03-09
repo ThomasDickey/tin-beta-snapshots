@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-05
+ *  Updated   : 2025-02-25
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -472,7 +472,7 @@ static void
 show_post_hist_page(
 	void)
 {
-	int i;
+	int i, prev_mark_offset = mark_offset;
 
 	signal_context = cPOSTED;
 	currmenu = &phmenu;
@@ -491,6 +491,7 @@ show_post_hist_page(
 	show_mini_help(POSTED_LEVEL);
 
 	draw_post_hist_arrow();
+	mark_offset = prev_mark_offset;
 }
 
 
@@ -603,7 +604,8 @@ post_hist_page(
 
 			case GLOBAL_TOGGLE_INFO_LAST_LINE:
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
-				show_post_hist_page();
+				clear_message();
+				draw_post_hist_arrow();
 				break;
 
 			case GLOBAL_TOGGLE_INVERSE_VIDEO:

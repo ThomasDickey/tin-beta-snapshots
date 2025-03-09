@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2025-01-31
+ *  Updated   : 2025-02-26
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2025 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -68,7 +68,7 @@
 
 static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 {
-	/* universal table for many languages */
+	/* 0 - universal table for many languages */
 	{
 	" ","!","c",SUB,SUB,"Y","|",SUB,"\"","(c)","a","<<","-","-","(R)","-",
 	" ","+/-","2","3","'","u","P",".",",","1","o",">>"," 1/4"," 1/2"," 3/4","?",
@@ -77,7 +77,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"a","a","a","a","a","a","ae","c","e","e","e","e","i","i","i","i",
 	"d","n","o","o","o","o","o",":","o","u","u","u","u","y","th","y"
 	},
-	/* single-spacing universal table */
+	/* 1 - single-spacing universal table */
 	{
 	" ","!","c",SUB,SUB,"Y","|",SUB,"\"","c","a","<","-","-","R","-",
 	" ",SUB,"2","3","'","u","P",".",",","1","o",">",SUB,SUB,SUB,"?",
@@ -86,7 +86,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"a","a","a","a","a","a","a","c","e","e","e","e","i","i","i","i",
 	"d","n","o","o","o","o","o",":","o","u","u","u","u","y","t","y"
 	},
-	/* table for Danish, Dutch, German, Norwegian and Swedish */
+	/* 2 - table for Danish, Dutch, German, Norwegian and Swedish */
 	{
 	" ","!","c",SUB,SUB,"Y","|",SUB,"\"","(c)","a","<<","-","-","(R)","-",
 	" ","+/-","2","3","'","u","P",".",",","1","o",">>"," 1/4"," 1/2"," 3/4","?",
@@ -95,7 +95,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"a","a","a","a","ae","aa","ae","c","e","e","e","e","i","i","i","i",
 	"d","n","o","o","o","o","oe",":","oe","u","u","u","ue","y","th","ij"
 	},
-	/* table for Danish, Finnish, Norwegian and Swedish, ISO 646 variant */
+	/* 3 - table for Danish, Finnish, Norwegian and Swedish, ISO 646 variant */
 	{
 	" ","!","c",SUB,"$","Y","|",SUB,"\"","(c)","a","<<","-","-","(R)","-",
 	" ","+/-","2","3","'","u","P",".",",","1","o",">>"," 1/4"," 1/2"," 3/4","?",
@@ -104,7 +104,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"a","a","a","a","{","}","{","c","e","`","e","e","i","i","i","i",
 	"d","n","o","o","o","o","|",":","|","u","u","u","~","y","th","y"
 	},
-	/* table with RFC 1345 codes in brackets */
+	/* 4 - table with RFC 1345 codes in brackets */
 	{
 	"[NS]","[!I]","[Ct]","[Pd]","[Cu]","[Ye]","[BB]","[SE]",
 	"[':]","[Co]","[-a]","[<<]","[NO]","[--]","[Rg]","['-]",
@@ -119,7 +119,7 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"[d-]","[n?]","[o!]","[o']","[o>]","[o?]","[o:]","[-:]",
 	"[o/]","[u!]","[u']","[u>]","[u:]","[y']","[th]","[y:]"
 	},
-	/* table for printers that allow overstriking with backspace */
+	/* 5 - table for printers that allow overstriking with backspace */
 	{
 	" ","!","c\b|","L\b-","o\bX","Y\b=","|",SUB,
 	"\"","(c)","a\b_","<<","-\b,","-","(R)","-",
@@ -134,21 +134,6 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 	"d\b-","n\b~","o\b`","o\b'","o\b^","o\b~","o\b\"","-\b:",
 	"o\b/","u\b`","u\b'","u\b^","u\b\"","y\b'","th","y\b\""
 	},
-	/* table for IBM PC character set (code page 437) */
-	{
-	"\377","\255","\233","\234",SUB,"\235","|","\25",
-	"\"","(c)","\246","\256","\252","-","(R)","-",
-	"\370","\361","\375","3","'","\346","\24","\371",
-	",","1","\247","\257","\254","\253"," 3/4","\250",
-	"A","A","A","A","\216","\217","\222","\200",
-	"E","\220","E","E","I","I","I","I",
-	"D","\245","O","O","O","O","\231","x",
-	"\355","U","U","U","\232","Y","T","\341",
-	"\205","\240","\203","a","\204","\206","\221","\207",
-	"\212","\202","\210","\211","\215","\241","\214","\213",
-	"d","\244","\225","\242","\223","o","\224","\366",
-	"\355","\227","\243","\226","\201","y","t","\230"
-	}
 };
 
 /*
@@ -205,7 +190,7 @@ convert_iso2asc(
 				if ((asc - *asc_buffer) >= (int) *max_line_len) {
 					int offset = (int) (asc - *asc_buffer);
 					*max_line_len += 64;
-					*asc_buffer = my_realloc(*asc_buffer, *max_line_len);
+					*asc_buffer = my_realloc(*asc_buffer, *max_line_len + 1);
 					asc = *asc_buffer + offset;
 				}
 				++a;
@@ -265,7 +250,7 @@ convert_iso2asc(
 		if ((asc - *asc_buffer) >= (int) *max_line_len) {
 			int offset = (int) (asc - *asc_buffer);
 			*max_line_len += 64;
-			*asc_buffer = my_realloc(*asc_buffer, *max_line_len);
+			*asc_buffer = my_realloc(*asc_buffer, *max_line_len + 1);
 			asc = *asc_buffer + offset;
 		}
 	}
@@ -293,24 +278,22 @@ convert_tex2iso(
 	 * code position as ISO-8859-1
 	 * DEC-MCS, Windows-1252
 	 */
-	if (
-		!strcasecmp( /* ensure not to also match ISO-8859-{11,12} */
+	if (iso2asc_supported >= 0 ||
+		/* ensure not to also match ISO-8859-{11,12} */
 #ifdef CHARSET_CONVERSION
-			tinrc.mm_local_charset
+		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-1")
 #else
-			tinrc.mm_charset
+		!strcasecmp(tinrc.mm_charset, "ISO-8859-1")
 #endif /* CHARSET_CONVERSION */
-			, "ISO-8859-1") ||
-		IS_LOCAL_CHARSET("ISO-8859-2") ||
-		IS_LOCAL_CHARSET("ISO-8859-3") ||
-		IS_LOCAL_CHARSET("ISO-8859-4") ||
-		IS_LOCAL_CHARSET("ISO-8859-9") ||
-		IS_LOCAL_CHARSET("ISO-8859-10") ||
-		IS_LOCAL_CHARSET("ISO-8859-13") ||
-		IS_LOCAL_CHARSET("ISO-8859-14") ||
-		IS_LOCAL_CHARSET("ISO-8859-15") ||
-		IS_LOCAL_CHARSET("ISO-8859-16") ||
-		iso2asc_supported >= 0) {
+		|| IS_LOCAL_CHARSET("ISO-8859-2")
+		|| IS_LOCAL_CHARSET("ISO-8859-3")
+		|| IS_LOCAL_CHARSET("ISO-8859-4")
+		|| IS_LOCAL_CHARSET("ISO-8859-9")
+		|| IS_LOCAL_CHARSET("ISO-8859-10")
+		|| IS_LOCAL_CHARSET("ISO-8859-13")
+		|| IS_LOCAL_CHARSET("ISO-8859-14")
+		|| IS_LOCAL_CHARSET("ISO-8859-15")
+		|| IS_LOCAL_CHARSET("ISO-8859-16")) {
 		tex_to[1] = tex_to[0] = "\344";	/* auml */
 		tex_to[3] = tex_to[2] = "\366";	/* ouml */
 		tex_to[5] = tex_to[4] = "\374";	/* uuml */
@@ -592,6 +575,7 @@ validate_charset(
 }
 
 
+#ifdef CHARSET_CONVERSION
 /*
  * return pos. of charset in txt_mime_charsets or -1 if not found
  */
@@ -611,3 +595,4 @@ charset_name_to_num(
 
 	return -1;
 }
+#endif /* CHARSET_CONVERSION */

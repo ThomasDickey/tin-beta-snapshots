@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2025-01-16
+ *  Updated   : 2025-03-03
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2025 Thomas Dickey <dickey@invisible-island.net>
@@ -181,6 +181,7 @@
 #	undef HAVE_NCURSES_TERM_H
 #	undef HAVE_NETDB_H
 #	undef HAVE_NETINET_IN_H
+#	undef HAVE_NETINET_TCP_H
 #	undef HAVE_NETLIB_H
 #	undef HAVE_NOMACROS_H		/* ncurses 4.1 */
 #	undef HAVE_PATHS_H
@@ -255,6 +256,7 @@
 #	undef HAVE_GETHOSTNAME
 #	undef HAVE_GETPEERNAME
 #	undef HAVE_GETSERVBYNAME
+#	undef HAVE_GETSOCKOPT
 #	undef HAVE_GETTIMEOFDAY
 #	undef HAVE_GETWD
 #	undef HAVE_GET_WCH
@@ -285,6 +287,7 @@
 #	undef HAVE_SELECT
 #	undef HAVE_SETENV
 #	undef HAVE_SETLOCALE
+#	undef HAVE_SETSOCKOPT
 #	undef HAVE_SETTZ
 #	undef HAVE_SETVBUF
 #	undef HAVE_SNPRINTF

@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-06
+ *  Updated   : 2025-02-20
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -367,6 +367,7 @@ struct t_config tinrc = {
 	THREAD_PERC_DEFAULT,	/* thread_perc */
 	THREAD_SCORE_MAX,		/* thread_score */
 	0,		/* trim_article_body */
+	VERBATIM_SHOW_ALL,		/* verbatim_handling */
 	0,		/* Default to wildmat, not regex */
 	2,		/* word_h_display_marks */
 	0,		/* wrap_column */
@@ -436,7 +437,6 @@ struct t_config tinrc = {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	FALSE,	/* utf8_graphics */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	TRUE,	/* verbatim_handling */
 #ifdef HAVE_COLOR
 	FALSE,	/* extquote_handling */
 #endif /* HAVE_COLOR */
@@ -501,6 +501,7 @@ struct t_config tinrc = {
 #	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
 	0,		/* attrib_trim_article_body */
+	VERBATIM_SHOW_ALL,	/* attrib_verbatim_handling */
 	0,		/* attrib_auto_cc_bcc */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* attrib_quick_kill_header */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* attrib_quick_select_header */
@@ -542,7 +543,6 @@ struct t_config tinrc = {
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	FALSE,	/* attrib_tex2iso_conv */
 	TRUE,	/* attrib_thread_catchup_on_exit */
-	TRUE,	/* attrib_verbatim_handling */
 #ifdef HAVE_COLOR
 	FALSE,	/* attrib_extquote_handling */
 #endif /* HAVE_COLOR */
@@ -755,9 +755,26 @@ init_selfinfo(
 	dangerous_signal_exit = FALSE;
 	disable_gnksa_domain_check = TRUE;
 	disable_sender = FALSE;	/* we set force_no_post=TRUE later on if we don't have a valid FQDN */
-	iso2asc_supported = s2i(get_val("ISO2ASC", DEFAULT_ISO2ASC), -1, NUM_ISO_TABLES - 1);
-	if (errno) /* TODO: issue a warning here? */
-		iso2asc_supported = -1;
+	p = get_val("ISO2ASC", DEFAULT_ISO2ASC);
+	iso2asc_supported = s2i(p, -1, NUM_ISO_TABLES - 1);
+	switch (errno) {
+		case EINVAL:
+			error_message(0, _(txt_arg_not_numeric), "$ISO2ASC", p);
+			if (!batch_mode)
+				sleep(2);
+			iso2asc_supported = -1;
+			break;
+
+		case ERANGE:
+			error_message(0, _(txt_val_out_of_range_ignored), "$ISO2ASC", p, -1, NUM_ISO_TABLES - 1);
+			if (!batch_mode)
+				sleep(2);
+			iso2asc_supported = -1;
+			break;
+
+		default:
+			break;
+	}
 	list_active = FALSE;
 	newsrc_active = FALSE;
 	post_article_and_exit = FALSE;

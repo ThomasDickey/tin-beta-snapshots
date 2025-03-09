@@ -160,6 +160,9 @@ prompt_menu_string(
  * last line giving the default answer "default_answer".
  * The function returns 1 if the user decided "yes", -1 if the user wanted
  * to escape, or 0 for any other decision.
+ *
+ * TODO: add nl_langinfo(YESEXPR) / nl_langinfo(NOEXPR), but use pcre
+ *       instead of rpmatch()
  */
 int
 prompt_yn(

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-03
+ *  Updated   : 2025-02-17
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -724,8 +724,9 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  * TODO: - split out ftp (only ftp allows username:passwd@, RFC 1738)?
  *       - test IDNA (RFC 3490) case
  *       - adjust to follow RFC 3986 (section 2.3)
+ *       - somehow shorten regex to < 500 chars
  */
-#define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-|[^\\W_]){0,61}(?<!---)[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,18}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:(?:[0-9A-F]{0,4}:){1,7}(?:[0-9A-F]{1,4}|:)|(?:::(?:[0-9A-F]{0,4}:){0,6}[0-9A-F]{1,4})|::)|(?:(?:[0-9A-F]{0,4}:){1,5}(?:[0-9A-F]{1,4}|:)|(?:::(?:[0-9A-F]{0,4}:){0,4}[0-9A-F]{1,4})|::)(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=\\$,]*)"
+#define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-|[^\\W_]){0,61}(?<!---)[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,18}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:(?:[\\dA-F]{0,4}:){1,7}(?:[\\dA-F]{1,4}|:)|(?:::(?:[\\dA-F]{0,4}:){0,6}[\\dA-F]{1,4})|::)|(?:(?:[\\dA-F]{0,4}:){1,5}(?:[\\dA-F]{1,4}|:)|(?:::(?:[\\dA-F]{0,4}:){0,4}[\\dA-F]{1,4})|::)(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:[a-z\\d()@:%_+.~#?&\\/=\\$,-]*)"
 /*
  * case insensitive
  * TOFO: check against RFC 6068
@@ -829,6 +830,20 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #ifndef CODESET
 #	define CODESET ((nl_item) 1)
 #endif /* CODESET */
+#ifndef HAVE_LANGINFO_CODESET
+#	ifndef RADIXCHAR
+#		define RADIXCHAR ((nl_item) 2)
+#	endif /* RADIXCHAR */
+#	ifndef DECIMAL_POINT
+#		define DECIMAL_POINT ((nl_item) 2)
+#	endif /* DECIMAL_POINT */
+#	ifndef NOEXPR
+#		define NOEXPR ((nl_item) 3)
+#	endif /* NOEXPR */
+#	ifndef YESEXPR
+#		define YESEXPR ((nl_item) 4)
+#	endif /* YESEXPR */
+#endif /* HAVE_LANGINFO_CODESET */
 
 #ifdef CHARSET_CONVERSION
 #	define IS_LOCAL_CHARSET(c)	(!strncasecmp(tinrc.mm_local_charset, c, strlen(c)))
@@ -1053,6 +1068,16 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define COMPACT_MULTIPLE		4
 
 /*
+ * defines for tinrc.verbatim_handling
+ */
+enum {
+	VERBATIM_NONE = 0,
+	VERBATIM_SHOW_ALL,
+	VERBATIM_HIDE_MARKS,
+	VERBATIM_HIDE_ALL
+};
+
+/*
  * defines for tinrc.show_help_mail_sign
  */
 enum {
@@ -1075,7 +1100,7 @@ enum {
 /*
  * Number of charset-traslation tables (iso2asci)
  */
-#define NUM_ISO_TABLES	7
+#define NUM_ISO_TABLES	6 /*7*/
 
 /*
  * Maximum permissible colour number
@@ -1700,6 +1725,7 @@ struct t_newsheader {
 #	define BITS_OF_thread_articles		3
 #	define BITS_OF_thread_perc			7
 #	define BITS_OF_trim_article_body	3
+#	define BITS_OF_verbatim_handling	2
 #else
 #	define BITS_OF(bits)	bits
 	enum bits_of {
@@ -1715,7 +1741,8 @@ struct t_newsheader {
 		sort_threads_type   = 3,
 		thread_articles     = 3,
 		thread_perc         = 7,
-		trim_article_body   = 3
+		trim_article_body   = 3,
+		verbatim_handling   = 2
 	};
 #endif /* CPP_DOES_CONCAT */
 
@@ -1828,7 +1855,9 @@ struct t_attribute {
 						6=Compact multiple blank lines between textblocks and skip trailing blank lines,
 						7=Compact multiple blank lines between textblocks and skip leading and trailing
 						  blank lines */
-	BoolField(verbatim_handling);	/* 0=none, 1=detect verbatim blocks */
+	IntField(verbatim_handling);	/* 0=none, 1=detect verbatim blocks and show all,
+						2=detect verbatim blocks, don't show begin and end marker,
+						3=detect verbatim blocks and hide them completely */
 #ifdef HAVE_COLOR
 	BoolField(extquote_handling);		/* 0=none, 1=detect quoted text from external sources */
 #endif /* HAVE_COLOR */

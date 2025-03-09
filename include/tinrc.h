@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2025-02-06
+ *  Updated   : 2025-02-17
  *  Notes     :
  *
  * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
@@ -205,6 +205,7 @@ struct t_config {
 	int thread_perc;					/* how close the match needs to be for THREAD_PERC to recognize two articles as the same thread */
 	int thread_score;					/* how the score for threads is computed */
 	int trim_article_body;				/* remove unnecessary blank lines */
+	int verbatim_handling;				/* Detection of verbatim blocks */
 	int wildcard;						/* 0=wildmat, 1=regex */
 	int word_h_display_marks;			/* display * or _ when highlighting or space or nothing */
 	int wrap_column;					/* screen column to wrap of text messages */
@@ -266,7 +267,6 @@ struct t_config {
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		t_bool utf8_graphics;			/* use utf-8 characters for line drawing */
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	t_bool verbatim_handling;			/* Detection of verbatim blocks */
 #	ifdef HAVE_COLOR
 		t_bool extquote_handling;		/* Detection of quoted text from external sources */
 #	endif /* HAVE_COLOR */
@@ -346,6 +346,7 @@ struct t_config {
 #		endif /* USE_ICU_UCSDET */
 #	endif /* !CHARSET_CONVERSION */
 	int attrib_trim_article_body;
+	int attrib_verbatim_handling;
 	int attrib_auto_cc_bcc;
 	int attrib_quick_kill_header;
 	int attrib_quick_select_header;
@@ -387,7 +388,6 @@ struct t_config {
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	t_bool attrib_tex2iso_conv;
 	t_bool attrib_thread_catchup_on_exit;
-	t_bool attrib_verbatim_handling;
 #	ifdef HAVE_COLOR
 		t_bool attrib_extquote_handling;
 #	endif /* HAVE_COLOR */

@@ -1,8 +1,8 @@
--- 2.6.4 release 20250209 "" --
+-- 2.6.4 release 20250309 "" --
 
  028) Bjarni Ingi Gislason <bjarniig@simnet.is>
-      ADD. manpage fixes (debian bug #1093395)
-      FIX. tin.1
+      ADD. manpage fixes (debian bug #1093395, #1096177)
+      FIX. tin.1, tin.5
 
  027) Dennis Preiser <dennis@d--p.de>
       ADD. avoid macro in snprintf() as that might be a macro too
@@ -13,12 +13,15 @@
            to the next filename parameter if available.
       ADD. PageToggleVerbatim (,)
       ADD. validate undeclared_charset in 'M'enu
+      ADD. extend verbatim_handling options
       BUG. -L/'L' did depend on sort_article_type/sort_threads_type
            and failed for some combinations
       BUG. possible memleaks
-      FIX. art.c, cook.c, feed.c, filter.c, global.c, group.c, header.c, help.c
-           keymap.c, lang.c, main.c, nntplib.c, options_menu.c, page.c, post.c
-           prompt.c, rfc2046.c, select.c, extern.h, keymap.h, tin.h, tin.[15]
+      FIX. art.c, attrib.c, charset.c, config.c, cook.c, feed.c, filter.c
+           global.c, group.c, header.c, help.c, init.c, keymap.c, lang.c
+           main.c, misc.c, nntplib.c, options_menu.c, page.c, post.c, prompt.c
+           rfc2045.c, rfc2046.c, rfc2047.c, save.c, select.c, thread.c
+           extern.h, keymap.h, tin.h, tincfg.tbl, tin.[15]
 
  026) Urs Janssen <urs@tin.org>
       ADD. avoid bison warning
@@ -27,8 +30,8 @@
       ADD. --with-url-normalization[=[uriparser,curl] (default: yes)
            check for liburiparser or libcurl for URL normalization
       ADD. if reading via NNTP Message-ID 'L'ookup in group-, thread- and
-           page level now try to find the ID via NNTP if the ID is not
-           in the current group
+           page level now try to find the ID via NNTP if the ID is not in
+           the current group
       ADD. adjust IPv6 part of URL_REGEX
       ADD. do not check for libgsasl but zlib if not using NNTP
       ADD. move setlocale in write_overview() out of the loop
@@ -38,15 +41,21 @@
            of trying recompile it from our preprocessed data.
       ADD. hash Path in overview-data
       ADD. Xref- and Path-filter to filter-menu
+      ADD. ToggleInfoLastLine ('i') to OptionMenu ('M')
+      ADD. configure check for getsockopt(), setsockopt()
+      ADD. set TCP_USER_TIMEOUT or TCP_CONNECTIONTIMEOUT and
+           TCP_RXT_CONNDROPTIME if available
       BUG. mixed up error-messages
       BUG. missing checks for empty string in From
       BUG. possible memleaks
-      FIX. active.c, art.c, charset.c, config.c, cook.c, feed.c, filter.c
-           group.c, header.c, init.c, keymap.c, lang.c, main.c, memory.c
-           misc.c, newsrc.c, nntplib.c, nntps.c, options_menu.c, page.c, pgp.c
-           post.c, rfc1524.c, rfc2045.c, save.c, select.c, search.c, string.c
-           thread.c, xref.c, extern.h, proto.h, tin.h, tinrc.h, parsdate.y
-           autoconf.h[in], tincfg.tbl, Makefile[.in], configure[.in]
+      REM. ISO2ASC=6 (CP437) table
+      FIX. active.c, art.c, auth.c, charset.c, config.c, cook.c, feed.c
+           filter.c, group.c, header.c, help.c, init.c, keymap.c, lang.c
+           main.c, memory.c, misc.c, newsrc.c, nntplib.c, nntps.c
+           options_menu.c, page.c, pgp.c, post.c, rfc1524.c, rfc2045.c, save.c
+           select.c, search.c, string.c, thread.c, xref.c, extern.h, proto.h
+           tin.h, tinrc.h, parsdate.y, autoconf.h[in], tincfg.tbl
+           Makefile[.in], configure[.in], tin.[15]
 
  025) Toomas Soome <tsoome@me.com>
       ADD. updated Estonian translation

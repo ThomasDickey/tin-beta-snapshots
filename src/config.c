@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-01-10
+ *  Updated   : 2025-02-17
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -56,7 +56,7 @@
  */
 static t_bool match_item(const char *line, const char *pat, char *dst, size_t dstlen);
 static t_bool rc_update(FILE *fp);
-static t_bool rc_post_update(FILE *fp/* , struct t_version *upgrade */);
+static t_bool rc_post_update(FILE *fp, struct t_version *upgrade);
 static void write_server_config(void);
 #ifdef HAVE_COLOR
 	static t_bool match_color(const char *line, const char *pat, int *dst, int max);
@@ -870,7 +870,8 @@ read_config_file(
 			if (match_string_ptr(buf, "verbatim_end_regex=", &tinrc.verbatim_end_regex))
 				break;
 
-			if (match_boolean(buf, "verbatim_handling=", &tinrc.verbatim_handling))
+			/* verbatim_handling has changed from bool to int in TINRC_VERSION == 1.3.19 */
+			if (upgrade && upgrade->file_version >= 10319 && match_integer(buf, "verbatim_handling=", &tinrc.verbatim_handling, 3))
 				break;
 
 			break;
@@ -906,7 +907,7 @@ read_config_file(
 		}
 	}
 	if (!global_file && upgrade && upgrade->state == RC_UPGRADE)
-		rc_post_update(fp/* , upgrade */);
+		rc_post_update(fp, upgrade);
 
 	FreeAndNull(upgrade);
 	fclose(fp);
@@ -1503,7 +1504,7 @@ write_config_file(
 	fprintf(fp, "alternative_handling=%s\n\n", print_boolean(tinrc.alternative_handling));
 
 	fprintf(fp, "%s", _(txt_verbatim_handling.tinrc));
-	fprintf(fp, "verbatim_handling=%s\n\n", print_boolean(tinrc.verbatim_handling));
+	fprintf(fp, "verbatim_handling=%d\n\n", tinrc.verbatim_handling);
 
 #ifdef HAVE_COLOR
 	fprintf(fp, "%s", _(txt_extquote_handling.tinrc));
@@ -1903,7 +1904,7 @@ ulBuildArgv(
 	const char *cmd,
 	int *new_argc)
 {
-	char **new_argv = NULL;
+	char **new_argv;
 	char *buf, *tmp;
 	const char *tmp_cmd;
 	int i = 0;
@@ -1936,7 +1937,10 @@ ulBuildArgv(
 		} else
 			++tmp;
 	}
-	*new_argc = i;
+	if ((*new_argc = i) == 0) {
+		free(buf);
+		FreeAndNull(new_argv);
+	}
 	return new_argv;
 }
 
@@ -2207,11 +2211,12 @@ rc_update(
  */
 static t_bool
 rc_post_update(
-	FILE *fp
-	/* , struct t_version *upgrade */)
+	FILE *fp,
+	struct t_version *upgrade)
 {
 	char *buf;
 	int groupname_max_length = 0;
+	t_bool verbatim_handling = TRUE;
 
 	if (fseek(fp, 0L, SEEK_SET) == -1) {
 		perror_message(txt_error_fseek);
@@ -2262,6 +2267,12 @@ rc_post_update(
 				}
 				break;
 
+			case 'v':
+				/* verbatim_handling has changed from bool to int in TINRC_VERSION == 1.3.19 */
+				if (upgrade && upgrade->file_version < 10319 && match_boolean(buf, "verbatim_handling=", &verbatim_handling))
+					break;
+				break;
+
 			default:
 				break;
 		}
@@ -2290,6 +2301,10 @@ rc_post_update(
 		tinrc.select_format = my_strdup(dest);
 		free(dest);
 	}
+
+	/* verbatim_handling has changed from bool to int in TINRC_VERSION == 1.3.19 */
+	if (upgrade && upgrade->file_version < 10319)
+		tinrc.verbatim_handling = verbatim_handling ? VERBATIM_SHOW_ALL : VERBATIM_NONE;
 
 	return TRUE;
 }

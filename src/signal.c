@@ -309,7 +309,7 @@ handle_resize(
 			break;
 
 		case cPage:
-			resize_article(TRUE, &pgart);
+			resize_article(TRUE, &pgart); /* loses current state raw/cooked */
 			draw_page(0);
 			break;
 
@@ -443,13 +443,13 @@ signal_handler(
 			 * phase give the user a chance to go on instead of exiting
 			 */
 			if (signal_context == cReconnect || batch_mode || !use_compress || !nntp_caps.compress || prompt_yn(_(txt_read_timeout_quit), FALSE) == 1)
-				tin_done(NNTP_ERROR_EXIT, _(txt_connection_error));
+				tin_done(NNTP_ERROR_EXIT, _(txt_connection_error)); /* NOTE: a lot of signal-unsafe calls in tin_done() */
 			else {
 				RESTORE_HANDLER(sig, signal_handler);
 				my_fprintf(stdout, "%s", _(txt_continuing));
 			}
 #		else
-			tin_done(NNTP_ERROR_EXIT, _(txt_connection_error));
+			tin_done(NNTP_ERROR_EXIT, _(txt_connection_error)); /* NOTE: a lot of signal-unsafe calls in tin_done() */
 #		endif /* USE_ZLIB */
 #	endif /* NNTP_ABLE */
 			errno = serrno;

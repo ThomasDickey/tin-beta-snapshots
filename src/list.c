@@ -65,14 +65,13 @@ init_group_hash(
 	int i;
 
 #if 0
-	if (num_active == -1) {
+	if (num_active == -1)
 #endif /* 0 */
+	{
 		num_active = 0;
 		for (i = 0; i < TABLE_SIZE; i++)
 			group_hash[i] = -1;
-#if 0
 	}
-#endif /* 0 */
 }
 
 

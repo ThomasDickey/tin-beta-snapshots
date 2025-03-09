@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2024-12-21
+ *  Updated   : 2025-02-10
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2025 Chris Blum <chris@resolution.de>
@@ -249,13 +249,13 @@ rfc1522_decode(
 
 	charset[0] = '\0';
 	c = my_strdup(s);
-	max_len = strlen(c) + 1;
+	max_len = strlen(c);
 
 	if (!buffer) {
-		buffer_len = (int) max_len;
+		buffer_len = (int) max_len + 1;
 		buffer = my_malloc((size_t) buffer_len);
 	} else if (max_len > (size_t) buffer_len) {
-		buffer_len = (int) max_len;
+		buffer_len = (int) max_len + 1;
 		buffer = my_realloc(buffer, (size_t) buffer_len);
 	}
 
@@ -582,9 +582,9 @@ rfc1522_do_encode(
 	char *t;
 	char buf2[80];				/* buffer for this and that */
 	int encoding;				/* which encoding to use ('B' or 'Q') */
-	size_t ew_taken_len;
 	int word_cnt = 0;
 	int offset;
+	size_t ew_taken_len;
 	size_t bufferlen = 2048;		/* size of buffer */
 	size_t ewsize = 0;			/* size of current encoded-word */
 	t_bool quoting = FALSE;		/* currently inside quote block? */
@@ -844,12 +844,10 @@ rfc1522_do_encode(
 	c = buffer;
 	if (break_long_line && any_quoting_done) {
 		char *new_buffer;
-		size_t new_bufferlen = strlen(buffer) * 2 + 1; /* maximum length if
-every "word" were a space ... */
+		size_t new_bufferlen = strlen(buffer) * 2 + 1; /* maximum length if every "word" were a space ... */
 		int column = 0;				/* current column */
 
-		new_buffer = my_malloc(new_bufferlen);
-		t = new_buffer;
+		t = new_buffer = my_malloc(new_bufferlen);
 		word_cnt = 1;			/*
 						 * note, if the user has typed a continuation
 						 * line, we will consider the initial
@@ -1001,7 +999,7 @@ do_rfc15211522_encode(
 		}
 		if (!allow_8bit_header) {
 			/* see if there are any 8bit chars in the body... */
-			for (c = buf; *c && !isreturn(*c); c++) {
+			for (c = buf; *c && !isreturn((unsigned char) *c); c++) {
 				if (is_EIGHT_BIT(c)) {
 					mime_headers_needed = TRUE;
 					break;

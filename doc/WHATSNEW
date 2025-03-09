@@ -14,6 +14,7 @@ New features
   suppress_soft_hyphens
 - ConnectionInfo page ('J') incl. TLS connection info and MOTD
 - ArticleInfo page ('\'') for MIME-debugging
+- PageToggleVerbatim (,)
 - ${TIN_HOMEDIR:-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
 - -t timeout cmd.-line option
 - -L <message-id> cmd.-line option
@@ -42,7 +43,7 @@ New features
 - allow argument names for -D (case insensitive, comma separated
   list, can be mix with numeric values)
 - URI syntax-check and normalization it with uriNormalizeSyntaxA() if
-  liburiparser was found
+  liburiparser or libcurl was found
 - $LC_NUMERIC for RADIXCHAR (used when showing attachment sizes)
 - allow hex-numbers for cmd.-line switches which take numeric args
 
@@ -61,6 +62,10 @@ Changes
   instead of $TMPDIR
 - valid IPv6-addresses in brackets are now allowed in gnksa-filters
 - allow ccTLD .ss, disallow ccTLD .an and .tp
+- if reading via NNTP Message-ID 'L'ookup in group-, thread- and page level
+  now try to find the ID via NNTP if the ID is not in the current group
+- verbatim_handling (tinrc/attributes) has changed from ON/OFF value to NUM
+  value with more options
 
 Retired Features
 ----------------
@@ -68,3 +73,5 @@ Retired Features
 - --with-sum specifying the sum of uue-file got more and more uncommon at
   the end of last century and uue mostly vanished later on ...
 - no longer expands %G and/or %P in $MAILCAPS
+- no longer allow ISO2ASC=6 (CP437 table) as that was the only non
+  to ASCII conversion and should be done with iconv()

@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-06
+ *  Updated   : 2025-02-12
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1987,6 +1987,7 @@ read_overview(
 #ifdef USE_ZLIB
 	int fd, dup_fd = -1;
 	gzFile gzfp = Z_NULL;
+	struct stat st;
 #endif /* USE_ZLIB */
 
 	/*
@@ -2012,7 +2013,8 @@ read_overview(
 				 * so stay with the gzgets() code even for plain data.
 				 */
 				if (gzdirect(gzfp)) { /* not gzipped, use normal read-code to avoid zlib overhead */
-					if (gzclose_r(gzfp) == Z_STREAM_ERROR)
+					gzclose_r(gzfp);
+					if (fstat(dup_fd, &st) == 0 || errno != EBADF) /* dup_fd still open? */
 						close(dup_fd);
 					gzfp = Z_NULL;
 					fseek(fp, 0L, SEEK_SET); /* rewind gzdirect() */
@@ -2485,7 +2487,8 @@ read_overview(
 #ifdef USE_ZLIB
 	if (gzfp) {
 		free(buf);
-		if (gzclose_r(gzfp) == Z_STREAM_ERROR)
+		gzclose_r(gzfp);
+		if (fstat(dup_fd, &st) == 0 || errno != EBADF) /* dup_fd still open? */
 			close(dup_fd);
 	}
 #endif /* USE_ZLIB */
@@ -2675,6 +2678,7 @@ write_overview(
 #ifdef USE_ZLIB
 	int dup_fd;
 	gzFile gzfp;
+	struct stat st;
 #endif /* USE_ZLIB */
 
 	/*
@@ -2833,7 +2837,8 @@ write_overview(
 #endif /* HAVE_FCHMOD */
 #ifdef USE_ZLIB
 	if (gzfp) {
-		if (gzclose_w(gzfp) == Z_STREAM_ERROR)
+		gzclose_w(gzfp);
+		if (fstat(dup_fd, &st) == 0 || errno != EBADF) /* dup_fd still open? */
 			close(dup_fd);
 	}
 #endif /* USE_ZLIB */
@@ -2877,6 +2882,7 @@ find_nov_file(
 #ifdef USE_ZLIB
 	int fd, dup_fd;
 	gzFile gzfp;
+	struct stat st;
 #endif /* USE_ZLIB */
 
 	if (group == NULL || (mode != R_OK && mode != W_OK))
@@ -3041,13 +3047,15 @@ find_nov_file(
 				ptr = my_calloc(1, 4096 + 1); /* group name is no longer than 497 */
 				if (gzgets(gzfp, ptr, 4096) == Z_NULL) {
 					free(ptr);
-					if (gzclose_r(gzfp) == Z_STREAM_ERROR)
+					gzclose_r(gzfp);
+					if (fstat(dup_fd, &st) == 0 || errno != EBADF) /* dup_fd still open? */
 						close(dup_fd);
 					fclose(fp);
 					continue; /* try next */
 				}
 				str_trim(ptr);
-				if (gzclose_r(gzfp) == Z_STREAM_ERROR)
+				gzclose_r(gzfp);
+				if (fstat(dup_fd, &st) == 0 || errno != EBADF) /* dup_fd still open? */
 					close(dup_fd);
 				fclose(fp);
 				fp = NULL;

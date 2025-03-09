@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-01-26
+ *  Updated   : 2025-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1519,7 +1519,7 @@ show_attachment_page(
 	char *attach_line;
 	char *buf;
 	const char *charset;
-	int i, tmp_len, max_depth;
+	int i, tmp_len, max_depth, prev_mark_offset = mark_offset;
 	size_t blen;
 	t_part *part;
 
@@ -1574,6 +1574,7 @@ show_attachment_page(
 	}
 
 	draw_attachment_arrow();
+	mark_offset = prev_mark_offset;
 }
 
 
@@ -1676,7 +1677,8 @@ attachment_page(
 
 			case GLOBAL_TOGGLE_INFO_LAST_LINE:
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
-				show_attachment_page();
+				clear_message();
+				draw_attachment_arrow();
 				break;
 
 			case GLOBAL_VERSION:

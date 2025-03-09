@@ -57,65 +57,84 @@ tin_nl_langinfo(
 {
   char *l, *p;
 
-  if (item != CODESET)
-    return NULL;
+  switch (item) {
 
-  if (((l = getenv("LC_ALL"))   && *l) ||
-      ((l = getenv("LC_CTYPE")) && *l) ||
-      ((l = getenv("LANG"))     && *l)) {
-    /* check standardized locales */
-    if (!strcmp(l, "C") || !strcmp(l, "POSIX"))
-      return C_CODESET;
+  case RADIXCHAR:
+/*  case DECIMAL_POINT: */
+    return ".";
+    break;
+
+  case NOEXPR:
+    return "^[-0nN]";
+    break;
+
+  case YESEXPR:
+    return "^[+1yY]";
+    break;
+
+
+  case CODESET:
+    if (((l = getenv("LC_ALL"))   && *l) ||
+        ((l = getenv("LC_CTYPE")) && *l) ||
+        ((l = getenv("LANG"))     && *l)) {
+      /* check standardized locales */
+      if (!strcmp(l, "C") || !strcmp(l, "POSIX"))
+        return C_CODESET;
     /* check for encoding name fragment */
-    if (strstr(l, "UTF") || strstr(l, "utf"))
-      return "UTF-8";
-    if ((p = strstr(l, "8859-"))) {
-      memcpy(buf, "ISO-8859-\0\0", 12);
-      p += 5;
-      if (digit(*p)) {
-        buf[9] = *p++;
-        if (digit(*p))
-          buf[10] = *p++;
-        return buf;
+      if (strstr(l, "UTF") || strstr(l, "utf"))
+        return "UTF-8";
+      if ((p = strstr(l, "8859-"))) {
+        memcpy(buf, "ISO-8859-\0\0", 12);
+        p += 5;
+        if (digit(*p)) {
+          buf[9] = *p++;
+          if (digit(*p))
+            buf[10] = *p++;
+          return buf;
+        }
       }
+      if (strstr(l, "KOI8-R")) return "KOI8-R";
+      if (strstr(l, "KOI8-U")) return "KOI8-U";
+      if (strstr(l, "620")) return "TIS-620";
+      if (strstr(l, "2312")) return "GB2312";
+      if (strstr(l, "HKSCS")) return "Big5HKSCS";   /* no MIME charset */
+      if (strstr(l, "Big5") || strstr(l, "BIG5")) return "Big5";
+      if (strstr(l, "GBK")) return "GBK";           /* no MIME charset */
+      if (strstr(l, "18030")) return "GB18030";     /* no MIME charset */
+      if (strstr(l, "Shift_JIS") || strstr(l, "SJIS")) return "Shift_JIS";
+      /* check for conclusive modifier */
+      if (strstr(l, "euro")) return "ISO-8859-15";
+      /* check for language (and perhaps country) codes */
+      if (strstr(l, "zh_TW")) return "Big5";
+      if (strstr(l, "zh_HK")) return "Big5HKSCS";   /* no MIME charset */
+      if (strstr(l, "zh")) return "GB2312";
+      if (strstr(l, "ja")) return "EUC-JP";
+      if (strstr(l, "ko")) return "EUC-KR";
+      if (strstr(l, "ru")) return "KOI8-R";
+      if (strstr(l, "uk")) return "KOI8-U";
+      if (strstr(l, "pl") || strstr(l, "hr") ||
+        strstr(l, "hu") || strstr(l, "cs") ||
+        strstr(l, "sk") || strstr(l, "sl")) return "ISO-8859-2";
+      if (strstr(l, "eo") || strstr(l, "mt")) return "ISO-8859-3";
+      if (strstr(l, "el")) return "ISO-8859-7";
+      if (strstr(l, "he")) return "ISO-8859-8";
+      if (strstr(l, "tr")) return "ISO-8859-9";
+      if (strstr(l, "th")) return "TIS-620";      /* or ISO-8859-11 */
+      if (strstr(l, "lt")) return "ISO-8859-13";
+      if (strstr(l, "cy")) return "ISO-8859-14";
+      if (strstr(l, "ro")) return "ISO-8859-2";   /* or ISO-8859-16 */
+      if (strstr(l, "am") || strstr(l, "vi")) return "UTF-8";
+      /* Send me further rules if you like, but don't forget that we are
+       * *only* interested in locale naming conventions on platforms
+       * that do not already provide an nl_langinfo(CODESET) implementation. */
+      return "ISO-8859-1"; /* should perhaps be "UTF-8" instead */
     }
-    if (strstr(l, "KOI8-R")) return "KOI8-R";
-    if (strstr(l, "KOI8-U")) return "KOI8-U";
-    if (strstr(l, "620")) return "TIS-620";
-    if (strstr(l, "2312")) return "GB2312";
-    if (strstr(l, "HKSCS")) return "Big5HKSCS";   /* no MIME charset */
-    if (strstr(l, "Big5") || strstr(l, "BIG5")) return "Big5";
-    if (strstr(l, "GBK")) return "GBK";           /* no MIME charset */
-    if (strstr(l, "18030")) return "GB18030";     /* no MIME charset */
-    if (strstr(l, "Shift_JIS") || strstr(l, "SJIS")) return "Shift_JIS";
-    /* check for conclusive modifier */
-    if (strstr(l, "euro")) return "ISO-8859-15";
-    /* check for language (and perhaps country) codes */
-    if (strstr(l, "zh_TW")) return "Big5";
-    if (strstr(l, "zh_HK")) return "Big5HKSCS";   /* no MIME charset */
-    if (strstr(l, "zh")) return "GB2312";
-    if (strstr(l, "ja")) return "EUC-JP";
-    if (strstr(l, "ko")) return "EUC-KR";
-    if (strstr(l, "ru")) return "KOI8-R";
-    if (strstr(l, "uk")) return "KOI8-U";
-    if (strstr(l, "pl") || strstr(l, "hr") ||
-	strstr(l, "hu") || strstr(l, "cs") ||
-	strstr(l, "sk") || strstr(l, "sl")) return "ISO-8859-2";
-    if (strstr(l, "eo") || strstr(l, "mt")) return "ISO-8859-3";
-    if (strstr(l, "el")) return "ISO-8859-7";
-    if (strstr(l, "he")) return "ISO-8859-8";
-    if (strstr(l, "tr")) return "ISO-8859-9";
-    if (strstr(l, "th")) return "TIS-620";      /* or ISO-8859-11 */
-    if (strstr(l, "lt")) return "ISO-8859-13";
-    if (strstr(l, "cy")) return "ISO-8859-14";
-    if (strstr(l, "ro")) return "ISO-8859-2";   /* or ISO-8859-16 */
-    if (strstr(l, "am") || strstr(l, "vi")) return "UTF-8";
-    /* Send me further rules if you like, but don't forget that we are
-     * *only* interested in locale naming conventions on platforms
-     * that do not already provide an nl_langinfo(CODESET) implementation. */
-    return "ISO-8859-1"; /* should perhaps be "UTF-8" instead */
+    return C_CODESET;
+    break;
+
+    default:
+    return "";
   }
-  return C_CODESET;
 }
 #	else
 const char *

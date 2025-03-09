@@ -468,27 +468,4 @@ debug_print_newsrc(
 	fprintf(fp, "]\n");
 	fflush(fp);
 }
-
-
-#	ifdef NNTP_ABLE
-const char *
-logtime(
-	void)
-{
-#		if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
-	static struct t_tintime log_time;
-	static char out[40];
-
-	if (tin_gettime(&log_time) == 0) {
-		if (my_strftime(out, 39, " [%H:%M:%S.", gmtime(&(log_time.tv_sec)))) {
-			snprintf(out + 11, sizeof(out) - 11, "%09ld", log_time.tv_nsec); /* strlen(" [hh:mm:ss.") */
-			out[17] = '\0'; /* strlen(" [hh:mm:ss.uuuuuu") */
-			strcat(out, "] ");
-			return out;
-		}
-	}
-#		endif /* HAVE_CLOCK_GETTIME || HAVE_GETTIMEOFDAY */
-	return " ";
-}
-#	endif /* NNTP_ABLE */
 #endif /* DEBUG */

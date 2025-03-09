@@ -3,7 +3,7 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2025-02-05
+ *  Updated   : 2025-02-28
  *
  * Copyright (c) 1997-2025 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
@@ -89,12 +89,12 @@ wait_for_input(
 	forever {
 		FD_ZERO(&readfds);
 		FD_SET(STDIN_FILENO, &readfds);
-/*		FD_SET(fileno(NEED_REAL_NNTP_FD_HERE), &readfds); */
+/*		FD_SET(NEED_REAL_NNTP_FD_HERE, &readfds); */ /* nntp_buf.fd */
 
 		tv.tv_sec = 0;		/* NNTP_READ_TIMEOUT; */
 		tv.tv_usec = 0;
 
-/* DEBUG_IO((stderr, "waiting on %d and %d...", STDIN_FILENO, fileno(fd))); */
+/* DEBUG_IO((stderr, "%swaiting on %d and %d...\n", logtime(), STDIN_FILENO, fileno(fd))); */
 #	ifdef HAVE_SELECT_INTP
 		if ((nfds = select(STDIN_FILENO + 1, (int *) &readfds, NULL, NULL, &tv)) == -1)
 #	else
@@ -163,7 +163,7 @@ wait_for_input(
 			/*
 			 * Our file has something for us to read
 			 */
-			if (FD_ISSET(fileno(NEED_NNTP_FD_HERE), &readfds))
+			if (FD_ISSET(NEED_NNTP_FD_HERE, &readfds))	/* nntp_buf.fd */
 				return TRUE;
 #	endif /* 0 */
 		}
@@ -360,7 +360,7 @@ tin_fgets(
 		return NULL;
 
 	if (tin_errno != 0) {
-		DEBUG_IO((stderr, _("Aborted read\n")));
+		DEBUG_IO((stderr, "%sAborted read\n", logtime()));
 		return NULL;
 	}
 
@@ -386,16 +386,16 @@ tin_fgets(
 	if (fp == FAKE_NNTP_FP) {
 		if (dynbuf[0] == '.') {			/* reduce leading .'s */
 			if (dynbuf[1] == '\0') {
-				DEBUG_IO((stderr, "tin_fgets(NULL)\n"));
+				DEBUG_IO((stderr, "%stin_fgets(NULL)\n", logtime()));
 				return NULL;
 			}
-			DEBUG_IO((stderr, "tin_fgets(%s)\n", dynbuf + 1));
+			DEBUG_IO((stderr, "%stin_fgets(\"%s\")\n", logtime(), dynbuf + 1));
 			return (dynbuf + 1);
 		}
 	}
 #endif /* NNTP_ABLE */
 
-DEBUG_IO((stderr, "tin_fgets(%s)\n", (dynbuf) ? dynbuf : "NULL"));
+	DEBUG_IO((stderr, "%stin_fgets(\"%s\")\n", logtime(), dynbuf ? dynbuf : "NULL"));
 
 	return dynbuf;
 }
@@ -415,7 +415,7 @@ drain_buffer(
 	if (fp != FAKE_NNTP_FP)
 		return;
 
-DEBUG_IO((stderr, _("Draining\n")));
+	DEBUG_IO((stderr, "%sDraining\n", logtime()));
 	while (tin_fgets(fp, FALSE) != NULL) {
 		if (++i % MODULO_COUNT_NUM == 0)
 			spin_cursor();
