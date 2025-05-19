@@ -82,7 +82,7 @@ rfc1521_encode(
 	static char buffer[80];
 	static int bits = 0;
 	static int xpos = 0;
-	static unsigned long pattern = 0;
+	static unsigned long pattern = 0L;
 
 	if (e == 'b') {
 		if (!b) {
@@ -108,7 +108,7 @@ rfc1521_encode(
 						*b++ = '=';
 					++xpos;
 				}
-				pattern = 0;
+				pattern = 0L;
 				bits = 0;
 			}
 			if (xpos) {
@@ -152,7 +152,7 @@ rfc1521_encode(
 						++xpos;
 						bits -= 6;
 					}
-					pattern = 0;
+					pattern = 0L;
 				}
 			}
 			FreeIfNeeded(tmpbuf);

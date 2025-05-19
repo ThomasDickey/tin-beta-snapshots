@@ -2,10 +2,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2025-02-18
+.\" Updated   : 2025-05-18
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
+.\"             - use semantic newlines
 .\"
 .TH TIN 1 2025-02-17 2.6.5 "Usenet newsreader"
 .\"
@@ -46,7 +47,7 @@ tin, rtin \- Usenet newsreader
 .RB [\| \-t
 .IR timeout \|]
 .RB [\| \-I
-.IR index_dir \|]\ \|[ newsgroup \|[\|,.\|.\|.\|]\|]\|]
+.IR index_dir \|]\ \|[ newsgroup \|[\|,.\|.\|.\&\|]\|]\|]
 .\"
 .\"
 .SH DESCRIPTION
@@ -77,7 +78,7 @@ The \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') key enters the next
 newsgroup with unread articles.
 .\"
 .\"
-.SH "EXIT STATUS"
+.SH EXIT STATUS
 .\" TODO: also exits with signalnr caught as exit status
 .TP 12
 .B 0
@@ -574,8 +575,8 @@ editor); \fBPostponeAll\fP ('\fBA\fP') = post all postponed articles
 \fBQuit\fP ('\fBq\fP') = quit postponed menu. Currently there is no 'simple'
 way to delete a postponed article from the postponed-file, you have to use
 the following command sequence instead: reload it with \fBPostponed\fP,
-enter editor with \fBPromptYes\fP, quit editor, discard posting with
-\fBQuit\fP ('\fB^O\fP''\fBy\fP''\fBq\fP'). See also ''\fB\-o\fP''
+enter editor with \fBPromptYes\fP ('\fBy\fP'), quit editor, discard posting
+with \fBQuit\fP ('\fB^O\fP''\fBy\fP''\fBq\fP'). See also ''\fB\-o\fP''
 command-line switch.
 .TP
 .B Help 'h'
@@ -1223,8 +1224,9 @@ Detailed MIME information of the article.
 Toggle ROT-13 decoding for this article.
 .TP
 .B PageToggleUue '('
-Toggle the display of uuencoded sections. The default behavior is
-taken from the \fBhide_uue\fP variable in the tinrc file.
+Toggle the display data sections outside of MIME, e.g. uuencoded or yenc
+data. The default behavior is taken from the \fBhide_uue\fP variable in
+the tinrc file.
 .TP
 .B PageReveal ')'
 The form feed character (^L) is often used to hide 'spoilers' that the
@@ -1680,8 +1682,8 @@ section "CUSTOMIZING THE SCREEN FORMAT".
 Default is "%t%s%e%c%d".
 .TP
 .B Send you a cc and/or bcc automatically (auto_cc_bcc)
-Automatically put your name in the ''Cc:'' and/or ''Bcc:'' field when
-mailing an article. Default is No.
+Automatically put your name in the ''Cc:'' (1) or ''Bcc:'' (2) field
+or to both (3) fields when mailing an article. Default is 'No' (0).
 .TP
 .B List thread using right arrow key (auto_list_thread)
 If ON automatically list thread when entering it using right arrow key.
@@ -1829,7 +1831,7 @@ Ask for confirmation before marking all not selected (with
 .RE
 .TP
 .B Format string for display of dates (date_format)
-Format string \fBtin\fP uses for date representation. A description of the
+Format string used for date representation. A description of the
 different format options can be found at
 .BR \%strftime (3).
 \fBtin\fP uses
@@ -2000,15 +2002,44 @@ end of the current one. When \fBPageNextUnread\fP is set \fBtin\fP jumps
 immediately to the next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')
 is pressed. Default is \fBPageNextUnread\fP.
 .TP
-.B Display uue data as an attachment (hide_uue)
-If set to 'No' then raw uuencoded data is displayed. If set to 'Yes'
-then sections of uuencoded data will be shown with a single tag line
-showing the size and filename (much the same as a MIME attachment).
-If set to 'Hide all' then any line that looks like uuencoded data
-will be folded into a tag line. This is useful when uuencoded data is
-split across more than one article but can also lead to false
-positives. This setting can also be toggled in the article viewer.
-Default is 'No'.
+.B Display none mime data as an attachment (hide_uue)
+If set to '\fBNothing\fP' (0) then raw data is displayed.
+If set to '\fBComplete UU/YENC\fP' (1) then sections of uuencoded or yenc data will
+be shown with a single tag line showing the size and filename (much the same
+as a MIME attachment).
+If set to '\fBAny UU/YENC\fP' (2) then any line that looks like uuencoded or yenc
+data will be folded into a tag line. This is useful when uuencoded or yenc
+data is split across more than one article but can also lead to false
+positives.
+If set to '\fBInline PGP\fP' (4) then any inline PGP data is hidden.
+If set to '\fBShar\fP' (8) then shar-archives are hidden, this should be used with
+care as it may hide other shell snippets and any following text as well.
+This setting can also be toggled in the article viewer via
+\fBPageToggleUue\fP ('\fB(\fP').
+Default is 'Nothing' (0). The possible values are:
+.in +0.3i
+.nf
+.ta \w'15    'u +\w'Complete UU/YENC & Inline PGP'u
+ 0	\fBNothing\fP
+ 1	\fBComplete UU/YENC\fP
+ 2	\fBAny UU/YENC\fP
+ 4	\fBInline PGP\fP
+ 5	\fBComplete UU/YENC & Inline PGP\fP
+ 6	\fBAny UU/YENC & Inline PGP\fP
+ 8	\fBShar\fP
+ 9	\fBComplete UU/YENC & Shar\fP
+10	\fBAny UU/YENC & Shar\fP
+12	\fBInline PGP & Shar\fP
+13	\fBCompl. UU/YENC & PGP & Shar\fP
+15	\fBHide all\fP
+.fi
+.in -0.3i
+.TP
+.B Regex used to hide matching lines (hideline_regex)
+A regular expression to hide matching lines in pager. Could be used to
+hide excessive quoting, e.g. via '^>\\s?>\\s?>'. If left blank, no lines
+will be hidden. This option does not affect lines within verbatim blocks
+and is applied after \fBtrim_article_body\fP and \fBsuppress_soft_hyphens\fP.
 .TP
 .B External inews (inews_prog)
 Path, name and options of external
@@ -2167,7 +2198,7 @@ character sets are regarded as compatible with the display. If it's
 not set, the value of the environment variable $\fBMM_CHARSET\fP is
 used. US-ASCII or compile-time default is used in case neither of
 them is defined. If your system supports
-.BR \%iconv (3),
+.BR \%iconv (3)
 or
 .BR \%ucnv_* (),
 this option is disabled and you should use \fBmm_network_charset\fP instead.
@@ -2178,10 +2209,10 @@ Conversion between \fBmm_network_charset\fP and local charset (determined
 via
 .BR \%nl_langinfo (3))
 is done via
-.BR \%iconv (3),
+.BR \%iconv (3)
 or
-.BR \%ucnv_* (),
-if none of these functions are available on your system this option is
+.BR \%ucnv_* ().
+If none of these functions are available on your system this option is
 disabled and you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP
 is limited to one of the following charsets:
 .in +.3i
@@ -2279,6 +2310,11 @@ Default is "[\-\- %T%S%*n%z%*l%!c%!d%*e \-\-]".
 Format string \fBtin\fP uses for uue header at Page level. See the
 section "CUSTOMIZING THE SCREEN FORMAT".
 Default is "[\-\- %T%S%*n%I%!d%*e \-\-]".
+.TP
+.B Format string for the display of yenc header at Article level (page_yenc_format)
+Format string \fBtin\fP uses for yenc header at Page level. See the
+section "CUSTOMIZING THE SCREEN FORMAT".
+Default is "[\-\- %*N%!d%I [%F%G]%V%W%X \-\-]".
 .TP
 .B Go to first unread article in group (pos_first_unread)
 If ON put cursor at first unread article in group otherwise at last
@@ -2660,7 +2696,7 @@ Format string \fBtin\fP uses for Thread level representation. See the section
 .TP
 .B Matchingness of a thread (thread_perc)
 How closely the subjects must match for two threads to be considered
-part of the same thread. This is a percentage and the default if 75%.
+part of the same thread. This is a percentage and the default is 75%.
 .TP
 .B Score of a thread (thread_score)
 How the total score of a thread is computed. Default is 0, the maximum
@@ -2689,7 +2725,8 @@ doesn't exist, this option is disabled. Default is OFF.
 .TP
 .B How to treat blank lines (trim_article_body)
 Allows you to select how \fBtin\fP treats blank lines in article bodies.
-Default is 0. This option does not affect lines within verbatim blocks.
+Default is 0. This option does not affect lines within verbatim blocks and
+is applied before \fBhideline_regex\fP.
 .RS +.5i
 .IP 0 3
 \fBDon't trim article body\fP, do nothing.
@@ -3324,7 +3361,7 @@ example \fBtin\fP will display the subject with a length of 60 characters if
 the screen is wider than 100 characters, otherwise a length of 40 characters
 is used: '\fB%60>100:40s\fP'.
 .PP
-The look of the Attachment level and the mime and uue header at
+The look of the Attachment level and the mime, uue and yenc header at
 Page level can be customized too via format strings.
 The following variables are available:
 .PP
@@ -3337,7 +3374,11 @@ The following variables are available:
 \fB%d\fP	Like %D but with description
 \fB%E\fP	Content encoding
 \fB%e\fP	Like %E but with description
-\fB%I\fP	Complete/incomplete UUE part indicator
+\fB%F\fP	Current YENC part
+\fB%f\fP	Like %F but with description
+\fB%G\fP	Total number of YENC parts
+\fB%g\fP	Like %G but with description
+\fB%I\fP	Complete/incomplete UUE/YENC part indicator
 \fB%L\fP	Language
 \fB%l\fP	Like %L but with description
 \fB%N\fP	Name
@@ -3346,6 +3387,12 @@ The following variables are available:
 \fB%s\fP	Like %S but with description
 \fB%T\fP	Content type
 \fB%t\fP	Like %T but with description
+\fB%V\fP	Size of the current YENC part in bytes
+\fB%v\fP	Like %V but with description
+\fB%W\fP	Total size of all YENC parts in bytes
+\fB%w\fP	Like %W but with description
+\fB%X\fP	CRC checksum of current yenc part
+\fB%x\fP	Like %X but with description
 \fB%Z\fP	Size in bytes
 \fB%z\fP	Like %Z but with description
 \fB%%\fP	%
@@ -3357,26 +3404,36 @@ an overview:
 .PP
 .in +.3i
 .nf
-.ta \w'%G   'uC +\w'\fBattachment_format\fP 'uC +\w'\fBpage_mime_format\fP 'uC +\w'\fBpage_uue_format\fP'uC
-	\fBattachment_format\fP	\fBpage_mime_format\fP	\fBpage_uue_format\fP
+.ta \w'%G   'uC +\w' \fBattachment_format\fP 'uC +\w' \fBpage_mime_format\fP 'uC +\w' \fBpage_uue_format\fP 'uC +\w' \fBpage_yenc_format\fP'uC
+	\fBattachment_format\fP	\fBpage_mime_format\fP	\fBpage_uue_format\fP	\fBpage_yenc_format\fP
 \fB%C\fP	X	X
 \fB%c\fP	X	X
-\fB%D\fP	X	X	X
-\fB%d\fP	X	X	X
-\fB%E\fP	X	X	X
-\fB%e\fP	X	X	X
-\fB%I\fP			X
+\fB%D\fP	X	X	X	X
+\fB%d\fP	X	X	X	X
+\fB%E\fP	X	X	X	X
+\fB%e\fP	X	X	X	X
+\fB%F\fP				X
+\fB%f\fP				X
+\fB%G\fP				X
+\fB%g\fP				X
+\fB%I\fP			X	X
 \fB%L\fP	X	X
 \fB%l\fP	X	X
-\fB%N\fP		X	X
-\fB%n\fP		X	X
-\fB%S\fP	X	X	X
-\fB%s\fP	X	X	X
-\fB%T\fP	X	X	X
-\fB%t\fP	X	X	X
-\fB%Z\fP	X	X	X
-\fB%z\fP	X	X	X
-\fB%%\fP	X	X	X
+\fB%N\fP		X	X	X
+\fB%n\fP		X	X	X
+\fB%S\fP	X	X	X	X
+\fB%s\fP	X	X	X	X
+\fB%T\fP	X	X	X	X
+\fB%t\fP	X	X	X	X
+\fB%V\fP				X
+\fB%v\fP				X
+\fB%W\fP				X
+\fB%w\fP				X
+\fB%X\fP				X
+\fB%x\fP				X
+\fB%Z\fP	X	X	X	X
+\fB%z\fP	X	X	X	X
+\fB%%\fP	X	X	X	X
 .fi
 .in -0.3i
 .PP
@@ -3388,18 +3445,20 @@ description is omitted if there is not enough space. If the % sign is
 followed by an exclamation mark ('!\&') for a lowercase letter, the
 description is omitted first and then the content. The shortening is always
 from right to left, first the description is omitted and when no more
-description is displayed, the content is omitted. If %T and %S follow each
-other directly a '/' will be inserted in between. %Z will always have one
-decimal point and may have a one letter bi-suffix.
+description is displayed, the content is omitted. If %T and %S, %F and %G
+or %V and %W follow each other directly a '/' will be inserted in
+between. %Z will always have one decimal point and may have a one letter
+bi-suffix.
 .PP
 Defaults for the format strings:
 .PP
 .in +.3i
 .nf
-.ta \w'attachment_format'u +\w'"\fB%T%S%E%C%d\fP"'u
+.ta \w'attachment_format:'u +\w'"\fB%T%S%E%C%d\fP"'u
 \fBattachment_format\fP:	"\fB%T%S%E%C%d\fP"
-\fBpage_mime_format\fP:	"\fB[\-\- %T%S%*n%z%*l%!c%!d%*e \-\-]\fP"
+\fBpage_mime_format\fP:		"\fB[\-\- %T%S%*n%z%*l%!c%!d%*e \-\-]\fP"
 \fBpage_uue_format\fP:		"\fB[\-\- %T%S%*n%I%!d%*e \-\-]\fP"
+\fBpage_yenc_format\fP:		"\fB[\-\- %*N%!d%I [%F%G]%V%W%X \-\-]\fP"
 .fi
 .\"
 .\"
@@ -4065,7 +4124,7 @@ authentication is required later on. Using the ''\fB\-A\fP'' command line
 option in conjunction with ''\fB\-C\fP'' circumvents this behavior.
 .\"
 .\"
-.SH "CONFORMING TO"
+.SH CONFORMING TO
 .B tin
 does conform to the Base Definitions volume of IEEE Std 1003.1-2008, Section
 12, Utility Conventions (Utility Argument Syntax, Utility Syntax Guidelines).
@@ -4167,6 +4226,10 @@ for
 and
 .BR \%vsnprintf (3)
 fallbacks.
+.IP "Gary S. Brown"
+for
+.BR \%crc32 ()
+fallback.
 .\"
 .\"
 .SH AUTHOR
@@ -4179,7 +4242,7 @@ Iain Lea <iain@bricbrac.de>
 Urs Janssen <urs@tin.org>
 .\"
 .\"
-.SH "SEE ALSO"
+.SH SEE ALSO
 .BR \%elm (1),
 .BR \%emacs (1),
 .BR \%gpg (1),

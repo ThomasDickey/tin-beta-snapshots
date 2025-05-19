@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-25
+ *  Updated   : 2025-04-04
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -194,7 +194,7 @@ build_tline(
 				free(buf);
 				break;
 
-			case 'F':	/* from */
+			case 'F':	/* from */ /* TODO: BiDi */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
@@ -220,7 +220,7 @@ build_tline(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 
-			case 'I':	/* initials */
+			case 'I':	/* initials */ /* TODO: BiDi? */
 				len = MIN(thrd_fmt.len_initials, sizeof(tmp) - 1);
 				get_initials(art, tmp, (int) len);
 				strcat(buffer, tmp);
@@ -293,7 +293,7 @@ build_tline(
 				strcat(buffer, tin_ltoa(art->score, thrd_fmt.len_score));
 				break;
 
-			case 'T':	/* thread/subject */
+			case 'T':	/* thread/subject */ /* TODO: BiDi */
 				len = curr_group->attribute->show_author != SHOW_FROM_NONE ? thrd_fmt.len_subj : thrd_fmt.len_subj + thrd_fmt.len_from;
 				len_start = (size_t) strwidth(buffer);
 
@@ -899,7 +899,7 @@ thread_page(
 					else
 						draw_thread_arrow();
 
-					info_message(tagged ? _(txt_prefix_tagged) : _(txt_prefix_untagged), txt_article_sp[0]);
+					info_message(tagged ? _(txt_tagged_article_sp[0]) : _(txt_untagged_article));
 				}
 				break;
 
@@ -919,7 +919,7 @@ thread_page(
 			case MARK_THREAD_UNREAD:		/* mark thread as unread */
 				thd_mark_unread(group, base[thread_basenote]);
 				update_thread_page();
-				info_message(_(txt_marked_as_unread), _(txt_thread_upper));
+				info_message(_(txt_marked_thread_as_unread));
 				break;
 
 			case THREAD_SELECT_ARTICLE:		/* mark article as selected */

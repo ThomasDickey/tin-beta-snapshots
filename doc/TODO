@@ -70,6 +70,8 @@ o  the key ToggleHelpDisplay / GLOBAL_TOGGLE_HELP_DISPLAY is misnamed
 o  the literal IPv6 with embedded IPv4 addresses part in URL_REGEX is buggy
    and does not catch all valid combinations
 
+o  tin.h MIME_ENCODING_* and rfc2046.h ENCODING_* are not aligned
+
 Pager Problems
 --------------
 
@@ -93,8 +95,9 @@ o  mailers other than sendmail (f.e. mutt) and interactive_mailer=0 may lead
 
 New features
 ------------
-o  add code for more TLS/SSL libraries (wolfSSL, mbed TLS, BearSSL, MatrixSSL,
-   axTLS, ...)
+o  add code for more TLS/SSL libraries, e.g.
+   mbed TLS <https://github.com/Mbed-TLS/mbedtls>, BearSSL, MatrixSSL,
+   axTLS, wolfSSL, ...)
 
 o  configure check for OpenSSL currently depends on pkg-config
 
@@ -148,6 +151,13 @@ o  allow to cancel piping / saving multiple articles, ESC/'z' just stops the
 
 o  add per scope getart_limit via attributes
    [20131114 Urs Janssen <urs@tin.org>]
+
+o  add per scope hide_{uue,yenc,shar) via attributes
+   (use a unified option with a name like hide_inline_non_mime_attachments
+    = {none, uue, partial_uue, xxe, partial_xxe, yec, partial_yenc, shar,
+       pgp-sig, pgp-key, ...} and combinations)
+
+o  add per scope hideline_regex via attributes e.g. to exclude *ascii-art
 
 o  add support for %A (Address), %C (Firstname), %N (Fullname) to
    group_format and thread_format
@@ -258,9 +268,8 @@ o  add $LOCKEXT support
 
 o  add xxencode (<http://www.debath.co.uk/code/xxencode.c>),
    base224 (<http://b-news.sf.net/>),
-   base91 (<http://base91.sourceforge.net/>) and yenc (hide/decode-)support
-   (see <http://yydecode.sourceforge.net/> for readable code, ignore
-   the crap on <http://www.yenc.org/>). also check
+   base91 (<http://base91.sourceforge.net/>) and yenc decode-support
+   (see <http://yydecode.sourceforge.net/> for readable code. also check
    <http://www.exit109.com/~jeremy/news/binaries/> which might replace yenc
    etc.pp. some day.
    [20020216 Urs Janssen <urs@tin.org>]
@@ -360,12 +369,17 @@ o  pgpverify invocation with a single key instead of '|''a''pgpverify' or a
 
 o  pgp-{6,7} support
 
-o  use runtime config for pgp instead of hardcoded values depending on
-   compile time detection, i.e. have tinrc vars for pgp_decode, pgp_verify, ...
-   like in mutt and/or
+o  use runtime config for pgp instead of hardcoded values depending on compile
+   time detection, i.e. have tinrc vars for pgp_decode, pgp_verify, ...
+   like in mutt (and use fork()/exec*() instead of system() where %F is
+   replaced (wordexp(3)-like (ulBuildArgv()-but quote aware)) with the
+   filename (and %U by the user); e.g.
+      pgp_verify=gpg --no-batch --verify %F
+   -> execlp("gpg", "gpg", "--no-batch", "--verify", artfile, NULL);
+   ) and/or
 
-o  add check for GPGME (<http://www.gnupg.org/related_software/gpgme/>) and if
-   found use it for pgp actions.
+o  add check for GPGME (<http://www.gnupg.org/related_software/gpgme/>) and
+   if found use it for pgp actions.
 
 o  add feature Cc:
 
@@ -377,6 +391,10 @@ o  add new key which tags articles based on a prompted regex, could be used
    works on tagged arts (the later might be useful in conjunction with
    GROUP_MARK_UNSELECTED_ARTICLES_READ)
    [20051110 Urs Janssen <urs@tin.org>]
+
+o  Additions to the page menu:
+     key to toggle hideline_regex on/off (e.g. '{' or '}') as toggle-raw
+     may not help to show oriinal article (e.g. base64 encoded article).
 
 o  Additions to the thread menu:
      ']'  (GLOBAL_QUICK_FILTER_KILL)
@@ -592,8 +610,10 @@ o  add missing mailcap (RFC 1524) features: %n, %F, copiousoutput, print,
 
 o  add BiDi handling to page header
 
-o  add trn like $HIDELINE tinrc-option to skip lines matching the given
-   regex when displaying (pipeing, printing, saving or quoting) an article.
+o  possibility to recook the article with a manually supplied charset
+   (e.g. to override a false guess or the like)
+
+o  add page_yenc_format for customization
 
 Internal Changes
 ----------------
@@ -648,8 +668,8 @@ o  move several (server related) files into the per-server dir e.g.:
       ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}/.news/
    [20050807 Urs Janssen <urs@tin.org>]
 
-o  remove untranslatable constructs like txt_prefix_*, txt_marked_as_*,
-   txt_reading_*, ...
+o  remove untranslatable constructs like txt_saved_to, txt_saved_to_range,
+   txt_mark_arts_read, txt_mark_art_read, ...
    [20050413 Urs Janssen <urs@tin.org>]
 
 o  keys which could be renamed/merged:
@@ -746,6 +766,7 @@ o  check code with
    clang-analyzer (<http://clang-analyzer.llvm.org/>),
    infer (<http://fbinfer.com/>)
    Splint (LCLint) <http://www.splint.org/>,
+   IKOS <https://github.com/NASA-SW-VnV/ikos/tree/master>,
    zzuf (<http://caca.zoy.org/wiki/zzuf>) and
    aflnet (<https://github.com/aflnet/aflnet>)
 
@@ -827,10 +848,14 @@ o  check for wcsftime() and if found use it instead of strftime() (at
    least in page.c).
    [20130129 Urs Janssen <urs@tin.org>]
 
-o  BiDi handling to select-, group-, thread-level
+o  BiDi handling to select-, group-, thread-level (ui-layout expects
+   left-to-right text).
 
 o  check for rpmatch(3) and if found use in yes/no questions,
    prompt.c:prompt_yn()?
+
+o  check for libunibreak <https://github.com/adah1972/libunibreak>
+   and make use of it if found? (tinrc.dont_break_words)
 
 Docs/online help
 ----------------
@@ -853,8 +878,7 @@ o  the online help of GroupMarkUnselArtRead 'X' is unclear as it doesn't
 o  document the different signals/actions
    [20080209 Urs Janssen <urs@tin.org>]
 
-o  review the Spanish, Swedish and Russian translations
-   (es.po, sv.po, ru.po); add/finish missing man-page translation(s).
+o  review the unfinished (man page) translations
 
 o  add installation guide (in html?)
 
@@ -1062,9 +1086,14 @@ o  add PGP_INCLUDE_KEY to pgp_mail_keys?
    [20050426 Urs Janssen <urs@tin.org>]
 
 o  trn and perls Net::NNTP::Auth use ~/.nntpauth (format is
-   "^server\s+user\s+password"), shall we also try ~/.nntpauth if we can't
-   find a matching entry in ~/.newsauth? and should we look for
+   /^$server\s+$user\s+$password/), shall we also try ~/.nntpauth if we
+   can't find a matching entry in ~/.newsauth? and should we look for
    ${TIN_HOMEDIR:-"$HOME"}/.tin/.newsauth if ~/.newsauth is not found?
+   What about ~/.authinfo (Gnus; format is .netrc-like:
+   /machine\s+$server\s+ login\s+$user\s+ (?:password\s+$password\s+)?
+    (?:\s+port\s+$port\s+)?(?:force\s+yes\s+)?/x
+   see <https://www.gnu.org/software/emacs/manual/html_node/gnus/NNTP.html>;
+   and note the default-token)?
    [20040128 Urs Janssen <urs@tin.org>]
 
 o  what todo if in a CTE: x-uue the CD: filename differs from the one given
@@ -1135,3 +1164,18 @@ o  option to {display,warn,hide} article if it has an Expires:-header in the
 o  also check for $NEWS_ORGANIZATION (see lynx(1))?
 
 o  add $MAILCHECK alarm-timer?
+
+o  in case of HAVE_LIB_PCRE2 && HAVE_SETLOCALE && !NO_LOCALE && ENABLE_NLS
+   (and $LC_CTYPE != C/POSIX[.UTF-8]) do we want to (see pcre2api(3)):
+     pcretables = pcre2_maketables_8(NULL);
+     pcreccontext = pcre2_compile_context_create_8(NULL);
+     pcre2_set_character_tables_8(pcreccontext, pcretables);
+     pcre2_compile(..., pcreccontext);
+     pcre2_maketables_free(pcretables);
+   and add PCRE2_UCP options? Do we want do set PCRE2_UCP unconditionally,
+   even though it slows down matching?
+
+o  when saving/decoding articles/attachments use realpath() and
+   warn if the canonical absolute path starts with any of
+   { "/boot/", "/dev/", "/etc/", "/proc/", "/root/", "/sbin/",
+     "/sys/", "/usr/sbin/" /*, ... */ }

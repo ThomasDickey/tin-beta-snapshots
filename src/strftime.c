@@ -269,7 +269,7 @@ my_strftime(
 			if (i == 0)
 				i = 12;
 			else if (i > 12)
-				i -=12;
+				i -= 12;
 			snprintf(tbuf, sizeof(tbuf), "%2d", i);
 			break;
 

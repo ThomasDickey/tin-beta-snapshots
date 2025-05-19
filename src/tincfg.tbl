@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2025-02-17
+;   Updated   : 2025-05-09
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2025 Thomas E. Dickey <dickey@invisible-island.net>
@@ -293,6 +293,7 @@
 	strip_was_regex			OPT_STRING
 	verbatim_begin_regex		OPT_STRING
 	verbatim_end_regex		OPT_STRING
+	hideline_regex			OPT_STRING
 #ifdef HAVE_COLOR
 	extquote_regex			OPT_STRING
 #endif
@@ -331,6 +332,7 @@
 	attachment_format		OPT_STRING
 	page_mime_format		OPT_STRING
 	page_uue_format			OPT_STRING
+	page_yenc_format		OPT_STRING
 	date_format			OPT_STRING
 #ifdef HAVE_UNICODE_NORMALIZATION
 	normalization_form		txt_normalization_forms

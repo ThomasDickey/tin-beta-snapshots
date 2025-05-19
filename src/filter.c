@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2025-02-14
+ *  Updated   : 2025-05-07
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -2287,21 +2287,18 @@ filter_on_path(
 {
 	int i;
 	const struct t_filter *flt;
-	t_bool ret = FALSE;
 
 	if (group->glob_filter->num == 0)
-		return ret;
+		return FALSE;
 
 	if (set_filter_scope(group)) {
 		flt = group->glob_filter->filter;
 		for (i = 0; i < group->glob_filter->num; i++) {
-			if (flt[i].inscope && flt[i].path) {
-				ret = TRUE;
-				break;
-			}
+			if (flt[i].inscope && flt[i].path)
+				return TRUE;
 		}
 	}
-	return ret;
+	return FALSE;
 }
 
 

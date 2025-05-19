@@ -2020,7 +2020,7 @@ read_overview(
 					fseek(fp, 0L, SEEK_SET); /* rewind gzdirect() */
 				} else
 #	endif /* 0 */
-					buf = my_malloc(32768 + 1);  /* FIXME make dynamic; I've seen up to 8K overview lines in the wild, so 32k should be "safe" */
+					buf = my_malloc(32768 + 1);	/* FIXME make dynamic; I've seen up to 8K overview lines in the wild, so 32k should be "safe" */
 			}
 		}
 	}
@@ -2786,7 +2786,8 @@ write_overview(
 					article->from_raw,
 					date,
 					BlankIfNull(article->msgid), BlankIfNull(ref),
-					0 /* bytes */,  article->line_count);
+					0 /* bytes */,
+					article->line_count);
 
 			if (article->xref) {
 #ifdef USE_ZLIB
@@ -3520,7 +3521,7 @@ valid_artnum(
 		cur <<= 1;
 
 	range = cur >> 1;
-	cur--;
+	--cur;
 
 	forever {
 		if (arts[cur].artnum == art)

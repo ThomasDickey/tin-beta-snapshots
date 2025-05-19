@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2025-03-03
+ *  Updated   : 2025-04-11
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2025 Thomas Dickey <dickey@invisible-island.net>
@@ -270,6 +270,7 @@
 #	undef HAVE_IS_XTERM
 #	undef HAVE_LINK
 #	undef HAVE_LOCKF
+#	undef HAVE_LSTAT
 #	undef HAVE_MEMCMP
 #	undef HAVE_MEMCPY
 #	undef HAVE_MEMMOVE
@@ -281,7 +282,9 @@
 #	undef HAVE_MUNMAP
 #	undef HAVE_NL_LANGINFO
 #	undef HAVE_POLL
+#	undef HAVE_POSIX_CLOSE
 #	undef HAVE_PUTENV
+#	undef HAVE_REALPATH
 #	undef HAVE_RESIZETERM
 #	undef HAVE_REWINDDIR
 #	undef HAVE_SELECT

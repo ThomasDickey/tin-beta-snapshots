@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2025-01-09
+# Updated: 2025-04-25
 #
 
 SHELL	= @SHELL@
@@ -11,7 +11,7 @@ LVER	= 2
 PVER	= 6
 SVER	= 5
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20250209
+DVER	= 20250519
 EXE	= tin
 
 # directory structure
@@ -57,6 +57,7 @@ CFILES	= \
 	$(SRCDIR)/color.c \
 	$(SRCDIR)/config.c \
 	$(SRCDIR)/cook.c \
+	$(SRCDIR)/crc32.c \
 	$(SRCDIR)/curses.c \
 	$(SRCDIR)/debug.c\
 	$(SRCDIR)/envarg.c \
@@ -523,7 +524,7 @@ distclean:
 	$(PODIR)/messages.mo
 
 configure: configure.in aclocal.m4
-	autoconf
+	@command -v autoconf-dickey 1>/dev/null && autoconf-dickey || autoconf
 
 config.status: configure
 	$(SHELL) $(TOPDIR)/config.status --recheck

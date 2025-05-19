@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2025-02-17
+ *  Updated   : 2025-05-09
  *  Notes     :
  *
  * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
@@ -80,6 +80,7 @@ struct t_config {
 	char *attachment_format;			/* format string for the attachment level */
 	char *page_mime_format;				/* format string for the mime header in page level */
 	char *page_uue_format;				/* format string for the uue header in page level */
+	char *page_yenc_format;				/* format string for the yenc header in page level */
 	char *date_format;					/* format string for the date display in the page header */
 	char *mail_quote_format;
 	char *mailer_format;				/* mailer + parameters  %M %S %T %F */
@@ -111,6 +112,7 @@ struct t_config {
 	char *underscores_regex;			/* regex used to highlight _underscores_ */
 	char *verbatim_begin_regex;			/* regex used to find the begin of a verbatim block */
 	char *verbatim_end_regex;			/* regex used to find the end of a verbatim block */
+	char *hideline_regex;				/* regex to skip over matching lines */
 	char *savedir;						/* directory to save articles to */
 	char *sigfile;
 	char *spamtrap_warning_addresses;

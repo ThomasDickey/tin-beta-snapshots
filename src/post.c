@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-25
+ *  Updated   : 2025-05-15
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -836,7 +836,7 @@ build_post_hist_list(
 	char *buf;
 	int count = 0;
 	int err = 0;
-	long fpos = 0;
+	long fpos = 0L;
 	size_t j, k, n, buflen = LEN;
 	t_posted *posted = NULL;
 
@@ -1772,22 +1772,13 @@ check_article_to_be_posted(
 		}
 		free(cp2);
 
-		if (!(warnings_catbp & CA_WARNING_RE_WITHOUT_REFERENCES)) {
-			/*
-			 * Warn if there are References: but no "Re: " at the beginning
-			 * of and no "(was:" in the Subject.
-			 */
-			if (saw_references && strncmp(subject, "Re: ", 4)) {
-				t_bool was_found = FALSE;
+		if (!(warnings_catbp & CA_WARNING_RE_WITHOUT_REFERENCES) && saw_references && strncmp(subject, "Re: ", 4) && !strstr(subject, "(was:"))
+			warnings_catbp |= CA_WARNING_REFERENCES_WITHOUT_RE;
 
-				cp2 = subject;
-				while (!was_found && (cp2 = strchr(cp2, '(')))
-				was_found = (STRNCMPEQ(++cp2, "was:", 4));
-
-				if (!was_found)
-					warnings_catbp |= CA_WARNING_REFERENCES_WITHOUT_RE;
-			}
-		}
+		/*
+		 * TODO: - warn if subject starts with "(was:"
+		 *       - warn if subject starts with "Re:" and contains "(was:"
+		 */
 	}
 
 	if (!found_from_lines)
@@ -2446,7 +2437,7 @@ post_loop(
 	char a_message_id[HEADER_LEN];	/* Message-ID of the article if known */
 	int ret_code = POSTED_NONE;
 	int i = 1;
-	int save_signal_context = signal_context;
+	enum context save_signal_context = signal_context;
 	long artchanged;		/* artchanged work was not done in post_postponed_article */
 	struct t_group *ogroup = curr_group;
 	t_bool art_unchanged;
@@ -3038,7 +3029,7 @@ post_postponed_article(
 		char *ng = my_strdup(newsgroups);
 		char *p;
 		char buf[LEN];
-		unsigned int offset = 1;
+		int offset = 1;
 
 		if ((p = strchr(ng, ',')) != NULL)
 			*p = '\0';
@@ -3659,7 +3650,7 @@ post_response(
 	} else if (note_h.followup && strcmp(note_h.followup, groupname) != 0
 			&& strcmp(note_h.followup, note_h.newsgroups) != 0) {
 		char keyignore[MAXKEYLEN], keypost[MAXKEYLEN], keyquit[MAXKEYLEN];
-		int save_signal_context = signal_context;
+		enum context save_signal_context = signal_context;
 
 		show_followup_info();
 		signal_context = cPostFup;
@@ -4814,7 +4805,7 @@ cancel_article(
 			char *smsg;
 			char buff[LEN];
 			char keycancel[MAXKEYLEN], keyedit[MAXKEYLEN], keyquit[MAXKEYLEN];
-			int save_signal_context = signal_context;
+			enum context save_signal_context = signal_context;
 
 			snprintf(buff, sizeof(buff), _(txt_quit_cancel),
 					PrintFuncKey(keyedit, POST_EDIT, post_cancel_keys),
@@ -6062,7 +6053,7 @@ build_messageid(
 	int i;
 	size_t j;
 	static char buf[NNTP_STRLEN]; /* Message-IDs are limited to 250 octets as of RFC 5536 3.1.3 and RFC 3977 3.6 */
-	static unsigned long int seqnum = 0; /* use a counter in tinrc? */
+	static unsigned long int seqnum = 0L; /* use a counter in tinrc? */
 	time_t t = time(NULL);
 
 	if (t >= 1041379200) /* 2003-01-01 00:00:00 GMT */

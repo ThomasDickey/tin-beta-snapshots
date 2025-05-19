@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-25
+ *  Updated   : 2025-04-04
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -603,7 +603,8 @@ group_page(
 				break;
 
 			case GLOBAL_QUIT:	/* return to group selection page */
-				if (num_of_tagged_arts && prompt_yn(_(txt_quit_despite_tags), TRUE) != 1)
+				/* TODO: add %d-num_of_tagged_arts counter in prompt? */
+				if (num_of_tagged_arts && prompt_yn(P_(txt_quit_despite_tags_sp[0], txt_quit_despite_tags_sp[1], num_of_tagged_arts), TRUE) != 1)
 					break;
 				if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(_(txt_confirm_select_on_exit), FALSE) != 1)) {
 					undo_auto_select_arts();
@@ -613,7 +614,8 @@ group_page(
 				break;
 
 			case GLOBAL_QUIT_TIN:		/* quit */
-				if (num_of_tagged_arts && prompt_yn(_(txt_quit_despite_tags), TRUE) != 1)
+				/* TODO: add %d-num_of_tagged_arts counter in prompt? */
+				if (num_of_tagged_arts && prompt_yn(P_(txt_quit_despite_tags_sp[0], txt_quit_despite_tags_sp[1], num_of_tagged_arts), TRUE) != 1)
 					break;
 				if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(_(txt_confirm_select_on_exit), FALSE) != 1)) {
 					undo_auto_select_arts();
@@ -744,7 +746,7 @@ group_page(
 					else
 						draw_subject_arrow();
 
-					info_message(tagged ? _(txt_prefix_untagged) : _(txt_prefix_tagged), txt_thread_sp[0]);
+					info_message(tagged ? _(txt_untagged_thread) : _(txt_tagged_thread));
 				}
 				break;
 
@@ -796,8 +798,6 @@ group_page(
 				if (grpmenu.curr < 0)
 					info_message(_(txt_no_arts));
 				else {
-					const char *ptr;
-
 					if (range_active) {
 						/*
 						 * We are tied to following base[] here, not arts[], as we operate on
@@ -813,16 +813,13 @@ group_page(
 						}
 						range_active = FALSE;
 						show_group_page();
-						ptr = _(txt_base_article_range);
-					} else {
+					} else
 						art_mark(group, &arts[base[grpmenu.curr]], ART_WILL_RETURN);
-						ptr = _(txt_base_article);
-					}
 
 					show_group_title(TRUE);
 					build_sline(grpmenu.curr);
 					draw_subject_arrow();
-					info_message(_(txt_marked_as_unread), ptr);
+					info_message(range_active ? _(txt_base_article_range_marked_read) : _(txt_base_article_marked_read));
 				}
 				break;
 
@@ -1129,8 +1126,7 @@ toggle_read_unread(
 	if (force)
 		curr_group->attribute->show_only_unread_arts = TRUE;	/* Yes - really, we change it in a bit */
 
-	wait_message(0, _(txt_reading_arts), /* TODO: plural-forms? ("unread" fr:("non lu", "non lus")) */
-		(curr_group->attribute->show_only_unread_arts) ? _(txt_all) : _(txt_unread));
+	wait_message(0, (curr_group->attribute->show_only_unread_arts) ? _(txt_reading_all_arts) : _(txt_reading_unread_arts));
 
 	if (grpmenu.curr >= 0) {
 		if (curr_group->attribute->show_only_unread_arts || new_responses(grpmenu.curr))
@@ -1369,7 +1365,7 @@ build_sline(
 				free(buf);
 				break;
 
-			case 'F':	/* from */
+			case 'F':	/* from */ /* TODO: BiDi */
 				if (curr_group->attribute->show_author != SHOW_FROM_NONE) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					get_author(FALSE, &arts[j], tmp, sizeof(tmp) - 1);
@@ -1471,7 +1467,7 @@ build_sline(
 				strcat(buffer, tin_ltoa(sbuf.score, grp_fmt.len_score));
 				break;
 
-			case 's':	/* thread/subject */
+			case 's':	/* thread/subject */ /* TODO: BiDi */
 				len = curr_group->attribute->show_author != SHOW_FROM_NONE ? grp_fmt.len_subj : grp_fmt.len_subj + grp_fmt.len_from;
 
 				if (sbuf.multipart_have > 1) /* We have a multipart msg so lets built our new header info. */
@@ -1826,7 +1822,8 @@ group_catchup(
 	char buf[LEN];
 	int pyn = 1;
 
-	if (num_of_tagged_arts && prompt_yn(_(txt_catchup_despite_tags), TRUE) != 1)
+	/* TODO: add %d-num_of_tagged_arts counter in prompt? */
+	if (num_of_tagged_arts && prompt_yn(P_(txt_catchup_despite_tags_sp[0], txt_catchup_despite_tags_sp[1], num_of_tagged_arts), TRUE) != 1)
 		return 0;
 
 	snprintf(buf, sizeof(buf), _(txt_mark_arts_read), (func == CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_unread_group) : "");

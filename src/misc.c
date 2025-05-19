@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-25
+ *  Updated   : 2025-04-10
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -4726,7 +4726,7 @@ tin_version_info(
 #	endif /* HAVE_LIBIDNKIT && HAVE_IDN_VERSION_H */
 
 #	if defined(HAVE_LIBIDN2) && defined(IDN2_VERSION)
-		fprintf(fp, "\tIDN2     = \"%s\"\n", IDN2_VERSION);
+		fprintf(fp, "\tIDN2     = \"%s\"\n", idn2_check_version(NULL));
 		++wlines;
 #	endif /* HAVE_LIBIDN2 && IDN2_VERSION */
 
@@ -4736,9 +4736,14 @@ tin_version_info(
 #	endif /* HAVE_LIBIDN && HAVE_STRINGPREP_H */
 
 #	ifdef USE_ZLIB
+#		if defined(ZLIB_VERNUM) && ZLIB_VERNUM >= 0x1020
+		fprintf(fp, "\tZLIB     = \"%s\"\n", zlibVersion());
+#		else
 		fprintf(fp, "\tZLIB     = \"%s\"\n", ZLIB_VERSION);
+#endif /* ZLIB_VERNUM && ZLIB_VERNUM >= 0x1020 */
 		++wlines;
 #	endif /* USE_ZLIB */
+
 #	ifdef HAVE_LIBURIPARSER
 		fprintf(fp, "\tURIPARSER= \"%s\"\n", URI_VER_ANSI);
 		++wlines;
@@ -4748,6 +4753,7 @@ tin_version_info(
 		++wlines;
 #		endif /* HAVE_LIBCURL */
 #	endif /* HAVE_LIBURIPARSER */
+
 #	if defined(USE_CANLOCK) && defined(CL_API_MAJOR) && defined(CL_API_MINOR)
 		fprintf(fp, "\tCANLOCK  = \"%d.%d\"\n", CL_API_MAJOR, CL_API_MINOR);
 		++wlines;
@@ -4926,6 +4932,7 @@ make_connection_page(
 	/* TODO: hide if empty? */
 	fprintf(fp, "tin.defaults       : %s\n", global_defaults_file);
 
+	/* TODO: getext for "local"/"global" translation? */
 	fprintf(fp, "attributes (local) : %s\n", local_attributes_file);
 	if (*global_attributes_file)
 		fprintf(fp, "attributes (global): %s\n", global_attributes_file);
@@ -5031,7 +5038,7 @@ tin_fopen(
 			if (S_ISDIR(st.st_mode))
 				serrno = errno = EISDIR;
 			else {
-				if (st.st_mode & (S_IFREG | S_IFLNK)) {
+				if (S_ISREG(st.st_mode)) {
 					if (mode[0] == 'r' && (mode[1] == '\0' || (mode[1] == 'b' && mode[2] == '\0')) && st.st_size <= 0L) {
 #ifdef DEBUG
 						if (debug & DEBUG_MISC)
@@ -5138,7 +5145,7 @@ tin_ucnv_buffer_to_local(
 	unicode_buffer = my_calloc(ilen, sizeof(UChar));
 
 	p = *line;
-	while ((p = strchr(p, '?')) != NULL) { /* count input questionmarks */
+	while ((p = strchr(p, '?')) != NULL) { /* TODO: fixme, instead of counting output questionmarks use ucnv_setToUCallBack(...,UCNV_TO_U_CALLBACK_SUBSTITUTE,...) */
 		--quest;
 		++p;
 	}
@@ -5180,7 +5187,7 @@ tin_ucnv_buffer_to_local(
 	} while (err == U_BUFFER_OVERFLOW_ERROR);
 
 	p = output_buffer;
-	while ((p = strchr(p, '?')) != NULL) { /* count output questionmarks */
+	while ((p = strchr(p, '?')) != NULL) { /* TODO: fixme, instead of counting output questionmarks use ucnv_setFromUCallBack(..,UCNV_FROM_U_CALLBACK_SUBSTITUTE,..) */
 		++quest;
 		++p;
 	}
@@ -5231,7 +5238,11 @@ fsync_again:
 #	endif /* !EINTR */
 
 		serrno = errno;
+#	ifdef HAVE_POSIX_CLOSE
+		posix_close(fd, 0);
+#	else
 		close(fd);
+#	endif /* HAVE_POSIX_CLOSE */
 		errno = serrno;
 		return rc;
 	}

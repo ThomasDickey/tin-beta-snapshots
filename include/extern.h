@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-17
+ *  Updated   : 2025-05-14
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>
@@ -471,7 +471,6 @@ extern constext *txt_wildcard_type[];
 	extern constext txt_abort_reading[];
 #endif /* NNTP_ABLE && HAVE_SELECT */
 extern constext txt_active_file_is_empty[];
-extern constext txt_all[];
 extern constext txt_all_groups[];
 extern constext txt_append_overwrite_quit[];
 extern constext txt_art_cancel[];
@@ -493,7 +492,6 @@ extern constext txt_article_cancelled[];
 extern constext txt_article_info_page[];
 extern constext txt_article_reposted[];
 extern constext *txt_article_sp[];
-extern constext txt_article_upper[];
 extern constext *txt_article_mailed_sp[];
 #ifndef DISABLE_PRINTING
 	extern constext *txt_article_printed_sp[];
@@ -581,20 +579,15 @@ extern constext txt_attrib_file_quick_kill_scope[];
 extern constext txt_attrib_file_quick_kill_expire[];
 extern constext txt_attrib_file_quick_kill_case[];
 extern constext txt_attrib_file_quick_kill_hdr[];
-extern constext txt_attrib_file_quick_kill_hdr_0_1[];
-extern constext txt_attrib_file_quick_kill_hdr_2_3[];
-extern constext txt_attrib_file_quick_kill_hdr_4[];
-extern constext txt_attrib_file_quick_kill_hdr_5[];
-extern constext txt_attrib_file_quick_kill_hdr_6[];
+extern constext txt_attrib_file_quick_ks_hdr_0_1[];
+extern constext txt_attrib_file_quick_ks_hdr_2_3[];
+extern constext txt_attrib_file_quick_ks_hdr_4[];
+extern constext txt_attrib_file_quick_ks_hdr_5[];
+extern constext txt_attrib_file_quick_ks_hdr_6[];
 extern constext txt_attrib_file_quick_select_scope[];
 extern constext txt_attrib_file_quick_select_expire[];
 extern constext txt_attrib_file_quick_select_case[];
 extern constext txt_attrib_file_quick_select_hdr[];
-extern constext txt_attrib_file_quick_select_hdr_0_1[];
-extern constext txt_attrib_file_quick_select_hdr_2_3[];
-extern constext txt_attrib_file_quick_select_hdr_4[];
-extern constext txt_attrib_file_quick_select_hdr_5[];
-extern constext txt_attrib_file_quick_select_hdr_6[];
 extern constext txt_attrib_file_quote_chars[];
 #ifndef DISABLE_PRINTING
 	extern constext txt_attrib_file_print_hdr[];
@@ -665,10 +658,11 @@ extern constext txt_autosubscribing_groups[];
 extern constext txt_bad_article[];
 #ifdef DEBUG
 	extern constext txt_bad_attrib[];
+	extern constext txt_bad_global_attrib[];
 #endif /* DEBUG */
 extern constext txt_bad_command[];
-extern constext txt_base_article[];
-extern constext txt_base_article_range[];
+extern constext txt_base_article_marked_read[];
+extern constext txt_base_article_range_marked_read[];
 extern constext txt_batch_update_unavail[];
 extern constext txt_begin_of_art[];
 extern constext txt_begin_of_page[];
@@ -705,7 +699,7 @@ extern constext txt_cannot_write_to_directory[];
 extern constext txt_catchup[];
 extern constext txt_catchup_group[];
 extern constext txt_catchup_all_read_groups[];
-extern constext txt_catchup_despite_tags[];
+extern constext *txt_catchup_despite_tags_sp[];
 extern constext txt_catchup_update_info[];
 extern constext txt_caughtup[];
 extern constext txt_check_article[];
@@ -976,7 +970,6 @@ extern constext txt_full[];
 #if defined(NNTP_ABLE) && !defined(INET6)
 	extern constext txt_giving_up[];
 #endif /* NNTP_ABLE && !INET6 */
-extern constext txt_global[];
 extern constext txt_group[];
 extern constext txt_group_aliased[];
 extern constext txt_group_bogus[];
@@ -1220,6 +1213,7 @@ extern constext txt_help_url_search_forwards[];
 extern constext txt_help_url_search_backwards[];
 extern constext txt_help_url_select[];
 extern constext txt_help_url_toggle_info_line[];
+extern constext *txt_hot_article_sp[];
 extern constext txt_index_page_com[];
 extern constext txt_info_add_kill[];
 extern constext txt_info_add_select[];
@@ -1230,6 +1224,7 @@ extern constext txt_info_do_postpone[];
 extern constext txt_info_enter_valid_character[];
 extern constext txt_info_missing_part[];
 extern constext txt_info_nopostponed[];
+extern constext txt_info_not_available_in_raw[];
 extern constext txt_info_not_multipart_message[];
 extern constext txt_info_not_subscribed[];
 extern constext txt_info_no_write[];
@@ -1284,8 +1279,10 @@ extern constext txt_mark_arts_read[];
 extern constext txt_mark_art_read[];
 extern constext txt_mark_group_read[];
 extern constext txt_mark_thread_read[];
-extern constext txt_marked_as_read[];
-extern constext txt_marked_as_unread[];
+extern constext txt_marked_article_as_read[];
+extern constext txt_marked_article_as_unread[];
+extern constext txt_marked_thread_as_read[];
+extern constext txt_marked_thread_as_unread[];
 extern constext txt_marked_arts_as_read[];
 extern constext txt_marked_arts_as_unread[];
 extern constext txt_matching_cmd_line_groups[];
@@ -1411,9 +1408,6 @@ extern constext txt_posting[];
 #endif /* NNTP_INEWS */
 extern constext txt_postpone_post[];
 extern constext txt_postpone_repost[];
-extern constext txt_prefix_hot[];
-extern constext txt_prefix_tagged[];
-extern constext txt_prefix_untagged[];
 #ifdef NNTP_ABLE
 	extern constext txt_prep_for_filter_on_path[];
 #endif /* NNTP_ABLE */
@@ -1424,7 +1418,7 @@ extern constext txt_quick_filter_kill[];
 extern constext txt_quick_filter_select[];
 extern constext txt_quit[];
 extern constext txt_quit_cancel[];
-extern constext txt_quit_despite_tags[];
+extern constext *txt_quit_despite_tags_sp[];
 extern constext txt_quit_edit_post[];
 extern constext txt_quit_edit_postpone[];
 extern constext txt_quit_edit_save_kill[];
@@ -1437,22 +1431,26 @@ extern constext txt_range_invalid[];
 	extern constext txt_read_abort[];
 	extern constext txt_read_exit[];
 #endif /* HAVE_SELECT */
+extern constext txt_reading_all_arts[];
+extern constext txt_reading_all_groups[];
 extern constext txt_reading_article[];
-extern constext txt_reading_arts[];
 extern constext txt_reading_attributes_file[];
+extern constext txt_reading_global_attributes_file[];
 extern constext txt_reading_config_file[];
+extern constext txt_reading_global_config_file[];
 extern constext txt_reading_filter_file[];
 #ifdef DEBUG
 	extern constext txt_reading_from_spool[];
 #endif /* DEBUG */
 extern constext txt_reading_group[];
-extern constext txt_reading_groups[];
 extern constext txt_reading_input_history_file[];
 extern constext txt_reading_keymap_file[];
 extern constext txt_reading_news_active_file[];
 extern constext txt_reading_news_newsrc_file[];
 extern constext txt_reading_newsgroups_file[];
 extern constext txt_reading_newsrc[];
+extern constext txt_reading_unread_arts[];
+extern constext txt_reading_unread_groups[];
 #ifdef NNTP_ABLE
 #	ifdef DEBUG
 		extern constext txt_reconnect_limit_reached[];
@@ -1544,13 +1542,14 @@ extern constext txt_supersede_group[];
 extern constext txt_superseding_art[];
 extern constext txt_suspended_message[];
 extern constext txt_tab[];
+extern constext *txt_tagged_article_sp[];
+extern constext txt_tagged_thread[];
 extern constext txt_tex[];
 extern constext txt_there_is_no_news[];
 extern constext txt_thread_upper[];
 extern constext txt_thread_com[];
 extern constext txt_thread_marked_as_deselected[];
 extern constext txt_thread_marked_as_selected[];
-extern constext *txt_thread_sp[];
 extern constext txt_thread_x_of_n[];
 extern constext txt_threading_arts[];
 extern constext txt_threading_by_multipart[];
@@ -1596,6 +1595,8 @@ extern constext txt_toggled_verbatim[];
 #endif /* NO_LOCKING */
 extern constext txt_type_h_for_help[];
 extern constext txt_unlimited_time[];
+extern constext txt_untagged_article[];
+extern constext txt_untagged_thread[];
 #ifdef DEBUG
 	extern constext txt_unchanged[];
 #endif /* DEBUG */
@@ -1603,7 +1604,6 @@ extern constext txt_unknown[];
 #if defined(XFACE_ABLE) || (defined(NNTPS_ABLE) && defined(HAVE_LIB_LIBTLS))
 	extern constext txt_unknown_error[];
 #endif /* XFACE_ABLE || (NNTPS_ABLE && HAVE_LIB_LIBTLS) */
-extern constext txt_unread[];
 extern constext txt_unsubscribe_pattern[];
 extern constext *txt_unsubscribed_num_group_sp[];
 extern constext txt_unsubscribed_to[];
@@ -1761,6 +1761,15 @@ extern constext *txt_x_resp_sp[];
 extern constext *txt_yanked_group_sp[];
 extern constext txt_yanked_none[];
 extern constext txt_yanked_sub_groups[];
+extern constext txt_yenc_complete[];
+extern constext txt_yenc_corrupt[];
+extern constext txt_yenc_crc[];
+extern constext txt_yenc_incomplete[];
+extern constext txt_yenc_part[];
+extern constext txt_yenc_part_size[];
+extern constext txt_yenc_partial[];
+extern constext txt_yenc_total[];
+extern constext txt_yenc_total_size[];
 extern constext txt_show_unread[];
 extern constext txt_yes[];
 extern constext txt_you_have_mail[];
@@ -1828,7 +1837,7 @@ extern int num_newnews;
 extern int num_of_tagged_arts;
 extern int num_save;
 extern int num_scope;
-extern int signal_context;
+extern enum context signal_context;
 extern int srch_lineno;
 extern int system_status;
 extern int this_resp;
@@ -1859,12 +1868,18 @@ extern struct regex_cache strip_re_regex;
 extern struct regex_cache strip_was_regex;
 extern struct regex_cache uubegin_regex;
 extern struct regex_cache uubody_regex;
+extern struct regex_cache xxbody_regex;
 extern struct regex_cache verbatim_begin_regex;
 extern struct regex_cache verbatim_end_regex;
+extern struct regex_cache hideline_regex;
+extern struct regex_cache yencbegin_regex;
+extern struct regex_cache yencpart_regex;
+extern struct regex_cache yencend_regex;
 extern struct regex_cache url_regex;
 extern struct regex_cache mail_regex;
 extern struct regex_cache news_regex;
 extern struct regex_cache shar_regex;
+extern struct regex_cache shar_end_regex;
 extern struct regex_cache slashes_regex;
 extern struct regex_cache stars_regex;
 extern struct regex_cache underscores_regex;
@@ -2189,6 +2204,7 @@ extern struct opttxt txt_news_quote_format;
 extern struct opttxt txt_organization;
 extern struct opttxt txt_page_mime_format;
 extern struct opttxt txt_page_uue_format;
+extern struct opttxt txt_page_yenc_format;
 extern struct opttxt txt_pos_first_unread;
 extern struct opttxt txt_post_8bit_header;
 extern struct opttxt txt_post_mime_encoding;
@@ -2270,6 +2286,7 @@ extern struct opttxt txt_use_mouse;
 extern struct opttxt txt_verbatim_begin_regex;
 extern struct opttxt txt_verbatim_end_regex;
 extern struct opttxt txt_verbatim_handling;
+extern struct opttxt txt_hideline_regex;
 extern struct opttxt txt_wildcard;
 extern struct opttxt txt_word_highlight;
 extern struct opttxt txt_word_h_display_marks;

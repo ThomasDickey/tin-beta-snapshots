@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2025-03-08
+ *  Updated   : 2025-05-12
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -44,12 +44,14 @@
 #			define TIMEOUT_INI_NAME TCP_CONNECTIONTIMEOUT
 #			define TIMEOUT_RXT_NAME TCP_RXT_CONNDROPTIME
 /*
- * no well tested, so disabled for now and stick with alarm()
- * - openbsd-7.6 : not available
- * - freebsd-15.0: looks ok
- * - netbsd-10   : times out too early
- * - solaris     : not tested
- * - aix         : not tested
+ * no (well) tested, so disabled for now and stick with alarm()
+ * - __OpenBSD__  7.6: not available
+ * - __FreeBSD__ 15.0: looks ok
+ * - __NetBSD__    10: times out too early
+ * - __DragonFly__   : not tested
+ * - __MidnightBSD__ : not tested
+ * - __sun           : not tested
+ * - _AIX            : not tested
  * - ...
  */
 /*
@@ -1023,7 +1025,7 @@ reconnect(
 	int retry)
 {
 	char buf[NNTP_STRLEN];
-	int save_signal_context = signal_context;
+	enum context save_signal_context = signal_context;
 
 	/*
 	 * Tear down current connection
@@ -1887,7 +1889,7 @@ nntp_open(
 				case ERR_COMMAND:
 					break;
 
-				case 221:	/* unexpected multiline ok, e.g.: SoftVelocity Discussions 2.5q */
+				case OK_XHDR:	/* unexpected multiline ok, e.g.: SoftVelocity Discussions 2.5q */
 					nntp_caps.hdr_cmd = &xhdr_cmds[i];
 #	ifdef DEBUG
 					if ((debug & DEBUG_NNTP) && verbose > 1)
@@ -1917,6 +1919,18 @@ nntp_open(
 		}
 #	endif /* 0 */
 	} else {
+		/*
+		 * XZVER (and XZHDR) are likely not mentioned in CAPABILITIES
+		 * so we would need to probe them unconditionally.
+		 * responses (note the -1 in size-paraeter):
+		 * - ERR_CMDSYN  = ok (not in a group)
+		 * - ERR_COMMAND = error
+		 * - OK_XOVER    = data follows
+		 *                 =ybegin line=128 size=-1
+		 *                 yenc encoded zcompressed data
+		 *                 =yend crc32=...
+		 *                 .
+		 */
 		if (!nntp_caps.over_cmd) {
 			/*
 			 * CAPABILITIES didn't mention OVER or XOVER, try XOVER
@@ -2897,30 +2911,28 @@ nntp_conninfo(
 	fprintf(stream, P_(txt_conninfo_timeout_sp[0], txt_conninfo_timeout_sp[1], TIN_NNTP_TIMEOUT), TIN_NNTP_TIMEOUT, TIN_NNTP_TIMEOUT ? "" : _(txt_conninfo_disabled));
 #	endif /* HAVE_ALARM && SIGALRM */
 
-#	if defined(TIMEOUT_TYPE) && defined(DEBUG)
+#	if defined(TIMEOUT_TYPE) && defined(TIMEOUT_INI_NAME) && defined(DEBUG)
 	/* as this is for debugging only, intentionally no _() here */
 	{
 		TIMEOUT_TYPE ival;
 		socklen_t vlen = sizeof(TIMEOUT_TYPE);
 		int l = strlen(_(txt_conninfo_type)) - 5; /* 5 == ": %s\n" */
 
-#		ifdef TIMEOUT_INI_NAME
 		if (getsockopt(nntp_buf.fd, IPPROTO_TCP, TIMEOUT_INI_NAME, &ival, &vlen) == 0) {
-#			ifdef TCP_USER_TIMEOUT
-			/* thiis actually is TIMEOUT_RXT_NAME */
-			fprintf(stream, "%-*.*s: %s %.3f seconds\n", l, l, "TCP TIMEOUTS", "TCP_USER_TIMEOUT", (float) ival / TIMEOUT_MUL);
-#			else
-#				if defined(TCP_CONNECTIONTIMEOUT) && defined(TCP_RXT_CONNDROPTIME)
+#		ifdef TCP_USER_TIMEOUT
+			/* this actually is TIMEOUT_RXT_NAME */
+			fprintf(stream, "%-*.*s: %s %u.%.3u seconds\n", l, l, "TCP TIMEOUTS", "TCP_USER_TIMEOUT", ival / TIMEOUT_MUL, ival % TIMEOUT_MUL);
+#		else
+#			if defined(TCP_CONNECTIONTIMEOUT) && defined(TCP_RXT_CONNDROPTIME)
 			fprintf(stream, "%-*.*s: %s %-5d seconds\n", l, l, "TCP TIMEOUTS", "TCP_CONNECTIONTIMEOUT", ival); /* 5 == snprintf(NULL, 0, "%d", TIN_NNTP_TIMEOUT_MAX) */
 			if (getsockopt(nntp_buf.fd, IPPROTO_TCP, TIMEOUT_RXT_NAME, &ival, &vlen) == 0)
 				fprintf(stream, "%-*.*s %s %-5d seconds", l + 1, l + 1, "", "TCP_RXT_CONNDROPTIME ", ival);
 			fprintf(stream, "\n");
-#				endif /* TCP_CONNECTIONTIMEOUT && TCP_RXT_CONNDROPTIME */
-#			endif /* TCP_USER_TIMEOUT */
+#			endif /* TCP_CONNECTIONTIMEOUT && TCP_RXT_CONNDROPTIME */
+#		endif /* TCP_USER_TIMEOUT */
 		}
-#		endif /* TIMEOUT_INI_NAME */
 	}
-#	endif /* TIMEOUT_TYPE && DEBUG */
+#	endif /* TIMEOUT_TYPE && TIMEOUT_INI_NAME && DEBUG */
 
 	if (nntp_caps.type == CAPABILITIES) {
 		if (nntp_caps.compress) {
@@ -3081,11 +3093,11 @@ set_tcp_user_rxt_timeout(
 				return -1L;
 			} else {
 				DEBUG_IO((stderr, "%sgetsockopt(,TCP_RXT_TIMEOUT,): %d\n", logtime(), ival));
-#   if defined(TIMEOUT_DIV) && TIMEOUT_DIV > 1
+#	if defined(TIMEOUT_DIV) && TIMEOUT_DIV > 1
 				return (long) ival * TIMEOUT_DIV;
 #	else
 				return (long) ival;
-#   endif /* TIMEOUT_DIV && TIMEOUT_DIV > 1 */
+#	endif /* TIMEOUT_DIV && TIMEOUT_DIV > 1 */
 			}
 		}
 	}

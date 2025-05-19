@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2024-12-03
+ *  Updated   : 2025-05-14
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -175,7 +175,7 @@ compile_regex(
 	PCRE2_SIZE regex_errpos;
 
 	if (regex_use_utf8())
-		options |= PCRE2_UTF;
+		options |= PCRE2_UTF; /* TODO: add PCRE2_UCP? */
 
 	cache->re = pcre2_compile_8((const PCRE2_UCHAR8 *) regex, PCRE2_ZERO_TERMINATED, options,
 			&regex_errcode, &regex_errpos, NULL);
@@ -317,6 +317,52 @@ regex_cache_destroy(
 	regex->ovecalloc = 0;
 	regex->ovecmax = 0;
 	regex->oveccount = 0;
+#endif /* HAVE_LIB_PCRE2 */
+}
+
+
+/*
+ * returns freshly allocated mem which holds the matched portion
+ * of the named subpattern on success and NULL on error
+ */
+char *
+regex_get_substring_by_name(
+	struct regex_cache *re,		/* precompiled regex */
+	const char *sname,			/* name of subpattern */
+	char *subject)				/* data to match against */
+{
+	char *ms;
+	int snum;
+
+#ifdef HAVE_LIB_PCRE2
+	PCRE2_UCHAR8 *buf = NULL;
+	PCRE2_SIZE buflen = 0;
+
+	(void) subject;
+	if ((snum = pcre2_substring_number_from_name_8(re->re, (PCRE2_SPTR8) sname)) < 1)
+		return NULL;
+
+	if (pcre2_substring_get_bynumber_8(re->match, snum, &buf, &buflen) < 0) {
+		pcre2_substring_free_8(buf);
+		return NULL;
+	}
+	ms = my_strdup((const char *) buf);
+	pcre2_substring_free_8(buf);
+	return ms;
+
+#else
+	const char *buf = NULL;
+
+	regex_get_ovector_pointer(re);
+	if ((snum = pcre_get_stringnumber(re->re, sname)) < 1)
+		return NULL;
+
+	if (pcre_get_substring(subject, re->ovector, re->oveccount, snum, &buf) < 1)
+		return NULL;
+
+	ms = my_strdup(buf);
+	pcre_free_substring(buf);
+	return ms;
 #endif /* HAVE_LIB_PCRE2 */
 }
 

@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2025-02-26
+ *  Updated   : 2025-05-14
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
@@ -93,7 +93,9 @@ extern char *convert_to_printable(char *buf, t_bool keep_tab);
 #	ifdef USE_ICU_UCSDET
 		extern char *guess_charset(const char *sample, int32_t confidence);
 #	endif /* USE_ICU_UCSDET */
+#	if defined(NNTP_ABLE) && defined(USE_GSASL)
 	extern int charset_name_to_num(const char *charset);
+#	endif /* NNTP_ABLE && USE_GSASL */
 #endif /* CHARSET_CONVERSION */
 extern t_bool charset_unsupported(const char *charset);
 extern t_bool is_art_tex_encoded(FILE *fp);
@@ -105,7 +107,7 @@ extern void convert_tex2iso(char *from, char *to);
 extern const char *validate_charset(const char *charset);
 
 /* color.c */
-extern void draw_pager_line(const char *str, int flags, t_bool raw_data);
+extern void draw_pager_line(const char *str, unsigned int flags, t_bool raw_data);
 #ifdef HAVE_COLOR
 	extern void bcol(int color);
 	extern void fcol(int color);
@@ -130,10 +132,13 @@ extern void read_server_config(void);
 extern void write_config_file(const char *file);
 
 /* cook.c */
-extern char *build_attach_line(const t_part *part, int depth, int max_len, int is_uue, const char *name, const char *charset);
+extern char *build_attach_line(const t_part *part, int depth, int max_len, enum section_type section, const char *name, const char *charset);
 extern const char *get_filename(t_param *ptr);
 extern t_bool cook_article(t_bool wrap_lines, t_openartinfo *artinfo, int hide_uue, t_bool show_all_headers);
 extern t_bool expand_ctrl_chars(char **line, size_t *length, size_t lcook_width);
+
+/* crc32.c */
+extern uint32_t tin_crc32(uint32_t crc, const unsigned char *buf, size_t len);
 
 /* curses.c */
 extern OUTC_RETTYPE outchar(OUTC_ARGS);
@@ -596,6 +601,7 @@ extern REGEX_SIZE *regex_get_ovector_pointer(struct regex_cache *regex);
 extern void highlight_regexes(int row, struct regex_cache *regex, int color);
 extern void regex_cache_init(struct regex_cache *regex);
 extern void regex_cache_destroy(struct regex_cache *regex);
+extern char *regex_get_substring_by_name(struct regex_cache *re, const char *sname, char *subject);
 extern t_bool regex_use_utf8(void);
 
 /* rfc1524.c */
@@ -628,6 +634,7 @@ extern void unfold_header(char *line);
 extern char *rfc1522_decode(const char *s);
 extern char *rfc1522_encode(char *s, const char *charset, t_bool ismail);
 extern int mmdecode(const char *what, int encoding, int delimiter, char *where);
+extern int b642str(const char *in, char *out);
 extern void rfc15211522_encode(const char *filename, constext *mime_encoding, struct t_group *group, t_bool allow_8bit_header, t_bool ismail);
 extern void compose_mail_mime_forwarded(const char *filename, FILE *articlefp, t_bool include_text, struct t_group *group);
 extern void compose_mail_text_plain(const char *filename, struct t_group *group);

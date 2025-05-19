@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2025-02-18
+ *  Updated   : 2025-04-04
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2025 Iain Lea <iain@bricbrac.de>
@@ -334,7 +334,7 @@ read_attributes_file(
 	}
 
 	if (!batch_mode || verbose)
-		wait_message(0, _(txt_reading_attributes_file), global_file ? _(txt_global) : "", file);
+		wait_message(0, global_file ? _(txt_reading_global_attributes_file) : _(txt_reading_attributes_file), file);
 
 	tmp = my_malloc(sizeof(char *));
 	*tmp = NULL;
@@ -696,7 +696,7 @@ read_attributes_file(
 					my_fprintf(stderr, msg, ln, line); /* TODO: add log_formatted_msg("ERR", ...)? */
 #ifdef DEBUG
 				if (debug & (DEBUG_ATTRIB))
-					debug_print_file("ATTRIBUTES", txt_bad_attrib, global_file ? txt_global : "", line);
+					debug_print_file("ATTRIBUTES", global_file ? _(txt_bad_global_attrib) : _(txt_bad_attrib), line);
 #endif /* DEBUG */
 			}
 		}
@@ -1413,20 +1413,20 @@ write_attributes_file(
 	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_expire));
 	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_case));
 	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr));
-	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr_0_1));
-	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr_2_3));
-	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr_4));
-	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr_5));
-	fprintf(fp, "%s", _(txt_attrib_file_quick_kill_hdr_6));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_ks_hdr_0_1));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_ks_hdr_2_3));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_ks_hdr_4));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_ks_hdr_5));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_ks_hdr_6));
 	fprintf(fp, "%s", _(txt_attrib_file_quick_select_scope));
 	fprintf(fp, "%s", _(txt_attrib_file_quick_select_expire));
 	fprintf(fp, "%s", _(txt_attrib_file_quick_select_case));
 	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr));
-	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr_0_1));
-	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr_2_3));
-	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr_4));
-	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr_5));
-	fprintf(fp, "%s", _(txt_attrib_file_quick_select_hdr_6));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_ks_hdr_0_1));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_ks_hdr_2_3));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_ks_hdr_4));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_ks_hdr_5));
+	fprintf(fp, "%s", _(txt_attrib_file_quick_ks_hdr_6));
 	fprintf(fp, "%s", _(txt_attrib_file_quote_chars));
 #ifndef DISABLE_PRINTING
 	fprintf(fp, "%s", _(txt_attrib_file_print_hdr));

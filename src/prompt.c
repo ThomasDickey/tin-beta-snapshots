@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-01-29
+ *  Updated   : 2025-05-19
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -391,11 +391,13 @@ prompt_list(
 			/*
 			 * increment or decrement list, loop around at the limits
 			 */
-			var += change;
-			if (var < 0)
-				var = size - 1;
-			else
-				var %= (size ? size : 1);
+			do {
+				var += change;
+				if (var < 0)
+					var = size - 1;
+				else
+					var %= (size ? size : 1);
+			} while (!*list[var]); /* allow gaps in lists */
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			if ((buf = spart(_(list[var]), width, TRUE)) != NULL) {
@@ -883,7 +885,7 @@ prompt_continue(
 	void)
 {
 	int ch;
-	int save_signal_context = signal_context;
+	enum context save_signal_context = signal_context;
 
 	cmd_line = TRUE;
 	info_message(_(txt_return_key));

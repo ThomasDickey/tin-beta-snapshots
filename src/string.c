@@ -425,7 +425,7 @@ long
 atol(
 	const char *s)
 {
-	long ret = 0;
+	long ret = 0L;
 
 	/* skip leading whitespace(s) */
 	while (*s && isspace((unsigned char) *s))
@@ -1980,6 +1980,8 @@ parse_format_string(
 
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 /*
+ * TODO: this is way to simple and needs to be reworked
+ *
  * prepare a string with bi-directional text for display
  * (converts from logical order to visual order)
  *
@@ -2022,7 +2024,7 @@ render_bidi(
 
 	ustr_len = u_strlen(ustr) + 1;
 	ustr_reordered = my_malloc(sizeof(UChar) * ustr_len);
-	ubidi_writeReordered(bidi_data, ustr_reordered, ustr_len, UBIDI_REMOVE_BIDI_CONTROLS|UBIDI_DO_MIRRORING, &status);
+	ubidi_writeReordered(bidi_data, ustr_reordered, ustr_len, UBIDI_REMOVE_BIDI_CONTROLS|UBIDI_DO_MIRRORING, &status); /* UBIDI_KEEP_BASE_COMBINING ? */
 	if (U_FAILURE(status)) {
 		ubidi_close(bidi_data);
 		free(ustr);
@@ -2063,7 +2065,7 @@ s2i(
 	signed int max)
 {
 	const char *hex;
-	char *end;
+	char *end = NULL;
 	signed long res;
 
 	errno = 0;

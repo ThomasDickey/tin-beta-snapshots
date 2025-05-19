@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-17
+ *  Updated   : 2025-05-18
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -699,16 +699,51 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  */
 
 /* case sensitive & ^-anchored */
-#define UUBEGIN_REGEX	"begin\\s\\s?[0-7]{3,4}\\s+"
+#define UUBEGIN_REGEX	"begin(?:-encoded)?\\s\\s?[0-7]{3,4}\\s+"
 /* case sensitive & ^-anchored */
 #define UUBODY_REGEX	"(?:`|.[\\x20-\\x60]{1,61})$"
 
+	/* case insensitive && ^-anchored*/
+#	define XXBODY_REGEX		"[\\dA-Z+-]{1,62}$"
+
+#if 0 /* we don't have specific xxencode-/base64-code (yet); just document the formats */
+	/* case sensitive & ^-anchored */
+#	define XXBEGIN_REGEX	"begin\\s\\s?[0-7]{3,4}\\s+"
+
+	/* uuencode -m [-e] from gnu-sharutils */
+	/* case sensitive & ^-anchored */
+#	define B64BEGIN_REGEX	"begin-base64(?:-encoded)?\\s\\s?[0-7]{3,4}\\s+"
+#	define B64BODY_REGEX	"(?:[\\da-z/\\+]{1,60})$"
+#	define B64END_REGEX		"={4}"
+#endif /* 0 */
+
+	/* case sensitive & ^-anchored */
+#if 1
+	/*
+	 * fuzzy version for more fine grained error reporting
+	 * the "useles" (?<pcrebug>(.)?) circumvents a bug in pcre1
+	 * not finding the last named capture group
+	 */
+#	define YENCBEGIN_REGEX	"=ybegin(\\spart=(?<y_part>\\S+))?(\\stotal=(?<y_total>\\S+))?(\\sline=(?<y_line>\\S+))?(\\ssize=(?<y_bsize>\\S+))?(\\sname=(?<y_name>.*))?(?<pcrebug>(.)?)$"
+#	define YENCPART_REGEX	"=ypart(\\sbegin=(?<y_pbegin>\\S+))?(\\send=(?<y_pend>\\S+))?.*(?<pcrebug>(.)?)$"
+#	define YENCEND_REGEX	"=yend(\\ssize=(?<y_esize>\\S+))?(\\spart=(?<y_epart>\\S+))?(\\spcrc32=(?<y_epcrc>\\S+))?(\\scrc32=(?<y_ecrc>\\S+))?.*(?<pcrebug>(.)?)$"
+#else
+	/* strict version; just to document the format */
+#	define YENCBEGIN_REGEX	"=ybegin (part=(?<y_part>\\d{1,3}) (total=(?<y_total>\\d{1,3}) )?)?line=\\d{2,3} size=(?<y_bsize>\\d{1,19}) name=(?<y_name>\\S+)$"
+#	define YENCPART_REGEX	"=ypart begin=(?<y_pbegin>\\d{1,19}) end=(?<y_pend>\\d{1,19})$"
+#	define YENCEND_REGEX	"=yend size=(?<y_esize>\\d{1,19})( part=\\d{1,3} pcrc32=(?<y_epcrc>[a-fA-F\\d]{8}))?( crc32=(?<y_ecrc>[a-fA-F\\d]{8}))?$"
+#endif /* 1 */
+
 /* case sensitive & ^-anchored */
-#define SHAR_REGEX	"\\#(?:!\\s?(?:/usr)?/bin/sh|\\s?(?i)this\\sis\\sa\\sshell\\sarchive)"
+#define SHAR_REGEX	"\\#(?:!\\s?(?:/usr)?/bin/sh\\b|\\s?(?i)this\\sis\\sa\\sshell\\sarchive)"
+#define SHAR_END_REGEX	"exit(?:\\s0)?$"
 
 /* slrn verbatim marks, case sensitive & ^-anchored */
 #define DEFAULT_VERBATIM_BEGIN_REGEX	"#v\\+\\s$"
 #define DEFAULT_VERBATIM_END_REGEX	"#v-\\s$"
+
+/* trn $HIDELINE like feature; never matching re */
+#define NEVER_MATCH_REGEX "(?!)"
 
 /* quoted text from external sources */
 #define DEFAULT_EXTQUOTE_REGEX "^\\|\\s"
@@ -800,6 +835,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	define REGEX_NOFFSET int
 #	define REGEX_SIZE int
 #endif /* HAVE_LIB_PCRE2 */
+#define MATCH_REGEX(x,y,z)	(match_regex_ex(y, (REGEX_SIZE) z, 0, 0, &(x)) >= 0)
 
 #if defined(HAVE_ICONV) || defined(HAVE_UCNV_OPEN)
 #	define CHARSET_CONVERSION 1
@@ -942,7 +978,7 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #endif /* HAVE_LONG_FILE_NAMES */
 #ifndef LOGIN_NAME_MAX
 #	define LOGIN_NAME_MAX 256
-#endif  /* !LOGIN_NAME_MAX */
+#endif /* !LOGIN_NAME_MAX */
 #define LEN	1024
 #define BUF_SIZE	1024
 
@@ -1100,7 +1136,7 @@ enum {
 /*
  * Number of charset-traslation tables (iso2asci)
  */
-#define NUM_ISO_TABLES	6 /*7*/
+#define NUM_ISO_TABLES	6
 
 /*
  * Maximum permissible colour number
@@ -1350,9 +1386,34 @@ enum {
  */
 #define UUE_NO			0		/* Don't hide uue data */
 #define UUE_YES			1		/* Hide uue data */
-#define UUE_ALL			2		/* Hide uue data harder */
-#define UUE_COMPLETE	3		/* uue part is complete */
-#define UUE_INCOMPLETE	4		/* uue part is not complete */
+#define UUE_INCOMPL		2
+#define UUE_ALL			(UUE_YES|UUE_INCOMPL)	/* Hide uue data harder */
+#define PGP_ALL			4		/* Hide inline PGP signature/key */
+#define SHAR_ALL		8		/* hide shell-scripts */
+#define HIDE_ALL		(UUE_YES|UUE_ALL|PGP_ALL|SHAR_ALL)
+
+
+/* RFC 4880 6.2 */
+#define PGP_KEY_TAG "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
+#define PGP_KEY_END_TAG "-----END PGP PUBLIC KEY BLOCK-----\n"
+#define PGP_SIG_TAG "-----BEGIN PGP SIGNATURE-----\n"
+#define PGP_SIG_END_TAG "-----END PGP SIGNATURE-----\n"
+
+
+/*
+ * Different sections of an article
+ */
+enum section_type {
+	SECTION_DEFAULT = 0,
+	SECTION_ATTACHMENT,
+	SECTION_UUE_COMPLETE,
+	SECTION_UUE_INCOMPLETE,
+	SECTION_YENC_COMPLETE,
+	SECTION_YENC_INCOMPLETE,	/* something missing */
+	SECTION_YENC_PARTIAL,		/* one full part of a multipart */
+	SECTION_YENC_CORRUPT		/* e.g. crc or size mismatch */
+};
+
 
 /*
  * used in misc.c/rfc1524.c
@@ -1508,6 +1569,7 @@ enum {
 #define DEFAULT_ATTACHMENT_FORMAT	"%T%S%E%C%d"
 #define DEFAULT_PAGE_MIME_FORMAT	"[-- %T%S%*n%z%*l%!c%!d%*e --]"
 #define DEFAULT_PAGE_UUE_FORMAT		"[-- %T%S%*n%I%!d%*e --]"
+#define DEFAULT_PAGE_YENC_FORMAT	"[-- %*N%!d%I [%F%G]%V%W%X --]"
 #define DEFAULT_DATE_FORMAT			"%a, %d %b %Y %H:%M:%S"
 
 /*
@@ -1749,12 +1811,16 @@ struct t_newsheader {
 /*
  * used as flags for t_attach_item
  */
-#define ATTACH_SHOW_CONTENT		(1 << 0) /* content visible */
-#define ATTACH_SHOW_BOTH		(1 << 1) /* description and content visible */
-#define ATTACH_OMIT_DESC		(1 << 2) /* description can be omitted */
-#define ATTACH_OMIT_BOTH		(1 << 3) /* description and content can be omitted */
-#define ATTACH_ITEM_IS_TYPE		(1 << 4) /* content type */
-#define ATTACH_ITEM_IS_SUBTYPE	(1 << 5) /* content subtype */
+#define ATTACH_SHOW_CONTENT				(1 << 0) /* content visible */
+#define ATTACH_SHOW_BOTH				(1 << 1) /* description and content visible */
+#define ATTACH_OMIT_DESC				(1 << 2) /* description can be omitted */
+#define ATTACH_OMIT_BOTH				(1 << 3) /* description and content can be omitted */
+#define ATTACH_ITEM_IS_TYPE				(1 << 4) /* content type */
+#define ATTACH_ITEM_IS_SUBTYPE			(1 << 5) /* content subtype */
+#define ATTACH_ITEM_IS_YENC_PART		(1 << 6) /* yenc part */
+#define ATTACH_ITEM_IS_YENC_TOTAL		(1 << 7) /* yenc total # of parts */
+#define ATTACH_ITEM_IS_YENC_PART_SIZE	(1 << 8) /* size if yenc part */
+#define ATTACH_ITEM_IS_YENC_TOTAL_SIZE	(1 << 9) /* size if yenc */
 
 /*
  * struct t_attach_item - information about a specific header part of a mime attachment

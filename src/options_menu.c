@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2025-02-25
+ *  Updated   : 2025-05-12
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2025 Michael Bienia <michael@vorlon.ping.de>
@@ -205,7 +205,7 @@ get_option_num(
 	enum option_enum i;
 	int result = 0;
 
-	for (i = 0; i < option && result < (int) last_opt; i = next_option(i, FALSE))
+	for (i = FIRST_OPT; i < option && result < (int) last_opt; i = next_option(i, FALSE))
 		++result;
 
 	return result;
@@ -219,7 +219,7 @@ static enum option_enum
 set_option_num(
 	int num)
 {
-	enum option_enum result = 0;
+	enum option_enum result = FIRST_OPT;
 
 	while (num > 0 && result < last_opt) {
 		result = next_option(result, FALSE);
@@ -596,6 +596,8 @@ print_any_option(
 		default:
 			break;
 	}
+	if (option == OPT_HIDELINE_REGEX && STRCMPEQ(ptr, NEVER_MATCH_REGEX))
+		*ptr = '\0';
 #ifdef USE_CURSES
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((buf = spart(temp, (size_t) (cCOLS > 1 ? cCOLS - 1 : 0), FALSE)) != NULL) {
@@ -788,7 +790,7 @@ next_option(
 	do {
 		++option;
 		if (option > last_opt)
-			option = 0;
+			option = FIRST_OPT;
 	} while (!(option_is_visible(option) && (incl_titles || !option_is_title(option))));
 
 	return option;
@@ -805,7 +807,7 @@ prev_option(
 	t_bool incl_titles)
 {
 	do {
-		if (option == 0)
+		if (option == FIRST_OPT)
 			option = last_opt;
 		else
 			--option;
@@ -832,8 +834,8 @@ set_first_option_on_screen(
 	/*
 	 * make sure that the first page is used completely
 	 */
-	if (first_option_on_screen == 0)
-		set_last_option_on_screen(0);
+	if (first_option_on_screen == FIRST_OPT)
+		set_last_option_on_screen(FIRST_OPT);
 }
 
 
@@ -892,7 +894,7 @@ void
 refresh_config_page(
 	enum option_enum act_option)
 {
-	static enum option_enum last_option = 0;
+	static enum option_enum last_option = FIRST_OPT;
 	/* t_bool force_redraw = FALSE; */
 
 	if (act_option == SIGNAL_HANDLER) {	/* called by signal handler */
@@ -1002,7 +1004,7 @@ set_last_opt(
 {
 	enum option_enum i;
 
-	for (i = 0; i <= LAST_OPT; i++) {
+	for (i = FIRST_OPT; i <= LAST_OPT; i++) {
 		if (option_is_visible(i))
 			last_opt = i;
 	}
@@ -1018,7 +1020,7 @@ get_first_opt(
 {
 	enum option_enum i;
 
-	for (i = 0; i <= last_opt; i++) {
+	for (i = FIRST_OPT; i <= last_opt; i++) {
 		if (option_is_visible(i) && !option_is_title(i))
 			break;
 	}
@@ -1049,7 +1051,7 @@ config_page(
 		TEX2ISO_CONV		= 1 << 8
 	} changed = NOT_CHANGED;
 	int i, scope_idx = 0;
-	int prev_signal_context = signal_context;
+	enum context prev_signal_context = signal_context;
 	t_bool change_option = FALSE;
 	t_function func;
 #ifdef CHARSET_CONVERSION
@@ -1071,8 +1073,8 @@ config_page(
 	}
 	set_last_opt();
 	option = get_first_opt();
-	first_option_on_screen = 0;
-	set_last_option_on_screen(0);
+	first_option_on_screen = FIRST_OPT;
+	set_last_option_on_screen(FIRST_OPT);
 
 	redraw_screen(option);
 	set_xclick_off();
@@ -1221,8 +1223,8 @@ config_page(
 			case GLOBAL_FIRST_PAGE:
 				unhighlight_option(option);
 				option = get_first_opt();
-				first_option_on_screen = 0;
-				set_last_option_on_screen(0);
+				first_option_on_screen = FIRST_OPT;
+				set_last_option_on_screen(FIRST_OPT);
 				redraw_screen(option);
 				/* highlight_option(option); is already done by redraw_screen() */
 				break;
@@ -1244,7 +1246,7 @@ config_page(
 						option = next_option(option, FALSE);
 					highlight_option(option);
 					break;
-				} else if (tinrc.scroll_lines == -2 && first_option_on_screen != 0) {
+				} else if (tinrc.scroll_lines == -2 && first_option_on_screen != FIRST_OPT) {
 					i = option_lines_per_page / 2;
 
 					for (; i > 0; i--) {
@@ -1270,8 +1272,8 @@ config_page(
 				unhighlight_option(option);
 				if (option == last_opt) {
 					/* wrap around */
-					first_option_on_screen = 0;
-					option = 0;
+					first_option_on_screen = FIRST_OPT;
+					option = FIRST_OPT;
 				} else {
 					enum option_enum old_first = first_option_on_screen;
 
@@ -1280,13 +1282,13 @@ config_page(
 
 						for (; i > 0; i--) {
 							first_option_on_screen = next_option(first_option_on_screen, TRUE);
-							if (first_option_on_screen == 0)	/* end on wrap_around */
+							if (first_option_on_screen == FIRST_OPT)	/* end on wrap_around */
 								break;
 						}
 					} else
 						first_option_on_screen = next_option(last_option_on_screen, TRUE);
 
-					if (first_option_on_screen == 0) {
+					if (first_option_on_screen == FIRST_OPT) {
 						first_option_on_screen = old_first;
 						option = last_opt;
 						highlight_option(option);
@@ -1361,8 +1363,8 @@ config_page(
 					scope_page(level);
 					set_last_opt();
 					option = get_first_opt();
-					first_option_on_screen = 0;
-					set_last_option_on_screen(0);
+					first_option_on_screen = FIRST_OPT;
+					set_last_option_on_screen(FIRST_OPT);
 					redraw_screen(option);
 				}
 				break;
@@ -1404,8 +1406,8 @@ config_page(
 					}
 					set_last_opt();
 					option = get_first_opt();
-					first_option_on_screen = 0;
-					set_last_option_on_screen(0);
+					first_option_on_screen = FIRST_OPT;
+					set_last_option_on_screen(FIRST_OPT);
 					redraw_screen(option);
 				}
 				break;
@@ -2567,6 +2569,20 @@ config_page(
 							}
 							break;
 
+						case OPT_HIDELINE_REGEX:
+							if (STRCMPEQ(tinrc.hideline_regex, NEVER_MATCH_REGEX)) /* hide internal NEVER_MATCH_REGEX from user */
+								*tinrc.hideline_regex = '\0';
+							if (prompt_option_string(option)) {
+								regex_cache_destroy(&hideline_regex);
+								if (!*tinrc.hideline_regex) {
+									free(tinrc.hideline_regex);
+									tinrc.hideline_regex = my_strdup(NEVER_MATCH_REGEX);
+								}
+								compile_regex(tinrc.hideline_regex, &hideline_regex, 0);
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
 						case OPT_ATTACHMENT_FORMAT:
 							if (prompt_option_string(option)) {
 								if (!*tinrc.attachment_format) {
@@ -2610,6 +2626,16 @@ config_page(
 								if (!*tinrc.page_uue_format) {
 									free(tinrc.page_uue_format);
 									tinrc.page_uue_format = my_strdup(DEFAULT_PAGE_UUE_FORMAT);
+								}
+								changed |= DISPLAY_OPTS;
+							}
+							break;
+
+						case OPT_PAGE_YENC_FORMAT:
+							if (prompt_option_string(option)) {
+								if (!*tinrc.page_yenc_format) {
+									free(tinrc.page_yenc_format);
+									tinrc.page_yenc_format = my_strdup(DEFAULT_PAGE_YENC_FORMAT);
 								}
 								changed |= DISPLAY_OPTS;
 							}
@@ -3387,7 +3413,7 @@ scope_is_empty(
 {
 	enum option_enum i;
 
-	for (i = 0; i <= last_opt; i++) {
+	for (i = FIRST_OPT; i <= last_opt; i++) {
 		if (option_is_visible(i) && !option_is_title(i) && check_state(i))
 			return FALSE;
 	}

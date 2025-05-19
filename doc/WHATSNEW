@@ -25,9 +25,10 @@ New features
 - mime encode and fold long header-lines (> 998 octets) if !post_8bit_header
 - post f'up from thread-level ('f' and 'F')
 - configurable display format of attachments
-  (page_mime_format, page_uue_format, attachment_format)
+  (page_mime_format, page_uue_format, page_yenc_format, attachment_format)
 - new option show_art_score (with col_score_neg, col_score_pos)
 - new option dont_break_words
+- new option hideline_regex
 - ranges can be undone
 - REPRODUCIBLE_BUILD define to prevent recoding of __DATE__, __TIME__,
   $CFLAGS, $CPPFLAGS and $LDFLAGS in the binary
@@ -46,7 +47,8 @@ New features
   liburiparser or libcurl was found
 - $LC_NUMERIC for RADIXCHAR (used when showing attachment sizes)
 - allow hex-numbers for cmd.-line switches which take numeric args
-
+- hide_uue now also hides yenc encoded parts (hide only, no decoding support
+  yet), inline pgp and/or shar
 
 Changes
 -------

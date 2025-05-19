@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2025-01-14
+ *  Updated   : 2025-04-04
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -350,6 +350,8 @@ get_feed_key(
  * Print a message like:
  * -- [Article|Thread|Tagged Articles] saved to [mailbox] [filenames] --
  * 'fed' is the number of articles we tried to save
+ *
+ * FIXME: translatable/plural-forms and fixed length buffer
  */
 static void
 print_save_summary(
@@ -363,12 +365,12 @@ print_save_summary(
 		wait_message(2, P_(txt_warn_not_all_arts_saved_sp[0], txt_warn_not_all_arts_saved_sp[1], num_save), fed, num_save);
 
 	switch (type) {
-		case FEED_HOT: /* FIXME: translatable/plural-forms */
-			snprintf(what, sizeof(what), _(txt_prefix_hot), P_(txt_article_sp[0], txt_article_sp[1], fed));
+		case FEED_HOT:
+			snprintf(what, sizeof(what), "%s", P_(txt_hot_article_sp[0], txt_hot_article_sp[1], fed));
 			break;
 
-		case FEED_TAGGED: /* FIXME: translatable/plural-forms */
-			snprintf(what, sizeof(what), _(txt_prefix_tagged), P_(txt_article_sp[0], txt_article_sp[1], fed));
+		case FEED_TAGGED:
+			snprintf(what, sizeof(what), "%s", P_(txt_tagged_article_sp[0], txt_tagged_article_sp[1], fed));
 			break;
 
 		case FEED_THREAD:
@@ -377,7 +379,7 @@ print_save_summary(
 
 		case FEED_ARTICLE:
 		case FEED_PATTERN:
-		default: /* FIXME: translatable/plural-forms */
+		default:
 			snprintf(what, sizeof(what), "%s", P_(txt_article_sp[0], txt_article_sp[1], fed));
 			break;
 	}
@@ -385,6 +387,7 @@ print_save_summary(
 	/*
 	 * We report the range of saved-to files for regular saves of > 1 articles
 	 */
+	/* FIXME: translatable/plural-forms */
 	if (num_save == 1 || save[0].mailbox)
 		snprintf(buf, sizeof(buf), _(txt_saved_to),
 			what, (save[0].mailbox ? _(txt_mailbox) : ""), save[0].path);
@@ -1022,16 +1025,26 @@ got_epipe_while_piping:
 				info_message(_(txt_no_next_unread_art));
 			else {
 				if (counter.success && level != PAGE_LEVEL) {
-					const char *ptr;
+					switch (feed_type) {
+						case FEED_THREAD:
+							info_message((function == FEED_MARK_READ) ?
+								_(txt_marked_thread_as_read) :
+								_(txt_marked_thread_as_unread));
+							break;
 
-					ptr = function == FEED_MARK_READ ? _(txt_marked_as_read) : _(txt_marked_as_unread);
-					if (feed_type == FEED_THREAD) {
-						info_message(ptr, _(txt_thread_upper));
-					} else if (feed_type == FEED_ARTICLE) {
-						info_message(ptr, _(txt_article_upper));
-					} else {
-						ptr = function == FEED_MARK_READ ? _(txt_marked_arts_as_read) : _(txt_marked_arts_as_unread);
-						info_message(ptr, counter.success, counter.max, P_(txt_article_sp[0], txt_article_sp[1], counter.max));
+						case FEED_ARTICLE:
+							info_message((function == FEED_MARK_READ) ?
+								_(txt_marked_article_as_read) :
+								_(txt_marked_article_as_unread));
+							break;
+
+						default:
+							/* FIXME: translatable/plural-forms */
+							info_message((function == FEED_MARK_READ) ?
+								_(txt_marked_arts_as_read) :
+								_(txt_marked_arts_as_unread),
+								counter.success, counter.max, P_(txt_article_sp[0], txt_article_sp[1], counter.max));
+							break;
 					}
 				}
 			}

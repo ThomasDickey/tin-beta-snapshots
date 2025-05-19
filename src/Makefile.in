@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2025-01-17
+# Updated: 2025-04-25
 #
 # Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -92,7 +92,7 @@ INS_OLD_SUFFIX	= old
 
 REMAKE		= $(MAKE) @cf_cv_makeflags@ DESTDIR="$(DESTDIR)"
 
-MAN_LINGUAS = de en_GB es
+MAN_LINGUAS = de en_GB #es
 
 # Project
 PROJECT	= `echo @PACKAGE@|sed '@program_transform_name@'`
@@ -156,6 +156,7 @@ CFILES	= \
 	$(SRCDIR)/color.c \
 	$(SRCDIR)/config.c \
 	$(SRCDIR)/cook.c \
+	$(SRCDIR)/crc32.c \
 	$(SRCDIR)/curses.c \
 	$(SRCDIR)/debug.c \
 	$(SRCDIR)/envarg.c \
@@ -228,6 +229,7 @@ OFILES	= @ALLOCA@ @EXTRAOBJS@ \
 	$(OBJDIR)/color$o \
 	$(OBJDIR)/config$o \
 	$(OBJDIR)/cook$o \
+	$(OBJDIR)/crc32$o \
 	$(OBJDIR)/curses$o \
 	$(OBJDIR)/debug$o \
 	$(OBJDIR)/envarg$o \
@@ -550,6 +552,7 @@ $(OBJDIR)/config$o :		$(SRCDIR)/config.c $(TIN_DEP) \
 				$(INCDIR)/version.h
 $(OBJDIR)/cook$o :		$(SRCDIR)/cook.c $(TIN_DEP) \
 				$(INCDIR)/rfc2046.h
+$(OBJDIR)/crc32$o :		$(SRCDIR)/crc32.c $(TIN_DEP)
 $(OBJDIR)/curses$o :		$(SRCDIR)/curses.c $(TIN_DEP) \
 				$(INCDIR)/missing_fd.h \
 				$(INCDIR)/tnntp.h

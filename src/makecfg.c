@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2024-12-21
+ *  Updated   : 2025-05-12
  *  Notes     : #defines and structs for options_menu.c
  *
  * Copyright (c) 1997-2025 Thomas E. Dickey <dickey@invisible-island.net>
@@ -350,6 +350,7 @@ generate_enum(
 	static const char *const table_2[] = {
 		"\tSIGNAL_HANDLER };",
 		"",
+		"#define FIRST_OPT OPT_DISPLAY_OPTIONS",
 		"#define LAST_OPT (SIGNAL_HANDLER - 1)",
 		NULL
 	};
@@ -365,9 +366,9 @@ generate_enum(
 			fprintf(ofp2, "\tOPT_");
 			while (*s != '\0') {
 				fprintf(ofp2, "%c",
-					 (*s >= 'a' && *s <= 'z')
-					 ? ((unsigned char) ((*s) - 'a' + 'A'))
-					 : *s);
+					(*s >= 'a' && *s <= 'z')
+					? ((unsigned char) ((*s) - 'a' + 'A'))
+					: *s);
 				s++;
 			}
 			fprintf(ofp2, ",\n");

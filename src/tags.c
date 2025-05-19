@@ -3,7 +3,7 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2025-02-05
+ *  Updated   : 2025-03-16
  *  Notes     : Split out from other modules
  *
  * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
@@ -139,11 +139,11 @@ tag_article(
 {
 	if (arts[art].tagged != 0) {
 		untag_article(art);
-		info_message(_(txt_prefix_untagged), txt_article_sp[0]);
+		info_message(_(txt_untagged_article));
 		return FALSE;
 	} else {
 		arts[art].tagged = ++num_of_tagged_arts;
-		info_message(_(txt_prefix_tagged), txt_article_sp[0]);
+		info_message(_(txt_tagged_article_sp[0]));
 		return TRUE;
 	}
 }

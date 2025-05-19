@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-25
+ *  Updated   : 2025-05-13
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1143,7 +1143,7 @@ post_process_sh(
 
 		while (fgets(buf, (int) sizeof(buf), fp_in) != NULL) {
 			/* find #!/bin/sh style patterns */
-			if ((fp_out == NULL) && match_regex_ex(buf, (REGEX_SIZE) strlen(buf), 0, 0, &shar_regex) >= 0)
+			if ((fp_out == NULL) && MATCH_REGEX(shar_regex, buf, strlen(buf)))
 				fp_out = fopen(file_out, "w");
 
 			/* write to temp file */
@@ -1543,7 +1543,7 @@ show_attachment_page(
 	for (i = 0; i < attmenu.max; ++i) {
 		part = get_part(i);
 		charset = get_param(part->params, "charset");
-		attach_line = build_attach_line(part, 0, cCOLS - 2, 0, NULL, charset);
+		attach_line = build_attach_line(part, 0, cCOLS - 2, SECTION_DEFAULT, NULL, charset);
 		snprintf(buf, blen, "  %s", attach_line);
 		FreeIfNeeded(attach_line);
 		tmp_len = strwidth(buf);
@@ -1856,7 +1856,7 @@ build_attachment_line(
 	if (namelen + len + info_len + 8 <= cCOLS)
 		namelen = cCOLS - 8 - info_len - len;
 
-	attach_line = build_attach_line(part, 0, info_len - 2, 0, NULL, charset);
+	attach_line = build_attach_line(part, 0, info_len - 2, SECTION_DEFAULT, NULL, charset);
 	snprintf(buf, sizeof(buf), "  %s", attach_line);
 	FreeIfNeeded(attach_line);
 
@@ -2275,7 +2275,7 @@ process_part(
 	 * uuencoded parts must be read from the cooked article,
 	 * otherwise they might be additionally encoded with b64 or qp
 	 */
-	if (part->encoding == ENCODING_UUE)
+	if (part->encoding == ENCODING_UUE || part->encoding == ENCODING_YENC)
 		infile = art->cooked;
 	else
 		infile = art->raw;
@@ -2309,7 +2309,7 @@ process_part(
 		 * page.c:new_uue() sets offset to the 'begin ...' line
 		 * -> skip over the first line in uuencoded parts
 		 */
-		if (part->encoding == ENCODING_UUE && i == 0) {
+		if ((part->encoding == ENCODING_UUE || part->encoding == ENCODING_YENC) && i == 0) {
 			++line_count;
 			continue;
 		}

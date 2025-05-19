@@ -3,7 +3,7 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2025-03-06
+ *  Updated   : 2025-05-19
  *  Notes     : #defines and static data for policy configuration
  *
  * Copyright (c) 1999-2025 Ralf Doeblitz <doeblitz@gmx.de>
@@ -1028,7 +1028,6 @@ static const char *gnksa_domain_list[] = {
 	"auspost",
 	"banamex",
 	"bauhaus",
-	"bentley",
 	"bestbuy",
 	"booking",
 	"brother",
@@ -1249,7 +1248,6 @@ static const char *gnksa_domain_list[] = {
 	"institute",
 	"insurance",
 	"kuokgroup",
-	"lancaster",
 	"landrover",
 	"lifestyle",
 	"marketing",
@@ -1257,7 +1255,6 @@ static const char *gnksa_domain_list[] = {
 	"melbourne",
 	"microsoft",
 	"panasonic",
-	"pramerica",
 	"richardli",
 	"shangrila",
 	"solutions",

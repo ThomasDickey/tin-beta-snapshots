@@ -1142,7 +1142,7 @@ log_func(
 		return;
 
 	if (msg[msglen - 1] == '\n')
-		msglen--;
+		--msglen;
 
 	debug_print_file("NNTP", "TLS%s%.*s [%d]", logtime(), msglen, msg, level);
 }

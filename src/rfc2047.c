@@ -397,6 +397,46 @@ str2b64(
 }
 
 
+int
+b642str(
+	const char *in,
+	char *out)
+{
+	char *t;
+	int bits = 0;
+	unsigned pattern;
+	unsigned char x;
+
+	if (!in || !*in)
+		return 0;
+	if (!out)
+		return -1;
+
+	t = out;
+	pattern = 0;
+	bits = 0;
+	build_base64_rank_table();
+
+	while (*in) {
+		x = base64_rank[(unsigned char) (*in++)];
+		if (x == NOT_RANKED) {
+			*t = '\0';
+			return (int) (t - out);
+		}
+		pattern <<= 6;
+		pattern |= x;
+		bits += 6;
+		if (bits >= 8) {
+			x = (unsigned char) ((pattern >> (bits - 8)) & 0xff);
+			*t++ = (char) x;
+			bits -= 8;
+		}
+	}
+	*t = '\0';
+	return (int) (t - out);
+}
+
+
 static int
 do_b_encode(
 	char *w,

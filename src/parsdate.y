@@ -537,8 +537,8 @@ Convert(
     if (Year < 0)
 	Year = -Year;
     if (Year < 70)
-        Year += 2000;
-    if (Year < 100)
+    Year += 2000;
+    if (Year < 200)
 	Year += 1900;
     if (Year < EPOCH)
 	Year += 100;

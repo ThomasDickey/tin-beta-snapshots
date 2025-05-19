@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2025-02-13
+ *  Updated   : 2025-04-07
  *
  * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -307,7 +307,8 @@ build_sender(
 
 	sender[0] = '\0';
 
-	if ((ptr = get_full_name())) /* TODO: rfc2047 encode */
+	ptr = get_full_name();
+	if (*ptr) /* TODO: rfc2047 encode */
 		snprintf(sender, sizeof(sender), ((strpbrk(ptr, "\".:;<>@[]()\\")) ? "\"%s\"" : "%s "), ptr);
 
 	snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "<%.*s@", LOGIN_NAME_MAX, userid);

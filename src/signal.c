@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-11-21
+ *  Updated   : 2025-05-12
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -104,7 +104,7 @@ static void _CDECL signal_handler(SIG_ARGS);
 	static t_bool redraw_after_suspend;
 #endif /* SIGWINCH || SIGTSTP */
 
-int signal_context = cMain;
+enum context signal_context = cMain;
 int input_context = cNone;
 int need_parse_fmt;
 int need_resize = cNo;

@@ -2,9 +2,9 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2025-02-18
+.\" Updated   : 2025-05-18
 .\" Notes     : needs a some work, see TODOs
-.\"
+.\"             - use semantic newlines
 .\"
 .\"*******************************************************************
 .\"
@@ -146,10 +146,10 @@ not executed on either a real terminal or a terminal window.
 .TP 
 \fBcopiousoutput\fP
 The "copiousoutput" field indicates that the output from the view\-command
-will be an extended stream of output, and is to be interpreted as advice to
-the UA (User Agent mail\-reading program) that the output should be either
-paged or made scroll\-able. Note that it is probably a mistake if
-needsterminal and copiousoutput are both specified.
+will be an extended stream of outputand is to be interpreted as advice to
+the UA (User Agent mail\-readingprogram) that the output should be either
+paged or made scroll\-able.Note that it is probably a mistake if
+needsterminal and copiousoutput areboth specified.
 .TP 
 \fBdescription\fP
 The "description" field simply provides a textual description, optionally
@@ -175,7 +175,7 @@ replaced by a short unique string to give the name of the temporary file to
 be passed to the viewing command. This is only expected to be relevant in
 environments where filename extensions are meaningful, e.g., one could
 specify that a GIF file being passed to a gif viewer should have a name
-ending in ".gif" by using "nametemplate=%s.gif"
+ending in ".gif" by using "nametemplate=%s.gif".
 .PP
 \fB\%tin\fP(1)  currently only respects the "test", "description",
 "nametemplate" and partly the "needsterminal" flags, all other flags are
@@ -483,7 +483,7 @@ Identical to the tinrc variable of the same name
 .TP 
 \fBmailing_list\fP
 Used when a group is a mailing list. All responses to the group will be
-directed to this email address instead
+directed to this e\-mail address instead
 .TP 
 \fBmark_ignore_tags\fP
 Identical to the tinrc variable of the same name
@@ -1332,8 +1332,8 @@ Format string \fB\%tin\fP(1) uses for Attachment level representation. Default
 is "%t%s%e%c%d".
 .TP 
 \fBauto_cc_bcc\fP
-Automatically put your name in the \*(rqCc:\*(rq and/or \*(rqBcc:\*(rq field when
-mailing an article. Default is No.
+Automatically put your name in the \*(rqCc:\*(rq (1) or \*(rqBcc:\*(rq (2) field or to
+both (3) fields when mailing an article. Default is 'No' (0).
 .TP 
 \fBauto_list_thread\fP
 If ON automatically list thread when entering it using right arrow key.
@@ -1356,7 +1356,7 @@ If ON, create local copies of NNTP overview files. This can be used to
 considerably speed up accessing large groups when using a slow connection.
 Default is OFF.
 .TP 
-\fBcache_overview_files\fP
+\fBcompress_overview_files\fP
 If ON, locally cached NNTP overview files (\fBcache_overview_files\fP) are
 saved in compressed form (\fBRFC\%1952\fP). Useful to reduce local disk space
 used. Default is OFF.
@@ -1581,7 +1581,7 @@ r L.
 .TP 
 \fBdont_break_words\fP
 Do not break long lines inside a word. This applies to the body except for
-verbatim blocks. ee also \fBwrap_column\fP. Default is OFF.
+verbatim blocks. See also \fBwrap_column\fP. Default is OFF.
 .TP 
 \fBdraw_arrow\fP
 Allows groups/articles to be selected by an arrow '\(->' if set ON or by
@@ -1613,10 +1613,10 @@ absolute value of \fBgetart_limit\fP. Default is 0, which means no limit.
 .TP 
 \fBgoto_next_unread\fP
 Which keys \fB\%tin\fP(1) should accept to jump to the next unread article.
-Possible is any combination of \fBPageDown\fP and \fBPageNextUnread\fP.  When
-\fBPageDown\fP is set \fB\tin\fP jumps to the next article at the end of the
+Possible is any combination of \fBPageDown\fP and \fBPageNextUnread\fP. When
+\fBPageDown\fP is set \fB\%tin\fP(1) jumps to the next article at the end of the
 current one. When \fBPageNextUnread\fP is set \fB\%tin\fP(1) jumps immediately to
-the next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')  is
+the next article when \fBPageNextUnread\fP ('\fB<TAB>\fP') is
 pressed. Default is \fBPageNextUnread\fP.
 .TP 
 \fBgroup_catchup_on_exit\fP
@@ -1642,13 +1642,42 @@ The format string used for the Group level. Default is "%n\ %m\ %R\ %L\ \ %s\ \ 
 .in -0.3i
 .TP 
 \fBhide_uue\fP
-If set to 'No' then raw uuencoded data is displayed. If set to 'Yes' then
-sections of uuencoded data will be shown with a single tag line showing the
-size and filename (much the same as a MIME attachment).  If set to 'Hide
-all' then any line that looks like uuencoded data will be folded into a tag
-line. This is useful when uuencoded data is split across more than one
-article but can also lead to false positives. This setting can also be
-toggled in the article viewer.  Default is 'No'.
+If set to '\fBNothing\fP' (0) then raw data is displayed.  If set to
+\&'\fBComplete UU/YENC\fP' (1) then sections of uuencoded or yenc data will be
+shown with a single tag line showing the size and filename (much the same as
+a MIME attachment).  If set to '\fBAny UU/YENC\fP' (2) then any line that looks
+like uuencoded or yenc data will be folded into a tag line. This is useful
+when uuencoded or yenc data is split across more than one article but can
+also lead to false positives.  If set to '\fBInline PGP\fP' (4) then any inline
+PGP data is hidden.  If set to '\fBShar\fP' (8) then shar\-archives are hidden,
+this should be used with care as it may hide other shell snippets and any
+following text as well.  This setting can also be toggled in the article
+viewer via \fBPageToggleUue\fP ('\fB(\fP').  Default is 'Nothing' (0). The
+possible values are:
+.in +0.3i
+.nf
+.ta \w'15    'u +\w'Complete UU/YENC & Inline PGP'u
+ 0	\fBNothing\fP
+ 1	\fBComplete UU/YENC\fP
+ 2	\fBAny UU/YENC\fP
+ 4	\fBInline PGP\fP
+ 5	\fBComplete UU/YENC & Inline PGP\fP
+ 6	\fBAny UU/YENC & Inline PGP\fP
+ 8	\fBShar\fP
+ 9	\fBComplete UU/YENC & Shar\fP
+10	\fBAny UU/YENC & Shar\fP
+12	\fBInline PGP & Shar\fP
+13	\fBCompl. UU/YENC & PGP & Shar\fP
+15	\fBHide all\fP
+.fi
+.in -0.3i
+.TP 
+\fBhideline_regex\fP
+A regular expression to hide matching lines in pager. Could be used to hide
+excessive quoting, e.g. via '^>\es?>\es?>'. If left blank, no
+lines will be hidden. This option does not affect lines within verbatim
+blocks and is applied after \fBtrim_article_body\fP and
+\fBsuppress_soft_hyphens\fP.
 .TP 
 \fBinews_prog\fP
 Path, name and options of external \fB\%inews\fP(1).  If you are reading via
@@ -1789,7 +1818,7 @@ neither of them is defined. If your system supports \fB\%iconv\fP(3)  or
 \fBmm_network_charset\fP
 Charset used for posting and MIME headers; replaces \fBmm_charset\fP.
 Conversion between \fBmm_network_charset\fP and local charset (determined via
-\fB\%nl_langinfo\fP(3))  is done via \fB\%iconv\fP(3)  or \fB\%ucnv_*\fP(), if none
+\fB\%nl_langinfo\fP(3))  is done via \fB\%iconv\fP(3)  or \fB\%ucnv_*\fP(). If none
 of these functions are available on your system this option is disabled and
 you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP is limited to
 one of the following charsets:
@@ -1879,6 +1908,10 @@ Format string \fB\%tin\fP(1) uses for mime header at Page level.  Default is
 \fBpage_uue_format\fP
 Format string \fB\%tin\fP(1) uses for uue header at Page level.  Default is
 "[\-\- %T%S%*n%I%!d%*e \-\-]".
+.TP 
+\fBpage_yenc_format\fP
+Format string \fB\%tin\fP(1)  uses for yenc header at Page level.  Default is
+"[\-\- %*N%!d%I [%F%G]%V%W%X \-\-]".
 .TP 
 \fBpos_first_unread\fP
 If ON put cursor at first unread article in group otherwise at last
@@ -2111,7 +2144,7 @@ OFF.
 If OFF don't show signatures when displaying articles. Default is ON.
 .TP 
 \fBsigdashes\fP
-If ON prefix the signature with sigdashes. Default is ON.
+If ON prepend the signature with sigdashes. Default is ON.
 .TP 
 \fBsigfile\fP
 The path that specifies the signature file to use when posting, following up
@@ -2210,7 +2243,7 @@ If ON, then unsubscribed groups will be permanently removed from your
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP file. Default is OFF.
 .TP 
 \fBstrip_re_regex\fP
-A regular expression to find Subject prefixes like "Re:" to remove If
+A regular expression to find Subject prefixes like "Re:" to remove.  If
 \fBstrip_re_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
 .TP 
 \fBstrip_was_regex\fP
@@ -2299,7 +2332,8 @@ doesn't exist, this option is disabled. Default is OFF.
 .TP 
 \fBtrim_article_body\fP
 Allows you to select how \fB\%tin\fP(1) treats blank lines in article bodies.
-Default is 0. This option does not affect lines within verbatim blocks.
+Default is 0. This option does not affect lines within verbatim blocks and
+is applied before \fBhideline_regex\fP.
 .RS +1i
 .IP 0 3
 \fBDon't trim article body\fP, do nothing.
@@ -2458,7 +2492,7 @@ Defines the default place for some configuration files, common values are
 \fI/news/db\fP. $\fBTIN_LIBDIR\fP overrides any specified value.
 .TP 
 \fBbugaddress\fP
-Defines the email address to which users can send bug reports using a
+Defines the e\-mail address to which users can send bug reports using a
 built\-in function. The default points to a developers mailing list located
 at tin.org. You might want to change this address to one of your local
 administration if you want to deal with your lusers problems on your own.
@@ -2603,7 +2637,7 @@ COUNTS (\fBRFC\%6048\fP) command instead.
 .sp
 .RS
 This file provides a chronological record of when newsgroups are created. It
-is normally updated by the local news server (e.g.,  \fB\%innd\fP(8))  whenever
+is normally updated by the local news server (e.g., \fB\%innd\fP(8))  whenever
 a new group is created. Each line consist of three space\-separated fields
 "\fIname\fP \fItime\fP \fIcreator\fP".
 .TP 

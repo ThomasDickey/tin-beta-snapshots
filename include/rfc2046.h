@@ -3,7 +3,7 @@
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2024-07-24
+ *  Updated   : 2025-05-09
  *  Notes     : RFC 2046 MIME article definitions
  *
  * Copyright (c) 2000-2025 Jason Faultless <jason@altarstone.com>
@@ -62,7 +62,8 @@
 #	define ENCODING_8BIT		3
 #	define ENCODING_BINARY		4
 #	define ENCODING_UUE			5
-#	define ENCODING_UNKNOWN		6
+#	define ENCODING_YENC		6
+#	define ENCODING_UNKNOWN		7
 
 /* Content-Disposition types (RFC 2183) */
 #	define DISP_INLINE			0
@@ -151,6 +152,11 @@ typedef struct part
 	unsigned long bytes;	/* part size in bytes */
 	int line_count;			/* # lines in this part */
 	int depth;				/* For multipart within multipart */
+	int yenc_part;			/* current yenc part */
+	int yenc_total;			/* total # of yenc parts */
+	unsigned long yenc_part_size;	/* total size of yenc */
+	unsigned long yenc_total_size;	/* size of current yenc part */
+	uint32_t yenc_crc;		/* yenc checksum */
 	t_hints mime_hints;
 	struct part *uue;		/* UUencoded section information */
 	struct part *next;		/* next part */
@@ -203,26 +209,27 @@ struct t_header
 #	define C_SIG		0x0004
 #	define C_ATTACH		0x0008
 #	define C_UUE		0x0010
+#	define C_YENC		0x0020
 
 /* Secondary flags */
-#	define C_QUOTE1	0x0020
-#	define C_QUOTE2	0x0040
-#	define C_QUOTE3	0x0080
+#	define C_QUOTE1	0x0040
+#	define C_QUOTE2	0x0080
+#	define C_QUOTE3	0x0100
 
-#	define C_URL			0x0100	/* Contains http|ftp|gopher: */
-#	define C_MAIL			0x0200	/* Contains mailto: */
-#	define C_NEWS			0x0400	/* Contains news|nntp: */
-#	define C_CTRLL			0x0800	/* Contains ^L */
-#	define C_VERBATIM		0x1000	/* Verbatim block */
+#	define C_URL			0x0200	/* Contains http|ftp|gopher: */
+#	define C_MAIL			0x0400	/* Contains mailto: */
+#	define C_NEWS			0x0800	/* Contains news|nntp: */
+#	define C_CTRLL			0x1000	/* Contains ^L */
+#	define C_VERBATIM		0x2000	/* Verbatim block */
 #	ifdef HAVE_COLOR
-#		define C_EXTQUOTE	0x2000	/* Quoted text from external sources */
+#		define C_EXTQUOTE	0x4000	/* Quoted text from external sources */
 #	endif /* HAVE_COLOR */
 
 
 typedef struct lineinfo
 {
 	long offset;			/* Offset of this line */
-	int flags;				/* Info about this line */
+	unsigned int flags;		/* Info about this line */
 } t_lineinfo;
 
 

@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-25
+ *  Updated   : 2025-05-19
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -720,7 +720,9 @@ page_goto_next_unread:
 				break;
 
 			case PAGE_TOGGLE_UUE:			/* toggle display of uuencoded sections */
-				hide_uue = (hide_uue + 1) % (UUE_ALL + 1);
+				do {
+					hide_uue = (hide_uue + 1) % (HIDE_ALL + 1);
+				} while (!*txt_hide_uue_type[hide_uue]); /* a list with gaps? - skip over them */
 				resize_article(TRUE, &pgart);	/* Also recooks it.. */
 				/*
 				 * If we hid uue and are off the end of the article, reposition to
@@ -837,9 +839,9 @@ page_goto_next_unread:
 			case MARK_THREAD_UNREAD:
 				thd_mark_unread(group, base[which_thread(this_resp)]);
 				if (group->attribute->thread_articles != THREAD_NONE)
-					info_message(_(txt_marked_as_unread), _(txt_thread_upper));
+					info_message(_(txt_marked_thread_as_unread));
 				else
-					info_message(_(txt_marked_as_unread), _(txt_article_upper));
+					info_message(_(txt_marked_article_as_unread));
 				break;
 
 			case PAGE_CANCEL:			/* cancel an article */
@@ -1025,10 +1027,14 @@ return_to_index:
 
 			case MARK_ARTICLE_UNREAD:	/* mark article as unread(to return) */
 				art_mark(group, &arts[this_resp], ART_WILL_RETURN);
-				info_message(_(txt_marked_as_unread), _(txt_article_upper));
+				info_message(_(txt_marked_article_as_unread));
 				break;
 
 			case PAGE_SKIP_INCLUDED_TEXT:	/* skip included text */
+				if (show_raw_article) {
+					info_message(_(txt_info_not_available_in_raw));
+					break;
+				}
 				for (i = j = curr_line; i < artlines; i++) {
 					if (artline[i].flags & (C_QUOTE1 | C_QUOTE2 | C_QUOTE3)) {
 						j = i;
@@ -1455,6 +1461,7 @@ invoke_metamail(
 }
 
 
+/* TODO: add BiDi handling (our layout expects LTR) */
 static char *
 build_from_line(
 	void)
@@ -1715,7 +1722,7 @@ skip:
 	 *       if !note_h->subj then the article just has no subject, no matter
 	 *       what the overview says.
 	 *
-	 *       add BiDi handling
+	 *       add BiDi handling (our layout expects LTR)
 	 */
 	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), line_len);
 	buf[line_len - 1] = '\0';
@@ -1838,7 +1845,7 @@ shrug:
 	 *
 	 * TODO: - IDNA decoding, see also comment in
 	 *         cook.c:cook_article()
-	 *       - add BiDi handling
+	 *       - add BiDi handling (our layout expects LTR)
 	 */
 	if (note_h->org && cur_pos < cCOLS - 1) {
 		snprintf(buf, line_len, _(txt_at_s), note_h->org);
@@ -2876,7 +2883,8 @@ static t_bool
 process_url(
 	int n)
 {
-	char *url, *url_esc;
+	char *url;
+	const char *url_esc;
 	int l;
 	size_t len;
 	t_url *lptr;
@@ -2998,11 +3006,11 @@ build_url_list(
 		 */
 		forever {
 			/* any matches left? */
-			if (match_regex_ex(ptr, (REGEX_SIZE) strlen(ptr), 0, 0, &url_regex) >= 0) {
+			if (MATCH_REGEX(url_regex, ptr, strlen(ptr))) {
 				offsets = regex_get_ovector_pointer(&url_regex);
-			} else if (match_regex_ex(ptr, (REGEX_SIZE) strlen(ptr), 0, 0, &mail_regex) >= 0) {
+			} else if (MATCH_REGEX(mail_regex, ptr, strlen(ptr))) {
 				offsets = regex_get_ovector_pointer(&mail_regex);
-			} else if (match_regex_ex(ptr, (REGEX_SIZE) strlen(ptr), 0, 0, &news_regex) >= 0) {
+			} else if (MATCH_REGEX(news_regex, ptr, strlen(ptr))) {
 				offsets = regex_get_ovector_pointer(&news_regex);
 			} else
 				break;

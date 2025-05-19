@@ -2,9 +2,9 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2025-02-18
+.\" Updated   : 2025-05-18
 .\" Notes     : needs a some work, see TODOs
-.\"
+.\"             - use semantic newlines
 .\"
 .\"*******************************************************************
 .\"
@@ -18,7 +18,7 @@ tin, rtin \- related files
 
 .SH DESCRIPCIÓN
 This man page describes the various (config) files and their formats used by
-the \fB\%tin\fP(1)  newsreader. All files are expected to have unix style
+the \fB\%tin\fP(1)  newsreader.  All files are expected to have unix style
 ('\(rsn' aka LF) line endings.
 
 .SH FICHEROS
@@ -54,23 +54,23 @@ the \fB\%tin\fP(1)  newsreader. All files are expected to have unix style
 \fI/etc/mail/mailcap\fP
 .sp
 .RS
-\fB\%mailcap\fP(5)  files as defined in \fBRFC\%1524\fP. The mailcap files are
+\fB\%mailcap\fP(5)  files as defined in \fBRFC\%1524\fP.  The mailcap files are
 read by \fB\%tin\fP(1)  to determine how to display non\-text messages at the
-local site. Any line that starts with "#" is a comment. Blank lines are
+local site.  Any line that starts with "#" is a comment.  Blank lines are
 ignored. Otherwise, each line defines a single mailcap entry for a single
-content type. Long lines may be continued by ending them with a backslash
+content type.  Long lines may be continued by ending them with a backslash
 character, "\(rs".
 .sp
 Each individual mailcap entry consists of a content\-type specification, a
 command to execute, and (possibly) a set of optional "flag" values.
 .sp
-The "type" field is simply any valid content type name. It is the string
+The "type" field is simply any valid content type name.  It is the string
 that will be matched against the \*(rqContent\-Type:\*(rq header to decide if this
-is the mailcap entry that matches the current message. Additionally, the
+is the mailcap entry that matches the current message.  Additionally, the
 type field may specify a subtype or a wildcard to match all subtypes.
 .sp
 The "command" field is any UNIX command and is used to specify the
-interpreter for the given type of message. It will be passed to the shell
+interpreter for the given type of message.  It will be passed to the shell
 via the \fB\%system\fP(3)  facility.
 .sp
 .\"
@@ -81,74 +81,74 @@ via the \fB\%system\fP(3)  facility.
 .\" then the name of the temporary file where the decoded part has been stored.
 .\"
 Semicolons and backslashes within the command or any flag field must be
-quoted with backslashes. If the field contains "%s", those two characters
+quoted with backslashes.  If the field contains "%s", those two characters
 will be replaced by the name of a file that contains the body of the
-message. If it contains "%t", those two characters will be replaced by the
-content\-type field, including the subtype, if any. If it contains "%{"
+message.  If it contains "%t", those two characters will be replaced by the
+content\-type field, including the subtype, if any.  If it contains "%{"
 followed by a parameter name and a closing "}", then all those characters
 will be replaced by the value of the named parameter, if any, from the
-\&\*(rqContent\-Type:\*(rq header. Finally, if the field contains "\(rs%", those
+\&\*(rqContent\-Type:\*(rq header.  Finally, if the field contains "\(rs%", those
 two characters will be replaced by a single "%" character.
 .sp
 Besides the type and command field the following "flags" are defined:
 .TP 
 \fBcompose\fP
 The "compose" field may be used to specify a program that can be used to
-compose a new body or body part in the given format. Its intended use is to
+compose a new body or body part in the given format.  Its intended use is to
 support mail composing agents that support the composition of multiple types
-of mail using external composing agents. As with the view\-command, the
-semantics of program execution are operating system dependent. The result of
-the composing program may be data that is not yet suitable for mail
+of mail using external composing agents.  As with the view\-command, the
+semantics of program execution are operating system dependent.  The result
+of the composing program may be data that is not yet suitable for mail
 transport \(em that is, a Content\-Transfer\-Encoding may need to be applied
 to the data.
 .TP 
 \fBcomposetyped\fP
 The "composetyped" field is similar to the "compose" field, but is to be
 used when the composing program needs to specify the \*(rqContent\-Type:\*(rq
-header field to be applied to the composed data. The "compose" field is
+header field to be applied to the composed data.  The "compose" field is
 simpler, and is preferred for use with existing (non\-mail\-oriented) programs
-for composing data in a given format. The "composetyped" field is necessary
+for composing data in a given format.  The "composetyped" field is necessary
 when the Content\-Type information must include auxiliary parameters, and the
 composition program must then know enough about mail formats to produce
 output that includes the mail type information.
 .TP 
 \fBedit\fP
 The "edit" field may be used to specify a program that can be used to edit a
-body or body part in the given format. In many cases, it may be identical in
-content to the "compose" field, and shares the operating\-system dependent
+body or body part in the given format.  In many cases, it may be identical
+in content to the "compose" field, and shares the operating\-system dependent
 semantics for program execution.
 .TP 
 \fBprint\fP
 The "print" field may be used to specify a program that can be used to print
-a message or body part in the given format. As with the view\-command, the
+a message or body part in the given format.  As with the view\-command, the
 semantics of program execution are operating system dependent.
 .TP 
 \fBtest\fP
 The "test" field may be used to test some external condition (e.g., the
 machine architecture, or the window system in use) to determine whether or
-not the mailcap line applies. It specifies a program to be run to test some
-condition. The semantics of execution and of the value returned by the test
-program are operating system dependent. If the test fails, a subsequent
-mailcap entry should be sought. Multiple test fields are not permitted \(em
+not the mailcap line applies.  It specifies a program to be run to test some
+condition.  The semantics of execution and of the value returned by the test
+program are operating system dependent.  If the test fails, a subsequent
+mailcap entry should be sought.  Multiple test fields are not permitted \(em
 since a test can call a program, it can already be arbitrarily complex.
 .TP 
 \fBneedsterminal\fP
 The "needsterminal" field indicates that the view\-command must be run on an
-interactive terminal. This is needed to inform window\-oriented user agents
-that an interactive terminal is needed. (The decision is not left
+interactive terminal.  This is needed to inform window\-oriented user agents
+that an interactive terminal is needed.  (The decision is not left
 exclusively to the view\-command because in some circumstances it may not be
 possible for such programs to tell whether or not they are on interactive
-terminals.) The needsterminal command should be assumed to apply to the
-compose and edit commands, too, if they exist. Note that this is NOT a test
+terminals.)  The needsterminal command should be assumed to apply to the
+compose and edit commands, too, if they exist.  Note that this is NOT a test
 \(en it is a requirement for the environment in which the program will be
 executed, and should typically cause the creation of a terminal window when
 not executed on either a real terminal or a terminal window.
 .TP 
 \fBcopiousoutput\fP
 The "copiousoutput" field indicates that the output from the view\-command
-will be an extended stream of output, and is to be interpreted as advice to
+will be an extended stream of output and is to be interpreted as advice to
 the UA (User Agent mail\-reading program) that the output should be either
-paged or made scroll\-able. Note that it is probably a mistake if
+paged or made scroll\-able.  Note that it is probably a mistake if
 needsterminal and copiousoutput are both specified.
 .TP 
 \fBdescription\fP
@@ -160,9 +160,9 @@ readers that wish to describe the data before offering to display it.
 The "textualnewlines" field, if set to any nonzero value, indicates that
 this type of data is line\-oriented and that, if encoded in base64, all
 newlines should be converted to canonical form (CRLF) before encoding, and
-will be in that form after decoding. In general, this field is needed only
-if there is line\-oriented data of some type other than text/* or non\-line\-
-oriented data that is a subtype of text.
+will be in that form after decoding.  In general, this field is needed only
+if there is line\-oriented data of some type other than text/* or
+non\-line\-oriented data that is a subtype of text.
 .TP 
 \fBx11\-bitmap\fP
 The "x11\-bitmap" field names a file, in X11 bitmap (xbm) format, which
@@ -172,14 +172,14 @@ this kind of data.
 \fBnametemplate\fP
 The "nametemplate" field gives a filename format, in which %s will be
 replaced by a short unique string to give the name of the temporary file to
-be passed to the viewing command. This is only expected to be relevant in
+be passed to the viewing command.  This is only expected to be relevant in
 environments where filename extensions are meaningful, e.g., one could
 specify that a GIF file being passed to a gif viewer should have a name
-ending in ".gif" by using "nametemplate=%s.gif"
+ending in ".gif" by using "nametemplate=%s.gif".
 .PP
 \fB\%tin\fP(1)  currently only respects the "test", "description",
 "nametemplate" and partly the "needsterminal" flags, all other flags are
-internally ignored. It also can't handle the "%F" and "%n" expansions yet.
+internally ignored.  It also can't handle the "%F" and "%n" expansions yet.
 .TP 
 Example:
 .RS
@@ -1332,8 +1332,8 @@ Format string \fB\%tin\fP(1)  uses for Attachment level representation.
 Default is "%t%s%e%c%d".
 .TP 
 \fBauto_cc_bcc\fP
-Automatically put your name in the \*(rqCc:\*(rq and/or \*(rqBcc:\*(rq field when
-mailing an article. Default is No.
+Automatically put your name in the \*(rqCc:\*(rq (1) or \*(rqBcc:\*(rq (2) field or to
+both (3) fields when mailing an article. Default is 'No' (0).
 .TP 
 \fBauto_list_thread\fP
 If ON automatically list thread when entering it using right arrow key.
@@ -1642,13 +1642,42 @@ The format string used for the Group level. Default is "%n\ %m\ %R\ %L\ \ %s\ \ 
 .in -0.3i
 .TP 
 \fBhide_uue\fP
-If set to 'No' then raw uuencoded data is displayed. If set to 'Yes' then
-sections of uuencoded data will be shown with a single tag line showing the
-size and filename (much the same as a MIME attachment).  If set to 'Hide
-all' then any line that looks like uuencoded data will be folded into a tag
-line. This is useful when uuencoded data is split across more than one
-article but can also lead to false positives. This setting can also be
-toggled in the article viewer.  Default is 'No'.
+If set to '\fBNothing\fP' (0) then raw data is displayed.  If set to
+\&'\fBComplete UU/YENC\fP' (1) then sections of uuencoded or yenc data will be
+shown with a single tag line showing the size and filename (much the same as
+a MIME attachment).  If set to '\fBAny UU/YENC\fP' (2) then any line that looks
+like uuencoded or yenc data will be folded into a tag line. This is useful
+when uuencoded or yenc data is split across more than one article but can
+also lead to false positives.  If set to '\fBInline PGP\fP' (4) then any inline
+PGP data is hidden.  If set to '\fBShar\fP' (8) then shar\-archives are hidden,
+this should be used with care as it may hide other shell snippets and any
+following text as well.  This setting can also be toggled in the article
+viewer via \fBPageToggleUue\fP ('\fB(\fP').  Default is 'Nothing' (0). The
+possible values are:
+.in +0.3i
+.nf
+.ta \w'15    'u +\w'Complete UU/YENC & Inline PGP'u
+ 0	\fBNothing\fP
+ 1	\fBComplete UU/YENC\fP
+ 2	\fBAny UU/YENC\fP
+ 4	\fBInline PGP\fP
+ 5	\fBComplete UU/YENC & Inline PGP\fP
+ 6	\fBAny UU/YENC & Inline PGP\fP
+ 8	\fBShar\fP
+ 9	\fBComplete UU/YENC & Shar\fP
+10	\fBAny UU/YENC & Shar\fP
+12	\fBInline PGP & Shar\fP
+13	\fBCompl. UU/YENC & PGP & Shar\fP
+15	\fBHide all\fP
+.fi
+.in -0.3i
+.TP 
+\fBhideline_regex\fP
+A regular expression to hide matching lines in pager. Could be used to hide
+excessive quoting, e.g. via '^>\es?>\es?>'. If left blank, no
+lines will be hidden. This option does not affect lines within verbatim
+blocks and is applied after \fBtrim_article_body\fP and
+\fBsuppress_soft_hyphens\fP.
 .TP 
 \fBinews_prog\fP
 Path, name and options of external \fB\%inews\fP(1).  If you are reading via
@@ -1789,7 +1818,7 @@ neither of them is defined. If your system supports \fB\%iconv\fP(3)  or
 \fBmm_network_charset\fP
 Charset used for posting and MIME headers; replaces \fBmm_charset\fP.
 Conversion between \fBmm_network_charset\fP and local charset (determined via
-\fB\%nl_langinfo\fP(3))  is done via \fB\%iconv\fP(3)  or \fB\%ucnv_*\fP(), if none
+\fB\%nl_langinfo\fP(3))  is done via \fB\%iconv\fP(3)  or \fB\%ucnv_*\fP().  If none
 of these functions are available on your system this option is disabled and
 you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP is limited to
 one of the following charsets:
@@ -1879,6 +1908,10 @@ Format string \fB\%tin\fP(1)  uses for mime header at Page level.  Default is
 \fBpage_uue_format\fP
 Format string \fB\%tin\fP(1)  uses for uue header at Page level.  Default is
 "[\-\- %T%S%*n%I%!d%*e \-\-]".
+.TP 
+\fBpage_yenc_format\fP
+Format string \fB\%tin\fP(1)  uses for yenc header at Page level.  Default is
+"[\-\- %*N%!d%I [%F%G]%V%W%X \-\-]".
 .TP 
 \fBpos_first_unread\fP
 If ON put cursor at first unread article in group otherwise at last
@@ -2210,7 +2243,7 @@ If ON, then unsubscribed groups will be permanently removed from your
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP file. Default is OFF.
 .TP 
 \fBstrip_re_regex\fP
-A regular expression to find Subject prefixes like "Re:" to remove If
+A regular expression to find Subject prefixes like "Re:" to remove.  If
 \fBstrip_re_regex\fP is blank, then \fB\%tin\fP(1)  uses a built\-in default.
 .TP 
 \fBstrip_was_regex\fP
@@ -2299,7 +2332,8 @@ doesn't exist, this option is disabled. Default is OFF.
 .TP 
 \fBtrim_article_body\fP
 Allows you to select how \fB\%tin\fP(1)  treats blank lines in article bodies.
-Default is 0. This option does not affect lines within verbatim blocks.
+Default is 0. This option does not affect lines within verbatim blocks and
+is applied before \fBhideline_regex\fP.
 .RS +1i
 .IP 0 3
 \fBDon't trim article body\fP, do nothing.

@@ -207,7 +207,7 @@ main(
 	 * Read user local & global config files
 	 * These override the compiled in defaults
 	 *
-	 * must be called before setup_screen()
+	 * must be called before setup_screen(), see comment below
 	 */
 	if (!read_config_file(global_config_file, TRUE))
 		global_config_file[0] = '\0';
@@ -238,9 +238,7 @@ main(
 			tin_done(EXIT_SUCCESS, NULL);
 		}
 
-		/*
-		 * Init curses emulation
-		 */
+		/* Init curses emulation */
 		if (!InitScreen()) {
 			error_message(2, _(txt_screen_init_failed), tin_progname);
 			FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
@@ -250,9 +248,7 @@ main(
 
 		EndInverse();
 
-		/*
-		 * This depends on various things in tinrc
-		 */
+		/* depends on various things in tinrc, e.g. color settings */
 		setup_screen();
 	}
 
@@ -1350,6 +1346,7 @@ read_cmd_line_options(
 		/* USELESS_COMB("-R", "-n"); */ /* we ignore this silently */
 		newsrc_active = FALSE;
 	}
+	/* USELESS_COMB("-R", "-p"); */ /* we ignore this silently */
 	if (read_saved_news && read_news_via_nntp) {
 		/* USELESS_COMB("-R", "-r"); */ /* we ignore this silently, also catches 'p' */
 		read_news_via_nntp = FALSE;

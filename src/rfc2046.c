@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2024-12-25
+ *  Updated   : 2025-05-09
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2025 Jason Faultless <jason@altarstone.com>
@@ -989,6 +989,11 @@ new_part(
 	ptr->line_count = 0;
 	ptr->bytes = 0;
 	ptr->depth = 0;							/* Not an embedded object (yet) */
+	ptr->yenc_part = 0;						/* current yenc part */
+	ptr->yenc_total = 0;					/* total # of yenc parts */
+	ptr->yenc_part_size = 0;				/* total size of yenc */
+	ptr->yenc_total_size = 0;				/* size of current yenc part */
+	ptr->yenc_crc = 0;						/* yenc checksum */
 	ptr->mime_hints.flags = MIME_INIT;
 	ptr->mime_hints.type = my_strdup("None");
 	ptr->mime_hints.subtype = my_strdup("None");

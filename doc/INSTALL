@@ -759,7 +759,7 @@ $CPPFLAGS and $LDFLAGS in the binary. This is required for
 reproducible builds.
 
 INLINE_DEBUG_MIME
-experimental, if set show (some) MIME (parse) errors/info inline.
+experimental, if set show (some) MIME or yenc (parse) errors/info inline.
 
 License
 -------

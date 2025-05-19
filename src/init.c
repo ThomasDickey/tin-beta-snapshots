@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-20
+ *  Updated   : 2025-05-14
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -203,9 +203,12 @@ char *input_history[HIST_MAXNUM + 1][HIST_SIZE + 1];
 struct regex_cache
 		strip_re_regex, strip_was_regex,
 		uubegin_regex, uubody_regex,
+		xxbody_regex,
 		verbatim_begin_regex, verbatim_end_regex,
+		hideline_regex,
+		yencbegin_regex, yencpart_regex, yencend_regex,
 		url_regex, mail_regex, news_regex,
-		shar_regex,
+		shar_regex, shar_end_regex,
 		slashes_regex, stars_regex, underscores_regex, strokes_regex
 #ifdef HAVE_COLOR
 		, extquote_regex, quote_regex, quote_regex2, quote_regex3
@@ -242,6 +245,7 @@ struct t_config tinrc = {
 	NULL,	/* attachment_format */
 	NULL,	/* page_mime_format */
 	NULL,	/* page_uue_format */
+	NULL,	/* page_yenc_format */
 	NULL,	/* date_format */
 	NULL,	/* mail_quote_format */
 	NULL,	/* mailer_format */
@@ -273,6 +277,7 @@ struct t_config tinrc = {
 	NULL,	/* underscores_regex */
 	NULL,	/* verbatim_begin_regex */
 	NULL,	/* verbatim_end_regex */
+	NULL,	/* hideline_regex */
 	NULL,	/* savedir */
 	NULL,	/* sigfile */
 	NULL,	/* spamtrap_warning_addresses */
@@ -984,6 +989,7 @@ init_selfinfo(
 	tinrc.attachment_format = my_strdup(DEFAULT_ATTACHMENT_FORMAT);
 	tinrc.page_mime_format = my_strdup(DEFAULT_PAGE_MIME_FORMAT);
 	tinrc.page_uue_format = my_strdup(DEFAULT_PAGE_UUE_FORMAT);
+	tinrc.page_yenc_format = my_strdup(DEFAULT_PAGE_YENC_FORMAT);
 	tinrc.date_format = my_strdup(DEFAULT_DATE_FORMAT);
 	joinpath(article_name, sizeof(article_name), homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID
@@ -1139,7 +1145,7 @@ read_site_config(
 		return -1;
 
 	/*
-	 * no (_(txt_reading_config_file), _(txt_global), global_defaults_file)
+	 * no (_(txt_reading_(global_)config_file), global_defaults_file)
 	 * here as read_site_config() is called (from init_selfinfo()) before
 	 * read_cmd_line_options() so we don't know if we're in (verbose)
 	 * batch mode or not ...
@@ -1298,9 +1304,22 @@ postinit_regexp(
 	compile_regex(UUBEGIN_REGEX, &uubegin_regex, REGEX_ANCHORED);
 	compile_regex(UUBODY_REGEX, &uubody_regex, REGEX_ANCHORED);
 
+	compile_regex(XXBODY_REGEX, &xxbody_regex, REGEX_CASELESS|REGEX_ANCHORED);
+
+	if (!tinrc.hideline_regex || !*tinrc.hideline_regex) {
+		FreeIfNeeded(tinrc.hideline_regex);
+		tinrc.hideline_regex = my_strdup(NEVER_MATCH_REGEX);
+	}
+	compile_regex(tinrc.hideline_regex, &hideline_regex, 0);
+
+	compile_regex(YENCBEGIN_REGEX, &yencbegin_regex, REGEX_ANCHORED);
+	compile_regex(YENCPART_REGEX, &yencpart_regex, REGEX_ANCHORED);
+	compile_regex(YENCEND_REGEX, &yencend_regex, REGEX_ANCHORED);
+
 	compile_regex(URL_REGEX, &url_regex, REGEX_CASELESS);
 	compile_regex(MAIL_REGEX, &mail_regex, REGEX_CASELESS);
 	compile_regex(NEWS_REGEX, &news_regex, REGEX_CASELESS);
 
 	compile_regex(SHAR_REGEX, &shar_regex, REGEX_ANCHORED);
+	compile_regex(SHAR_END_REGEX, &shar_end_regex, REGEX_ANCHORED);
 }

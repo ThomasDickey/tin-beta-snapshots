@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2025-02-27
+ *  Updated   : 2025-03-18
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2025 Steven J. Madsen <steve@erinet.com>
@@ -111,9 +111,6 @@ PGPNAME, pgpopts, pt, mailto, mailfrom, pt
 #	endif /* HAVE_GPG */
 
 /* RFC 4880 6.2 */
-#	define PGP_SIG_TAG "-----BEGIN PGP SIGNED MESSAGE-----\n"
-#	define PGP_KEY_TAG "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
-
 #	define HEADERS	"tin-%ld.h"
 #	ifdef HAVE_LONG_FILE_NAMES
 #		define PLAINTEXT	"tin-%ld.pt"
@@ -350,16 +347,16 @@ pgp_available(
 		fclose(fp);
 		return TRUE;
 	}
-	fclose(fp);
 #endif /* HAVE_GPG */
+
 	joinpath(keyring, sizeof(keyring), pgp_data, PGP_PUBRING);
-	if ((fp = fopen(keyring, "r")) == NULL) {
-		wait_message(2, _(txt_pgp_not_avail), keyring);
-		return FALSE;
+	if ((fp = fopen(keyring, "r")) != NULL) {
+		fclose(fp);
+		return TRUE;
 	}
 
-	fclose(fp);
-	return TRUE;
+	wait_message(2, _(txt_pgp_not_avail), keyring);
+	return FALSE;
 }
 
 

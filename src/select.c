@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-25
+ *  Updated   : 2025-03-13
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -435,8 +435,7 @@ selection_page(
 				 * as we effectively do a yank out on each change, set yanked_out accordingly
 				 */
 				yanked_out = TRUE;
-				/* TODO: plural-forms? ("unread" fr:("non lu", "non lus")) */
-				wait_message(0, _(txt_reading_groups), (tinrc.show_only_unread_groups) ? _(txt_unread) : _(txt_all));
+				wait_message(0, (tinrc.show_only_unread_groups) ? _(txt_reading_unread_groups) : _(txt_reading_all_groups));
 
 				toggle_my_groups(NULL);
 				show_selection_page();

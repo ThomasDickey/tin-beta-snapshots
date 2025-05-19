@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2024-07-28
+ *  Updated   : 2025-05-01
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -544,7 +544,7 @@ StartInverse(
 /*	in_inverse = 1; */
 	if (_setinverse && tinrc.inverse_okay) {
 #	ifdef HAVE_COLOR
-		if (use_color) {
+		if (use_color && (tinrc.col_invers_bg != -1 || tinrc.col_invers_fg != -1)) {
 			bcol(tinrc.col_invers_bg);
 			fcol(tinrc.col_invers_fg);
 		} else {
@@ -568,7 +568,7 @@ EndInverse(
 /*	in_inverse = 0; */
 	if (_clearinverse && tinrc.inverse_okay) {
 #	ifdef HAVE_COLOR
-		if (use_color) {
+		if (use_color && (tinrc.col_invers_bg != -1 || tinrc.col_invers_fg != -1)) {
 			fcol(tinrc.col_normal);
 			bcol(tinrc.col_back);
 		} else {

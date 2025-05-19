@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2024-08-15
+ *  Updated   : 2025-05-01
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -220,7 +220,7 @@ StartInverse(
 {
 	if (tinrc.inverse_okay) {
 #	ifdef HAVE_COLOR
-		if (use_color) {
+		if (use_color && (tinrc.col_invers_bg != -1 || tinrc.col_invers_fg != -1)) {
 			bcol(tinrc.col_invers_bg);
 			fcol(tinrc.col_invers_fg);
 		} else

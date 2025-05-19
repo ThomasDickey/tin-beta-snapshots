@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-20
+ *  Updated   : 2025-05-18
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -49,7 +49,6 @@ constext txt_active_file_is_empty[] = N_("\n%s contains no newsgroups. Exiting."
 #if defined(NNTP_ABLE) && defined(HAVE_SELECT)
 	constext txt_abort_reading[] = N_("Aborting read, please wait...");
 #endif /* NNTP_ABLE && HAVE_SELECT */
-constext txt_all[] = N_("all");
 constext txt_all_groups[] = N_("All groups");
 constext txt_append_overwrite_quit[] = N_("File %s exists. %s=append, %s=overwrite, %s=quit: ");
 constext txt_art_cancel[] = N_("Article cancelled (deleted).");
@@ -75,7 +74,6 @@ constext txt_article_cancelled[] = "Article cancelled by author.\n";
 constext txt_article_info_page[] = N_("Article Info Page");
 constext txt_article_reposted[] = N_("This is a repost of the following article:");
 constext *txt_article_sp[] = PN_("article", "articles");
-constext txt_article_upper[] = N_("Article");
 constext *txt_article_mailed_sp[] = PN_("-- %d article mailed --", "-- %d articles mailed --");
 constext txt_at_s[] = N_(" at %s");
 constext txt_attachment_menu[] = N_("Attachment Menu");
@@ -141,29 +139,19 @@ constext txt_attrib_file_quick_kill_expire[] = N_("#  quick_kill_expire=ON/OFF\n
 constext txt_attrib_file_quick_kill_case[] = N_("#  quick_kill_case=ON/OFF\n");
 constext txt_attrib_file_quick_kill_hdr[] = N_("#  quick_kill_header=NUM\n");
 /* TRANSLATORS: do not translate header names like 'Subject:' */
-constext txt_attrib_file_quick_kill_hdr_0_1[] = N_("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n");
+constext txt_attrib_file_quick_ks_hdr_0_1[] = N_("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n");
 /* TRANSLATORS: do not translate header names like 'From:' */
-constext txt_attrib_file_quick_kill_hdr_2_3[] = N_("#    2=From: (case sensitive)     3=From: (ignore case)\n");
+constext txt_attrib_file_quick_ks_hdr_2_3[] = N_("#    2=From: (case sensitive)     3=From: (ignore case)\n");
 /* TRANSLATORS: do not translate header names like 'Message-ID:' or 'References:' */
-constext txt_attrib_file_quick_kill_hdr_4[] = N_("#    4=Message-ID: & full References: line\n");
+constext txt_attrib_file_quick_ks_hdr_4[] = N_("#    4=Message-ID: & full References: line\n");
 /* TRANSLATORS: do not translate header names like 'Message-ID:' or 'References:' */
-constext txt_attrib_file_quick_kill_hdr_5[] = N_("#    5=Message-ID: & last References: entry only\n");
+constext txt_attrib_file_quick_ks_hdr_5[] = N_("#    5=Message-ID: & last References: entry only\n");
 /* TRANSLATORS: do not translate header names like 'Message-ID:' or 'Lines:' */
-constext txt_attrib_file_quick_kill_hdr_6[] = N_("#    6=Message-ID: entry only     7=Lines:\n");
+constext txt_attrib_file_quick_ks_hdr_6[] = N_("#    6=Message-ID: entry only     7=Lines:\n");
 constext txt_attrib_file_quick_select_scope[] = N_("#  quick_select_scope=STRING\n");
 constext txt_attrib_file_quick_select_expire[] = N_("#  quick_select_expire=ON/OFF\n");
 constext txt_attrib_file_quick_select_case[] = N_("#  quick_select_case=ON/OFF\n");
 constext txt_attrib_file_quick_select_hdr[] = N_("#  quick_select_header=NUM\n");
-/* TRANSLATORS: do not translate header names like 'Subject:' */
-constext txt_attrib_file_quick_select_hdr_0_1[] = N_("#    0=Subject: (case sensitive)  1=Subject: (ignore case)\n");
-/* TRANSLATORS: do not translate header names like 'From:' */
-constext txt_attrib_file_quick_select_hdr_2_3[] = N_("#    2=From: (case sensitive)     3=From: (ignore case)\n");
-/* TRANSLATORS: do not translate header names like 'Message-ID:' or 'References:' */
-constext txt_attrib_file_quick_select_hdr_4[] = N_("#    4=Message-ID: & full References: line\n");
-/* TRANSLATORS: do not translate header names like 'Message-ID:' or 'References:' */
-constext txt_attrib_file_quick_select_hdr_5[] = N_("#    5=Message-ID: & last References: entry only\n");
-/* TRANSLATORS: do not translate header names like 'Message-ID:' or 'Lines:' */
-constext txt_attrib_file_quick_select_hdr_6[] = N_("#    6=Message-ID: entry only     7=Lines:\n");
 constext txt_attrib_file_quote_chars[] = N_("#  quote_chars=STRING (%I for initials)\n");
 #ifndef DISABLE_PRINTING
 	constext txt_attrib_file_print_hdr[] = N_("#  print_header=ON/OFF\n");
@@ -233,11 +221,12 @@ constext txt_autoselecting_articles[] = N_("Autoselecting articles (use '%s' to 
 
 constext txt_bad_article[] = N_("Article to be posted resulted in errors/warnings. %s=quit, %s=Menu, %s=edit: ");
 #ifdef DEBUG
-	constext txt_bad_attrib[] = N_("Unrecognized %sattribute: %s");
+	constext txt_bad_attrib[] = N_("Unrecognized attribute: %s");
+	constext txt_bad_global_attrib[] = N_("Unrecognized global attribute: %s");
 #endif /* DEBUG */
 constext txt_bad_command[] = N_("Bad command. Type '%s' for help.");
-constext txt_base_article[] = N_("Base article");
-constext txt_base_article_range[] = N_("Base article range");
+constext txt_base_article_marked_read[] = N_("Marked base article as read");
+constext txt_base_article_range_marked_read[] = N_("Marked base article range as read");
 constext txt_batch_update_unavail[] = N_("%s: Updating of index files not supported: cache_overview_files=%s");
 constext txt_begin_of_art[] = N_("*** Beginning of article ***");
 constext txt_begin_of_page[] = N_("*** Beginning of page ***");
@@ -262,7 +251,7 @@ constext txt_cannot_write_to_directory[] = N_("%s is a directory");
 constext txt_catchup[] = N_("Catchup");
 constext txt_catchup_group[] = N_("Catchup %s...");
 constext txt_catchup_all_read_groups[] = N_("Catchup all groups entered during this session?");
-constext txt_catchup_despite_tags[] = N_("You have tagged articles in this group - catchup anyway?");
+constext *txt_catchup_despite_tags_sp[] = PN_("You have a tagged article in this group - catchup anyway?", "You have tagged articles in this group - catchup anyway?");
 constext txt_catchup_update_info[] = N_("%s %d %s in %lu seconds\n");
 constext txt_caughtup[] = N_("Caughtup");
 constext txt_check_article[] = N_("Check Prepared Article");
@@ -522,8 +511,8 @@ constext txt_filter_file[] = N_("# Format:\n\
 #                     full references.\n\
 #   msgid_last=STRING Optional. Like above, but with last reference only.\n\
 #   msgid_only=STRING Optional. Like above, but without references.\n\
-#   refs_only=STRING  Optional. References: line (e.g. <123@example.net>) without\n\
-#                     Message-ID:\n\
+#   refs_only=STRING  Optional. References: line (e.g. <123@example.net>)\n\
+#                     without Message-ID:\n\
 #   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n\
 #   gnksa=[<>]?NUM    Optional. GNKSA parse_from() return code. '<' or '>' opt.\n\
 #   xref=PATTERN      Optional. Kill pattern (e.g. alt.flame*)\n\
@@ -556,7 +545,6 @@ constext txt_from_line_only_case[] = N_("From: line (case sensitive)   ");
 #ifdef NNTP_ABLE
 	constext txt_gethostbyname[] = N_("%s%s: Unknown host.\n");
 #endif /* NNTP_ABLE */
-constext txt_global[] = N_("global ");
 constext txt_group_aliased[] = N_("Please use %.100s instead");
 constext txt_group_bogus[] = N_("%s is bogus");
 constext txt_group_is_moderated[] = N_("Group %s is moderated. Continue?");
@@ -620,8 +608,8 @@ constext txt_help_article_toggle_highlight[] = N_("toggle word highlighting on/o
 constext txt_help_article_toggle_rot13[] = N_("toggle ROT-13 (basic decode) for current article");
 constext txt_help_article_toggle_tabwidth[] = N_("toggle tabwidth 4 <-> 8");
 constext txt_help_article_toggle_tex2iso[] = N_("toggle German TeX style decoding for current article");
-constext txt_help_article_toggle_uue[] = N_("toggle display of uuencoded sections");
-constext txt_help_article_toggle_verbatim[] = N_("cycle through the options for detecting and displaying verbatim blocks");
+constext txt_help_article_toggle_uue[] = N_("toggle display of data sections");
+constext txt_help_article_toggle_verbatim[] = N_("cycle through the options for detecting/displaying verbatim blocks");
 constext txt_help_article_view_attachments[] = N_("View/pipe/save multimedia attachments");
 constext txt_help_attachment_first[] = N_("choose first attachment in list");
 constext txt_help_attachment_goto[] = N_("0 - 9\t  choose attachment by number");
@@ -789,6 +777,7 @@ constext txt_help_url_search_forwards[] = N_("search for URLs forwards");
 constext txt_help_url_search_backwards[] = N_("search for URLs backwards");
 constext txt_help_url_select[] = N_("Open URL in browser");
 constext txt_help_url_toggle_info_line[] = N_("toggle info message in last line (URL)");
+constext *txt_hot_article_sp[] = PN_("Hot article", "Hot articles");
 
 constext txt_index_page_com[] = N_("Group Level Commands");
 constext txt_info_add_kill[] = N_("Kill filter added");
@@ -800,6 +789,7 @@ constext txt_info_do_postpone[] = N_("Storing article for later posting");
 constext txt_info_enter_valid_character[] = N_("Please enter a valid character");
 constext txt_info_missing_part[] = N_("Missing part #%d");
 constext txt_info_nopostponed[] = N_("*** No postponed articles ***");
+constext txt_info_not_available_in_raw[] = N_("Operation not available in raw-mode");
 constext txt_info_not_multipart_message[] = N_("Not a multi-part message");
 constext txt_info_not_subscribed[] = N_("You are not subscribed to this group");
 constext txt_info_no_previous_expression[] = N_("No previous expression");
@@ -879,8 +869,10 @@ constext txt_mailing_to[] = N_("Mailing to %s...");
 constext txt_mail_save_active_head[] = N_("# [Mail/Save] active file. Format is like news active file:\n\
 #   groupname  max.artnum  min.artnum  /dir\n\
 # The 4th field is the basedir (i.e. ~/Mail or ~/News)\n#\n");
-constext txt_marked_as_read[] = N_("%s marked as read");
-constext txt_marked_as_unread[] = N_("%s marked as unread");
+constext txt_marked_article_as_read[] = N_("Article marked as read");
+constext txt_marked_article_as_unread[] = N_("Article marked as unread");
+constext txt_marked_thread_as_read[] = N_("Thread marked as read");
+constext txt_marked_thread_as_unread[] = N_("Thread marked as unread");
 constext txt_marked_arts_as_read[] = N_("Marked %d of %d %s as read");
 constext txt_marked_arts_as_unread[] = N_("Marked %d of %d %s as unread");
 constext txt_mark[] = N_("Mark");
@@ -1035,9 +1027,6 @@ constext txt_posting[] = N_("Posting article...");
 #endif /* NNTP_INEWS */
 constext txt_postpone_post[] = N_("Posting: %.*s ...");
 constext txt_postpone_repost[] = N_("Post postponed articles [%%s]? (%s/%s/%s/%s/%s): ");
-constext txt_prefix_hot[] = N_("Hot %s");
-constext txt_prefix_tagged[] = N_("Tagged %s");
-constext txt_prefix_untagged[] = N_("Untagged %s");
 #ifdef NNTP_ABLE
 	constext txt_prep_for_filter_on_path[] = N_("Preparing for filtering on Path header (%d/%d)...");
 #endif /* NNTP_ABLE */
@@ -1052,7 +1041,7 @@ constext txt_quick_filter_kill[] = N_("Add quick kill filter?");
 constext txt_quick_filter_select[] = N_("Add quick selection filter?");
 constext txt_quit[] = N_("Do you really want to quit?");
 constext txt_quit_cancel[] = N_("%s=edit cancel message, %s=quit, %s=delete (cancel) [%%s]: ");
-constext txt_quit_despite_tags[] = N_("You have tagged articles in this group - quit anyway?");
+constext *txt_quit_despite_tags_sp[] = PN_("You have a tagged article in this group - quit anyway?", "You have tagged articles in this group - quit anyway?");
 constext txt_quit_edit_postpone[] = N_("%s=quit, %s=edit, %s=postpone: ");
 constext txt_quit_edit_save_kill[] = N_("%s=quit, %s=edit, %s=save kill description: ");
 constext txt_quit_edit_save_select[] = N_("%s=quit, %s=edit, %s=save select description: ");
@@ -1063,22 +1052,26 @@ constext txt_range_invalid[] = N_("Invalid range - valid are '0-9.$' e.g. 1-$");
 	constext txt_read_abort[] = N_("Do you want to abort this operation?");
 	constext txt_read_exit[] = N_("Do you want to exit tin immediately?");
 #endif /* HAVE_SELECT */
+constext txt_reading_all_arts[] = N_("Reading all articles...");
+constext txt_reading_all_groups[] = N_("Reading all groups...");
 constext txt_reading_article[] = N_("Reading ('q' to quit)...");
-constext txt_reading_arts[] = N_("Reading %s articles...");
-constext txt_reading_attributes_file[] = N_("Reading %sattributes file: %s\n");
-constext txt_reading_config_file[] = N_("Reading %sconfig file: %s\n");
+constext txt_reading_attributes_file[] = N_("Reading attributes file: %s\n");
+constext txt_reading_global_attributes_file[] = N_("Reading global attributes file: %s\n");
+constext txt_reading_config_file[] = N_("Reading config file: %s\n");
+constext txt_reading_global_config_file[] = N_("Reading global config file: %s\n");
 constext txt_reading_filter_file[] = N_("Reading filter file: %s\n");
 #ifdef DEBUG
 	constext txt_reading_from_spool[] = N_("reading from local spool");
 #endif /* DEBUG */
 constext txt_reading_group[] = N_("Reading %s\n");
-constext txt_reading_groups[] = N_("Reading %s groups...");
 constext txt_reading_input_history_file[] = N_("Reading input history file: %s\n");
 constext txt_reading_keymap_file[] = N_("Reading keymap file: %s\n");
 constext txt_reading_news_active_file[] = N_("Reading groups from active file... ");
 constext txt_reading_news_newsrc_file[] = N_("Reading groups from newsrc file... ");
 constext txt_reading_newsgroups_file[] = N_("Reading newsgroups file... ");
 constext txt_reading_newsrc[] = N_("Reading newsrc file: %s");
+constext txt_reading_unread_arts[] = N_("Reading unread articles...");
+constext txt_reading_unread_groups[] = N_("Reading unread groups...");
 /* TRANSLATORS: do not translate header names like 'References:' */
 constext txt_refs_line_only[] = N_("References: line              ");
 #if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
@@ -1179,6 +1172,9 @@ constext txt_suspended_message[] = N_("\nStopped. Type 'fg' to restart %s\n");
 
 constext *txt_time_default_day_sp[] = PN_("%d day", "%d days");
 constext txt_tab[] = N_("<TAB>");
+constext *txt_tagged_article_sp[] = PN_("Tagged article", "Tagged articles");
+constext txt_tagged_thread[] = N_("Tagged thread");
+
 constext txt_tex[] = N_("TeX ");
 constext txt_tin_version[] = N_("Version: %s %s release %s (\"%s\")");
 constext txt_tinrc_defaults[] = N_("# Default action/prompt strings\n");
@@ -1203,7 +1199,6 @@ constext txt_thread_upper[] = N_("Thread");
 constext txt_thread_com[] = N_("Thread Level Commands");
 constext txt_thread_marked_as_deselected[] = N_("Thread deselected");
 constext txt_thread_marked_as_selected[] = N_("Thread selected");
-constext *txt_thread_sp[] = PN_("thread", "threads");
 constext txt_thread_x_of_n[] = N_("Thread %4s of %4s");
 constext txt_threading_arts[] = N_("Threading articles...");
 constext txt_threading_by_multipart[] = N_("Threading by multipart");
@@ -1244,6 +1239,8 @@ constext txt_toggled_verbatim[] = N_("Verbatim handling: %s");
 constext txt_type_h_for_help[] = N_("%s=help");
 
 constext txt_unlimited_time[] = N_("Unlimited");
+constext txt_untagged_article[] = N_("Untagged article");
+constext txt_untagged_thread[] = N_("Untagged thread");
 constext txt_unsubscribe_pattern[] = N_("Enter wildcard unsubscribe pattern> ");
 constext txt_uu_error_decode[] = N_("Error decoding %s : %s");
 constext txt_uu_error_no_end[] = N_("No end.");
@@ -1255,8 +1252,6 @@ constext txt_unknown[] = N_("(unknown)");
 #if defined(XFACE_ABLE) || (defined(NNTPS_ABLE) && defined(HAVE_LIB_LIBTLS))
 	constext txt_unknown_error[] = N_("unknown error");
 #endif /* XFACE_ABLE || (NNTPS_ABLE && HAVE_LIB_LIBTLS) */
-/* TODO: plural-forms? ("unread" fr:("non lu", "non lus")) */
-constext txt_unread[] = N_("unread");
 constext *txt_unsubscribed_num_group_sp[] = PN_("unsubscribed from %d group", "unsubscribed from %d groups");
 constext txt_unsubscribed_to[] = N_("Unsubscribed from %s");
 constext txt_unsubscribing[] = N_("Unsubscribing... ");
@@ -1444,6 +1439,15 @@ constext txt_xref_line_nocasse[] = N_("Xref: line (case insensitive)");
 constext *txt_yanked_group_sp[] = PN_("Added %d group", "Added %d groups");
 constext txt_yanked_none[] = N_("No unsubscribed groups to show");
 constext txt_yanked_sub_groups[] = N_("Showing subscribed to groups only");
+constext txt_yenc_complete[] = N_("yenc file");
+constext txt_yenc_corrupt[] = N_("corrupt yenc");
+constext txt_yenc_crc[] = N_("crc checksum %s");
+constext txt_yenc_incomplete[] = N_("incomplete yenc");
+constext txt_yenc_part[] = N_("part %s");
+constext txt_yenc_part_size[] = N_("part size %s");
+constext txt_yenc_partial[] = N_("partial yenc");
+constext txt_yenc_total[] = N_("total parts %s");
+constext txt_yenc_total_size[] = N_("total size %s");
 constext txt_yes[] = N_("Yes ");
 constext txt_you_have_mail[] = N_("You have mail");
 
@@ -1747,12 +1751,25 @@ constext *txt_threading[] = {
 constext *txt_wildcard_type[] = { "WILDMAT", "REGEX", NULL };
 
 /*
- * Handling of uuencoded data in pager
+ * Handling of non text data in pager
  */
 constext *txt_hide_uue_type[] = {
-	N_("No"),
-	N_("Yes"),
+	N_("Nothing"),
+	N_("Complete UU/YENC"),
+	N_("Any UU/YENC"),
+	N_(""),
+	N_("Inline PGP"),
+	N_("Complete UU/YENC & Inline PGP"),
+	N_("Any UU/YENC & Inline PGP"),
+	N_(""),
+	N_("Shar"),
+	N_("Complete UU/YENC & Shar"),
+	N_("Any UU/YENC & Shar"),
+	N_(""),
+	N_("Inline PGP & Shar"),
+	N_("Compl. UU/YENC & PGP & Shar"),
 	N_("Hide all"),
+	N_(""),
 	NULL
 };
 
@@ -1942,7 +1959,7 @@ constext *txt_mime_encodings[] = {
 };
 
 constext *content_encodings[] = {
-	"7bit", "quoted-printable", "base64", "8bit", "binary", "x-uuencode", "unknown",
+	"7bit", "quoted-printable", "base64", "8bit", "binary", "x-uuencode", "yenc", "unknown",
 	NULL
 };
 
@@ -2026,7 +2043,7 @@ constext *txt_quote_style_type[] = {
 };
 
 #ifdef CHARSET_CONVERSION
-/* supported charsets */
+/* supported outgoing charsets */
 constext *txt_mime_charsets[] = {
 	"US-ASCII",
 	"ISO-8859-1", "ISO-8859-2", "ISO-8859-3", "ISO-8859-4", "ISO-8859-5",
@@ -2415,15 +2432,17 @@ struct opttxt txt_suppress_soft_hyphens = {
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 struct opttxt txt_hide_uue = {
-	N_("Display uuencoded data as tagged attachments. <SPACE> toggles & <CR> sets."),
-	N_("Display uue data as an attachment"),
-	N_("# Handling of uuencoded data in the pager\n\
-# Possible values are (the default is marked with *):\n\
-# * 0 = No, display raw uuencoded data\n\
-#   1 = Yes, uuencoded data will be condensed to a single tag line showing\n\
+	N_("Display none mime data as tagged attachments. <SPACE> toggles & <CR> sets."),
+	N_("Display none mime data as an attachment"),
+	N_("# Handling of none text in the pager\n\
+# Possible values are any combination of (the default is marked with *):\n\
+# * 0 = No, display raw data\n\
+#   1 = uuencoded and yenc data will be condensed to a single tag line showing\n\
 #       size and filename, similar to how MIME attachments are displayed\n\
-#   2 = Hide all, as for 1, but any line that looks like uuencoded data will\n\
-#       be folded into a tag line.\n")
+#   2 = Also hide partial, as for 1, but any line that looks like uuencoded\n\
+#       or yenc data will be folded into a tag line.\n\
+#   4 = Hide Inline PGP\n\
+#   8 = Hide Shar\n")
 };
 
 struct opttxt txt_tex2iso_conv = {
@@ -2511,6 +2530,14 @@ struct opttxt txt_extquote_regex = {
 # If you leave this blank, tin will use a built in default.\n")
 };
 #endif /* HAVE_COLOR */
+
+struct opttxt txt_hideline_regex = {
+	N_("A regex used to decide which lines to hide in pager"),
+	N_("Regex used to hide matching lines"),
+	N_("# A regular expression that to hide matching lines.\n\
+# Could be used to hide excessive quoting, e.g. via \"^>\\s?>\\s?>\".\n\
+# If you leave this blank, no lines will be hidden.\n")
+};
 
 struct opttxt txt_slashes_regex = {
 	N_("A regex used to decide which words to show in col_markslashes."),
@@ -3460,6 +3487,38 @@ struct opttxt txt_page_uue_format = {
 #   %s              Like %S but with description\n\
 #   %T              Content type\n\
 #   %t              Like %T but with description\n\
+#   %Z              Size in bytes\n\
+#   %z              Like %Z but with description\n")
+};
+
+struct opttxt txt_page_yenc_format = {
+	N_("Enter format string. <CR> sets, <ESC> cancels."),
+	N_("Format string for display of yenc header"),
+	N_("# Format string for yenc header at article level\n\
+# Default: [-- %*N%!d%I [%F%G]%V%W%X --]\n\
+# Possible values are:\n\
+#   %%              '%'\n\
+#   %D              Line count\n\
+#   %d              Like %D but with description\n\
+#   %E              Content encoding\n\
+#   %e              Like %E but with description\n\
+#   %F              Current part\n\
+#   %f              Like %F but with description\n\
+#   %G              Number of all parts\n\
+#   %g              Like %G but with description\n\
+#   %I              Complete/incomplete YENC part indicator\n\
+#   %N              Name\n\
+#   %n              Like %N but with description\n\
+#   %S              Content subtype\n\
+#   %s              Like %S but with description\n\
+#   %T              Content type\n\
+#   %t              Like %T but with description\n\
+#   %V              Part size in bytes\n\
+#   %v              Like %V but with description\n\
+#   %W              Total size in bytes\n\
+#   %w              Like %W but with description\n\
+#   %X              CRC checksum\n\
+#   %x              Like %X but with description\n\
 #   %Z              Size in bytes\n\
 #   %z              Like %Z but with description\n")
 };

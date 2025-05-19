@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2025-02-26
+ *  Updated   : 2025-05-12
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2025 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -274,16 +274,16 @@ convert_tex2iso(
 	memset(tex_to, '\0', sizeof(tex_to));
 
 	/*
-	 * Charsets which have German umlauts incl. sharp s at the same
-	 * code position as ISO-8859-1
+	 * Charsets which have German umlauts incl. sharp s
+	 * at the same code position as ISO-8859-1
 	 * DEC-MCS, Windows-1252
 	 */
-	if (iso2asc_supported >= 0 ||
+	if (iso2asc_supported >= 0
 		/* ensure not to also match ISO-8859-{11,12} */
 #ifdef CHARSET_CONVERSION
-		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-1")
+		|| !strcasecmp(tinrc.mm_local_charset, "ISO-8859-1")
 #else
-		!strcasecmp(tinrc.mm_charset, "ISO-8859-1")
+		|| !strcasecmp(tinrc.mm_charset, "ISO-8859-1")
 #endif /* CHARSET_CONVERSION */
 		|| IS_LOCAL_CHARSET("ISO-8859-2")
 		|| IS_LOCAL_CHARSET("ISO-8859-3")
@@ -461,10 +461,9 @@ charset_unsupported(
 		"csSCSU",
 		NULL };
 	const char **charsetptr = charsets;
-	t_bool ret = FALSE;
 
 	if (!charset)
-		return ret;
+		return TRUE;
 
 	do {
 		if (!strncasecmp(charset, *charsetptr, strlen(*charsetptr)))
@@ -478,7 +477,7 @@ charset_unsupported(
 
 		if ((cd = iconv_open("UCS-4", charset)) != (iconv_t) (-1)) {
 			iconv_close(cd);
-			return ret;
+			return FALSE;
 		}
 	}
 #	endif /* CHARSET_CONVERSION_ICONV */
@@ -492,14 +491,14 @@ charset_unsupported(
 #if defined(DEBUG) && defined(DEBUG_UCNV)
 			wait_message(2, "UCNV: %s (%s:%d) %s", u_errorName(err), __FILE__, __LINE__, charset);
 #endif /* DEBUG && DEBUG_UCNV */
-			ret = TRUE;
+			return TRUE;
 		} else
 			ucnv_close(test);
 	}
 #	endif /* CHARSET_CONVERSION_UCNV */
 #endif /* CHARSET_CONVERSION */
 
-	return ret;
+	return FALSE;
 }
 
 
@@ -560,11 +559,12 @@ const char *
 validate_charset(
 	const char *charset)
 {
-	const char *c = charset;
+	const char *c;
 
 	if (!charset || strlen(charset) > 40) /* RFC 2978 2.3 */
 		return NULL;
 
+	c = charset;
 	while (*c) {
 		if (*c < 45 || *c > 122 || *c == 46 || *c == 47 || (*c >= 58 && *c <= 64) || (*c >= 91 && *c <= 94) || *c == 96)
 			return NULL;
@@ -575,7 +575,7 @@ validate_charset(
 }
 
 
-#ifdef CHARSET_CONVERSION
+#if defined(NNTP_ABLE) && defined(CHARSET_CONVERSION) && defined(USE_GSASL)
 /*
  * return pos. of charset in txt_mime_charsets or -1 if not found
  */
@@ -595,4 +595,4 @@ charset_name_to_num(
 
 	return -1;
 }
-#endif /* CHARSET_CONVERSION */
+#endif /* NNTP_ABLE && CHARSET_CONVERSION && USE_GSASL */

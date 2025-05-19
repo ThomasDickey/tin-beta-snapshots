@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-03
+ *  Updated   : 2025-05-14
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -271,12 +271,18 @@ free_all_arrays(
 	regex_cache_destroy(&strip_was_regex);
 	regex_cache_destroy(&uubegin_regex);
 	regex_cache_destroy(&uubody_regex);
+	regex_cache_destroy(&xxbody_regex);
 	regex_cache_destroy(&verbatim_begin_regex);
 	regex_cache_destroy(&verbatim_end_regex);
+	regex_cache_destroy(&yencbegin_regex);
+	regex_cache_destroy(&yencpart_regex);
+	regex_cache_destroy(&yencend_regex);
 	regex_cache_destroy(&url_regex);
 	regex_cache_destroy(&mail_regex);
 	regex_cache_destroy(&news_regex);
 	regex_cache_destroy(&shar_regex);
+	regex_cache_destroy(&shar_end_regex);
+	regex_cache_destroy(&hideline_regex);
 
 	if (!batch_mode) {
 		free_keymaps();
@@ -423,10 +429,14 @@ free_tinrc_strings(
 	FreeAndNull(tinrc.mailer_format);
 	FreeAndNull(tinrc.default_goto_group);
 	FreeAndNull(tinrc.default_mail_address);
+#ifndef DONT_HAVE_PIPING
 	FreeAndNull(tinrc.default_pipe_command);
+#endif /* DONT_HAVE_PIPING */
 	FreeAndNull(tinrc.default_post_newsgroups);
 	FreeAndNull(tinrc.default_post_subject);
+#ifndef DISABLE_PRINTING
 	FreeAndNull(tinrc.printer);
+#endif /* DISABLE_PRINTING */
 	FreeAndNull(tinrc.default_range_group);
 	FreeAndNull(tinrc.default_range_select);
 	FreeAndNull(tinrc.default_range_thread);
@@ -466,6 +476,7 @@ free_tinrc_strings(
 	FreeAndNull(tinrc.strip_was_regex);
 	FreeAndNull(tinrc.verbatim_begin_regex);
 	FreeAndNull(tinrc.verbatim_end_regex);
+	FreeAndNull(tinrc.hideline_regex);
 	FreeAndNull(tinrc.savedir);
 	FreeAndNull(tinrc.sigfile);
 	FreeAndNull(tinrc.spamtrap_warning_addresses);
@@ -478,6 +489,7 @@ free_tinrc_strings(
 	FreeAndNull(tinrc.attachment_format);
 	FreeAndNull(tinrc.page_mime_format);
 	FreeAndNull(tinrc.page_uue_format);
+	FreeAndNull(tinrc.page_yenc_format);
 	FreeAndNull(tinrc.date_format);
 	FreeAndNull(tinrc.xpost_quote_format);
 #	ifdef NNTPS_ABLE

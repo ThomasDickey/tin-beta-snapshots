@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2024-12-04
+ *  Updated   : 2025-05-13
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -183,7 +183,7 @@ search_config(
 	do {
 		if (forward) {
 			if (n == last)
-				n = 0;
+				n = (enum option_enum) 0;
 			else
 				++n;
 		} else {
@@ -418,7 +418,7 @@ body_search(
 			line = my_strdup(tmp);
 
 		if (tinrc.wildcard) {
-			if (match_regex_ex(line, (REGEX_SIZE) strlen(line), 0, 0, &search_regex) >= 0) {
+			if (MATCH_REGEX(search_regex, line, strlen(line))) {
 				copy_offsets(srch_offsets, srch_offsets_size, &search_regex);
 				srch_lineno = i;
 				art_close(&pgart);		/* Switch the pager over to matched art */

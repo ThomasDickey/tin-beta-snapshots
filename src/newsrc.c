@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-06
+ *  Updated   : 2025-04-11
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -90,7 +90,7 @@ read_newsrc(
 	FILE *fp;
 	char *grp, *seq;
 	int sub, i;
-	signed long line_count = 0;
+	signed long line_count = 0L;
 	struct stat statbuf;
 
 	if (allgroups)
@@ -453,6 +453,7 @@ backup_newsrc(
 	char dirbuf[PATH_LEN];
 	char filebuf[PATH_LEN];
 	struct stat statbuf;
+	FILE *fp_in, *fp_out;
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
@@ -467,12 +468,114 @@ backup_newsrc(
 
 	if (stat(dirbuf, &statbuf) == -1) {
 		if (my_mkdir(dirbuf, (mode_t) (S_IRWXU)) == -1)
-			/* Can't create directory: Fall back on Homedir */
+			/* Can't create directory: Fall back to homedir */
 			joinpath(filebuf, sizeof(filebuf), homedir, OLDNEWSRC_FILE);
 	}
 
+#if defined(HAVE_REALPATH) && (defined(O_NOFOLLOW) || defined(HAVE_LSTAT))
+	/*
+	 * preserve symlink if target is below homedir (dedian bug #151113)
+	 *
+	 * requires realpath(3) as readlink(3) doesn't canonicalize;
+	 * prefer the O_NOFOLLOW path as that avoids TOCTOU
+	 *
+	 * TODO: return errno
+	 */
+	{
+		t_bool islink = FALSE;
+#	ifdef O_NOFOLLOW
+		int fd;
+#	endif /* O_NOFOLLOW */
+
+		if ((fp_in = tin_fopen(newsrc , "r")) == NULL)
+			return;
+
+#	ifdef O_NOFOLLOW
+		if ((fd = open(filebuf, (O_RDWR|O_CREAT|O_APPEND|O_NOFOLLOW), (S_IRUSR|S_IWUSR))) == -1) {
+			if ((fd = open(filebuf, (O_RDWR|O_CREAT|O_APPEND), (S_IRUSR|S_IWUSR))) == -1) {
+				fclose(fp_in);
+				perror_message(_(txt_cannot_open), filebuf);
+				return;
+			}
+			islink = TRUE;
+		}
+
+		if ((fp_out = fdopen(fd, "a+")) == NULL) {
+#		ifdef HAVE_POSIX_CLOSE
+			posix_close(fd, 0);
+#		else
+			close(fd);
+#		endif /* HAVE_POSIX_CLOSE */
+			fclose(fp_in);
+			perror_message(_(txt_cannot_open), filebuf);
+			return;
+		}
+#	else
+		/* TOCTOU */
+		if ((fp_out = fopen(filebuf, "a+")) == NULL) {
+			fclose(fp_in);
+			perror_message(_(txt_cannot_open), filebuf);
+			return;
+		}
+
+		if (lstat(filebuf, &statbuf) != 0) {
+			fclose(fp_in);
+			fclose(fp_out);
+			perror_message(_(txt_cannot_open), filebuf);
+			return;
+		}
+
+		if (S_ISLNK(statbuf.st_mode))
+			islink = TRUE;
+
+#	endif /* O_NOFOLLOW */
+
+		if (islink) {
+			char target[PATH_LEN] = { '\0' };
+
+			if (realpath(filebuf, target) == NULL) {
+				fclose(fp_in);
+				fclose(fp_out);
+				return;
+			} else {
+				joinpath(dirbuf, sizeof(dirbuf), homedir, ""); /* ensure homedir is '/'-terminated */
+
+				if (strncmp(dirbuf, target, strlen(dirbuf))) { /* disallow symlinks outside homedir */
+#		ifdef DEBUG
+					if (debug & DEBUG_NEWSRC) {
+						char *debug_mesg;
+						int n;
+
+						if ((n = snprintf(NULL, 0, "overwriting %s-link \"%s\", target \"%s\" not below \"%s\"", OLDNEWSRC_FILE, filebuf, target, dirbuf)) > 0) {
+							debug_mesg = my_malloc(++n);
+							snprintf(debug_mesg, n, "overwriting %s-link \"%s\", target \"%s\" not below \"%s\"", OLDNEWSRC_FILE, filebuf, target, dirbuf);
+							debug_print_comment(debug_mesg);
+							error_message(2, "Warning: %s", debug_mesg);
+							free(debug_mesg);
+						}
+					}
+#		endif /* DEBUG */
+					fclose(fp_in);
+					fclose(fp_out);
+					if (!backup_file(newsrc, filebuf))
+						error_message(2, _(txt_filesystem_full_backup), newsrc);
+					return;
+				}
+			}
+		}
+
+		if (ftruncate(fileno(fp_out), 0L) == 0)
+			copy_fp(fp_in, fp_out);
+
+		fclose(fp_in);
+		fclose(fp_out);
+	}
+#else
 	if (!backup_file(newsrc, filebuf))
 		error_message(2, _(txt_filesystem_full_backup), newsrc);
+#endif /* HAVE_REALPATH && (O_NOFOLLOW || HAVE_LSTAT) */
+
+	return;
 }
 
 
@@ -1001,7 +1104,7 @@ parse_bitmap_seq(
 	if (debug & DEBUG_NEWSRC) {
 		char buf[NEWSRC_LINE];
 
-		snprintf(buf, sizeof(buf), "Parsing [%s%c %.*s]", group->name, SUB_CHAR(group->subscribed), (int) (NEWSRC_LINE - strlen(group->name) - 14), BlankIfNull(ptr));
+		snprintf(buf, sizeof(buf), "\nParsing [%s%c %.*s]", group->name, SUB_CHAR(group->subscribed), (int) (NEWSRC_LINE - strlen(group->name) - 14), BlankIfNull(ptr));
 		debug_print_comment(buf);
 		debug_print_bitmap(group, NULL);
 	}

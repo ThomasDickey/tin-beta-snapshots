@@ -7,7 +7,7 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@invisible-island.net> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 2023-11-20
+ *  Updated   : 2025-05-09
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
@@ -244,14 +244,14 @@ bcol(
 void
 draw_pager_line(
 	const char *str,
-	int flags,
+	unsigned int flags,
 	t_bool raw_data)
 {
 #ifdef HAVE_COLOR
 	if (use_color) {
 		if (flags & C_SIG) {
 			fcol(tinrc.col_signature);
-		} else if (flags & (C_HEADER | C_ATTACH | C_UUE)) {
+		} else if (flags & (C_HEADER | C_ATTACH | C_UUE | C_YENC)) {
 			fcol(tinrc.col_newsheaders);
 		} else { /* keep order in sync with cook.c:process_text_body_part() */
 			if (flags & C_VERBATIM) {

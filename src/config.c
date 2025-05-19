@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-17
+ *  Updated   : 2025-05-18
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -105,8 +105,8 @@ read_config_file(
 	if ((fp = tin_fopen(file, "r")) == NULL)
 		return FALSE;
 
-	if (!batch_mode || verbose)
-		wait_message(0, _(txt_reading_config_file), global_file ? _(txt_global) : "", file);
+	if (/*!batch_mode ||*/ verbose) /* skip message as it would stay on screen after termination */
+		wait_message(0, global_file ? _(txt_reading_global_config_file) : _(txt_reading_config_file), file);
 
 	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
 		if (!*buf)
@@ -466,7 +466,22 @@ read_config_file(
 			break;
 
 		case 'h':
-			if (match_integer(buf, "hide_uue=", &tinrc.hide_uue, UUE_ALL))
+			if (upgrade && upgrade->file_version <= 10305) {
+				t_bool hide_uue;
+				if (match_boolean(buf, "hide_uue=", &hide_uue)) {
+					if (hide_uue)
+						tinrc.hide_uue = 1;
+					break;
+				}
+			} else {
+				if (match_integer(buf, "hide_uue=", &tinrc.hide_uue, HIDE_ALL)) {
+					if (tinrc.hide_uue & UUE_INCOMPL)
+						tinrc.hide_uue &= ~UUE_YES;
+					break;
+				}
+			}
+
+			if (match_string_ptr(buf, "hideline_regex=", &tinrc.hideline_regex))
 				break;
 
 			break;
@@ -589,6 +604,9 @@ read_config_file(
 				break;
 
 			if (match_string_ptr(buf, "page_uue_format=", &tinrc.page_uue_format))
+				break;
+
+			if (match_string_ptr(buf, "page_yenc_format=", &tinrc.page_yenc_format))
 				break;
 
 			if (match_list(buf, "post_mime_encoding=", txt_mime_encodings, &tinrc.post_mime_encoding))
@@ -994,6 +1012,10 @@ read_config_file(
 		FreeIfNeeded(tinrc.page_uue_format);
 		tinrc.page_uue_format = my_strdup(DEFAULT_PAGE_UUE_FORMAT);
 	}
+	if (!tinrc.page_yenc_format || !*tinrc.page_yenc_format) {
+		FreeIfNeeded(tinrc.page_yenc_format);
+		tinrc.page_yenc_format = my_strdup(DEFAULT_PAGE_YENC_FORMAT);
+	}
 
 	return TRUE;
 }
@@ -1217,6 +1239,9 @@ write_config_file(
 	fprintf(fp, "verbatim_begin_regex=%s\n\n", BlankIfNull(tinrc.verbatim_begin_regex));
 	fprintf(fp, "%s", _(txt_verbatim_end_regex.tinrc));
 	fprintf(fp, "verbatim_end_regex=%s\n\n", BlankIfNull(tinrc.verbatim_end_regex));
+
+	fprintf(fp, "%s", _(txt_hideline_regex.tinrc));
+	fprintf(fp, "hideline_regex=%s\n\n", (*tinrc.hideline_regex && STRCMPEQ(tinrc.hideline_regex, NEVER_MATCH_REGEX)) ? "" : BlankIfNull(tinrc.hideline_regex));
 
 #ifdef HAVE_COLOR
 	fprintf(fp, "%s", _(txt_extquote_regex.tinrc));
@@ -1537,6 +1562,9 @@ write_config_file(
 
 	fprintf(fp, "%s", _(txt_page_uue_format.tinrc));
 	fprintf(fp, "page_uue_format=%s\n\n", BlankIfNull(tinrc.page_uue_format));
+
+	fprintf(fp, "%s", _(txt_page_yenc_format.tinrc));
+	fprintf(fp, "page_yenc_format=%s\n\n", BlankIfNull(tinrc.page_yenc_format));
 
 	fprintf(fp, "%s", _(txt_date_format.tinrc));
 	fprintf(fp, "date_format=%s\n\n", BlankIfNull(tinrc.date_format));
@@ -1961,7 +1989,6 @@ rc_update(
 	t_bool confirm_action = FALSE;
 	t_bool compress_quotes = FALSE;
 	t_bool set_goto_next_unread = FALSE;
-	t_bool hide_uue = FALSE;
 	t_bool keep_posted_articles = FALSE;
 	t_bool pgdn_goto_next = FALSE;
 	t_bool quote_empty_lines = FALSE;
@@ -2053,11 +2080,6 @@ rc_update(
 				}
 				break;
 
-			case 'h':
-				if (match_boolean(buf, "hide_uue=", &hide_uue))
-					break;
-				break;
-
 			case 'k':
 				if (match_boolean(buf, "keep_posted_articles=", &keep_posted_articles))
 					break;
@@ -2138,9 +2160,6 @@ rc_update(
 		if (tab_goto_next_unread)
 			tinrc.goto_next_unread |= GOTO_NEXT_UNREAD_TAB;
 	}
-
-	if (hide_uue)
-		tinrc.hide_uue = 1;
 
 	if (keep_posted_articles) {
 		FreeIfNeeded(tinrc.posted_articles_file);
