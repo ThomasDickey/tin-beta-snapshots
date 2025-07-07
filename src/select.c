@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-03-13
+ *  Updated   : 2025-06-18
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -680,10 +680,10 @@ show_selection_page(
 	if (recalc) {
 		if (sel_fmt.len_grpname_max && !sel_fmt.len_grpname) {
 			/*
-			* calculate max length of groupname field
-			* if yanked in (yanked_out == FALSE) check all groups in active file
-			* otherwise just subscribed to groups
-			*/
+			 * calculate max length of groupname field if yanked
+			 * in (yanked_out == FALSE) check all groups in active
+			 * file otherwise just subscribed to groups
+			 */
 			if (yanked_out) {
 				for (i = 0; i < selmenu.max; i++) {
 					if ((len = (size_t) strwidth(active[my_group[i]].name)) > sel_fmt.len_grpname)
@@ -1758,8 +1758,8 @@ show_article_by_msgid(
 	num_of_tagged_arts = 0;
 	range_active = FALSE;
 	this_resp = last_resp = -1;
-	tmp_cache_overview_files = tinrc.cache_overview_files;
-	tinrc.cache_overview_files = FALSE;
+	tmp_cache_overview_files = serverrc.cache_overview_files;
+	serverrc.cache_overview_files = FALSE;
 	tmp_show_only_unread_arts = curr_group->attribute->show_only_unread_arts;
 	curr_group->attribute->show_only_unread_arts = FALSE;
 
@@ -1794,7 +1794,7 @@ show_article_by_msgid(
 
 	free(newsgroups);
 	art_close(&pgart);
-	tinrc.cache_overview_files = tmp_cache_overview_files;
+	serverrc.cache_overview_files = tmp_cache_overview_files;
 	curr_group->attribute->show_only_unread_arts = CAST_BOOL(tmp_show_only_unread_arts);
 
 	if (saved_curr_group != curr_group)

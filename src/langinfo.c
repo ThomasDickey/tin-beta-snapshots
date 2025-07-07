@@ -72,7 +72,6 @@ tin_nl_langinfo(
     return "^[+1yY]";
     break;
 
-
   case CODESET:
     if (((l = getenv("LC_ALL"))   && *l) ||
         ((l = getenv("LC_CTYPE")) && *l) ||

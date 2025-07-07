@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2025-05-18
+.\" Updated   : 2025-06-29
 .\" Notes     : needs a some work, see TODOs
 .\"             - use semantic newlines
 .\"
@@ -146,10 +146,10 @@ not executed on either a real terminal or a terminal window.
 .TP 
 \fBcopiousoutput\fP
 The "copiousoutput" field indicates that the output from the view\-command
-will be an extended stream of outputand is to be interpreted as advice to
-the UA (User Agent mail\-readingprogram) that the output should be either
-paged or made scroll\-able.Note that it is probably a mistake if
-needsterminal and copiousoutput areboth specified.
+will be an extended stream of output and is to be interpreted as advice to
+the UA (User Agent mail\-reading program) that the output should be either
+paged or made scroll\-able. Note that it is probably a mistake if
+needsterminal and copiousoutput are both specified.
 .TP 
 \fBdescription\fP
 The "description" field simply provides a textual description, optionally
@@ -219,16 +219,16 @@ needsterminal
 .sp
 .RS
 default NNTP\-server to read news from if not reading from the local spool.
-\&'\fB\-g\fP \fIserver\fP', $\fBNNTPSERVER\fP have higher priority (in that order),
+\&\*(rq\fB\-g\fP\~\fIserver\fP\*(rq, $\fBNNTPSERVER\fP have higher priority (in that order),
 the default server given at compile time has lower priority.
 .RE
 .PP
 \fI${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret\fP
 .sp
 .RS
-secret to be used for cancel\-locks if \fB\%tin\fP(1)  is built with support for
-it. An empty secret file disables the cancel\-lock creation in that
-case. This file should be readable only by the user.
+secret to be used for cancel\-locks (\fBRFC\%8315\fP) if \fB\%tin\fP(1)  is built
+with support for it. An empty secret file disables the cancel\-lock creation
+in that case. This file should be readable only by the user.
 .RE
 .PP
 \fI${TIN_HOMEDIR:\-"$HOME"}/.mime.types\fP
@@ -303,7 +303,7 @@ news.software.readers: 1\(en19567,19571\(en19597
 .RE
 .PP
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/.oldnewsrc\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/.oldnewsrc\fP
 .fi
 .sp
 .RS
@@ -353,9 +353,9 @@ saved newsgroups index files
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail\fP
 .sp
 .RS
-active file ("\fImailgroupname\fP \fImaxnum\fP \fIminnum\fP \fImailspool\fP" quadruples)
-of user's mailgroups (requires \fB\%tin\fP(1)  to be built with
-mh\-mail\-handling support).
+active file ("\fImailgroupname\fP \fImaxnum\fP \fIminnum\fP \fImailspool\fP" quadruples
+separated by spaces not tabs) of user's mailgroups (requires \fB\%tin\fP(1)  to
+be built with mh\-mail\-handling support).
 .TP 
 \fBmailgroupname\fP
 must be the pathname of the mailbox relative to field #4 with '/' changed to
@@ -472,6 +472,9 @@ Identical to the tinrc variable of the same name
 \fBgroup_format\fP
 Identical to the tinrc variable of the same name
 .TP 
+\fBhide_inline_data\fP
+Identical to the tinrc variable of the same name
+.TP 
 \fBmail_8bit_header\fP
 Identical to the tinrc variable of the same name
 .TP 
@@ -584,7 +587,7 @@ Identical to the tinrc variable of the same name
 Identical to the tinrc variable of the same name
 .TP 
 \fBsort_article_type\fP
-Identical to the tinrc variable \fBsort_article_type\fP
+Identical to the tinrc variable of the same name
 .TP 
 \fBsort_threads_type\fP
 Identical to the tinrc variable of the same name
@@ -733,7 +736,9 @@ undeclared_charset=ISO\-2022\-JP\-2
 .sp
 .RS
 The filter file is used to assign scores to certain articles. Based on the
-score an article can be filtered out (hidden) or marked hot. Empty lines or
+score an article can be filtered out (hidden) or marked hot.  The tinrc
+variables \fBscore_limit_kill\fP and \fBscore_limit_select\fP are the limits that
+must be crossed to mark an article as killed or selected.  Empty lines or
 lines beginning with a '#' are ignored. Multiple matching\-rules in the same
 scope are all applied individually and not only when they all hit at the
 same time (logical OR not AND).
@@ -793,18 +798,23 @@ than.
 Match against \*(rqFrom:\*(rq address parser return codes. <num matches less
 than, >num matches more than the returned numeric
 value. GNKSA_LOCAL_DOMAIN_LITERAL or GNKSA_INVALID_DOMAIN are only returned
-if \fBdisable_gnksa_domain_check\fP is set to false. As the built in domain
-list is outdated this should be considered carefully.
+if \fBdisable_gnksa_domain_check\fP in \fI/etc/tin/tin.defaults\fP is set to
+OFF. As the built in domain list may be outdated this should be considered
+carefully. GNKSA_ILLEGAL_LABEL_BEGNUM is only only returned if \fBtin\fP(1) was
+compiled with ENFORCE_RFC1034 defined which is usually not the case.
 .in +0.3i
 .nf
 .ta \w'%406	'u +\w'GNKSA_ZERO_LENGTH_LOCAL_WORD'u
+	internal codes
   \fB0\fP	GNKSA_OK
   \fB1\fP	GNKSA_INTERNAL_ERROR
+	general syntactical errors
 \fB100\fP	GNKSA_LANGLE_MISSING
 \fB101\fP	GNKSA_LPAREN_MISSING
 \fB102\fP	GNKSA_RPAREN_MISSING
 \fB103\fP	GNKSA_ATSIGN_MISSING
 \fB104\fP	GNKSA_RANGLE_MISSING
+	FQDN part syntax and semantics errors
 \fB200\fP	GNKSA_SINGLE_DOMAIN
 \fB201\fP	GNKSA_INVALID_DOMAIN
 \fB202\fP	GNKSA_ILLEGAL_DOMAIN
@@ -817,9 +827,11 @@ list is outdated this should be considered carefully.
 \fB209\fP	GNKSA_BAD_DOMAIN_LITERAL
 \fB210\fP	GNKSA_LOCAL_DOMAIN_LITERAL
 \fB211\fP	GNKSA_RBRACKET_MISSING
+	localpart syntactical errors
 \fB300\fP	GNKSA_LOCALPART_MISSING
 \fB301\fP	GNKSA_INVALID_LOCALPART
 \fB302\fP	GNKSA_ZERO_LENGTH_LOCAL_WORD
+	realname part syntactical errors
 \fB400\fP	GNKSA_ILLEGAL_UNQUOTED_CHAR
 \fB401\fP	GNKSA_ILLEGAL_QUOTED_CHAR
 \fB402\fP	GNKSA_ILLEGAL_ENCODED_CHAR
@@ -1199,7 +1211,7 @@ Pool of postponed articles. This file is in \fB\%mbox\fP(5)  format.
 .RE
 .PP
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/motd\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/motd\fP
 .fi
 .sp
 .RS
@@ -1209,16 +1221,16 @@ command\-line option and is unlinked on exit.
 .RE
 .PP
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/msglog\fP
 .fi
 .sp
 .RS
-File to store $\fBNNTPSERVER\fP and $\fBNNTPPORT\fP related info\- and
-error\-messages. The file is overwritten on startup and meant for debugging.
+File to store $\fBNNTPSERVER\fP related info\- and error\-messages. The file is
+overwritten on startup and meant for debugging.
 .RE
 .PP
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/newsgroups\fP
 .fi
 .sp
 .RS
@@ -1236,16 +1248,62 @@ is a short single\-line description of the group
 .RE
 .PP
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc\fP
 .fi
 .sp
 .RS
-File to store $\fBNNTPSERVER\fP and $\fBNNTPPORT\fP related data via a list of
-"\fIvariable\fP=\fIvalue\fP" pairs. Currently there are only a few variables, all
-are not meant to be changed by the user.
+File to store $\fBNNTPSERVER\fP related data via a list of
+"\fIvariable\fP=\fIvalue\fP" pairs. Currently there are only a few variables, and
+some are not meant to be changed by the user.
 .TP 
 \fBversion\fP
 Internal version number.
+.TP 
+\fBadd_cmd_line_opts\fP
+Additional command line options. Acts like $\fBTINRC\fP but server specific.
+Be aware that the file is read after the command line options any may
+override them.  The allowed option are currently limited to \*(rq\fB\-4\fP\*(rq,
+\&\*(rq\fB\-6\fP\*(rq, \&\*(rq\fB\-A\fP\*(rq, \*(rq\fB\-C\fP\*(rq, \*(rq\fB\-d\fP\*(rq, \*(rq\fB\-G\fP\~\fIlimit\fP\*(rq,
+\&\*(rq\fB\-k\fP\*(rq, \*(rq\fB\-n\fP\*(rq, \*(rq\fB\-p\fP\~\fIport\fP\*(rq, \*(rq\fB\-q\fP\*(rq, \&\*(rq\fB\-Q\fP\*(rq,
+\&\*(rq\fB\-t\fP\~\fItimeout\fP\*(rq, \*(rq\fB\-T\fP\*(rq and \*(rq\fB\-x\fP\*(rq.  The default is unset.
+.TP 
+\fBdisabled_nntp_cmds\fP
+A comma separated list of NNTP commands which should be avoided.  This can
+be used to work around some buggy servers and usually should left blank.
+The following commands can be disabled:
+.in +0.3i
+.nf
+.ta \w'LIST SUBSCRIPTIONS'u
+AUTHINFO SASL
+CAPABILITIES
+COMPRESS DEFLATE
+HDR
+LIST COUNTS
+LIST HEADERS
+LIST MOTD
+LIST NEWSGROUPS
+LIST OVERVIEW.FMT
+LIST SUBSCRIPTIONS
+LISTGROUP	(\-\-enable\-broken\-listgroup\-fix)
+NEWGROUPS
+OVER
+XHDR	(\-\-disable\-xhdr\-xref)
+XOVER
+XPAT
+.fi
+.in -0.3i
+.TP 
+\fBcache_overview_files\fP
+Identical to the tinrc variable of the same name but overrides it.  Be aware
+the the serverrc variable will not be promoted to the tinrc, but the tinrc
+variable will be promoted to the serverc if changed in the \fBOptionMenu\fP
+('\fBM\fP').
+.TP 
+\fBcompress_overview_files\fP
+Identical to the tinrc variable of the same name but overrides it.  Be aware
+the the serverrc variable will not be promoted to the tinrc, but the tinrc
+variable will be promoted to the serverc if changed in the \fBOptionMenu\fP
+('\fBM\fP').
 .TP 
 \fBmotd_hash\fP
 Internal hash of the servers MOTD, so displaying it can be skipped if it is
@@ -1343,8 +1401,9 @@ Default is ON.
 Reconnect to server automatically. Default is OFF.
 .TP 
 \fBbatch_save\fP
-If set ON articles/threads will be saved in batch mode when save \&\*(rq\fB\-S\fP\*(rq
-or mail \*(rq\fB\-M\fP, \fB\-N\fP\*(rq is specified on the command line. Default is ON.
+If set ON articles/threads will be saved in batch mode when save \*(rq\fB\-S\fP\*(rq
+or mail \*(rq\fB\-M\fP\*(rq, \*(rq\fB\-N\fP\*(rq is specified on the command line.  Default is
+ON.
 .TP 
 \fBbeginner_level\fP
 If set ON a mini menu of the most useful commands will be displayed at the
@@ -1362,9 +1421,10 @@ saved in compressed form (\fBRFC\%1952\fP). Useful to reduce local disk space
 used. Default is OFF.
 .TP 
 \fBcancel_lock_algo\fP
-Use this hash algorithm for cancel\-locks. Only available when built with
-cancel\-lock support. none disables the generation of cancel\-locks. Valid
-values are none, sha1, sha256 and sha512.  Default is sha1.
+Use this hash algorithm for cancel\-locks (\fBRFC\%8315\fP). Only available when
+built with cancel\-lock support. none disables the generation of
+cancel\-locks. Valid values are none, sha1, sha256 and sha512.  Default is
+sha1.
 .TP 
 \fBcatchup_read_groups\fP
 If set ON the user is asked when quitting if all groups read during the
@@ -1641,7 +1701,7 @@ The format string used for the Group level. Default is "%n\ %m\ %R\ %L\ \ %s\ \ 
 .fi
 .in -0.3i
 .TP 
-\fBhide_uue\fP
+\fBhide_inline_data\fP
 If set to '\fBNothing\fP' (0) then raw data is displayed.  If set to
 \&'\fBComplete UU/YENC\fP' (1) then sections of uuencoded or yenc data will be
 shown with a single tag line showing the size and filename (much the same as
@@ -1731,7 +1791,7 @@ articles simply does not get displayed at all.
 Allows 8\-bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set to
 8bit. Leaving it OFF is safe for most users and compliant to Internet Mail
-Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP). Default is OFF.
+Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP).
 .TP 
 \fBmail_address\fP
 User's mail address (and full name), if not username@host. This is used when
@@ -1880,7 +1940,7 @@ first is evaluated. Default is "%F wrote:".
 Time in seconds to wait for a response from the server. Default is 120.
 .TP 
 \fBnormalization_form\fP
-The normalisation form which should be used to normalise unicode input.  The
+The normalisation form which should be used to normalise Unicode input.  The
 possible values are:
 .RS +1i
 .IP 0 3
@@ -2719,4 +2779,5 @@ command instead.
 \fB\%overview.fmt\fP(5), \fB\%innd\fP(8), \fBRFC\%1524\fP, \fBRFC\%1952\fP,
 \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP,
 \fBRFC\%3977\fP, \fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5198\fP, \fBRFC\%5322\fP,
-\fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%6838\fP, \fBRFC\%8143\fP
+\fBRFC\%5536\fP, \fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%6838\fP, \fBRFC\%8143\fP,
+\fBRFC\%8315\fP

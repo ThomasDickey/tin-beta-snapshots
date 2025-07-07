@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2025-05-18
+.\" Updated   : 2025-06-29
 .\" Notes     : needs a some work, see TODOs
 .\"             - use semantic newlines
 .\"
@@ -245,7 +245,7 @@ needsterminal
 .sp
 .RS
 default NNTP-server to read news from if not reading from the local spool.
-\&'\fB\-g\fP \fIserver\fR', $\fBNNTPSERVER\fP have higher priority (in
+\&''\fB\-g\fP\~\fIserver\fR'', $\fBNNTPSERVER\fP have higher priority (in
 that order), the default server given at compile time has lower
 priority.
 .RE
@@ -253,7 +253,7 @@ priority.
 .I ${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret
 .sp
 .RS
-secret to be used for cancel-locks if
+secret to be used for cancel-locks (\fBRFC\%8315\fP) if
 .BR \%tin (1)
 is built with support for it. An empty secret file disables the cancel-lock
 creation in that case. This file should be readable only by the user.
@@ -333,7 +333,7 @@ news.software.readers: 1\(en19567,19571\(en19597
 .RE
 .PP
 .nf
-.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/.oldnewsrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/.oldnewsrc
 .fi
 .sp
 .RS
@@ -383,8 +383,8 @@ saved newsgroups index files
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail
 .sp
 .RS
-active file ("\fImailgroupname\fR \fImaxnum\fR \fIminnum\fR
-\fImailspool\fR" quadruples) of user's mailgroups (requires
+active file ("\fImailgroupname\fR \fImaxnum\fR \fIminnum\fR \fImailspool\fR"
+quadruples separated by spaces not tabs) of user's mailgroups (requires
 .BR \%tin (1)
 to be built with mh-mail-handling support).
 .TP
@@ -405,7 +405,7 @@ the mail folder area.
 .TP
 Example:
 .RS
-Mail.inbox  12345 00000 /home/foo
+Mail.inbox 12345 00000 /home/foo
 .br
 Mail.outbox 23456 00000 /home/foo
 .RE
@@ -504,6 +504,9 @@ Identical to the tinrc variable \fBmail_address\fP
 Identical to the tinrc variable of the same name
 .TP
 .B group_format
+Identical to the tinrc variable of the same name
+.TP
+.B hide_inline_data
 Identical to the tinrc variable of the same name
 .TP
 .B mail_8bit_header
@@ -621,7 +624,7 @@ Identical to the tinrc variable of the same name
 Identical to the tinrc variable of the same name
 .TP
 .B sort_article_type
-Identical to the tinrc variable \fBsort_article_type\fP
+Identical to the tinrc variable of the same name
 .TP
 .B sort_threads_type
 Identical to the tinrc variable of the same name
@@ -781,10 +784,12 @@ undeclared_charset=ISO\-2022\-JP\-2
 .sp
 .RS
 The filter file is used to assign scores to certain articles. Based on the
-score an article can be filtered out (hidden) or marked hot. Empty lines or
-lines beginning with a '#' are ignored. Multiple matching-rules in the same
-scope are all applied individually and not only when they all hit at the
-same time (logical OR not AND).
+score an article can be filtered out (hidden) or marked hot.
+The tinrc variables \fBscore_limit_kill\fP and \fBscore_limit_select\fP are
+the limits that must be crossed to mark an article as killed or selected.
+Empty lines or lines beginning with a '#' are ignored. Multiple
+matching-rules in the same scope are all applied individually and not only
+when they all hit at the same time (logical OR not AND).
 .TP
 .B comment
 Every entry (rule) in the filter file might get a comment. Multiple
@@ -843,18 +848,24 @@ Match against ''Lines:'', <num matches less than, >num matches more than.
 Match against ''From:'' address parser return codes. <num matches less than,
 >num matches more than the returned numeric value. GNKSA_LOCAL_DOMAIN_LITERAL
 or GNKSA_INVALID_DOMAIN are only returned if \fBdisable_gnksa_domain_check\fP
-is set to false. As the built in domain list is outdated this should be
-considered carefully.
+in \fI/etc/tin/tin.defaults\fR is set to OFF. As the built in domain list may
+be outdated this should be considered carefully. GNKSA_ILLEGAL_LABEL_BEGNUM
+is only only returned if
+.BR tin (1)
+was compiled with ENFORCE_RFC1034 defined which is usually not the case.
 .in +0.3i
 .nf
 .ta \w'%406	'u +\w'GNKSA_ZERO_LENGTH_LOCAL_WORD'u
+	internal codes
 \fB  0\fP	GNKSA_OK
 \fB  1\fP	GNKSA_INTERNAL_ERROR
+	general syntactical errors
 \fB100\fP	GNKSA_LANGLE_MISSING
 \fB101\fP	GNKSA_LPAREN_MISSING
 \fB102\fP	GNKSA_RPAREN_MISSING
 \fB103\fP	GNKSA_ATSIGN_MISSING
 \fB104\fP	GNKSA_RANGLE_MISSING
+	FQDN part syntax and semantics errors
 \fB200\fP	GNKSA_SINGLE_DOMAIN
 \fB201\fP	GNKSA_INVALID_DOMAIN
 \fB202\fP	GNKSA_ILLEGAL_DOMAIN
@@ -867,9 +878,11 @@ considered carefully.
 \fB209\fP	GNKSA_BAD_DOMAIN_LITERAL
 \fB210\fP	GNKSA_LOCAL_DOMAIN_LITERAL
 \fB211\fP	GNKSA_RBRACKET_MISSING
+	localpart syntactical errors
 \fB300\fP	GNKSA_LOCALPART_MISSING
 \fB301\fP	GNKSA_INVALID_LOCALPART
 \fB302\fP	GNKSA_ZERO_LENGTH_LOCAL_WORD
+	realname part syntactical errors
 \fB400\fP	GNKSA_ILLEGAL_UNQUOTED_CHAR
 \fB401\fP	GNKSA_ILLEGAL_QUOTED_CHAR
 \fB402\fP	GNKSA_ILLEGAL_ENCODED_CHAR
@@ -1262,7 +1275,7 @@ format.
 .RE
 .PP
 .nf
-.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/motd
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/motd
 .fi
 .sp
 .RS
@@ -1272,16 +1285,16 @@ command-line option and is unlinked on exit.
 .RE
 .PP
 .nf
-.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/msglog
 .fi
 .sp
 .RS
-File to store $\fBNNTPSERVER\fP and $\fBNNTPPORT\fP related info- and
-error-messages. The file is overwritten on startup and meant for debugging.
+File to store $\fBNNTPSERVER\fP related info- and error-messages. The file
+is overwritten on startup and meant for debugging.
 .RE
 .PP
 .nf
-.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/\
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/\
 newsgroups
 .fi
 .sp
@@ -1300,17 +1313,65 @@ is a short single-line description of the group
 .RE
 .PP
 .nf
-.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc
 .fi
 .sp
 .RS
-File to store $\fBNNTPSERVER\fP and $\fBNNTPPORT\fP related
-data via a list of "\fIvariable\fR=\fIvalue\fR" pairs. Currently
-there are only a few variables, all are not meant to be changed by the
-user.
+File to store $\fBNNTPSERVER\fP related data via a list of
+"\fIvariable\fR=\fIvalue\fR" pairs. Currently there are only a few
+variables, and some are not meant to be changed by the user.
 .TP
 .B version
 Internal version number.
+.TP
+.B add_cmd_line_opts
+Additional command line options. Acts like $\fBTINRC\fP but server specific.
+Be aware that the file is read after the command line options any may
+override them.
+The allowed option are currently limited to ''\fB\-4\fP'', ''\fB\-6\fP'',
+\&''\fB\-A\fP'', ''\fB\-C\fP'', ''\fB\-d\fP'', ''\fB\-G\fP\~\fIlimit\fP'',
+\&''\fB\-k\fP'', ''\fB\-n\fP'', ''\fB\-p\fP\~\fIport\fP'', ''\fB\-q\fP'',
+\&''\fB\-Q\fP'', ''\fB\-t\fP\~\fItimeout\fP'', ''\fB\-T\fP'' and ''\fB\-x\fP''.
+The default is unset.
+.TP
+.B disabled_nntp_cmds
+A comma separated list of NNTP commands which should be avoided.
+This can be used to work around some buggy servers and usually should left
+blank.
+The following commands can be disabled:
+.in +0.3i
+.nf
+.ta \w'LIST SUBSCRIPTIONS'u
+AUTHINFO SASL
+CAPABILITIES
+COMPRESS DEFLATE
+HDR
+LIST COUNTS
+LIST HEADERS
+LIST MOTD
+LIST NEWSGROUPS
+LIST OVERVIEW.FMT
+LIST SUBSCRIPTIONS
+LISTGROUP	(--enable-broken-listgroup-fix)
+NEWGROUPS
+OVER
+XHDR	(--disable-xhdr-xref)
+XOVER
+XPAT
+.fi
+.in -0.3i
+.TP
+.B cache_overview_files
+Identical to the tinrc variable of the same name but overrides it.
+Be aware the the serverrc variable will not be promoted to the tinrc,
+but the tinrc variable will be promoted to the serverc if changed in
+the \fBOptionMenu\fP ('\fBM\fP').
+.TP
+.B compress_overview_files
+Identical to the tinrc variable of the same name but overrides it.
+Be aware the the serverrc variable will not be promoted to the tinrc,
+but the tinrc variable will be promoted to the serverc if changed in
+the \fBOptionMenu\fP ('\fBM\fP').
 .TP
 .B motd_hash
 Internal hash of the servers MOTD, so displaying it can be skipped if
@@ -1417,9 +1478,9 @@ Default is ON.
 Reconnect to server automatically. Default is OFF.
 .TP
 .B batch_save
-If set ON articles/threads will be saved in batch mode when save
-\&''\fB\-S\fP'' or mail ''\fB\-M\fP, \fB\-N\fP'' is specified on the command
-line. Default is ON.
+If set ON articles/threads will be saved in batch mode when save ''\fB\-S\fP''
+or mail ''\fB\-M\fP'', ''\fB\-N\fP'' is specified on the command line.
+Default is ON.
 .TP
 .B beginner_level
 If set ON a mini menu of the most useful commands will be displayed at the
@@ -1437,7 +1498,7 @@ saved in compressed form (\fBRFC\%1952\fP). Useful to reduce local disk
 space used. Default is OFF.
 .TP
 .B cancel_lock_algo
-Use this hash algorithm for cancel-locks. Only available when built with
+Use this hash algorithm for cancel-locks (\fBRFC\%8315\fP). Only available when built with
 cancel-lock support. none disables the generation of cancel-locks. Valid
 values are none, sha1, sha256 and sha512.
 Default is sha1.
@@ -1739,7 +1800,7 @@ The format string used for the Group level. Default is
 .fi
 .in -0.3i
 .TP
-.B hide_uue
+.B hide_inline_data
 If set to '\fBNothing\fP' (0) then raw data is displayed.
 If set to '\fBComplete UU/YENC\fP' (1) then sections of uuencoded or yenc data will
 be shown with a single tag line showing the size and filename (much the same
@@ -1832,7 +1893,7 @@ option. Killed articles simply does not get displayed at all.
 Allows 8-bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set
 to 8bit. Leaving it OFF is safe for most users and compliant to Internet
-Mail Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP). Default is OFF.
+Mail Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP).
 .TP
 .B mail_address
 User's mail address (and full name), if not username@host. This is used when
@@ -2007,7 +2068,7 @@ the first is evaluated. Default is "%F wrote:".
 Time in seconds to wait for a response from the server. Default is 120.
 .TP
 .B normalization_form
-The normalization form which should be used to normalize unicode input.
+The normalization form which should be used to normalize Unicode input.
 The possible values are:
 .RS +1i
 .IP 0 3
@@ -2983,4 +3044,5 @@ uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP) command instead.
 .BR RFC\%5537 ,
 .BR RFC\%6048 ,
 .BR RFC\%6838 ,
-.B RFC\%8143
+.BR RFC\%8143 ,
+.B RFC\%8315

@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2025-02-27
+ *  Updated   : 2025-06-30
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
@@ -60,6 +60,13 @@
 /*
  * this file needs some work
  */
+/*
+ * Local prototypes
+ */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static wchar_t *my_wcsdup(const wchar_t *wstr);
+	static wchar_t *wexpand_tab(const wchar_t *wstr, size_t tab_width);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
 /*
@@ -325,6 +332,29 @@ str_lwr(
 
 	while (*str)
 		*dst++ = (char) my_tolower((unsigned char) *str++);
+
+	*dst = '\0';
+}
+
+
+/*
+ * TODO: add a wide char variant "wchar *wstr_upr(wchar *wc)" or
+ * HAVE_LIBICUUC
+ * 	char *dst = NULL; UChar *usrc, *udst;
+ * 	UErrorCode err = U_ZERO_ERROR; size_t dlen;
+ * 	dlen = (strlen(src) + 1) * 4; udst = my_malloc(dlen);
+ * 	usrc = char2UChar(src); u_strToUpper(udst, dlen, usrc, -1, NULL, &err);
+ * 	if (!(U_FAILURE(err))) dst = UChar2char(udst);
+ * 	free(udst); return dst;
+ */
+void
+str_upr(
+	char *str)
+{
+	char *dst = str;
+
+	while (*str)
+		*dst++ = (char) my_toupper((unsigned char) *str++);
 
 	*dst = '\0';
 }
@@ -641,7 +671,7 @@ eat_tab(
 
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-wchar_t *
+static wchar_t *
 wexpand_tab(
 	const wchar_t *wstr,
 	size_t tab_width)
@@ -873,24 +903,49 @@ wchar_t *
 char2wchar_t(
 	const char *str)
 {
-	char *test = my_strdup(str);
-	size_t len = (size_t) (-1);
-	size_t pos = strlen(test);
+	char *test;
+	size_t i, len, pos;
 	wchar_t *wstr;
 
+	if (!str)
+		return NULL;
+
+	test = my_calloc(1, strlen(str) + 1);
 	/* check for illegal sequences */
-	while (len == (size_t) (-1) && pos) {
+	for (pos = 0; str[pos] != '\0' ; pos++) {
+		test[pos] = str[pos];
+		i = 1;
+		while ((len = mbstowcs(NULL, test, 0)) == (size_t) (-1) && str[pos + i] != '\0' && i < (size_t) MB_CUR_MAX) {
+			test[pos + i] = str[pos + i];
+			i++;
+		}
+		if (len == (size_t) (-1)) {
+			test[pos] = '?';
+			while (--i > 1)
+				test[pos + i] = '\0';
+		} else
+			pos += i - 1;
+		test[pos + 1] = '\0';
+	}
+
+#if 0
+	if ((len = mbstowcs(NULL, test, 0)) != pos) {
+		len = (size_t) (-1);
+		while (len == (size_t) (-1) && pos) {
 		if ((len = mbstowcs(NULL, test, 0)) == (size_t) (-1))
 			test[--pos] = '?';
+		}
 	}
+#endif /* 0 */
 
 	if ((len = mbstowcs(NULL, test, 0)) == (size_t) (-1)) {
 		free(test);
 		return NULL;
 	}
+
 	wstr = my_calloc(len + 1, sizeof(wchar_t));
-	/* pos = */ mbstowcs(wstr, test, len);
-	/* wstr[pos == (size_t) (-1) ? 0 : pos] = '\0'; */
+	pos = mbstowcs(wstr, test, len);
+	wstr[pos == (size_t) (-1) ? 0 : pos] = '\0';
 	free(test);
 
 	return wstr;
@@ -1049,9 +1104,9 @@ abbr_groupname(
 	char *src, *dest, *tail, *new_grpname;
 	size_t tmplen, newlen;
 
-	dest = new_grpname = my_strdup(grpname);
+	dest = new_grpname = my_strdup(len > 0 ? grpname : "");
 
-	if (strlen(grpname) > len) {
+	if (len > 0 && strlen(grpname) > len) {
 		if ((src = strchr(grpname, '.')) != NULL) {
 			++dest;
 			tmplen = 1;
@@ -1118,6 +1173,8 @@ strwidth(
  * If it was necessary to truncate 'mesg', " ..." is appended to the
  * resulting string (still 'len' screen positions wide).
  * The resulting string is stored in 'buf'.
+ *
+ * TODO: stop at first '\n' and remove (leading?) and tailing whitespace.
  */
 char *
 strunc(
@@ -1142,11 +1199,22 @@ strunc(
 	/* something went wrong using wide-chars, default back to normal chars */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-	if (strlen(BlankIfNull(message)) <= len)
-		tmp = my_strdup(BlankIfNull(message));
+	if (len <= strlen(TRUNC_TAIL))
+		tmp = my_strdup("");
 	else {
-		tmp = my_malloc(len + 1);
-		snprintf(tmp, len + 1, "%-.*s%s", (int) (len - 3), message, TRUNC_TAIL);
+		char *tmp_msg;
+
+		tmp_msg = my_strdup(message);
+		/* make sure all characters are printable */
+		convert_to_printable(tmp_msg, FALSE);
+
+		if (strlen(tmp_msg) <= len)
+			tmp = my_strdup(tmp_msg);
+		else {
+			tmp = my_malloc(len + 1);
+			snprintf(tmp, len + 1, "%-.*s%s", (int) (len - 3), tmp_msg, TRUNC_TAIL);
+		}
+		free(tmp_msg);
 	}
 
 	return tmp;
@@ -1155,6 +1223,7 @@ strunc(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 /* the wide-char equivalent of strunc() */
+/* TODO: stop at first '\n' and remove (leading?) and tailing whitespace. */
 wchar_t *
 wstrunc(
 	const wchar_t *wmessage,
@@ -1169,7 +1238,7 @@ wstrunc(
 	if (wcswidth(wtmp, wcslen(wtmp)) > (int) len) {
 		/* wtmp must be truncated */
 		size_t len_tail;
-		wchar_t *wtmp2, *tail;
+		wchar_t *wtmp2 = NULL, *tail;
 
 		if (tinrc.utf8_graphics)
 			tail = my_wcsdup((const wchar_t *) WTRUNC_TAIL);
@@ -1177,13 +1246,13 @@ wstrunc(
 			tail = char2wchar_t(TRUNC_TAIL);
 
 		len_tail = tail ? wcslen(tail) : 0;
-		if (len_tail > len) {
+		if (len_tail >= len) {
 			FreeAndNull(tail);
 			len_tail = 0;
-		}
-		wtmp2 = wcspart(wtmp, len - len_tail, FALSE);
-		free(wtmp);
+		} else
+			wtmp2 = wcspart(wtmp, len - len_tail, FALSE);
 
+		free(wtmp);
 		if (wtmp2)
 			wtmp = my_realloc(wtmp2, sizeof(wchar_t) * (wcslen(wtmp2) + len_tail + 1));	/* wtmp2 isn't valid anymore and doesn't have to be free()ed */
 		else
@@ -1202,7 +1271,7 @@ wstrunc(
 /*
  * duplicates a wide-char string
  */
-wchar_t *
+static wchar_t *
 my_wcsdup(
 	const wchar_t *wstr)
 {
@@ -1575,34 +1644,34 @@ parse_format_string(
 		tmp_date_str[0] = '\0';
 		d_fmt = tmp_date_str;
 		if (*in > '0' && *in <= '9') {
-			len = (size_t) atoi(in);
+			len = (size_t) strtol(in, NULL, 10);
 			for (; *in >= '0' && *in <= '9'; in++)
 				;
 		}
 		if (*in == ',') {
 			if (*++in > '0' && *in <= '9') {
-				len2 = (size_t) atoi(in);
+				len2 = (size_t) strtol(in, NULL, 10);
 				for (; *in >= '0' && *in <= '9'; in++)
 					;
 			}
 		}
 		if (*in == '>') {
 			if (*++in > '0' && *in <= '9') {
-				min_cols = atoi(in);
+				min_cols = strtol(in, NULL, 10);
 				for (; *in >= '0' && *in <= '9'; in++)
 					;
 			}
 		}
 		if (*in == '<') {
 			if (*++in > '0' && *in <= '9') {
-				max_cols = atoi(in);
+				max_cols = strtol(in, NULL, 10);
 				for (; *in >= '0' && *in <= '9'; in++)
 					;
 			}
 		}
 		if (*in == ':') {
 			if (*++in > '0' && *in <= '9') {
-				cond_len = atoi(in);
+				cond_len = strtol(in, NULL, 10);
 				for (; *in >= '0' && *in <= '9'; in++)
 					;
 			} else
@@ -1973,7 +2042,7 @@ parse_format_string(
 				}
 			}
 		} else if (flags_last && (!*len_first || *len_first > (size_t) len_tmp))
-				*len_first = (size_t) len_tmp;
+			*len_first = (size_t) len_tmp;
 	}
 }
 

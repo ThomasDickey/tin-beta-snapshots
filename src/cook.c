@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2025-05-18
+ *  Updated   : 2025-07-04
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2025 Jason Faultless <jason@altarstone.com>
@@ -51,7 +51,7 @@
 			if ((l = offsets[1] - offsets[0])) { \
 				u = my_strndup(line + offsets[0], l); \
 				if (*(u + l - 1) == '\n') \
-					*(u + l -1) = '\0'; \
+					*(u + l - 1) = '\0'; \
 				if (*u) { \
 					state.uri = &uri; \
 					if (uriParseUriA(&state, u) == URI_SUCCESS) { \
@@ -73,7 +73,7 @@
 			if ((l = offsets[1] - offsets[0])) { \
 				u = my_strndup(line + offsets[0], l); \
 				if (*(u + l - 1) == '\n') \
-					*(u + l -1) = '\0'; \
+					*(u + l - 1) = '\0'; \
 				if (*u) { \
 					if ((curl = curl_url())) { \
 						if (curl_url_set(curl, CURLUPART_URL, u, CURLU_URLENCODE) == CURLUE_OK) { \
@@ -107,6 +107,7 @@
 #define SHAR_SECTION		(1 << 7)
 #define PGP_KEY_SECTION		(1 << 8)
 #define PGP_SIG_SECTION		(1 << 9)
+#define PGP_ANY_SECTION		(PGP_KEY_SECTION | PGP_SIG_SECTION)
 
 #define STRIP_ALTERNATIVE(x) \
 			(curr_group->attribute->alternative_handling && \
@@ -119,7 +120,7 @@ static struct t_attach_item *add_attach_line_item(struct t_attach_item **item);
 static t_bool header_wanted(const char *line);
 static t_bool shorten_attach_line(struct t_attach_item *item);
 static t_part *new_uue(t_part **part, char *name);
-static void process_text_body_part(t_bool wrap_lines, FILE *in, const char *charset, t_part *part, int hide_uue);
+static void process_text_body_part(t_bool wrap_lines, FILE *in, const char *charset, t_part *part, int hide_inline_data);
 static void put_attach(t_bool wrap_lines, t_part *part, int depth, enum section_type section, const char *name, const char *charset);
 static void put_cooked(size_t buf_len, t_bool wrap_lines, unsigned int flags, const char *fmt, ...);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -1164,7 +1165,7 @@ put_attach(
 		put_cooked(LEN, wrap_lines, C_YENC, "[-- Error: crc32 mismatch, computed 0x%08lx != 0x%08lx expected --]", (computed), (expected)); \
 	} while (0)
 #else
-#		define DEBUG_PUT_YENC_INVALID_ITEM(what, value, where) do {} while (0)
+#	define DEBUG_PUT_YENC_INVALID_ITEM(what, value, where) do {} while (0)
 #	define DEBUG_PUT_YENC_UNEXPECTED_ITEM(what) do {} while (0)
 /* #	define DEBUG_PUT_YENC_CRC32_MISMATCH(computed, expected) do {} while (0) */
 #endif /* INLINE_DEBUG_MIME */
@@ -1179,7 +1180,7 @@ process_text_body_part(
 	FILE *in,
 	const char *charset,
 	t_part *part,
-	int hide_uue)
+	int hide_inline_data)
 {
 	char *rest = NULL;
 	char *line = NULL, *buf;
@@ -1202,6 +1203,8 @@ process_text_body_part(
 	int lines_left;
 	int y_part = 0;					/* yenc, current part */
 	int y_total = 0;				/* yenc, total parts */
+	int is_uubody;					/* Set when current line looks like a uuencoded=1/xxencoded=2 line */
+	int sum;
 	unsigned int flags;
 	unsigned int section = TEXT_SECTION;
 	unsigned int lines_skipped = 0;
@@ -1214,7 +1217,6 @@ process_text_body_part(
 	uint32_t y_ccrc = 0L;			/* computed crc */
 	t_bool first_line_blank = TRUE;	/* Unset when first non-blank line is reached */
 	t_bool put_blank_lines = FALSE;	/* Set when previously skipped lines needs to put */
-	int is_uubody;					/* Set when current line looks like a uuencoded=1/xxencoded=2 line */
 	t_part *curruue = NULL;
 #if defined(HAVE_LIBURIPARSER) || defined(HAVE_LIBCURL)
 	REGEX_SIZE *offsets;
@@ -1274,7 +1276,7 @@ process_text_body_part(
 				 * especially if we must resize it.
 				 * So copy buf to line (and resize line if necessary).
 				 */
-				if (max_line_len < strlen(buf) + 1 || !line) {
+				if (max_line_len <= strlen(buf) + 1 || !line) {
 					max_line_len = strlen(buf) + 1;
 					line = my_realloc(line, max_line_len + 1);
 				}
@@ -1295,6 +1297,15 @@ process_text_body_part(
 			break;	/* premature end of file, file error etc. */
 		}
 
+		/*
+		 * former is_art_tex_encoded(), may have false positives.
+		 * unfortinatly we decode on the fly, so we can't validate
+		 * via e.g. non blank lines vs. umlaut lines ratio (like
+		 * 20:1; typical in german is ~4:1 with lines around 70 chars).
+		 */
+		if (!art->tex2iso && (section == TEXT_SECTION || section == SIGNATURE_SECTION) && MATCH_REGEX(latex_regex, line, strlen(line)))
+			art->tex2iso = TRUE;
+
 		FreeAndNull(raw_line);
 		raw_line = my_strdup(line); /* we need the raw data for yenc decoding */
 		process_charsets(&line, &max_line_len, charset, tinrc.mm_local_charset, curr_group->attribute->tex2iso_conv && art->tex2iso && !(section & (VERBATIM_SECTION | VERBATIM_BEGIN)));
@@ -1306,7 +1317,7 @@ process_text_body_part(
 		 * (incl. '\n') and lines are not all ascii (unlikely for yenc).
 		 * we use raw_len as a flag.
 		 */
-		if ((hide_uue & UUE_ALL) && section == TEXT_SECTION && (part->encoding == ENCODING_7BIT || part->encoding == ENCODING_8BIT) && !strcasecmp(charset, "US-ASCII") &&  (*raw_line != '=' || *(raw_line + 1) != 'y')) {
+		if ((hide_inline_data & UUE_ALL) && section == TEXT_SECTION && (part->encoding == ENCODING_7BIT || part->encoding == ENCODING_8BIT) && !strcasecmp(charset, "US-ASCII") &&  (*raw_line != '=' || *(raw_line + 1) != 'y')) {
 			raw_len = strlen(raw_line);
 			/* skip check after 100 yenc-lins; yenc should run till ^=yend or EOF */
 			/* TODO: use defines instead of magic numbers */
@@ -1328,11 +1339,14 @@ process_text_body_part(
 				section &= ~VERBATIM_SECTION;
 				section |= VERBATIM_END;
 			}
-		} /* else section &= ~(VERBATIM_BEGIN|VERBATIM_SECTION|VERBATIM_END); */
+		} /* else section &= ~(VERBATIM_BEGIN | VERBATIM_SECTION | VERBATIM_END); */
 
 		if (!(section & VERBATIM_SECTION)) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			/* UTF-8 and all ISO-8859 charsets but ISO-8859-11 do have SHY at 0xAD */
+			/*
+			 * UTF-8 and all ISO-8859 charsets but ISO-8859-11 do have SHY at 0xAD
+			 * also KOI8-[ET] and Windows-125[0-8] do have SHY at 0xAD
+			 */
 			if (strcasecmp(tinrc.mm_local_charset, "ISO-8859-11") && (IS_LOCAL_CHARSET("ISO-8859") || IS_LOCAL_CHARSET("UTF-8")) && curr_group->attribute->suppress_soft_hyphens) {
 				remove_soft_hyphens(line);
 				len = strlen(line);
@@ -1351,7 +1365,7 @@ process_text_body_part(
 				for (cp = line; (*cp == ' ') || (*cp == '\t'); cp++)
 					;
 				if (*cp == '\n') {	/* line was all blank */
-					if (section & (SHAR_SECTION|PGP_KEY_SECTION|PGP_SIG_SECTION)) {
+					if (section & (SHAR_SECTION | PGP_ANY_SECTION)) {
 						++non_attach_lines;
 						continue;
 					}
@@ -1399,12 +1413,12 @@ process_text_body_part(
 				section |= SIGNATURE_SECTION;
 				if (section & UUE_SECTION) {
 					section &= ~UUE_SECTION;
-					if (hide_uue & UUE_ALL)
+					if (hide_inline_data & UUE_ALL)
 						put_attach(wrap_lines, curruue, (curruue->depth - 1) * 4, SECTION_UUE_INCOMPLETE, get_filename(curruue->params), content_encodings[curruue->encoding]);
 				}
 				if (section & YENC_SECTION) {
 					section &= ~YENC_SECTION;
-					if (hide_uue & UUE_ALL)
+					if (hide_inline_data & UUE_ALL)
 						put_attach(wrap_lines, curruue, (curruue->depth - 1) * 4, SECTION_YENC_INCOMPLETE, get_filename(curruue->params), content_encodings[curruue->encoding]);
 				}
 			}
@@ -1422,7 +1436,7 @@ process_text_body_part(
 			 *       - we should use raw_line instead of line (but we
 			 *         abuse raw_len as a flag)
 			 */
-			if (!(section & (SIGNATURE_SECTION | UUE_SECTION))) { /* yenc? */
+			if (!(section & (SIGNATURE_SECTION | UUE_SECTION | PGP_ANY_SECTION | SHAR_SECTION))) { /* yenc? */
 				if (*line == '=' && *(line + 1) == 'y') { /* can't show up in yenc-bodies */
 					if (MATCH_REGEX(yencbegin_regex, line, len)) {
 #	ifdef INLINE_DEBUG_MIME
@@ -1495,7 +1509,7 @@ process_text_body_part(
 						curruue = new_uue(&part, y_name);
 						curruue->encoding = ENCODING_YENC;
 						FreeAndNull(y_name);
- 						y_ccrc = tin_crc32(0L, NULL, 0);
+						y_ccrc = tin_crc32(0L, NULL, 0);
 					} else if (MATCH_REGEX(yencpart_regex, line, len)) {
 						ncs = regex_get_substring_by_name(&yencpart_regex, "y_pbegin", line);
 						if (ncs && *ncs) {
@@ -1539,12 +1553,11 @@ process_text_body_part(
 							DEBUG_PUT_YENC_UNEXPECTED_ITEM("=ypart");
 #	endif /* INLINE_DEBUG_MIME */
 					} else if (MATCH_REGEX(yencend_regex, line, len)) {
-						unsigned long y_ecrc = 0L;
-						unsigned long y_epcrc = 0L;
+						unsigned long y_ecrc = 0L; /* crc32 mentioned in end line */
+						unsigned long y_epcrc = 0L; /* pcrc32 mentioned in end line */
 
 						if (!(section & YENC_SECTION) && lines_hidden) {
-							/*TODO: -> lang.c, _() */
-							put_cooked(LEN, wrap_lines, C_BODY, "[-- %lu lines of partial yenc data hidden --]\n", lines_hidden);
+							put_cooked(LEN, wrap_lines, C_BODY, P_(txt_cook_lines_hidden_sp[0], txt_cook_lines_hidden_sp[1], lines_hidden), _(txt_yenc_partial), lines_hidden);
 							lines_hidden = 0;
 						}
 
@@ -1597,7 +1610,7 @@ process_text_body_part(
 						FreeAndNull(ncs);
 						if (!(section & YENC_SECTION)) {
 							DEBUG_PUT_YENC_UNEXPECTED_ITEM("=yend");
-							if ((hide_uue & UUE_ALL))
+							if ((hide_inline_data & UUE_ALL))
 								continue;
 						} else {
 							enum section_type section_type;
@@ -1651,7 +1664,7 @@ process_text_body_part(
 						dl[cnt] = '\0';
 						y_ccrc = tin_crc32(y_ccrc, dl, cnt);
 #if 0
-						if (hide_uue & UUE_ALL) {
+						if (hide_inline_data & UUE_ALL) {
 							cp = my_calloc((strlen(raw_line) + 1) * 4 / 3 + 1, 1);
 
 							/* process_charsets(&dl, &cnt, charset, tinrc.mm_local_charset, FALSE); */
@@ -1664,7 +1677,7 @@ process_text_body_part(
 						free(dl);
 					}
 				}
-				if ((section & YENC_SECTION) && (hide_uue & UUE_ALL))
+				if ((section & YENC_SECTION) && (hide_inline_data & UUE_ALL))
 					continue;
 			}
 
@@ -1683,7 +1696,7 @@ process_text_body_part(
 				REGEX_SIZE *ovector = regex_get_ovector_pointer(&uubegin_regex);
 
 				if (section & UUE_SECTION) { /* previous uue part incomplete and the current one follows without gap */
-					if (hide_uue & UUE_ALL)
+					if (hide_inline_data & UUE_ALL)
 						put_attach(wrap_lines, curruue, (curruue->depth - 1) * 4, SECTION_UUE_INCOMPLETE, get_filename(curruue->params), content_encodings[curruue->encoding]);
 				} else
 					section |= UUE_SECTION;
@@ -1699,12 +1712,12 @@ process_text_body_part(
 					curruue = new_uue(&part, cp);
 					free(cp);
 				}
-				if (hide_uue & UUE_ALL)
+				if (hide_inline_data & UUE_ALL)
 					continue;				/* Don't cook the 'begin' line */
 			} else if (STRNCMPEQ(line, "end\n", 4)) {
 				if (section & UUE_SECTION) {
 					section &= ~UUE_SECTION;
-					if (hide_uue & UUE_ALL) {
+					if (hide_inline_data & UUE_ALL) {
 						put_attach(wrap_lines, curruue, (curruue->depth - 1) * 4, SECTION_UUE_COMPLETE, get_filename(curruue->params), content_encodings[curruue->encoding]);
 						continue;			/* Don't cook the 'end' line */
 					}
@@ -1717,32 +1730,38 @@ process_text_body_part(
 			is_uubody = 0;
 
 			if (MATCH_REGEX(uubody_regex, line, len)) {
-				int sum = (((*line) - ' ') & 077) * 4 / 3;		/* uuencode octet checksum */
+				sum = (((*line) - ' ') & 077) * 4 / 3;		/* uuencode octet checksum */
 				/*
 				 * sum = 0 in a uubody only on the last line, a single `
 				 * +1 for the \n
 				 */
 				if ((sum == 0 && len == 1 + 1) || len == (unsigned) (sum + 1 + 1))
 					is_uubody = 1;
+
+#ifdef DEBUG_ART
+				if (debug & DEBUG_MISC)
+					fprintf(stderr, "%d sum=%d len=%lu %s", is_uubody, sum, len, line);
+#endif /* DEBUG_ART */
 			} else {
 				if (MATCH_REGEX(xxbody_regex, line, len)) {
-					int sum;
-
 					/*
 					 * we don't bother to sum != 0x7f as it will be
 					 * caught be the check against len (limited via
 					 * the regex) anyway
 					 */
- 					if (*line >= '+' && *line <= 'z' && (sum = xxenc[(*line - '+')]) >= 0) {
+					if (*line >= '+' && *line <= 'z' && (sum = xxenc[(*line - '+')]) >= 0) {
 						sum = sum * 4 / 3;
 						if ((sum == 0 && len == 1 + 1) || len == (unsigned) (sum + 1 + 1))
 							is_uubody = 2;
 					}
-				}
 #ifdef DEBUG_ART
-				if (debug & DEBUG_MISC)
-					fprintf(stderr, "%d sum=%d len=%lu %s", is_uubody, sum, len, line);
+					else
+						sum = 0;
+
+					if (debug & DEBUG_MISC)
+						fprintf(stderr, "%d sum=%d len=%lu %s", is_uubody, sum, len, line);
 #endif /* DEBUG_ART */
+				}
 			}
 
 			if (section & UUE_SECTION) {
@@ -1753,7 +1772,7 @@ process_text_body_part(
 					if (line[0] == '\n') {		/* Blank line in a uubody - definitely a failure */
 						/* fprintf(stderr, "not a uue line while reading a uue body?\n"); */
 						section &= ~UUE_SECTION;
-						if (hide_uue & UUE_ALL)
+						if (hide_inline_data & UUE_ALL)
 							/* don't continue here, so we see the line that 'broke' in_uue */
 							put_attach(wrap_lines, curruue, (curruue->depth - 1) * 4, SECTION_UUE_INCOMPLETE, get_filename(curruue->params), content_encodings[curruue->encoding]);
 					} else {
@@ -1769,7 +1788,7 @@ process_text_body_part(
 				 * when uue sections are split across > 1 article
 				 * requires at least one full uu/xx line to fire
 				 */
-				if (is_uubody && (hide_uue & UUE_ALL) && section == TEXT_SECTION && len == 62) {
+				if (is_uubody && (hide_inline_data & UUE_ALL) && section == TEXT_SECTION && len == 62) {
 					/* _(txt_unknown) cannot be used directly in new_uue() due to str_trim() there */
 					char *name = my_strdup(_(txt_unknown));
 
@@ -1788,7 +1807,7 @@ process_text_body_part(
 			/*
 			 * Skip output if we're hiding uue or the sig
 			 */
-			if ((section & UUE_SECTION) && (hide_uue & UUE_ALL))
+			if ((section & UUE_SECTION) && (hide_inline_data & UUE_ALL))
 				continue;	/* No further processing needed */
 		}
 
@@ -1850,7 +1869,7 @@ process_text_body_part(
 		CHECK_URI(url_regex, C_URL);
 		CHECK_URI(mail_regex, C_MAIL);
 		CHECK_URI(news_regex, C_NEWS);
-	#else
+#	else
 		if (MATCH_REGEX(url_regex, line, len))
 			flags |= C_URL;
 		if (MATCH_REGEX(mail_regex, line, len))
@@ -1866,10 +1885,21 @@ process_text_body_part(
 		buf = line;
 
 		/*
-		 * Skip over the first space in case of Format=Flowed (space-stuffing)
+		 * Skip over the first space in case of Format=Flowed
+		 * (RFC 3676 4.4 Space-Stuffing)
+		 * #if 1
+		 * _except_ for lines starting with " ", " >" or " From "
+		 * (this is NOT what the RFC says).
+		 * #endif
+		 * quote depth adjustment, 1st level only.
 		 */
-		if (part->format == FORMAT_FLOWED) {
-			if (line[0] == ' ')
+		if (part->format == FORMAT_FLOWED && line[0] == ' ') {
+			if (line[1] == '>' && (flags & C_QUOTE1))
+				flags &= ~C_QUOTE1;
+
+#if 0
+			if (line[1] != '>' && line[1] != ' ' && strncmp(line + 1, "From ", 5))
+#endif /* 0 */
 				++buf;
 		}
 
@@ -1878,26 +1908,31 @@ process_text_body_part(
 		 * in contrast to partial uue we don't store the data
 		 */
 		if (raw_len) {
-			flags &= ~(C_CTRLL|C_QUOTE1|C_QUOTE2|C_QUOTE3|C_EXTQUOTE);
+#ifdef HAVE_COLOR
+			flags &= ~(C_CTRLL | C_QUOTE1 | C_QUOTE2 | C_QUOTE3 | C_EXTQUOTE);
+#else
+			flags &= ~(C_CTRLL | C_QUOTE1 | C_QUOTE2 | C_QUOTE3);
+#endif /* HAVE_COLOR */
 			if (flags == C_BODY && (*line != '=' || *(line + 1) != 'y') && (strcmp(raw_line, line) || lines_hidden > 100)) {
-				if (!(section & (SHAR_SECTION|PGP_KEY_SECTION|PGP_SIG_SECTION)))
-				{
+				if (!(section & (SHAR_SECTION | PGP_ANY_SECTION))) {
 					++lines_hidden;
 					continue;
 				}
 			}
 		}
 
-		if ((hide_uue & PGP_ALL) && section == TEXT_SECTION && !strcmp(line, PGP_KEY_TAG)) {
+		/* TODO: shall we also look for PGP_PRIVATE_KEY_TAG? */
+		if ((hide_inline_data & PGP_ALL) && section == TEXT_SECTION && !strcmp(line, PGP_PUBLIC_KEY_TAG)) {
 			section |= PGP_KEY_SECTION;
 			++non_attach_lines;
 			continue;
 		}
-		if ((hide_uue & PGP_ALL) && section == PGP_KEY_SECTION) {
-			if (!strcmp(line, PGP_KEY_END_TAG)) {
+		if ((hide_inline_data & PGP_ALL) && section == PGP_KEY_SECTION) {
+			if (!strcmp(line, PGP_PUBLIC_KEY_END_TAG)) { /* see above, PGP_PRIVATE_KEY_END_TAG */
 				++non_attach_lines;
 				section &= ~PGP_KEY_SECTION;
-				put_cooked(LEN, wrap_lines, C_BODY, "[-- %s, %u lines hidden --]\n", "pgp key block", ++non_attach_lines);
+				/* -> lang.c && _("OpenPGP public key block") */
+				put_cooked(LEN, wrap_lines, C_BODY, P_(txt_cook_lines_hidden_sp[0], txt_cook_lines_hidden_sp[1], non_attach_lines), "OpenPGP pubic key block", non_attach_lines);
 				non_attach_lines = 0;
 				continue;
 			} else
@@ -1905,16 +1940,17 @@ process_text_body_part(
 			continue;
 		}
 
-		if ((hide_uue & PGP_ALL) && section == TEXT_SECTION && !strcmp(line, PGP_SIG_TAG)) {
+		if ((hide_inline_data & PGP_ALL) && section == TEXT_SECTION && !strcmp(line, PGP_SIG_TAG)) {
 			section |= PGP_SIG_SECTION;
 			++non_attach_lines;
 			continue;
 		}
-		if ((hide_uue & PGP_ALL) && section == PGP_SIG_SECTION) {
+		if ((hide_inline_data & PGP_ALL) && section == PGP_SIG_SECTION) {
 			if (!strcmp(line, PGP_SIG_END_TAG)) {
 				++non_attach_lines;
 				section &= ~PGP_SIG_SECTION;
-				put_cooked(LEN, wrap_lines, C_BODY, "[-- %s, %u lines hidden --]\n", "pgp signature block", ++non_attach_lines);
+				/* -> lang.c && _("OpenPGP signature block") */
+				put_cooked(LEN, wrap_lines, C_BODY, P_(txt_cook_lines_hidden_sp[0], txt_cook_lines_hidden_sp[1], non_attach_lines), "OpenPGP signature block", non_attach_lines);
 				non_attach_lines = 0;
 				continue;
 			} else
@@ -1922,18 +1958,17 @@ process_text_body_part(
 			continue;
 		}
 
-		/* TODO: there currently is no way to hide uue (or yenc) but not shar */
-		if ((hide_uue & SHAR_ALL) && section == SHAR_SECTION) {
-			if (!MATCH_REGEX(shar_end_regex, line, len))
-				++non_attach_lines;
-			else {
-				put_cooked(LEN, wrap_lines, C_BODY, "[-- %s, %u lines hidden --]\n", "shar archive", ++non_attach_lines);
+		if ((hide_inline_data & SHAR_ALL) && section == SHAR_SECTION) {
+			++non_attach_lines;
+			if (MATCH_REGEX(shar_end_regex, line, len)) {
+				/* -> lang.c && _("shar archive") */
+				put_cooked(LEN, wrap_lines, C_BODY, P_(txt_cook_lines_hidden_sp[0], txt_cook_lines_hidden_sp[1], non_attach_lines), "shar archive", non_attach_lines);
 				non_attach_lines = 0;
 				section &= ~SHAR_SECTION;
 			}
 			continue;
 		} else {
-			if ((hide_uue & SHAR_ALL) && section == TEXT_SECTION && MATCH_REGEX(shar_regex, line, len)) {
+			if ((hide_inline_data & SHAR_ALL) && section == TEXT_SECTION && MATCH_REGEX(shar_regex, line, len)) {
 				++non_attach_lines;
 				section |= SHAR_SECTION;
 				continue;
@@ -1954,10 +1989,10 @@ process_text_body_part(
 	/*
 	 * Were we reading uue/yenc and ran off the end ?
 	 */
-	if ((section & UUE_SECTION) && (hide_uue & UUE_ALL))
+	if ((section & UUE_SECTION) && (hide_inline_data & UUE_ALL))
 		put_attach(wrap_lines, curruue, (curruue->depth - 1) * 4, SECTION_UUE_INCOMPLETE, get_filename(curruue->params), content_encodings[curruue->encoding]);
 	else
-		if ((section & YENC_SECTION) && hide_uue) {
+		if ((section & YENC_SECTION) && hide_inline_data) {
 			curruue->yenc_part = y_part ? y_part : 1; /* fixup display when no =part was found */
 			curruue->yenc_total = y_total ? y_total : 1; /* fixup display when no =total was found */
 			curruue->yenc_part_size = y_pend && (y_pend - y_pbegin) ? y_pend - y_pbegin : y_bsize == y_esize ? y_bsize : 0;
@@ -1967,9 +2002,22 @@ process_text_body_part(
 			FreeAndNull(y_name);
 		}
 
-	if (!(section & YENC_SECTION) && lines_hidden && (hide_uue & UUE_ALL)) {
-		/*TODO: -> lang.c, _() */
-		put_cooked(LEN, wrap_lines, C_BODY, "[-- %s, %lu lines hidden --]\n", "partial yenc data", lines_hidden);
+	if (!(section & YENC_SECTION) && lines_hidden && (hide_inline_data & UUE_ALL))
+		put_cooked(LEN, wrap_lines, C_BODY, P_(txt_cook_lines_hidden_sp[0], txt_cook_lines_hidden_sp[1], lines_hidden), _(txt_yenc_partial), lines_hidden);
+
+	if (section != TEXT_SECTION && non_attach_lines) {
+		if ((section & SHAR_SECTION) && (hide_inline_data & SHAR_ALL))
+			put_cooked(LEN, wrap_lines, C_BODY, P_(txt_cook_lines_hidden_sp[0], txt_cook_lines_hidden_sp[1], non_attach_lines), "shar archive", non_attach_lines);
+
+		if ((section & PGP_KEY_SECTION) && (hide_inline_data & PGP_ALL))
+			put_cooked(LEN, wrap_lines, C_BODY, P_(txt_cook_lines_hidden_sp[0], txt_cook_lines_hidden_sp[1], non_attach_lines), "OpenPGP public key block", non_attach_lines);
+
+		if ((section & PGP_SIG_SECTION) && (hide_inline_data & PGP_ALL))
+			put_cooked(LEN, wrap_lines, C_BODY, P_(txt_cook_lines_hidden_sp[0], txt_cook_lines_hidden_sp[1], non_attach_lines), "OpenPGP signature block", non_attach_lines);
+
+#ifdef INLINE_DEBUG_MIME
+		put_cooked(LEN, wrap_lines, C_BODY, "[-- Error: unexpected %s --]", "end. No mark found.");
+#endif /* INLINE_DEBUG_MIME */
 	}
 
 	free(line);
@@ -2041,31 +2089,6 @@ dump_cooked(
 #endif /* DEBUG_ART */
 
 
-/*
- * 'cooks' an article, ie, prepare what will actually appear on the screen
- * It is not easy to do this in the same pass as the initial read since
- * boundary conditions for multipart articles make it harder to do on the
- * fly decoding.
- * We could have cooked the headers whilst they were being read but we're
- * trying to keep this simple.
- *
- * Expects:
- *		Fresh article context to write into
- *		parse_uue is set only when the art is opened to create t_parts for
- *		uue sections found, when resizing this is not needed
- *		hide_uue determines the folding of uue sections
- * Handles:
- *		multipart articles
- *		stripping of non text sections if skip_alternative
- *		Q and B decoding of text sections
- *		handling of uuencoded sections
- *		stripping of sigs if !show_signatures
- * Returns:
- *		TRUE on success
- *
- * TODO:
- *      give an error-message on at least disk-full
- */
 /* set INLINE_DEBUG_MIME to 1 to inline report some errors/warnings,
  * use PAGE_ARTICLE_INFO ('\'') for a more detailed info.
  * strings -> lang.c?
@@ -2074,14 +2097,14 @@ t_bool
 cook_article(
 	t_bool wrap_lines,
 	t_openartinfo *artinfo,
-	int hide_uue,
+	int hide_inline_data,
 	t_bool show_all_headers)
 {
 	const char *charset;
 	const char *name;
 	char *line;
 	struct t_header *hdr = &artinfo->hdr;
-	static const char *struct_header[] = {
+	static const char *struct_header[] = { /* as in rfc2047.c:rfc1522_do_encode() */
 		"Approved: ", "From: ", "Originator: ", "Reply-To: ",
 		"Sender: ", "To: ", "Cc: ", "Bcc: ", "X-Cancelled-By: ",
 		"X-Comment-To: ", "X-Submissions-To: ", "X-Originator: ",
@@ -2214,8 +2237,8 @@ cook_article(
 				}
 			} while (!found && *(++strptr) != NULL);
 
-			/* unstructured but must not be decoded */
-			if (l == NULL && (!strncasecmp(line, "References: ", 12) || !strncasecmp(line, "Message-ID: ", 12) || !strncasecmp(line, "Date: ", 6) || !strncasecmp(line, "Newsgroups: ", 12) || !strncasecmp(line, "Distribution: ", 14) || !strncasecmp(line, "Followup-To: ", 13) || !strncasecmp(line, "X-Face: ", 8) || !strncasecmp(line, "Cancel-Lock: ", 13) || !strncasecmp(line, "Cancel-Key: ", 12) || !strncasecmp(line, "Supersedes: ", 12)))
+			/* unstructured but must not be decoded (see also rfc2047.c:do_rfc15211522_encode()) */
+			if (l == NULL && (!strncasecmp(line, "References: ", 12) || !strncasecmp(line, "Message-ID: ", 12) || !strncasecmp(line, "Date: ", 6) || !strncasecmp(line, "Newsgroups: ", 12) || !strncasecmp(line, "Distribution: ", 14) || !strncasecmp(line, "Followup-To: ", 13) || !strncasecmp(line, "X-Face: ", 8) || !strncasecmp(line, "Cancel-Lock: ", 13) || !strncasecmp(line, "Cancel-Key: ", 12) || !strncasecmp(line, "Supersedes: ", 12) || !strncasecmp(line, "Path: ", 6)))
 				l = my_strdup(line);
 
 			if (l == NULL)
@@ -2274,7 +2297,7 @@ cook_article(
 						put_cooked(1, wrap_lines, C_ATTACH, "\n");
 				} else {
 					charset = validate_charset(charset);
-					process_text_body_part(wrap_lines, artinfo->raw, charset ? charset : "US-ASCII", ptr, hide_uue);
+					process_text_body_part(wrap_lines, artinfo->raw, charset ? charset : "US-ASCII", ptr, hide_inline_data);
 				}
 			}
 		}
@@ -2320,7 +2343,7 @@ cook_article(
 			if (hdr->ext->mime_hints.flags & MIME_CHARSET_UNSUPPORTED)
 				put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_mime_unsup_charset), 0, "", hdr->ext->mime_hints.charset);
 			else
-				process_text_body_part(wrap_lines, artinfo->raw, charset ? charset : "US-ASCII", hdr->ext, hide_uue);
+				process_text_body_part(wrap_lines, artinfo->raw, charset ? charset : "US-ASCII", hdr->ext, hide_inline_data);
 		} else {
 			/*
 			 * Non-textual main body

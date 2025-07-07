@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-05-14
+ *  Updated   : 2025-06-22
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -115,6 +115,7 @@ char posted_info_file[PATH_LEN];
 char postponed_articles_file[PATH_LEN];	/* ~/.tin/postponed.articles file */
 char rcdir[PATH_LEN];
 char save_active_file[PATH_LEN];
+char serverrc_file[PATH_LEN];	/* ~/.tin/$NNTPSERVER/serverrc file */
 char spooldir[PATH_LEN];		/* directory where news is */
 char *tin_progname;		/* program name */
 const char *tmpdir;
@@ -139,7 +140,7 @@ int iso2asc_supported;			/* Convert ISO-Latin1 to Ascii */
 int system_status;
 int xmouse, xrow, xcol;			/* xterm button pressing information */
 
-long motd_hash = 0L;
+volatile sig_atomic_t pending_sactions;	/* pending sigactions */
 
 pid_t process_id;			/* Useful to have around for .suffixes */
 
@@ -209,6 +210,7 @@ struct regex_cache
 		yencbegin_regex, yencpart_regex, yencend_regex,
 		url_regex, mail_regex, news_regex,
 		shar_regex, shar_end_regex,
+		latex_regex,
 		slashes_regex, stars_regex, underscores_regex, strokes_regex
 #ifdef HAVE_COLOR
 		, extquote_regex, quote_regex, quote_regex2, quote_regex3
@@ -216,6 +218,20 @@ struct regex_cache
 	= REGEX_CACHE_INITIALIZER;
 
 struct t_cmdlineopts cmdline = { 0, 0, NULL, NULL, NULL, NULL, 0 };
+
+struct t_serverrc serverrc = {
+#if 0
+	NULL,	/* version */
+	NULL,	/* last_newnews */
+#endif /* 0 */
+	NULL,	/* add_cmd_line_opts */
+	NULL,	/* disabled_nntp_cmds */
+	0UL,	/* motd_hash */
+	FALSE,	/* cache_overview_files */
+#ifdef USE_ZLIB
+	FALSE,	/* compress_overview_files */
+#endif /* USE_ZLIB */
+};
 
 struct t_config tinrc = {
 	NULL,	/* default_goto_group */
@@ -336,7 +352,7 @@ struct t_config tinrc = {
 	'a',	/* default_save_mode */
 	0,		/* getart_limit */
 	GOTO_NEXT_UNREAD_TAB,		/* goto_next_unread */
-	UUE_NO,	/* hide_uue */
+	UUE_NO,	/* hide_inline_data */
 	INTERACTIVE_NONE,			/* interactive_mailer */
 	KILL_UNREAD,				/* kill_level */
 	2,		/* mono_markdash */
@@ -505,6 +521,7 @@ struct t_config tinrc = {
 	FALSE,
 #	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
+	UUE_NO,	/* attrib_hide_inline_data */
 	0,		/* attrib_trim_article_body */
 	VERBATIM_SHOW_ALL,	/* attrib_verbatim_handling */
 	0,		/* attrib_auto_cc_bcc */
@@ -566,25 +583,26 @@ struct t_capabilities nntp_caps = {
 	FALSE, /* MODE-READER: "MODE READER" */
 	FALSE, /* READER: "ARTICLE", "BODY" */
 	FALSE, /* POST */
-	FALSE, /* LIST: "LIST ACTIVE" */
+	TRUE, /* LIST: "LIST ACTIVE" */
 	FALSE, /* LIST: "LIST ACTIVE.TIMES" */
 	FALSE, /* LIST: "LIST DISTRIB.PATS" */
 	FALSE, /* LIST: "LIST HEADERS" */
 	NULL, /* list of headers by range */
 	NULL, /* list of headers by id */
-	FALSE, /* LIST: "LIST NEWSGROUPS" */
-	FALSE, /* LIST: "LIST OVERVIEW.FMT" */
-	FALSE, /* LIST: "LIST MOTD" */
-	FALSE, /* LIST: "LIST SUBSCRIPTIONS" */
+	TRUE, /* LIST: "LIST NEWSGROUPS" */
+	TRUE, /* LIST: "LIST OVERVIEW.FMT" */
+	TRUE, /* LIST: "LIST MOTD" */
+	TRUE, /* LIST: "LIST SUBSCRIPTIONS" */
 	FALSE, /* LIST: "LIST DISTRIBUTIONS" */
 	FALSE, /* LIST: "LIST MODERATORS" */
 	FALSE, /* LIST: "LIST COUNTS" */
-	FALSE, /* XPAT */
-	FALSE, /* HDR: "HDR", "LIST HEADERS" */
+	TRUE, /* XPAT */
+	TRUE, /* HDR: "HDR", "LIST HEADERS" */
 	NULL, /* [X]HDR */
-	FALSE, /* OVER: "OVER", "LIST OVERVIEW.FMT" */
+	TRUE, /* OVER: "OVER", "LIST OVERVIEW.FMT" */
 	FALSE, /* OVER: "OVER mid" */
 	NULL, /* [X]OVER */
+	TRUE, /* NEWGROUPS */
 	FALSE, /* NEWNEWS */
 	NULL, /* IMPLEMENTATION */
 	FALSE, /* STARTTLS */
@@ -600,13 +618,9 @@ struct t_capabilities nntp_caps = {
 #endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 #if 0
 	FALSE, /* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
-	FALSE /* IHAVE */
+	FALSE, /* IHAVE */
 #endif /* 0 */
-#ifndef BROKEN_LISTGROUP
 	FALSE /* LISTGROUP doesn't select group */
-#else
-	TRUE
-#endif /* !BROKEN_LISTGROUP */
 };
 
 static char libdir[PATH_LEN];			/* directory where news config files are (ie. active) */
@@ -721,6 +735,8 @@ init_selfinfo(
 	} else
 		my_strncpy(userid, myentry->pw_name, sizeof(userid) - 1);
 
+	pending_sactions = 0;
+
 	*domain_name = '\0';
 
 #ifdef HAVE_SYS_UTSNAME_H
@@ -751,7 +767,7 @@ init_selfinfo(
 
 	if ((p = get_val("TIN_HOMEDIR", get_val("HOME", NULL))) != NULL) {
 		my_strncpy(homedir, p, sizeof(homedir) - 1);
-	} else if (strlen(myentry->pw_dir)) {
+	} else if (*myentry->pw_dir) {
 		strncpy(homedir, myentry->pw_dir, sizeof(homedir) - 1);
 	} else
 		strncpy(homedir, tmpdir, sizeof(homedir) - 1);
@@ -926,15 +942,13 @@ init_selfinfo(
 				/* fallback to MM_CHARSET */
 				snprintf(ptr, space, "mm_network_charset=%s\n", MM_CHARSET);
 				if (!match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset))
-					/* fallback to US-ASCII */
-					tinrc.mm_network_charset = 0;
+					tinrc.mm_network_charset = 0; /* fallback to US-ASCII */
 			}
 		} else {
-				/* fallback to MM_CHARSET */
-				snprintf(ptr, space, "mm_network_charset=%s\n", MM_CHARSET);
-				if (!match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset))
-					/* fallback to US-ASCII */
-					tinrc.mm_network_charset = 0;
+			/* fallback to MM_CHARSET */
+			snprintf(ptr, space, "mm_network_charset=%s\n", MM_CHARSET);
+			if (!match_list(ptr, "mm_network_charset=", txt_mime_charsets, &tinrc.mm_network_charset))
+				tinrc.mm_network_charset = 0; /* fallback to US-ASCII */
 		}
 		free(ptr);
 	}
@@ -1322,4 +1336,5 @@ postinit_regexp(
 
 	compile_regex(SHAR_REGEX, &shar_regex, REGEX_ANCHORED);
 	compile_regex(SHAR_END_REGEX, &shar_end_regex, REGEX_ANCHORED);
+	compile_regex(LATEX_REGEX, &latex_regex, 0);
 }

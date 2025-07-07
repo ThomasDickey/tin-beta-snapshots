@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-03-08
+ *  Updated   : 2025-07-07
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -80,7 +80,7 @@ static void usage(char *theProgname);
 
 #define FREE_ARGV_IF_NEEDED(orig, new) do { \
 		if (orig != new) { \
-			free(*(new + 1)); \
+			FreeAndNull(*(new + 1)); \
 			FreeAndNull(new); \
 		} \
 	} while (0)
@@ -95,8 +95,10 @@ main(
 	char *argv[])
 {
 	char **argv_orig = argv;
+	char serverdir[PATH_LEN];
 	int count, start_groupnum;
 	int num_cmd_line_groups = 0;
+	unsigned int srvrc_mask = 0;
 	t_bool tmp_no_write;
 
 	cmd_line = TRUE;
@@ -267,8 +269,17 @@ main(
 	if (!nntp_server || !*nntp_server)
 		nntp_server = getserverbyfile(NNTP_SERVER_FILE);
 
+	STRCPY(serverrc_file, quote_space_to_dash(nntp_server));
+	joinpath(serverdir, sizeof(serverdir), rcdir, serverrc_file);
+	joinpath(serverrc_file, sizeof(serverrc_file), serverdir, SERVERCONFIG_FILE);
+
 	open_msglog(); /* depends on nntp_server */
-	read_server_config();
+
+	if (update_index)
+		srvrc_mask |= SRVRC_MASK_UPDATE_INDEX;
+	if (read_saved_news)
+		srvrc_mask |= SRVRC_MASK_READ_SAVED_NEWS;
+	read_server_config(srvrc_mask);
 
 	if (read_news_via_nntp && !read_saved_news) {
 #	ifdef NNTPS_ABLE
@@ -317,8 +328,8 @@ main(
 	 * why evaluate tinrc.cache_overview_files in error_message, we know
 	 * it is false -> txt_batch_update_unavail could hold a fixed string.
 	 */
-	if (update_index && !tinrc.cache_overview_files) {
-		error_message(2, _(txt_batch_update_unavail), tin_progname, print_boolean(tinrc.cache_overview_files));
+	if (update_index && !serverrc.cache_overview_files) {
+		error_message(2, _(txt_batch_update_unavail), tin_progname, print_boolean(serverrc.cache_overview_files));
 		FREE_ARGV_IF_NEEDED(argv_orig, cmdargs);
 		free_all_arrays();
 		giveup();
@@ -348,18 +359,16 @@ main(
 		read_input_history_file();
 	}
 
-	if (!(batch_mode || post_postponed_and_exit)) {
+	if (read_saved_news && !(batch_mode || post_postponed_and_exit)) {
 		/*
 		 * Load the mail & news active files into active[]
 		 *
 		 * create_save_active_file cannot write to active.save
 		 * if no_write != FALSE, so restore original value temporarily
 		 */
-		if (read_saved_news) {
-			no_write = tmp_no_write;
-			create_save_active_file();
-			no_write = TRUE;
-		}
+		no_write = tmp_no_write;
+		create_save_active_file();
+		no_write = TRUE;
 	}
 
 #ifdef HAVE_MH_MAIL_HANDLING
@@ -535,7 +544,7 @@ main(
 
 /*
  * process command line options
- * [01235789beEFijJKOyY] are unused
+ * [01235789beEijJKOyY] are unused
  * [W] is reserved
  * [BPU] have been in use at some time, but now are unused:
  *   B BBS mode (M_AMIGA only)
@@ -545,7 +554,7 @@ main(
  *   C was count articles, now is activate COMPRESS DEFLATE
  *   p was set printer-cmd., now is nntp-port
  *
- * unused: [bBeEijJKOPU01235789]
+ * unused: [01235789bBeEijJKOPUyY]
  */
 #define DO_FREE() do { \
 		FreeIfNeeded(trcv); \
@@ -562,7 +571,7 @@ main(
 #define USELESS_COMB(keep,ignore) do { \
 		wait_message(2, _(txt_useless_combination), keep, ignore, ignore, BlankIfNull(trcv)); \
 	} while (0)
-#define OPTIONS "46aAcCdD:f:F:g:G:hHI:klL:m:M:nNop:qQrRs:St:TuvVwxXzZ"
+#define OPTIONS ":46aAcCdD:f:F:g:G:hHI:klL:m:M:nNop:qQrRs:St:TuvVwxXzZ"
 static char **
 read_cmd_line_options(
 	int argc,
@@ -570,7 +579,7 @@ read_cmd_line_options(
 {
 	const char *envtinrc = get_val("TINRC", NULL);
 	char **argv_orig = argv;
-	char *trcv;
+	char *trcv = NULL;
 	int n, ch;
 #if defined(NNTP_ABLE) || defined(DEBUG)
 	int i;
@@ -590,11 +599,10 @@ read_cmd_line_options(
 			if (snprintf(trcv, len, txt_option_check_tinrc, envtinrc) != n) {
 				FreeAndNull(trcv);
 			}
-		} else
-			trcv = NULL;
-	} else
-		trcv = NULL;
+		}
+	}
 
+	optopt = 0; /* AFAIK at least MINIX < 3.2.0 doesn't set optopt */
 	while ((ch = getopt(argc, argv, OPTIONS)) != -1) {
 		switch (ch) {
 			case '4':
@@ -607,7 +615,7 @@ read_cmd_line_options(
 				OPTION_EXIT("-DNNTP_ABLE");
 				/* keep lint quiet: */
 				/* NOTREACHED */
-#endif /* NNTP_ABLE && INET6 */
+#endif /* NNTP_ABLE */
 				break;
 
 			case '6':
@@ -767,31 +775,6 @@ read_cmd_line_options(
 				my_strncpy(filter_file, optarg, sizeof(filter_file) - 1);
 				break;
 
-			case 'G':
-				cmdline.getart_limit = s2i(optarg, INT_MIN, INT_MAX);
-				switch (errno) {
-					case EINVAL: /* arg not numeric */
-						error_message(0, _(txt_arg_not_numeric), "-G", optarg);
-						DO_FREE();
-						giveup();
-						/* keep lint quiet: */
-						/* FALLTHROUGH */
-						break;
-
-					case ERANGE:
-						error_message(0, _(txt_val_out_of_range_ignored), "-G", optarg, INT_MIN, INT_MAX);
-						cmdline.getart_limit = 0;
-						if (!batch_mode)
-							sleep(2);
-						break;
-
-					default:
-						break;
-				}
-				if (cmdline.getart_limit != 0)
-					cmdline.args |= CMDLINE_GETART_LIMIT;
-				break;
-
 			case 'g':	/* select alternative NNTP-server, implies -r */
 #ifdef NNTP_ABLE
 				FreeIfNeeded(cmdline.nntpserver);
@@ -907,6 +890,31 @@ read_cmd_line_options(
 				/* keep lint quiet: */
 				/* NOTREACHED */
 #endif /* NNTP_ABLE */
+				break;
+
+			case 'G':
+				cmdline.getart_limit = s2i(optarg, INT_MIN, INT_MAX);
+				switch (errno) {
+					case EINVAL: /* arg not numeric */
+						error_message(0, _(txt_arg_not_numeric), "-G", optarg);
+						DO_FREE();
+						giveup();
+						/* keep lint quiet: */
+						/* FALLTHROUGH */
+						break;
+
+					case ERANGE:
+						error_message(0, _(txt_val_out_of_range_ignored), "-G", optarg, INT_MIN, INT_MAX);
+						cmdline.getart_limit = 0;
+						if (!batch_mode)
+							sleep(2);
+						break;
+
+					default:
+						break;
+				}
+				if (cmdline.getart_limit != 0)
+					cmdline.args |= CMDLINE_GETART_LIMIT;
 				break;
 
 			case 'H':
@@ -1138,12 +1146,28 @@ read_cmd_line_options(
 				batch_mode = TRUE;
 				break;
 
-			case 'h':
+			case ':':
 			case '?':
+			case 'h':
 			default:
+				switch (ch) {
+					case ':':
+						my_fprintf(stderr, _(txt_error_option_missing_argument), argv[0], optopt);
+						break;
+
+					case '?':
+						my_fprintf(stderr, _(txt_error_option_unknown), argv[0], optopt);
+						break;
+
+					default:
+						break;
+				}
 				usage(tin_progname);
 				DO_FREE();
 				exit(EXIT_SUCCESS);
+				/* keep lint quiet: */
+				/* NOTREACHED */
+				break;
 		}
 	}
 
@@ -1167,28 +1191,21 @@ read_cmd_line_options(
 		if (read_news_via_nntp) {
 			nntp_server = getserverbyfile(NNTP_SERVER_FILE);
 			get_newsrcname(newsrc, sizeof(newsrc), nntp_server);
-		} else {
-			const char *nodenamebuf = get_host_name();
-
-			get_newsrcname(newsrc, sizeof(newsrc), nodenamebuf);
-		}
+		} else
+			get_newsrcname(newsrc, sizeof(newsrc), BlankIfNull(get_host_name()));
 	}
 #endif /* NNTP_ABLE */
 
 	/*
 	 * Sort out option conflicts
 	 */
-	if (!batch_mode) {
-		if (catchup) {
-			wait_message(2, _(txt_useful_with_batch_mode), "-c", BlankIfNull(trcv));
-			catchup = FALSE;
-		}
+	if (catchup && !batch_mode) {
+		wait_message(2, _(txt_useful_with_batch_mode), "-c", BlankIfNull(trcv));
+		catchup = FALSE;
 	}
-	if (!(batch_mode || debug)) {
-		if (verbose) {
-			wait_message(2, _(txt_useful_with_batch_or_debug_mode), "-v", BlankIfNull(trcv));
-			verbose = FALSE;
-		}
+	if (verbose && !batch_mode && !debug) {
+		wait_message(2, _(txt_useful_with_batch_or_debug_mode), "-v", BlankIfNull(trcv));
+		verbose = FALSE;
 	}
 	/*
 	 * NOTE: order IS important (in case where multiple conflicting settings
@@ -1363,7 +1380,7 @@ read_cmd_line_options(
 		/* USELESS_COMB("-R", "-t"); */ /* we ignore this silently */
 		read_news_via_nntp = FALSE;
 		cmdline.nntp_timeout = 0;
-		cmdline.args |= CMDLINE_NNTP_TIMEOUT;
+		cmdline.args &= ~CMDLINE_NNTP_TIMEOUT;
 	}
 	if (read_saved_news && check_any_unread) {
 		USELESS_COMB("-R", "-Z");
@@ -1383,10 +1400,12 @@ read_cmd_line_options(
 	 * information for all article; this overwrites '-G limit' and disables
 	 * tinrc.getart_limit temporary
 	 */
-	if (update_index && cmdline.getart_limit ) {
-		/* USELESS_COMB("-u", "-G"); */  /* we ignore this silently */
+	if (update_index && cmdline.getart_limit) {
+		if (debug || verbose) {
+			USELESS_COMB("-u", "-G");
+		}
 		cmdline.getart_limit = 0;
-		cmdline.args |= CMDLINE_GETART_LIMIT;
+		cmdline.args &= ~CMDLINE_GETART_LIMIT;
 	}
 #ifdef DEBUG
 #	ifdef NNTP_ABLE
@@ -1444,7 +1463,7 @@ read_cmd_line_options(
 #undef OPTION_EXIT
 #undef USELESS_COMB
 #undef DO_FREE
-
+#undef OPTIONS
 
 /*
  * usage
@@ -1478,7 +1497,7 @@ usage(
 #endif /* DEBUG */
 
 	error_message(0, _(txt_usage_newsrc_file), newsrc);
-	error_message(0, _(txt_usage_getart_limit));
+	error_message(0, _(txt_usage_filter_file), filter_file);
 
 #ifdef NNTP_ABLE
 #	ifdef NNTP_DEFAULT_SERVER
@@ -1488,6 +1507,7 @@ usage(
 #	endif /* NNTP_DEFAULT_SERVER */
 #endif /* NNTP_ABLE */
 
+	error_message(0, _(txt_usage_getart_limit));
 	error_message(0, _(txt_usage_help_message));
 	error_message(0, _(txt_usage_help_information), theProgname);
 	error_message(0, _(txt_usage_index_newsdir), index_newsdir);
@@ -1522,7 +1542,7 @@ usage(
 	error_message(0, _(txt_usage_quickstart));
 
 #ifdef NNTP_ABLE
-	if (!read_news_via_nntp)
+	/* if (!read_news_via_nntp) */ /* why should we suppress the usage-info? */
 		error_message(0, _(txt_usage_read_news_remotely));
 #endif /* NNTP_ABLE */
 
@@ -1674,9 +1694,10 @@ handle_cmdargs(
 
 	if (init)
 		argv_modified = TRUE;
+
 	else if (argv_modified) {
 		if (cmdargs) {
-			free(*(cmdargs + 1));
+			FreeAndNull(*(cmdargs + 1));
 			free(cmdargs);
 			cmdargs = NULL;
 		}

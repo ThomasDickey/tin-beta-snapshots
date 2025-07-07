@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2025-04-04
+ *  Updated   : 2025-06-29
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2025 Iain Lea <iain@bricbrac.de>
@@ -140,6 +140,7 @@ set_default_attributes(
 	CopyBool(batch_save, tinrc.batch_save);
 	attributes->delete_tmp_files = FALSE;
 	CopyBool(group_catchup_on_exit, tinrc.group_catchup_on_exit);
+	CopyBits(hide_inline_data, tinrc.hide_inline_data);
 	CopyBool(mail_8bit_header, tinrc.mail_8bit_header);
 	CopyBits(mail_mime_encoding, tinrc.mail_mime_encoding);
 	CopyBool(mark_ignore_tags, tinrc.mark_ignore_tags);
@@ -194,6 +195,7 @@ set_default_state(
 	state->from = FALSE;
 	state->group_catchup_on_exit = FALSE;
 	state->group_format = FALSE;
+	state->hide_inline_data = FALSE;
 #ifdef HAVE_ISPELL
 	state->ispell = FALSE;
 #endif /* HAVE_ISPELL */
@@ -397,6 +399,10 @@ read_attributes_file(
 				case 'g':
 					MATCH_BOOLEAN("group_catchup_on_exit=", OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT);
 					MATCH_STRING("group_format=", OPT_ATTRIB_GROUP_FORMAT);
+					break;
+
+				case 'h':
+					MATCH_INTEGER("hide_inline_data=", OPT_ATTRIB_HIDE_INLINE_DATA, HIDE_ALL);
 					break;
 
 				case 'i':
@@ -639,7 +645,7 @@ read_attributes_file(
 							if (upgrade && upgrade->file_version < 10009) {
 								char *newbuf = my_malloc(sizeof(buf) + 3); /* " %G" */
 
-								sprintf(newbuf, "%s %s", buf, "%G");
+								sprintf(newbuf, "%s %%G", buf);
 								set_attrib(OPT_ATTRIB_SIGFILE, scope, line, newbuf);
 							}
 							break;
@@ -863,6 +869,9 @@ set_attrib(
 
 			case OPT_ATTRIB_GROUP_FORMAT:
 				SET_STRING(group_format);
+
+			case OPT_ATTRIB_HIDE_INLINE_DATA:
+				SET_INTEGER(hide_inline_data);
 
 			case OPT_ATTRIB_MAIL_8BIT_HEADER:
 				SET_BOOLEAN(mail_8bit_header);
@@ -1195,6 +1204,7 @@ assign_attributes_to_groups(
 				SET_ATTRIB(batch_save);
 				SET_ATTRIB(delete_tmp_files);
 				SET_ATTRIB(group_catchup_on_exit);
+				SET_ATTRIB(hide_inline_data);
 				SET_ATTRIB(mail_8bit_header);
 				SET_ATTRIB(mail_mime_encoding);
 				SET_ATTRIB(mark_ignore_tags);
@@ -1360,6 +1370,12 @@ write_attributes_file(
 	fprintf(fp, "%s", _(txt_attrib_file_from));
 	fprintf(fp, "%s", _(txt_attrib_file_grp_catchup));
 	fprintf(fp, "%s", _(txt_attrib_file_grp_fmt));
+	fprintf(fp, "%s", _(txt_attrib_file_hide_inline_data));
+	fprintf(fp, "%s", _(txt_attrib_file_hide_inline_data_0));
+	fprintf(fp, "%s", _(txt_attrib_file_hide_inline_data_1));
+	fprintf(fp, "%s", _(txt_attrib_file_hide_inline_data_2));
+	fprintf(fp, "%s", _(txt_attrib_file_hide_inline_data_4));
+	fprintf(fp, "%s", _(txt_attrib_file_hide_inline_data_8));
 	fprintf(fp, "%s", _(txt_attrib_file_mail_8bit_hdr));
 	fprintf(fp, "%s", _(txt_attrib_file_mail_mime_enc));
 	for (i = 0; txt_mime_encodings[i] != NULL; i++) {
@@ -1586,6 +1602,8 @@ write_attributes_file(
 					fprintf(fp, "group_catchup_on_exit=%s\n", print_boolean(scope->attribute->group_catchup_on_exit));
 				if (ATTRIB_IS_SET(group_format))
 					fprintf(fp, "group_format=%s\n", *scope->attribute->group_format);
+				if (scope->state->hide_inline_data)
+					fprintf(fp, "hide_inline_data=%u\n", (unsigned) scope->attribute->hide_inline_data);
 				if (scope->state->mail_8bit_header)
 					fprintf(fp, "mail_8bit_header=%s\n", print_boolean(scope->attribute->mail_8bit_header));
 				if (scope->state->mail_mime_encoding)
@@ -1761,6 +1779,7 @@ skip_scope(
 		|| ATTRIB_IS_SET(from)
 		|| scope->state->group_catchup_on_exit
 		|| ATTRIB_IS_SET(group_format)
+		|| scope->state->hide_inline_data
 		|| scope->state->mail_8bit_header
 		|| scope->state->mail_mime_encoding
 #ifdef HAVE_ISPELL
@@ -1912,6 +1931,7 @@ dump_attributes(
 #	endif /* HAVE_COLOR */
 			debug_print_file("ATTRIBUTES", "\tgroup_catchup_on_exit=%s", print_boolean(group->attribute->group_catchup_on_exit));
 			debug_print_file("ATTRIBUTES", "\tgroup_format=%s", DEBUG_PRINT_BLANK_IF_NULL(group_format));
+			debug_print_file("ATTRIBUTES", "\thide_inline_data=%d", group->attribute->hide_inline_data);
 			debug_print_file("ATTRIBUTES", "\tmail_8bit_header=%s", print_boolean(group->attribute->mail_8bit_header));
 			debug_print_file("ATTRIBUTES", "\tmail_mime_encoding=%s", txt_mime_encodings[group->attribute->mail_mime_encoding]);
 			debug_print_file("ATTRIBUTES", "\tmark_ignore_tags=%s", print_boolean(group->attribute->mark_ignore_tags));
@@ -2033,6 +2053,7 @@ dump_scopes(
 #	endif /* HAVE_COLOR */
 			debug_print_file(fname, "\t%sgroup_catchup_on_exit=%s", DEBUG_PRINT_STATE(group_catchup_on_exit), print_boolean(scope->attribute->group_catchup_on_exit));
 			debug_print_file(fname, "\t%sgroup_format=%s", DEBUG_PRINT_STATE(group_format), DEBUG_PRINT_STRING(group_format));
+			debug_print_file(fname, "\t%shide_inline_data=%d", DEBUG_PRINT_STATE(hide_inline_data), scope->attribute->hide_inline_data);
 			debug_print_file(fname, "\t%smail_8bit_header=%s", DEBUG_PRINT_STATE(mail_8bit_header), print_boolean(scope->attribute->mail_8bit_header));
 			debug_print_file(fname, "\t%smail_mime_encoding=%s", DEBUG_PRINT_STATE(mail_mime_encoding), txt_mime_encodings[scope->attribute->mail_mime_encoding]);
 			debug_print_file(fname, "\t%smark_ignore_tags=%s", DEBUG_PRINT_STATE(mark_ignore_tags), print_boolean(scope->attribute->mark_ignore_tags));

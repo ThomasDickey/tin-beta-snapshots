@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2025-04-11
+ *  Updated   : 2025-06-15
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2025 Thomas Dickey <dickey@invisible-island.net>
@@ -153,6 +153,13 @@
 
 #	undef HAVE_INT64_C
 
+#	undef HAVE_SIG_ATOMIC_T
+#	ifndef HAVE_SIG_ATOMIC_T
+	typedef int sig_atomic_t;
+# 	endif /* !HAVE_SIG_ATOMIC_T */
+
+#	undef volatile
+
 /*
  * The following xxx_H definitions are set by the 'configure' script to
  * defined or commented-out, according to whether the corresponding header
@@ -234,7 +241,6 @@
  * function is found in a library.
  */
 #	undef HAVE_ALARM
-#	undef HAVE_ATOI
 #	undef HAVE_ATOL
 #	undef HAVE_ATOLL
 #	undef HAVE_ATOQ
@@ -347,7 +353,6 @@
  * warnings, etc., for development/testing).
  */
 #	undef DECL_ALARM
-#	undef DECL_ATOI
 #	undef DECL_ATOL
 #	undef DECL_ATOLL
 #	undef DECL_ATOQ
@@ -601,11 +606,6 @@
 #	undef USE_SYSTEM_STATUS
 
 /*
- * allow fallback to XHDR XREF if XOVER isn't supported?
- */
-#	undef XHDR_XREF
-
-/*
  * The directory, where tin looks first for its tin.defaults file
  * can be left empty, tin searches for some standard places
  * XXXXX please define surrounded with double quotes! XXXXX
@@ -627,13 +627,6 @@
  * define if gettimeofday() takes the timezone as 2nd argument
  */
 #	undef GETTIMEOFDAY_2ARGS
-
-/*
- * define if your NNTP server needs an extra GROUP command before
- * accepting a LISTGROUP command.
- * (old versions of leafnode and NNTPcache need this)
- */
-#	undef BROKEN_LISTGROUP
 
 /*
  * on some old systems the WIFEXITED()/WEXITSTATUS() macros do not work,

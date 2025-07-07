@@ -82,8 +82,8 @@ t_bool have_linescroll = FALSE;
 #				define USE_SGTTY 1
 #				define TTY struct sgttyb
 /*
-	#			else
-	#				error "No termios.h, termio.h or sgtty.h found"
+#			else
+#				error "No termios.h, termio.h or sgtty.h found"
 */
 #			endif /* HAVE_SGTTY_H */
 #		endif /* HAVE_TERMIO_H */
@@ -126,8 +126,8 @@ static int _columns, _line, _lines, _colors;
 #				define SET_TTY(arg) stty(TTYIN, arg)
 #				define GET_TTY(arg) gtty(TTYIN, arg)
 /*
-	#			else
-	#				error "No termios.h, termio.h or sgtty.h found"
+#			else
+#				error "No termios.h, termio.h or sgtty.h found"
 */
 #			endif /* USE_SGTTY */
 #		endif /* USE_TERMIO */

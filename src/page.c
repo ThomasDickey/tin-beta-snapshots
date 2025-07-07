@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-05-19
+ *  Updated   : 2025-06-04
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -84,7 +84,7 @@ static struct t_header *note_h = &pgart.hdr;	/* Easy access to article headers *
 static FILE *info_file;
 static const char *info_title;
 static int curr_info_line;
-static int hide_uue;			/* set when uuencoded sections are 'hidden' */
+static int hide_inline_data;	/* set when inline data sections are 'hidden' */
 static int num_info_lines;
 static int reveal_ctrl_l_lines;	/* number of lines (from top) with de-activated ^L */
 static int rotate;				/* 0=normal, 13=rot13 decode */
@@ -115,7 +115,7 @@ static t_function page_mouse_action(t_function (*left_action) (void), t_function
 static t_function url_left(void);
 static t_function url_right(void);
 static void build_url_line(int i);
-static void draw_page_header(void);
+static void draw_page_header(t_bool tex2iso_conv);
 static void draw_percent_mark(long cur_num, long max_num);
 static void draw_url_arrow(void);
 static void free_url_list(void);
@@ -328,7 +328,7 @@ show_page(
 	char key[MAXKEYLEN];
 	int i, j, n = 0;
 	int art_type = GROUP_TYPE_NEWS;
-	int hide_uue_tmp;
+	int hide_inline_data_tmp;
 	t_artnum old_artnum;
 	t_bool mouse_click_on = TRUE;
 	t_bool repeat_search;
@@ -703,7 +703,7 @@ page_goto_next_unread:
 
 			case PAGE_TOGGLE_TEX2ISO:		/* toggle German TeX to ISO latin1 style conversion */
 				if ((group->attribute->tex2iso_conv = bool_not(group->attribute->tex2iso_conv)))
-					pgart.tex2iso = is_art_tex_encoded(pgart.raw);
+					;
 				else
 					pgart.tex2iso = FALSE;
 
@@ -719,19 +719,19 @@ page_goto_next_unread:
 				info_message(_(txt_toggled_tabwidth), tabwidth);
 				break;
 
-			case PAGE_TOGGLE_UUE:			/* toggle display of uuencoded sections */
+			case PAGE_TOGGLE_INLINE_DATA:	/* toggle display of inline data sections */
 				do {
-					hide_uue = (hide_uue + 1) % (HIDE_ALL + 1);
-				} while (!*txt_hide_uue_type[hide_uue]); /* a list with gaps? - skip over them */
+					hide_inline_data = (hide_inline_data + 1) % (HIDE_ALL + 1);
+				} while (!*txt_hide_inline_data_type[hide_inline_data]); /* a list with gaps? - skip over them */
 				resize_article(TRUE, &pgart);	/* Also recooks it.. */
 				/*
 				 * If we hid uue and are off the end of the article, reposition to
 				 * show last page for neatness
 				 */
-				if (hide_uue && curr_line + ARTLINES > artlines)
+				if (hide_inline_data && curr_line + ARTLINES > artlines)
 					curr_line = artlines - ARTLINES;
 				draw_page(0);
-				info_message("%s: %s", _(txt_hide_uue.opt), _(txt_hide_uue_type[hide_uue]));
+				info_message("%s: %s", _(txt_hide_inline_data.opt), _(txt_hide_inline_data_type[hide_inline_data]));
 				break;
 
 			case PAGE_TOGGLE_VERBATIM:			/* toggle verbatim options */
@@ -1065,12 +1065,12 @@ return_to_index:
 
 			case PAGE_VIEW_ATTACHMENTS:
 				XFACE_SUPPRESS();
-				hide_uue_tmp = hide_uue;
-				hide_uue = UUE_NO;
+				hide_inline_data_tmp = hide_inline_data;
+				hide_inline_data = UUE_NO;
 				resize_article(TRUE, &pgart);
 				attachment_page(&pgart);
 				signal_context = cPage;
-				hide_uue = hide_uue_tmp;
+				hide_inline_data = hide_inline_data_tmp;
 				resize_article(TRUE, &pgart);
 				draw_page(0);
 				XFACE_SHOW();
@@ -1289,7 +1289,7 @@ draw_page(
 	 */
 	if ((end - start >= ARTLINES) || (part == 0)) {
 		ClearScreen();
-		draw_page_header();
+		draw_page_header(CURR_GROUP.attribute->tex2iso_conv);
 	} else
 		MoveCursor(0, 0);
 
@@ -1512,6 +1512,7 @@ build_from_line(
 }
 
 
+#define CCOLS_THIRD (cCOLS / 3 + 1)
 /*
  * PAGE_HEADER defines the size in lines of this header
  *
@@ -1522,17 +1523,16 @@ build_from_line(
  */
 static void
 draw_page_header(
-	void)
+	t_bool tex2iso_conv)
 {
-	char *buf, *from, *tmp, *tmp2;
-	int i;
+	char *buf, *from, *tmp = NULL, *tmp2 = NULL;
+	int i, n;
 	int whichresp, x_resp;
 	int len, right_len, center_pos, cur_pos;
-	size_t line_len;
+	int tex_space = 0;
+	size_t line_len, tlen;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	int n;
-	size_t tlen;
-	wchar_t *fmt_resp = NULL, *fmt_thread, *wtmp, *wtmp2, *wtmp3, *wbuf;
+	wchar_t *wtmp, *wtmp2;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	whichresp = which_response(this_resp);
@@ -1556,35 +1556,22 @@ draw_page_header(
 	/* first line */
 	cur_pos = 0;
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-
-	/* convert to wide-char format string */
-	fmt_thread = char2wchar_t(_(txt_thread_x_of_n));
-
 	/*
 	 * Determine the needed space for the text at the right hand margin.
 	 * The formatting info (%4s) needs 3 positions but we need 4 positions
 	 * on the screen for each counter.
 	 */
-	if (fmt_thread)
-		right_len = wcswidth(fmt_thread, wcslen(fmt_thread)) - 6 + 8;
-	else
-		right_len = 0;
-	FreeIfNeeded(fmt_thread);
+	right_len = strwidth(_(txt_thread_x_of_n)) - 6 + 8;
 
 	/*
 	 * limit right_len to cCOLS / 3
 	 */
-	if (right_len > cCOLS / 3 + 1)
-		right_len = cCOLS / 3 + 1;
+	if (right_len > CCOLS_THIRD)
+		right_len = CCOLS_THIRD;
 
 	/* date */
-	if ((wtmp = char2wchar_t(buf)) != NULL) {
-		my_fputws(wtmp, stdout);
-		if ((n = wcswidth(wtmp, wcslen(wtmp))) > 0)
-			cur_pos += n;
-		free(wtmp);
-	}
+	my_fputs(buf, stdout);
+	cur_pos += strwidth(buf);
 
 	/*
 	 * determine max len for centered group name
@@ -1594,27 +1581,37 @@ draw_page_header(
 		len = 0;
 
 	/* group name */
-	if ((wtmp = char2wchar_t(curr_group->name)) != NULL && len > 0) {
-		/* wconvert_to_printable(wtmp, FALSE); */
-		if (tinrc.abbreviate_groupname)
-			wtmp2 = abbr_wcsgroupname(wtmp, len);
-		else
-			wtmp2 = wstrunc(wtmp, len);
-
-		if ((i = wcswidth(wtmp2, wcslen(wtmp2))) < len)
-			len = i;
-
-		center_pos = (cCOLS - len) / 2;
-
-		/* pad out to left */
-		for (; cur_pos < center_pos; cur_pos++)
-			my_fputc(' ', stdout);
-
-		my_fputws(wtmp2, stdout);
-		cur_pos += wcswidth(wtmp2, wcslen(wtmp2));
-		free(wtmp2);
+	if (len > 0) {
+		if (tinrc.abbreviate_groupname) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if ((wtmp = char2wchar_t(curr_group->name)) != NULL) {
+				/* wconvert_to_printable(wtmp, FALSE); */
+				wtmp2 = abbr_wcsgroupname(wtmp, len);
+				tmp = wchar_t2char(wtmp2);
+				free(wtmp);
+				free(wtmp2);
+			}
+#else
+			tmp = abbr_groupname(curr_group->name, len);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		} else
+			tmp = strunc(curr_group->name, len);
 	}
-	FreeIfNeeded(wtmp);
+	if (!tmp)
+		tmp = my_strdup("");
+
+	if ((i = strwidth(tmp)) < len)
+		len = i;
+
+	center_pos = (cCOLS - len) / 2;
+
+	/* pad out to left */
+	for (; cur_pos < center_pos; cur_pos++)
+		my_fputc(' ', stdout);
+
+	my_fputs(tmp, stdout);
+	cur_pos += strwidth(tmp);
+	FreeAndNull(tmp);
 
 	/* pad out to right */
 	for (; cur_pos < cCOLS - right_len - 1; cur_pos++)
@@ -1636,15 +1633,15 @@ draw_page_header(
 		tlen = (size_t) n + 1;
 		tmp2 = my_malloc(tlen);
 		if (snprintf(tmp2, tlen, _(txt_thread_x_of_n), buf, buf2) != n) {
-			free(tmp2);
+			FreeAndNull(tmp2);
 			free(buf2);
 			goto skip;
 		}
-		tmp = strunc(tmp2, cCOLS / 3 - 1);
+		tmp = strunc(tmp2, CCOLS_THIRD);
 		my_printf("%s", tmp);
-		free(tmp2);
+		FreeAndNull(tmp);
+		FreeAndNull(tmp2);
 		free(buf2);
-		free(tmp);
 skip:
 		my_fputs(cCRLF, stdout);
 	}
@@ -1659,28 +1656,24 @@ skip:
 	cur_pos = 0;
 
 	/*
-	 * Convert to wide-char format string and determine the needed space
-	 * for the text at the right hand margin. The formatting info (%4s)
-	 * needs 3 positions but we need 4 positions on the screen for each
-	 * counter.
+	 * Determine the needed space for the text at the right hand margin
+	 * the formatting info (%4s) needs 3 positions but we need 4 positions
+	 * on the screen for each counter
 	 */
-
-	right_len = 0;
-	if (whichresp && (fmt_resp = char2wchar_t(_(txt_art_x_of_n)))) {
-		right_len = wcswidth(fmt_resp, wcslen(fmt_resp)) - 6 + 8;
-	} else {
-		if (!x_resp && (fmt_resp = char2wchar_t(_(txt_no_responses))))
-			right_len = wcswidth(fmt_resp, wcslen(fmt_resp));
-		else if ((fmt_resp = char2wchar_t(P_(txt_x_resp_sp[0], txt_x_resp_sp[1], x_resp))))
-			right_len = wcswidth(fmt_resp, wcslen(fmt_resp)) - 3 + 4;
+	if (whichresp)
+		right_len = strwidth(_(txt_art_x_of_n)) - 6 + 8;
+	else {
+		if (!x_resp)
+			right_len = strwidth(_(txt_no_responses));
+		else
+			right_len = strwidth(P_(txt_x_resp_sp[0], txt_x_resp_sp[1], x_resp)) - 3 + 4;
 	}
-	FreeIfNeeded(fmt_resp);
 
 	/*
 	 * limit right_len to cCOLS / 3
 	 */
-	if (right_len > cCOLS / 3 + 1)
-		right_len = cCOLS / 3 + 1;
+	if (right_len > CCOLS_THIRD)
+		right_len = CCOLS_THIRD;
 
 	/* line count */
 	if (arts[this_resp].line_count < 0)
@@ -1688,35 +1681,35 @@ skip:
 	else
 		snprintf(buf, line_len, "%-4d", arts[this_resp].line_count);
 
-	if ((wtmp = char2wchar_t(_(txt_lines))) != NULL) {
-		wchar_t *fmt;
-		int tex_space = pgart.tex2iso ? 5 : 0;
-
-		fmt = wstrunc(wtmp, cCOLS / 3 - 1 - tex_space);
-		wtmp = my_realloc(wtmp, sizeof(wchar_t) * line_len);
-		swprintf(wtmp, line_len, fmt, buf);
-		my_fputws(wtmp, stdout);
-		cur_pos += wcswidth(wtmp, wcslen(wtmp));
-		free(fmt);
-		free(wtmp);
+	if ((n = snprintf(NULL, 0, _(txt_lines), buf)) > 0) {
+		tlen = (size_t) n + 1;
+		tmp = my_malloc(tlen);
+		if (snprintf(tmp, line_len, _(txt_lines), buf) == n) {
+			tmp2 = strunc(tmp, CCOLS_THIRD);
+			my_fputs(tmp2, stdout);
+			cur_pos += strwidth(tmp2);
+		}
+		free(tmp);
+		free(tmp2);
 	}
 
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_subject);
-#	endif /* HAVE_COLOR */
-
 	/* tex2iso */
-	if (pgart.tex2iso) {
-		if ((wtmp = char2wchar_t(_(txt_tex))) != NULL) {
-			wtmp2 = wstrunc(wtmp, 5);
-			my_fputws(wtmp2, stdout);
-			cur_pos += wcswidth(wtmp2, wcslen(wtmp2));
-			free(wtmp);
-			free(wtmp2);
-		}
+	if (pgart.tex2iso && tex2iso_conv) {
+		tex_space = strwidth(_(txt_tex));
+		if (tex_space > CCOLS_THIRD - cur_pos)
+			tex_space = CCOLS_THIRD - cur_pos;
+
+		tmp = strunc(_(txt_tex), tex_space);
+		tex_space = strwidth(tmp);
+		my_fputs(tmp, stdout);
+		cur_pos += tex_space;
+		free(tmp);
 	}
 
 	/* subject */
+#	ifdef HAVE_COLOR
+	fcol(tinrc.col_subject);
+#	endif /* HAVE_COLOR */
 	/*
 	 * TODO: why do we fall back to arts[this_resp].subject if !note_h->subj?
 	 *       if !note_h->subj then the article just has no subject, no matter
@@ -1726,23 +1719,23 @@ skip:
 	 */
 	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), line_len);
 	buf[line_len - 1] = '\0';
-	if ((wtmp = char2wchar_t(buf)) != NULL) {
-		wbuf = wexpand_tab(wtmp, tabwidth);
-		wtmp2 = wstrunc(wbuf, cCOLS - 2 * right_len - 4);
-		center_pos = (cCOLS - wcswidth(wtmp2, wcslen(wtmp2))) / 2;
 
-		/* pad out to left */
-		for (; cur_pos < center_pos; cur_pos++)
-			my_fputc(' ', stdout);
+	tmp2 = expand_tab(buf, tabwidth);
+	tmp = strunc(tmp2, cCOLS - 2 * (MAX(cur_pos, right_len)) - 4);
 
-		StartInverse();
-		my_fputws(wtmp2, stdout);
-		EndInverse();
-		cur_pos += wcswidth(wtmp2, wcslen(wtmp2));
-		free(wtmp2);
-		free(wtmp);
-		free(wbuf);
-	}
+	n = strwidth(tmp);
+	center_pos = (cCOLS - n) / 2;
+
+	/* pad out to left */
+	for (; cur_pos < center_pos; cur_pos++)
+		my_fputc(' ', stdout);
+
+	StartInverse();
+	my_fputs(tmp, stdout);
+	EndInverse();
+	cur_pos += n;
+	free(tmp);
+	free(tmp2);
 
 #	ifdef HAVE_COLOR
 	fcol(tinrc.col_response);
@@ -1762,14 +1755,13 @@ skip:
 			free(tmp2);
 			goto shrug;
 		}
-		tmp = strunc(tmp2, cCOLS / 3 - 1);
+		tmp = strunc(tmp2, CCOLS_THIRD);
 		my_printf("%s", tmp);
 		free(tmp2);
 		free(tmp);
 	} else {
-		/* TODO: ngettext */
 		if (!x_resp) {
-			tmp = strunc(_(txt_no_responses), cCOLS / 3 - 1);
+			tmp = strunc(_(txt_no_responses), CCOLS_THIRD);
 			my_printf("%s", tmp);
 		} else {
 			if ((n = snprintf(NULL, 0, P_(txt_x_resp_sp[0], txt_x_resp_sp[1], x_resp), x_resp)) < 0)
@@ -1781,7 +1773,7 @@ skip:
 				free(tmp2);
 				goto shrug;
 			}
-			tmp = strunc(tmp2, cCOLS / 3 - 1);
+			tmp = strunc(tmp2, CCOLS_THIRD);
 			my_printf("%s", tmp);
 			free(tmp2);
 		}
@@ -1798,47 +1790,16 @@ shrug:
 #	ifdef HAVE_COLOR
 	fcol(tinrc.col_from);
 #	endif /* HAVE_COLOR */
+
 	/* from */
 	from = build_from_line();
 	snprintf(buf, line_len, "%s", from);
 	free(from);
 
-	/* precalculate min. organization length */
-	wtmp3 = my_calloc(1, sizeof(wchar_t));
-	if (note_h->org) {
-		char *tb;
-		char *tail = NULL;
-
-		if (tinrc.utf8_graphics)
-			tail = wchar_t2char((const wchar_t *) WTRUNC_TAIL);
-
-		if ((n = snprintf(NULL, 0, _(txt_at_s), tail ? tail : TRUNC_TAIL)) > 0) {
-			size_t olen = (size_t) n + 1;
-
-			tb = my_malloc(olen);
-			if (snprintf(tb, olen, _(txt_at_s), tail ? tail : TRUNC_TAIL) == n) {
-				if ((wtmp = char2wchar_t(tb)) != NULL) {
-					wbuf = wexpand_tab(wtmp, tabwidth);
-					free(wtmp3);
-					wtmp3 = my_wcsdup(wbuf);
-					free(wtmp);
-					free(wbuf);
-				}
-			}
-			free(tb);
-		}
-		FreeIfNeeded(tail);
-	}
-
-	/* from */
-	if ((wtmp = char2wchar_t(buf)) != NULL) {
-		wtmp2 = wstrunc(wtmp, cCOLS - 1 - wcslen(wtmp3));
-		my_fputws(wtmp2, stdout);
-		cur_pos += wcswidth(wtmp2, wcslen(wtmp2));
-		free(wtmp2);
-		free(wtmp);
-	}
-	free(wtmp3);
+	tmp = strunc(buf, cCOLS - 1);
+	my_fputs(tmp, stdout);
+	cur_pos += strwidth(tmp);
+	free(tmp);
 
 	/*
 	 * Organization
@@ -1847,196 +1808,19 @@ shrug:
 	 *         cook.c:cook_article()
 	 *       - add BiDi handling (our layout expects LTR)
 	 */
-	if (note_h->org && cur_pos < cCOLS - 1) {
-		snprintf(buf, line_len, _(txt_at_s), note_h->org);
-
-		if ((wtmp = char2wchar_t(buf)) != NULL) {
-			wbuf = wexpand_tab(wtmp, tabwidth);
-			wtmp2 = wstrunc(wbuf, cCOLS - cur_pos - 1);
-
-			i = cCOLS - wcswidth(wtmp2, wcslen(wtmp2)) - 1;
-			for (; cur_pos < i; cur_pos++)
-				my_fputc(' ', stdout);
-
-			my_fputws(wtmp2, stdout);
-			free(wtmp2);
-			free(wtmp);
-			free(wbuf);
-		}
-	}
-
-#else /* !MULTIBYTE_ABLE || NO_LOCALE */
-
-	/*
-	 * determine the needed space for the text at the right hand margin
-	 * the formatting info (%4s) needs 3 positions but we need 4 positions
-	 * on the screen for each counter
-	 */
-	right_len = strlen(_(txt_thread_x_of_n)) - 6 + 8;
-
-	/* date */
-	my_fputs(buf, stdout);
-	cur_pos += strlen(buf);
-
-	/*
-	 * determine max len for centered group name
-	 * allow one space before and after group name
-	 */
-	len = cCOLS - 2 * MAX(cur_pos, right_len) - 3;
-
-	/* group name */
-	if (tinrc.abbreviate_groupname)
-		tmp = abbr_groupname(curr_group->name, len);
-	else
-		tmp = strunc(curr_group->name, len);
-
-	if ((i = strlen(tmp)) < len)
-		len = i;
-
-	center_pos = (cCOLS - len) / 2;
-
-	/* pad out to left */
-	for (; cur_pos < center_pos; cur_pos++)
-		my_fputc(' ', stdout);
-
-	my_fputs(tmp, stdout);
-	cur_pos += strlen(tmp);
-	free(tmp);
-
-	/* pad out to right */
-	for (; cur_pos < cCOLS - right_len - 1; cur_pos++)
-		my_fputc(' ', stdout);
-
-	/* thread info */
-	/* can't eval tin_ltoa() more than once in a statement due to statics */
-	strcpy(buf, tin_ltoa(which_thread(this_resp) + 1, 4));
-	my_printf(_(txt_thread_x_of_n), buf, tin_ltoa(grpmenu.max, 4));
-
-	my_fputs(cCRLF, stdout);
-
-#	if 0
-	/* display a ruler for layout checking purposes */
-	my_fputs("....|....3....|....2....|....1....|....0....|....1....|....2....|....3....|....\n", stdout);
-#	endif /* 0 */
-
-	/*
-	 * second line
-	 */
-	cur_pos = 0;
-
-	/*
-	 * determine the needed space for the text at the right hand margin
-	 * the formatting info (%4s) needs 3 positions but we need 4 positions
-	 * on the screen for each counter
-	 */
-	if (whichresp) {
-		right_len = strlen(_(txt_art_x_of_n)) - 6 + 8;
-	} else {
-		if (!x_resp)
-			right_len = strlen(_(txt_no_responses));
-		else
-			right_len = strlen(P_(txt_x_resp_sp[0], txt_x_resp_sp[1], x_resp)) - 3 + 4;
-	}
-
-	/* line count */
-	/* an accurate line count will appear in the footer anymay */
-	if (arts[this_resp].line_count < 0)
-		strcpy(buf, "?");
-	else
-		snprintf(buf, line_len, "%-4d", arts[this_resp].line_count);
-
-	tmp = my_malloc(line_len);
-	snprintf(tmp, line_len, _(txt_lines), buf);
-	my_fputs(tmp, stdout);
-	cur_pos += strlen(tmp);
-	free(tmp);
-
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_subject);
-#	endif /* HAVE_COLOR */
-
-	/* tex2iso */
-	if (pgart.tex2iso) {
-		my_fputs(_(txt_tex), stdout);
-		cur_pos += strlen(_(txt_tex));
-	}
-
-	/* subject */
-	/*
-	 * TODO: why do we fall back to arts[this_resp].subject if !note_h->subj?
-	 *       if !note_h->subj then the article just has no subject, no matter
-	 *       what the overview says.
-	 */
-	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), line_len);
-	buf[line_len - 1] = '\0';
-
-	tmp2 = expand_tab(buf, tabwidth);
-	tmp = strunc(tmp2, cCOLS - 2 * right_len - 3);
-
-	center_pos = (cCOLS - strlen(tmp)) / 2;
-
-	/* pad out to left */
-	for (; cur_pos < center_pos; cur_pos++)
-		my_fputc(' ', stdout);
-
-	StartInverse();
-	my_fputs(tmp, stdout);
-	EndInverse();
-	cur_pos += strlen(tmp);
-	free(tmp);
-	free(tmp2);
-
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_response);
-#	endif /* HAVE_COLOR */
-
-	/* pad out to right */
-	for (; cur_pos < cCOLS - right_len - 1; cur_pos++)
-		my_fputc(' ', stdout);
-
-	if (whichresp)
-		my_printf(_(txt_art_x_of_n), whichresp + 1, x_resp + 1);
-	else {
-		if (!x_resp)
-			my_printf("%s", _(txt_no_responses));
-		else
-			my_printf(P_(txt_x_resp_sp[0], txt_x_resp_sp[1], x_resp), x_resp);
-	}
-	my_fputs(cCRLF, stdout);
-
-	/*
-	 * third line
-	 */
-	cur_pos = 0;
-
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_from);
-#	endif /* HAVE_COLOR */
-	/* from */
-	from = build_from_line();
-	snprintf(buf, line_len, "%s", from);
-	free(from);
-
-	tmp = strunc(buf, cCOLS - 1);
-	my_fputs(tmp, stdout);
-	cur_pos += strlen(tmp);
-	free(tmp);
-
 	if (note_h->org && cCOLS - cur_pos - 1 >= (int) strlen(_(txt_at_s)) - 2 + 3) {
 		/* we have enough space to print at least " at ..." */
 		snprintf(buf, line_len, _(txt_at_s), note_h->org);
 
 		tmp2 = expand_tab(buf, tabwidth);
 		tmp = strunc(tmp2, cCOLS - cur_pos - 1);
-		len = cCOLS - (int) strlen(tmp) - 1;
+		len = cCOLS - (int) strwidth(tmp) - 1;
 		for (; cur_pos < len; cur_pos++)
 			my_fputc(' ', stdout);
 		my_fputs(tmp, stdout);
 		free(tmp);
 		free(tmp2);
 	}
-
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	my_fputs(cCRLF, stdout);
 	my_fputs(cCRLF, stdout);
@@ -2047,6 +1831,7 @@ shrug:
 	fcol(tinrc.col_normal);
 #endif /* HAVE_COLOR */
 }
+#undef CCOLS_THIRD
 
 
 /*
@@ -2146,7 +1931,7 @@ load_article(
 	rotate = 0;			/* normal mode, not rot13 */
 	reveal_ctrl_l = FALSE;
 	reveal_ctrl_l_lines = -1;	/* all ^L's active */
-	hide_uue = tinrc.hide_uue;
+	hide_inline_data = group->attribute->hide_inline_data;
 
 	draw_page(0);
 
@@ -2367,11 +2152,11 @@ toggle_raw(
 
 
 void
-update_hide_uue(
+update_hide_inline_data(
 	void)
 {
-	if (hide_uue != tinrc.hide_uue)
-		hide_uue = tinrc.hide_uue;
+	if (hide_inline_data != curr_group->attribute->hide_inline_data)
+		hide_inline_data = curr_group->attribute->hide_inline_data;
 }
 
 
@@ -2387,7 +2172,7 @@ resize_article(
 	if (artinfo->cooked)
 		fclose(artinfo->cooked);
 
-	if (!cook_article(wrap_lines, artinfo, hide_uue, show_all_headers))
+	if (!cook_article(wrap_lines, artinfo, hide_inline_data, show_all_headers))
 		tin_done(EXIT_FAILURE, _(txt_cook_article_failed_exiting), tin_progname);
 
 	show_raw_article = FALSE;
@@ -3105,6 +2890,8 @@ log_article_info(
 			fprintf(fp, " / %s: %s", "Unsupported", ptr->mime_hints.subtype);
 		else
 			fprintf(fp, " / %s", ptr->mime_hints.subtype);
+		if (ptr->format)
+			fprintf(fp, "%s", " ; Format=Flowed");
 		fprintf(fp, "\n\t\tUsed:\t\t%s / %s", content_types[ptr->type], ptr->subtype);
 
 		charset = get_param(ptr->params, "charset");
@@ -3141,6 +2928,9 @@ log_article_info(
 			fprintf(fp, "%s", content_encodings[ptr->encoding]);
 		fprintf(fp, "\n\t\tUsed:\t\t%s", content_encodings[ptr->encoding]);
 
+		if (artinfo->tex2iso)
+			fprintf(fp, "\n\n\t\t%s\n", _(txt_tex));
+
 #ifdef DEBUG
 		if ((filename_star = get_param(ptr->params, "filename*")) != NULL) {
 			fprintf(fp, "\n\tFilename*:\n");
@@ -3167,15 +2957,12 @@ log_article_info(
 			fprintf(fp, "\t\t%s", ptr->disposition == DISP_INLINE ? content_disposition[DISP_INLINE] : content_disposition[DISP_ATTACHMENT]);
 		}
 		fprintf(fp, "\n");
-		if (filename_star && *filename_star && filename && *filename && strcmp(filename_star, filename)) {
+		if (filename_star && *filename_star && filename && *filename && strcmp(filename_star, filename))
 			fprintf(fp, "\n!!\tFilename*: %s != Filename: %s", filename_star, filename);
-		}
-		if (filename_star && *filename_star && name && *name && strcmp(filename_star, name)) {
+		if (filename_star && *filename_star && name && *name && strcmp(filename_star, name))
 			fprintf(fp, "\n!!\tFilename*: %s != Name: %s", filename_star, name);
-		}
-		if (filename && *filename && name && *name && strcmp(filename, name)) {
+		if (filename && *filename && name && *name && strcmp(filename, name))
 			fprintf(fp, "\n!!\tFilename: %s != Name: %s", filename, name);
-		}
 #endif /* DEBUG */
 		fprintf(fp, "\n");
 	}

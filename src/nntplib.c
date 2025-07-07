@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2025-05-12
+ *  Updated   : 2025-06-29
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -28,7 +28,7 @@
 #ifdef HAVE_NETINET_TCP_H
 #	include <netinet/tcp.h>
 #endif /* HAVE_NETINET_TCP_H */
-#if defined(HAVE_GETSOCKOPT) && defined(HAVE_SETSOCKOPT)
+#if defined(NNTP_ABLE) && defined(HAVE_GETSOCKOPT) && defined(HAVE_SETSOCKOPT)
 	/* avoid SO_RCVTIMEO due to delayed responses when COMPRESS is used */
 #	ifdef TCP_USER_TIMEOUT /* Linux >= 2.6.37 */
 #		define TIMEOUT_TYPE	unsigned int
@@ -66,7 +66,7 @@
 */
 #		endif /* TCP_RXT_CONNDROPTIME */
 #	endif /* TCP_USER_TIMEOUT */
-#endif /* HAVE_GETSOCKOPT && HAVE_SETSOCKOPT */
+#endif /* NNTP_ABLE && HAVE_GETSOCKOPT && HAVE_SETSOCKOPT */
 
 #ifdef USE_ZLIB
 #	include <zlib.h>
@@ -1277,8 +1277,7 @@ int
 check_extensions(
 	int rvl)
 {
-	char *d;
-	char *ptr;
+	char *d, *s, *ptr;
 	char buf[NNTP_STRLEN];
 	int i;
 	int ret = 0;
@@ -1312,245 +1311,312 @@ check_extensions(
 
 	buf[0] = '\0';
 
-	/* rvl > 0 = manually send "CAPABILITIES" to avoid endless AUTH loop */
-	i = rvl ? rvl : new_nntp_command("CAPABILITIES", INF_CAPABILITIES, buf, sizeof(buf));
-	switch (i) {
-		case INF_CAPABILITIES:
-			/* clear capabilities */
-			nntp_caps.type = CAPABILITIES;
-			nntp_caps.version = 0;
-			nntp_caps.mode_reader = FALSE;
-			nntp_caps.reader = FALSE;
-			nntp_caps.post = FALSE;
-			nntp_caps.list_active = FALSE;
-			nntp_caps.list_active_times = FALSE;
-			nntp_caps.list_distrib_pats = FALSE;
-			nntp_caps.list_headers = FALSE;
-			FreeAndNull(nntp_caps.headers_range);
-			FreeAndNull(nntp_caps.headers_id);
-			nntp_caps.list_newsgroups = FALSE;
-			nntp_caps.list_overview_fmt = FALSE;
-			nntp_caps.list_motd = FALSE;
-			nntp_caps.list_subscriptions = FALSE;
-			nntp_caps.list_distributions = FALSE;
-			nntp_caps.list_moderators = FALSE;
-			nntp_caps.list_counts = FALSE;
-			nntp_caps.xpat = TRUE; /* toggles to false if fails, INN > 2.7.0 announces it */
-			nntp_caps.hdr = FALSE;
-			nntp_caps.hdr_cmd = NULL;
-			nntp_caps.over = FALSE;
-			nntp_caps.over_msgid = FALSE;
-			nntp_caps.over_cmd = NULL;
-			nntp_caps.newnews = FALSE;
-			FreeAndNull(nntp_caps.implementation);
-			nntp_caps.starttls = FALSE;
-			nntp_caps.authinfo_user = FALSE;
-			nntp_caps.authinfo_sasl = FALSE;
-			nntp_caps.authinfo_state = FALSE;
-			FreeAndNull(nntp_caps.sasl_mechs);
-			/* nntp_caps.sasl_mech_used will be init in sasl_auth() */
-			nntp_caps.compress = FALSE;
-			nntp_caps.compress_algorithm = COMPRESS_NONE;
-			/* nntp_caps.maxartnum will be init it nntp_open() */
+	if (nntp_caps.type != BROKEN) { /* CAPABILITIES disabled? */
+		/* rvl > 0 = manually send "CAPABILITIES" to avoid endless AUTH loop */
+		i = rvl ? rvl : new_nntp_command("CAPABILITIES", INF_CAPABILITIES, buf, sizeof(buf));
+		switch (i) {
+			case INF_CAPABILITIES:
+				/* clear capabilities */
+				nntp_caps.type = CAPABILITIES;
+				nntp_caps.version = 0;
+				nntp_caps.mode_reader = FALSE;
+				nntp_caps.reader = FALSE;
+				nntp_caps.post = FALSE;
+				nntp_caps.list_active = FALSE;
+				nntp_caps.list_active_times = FALSE;
+				nntp_caps.list_distrib_pats = FALSE;
+				nntp_caps.list_headers = FALSE;
+				FreeAndNull(nntp_caps.headers_range);
+				FreeAndNull(nntp_caps.headers_id);
+				nntp_caps.list_newsgroups = FALSE;
+				nntp_caps.list_overview_fmt = FALSE;
+				nntp_caps.list_motd = FALSE;
+				nntp_caps.list_subscriptions = FALSE;
+				nntp_caps.list_distributions = FALSE;
+				nntp_caps.list_moderators = FALSE;
+				nntp_caps.list_counts = FALSE;
+				nntp_caps.xpat = FALSE;
+				nntp_caps.hdr = FALSE;
+				nntp_caps.hdr_cmd = NULL;
+				nntp_caps.over = FALSE;
+				nntp_caps.over_msgid = FALSE;
+				nntp_caps.over_cmd = NULL;
+				nntp_caps.newgroups = TRUE;	/* not listed in CAPABILITIES */
+				nntp_caps.newnews = FALSE;
+				FreeAndNull(nntp_caps.implementation);
+				nntp_caps.starttls = FALSE;
+				nntp_caps.authinfo_user = FALSE;
+				nntp_caps.authinfo_sasl = FALSE;
+				nntp_caps.authinfo_state = FALSE;
+				FreeAndNull(nntp_caps.sasl_mechs);
+				/* nntp_caps.sasl_mech_used will be init in sasl_auth() */
+				nntp_caps.compress = FALSE;
+				nntp_caps.compress_algorithm = COMPRESS_NONE;
+				/* nntp_caps.maxartnum will be init it nntp_open() */
 #	if 0
-			nntp_caps.streaming = FALSE;
-			nntp_caps.ihave = FALSE;
+				nntp_caps.streaming = FALSE;
+				nntp_caps.ihave = FALSE;
 #	endif /* 0 */
-#	ifndef BROKEN_LISTGROUP
-			nntp_caps.broken_listgroup = FALSE;
-#	else
-			nntp_caps.broken_listgroup = TRUE;
-#	endif /* !BROKEN_LISTGROUP */
+				nntp_caps.broken_listgroup = FALSE;
 
-			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+				while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #	ifdef DEBUG
-				if (debug & DEBUG_NNTP)
-					debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+					if (debug & DEBUG_NNTP)
+						debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
-				/* look for version number(s) */
-				if (!nntp_caps.version && nntp_caps.type == CAPABILITIES) {
-					if (!strncasecmp(ptr, "VERSION", 7)) {
-						if (strtok(ptr, WS) != NULL) { /* skip initial VERSION */
-							unsigned int v, j;
+					/* look for version number(s) */
+					if (!nntp_caps.version && nntp_caps.type == CAPABILITIES) {
+						if (!strncasecmp(ptr, "VERSION", 7)) {
+							if (strtok(ptr, WS) != NULL) { /* skip initial VERSION */
+								unsigned int v, j;
 
-							while ((d = strtok(NULL, WS)) != NULL) { /* find highest version we do support */
-								v = (unsigned int) s2i(d, 2, INT_MAX);
-								for (j = 0; cap_vers[j]; j++) {
-									if (v == cap_vers[j])
-										nntp_caps.version = MAX(nntp_caps.version, v);
+								while ((d = strtok(NULL, WS)) != NULL) { /* find highest version we do support */
+									v = (unsigned int) s2i(d, 2, INT_MAX);
+									for (j = 0; cap_vers[j]; j++) {
+										if (v == cap_vers[j])
+											nntp_caps.version = MAX(nntp_caps.version, v);
+									}
 								}
 							}
 						}
 					}
-				}
-				/* CAPABILITIES VERSION 2 (we currently only support that) */
-				if (nntp_caps.version == 2) {
-					/* check for LIST variants */
-					if (!strncasecmp(ptr, "LIST", 4)) {
-						if (strtok(ptr, WS) != NULL) { /* skip initial LIST */
-							while ((d = strtok(NULL, WS)) != NULL) {
-								if (!strcasecmp(d, "ACTIVE.TIMES"))
-									nntp_caps.list_active_times = TRUE;
-								else if (!strcasecmp(d, "ACTIVE"))
-									nntp_caps.list_active = TRUE;
-								else if (!strcasecmp(d, "DISTRIB.PATS"))
-									nntp_caps.list_distrib_pats = TRUE;
-								else if (!strcasecmp(d, "DISTRIBUTIONS")) /* RFC 6048 */
-									nntp_caps.list_distributions = TRUE;
-								else if (!strcasecmp(d, "HEADERS"))
-									nntp_caps.list_headers = TRUE; /* HDR requires LIST HEADERS, but not vice versa */
-								else if (!strcasecmp(d, "NEWSGROUPS"))
-									nntp_caps.list_newsgroups = TRUE;
-								else if (!strcasecmp(d, "OVERVIEW.FMT")) /* OVER requires OVERVIEW.FMT, but not vice versa */
-									nntp_caps.list_overview_fmt = TRUE;
-								else if (!strcasecmp(d, "MOTD")) /* RFC 6048 */
-									nntp_caps.list_motd = TRUE;
-								else if (!strcasecmp(d, "SUBSCRIPTIONS")) /* RFC 6048 */
-									nntp_caps.list_subscriptions = TRUE;
-								else if (!strcasecmp(d, "MODERATORS")) /* RFC 6048 */
-									nntp_caps.list_moderators = TRUE;
-								else if (!strcasecmp(d, "COUNTS")) /* RFC 6048 */
-									nntp_caps.list_counts = TRUE;
+					/* CAPABILITIES VERSION 2 (we currently only support that) */
+					if (nntp_caps.version == 2) {
+						/* check for LIST variants */
+						if (!strncasecmp(ptr, "LIST", 4)) {
+							if (strtok(ptr, WS) != NULL) { /* skip initial LIST */
+								while ((d = strtok(NULL, WS)) != NULL) {
+									if (!strcasecmp(d, "ACTIVE.TIMES"))
+										nntp_caps.list_active_times = TRUE;
+									else if (!strcasecmp(d, "ACTIVE"))
+										nntp_caps.list_active = TRUE;
+									else if (!strcasecmp(d, "DISTRIB.PATS"))
+										nntp_caps.list_distrib_pats = TRUE;
+									else if (!strcasecmp(d, "DISTRIBUTIONS")) /* RFC 6048 */
+										nntp_caps.list_distributions = TRUE;
+									else if (!strcasecmp(d, "HEADERS"))
+										nntp_caps.list_headers = TRUE; /* HDR requires LIST HEADERS, but not vice versa */
+									else if (!strcasecmp(d, "NEWSGROUPS"))
+										nntp_caps.list_newsgroups = TRUE;
+									else if (!strcasecmp(d, "OVERVIEW.FMT")) /* OVER requires OVERVIEW.FMT, but not vice versa */
+										nntp_caps.list_overview_fmt = TRUE;
+									else if (!strcasecmp(d, "MOTD")) /* RFC 6048 */
+										nntp_caps.list_motd = TRUE;
+									else if (!strcasecmp(d, "SUBSCRIPTIONS")) /* RFC 6048 */
+										nntp_caps.list_subscriptions = TRUE;
+									else if (!strcasecmp(d, "MODERATORS")) /* RFC 6048 */
+										nntp_caps.list_moderators = TRUE;
+									else if (!strcasecmp(d, "COUNTS")) /* RFC 6048 */
+										nntp_caps.list_counts = TRUE;
+								}
+							}
+						} else if (!strncasecmp(ptr, "IMPLEMENTATION", 14)) {
+							FreeIfNeeded(nntp_caps.implementation);
+							nntp_caps.implementation = my_strdup(ptr + 14);
+							str_trim(nntp_caps.implementation);
+						} else if (!strcasecmp(ptr, "MODE-READER")) {
+							if (!nntp_caps.reader)
+								nntp_caps.mode_reader = TRUE;
+						} else if (!strcasecmp(ptr, "READER")) { /* if we saw READER, "LIST ACTIVE" and "LIST NEWSGROUPS" must be implemented */
+							nntp_caps.reader = TRUE;
+							nntp_caps.mode_reader = FALSE;
+							nntp_caps.list_newsgroups = TRUE;
+							nntp_caps.list_active = TRUE;
+						} else if (!strcasecmp(ptr, "POST"))
+							nntp_caps.post = TRUE;
+						else if (!strcasecmp(ptr, "NEWNEWS"))
+							nntp_caps.newnews = TRUE;
+						else if (!strcasecmp(ptr, "XPAT")) /* extension, RFC 2980 */
+							nntp_caps.xpat = TRUE;
+						else if (!strcasecmp(ptr, "STARTTLS"))
+							nntp_caps.starttls = TRUE;
+						/*
+						 * NOTE: if we saw OVER, LIST OVERVIEW.FMT _must_ be implemented
+						 */
+						else if (!strncasecmp(ptr, &xover_cmds[1], strlen(&xover_cmds[1]))) {
+							nntp_caps.list_overview_fmt = nntp_caps.over = TRUE;
+							nntp_caps.over_cmd = &xover_cmds[1];
+							if (strtok(ptr, WS) != NULL) {
+								while ((d = strtok(NULL, WS)) != NULL) {
+									if (!strcasecmp(d, "MSGID"))
+										nntp_caps.over_msgid = TRUE;
+								}
 							}
 						}
-					} else if (!strncasecmp(ptr, "IMPLEMENTATION", 14)) {
-						FreeIfNeeded(nntp_caps.implementation);
-						nntp_caps.implementation = my_strdup(ptr + 14);
-						str_trim(nntp_caps.implementation);
-					} else if (!strcasecmp(ptr, "MODE-READER")) {
-						if (!nntp_caps.reader)
-							nntp_caps.mode_reader = TRUE;
-					} else if (!strcasecmp(ptr, "READER")) { /* if we saw READER, "LIST ACTIVE" and "LIST NEWSGROUPS" must be implemented */
-						nntp_caps.reader = TRUE;
-						nntp_caps.mode_reader = FALSE;
-						nntp_caps.list_newsgroups = TRUE;
-						nntp_caps.list_active = TRUE;
-					} else if (!strcasecmp(ptr, "POST"))
-						nntp_caps.post = TRUE;
-					else if (!strcasecmp(ptr, "NEWNEWS"))
-						nntp_caps.newnews = TRUE;
-					else if (!strcasecmp(ptr, "XPAT")) /* extension, RFC 2980 */
-						nntp_caps.xpat = TRUE;
-					else if (!strcasecmp(ptr, "STARTTLS"))
-						nntp_caps.starttls = TRUE;
-					/*
-					 * NOTE: if we saw OVER, LIST OVERVIEW.FMT _must_ be implemented
-					 */
-					else if (!strncasecmp(ptr, &xover_cmds[1], strlen(&xover_cmds[1]))) {
-						nntp_caps.list_overview_fmt = nntp_caps.over = TRUE;
-						nntp_caps.over_cmd = &xover_cmds[1];
-						if (strtok(ptr, WS) != NULL) {
-							while ((d = strtok(NULL, WS)) != NULL) {
-								if (!strcasecmp(d, "MSGID"))
-									nntp_caps.over_msgid = TRUE;
+						/*
+						 * NOTE: if we saw HDR, LIST HEADERS _must_ be implemented
+						 */
+						else if (!strncasecmp(ptr, &xhdr_cmds[1], strlen(&xhdr_cmds[1]))) {
+							nntp_caps.hdr_cmd = &xhdr_cmds[1];
+							nntp_caps.list_headers = nntp_caps.hdr = TRUE;
+							FreeIfNeeded(nntp_caps.headers_range);
+							nntp_caps.headers_range = my_strdup("");
+							FreeIfNeeded(nntp_caps.headers_id);
+							nntp_caps.headers_id = my_strdup("");
+						} else if (!strncasecmp(ptr, "AUTHINFO", 8)) {
+							if (strtok(ptr, WS) == NULL) /* AUTHINFO without args */
+								nntp_caps.authinfo_state = TRUE;
+							else {
+								while ((d = strtok(NULL, WS)) != NULL) {
+									if (!strcasecmp(d, "USER"))
+										nntp_caps.authinfo_user = TRUE;
+									if (!strcasecmp(d, "SASL"))
+										nntp_caps.authinfo_sasl = TRUE;
+								}
 							}
-						}
-					}
-					/*
-					 * NOTE: if we saw HDR, LIST HEADERS _must_ be implemented
-					 */
-					else if (!strncasecmp(ptr, &xhdr_cmds[1], strlen(&xhdr_cmds[1]))) {
-						nntp_caps.hdr_cmd = &xhdr_cmds[1];
-						nntp_caps.list_headers = nntp_caps.hdr = TRUE;
-						FreeIfNeeded(nntp_caps.headers_range);
-						nntp_caps.headers_range = my_strdup("");
-						FreeIfNeeded(nntp_caps.headers_id);
-						nntp_caps.headers_id = my_strdup("");
-					} else if (!strncasecmp(ptr, "AUTHINFO", 8)) {
-						if (strtok(ptr, WS) == NULL) /* AUTHINFO without args */
-							nntp_caps.authinfo_state = TRUE;
-						else {
-							while ((d = strtok(NULL, WS)) != NULL) {
-								if (!strcasecmp(d, "USER"))
-									nntp_caps.authinfo_user = TRUE;
-								if (!strcasecmp(d, "SASL"))
+						} else if (!strncasecmp(ptr, "SASL", 4)) {
+							nntp_caps.authinfo_sasl = FALSE;
+							FreeAndNull(nntp_caps.sasl_mechs);
+							nntp_caps.sasl_mechs = my_malloc(strlen(ptr) + 1); /* more than enough */
+							nntp_caps.sasl_mechs[0] = '\0';
+
+							if (strtok(ptr, WS) != NULL) { /* skip initial "SASL" */
+								int m;
+
+								while ((d = strtok(NULL, WS)) != NULL) {
+									m = 0;
+									while (tin_mechs[m]) { /* remember servers mechs we like */
+										if (!strcasecmp(d, tin_mechs[m])) {
+											strcat(nntp_caps.sasl_mechs, d);
+											strcat(nntp_caps.sasl_mechs, " ");
+											break;
+										}
+										++m;
+									}
+								}
+								str_trim(nntp_caps.sasl_mechs);
+								if (*nntp_caps.sasl_mechs)
 									nntp_caps.authinfo_sasl = TRUE;
 							}
-						}
-					} else if (!strncasecmp(ptr, "SASL", 4)) {
-						nntp_caps.authinfo_sasl = FALSE;
-						FreeAndNull(nntp_caps.sasl_mechs);
-						nntp_caps.sasl_mechs = my_malloc(strlen(ptr) + 1); /* more than enough */
-						nntp_caps.sasl_mechs[0] = '\0';
-
-						if (strtok(ptr, WS) != NULL) { /* skip initial "SASL" */
-							int m;
-
-							while ((d = strtok(NULL, WS)) != NULL) {
-								m = 0;
-								while (tin_mechs[m]) { /* remember servers mechs we like */
-									if (!strcasecmp(d, tin_mechs[m])) {
-										strcat(nntp_caps.sasl_mechs, d);
-										strcat(nntp_caps.sasl_mechs, " ");
-										break;
+						} else if (!strncasecmp(ptr, "COMPRESS", 8)) { /* RFC 8054 */
+							if (strtok(ptr, WS) != NULL) {
+								while ((d = strtok(NULL, WS)) != NULL) {
+									if (!strcasecmp(d, "DEFLATE")) {
+										nntp_caps.compress = TRUE;
+										nntp_caps.compress_algorithm |= COMPRESS_DEFLATE;
 									}
-									++m;
-								}
-							}
-							str_trim(nntp_caps.sasl_mechs);
-							if (*nntp_caps.sasl_mechs)
-								nntp_caps.authinfo_sasl = TRUE;
-						}
-					} else if (!strncasecmp(ptr, "COMPRESS", 8)) { /* RFC 8054 */
-						if (strtok(ptr, WS) != NULL) {
-							while ((d = strtok(NULL, WS)) != NULL) {
-								if (!strcasecmp(d, "DEFLATE")) {
-									nntp_caps.compress = TRUE;
-									nntp_caps.compress_algorithm |= COMPRESS_DEFLATE;
 								}
 							}
 						}
-					}
 #	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
-					/*
-					 * MAXARTNUM - <tnqm14$35bas$1@news.trigofacile.com>
-					 *
-					 * if server responds with MAXARTNUM we (re)parse it
-					 * as we may have changed the state (auth) and it's
-					 * the servers job to not advertised MAXARTNUM again
-					 * after it had been used ...
-					 */
-					else if (!strncasecmp(ptr, "MAXARTNUM", 9) && nntp_caps.maxartnum == T_ARTNUM_CONST(0)) {
-						if (strtok(ptr, WS) != NULL) {
-							while ((d = strtok(NULL, WS)) != NULL)
-								nntp_caps.maxartnum = MIN(atoartnum(d), ARTNUM_MAX);
+						/*
+						 * MAXARTNUM - <tnqm14$35bas$1@news.trigofacile.com>
+						 *
+						 * if server responds with MAXARTNUM we (re)parse it
+						 * as we may have changed the state (auth) and it's
+						 * the servers job to not advertised MAXARTNUM again
+						 * after it had been used ...
+						 */
+						else if (!strncasecmp(ptr, "MAXARTNUM", 9) && nntp_caps.maxartnum == T_ARTNUM_CONST(0)) {
+							if (strtok(ptr, WS) != NULL) {
+								while ((d = strtok(NULL, WS)) != NULL)
+									nntp_caps.maxartnum = MIN(atoartnum(d), ARTNUM_MAX);
+							}
 						}
-					}
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 #	if 0 /* we don't need these */
-					else if (!strcasecmp(ptr, "IHAVE"))
-						nntp_caps.ihave = TRUE;
-					else if (!strcasecmp(ptr, "STREAMING"))
-						nntp_caps.streaming = TRUE;
+						else if (!strcasecmp(ptr, "IHAVE"))
+							nntp_caps.ihave = TRUE;
+						else if (!strcasecmp(ptr, "STREAMING"))
+							nntp_caps.streaming = TRUE;
 #	endif /* 0 */
-				/* XZVER, XZHDR, ... */
-				} else
-					nntp_caps.type = NONE;
-			}
-			break;
+					/* XZVER, XZHDR, ... */
+					} else
+						nntp_caps.type = NONE;
+				}
+				break;
 
-		/*
-		 * XanaNewz 2 Server Version 2.0.0.3 doesn't know CAPABILITIES
-		 * but responds with 400 _without_ closing the connection. If
-		 * you use tin on a XanaNewz 2 Server comment out the following
-		 * case.
-		 */
+			/*
+			 * XanaNewz 2 Server Version 2.0.0.3 doesn't know CAPABILITIES
+			 * but responds with 400 _without_ closing the connection. If
+			 * you use tin on a XanaNewz 2 Server comment out the following
+			 * case.
+			 */
 #	if 1
-		case ERR_GOODBYE:
-			ret = i;
-			error_message(2, "%s", buf);
-			break;
+			case ERR_GOODBYE:
+				ret = i;
+				error_message(2, "%s", buf);
+				break;
 #	endif /* 1 */
 
-		default:
-			break;
-	}
+			default:
+				break;
+		}
 
 #	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
-	if (nntp_caps.maxartnum <= T_ARTNUM_CONST(2147483647)) /* RFC 3977 "Article numbers MUST lie between 1 and 2,147,483,647, inclusive." */
-		nntp_caps.maxartnum = T_ARTNUM_CONST(0);
+		if (nntp_caps.maxartnum <= T_ARTNUM_CONST(2147483647)) /* RFC 3977 "Article numbers MUST lie between 1 and 2,147,483,647, inclusive." */
+			nntp_caps.maxartnum = T_ARTNUM_CONST(0);
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 
+	}
+
+	/*
+	 * disable NNTP cmds if requested
+	 * takes comma separated list of NNTP commands
+	 *
+	 * TODO: remember what got disabled so we don't have to
+	 *       strstr(serverrc.disabled_nntp_cmds, CMD)
+	 *       in the rest of the code to figure it out again.
+	 *
+	 * NOTE: keep in sync with valid_suppressions in read_server_config()
+	 */
+	if (*serverrc.disabled_nntp_cmds) {
+		ptr = my_strdup(serverrc.disabled_nntp_cmds);
+		s = ptr;
+		while ((d = strtok(s, ",")) != NULL) {
+			str_trim(d);
+			/* no check for "CAPABILITIES" here */
+			if (!strcasecmp(d, "AUTHINFO SASL")) /* disables _any_ AUTHINFO SASL mech */
+				nntp_caps.authinfo_sasl = FALSE;
+			else if (!strcasecmp(d, "COMPRESS DEFLATE")) {
+				nntp_caps.compress = FALSE;
+				nntp_caps.compress_algorithm = COMPRESS_NONE;
+			}
+			else if (!strcasecmp(d, "HDR")) {
+				nntp_caps.hdr = FALSE;
+				nntp_caps.hdr_cmd = NULL;
+				nntp_caps.list_headers = FALSE;
+			}
+			else if (!strcasecmp(d, "LIST COUNTS"))
+				nntp_caps.list_counts = FALSE;
+			else if (!strcasecmp(d, "LIST HEADERS"))
+				nntp_caps.list_headers = FALSE;
+			else if (!strcasecmp(d, "LIST MOTD"))
+				nntp_caps.list_motd = FALSE;
+			else if (!strcasecmp(d, "LIST NEWSGROUPS")) {
+				nntp_caps.list_newsgroups = FALSE;
+				show_description = FALSE;
+			}
+			else if (!strcasecmp(d, "LIST OVERVIEW.FMT"))
+				nntp_caps.list_overview_fmt = FALSE;
+			else if (!strcasecmp(d, "LIST SUBSCRIPTIONS"))
+				nntp_caps.list_subscriptions = FALSE;
+			else if (!strcasecmp(d, "LISTGROUP")) /* --enable-broken-listgroup-fix */
+				nntp_caps.broken_listgroup = TRUE;
+			else if (!strcasecmp(d, "NEWGROUPS")) {
+				nntp_caps.newgroups = FALSE;
+				check_for_new_newsgroups = FALSE;
+			}
+			else if (!strcasecmp(d, "OVER")) {
+				nntp_caps.over = FALSE;
+				nntp_caps.over_cmd = NULL;
+			}
+			else if (!strcasecmp(d, "XHDR")) { /* --disable-xhdr-xref */
+				nntp_caps.hdr = FALSE;
+				nntp_caps.hdr_cmd = NULL;
+			}
+			else if (!strcasecmp(d, "XOVER")) {
+				nntp_caps.over = FALSE;
+				nntp_caps.over_cmd = NULL;
+			}
+			else if (!strcasecmp(d, "XPAT"))
+				nntp_caps.xpat = FALSE;
+			/* add more cms. if required */
+			if (s)
+				s = NULL;
+		}
+		free(ptr);
+	}
 	return ret;
 }
 
@@ -1710,7 +1776,7 @@ nntp_open(
 			if (ret < 0)
 				error_message(2, _(txt_failed_to_connect_to_server), nntp_server);
 			else
-				error_message(2, "%s", line);
+				error_message(2, "%3.3d %s", ret, line);
 
 			return ret;
 	}
@@ -1738,8 +1804,7 @@ nntp_open(
 	 *       of extensions. (For details about authentication methods, see
 	 *       RFC 4643).
 	 */
-	if (nntp_caps.type != BROKEN)
-		check_extensions(0);
+	check_extensions(0);
 
 	/*
 	 * If the user wants us to authenticate on connection startup, do it now.
@@ -1857,9 +1922,10 @@ nntp_open(
 	 *
 	 * TODO: this should be done when the command is first used!
 	 */
-	if (nntp_caps.type != CAPABILITIES) {
+	if (nntp_caps.type != CAPABILITIES && nntp_caps.over) {
 		int i, j = 0;
 
+		nntp_caps.over_cmd = NULL;
 		for (i = 0; i < 2 && j >= 0; i++) {
 			j = new_nntp_command(&xover_cmds[i], ERR_NCING, line, sizeof(line));
 			switch (j) {
@@ -1883,27 +1949,32 @@ nntp_open(
 					break;
 			}
 		}
-		for (i = j = 0; i < 2 && j >= 0; i++) {
-			j = new_nntp_command(&xhdr_cmds[i], ERR_CMDSYN, line, sizeof(line));
-			switch (j) {
-				case ERR_COMMAND:
-					break;
+		if (!*nntp_caps.over_cmd)
+			nntp_caps.over = FALSE;
 
-				case OK_XHDR:	/* unexpected multiline ok, e.g.: SoftVelocity Discussions 2.5q */
-					nntp_caps.hdr_cmd = &xhdr_cmds[i];
+		if (nntp_caps.hdr) { /* not disabled but we have to check it */
+			for (i = j = 0; i < 2 && j >= 0; i++) {
+				j = new_nntp_command(&xhdr_cmds[i], ERR_CMDSYN, line, sizeof(line));
+				switch (j) {
+					case ERR_COMMAND:
+						break;
+
+					case OK_XHDR:	/* unexpected multiline ok, e.g.: SoftVelocity Discussions 2.5q */
+						nntp_caps.hdr_cmd = &xhdr_cmds[i];
 #	ifdef DEBUG
-					if ((debug & DEBUG_NNTP) && verbose > 1)
-						debug_print_file("NNTP", "nntp_open() %s skipping data", &xhdr_cmds[i]);
+						if ((debug & DEBUG_NNTP) && verbose > 1)
+							debug_print_file("NNTP", "nntp_open() %s skipping data", &xhdr_cmds[i]);
 #	endif /* DEBUG */
-					while (tin_fgets(FAKE_NNTP_FP, FALSE))
-						;
-					j = -1;
-					break;
+						while (tin_fgets(FAKE_NNTP_FP, FALSE))
+							;
+						j = -1;
+						break;
 
-				default:	/* usually ERR_CMDSYN (args missing), Typhoon/Twister sends ERR_NCING */
-					nntp_caps.hdr_cmd = &xhdr_cmds[i];
-					j = -1;
-					break;
+					default:	/* usually ERR_CMDSYN (args missing), Typhoon/Twister sends ERR_NCING */
+						nntp_caps.hdr_cmd = &xhdr_cmds[i];
+						j = -1;
+						break;
+				}
 			}
 		}
 		/* no XPAT probing here, we do when it's needed */
@@ -1931,7 +2002,7 @@ nntp_open(
 		 *                 =yend crc32=...
 		 *                 .
 		 */
-		if (!nntp_caps.over_cmd) {
+		if (nntp_caps.type == CAPABILITIES && !nntp_caps.over_cmd && !strstr(serverrc.disabled_nntp_cmds, "XOVER")) {
 			/*
 			 * CAPABILITIES didn't mention OVER or XOVER, try XOVER
 			 */
@@ -1954,11 +2025,12 @@ nntp_open(
 					break;
 			}
 		}
-		if (!nntp_caps.hdr_cmd /* && strncmp(nntp_caps.implementation, "FEEDBASE", 8) */) {
+
+		if (!nntp_caps.hdr_cmd && !strstr(serverrc.disabled_nntp_cmds, "XHDR")) {
 			/* NOTE:
 			 * FEEDBASE 0.3 (feedbase-nntpd.pl 0.3; feedbase.org; nntps on port 563)
-			 * an Atom/RSS-feed to nntp gateway doesn't like this, but
-			 * also has other issues ...
+			 * an Atom/RSS-feed to nntp gateway doesn't like this, use
+			 * disabled_nntp_cmds=XHDR,NEWGROUPS,LISTGROUP
 			 */
 			/*
 			 * CAPABILITIES didn't mention HDR or XHDR, try XHDR
@@ -1986,12 +2058,14 @@ nntp_open(
 
 	if (!nntp_caps.over_cmd) {
 		if (!is_reconnect && !batch_mode) {
-			wait_message(2, _(txt_no_xover_support));
+			if (!strstr(serverrc.disabled_nntp_cmds, "OVER")) { /* intentionally disabled? */
+				wait_message(2, _(txt_no_xover_support));
 
-			if (tinrc.cache_overview_files)
-				wait_message(2, _(txt_caching_on));
-			else
-				wait_message(2, _(txt_caching_off));
+				if (serverrc.cache_overview_files)
+					wait_message(2, _(txt_caching_on));
+				else
+					wait_message(2, _(txt_caching_off));
+			}
 		}
 	}
 #	if 0
@@ -2008,7 +2082,7 @@ nntp_open(
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 
 	/* no no_write logic here as that's always set on initial connect */
-	if (((nntp_caps.type == CAPABILITIES && nntp_caps.list_motd) || nntp_caps.type != CAPABILITIES) && !is_reconnect && !batch_mode && show_description && check_for_new_newsgroups) {
+	if (nntp_caps.list_motd && !is_reconnect && !batch_mode && show_description && check_for_new_newsgroups) {
 		FILE *fp;
 
 		if ((fp = tin_fopen(local_motd_file, "w+")) != NULL) {
@@ -2016,7 +2090,7 @@ nntp_open(
 			unsigned int n;
 			long m_hash = list_motd(fp);
 
-			if (m_hash != motd_hash) {
+			if (m_hash != serverrc.motd_hash) {
 				if (fseek(fp, 0L, SEEK_SET) != -1) {
 					n = 0;
 #	ifdef HAVE_COLOR
@@ -2036,7 +2110,7 @@ nntp_open(
 					} else
 						unlink(local_motd_file);
 
-					motd_hash = m_hash;
+					serverrc.motd_hash = m_hash;
 				} /* else EBADF */
 			}
 			fclose(fp);
@@ -2351,7 +2425,7 @@ list_motd(
 	char *guessed_charset;
 #	endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
-	if (!stream)
+	if (!stream || !nntp_caps.list_motd)
 		return m_hash;
 
 	m = my_calloc(1, 1);
@@ -2823,6 +2897,10 @@ nntpbuf_close(
 		if (result != 0) {
 			/* TODO: warn? */
 		}
+#	ifdef USE_OPENSSL
+		else
+			buf->fd = -1;
+#	endif /* USE_OPENSSL */
 	}
 	buf->tls_ctx = NULL;
 #	endif /* NNTPS_ABLE */
@@ -2970,6 +3048,9 @@ nntp_conninfo(
 			fprintf(stream, _(txt_conninfo_implementation), nntp_caps.implementation);
 		}
 	}
+
+	if (*serverrc.disabled_nntp_cmds)
+		fprintf(stream, "DISABLED CMDS.: %s\n", serverrc.disabled_nntp_cmds);
 
 	{
 		char *motd;

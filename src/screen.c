@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-13
+ *  Updated   : 2025-06-17
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -779,14 +779,7 @@ open_msglog(
 	if (msglog != NULL)
 		return;
 
-#ifdef NNTP_ABLE
-	if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
-		snprintf(logfile, sizeof(logfile), "%s:%u", nntp_server, nntp_tcp_port);
-	else
-#endif /* NNTP_ABLE */
-	{
-		snprintf(logfile, sizeof(logfile), "%s", nntp_server);
-	}
+	snprintf(logfile, sizeof(logfile), "%s", nntp_server);
 	joinpath(serverdir, sizeof(serverdir), rcdir, logfile);
 	joinpath(logfile, sizeof(logfile), serverdir, "msglog");
 

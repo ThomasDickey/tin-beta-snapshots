@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2025-05-09
+ *  Updated   : 2025-07-01
  *  Notes     :
  *
  * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
@@ -167,7 +167,7 @@ struct t_config {
 	int default_save_mode;				/* Append/Overwrite existing file when saving */
 	int getart_limit;					/* number of article to get */
 	int goto_next_unread;				/* jump to next unread article with SPACE|PGDN|TAB */
-	int hide_uue;						/* treatment of uuencoded data in pager */
+	int hide_inline_data;				/* handling of none text in pager */
 	int interactive_mailer;				/* invoke user's mailreader */
 	int kill_level;						/* Define how killed articles are shown */
 	int mono_markdash;					/* attribute for text highlighting with _underdashes_ */
@@ -347,6 +347,7 @@ struct t_config {
 		t_bool attrib_undeclared_cs_guess;
 #		endif /* USE_ICU_UCSDET */
 #	endif /* !CHARSET_CONVERSION */
+	int attrib_hide_inline_data;
 	int attrib_trim_article_body;
 	int attrib_verbatim_handling;
 	int attrib_auto_cc_bcc;
@@ -400,6 +401,23 @@ struct t_config {
 	t_bool attrib_quick_kill_expire;
 	t_bool attrib_quick_select_case;
 	t_bool attrib_quick_select_expire;
+};
+
+
+#	define SRVRC_MASK_UPDATE_INDEX		(1 << 0)	/* cmd.-line -u vs. serverrc -G */
+#	define SRVRC_MASK_READ_SAVED_NEWS	(1 << 1)	/* cmd.-line -R	vs. serverrc -t */
+struct t_serverrc {
+#	if 0 /* we don't need the outside read_server_config() */
+	char *version;
+	char *last_newnews;
+#	endif /* 0 */
+	char *add_cmd_line_opts;
+	char *disabled_nntp_cmds;
+	long motd_hash;
+	t_bool cache_overview_files;
+#	ifdef USE_ZLIB
+	t_bool compress_overview_files;
+#	endif /* USE_ZLIB */
 };
 
 #endif /* !TINRC_H */

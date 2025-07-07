@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2024-09-20
+ *  Updated   : 2025-06-01
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -731,7 +731,7 @@ hist_prev(
 				size = 0;
 			gl_buf[size] = (wchar_t) '\0';
 #else
-			strcpy(gl_buf, input_history[w][hist_pos[w]]);
+			STRCPY(gl_buf, input_history[w][hist_pos[w]]);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		} else
 			ring_bell();
@@ -764,7 +764,7 @@ hist_next(
 				size = 0;
 			gl_buf[size] = (wchar_t) '\0';
 #else
-			strcpy(gl_buf, input_history[w][hist_pos[w]]);
+			STRCPY(gl_buf, input_history[w][hist_pos[w]]);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		} else
 			gl_buf[0] = 0;

@@ -45,13 +45,13 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"2.6.5"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20250519"
+#	define RELEASEDATE	"20250707"
 #	define RELEASENAME	"Helmsdale"
 /* config-file versions - must be dotted triples in the range 0 to 99 each */
-#	define TINRC_VERSION	"1.3.19"
-#	define ATTRIBUTES_VERSION	"1.0.12"
+#	define TINRC_VERSION	"1.3.20"
+#	define ATTRIBUTES_VERSION	"1.0.13"
 #	define FILTER_VERSION	"1.0.2"
-#	define KEYMAP_VERSION	"1.0.11"
-#	define SERVERCONFIG_VERSION	"1.0.0"
+#	define KEYMAP_VERSION	"1.0.12"
+#	define SERVERCONFIG_VERSION	"1.0.1"
 
 #endif /* !VERSION_H */

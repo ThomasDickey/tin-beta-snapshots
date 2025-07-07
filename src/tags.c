@@ -344,10 +344,10 @@ parse_range(
 	while (*ptr && state != DONE) {
 		if (isdigit((unsigned char) *ptr)) {
 			if (state == FINDMAX) {
-				*range_end = atoi(ptr);
+				*range_end = strtol(ptr, NULL, 10);
 				state = DONE;
 			} else
-				*range_start = atoi(ptr);
+				*range_start = strtol(ptr, NULL, 10);
 			while (isdigit((unsigned char) *ptr))
 				++ptr;
 		} else {

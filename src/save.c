@@ -539,7 +539,7 @@ save_and_process_art(
 		if (artinfo->hdr.from)
 			strip_name(artinfo->hdr.from, from);
 		else /* shouldn't show up */
-			snprintf(from, sizeof(from), "%s@%s", PATHMASTER, get_host_name());
+			snprintf(from, sizeof(from), "%s@%s", PATHMASTER, BlankIfNull(get_host_name()));
 
 		(void) time(&epoch);
 		fprintf(fp, "From %s %s\n", from, BlankIfNull(str_trim(ctime(&epoch))));

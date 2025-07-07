@@ -2,7 +2,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2025-05-18
+.\" Updated   : 2025-07-04
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -107,7 +107,7 @@ Keine Gruppenbeschreibungen und die Server Meldung des Tages laden
 (Interaktiver\-Modus).
 .TP 
 \fB\-D\fP \fIDebuggrad\fP
-Legt den Debug\-level fest. Die Level können über Nummer (sollte vermieden
+Legt den Debuggrad fest. Die Stufen können über Nummer (sollte vermieden
 werden, da die Möglichkeit in Zukunft entfernt wird) oder Name (Groß\- und
 Kleinschreibung wird nicht beachtet) wie unten aufgeführt angegeben
 werden. Verwenden Sie Komma, um mehrere Ebenen anzugeben, beliebige
@@ -1221,7 +1221,7 @@ einschließlich aller Header antworten.
 .TP 
 \fBPagePGPCheckArticle '^G'\fP
 \fB\%pgp\fP(1) / \fB\%gpg\fP(1)\-Operationen für den Artikel ausführen. Es muß
-Inline\-PGP (\fBRFC\%4880\fP) und nicht MIME\-PGP (\fBRFC\%3156\fP) vorliegen.
+Inline\-PGP (\fBRFC\%9580\fP) und nicht MIME\-PGP (\fBRFC\%3156\fP) vorliegen.
 .TP 
 \fBPageToggleRaw '^H'\fP
 Schaltet den Anzeigemodus um (Roh einschließlich aller Header zu
@@ -1253,10 +1253,10 @@ Detaillierte MIME\-Informationen des Artikels.
 \fBPageToggleRot '%'\fP
 ROT\-13 Entschlüsseln ein\-/ausschalten.
 .TP 
-\fBPageToggleUue '('\fP
-Schaltet die Anzeige von nicht Text\-Abschnitten ausserhalb von MIME um. Das
-Standardverhalten wird durch die Variable \fBhide_uue\fP in der tinrc\-Datei
-festgelegt.
+\fBPageToggleInlineData '('\fP
+Schaltet die Anzeige von nicht Text\-Abschnitten außerhalb von MIME um. Das
+Standardverhalten wird durch die Variable \fBhide_inline_data\fP in der
+tinrc\-Datei festgelegt.
 .TP 
 \fBPageReveal ')'\fP
 Das Formfeed\-Zeichen (»^L«) wird häufig verwendet, um »Spoiler«
@@ -1649,11 +1649,11 @@ Optionen umzuschalten. \fBConfigSelect\fP speichert den neuen Wert
 \&'\fB<ESC>\fP' bricht ab, ohne die Änderungen zu speichern.
 .PP
 Wie in den anderen Menüs auch wird \fBRedrawScr\fP ('\fB^L\fP') der Bildschirm neu
-gezeichnet. Es kannen \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') und
-\fBSearchRepeat\fP ('\fB\(rs\fP') verwendet, um nach einer bestimmten Option zu
-suchen. Verwenden Sie \fBQuit\fP ('\fBq\fP'), um das Optionsmenü zu verlassen und
-Ihre Änderungen beizubehalten. Verwenden Sie \fBQuitTin\fP ('\fBQ\fP'), um es ohne
-Speicherung Ihrer Änderungen zu verlassen.
+gezeichnet. Es können \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') und
+\fBSearchRepeat\fP ('\fB\(rs\fP') verwendet werden, um nach einer bestimmten
+Option zu suchen. Verwenden Sie \fBQuit\fP ('\fBq\fP'), um das Optionsmenü zu
+verlassen und Ihre Änderungen beizubehalten. Verwenden Sie \fBQuitTin\fP
+('\fBQ\fP'), um es ohne Speicherung Ihrer Änderungen zu verlassen.
 .PP
 Das Optionen\-Menü bietet Zugriff auf das Attributs\-Menü der aktuellen Gruppe
 über den \fBConfigToggleAttrib\fP ('\fB<TAB>\fP') Befehl. Ein weiteres
@@ -1685,7 +1685,7 @@ Falls »ON« füge »User\-Agent:«\-Header ein. Die Voreinstellung ist »ON«.
 .TP 
 \fBÜbersp. multipart/alternative\-Teile (alternative_handling)\fP
 Falls »ON« entsorge multipart/alternative Teile des Artikels
-automatisch. Voreinstellung ist »ON«.
+automatisch. Die Voreinstellung ist »ON«.
 .TP 
 \fBZeichen für gelöschte Artikel (art_marked_deleted)\fP
 Zeichen das anzeigt, dass ein Artikel gelöscht wurde. Die Voreinstellung ist
@@ -1697,8 +1697,8 @@ befindet. Die Voreinstellung ist »#«.
 .TP 
 \fBZeichen für wiederkehrende Artikel (art_marked_return)\fP
 Zeichen das verwendet wird, um anzuzeigen, dass ein Artikel als ungelesener
-Artikel zurückkehrt, wenn die Gruppe das nächste Mal betreten
-wird. Voreinstellung ist »\-«.
+Artikel zurückkehrt, wenn die Gruppe das nächste Mal betreten wird. Die
+Voreinstellung ist »\-«.
 .TP 
 \fBZeichen für wichtige Artikel (art_marked_selected)\fP
 Zeichen das verwendet wird, um anzuzeigen, dass ein Artikel/Thread
@@ -1710,12 +1710,12 @@ Zeichen das verwendet wird, um anzuzeigen, dass ein Artikel/Thread neu ist
 »o«.
 .TP 
 \fBZeichen für ungelesene Artikel (art_marked_unread)\fP
-Zeichen das anzeigt, dass ein Artikel noch nicht gelesen
-wurde. Voreinstellung ist »+«.
+Zeichen das anzeigt, dass ein Artikel noch nicht gelesen wurde. Die
+Voreinstellung ist »+«.
 .TP 
 \fBZeichen für gelesene Artikel (art_marked_read)\fP
-Zeichen das anzeigt, dass ein Artikel schon gelesen wurde. Voreinstellung
-ist » «.
+Zeichen das anzeigt, dass ein Artikel schon gelesen wurde. Die
+Voreinstellung ist » «.
 .TP 
 \fBZeichen für gekillte Artikel (art_marked_killed)\fP
 Zeichen das anzeigt, dass ein Artikel gekillt wurde. Die Voreinstellung ist
@@ -1750,8 +1750,8 @@ Voreinstellung ist »OFF«.
 .TP 
 \fBSpeicher Artikel im Batchmode (\-S) (batch_save)\fP
 Falls »ON« werden Artikel/Threads im Batchmode gespeichert wenn »\fB\-S\fP« oder
-gemailt, wenn »\fB\-M\fP« bzw. »\fB\-N\fP« in der Kommandozeile angegeben
-wurde. Voreinstellung ist »ON«.
+gemailt, wenn »\fB\-M\fP« bzw. »\fB\-N\fP« in der Kommandozeile angegeben wurde. Die
+Voreinstellung ist »ON«.
 .TP 
 \fBZeigt Mini\-Menü & Posting\-Knigge (beginner_level)\fP
 Falls diese Funktion eingeschaltet ist (»ON«), wird am unteren
@@ -1763,7 +1763,7 @@ Posting\-Knigge angezeigt. Die Voreinstellung ist »ON«.
 Falls »ON« wird eine lokale Kopien der NNTP Overview Daten erstellt. Dies
 kann verwendet werden, um den Zugriff auf große Gruppen (bei Verwendung
 einer langsamen Verbindung) erheblich zu beschleunigen. Siehe auch den
-Abschnitt »INDEX DATEIEN«. Die Standardeinstellung ist »OFF«.
+Abschnitt »INDEX DATEIEN«. Die Voreinstellung ist »OFF«.
 .TP 
 \fBKomprimieren der lokalen NNTP Overview Daten (compress_overview_files)\fP
 Falls »ON«, werden lokal zwischengespeicherte NNTP Overview Daten
@@ -1772,10 +1772,10 @@ gespeichert. Nützlich, um den verwendeten lokalen Speicherplatz zu
 reduzieren.
 .TP 
 \fBHash\-Algorithmus für Cancel\-Lock/Cancel\-Key (cancel_lock_algo)\fP
-Diesen Hash\-Algorithmus für Cancel\-Locks verwenden. Nur vorhanden falls
-\fBtin\fP mit Cancel\-Lock\-Unterstützung gebaut wurde. Keiner deaktiviert die
-Erzeugung von Cancel\-Locks. Gültige Werte sind Keiner, »sha1«, »sha256« und
-»sha512«. Die Voreinstellung ist »sha1«. Siehe auch
+Diesen Hash\-Algorithmus für Cancel\-Locks (\fBRFC\%8315\fP) verwenden. Nur
+vorhanden falls \fBtin\fP mit Cancel\-Lock\-Unterstützung gebaut wurde. »Keiner«
+deaktiviert die Erzeugung von Cancel\-Locks. Gültige Werte sind »Keiner«,
+»sha1«, »sha256« und »sha512«. Die Voreinstellung ist »sha1«. Siehe auch
 \fI${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret\fP in \fB\%tin\fP(5).
 .TP 
 \fBCatchup der Gruppen beim Beenden (catchup_read_groups)\fP
@@ -2021,13 +2021,13 @@ Artikelkörper mit Ausnahme von wortgetreuen Blöcken. Siehe auch
 .TP 
 \fBZeige \(-> anstatt einer Markierung (draw_arrow)\fP
 Ermöglicht die Auswahl von Gruppen/Artikeln mit einem Pfeil »\(->«, wenn
-aktiviert, oder durch eine hervorgehobene Leiste, wenn deaktiviert. Der
-Standardwert ist »OFF«.
+aktiviert, oder durch eine hervorgehobene Leiste, wenn deaktiviert. Die
+Voreinstellung ist »OFF«.
 .TP 
 \fBAufruf Ihres Editors (editor_format)\fP
 Der Formatstring, der verwendet wird, um den Editor\-Startbefehl mit
 Parametern zu erstellen. Die Voreinstellung ist »%E +%N %F«, wobei
-%E=Editor, %N=Zeilennumme und %F=Dateiname ist (z.B. »/bin/vi +7
+%E=Editor, %N=Zeilennummer und %F=Dateiname ist (z.B. »/bin/vi +7
 \&.article«). Siehe auch $\fBVISUAL\fP und $\fBEDITOR\fP unter »UMGEBUNGSVARIABLEN«.
 .TP 
 \fBFremdzitate erkennen (extquote_handling)\fP
@@ -2068,7 +2068,7 @@ current one. When \fBPageNextUnread\fP is set \fBtin\fP jumps immediately to the
 next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')  is
 pressed. Default is \fBPageNextUnread\fP.
 .TP 
-\fBZeige nicht Text\-Teile als Anhang (hide_uue)\fP
+\fBZeige nicht Text\-Teile als Anhang an (hide_inline_data)\fP
 If set to '\fBNothing\fP' (0) then raw data is displayed.  If set to
 \&'\fBComplete UU/YENC\fP' (1) then sections of uuencoded or yenc data will be
 shown with a single tag line showing the size and filename (much the same as
@@ -2170,12 +2170,12 @@ Erlaubt unkodierte 8\-Bit\-Zeichen im Header von E\-Mail\-Nachrichten. Die
 Voreinstellung ist »OFF«. Das Aktivieren hat nur Wirkung, wenn
 \fBmail_mime_encoding\fP auch auf »8bit« gesetzt ist. Das Beibehalten auf »OFF«
 ist für die meisten Benutzer sicher und entspricht dem Internet Mail
-Standard (\fBRFC\%5322\fP und \fBRFC\%2047\fP). Die Voreinstellung ist »OFF«.
+Standard (\fBRFC\%5322\fP und \fBRFC\%2047\fP).
 .TP 
 \fBMailadresse (und Name) (mail_address)\fP
 E\-Mail\-Adresse des Benutzers (und vollständiger Name), falls nicht
 benutzername@host. Wird beim Erstellen von Artikeln, beim Versenden von
-E\-Mails und beim Signieren mit \fB\%pgp\fP(1) / \fB\%gpg\fP(1) (\fBRFC\%4880\fP)
+E\-Mails und beim Signieren mit \fB\%pgp\fP(1) / \fB\%gpg\fP(1) (\fBRFC\%9580\fP)
 verwendet.
 .TP 
 \fBMIME\-Kodierung für E\-Mails (mail_mime_encoding)\fP
@@ -2241,8 +2241,8 @@ ist, zeigt dieselbe Funktion ein Menü mit Optionen für den aktuellen Thread
 oder Artikel, alle markierten, ungelesenen Artikel oder nichts.
 .TP 
 \fBMark. gesp. Artikel/Threads gelesen (mark_saved_read)\fP
-Falls »ON« werden gespeicherte Artikel als gelesen markiert. Voreinstellung
-ist »ON«.
+Falls »ON« werden gespeicherte Artikel als gelesen markiert. Die
+Voreinstellung ist »ON«.
 .TP 
 \fBMIME\-Viewer (metamail_prog)\fP
 Pfad, Name und Optionen des externen \fB\%metamail\fP(1) Programms, das
@@ -2424,7 +2424,7 @@ Extrahieren von Shell\-Archiven! Die folgenden Werte sind erlaubt:
 .RE
 .TP 
 \fBGepostete Artikel speichern in (posted_articles_file)\fP
-Spiechert gepostete Artikel in der angegebenen Datei. Wenn der angegebene
+Speichert gepostete Artikel in der angegebenen Datei. Wenn der angegebene
 Dateiname keine erweiterbaren Zeichenfolgen enthält, wird ihm
 \fI${TIN_HOMEDIR:\-"$HOME"}/Mail/\fP vorangestellt. Wenn kein Dateiname
 angegeben wird, werden die Postings nicht gespeichert. Siehe den Abschnitt
@@ -2435,7 +2435,7 @@ Voreinstellung ist »posted«.
 \fBAlle Header beim Drucken ausgeben (print_header)\fP
 Falls »ON« wird der vollständige Artikelheader wird an den Drucker
 gesendet. Ansonsten werden nur die »Subject:«\- und »From:«\-Zeile
-ausgegeben. Voreinstellung ist »OFF«.
+ausgegeben. Die Voreinstellung ist »OFF«.
 .TP 
 \fBDruckprogramm mit Optionen (printer)\fP
 Das Druckerprogramm mit Optionen, das zum Drucken von Artikeln verwendet
@@ -2466,8 +2466,8 @@ multiple times (for example, '> > >' will be turned into
 lines.
 .br
 When you are viewing an article in raw mode ('\fB^H\fP'), and follow up or
-reply to it, the signature will be quoted even if it would otherwise not
-be.  If \fBshow_signatures\fP is off, then the signature will never be quoted.
+reply to it, the signature will be quoted even if it otherwise would be
+not.  If \fBshow_signatures\fP is off, then the signature will never be quoted.
 .TP 
 \fBRegulärer Ausd. für zit. Zeilen (quote_regex)\fP
 Ein regulärer Ausdruck, der beim Lesen von Artikeln angewendet wird. Alle
@@ -2512,7 +2512,7 @@ Wenn die Punktzahl eines Artikels über oder gleich diesem Wert liegt, wird
 der Artikel als heiß (hot) markiert.
 .TP 
 \fBBewertung für gekillte Artikel (score_kill)\fP
-Punktzahl eines Artikels, der gekilled werden soll, dies muss <=
+Punktzahl eines Artikels, der gekillet werden soll, dies muss <=
 \fBscore_limit_kill\fP sein.
 .TP 
 \fBBewertung für wichtige Artikel (score_select)\fP
@@ -2542,23 +2542,23 @@ Voreinstellung ist »2«, der vollständige Name des Autors.
 .IP 0 3
 \fBNichts\fP, nur die »Subject:« Zeile wird angezeigt.
 .IP 1
-\fBAddresse\fP, »Subject:«\-Zeile & die Addresse aus der »From:«\-Zeile wird
+\fBAddresse\fP, »Subject:«\-Zeile & die Adresse aus der »From:«\-Zeile wird
 angezeigt.
 .IP 2
 \fBVoller Name\fP, »Subject:«\-Zeile & der Name aus der »From:«\-Zeile wird
 angezeigt (Voreinstellung).
 .IP 3
-\fBAdresse und Name\fP, »Subject:«\-Zeile & die gesammte »From:«\-Zeile wird
+\fBAdresse und Name\fP, »Subject:«\-Zeile & die gesamte »From:«\-Zeile wird
 angezeigt.
 .RE
 .TP 
 \fBZeige Beschreibung der Newsgruppen (show_description)\fP
-Falls »ON«, wird ein kurzer Gruppendescriptionstext nach dem Namen der
-Newsgroup auf der Gruppenauswahl\-Ebene angezeigt. Der »\fB\-d\fP«
-Befehlszeilen\-Parameter überschreibt die Einstellung und schaltet die
-Beschreibungen aus. Der verwendete Text stammt aus der Datei
-\fI${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups\fP und falls unterstützt (erfordert,
-dass \fBtin\fP mit mh\-mail\-handling\-Unterstützung kompiliert wurde) aus
+Falls »ON«, wird eine kurze Gruppenbeschreibung nach dem Namen der Newsgroup
+auf der Gruppenauswahl\-Ebene angezeigt. Der »\fB\-d\fP« Befehlszeilen\-Parameter
+überschreibt die Einstellung und schaltet die Beschreibungen aus. Der
+verwendete Text stammt aus der Datei \fI${TIN_LIBDIR:\-NEWSLIBDIR}/newsgroups\fP
+und falls unterstützt (erfordert, dass \fBtin\fP mit
+mh\-mail\-handling\-Unterstützung kompiliert wurde) aus
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/mailgroups\fP für Mailgruppen. Die
 Voreinstellung ist »ON«.
 .TP 
@@ -2594,8 +2594,8 @@ Falls »ON«, werden nur neue/ungelesene Artikel angezeigt, andernfalls werden
 alle Artikel angezeigt.
 .TP 
 \fBZeige nur Gruppen mit ungel. Art. (show_only_unread_groups)\fP
-Falls »ON« zeige nur abonnierte Gruppen mit ungelesen
-Artikeln. Voreinstellung ist »OFF«.
+Falls »ON« zeige nur abonnierte Gruppen mit ungelesen Artikeln. Die
+Voreinstellung ist »OFF«.
 .TP 
 \fBZeige Signaturen an (show_signatures)\fP
 Falls »OFF« zeige keine Signaturen an. Die Voreinstellung ist »ON«.
@@ -2606,8 +2606,8 @@ linken Ecke gezeigt. Die Voreinstellung ist »OFF«. Siehe auch
 \fBcol_score_neg\fP und \fBcol_score_pos\fP.
 .TP 
 \fBTrenne Sig mit '\en\-\- \en' ab (sigdashes)\fP
-Falls »ON«, wird der Signatur ein Signaturtrenner
-vorangestellt. Voreinstellung ist »ON«.
+Falls »ON«, wird der Signatur ein Signaturtrenner vorangestellt. Die
+Voreinstellung ist »ON«.
 .TP 
 \fBErzeuge Signatur aus Pfad/Kommando (sigfile)\fP
 The path that specifies the signature file to use when posting, following up
@@ -2620,8 +2620,8 @@ current newsgroup. \-\-none will suppress any signature.  Default is
 \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP.
 .TP 
 \fBSignatur beim Reposten anhängen (signature_repost)\fP
-Falls »ON« wird die Signatur auch an repostete Artikel
-angehängt. Voreinstellung ist »ON«.
+Falls »ON« wird die Signatur auch an repostete Artikel angehängt. Die
+Voreinstellung ist »ON«.
 .TP 
 \fBReg. für /Schrägst./ Hervorhebungen (slashes_regex)\fP
 Ein regulärer Ausdruck, der beim Lesen von Artikeln angewendet wird. Alle
@@ -2708,7 +2708,7 @@ es Ihnen, diese nach Belieben zu entfernen. Die Voreinstellung ist »0«
 (Immer Behalten).
 .TP 
 \fBNur abonnierte Gruppen in newsrc (strip_newsrc)\fP
-Falls »ON« werden nicht abbonierte Gruppen dauerhaft aus Ihrer
+Falls »ON« werden nicht abonierte Gruppen dauerhaft aus Ihrer
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-Datei entfernt. Die Voreinstellung ist
 »OFF«.
 .TP 
@@ -2876,7 +2876,7 @@ Voreinstellung ist »OFF«.
 .TP 
 \fBUTF\-8\-Grafik benutzten (utf8_graphics)\fP
 Fall »ON«, werden UTF\-8\-Zeichen für den Indikator ('\(->'),
-Thread\-/Anhangsbaum und Auslassungszeichen ('...') verwendet. Die
+Thread\-/Anhangsbaum und Auslassungszeichen (»...«) verwendet. Die
 Voreinstellung ist »OFF«.
 .TP 
 \fBReg. Ausd. für den Anfang e. wortgetreuen Textblock (verbatim_begin_regex)\fP
@@ -2887,18 +2887,18 @@ Absatzes findet.
 Ein regulärer Ausdruck, der das Ende eines wortgetreu wiederzugebenden
 Absatzes findet.
 .TP 
-\fBWortgetreue Textblöcke erkennen und anzeigen (verbatim_handling)\fP
+\fBWortgetreue Blöcke (verbatim_handling)\fP
 Ermöglicht es auszuwählen, wie \fBtin\fP wortgetreue Textblöcke in
 Artikelkörpern behandelt werden sollen. Die Voreinstellung ist »1«.
 .RS +.5i
 .IP 0 3
 \fBWortgetreue Textblöcke nicht erkennen\fP
 .IP 1
-\fBWortgetreue Textblöcke erkennen und anzeigen\fP. Erkennen und Anzeigen von
-wortgetreuen Textblöcken, einschließlich Anfangs\- und Endmarkierungen.
+\fBErkennen und anzeigen\fP. Erkennen und Anzeigen von wortgetreuen
+Textblöcken, einschließlich Anfangs\- und Endmarkierungen.
 .IP 2
-\fBWortgetreue Textblöcke erkennen und anzeigen aber ohne Anfangs\-/End\-Marker\fP. Erkennen und Anzeigen von wortgetreuen Textblöcken,
-Ausblenden der Anfangs\- und Endmarkierungen.
+\fBErkennen und anzeigen ohne Anfangs\-/End\-Marker\fP. Erkennen und Anzeigen von
+wortgetreuen Textblöcken, Ausblenden der Anfangs\- und Endmarkierungen.
 .IP 3
 \fBWortgetreue Textblöcke ausblenden\fP. Wortgetreue Textblöcke erkennen und
 vollständig ausblenden.
@@ -3020,7 +3020,7 @@ auto\-selection rule are marked with a \*(rq*\*(rq.
 .PP
 Filtrierungsregeln können manuell in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fP
 eingegeben werden (nicht machen, während \fBtin\fP ausgeführt wird, da sonst
-die Änderungen vorloren gehen sobald dieser beendet wird) oder durch die
+die Änderungen verloren gehen sobald dieser beendet wird) oder durch die
 Verwendung eines Menüs innerhalb von \fBtin\fP.
 .PP
 Die Filterfähigkeiten von \fBtin\fP wurden im Vergleich zu früheren Versionen
@@ -3031,6 +3031,19 @@ gelesen werden unter
 .br
 <http://bzr.tin.org/doc/filtering>.
 .PP
+Note that there are two different ways to match strings (see \fBwildcard\fP
+tinrc variable): via wildmats or via regular expressions.  The later is more
+complex but offers significantly more options. If you intend to change the
+matching type from one to the other, the rules in the filter file need to be
+changed manually first. For switching from wildmats to regexp there is a
+helper script \fBw2r.pl\fP(1)  in the tools dir and online at
+.br
+<http://bzr.tin.org/tools/w2r.pl>.
+.PP
+As regular expressions do provide options which are not available with
+wildmats there is no helper script for such a switch. If you switch to
+regular expressions, stay with them. They are powerful and fast.
+.PP
 .\" FIXME - Next paragraph is out of date
 .\"
 .\"
@@ -3038,11 +3051,11 @@ The on\-screen filtering menu is accessed by pressing \fBMenuFilterKill\fP
 ('\fB^K\fP') or \fBMenuFilterSelect\fP ('\fB^A\fP')  at the Group and Article
 levels. It allows the user to kill or select an article that matches the
 current \*(rqSubject:\*(rq line, \*(rqFrom:\*(rq line or a string entered by the
-user. The user entered string can be applied to the \&\*(rqSubject:\*(rq or
-\&\*(rqFrom:\*(rq line of an article. The filter can be limited to the current
-newsgroup or it can apply to all newsgroups. Once entered the user can abort
-the command and not save the new filter, edit the full filter file or save
-filter.
+user. The user entered string can be applied to the \&\*(rqSubject:\*(rq,
+\&\*(rqFrom:\*(rq, \*(rqMessage\-ID:\*(rq, \*(rqReferences:\*(rq, \*(rqXref:\*(rq or \&\*(rqPath:\*(rq line
+of an article. The filter can be limited to the current newsgroup or it can
+apply to all newsgroups. Once entered the user can abort the command and not
+save the new filter, edit the full filter file or save filter.
 .SS "ARTIKEL POSTEN"
 \fBtin\fP ermöglicht das Posten von Artikeln, das Antworten auf gepostete
 Artikel (follow\-up) und das direkte Antworten per E\-Mail an den Autor eines
@@ -3245,6 +3258,27 @@ Passt auf alt.config und alles in der »news«\-Hierarchie außer »news.test«
 .\"
 Weitere Beispiele finden sich in der Erklärung zu den Variablen
 $\fBAUTOSUBSCRIBE\fP und $\fBAUTOUNSUBSCRIBE\fP.
+.SS "INTERAKTIVE SUCHE"
+Depending on the setting of the \fBwildcard\fP tinrc variable there are
+currently a few limitations for interactive searches \fBSearchSubjF\fP
+('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP'), \fBSearchAuthF\fP ('\fBa\fP'), \fBSearchAuthB\fP
+('\fBA\fP'), \fBSearchBody\fP ('\fBB\fP') and \fBSearchRepeat\fP ('\fB\(rs\fP') one should
+be aware of.
+.PP
+Bei der Wildmat\-Suche wird der Suchstring automatisch in Sternchen (»*«)
+eingeschlossen, um eine Teilstringsuche zu simulieren. Dieses Verhalten kann
+nicht geändert werden.
+.PP
+Regex searches automatically replace spaces ('\ ') and/or tabs ('\et') in
+the search string with the '\es' meta\-character, which matches any
+whitespace character. This behavior cannot be prevented. Also regex searches
+are case insensitive by default. To enforce case sensitivity, prefix the
+search pattern by one of the following: '\fB(?^)\fP' or '\fB(?\-i)\fP'.
+.PP
+.\"
+.\"
+Falls Unicode\-Normalisierung verfügbar ist, werden Suchmuster gemäß der
+\fBnormalization_form\fP tinrc\-Variable normalisiert.
 .SS SIGNATUREN
 \fBtin\fP will recognize a signature in either
 \fI${TIN_HOMEDIR:\-"$HOME"}/.signature\fP or \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP.
@@ -3464,7 +3498,7 @@ folgenden Variablen sind verfügbar:
 \fB%v\fP	Wie %V aber mit Beschreibung
 \fB%W\fP	Gesamtgröße der YENC\-Teile in Bytes
 \fB%w\fP	Wie %W aber mit Beschreibung
-\fB%X\fP	CRC Prüfsumme des akuellen YENC\-Teils
+\fB%X\fP	CRC Prüfsumme des aktuellen YENC\-Teils
 \fB%x\fP	Wie %X aber mit Beschreibung
 \fB%Z\fP	Größe in Bytes
 \fB%z\fP	Wie %Z aber mit Beschreibung
@@ -3587,7 +3621,7 @@ kehrt zur vorherigen (oberen) Ebene zurück, wenn Sie auf einen Artikel
 klicken, andernfalls wird eine Seite nach oben geblättert.
 .TP 
 Maustaste3 (Rechts)
-Positioniert in die Artikelzeile unter dem Mauszeiger oder blättertnach
+Positioniert in die Artikelzeile unter dem Mauszeiger oder blättert nach
 unten, wenn außerhalb der Artikelliste geklickt wurde.
 .PP
 Im Gruppenauswahlmenü, wenn die Maus auf eine Gruppe zeigt, dann:
@@ -3644,7 +3678,7 @@ Abschnitt ignorieren.
 Wenn Ihr Newsserver keine NOV\-Indexdateien unterstützt oder Sie eine sehr
 sehr langsame Verbindung zu Ihrem Newsserver haben, kann \fBtin\fP den Index
 für jede Newsgruppe zwischenspeichern wenn \fBcache_overview_files\fP auf »ON«
-gesetzt ist. Beachten Sie, daß dieser Cache große Mengen an Speicherplatz
+gesetzt ist. Beachten Sie, dass dieser Cache große Mengen an Speicherplatz
 verbrauchen kann, wenn Sie sehr viele Gruppen und/oder Gruppen mit hohem
 Datenverkehr lesen. Um Platz zu sparen kann \fBcompress_overview_files\fP auf
 »ON« gesetzt werden.
@@ -3732,7 +3766,7 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP
 .PP
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/.oldnewsrc\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/.oldnewsrc\fP
 .fi
 .PP
 \fI${TIN_HOMEDIR:\-"$HOME"}/.signature\fP
@@ -3779,19 +3813,19 @@ Für eine ausführlich Beschreibung siehe \fB\%tin\fP(5).
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/postponed.articles\fP
 .PP
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/motd\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/motd\fP
 .fi
 .PP
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/msglog\fP
 .fi
 .PP
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/newsgroups\fP
 .fi
 .PP
 .nf
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc\fP
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc\fP
 .fi
 .PP
 .\" .I ${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc
@@ -3946,7 +3980,7 @@ Rücksendeadresse. Dies ist nützlich, wenn Sie Antworten an eine andere
 Adresse erhalten möchten.
 .TP 
 \fBNAME\fP
-Überschreibt den vollständigen Namen, der im Geos\-Feld in \fI/etc/passwd\fP
+Überschreibt den vollständigen Namen, der im Gecos\-Feld in \fI/etc/passwd\fP
 angegeben ist, siehe auch \fBmail_address\fP.
 .TP 
 \fBREALNAME\fP
@@ -3983,8 +4017,8 @@ UNIX\-Systemen). Weitere Informationen finden sich in \fB\%environ\fP(5).
 .TP 
 \fBAUTOSUBSCRIBE\fP
 Eine neue Gruppe wird mit der Liste der Muster verglichen; wenn sie
-übereinstimmt, abonniniert \fBtin\fP die Gruppe ohne weitere Nachfrage. Siehe
-den Abschnitt »NEWSGROUP LISTEN & WILDCARDS« für eine Erklärung der gültigen
+übereinstimmt, abonniert \fBtin\fP die Gruppe ohne weitere Nachfrage. Siehe den
+Abschnitt »NEWSGROUP LISTEN & WILDCARDS« für eine Erklärung der gültigen
 Syntax. Das Setzen von zum Beispiel
 .sp
 \fIAUTOSUBSCRIBE=comp.os.unix.*,talk.*,!talk.politics.*\fP
@@ -4140,12 +4174,12 @@ Beenden ohne das Terminal (tty) wiederherzustellen.
 .\"
 Speichern der \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-Datei.
 .SH SICHERHEIT
-Falls \fBtin\fP im Debug\-Modus (»\fB\-D n\fP«) gestartet wird, werden in \fB$TMPDIR\fP
-für alle Benutzer lesbare Dateien erzeugt, welche das NNTP\-Passwort des
-aktuellen Benutzers im Klartext enthalten können (falls Ausführlich
-(verbose) angeschaltet ist). Auf Multiuser\-Systemen sollte daher \fB$TMPDIR\fP
-auf einen sicheren Speicherort gesetzt werden, bevor \fBtin\fP im
-(Ausführlichen (verbosen)) Debug\-Modus gestartet wird (z. B. »\fBTMPDIR=$HOME tin \-vD NNTP\fP«).
+Falls \fBtin\fP im Debug\-Modus (»\fB\-D\~n\fP«) gestartet wird, werden in
+\fB$TMPDIR\fP für alle Benutzer lesbare Dateien erzeugt, welche das
+NNTP\-Passwort des aktuellen Benutzers im Klartext enthalten können (falls
+Ausführlich (verbose, »\fB\-v\fP«) angeschaltet ist). Auf Multiuser\-Systemen
+sollte daher \fB$TMPDIR\fP auf einen sicheren Speicherort gesetzt werden, bevor
+\fBtin\fP im (Ausführlichen) Debug\-Modus gestartet wird (z. B. »\fBTMPDIR=$HOME tin \-vD NNTP\fP«).
 .PP
 Die Verwendung der Option »\fB\-k\fP« zum Überspringen der
 Zertifikatsüberprüfung macht die Sitzung unsicher, da das Zertifikat des
@@ -4187,12 +4221,14 @@ normalerweise keine Schreibrechte an diesem Ort hat.
 V1.1.91) können nicht mit gepipelinten »GROUP«\-Befehlen (\fBRFC\%3977\fP)
 umgehen. Falls Sie Probleme mit einem der genannten historischen Server
 haben, definieren Sie »DISABLE_PIPELINING« in include/autoconf.h und
-kompilieren Sie das Programm neu.
+kompilieren Sie das Programm neu oder benutzen Sie die »\fB\-l\fP«
+Kommandozeilenoption.
 .PP
 Die Verwendung des »\fB\-C\fP« (»COMPRESS«)\-Flags mit \fBINN\fP\-Versionen zwischen
-2.6.1 und 2.7.1 (beide einschl.) kann dazu führen, dass \fBtin\fP beim Posten
-hängt und sich mit einem Timeout beendet. Dies wurde in der \fBINN\fP\-Version
-2.7.2 behoben. Als Abhilfemaßnahme verwenden Sie einfach kein »\fB\-C\fP«.
+2.6.1 und 2.7.1 (beide einschl.) kann dazu führen, dass \fBtin\fP bei der
+zusätzlichen Verwendung von »\fB\-n\fP« oder beim Posten hängt und sich mit
+einem Timeout beendet. Dies wurde in der \fBINN\fP\-Version 2.7.2 behoben. Als
+Abhilfemaßnahme verwenden Sie einfach kein »\fB\-C\fP«.
 .PP
 .\"
 .\"
@@ -4256,21 +4292,22 @@ Urs Janßen <urs@tin.org>
 .\"
 .SH ÜBERSETZUNG
 .IP "Erika Mustermann <erika@example.org>"
-Wenn Sie Fehler in der Übersetzung finden, schicken Sie bitte eine E-Mail
-an <translation@tin.org>.
+Wenn Sie Fehler in der Übersetzung finden, dürfen Sie diese gerne per
+E-Mail an <translation@tin.org> melden.
 .\"
 .SH "SIEHE AUCH"
 \fB\%elm\fP(1), \fB\%emacs\fP(1), \fB\%gpg\fP(1), \fB\%inews\fP(1), \fB\%ispell\fP(1),
 \fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1), \fB\%mutt\fP(1), \fB\%noffle\fP(1),
 \fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1), \fB\%sendmail\fP(1),
 \fB\%shar\fP(1), \fB\%slrnface\fP(1), \fB\%tass\fP(1), \fB\%unshar\fP(1),
-\fB\%uudecode\fP(1), \fB\%vi\fP(1), \fB\%xterm\fP(1x), \fB\%heapsort\fP(3),
-\fB\%iconv\fP(3), \fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3), \fB\%pcre\fP(3),
-\fB\%pcre2\fP(3), \fB\%pcrepattern\fP(3), \fB\%pcre2pattern\fP(3), \fB\%qsort\fP(3),
-\fB\%snprintf\fP(3), \fB\%strftime\fP(3), \fB\%vsnprintf\fP(3), \fB\%wildmat\fP(3),
-\fB\%environ\fP(5), \fB\%locale\fP(5), \fB\%mailcap\fP(5), \fB\%mbox\fP(5),
-\fB\%mmdf\fP(5), \fB\%newsoverview\fP(5), \fB\%tin\fP(5), \fB\%cron\fP(8), \fBRFC\%1345\fP,
-\fBRFC\%1524\fP, \fBRFC\%1952\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP, \fBRFC\%2047\fP,
-\fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP, \fBRFC\%4155\fP,
-\fBRFC\%4643\fP, \fBRFC\%4880\fP, \fBRFC\%5198\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP,
-\fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%6838\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP
+\fB\%uudecode\fP(1), \fB\%vi\fP(1), \fB\%w2r.pl\fP(1), \fB\%xterm\fP(1x),
+\fB\%heapsort\fP(3), \fB\%iconv\fP(3), \fB\%iconv_open\fP(3), \fB\%nl_langinfo\fP(3),
+\fB\%pcre\fP(3), \fB\%pcre2\fP(3), \fB\%pcrepattern\fP(3), \fB\%pcre2pattern\fP(3),
+\fB\%qsort\fP(3), \fB\%snprintf\fP(3), \fB\%strftime\fP(3), \fB\%vsnprintf\fP(3),
+\fB\%wildmat\fP(3), \fB\%environ\fP(5), \fB\%locale\fP(5), \fB\%mailcap\fP(5),
+\fB\%mbox\fP(5), \fB\%mmdf\fP(5), \fB\%newsoverview\fP(5), \fB\%tin\fP(5), \fB\%cron\fP(8),
+\fBRFC\%1345\fP, \fBRFC\%1524\fP, \fBRFC\%1952\fP, \fBRFC\%2045\fP, \fBRFC\%2046\fP,
+\fBRFC\%2047\fP, \fBRFC\%2231\fP, \fBRFC\%2980\fP, \fBRFC\%3156\fP, \fBRFC\%3977\fP,
+\fBRFC\%4155\fP, \fBRFC\%4643\fP, \fBRFC\%5198\fP, \fBRFC\%5322\fP, \fBRFC\%5536\fP,
+\fBRFC\%5537\fP, \fBRFC\%6048\fP, \fBRFC\%6838\fP, \fBRFC\%8054\fP, \fBRFC\%8143\fP,
+\fBRFC\%8315\fP, \fBRFC\%9580\fP

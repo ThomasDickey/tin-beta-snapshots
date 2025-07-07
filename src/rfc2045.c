@@ -3,7 +3,7 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2025-02-17
+ *  Updated   : 2025-06-22
  *  Notes     : RFC 2045/2047 encoding
  *
  * Copyright (c) 1995-2025 Chris Blum <chris@resolution.de>
@@ -266,7 +266,7 @@ put_rest(
 
 	if ((ptr = my_rest) == NULL)
 		return put_chars;
-	if (strlen(my_rest) == 0) {
+	if (!*my_rest) {
 		FreeAndNull(*rest);
 		return put_chars;
 	}
@@ -416,7 +416,7 @@ read_decoded_base64_line(
 		*line = my_realloc(*line, *max_line_len + 1);
 	}
 	if ((put_chars == 0) || ((*line)[put_chars - 1] != '\n'))
-			(*line)[put_chars++] = '\n';
+		(*line)[put_chars++] = '\n';
 	(*line)[put_chars] = '\0';
 	return lines_read;
 }

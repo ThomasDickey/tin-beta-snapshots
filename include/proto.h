@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2025-05-14
+ *  Updated   : 2025-06-30
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
@@ -98,7 +98,7 @@ extern char *convert_to_printable(char *buf, t_bool keep_tab);
 #	endif /* NNTP_ABLE && USE_GSASL */
 #endif /* CHARSET_CONVERSION */
 extern t_bool charset_unsupported(const char *charset);
-extern t_bool is_art_tex_encoded(FILE *fp);
+extern t_bool charset_compare(const char *cs_a, const char *cs_b);
 extern void convert_iso2asc(char *iso, char **asc_buffer, size_t *max_line_len, int t);
 extern void convert_tex2iso(char *from, char *to);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -128,13 +128,13 @@ extern t_bool match_string(char *line, const char *pat, char *dst, size_t dstlen
 extern t_bool match_string_ptr(char *line, const char *pat, char **dst);
 extern t_bool read_config_file(char *file, t_bool global_file);
 extern void quote_dash_to_space(char *str);
-extern void read_server_config(void);
+extern void read_server_config(unsigned int option_mask);
 extern void write_config_file(const char *file);
 
 /* cook.c */
 extern char *build_attach_line(const t_part *part, int depth, int max_len, enum section_type section, const char *name, const char *charset);
 extern const char *get_filename(t_param *ptr);
-extern t_bool cook_article(t_bool wrap_lines, t_openartinfo *artinfo, int hide_uue, t_bool show_all_headers);
+extern t_bool cook_article(t_bool wrap_lines, t_openartinfo *artinfo, int hide_inline_data, t_bool show_all_headers);
 extern t_bool expand_ctrl_chars(char **line, size_t *length, size_t lcook_width);
 
 /* crc32.c */
@@ -515,7 +515,7 @@ extern void draw_page(int part);
 extern void info_pager(FILE *info_fh, const char *title, t_bool wrap_at_ends);
 extern void log_article_info(t_openartinfo *artinfo);
 extern void resize_article(t_bool wrap_lines, t_openartinfo *artinfo);
-extern void update_hide_uue(void);
+extern void update_hide_inline_data(void);
 extern void toggle_raw(void);
 
 /* parsdate.y */
@@ -723,6 +723,7 @@ extern size_t mystrcat(char **t, const char *s);
 extern void my_strncpy(char *p, const char *q, size_t n);
 extern void parse_format_string(const char *fmtstr, struct t_fmt *fmt);
 extern void str_lwr(char *str);
+extern void str_upr(char *str);
 extern int my_tolower(int);
 extern int my_toupper(int);
 #if !defined(HAVE_STRCASESTR) || defined(DECL_STRCASESTR)
@@ -743,9 +744,6 @@ extern int my_toupper(int);
 #ifndef HAVE_STRNCASECMP
 	extern int strncasecmp(const char *p, const char *q, size_t n);
 #endif /* !HAVE_STRNCASECMP */
-#ifndef HAVE_ATOI
-	extern int atoi(const char *s);
-#endif /* !HAVE_ATOI */
 #ifndef HAVE_ATOL
 	extern long atol(const char *s);
 #endif /* !HAVE_ATOL */
@@ -765,9 +763,7 @@ extern int my_toupper(int);
 	extern char *wchar_t2char(const wchar_t *wstr);
 	extern wchar_t *abbr_wcsgroupname(const wchar_t *grpname, int len);
 	extern wchar_t *char2wchar_t(const char *str);
-	extern wchar_t *my_wcsdup(const wchar_t *wstr);
 	extern wchar_t *wcspart(const wchar_t *wstr, size_t columns, t_bool pad);
-	extern wchar_t *wexpand_tab(const wchar_t *wstr, size_t tab_width);
 	extern wchar_t *wstrunc(const wchar_t *wmessage, size_t len);
 #else
 	extern char *abbr_groupname(const char *grpname, size_t len);

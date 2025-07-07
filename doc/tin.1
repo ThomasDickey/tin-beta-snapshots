@@ -2,7 +2,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2025-05-18
+.\" Updated   : 2025-07-04
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -1193,7 +1193,7 @@ Perform
 .BR \%pgp (1)
 /
 .BR \%gpg (1)
-operations on article. This expects inline pgp (\fBRFC\%4880\fP) and not MIME
+operations on article. This expects inline pgp (\fBRFC\%9580\fP) and not MIME
 pgp (\fBRFC\%3156\fP).
 .TP
 .B PageToggleRaw '^H'
@@ -1223,10 +1223,10 @@ Detailed MIME information of the article.
 .B PageToggleRot '%'
 Toggle ROT-13 decoding for this article.
 .TP
-.B PageToggleUue '('
+.B PageToggleInlineData '('
 Toggle the display data sections outside of MIME, e.g. uuencoded or yenc
-data. The default behavior is taken from the \fBhide_uue\fP variable in
-the tinrc file.
+data. The default behavior is taken from the \fBhide_inline_data\fP variable
+in the tinrc file.
 .TP
 .B PageReveal ')'
 The form feed character (^L) is often used to hide 'spoilers' that the
@@ -1713,9 +1713,9 @@ saved in compressed form (\fBRFC\%1952\fP). Useful to reduce local disk
 space used. Default is OFF.
 .TP
 .B Hash algorithm for cancel-locks (cancel_lock_algo)
-Use this hash algorithm for cancel-locks. Only available when built with
-cancel-lock support. none disables the generation of cancel-locks. Valid
-values are none, sha1, sha256 and sha512.
+Use this hash algorithm for cancel-locks (\fBRFC\%8315\fP). Only available
+when built with cancel-lock support. none disables the generation of
+cancel-locks. Valid values are none, sha1, sha256 and sha512.
 Default is sha1. See also \fI${TIN_HOMEDIR:\-"$HOME"}/.cancelsecret\fR in
 .BR \%tin (5).
 .TP
@@ -2002,7 +2002,7 @@ end of the current one. When \fBPageNextUnread\fP is set \fBtin\fP jumps
 immediately to the next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')
 is pressed. Default is \fBPageNextUnread\fP.
 .TP
-.B Display none mime data as an attachment (hide_uue)
+.B Display none mime data as an attachment (hide_inline_data)
 If set to '\fBNothing\fP' (0) then raw data is displayed.
 If set to '\fBComplete UU/YENC\fP' (1) then sections of uuencoded or yenc data will
 be shown with a single tag line showing the size and filename (much the same
@@ -2100,7 +2100,7 @@ Default is 0 (\fBKill only unread arts\fP).
 Allows 8-bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set
 to 8bit. Leaving it OFF is safe for most users and compliant to Internet
-Mail Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP). Default is OFF.
+Mail Standard (\fBRFC\%5322\fP and \fBRFC\%2047\fP).
 .TP
 .B Mail address (mail_address)
 User's mail address (and full name), if not username@host. This is used when
@@ -2108,7 +2108,7 @@ creating articles, sending mail and when
 .BR \%pgp (1)
 /
 .BR \%gpg (1)
-signing (\fBRFC\%4880\fP).
+signing (\fBRFC\%9580\fP).
 .TP
 .B MIME encoding in mail messages (mail_mime_encoding)
 MIME encoding of the body in mail message, if necessary (8bit, base64,
@@ -2281,7 +2281,7 @@ is sent to the server and that needs some time to compress the large
 response, the value should not be set too small.
 .TP
 .B Unicode normalization form (normalization_form)
-The normalization form \fBtin\fP should use to normalize unicode input.
+The normalization form \fBtin\fP should use to normalize Unicode input.
 The possible values are:
 .RS +.5i
 .IP 0 3
@@ -2402,7 +2402,7 @@ multiple times (for example, '> > >' will be turned into '>>>'). The default
 is to compress quotes, and to quote empty lines.
 .br
 When you are viewing an article in raw mode ('\fB^H\fP'), and follow up or
-reply to it, the signature will be quoted even if it would otherwise not be.
+reply to it, the signature will be quoted even if it otherwise would be not.
 If \fBshow_signatures\fP is off, then the signature will never be quoted.
 .TP
 .B Regex used to show quoted lines (quote_regex)
@@ -2956,16 +2956,32 @@ documentation directory. This file can also be read online at
 .br
 <http://bzr.tin.org/doc/filtering>.
 .PP
+Note that there are two different ways to match strings (see
+\fBwildcard\fP tinrc variable): via wildmats or via regular expressions.
+The later is more complex but offers significantly more options. If you
+intend to change the matching type from one to the other, the rules in the
+filter file need to be changed manually first. For switching from wildmats
+to regexp there is a helper script
+.BR w2r.pl (1)
+in the tools dir and online at
+.br
+<http://bzr.tin.org/tools/w2r.pl>.
+.PP
+As regular expressions do provide options which are not available with
+wildmats there is no helper script for such a switch. If you switch to
+regular expressions, stay with them. They are powerful and fast.
+.PP
 .\" FIXME - Next paragraph is out of date
 The on-screen filtering menu is accessed by pressing
 \fBMenuFilterKill\fP ('\fB^K\fP') or \fBMenuFilterSelect\fP ('\fB^A\fP')
 at the Group and Article levels. It allows the user to kill or select an
 article that matches the current ''Subject:'' line, ''From:'' line or a
 string entered by the user. The user entered string can be applied to the
-\&''Subject:'' or ''From:'' line of an article. The filter can be limited
-to the current newsgroup or it can apply to all newsgroups. Once entered
-the user can abort the command and not save the new filter, edit the full
-filter file or save filter.
+\&''Subject:'', ''From:'', ''Message-ID:'', ''References:'', ''Xref:'' or
+\&''Path:'' line of an article. The filter can be limited to the current
+newsgroup or it can apply to all newsgroups. Once entered the user can
+abort the command and not save the new filter, edit the full filter file
+or save filter.
 .\"
 .\"
 .SS "POSTING ARTICLES"
@@ -3174,6 +3190,26 @@ Matches alt.config and everything in the 'news' hierarchy except news.test
 .PP
 See the explanation for the $\fBAUTOSUBSCRIBE\fP and $\fBAUTOUNSUBSCRIBE\fP
 variables for further examples.
+.\"
+.\"
+.SS INTERACTIVE SEARCH
+Depending on the setting of the \fBwildcard\fP tinrc variable there are
+currently a few limitations for interactive searches \fBSearchSubjF\fP
+('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP'), \fBSearchAuthF\fP ('\fBa\fP'),
+\fBSearchAuthB\fP ('\fBA\fP'), \fBSearchBody\fP ('\fBB\fP') and
+\fBSearchRepeat\fP ('\fB\(rs\fP') one should be aware of.
+.PP
+Wildmat searches automatically enclose the search string in asterisks ('*'),
+simulating substring searches. This behavior is fixed and cannot be altered.
+.PP
+Regex searches automatically replace spaces ('\ ') and/or tabs ('\\t') in
+the search string with the '\\s' meta-character, which matches any whitespace
+character. This behavior cannot be prevented. Also regex searches are
+case insensitive by default. To enforce case sensitivity, prefix the search
+pattern by one of the following: '\fB(?^)\fP' or '\fB(?-i)\fP'.
+.PP
+If Unicode normalization is available, search patterns are normalized
+according to the \fBnormalization_form\fP tinrc variable.
 .\"
 .\"
 .SS SIGNATURES
@@ -3662,7 +3698,7 @@ For a detailed description see
 .I ${TIN_HOMEDIR:\-"$HOME"}/.newsrc
 .PP
 .nf
-.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/.oldnewsrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER$/.oldnewsrc
 .fi
 .PP
 .I ${TIN_HOMEDIR:\-"$HOME"}/.signature
@@ -3709,19 +3745,19 @@ For a detailed description see
 .I ${TIN_HOMEDIR:\-"$HOME"}/.tin/postponed.articles
 .PP
 .nf
-.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/motd
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/motd
 .fi
 .PP
 .nf
-.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/msglog
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/msglog
 .fi
 .PP
 .nf
-.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/newsgroups
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/newsgroups
 .fi
 .PP
 .nf
-.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT:+":$NNTPPORT"}/serverrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc
 .fi
 .PP
 .\" .I ${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc
@@ -4108,7 +4144,7 @@ Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR-file.
 .\"
 .\"
 .SH SECURITY
-If \fBtin\fP is started in debug mode (''\fB\-D n\fP'') it will create world
+If \fBtin\fP is started in debug mode (''\fB\-D\~n\fP'') it will create world
 readable files in \fB$TMPDIR\fP which may contain sensitive data like the
 users NNTP password in clear text (if running verbose).  On multiuser-systems
 \fB$TMPDIR\fP should be set to a safe location before starting \fBtin\fP in
@@ -4158,12 +4194,14 @@ permission at that location.
 .B NewsCache
 (<= V1.1.91) can't handle pipelined GROUP commands (\fBRFC\%3977\fP).
 If you run into trouble with any of the mentioned historical servers define
-DISABLE_PIPELINING in include/autoconf.h and recompile.
+DISABLE_PIPELINING in include/autoconf.h and recompile or use the ''\fB\-l\fP''
+command line option.
 .PP
 Using the ''\fB\-C\fP'' (COMPRESS) flag with
 .BR INN \0nnrpd
 versions between 2.6.1 and 2.7.1 (both incl.) may cause \fBtin\fP to hang
-and later timeout when posting. This has been fixed in
+and later timeout when used in conjunction with the ''\fB\-n\fP'' flag or
+when posting. This has been fixed in
 .BR INN \0nnrpd
 version 2.7.2. As a workaround simply don't use ''\fB\-C\fP''.
 .PP
@@ -4264,6 +4302,7 @@ Urs Janssen <urs@tin.org>
 .BR \%unshar (1),
 .BR \%uudecode (1),
 .BR \%vi (1),
+.BR \%w2r.pl (1),
 .BR \%xterm (1x),
 .BR \%heapsort (3),
 .BR \%iconv (3),
@@ -4298,7 +4337,6 @@ Urs Janssen <urs@tin.org>
 .BR RFC\%3977 ,
 .BR RFC\%4155 ,
 .BR RFC\%4643 ,
-.BR RFC\%4880 ,
 .BR RFC\%5198 ,
 .BR RFC\%5322 ,
 .BR RFC\%5536 ,
@@ -4306,4 +4344,6 @@ Urs Janssen <urs@tin.org>
 .BR RFC\%6048 ,
 .BR RFC\%6838 ,
 .BR RFC\%8054 ,
-.B RFC\%8143
+.BR RFC\%8143 ,
+.BR RFC\%8315 ,
+.B RFC\%9580

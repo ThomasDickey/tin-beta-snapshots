@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2025-05-12
+ *  Updated   : 2025-06-03
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2025 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -49,6 +49,7 @@
 #		include <unicode/ucsdet.h>
 #	endif /* USE_ICU_UCSDET */
 #endif /* CHARSET_CONVERSION */
+
 
 /*
  *  Table for the iso2asc conversion
@@ -143,6 +144,13 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
 #define TEX_SUBST	16
 #define SPACES		"                                                                                                         "
 
+/*
+ * - "i/"I (iuml/Iuml) are just in ISO-8859-{1,3,9,10,14,15,16}
+ *   but not in ISO-8859-{2,4}
+ * - "y (yuml) is "just" in ISO-8859-{1,9,14,15,16}
+ *
+ * - "S (sect) would be possible (all but ISO-8859-{5,6,11})
+ */
 static const char *const tex_from[TEX_SUBST] =
 {
 	"\"a", "\\\"a",
@@ -258,6 +266,9 @@ convert_iso2asc(
 }
 
 
+/*
+ * TODO: disallow "s at start of a word
+ */
 void
 convert_tex2iso(
 	char *from,
@@ -300,7 +311,7 @@ convert_tex2iso(
 		tex_to[7] = tex_to[6] = "\304";	/* Auml */
 		tex_to[9] = tex_to[8] = "\326";	/* Ouml */
 		tex_to[11] = tex_to[10] = "\334";	/* Uuml */
-		tex_to[14] = tex_to[13] = tex_to[12] = "\337"; /* szlig */
+		tex_to[14] = tex_to[13] = tex_to[12] = "\337";	/* szlig */
 	} else if (IS_LOCAL_CHARSET("UTF-8")) { /* locale charset is UTF-8 */
 		tex_to[1] = tex_to[0] = "\303\244";	/* auml */
 		tex_to[3] = tex_to[2] = "\303\266";	/* ouml */
@@ -337,46 +348,6 @@ convert_tex2iso(
 		}
 		++col;
 	}
-}
-
-
-/*
- * Check for German TeX encoding in file open on fp
- */
-t_bool
-is_art_tex_encoded(
-	FILE *fp)
-{
-	char *line;
-	int i, len;
-	t_bool body = FALSE;
-
-	rewind(fp);
-	while ((line = tin_fgets(fp, FALSE)) != NULL) {
-		if (!body) {
-			if (!*line)
-				body = TRUE;
-
-			continue;
-		}
-
-		i = 0;
-		while (line[i++] == ' ')
-			;	/* search for first non blank */
-
-		--i;
-		if (!isalnum((unsigned char) line[i]) && line[i] != '\"')
-			continue;	/* quoting char */
-
-		len = (int) strlen(line) - 1;
-		for (i = 1; i < len; i++) {
-			if (((line[i] == '\\') || (line[i] == '\"')) &&
-							(isalnum((unsigned char) line[i - 1])) &&
-							(isalnum((unsigned char) line[i + 1])))
-				return TRUE;
-		}
-	}
-	return FALSE;
 }
 
 
@@ -452,10 +423,14 @@ charset_unsupported(
 	static const char *charsets[] = {
 		"csUnicode",	/* alias for ISO-10646-UCS-2 */
 		"csUCS4",		/* alias for ISO-10646-UCS-4 */
-		"ISO-10646-UCS-2", /* can't be shortened due to ISO-10646-UCS-Basic */
+		"ISO-10646-UCS-2",
 		"ISO-10646-UCS-4",
-		"UTF-16",		/* covers also BE/LE */
-		"UTF-32",		/* covers also BE/LE */
+		"UTF-16",
+		"UTF-16BE",
+		"UTF-16LE",
+		"UTF-32",
+		"UTF-32BE",
+		"UTF-32LE",
 		"UNICODE-1-1",
 		"SCSU",
 		"csSCSU",
@@ -466,7 +441,7 @@ charset_unsupported(
 		return TRUE;
 
 	do {
-		if (!strncasecmp(charset, *charsetptr, strlen(*charsetptr)))
+		if (charset_compare(charset, *charsetptr))
 			return TRUE;
 	} while (*(++charsetptr) != NULL);
 
@@ -561,7 +536,7 @@ validate_charset(
 {
 	const char *c;
 
-	if (!charset || strlen(charset) > 40) /* RFC 2978 2.3 */
+	if (!charset || strlen(charset) > CHARSET_MAX_NAME_LEN) /* RFC 2978 2.3 */
 		return NULL;
 
 	c = charset;
@@ -572,6 +547,50 @@ validate_charset(
 		++c;
 	}
 	return charset;
+}
+
+
+/*
+ * compare two charset names ignoring case, punctuation and leading zeros.
+ * returns TRUE if the names do match and FALSE if they differ.
+ *
+ * see Unicode Technical Standard #22, 1.4 Charset Alias Matching
+ * and the note about false positives
+ */
+t_bool
+charset_compare(
+	const char *cs_a,
+	const char *cs_b)
+{
+#ifndef CHARSET_CONVERSION_UCNV
+	int i = 0, j = 0;
+
+	while(cs_a[i] && cs_b[j]) {
+		/* skip all but alnums */
+		while(cs_a[i] && !isalnum((unsigned char) cs_a[i]))
+			i++;
+		while(cs_b[j] && !isalnum((unsigned char) cs_b[j]))
+			j++;
+
+		/* skip 0 not preceded by a digit */
+		while(i && cs_a[i] == '0' && !isdigit((unsigned char) cs_a[i - 1]))
+			i++;
+		while(j && cs_b[j] == '0' && !isdigit((unsigned char) cs_b[j - 1]))
+			j++;
+
+		if (tolower((unsigned char) cs_a[i]) != tolower((unsigned char) cs_b[j]))
+			return FALSE;
+
+		++i;
+		++j;
+	}
+	return TRUE;
+#else
+	if (!ucnv_compareNames(cs_a, cs_b))
+		return TRUE;
+	else
+		return FALSE;
+#endif /* !CHARSET_CONVERSION_UCNV */
 }
 
 

@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2024-12-21
+ *  Updated   : 2025-06-15
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2025 Iain Lea <iain@bricbrac.de>
@@ -120,7 +120,7 @@ read_mail_active_file(
 	}
 
 	while ((buf = tin_fgets(fp, FALSE))) {
-		if (!parse_active_line(buf, &max, &min, my_spooldir) || *buf == '\0')
+		if (*buf == '\0' || *buf == '#' || !parse_active_line(buf, &max, &min, my_spooldir))
 			continue;
 
 		/*
@@ -289,7 +289,7 @@ open_newsgroups_fp(
 		 *       optimize more than n groups (e.g. 5) of the same
 		 *       subhierarchy to a wildmat?
 		 */
-		if (((nntp_caps.type == CAPABILITIES && nntp_caps.list_newsgroups) || nntp_caps.type != CAPABILITIES) && newsrc_active && !list_active && !no_more_wildmat && (PIPELINE_LIMIT > MAX(1, num_active))) {
+		if (nntp_caps.list_newsgroups && newsrc_active && !list_active && !no_more_wildmat && (PIPELINE_LIMIT > MAX(1, num_active))) {
 			char *ptr;
 			char buff[NNTP_STRLEN];
 			char line[NNTP_STRLEN];
@@ -298,11 +298,7 @@ open_newsgroups_fp(
 			int resp, i, j = 0;
 			struct t_group *group;
 
-			if (nntp_tcp_port != IPPORT_NNTP)
-				snprintf(file, sizeof(file), "%s:%u", nntp_server, nntp_tcp_port);
-			else
-				STRCPY(file, quote_space_to_dash(nntp_server));
-
+			STRCPY(file, quote_space_to_dash(nntp_server));
 			joinpath(serverdir, sizeof(serverdir), rcdir, file);
 			joinpath(file, sizeof(file), serverdir, NEWSGROUPS_FILE".tmp");
 			*buff = '\0';
@@ -310,7 +306,7 @@ open_newsgroups_fp(
 				for_each_group(i) {
 					if ((group = group_find(active[i].name, FALSE)) != NULL) {
 						if (group->type == GROUP_TYPE_NEWS) {
-							if (nntp_caps.type == CAPABILITIES && nntp_caps.list_newsgroups) {
+							if (nntp_caps.type == CAPABILITIES) {
 								if (*buff) {
 									if (strlen(buff) + strlen(active[i].name) + 1 < NNTP_GRPLEN) {
 										snprintf(buff + strlen(buff), sizeof(buff) - strlen(buff), ",%s", active[i].name);

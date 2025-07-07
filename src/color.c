@@ -7,7 +7,7 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@invisible-island.net> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 2025-05-09
+ *  Updated   : 2025-05-05
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
@@ -301,13 +301,9 @@ draw_pager_line(
 							for (i = 0; i < cCOLS - visual_len - 1; i++)
 								my_fputc(' ', stdout);
 						}
-						my_fputs(line, stdout);
-					} else /* fallback */
-						my_fputs(line, stdout);
-
-				} else	/* LTR */
-					my_fputs(line, stdout);
-
+					}
+				}
+				my_fputs(line, stdout);
 				free(line);
 			} else
 				my_fputs(str, stdout);
@@ -331,10 +327,8 @@ draw_pager_line(
 				c += num_bytes;
 			}
 #else
-			if (my_isprint((unsigned char) *c)) {
-				my_fputc((int) *c, stdout);
-				++c;
-			}
+			if (my_isprint((unsigned char) *c))
+				my_fputc((int) *c++, stdout);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			else if (IS_LOCAL_CHARSET("Big5") && (unsigned char) *c >= 0xa1 && (unsigned char) *c <= 0xfe && *(c + 1)) {
 				/*
@@ -342,18 +336,15 @@ draw_pager_line(
 				 * check only for 2-byte chars
 				 * TODO: should we also check if the second byte is also valid?
 				 */
-				my_fputc((int) *c, stdout);
-				++c;
-				my_fputc((int) *c, stdout);
-				++c;
+				my_fputc((int) *c++, stdout);
+				my_fputc((int) *c++, stdout);
 			} else {
 				/*
 				 * non-printable char
 				 * print as an octal value
 				 */
-				snprintf(octal, sizeof(octal), "\\%03o", (unsigned int) (*c & 0xff));
+				snprintf(octal, sizeof(octal), "\\%03o", (unsigned int) (*c++ & 0xff));
 				my_fputs(octal, stdout);
-				++c;
 			}
 		}
 	}

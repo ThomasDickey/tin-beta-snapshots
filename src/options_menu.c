@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2025-05-12
+ *  Updated   : 2025-06-18
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2025 Michael Bienia <michael@vorlon.ping.de>
@@ -386,6 +386,7 @@ option_is_visible(
 		case OPT_ATTRIB_FROM:
 		case OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT:
 		case OPT_ATTRIB_GROUP_FORMAT:
+		case OPT_ATTRIB_HIDE_INLINE_DATA:
 #ifdef HAVE_ISPELL
 		case OPT_ATTRIB_ISPELL:
 #endif /* HAVE_ISPELL */
@@ -495,57 +496,22 @@ fmt_option_prompt(
 	enum option_enum option)
 {
 	char *buf;
-	size_t option_width = (size_t) MAX(35, cCOLS / 2 - 9);
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t *wbuf, *wbuf2;
-
-	/* convert the option text to wchar_t */
-	wbuf = char2wchar_t(_(option_table[option].txt->opt));
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-
 	if (!option_is_title(option)) {
 		char flag;
-		int num = get_option_num(option);
+		int opt_len, num = get_option_num(option);
+		size_t option_width = (size_t) MAX(25, cCOLS / 2 - 5);
 
 		flag = (curr_scope && check_state(option)) ? '+' : ' ';
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (wbuf != NULL) {
-			wbuf2 = wstrunc(wbuf, option_width);
-			if ((buf = wchar_t2char(wbuf2)) == NULL) {
-				/* conversion failed, truncate original string */
-				buf = strunc(_(option_table[option].txt->opt), option_width);
-				snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num, (int) option_width, (int) option_width, buf);
-			} else
-				snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num,
-					(int) (strlen(buf) + option_width - (size_t) wcswidth(wbuf2, option_width + 1)),
-					(int) (strlen(buf) + option_width - (size_t) wcswidth(wbuf2, option_width + 1)), buf);
-			free(wbuf2);
-		} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		{
-			/* truncate original string */
-			buf = strunc(_(option_table[option].txt->opt), option_width);
-			snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num, (int) option_width, (int) option_width, buf);
-		}
+		buf = strunc(_(option_table[option].txt->opt), option_width);
+		opt_len = (int) (strlen(buf) + option_width - strwidth(buf));
+		snprintf(dst, len, "%s %c%3d %-*.*s: ", editing ? "->" : "  ", flag, num, opt_len, opt_len, buf);
 	} else {
 		size_t w = (size_t) (cCOLS > 3 ? cCOLS - 3 : 0);
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (wbuf != NULL) {
-			wbuf2 = wstrunc(wbuf, w);
-			if ((buf = wchar_t2char(wbuf2)) == NULL)	/* conversion failed, truncate original string */
-				buf = strunc(_(option_table[option].txt->opt), w);
-			free(wbuf2);
-		} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			buf = strunc(_(option_table[option].txt->opt), w);	/* truncate original string */
+		buf = strunc(_(option_table[option].txt->opt), w);
 		snprintf(dst, len, "  %s", buf);
 	}
-
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	FreeIfNeeded(wbuf);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	FreeIfNeeded(buf);
+	free(buf);
 	return dst;
 }
 
@@ -590,7 +556,7 @@ print_any_option(
 			break;
 
 		case OPT_CHAR:
-			snprintf(ptr, len, "%"T_CHAR_FMT, (wint_t) *OPT_CHAR_list[option_table[option].var_index]);
+			snprintf(ptr, len, "%"T_CHAR_FMT, (T_CHAR_TYPE) *OPT_CHAR_list[option_table[option].var_index]);
 			break;
 
 		default:
@@ -1048,7 +1014,8 @@ config_page(
 		SORT_OPTS			= 1 << 5,
 		THREAD_ARTS			= 1 << 6,
 		THREAD_SCORE		= 1 << 7,
-		TEX2ISO_CONV		= 1 << 8
+		TEX2ISO_CONV		= 1 << 8,
+		HIDE_INLINE_DATA	= 1 << 9
 	} changed = NOT_CHANGED;
 	int i, scope_idx = 0;
 	enum context prev_signal_context = signal_context;
@@ -1138,7 +1105,7 @@ config_page(
 						if (changed & TEX2ISO_CONV) {
 							if (pgart.raw) {
 								if (curr_group->attribute->tex2iso_conv)
-									pgart.tex2iso = is_art_tex_encoded(pgart.raw);
+									;
 								else
 									pgart.tex2iso = FALSE;
 								/* force recooking the current article */
@@ -1149,8 +1116,11 @@ config_page(
 						 * recook if an article is open
 						 */
 						if (changed & DISPLAY_OPTS) {
-							if (pgart.raw)
+							if (pgart.raw) {
+								if (changed & HIDE_INLINE_DATA)
+									update_hide_inline_data();
 								resize_article(TRUE, &pgart);
+							}
 						}
 						/*
 						 * Clear art->keep_in_base if switching to !show_only_unread_arts
@@ -1452,9 +1422,6 @@ config_page(
 						case OPT_AUTO_RECONNECT:
 #endif /* NNTP_ABLE */
 						case OPT_CATCHUP_READ_GROUPS:
-#ifdef USE_ZLIB
-						case OPT_COMPRESS_OVERVIEW_FILES:
-#endif /* USE_ZLIB */
 						case OPT_FORCE_SCREEN_REDRAW:
 						case OPT_KEEP_DEAD_ARTICLES:
 						case OPT_SHOW_ONLY_UNREAD_GROUPS:
@@ -1518,8 +1485,16 @@ config_page(
 								set_last_option_on_screen(first_option_on_screen);
 								redraw_screen(option);
 #endif /* USE_ZLIB */
+								serverrc.cache_overview_files = tinrc.cache_overview_files;
 							}
 							break;
+
+#ifdef USE_ZLIB
+						case OPT_COMPRESS_OVERVIEW_FILES:
+							if (prompt_option_on_off(option))
+								serverrc.compress_overview_files = tinrc.compress_overview_files;
+							break;
+#endif /* USE_ZLIB */
 
 #ifdef HAVE_COLOR
 						case OPT_EXTQUOTE_HANDLING:
@@ -1976,8 +1951,6 @@ config_page(
 						case OPT_COL_FROM:
 						case OPT_COL_HEAD:
 						case OPT_COL_HELP:
-						case OPT_COL_INVERS_BG:
-						case OPT_COL_INVERS_FG:
 						case OPT_COL_MESSAGE:
 						case OPT_COL_MINIHELP:
 						case OPT_COL_NEWSHEADERS:
@@ -2026,6 +1999,8 @@ config_page(
 #ifdef HAVE_COLOR
 						case OPT_COL_BACK:
 						case OPT_COL_NORMAL:
+						case OPT_COL_INVERS_BG:
+						case OPT_COL_INVERS_FG:
 							if (prompt_option_list(option)) {
 								redraw_screen(option);
 								changed |= MISC_OPTS;
@@ -2038,9 +2013,10 @@ config_page(
 								UPDATE_INT_ATTRIBUTES(auto_cc_bcc);
 							break;
 
-						case OPT_HIDE_UUE:
+						case OPT_HIDE_INLINE_DATA:
 							if (prompt_option_list(option)) {
-								update_hide_uue();
+								UPDATE_INT_ATTRIBUTES(hide_inline_data);
+								changed |= HIDE_INLINE_DATA;
 								changed |= DISPLAY_OPTS;
 							}
 							break;
@@ -2229,6 +2205,14 @@ config_page(
 						case OPT_ATTRIB_AUTO_CC_BCC:
 							if (prompt_option_list(option))
 								SET_NUM_ATTRIBUTE(auto_cc_bcc, tinrc.attrib_auto_cc_bcc);
+							break;
+
+						case OPT_ATTRIB_HIDE_INLINE_DATA:
+							if (prompt_option_list(option)) {
+								SET_NUM_ATTRIBUTE(hide_inline_data, tinrc.attrib_hide_inline_data);
+								changed |= HIDE_INLINE_DATA;
+								changed |= DISPLAY_OPTS;
+							}
 							break;
 
 						case OPT_ATTRIB_MAIL_MIME_ENCODING:
@@ -3400,7 +3384,7 @@ free_scopes_and_attributes(
 	}
 
 	while (num_scope > 1 && !scopes[num_scope - 1].global)
-			free_scope(--num_scope);
+		free_scope(--num_scope);
 }
 
 
@@ -3466,6 +3450,8 @@ check_state(
 			return curr_scope->state->group_catchup_on_exit;
 		case OPT_ATTRIB_GROUP_FORMAT:
 			return curr_scope->state->group_format;
+		case OPT_ATTRIB_HIDE_INLINE_DATA:
+			return curr_scope->state->hide_inline_data;
 #ifdef HAVE_ISPELL
 		case OPT_ATTRIB_ISPELL:
 			return curr_scope->state->ispell;
@@ -3679,6 +3665,10 @@ reset_state(
 			break;
 		case OPT_ATTRIB_GROUP_FORMAT:
 			RESET_ATTRIBUTE(group_format, tinrc.attrib_group_format);
+			break;
+		case OPT_ATTRIB_HIDE_INLINE_DATA:
+			curr_scope->state->hide_inline_data = FALSE;
+			tinrc.attrib_hide_inline_data = default_scope->attribute->hide_inline_data;
 			break;
 #ifdef HAVE_ISPELL
 		case OPT_ATTRIB_ISPELL:
@@ -3937,6 +3927,7 @@ initialize_attributes(
 	INITIALIZE_NUM_ATTRIBUTE(extquote_handling, tinrc.attrib_extquote_handling);
 #endif /* HAVE_COLOR */
 	INITIALIZE_NUM_ATTRIBUTE(group_catchup_on_exit, tinrc.attrib_group_catchup_on_exit);
+	INITIALIZE_NUM_ATTRIBUTE(hide_inline_data, tinrc.attrib_hide_inline_data);
 	INITIALIZE_NUM_ATTRIBUTE(mail_8bit_header, tinrc.attrib_mail_8bit_header);
 	INITIALIZE_NUM_ATTRIBUTE(mail_mime_encoding, tinrc.attrib_mail_mime_encoding);
 	INITIALIZE_NUM_ATTRIBUTE(mark_ignore_tags, tinrc.attrib_mark_ignore_tags);

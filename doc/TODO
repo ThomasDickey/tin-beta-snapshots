@@ -43,6 +43,10 @@ o  add version number to other config-files (e.g. tin.defaults)
 
 o  Add docs to explain how to create system-wide overviews
 
+o  performing a body_search after toggling show_only_unread_arts to
+   also show read arts the total and percentage is wrong, e.g.:
+   "Searching article 4700 of 2831 ('q' to abort)... 166%"
+
 o  iso2asc conversion is missing for 'internal' strings (e.g. 'M'enu)
    (eg. via _()/P_() beening a wrapper abround *gettext() with additional
     if (iso2asc_supported >= 0) process_charsets(..., FALSE))
@@ -69,8 +73,6 @@ o  the key ToggleHelpDisplay / GLOBAL_TOGGLE_HELP_DISPLAY is misnamed
 
 o  the literal IPv6 with embedded IPv4 addresses part in URL_REGEX is buggy
    and does not catch all valid combinations
-
-o  tin.h MIME_ENCODING_* and rfc2046.h ENCODING_* are not aligned
 
 Pager Problems
 --------------
@@ -128,11 +130,17 @@ o  add configure check for cl_clear_secret() in libcanlock and CL_API_MAJOR,
 o  update included libcanlock to >= 3.3.1
    [20211024 Urs Janssen <urs@tin.org>]
 
-o  allow per server cache_overview_files, compress_overview_files setting via
-   serverrc.
-   [20180215 Urs Janssen <urs@tin.org>]
-
-o  if we extend serverrc it should also get some 'M'enu.
+o  serverrc should get some 'M'enu. Eg. if there is a tinrc and a serverrc
+   var (where the later overrides the former) both should be shown in the
+   'M'enu side by side like ([D] = tinrc/default, [S] = serverc):
+   -> nnn [D] Cache NNTP overview files locally  : OFF
+   -> nnn [S] Cache NNTP overview files locally  : ON
+   -> nnn [D] Compress locally cached NNTP ove...: ON
+   -> nnn [S] Compress locally cached NNTP ove...: OFF
+   (and the 3rd line could be hidden as it's currently done)
+   the above is just an idea (which doesn't match the (probably mostly
+   unknown) 'S'copes menu) we could add something like that as 's'erverrc
+   menu instead - other options welcome.
    [20190205 Urs Janssen <urs@tin.org>]
 
 o  implement SAVE_APPEND_FILE_ALL ('A') and SAVE_OVERWRITE_ALL ('O') keys
@@ -151,11 +159,6 @@ o  allow to cancel piping / saving multiple articles, ESC/'z' just stops the
 
 o  add per scope getart_limit via attributes
    [20131114 Urs Janssen <urs@tin.org>]
-
-o  add per scope hide_{uue,yenc,shar) via attributes
-   (use a unified option with a name like hide_inline_non_mime_attachments
-    = {none, uue, partial_uue, xxe, partial_xxe, yec, partial_yenc, shar,
-       pgp-sig, pgp-key, ...} and combinations)
 
 o  add per scope hideline_regex via attributes e.g. to exclude *ascii-art
 
@@ -420,6 +423,7 @@ o  Additions to the group menu:
      'V'  (View/pipe/save multimedia attachments)
      'Y'  (check for new articles in group)
      '%'  (toggle rot13 encoding of screen content)
+     key to search in (raw) article headers (and body).
 
 o  Additions to the select menu:
      '%'  (toggle rot13 encoding of screen content)
@@ -556,13 +560,20 @@ o  Enhance -n to take newsgroup name as argument and use group_get_art_info()
    to allow posting to groups other than those in newsrc.
 
 o  add config option for (external) viewer to show postings stored in
-   keep_posted_articles_file
+   posted_articles_file
    [20021003 Michael Gerhards <HM-Gerhards@uni.de>]
 
 Filtering enhancements
 ----------------------
 o  add used filter-type to filter file or filter rule or use different
-   filter files for wildmat/regexp
+   filter files for wildmat/regexp; or at least check the filter file
+   before usage and inform the user if its format seems not to match
+   the wildcard-tinrc entry, e.g. read the filter-file (count the
+   rules and if any ignore everything but the lines which take a regexp
+   or wildmat (subj|from|msgid(?:|_last|_only)|refs_only|xref|path) and
+   try to compile_regex() it - if there are errors like
+   PCRE2_ERROR_QUANTIFIER_INVALID warn the user if wildcard-tinrc is
+   regexp ("looks like a wildmat filter file, but ... q)uit r)rename ...).
 
 o  add command: mark all articles older/newer than <date> (or <days>) as
    read (useful when subscribing to a new group with high-traffic...)
@@ -613,8 +624,6 @@ o  add BiDi handling to page header
 o  possibility to recook the article with a manually supplied charset
    (e.g. to override a false guess or the like)
 
-o  add page_yenc_format for customization
-
 Internal Changes
 ----------------
 o  check remaining fopen(..., "r") calls if they should replaced by
@@ -653,10 +662,6 @@ o  rewrite auth.c
    - it is overcomplex and the current codeflow has issues (e.g. prompts
      for user/pass if not in newsauth even for e.g. SASL ANONYMOUS).
    - sasl-libs likely have callbacks, make use of them!
-   - add config option (per server?) to force the use of SASL or USER/PASS
-     only (or disallow SASL (mech list?) or USER/PASS):
-     - I saw at least one bigger server which announced SASL (compiled in)
-       but did not support it (intentional lacking local config!).
 
 o  fix aclocal.m4:CF_FUNC_SYSTEM and/or misc.c:invoke_cmd() that
    --enable-broken-system-fix/IGNORE_SYSTEM_STATUS isn't needed anymore.
@@ -733,14 +738,15 @@ o  check where iKeyAbort should be used instead of ESC (etc.pp.)
    [Urs Janssen <urs@tin.org>]
 
 o  close potential security holes:
-   - remove fixed length buffers (find_nov_file(), print_from(),
-     quote_space_to_dash(), escape_shell_meta(),
-     build_messageid(), get_secret(), get_host_name(), get_domain_name(),
-     get_fqdn(), get_user_name(), get_full_name(), build_sender(), ...)
+   - remove fixed length buffers (find_nov_file(), quote_space_to_dash(),
+     escape_shell_meta(), build_messageid(), get_secret(), get_host_name(),
+     get_domain_name(), get_fqdn(), get_full_name(), build_sender(), ...)
    - change all system()/popen() calls to fork() and exec() calls
    - check where we should use snprintf() instead of sprintf()
-   - check where we should use strncat() instead of strcat()
-   - check where we should use strncpy() instead of strcpy()
+   - check where we should use strncat() (or append_to_string()) instead of
+                               strcat()
+   - check where we should use strscpy() (configure check needed) or
+                               strncpy() instead of strcpy()
    - check possible races with access()/link()/rename()/stat()/
                                unlink()/chdir()/fopen()/fstat()/open()/
                                opendir()/t_open()
@@ -801,6 +807,8 @@ o  as rename_file() and copy_fp() now return errno (or 0),
 o  without %G and %P expansion, we could read mailcaps only once and keep
    the config in memory
 
+o  tin.h MIME_ENCODING_* and rfc2046.h ENCODING_* are not aligned
+
 Unicode
 -------
 o  make mm_network_charset an "option_list" to avoid junk input or
@@ -856,6 +864,9 @@ o  check for rpmatch(3) and if found use in yes/no questions,
 
 o  check for libunibreak <https://github.com/adah1972/libunibreak>
    and make use of it if found? (tinrc.dont_break_words)
+
+o  check for libgrapheme <https://libs.suckless.org/libgrapheme/>
+   and if found use it for char/word-segmentation?
 
 Docs/online help
 ----------------
@@ -915,16 +926,15 @@ Not yet classified
 o  tinrc.info_in_last_line has no 'M'enu entry (but a toggle-key at most
    levels: GLOBAL_TOGGLE_INFO_LAST_LINE)
 
-o  configure check for volatile sig_atomic_t and if found use in
-   signal_handler to flag actions to be done; check the flag outside
+o  flag actions in signal_handler to be done; check the flag outside
    the signal_handler (where? handle_keypad()?) and do the outstanding
    actions there, like:
    	enum sactions {nothing, write_newsrc, tin_done, ...}
-   	volatile sig_atomic_t pending_saction = nothing;
+   	volatile sig_atomic_t pending_sactions = nothing;
    	/* ... */
    		case SIGUSR2:
-   			pending_saction = write_newsrc;
-   (could fix our SIGUSR2 and SIGTERM issue).
+   			pending_sactions = write_newsrc;
+   (could fix our SIGUSR2 and SIGTERM issue; see SIGWINCH/prompt_list()).
 
 o  add tinrc option to disable charset guessing for group-descriptions
    and MOTD.
@@ -965,6 +975,10 @@ o  exit HEAD/NEXT loop on 5xx responses to HEAD? (see
 o  motd is only shown/checked for if using nntp, subscriptions is also
    evaluated if reading from local spool - look for motd[.nnrpd|.innd] in
    the same dir if not using nntp?
+
+o  if reading from local spool, groups which are present in the active
+   but all articles are exired (and thus the group-dir got removed from
+   the spool) are shown as bogus ('D').
 
 o  follow $LC_COLLATE (e.g. add strxfrm()/wcsxfrm()/strcoll()/wcscoll() to
    subj_comp_*/from_comp_*)?

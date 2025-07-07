@@ -1,6 +1,6 @@
 PO4A-HEADER: mode=after; position=MAINTAINER;beginboundary=^\.SH
 .SH ÜBERSETZUNG
 .IP "Erika Mustermann <erika@example.org>"
-Wenn Sie Fehler in der Übersetzung finden, schicken Sie bitte eine E-Mail
-an <translation@tin.org>.
+Wenn Sie Fehler in der Übersetzung finden, dürfen Sie diese gerne per
+E-Mail an <translation@tin.org> melden.
 .\"

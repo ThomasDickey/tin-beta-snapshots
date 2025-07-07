@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-05-13
+ *  Updated   : 2025-05-27
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -272,7 +272,7 @@ generic_search(
 
 			case POSTED_LEVEL:
 				phptr = find_post_hist(n);
-				snprintf(buf, sizeof(buf), "%s %s %s", phptr->date, phptr->group, phptr->subj);
+				snprintf(buf, sizeof(buf), "%s %s %s", phptr->date, BlankIfNull(phptr->group), BlankIfNull(phptr->subj));
 				break;
 
 			case URL_LEVEL:
@@ -396,6 +396,12 @@ body_search(
 
 	/*
 	 * Skip the header - is this right ?
+	 * then we currently don't have a way to search in the headers
+	 * (except author/subject search). if we add some kind of full
+	 * article search we need to decide if it should act on the raw
+	 * headers or even article (so one could search for
+	 * "\b\?iso-8859-\d\d?\?" or the like or on the decoded headers
+	 * (you don't search for base64 raw-data, do you?)
 	 */
 	for (i = 0; artinfo.cookl[i].flags & C_HEADER; ++i)
 		;

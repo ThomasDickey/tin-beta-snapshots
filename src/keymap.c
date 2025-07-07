@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2025-02-25
+ *  Updated   : 2025-05-30
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2025 Dirk Nimmich <nimmich@muenster.de>
@@ -1376,6 +1376,11 @@ process_mapping(
 
 				return TRUE;
 			}
+			if (STRCMPEQ(keyname, "PageToggleInlineData")) {
+				process_keys(PAGE_TOGGLE_INLINE_DATA, keys, &page_keys);
+
+				return TRUE;
+			}
 			if (STRCMPEQ(keyname, "PageToggleRaw")) {
 				process_keys(PAGE_TOGGLE_RAW, keys, &page_keys);
 
@@ -1393,11 +1398,6 @@ process_mapping(
 			}
 			if (STRCMPEQ(keyname, "PageToggleTex2iso")) {
 				process_keys(PAGE_TOGGLE_TEX2ISO, keys, &page_keys);
-
-				return TRUE;
-			}
-			if (STRCMPEQ(keyname, "PageToggleUue")) {
-				process_keys(PAGE_TOGGLE_UUE, keys, &page_keys);
 
 				return TRUE;
 			}
@@ -2455,6 +2455,8 @@ upgrade_keymap_file(
 					catchup_next_unread[1] = my_strdup(keydef);
 				else if (STRCMPEQ(keyname, "PageToggleHeaders"))
 					fprintf(newfp, "PageToggleRaw\t\t\t%s\n", keydef);
+				else if (STRCMPEQ(keyname, "PageToggleUue"))
+					fprintf(newfp, "PageToggleInlineData\t%s\n", keydef);
 				else if (STRCMPEQ(keyname, "PromptNo") || STRCMPEQ(keyname, "PromptYes")) {
 					if (strlen(keydef) == 1 && islower((unsigned char) keydef[0]))
 						fprintf(newfp, "%s\t\t\t%c\t%c\n", keyname, keydef[0], my_toupper((unsigned char) keydef[0]));
@@ -2995,7 +2997,7 @@ setup_default_keys(
 	add_default_key(&page_keys, "<", PAGE_TOP_THREAD);
 	add_default_key(&page_keys, ">", PAGE_BOTTOM_THREAD);
 	add_default_key(&page_keys, "\"", PAGE_TOGGLE_TEX2ISO);
-	add_default_key(&page_keys, "(", PAGE_TOGGLE_UUE);
+	add_default_key(&page_keys, "(", PAGE_TOGGLE_INLINE_DATA);
 	add_default_key(&page_keys, ")", PAGE_REVEAL);
 	add_default_key(&page_keys, "[", GLOBAL_QUICK_FILTER_SELECT);
 	add_default_key(&page_keys, "]", GLOBAL_QUICK_FILTER_KILL);
@@ -3469,11 +3471,11 @@ dump_keylist(
 		"PageTag",
 		"PageToggleAllHeaders",
 		"PageToggleHighlight",
+		"PageToggleInlineData",
 		"PageToggleRaw",
 		"PageToggleRot",
 		"PageToggleTabs",
 		"PageToggleTex2iso",
-		"PageToggleUue",
 		"PageToggleVerbatim",
 		"PageTopThd",
 		"PageViewAttach",

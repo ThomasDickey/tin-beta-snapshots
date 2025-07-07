@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-04-04
+ *  Updated   : 2025-06-06
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -352,20 +352,16 @@ build_tline(
 						gap = (len - (len_end - len_start));
 						if (gap > 0) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-							{
-								if ((wtmp = char2wchar_t(art->subject)) != NULL) {
-									wtmp2 = wcspart(wtmp, gap, TRUE);
-									free(wtmp);
-									if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
-										strcat(buffer, tmp);
+							if ((wtmp = char2wchar_t(art->subject)) != NULL) {
+								wtmp2 = wcspart(wtmp, gap, TRUE);
+								free(wtmp);
+								if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+									strcat(buffer, tmp);
 
-									free(wtmp2);
-								}
+								free(wtmp2);
 							}
 #else
-							{
-								strncat(buffer, art->subject, gap);
-							}
+							strncat(buffer, art->subject, gap);
 							buffer[len_end + gap] = '\0';	/* Just in case */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 						}

@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-05-12
+ *  Updated   : 2025-06-09
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -340,12 +340,21 @@ handle_resize(
 
 	switch (input_context) {
 		case cGetline:
-			gl_redraw();
+			/* leave input field to avoid confusion after redrawing the screen */
+			if (signal_context == cAttrib || signal_context == cConfig)
+				pending_sactions = 1;
+			else
+				gl_redraw();
 			break;
 
 		case cPromptCONT:
 			if (redraw_after_suspend)
 				info_message(_(txt_return_key));
+			break;
+
+		case cPromptList:
+			/* leave input field to avoid confusion after redrawing the screen */
+			pending_sactions = 1;
 			break;
 
 		case cPromptSLK:

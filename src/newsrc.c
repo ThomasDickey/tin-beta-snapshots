@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-04-11
+ *  Updated   : 2025-06-15
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -365,7 +365,7 @@ open_subscription_fp(
 #ifdef NNTP_ABLE
 		if (read_news_via_nntp) {
 			/* RFC 6048 2.6 */
-			if (nntp_caps.type == CAPABILITIES && !nntp_caps.list_subscriptions)
+			if (!nntp_caps.list_subscriptions)
 				return (FILE *) 0;
 			else
 				return (nntp_command("LIST SUBSCRIPTIONS", OK_GROUPS, NULL, 0));
@@ -455,14 +455,7 @@ backup_newsrc(
 	struct stat statbuf;
 	FILE *fp_in, *fp_out;
 
-#ifdef NNTP_ABLE
-	if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
-		snprintf(filebuf, sizeof(filebuf), "%s:%u", nntp_server, nntp_tcp_port);
-	else
-#endif /* NNTP_ABLE */
-	{
-		STRCPY(filebuf, quote_space_to_dash(nntp_server));
-	}
+	STRCPY(filebuf, quote_space_to_dash(nntp_server));
 	joinpath(dirbuf, sizeof(dirbuf), rcdir, filebuf);
 	joinpath(filebuf, sizeof(filebuf), dirbuf, OLDNEWSRC_FILE);
 

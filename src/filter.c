@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2025-05-07
+ *  Updated   : 2025-06-18
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -1510,7 +1510,7 @@ filter_menu(
 			ret = add_filter_rule(group, art, &rule, FALSE);
 			if (!art->path && !has_path_filter && filter_on_path(group)) { /* we don't have Path-data yet */
 				index_group(group); /* fetch Path:-data */
-				if (tinrc.cache_overview_files) /* update cache */
+				if (serverrc.cache_overview_files) /* update cache */
 					write_overview(group);
 			}
 			FreeIfNeeded(rule.text);

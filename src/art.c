@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-12
+ *  Updated   : 2025-07-03
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -239,8 +239,15 @@ setup_hard_base(
 		t_artnum last, start, count = T_ARTNUM_CONST(0), j = T_ARTNUM_CONST(0);
 		static t_bool skip_listgroup = FALSE;
 
-		if (newsrc_active && !list_active)
+		if (newsrc_active && !list_active) /* -n */
 			skip_listgroup = TRUE;
+
+		if (getart_limit > 0)
+			j = group->xmax - getart_limit;
+		if (getart_limit < 0)
+			j = getart_limit + find_first_unread(group);
+		if (j < group->xmin)
+			j = group->xmin;
 
 		/*
 		 * Some nntp servers are broken and need an extra GROUP command
@@ -253,56 +260,54 @@ setup_hard_base(
 		 * and GROUP (based on the clients contract).
 		 * Calculate range and prepare base[] not to lose unread arts.
 		 */
-		if (nntp_caps.broken_listgroup || (!skip_listgroup && getart_limit && nntp_caps.type == CAPABILITIES && nntp_caps.reader)) {
+		if (nntp_caps.broken_listgroup) {
 			snprintf(buf, sizeof(buf), "GROUP %s", group->name);
 			if (nntp_command(buf, OK_GROUP, line, sizeof(line)) == NULL)
 				return -1;
 
-			if (sscanf(line, "%"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT, &count, &start) != 2)
+			if (sscanf(line, "%"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT, &count, &start, &last) != 3)
 				return -1;
 
-			if (getart_limit > 0) {
-				j = group->xmax - getart_limit;
-				count = MAX(find_first_unread(group), start);
-			}
-			if (getart_limit < 0) {
-				j = getart_limit + find_first_unread(group);
-				count = group->xmin;
-			}
-			if (j < group->xmin)
-				j = group->xmin;
+#	ifdef DEBUG
+			if ((debug & DEBUG_NNTP) && verbose > 1)
+				debug_print_file("NNTP", "setup_hard_base(GROUP %s %d-%d (%d))", buf, start, last, count);
+#	endif /* DEBUG */
 
-			for (; count < j; count++) {
+			total = count;
+			grpmenu.max = 0;
+
+			if (getart_limit > 0 && group->xmax > getart_limit) {
+				if ((j = find_first_unread(group)) > start) {
+					start = MIN(j, group->xmax - getart_limit);
+					total = getart_limit;
+				}
+			}
+
+			if (getart_limit < 0) {
+				if ((j = (getart_limit + find_first_unread(group))) > start)
+					if (j < group->xmax)
+						start = j;
+			}
+
+			while (start <= last) {
 				if (grpmenu.max >= max_base)
 					expand_base();
-				base[grpmenu.max++] = count;
+				base[grpmenu.max++] = start++;
 			}
 		}
 
-		/*
-		 * See if LISTGROUP works
-		 */
-		if (!skip_listgroup && getart_limit != 0) { /* try to avoid traffic */
-			if (nntp_caps.type == CAPABILITIES && nntp_caps.reader) {
-				/* RFC 3977 allows ranges in LISTGROUP */
-				if (getart_limit > 0)
-					snprintf(buf, sizeof(buf), "LISTGROUP %s %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT"", group->name, j, group->xmax);
-				else /* getart_limit < 0; fetch till newest art */
-					snprintf(buf, sizeof(buf), "LISTGROUP %s %"T_ARTNUM_PFMT"-", group->name, j);
-
-			} else /* for RFC 977 just use GROUP */
-				skip_listgroup = TRUE;
-
-		} else /* get all article numbers */
-			snprintf(buf, sizeof(buf), "LISTGROUP %s", group->name);
-
 		if (!skip_listgroup) {
+			if (getart_limit != 0 && nntp_caps.type == CAPABILITIES && nntp_caps.reader) /* RFC 3977 allows ranges in LISTGROUP */
+				snprintf(buf, sizeof(buf), "LISTGROUP %s %"T_ARTNUM_PFMT"-", group->name, j); /* shorthand for j "-" group->xmax */
+			else
+				snprintf(buf, sizeof(buf), "LISTGROUP %s", group->name);
+
 			if ((fp = nntp_command(buf, OK_GROUP, NULL, 0)) != NULL) {
 				char *ptr;
 
 #	ifdef DEBUG
 				if ((debug & DEBUG_NNTP) && verbose > 1)
-					debug_print_file("NNTP", "setup_hard_base(%s)", buf);
+					debug_print_file("NNTP", "setup_hard_base(LISTGROUP %s)", buf);
 #	endif /* DEBUG */
 
 				while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
@@ -327,7 +332,7 @@ setup_hard_base(
 				skip_listgroup = TRUE;
 		}
 
-		if (skip_listgroup) { /* LISTGROUP was skipped or failed */
+		if (!nntp_caps.broken_listgroup && (skip_listgroup || (newsrc_active && list_active))) { /* LISTGROUP was skipped or failed or -ln */
 			/*
 			 * Handle the obscure case that the user aborted before the LISTGROUP
 			 * had a chance to respond
@@ -344,23 +349,25 @@ setup_hard_base(
 
 #	ifdef DEBUG
 			if ((debug & DEBUG_NNTP) && verbose > 1)
-				debug_print_file("NNTP", "setup_hard_base(%s)", buf);
+				debug_print_file("NNTP", "setup_hard_base(GROUP %s %d-%d (%d))", buf, start, last, count);
 #	endif /* DEBUG */
+
 			total = count;
 			grpmenu.max = 0;
-			if (getart_limit > 0) {
+
+			if (getart_limit > 0 && group->xmax > getart_limit) {
 				if ((j = find_first_unread(group)) > start) {
-					if (group->xmax > getart_limit) {
-						start = MIN(j, group->xmax - getart_limit);
-						total = getart_limit;
-					} else
-						start = j;
+					start = MIN(j, group->xmax - getart_limit);
+					total = getart_limit;
 				}
 			}
+
 			if (getart_limit < 0) {
 				if ((j = (getart_limit + find_first_unread(group))) > start)
-					start = j;
+					if (j < group->xmax)
+						start = j;
 			}
+
 			while (start <= last) {
 				if (grpmenu.max >= max_base)
 					expand_base();
@@ -470,27 +477,27 @@ index_group(
 	min = grpmenu.max ? base[0] : group->xmin;
 	max = grpmenu.max ? base[grpmenu.max - 1] : min - 1;
 
+	/*
+	 * Quit now if no articles
+	 */
+	if (max < 0)
+		return FALSE;
+
 	getart_limit = (cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit;
 
 	if (getart_limit > 0) {
 		if (grpmenu.max && (grpmenu.max > getart_limit))
 			min = base[grpmenu.max - getart_limit];
 		else
-			getart_limit = 0;
+			min = group->xmin;
 	} else if (getart_limit < 0) {
 		t_artnum first_unread = find_first_unread(group);
 
 		if (min - first_unread < getart_limit)
 			min = first_unread + getart_limit;
 		else
-			getart_limit = 0;
+			min = group->xmin;
 	}
-
-	/*
-	 * Quit now if no articles
-	 */
-	if (max < 0)
-		return FALSE;
 
 	top_art = 0;
 	last_read_article = T_ARTNUM_CONST(0);
@@ -503,7 +510,7 @@ index_group(
 	 * When reading local spool, this will pull in the system wide overview
 	 * cache (if found) otherwise the private overview cache will be read
 	 */
-	caching_xover = (tinrc.cache_overview_files && nntp_caps.over_cmd && group->type == GROUP_TYPE_NEWS);
+	caching_xover = (serverrc.cache_overview_files && nntp_caps.over_cmd && group->type == GROUP_TYPE_NEWS);
 	if ((changed = read_overview(group, min, max, &last_read_article, caching_xover, &rebuild_cache)) == -1)
 		return FALSE;	/* user aborted indexing */
 
@@ -688,10 +695,9 @@ open_art_header(
 					*next = atoartnum(buf);		/* Set next art number */
 					break;
 
-#	ifndef BROKEN_LISTGROUP
 				/*
 				 * might happen if LISTGROUP doesn't select group, but
-				 * we are not -DBROKEN_LISTGROUP
+				 * we do not have disabled_nntp_cmds=LISTGROUP
 				 */
 				case ERR_NCING:
 					nntp_caps.broken_listgroup = TRUE;
@@ -704,7 +710,6 @@ open_art_header(
 					if (nntp_command("NEXT", OK_NOTEXT, buf, sizeof(buf)))
 						*next = atoartnum(buf);
 					break;
-#	endif /* !BROKEN_LISTGROUP */
 
 				case ERR_COMMAND:	/* TODO: abort loop over all arts */
 					no_next = TRUE;
@@ -718,27 +723,22 @@ open_art_header(
 					/*
 					 * TODO: abort loop over all arts on ERR_NONEXT
 					 */
-#	ifndef BROKEN_LISTGROUP
 					/*
 					 * to avoid out of sync responses
-					 * (listgroup seems to work, but didn't select new group,
+					 * (LISTGROUP seems to work, but didn't select new group,
 					 *  so xover seems to work but returns old data)
 					 * we set listgroup_broken = TRUE; once we saw a
 					 * ERR_NOARTIG / ERR_NONEXT or the like - even if
-					 * ERR_NOARTIG may occur on servers where listgroup
+					 * ERR_NOARTIG may occur on servers where LISTGROUP
 					 * isn't broken...
 					 */
 					nntp_caps.broken_listgroup = TRUE;
-#	endif /* !BROKEN_LISTGROUP */
 					break;
 			}
 		}
 		return NULL;
 	}
 	/* silence compiler warning (unused parameter) */
-#	ifdef BROKEN_LISTGROUP
-	(void) groupname;
-#	endif /* BROKEN_LISTGROUP */
 #else
 	(void) groupname;
 	(void) next;
@@ -1303,7 +1303,6 @@ make_threads(
 	 */
 	clear_art_ptrs();
 
-
 	for_each_art(i) {
 		/* The threading pointers need to be reset if re-threading */
 		if (rethread || (group->attribute && group->attribute->thread_articles)) {
@@ -1496,7 +1495,7 @@ parse_headers(
 			case 'F':	/* From:  mandatory */
 				if (!got_from) {
 					if ((hdr = parse_header(ptr + 1, "rom", FALSE, FALSE, FALSE))) {
-						if (tinrc.cache_overview_files)
+						if (serverrc.cache_overview_files)
 							h->from_raw = hash_str(hdr);
 						build_mailbox_list(h, hdr);
 						got_from = TRUE;
@@ -1538,7 +1537,7 @@ parse_headers(
 			case 'S':	/* Subject:  mandatory */
 				if (!h->subject) {
 					if ((hdr = parse_header(ptr + 1, "ubject", FALSE, FALSE, FALSE))) {
-						if (tinrc.cache_overview_files && !h->subject_raw)
+						if (serverrc.cache_overview_files && !h->subject_raw)
 							h->subject_raw = hash_str(hdr);
 #ifdef HAVE_UNICODE_NORMALIZATION
 						if (IS_LOCAL_CHARSET("UTF-8"))
@@ -1583,7 +1582,7 @@ parse_headers(
 	if (got_from && h->date && h->msgid) {
 		if (!h->subject)
 			h->subject = hash_str("");
-		if (tinrc.cache_overview_files) {
+		if (serverrc.cache_overview_files) {
 			if (!h->subject_raw)
 				h->subject_raw = hash_str("");
 			if (!h->from_raw)
@@ -1804,7 +1803,7 @@ get_path_header(
 		} while (!found && *ptr && (ptr = strtok(NULL, "\n")) != NULL);
 	}
 
-	if ((nntp_caps.hdr || nntp_caps.hdr_cmd) && (!(nntp_caps.type == CAPABILITIES) || found)) {
+	if ((nntp_caps.hdr && nntp_caps.hdr_cmd) && found) {
 		if (min == max)
 			snprintf(cmd, sizeof(cmd), "%s Path %"T_ARTNUM_PFMT, nntp_caps.hdr_cmd, min);
 		else
@@ -1997,7 +1996,7 @@ read_overview(
 		return expired;
 
 #ifdef USE_ZLIB
-	if (fp != FAKE_NNTP_FP /* && tinrc.compress_overview_files */ ) { /* we may need to read compressed data even if not writing it */
+	if (fp != FAKE_NNTP_FP) { /* we may need to read compressed data even if not writing it, so no check for serverrc.compress_overview_files */
 		if ((fd = fileno(fp)) == -1) { /* paranoid */
 			fclose(fp);
 			return expired;
@@ -2183,7 +2182,7 @@ read_overview(
 				if (ofmt[count].type == OVER_T_STRING) {
 					if (!strcasecmp(ofmt[count].name, "Subject:")) {
 						if (*ptr) {
-							if (tinrc.cache_overview_files)
+							if (serverrc.cache_overview_files)
 								art->subject_raw = hash_str(ptr);
 
 #ifdef HAVE_UNICODE_NORMALIZATION
@@ -2197,7 +2196,7 @@ read_overview(
 							free(q);
 						} else {
 							art->subject = hash_str("");
-							if (tinrc.cache_overview_files)
+							if (serverrc.cache_overview_files)
 								art->subject_raw = hash_str("");
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && verbose > 1)
@@ -2209,13 +2208,13 @@ read_overview(
 
 					if (!strcasecmp(ofmt[count].name, "From:")) {
 						if (*ptr) {
-							if (tinrc.cache_overview_files)
+							if (serverrc.cache_overview_files)
 								art->from_raw = hash_str(ptr);
 							build_mailbox_list(art, ptr);
 						} else {
 							struct t_mailbox *mb;
 
-							if (tinrc.cache_overview_files)
+							if (serverrc.cache_overview_files)
 								art->from_raw = hash_str("");
 							if ((mb = add_mailbox(art)) != NULL)
 								mb->from = hash_str("");
@@ -2313,7 +2312,7 @@ read_overview(
 				switch (count) {
 					case 1: /* Subject: */
 						if (*ptr) {
-							if (tinrc.cache_overview_files)
+							if (serverrc.cache_overview_files)
 								art->subject_raw = hash_str(ptr);
 #ifdef HAVE_UNICODE_NORMALIZATION
 							if (IS_LOCAL_CHARSET("UTF-8"))
@@ -2326,7 +2325,7 @@ read_overview(
 							free(q);
 						} else {
 							art->subject = hash_str("");
-							if (tinrc.cache_overview_files)
+							if (serverrc.cache_overview_files)
 								art->subject_raw = hash_str("");
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && verbose > 1)
@@ -2337,13 +2336,13 @@ read_overview(
 
 					case 2:	/* From: */
 						if (*ptr) {
-							if (tinrc.cache_overview_files)
+							if (serverrc.cache_overview_files)
 								art->from_raw = hash_str(ptr);
 							build_mailbox_list(art, ptr);
 						} else {
 							struct t_mailbox *mb;
 
-							if (tinrc.cache_overview_files)
+							if (serverrc.cache_overview_files)
 								art->from_raw = hash_str("");
 							if ((mb = add_mailbox(art)) != NULL)
 								mb->from = hash_str("");
@@ -2497,7 +2496,7 @@ read_overview(
 	if (tin_errno)
 		return -1;
 
-#if defined(NNTP_ABLE) && defined(XHDR_XREF)
+#ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news && !xref_supported && nntp_caps.hdr_cmd) {
 		char cbuf[HEADER_LEN];
 		static t_bool found;
@@ -2585,7 +2584,7 @@ read_overview(
 			free(group_msg);
 		}
 	}
-#endif /* NNTP_ABLE && XHDR_XREF */
+#endif /* NNTP_ABLE */
 
 	if (local) {
 #ifdef NNTP_ABLE
@@ -2684,7 +2683,7 @@ write_overview(
 	/*
 	 * Can't write or caching is off or getart_limit is set
 	 */
-	if (no_write || !tinrc.cache_overview_files || ((cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit) != 0)
+	if (no_write || !serverrc.cache_overview_files || ((cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit) != 0)
 		return;
 
 	if ((fp = open_xover_fp(group, "w", T_ARTNUM_CONST(0), T_ARTNUM_CONST(0), FALSE)) == NULL)
@@ -2701,11 +2700,11 @@ write_overview(
 		return;
 	}
 	if ((dup_fd = dup(fd)) != -1) {
-		if ((gzfp = gzdopen(dup_fd, tinrc.compress_overview_files ? "w3" : "wT")) == Z_NULL)
+		if ((gzfp = gzdopen(dup_fd, serverrc.compress_overview_files ? "w3" : "wT")) == Z_NULL)
 			close(dup_fd);
 #	if 0 /* the 8k default is ok for us */
 		else
-			gzbuffer(gzfp, (tinrc.compress_overview_files ? 4 : 1) * 32768);
+			gzbuffer(gzfp, (serverrc.compress_overview_files ? 4 : 1) * 32768);
 #	endif /* 0 */
 	} else
 		gzfp = Z_NULL;
@@ -2966,7 +2965,7 @@ find_nov_file(
 			 * We only get here when private overviews are going to be used
 			 * Go no further if they are explicitly turned off
 			 */
-			if (!tinrc.cache_overview_files)
+			if (!serverrc.cache_overview_files)
 				return NULL;
 
 			/*
@@ -3136,7 +3135,8 @@ do_update(
 		++k;
 
 		if (verbose) {
-			my_printf("%s %s\n", (catchup ? _(txt_catchup) : _(txt_updating)), group->name);
+			my_printf((catchup ? _(txt_catchup_group) : _(txt_updating_group)), group->name);
+			my_printf("\n");
 			my_flush();
 		}
 

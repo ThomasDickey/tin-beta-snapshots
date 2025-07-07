@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2025-02-26
+ *  Updated   : 2025-06-14
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -305,7 +305,7 @@ authinfo_plain(
 	 */
 	if (initialized && !changed && !already_failed) {
 #	ifdef USE_GSASL
-		if (nntp_caps.authinfo_sasl && *nntp_caps.sasl_mechs)
+		if (nntp_caps.authinfo_sasl && nntp_caps.sasl_mechs && *nntp_caps.sasl_mechs)
 			ret = do_authinfo_sasl(authusername, authpassword);
 		if (ret != OK_AUTH_SASL && ret != OK_AUTH)
 #	endif /* USE_GSASL */
@@ -338,7 +338,7 @@ authinfo_plain(
 	if ((changed || !initialized) && !already_failed) {
 		if (read_newsauth_file(server, authuser, authpass)) {
 #	ifdef USE_GSASL
-			if (nntp_caps.authinfo_sasl && *nntp_caps.sasl_mechs)
+			if (nntp_caps.authinfo_sasl && nntp_caps.sasl_mechs && *nntp_caps.sasl_mechs)
 				ret = do_authinfo_sasl(authuser, authpass);
 
 			if (ret != OK_AUTH_SASL && ret != OK_AUTH)
@@ -384,7 +384,7 @@ authinfo_plain(
 			error_message(0, _(txt_auth_needed));
 			return (ret == OK_AUTH || ret == OK_AUTH_SASL);
 		}
-		if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && !nntp_caps.authinfo_state && ((nntp_caps.authinfo_sasl && *nntp_caps.sasl_mechs) || nntp_caps.authinfo_user))) {
+		if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && !nntp_caps.authinfo_state && ((nntp_caps.authinfo_sasl && nntp_caps.sasl_mechs && *nntp_caps.sasl_mechs) || nntp_caps.authinfo_user))) {
 			char *u, *p;
 
 			wait_message(0, _(txt_auth_needed));
@@ -406,7 +406,7 @@ authinfo_plain(
 			free(u);
 
 #	ifdef USE_GSASL
-			if (nntp_caps.authinfo_sasl && *nntp_caps.sasl_mechs)
+			if (nntp_caps.authinfo_sasl && nntp_caps.sasl_mechs && *nntp_caps.sasl_mechs)
 				ret = do_authinfo_sasl(authuser, authpass);
 			if (ret != OK_AUTH_SASL && ret != OK_AUTH)
 #	endif /* USE_GSASL */
@@ -737,13 +737,13 @@ callback(
 			}
 			break;
 
-		GSASL_ANONYMOUS_TOKEN:
+		case GSASL_ANONYMOUS_TOKEN:
 			gsasl_property_set(sctx, GSASL_ANONYMOUS_TOKEN, "dummy");
 			rc = GSASL_OK;
 			break;
 
-		GSASL_SERVICE:
-			gsasl_property_set(sctx, GSASL_SERVICE, "nntp");
+		case GSASL_SERVICE:
+			gsasl_property_set(sctx, GSASL_SERVICE, NNTP_TCP_NAME);
 			rc = GSASL_OK;
 			break;
 

@@ -145,7 +145,7 @@ slrnface_start(
 	}
 	free(fifo);
 	pid = getpid();
-	m = get_host_name();
+	m = BlankIfNull(get_host_name());
 	if ((n = snprintf(NULL, 0, "%s/.slrnfaces/%s.%ld", ptr, m, (long) pid)) < 0)
 		return;
 	pathlen = (size_t) n + 1;

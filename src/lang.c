@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-05-18
+ *  Updated   : 2025-07-07
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -107,6 +107,12 @@ constext txt_attrib_file_followup_to[] = N_("#  followup_to=STRING\n");
 constext txt_attrib_file_from[] = N_("#  from=STRING (just append wanted From:-line, don't use quotes)\n");
 constext txt_attrib_file_grp_catchup[] = N_("#  group_catchup_on_exit=ON/OFF\n");
 constext txt_attrib_file_grp_fmt[] = N_("#  group_format=STRING (eg. %n %m %R %L  %s  %F)\n");
+constext txt_attrib_file_hide_inline_data[] = N_("#  hide_inline_data=NUM (any combination is allowed)\n");
+constext txt_attrib_file_hide_inline_data_0[] = N_("#    0 = Display raw data\n");
+constext txt_attrib_file_hide_inline_data_1[] = N_("#    1 = uuencoded and yenc data will be condensed to a single tag line showing\n#        size and filename, similar to how MIME attachments are displayed\n");
+constext txt_attrib_file_hide_inline_data_2[] = N_("#    2 = Also hide partial, as for 1, but any line that looks like uuencoded\n#        or yenc data will be folded into a tag line.\n");
+constext txt_attrib_file_hide_inline_data_4[] = N_("#    4 = Hide Inline PGP\n");
+constext txt_attrib_file_hide_inline_data_8[] = N_("#    8 = Hide Shar\n");
 constext txt_attrib_file_mail_8bit_hdr[] = N_("#  mail_8bit_header=ON/OFF\n");
 constext txt_attrib_file_mail_mime_enc[] = N_("#  mail_mime_encoding=supported_encoding");
 #ifdef HAVE_ISPELL
@@ -248,7 +254,6 @@ constext txt_cannot_post_group[] = N_("Posting is not allowed to %s");
 #endif /* NNTP_ABLE */
 constext txt_cannot_supersede_mailgroups[] = N_("Can't supersede in mailgroups, try repost instead.");
 constext txt_cannot_write_to_directory[] = N_("%s is a directory");
-constext txt_catchup[] = N_("Catchup");
 constext txt_catchup_group[] = N_("Catchup %s...");
 constext txt_catchup_all_read_groups[] = N_("Catchup all groups entered during this session?");
 constext *txt_catchup_despite_tags_sp[] = PN_("You have a tagged article in this group - catchup anyway?", "You have tagged articles in this group - catchup anyway?");
@@ -263,6 +268,7 @@ constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=sha
 	constext txt_color_on[] = N_("ANSI color enabled");
 #endif /* HAVE_COLOR */
 constext txt_command_failed[] = N_("Command failed: %s");
+constext *txt_cook_lines_hidden_sp[] = PN_("[-- %s, %lu line hidden --]\n", "[-- %s, %lu lines hidden --]\n");
 constext txt_copyright_notice[] = "%s (c) Copyright 1991-2025 Iain Lea.";
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 constext txt_connection_info[] = N_("Connection Info");
@@ -273,11 +279,11 @@ constext txt_conninfo_conf_files[] = N_("\nConfiguration files:\n---------------
 	constext txt_conninfo_active_file[] = "ACTIVE_FILE       : %s\n";
 	constext txt_conninfo_active_times_file[] = "ACTIVE_TIMES_FILE : %s\n";
 	constext txt_conninfo_newsgroups_file[] = "NEWSGROUPS_FILE   : %s\n";
-	constext txt_conninfo_novrootdir[] = "NOVROOTDIR        : %s\n";
+	constext txt_conninfo_novrootdir[] = "NOVROOTDIR        : %s%s\n";
 	constext txt_conninfo_overview_file[] = "OVERVIEW_FILE     : %s\n";
 	constext txt_conninfo_overview_fmt[] = "OVERVIEW_FMT      : %s\n";
 	constext txt_conninfo_spool_config[] = N_("\nLocal spool config:\n-------------------\n");
-	constext txt_conninfo_spooldir[] = "SPOOLDIR          : %s\n";
+	constext txt_conninfo_spooldir[] = "SPOOLDIR          : %s%s\n";
 	constext txt_conninfo_subscriptions_file[] = "SUBSCRIPTIONS_FILE: %s\n";
 #endif /* !NNTP_ONLY */
 #ifdef NNTP_ABLE
@@ -473,6 +479,10 @@ constext txt_error_no_domain_name[] = N_("Can't get a (fully-qualified) domain-n
 		constext txt_error_not_ipv6_literal[] = N_("Not a literal IPv6 address: %s");
 #	endif /* INET6 */
 #endif /* NNTP_ABLE */
+
+constext txt_error_option_missing_argument[] = N_("%s: -%c option requires an argument\n");
+constext txt_error_option_unknown[] = N_("%s: -%c unknown option\n");
+
 constext txt_error_passwd_missing[] = N_("Can't get user information (/etc/passwd missing?)");
 #ifdef HAVE_LIBUU
 	constext *txt_error_sp[] = PN_("error", "errors");
@@ -605,10 +615,10 @@ constext txt_help_article_skip_quote[] = N_("skip next block of included text");
 constext txt_help_article_toggle_formfeed[] = N_("toggle display of sections hidden by a form-feed (^L) on/off");
 constext txt_help_article_toggle_headers[] = N_("toggle display of all headers");
 constext txt_help_article_toggle_highlight[] = N_("toggle word highlighting on/off");
+constext txt_help_article_toggle_inline_data[] = N_("toggle display of data sections");
 constext txt_help_article_toggle_rot13[] = N_("toggle ROT-13 (basic decode) for current article");
 constext txt_help_article_toggle_tabwidth[] = N_("toggle tabwidth 4 <-> 8");
 constext txt_help_article_toggle_tex2iso[] = N_("toggle German TeX style decoding for current article");
-constext txt_help_article_toggle_uue[] = N_("toggle display of data sections");
 constext txt_help_article_toggle_verbatim[] = N_("cycle through the options for detecting/displaying verbatim blocks");
 constext txt_help_article_view_attachments[] = N_("View/pipe/save multimedia attachments");
 constext txt_help_attachment_first[] = N_("choose first attachment in list");
@@ -1203,6 +1213,7 @@ constext txt_thread_x_of_n[] = N_("Thread %4s of %4s");
 constext txt_threading_arts[] = N_("Threading articles...");
 constext txt_threading_by_multipart[] = N_("Threading by multipart");
 #if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
+	constext txt_tls_no_alpn_negotiated[] = N_("No ALP negotiated.");
 #	ifdef HAVE_LIB_LIBTLS
 	constext txt_retr_cipher_failed[] = N_("<failed to retrieve cipher>");
 	constext txt_retr_issuer_failed[] = N_("<failed to retrieve issuer>");
@@ -1257,7 +1268,7 @@ constext txt_unsubscribed_to[] = N_("Unsubscribed from %s");
 constext txt_unsubscribing[] = N_("Unsubscribing... ");
 constext txt_unthreading_arts[] = N_("Unthreading articles...");
 constext txt_updated[] = N_("Updated");
-constext txt_updating[] = N_("Updating");
+constext txt_updating_group[] = N_("Updating %s...");
 constext txt_url_menu[] = N_("URL Menu");
 constext txt_url_menu_com[] = N_("URL Menu Commands");
 constext txt_url_open[] = N_("Opening %s");
@@ -1272,6 +1283,7 @@ constext txt_usage_check_for_unread_news[] = N_("  -Z       return status indica
 constext txt_usage_dont_check_new_newsgroups[] = N_("  -q       don't check for new newsgroups");
 constext txt_usage_dont_save_files_on_quit[] = N_("  -X       don't save any files on quit");
 constext txt_usage_dont_show_descriptions[] = N_("  -d       don't show newsgroup descriptions");
+constext txt_usage_filter_file[] = N_("  -F file  filter file to use [default=%s]");
 constext txt_usage_getart_limit[] = N_("  -G limit get only limit articles/group");
 constext txt_usage_help_information[] = N_("  -H       help information about %s");
 constext txt_usage_help_message[] = N_("  -h       this help message");
@@ -1430,9 +1442,9 @@ However, if the directory is mounted from an NFS server, you might see\n\
 special files created by your NFS server while slrnface is running.\n\
 Do not try to remove them.\n");
 #endif /* XFACE_ABLE */
-#if defined(NNTP_ABLE) && defined(XHDR_XREF)
+#ifdef NNTP_ABLE
 	constext txt_xref_loop[] = "%s XREF loop";
-#endif /* NNTP_ABLE && XHDR_XREF */
+#endif /* NNTP_ABLE */
 /* TRANSLATORS: do not translate header names like 'Xref:' */
 constext txt_xref_line_nocasse[] = N_("Xref: line (case insensitive)");
 
@@ -1605,12 +1617,8 @@ constext txt_arg_not_numeric[] = N_("%s argument is not numeric: %s");
 			constext txt_error_unknown_service[] = N_("%s/tcp: Unknown service.\n");
 #		endif /* HAVE_GETSERVBYNAME */
 #	endif /* INET6 */
-#	ifdef XHDR_XREF
-		constext txt_warn_xref_not_supported[] = N_("Your server does not have Xref: in its XOVER information.\n\
+	constext txt_warn_xref_not_supported[] = N_("Your server does not have Xref: in its XOVER information.\n\
 Tin will try to use XHDR XREF instead (slows down things a bit).\n");
-#	else
-		constext txt_warn_xref_not_supported[] = N_("Your server does not have Xref: in its XOVER information.\n");
-#	endif /* XHDR_XREF */
 #	ifndef NNTP_ONLY
 		constext txt_cannot_open_active_file[] = N_("Can't open %s. Try %s -r to read news via NNTP.");
 #	endif /* !NNTP_ONLY */
@@ -1753,23 +1761,23 @@ constext *txt_wildcard_type[] = { "WILDMAT", "REGEX", NULL };
 /*
  * Handling of non text data in pager
  */
-constext *txt_hide_uue_type[] = {
+constext *txt_hide_inline_data_type[] = {
 	N_("Nothing"),
 	N_("Complete UU/YENC"),
 	N_("Any UU/YENC"),
-	N_(""),
+	"",
 	N_("Inline PGP"),
 	N_("Complete UU/YENC & Inline PGP"),
 	N_("Any UU/YENC & Inline PGP"),
-	N_(""),
+	"",
 	N_("Shar"),
 	N_("Complete UU/YENC & Shar"),
 	N_("Any UU/YENC & Shar"),
-	N_(""),
+	"",
 	N_("Inline PGP & Shar"),
-	N_("Compl. UU/YENC & PGP & Shar"),
+	N_("Complete UU/YENC & PGP & Shar"),
 	N_("Hide all"),
-	N_(""),
+	"",
 	NULL
 };
 
@@ -2431,7 +2439,7 @@ struct opttxt txt_suppress_soft_hyphens = {
 };
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-struct opttxt txt_hide_uue = {
+struct opttxt txt_hide_inline_data = {
 	N_("Display none mime data as tagged attachments. <SPACE> toggles & <CR> sets."),
 	N_("Display none mime data as an attachment"),
 	N_("# Handling of none text in the pager\n\
@@ -2737,189 +2745,189 @@ struct opttxt txt_use_color = {
 };
 
 struct opttxt txt_col_normal = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Standard foreground color"),
 	N_("# Standard foreground color\n\
 # Default: -1 (default color)\n")
 };
 
 struct opttxt txt_col_back = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Standard background color"),
 	N_("# Standard background color\n\
 # Default: -1 (default color)\n")
 };
 
 struct opttxt txt_col_invers_bg = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color for inverse text (background)"),
 	N_("# Color of background for inverse text\n\
 # Default: 4 (blue)\n")
 };
 
 struct opttxt txt_col_invers_fg = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color for inverse text (foreground)"),
 	N_("# Color of foreground for inverse text\n\
 # Default: 7 (white)\n")
 };
 
 struct opttxt txt_col_text = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of text lines"),
 	N_("# Color of text lines\n\
 # Default: -1 (default color)\n")
 };
 
 struct opttxt txt_col_minihelp = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of mini help menu"),
 	N_("# Color of mini help menu\n\
 # Default: 3 (brown)\n")
 };
 
 struct opttxt txt_col_help = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of help text"),
 	N_("# Color of help pages\n\
 # Default: -1 (default color)\n")
 };
 
 struct opttxt txt_col_message = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of status messages"),
 	N_("# Color of messages in last line\n\
 # Default: 6 (cyan)\n")
 };
 
 struct opttxt txt_col_quote = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of quoted lines"),
 	N_("# Color of quote-lines\n\
 # Default: 2 (green)\n")
 };
 
 struct opttxt txt_col_quote2 = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of twice quoted line"),
 	N_("# Color of twice quoted lines\n\
 # Default: 3 (brown)\n")
 };
 
 struct opttxt txt_col_quote3 = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of >=3 times quoted line"),
 	N_("# Color of >=3 times quoted lines\n\
 # Default: 4 (blue)\n")
 };
 
 struct opttxt txt_col_head = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of article header lines"),
 	N_("# Color of header-lines\n\
 # Default: 2 (green)\n")
 };
 
 struct opttxt txt_col_newsheaders = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of actual news header fields"),
 	N_("# Color of actual news header fields\n\
 # Default: 9 (light red)\n")
 };
 
 struct opttxt txt_col_subject = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of article subject lines"),
 	N_("# Color of article subject\n\
 # Default: 6 (cyan)\n")
 };
 
 struct opttxt txt_col_extquote = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of external quotes"),
 	N_("# Color of quoted text from external sources\n\
 # Default: 5 (pink)\n")
 };
 
 struct opttxt txt_col_response = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of response counter"),
 	N_("# Color of response counter\n\
 # Default: 2 (green)\n")
 };
 
 struct opttxt txt_col_from = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of sender (From:)"),
 	N_("# Color of sender (From:)\n\
 # Default: 2 (green)\n")
 };
 
 struct opttxt txt_col_title = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of help/mail sign"),
 	N_("# Color of Help/Mail-Sign\n\
 # Default: 4 (blue)\n")
 };
 
 struct opttxt txt_col_signature = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of signatures"),
 	N_("# Color of signature\n\
 # Default: 4 (blue)\n")
 };
 
 struct opttxt txt_col_score_neg = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of negative score"),
 	N_("# Color of negative score\n\
 # Default: 1 (red)\n")
 };
 
 struct opttxt txt_col_score_pos = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of positive score"),
 	N_("# Color of positive score\n\
 # Default: 2 (green)\n")
 };
 
 struct opttxt txt_col_urls = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of highlighted URLs"),
 	N_("# Color of highlighted URLs\n\
 # Default: -1 (default color)\n")
 };
 
 struct opttxt txt_col_verbatim = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of verbatim blocks"),
 	N_("# Color of verbatim blocks\n\
 # Default: 5 (pink)\n")
 };
 
 struct opttxt txt_col_markstar = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of highlighting with *stars*"),
 	N_("# Color of word highlighting with *stars*\n\
 # Default: 11 (yellow)\n")
 };
 
 struct opttxt txt_col_markdash = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of highlighting with _dash_"),
 	N_("# Color of word highlighting with _dash_\n\
 # Default: 13 (light pink)\n")
 };
 
 struct opttxt txt_col_markslash = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of highlighting with /slash/"),
 	N_("# Color of word highlighting with /slash/\n\
 # Default: 14 (light cyan)\n")
 };
 
 struct opttxt txt_col_markstroke = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	"",
 	N_("Color of highlighting with -stroke-"),
 	N_("# Color of word highlighting with -stroke-\n\
 # Default: 12 (light blue)\n")

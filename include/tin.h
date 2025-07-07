@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-05-18
+ *  Updated   : 2025-06-15
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -115,7 +115,7 @@
 #endif /* HAVE_SIGNAL_H */
 
 enum context { cMain, cArt, cAttachment, cAttrib, cConfig, cFilter, cGroup, cInfopager, cPage, cPOSTED, cPost, cPostCancel, cPostFup, cReconnect, cScope, cSelect, cThread, cURL };
-enum icontext { cNone, cGetline, cPromptCONT, cPromptSLK, cPromptYN };
+enum icontext { cNone, cGetline, cPromptCONT, cPromptList, cPromptSLK, cPromptYN };
 enum resizer { cNo, cYes, cRedraw };
 enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
@@ -126,8 +126,8 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	ifdef HAVE_SYS_ERRNO_H
 #		include <sys/errno.h>
 /*
-	#	else
-	#		error "No errno.h or sys/errno.h found"
+#	else
+#		error "No errno.h or sys/errno.h found"
 */
 #	endif /* HAVE_SYS_ERRNO_H */
 #endif /* HAVE_ERRNO_H */
@@ -493,13 +493,6 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	ifndef NNTP_INEWS
 #		define NNTP_INEWS	1
 #	endif /* !NNTP_INEWS */
-#else
-#	ifdef XHDR_XREF
-#		undef XHDR_XREF
-#	endif /* XHDR_XREF */
-#	ifdef BROKEN_LISTGROUP
-#		undef BROKEN_LISTGROUP
-#	endif /* BROKEN_LISTGROUP */
 #endif /* NNTP_ABLE || NNTP_ONLY || NNTPS_ABLE */
 
 #define FAKE_NNTP_FP		(FILE *) 9999
@@ -703,8 +696,8 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 /* case sensitive & ^-anchored */
 #define UUBODY_REGEX	"(?:`|.[\\x20-\\x60]{1,61})$"
 
-	/* case insensitive && ^-anchored*/
-#	define XXBODY_REGEX		"[\\dA-Z+-]{1,62}$"
+/* case insensitive && ^-anchored*/
+#define XXBODY_REGEX		"[\\dA-Z+-]{1,62}$"
 
 #if 0 /* we don't have specific xxencode-/base64-code (yet); just document the formats */
 	/* case sensitive & ^-anchored */
@@ -734,11 +727,18 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	define YENCEND_REGEX	"=yend size=(?<y_esize>\\d{1,19})( part=\\d{1,3} pcrc32=(?<y_epcrc>[a-fA-F\\d]{8}))?( crc32=(?<y_ecrc>[a-fA-F\\d]{8}))?$"
 #endif /* 1 */
 
-/* case sensitive & ^-anchored */
+/* shar archives; case sensitive & ^-anchored */
 #define SHAR_REGEX	"\\#(?:!\\s?(?:/usr)?/bin/sh\\b|\\s?(?i)this\\sis\\sa\\sshell\\sarchive)"
-#define SHAR_END_REGEX	"exit(?:\\s0)?$"
+#define SHAR_END_REGEX	"exit(?:\\s0;?)?(?:\\s*#.*)?$"
 
-/* slrn verbatim marks, case sensitive & ^-anchored */
+/*
+ * LaTeX like umlauts for tex2iso_conv; case sensitive
+ * requires [\sA-Za-z\"'] before "[aou]
+ * require at least one letter before "s and disallow [qxy] after "s
+ */
+#define LATEX_REGEX	"(?<=[\\sA-Za-z\"'])\\\\?\"[AOUaou]|[A-Za-z]\\\\?\"s(?![qxy])"
+
+/* slrn verbatim marks; case sensitive & ^-anchored */
 #define DEFAULT_VERBATIM_BEGIN_REGEX	"#v\\+\\s$"
 #define DEFAULT_VERBATIM_END_REGEX	"#v-\\s$"
 
@@ -926,15 +926,15 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  */
 #define STRCPY(dst, src) ((void) snprintf(dst, sizeof(dst), "%s", src))
 /*
-	#ifdef HAVE_STRLCPY
-	#	define STRCPY(dst, src) (strlcpy(dst, src, sizeof(dst)))
-	#else
-	#	if 0
-	#		define STRCPY(dst, src)	(strncpy(dst, src, sizeof(dst) - 1)[sizeof(dst) - 1] = '\0')
-	#	else
-	#		define STRCPY(dst, src)	(*(dst) = '\0', strncat(dst, src, sizeof(dst) - 1))
-	#	endif
-	#endif
+#ifdef HAVE_STRLCPY
+#	define STRCPY(dst, src) (strlcpy(dst, src, sizeof(dst)))
+#else
+#	if 0
+#		define STRCPY(dst, src)	(strncpy(dst, src, sizeof(dst) - 1)[sizeof(dst) - 1] = '\0')
+#	else
+#		define STRCPY(dst, src)	(*(dst) = '\0', strncat(dst, src, sizeof(dst) - 1))
+#	endif
+#endif
 */
 
 #define STRCMPEQ(s1, s2)	(strcmp((s1), (s2)) == 0)
@@ -1001,8 +1001,10 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #endif /* !DEFAULT_COMMENT */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 #	define T_CHAR_FMT "lc"
+#	define T_CHAR_TYPE wint_t
 #else
 #	define T_CHAR_FMT "c"
+#	define T_CHAR_TYPE int
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #ifndef ART_MARK_UNREAD
 #	define ART_MARK_UNREAD	'+'	/* used to show that an art is unread */
@@ -1393,9 +1395,13 @@ enum {
 #define HIDE_ALL		(UUE_YES|UUE_ALL|PGP_ALL|SHAR_ALL)
 
 
-/* RFC 4880 6.2 */
-#define PGP_KEY_TAG "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
-#define PGP_KEY_END_TAG "-----END PGP PUBLIC KEY BLOCK-----\n"
+/* RFC 9580 6.2.1 / 6.2.3 */
+#define PGP_PUBLIC_KEY_TAG "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
+#define PGP_PUBLIC_KEY_END_TAG "-----END PGP PUBLIC KEY BLOCK-----\n"
+#if 0 /* we do not look for these */
+#	define PGP_PRIVATE_KEY_TAG "-----BEGIN PGP PRIVATE KEY BLOCK-----\n"
+#	define PGP_PRIVATE_KEY_END_TAG "-----END PGP PRIVATE KEY BLOCK-----\n"
+#endif /* 0*/
 #define PGP_SIG_TAG "-----BEGIN PGP SIGNATURE-----\n"
 #define PGP_SIG_END_TAG "-----END PGP SIGNATURE-----\n"
 
@@ -1786,6 +1792,7 @@ struct t_newsheader {
 #	define BITS_OF_sort_threads_type	3
 #	define BITS_OF_thread_articles		3
 #	define BITS_OF_thread_perc			7
+#	define BITS_OF_hide_inline_data		4
 #	define BITS_OF_trim_article_body	3
 #	define BITS_OF_verbatim_handling	2
 #else
@@ -1803,6 +1810,7 @@ struct t_newsheader {
 		sort_threads_type   = 3,
 		thread_articles     = 3,
 		thread_perc         = 7,
+		hide_inline_data	= 4,
 		trim_article_body   = 3,
 		verbatim_handling   = 2
 	};
@@ -1914,6 +1922,13 @@ struct t_attribute {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	BoolField(suppress_soft_hyphens);	/* set TRUE to remove soft hyphens (U+00AD) from articles */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	IntField(hide_inline_data);	/* 0=No, display raw data
+						1=uuencoded and yenc data will be condensed to a single tag line showing
+						  size and filename, similar to how MIME attachments are displayed
+						2=Also hide partial, as for 1, but any line that looks like uuencoded or
+						  yenc data will be folded into a tag line.
+						4=Hide Inline PGP
+						8=Hide Shar */
 	IntField(trim_article_body);	/* 0=Don't trim article body, 1=Skip leading blank lines,
 						2=Skip trailing blank lines, 3=Skip leading and trailing blank lines,
 						4=Compact multiple blank lines between textblocks,
@@ -1961,6 +1976,7 @@ struct t_attribute_state {
 	BoolField(from);
 	BoolField(group_catchup_on_exit);
 	BoolField(group_format);
+	BoolField(hide_inline_data);
 #ifdef HAVE_ISPELL
 	BoolField(ispell);
 #endif /* HAVE_ISPELL */
@@ -2238,16 +2254,15 @@ struct t_screen {
 #endif /* !USE_CURSES */
 
 /*
- * NOTE: the fixed length (which should be removed) is used during display
- * only (TODO: add user-defined dispaly-format ("%D %80G %K %120s %256M")),
- * the file on disk may have longer lines/members.
+ * NOTE: the members are used during display only
+ * TODO: add user-defined display-format ("%D %80G %K %120s %256M")
  */
 typedef struct posted {
 	char date[10];	/* dd-mm-yy */
 	char action;	/* [ dfrwx] */
-	char group[80];
-	char subj[120];
-	char mid[256];
+	char *group;
+	char *subj;
+	char *mid;
 	struct posted *next;
 } t_posted;
 
@@ -2780,6 +2795,8 @@ extern int fclose(FILE *);
 #	define MM_CHARSET "US-ASCII"
 #endif /* !MM_CHARSET */
 
+/* RFC 2978 2.3 */
+#define CHARSET_MAX_NAME_LEN	40
 
 #if !defined(SEEK_SET)
 #	define SEEK_SET 0L

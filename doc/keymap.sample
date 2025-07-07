@@ -137,7 +137,7 @@ PageFollowupQuoteHeaders	^W
 PageToggleTex2iso		"
 PageToggleRot			%
 PageToggleVerbatim		,
-PageToggleUue			(
+PageToggleInlineData		(
 PageReveal			)
 PageToggleAllHeaders		*
 PageArticleInfo			'

@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2025-02-10
+ *  Updated   : 2025-07-04
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2025 Chris Blum <chris@resolution.de>
@@ -237,9 +237,10 @@ rfc1522_decode(
 	char *t;
 	static char *buffer = NULL;
 	static int buffer_len = 0;
-	size_t max_len;
-	char charset[1024];
+	char charset[CHARSET_MAX_NAME_LEN + 1];
 	char encoding;
+	char csl = CHARSET_MAX_NAME_LEN;
+	size_t max_len;
 	t_bool adjacentflag = FALSE;
 
 	if (!s) {
@@ -247,7 +248,6 @@ rfc1522_decode(
 		return NULL;
 	}
 
-	charset[0] = '\0';
 	c = my_strdup(s);
 	max_len = strlen(c);
 
@@ -317,9 +317,17 @@ rfc1522_decode(
 						;
 					continue;
 				}
-				*e++ = *c++;
+				if (csl > 0) {
+					*e++ = *c++;
+					--csl;
+				} else
+					c++;
 			}
 			*e = '\0';
+/*
+			if (!validate_charset(charset))
+				strcpy(charset, "US-ASCII");
+*/
 			if (*c == '?') {
 				++c;
 				encoding = (char) my_tolower((unsigned char) *c);
@@ -636,14 +644,16 @@ rfc1522_do_encode(
 	t_bool colon_seen = FALSE;
 	t_bool long_line = FALSE;
 #endif /* MIME_BREAK_LONG_LINES */
-/*
- * the list of structured header fields where '(' and ')' are
- * treated specially in RFC 1522 encoding
- */
+	/*
+	 * the list of structured header fields where '(' and ')' are
+	 * treated specially in RFC 1522 encoding
+	 * (keep the list in cook.c:cook_article() in sync)
+	 */
 	static const char *struct_header[] = {
-		"Approved: ", "From: ", "Originator: ",
-		"Reply-To: ", "Sender: ", "X-Cancelled-By: ", "X-Comment-To: ",
-		"X-Submissions-To: ", "To: ", "Cc: ", "Bcc: ", "X-Originator: ", NULL };
+		"Approved: ", "From: ", "Originator: ", "Reply-To: ",
+		"Sender: ", "X-Cancelled-By: ", "X-Comment-To: ",
+		"X-Submissions-To: ", "To: ", "Cc: ", "Bcc: ", "X-Originator: ",
+		NULL };
 	const char **strptr = struct_header;
 
 	do {
@@ -1012,7 +1022,7 @@ do_rfc15211522_encode(
 		 * TODO: - what about 8bit chars in the mentioned headers
 		 *         when !allow_8bit_header?
 		 */
-		if (allow_8bit_header || (!strncasecmp(header, "References: ", 12) || !strncasecmp(header, "Message-ID: ", 12) || !strncasecmp(header, "Date: ", 6) || !strncasecmp(header, "Newsgroups: ", 12) || !strncasecmp(header, "Distribution: ", 14) || !strncasecmp(header, "Followup-To: ", 13) || !strncasecmp(header, "X-Face: ", 8) || !strncasecmp(header, "Cancel-Lock: ", 13) || !strncasecmp(header, "Cancel-Key: ", 12) || !strncasecmp(header, "Path: ", 6)))
+		if (allow_8bit_header || (!strncasecmp(header, "References: ", 12) || !strncasecmp(header, "Message-ID: ", 12) || !strncasecmp(header, "Date: ", 6) || !strncasecmp(header, "Newsgroups: ", 12) || !strncasecmp(header, "Distribution: ", 14) || !strncasecmp(header, "Followup-To: ", 13) || !strncasecmp(header, "X-Face: ", 8) || !strncasecmp(header, "Cancel-Lock: ", 13) || !strncasecmp(header, "Cancel-Key: ", 12) || !strncasecmp(header, "Supersedes: ", 12) || !strncasecmp(header, "Path: ", 6)))
 			fputs(header, g);
 		else {
 #ifdef CHARSET_CONVERSION
@@ -1091,6 +1101,11 @@ do_rfc15211522_encode(
 		if (mime_headers_needed) {
 			if (contains_headers)
 				fprintf(f, txt_mime_version, MIME_SUPPORTED_VERSION);
+			/*
+			 * for f=f (copy_body() must be fixed first to handle it)
+			 * add something like
+			 * group->attribute->flowed ? "; format=flowed" : ""
+			 */
 #ifdef CHARSET_CONVERSION
 			fprintf(f, txt_mime_hdr_c_type_text_plain_charset, txt_mime_charsets[mmnwcharset]);
 #else

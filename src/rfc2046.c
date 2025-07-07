@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2025-05-09
+ *  Updated   : 2025-05-30
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2025 Jason Faultless <jason@altarstone.com>
@@ -2073,12 +2073,12 @@ art_open(
 	 *       build_references().
 	 */
 
-	if ((artinfo->tex2iso = ((group->attribute->tex2iso_conv) ? is_art_tex_encoded(artinfo->raw) : FALSE)))
-		wait_message(0, _(txt_is_tex_encoded));
-
 	/* Maybe fix it so if this fails, we default to raw? */
-	if (!cook_article(wrap_lines, artinfo, tinrc.hide_uue, FALSE))
+	if (!cook_article(wrap_lines, artinfo, group->attribute->hide_inline_data, FALSE))
 		return ART_ABORT;
+
+	if (artinfo->tex2iso && group->attribute->tex2iso_conv)
+		wait_message(0, _(txt_is_tex_encoded));
 
 	log_article_info(artinfo);
 

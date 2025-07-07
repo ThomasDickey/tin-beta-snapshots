@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-02-25
+ *  Updated   : 2025-06-14
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -57,8 +57,6 @@ typedef struct thp {
 static void make_help_page(FILE *fp, const t_help_page *helppage, const struct keylist keys);
 
 
-static constext txt_help_empty_line[] = "";
-
 static t_help_page attachment_help_page[] = {
 	{ txt_help_title_navi, NOT_ASSIGNED },
 	{ txt_help_global_page_down, GLOBAL_PAGE_DOWN },
@@ -67,14 +65,14 @@ static t_help_page attachment_help_page[] = {
 	{ txt_help_global_line_up, GLOBAL_LINE_UP },
 	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
 	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_attachment_first, GLOBAL_FIRST_PAGE },
 	{ txt_help_attachment_last, GLOBAL_LAST_PAGE },
 	{ txt_help_attachment_goto, NOT_ASSIGNED },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_disp, NOT_ASSIGNED },
 	{ txt_help_attachment_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_attachment_ops, NOT_ASSIGNED },
 	{ txt_help_attachment_select, ATTACHMENT_SELECT },
 #ifndef DONT_HAVE_PIPING
@@ -86,11 +84,11 @@ static t_help_page attachment_help_page[] = {
 	{ txt_help_attachment_tag_pattern, ATTACHMENT_TAG_PATTERN },
 	{ txt_help_attachment_toggle_tagged, ATTACHMENT_TOGGLE_TAGGED },
 	{ txt_help_attachment_untag, ATTACHMENT_UNTAG },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_attachment_search_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
 	{ txt_help_attachment_search_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
 	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_select_quit, GLOBAL_QUIT },
 	{ txt_help_global_help, GLOBAL_HELP },
@@ -99,7 +97,7 @@ static t_help_page attachment_help_page[] = {
 #ifndef NO_SHELL_ESCAPE
 	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
 	{ NULL, NOT_ASSIGNED }
 };
@@ -112,21 +110,21 @@ static t_help_page attrib_help_page[] = {
 	{ txt_help_global_line_up, GLOBAL_LINE_UP },
 	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
 	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_attrib_first_opt, GLOBAL_FIRST_PAGE },
 	{ txt_help_attrib_last_opt, GLOBAL_LAST_PAGE },
 	{ txt_help_attrib_goto_opt, NOT_ASSIGNED },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_attrib_search_opt_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
 	{ txt_help_attrib_search_opt_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
 	{ txt_help_select_search_group_comment, NOT_ASSIGNED },
 	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_attrib_ops, NOT_ASSIGNED },
 	{ txt_help_attrib_reset_attrib, CONFIG_RESET_ATTRIB },
 	{ txt_help_attrib_select, CONFIG_SELECT },
 	{ txt_help_attrib_toggle_attrib, CONFIG_TOGGLE_ATTRIB },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_select_quit, GLOBAL_QUIT },
 	{ txt_help_select_quit_no_write, CONFIG_NO_SAVE },
@@ -135,7 +133,7 @@ static t_help_page attrib_help_page[] = {
 #ifndef NO_SHELL_ESCAPE
 	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
 	{ NULL, NOT_ASSIGNED }
 };
@@ -148,27 +146,27 @@ static t_help_page config_help_page[] = {
 	{ txt_help_global_line_up, GLOBAL_LINE_UP },
 	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
 	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_config_first_opt, GLOBAL_FIRST_PAGE },
 	{ txt_help_config_last_opt, GLOBAL_LAST_PAGE },
 	{ txt_help_config_goto_opt, NOT_ASSIGNED },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_config_search_opt_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
 	{ txt_help_config_search_opt_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
 	{ txt_help_select_search_group_comment, NOT_ASSIGNED },
 	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_config_ops, NOT_ASSIGNED },
 	{ txt_help_config_select, CONFIG_SELECT },
 	{ txt_help_config_toggle_attrib, CONFIG_TOGGLE_ATTRIB },
 	{ txt_help_config_scope_menu, CONFIG_SCOPE_MENU },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_disp, NOT_ASSIGNED },
 #ifdef HAVE_COLOR
 	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
 	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_select_quit, GLOBAL_QUIT },
 	{ txt_help_select_quit_no_write, CONFIG_NO_SAVE },
@@ -177,7 +175,7 @@ static t_help_page config_help_page[] = {
 #ifndef NO_SHELL_ESCAPE
 	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
 	{ NULL, NOT_ASSIGNED }
 };
@@ -190,20 +188,20 @@ static t_help_page scope_help_page[] = {
 	{ txt_help_global_line_up, GLOBAL_LINE_UP },
 	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
 	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_scope_first_scope, GLOBAL_FIRST_PAGE },
 	{ txt_help_scope_last_scope, GLOBAL_LAST_PAGE },
 	{ txt_help_scope_goto_scope, NOT_ASSIGNED },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_scope_ops, NOT_ASSIGNED },
 	{ txt_help_scope_add, SCOPE_ADD },
 	{ txt_help_scope_move, SCOPE_MOVE },
 	{ txt_help_scope_rename, SCOPE_RENAME },
 	{ txt_help_scope_del, SCOPE_DELETE },
 	{ txt_help_scope_select, SCOPE_SELECT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_scope_edit_attrib_file, SCOPE_EDIT_ATTRIBUTES_FILE },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_select_quit, GLOBAL_QUIT },
 	{ txt_help_global_help, GLOBAL_HELP },
@@ -223,7 +221,7 @@ static t_help_page select_help_page[] = {
 	{ txt_help_global_line_up, GLOBAL_LINE_UP },
 	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
 	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_select_first_group, GLOBAL_FIRST_PAGE },
 	{ txt_help_select_last_group, GLOBAL_LAST_PAGE },
 	{ txt_help_select_group_by_num, NOT_ASSIGNED },
@@ -233,12 +231,12 @@ static t_help_page select_help_page[] = {
 	{ txt_help_select_lookup_group, GLOBAL_LOOKUP_MESSAGEID },
 	{ txt_help_select_lookup_group_comment, NOT_ASSIGNED },
 #endif /* NNTP_ABLE */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_select_search_group_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
 	{ txt_help_select_search_group_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
 	{ txt_help_select_search_group_comment, NOT_ASSIGNED },
 	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_disp, NOT_ASSIGNED },
 	{ txt_help_select_toggle_read_groups, SELECT_TOGGLE_READ_DISPLAY },
 	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
@@ -247,11 +245,11 @@ static t_help_page select_help_page[] = {
 #ifdef HAVE_COLOR
 	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_select_sort_active, SELECT_SORT_ACTIVE },
 	{ txt_help_select_yank_active, SELECT_YANK_ACTIVE },
 	{ txt_help_select_sync_with_active, SELECT_SYNC_WITH_ACTIVE },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_ops, NOT_ASSIGNED },
 	{ txt_help_select_read_group, SELECT_ENTER_GROUP },
 	{ txt_help_select_next_unread_group, SELECT_ENTER_NEXT_UNREAD_GROUP },
@@ -259,9 +257,9 @@ static t_help_page select_help_page[] = {
 	{ txt_help_global_post, GLOBAL_POST },
 	{ txt_help_global_post_postponed, GLOBAL_POSTPONED },
 #endif /* NO_POSTING */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_select_group_range, GLOBAL_SET_RANGE },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_select_catchup, CATCHUP },
 	{ txt_help_select_catchup_next_unread, CATCHUP_NEXT_UNREAD },
 	{ txt_help_select_mark_group_unread, SELECT_MARK_GROUP_UNREAD },
@@ -270,9 +268,9 @@ static t_help_page select_help_page[] = {
 	{ txt_help_select_subscribe_pattern, SELECT_SUBSCRIBE_PATTERN },
 	{ txt_help_select_unsubscribe_pattern, SELECT_UNSUBSCRIBE_PATTERN },
 	{ txt_help_select_move_group, SELECT_MOVE_GROUP },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_edit_filter, GLOBAL_EDIT_FILTER},
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_select_quit, GLOBAL_QUIT },
 	{ txt_help_global_quit_tin, GLOBAL_QUIT_TIN },
@@ -287,7 +285,7 @@ static t_help_page select_help_page[] = {
 #endif /* !NO_SHELL_ESCAPE */
 	{ txt_help_global_posting_history, GLOBAL_DISPLAY_POST_HISTORY },
 	{ txt_help_select_reset_newsrc, SELECT_RESET_NEWSRC },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
 	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ txt_help_bug_report, GLOBAL_BUGREPORT },
@@ -302,7 +300,7 @@ static t_help_page group_help_page[] = {
 	{ txt_help_global_line_up, GLOBAL_LINE_UP },
 	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
 	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_group_first_thread, GLOBAL_FIRST_PAGE },
 	{ txt_help_group_last_thread, GLOBAL_LAST_PAGE },
 	{ txt_help_group_thread_by_num, NOT_ASSIGNED },
@@ -314,7 +312,7 @@ static t_help_page group_help_page[] = {
 	{ txt_help_global_last_art, GLOBAL_LAST_VIEWED },
 	{ txt_help_global_lookup_art, GLOBAL_LOOKUP_MESSAGEID },
 	{ txt_help_group_list_thread, GROUP_LIST_THREAD },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_search_subj_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
 	{ txt_help_global_search_subj_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
 	{ txt_help_global_search_auth_forwards, GLOBAL_SEARCH_AUTHOR_FORWARD },
@@ -322,7 +320,7 @@ static t_help_page group_help_page[] = {
 	{ txt_help_global_search_body, GLOBAL_SEARCH_BODY },
 	{ txt_help_global_search_body_comment, NOT_ASSIGNED },
 	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_disp, NOT_ASSIGNED },
 	{ txt_help_group_toggle_read_articles, GROUP_TOGGLE_READ_UNREAD },
 	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
@@ -331,12 +329,12 @@ static t_help_page group_help_page[] = {
 #ifdef HAVE_COLOR
 	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_toggle_subj_display, GROUP_TOGGLE_SUBJECT_DISPLAY},
 	{ txt_help_group_toggle_threading, GROUP_TOGGLE_THREADING },
 	{ txt_help_group_mark_unsel_art_read, GROUP_MARK_UNSELECTED_ARTICLES_READ },
 	{ txt_help_group_toggle_getart_limit, GROUP_TOGGLE_GET_ARTICLES_LIMIT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_ops, NOT_ASSIGNED },
 	{ txt_help_thread_read_article, GROUP_READ_BASENOTE },
 	{ txt_help_article_next_unread, GROUP_NEXT_UNREAD_ARTICLE_OR_GROUP },
@@ -346,9 +344,9 @@ static t_help_page group_help_page[] = {
 	{ txt_help_article_repost, GROUP_REPOST },
 	{ txt_help_article_cancel, GROUP_CANCEL },
 #endif /* NO_POSTING */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_article_range, GLOBAL_SET_RANGE },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_mail, GROUP_MAIL },
 	{ txt_help_global_save, GROUP_SAVE },
 	{ txt_help_global_auto_save, GROUP_AUTOSAVE },
@@ -358,11 +356,11 @@ static t_help_page group_help_page[] = {
 #ifndef DISABLE_PRINTING
 	{ txt_help_global_print, GLOBAL_PRINT },
 #endif /* !DISABLE_PRINTING */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_tag, GROUP_TAG },
 	{ txt_help_tag_parts, GROUP_TAG_PARTS },
 	{ txt_help_group_untag_thread, GROUP_UNTAG },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_group_mark_thread_read, GROUP_MARK_THREAD_READ },
 	{ txt_help_group_catchup, CATCHUP },
 	{ txt_help_group_catchup_next, CATCHUP_NEXT_UNREAD },
@@ -370,7 +368,7 @@ static t_help_page group_help_page[] = {
 	{ txt_help_group_mark_thread_unread, MARK_THREAD_UNREAD },
 	{ txt_help_mark_feed_read, MARK_FEED_READ },
 	{ txt_help_mark_feed_unread, MARK_FEED_UNREAD },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_group_select_all, GROUP_DO_AUTOSELECT },
 	{ txt_help_group_select_thread, GROUP_SELECT_THREAD },
 	{ txt_help_group_select_thread_pattern, GROUP_SELECT_PATTERN },
@@ -378,13 +376,13 @@ static t_help_page group_help_page[] = {
 	{ txt_help_group_toggle_thread_selection, GROUP_TOGGLE_SELECT_THREAD },
 	{ txt_help_group_reverse_thread_selection, GROUP_REVERSE_SELECTIONS },
 	{ txt_help_group_undo_thread_selection, GROUP_UNDO_SELECTIONS },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_article_autoselect, GLOBAL_MENU_FILTER_SELECT },
 	{ txt_help_article_autokill, GLOBAL_MENU_FILTER_KILL },
 	{ txt_help_article_quick_select, GLOBAL_QUICK_FILTER_SELECT },
 	{ txt_help_article_quick_kill, GLOBAL_QUICK_FILTER_KILL },
 	{ txt_help_global_edit_filter, GLOBAL_EDIT_FILTER},
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_global_previous_menu, GLOBAL_QUIT },
 	{ txt_help_global_quit_tin, GLOBAL_QUIT_TIN },
@@ -397,7 +395,7 @@ static t_help_page group_help_page[] = {
 	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
 	{ txt_help_global_posting_history, GLOBAL_DISPLAY_POST_HISTORY },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
 	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ txt_help_bug_report, GLOBAL_BUGREPORT },
@@ -412,13 +410,13 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_global_line_up, GLOBAL_LINE_UP },
 	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
 	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_thread_first_article, GLOBAL_FIRST_PAGE },
 	{ txt_help_thread_last_article, GLOBAL_LAST_PAGE },
 	{ txt_help_thread_article_by_num, NOT_ASSIGNED },
 	{ txt_help_global_last_art, GLOBAL_LAST_VIEWED },
 	{ txt_help_global_lookup_art, GLOBAL_LOOKUP_MESSAGEID },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_search_subj_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
 	{ txt_help_global_search_subj_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
 	{ txt_help_global_search_auth_forwards, GLOBAL_SEARCH_AUTHOR_FORWARD },
@@ -426,7 +424,7 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_global_search_body, GLOBAL_SEARCH_BODY },
 	{ txt_help_global_search_body_comment, NOT_ASSIGNED },
 	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_disp, NOT_ASSIGNED },
 	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
 	{ txt_help_global_toggle_subj_display, THREAD_TOGGLE_SUBJECT_DISPLAY},
@@ -434,7 +432,7 @@ static t_help_page thread_help_page[] = {
 #ifdef HAVE_COLOR
 	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_ops, NOT_ASSIGNED },
 	{ txt_help_thread_read_article, THREAD_READ_ARTICLE },
 	{ txt_help_article_next_unread, THREAD_READ_NEXT_ARTICLE_OR_THREAD },
@@ -445,9 +443,9 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_global_post_postponed, GLOBAL_POSTPONED },
 	{ txt_help_article_cancel, THREAD_CANCEL },
 #endif /* NO_POSTING */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_article_range, GLOBAL_SET_RANGE },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_mail, THREAD_MAIL },
 	{ txt_help_global_save, THREAD_SAVE },
 	{ txt_help_global_auto_save, THREAD_AUTOSAVE },
@@ -457,11 +455,11 @@ static t_help_page thread_help_page[] = {
 #ifndef DISABLE_PRINTING
 	{ txt_help_global_print, GLOBAL_PRINT },
 #endif /* !DISABLE_PRINTING */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_tag, THREAD_TAG },
 	{ txt_help_tag_parts, THREAD_TAG_PARTS },
 	{ txt_help_group_untag_thread, THREAD_UNTAG },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_thread_mark_article_read, THREAD_MARK_ARTICLE_READ },
 	{ txt_help_thread_catchup, CATCHUP },
 	{ txt_help_thread_catchup_next_unread, CATCHUP_NEXT_UNREAD },
@@ -469,16 +467,16 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_thread_mark_thread_unread, MARK_THREAD_UNREAD },
 	{ txt_help_mark_feed_read, MARK_FEED_READ },
 	{ txt_help_mark_feed_unread, MARK_FEED_UNREAD },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_group_select_thread, THREAD_SELECT_ARTICLE },
 	{ txt_help_group_toggle_thread_selection, THREAD_TOGGLE_ARTICLE_SELECTION },
 	{ txt_help_group_reverse_thread_selection, THREAD_REVERSE_SELECTIONS },
 	{ txt_help_group_undo_thread_selection, THREAD_UNDO_SELECTIONS },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_article_autoselect, GLOBAL_MENU_FILTER_SELECT },
 	{ txt_help_article_autokill, GLOBAL_MENU_FILTER_KILL },
 	{ txt_help_global_edit_filter, GLOBAL_EDIT_FILTER },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_global_previous_menu, GLOBAL_QUIT },
 	{ txt_help_global_quit_tin, GLOBAL_QUIT_TIN },
@@ -491,7 +489,7 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
 	{ txt_help_global_posting_history, GLOBAL_DISPLAY_POST_HISTORY },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
 	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ txt_help_bug_report, GLOBAL_BUGREPORT },
@@ -506,7 +504,7 @@ static t_help_page page_help_page[] = {
 	{ txt_help_global_line_up, GLOBAL_LINE_UP },
 	{ txt_help_article_first_page, GLOBAL_FIRST_PAGE },
 	{ txt_help_article_last_page, GLOBAL_LAST_PAGE },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_article_by_num, NOT_ASSIGNED },
 	{ txt_help_article_next_thread, PAGE_NEXT_THREAD },
 	{ txt_help_article_next_unread, PAGE_NEXT_UNREAD },
@@ -522,7 +520,7 @@ static t_help_page page_help_page[] = {
 	{ txt_help_global_lookup_art, GLOBAL_LOOKUP_MESSAGEID },
 	{ txt_help_article_quit_to_select_level, PAGE_GROUP_SELECT },
 	{ txt_help_article_skip_quote, PAGE_SKIP_INCLUDED_TEXT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_article_search_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
 	{ txt_help_article_search_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
 	{ txt_help_global_search_auth_forwards, GLOBAL_SEARCH_AUTHOR_FORWARD },
@@ -530,7 +528,7 @@ static t_help_page page_help_page[] = {
 	{ txt_help_global_search_body, GLOBAL_SEARCH_BODY },
 	{ txt_help_global_search_body_comment, NOT_ASSIGNED },
 	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_disp, NOT_ASSIGNED },
 	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
 	{ txt_help_article_toggle_rot13, PAGE_TOGGLE_ROT13 },
@@ -541,12 +539,12 @@ static t_help_page page_help_page[] = {
 	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
 	{ txt_help_article_toggle_highlight, PAGE_TOGGLE_HIGHLIGHTING },
+	{ txt_help_article_toggle_inline_data, PAGE_TOGGLE_INLINE_DATA },
 	{ txt_help_article_toggle_verbatim, PAGE_TOGGLE_VERBATIM },
 	{ txt_help_article_toggle_tex2iso, PAGE_TOGGLE_TEX2ISO },
 	{ txt_help_article_toggle_tabwidth, PAGE_TOGGLE_TABS },
-	{ txt_help_article_toggle_uue, PAGE_TOGGLE_UUE },
 	{ txt_help_article_toggle_formfeed, PAGE_REVEAL },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_ops, NOT_ASSIGNED },
 #ifndef NO_POSTING
 	{ txt_help_global_post, GLOBAL_POST },
@@ -561,7 +559,7 @@ static t_help_page page_help_page[] = {
 	{ txt_help_article_reply_no_quote, PAGE_REPLY },
 	{ txt_help_article_reply_with_header, PAGE_REPLY_QUOTE_HEADERS },
 	{ txt_help_article_edit, PAGE_EDIT_ARTICLE },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_mail, PAGE_MAIL },
 	{ txt_help_global_save, PAGE_SAVE },
 	{ txt_help_global_auto_save, PAGE_AUTOSAVE },
@@ -572,21 +570,21 @@ static t_help_page page_help_page[] = {
 	{ txt_help_global_print, GLOBAL_PRINT },
 #endif /* !DISABLE_PRINTING */
 	{ txt_help_article_view_attachments, PAGE_VIEW_ATTACHMENTS },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_tag, PAGE_TAG },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_article_mark_thread_read, PAGE_MARK_THREAD_READ },
 	{ txt_help_thread_catchup, CATCHUP },
 	{ txt_help_thread_catchup_next_unread, CATCHUP_NEXT_UNREAD },
 	{ txt_help_group_mark_article_unread, MARK_ARTICLE_UNREAD },
 	{ txt_help_thread_mark_thread_unread, MARK_THREAD_UNREAD },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_article_autoselect, GLOBAL_MENU_FILTER_SELECT },
 	{ txt_help_article_autokill, GLOBAL_MENU_FILTER_KILL },
 	{ txt_help_article_quick_select, GLOBAL_QUICK_FILTER_SELECT },
 	{ txt_help_article_quick_kill, GLOBAL_QUICK_FILTER_KILL },
 	{ txt_help_global_edit_filter, GLOBAL_EDIT_FILTER },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_article_browse_urls, PAGE_VIEW_URL },
 	{ txt_help_global_previous_menu, GLOBAL_QUIT },
@@ -601,10 +599,10 @@ static t_help_page page_help_page[] = {
 #endif /* !NO_SHELL_ESCAPE */
 	{ txt_help_global_posting_history, GLOBAL_DISPLAY_POST_HISTORY },
 #ifdef HAVE_PGP_GPG
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_article_pgp, PAGE_PGP_CHECK_ARTICLE },
 #endif /* HAVE_PGP_GPG */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ txt_help_article_info, PAGE_ARTICLE_INFO },
 	{ txt_help_global_version, GLOBAL_VERSION },
@@ -619,25 +617,25 @@ static t_help_page post_hist_help_page[] = {
 	{ txt_help_global_line_up, GLOBAL_LINE_UP },
 	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
 	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_thread_first_article, GLOBAL_FIRST_PAGE },
 	{ txt_help_thread_last_article, GLOBAL_LAST_PAGE },
 	{ txt_help_thread_article_by_num, NOT_ASSIGNED },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_post_hist_search_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
 	{ txt_help_post_hist_search_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
 	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_post_hist_ops, NOT_ASSIGNED },
 	{ txt_help_post_hist_select, POSTED_SELECT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_disp, NOT_ASSIGNED },
 	{ txt_help_post_hist_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
 	{ txt_help_global_toggle_inverse_video, GLOBAL_TOGGLE_INVERSE_VIDEO },
 #ifdef HAVE_COLOR
 	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_select_quit, GLOBAL_QUIT },
 	{ txt_help_global_help, GLOBAL_HELP },
@@ -647,7 +645,7 @@ static t_help_page post_hist_help_page[] = {
 #ifndef NO_SHELL_ESCAPE
 	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
 	{ NULL, NOT_ASSIGNED }
 };
@@ -660,25 +658,25 @@ static t_help_page url_help_page[] = {
 	{ txt_help_global_line_up, GLOBAL_LINE_UP },
 	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
 	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_url_first_url, GLOBAL_FIRST_PAGE },
 	{ txt_help_url_last_url, GLOBAL_LAST_PAGE },
 	{ txt_help_url_goto_url, NOT_ASSIGNED },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_url_ops, NOT_ASSIGNED },
 	{ txt_help_url_select, URL_SELECT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_url_search_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
 	{ txt_help_url_search_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
 	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_disp, NOT_ASSIGNED },
 	{ txt_help_url_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
 	{ txt_help_global_toggle_inverse_video, GLOBAL_TOGGLE_INVERSE_VIDEO },
 #ifdef HAVE_COLOR
 	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_select_quit, GLOBAL_QUIT },
 	{ txt_help_global_help, GLOBAL_HELP },
@@ -688,7 +686,7 @@ static t_help_page url_help_page[] = {
 #ifndef NO_SHELL_ESCAPE
 	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
-	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
 	{ NULL, NOT_ASSIGNED }
 };
@@ -701,38 +699,34 @@ make_help_page(
 	const struct keylist keys)
 {
 	char *buf;
-	char *last;
 	char key[MAXKEYLEN];
-	/*
-	 * length is only needed to pass it to expand_ctrl_chars()
-	 * we have no need for the value
-	 */
-	size_t length;
+	size_t length; /* length is only needed to pass it to expand_ctrl_chars() */
 	size_t i;
 
 	if (!helppage)
 		return;
 
 	buf = my_malloc(LEN);
-	last = my_malloc(LEN);
-
-	last[0] = '\0';
 
 	while (helppage->helptext) {
 		if (helppage->func == NOT_ASSIGNED) {
-			/*
-			 * as expand_ctrl_chars() may has shrunk buf
-			 * make sure buf is large enough to contain the helpline
-			 */
-			buf = my_realloc(buf, LEN);
+			buf[0]='\0';
 
-			if (!*helppage->helptext)	/* avoid translation of empty strings */
-				strcpy(buf, "\n");
-			else
-				strncpy(buf, _(helppage->helptext), LEN);
-			buf[LEN - 1] = '\0';
+			/* no translation of empty strings */
+			if (*helppage->helptext) {
+				/*
+				 * as expand_ctrl_chars() may has shrunk buf
+				 * make sure buf is large enough to contain the helpline
+				 */
+				buf = my_realloc(buf, LEN);
+				if (helppage->helptext[0] == '\n' && helppage->helptext[1] == '\0')
+					strncpy(buf, helppage->helptext, LEN);
+				else
+					strncpy(buf, _(helppage->helptext), LEN);
+				buf[LEN - 1] = '\0';
+			}
 			expand_ctrl_chars(&buf, &length, 8);
-			fprintf(fp, "%s\n", buf);
+			fprintf(fp, "%s\n", BlankIfNull(buf));
 		} else {
 			for (i = 0; i < keys.used; i++) {
 				if (keys.list[i].function == helppage->func && keys.list[i].key) {
@@ -743,18 +737,13 @@ make_help_page(
 					snprintf(buf, LEN, "%s\t  %s", printascii(key, keys.list[i].key), _(helppage->helptext));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 					expand_ctrl_chars(&buf, &length, 8);
-					if (strcmp(last, buf)) {
-						fprintf(fp, "%s\n", buf);
-						strncpy(last, buf, LEN - 1);
-					}
+					fprintf(fp, "%s\n", buf);
 				}
 			}
 		}
 		++helppage;
 	}
-
 	free(buf);
-	free(last);
 }
 
 

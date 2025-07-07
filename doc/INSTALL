@@ -20,7 +20,7 @@ The following configure options and defines are documented in detail:
   --enable-8bit-keys                      --program-suffix
   --enable-append-pid                     --program-transform-name
   --disable-break-long-lines              --with-coffee
-  --enable-broken-listgroup-fix           --with-curses-dir
+                                          --with-curses-dir
   --enable-broken-system-fix              --with-dbmalloc
   --enable-cancel-locks                   --with-canlock
                                           --with-defaults-dir
@@ -50,7 +50,7 @@ The following configure options and defines are documented in detail:
   --enable-prototypes                     --with-pgpk
   --enable-shell-escape                   --with-screen
   --enable-warnings                       --with-shell
-  --enable-xhdr-xref                      --with-spooldir
+                                          --with-spooldir
   --exec-prefix                           --with-socks
   --mandir                                --with-socks5
                                           --with-trace
@@ -67,7 +67,9 @@ The following configure options and defines are documented in detail:
   OPTIMIZE_JUST_STAR                      MATCH_TAR_PATTERN
   MIN_COLUMNS_ON_TERMINAL                 MIN_LINES_ON_TERMINAL
   MAXARTNUM                               REPRODUCIBLE_BUILD
-
+  INLINE_DEBUG_MIME                       DEBUG_UCNV
+  DEBUG_ART                               FILE_MODE_BROKEN
+  BACKUP_FILE_EXT
 
 Not yet documented configure options and defines:
 -------------------------------------------------
@@ -77,11 +79,6 @@ Networking related
             BSD/POSIX sockets)
   DECNET  - e.g. VMS, Ultrix, ...
   EXCELAN - e.g. VxWorks
-
-TIN related:
-  BACKUP_FILE_EXT (see misc.c:invoke_editor())
-  FILE_MODE_BROKEN                        NO_LOCKING
-  DEBUG_ART                               DEBUG_UCNV
 
 System related:
   --datadir                               --localstatedir
@@ -275,16 +272,6 @@ when using libtls or gnutls.
 --with-nntp-default-server (default: news.$DOMAIN_NAME)
 Defines the name of the default NNTP server that tin should connect to.
 Can be overridden by setting the environment variable NNTPSERVER.
-
---enable-broken-listgroup-fix (default: off)
-Bypass a bug in some broken NNTPservers which need an extra GROUP command
-before accepting a LISTGROUP command. This can be also used to bypass the
-bug in some servers (i.e. DeleGate, SurgeNews) where LISTGROUP doesn't
-select the group and thus subsequent cmds. fail.
-
---enable-xhdr-xref (default: on)
-If disabled, don't allow using XHDR XREF if XOVER doesn't work to mark
-crossposted articles as read in all groups.
 
 The following options determine which locking method should be used when
 appending posted or postponed messages to mailbox-style files. Tin will
@@ -760,6 +747,25 @@ reproducible builds.
 
 INLINE_DEBUG_MIME
 experimental, if set show (some) MIME or yenc (parse) errors/info inline.
+
+DEBUG_UCNV
+additional debug messages for ucnv_*-functions (e.g. charset guessing),
+requires DEBUG and is for development only.
+
+DEBUG_ART
+additional debug messages for article decoding/cooking, for development only.
+
+FILE_MODE_BROKEN
+define if st_mode of stat() is not reliable
+
+NO_LOCKING
+define if (dot)locking should be skipped, should be used as a last resort
+if none of the locking schemes fcntl, lockf or flock works. See also
+--disable-fcntl, --enable-lockf and --enable-flock
+
+BACKUP_FILE_EXT
+extension used for temporary backup files. set in misc.c:invoke_editor()
+to ".b"
 
 License
 -------

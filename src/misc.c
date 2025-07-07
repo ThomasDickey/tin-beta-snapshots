@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-04-10
+ *  Updated   : 2025-06-18
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -348,7 +348,9 @@ backup_file(
  * prefix (= quote_chars), initials of the articles author
  * with_sig is set if the signature should be quoted
  *
- * TODO: rewrite from scratch, the code is awful!
+ * TODO: - rewrite from scratch, the code is awful!
+ *       - handle format-flowed (rewrapping, space stuffing,
+ *         force quote compression?, ...)
  */
 void
 copy_body(
@@ -1056,7 +1058,7 @@ mail_check(
 	mb = my_strdup(mailbox_name); /* take a copy due to strtok() */
 
 	/*
-	 * remove custom messages for now; rughly based on
+	 * remove custom messages for now; roughly based on
 	 * <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/sh.html>
 	 *
 	 * TODO: if '\'-quoting is limited to '%' outside the message, there
@@ -2614,6 +2616,10 @@ buffer_to_local( /* TODO: rename to something more useful/descriptive */
 
 	/* FIXME: this should default in RFC2046.c to US-ASCII */
 	if ((from_charset && *from_charset)) {	/* Content-Type: had a charset parameter */
+		/* iconv() might crash on broken multibyte sequences so check them */
+		if (charset_compare(from_charset, "UTF-8"))
+			(void) utf8_valid(*line);
+
 		if (strcasecmp(from_charset, to_charset)) { /* different charsets */
 #	ifdef CHARSET_CONVERSION_ICONV
 			char *clocal_charset;
@@ -2624,10 +2630,6 @@ buffer_to_local( /* TODO: rename to something more useful/descriptive */
 			if (tinrc.translit)
 				clocal_charset = append_to_string(clocal_charset, "//TRANSLIT");
 #		endif /* HAVE_ICONV_OPEN_TRANSLIT */
-
-			/* iconv() might crash on broken multibyte sequences so check them */
-			if (!strcasecmp(from_charset, "UTF-8") || !strcasecmp(from_charset, "utf8"))
-				(void) utf8_valid(*line);
 
 			/*
 			 * TODO: hardcode unknown_ucs4 (0x00 0x00 0x00 0x3f)
@@ -2715,7 +2717,7 @@ buffer_to_local( /* TODO: rename to something more useful/descriptive */
 					if (result == (size_t) (-1)) {
 						switch (errno) {
 							case EILSEQ:
-								**&outbuf = '?';
+								*outbuf = '?';
 								++outbuf;
 								--outbytesleft;
 								inbuf += 4;
@@ -2746,7 +2748,7 @@ buffer_to_local( /* TODO: rename to something more useful/descriptive */
 					}
 				} while (inbytesleft > 0);
 
-				**&outbuf = '\0';
+				*outbuf = '\0';
 				if (*max_line_len < strlen(obuf)) {
 					*max_line_len = strlen(obuf);
 					*line = my_realloc(*line, *max_line_len + 1);
@@ -4407,16 +4409,6 @@ tin_version_info(
 #else
 			" -NO_POSTING"
 #endif /* NO_POSTING */
-#ifdef BROKEN_LISTGROUP
-			" +BROKEN_LISTGROUP"
-#else
-			" -BROKEN_LISTGROUP"
-#endif /* BROKEN_LISTGROUP */
-#ifdef XHDR_XREF
-			" +XHDR_XREF"
-#else
-			" -XHDR_XREF"
-#endif /* XHDR_XREF */
 			"\n\t"
 #ifdef USE_ZLIB
 			"+USE_ZLIB"
@@ -4781,7 +4773,7 @@ draw_mark_selected(
 	for (j = art_mark_width - wcwidth(tinrc.art_marked_selected); j > 0; --j)
 		my_fputc(' ', stdout);
 	StartInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
-	my_fputwc(tinrc.art_marked_selected, stdout);
+	my_fputwc((wint_t) tinrc.art_marked_selected, stdout);
 #else
 	StartInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
 	my_fputc(tinrc.art_marked_selected, stdout);
@@ -4878,6 +4870,8 @@ static void
 make_connection_page(
 	FILE *fp)
 {
+	t_bool add_slash;
+
 	if (!read_news_via_nntp)
 		fprintf(fp, "%s", _(txt_conninfo_local_spool));
 	else {
@@ -4914,11 +4908,17 @@ make_connection_page(
 #endif /* NNTP_ABLE */
 	}
 
+	/*
+	 * TODO: do we want (#ifdef HAVE_REALPATH) to resolve symlinks
+	 *       (or show both like "ls -ld") in the display?
+	 */
 #ifndef NNTP_ONLY
 	if (!read_news_via_nntp && !read_saved_news) {
 		fprintf(fp, "%s", txt_conninfo_spool_config);
-		fprintf(fp, txt_conninfo_spooldir, spooldir);
-		fprintf(fp, txt_conninfo_novrootdir, novrootdir);
+		add_slash = (spooldir[strlen(spooldir) - 1] != '/');
+		fprintf(fp, txt_conninfo_spooldir, spooldir, add_slash ? "/" : "");
+		add_slash = (novrootdir[strlen(novrootdir) - 1] != '/');
+		fprintf(fp, txt_conninfo_novrootdir, novrootdir, add_slash ? "/" : "");
 		fprintf(fp, txt_conninfo_overview_file, novfilename); /* TODO: shows wrong name if using inn >= 2.3.0 nov-style */
 		fprintf(fp, txt_conninfo_overview_fmt, overviewfmt_file);
 		fprintf(fp, txt_conninfo_newsgroups_file, newsgroups_file);
@@ -4941,6 +4941,8 @@ make_connection_page(
 	if (*global_config_file)
 		fprintf(fp, "tinrc (global)     : %s\n", global_config_file);
 
+	fprintf(fp, "serverrc           : %s\n", serverrc_file);
+
 	fprintf(fp, "filter             : %s\n", filter_file);
 
 	if (*keymap_file)
@@ -4950,9 +4952,48 @@ make_connection_page(
 	fprintf(fp, "\n");
 	fprintf(fp, ".newsrc            : %s\n", newsrc);
 
-	/* TODO: mention "gzip" if compress_overview_files? */
-	if (tinrc.cache_overview_files)
-		fprintf(fp, "local overviews    : %s\n", index_newsdir);
+	/*
+	 * "-$NNTPSERVER" is appended in find_nov_file()
+	 * which may not haven been called yet (e.g. not
+	 * entered a group till now), so index_newsdir may
+	 * lack the suffix, fix it for displaying only
+	 */
+	if (serverrc.cache_overview_files) {
+		char *ns = strcasestr(index_newsdir, nntp_server);
+		char *idx_nd = my_strdup(index_newsdir);
+
+		if (!ns || strlen(ns) != strlen(nntp_server)) {
+			char *srv = my_strdup(nntp_server);
+
+			idx_nd = append_to_string(idx_nd, "-");
+			idx_nd = append_to_string(idx_nd, srv);
+			free(srv);
+		}
+		add_slash = (idx_nd[strlen(idx_nd) - 1] != '/');
+
+#ifdef USE_ZLIB
+		fprintf(fp, "local overviews %s: %s%s\n", serverrc.compress_overview_files ? "[c]" : "   ", idx_nd, add_slash ? "/" : "");
+#else
+		fprintf(fp, "local overviews    : %s%s\n", idx_nd, add_slash ? "/" : "");
+#endif /* USE_ZLIB */
+		free(idx_nd);
+    }
+
+#ifdef DEBUG
+	{	/* till we have a serverrc-menu */
+		const char *e = get_val("TINRC", NULL);
+		size_t l = strlen(BlankIfNull(e)) + strlen(BlankIfNull(serverrc.add_cmd_line_opts));
+
+		if (l) {
+			fprintf(fp, "\n$TINRC + serverrc  : ");
+			if (e && *e && *serverrc.add_cmd_line_opts)
+				fprintf(fp, "%s %s", e, serverrc.add_cmd_line_opts);
+			else
+				fprintf(fp, "%s", (e && *e) ? e : serverrc.add_cmd_line_opts);
+			fprintf(fp, "\n");
+		}
+	}
+#endif /* DEBUG */
 }
 
 

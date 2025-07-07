@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2025-02-06
+ *  Updated   : 2025-07-05
  *  Notes     :
  *
  * Copyright (c) 1992-2025 Iain Lea <iain@bricbrac.de>
@@ -270,6 +270,7 @@ parse_active_line(
 	*min = atoartnum(q);
 
 	if (!lineok) { /* missing moderation flag - seen on usenet.farm */
+		/* TODO: don't do the y-guessing with mail-active-files */
 		strcpy(moderated, "y");	/* guess posting is fine */
 		lineok = TRUE;
 	} else
@@ -447,7 +448,7 @@ do_read_newsrc_active_file(
 #	endif /* DEBUG */
 							}
 							ptr = ngname;
-							free(ngnames[index_o]);
+							FreeAndNull(ngnames[index_o]);
 							index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
 							--window;
 							break;
@@ -460,16 +461,21 @@ do_read_newsrc_active_file(
 						/* FALLTHROUGH */
 
 					case ERR_NOGROUP:
-						free(ngnames[index_o]);
+						FreeAndNull(ngnames[index_o]);
 						index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
 						--window;
 						continue;
 
 					case ERR_ACCESS:
-						for (index_i = 0; index_i < NUM_SIMULTANEOUS_GROUP_COMMAND - 1; index_i++) {
-							FreeIfNeeded(ngnames[index_i]);
+						{
+							char bbuf[4 + NNTP_GRPLEN + NNTP_STRLEN + 3 + 1];
+
+							snprintf(bbuf, sizeof(bbuf), "%d %s (%s)", respcode, line, BlankIfNull(ngnames[index_o]));
+							for (index_i = 0; index_i < NUM_SIMULTANEOUS_GROUP_COMMAND - 1; ++index_i) {
+								FreeIfNeeded(ngnames[index_i]);
+							}
+							tin_done(NNTP_ERROR_EXIT, "%s", bbuf);
 						}
-						tin_done(NNTP_ERROR_EXIT, "%s", line);
 						/* keep lint quiet: */
 						/* FALLTHROUGH */
 
@@ -478,7 +484,7 @@ do_read_newsrc_active_file(
 						if ((debug & DEBUG_NNTP) && verbose > 1)
 							debug_print_file("NNTP", "NOT_OK %s", line);
 #	endif /* DEBUG */
-						free(ngnames[index_o]);
+						FreeAndNull(ngnames[index_o]);
 						index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
 						--window;
 						continue;
@@ -846,9 +852,9 @@ read_news_active_file(
 						*q = '\0';
 						if (nntp_caps.type == CAPABILITIES && (nntp_caps.list_active || nntp_caps.list_counts)) {
 							/* LIST ACTIVE or LIST COUNTS takes wildmats */
-							if (*buff && ((strlen(buff) + strlen(ptr)) < (NNTP_GRPLEN - 1))) { /* append group name */
+							if (*buff && ((strlen(buff) + strlen(ptr)) < (NNTP_GRPLEN - 1))) /* append group name */
 								snprintf(buff + strlen(buff), sizeof(buff) - strlen(buff), ",%s", ptr);
-							} else {
+							else {
 								if (*buff) {
 									put_server(buff, FALSE);
 									++r;
@@ -858,6 +864,7 @@ read_news_active_file(
 							continue;
 						} else
 							snprintf(buff, sizeof(buff), "LIST ACTIVE %s", ptr);
+
 						put_server(buff, FALSE);
 						++r;
 						*buff = '\0';
@@ -888,7 +895,7 @@ read_news_active_file(
 								if ((debug & DEBUG_NNTP) && verbose) /* long multiline response */
 									debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #		endif /* DEBUG */
-								if (nntp_caps.type == CAPABILITIES && nntp_caps.list_counts) {
+								if (nntp_caps.list_counts) {
 									if (!parse_count_line(ptr, &max, &min, &count, moderated))
 										continue;
 								} else {
@@ -967,7 +974,7 @@ open_newgroups_fp(
 	int idx)
 {
 #ifdef NNTP_ABLE
-	if (read_news_via_nntp && !read_saved_news) {
+	if (read_news_via_nntp && !read_saved_news && nntp_caps.newgroups) {
 		char line[NNTP_STRLEN];
 		const struct tm *ngtm;
 

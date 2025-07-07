@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-05-18
+ *  Updated   : 2025-07-07
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -359,7 +359,7 @@ read_config_file(
 				break;
 
 			if (match_string(buf, "default_save_mode=", tmp, sizeof(tmp))) {
-				tinrc.default_save_mode = tmp[0];
+				tinrc.default_save_mode = *tmp;
 				break;
 			}
 
@@ -466,19 +466,10 @@ read_config_file(
 			break;
 
 		case 'h':
-			if (upgrade && upgrade->file_version <= 10305) {
-				t_bool hide_uue;
-				if (match_boolean(buf, "hide_uue=", &hide_uue)) {
-					if (hide_uue)
-						tinrc.hide_uue = 1;
-					break;
-				}
-			} else {
-				if (match_integer(buf, "hide_uue=", &tinrc.hide_uue, HIDE_ALL)) {
-					if (tinrc.hide_uue & UUE_INCOMPL)
-						tinrc.hide_uue &= ~UUE_YES;
-					break;
-				}
+			if (match_integer(buf, "hide_inline_data=", &tinrc.hide_inline_data, HIDE_ALL)) {
+				if (tinrc.hide_inline_data & UUE_INCOMPL)
+					tinrc.hide_inline_data &= ~UUE_YES;
+				break;
 			}
 
 			if (match_string_ptr(buf, "hideline_regex=", &tinrc.hideline_regex))
@@ -950,9 +941,9 @@ read_config_file(
 			break;
 		}
 	}
-	if (is_7bit) {
+	if (is_7bit)
 		tinrc.mail_mime_encoding = tinrc.post_mime_encoding = MIME_ENCODING_7BIT;
-	} else {
+	else {
 		if (tinrc.mail_mime_encoding == MIME_ENCODING_7BIT)
 			tinrc.mail_mime_encoding = MIME_ENCODING_QP;
 		if (tinrc.post_mime_encoding == MIME_ENCODING_7BIT)
@@ -1219,6 +1210,9 @@ write_config_file(
 	fprintf(fp, "quote_regex2=%s\n\n", BlankIfNull(tinrc.quote_regex2));
 	fprintf(fp, "%s", _(txt_quote_regex3.tinrc));
 	fprintf(fp, "quote_regex3=%s\n\n", BlankIfNull(tinrc.quote_regex3));
+
+	fprintf(fp, "%s", _(txt_extquote_regex.tinrc));
+	fprintf(fp, "extquote_regex=%s\n\n", BlankIfNull(tinrc.extquote_regex));
 #endif /* HAVE_COLOR */
 
 	fprintf(fp, "%s", _(txt_slashes_regex.tinrc));
@@ -1243,11 +1237,6 @@ write_config_file(
 	fprintf(fp, "%s", _(txt_hideline_regex.tinrc));
 	fprintf(fp, "hideline_regex=%s\n\n", (*tinrc.hideline_regex && STRCMPEQ(tinrc.hideline_regex, NEVER_MATCH_REGEX)) ? "" : BlankIfNull(tinrc.hideline_regex));
 
-#ifdef HAVE_COLOR
-	fprintf(fp, "%s", _(txt_extquote_regex.tinrc));
-	fprintf(fp, "extquote_regex=%s\n\n", BlankIfNull(tinrc.extquote_regex));
-#endif /* HAVE_COLOR */
-
 	fprintf(fp, "%s", _(txt_show_signatures.tinrc));
 	fprintf(fp, "show_signatures=%s\n\n", print_boolean(tinrc.show_signatures));
 
@@ -1262,8 +1251,8 @@ write_config_file(
 	fprintf(fp, "%s", _(txt_tex2iso_conv.tinrc));
 	fprintf(fp, "tex2iso_conv=%s\n\n", print_boolean(tinrc.tex2iso_conv));
 
-	fprintf(fp, "%s", _(txt_hide_uue.tinrc));
-	fprintf(fp, "hide_uue=%d\n\n", tinrc.hide_uue);
+	fprintf(fp, "%s", _(txt_hide_inline_data.tinrc));
+	fprintf(fp, "hide_inline_data=%d\n\n", tinrc.hide_inline_data);
 
 	fprintf(fp, "%s", _(txt_news_quote_format.tinrc));
 	fprintf(fp, "news_quote_format=%s\n", BlankIfNull(tinrc.news_quote_format));
@@ -1701,7 +1690,7 @@ match_color(
 		}
 
 		if (!found)
-			*dst = atoi(&line[patlen]);
+			*dst = strtol(&line[patlen], NULL, 10);
 
 		if (max) {
 			if (max == MAX_BACKCOLOR && *dst > max && *dst <= MAX_COLOR)
@@ -1737,7 +1726,7 @@ match_integer(
 	size_t patlen = strlen(pat);
 
 	if (STRNCMPEQ(line, pat, patlen)) {
-		*dst = atoi(&line[patlen]);
+		*dst = strtol(&line[patlen], NULL, 10);
 
 		if (maxval) {
 			if ((*dst < 0) || (*dst > maxval)) {
@@ -1955,10 +1944,8 @@ ulBuildArgv(
 			new_argv[i] = tmp;
 			for (; *tmp && !isspace((unsigned char) *tmp); tmp++)
 				;
-			if (*tmp) {
-				*tmp = '\0';
-				++tmp;
-			}
+			if (*tmp)
+				*tmp++ = '\0';
 			++i;
 			new_argv = my_realloc(new_argv, ((size_t) (i + 1) * sizeof(char *)));
 			new_argv[i] = NULL;
@@ -2017,7 +2004,6 @@ rc_update(
 			case 'a':
 				if (match_boolean(buf, "auto_bcc=", &auto_bcc))
 					break;
-
 				if (match_boolean(buf, "auto_cc=", &auto_cc))
 					break;
 				break;
@@ -2071,7 +2057,7 @@ rc_update(
 					if (*tinrc.sigfile == '!' && (tinrc.sigfile[l - 2] != '%' || tinrc.sigfile[l - 1] != 'G')) {
 						char *newbuf = my_malloc(sizeof(tinrc.sigfile) + 4);
 
-						sprintf(newbuf, "%s %s", tinrc.sigfile, "%G");
+						sprintf(newbuf, "%s %%G", tinrc.sigfile);
 						free(tinrc.sigfile);
 						tinrc.sigfile = my_strdup(newbuf);
 						free(newbuf);
@@ -2210,10 +2196,12 @@ rc_update(
 	if (use_mailreader_i)
 		tinrc.interactive_mailer = INTERACTIVE_WITHOUT_HEADERS;
 
-	if (!use_metamail || getenv("NOMETAMAIL") != NULL)
-		tinrc.metamail_prog = my_strdup(INTERNAL_CMD);
-	else
-		tinrc.metamail_prog = my_strdup(METAMAIL_CMD);
+	if (!*tinrc.metamail_prog) {
+		if (!use_metamail || getenv("NOMETAMAIL") != NULL)
+			tinrc.metamail_prog = my_strdup(INTERNAL_CMD);
+		else
+			tinrc.metamail_prog = my_strdup(METAMAIL_CMD);
+	}
 
 	rewind(fp);
 	return TRUE;
@@ -2267,6 +2255,24 @@ rc_post_update(
 
 				break;
 
+			case 'h':
+				if (upgrade && upgrade->file_version <= 10305) {
+					t_bool hide_uue;
+
+					if (match_boolean(buf, "hide_uue=", &hide_uue)) {
+						if (hide_uue)
+							tinrc.hide_inline_data = 1;
+						break;
+					}
+				} else {
+					if (match_integer(buf, "hide_uue=", &tinrc.hide_inline_data, HIDE_ALL)) {
+						if (tinrc.hide_inline_data & UUE_INCOMPL)
+							tinrc.hide_inline_data &= ~UUE_YES;
+						break;
+					}
+				}
+				break;
+
 			case 's':
 				/*
 				 * previous versions has always passed groupname to external
@@ -2278,7 +2284,7 @@ rc_post_update(
 					if (tinrc.sigfile[0] == '!' && (tinrc.sigfile[l - 2] != '%' || tinrc.sigfile[l - 1] != 'G')) {
 						char *newbuf = my_malloc(sizeof(tinrc.sigfile) + 4);
 
-						sprintf(newbuf, "%s %s", tinrc.sigfile, "%G");
+						sprintf(newbuf, "%s %%G", tinrc.sigfile);
 						my_strncpy(tinrc.sigfile, newbuf, sizeof(tinrc.sigfile) - 1);
 						free(newbuf);
 					}
@@ -2329,68 +2335,347 @@ rc_post_update(
 }
 
 
+/*
+ * NOTE: this is read after the cmd-line options and
+ *       after glocal/local-tinrc, so add_cmd_line_opts
+ *       may override them, but be aware that attributes
+ *       are read even later (so better not add anything
+ *       which could also be set via attributes to avoid
+ *       confusion).
+ *
+ * TODO: - once we have a (nice) solution for a severrc 'M'enu we
+ *         could add more server specific vars (which can't be set
+ *         via add_cmd_line_opts) or even per server config-files like
+ *         keymap, filter, ...
+ *       - add a cmd-line option to skip reading the serverrc?
+ *         (what about status vars like last_newnews or motd_hash then?)
+ */
+#if defined(NNTP_ABLE) && defined(INET6)
+#	define USELESS_COMB(keep,ignore) do { \
+		wait_message(2, _(txt_useless_combination), keep, ignore, ignore, _(" Keeping serverrc.add_cmd_line_opts.")); \
+	} while (0) /* -> lang.c */
+#endif /* NNTP_ABLE && INET6 */
+#define OPTIONS ":46ACdG:knp:qQt:Tx"
 void
 read_server_config(
-	void)
+	unsigned int option_mask) /* -u or -R on the cmd.-line? */
 {
 	FILE *fp;
 	char *line;
-	char file[PATH_LEN];
 	char newnews_info[LEN];
+	char *d, *s, *bp = NULL;
 	char serverdir[PATH_LEN];
+	int i;
 	struct t_version *upgrade = NULL;
-
+	t_bool is_valid = TRUE;
 #ifdef NNTP_ABLE
-	if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
-		snprintf(file, sizeof(file), "%s:%u", nntp_server, nntp_tcp_port);
-	else
+	const char *valid_suppressions[] = { /* keep in sync with check_extensions() */
+		"AUTHINFO SASL",
+		"CAPABILITIES",
+		"COMPRESS DEFLATE",
+		"HDR",
+		"LIST COUNTS",
+		"LIST HEADERS",
+		"LIST MOTD",
+		"LIST NEWSGROUPS",
+		"LIST OVERVIEW.FMT",
+		"LIST SUBSCRIPTIONS",
+		"LISTGROUP",
+		"NEWGROUPS",
+		"OVER",
+		"XHDR",
+		"XOVER",
+		"XPAT",
+		NULL
+	};
 #endif /* NNTP_ABLE */
-	{
-		STRCPY(file, quote_space_to_dash(nntp_server));
-	}
-	joinpath(serverdir, sizeof(serverdir), rcdir, file);
-	joinpath(file, sizeof(file), serverdir, SERVERCONFIG_FILE);
+
+	/*
+	 * to avoid !serverrc.disabled_nntp_cmds checks elsewhere
+	 * this is for the case when we can't read the serverrc
+	 */
+	serverrc.disabled_nntp_cmds = my_strdup("");
+
+	/*
+	 * as we don't want to logical OR to but override
+	 * tinrc values pull them in as default first
+	 */
+	serverrc.cache_overview_files = tinrc.cache_overview_files;
+#ifdef USE_ZLIB
+	serverrc.compress_overview_files = tinrc.compress_overview_files;
+#endif /* USE_ZLIB */
+
+	dir_name(serverrc_file, serverdir);
 	joinpath(local_newsgroups_file, sizeof(local_newsgroups_file), serverdir, NEWSGROUPS_FILE);
 	joinpath(local_motd_file, sizeof(local_motd_file), serverdir, MOTD_FILE);
 
-	if ((fp = tin_fopen(file, "r")) == NULL)
+	if ((fp = tin_fopen(serverrc_file, "r")) == NULL)
 		return;
 
 	while ((line = tin_fgets(fp, FALSE)) != NULL) {
-		if ((*line == '#') || (*line == '\0'))
+		if (*line == '#' || *line == '\0')
 			continue;
 
-		if (match_string(line, "last_newnews=", newnews_info, sizeof(newnews_info))) {
-			char *tmp_info;
-			int tmp_len;
+		/*
+		 * serverrc specific
+		 */
+		if (match_string_ptr(line, "add_cmd_line_opts=", &serverrc.add_cmd_line_opts))
+			continue; /* parsing is done after the file has been read */
 
-			if ((tmp_len = snprintf(NULL, 0, "%s %s", nntp_server, newnews_info)) > 0) {
-				tmp_info = my_malloc(++tmp_len);
-				if (snprintf(tmp_info, (size_t) tmp_len, "%s %s", nntp_server, newnews_info) == tmp_len - 1)
-					load_newnews_info(tmp_info);
-				free(tmp_info);
+		/*
+		 * we intentionally read them even in the !NNTP_ABLE case
+		 * but do no checking then
+		 */
+		if (match_string(line, "disabled_nntp_cmds=", NULL, 0)) {
+			FreeAndNull(serverrc.disabled_nntp_cmds);
+			/* beautify */
+			s = line + strlen("disabled_nntp_cmds=");
+			while ((d = strtok(s, ",")) != NULL) {
+				str_trim(d);
+#ifdef NNTP_ABLE
+				i = 0;
+				is_valid = FALSE;
+				if (*d == '"')
+					++d;
+				if (*d && d[strlen(d) -1] == '"')
+					d[strlen(d) -1] = '\0';
+				str_trim(d);
+				buffer_to_ascii(d);
+				str_upr(d);
+				while (!is_valid && valid_suppressions[i]) {
+					if (!strcmp(d, valid_suppressions[i++]))
+						is_valid = TRUE;
+				}
+#endif /* NNTP_ABLE */
+
+				if (*d) { /* ignore empty tokens */
+#ifdef NNTP_ABLE
+					if (!is_valid) /* TODO: only in debug mode? */
+						wait_message(2, "Invalid %s \"%s\", discarding it", "disabled_nntp_cmds", d); /* -> lang.c */
+					else
+#endif /* NNTP_ABLE */
+					{
+						bp = append_to_string(bp, d);
+						bp = append_to_string(bp, ",");
+#ifdef NNTP_ABLE
+						/*
+						 * special case, everything else is handled in
+						 * check_extensions() (after add_cmd_line_opts has
+						 * been parsed)
+						 */
+						if (nntp_caps.type != BROKEN && !strcasecmp(d, "CAPABILITIES"))
+							nntp_caps.type = BROKEN;
+#endif /* NNTP_ABLE */
+					}
+				}
+
+				if (s)
+					s = NULL;
 			}
+			if (bp && *bp) {
+				i = strlen(bp);
+				if (*(bp + i - 1) == ',')
+					*(bp + i - 1) = '\0';
+				serverrc.disabled_nntp_cmds = my_strdup(bp);
+			}
+			FreeAndNull(bp);
+			/* to avoid !serverrc.disabled_nntp_cmds checks elsewhere */
+			if (!serverrc.disabled_nntp_cmds)
+				serverrc.disabled_nntp_cmds = my_strdup("");
+
 			continue;
 		}
 
-		if (match_long(line, "motd_hash=", &motd_hash))
+		/*
+		 * tinrc overrides
+		 */
+		if (match_boolean(line, "cache_overview_files=", &serverrc.cache_overview_files))
 			continue;
+
+#ifdef USE_ZLIB
+		if (match_boolean(line, "compress_overview_files=", &serverrc.compress_overview_files))
+			continue;
+#endif /* USE_ZLIB */
+
+		/*
+		 * internal values
+		 */
+		if (match_long(line, "motd_hash=", &serverrc.motd_hash))
+			continue;
+
+		if (match_string(line, "last_newnews=", newnews_info, sizeof(newnews_info))) {
+			if ((i = snprintf(NULL, 0, "%s %s", nntp_server, newnews_info)) > 0) {
+				s = my_malloc(++i);
+				if (snprintf(s, (size_t) i, "%s %s", nntp_server, newnews_info) == i - 1)
+					load_newnews_info(s);
+				free(s);
+			}
+			continue;
+		}
 
 		if (match_string(line, "version=", NULL, 0)) {
 			if (upgrade != NULL) /* ignore duplicate version lines; first match counts */
 				continue;
 
 			upgrade = check_upgrade(line, "version=", SERVERCONFIG_VERSION);
-			if (upgrade->state == RC_IGNORE) /* Expected version number; nothing to do -> continue */
-				continue;
+			if (upgrade->state != RC_IGNORE)
+				upgrade_prompt_quit(upgrade, serverrc_file, fp);
 
 			/* Nothing to do yet for RC_UPGRADE and RC_DOWNGRADE */
 			continue;
 		}
 	}
+
+	/*
+	 * parse serverrc.add_cmd_line_opts here so we can override options
+	 * in the file
+	 */
+	if (serverrc.add_cmd_line_opts && *serverrc.add_cmd_line_opts) {
+		char *args[LEN];
+		char *token, *lc = NULL;
+		int ch, cnt = 0;
+
+		/* prepare args for getopt() with dummy args[0] */
+		lc = append_to_string(lc, "serverrc.add_cmd_line_opts ");
+		lc = append_to_string(lc, serverrc.add_cmd_line_opts);
+		token = strtok(lc, " ");
+		while (token != NULL && cnt < LEN - 1) {
+			args[cnt++] = token;
+			token = strtok(NULL, " ");
+		}
+		args[cnt] = NULL;
+		optind = 1;
+		optopt = 0; /* AFAIK at least MINIX < 3.2.0 doesn't set optopt */
+
+		while ((ch = getopt(cnt, args, OPTIONS)) != -1) {
+			switch (ch) {
+				case '4':
+#if defined(NNTP_ABLE) && defined(INET6)
+					if (force_ipv6) {
+						USELESS_COMB("-4", "-6");
+						force_ipv6 = FALSE;
+					}
+					read_news_via_nntp = force_ipv4 = TRUE;
+					force_ipv6 = FALSE;
+#endif /* NNTP_ABLE && INET6 */
+					break;
+
+				case '6':
+#if defined(NNTP_ABLE) && defined(INET6)
+					if (force_ipv4) {
+						USELESS_COMB("-6", "-4");
+						force_ipv4 = FALSE;
+					}
+					read_news_via_nntp = force_ipv6 = TRUE;
+					force_ipv4 = FALSE;
+#endif /* NNTP_ABLE && INET6 */
+					break;
+
+				case 'A':
+#ifdef NNTP_ABLE
+					read_news_via_nntp = force_auth_on_conn_open = TRUE;
+#endif /* NNTP_ABLE */
+					break;
+
+				case 'C':
+#if defined(NNTP_ABLE) && defined(USE_ZLIB)
+					read_news_via_nntp = use_compress = TRUE;
+#endif /* NNTP_ABLE && USE_ZLIB */
+					break;
+
+				case 'd':
+					show_description = FALSE;
+					cmdline.args |= CMDLINE_NO_DESCRIPTION;
+					break;
+
+				case 'G':
+					if ((option_mask & SRVRC_MASK_UPDATE_INDEX) != SRVRC_MASK_UPDATE_INDEX) { /* only accept -G without -u */
+						cmdline.getart_limit = s2i(optarg, INT_MIN, INT_MAX);
+						if (errno)
+							cmdline.getart_limit = 0;
+						if (cmdline.getart_limit != 0)
+							cmdline.args |= CMDLINE_GETART_LIMIT;
+					}
+					break;
+
+				case 'k':
+#ifdef NNTPS_ABLE
+					read_news_via_nntp = insecure_nntps = use_nntps = TRUE;
+#endif /* NNTPS_ABLE */
+					break;
+
+				case 'n':
+					newsrc_active = TRUE;
+					list_active = FALSE;
+					break;
+
+				case 'p':
+#ifdef NNTP_ABLE
+					nntp_tcp_port = (unsigned short) s2i(optarg, 0, 65535);
+					if (errno)
+						nntp_tcp_port = IPPORT_NNTP;
+					read_news_via_nntp = TRUE;
+#endif /* NNTP_ABLE */
+					break;
+
+				case 'q':
+					check_for_new_newsgroups = FALSE;
+					break;
+
+				case 'Q':
+					newsrc_active = TRUE;
+					list_active = FALSE;
+					check_for_new_newsgroups = FALSE;
+					show_description = FALSE;
+					cmdline.args |= CMDLINE_NO_DESCRIPTION;
+					break;
+
+				case 't':
+#if defined(NNTP_ABLE) && defined(HAVE_ALARM) && defined(SIGALRM)
+					if ((option_mask & SRVRC_MASK_READ_SAVED_NEWS) != SRVRC_MASK_READ_SAVED_NEWS) {
+						cmdline.nntp_timeout = s2i(optarg, 0, TIN_NNTP_TIMEOUT_MAX);
+						if (errno)
+							cmdline.nntp_timeout = 120;
+						if (cmdline.nntp_timeout)
+							cmdline.args |= CMDLINE_NNTP_TIMEOUT;
+						read_news_via_nntp = TRUE;
+					}
+#endif /* NNTP_ABLE && HAVE_ALARM && SIGALRM */
+					break;
+
+				case 'T':
+#ifdef NNTPS_ABLE
+					read_news_via_nntp = use_nntps = TRUE;
+					if (nntp_tcp_port == nntp_tcp_default_port) /* TODO: a previous -p has precedence, logic ok? */
+						nntp_tcp_port = nntps_tcp_default_port;
+#endif /* NNTPS_ABLE */
+					break;
+
+				case 'x':
+					force_no_post = TRUE;
+					break;
+
+				case ':':
+					if (optopt)
+						error_message(2, _(txt_error_option_missing_argument), "serverrc.add_cmd_line_opts", optopt);
+					break;
+
+				case '?':
+				default:
+					if (optopt)
+						error_message(2, _(txt_error_option_unknown), "serverrc.add_cmd_line_opts", optopt);
+					break;
+			}
+		}
+		free(lc);
+	}
 	fclose(fp);
 	FreeAndNull(upgrade);
 }
+#undef OPTIONS
+#if defined(NNTP_ABLE) && defined(INET6)
+#	undef USELESS_COMB
+#endif /* NNTP_ABLE && INET6 */
 
 
 static void
@@ -2400,7 +2685,6 @@ write_server_config(
 	DIR *dirp;
 	FILE *fp;
 	char *file_tmp;
-	char file[PATH_LEN];
 	char timestring[30];
 	char serverdir[PATH_LEN];
 	int i;
@@ -2409,20 +2693,10 @@ write_server_config(
 		/* don't update server files while reading locally stored articles */
 		return;
 
-#ifdef NNTP_ABLE
-	if (read_news_via_nntp && nntp_tcp_port != IPPORT_NNTP)
-		snprintf(file, sizeof(file), "%s:%u", nntp_server, nntp_tcp_port);
-	else
-#endif /* NNTP_ABLE */
-	{
-		STRCPY(file, nntp_server);
-	}
-	joinpath(serverdir, sizeof(serverdir), rcdir, file);
-	joinpath(file, sizeof(file), serverdir, SERVERCONFIG_FILE);
-
-	if ((no_write || post_article_and_exit || post_postponed_and_exit) && file_size(file) != -1L)
+	if ((no_write || post_article_and_exit || post_postponed_and_exit) && file_size(serverrc_file) != -1L)
 		return;
 
+	dir_name(serverrc_file, serverdir);
 	errno = 0;
 	if (!(dirp = opendir(serverdir))) {
 		switch (errno) {
@@ -2442,7 +2716,7 @@ write_server_config(
 		CLOSEDIR(dirp);
 
 	/* generate tmp-filename */
-	if ((file_tmp = get_tmpfilename(file)) == NULL)
+	if ((file_tmp = get_tmpfilename(serverrc_file)) == NULL)
 		return;
 
 	if ((fp = fopen(file_tmp, "w")) == NULL) {
@@ -2454,9 +2728,19 @@ write_server_config(
 	fprintf(fp, _(txt_serverconfig_header), PRODUCT, tin_progname, VERSION, RELEASEDATE, RELEASENAME, PRODUCT, PRODUCT);
 	fprintf(fp, "version=%s\n", SERVERCONFIG_VERSION);
 
-	if (motd_hash != 0)
-		fprintf(fp, "motd_hash=%lu\n", (unsigned long int) motd_hash);
+	fprintf(fp, "\n# config options\n"); /* -> lang.c */
+	fprintf(fp, "add_cmd_line_opts=%s\n", BlankIfNull(serverrc.add_cmd_line_opts));
+	fprintf(fp, "disabled_nntp_cmds=%s\n", BlankIfNull(serverrc.disabled_nntp_cmds));
 
+	fprintf(fp, "\n# tinrc overrides\n"); /* -> lang.c */
+	fprintf(fp, "cache_overview_files=%s\n", print_boolean(serverrc.cache_overview_files));
+#ifdef USE_ZLIB
+	fprintf(fp, "compress_overview_files=%s\n", print_boolean(serverrc.compress_overview_files));
+#endif /* USE_ZLIB */
+
+	fprintf(fp, "\n# internal data, should not be modified\n"); /* -> lang.c */
+	if (serverrc.motd_hash != 0)
+		fprintf(fp, "motd_hash=%lu\n", (unsigned long int) serverrc.motd_hash);
 	if ((i = find_newnews_index(nntp_server)) >= 0) {
 		if (my_strftime(timestring, sizeof(timestring) - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time))))
 			fprintf(fp, "last_newnews=%lu (%s)\n", (unsigned long int) newnews[i].time, timestring);
@@ -2477,7 +2761,7 @@ write_server_config(
 			fclose(fp);
 		}
 	} else
-		rename_file(file_tmp, file);
+		rename_file(file_tmp, serverrc_file);
 
 	free(file_tmp);
 }

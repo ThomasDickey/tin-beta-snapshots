@@ -287,11 +287,10 @@ void
 regex_cache_init(
 	struct regex_cache *regex)
 {
-#ifdef HAVE_LIB_PCRE2
 	regex->re = NULL;
+#ifdef HAVE_LIB_PCRE2
 	regex->match = NULL;
 #else
-	regex->re = NULL;
 	regex->extra = NULL;
 	regex->ovector = NULL;
 	regex->ovecalloc = 0;

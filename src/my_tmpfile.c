@@ -79,16 +79,18 @@ my_mktmp(
 
 		if (base_dir) {
 #ifdef HAVE_LONG_FILE_NAMES
+			const char *nodenamebuf = BlankIfNull(get_host_name());
+
 			/*
 			 * base_dir may reside on a shared network device
 			 * so add hostname/pid if allowed.
 			 */
-			if ((n = snprintf(NULL, 0, "tin-%s-%ld-XXXXXX", get_host_name(), (long) process_id)) < 0)
+			if ((n = snprintf(NULL, 0, "tin-%s-%ld-XXXXXX", nodenamebuf, (long) process_id)) < 0)
 				goto error_out;
 
 			len = (size_t) n + 1;
 			buf = my_malloc(len);
-			if (snprintf(buf, len, "tin-%s-%ld-XXXXXX", get_host_name(), (long) process_id) != n) {
+			if (snprintf(buf, len, "tin-%s-%ld-XXXXXX", nodenamebuf, (long) process_id) != n) {
 				free(buf);
 				goto error_out;
 			}

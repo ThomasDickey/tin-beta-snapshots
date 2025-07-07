@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-05-15
+ *  Updated   : 2025-06-22
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -679,7 +679,7 @@ draw_post_hist_arrow(
 	if (tinrc.info_in_last_line) {
 		t_posted *lptr = find_post_hist(phmenu.curr);
 
-		if (*lptr->mid)
+		if (lptr->mid)
 			info_message("%s", lptr->mid);
 	} else if (phmenu.curr == phmenu.max - 1)
 		info_message(_(txt_end_of_posted));
@@ -703,7 +703,7 @@ static void
 build_post_hist_line(
 	int i)
 {
-	char *sptr;
+	char *sptr, *to = NULL;
 	char *tmp = NULL;
 	int group_len = cCOLS / 5;
 	t_posted *lptr;
@@ -739,6 +739,7 @@ build_post_hist_line(
 		}
 		free(wtmp);
 	}
+	to = spart(tmp ? tmp : " ", group_len, TRUE);
 #else
 	if (!strchr(lptr->group, '@') && tinrc.abbreviate_groupname)
 		tmp = abbr_groupname(lptr->group, group_len);
@@ -746,19 +747,25 @@ build_post_hist_line(
 		tmp = my_strdup(lptr->group);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
+	if (!to) {
+		to = my_malloc(group_len + 1);
+		snprintf(to, group_len + 1, "%-*.*s", group_len, group_len, tmp ? tmp : " ");
+	}
+
 #if 1
-	snprintf(sptr, len, "  %s  %8s  %c  %-*.*s  \"%s\"", tin_ltoa(i + 1, 4),
+	snprintf(sptr, len, "  %s  %8s  %c  %s  \"%s\"", tin_ltoa(i + 1, 4),
 			lptr->date, lptr->action,
-			group_len, group_len, BlankIfNull(tmp),
-			lptr->subj);
+			to,
+			BlankIfNull(lptr->subj));
 #else
 	/* also show MID */
-	snprintf(sptr, len, "  %s  %8s  %c  %-*.*s  \"%s\" %s", tin_ltoa(i + 1, 4),
+	snprintf(sptr, len, "  %s  %8s  %c  %s  \"%s\" %s", tin_ltoa(i + 1, 4),
 			lptr->date, lptr->action,
-			group_len, group_len, BlankIfNull(tmp),
-			lptr->subj,
-			lptr->mid);
+			to,
+			BlankIfNull(lptr->subj),
+			BlankIfNull(lptr->mid));
 #endif /* 1 */
+	free(to);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((wtmp = char2wchar_t(sptr)) != NULL) {
@@ -800,7 +807,7 @@ process_post_hist(
 		ret = LOOKUP_REPLY;
 #ifdef NNTP_ABLE
 	else if (read_news_via_nntp && !read_saved_news) {
-			ret = show_article_by_msgid(lptr->mid);
+		ret = show_article_by_msgid(lptr->mid);
 	}
 #endif /* NNTP_ABLE */
 	/*
@@ -817,7 +824,7 @@ process_post_hist(
 			if ((msgid = find_msgid(lptr->mid)) != NULL) {
 				if (msgid->article != ART_UNAVAILABLE) {
 					if (show_page(curr_group, msgid->article, NULL))
-							ret = LOOKUP_OK;
+						ret = LOOKUP_OK;
 				}
 			}
 		} else
@@ -838,6 +845,7 @@ build_post_hist_list(
 	int err = 0;
 	long fpos = 0L;
 	size_t j, k, n, buflen = LEN;
+	t_bool ng_list = FALSE;
 	t_posted *posted = NULL;
 
 	if ((fp = tin_fopen(posted_info_file, "r")) == NULL) {
@@ -884,6 +892,10 @@ build_post_hist_list(
 			post_hist_list = posted;
 		}
 
+		posted->group = NULL;
+		posted->subj = NULL;
+		posted->mid = NULL;
+
 		n = 0;
 		q = my_strdup(buf);
 		if (tin_strtok(q, "|") != NULL) {
@@ -919,35 +931,35 @@ build_post_hist_list(
 		/* TODO:
 		 * - '|' in local-parts of mail addresses will confuse the code
 		 */
-		for (k = 0; buf[j] != '|' && buf[j] != ','; j++) {
-			if (k < sizeof(posted->group) - 1)
-				posted->group[k++] = buf[j];
-		}
+		p = &buf[j];
+		for (k = 0; buf[j] != '|' && buf[j] != ','; j++, k++)
+			;
+
 		if (buf[j] == ',') {
+			ng_list = TRUE;
+			buf[j++] = '\0';
 			while (buf[j] != '|' && buf[j] != '\n')
 				++j;
-
-			if (k > sizeof(posted->group) - 5)
-				k = sizeof(posted->group) - 5;
-
-			posted->group[k++] = ',';
-			posted->group[k++] = '.';
-			posted->group[k++] = '.';
-			posted->group[k++] = '.';
+			k += 4; /* ",..." */
 		}
-		posted->group[k] = '\0';
 
-		++j;
+		posted->group = my_malloc(k + 1);
+		strncpy(posted->group, p, k);
 
-		p = buf;
+		if (ng_list) {
+			strcat(posted->group, ",...");
+			ng_list = FALSE;
+		}
+
+		p = &buf[++j];
+
 		while ((q = strstr(p, "|<")) != NULL)
 			p = ++q;
 
-		if (strlen(p) >= 4 && *p == '<' && strlen(p) < sizeof(posted->mid) - 1) { /* <@> */
+		if (strlen(p) >= 4 && *p == '<') { /* <@> */
 			t_bool invalid = FALSE;
 			t_bool has_at = FALSE;
 
-			k = 0;
 			for (q = p; *q != '\n' && !invalid; q++) {
 				if (*q < 33 || !isascii((unsigned char) *q)) {
 					invalid = TRUE;
@@ -955,23 +967,24 @@ build_post_hist_list(
 				}
 				if (*q == '@')
 					has_at = TRUE;
-
-				posted->mid[k++] = *q;
 			}
 
 			if (*q != '\n' || *(q - 1) != '>')
 				invalid = TRUE;
 
 			if (!invalid && has_at) {
-				posted->mid[k] = '\0';
-				*(p - 1) = '\n'; /* so it does not end up in subj */
-			} else
-				posted->mid[0] = '\0';
+				*q = '\0'; /* replace '\n' */
+				*(p - 1) = '\0'; /* so it does not end up in subj */
+				posted->mid = my_strdup(p);
+			}
 		}
 
 		if (p == buf || p == buf + j) /* subject looks like id and no id logged or no id given, clear id */
-			posted->mid[0] = '\0';
-		my_strncpy(posted->subj, buf + j, sizeof(posted->subj) - 1);
+			FreeAndNull(posted->mid);
+		p = buf + j;
+		if (*(p + strlen(p) - 1) == '\n')
+			*(p + strlen(p) - 1) = '\0';
+		posted->subj = my_strdup(p);
 		++count;
 	}
 
@@ -999,6 +1012,9 @@ free_post_hist_list(
 
 	for (p = post_hist_list; p != NULL; p = q) {
 		q = p->next;
+		FreeIfNeeded(p->group);
+		FreeIfNeeded(p->subj);
+		FreeIfNeeded(p->mid);
 		free(p);
 	}
 	post_hist_list = NULL;
@@ -1341,7 +1357,7 @@ check_article_to_be_posted(
 	enc = *c_group ? (*c_group)->attribute->post_mime_encoding : tinrc.post_mime_encoding;
 
 	oldraw = RawState();	/* save state */
-	subject[0] = '\0';
+	*subject = '\0';
 
 	/* check the header of the article */
 	setup_check_article_screen(&init);
@@ -1349,7 +1365,7 @@ check_article_to_be_posted(
 	while ((line = tin_fgets(fp, TRUE)) != NULL) {
 		++cnt;
 		contains_8bit = FALSE; /* in header we need to check line wise */
-		if (!end_of_header && !strlen(line)) { /* end of header reached */
+		if (!end_of_header && !*line) { /* end of header reached */
 			if (cnt == 1)
 				errors_catbp |= CA_ERROR_HEADER_LINE_BLANK;
 			end_of_header = TRUE;
@@ -1745,7 +1761,6 @@ check_article_to_be_posted(
 						 *       uppercase letters
 						 *       all digit component
 						 */
-
 					} while ((hp = strtok(NULL, ",")) != NULL);
 				}
 				free(cp2);
@@ -1871,12 +1886,12 @@ check_article_to_be_posted(
 					++cp;
 				} else {
 					char *tcp = strunc(cp, cCOLS - 1);
+
 					/*
 					 * TODO: convert the unprintables to hex ("0X%.2X ")
 					 * or the like (we use octal in draw_pager_line())
 					 * before strunc()?
 					 */
-
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					if ((num_bytes = mbtowc(&wc, cp, MB_CUR_MAX)) != -1) {
 						if (!contains_8bit && (num_bytes > 1 || !isascii((unsigned char) *cp)))
@@ -2831,24 +2846,26 @@ check_moderated(
 		if (group->attribute->mailing_list && *group->attribute->mailing_list)
 			*art_type = GROUP_TYPE_MAIL;
 
-		if (!can_post && *art_type == GROUP_TYPE_NEWS) {
-			info_message(_(txt_cannot_post));
-			return NULL;
-		}
-
-		if (group->moderated == 'x' || group->moderated == 'n' || group->moderated == 'j') {
-			error_message(2, _(txt_cannot_post_group), group->name);
-			return NULL;
-		}
-
-		if (group->moderated == 'm') {
-			char *prompt = fmt_string(_(txt_group_is_moderated), groupname);
-			if (prompt_yn(prompt, TRUE) != 1) {
-				error_message(*failmsg ? 2 : 0, failmsg);
-				free(prompt);
+		if (*art_type == GROUP_TYPE_NEWS) {
+			if (!can_post) {
+				info_message(_(txt_cannot_post));
 				return NULL;
 			}
-			free(prompt);
+
+			if (group->moderated == 'x' || group->moderated == 'n' || group->moderated == 'j') {
+				error_message(2, _(txt_cannot_post_group), group->name);
+				return NULL;
+			}
+
+			if (group->moderated == 'm') {
+				char *prompt = fmt_string(_(txt_group_is_moderated), groupname);
+				if (prompt_yn(prompt, TRUE) != 1) {
+					error_message(*failmsg ? 2 : 0, failmsg);
+					free(prompt);
+					return NULL;
+				}
+				free(prompt);
+			}
 		}
 	} while ((groupname = strtok(NULL, ",")) != NULL);
 
@@ -2975,7 +2992,6 @@ quick_post_article(
 	 * second param is whether to assume yes to all which is the same as
 	 * the command line switch.
 	 */
-
 	if (pickup_postponed_articles(!postponed_only, postponed_only) || postponed_only)
 		return;
 
@@ -3473,8 +3489,11 @@ join_references(
 			++e;	/* message-ids */
 			continue;
 		}
-		if (damaged_id(e)) {	/* remove damaged message ids and mark
-					   the gap if that's not already done */
+		if (damaged_id(e)) {
+			/*
+			 * remove damaged message ids and mark
+			 * the gap if that's not already done
+			 */
 			e += skip_id(e);
 			while (space < 3) {
 				++space;
@@ -4317,6 +4336,10 @@ mail_bug_report(
 		}
 		if (nntp_caps.implementation) {
 			fprintf(fp, "IMPLE: %s\n", nntp_caps.implementation);
+			++start_line_offset;
+		}
+		if (*serverrc.disabled_nntp_cmds) {
+			fprintf(fp, "-CMDS: %s\n", serverrc.disabled_nntp_cmds);
 			++start_line_offset;
 		}
 	}
@@ -6087,7 +6110,7 @@ build_messageid(
 	 * draft-ietf-usefor-msg-id-alt-00, 2.1.1
 	 * based on the host's FQDN
 	 */
-	snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "N%s@%s>", radix32(getuid()), get_fqdn(get_host_name()));
+	snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "N%s@%s>", radix32(getuid()), BlankIfNull(get_fqdn(get_host_name())));
 #	endif /* !FORGERY */
 
 	/*
@@ -6286,7 +6309,7 @@ add_headers(
 
 				if (adddate) {
 					time_t epoch;
-					char dateheader[50];
+					char dateheader[50] = { '\0' };
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 					char *old_lc_all = NULL, *old_lc_time = NULL;
 

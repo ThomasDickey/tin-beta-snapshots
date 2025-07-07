@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-04-04
+ *  Updated   : 2025-06-01
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1569,29 +1569,29 @@ show_group_title(
 	if ((cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit)
 		snprintf(tmp, sizeof(tmp), " %d/%d%"T_CHAR_FMT,
 			(cmdline.args & CMDLINE_GETART_LIMIT) ? cmdline.getart_limit : tinrc.getart_limit, art_cnt,
-			(wint_t) (curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
+			(T_CHAR_TYPE) (curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
 	else
 		snprintf(tmp, sizeof(tmp), " %d%"T_CHAR_FMT,
 			art_cnt,
-			(wint_t) (curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
+			(T_CHAR_TYPE) (curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 
 	/* selected articles */
 	if (curr_group->attribute->show_only_unread_arts)
 		snprintf(tmp, sizeof(tmp), " %d%"T_CHAR_FMT,
-			selected_art_cnt, (wint_t) tinrc.art_marked_selected);
+			selected_art_cnt, (T_CHAR_TYPE) tinrc.art_marked_selected);
 	else
 		snprintf(tmp, sizeof(tmp), " %d%"T_CHAR_FMT" %d%"T_CHAR_FMT,
-			selected_art_cnt, (wint_t) tinrc.art_marked_selected,
-			read_selected_art_cnt, (wint_t) tinrc.art_marked_read_selected);
+			selected_art_cnt, (T_CHAR_TYPE) tinrc.art_marked_selected,
+			read_selected_art_cnt, (T_CHAR_TYPE) tinrc.art_marked_read_selected);
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 
 	/* recent articles */
 	if (tinrc.recent_time) {
 		snprintf(tmp, sizeof(tmp), " %d%"T_CHAR_FMT,
-			recent_art_cnt, (wint_t) tinrc.art_marked_recent);
+			recent_art_cnt, (T_CHAR_TYPE) tinrc.art_marked_recent);
 
 		if (sizeof(buf) > strlen(buf) + strlen(tmp))
 			strcat(buf, tmp);
@@ -1599,7 +1599,7 @@ show_group_title(
 
 	/* killed articles */
 	snprintf(tmp, sizeof(tmp), " %d%"T_CHAR_FMT,
-		killed_art_cnt, (wint_t) tinrc.art_marked_killed);
+		killed_art_cnt, (T_CHAR_TYPE) tinrc.art_marked_killed);
 
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);

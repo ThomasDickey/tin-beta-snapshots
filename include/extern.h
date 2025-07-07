@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-05-14
+ *  Updated   : 2025-07-07
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>
@@ -66,9 +66,6 @@
 #ifdef DECL_ALARM
 	extern unsigned alarm(unsigned);
 #endif /* DECL_ALARM */
-#ifdef DECL_ATOI
-	extern int atoi(const char *);
-#endif /* DECL_ATOI */
 #ifdef DECL_ATOL
 	extern long atol(const char *);
 #endif /* DECL_ATOL */
@@ -340,11 +337,15 @@
 #endif /* 0 */
 
 #ifdef __CYGWIN__
-	extern int __declspec(dllimport) optind;
 	extern char __declspec(dllimport) *optarg;
+	extern int __declspec(dllimport) optind;
+	extern int __declspec(dllimport) optopt;
+/*	extern int __declspec(dllimport) opterr; */
 #else
-	extern int optind;
 	extern char *optarg;
+	extern int optind;
+	extern int optopt;
+/*	extern int opterr; */
 #endif /* __CYGWIN__ */
 
 /*
@@ -414,6 +415,7 @@ extern char posted_info_file[PATH_LEN];
 extern char postponed_articles_file[PATH_LEN];
 extern char rcdir[PATH_LEN];
 extern char save_active_file[PATH_LEN];
+extern char serverrc_file[PATH_LEN];
 extern char spooldir[PATH_LEN];
 #ifndef NNTP_ONLY
 	extern char overviewfmt_file[PATH_LEN];
@@ -440,7 +442,7 @@ extern constext *txt_auto_cc_bcc_options[];
 #endif /* HAVE_COLOR */
 extern constext *txt_confirm_choices[];
 extern constext *txt_goto_next_unread_options[];
-extern constext *txt_hide_uue_type[];
+extern constext *txt_hide_inline_data_type[];
 extern constext *txt_interactive_mailers[];
 extern constext *txt_kill_level_type[];
 #ifdef CHARSET_CONVERSION
@@ -548,6 +550,12 @@ extern constext txt_attrib_file_followup_to[];
 extern constext txt_attrib_file_from[];
 extern constext txt_attrib_file_grp_catchup[];
 extern constext txt_attrib_file_grp_fmt[];
+extern constext txt_attrib_file_hide_inline_data[];
+extern constext txt_attrib_file_hide_inline_data_0[];
+extern constext txt_attrib_file_hide_inline_data_1[];
+extern constext txt_attrib_file_hide_inline_data_2[];
+extern constext txt_attrib_file_hide_inline_data_4[];
+extern constext txt_attrib_file_hide_inline_data_8[];
 extern constext txt_attrib_file_mail_8bit_hdr[];
 extern constext txt_attrib_file_mail_mime_enc[];
 #ifdef HAVE_ISPELL
@@ -696,7 +704,6 @@ extern constext txt_cannot_write_to_directory[];
 #ifdef NNTP_ABLE
 	extern constext txt_capabilities_without_reader[];
 #endif /* NNTP_ABLE */
-extern constext txt_catchup[];
 extern constext txt_catchup_group[];
 extern constext txt_catchup_all_read_groups[];
 extern constext *txt_catchup_despite_tags_sp[];
@@ -712,6 +719,7 @@ extern constext txt_choose_post_process_type[];
 #endif /* HAVE_COLOR */
 extern constext txt_command_failed[];
 extern constext txt_cook_article_failed_exiting[];
+extern constext *txt_cook_lines_hidden_sp[];
 extern constext txt_confirm_select_on_exit[];
 #ifdef NNTP_ABLE
 	extern constext txt_connecting_port[];
@@ -914,6 +922,10 @@ extern constext txt_error_no_domain_name[];
 #	endif /* INET6 */
 #endif /* NNTP_ABLE */
 extern constext txt_error_newsgroups_poster[];
+
+extern constext txt_error_option_missing_argument[];
+extern constext txt_error_option_unknown[];
+
 extern constext txt_error_passwd_missing[];
 #ifdef HAVE_LIBUU
 	extern constext *txt_error_sp[];
@@ -1019,10 +1031,10 @@ extern constext txt_help_article_skip_quote[];
 extern constext txt_help_article_toggle_formfeed[];
 extern constext txt_help_article_toggle_headers[];
 extern constext txt_help_article_toggle_highlight[];
+extern constext txt_help_article_toggle_inline_data[];
 extern constext txt_help_article_toggle_rot13[];
 extern constext txt_help_article_toggle_tabwidth[];
 extern constext txt_help_article_toggle_tex2iso[];
-extern constext txt_help_article_toggle_uue[];
 extern constext txt_help_article_toggle_verbatim[];
 extern constext txt_help_article_view_attachments[];
 extern constext txt_help_attachment_first[];
@@ -1562,6 +1574,7 @@ extern constext txt_tinrc_info_in_last_line[];
 extern constext txt_tinrc_newnews[];
 #if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
 	extern constext txt_tls_handshake_done[];
+	extern constext txt_tls_no_alpn_negotiated[];
 #	ifdef HAVE_LIB_LIBTLS
 	extern constext txt_retr_cipher_failed[];
 	extern constext txt_retr_issuer_failed[];
@@ -1610,7 +1623,7 @@ extern constext txt_unsubscribed_to[];
 extern constext txt_unsubscribing[];
 extern constext txt_unthreading_arts[];
 extern constext txt_updated[];
-extern constext txt_updating[];
+extern constext txt_updating_group[];
 extern constext txt_url_menu[];
 extern constext txt_url_menu_com[];
 extern constext txt_url_open[];
@@ -1653,6 +1666,7 @@ extern constext txt_usage_dont_show_descriptions[];
 	extern constext txt_usage_use_nntps[];
 #	endif /* NNTPS_ABLE */
 #endif /* NNTP_ABLE */
+extern constext txt_usage_filter_file[];
 extern constext txt_usage_getart_limit[];
 extern constext txt_usage_help_information[];
 extern constext txt_usage_help_message[];
@@ -1755,9 +1769,9 @@ extern constext *txt_x_resp_sp[];
 	extern constext txt_xface_msg_windowid_not_found[];
 	extern constext txt_xface_readme[];
 #endif /* XFACE_ABLE */
-#if defined(NNTP_ABLE) && defined(XHDR_XREF)
+#ifdef NNTP_ABLE
 	extern constext txt_xref_loop[];
-#endif /* NNTP_ABLE && XHDR_XREF */
+#endif /* NNTP_ABLE */
 extern constext *txt_yanked_group_sp[];
 extern constext txt_yanked_none[];
 extern constext txt_yanked_sub_groups[];
@@ -1880,6 +1894,7 @@ extern struct regex_cache mail_regex;
 extern struct regex_cache news_regex;
 extern struct regex_cache shar_regex;
 extern struct regex_cache shar_end_regex;
+extern struct regex_cache latex_regex;
 extern struct regex_cache slashes_regex;
 extern struct regex_cache stars_regex;
 extern struct regex_cache underscores_regex;
@@ -1902,6 +1917,7 @@ extern struct t_newnews *newnews;
 extern struct t_option option_table[];
 extern struct t_save *save;
 extern struct t_capabilities nntp_caps;
+extern struct t_serverrc serverrc;
 
 extern t_bool *OPT_ON_OFF_list[];
 extern t_bool can_post;
@@ -1983,7 +1999,8 @@ enum {
 extern int hist_last[HIST_MAXNUM + 1];
 extern int hist_pos[HIST_MAXNUM + 1];
 extern char *input_history[HIST_MAXNUM + 1][HIST_SIZE + 1];
-extern long motd_hash;
+
+extern volatile sig_atomic_t pending_sactions;
 
 /* defines for GNKSA checking */
 /* success/undefined failure */
@@ -2162,7 +2179,7 @@ extern struct opttxt txt_getart_limit_options;
 extern struct opttxt txt_goto_next_unread;
 extern struct opttxt txt_group_catchup_on_exit;
 extern struct opttxt txt_group_format;
-extern struct opttxt txt_hide_uue;
+extern struct opttxt txt_hide_inline_data;
 extern struct opttxt txt_inews_prog;
 extern struct opttxt txt_interactive_mailer;
 extern struct opttxt txt_inverse_okay;

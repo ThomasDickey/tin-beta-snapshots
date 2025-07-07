@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-05-14
+ *  Updated   : 2025-06-14
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -77,6 +77,7 @@ static void free_attributes(struct t_attribute *attributes);
 static void free_cmdline_args(void);
 static void free_scopes_arrays(void);
 static void free_tinrc_strings(void);
+static void free_serverrc_strings(void);
 static void free_newnews_array(void);
 static void free_if_not_default(char ***attrib, char **deflt);
 static void free_input_history(void);
@@ -256,6 +257,7 @@ free_all_arrays(
 	free_active_arrays();
 	free_scopes_arrays();
 	free_tinrc_strings();
+	free_serverrc_strings();
 
 #ifdef HAVE_COLOR
 	regex_cache_destroy(&quote_regex);
@@ -283,6 +285,7 @@ free_all_arrays(
 	regex_cache_destroy(&shar_regex);
 	regex_cache_destroy(&shar_end_regex);
 	regex_cache_destroy(&hideline_regex);
+	regex_cache_destroy(&latex_regex);
 
 	if (!batch_mode) {
 		free_keymaps();
@@ -495,6 +498,19 @@ free_tinrc_strings(
 #	ifdef NNTPS_ABLE
 		FreeAndNull(tinrc.tls_ca_cert_file);
 #	endif /* NNTPS_ABLE */
+}
+
+
+static void
+free_serverrc_strings(
+	void)
+{
+#if 0
+	FreeAndNull(serverrc.version);
+	FreeAndNull(serverrc.last_newnews);
+#endif /* 0 */
+	FreeAndNull(serverrc.add_cmd_line_opts);
+	FreeAndNull(serverrc.disabled_nntp_cmds);
 }
 
 

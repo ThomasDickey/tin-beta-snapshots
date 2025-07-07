@@ -319,7 +319,7 @@ build_sender(
 	ptr = get_host_name();
 #	endif /* HAVE_GETHOSTBYNAME */
 
-		/* intentionally do not fall back to *domain_name */
+	/* intentionally do not fall back to *domain_name */
 
 	if (*ptr)
 		snprintf(sender + strlen(sender), sizeof(sender) - strlen(sender), "%s>", ptr);

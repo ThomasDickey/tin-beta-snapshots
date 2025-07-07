@@ -3,7 +3,7 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-04-01
+ *  Updated   : 2025-06-14
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -211,6 +211,7 @@ struct t_capabilities {
 	t_bool over:1;					/* OVER: "OVER", "LIST OVERVIEW.FMT" */
 	t_bool over_msgid:1;			/* OVER: "OVER mid" */
 	const char *over_cmd;			/* [X]OVER */
+	t_bool newgroups:1;				/* NEWGROUPS */
 	t_bool newnews:1;				/* NEWNEWS */
 	char *implementation;			/* IMPLEMENTATION */
 	t_bool starttls:1;				/* STARTTLS (not supported; RFC 7525 3.2, RFC 8143 2) */

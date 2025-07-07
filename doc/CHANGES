@@ -1,8 +1,8 @@
--- 2.6.4 release 20250519 "" --
+-- 2.6.5 release 20250707 "" --
 
  028) Bjarni Ingi Gislason <bjarniig@simnet.is>
       ADD. manpage fixes (debian bug #1093395, #1096177)
-      FIX. tin.1, tin.5
+      FIX. tin.[15]
 
  027) Dennis Preiser <dennis@d--p.de>
       ADD. avoid macro in snprintf() as that might be a macro too
@@ -16,15 +16,20 @@
       ADD. extend verbatim_handling options
       ADD. ignore col_invers_bg == col_invers_fg == -1
       ADD. page_yenc_format
+      ADD. per scope hide_inline_data via attributes
+      ADD. cleanup draw_page_header(), fmt_option_prompt()
+      ADD. color the color-menu items while selecting the color
       BUG. -L/'L' did depend on sort_article_type/sort_threads_type
            and failed for some combinations
       BUG. possible memleaks
+      BUG. layout issue with multibyte chars on posting history screen
       FIX. art.c, attrib.c, charset.c, color.c, config.c, cook.c, curses.c
            feed.c, filter.c, global.c, group.c, header.c, help.c, init.c
            keymap.c, lang.c, main.c, makecfg.c, memory.c, misc.c, nntplib.c
            options_menu.c, page.c, post.c, prompt.c, rfc2045.c, rfc2046.c
-           rfc2047.c, save.c, select.c, tcurses.c, thread.c, extern.h
-           keymap.h, proto.h, rfc2046.h, tin.h, tincfg.tbl, tin.[15]
+           rfc2047.c, save.c, search.c, select.c, signal.c, string.c, tcurses.c
+           thread.c, extern.h, keymap.h, proto.h, rfc2046.h, tin.h, tincfg.tbl
+           tin.[15]
 
  026) Urs Janssen <urs@tin.org>
       ADD. avoid bison warning
@@ -46,27 +51,41 @@
       ADD. Xref- and Path-filter to filter-menu
       ADD. ToggleInfoLastLine ('i') to OptionMenu ('M')
       ADD. configure check for getsockopt(), setsockopt(), posix_close(),
-           realpath(), lstat()
+           realpath(), lstat(), sig_atomic_t, volatile
       ADD. set TCP_USER_TIMEOUT or TCP_CONNECTIONTIMEOUT and
            TCP_RXT_CONNDROPTIME if available
       ADD. use truncate/append for .oldnewsrc (debian bug #151113)
       ADD. detect "begin-encoded" as start of an uuencoded file with
            a base64 encoed filename.
-      ADD. hide_uue now also can hide (partial) yenc, inline pgp and shar
+      ADD. hide_inline_data (was hide_uue) now also can hide (partial) yenc,
+           inline pgp and shar
       ADD. crc32()-fallback from Gary S. Brown
       ADD. hideline_regex tinrc/'M'enu option similar to trn4 $HIDELINE
+      ADD. merge is_art_tex_encoded() into process_text_body_part()
+      ADD. ALPN with TLS (RFC 7301)
+      ADD. add_cmd_line_opts and disabled_nntp_cmds to serverrc, the later
+           must be used to replace the now dropped --disable-xhdr-xref and
+           --enable-broken-listgroup-fix configure options
+      ADD. cache_overview_files and compress_overview_files to serverrc
+      BUG. positive getart_limit had several bugs
+      BUG. -F was not mentioned in -h
       BUG. mixed up error-messages
       BUG. missing checks for empty string in From
       BUG. possible memleaks
+      BUG. "posting" to mailgroups (mailing_list=) wasn't allowed if the
+           group had one of the [jnx]-flags, and the moderated warning
+           was given if it had the m-flag.
+      BUG. double-free group-name on a 502 response to GROUP
       REM. ISO2ASC=6 (CP437) table
+      REM. configure check for atoi()
       FIX. active.c, art.c, attrib.c, auth.c, charset.c, config.c, cook.c
-           crc32.c, feed.c, filter.c, group.c, header.c, help.c, init.c
-           keymap.c, lang.c, main.c, memory.c, misc.c, newsrc.c, nntplib.c
-           nntps.c, options_menu.c, page.c, pgp.c, post.c, prompt.c, regex.c
-           rfc1524.c, rfc2045.c, save.c, search.c, select.c, signal.c, string.c
-           thread.c, xref.c, extern.h, policy.h, proto.h, rfc2046.h, tin.h
-           tinrc.h, parsdate.y, autoconf.h[in], tincfg.tbl, Makefile[.in]
-           configure[.in], tin.[15]
+           crc32.c, feed.c, filter.c, getline.c, group.c, header.c, help.c
+           init.c, keymap.c, lang.c, mail.c, main.c, memory.c, misc.c, newsrc.c
+           nntplib.c, nntps.c, options_menu.c, page.c, pgp.c, post.c, prompt.c
+           regex.c, rfc1524.c, rfc2045.c, rfc2047.c, save.c, screen.c, search.c
+           select.c, signal.c, string.c, tags.c, thread.c, xref.c, extern.h
+           nntplib.h, policy.h, proto.h, rfc2046.h, tin.h, tinrc.h, parsdate.y
+           autoconf.h[in], tincfg.tbl, Makefile[.in], configure[.in], tin.[15]
 
  025) Toomas Soome <tsoome@me.com>
       ADD. updated Estonian translation

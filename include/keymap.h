@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2025-01-30
+ *  Updated   : 2025-05-30
  *  Notes     :
  *
  * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
@@ -126,7 +126,7 @@
 /*
  * Maximum chars (including null byte) needed to print a key name
  * A multibyte character can use up to MB_CUR_MAX chars. But as MB_CUR_MAX
- * can't be used here, use MB_LEN_MAX instead.
+ * can't be used here (avoid VLAs), use MB_LEN_MAX instead.
  * Some values for MB_LEN_MAX:
  * - glibc 2.3.5: 16
  * - gcc 4.0: 1
@@ -294,11 +294,11 @@ enum defined_functions {
 	PAGE_TAG,
 	PAGE_TOGGLE_HEADERS,
 	PAGE_TOGGLE_HIGHLIGHTING,
+	PAGE_TOGGLE_INLINE_DATA,
 	PAGE_TOGGLE_RAW,
 	PAGE_TOGGLE_ROT13,
 	PAGE_TOGGLE_TABS,
 	PAGE_TOGGLE_TEX2ISO,
-	PAGE_TOGGLE_UUE,
 	PAGE_TOGGLE_VERBATIM,
 	PAGE_TOP_THREAD,
 	PAGE_VIEW_ATTACHMENTS,

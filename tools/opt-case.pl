@@ -15,7 +15,7 @@
 #       filter via w2r.pl first
 
 # version number
-# $VERSION = "0.2.2";
+# $VERSION = "0.2.3";
 
 # perl 5 is needed for lookahead assertions and perl < 5.004 is known to be
 # buggy
@@ -24,7 +24,8 @@ require 5.004;
 use strict;
 use warnings;
 
-$mod=""; 	# (?i) modifier
+my $line;
+my $mod=""; 	# (?i) modifier
 
 while (defined($line = <>)) {
 	chomp $line;
@@ -57,10 +58,12 @@ while (defined($line = <>)) {
 	# upper/lowercase letters, this will miss a few possible
 	# optimizations (on lines with \s, \S, \d, \D as only 'letters') but
 	# that won't hurt, it just doesn't optimize'em
-	if ($line =~ m/^(subj|from|msgid(?:|_last|_only)|refs_only|xref)=(.*[^\W\d_].*)$/o) {
-		print "# rule rewritten, it might be possible that it can be further optimized\n";
-		print "# check lines with (?i) if they really need to be case insensitive and if\n";
-		print "# not remove leading (?i) manually\n";
+	if ($line =~ m/^(subj|from|msgid(?:|_last|_only)|refs_only|xref|path)=(.*[^\W\d_].*)$/o) {
+		if ($mod ne "") {
+			print "# rule rewritten, it might be possible that it can be further optimized\n";
+			print "# check lines with (?i) if they really need to be case insensitive and if\n";
+			print "# not remove leading (?i) manually\n";
+		}
 		print "$1=$mod$2\n";
 		next;
         }

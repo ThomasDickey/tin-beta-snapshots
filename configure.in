@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2025-04-11
+dnl Updated   : 2025-06-09
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -747,20 +747,6 @@ CF_ARG_DISABLE(append-pid,
 	[AC_DEFINE(APPEND_PID,1,[Define this to 1 to unique tmp-files by appending .pid])])
 AC_MSG_RESULT($enableval)
 
-AC_MSG_CHECKING(whether to fallback to XHDR XREF if XOVER isn't supported)
-CF_ARG_DISABLE(xhdr-xref,
-	[  --disable-xhdr-xref     disable XHDR XREF fallback],,
-	[AC_DEFINE(XHDR_XREF,1,[Define this to 1 to fallback to XHDR XREF if XOVER isn't supported])])
-AC_MSG_RESULT($enableval)
-
-### bypass a bug in old versions of leafnode & NNTPcache
-AC_MSG_CHECKING(whether to send a GROUP command before a LISTGROUP)
-CF_ARG_ENABLE(broken-listgroup-fix,
-	[  --enable-broken-listgroup-fix
-                          send extra GROUP command before LISTGROUP],
-	[AC_DEFINE(BROKEN_LISTGROUP,1,[Define this to 1 to send a GROUP command before a LISTGROUP])])
-AC_MSG_RESULT($enableval)
-
 ### on some old systems the WIFEXITED()/WEXITSTATUS() macros do not work
 AC_MSG_CHECKING(whether to ignore system()s return value)
 CF_ARG_ENABLE(broken-system-fix,
@@ -1247,6 +1233,14 @@ if test $ac_cv_nl_item = yes; then
 	AC_DEFINE(HAVE_NL_ITEM,1,[Define this to 1 if we have header nl_types.h])
 fi
 
+AC_CHECK_TYPES([sig_atomic_t], [], [],
+[
+#include <sys/types.h>
+#include <signal.h>
+])
+
+AC_C_VOLATILE
+
 ###	Checks for libraries.
 # libuu/uudeview
 # only define HAVE_LIBUU and HAVE_UUDEVIEW_H if both are found
@@ -1512,7 +1506,6 @@ CF_STRERROR
 AC_CHECK_FUNCS(\
 	alarm \
 	arc4random_uniform \
-	atoi \
 	atol \
 	atoll \
 	atoq \
@@ -1761,7 +1754,6 @@ CHECK_DECL_HDRS="$TIN_DECL_HDRS"
 CF_CHECK_DECL(\
 	_flsbuf \
 	alarm \
-	atoi \
 	atol \
 	atoll \
 	atoq \

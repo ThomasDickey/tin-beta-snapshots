@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2025-02-07
+ *  Updated   : 2025-06-11
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2025 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -33,9 +33,11 @@ static struct tls_config *libtls_config = NULL;
 static gnutls_certificate_credentials_t tls_xcreds = NULL;
 static char *gnutls_servername = NULL;
 static unsigned gnutls_verification_status = 0;
+static gnutls_datum_t gtls_alpns[] = { { (unsigned char *) NNTP_TCP_NAME, 4 } };
 #	else
 #		ifdef USE_OPENSSL
 static SSL_CTX *openssl_ctx = NULL;
+static unsigned char nntp_alpn[] = { 4, 'n', 'n', 't', 'p' };
 #		endif /* USE_OPENSSL */
 #	endif /* USE_GNUTLS */
 #endif /* USE_LIBTLS */
@@ -109,6 +111,14 @@ tintls_init(
 		tls_config_insecure_noverifycert(libtls_config);
 		tls_config_insecure_noverifyname(libtls_config);
 		tls_config_insecure_noverifytime(libtls_config);
+	}
+
+	/* ALPN - Application-Layer Protocol Negotiation, RFC 7301 */
+	if (tls_config_set_alpn(libtls_config, NNTP_TCP_NAME)) {
+		error_message(2, "%s!\n", tls_config_error(libtls_config));
+		tls_config_free(libtls_config);
+		libtls_config = NULL;
+		return -EINVAL;
 	}
 
 #else
@@ -185,6 +195,14 @@ tintls_init(
 			show_errors("SSL_CTX_load_verify_locations: %s!\n");
 			return -EINVAL;
 		}
+	}
+
+	/* ALPN - Application-Layer Protocol Negotiation, RFC 7301 */
+	if (SSL_CTX_set_alpn_protos(openssl_ctx, nntp_alpn, (int) sizeof(nntp_alpn))) {
+		SSL_CTX_free(openssl_ctx);
+		openssl_ctx = NULL;
+		show_errors("SSL_CTX_set_alpn_protos: %s!\n");
+		return -EINVAL;
 	}
 
 	if (insecure_nntps)
@@ -275,6 +293,14 @@ tintls_open(
 	if (gnutls_init(&client, GNUTLS_CLIENT | GNUTLS_AUTO_REAUTH | GNUTLS_POST_HANDSHAKE_AUTH) < 0)
 		return -ENOMEM;
 
+	/* ALPN - Application-Layer Protocol Negotiation, RFC 7301 */
+	if (gnutls_alpn_set_protocols(client, gtls_alpns, 1, GNUTLS_ALPN_MANDATORY)) {
+		error_message(1, "%s", "failed setting ALPN");
+		gnutls_deinit(client);
+		return -EINVAL;
+	}
+
+	/* SNI - Server Name Indication, RFC 6066 */
 	if (gnutls_server_name_set(client, GNUTLS_NAME_DNS, servername, strlen(servername)) < 0) {
 		gnutls_deinit(client);
 		return -ENOMEM;
@@ -331,6 +357,16 @@ tintls_open(
 		return -EINVAL;
 	}
 
+	/* ALPN - Application-Layer Protocol Negotiation, RFC 7301 */
+	/* should not be needed as we already set it, but it doesn't hurt */
+	if (SSL_set_alpn_protos(ssl, nntp_alpn, (int) sizeof(nntp_alpn))) {
+		BIO_free(client);
+		BIO_free(sock);
+		show_errors("SSL_set_alpn_protos: %s!\n");
+		return -EINVAL;
+	}
+
+	/* SNI - Server Name Indication, RFC 6066 */
 	if (SSL_set_tlsext_host_name(ssl, servername) != 1) {
 		BIO_free(client);
 		BIO_free(sock);
@@ -428,6 +464,13 @@ tintls_handshake(
 
 		wait_message(0, _(txt_tls_handshake_done), version, cipher);
 	}
+
+#	ifdef DEBUG
+	if (debug & DEBUG_NNTP) {
+		if (tls_conn_alpn_selected(client) == NULL)
+			wait_message(0, _(txt_tls_no_alpn_negotiated));
+	}
+#	endif /* DEBUG */
 #else
 #	ifdef USE_GNUTLS
 	int result;
@@ -543,10 +586,18 @@ err_cert:
 		}
 
 		if (!batch_mode || verbose) {
+#		ifdef DEBUG
+			gnutls_datum_t alpn = { NULL, 0 };
+#		endif /* DEBUG */
+
 			if ((desc = gnutls_session_get_desc(client)) != NULL) {
 				wait_message(0, _(txt_tls_handshake_done), desc);
 				gnutls_free(desc);
 			}
+#		ifdef DEBUG
+			if ((debug & DEBUG_NNTP) && gnutls_alpn_get_selected_protocol(client, &alpn))
+				wait_message(0, _(txt_tls_no_alpn_negotiated));
+#		endif /* DEBUG */
 		}
 	}
 #	else
@@ -594,6 +645,17 @@ err_cert:
 		}
 
 		wait_message(0, _(txt_tls_handshake_done), SSL_get_cipher_name(ssl));
+
+#			ifdef DEBUG
+		if (debug & DEBUG_NNTP) {
+			const unsigned char *proto;
+			unsigned int proto_len;
+
+			SSL_get0_alpn_selected(ssl, &proto, &proto_len);
+			if (!proto_len)
+				wait_message(0, txt_tls_no_alpn_negotiated);
+		}
+#			endif /* DEBUG */
 	}
 #		endif /* USE_OPENSSL */
 #	endif /* USE_GNUTLS */
@@ -784,6 +846,8 @@ tintls_conninfo(
 
 	fprintf(fp, "%s", _(txt_conninfo_tls_info));
 	fprintf(fp, _(txt_conninfo_libtls_info), tls_conn_version(client), tls_conn_cipher(client), tls_conn_cipher_strength(client));
+	if (tls_conn_alpn_selected(client) == NULL)
+		fprintf(fp, "%s\n", _(txt_tls_no_alpn_negotiated));
 
 	if ((chain = tls_peer_cert_chain_pem(client, &chain_size)))
 		io_buf = BIO_new(BIO_s_mem());
@@ -845,6 +909,8 @@ tintls_conninfo(
 	fprintf(fp, "%s", _(txt_conninfo_tls_info));
 	fprintf(fp, _(txt_conninfo_libtls_info), tls_conn_version(client), tls_conn_cipher(client), tls_conn_cipher_strength(client));
 	fprintf(fp, "%s", _(txt_conninfo_server_cert_info));
+	if (tls_conn_alpn_selected(client) == NULL)
+		fprintf(fp, "%s\n", _(txt_tls_no_alpn_negotiated));
 #	endif /* HAVE_LIB_CRYPTO */
 	{
 		struct tm *tm;
@@ -870,6 +936,7 @@ tintls_conninfo(
 	int retval = -1;
 	gnutls_session_t client = session_ctx;
 	gnutls_datum_t msg;
+	gnutls_datum_t alpn = { NULL, 0 };
 	const gnutls_datum_t *raw_servercert_chain;
 	unsigned int servercert_chainlen;
 	unsigned int i;
@@ -888,13 +955,16 @@ tintls_conninfo(
 
 		if (!gnutls_certificate_verification_status_print(gnutls_verification_status, type, &msg, 0))
 			fprintf(fp, _(txt_conninfo_verify_failed), msg.data,
-					insecure_nntps ? _(txt_conninfo_error_tolerated) : _(txt_conninfo_error_unexpected));
+				insecure_nntps ? _(txt_conninfo_error_tolerated) : _(txt_conninfo_error_unexpected));
 		else
 			fprintf(fp, "%s", _(txt_conninfo_verify_failed_no_reason));
 
 		gnutls_free(msg.data);
 	} else
 		fprintf(fp, "%s", _(txt_conninfo_verify_successful));
+
+	if (gnutls_alpn_get_selected_protocol(client, &alpn))
+		fprintf(fp, "%s\n", _(txt_tls_no_alpn_negotiated));
 
 	raw_servercert_chain = gnutls_certificate_get_peers(client, &servercert_chainlen);
 	if (servercert_chainlen > 0)
@@ -975,6 +1045,8 @@ err_cert:
 #	else
 
 #		ifdef USE_OPENSSL
+	const unsigned char *proto;
+	unsigned int proto_len;
 	long verification_result;
 	BIO *client = session_ctx;
 	SSL *ssl;
@@ -993,6 +1065,10 @@ err_cert:
 			insecure_nntps ? _(txt_conninfo_error_tolerated) : _(txt_conninfo_error_unexpected));
 	else
 		fprintf(fp, "%s", _(txt_conninfo_verify_successful));
+
+	SSL_get0_alpn_selected(ssl, &proto, &proto_len);
+	if (!proto_len)
+		fprintf(fp, "%s\n", _(txt_tls_no_alpn_negotiated));
 
 	fprintf(fp, "%s", _(txt_conninfo_server_cert_info));
 

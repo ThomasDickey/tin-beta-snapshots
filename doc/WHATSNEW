@@ -5,6 +5,7 @@ New features
 - pcre2 support (configure --with-pcre2-config[=PATH] vs.
   --with-pcre[=PATH])
 - NNTPS support based on libressl/gnuttls/OpenSSL (RFC 8143)
+  with ALPN (RFC 7301)
   (configure --with-nntps[=[libtls|openssl|gnutls]])
 - "COMPRESS DEFLATE" support (RFC 8054)
 - compress_overview_files option
@@ -47,8 +48,11 @@ New features
   liburiparser or libcurl was found
 - $LC_NUMERIC for RADIXCHAR (used when showing attachment sizes)
 - allow hex-numbers for cmd.-line switches which take numeric args
-- hide_uue now also hides yenc encoded parts (hide only, no decoding support
-  yet), inline pgp and/or shar
+- hide_inline_data (was hide_uue) now also hides yenc encoded parts
+  (hide only, no decoding support yet), inline pgp and/or shar
+- hide_inline_data can be set per scope via attributes
+- add_cmd_line_opts and disabled_nntp_cmds in serverrc
+- cache_overview_files and compress_overview_files in serverrc
 
 Changes
 -------
@@ -68,6 +72,8 @@ Changes
   now try to find the ID via NNTP if the ID is not in the current group
 - verbatim_handling (tinrc/attributes) has changed from ON/OFF value to NUM
   value with more options
+- hide_uue (tinrc) has been renamed to hide_inline_data and is now also
+  available in attributes
 
 Retired Features
 ----------------
@@ -77,3 +83,5 @@ Retired Features
 - no longer expands %G and/or %P in $MAILCAPS
 - no longer allow ISO2ASC=6 (CP437 table) as that was the only non
   to ASCII conversion and should be done with iconv()
+- --enable-broken-listgroup-fix (disable LISTGROUP via serverrc instead)
+- --disable-xhdr-xref (disable XHDR via serverrc instead)

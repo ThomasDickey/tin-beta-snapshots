@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2025-03-18
+ *  Updated   : 2025-06-17
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2025 Steven J. Madsen <steve@erinet.com>
@@ -482,7 +482,7 @@ pgp_check_article(
 		if (fgets(buf, sizeof(buf), artinfo->raw) != NULL) {
 			if (!pgp_signed && !strcmp(buf, PGP_SIG_TAG))
 				pgp_signed = TRUE;
-			if (!strcmp(buf, PGP_KEY_TAG))
+			if (!strcmp(buf, PGP_PUBLIC_KEY_TAG))
 				++pgp_key;
 			fputs(buf, art);
 		} else
@@ -490,7 +490,7 @@ pgp_check_article(
 	}
 	fclose(art);
 
-	if (!(pgp_signed || pgp_key)) {
+	if (!pgp_signed && !pgp_key) {
 		info_message(_(txt_pgp_nothing));
 		return FALSE;
 	}
