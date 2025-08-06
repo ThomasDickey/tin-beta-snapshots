@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2025-06-18
+ *  Updated   : 2025-07-25
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2025 Michael Bienia <michael@vorlon.ping.de>
@@ -120,6 +120,7 @@
 	} while (0)
 
 static enum option_enum first_option_on_screen, last_option_on_screen, last_opt;
+static enum menu_type menu_type = options_menu;
 
 /*
  * local prototypes
@@ -278,6 +279,25 @@ t_bool
 option_is_visible(
 	enum option_enum option)
 {
+	switch (option) {
+		case OPT_SERVERRC_ADD_CMD_LINE_OPTS:
+		case OPT_SERVERRC_DISABLED_NNTP_CMDS:
+		case OPT_SERVERRC_NNTP_PIPELINE_LIMIT:
+		case OPT_SERVERRC_CACHE_OVERVIEW_FILES:
+		case OPT_SERVERRC_TINRC_OVERRIDE_OPTIONS:
+		case OPT_SERVERRC_CONFIG_OPTIONS:
+			return menu_type == serverrc_menu ? TRUE : FALSE;
+
+#	ifdef USE_ZLIB
+		case OPT_SERVERRC_COMPRESS_OVERVIEW_FILES:
+			return menu_type == serverrc_menu && tinrc.serverrc_cache_overview_files ? TRUE : FALSE;
+#	endif /* USE_ZLIB */
+
+		default:
+			if (menu_type == serverrc_menu)
+				return FALSE;
+	}
+
 	switch (option) {
 #ifdef HAVE_COLOR
 		case OPT_COL_BACK:
@@ -459,6 +479,9 @@ option_is_visible(
 		case OPT_ATTRIB_EXTQUOTE_HANDLING:
 			return curr_scope ? tinrc.use_color : FALSE;
 #endif /* HAVE_COLOR */
+
+		case SIGNAL_HANDLER:
+			return FALSE;
 
 		default:
 			return curr_scope ? FALSE : TRUE;
@@ -913,7 +936,7 @@ show_config_page(
 	mark_offset = 0;
 
 	ClearScreen();
-	center_line(0, TRUE, curr_scope ? curr_scope->scope : _(txt_options_menu));
+	center_line(0, TRUE, menu_type == serverrc_menu ? _(txt_serverrc_menu) : curr_scope ? curr_scope->scope : _(txt_options_menu));
 
 	for (i = first_option_on_screen; i <= last_option_on_screen; i++) {
 		while (!option_is_visible(i))
@@ -1026,6 +1049,7 @@ config_page(
 #endif /* CHARSET_CONVERSION */
 	unsigned old_show_author = 0, old_show_unread = 0, old_thread_arts = 0;
 
+	menu_type = options_menu;
 	if (curr_scope)
 		initialize_attributes();
 	if (grpname && curr_group) {
@@ -1049,6 +1073,15 @@ config_page(
 	forever {
 		switch ((func = handle_keypad(option_left, option_right, NULL, option_menu_keys))) {
 			case GLOBAL_QUIT:
+				if (menu_type == serverrc_menu) {
+					menu_type = options_menu;
+					set_last_opt();
+					option = get_first_opt();
+					first_option_on_screen = FIRST_OPT;
+					set_last_option_on_screen(FIRST_OPT);
+					redraw_screen(option);
+					break;
+				}
 				if (grpname) {
 					if (curr_scope && scope_is_empty()) {
 						/*
@@ -1069,6 +1102,15 @@ config_page(
 				}
 				/* FALLTHROUGH */
 			case CONFIG_NO_SAVE:
+				if (menu_type == serverrc_menu) {
+					menu_type = options_menu;
+					set_last_opt();
+					option = get_first_opt();
+					first_option_on_screen = FIRST_OPT;
+					set_last_option_on_screen(FIRST_OPT);
+					redraw_screen(option);
+					break;
+				}
 				if (grpname && curr_scope) {
 					/*
 					 * Called via TAB from Config 'M'enu,
@@ -1173,6 +1215,8 @@ config_page(
 			case GLOBAL_HELP:
 				if (curr_scope)
 					show_help_page(ATTRIB_LEVEL, _(txt_attrib_menu_com));
+				else if (menu_type == serverrc_menu)
+					show_help_page(SERVERRC_LEVEL, _(txt_serverrc_menu_com));
 				else
 					show_help_page(CONFIG_LEVEL, _(txt_options_menu_com));
 				redraw_screen(option);
@@ -1329,14 +1373,37 @@ config_page(
 				break;
 
 			case CONFIG_SCOPE_MENU:
-				if (!curr_scope) {
-					scope_page(level);
+				if (menu_type == options_menu) {
+					if (!curr_scope) {
+						scope_page(level);
+						set_last_opt();
+						option = get_first_opt();
+						first_option_on_screen = FIRST_OPT;
+						set_last_option_on_screen(FIRST_OPT);
+						redraw_screen(option);
+					}
+				} else
+					/*
+					 * CONFIG_SCOPE_MENU is valid in serverrc_menu but we allow
+					 * it only in options_menu hence the 'bad command' message
+					 */
+					info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, option_menu_keys));
+				break;
+
+			case CONFIG_SERVERRC_MENU:
+				if (menu_type == options_menu) {
+					menu_type = serverrc_menu;
 					set_last_opt();
 					option = get_first_opt();
 					first_option_on_screen = FIRST_OPT;
 					set_last_option_on_screen(FIRST_OPT);
 					redraw_screen(option);
-				}
+				} else
+					/*
+					 * CONFIG_SERVERRC_MENU is valid in serverrc_menu but we allow
+					 * it only in options_menu hence the 'bad command' message
+					 */
+					info_message(_(txt_bad_command), PrintFuncKey(key, GLOBAL_HELP, option_menu_keys));
 				break;
 
 			case CONFIG_RESET_ATTRIB:
@@ -1359,7 +1426,7 @@ config_page(
 				break;
 
 			case CONFIG_TOGGLE_ATTRIB:
-				if (grpname) {
+				if (menu_type != serverrc_menu && grpname) {
 					if (curr_scope) {
 						if (scope_is_empty()) {
 							do_delete_scope(scope_idx);
@@ -1445,6 +1512,15 @@ config_page(
 						case OPT_ADD_POSTED_TO_FILTER:
 							if (prompt_option_on_off(option))
 								UPDATE_BOOL_ATTRIBUTES(add_posted_to_filter);
+							break;
+
+						case OPT_KEEP_EXPIRED_FILTERS:
+							if (prompt_option_on_off(option)) {
+#if 0 /* TODO: desired? or defer till end of session so one could undo it before */
+								if (!tinrc.keep_expired_filters)
+									write_filter_file(filter_file);
+#endif /* 0 */
+							}
 							break;
 
 						case OPT_ADVERTISING:
@@ -1936,6 +2012,24 @@ config_page(
 							if (prompt_option_on_off(option))
 								SET_BOOL_ATTRIBUTE(x_comment_to, tinrc.attrib_x_comment_to);
 							break;
+
+						case OPT_SERVERRC_CACHE_OVERVIEW_FILES:
+							if (prompt_option_on_off(option)) {
+#ifdef USE_ZLIB
+								set_last_opt();
+								set_last_option_on_screen(first_option_on_screen);
+								redraw_screen(option);
+#endif /* USE_ZLIB */
+								serverrc.cache_overview_files = tinrc.serverrc_cache_overview_files;
+							}
+							break;
+
+#ifdef USE_ZLIB
+						case OPT_SERVERRC_COMPRESS_OVERVIEW_FILES:
+							if (prompt_option_on_off(option))
+								serverrc.compress_overview_files = tinrc.serverrc_compress_overview_files;
+							break;
+#endif /* USE_ZLIB */
 
 						default:
 							break;
@@ -2804,6 +2898,20 @@ config_page(
 								SET_STRING_ATTRIBUTE(x_headers, tinrc.attrib_x_headers);
 							break;
 
+						case OPT_SERVERRC_ADD_CMD_LINE_OPTS:
+							if (prompt_option_string(option)) {
+								FreeIfNeeded(serverrc.add_cmd_line_opts);
+								serverrc.add_cmd_line_opts = my_strdup(tinrc.serverrc_add_cmd_line_opts);
+							}
+							break;
+
+						case OPT_SERVERRC_DISABLED_NNTP_CMDS:
+							if (prompt_option_string(option)) {
+								FreeIfNeeded(serverrc.disabled_nntp_cmds);
+								serverrc.disabled_nntp_cmds = my_strdup(tinrc.serverrc_disabled_nntp_cmds);
+							}
+							break;
+
 						default:
 							break;
 					} /* switch (option) */
@@ -2882,6 +2990,16 @@ config_page(
 						case OPT_ATTRIB_THREAD_PERC:
 							if (prompt_option_num(option))
 								SET_NUM_ATTRIBUTE(thread_perc, tinrc.attrib_thread_perc);
+							break;
+
+						case OPT_SERVERRC_NNTP_PIPELINE_LIMIT:
+							if (prompt_option_num(option)) {
+								if (tinrc.serverrc_nntp_pipeline_limit < PIPELINE_LIMIT_MIN)
+									tinrc.serverrc_nntp_pipeline_limit = PIPELINE_LIMIT_MIN;
+								else if (tinrc.serverrc_nntp_pipeline_limit > PIPELINE_LIMIT_MAX)
+									tinrc.serverrc_nntp_pipeline_limit = PIPELINE_LIMIT_MAX;
+								serverrc.nntp_pipeline_limit = tinrc.serverrc_nntp_pipeline_limit;
+							}
 							break;
 
 						default:

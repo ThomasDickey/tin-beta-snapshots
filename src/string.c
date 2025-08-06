@@ -510,9 +510,10 @@ strtol(
 				use_base = 8;
 		} else
 			use_base = 10;
-	} else if (use_base == 16)
+	} else if (use_base == 16) {
 		if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
 			str += 2;
+	}
 	/*
 	 * for any base > 10, the digits incrementally following
 	 * 9 are assumed to be "abc...z" or "ABC...Z"

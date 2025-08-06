@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-14
+ *  Updated   : 2025-07-25
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -166,6 +166,40 @@ static t_help_page config_help_page[] = {
 	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
 	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
+	{ "\n", NOT_ASSIGNED },
+	{ txt_help_title_misc, NOT_ASSIGNED },
+	{ txt_help_select_quit, GLOBAL_QUIT },
+	{ txt_help_select_quit_no_write, CONFIG_NO_SAVE },
+	{ txt_help_global_help, GLOBAL_HELP },
+	{ txt_help_global_redraw_screen, GLOBAL_REDRAW_SCREEN },
+#ifndef NO_SHELL_ESCAPE
+	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
+#endif /* !NO_SHELL_ESCAPE */
+	{ "", NOT_ASSIGNED },
+	{ txt_help_global_version, GLOBAL_VERSION },
+	{ NULL, NOT_ASSIGNED }
+};
+
+static t_help_page serverrc_help_page[] = {
+	{ txt_help_title_navi, NOT_ASSIGNED },
+	{ txt_help_global_page_down, GLOBAL_PAGE_DOWN },
+	{ txt_help_global_page_up, GLOBAL_PAGE_UP },
+	{ txt_help_global_line_down, GLOBAL_LINE_DOWN },
+	{ txt_help_global_line_up, GLOBAL_LINE_UP },
+	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
+	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
+	{ "", NOT_ASSIGNED },
+	{ txt_help_config_first_opt, GLOBAL_FIRST_PAGE },
+	{ txt_help_config_last_opt, GLOBAL_LAST_PAGE },
+	{ txt_help_config_goto_opt, NOT_ASSIGNED },
+	{ "", NOT_ASSIGNED },
+	{ txt_help_config_search_opt_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
+	{ txt_help_config_search_opt_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
+	{ txt_help_select_search_group_comment, NOT_ASSIGNED },
+	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
+	{ "\n", NOT_ASSIGNED },
+	{ txt_help_title_config_ops, NOT_ASSIGNED },
+	{ txt_help_config_select, CONFIG_SELECT },
 	{ "\n", NOT_ASSIGNED },
 	{ txt_help_title_misc, NOT_ASSIGNED },
 	{ txt_help_select_quit, GLOBAL_QUIT },
@@ -776,6 +810,10 @@ show_help_page(
 
 		case SELECT_LEVEL:
 			make_help_page(fp, select_help_page, select_keys);
+			break;
+
+		case SERVERRC_LEVEL:
+			make_help_page(fp, serverrc_help_page, option_menu_keys);
 			break;
 
 		case GROUP_LEVEL:

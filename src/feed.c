@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2025-04-04
+ *  Updated   : 2025-07-24
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -726,10 +726,9 @@ feed_articles(
 				char *tmp;
 				char *smsg;
 #ifndef FORGERY
-				char from_name[PATH_LEN];
+				char from_name[HEADER_LEN];
 
-				get_from_name(from_name, (struct t_group *) 0);
-
+				get_from_name(from_name, sizeof(from_name), (struct t_group *) 0);
 				if (strstr(from_name, arts[respnum].mailbox.from)) {
 #endif /* !FORGERY */
 					char buf[LEN];
@@ -887,8 +886,8 @@ feed_articles(
 				for_each_art_in_thread(art, i) {
 					if (!arts[art].matched)
 						continue;
-					arts[art].matched = FALSE;
 
+					arts[art].matched = FALSE;
 					/* Keep going - don't abort on errors */
 					if (feed_article(art, function, &counter, use_current, outpath, group)) {
 						if (feed_type == FEED_HOT)

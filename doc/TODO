@@ -130,18 +130,8 @@ o  add configure check for cl_clear_secret() in libcanlock and CL_API_MAJOR,
 o  update included libcanlock to >= 3.3.1
    [20211024 Urs Janssen <urs@tin.org>]
 
-o  serverrc should get some 'M'enu. Eg. if there is a tinrc and a serverrc
-   var (where the later overrides the former) both should be shown in the
-   'M'enu side by side like ([D] = tinrc/default, [S] = serverc):
-   -> nnn [D] Cache NNTP overview files locally  : OFF
-   -> nnn [S] Cache NNTP overview files locally  : ON
-   -> nnn [D] Compress locally cached NNTP ove...: ON
-   -> nnn [S] Compress locally cached NNTP ove...: OFF
-   (and the 3rd line could be hidden as it's currently done)
-   the above is just an idea (which doesn't match the (probably mostly
-   unknown) 'S'copes menu) we could add something like that as 's'erverrc
-   menu instead - other options welcome.
-   [20190205 Urs Janssen <urs@tin.org>]
+o  default_post_newsgroups, default_repost_group may hold groups not valid
+   on the current server, these are candidates to move to serverrc.
 
 o  implement SAVE_APPEND_FILE_ALL ('A') and SAVE_OVERWRITE_ALL ('O') keys
    which just ask once if file(s) already exist (open_save_filename()).
@@ -159,6 +149,8 @@ o  allow to cancel piping / saving multiple articles, ESC/'z' just stops the
 
 o  add per scope getart_limit via attributes
    [20131114 Urs Janssen <urs@tin.org>]
+
+o  add per scope render_bidi via attributes
 
 o  add per scope hideline_regex via attributes e.g. to exclude *ascii-art
 
@@ -339,18 +331,10 @@ o  add cmd-line/tinrc-switch to fetch only headers of unread articles;
    [-G is a start]
    allow setting a per group limit via attributes
 
-o  check if server supports 'LIST MODERATORS' and/or 'LIST DISTRIB.PATS' and
+o  check if server supports 'LIST MODERATORS' and
    if it does parse the output so it can be shown to the user. (e.g. when
    posting to a moderated group, show the moderators mail-address, but still
-   leave the mailing to the server; if the group has limited distribution
-   inform the user, ...)
-
-o  if using "-n" command-line switch you can't subscribe to newsgroups not
-   present in your newsrc - a simple check against the server
-   (e.g. GROUP $newsgroup or if !NNTP try to stat the dir) would help.
-   if the server understands "LIST ACTIVE grp" we could also get the group's
-   attribute (moderated, etc.) and with "LIST NEWSGROUPS grp" it's
-   description.
+   leave the mailing to the server)
 
 o  item_by_item_etiquette_warnings [compile-time?]
    (e.g. enable x-posts without f'up warning, disable long-sig warning)
@@ -555,9 +539,6 @@ o  posting to a binary group should warn if no followup is set to another
 
 o  when posting to a group containing uppercase-letters: bring up a
    warning: "Newsgroup-names should be all lowercase, correct it? (Y/n)"
-
-o  Enhance -n to take newsgroup name as argument and use group_get_art_info()
-   to allow posting to groups other than those in newsrc.
 
 o  add config option for (external) viewer to show postings stored in
    posted_articles_file
@@ -785,9 +766,6 @@ o  rewrite code to use INEWS_PATH instead of INEWSDIR
 o  remove built in path of external commands (metamail, ispell, ...)
    [for ispell $ISPELL can be used to override systempath and progname]
 
-o  add configure-switch for DISABLE_PIPELINING
-   [20090612 Urs Janssen <urs@tin.org>]
-
 o  mask inline pgp signature/key block like we do for uu-sections
    [20090722 Urs Janssen <urs@tin.org>]
 
@@ -964,17 +942,13 @@ o  verbatim regions can't be nested, should they?
 o  allow per group cancel_lock_algo setting via attributes?
    [20170810 Urs Janssen <urs@tin.org>]
 
-o  allow per group cache_overview_files, compress_overview_files setting
-   via attributes?
-   [20180215 Urs Janssen <urs@tin.org>]
-
 o  exit HEAD/NEXT loop on 5xx responses to HEAD? (see
    art.c:open_art_header())
    [20161011 Urs Janssen <urs@tin.org>]
 
 o  motd is only shown/checked for if using nntp, subscriptions is also
-   evaluated if reading from local spool - look for motd[.nnrpd|.innd] in
-   the same dir if not using nntp?
+   evaluated if reading from local spool - look for motd[.nnrpd|.news[|.innd]]
+   in the same dir if not using nntp?
 
 o  if reading from local spool, groups which are present in the active
    but all articles are exired (and thus the group-dir got removed from
@@ -1193,3 +1167,5 @@ o  when saving/decoding articles/attachments use realpath() and
    warn if the canonical absolute path starts with any of
    { "/boot/", "/dev/", "/etc/", "/proc/", "/root/", "/sbin/",
      "/sys/", "/usr/sbin/" /*, ... */ }
+
+o  should NNTP_SERVER_FILE be changeable via configure?

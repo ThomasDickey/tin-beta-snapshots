@@ -591,6 +591,7 @@ group_get_art_info(
 	if (read_news_via_nntp && grouptype == GROUP_TYPE_NEWS) {
 #ifdef NNTP_ABLE
 		char line[NNTP_STRLEN];
+		int respcode;
 
 		snprintf(line, sizeof(line), "GROUP %s", groupname);
 #	ifdef DEBUG
@@ -598,8 +599,9 @@ group_get_art_info(
 			debug_print_file("NNTP", "group_get_art_info %s", line);
 #	endif /* DEBUG */
 		put_server(line, FALSE);
+		respcode = get_respcode(line, sizeof(line));
 
-		switch (get_respcode(line, sizeof(line))) {
+		switch (respcode) {
 			case OK_GROUP:
 				if (sscanf(line, "%"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT, art_count, art_min, art_max) != 3) {
 #	ifdef DEBUG
@@ -616,7 +618,7 @@ group_get_art_info(
 				return -ERR_NOGROUP;
 
 			case ERR_ACCESS:
-				tin_done(NNTP_ERROR_EXIT, "%s", line);
+				tin_done(NNTP_ERROR_EXIT, "%d %s (%s)", respcode, line, groupname);
 				/* keep lint quiet: */
 				/* NOTREACHED */
 				break;

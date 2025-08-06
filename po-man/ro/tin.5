@@ -11,17 +11,17 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH TIN 5 2025\-02\-17 2.6.5 "Usenet newsreader"
+.TH TIN 5 2025\-02\-17 2.6.5 "Cititor de știri Usenet"
 
-.SH NOMBRE
+.SH NUME
 tin, rtin \- related files
 
-.SH DESCRIPCIÓN
+.SH DESCRIERE
 This man page describes the various (config) files and their formats used by
 the \fB\%tin\fP(1)  newsreader.  All files are expected to have unix style
 ('\(rsn' aka LF) line endings.
 
-.SH FICHEROS
+.SH FIȘIERE
 .\" TODO: mention
 .\" ${TIN_HOMEDIR:\-"$HOME"}/dead.article
 .\" ${TIN_HOMEDIR:\-"$HOME"}/dead.articles
@@ -181,7 +181,7 @@ ending in ".gif" by using "nametemplate=%s.gif".
 "nametemplate" and partly the "needsterminal" flags, all other flags are
 internally ignored.  It also can't handle the "%F" and "%n" expansions yet.
 .TP 
-Example:
+Exemplu:
 .RS
 .nf
 # mailcap file example
@@ -255,14 +255,14 @@ the user as it contains the user's unencrypted password for reading news!
 full qualified domain name of the news server. Additionally, a port can be
 specified by appending :portnumber.
 .TP 
-\fBcontraseña\fP
+\fBpassword\fP
 user's unencrypted password for reading news.
 .TP 
-\fBusuario\fP
+\fBuser\fP
 username on the news server if it differs from the local login. This field
 is optional.
 .TP 
-Example:
+Exemplu:
 .RS
 # sample .newsauth file
 .br
@@ -290,7 +290,7 @@ range of already read articles from that group; numbers separated by commas
 with sequential numbers collapsed with hyphens. Empty lines and lines which
 start with "#" are ignored and not written back.
 .TP 
-Example:
+Exemplu:
 .RS
 # sample .newsrc file
 .br
@@ -315,7 +315,7 @@ backup of \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP
 \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fP
 .sp
 .RS
-signature
+semnătură
 .RE
 .PP
 \fI${TIN_HOMEDIR:\-"$HOME"}/.sigfixed\fP
@@ -372,7 +372,7 @@ put 0 here
 path of mail spool directory. This must be the full pathname to the root of
 the mail folder area.
 .TP 
-Example:
+Exemplu:
 .RS
 Mail.inbox 12345 00000 /home/foo
 .br
@@ -687,7 +687,7 @@ attribute works only on systems with working \fB\%iconv\fP(3)  or \fB\%ucnv_*\fP
 and \fB\%ucsdet_getName\fP()  from libicui18n. It has no effect if
 undeclared_charset is also set.
 .TP 
-Example:
+Exemplu:
 .RS
 .nf
 # include extra headers
@@ -855,10 +855,10 @@ Match against \*(rqPath:\*(rq line. This may not work on some servers. The
 matching type used (wildmat or regex) depends on the setting of the tinrc
 variable \fBwildcard\fP.
 .TP 
-\fBtime\fP
+\fBtimp\fP
 time_t value when rule expires
 .TP 
-Example:
+Exemplu:
 .RS
 .nf
 comment=mark all articles about tin, rtin,
@@ -1165,7 +1165,7 @@ related newsrc. A file specified via \*(rq\fB\-f\fP\*(rq has a higher priority.
 nickname(s) for the nntpserver. Nicknames must not contain ":" and must be
 unique.
 .TP 
-Example:
+Exemplu:
 .RS
 # sample newsrctable file
 .br
@@ -2509,7 +2509,7 @@ displayed, even when they are highlighting marks?
 .IP 0 3
 \fBno\fP
 .IP 1
-si \fBdisplay mark\fP
+yes, \fBdisplay mark\fP
 .IP 2
 print a \fBspace\fP instead
 .RE
@@ -2639,7 +2639,7 @@ change this setting if your configuration differs.
 \fI/usr/local/share/locale/$LC_MESSAGES/LC_MESSAGES/tin.mo\fP
 .sp
 .RS
-traducido en idiomas especificados dentro de $\fBLC_ALL\fP, $\fBLC_MESSAGES\fP o
+translation into language specified in $\fBLC_ALL\fP, $\fBLC_MESSAGES\fP or
 $\fBLANG\fP
 .RE
 .PP
@@ -2663,7 +2663,7 @@ is rejected.
 Each line consists of four space\-separated fields "\fIname\fP \fIhighmark\fP
 \fIlowmark\fP \fIflags\fP".
 .TP 
-\fBnombre\fP
+\fBname\fP
 is the name of the newsgroup
 .TP 
 \fBhighmark\fP
@@ -2713,10 +2713,10 @@ is normally updated by the local news server (e.g., \fB\%innd\fP(8))  whenever
 a new group is created. Each line consist of three space\-separated fields
 "\fIname\fP \fItime\fP \fIcreator\fP".
 .TP 
-\fBnombre\fP
+\fBname\fP
 is the name of the newsgroup
 .TP 
-\fBtime\fP
+\fBtimp\fP
 is the time when the group was created, expressed as the number of seconds
 since the Epoch.
 .TP 
@@ -2780,7 +2780,7 @@ read news via NNTP, \fB\%tin\fP(1)  uses the LIST SUBSCRIPTIONS (\fBRFC\%6048\fP
 command instead.
 .RE
 
-.SH "VEA ADEMÁS"
+.SH "CONSULTAȚI ȘI"
 \fB\%inews\fP(1), \fB\%ispell\fP(1), \fB\%lp\fP(1), \fB\%lpr\fP(1), \fB\%metamail\fP(1),
 \fB\%mutt\fP(1), \fB\%perl\fP(1), \fB\%perlre\fP(1), \fB\%pgp\fP(1), \fB\%rn\fP(1),
 \fB\%shar\fP(1), \fB\%slrnface\fP(1), \fB\%tin\fP(1), \fB\%xterm\fP(1x),

@@ -81,7 +81,7 @@ case "$host_os" in
 esac
 
 ### Native Language Support
-ALL_LINGUAS="da de en_GB es et fr ru sv tr zh_CN zh_TW"
+ALL_LINGUAS="da de en_GB es et fr ro ru sv tr zh_CN zh_TW"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"

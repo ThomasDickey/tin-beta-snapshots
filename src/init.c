@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-22
+ *  Updated   : 2025-07-29
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -227,6 +227,7 @@ struct t_serverrc serverrc = {
 	NULL,	/* add_cmd_line_opts */
 	NULL,	/* disabled_nntp_cmds */
 	0UL,	/* motd_hash */
+	PIPELINE_LIMIT_DEFAULT,	/* nntp_pipeline_limit */
 	FALSE,	/* cache_overview_files */
 #ifdef USE_ZLIB
 	FALSE,	/* compress_overview_files */
@@ -424,6 +425,7 @@ struct t_config tinrc = {
 	TRUE,	/* inverse_okay */
 #endif /* USE_INVERSE_HACK */
 	TRUE,	/* keep_dead_articles */
+	FALSE,	/* keep_expired_filters */
 	FALSE,	/* mail_8bit_header */
 	FALSE,	/* mark_ignore_tags */
 	TRUE,	/* mark_saved_read */
@@ -574,7 +576,14 @@ struct t_config tinrc = {
 	FALSE,	/* attrib_quick_kill_case */
 	FALSE,	/* attrib_quick_kill_expire */
 	FALSE,	/* attrib_quick_select_case */
-	FALSE	/* attrib_quick_select_expire */
+	FALSE,	/* attrib_quick_select_expire */
+	NULL,	/* serverrc_add_cmd_line_opts */
+	NULL,	/* serverrc_disabled_nntp_cmds */
+	PIPELINE_LIMIT_DEFAULT,	/* serverrc_nntp_pipeline_limit */
+	FALSE	/* serverrc_cache_overview_files */
+#	ifdef USE_ZLIB
+	, FALSE	/* serverrc_compress_overview_files */
+#	endif /* USE_ZLIB */
 };
 
 struct t_capabilities nntp_caps = {
@@ -585,7 +594,7 @@ struct t_capabilities nntp_caps = {
 	FALSE, /* POST */
 	TRUE, /* LIST: "LIST ACTIVE" */
 	FALSE, /* LIST: "LIST ACTIVE.TIMES" */
-	FALSE, /* LIST: "LIST DISTRIB.PATS" */
+	TRUE, /* LIST: "LIST DISTRIB.PATS" */
 	FALSE, /* LIST: "LIST HEADERS" */
 	NULL, /* list of headers by range */
 	NULL, /* list of headers by id */
@@ -593,9 +602,10 @@ struct t_capabilities nntp_caps = {
 	TRUE, /* LIST: "LIST OVERVIEW.FMT" */
 	TRUE, /* LIST: "LIST MOTD" */
 	TRUE, /* LIST: "LIST SUBSCRIPTIONS" */
-	FALSE, /* LIST: "LIST DISTRIBUTIONS" */
+	TRUE, /* LIST: "LIST DISTRIBUTIONS" */
 	FALSE, /* LIST: "LIST MODERATORS" */
 	FALSE, /* LIST: "LIST COUNTS" */
+	TRUE, /* LISTGROUP */
 	TRUE, /* XPAT */
 	TRUE, /* HDR: "HDR", "LIST HEADERS" */
 	NULL, /* [X]HDR */
@@ -603,7 +613,9 @@ struct t_capabilities nntp_caps = {
 	FALSE, /* OVER: "OVER mid" */
 	NULL, /* [X]OVER */
 	TRUE, /* NEWGROUPS */
+#if 0
 	FALSE, /* NEWNEWS */
+#endif /* 0 */
 	NULL, /* IMPLEMENTATION */
 	FALSE, /* STARTTLS */
 	FALSE, /* AUTHINFO USER/PASS */
@@ -613,6 +625,7 @@ struct t_capabilities nntp_caps = {
 	NULL, /* SASL mech used after handshake */
 	FALSE, /* COMPRESS */
 	COMPRESS_NONE, /* COMPRESS_NONE, COMPRESS_DEFLATE */
+	NULL,	/* DISTRIB.PATS linked list */
 #if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
 	T_ARTNUM_CONST(0), /* MAXARTNUM */
 #endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
@@ -620,7 +633,6 @@ struct t_capabilities nntp_caps = {
 	FALSE, /* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
 	FALSE, /* IHAVE */
 #endif /* 0 */
-	FALSE /* LISTGROUP doesn't select group */
 };
 
 static char libdir[PATH_LEN];			/* directory where news config files are (ie. active) */
@@ -895,14 +907,12 @@ init_selfinfo(
 		else
 			my_strncpy(news_active_file, p, sizeof(news_active_file) - 1);
 	}
-#ifndef NNTP_ONLY
 	if (!*active_times_file)
 		joinpath(active_times_file, sizeof(active_times_file), libdir, ACTIVE_TIMES_FILE);
 	if (!*overviewfmt_file)
 		joinpath(overviewfmt_file, sizeof(overviewfmt_file), libdir, OVERVIEW_FMT);
 	if (!*subscriptions_file)
 		joinpath(subscriptions_file, sizeof(subscriptions_file), libdir, SUBSCRIPTIONS_FILE);
-#endif /* !NNTP_ONLY */
 	if (!*newsgroups_file)
 		joinpath(newsgroups_file, sizeof(newsgroups_file), libdir, NEWSGROUPS_FILE);
 	if (!default_organization || !*default_organization) {
@@ -920,7 +930,7 @@ init_selfinfo(
 			default_organization = my_strdup(buf);
 		}
 	}
-#endif /* NNTP_ONLY */
+#endif /* !NNTP_ONLY */
 
 	/*
 	 * Formerly get_mm_charset(), read_site_config() may set mm_charset

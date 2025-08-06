@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2025-05-30
+ *  Updated   : 2025-07-25
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2025 Dirk Nimmich <nimmich@muenster.de>
@@ -809,6 +809,11 @@ process_mapping(
 			}
 			if (STRCMPEQ(keyname, "ConfigSelect")) {
 				process_keys(CONFIG_SELECT, keys, &option_menu_keys);
+
+				return TRUE;
+			}
+			if (STRCMPEQ(keyname, "ConfigServerrcMenu")) {
+				process_keys(CONFIG_SERVERRC_MENU, keys, &option_menu_keys);
 
 				return TRUE;
 			}
@@ -3046,6 +3051,7 @@ setup_default_keys(
 	add_default_key(&option_menu_keys, "r", CONFIG_RESET_ATTRIB);
 	add_default_key(&option_menu_keys, "v", GLOBAL_VERSION);
 	add_default_key(&option_menu_keys, "Q", CONFIG_NO_SAVE);
+	add_default_key(&option_menu_keys, "s", CONFIG_SERVERRC_MENU);
 	add_default_key(&option_menu_keys, "S", CONFIG_SCOPE_MENU);
 	add_default_key(&option_menu_keys, ">", GLOBAL_SCROLL_DOWN);
 	add_default_key(&option_menu_keys, "<", GLOBAL_SCROLL_UP);

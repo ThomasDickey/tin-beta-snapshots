@@ -69,6 +69,7 @@ ConfigSelect			^J	^M
 ConfigLastPage			G
 ConfigNoSave			Q
 ConfigScopeMenu			S
+ConfigServerrcMenu		s
 ConfigFirstPage			g
 ConfigResetAttrib		r
 

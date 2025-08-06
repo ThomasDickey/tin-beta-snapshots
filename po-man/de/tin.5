@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2025-06-29
+.\" Updated   : 2025-07-30
 .\" Notes     : needs a some work, see TODOs
 .\"             - use semantic newlines
 .\"
@@ -63,8 +63,7 @@ fortgesetzt werden, indem man sie mit einem Backslash\-Zeichen »\(rs«
 beendet.
 .sp
 Jeder einzelne Mailcap\-Eintrag besteht aus einer Content\-Typ\-Spezifikation,
-einem Befehl zum Ausführen und (möglicherweise) einem Satz optionaler
-»Flag«\-Werte.
+einem Befehl zum Ausführen und (möglicherweise) einem Satz optionaler Werte.
 .sp
 Das Feld »Typ« ist ein beliebiger Name für einen legalen Inhaltstyp. Es ist
 die Zeichenkette, die mit dem »Content\-Type:«\-Header verglichen wird, um zu
@@ -83,17 +82,18 @@ Interpreter für den angegebenen Nachrichtentyp anzugeben. Es wird über die
 .\" series of arguments, two for each part, giving first the content-type and
 .\" then the name of the temporary file where the decoded part has been stored.
 .\"
-Semicolons and backslashes within the command or any flag field must be
-quoted with backslashes.  If the field contains "%s", those two characters
-will be replaced by the name of a file that contains the body of the
-message.  If it contains "%t", those two characters will be replaced by the
-content\-type field, including the subtype, if any.  If it contains "%{"
-followed by a parameter name and a closing "}", then all those characters
-will be replaced by the value of the named parameter, if any, from the
-\&\*(rqContent\-Type:\*(rq header.  Finally, if the field contains "\(rs%", those
-two characters will be replaced by a single "%" character.
+Semikolons (»;«) und umgekehrte Schrägstriche (»\(rs«) im Befehl oder einem
+beliebigen Flag\-Feld müssen mit umgekehrten Schrägstrichen (»\(rs«) maskiert
+werden. Wenn das Feld »%s« enthält, werden diese beiden Zeichen durch den
+Namen der Datei ersetzt, die den Text der Nachricht enthält. Wenn es »%t«
+enthält, werden diese beiden Zeichen durch das Feld Inhaltstyp ersetzt,
+einschließlich des Subtyps, falls vorhanden. Wenn es »%{« gefolgt von einem
+Parameternamen und einem schließenden »}« enhält, dann werden alle diese
+Zeichen durch den Wert des genannten Parameters aus dem
+»Content\-Typ:«\-Header ersetzt, falls vorhanden. Wenn das Feld »\(rs%«
+enthält, werden diese zwei Zeichen durch ein einzelnes »%«\-Zeichen ersetzt.
 .sp
-Neben dem Typ und dem Befehlsfeld sind folgende »Flags« definiert:
+Neben dem Typ und dem Befehlsfeld sind folgende Felder definiert:
 .TP 
 \fBcompose\fP
 The "compose" field may be used to specify a program that can be used to
@@ -181,9 +181,10 @@ environments where filename extensions are meaningful, e.g., one could
 specify that a GIF file being passed to a gif viewer should have a name
 ending in ".gif" by using "nametemplate=%s.gif".
 .PP
-\fB\%tin\fP(1)  currently only respects the "test", "description",
-"nametemplate" and partly the "needsterminal" flags, all other flags are
-internally ignored.  It also can't handle the "%F" and "%n" expansions yet.
+Aktuell untersützt \fB\%tin\fP(1) nur die »test«\-, »description«\- und
+»nametemplate«\-Felder sowie teilweise das »needsterminal«\-Feld, alle
+Weiteren werden ingoriert. Außerdem wird die Auswertung von »%F« und »%n«
+bisher nicht untersützt.
 .TP 
 Beispiel:
 .RS
@@ -419,9 +420,9 @@ they function exactly as their global equivalents. The following group
 attributes are available:
 .TP 
 \fBscope\fP
-This changes the list of groups to which the attributes that follow will be
-applied. See the section NEWSGROUP LISTS & WILDCARDS in \fB\%tin\fP(1)  for the
-types of pattern that can be used here.
+Ändert die Liste der Gruppen, auf die die folgenden Attribute angewendet
+werden. Siehe den Abschnitt »NEWSGROUP LISTEN & WILDCARDS« für die Arten von
+Mustern, die \fB\%tin\fP(1) versteht.
 .TP 
 \fBadd_posted_to_filter\fP
 Identisch mit der tinrc\-Variable gleichen Namens
@@ -454,10 +455,11 @@ UND SPEICHERN VON UNGELESENEN ARTIKELN« in \fB\%tin\fP(1).
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
 \fBdelete_tmp_files\fP
-If this is set to ON, then saved article files that have been post\-processed
-will be automatically deleted, otherwise the user will be asked whether to
-delete the post\-processed files. Automatic processing of marked articles
-using \fBGroupAutoSave\fP ('\fBS\fP') will suppress prompting.
+Falls auf »ON« gesetzt werden gespeicherte Artikel, die nachbearbeitet
+wurden, automatisch gelöscht, andernfalls wird der Benutzer gefragt, ob die
+nachbearbeiteten Dateien gelöscht werden sollen. Die automatische
+Verarbeitung markierter Artikel mit \fBGroupAutoSave\fP ('\fBS\fP') unterdrückt
+die Nachfarge.
 .TP 
 \fBeditor_format\fP
 Identisch mit der tinrc\-Variable gleichen Namens
@@ -715,8 +717,9 @@ undeclared_charset=ISO\-8859\-1
 scope=*sources*
 post_process_type=1
 
-# In *binaries* volle Nachbearbeitung (Anhänge dekodieren) verwenden,
-# temporäre Dateien löschen und Followup\-To: poster setzten.
+# In *binaries* volle Nachbearbeitung (Anhänge
+# dekodieren) verwenden, temporäre Dateien löschen
+# und Followup\-To: poster setzten.
 scope=*binaries*
 post_process_type=2
 delete_tmp_files=ON
@@ -783,11 +786,11 @@ Vergleiche mit »Subject:«. Der verwendete Vergleichstyp (Wildmat oder Regex)
 hängt von der Einstellung der tinrc\-Variable \fBwildcard\fP ab.
 .TP 
 \fBfrom\fP
-Match against \*(rqFrom:\*(rq.  \fB\%tin\fP(1)  converts the contents of the
-\&\*(rqFrom:\*(rq header to an old style e\-mail address, e.g., \*(rqsome@body.example
-(John Doe)\*(rq instead of \*(rqJohn Doe <some@body.example>\*(rq, before
-trying to match the patterns in the filter rule. The matching type used
-(wildmat or regex) depends on the setting of the tinrc variable \fBwildcard\fP.
+Vergleiche mit »From:«. \fB\%tin\fP(1) wandelt den Inhalt des »From:«\-Headers
+zu einer E\-Mail\-Adresse im alten Stil vor dem Vergleich mit den Filterregeln
+um. Z.B. »some@body.example (John Doe)« anstelle von »John Doe
+<some@body.example>«. Der verwendete Vergleichstyp (Wildmat oder
+Regex) hängt von der Einstellung der tinrc\-Variable \fBwildcard\fP ab.
 .TP 
 \fBmsgid\fP
 Vergleiche mit »Message\-ID:« & allen »References:«. Der verwendete
@@ -819,7 +822,7 @@ zurückgegeben falls \fBdisable_gnksa_domain_check\fP in
 \fI/etc/tin/tin.defaults\fP auf OFF steht. Da die einkompilierte Liste der
 gültigen Top\-Level\-Domainnamen veraltet sein könnte ist hier bei der
 Verwendung Vorsicht geboten. GNKSA_ILLEGAL_LABEL_BEGNUM wird nur
-zurückgegeben falls \fBtin\fP(1) mit definiertem ENFORCE_RFC1034 kompiliert
+zurückgegeben falls \fB\%tin\fP(1) mit definiertem ENFORCE_RFC1034 kompiliert
 wurde, das ist üblicherweise nicht der Fall.
 .in +0.3i
 .nf
@@ -862,17 +865,17 @@ wurde, das ist üblicherweise nicht der Fall.
 .in -0.3i
 .TP 
 \fBxref\fP
-Match against \*(rqXref:\*(rq line. Before any matching is done the line is turned
-into the same format \*(rqNewsgroups:\*(rq has that is it is turned into a comma
-separated newsgroup list with all other information (i.e., the article
-counter) removed. The matching type used (wildmat or regex)  depends on the
-setting of the tinrc variable \fBwildcard\fP.
+Vergleiche mit der »Xref:«\-Zeile. Vor dem Vergleich wird die Zeile in das
+Format der »Newsgroups:«\-Zeile gewandelt, also in eine Kommata getrennte
+List von Newsgruppen, alle anderen Informationen (wie Artikelnummern) werden
+aus der Zeile entfernt. Die Art des Vergleiches (Wildmat oder Regex) hängt
+von der Einstellung der tinrc\-Variablen \fBwildcard\fP ab.
 .TP 
 .\" TODO: document option in detail
 \fBpath\fP
 Vergleiche mit der »Path:«\-Zeile. Dies funktioniert evtl. auf einigen
-Servern nicht. Die Art der Übereinstimmung (Wildmat oder Regex) hängt von
-der Einstellung der tinrc\-Variablen \fBwildcard\fP ab.
+Servern nicht. Die Art des Vergleiches (Wildmat oder Regex) hängt von der
+Einstellung der tinrc\-Variablen \fBwildcard\fP ab.
 .TP 
 \fBtime\fP
 time_t Wert wann die Regel abläuft
@@ -904,17 +907,18 @@ msgid_only=@googlegroups.com>
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\:\-"${LC_CTYPE:\:\-"$LANG"}"}"}:\:+".${LC_ALL:\:\-"${LC_MESSAGES:\:\-"${LC_CTYPE:\:\-"$LANG"}"}"}"}\fP
 .sp 1v
 .\".fi
-\fI/etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:\:\\fR
-+".${LC_ALL:\:\-"${LC_MESSAGES:\:\-"${LC_CTYPE:\:\-"$LANG"}"}"}"}
+\fI/etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:\:\+".${LC_ALL:\:\-"${LC_MESSAGES:\:\-"${LC_CTYPE:\:\-"$LANG"}"}"}"}\fP
 .sp
 .RS
-Keymap\-file, containing "\fIkeyname\fP \fIvalue\fP \fI[value]\fP" pairs separated by
-spaces or tabs. If the keymap\-file named with full specified \fB\%locale\fP(5)
-is not found, less specific ones are looked for. Various parts will be
-stripped off the name, in the following order codeset, normalized codeset,
-territory and modifier when looking for the keymap\-file.  Below is a list of
-all rebindable keynames and their defaults. If a keyname is bound to NULL it
-is unassigned.
+Tastaturbelegungs\-Datei, die "\fITaste\fP \fIWert\fP \fI[Wert]\fP"\-Paare enthält, die
+durch Leerzeichen oder Tabulatoren getrennt sind. Wenn die
+Tastaturbelegungs\-Datei mit dem vollständigen Gebietsschema\-Namen
+\fB\%locale\fP(5) nicht gefunden wird, wird nach weniger spezifischen
+gesucht. Bei der Suche nach der Tastaturbelegungs\-Datei werden verschiedene
+Teile vom Namen entfernt, in der folgenden Reihenfolge Codeset,
+normalisiertes Codeset, Territorium und Modifikator. Unten finden Sie eine
+Liste aller wiederbindbaren Tastennamen und ihrer Standardwerte. Wenn ein
+Tastenname an NULL gebunden ist, ist er nicht zugewiesen.
 .sp
 .nf
 .ta \w'GroupSelThdIfUnreadSelected    'u +\w'SPACE'u +\w'SPACE'u
@@ -979,6 +983,7 @@ is unassigned.
 \fBConfigLastPage\fP	G
 \fBConfigNoSave\fP	Q
 \fBConfigScopeMenu\fP	S
+\fBConfigServerrcMenu\fP	s
 \fBConfigFirstPage\fP	g
 \fBConfigResetAttrib\fP	r
 .sp
@@ -1284,7 +1289,9 @@ ist die zugehörige Kurzbeschreibung
 .RS
 Datei zum Speichern von $\fBNNTPSERVER\fP bezogenen Daten mittels
 »\fIVariable\fP=\fIWert\fP« Paaren. Derzeit gibt es nur wenige Variablen und
-einige sind nicht dazu gedacht, vom Benutzer geändert zu werden.
+einige sind nicht dazu gedacht, vom Benutzer geändert zu werden. Auch
+\fBConfigServerrcMenu\fP ('\fBs\fP') im Abschnitt »SERVERRC MENÜ« in \fB\%tin\fP(1)
+beachten.
 .TP 
 \fBversion\fP
 Interne Versionsnummer.
@@ -1300,8 +1307,9 @@ beschränkt auf »\fB\-4\fP«, »\fB\-6\fP«, »\fB\-A\fP«, »\fB\-C\fP«, »\f
 \fBdisabled_nntp_cmds\fP
 Eine durch Kommas getrennte Liste von NNTP\-Befehlen, die vermieden werden
 sollen. Kann verwendet werden, um Probleme mit fehlerhaften Serveren zu
-umgehen und sollte normalerweise leer gelassen werden. Die folgenden Befehle
-können deaktiviert werden:
+umgehen und sollte normalerweise leer gelassen werden. Das Deaktivieren von
+»XHDR« deaktiviert auch »HDR« und umgekehrt. Die folgenden Befehle können
+deaktiviert werden:
 .in +0.3i
 .nf
 .ta \w'LIST SUBSCRIPTIONS'u
@@ -1310,31 +1318,37 @@ CAPABILITIES
 COMPRESS DEFLATE
 HDR
 LIST COUNTS
+LIST DISTRIB.PATS
+LIST DISTRIBUTIONS
 LIST HEADERS
 LIST MOTD
 LIST NEWSGROUPS
 LIST OVERVIEW.FMT
 LIST SUBSCRIPTIONS
-LISTGROUP	(\-\-enable\-broken\-listgroup\-fix)
+LISTGROUP
 NEWGROUPS
 OVER
-XHDR	(\-\-disable\-xhdr\-xref)
+XHDR
 XOVER
 XPAT
 .fi
 .in -0.3i
 .TP 
+\fBnntp_pipeline_limit\fP
+Anzahl der NNTP\-Befehle im Pipeline\-Verfahren. Auf 1 setzen, wenn der Server
+Pipelining nicht unterstützt. Standard ist 50. Zulässiges Maximum ist 256.
+.TP 
 \fBcache_overview_files\fP
 Identisch mit der tinrc\-Variable gleichen Namens, übersteuert diese. Bitte
 beachten, dass die serverrc\-Variable nicht in die tinrc\-Variable übernommen
-wird, aber die tinrc\-Variable aber auch die serverc\-Variable setzt sofern
-diese im \fBOptionMenu\fP ('\fBM\fP') (und nur da) geändert wird.
+wird, die tinrc\-Variable aber auch die serverc\-Variable setzt sofern diese
+im \fBOptionMenu\fP ('\fBM\fP') (und nur da) geändert wird.
 .TP 
 \fBcompress_overview_files\fP
 Identisch mit der tinrc\-Variable gleichen Namens, übersteuert diese. Bitte
 beachten, dass die serverrc\-Variable nicht in die tinrc\-Variable übernommen
-wird, aber die tinrc\-Variable aber auch die serverc\-Variable setzt sofern
-diese im \fBOptionMenu\fP ('\fBM\fP') (und nur da) geändert wird.
+wird, die tinrc\-Variable aber auch die serverc\-Variable setzt sofern diese
+im \fBOptionMenu\fP ('\fBM\fP') (und nur da) geändert wird.
 .TP 
 \fBmotd_hash\fP
 Interner Hash der MOTD (»Message of the Day«) des Servers, damit dessen
@@ -1832,6 +1846,10 @@ Wenn »ON«, alle fehlgeschlagenen Beiträge in
 \fI${TIN_HOMEDIR:\-"$HOME"}/dead.articles\fP behalten, zusätzlich zum Speichern
 des letzten fehlgeschlagenen Beitrags in
 \fI${TIN_HOMEDIR:\-"$HOME"}/dead.article\fP. Die Voreinstellung ist »ON«.
+.TP 
+\fBkeep_expired_filters\fP
+Falls »ON« werden abgelaufene Filterregeln behlaten aber nicht mehr
+angewendet. Die Voreinstellung ist »OFF«.
 .TP 
 \fBkill_level\fP
 Diese Option steuert die Verarbeitung und Anzeige von Artikeln, die gekillt

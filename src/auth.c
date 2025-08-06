@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2025-06-14
+ *  Updated   : 2025-07-15
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -582,10 +582,23 @@ do_authinfo_sasl(
 
 
 /*
- * TODO: add cyrus-sasl variant
- *       support more mechs
- *       callbacks
+ * TODO: - add cyrus-sasl variant
+ *       - support more mechs
+ *       - callbacks
+ *       - add configure check for return type of gsasl_property_set()
+ *         instead of hard coding GSASL_VERSION_NUMBER
+ *       - check for and use gsasl_property_free()?
  */
+#		if GSASL_VERSION_NUMBER >= 0x010b00
+#			define TIN_GSASL_PROP_SET(prop, data)  do { \
+					if (gsasl_property_set(session, prop, data) != GSASL_OK) \
+						goto sasl_done; \
+				} while (0)
+#		else
+#			define TIN_GSASL_PROP_SET(prop, data)  do { \
+					gsasl_property_set(session, prop, data); \
+				} while (0)
+#		endif /* GSASL_VERSION_NUMBER >= 0x010b00 */
 static int
 sasl_auth(
 	char *user,
@@ -624,26 +637,22 @@ sasl_auth(
 		sasl_prop = SASL_NEED_ANONYMOUS_TOKEN;
 
 	/* set required props; see also callback() */
-#if 0
+#		if 0
 	if (user && (sasl_prop & SASL_NEED_AUTHZID)) { /* authorization identity, usually not used with NNTP, but GSSAPI? */
-		if (gsasl_property_set(session, GSASL_AUTHZID, user) != GSASL_OK)
-			goto sasl_done;
+		TIN_GSASL_PROP_SET(GSASL_AUTHZID, user);
 	}
-#endif /* 0 */
+#		endif /* 0 */
 
 	if (user && (sasl_prop & SASL_NEED_AUTHID)) {	/* authentication identity */
-		if (gsasl_property_set(session, GSASL_AUTHID, user) != GSASL_OK)
-			goto sasl_done;
+		TIN_GSASL_PROP_SET(GSASL_AUTHID, user);
 	}
 
 	if (pass && (sasl_prop & SASL_NEED_PASSWORD)) {	/* password of the authentication identity */
-		if (gsasl_property_set(session, GSASL_PASSWORD, pass) != GSASL_OK)
-			goto sasl_done;
+		TIN_GSASL_PROP_SET(GSASL_PASSWORD, pass);
 	}
 
 	if (sasl_prop & SASL_NEED_ANONYMOUS_TOKEN) {
-		if (gsasl_property_set(session, GSASL_ANONYMOUS_TOKEN, "dummy") != GSASL_OK) /* use a base64(randstr(len=whatever))?? */
-			goto sasl_done;
+		TIN_GSASL_PROP_SET(GSASL_ANONYMOUS_TOKEN, "dummy");
 	}
 
 	/* authenticate */
@@ -681,9 +690,14 @@ sasl_done:
 
 	return ret;
 }
+#		undef TIN_GSASL_PROP_SET
 
 
-#if 0 /* prototype; TODO check return val of gsasl_property_set */
+#		if 0
+/*
+ * prototype; when we want to check gsasl_property_set()'s return
+ * value, use a wrapper like TIN_GSASL_PROP_SET() above.
+ */
 static int
 callback(
 	Gsasl *ctx,
@@ -752,18 +766,18 @@ callback(
 			rc = GSASL_OK;
 			break;
 
-#if 0
+#			if 0
 		case GSASL_AUTHZID:
 		case GSASL_PASSCODE:
 		case GSASL_PIN:
 		case GSASL_REALM:
-#endif /* 0 */
+#			endif /* 0 */
 		default: /* unhandled property */
 			break;
 	}
 	return rc;
 }
-#endif /* 0 */
+#		endif /* 0 */
 #	endif /* USE_GSASL */
 
 

@@ -3,7 +3,7 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2025-06-14
+ *  Updated   : 2025-07-09
  *  Notes     :
  *
  * Copyright (c) 1993-2025 Iain Lea <iain@bricbrac.de>
@@ -322,10 +322,9 @@ overview_xref_support(
 	 *         (use nntp_caps.hdr_cmd in txt_warn_xref_not_supported ?)
 	 *       - if server doesn't mention XREF in LIST HEADERS
 	 */
-	if (read_news_via_nntp && !supported) {
-		if (*serverrc.disabled_nntp_cmds && !strstr(serverrc.disabled_nntp_cmds, "LIST OVERVIEW.FMT") && !strstr(serverrc.disabled_nntp_cmds, "HDR"))
-			wait_message(2, _(txt_warn_xref_not_supported));
-	}
+	if (read_news_via_nntp && !supported && !strstr(serverrc.disabled_nntp_cmds, "LIST OVERVIEW.FMT") && !strstr(serverrc.disabled_nntp_cmds, "HDR"))
+		wait_message(2, _(txt_warn_xref_not_supported));
+
 	return supported;
 }
 

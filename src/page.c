@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-04
+ *  Updated   : 2025-07-10
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1529,7 +1529,7 @@ draw_page_header(
 	int i, n;
 	int whichresp, x_resp;
 	int len, right_len, center_pos, cur_pos;
-	int tex_space = 0;
+	int tex_space;
 	size_t line_len, tlen;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wtmp, *wtmp2;
@@ -1684,7 +1684,7 @@ skip:
 	if ((n = snprintf(NULL, 0, _(txt_lines), buf)) > 0) {
 		tlen = (size_t) n + 1;
 		tmp = my_malloc(tlen);
-		if (snprintf(tmp, line_len, _(txt_lines), buf) == n) {
+		if (snprintf(tmp, tlen, _(txt_lines), buf) == n) {
 			tmp2 = strunc(tmp, CCOLS_THIRD);
 			my_fputs(tmp2, stdout);
 			cur_pos += strwidth(tmp2);

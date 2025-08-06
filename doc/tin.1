@@ -2,7 +2,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2025-07-04
+.\" Updated   : 2025-07-29
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -333,9 +333,10 @@ status, then the command-line groups will be gone. You can use
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fR file and get
 them back.
 .PP
-NB: With the ''\fB\-n\fP'' flag, only unsubscribed groups in the
-\fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR file (or the newsrc-file given by the
-\&''\fB\-f\fP'' command-line switch or via
+NB: With the ''\fB\-n\fP'' flag, if reading via NNTP it may happen that
+only unsubscribed groups in the \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR
+file (or the newsrc-file given by the \&''\fB\-f\fP'' command-line switch
+or via
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fR) can be matched.
 .PP
 Command-line options have higher priority than attributes and tinrc options.
@@ -438,8 +439,8 @@ articles \fBart_marked_selected\fP, the number of read hot articles (if any;
 The characters after the numbers are depending to the configuration and if
 your are in \fBshow_only_unread_arts\fP mode or not. Some numbers could be
 missing if the specific option is not enabled. It might also contain an 'M',
-\&'X' or '=' (see above; doesn't work with the ''\fB\-n\fP'' command-line
-switch!) if the group is moderated, set to no posting or postings to it get
+\&'X' or '=' (see above; may not work with the ''\fB\-n\fP'' command-line
+switch) if the group is moderated, set to no posting or postings to it get
 redirected.
 .PP
 If a thread has unread articles it is marked with \fBart_marked_unread\fP
@@ -1618,6 +1619,10 @@ information see section "ATTRIBUTES MENU AND GROUP ATTRIBUTES".
 The \fBConfigScopeMenu\fP ('\fBS\fP') command brings up the scopes menu. For
 more information see section "SCOPES MENU".
 .PP
+Finally, the \fBConfigServerrcMenu\fP ('\fBs\fP') command brings up the
+serverrc menu where values from
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc\fR can be changed.
+.PP
 Here is a full list of all the available variables. The name in braces is
 the name of the corresponding setting in
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fR.
@@ -2073,6 +2078,10 @@ Default is ON.
 If ON keep all failed postings in \fI${TIN_HOMEDIR:\-"$HOME"}/dead.articles\fR
 besides keeping the last failed posting in
 \fI${TIN_HOMEDIR:\-"$HOME"}/dead.article\fR. Default is ON.
+.TP
+.B Keep expired filter rules in file (keep_expired_filters)
+If ON keep expired filter rules in the file, but no longer evaluate them.
+Default is OFF.
 .TP
 .B Filter which articles (kill_level)
 This option controls the processing and display of articles that are killed.
@@ -2924,6 +2933,13 @@ menu at the bottom of the screen and posting etiquette after composing an
 article (\fBbeginner_level\fP).
 .\"
 .\"
+.SS "SERVERRC MENU"
+The serverrc menu (accessible from the options menu with
+\fBConfigServerrcMenu\fP ('\fBs\fP')) can be used to change
+the server specific settings which are stored in
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc\fR.
+.\"
+.\"
 .SS "FILTERING ARTICLES"
 .\" FIXME - add scoring description
 When there is a subject or an author which you are either very interested
@@ -3698,7 +3714,7 @@ For a detailed description see
 .I ${TIN_HOMEDIR:\-"$HOME"}/.newsrc
 .PP
 .nf
-.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER$/.oldnewsrc
+.I ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/.oldnewsrc
 .fi
 .PP
 .I ${TIN_HOMEDIR:\-"$HOME"}/.signature
@@ -4193,9 +4209,18 @@ permission at that location.
 (<= V1.0-pre5) and
 .B NewsCache
 (<= V1.1.91) can't handle pipelined GROUP commands (\fBRFC\%3977\fP).
-If you run into trouble with any of the mentioned historical servers define
-DISABLE_PIPELINING in include/autoconf.h and recompile or use the ''\fB\-l\fP''
-command line option.
+If you run into trouble with any of the mentioned historical servers
+set \fBnntp_pipeline_limit\fP in
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc\fR to 1.
+.PP
+Early versions of
+.B NNTPCache
+(<= 2.3.2) and
+.B Leafnode
+(<= 1.6) had a buggy LISTGROUP implementation. If you run into trouble
+with any of the mentioned historical servers use the ''\fB\-n\fP''
+commandline flag (or disable LISTGROUP via \fBdisabled_nntp_cmds\fP in
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc\fR).
 .PP
 Using the ''\fB\-C\fP'' (COMPRESS) flag with
 .BR INN \0nnrpd

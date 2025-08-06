@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2024-12-21
+ *  Updated   : 2025-07-10
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -329,13 +329,13 @@ debug_print_filters(
 	if (!*file)
 		joinpath(file, sizeof(file), tmpdir, "FILTER");
 
-	if ((fp = fopen(file, "w")) != NULL) {
+	if ((fp = fopen(file, "a")) != NULL) {
 		/*
 		 * print global filter
 		 */
 		num = glob_filter.num;
 		the_filter = glob_filter.filter;
-		fprintf(fp, "*** BEG GLOBAL FILTER=[%3d] ***\n", num);
+		fprintf(fp, "\n*** BEG GLOBAL FILTER=[%3d] ***\n", num);
 		for (i = 0; i < num; i++) {
 			debug_print_filter(fp, i, &the_filter[i]);
 			fprintf(fp, "\n");

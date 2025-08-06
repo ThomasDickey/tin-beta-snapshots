@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-07
+ *  Updated   : 2025-07-30
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -111,6 +111,7 @@ read_config_file(
 	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
 		if (!*buf)
 			continue;
+
 		if (buf[0] == '#') {
 			if (upgrade == NULL && !global_file && match_string(buf, "# tin configuration file V", NULL, 0)) {
 				upgrade = check_upgrade(buf, "# tin configuration file V", TINRC_VERSION);
@@ -494,6 +495,9 @@ read_config_file(
 
 		case 'k':
 			if (match_boolean(buf, "keep_dead_articles=", &tinrc.keep_dead_articles))
+				break;
+
+			if (match_boolean(buf, "keep_expired_filters=", &tinrc.keep_expired_filters))
 				break;
 
 			if (match_integer(buf, "kill_level=", &tinrc.kill_level, KILL_NOTHREAD))
@@ -1171,6 +1175,9 @@ write_config_file(
 	fprintf(fp, "%s", _(txt_add_posted_to_filter.tinrc));
 	fprintf(fp, "add_posted_to_filter=%s\n\n", print_boolean(tinrc.add_posted_to_filter));
 
+	fprintf(fp, "%s", _(txt_keep_expired_filters.tinrc));
+	fprintf(fp, "keep_expired_filters=%s\n\n", print_boolean(tinrc.keep_expired_filters));
+
 	fprintf(fp, "%s", _(txt_sigfile.tinrc));
 	fprintf(fp, "sigfile=%s\n\n", BlankIfNull(tinrc.sigfile));
 
@@ -1625,6 +1632,7 @@ write_config_file(
 		for (i = 0; i < num_newnews; i++) {
 			if (i == j)
 				continue;
+
 			if (my_strftime(timestring, sizeof(timestring) - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time))))
 				fprintf(fp, "newnews=%s %lu (%s)\n", newnews[i].host, (unsigned long int) newnews[i].time, timestring);
 		}
@@ -2343,10 +2351,9 @@ rc_post_update(
  *       which could also be set via attributes to avoid
  *       confusion).
  *
- * TODO: - once we have a (nice) solution for a severrc 'M'enu we
- *         could add more server specific vars (which can't be set
+ * TODO: - add more server specific vars (which can't be set
  *         via add_cmd_line_opts) or even per server config-files like
- *         keymap, filter, ...
+ *         keymap, filter, ...?
  *       - add a cmd-line option to skip reading the serverrc?
  *         (what about status vars like last_newnews or motd_hash then?)
  */
@@ -2355,6 +2362,7 @@ rc_post_update(
 		wait_message(2, _(txt_useless_combination), keep, ignore, ignore, _(" Keeping serverrc.add_cmd_line_opts.")); \
 	} while (0) /* -> lang.c */
 #endif /* NNTP_ABLE && INET6 */
+/* avoid to add options which take a string as argument */
 #define OPTIONS ":46ACdG:knp:qQt:Tx"
 void
 read_server_config(
@@ -2362,12 +2370,11 @@ read_server_config(
 {
 	FILE *fp;
 	char *line;
-	char newnews_info[LEN];
 	char *d, *s, *bp = NULL;
+	char newnews_info[LEN];
 	char serverdir[PATH_LEN];
 	int i;
 	struct t_version *upgrade = NULL;
-	t_bool is_valid = TRUE;
 #ifdef NNTP_ABLE
 	const char *valid_suppressions[] = { /* keep in sync with check_extensions() */
 		"AUTHINFO SASL",
@@ -2375,6 +2382,8 @@ read_server_config(
 		"COMPRESS DEFLATE",
 		"HDR",
 		"LIST COUNTS",
+		"LIST DISTRIB.PATS",
+		"LIST DISTRIBUTIONS",
 		"LIST HEADERS",
 		"LIST MOTD",
 		"LIST NEWSGROUPS",
@@ -2388,6 +2397,7 @@ read_server_config(
 		"XPAT",
 		NULL
 	};
+	t_bool is_valid;
 #endif /* NNTP_ABLE */
 
 	/*
@@ -2419,8 +2429,10 @@ read_server_config(
 		/*
 		 * serverrc specific
 		 */
-		if (match_string_ptr(line, "add_cmd_line_opts=", &serverrc.add_cmd_line_opts))
+		if (match_string_ptr(line, "add_cmd_line_opts=", &serverrc.add_cmd_line_opts)) {
+			str_trim(serverrc.add_cmd_line_opts);
 			continue; /* parsing is done after the file has been read */
+		}
 
 		/*
 		 * we intentionally read them even in the !NNTP_ABLE case
@@ -2428,6 +2440,8 @@ read_server_config(
 		 */
 		if (match_string(line, "disabled_nntp_cmds=", NULL, 0)) {
 			FreeAndNull(serverrc.disabled_nntp_cmds);
+			/* to avoid !serverrc.disabled_nntp_cmds checks elsewhere */
+			serverrc.disabled_nntp_cmds = my_strdup("");
 			/* beautify */
 			s = line + strlen("disabled_nntp_cmds=");
 			while ((d = strtok(s, ",")) != NULL) {
@@ -2437,8 +2451,8 @@ read_server_config(
 				is_valid = FALSE;
 				if (*d == '"')
 					++d;
-				if (*d && d[strlen(d) -1] == '"')
-					d[strlen(d) -1] = '\0';
+				if (*d && d[strlen(d) - 1] == '"')
+					d[strlen(d) - 1] = '\0';
 				str_trim(d);
 				buffer_to_ascii(d);
 				str_upr(d);
@@ -2451,7 +2465,7 @@ read_server_config(
 				if (*d) { /* ignore empty tokens */
 #ifdef NNTP_ABLE
 					if (!is_valid) /* TODO: only in debug mode? */
-						wait_message(2, "Invalid %s \"%s\", discarding it", "disabled_nntp_cmds", d); /* -> lang.c */
+						wait_message(2, "Invalid disabled_nntp_cmds \"%s\", discarding it", d); /* -> lang.c */
 					else
 #endif /* NNTP_ABLE */
 					{
@@ -2468,21 +2482,27 @@ read_server_config(
 #endif /* NNTP_ABLE */
 					}
 				}
-
-				if (s)
-					s = NULL;
+				s = NULL;
 			}
 			if (bp && *bp) {
 				i = strlen(bp);
 				if (*(bp + i - 1) == ',')
 					*(bp + i - 1) = '\0';
-				serverrc.disabled_nntp_cmds = my_strdup(bp);
+				serverrc.disabled_nntp_cmds = append_to_string(serverrc.disabled_nntp_cmds, bp);
 			}
 			FreeAndNull(bp);
-			/* to avoid !serverrc.disabled_nntp_cmds checks elsewhere */
-			if (!serverrc.disabled_nntp_cmds)
-				serverrc.disabled_nntp_cmds = my_strdup("");
 
+			continue;
+		}
+
+		/* per server -DDISABLE_PIPELINING, >=2 allow piplelining */
+		if (match_integer(line, "nntp_pipeline_limit=", &serverrc.nntp_pipeline_limit, 0)) {
+			if (serverrc.nntp_pipeline_limit < PIPELINE_LIMIT_MIN)
+				serverrc.nntp_pipeline_limit = PIPELINE_LIMIT_MIN;
+			else { /* upper limit */
+				if (serverrc.nntp_pipeline_limit > PIPELINE_LIMIT_MAX)
+					serverrc.nntp_pipeline_limit = PIPELINE_LIMIT_MAX;
+			}
 			continue;
 		}
 
@@ -2538,10 +2558,15 @@ read_server_config(
 		/* prepare args for getopt() with dummy args[0] */
 		lc = append_to_string(lc, "serverrc.add_cmd_line_opts ");
 		lc = append_to_string(lc, serverrc.add_cmd_line_opts);
-		token = strtok(lc, " ");
+		/*
+		 * we split on \s without any extra checks for quoting here
+		 * that's ok as long as we don't allow any options which take
+		 * a string as argument ...
+		 */
+		token = strtok(lc, " \t");
 		while (token != NULL && cnt < LEN - 1) {
 			args[cnt++] = token;
-			token = strtok(NULL, " ");
+			token = strtok(NULL, " \t");
 		}
 		args[cnt] = NULL;
 		optind = 1;
@@ -2671,6 +2696,17 @@ read_server_config(
 	}
 	fclose(fp);
 	FreeAndNull(upgrade);
+
+	/* init tinrc.serverrc_* */
+	if (serverrc.add_cmd_line_opts)
+		tinrc.serverrc_add_cmd_line_opts = my_strdup(serverrc.add_cmd_line_opts);
+	if (serverrc.disabled_nntp_cmds)
+		tinrc.serverrc_disabled_nntp_cmds = my_strdup(serverrc.disabled_nntp_cmds);
+	tinrc.serverrc_nntp_pipeline_limit = serverrc.nntp_pipeline_limit;
+	tinrc.serverrc_cache_overview_files = serverrc.cache_overview_files;
+#ifdef USE_ZLIB
+	tinrc.serverrc_compress_overview_files = serverrc.compress_overview_files;
+#endif /* USE_ZLIB */
 }
 #undef OPTIONS
 #if defined(NNTP_ABLE) && defined(INET6)
@@ -2728,17 +2764,18 @@ write_server_config(
 	fprintf(fp, _(txt_serverconfig_header), PRODUCT, tin_progname, VERSION, RELEASEDATE, RELEASENAME, PRODUCT, PRODUCT);
 	fprintf(fp, "version=%s\n", SERVERCONFIG_VERSION);
 
-	fprintf(fp, "\n# config options\n"); /* -> lang.c */
+	fprintf(fp, "%s", _(txt_serverrc_config_opts));
 	fprintf(fp, "add_cmd_line_opts=%s\n", BlankIfNull(serverrc.add_cmd_line_opts));
 	fprintf(fp, "disabled_nntp_cmds=%s\n", BlankIfNull(serverrc.disabled_nntp_cmds));
+	fprintf(fp, "nntp_pipeline_limit=%d\n", serverrc.nntp_pipeline_limit);
 
-	fprintf(fp, "\n# tinrc overrides\n"); /* -> lang.c */
+	fprintf(fp, "%s", _(txt_serverrc_tinrc));
 	fprintf(fp, "cache_overview_files=%s\n", print_boolean(serverrc.cache_overview_files));
 #ifdef USE_ZLIB
 	fprintf(fp, "compress_overview_files=%s\n", print_boolean(serverrc.compress_overview_files));
 #endif /* USE_ZLIB */
 
-	fprintf(fp, "\n# internal data, should not be modified\n"); /* -> lang.c */
+	fprintf(fp, "%s", _(txt_serverrc_internal));
 	if (serverrc.motd_hash != 0)
 		fprintf(fp, "motd_hash=%lu\n", (unsigned long int) serverrc.motd_hash);
 	if ((i = find_newnews_index(nntp_server)) >= 0) {

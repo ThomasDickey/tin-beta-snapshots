@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2025-06-29
+ *  Updated   : 2025-07-31
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -103,6 +103,9 @@ char *nntp_server = NULL;
 	static int reconnect(int retry);
 	static int server_init(char *machine, const char *cservice, unsigned short port, char *text, size_t mlen);
 	static void close_server(t_bool send_no_quit);
+	static t_distrib_pat *add_distrib_pat(int weight, char *pat, char *dist, char *desc);
+	static void list_distrib_pats(void);
+	static void list_distributions(void);
 	static long set_tcp_user_ini_timeout(int sockfd);
 	static long set_tcp_user_rxt_timeout(int sockfd);
 	static long int list_motd(FILE *stream);
@@ -1272,6 +1275,10 @@ close_server(
  * extensions.
  *
  * Sets up: t_capabilities nntp_caps
+ *
+ * NOTE: LIST HEADERS RANGE is checked/setup in art.c:read_overview()
+ * (for Path) and LIST HEADERS MSGID is check in select.c:lookup_msgid()
+ * (for Xref and/or Newsgroups).
  */
 int
 check_extensions(
@@ -1325,6 +1332,7 @@ check_extensions(
 				nntp_caps.list_active = FALSE;
 				nntp_caps.list_active_times = FALSE;
 				nntp_caps.list_distrib_pats = FALSE;
+				nntp_caps.distrib_pats = NULL;
 				nntp_caps.list_headers = FALSE;
 				FreeAndNull(nntp_caps.headers_range);
 				FreeAndNull(nntp_caps.headers_id);
@@ -1335,6 +1343,7 @@ check_extensions(
 				nntp_caps.list_distributions = FALSE;
 				nntp_caps.list_moderators = FALSE;
 				nntp_caps.list_counts = FALSE;
+				nntp_caps.listgroup = FALSE;
 				nntp_caps.xpat = FALSE;
 				nntp_caps.hdr = FALSE;
 				nntp_caps.hdr_cmd = NULL;
@@ -1342,7 +1351,9 @@ check_extensions(
 				nntp_caps.over_msgid = FALSE;
 				nntp_caps.over_cmd = NULL;
 				nntp_caps.newgroups = TRUE;	/* not listed in CAPABILITIES */
+#if 0
 				nntp_caps.newnews = FALSE;
+#endif /* 0 */
 				FreeAndNull(nntp_caps.implementation);
 				nntp_caps.starttls = FALSE;
 				nntp_caps.authinfo_user = FALSE;
@@ -1357,7 +1368,6 @@ check_extensions(
 				nntp_caps.streaming = FALSE;
 				nntp_caps.ihave = FALSE;
 #	endif /* 0 */
-				nntp_caps.broken_listgroup = FALSE;
 
 				while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #	ifdef DEBUG
@@ -1422,10 +1432,13 @@ check_extensions(
 							nntp_caps.mode_reader = FALSE;
 							nntp_caps.list_newsgroups = TRUE;
 							nntp_caps.list_active = TRUE;
+							nntp_caps.listgroup = TRUE;
 						} else if (!strcasecmp(ptr, "POST"))
 							nntp_caps.post = TRUE;
+#if 0
 						else if (!strcasecmp(ptr, "NEWNEWS"))
 							nntp_caps.newnews = TRUE;
+#endif /* 0 */
 						else if (!strcasecmp(ptr, "XPAT")) /* extension, RFC 2980 */
 							nntp_caps.xpat = TRUE;
 						else if (!strcasecmp(ptr, "STARTTLS"))
@@ -1561,8 +1574,7 @@ check_extensions(
 	 * NOTE: keep in sync with valid_suppressions in read_server_config()
 	 */
 	if (*serverrc.disabled_nntp_cmds) {
-		ptr = my_strdup(serverrc.disabled_nntp_cmds);
-		s = ptr;
+		s = ptr = my_strdup(serverrc.disabled_nntp_cmds);
 		while ((d = strtok(s, ",")) != NULL) {
 			str_trim(d);
 			/* no check for "CAPABILITIES" here */
@@ -1579,6 +1591,10 @@ check_extensions(
 			}
 			else if (!strcasecmp(d, "LIST COUNTS"))
 				nntp_caps.list_counts = FALSE;
+			else if (!strcasecmp(d, "LIST DISTRIB.PATS"))
+				nntp_caps.list_distrib_pats = FALSE;
+			else if (!strcasecmp(d, "LIST DISTRIBUTIONS"))
+				nntp_caps.list_distributions = FALSE;
 			else if (!strcasecmp(d, "LIST HEADERS"))
 				nntp_caps.list_headers = FALSE;
 			else if (!strcasecmp(d, "LIST MOTD"))
@@ -1591,8 +1607,8 @@ check_extensions(
 				nntp_caps.list_overview_fmt = FALSE;
 			else if (!strcasecmp(d, "LIST SUBSCRIPTIONS"))
 				nntp_caps.list_subscriptions = FALSE;
-			else if (!strcasecmp(d, "LISTGROUP")) /* --enable-broken-listgroup-fix */
-				nntp_caps.broken_listgroup = TRUE;
+			else if (!strcasecmp(d, "LISTGROUP"))
+				nntp_caps.listgroup = FALSE;
 			else if (!strcasecmp(d, "NEWGROUPS")) {
 				nntp_caps.newgroups = FALSE;
 				check_for_new_newsgroups = FALSE;
@@ -1611,9 +1627,8 @@ check_extensions(
 			}
 			else if (!strcasecmp(d, "XPAT"))
 				nntp_caps.xpat = FALSE;
-			/* add more cms. if required */
-			if (s)
-				s = NULL;
+			/* add more cms. if required. e.g. NEWNEWS if we ever use it */
+			s = NULL;
 		}
 		free(ptr);
 	}
@@ -1952,7 +1967,8 @@ nntp_open(
 		if (!*nntp_caps.over_cmd)
 			nntp_caps.over = FALSE;
 
-		if (nntp_caps.hdr) { /* not disabled but we have to check it */
+		/* TODO; delay check till needed */
+		if (nntp_caps.hdr) {
 			for (i = j = 0; i < 2 && j >= 0; i++) {
 				j = new_nntp_command(&xhdr_cmds[i], ERR_CMDSYN, line, sizeof(line));
 				switch (j) {
@@ -1978,17 +1994,7 @@ nntp_open(
 			}
 		}
 		/* no XPAT probing here, we do when it's needed */
-		nntp_caps.xpat = TRUE;
-#	if 0
-		switch (new_nntp_command("XPAT Newsgroups <0> *", ERR_NOART, line, sizeof(line))) {
-			case ERR_NOART:
-				nntp_caps.xpat = TRUE;
-				break;
-
-			default:
-				break;
-		}
-#	endif /* 0 */
+		nntp_caps.xpat = (strstr(serverrc.disabled_nntp_cmds, "XPAT") != NULL) ? FALSE : TRUE;
 	} else {
 		/*
 		 * XZVER (and XZHDR) are likely not mentioned in CAPABILITIES
@@ -2056,17 +2062,13 @@ nntp_open(
 		}
 	}
 
-	if (!nntp_caps.over_cmd) {
-		if (!is_reconnect && !batch_mode) {
-			if (!strstr(serverrc.disabled_nntp_cmds, "OVER")) { /* intentionally disabled? */
-				wait_message(2, _(txt_no_xover_support));
+	if (!is_reconnect && !batch_mode && !nntp_caps.over_cmd && !strstr(serverrc.disabled_nntp_cmds, "OVER")) {
+		wait_message(2, _(txt_no_xover_support));
 
-				if (serverrc.cache_overview_files)
-					wait_message(2, _(txt_caching_on));
-				else
-					wait_message(2, _(txt_caching_off));
-			}
-		}
+		if (serverrc.cache_overview_files)
+			wait_message(2, _(txt_caching_on));
+		else
+			wait_message(2, _(txt_caching_off));
 	}
 #	if 0
 	else {
@@ -2082,6 +2084,10 @@ nntp_open(
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
 
 	/* no no_write logic here as that's always set on initial connect */
+	if (!is_reconnect) {
+		list_distrib_pats();
+		list_distributions();
+	}
 	if (nntp_caps.list_motd && !is_reconnect && !batch_mode && show_description && check_for_new_newsgroups) {
 		FILE *fp;
 
@@ -2413,17 +2419,122 @@ DEBUG_IO((stderr, "%snew_nntp_command(%s)\n", logtime(), command));
 }
 
 
+static void
+list_distributions(
+	void)
+{
+	char *ptr, *dist, *desc;
+	t_distrib_pat *p, *q;
+
+	if (!nntp_caps.list_distrib_pats || !nntp_caps.list_distributions || !nntp_caps.distrib_pats)
+		return;
+
+	switch (new_nntp_command("LIST DISTRIBUTIONS", OK_GROUPS, NULL, 0)) {
+		case OK_GROUPS:
+			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#	ifdef DEBUG
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+#	endif /* DEBUG */
+				if ((desc = strpbrk(ptr, " \t")) == NULL)
+					continue;
+				*desc++ = '\0';
+				dist = ptr;
+				for (p = nntp_caps.distrib_pats; p != NULL; p = q) {
+					if (!strcasecmp(p->distribution, dist)) {
+						FreeIfNeeded(p->description);
+						p->description = str_trim(utf8_valid(my_strdup(desc))); /* TODO: csguess_convert_str(..., "UTF-8")? */
+						break;
+					}
+					q = p->next;
+				}
+				if (p == NULL)
+					add_distrib_pat(0, NULL, dist, desc);
+			}
+			break;
+
+		default:
+			nntp_caps.list_distributions = FALSE;
+			break;
+	}
+	return;
+}
+
+
+static void
+list_distrib_pats(
+	void)
+{
+	char *ptr, *d, *pat, *dist;
+	int weight;
+
+	if (!nntp_caps.list_distrib_pats)
+		return;
+
+	switch (new_nntp_command("LIST DISTRIB.PATS", OK_GROUPS, NULL, 0)) {
+		case OK_GROUPS:
+			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#	ifdef DEBUG
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+#	endif /* DEBUG */
+				if ((d = strpbrk(ptr, ":")) == NULL)
+					continue;
+				weight = strtol(ptr, NULL, 10);
+				pat = d + 1;
+				if ((d = strpbrk(pat, ":")) == NULL)
+					continue;
+				*d = '\0';
+				dist = d + 1;
+				if (*dist && *pat)
+					nntp_caps.distrib_pats = add_distrib_pat(weight, pat, dist, NULL);
+			}
+			break;
+
+		default:
+			nntp_caps.list_distrib_pats = FALSE;
+			break;
+	}
+}
+
+
+static t_distrib_pat *
+add_distrib_pat(
+	int weight,
+	char *pat,
+	char *dist,
+	char *desc)
+{
+	t_distrib_pat *p, *temp = my_malloc(sizeof *temp);
+
+	assert(((void) "add_distrib_pat() failed. dist == NULL", dist != NULL));
+
+	temp->weight = weight;
+	temp->pattern = pat ? my_strdup(pat) : NULL;
+	temp->distribution = my_strdup(dist);
+	temp->description = desc ? my_strdup(desc) : NULL;
+	temp->next = NULL;
+
+	if (nntp_caps.distrib_pats == NULL)
+		nntp_caps.distrib_pats = temp;
+	else {
+		p = nntp_caps.distrib_pats;
+		while (p->next != NULL)
+			p = p->next;
+		p->next = temp;
+	}
+
+	return nntp_caps.distrib_pats;
+}
+
+
 static long int
 list_motd(
 	FILE *stream)
 {
 	char *ptr, *p, *m;
 	char buf[NNTP_STRLEN];
-	size_t len;
 	long m_hash = 0L;
-#	if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
-	char *guessed_charset;
-#	endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
 
 	if (!stream || !nntp_caps.list_motd)
 		return m_hash;
@@ -2439,7 +2550,6 @@ list_motd(
 					debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #	endif /* DEBUG */
 				p = my_strdup(ptr);
-				len = strlen(p);
 
 				/* original MOTD for hashing as local charset may change */
 				m = append_to_string(m, p);
@@ -2451,14 +2561,7 @@ list_motd(
 				 * so checking nntp_caps.type doesn't help and we guess if
 				 * we can. Some day we may check for nntp_caps.version > 2 ...
 				 */
-#	if defined(CHARSET_CONVERSION) && defined(USE_ICU_UCSDET)
-				if ((guessed_charset = guess_charset(p, 10)) != NULL) {
-					process_charsets(&p, &len, guessed_charset, tinrc.mm_local_charset, FALSE);
-					free(guessed_charset);
-				} else
-#	endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
-					process_charsets(&p, &len, "UTF-8", tinrc.mm_local_charset, FALSE);
-
+				csguess_convert_str(&p, "UTF-8");
 				fprintf(stream, _(txt_motd), p);
 				free(p);
 			}
@@ -3050,7 +3153,7 @@ nntp_conninfo(
 	}
 
 	if (*serverrc.disabled_nntp_cmds)
-		fprintf(stream, "DISABLED CMDS.: %s\n", serverrc.disabled_nntp_cmds);
+		fprintf(stream, _("DISABLED CMDS.: %s\n"), serverrc.disabled_nntp_cmds); /* -> lang.c */
 
 	{
 		char *motd;
@@ -3070,6 +3173,8 @@ nntp_conninfo(
 	if (nntp_buf.tls_ctx)
 		retval = tintls_conninfo(nntp_buf.tls_ctx, stream);
 #	endif /* NNTPS_ABLE */
+
+	/* TODO: display distributions? */
 
 	return retval;
 }
@@ -3189,4 +3294,36 @@ set_tcp_user_rxt_timeout(
 	return 0L;
 }
 
+
+t_bool
+nntp_list_active_grp(
+	const char *group,
+	char *moderated)
+{
+	/* try to fetch moderationm flag via "LIST ACTIVE grp" */
+	char *line;
+	char cmd[NNTP_STRLEN];
+	t_artnum ac_min = T_ARTNUM_CONST(1), ac_max = T_ARTNUM_CONST(0);
+	t_bool found = FALSE;
+
+	snprintf(cmd, sizeof(cmd), "LIST ACTIVE %s", group);
+	switch (new_nntp_command(cmd, OK_GROUPS, NULL, 0)) {
+		case OK_GROUPS:
+			while ((line = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#	ifdef DEBUG
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "<<<%s%s", logtime(), line);
+#	endif /* DEBUG */
+
+				parse_active_line(line, &ac_max, &ac_min, moderated);
+				found = TRUE;
+			}
+			break;
+
+		default:
+			break;
+		}
+
+		return found;
+}
 #endif /* NNTP_ABLE */

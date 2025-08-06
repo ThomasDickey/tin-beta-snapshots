@@ -1,22 +1,30 @@
-# Spanish translations template for tin-man 2.4.2
-# Copyright (C) 2018 Free Software Foundation, Inc.
+# Mesajele în limba română pentru pachetul tin-man.
+# Translation of tin-man in Romanian.
+# Copyright © 2025 Free Software Foundation, Inc.
 # This file is distributed under the same license as the tin package.
-# Francisco Javier Serrador <fserrador@gmail.com>, 2018.
+#
+# Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>, 2025.
+#
+# Cronologia traducerii fișierului „tin-man”:
+# Traducerea inițială, făcută de R-GC, pentru versiunea tin-man 2.6.4 (35% - tradus), iul-2025.
+# Completare traducere, făcută de X, pentru versiunea Y, (?% - tradus), Z(luna-anul).
+# Actualizare a traducerii pentru versiunea Y, făcută de X, Z(luna-anul).
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: tin-man 2.4.2\n"
+"Project-Id-Version: tin-man 2.6.4\n"
 "POT-Creation-Date: 2025-07-30 13:16+0200\n"
-"PO-Revision-Date: 2024-08-01 11:39+0200\n"
-"Last-Translator: Francisco Javier Serrador <fserrador@gmail.com>\n"
-"Language-Team: Spanish <es@tp.org.es>\n"
-"Language: es\n"
+"PO-Revision-Date: 2025-07-22 16:19+0200\n"
+"Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
+"Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
+"Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
+"20)) ? 1 : 2);\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 2.0.4\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.5\n"
 
 #. type: TH
 #: doc/tin.1:11 doc/tin.5:9
@@ -28,7 +36,7 @@ msgstr "TIN"
 #: doc/tin.1:11 doc/tin.5:9
 #, no-wrap
 msgid "2025-02-17"
-msgstr "2025-02-17"
+msgstr ""
 
 #. type: TH
 #: doc/tin.1:11 doc/tin.5:9
@@ -40,18 +48,18 @@ msgstr "2.6.5"
 #: doc/tin.1:11 doc/tin.5:9
 #, no-wrap
 msgid "Usenet newsreader"
-msgstr ""
+msgstr "Cititor de știri Usenet"
 
 #. type: SH
 #: doc/tin.1:14 doc/tin.5:11
 #, no-wrap
 msgid "NAME"
-msgstr "NOMBRE"
+msgstr "NUME"
 
 #. type: Plain text
 #: doc/tin.1:18
 msgid "tin, rtin - Usenet newsreader"
-msgstr ""
+msgstr "tin, rtin - cititor de știri Usenet"
 
 #. type: SH
 #: doc/tin.1:18
@@ -77,7 +85,7 @@ msgstr ""
 #: doc/tin.1:53 doc/tin.5:14
 #, no-wrap
 msgid "DESCRIPTION"
-msgstr "DESCRIPCIÓN"
+msgstr "DESCRIERE"
 
 #. type: Plain text
 #: doc/tin.1:62
@@ -121,7 +129,7 @@ msgstr ""
 #: doc/tin.1:81
 #, no-wrap
 msgid "EXIT STATUS"
-msgstr "ESTADO SALIENTE"
+msgstr "STARE DE IEȘIRE"
 
 #. type: TP
 #: doc/tin.1:83 doc/tin.1:1177 doc/tin.1:3892
@@ -133,6 +141,8 @@ msgstr "B<0>"
 #: doc/tin.1:86
 msgid "Successful program execution. No unread news available in batch mode."
 msgstr ""
+"Execuția cu succes a programului. Nu există știri necitite disponibile în "
+"modul pe loturi."
 
 #. type: TP
 #: doc/tin.1:86 doc/tin.1:3895
@@ -143,7 +153,7 @@ msgstr "B<1>"
 #. type: Plain text
 #: doc/tin.1:89
 msgid "Usage, syntax, configuration file or network error."
-msgstr ""
+msgstr "Eroare de utilizare, sintaxă, fișier de configurare sau rețea."
 
 #. type: TP
 #: doc/tin.1:89 doc/tin.1:3898
@@ -154,7 +164,7 @@ msgstr "B<2>"
 #. type: Plain text
 #: doc/tin.1:92
 msgid "Unread news available (batch mode (''B<-Z>'') only)."
-msgstr ""
+msgstr "Știri necitite disponibile (numai în modul pe loturi („B<-Z>”))."
 
 #. type: TP
 #: doc/tin.1:92 doc/tin.1:3901
@@ -165,13 +175,13 @@ msgstr "B<3>"
 #. type: Plain text
 #: doc/tin.1:97
 msgid "NNTP error."
-msgstr "Error NNTP"
+msgstr "Eroare NNTP."
 
 #. type: SH
 #: doc/tin.1:97
 #, no-wrap
 msgid "OPTIONS"
-msgstr "OPCIONES"
+msgstr "OPȚIUNI"
 
 #. type: TP
 #: doc/tin.1:98
@@ -185,6 +195,8 @@ msgid ""
 "Force connecting via IPv4 to the remote NNTP server. Only available when "
 "built with IPv6 support."
 msgstr ""
+"Forțează conectarea prin IPv4 la serverul NNTP de la distanță. Disponibilă "
+"numai atunci când este construit cu suport IPv6."
 
 #. type: TP
 #: doc/tin.1:102
@@ -198,6 +210,8 @@ msgid ""
 "Force connecting via IPv6 to the remote NNTP server. Only available when "
 "built with IPv6 support."
 msgstr ""
+"Forțează conectarea prin IPv6 la serverul NNTP de la distanță. Disponibilă "
+"numai atunci când este construit cu suport IPv6."
 
 #. type: TP
 #: doc/tin.1:106
@@ -270,7 +284,7 @@ msgstr ""
 #: doc/tin.1:128
 #, no-wrap
 msgid "B<-D>I< debug-level>"
-msgstr ""
+msgstr "B<-D>I< nivel-depanare>"
 
 #. type: Plain text
 #: doc/tin.1:136
@@ -469,9 +483,9 @@ msgstr ""
 
 #. type: TP
 #: doc/tin.1:153
-#, fuzzy, no-wrap
+#, no-wrap
 msgid "B<-f>I< file>"
-msgstr "B<-f> I<archivo>"
+msgstr "B<-f>I< fișier>"
 
 #. type: Plain text
 #: doc/tin.1:158
@@ -483,9 +497,9 @@ msgstr ""
 
 #. type: TP
 #: doc/tin.1:158
-#, fuzzy, no-wrap
+#, no-wrap
 msgid "B<-F>I< file>"
-msgstr "B<-F> I<archivo>"
+msgstr "B<-F>I< fișier>"
 
 #. type: Plain text
 #: doc/tin.1:161
@@ -496,9 +510,9 @@ msgstr ""
 
 #. type: TP
 #: doc/tin.1:161
-#, fuzzy, no-wrap
+#, no-wrap
 msgid "B<-g>I< server>[B<:>I<port>]"
-msgstr "B<-g> I<servidor>[B<:>I<puerto>]"
+msgstr "B<-g>I< server>[B<:>I<port>]"
 
 #. type: Plain text
 #: doc/tin.1:167
@@ -513,7 +527,7 @@ msgstr ""
 #: doc/tin.1:167
 #, no-wrap
 msgid "B<-G>I< article-limit>"
-msgstr ""
+msgstr "B<-G>I< limită-articole>"
 
 #. type: Plain text
 #: doc/tin.1:175
@@ -552,7 +566,7 @@ msgstr ""
 #: doc/tin.1:182
 #, no-wrap
 msgid "B<-I>I< dir>"
-msgstr "B<-I> I<dir>"
+msgstr "B<-I>I< director>"
 
 #. type: Plain text
 #: doc/tin.1:188
@@ -613,7 +627,7 @@ msgstr ""
 #: doc/tin.1:209
 #, no-wrap
 msgid "B<-m>I< dir>"
-msgstr "B<-m> I<dir>"
+msgstr "B<-m>I< director>"
 
 #. type: Plain text
 #: doc/tin.1:212
@@ -622,9 +636,9 @@ msgstr ""
 
 #. type: TP
 #: doc/tin.1:212
-#, fuzzy, no-wrap
+#, no-wrap
 msgid "B<-M>I< user>"
-msgstr "B<-M> I<usuario>"
+msgstr "B<-M>I< utilizator>"
 
 #. type: Plain text
 #: doc/tin.1:216
@@ -679,7 +693,7 @@ msgstr ""
 #: doc/tin.1:231
 #, no-wrap
 msgid "B<-p>I< port>"
-msgstr ""
+msgstr "B<-p>I< port>"
 
 #. type: Plain text
 #: doc/tin.1:237
@@ -744,7 +758,7 @@ msgstr ""
 #: doc/tin.1:253
 #, no-wrap
 msgid "B<-s>I< dir>"
-msgstr "B<-s> I<dir>"
+msgstr "B<-s>I< director>"
 
 #. type: Plain text
 #: doc/tin.1:257
@@ -768,9 +782,9 @@ msgstr ""
 
 #. type: TP
 #: doc/tin.1:261
-#, fuzzy, no-wrap
+#, no-wrap
 msgid "B<-t>I< timeout>"
-msgstr "B<-t> I<tiempo de expiracion>"
+msgstr "B<-t>I< timp-așteptare>"
 
 #. type: Plain text
 #: doc/tin.1:265
@@ -970,13 +984,13 @@ msgstr ""
 #: doc/tin.1:351
 #, no-wrap
 msgid "USAGE"
-msgstr "UTILIZACIÓN"
+msgstr "UTILIZARE"
 
 #. type: SS
 #: doc/tin.1:354
 #, no-wrap
 msgid "NEWS ADMINISTRATION"
-msgstr "ADMINISTRACIÓN DE NOTICIARIOS"
+msgstr "ADMINISTRAREA ARTICOLELOR"
 
 #. type: Plain text
 #: doc/tin.1:358
@@ -1002,7 +1016,7 @@ msgstr ""
 #: doc/tin.1:368
 #, no-wrap
 msgid "SCREEN FORMAT"
-msgstr "PERSONALIZANDO FORMATO DE PANTALLA"
+msgstr "FORMATUL ECRANULUI"
 
 #. type: Plain text
 #: doc/tin.1:371
@@ -1032,11 +1046,6 @@ msgid ""
 "       4  1475  news.software.nntp      The Network News Transfer Protoc\n"
 "  X    5   124  news.software.readers   Discussion of software used to r\\fR\n"
 msgstr ""
-"\\f(CR\\(-E<gt>M    1     2  comp.security.announce  Announcements from the CERT abou\n"
-"  M    2     1  news.admin.announce     Announcements for news adminstra\n"
-"       3    22  news.software.misc      News-related software other than\n"
-"       4  1475  news.software.nntp      The Network News Transfer Protoc\n"
-"  X    5   124  news.software.readers   Discussion of software used to r\\fR\n"
 
 #. type: Plain text
 #: doc/tin.1:389
@@ -1180,7 +1189,7 @@ msgstr ""
 #: doc/tin.1:458
 #, no-wrap
 msgid "\\f(CR                de.admin.net-abuse.announce (11B 13+ 1* 1o 0K) M\\fR\n"
-msgstr "\\f(CR                de.admin.net-abuse.announce (11B 13+ 1* 1o 0K) M\\fR\n"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:463
@@ -1191,10 +1200,6 @@ msgid ""
 "     3   o       93 EMP gecancelt. SouthBeach/Palms  Henning Weede E<lt>hwee\n"
 "     4   *      368 E<lt>1997-11-12E<gt> Fremdcancel-FAQ     Thomas Roessler E<lt>ro\\fR\n"
 msgstr ""
-"\\f(CR\\(-E<gt>   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg E<lt>l\n"
-"     2   +       69 EMP/ECP gecancelt. xynx. BI= 10  Henning Weede E<lt>hwee\n"
-"     3   o       93 EMP gecancelt. SouthBeach/Palms  Henning Weede E<lt>hwee\n"
-"     4   *      368 E<lt>1997-11-12E<gt> Fremdcancel-FAQ     Thomas Roessler E<lt>ro\\fR\n"
 
 #.  FIXME - add description of fields
 #. type: Plain text
@@ -1213,10 +1218,6 @@ msgid ""
 "     3      [ 230]  | `\\(-E<gt>Tin thread-level (was: What is Bob Johnson E<lt>bob\n"
 "     4      [  22]  `\\(-E<gt>tin threading menu               Brian Richardson\\fR\n"
 msgstr ""
-"\\f(CR\\(-E<gt>   1      [   7]  What is this funny tree in the thr  Robert F. Simmig\n"
-"     2      [  12]  +\\(-E<gt>                                 Sephan Wagner E<lt>s\n"
-"     3      [ 230]  | `\\(-E<gt>Tin thread-level (was: What is Bob Johnson E<lt>bob\n"
-"     4      [  22]  `\\(-E<gt>tin threading menu               Brian Richardson\\fR\n"
 
 #.  FIXME - add description of fields
 #. type: Plain text
@@ -1232,15 +1233,12 @@ msgid ""
 "Lines 50   Re: EINSPRUCH zu RESULT:de.comm.mobil.ALL   Article  47 of 59\n"
 "Urs Janssen E<lt>urs@akk.orgE<gt>        at Arbeitskreis Kultur und Kommunikati\\fR\n"
 msgstr ""
-"\\f(CRSun, 28 Dec 1997 21:21:01   de.admin.news.groups      Thread   20 of 86\n"
-"Lines 50   Re: EINSPRUCH zu RESULT:de.comm.mobil.ALL   Article  47 of 59\n"
-"Urs Janssen E<lt>urs@akk.orgE<gt>        at Arbeitskreis Kultur und Kommunikati\\fR\n"
 
 #. type: Plain text
 #: doc/tin.1:487
 #, no-wrap
 msgid "\\f(CRarticle-body\\fR\n"
-msgstr "\\f(CRarticle-body\\fR\n"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:493
@@ -1253,7 +1251,7 @@ msgstr ""
 #: doc/tin.1:493
 #, no-wrap
 msgid "COMMON MOVING KEYS"
-msgstr "TECLAS DE MOVIMIENTO COMUNES"
+msgstr "TASTE DE DEPLASARE COMUNE"
 
 #. type: Plain text
 #: doc/tin.1:496
@@ -1285,7 +1283,7 @@ msgstr ""
 #: doc/tin.1:510
 #, no-wrap
 msgid "COMMON EDITING COMMANDS"
-msgstr "MANDATOS COMUNES EDITADOS"
+msgstr "COMENZI DE EDITARE COMUNE"
 
 #. type: Plain text
 #: doc/tin.1:517
@@ -1335,7 +1333,7 @@ msgstr ""
 #: doc/tin.1:527
 #, no-wrap
 msgid "B<^H, E<lt>DELE<gt>>"
-msgstr "B<^H, E<lt>BORR<gt>>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:530
@@ -1392,7 +1390,7 @@ msgstr ""
 #: doc/tin.1:543
 #, no-wrap
 msgid "B<E<lt>ESCE<gt>>"
-msgstr ""
+msgstr "B<E<lt>ESCE<gt>>"
 
 #. type: Plain text
 #: doc/tin.1:548
@@ -1403,7 +1401,7 @@ msgstr ""
 #: doc/tin.1:548
 #, no-wrap
 msgid "GLOBAL COMMANDS"
-msgstr "MANDATOS GLOBALES"
+msgstr "COMENZI GLOBALE"
 
 #. type: Plain text
 #: doc/tin.1:551
@@ -1548,7 +1546,7 @@ msgstr ""
 #: doc/tin.1:602
 #, no-wrap
 msgid "NEWSGROUP SELECTION COMMANDS"
-msgstr "MANDATOS SELECCIONADOS DE GRUPOS NOTICIARIOS"
+msgstr "COMENZI DE SELECȚIE A GRUPURILOR DE ȘTIRI"
 
 #. type: TP
 #: doc/tin.1:603 doc/tin.1:744 doc/tin.1:1001 doc/tin.1:1180 doc/tin.1:3905
@@ -1650,7 +1648,7 @@ msgstr ""
 #: doc/tin.1:629
 #, no-wrap
 msgid "B<SelectEnterNextUnreadGrp 'E<lt>TABE<gt>' 'n'>"
-msgstr "B<SelectEnterNextUnreadGrp 'E<lt>TABE<gt>' 'n'>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:633
@@ -1987,7 +1985,7 @@ msgstr ""
 #: doc/tin.1:740
 #, no-wrap
 msgid "GROUP INDEX COMMANDS"
-msgstr "ÍNDICE DE MANDATOS AGRUPADOS"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:744
@@ -2235,7 +2233,7 @@ msgstr ""
 #: doc/tin.1:839
 #, no-wrap
 msgid "B<GroupNextUnreadArtOrGrp 'E<lt>TABE<gt>'>"
-msgstr "B<GroupNextUnreadArtOrGrp 'E<lt>TABE<gt>'>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:842
@@ -2614,7 +2612,7 @@ msgstr ""
 #: doc/tin.1:999
 #, no-wrap
 msgid "THREAD LISTING COMMANDS"
-msgstr "HILOS DE MANDATOS LISTADOS"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:1004
@@ -2664,7 +2662,7 @@ msgstr ""
 #: doc/tin.1:1055
 #, no-wrap
 msgid "B<ThreadReadArt '^J' 'E<lt>CRE<gt>'>"
-msgstr "B<ThreadReadArt '^J' 'E<lt>CRE<gt>'>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:1058
@@ -2675,7 +2673,7 @@ msgstr ""
 #: doc/tin.1:1058
 #, no-wrap
 msgid "B<ThreadReadNextArtOrThread 'E<lt>TABE<gt>'>"
-msgstr "B<ThreadReadNextArtOrThread 'E<lt>TABE<gt>'>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:1061
@@ -2826,7 +2824,7 @@ msgstr ""
 #: doc/tin.1:1175
 #, no-wrap
 msgid "ARTICLE VIEWER COMMANDS"
-msgstr ""
+msgstr "COMENZI PENTRU VIZORUL DE ARTICOLE"
 
 #. type: Plain text
 #: doc/tin.1:1180
@@ -3071,7 +3069,7 @@ msgstr ""
 #: doc/tin.1:1290
 #, no-wrap
 msgid "B<PageNextThd '^J' 'E<lt>CRE<gt>'>"
-msgstr "B<PageNextThd '^J' 'E<lt>CRE<gt>'>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:1293
@@ -3082,7 +3080,7 @@ msgstr ""
 #: doc/tin.1:1293
 #, no-wrap
 msgid "B<PageNextUnread 'E<lt>TABE<gt>'>"
-msgstr "B<PageNextUnread 'E<lt>TABE<gt>'>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:1298
@@ -3360,7 +3358,7 @@ msgstr ""
 #: doc/tin.1:1447
 #, no-wrap
 msgid "URL LISTING"
-msgstr "LISTADO URL"
+msgstr "LISTAREA ADRESELOR URL"
 
 #. type: Plain text
 #: doc/tin.1:1450
@@ -3373,7 +3371,7 @@ msgstr ""
 #: doc/tin.1:1451
 #, no-wrap
 msgid "B<UrlSelect '^J' 'E<lt>CRE<gt>'>"
-msgstr "B<UrlSelect '^J' 'E<lt>CRE<gt>'>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:1455
@@ -3412,7 +3410,7 @@ msgstr ""
 #: doc/tin.1:1480
 #, no-wrap
 msgid "ATTACHMENT LISTING"
-msgstr ""
+msgstr "LISTAREA ATAȘAMENTELOR"
 
 #. type: Plain text
 #: doc/tin.1:1483
@@ -3448,12 +3446,12 @@ msgstr ""
 #: doc/tin.1:1490
 #, no-wrap
 msgid "B<AttachSelect '^J' 'E<lt>CRE<gt>'>"
-msgstr "B<AttachSelect '^J' 'E<lt>CRE<gt>'>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:1493
 msgid "View attachment."
-msgstr "Vea adjunto."
+msgstr ""
 
 #. type: TP
 #: doc/tin.1:1493
@@ -3535,7 +3533,7 @@ msgstr ""
 #: doc/tin.1:1535
 #, no-wrap
 msgid "POSTING HISTORY LISTING"
-msgstr ""
+msgstr "LISTAREA ISTORICULUI PUBLICĂRILOR"
 
 #. type: Plain text
 #: doc/tin.1:1543
@@ -3553,7 +3551,7 @@ msgstr ""
 #: doc/tin.1:1544
 #, no-wrap
 msgid "B<PostedArticlesSelect '^J' 'E<lt>CRE<gt>'>"
-msgstr "B<PostedArticlesSelect '^J' 'E<lt>CRE<gt>'>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:1555
@@ -3578,7 +3576,7 @@ msgstr ""
 #: doc/tin.1:1580
 #, no-wrap
 msgid "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
-msgstr ""
+msgstr "MENIU DE OPȚIUNI GLOBALE ȘI VARIABILE CONFIGURABILE TINRC"
 
 #.  FIXME - add missing descriptions
 #.        - \fI${TIN_LIBDIR:\-NEWSLIBDIR}/tinrc\fR is used
@@ -3734,7 +3732,7 @@ msgstr ""
 #: doc/tin.1:1651
 #, no-wrap
 msgid "B<Character to show returning arts (art_marked_return)>"
-msgstr "B<Carácter para mostrar artes devueltos (art_marked_return)>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:1655 doc/tin.5:1440
@@ -3969,15 +3967,14 @@ msgstr ""
 
 #. type: TP
 #: doc/tin.1:1732
-#, fuzzy, no-wrap
+#, no-wrap
 msgid "B<Standard background color (col_back)>"
-msgstr "B<Color de fondo estándar (col_back)>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:1735 doc/tin.5:1520
-#, fuzzy
 msgid "Standard background color"
-msgstr "Color de fondo estándar"
+msgstr ""
 
 #. type: TP
 #: doc/tin.1:1735
@@ -4132,15 +4129,14 @@ msgstr ""
 
 #. type: TP
 #: doc/tin.1:1778
-#, fuzzy, no-wrap
+#, no-wrap
 msgid "B<Standard foreground color (col_normal)>"
-msgstr "B<Color de primer plano estándar (col_normal)>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:1781 doc/tin.5:1566
-#, fuzzy
 msgid "Standard foreground color"
-msgstr "Color de primer plano estándar"
+msgstr ""
 
 #. type: TP
 #: doc/tin.1:1781
@@ -4291,7 +4287,7 @@ msgstr ""
 #: doc/tin.1:1822 doc/tin.1:1828 doc/tin.1:1832
 #, no-wrap
 msgid "\\(bu"
-msgstr ""
+msgstr "\\(bu"
 
 #.  TODO: check if all affected commands are marked [after confirmation]
 #. type: Plain text
@@ -5097,9 +5093,6 @@ msgid ""
 "mutt -H %F\n"
 "claws-mail --compose \"mailto:%T?subject=%S&insert=%F\"\n"
 msgstr ""
-"sendmail -oem -t E<lt> %F\n"
-"mutt -H %F\n"
-"claws-mail --compose \"mailto:%T?subject=%S&insert=%F\"\n"
 
 #. type: Plain text
 #: doc/tin.1:2165 doc/tin.5:1959
@@ -5175,7 +5168,7 @@ msgstr ""
 #: doc/tin.1:2199
 #, no-wrap
 msgid "B<MM_CHARSET (mm_charset)>"
-msgstr "B<MM_CHARSET (mm_charset)>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:2214 doc/tin.5:2008
@@ -5196,7 +5189,7 @@ msgstr ""
 #: doc/tin.1:2214
 #, no-wrap
 msgid "B<MM_NETWORK_CHARSET (mm_network_charset)>"
-msgstr "B<MM_NETWORK_CHARSET (mm_network_charset)>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:2227 doc/tin.5:2021
@@ -5215,8 +5208,6 @@ msgid ""
 "US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU} EUC-{CN,JP,"
 "KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2}, Big5, UTF-8"
 msgstr ""
-"US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU} EUC-{CN,JP,"
-"KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2}, Big5, UTF-8"
 
 #. type: Plain text
 #: doc/tin.1:2236 doc/tin.5:2030
@@ -5287,7 +5278,7 @@ msgstr ""
 #: doc/tin.1:2256
 #, no-wrap
 msgid "B<(newnews)>"
-msgstr "B<(newnews)>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:2260
@@ -6747,17 +6738,15 @@ msgid ""
 "displayed, even when they are highlighting marks?"
 msgstr ""
 
-# fuzzy
 #. type: Plain text
 #: doc/tin.1:2859 doc/tin.5:2717
 msgid "B<no>"
 msgstr "B<no>"
 
-# fuzzy
 #. type: Plain text
 #: doc/tin.1:2861 doc/tin.5:2719
 msgid "yes, B<display mark>"
-msgstr "si B<display mark>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:2863 doc/tin.5:2721
@@ -6864,7 +6853,7 @@ msgstr ""
 #: doc/tin.1:2919
 #, no-wrap
 msgid "SCOPES MENU"
-msgstr "ÁMBITO"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:2924
@@ -6959,7 +6948,7 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.1:2974
 msgid "E<lt>http://bzr.tin.org/doc/filteringE<gt>."
-msgstr "E<lt>http://bzr.tin.org/doc/filteringE<gt>."
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:2983
@@ -7004,7 +6993,7 @@ msgstr ""
 #: doc/tin.1:3003
 #, no-wrap
 msgid "POSTING ARTICLES"
-msgstr "RETENIENDO ARTÍCULOS"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3006
@@ -7066,7 +7055,7 @@ msgstr ""
 #: doc/tin.1:3043
 #, no-wrap
 msgid "CUSTOMIZING THE ARTICLE QUOTE STRING"
-msgstr "ADAPTADO LOS ARTÍCULOS ENTRECOMILLADOS"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3052
@@ -7104,7 +7093,7 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.1:3066
 msgid "e.g.,"
-msgstr "p.e.,"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3071
@@ -7113,8 +7102,6 @@ msgid ""
 "\\f(CRmail_quote_format=On %D in %G you wrote:\n"
 "news_quote_format=In %M, %F wrote:\\fR\n"
 msgstr ""
-"\\f(CRmail_quote_format=On %D in %G you wrote:\n"
-"news_quote_format=In %M, %F wrote:\\fR\n"
 
 #. type: Plain text
 #: doc/tin.1:3075
@@ -7314,7 +7301,7 @@ msgstr ""
 #: doc/tin.1:3178
 #, no-wrap
 msgid "RANGES"
-msgstr "LÍMITES"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3190
@@ -7335,7 +7322,7 @@ msgstr ""
 #: doc/tin.1:3190
 #, no-wrap
 msgid "NEWSGROUP LISTS & WILDCARDS"
-msgstr "LISTADOS DE GRUPOS NOTICIARIOS Y COMODINES"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3202
@@ -7353,7 +7340,7 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.1:3204
 msgid "I<alt.config,news.*,!news.test>"
-msgstr "I<alt.config,news.*,!news.test>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3206
@@ -7412,7 +7399,7 @@ msgstr ""
 #: doc/tin.1:3231
 #, no-wrap
 msgid "SIGNATURES"
-msgstr "FIRMAS"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3240
@@ -7463,7 +7450,7 @@ msgstr ""
 #: doc/tin.1:3265
 #, no-wrap
 msgid "CUSTOMIZING THE SCREEN FORMAT"
-msgstr "PERSONALIZANDO FORMATO DE PANTALLA"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3271
@@ -7825,7 +7812,7 @@ msgstr ""
 #: doc/tin.1:3517
 #, no-wrap
 msgid "TIPS AND TRICKS"
-msgstr "CONSEJOS Y TRUCOS"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3521
@@ -7894,7 +7881,7 @@ msgstr ""
 #: doc/tin.1:3550
 #, no-wrap
 msgid "XTERM BUTTONS"
-msgstr "BOTONES TERMINALES XTERM"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3556
@@ -8104,7 +8091,7 @@ msgstr ""
 #: doc/tin.1:3653
 #, no-wrap
 msgid "\\f(CR30 6 * * * /usr/local/bin/tin -u\\fR\n"
-msgstr "\\f(CR30 6 * * * /usr/local/bin/tin -u\\fR\n"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3659
@@ -8120,14 +8107,12 @@ msgid ""
 "\\f(CRfind ${TIN_INDEX_NEWSDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.news* \\e\n"
 "-type f -name \"[0-9]*.[0-9]\" -atime +28 | xargs rm -f\\fR\n"
 msgstr ""
-"\\f(CRfind ${TIN_INDEX_NEWSDIR:-\"${TIN_HOMEDIR:-\"$HOME\"}/.tin\"}/.news* \\e\n"
-"-type f -name \"[0-9]*.[0-9]\" -atime +28 | xargs rm -f\\fR\n"
 
 #. type: SH
 #: doc/tin.1:3670 doc/tin.5:21
 #, no-wrap
 msgid "FILES"
-msgstr "FICHEROS"
+msgstr "FIȘIERE"
 
 #.  TODO: mention dead.article, dead.articles
 #.                .article[.$$], .cancel[.$$], .letter[.$$]?
@@ -8148,7 +8133,7 @@ msgstr "FICHEROS"
 #. type: Plain text
 #: doc/tin.1:3689
 msgid "For a detailed description see B<\\%tin>(5)."
-msgstr ""
+msgstr "Pentru o descriere detaliată, a se vedea B<\\%tin>(5)."
 
 #.  TODO: mention
 #.  ${TIN_HOMEDIR:\-"$HOME"}/dead.article
@@ -8431,7 +8416,7 @@ msgstr "I<${TIN_LIBDIR:-NEWSLIBDIR}/subscriptions>"
 #: doc/tin.1:3801
 #, no-wrap
 msgid "ENVIRONMENT"
-msgstr "ENTORNO"
+msgstr "MEDIU"
 
 #. type: TP
 #: doc/tin.1:3805
@@ -8804,13 +8789,10 @@ msgstr "B<MAILPATH>"
 
 #. type: Plain text
 #: doc/tin.1:3951
-#, fuzzy
 msgid ""
 "A colon-separated list of filenames which are checked for new mail. This "
 "overrides the $B<MAIL> variable."
 msgstr ""
-"Una lista de nombres de archivos separados por dos puntos que se comprueban "
-"en busca de correo nuevo. Esto anula la variable $B<MAIL>."
 
 #. type: TP
 #: doc/tin.1:3951
@@ -8860,7 +8842,7 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.1:3977
 msgid "I<AUTOSUBSCRIBE=comp.os.unix.*,talk.*,!talk.politics.*>"
-msgstr "I<AUTOSUBSCRIBE=comp.os.unix.*,talk.*,!talk.politics.*>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3982
@@ -8887,7 +8869,7 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.1:3988
 msgid "I<AUTOUNSUBSCRIBE=alt.flame.*,u*,!uk.*>"
-msgstr "I<AUTOUNSUBSCRIBE=alt.flame.*,u*,!uk.*>"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.1:3992
@@ -9210,7 +9192,7 @@ msgstr ""
 #: doc/tin.1:4138
 #, no-wrap
 msgid "SIGNALS"
-msgstr "SEÑALES"
+msgstr "SEMNALE"
 
 #.  TODO: add missing, sort useful, document in detail
 #. type: Plain text
@@ -9266,7 +9248,7 @@ msgstr ""
 #: doc/tin.1:4162
 #, no-wrap
 msgid "SECURITY"
-msgstr "GARANTÍA"
+msgstr "SECURITATE"
 
 #. type: Plain text
 #: doc/tin.1:4168
@@ -9299,7 +9281,7 @@ msgstr ""
 #: doc/tin.1:4179
 #, no-wrap
 msgid "CONFORMING TO"
-msgstr "CONFORME A"
+msgstr "ÎN CONFORMITATE CU"
 
 #.  - RFC\%2045, RFC\%2047, RFC\%2231, RFC\%2980, RFC\%3977, RFC\%4155
 #.    RFC\%4643, RFC\%5322, RFC\%5536, RFC\%5537, RFC\%6048 or whatever
@@ -9315,7 +9297,7 @@ msgstr ""
 #: doc/tin.1:4187
 #, no-wrap
 msgid "NOTES"
-msgstr "ANOTACIONES"
+msgstr "NOTE"
 
 #. type: Plain text
 #: doc/tin.1:4194
@@ -9348,7 +9330,7 @@ msgstr ""
 #: doc/tin.1:4206
 #, no-wrap
 msgid "BUGS"
-msgstr "DEFECTOS"
+msgstr "ERORI"
 
 #. type: Plain text
 #: doc/tin.1:4215
@@ -9395,7 +9377,7 @@ msgstr ""
 #: doc/tin.1:4241
 #, no-wrap
 msgid "HISTORY"
-msgstr "HISTORIAL"
+msgstr "ISTORIC"
 
 #. type: Plain text
 #: doc/tin.1:4250
@@ -9417,7 +9399,7 @@ msgstr "E<lt>http://www.tin.org/history.htmlE<gt>."
 #: doc/tin.1:4254
 #, no-wrap
 msgid "CREDITS"
-msgstr "DERECHOS"
+msgstr "MULȚUMIRI"
 
 #. type: IP
 #: doc/tin.1:4255
@@ -9548,7 +9530,7 @@ msgstr ""
 #: doc/tin.1:4292
 #, no-wrap
 msgid "Gary S. Brown"
-msgstr ""
+msgstr "Gary S. Brown"
 
 #. type: Plain text
 #: doc/tin.1:4298
@@ -9571,7 +9553,7 @@ msgstr "Iain Lea E<lt>iain@bricbrac.deE<gt>"
 #: doc/tin.1:4303
 #, no-wrap
 msgid "MAINTAINER"
-msgstr "RESPONSABLE"
+msgstr "RESPONSABIL"
 
 #. type: TP
 #: doc/tin.1:4304
@@ -9583,7 +9565,7 @@ msgstr "Urs Janssen E<lt>urs@tin.orgE<gt>"
 #: doc/tin.1:4308 doc/tin.5:3010
 #, no-wrap
 msgid "SEE ALSO"
-msgstr "VEA ADEMÁS"
+msgstr "CONSULTAȚI ȘI"
 
 #. type: Plain text
 #: doc/tin.1:4374
@@ -9892,7 +9874,7 @@ msgstr ""
 #: doc/tin.5:911 doc/tin.5:1225
 #, no-wrap
 msgid "Example:"
-msgstr ""
+msgstr "Exemplu:"
 
 #. type: Plain text
 #: doc/tin.5:214
@@ -9904,67 +9886,67 @@ msgstr ""
 #: doc/tin.5:216
 #, no-wrap
 msgid "image/*;\\e\n"
-msgstr ""
+msgstr "image/*;\\e\n"
 
 #. type: Plain text
 #: doc/tin.5:219
 #, no-wrap
 msgid "xv -8 -geometry +0 '%s';\\e\n"
-msgstr ""
+msgstr "xv -8 -geometry +0 '%s';\\e\n"
 
 #. type: Plain text
 #: doc/tin.5:221
 #, no-wrap
 msgid "description=%{name} %t-Image;\\e\n"
-msgstr ""
+msgstr "description=%{name} %t-Image;\\e\n"
 
 #. type: Plain text
 #: doc/tin.5:223
 #, no-wrap
 msgid "test=test \"$DISPLAY\" != \"\";\\e\n"
-msgstr ""
+msgstr "test=test \"$DISPLAY\" != \"\";\\e\n"
 
 #. type: Plain text
 #: doc/tin.5:225
 #, no-wrap
 msgid "nametemplate=%s.IMAGE\n"
-msgstr ""
+msgstr "nametemplate=%s.IMAGE\n"
 
 #. type: Plain text
 #: doc/tin.5:228
 #, no-wrap
 msgid "message/rfc822;\\e\n"
-msgstr ""
+msgstr "message/rfc822;\\e\n"
 
 #. type: Plain text
 #: doc/tin.5:231
 #, no-wrap
 msgid "${PAGER:-\"more\"} '%s';\\e\n"
-msgstr ""
+msgstr "${PAGER:-\"more\"} '%s';\\e\n"
 
 #. type: Plain text
 #: doc/tin.5:233
 #, no-wrap
 msgid "edit=${EDITOR:-\"vi\"} '%s';\\e\n"
-msgstr ""
+msgstr "edit=${EDITOR:-\"vi\"} '%s';\\e\n"
 
 #. type: Plain text
 #: doc/tin.5:235
 #, no-wrap
 msgid "compose=${EDITOR:-\"vi\"} '%s';\\e\n"
-msgstr ""
+msgstr "compose=${EDITOR:-\"vi\"} '%s';\\e\n"
 
 #. type: Plain text
 #: doc/tin.5:237
 #, no-wrap
 msgid "print=a2ps '%s';\\e\n"
-msgstr ""
+msgstr "print=a2ps '%s';\\e\n"
 
 #. type: Plain text
 #: doc/tin.5:239
 #, no-wrap
 msgid "needsterminal\n"
-msgstr ""
+msgstr "needsterminal\n"
 
 #. type: Plain text
 #: doc/tin.5:251
@@ -10012,24 +9994,22 @@ msgid ""
 "specified by appending :portnumber."
 msgstr ""
 
-# fuzzy
 #. type: TP
 #: doc/tin.5:286
 #, no-wrap
 msgid "B<password>"
-msgstr "B<contraseña>"
+msgstr "B<password>"
 
 #. type: Plain text
 #: doc/tin.5:289
 msgid "user's unencrypted password for reading news."
 msgstr ""
 
-# fuzzy
 #. type: TP
 #: doc/tin.5:289
 #, no-wrap
 msgid "B<user>"
-msgstr "B<usuario>"
+msgstr "B<user>"
 
 #. type: Plain text
 #: doc/tin.5:293
@@ -10067,7 +10047,7 @@ msgstr ""
 #: doc/tin.5:311
 #, no-wrap
 msgid "B<newsgroup>"
-msgstr ""
+msgstr "B<newsgroup>"
 
 #. type: Plain text
 #: doc/tin.5:314
@@ -10078,7 +10058,7 @@ msgstr ""
 #: doc/tin.5:314
 #, no-wrap
 msgid "B<flag>"
-msgstr ""
+msgstr "B<flag>"
 
 #. type: Plain text
 #: doc/tin.5:317
@@ -10089,7 +10069,7 @@ msgstr ""
 #: doc/tin.5:317
 #, no-wrap
 msgid "B<article>"
-msgstr ""
+msgstr "B<article>"
 
 #. type: Plain text
 #: doc/tin.5:322
@@ -10127,7 +10107,7 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.5:349
 msgid "signature"
-msgstr "signature"
+msgstr "semnătură"
 
 #. type: Plain text
 #: doc/tin.5:355
@@ -10172,7 +10152,7 @@ msgstr ""
 #: doc/tin.5:390 doc/tin.5:1194
 #, no-wrap
 msgid "B<mailgroupname>"
-msgstr ""
+msgstr "B<mailgroupname>"
 
 #. type: Plain text
 #: doc/tin.5:394
@@ -10185,7 +10165,7 @@ msgstr ""
 #: doc/tin.5:394
 #, no-wrap
 msgid "B<maxnum>"
-msgstr ""
+msgstr "B<maxnum>"
 
 #. type: Plain text
 #: doc/tin.5:398
@@ -10198,7 +10178,7 @@ msgstr ""
 #: doc/tin.5:398
 #, no-wrap
 msgid "B<minnum>"
-msgstr ""
+msgstr "B<minnum>"
 
 #. type: Plain text
 #: doc/tin.5:401
@@ -10209,7 +10189,7 @@ msgstr ""
 #: doc/tin.5:401
 #, no-wrap
 msgid "B<mailspool>"
-msgstr ""
+msgstr "B<mailspool>"
 
 #. type: Plain text
 #: doc/tin.5:405
@@ -11241,7 +11221,7 @@ msgstr ""
 #: doc/tin.5:908 doc/tin.5:2934
 #, no-wrap
 msgid "B<time>"
-msgstr "B<time>"
+msgstr "B<timp>"
 
 #. type: Plain text
 #: doc/tin.5:911
@@ -11314,7 +11294,7 @@ msgstr ""
 #: doc/tin.5:955
 #, no-wrap
 msgid "\\w'GroupSelThdIfUnreadSelected    'u +\\w'SPACE'u +\\w'SPACE'u"
-msgstr ""
+msgstr "\\w'GroupSelThdIfUnreadSelected    'u +\\w'SPACE'u +\\w'SPACE'u"
 
 #. type: Plain text
 #: doc/tin.5:1003
@@ -11916,17 +11896,17 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.5:1231
 msgid "news.tin.org .newsrc-tin.org tinorg"
-msgstr "news.tin.org .newsrc-tin.org tinorg"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.5:1233
 msgid "news.example.org /tmp/nrc-ex example ex"
-msgstr "news.example.org /tmp/nrc-ex example ex"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.5:1235
 msgid "[::1]:1119 /tmp/localhost6\\(en1119 lh6"
-msgstr "[::1]:1119 /tmp/localhost6\\(en1119 lh6"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.5:1237
@@ -11941,12 +11921,12 @@ msgstr ""
 #. type: Plain text
 #: doc/tin.5:1241
 msgid "*:563 ~/.tin/newsrcs/${NNTPSERVER-localhost}:563/newsrc"
-msgstr "*:563 ~/.tin/newsrcs/${NNTPSERVER-localhost}:563/newsrc"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.5:1243
 msgid "* ~/.tin/newsrcs/${NNTPSERVER-localhost}/newsrc"
-msgstr "* ~/.tin/newsrcs/${NNTPSERVER-localhost}/newsrc"
+msgstr ""
 
 #. type: Plain text
 #: doc/tin.5:1258
@@ -12002,7 +11982,7 @@ msgstr ""
 #: doc/tin.5:1307 doc/tin.5:2957
 #, no-wrap
 msgid "B<group.name>"
-msgstr ""
+msgstr "B<group.name>"
 
 #. type: TP
 #: doc/tin.5:1310 doc/tin.5:2960
@@ -12152,13 +12132,10 @@ msgstr "B<motd_hash>"
 
 #. type: Plain text
 #: doc/tin.5:1387
-#, fuzzy
 msgid ""
 "Internal hash of the servers MOTD, so displaying it can be skipped if it is "
 "unchanged."
 msgstr ""
-"Hash interno del MOTD del servidor, por lo que se puede omitir su "
-"visualización si no se ha modificado."
 
 #. type: TP
 #: doc/tin.5:1387
@@ -13968,8 +13945,6 @@ msgid ""
 "translation into language specified in $B<LC_ALL>, $B<LC_MESSAGES> or "
 "$B<LANG>"
 msgstr ""
-"traducido en idiomas especificados dentro de $B<LC_ALL>, $B<LC_MESSAGES> o "
-"$B<LANG>"
 
 #. type: Plain text
 #: doc/tin.5:2870
@@ -13996,18 +13971,17 @@ msgid ""
 "I<lowmark> I<flags>\"."
 msgstr ""
 
-# fuzzy
 #. type: TP
 #: doc/tin.5:2878 doc/tin.5:2931
-#, no-wrap
+#, fuzzy, no-wrap
 msgid "B<name>"
-msgstr "B<nombre>"
+msgstr "B<nume>"
 
 #. type: TP
 #: doc/tin.5:2881
 #, no-wrap
 msgid "B<highmark>"
-msgstr ""
+msgstr "B<highmark>"
 
 #. type: Plain text
 #: doc/tin.5:2884
@@ -14018,7 +13992,7 @@ msgstr ""
 #: doc/tin.5:2884
 #, no-wrap
 msgid "B<lowmark>"
-msgstr ""
+msgstr "B<lowmark>"
 
 #. type: Plain text
 #: doc/tin.5:2891
@@ -14034,7 +14008,7 @@ msgstr ""
 #: doc/tin.5:2891
 #, no-wrap
 msgid "B<flags>"
-msgstr ""
+msgstr "B<flags>"
 
 #. type: Plain text
 #: doc/tin.5:2894
@@ -14141,7 +14115,7 @@ msgstr ""
 #: doc/tin.5:2938
 #, no-wrap
 msgid "B<creator>"
-msgstr ""
+msgstr "B<creator>"
 
 #. type: Plain text
 #: doc/tin.5:2941
@@ -14231,5 +14205,5 @@ msgstr ""
 "B<RFC\\%8143>, B<RFC\\%8315>"
 
 #, no-wrap
-#~ msgid "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER$/.oldnewsrc>\n"
-#~ msgstr "I<${TIN_HOMEDIR:-\"$HOME\"}/.tin/$NNTPSERVER/.oldnewsrc>\n"
+#~ msgid "December 24th, 2024"
+#~ msgstr "24 decembrie 2024"

@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2025-06-29
+.\" Updated   : 2025-07-30
 .\" Notes     : needs a some work, see TODOs
 .\"             - use semantic newlines
 .\"
@@ -800,8 +800,8 @@ than, >num matches more than the returned numeric
 value. GNKSA_LOCAL_DOMAIN_LITERAL or GNKSA_INVALID_DOMAIN are only returned
 if \fBdisable_gnksa_domain_check\fP in \fI/etc/tin/tin.defaults\fP is set to
 OFF. As the built in domain list may be outdated this should be considered
-carefully. GNKSA_ILLEGAL_LABEL_BEGNUM is only only returned if \fBtin\fP(1) was
-compiled with ENFORCE_RFC1034 defined which is usually not the case.
+carefully. GNKSA_ILLEGAL_LABEL_BEGNUM is only only returned if \fB\%tin\fP(1)
+was compiled with ENFORCE_RFC1034 defined which is usually not the case.
 .in +0.3i
 .nf
 .ta \w'%406	'u +\w'GNKSA_ZERO_LENGTH_LOCAL_WORD'u
@@ -884,8 +884,7 @@ msgid_only=@googlegroups.com>
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\:\-"${LC_CTYPE:\:\-"$LANG"}"}"}:\:+".${LC_ALL:\:\-"${LC_MESSAGES:\:\-"${LC_CTYPE:\:\-"$LANG"}"}"}"}\fP
 .sp 1v
 .\".fi
-\fI/etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:\:\\fR
-+".${LC_ALL:\:\-"${LC_MESSAGES:\:\-"${LC_CTYPE:\:\-"$LANG"}"}"}"}
+\fI/etc/tin/keymap${${LC_ALL:\-"${LC_MESSAGES:\-"${LC_CTYPE:\-"$LANG"}"}"}:\:\+".${LC_ALL:\:\-"${LC_MESSAGES:\:\-"${LC_CTYPE:\:\-"$LANG"}"}"}"}\fP
 .sp
 .RS
 Keymap\-file, containing "\fIkeyname\fP \fIvalue\fP \fI[value]\fP" pairs separated by
@@ -959,6 +958,7 @@ is unassigned.
 \fBConfigLastPage\fP	G
 \fBConfigNoSave\fP	Q
 \fBConfigScopeMenu\fP	S
+\fBConfigServerrcMenu\fP	s
 \fBConfigFirstPage\fP	g
 \fBConfigResetAttrib\fP	r
 .sp
@@ -1254,7 +1254,8 @@ is a short single\-line description of the group
 .RS
 File to store $\fBNNTPSERVER\fP related data via a list of
 "\fIvariable\fP=\fIvalue\fP" pairs. Currently there are only a few variables, and
-some are not meant to be changed by the user.
+some are not meant to be changed by the user. See also \fBConfigServerrcMenu\fP
+('\fBs\fP') in section "SERVERRC MENU" in \fB\%tin\fP(1).
 .TP 
 \fBversion\fP
 Internal version number.
@@ -1269,8 +1270,9 @@ override them.  The allowed option are currently limited to \*(rq\fB\-4\fP\*(rq,
 .TP 
 \fBdisabled_nntp_cmds\fP
 A comma separated list of NNTP commands which should be avoided.  This can
-be used to work around some buggy servers and usually should left blank.
-The following commands can be disabled:
+be used to work around some buggy servers and usually should left
+blank. Switching off XHDR also switches off HDR and vice versa.  The
+following commands can be disabled:
 .in +0.3i
 .nf
 .ta \w'LIST SUBSCRIPTIONS'u
@@ -1279,19 +1281,25 @@ CAPABILITIES
 COMPRESS DEFLATE
 HDR
 LIST COUNTS
+LIST DISTRIB.PATS
+LIST DISTRIBUTIONS
 LIST HEADERS
 LIST MOTD
 LIST NEWSGROUPS
 LIST OVERVIEW.FMT
 LIST SUBSCRIPTIONS
-LISTGROUP	(\-\-enable\-broken\-listgroup\-fix)
+LISTGROUP
 NEWGROUPS
 OVER
-XHDR	(\-\-disable\-xhdr\-xref)
+XHDR
 XOVER
 XPAT
 .fi
 .in -0.3i
+.TP 
+\fBnntp_pipeline_limit\fP
+Number of pipelined NNTP commands to send. Set to 1 if server does not
+support pipelining. Default is 50. Allowed maximum is 256.
 .TP 
 \fBcache_overview_files\fP
 Identical to the tinrc variable of the same name but overrides it.  Be aware
@@ -1765,6 +1773,10 @@ ON.
 If ON keep all failed postings in \fI${TIN_HOMEDIR:\-"$HOME"}/dead.articles\fP
 besides keeping the last failed posting in
 \fI${TIN_HOMEDIR:\-"$HOME"}/dead.article\fP. Default is ON.
+.TP 
+\fBkeep_expired_filters\fP
+If ON keep expired filter rules in the file, but no longer evaluate them.
+Default is OFF.
 .TP 
 \fBkill_level\fP
 This option controls the processing and display of articles that are

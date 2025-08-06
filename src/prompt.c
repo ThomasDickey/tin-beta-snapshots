@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-10
+ *  Updated   : 2025-07-25
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -430,9 +430,8 @@ prompt_list(
 		(void) help_text;
 		show_color_help();
 	} else
-#else
-	show_menu_help(help_text);
 #endif /* HAVE_COLOR */
+		show_menu_help(help_text);
 	cursoron();
 
 	offset = strwidth(_(prompt_text));
@@ -646,10 +645,12 @@ prompt_option_string(
 		is_same = strcmp(old_value, variable) ? TRUE : FALSE;
 		free(old_value);
 		free(variable);
+		cursoroff();
 		return is_same;
 	} else {
 		free(old_value);
 		free(variable);
+		cursoroff();
 		return FALSE;
 	}
 }
@@ -677,13 +678,15 @@ prompt_option_num(
 	fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
 	snprintf(&number[0], sizeof(number), "%d", *(option_table[option].variable));
 
-	if ((p = tin_getline(prompt, 2, number, 0, FALSE, HIST_OTHER)) == NULL)
+	if ((p = tin_getline(prompt, 2, number, 0, FALSE, HIST_OTHER)) == NULL) {
+		cursoroff();
 		return FALSE;
+	}
 
 	STRCPY(number, p);
 	num = strtol(number, NULL, 10);
 	*(option_table[option].variable) = num;
-	clear_message();
+	cursoroff();
 	return TRUE;
 }
 

@@ -73,6 +73,7 @@ hash_str(
 		h = (h << 1) ^ *t++;
 		if (++len & 7)
 			continue;
+
 		h %= (long) HASHNODE_TABLE_SIZE;
 	}
 	h %= (long) HASHNODE_TABLE_SIZE;
@@ -82,6 +83,7 @@ hash_str(
 	while (*p) {
 		if (STRCMPEQ(s, (*p)->txt))
 			return (*p)->txt;
+
 		p = &(*p)->next;
 	}
 

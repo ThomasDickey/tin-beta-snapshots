@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2025-07-01
+ *  Updated   : 2025-07-25
  *  Notes     :
  *
  * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
@@ -235,6 +235,7 @@ struct t_config {
 	t_bool info_in_last_line;
 	t_bool inverse_okay;
 	t_bool keep_dead_articles;			/* keep all dead articles in dead.articles */
+	t_bool keep_expired_filters;		/* keep expired filter rules in file */
 	t_bool mail_8bit_header;			/* allow 8bit chars. in header of mail message */
 	t_bool mark_ignore_tags;			/* Ignore tags for GROUP_MARK_THREAD_READ/THREAD_MARK_ARTICLE_READ */
 	t_bool mark_saved_read;				/* mark saved article/thread as read */
@@ -401,6 +402,13 @@ struct t_config {
 	t_bool attrib_quick_kill_expire;
 	t_bool attrib_quick_select_case;
 	t_bool attrib_quick_select_expire;
+	char *serverrc_add_cmd_line_opts;
+	char *serverrc_disabled_nntp_cmds;
+	int serverrc_nntp_pipeline_limit;
+	t_bool serverrc_cache_overview_files;
+#	ifdef USE_ZLIB
+	t_bool serverrc_compress_overview_files;
+#	endif /* USE_ZLIB */
 };
 
 
@@ -414,6 +422,7 @@ struct t_serverrc {
 	char *add_cmd_line_opts;
 	char *disabled_nntp_cmds;
 	long motd_hash;
+	int nntp_pipeline_limit;
 	t_bool cache_overview_files;
 #	ifdef USE_ZLIB
 	t_bool compress_overview_files;

@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-03
+ *  Updated   : 2025-07-25
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -239,7 +239,7 @@ setup_hard_base(
 		t_artnum last, start, count = T_ARTNUM_CONST(0), j = T_ARTNUM_CONST(0);
 		static t_bool skip_listgroup = FALSE;
 
-		if (newsrc_active && !list_active) /* -n */
+		if (!skip_listgroup && ((newsrc_active && !list_active) || !nntp_caps.listgroup))
 			skip_listgroup = TRUE;
 
 		if (getart_limit > 0)
@@ -250,52 +250,11 @@ setup_hard_base(
 			j = group->xmin;
 
 		/*
-		 * Some nntp servers are broken and need an extra GROUP command
-		 * (reported by reorx@irc.pl). This affects (old?) versions of
-		 * nntpcache, leafnode and SurgeNews. Usually this should not be
-		 * needed.
-		 *
 		 * For getart_limit recheck lowwatermark as at least giganews gives
 		 * very different results for LIST ACTIVE (3 year retention for all)
 		 * and GROUP (based on the clients contract).
 		 * Calculate range and prepare base[] not to lose unread arts.
 		 */
-		if (nntp_caps.broken_listgroup) {
-			snprintf(buf, sizeof(buf), "GROUP %s", group->name);
-			if (nntp_command(buf, OK_GROUP, line, sizeof(line)) == NULL)
-				return -1;
-
-			if (sscanf(line, "%"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT" %"T_ARTNUM_SFMT, &count, &start, &last) != 3)
-				return -1;
-
-#	ifdef DEBUG
-			if ((debug & DEBUG_NNTP) && verbose > 1)
-				debug_print_file("NNTP", "setup_hard_base(GROUP %s %d-%d (%d))", buf, start, last, count);
-#	endif /* DEBUG */
-
-			total = count;
-			grpmenu.max = 0;
-
-			if (getart_limit > 0 && group->xmax > getart_limit) {
-				if ((j = find_first_unread(group)) > start) {
-					start = MIN(j, group->xmax - getart_limit);
-					total = getart_limit;
-				}
-			}
-
-			if (getart_limit < 0) {
-				if ((j = (getart_limit + find_first_unread(group))) > start)
-					if (j < group->xmax)
-						start = j;
-			}
-
-			while (start <= last) {
-				if (grpmenu.max >= max_base)
-					expand_base();
-				base[grpmenu.max++] = start++;
-			}
-		}
-
 		if (!skip_listgroup) {
 			if (getart_limit != 0 && nntp_caps.type == CAPABILITIES && nntp_caps.reader) /* RFC 3977 allows ranges in LISTGROUP */
 				snprintf(buf, sizeof(buf), "LISTGROUP %s %"T_ARTNUM_PFMT"-", group->name, j); /* shorthand for j "-" group->xmax */
@@ -332,7 +291,7 @@ setup_hard_base(
 				skip_listgroup = TRUE;
 		}
 
-		if (!nntp_caps.broken_listgroup && (skip_listgroup || (newsrc_active && list_active))) { /* LISTGROUP was skipped or failed or -ln */
+		if (skip_listgroup || (newsrc_active && list_active)) { /* LISTGROUP was skipped or failed or -ln */
 			/*
 			 * Handle the obscure case that the user aborted before the LISTGROUP
 			 * had a chance to respond
@@ -539,6 +498,7 @@ index_group(
 		}
 		if (base[i] <= last_read_article)		/* It is vital this test be done last */
 			continue;
+
 		++total;
 	}
 
@@ -700,7 +660,7 @@ open_art_header(
 				 * we do not have disabled_nntp_cmds=LISTGROUP
 				 */
 				case ERR_NCING:
-					nntp_caps.broken_listgroup = TRUE;
+					nntp_caps.listgroup = FALSE;
 					snprintf(buf, sizeof(buf), "GROUP %s", groupname);
 					if (nntp_command(buf, OK_GROUP, NULL, 0) == NULL)
 						return NULL;
@@ -732,7 +692,7 @@ open_art_header(
 					 * ERR_NOARTIG may occur on servers where LISTGROUP
 					 * isn't broken...
 					 */
-					nntp_caps.broken_listgroup = TRUE;
+					nntp_caps.listgroup = FALSE;
 					break;
 			}
 		}
@@ -804,9 +764,7 @@ read_art_headers(
 		 * Skip articles that are below the low water mark or are
 		 * already present
 		 */
-		if (valid_artnum(art) >= 0)
-			continue;
-		if (art <= top)
+		if (valid_artnum(art) >= 0 || art <= top)
 			continue;
 
 		/*
@@ -1796,21 +1754,22 @@ get_path_header(
 	}
 
 	/* does HDR return Path? */
-	if (nntp_caps.headers_range && (ptr = strtok(nntp_caps.headers_range, "\n")) != NULL) {
-		do {
-			if ((*ptr == ':' && *(ptr + 1) == '\0') || !strncasecmp(ptr, "Path", 4))
-				found = TRUE;
-		} while (!found && *ptr && (ptr = strtok(NULL, "\n")) != NULL);
-	}
+	if (nntp_caps.type == CAPABILITIES) {
+		if (nntp_caps.headers_range && (ptr = strtok(nntp_caps.headers_range, "\n")) != NULL) {
+			do {
+				if ((*ptr == ':' && *(ptr + 1) == '\0') || !strncasecmp(ptr, "Path", 4))
+					found = TRUE;
+			} while (!found && *ptr && (ptr = strtok(NULL, "\n")) != NULL);
+		}
+	} else
+		found = TRUE;
 
-	if ((nntp_caps.hdr && nntp_caps.hdr_cmd) && found) {
+	if (nntp_caps.hdr && nntp_caps.hdr_cmd && found) {
 		if (min == max)
 			snprintf(cmd, sizeof(cmd), "%s Path %"T_ARTNUM_PFMT, nntp_caps.hdr_cmd, min);
 		else
 			snprintf(cmd, sizeof(cmd), "%s Path %"T_ARTNUM_PFMT"-%"T_ARTNUM_PFMT, nntp_caps.hdr_cmd, min, MAX(min, max));
 		fp = nntp_command(cmd, nntp_caps.hdr_cmd[0] == 'X' ? OK_XHDR : OK_HDR, NULL, 0);
-		if (!nntp_caps.hdr && fp)
-			nntp_caps.hdr = TRUE;
 	} else if (nntp_caps.xpat) {
 		if (min == max)
 			snprintf(cmd, sizeof(cmd), "XPAT Path %"T_ARTNUM_PFMT" *", min);
@@ -2562,9 +2521,11 @@ read_overview(
 					if (!strstr(ptr, "(none)")) {
 						if ((q = strchr(ptr, ' ')) == NULL) /* skip article number */
 							continue;
+
 						ptr = q;
 						while (*ptr && isspace((unsigned char) *ptr))
 							++ptr;
+
 						if ((q = strchr(ptr, '\n')) != NULL)
 							*q = '\0';
 						art->xref = my_strdup(ptr);

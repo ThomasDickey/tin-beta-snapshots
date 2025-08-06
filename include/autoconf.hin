@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2025-06-15
+ *  Updated   : 2025-07-08
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2025 Thomas Dickey <dickey@invisible-island.net>
@@ -155,8 +155,8 @@
 
 #	undef HAVE_SIG_ATOMIC_T
 #	ifndef HAVE_SIG_ATOMIC_T
-	typedef int sig_atomic_t;
-# 	endif /* !HAVE_SIG_ATOMIC_T */
+		typedef int sig_atomic_t;
+#	endif /* !HAVE_SIG_ATOMIC_T */
 
 #	undef volatile
 
@@ -830,12 +830,6 @@
  * define if FD_SET()marcor is present
  */
 #	undef HAVE_TYPE_FD_SET
-
-/*
- * define if newsserver can't handle pipelined (streamed) commands
- * TODO: write configure option
- */
-#	undef DISABLE_PIPELINING
 
 /* Define to 1 if we can/should compile with the PCRE2 library */
 #	undef HAVE_LIB_PCRE2

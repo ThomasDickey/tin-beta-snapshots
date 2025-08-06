@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2025-06-03
+ *  Updated   : 2025-07-22
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2025 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -379,6 +379,9 @@ convert_to_printable(
 #else
 	unsigned char *c;
 
+	if (IS_LOCAL_CHARSET("UTF-8"))
+		utf8_valid(buf);
+
 	for (c = (unsigned char *) buf; *c; c++) {
 		if (!my_isprint(*c) && !(keep_tab && *c == '\t'))
 			*c = '?';
@@ -525,6 +528,27 @@ failure:
 	return guessed_charset;
 }
 #endif /* CHARSET_CONVERSION && USE_ICU_UCSDET */
+
+
+void
+csguess_convert_str(
+	char **line,
+	const char *def_cs)
+{
+	size_t len = strlen(*line);
+#ifdef CHARSET_CONVERSION
+#	ifdef USE_ICU_UCSDET
+	char *guessed_charset = guess_charset(*line, 10);
+
+	process_charsets(line, &len, guessed_charset ? guessed_charset : def_cs, tinrc.mm_local_charset, FALSE);
+	FreeAndNull(guessed_charset);
+#	else
+	process_charsets(line, &len, def_cs, tinrc.mm_local_charset, FALSE);
+#	endif /* USE_ICU_UCSDET */
+#else
+	process_charsets(line, &len, def_cs, tinrc.mm_local_charset, FALSE);
+#endif /* CHARSET_CONVERSION */
+}
 
 
 /*

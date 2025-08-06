@@ -2,7 +2,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2025-07-04
+.\" Updated   : 2025-07-29
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -306,7 +306,7 @@ TINRC\-VARIABLEN« und \fB\%tin\fP(5).
 Eine Liste von Gruppen kann nach den anderen Kommandozeilenoptionen
 angegeben werden. Dies kann nützlich sein, falls Sie eine handverlesene
 Untermenge der aktiven Newsgruppen einblenden oder abonnieren möchten. Siehe
-den Abschnitt »NEWSGROUP LISTEN & WILDCARDS« für die Arten von Muster, die
+den Abschnitt »NEWSGROUP LISTEN & WILDCARDS« für die Arten von Mustern, die
 \fBtin\fP versteht.
 .PP
 Wenn Sie einen einzelnen Gruppennamen oder eine Wildcard, die nur auf eine
@@ -326,10 +326,11 @@ verschwunden. Sie können \fBSelectSyncWithActive\fP ('\fBY\fP') verwenden, um d
 Datei \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP erneut zu
 lesen um diese wieder anzuzeigen.
 .PP
-Anmerkung: Mit der »\fB\-n\fP« Option können nur nicht abonnierte Gruppen in der
-\fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP Datei (oder der durch die »\fB\-f\fP«
-Befehlszeilen\-Option angegebenen newsrc\-Datei oder über
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP) gefunden werden.
+Anmerkung: Mit der »\fB\-n\fP« Option und Lesen mittels NNTP kann es vorkommen,
+dass nur nicht abonnierte Gruppen in der \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP
+Datei (oder der durch die »\fB\-f\fP« Befehlszeilen\-Option angegebenen
+newsrc\-Datei oder über \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP) gefunden
+werden.
 .PP
 .\"
 .\"
@@ -434,9 +435,9 @@ Die Zeichen nach den Zahlen hängen von der Konfiguration ab und davon, ob
 Sie sich im \fBshow_only_unread_arts\fP Modus befinden oder nicht. Einige
 Nummern könnten fehlen, wenn die spezifische Option nicht aktiviert ist. Es
 könnte auch ein »M«, »X« oder »=« enthalten sein (siehe oben; funktioniert
-nicht mit dem Befehlszeilenschalter »\fB\-n\fP«!) wenn die Gruppe moderiert ist,
-sie keine Postings zulässt oder Postings in eine andre Gruppe umgeleitet
-werden.
+evtl. nicht mit dem Befehlszeilenschalter »\fB\-n\fP«!) wenn die Gruppe
+moderiert ist, sie keine Postings zulässt oder Postings in eine andre Gruppe
+umgeleitet werden.
 .PP
 Falls ein Thread ungelesene Artikel enthält, wird er mit
 \fBart_marked_unread\fP vor der Gesamtzahl der Artikel im Thread markiert. Wenn
@@ -1665,6 +1666,10 @@ Der Befehl \fBConfigScopeMenu\fP ('\fBS\fP') ruft das Gültigkeitsbereichsmenü
 auf. Weitere Informationen finden Sie im Abschnitt
 »GÜLTIGKEITSBEREICHSMENÜ«.
 .PP
+Und der Befehl \fBConfigServerrcMenu\fP ('\fBs\fP') ruft das Serverrc Menü auf in
+dem die Werte aus
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc\fPgeändert werden können.
+.PP
 Liste aller verfügbaren Variablen. Der Name in geschweiften Klammern ist der
 Name der entsprechenden Einstellung im
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fP.
@@ -2141,6 +2146,10 @@ Wenn »ON«, alle fehlgeschlagenen Beiträge in
 des letzten fehlgeschlagenen Beitrags in
 \fI${TIN_HOMEDIR:\-"$HOME"}/dead.article\fP. Die Voreinstellung ist »ON«.
 .TP 
+\fBAbgelaufene Filterregeln behalten (keep_expired_filters)\fP
+Falls »ON« werden abgelaufene Filterregeln behlaten aber nicht mehr
+angewendet. Die Voreinstellung ist »OFF«.
+.TP 
 \fBFilter (kill) anwenden auf (kill_level)\fP
 Diese Option steuert die Verarbeitung und Anzeige von Artikeln, die gekillt
 wurden. Es gibt 3 Optionen:
@@ -2465,9 +2474,10 @@ multiple times (for example, '> > >' will be turned into
 \&'>>>'). The default is to compress quotes, and to quote empty
 lines.
 .br
-When you are viewing an article in raw mode ('\fB^H\fP'), and follow up or
-reply to it, the signature will be quoted even if it otherwise would be
-not.  If \fBshow_signatures\fP is off, then the signature will never be quoted.
+Wenn Sie den Artikel im der Rohansicht ('\fB^H\fP') anzeigen und darauf
+antworten, wird die Signatur zitiert, auch wenn dies sonst nicht der Fall
+wäre. Falls \fBshow_signatures\fP deaktiviert ist, wird die Signatur niemals
+zitiert.
 .TP 
 \fBRegulärer Ausd. für zit. Zeilen (quote_regex)\fP
 Ein regulärer Ausdruck, der beim Lesen von Artikeln angewendet wird. Alle
@@ -2984,10 +2994,11 @@ Optionsmenü bekannt sind, bietet das Attributmenü den folgenden Befehl:
 \fBConfigResetAttrib\fP ('\fBr\fP'), der ein Attribut auf einen Standardwert
 zurücksetzt.
 .SS GÜLTIGKEITSBEREICHSMENÜ
-The scopes menu (accessible from the options menu with \fBConfigScopeMenu\fP
-('\fBS\fP')) shows all scopes read from the global and local attributes file.
-Scopes from the global attributes file are marked with '!\&' to the left of
-the scope number. Delete/rename/move are not possible with those scopes.
+Das Gültigkeitsbereichsmenü (aus dem Optionsmenü mittels \fBConfigScopeMenu\fP
+('\fBS\fP') zu erreichen) zeigt alle Gültigkeitsbereiche aus der globalen und
+der lokalen attributes\-Datei. Bereiche aus der globalen Datei sind links von
+ihrer Nummer mit '!\&' gekennzeichnet. Diese lassen sich nicht löschen,
+umbenennen oder verschieben.
 .PP
 .\"
 .\"
@@ -3000,6 +3011,13 @@ scope to a new position, \fBScopeRename\fP ('\fBr\fP') rename the current
 scope. \fBToggleHelpDisplay\fP ('\fBH\fP') toggles the help mini menu at the
 bottom of the screen and posting etiquette after composing an article
 (\fBbeginner_level\fP).
+.SS "SERVERRC MENÜ"
+.\"
+.\"
+Das Serverrc Menü, erreichbar aus dem Options Menü mittels
+\fBConfigServerrcMenu\fP ('\fBs\fP'), kann zum Ändern der Serverspezifischen
+Einstellungen welche in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc\fP
+gespeichert sind verwendet werden.
 .SS "FILTERN VON ARTIKELN"
 .\" FIXME - add scoring description
 When there is a subject or an author which you are either very interested
@@ -3040,9 +3058,10 @@ helper script \fBw2r.pl\fP(1)  in the tools dir and online at
 .br
 <http://bzr.tin.org/tools/w2r.pl>.
 .PP
-As regular expressions do provide options which are not available with
-wildmats there is no helper script for such a switch. If you switch to
-regular expressions, stay with them. They are powerful and fast.
+Da reguläre Ausdrücke Optionen bereitstellen, die bei Wildmats nicht
+verfügbar sind, gibt es kein Hilfsskript für einen solchen Wechsel. Falls
+Sie zu regulären Ausdrücken wechseln, bleiben Sie bei ihnen. Sie sind
+leistungsstark und schnell.
 .PP
 .\" FIXME - Next paragraph is out of date
 .\"
@@ -3156,9 +3175,9 @@ Otherwise, the initial prompt will ask you to select which article, thread,
 hot (auto\-selected), regular expression pattern, tagged articles you wish to
 mail, pipe etc.
 .PP
-Tagged articles must have already been tagged with a \fB*Tag\fP ('\fBt\fP')
-command. All tagged articles can be untagged by a \fB*Untag\fP ('\fBU\fP')  untag
-command.
+Markierte Artikel müssen bereits mittels einem \fB*Tag\fP ('\fBt\fP') Befehl
+markiert worden sein. Alle markierten Artikel können mit einem \fB*Untag\fP
+('\fBU\fP') Befehl unmarkiert werden.
 .PP
 If a regular expression pattern is selected you are asked to enter a pattern
 (e.g., to match all articles subject lines containing 'net News' you enter
@@ -4220,9 +4239,15 @@ normalerweise keine Schreibrechte an diesem Ort hat.
 \fBCNews\fP\0NNTPd, \fB\%noffle\fP(1) (<= V1.0\-pre5) und \fBNewsCache\fP (<=
 V1.1.91) können nicht mit gepipelinten »GROUP«\-Befehlen (\fBRFC\%3977\fP)
 umgehen. Falls Sie Probleme mit einem der genannten historischen Server
-haben, definieren Sie »DISABLE_PIPELINING« in include/autoconf.h und
-kompilieren Sie das Programm neu oder benutzen Sie die »\fB\-l\fP«
-Kommandozeilenoption.
+haben, setzen Sie \fBnntp_pipeline_limit\fP in
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc\fP auf 1.
+.PP
+Frühe Versionen von \fBNNTPCache\fP (<= 2.3.2) und \fBLeafnode\fP (<= 1.6)
+hatten eine fehlerhafte Umsetzung des »LISTGROUP«\-Befehls. Falls Sie
+Probleme mit einem der genannten historischen Server haben, benutzen Sie die
+»\fB\-n\fP« Kommandozeilenoption (oder deaktivieren Sie »LISTGROUP« mittels
+\fBdisabled_nntp_cmds\fP in
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/serverrc\fP).
 .PP
 Die Verwendung des »\fB\-C\fP« (»COMPRESS«)\-Flags mit \fBINN\fP\-Versionen zwischen
 2.6.1 und 2.7.1 (beide einschl.) kann dazu führen, dass \fBtin\fP bei der

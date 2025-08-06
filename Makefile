@@ -11,7 +11,7 @@ LVER	= 2
 PVER	= 6
 SVER	= 5
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20250707
+DVER	= 20250806
 EXE	= tin
 
 # directory structure
@@ -306,6 +306,8 @@ POFILES = \
 	$(PODIR)/et.po \
 	$(PODIR)/fr.gmo \
 	$(PODIR)/fr.po \
+	$(PODIR)/ro.gmo \
+	$(PODIR)/ro.po \
 	$(PODIR)/ru.gmo \
 	$(PODIR)/ru.po \
 	$(PODIR)/sv.gmo \
@@ -328,11 +330,14 @@ L10NFILES = \
 	$(POMANDIR)/es/tin.1 \
 	$(POMANDIR)/es/tin.5 \
 	$(POMANDIR)/es.po \
+	$(POMANDIR)/ro/tin.1 \
+	$(POMANDIR)/ro/tin.5 \
+	$(POMANDIR)/ro.po \
 	$(POMANDIR)/tin-man.pot
 
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(PCRE) $(MISC) $(CAN) $(POFILES) $(L10NFILES)
 
-ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(CANDIR)/include $(CANDIR)/src $(CANDIR)/test $(CANDIR)/util/ $(PODIR) $(POMANDIR) $(POMANDIR)/de $(POMANDIR)/en_GB
+ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(CANDIR)/include $(CANDIR)/src $(CANDIR)/test $(CANDIR)/util/ $(PODIR) $(POMANDIR) $(POMANDIR)/de $(POMANDIR)/en_GB $(POMANDIR)/es $(POMANDIR)/ro
 
 # standard commands
 CD	= cd

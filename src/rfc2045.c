@@ -3,7 +3,7 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2025-06-22
+ *  Updated   : 2025-07-25
  *  Notes     : RFC 2045/2047 encoding
  *
  * Copyright (c) 1995-2025 Chris Blum <chris@resolution.de>
@@ -214,7 +214,7 @@ rfc1521_encode(
 		*b = '\0';
 		if (b != buffer)
 			fputs(buffer, f);
-		if (b != buffer && b[-1] == '\n')
+		if (b != buffer && *(b - 1) == '\n')
 			xpos = 0;
 	} else if (line)
 		fputs(line, f);
@@ -521,11 +521,13 @@ read_decoded_qp_line(
 		ptr = buf;
 
 	if (*max_line_len < strlen(ptr)) {
-		*max_line_len = strlen(ptr);
-		*line = my_realloc(*line, *max_line_len + 1);
+		free(*line);
+		*line = my_strdup(ptr);
+		*max_line_len = strlen(*line);
+	} else {
+		strncpy(*line, ptr, *max_line_len);
+		(*line)[*max_line_len - 1] = '\0'; /* be sure to terminate string */
 	}
-	strncpy(*line, ptr, *max_line_len);
-	(*line)[*max_line_len] = '\0'; /* be sure to terminate string */
 	free(buf);
 	free(buf2);
 	return lines_read;

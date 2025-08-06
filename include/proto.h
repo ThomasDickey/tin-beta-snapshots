@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2025-06-30
+ *  Updated   : 2025-07-29
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
@@ -51,7 +51,7 @@
 /* active.c */
 extern char group_flag(char ch);
 extern int find_newnews_index(const char *cur_newnews_host);
-extern int read_news_active_file(t_bool check_any_unread);
+extern int read_news_active_file(void);
 extern t_bool match_group_list(const char *group, const char *group_list);
 extern t_bool parse_active_line(char *line, t_artnum *max, t_artnum *min, char *moderated);
 extern t_bool process_bogus(const char *name);
@@ -59,6 +59,7 @@ extern t_bool need_reread_active_file(void);
 extern t_bool resync_active_file(void);
 extern void create_save_active_file(void);
 extern void load_newnews_info(char *info);
+extern void active_add(struct t_group *ptr, t_artnum count, t_artnum max, t_artnum min, const char *moderated);
 
 /* art.c */
 extern int find_artnum(t_artnum art);
@@ -101,6 +102,7 @@ extern t_bool charset_unsupported(const char *charset);
 extern t_bool charset_compare(const char *cs_a, const char *cs_b);
 extern void convert_iso2asc(char *iso, char **asc_buffer, size_t *max_line_len, int t);
 extern void convert_tex2iso(char *from, char *to);
+extern void csguess_convert_str(char **line, const char *def_cs);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern wchar_t *wconvert_to_printable(wchar_t *wbuf, t_bool keep_tab);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -269,7 +271,7 @@ extern const char *get_host_name(void);
 
 /* inews.c */
 extern t_bool submit_news_file(char *name, struct t_group *group, char *a_message_id);
-extern void get_from_name(char *from_name, const struct t_group *thisgrp);
+extern void get_from_name(char *from_name, size_t len, const struct t_group *thisgrp);
 
 /* init.c */
 extern void init_selfinfo(void);
@@ -310,7 +312,7 @@ extern t_bool dot_unlock(const char *filename);
 
 /* mail.c */
 extern t_bool art_edit(const struct t_group *group, const struct t_article *article);
-extern void find_art_max_min(const char *group_path, t_artnum *art_max, t_artnum *art_min);
+extern t_bool find_art_max_min(const char *group_path, t_artnum *art_max, t_artnum *art_min);
 extern void print_active_head(const char *active_file);
 extern void print_group_line(FILE *fp, const char *group_name, t_artnum art_max, t_artnum art_min, const char *base_dir);
 extern void read_descriptions(t_bool verb);
@@ -414,9 +416,7 @@ extern void srndm(void);
 extern void strip_name(const char *from, char *address);
 extern _Noreturn void tin_done(int ret, const char *fmt, ...);
 extern void toggle_inverse_video(void);
-#if defined(CHARSET_CONVERSION) || (defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE))
-	extern char *utf8_valid(char *line);
-#endif /* CHARSET_CONVERSION || (MULTIBYTE_ABLE && !NO_LOCALE) */
+extern char *utf8_valid(char *line);
 #if defined(NO_LOCALE) || !defined(MULTIBYTE_ABLE)
 	extern int my_isprint(int c);
 #endif /* NO_LOCALE || !MULTIBYTE_ABLE */
@@ -475,6 +475,7 @@ extern void nntp_close(t_bool send_no_quit);
 	extern int fgetc_server(FILE *stream);
 	extern int ungetc_server(int c, FILE *stream);
 	extern int nntp_conninfo(FILE *stream);
+	extern t_bool nntp_list_active_grp(const char *group, char *moderated);
 #	if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
 	extern void set_maxartnum(t_bool reconnect);
 #	endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */

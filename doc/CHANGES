@@ -1,4 +1,8 @@
--- 2.6.5 release 20250707 "" --
+-- 2.6.5 release 20250730 "" --
+
+ 029) Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>
+      ADD. Romanian translation
+      FIX. ro.po
 
  028) Bjarni Ingi Gislason <bjarniig@simnet.is>
       ADD. manpage fixes (debian bug #1093395, #1096177)
@@ -19,6 +23,7 @@
       ADD. per scope hide_inline_data via attributes
       ADD. cleanup draw_page_header(), fmt_option_prompt()
       ADD. color the color-menu items while selecting the color
+      ADD. serverrc-menu via ConfigServerrcMenu ('s')
       BUG. -L/'L' did depend on sort_article_type/sort_threads_type
            and failed for some combinations
       BUG. possible memleaks
@@ -28,8 +33,8 @@
            keymap.c, lang.c, main.c, makecfg.c, memory.c, misc.c, nntplib.c
            options_menu.c, page.c, post.c, prompt.c, rfc2045.c, rfc2046.c
            rfc2047.c, save.c, search.c, select.c, signal.c, string.c, tcurses.c
-           thread.c, extern.h, keymap.h, proto.h, rfc2046.h, tin.h, tincfg.tbl
-           tin.[15]
+           thread.c, extern.h, keymap.h, proto.h, rfc2046.h, tin.h, tinrc.h
+           tincfg.tbl, tin.[15]
 
  026) Urs Janssen <urs@tin.org>
       ADD. avoid bison warning
@@ -67,6 +72,25 @@
            must be used to replace the now dropped --disable-xhdr-xref and
            --enable-broken-listgroup-fix configure options
       ADD. cache_overview_files and compress_overview_files to serverrc
+      ADD. nntp_pipeline_limit to serverrc (DISABLE_PIPELINING replacement)
+      ADD. keep_expired_filters to keep expired rules (debian bug #1109039)
+      ADD. -n cmd.line.grp now also allows to specify a group not present in
+           newsrc yet (same for -nw)
+      ADD. 'g'oto group now works with -n even if group is not present in
+           newsrc
+      ADD. -L/'L'ookup Message-ID now works with -n even if Message-ID is in
+           a group not present in newsrc.
+      ADD. 'S'ubscribe pattern with -n may now work for groups not in newsrc
+           yet (local spool with active file and/or RFC 3977 server only)
+      ADD. config.guess, config.sub update
+      ADD. lower 8bit check for Newsgroups, Followup-To and Distribution
+           from error to warning
+      ADD. prefer Xref- over Newsgroups-header if performing Message-ID
+           lookups via NNTP
+      ADD. lookup "DISTRIB.PATS" and use as default for Distribution
+      ADD. lookup "DISTRIBUTIONS" descriptions and display if available
+      BUG. in NO_LOCALE config get_author() could write outside the
+           allocated screen-memory
       BUG. positive getart_limit had several bugs
       BUG. -F was not mentioned in -h
       BUG. mixed up error-messages
@@ -79,13 +103,14 @@
       REM. ISO2ASC=6 (CP437) table
       REM. configure check for atoi()
       FIX. active.c, art.c, attrib.c, auth.c, charset.c, config.c, cook.c
-           crc32.c, feed.c, filter.c, getline.c, group.c, header.c, help.c
-           init.c, keymap.c, lang.c, mail.c, main.c, memory.c, misc.c, newsrc.c
-           nntplib.c, nntps.c, options_menu.c, page.c, pgp.c, post.c, prompt.c
-           regex.c, rfc1524.c, rfc2045.c, rfc2047.c, save.c, screen.c, search.c
-           select.c, signal.c, string.c, tags.c, thread.c, xref.c, extern.h
-           nntplib.h, policy.h, proto.h, rfc2046.h, tin.h, tinrc.h, parsdate.y
-           autoconf.h[in], tincfg.tbl, Makefile[.in], configure[.in], tin.[15]
+           crc32.c, debug.c, feed.c, filter.c, getline.c, group.c, header.c
+           help.c, init.c, keymap.c, lang.c, mail.c, main.c, memory.c, misc.c
+           newsrc.c, nntplib.c, nntps.c, options_menu.c, page.c, pgp.c, post.c
+           prompt.c, regex.c, rfc1524.c, rfc2045.c, rfc2047.c, save.c, screen.c
+           search.c, select.c, signal.c, string.c, tags.c, thread.c, xref.c
+           extern.h, nntplib.h, policy.h, proto.h, rfc2046.h, tin.h, tinrc.h
+           parsdate.y, autoconf.h[in], tincfg.tbl, Makefile[.in]
+           configure[.in], config.guess, config.sub, tin.[15]
 
  025) Toomas Soome <tsoome@me.com>
       ADD. updated Estonian translation

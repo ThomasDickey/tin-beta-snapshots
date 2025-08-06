@@ -349,6 +349,7 @@ read_attributes_file(
 			++ln;
 			if (!*line)
 				continue;
+
 			if (line[0] == '#') {
 				if (!global_file) {
 					if (!*scope)
@@ -1565,6 +1566,7 @@ write_attributes_file(
 			if (!scope->global) {
 				if (skip_scope(scope))
 					continue;
+
 				fprintf(fp, "\nscope=%s\n", scope->scope);
 				if (scope->state->add_posted_to_filter)
 					fprintf(fp, "add_posted_to_filter=%s\n", print_boolean(scope->attribute->add_posted_to_filter));
@@ -1894,6 +1896,7 @@ dump_attributes(
 			group = &active[i];
 			if (!group->attribute)
 				continue;
+
 			debug_print_file("ATTRIBUTES", "group=%s", BlankIfNull(group->name));
 			debug_print_file("ATTRIBUTES", "\tGlobal=%d", group->attribute->global);
 			debug_print_file("ATTRIBUTES", "\tmaildir=%s", DEBUG_PRINT_BLANK_IF_NULL(maildir));

@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-06
+ *  Updated   : 2025-07-22
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -129,8 +129,8 @@ build_tline(
 	int l,
 	struct t_article *art)
 {
-	int w;
-	size_t gap, fill, i, len, len_start, len_end;
+	int i, w, fill, gap;
+	size_t len, len_start, len_end;
 	struct t_msgid *ptr;
 	char *buffer, *buf;
 	char *fmt = thrd_fmt.str;
@@ -211,11 +211,12 @@ build_tline(
 				if (curr_group->attribute->show_author != SHOW_FROM_NONE) {
 					len_start = strwidth(buffer);
 					get_author(TRUE, art, buffer + strlen(buffer), thrd_fmt.len_from);
-					fill = thrd_fmt.len_from - (strwidth(buffer) - len_start);
-					gap = strlen(buffer);
-					for (i = 0; i < fill; i++)
-						buffer[gap + i] = ' ';
-					buffer[gap + fill] = '\0';
+					if ((fill = thrd_fmt.len_from - (strwidth(buffer) - len_start)) > 0) {
+						gap = strlen(buffer);
+						for (i = 0; i < fill; i++)
+							buffer[gap + i] = ' ';
+						buffer[gap + fill] = '\0';
+					}
 				}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
@@ -313,13 +314,11 @@ build_tline(
 							/*
 							 * Copy in the subject up to where the author (if any) starts
 							 */
-							gap = (len - (len_end - len_start));
-
-							/*
-							 * Mutt-like thread tree. by sjpark@sparcs.kaist.ac.kr
-							 * Hide subject if same as parent's.
-							 */
-							if (gap > 0) {
+							if ((gap = (len - (len_end - len_start))) > 0) {
+								/*
+								 * Mutt-like thread tree. by sjpark@sparcs.kaist.ac.kr
+								 * Hide subject if same as parent's.
+								 */
 								for (ptr = art->refptr->parent; ptr && IS_EXPIRED(ptr); ptr = ptr->parent)
 									;
 								if (!(ptr && arts[ptr->article].subject == art->subject))
@@ -337,8 +336,8 @@ build_tline(
 #else
 								{
 									strncat(buffer, art->subject, gap);
+									buffer[len_end + gap] = '\0';
 								}
-								buffer[len_end + gap] = '\0';	/* Just in case */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 							}
 						}
@@ -349,22 +348,23 @@ build_tline(
 					case THREAD_MULTI:
 					case THREAD_PERC:
 						len_end = (size_t) strwidth(buffer);
-						gap = (len - (len_end - len_start));
-						if (gap > 0) {
+						if ((gap = (len - (len_end - len_start))) > 0)
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-							if ((wtmp = char2wchar_t(art->subject)) != NULL) {
-								wtmp2 = wcspart(wtmp, gap, TRUE);
-								free(wtmp);
-								if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
-									strcat(buffer, tmp);
-
-								free(wtmp2);
+							{
+								if ((wtmp = char2wchar_t(art->subject)) != NULL) {
+									wtmp2 = wcspart(wtmp, gap, TRUE);
+									free(wtmp);
+									if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
+										strcat(buffer, tmp);
+									free(wtmp2);
+								}
 							}
 #else
-							strncat(buffer, art->subject, gap);
-							buffer[len_end + gap] = '\0';	/* Just in case */
+							{
+								strncat(buffer, art->subject, gap);
+								buffer[len_end + gap] = '\0';
+							}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-						}
 						break;
 
 					default:
@@ -372,11 +372,12 @@ build_tline(
 				}
 
 				/* pad out */
-				fill = (len - ((size_t) strwidth(buffer) - len_start));
-				gap = strlen(buffer);
-				for (i = 0; i < fill; i++)
-					buffer[gap + i] = ' ';
-				buffer[gap + fill] = '\0';
+				if ((fill = (len - ((size_t) strwidth(buffer) - len_start))) > 0) {
+					gap = strlen(buffer);
+					for (i = 0; i < fill; i++)
+						buffer[gap + i] = ' ';
+					buffer[gap + fill] = '\0';
+				}
 				break;
 
 			default:
@@ -1587,6 +1588,7 @@ make_prefix(
 	for (ptr = art->parent; ptr && prefix_ptr > 1; ptr = ptr->parent) {
 		if (IS_EXPIRED(ptr))
 			continue;
+
 		buf[--prefix_ptr] = TREE_BLANK;
 		buf[--prefix_ptr] = (has_sibling(ptr) ? TREE_VERT : TREE_BLANK);
 	}

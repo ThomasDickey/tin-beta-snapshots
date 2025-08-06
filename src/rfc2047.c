@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2025-07-04
+ *  Updated   : 2025-07-18
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2025 Chris Blum <chris@resolution.de>
@@ -272,18 +272,13 @@ rfc1522_decode(
 #else
 	if (CURR_GROUP.attribute != NULL) {
 #	ifdef USE_ICU_UCSDET
-	if (CURR_GROUP.attribute->undeclared_cs_guess && !(CURR_GROUP.attribute->undeclared_charset && *CURR_GROUP.attribute->undeclared_charset)) {
-		char *guessed_charset;
-
-		if ((guessed_charset = guess_charset(c, 10)) != NULL) {
-			process_charsets(&c, &max_len, guessed_charset, tinrc.mm_local_charset, FALSE);
-			free(guessed_charset);
-		}
-	} else
+		if (CURR_GROUP.attribute->undeclared_cs_guess && !(CURR_GROUP.attribute->undeclared_charset && *CURR_GROUP.attribute->undeclared_charset))
+			csguess_convert_str(&c, "US-ASCII");
+		else
 #	endif /* USE_ICU_UCSDET */
-		process_charsets(&c, &max_len, (CURR_GROUP.attribute->undeclared_charset && *CURR_GROUP.attribute->undeclared_charset) ? (*CURR_GROUP.attribute->undeclared_charset) : "US-ASCII", tinrc.mm_local_charset, FALSE);
+			csguess_convert_str(&c, (CURR_GROUP.attribute->undeclared_charset && *CURR_GROUP.attribute->undeclared_charset) ? *CURR_GROUP.attribute->undeclared_charset : "US-ASCII");
 	} else
-		process_charsets(&c, &max_len, "US-ASCII", tinrc.mm_local_charset, FALSE);
+		csguess_convert_str(&c, "US-ASCII");
 #endif /* !CHARSET_CONVERSION */
 	sc = c;
 
@@ -411,7 +406,7 @@ b642str(
 	char *out)
 {
 	char *t;
-	int bits = 0;
+	int bits;
 	unsigned pattern;
 	unsigned char x;
 
@@ -1022,7 +1017,7 @@ do_rfc15211522_encode(
 		 * TODO: - what about 8bit chars in the mentioned headers
 		 *         when !allow_8bit_header?
 		 */
-		if (allow_8bit_header || (!strncasecmp(header, "References: ", 12) || !strncasecmp(header, "Message-ID: ", 12) || !strncasecmp(header, "Date: ", 6) || !strncasecmp(header, "Newsgroups: ", 12) || !strncasecmp(header, "Distribution: ", 14) || !strncasecmp(header, "Followup-To: ", 13) || !strncasecmp(header, "X-Face: ", 8) || !strncasecmp(header, "Cancel-Lock: ", 13) || !strncasecmp(header, "Cancel-Key: ", 12) || !strncasecmp(header, "Supersedes: ", 12) || !strncasecmp(header, "Path: ", 6)))
+		if (allow_8bit_header || (!strncasecmp(header, "References: ", 12) || !strncasecmp(header, "Message-ID: ", 12) || !strncasecmp(header, "Date: ", 6) || !strncasecmp(header, "Newsgroups: ", 12) || !strncasecmp(header, "Distribution: ", 14) || !strncasecmp(header, "Followup-To: ", 13) || !strncasecmp(header, "X-Face: ", 8) || !strncasecmp(header, "Cancel-Lock: ", 13) || !strncasecmp(header, "Cancel-Key: ", 12) || !strncasecmp(header, "Supersedes: ", 12) || !strncasecmp(header, "Path: ", 6) || !strncasecmp(header, "Xref: ", 6)))
 			fputs(header, g);
 		else {
 #ifdef CHARSET_CONVERSION

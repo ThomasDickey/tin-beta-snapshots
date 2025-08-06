@@ -651,7 +651,7 @@ dump_thread(
 	if (msgid->article >= 0)
 		sprintf(ptr + len, "%-*.*s   %-17.17s", i, i, arts[msgid->article].subject, (arts[msgid->article].mailbox->name) ? arts[msgid->article].mailbox->name : arts[msgid->article].mailbox->from);
 	else
-		sprintf(ptr + len, "%-*.*s", i, i, _("[- Unavailable -]"));
+		sprintf(ptr + len, "%-*.*s", i, i, "[- Unavailable -]");
 
 	fprintf(fp, "%s\n", ptr);
 

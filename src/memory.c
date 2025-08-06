@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-14
+ *  Updated   : 2025-07-30
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -81,6 +81,9 @@ static void free_serverrc_strings(void);
 static void free_newnews_array(void);
 static void free_if_not_default(char ***attrib, char **deflt);
 static void free_input_history(void);
+#ifdef NNTP_ABLE
+	static void free_distrib_pats(void);
+#endif /* NNTP_ABLE */
 
 
 /*
@@ -250,6 +253,9 @@ free_all_arrays(
 		init_screen_array(FALSE);
 #endif /* !USE_CURSES */
 
+#ifdef NNTP_ABLE
+	free_distrib_pats();
+#endif /* NNTP_ABLE */
 	free_art_array();
 	free_msgids();
 	FreeAndNull(arts);
@@ -498,6 +504,8 @@ free_tinrc_strings(
 #	ifdef NNTPS_ABLE
 		FreeAndNull(tinrc.tls_ca_cert_file);
 #	endif /* NNTPS_ABLE */
+	FreeAndNull(tinrc.serverrc_add_cmd_line_opts);
+	FreeAndNull(tinrc.serverrc_disabled_nntp_cmds);
 }
 
 
@@ -625,6 +633,25 @@ free_input_history(
 		}
 	}
 }
+
+
+#ifdef NNTP_ABLE
+static void
+free_distrib_pats(
+	void)
+{
+	t_distrib_pat *p, *q;
+
+	for (p = nntp_caps.distrib_pats; p != NULL; p = q) {
+		q = p->next;
+		FreeIfNeeded(p->pattern);
+		free(p->distribution);
+		FreeIfNeeded(p->description);
+		free(p);
+	}
+	nntp_caps.distrib_pats = NULL;
+}
+#endif /* NNTP_ABLE */
 
 
 void *

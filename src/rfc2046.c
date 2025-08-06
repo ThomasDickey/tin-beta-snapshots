@@ -1519,9 +1519,10 @@ count_lines(
 	char c;
 	int lines = 1;
 
-	while ((c = *src++))
+	while ((c = *src++)) {
 		if (c == '\n')
 			++lines;
+	}
 	return lines;
 }
 

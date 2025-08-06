@@ -771,12 +771,12 @@ search_body(
 	t_bool forward_fake = TRUE;
 
 	if (!(buf = get_search_pattern(
-			&forward_fake,				/* we pass a dummy var since body search has no `forward' */
-			repeat,
-			_(txt_search_body),
-			_(txt_search_body),
-			&tinrc.default_search_art,
-			HIST_ART_SEARCH
+		&forward_fake,				/* we pass a dummy var since body search has no `forward' */
+		repeat,
+		_(txt_search_body),
+		_(txt_search_body),
+		&tinrc.default_search_art,
+		HIST_ART_SEARCH
 	))) return -1;
 
 	last_search = GLOBAL_SEARCH_BODY;	/* store last search type for repeated search */

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-15
+ *  Updated   : 2025-07-30
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -198,6 +198,10 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	include <limits.h>
 #endif /* HAVE_LIMITS_H */
 
+#ifdef HAVE_STDINT_H
+#	include <stdint.h>
+#endif /* HAVE_STDINT_H */
+
 #if defined(ENABLE_LONG_ARTICLE_NUMBERS) && !defined(SMALL_MEMORY_MACHINE)
 /*
  * defines and typedefs for 64 bit article numbers
@@ -214,9 +218,6 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #			endif /* HAVE_STRTOLL */
 #		endif /* HAVE_ATOLL || HAVE_ATOQ */
 #	endif /* HAVE_INT_LEAST64_T || HAVE_LONG_LONG || quad_t */
-#	ifdef HAVE_STDINT_H
-#		include <stdint.h>
-#	endif /* HAVE_STDINT_H */
 #endif /* ENABLE_LONG_ARTICLE_NUMBERS && !SMALL_MEMORY_MACHINE */
 #ifdef USE_LONG_ARTICLE_NUMBERS
 #	if defined(HAVE_INT_LEAST64_T) && defined(HAVE_PRIDLEAST64) && defined(HAVE_SCNDLEAST64) && defined(HAVE_INT64_C)
@@ -778,6 +779,8 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  * case insensitive
  */
 #	define TELNET_REGEX	"\\btelnet://(?:[^:@/]*(?::[^:@/]*)?@)?(?:(?:[^\\W_](?:(?:-|[^\\W_]){0,61}(?<!---)[^\\W_])?\\.)+[a-z]{2,14}\\.?||localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?/?"
+	/* https://github.com/package-url/purl-spec/blob/main/PURL-SPECIFICATION.rst */
+#	define PURL_REGEX	"\\bpkg:/{0,2}[a-zA-Z][a-zA-Z\\d._~-]+/(?:[a-zA-Z\\d._%~-]+/)?[a-zA-Z\\d._~-]+(?:@[a-zA-Z\\d._:%~-]+)?(?:\\?[a-zA-Z\\d._%~+=/&-]+)?(?:#[a-zA-Z\\d._%/~-]+)?\\b"
 #endif /* 0 */
 
 
@@ -1260,6 +1263,7 @@ enum {
 #define ATTACHMENT_LEVEL	(1 << 8)
 #define URL_LEVEL			(1 << 9)
 #define POSTED_LEVEL		(1 << 10)
+#define SERVERRC_LEVEL		(1 << 11)
 
 #define MINI_HELP_LINES		5
 
@@ -1418,6 +1422,12 @@ enum section_type {
 	SECTION_YENC_INCOMPLETE,	/* something missing */
 	SECTION_YENC_PARTIAL,		/* one full part of a multipart */
 	SECTION_YENC_CORRUPT		/* e.g. crc or size mismatch */
+};
+
+
+enum menu_type {
+	options_menu = 0,
+	serverrc_menu
 };
 
 
@@ -2397,6 +2407,17 @@ typedef struct urllist {
 } t_url;
 
 
+#ifdef NNTP_ABLE
+typedef struct distribpat {
+	int weight;
+	char *pattern;
+	char *distribution;
+	char *description;
+	struct distribpat *next;
+} t_distrib_pat;
+#endif /* NNTP_ABLE */
+
+
 /*
  * Determine signal return type
  */
@@ -2812,12 +2833,10 @@ extern int fclose(FILE *);
 #define TIN_LETTER_NAME	".letter"
 #define TIN_BUGREPORT_NAME	".bugreport"
 
-/* read_news_active_file() / open_newsgroups_fp() */
-#ifndef DISABLE_PIPELINING
-#	define PIPELINE_LIMIT 45
-#else
-#	define PIPELINE_LIMIT 1
-#endif /* DISABLE_PIPELINING */
+/* serverrc.nntp_pipeline_limit (was DISABLE_PIPELINING) */
+#define PIPELINE_LIMIT_DEFAULT	50
+#define PIPELINE_LIMIT_MAX		256
+#define PIPELINE_LIMIT_MIN		1
 
 #ifndef DEBUG_H
 #	include "debug.h"

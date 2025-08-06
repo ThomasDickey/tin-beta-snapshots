@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-18
+ *  Updated   : 2025-07-22
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1212,8 +1212,7 @@ get_author(
 	size_t len)
 {
 	char *p, *ptr = str;
-	int author;
-	size_t curr_len, rem_len = len - 1;
+	int author, curr_len, rem_len = len;
 	struct t_mailbox *mb = &art->mailbox;
 
 	*ptr = '\0';
@@ -1225,11 +1224,11 @@ get_author(
 
 		switch (author) {
 			case SHOW_FROM_ADDR:
-				strncpy(ptr, p, rem_len);
+				snprintf(ptr, rem_len, "%s", p);
 				break;
 
 			case SHOW_FROM_NAME:
-				strncpy(ptr, (mb->name ? mb->name : p), rem_len);
+				snprintf(ptr, rem_len, "%s", mb->name ? mb->name : p);
 				break;
 
 			case SHOW_FROM_BOTH:
@@ -1238,9 +1237,8 @@ get_author(
 						snprintf(ptr, rem_len, "\"%s\" <%s>", mb->name, p);
 					else
 						snprintf(ptr, rem_len, "%s <%s>", mb->name, p);
-				}
-				else
-					strncpy(ptr, p, rem_len);
+				} else
+					snprintf(ptr, rem_len, "%s", p);
 				break;
 
 			case SHOW_FROM_NONE:
@@ -1257,7 +1255,8 @@ get_author(
 		else if ((mb = mb->next)) {
 			strcat(ptr, ", ");
 			curr_len = strlen(ptr);
-			rem_len -= curr_len;
+			if ((rem_len -= curr_len) <= 0)
+				break;
 			ptr += curr_len;
 		}
 	} while (mb);
@@ -3921,7 +3920,6 @@ strip_line(
 }
 
 
-#if defined(CHARSET_CONVERSION) || (defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE))
 /*
  * 'check' a given UTF-8 string and '?'-out illegal sequences
  * TODO: is this check complete?
@@ -4063,7 +4061,6 @@ utf8_valid(
 	}
 	return line;
 }
-#endif /* CHARSET_CONVERSION || (MULTIBYTE_ABLE && !NO_LOCALE) */
 
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -4977,21 +4974,18 @@ make_connection_page(
 		fprintf(fp, "local overviews    : %s%s\n", idx_nd, add_slash ? "/" : "");
 #endif /* USE_ZLIB */
 		free(idx_nd);
-    }
+	}
 
 #ifdef DEBUG
-	{	/* till we have a serverrc-menu */
+	{	/*
+		 * till we have a serverrc-menu
+		 * the user likely remembers what he just gave
+		 * on the cmd.-line so we omit that here
+		 */
 		const char *e = get_val("TINRC", NULL);
-		size_t l = strlen(BlankIfNull(e)) + strlen(BlankIfNull(serverrc.add_cmd_line_opts));
 
-		if (l) {
-			fprintf(fp, "\n$TINRC + serverrc  : ");
-			if (e && *e && *serverrc.add_cmd_line_opts)
-				fprintf(fp, "%s %s", e, serverrc.add_cmd_line_opts);
-			else
-				fprintf(fp, "%s", (e && *e) ? e : serverrc.add_cmd_line_opts);
-			fprintf(fp, "\n");
-		}
+		if (strlen(BlankIfNull(e)) + strlen(BlankIfNull(serverrc.add_cmd_line_opts)))
+			fprintf(fp, "\n\'$TINRC\' \'serverrc\': \'%s\' \'%s\'\n", BlankIfNull(e), BlankIfNull(serverrc.add_cmd_line_opts));
 	}
 #endif /* DEBUG */
 }

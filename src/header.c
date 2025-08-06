@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2025-04-07
+ *  Updated   : 2025-07-24
  *
  * Copyright (c) 1997-2025 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -277,14 +277,21 @@ get_full_name(
 void
 get_from_name(
 	char *from_name,
+	size_t len,
 	const struct t_group *thisgrp)
 {
 	const char *fromhost = domain_name;
 
+	assert(((void) "len must not be < 3", len > 2));	/* <@> */
+
 	if (thisgrp && thisgrp->attribute->from && *thisgrp->attribute->from && strchr(*thisgrp->attribute->from, '@'))
-		strcpy(from_name, *thisgrp->attribute->from);
-	else
-		sprintf(from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), BlankIfNull(get_full_name()), userid, BlankIfNull(fromhost));
+		snprintf(from_name, len, "%s", *thisgrp->attribute->from);
+	else {
+		if (tinrc.mail_address && *tinrc.mail_address && strchr(tinrc.mail_address, '@'))
+			snprintf(from_name, len, "%s", tinrc.mail_address);
+		else
+			snprintf(from_name, len, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), BlankIfNull(get_full_name()), userid, BlankIfNull(fromhost));
+	}
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)

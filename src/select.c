@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-18
+ *  Updated   : 2025-07-31
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -71,6 +71,7 @@ static void sync_active_file(void);
 static void yank_active_file(void);
 #ifdef NNTP_ABLE
 	static char *lookup_msgid(const char *msgid);
+	static char *nntp_list_newsgroups_grp(const char *group);
 	static struct t_group *get_group_from_list(char *newsgroups);
 #endif /* NNTP_ABLE */
 
@@ -527,36 +528,75 @@ selection_page(
 					snprintf(buf, sizeof(buf), _(txt_post_newsgroups), BlankIfNull(tinrc.default_post_newsgroups));
 					if (!prompt_string_ptr_default(buf, &tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
 						break;
+
 					str_trim(tinrc.default_post_newsgroups);
 					if (!*tinrc.default_post_newsgroups)
 						break;
-					if (group_find(tinrc.default_post_newsgroups, FALSE) == NULL) {
-						error_message(2, _(txt_not_in_active_file), tinrc.default_post_newsgroups);
-						break;
-					} else {
-						STRCPY(buf, tinrc.default_post_newsgroups);
-#if 1 /* TODO: fix the rest of the code so we don't need this anymore */
-						/*
-						 * this is a gross hack to avoid a crash in the
-						 * CHARSET_CONVERSION case in new_part()
-						 * which currently relies on CURR_GROUP
-						 */
-						selmenu.curr = my_group_add(buf, FALSE);
-						/*
-						 * and the next hack to avoid a grabbled selection
-						 * screen after the posting
-						 */
-						toggle_my_groups(NULL);
-						toggle_my_groups(NULL);
-#endif /* 1 */
+					else {
+						char *cg, *ng, *ngcpy, *new_list = NULL, *reject = NULL;
+
+						n = 0;
+						*buf = '\0';
+						ng = ngcpy = my_strdup(tinrc.default_post_newsgroups);
+						while ((cg = strtok(ng, ", \t")) != NULL) {
+							if (group_find(cg, FALSE) == NULL) {
+								reject = append_to_string(reject, cg);
+								reject = append_to_string(reject, ",");
+								++n;
+							} else {
+								if (!*buf)
+									strcpy(buf, cg);
+								new_list = append_to_string(new_list, cg);
+								new_list = append_to_string(new_list, ",");
+							}
+							ng = NULL;
+						}
+						free(ngcpy);
+						if (reject && *reject) {
+							i = strlen(reject);
+							if (*(reject + i - 1) == ',')
+								*(reject + i - 1) = '\0';
+							/* TODO: improve error/warningf (-n) message */
+							error_message((n & 0x07), _(txt_not_in_active_file), reject);
+							free(reject);
+						}
+						if (new_list && *new_list) {
+							if (n) { /* without errors no need to use new_list */
+								i = strlen(new_list);
+								if (*(new_list + i - 1) == ',')
+									*(new_list + i - 1) = '\0';
+								strcpy(tinrc.default_post_newsgroups, new_list);
+							}
+							free(new_list);
+						}
+						if (!*buf) {
+							error_message(3, "%s%s", P_(txt_error_no_valid_newsgroup_sp[0], txt_error_no_valid_newsgroup_sp[1], n), list_active ? "" :  _(txt_error_retry_without_n));
+							break;
+						}
 					}
+#if 1 /* TODO: fix the rest of the code so we don't need this anymore */
+					/*
+					 * this is a gross hack to avoid a crash in the
+					 * CHARSET_CONVERSION case in new_part()
+					 * which currently relies on CURR_GROUP
+					 */
+					selmenu.curr = my_group_add(buf, FALSE);
+					*buf = '\0';
+					/*
+					 * and the next hack to avoid a grabbled selection
+					 * screen after the posting
+					 */
+					toggle_my_groups(NULL);
+					toggle_my_groups(NULL);
+#endif /* 1 */
 				} else
 					STRCPY(buf, CURR_GROUP.name);
+
 				if (!can_post && !CURR_GROUP.bogus && !(CURR_GROUP.attribute->mailing_list && *CURR_GROUP.attribute->mailing_list)) {
 					info_message(_(txt_cannot_post));
 					break;
 				}
-				if (post_article(buf))
+				if (post_article(*buf ? buf : tinrc.default_post_newsgroups))
 					show_selection_page();
 				break;
 
@@ -747,7 +787,7 @@ build_gline(
 	wchar_t *active_name, *active_name2 = NULL, *active_desc, *active_desc2;
 #else
 	char *active_name, *active_name2;
-	size_t fill, len_start;
+	int fill, len_start;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 #ifdef USE_CURSES
@@ -1092,8 +1132,79 @@ choose_new_group(
 		return -1;
 
 	clear_message();
+	idx = my_group_add(tinrc.default_goto_group, TRUE);
 
-	if ((idx = my_group_add(tinrc.default_goto_group, TRUE)) == -1)
+	if (idx == -1 && !list_active) {
+		struct t_group *ptr;
+		t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
+
+		if (!group_get_art_info(spooldir, tinrc.default_goto_group, GROUP_TYPE_NEWS, &count, &max, &min)) {
+			if ((idx = my_group_add(tinrc.default_goto_group, TRUE)) < 0) {
+				if ((ptr = group_add(tinrc.default_goto_group)) != NULL) {
+					char *desc = NULL;
+					char *moderated = my_malloc(NNTP_STRLEN);
+
+					moderated[0] = 'y';
+					moderated[1] = '\0';
+#		ifdef NNTP_ABLE
+					if (read_news_via_nntp && nntp_caps.type == CAPABILITIES) {
+						if (nntp_caps.list_active) {
+							if (nntp_list_active_grp(tinrc.default_goto_group, moderated) && nntp_caps.list_newsgroups)
+								desc = nntp_list_newsgroups_grp(tinrc.default_goto_group);
+						}
+					}
+#		endif /* NNTP_ABLE */
+#		ifndef NNTP_ONLY
+					if (!read_news_via_nntp && !list_active) {
+						FILE *fp;
+						char *rp;
+						size_t gl = strlen(tinrc.default_goto_group);
+						t_artnum ac_min = T_ARTNUM_CONST(1), ac_max = T_ARTNUM_CONST(0);
+
+						if ((fp = tin_fopen(news_active_file, "r")) != NULL) {
+							while ((rp = tin_fgets(fp, FALSE)) != NULL) {
+								if (strncmp(tinrc.default_goto_group, rp, gl))
+									continue;
+
+								if (*(rp + gl) != ' ')
+									continue;
+
+								if (parse_active_line(rp, &ac_max, &ac_min, moderated))
+									break;
+							}
+							fclose(fp);
+						}
+
+						if ((fp = tin_fopen(newsgroups_file, "r")) != NULL) {
+							while ((rp = tin_fgets(fp, FALSE)) != NULL) {
+								if (strncmp(tinrc.default_goto_group, rp, gl))
+									continue;
+
+								if (!isblank(*(rp + gl)))
+									continue;
+
+								if (*(rp + gl + 1))
+									desc = my_strdup(rp + gl + 1);
+								break;
+							}
+							fclose(fp);
+						}
+					}
+#		endif /* NNTP_ONLY */
+
+					active_add(ptr, count, max, min, moderated);
+					if ((idx = my_group_add(tinrc.default_goto_group, TRUE)) != -1) {
+						assign_attributes_to_groups();
+						if (desc)
+							active[my_group[idx]].description = convert_to_printable(desc, FALSE);
+					}
+					free(moderated);
+				}
+			}
+		}
+	}
+
+	if (idx == -1)
 		info_message(_(txt_not_in_active_file), tinrc.default_goto_group);
 
 	return idx;
@@ -1462,9 +1573,9 @@ subscribe_pattern(
 	wait_message(0, message);
 
 	for_each_group(i) {
+		spin_cursor();
 		if (match_group_list(active[i].name, buf)) {
 			if (active[i].subscribed != (state != FALSE)) {
-				spin_cursor();
 				if ((size_t) subscribe_num == groups_size) {
 					groups_size <<= 1;
 					groups = my_realloc(groups, groups_size * sizeof(struct t_group *));
@@ -1480,7 +1591,186 @@ subscribe_pattern(
 		}
 	}
 
-	bulk_subscribe(groups, subscribe_num, SUB_CHAR(state), TRUE);
+	if (!list_active) {
+		char *line;
+		char *s, *name;
+		char moderated[PATH_LEN];
+		int idx;
+		struct t_group *ptr;
+		t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
+
+#ifdef NNTP_ABLE
+		if (read_news_via_nntp) {
+			if (nntp_caps.type == CAPABILITIES && nntp_caps.list_active) {	/* "LIST ACTIVE pattern" */
+				char cmd[NNTP_STRLEN];
+
+				snprintf(cmd, sizeof(cmd), "LIST ACTIVE %.*s", (int) (NNTP_STRLEN - strlen("LIST ACTIVE ") - 1), buf);
+				switch (new_nntp_command(cmd, OK_GROUPS, NULL, 0)) {
+					case OK_GROUPS:
+						while ((line = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+							spin_cursor();
+#	ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "<<<%s%s", logtime(), line);
+#	endif /* DEBUG */
+							if (parse_active_line(line, &max, &min, moderated)) { /* parse_active_line() modifies line */
+								if (my_group_add(line, FALSE) < 0) {
+									if ((ptr = group_add(line)) != NULL) {
+										if ((size_t) subscribe_num == groups_size) {
+											groups_size <<= 1;
+											groups = my_realloc(groups, groups_size * sizeof(struct t_group *));
+										}
+										active_add(ptr, count, max, min, moderated);
+										groups[subscribe_num] = &active[i];
+										my_group_add(line, FALSE);
+										++i;
+										++subscribe_num;
+									}
+								}
+							}
+						}
+						break;
+
+					default:
+						break;
+				}
+
+				if (subscribe_num) {
+					if (nntp_caps.list_newsgroups) { /* "LIST NEWSGROUPS list" */
+						t_bool conv_needed;
+
+						snprintf(cmd, sizeof(cmd), "LIST NEWSGROUPS %.*s", (int) (NNTP_STRLEN - strlen("LIST NEWSGROUPS ") - 1), buf);
+						switch (new_nntp_command(cmd, OK_GROUPS, NULL, 0)) {
+							case OK_GROUPS:
+								while ((line = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+									spin_cursor();
+#	ifdef DEBUG
+									if (debug & DEBUG_NNTP)
+										debug_print_file("NNTP", "<<<%s%s", logtime(), line);
+#	endif /* DEBUG */
+									if ((s = strpbrk(line, " \t")) == NULL)
+										continue;
+
+									*s++ = '\0';
+									if (!match_group_list(line, buf))
+										continue;
+
+									if ((idx = find_group_index(line, FALSE)) != -1) {
+										conv_needed = FALSE;
+										name = my_strdup(s);
+										while (*s) {
+											if (*s == '\t')
+												*s = ' ';
+											else {
+												if (!conv_needed && (*s < 0x20 || !isascii((unsigned char) *s)))
+													conv_needed = TRUE;
+											}
+											++s;
+										}
+										FreeIfNeeded(active[idx].description);
+										if (conv_needed)
+											csguess_convert_str(&name, "UTF-8");
+										str_trim(name);
+										if (*name)
+											active[idx].description = convert_to_printable(name, FALSE);
+										else
+											free(name);
+									}
+								}
+								break;
+
+							default:
+								break;
+						}
+					}
+
+					{	/* mark unread (does "GROUP"-cmd. so it can't be done above) */
+						int j = subscribe_num;
+						int k = i;
+
+						while (j--)
+							grp_mark_unread(&active[--k]);
+					}
+					assign_attributes_to_groups();
+				}
+			} else {
+				/*
+				 * 'S' with -n on pre RFC3977 server doesn't work, it may
+				 * result in too much data (full active file), we could
+				 * filter that on our own (match_group_list()) but that
+				 * would be not a big win over just leaving out -n.
+				 */
+				info_message(_(txt_no_match));
+				free(groups);
+				return;
+			}
+		}
+#	ifndef NNTP_ONLY
+		else
+#	endif /* !NNTP_ONLY */
+#endif /* NNTP_ABLE */
+
+#ifndef NNTP_ONLY
+		{ /* local spool */
+			FILE *fp;
+
+			if ((fp = tin_fopen(news_active_file, "r")) != NULL) {
+				while ((line = tin_fgets(fp, FALSE)) != NULL) {
+					spin_cursor();
+					if ((s = strchr(line, ' ')) == NULL)
+						continue;
+
+					name = my_strndup(line, s - line);
+					if (match_group_list(name, buf)) {
+						if (!group_get_art_info(spooldir, name, GROUP_TYPE_NEWS, &count, &max, &min)) {
+							if (my_group_add(name, FALSE) < 0) {
+								if ((ptr = group_add(name)) != NULL) {
+									if (parse_active_line(line, &max, &min, moderated)) {
+										if ((size_t) subscribe_num == groups_size) {
+											groups_size <<= 1;
+											groups = my_realloc(groups, groups_size * sizeof(struct t_group *));
+										}
+										active_add(ptr, count, max, min, moderated);
+										groups[subscribe_num] = &active[i];
+										my_group_add(name, FALSE);
+										grp_mark_unread(&active[i]);
+										++i;
+										++subscribe_num;
+									}
+								}
+							}
+						}
+					}
+					free(name);
+				}
+				fclose(fp);
+				assign_attributes_to_groups();
+			}
+			if (subscribe_num) {
+				if ((fp = tin_fopen(newsgroups_file, "r")) != NULL) {
+					while ((line = tin_fgets(fp, FALSE)) != NULL) {
+						spin_cursor();
+						if ((s = strpbrk(line, " \t")) == NULL)
+							continue;
+
+						*s++ = '\0';
+						if (!match_group_list(line, buf))
+							continue;
+
+						if ((idx = find_group_index(line, FALSE)) != -1) {
+							name = my_strdup(s);
+							FreeIfNeeded(active[idx].description);
+							active[idx].description = convert_to_printable(name, FALSE);
+						}
+					}
+					fclose(fp);
+				}
+			}
+		}
+#endif /* !NNTP_ONLY */
+	}
+	/* avoid GROUP cmds via get_subscribe_info(group_get_art_info()) */
+	bulk_subscribe(groups, subscribe_num, SUB_CHAR(state), subscribe_num && read_news_via_nntp && nntp_caps.type == CAPABILITIES && nntp_caps.list_active ? FALSE : TRUE);
 
 	free(groups);
 
@@ -1568,8 +1858,49 @@ lookup_msgid(
 			char buf[NNTP_STRLEN];
 			int ret;
 
-			if (nntp_caps.hdr_cmd) {
-				snprintf(buf, sizeof(buf), "%s Newsgroups %s", nntp_caps.hdr_cmd, msgid);
+			if (nntp_caps.hdr_cmd && *nntp_caps.hdr_cmd) {
+				char *s, *e;
+				int which_hdr = 0;
+				t_bool skip;
+
+				/*
+				 * check which hds are available via HDR msg-id
+				 * and if available prefer "HDR Xref ID" as that will
+				 * only return the local available groups and in
+				 * case of control messages the pseudo group used.
+				 */
+				if (nntp_caps.type == CAPABILITIES && !*nntp_caps.headers_id) {
+					switch (new_nntp_command("LIST HEADERS MSGID", 215, NULL, 0)) {
+						case 215:
+							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#		ifdef DEBUG
+								if (debug & DEBUG_NNTP)
+									debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+#		endif /* DEBUG */
+								nntp_caps.headers_id = append_to_string(nntp_caps.headers_id, ptr);
+								nntp_caps.headers_id = append_to_string(nntp_caps.headers_id, "\n");
+							}
+
+						default:
+							break;
+					}
+				}
+
+				if (nntp_caps.headers_id && (ptr = strtok(nntp_caps.headers_id, "\n")) != NULL) {
+					do { /* TODO: avoid magic numbers */
+						if ((*ptr == ':' && *(ptr + 1) == '\0')) {
+							which_hdr = 3;
+							break;
+						}
+						if (!strncasecmp(ptr, "Xref", 4))
+							which_hdr |= 1;
+						if (!strncasecmp(ptr, "Newsgroups", 10))
+							which_hdr |= 2;
+					} while (*ptr && (ptr = strtok(NULL, "\n")) != NULL);
+				} else
+					which_hdr = 1; /* fallback, try [X]HDR Xref */
+
+				snprintf(buf, sizeof(buf), "%s %s %s", nntp_caps.hdr_cmd, (which_hdr & 1) ? "Xref" : "Newsgroups", msgid);
 				ret = new_nntp_command(buf, (nntp_caps.type == CAPABILITIES) ? OK_HDR : OK_HEAD, NULL, 0);
 
 				switch (ret) {
@@ -1581,30 +1912,52 @@ lookup_msgid(
 							if (debug & DEBUG_NNTP)
 								debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #		endif /* DEBUG */
-
-							if (ret == OK_HEAD) { /* RFC 2980 ("%s %s", id, grp) */
-								if (!strncmp(ptr, msgid, strlen(msgid))) { /* INN, MPNews, Leafnode, Cnews nntpd */
-									r = ptr + strlen(msgid) + 1;
-								} else { /* DNEWS ("%d %s", num, grp) */
-									r = ptr;
-									while (*r && *r != ' ' && *r != '\t')
-										++r;
-									while (*r && (*r == ' ' || *r == '\t'))
-										++r;
+							if (ret == OK_HEAD || (ret == OK_HDR && (which_hdr & 1))) {
+								s = ptr;
+								if (*s == '0' && *(s + 1) == ' ') /* RFC 3977, "0 site.name gro.up:num gr.oup:num ..." */
+									s += 2;
+								else { /* RFC 2980 "<ID> site.name gro.up:num gr.oup:num ..." */
+									if (*ptr == '<') {
+										while (*s && !isspace((unsigned char) *s))
+											++s;
+										while (*s && isspace((unsigned char) *s))
+											++s;
+									}
 								}
-							}
+								/* skip site name */
+								while (*s && !isspace((unsigned char) *s))
+									++s;
+								while (*s && isspace((unsigned char) *s))
+									++s;
 
-							if (ret == OK_HDR) { /* RFC 3977 ("0 %s", grp) */
+								if (*s) { /* reformat, Newsgroups-style - ID should be available in the first group but ... */
+									skip = FALSE;
+									x = e = my_malloc(strlen(s) + 1);
+									while (*s) {
+										if (*s == ':') {
+											*e++ = ',';
+											skip = TRUE;
+										}
+										if (!skip && *s != ':' && !isspace((unsigned char) *s))
+											*e++ = *s;
+										if (isspace((unsigned char) *s))
+											skip = FALSE;
+										++s;
+									}
+									if (e == x) {
+										FreeAndNull(x);
+									} else
+											*--e = '\0';
+								}
+							} else { /* HDR Newsgroups */
 								if (*ptr == '0' && (*(ptr + 1) == ' ' || *(ptr + 1) == '\t'))
 									r = ptr + 2;
-							}
-
-							if (r) {
-								FreeIfNeeded(x);	/* only required on bogus multi responses, just to be safe */
-								x = my_strdup(r);
+								if (r) {
+									FreeIfNeeded(x);	/* only required on bogus multi responses, just to be safe */
+									x = my_strdup(r);
+								}
 							}
 						}
-
 						if (x)
 							return x;
 
@@ -1621,8 +1974,15 @@ lookup_msgid(
 						break;
 
 					case ERR_NOART:
+					case 530: /* colobus 3.0 */
 						info_message(_(txt_art_unavailable));
 						return NULL;
+
+					case ERR_COMMAND: /* Usenet.Farm announces HDR but ... */
+						nntp_caps.hdr_cmd = NULL;
+						nntp_caps.hdr = FALSE;
+						nntp_caps.xpat = TRUE;
+						break;
 
 					default:
 						if (!nntp_caps.xpat) { /* try only once */
@@ -1733,6 +2093,36 @@ show_article_by_msgid(
 	while ((cg = strtok(ng, ",")) != NULL) {
 		if ((selmenu.curr = my_group_add(cg, FALSE)) != -1)
 			break;
+		else {
+			struct t_group *ptr;
+			t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
+
+			if (!group_get_art_info(spooldir, cg, GROUP_TYPE_NEWS, &count, &max, &min)) {
+				if ((selmenu.curr = my_group_add(cg, FALSE)) < 0) {
+					if ((ptr = group_add(cg)) != NULL) {
+						char *desc = NULL;
+						char *moderated = my_malloc(NNTP_STRLEN);
+
+						moderated[0] = 'y';
+						moderated[1] = '\0';
+						if (nntp_caps.type == CAPABILITIES && nntp_caps.list_active) {
+							if (nntp_list_active_grp(cg, moderated) && nntp_caps.list_newsgroups)
+								desc = nntp_list_newsgroups_grp(cg);
+						}
+
+						active_add(ptr, count, max, min, moderated);
+						free(moderated);
+						if ((selmenu.curr = my_group_add(cg, FALSE)) != -1) {
+							assign_attributes_to_groups();
+							if (desc)
+								active[my_group[selmenu.curr]].description = convert_to_printable(desc, FALSE);
+							break;
+						}
+					}
+				} else
+					break;
+			}
+		}
 		ng = NULL;
 	}
 
@@ -1829,5 +2219,58 @@ get_group_from_list(
 	} while (!found && (ptr = strtok(NULL, ",")) != NULL);
 
 	return found ? group : NULL;
+}
+#endif /* NNTP_ABLE */
+
+
+/* caller must free returned string */
+#ifdef NNTP_ABLE
+static char *
+nntp_list_newsgroups_grp(
+	const char *group)
+{
+	char *line, *p = NULL, *desc;
+	char cmd[NNTP_STRLEN];
+	t_bool conv_needed = FALSE;
+
+	snprintf(cmd, sizeof(cmd), "LIST NEWSGROUPS %s", group);
+	switch (new_nntp_command(cmd, OK_GROUPS, NULL, 0)) {
+		case OK_GROUPS:
+			while ((line = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#	ifdef DEBUG
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "<<<%s%s", logtime(), line);
+#	endif /* DEBUG */
+
+				if ((p = strpbrk(line, " \t")) == NULL)
+					continue;
+
+				*p++ = '\0';
+			}
+			break;
+
+			default:
+				break;
+	}
+
+	if (p && *p) {
+		desc = my_strdup(p);
+		while (*p) {
+			if (*p == '\t')
+				*p = ' ';
+			else {
+				if (!conv_needed && (*p < 0x20 || !isascii((unsigned char) *p))) {
+					conv_needed = TRUE;
+					break;
+				}
+			}
+			++p;
+		}
+		if (conv_needed)
+			csguess_convert_str(&desc, "UTF-8");
+		str_trim(desc);
+		return desc;
+	}
+	return NULL;
 }
 #endif /* NNTP_ABLE */

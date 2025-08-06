@@ -20,6 +20,11 @@ New features
 - -t timeout cmd.-line option
 - -L <message-id> cmd.-line option
 - -F filter-file cmd.-line option
+- -n cmd.line.grp now also allows to specify a group not present in
+  newsrc yet (same for -nw)
+- 'g'oto group with -n works for group not in newsrc yet
+- 'S'ubscribe pattern with -n may now work for groups not in newsrc yet
+  (local spool with active file and/or RFC 3977 server only)
 - :port suffix in newsauth, newsrctable and -g
 - -[zZMN] now note unsubscribed cmd-line groups
 - cmd. execution via ! for x_body
@@ -53,6 +58,10 @@ New features
 - hide_inline_data can be set per scope via attributes
 - add_cmd_line_opts and disabled_nntp_cmds in serverrc
 - cache_overview_files and compress_overview_files in serverrc
+- keep_expired_filters to keep expired filter rules
+- serverrc-menu via ConfigServerrcMenu ('s')
+- get distributions from "LIST DISTRIB.PATS" and descriptions from
+  "LIST DISTRIBUTIONS" if available
 
 Changes
 -------
@@ -74,6 +83,8 @@ Changes
   value with more options
 - hide_uue (tinrc) has been renamed to hide_inline_data and is now also
   available in attributes
+- lower 8bit check for Newsgroups, Followup-To and Distribution
+  from error to warning
 
 Retired Features
 ----------------

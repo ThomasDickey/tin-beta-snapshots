@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-07
+ *  Updated   : 2025-07-30
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>
@@ -890,7 +890,7 @@ extern constext txt_error_header_line_blank[];
 extern constext txt_error_header_line_colon[];
 extern constext txt_error_header_line_empty[];
 extern constext txt_error_header_line_missing[];
-extern constext txt_error_header_line_not_7bit[];
+extern constext txt_warning_header_line_not_7bit[];
 extern constext txt_error_header_line_space[];
 extern constext txt_error_header_no_name[];
 extern constext txt_error_mailgroup_no_recipient[];
@@ -922,7 +922,8 @@ extern constext txt_error_no_domain_name[];
 #	endif /* INET6 */
 #endif /* NNTP_ABLE */
 extern constext txt_error_newsgroups_poster[];
-
+extern constext *txt_error_no_valid_newsgroup_sp[];
+extern constext txt_error_retry_without_n[];
 extern constext txt_error_option_missing_argument[];
 extern constext txt_error_option_unknown[];
 
@@ -1536,6 +1537,11 @@ extern constext txt_send_bugreport[];
 	extern constext txt_server_name_in_file_env_var[];
 #endif /* NNTP_ABLE */
 extern constext txt_serverconfig_header[];
+extern constext txt_serverrc_config_opts[];
+extern constext txt_serverrc_internal[];
+extern constext txt_serverrc_menu[];
+extern constext txt_serverrc_menu_com[];
+extern constext txt_serverrc_tinrc[];
 extern constext txt_servers_active[];
 extern constext txt_skipped_group[];
 extern constext txt_skipping_newgroups[];
@@ -1715,6 +1721,7 @@ extern constext txt_warn_cancel[];
 #ifdef CHARSET_CONVERSION
 	extern constext txt_warn_charset_conversion[];
 #endif /* CHARSET_CONVERSION */
+extern constext txt_warn_distribution[];
 extern constext txt_warn_distribution_world[];
 extern constext txt_warn_downgrade[];
 extern constext txt_warn_encoding_and_external_inews[];
@@ -2187,6 +2194,7 @@ extern struct opttxt txt_inverse_okay;
 	extern struct opttxt txt_ispell;
 #endif /* HAVE_ISPELL */
 extern struct opttxt txt_keep_dead_articles;
+extern struct opttxt txt_keep_expired_filters;
 extern struct opttxt txt_kill_level;
 extern struct opttxt txt_mail_8bit_header;
 extern struct opttxt txt_mail_address;
@@ -2256,6 +2264,15 @@ extern struct opttxt txt_score_kill;
 extern struct opttxt txt_score_select;
 extern struct opttxt txt_scroll_lines;
 extern struct opttxt txt_select_format;
+extern struct opttxt txt_serverrc_add_cmd_line_opts;
+extern struct opttxt txt_serverrc_cache_overview_files;
+#ifdef USE_ZLIB
+	extern struct opttxt txt_serverrc_compress_overview_files;
+#endif /* USE_ZLIB */
+extern struct opttxt txt_serverrc_config_options;
+extern struct opttxt txt_serverrc_disabled_nntp_cmds;
+extern struct opttxt txt_serverrc_nntp_pipeline_limit;
+extern struct opttxt txt_serverrc_tinrc_override_options;
 extern struct opttxt txt_show_author;
 extern struct opttxt txt_show_description;
 extern struct opttxt txt_show_help_mail_sign;

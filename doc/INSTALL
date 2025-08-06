@@ -63,7 +63,7 @@ The following configure options and defines are documented in detail:
   FORGERY                                 PROFILE
   REQUIRE_BRACKETS_IN_DOMAIN_LITERAL      SMALL_MEMORY_MACHINE
   HAVE_LIBUU                              REREAD_ACTIVE_FILE_SECS
-  HAVE_BROKEN_SSCANF                      DISABLE_PIPELINING
+  HAVE_BROKEN_SSCANF
   OPTIMIZE_JUST_STAR                      MATCH_TAR_PATTERN
   MIN_COLUMNS_ON_TERMINAL                 MIN_LINES_ON_TERMINAL
   MAXARTNUM                               REPRODUCIBLE_BUILD
@@ -296,9 +296,6 @@ time they use tin.
 
 NNTP_SERVER_FILE (default: /etc/nntpserver)
 Only define if your NNTP-server file is other than /etc/nntpserver.
-
-DISABLE_PIPELINING
-Define if your newsserver can't handle pipelined commands.
 
 --enable-long-article-numbers (default: off)
 Add code to handle huge (>2^31) article numbers, such article numbers violate

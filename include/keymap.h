@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2025-05-30
+ *  Updated   : 2025-07-25
  *  Notes     :
  *
  * Copyright (c) 1999-2025 Jason Faultless <jason@altarstone.com>
@@ -170,6 +170,7 @@ enum defined_functions {
 	CONFIG_RESET_ATTRIB,
 	CONFIG_SCOPE_MENU,
 	CONFIG_SELECT,
+	CONFIG_SERVERRC_MENU,
 	CONFIG_NO_SAVE,
 	CONFIG_TOGGLE_ATTRIB,
 	FEED_ARTICLE,

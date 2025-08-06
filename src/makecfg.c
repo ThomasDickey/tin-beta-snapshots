@@ -105,8 +105,8 @@ extern size_t strlen(const char *);
 #define L_CURL '{'
 #define R_CURL '}'
 
-#define MAXNAME 36 /* maximum name-length (just for readability formatting) */
-#define MAXTYPE 5  /* limits opt_type to keep names unique within 31 chars */
+#define MAXNAME 36	/* maximum name-length (just for readability formatting) */
+#define MAXTYPE 5	/* limits opt_type to keep names unique within 31 chars */
 
 #define MYDATA struct mydata
 MYDATA {
@@ -283,12 +283,14 @@ generate_tbl(
 		,"#define OPT_STRING    3"
 		,"#define OPT_NUM       4"
 		,"#define OPT_CHAR      5"
+		,"#define OPT_DUMMY     6"
 		,""
 		,"struct t_option option_table[]={"
 		,NULL
 	};
 	static const char *const table_2[] =
 	{
+		"  { OPT_DUMMY,   0, NULL, NULL, NULL },",
 		"};"
 		,NULL
 	};

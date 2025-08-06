@@ -92,7 +92,7 @@ INS_OLD_SUFFIX	= old
 
 REMAKE		= $(MAKE) @cf_cv_makeflags@ DESTDIR="$(DESTDIR)"
 
-MAN_LINGUAS = de en_GB #es
+MAN_LINGUAS = de en_GB #es ro
 
 # Project
 PROJECT	= `echo @PACKAGE@|sed '@program_transform_name@'`

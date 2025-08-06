@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-22
+ *  Updated   : 2025-08-05
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -73,7 +73,7 @@
 #		define ADD_CAN_LOCK(id) { \
 			if (tinrc.cancel_lock_algo) { \
 				char lock[1024]; \
-				char *lptr = (char *) 0; \
+				char *lptr; \
 				lock[0] = '\0'; \
 				if ((lptr = build_canlock(id, get_secret())) != NULL) { \
 					STRCPY(lock, lptr); \
@@ -94,7 +94,7 @@
 /* gee! ugly hack - but works */
 #	define ADD_MSG_ID_HEADER()	{ \
 		char mid[NNTP_STRLEN]; \
-		const char *mptr = (const char *) 0; \
+		const char *mptr; \
 		mid[0] = '\0'; \
 		if ((mptr = build_messageid()) != NULL) { \
 			STRCPY(mid, mptr); \
@@ -119,9 +119,9 @@
 
 static int start_line_offset = 1;		/* used by invoke_editor for line no. */
 
-char bug_addr[LEN];			/* address to add send bug reports to */
-static char my_distribution[LEN];		/* Distribution: */
-static char reply_to[LEN];		/* Reply-To: address */
+char bug_addr[HEADER_LEN];			/* address to add send bug reports to */
+static char my_distribution[HEADER_LEN];		/* Distribution: */
+static char reply_to[HEADER_LEN];		/* Reply-To: address */
 
 static struct msg_header {
 	char *name;
@@ -136,6 +136,7 @@ static t_posted *post_hist_list;
  */
 static FILE *create_mail_headers(char *filename, size_t filename_len, const char *suffix, const char *to, const char *subject, struct t_header *extra_hdrs);
 static char **build_nglist(char *ngs_list, int *ngcnt);
+static char *find_distribution(const char *ngs_list);
 static char **split_address_list(const char *addresses, unsigned int *cnt);
 static int add_mail_quote(FILE *fp, int respnum);
 static int append_mail(const char *the_article, const char *addr, const char *the_mailbox);
@@ -285,6 +286,7 @@ init_postinfo(
 	void)
 {
 	char *ptr;
+	size_t w;
 
 	/*
 	 * check environment for REPLYTO
@@ -299,6 +301,10 @@ init_postinfo(
 	my_distribution[0] = '\0';
 	if ((ptr = getenv("DISTRIBUTION")) != NULL && *ptr)
 		my_strncpy(my_distribution, ptr, sizeof(my_distribution) - 1);
+	strip_double_ngs(my_distribution);
+	w = strlen(my_distribution);
+	while (w && my_distribution[--w] == ',')
+		my_distribution[w] = '\0';
 }
 
 
@@ -943,7 +949,7 @@ build_post_hist_list(
 			k += 4; /* ",..." */
 		}
 
-		posted->group = my_malloc(k + 1);
+		posted->group = my_calloc(1, k + 1);
 		strncpy(posted->group, p, k);
 
 		if (ng_list) {
@@ -1234,43 +1240,44 @@ append_mail(
 #define CA_ERROR_BAD_MESSAGE_ID            0x0002000
 #define CA_ERROR_BAD_DATE                  0x0004000
 #define CA_ERROR_BAD_EXPIRES               0x0008000
-#define CA_ERROR_NEWSGROUPS_NOT_7BIT       0x0010000
-#define CA_ERROR_FOLLOWUP_TO_NOT_7BIT      0x0020000
-#define CA_ERROR_DISTRIBUTIOIN_NOT_7BIT    0x0040000
-#define CA_ERROR_NEWSGROUPS_POSTER         0x0080000
-#define CA_ERROR_FOLLOWUP_TO_POSTER        0x0100000
-#define CA_ERROR_NO_RECIPIENT              0x0200000
-#define CA_ERROR_EMPTY_BODY                0x0400000
+#define CA_ERROR_NEWSGROUPS_POSTER         0x0010000
+#define CA_ERROR_FOLLOWUP_TO_POSTER        0x0020000
+#define CA_ERROR_NO_RECIPIENT              0x0040000
+#define CA_ERROR_EMPTY_BODY                0x0080000
 #ifndef ALLOW_FWS_IN_NEWSGROUPLIST
-#	define CA_ERROR_SPACE_IN_NEWSGROUPS    0x0800000
-#	define CA_ERROR_NEWLINE_IN_NEWSGROUPS  0x1000000
-#	define CA_ERROR_SPACE_IN_FOLLOWUP_TO   0x2000000
-#	define CA_ERROR_NEWLINE_IN_FOLLOWUP_TO 0x4000000
+#	define CA_ERROR_SPACE_IN_NEWSGROUPS    0x0100000
+#	define CA_ERROR_NEWLINE_IN_NEWSGROUPS  0x0200000
+#	define CA_ERROR_SPACE_IN_FOLLOWUP_TO   0x0400000
+#	define CA_ERROR_NEWLINE_IN_FOLLOWUP_TO 0x0800000
 #endif /* !ALLOW_FWS_IN_NEWSGROUPLIST */
-#define CA_ERROR_DISTRIBUTION_ALL          0x8000000
+#define CA_ERROR_DISTRIBUTION_ALL          0x1000000
 
-#define CA_WARNING_SPACES_ONLY_SUBJECT       0x00001
-#define CA_WARNING_RE_WITHOUT_REFERENCES     0x00002
-#define CA_WARNING_REFERENCES_WITHOUT_RE     0x00004
-#define CA_WARNING_MULTIPLE_SIGDASHES        0x00008
-#define CA_WARNING_WRONG_SIGDASHES           0x00010
-#define CA_WARNING_LONG_SIGNATURE            0x00020
-#define CA_WARNING_ENCODING_EXTERNAL_INEWS   0x00040
-#define CA_WARNING_NEWSGROUPS_EXAMPLE        0x00080
-#define CA_WARNING_FOLLOWUP_TO_EXAMPLE       0x00100
-#define CA_WARNING_DISTRIBUTION_WORLD        0x00200
-#define CA_WARNING_MULTI_ADDRESSES_REPLYTO   0x00400
-#define CA_WARNING_MULTI_ADDRESSES_FROM      0x00800
-#define CA_WARNING_MULTI_ADDRESSES_TO        0x01000
-#define CA_WARNING_RE_ONLY_SUBJECT           0x02000
+#define CA_WARNING_SPACES_ONLY_SUBJECT       0x000001
+#define CA_WARNING_RE_WITHOUT_REFERENCES     0x000002
+#define CA_WARNING_REFERENCES_WITHOUT_RE     0x000004
+#define CA_WARNING_MULTIPLE_SIGDASHES        0x000008
+#define CA_WARNING_WRONG_SIGDASHES           0x000010
+#define CA_WARNING_LONG_SIGNATURE            0x000020
+#define CA_WARNING_ENCODING_EXTERNAL_INEWS   0x000040
+#define CA_WARNING_NEWSGROUPS_EXAMPLE        0x000080
+#define CA_WARNING_FOLLOWUP_TO_EXAMPLE       0x000100
+#define CA_WARNING_DISTRIBUTION_WORLD        0x000200
+#define CA_WARNING_MULTI_ADDRESSES_REPLYTO   0x000400
+#define CA_WARNING_MULTI_ADDRESSES_FROM      0x000800
+#define CA_WARNING_MULTI_ADDRESSES_TO        0x001000
+#define CA_WARNING_RE_ONLY_SUBJECT           0x002000
+#define CA_WARNING_NEWSGROUPS_NOT_7BIT       0x004000
+#define CA_WARNING_FOLLOWUP_TO_NOT_7BIT      0x008000
+#define CA_WARNING_DISTRIBUTION_NOT_7BIT     0x010000
+
 #ifdef CHARSET_CONVERSION
-#	define CA_WARNING_CHARSET_CONVERSION     0x04000
+#	define CA_WARNING_CHARSET_CONVERSION     0x020000
 #endif /* CHARSET_CONVERSION */
 #ifdef ALLOW_FWS_IN_NEWSGROUPLIST
-#	define CA_WARNING_SPACE_IN_NEWSGROUPS    0x08000
-#	define CA_WARNING_NEWLINE_IN_NEWSGROUPS  0x10000
-#	define CA_WARNING_SPACE_IN_FOLLOWUP_TO   0x20000
-#	define CA_WARNING_NEWLINE_IN_FOLLOWUP_TO 0x40000
+#	define CA_WARNING_SPACE_IN_NEWSGROUPS    0x040000
+#	define CA_WARNING_NEWLINE_IN_NEWSGROUPS  0x080000
+#	define CA_WARNING_SPACE_IN_FOLLOWUP_TO   0x100000
+#	define CA_WARNING_NEWLINE_IN_FOLLOWUP_TO 0x200000
 #endif /* ALLOW_FWS_IN_NEWSGROUPLIST */
 
 /*
@@ -1297,6 +1304,7 @@ check_article_to_be_posted(
 	char **followupto = NULL;
 	char *line, *cp, *cp2, *hp;
 	char *to = NULL;
+	char *dist = NULL;
 	char references[HEADER_LEN];
 	char subject[HEADER_LEN];
 	int cnt = 0;
@@ -1603,7 +1611,7 @@ check_article_to_be_posted(
 			else {
 				for (hp = line + 11; *hp; hp++) {
 					if (!isascii((unsigned char) *hp)) {
-						errors_catbp |= CA_ERROR_NEWSGROUPS_NOT_7BIT;
+						warnings_catbp |= CA_WARNING_NEWSGROUPS_NOT_7BIT;
 						break;
 					}
 				}
@@ -1643,11 +1651,10 @@ check_article_to_be_posted(
 		}
 
 		if (cp - line == 12 && !strncasecmp(line, "Distribution", 12)) {
-			char *dist;
-
+			FreeIfNeeded(dist);
 			for (hp = line + 13; *hp; hp++) {
 				if (!isascii((unsigned char) *hp)) {
-					errors_catbp |= CA_ERROR_DISTRIBUTIOIN_NOT_7BIT;
+					warnings_catbp |= CA_WARNING_DISTRIBUTION_NOT_7BIT;
 					break;
 				}
 			}
@@ -1673,10 +1680,11 @@ check_article_to_be_posted(
 						warnings_catbp |= CA_WARNING_DISTRIBUTION_WORLD;
 
 #if 0 /* TODO */
-					if (strlen(hp) < 2)
+					i = strlen(hp);
+					if (i < 2)
 						warnings_catbp |= CA_WARNING_DISTRIBUTION_SHORT;
-					if (strlen(hp) == 2) {
-						if (!isalpha((unsigned char) *hp) || !isalpha((unsigned char) *hp + 1))
+					else {
+						if (i == 2 && !isalpha((unsigned char) *hp) || !isalpha((unsigned char) *hp + 1))
 							/*
 							 * simplified check for two-letter country codes
 							 * ISO-3166-1, what about gnksa_country_codes[]?
@@ -1698,6 +1706,7 @@ check_article_to_be_posted(
 				} while ((hp = strtok(NULL, ", \t\n")) != NULL);
 			}
 			free(cp2);
+			dist = my_strdup(line + 14);
 			continue;
 		}
 
@@ -1730,7 +1739,7 @@ check_article_to_be_posted(
 				(void) stripped_double_ngs(followupto, &ftngcnt);
 				for (hp = line + 12; *hp; hp++) {
 					if (!isascii((unsigned char) *hp)) {
-						errors_catbp |= CA_ERROR_FOLLOWUP_TO_NOT_7BIT;
+						warnings_catbp |= CA_WARNING_FOLLOWUP_TO_NOT_7BIT;
 						break;
 					}
 				}
@@ -2113,13 +2122,6 @@ check_article_to_be_posted(
 		if (errors_catbp & CA_ERROR_BAD_ENCODING)
 			my_fprintf(stderr, "%s", _(txt_error_header_line_bad_encoding));
 
-		if (errors_catbp & CA_ERROR_DISTRIBUTIOIN_NOT_7BIT)
-			my_fprintf(stderr, _(txt_error_header_line_not_7bit), "Distribution");
-		if (errors_catbp & CA_ERROR_NEWSGROUPS_NOT_7BIT)
-			my_fprintf(stderr, _(txt_error_header_line_not_7bit), "Newsgroups");
-		if (errors_catbp & CA_ERROR_FOLLOWUP_TO_NOT_7BIT)
-			my_fprintf(stderr, _(txt_error_header_line_not_7bit), "Followup-To");
-
 		if (errors_catbp & CA_ERROR_BAD_MESSAGE_ID)
 			my_fprintf(stderr, _(txt_error_header_format), "Message-ID");
 		if (errors_catbp & CA_ERROR_BAD_DATE)
@@ -2172,6 +2174,13 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_warn_multiple_addresses), "Reply-To");
 		if (warnings_catbp & CA_WARNING_MULTI_ADDRESSES_TO)
 			my_fprintf(stderr, _(txt_warn_multiple_addresses), "To");
+
+		if (warnings_catbp & CA_WARNING_DISTRIBUTION_NOT_7BIT)
+			my_fprintf(stderr, _(txt_warning_header_line_not_7bit), "Distribution");
+		if (warnings_catbp & CA_WARNING_NEWSGROUPS_NOT_7BIT)
+			my_fprintf(stderr, _(txt_warning_header_line_not_7bit), "Newsgroups");
+		if (warnings_catbp & CA_WARNING_FOLLOWUP_TO_NOT_7BIT)
+			my_fprintf(stderr, _(txt_warning_header_line_not_7bit), "Followup-To");
 
 		if (warnings_catbp & CA_WARNING_DISTRIBUTION_WORLD)
 			my_fprintf(stderr, "%s", _(txt_warn_distribution_world));
@@ -2303,6 +2312,27 @@ check_article_to_be_posted(
 #endif /* HAVE_FASCIST_NEWSADMIN */
 			}
 
+			if (dist && *dist) {
+				char *d, *dc, *s;
+				t_distrib_pat *p, *q;
+
+				my_fprintf(stderr, "%s", _(txt_warn_distribution));
+				s = dc = my_strdup(dist);
+				while ((d = strtok(s, ", \t")) != NULL) {
+					for (p = nntp_caps.distrib_pats; p != NULL; p = q) {
+						if (!strcasecmp(p->distribution, d)) {
+							my_fprintf(stderr, "  %s\t %s\n", p->distribution, BlankIfNull(p->description));
+							break;
+						}
+						q = p->next;
+					}
+					s = NULL;
+					if (p == NULL)
+						my_fprintf(stderr, "  %s\n", d);
+				}
+				free(dc);
+			}
+
 #ifndef NO_ETIQUETTE
 			if (tinrc.beginner_level)
 				my_fprintf(stderr, "%s", _(txt_warn_posting_etiquette));
@@ -2311,10 +2341,10 @@ check_article_to_be_posted(
 		}
 	}
 	fclose(fp);
-
 	Raw(oldraw);		/* restore raw/unraw state */
 
 	/* free memory */
+	FreeIfNeeded(dist);
 	if (newsgroups && ngcnt) {
 		FreeIfNeeded(*newsgroups);
 		FreeIfNeeded(newsgroups);
@@ -2924,7 +2954,7 @@ create_normal_article_headers(
 		free(tmp2);
 	}
 #endif /* FORGERY */
-	get_from_name(from_name, group);
+	get_from_name(from_name, sizeof(from_name), group);
 	msg_add_header("From", from_name);
 	msg_add_header("Subject", tinrc.default_post_subject);
 
@@ -2950,8 +2980,11 @@ create_normal_article_headers(
 	if (group->attribute->organization && *group->attribute->organization)
 		msg_add_header("Organization", random_organization(*group->attribute->organization));
 
-	if (*my_distribution && art_type == GROUP_TYPE_NEWS)
-		msg_add_header("Distribution", my_distribution);
+	if (art_type == GROUP_TYPE_NEWS) {
+		if ((tmp2 = find_distribution(newsgroups)) != NULL && *tmp2)
+			msg_add_header("Distribution", tmp2);
+		FreeIfNeeded(tmp2);
+	}
 
 	msg_add_header("Summary", "");
 	msg_add_header("Keywords", "");
@@ -3419,9 +3452,10 @@ is_crosspost(
 {
 	int count = 0;
 
-	for (; *xref; xref++)
+	for (; *xref; xref++) {
 		if (*xref == ':')
 			++count;
+	}
 
 	return (count >= 2) ? TRUE : FALSE;
 }
@@ -3714,7 +3748,7 @@ post_response(
 	}
 #endif /* FORGERY */
 	group = group_find(groupname, FALSE);
-	get_from_name(from_name, group);
+	get_from_name(from_name, sizeof(from_name), group);
 	msg_add_header("From", from_name);
 
 	{
@@ -3778,8 +3812,14 @@ post_response(
 		ADD_MSG_ID_HEADER();
 		if (note_h.distrib)
 			msg_add_header("Distribution", note_h.distrib);
-		else if (*my_distribution)
-			msg_add_header("Distribution", my_distribution);
+		else {
+			char *d = NULL;
+
+			d = find_distribution((note_h.followup && use_followup_to) ? note_h.followup : note_h.newsgroups);
+			if (d && *d)
+				msg_add_header("Distribution", d);
+			FreeIfNeeded(d);
+		}
 	}
 
 	if (group)
@@ -3924,15 +3964,8 @@ create_mail_headers(
 		char from_buf[HEADER_LEN];
 		char *from_address;
 
-		if (curr_group && curr_group->attribute && curr_group->attribute->from && *curr_group->attribute->from && strchr(*curr_group->attribute->from, '@'))
-			from_address = *curr_group->attribute->from;
-		else /* i.e. called from select.c without any groups */
-			from_address = tinrc.mail_address;
-
-		if (from_address == NULL || !*from_address) {
-			get_from_name(from_buf, (struct t_group *) 0);
-			from_address = &from_buf[0];
-		} /* from_address is now always a valid pointer to a string */
+		get_from_name(from_buf, sizeof(from_buf), (struct t_group *) 0);
+		from_address = &from_buf[0];
 
 		msg_add_header("From", from_address);
 
@@ -3949,12 +3982,12 @@ create_mail_headers(
 		 * only for displaying; the MTA has to deal with it. They shouldn't be
 		 * put in the file in the first place, so we don't do it.
 		 */
-		if (!address_in_list(to, strlen(from_address) ? from_address : userid)) {
+		if (!address_in_list(to, from_address)) {
 			if ((curr_group && curr_group->attribute && (curr_group->attribute->auto_cc_bcc & AUTO_CC)) || (!curr_group && (tinrc.auto_cc_bcc & AUTO_CC)))
-				msg_add_header("Cc", strlen(from_address) ? from_address : userid);
+				msg_add_header("Cc", from_address);
 
 			if ((curr_group && curr_group->attribute && (curr_group->attribute->auto_cc_bcc & AUTO_BCC)) || (!curr_group && (tinrc.auto_cc_bcc & AUTO_BCC)))
-				msg_add_header("Bcc", strlen(from_address) ? from_address : userid);
+				msg_add_header("Bcc", from_address);
 		}
 
 		if (curr_group && curr_group->attribute && curr_group->attribute->fcc && strlen(*curr_group->attribute->fcc))
@@ -4663,7 +4696,7 @@ cancel_article(
 		grp_del_mail_art(art);
 		return FALSE;
 	}
-	get_from_name(from_name, group); /* TODO: strip_name() for both? */
+	get_from_name(from_name, sizeof(from_name), group); /* TODO: strip_name() for both? */
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
@@ -4778,8 +4811,14 @@ cancel_article(
 
 	if (note_h.distrib)
 		msg_add_header("Distribution", note_h.distrib);
-	else if (*my_distribution)
-		msg_add_header("Distribution", my_distribution);
+	else {
+		char *d = NULL;
+
+		d = find_distribution(note_h.newsgroups);
+		if (d && *d)
+			msg_add_header("Distribution", d);
+		FreeIfNeeded(d);
+	}
 
 	/* some ppl. like X-Headers: in cancels */
 	msg_add_x_headers(group->attribute->x_headers);
@@ -4956,7 +4995,7 @@ repost_article(
 #	endif /* HAVE_CHMOD */
 #endif /* HAVE_FCHMOD */
 
-	get_from_name(from_name, group);
+	get_from_name(from_name, sizeof(from_name), group);
 
 	if (Superseding) {
 #ifdef FORGERY
@@ -5028,9 +5067,14 @@ repost_article(
 		if (*reply_to)
 			msg_add_header("Reply-To", reply_to);
 
-		if (*my_distribution)
-			msg_add_header("Distribution", my_distribution);
+		if (!group->attribute->mailing_list || !*group->attribute->mailing_list) {
+			char *d = NULL;
 
+			d = find_distribution(groupname);
+			if (d && *d)
+				msg_add_header("Distribution", d);
+			FreeIfNeeded(d);
+		}
 	} else {
 		if (note_h.org)
 			msg_add_header("Organization", note_h.org);
@@ -5225,6 +5269,7 @@ msg_add_x_headers(
 				} else {
 					if (!num_x_hdrs) /* folded line, but no previous header */
 						continue;
+
 					i = (int) strlen(x_hdrs[num_x_hdrs - 1]);
 					x_hdrs[num_x_hdrs - 1] = my_realloc(x_hdrs[num_x_hdrs - 1], (size_t) i + strlen(line) + 1);
 					strcpy(x_hdrs[num_x_hdrs - 1] + i, line);
@@ -5426,7 +5471,6 @@ checknadd_headers(
 			PRODUCT, VERSION, RELEASEDATE, RELEASENAME, BlankIfNull(suffix));
 		FreeIfNeeded(suffix);
 	}
-
 	fputs("\n", fp_out); /* header/body separator */
 
 	while ((l = tin_fgets(fp_in, FALSE)) != NULL)
@@ -5458,10 +5502,7 @@ insert_from_header(
 	snprintf(outfile, sizeof(outfile), "%s.%ld", infile, (long) process_id);
 	if ((fp_out = fopen(outfile, "w")) != NULL) {
 		strcpy(from_name, "From: ");
-		if (tinrc.mail_address && *tinrc.mail_address) /* FIXME: avoid hardcoded length */
-			snprintf(from_name + 6, sizeof(from_name) - 7, "%.1016s", tinrc.mail_address);
-		else
-			get_from_name(from_name + 6, (struct t_group *) 0);
+		get_from_name(from_name + 6, sizeof(from_name) - 6, (struct t_group *) 0);
 
 #	ifdef DEBUG
 		if (debug & DEBUG_MISC)
@@ -6022,9 +6063,11 @@ get_recipients(
 	for (i = 0; i < (num_all - 1); i++) {
 		if (!all_addresses[i])
 			continue;
+
 		for (j = i + 1; j < num_all; j++) {
 			if (!all_addresses[j])
 				continue;
+
 			if (!strcasecmp(all_addresses[i], all_addresses[j]))
 				FreeAndNull(all_addresses[j]);
 		}
@@ -6480,7 +6523,7 @@ strip_double_ngs(
 	char **newsgroups;
 	int ngcnt;
 
-	if (strchr(ngs_list, ',') == NULL)	/* shortcut, only one newsgroup */
+	if (!ngs_list || strchr(ngs_list, ',') == NULL)	/* shortcut, only one newsgroup */
 		return;
 
 	if ((newsgroups = build_nglist(ngs_list, &ngcnt)) == NULL) /* something went wrong */
@@ -6500,4 +6543,61 @@ strip_double_ngs(
 	}
 	free(*newsgroups);
 	free(newsgroups);
+}
+
+
+static char *
+find_distribution(
+	const char *ngs_list)
+{
+	char *distributions = NULL;
+	int w;
+
+	if (*my_distribution) {
+		distributions = append_to_string(distributions, my_distribution);
+#if 0 /* this is what the mapages says */
+		return distributions;
+#else  /* and this is likely the better solution */
+		distributions = append_to_string(distributions, ",");
+#endif /* 0 */
+	}
+
+#ifdef NNTP_ABLE
+	{
+		char *cg, *ng, *ngcpy, *d = NULL;
+		t_distrib_pat *p, *q;
+
+		/* TODO: what if x-post and contradicting distributions? */
+		ng = ngcpy = my_strdup(ngs_list);
+		w = INT_MIN;
+		while ((cg = strtok(ng, ",")) != NULL) {
+			for (p = nntp_caps.distrib_pats; p != NULL; p = q) {
+				q = p->next;
+				if (!p->pattern)
+					continue;
+				if (match_group_list(cg, p->pattern)) {
+					if (!d || (*d && p->weight > w)) {
+						w = p->weight;
+						d = p->distribution;
+					}
+				}
+			}
+			if (d && *d) {
+				distributions = append_to_string(distributions, d);
+				distributions = append_to_string(distributions, ",");
+				d = NULL;
+			}
+			ng = NULL;
+		}
+		free(ngcpy);
+	}
+#endif /* NNTP_ABLE */
+
+	if (distributions && *distributions) {
+		strip_double_ngs(distributions);
+		w = strlen(distributions);
+		if (w && distributions[w - 1] == ',')
+			distributions[w - 1] = '\0';
+	}
+	return distributions;
 }

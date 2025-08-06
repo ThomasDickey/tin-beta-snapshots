@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2025-05-30
+;   Updated   : 2025-07-25
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2025 Thomas E. Dickey <dickey@invisible-island.net>
@@ -140,6 +140,7 @@
 	score_select			OPT_NUM
 	filter_days			OPT_NUM
 	add_posted_to_filter		OPT_ON_OFF
+	keep_expired_filters		OPT_ON_OFF
 	attrib_add_posted_to_filter	OPT_ON_OFF
 	attrib_quick_kill_scope		OPT_STRING
 	attrib_quick_kill_header	txt_quick_ks_header_options
@@ -354,3 +355,15 @@
 	attrib_group_format		OPT_STRING
 	attrib_thread_format		OPT_STRING
 	attrib_date_format		OPT_STRING
+
+; serverrc config options
+	serverrc_config_options				OPT_TITLE
+	serverrc_add_cmd_line_opts			OPT_STRING
+	serverrc_disabled_nntp_cmds			OPT_STRING
+	serverrc_nntp_pipeline_limit		OPT_NUM
+; serverrc tinrc override options
+	serverrc_tinrc_override_options		OPT_TITLE
+	serverrc_cache_overview_files		OPT_ON_OFF
+#ifdef USE_ZLIB
+	serverrc_compress_overview_files	OPT_ON_OFF
+#endif

@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2025-07-04
+ *  Updated   : 2025-07-22
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2025 Jason Faultless <jason@altarstone.com>
@@ -1187,7 +1187,7 @@ process_text_body_part(
 	char *raw_line = NULL;
 	char *y_name = NULL;			/* yenc, filename */
 	char *cp;
-	char  *ncs;						/* named capture */
+	char *ncs;						/* named capture */
 	static const char xxenc[] = {	/* xxdecode table */
 		0x00, 0x7f, 0x01, 0x7f, 0x7f,
 		0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
@@ -1317,7 +1317,7 @@ process_text_body_part(
 		 * (incl. '\n') and lines are not all ascii (unlikely for yenc).
 		 * we use raw_len as a flag.
 		 */
-		if ((hide_inline_data & UUE_ALL) && section == TEXT_SECTION && (part->encoding == ENCODING_7BIT || part->encoding == ENCODING_8BIT) && !strcasecmp(charset, "US-ASCII") &&  (*raw_line != '=' || *(raw_line + 1) != 'y')) {
+		if ((hide_inline_data & UUE_ALL) && section == TEXT_SECTION && (part->encoding == ENCODING_7BIT || part->encoding == ENCODING_8BIT) && !strcasecmp(charset, "US-ASCII") && (*raw_line != '=' || *(raw_line + 1) != 'y')) {
 			raw_len = strlen(raw_line);
 			/* skip check after 100 yenc-lins; yenc should run till ^=yend or EOF */
 			/* TODO: use defines instead of magic numbers */
@@ -1961,8 +1961,8 @@ process_text_body_part(
 		if ((hide_inline_data & SHAR_ALL) && section == SHAR_SECTION) {
 			++non_attach_lines;
 			if (MATCH_REGEX(shar_end_regex, line, len)) {
-				/* -> lang.c && _("shar archive") */
-				put_cooked(LEN, wrap_lines, C_BODY, P_(txt_cook_lines_hidden_sp[0], txt_cook_lines_hidden_sp[1], non_attach_lines), "shar archive", non_attach_lines);
+				/* -> lang.c && _("shell archive (shar)") */
+				put_cooked(LEN, wrap_lines, C_BODY, P_(txt_cook_lines_hidden_sp[0], txt_cook_lines_hidden_sp[1], non_attach_lines), "shell archive (shar)", non_attach_lines);
 				non_attach_lines = 0;
 				section &= ~SHAR_SECTION;
 			}
@@ -2238,16 +2238,15 @@ cook_article(
 			} while (!found && *(++strptr) != NULL);
 
 			/* unstructured but must not be decoded (see also rfc2047.c:do_rfc15211522_encode()) */
-			if (l == NULL && (!strncasecmp(line, "References: ", 12) || !strncasecmp(line, "Message-ID: ", 12) || !strncasecmp(line, "Date: ", 6) || !strncasecmp(line, "Newsgroups: ", 12) || !strncasecmp(line, "Distribution: ", 14) || !strncasecmp(line, "Followup-To: ", 13) || !strncasecmp(line, "X-Face: ", 8) || !strncasecmp(line, "Cancel-Lock: ", 13) || !strncasecmp(line, "Cancel-Key: ", 12) || !strncasecmp(line, "Supersedes: ", 12) || !strncasecmp(line, "Path: ", 6)))
+			if (l == NULL && (!strncasecmp(line, "References: ", 12) || !strncasecmp(line, "Message-ID: ", 12) || !strncasecmp(line, "Date: ", 6) || !strncasecmp(line, "Newsgroups: ", 12) || !strncasecmp(line, "Distribution: ", 14) || !strncasecmp(line, "Followup-To: ", 13) || !strncasecmp(line, "X-Face: ", 8) || !strncasecmp(line, "Cancel-Lock: ", 13) || !strncasecmp(line, "Cancel-Key: ", 12) || !strncasecmp(line, "Supersedes: ", 12) || !strncasecmp(line, "Path: ", 6) || !strncasecmp(line, "Xref: ", 6)))
 				l = my_strdup(line);
 
 			if (l == NULL)
 				l = my_strdup(rfc1522_decode(line));
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			if (IS_LOCAL_CHARSET("UTF-8"))
 				utf8_valid(l);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 			header_put = TRUE;
 			expand_ctrl_chars(&l, &i, tabwidth);
 			put_cooked(i, wrap_lines, C_HEADER, "%s", l);

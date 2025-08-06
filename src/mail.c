@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2025-06-15
+ *  Updated   : 2025-07-18
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2025 Iain Lea <iain@bricbrac.de>
@@ -284,12 +284,7 @@ open_newsgroups_fp(
 					unlink(local_newsgroups_file);
 			}
 		}
-		/*
-		 * TODO: test me, find a useful limit,
-		 *       optimize more than n groups (e.g. 5) of the same
-		 *       subhierarchy to a wildmat?
-		 */
-		if (nntp_caps.list_newsgroups && newsrc_active && !list_active && !no_more_wildmat && (PIPELINE_LIMIT > MAX(1, num_active))) {
+		if (nntp_caps.list_newsgroups && newsrc_active && !list_active && !no_more_wildmat && (serverrc.nntp_pipeline_limit > MAX(1, num_active))) {
 			char *ptr;
 			char buff[NNTP_STRLEN];
 			char line[NNTP_STRLEN];
@@ -323,29 +318,29 @@ open_newsgroups_fp(
 								}
 							} else
 								snprintf(buff, sizeof(buff), "LIST NEWSGROUPS %s", active[i].name);
-#		ifdef DISABLE_PIPELINING
-							if ((resp = new_nntp_command(buff, OK_GROUPS, line, sizeof(line))) != OK_GROUPS) {
-								no_more_wildmat = resp;
-								*buff = '\0';
-								break;
-							}
-							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+							if (serverrc.nntp_pipeline_limit < 2) { /* DISABLE_PIPELINING */
+								if ((resp = new_nntp_command(buff, OK_GROUPS, line, sizeof(line))) != OK_GROUPS) {
+									no_more_wildmat = resp;
+									*buff = '\0';
+									break;
+								}
+								while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #			if defined(DEBUG) && defined(NNTP_ABLE)
-								if ((debug & DEBUG_NNTP) && verbose)
-									debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+									if ((debug & DEBUG_NNTP) && verbose)
+										debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #			endif /* DEBUG && NNTP_ABLE */
-								fprintf(result, "%s\n", str_trim(ptr));
-							}
+									fprintf(result, "%s\n", str_trim(ptr));
+								}
 #			if defined(DEBUG) && defined(NNTP_ABLE)
-							if ((debug & DEBUG_NNTP) && !verbose)
-								debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
+								if ((debug & DEBUG_NNTP) && !verbose)
+									debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
 #			endif /* DEBUG && NNTP_ABLE */
 
-#		else
-							put_server(buff, FALSE);
-							*buff = '\0';
-							++j;
-#		endif /* DISABLE_PIPELINING */
+							} else {
+								put_server(buff, FALSE);
+								*buff = '\0';
+								++j;
+							}
 						}
 					}
 				}
@@ -353,33 +348,33 @@ open_newsgroups_fp(
 					put_server(buff, FALSE);
 					++j;
 				}
-#		ifndef DISABLE_PIPELINING
-				while (j--) {
-					if ((resp = get_only_respcode(line, sizeof(line))) != OK_GROUPS) {
-						if (!no_more_wildmat)
-							no_more_wildmat = resp;
-						continue;
-					}
-					while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+				if (serverrc.nntp_pipeline_limit >= 2) { /* !DISABLE_PIPELINING */
+					while (j--) {
+						if ((resp = get_only_respcode(line, sizeof(line))) != OK_GROUPS) {
+							if (!no_more_wildmat)
+								no_more_wildmat = resp;
+							continue;
+						}
+						while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #			if defined(DEBUG) && defined(NNTP_ABLE)
-						if ((debug & DEBUG_NNTP) && verbose)
-							debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
+							if ((debug & DEBUG_NNTP) && verbose)
+								debug_print_file("NNTP", "<<<%s%s", logtime(), ptr);
 #			endif /* DEBUG && NNTP_ABLE */
-						fprintf(result, "%s\n", str_trim(ptr));
-					}
+							fprintf(result, "%s\n", str_trim(ptr));
+						}
 #			if defined(DEBUG) && defined(NNTP_ABLE)
-					if ((debug & DEBUG_NNTP) && !verbose)
-						debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
+						if ((debug & DEBUG_NNTP) && !verbose)
+							debug_print_file("NNTP", "<<<%s%s", logtime(), txt_log_data_hidden);
 #			endif /* DEBUG && NNTP_ABLE */
-				}
-				/* TODO: add 483 (RFC 3977) support */
-				if (no_more_wildmat == ERR_NOAUTH || no_more_wildmat == NEED_AUTHINFO) {
-					if (!authenticate(nntp_server, userid, FALSE)) {
-						fclose(result);
-						tin_done(EXIT_FAILURE, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS); /* TODO: should we exit with NNTP_ERROR_EXIT? */
+					}
+					/* TODO: add 483 (RFC 3977) support */
+					if (no_more_wildmat == ERR_NOAUTH || no_more_wildmat == NEED_AUTHINFO) {
+						if (!authenticate(nntp_server, userid, FALSE)) {
+							fclose(result);
+							tin_done(EXIT_FAILURE, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS); /* TODO: should we exit with NNTP_ERROR_EXIT? */
+						}
 					}
 				}
-#		endif /* !DISABLE_PIPELINING */
 				fclose(result);
 				result = fopen(file, "r");
 				unlink(file); /* unlink on close */
@@ -522,40 +517,25 @@ read_groups_descriptions(
 
 		if (group != NULL && group->description == NULL) {
 			char *r;
-			size_t r_len;
 			t_bool conv_needed = FALSE;
 
 			q = p;
 			while (*q) {
-				if (*q == '\t') /* what about '\r', '\f', '\v', '\b', '\a'? */
+				if (*q == '\t')
 					*q = ' ';
 				else {
-					if (!conv_needed && (*q < 0x20 || (unsigned char) *q > 0x7f))
+					if (!conv_needed && (*q < 0x20 || !isascii((unsigned char) *q)))
 						conv_needed = TRUE;
 				}
 				++q;
 			}
 
 			r = my_strdup(p);
-			r_len = strlen(r);
-
 			/*
 			 * Protect against invalid character sequences.
 			 */
-			if (conv_needed) {
-#ifdef CHARSET_CONVERSION
-#	ifdef USE_ICU_UCSDET
-				char *guessed_charset = guess_charset(r, 10);
-
-				process_charsets(&r, &r_len, guessed_charset ? guessed_charset : "UTF-8", tinrc.mm_local_charset, FALSE);
-				FreeAndNull(guessed_charset);
-#	else
-				process_charsets(&r, &r_len, "UTF-8", tinrc.mm_local_charset, FALSE);
-#	endif /* USE_ICU_UCSDET */
-#else
-				process_charsets(&r, &r_len, "UTF-8", tinrc.mm_local_charset, FALSE);
-#endif /* CHARSET_CONVERSION */
-			}
+			if (conv_needed)
+				csguess_convert_str(&r, "UTF-8");
 			group->description = convert_to_printable(r, FALSE);
 		}
 
@@ -586,7 +566,7 @@ print_active_head(
 }
 
 
-void
+t_bool
 find_art_max_min(
 	const char *group_path,
 	t_artnum *art_max,
@@ -611,9 +591,11 @@ find_art_max_min(
 			}
 		}
 		CLOSEDIR(dir);
+		if (*art_min == T_ARTNUM_CONST(0))
+			*art_min = T_ARTNUM_CONST(1);
+		return TRUE;
 	}
-	if (*art_min == T_ARTNUM_CONST(0))
-		*art_min = T_ARTNUM_CONST(1);
+	return FALSE;
 }
 
 

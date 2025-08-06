@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-07
+ *  Updated   : 2025-07-16
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -52,6 +52,9 @@
 #		include "tnntp.h"
 #	endif /* !TNNTP_H */
 #endif /* INET6 && HAVE_INET_PTON */
+#ifndef STPWATCH_H
+#	include "stpwatch.h"
+#endif /* !STPWATCH_H */
 
 
 signed long int read_newsrc_lines = -1;
@@ -391,7 +394,7 @@ main(
 
 		read_attributes_file(FALSE);
 	}
-	start_groupnum = read_news_active_file(check_any_unread);
+	start_groupnum = read_news_active_file();
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
 		debug_print_active();
@@ -416,6 +419,16 @@ main(
 	 */
 	if (!post_postponed_and_exit)
 		num_cmd_line_groups = read_cmd_line_groups();
+
+	/*
+	 * finally we have a list of all groups and can set the attributes
+	 * if required
+	 */
+	if (!check_any_unread) {
+		BegStopWatch();
+		assign_attributes_to_groups();
+		EndStopWatch("assign_attributes_to_groups()");
+	}
 
 	/*
 	 * Quick post an article and exit if -w or -o specified
@@ -1636,18 +1649,70 @@ read_cmd_line_groups(
 			if (!batch_mode)
 				wait_message(0, _(txt_matching_cmd_line_groups), cmdargs[num]);
 
-			for_each_group(i) {
-				if (match_group_list(active[i].name, cmdargs[num])) {
-					if (my_group_add(active[i].name, TRUE) != -1) {
-						++matched;
-						if (post_article_and_exit) {
-							FreeIfNeeded(tinrc.default_post_newsgroups);
-							tinrc.default_post_newsgroups = my_strdup(active[i].name);
-							break;
+			if (list_active) {
+				for_each_group(i) {
+					if (match_group_list(active[i].name, cmdargs[num])) {
+						if (my_group_add(active[i].name, TRUE) != -1) {
+							++matched;
+							if (post_article_and_exit) {
+								FreeIfNeeded(tinrc.default_post_newsgroups);
+								tinrc.default_post_newsgroups = my_strdup(active[i].name);
+								break;
+							}
+							active[i].read_during_session = TRUE; /* misuse for "-[zZMN] grp" */
 						}
-						active[i].read_during_session = TRUE; /* misuse for "-[zZMN] grp" */
 					}
 				}
+			} else {
+				char *ng, *ngp, *newsgroups;
+				char *moderated = my_malloc(NNTP_STRLEN);
+				struct t_group *ptr;
+				t_artnum count = T_ARTNUM_CONST(-1), min = T_ARTNUM_CONST(1), max = T_ARTNUM_CONST(0);
+
+				ngp = newsgroups = my_strdup(cmdargs[num]);
+				while ((ng = strsep(&newsgroups, ","))) { /* strsep to avoid nested srtok via parse_active_line() */
+					if (!group_get_art_info(spooldir, ng, GROUP_TYPE_NEWS, &count, &max, &min)) {
+						if (my_group_add(ng, FALSE) < 0) {
+							if ((ptr = group_add(ng)) != NULL) {
+								++matched;
+								moderated[0] = 'y';
+								moderated[1] = '\0';
+
+								/* try to get real group flag */
+#	ifdef NNTP_ABLE
+								if (read_news_via_nntp && nntp_caps.list_active && nntp_caps.type == CAPABILITIES)
+									nntp_list_active_grp(ng, moderated);
+#	endif /* NNTP_ABLE */
+#	ifndef NNTP_ONLY
+								if (!read_news_via_nntp && !list_active) {	/* fetching flag from active-file */
+									char *rp;
+									FILE *fp;
+									t_artnum ac_min = T_ARTNUM_CONST(1), ac_max = T_ARTNUM_CONST(0);
+
+									if ((fp = tin_fopen(news_active_file, "r")) != NULL) {
+										while ((rp = tin_fgets(fp, FALSE)) != NULL) {
+											if (parse_active_line(rp, &ac_max, &ac_min, moderated)) { /* parse_active_line() modifies rp*/
+												if (!strcmp(rp, ng))
+													break;
+											}
+										}
+										fclose(fp);
+									}
+								}
+#	endif /* !NNTP_ONLY */
+								active_add(ptr, count, max, min, moderated);
+								my_group_add(ng, FALSE);
+								if (post_article_and_exit && matched == 1) { /* first group only */
+									FreeIfNeeded(tinrc.default_post_newsgroups);
+									tinrc.default_post_newsgroups = my_strdup(ng);
+								}
+							}
+						} else
+							++matched;
+					}
+				}
+				FreeAndNull(ngp);
+				free(moderated);
 			}
 		}
 	}

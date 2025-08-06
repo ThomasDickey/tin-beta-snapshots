@@ -3,7 +3,7 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-14
+ *  Updated   : 2025-07-29
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -205,6 +205,7 @@ struct t_capabilities {
 	t_bool list_distributions:1;	/* LIST DISTRIBUTIONS, "private" extension, RFC 2980 */
 	t_bool list_moderators:1;		/* LIST MODERATORS, "private" extension */
 	t_bool list_counts:1;			/* LIST COUNTS, "private" extension */
+	t_bool listgroup:1;				/* LISTGROUP - old versions of nntpcache (< 2.3.3b1?), leafnode and SurgeNews had a buggy implementation which didn't select the group and would require an extra GROUP cmd. before */
 	t_bool xpat:1;					/* XPAT, "private" extension, RFC 2980 */
 	t_bool hdr:1;					/* HDR: "HDR", "LIST HEADERS" */
 	const char *hdr_cmd;			/* [X]HDR */
@@ -212,7 +213,10 @@ struct t_capabilities {
 	t_bool over_msgid:1;			/* OVER: "OVER mid" */
 	const char *over_cmd;			/* [X]OVER */
 	t_bool newgroups:1;				/* NEWGROUPS */
+#if 0
+	/* we don't do NEWNEWS */
 	t_bool newnews:1;				/* NEWNEWS */
+#endif /* 0 */
 	char *implementation;			/* IMPLEMENTATION */
 	t_bool starttls:1;				/* STARTTLS (not supported; RFC 7525 3.2, RFC 8143 2) */
 	t_bool authinfo_user:1;			/* AUTHINFO USER/PASS */
@@ -222,6 +226,7 @@ struct t_capabilities {
 	char *sasl_mech_used;			/* SASL mech in use */
 	t_bool compress:1;				/* COMPRESS */
 	enum c_algorithms compress_algorithm;	/* COMPRESS_NONE, COMPRESS_DEFLATE */
+	t_distrib_pat *distrib_pats;		/* DISTRIB.PATS linked list */
 #if defined(MAXARTNUM) && defined(USE_LONG_ARTICLE_NUMBERS)
 	t_artnum maxartnum;				/* MAXARTNUM indicating article numbers >=2^31 */
 #endif /* MAXARTNUM && USE_LONG_ARTICLE_NUMBERS */
@@ -230,7 +235,6 @@ struct t_capabilities {
 	t_bool streaming:1;				/* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
 	t_bool ihave:1;					/* IHAVE: "IHAVE" */
 #endif /* 0 */
-	t_bool broken_listgroup:1;		/* LISTGROUP doesn't select newsgroup */
 };
 
 #endif /* !NNTPLIB_H */

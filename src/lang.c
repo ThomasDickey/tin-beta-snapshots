@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-07
+ *  Updated   : 2025-07-30
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -442,7 +442,7 @@ constext txt_error_header_line_blank[] = N_("\nError: Article starts with blank 
 constext txt_error_header_line_colon[] = N_("\nError: Header on line %d does not have a colon after the header name:\n%s\n");
 constext txt_error_header_line_empty[] = N_("\nError: The \"%s:\" line is empty.\n");
 constext txt_error_header_line_missing[] = N_("\nError: The \"%s:\" line is missing from the article header.\n");
-constext txt_error_header_line_not_7bit[] = N_("\nError: %s contains non 7-bit chars.\n");
+constext txt_warning_header_line_not_7bit[] = N_("\nWarning: %s contains non 7-bit chars.\n");
 constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not have a space after the colon:\n%s\n");
 /* TRANSLATORS: for nplurals>=3 */
 constext *txt_error_header_duplicate_sp[] = PN_("\nError: There are multiple (%d) \"%s:\" line in the header.\n", "\nError: There are multiple (%d) \"%s:\" lines in the header.\n");
@@ -466,6 +466,8 @@ constext txt_error_mime_end[] = N_("MIME parse error: Unexpected end of %s/%s ar
 constext txt_error_mime_start[] = N_("MIME parse error: Start boundary whilst reading headers\n");
 constext txt_error_newsgroups_poster[] = N_("\nError: \"poster\" is not allowed in Newsgroups!\n");
 constext txt_error_no_domain_name[] = N_("Can't get a (fully-qualified) domain-name!");
+constext *txt_error_no_valid_newsgroup_sp[] = PN_("No valid newsgroup given.", "No valid newsgroups given.");
+constext txt_error_retry_without_n[] = N_(" You may need to retry without \"-n\".");
 #ifdef NNTP_INEWS
 	/* TRANSLATORS: do not translate header names like 'From:' */
 	constext txt_error_no_from[] = N_("\nError: From: line missing.\n");
@@ -1121,6 +1123,10 @@ constext txt_serverconfig_header[] = N_("# %s server configuration file\n\
 # will be overwritten when you leave %s.\n\
 # Do not edit at all if you don't know what you do.\n\
 ############################################################################\n\n");
+constext txt_serverrc_config_opts[] = N_("\n# config options\n");
+constext txt_serverrc_internal[] = N_("\n# internal data, should not be modified\n");
+constext txt_serverrc_tinrc[] = N_("\n# tinrc overrides\n");
+constext txt_serverrc_menu[] = N_("Serverrc Menu");
 constext txt_show_unread[] = N_("Showing unread groups only");
 /* TRANSLATORS: do not translate header names like 'Subject:' */
 constext txt_subj_line_only[] = N_("Subject: line (ignore case)   ");
@@ -1163,6 +1169,7 @@ constext txt_select_group[] = N_("Select group> ");
 constext txt_select_pattern[] = N_("Enter selection pattern [%s]> ");
 constext txt_select_thread[] = N_("Select thread> ");
 constext txt_send_bugreport[] = N_("%s %s %s (\"%s\"): send a DETAILED bug report to %s\n");
+constext txt_serverrc_menu_com[] = N_("Serverrc Menu Commands");
 constext txt_servers_active[] = N_("servers active-file");
 constext txt_skipped_group[] = N_("Skipped %s");
 constext txt_skipping_newgroups[] = N_("Cannot move into new newsgroups. Subscribe first...");
@@ -1345,6 +1352,7 @@ constext txt_warn_cancel[] = N_("Read carefully!\n\n\
   You are about to cancel an article seemingly written by you. This will wipe\n\
   the article from most  news servers  throughout the world,  but there is no\n\
   guarantee that it will work.\n\nThis is the article you are about to cancel:\n\n");
+constext txt_warn_distribution[] = N_("\nDistribution is limited to:\n");
 constext txt_warn_distribution_world[] = N_("\nWarning: Undesired Distribution \"world\" used.\n");
 constext txt_warn_encoding_and_external_inews[] = N_("\n\
 Warning: You are using a non-plain transfer encoding (such as base64 or\n\
@@ -1525,7 +1533,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_warn_grp_renamed[] = N_("\nWarning: \"%s\" is renamed, you should use \"%s\" instead!\n");
 	/* TRANSLATORS: for nplurals>=3 */
 	constext *txt_warn_missing_followup_to_sp[] = PN_("\nWarning: cross-posting to %d newsgroup and no Followup-To line!\n", "\nWarning: cross-posting to %d newsgroups and no Followup-To line!\n");
-	constext txt_warn_not_in_newsrc[] = N_("\nWarning: \"%s\" is not in your newsrc, it may be invalid at this site!\n");
+	constext txt_warn_not_in_newsrc[] = N_("\nWarning: \"%s\" is not in your newsrc,\nit may be invalid at this site!\n");
 	constext txt_warn_not_valid_newsgroup[] = N_("\nWarning: \"%s\" is not a valid newsgroup at this site!\n");
 #endif /* HAVE_FASCIST_NEWSADMIN */
 
@@ -3225,6 +3233,13 @@ struct opttxt txt_add_posted_to_filter = {
 	N_("# If ON add posted articles which start a new thread to filter for\n# highlighting follow-ups\n")
 };
 
+struct opttxt txt_keep_expired_filters = {
+    N_("Keep expired filter rules in file. <SPACE> toggles, <CR> sets, <ESC> cancels."),
+    N_("Keep expired filter rules in file"),
+    N_("# If ON, expired filter rules are kept in the filter file\n")
+};
+
+
 struct opttxt txt_maildir = {
 	N_("The directory where articles/threads are to be saved in mailbox format."),
 	N_("Mail directory"),
@@ -3711,6 +3726,50 @@ struct opttxt txt_quick_kill_case = {
 struct opttxt txt_quick_kill_expire = {
 	N_("ON = expire, OFF = don't ever expire. <CR> sets, <ESC> cancels."),
 	N_("Quick (1 key) kill filter expire"),
+	NULL
+};
+
+struct opttxt txt_serverrc_add_cmd_line_opts = {
+	N_("Command line options to add. <CR> sets, <ESC> cancels."),
+	N_("CMD line options to add"),
+	NULL
+};
+
+struct opttxt txt_serverrc_cache_overview_files = {
+	N_("ON = cache NNTP overview files, OFF = don't cache. <CR> sets, <ESC> cancels."),
+	N_("Cache overview files"),
+	NULL
+};
+
+#ifdef USE_ZLIB
+struct opttxt txt_serverrc_compress_overview_files = {
+	N_("ON = compress cached files, OFF = don't compress. <CR> sets, <ESC> cancels."),
+	N_("Compress overview files"),
+	NULL
+};
+#endif /* USE_ZLIB */
+
+struct opttxt txt_serverrc_config_options = {
+	NULL,
+	N_("Config Options"),
+	NULL
+};
+
+struct opttxt txt_serverrc_disabled_nntp_cmds = {
+	N_("A comma separated list of NNTP commands. <CR> sets, <ESC> cancels."),
+	N_("Disabled NNTP commands"),
+	NULL
+};
+
+struct opttxt txt_serverrc_nntp_pipeline_limit = {
+	N_("Number of pipelined NNTP commands to send. <CR> sets, <ESC> cancels."),
+	N_("NNTP pipeline limit"),
+	NULL
+};
+
+struct opttxt txt_serverrc_tinrc_override_options = {
+	NULL,
+	N_("tinrc Override Options"),
 	NULL
 };
 

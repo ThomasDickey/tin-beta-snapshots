@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2025-05-14
+ *  Updated   : 2025-07-09
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -170,6 +170,9 @@ compile_regex(
 	struct regex_cache *cache,
 	REGEX_OPTIONS options)
 {
+	char curr_error[8192];
+	static char last_error[8192] = { '\0' };
+	t_bool different;
 #ifdef HAVE_LIB_PCRE2
 	int regex_errcode;
 	PCRE2_SIZE regex_errpos;
@@ -183,7 +186,11 @@ compile_regex(
 		PCRE2_UCHAR8 regex_errmsg[256];
 
 		pcre2_get_error_message_8(regex_errcode, regex_errmsg, sizeof(regex_errmsg));
-		error_message(2, _(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
+		snprintf(curr_error, sizeof(curr_error), _(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
+		different = (strcmp(last_error, curr_error) != 0);
+		error_message(different ? 2 : 0, "%s", curr_error);
+		if (different)
+			strcpy(last_error, curr_error);
 	} else {
 		cache->match = pcre2_match_data_create_from_pattern_8(cache->re, NULL);
 		if (cache->match == NULL) /* out of memory ... */
@@ -201,9 +208,13 @@ compile_regex(
 	if (regex_use_utf8())
 		options |= PCRE_UTF8;
 
-	if ((cache->re = pcre_compile(regex, options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
-		error_message(2, _(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
-	else {
+	if ((cache->re = pcre_compile(regex, options, &regex_errmsg, &regex_errpos, NULL)) == NULL) {
+		snprintf(curr_error, sizeof(curr_error), _(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
+		different = (strcmp(last_error, curr_error) != 0);
+		error_message(different ? 2 : 0, "%s", curr_error);
+		if (different)
+			strcpy(last_error, curr_error);
+	} else {
 		cache->extra = pcre_study(cache->re, 0, &regex_errmsg);
 		if (regex_errmsg != NULL) {
 			/* we failed, clean up */

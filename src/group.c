@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-01
+ *  Updated   : 2025-07-22
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1299,8 +1299,8 @@ build_sline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wtmp, *wtmp2;
 #else
-	int fill, gap;
-	size_t len_start;
+	int fill;
+	size_t len_start, gap;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 #ifdef USE_CURSES
@@ -1382,11 +1382,12 @@ build_sline(
 #else
 					len_start = strwidth(buffer);
 					get_author(FALSE, &arts[j], buffer + strlen(buffer), grp_fmt.len_from);
-					fill = grp_fmt.len_from - (strwidth(buffer) - len_start);
-					gap = strlen(buffer);
-					for (k = 0; k < fill; k++)
-						buffer[gap + k] = ' ';
-					buffer[gap + fill] = '\0';
+					if ((fill = grp_fmt.len_from - (strwidth(buffer) - len_start)) > 0) {
+						gap = strlen(buffer);
+						for (k = 0; k < fill; k++)
+							buffer[gap + k] = ' ';
+						buffer[gap + fill] = '\0';
+					}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				}
 				break;
@@ -1489,11 +1490,12 @@ build_sline(
 #else
 				len_start = strwidth(buffer);
 				strncat(buffer, arts_sub, len);
-				fill = len - (strwidth(buffer) - len_start);
-				gap = strlen(buffer);
-				for (k = 0; k < fill; k++)
-					buffer[gap + k] = ' ';
-				buffer[gap + fill] = '\0';
+				if ((fill = len - (strwidth(buffer) - len_start)) > 0) {
+					gap = strlen(buffer);
+					for (k = 0; k < fill; k++)
+						buffer[gap + k] = ' ';
+					buffer[gap + fill] = '\0';
+				}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				break;
 
