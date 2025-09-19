@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-10
+ *  Updated   : 2025-08-12
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -401,12 +401,11 @@ show_page(
 				if (activate_last_ctrl_l())
 					draw_page(0);
 				else {
-					if (curr_line == 0)
-						info_message(_(txt_begin_of_art));
-					else {
+					if (curr_line) {
 						curr_line -= ((tinrc.scroll_lines == -2) ? ARTLINES / 2 : ARTLINES);
 						draw_page(0);
-					}
+					} else
+						info_message(_(txt_begin_of_art));
 				}
 				break;
 
@@ -471,14 +470,12 @@ page_goto_next_unread:
 				if (activate_last_ctrl_l())
 					draw_page(0);
 				else {
-					if (curr_line == 0) {
+					if (curr_line) {
+						i = scroll_page(KEYMAP_UP);
+						curr_line += i;
+						draw_page(i);
+					} else
 						info_message(_(txt_begin_of_art));
-						break;
-					}
-
-					i = scroll_page(KEYMAP_UP);
-					curr_line += i;
-					draw_page(i);
 				}
 				break;
 
@@ -486,14 +483,12 @@ page_goto_next_unread:
 				if (deactivate_next_ctrl_l())
 					draw_page(0);
 				else {
-					if (curr_line + ARTLINES >= artlines) {
+					if (curr_line + ARTLINES < artlines) {
+						i = scroll_page(KEYMAP_DOWN);
+						curr_line += i;
+						draw_page(i);
+					} else
 						info_message(_(txt_end_of_art));
-						break;
-					}
-
-					i = scroll_page(KEYMAP_DOWN);
-					curr_line += i;
-					draw_page(i);
 				}
 				break;
 
@@ -550,31 +545,30 @@ page_goto_next_unread:
 				break;
 
 			case PAGE_GOTO_PARENT:		/* Goto parent of this article */
-			{
-				const struct t_msgid *parent = arts[this_resp].refptr->parent;
+				{
+					const struct t_msgid *parent = arts[this_resp].refptr->parent;
 
-				if (parent == NULL) {
-					info_message(_(txt_art_parent_none));
-					break;
+					if (parent == NULL) {
+						info_message(_(txt_art_parent_none));
+						break;
+					}
+
+					if (parent->article == ART_UNAVAILABLE) {
+						info_message(_(txt_art_parent_unavail));
+						break;
+					}
+
+					if (arts[parent->article].killed && tinrc.kill_level == KILL_NOTHREAD) {
+						info_message(_(txt_art_parent_killed));
+						break;
+					}
+
+					if ((i = load_article(parent->article, group)) < 0) {
+						XFACE_CLEAR();
+						return i;
+					}
 				}
-
-				if (parent->article == ART_UNAVAILABLE) {
-					info_message(_(txt_art_parent_unavail));
-					break;
-				}
-
-				if (arts[parent->article].killed && tinrc.kill_level == KILL_NOTHREAD) {
-					info_message(_(txt_art_parent_killed));
-					break;
-				}
-
-				if ((i = load_article(parent->article, group)) < 0) {
-					XFACE_CLEAR();
-					return i;
-				}
-
 				break;
-			}
 
 			case GLOBAL_PIPE:		/* pipe article/thread/tagged arts to command */
 				XFACE_SUPPRESS();
@@ -1404,7 +1398,7 @@ invoke_metamail(
 		t_bool seek_error = FALSE;
 
 		rewind(fp);
-		while (fgets(buf, (int) sizeof(buf), fp) != NULL)
+		while (fgets(buf, sizeof(buf), fp) != NULL)
 			fputs(buf, mime_fp);
 
 		fflush(mime_fp);
@@ -2695,52 +2689,54 @@ process_url(
 			return FALSE;
 		}
 
-#ifdef HAVE_LIBURIPARSER
-		/*
-		 * Syntax-Based Normalization RFC 3986 6.2.2
-		 *
-		 * We could keep the error code, but that would be likely
-		 * always URI_ERROR_SYNTAX, so no big win.
-		 * With -DDEBUG MISC|URI we would write some details
-		 * (uri.scheme, uri.hostText, ...) to a log.
-		 * And/or make use of uri(Une|E)scape* ...
-		 */
-		state.uri = &uri;
-		if (uriParseUriA(&state, url) == URI_SUCCESS) {
-			if (uriNormalizeSyntaxA(&uri) == URI_SUCCESS) {
-				if (uriToStringCharsRequiredA(&uri, &ulen) == URI_SUCCESS) {
-					uri_norm = my_malloc(++ulen);
-					if (uriToStringA(uri_norm, &uri, ulen, NULL) == URI_SUCCESS) {
-						free(url);
-						url = uri_norm;
-					} else {
-						free(uri_norm);
-						ulen = -1;
+#if defined(HAVE_LIBURIPARSER) || defined(HAVE_LIBCURL)
+		if (!(MATCH_REGEX(news_regex, url, strlen(url)))) { /* normalize all but news */
+#	ifdef HAVE_LIBURIPARSER
+			/*
+			 * Syntax-Based Normalization RFC 3986 6.2.2
+			 *
+			 * We could keep the error code, but that would be
+			 * likely always URI_ERROR_SYNTAX, so no big win.
+			 * With -DDEBUG MISC|URI we could write some details
+			 * (uri.scheme, uri.hostText, ...) to a log.
+			 * And/or make use of uri(Une|E)scape* ...
+			 */
+			state.uri = &uri;
+			if (uriParseUriA(&state, url) == URI_SUCCESS) {
+				if (uriNormalizeSyntaxA(&uri) == URI_SUCCESS) {
+					if (uriToStringCharsRequiredA(&uri, &ulen) == URI_SUCCESS) {
+						uri_norm = my_malloc(++ulen);
+						if (uriToStringA(uri_norm, &uri, ulen, NULL) == URI_SUCCESS) {
+							free(url);
+							url = uri_norm;
+						} else {
+							free(uri_norm);
+							ulen = -1;
+						}
 					}
 				}
+				uriFreeUriMembersA(&uri);
 			}
-			uriFreeUriMembersA(&uri);
-		}
-#else
-#	ifdef HAVE_LIBCURL
-		/* same as above but with libcurl, again no detailed error logging yet */
-		if ((curl = curl_url())) {
-			if (curl_url_set(curl, CURLUPART_URL, url, CURLU_URLENCODE) == CURLUE_OK) {
-				if (curl_url_get(curl, CURLUPART_URL, &uri_norm, 0) == CURLUE_OK) {
-					free(url);
-					url = uri_norm;
-					ulen = strlen(url);
+#	else
+#		ifdef HAVE_LIBCURL
+			/* same as above but with libcurl, again no detailed error logging yet */
+			if ((curl = curl_url())) {
+				if (curl_url_set(curl, CURLUPART_URL, url, CURLU_URLENCODE) == CURLUE_OK) {
+					if (curl_url_get(curl, CURLUPART_URL, &uri_norm, 0) == CURLUE_OK) {
+						free(url);
+						url = uri_norm;
+						ulen = strlen(url);
+					}
 				}
+				curl_url_cleanup(curl);
 			}
-			curl_url_cleanup(curl);
-		}
-#	endif /* HAVE_LIBCURL */
-#endif /* HAVE_LIBURIPARSER */
-#if defined(HAVE_LIBURIPARSER) || defined(HAVE_LIBCURL)
-		if (ulen < 0) { /* should only happen if the URL was modified in the prompt above */
-			error_message(2, "URI Normalization failed: %s", url); /* TODO: -> lang.c; _()? */
-			free(url);
-			return FALSE;
+#		endif /* HAVE_LIBCURL */
+#	endif /* HAVE_LIBURIPARSER */
+			if (ulen < 0) { /* should only happen if the URL was modified in the prompt above */
+				error_message(2, "URI Normalization failed: %s", url); /* TODO: -> lang.c; _()? */
+				free(url);
+				return FALSE;
+			}
 		}
 #endif /* HAVE_LIBURIPARSER || HAVE_LIBCURL */
 		url_esc = escape_shell_meta(url, no_quote);

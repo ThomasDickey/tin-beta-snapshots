@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2025-07-18
+ *  Updated   : 2025-08-20
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2025 Iain Lea <iain@bricbrac.de>
@@ -289,12 +289,9 @@ open_newsgroups_fp(
 			char buff[NNTP_STRLEN];
 			char line[NNTP_STRLEN];
 			char file[PATH_LEN];
-			char serverdir[PATH_LEN];
 			int resp, i, j = 0;
 			struct t_group *group;
 
-			STRCPY(file, quote_space_to_dash(nntp_server));
-			joinpath(serverdir, sizeof(serverdir), rcdir, file);
 			joinpath(file, sizeof(file), serverdir, NEWSGROUPS_FILE".tmp");
 			*buff = '\0';
 			if ((result = fopen(file, "w")) != NULL) {

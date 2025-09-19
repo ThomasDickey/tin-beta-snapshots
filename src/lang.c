@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-30
+ *  Updated   : 2025-08-12
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -322,7 +322,7 @@ constext txt_conninfo_conf_files[] = N_("\nConfiguration files:\n---------------
 #		if defined(HAVE_LIB_GNUTLS) || defined(HAVE_LIB_OPENSSL)
 		constext txt_conninfo_error_unexpected[] = N_("UNEXPECTED, possible BUG");
 		constext txt_conninfo_error_tolerated[] = N_("tolerated as \"-k\" (insecure) requested");
-		constext txt_conninfo_verify_failed[] = N_("Server certificate verification FAILED:\n\t%s (%s)\n");
+		constext txt_conninfo_verify_failed[] = N_("Server certificate verification FAILED:\n\t%s\n\t(%s)\n");
 		constext txt_conninfo_verify_successful[] = N_("Server certificate verified successfully.\n");
 #		endif /* HAVE_LIB_GNUTLS || HAVE_LIB_OPENSSL */
 #		ifdef HAVE_LIB_GNUTLS
@@ -811,7 +811,7 @@ constext *txt_info_postponed_sp[] = PN_("%d postponed article, reuse with ^O...\
 constext txt_info_x_conversion_note[] = N_("X-Conversion-Note: multipart/alternative contents have been removed.\n\
   To get the whole article, turn alternative handling OFF in the Option Menu\n");
 constext txt_is_mailbox[] = N_("Save filename for %s/%s is a mailbox. Attachment not saved");
-constext txt_is_tex_encoded[] = N_("TeX2Iso encoded article");
+/* constext txt_is_tex_encoded[] = N_("TeX2Iso encoded article"); */
 /* TODO: replace hard coded key-names */
 constext txt_intro_page[] = N_("\nWelcome to %s, a full screen threaded Netnews reader. It can read news locally\n\
 (i.e. <spool>/news) or remotely (-r option) from an NNTP (Network News Transport\n\
@@ -842,6 +842,7 @@ constext txt_invalid_from[] = N_("Invalid From:-header \"%s\". Check your mail_a
 constext txt_inverse_off[] = N_("Inverse video disabled");
 constext txt_inverse_on[] = N_("Inverse video enabled");
 
+constext txt_keeping_add_cmd_line_opts[] = N_(" Keeping serverrc.add_cmd_line_opts.");
 constext txt_keymap_missing_key[] = N_("Missing definition for %s\n");
 constext txt_keymap_invalid_key[] = N_("Invalid key definition '%s'\n");
 constext txt_keymap_invalid_name[] = N_("Invalid keyname '%s'\n");
@@ -1175,6 +1176,9 @@ constext txt_skipped_group[] = N_("Skipped %s");
 constext txt_skipping_newgroups[] = N_("Cannot move into new newsgroups. Subscribe first...");
 constext txt_space[] = N_("<SPACE>");
 constext txt_starting_command[] = N_("Starting: (%s)");
+#if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
+	constext txt_startup_time[] = N_("Startup time was: %s\n");
+#endif /* NNTP_ABLE && NNTPS_ABLE */
 constext txt_stp_list_thread[] = N_("List Thread (%d of %d)");
 constext txt_stp_thread[] = N_("Thread (%.*s)");
 constext txt_subscribe_pattern[] = N_("Enter wildcard subscribe pattern> ");
@@ -1326,8 +1330,10 @@ constext txt_uue_complete[] = N_("uuencoded file");
 constext txt_uue_incomplete[] = N_("incomplete uuencoded file");
 
 #if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
-	constext txt_valid_not_after[] = N_("Valid not after : %s\n");
-	constext txt_valid_not_before[] = N_("Valid not before: %s\n");
+	constext txt_valid_not_after[] = N_("Valid not after : %s%s\n");
+	constext txt_valid_not_before[] = N_("Valid not before: %s%s\n");
+	constext txt_valid_not_yet[] = N_(" <- NOT YET VALID!");
+	constext txt_valid_no_longer[] = N_(" <- NO LONGER VALID!");
 #endif /* NNTP_ABLE && NNTPS_ABLE */
 constext txt_val_out_of_range_ignored[] = N_("%s %s out of range (%d - %d). Ignored.");
 constext txt_val_out_of_range_reset[] = N_("%s %d out of range (0 - %d). Reset to 0.");
@@ -1587,6 +1593,7 @@ constext txt_arg_not_numeric[] = N_("%s argument is not numeric: %s");
 	constext txt_capabilities_without_reader[] = N_("CAPABILITIES did not announce READER");
 	constext txt_connecting_port[] = N_("Connecting to %s:%u...");
 	constext txt_connection_error[] = N_("NNTP connection error. Exiting...");
+	constext txt_disabled_cmds[] = N_("DISABLED CMDS.: %s\n");
 	constext txt_disconnecting[] = N_("Disconnecting from server...");
 	constext txt_failed_to_connect_to_server[] = N_("Failed to connect to NNTP server %s. Exiting...");
 	constext txt_nntp_ok_goodbye[] = N_("205  Closing connection");

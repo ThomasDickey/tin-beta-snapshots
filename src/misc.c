@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-22
+ *  Updated   : 2025-08-20
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -559,7 +559,7 @@ invoke_ispell(
 		return FALSE;
 	}
 
-	while (fgets(buf, (int) sizeof(buf), fp_all) != NULL) {
+	while (fgets(buf, sizeof(buf), fp_all) != NULL) {
 		fputs(buf, fp_head);
 		if (buf[0] == '\n' || buf[0] == '\r') {
 			fclose(fp_head);
@@ -572,7 +572,7 @@ invoke_ispell(
 		fclose(fp_head);
 
 	while (!feof(fp_all) && !ferror(fp_all)) {
-		if (fgets(buf, (int) sizeof(buf), fp_all) != NULL)
+		if (fgets(buf, sizeof(buf), fp_all) != NULL)
 			fputs(buf, fp_body);
 		else
 			break;
@@ -1340,7 +1340,7 @@ create_index_lock_file(
 	time_t epoch;
 
 	if ((fp = tin_fopen(the_lock_file, "r")) != NULL) {
-		err = (fgets(buf, (int) sizeof(buf), fp) == NULL);
+		err = (fgets(buf, sizeof(buf), fp) == NULL);
 		fclose(fp);
 		if (!err) {
 			for (cp = buf; *cp; cp++) {
@@ -2326,8 +2326,28 @@ cleanup_tmp_files(
 	 * only required if update_index == TRUE, but update_index is
 	 * unknown here
 	 */
-	if (batch_mode)
+	if (batch_mode) {
 		unlink(lock_file);
+		return;
+	}
+
+	/*
+	 * remove any cached help pages (!batch_mode only)
+	 * ${TIN_HOMEDIR:-"$HOME"}/.tin/$NNTPSERVER/.help-*
+	 */
+	if (*serverdir) {
+		char tmp[NAME_LEN];
+		char cfile[PATH_LEN];
+		int i;
+
+		for (i = MIN_LEVEL; i < MAX_LEVEL; i <<= 1) {
+			snprintf(tmp, sizeof(tmp), HELP_PAGE_CACHE_FILE, i);
+			joinpath(cfile, sizeof(cfile), serverdir, tmp);
+			(void) unlink(cfile);
+		}
+		joinpath(cfile, sizeof(cfile), serverdir, CONINFO_CACHE_FILE);
+		(void) unlink(cfile);
+	}
 }
 
 
@@ -2378,7 +2398,7 @@ random_organization(
 	if ((orgfp = tin_fopen(in_org, "r")) == NULL)
 		return selorg;
 
-	while (fgets(selorg, (int) sizeof(selorg), orgfp))
+	while (fgets(selorg, sizeof(selorg), orgfp))
 		++nool;
 
 	if (nool) {
@@ -2388,7 +2408,7 @@ random_organization(
 		sol = rndm() % nool + 1;
 		nool = 0;
 
-		while ((nool != sol) && (fgets(selorg, (int) sizeof(selorg), orgfp)))
+		while ((nool != sol) && (fgets(selorg, sizeof(selorg), orgfp)))
 			++nool;
 	}
 
@@ -2417,7 +2437,7 @@ read_input_history_file(
 	memset((void *) hist_last, 0, sizeof(hist_last));
 	memset((void *) hist_pos, 0, sizeof(hist_pos));
 
-	while (fgets(buf, (int) sizeof(buf), fp)) {
+	while (fgets(buf, sizeof(buf), fp)) {
 		if ((chr = strpbrk(buf, "\n\r")) != NULL)
 			*chr = '\0';
 
@@ -4115,7 +4135,7 @@ idna_decode(
 	char *out = my_strdup(in);
 
 	/* decoding needed? */
-	if (!strstr(in, "xn--"))
+	if (!strcasestr(in, ACE_PREFIX))
 		return out;
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -4852,11 +4872,15 @@ show_connection_page(
 	void)
 {
 	FILE *fp;
+	char coninfo_file[PATH_LEN];
 
-	if (!(fp = my_tmpfile()))
-		return;
-
-	make_connection_page(fp);
+	/* check if we have cached the page already, if not create it */
+	joinpath(coninfo_file, sizeof(coninfo_file), serverdir, CONINFO_CACHE_FILE);
+	if ((fp = fopen(coninfo_file, "r")) == NULL) { /* ENOENT */
+		if ((fp = fopen(coninfo_file, "w+")) == NULL) /* TODO: error message */
+			return;
+		make_connection_page(fp);
+	}
 	info_pager(fp, _(txt_connection_info), FALSE); /* all other pagers do wrap */
 	fclose(fp);
 	info_pager(NULL, NULL, TRUE); /* free mem */
@@ -5048,7 +5072,7 @@ srndm(
 /*
  * opens pathname with mode if it is S_IFREG or S_IFLNK
  * if mode is "r[b]" (read only) its size needs to be > 0L
- * returns FILE* on success or NULL on failure
+ * returns FILE * on success or NULL on failure
  * if NULL is returned and errno is 0, it either had a zero size
  * or was neither S_IFDIR, S_IFLNK or S_IFREG.
  *

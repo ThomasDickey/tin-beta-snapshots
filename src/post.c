@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-08-05
+ *  Updated   : 2025-08-08
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -1151,7 +1151,7 @@ append_mail(
 			(void) time(&epoch);
 			fprintf(fp_out, "From %s %s\n", addr, BlankIfNull(str_trim(ctime(&epoch))));
 		}
-		while (fgets(buf, (int) sizeof(buf), fp_in) != NULL) {
+		while (fgets(buf, sizeof(buf), fp_in) != NULL) {
 			if (!mmdf) { /* moboxo/mboxrd style From_ quoting required */
 				/*
 				 * TODO: add Content-Length: header when using MBOXO
@@ -3113,7 +3113,7 @@ count_postponed_articles(
 	if (!fp)
 		return 0;
 
-	while (fgets(line, (int) sizeof(line), fp)) {
+	while (fgets(line, sizeof(line), fp)) {
 		if (STRNCMPEQ(line, "From ", 5))
 			++count;
 	}
@@ -3166,7 +3166,7 @@ fetch_postponed_article(
 		return FALSE;
 	}
 
-	if (fgets(line, (int) sizeof(line), in) == NULL || strncmp(line, "From ", 5) != 0) {
+	if (fgets(line, sizeof(line), in) == NULL || strncmp(line, "From ", 5) != 0) {
 		fclose(in);
 		fclose(out);
 		fclose(tmp);
@@ -3185,7 +3185,7 @@ fetch_postponed_article(
 	 * line containing "From "
 	 */
 
-	while (fgets(line, (int) sizeof(line), in) != NULL) {
+	while (fgets(line, sizeof(line), in) != NULL) {
 		if (STRNCMPEQ(line, "From ", 5))
 			first_article = FALSE;
 		if (first_article) {
@@ -3763,7 +3763,7 @@ post_response(
 		len = (size_t) n + 1;
 		dbuf = my_malloc(len);
 		snprintf(dbuf, len, "Re: %s", tbuf);
-		free(ptr);
+		FreeAndNull(ptr);
 		msg_add_header("Subject", dbuf);
 		free(dbuf);
 	}
@@ -3776,6 +3776,28 @@ post_response(
 			msg_add_header("Followup-To", (strchr(note_h.followup, ',') != NULL) ? note_h.followup : "");
 	} else {
 		if (group && group->attribute->mailing_list && *group->attribute->mailing_list) {
+			/*
+			 * debian bug #250317 ->
+			 * TODO: loop over split_mailbox_list(note_h.to)
+			 *       as note_h.to and/or *group->attribute->mailing_list
+			 *       could hold multiple addresses
+			 */
+			if (note_h.to && *note_h.to && !address_in_list(note_h.to, *group->attribute->mailing_list))
+				ptr = append_to_string(ptr, note_h.to);
+			if (note_h.cc && *note_h.cc && !address_in_list(note_h.cc, *group->attribute->mailing_list)) {
+				if (ptr && *ptr)
+					ptr = append_to_string(ptr, ",");
+				ptr = append_to_string(ptr, note_h.cc);
+			}
+			if (ptr && *ptr) {
+				msg_add_header("Cc", ptr);
+				free(ptr);
+			}
+
+			if (note_h.bcc && *note_h.bcc && !address_in_list(note_h.bcc, *group->attribute->mailing_list))
+				msg_add_header("Bcc", note_h.bcc);
+			/* <- debian bug #250317 */
+
 			msg_add_header("To", *group->attribute->mailing_list);
 			art_type = GROUP_TYPE_MAIL;
 		} else {
@@ -3863,7 +3885,7 @@ post_response(
 				char buffer[8192];
 
 				/* skip headers + header/body separator */
-				while (fgets(buffer, (int) sizeof(buffer), pgart.raw) != NULL) {
+				while (fgets(buffer, sizeof(buffer), pgart.raw) != NULL) {
 					offset = (long) ((size_t) offset + strlen(buffer));
 					if (buffer[0] == '\n' || buffer[0] == '\r')
 						break;
@@ -4507,7 +4529,7 @@ mail_to_author(
 				char buffer[8192];
 
 				/* skip headers + header/body separator */
-				while (fgets(buffer, (int) sizeof(buffer), pgart.raw) != NULL) {
+				while (fgets(buffer, sizeof(buffer), pgart.raw) != NULL) {
 					offset = (long) ((size_t) offset + strlen(buffer));
 					if (buffer[0] == '\n' || buffer[0] == '\r')
 						break;
@@ -5261,7 +5283,7 @@ msg_add_x_headers(
 				return;
 		}
 
-		while (fgets(line, (int) sizeof(line), fp) != NULL) {
+		while (fgets(line, sizeof(line), fp) != NULL) {
 			if (line[0] != '\n' && line[0] != '#') {
 				if (line[0] != ' ' && line[0] != '\t') {
 					x_hdrs = my_realloc(x_hdrs, (size_t) (num_x_hdrs + 1) * sizeof(char *));
@@ -5348,7 +5370,7 @@ msg_add_x_body(
 				return 0;
 		}
 
-		while (fgets(line, (int) sizeof(line), fp) != NULL) {
+		while (fgets(line, sizeof(line), fp) != NULL) {
 			fputs(line, fp_out);
 			++wrote;
 		}

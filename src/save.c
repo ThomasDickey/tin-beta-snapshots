@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-05-13
+ *  Updated   : 2025-08-19
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -923,7 +923,7 @@ post_process_uud(
 		if ((fp_in = tin_fopen(save[i].path, "r")) == NULL)
 			continue;
 
-		while (fgets(s, (int) sizeof(s), fp_in) != NULL) {
+		while (fgets(s, sizeof(s), fp_in) != NULL) {
 			switch (state) {
 				case INITIAL:
 					if (STRNCMPEQ("begin ", s, 6)) {
@@ -1141,7 +1141,7 @@ post_process_sh(
 
 		wait_message(0, _(txt_extracting_shar), save[i].path);
 
-		while (fgets(buf, (int) sizeof(buf), fp_in) != NULL) {
+		while (fgets(buf, sizeof(buf), fp_in) != NULL) {
 			/* find #!/bin/sh style patterns */
 			if ((fp_out == NULL) && MATCH_REGEX(shar_regex, buf, strlen(buf)))
 				fp_out = fopen(file_out, "w");
@@ -1625,6 +1625,11 @@ attachment_page(
 
 			case GLOBAL_HELP:
 				show_help_page(ATTACHMENT_LEVEL, _(txt_attachment_menu_com));
+				show_attachment_page();
+				break;
+
+			case GLOBAL_CONNECTION_INFO:
+				show_connection_page();
 				show_attachment_page();
 				break;
 

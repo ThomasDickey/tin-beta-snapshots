@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2025-07-25
+ *  Updated   : 2025-08-19
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2025 Dirk Nimmich <nimmich@muenster.de>
@@ -823,7 +823,9 @@ process_mapping(
 				return TRUE;
 			}
 			if (STRCMPEQ(keyname, "ConnectionInfo")) {
+				process_keys(GLOBAL_CONNECTION_INFO, keys, &attachment_keys);
 				process_keys(GLOBAL_CONNECTION_INFO, keys, &group_keys);
+				process_keys(GLOBAL_CONNECTION_INFO, keys, &option_menu_keys);
 				process_keys(GLOBAL_CONNECTION_INFO, keys, &page_keys);
 				process_keys(GLOBAL_CONNECTION_INFO, keys, &select_keys);
 				process_keys(GLOBAL_CONNECTION_INFO, keys, &thread_keys);
@@ -2772,6 +2774,7 @@ setup_default_keys(
 	add_default_key(&attachment_keys, "g^", GLOBAL_FIRST_PAGE);
 	add_default_key(&attachment_keys, "G$", GLOBAL_LAST_PAGE);
 	add_default_key(&attachment_keys, "i", GLOBAL_TOGGLE_INFO_LAST_LINE);
+	add_default_key(&attachment_keys, "J", GLOBAL_CONNECTION_INFO);
 	add_default_key(&attachment_keys, "p", ATTACHMENT_PIPE);
 	add_default_key(&attachment_keys, "q", GLOBAL_QUIT);
 	add_default_key(&attachment_keys, "s", ATTACHMENT_SAVE);
@@ -3047,6 +3050,7 @@ setup_default_keys(
 	add_default_key(&option_menu_keys, "g^", GLOBAL_FIRST_PAGE);
 	add_default_key(&option_menu_keys, "G$", GLOBAL_LAST_PAGE);
 	add_default_key(&option_menu_keys, "h", GLOBAL_HELP);
+	add_default_key(&option_menu_keys, "J", GLOBAL_CONNECTION_INFO);
 	add_default_key(&option_menu_keys, "q", GLOBAL_QUIT);
 	add_default_key(&option_menu_keys, "r", CONFIG_RESET_ATTRIB);
 	add_default_key(&option_menu_keys, "v", GLOBAL_VERSION);
@@ -3353,6 +3357,7 @@ dump_keylist(
 		"ConfigResetAttrib",
 		"ConfigScopeMenu",
 		"ConfigSelect",
+		"ConfigServerrcMenu",
 		"ConfigNoSave",
 		"ConfigToggleAttrib",
 		"FeedArt",
@@ -3571,8 +3576,7 @@ dump_keylist(
 
 static void
 dump_all_keys(
-	void
-)
+	void)
 {
 	if (debug) { /* order? */
 		dump_keylist(attachment_keys);

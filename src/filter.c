@@ -346,7 +346,7 @@ read_filter_file(
 
 	(void) time(&current_secs);
 
-	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		if (*buf == '\n')
 			continue;
 

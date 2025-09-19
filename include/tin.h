@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-30
+ *  Updated   : 2025-08-20
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -804,6 +804,9 @@ enum rc_state { RC_IGNORE, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define NEWSGROUPS_FILE	"newsgroups"
 #define MOTD_FILE	"motd"
 #define KEYMAP_FILE	"keymap"
+#define MSGLOG_FILE "msglog"
+#define HELP_PAGE_CACHE_FILE ".help-%d"
+#define CONINFO_CACHE_FILE ".coninfo"
 
 #define SIGDASHES "-- \n"
 
@@ -1172,7 +1175,7 @@ enum {
 
 #define REGEX_FMT (tinrc.wildcard ? "%s" : "*%s*")
 
-#define IGNORE_ART(i)	((tinrc.kill_level != KILL_THREAD && arts[i].killed) || (arts[i].thread == ART_EXPIRED))
+#define IGNORE_ART(i)	((tinrc.kill_level == KILL_NOTHREAD && arts[i].killed) || (arts[i].thread == ART_EXPIRED))
 /* only used for threading */
 #define IGNORE_ART_THREAD(i)	(arts[i].thread != ART_UNTHREADED || (tinrc.kill_level == KILL_NOTHREAD && arts[i].killed))
 
@@ -1256,14 +1259,16 @@ enum {
 #define GROUP_LEVEL			(1 << 1)
 #define THREAD_LEVEL		(1 << 2)
 #define PAGE_LEVEL			(1 << 3)
-#define INFO_PAGER			(1 << 4)
-#define SCOPE_LEVEL			(1 << 5)
-#define CONFIG_LEVEL		(1 << 6)
-#define ATTRIB_LEVEL		(1 << 7)
-#define ATTACHMENT_LEVEL	(1 << 8)
-#define URL_LEVEL			(1 << 9)
-#define POSTED_LEVEL		(1 << 10)
-#define SERVERRC_LEVEL		(1 << 11)
+#define SCOPE_LEVEL			(1 << 4)
+#define CONFIG_LEVEL		(1 << 5)
+#define ATTRIB_LEVEL		(1 << 6)
+#define ATTACHMENT_LEVEL	(1 << 7)
+#define URL_LEVEL			(1 << 8)
+#define POSTED_LEVEL		(1 << 9)
+#define SERVERRC_LEVEL		(1 << 10)
+#define INFO_PAGER			(1 << 11)	/* has no help text, put at end */
+#define MIN_LEVEL			SELECT_LEVEL
+#define MAX_LEVEL			INFO_PAGER
 
 #define MINI_HELP_LINES		5
 
@@ -1653,6 +1658,7 @@ enum {
 #	endif /* HAVE_UNICODE_UBIDI_H */
 #endif /* HAVE_LIBICUUC */
 
+#define ACE_PREFIX "xn--"
 
 /*
  * used in checking article header before posting

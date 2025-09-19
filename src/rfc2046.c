@@ -2078,8 +2078,10 @@ art_open(
 	if (!cook_article(wrap_lines, artinfo, group->attribute->hide_inline_data, FALSE))
 		return ART_ABORT;
 
+#if 0 /* ok for single arts but if art_open() is called in a loop (e.g. body_search()) */
 	if (artinfo->tex2iso && group->attribute->tex2iso_conv)
 		wait_message(0, _(txt_is_tex_encoded));
+#endif /* 0 */
 
 	log_article_info(artinfo);
 

@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2025-07-22
+ *  Updated   : 2025-08-27
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2025 Jason Faultless <jason@altarstone.com>
@@ -1858,26 +1858,19 @@ process_text_body_part(
 		}
 #endif /* HAVE_COLOR */
 
-#ifdef HAVE_LIBURIPARSER
+#if defined(HAVE_LIBURIPARSER) || defined(HAVE_LIBCURL)
 		/* find and validate URIs */
 		CHECK_URI(url_regex, C_URL);
 		CHECK_URI(mail_regex, C_MAIL);
-		CHECK_URI(news_regex, C_NEWS);
 #else
-#	ifdef HAVE_LIBCURL
-		/* find and validate URIs */
-		CHECK_URI(url_regex, C_URL);
-		CHECK_URI(mail_regex, C_MAIL);
-		CHECK_URI(news_regex, C_NEWS);
-#	else
 		if (MATCH_REGEX(url_regex, line, len))
 			flags |= C_URL;
 		if (MATCH_REGEX(mail_regex, line, len))
 			flags |= C_MAIL;
+#endif /* HAVE_LIBURIPARSER */
+		/* see debian bug #687198 */
 		if (MATCH_REGEX(news_regex, line, len))
 			flags |= C_NEWS;
-#	endif /* HAVE_LIBCURL */
-#endif /* HAVE_LIBURIPARSER */
 
 		if (expand_ctrl_chars(&line, &max_line_len, tabwidth))
 			flags |= C_CTRLL;				/* Line contains form-feed */
@@ -2187,7 +2180,7 @@ cook_article(
 							 */
 
 							/* something which looks like IDNA? */
-							if ((idnp = strcasestr(ptr, "xn--")) != NULL) {
+							if ((idnp = strcasestr(ptr, ACE_PREFIX)) != NULL) {
 								char *t = NULL;
 								char *ep = idnp;
 								char k;

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tin 2.3.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-30 20:34+0200\n"
+"POT-Creation-Date: 2025-08-12 22:43+0200\n"
 "PO-Revision-Date: 2015-08-28 12:21+0800\n"
 "Last-Translator: Mingye Wang <arthur200126@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
@@ -19,10 +19,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 1.8.4\n"
-
-#: src/config.c:2362
-msgid " Keeping serverrc.add_cmd_line_opts."
-msgstr ""
 
 #: src/lang.c:48
 #, c-format
@@ -1072,13 +1068,13 @@ msgstr ""
 #, c-format
 msgid ""
 "Server certificate verification FAILED:\n"
-"\t%s (%s)\n"
+"\t%s\n"
+"\t(%s)\n"
 msgstr ""
 
 #: src/lang.c:326
-#, fuzzy
 msgid "Server certificate verified successfully.\n"
-msgstr "newsrc 文件已成功保存。\n"
+msgstr ""
 
 #: src/lang.c:330
 msgid "Server certificate verification FAILED: <can't get reason>\n"
@@ -1107,7 +1103,7 @@ msgstr "为已存群组创建现用文件…\n"
 msgid "Creating %s file...\n"
 msgstr "创建 newsrc 文件…\n"
 
-#: src/lang.c:346 src/lang.c:1818 src/lang.c:1838
+#: src/lang.c:346 src/lang.c:1825 src/lang.c:1845
 msgid "Default"
 msgstr "缺省"
 
@@ -2632,7 +2628,7 @@ msgstr "移动清单内所选群组"
 msgid "choose next group with unread news"
 msgstr "选择具有未读新闻的下一个群组"
 
-#: src/lang.c:748 src/lang.c:1900
+#: src/lang.c:748 src/lang.c:1907
 msgid "quit"
 msgstr "离开"
 
@@ -3033,128 +3029,132 @@ msgid "Inverse video enabled"
 msgstr "反白显示已启用"
 
 #: src/lang.c:845
+msgid " Keeping serverrc.add_cmd_line_opts."
+msgstr ""
+
+#: src/lang.c:846
 #, c-format
 msgid "Missing definition for %s\n"
 msgstr "缺少 %s 的定义\n"
 
-#: src/lang.c:846
+#: src/lang.c:847
 #, c-format
 msgid "Invalid key definition '%s'\n"
 msgstr "无效的按键定义‘%s’\n"
 
-#: src/lang.c:847
+#: src/lang.c:848
 #, c-format
 msgid "Invalid keyname '%s'\n"
 msgstr "无效的按键名称‘%s’\n"
 
-#: src/lang.c:848
+#: src/lang.c:849
 #, c-format
 msgid "Keymap file was upgraded to version %s\n"
 msgstr "Keymap 文件已升级到版本 %s\n"
 
 #. TRANSLATORS: do not translate header names like 'From:'
-#: src/lang.c:850
+#: src/lang.c:851
 #, c-format
 msgid "Kill From:     [%s] (y/n): "
 msgstr "砍除 From:   [%s] (y/n)："
 
 #. TRANSLATORS: do not translate header names like 'Lines:'
-#: src/lang.c:852
+#: src/lang.c:853
 msgid "Kill Lines: (</>num): "
 msgstr "砍除 Lines: (</>num)："
 
-#: src/lang.c:853
+#: src/lang.c:854
 msgid "Kill Article Menu"
 msgstr "砍除文章菜单"
 
-#: src/lang.c:854
+#: src/lang.c:855
 #, fuzzy, c-format
 msgid "Kill Msg-ID:   [%s] (f/l/o/n): "
 msgstr "砍除 Msg-Id： [%s] (f/l/o/n)："
 
-#: src/lang.c:855
+#: src/lang.c:856
 msgid "Kill pattern scope  : "
 msgstr "砍除模式范围 ："
 
 #. TRANSLATORS: do not translate header names like 'Subject:'
-#: src/lang.c:857
+#: src/lang.c:858
 #, c-format
 msgid "Kill Subject:  [%s] (y/n): "
 msgstr "砍除 Subject: [%s] (y/n)："
 
-#: src/lang.c:858
+#: src/lang.c:859
 msgid "Kill text pattern   : "
 msgstr "砍除文本模式  ："
 
-#: src/lang.c:859
+#: src/lang.c:860
 msgid "Kill time in days   : "
 msgstr "砍除时间于每日  ："
 
-#: src/lang.c:861
+#: src/lang.c:862
 msgid "Last"
 msgstr "最后一笔"
 
-#: src/lang.c:862
+#: src/lang.c:863
 msgid "-- Last response --"
 msgstr "-- 最后一笔回应 --"
 
-#: src/lang.c:863
+#: src/lang.c:864
 #, c-format
 msgid "Lines %s  "
 msgstr "行 %s  "
 
-#: src/lang.c:867
+#: src/lang.c:868
 #, fuzzy
 msgid "Function not available."
 msgstr "无法使用文章"
 
-#: src/lang.c:868
+#: src/lang.c:869
 msgid "Not reading via NNTP."
 msgstr ""
 
-#: src/lang.c:870
+#: src/lang.c:871
 #, fuzzy, c-format
 msgid "Group: %s"
 msgid_plural "Groups: %s"
 msgstr[0] "群组 %.*s…"
 
-#: src/lang.c:873
+#: src/lang.c:874
 msgid "Mail"
 msgstr "邮寄"
 
-#: src/lang.c:874
+#: src/lang.c:875
 msgid "mailbox "
 msgstr "信箱 "
 
-#: src/lang.c:875
+#: src/lang.c:876
 #, c-format
 msgid "Mail article(s) to [%.*s]> "
 msgstr "邮寄文章到 [%.*s]>"
 
-#: src/lang.c:876
+#: src/lang.c:877
 #, c-format
 msgid "Mailing log to %s\n"
 msgstr "邮寄记录档到 %s\n"
 
-#: src/lang.c:877
+#: src/lang.c:878
 msgid "Mail bug report..."
 msgstr "邮寄错误报告…"
 
-#: src/lang.c:878
+#: src/lang.c:879
 #, c-format
 msgid "Mail BUG REPORT to %s?"
 msgstr "邮寄错误报告到 %s？"
 
-#: src/lang.c:879
+#: src/lang.c:880
 msgid "Mailed"
 msgstr "已寄出"
 
-#: src/lang.c:880
+#: src/lang.c:881
 #, c-format
 msgid "Mailing to %s..."
 msgstr "邮寄到 %s…"
 
-#: src/lang.c:881
+#: src/lang.c:882
 msgid ""
 "# [Mail/Save] active file. Format is like news active file:\n"
 "#   groupname  max.artnum  min.artnum  /dir\n"
@@ -3166,121 +3166,121 @@ msgstr ""
 "# 第四个字段是基底目录 (亦即 ~/Mail 或 ~/News)\n"
 "#\n"
 
-#: src/lang.c:884
+#: src/lang.c:885
 #, fuzzy
 msgid "Article marked as read"
 msgstr "%s 标记为已读"
 
-#: src/lang.c:885
+#: src/lang.c:886
 #, fuzzy
 msgid "Article marked as unread"
 msgstr "%s 标记为未读"
 
-#: src/lang.c:886
+#: src/lang.c:887
 #, fuzzy
 msgid "Thread marked as read"
 msgstr "%s 标记为已读"
 
-#: src/lang.c:887
+#: src/lang.c:888
 #, fuzzy
 msgid "Thread marked as unread"
 msgstr "%s 标记为未读"
 
-#: src/lang.c:888
+#: src/lang.c:889
 #, c-format
 msgid "Marked %d of %d %s as read"
 msgstr "标记 %2$d 中的 %1$d %3$s 为已读"
 
-#: src/lang.c:889
+#: src/lang.c:890
 #, c-format
 msgid "Marked %d of %d %s as unread"
 msgstr "标记 %2$d 中的 %1$d %3$s 为未读"
 
-#: src/lang.c:890 src/lang.c:1856
+#: src/lang.c:891 src/lang.c:1863
 msgid "Mark"
 msgstr "标记"
 
-#: src/lang.c:891
+#: src/lang.c:892
 #, c-format
 msgid "Mark all articles as read%s?"
 msgstr "标记所有文章为 %s 读？"
 
-#: src/lang.c:892
+#: src/lang.c:893
 #, c-format
 msgid "Mark article as read%s?"
 msgstr "标记文章为 %s 读？"
 
-#: src/lang.c:893
+#: src/lang.c:894
 #, c-format
 msgid "Mark group %s as read?"
 msgstr "标记群组 %s 为已读？"
 
-#: src/lang.c:894
+#: src/lang.c:895
 #, c-format
 msgid "Mark thread as read%s?"
 msgstr "标记讨论串为 %s 读？"
 
-#: src/lang.c:895
+#: src/lang.c:896
 #, c-format
 msgid "Matching %s groups..."
 msgstr "正在匹配 %s 群组…"
 
-#: src/lang.c:898
+#: src/lang.c:899
 #, fuzzy, c-format
 msgid "charset %s"
 msgstr "，字符集："
 
-#: src/lang.c:899
+#: src/lang.c:900
 #, c-format
 msgid "content subtype %s"
 msgstr ""
 
-#: src/lang.c:900
+#: src/lang.c:901
 #, c-format
 msgid "content type %s"
 msgstr ""
 
-#: src/lang.c:901
+#: src/lang.c:902
 #, c-format
 msgid "%*s[-- charset %s not supported --]\n"
 msgstr "%*s[-- 不支持 %s 字符集 --]\n"
 
-#: src/lang.c:902
+#: src/lang.c:903
 #, c-format
 msgid "%*s[-- Description: %s --]\n"
 msgstr "%*s[-- 描述：%s --]\n"
 
-#: src/lang.c:903
+#: src/lang.c:904
 #, fuzzy, c-format
 msgid "encoding %s"
 msgstr "打开 %s"
 
-#: src/lang.c:909
+#: src/lang.c:910
 #, fuzzy, c-format
 msgid "lang %s"
 msgstr "重新读取 %s…"
 
-#: src/lang.c:910
+#: src/lang.c:911
 #, fuzzy, c-format
 msgid "%s line"
 msgid_plural "%s lines"
 msgstr[0] "%d 行"
 
-#: src/lang.c:911
+#: src/lang.c:912
 #, fuzzy, c-format
 msgid "name %s"
 msgstr "，名称："
 
-#: src/lang.c:912
+#: src/lang.c:913
 msgid ", "
 msgstr ""
 
-#: src/lang.c:913
+#: src/lang.c:914
 #, c-format
 msgid "size %s"
 msgstr ""
 
-#: src/lang.c:914
+#: src/lang.c:915
 msgid ""
 "This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
 "are reading this prefix, your mail reader probably has not yet been "
@@ -3293,35 +3293,35 @@ msgstr ""
 "以了解新的格式，而随后而来的东西也许看起来会很怪异。\n"
 "\n"
 
-#: src/lang.c:918 src/lang.c:931 src/lang.c:934 src/lang.c:940
+#: src/lang.c:919 src/lang.c:932 src/lang.c:935 src/lang.c:941
 #, c-format
 msgid "<n>=set current to n; %s=line down; %s=line up; %s=help; %s=quit"
 msgstr "<n>=设置目前为 n; %s=下移一行；%s=上移一行；%s=求助；%s=离开"
 
-#: src/lang.c:920
+#: src/lang.c:921
 #, c-format
 msgid ""
 "%s=view; %s=pipe; %s=pipe raw; %s=save; %s=tag; %s=tag pattern; %s=untag all"
 msgstr ""
 "%s=查看；%s=管道；%s=管道原始；%s=保存；%s=标记；%s=标记模式；%s=取消所有标记"
 
-#: src/lang.c:922
+#: src/lang.c:923
 #, c-format
 msgid "%s=view; %s=save; %s=tag; %s=tag pattern; %s=untag all"
 msgstr "%s=查看；%s=保存；%s=标记；%s=标记模式；%s=取消所有标记"
 
-#: src/lang.c:924
+#: src/lang.c:925
 #, c-format
 msgid ""
 "%s=reverse tagging; %s=search forwards; %s=search backwards; %s=repeat search"
 msgstr "%s=反向标记；%s=向前搜索；%s=向后搜索；%s=重复搜索"
 
-#: src/lang.c:925 src/lang.c:929
+#: src/lang.c:926 src/lang.c:930
 #, c-format
 msgid "<n>=set current to n; %s=next unread; %s=search pattern; %s=kill/select"
 msgstr "<n>=设置目前为 n; %s=下一个未读；%s=搜索模式；%s=砍除/选取"
 
-#: src/lang.c:926
+#: src/lang.c:927
 #, c-format
 msgid ""
 "%s=author search; %s=catchup; %s=line down; %s=line up; %s=mark read; "
@@ -3330,264 +3330,264 @@ msgstr ""
 "%s=作者搜索；%s=设回未读；%s=下移一行；%s=上移一行；%s=设为已读；%s=列出讨论"
 "串"
 
-#: src/lang.c:927
+#: src/lang.c:928
 #, c-format
 msgid "%s=line up; %s=line down; %s=page up; %s=page down; %s=top; %s=bottom"
 msgstr "%s=上移一行；%s=下移一行；%s=向上一页；%s=向下一页；%s=顶端；%s=底部"
 
-#: src/lang.c:928
+#: src/lang.c:929
 #, c-format
 msgid "%s=search forwards; %s=search backwards; %s=quit"
 msgstr "%s=向前搜索；%s=向后搜索；%s=离开"
 
-#: src/lang.c:930
+#: src/lang.c:931
 #, c-format
 msgid "%s=author search; %s=body search; %s=catchup; %s=followup; %s=mark read"
 msgstr "%s=作者搜索；%s=内文搜索；%s=设回未读；%s=跟贴；%s=设为已读"
 
-#: src/lang.c:932 src/lang.c:941
+#: src/lang.c:933 src/lang.c:942
 #, c-format
 msgid "%s=search forwards; %s=search backwards; %s=repeat search"
 msgstr "%s=向前搜索；%s=向后搜索；%s=重复搜索"
 
-#: src/lang.c:933
+#: src/lang.c:934
 #, c-format
 msgid "%s=add; %s=move; %s=rename; %s=delete"
 msgstr "%s=加入；%s=移动；%s=重命名；%s=删除"
 
-#: src/lang.c:935
+#: src/lang.c:936
 #, c-format
 msgid "<n>=set current to n; %s=next unread; %s,%s=search pattern; %s=catchup"
 msgstr "<n>=设置目前为 n; %s=下一个未读；%s,%s=搜索模式；%s=设回未读"
 
-#: src/lang.c:936
+#: src/lang.c:937
 #, c-format
 msgid ""
 "%s=line down; %s=line up; %s=help; %s=move; %s=quit; %s=toggle all/unread"
 msgstr "%s=下移一行；%s=上移一行；%s=求助；%s=移动；%s=离开；%s=切换全部/未读"
 
-#: src/lang.c:937
+#: src/lang.c:938
 #, c-format
 msgid ""
 "%s=subscribe; %s=sub pattern; %s=unsubscribe; %s=unsub pattern; %s=yank in/"
 "out"
 msgstr "%s=订阅；%s=订阅模式；%s=取消订阅；%s=取消订阅模式；%s=拔入/出"
 
-#: src/lang.c:938
+#: src/lang.c:939
 #, c-format
 msgid "<n>=set current to n; %s=next unread; %s=catchup; %s=display toggle"
 msgstr "<n>=设置目前为 n; %s=下一个未读；%s=设回未读；%s=显示切换"
 
-#: src/lang.c:939
+#: src/lang.c:940
 #, c-format
 msgid "%s=help; %s=line down; %s=line up; %s=quit; %s=tag; %s=mark unread"
 msgstr "%s=求助；%s=下移一行；%s=上移一行；%s=离开；%s=标记；%s=标记未读"
 
-#: src/lang.c:942
+#: src/lang.c:943
 msgid "--More--"
 msgstr "--更多--"
 
-#: src/lang.c:944
+#: src/lang.c:945
 #, fuzzy, c-format
 msgid "MOTD: %s\n"
 msgstr "MOTD: "
 
-#: src/lang.c:946
+#: src/lang.c:947
 #, c-format
 msgid "Moving %s..."
 msgstr "正在移动 %s…"
 
 #. TRANSLATORS: do not translate header names like 'Message-ID:'
-#: src/lang.c:948
+#: src/lang.c:949
 msgid "Message-ID: & last Reference  "
 msgstr "Message-ID: & 最近参考  "
 
 #. TRANSLATORS: do not translate header names like 'Message-ID:'
-#: src/lang.c:950
+#: src/lang.c:951
 msgid "Message-ID: line              "
 msgstr "Message-ID: 行              "
 
 #. TRANSLATORS: do not translate header names like 'Message-ID:' or 'References:'
-#: src/lang.c:952
+#: src/lang.c:953
 msgid "Message-ID: & References: line"
 msgstr "Message-ID: & References: 行"
 
-#: src/lang.c:954
+#: src/lang.c:955
 #, c-format
 msgid "Go to newsgroup [%s]> "
 msgstr "前往新闻群组 [%s]>"
 
-#: src/lang.c:955
+#: src/lang.c:956
 #, c-format
 msgid "Position %s in group list (1,2,..,$) [%d]> "
 msgstr "定位 %s 于群组清单 (1,2,..,$) [%d]>"
 
-#: src/lang.c:956
+#: src/lang.c:957
 msgid "Try and save newsrc file again?"
 msgstr "再次尝试并保存 newsrc 文件？"
 
-#: src/lang.c:957
+#: src/lang.c:958
 #, fuzzy, c-format
 msgid "Warning: No groups written to your %s file. Save aborted."
 msgstr "警告：没有任何新闻群组被写入您的 newsrc 文件。已放弃保存。"
 
-#: src/lang.c:958
+#: src/lang.c:959
 #, fuzzy, c-format
 msgid "%s file saved successfully.\n"
 msgstr "newsrc 文件已成功保存。\n"
 
-#: src/lang.c:959
+#: src/lang.c:960
 msgid "-- Next response --"
 msgstr "-- 下一个回应 --"
 
-#: src/lang.c:960
+#: src/lang.c:961
 msgid "No  "
 msgstr "否  "
 
-#: src/lang.c:961
+#: src/lang.c:962
 msgid "*** No articles ***"
 msgstr "*** 没有文章 ***"
 
-#: src/lang.c:962
+#: src/lang.c:963
 msgid "No articles have been posted"
 msgstr "没有任何文章已被张贴"
 
-#: src/lang.c:963
+#: src/lang.c:964
 msgid "*** No attachments ***"
 msgstr "*** 没有附件 ***"
 
-#: src/lang.c:964
+#: src/lang.c:965
 msgid "*** No description ***"
 msgstr "*** 没有描述 ***"
 
-#: src/lang.c:965
+#: src/lang.c:966
 msgid "No filename"
 msgstr "没有文件名"
 
-#: src/lang.c:966
+#: src/lang.c:967
 msgid "No group"
 msgstr "没有群组"
 
-#: src/lang.c:967
+#: src/lang.c:968
 msgid "*** No groups ***"
 msgstr "*** 没有群组 ***"
 
-#: src/lang.c:968
+#: src/lang.c:969
 msgid "No more groups to read"
 msgstr "已无可读取群组"
 
-#: src/lang.c:969
+#: src/lang.c:970
 msgid "No last message"
 msgstr "没有最近一笔消息"
 
-#: src/lang.c:970
+#: src/lang.c:971
 msgid "No mail address"
 msgstr "没有邮件地址"
 
-#: src/lang.c:971
+#: src/lang.c:972
 msgid "No articles marked for saving"
 msgstr "没有标记要保存的文章"
 
-#: src/lang.c:972
+#: src/lang.c:973
 msgid "No match"
 msgstr "没有匹配"
 
-#: src/lang.c:973
+#: src/lang.c:974
 msgid "No more groups"
 msgstr "已无群组"
 
-#: src/lang.c:974
+#: src/lang.c:975
 msgid "No newsgroups"
 msgstr "没有新闻群组"
 
-#: src/lang.c:975
+#: src/lang.c:976
 msgid "No next unread article"
 msgstr "没有下一篇未读文章"
 
-#: src/lang.c:976
+#: src/lang.c:977
 msgid "No previous group"
 msgstr "没有上一个群组"
 
-#: src/lang.c:977
+#: src/lang.c:978
 msgid "No previous search, nothing to repeat"
 msgstr "没有上一个搜索，没有任何东西可重复"
 
-#: src/lang.c:978
+#: src/lang.c:979
 msgid "No previous unread article"
 msgstr "没有上一篇未读文章"
 
-#: src/lang.c:979
+#: src/lang.c:980
 msgid "No responses"
 msgstr "没有回应"
 
-#: src/lang.c:980
+#: src/lang.c:981
 msgid "No responses to list in current thread"
 msgstr "在目前的讨论串中没有回应可列出"
 
-#: src/lang.c:981
+#: src/lang.c:982
 msgid "*** No scopes ***"
 msgstr "*** 没有范围 ***"
 
-#: src/lang.c:982
+#: src/lang.c:983
 msgid "No search string"
 msgstr "没有搜索字串"
 
-#: src/lang.c:983
+#: src/lang.c:984
 msgid "No subject"
 msgstr "没有主旨"
 
-#: src/lang.c:985
+#: src/lang.c:986
 #, c-format
 msgid "%s: Terminal must have clear to end-of-line (ce)\n"
 msgstr "%s：终端机必须能够清空到行尾 (ce)\n"
 
-#: src/lang.c:986
+#: src/lang.c:987
 #, c-format
 msgid "%s: Terminal must have clear to end-of-screen (cd)\n"
 msgstr "%s：终端机必须能够清空到屏幕末端 (cd)\n"
 
-#: src/lang.c:987
+#: src/lang.c:988
 #, c-format
 msgid "%s: Terminal must have clearscreen (cl) capability\n"
 msgstr "%s：终端机必须具备清空屏幕 (cl) 的能力\n"
 
-#: src/lang.c:988
+#: src/lang.c:989
 #, c-format
 msgid "%s: Terminal must have cursor motion (cm)\n"
 msgstr "%s：终端机必须能够移动光标 (cm)\n"
 
-#: src/lang.c:989
+#: src/lang.c:990
 #, c-format
 msgid "%s: TERM variable must be set to use screen capabilities\n"
 msgstr "%s：TERM 变量必须被设置以使用屏幕能力\n"
 
-#: src/lang.c:991
+#: src/lang.c:992
 #, c-format
 msgid "No viewer found for %s/%s\n"
 msgstr "找不到任何查看器用于 %s/%s\n"
 
-#: src/lang.c:992 src/lang.c:1755 src/lang.c:1796 src/lang.c:2105
+#: src/lang.c:993 src/lang.c:1762 src/lang.c:1803 src/lang.c:2112
 msgid "None"
 msgstr "无"
 
-#: src/lang.c:993
+#: src/lang.c:994
 msgid "Newsgroup does not exist on this server"
 msgstr "新闻群组不存在于这个服务器"
 
-#: src/lang.c:994
+#: src/lang.c:995
 #, c-format
 msgid "Group %s not found in active file"
 msgstr "在现用文件中找不到群组 %s"
 
-#: src/lang.c:996
+#: src/lang.c:997
 msgid "c)reate it, use a)lternative name, use d)efault .newsrc, q)uit tin: "
 msgstr "c)创建它、使用 a)替代名称、使用 d)缺省 .newsrc、q)离开 tin："
 
-#: src/lang.c:997
+#: src/lang.c:998
 msgid "use a)lternative name, use d)efault .newsrc, q)uit tin: "
 msgstr "使用 a)替代名称、使用 d)缺省 .newsrc、q)离开 tin："
 
-#: src/lang.c:998
+#: src/lang.c:999
 #, c-format
 msgid ""
 "# NNTP-server -> newsrc translation table and NNTP-server\n"
@@ -3616,54 +3616,54 @@ msgstr ""
 "#   news.example.org  /tmp/nrc-ex      example    ex\n"
 "#\n"
 
-#: src/lang.c:1005
+#: src/lang.c:1006
 msgid "NULL"
 msgstr "NULL"
 
-#: src/lang.c:1007
+#: src/lang.c:1008
 msgid "Only"
 msgstr "只有"
 
-#: src/lang.c:1009
+#: src/lang.c:1010
 msgid "Options Menu"
 msgstr "选项功能表"
 
-#: src/lang.c:1010
+#: src/lang.c:1011
 msgid "Options Menu Commands"
 msgstr "选项功能表命令"
 
-#: src/lang.c:1011
+#: src/lang.c:1012
 #, fuzzy, c-format
 msgid "Option not enabled. Recompile with %s.%s\n"
 msgstr "选项未启用。重新以 %s 编译。%s\n"
 
 #. TRANSLATORS: do not translate header names like 'Path:'
-#: src/lang.c:1015
+#: src/lang.c:1016
 #, fuzzy
 msgid "Path: line (case insensitive)"
 msgstr "Path: 行 (大小写相符)   "
 
-#: src/lang.c:1016
+#: src/lang.c:1017
 #, c-format
 msgid "Error in regex: %s at pos. %d '%s'"
 msgstr "在正则表达式 %s 的位置 %d 发生错误：‘%s’"
 
-#: src/lang.c:1017
+#: src/lang.c:1018
 #, c-format
 msgid "Error in regex: pcre internal error %d"
 msgstr "在正则表达式中发生错误：pcre 内部错误 %d"
 
-#: src/lang.c:1019
+#: src/lang.c:1020
 #, c-format
 msgid "Error in regex: study - pcre internal error %s"
 msgstr "在正则表达式中发生错误：study - pcre 内部错误 %s"
 
-#: src/lang.c:1021
+#: src/lang.c:1022
 msgid "Post a followup..."
 msgstr "跟贴…"
 
 #. TODO: replace hard coded key-name in txt_post_error_ask_postpone
-#: src/lang.c:1023
+#: src/lang.c:1024
 msgid ""
 "An error has occurred while posting the article. If you think that this\n"
 "error is temporary or otherwise correctable, you can postpone the article\n"
@@ -3673,360 +3673,360 @@ msgstr ""
 "错误是暂时或是可改正的，您可以搁置文章\n"
 "并于稍后以 ^O 再次取出它。\n"
 
-#: src/lang.c:1026
+#: src/lang.c:1027
 msgid "Posted articles history"
 msgstr "张贴文章历史记录"
 
-#: src/lang.c:1027
+#: src/lang.c:1028
 #, fuzzy
 msgid "Posted Articles Menu Commands"
 msgstr "属性功能表指令"
 
-#: src/lang.c:1028
+#: src/lang.c:1029
 msgid "Lookup failed"
 msgstr ""
 
-#: src/lang.c:1029
+#: src/lang.c:1030
 #, fuzzy
 msgid "Operation not available for replies by mail"
 msgstr "回到群组选择层级"
 
-#: src/lang.c:1030
+#: src/lang.c:1031
 #, fuzzy
 msgid "Already in posted articles history level"
 msgstr "张贴文章历史记录"
 
-#: src/lang.c:1031
+#: src/lang.c:1032
 #, c-format
 msgid "Post to newsgroup(s) [%s]> "
 msgstr "张贴到新闻群组 [%s]>"
 
-#: src/lang.c:1032
+#: src/lang.c:1033
 msgid "-- post processing started --"
 msgstr "-- 张贴处理开始 --"
 
-#: src/lang.c:1033
+#: src/lang.c:1034
 msgid "-- post processing completed --"
 msgstr "-- 张贴处理完成 --"
 
-#: src/lang.c:1034
+#: src/lang.c:1035
 #, c-format
 msgid "Post subject [%s]> "
 msgstr "张贴主旨 [%s]>"
 
-#: src/lang.c:1035
+#: src/lang.c:1036
 msgid ""
 "# Summary of mailed/posted messages viewable by 'W' command from within "
 "tin.\n"
 msgstr "# 邮寄/张贴的消息概要可以在 tin 之中经由‘W’命令来查看。\n"
 
-#: src/lang.c:1036
+#: src/lang.c:1037
 msgid "Posting article..."
 msgstr "张贴文章…"
 
-#: src/lang.c:1038
+#: src/lang.c:1039
 #, fuzzy, c-format
 msgid "Posting failed (%s)"
 msgstr "张贴文章…"
 
-#: src/lang.c:1040
+#: src/lang.c:1041
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "张贴：%.*s…"
 
-#: src/lang.c:1041
+#: src/lang.c:1042
 #, c-format
 msgid "Post postponed articles [%%s]? (%s/%s/%s/%s/%s): "
 msgstr "张贴被搁置的文章 [%%s]？(%s/%s/%s/%s/%s)："
 
-#: src/lang.c:1043
+#: src/lang.c:1044
 #, c-format
 msgid "Preparing for filtering on Path header (%d/%d)..."
 msgstr ""
 
-#: src/lang.c:1045
+#: src/lang.c:1046
 #, fuzzy
 msgid "Processing attributes..."
 msgstr "处理属性…"
 
-#: src/lang.c:1046
+#: src/lang.c:1047
 msgid "Processing mail messages marked for deletion."
 msgstr "处理标记为删除的邮件消息。"
 
-#: src/lang.c:1047
+#: src/lang.c:1048
 msgid "Processing saved articles marked for deletion."
 msgstr "处理标记为删除的已保存文章。"
 
-#: src/lang.c:1048
+#: src/lang.c:1049
 #, c-format
 msgid "Accept Followup-To? %s=post, %s=ignore, %s=quit: "
 msgstr "接受跟贴？%s=张贴，%s=忽略，%s=离开："
 
-#: src/lang.c:1049
+#: src/lang.c:1050
 msgid "Article unchanged, abort mailing?"
 msgstr "文章未变更，放弃邮寄？"
 
-#: src/lang.c:1050
+#: src/lang.c:1051
 #, fuzzy, c-format
 msgid "Do you want to see postponed article (%d)?"
 msgid_plural "Do you want to see postponed articles (%d)?"
 msgstr[0] "您要看到搁置的文章 (%d) 吗？"
 
-#: src/lang.c:1052
+#: src/lang.c:1053
 msgid "Add quick kill filter?"
 msgstr "加入快速砍除筛选器？"
 
-#: src/lang.c:1053
+#: src/lang.c:1054
 msgid "Add quick selection filter?"
 msgstr "加入快速选择筛选器？"
 
-#: src/lang.c:1054
+#: src/lang.c:1055
 msgid "Do you really want to quit?"
 msgstr "您真的要离开吗？"
 
-#: src/lang.c:1055
+#: src/lang.c:1056
 #, c-format
 msgid "%s=edit cancel message, %s=quit, %s=delete (cancel) [%%s]: "
 msgstr "%s=编辑取消消息，%s=离开，%s=删除 (取消) [%%s]："
 
-#: src/lang.c:1056
+#: src/lang.c:1057
 #, fuzzy
 msgid "You have a tagged article in this group - quit anyway?"
 msgid_plural "You have tagged articles in this group - quit anyway?"
 msgstr[0] "您已在这个群组中标记文章 - 无论如何都要离开？"
 
-#: src/lang.c:1057
+#: src/lang.c:1058
 #, c-format
 msgid "%s=quit, %s=edit, %s=postpone: "
 msgstr "%s=离开，%s=编辑，%s=搁置："
 
-#: src/lang.c:1058
+#: src/lang.c:1059
 #, fuzzy, c-format
 msgid "%s=quit, %s=edit, %s=save kill description: "
 msgstr "%s=离开 %s=编辑 %s=保存砍除描述："
 
-#: src/lang.c:1059
+#: src/lang.c:1060
 #, fuzzy, c-format
 msgid "%s=quit, %s=edit, %s=save select description: "
 msgstr "%s=离开 %s=编辑 %s=保存选取描述："
 
-#: src/lang.c:1060
+#: src/lang.c:1061
 msgid "Do you really want to quit without saving your configuration?"
 msgstr "您真的要离开却不保存您的组态吗？"
 
-#: src/lang.c:1062
+#: src/lang.c:1063
 msgid "Invalid range - valid are '0-9.$' e.g. 1-$"
 msgstr "无效的范围 - 有效是‘0-9.$’例如：1-$"
 
-#: src/lang.c:1064
+#: src/lang.c:1065
 msgid "Do you want to abort this operation?"
 msgstr "您要放弃这个操作吗？"
 
-#: src/lang.c:1065
+#: src/lang.c:1066
 msgid "Do you want to exit tin immediately?"
 msgstr "您要马上离开 tin 吗？"
 
-#: src/lang.c:1067
+#: src/lang.c:1068
 #, fuzzy
 msgid "Reading all articles..."
 msgstr "读取 %s 篇文章…"
 
-#: src/lang.c:1068
+#: src/lang.c:1069
 #, fuzzy
 msgid "Reading all groups..."
 msgstr "读取 %s 群组…"
 
-#: src/lang.c:1069
+#: src/lang.c:1070
 msgid "Reading ('q' to quit)..."
 msgstr "读取 (‘q’表示离开)…"
 
-#: src/lang.c:1070
+#: src/lang.c:1071
 #, fuzzy, c-format
 msgid "Reading attributes file: %s\n"
 msgstr "读取 %s 属性文件…\n"
 
-#: src/lang.c:1071
+#: src/lang.c:1072
 #, fuzzy, c-format
 msgid "Reading global attributes file: %s\n"
 msgstr "读取 %s 属性文件…\n"
 
-#: src/lang.c:1072
+#: src/lang.c:1073
 #, fuzzy, c-format
 msgid "Reading config file: %s\n"
 msgstr "读取 %s 组态文件…\n"
 
-#: src/lang.c:1073
+#: src/lang.c:1074
 #, fuzzy, c-format
 msgid "Reading global config file: %s\n"
 msgstr "读取 %s 组态文件…\n"
 
-#: src/lang.c:1074
+#: src/lang.c:1075
 #, fuzzy, c-format
 msgid "Reading filter file: %s\n"
 msgstr "读取筛选器文件…\n"
 
-#: src/lang.c:1076
+#: src/lang.c:1077
 msgid "reading from local spool"
 msgstr ""
 
-#: src/lang.c:1078
+#: src/lang.c:1079
 #, fuzzy, c-format
 msgid "Reading %s\n"
 msgstr "重新读取 %s…"
 
-#: src/lang.c:1079
+#: src/lang.c:1080
 #, fuzzy, c-format
 msgid "Reading input history file: %s\n"
 msgstr "读取输入历史文件…\n"
 
-#: src/lang.c:1080
+#: src/lang.c:1081
 #, fuzzy, c-format
 msgid "Reading keymap file: %s\n"
 msgstr "读取 keymap 文件…\n"
 
-#: src/lang.c:1081
+#: src/lang.c:1082
 msgid "Reading groups from active file... "
 msgstr "从现用文件读取群组…"
 
-#: src/lang.c:1082
+#: src/lang.c:1083
 msgid "Reading groups from newsrc file... "
 msgstr "从 newsrc 文件读取群组…"
 
-#: src/lang.c:1083
+#: src/lang.c:1084
 msgid "Reading newsgroups file... "
 msgstr "读取新闻群组文件…"
 
-#: src/lang.c:1084
+#: src/lang.c:1085
 #, fuzzy, c-format
 msgid "Reading newsrc file: %s"
 msgstr "读取 newsrc 文件…"
 
-#: src/lang.c:1085
+#: src/lang.c:1086
 #, fuzzy
 msgid "Reading unread articles..."
 msgstr "读取 %s 篇文章…"
 
-#: src/lang.c:1086
+#: src/lang.c:1087
 #, fuzzy
 msgid "Reading unread groups..."
 msgstr "读取 %s 群组…"
 
 #. TRANSLATORS: do not translate header names like 'References:'
-#: src/lang.c:1088
+#: src/lang.c:1089
 msgid "References: line              "
 msgstr "References: 行              "
 
-#: src/lang.c:1090
+#: src/lang.c:1091
 #, c-format
 msgid "(%d:%02d remaining)"
 msgstr "(%d:%02d 还剩余)"
 
-#: src/lang.c:1092
+#: src/lang.c:1093
 #, c-format
 msgid "Bogus group %s removed."
 msgstr "假造的群组 %s 已移除。"
 
-#: src/lang.c:1093
+#: src/lang.c:1094
 #, fuzzy
 msgid "Removed from this rule: "
 msgstr "已从上一个规则移除："
 
-#: src/lang.c:1094
+#: src/lang.c:1095
 #, c-format
 msgid "Error: rename %s to %s"
 msgstr "错误：重命名 %s 为 %s"
 
-#: src/lang.c:1095
+#: src/lang.c:1096
 msgid "Reply to author..."
 msgstr "回复给作者…"
 
-#: src/lang.c:1096
+#: src/lang.c:1097
 msgid "Repost"
 msgstr "重新张贴"
 
-#: src/lang.c:1097
+#: src/lang.c:1098
 msgid "Reposting article..."
 msgstr "重新张贴文章…"
 
 #. TODO: plural-forms? (do we have a counter?)
-#: src/lang.c:1099
+#: src/lang.c:1100
 #, c-format
 msgid "Repost article(s) to group(s) [%s]> "
 msgstr "重新张贴文章到群组 [%s]>"
 
-#: src/lang.c:1100
+#: src/lang.c:1101
 msgid "Reset newsrc?"
 msgstr "重置 newsrc？"
 
-#: src/lang.c:1101
+#: src/lang.c:1102
 msgid "Responses have been directed to the following newsgroups"
 msgstr "回应已被导向下列新闻群组"
 
-#: src/lang.c:1102
+#: src/lang.c:1103
 #, c-format
 msgid "Responses have been directed to poster. %s=mail, %s=post, %s=quit: "
 msgstr "回应已被导向张贴者。%s=邮寄，%s=张贴，%s=离开："
 
-#: src/lang.c:1103
+#: src/lang.c:1104
 msgid "Press <RETURN> to continue..."
 msgstr "按下 <RETURN> 以继续…"
 
-#: src/lang.c:1105
+#: src/lang.c:1106
 #, fuzzy, c-format
 msgid "Score: %s"
 msgstr "分数"
 
 #. TRANSLATORS: do not translate header names like 'From:'
-#: src/lang.c:1107
+#: src/lang.c:1108
 #, c-format
 msgid "Select From    [%s] (y/n): "
 msgstr "选取自    [%s] (y/n)："
 
 #. TRANSLATORS: do not translate header names like 'Lines:'
-#: src/lang.c:1109
+#: src/lang.c:1110
 msgid "Select Lines: (</>num): "
 msgstr "选取多行：(</>num)："
 
-#: src/lang.c:1110
+#: src/lang.c:1111
 msgid "Auto-select Article Menu"
 msgstr "自动选取文章菜单"
 
-#: src/lang.c:1111
+#: src/lang.c:1112
 #, fuzzy, c-format
 msgid "Select Msg-ID  [%s] (f/l/o/n): "
 msgstr "选取 Msg-Id  [%s] (f/l/o/n)："
 
-#: src/lang.c:1112
+#: src/lang.c:1113
 msgid "Select pattern scope: "
 msgstr "选取模式范围："
 
 #. TRANSLATORS: do not translate header names like 'Subject:'
-#: src/lang.c:1114
+#: src/lang.c:1115
 #, c-format
 msgid "Select Subject [%s] (y/n): "
 msgstr "选取主旨 [%s] (y/n)："
 
-#: src/lang.c:1115
+#: src/lang.c:1116
 msgid "Select text pattern : "
 msgstr "选取文本模式："
 
-#: src/lang.c:1116
+#: src/lang.c:1117
 msgid "Select time in days   : "
 msgstr "选取时间天数  ："
 
-#: src/lang.c:1117
+#: src/lang.c:1118
 msgid "[k]"
 msgstr ""
 
-#: src/lang.c:1118
+#: src/lang.c:1119
 msgid "[T]"
 msgstr ""
 
-#: src/lang.c:1119
+#: src/lang.c:1120
 msgid " R"
 msgstr " R"
 
-#: src/lang.c:1120
+#: src/lang.c:1121
 #, c-format
 msgid ""
 "# %s server configuration file\n"
@@ -4047,80 +4047,80 @@ msgstr ""
 "############################################################################\n"
 "\n"
 
-#: src/lang.c:1126
+#: src/lang.c:1127
 #, fuzzy
 msgid ""
 "\n"
 "# config options\n"
 msgstr "颜色选项"
 
-#: src/lang.c:1127
+#: src/lang.c:1128
 msgid ""
 "\n"
 "# internal data, should not be modified\n"
 msgstr ""
 
-#: src/lang.c:1128
+#: src/lang.c:1129
 #, fuzzy
 msgid ""
 "\n"
 "# tinrc overrides\n"
 msgstr "筛选选项"
 
-#: src/lang.c:1129
+#: src/lang.c:1130
 msgid "Serverrc Menu"
 msgstr ""
 
-#: src/lang.c:1130
+#: src/lang.c:1131
 msgid "Showing unread groups only"
 msgstr "只显示未读群组"
 
 #. TRANSLATORS: do not translate header names like 'Subject:'
-#: src/lang.c:1132
+#: src/lang.c:1133
 msgid "Subject: line (ignore case)   "
 msgstr "Subject: 行 (忽略大小写)   "
 
 #. TRANSLATORS: do not translate header names like 'Subject:'
-#: src/lang.c:1134
+#: src/lang.c:1135
 msgid "Subject: line (case sensitive)"
 msgstr "Subject: 行 (大小写相符)"
 
-#: src/lang.c:1135
+#: src/lang.c:1136
 msgid "Save"
 msgstr "保存"
 
-#: src/lang.c:1136
+#: src/lang.c:1137
 #, c-format
 msgid "Save '%s' (%s/%s)?"
 msgstr "保存‘%s’(%s/%s)？"
 
-#: src/lang.c:1137
+#: src/lang.c:1138
 msgid "Save configuration before continuing?"
 msgstr "继续之前先保存组态？"
 
-#: src/lang.c:1138
+#: src/lang.c:1139
 msgid "Save filename> "
 msgstr "保存文件名>"
 
-#: src/lang.c:1139
+#: src/lang.c:1140
 msgid "Saved"
 msgstr "已保存"
 
-#: src/lang.c:1140
+#: src/lang.c:1141
 #, fuzzy, c-format
 msgid "%s unread (%s hot) %s in %s\n"
 msgstr "%4d 未读 (%4d 热门) %s 于 %s\n"
 
-#: src/lang.c:1141
+#: src/lang.c:1142
 #, c-format
 msgid "Saved %s...\n"
 msgstr "已保存 %s…\n"
 
-#: src/lang.c:1142
+#: src/lang.c:1143
 msgid "Nothing was saved"
 msgstr "没有任何东西被保存"
 
-#: src/lang.c:1143
+#: src/lang.c:1144
 #, c-format
 msgid ""
 "\n"
@@ -4129,194 +4129,199 @@ msgstr ""
 "\n"
 "%s %d %s 来自 %d %s\n"
 
-#: src/lang.c:1144
+#: src/lang.c:1145
 #, c-format
 msgid "-- %s saved to %s%s --"
 msgstr "-- %s 保存到 %s%s --"
 
-#: src/lang.c:1145
+#: src/lang.c:1146
 #, c-format
 msgid "-- %s saved to %s - %s --"
 msgstr "-- %s 保存到 %s - %s --"
 
-#: src/lang.c:1146
+#: src/lang.c:1147
 msgid "Saving..."
 msgstr "保存中…"
 
-#: src/lang.c:1147
+#: src/lang.c:1148
 #, c-format
 msgid "%s: Screen initialization failed"
 msgstr "%s：屏幕初始化失败"
 
-#: src/lang.c:1149
+#: src/lang.c:1150
 #, c-format
 msgid "%s: screen is too small\n"
 msgstr "%s：屏幕太小\n"
 
-#: src/lang.c:1151
+#: src/lang.c:1152
 #, fuzzy, c-format
 msgid "screen is too small, %s is exiting"
 msgstr "屏幕太小，%s 正在离开\n"
 
-#: src/lang.c:1152
+#: src/lang.c:1153
 msgid "Delete scope?"
 msgstr "删除范围？"
 
-#: src/lang.c:1153
+#: src/lang.c:1154
 msgid "Enter scope> "
 msgstr "输入范围>"
 
-#: src/lang.c:1154
+#: src/lang.c:1155
 msgid "Select new position> "
 msgstr "选取新位置>"
 
-#: src/lang.c:1155
+#: src/lang.c:1156
 msgid "New position cannot be a global scope"
 msgstr "新位置不可是全局范围"
 
-#: src/lang.c:1156
+#: src/lang.c:1157
 msgid "Global scope, operation not allowed"
 msgstr "全局范围，操作不允许"
 
-#: src/lang.c:1157
+#: src/lang.c:1158
 msgid "Rename scope> "
 msgstr "重命名范围>"
 
-#: src/lang.c:1158
+#: src/lang.c:1159
 msgid "Select scope> "
 msgstr "选取范围>"
 
-#: src/lang.c:1159
+#: src/lang.c:1160
 msgid "Scopes Menu"
 msgstr "范围菜单"
 
-#: src/lang.c:1160
+#: src/lang.c:1161
 msgid "Scopes Menu Commands"
 msgstr "范围功能表指令"
 
-#: src/lang.c:1161
+#: src/lang.c:1162
 #, c-format
 msgid "Search backwards [%s]> "
 msgstr "向后搜索 [%s]>"
 
-#: src/lang.c:1162
+#: src/lang.c:1163
 #, c-format
 msgid "Search body [%s]> "
 msgstr "搜索内文 [%s]>"
 
-#: src/lang.c:1163
+#: src/lang.c:1164
 #, c-format
 msgid "Search forwards [%s]> "
 msgstr "向前搜索 [%s]>"
 
-#: src/lang.c:1164
+#: src/lang.c:1165
 msgid "Searching..."
 msgstr "搜索中…"
 
-#: src/lang.c:1165
+#: src/lang.c:1166
 #, c-format
 msgid "Searching article %d of %d ('q' to abort)..."
 msgstr "搜索文章 %2$d 中的 %1$d (‘q’以放弃)…"
 
-#: src/lang.c:1166
+#: src/lang.c:1167
 msgid "Select article> "
 msgstr "选取文章>"
 
-#: src/lang.c:1167
+#: src/lang.c:1168
 msgid ""
 "Select option number before text or use arrow keys and <CR>. 'q' to quit."
 msgstr "选取文本前方的选项数字或使用方向键和 <CR>。‘q’以离开。"
 
-#: src/lang.c:1168
+#: src/lang.c:1169
 msgid "Select group> "
 msgstr "选取群组>"
 
-#: src/lang.c:1169
+#: src/lang.c:1170
 #, c-format
 msgid "Enter selection pattern [%s]> "
 msgstr "输入选择模式 [%s]>"
 
-#: src/lang.c:1170
+#: src/lang.c:1171
 msgid "Select thread> "
 msgstr "选取帖子> "
 
-#: src/lang.c:1171
+#: src/lang.c:1172
 #, fuzzy, c-format
 msgid "%s %s %s (\"%s\"): send a DETAILED bug report to %s\n"
 msgstr "%s %s %s (“%s”) [%s]：发送详细的错误报告给 %s\n"
 
-#: src/lang.c:1172
+#: src/lang.c:1173
 #, fuzzy
 msgid "Serverrc Menu Commands"
 msgstr "范围功能表指令"
 
-#: src/lang.c:1173
+#: src/lang.c:1174
 msgid "servers active-file"
 msgstr "服务器目前文件"
 
-#: src/lang.c:1174
+#: src/lang.c:1175
 #, c-format
 msgid "Skipped %s"
 msgstr ""
 
-#: src/lang.c:1175
+#: src/lang.c:1176
 msgid "Cannot move into new newsgroups. Subscribe first..."
 msgstr "无法移入新的新闻群组。请先订阅…"
 
-#: src/lang.c:1176
+#: src/lang.c:1177
 msgid "<SPACE>"
 msgstr "<SPACE>"
 
-#: src/lang.c:1177
+#: src/lang.c:1178
 #, c-format
 msgid "Starting: (%s)"
 msgstr "开始：(%s)"
 
-#: src/lang.c:1178
+#: src/lang.c:1180
+#, c-format
+msgid "Startup time was: %s\n"
+msgstr ""
+
+#: src/lang.c:1182
 #, c-format
 msgid "List Thread (%d of %d)"
 msgstr "列出讨论串 (%2$d 中的 %1$d)"
 
-#: src/lang.c:1179
+#: src/lang.c:1183
 #, c-format
 msgid "Thread (%.*s)"
 msgstr "讨论串 (%.*s)"
 
-#: src/lang.c:1180
+#: src/lang.c:1184
 msgid "Enter wildcard subscribe pattern> "
 msgstr "输入通配符订阅模式>"
 
-#: src/lang.c:1181
+#: src/lang.c:1185
 #, fuzzy, c-format
 msgid "subscribed to %d group"
 msgid_plural "subscribed to %d groups"
 msgstr[0] "已订阅 %d 群组"
 
-#: src/lang.c:1182
+#: src/lang.c:1186
 #, c-format
 msgid "Subscribed to %s"
 msgstr "已订阅 %s"
 
-#: src/lang.c:1183
+#: src/lang.c:1187
 msgid "Subscribing... "
 msgstr "订阅…"
 
-#: src/lang.c:1184
+#: src/lang.c:1188
 #, c-format
 msgid "Repost or supersede article(s) [%%s]? (%s/%s/%s): "
 msgstr "重新张贴或取代文章 [%%s]？(%s/%s/%s)："
 
 #. TODO: plural-forms? (do we have a counter?)
-#: src/lang.c:1186
+#: src/lang.c:1190
 #, c-format
 msgid "Supersede article(s) to group(s) [%s]> "
 msgstr "取代文章于群组 [%s]>"
 
-#: src/lang.c:1187
+#: src/lang.c:1191
 msgid "Superseding article ..."
 msgstr "取代文章…"
 
-#: src/lang.c:1188
+#: src/lang.c:1192
 #, c-format
 msgid ""
 "\n"
@@ -4325,42 +4330,42 @@ msgstr ""
 "\n"
 "已停止。输入‘fg’以重新启动 %s\n"
 
-#: src/lang.c:1190
+#: src/lang.c:1194
 #, fuzzy, c-format
 msgid "%d day"
 msgid_plural "%d days"
 msgstr[0] "%d 天"
 
-#: src/lang.c:1191
+#: src/lang.c:1195
 msgid "<TAB>"
 msgstr "<TAB>"
 
-#: src/lang.c:1192
+#: src/lang.c:1196
 #, fuzzy
 msgid "Tagged article"
 msgid_plural "Tagged articles"
 msgstr[0] "基底文章"
 
-#: src/lang.c:1193
+#: src/lang.c:1197
 #, fuzzy
 msgid "Tagged thread"
 msgstr "已标记附件"
 
-#: src/lang.c:1195
+#: src/lang.c:1199
 msgid "TeX "
 msgstr "TeX "
 
-#: src/lang.c:1196
+#: src/lang.c:1200
 #, fuzzy, c-format
 msgid "Version: %s %s release %s (\"%s\")"
 msgstr "版本：%s %s 发布 %s (“%s”)\n"
 
-#: src/lang.c:1197
+#: src/lang.c:1201
 msgid "# Default action/prompt strings\n"
 msgstr "# 缺省的动作/提示字串\n"
 
 #. TRANSLATORS: do not translate header names like 'Subject:', 'From:', ...
-#: src/lang.c:1199
+#: src/lang.c:1203
 msgid ""
 "# Defaults for quick (1 key) kill & auto-selection filters\n"
 "# header=NUM  0,1=Subject: 2,3=From: 4=Message-ID: & full References: line\n"
@@ -4378,315 +4383,315 @@ msgstr ""
 "# case=ON/OFF    ON=筛选器大小写须相符 OFF=忽略大小写\n"
 "# expire=ON/OFF  ON=限制到 default_filter_days OFF=不会过期\n"
 
-#: src/lang.c:1212
+#: src/lang.c:1216
 #, fuzzy
 msgid ""
 "# If ON print current subject or newsgroup description in the last line\n"
 msgstr "# 如果为 ON 就印出目前的主旨或最后一行中的新闻群组描述\n"
 
-#: src/lang.c:1213
+#: src/lang.c:1217
 msgid "# Host & time info used for detecting new groups (don't touch)\n"
 msgstr "# 主机 & 时间信息用于侦测新群组 (不影响)\n"
 
-#: src/lang.c:1214
+#: src/lang.c:1218
 msgid "There is no news\n"
 msgstr "没有任何新闻\n"
 
-#: src/lang.c:1215
+#: src/lang.c:1219
 msgid "Thread"
 msgstr "讨论串"
 
-#: src/lang.c:1216
+#: src/lang.c:1220
 msgid "Thread Level Commands"
 msgstr "讨论串层级命令"
 
-#: src/lang.c:1217
+#: src/lang.c:1221
 msgid "Thread deselected"
 msgstr "讨论串已取消选取"
 
-#: src/lang.c:1218
+#: src/lang.c:1222
 msgid "Thread selected"
 msgstr "讨论串已选取"
 
-#: src/lang.c:1219
+#: src/lang.c:1223
 #, c-format
 msgid "Thread %4s of %4s"
 msgstr "讨论串 %2$4s 中的 %1$4s"
 
-#: src/lang.c:1220
+#: src/lang.c:1224
 msgid "Threading articles..."
 msgstr "讨论串文章…"
 
-#: src/lang.c:1221
+#: src/lang.c:1225
 #, fuzzy
 msgid "Threading by multipart"
 msgstr "讨论串文章…"
 
-#: src/lang.c:1223
+#: src/lang.c:1227
 msgid "No ALP negotiated."
 msgstr ""
 
-#: src/lang.c:1225
+#: src/lang.c:1229
 msgid "<failed to retrieve cipher>"
 msgstr ""
 
-#: src/lang.c:1226
+#: src/lang.c:1230
 msgid "<failed to retrieve issuer>"
 msgstr ""
 
-#: src/lang.c:1227
+#: src/lang.c:1231
 msgid "<failed to retrieve subject>"
 msgstr ""
 
-#: src/lang.c:1228
+#: src/lang.c:1232
 msgid "<failed to retrieve version>"
 msgstr ""
 
-#: src/lang.c:1229
+#: src/lang.c:1233
 #, fuzzy, c-format
 msgid "%s handshake done: %s\n"
 msgstr "Slrnface 失败：%s。"
 
-#: src/lang.c:1232
+#: src/lang.c:1236
 #, fuzzy, c-format
 msgid "TLS handshake failed: %s (%d)\n"
 msgstr "Slrnface 失败：%s。"
 
-#: src/lang.c:1233
+#: src/lang.c:1237
 #, fuzzy, c-format
 msgid "TLS peer verification failed: %s\n"
 msgstr "Slrnface 失败：%s。"
 
-#: src/lang.c:1234
+#: src/lang.c:1238
 #, c-format
 msgid "TLS peer verification failed, continuing anyway as requested: %s\n"
 msgstr ""
 
-#: src/lang.c:1235
+#: src/lang.c:1239
 msgid "<unable to retrieve status>"
 msgstr ""
 
-#: src/lang.c:1236
+#: src/lang.c:1240
 msgid "unexpected certificate verification status!"
 msgstr ""
 
-#: src/lang.c:1239
+#: src/lang.c:1243
 #, c-format
 msgid ""
 "TLS peer verification failed: %s.\n"
 "Continuing anyway as requested.\n"
 msgstr ""
 
-#: src/lang.c:1242
+#: src/lang.c:1246
 #, fuzzy, c-format
 msgid "TLS handshake done: %s\n"
 msgstr "Slrnface 失败：%s。"
 
-#: src/lang.c:1245
+#: src/lang.c:1249
 #, fuzzy, c-format
 msgid "TLS handshake failed: %s\n"
 msgstr "Slrnface 失败：%s。"
 
-#: src/lang.c:1248
+#: src/lang.c:1252
 #, c-format
 msgid "Toggled word highlighting %s"
 msgstr "已切换字词高亮度显示 %s"
 
-#: src/lang.c:1249
+#: src/lang.c:1253
 msgid "Toggled rot13 encoding"
 msgstr "已切换 rot13 编码"
 
-#: src/lang.c:1250
+#: src/lang.c:1254
 #, fuzzy, c-format
 msgid "Toggled German TeX encoding %s"
 msgstr "已切换德语 TeX 编码 %s"
 
-#: src/lang.c:1251
+#: src/lang.c:1255
 #, c-format
 msgid "Toggled tab-width to %d"
 msgstr "已切换跳格宽度为 %d"
 
-#: src/lang.c:1252
+#: src/lang.c:1256
 #, fuzzy, c-format
 msgid "Verbatim handling: %s"
 msgstr "#  verbatim_handling=ON/OFF\n"
 
-#: src/lang.c:1254
+#: src/lang.c:1258
 #, c-format
 msgid "%d Trying to dotlock %s"
 msgstr "%d 尝试点锁定 %s"
 
-#: src/lang.c:1255
+#: src/lang.c:1259
 #, c-format
 msgid "%d Trying to lock %s"
 msgstr "%d 尝试锁定 %s"
 
-#: src/lang.c:1257
+#: src/lang.c:1261
 #, fuzzy, c-format
 msgid "%s=help"
 msgstr "%s=求助"
 
-#: src/lang.c:1259
+#: src/lang.c:1263
 msgid "Unlimited"
 msgstr "没有限制"
 
-#: src/lang.c:1260
+#: src/lang.c:1264
 #, fuzzy
 msgid "Untagged article"
 msgstr "基底文章"
 
-#: src/lang.c:1261
+#: src/lang.c:1265
 #, fuzzy
 msgid "Untagged thread"
 msgstr "取消标记所有已标记讨论串"
 
-#: src/lang.c:1262
+#: src/lang.c:1266
 msgid "Enter wildcard unsubscribe pattern> "
 msgstr "输入取消订阅的通配符模式>"
 
-#: src/lang.c:1263
+#: src/lang.c:1267
 #, c-format
 msgid "Error decoding %s : %s"
 msgstr "解码 %s 时发生错误：%s"
 
-#: src/lang.c:1264
+#: src/lang.c:1268
 msgid "No end."
 msgstr "没有结束。"
 
-#: src/lang.c:1265
+#: src/lang.c:1269
 #, c-format
 msgid "%s successfully decoded."
 msgstr "%s 已成功解码。"
 
-#: src/lang.c:1267
+#: src/lang.c:1271
 msgid "unchanged"
 msgstr "未变更"
 
-#: src/lang.c:1269
+#: src/lang.c:1273
 msgid "(unknown)"
 msgstr "(不明)"
 
-#: src/lang.c:1271
+#: src/lang.c:1275
 #, fuzzy
 msgid "unknown error"
 msgstr "不明错误。"
 
-#: src/lang.c:1273
+#: src/lang.c:1277
 #, fuzzy, c-format
 msgid "unsubscribed from %d group"
 msgid_plural "unsubscribed from %d groups"
 msgstr[0] "已从 %d 群组取消订阅"
 
-#: src/lang.c:1274
+#: src/lang.c:1278
 #, c-format
 msgid "Unsubscribed from %s"
 msgstr "已从 %s 取消订阅"
 
-#: src/lang.c:1275
+#: src/lang.c:1279
 msgid "Unsubscribing... "
 msgstr "取消订阅…"
 
-#: src/lang.c:1276
+#: src/lang.c:1280
 msgid "Unthreading articles..."
 msgstr "展开讨论串文章…"
 
-#: src/lang.c:1277
+#: src/lang.c:1281
 msgid "Updated"
 msgstr "已更新"
 
-#: src/lang.c:1278
+#: src/lang.c:1282
 #, fuzzy, c-format
 msgid "Updating %s..."
 msgstr "更新 %s…"
 
-#: src/lang.c:1279
+#: src/lang.c:1283
 msgid "URL Menu"
 msgstr "网址菜单"
 
-#: src/lang.c:1280
+#: src/lang.c:1284
 msgid "URL Menu Commands"
 msgstr "网址功能表指令"
 
-#: src/lang.c:1281
+#: src/lang.c:1285
 #, c-format
 msgid "Opening %s"
 msgstr "打开 %s"
 
-#: src/lang.c:1282
+#: src/lang.c:1286
 msgid "Select URL> "
 msgstr "选取网址>"
 
-#: src/lang.c:1283
+#: src/lang.c:1287
 msgid "No URLs in this article"
 msgstr "在这篇文章中没有网址"
 
-#: src/lang.c:1285
+#: src/lang.c:1289
 #, c-format
 msgid "SASL MECHS    : %s\n"
 msgstr ""
 
-#: src/lang.c:1286
+#: src/lang.c:1290
 #, c-format
 msgid "SASL MECH used: %s\n"
 msgstr ""
 
-#: src/lang.c:1288
+#: src/lang.c:1292
 msgid "  -c       mark all news as read in subscribed newsgroups (batch mode)"
 msgstr "  -c       标记所有在订阅新闻群组中的新闻为已读 (批次模式)"
 
-#: src/lang.c:1289
+#: src/lang.c:1293
 msgid "  -Z       return status indicating if any unread news (batch mode)"
 msgstr "  -Z       返回状态指出是否有任何未读新闻 (批次模式)"
 
-#: src/lang.c:1290
+#: src/lang.c:1294
 msgid "  -q       don't check for new newsgroups"
 msgstr "  -q       不检查新的新闻群组"
 
-#: src/lang.c:1291
+#: src/lang.c:1295
 msgid "  -X       don't save any files on quit"
 msgstr "  -X       离开时不保存任何文件"
 
-#: src/lang.c:1292
+#: src/lang.c:1296
 msgid "  -d       don't show newsgroup descriptions"
 msgstr "  -d       不显示新闻群组的描述"
 
-#: src/lang.c:1293
+#: src/lang.c:1297
 #, fuzzy, c-format
 msgid "  -F file  filter file to use [default=%s]"
 msgstr "  -f file  订阅新闻群组文件 [缺省=%s]"
 
-#: src/lang.c:1294
+#: src/lang.c:1298
 msgid "  -G limit get only limit articles/group"
 msgstr "  -G limit 只提取有限的文章/群组"
 
-#: src/lang.c:1295
+#: src/lang.c:1299
 #, c-format
 msgid "  -H       help information about %s"
 msgstr "  -H       %s 相关的说明信息"
 
-#: src/lang.c:1296
+#: src/lang.c:1300
 msgid "  -h       this help message"
 msgstr "  -h       这份说明消息"
 
-#: src/lang.c:1297
+#: src/lang.c:1301
 #, c-format
 msgid "  -I dir   news index file directory [default=%s]"
 msgstr "  -I dir   新闻索引文件目录 [缺省=%s]"
 
-#: src/lang.c:1299
+#: src/lang.c:1303
 msgid "  -L msgid show the message with that Message-ID"
 msgstr ""
 
-#: src/lang.c:1301
+#: src/lang.c:1305
 msgid "  -u       update index files (batch mode)"
 msgstr "  -u       更新索引文件 (批次模式)"
 
-#: src/lang.c:1302
+#: src/lang.c:1306
 #, c-format
 msgid "  -m dir   mailbox directory [default=%s]"
 msgstr "  -m dir   信箱目录 [缺省=%s]"
 
-#: src/lang.c:1303
+#: src/lang.c:1307
 #, c-format
 msgid ""
 "\n"
@@ -4695,54 +4700,54 @@ msgstr ""
 "\n"
 "邮寄错误报告/评论给 %s"
 
-#: src/lang.c:1304
+#: src/lang.c:1308
 msgid "  -N       mail new news to your posts (batch mode)"
 msgstr "  -N       邮寄对于您的张贴的新闻 (批次模式)"
 
-#: src/lang.c:1305
+#: src/lang.c:1309
 msgid "  -M user  mail new news to specified user (batch mode)"
 msgstr "  -M user  邮寄新的新闻给指定用户 (批次模式)"
 
-#: src/lang.c:1306
+#: src/lang.c:1310
 #, c-format
 msgid "  -f file  subscribed to newsgroups file [default=%s]"
 msgstr "  -f file  订阅新闻群组文件 [缺省=%s]"
 
-#: src/lang.c:1308
+#: src/lang.c:1312
 #, c-format
 msgid "  -t sec   override nntp_read_timeout_secs setting [default=%d]"
 msgstr ""
 
-#: src/lang.c:1310
+#: src/lang.c:1314
 msgid "  -x       no-posting mode"
 msgstr "  -x       不许张贴模式"
 
-#: src/lang.c:1311
+#: src/lang.c:1315
 msgid "  -w       post an article and exit"
 msgstr "  -w       张贴文章然后离开"
 
-#: src/lang.c:1312
+#: src/lang.c:1316
 msgid "  -o       post all postponed articles and exit"
 msgstr "  -o       张贴所有搁置的文章然后离开"
 
-#: src/lang.c:1313
+#: src/lang.c:1317
 msgid "  -R       read news saved by -S option"
 msgstr "  -R       读取由 -S 选项所保存的新闻"
 
-#: src/lang.c:1314
+#: src/lang.c:1318
 #, c-format
 msgid "  -s dir   save news directory [default=%s]"
 msgstr "  -s dir   保存新闻目录 [缺省=%s]"
 
-#: src/lang.c:1315
+#: src/lang.c:1319
 msgid "  -S       save new news for later reading (batch mode)"
 msgstr "  -S       保存新的新闻以便稍后读取 (批次模式)"
 
-#: src/lang.c:1316
+#: src/lang.c:1320
 msgid "  -z       start if any unread news"
 msgstr "  -z       如果有任何未读新闻才打开"
 
-#: src/lang.c:1317
+#: src/lang.c:1321
 #, c-format
 msgid ""
 "A Usenet reader.\n"
@@ -4753,78 +4758,86 @@ msgstr ""
 "\n"
 "用法：%s [选项] [新闻群组[,...]]"
 
-#: src/lang.c:1318
+#: src/lang.c:1322
 msgid "  -v       verbose output for batch mode options"
 msgstr "  -v       详细输出用于批次模式选项"
 
-#: src/lang.c:1319
+#: src/lang.c:1323
 msgid "  -V       print version & date information"
 msgstr "  -V       印出版本 & 日期信息"
 
-#: src/lang.c:1320
+#: src/lang.c:1324
 msgid "Use MIME display program for this message?"
 msgstr "这个消息使用 MIME 显示程序？"
 
-#: src/lang.c:1321
+#: src/lang.c:1325
 #, fuzzy, c-format
 msgid "%s only useful without batch mode operations.%s\n"
 msgstr "%s 只有在非批次模式操作时有用\n"
 
-#: src/lang.c:1322
+#: src/lang.c:1326
 #, fuzzy, c-format
 msgid "%s only useful for batch mode operations.%s\n"
 msgstr "%s 只有在批次模式操作时有用\n"
 
-#: src/lang.c:1323
+#: src/lang.c:1327
 #, fuzzy, c-format
 msgid "%s only useful for batch or debug mode operations.%s\n"
 msgstr "%s 只有在批次模式操作时有用\n"
 
-#: src/lang.c:1324
+#: src/lang.c:1328
 #, fuzzy, c-format
 msgid "Useless combination %s and %s. Ignoring %s.%s\n"
 msgstr "无用的组合 %s 和 %s。忽略 %s。%s\n"
 
-#: src/lang.c:1325
+#: src/lang.c:1329
 msgid "uuencoded file"
 msgstr ""
 
-#: src/lang.c:1326
+#: src/lang.c:1330
 #, fuzzy
 msgid "incomplete uuencoded file"
 msgstr "不完整的 "
 
-#: src/lang.c:1329
+#: src/lang.c:1333
 #, c-format
-msgid "Valid not after : %s\n"
+msgid "Valid not after : %s%s\n"
 msgstr ""
 
-#: src/lang.c:1330
+#: src/lang.c:1334
 #, c-format
-msgid "Valid not before: %s\n"
+msgid "Valid not before: %s%s\n"
 msgstr ""
 
-#: src/lang.c:1332
+#: src/lang.c:1335
+msgid " <- NOT YET VALID!"
+msgstr ""
+
+#: src/lang.c:1336
+msgid " <- NO LONGER VALID!"
+msgstr ""
+
+#: src/lang.c:1338
 #, fuzzy, c-format
 msgid "%s %s out of range (%d - %d). Ignored."
 msgstr "%s%d 超出范围 (0 - %d)。被忽视。"
 
-#: src/lang.c:1333
+#: src/lang.c:1339
 #, fuzzy, c-format
 msgid "%s %d out of range (0 - %d). Reset to 0."
 msgstr "%s%d 超出范围 (0 - %d)。重置为 0。"
 
-#: src/lang.c:1334
+#: src/lang.c:1340
 msgid "[-- Verbatim block hidden --]"
 msgstr ""
 
-#: src/lang.c:1335
+#: src/lang.c:1341
 #, c-format
 msgid "View '%s' (%s/%s)?"
 msgstr "查看‘%s’(%s/%s)？"
 
 #. TRANSLATORS: for nplurals>=3
-#: src/lang.c:1338
+#: src/lang.c:1344
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -4839,7 +4852,7 @@ msgstr[0] ""
 "警告：张贴超出 %d 字段。第 %d 行是第一个长行：\n"
 "%-100s\n"
 
-#: src/lang.c:1339
+#: src/lang.c:1345
 msgid ""
 "\n"
 "Warning: article unchanged after editing\n"
@@ -4848,7 +4861,7 @@ msgstr ""
 "警告：文章编辑之后未变更\n"
 
 #. TRANSLATORS: do not translate header names like 'Subject:'
-#: src/lang.c:1341
+#: src/lang.c:1347
 msgid ""
 "\n"
 "Warning: \"Subject:\" contains only whitespaces.\n"
@@ -4857,7 +4870,7 @@ msgstr ""
 "警告：“ Subject: ”只含空白。\n"
 
 #. TRANSLATORS: do not translate header names like 'Subject:' or 'References:'
-#: src/lang.c:1343
+#: src/lang.c:1349
 msgid ""
 "\n"
 "Warning: \"Subject:\" begins with \"Re: \" but there are no \"References:"
@@ -4867,7 +4880,7 @@ msgstr ""
 "警告：“ Subject: ”以“Re：”开始但是没有“ References: ”。\n"
 
 #. TRANSLATORS: do not translate header names like 'Subject:' or 'References:'
-#: src/lang.c:1346
+#: src/lang.c:1352
 msgid ""
 "\n"
 "Warning: Article has \"References:\" but \"Subject:\" does not begin\n"
@@ -4878,7 +4891,7 @@ msgstr ""
 "      以“Re:”开始且不包含“(was:”。\n"
 
 #. TRANSLATORS: do not translate header names like 'Subject:'
-#: src/lang.c:1350
+#: src/lang.c:1356
 #, fuzzy
 msgid ""
 "\n"
@@ -4887,7 +4900,7 @@ msgstr ""
 "\n"
 "警告：“ Subject: ”只含空白。\n"
 
-#: src/lang.c:1351
+#: src/lang.c:1357
 msgid ""
 "Read carefully!\n"
 "\n"
@@ -4909,13 +4922,13 @@ msgstr ""
 "这是您即将取消的文章：\n"
 "\n"
 
-#: src/lang.c:1355
+#: src/lang.c:1361
 msgid ""
 "\n"
 "Distribution is limited to:\n"
 msgstr ""
 
-#: src/lang.c:1356
+#: src/lang.c:1362
 #, fuzzy
 msgid ""
 "\n"
@@ -4924,7 +4937,7 @@ msgstr ""
 "\n"
 "错误：不合法的格式 %s。\n"
 
-#: src/lang.c:1357
+#: src/lang.c:1363
 msgid ""
 "\n"
 "Warning: You are using a non-plain transfer encoding (such as base64 or\n"
@@ -4939,7 +4952,7 @@ msgstr ""
 "      无法被适当地编码。\n"
 
 #. TRANSLATORS: for nplurals>=3
-#: src/lang.c:1364
+#: src/lang.c:1370
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -4954,7 +4967,7 @@ msgstr[0] ""
 "编码未被设置为 %s 亦非 %s\n"
 
 #. TRANSLATORS: for nplurals>=3
-#: src/lang.c:1372
+#: src/lang.c:1378
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -4972,7 +4985,7 @@ msgstr[0] ""
 "贴文不包含任何 8 比特字符，因而无法发生折叠\n"
 
 #. TRANSLATORS: for nplurals>=3
-#: src/lang.c:1381
+#: src/lang.c:1387
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -4986,7 +4999,7 @@ msgstr[0] ""
 "第 %d 行长度超过 998 字节而，但是\n"
 "编码未被设置为 %s\n"
 
-#: src/lang.c:1387
+#: src/lang.c:1393
 msgid ""
 "\n"
 "Warning: \"example\" is a reserved hierarchy!\n"
@@ -4994,7 +5007,7 @@ msgstr ""
 "\n"
 "警告：“example”是被保留的阶层结构！\n"
 
-#: src/lang.c:1388
+#: src/lang.c:1394
 #, c-format
 msgid ""
 "\n"
@@ -5009,7 +5022,7 @@ msgstr ""
 "在您 %s 文件中的某些值已有变更！\n"
 "请参阅 WHATSNEW …等等\n"
 
-#: src/lang.c:1390
+#: src/lang.c:1396
 #, c-format
 msgid ""
 "\n"
@@ -5022,7 +5035,7 @@ msgstr ""
 "您正在从较新的版本降级到 tin %s！\n"
 "在您 %s 文件中的某些值可能会被忽略，其他值也可能已有变更！\n"
 
-#: src/lang.c:1393
+#: src/lang.c:1399
 #, c-format
 msgid ""
 "Warning: tin wrote fewer groups to your\n"
@@ -5037,7 +5050,7 @@ msgstr ""
 "并未取消订阅 %ld %s，那么这就代表发生了错误，而您应该\n"
 "于再次启动 tin 之前先备份您的 %s！\n"
 
-#: src/lang.c:1397
+#: src/lang.c:1403
 #, c-format
 msgid ""
 "\n"
@@ -5045,7 +5058,7 @@ msgid ""
 "         This is at least uncommon.\n"
 msgstr ""
 
-#: src/lang.c:1400
+#: src/lang.c:1406
 #, c-format
 msgid ""
 "\n"
@@ -5056,7 +5069,7 @@ msgid ""
 msgstr ""
 
 #. TRANSLATORS: for nplurals>=3
-#: src/lang.c:1406
+#: src/lang.c:1412
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -5069,14 +5082,14 @@ msgstr[0] ""
 "警告：找到 %d 个‘-- \\n’行，这也许会使某些人感到困惑。\n"
 
 #. TRANSLATORS: for nplurals>=3
-#: src/lang.c:1408
+#: src/lang.c:1414
 #, fuzzy, c-format
 msgid "Warning: Only %d out of %d article was saved"
 msgid_plural "Warning: Only %d out of %d articles were saved"
 msgstr[0] "警告：只有 %2$d 中的 %1$d 篇文章被保存"
 
 #. TRANSLATORS: for nplurals>=3
-#: src/lang.c:1410
+#: src/lang.c:1416
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -5097,20 +5110,20 @@ msgstr[0] ""
 "警告：您的签名长度已超过 %d 行。 由于签名通常\n"
 "      不会用来传输任何有用的信息，它们应该要愈短愈好。\n"
 
-#: src/lang.c:1418
+#: src/lang.c:1424
 #, c-format
 msgid ""
 "Warning: this mail address may contain a spamtrap. %s=continue, %s=abort? "
 msgstr "警告：这个邮件地址可能包含垃圾陷阱。%s=继续，%s=放弃？"
 
-#: src/lang.c:1419
+#: src/lang.c:1425
 #, c-format
 msgid ""
 "Warning: line %d contains unprintable chars:\n"
 "%s\n"
 msgstr ""
 
-#: src/lang.c:1420
+#: src/lang.c:1426
 msgid ""
 "\n"
 "Warning: Signatures should start with '-- \\n' not with '--\\n'.\n"
@@ -5118,85 +5131,85 @@ msgstr ""
 "\n"
 "警告：签名应该以‘-- \\n’起始而非以‘--\\n’。\n"
 
-#: src/lang.c:1421
+#: src/lang.c:1427
 msgid "Writing attributes file..."
 msgstr "写入属性文件…"
 
-#: src/lang.c:1422
+#: src/lang.c:1428
 #, fuzzy, c-format
 msgid "Writing %s\n"
 msgstr "尝试 %s"
 
-#: src/lang.c:1423
+#: src/lang.c:1429
 #, fuzzy
 msgid "Writing overview cache..."
 msgstr "写入属性文件…"
 
-#: src/lang.c:1425
+#: src/lang.c:1431
 #, fuzzy, c-format
 msgid "%4d Response"
 msgid_plural "%4d Responses"
 msgstr[0] "%d 篇回应"
 
-#: src/lang.c:1427
+#: src/lang.c:1433
 msgid "Can't run slrnface: couldn't construct fifo name."
 msgstr "无法运行 slrnface：无法建构 fifo 名称。"
 
-#: src/lang.c:1428
+#: src/lang.c:1434
 #, c-format
 msgid "Can't run slrnface: failed to create %s"
 msgstr "无法运行 slrnface：无法创建 %s"
 
-#: src/lang.c:1429
+#: src/lang.c:1435
 #, c-format
 msgid "Slrnface abnormally exited, code %d."
 msgstr "Slrnface 不正常退出，代码 %d。"
 
-#: src/lang.c:1430
+#: src/lang.c:1436
 #, c-format
 msgid "Slrnface failed: %s."
 msgstr "Slrnface 失败：%s。"
 
-#: src/lang.c:1432
+#: src/lang.c:1438
 #, c-format
 msgid "Can't run slrnface: Environment variable %s not found."
 msgstr "无法运行 slrnface：找不到环境变量 %s。"
 
-#: src/lang.c:1434
+#: src/lang.c:1440
 #, fuzzy
 msgid "Can't run slrnface: Not running in an xterm."
 msgstr "无法运行 slrnface：未在 xterm 中运行。"
 
-#: src/lang.c:1437
+#: src/lang.c:1443
 msgid "couldn't connect to display"
 msgstr ""
 
-#: src/lang.c:1438
+#: src/lang.c:1444
 #, fuzzy
 msgid "can't open FIFO"
 msgstr "无法打开 %s"
 
-#: src/lang.c:1439
+#: src/lang.c:1445
 msgid "executable not found"
 msgstr ""
 
-#: src/lang.c:1440
+#: src/lang.c:1446
 msgid "fork() failed"
 msgstr ""
 
-#: src/lang.c:1441
+#: src/lang.c:1447
 msgid "couldn't find controlling terminal"
 msgstr ""
 
-#: src/lang.c:1442
+#: src/lang.c:1448
 msgid "terminal doesn't export width and height"
 msgstr ""
 
-#: src/lang.c:1443
+#: src/lang.c:1449
 msgid "WINDOWID not found in environment"
 msgstr ""
 
-#: src/lang.c:1444
+#: src/lang.c:1450
 msgid ""
 "This directory is used to create named pipes for communication between\n"
 "slrnface and its parent process. It should normally be empty because\n"
@@ -5221,77 +5234,77 @@ msgstr ""
 "请不要尝试去移除它们。\n"
 
 #. TRANSLATORS: do not translate header names like 'Xref:'
-#: src/lang.c:1457
+#: src/lang.c:1463
 #, fuzzy
 msgid "Xref: line (case insensitive)"
 msgstr "Xref: 行 (大小写相符)   "
 
-#: src/lang.c:1459
+#: src/lang.c:1465
 #, fuzzy, c-format
 msgid "Added %d group"
 msgid_plural "Added %d groups"
 msgstr[0] "已加入 %d 群组"
 
-#: src/lang.c:1460
+#: src/lang.c:1466
 msgid "No unsubscribed groups to show"
 msgstr "没有已取消订阅的群组可显示"
 
-#: src/lang.c:1461
+#: src/lang.c:1467
 msgid "Showing subscribed to groups only"
 msgstr "只显示已订阅群组"
 
-#: src/lang.c:1462
+#: src/lang.c:1468
 msgid "yenc file"
 msgstr ""
 
-#: src/lang.c:1463
-msgid "corrupt yenc"
-msgstr ""
-
-#: src/lang.c:1464
-#, c-format
-msgid "crc checksum %s"
-msgstr ""
-
-#: src/lang.c:1465
-#, fuzzy
-msgid "incomplete yenc"
-msgstr "不完整的 "
-
-#: src/lang.c:1466
-#, fuzzy, c-format
-msgid "part %s"
-msgstr " 于 %s"
-
-#: src/lang.c:1467
-#, c-format
-msgid "part size %s"
-msgstr ""
-
-#: src/lang.c:1468
-#, fuzzy
-msgid "partial yenc"
-msgstr "文章"
-
 #: src/lang.c:1469
-#, c-format
-msgid "total parts %s"
+msgid "corrupt yenc"
 msgstr ""
 
 #: src/lang.c:1470
 #, c-format
-msgid "total size %s"
+msgid "crc checksum %s"
 msgstr ""
 
 #: src/lang.c:1471
+#, fuzzy
+msgid "incomplete yenc"
+msgstr "不完整的 "
+
+#: src/lang.c:1472
+#, fuzzy, c-format
+msgid "part %s"
+msgstr " 于 %s"
+
+#: src/lang.c:1473
+#, c-format
+msgid "part size %s"
+msgstr ""
+
+#: src/lang.c:1474
+#, fuzzy
+msgid "partial yenc"
+msgstr "文章"
+
+#: src/lang.c:1475
+#, c-format
+msgid "total parts %s"
+msgstr ""
+
+#: src/lang.c:1476
+#, c-format
+msgid "total size %s"
+msgstr ""
+
+#: src/lang.c:1477
 msgid "Yes "
 msgstr "是 "
 
-#: src/lang.c:1472
+#: src/lang.c:1478
 msgid "You have mail"
 msgstr "您有邮件"
 
-#: src/lang.c:1477
+#: src/lang.c:1483
 #, c-format
 msgid ""
 "\n"
@@ -5312,11 +5325,11 @@ msgstr ""
 "      变更 MM_NETWORK_CHARSET 的设置为适当的值，\n"
 "      以用于您的张贴。\n"
 
-#: src/lang.c:1488
+#: src/lang.c:1494
 msgid "  -D mode  debug mode"
 msgstr "  -D 模式  除错模式"
 
-#: src/lang.c:1492
+#: src/lang.c:1498
 msgid ""
 "Read carefully!\n"
 "\n"
@@ -5343,11 +5356,11 @@ msgstr ""
 "这是您即将要取消的文章：\n"
 "\n"
 
-#: src/lang.c:1501
+#: src/lang.c:1507
 msgid "toggle color"
 msgstr "切换颜色"
 
-#: src/lang.c:1502
+#: src/lang.c:1508
 msgid ""
 "# Changing colors of several screen parts\n"
 "# Possible values are:\n"
@@ -5393,11 +5406,11 @@ msgstr ""
 "#  15 = 亮白色\n"
 "\n"
 
-#: src/lang.c:1522
+#: src/lang.c:1528
 msgid "  -a       toggle color flag"
 msgstr "  -a       切换颜色旗标"
 
-#: src/lang.c:1526
+#: src/lang.c:1532
 msgid ""
 "\n"
 "Error: Followup-To set to more than one newsgroup!\n"
@@ -5405,7 +5418,7 @@ msgstr ""
 "\n"
 "错误：跟贴被设置超过一个新闻群组！\n"
 
-#: src/lang.c:1527
+#: src/lang.c:1533
 #, c-format
 msgid ""
 "\n"
@@ -5415,7 +5428,7 @@ msgstr ""
 "错误：“%s”被重命名，使用“%s”作为替代！\n"
 
 #. TRANSLATORS: for nplurals>=3
-#: src/lang.c:1529
+#: src/lang.c:1535
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -5427,7 +5440,7 @@ msgstr[0] ""
 "\n"
 "错误：跨板张贴到 %d 新闻群组而没有跟贴行！\n"
 
-#: src/lang.c:1530
+#: src/lang.c:1536
 #, c-format
 msgid ""
 "\n"
@@ -5436,7 +5449,7 @@ msgstr ""
 "\n"
 "错误：“%s”并非有效新闻群组！\n"
 
-#: src/lang.c:1532
+#: src/lang.c:1538
 msgid ""
 "\n"
 "Warning: Followup-To set to more than one newsgroup!\n"
@@ -5444,7 +5457,7 @@ msgstr ""
 "\n"
 "警告：跟贴被设置超过一个新闻群组！\n"
 
-#: src/lang.c:1533
+#: src/lang.c:1539
 #, c-format
 msgid ""
 "\n"
@@ -5454,7 +5467,7 @@ msgstr ""
 "警告：“%s”被重命名，您应该使用“%s”作为替代！\n"
 
 #. TRANSLATORS: for nplurals>=3
-#: src/lang.c:1535
+#: src/lang.c:1541
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -5466,7 +5479,7 @@ msgstr[0] ""
 "\n"
 "警告：跨板张贴到 %d 新闻群组而没有跟贴行！\n"
 
-#: src/lang.c:1536
+#: src/lang.c:1542
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -5477,7 +5490,7 @@ msgstr ""
 "警告：“%s”不在您的 newsrc 之中，\n"
 "在这个站台它也许会无效！\n"
 
-#: src/lang.c:1537
+#: src/lang.c:1543
 #, c-format
 msgid ""
 "\n"
@@ -5486,197 +5499,202 @@ msgstr ""
 "\n"
 "警告：“%s”并非这个站台上的有效新闻群组！\n"
 
-#: src/lang.c:1541
+#: src/lang.c:1547
 #, c-format
 msgid "%d files successfully written from %d articles. %d %s occurred."
 msgstr "%d 个文件成功地从 %d 篇文章写入。%d %s 已发生。"
 
-#: src/lang.c:1542
+#: src/lang.c:1548
 msgid "Missing parts."
 msgstr "缺少部分。"
 
-#: src/lang.c:1543
+#: src/lang.c:1549
 msgid "No beginning."
 msgstr "没有起始部分。"
 
-#: src/lang.c:1544
+#: src/lang.c:1550
 msgid "No data."
 msgstr "没有数据。"
 
-#: src/lang.c:1545
+#: src/lang.c:1551
 msgid "Unknown error."
 msgstr "不明错误。"
 
-#: src/lang.c:1549
+#: src/lang.c:1555
 #, fuzzy, c-format
 msgid "Reading mail active file: %s"
 msgstr "读取邮件现用文件…"
 
-#: src/lang.c:1550
+#: src/lang.c:1556
 #, fuzzy, c-format
 msgid "Reading mailgroups file: %s"
 msgstr "读取邮件群组文件…"
 
-#: src/lang.c:1554
+#: src/lang.c:1560
 msgid "perform PGP operations on article"
 msgstr "对于文章施行 PGP 操作"
 
-#: src/lang.c:1555
+#: src/lang.c:1561
 #, fuzzy
 msgid "Add key to public keyring?"
 msgid_plural "Add keys to public keyring?"
 msgstr[0] "将密钥加入公用钥匙圈？"
 
-#: src/lang.c:1556
+#: src/lang.c:1562
 #, c-format
 msgid "%s=encrypt, %s=sign, %s=both, %s=quit: "
 msgstr "%s=加密，%s=签名，%s=两者，%s=离开："
 
-#: src/lang.c:1557
+#: src/lang.c:1563
 #, c-format
 msgid "%s=sign, %s=sign & include public key, %s=quit: "
 msgstr "%s=签名，%s=签名 & 包含公开密钥，%s=离开："
 
-#: src/lang.c:1558
+#: src/lang.c:1564
 #, c-format
 msgid "PGP has not been set up (can't open %s)"
 msgstr "PGP 尚未设置 (无法打开 %s)"
 
-#: src/lang.c:1559
+#: src/lang.c:1565
 msgid "Article not signed and no public keys found"
 msgstr "文章未被签名且找不到任何公开密钥"
 
-#: src/lang.c:1561
+#: src/lang.c:1567
 #, c-format
 msgid "%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone: "
 msgstr "%s=离开，%s=编辑，%s=拼写检查，%s=pgp，%s=菜单，%s=张贴，%s=搁置："
 
-#: src/lang.c:1562
+#: src/lang.c:1568
 #, c-format
 msgid "%s=quit, %s=edit, %s=ispell, %s=pgp, %s=send [%%s]: "
 msgstr "%s=离开，%s=编辑，%s=拼写检查，%s=pgp，%s=发送 [%%s]："
 
-#: src/lang.c:1563
+#: src/lang.c:1569
 #, c-format
 msgid ""
 "%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr ""
 "%s=离开，%s=编辑，%s=拼写检查，%s=pgp，%s=菜单，%s=张贴，%s=搁置 [%%s]："
 
-#: src/lang.c:1565
+#: src/lang.c:1571
 #, c-format
 msgid "%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone: "
 msgstr "%s=离开，%s=编辑，%s=pgp，%s=菜单，%s=张贴，%s=搁置："
 
-#: src/lang.c:1566
+#: src/lang.c:1572
 #, c-format
 msgid "%s=quit, %s=edit, %s=pgp, %s=send [%%s]: "
 msgstr "%s=离开，%s=编辑，%s=pgp，%s=发送 [%%s]："
 
-#: src/lang.c:1567
+#: src/lang.c:1573
 #, c-format
 msgid "%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr "%s=离开，%s=编辑，%s=pgp，%s=菜单，%s=张贴，%s=搁置 [%%s]："
 
-#: src/lang.c:1571
+#: src/lang.c:1577
 #, c-format
 msgid "%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone: "
 msgstr "%s=离开，%s=编辑，%s=拼写检查，%s=菜单，%s=张贴，%s=搁置："
 
-#: src/lang.c:1572
+#: src/lang.c:1578
 #, c-format
 msgid "%s=quit, %s=edit, %s=ispell, %s=send [%%s]: "
 msgstr "%s=离开，%s=编辑，%s=拼写检查，%s=发送 [%%s]："
 
-#: src/lang.c:1573
+#: src/lang.c:1579
 #, c-format
 msgid "%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr "%s=离开，%s=编辑，%s=拼写检查，%s=菜单，%s=张贴，%s=搁置 [%%s]："
 
-#: src/lang.c:1575
+#: src/lang.c:1581
 #, c-format
 msgid "%s=quit, %s=edit, %s=menu, %s=post, %s=postpone: "
 msgstr "%s=离开，%s=编辑，%s=菜单，%s=张贴，%s=搁置："
 
-#: src/lang.c:1576
+#: src/lang.c:1582
 #, c-format
 msgid "%s=quit, %s=edit, %s=send [%%s]: "
 msgstr "%s=离开，%s=编辑，%s=发送 [%%s]："
 
-#: src/lang.c:1577
+#: src/lang.c:1583
 #, c-format
 msgid "%s=quit, %s=edit, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr "%s=离开，%s=编辑，%s=菜单，%s=张贴，%s=搁置 [%%s]："
 
-#: src/lang.c:1581
+#: src/lang.c:1587
 #, c-format
 msgid "%s argument is not numeric: %s"
 msgstr ""
 
-#: src/lang.c:1584
+#: src/lang.c:1590
 msgid "Try cache_overview_files to speed up things.\n"
 msgstr "尝试 cache_overview_files 以加速。\n"
 
-#: src/lang.c:1585
+#: src/lang.c:1591
 msgid "Tin will use local index files instead.\n"
 msgstr "Tin 将使用本地索引文件作为替代。\n"
 
-#: src/lang.c:1586
+#: src/lang.c:1592
 msgid "Cannot find NNTP server name"
 msgstr "找不到 NNTP 服务器名称"
 
-#: src/lang.c:1587
+#: src/lang.c:1593
 msgid "CAPABILITIES did not announce READER"
 msgstr "能力中并未宣告包含阅读器"
 
-#: src/lang.c:1588
+#: src/lang.c:1594
 #, c-format
 msgid "Connecting to %s:%u..."
 msgstr "连接到 %s:%u…"
 
-#: src/lang.c:1589
+#: src/lang.c:1595
 #, fuzzy
 msgid "NNTP connection error. Exiting..."
 msgstr "连接到 NNTP 服务器 %s 时失败。离开…"
 
-#: src/lang.c:1590
+#: src/lang.c:1596
+#, c-format
+msgid "DISABLED CMDS.: %s\n"
+msgstr ""
+
+#: src/lang.c:1597
 #, fuzzy
 msgid "Disconnecting from server..."
 msgstr "从服务器中断连接…\n"
 
-#: src/lang.c:1591
+#: src/lang.c:1598
 #, c-format
 msgid "Failed to connect to NNTP server %s. Exiting..."
 msgstr "连接到 NNTP 服务器 %s 时失败。离开…"
 
-#: src/lang.c:1592
+#: src/lang.c:1599
 msgid "205  Closing connection"
 msgstr "205  关闭连接"
 
-#: src/lang.c:1593
+#: src/lang.c:1600
 msgid "Your server does not support the NNTP XOVER or OVER command.\n"
 msgstr "您的服务器不支持 NNTP XOVER 或 OVER 命令。\n"
 
-#: src/lang.c:1594
+#: src/lang.c:1601
 #, c-format
 msgid "Port isn't numeric: %s:%s\n"
 msgstr ""
 
-#: src/lang.c:1596
+#: src/lang.c:1603
 #, c-format
 msgid "Port in %s isn't numeric: %s:%s\n"
 msgstr ""
 
-#: src/lang.c:1597
+#: src/lang.c:1604
 #, c-format
 msgid "reconnect (%d) limit %d reached, giving up."
 msgstr ""
 
-#: src/lang.c:1599
+#: src/lang.c:1606
 msgid "Connection to news server has timed out. Reconnect?"
 msgstr "连接到新闻服务器已超时。重新连接？"
 
-#: src/lang.c:1600
+#: src/lang.c:1607
 #, c-format
 msgid ""
 "Put the server name in the file %s,\n"
@@ -5685,67 +5703,67 @@ msgstr ""
 "在文件 %s 中放入服务器名称，\n"
 "或设置环境变量 NNTPSERVER"
 
-#: src/lang.c:1602
+#: src/lang.c:1609
 #, fuzzy
 msgid "Continuing..."
 msgstr "打印中…"
 
-#: src/lang.c:1603
+#: src/lang.c:1610
 msgid "Read timeout from server - quit tin?"
 msgstr ""
 
-#: src/lang.c:1604
+#: src/lang.c:1611
 msgid "  -C       try COMPRESS NNTP extension"
 msgstr ""
 
-#: src/lang.c:1606
+#: src/lang.c:1613
 msgid "  -A       force authentication on connect"
 msgstr "  -A       连接时强制认证"
 
-#: src/lang.c:1607
+#: src/lang.c:1614
 #, c-format
 msgid "  -g serv  read news from NNTP server serv [default=%s]"
 msgstr "  -g serv  从 NNTP 服务器 serv [缺省=%s] 读取新闻"
 
-#: src/lang.c:1608
+#: src/lang.c:1615
 #, c-format
 msgid "  -p port  use port as NNTP port [default=%d]"
 msgstr "  -p port  使用 port 作为 NNTP 通信端口 [缺省=%d]"
 
-#: src/lang.c:1610
+#: src/lang.c:1617
 msgid "  -k       skip verification for NNTPS"
 msgstr ""
 
-#: src/lang.c:1611
+#: src/lang.c:1618
 msgid "  -T       enable NNTPS"
 msgstr ""
 
-#: src/lang.c:1613
+#: src/lang.c:1620
 #, fuzzy
 msgid "  -Q       quick start. Same as -dnq"
 msgstr "  -Q       快速开始。如同 -dnq"
 
-#: src/lang.c:1614
+#: src/lang.c:1621
 msgid "  -r       read news remotely from default NNTP server"
 msgstr "  -r       从缺省 NNTP 服务器远程读取新闻"
 
-#: src/lang.c:1615
+#: src/lang.c:1622
 msgid "  -l       use only LIST instead of GROUP (-n) command"
 msgstr "  -l       只使用 LIST 以代替 GROUP (-n) 命令"
 
-#: src/lang.c:1616
+#: src/lang.c:1623
 msgid "  -n       only read subscribed .newsrc groups from NNTP server"
 msgstr "  -n       从 NNTP 服务器只读取已订阅的 .newsrc 群组"
 
-#: src/lang.c:1618
+#: src/lang.c:1625
 msgid "  -4       force connecting via IPv4"
 msgstr "  -4       强制透过 IPv4 连接"
 
-#: src/lang.c:1619
+#: src/lang.c:1626
 msgid "  -6       force connecting via IPv6"
 msgstr "  -6       强制透过 IPv6 连接"
 
-#: src/lang.c:1620
+#: src/lang.c:1627
 msgid ""
 "\n"
 "socket or connect problem\n"
@@ -5753,7 +5771,7 @@ msgstr ""
 "\n"
 "通信端或连接问题\n"
 
-#: src/lang.c:1622
+#: src/lang.c:1629
 #, c-format
 msgid ""
 "\n"
@@ -5762,16 +5780,16 @@ msgstr ""
 "\n"
 "连接到 %s："
 
-#: src/lang.c:1623
+#: src/lang.c:1630
 msgid "Giving up...\n"
 msgstr "放弃…\n"
 
-#: src/lang.c:1625
+#: src/lang.c:1632
 #, c-format
 msgid "%s/tcp: Unknown service.\n"
 msgstr "%s/tcp：不明服务。\n"
 
-#: src/lang.c:1628
+#: src/lang.c:1635
 msgid ""
 "Your server does not have Xref: in its XOVER information.\n"
 "Tin will try to use XHDR XREF instead (slows down things a bit).\n"
@@ -5779,85 +5797,85 @@ msgstr ""
 "您的服务器没有 Xref: 于它的 XOVER 信息之中。\n"
 "Tin 将尝试使用 XHDR XREF 作为替代 (会慢一点)。\n"
 
-#: src/lang.c:1631
+#: src/lang.c:1638
 #, fuzzy, c-format
 msgid "Can't open %s. Try %s -r to read news via NNTP."
 msgstr "无法打开 %s。尝试 %s -r 以透过 NNTP 读取新闻。\n"
 
-#: src/lang.c:1634
+#: src/lang.c:1641
 msgid "  -Q       quick start. Same as -dq"
 msgstr "  -Q       快速开始。如同 -dq"
 
-#: src/lang.c:1635
+#: src/lang.c:1642
 msgid "  -l       read only active file instead of scanning spool (-n) command"
 msgstr "  -l       现用文件只读以代替扫描暂存 (-n) 命令"
 
-#: src/lang.c:1636
+#: src/lang.c:1643
 msgid "  -n       only read subscribed .newsrc groups from spool"
 msgstr "  -n       只从暂存读取已订阅的 .newsrc 群组"
 
-#: src/lang.c:1637
+#: src/lang.c:1644
 msgid "Your server does not have Xref: in its NOV-files.\n"
 msgstr "您的服务器没有 Xref: 于它的 NOV 文件之中。\n"
 
-#: src/lang.c:1641
+#: src/lang.c:1648
 msgid "Posting using external inews failed. Use built in inews instead?"
 msgstr "使用外部 inews 张贴失败。使用内置 inews 作为替代？"
 
-#: src/lang.c:1642
+#: src/lang.c:1649
 msgid "It worked! Should I always use my built in inews from now on?"
 msgstr "它做到了！从现在起，我应该一律使用内置的 inews？"
 
-#: src/lang.c:1646
+#: src/lang.c:1653
 #, fuzzy, c-format
 msgid "%d article printed"
 msgid_plural "%d articles printed"
 msgstr[0] "%d %s 已打印"
 
-#: src/lang.c:1647
+#: src/lang.c:1654
 msgid "output article/thread/hot/pattern/tagged articles to printer"
 msgstr "输出 文章/讨论串/热门/模式/已标记文章 到打印机"
 
-#: src/lang.c:1648
+#: src/lang.c:1655
 msgid "Print"
 msgstr "打印"
 
-#: src/lang.c:1649
+#: src/lang.c:1656
 msgid "Printing..."
 msgstr "打印中…"
 
-#: src/lang.c:1653
+#: src/lang.c:1660
 #, fuzzy, c-format
 msgid "%d article piped to \"%s\""
 msgid_plural "%d articles piped to \"%s\""
 msgstr[0] "%d %s 已打印"
 
-#: src/lang.c:1654
+#: src/lang.c:1661
 msgid "pipe article/thread/hot/pattern/tagged articles into command"
 msgstr "管道 文章/讨论串/热门/模式/已标记文章 进入命令"
 
-#: src/lang.c:1655
+#: src/lang.c:1662
 msgid "No command"
 msgstr "没有命令"
 
-#: src/lang.c:1656
+#: src/lang.c:1663
 msgid "Pipe"
 msgstr "管道"
 
-#: src/lang.c:1657
+#: src/lang.c:1664
 #, c-format
 msgid "Pipe to command [%.*s]> "
 msgstr "管道到命令 [%.*s]>"
 
-#: src/lang.c:1658
+#: src/lang.c:1665
 msgid "Piping..."
 msgstr "管道中…"
 
-#: src/lang.c:1660
+#: src/lang.c:1667
 msgid "Piping not enabled."
 msgstr "管道未启用。"
 
-#: src/lang.c:1664
+#: src/lang.c:1671
 #, c-format
 msgid ""
 "\n"
@@ -5872,7 +5890,7 @@ msgstr ""
 "      才允许。使用逗号(,)来分隔多重的\n"
 "      新闻群组名称。\n"
 
-#: src/lang.c:1669
+#: src/lang.c:1676
 #, c-format
 msgid ""
 "\n"
@@ -5885,7 +5903,7 @@ msgstr ""
 "      在行中不可以包含空白， 因此这是不允许的。\n"
 "      请将所有新闻群组写入单一行中。\n"
 
-#: src/lang.c:1674
+#: src/lang.c:1681
 #, c-format
 msgid ""
 "\n"
@@ -5898,7 +5916,7 @@ msgstr ""
 "        这是非常新的功能，可能无法被所有的服务器接收。\n"
 "        为避免麻烦，请将所有新闻群组写入单一行中。\n"
 
-#: src/lang.c:1678
+#: src/lang.c:1685
 #, c-format
 msgid ""
 "\n"
@@ -5907,7 +5925,7 @@ msgstr ""
 "\n"
 "警告：“%s:”行中含有应该被移除的空格。\n"
 
-#: src/lang.c:1683
+#: src/lang.c:1690
 msgid ""
 "\n"
 "  If your article contains quoted text  please take some time to pare it "
@@ -5939,40 +5957,40 @@ msgstr ""
 "  不在乎并注意您张贴所用的格式，别人将很可能\n"
 "  会完全忽略它，尤其是在这个拥挤的网络中。\n"
 
-#: src/lang.c:1696
+#: src/lang.c:1703
 msgid "shell escape"
 msgstr "命令壳跳脱"
 
-#: src/lang.c:1697
+#: src/lang.c:1704
 #, c-format
 msgid "Shell Command (%s)"
 msgstr "命令壳命令 (%s)"
 
-#: src/lang.c:1698
+#: src/lang.c:1705
 #, c-format
 msgid "Enter shell command [%s]> "
 msgstr "输入命令壳命令 [%s]>"
 
-#: src/lang.c:1702
+#: src/lang.c:1709
 #, c-format
 msgid "%s: Can't get entry for TERM\n"
 msgstr "%s：无法提取 TERM 条目\n"
 
-#: src/lang.c:1706
+#: src/lang.c:1713
 #, c-format
 msgid "Group %.*s ('q' to quit)..."
 msgstr "群组 %.*s (‘q’以离开)…"
 
-#: src/lang.c:1708
+#: src/lang.c:1715
 #, c-format
 msgid "Group %.*s..."
 msgstr "群组 %.*s…"
 
-#: src/lang.c:1712
+#: src/lang.c:1719
 msgid "Server unavailable\n"
 msgstr "服务器无法使用\n"
 
-#: src/lang.c:1718
+#: src/lang.c:1725
 #, c-format
 msgid ""
 "%s=pipe; %s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; "
@@ -5981,604 +5999,604 @@ msgstr ""
 "%s=管道；%s=邮寄；%s=打印；%s=离开；%s=切换所有/未读；%s=保存；%s=标记；%s=张"
 "贴"
 
-#: src/lang.c:1719
+#: src/lang.c:1726
 #, c-format
 msgid ""
 "%s=pipe; %s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr ""
 "%s=管道；%s=邮寄；%s=打印；%s=离开；%s=回复邮件；%s=保存；%s=标记；%s=张贴"
 
-#: src/lang.c:1721
+#: src/lang.c:1728
 #, c-format
 msgid ""
 "%s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
 msgstr "%s=邮寄；%s=打印；%s=离开；%s=切换所有/未读；%s=保存；%s=标记；%s=张贴"
 
-#: src/lang.c:1722
+#: src/lang.c:1729
 #, c-format
 msgid "%s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr "%s=邮寄；%s=打印；%s=离开；%s=回复邮件；%s=保存；%s=标记；%s=张贴"
 
-#: src/lang.c:1726
+#: src/lang.c:1733
 #, c-format
 msgid ""
 "%s=pipe; %s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
 msgstr "%s=管道；%s=邮寄；%s=离开；%s=切换所有/未读；%s=保存；%s=标记；%s=张贴"
 
-#: src/lang.c:1727
+#: src/lang.c:1734
 #, c-format
 msgid "%s=pipe; %s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr "%s=管道；%s=邮寄；%s=离开；%s=回复邮件；%s=保存；%s=标记；%s=张贴"
 
-#: src/lang.c:1729
+#: src/lang.c:1736
 #, c-format
 msgid "%s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
 msgstr "%s=邮寄；%s=离开；%s=切换所有/未读；%s=保存；%s=标记；%s=张贴"
 
-#: src/lang.c:1730
+#: src/lang.c:1737
 #, c-format
 msgid "%s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr "%s=邮寄；%s=离开；%s=回复邮件；%s=保存；%s=标记；%s=张贴"
 
-#: src/lang.c:1736
+#: src/lang.c:1743
 msgid "Terminal does not support color"
 msgstr "终端机不支持颜色"
 
-#: src/lang.c:1741
+#: src/lang.c:1748
 #, c-format
 msgid "Trying %s"
 msgstr "尝试 %s"
 
-#: src/lang.c:1756
+#: src/lang.c:1763
 msgid "Subject"
 msgstr "主旨"
 
-#: src/lang.c:1757
+#: src/lang.c:1764
 msgid "References"
 msgstr "参考"
 
-#: src/lang.c:1758
+#: src/lang.c:1765
 msgid "Both Subject and References"
 msgstr "主旨和参考两者"
 
-#: src/lang.c:1759
+#: src/lang.c:1766
 msgid "Multipart Subject"
 msgstr "多部件主旨"
 
-#: src/lang.c:1760
+#: src/lang.c:1767
 msgid "Percentage Match"
 msgstr "百分比匹配"
 
-#: src/lang.c:1773 src/lang.c:1855 src/lang.c:2001 src/lang.c:2016
+#: src/lang.c:1780 src/lang.c:1862 src/lang.c:2008 src/lang.c:2023
 msgid "Nothing"
 msgstr "没有任何东西"
 
-#: src/lang.c:1774
+#: src/lang.c:1781
 msgid "Complete UU/YENC"
 msgstr ""
 
-#: src/lang.c:1775
+#: src/lang.c:1782
 msgid "Any UU/YENC"
 msgstr ""
 
-#: src/lang.c:1777
+#: src/lang.c:1784
 msgid "Inline PGP"
 msgstr ""
 
-#: src/lang.c:1778
+#: src/lang.c:1785
 msgid "Complete UU/YENC & Inline PGP"
 msgstr ""
 
-#: src/lang.c:1779
+#: src/lang.c:1786
 msgid "Any UU/YENC & Inline PGP"
 msgstr ""
 
-#: src/lang.c:1781
+#: src/lang.c:1788
 msgid "Shar"
 msgstr ""
 
-#: src/lang.c:1782
+#: src/lang.c:1789
 msgid "Complete UU/YENC & Shar"
 msgstr ""
 
-#: src/lang.c:1783
+#: src/lang.c:1790
 msgid "Any UU/YENC & Shar"
 msgstr ""
 
-#: src/lang.c:1785
+#: src/lang.c:1792
 msgid "Inline PGP & Shar"
 msgstr ""
 
-#: src/lang.c:1786
+#: src/lang.c:1793
 msgid "Complete UU/YENC & PGP & Shar"
 msgstr ""
 
-#: src/lang.c:1787
+#: src/lang.c:1794
 #, fuzzy
 msgid "Hide all"
 msgstr "隐藏所有"
 
-#: src/lang.c:1797
+#: src/lang.c:1804
 msgid "Address"
 msgstr "地址"
 
-#: src/lang.c:1798
+#: src/lang.c:1805
 msgid "Full Name"
 msgstr "全名"
 
-#: src/lang.c:1799
+#: src/lang.c:1806
 msgid "Address and Name"
 msgstr "地址和名称"
 
-#: src/lang.c:1807
+#: src/lang.c:1814
 msgid "Max"
 msgstr "最大"
 
-#: src/lang.c:1808
+#: src/lang.c:1815
 msgid "Sum"
 msgstr "总和"
 
-#: src/lang.c:1809
+#: src/lang.c:1816
 msgid "Average"
 msgstr "平均"
 
-#: src/lang.c:1819 src/lang.c:1839
+#: src/lang.c:1826 src/lang.c:1846
 msgid "Black"
 msgstr "黑色"
 
-#: src/lang.c:1820 src/lang.c:1840
+#: src/lang.c:1827 src/lang.c:1847
 msgid "Red"
 msgstr "红色"
 
-#: src/lang.c:1821 src/lang.c:1841
+#: src/lang.c:1828 src/lang.c:1848
 msgid "Green"
 msgstr "绿色"
 
-#: src/lang.c:1822 src/lang.c:1842
+#: src/lang.c:1829 src/lang.c:1849
 msgid "Brown"
 msgstr "棕色"
 
-#: src/lang.c:1823 src/lang.c:1843
+#: src/lang.c:1830 src/lang.c:1850
 msgid "Blue"
 msgstr "蓝色"
 
-#: src/lang.c:1824 src/lang.c:1844
+#: src/lang.c:1831 src/lang.c:1851
 msgid "Pink"
 msgstr "粉红"
 
-#: src/lang.c:1825 src/lang.c:1845
+#: src/lang.c:1832 src/lang.c:1852
 msgid "Cyan"
 msgstr "青色"
 
-#: src/lang.c:1826 src/lang.c:1846
+#: src/lang.c:1833 src/lang.c:1853
 msgid "White"
 msgstr "白色"
 
-#: src/lang.c:1827
+#: src/lang.c:1834
 msgid "Gray"
 msgstr "灰色"
 
-#: src/lang.c:1828
+#: src/lang.c:1835
 msgid "Light Red"
 msgstr "浅红色"
 
-#: src/lang.c:1829
+#: src/lang.c:1836
 msgid "Light Green"
 msgstr "浅绿色"
 
-#: src/lang.c:1830
+#: src/lang.c:1837
 msgid "Yellow"
 msgstr "黄色"
 
-#: src/lang.c:1831
+#: src/lang.c:1838
 msgid "Light Blue"
 msgstr "浅蓝色"
 
-#: src/lang.c:1832
+#: src/lang.c:1839
 msgid "Light Pink"
 msgstr "浅粉红"
 
-#: src/lang.c:1833
+#: src/lang.c:1840
 msgid "Light Cyan"
 msgstr "浅青色"
 
-#: src/lang.c:1834
+#: src/lang.c:1841
 msgid "Light White"
 msgstr "亮白色"
 
-#: src/lang.c:1857
+#: src/lang.c:1864
 msgid "Space"
 msgstr "空格"
 
-#: src/lang.c:1865
+#: src/lang.c:1872
 msgid "Normal"
 msgstr "一般"
 
-#: src/lang.c:1866
+#: src/lang.c:1873
 msgid "Best highlighting"
 msgstr "最佳高亮度显示"
 
-#: src/lang.c:1867
+#: src/lang.c:1874
 msgid "Underline"
 msgstr "底线"
 
-#: src/lang.c:1868
+#: src/lang.c:1875
 msgid "Reverse video"
 msgstr "反白显示"
 
-#: src/lang.c:1869
+#: src/lang.c:1876
 msgid "Blinking"
 msgstr "闪动"
 
-#: src/lang.c:1870
+#: src/lang.c:1877
 msgid "Half bright"
 msgstr "半明亮"
 
-#: src/lang.c:1871
+#: src/lang.c:1878
 msgid "Bold"
 msgstr "粗体"
 
-#: src/lang.c:1877 src/lang.c:1993 src/lang.c:2097
+#: src/lang.c:1884 src/lang.c:2000 src/lang.c:2104
 msgid "No"
 msgstr "否"
 
-#: src/lang.c:1878
+#: src/lang.c:1885
 msgid "Cc"
 msgstr "副本"
 
-#: src/lang.c:1879
+#: src/lang.c:1886
 msgid "Bcc"
 msgstr "密件副本"
 
-#: src/lang.c:1880
+#: src/lang.c:1887
 msgid "Cc and Bcc"
 msgstr "副本和密件副本"
 
-#: src/lang.c:1897 src/lang.c:1910
+#: src/lang.c:1904 src/lang.c:1917
 msgid "none"
 msgstr "无"
 
-#: src/lang.c:1898
+#: src/lang.c:1905
 msgid "commands"
 msgstr "命令"
 
-#: src/lang.c:1899
+#: src/lang.c:1906
 msgid "select"
 msgstr "选取"
 
-#: src/lang.c:1901
+#: src/lang.c:1908
 msgid "commands & quit"
 msgstr "命令 & 离开"
 
-#: src/lang.c:1902
+#: src/lang.c:1909
 msgid "commands & select"
 msgstr "命令 & 选取"
 
-#: src/lang.c:1903
+#: src/lang.c:1910
 msgid "quit & select"
 msgstr "离开 & 选取"
 
-#: src/lang.c:1904
+#: src/lang.c:1911
 msgid "commands & quit & select"
 msgstr "命令 & 离开 & 选取"
 
-#: src/lang.c:1911
+#: src/lang.c:1918
 msgid "PageDown"
 msgstr "下一页"
 
-#: src/lang.c:1912
+#: src/lang.c:1919
 msgid "PageNextUnread"
 msgstr "下一未读页"
 
-#: src/lang.c:1913
+#: src/lang.c:1920
 msgid "PageDown or PageNextUnread"
 msgstr "下一页或一未读页"
 
-#: src/lang.c:1920
+#: src/lang.c:1927
 msgid "Subject: (case sensitive)"
 msgstr "Subject: (大小写相符)"
 
-#: src/lang.c:1921
+#: src/lang.c:1928
 msgid "Subject: (ignore case)"
 msgstr "Subject: (忽略大小写)"
 
-#: src/lang.c:1922
+#: src/lang.c:1929
 msgid "From: (case sensitive)"
 msgstr "From: (大小写相符)"
 
-#: src/lang.c:1923
+#: src/lang.c:1930
 msgid "From: (ignore case)"
 msgstr "From: (忽略大小写)"
 
-#: src/lang.c:1924
+#: src/lang.c:1931
 msgid "Msg-ID: & full References: line"
 msgstr "Message-ID: & 全部 References: 行"
 
-#: src/lang.c:1925
+#: src/lang.c:1932
 msgid "Msg-ID: & last References: only"
 msgstr "Message-ID: & 最后一笔 References: 只有"
 
-#: src/lang.c:1926
+#: src/lang.c:1933
 msgid "Message-ID: entry only"
 msgstr "只有 Message-ID: 条目"
 
-#: src/lang.c:1927
+#: src/lang.c:1934
 msgid "Lines:"
 msgstr "Lines:"
 
-#: src/lang.c:1933
+#: src/lang.c:1940
 msgid "Don't trim article body"
 msgstr "不修剪文章内文"
 
-#: src/lang.c:1934
+#: src/lang.c:1941
 msgid "Skip leading blank lines"
 msgstr "跳过前导空行"
 
-#: src/lang.c:1935
+#: src/lang.c:1942
 msgid "Skip trailing blank lines"
 msgstr "跳过尾随空行"
 
-#: src/lang.c:1936
+#: src/lang.c:1943
 msgid "Skip leading and trailing blank l."
 msgstr "跳过前导和尾随空行。"
 
-#: src/lang.c:1937
+#: src/lang.c:1944
 msgid "Compact multiple between text"
 msgstr "压缩文本间多重空行"
 
-#: src/lang.c:1938
+#: src/lang.c:1945
 msgid "Compact multiple and skip leading"
 msgstr "压缩多重空行和跳过前导空行"
 
-#: src/lang.c:1939
+#: src/lang.c:1946
 msgid "Compact multiple and skip trailing"
 msgstr "压缩多重空行和跳过尾随空行"
 
-#: src/lang.c:1940
+#: src/lang.c:1947
 msgid "Compact mltpl., skip lead. & trai."
 msgstr "压缩多重空行，跳过前导 & 尾随空行。"
 
-#: src/lang.c:1946
+#: src/lang.c:1953
 #, fuzzy
 msgid "Don't detect verbatim blocks"
 msgstr "字面区块的侦测"
 
-#: src/lang.c:1947
+#: src/lang.c:1954
 #, fuzzy
 msgid "Detect and show verbatim blocks"
 msgstr "字面区块的侦测"
 
-#: src/lang.c:1948
+#: src/lang.c:1955
 msgid "Detect, hide begin and end marks"
 msgstr ""
 
-#: src/lang.c:1949
+#: src/lang.c:1956
 #, fuzzy
 msgid "Don't show verbatim blocks"
 msgstr "字面区块的侦测"
 
-#: src/lang.c:1955
+#: src/lang.c:1962
 #, fuzzy
 msgid "Don't show help or mail sign"
 msgstr "说明/邮件签名的颜色"
 
-#: src/lang.c:1956
+#: src/lang.c:1963
 #, fuzzy
 msgid "Show only help sign"
 msgstr "说明/邮件签名的颜色"
 
-#: src/lang.c:1957
+#: src/lang.c:1964
 msgid "Show only mail sign if new mail"
 msgstr ""
 
-#: src/lang.c:1958
+#: src/lang.c:1965
 msgid "Show mail if new mail else help s."
 msgstr ""
 
-#: src/lang.c:1994
+#: src/lang.c:2001
 msgid "Shell archive"
 msgstr "命令壳存盘"
 
-#: src/lang.c:1995
+#: src/lang.c:2002
 msgid "Yes"
 msgstr "是"
 
-#: src/lang.c:2002
+#: src/lang.c:2009
 msgid "Subject: (descending)"
 msgstr "Subject: (递减)"
 
-#: src/lang.c:2003
+#: src/lang.c:2010
 msgid "Subject: (ascending)"
 msgstr "Subject: (递升)"
 
-#: src/lang.c:2004
+#: src/lang.c:2011
 msgid "From: (descending)"
 msgstr "From: (递减)"
 
-#: src/lang.c:2005
+#: src/lang.c:2012
 msgid "From: (ascending)"
 msgstr "From: (递升)"
 
-#: src/lang.c:2006
+#: src/lang.c:2013
 msgid "Date: (descending)"
 msgstr "Date: (递减)"
 
-#: src/lang.c:2007
+#: src/lang.c:2014
 msgid "Date: (ascending)"
 msgstr "Date: (递升)"
 
-#: src/lang.c:2008 src/lang.c:2017
+#: src/lang.c:2015 src/lang.c:2024
 msgid "Score (descending)"
 msgstr "分数 (递减)"
 
-#: src/lang.c:2009 src/lang.c:2018
+#: src/lang.c:2016 src/lang.c:2025
 msgid "Score (ascending)"
 msgstr "分数 (递升)"
 
-#: src/lang.c:2010
+#: src/lang.c:2017
 msgid "Lines: (descending)"
 msgstr "Lines: (递减)"
 
-#: src/lang.c:2011
+#: src/lang.c:2018
 msgid "Lines: (ascending)"
 msgstr "Lines: (递升)"
 
-#: src/lang.c:2019
+#: src/lang.c:2026
 msgid "Last posting date (descending)"
 msgstr "最近一次张贴日期 (递减)"
 
-#: src/lang.c:2020
+#: src/lang.c:2027
 msgid "Last posting date (ascending)"
 msgstr "最近一次张贴日期 (递升)"
 
-#: src/lang.c:2026
+#: src/lang.c:2033
 msgid "Quick-sort"
 msgstr "快速排序法"
 
-#: src/lang.c:2027
+#: src/lang.c:2034
 msgid "Heap-sort"
 msgstr "堆积排序法"
 
-#: src/lang.c:2034
+#: src/lang.c:2041
 msgid "Always Keep"
 msgstr "一律保留"
 
-#: src/lang.c:2035
+#: src/lang.c:2042
 msgid "Always Remove"
 msgstr "一律移除"
 
-#: src/lang.c:2036
+#: src/lang.c:2043
 msgid "Mark with D on selection screen"
 msgstr "于选择屏幕以 D 标记"
 
-#: src/lang.c:2042
+#: src/lang.c:2049
 msgid "Kill only unread arts"
 msgstr "只砍除未读文章"
 
-#: src/lang.c:2043
+#: src/lang.c:2050
 msgid "Kill all arts & show with K"
 msgstr "以 K 砍除所有文章 & 显示"
 
 #. TODO: s/K/art_marked_killed/
-#: src/lang.c:2044
+#: src/lang.c:2051
 msgid "Kill all arts and never show"
 msgstr "砍除所有文章并永不显示"
 
-#: src/lang.c:2050
+#: src/lang.c:2057
 msgid "Nothing special"
 msgstr "没什么特别"
 
-#: src/lang.c:2051
+#: src/lang.c:2058
 msgid "Compress quotes"
 msgstr "压缩引言"
 
-#: src/lang.c:2052
+#: src/lang.c:2059
 msgid "Quote signatures"
 msgstr "引用签名"
 
-#: src/lang.c:2053
+#: src/lang.c:2060
 msgid "Compress quotes, quote sigs"
 msgstr "压缩引言，引用签名"
 
-#: src/lang.c:2054
+#: src/lang.c:2061
 msgid "Quote empty lines"
 msgstr "引言空行"
 
-#: src/lang.c:2055
+#: src/lang.c:2062
 msgid "Compress quotes, quote empty lines"
 msgstr "压缩引言，引言空行"
 
-#: src/lang.c:2056
+#: src/lang.c:2063
 msgid "Quote sigs & empty lines"
 msgstr "引用签名 & 空行"
 
-#: src/lang.c:2057
+#: src/lang.c:2064
 msgid "Comp. q., quote sigs & empty lines"
 msgstr "压缩引言，引用签名 & 空行"
 
-#: src/lang.c:2098
+#: src/lang.c:2105
 #, fuzzy
 msgid "With headers"
 msgstr "保留标头"
 
-#: src/lang.c:2099
+#: src/lang.c:2106
 #, fuzzy
 msgid "Without headers"
 msgstr "无需标头"
 
-#: src/lang.c:2106
+#: src/lang.c:2113
 msgid "NFKC"
 msgstr "NFKC"
 
-#: src/lang.c:2108
+#: src/lang.c:2115
 msgid "NFKD"
 msgstr "NFKD"
 
-#: src/lang.c:2109
+#: src/lang.c:2116
 msgid "NFC"
 msgstr "NFC"
 
-#: src/lang.c:2110
+#: src/lang.c:2117
 msgid "NFD"
 msgstr "NFD"
 
-#: src/lang.c:2112
+#: src/lang.c:2119
 msgid "NFKC case fold"
 msgstr ""
 
-#: src/lang.c:2121
+#: src/lang.c:2128
 msgid "Display Options"
 msgstr "显示选项"
 
-#: src/lang.c:2128
+#: src/lang.c:2135
 msgid "Color Options"
 msgstr "颜色选项"
 
-#: src/lang.c:2134
+#: src/lang.c:2141
 msgid "Highlight Options"
 msgstr "突显选项"
 
-#: src/lang.c:2141
+#: src/lang.c:2148
 msgid "Article-Limiting Options"
 msgstr "文章限制选项"
 
-#: src/lang.c:2147
+#: src/lang.c:2154
 msgid "Posting/Mailing Options"
 msgstr "张贴/邮寄选项"
 
-#: src/lang.c:2153
+#: src/lang.c:2160
 msgid "Saving/Printing Options"
 msgstr "保存/打印选项"
 
-#: src/lang.c:2159
+#: src/lang.c:2166
 msgid "Expert Options"
 msgstr "专家选项"
 
-#: src/lang.c:2165
+#: src/lang.c:2172
 msgid "Filtering Options"
 msgstr "筛选选项"
 
-#: src/lang.c:2170 src/lang.c:2201 src/lang.c:2207 src/lang.c:2234
-#: src/lang.c:2286 src/lang.c:2292 src/lang.c:2302 src/lang.c:2313
-#: src/lang.c:2331 src/lang.c:2342 src/lang.c:2411 src/lang.c:2641
-#: src/lang.c:2647 src/lang.c:2653 src/lang.c:2668 src/lang.c:2680
-#: src/lang.c:2687 src/lang.c:2741 src/lang.c:2750 src/lang.c:2946
-#: src/lang.c:2962 src/lang.c:2969 src/lang.c:2976 src/lang.c:2983
-#: src/lang.c:2989 src/lang.c:2995 src/lang.c:3018 src/lang.c:3030
-#: src/lang.c:3065 src/lang.c:3118 src/lang.c:3132 src/lang.c:3138
-#: src/lang.c:3163 src/lang.c:3181 src/lang.c:3198 src/lang.c:3210
-#: src/lang.c:3250 src/lang.c:3279 src/lang.c:3299 src/lang.c:3326
-#: src/lang.c:3336 src/lang.c:3343 src/lang.c:3369 src/lang.c:3393
-#: src/lang.c:3580 src/lang.c:3595 src/lang.c:3603 src/lang.c:3617
-#: src/lang.c:3623 src/lang.c:3661
+#: src/lang.c:2177 src/lang.c:2208 src/lang.c:2214 src/lang.c:2241
+#: src/lang.c:2293 src/lang.c:2299 src/lang.c:2309 src/lang.c:2320
+#: src/lang.c:2338 src/lang.c:2349 src/lang.c:2418 src/lang.c:2648
+#: src/lang.c:2654 src/lang.c:2660 src/lang.c:2675 src/lang.c:2687
+#: src/lang.c:2694 src/lang.c:2748 src/lang.c:2757 src/lang.c:2953
+#: src/lang.c:2969 src/lang.c:2976 src/lang.c:2983 src/lang.c:2990
+#: src/lang.c:2996 src/lang.c:3002 src/lang.c:3025 src/lang.c:3037
+#: src/lang.c:3072 src/lang.c:3125 src/lang.c:3139 src/lang.c:3145
+#: src/lang.c:3170 src/lang.c:3188 src/lang.c:3205 src/lang.c:3217
+#: src/lang.c:3257 src/lang.c:3286 src/lang.c:3306 src/lang.c:3333
+#: src/lang.c:3343 src/lang.c:3350 src/lang.c:3376 src/lang.c:3400
+#: src/lang.c:3587 src/lang.c:3602 src/lang.c:3610 src/lang.c:3624
+#: src/lang.c:3630 src/lang.c:3668
 msgid "<SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr "<SPACE> 切换，<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2171
+#: src/lang.c:2178
 msgid "Show mini menu & posting etiquette"
 msgstr "显示迷你菜单 & 张贴礼仪"
 
-#: src/lang.c:2172
+#: src/lang.c:2179
 msgid ""
 "# If ON show a mini menu of useful commands at each level\n"
 "# and posting etiquette after composing an article\n"
@@ -6586,15 +6604,15 @@ msgstr ""
 "# 如果打开就在每个层级中显示常用命令的迷你菜单\n"
 "# 并于撰写文章之后显示张贴礼仪\n"
 
-#: src/lang.c:2177
+#: src/lang.c:2184
 msgid "Show short description for each newsgroup. <SPACE> toggles & <CR> sets."
 msgstr "显示每个新闻群组的简短描述。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2178
+#: src/lang.c:2185
 msgid "Show description of each newsgroup"
 msgstr "显示每个新闻群组的描述"
 
-#: src/lang.c:2179
+#: src/lang.c:2186
 msgid ""
 "# If ON show group description text after newsgroup name at\n"
 "# group selection level\n"
@@ -6602,19 +6620,19 @@ msgstr ""
 "# 如果打开就在群组选择层级中于新闻群组名称之后\n"
 "# 显示群组描述文本\n"
 
-#: src/lang.c:2184
+#: src/lang.c:2191
 #, fuzzy
 msgid ""
 "Show From (author) fields in group & thread level. <SPACE> toggles & <CR> "
 "sets."
 msgstr "在群组菜单中显示主旨 & 发信者 (作者) 字段。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2185
+#: src/lang.c:2192
 #, fuzzy
 msgid "In group and thread level, show author by"
 msgstr "在群组菜单中，显示作者"
 
-#: src/lang.c:2186
+#: src/lang.c:2193
 #, fuzzy
 msgid ""
 "# Part of From field to display in group and thread level\n"
@@ -6631,31 +6649,31 @@ msgstr ""
 "# * 2 = 全名\n"
 "#   3 = 两者\n"
 
-#: src/lang.c:2195
+#: src/lang.c:2202
 msgid "Draw -> or highlighted bar for selection. <SPACE> toggles & <CR> sets."
 msgstr "绘制 -> 或高亮度条用于选择。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2196
+#: src/lang.c:2203
 msgid "Draw -> instead of highlighted bar"
 msgstr "绘制 -> 以代替高亮度条"
 
-#: src/lang.c:2197
+#: src/lang.c:2204
 msgid "# If ON use -> otherwise highlighted bar for selection\n"
 msgstr "# 如果打开就使用 -> 否则高亮度条用于选择\n"
 
-#: src/lang.c:2202
+#: src/lang.c:2209
 msgid "Use inverse video for page headers"
 msgstr "使用反白显示用于页面标头"
 
-#: src/lang.c:2203
+#: src/lang.c:2210
 msgid "# If ON use inverse video for page headers at different levels\n"
 msgstr "# 如果打开就于不同的层级使用反白显示用于页面标头\n"
 
-#: src/lang.c:2208
+#: src/lang.c:2215
 msgid "Thread articles by"
 msgstr "讨论串文章依据"
 
-#: src/lang.c:2209
+#: src/lang.c:2216
 msgid ""
 "# Thread articles by ...\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6675,15 +6693,15 @@ msgstr ""
 "#   4 = 多部件主旨\n"
 "#   5 = 百分比匹配\n"
 
-#: src/lang.c:2220
+#: src/lang.c:2227
 msgid "Enter percentage match required to thread together. <CR> sets."
 msgstr "输入将讨论串起所必需的百分比匹配。<CR> 设置。"
 
-#: src/lang.c:2221
+#: src/lang.c:2228
 msgid "Thread percentage match"
 msgstr "讨论串百分比匹配"
 
-#: src/lang.c:2223
+#: src/lang.c:2230
 #, no-c-format
 msgid ""
 "# Thread percentage match...\n"
@@ -6706,11 +6724,11 @@ msgstr ""
 "# 任何插入。例如 happy 将匹配 harpy，但 harpie, happie 和 harpy 会被分入另一"
 "篇帖子。\n"
 
-#: src/lang.c:2235
+#: src/lang.c:2242
 msgid "Score of a thread"
 msgstr "讨论串的分数"
 
-#: src/lang.c:2236
+#: src/lang.c:2243
 msgid ""
 "# Thread score\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6724,16 +6742,16 @@ msgstr ""
 "#   1 = 总和\n"
 "#   2 = 平均\n"
 
-#: src/lang.c:2244
+#: src/lang.c:2251
 msgid ""
 "Sort articles by Subject, From, Date or Score. <SPACE> toggles & <CR> sets."
 msgstr "排序文章依据主题、发信者、日期或分数。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2245
+#: src/lang.c:2252
 msgid "Sort articles by"
 msgstr "排序文章依据"
 
-#: src/lang.c:2246
+#: src/lang.c:2253
 msgid ""
 "# Sort articles by ...\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6763,15 +6781,15 @@ msgstr ""
 "#   9 = 行数递减\n"
 "#  10 = 行数递升\n"
 
-#: src/lang.c:2262
+#: src/lang.c:2269
 msgid "Sort threads by Nothing or Score. <SPACE> toggles & <CR> sets."
 msgstr "排序讨论串不依据任何东西或依据分数。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2263
+#: src/lang.c:2270
 msgid "Sort threads by"
 msgstr "排序讨论串依据"
 
-#: src/lang.c:2264
+#: src/lang.c:2271
 msgid ""
 "# Sort thread by ...\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6789,44 +6807,44 @@ msgstr ""
 "#   3 = 最近一次张贴日期递减\n"
 "#   4 = 最近一次张贴日期递升\n"
 
-#: src/lang.c:2274
+#: src/lang.c:2281
 msgid ""
 "Put cursor at first/last unread art in groups. <SPACE> toggles & <CR> sets."
 msgstr "将光标放在群组中第一/最后一篇未读文章。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2275
+#: src/lang.c:2282
 msgid "Go to first unread article in group"
 msgstr "前往群组中第一篇未读的文章"
 
-#: src/lang.c:2276
+#: src/lang.c:2283
 msgid "# If ON put cursor at first unread art in group otherwise last art\n"
 msgstr "# 如果打开就将光标放在群组中第一篇未读文章，否则是最后一篇文章\n"
 
-#: src/lang.c:2280
+#: src/lang.c:2287
 msgid "Show all articles or only unread articles. <SPACE> toggles & <CR> sets."
 msgstr "显示所有文章或只有未读文章。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2281
+#: src/lang.c:2288
 msgid "Show only unread articles"
 msgstr "只显示未读文章"
 
-#: src/lang.c:2282
+#: src/lang.c:2289
 msgid "# If ON show only new/unread articles otherwise show all.\n"
 msgstr "# 如果打开就只显示新的/未读文章，否则全部显示。\n"
 
-#: src/lang.c:2287
+#: src/lang.c:2294
 msgid "Show only groups with unread arts"
 msgstr "只显示有未读文章的群组"
 
-#: src/lang.c:2288
+#: src/lang.c:2295
 msgid "# If ON show only subscribed to groups that contain unread articles.\n"
 msgstr "# 如果打开就只显示包含未读文章的订阅群组。\n"
 
-#: src/lang.c:2293
+#: src/lang.c:2300
 msgid "Filter which articles"
 msgstr "筛选哪些文章"
 
-#: src/lang.c:2294
+#: src/lang.c:2301
 msgid ""
 "# Filter which articles\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6840,11 +6858,11 @@ msgstr ""
 "#   1 = 砍除所有文章并在讨论串中显示时以 K 标记\n"
 "#   2 = 砍除所有文章并永不显示它们\n"
 
-#: src/lang.c:2303
+#: src/lang.c:2310
 msgid "Go to the next unread article with"
 msgstr "前往下一篇未读文章借由"
 
-#: src/lang.c:2304
+#: src/lang.c:2311
 msgid ""
 "# Go to the unread article with following key(s)\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6860,11 +6878,11 @@ msgstr ""
 "# * 2 = TAB\n"
 "#   3 = PAGE DOWN 或 TAB\n"
 
-#: src/lang.c:2314
+#: src/lang.c:2321
 msgid "How to treat blank lines"
 msgstr "如何对待空行"
 
-#: src/lang.c:2315
+#: src/lang.c:2322
 msgid ""
 "# Trim the article body, remove unnecessary blank lines.\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6894,11 +6912,11 @@ msgstr ""
 "#   7 = 压缩文本区块间的多重空行和跳过\n"
 "#       前导和尾随空行\n"
 
-#: src/lang.c:2332
+#: src/lang.c:2339
 msgid "Show help/mail sign in level titles"
 msgstr ""
 
-#: src/lang.c:2333
+#: src/lang.c:2340
 msgid ""
 "# Show help sign, new mail sign, both or nothing in level titles.\n"
 "# Possible values are (the default is marked with *):\n"
@@ -6908,24 +6926,24 @@ msgid ""
 "# * 3 = Show mail sign if new mail has arrived else show help sign\n"
 msgstr ""
 
-#: src/lang.c:2343
+#: src/lang.c:2350
 msgid "List thread using right arrow key"
 msgstr "使用向右键列出讨论串"
 
-#: src/lang.c:2344
+#: src/lang.c:2351
 msgid ""
 "# If ON automatically list thread when entering it using right arrow key.\n"
 msgstr "# 如果打开当使用向右键输入它时就自动列出讨论串。\n"
 
-#: src/lang.c:2348
+#: src/lang.c:2355
 msgid "Enter character to indicate deleted articles. <CR> sets, <ESC> cancels."
 msgstr "输入字符以指出已删除文章。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2349
+#: src/lang.c:2356
 msgid "Character to show deleted articles"
 msgstr "用来显示已删除文章的字符"
 
-#: src/lang.c:2350
+#: src/lang.c:2357
 msgid ""
 "# Character used to show that an art was deleted (default 'D')\n"
 "# _ is turned into ' '\n"
@@ -6933,16 +6951,16 @@ msgstr ""
 "# 用来显示文章被删除的字符 (缺省‘D’)\n"
 "# _ 被转换为‘ ’\n"
 
-#: src/lang.c:2355
+#: src/lang.c:2362
 msgid ""
 "Enter character to indicate articles in a range. <CR> sets, <ESC> cancels."
 msgstr "输入字符以指出在范围中的文章。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2356
+#: src/lang.c:2363
 msgid "Character to show inrange articles"
 msgstr "用来显示范围中文章的字符"
 
-#: src/lang.c:2357
+#: src/lang.c:2364
 msgid ""
 "# Character used to show that an art is in a range (default '#')\n"
 "# _ is turned into ' '\n"
@@ -6950,17 +6968,17 @@ msgstr ""
 "# 用来显示文章在范围中的字符 (缺省‘#’)\n"
 "# _ 被转换为‘ ’\n"
 
-#: src/lang.c:2362
+#: src/lang.c:2369
 msgid ""
 "Enter character to indicate that article will return. <CR> sets, <ESC> "
 "cancels."
 msgstr "输入字符以指出该文章将返回。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2363
+#: src/lang.c:2370
 msgid "Character to show returning arts"
 msgstr "用来显示返回文章的字符"
 
-#: src/lang.c:2364
+#: src/lang.c:2371
 msgid ""
 "# Character used to show that an art will return (default '-')\n"
 "# _ is turned into ' '\n"
@@ -6968,16 +6986,16 @@ msgstr ""
 "# 用来显示该文章将返回的字符 (缺省‘-’)\n"
 "# _ 被转换为‘ ’\n"
 
-#: src/lang.c:2369
+#: src/lang.c:2376
 msgid ""
 "Enter character to indicate selected articles. <CR> sets, <ESC> cancels."
 msgstr "输入字符以指出已选文章。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2370
+#: src/lang.c:2377
 msgid "Character to show selected articles"
 msgstr "用来显示已选文章的字符"
 
-#: src/lang.c:2371
+#: src/lang.c:2378
 msgid ""
 "# Character used to show that an art was auto-selected (default '*')\n"
 "# _ is turned into ' '\n"
@@ -6985,15 +7003,15 @@ msgstr ""
 "# 用来显示该文章已被自动选取的字符 (缺省‘*’)\n"
 "# _ 被转换为‘ ’\n"
 
-#: src/lang.c:2376
+#: src/lang.c:2383
 msgid "Enter character to indicate recent articles. <CR> sets, <ESC> cancels."
 msgstr "输入字符以指出最近文章。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2377
+#: src/lang.c:2384
 msgid "Character to show recent articles"
 msgstr "用来显示最近文章的字符"
 
-#: src/lang.c:2378
+#: src/lang.c:2385
 msgid ""
 "# Character used to show that an art is recent (default 'o')\n"
 "# _ is turned into ' '\n"
@@ -7001,15 +7019,15 @@ msgstr ""
 "# 用来显示是最近文章的字符 (缺省‘o’)\n"
 "# _ 被转换为‘ ’\n"
 
-#: src/lang.c:2383
+#: src/lang.c:2390
 msgid "Enter character to indicate unread articles. <CR> sets, <ESC> cancels."
 msgstr "输入字符以指出未读文章。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2384
+#: src/lang.c:2391
 msgid "Character to show unread articles"
 msgstr "用来显示未读文章的字符"
 
-#: src/lang.c:2385
+#: src/lang.c:2392
 msgid ""
 "# Character used to show that an art is unread (default '+')\n"
 "# _ is turned into ' '\n"
@@ -7017,15 +7035,15 @@ msgstr ""
 "# 用来显示该文章未读的字符 (缺省‘+’)\n"
 "# _ 被转换为‘ ’\n"
 
-#: src/lang.c:2390
+#: src/lang.c:2397
 msgid "Enter character to indicate read articles. <CR> sets, <ESC> cancels."
 msgstr "输入字符以指出已读文章。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2391
+#: src/lang.c:2398
 msgid "Character to show read articles"
 msgstr "用来显示已读文章的字符"
 
-#: src/lang.c:2392
+#: src/lang.c:2399
 msgid ""
 "# Character used to show that an art was read (default ' ')\n"
 "# _ is turned into ' '\n"
@@ -7033,15 +7051,15 @@ msgstr ""
 "# 用来显示该文章已读取字符 (缺省‘ ’)\n"
 "# _ 被转换为‘ ’\n"
 
-#: src/lang.c:2397
+#: src/lang.c:2404
 msgid "Enter character to indicate killed articles. <CR> sets, <ESC> cancels."
 msgstr "输入字符以指出被砍除文章。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2398
+#: src/lang.c:2405
 msgid "Character to show killed articles"
 msgstr "用来显示被砍除文章的字符"
 
-#: src/lang.c:2399
+#: src/lang.c:2406
 msgid ""
 "# Character used to show that an art was killed (default 'K')\n"
 "# kill_level must be set accordingly, _ is turned into ' '\n"
@@ -7049,16 +7067,16 @@ msgstr ""
 "# 用来显示该文章被砍除的字符 (缺省‘K’)\n"
 "# kill_level 必须根据不同情况而设置，_ 被转换为‘ ’\n"
 
-#: src/lang.c:2404
+#: src/lang.c:2411
 msgid ""
 "Enter character to indicate read selected articles. <CR> sets, <ESC> cancels."
 msgstr "输入字符以指出读取所选文章。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2405
+#: src/lang.c:2412
 msgid "Character to show readselected arts"
 msgstr "用来显示读取所选文章的字符"
 
-#: src/lang.c:2406
+#: src/lang.c:2413
 msgid ""
 "# Character used to show that an art was selected before read (default ':')\n"
 "# kill_level must be set accordingly, _ is turned into ' '\n"
@@ -7066,11 +7084,11 @@ msgstr ""
 "# 用来显示该文章读取之前已被选的字符 (缺省‘:’)\n"
 "# kill_level 必须根据不同情况而设置，_ 被转换为‘ ’\n"
 
-#: src/lang.c:2412
+#: src/lang.c:2419
 msgid "Abbreviate long newsgroup names"
 msgstr "将较长新闻群组名称缩写"
 
-#: src/lang.c:2413
+#: src/lang.c:2420
 msgid ""
 "# If ON abbreviate (if necessary) long newsgroup names at group selection\n"
 "# level and article level like this:\n"
@@ -7080,17 +7098,17 @@ msgstr ""
 "# 层级和文章层级会如下所示：\n"
 "#   news.software.readers -> n.software.readers -> n.s.readers -> n.s.r。\n"
 
-#: src/lang.c:2419
+#: src/lang.c:2426
 msgid ""
 "0 = full page scrolling, -1 = show previous last line as first on next page, "
 "-2 = half page"
 msgstr "0 = 整页卷动，-1 = 显示上页最后一行为下页第一行，-2 = 半页卷动"
 
-#: src/lang.c:2420
+#: src/lang.c:2427
 msgid "Number of lines to scroll in pager"
 msgstr "页面切换时卷动的行数"
 
-#: src/lang.c:2421
+#: src/lang.c:2428
 msgid ""
 "# Number of lines that cursor-up/down will scroll in article pager\n"
 "# Possible values are (the default is marked with *):\n"
@@ -7108,60 +7126,60 @@ msgstr ""
 "# * 1 = 卷动一行\n"
 "#   2 或更大 = 卷动 2 或更多行 (只有在页面切换时)\n"
 
-#: src/lang.c:2431
+#: src/lang.c:2438
 msgid "Display signatures. <SPACE> toggles & <CR> sets."
 msgstr "显示签名。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2432
+#: src/lang.c:2439
 msgid "Display signatures"
 msgstr "显示签名"
 
-#: src/lang.c:2433
+#: src/lang.c:2440
 msgid "# If OFF don't show signatures when displaying articles\n"
-msgstr "# 如果关闭于显示文章时就不显示签名\n"
-
-#: src/lang.c:2437
-#, fuzzy
-msgid "Display article score. <SPACE> toggles & <CR> sets."
-msgstr "显示签名。<SPACE> 切换 & <CR> 设置。"
-
-#: src/lang.c:2438
-#, fuzzy
-msgid "Display article score in pager"
-msgstr "显示下一篇文章"
-
-#: src/lang.c:2439
-#, fuzzy
-msgid "# If ON show article score when displaying articles\n"
 msgstr "# 如果关闭于显示文章时就不显示签名\n"
 
 #: src/lang.c:2444
 #, fuzzy
-msgid "Remove soft hyphens. <SPACE> toggles & <CR> sets."
+msgid "Display article score. <SPACE> toggles & <CR> sets."
 msgstr "显示签名。<SPACE> 切换 & <CR> 设置。"
 
 #: src/lang.c:2445
 #, fuzzy
+msgid "Display article score in pager"
+msgstr "显示下一篇文章"
+
+#: src/lang.c:2446
+#, fuzzy
+msgid "# If ON show article score when displaying articles\n"
+msgstr "# 如果关闭于显示文章时就不显示签名\n"
+
+#: src/lang.c:2451
+#, fuzzy
+msgid "Remove soft hyphens. <SPACE> toggles & <CR> sets."
+msgstr "显示签名。<SPACE> 切换 & <CR> 设置。"
+
+#: src/lang.c:2452
+#, fuzzy
 msgid "Remove soft hyphens"
 msgstr "移动范围"
 
-#: src/lang.c:2446
+#: src/lang.c:2453
 #, fuzzy
 msgid "# If ON remove soft hyphens when displaying articles\n"
 msgstr "# 如果关闭于显示文章时就不显示签名\n"
 
-#: src/lang.c:2451
+#: src/lang.c:2458
 #, fuzzy
 msgid ""
 "Display none mime data as tagged attachments. <SPACE> toggles & <CR> sets."
 msgstr "将 uuencoded 数据显示为已标记附件。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2452
+#: src/lang.c:2459
 #, fuzzy
 msgid "Display none mime data as an attachment"
 msgstr "将 uue 数据作为附件显示"
 
-#: src/lang.c:2453
+#: src/lang.c:2460
 #, fuzzy
 msgid ""
 "# Handling of none text in the pager\n"
@@ -7183,16 +7201,16 @@ msgstr ""
 "#   2 = 隐藏所有，类似 1，但是任何看来像是 uuencoded 数据的行，都将\n"
 "#       被折叠为一标记行。\n"
 
-#: src/lang.c:2465
+#: src/lang.c:2472
 msgid ""
 "Decode German style TeX umlaut codes to ISO. <SPACE> toggles & <CR> sets."
 msgstr "解码德语样式 TeX 变音编码为 ISO。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2466
+#: src/lang.c:2473
 msgid "Display \"a as Umlaut-a"
 msgstr "显示 \"a 为变音 a"
 
-#: src/lang.c:2467
+#: src/lang.c:2474
 msgid ""
 "# If ON decode German style TeX umlaut codes to ISO and\n"
 "# show \"a as Umlaut-a, etc.\n"
@@ -7200,15 +7218,15 @@ msgstr ""
 "# 如果打开就解码德语样式 TeX 变音编码为 ISO 并\n"
 "# 显示 \"a 为变音 a ...等等\n"
 
-#: src/lang.c:2472 src/lang.c:2482
+#: src/lang.c:2479 src/lang.c:2489
 msgid "Space separated list of header fields"
 msgstr "以空格分隔的标头字段清单"
 
-#: src/lang.c:2473
+#: src/lang.c:2480
 msgid "Display these header fields (or *)"
 msgstr "显示这些标头字段 (或 *)"
 
-#: src/lang.c:2474
+#: src/lang.c:2481
 msgid ""
 "# Which news headers you wish to see. If you want to see _all_ the headers,\n"
 "# place an '*' as this value. This is the only way a wildcard can be used.\n"
@@ -7223,11 +7241,11 @@ msgstr ""
 "#‘X-’(像是 X-Alan 或 X-Pape)。您可以借由以空格分隔而列出\n"
 "# 超过一个。没有定义任何值将会关闭这个选项。\n"
 
-#: src/lang.c:2483
+#: src/lang.c:2490
 msgid "Do not display these header fields"
 msgstr "不显示这些标头字段"
 
-#: src/lang.c:2484
+#: src/lang.c:2491
 msgid ""
 "# Same as 'news_headers_to_display' except it denotes the opposite.\n"
 "# An example of using both options might be if you thought X- headers were\n"
@@ -7246,30 +7264,30 @@ msgstr ""
 "# news_headers_to_not_display=X-Alan X-Pape\n"
 "# 没有定义任何值就表示关闭这个选项。\n"
 
-#: src/lang.c:2494
+#: src/lang.c:2501
 msgid ""
 "Do you want to enable automatic handling of multipart/alternative articles?"
 msgstr "您要启用多部件/替代文章的自动处理吗？"
 
-#: src/lang.c:2495
+#: src/lang.c:2502
 msgid "Skip multipart/alternative parts"
 msgstr "跳过多部件/替代部分"
 
-#: src/lang.c:2496
+#: src/lang.c:2503
 msgid "# If ON strip multipart/alternative messages automatically\n"
 msgstr "# 如果打开就自动截除多部件/替代消息\n"
 
-#: src/lang.c:2500
+#: src/lang.c:2507
 #, fuzzy
 msgid "<SPACE> toggles & <CR> sets."
 msgstr "<SPACE> 切换，<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2501
+#: src/lang.c:2508
 #, fuzzy
 msgid "How to treat verbatim blocks"
 msgstr "字面区块的颜色"
 
-#: src/lang.c:2502
+#: src/lang.c:2509
 msgid ""
 "# How to treat verbatim blocks in articles\n"
 "# Possible values are (the default is marked with *):\n"
@@ -7279,15 +7297,15 @@ msgid ""
 "#   3 = Detect verbatim blocks and hide them completely\n"
 msgstr ""
 
-#: src/lang.c:2512
+#: src/lang.c:2519
 msgid "A regex used to decide which lines to show in col_quote."
 msgstr "用来决定在 col_quote 中要显示哪些行的 regex。"
 
-#: src/lang.c:2513
+#: src/lang.c:2520
 msgid "Regex used to show quoted lines"
 msgstr "用来显示引言行的 regex"
 
-#: src/lang.c:2514
+#: src/lang.c:2521
 msgid ""
 "# A regular expression that tin will use to decide which lines are\n"
 "# quoted when viewing articles. Quoted lines are shown in col_quote.\n"
@@ -7297,15 +7315,15 @@ msgstr ""
 "# 正则表达式。引言行将以 col_quote 显示。\n"
 "# 如果您保留它为空白，tin 将使用内置的默认值。\n"
 
-#: src/lang.c:2520
+#: src/lang.c:2527
 msgid "A regex used to decide which lines to show in col_quote2."
 msgstr "用来决定要以 col_quote2 显示哪些行的 regex。"
 
-#: src/lang.c:2521
+#: src/lang.c:2528
 msgid "Regex used to show twice quoted l."
 msgstr "用来显示第二层引言行的 regex。"
 
-#: src/lang.c:2522
+#: src/lang.c:2529
 msgid ""
 "# A regular expression that tin will use to decide which lines are\n"
 "# quoted twice. Twice quoted lines are shown in col_quote2.\n"
@@ -7315,15 +7333,15 @@ msgstr ""
 "# 正则表达式。第二层引言行将以 col_quote2 显示。\n"
 "# 如果您保留它为空白，tin 将使用内置的默认值。\n"
 
-#: src/lang.c:2528
+#: src/lang.c:2535
 msgid "A regex used to decide which lines to show in col_quote3."
 msgstr "用来决定要以 col_quote3 显示哪些行的 regex。"
 
-#: src/lang.c:2529
+#: src/lang.c:2536
 msgid "Regex used to show >= 3 times q.l."
 msgstr "用来显示 >= 3 层引言行的 regex。"
 
-#: src/lang.c:2530
+#: src/lang.c:2537
 msgid ""
 "# A regular expression that tin will use to decide which lines are\n"
 "# quoted >=3 times. >=3 times quoted lines are shown in col_quote3.\n"
@@ -7333,32 +7351,32 @@ msgstr ""
 "# 正则表达式。>= 3 层引言行将以 col_quote3 显示。\n"
 "# 如果您保留它为空白，tin 将使用内置的默认值。\n"
 
-#: src/lang.c:2536
+#: src/lang.c:2543
 #, fuzzy
 msgid "Enable detection of external quotes? <SPACE> toggles & <CR> sets."
 msgstr "启用字面区块的侦测？<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2537
+#: src/lang.c:2544
 #, fuzzy
 msgid "Detection of external quotes"
 msgstr "字面区块的侦测"
 
-#: src/lang.c:2538
+#: src/lang.c:2545
 #, fuzzy
 msgid "# If ON detect quoted text from external sources in articles\n"
 msgstr "# 如果打开就在文章中侦测字面区块\n"
 
-#: src/lang.c:2542
+#: src/lang.c:2549
 #, fuzzy
 msgid "A regex used to decide which lines to show in col_extquote."
 msgstr "用来决定在 col_quote 中要显示哪些行的 regex。"
 
-#: src/lang.c:2543
+#: src/lang.c:2550
 #, fuzzy
 msgid "Regex used to show quotes from external sources"
 msgstr "用来显示引言行的 regex"
 
-#: src/lang.c:2544
+#: src/lang.c:2551
 #, fuzzy
 msgid ""
 "# A regular expression that tin will use to decide which lines are\n"
@@ -7369,17 +7387,17 @@ msgstr ""
 "# 正则表达式。第二层引言行将以 col_quote2 显示。\n"
 "# 如果您保留它为空白，tin 将使用内置的默认值。\n"
 
-#: src/lang.c:2551
+#: src/lang.c:2558
 #, fuzzy
 msgid "A regex used to decide which lines to hide in pager"
 msgstr "用来决定在 col_quote 中要显示哪些行的 regex。"
 
-#: src/lang.c:2552
+#: src/lang.c:2559
 #, fuzzy
 msgid "Regex used to hide matching lines"
 msgstr "用来显示引言行的 regex"
 
-#: src/lang.c:2553
+#: src/lang.c:2560
 #, fuzzy
 msgid ""
 "# A regular expression that to hide matching lines.\n"
@@ -7390,15 +7408,15 @@ msgstr ""
 "# 正则表达式。第二层引言行将以 col_quote2 显示。\n"
 "# 如果您保留它为空白，tin 将使用内置的默认值。\n"
 
-#: src/lang.c:2559
+#: src/lang.c:2566
 msgid "A regex used to decide which words to show in col_markslashes."
 msgstr "用来决定要以 col_markslashes 显示哪些字词的 regex。"
 
-#: src/lang.c:2560
+#: src/lang.c:2567
 msgid "Regex used to highlight /slashes/"
 msgstr "用来高亮度标示 /斜线/ 的 regex"
 
-#: src/lang.c:2561
+#: src/lang.c:2568
 msgid ""
 "# A regular expression that tin will use to decide which words\n"
 "# bounded by '/' are to be shown in col_markslashes.\n"
@@ -7408,15 +7426,15 @@ msgstr ""
 "# 将以 col_markslashes 显示的正则表达式。\n"
 "# 如果您保留它为空白，tin 将使用内置的默认值。\n"
 
-#: src/lang.c:2567
+#: src/lang.c:2574
 msgid "A regex used to decide which words to show in col_markstars."
 msgstr "用来决定要以 col_markstars 显示哪些字词的 regex。"
 
-#: src/lang.c:2568
+#: src/lang.c:2575
 msgid "Regex used to highlight *stars*"
 msgstr "用来高亮度显示 *星号* 的 regex"
 
-#: src/lang.c:2569
+#: src/lang.c:2576
 msgid ""
 "# A regular expression that tin will use to decide which words\n"
 "# bounded by '*' are to be shown in col_markstars.\n"
@@ -7426,15 +7444,15 @@ msgstr ""
 "# 将以 col_markstars 显示的正则表达式。\n"
 "# 如果您保留它为空白，tin 将使用内置的默认值。\n"
 
-#: src/lang.c:2575
+#: src/lang.c:2582
 msgid "A regex used to decide which words to show in col_markstroke."
 msgstr "用来决定要以 col_markstroke 显示哪些字词的 regex。"
 
-#: src/lang.c:2576
+#: src/lang.c:2583
 msgid "Regex used to highlight -strokes-"
 msgstr "用来高亮度显示 -横线- 的 regex"
 
-#: src/lang.c:2577
+#: src/lang.c:2584
 msgid ""
 "# A regular expression that tin will use to decide which words\n"
 "# bounded by '-' are to be shown in col_markstroke.\n"
@@ -7444,15 +7462,15 @@ msgstr ""
 "# 将以 col_markstroke 显示的正则表达式。\n"
 "# 如果您保留它为空白，tin 将使用内置的默认值。\n"
 
-#: src/lang.c:2583
+#: src/lang.c:2590
 msgid "A regex used to decide which words to show in col_markdash."
 msgstr "用来决定要以 col_markdash 显示哪些字词的 regex。"
 
-#: src/lang.c:2584
+#: src/lang.c:2591
 msgid "Regex used to highlight _underline_"
 msgstr "用来高亮度显示 _底线_ 的 regex"
 
-#: src/lang.c:2585
+#: src/lang.c:2592
 msgid ""
 "# A regular expression that tin will use to decide which words\n"
 "# bounded by '_' are to be shown in col_markdash.\n"
@@ -7462,15 +7480,15 @@ msgstr ""
 "# 将以 col_markdash 显示的正则表达式。\n"
 "# 如果您保留它为空白，tin 将使用内置的默认值。\n"
 
-#: src/lang.c:2591
+#: src/lang.c:2598
 msgid "A regex used to find Subject prefixes to remove.  Use '|' as separator."
 msgstr "用来寻找要移除的主旨前缀的 regex。 使用‘|’作为分隔符号。"
 
-#: src/lang.c:2592
+#: src/lang.c:2599
 msgid "Regex with Subject prefixes"
 msgstr "主旨前缀的 regex"
 
-#: src/lang.c:2593
+#: src/lang.c:2600
 msgid ""
 "# A regular expression that tin will use to find Subject prefixes\n"
 "# which will be removed before showing the header.\n"
@@ -7478,15 +7496,15 @@ msgstr ""
 "# tin 将用来寻找主旨前缀的正则表达式\n"
 "# 于显示标头之前将被移除。\n"
 
-#: src/lang.c:2598
+#: src/lang.c:2605
 msgid "A regex used to find Subject suffixes to remove.  Use '|' as separator."
 msgstr "用来寻找要移除的主旨后缀的 regex。 使用‘|’作为分隔符号。"
 
-#: src/lang.c:2599
+#: src/lang.c:2606
 msgid "Regex with Subject suffixes"
 msgstr "主旨后缀的 regex"
 
-#: src/lang.c:2600
+#: src/lang.c:2607
 msgid ""
 "# A regular expression that tin will use to find Subject suffixes\n"
 "# which will be removed when replying or posting followup.\n"
@@ -7494,45 +7512,45 @@ msgstr ""
 "# tin 将用来寻找主旨后缀的正则表达式\n"
 "# 于回复或跟贴时将被移除。\n"
 
-#: src/lang.c:2605
+#: src/lang.c:2612
 msgid "A regex used to find the begin of a verbatim block."
 msgstr "用来找寻字面区块开始的 regex。"
 
-#: src/lang.c:2606
+#: src/lang.c:2613
 msgid "Regex for begin of a verbatim block"
 msgstr "用于字面区块开始的 regex"
 
-#: src/lang.c:2607
+#: src/lang.c:2614
 msgid ""
 "# A regular expression that tin will use to find the begin of\n"
 "# a verbatim block.\n"
 msgstr "# tin 将用来找寻字面区块开始的正则表达式。\n"
 
-#: src/lang.c:2612
+#: src/lang.c:2619
 msgid "A regex used to find the end of a verbatim block."
 msgstr "用来找寻字面区块结束的 regex。"
 
-#: src/lang.c:2613
+#: src/lang.c:2620
 msgid "Regex for end of a verbatim block"
 msgstr "用于字面区块结束的 regex"
 
-#: src/lang.c:2614
+#: src/lang.c:2621
 msgid ""
 "# A regular expression that tin will use to find the end of\n"
 "# a verbatim block.\n"
 msgstr "# tin 将用来找寻字面区块结束的正则表达式。\n"
 
-#: src/lang.c:2619
+#: src/lang.c:2626
 msgid ""
 "Enter name and options for external MIME viewer, --internal for built-in "
 "viewer"
 msgstr "输入外部 MIME 查看器的名称和选项，--internal 表示内置查看器"
 
-#: src/lang.c:2620
+#: src/lang.c:2627
 msgid "MIME binary content viewer"
 msgstr "MIME 二进制内容查看器"
 
-#: src/lang.c:2621
+#: src/lang.c:2628
 #, fuzzy
 msgid ""
 "# If --internal automatically use the built in MIME viewer for non-text\n"
@@ -7546,15 +7564,15 @@ msgstr ""
 "# 否则请指定外部查看器程序 (例：metamail) 或保持空白以\n"
 "# 表示不要自动查看\n"
 
-#: src/lang.c:2628
+#: src/lang.c:2635
 msgid "Confirm before starting non-text viewing program"
 msgstr "启动非纯文本查看程序之前先确认"
 
-#: src/lang.c:2629
+#: src/lang.c:2636
 msgid "Ask before using MIME viewer"
 msgstr "使用 MIME 查看器之前先询问"
 
-#: src/lang.c:2630
+#: src/lang.c:2637
 msgid ""
 "# If ON tin will ask before using metamail to display MIME messages\n"
 "# this only happens if metamail_prog is set to something\n"
@@ -7562,35 +7580,35 @@ msgstr ""
 "# 如果打开，tin 将于使用 metamail 显示 MIME 消息之前先询问\n"
 "# 只有当 metamail_prog 已设置为某个值时，这才会发生\n"
 
-#: src/lang.c:2635
+#: src/lang.c:2642
 msgid "Ask to mark groups read when quitting. <SPACE> toggles & <CR> sets."
 msgstr "离开时询问是否将群组标记为已读。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:2636
+#: src/lang.c:2643
 msgid "Catchup read groups when quitting"
 msgstr "离开时将已读群组设回未读"
 
-#: src/lang.c:2637
+#: src/lang.c:2644
 msgid "# If ON ask user if read groups should all be marked read\n"
 msgstr "# 如果打开就询问用户是否所有已读群组应该都被标记为已读\n"
 
-#: src/lang.c:2642
+#: src/lang.c:2649
 msgid "Catchup group using left key"
 msgstr "使用向左键将群组设回未读"
 
-#: src/lang.c:2643
+#: src/lang.c:2650
 msgid "# If ON catchup group/thread when leaving with the left arrow key.\n"
 msgstr "# 如果打开则当以向左键离开时，将群组/讨论串设回未读。\n"
 
-#: src/lang.c:2648
+#: src/lang.c:2655
 msgid "Catchup thread by using left key"
 msgstr "使用向左键将讨论串设回未读"
 
-#: src/lang.c:2654
+#: src/lang.c:2661
 msgid "Which actions require confirmation"
 msgstr "哪些动作需要确认"
 
-#: src/lang.c:2655
+#: src/lang.c:2662
 #, fuzzy
 msgid ""
 "# What should we ask confirmation for.\n"
@@ -7613,52 +7631,52 @@ msgstr ""
 "#   4 = 多部件主旨\n"
 "#   5 = 百分比匹配\n"
 
-#: src/lang.c:2669
+#: src/lang.c:2676
 msgid "'Mark as (un)read' ignores tags"
 msgstr "‘标记为(未)已读’忽略标记"
 
-#: src/lang.c:2670
+#: src/lang.c:2677
 msgid ""
 "# If ON the 'Mark as (un)read' function marks only the current article.\n"
 msgstr "# 如果打开则‘标记为(未)已读’功能只会标记目前的文章。\n"
 
-#: src/lang.c:2674
+#: src/lang.c:2681
 msgid "Program to run to open URLs, <CR> sets, <ESC> cancels."
 msgstr "运行以打开网址的程序，<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:2675
+#: src/lang.c:2682
 msgid "Program that opens URLs"
 msgstr "打开网址的程序"
 
-#: src/lang.c:2676
+#: src/lang.c:2683
 msgid "# The program used to open URLs. The actual URL will be appended\n"
 msgstr "# 用来打开网址的程序。将会附加实际的网址\n"
 
-#: src/lang.c:2681
+#: src/lang.c:2688
 msgid "Use mouse in xterm"
 msgstr "在 xterm 中使用鼠标"
 
-#: src/lang.c:2682
+#: src/lang.c:2689
 msgid "# If ON enable mouse button support on xterm terminals\n"
 msgstr "# 如果打开就启用 xterm 终端机对于鼠标按钮的支持\n"
 
-#: src/lang.c:2688
+#: src/lang.c:2695
 msgid "Use scroll keys on keypad"
 msgstr "使用数字键盘上的卷动键"
 
-#: src/lang.c:2689
+#: src/lang.c:2696
 msgid "# If ON enable scroll keys on terminals that support it\n"
 msgstr "# 如果打开就在有支持卷动键的终端机上启用它\n"
 
-#: src/lang.c:2694
+#: src/lang.c:2701
 msgid "Enter maximum number of article to get. <CR> sets."
 msgstr "输入要提取文章的最大值数量。<CR> 设置。"
 
-#: src/lang.c:2695
+#: src/lang.c:2702
 msgid "Number of articles to get"
 msgstr "要提取文章的数量"
 
-#: src/lang.c:2696
+#: src/lang.c:2703
 msgid ""
 "# Number of articles to get (0=no limit), if negative sets maximum number\n"
 "# of already read articles to be read before first unread one\n"
@@ -7666,28 +7684,28 @@ msgstr ""
 "# 要提取文章的数量 (0=无限制)，如果为负就设置\n"
 "# 为第一篇未读文章之前要读取的已读文章最大值\n"
 
-#: src/lang.c:2701
+#: src/lang.c:2708
 msgid "Enter number of days article is considered recent. <CR> sets."
 msgstr "输入被认为最近文章的日数。<CR> 设置。"
 
-#: src/lang.c:2702
+#: src/lang.c:2709
 msgid "Article recentness time limit"
 msgstr "最近文章的时间限制"
 
-#: src/lang.c:2703
+#: src/lang.c:2710
 msgid "# Number of days in which article is considered recent, (0=OFF)\n"
 msgstr "# 被认为是最近文章所需的日数，(0=关闭)\n"
 
-#: src/lang.c:2707
+#: src/lang.c:2714
 msgid ""
 "WILDMAT for normal wildcards, REGEX for full regular expression matching."
 msgstr "WILDMAT 用于一般通配符，REGEX 用于完整正则表达式匹配。"
 
-#: src/lang.c:2708
+#: src/lang.c:2715
 msgid "Wildcard matching"
 msgstr "通配符匹配"
 
-#: src/lang.c:2709
+#: src/lang.c:2716
 msgid ""
 "# Wildcard matching\n"
 "# Possible values are (the default is marked with *):\n"
@@ -7699,59 +7717,59 @@ msgstr ""
 "# * 0 = wildmat\n"
 "#   1 = regex\n"
 
-#: src/lang.c:2716
+#: src/lang.c:2723
 msgid "Enter minimal score before an article is marked killed. <CR> sets."
 msgstr "输入文章被标记砍除之前的最少分数。<CR> 设置。"
 
-#: src/lang.c:2717
+#: src/lang.c:2724
 msgid "Score limit (kill)"
 msgstr "分数限制 (砍除)"
 
-#: src/lang.c:2718
+#: src/lang.c:2725
 msgid "# Score limit before an article is marked killed\n"
 msgstr "# 文章被标记砍除之前的分数限制\n"
 
-#: src/lang.c:2722
+#: src/lang.c:2729
 msgid "Enter default score to kill articles. <CR> sets."
 msgstr "输入砍除文章的缺省分数。<CR> 设置。"
 
-#: src/lang.c:2723
+#: src/lang.c:2730
 msgid "Default score to kill articles"
 msgstr "砍除文章的缺省分数"
 
-#: src/lang.c:2724
+#: src/lang.c:2731
 msgid "# Default score to kill articles\n"
 msgstr "# 砍除文章的缺省分数\n"
 
-#: src/lang.c:2728
+#: src/lang.c:2735
 msgid "Enter minimal score before an article is marked hot. <CR> sets."
 msgstr "输入文章被标记热门之前的最少分数。<CR> 设置。"
 
-#: src/lang.c:2729
+#: src/lang.c:2736
 msgid "Score limit (select)"
 msgstr "分数限制 (选取)"
 
-#: src/lang.c:2730
+#: src/lang.c:2737
 msgid "# Score limit before an article is marked hot\n"
 msgstr "# 文章被标记热门之前的分数限制\n"
 
-#: src/lang.c:2734
+#: src/lang.c:2741
 msgid "Enter default score to select articles. <CR> sets."
 msgstr "输入选取文章的缺省分数。<CR> 设置。"
 
-#: src/lang.c:2735
+#: src/lang.c:2742
 msgid "Default score to select articles"
 msgstr "选取文章的缺省分数"
 
-#: src/lang.c:2736
+#: src/lang.c:2743
 msgid "# Default score to select articles\n"
 msgstr "# 选取文章的缺省分数\n"
 
-#: src/lang.c:2742
+#: src/lang.c:2749
 msgid "Use slrnface to show ''X-Face:''s"
 msgstr "使用 slrnface 以显示‘X-Face:’"
 
-#: src/lang.c:2743
+#: src/lang.c:2750
 msgid ""
 "# If ON using slrnface(1) to interpret the ''X-Face:'' header.\n"
 "# Only useful when running in an xterm.\n"
@@ -7759,19 +7777,19 @@ msgstr ""
 "# 如果打开就使用 slrnface(1) 以解译‘X-Face:’标头。\n"
 "# 只有在 xterm 中运行时才有作用。\n"
 
-#: src/lang.c:2751
+#: src/lang.c:2758
 msgid "Use ANSI color"
 msgstr "使用 ANSI 颜色"
 
-#: src/lang.c:2752
+#: src/lang.c:2759
 msgid "# If ON using ANSI-color\n"
 msgstr "# 如果打开就使用 ANSI 颜色\n"
 
-#: src/lang.c:2757
+#: src/lang.c:2764
 msgid "Standard foreground color"
 msgstr "标准前景颜色"
 
-#: src/lang.c:2758
+#: src/lang.c:2765
 msgid ""
 "# Standard foreground color\n"
 "# Default: -1 (default color)\n"
@@ -7779,11 +7797,11 @@ msgstr ""
 "# 标准前景颜色\n"
 "# 缺省：-1 (缺省颜色)\n"
 
-#: src/lang.c:2764
+#: src/lang.c:2771
 msgid "Standard background color"
 msgstr "标准背景颜色"
 
-#: src/lang.c:2765
+#: src/lang.c:2772
 msgid ""
 "# Standard background color\n"
 "# Default: -1 (default color)\n"
@@ -7791,11 +7809,11 @@ msgstr ""
 "# 标准背景颜色\n"
 "# 缺省：-1 (缺省颜色)\n"
 
-#: src/lang.c:2771
+#: src/lang.c:2778
 msgid "Color for inverse text (background)"
 msgstr "反白文本的颜色 (背景)"
 
-#: src/lang.c:2772
+#: src/lang.c:2779
 msgid ""
 "# Color of background for inverse text\n"
 "# Default: 4 (blue)\n"
@@ -7803,11 +7821,11 @@ msgstr ""
 "# 反白文本的背景颜色\n"
 "# 缺省：4 (蓝色)\n"
 
-#: src/lang.c:2778
+#: src/lang.c:2785
 msgid "Color for inverse text (foreground)"
 msgstr "反白文本的颜色 (前景)"
 
-#: src/lang.c:2779
+#: src/lang.c:2786
 msgid ""
 "# Color of foreground for inverse text\n"
 "# Default: 7 (white)\n"
@@ -7815,11 +7833,11 @@ msgstr ""
 "# 反白文本的前景颜色\n"
 "# 缺省：7 (白色)\n"
 
-#: src/lang.c:2785
+#: src/lang.c:2792
 msgid "Color of text lines"
 msgstr "文本行的颜色"
 
-#: src/lang.c:2786
+#: src/lang.c:2793
 msgid ""
 "# Color of text lines\n"
 "# Default: -1 (default color)\n"
@@ -7827,11 +7845,11 @@ msgstr ""
 "# 文本行的颜色\n"
 "# 缺省：-1 (缺省颜色)\n"
 
-#: src/lang.c:2792
+#: src/lang.c:2799
 msgid "Color of mini help menu"
 msgstr "迷你说明菜单的颜色"
 
-#: src/lang.c:2793
+#: src/lang.c:2800
 msgid ""
 "# Color of mini help menu\n"
 "# Default: 3 (brown)\n"
@@ -7839,11 +7857,11 @@ msgstr ""
 "# 迷你说明菜单的颜色\n"
 "# 缺省：3 (棕色)\n"
 
-#: src/lang.c:2799
+#: src/lang.c:2806
 msgid "Color of help text"
 msgstr "说明文本的颜色"
 
-#: src/lang.c:2800
+#: src/lang.c:2807
 msgid ""
 "# Color of help pages\n"
 "# Default: -1 (default color)\n"
@@ -7851,11 +7869,11 @@ msgstr ""
 "# 说明页面的颜色\n"
 "# 缺省：-1 (缺省颜色)\n"
 
-#: src/lang.c:2806
+#: src/lang.c:2813
 msgid "Color of status messages"
 msgstr "状态消息的颜色"
 
-#: src/lang.c:2807
+#: src/lang.c:2814
 msgid ""
 "# Color of messages in last line\n"
 "# Default: 6 (cyan)\n"
@@ -7863,11 +7881,11 @@ msgstr ""
 "# 最后一行中消息的颜色\n"
 "# 缺省：6 (青色)\n"
 
-#: src/lang.c:2813
+#: src/lang.c:2820
 msgid "Color of quoted lines"
 msgstr "引言行的颜色"
 
-#: src/lang.c:2814
+#: src/lang.c:2821
 msgid ""
 "# Color of quote-lines\n"
 "# Default: 2 (green)\n"
@@ -7875,11 +7893,11 @@ msgstr ""
 "# 引言行的颜色\n"
 "# 缺省：2 (绿色)\n"
 
-#: src/lang.c:2820
+#: src/lang.c:2827
 msgid "Color of twice quoted line"
 msgstr "第二层引言行的颜色"
 
-#: src/lang.c:2821
+#: src/lang.c:2828
 msgid ""
 "# Color of twice quoted lines\n"
 "# Default: 3 (brown)\n"
@@ -7887,12 +7905,12 @@ msgstr ""
 "# 第二层引言行的颜色\n"
 "# 缺省：3 (棕色)\n"
 
-#: src/lang.c:2827
+#: src/lang.c:2834
 #, fuzzy
 msgid "Color of >=3 times quoted line"
 msgstr ">=3 层引言行的颜色"
 
-#: src/lang.c:2828
+#: src/lang.c:2835
 msgid ""
 "# Color of >=3 times quoted lines\n"
 "# Default: 4 (blue)\n"
@@ -7900,11 +7918,11 @@ msgstr ""
 "# >=3 层引言行的颜色\n"
 "# 缺省：4 (蓝色)\n"
 
-#: src/lang.c:2834
+#: src/lang.c:2841
 msgid "Color of article header lines"
 msgstr "标头行的颜色"
 
-#: src/lang.c:2835
+#: src/lang.c:2842
 msgid ""
 "# Color of header-lines\n"
 "# Default: 2 (green)\n"
@@ -7912,11 +7930,11 @@ msgstr ""
 "# 标头行的颜色\n"
 "# 缺省：2 (绿色)\n"
 
-#: src/lang.c:2841
+#: src/lang.c:2848
 msgid "Color of actual news header fields"
 msgstr "实际新闻标头字段的颜色"
 
-#: src/lang.c:2842
+#: src/lang.c:2849
 msgid ""
 "# Color of actual news header fields\n"
 "# Default: 9 (light red)\n"
@@ -7924,11 +7942,11 @@ msgstr ""
 "# 实际新闻标头字段的颜色\n"
 "# 缺省：9 (浅红色)\n"
 
-#: src/lang.c:2848
+#: src/lang.c:2855
 msgid "Color of article subject lines"
 msgstr "文章主旨行的颜色"
 
-#: src/lang.c:2849
+#: src/lang.c:2856
 msgid ""
 "# Color of article subject\n"
 "# Default: 6 (cyan)\n"
@@ -7936,12 +7954,12 @@ msgstr ""
 "# 文章主旨行的颜色\n"
 "# 缺省：6 (青色)\n"
 
-#: src/lang.c:2855
+#: src/lang.c:2862
 #, fuzzy
 msgid "Color of external quotes"
 msgstr "文本行的颜色"
 
-#: src/lang.c:2856
+#: src/lang.c:2863
 #, fuzzy
 msgid ""
 "# Color of quoted text from external sources\n"
@@ -7950,11 +7968,11 @@ msgstr ""
 "# 字面区块的颜色\n"
 "# 缺省：5 (粉红)\n"
 
-#: src/lang.c:2862
+#: src/lang.c:2869
 msgid "Color of response counter"
 msgstr "回应计数器的颜色"
 
-#: src/lang.c:2863
+#: src/lang.c:2870
 msgid ""
 "# Color of response counter\n"
 "# Default: 2 (green)\n"
@@ -7962,11 +7980,11 @@ msgstr ""
 "# 回应计数器的颜色\n"
 "# 缺省：2 (绿色)\n"
 
-#: src/lang.c:2869
+#: src/lang.c:2876
 msgid "Color of sender (From:)"
 msgstr "发送者的颜色 ( From: )"
 
-#: src/lang.c:2870
+#: src/lang.c:2877
 msgid ""
 "# Color of sender (From:)\n"
 "# Default: 2 (green)\n"
@@ -7974,11 +7992,11 @@ msgstr ""
 "# 发送者的颜色 ( From: )\n"
 "# 缺省：2 (绿色)\n"
 
-#: src/lang.c:2876
+#: src/lang.c:2883
 msgid "Color of help/mail sign"
 msgstr "说明/邮件签名的颜色"
 
-#: src/lang.c:2877
+#: src/lang.c:2884
 msgid ""
 "# Color of Help/Mail-Sign\n"
 "# Default: 4 (blue)\n"
@@ -7986,11 +8004,11 @@ msgstr ""
 "# 说明/邮件签名的颜色\n"
 "# 缺省：4 (蓝色)\n"
 
-#: src/lang.c:2883
+#: src/lang.c:2890
 msgid "Color of signatures"
 msgstr "签名的颜色"
 
-#: src/lang.c:2884
+#: src/lang.c:2891
 msgid ""
 "# Color of signature\n"
 "# Default: 4 (blue)\n"
@@ -7998,12 +8016,12 @@ msgstr ""
 "# 签名的颜色\n"
 "# 缺省：4 (蓝色)\n"
 
-#: src/lang.c:2890
+#: src/lang.c:2897
 #, fuzzy
 msgid "Color of negative score"
 msgstr "文本行的颜色"
 
-#: src/lang.c:2891
+#: src/lang.c:2898
 #, fuzzy
 msgid ""
 "# Color of negative score\n"
@@ -8012,12 +8030,12 @@ msgstr ""
 "# 签名的颜色\n"
 "# 缺省：4 (蓝色)\n"
 
-#: src/lang.c:2897
+#: src/lang.c:2904
 #, fuzzy
 msgid "Color of positive score"
 msgstr "回应计数器的颜色"
 
-#: src/lang.c:2898
+#: src/lang.c:2905
 #, fuzzy
 msgid ""
 "# Color of positive score\n"
@@ -8026,11 +8044,11 @@ msgstr ""
 "# 回应计数器的颜色\n"
 "# 缺省：2 (绿色)\n"
 
-#: src/lang.c:2904
+#: src/lang.c:2911
 msgid "Color of highlighted URLs"
 msgstr "高亮度网址的颜色"
 
-#: src/lang.c:2905
+#: src/lang.c:2912
 msgid ""
 "# Color of highlighted URLs\n"
 "# Default: -1 (default color)\n"
@@ -8038,11 +8056,11 @@ msgstr ""
 "# 高亮度网址的颜色\n"
 "# 缺省：-1 (缺省颜色)\n"
 
-#: src/lang.c:2911
+#: src/lang.c:2918
 msgid "Color of verbatim blocks"
 msgstr "字面区块的颜色"
 
-#: src/lang.c:2912
+#: src/lang.c:2919
 msgid ""
 "# Color of verbatim blocks\n"
 "# Default: 5 (pink)\n"
@@ -8050,11 +8068,11 @@ msgstr ""
 "# 字面区块的颜色\n"
 "# 缺省：5 (粉红)\n"
 
-#: src/lang.c:2918
+#: src/lang.c:2925
 msgid "Color of highlighting with *stars*"
 msgstr "高亮度显示 *星号* 的颜色"
 
-#: src/lang.c:2919
+#: src/lang.c:2926
 msgid ""
 "# Color of word highlighting with *stars*\n"
 "# Default: 11 (yellow)\n"
@@ -8062,11 +8080,11 @@ msgstr ""
 "# 高亮度显示 *星号* 字词的颜色\n"
 "# 缺省：11 (黄色)\n"
 
-#: src/lang.c:2925
+#: src/lang.c:2932
 msgid "Color of highlighting with _dash_"
 msgstr "高亮度显示 _底线_ 的颜色"
 
-#: src/lang.c:2926
+#: src/lang.c:2933
 msgid ""
 "# Color of word highlighting with _dash_\n"
 "# Default: 13 (light pink)\n"
@@ -8074,11 +8092,11 @@ msgstr ""
 "# 高亮度显示 _底线_ 字词的颜色\n"
 "# 缺省：13 (浅粉红)\n"
 
-#: src/lang.c:2932
+#: src/lang.c:2939
 msgid "Color of highlighting with /slash/"
 msgstr "高亮度显示 /斜线/ 的颜色"
 
-#: src/lang.c:2933
+#: src/lang.c:2940
 msgid ""
 "# Color of word highlighting with /slash/\n"
 "# Default: 14 (light cyan)\n"
@@ -8086,11 +8104,11 @@ msgstr ""
 "# 高亮度显示 /斜线/ 字词的颜色\n"
 "# 缺省：14 (浅蓝绿色)\n"
 
-#: src/lang.c:2939
+#: src/lang.c:2946
 msgid "Color of highlighting with -stroke-"
 msgstr "高亮度显示 -横线- 的颜色"
 
-#: src/lang.c:2940
+#: src/lang.c:2947
 msgid ""
 "# Color of word highlighting with -stroke-\n"
 "# Default: 12 (light blue)\n"
@@ -8098,11 +8116,11 @@ msgstr ""
 "# 高亮度显示 -横线- 字词的颜色\n"
 "# 缺省：12 (浅蓝色)\n"
 
-#: src/lang.c:2947
+#: src/lang.c:2954
 msgid "Attr. of highlighting with *stars*"
 msgstr "高亮度显示 *星号* 的属性"
 
-#: src/lang.c:2948
+#: src/lang.c:2955
 msgid ""
 "# Attributes of word highlighting on mono terminals\n"
 "# Possible values are:\n"
@@ -8130,11 +8148,11 @@ msgstr ""
 "# 高亮度显示 *星号* 字词的属性\n"
 "# 缺省：6 (粗体)\n"
 
-#: src/lang.c:2963
+#: src/lang.c:2970
 msgid "Attr. of highlighting with _dash_"
 msgstr "高亮度显示 _底线_ 的属性"
 
-#: src/lang.c:2964
+#: src/lang.c:2971
 msgid ""
 "# Attribute of word highlighting with _dash_\n"
 "# Default: 2 (best highlighting)\n"
@@ -8142,11 +8160,11 @@ msgstr ""
 "# 高亮度显示 _底线_ 字词的属性\n"
 "# 缺省：2 (最好高亮度显示)\n"
 
-#: src/lang.c:2970
+#: src/lang.c:2977
 msgid "Attr. of highlighting with /slash/"
 msgstr "高亮度显示 /斜线/ 的属性"
 
-#: src/lang.c:2971
+#: src/lang.c:2978
 msgid ""
 "# Attribute of word highlighting with /slash/\n"
 "# Default: 5 (half bright)\n"
@@ -8154,11 +8172,11 @@ msgstr ""
 "# 高亮度显示 /斜线/ 字词的属性\n"
 "# 缺省：5 (半明亮)\n"
 
-#: src/lang.c:2977
+#: src/lang.c:2984
 msgid "Attr. of highlighting with -stroke-"
 msgstr "高亮度显示 -横线- 的属性"
 
-#: src/lang.c:2978
+#: src/lang.c:2985
 msgid ""
 "# Attribute of word highlighting with -stroke-\n"
 "# Default: 3 (reverse video)\n"
@@ -8166,27 +8184,27 @@ msgstr ""
 "# 高亮度显示 /斜线/ 字词的属性\n"
 "# 缺省：3 (反白显示)\n"
 
-#: src/lang.c:2984
+#: src/lang.c:2991
 msgid "URL highlighting in message body"
 msgstr "在消息内文中高亮度显示网址"
 
-#: src/lang.c:2985
+#: src/lang.c:2992
 msgid "# Enable URL highlighting?\n"
 msgstr "# 启用高亮度显示网址？\n"
 
-#: src/lang.c:2990
+#: src/lang.c:2997
 msgid "Word highlighting in message body"
 msgstr "在消息内文中高亮度显示字词"
 
-#: src/lang.c:2991
+#: src/lang.c:2998
 msgid "# Enable word highlighting?\n"
 msgstr "# 启用高亮度显示字词？\n"
 
-#: src/lang.c:2996
+#: src/lang.c:3003
 msgid "What to display instead of mark"
 msgstr "要显示什么以代替标记"
 
-#: src/lang.c:2997
+#: src/lang.c:3004
 msgid ""
 "# Should the leading and ending stars and dashes also be displayed,\n"
 "# even when they are highlighting marks?\n"
@@ -8202,70 +8220,70 @@ msgstr ""
 "#   1 = 是，显示标记\n"
 "# * 2 = 印出空格作为替代\n"
 
-#: src/lang.c:3006
+#: src/lang.c:3013
 msgid "Enter column number to wrap article lines to in the pager. <CR> sets."
 msgstr "输入在页面切换中用来将文章换行的栏号。<CR> 设置。"
 
-#: src/lang.c:3007
+#: src/lang.c:3014
 msgid "Page line wrap column"
 msgstr "页面自动换行栏号"
 
-#: src/lang.c:3008
+#: src/lang.c:3015
 msgid "# Wrap article lines at column\n"
 msgstr "# 文章换行于栏号\n"
 
-#: src/lang.c:3012
+#: src/lang.c:3019
 #, fuzzy
 msgid ""
 "If ON, don't break words when wrapping lines. <SPACE> toggles & <CR> sets."
 msgstr "重新张贴文章时加入签名。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3013
+#: src/lang.c:3020
 msgid "Don't break words when wrapping"
 msgstr ""
 
-#: src/lang.c:3014
+#: src/lang.c:3021
 msgid "# Don't break long lines inside a word but on <SPACE> or <TAB>\n"
 msgstr ""
 
-#: src/lang.c:3019
+#: src/lang.c:3026
 msgid "Wrap around threads on next unread"
 msgstr "于下一篇未读回到开始部分讨论串"
 
-#: src/lang.c:3020
+#: src/lang.c:3027
 msgid "# If ON wrap around threads on searching next unread article\n"
 msgstr "# 如果打开就于搜索下一篇未读文章时回到开始部分讨论串\n"
 
-#: src/lang.c:3024
+#: src/lang.c:3031
 msgid "Enter default mail address (and fullname). <CR> sets."
 msgstr "输入缺省邮件地址 (以及全名)。<CR> 设置。"
 
-#: src/lang.c:3025 src/lang.c:3642
+#: src/lang.c:3032 src/lang.c:3649
 msgid "Mail address (and fullname)"
 msgstr "邮件地址 (以及全名)"
 
-#: src/lang.c:3026
+#: src/lang.c:3033
 msgid "# User's mail address (and fullname), if not username@host (fullname)\n"
 msgstr "# 用户邮件地址 (以及全名)，如果不是 用户名@主机 (全名)\n"
 
-#: src/lang.c:3031
+#: src/lang.c:3038
 msgid "Show empty Followup-To in editor"
 msgstr "在编辑器中显示空的跟贴"
 
-#: src/lang.c:3032
+#: src/lang.c:3039
 msgid "# If ON show empty Followup-To header when editing an article\n"
 msgstr "# 如果打开就于编辑文章时显示空的跟贴标头\n"
 
-#: src/lang.c:3036
+#: src/lang.c:3043
 msgid ""
 "Enter path/! command/--none to create your default signature. <CR> sets."
 msgstr "输入 path/! command/--none 以创建您的缺省签名。<CR> 设置。"
 
-#: src/lang.c:3037
+#: src/lang.c:3044
 msgid "Create signature from path/command"
 msgstr "从路径/命令创建签名"
 
-#: src/lang.c:3038
+#: src/lang.c:3045
 #, fuzzy, c-format
 msgid ""
 "# Signature path (random sigs)/file to be used when posting/replying\n"
@@ -8279,41 +8297,41 @@ msgstr ""
 "# sigfile=!命令      运行外部命令以产生签名\n"
 "# sigfile=--none     不附加签名\n"
 
-#: src/lang.c:3046
+#: src/lang.c:3053
 msgid ""
 "Prepend signature with \"-- \" on own line. <SPACE> toggles & <CR> sets."
 msgstr "将单独一行的“-- ”前置于签名。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3047
+#: src/lang.c:3054
 msgid "Prepend signature with \"-- \""
 msgstr "将“-- ”前置于签名"
 
-#: src/lang.c:3048
+#: src/lang.c:3055
 msgid "# If ON prepend the signature with dashes '\\n-- \\n'\n"
 msgstr "# 如果打开就将虚线‘\\n-- \\n’前置于签名\n"
 
-#: src/lang.c:3052
+#: src/lang.c:3059
 msgid "Add signature when reposting articles. <SPACE> toggles & <CR> sets."
 msgstr "重新张贴文章时加入签名。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3053
+#: src/lang.c:3060
 msgid "Add signature when reposting"
 msgstr "重新张贴时加入签名"
 
-#: src/lang.c:3054
+#: src/lang.c:3061
 msgid "# If ON add signature to reposted articles\n"
 msgstr "# 如果打开就将签名加入重新张贴的文章\n"
 
-#: src/lang.c:3058
+#: src/lang.c:3065
 #, fuzzy
 msgid "Enter quotation marks, %I for author's initials."
 msgstr "输入引言符号、%s 或 %S 作为作者的缩写。"
 
-#: src/lang.c:3059
+#: src/lang.c:3066
 msgid "Characters used as quote-marks"
 msgstr "作为引言符号使用的字符"
 
-#: src/lang.c:3060
+#: src/lang.c:3067
 #, fuzzy
 msgid ""
 "# Characters used in quoting to followups and replies.\n"
@@ -8322,11 +8340,11 @@ msgstr ""
 "# 字符已用于引言到跟随和回复。\n"
 "#‘_’被置换由‘ ’，%s，%S 被置换依作者设置缩写。\n"
 
-#: src/lang.c:3066
+#: src/lang.c:3073
 msgid "Quoting behavior"
 msgstr "引言行为"
 
-#: src/lang.c:3067
+#: src/lang.c:3074
 msgid ""
 "# How quoting should be handled when following up or replying.\n"
 "# Possible values are (the default is marked with *):\n"
@@ -8350,16 +8368,16 @@ msgstr ""
 "#   6 = 引用签名，引用空行\n"
 "#   7 = 压缩引言，引用签名，引用空行\n"
 
-#: src/lang.c:3080 src/lang.c:3088 src/lang.c:3094
+#: src/lang.c:3087 src/lang.c:3095 src/lang.c:3101
 msgid ""
 "%A Addr %D Date %F Addr+Name %G Groupname %M Message-ID %N Name %C First Name"
 msgstr "%A 地址 %D 日期 %F 地址+名称 %G 群组名称 %M 消息识别号 %N 名称 %C 名字"
 
-#: src/lang.c:3081
+#: src/lang.c:3088
 msgid "Quote line when following up"
 msgstr "跟贴时的引言行"
 
-#: src/lang.c:3082
+#: src/lang.c:3089
 msgid ""
 "# Format of quote line when mailing/posting/following-up an article\n"
 "# %A Address    %D Date   %F Addr+Name   %G Groupname   %M Message-ID\n"
@@ -8369,39 +8387,39 @@ msgstr ""
 "# %A 地址    %D 日期   %F Addr+名称   %G 群组名称   %M 消息识别号\n"
 "# %N 全名  %C 名字   %I 缩写\n"
 
-#: src/lang.c:3089
+#: src/lang.c:3096
 msgid "Quote line when cross-posting"
 msgstr "跨板张贴时的引言行"
 
-#: src/lang.c:3095
+#: src/lang.c:3102
 msgid "Quote line when mailing"
 msgstr "邮寄时的引言行"
 
-#: src/lang.c:3100
+#: src/lang.c:3107
 msgid "If ON, include User-Agent: header. <SPACE> toggles & <CR> sets."
 msgstr "如果打开就包含 User-Agent: 标头。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3101
+#: src/lang.c:3108
 #, fuzzy
 msgid "Insert ''User-Agent:'' header"
 msgstr "插入‘User-Agent:’标头"
 
-#: src/lang.c:3102
+#: src/lang.c:3109
 msgid "# If ON include advertising User-Agent: header\n"
 msgstr "# 如果打开就包含作为通告的 User-Agent: 标头\n"
 
-#: src/lang.c:3107
+#: src/lang.c:3114
 msgid ""
 "Enter charset name for MIME (e.g. US-ASCII, ISO-8859-1, EUC-KR), <CR> to set."
 msgstr ""
 "输入用于 MIME 的字符集名称 (例如：US-ASCII, ISO-8859-1, EUC-KR)，<CR> 以设"
 "置。"
 
-#: src/lang.c:3108
+#: src/lang.c:3115
 msgid "MM_CHARSET"
 msgstr "MM_CHARSET"
 
-#: src/lang.c:3109
+#: src/lang.c:3116
 msgid ""
 "# Charset supported locally which is also used for MIME header and\n"
 "# Content-Type header.\n"
@@ -8417,40 +8435,40 @@ msgstr ""
 "# 如果 MIME_STRICT_CHARSET 于编译时期被定义，那么 mm_charset 以外的\n"
 "# 字符集将被认为无法显示，并且以‘？’的方式表述。\n"
 
-#: src/lang.c:3119
+#: src/lang.c:3126
 msgid "MM_NETWORK_CHARSET"
 msgstr "MM_NETWORK_CHARSET"
 
-#: src/lang.c:3120
+#: src/lang.c:3127
 msgid "# Charset used for MIME (Content-Type) header in postings.\n"
 msgstr "# 在贴文中作为 MIME (内容类型) 标头的字符集。\n"
 
-#: src/lang.c:3124
+#: src/lang.c:3131
 msgid ""
 "Enter local charset name (e.g. US-ASCII, ISO-8859-1, EUC-KR), <CR> to set."
 msgstr "输入本地字符集名称 (例如：US-ASCII, ISO-8859-1, EUC-KR)，<CR> 以设置。"
 
-#: src/lang.c:3125
+#: src/lang.c:3132
 msgid "MM_LOCAL_CHARSET"
 msgstr "MM_LOCAL_CHARSET"
 
-#: src/lang.c:3126
+#: src/lang.c:3133
 msgid "# Charset supported locally.\n"
 msgstr "# 本地支持的字符集。\n"
 
-#: src/lang.c:3133
+#: src/lang.c:3140
 msgid "Mailbox format"
 msgstr "信箱格式"
 
-#: src/lang.c:3134
+#: src/lang.c:3141
 msgid "# Format of the mailbox.\n"
 msgstr "# 信箱的格式。\n"
 
-#: src/lang.c:3139
+#: src/lang.c:3146
 msgid "MIME encoding in news messages"
 msgstr "在新闻消息中的 MIME 编码"
 
-#: src/lang.c:3140
+#: src/lang.c:3147
 #, fuzzy
 msgid ""
 "# MIME encoding (8bit, base64, quoted-printable, 7bit) of the body\n"
@@ -8465,16 +8483,16 @@ msgstr ""
 "# 而 Base64 对于包含很多 8 比特字符的多数 8 比特东亚诸语、\n"
 "# 希腊语以及俄语字符集来说更为适当。\n"
 
-#: src/lang.c:3148 src/lang.c:3169
+#: src/lang.c:3155 src/lang.c:3176
 msgid "Don't change unless you know what you are doing. <ESC> cancels."
 msgstr "不要变更，除非您知道您在做什么。<ESC> 取消。"
 
-#: src/lang.c:3149
+#: src/lang.c:3156
 #, fuzzy
 msgid "Use 8-bit characters in news headers"
 msgstr "在新闻标头中使用 8 比特字符"
 
-#: src/lang.c:3150
+#: src/lang.c:3157
 #, fuzzy
 msgid ""
 "# If ON, 8-bit characters in news headers are NOT encoded.\n"
@@ -8487,29 +8505,29 @@ msgstr ""
 "# 除非 post_mime_encoding 同样也被设置为 8 比特，\n"
 "# 否则标头中的 8 比特字符将无视于此参数而被编码。\n"
 
-#: src/lang.c:3157
+#: src/lang.c:3164
 msgid ""
 "Auto-view post-processed files <SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr "自动查看处理后文件<SPACE> 切换，<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3158
+#: src/lang.c:3165
 msgid "View post-processed files"
 msgstr "查看处理后文件"
 
-#: src/lang.c:3159
+#: src/lang.c:3166
 msgid "# If set, post processed files will be opened in a viewer\n"
 msgstr "# 如果设置，处理之后的文件将在查看器中被打开\n"
 
-#: src/lang.c:3164
+#: src/lang.c:3171
 msgid "MIME encoding in mail messages"
 msgstr "邮件消息中的 MIME 编码"
 
-#: src/lang.c:3170
+#: src/lang.c:3177
 #, fuzzy
 msgid "Use 8-bit characters in mail headers"
 msgstr "邮件标头中使用 8 比特字符"
 
-#: src/lang.c:3171
+#: src/lang.c:3178
 #, fuzzy
 msgid ""
 "# If ON, 8-bit characters in mail headers are NOT encoded.\n"
@@ -8527,25 +8545,25 @@ msgstr ""
 "# 禁止邮件标头中的 8 比特字符，因此建议您不要将它打开，\n"
 "# 除非您有某些强制的原因。\n"
 
-#: src/lang.c:3182
+#: src/lang.c:3189
 msgid "Strip blanks from ends of lines"
 msgstr "从行尾截除空白"
 
-#: src/lang.c:3183
+#: src/lang.c:3190
 msgid ""
 "# If ON strip blanks from ends of lines for faster display on slow "
 "terminals.\n"
 msgstr "# 如果打开就从行尾截除空白，以便在较慢终端机上能较快显示。\n"
 
-#: src/lang.c:3189
+#: src/lang.c:3196
 msgid "If ON, use transliteration. <SPACE> toggles & <CR> sets."
 msgstr "如果打开就使用字面量转译。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3190
+#: src/lang.c:3197
 msgid "Transliteration"
 msgstr "字面量转译"
 
-#: src/lang.c:3191
+#: src/lang.c:3198
 msgid ""
 "# If ON, use //TRANSLIT extension. This means that when a character cannot\n"
 "# be represented in the in the target character set, it can be approximated\n"
@@ -8555,11 +8573,11 @@ msgstr ""
 "# 在目标字符集中被表述时，它可以透过一个\n"
 "# 或多个外观类似的字符所近似显示。\n"
 
-#: src/lang.c:3199
+#: src/lang.c:3206
 msgid "Send you a Cc/Bcc automatically"
 msgstr "自动发送给您一份副本/密件副本"
 
-#: src/lang.c:3200
+#: src/lang.c:3207
 msgid ""
 "# Put your name in the Cc: and/or Bcc: field when mailing an article.\n"
 "# Possible values are (the default is marked with *):\n"
@@ -8575,25 +8593,25 @@ msgstr ""
 "#   2 = 密件副本\n"
 "#   3 = 副本和密件副本\n"
 
-#: src/lang.c:3211
+#: src/lang.c:3218
 msgid "Hash algorithm for Cancel-Lock/Cancel-Key"
 msgstr ""
 
-#: src/lang.c:3212
+#: src/lang.c:3219
 msgid ""
 "# Hash algorithm for Cancel-Lock/Cancel-Key (default 'sha1')\n"
 "# Use 'none' to not generate Cancel-Lock headers.\n"
 msgstr ""
 
-#: src/lang.c:3218
+#: src/lang.c:3225
 msgid "Enter address elements about which you want to be warned. <CR> sets."
 msgstr "输入您想要获得相关警告的地址因素。<CR> 设置。"
 
-#: src/lang.c:3219
+#: src/lang.c:3226
 msgid "Spamtrap warning address parts"
 msgstr "垃圾邮件抓取警告的地址部分"
 
-#: src/lang.c:3220
+#: src/lang.c:3227
 msgid ""
 "# A comma-delimited list of address-parts you want to be warned\n"
 "# about when trying to reply by email.\n"
@@ -8601,27 +8619,27 @@ msgstr ""
 "# 当您尝试以电子邮件回复时\n"
 "# 想要获得相关警告而以逗号分隔的地址部分清单。\n"
 
-#: src/lang.c:3225
+#: src/lang.c:3232
 msgid "Enter default number of days a filter entry will be valid. <CR> sets."
 msgstr "输入筛选器条目保持有效的缺省天数。<CR> 设置。"
 
-#: src/lang.c:3226
+#: src/lang.c:3233
 msgid "No. of days a filter entry is valid"
 msgstr "筛选器条目有效天数"
 
-#: src/lang.c:3227
+#: src/lang.c:3234
 msgid "# Number of days a short term filter will be active\n"
 msgstr "# 短期筛选器保持作用的天数\n"
 
-#: src/lang.c:3231
+#: src/lang.c:3238
 msgid "Add posted articles to filter. <SPACE> toggles & <CR> sets."
 msgstr "加入已张贴文章到筛选器。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3232
+#: src/lang.c:3239
 msgid "Add posted articles to filter"
 msgstr "加入已张贴文章到筛选器"
 
-#: src/lang.c:3233
+#: src/lang.c:3240
 msgid ""
 "# If ON add posted articles which start a new thread to filter for\n"
 "# highlighting follow-ups\n"
@@ -8629,37 +8647,37 @@ msgstr ""
 "# 如果打开就加入开始新讨论串的已张贴文章到筛选器\n"
 "# 作为高亮度显示跟贴\n"
 
-#: src/lang.c:3237
+#: src/lang.c:3244
 #, fuzzy
 msgid ""
 "Keep expired filter rules in file. <SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr "启始编辑器以及行偏移。<SPACE> 切换，<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3238
+#: src/lang.c:3245
 msgid "Keep expired filter rules in file"
 msgstr ""
 
-#: src/lang.c:3239
+#: src/lang.c:3246
 msgid "# If ON, expired filter rules are kept in the filter file\n"
 msgstr ""
 
-#: src/lang.c:3244
+#: src/lang.c:3251
 msgid "The directory where articles/threads are to be saved in mailbox format."
 msgstr "将以 mailbox 格式保存的文章/讨论串目录位置。"
 
-#: src/lang.c:3245
+#: src/lang.c:3252
 msgid "Mail directory"
 msgstr "邮件目录"
 
-#: src/lang.c:3246
+#: src/lang.c:3253
 msgid "# (-m) directory where articles/threads are saved in mailbox format\n"
 msgstr "# (-m) 以 mailbox 格式保存的文章/讨论串目录位置\n"
 
-#: src/lang.c:3251
+#: src/lang.c:3258
 msgid "Save articles in batch mode (-S)"
 msgstr "以批次模式保存文章 (-S)"
 
-#: src/lang.c:3252
+#: src/lang.c:3259
 msgid ""
 "# If ON articles/threads will be saved in batch mode when save -S\n"
 "# or mail (-M/-N) is specified on the command line\n"
@@ -8667,41 +8685,41 @@ msgstr ""
 "# 如果打开就于命令行上指定保存 -S 或邮寄 (-M/-N) 时\n"
 "# 以批次模式保存文章/讨论串\n"
 
-#: src/lang.c:3257
+#: src/lang.c:3264
 msgid "The directory where you want articles/threads saved."
 msgstr "您想要保存文章/讨论串的目录位置。"
 
-#: src/lang.c:3258
+#: src/lang.c:3265
 msgid "Directory to save arts/threads in"
 msgstr "要保存文章/讨论串的目录"
 
-#: src/lang.c:3259
+#: src/lang.c:3266
 msgid "# Directory where articles/threads are saved\n"
 msgstr "# 保存文章/讨论串的目录位置\n"
 
-#: src/lang.c:3263
+#: src/lang.c:3270
 msgid ""
 "Mark saved articles/threads as read. <SPACE> toggles, <CR> sets, <ESC> "
 "cancels."
 msgstr "将已保存的文章/讨论串标记为已读。<SPACE> 切换，<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3264
+#: src/lang.c:3271
 msgid "Mark saved articles/threads as read"
 msgstr "将已保存的文章/讨论串标记为已读"
 
-#: src/lang.c:3265
+#: src/lang.c:3272
 msgid "# If ON mark articles that are saved as read\n"
 msgstr "# 如果打开就标记已保存的文章为已读\n"
 
-#: src/lang.c:3269
+#: src/lang.c:3276
 msgid "Do post processing (e.g. extract attachments) for saved articles."
 msgstr "对于已保存的文章进行后续处理 (例如：截取附件)。"
 
-#: src/lang.c:3270
+#: src/lang.c:3277
 msgid "Post process saved articles"
 msgstr "后续处理已保存的文章"
 
-#: src/lang.c:3271
+#: src/lang.c:3278
 #, fuzzy
 msgid ""
 "# Perform post processing (saving binary attachments) from saved articles.\n"
@@ -8716,61 +8734,61 @@ msgstr ""
 "#   1 = 只截取命令壳归档 (shar)\n"
 "#   2 = 是\n"
 
-#: src/lang.c:3280
+#: src/lang.c:3287
 msgid "Process only unread articles"
 msgstr "只处理未读文章"
 
-#: src/lang.c:3281
+#: src/lang.c:3288
 msgid ""
 "# If ON only save/print/pipe/mail unread articles (tagged articles "
 "excepted)\n"
 msgstr "# 如果打开就只 保存/打印/管道/邮寄 未读文章 (除了已标记文章)\n"
 
-#: src/lang.c:3286
+#: src/lang.c:3293
 msgid "Print all or just part of header. <SPACE> toggles & <CR> sets."
 msgstr "打印所有或是仅仅部分的标头。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3287
+#: src/lang.c:3294
 msgid "Print all headers when printing"
 msgstr "打印时打印所有标头"
 
-#: src/lang.c:3288
+#: src/lang.c:3295
 msgid ""
 "# If ON print all of article header otherwise just the important lines\n"
 msgstr "# 如果打开就打印所有的文章标头，否则仅打印重要行\n"
 
-#: src/lang.c:3292
+#: src/lang.c:3299
 msgid ""
 "The printer program with options that is to be used to print articles/"
 "threads."
 msgstr "将被用来打印文章/讨论串的打印程序以及选项。"
 
-#: src/lang.c:3293
+#: src/lang.c:3300
 msgid "Printer program with options"
 msgstr "打印程序以及选项"
 
-#: src/lang.c:3294
+#: src/lang.c:3301
 msgid "# Print program with parameters used to print articles/threads\n"
 msgstr "# 用来打印文章/讨论串的打印程序以及参数\n"
 
-#: src/lang.c:3300
+#: src/lang.c:3307
 msgid "Force redraw after certain commands"
 msgstr "特定命令之后强制重绘"
 
-#: src/lang.c:3301
+#: src/lang.c:3308
 msgid ""
 "# If ON a screen redraw will always be done after certain external commands\n"
 msgstr "# 如果打开就于特定外部命令之后将一律完成屏幕重绘\n"
 
-#: src/lang.c:3305
+#: src/lang.c:3312
 msgid "Enter %E for editor, %F for filename, %N for line-number, <CR> to set."
 msgstr "输入 %E 作为编辑器，%F 作为文件名，%N 作为行号，<CR> 以设置。"
 
-#: src/lang.c:3306
+#: src/lang.c:3313
 msgid "Invocation of your editor"
 msgstr "调用您的编辑器"
 
-#: src/lang.c:3307
+#: src/lang.c:3314
 msgid ""
 "# Format of editor line including parameters\n"
 "# %E Editor  %F Filename  %N Linenumber\n"
@@ -8778,16 +8796,16 @@ msgstr ""
 "# 格式的编辑器行包含参数\n"
 "# %E 编辑器  %F 文件名  %N Linenumber\n"
 
-#: src/lang.c:3312
+#: src/lang.c:3319
 msgid ""
 "Enter name and options for external-inews, --internal for internal inews"
 msgstr "输入用于外部 inews 的名称和选项，--internal 用于内部 inews"
 
-#: src/lang.c:3313
+#: src/lang.c:3320
 msgid "External inews"
 msgstr "外部 inews"
 
-#: src/lang.c:3314
+#: src/lang.c:3321
 msgid ""
 "# If --internal use the built in mini inews for posting via NNTP\n"
 "# otherwise use an external inews program\n"
@@ -8795,18 +8813,18 @@ msgstr ""
 "# 如果设置 --internal 就使用内置的迷你 inews 作为透过 NNTP 张贴\n"
 "# 否则使用外部 inews 程序\n"
 
-#: src/lang.c:3318
+#: src/lang.c:3325
 msgid ""
 "Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."
 msgstr ""
 "输入 %M 作为邮件程序，%S 作为主旨，%T 作为收件者，%F 作为文件名，<CR> 以设"
 "置。"
 
-#: src/lang.c:3319
+#: src/lang.c:3326
 msgid "Invocation of your mail command"
 msgstr "调用您的邮寄命令"
 
-#: src/lang.c:3320
+#: src/lang.c:3327
 #, fuzzy
 msgid ""
 "# Format of mailer line including parameters\n"
@@ -8818,11 +8836,11 @@ msgstr ""
 "# 我。以使用 elm 作为您的邮件程序：   elm -s“%S”“%T”<%F\n"
 "# 我。elm 交互式         ：   elm -i %F -s“%S”“%T”\n"
 
-#: src/lang.c:3327
+#: src/lang.c:3334
 msgid "Use interactive mail reader"
 msgstr "使用交互式邮件阅读器"
 
-#: src/lang.c:3328
+#: src/lang.c:3335
 msgid ""
 "# Interactive mailreader\n"
 "# Possible values are (the default is marked with *):\n"
@@ -8836,32 +8854,32 @@ msgstr ""
 "#   1 = 使用交互式邮件阅读器以及文件中的标头\n"
 "#   2 = 使用交互式邮件阅读器而无需文件中的标头\n"
 
-#: src/lang.c:3337
+#: src/lang.c:3344
 msgid "Remove ~/.article after posting"
 msgstr "张贴之后移除 ~/.article"
 
-#: src/lang.c:3338
+#: src/lang.c:3345
 msgid "# If ON remove ~/.article after posting.\n"
 msgstr "# 如果打开就于张贴之后移除 ~/.article。\n"
 
-#: src/lang.c:3344
+#: src/lang.c:3351
 msgid "Use UTF-8 graphics (thread tree etc.)"
 msgstr "使用 UTF-8 图形 (树状讨论串等等…)"
 
-#: src/lang.c:3345
+#: src/lang.c:3352
 msgid ""
 "# If ON use UTF-8 characters for indicator '->', tree and ellipsis '...'.\n"
 msgstr "# 如果打开就使用 UTF-8 字符作为指示器‘->’、树状结构和省略符号‘…’。\n"
 
-#: src/lang.c:3350
+#: src/lang.c:3357
 msgid "Filename for all posted articles, <CR> sets, no filename=do not save."
 msgstr "用于所有已张贴文章的文件名，<CR> 设置，没有文件名=不保存。"
 
-#: src/lang.c:3351
+#: src/lang.c:3358
 msgid "Filename for posted articles"
 msgstr "用于已张贴文章的文件名"
 
-#: src/lang.c:3352
+#: src/lang.c:3359
 msgid ""
 "# Filename where to keep all postings (default posted)\n"
 "# If no filename is set then postings will not be saved\n"
@@ -8869,36 +8887,36 @@ msgstr ""
 "# 保留所有贴文 (缺省为已张贴) 的文件位置\n"
 "# 如果没有设置文件名则不会保存贴文\n"
 
-#: src/lang.c:3357
+#: src/lang.c:3364
 msgid ""
 "Keep all failed articles in ~/dead.articles. <SPACE> toggles & <CR> sets."
 msgstr "保留所有张贴失败的文章于 ~/dead.articles。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3358
+#: src/lang.c:3365
 msgid "Keep failed arts in ~/dead.articles"
 msgstr "保留张贴失败的文章于 ~/dead.articles"
 
-#: src/lang.c:3359
+#: src/lang.c:3366
 msgid "# If ON keep all failed postings in ~/dead.articles\n"
 msgstr "# 如果打开就保留所有张贴失败的贴文于 ~/dead.articles\n"
 
-#: src/lang.c:3363
+#: src/lang.c:3370
 msgid "Do you want to strip unsubscribed groups from .newsrc"
 msgstr "您要从 .newsrc 截除已取消订阅的群组"
 
-#: src/lang.c:3364
+#: src/lang.c:3371
 msgid "No unsubscribed groups in newsrc"
 msgstr "在 newsrc 中没有已取消订阅的群组"
 
-#: src/lang.c:3365
+#: src/lang.c:3372
 msgid "# If ON strip unsubscribed groups from newsrc\n"
 msgstr "# 如果打开就从 newsrc 截除已取消订阅的群组\n"
 
-#: src/lang.c:3370
+#: src/lang.c:3377
 msgid "Remove bogus groups from newsrc"
 msgstr "从 newsrc 移除假造的群组"
 
-#: src/lang.c:3371
+#: src/lang.c:3378
 msgid ""
 "# What to do with bogus groups in newsrc file\n"
 "# Possible values are (the default is marked with *):\n"
@@ -8912,81 +8930,81 @@ msgstr ""
 "#   1 = 移除\n"
 "#   2 = 以 D 高亮度显示于选择屏幕\n"
 
-#: src/lang.c:3380
+#: src/lang.c:3387
 msgid ""
 "Enter number of seconds to wait for a response from the server. <CR> sets."
 msgstr "输入从服务器等待回应的秒数。<CR> 表示设置。"
 
-#: src/lang.c:3381
+#: src/lang.c:3388
 msgid "NNTP read timeout in seconds"
 msgstr "NNTP 读取超时的秒数"
 
-#: src/lang.c:3382
+#: src/lang.c:3389
 msgid ""
 "# Time in seconds to wait for a response from the server (0=no timeout)\n"
 msgstr "# 从服务器等待回应的秒数时间 (0=没有超时限制)\n"
 
-#: src/lang.c:3387
+#: src/lang.c:3394
 msgid "Enter number of seconds until active file will be reread. <CR> sets."
 msgstr "输入重新读取现用文件的间隔秒数。<CR> 设置。"
 
-#: src/lang.c:3388
+#: src/lang.c:3395
 msgid "Interval in secs to reread active"
 msgstr "重新读取现用文件的间隔(以秒为单位)"
 
-#: src/lang.c:3389
+#: src/lang.c:3396
 msgid ""
 "# Time interval in seconds between rereading the active file (0=never)\n"
 msgstr "# 重新读取现用文件的时间间隔秒数 (0=永不)\n"
 
-#: src/lang.c:3394
+#: src/lang.c:3401
 msgid "Reconnect to server automatically"
 msgstr "自动重新连接到服务器"
 
-#: src/lang.c:3395
+#: src/lang.c:3402
 msgid ""
 "# If ON automatically reconnect to NNTP server if the connection is broken\n"
 msgstr "# 如果打开就于连接中断时自动重新连接到 NNTP 服务器\n"
 
-#: src/lang.c:3399
+#: src/lang.c:3406
 msgid ""
 "Create local copies of NNTP overview files. <SPACE> toggles & <CR> sets."
 msgstr "创建 NNTP 概述文件的本地复本。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3400
+#: src/lang.c:3407
 msgid "Cache NNTP overview files locally"
 msgstr "产生 NNTP 概述文件的本地缓存"
 
-#: src/lang.c:3401
+#: src/lang.c:3408
 msgid "# If ON, create local copies of NNTP overview files.\n"
 msgstr "# 如果打开就创建 NNTP 概述文件的本地复本。\n"
 
-#: src/lang.c:3406
+#: src/lang.c:3413
 #, fuzzy
 msgid ""
 "Compress local copies of NNTP overview files. <SPACE> toggles & <CR> sets."
 msgstr "创建 NNTP 概述文件的本地复本。<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3407
+#: src/lang.c:3414
 #, fuzzy
 msgid "Compress locally cached NNTP overview files"
 msgstr "产生 NNTP 概述文件的本地缓存"
 
-#: src/lang.c:3408
+#: src/lang.c:3415
 #, fuzzy
 msgid "# If ON, compress local copies of NNTP overview files.\n"
 msgstr "# 如果打开就创建 NNTP 概述文件的本地复本。\n"
 
-#: src/lang.c:3413 src/lang.c:3428 src/lang.c:3448 src/lang.c:3471
-#: src/lang.c:3496 src/lang.c:3518 src/lang.c:3550 src/lang.c:3569
+#: src/lang.c:3420 src/lang.c:3435 src/lang.c:3455 src/lang.c:3478
+#: src/lang.c:3503 src/lang.c:3525 src/lang.c:3557 src/lang.c:3576
 msgid "Enter format string. <CR> sets, <ESC> cancels."
 msgstr "输入格式字串。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3414
+#: src/lang.c:3421
 msgid "Format string for selection level"
 msgstr "用于选择层级表示的格式字串"
 
-#: src/lang.c:3415
+#: src/lang.c:3422
 msgid ""
 "# Format string for selection level representation\n"
 "# Default: %f %n %U  %G  %d\n"
@@ -9010,11 +9028,11 @@ msgstr ""
 "#   %n              数字，屏幕上的行数\n"
 "#   %U              未读数\n"
 
-#: src/lang.c:3429
+#: src/lang.c:3436
 msgid "Format string for group level"
 msgstr "用于组层级表示的格式字串"
 
-#: src/lang.c:3430
+#: src/lang.c:3437
 msgid ""
 "# Format string for group level representation\n"
 "# Default: %n %m %R %L  %s  %F\n"
@@ -9048,12 +9066,12 @@ msgstr ""
 "#   %s              主题（仅组级）\n"
 "#   %S              分数\n"
 
-#: src/lang.c:3449
+#: src/lang.c:3456
 #, fuzzy
 msgid "Format string for attachment level"
 msgstr "用于帖子层级的格式字串"
 
-#: src/lang.c:3450
+#: src/lang.c:3457
 #, fuzzy
 msgid ""
 "# Format string for attachment level representation\n"
@@ -9091,12 +9109,12 @@ msgstr ""
 "#   %s              主题（仅组级）\n"
 "#   %S              分数\n"
 
-#: src/lang.c:3472
+#: src/lang.c:3479
 #, fuzzy
 msgid "Format string for display of mime header"
 msgstr "用于显示日期的格式字串"
 
-#: src/lang.c:3473
+#: src/lang.c:3480
 #, fuzzy
 msgid ""
 "# Format string for mime header at article level\n"
@@ -9136,12 +9154,12 @@ msgstr ""
 "#   %s              主题（仅组级）\n"
 "#   %S              分数\n"
 
-#: src/lang.c:3497
+#: src/lang.c:3504
 #, fuzzy
 msgid "Format string for display of uue header"
 msgstr "用于显示日期的格式字串"
 
-#: src/lang.c:3498
+#: src/lang.c:3505
 #, fuzzy
 msgid ""
 "# Format string for uue header at article level\n"
@@ -9178,12 +9196,12 @@ msgstr ""
 "#   %s              主题（仅组级）\n"
 "#   %S              分数\n"
 
-#: src/lang.c:3519
+#: src/lang.c:3526
 #, fuzzy
 msgid "Format string for display of yenc header"
 msgstr "用于显示日期的格式字串"
 
-#: src/lang.c:3520
+#: src/lang.c:3527
 #, fuzzy
 msgid ""
 "# Format string for yenc header at article level\n"
@@ -9230,11 +9248,11 @@ msgstr ""
 "#   %s              主题（仅组级）\n"
 "#   %S              分数\n"
 
-#: src/lang.c:3551
+#: src/lang.c:3558
 msgid "Format string for thread level"
 msgstr "用于帖子层级的格式字串"
 
-#: src/lang.c:3552
+#: src/lang.c:3559
 msgid ""
 "# Format string for thread level representation\n"
 "# Default: %n %m  [%L]  %T  %F\n"
@@ -9268,19 +9286,19 @@ msgstr ""
 "#   %T              帖子树（仅帖级）\n"
 "\n"
 
-#: src/lang.c:3570
+#: src/lang.c:3577
 msgid "Format string for display of dates"
 msgstr "用于显示日期的格式字串"
 
-#: src/lang.c:3571
+#: src/lang.c:3578
 msgid "# Format string for date representation\n"
 msgstr "# 用于日期表示的格式字串\n"
 
-#: src/lang.c:3581
+#: src/lang.c:3588
 msgid "Unicode normalization form"
 msgstr "万国码范式形式"
 
-#: src/lang.c:3582
+#: src/lang.c:3589
 #, fuzzy
 msgid ""
 "# Unicode normalization form\n"
@@ -9301,19 +9319,19 @@ msgstr ""
 "#   4 = NFD\n"
 "#   5 = NFKC_CF\n"
 
-#: src/lang.c:3596
+#: src/lang.c:3603
 msgid "Render BiDi"
 msgstr "呈现双向文本"
 
-#: src/lang.c:3597
+#: src/lang.c:3604
 msgid "# If ON, bi-directional text is rendered by tin\n"
 msgstr "# 如果打开就由 tin 呈现双向文本\n"
 
-#: src/lang.c:3604
+#: src/lang.c:3611
 msgid "Function for sorting articles"
 msgstr "用于排序文章的函数"
 
-#: src/lang.c:3605
+#: src/lang.c:3612
 msgid ""
 "# Function for sorting articles\n"
 "# Possible values are (the default is marked with *):\n"
@@ -9325,250 +9343,245 @@ msgstr ""
 "# * 0 = 快速排序\n"
 "#   1 = 堆积排序\n"
 
-#: src/lang.c:3618
+#: src/lang.c:3625
 msgid "Automatically GroupMarkUnselArtRead"
 msgstr "自动 GroupMarkUnselArtRead"
 
-#: src/lang.c:3624
+#: src/lang.c:3631
 msgid "Delete post-process files"
 msgstr "删除后续处理文件"
 
-#: src/lang.c:3629
+#: src/lang.c:3636
 msgid "Filename for all mailed articles, <CR> sets, no filename=do not save."
 msgstr "用于所有已邮寄文章的文件名，<CR> 设置，没有文件名=不保存。"
 
-#: src/lang.c:3630
+#: src/lang.c:3637
 msgid "Mailbox to save sent mails"
 msgstr "要保存已发送邮件的信箱"
 
-#: src/lang.c:3635
+#: src/lang.c:3642
 msgid "Set Followup-To: header to this group(s). <CR> sets, <ESC> cancels."
 msgstr "设置 Followup-To: 标头为这个群组。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3636
+#: src/lang.c:3643
 msgid "Followup-To: header"
 msgstr "Followup-To: 标头"
 
-#: src/lang.c:3641
+#: src/lang.c:3648
 msgid "Enter default mail address (and fullname). <CR> sets, <ESC> cancels."
 msgstr "输入缺省邮件地址 (附全名)。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3648
+#: src/lang.c:3655
 msgid ""
 "Path and options for ispell-like spell-checker. <CR> sets, <ESC> cancels."
 msgstr "作为类似 ispell 拼写检查器的路径和选项。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3649
+#: src/lang.c:3656
 msgid "Ispell program"
 msgstr "Ispell 程序"
 
-#: src/lang.c:3655
+#: src/lang.c:3662
 msgid "When group is a mailing list, send responses to this email address."
 msgstr "当群组是个邮递论坛时，发送回应到这个电子邮件地址。"
 
-#: src/lang.c:3656
+#: src/lang.c:3663
 msgid "Mailing list address"
 msgstr "邮递论坛地址"
 
-#: src/lang.c:3662
+#: src/lang.c:3669
 msgid "Forward articles as attachment"
 msgstr "作为附件以转发文章"
 
-#: src/lang.c:3667
+#: src/lang.c:3674
 msgid ""
 "A comma separated list of MIME major/minor Content-Types. <ESC> cancels."
 msgstr "逗号分隔的 MIME 主要/次要内容类型清单。<ESC> 取消。"
 
-#: src/lang.c:3668
+#: src/lang.c:3675
 msgid "Which MIME types will be saved"
 msgstr "将被保存的 MIME 类型"
 
-#: src/lang.c:3673
+#: src/lang.c:3680
 msgid "Value of the Organization: header. <CR> sets, <ESC> cancels."
 msgstr "Organization: 标头的值。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3674
+#: src/lang.c:3681
 msgid "Organization: header"
 msgstr "Organization: 标头"
 
-#: src/lang.c:3679
+#: src/lang.c:3686
 msgid "Filename for saved articles. <CR> sets, <ESC> cancels."
 msgstr "用于已保存文章的文件名。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3680
+#: src/lang.c:3687
 msgid "savefile"
 msgstr "保存文件"
 
-#: src/lang.c:3685 src/lang.c:3709
+#: src/lang.c:3692 src/lang.c:3716
 msgid "Scope for the filter rule. <CR> sets, <ESC> cancels."
 msgstr "用于筛选器规则的范围。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3686
+#: src/lang.c:3693
 msgid "Quick (1 key) select filter scope"
 msgstr "快速 (1 键) 选取筛选器范围"
 
-#: src/lang.c:3691 src/lang.c:3715
+#: src/lang.c:3698 src/lang.c:3722
 msgid "Header for filter rule. <CR> sets, <ESC> cancels."
 msgstr "用于筛选器规则的标头。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3692
+#: src/lang.c:3699
 msgid "Quick (1 key) select filter header"
 msgstr "快速 (1 键) 选取筛选器标头"
 
-#: src/lang.c:3697 src/lang.c:3721
+#: src/lang.c:3704 src/lang.c:3728
 msgid "ON = case sensitive, OFF = ignore case. <CR> sets, <ESC> cancels."
 msgstr "ON = 大小写相符，OFF = 忽略大小写。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3698
+#: src/lang.c:3705
 msgid "Quick (1 key) select filter case"
 msgstr "快速 (1 键) 选取筛选器大小写"
 
-#: src/lang.c:3703 src/lang.c:3727
+#: src/lang.c:3710 src/lang.c:3734
 msgid "ON = expire, OFF = don't ever expire. <CR> sets, <ESC> cancels."
 msgstr "ON = 过期，OFF = 不会过期。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3704
+#: src/lang.c:3711
 msgid "Quick (1 key) select filter expire"
 msgstr "快速 (1 键) 选取筛选器过期"
 
-#: src/lang.c:3710
+#: src/lang.c:3717
 msgid "Quick (1 key) kill filter scope"
 msgstr "快速 (1 键) 砍除筛选器范围"
 
-#: src/lang.c:3716
+#: src/lang.c:3723
 msgid "Quick (1 key) kill filter header"
 msgstr "快速 (1 键) 砍除筛选器标头"
 
-#: src/lang.c:3722
+#: src/lang.c:3729
 msgid "Quick (1 key) kill filter case"
 msgstr "快速 (1 键) 砍除筛选器大小写"
 
-#: src/lang.c:3728
+#: src/lang.c:3735
 msgid "Quick (1 key) kill filter expire"
 msgstr "快速 (1 键) 砍除筛选器过期"
 
-#: src/lang.c:3733
+#: src/lang.c:3740
 #, fuzzy
 msgid "Command line options to add. <CR> sets, <ESC> cancels."
 msgstr "Organization: 标头的值。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3734
+#: src/lang.c:3741
 msgid "CMD line options to add"
 msgstr ""
 
-#: src/lang.c:3739
+#: src/lang.c:3746
 #, fuzzy
 msgid ""
 "ON = cache NNTP overview files, OFF = don't cache. <CR> sets, <ESC> cancels."
 msgstr "ON = 大小写相符，OFF = 忽略大小写。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3740
+#: src/lang.c:3747
 #, fuzzy
 msgid "Cache overview files"
 msgstr "产生 NNTP 概述文件的本地缓存"
 
-#: src/lang.c:3746
+#: src/lang.c:3753
 #, fuzzy
 msgid ""
 "ON = compress cached files, OFF = don't compress. <CR> sets, <ESC> cancels."
 msgstr "ON = 过期，OFF = 不会过期。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3747
+#: src/lang.c:3754
 #, fuzzy
 msgid "Compress overview files"
 msgstr "产生 NNTP 概述文件的本地缓存"
 
-#: src/lang.c:3754
+#: src/lang.c:3761
 #, fuzzy
 msgid "Config Options"
 msgstr "颜色选项"
 
-#: src/lang.c:3759
+#: src/lang.c:3766
 #, fuzzy
 msgid "A comma separated list of NNTP commands. <CR> sets, <ESC> cancels."
 msgstr "逗号分隔的 MIME 主要/次要内容类型清单。<ESC> 取消。"
 
-#: src/lang.c:3760
+#: src/lang.c:3767
 msgid "Disabled NNTP commands"
-msgstr ""
-
-#: src/lang.c:3765
-#, fuzzy
-msgid "Number of pipelined NNTP commands to send. <CR> sets, <ESC> cancels."
-msgstr "输入格式字串。<CR> 设置，<ESC> 取消。"
-
-#: src/lang.c:3766
-msgid "NNTP pipeline limit"
 msgstr ""
 
 #: src/lang.c:3772
 #, fuzzy
+msgid "Number of pipelined NNTP commands to send. <CR> sets, <ESC> cancels."
+msgstr "输入格式字串。<CR> 设置，<ESC> 取消。"
+
+#: src/lang.c:3773
+msgid "NNTP pipeline limit"
+msgstr ""
+
+#: src/lang.c:3779
+#, fuzzy
 msgid "tinrc Override Options"
 msgstr "筛选选项"
 
-#: src/lang.c:3778
+#: src/lang.c:3785
 msgid "Assume this charset if no charset declaration is present, <CR> to set."
 msgstr "如果不存在任何字符集宣告就假设为这个字符集，<CR> 以设置。"
 
-#: src/lang.c:3779
+#: src/lang.c:3786
 msgid "UNDECLARED_CHARSET"
 msgstr "未宣告字符集"
 
-#: src/lang.c:3784
+#: src/lang.c:3791
 #, fuzzy
 msgid "Guess charset if no charset declaration is present, <CR> to set."
 msgstr "如果不存在任何字符集宣告就假设为这个字符集，<CR> 以设置。"
 
-#: src/lang.c:3785
+#: src/lang.c:3792
 #, fuzzy
 msgid "UNDECLARED_CS_GUESS"
 msgstr "未宣告字符集"
 
-#: src/lang.c:3792
+#: src/lang.c:3799
 msgid ""
 "Add this text at the start of the message body. <CR> sets, <ESC> cancels."
 msgstr "加入这个文本于消息内文的开始。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3793
+#: src/lang.c:3800
 msgid "X_Body"
 msgstr "X_Body"
 
-#: src/lang.c:3798
+#: src/lang.c:3805
 msgid "Insert this header when posting. <CR> sets, <ESC> cancels."
 msgstr "张贴时插入这个标头。<CR> 设置，<ESC> 取消。"
 
-#: src/lang.c:3799
+#: src/lang.c:3806
 msgid "X_Headers"
 msgstr "X_Headers"
 
-#: src/lang.c:3804
+#: src/lang.c:3811
 msgid ""
 "Automatically insert an X-Comment-To: header? <SPACE> toggles & <CR> sets."
 msgstr "自动插入 X-Comment-To: 标头？<SPACE> 切换 & <CR> 设置。"
 
-#: src/lang.c:3805
+#: src/lang.c:3812
 msgid "Insert 'X-Comment-To:' header"
 msgstr "插入‘X-Comment-To:’标头"
 
-#: src/lang.c:3811
+#: src/lang.c:3818
 #, fuzzy
 msgid "Enter name of file containing trusted CA certificates. <CR> sets."
 msgstr "输入被认为最近文章的日数。<CR> 设置。"
 
-#: src/lang.c:3812
+#: src/lang.c:3819
 #, fuzzy
 msgid "CA certificate file"
 msgstr "编辑筛选器文件"
 
-#: src/lang.c:3813
+#: src/lang.c:3820
 msgid ""
 "# name of file containing all trusted CA certificates (empty = system "
 "default)\n"
-msgstr ""
-
-#: src/nntplib.c:3156
-#, c-format
-msgid "DISABLED CMDS.: %s\n"
 msgstr ""
 
 #~ msgid "[- Unavailable -]"

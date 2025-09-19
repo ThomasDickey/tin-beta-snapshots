@@ -43,10 +43,6 @@ o  add version number to other config-files (e.g. tin.defaults)
 
 o  Add docs to explain how to create system-wide overviews
 
-o  performing a body_search after toggling show_only_unread_arts to
-   also show read arts the total and percentage is wrong, e.g.:
-   "Searching article 4700 of 2831 ('q' to abort)... 166%"
-
 o  iso2asc conversion is missing for 'internal' strings (e.g. 'M'enu)
    (eg. via _()/P_() beening a wrapper abround *gettext() with additional
     if (iso2asc_supported >= 0) process_charsets(..., FALSE))
@@ -107,6 +103,7 @@ o  with -T and an expired cert we could try to give more info then just
    "certificate has expired" and then quitting, e.g. "was valid till ... "
    or "not yet valid ..."  with the corresponding dates (and the current
    date); with -k we could emphasise the fact on connect.
+   (done for 'J' ConnectionInfo-page)
 
 o  with -T and hostname mismatch (OpenSSL: X509_V_ERR_HOSTNAME_MISMATCH)
    we could give more info than just "TLS handshake failed: hostname mismatch"
@@ -116,7 +113,8 @@ o  with -T and hostname mismatch (OpenSSL: X509_V_ERR_HOSTNAME_MISMATCH)
 o  add configure check and code for libdeflate
    <https://github.com/ebiggers/libdeflate> (if zlib can't be found).
 
-o  add possibility to dump the current key mapping to a file
+o  add possibility to dump the current key mapping to a file or even
+   add a keymap-menu to see and change the mapping from inside tin.
 
 o  make the group status flag (moderated, new, bogus, ...) configurable
    like the thread and article flag (select.c:build_gline(%f))
@@ -381,7 +379,7 @@ o  add new key which tags articles based on a prompted regex, could be used
 
 o  Additions to the page menu:
      key to toggle hideline_regex on/off (e.g. '{' or '}') as toggle-raw
-     may not help to show oriinal article (e.g. base64 encoded article).
+     may not help to show original article (e.g. base64 encoded article).
 
 o  Additions to the thread menu:
      ']'  (GLOBAL_QUICK_FILTER_KILL)
@@ -427,7 +425,6 @@ o  Add to the attachment menu ('V'):
      'x'  repost current attachment to another group
      '%'  (toggle rot13 encoding of screen content)
      'M'  (GLOBAL_OPTION_MENU)
-     'J'  (GLOBAL_CONNECTION_INFO)
      '&'  (GLOBAL_TOGGLE_COLOR)
      'I'  (GLOBAL_TOGGLE_INVERSE_VIDEO)
      '\'' (PAGE_ARTICLE_INFO) (the key would then be miss-named, but 'V'
@@ -443,7 +440,6 @@ o  Add to the URL Menu ('U'):
 
 o  Add to the Options Menu ('M'):
      'I'  (GLOBAL_TOGGLE_INVERSE_VIDEO)
-     'J'  (GLOBAL_CONNECTION_INFO)
 
 o  integrate multi-part tagging with regular tagging, eg.
    "This article appears to have multi-parts, try and find them (y/n)?"

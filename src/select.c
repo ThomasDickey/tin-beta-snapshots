@@ -570,7 +570,7 @@ selection_page(
 							free(new_list);
 						}
 						if (!*buf) {
-							error_message(3, "%s%s", P_(txt_error_no_valid_newsgroup_sp[0], txt_error_no_valid_newsgroup_sp[1], n), list_active ? "" :  _(txt_error_retry_without_n));
+							error_message(3, "%s%s", P_(txt_error_no_valid_newsgroup_sp[0], txt_error_no_valid_newsgroup_sp[1], n), list_active ? "" : _(txt_error_retry_without_n));
 							break;
 						}
 					}
@@ -1518,7 +1518,7 @@ toggle_my_groups(
 	if ((fp = tin_fopen(newsrc, "r")) == NULL)
 		return;
 
-	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		if ((ptr = strchr(buf, SUBSCRIBED)) != NULL) {
 			*ptr = '\0';
 

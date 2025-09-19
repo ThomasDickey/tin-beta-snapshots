@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2025-07-25
+ *  Updated   : 2025-08-19
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2025 Michael Bienia <michael@vorlon.ping.de>
@@ -1219,6 +1219,11 @@ config_page(
 					show_help_page(SERVERRC_LEVEL, _(txt_serverrc_menu_com));
 				else
 					show_help_page(CONFIG_LEVEL, _(txt_options_menu_com));
+				redraw_screen(option);
+				break;
+
+			case GLOBAL_CONNECTION_INFO:
+				show_connection_page();
 				redraw_screen(option);
 				break;
 

@@ -97,7 +97,7 @@ get_domain_name(
 	if (domain[0] == '/' && domain[1]) {
 		/* read domainname from specified file */
 		if ((fp = tin_fopen(domain, "r")) != NULL) {
-			while (fgets(buff, (int) sizeof(buff), fp) != NULL) {
+			while (fgets(buff, sizeof(buff), fp) != NULL) {
 				if (buff[0] == '#' || buff[0] == '\n')
 					continue;
 

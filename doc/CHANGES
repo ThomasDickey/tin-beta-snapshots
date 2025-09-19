@@ -1,4 +1,4 @@
--- 2.6.5 release 20250730 "" --
+-- 2.6.5 release 20250919 "" --
 
  029) Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>
       ADD. Romanian translation
@@ -28,6 +28,8 @@
            and failed for some combinations
       BUG. possible memleaks
       BUG. layout issue with multibyte chars on posting history screen
+      BUG. IGNORE_ART() macro didn't honor kill_level == KILL_THREAD
+      BUG. possible buffer overflow with -C
       FIX. art.c, attrib.c, charset.c, color.c, config.c, cook.c, curses.c
            feed.c, filter.c, global.c, group.c, header.c, help.c, init.c
            keymap.c, lang.c, main.c, makecfg.c, memory.c, misc.c, nntplib.c
@@ -55,6 +57,7 @@
       ADD. hash Path in overview-data
       ADD. Xref- and Path-filter to filter-menu
       ADD. ToggleInfoLastLine ('i') to OptionMenu ('M')
+      Add. ConnectionInfo ('J') to OptionMenu ('M') and PageViewAttach ('V')
       ADD. configure check for getsockopt(), setsockopt(), posix_close(),
            realpath(), lstat(), sig_atomic_t, volatile
       ADD. set TCP_USER_TIMEOUT or TCP_CONNECTIONTIMEOUT and
@@ -89,6 +92,9 @@
            lookups via NNTP
       ADD. lookup "DISTRIB.PATS" and use as default for Distribution
       ADD. lookup "DISTRIBUTIONS" descriptions and display if available
+      ADD. evaluate To/Cc/Bcc in mailing_list-groups (debian bug #250317)
+      ADD. cache connectioninfo and help pages during session once created
+      BUG. do not validated news_regex URIs with libcurl/liburiparser
       BUG. in NO_LOCALE config get_author() could write outside the
            allocated screen-memory
       BUG. positive getart_limit had several bugs

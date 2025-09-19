@@ -28,6 +28,8 @@ the \fB\%tin\fP(1)  newsreader. All files are expected to have unix style
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.article[.$$]
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.cancel[.$$]
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.letter[.$$]
+.\" ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/.help-*
+.\" ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/.coninfo
 .\" ${XDG_RUNTIME_DIR:\-"$HOME"}/.slrnfaces
 .\" $PWD/trace[.out]   (--with-trace)
 .\" $TMPDIR/NNTP       (-D 1)
@@ -1304,13 +1306,13 @@ support pipelining. Default is 50. Allowed maximum is 256.
 \fBcache_overview_files\fP
 Identical to the tinrc variable of the same name but overrides it.  Be aware
 the the serverrc variable will not be promoted to the tinrc, but the tinrc
-variable will be promoted to the serverc if changed in the \fBOptionMenu\fP
+variable will be promoted to the serverrc if changed in the \fBOptionMenu\fP
 ('\fBM\fP').
 .TP 
 \fBcompress_overview_files\fP
 Identical to the tinrc variable of the same name but overrides it.  Be aware
 the the serverrc variable will not be promoted to the tinrc, but the tinrc
-variable will be promoted to the serverc if changed in the \fBOptionMenu\fP
+variable will be promoted to the serverrc if changed in the \fBOptionMenu\fP
 ('\fBM\fP').
 .TP 
 \fBmotd_hash\fP

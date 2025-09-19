@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2025-07-31
+ *  Updated   : 2025-08-29
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -137,8 +137,8 @@ char *nntp_server = NULL;
 #	ifdef USE_ZLIB
 		z_streamp z_wr;
 		z_streamp z_rd;
-		unsigned char* z_wr_buf;
-		unsigned char* z_rd_buf;
+		unsigned char *z_wr_buf;
+		unsigned char *z_rd_buf;
 #	endif /* USE_ZLIB */
 		void *tls_ctx;
 };
@@ -158,8 +158,8 @@ char *nntp_server = NULL;
 		static void enable_deflate(struct nntpbuf *nntpbuf);
 #	endif /* USE_ZLIB */
 	static int nntpbuf_refill(struct nntpbuf *buf);
-	static int nntpbuf_flush(struct nntpbuf* buf);
-	static int nntpbuf_puts(const char* data, struct nntpbuf* buf);
+	static int nntpbuf_flush(struct nntpbuf *buf);
+	static int nntpbuf_puts(const char *data, struct nntpbuf *buf);
 	static int nntpbuf_getc(struct nntpbuf *buf);
 	static int nntpbuf_ungetc(int c, struct nntpbuf *buf);
 	static char *nntpbuf_gets(char *s, int size, struct nntpbuf *buf);
@@ -311,7 +311,7 @@ getserverbyfile(
 		return NULL;
 
 	if ((fp = tin_fopen(file, "r")) != NULL) {
-		while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
+		while (fgets(buf, sizeof(buf), fp) != NULL) {
 			if (*buf == '\n' || *buf == '#')
 				continue;
 
@@ -2505,10 +2505,11 @@ add_distrib_pat(
 	char *dist,
 	char *desc)
 {
-	t_distrib_pat *p, *temp = my_malloc(sizeof *temp);
+	t_distrib_pat *p, *temp;
 
 	assert(((void) "add_distrib_pat() failed. dist == NULL", dist != NULL));
 
+	temp = my_malloc(sizeof *temp);
 	temp->weight = weight;
 	temp->pattern = pat ? my_strdup(pat) : NULL;
 	temp->distribution = my_strdup(dist);
@@ -2648,6 +2649,7 @@ deflate_free(
 
 static z_streamp
 z_stream_init(
+	unsigned char *io_buf,
 	t_bool is_deflate)
 {
 	int result;
@@ -2655,11 +2657,17 @@ z_stream_init(
 	z_streamp strm = my_calloc(1, sizeof(z_stream));
 	strm->zalloc = deflate_alloc;
 	strm->zfree = deflate_free;
+	strm->opaque = NULL;
 
-	if (is_deflate)
+	if (is_deflate) {
+		strm->next_out = io_buf;
+		strm->avail_out = DEFLATE_BUFSZ;
 		result = deflateInit2(strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY);
-	else
+	} else {
+		strm->next_in = io_buf;
+		strm->avail_in = 0;
 		result = inflateInit2(strm, -15);
+	}
 
 	if (result != Z_OK) {
 		if (is_deflate)
@@ -2675,26 +2683,20 @@ z_stream_init(
 
 static void
 enable_deflate(
-	struct nntpbuf* nntpbuf)
+	struct nntpbuf *nntpbuf)
 {
 	char buf[NNTP_STRLEN];
 
 	if (nntpbuf->z_rd || nntpbuf->z_wr)
 		return;
 
-	nntpbuf->z_rd = z_stream_init(FALSE);
-	nntpbuf->z_wr = z_stream_init(TRUE);
+	nntpbuf->z_rd_buf = my_malloc(DEFLATE_BUFSZ);
+	nntpbuf->z_wr_buf = my_malloc(DEFLATE_BUFSZ);
+	nntpbuf->z_rd = z_stream_init(nntpbuf->z_rd_buf, FALSE);
+	nntpbuf->z_wr = z_stream_init(nntpbuf->z_wr_buf, TRUE);
 
 	if (nntpbuf->z_rd == NULL || nntpbuf->z_wr == NULL)
 		goto error_out;
-
-	nntpbuf->z_rd_buf = my_malloc(DEFLATE_BUFSZ);
-	nntpbuf->z_rd->next_in = nntpbuf->z_rd_buf;
-	nntpbuf->z_rd->avail_in = 0;
-
-	nntpbuf->z_wr_buf = my_malloc(DEFLATE_BUFSZ);
-	nntpbuf->z_wr->next_out = nntpbuf->z_wr_buf;
-	nntpbuf->z_wr->avail_out = DEFLATE_BUFSZ;
 
 	buf[0] = '\0';
 	switch (new_nntp_command("COMPRESS DEFLATE", OK_COMPRESS, buf, sizeof(buf))) {
@@ -2718,7 +2720,7 @@ error_out:
 
 static ssize_t
 nntpbuf_deflate_write(
-	struct nntpbuf* buf)
+	struct nntpbuf *buf)
 {
 	ssize_t bytes_written = 0, bwritten;
 	t_bool deflate_again = TRUE;
@@ -2746,6 +2748,8 @@ nntpbuf_deflate_write(
 			bytes_written += bwritten;
 		}
 	}
+
+	buf->z_wr->next_out = buf->z_wr_buf;
 	buf->wr.lb = buf->wr.ub;
 
 	return bytes_written;
@@ -2754,7 +2758,7 @@ nntpbuf_deflate_write(
 
 static ssize_t
 nntpbuf_inflate(
-	struct nntpbuf* buf)
+	struct nntpbuf *buf)
 {
 	int result = inflate(buf->z_rd, Z_NO_FLUSH);
 
@@ -2771,7 +2775,7 @@ nntpbuf_inflate(
 
 static ssize_t
 nntpbuf_inflate_read(
-	struct nntpbuf* buf)
+	struct nntpbuf *buf)
 {
 	ssize_t bytes_read;
 	ssize_t bread;
@@ -2807,7 +2811,7 @@ nntpbuf_inflate_read(
  */
 static int
 nntpbuf_flush(
-	struct nntpbuf* buf)
+	struct nntpbuf *buf)
 {
 	if (!buf)
 		return EOF;
@@ -2839,8 +2843,8 @@ nntpbuf_flush(
  */
 static int
 nntpbuf_puts(
-	const char* data,
-	struct nntpbuf* buf)
+	const char *data,
+	struct nntpbuf *buf)
 {
 	int bytes_written = 0, retval;
 	size_t len, l;
@@ -3153,7 +3157,7 @@ nntp_conninfo(
 	}
 
 	if (*serverrc.disabled_nntp_cmds)
-		fprintf(stream, _("DISABLED CMDS.: %s\n"), serverrc.disabled_nntp_cmds); /* -> lang.c */
+		fprintf(stream, _(txt_disabled_cmds), serverrc.disabled_nntp_cmds);
 
 	{
 		char *motd;

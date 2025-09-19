@@ -173,7 +173,7 @@ get_newsrcname(
 			sprintf(nsp, "%s:%u", nntpserver_name, nntp_tcp_port);
 		}
 
-		while ((fgets(line, (int) sizeof(line), fp) != NULL) && (found != 1)) {
+		while ((fgets(line, sizeof(line), fp) != NULL) && (found != 1)) {
 			if (strchr("# ;", line[0])) /* comment? */
 				continue;
 

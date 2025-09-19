@@ -390,15 +390,15 @@ generate_ptr(
 	int after;
 
 	switch (mode) {
-	case 0:
-		fprintf(ofp, "\n%s %s_list[] = %c\n", ptr_type, opt_type, L_CURL);
-		break;
-	case 1:
-		fprintf(ofp, "\ntypedef OTYP %c\n", L_CURL);
-		break;
-	case 2:
-		fprintf(ofp, "\n");
-		break;
+		case 0:
+			fprintf(ofp, "\n%s %s_list[] = %c\n", ptr_type, opt_type, L_CURL);
+			break;
+		case 1:
+			fprintf(ofp, "\ntypedef OTYP %c\n", L_CURL);
+			break;
+		case 2:
+			fprintf(ofp, "\n");
+			break;
 	}
 	after = FALSE;
 
@@ -421,41 +421,41 @@ generate_ptr(
 				after = TRUE;
 			}
 			switch (mode) {
-			case 0:
-				fprintf(ofp, "\t&tinrc.%s,%*s/* %2d: %s__ */\n",
-					p->name,
-					MAXNAME - (int) (1 + strlen(p->name)),
-					" ",
-					index_of(p),
-					p->name);
-				break;
-			case 1:
-				fprintf(ofp, "\tOVAL(oinx_%.*s, %s__)\n",
-					MAXTYPE, opt_type,
-					p->name);
-				break;
-			case 2:
-				fprintf(ofp, "#define OINX_%-*.*s OINX(oinx_%.*s, %s__)\n",
-					MAXNAME, MAXNAME,
-					p->name,
-					MAXTYPE, opt_type,
-					p->name);
-				break;
+				case 0:
+					fprintf(ofp, "\t&tinrc.%s,%*s/* %2d: %s__ */\n",
+						p->name,
+						MAXNAME - (int) (1 + strlen(p->name)),
+						" ",
+						index_of(p),
+						p->name);
+					break;
+				case 1:
+					fprintf(ofp, "\tOVAL(oinx_%.*s, %s__)\n",
+						MAXTYPE, opt_type,
+						p->name);
+					break;
+				case 2:
+					fprintf(ofp, "#define OINX_%-*.*s OINX(oinx_%.*s, %s__)\n",
+						MAXNAME, MAXNAME,
+						p->name,
+						MAXTYPE, opt_type,
+						p->name);
+					break;
 			}
 		}
 	}
 
 	switch (mode) {
-	case 0:
-		fprintf(ofp, "%c;\n", R_CURL);
-		break;
-	case 1:
-		fprintf(ofp, "\tOVAL(oinx_%.*s, s_MAX)\n", MAXTYPE, opt_type);
-		fprintf(ofp, "\tOEND(oinx_%.*s, Q1)\n", MAXTYPE, opt_type);
-		fprintf(ofp, "%c oinx_%.*s;\n", R_CURL, MAXTYPE, opt_type);
-		break;
-	case 2:
-		break;
+		case 0:
+			fprintf(ofp, "%c;\n", R_CURL);
+			break;
+		case 1:
+			fprintf(ofp, "\tOVAL(oinx_%.*s, s_MAX)\n", MAXTYPE, opt_type);
+			fprintf(ofp, "\tOEND(oinx_%.*s, Q1)\n", MAXTYPE, opt_type);
+			fprintf(ofp, "%c oinx_%.*s;\n", R_CURL, MAXTYPE, opt_type);
+			break;
+		case 2:
+			break;
 	}
 }
 

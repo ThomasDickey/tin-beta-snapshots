@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-06-17
+ *  Updated   : 2025-08-20
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -50,7 +50,7 @@
 
 int mark_offset = 0;
 
-static FILE* msglog = NULL;
+static FILE *msglog = NULL;
 
 #ifndef USE_CURSES
 	struct t_screen *screen;
@@ -774,14 +774,11 @@ open_msglog(
 	void)
 {
 	char logfile[PATH_LEN];
-	char serverdir[PATH_LEN];
 
 	if (msglog != NULL)
 		return;
 
-	snprintf(logfile, sizeof(logfile), "%s", nntp_server);
-	joinpath(serverdir, sizeof(serverdir), rcdir, logfile);
-	joinpath(logfile, sizeof(logfile), serverdir, "msglog");
+	joinpath(logfile, sizeof(logfile), serverdir, MSGLOG_FILE);
 
 	if ((msglog = fopen(logfile, "w")) != NULL) {
 #ifdef HAVE_FCHMOD

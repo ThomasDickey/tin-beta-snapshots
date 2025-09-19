@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2025-06-09
+dnl Updated   : 2025-08-11
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2024 Thomas E. Dickey <dickey@invisible-island.net>
@@ -1537,6 +1537,7 @@ AC_CHECK_FUNCS(\
 	mkdir \
 	mkfifo \
 	mktemp \
+	mktime \
 	mkstemp \
 	nl_langinfo \
 	poll \

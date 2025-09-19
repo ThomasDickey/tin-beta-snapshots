@@ -39,6 +39,7 @@
 #       - add pid to pgptmpf to allow multiple simultaneous instances
 #       - check for /etc/nntpserver (and /etc/news/server)
 #       - add $PGPOPTS, $PGPPATH and $GNUPGHOME support
+#       - add $AUTHORCOPY (pnews(1)) support?
 #       - cleanup and remove duplicated code
 #       - quote inpupt properly before passing to shell
 #       - $ENV{'NEWSHOST'} / $ENV{'NNTPSERVER'} and $ENV{'NNTPPORT'}
@@ -71,7 +72,7 @@ use strict;
 use warnings;
 
 # version Number
-my $version = "1.1.70";
+my $version = "1.1.71";
 
 my %config;
 
@@ -473,7 +474,7 @@ if (!$config{'nntp-pass'}) {
 		close($NEWSAUTH);
 		if ($pass && $server =~ m/\Q$config{'nntp-server'}\E/) {
 			$config{'nntp-pass'} = $pass;
-			$config{'nntp-user'} = $user || getlogin || getpwuid($<) || $ENV{USER};
+			$config{'nntp-user'} = $user || getlogin || getpwuid($<) || $ENV{USER} || $ENV{LOGNAME};
 		} else {
 			$pass = $user = "";
 		}
@@ -491,7 +492,7 @@ if (!$config{'nntp-pass'}) {
 			close($NNTPAUTH);
 			if ($pass && $server =~ m/\Q$config{'nntp-server'}\E/) {
 				$config{'nntp-pass'} = $pass;
-				$config{'nntp-user'} = $user || getlogin || getpwuid($<) || $ENV{USER};
+				$config{'nntp-user'} = $user || getlogin || getpwuid($<) || $ENV{USER} || $ENV{LOGNAME};
 			}
 		}
 	}

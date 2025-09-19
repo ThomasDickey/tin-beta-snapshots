@@ -28,6 +28,8 @@ Zeilenenden (»\(rsn« aka LF) haben.
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.article[.$$]
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.cancel[.$$]
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.letter[.$$]
+.\" ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/.help-*
+.\" ${TIN_HOMEDIR:\-"$HOME"}/.tin/$NNTPSERVER/.coninfo
 .\" ${XDG_RUNTIME_DIR:\-"$HOME"}/.slrnfaces
 .\" $PWD/trace[.out]   (--with-trace)
 .\" $TMPDIR/NNTP       (-D 1)
@@ -88,7 +90,7 @@ werden. Wenn das Feld »%s« enthält, werden diese beiden Zeichen durch den
 Namen der Datei ersetzt, die den Text der Nachricht enthält. Wenn es »%t«
 enthält, werden diese beiden Zeichen durch das Feld Inhaltstyp ersetzt,
 einschließlich des Subtyps, falls vorhanden. Wenn es »%{« gefolgt von einem
-Parameternamen und einem schließenden »}« enhält, dann werden alle diese
+Parameternamen und einem schließenden »}« enthält, dann werden alle diese
 Zeichen durch den Wert des genannten Parameters aus dem
 »Content\-Typ:«\-Header ersetzt, falls vorhanden. Wenn das Feld »\(rs%«
 enthält, werden diese zwei Zeichen durch ein einzelnes »%«\-Zeichen ersetzt.
@@ -181,10 +183,10 @@ environments where filename extensions are meaningful, e.g., one could
 specify that a GIF file being passed to a gif viewer should have a name
 ending in ".gif" by using "nametemplate=%s.gif".
 .PP
-Aktuell untersützt \fB\%tin\fP(1) nur die »test«\-, »description«\- und
+Aktuell unterstützt \fB\%tin\fP(1) nur die »test«\-, »description«\- und
 »nametemplate«\-Felder sowie teilweise das »needsterminal«\-Feld, alle
-Weiteren werden ingoriert. Außerdem wird die Auswertung von »%F« und »%n«
-bisher nicht untersützt.
+Weiteren werden ignoriert. Außerdem wird die Auswertung von »%F« und »%n«
+bisher nicht unterstützt.
 .TP 
 Beispiel:
 .RS
@@ -459,7 +461,7 @@ Falls auf »ON« gesetzt werden gespeicherte Artikel, die nachbearbeitet
 wurden, automatisch gelöscht, andernfalls wird der Benutzer gefragt, ob die
 nachbearbeiteten Dateien gelöscht werden sollen. Die automatische
 Verarbeitung markierter Artikel mit \fBGroupAutoSave\fP ('\fBS\fP') unterdrückt
-die Nachfarge.
+die Nachfrage.
 .TP 
 \fBeditor_format\fP
 Identisch mit der tinrc\-Variable gleichen Namens
@@ -644,7 +646,7 @@ Fügt Header »X\-Comment\-To:« ein, dies ist nur in FIDO\-Gruppen nützlich.
 .TP 
 \fBx_headers\fP
 Eine Zeichenkette, die den Header\-Namen und den Inhalt des Headers enthält,
-der beim Posten automatisch hinzugefügt wird.Wenn dieser String mit einem
+der beim Posten automatisch hinzugefügt wird. Wenn dieser String mit einem
 »/« oder »~« beginnt, wird davon ausgegangen, dass es sich um den Namen
 einer Datei handelt, die den einzufügenden Text enthält. Wenn der String mit
 einem »!« beginnt, wird angenommen, dass das Folgende der Pfad zu einem
@@ -763,12 +765,14 @@ alle einzeln angewendet und nicht nur, wenn sie gleichzeitig zutreffen
 (logisches ODER, nicht UND).
 .TP 
 \fBcomment\fP
-Every entry (rule) in the filter file might get a comment. Multiple lines
-are allowed (but only for comments yet). Every line must start with the
-"comment=" keyword. Comments must appear first in the rule.  Comment lines
-placed within a rule will be moved to the begin of the next rule. This might
-be changed in the future. Don't use '#' to mark comments as those lines are
-ignored and your comments will get lost on the next write of the file.
+Jeder Eintrag (Regel) in der Filterdatei kann mit einem Kommentar versehen
+werden. Hier sind mehrere Zeilen sind erlaubt (aber bisher nur für
+Kommentare). Jede dieser Zeilen muss mit dem Schlüsselwort »comment=«
+beginnen. Kommentare müssen am Anfang der Regel stehen. Kommentarzeilen
+innerhalb einer Regel werden an den Anfang der nächsten Regel
+verschoben. Dies könnte sich in Zukunft ändern. Kein »#« verwenden um
+Kommentare zu markieren, da diese Zeilen ignoriert werden und Ihre
+Kommentare beim nächsten Schreiben der Datei verloren gehen.
 .TP 
 \fBgroup\fP
 Eine durch Komma getrennte Liste von Newsgroup\-Mustern im Wildmat\-Stil, auf
@@ -1306,7 +1310,7 @@ beschränkt auf »\fB\-4\fP«, »\fB\-6\fP«, »\fB\-A\fP«, »\fB\-C\fP«, »\f
 .TP 
 \fBdisabled_nntp_cmds\fP
 Eine durch Kommas getrennte Liste von NNTP\-Befehlen, die vermieden werden
-sollen. Kann verwendet werden, um Probleme mit fehlerhaften Serveren zu
+sollen. Kann verwendet werden, um Probleme mit fehlerhaften Servern zu
 umgehen und sollte normalerweise leer gelassen werden. Das Deaktivieren von
 »XHDR« deaktiviert auch »HDR« und umgekehrt. Die folgenden Befehle können
 deaktiviert werden:
@@ -1341,13 +1345,13 @@ Pipelining nicht unterstützt. Standard ist 50. Zulässiges Maximum ist 256.
 \fBcache_overview_files\fP
 Identisch mit der tinrc\-Variable gleichen Namens, übersteuert diese. Bitte
 beachten, dass die serverrc\-Variable nicht in die tinrc\-Variable übernommen
-wird, die tinrc\-Variable aber auch die serverc\-Variable setzt sofern diese
+wird, die tinrc\-Variable aber auch die serverrc\-Variable setzt sofern diese
 im \fBOptionMenu\fP ('\fBM\fP') (und nur da) geändert wird.
 .TP 
 \fBcompress_overview_files\fP
 Identisch mit der tinrc\-Variable gleichen Namens, übersteuert diese. Bitte
 beachten, dass die serverrc\-Variable nicht in die tinrc\-Variable übernommen
-wird, die tinrc\-Variable aber auch die serverc\-Variable setzt sofern diese
+wird, die tinrc\-Variable aber auch die serverrc\-Variable setzt sofern diese
 im \fBOptionMenu\fP ('\fBM\fP') (und nur da) geändert wird.
 .TP 
 \fBmotd_hash\fP
@@ -1848,7 +1852,7 @@ des letzten fehlgeschlagenen Beitrags in
 \fI${TIN_HOMEDIR:\-"$HOME"}/dead.article\fP. Die Voreinstellung ist »ON«.
 .TP 
 \fBkeep_expired_filters\fP
-Falls »ON« werden abgelaufene Filterregeln behlaten aber nicht mehr
+Falls »ON« werden abgelaufene Filterregeln behalten aber nicht mehr
 angewendet. Die Voreinstellung ist »OFF«.
 .TP 
 \fBkill_level\fP
@@ -2224,7 +2228,7 @@ Wenn die Punktzahl eines Artikels über oder gleich diesem Wert liegt, wird
 der Artikel als heiß (hot) markiert.
 .TP 
 \fBscore_kill\fP
-Punktzahl eines Artikels, der gekillet werden soll, dies muss <=
+Punktzahl eines Artikels, der gekillt werden soll, dies muss <=
 \fBscore_limit_kill\fP sein.
 .TP 
 \fBscore_select\fP
@@ -2275,7 +2279,7 @@ Voreinstellung ist »2«, der vollständige Name des Autors.
 .IP 0 3
 \fBNichts\fP, nur die »Subject:« Zeile wird angezeigt.
 .IP 1
-\fBAddresse\fP, »Subject:«\-Zeile & die Adresse aus der »From:«\-Zeile wird
+\fBAdresse\fP, »Subject:«\-Zeile & die Adresse aus der »From:«\-Zeile wird
 angezeigt.
 .IP 2
 \fBVoller Name\fP, »Subject:«\-Zeile & der Name aus der »From:«\-Zeile wird
@@ -2432,7 +2436,7 @@ es Ihnen, diese nach Belieben zu entfernen. Die Voreinstellung ist »0«
 (Immer Behalten).
 .TP 
 \fBstrip_newsrc\fP
-Falls »ON« werden nicht abonierte Gruppen dauerhaft aus Ihrer
+Falls »ON« werden nicht abonnierte Gruppen dauerhaft aus Ihrer
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-Datei entfernt. Die Voreinstellung ist
 »OFF«.
 .TP 

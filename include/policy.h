@@ -3,7 +3,7 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2025-05-19
+ *  Updated   : 2025-08-27
  *  Notes     : #defines and static data for policy configuration
  *
  * Copyright (c) 1999-2025 Ralf Doeblitz <doeblitz@gmx.de>
@@ -1202,7 +1202,6 @@ static const char *gnksa_domain_list[] = {
 	"pictures",
 	"plumbing",
 	"property",
-	"redstone",
 	"reliance",
 	"saarland",
 	"samsclub",

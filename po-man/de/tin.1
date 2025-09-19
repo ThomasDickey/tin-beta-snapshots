@@ -2,7 +2,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2025-07-29
+.\" Updated   : 2025-08-26
 .\" Notes     : use American English; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -427,8 +427,8 @@ die Anzahl der gelesenen heißen Artikel (falls vorhanden;
 (\fBart_marked_killed\fP). D.h.:
 .PP
 .nf
-.\" FIXME - make this autocenter
-            alt.sources (5B \-50/23+ 0* 3o 0K)
+.ce
+alt.sources (5B \-50/23+ 0* 3o 0K)
 .fi
 .PP
 Die Zeichen nach den Zahlen hängen von der Konfiguration ab und davon, ob
@@ -449,7 +449,8 @@ wird er mit \fBart_marked_selected\fP vor der Gesamtzahl der Artikel im Thread
 markiert. Die Anzeige kann über \fBgroup_format\fP angepasst werden.
 .PP
 .nf
-\f(CR                de.admin.net\-abuse.announce (11B 13+ 1* 1o 0K) M\fR
+.ce
+\f(CRde.admin.net\-abuse.announce (11B 13+ 1* 1o 0K) M\fR
 
 \f(CR\(->   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg <l
      2   +       69 EMP/ECP gecancelt. xynx. BI= 10  Henning Weede <hwee
@@ -1660,7 +1661,7 @@ Das Optionen\-Menü bietet Zugriff auf das Attributs\-Menü der aktuellen Gruppe
 über den \fBConfigToggleAttrib\fP ('\fB<TAB>\fP') Befehl. Ein weiteres
 Drücken von \fBConfigToggleAttrib\fP wechselt zurück zum Optionen\-Menü. Für
 weitere Informationen siehe den Abschnitt »ATTRIBUTE UND GRUPPENATTRIBUTE
-MENÜ«
+MENÜ«.
 .PP
 Der Befehl \fBConfigScopeMenu\fP ('\fBS\fP') ruft das Gültigkeitsbereichsmenü
 auf. Weitere Informationen finden Sie im Abschnitt
@@ -2147,7 +2148,7 @@ des letzten fehlgeschlagenen Beitrags in
 \fI${TIN_HOMEDIR:\-"$HOME"}/dead.article\fP. Die Voreinstellung ist »ON«.
 .TP 
 \fBAbgelaufene Filterregeln behalten (keep_expired_filters)\fP
-Falls »ON« werden abgelaufene Filterregeln behlaten aber nicht mehr
+Falls »ON« werden abgelaufene Filterregeln behalten aber nicht mehr
 angewendet. Die Voreinstellung ist »OFF«.
 .TP 
 \fBFilter (kill) anwenden auf (kill_level)\fP
@@ -2522,7 +2523,7 @@ Wenn die Punktzahl eines Artikels über oder gleich diesem Wert liegt, wird
 der Artikel als heiß (hot) markiert.
 .TP 
 \fBBewertung für gekillte Artikel (score_kill)\fP
-Punktzahl eines Artikels, der gekillet werden soll, dies muss <=
+Punktzahl eines Artikels, der gekillt werden soll, dies muss <=
 \fBscore_limit_kill\fP sein.
 .TP 
 \fBBewertung für wichtige Artikel (score_select)\fP
@@ -2552,7 +2553,7 @@ Voreinstellung ist »2«, der vollständige Name des Autors.
 .IP 0 3
 \fBNichts\fP, nur die »Subject:« Zeile wird angezeigt.
 .IP 1
-\fBAddresse\fP, »Subject:«\-Zeile & die Adresse aus der »From:«\-Zeile wird
+\fBAdresse\fP, »Subject:«\-Zeile & die Adresse aus der »From:«\-Zeile wird
 angezeigt.
 .IP 2
 \fBVoller Name\fP, »Subject:«\-Zeile & der Name aus der »From:«\-Zeile wird
@@ -2718,7 +2719,7 @@ es Ihnen, diese nach Belieben zu entfernen. Die Voreinstellung ist »0«
 (Immer Behalten).
 .TP 
 \fBNur abonnierte Gruppen in newsrc (strip_newsrc)\fP
-Falls »ON« werden nicht abonierte Gruppen dauerhaft aus Ihrer
+Falls »ON« werden nicht abonnierte Gruppen dauerhaft aus Ihrer
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-Datei entfernt. Die Voreinstellung ist
 »OFF«.
 .TP 
@@ -2750,11 +2751,12 @@ Standardeinstellung ist »OFF«. Dieses Verhalten kann auch im Artikel\-Viewer
 über \fBPageToggleTex2iso\fP ('\fB"\fP') umgeschaltet werden.
 .TP 
 \fBThreade Artikel anhand (thread_articles)\fP
-Defines which threading method to use. It's possible to set the threading
-type on a per group basis by setting the group attribute variable
-\fBthread_arts\fP to 0 \(en 4 in the file
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fP. (See also "GROUP ATTRIBUTES".)
-The default is Both Subject and References.  The choices are:
+Definiert, welche Threading\-Methode verwendet werden soll. Es ist möglich,
+den Threading\-Typ pro Gruppe festzulegen, indem die Gruppenattributvariable
+\fBthread_arts\fP auf 0 \en 4 in der Datei
+\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fP gesetzt wird. (Siehe auch den
+Abschnitt »ATTRIBUTE UND GRUPPENATTRIBUTE MENÜ«.) Der Standardwert ist
+Subject und References. Die Möglichkeiten sind:
 .RS +.5i
 .IP 0 3
 \fBNichts\fP, keinen Diskussionsfaden aufbauen.
@@ -2966,19 +2968,21 @@ Format ist das gleiche wie für \fBnews_quote_format\fP, dies wird verwendet,
 wenn auf ein Crossposting in mehrere Gruppen geantwortet wird, ohne dass ein
 »Followup\-To:« angegeben ist.
 .SS "ATTRIBUTE UND GRUPPENATTRIBUTE MENÜ"
-\fBtin\fP allows certain attributes to be set on a per group basis. If it
-exists, the global attributes file, \fI${TIN_LIBDIR:\-NEWSLIBDIR}/attributes\fP
-is read. After that, the user's own attributes file
-\fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fP is read.  The global attributes
-file is useful for distributing system\-wide defaults to new users who have
-no private attributes file yet.
+\fBtin\fP ermöglicht das Festlegen bestimmter Attribute auf Gruppenbasis. Falls
+vorhanden, wird die globale Attributdatei
+\fI${TIN_LIBDIR:\-NEWSLIBDIR}/attributes\fP gelesen. Anschließend wird die
+benutzereigene Attributdatei \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fP
+gelesen. Die globale Attributdatei ist nützlich, um systemweite
+Standardeinstellungen an neue Benutzer zu verteilen, die noch keine private
+Attributdatei haben.
 .PP
-Note that the \fIscope=<grouplist>\fP line has to be specified before
-the attributes are specified for that list. All attributes are set to a
-reasonable default so you only have to specify the attribute that you want
-to change (e.g., \fBsavedir\fP). All toggle attributes are set by specifying
-ON/OFF. Otherwise, these function exactly the same as their global
-equivalents. For more details see \fB\%tin\fP(5).
+Beachten Sie, dass die Zeile \fIscope=<grouplist>\fP vor den Attributen
+für diese Liste angegeben werden muss. Alle Attribute sind auf einen
+vernünftigen Standardwert gesetzt, sodass Sie nur das Attribut angeben
+müssen, das Sie ändern möchten (z. B. \fBsavedir\fP). Alle Umschaltattribute
+werden durch Angabe von »ON«»/OFF« festgelegt. Ansonsten funktionieren diese
+genau so wie ihre globalen Äquivalente. Für weitere Details siehe
+\fB\%tin\fP(5).
 .PP
 Attributes can also be changed from the attributes menu which can be
 accessed by \fBConfigToggleAttrib\fP ('\fB<TAB>\fP') from the options menu
@@ -2990,7 +2994,7 @@ marked with '+' to the left of the attributes number.
 .\"
 .\"
 Zusätzlich zu den Tasten zum Navigieren und Ändern von Werten, die aus dem
-Optionsmenü bekannt sind, bietet das Attributmenü den folgenden Befehl:
+Optionsmenü bekannt sind, bietet das Attributemenü den folgenden Befehl:
 \fBConfigResetAttrib\fP ('\fBr\fP'), der ein Attribut auf einen Standardwert
 zurücksetzt.
 .SS GÜLTIGKEITSBEREICHSMENÜ
@@ -3031,14 +3035,15 @@ When \fBtin\fP starts up the user's kill\-file
 is read (see also \fB\%tin\fP(5)  ). Each time a newsgroup is entered the rules
 are applied and articles killed or selected when they meet certain criteria.
 .PP
-The degree to which rules are applied depend on the \fBkill_level\fP tinrc
-setting. By default killed articles will only be marked read. Adjust
-\fBkill_level\fP for more aggressive processing. Articles that match an
-auto\-selection rule are marked with a \*(rq*\*(rq.
+Der Grad, in dem Regeln angewendet werden, hängt von der \fBkill_level\fP tinrc
+Einstellung ab. Standardmäßig werden getötete Artikel nur als gelesen
+markiert. Für aggressivere Verarbeitung mann der \fBkill_level\fP angepasst
+werden. Artikel, die auf eine Automatischenauswahlregel passen, sind mit
+einem »*« gekennzeichnet.
 .PP
-Filtrierungsregeln können manuell in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fP
-eingegeben werden (nicht machen, während \fBtin\fP ausgeführt wird, da sonst
-die Änderungen verloren gehen sobald dieser beendet wird) oder durch die
+Filterregeln können manuell in \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/filter\fP
+angegeben werden (nicht machen, während \fBtin\fP ausgeführt wird, da sonst die
+Änderungen verloren gehen sobald dieser beendet wird) oder durch die
 Verwendung eines Menüs innerhalb von \fBtin\fP.
 .PP
 Die Filterfähigkeiten von \fBtin\fP wurden im Vergleich zu früheren Versionen
@@ -3049,12 +3054,13 @@ gelesen werden unter
 .br
 <http://bzr.tin.org/doc/filtering>.
 .PP
-Note that there are two different ways to match strings (see \fBwildcard\fP
-tinrc variable): via wildmats or via regular expressions.  The later is more
-complex but offers significantly more options. If you intend to change the
-matching type from one to the other, the rules in the filter file need to be
-changed manually first. For switching from wildmats to regexp there is a
-helper script \fBw2r.pl\fP(1)  in the tools dir and online at
+Beachten Sie, dass es zwei verschiedene Möglichkeiten gibt, Zeichenfolgen zu
+vergleichen (siehe \fBwildcard\fP tinrc\-Variable): mittels Wildcards oder
+mittels regulärer Ausdrücke. Letztere sind komplexer, bieten aber deutlich
+mehr Optionen. Wenn Sie den Abgleichtyp von einem zum anderen ändern
+möchten, müssen die Regeln in der Filterdatei zunächst manuell geändert
+werden. Für den Wechsel von Wildcards zu Regexp gibt es ein Hilfsskript
+\fBw2r.pl\fP(1) im Verzeichnis »tools« und online unter
 .br
 <http://bzr.tin.org/tools/w2r.pl>.
 .PP
@@ -3171,9 +3177,10 @@ on marked articles. They will processed without any further prompting
 according to the default save parameters defined in tinrc or by any
 attributes set for the current group.
 .PP
-Otherwise, the initial prompt will ask you to select which article, thread,
-hot (auto\-selected), regular expression pattern, tagged articles you wish to
-mail, pipe etc.
+Andernfalls werden Sie in der ersten Eingabeaufforderung aufgefordert,
+auszuwählen, welche Artikel, Threads, Hot\-Artikel (automatisch ausgewählt),
+regulären Ausdruck oder getaggten Artikel Sie per E\-Mail versenden
+oderweiterleiten usw. möchten.
 .PP
 Markierte Artikel müssen bereits mittels einem \fB*Tag\fP ('\fBt\fP') Befehl
 markiert worden sein. Alle markierten Artikel können mit einem \fB*Untag\fP
@@ -3202,10 +3209,11 @@ To save in savedir/<news.group.name>/<filename> format enter
 current news.group.name but without \fBsavedir\fP prefixed. %P is expanded to
 the news.group.name with all '.\&' replaced by '/'.
 .PP
-If saving multiple files at once the filename (if not referring to a
-mailbox)  will be extended by ".num" where "num" is at least 3 digit number
-counting up from 1. Environment variables are allowed within a filename
-(e.g., \fI$SOURCES/dir/filename\fP).
+Falls mehrere Dateien gleichzeitig gespeichert werden, wird der Dateiname
+(wenn er sich nicht auf ein Postfach bezieht) um ».num« erweitert, wobei
+»num« eine mindestens dreistellige Zahl ist, die von 1 aufwärts
+zählt. Umgebungsvariablen innerhalb eines Dateinamens sind zulässig
+(z. B. \fI$SOURCES/dir/filename\fP).
 .PP
 .\"
 .\"
@@ -3278,11 +3286,11 @@ Passt auf alt.config und alles in der »news«\-Hierarchie außer »news.test«
 Weitere Beispiele finden sich in der Erklärung zu den Variablen
 $\fBAUTOSUBSCRIBE\fP und $\fBAUTOUNSUBSCRIBE\fP.
 .SS "INTERAKTIVE SUCHE"
-Depending on the setting of the \fBwildcard\fP tinrc variable there are
-currently a few limitations for interactive searches \fBSearchSubjF\fP
-('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP'), \fBSearchAuthF\fP ('\fBa\fP'), \fBSearchAuthB\fP
-('\fBA\fP'), \fBSearchBody\fP ('\fBB\fP') and \fBSearchRepeat\fP ('\fB\(rs\fP') one should
-be aware of.
+Abhängig von der Einstellung der \fBwildcard\fP tinrc\-Variablen gibt es derzeit
+einige Einschränkungen für die interaktive Suche \fBSearchSubjF\fP ('\fB/\fP'),
+\fBSearchSubjB\fP ('\fB?\fP'), \fBSearchAuthF\fP ('\fBa\fP'), \fBSearchAuthB\fP ('\fBA\fP'),
+\fBSearchBody\fP ('\fBB\fP') und \fBSearchRepeat\fP ('\fB\(rs\fP') die beachtet werden
+sollten:
 .PP
 Bei der Wildmat\-Suche wird der Suchstring automatisch in Sternchen (»*«)
 eingeschlossen, um eine Teilstringsuche zu simulieren. Dieses Verhalten kann
@@ -4003,7 +4011,7 @@ Adresse erhalten möchten.
 angegeben ist, siehe auch \fBmail_address\fP.
 .TP 
 \fBREALNAME\fP
-Bewirkt das Gleiche wie $\fBNAME\fP.
+Bewirkt das Gleiche wie $\fBNAME\fP aber mit geringerer Priorität.
 .TP 
 \fBHOME\fP
 Das Anmeldeverzeichnis des Benutzers. Weitere Informationen finden sich in
@@ -4259,11 +4267,11 @@ Abhilfemaßnahme verwenden Sie einfach kein »\fB\-C\fP«.
 .\"
 Bevor Sie einen Fehlerbericht an <tin\-bugs@tin.org> schicken,
 überprüfen Sie bitte, ob die aktuellste (stabile) Version verwendet wird,
-falls nicht, bitte erst aktualisieren! Sehen Sie sich die doc/TODO\-Datei für
-bekannte Fehler an. Wenn Sie immer noch meinen einen Fehler gefunden zu
+falls nicht, bitte erst aktualisieren! Sehen Sie sich die Datei »doc/TODO«
+für bekannte Fehler an. Wenn Sie immer noch meinen einen Fehler gefunden zu
 haben benutzen Sie bitte die Funktion \fBBugReport\fP ('\fBR\fP') und schreiben
-auf Englisch. Bitte fügen Sie Ihrem Fehlerbericht KEINE Core\-Datei bei \(em
-außer wir haben diese angefordert.
+auf Englisch. Bitte fügen Sie Ihrem Fehlerbericht KEINE »Core«\-Datei bei
+\(em außer wir haben diese angefordert.
 .SH GESCHICHTE
 \fBtin\fP basiert auf \fB\%tass\fP(1), einem Newsreader der von Rich Skrenta
 entwickelt und dessen Code im März 1991 von ihm in alt.sources

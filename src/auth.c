@@ -247,7 +247,7 @@ do_authinfo_user(
 		wait_message(2, _(txt_authorization_fail), authuser);
 	else {
 		if (!batch_mode || verbose)
-			wait_message(0, _(txt_authorization_ok) , authuser);
+			wait_message(0, _(txt_authorization_ok), authuser);
 	}
 	return ret;
 }
@@ -575,7 +575,7 @@ do_authinfo_sasl(
 		wait_message(2, _(txt_authorization_fail), authuser);
 	else {
 		if (!batch_mode || verbose)
-			wait_message(0, _(txt_authorization_ok) , authuser);
+			wait_message(0, _(txt_authorization_ok), authuser);
 	}
 	return r;
 }

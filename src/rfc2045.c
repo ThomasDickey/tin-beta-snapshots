@@ -3,7 +3,7 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2025-07-25
+ *  Updated   : 2025-09-03
  *  Notes     : RFC 2045/2047 encoding
  *
  * Copyright (c) 1995-2025 Chris Blum <chris@resolution.de>
@@ -520,7 +520,7 @@ read_decoded_qp_line(
 	} else	/* error in encoding: copy raw line */
 		ptr = buf;
 
-	if (*max_line_len < strlen(ptr)) {
+	if (*max_line_len <= strlen(ptr)) {
 		free(*line);
 		*line = my_strdup(ptr);
 		*max_line_len = strlen(*line);

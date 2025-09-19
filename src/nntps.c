@@ -3,7 +3,7 @@
  *  Module    : nntps.c
  *  Author    : E. Berkhan
  *  Created   : 2022-09-10
- *  Updated   : 2025-06-11
+ *  Updated   : 2025-08-14
  *  Notes     : simple abstraction for various TLS implementations
  *  Copyright : (c) Copyright 2022-2025 Enrik Berkhan <Enrik.Berkhan@inka.de>
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -815,18 +815,34 @@ tintls_close(
 }
 
 
-/* TODO: make date-format configurable? */
-#define PRINT_VALID_AFTER(ts, what) do { \
-		if (my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", ts)) \
-			fprintf(fp, _(txt_valid_not_after), (what)); \
-		else \
+/*
+ * TODO:
+ *      - make date-format configurable?
+ *      - format startup time only once, it is static
+ */
+#define PRINT_VALID_AFTER(ts, what, val) do { \
+		if (my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", ts)) { \
+			fprintf(fp, _(txt_valid_not_after), (what), (val) ? "" : _(txt_valid_no_longer)); \
+			if (!val_time) { \
+				if (my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", gmtime(&startup_time))) { \
+					fprintf(fp, _(txt_startup_time), (what)); \
+					fprintf(fp, "\n"); \
+				} \
+				val_time = TRUE; \
+			} \
+		} else \
 			fprintf(fp, "%s", txt_conninfo_fmt_error); \
 	} while (0)
 
-#define PRINT_VALID_BEFORE(ts, what) do { \
-		if (my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", ts)) \
-			fprintf(fp, _(txt_valid_not_before), (what)); \
-		else \
+#define PRINT_VALID_BEFORE(ts, what, val) do { \
+		if (my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", ts)) { \
+			fprintf(fp, _(txt_valid_not_before), (what), (val) ? "" : _(txt_valid_not_yet)); \
+			if (!val_time) { \
+				if (my_strftime(what, sizeof(what), "%Y-%m-%dT%H:%M%z", gmtime(&startup_time))) \
+					fprintf(fp, _(txt_startup_time), (what)); \
+				val_time = TRUE; \
+			} \
+		} else \
 			fprintf(fp, "%s", txt_conninfo_fmt_error); \
 	} while (0)
 
@@ -836,9 +852,9 @@ tintls_conninfo(
 	void *session_ctx,
 	FILE *fp)
 {
+	char fmt_time[22]; /* %Y-%m-%dT%H:%M%z */
 #ifdef USE_LIBTLS
 	struct tls *client = session_ctx;
-	char fmt_time[22]; /* %Y-%m-%dT%H:%M%z */
 #	ifdef HAVE_LIB_CRYPTO
 	BIO *io_buf = NULL;
 	const uint8_t *chain;
@@ -860,6 +876,7 @@ tintls_conninfo(
 		int i;
 		size_t cl;
 		struct tm tm;
+		t_bool val_time = TRUE;
 
 		fprintf(fp, "%s", _(txt_conninfo_server_cert_info));
 
@@ -888,14 +905,24 @@ tintls_conninfo(
 
 					if ((asn1 = X509_get0_notBefore(cert)) != NULL) {
 						if (ASN1_TIME_to_tm(asn1, &tm) == 1) {
-							PRINT_VALID_BEFORE(&tm, fmt_time);
+#	ifdef HAVE_MKTIME
+							if (mktime(&tm) > startup_time)
+								val_time = FALSE;
+#	endif /* HAVE_MKTIME */
+							PRINT_VALID_BEFORE(&tm, fmt_time, val_time);
 						}
 					}
+
 					if ((asn1 = X509_get0_notAfter(cert)) != NULL) {
 						if (ASN1_TIME_to_tm(asn1, &tm) == 1) {
-							PRINT_VALID_AFTER(&tm, fmt_time);
+#	ifdef HAVE_MKTIME
+							if (mktime(&tm) < startup_time)
+								val_time = FALSE;
+#	endif /* HAVE_MKTIME */
+							PRINT_VALID_AFTER(&tm, fmt_time, val_time);
 						}
 					}
+
 					X509_free(cert);
 				}
 			}
@@ -915,24 +942,32 @@ tintls_conninfo(
 	{
 		struct tm *tm;
 		time_t t;
+		t_bool val_time = TRUE;
 
 		fprintf(fp, _(txt_conninfo_subject), tls_peer_cert_subject(client));
 		fprintf(fp, _(txt_conninfo_issuer), tls_peer_cert_issuer(client));
 
 		if ((t = tls_peer_cert_notbefore(client)) != -1) {
 			tm = gmtime(&t);
-			PRINT_VALID_BEFORE(tm, fmt_time);
+#	ifdef HAVE_MKTIME
+			if (mktime(tm) > startup_time)
+				val_time = FALSE;
+#	endif /* HAVE_MKTIME */
+			PRINT_VALID_BEFORE(tm, fmt_time, val_time);
 		}
 
 		if ((t = tls_peer_cert_notafter(client)) != -1) {
 			tm = gmtime(&t);
-			PRINT_VALID_AFTER(tm, fmt_time);
+#	ifdef HAVE_MKTIME
+			if (mktime(tm) < startup_time)
+				val_time = FALSE;
+#	endif /* HAVE_MKTIME */
+			PRINT_VALID_AFTER(tm, fmt_time, val_time);
 		}
 	}
 #else
 #	ifdef USE_GNUTLS
 	char *desc;
-	char fmt_time[22]; /* %Y-%m-%dT%H:%M%z */
 	int retval = -1;
 	gnutls_session_t client = session_ctx;
 	gnutls_datum_t msg;
@@ -942,6 +977,7 @@ tintls_conninfo(
 	unsigned int i;
 	time_t t;
 	struct tm *tm;
+	t_bool val_time = TRUE;
 
 	desc = gnutls_session_get_desc(client);
 	fprintf(fp, "%s", _(txt_conninfo_tls_info));
@@ -974,12 +1010,12 @@ tintls_conninfo(
 		gnutls_x509_crt_t servercert = NULL;
 		gnutls_datum_t subject = { NULL, 0 };
 		gnutls_datum_t issuer = { NULL, 0 };
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		char *sub;
 		char *iss;
 		size_t len_s;
 		size_t len_i;
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 		if (i)
 			fputs("\n", fp);
@@ -994,40 +1030,44 @@ tintls_conninfo(
 		if (gnutls_x509_crt_get_dn3(servercert, &subject, 0) < 0)
 			goto err_cert;
 		else {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			sub = (char *) subject.data;
 			len_s = strlen(sub);
 			process_charsets(&sub, &len_s, "UTF-8", tinrc.mm_local_charset, FALSE);
 			fprintf(fp, _(txt_conninfo_subject), sub);
-#else
+#		else
 			fprintf(fp, _(txt_conninfo_subject), subject.data);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
 
 		if (gnutls_x509_crt_get_issuer_dn3(servercert, &issuer, 0) < 0)
 			goto err_cert;
 		else {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			iss = (char *) issuer.data;
 			len_i = strlen(iss);
 			process_charsets(&iss, &len_i, "UTF-8", tinrc.mm_local_charset, FALSE);
 			fprintf(fp, _(txt_conninfo_issuer), iss);
-#else
+#		else
 			fprintf(fp, _(txt_conninfo_issuer), issuer.data);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
 
 		if ((t = gnutls_x509_crt_get_activation_time(servercert)) == -1)
 			goto err_cert;
 
 		tm = localtime(&t);
-		PRINT_VALID_BEFORE(tm, fmt_time);
+		if (t > startup_time)
+			val_time = FALSE;
+		PRINT_VALID_BEFORE(tm, fmt_time, val_time);
 
 		if ((t = gnutls_x509_crt_get_expiration_time(servercert)) == -1)
 			goto err_cert;
 
 		tm = localtime(&t);
-		PRINT_VALID_AFTER(tm, fmt_time);
+		if (t < startup_time)
+			val_time = FALSE;
+		PRINT_VALID_AFTER(tm, fmt_time, val_time);
 
 		retval = 0;
 
@@ -1051,6 +1091,7 @@ err_cert:
 	BIO *client = session_ctx;
 	SSL *ssl;
 	STACK_OF(X509) *chain;
+	t_bool val_time = TRUE;
 
 	if (BIO_get_ssl(client, &ssl) != 1L)
 		return -1;
@@ -1078,14 +1119,13 @@ err_cert:
 		chain = SSL_get0_verified_chain(ssl);
 
 	if (chain) {
-		char name[22]; /* %Y-%m-%dT%H:%M%z */
 		char **cert_info;
 		const ASN1_TIME *asn1;
 		int i;
 		struct tm tm;
 
 		for (i = 0; i < sk_X509_num(chain); i++) {
-			X509* cert = sk_X509_value(chain, i);
+			X509 *cert = sk_X509_value(chain, i);
 
 			if (i)
 				fputs("\n", fp);
@@ -1101,13 +1141,21 @@ err_cert:
 
 			if ((asn1 = X509_get0_notBefore(cert)) != NULL) {
 				if (ASN1_TIME_to_tm(asn1, &tm) == 1) {
-					PRINT_VALID_BEFORE(&tm, name);
+#			ifdef HAVE_MKTIME
+					if (mktime(&tm) > startup_time)
+						val_time = FALSE;
+#			endif /* HAVE_MKTIME */
+					PRINT_VALID_BEFORE(&tm, fmt_time, val_time);
 				}
 			}
 
 			if ((asn1 = X509_get0_notAfter(cert)) != NULL) {
 				if (ASN1_TIME_to_tm(asn1, &tm) == 1) {
-					PRINT_VALID_AFTER(&tm, name);
+#			ifdef HAVE_MKTIME
+					if (mktime(&tm) < startup_time)
+						val_time = FALSE;
+#			endif /* HAVE_MKTIME */
+					PRINT_VALID_AFTER(&tm, fmt_time, val_time);
 				}
 			}
 		}

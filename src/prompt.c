@@ -805,7 +805,7 @@ prompt_string_ptr_default(
 		return NULL;
 	}
 
-	if (*pattern)	{		/* got a string - make it the default */
+	if (*pattern) {		/* got a string - make it the default */
 		FreeIfNeeded(*def);
 		*def = my_strdup(pattern);
 	} else {

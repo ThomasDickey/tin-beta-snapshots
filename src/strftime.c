@@ -72,10 +72,6 @@ my_strftime(
 	char *start = s;
 	char tbuf[100];
 	int i;
-
-	/*
-	 * various tables, useful in North America
-	 */
 	static const char *days_a[] = {
 		"Sun", "Mon", "Tue", "Wed",
 		"Thu", "Fri", "Sat",
@@ -117,181 +113,181 @@ my_strftime(
 			continue;
 		}
 		switch (*++format) {
-		case '\0':
-			*s++ = '%';
-			goto out;
+			case '\0':
+				*s++ = '%';
+				goto out;
 
-		case '%':
-			*s++ = '%';
-			continue;
+			case '%':
+				*s++ = '%';
+				continue;
 
-		case 'a':	/* abbreviated weekday name */
-			strcpy(tbuf, days_a[timeptr->tm_wday]);
-			break;
+			case 'a':	/* abbreviated weekday name */
+				strcpy(tbuf, days_a[timeptr->tm_wday]);
+				break;
 
-		case 'A':	/* full weekday name */
-			strcpy(tbuf, days_l[timeptr->tm_wday]);
-			break;
-
-#	ifdef SYSV_EXT
-		case 'h':	/* abbreviated month name */
-#	endif /* SYSV_EXT */
-		case 'b':	/* abbreviated month name */
-			strcpy(tbuf, months_a[timeptr->tm_mon]);
-			break;
-
-		case 'B':	/* full month name */
-			strcpy(tbuf, months_l[timeptr->tm_mon]);
-			break;
-
-		case 'c':	/* appropriate date and time representation */
-			snprintf(tbuf, sizeof(tbuf), "%s %s %2d %02d:%02d:%02d %d",
-				days_a[timeptr->tm_wday],
-				months_a[timeptr->tm_mon],
-				timeptr->tm_mday,
-				timeptr->tm_hour,
-				timeptr->tm_min,
-				timeptr->tm_sec,
-				timeptr->tm_year + 1900);
-			break;
-
-		case 'd':	/* day of the month, 01 - 31 */
-			snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_mday);
-			break;
-
-		case 'H':	/* hour, 24-hour clock, 00 - 23 */
-			snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_hour);
-			break;
-
-		case 'I':	/* hour, 12-hour clock, 01 - 12 */
-			i = timeptr->tm_hour;
-			if (i == 0)
-				i = 12;
-			else if (i > 12)
-				i -= 12;
-			snprintf(tbuf, sizeof(tbuf), "%02d", i);
-			break;
-
-		case 'j':	/* day of the year, 001 - 366 */
-			snprintf(tbuf, sizeof(tbuf), "%03d", timeptr->tm_yday + 1);
-			break;
-
-		case 'm':	/* month, 01 - 12 */
-			snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_mon + 1);
-			break;
-
-		case 'M':	/* minute, 00 - 59 */
-			snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_min);
-			break;
-
-		case 'p':	/* AM or PM based on 12-hour clock */
-			strcpy(tbuf, ampm[((timeptr->tm_hour < 12) ? 0 : 1)]);
-			break;
-
-		case 'S':	/* second, 00 - 61 */
-			snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_sec);
-			break;
-
-		case 'w':	/* weekday, Sunday == 0, 0 - 6 */
-			snprintf(tbuf, sizeof(tbuf), "%d", timeptr->tm_wday);
-			break;
-
-		case 'x':	/* appropriate date representation */
-			snprintf(tbuf, sizeof(tbuf), "%s %s %2d %d",
-				days_a[timeptr->tm_wday],
-				months_a[timeptr->tm_mon],
-				timeptr->tm_mday,
-				timeptr->tm_year + 1900);
-			break;
-
-		case 'X':	/* appropriate time representation */
-			snprintf(tbuf, sizeof(tbuf), "%02d:%02d:%02d",
-				timeptr->tm_hour,
-				timeptr->tm_min,
-				timeptr->tm_sec);
-			break;
-
-		case 'y':	/* year without a century, 00 - 99 */
-			i = timeptr->tm_year % 100;
-			snprintf(tbuf, sizeof(tbuf), "%d", i);
-			break;
-
-		case 'Y':	/* year with century */
-			snprintf(tbuf, sizeof(tbuf), "%d", timeptr->tm_year + 1900);
-			break;
+			case 'A':	/* full weekday name */
+				strcpy(tbuf, days_l[timeptr->tm_wday]);
+				break;
 
 #	ifdef SYSV_EXT
-		case 'n':	/* same as \n */
-			tbuf[0] = '\n';
-			tbuf[1] = '\0';
-			break;
+			case 'h':	/* abbreviated month name */
+#	endif /* SYSV_EXT */
+			case 'b':	/* abbreviated month name */
+				strcpy(tbuf, months_a[timeptr->tm_mon]);
+				break;
 
-		case 't':	/* same as \t */
-			tbuf[0] = '\t';
-			tbuf[1] = '\0';
-			break;
+			case 'B':	/* full month name */
+				strcpy(tbuf, months_l[timeptr->tm_mon]);
+				break;
 
-		case 'D':	/* date as %m/%d/%y */
-			my_strftime(tbuf, sizeof(tbuf), "%m/%d/%y", timeptr);
-			break;
+			case 'c':	/* appropriate date and time representation */
+				snprintf(tbuf, sizeof(tbuf), "%s %s %2d %02d:%02d:%02d %d",
+					days_a[timeptr->tm_wday],
+					months_a[timeptr->tm_mon],
+					timeptr->tm_mday,
+					timeptr->tm_hour,
+					timeptr->tm_min,
+					timeptr->tm_sec,
+					timeptr->tm_year + 1900);
+				break;
 
-		case 'e':	/* day of month, blank padded */
-			snprintf(tbuf, sizeof(tbuf), "%2d", timeptr->tm_mday);
-			break;
+			case 'd':	/* day of the month, 01 - 31 */
+				snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_mday);
+				break;
 
-		case 'r':	/* time as %I:%M:%S %p */
-			my_strftime(tbuf, sizeof(tbuf), "%I:%M:%S %p", timeptr);
-			break;
+			case 'H':	/* hour, 24-hour clock, 00 - 23 */
+				snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_hour);
+				break;
 
-		case 'R':	/* time as %H:%M */
-			my_strftime(tbuf, sizeof(tbuf), "%H:%M", timeptr);
-			break;
+			case 'I':	/* hour, 12-hour clock, 01 - 12 */
+				i = timeptr->tm_hour;
+				if (i == 0)
+					i = 12;
+				else if (i > 12)
+					i -= 12;
+				snprintf(tbuf, sizeof(tbuf), "%02d", i);
+				break;
 
-		case 'T':	/* time as %H:%M:%S */
-			my_strftime(tbuf, sizeof(tbuf), "%H:%M:%S", timeptr);
-			break;
+			case 'j':	/* day of the year, 001 - 366 */
+				snprintf(tbuf, sizeof(tbuf), "%03d", timeptr->tm_yday + 1);
+				break;
+
+			case 'm':	/* month, 01 - 12 */
+				snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_mon + 1);
+				break;
+
+			case 'M':	/* minute, 00 - 59 */
+				snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_min);
+				break;
+
+			case 'p':	/* AM or PM based on 12-hour clock */
+				strcpy(tbuf, ampm[((timeptr->tm_hour < 12) ? 0 : 1)]);
+				break;
+
+			case 'S':	/* second, 00 - 61 */
+				snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_sec);
+				break;
+
+			case 'w':	/* weekday, Sunday == 0, 0 - 6 */
+				snprintf(tbuf, sizeof(tbuf), "%d", timeptr->tm_wday);
+				break;
+
+			case 'x':	/* appropriate date representation */
+				snprintf(tbuf, sizeof(tbuf), "%s %s %2d %d",
+					days_a[timeptr->tm_wday],
+					months_a[timeptr->tm_mon],
+					timeptr->tm_mday,
+					timeptr->tm_year + 1900);
+				break;
+
+			case 'X':	/* appropriate time representation */
+				snprintf(tbuf, sizeof(tbuf), "%02d:%02d:%02d",
+					timeptr->tm_hour,
+					timeptr->tm_min,
+					timeptr->tm_sec);
+				break;
+
+			case 'y':	/* year without a century, 00 - 99 */
+				i = timeptr->tm_year % 100;
+				snprintf(tbuf, sizeof(tbuf), "%d", i);
+				break;
+
+			case 'Y':	/* year with century */
+				snprintf(tbuf, sizeof(tbuf), "%d", timeptr->tm_year + 1900);
+				break;
+
+#	ifdef SYSV_EXT
+			case 'n':	/* same as \n */
+				tbuf[0] = '\n';
+				tbuf[1] = '\0';
+				break;
+
+			case 't':	/* same as \t */
+				tbuf[0] = '\t';
+				tbuf[1] = '\0';
+				break;
+
+			case 'D':	/* date as %m/%d/%y */
+				my_strftime(tbuf, sizeof(tbuf), "%m/%d/%y", timeptr);
+				break;
+
+			case 'e':	/* day of month, blank padded */
+				snprintf(tbuf, sizeof(tbuf), "%2d", timeptr->tm_mday);
+				break;
+
+			case 'r':	/* time as %I:%M:%S %p */
+				my_strftime(tbuf, sizeof(tbuf), "%I:%M:%S %p", timeptr);
+				break;
+
+			case 'R':	/* time as %H:%M */
+				my_strftime(tbuf, sizeof(tbuf), "%H:%M", timeptr);
+				break;
+
+			case 'T':	/* time as %H:%M:%S */
+				my_strftime(tbuf, sizeof(tbuf), "%H:%M:%S", timeptr);
+				break;
 #	endif /* SYSV_EXT */
 
-		case 'C': /* century number (SU) */
-			sprintf(tbuf, "%02d", (timeptr->tm_year + 1900) / 100);
-			break;
+			case 'C': /* century number (SU) */
+				sprintf(tbuf, "%02d", (timeptr->tm_year + 1900) / 100);
+				break;
 
-		case 'F': /* ISO 8601 date format (C99) */
-			my_strftime(tbuf, sizeof(tbuf), "%Y-%m-%d", timeptr);
-			break;
+			case 'F': /* ISO 8601 date format (C99) */
+				my_strftime(tbuf, sizeof(tbuf), "%Y-%m-%d", timeptr);
+				break;
 
-		case 'k':	/* 24-hour clock, blank padded */
-			snprintf(tbuf, sizeof(tbuf), "%2d", timeptr->tm_hour);
-			break;
+			case 'k':	/* 24-hour clock, blank padded */
+				snprintf(tbuf, sizeof(tbuf), "%2d", timeptr->tm_hour);
+				break;
 
-		case 'l':	/* 12-hour clock, blank padded */
-			i = timeptr->tm_hour;
-			if (i == 0)
-				i = 12;
-			else if (i > 12)
-				i -= 12;
-			snprintf(tbuf, sizeof(tbuf), "%2d", i);
-			break;
+			case 'l':	/* 12-hour clock, blank padded */
+				if ((i = timeptr->tm_hour) == 0)
+					i = 12;
+				else if (i > 12)
+					i -= 12;
+				snprintf(tbuf, sizeof(tbuf), "%2d", i);
+				break;
 
-		case 'P':	/* am or pm based on 12-hour clock (GNU) */
-			strcpy(tbuf, ampm[((timeptr->tm_hour < 12) ? 0 : 1)]);
-			str_lwr(tbuf);
-			break;
+			case 'P':	/* am or pm based on 12-hour clock (GNU) */
+				strcpy(tbuf, ampm[((timeptr->tm_hour < 12) ? 0 : 1)]);
+				str_lwr(tbuf);
+				break;
 
-		case 's': /* seconds since the Epoch */
-			sprintf(tbuf, "%ld", time((time_t *) 0));
-			break;
+			case 's': /* seconds since the Epoch */
+				sprintf(tbuf, "%ld", time((time_t *) 0));
+				break;
 
-		case 'u': /* day of the week, range 1 to 7 */
-			sprintf(tbuf, "%d", timeptr->tm_wday == 0 ? 7 : timeptr->tm_wday);
-			break;
+			case 'u': /* day of the week, range 1 to 7 */
+				sprintf(tbuf, "%d", timeptr->tm_wday == 0 ? 7 : timeptr->tm_wday);
+				break;
 
-		default:
-			tbuf[0] = '%';
-			tbuf[1] = *format;
-			tbuf[2] = '\0';
-			break;
+			default:
+				tbuf[0] = '%';
+				tbuf[1] = *format;
+				tbuf[2] = '\0';
+				break;
 		}
+
 		if ((i = strlen(tbuf))) {
 			if (s + i < endp - 1) {
 				strcpy(s, tbuf);

@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-25
+ *  Updated   : 2025-08-20
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -99,6 +99,7 @@ static t_help_page attachment_help_page[] = {
 #endif /* !NO_SHELL_ESCAPE */
 	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
+	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ NULL, NOT_ASSIGNED }
 };
 
@@ -135,6 +136,7 @@ static t_help_page attrib_help_page[] = {
 #endif /* !NO_SHELL_ESCAPE */
 	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
+	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ NULL, NOT_ASSIGNED }
 };
 
@@ -177,6 +179,7 @@ static t_help_page config_help_page[] = {
 #endif /* !NO_SHELL_ESCAPE */
 	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
+	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ NULL, NOT_ASSIGNED }
 };
 
@@ -211,6 +214,7 @@ static t_help_page serverrc_help_page[] = {
 #endif /* !NO_SHELL_ESCAPE */
 	{ "", NOT_ASSIGNED },
 	{ txt_help_global_version, GLOBAL_VERSION },
+	{ txt_help_global_connection_info, GLOBAL_CONNECTION_INFO },
 	{ NULL, NOT_ASSIGNED }
 };
 
@@ -754,7 +758,7 @@ make_help_page(
 				 */
 				buf = my_realloc(buf, LEN);
 				if (helppage->helptext[0] == '\n' && helppage->helptext[1] == '\0')
-					strncpy(buf, helppage->helptext, LEN);
+					strncpy(buf, helppage->helptext, 2);
 				else
 					strncpy(buf, _(helppage->helptext), LEN);
 				buf[LEN - 1] = '\0';
@@ -787,60 +791,76 @@ show_help_page(
 	const char *title)
 {
 	FILE *fp;
+	char help_file[PATH_LEN];
+	char tmp[PATH_LEN];
 
-	if (!(fp = my_tmpfile()))
-		return;
+	sprintf(tmp, HELP_PAGE_CACHE_FILE, level);
+	joinpath(help_file, sizeof(help_file), serverdir, tmp);
 
-	switch (level) {
-		case ATTACHMENT_LEVEL:
-			make_help_page(fp, attachment_help_page, attachment_keys);
-			break;
-
-		case ATTRIB_LEVEL:
-			make_help_page(fp, attrib_help_page, option_menu_keys);
-			break;
-
-		case CONFIG_LEVEL:
-			make_help_page(fp, config_help_page, option_menu_keys);
-			break;
-
-		case SCOPE_LEVEL:
-			make_help_page(fp, scope_help_page, scope_keys);
-			break;
-
-		case SELECT_LEVEL:
-			make_help_page(fp, select_help_page, select_keys);
-			break;
-
-		case SERVERRC_LEVEL:
-			make_help_page(fp, serverrc_help_page, option_menu_keys);
-			break;
-
-		case GROUP_LEVEL:
-			make_help_page(fp, group_help_page, group_keys);
-			break;
-
-		case THREAD_LEVEL:
-			make_help_page(fp, thread_help_page, thread_keys);
-			break;
-
-		case PAGE_LEVEL:
-			make_help_page(fp, page_help_page, page_keys);
-			break;
-
-		case POSTED_LEVEL:
-			make_help_page(fp, post_hist_help_page, post_hist_keys);
-			break;
-
-		case URL_LEVEL:
-			make_help_page(fp, url_help_page, url_keys);
-			break;
-
-		case INFO_PAGER:
-		default: /* should not happen */
-			error_message(2, _(txt_error_unknown_dlevel));
-			fclose(fp);
+	/*
+	 * check if we have cached the help page already, if not create it
+	 *
+	 * TODO: remember which help-pages haven been created so we don't
+	 *       have to try (removal) based on the file,
+	 *       if (!(level & help_page_cached)) { ... }
+	 *       but that would be another global (so we can make use of it
+	 *       in cleanup_tmp_files())?
+	 */
+	if ((fp = fopen(help_file, "r")) == NULL) { /* ENOENT */
+		if ((fp = fopen(help_file, "w+")) == NULL) /* TODO: error message */
 			return;
+
+		switch (level) {
+			case ATTACHMENT_LEVEL:
+				make_help_page(fp, attachment_help_page, attachment_keys);
+				break;
+
+			case ATTRIB_LEVEL:
+				make_help_page(fp, attrib_help_page, option_menu_keys);
+				break;
+
+			case CONFIG_LEVEL:
+				make_help_page(fp, config_help_page, option_menu_keys);
+				break;
+
+			case SCOPE_LEVEL:
+				make_help_page(fp, scope_help_page, scope_keys);
+				break;
+
+			case SELECT_LEVEL:
+				make_help_page(fp, select_help_page, select_keys);
+				break;
+
+			case SERVERRC_LEVEL:
+				make_help_page(fp, serverrc_help_page, option_menu_keys);
+				break;
+
+			case GROUP_LEVEL:
+				make_help_page(fp, group_help_page, group_keys);
+				break;
+
+			case THREAD_LEVEL:
+				make_help_page(fp, thread_help_page, thread_keys);
+				break;
+
+			case PAGE_LEVEL:
+				make_help_page(fp, page_help_page, page_keys);
+				break;
+
+			case POSTED_LEVEL:
+				make_help_page(fp, post_hist_help_page, post_hist_keys);
+				break;
+
+			case URL_LEVEL:
+				make_help_page(fp, url_help_page, url_keys);
+				break;
+
+			case INFO_PAGER:
+			default: /* should not happen */
+				error_message(2, _(txt_error_unknown_dlevel));
+				fclose(fp);
+				return;
+		}
 	}
 
 	info_pager(fp, title, TRUE);

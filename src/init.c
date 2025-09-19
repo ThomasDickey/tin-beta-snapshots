@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-29
+ *  Updated   : 2025-08-15
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>
@@ -121,6 +121,9 @@ char *tin_progname;		/* program name */
 const char *tmpdir;
 char txt_help_bug_report[LEN];		/* address to send bug reports to */
 char userid[LOGIN_NAME_MAX];
+#ifdef NNTPS_ABLE
+	time_t startup_time;
+#endif /* NNTPS_ABLE */
 #ifdef HAVE_MH_MAIL_HANDLING
 	char mail_active_file[PATH_LEN];
 	char mailgroups_file[PATH_LEN];
@@ -749,6 +752,10 @@ init_selfinfo(
 
 	pending_sactions = 0;
 
+#ifdef NNTPS_ABLE
+	(void) time(&startup_time); /* issue warning on error? */
+#endif /* NNTPS_ABLE */
+
 	*domain_name = '\0';
 
 #ifdef HAVE_SYS_UTSNAME_H
@@ -920,7 +927,7 @@ init_selfinfo(
 		if ((fp = tin_fopen(tmp, "r")) != NULL) {
 			char buf[LEN];
 
-			if (fgets(buf, (int) sizeof(buf), fp) != NULL) {
+			if (fgets(buf, sizeof(buf), fp) != NULL) {
 				if ((ptr = strrchr(buf, '\n')) != NULL)
 					*ptr = '\0';
 			}
@@ -1021,9 +1028,9 @@ init_selfinfo(
 #endif /* APPEND_PID */
 
 #ifdef HAVE_LONG_FILE_NAMES
-	space = snprintf(NULL, 0, "%s.bak", article_name);
+	space = (size_t) snprintf(NULL, 0, "%s.bak", article_name);
 #else
-	space = snprintf(NULL, 0, "%s.b", article_name);
+	space = (size_t) snprintf(NULL, 0, "%s.b", article_name);
 #endif /* HAVE_LONG_FILE_NAMES */
 	backup_article_name = my_malloc(++space);
 #ifdef HAVE_LONG_FILE_NAMES

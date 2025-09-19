@@ -913,7 +913,7 @@ char2wchar_t(
 
 	test = my_calloc(1, strlen(str) + 1);
 	/* check for illegal sequences */
-	for (pos = 0; str[pos] != '\0' ; pos++) {
+	for (pos = 0; str[pos] != '\0'; pos++) {
 		test[pos] = str[pos];
 		i = 1;
 		while ((len = mbstowcs(NULL, test, 0)) == (size_t) (-1) && str[pos + i] != '\0' && i < (size_t) MB_CUR_MAX) {

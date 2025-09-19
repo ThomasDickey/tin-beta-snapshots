@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-16
+ *  Updated   : 2025-08-20
  *  Notes     :
  *
  * Copyright (c) 1991-2025 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -56,6 +56,7 @@
 #	include "stpwatch.h"
 #endif /* !STPWATCH_H */
 
+char serverdir[PATH_LEN];
 
 signed long int read_newsrc_lines = -1;
 
@@ -98,7 +99,6 @@ main(
 	char *argv[])
 {
 	char **argv_orig = argv;
-	char serverdir[PATH_LEN];
 	int count, start_groupnum;
 	int num_cmd_line_groups = 0;
 	unsigned int srvrc_mask = 0;
@@ -276,7 +276,11 @@ main(
 	joinpath(serverdir, sizeof(serverdir), rcdir, serverrc_file);
 	joinpath(serverrc_file, sizeof(serverrc_file), serverdir, SERVERCONFIG_FILE);
 
-	open_msglog(); /* depends on nntp_server */
+	open_msglog(); /* depends on serverdir */
+
+	/* remove help text cache if any */
+	if (!batch_mode)
+		cleanup_tmp_files();
 
 	if (update_index)
 		srvrc_mask |= SRVRC_MASK_UPDATE_INDEX;

@@ -480,7 +480,7 @@ backup_newsrc(
 		int fd;
 #	endif /* O_NOFOLLOW */
 
-		if ((fp_in = tin_fopen(newsrc , "r")) == NULL)
+		if ((fp_in = tin_fopen(newsrc, "r")) == NULL)
 			return;
 
 #	ifdef O_NOFOLLOW

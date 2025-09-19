@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2025-07-30
+ *  Updated   : 2025-08-12
  *  Notes     :
  *
  * Copyright (c) 1997-2025 Iain Lea <iain@bricbrac.de>
@@ -415,6 +415,7 @@ extern char posted_info_file[PATH_LEN];
 extern char postponed_articles_file[PATH_LEN];
 extern char rcdir[PATH_LEN];
 extern char save_active_file[PATH_LEN];
+extern char serverdir[PATH_LEN];
 extern char serverrc_file[PATH_LEN];
 extern char spooldir[PATH_LEN];
 #ifndef NNTP_ONLY
@@ -803,6 +804,7 @@ extern constext txt_default[];
 extern constext txt_delete_processed_files[];
 extern constext txt_deleting[];
 #ifdef NNTP_ABLE
+	extern constext txt_disabled_cmds[];
 	extern constext txt_disconnecting[];
 #endif /* NNTP_ABLE */
 extern constext txt_end_of_art[];
@@ -1254,7 +1256,8 @@ extern constext txt_invalid_from[];
 extern constext txt_inverse_off[];
 extern constext txt_inverse_on[];
 extern constext txt_is_mailbox[];
-extern constext txt_is_tex_encoded[];
+/* extern constext txt_is_tex_encoded[]; */
+extern constext txt_keeping_add_cmd_line_opts[];
 extern constext txt_keymap_missing_key[];
 extern constext txt_keymap_invalid_key[];
 extern constext txt_keymap_invalid_name[];
@@ -1547,6 +1550,9 @@ extern constext txt_skipped_group[];
 extern constext txt_skipping_newgroups[];
 extern constext txt_space[];
 extern constext txt_starting_command[];
+#if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
+	extern constext txt_startup_time[];
+#endif /* NNTP_ABLE && NNTPS_ABLE */
 extern constext txt_stp_list_thread[];
 extern constext txt_stp_thread[];
 extern constext txt_subj_line_only[];
@@ -1709,6 +1715,8 @@ extern constext txt_uue_incomplete[];
 #if defined(NNTP_ABLE) && defined(NNTPS_ABLE)
 	extern constext txt_valid_not_after[];
 	extern constext txt_valid_not_before[];
+	extern constext txt_valid_not_yet[];
+	extern constext txt_valid_no_longer[];
 #endif /* NNTP_ABLE && NNTPS_ABLE */
 extern constext txt_val_out_of_range_ignored[];
 extern constext txt_val_out_of_range_reset[];
@@ -1878,6 +1886,10 @@ extern signed long int read_newsrc_lines;
 extern size_t tabwidth;
 
 extern pid_t process_id;
+
+#ifdef NNTPS_ABLE
+	extern time_t startup_time;
+#endif /* NNTPS_ABLE */
 
 #ifdef USE_HEAPSORT
 	extern int tin_sort(void *, size_t, size_t, t_compfunc);

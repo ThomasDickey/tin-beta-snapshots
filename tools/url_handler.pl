@@ -11,7 +11,7 @@ use warnings;
 die "Usage: $pname URL" if $#ARGV != 0;
 
 # version Number
-my $version = "0.1.4";
+my $version = "0.1.5";
 
 my ($method, $url, $match, @try);
 if (eval { require URI;1; } == 1) {
@@ -32,14 +32,21 @@ if ($ENV{"BROWSER_".uc($method)}) {
 	if ($ENV{BROWSER}) {
 		push(@try, split(/:/x, $ENV{BROWSER}));
 	} else { # set some defaults
-		push(@try, 'firefox -a firefox -remote');
-		push(@try, 'mozilla -remote openURL\(%s\)');
-		push(@try, 'opera -remote openURL\(%s\)');
-		push(@try, qw(chromium 'galeon -n' 'epiphany -n' konqueror));
-		push(@try, 'lynx'); # prefer lynx over links as it can handle news:-urls
-		push(@try, qw('links2 -g' links w3m surf arora));
-		push(@try, 'kfmclient newTab'); # has no useful return-value on error
-		push(@try, 'xdg-open'); # xdg-open evaluates $BROWSER which is unset
+		@try = (
+			'firefox',
+			'vivaldi',
+			'chromium',
+			'epiphany',
+			'konqueror',
+			'falkon',
+			'lynx', # prefer lynx over links as it can handle news:-urls
+			'links2 -g',
+			'links',
+			'w3m',
+			'surf',
+			'kfmclient newTab', # has no useful return-value on error
+			'xdg-open' # xdg-open evaluates $BROWSER which is unset
+		);
 	}
 }
 
@@ -123,7 +130,7 @@ Examples:
 
 =over 2
 
-=item $BROWSER="firefox -a firefox -remote:opera:konqueror:links2 -g:lynx:w3m"
+=item $BROWSER="firefox:opera:konqueror:links2 -g:lynx:w3m"
 
 =back
 

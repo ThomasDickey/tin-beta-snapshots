@@ -1209,8 +1209,8 @@ match_group_list(
 		 * copy out the entry and terminate it properly
 		 */
 		my_strncpy(pattern, group_list, group_len);
-		my_strncpy(ngname, group, sizeof(ngname) - 1);
 		str_lwr(pattern);
+		my_strncpy(ngname, group, sizeof(ngname) - 1);
 		str_lwr(ngname);
 
 		/*
